@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.187 2002/04/04 14:05:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.189 2002/09/26 02:56:49 keithp Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -858,6 +858,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 				  SubPixelHorizontalRGB : SubPixelNone) :
 				 SubPixelUnknown);;
     }
+#endif
+#ifdef RANDR
+    xf86RandRInit (screenInfo.screens[scr_index]);
 #endif
 #ifdef NOT_USED
       /*

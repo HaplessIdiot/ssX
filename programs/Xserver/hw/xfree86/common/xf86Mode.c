@@ -1466,6 +1466,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	for (i = 0; modeNames[i] != NULL; i++) {
 	    new = xnfcalloc(1, sizeof(DisplayModeRec));
 	    new->prev = last;
+	    new->type = M_T_USERDEF;
 	    new->name = xnfalloc(strlen(modeNames[i]) + 1);
 	    strcpy(new->name, modeNames[i]);
 	    if (new->prev)
@@ -1476,7 +1477,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     }
 
     /* Lookup each mode */
-    validateAllDefaultModes = FALSE;
+    validateAllDefaultModes = TRUE;
     for (p = scrp->modes; ; p = p->next) {
 	Bool repeat;
 

@@ -190,6 +190,9 @@ xf86SwitchMode(ScreenPtr pScreen, DisplayModePtr mode)
   if (mode == pScr->currentMode)
     return TRUE;
 
+  if (mode->HDisplay > pScreen->width || mode->VDisplay > pScreen->height)
+    return FALSE;
+
   pCursorScreen = miPointerCurrentScreen();
   if (pScreen == pCursorScreen)
     miPointerPosition(&px, &py);
@@ -255,10 +258,12 @@ xf86ZoomViewport(ScreenPtr pScreen, int zoom)
   if (pScr->zoomLocked || !(mode = pScr->currentMode))
     return;
 
-  if (zoom > 0)
-    mode = mode->next;
-  else
-    mode = mode->prev;
+  do {
+    if (zoom > 0)
+      mode = mode->next;
+    else
+      mode = mode->prev;
+  } while (mode != pScr->currentMode && !(mode->type & M_T_USERDEF));
 
   (void)xf86SwitchMode(pScreen, mode);
 }

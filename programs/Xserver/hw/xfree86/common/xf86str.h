@@ -101,6 +101,7 @@ typedef enum {
 # define M_T_CLOCK_CRTC_C  (M_T_CLOCK_C | M_T_CRTC_C)
                                /* built-in mode - configure CRTC and clock */
 # define M_T_DEFAULT 0x10	/* (VESA) default modes */
+# define M_T_USERDEF 0x20	/* One of the modes from the config file */
 
 /* Video mode */
 typedef struct _DisplayModeRec {

@@ -1053,8 +1053,13 @@ xf86SetRootClip (ScreenPtr pScreen, BOOL enable)
 	box.y1 = 0;
 	box.x2 = pScreen->width;
 	box.y2 = pScreen->height;
-	REGION_RESET(pScreen, &pWin->borderClip, &box);
-	REGION_BREAK (pWin->drawable.pScreen, &pWin->clipList);
+	REGION_INIT (pScreen, &pWin->winSize, &box, 1);
+	REGION_INIT (pScreen, &pWin->borderSize, &box, 1);
+	if (WasViewable)
+	    REGION_RESET(pScreen, &pWin->borderClip, &box);
+	pWin->drawable.width = pScreen->width;
+	pWin->drawable.height = pScreen->height;
+        REGION_BREAK (pWin->drawable.pScreen, &pWin->clipList);
     }
     else
     {

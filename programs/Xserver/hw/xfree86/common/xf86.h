@@ -384,6 +384,13 @@ void xf86ShowClockRanges(ScrnInfoPtr scrp, ClockRangePtr clockRanges);
 
 void xf86CollectOptions(ScrnInfoPtr pScrn, pointer extraOpts);
 
+
+/* xf86RandR.c */
+#ifdef RANDR
+Bool xf86RandRInit (ScreenPtr    pScreen);
+void xf86RandRSetInitialMode (ScreenPtr pScreen);
+#endif
+
 /* xf86VidModeExtentionInit.c */
 
 Bool VidModeExtensionInit(ScreenPtr pScreen);
