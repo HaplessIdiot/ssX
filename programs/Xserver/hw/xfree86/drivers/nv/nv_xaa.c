@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.23 2001/06/16 22:00:30 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.24 2001/09/19 23:40:06 mvojkovi Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -62,7 +62,6 @@ NVSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
     RIVA_FIFO_FREE(pNv->riva, Clip, 2);
     pNv->riva.Clip->TopLeft     = (y1     << 16) | (x1 & 0xffff);
     pNv->riva.Clip->WidthHeight = (height << 16) | width;
-    write_mem_barrier();
 }
 
 
@@ -135,6 +134,7 @@ NVSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 2);
     pNv->riva.Bitmap->UnclippedRectangle[0].TopLeft     = (x << 16) | y; 
+    write_mem_barrier();
     pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
     write_mem_barrier();
 }
@@ -155,14 +155,12 @@ NVSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 {
     NVPtr pNv = NVPTR(pScrn);
 
-/*      ErrorF("E SubseqSS\n");  */
     RIVA_FIFO_FREE(pNv->riva, Blt, 3);
     pNv->riva.Blt->TopLeftSrc  = (y1 << 16) | x1;
     pNv->riva.Blt->TopLeftDst  = (y2 << 16) | x2;
+    write_mem_barrier();
     pNv->riva.Blt->WidthHeight = (h  << 16) | w;
     write_mem_barrier();
-/*        ErrorF("L SubseqSS\n");  */
-
 }
 
 
@@ -198,7 +196,6 @@ NVSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patternx, int patterny,
 	bg  = (bg == -1) ? 0 : bg | pNv->opaqueMonochrome;
     };
     NVSetPattern(pNv, bg, fg, patternx, patterny);
-    write_mem_barrier();
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 1);
     pNv->riva.Bitmap->Color1A = fg;
 }
@@ -212,6 +209,7 @@ NVSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
 
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 2);
     pNv->riva.Bitmap->UnclippedRectangle[0].TopLeft     = (x << 16) | y;
+    write_mem_barrier();
     pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
     write_mem_barrier();
 }
@@ -237,9 +235,7 @@ NVResetGraphics(ScrnInfoPtr pScrn)
 void NVSync(ScrnInfoPtr pScrn)
 {
     NVPtr pNv = NVPTR(pScrn);
-/*      ErrorF("sync enter\n"); */
     RIVA_BUSY(pNv->riva);
-/*      ErrorF("sync leave\n");     */
 }
 
 /* Color expansion */
@@ -306,7 +302,6 @@ NVSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 	d[14] = pbits[14];
 	d[15] = pbits[15];
 	t -= 16; pbits += 16;
-	write_mem_barrier();
     }
     if(t) {
 	RIVA_FIFO_FREE(pNv->riva, Bitmap, t);
@@ -317,17 +312,17 @@ NVSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 	    d[2]  = pbits[2];
 	    d[3]  = pbits[3];
 	    t -= 4; pbits += 4;
-	    write_mem_barrier();
 	}
 	while(t--) 
 	    *(d++) = *(pbits++); 
-	write_mem_barrier();
     }
 
     if (!(--pNv->expandRows)) { /* hardware bug workaround */
        RIVA_FIFO_FREE(pNv->riva, Blt, 1);
+       write_mem_barrier();
        pNv->riva.Blt->TopLeftSrc = 0;
     }
+    write_mem_barrier();
 }
 
 static void
@@ -339,9 +334,10 @@ NVSubsequentColorExpandScanlineFifo(ScrnInfoPtr pScrn, int bufno)
        RIVA_FIFO_FREE(pNv->riva, Bitmap, pNv->expandWidth);
     } else { /* hardware bug workaround */
        RIVA_FIFO_FREE(pNv->riva, Blt, 1);
+       write_mem_barrier();
        pNv->riva.Blt->TopLeftSrc = 0;
+       write_mem_barrier();
     }
-    write_mem_barrier();
 }
 
 static void
@@ -364,7 +360,9 @@ NVSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x,
         pNv->riva.Bitmap->ClipC.BottomRight = ((y+h) << 16) | ((x+w)&0xffff);
         pNv->riva.Bitmap->Color1C           = pNv->FgColor;
         pNv->riva.Bitmap->WidthHeightC      = (h << 16) | bw;
+        write_mem_barrier();
         pNv->riva.Bitmap->PointC            = (y << 16) | (x & 0xFFFF);
+        write_mem_barrier();
     }
     else
     {
@@ -377,7 +375,9 @@ NVSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x,
         pNv->riva.Bitmap->Color1E           = pNv->FgColor;
         pNv->riva.Bitmap->WidthHeightInE  = (h << 16) | bw;
         pNv->riva.Bitmap->WidthHeightOutE = (h << 16) | bw;
+        write_mem_barrier();
         pNv->riva.Bitmap->PointE          = (y << 16) | (x & 0xFFFF);
+        write_mem_barrier();
     }
 
     pNv->expandRows = h;
@@ -417,7 +417,9 @@ NVSubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn, int x, int y,
     RIVA_FIFO_FREE( pNv->riva, Pixmap, 3 );
     pNv->riva.Pixmap->TopLeft         = (y << 16) | (x & 0xFFFF);
     pNv->riva.Pixmap->WidthHeight     = (h << 16) | w;
+    write_mem_barrier();
     pNv->riva.Pixmap->WidthHeightIn   = (h << 16) | bw;
+    write_mem_barrier();
 }
 
 
@@ -450,7 +452,6 @@ NVSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 	d[14] = pbits[14];
 	d[15] = pbits[15];
 	t -= 16; pbits += 16;
-	write_mem_barrier();
     }
     if(t) {
 	RIVA_FIFO_FREE(pNv->riva, Pixmap, t);
@@ -461,12 +462,11 @@ NVSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 	    d[2]  = pbits[2];
 	    d[3]  = pbits[3];
 	    t -= 4; pbits += 4;
-	    write_mem_barrier();
 	}
 	while(t--) 
 	    *(d++) = *(pbits++); 
-	write_mem_barrier();
     }
+    write_mem_barrier();
 }
 
 
@@ -477,7 +477,6 @@ NVSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop, unsigned planemask)
     NVPtr pNv = NVPTR(pScrn);
 
     NVSetRopSolid(pNv, rop);
-    write_mem_barrier();
     pNv->FgColor = color;
 }
 
@@ -489,6 +488,7 @@ NVSubsequentSolidHorVertLine(ScrnInfoPtr pScrn, int x, int y, int len, int dir)
     RIVA_FIFO_FREE(pNv->riva, Line, 3);
     pNv->riva.Line->Color = pNv->FgColor;
     pNv->riva.Line->Lin[0].point0 = ((y << 16) | ( x & 0xffff));
+    write_mem_barrier();
     if ( dir ==DEGREES_0 )
         pNv->riva.Line->Lin[0].point1 = ((y << 16) | (( x + len ) & 0xffff));
     else
@@ -506,13 +506,16 @@ NVSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn, int x1, int y1,
     RIVA_FIFO_FREE(pNv->riva, Line, lastPoint ? 5 : 3);
     pNv->riva.Line->Color = pNv->FgColor;
     pNv->riva.Line->Lin[0].point0 = ((y1 << 16) | (x1 & 0xffff));
+    write_mem_barrier();
     pNv->riva.Line->Lin[0].point1 = ((y2 << 16) | (x2 & 0xffff));
+    write_mem_barrier();
     if (lastPoint)
     {
         pNv->riva.Line->Lin[1].point0 = ((y2 << 16) | (x2 & 0xffff));
+        write_mem_barrier();
         pNv->riva.Line->Lin[1].point1 = (((y2 + 1) << 16) | (x2 & 0xffff));
+        write_mem_barrier();
     }
-    write_mem_barrier();
 }
 
 static void
