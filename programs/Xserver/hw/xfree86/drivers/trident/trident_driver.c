@@ -46,7 +46,7 @@
 #include "xf86cmap.h"
 #include "vgaHW.h"
 #include "xf86RAC.h"
-#include "xf86int10.h"
+#include "vbe.h"
 
 #include "mipointer.h"
 
@@ -929,6 +929,18 @@ TRIDENTRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     }
 } 
 
+extern xf86MonPtr ConfiguredMonitor;
+
+void
+TRIDENTProbeDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+	pVbe = VBEInit(NULL,index);
+	ConfiguredMonitor = vbeDoEDID(pVbe);
+    }
+}
+
 /* Mandatory */
 static Bool
 TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
@@ -946,6 +958,39 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *Sym = "";
+
+    /* Allocate the TRIDENTRec driverPrivate */
+    if (!TRIDENTGetRec(pScrn)) {
+	return FALSE;
+    }
+    pTrident = TRIDENTPTR(pScrn);
+    pTrident->pScrn = pScrn;
+
+    if (pScrn->numEntities > 1)
+	return FALSE;
+    /* This is the general case */
+    for (i = 0; i<pScrn->numEntities; i++) {
+	pTrident->pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
+	if (pTrident->pEnt->resources) return FALSE;
+	pTrident->Chipset = pTrident->pEnt->chipset;
+	pScrn->chipset = (char *)xf86TokenToString(TRIDENTChipsets,
+						   pTrident->pEnt->chipset);
+	/* This driver can handle ISA and PCI buses */
+	if (pTrident->pEnt->location.type == BUS_PCI) {
+	    pTrident->PciInfo = xf86GetPciInfoForEntity(pTrident->pEnt->index);
+	    pTrident->PciTag = pciTag(pTrident->PciInfo->bus, 
+				  pTrident->PciInfo->device,
+				  pTrident->PciInfo->func);
+    	    pTrident->Linear = TRUE;
+	} else {
+    	    pTrident->Linear = FALSE;
+	}
+    }
+
+    if (flags & PROBE_DETECT) {
+	TRIDENTProbeDDC(pScrn, pTrident->pEnt->index);
+	return;
+    }
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -997,34 +1042,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-
-    /* Allocate the TRIDENTRec driverPrivate */
-    if (!TRIDENTGetRec(pScrn)) {
-	return FALSE;
-    }
-    pTrident = TRIDENTPTR(pScrn);
-    pTrident->pScrn = pScrn;
-
-    if (pScrn->numEntities > 1)
-	return FALSE;
-    /* This is the general case */
-    for (i = 0; i<pScrn->numEntities; i++) {
-	pTrident->pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
-	if (pTrident->pEnt->resources) return FALSE;
-	pTrident->Chipset = pTrident->pEnt->chipset;
-	pScrn->chipset = (char *)xf86TokenToString(TRIDENTChipsets,
-						   pTrident->pEnt->chipset);
-	/* This driver can handle ISA and PCI buses */
-	if (pTrident->pEnt->location.type == BUS_PCI) {
-	    pTrident->PciInfo = xf86GetPciInfoForEntity(pTrident->pEnt->index);
-	    pTrident->PciTag = pciTag(pTrident->PciInfo->bus, 
-				  pTrident->PciInfo->device,
-				  pTrident->PciInfo->func);
-    	    pTrident->Linear = TRUE;
-	} else {
-    	    pTrident->Linear = FALSE;
-	}
-    }
 
     if (xf86LoadSubModule(pScrn, "int10")) {
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Initializing int10\n");
@@ -1873,8 +1890,13 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Initialize DDC1 if possible */
     if (IsPrimaryCard) {
-       if (pTrident->ddc1Read) 
-	    xf86PrintEDID(xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,pTrident->ddc1Read ) );
+       if (pTrident->ddc1Read) {
+    	   if (xf86LoadSubModule(pScrn, "vbe")) {
+		xf86MonPtr pMon;
+		pMon = vbeDoEDID(VBEInit(NULL,pTrident->pEnt->index));
+	   	xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
+	   }
+       }
     }
 
     if (IsPciCard && UseMMIO) {
