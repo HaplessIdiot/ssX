@@ -1,5 +1,5 @@
 /* $XConsortium: Error.c /main/37 1996/11/13 14:45:02 lehors $ */
-/* $XFree86: xc/lib/Xt/Error.c,v 3.1 1996/08/26 14:43:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Error.c,v 3.2 1996/12/23 06:01:14 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -63,7 +63,6 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "IntrinsicI.h"
 #include <stdio.h>
-#include "snprintf.h"
 
 /* The error handlers in the application context aren't used since we can't
    come up with a uniform way of using them.  If you can, define
