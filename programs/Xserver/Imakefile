@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.225 2001/04/26 18:00:19 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.226 2001/04/26 21:27:49 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1121,21 +1121,21 @@ ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS), \
 
 #if XWinServer
 XCOMM
-XCOMM server with DirectX framebuffer for Windows
+XCOMM X Server for MS Windows
 XCOMM
-XWINDDXDIR = hw/xwin
-XWIN = $(XWINDDXDIR)/LibraryTargetName(XWin)
+FBDIR = fb
+SHADOWDIR = miext/shadow
+XWINDIR = hw/xwin
+XWIN = $(XWINDIR)/LibraryTargetName(Xwin)
 XWINGDI32 = -lgdi32
 XWINDDRAW = -lddraw
-/* XWINOLE32 = -lole32 */
-SHADOWDIR = miext/shadow
-DDXDIR1 = $(XWINDDXDIR)
-XWINDIRS = $(STDDIRS) $(FB) $(SHADOW) $(XWINDDXDIR) $(DEPDIRS)
+DDXDIR1 = $(XWINDIR)
+XWINDIRS = $(STDDIRS) $(FBDIR) $(SHADOWDIR) $(XWINDIR) $(DEPDIRS)
 
-XWINOBJSA = $(XWINDDXDIR)/stubs.o dix/main.o
+XWINOBJSA = $(XWINDIR)/stubs.o
 
 #if BuildDPMS
-XWINOBJSB = $(XWINDDXDIR)/dpmsstubs.o
+XWINOBJSB = $(XWINDIR)/dpmsstubs.o
 #endif
 
 XWINOBJS = $(XWINOBJSA) $(XWINOBJSB)
@@ -1160,7 +1160,9 @@ ServerTarget(XWin,$(XWINDIRS),$(XWINOBJS), \
 #ifndef ServerToInstall
 #define ServerToInstall XWin
 #endif
+
 #endif /* XWinServer */
+
 
 #if XDarwinServer
 XCOMM
