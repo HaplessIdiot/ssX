@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.5 2000/08/17 19:41:44 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/Imakefile,v 3.25 2001/03/21 17:36:43 dawes Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.26 2002/05/31 18:45:38 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -46,6 +46,11 @@ DependSubdirs($(SUBDIRS))
 #define IHaveSpecialMakefileTarget
 
 #ifndef Win32Architecture
+#ifdef XFree86VersionString
+VerifyOS::
+	@echo ""
+	@echo Building XFree86 version XFree86VersionString "("XFree86DateString")."
+#endif
 VerifyOS::
 	@echo ""
 	@echo Building on OSName "("OSMajorVersion"."OSMinorVersion"."OSTeenyVersion")."
@@ -63,7 +68,6 @@ VerifyOS::
 	@echo ""
 #endif
 
-#ifdef XFree86Version
 #ifndef OS2Architecture
 version.def::
 	$(RM) $(IRULESRC)/version.def
@@ -72,9 +76,6 @@ version.def::
 version.def::
 	$(RM) $(IRULESRC)/version.def
 	$(CP) $(XF86SRC)/xf86Version.h $(IRULESRC)/version.def
-#endif
-#else
-version.def::
 #endif
 
 includes::
