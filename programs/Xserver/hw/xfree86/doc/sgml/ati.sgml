@@ -15,7 +15,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.39 2002/01/16 16:25:54 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.40 2002/02/14 22:08:00 tsi Exp $
 </ident>
 
 <abstract>
@@ -53,7 +53,7 @@ disable itself to allow other drivers to examine the system.<p>
 Note that I am currently considering removing the driver's support for generic
 VGA.
 If you have any concerns about this, please contact me at
-<it>tsi@xfree86.org</it>.
+<email>tsi@xfree86.org</email>.
 <sect>A note on acceleration<p>
 The meaning of ``acceleration'', as used in this document, needs to be
 clarified.
@@ -585,7 +585,7 @@ name="ftp://ftp.xfree86.org/pub/XFree86"
 url="ftp://ftp.xfree86.org/pub/XFree86"> if you are uncertain.<p>
 Secondly, please check XFree86's doc directory for additional information.<p>
 Thirdly, a scan through the comp.windows.x.i386unix and comp.os.linux.x
-newsgroups and the newbie or xpert mailing lists using your favourite archiving
+newsgroups and the xfree86 mailing list using your favourite archiving
 service can also prove useful in resolving problems.<p>
 If you are still experiencing problems, you can send me <it>non-HTMLised</it>
 e-mail at <email>tsi@xfree86.org</email>.

@@ -7,6 +7,10 @@
 <author>David Dawes, Matthieu Herrb
 <Date>20 December 2002
 
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.8 2002/12/21 03:47:40 dawes Exp $
+</ident>
+
 <abstract>
 This document describes how to build XFree86 from the <bf>source</bf>
 distribution.  It is designed to
@@ -259,12 +263,9 @@ produced by <tt>make includes</tt>.
 <item><bf/VerifyOS/ displays the detected operating system version. If
 the numbers shown do not match your system, you probably need to set
 them manually in <tt>host.def</tt> and report the problem to
-XFree86@XFree86.org. 
+<email>XFree86@XFree86.org</email>.
 </itemize>
 
-<verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.7 2002/09/04 03:31:10 dawes Exp $
-</verb>
 
 </article>
 

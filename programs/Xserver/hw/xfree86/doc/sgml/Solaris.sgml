@@ -6,6 +6,10 @@
 <author>David Holland, modified by Marc Aurele La France
 <date>2001 October 01
 
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Solaris.sgml,v 1.3 2002/01/25 21:55:53 tsi Exp $
+</ident>
+
 <!-- Table of contents -->
 <toc>
 
@@ -208,10 +212,5 @@ reported!).
 It might even have broken some aspects of the x86 port.<p>
 </enum>
 <sect>Bug Notification<p>
-Bug reports should be sent to one of the <bf/XFree86@XFree86.org/,
-<bf>Xpert@XFree86.org</bf>, or <bf>Newbie@XFree86.org</bf> (depending on your
-level of comfort).
-<verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Solaris.sgml,v 1.2 2001/11/15 17:22:55 dawes Exp $
-</verb>
+Bug reports should be sent to <email>XFree86@XFree86.org</email>.
 </article>
