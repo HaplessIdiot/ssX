@@ -27,7 +27,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.3 2000/06/12 10:11:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.4 2000/07/09 21:02:21 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -65,7 +65,6 @@ Permedia3PreInit(ScrnInfoPtr pScrn, GLINTPtr pGlint)
 	 * This is needed for the second head which is left unitilialized
 	 * by the bios, thus freezing the machine.
 	 */
-	GLINT_SLOW_WRITE_REG(0xffffffff, PM3MemBypassWriteMask);
 	GLINT_SLOW_WRITE_REG(0x02e311B8, PM3LocalMemCaps);
 	GLINT_SLOW_WRITE_REG(0x07424905, PM3LocalMemTimings);
 	GLINT_SLOW_WRITE_REG(0x0c000003, PM3LocalMemControl);
@@ -197,10 +196,7 @@ PM3DAC_CalculateClock
     for (f=1;f<256;f++) {
 	for (pre=1;pre<256;pre++) {
 	    for (post=0;post<5;post++) { 
-		/* P3Lib multiplies it by two here lets try it alsos
-		 * Didn't work at all, don't know why, ...
-		 */
-	    	freq = ((2*refclock * f) / (pre * (1 << post)));
+	    	freq = ((2* refclock * f) / (pre * (1 << post)));
 		if ((reqclock > freq - freqerr)&&(reqclock < freq + freqerr)){
 		    freqerr = (reqclock > freq) ? 
 					reqclock - freq : freq - reqclock;
@@ -212,6 +208,7 @@ PM3DAC_CalculateClock
 	    }
 	}
     }
+
     return(actualclock);
 }
 
@@ -228,15 +225,16 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
      */
     if ((pGlint->PciInfo->subsysVendor == 0x1097) &&
 	(pGlint->PciInfo->subsysCard == 0x3d32)) {
-	pReg->glintRegs[PM3MemBypassWriteMask >> 3] = 0xffffffff;
 	pReg->glintRegs[PM3LocalMemCaps >> 3] = 0x02e311B8;
 	pReg->glintRegs[PM3LocalMemTimings >> 3] = 0x07424905;
 	pReg->glintRegs[PM3LocalMemControl >> 3] = 0x0c000003;
 	pReg->glintRegs[PM3LocalMemRefresh >> 3] = 0x00000069;
-	pReg->glintRegs[PM3LocalMemPowerDown >> 3] = 0x00000000;
-	pReg->glintRegs[PM3ByAperture1Mode >> 3] = 0x00000000;
-	pReg->glintRegs[PM3ByAperture2Mode >> 3] = 0x00000000;
     }
+
+    pReg->glintRegs[PM3LocalMemPowerDown >> 3] = 0x00000000;
+    pReg->glintRegs[PM3MemBypassWriteMask >> 3] = 0xffffffff;
+    pReg->glintRegs[PM3ByAperture1Mode >> 3] = 0x00000000;
+    pReg->glintRegs[PM3ByAperture2Mode >> 3] = 0x00000000;
 
     pReg->glintRegs[Aperture0 >> 3] = 0;
     pReg->glintRegs[Aperture1 >> 3] = 0;
@@ -317,7 +315,6 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->DacRegs[PM2VDACRDColorFormat] = 0x2E;
     	break;
     case 16:
-        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x01;
 	if (pScrn->depth == 15) 
 	    pReg->DacRegs[PM2VDACRDColorFormat] = 0x61;
@@ -325,17 +322,15 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    pReg->DacRegs[PM2VDACRDColorFormat] = 0x70;
     	break;
     case 24:
-        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x04;
 	pReg->DacRegs[PM2VDACRDColorFormat] = 0x60;
     	break;
     case 32:
-        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x02;
 	pReg->DacRegs[PM2VDACRDColorFormat] = 0x20;
 	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 	    pReg->DacRegs[PM2VDACRDMiscControl] |= 0x10;
-	    pReg->DacRegs[PM2VDACRDOverlayKey] = 0xFF;
+	    pReg->DacRegs[PM2VDACRDOverlayKey] = pScrn->colorKey;
 	}
     	break;
     }
@@ -493,107 +488,4 @@ Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0PostScale, 0x00, 
 				glintReg->DacRegs[PM2VDACRDDClk0PostScale]);
     Permedia2vOutIndReg(pScrn, PM2VDACIndexClockControl, 0x00, temp|0x03);
-}
-
-static void 
-Permedia3ShowCursor(ScrnInfoPtr pScrn)
-{
-    /* Enable cursor - X11 mode */
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorMode, 0x00, 0x11);
-}
-
-static void
-Permedia3HideCursor(ScrnInfoPtr pScrn)
-{
-    /* Disable cursor - X11 mode */
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorMode, 0x00, 0x10);
-}
-
-static void
-Permedia3LoadCursorImage(
-    ScrnInfoPtr pScrn, 
-    unsigned char *src
-)
-{
-    int i;
-       
-    for (i=0; i<1024; i++) 
-    	Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPattern+i, 0x00, *(src++));
-}
-
-static void
-Permedia3SetCursorPosition(
-   ScrnInfoPtr pScrn, 
-   int x, int y
-)
-{
-    x += 64;
-    y += 64;
-
-    /* Output position - "only" 11 bits of location documented */
-   
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorHotSpotX, 0x00, 0x3f);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorHotSpotY, 0x00, 0x3f);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorXLow, 0x00, x & 0xFF);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorXHigh, 0x00, (x>>8) & 0x0F);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorYLow, 0x00, y & 0xFF);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorYHigh, 0x00, (y>>8) & 0x0F);
-    Permedia2vOutIndReg(pScrn, PM2DACCursorControl, 0x00, 0x00);
-}
-
-
-static void
-Permedia3SetCursorColor(
-   ScrnInfoPtr pScrn, 
-   int index,
-   int color
-)
-{
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+3*(14-index)+0,
-	0x00, 0xff & (color >>16));
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+3*(14-index)+1,
-	0x00, 0xff & (color >>8));
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+3*(14-index)+2,
-	0x00, 0xff & color);
-}
-
-static void
-Permedia3SetCursorColors(
-   ScrnInfoPtr pScrn, 
-   int bg, int fg
-)
-{
-    Permedia3SetCursorColor (pScrn, 0, bg);
-    Permedia3SetCursorColor (pScrn, 1, fg);
-}
-
-static Bool 
-Permedia3UseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
-{
-    return TRUE;
-}
-
-Bool 
-Permedia3HWCursorInit(ScreenPtr pScreen)
-{
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    xf86CursorInfoPtr infoPtr;
-
-    infoPtr = xf86CreateCursorInfoRec();
-    if(!infoPtr) return FALSE;
-    
-    pGlint->CursorInfoRec = infoPtr;
-
-    infoPtr->MaxWidth = 64;
-    infoPtr->MaxHeight = 64;
-    infoPtr->Flags = HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_1;
-    infoPtr->SetCursorColors = Permedia3SetCursorColors;
-    infoPtr->SetCursorPosition = Permedia3SetCursorPosition;
-    infoPtr->LoadCursorImage = Permedia3LoadCursorImage;
-    infoPtr->HideCursor = Permedia3HideCursor;
-    infoPtr->ShowCursor = Permedia3ShowCursor;
-    infoPtr->UseHWCursor = Permedia3UseHWCursor;
-
-    return(xf86InitCursor(pScreen, infoPtr));
 }

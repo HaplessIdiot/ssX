@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.15 2000/07/09 23:10:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.16 2000/07/11 14:19:58 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -170,7 +170,7 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->glintRegs[PMVTotal >> 3] -= 1; /* PMVTotal */
 
     pReg->glintRegs[ChipConfig >> 3] = GLINT_READ_REG(ChipConfig) & 0xFFFFFFDD;
-    pReg->DacRegs[PM2VDACRDDACControl] = 0x00;
+    pReg->DacRegs[PM2VDACRDDACControl] = 0x80;
   
     {
 	/* Get the programmable clock values */
@@ -204,7 +204,6 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->DacRegs[PM2VDACRDColorFormat] = 0x2E;
     	break;
     case 16:
-        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x01;
 	if (pScrn->depth == 15)
 	    pReg->DacRegs[PM2VDACRDColorFormat] = 0x61;
@@ -212,17 +211,15 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    pReg->DacRegs[PM2VDACRDColorFormat] = 0x70;
     	break;
     case 24:
-        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x04;
 	pReg->DacRegs[PM2VDACRDColorFormat] = 0x60;
     	break;
     case 32:
-        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x02;
 	pReg->DacRegs[PM2VDACRDColorFormat] = 0x20;
 	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 	    pReg->DacRegs[PM2VDACRDMiscControl] |= 0x10;
-	    pReg->DacRegs[PM2VDACRDOverlayKey] = 0xFF;
+	    pReg->DacRegs[PM2VDACRDOverlayKey] = pScrn->colorKey;
 	}
     	break;
     }
@@ -401,6 +398,7 @@ Permedia2vSetCursorPosition(
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorXHigh, 0x00, (x>>8) & 0x0F);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorYLow, 0x00, y & 0xFF);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorYHigh, 0x00, (y>>8) & 0x0F);
+    Permedia2vOutIndReg(pScrn, PM2DACCursorControl, 0x00, 0x00);
 }
 
 static void
@@ -409,16 +407,14 @@ Permedia2vSetCursorColors(
    int bg, int fg
 )
 {
-    int i;
-    /* The Permedia2v cursor is always 8 bits so shift 8, not 10 */
+    /* A 2 color cursor uses last 2 indexes into hardware cursor palette */
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+39, 0x00, (fg>>16)&0xff);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+40, 0x00, (fg>>8)&0xff);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+41, 0x00, fg & 0xff);
 
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+0, 0x00, bg >> 16);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+1, 0x00, bg >> 8);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+2, 0x00, bg);
-
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+3, 0x00, fg >> 16);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+4, 0x00, fg >> 8);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+5, 0x00, fg);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+42, 0x00, (bg>>16)&0xff);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+43, 0x00, (bg>>8)&0xff);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+44, 0x00, bg & 0xff);
 }
 
 static Bool 

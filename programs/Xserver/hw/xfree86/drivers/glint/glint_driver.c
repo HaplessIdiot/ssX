@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.92 2000/08/24 11:40:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.93 2000/08/24 11:45:51 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -801,25 +801,25 @@ GLINTProbeTIramdac(ScrnInfoPtr pScrn)
     GLINTPtr pGlint;
     CARD32 temp = 0;
     pGlint = GLINTPTR(pScrn);
+
+    pGlint->RamDacRec = RamDacCreateInfoRec();
     if (pGlint->numMXDevices == 2) {
-	pGlint->RamDacRec = RamDacCreateInfoRec();
 	pGlint->RamDacRec->ReadDAC = DUALglintInTIIndReg;
 	pGlint->RamDacRec->WriteDAC = DUALglintOutTIIndReg;
 	pGlint->RamDacRec->ReadAddress = DUALglintTIReadAddress;
 	pGlint->RamDacRec->WriteAddress = DUALglintTIWriteAddress;
 	pGlint->RamDacRec->ReadData = DUALglintTIReadData;
 	pGlint->RamDacRec->WriteData = DUALglintTIWriteData;
-	pGlint->RamDacRec->LoadPalette = TIramdacLoadPalette;
     } else {
-	pGlint->RamDacRec = RamDacCreateInfoRec();
 	pGlint->RamDacRec->ReadDAC = glintInTIIndReg;
 	pGlint->RamDacRec->WriteDAC = glintOutTIIndReg;
 	pGlint->RamDacRec->ReadAddress = glintTIReadAddress;
 	pGlint->RamDacRec->WriteAddress = glintTIWriteAddress;
 	pGlint->RamDacRec->ReadData = glintTIReadData;
 	pGlint->RamDacRec->WriteData = glintTIWriteData;
-	pGlint->RamDacRec->LoadPalette = TIramdacLoadPalette;
     }
+    pGlint->RamDacRec->LoadPalette = TIramdacLoadPalette;
+
     if(!RamDacInit(pScrn, pGlint->RamDacRec)) {
 	RamDacDestroyInfoRec(pGlint->RamDacRec);
 	return;
@@ -2511,11 +2511,9 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    (pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2))
 	    Permedia2HWCursorInit(pScreen);
 	else
-	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V)
+	if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) ||
+	    (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3))
 	    Permedia2vHWCursorInit(pScreen);
-	else
-	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3)
-	    Permedia3HWCursorInit(pScreen);
 	else
 	/* If we get here pGlint->Ramdac should have been set */
 	if ( ((pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC)) ||
