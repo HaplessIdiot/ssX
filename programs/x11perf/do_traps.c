@@ -136,8 +136,8 @@ InitFixedTrapezoids(XParms xp, Parms p, int reps)
     rows = 0;
     skew = size;
     aadraw = XftDrawCreate (xp->d, xp->w, 
-			    DefaultVisual (xp->d, DefaultScreen (xp->d)), 
-			    DefaultColormap (xp->d, DefaultScreen (xp->d)));
+			    xp->vinfo.visual, 
+			    xp->cmap);
     if (p->font && !strcmp (p->font, "add"))
     {
 	XRenderPictFormat   templ;
@@ -160,8 +160,8 @@ InitFixedTrapezoids(XParms xp, Parms p, int reps)
     color.blue = 0;
     color.alpha = 0xffff;
     if (!XftColorAllocValue (xp->d,
-			     DefaultVisual (xp->d, DefaultScreen (xp->d)), 
-			     DefaultColormap (xp->d, DefaultScreen (xp->d)),
+			     xp->vinfo.visual, 
+			     xp->cmap,
 			     &color, &aablack))
     {
 	XftDrawDestroy (aadraw);
@@ -173,8 +173,8 @@ InitFixedTrapezoids(XParms xp, Parms p, int reps)
     color.blue = 0xffff;
     color.alpha = 0xffff;
     if (!XftColorAllocValue (xp->d,
-			     DefaultVisual (xp->d, DefaultScreen (xp->d)), 
-			     DefaultColormap (xp->d, DefaultScreen (xp->d)),
+			     xp->vinfo.visual, 
+			     xp->cmap,
 			     &color, &aawhite))
     {
 	XftDrawDestroy (aadraw);

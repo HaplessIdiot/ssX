@@ -1165,7 +1165,8 @@ main(int argc, char *argv[])
 	    XInstallColormap(xparms.d, cmap);
 	}
     }
-
+    xparms.cmap = cmap;
+    
     printf("x11perf - X11 performance program, version %s\n",
 	   xparms.version & VERSION1_5 ? "1.5" :
 	   xparms.version & VERSION1_4 ? "1.4" :

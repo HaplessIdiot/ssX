@@ -423,8 +423,8 @@ InitAAText(XParms xp, Parms p, int reps)
     }
 
     aadraw = XftDrawCreate (xp->d, xp->w, 
-			    DefaultVisual (xp->d, DefaultScreen (xp->d)), 
-			    DefaultColormap (xp->d, DefaultScreen (xp->d)));
+			    xp->vinfo.visual, 
+			    xp->cmap);
 
     if (!aadraw) 
     {
@@ -437,8 +437,8 @@ InitAAText(XParms xp, Parms p, int reps)
     color.blue = 0;
     color.alpha = 0xffff;
     if (!XftColorAllocValue (xp->d,
-			     DefaultVisual (xp->d, DefaultScreen (xp->d)), 
-			     DefaultColormap (xp->d, DefaultScreen (xp->d)),
+			     xp->vinfo.visual, 
+			     xp->cmap,
 			     &color, &aacolor))
     {
 	printf ("Cannot allocate black\n");
@@ -506,8 +506,8 @@ EndAAText(XParms xp, Parms p)
     XftDrawDestroy (aadraw);
     XftFontClose (xp->d, aafont);
     XftColorFree (xp->d,
-		  DefaultVisual (xp->d, DefaultScreen (xp->d)), 
-		  DefaultColormap (xp->d, DefaultScreen (xp->d)),
+		  xp->vinfo.visual, 
+		  xp->cmap,
 		  &aacolor);
 }
 

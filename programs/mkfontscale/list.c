@@ -37,41 +37,31 @@ listCons(char *car, ListPtr cdr)
     return lcar;
 }
 
-static char*
-vsprintf_reliable(char *f, va_list args)
-{
-    int n, size = 20;
-    char *string;
-    while(1) {
-        if(size > 4096)
-            return NULL;
-        string = malloc(size);
-        if(!string)
-            return NULL;
-        n = vsnprintf(string, size, f, args);
-        if(n >= 0 && n < size)
-            return string;
-        else if(n >= size)
-            size = n + 1;
-        else
-            size = size * 3 / 2 + 1;
-        free(string);
-    }
-    /* NOTREACHED */
-}
-
 ListPtr
 listConsF(ListPtr cdr, char *f, ...)
 {
     va_list args;
     char *string;
-    va_start(args, f);
-    string = vsprintf_reliable(f, args);
-    va_end(args);
-    if(string)
-        return listCons(string, cdr);
-    else
-        return NULL;
+    {
+	int n, size = 20;
+	while(1) {
+	    if(size > 4096)
+		return NULL;
+	    string = malloc(size);
+	    if(!string)
+		return NULL;
+	    va_start(args, f);
+	    n = vsnprintf(string, size, f, args);
+	    va_end(args);
+	    if(n >= 0 && n < size)
+		return listCons(string, cdr);
+	    else if(n >= size)
+		size = n + 1;
+	    else
+		size = size * 3 / 2 + 1;
+	    free(string);
+	}
+    }
 }
 
 int

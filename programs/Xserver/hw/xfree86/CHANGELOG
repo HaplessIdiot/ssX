@@ -1,4 +1,14 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 574. Make RENDER optional for Xvfb. When RENDER is enabled add depth 32 
+      pixmap format  to list of supported pixmaps (Egbert Eich).
+ 573. Fix va_args glitches for xterm/libfontconfig: 0 == (void*)0 isn't true   
+      for all platforms (Egbert Eich).
+ 572. Fix lbxproxy to also build on platforms that don't have snprintf()    
+      (Egbert Eich).
+ 571. Fix va_args glitches in mkfontscale: arg stack isn't preserved after
+      calling va_arg on all platforms (Egbert Eich).
+ 570. Fixed x11perf aa benchmarks to support non-default visuals/colormaps
+      (Egbert Eich).
  569. Use -Os to build on Darwin PPC with Gcc 3.x (Torrey T. Lyons).
  568. XEditResCheckMessages trashed XtMalloced memory on some widget
       hierarchies, due to using incorrect indexes when removing
@@ -15666,4 +15676,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2421 2002/12/03 18:07:57 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2422 2002/12/04 04:40:16 torrey Exp $
