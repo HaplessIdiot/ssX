@@ -2,7 +2,7 @@
 
                           The XFree86 Project Inc.
 
-                                25 Juni 1999
+                                25 June 1999
 
 1.  Supported hardware
 
@@ -93,7 +93,7 @@ This server supports the following 3DLabs chipsets:
      work on this server on paid time, thereby financing development of this
      server.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/3Dlabs.sgml,v 1.1 1999/08/23 06:24:54 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/3Dlabs.sgml,v 1.2 1999/08/24 02:01:07 dawes Exp $
 
 
 $XFree86$

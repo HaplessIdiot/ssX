@@ -9,11 +9,17 @@
      This document contains some information about the features present
      in XFree86 3.9.16 and their status.
 
-1.  Summary of new features in 3.9.16 compared with the previous snapshot.
+1.  Summary of new features in 3.9.16 compared with 3.9.15.
 
 This section contains a brief summary of what has changed since the previous
 snapshot.  More detailed information can be found in the sections that fol-
 low.
+
+   o The ``apm'' driver has been updated.  See the APM section (section
+     2.11.1, page 1) below.
+
+   o A driver for NVIDIA chipsets is now included.  The driver is called
+     ``nv''.  Some very basic information can be found in the nv(4) man page.
 
 2.  X server
 
@@ -404,6 +410,8 @@ ules (this list needs to be verified):
 
    o Neomagic
 
+   o S3 ViRGE
+
    o SIS
 
    o Trident
@@ -415,7 +423,7 @@ abled independently with Option "NoDDC1" and Option "NoDDC2".
 At startup the server prints out DDC information from the display, but it
 does not yet use it the determine modelines.
 
-Changed behavior caused by DDC. The MGA driver uses DDC information to set
+Changed behavior caused by DDC. Several drivers uses DDC information to set
 the monitor gamma (brightness) curve, and the screen size and pitch.
 
    o The gamma is particularly noticeable; every monitor I have tried has a
@@ -479,6 +487,7 @@ XFree86 3.9.16 includes the following drivers:
                     |glint       | 3Dlabs               |
                     |mga         | Matrox               |
                     |neomagic    | NeoMagic             |
+                    |nv          | NVIDIA               |
                     |rendition   | Rendition            |
                     |s3virge     | S3 ViRGE             |
                     |sis         | SiS                  |
@@ -490,10 +499,11 @@ XFree86 3.9.16 includes the following drivers:
 
 2.11.1  APM
 
-The driver apm is for Alliance AT3D/AT25 based boards. It's still buggy, but
-it works at least with the Hercules 128/3D board.  Please send as many bug-
-report (but success stories as well) as possible to <grenie@lami.univ-
-evry.fr>
+The driver apm is for Alliance AT3D/AT25 based boards.  The driver is still
+in development. I hope to be able to correct the errors I find.  The Rush
+extension should be ready for the next snapshot; I can do better memory man-
+agement, but I'll need time. If someone can help me, feel free to drop an
+email to <grenie@lami.univ-evry.fr>
 
 2.11.2  Chips & Technologies
 
@@ -806,7 +816,7 @@ been implemented is a modified search path for the X server's XF86Config
 file.  The details of this can be found above in the Configuration File (sec-
 tion 2.2, page 1) section.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.13 1999/08/21 14:08:29 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.14 1999/08/28 09:00:55 dawes Exp $
 
 
 $XFree86$

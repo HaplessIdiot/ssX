@@ -466,7 +466,7 @@ You also should increase MAXUMEM to its maximum, else programs may die with:
        Current serial number in output stream:  37822
        Widget hierarchy of resource: unknown
 
-You could do this automtically with menu entry no. 5.
+You could do this automatically with menu entry no. 5.
 
 10.  Using ...
 
@@ -550,7 +550,7 @@ All thanks should go to the members of the XFree86 Team for their great work
 and the X Consortium for their Public Release of X11R6, as to all who con-
 tribute to this excellent piece of free software.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.21 1999/07/19 13:36:23 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.22 1999/08/28 10:43:33 dawes Exp $
 
 
 $XFree86$

@@ -58,10 +58,10 @@ The following Section "Device" options are supported by the MGA driver:
      Will enable syncing on green for sync-on-green monitors (these are typi-
      cally fixed frequency workstation monitors).
 
-4.  Mode lines for the SiliconGraphics flat panel display:
+4.  Mode lines for the Silicon Graphics flat panel display:
 
    o These mode lines are required for use with the T2R4 (Rev 4) and the Sil-
-     iconGraphics Flat Panel display.
+     icon Graphics Flat Panel display.
 
    o Modeline "1600x1024d32" 103.125  1600 1600 1656 1664 1024 1024 1029 1030
      HSkew 7 +Hsync +Vsync
@@ -89,7 +89,7 @@ and special help from:
 
    o Galen Brooks, galen@nine.com
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/I128.sgml,v 1.2 1999/08/23 06:18:32 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/I128.sgml,v 1.3 1999/08/28 10:43:32 dawes Exp $
 
 
 $XFree86$
