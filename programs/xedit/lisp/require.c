@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.5 2001/10/11 06:34:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.6 2001/10/15 07:05:52 paulo Exp $ */
 
 #include "require.h"
 
@@ -44,7 +44,7 @@ Lisp_Load(LispMac *mac, LispObj *list, char *fname)
 {
     LispObj *file = CAR(list), *verbose, *print, *ifdoesnotexist;
 
-    if (file->type != LispString_t)
+    if (!STRING_P(file))
 	LispDestroy(mac, BadArgumentAt, LispStrObj(mac, file), fname);
 
     LispGetKeys(mac, fname, "VERBOSE:PRINT:IF-DOES-NOT-EXIST", CDR(list),
@@ -61,13 +61,13 @@ Lisp_Require(LispMac *mac, LispObj *list, char *fname)
     char filename[1024], *ext;
     int len;
 
-    if (feat->type != LispString_t && feat->type != LispAtom_t)
+    if (!STRING_P(feat) && !SYMBOL_P(feat))
 	LispDestroy(mac, BadArgumentAt, LispStrObj(mac, feat), fname);
 
     if (CDR(list) != NIL) {
 	nam = CAR(CDR(list));
 
-	if (nam->type != LispString_t)
+	if (!STRING_P(nam))
 	    LispDestroy(mac, "%s is not of type string, at %s",
 			LispStrObj(mac, nam), fname);
     }

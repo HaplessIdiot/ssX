@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.4 2001/10/02 06:38:37 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.5 2001/10/15 07:05:51 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -64,19 +64,22 @@ LispObj *Lisp_Cons(LispMac*, LispObj*, char*);		/* cons */
 LispObj *Lisp_Decf(LispMac*, LispObj*, char*);		/* decf */
 LispObj *Lisp_Defmacro(LispMac*, LispObj*, char*);	/* defmacro */
 LispObj *Lisp_Defun(LispMac*, LispObj*, char*);		/* defun */
-LispObj *Lisp_Defstruct(LispMac*, LispObj*, char*);	/* defstruct */
+LispObj *Lisp_Defsetf(LispMac*, LispObj*, char*);	/* defsetf */
 LispObj *Lisp_Do(LispMac*, LispObj*, char*);		/* do */
 LispObj *Lisp_DoP(LispMac*, LispObj*, char*);		/* do* */
 LispObj *Lisp_DoList(LispMac*, LispObj*, char*);	/* dolist */
 LispObj *Lisp_DoTimes(LispMac*, LispObj*, char*);	/* dotimes */
+LispObj *Lisp_Elt(LispMac*, LispObj*, char*);		/* elt */
 LispObj *Lisp_Equal(LispMac*, LispObj*, char*);		/* equal */
 LispObj *Lisp_Eval(LispMac*, LispObj*, char*);		/* eval */
+LispObj *Lisp_Evenp(LispMac*, LispObj*, char*);		/* evenp */
 LispObj *Lisp_FMakunbound(LispMac*, LispObj*, char*);	/* fmakunbound */
 LispObj *Lisp_Funcall(LispMac*, LispObj*, char*);	/* funcall */
 LispObj *Lisp_Gc(LispMac*, LispObj*, char*);		/* gc */
 LispObj *Lisp_Get(LispMac*, LispObj*, char*);		/* get */
 LispObj *Lisp_If(LispMac*, LispObj*, char*);		/* if */
 LispObj *Lisp_Incf(LispMac*, LispObj*, char*);		/* incf */
+LispObj *Lisp_Integerp(LispMac*, LispObj*, char*);	/* integerp */
 LispObj *Lisp_Lambda(LispMac*, LispObj*, char*);	/* lambda */
 LispObj *Lisp_Last(LispMac*, LispObj*, char*);		/* last */
 LispObj *Lisp_Length(LispMac*, LispObj*, char*);	/* length */
@@ -93,11 +96,14 @@ LispObj *Lisp_Mapcar(LispMac*, LispObj*, char*);	/* mapcar */
 LispObj *Lisp_Max(LispMac*, LispObj*, char*);		/* max */
 LispObj *Lisp_Member(LispMac*, LispObj*, char*);	/* member */
 LispObj *Lisp_Min(LispMac*, LispObj*, char*);		/* min */
+LispObj *Lisp_Minusp(LispMac*, LispObj*, char*);	/* minusp */
 LispObj *Lisp_Nth(LispMac*, LispObj*, char*);		/* nth */
 LispObj *Lisp_Nthcdr(LispMac*, LispObj*, char*);	/* nthcdr */
 LispObj *Lisp_Null(LispMac*, LispObj*, char*);		/* null */
 LispObj *Lisp_Numberp(LispMac*, LispObj*, char*);	/* numberp */
+LispObj *Lisp_Oddp(LispMac*, LispObj*, char*);		/* oddp */
 LispObj *Lisp_Or(LispMac*, LispObj*, char*);		/* or */
+LispObj *Lisp_Plusp(LispMac*, LispObj*, char*);		/* plusp */
 LispObj *Lisp_Prin1(LispMac*, LispObj*, char*);		/* prin1 */
 LispObj *Lisp_Princ(LispMac*, LispObj*, char*);		/* princ */
 LispObj *Lisp_Print(LispMac*, LispObj*, char*);		/* print */
@@ -108,6 +114,7 @@ LispObj *Lisp_Provide(LispMac*, LispObj*, char*);	/* provide */
 LispObj *Lisp_Quit(LispMac*, LispObj*, char*);		/* quit */
 LispObj *Lisp_Quote(LispMac*, LispObj*, char*);		/* quote */
 LispObj *Lisp_Read(LispMac*, LispObj*, char*);		/* read */
+LispObj *Lisp_Replace(LispMac*, LispObj*, char*);	/* replace */
 LispObj *Lisp_Return(LispMac*, LispObj*, char*);	/* return */
 LispObj *Lisp_ReturnFrom(LispMac*, LispObj*, char*);	/* return-from */
 LispObj *Lisp_Reverse(LispMac*, LispObj*, char*);	/* reverse */
@@ -117,8 +124,10 @@ LispObj *Lisp_Set(LispMac*, LispObj*, char*);		/* set */
 LispObj *Lisp_Setf(LispMac*, LispObj*, char*);		/* setf */
 LispObj *Lisp_SetQ(LispMac*, LispObj*, char*);		/* setq */
 LispObj *Lisp_Stringp(LispMac*, LispObj*, char*);	/* stringp */
+LispObj *Lisp_Subseq(LispMac*, LispObj*, char*);	/* subseq */
 LispObj *Lisp_Symbolp(LispMac*, LispObj*, char*);	/* symbolp */
 LispObj *Lisp_SymbolPlist(LispMac*, LispObj*, char*);	/* symbol-plist */
+LispObj *Lisp_Terpri(LispMac*, LispObj*, char*);	/* terpri */
 LispObj *Lisp_Throw(LispMac*, LispObj*, char*);		/* throw */
 LispObj *Lisp_Typep(LispMac*, LispObj*, char*);		/* typep */
 LispObj *Lisp_Unless(LispMac*, LispObj*, char*);	/* unless */
@@ -126,5 +135,9 @@ LispObj *Lisp_Until(LispMac*, LispObj*, char*);		/* until */
 LispObj *Lisp_Vector(LispMac*, LispObj*, char*);	/* vector */
 LispObj *Lisp_When(LispMac*, LispObj*, char*);		/* when */
 LispObj *Lisp_While(LispMac*, LispObj*, char*);		/* while */
+LispObj *Lisp_XeditEltStore(LispMac*, LispObj*, char*);	    /* xedit::elt-store */
+LispObj *Lisp_XeditPut(LispMac*, LispObj*, char*);	    /* xedit::put */
+LispObj *Lisp_XeditVectorStore(LispMac*, LispObj*, char*);  /* xedit::vector-store */
+LispObj *Lisp_Zerop(LispMac*, LispObj*, char*);		/* zerop */
 
 #endif /* Lisp_core_h */

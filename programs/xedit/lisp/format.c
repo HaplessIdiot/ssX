@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.8 2001/10/11 06:34:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.9 2001/10/15 07:05:52 paulo Exp $ */
 
 #include "format.h"
 #include <ctype.h>
@@ -292,8 +292,8 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			    goto not_enough_args;
 			plural = arg;
 		    }
-		    if (CAR(plural)->type != LispReal_t ||
-			CAR(plural)->data.real != 1.0) {
+		    if (!NUMBER_P(CAR(plural)) ||
+			NUMBER_VALUE(CAR(plural)) != 1) {
 			if (atsign)
 			    mac->column += LispPrintf(mac, stream, "ies");
 			else
@@ -496,7 +496,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 
 			if (arg->type != LispCons_t)
 			    goto not_enough_args;
-			if (CAR(arg)->type != LispString_t)
+			if (!STRING_P(CAR(arg)))
 			    LispDestroy(mac, "expecting string, at %s", fname);
 			indirection = LispRealloc(mac, indirection,
 						  sizeof(char*) *
@@ -730,13 +730,12 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    else {
 			if (arg->type != LispCons_t)
 			    goto not_enough_args;
-			if (CAR(arg)->type != LispReal_t ||
-			    (int)CAR(arg)->data.real != CAR(arg)->data.real)
+			if (!INTEGER_P(CAR(arg)))
 			    LispDestroy(mac, "%s is not an index, at %s",
 					LispStrObj(mac, CAR(arg)), fname);
-			if (CAR(arg)->data.real < nfields &&
-			    CAR(arg)->data.real >= 0)
-			    field = CAR(arg)->data.real;
+			if (NUMBER_VALUE(CAR(arg)) < nfields &&
+			    NUMBER_VALUE(CAR(arg)) >= 0)
+			    field = NUMBER_VALUE(CAR(arg));
 			else if (def >= 0)
 			    field = def;
 			plural = arg;
@@ -866,7 +865,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			LispFree(mac, str);
 			if (arg->type != LispCons_t)
 			    goto not_enough_args;
-			else if (CAR(arg)->type != LispString_t)
+			else if (!STRING_P(CAR(arg)))
 			    LispDestroy(mac, "expecting string, at %s", fname);
 			ptr = STRPTR(CAR(arg));
 			plural = arg;
@@ -972,7 +971,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    continue;
 		case ';':	/* separator for ~[ and ~<, in this code,
 				 * only used for ~< */
-		    if (CAR(CAR(ilist))->type != LispString_t ||
+		    if (!STRING_P(CAR(CAR(ilist))) ||
 			STRPTR(CAR(CAR(ilist)))[0] != '<')
 			LispDestroy(mac, "~; not allowed here, at %s", fname);
 
@@ -1283,15 +1282,14 @@ print_number:
 	    if (arg->type != LispCons_t)
 		goto not_enough_args;
 	    /* if not an integer */
-	    if (CAR(arg)->type != LispReal_t ||
-		(long)CAR(arg)->data.real != CAR(arg)->data.real) {
+	    if (!INTEGER_P(CAR(arg))) {
 		/* print just as 'A' */
 		isprinc = 1;
 		goto print_object;
 	    }
 	    else {
 		int sign;
-		long num = (long)CAR(arg)->data.real;
+		long num = (long)NUMBER_VALUE(CAR(arg));
 
 		len = 0;
 		if ((sign = num < 0) != 0)
@@ -1342,9 +1340,9 @@ print_number_args:
 		    }
 		}
 		else if (atsign) {	/* roman */
-		    long num = (long)CAR(arg)->data.real;
+		    long num = (long)NUMBER_VALUE(CAR(arg));
 
-		if ((double)num != CAR(arg)->data.real ||
+		if ((double)num != NUMBER_VALUE(CAR(arg)) ||
 		    num <= 0 || num > (3999 + (collon ? 1000 : 0)))
 		    LispDestroy(mac, BadArgument, fname);
 

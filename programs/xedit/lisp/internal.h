@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.8 2001/10/11 06:34:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.9 2001/10/15 07:05:52 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -40,6 +40,7 @@
  */
 #define	CAR(list)		(list->data.cons.car)
 #define	CAAR(list)		(list->data.cons.car->data.cons.car)
+#define	CADR(list)		(list->data.cons.cdr->data.cons.car)
 #define CDR(list)		(list->data.cons.cdr)
 #define CDAR(list)		(list->data.cons.car->data.cons.cdr)
 #define CONS(car, cdr)		LispNewCons(mac, car, cdr)
@@ -47,9 +48,12 @@
 #define ATOM(atom)		LispNewAtom(mac, atom)
 #define ATOM2(atom)		LispNewAtom(mac, LispGetString(mac, atom))
 #define QUOTE(quote)		LispNewQuote(mac, quote)
+#define BACKQUOTE(bquote)	LispNewBackquote(mac, bquote)
+#define COMMA(comma, at)	LispNewComma(mac, comma, at)
 #define REAL(num)		LispNewReal(mac, num)
 #define STRING(str)		LispNewString(mac, str)
 #define CHAR(c)			LispNewCharacter(mac, c)
+#define INTEGER(i)		LispNewInteger(mac, i)
 #define OPAQUE(data, type)	LispNewOpaque(mac, (void*)((long)data), type)
 #define CHECKO(obj, typ)						\
 	obj->type == LispOpaque_t && 					\
@@ -61,6 +65,23 @@
 #define	GCUProtect()		--gcpro
 
 #define	STRPTR(obj)		(obj)->data.atom->string
+
+#define NUMBER_P(obj)			\
+	(obj->type == LispReal_t || obj->type == LispInteger_t)
+
+/* assumes NUMBER_P is true */
+#define NUMBER_VALUE(obj)		\
+	(obj->type == LispReal_t ? obj->data.real : obj->data.integer)
+
+#define INTEGER_P(obj)			\
+	(obj->type == LispInteger_t ||	\
+	 (obj->type == LispReal_t && (long)obj->data.real == obj->data.real))
+
+/* positive integer */
+#define INDEX_P(obj)		(INTEGER_P(obj) && NUMBER_VALUE(obj) >= 0)
+
+#define SYMBOL_P(obj)		obj->type == LispAtom_t
+#define STRING_P(obj)		obj->type == LispString_t
 
 /*
  * Types
@@ -84,13 +105,16 @@ typedef enum _LispType {
     LispArray_t,
     LispStruct_t,
     LispStream_t,
-    LispOpaque_t
+    LispOpaque_t,
+    LispBackquote_t,
+    LispComma_t
 } LispType;
 
 typedef enum _LispFunType {
     LispLambda,
     LispFunction,
-    LispMacro
+    LispMacro,
+    LispSetf
 } LispFunType;
 
 struct _LispObj {
@@ -111,7 +135,7 @@ struct _LispObj {
 	    LispObj *name;
 	    LispObj *code;
 	    unsigned int num_args : 12;
-	    LispFunType type : 2;
+	    LispFunType type : 4;
 	    unsigned int key : 1;
 	    unsigned int optional : 1;
 	    unsigned int rest : 1;
@@ -142,6 +166,10 @@ struct _LispObj {
 	    void *data;
 	    int type;
 	} opaque;
+	struct {
+	    LispObj *eval;
+	    int atlist;
+	} comma;
     } data;
 };
 
@@ -170,13 +198,14 @@ struct _LispModuleData {
 LispObj *LispEval(LispMac*, LispObj*);
 
 LispObj *LispNew(LispMac*, LispObj*, LispObj*);
-LispObj *LispNewNil(LispMac*);
-LispObj *LispNewTrue(LispMac*);
 LispObj *LispNewAtom(LispMac*, char*);
 LispObj *LispNewReal(LispMac*, double);
 LispObj *LispNewString(LispMac*, char*);
 LispObj *LispNewCharacter(LispMac*, long);
+LispObj *LispNewInteger(LispMac*, long);
 LispObj *LispNewQuote(LispMac*, LispObj*);
+LispObj *LispNewBackquote(LispMac*, LispObj*);
+LispObj *LispNewComma(LispMac*, LispObj*, int);
 LispObj *LispNewCons(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewSymbol(LispMac*, char*, LispObj*);
 LispObj *LispNewLambda(LispMac*, LispObj*, LispObj*, LispObj*,

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/string.h,v 1.1 2001/10/15 07:05:52 paulo Exp $ */
 
 #ifndef Lisp_string_h
 #define Lisp_string_h
@@ -72,5 +72,6 @@ LispObj *Lisp_StringNotEqual(LispMac*, LispObj*, char*);    /* string-not-equal 
 LispObj *Lisp_StringUpcase(LispMac*, LispObj*, char*);	    /* string-upcase */
 LispObj *Lisp_StringDowncase(LispMac*, LispObj*, char*);    /* string-downcase */
 LispObj *Lisp_StringCapitalize(LispMac*, LispObj*, char*);  /* string-capitalize */
+LispObj *Lisp_XeditCharStore(LispMac*, LispObj*, char*);    /* xedit::char-store */
 
 #endif /* Lisp_String_h */
