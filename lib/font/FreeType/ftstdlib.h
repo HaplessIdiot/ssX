@@ -1,5 +1,5 @@
 /* ftstdlib.h -- modified for XFree86. */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/FreeType/ftstdlib.h,v 1.3tsi Exp $ */
 
 #ifndef __FTSTDLIB_H__
 #define __FTSTDLIB_H__
@@ -66,7 +66,7 @@
 #endif
 
 #define FT_UINT_MAX   4294967295U
-#ifdef WORD64
+#ifdef LONG64
 #define FT_ULONG_MAX 18446744073709551615UL
 #else
 #define FT_ULONG_MAX  4294967295UL
