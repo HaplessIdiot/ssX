@@ -59,7 +59,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xt/Resources.c,v 1.8 2001/07/25 15:04:52 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Resources.c,v 1.9 2001/12/14 19:56:28 dawes Exp $ */
 
 /*LINTLIBRARY*/
 #include "IntrinsicI.h"
@@ -1071,33 +1071,17 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
 } /* _XtGetResources */
 
 
-#if NeedFunctionPrototypes
 void _XtGetSubresources (
-    Widget	  w,
-    XtPointer	  base,
-    const char*   name,
-    const char*   class,
-    XtResourceList resources,
-    Cardinal	  num_resources,
-    ArgList	  args,
+    Widget	  w,			/* Widget "parent" of subobject   */
+    XtPointer	  base,			/* Base address to write to       */
+    const char*   name,			/* name of subobject		    */
+    const char*   class,		/* class of subobject		    */
+    XtResourceList resources,		/* resource list for subobject    */
+    Cardinal	  num_resources,	                                    
+    ArgList	  args,			/* arg list to override resources */
     Cardinal	  num_args,
     XtTypedArgList typed_args,
-    Cardinal      num_typed_args
-    )
-#else
-void _XtGetSubresources (w, base, name, class, resources, num_resources,
-			args, num_args)
-    Widget	  w;		  /* Widget "parent" of subobject   */
-    XtPointer	  base;		  /* Base address to write to       */
-    String	  name;		  /* name of subobject		    */
-    String	  class;	  /* class of subobject		    */
-    XtResourceList resources;	  /* resource list for subobject    */
-    Cardinal	  num_resources;
-    ArgList	  args;		  /* arg list to override resources */
-    Cardinal	  num_args;
-    XtTypedArgsList typed_args;
-    Cardinal      num_typed_args;
-#endif
+    Cardinal      num_typed_args)
 {
     XrmName	  *names, names_s[50];
     XrmClass	  *classes, classes_s[50];
@@ -1144,29 +1128,15 @@ void _XtGetSubresources (w, base, name, class, resources, num_resources,
     UNLOCK_APP(app);
 }
 
-#if NeedFunctionPrototypes
 void XtGetSubresources (
-    Widget	  w,
-    XtPointer	  base,
-    _Xconst char* name,
-    _Xconst char* class,
-    XtResourceList resources,
-    Cardinal	  num_resources,
-    ArgList	  args,
-    Cardinal	  num_args
-    )
-#else
-void XtGetSubresources (w, base, name, class, resources, num_resources,
-			args, num_args)
-    Widget	  w;		  /* Widget "parent" of subobject   */
-    XtPointer	  base;		  /* Base address to write to       */
-    String	  name;		  /* name of subobject		    */
-    String	  class;	  /* class of subobject		    */
-    XtResourceList resources;	  /* resource list for subobject    */
-    Cardinal	  num_resources;
-    ArgList	  args;		  /* arg list to override resources */
-    Cardinal	  num_args;
-#endif
+    Widget	  w,			/* Widget "parent" of subobject   */
+    XtPointer	  base,			/* Base address to write to       */
+    _Xconst char* name,			/* name of subobject		    */
+    _Xconst char* class,		/* class of subobject		    */
+    XtResourceList resources,		/* resource list for subobject    */
+    Cardinal	  num_resources,	                                    
+    ArgList	  args,			/* arg list to override resources */
+    Cardinal	  num_args)
 {
     _XtGetSubresources (w, base, name, class, resources, num_resources, args, num_args, NULL, 0);
 }

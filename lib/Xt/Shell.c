@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Shell.c,v 3.14 2001/10/28 03:32:40 tsi Exp $ */
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.15 2001/12/14 19:56:30 dawes Exp $ */
 
 /*
 
@@ -3241,12 +3241,7 @@ static XtCheckpointToken GetToken(widget, type)
     return token;
 }
 
-#if NeedFunctionPrototypes
 XtCheckpointToken XtSessionGetToken(Widget widget)
-#else
-XtCheckpointToken XtSessionGetToken(widget)
-    Widget	widget;
-#endif
 {
     SessionShellWidget w = (SessionShellWidget) widget;
     XtCheckpointToken token = NULL;
@@ -3281,12 +3276,7 @@ static Boolean ExamineToken(call_data)
     return True;
 }
 
-#if NeedFunctionPrototypes
 void XtSessionReturnToken(XtCheckpointToken token)
-#else
-void XtSessionReturnToken(token)
-    XtCheckpointToken	token;
-#endif
 {
     SessionShellWidget w = (SessionShellWidget) token->widget;
     Boolean has_some;

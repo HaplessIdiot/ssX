@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Converters.c,v 3.12 2002/05/31 18:45:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Converters.c,v 3.13 2002/06/03 20:59:19 dawes Exp $ */
 
 /*
 
@@ -171,17 +171,11 @@ void _XtConvertInitialize()
 	    return True;					\
 	}
 
-#if NeedFunctionPrototypes
 void XtDisplayStringConversionWarning(
     Display* dpy,
     _Xconst char* from,
     _Xconst char* toType
     )
-#else
-void XtDisplayStringConversionWarning(dpy, from, toType)
-    Display* dpy;
-    String from, toType;
-#endif
 {
 #ifndef NO_MIT_HACKS	
     /* Allow suppression of conversion warnings. %%%  Not specified. */
@@ -238,15 +232,10 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
     UNLOCK_APP(app);
 }
 
-#if NeedFunctionPrototypes
 void XtStringConversionWarning(
     _Xconst char* from,
     _Xconst char* toType
     )
-#else
-void XtStringConversionWarning(from, toType)
-    String from, toType;
-#endif
 {
 	String params[2];
 	Cardinal num_params = 2;

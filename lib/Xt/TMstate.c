@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/TMstate.c,v 1.7 2001/11/23 19:21:31 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/TMstate.c,v 1.8 2001/12/14 19:56:31 dawes Exp $ */
 
 /*
 
@@ -1400,18 +1400,11 @@ void XtUninstallTranslations(widget)
     UNLOCK_APP(app);
 }
 
-#if NeedFunctionPrototypes
 XtTranslations _XtCreateXlations(
     TMStateTree		*stateTrees,
     TMShortCard		numStateTrees,
     XtTranslations	first,
     XtTranslations	second)
-#else
-XtTranslations _XtCreateXlations(stateTrees, numStateTrees, first, second)
-    TMStateTree		*stateTrees;
-    TMShortCard		numStateTrees;
-    XtTranslations	first, second;
-#endif
 {
     XtTranslations	xlations;
     TMShortCard i;
