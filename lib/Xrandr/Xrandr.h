@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.1 2001/05/23 03:29:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -28,11 +28,34 @@
 
 #include "randr.h"
 
+typedef struct {
+    int	    nvisual;
+    Visual  **visuals;
+} XRRVisualSet;
+
+typedef struct {
+    int		    nset;
+    XRRVisualSet    **sets;
+} XRRSetOfVisualSet;
+    
+typedef struct {
+    int			width, height;
+    int			mwidth, mheight;
+    XRRSetOfVisualSet	*set;
+} XRRScreenSize;
+
 Bool XRRQueryExtension (Display *dpy, int *event_basep, int *error_basep);
 
 Status XRRQueryVersion (Display *dpy,
 			    int     *major_versionp,
 			    int     *minor_versionp);
+
+Time XRRGetScreenInfo (Display		*dpy,
+		       Window		win,
+		       XRRScreenSize	**sizes,
+		       int		*nsize);
+    
+void XRRFreeScreenInfo (XRRScreenSize	*sizes);
 
 Time XRRSetScreenConfig (Display *dpy,
 			 Drawable draw,
@@ -40,5 +63,6 @@ Time XRRSetScreenConfig (Display *dpy,
 			 int visual_set_index,
 			 int rotation,
 			 Time timestamp); /* returns new timestamp */
+
 
 #endif /* _XRANDR_H_ */

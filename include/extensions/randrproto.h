@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/include/extensions/randrproto.h,v 1.2 2000/08/28 02:43:11 tsi Exp $
+ * $XFree86: xc/include/extensions/randrproto.h,v 1.1 2001/05/23 03:29:38 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation
  *
@@ -93,7 +93,7 @@ typedef struct {
     CARD8   reqType;
     CARD8   randrReqType;
     CARD16  length B16;
-    Drawable drawable B32;
+    Window  window B32;
 } xRRGetScreenInfoReq;
 #define sz_xRRGetScreenInfoReq   8
 
@@ -106,6 +106,7 @@ typedef struct {
     CARD16  rotation B16;
     CARD16  nSizes B16;
     CARD16  nVisualSets B16;
+    CARD16  nSetsOfVisualSets B16;
     CARD16  nAccelerated B16;
     CARD16  nRotations B16;
     CARD16  sizeSetID B16;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/mirandr.c,v 1.1 2001/05/23 03:29:44 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/mirandr.c,v 1.2 2001/05/23 04:15:06 keithp Exp $
  *
  * Copyright © 2001 Compaq Computer Corporation
  *
@@ -42,6 +42,7 @@ Bool
 miRRGetInfo (ScreenPtr pScreen, int *rotations, int *swaps)
 {
     int	i;
+    Bool setConfig = FALSE;
     *rotations = RR_ROTATE_0;
     *swaps = 0;
     for (i = 0; i < pScreen->numDepths; i++)
@@ -86,6 +87,11 @@ miRRGetInfo (ScreenPtr pScreen, int *rotations, int *swaps)
 					pSetOfVisualSet);
 		if (!pSize)
 		    return FALSE;
+		if (!setConfig)
+		{
+		    RRSetCurrentConfig (pScreen, RR_ROTATE_0, 0, pSize, pVisualSet);
+		    setConfig = TRUE;
+		}
 	    }
 	}
     }
@@ -99,7 +105,8 @@ Bool
 miRRSetConfig (ScreenPtr	pScreen,
 	       int		rotation,
 	       int		swap,
-	       RRSizeInfoPtr	size)
+	       RRSizeInfoPtr	pSize,
+	       RRVisualSetPtr	pVisualSet)
 {
     return TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.14 2000/08/31 19:03:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.16 2001/02/16 13:24:09 eich Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -983,6 +983,11 @@ extern void WindowsRestructured(
     void
 #endif
 );
+
+#ifdef RANDR
+void
+ScreenRestructured (ScreenPtr pScreen);
+#endif
 
 extern void ResetClientPrivates(
 #if NeedFunctionPrototypes

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.36 2001/01/17 22:36:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.38 2001/02/16 13:24:07 eich Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -1189,6 +1189,24 @@ playmore:
 			      TRUE, FALSE);
     PostNewCursor();
 }
+
+#ifdef RANDR
+void
+ScreenRestructured (ScreenPtr pScreen)
+{
+    GrabPtr grab;
+
+    if ((grab = inputInfo.pointer->grab) && grab->confineTo)
+    {
+	if (grab->confineTo->drawable.pScreen != sprite.hotPhys.pScreen)
+	    sprite.hotPhys.x = sprite.hotPhys.y = 0;
+	ConfineCursorToWindow(grab->confineTo, TRUE, TRUE);
+    }
+    else
+	ConfineCursorToWindow(WindowTable[sprite.hotPhys.pScreen->myNum],
+			      TRUE, FALSE);
+}
+#endif
 
 void
 CheckGrabForSyncs(thisDev, thisMode, otherMode)

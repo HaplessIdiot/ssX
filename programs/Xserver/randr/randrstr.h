@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randrstr.h,v 1.1 2001/05/23 03:29:44 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randrstr.h,v 1.2 2001/05/23 04:15:06 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation
  *
@@ -33,11 +33,6 @@
 #define RR_SWAP_RL	1
 #define RR_SWAP_TB	2
 
-typedef struct _rrGlobalInfo {
-    int	    rotations;
-    int	    swaps;
-} RRGlobalInfo, *RRGlobalInfoPtr;
-
 typedef struct _rrVisualSet {
     int		id;
     int		nvisuals;
@@ -66,7 +61,9 @@ typedef struct _rrSizeInfo {
 typedef Bool (*RRSetConfigProcPtr) (ScreenPtr	    pScreen,
 				    int		    rotation,
 				    int		    swap,
-				    RRSizeInfoPtr   size);
+				    RRSizeInfoPtr   pSize,
+				    RRVisualSetPtr  pVisualSet);
+
 typedef Bool (*RRGetInfoProcPtr) (ScreenPtr pScreen, int *rotations, int *swaps);
 typedef Bool (*RRCloseScreenProcPtr) ( int i, ScreenPtr pscreen);
 	
@@ -99,7 +96,8 @@ typedef struct _rrScrPriv {
     int			    rotation;
     int			    swap;
     RRSizeInfoPtr	    pSize;
-    
+    RRVisualSetPtr	    pVisualSet;
+
 } rrScrPrivRec, *rrScrPrivPtr;
 
 extern int rrPrivIndex;
@@ -154,7 +152,7 @@ RRRegisterSetOfVisualSet (ScreenPtr		pScreen,
 
 
 /*
- * Finally, register the specific size with the screen
+ * Then, register the specific size with the screen
  */
 
 RRSizeInfoPtr
@@ -165,6 +163,17 @@ RRRegisterSize (ScreenPtr	    pScreen,
 		short		    mmHeight,
 		RRSetOfVisualSet    *visualsets);
 
+/*
+ * Finally, set the current configuration of the screen
+ */
+
+void
+RRSetCurrentConfig (ScreenPtr	    pScreen,
+		    int		    rotation,
+		    int		    swap,
+		    RRSizeInfoPtr   pSize,
+		    RRVisualSetPtr  pVisualSet);
+
 Bool
 miRandRInit (ScreenPtr pScreen);
 
@@ -172,7 +181,8 @@ Bool
 miRRSetScreenConfig (ScreenPtr	    pScreen,
 		     int	    rotations,
 		     int	    swaps,
-		     RRSizeInfoPtr  size);
+		     RRSizeInfoPtr  size,
+		     RRVisualSetPtr pVisualSet);
 
 Bool
 miRRGetScreenInfo (ScreenPtr pScreen);
