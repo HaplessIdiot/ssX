@@ -43,6 +43,17 @@
 
 #define MAX_AREA 0x80000000
 
+/*
+ * A RationalPoint is an exact position along one of the trapezoid
+ * edges represented by an approximate position (x,y) and two error
+ * terms (ex_dy, ey_dx).  The error in X is multiplied by the Y 
+ * dimension of the line while the error in Y is multiplied by the
+ * X dimension of the line, allowing an exact measurement of the
+ * distance from (x,y) to the line.
+ *
+ * Generally, while walking an edge, one of ex_dy/ey_dx will be zero
+ * indicating that the position error is held in the other.
+ */
 typedef struct {
     Fixed x;
     Fixed ex_dy;
@@ -50,10 +61,39 @@ typedef struct {
     Fixed ey_dx;
 } RationalPoint;
 
+/*
+ * Edges are walked both horizontally and vertically
+ * They are walked vertically to get to a particular row
+ * of pixels, and then walked horizontally within that row
+ * to compute pixel coverage.
+ *
+ * Edges are always walked from top to bottom and from
+ * left to right.  This means that for lines moving leftwards
+ * from top to bottom, the left to right walking actually moves
+ * backwards along the line with respect to the top to bottom
+ * walking.
+ */
+
+/*
+ * A RationalRow represents the two positions where
+ * an edge intersects a row of pixels.  This is used
+ * to walk an edge vertically
+ */
+
 typedef struct {
-    RationalPoint p1;
-    RationalPoint p2;
-} RationalLine;
+    RationalPoint   top;	/* intersection at top of row */
+    RationalPoint   bottom;	/* intersection at bottom of row */
+} RationalRow;
+
+/*
+ * A RationalCol represents the two positions where
+ * an edge intersects a column of pixels
+ */
+
+typedef struct {
+    RationalPoint   left;	/* intersection at left of column */
+    RationalPoint   right;	/* intersection at right of column */
+} RationalCol;
 
 /*
   Here are some thoughts on line walking:
@@ -76,27 +116,47 @@ c1\   |   |`-.|c2 |   \c2 | | |   | | |  c1/   | c1|,_/|c2  |   /c2
 
 State transitions:
 
-A -> C, D       	E -> F, F
+A -> C, D       	E -> E, F
 B -> A, B          	F -> G, H
 C -> A, B       	G -> G, H
 D -> C, D       	H -> E, F
 
 */
 
-/* Values for PixelWalk.mode. TOP and BOTTOM can have the same value
-   as only one mode is possible given a line of either positive or
-   negative slope.  */
-#define OUT_TOP    0
-#define OUT_BOTTOM 0
-#define OUT_RIGHT  1
+/*
+ * Values for PixelWalk.depart. Top and Bottom can have the same value
+ * as only one mode is possible given a line of either positive or
+ * negative slope.  These mark the departure edge while walking
+ * rightwards across columns.
+ */
 
+typedef enum _departure {
+    DepartTop = 0,	    /* edge exits top of pixel */
+    DepartBottom = 0,	    /* edge exits bottom of pixel */
+    DepartRight = 1	    /* edge exits right edge of pixel */
+} Departure;
+
+/*
+ * PixelWalk
+ *
+ * This structure holds state to walk a single edge down the trapezoid.
+ *
+ * The edge is walked twice -- once by rows and once by columns.
+ * The two intersections of the pixel by the edge are then set
+ * from either the row or column position, depending on which edge 
+ * is intersected.
+ *
+ * Note that for lines moving left, walking by rows moves down the
+ * line (increasing y) while walking by columns moves up the line 
+ * (decreasing y).
+ */
 typedef struct {
     Fixed dx;
     Fixed ey_thresh;
     Fixed dy;
     Fixed ex_thresh;
 
-    int mode;
+    Departure depart;
 
     /* slope */
     Fixed m;
@@ -110,188 +170,471 @@ typedef struct {
     Fixed x_correct;
     Fixed ex_correct;
 
-    RationalLine  row;
-    RationalLine  col;
+    /*
+     * Current edge positions along pixel rows and columns
+     */
+    RationalRow row;
+    RationalCol col;
 
+    /*
+     * The two pixel intersection points, copied from the appropriate
+     * row or column position above
+     */
     RationalPoint p1;
     RationalPoint p2;
 } PixelWalk;
 
-#define PIXEL_WALK_STEP_ROW(pw)			\
-{						\
-    /* pw.row.p1.y < pw.row.p2.y */		\
-    (pw).row.p1 = (pw).row.p2;			\
-						\
-    (pw).row.p2.y += Fixed1;			\
-    (pw).row.p2.x += (pw).p;			\
-    (pw).row.p2.ex_dy += (pw).ep_dy;		\
-    if (abs((pw).row.p2.ex_dy) > (pw).ex_thresh) {\
-	(pw).row.p2.x += (pw).x_correct;	\
-	(pw).row.p2.ex_dy += (pw).ex_correct;	\
-    }						\
-}
 
-#define PIXEL_WALK_STEP_COL(pw)			\
-{						\
-    /* pw.col.p1.x < pw.col.p2.x */		\
-    (pw).col.p1 = (pw).col.p2;			\
-						\
-    (pw).col.p2.x += Fixed1;			\
-    (pw).col.p2.y += (pw).m;			\
-    (pw).col.p2.ey_dx += (pw).em_dx;		\
-    if ((pw).col.p2.ey_dx > (pw).ey_thresh) {	\
-	(pw).col.p2.y += (pw).y_correct;	\
-	(pw).col.p2.ey_dx += (pw).ey_correct;	\
-    }						\
-}
+#if 0
+#ifdef GCC
+#define INLINE inline
+#endif
+#endif
 
-#define PIXEL_WALK_MOVE_POINT_TO_ROW(pw, pt, newy)	\
-{						\
-    Fixed_32_32 oex, xoff;			\
-						\
-    oex = (Fixed_32_32) (pw).dx * ((newy) - (pt).y)	\
-        - (pt).ey_dx + (pt).ex_dy;\
-    xoff = oex / (pw).dy;			\
-						\
-    (pt).x = (pt).x + xoff;	\
-    (pt).ex_dy = oex - xoff * (pw).dy;	\
-						\
-    (pt).y = (newy);			\
-    (pt).ey_dx = 0;			\
-}
+#ifndef INLINE
+#define INLINE
+#endif
 
-#define PIXEL_WALK_MOVE_POINT_TO_COL(pw, pt, newx)	\
-{							\
-    Fixed_32_32 oey, yoff;				\
-							\
-    /* Special case vertical lines to arbitrary y */	\
-    if ((pw).dx == 0) {					\
-	(pt).x = newx;					\
-	(pt).ex_dy = 0;					\
-	(pt).y = 0;					\
-	(pt).ey_dx = 0;					\
-    } else {						\
-	oey = (Fixed_32_32) (pw).dy * ((newx) - (pt).x)	\
-              - (pt).ex_dy + (pt).ey_dx;		\
-	yoff = oey / (pw).dx;				\
-							\
-	(pt).y  = (pt).y + yoff;			\
-	(pt).ey_dx = oey - yoff * (pw).dx;		\
-							\
-	(pt).x = (newx);				\
-	(pt).ex_dy = 0;					\
-    }							\
-}
-
-#define PIXEL_WALK_NEXT_PIXEL(pw)		\
-{						\
-    if ((pw).dx < 0) {				\
-	if ((pw).mode == OUT_TOP) {		\
-	    if ((pw).row.p1.x == (pw).col.p2.x) {		\
-		PIXEL_WALK_STEP_COL(pw);	\
-	    }					\
-	    PIXEL_WALK_STEP_ROW(pw);		\
-	    PIXEL_WALK_MOVE_POINT_TO_COL(pw, pw.col.p2, FixedFloor((pw).row.p2.x));	\
-	    PIXEL_WALK_STEP_COL(pw);		\
-	    (pw).p2 = (pw).row.p2;		\
-	} else { /* (pw).mode == OUT_RIGHT */	\
-	    PIXEL_WALK_STEP_COL(pw);		\
-	    (pw).p2 = (pw).col.p1;		\
-	}					\
-	if ((pw).row.p1.x <= (pw).col.p2.x) {	\
-	    (pw).p1 = (pw).row.p1;		\
-	    (pw).mode = OUT_TOP;		\
-	} else {				\
-	    (pw).p1 = (pw).col.p2;		\
-	    (pw).mode = OUT_RIGHT;		\
-	}					\
-    } else {					\
-	if ((pw).mode == OUT_BOTTOM) {		\
-	    if ((pw).row.p2.x == (pw).col.p2.x) {		\
-		PIXEL_WALK_STEP_COL(pw);	\
-	    }					\
-	    PIXEL_WALK_STEP_ROW(pw);		\
-	    (pw).p1 = (pw).row.p1;		\
-	} else { /* (pw).mode == OUT_RIGHT */	\
-	    PIXEL_WALK_STEP_COL(pw);		\
-	    (pw).p1 = (pw).col.p1;		\
-	}					\
-	if ((pw).row.p2.x <= (pw).col.p2.x) {	\
-	    (pw).p2 = (pw).row.p2;		\
-	    (pw).mode = OUT_BOTTOM;		\
-	} else {				\
-	    (pw).p2 = (pw).col.p2;		\
-	    (pw).mode = OUT_RIGHT;		\
-	}					\
-    }						\
-}
-
-static void PIXEL_WALK_FIND_MODE(PixelWalk *pw)
+/*
+ * Step the 'row' element of 'pw' vertically 
+ * (increasing y) by one whole pixel
+ */
+static INLINE void
+pixelWalkStepRow (PixelWalk *pw)
 {
-    if (pw->dx < 0) {
-	if (pw->row.p1.x <= pw->col.p2.x) {
-	    pw->mode = OUT_TOP;
-	    pw->p1 = pw->row.p1;
-	} else {
-	    pw->mode = OUT_RIGHT;
-	    pw->p1 = pw->col.p2;
+    /* pw.row.top.y < pw.row.bottom.y */
+    pw->row.top = pw->row.bottom;
+
+    pw->row.bottom.y += Fixed1;
+    pw->row.bottom.x += pw->p;
+    pw->row.bottom.ex_dy += pw->ep_dy;
+    if (abs (pw->row.bottom.ex_dy) > pw->ex_thresh) 
+    {
+	pw->row.bottom.x += pw->x_correct;
+	pw->row.bottom.ex_dy += pw->ex_correct;
+    }
+}
+
+/*
+ * Step the 'col' element of 'pw' horizontally
+ * (increasing x) by one whole pixel
+ */
+static INLINE void
+pixelWalkStepCol (PixelWalk *pw)
+{
+    /* pw.col.p1.x < pw.col.p2.x */
+    /*
+     * Copy the current right point into the left point
+     */
+    pw->col.left = pw->col.right;
+
+    /*
+     * Now incrementally walk across the pixel
+     */
+    pw->col.right.x += Fixed1;
+    pw->col.right.y += pw->m;
+    pw->col.right.ey_dx += pw->em_dx;
+    if (pw->col.right.ey_dx > pw->ey_thresh) 
+    {
+	pw->col.right.y += pw->y_correct;
+	pw->col.right.ey_dx += pw->ey_correct;
+    }
+}
+
+/* 
+ * Step 'pt' vertically to 'newy'.
+ */
+static INLINE void
+pixelWalkMovePointToRow (PixelWalk *pw, RationalPoint *pt, Fixed newy)
+{
+    Fixed_32_32	oex;
+    Fixed	xoff;
+
+    /* X error of old X position and new Y position */
+    oex = (Fixed_32_32) pw->dx * (newy - pt->y) - pt->ey_dx + pt->ex_dy;
+    
+    /* amount to step X by */
+    xoff = oex / pw->dy;
+
+    /* step X */
+    pt->x = pt->x + xoff;
+    
+    /* set new X error value for new X position and new Y positition */
+    pt->ex_dy = oex - (Fixed_32_32) pw->dy * xoff;
+
+    /* set new Y position, set Y error to zero */
+    pt->y = newy;
+    pt->ey_dx = 0;
+}
+
+/*
+ * Step 'pt' horizontally to 'newx' 
+ */
+static INLINE void
+pixelWalkMovePointToCol (PixelWalk *pw, RationalPoint *pt, Fixed newx)
+{
+    Fixed_32_32 oey;
+    Fixed	yoff;
+
+    /* Special case vertical lines to arbitrary y */
+    if (pw->dx == 0) 
+    {
+	pt->x = newx;
+	pt->ex_dy = 0;
+	pt->y = 0;
+	pt->ey_dx = 0;
+    }
+    else 
+    {
+	/* Y error of old Y position and new X position */
+	oey = (Fixed_32_32) pw->dy * (newx - pt->x) - pt->ex_dy + pt->ey_dx;
+
+	/* amount to step Y by */
+	yoff = oey / pw->dx;
+
+	/* step Y */
+	pt->y = pt->y + yoff;
+
+	/* set new Y error value for new Y position and new X position */
+	pt->ey_dx = oey - (Fixed_32_32) pw->dx * yoff;
+
+	/* set new X position, set X error to zero */
+	pt->x = newx;
+	pt->ex_dy = 0;
+    }
+}
+
+/*
+ * Walk to the nearest edge of the next pixel, filling in both p1 and
+ * p2 as necessary from either the row or col intersections.
+ *
+ * The "next" pixel is defined to be the next pixel intersected by the
+ * line with pixels visited in raster scan order, (for the benefit of
+ * cache performance). For lines with positive slope it is easy to
+ * achieve raster scan order by simply calling StepCol for each pixel
+ * in a given scanline, then calling StepRow once at the end of each
+ * scanline.
+ *
+ * However, for lines of negative slope where the magnitude of dx is
+ * greater than dy, a little more work needs to be done. The pixels of
+ * a particular scanline will be visited by succesive calls to StepCol
+ * as before. This will effectively step "up" the line as we scan from
+ * left to right. But, the call to StepRow at the end of the scan line
+ * will step "down" the line and the column information will be
+ * invalid at that point.
+ *
+ * For now, I fix up the column of all negative slope lines by calling
+ * MovePointToCol at the end of each scanline. However, this is an
+ * extremely expensive operation since it involves a 64-bit multiply
+ * and a 64-bit divide. It would be much better, (at least as long as
+ * abs(dx) is not much greater than dy), to instead step the col
+ * backwards as many times as necessary. Or even better, we could
+ * simply restore col to the position it began at when we started the
+ * scanline, then simply step it backwards once. That would give a
+ * performance benefit for lines with slope of any magnitude. 
+ */
+
+static INLINE void
+pixelWalkNextPixel (PixelWalk *pw)
+{
+    if (pw->dx < 0) 
+    {
+	/* 
+	 * left moving lines
+	 *
+	 * Check which pixel edge we're departing from 
+	 *
+	 * Remember that in this case (dx < 0), the 'row' element of 'pw'
+	 * walks down the line while 'col' walks up
+	 */
+	if (pw->depart == DepartTop) 
+	{
+	    /*
+	     * The edge departs the row at this pixel, the
+	     * next time it gets used will be for the next row
+	     *
+	     * Step down one row and then recompute the
+	     * column values to start the next row of
+	     * pixels
+	     */
+	    pixelWalkStepRow(pw);
+	    /*
+	     * Set column exit pixel
+	     */
+	    pixelWalkMovePointToCol(pw, &pw->col.right, FixedFloor(pw->row.bottom.x));
+	    /*
+	     * This moves the exit pixel to the entry pixel
+	     * and computes the next exit pixel
+	     */
+	    pixelWalkStepCol(pw);
+	    /*
+	     * The first pixel on the next row will always
+	     * be entered from below, set the lower
+	     * intersection of this edge with that pixel
+	     */
+	    pw->p2 = pw->row.bottom;
+	} 
+	else	/* pw->depart == DepartRight */
+	{ 
+	    /*
+	     * easy case -- just move right one pixel 
+	     */
+	    pixelWalkStepCol(pw);
+	    /* 
+	     * Set the lower intersection of the edge with the
+	     * pixel -- that's just where the edge entered
+	     * the pixel from the left
+	     */
+	    pw->p2 = pw->col.left;
 	}
-	if (pw->row.p2.x > pw->col.p1.x) {
-	    pw->p2 = pw->row.p2;
-	} else {
-	    pw->p2 = pw->col.p1;
+	/*
+	 * Now compute which edge the pixel
+	 * is departing from
+	 */
+	if (pw->row.top.x <= pw->col.right.x) 
+	{
+	    /* 
+	     * row intersection is left of column intersection,
+	     * that means the edge hits the top of the pixel
+	     * before it hits the right edge
+	     */
+	    pw->p1 = pw->row.top;
+	    pw->depart = DepartTop;
 	}
-    } else {
-	if (pw->row.p2.x <= pw->col.p2.x) {
-	    pw->mode = OUT_BOTTOM;
-	    pw->p2 = pw->row.p2;
-	} else {
-	    pw->mode = OUT_RIGHT;
-	    pw->p2 = pw->col.p2;
+	else 
+	{
+	    /*
+	     * Row intersection is right of colum intersection,
+	     * that means the edge hits the right edge of the
+	     * pixel first
+	     */
+	    pw->p1 = pw->col.right;
+	    pw->depart = DepartRight;
 	}
-	if (pw->row.p1.x > pw->col.p1.x) {
-	    pw->p1 = pw->row.p1;
-	} else {
-	    pw->p1 = pw->col.p1;
+    } 
+    else 
+    {
+	/*
+	 * right moving lines
+	 *
+	 * Check which edge we're departing from
+	 *
+	 * In the dx >= 0 case, the row and col elements both
+	 * walk downwards
+	 */
+	if (pw->depart == DepartBottom) 
+	{
+	    /*
+	     * The edge departs the row at this pixel,
+	     * the next time it gets used will be for the
+	     * next row
+	     *
+	     * Step down one row and (maybe) over one
+	     * column to prepare for the next row
+	     */
+	    if (pw->row.bottom.x == pw->col.right.x)
+	    {
+		/* 
+		 * right through the corner of the pixel,
+		 * adjust the column
+		 */
+		pixelWalkStepCol(pw);
+	    }
+	    pixelWalkStepRow(pw);
+	    /*
+	     * Set the upper intersection of the edge with
+	     * the pixel, the first pixel on the next
+	     * row is always entered from the top
+	     */
+	    pw->p1 = pw->row.top;
+	}
+	else	/* pw->depart == DepartRight */
+	{ 
+	    /*
+	     * Easy case -- move right one
+	     * pixel
+	     */
+	    pixelWalkStepCol(pw);
+	    /*
+	     * Set the upper intersection of the edge
+	     * with the pixel, that's along the left
+	     * edge of the pixel
+	     */
+	    pw->p1 = pw->col.left;
+	}
+	/*
+	 * Now compute the exit edge and the
+	 * lower intersection of the edge with the pixel
+	 */
+	if (pw->row.bottom.x <= pw->col.right.x) 
+	{
+	    /*
+	     * Hit the place where the edge leaves
+	     * the pixel, the lower intersection is
+	     * where the edge hits the bottom
+	     */
+	    pw->p2 = pw->row.bottom;
+	    pw->depart = DepartBottom;
+	}
+	else 
+	{
+	    /*
+	     * The edge goes through the
+	     * next pixel on the row,
+	     * the lower intersection is where the
+	     * edge hits the right side of the pixel
+	     */
+	    pw->p2 = pw->col.right;
+	    pw->depart = DepartRight;
 	}
     }
 }
 
-static void PIXEL_WALK_INIT(PixelWalk *pw, xLineFixed line, Fixed newy)
+/*
+ * Compute the first pixel intersection points
+ * and the departure type from that pixel
+ */
+static void 
+pixelWalkFirstPixel (PixelWalk *pw)
 {
-    Fixed_32_32 dy_inc, dx_inc;
-    xPointFixed tmp;
+    if (pw->dx < 0) 
+    {
+	if (pw->row.top.x <= pw->col.right.x) 
+	{
+	    /*
+	     * leaving through the top.
+	     * upper position is the upper point of
+	     * the 'row' element
+	     */
+	    pw->depart = DepartTop;
+	    pw->p1 = pw->row.top;
+	}
+	else 
+	{
+	    /*
+	     * leaving through the right side
+	     * upper position is the right point of
+	     * the 'col' element
+	     */
+	    pw->depart = DepartRight;
+	    pw->p1 = pw->col.right;
+	}
+	/*
+	 * Now find the lower pixel intersection point
+	 */
+	if (pw->row.bottom.x >= pw->col.left.x)
+	    /*
+	     * entering through bottom,
+	     * lower position is the bottom point of
+	     * the 'row' element
+	     */
+	    pw->p2 = pw->row.bottom;
+	else
+	    /*
+	     * entering through left side,
+	     * lower position is the left point of
+	     * the 'col' element
+	     */
+	    pw->p2 = pw->col.left;
+    }
+    else 
+    {
+	if (pw->row.bottom.x <= pw->col.right.x)
+	{
+	    /*
+	     * leaving through the bottom (or corner).
+	     * lower position is the lower point of
+	     * the 'row' element
+	     */
+	    pw->depart = DepartBottom;
+	    pw->p2 = pw->row.bottom;
+	} 
+	else 
+	{
+	    /*
+	     * leaving through the right side
+	     * lower position is the right point of
+	     * the 'col' element
+	     */
+	    pw->depart = DepartRight;
+	    pw->p2 = pw->col.right;
+	}
+	/*
+	 * Now find the upper pixel intersection point
+	 */
+	if (pw->row.top.x >= pw->col.left.x)
+	    /*
+	     * entering through the top (or corner),
+	     * upper position is the top point
+	     * of the 'row' element
+	     */
+	    pw->p1 = pw->row.top;
+	else
+	    /*
+	     * entering through the left side,
+	     * upper position is the left point of
+	     * the 'col' element
+	     */
+	    pw->p1 = pw->col.left;
+    }
+}
 
-    if (line.p1.y > line.p2.y) {
-	tmp = line.p1;
-	line.p1 = line.p2;
-	line.p2 = tmp;
+static void 
+pixelWalkInit (PixelWalk *pw, xLineFixed *line, Fixed y)
+{
+    Fixed_32_32	    dy_inc, dx_inc;
+    xPointFixed	    *top, *bot;
+
+    /*
+     * Orient lines top down
+     */
+    if (line->p1.y < line->p2.y) 
+    {
+	top = &line->p1;
+	bot = &line->p2;
+    }
+    else
+    {
+	top = &line->p2;
+	bot = &line->p1;
     }
 
-    pw->dx = line.p2.x - line.p1.x;
+    pw->dx = bot->x - top->x;
     pw->ey_thresh = abs(pw->dx >> 1);
-    pw->dy = line.p2.y - line.p1.y;
+    pw->dy = bot->y - top->y;
     pw->ex_thresh = pw->dy >> 1;
 
-    if (pw->dx < 0) {
+    /*
+     * Set step values for walking lines
+     */
+    if (pw->dx < 0) 
+    {
 	pw->x_correct = -1;
 	pw->ex_correct = pw->dy;
 	pw->y_correct = -1;
 	pw->ey_correct = pw->dx;
-    } else {
+    }
+    else 
+    {
 	pw->x_correct = 1;
 	pw->ex_correct = -pw->dy;
 	pw->y_correct = 1;
 	pw->ey_correct = -pw->dx;
     }
 
-    dy_inc = (Fixed_32_32) Fixed1 * pw->dy;	/* > 0 */
-    if (pw->dx != 0) {
-	pw->m = dy_inc / pw->dx;			/* sign(dx) */
-	pw->em_dx = dy_inc - (Fixed_32_32) pw->m * pw->dx; /* > 0 */
-    } else {
+    /*
+     * Compute Bresenham values for walking edges incrementally
+     */
+    dy_inc = (Fixed_32_32) Fixed1 * pw->dy;			/* > 0 */
+    if (pw->dx != 0) 
+    {
+	pw->m = dy_inc / pw->dx;				/* sign(dx) */
+	pw->em_dx = dy_inc - (Fixed_32_32) pw->m * pw->dx;	/* > 0 */
+    }
+    else 
+    {
 	/* Vertical line. Setting these to zero prevents us from
-           having to put any conditions in PIXEL_WALK_STEP_COL. */
+           having to put any conditions in pixelWalkStepCol. */
 	pw->m = 0;
 	pw->em_dx = 0;
     }
@@ -300,25 +643,53 @@ static void PIXEL_WALK_INIT(PixelWalk *pw, xLineFixed line, Fixed newy)
     pw->p = dx_inc / pw->dy;					/* sign(dx) */
     pw->ep_dy = dx_inc - (Fixed_32_32) pw->p * pw->dy;		/* sign(dx) */
 
-    pw->row.p2.x = line.p1.x;
-    pw->row.p2.ex_dy = 0;
-    pw->row.p2.y = line.p1.y;
-    pw->row.p2.ey_dx = 0;
+    /*
+     * Initialize 'row' for walking down rows
+     */
+    pw->row.bottom.x = top->x;
+    pw->row.bottom.ex_dy = 0;
+    pw->row.bottom.y = top->y;
+    pw->row.bottom.ey_dx = 0;
 
-    PIXEL_WALK_MOVE_POINT_TO_ROW(*pw, pw->row.p2, newy);
-    PIXEL_WALK_STEP_ROW(*pw);
+    /*
+     * Move to the pixel above the 'y' coordinate,
+     * first setting 'bottom' and then using StepRow
+     * which moves that to 'top' and computes the next 'bottom'
+     */
+    pixelWalkMovePointToRow(pw, &pw->row.bottom, FixedFloor(y));
+    pixelWalkStepRow(pw);
 
-    pw->col.p2.x = line.p1.x;
-    pw->col.p2.ex_dy = 0;
-    pw->col.p2.y = line.p1.y;
-    pw->col.p2.ey_dx = 0;
+    /*
+     * Initialize 'col' for walking across columns
+     */
+    pw->col.right.x = top->x;
+    pw->col.right.ex_dy = 0;
+    pw->col.right.y = top->y;
+    pw->col.right.ey_dx = 0;
 
-    PIXEL_WALK_MOVE_POINT_TO_COL(*pw, pw->col.p2,
-	       MIN(FixedFloor(pw->row.p1.x),
-		   FixedFloor(pw->row.p2.x)));
-    PIXEL_WALK_STEP_COL(*pw);
+    /*
+     * First set the column to the left most
+     * pixel hit by the row
+     */
+    pixelWalkMovePointToCol(pw, &pw->col.right,
+	       MIN(FixedFloor(pw->row.top.x),
+		   FixedFloor(pw->row.bottom.x)));
+    pixelWalkStepCol(pw);
+    
+    /*
+     * Now move down so that the rows match,
+     * this can take a few steps if the line
+     * is close to vertical
+     */
+    if (pw->dx)
+	while (pw->col.left.y < y && pw->col.right.y < y)
+	    pixelWalkStepCol(pw);
 
-    PIXEL_WALK_FIND_MODE(pw);
+    /*
+     * Compute first pixel intersections and the
+     * first departure state
+     */
+    pixelWalkFirstPixel (pw);
 }
 
 #define AreaAlpha(area, depth) ((((area) >> (depth)) * ((1 << (depth)) - 1)) >> (31 - (depth)))
@@ -424,6 +795,18 @@ SubPixelAlpha (Fixed_1_16	x1,
 }
 */
 
+/* Alpha of a pixel above a given horizontal line */
+static int
+RectAlpha(Fixed pixel_y, Fixed line_y, int depth)
+{
+    if (line_y < pixel_y)
+	return 0;
+    else if (line_y > pixel_y + Fixed1)
+	return (1 << depth) - 1;
+    else
+	return AreaAlpha(AREA_MULT(line_y - pixel_y, Fixed1), depth);
+}
+
 /*
   Pixel coverage from the left edge bounded by two horizontal lines,
   (top and bottom), as well as one line two points, p1 and p2, which
@@ -475,7 +858,14 @@ PixelAlpha(Fixed	pixel_x,
 	bottom = Fixed1;
     } else {
 	if (bottom < pw->p2.y) {
-	    PIXEL_WALK_MOVE_POINT_TO_ROW(*pw, pw->p2, bottom);
+	    pixelWalkMovePointToRow(pw, &pw->p2, bottom);
+	    if (pw->p2.y < pw->p1.y) {
+		if (pw->p1.x < pw->p2.x) {
+		    return RectAlpha(pixel_y, bottom, depth);
+		} else {
+		    return 0;
+		}
+	    }
 	}
 	bottom -= pixel_y;
     } 
@@ -488,15 +878,22 @@ PixelAlpha(Fixed	pixel_x,
 
     alpha = SubPixelAlpha(x1, y1, x2, y2, bottom, depth);
 
-    if (top > pw->p1.y) {
-	PIXEL_WALK_MOVE_POINT_TO_ROW(*pw, pw->p2, top);
-	x2 = pw->p2.x - pixel_x;
-	y2 = pw->p2.y - pixel_y;
-	top -= pixel_y;
-	alpha -= SubPixelAlpha(x1, y1, x2, y2, top, depth);
+    if (top > pixel_y) {
+	if (top <= pw->p1.y) {
+	    alpha -= RectAlpha(pixel_y, top, depth);
 
-	if (alpha < 0)
-	    alpha = 0;
+	    if (alpha < 0)
+		alpha = 0;
+	} else if (top < pw->p2.y) {
+	    pixelWalkMovePointToRow(pw, &pw->p2, top);
+	    x2 = pw->p2.x - pixel_x;
+	    y2 = pw->p2.y - pixel_y;
+	    top -= pixel_y;
+	    alpha -= SubPixelAlpha(x1, y1, x2, y2, top, depth);
+
+	    if (alpha < 0)
+		alpha = 0;
+	}
     }
 
 #ifdef DEBUG
@@ -507,18 +904,6 @@ PixelAlpha(Fixed	pixel_x,
 #endif
 
     return alpha;
-}
-
-/* Alpha of a pixel above a given horizontal line */
-static int
-RectAlpha(Fixed pixel_y, Fixed line_y, int depth)
-{
-    if (line_y < pixel_y)
-	return 0;
-    else if (line_y > pixel_y + Fixed1)
-	return (1 << depth) - 1;
-    else
-	return AreaAlpha(AREA_MULT(line_y - pixel_y, Fixed1), depth);
 }
 
 #define INCREMENT_X_AND_PIXEL		\
@@ -533,10 +918,10 @@ RectAlpha(Fixed pixel_y, Fixed line_y, int depth)
 #define saturateAdd(t, a, b) (((t) = (a) + (b)), \
 			       ((CARD8) ((t) | (0 - ((t) >> 8)))))
 
-#define addAlpha(mask, depth, alpha) (\
+#define addAlpha(mask, depth, alpha, temp) (\
     (*(mask)->store) ((mask), (alpha == (1 << depth) - 1) ? \
 		      0xff000000 : \
-		      (saturateAdd (alpha,  \
+		      (saturateAdd (temp,  \
 				    alpha << (8 - depth),  \
 				    (*(mask)->fetch) (mask) >> 24) << 24)) \
 )
@@ -548,7 +933,7 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 		      int	    y_off)
 {
     xTrapezoid	trap = *pTrap;
-    int alpha;
+    int alpha, temp;
     
     FbCompositeOperand	mask;
 
@@ -590,8 +975,8 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	    (double) trap.bottom / (1 << 16));
 #endif
 
-    PIXEL_WALK_INIT(&left, trap.left, FixedFloor(trap.top));
-    PIXEL_WALK_INIT(&right, trap.right, FixedFloor(trap.top));
+    pixelWalkInit(&left, &trap.left, trap.top);
+    pixelWalkInit(&right, &trap.right, trap.top);
 
     /* XXX: I'd still like to optimize this loop for top and
        bottom. Only the first row intersects top and only the last
@@ -610,78 +995,133 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
     
     for (y = y_min, y_next = y + Fixed1;
 	 y < y_max;
-	 y = y_next, y_next += Fixed1) {
-	first_right_x = FixedFloor(right.col.p1.x);
+	 y = y_next, y_next += Fixed1) 
+    {
+	first_right_x = FixedFloor(right.col.left.x);
 	
-	/* First, pixels on this row intersected by only trap.left */
-	x = FixedFloor(left.col.p1.x);
+	x = FixedFloor(left.col.left.x);
+
+	/*
+	 * Walk pixels on this row that are left of the
+	 * first possibly lit pixel
+	 *
+	 * pixelWalkNextPixel will change .row.top.y
+	 * when the last pixel covered by the edge
+	 * is passed
+	 */
+
+	while (right.row.top.y == y && first_right_x < x)
+	{
+	    /* these are empty */
+	    pixelWalkNextPixel (&right);
+	    /* step over */
+	    first_right_x += Fixed1;
+	}
 
 	pixel_x = FixedToInt (x);
 	mask.offset = pixel_x * mask.bpp;
 	
-	while (left.row.p1.y < y_next && x < first_right_x) {
-	    if (trap.bottom < y_next) {
+	/* 
+	 * Walk pixels on this row intersected by only trap.left
+	 *
+	 */
+	while (left.row.top.y == y && x < first_right_x) 
+	{
+	    /*
+	     * Compute alpha for this pixel
+	     */
+	    if (trap.bottom < y_next)
 		alpha = RectAlpha(y, trap.bottom, depth);
-	    } else {
+	    else
 		alpha = max_alpha;
-	    }
-	    if (trap.top > y) {
+	    if (trap.top > y)
 		alpha -= RectAlpha(y, trap.top, depth);
-	    }
+	    
 	    alpha -= PixelAlpha(x, y, trap.top, trap.bottom, &left, depth);
+	    
 	    if (0 <= x && x < buf_width_fixed)
-		addAlpha (&mask, depth, alpha);
-	    PIXEL_WALK_NEXT_PIXEL(left);
+		addAlpha (&mask, depth, alpha, temp);
+	    
+	    /*
+	     * Step right
+	     */
+	    pixelWalkNextPixel(&left);
 	    INCREMENT_X_AND_PIXEL;
 	}
 
-	/* Either one pixel is intersected by trap.left and
-	   trap.right, or else one or more are covered 100%, (or there
-	   is nothing to do in this block at all) */
-	if (left.row.p1.y == y && x == first_right_x) {
-	    alpha = PixelAlpha(x, y, trap.top, trap.bottom, &right, depth)
-		- PixelAlpha(x, y, trap.top, trap.bottom, &left, depth);
-	    if (0 <= x && x < buf_width_fixed)
-		addAlpha (&mask, depth, alpha);
-	    PIXEL_WALK_NEXT_PIXEL(left);
-	    PIXEL_WALK_NEXT_PIXEL(right);
-	    INCREMENT_X_AND_PIXEL;
-	    /* XXX: It might be smart to check here if left has passed
-               up right, in which case we can simply return */
-	} else {
-	    /* Fully covered pixels simply saturate */
-	    if (trap.top < y && trap.bottom > y_next) {
-		while (x < first_right_x) {
+	/*
+	 * Either pixels are covered by both edges or
+	 * there are fully covered pixels on this row
+	 */
+	if (x == first_right_x)
+	{
+	    /*
+	     * Now walk the pixels on this row intersected
+	     * by both edges
+	     */
+	    while (left.row.top.y == y && right.row.top.y == y)
+	    {
+		alpha = PixelAlpha(x, y, trap.top, trap.bottom, &right, depth)
+		    - PixelAlpha(x, y, trap.top, trap.bottom, &left, depth);
+		if (0 <= x && x < buf_width_fixed)
+		    addAlpha (&mask, depth, alpha, temp);
+		pixelWalkNextPixel(&left);
+		pixelWalkNextPixel(&right);
+		INCREMENT_X_AND_PIXEL;
+	    }
+	    /*
+	     * If the right edge is now left of the left edge,
+	     * the left edge will end up only partially walked,
+	     * walk it the rest of the way
+	     */
+	    while (left.row.top.y == y)
+		pixelWalkNextPixel(&left);
+
+	}
+	else
+	{
+	    /*
+	     * Fully covered pixels simply saturate 
+	     */
+	    if (trap.top <= y && y_next <= trap.bottom)
+	    {
+		while (x < first_right_x) 
+		{
 		    if (0 <= x && x < buf_width_fixed)
 			(*mask.store) (&mask, 0xff000000);
 		    INCREMENT_X_AND_PIXEL;
 		}
-	    } else {
+	    }
+	    else 
+	    {
 		/* Otherwise, we have only a couple of rectangles to compute */
-		alpha = RectAlpha(y, trap.bottom, depth) - RectAlpha(y, trap.top, depth);
-		while (x < first_right_x) {
+		alpha = (RectAlpha(y, trap.bottom, depth) - 
+			 RectAlpha(y, trap.top, depth));
+		while (x < first_right_x) 
+		{
 		    if (0 <= x && x < buf_width_fixed)
-			addAlpha (&mask, depth, alpha);
+			addAlpha (&mask, depth, alpha, temp);
 		    INCREMENT_X_AND_PIXEL;
 		}
 	    }
 	}
 
-	/* Finally, pixels intersected only by trap.right */
-	while (right.row.p1.y < y_next && right.p1.y < trap.bottom) {
+	/*
+	 * Finally, pixels intersected only by trap.right 
+	 */
+	while (right.row.top.y == y)
+	{
 	    alpha = PixelAlpha(x, y, trap.top, trap.bottom, &right, depth);
 	    if (0 <= x && x < buf_width_fixed)
-		addAlpha (&mask, depth, alpha);
-	    PIXEL_WALK_NEXT_PIXEL(right);
+		addAlpha (&mask, depth, alpha, temp);
+	    pixelWalkNextPixel(&right);
 	    INCREMENT_X_AND_PIXEL;
 	}
+	
+	/*
+	 * Step down the mask
+	 */
 	mask.line += mask.stride;
-	while (left.row.p1.y < y_next) {
-	    PIXEL_WALK_NEXT_PIXEL(left);
-	}
-	while (right.row.p1.y < y_next) {
-	    PIXEL_WALK_NEXT_PIXEL(right);
-	}
     }
 }
 
