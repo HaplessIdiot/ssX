@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:14 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.63 2003/11/19 04:44:00 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.64tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -148,6 +148,10 @@ RANDOM_DEFINES = RandomDefines
 VFORK_DEFINES = -DHAS_VFORK
 #endif
 
+#if HasMkstemp
+MKSTEMP_DEFINES = -DHAS_MKSTEMP
+#endif
+
 #if UseXKBInClients
 XKB_CLIENT_DEFINES = XkbClientDefines
 #endif
@@ -253,7 +257,7 @@ LOCAL_LIBRARIES = $(GREETLIBS) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) \
 		-DOSMINORVERSION=$(OSMINORVERSION) \
 		$(XKB_CLIENT_DEFINES) $(USER_CONTEXT_DEFINES) \
 		$(XPM_DEFINES) $(XINERAMA_DEFINES) $(PROCTITLE_DEFINES) \
-		$(IFADDRS_DEFINES) $(IPV6_DEFINES)
+		$(IFADDRS_DEFINES) $(IPV6_DEFINES) $(MKSTEMP_DEFINES)
    EXTRAMANDEFS = $(RANDOM_DEFINES)
 
 XCOMM

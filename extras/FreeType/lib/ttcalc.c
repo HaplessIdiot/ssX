@@ -14,7 +14,7 @@
  *  understand and accept it fully.
  *
  ******************************************************************/
-/* $XFree86: xc/extras/FreeType/lib/ttcalc.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/extras/FreeType/lib/ttcalc.c,v 1.7tsi Exp $ */
 
 #include "ttcalc.h"
 #include "ttdebug.h"
@@ -77,6 +77,9 @@
   }
 
 
+#if !defined(TT_MAKE_OPTION_SINGLE_OBJECT) || \
+    !defined(TT_CONFIG_OPTION_NO_INTERPRETER)
+
   LOCAL_FUNC
   Int  Order64( TT_Int64  z )
   {
@@ -91,9 +94,6 @@
     return j - 1;
   }
 
-
-#if !defined(TT_MAKE_OPTION_SINGLE_OBJECT) || \
-    !defined(TT_CONFIG_OPTION_NO_INTERPRETER)
 
   LOCAL_FUNC
   TT_Int32  Sqrt64( TT_Int64  l )
@@ -350,6 +350,9 @@
   }
 
 
+#if !defined(TT_MAKE_OPTION_SINGLE_OBJECT) || \
+    !defined(TT_CONFIG_OPTION_NO_INTERPRETER)
+
   LOCAL_FUNC
   Int  Order64( TT_Int64*  z )
   {
@@ -376,9 +379,6 @@
     return j-1;
   }
 
-
-#if !defined(TT_MAKE_OPTION_SINGLE_OBJECT) || \
-    !defined(TT_CONFIG_OPTION_NO_INTERPRETER)
 
   LOCAL_FUNC
   TT_Int32  Sqrt64( TT_Int64*  l )

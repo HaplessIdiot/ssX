@@ -1,4 +1,9 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 698. Warning fixes for gcc 3.3.2 (Marc La France).
+ 697. Fix file descriptor leaks in xdm (Marc La France).
+ 696. Fix memory leaks in libFS (Marc La France).
+ 695. Security fix:  change xdm to use mkstemp(), where available, instead of
+      mktemp() (Marc La France).
  694. Update XKB registry file rules/xfree86.xml (Sergey Oudaltsov).
  693. Fix for FreeType-related crash when attempting to draw a missing glyph
       with constant-width fonts (Chisato Yamauchi).
@@ -18394,7 +18399,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3044 2003/12/21 04:02:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3045 2003/12/22 14:59:04 pascal Exp $
 
 
 

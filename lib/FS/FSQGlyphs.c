@@ -23,7 +23,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/FS/FSQGlyphs.c,v 1.5tsi Exp $ */
 
 /*
 
@@ -85,20 +85,24 @@ FSQueryXBitmaps8(svr, fid, format, range_type, str, str_len, offsets, glyphdata)
      (SIZEOF(fsQueryXBitmaps8Reply) - SIZEOF(fsGenericReply)) >> 2, fsFalse))
 	return FSBadAlloc;
 
+#if SIZE_MAX <= UINT_MAX
     if (reply.num_chars > SIZE_MAX / sizeof(FSOffset)) 
 	return FSBadAlloc;
+#endif
 
     offs = (FSOffset *) FSmalloc(sizeof(FSOffset) * reply.num_chars);
     *offsets = offs;
     if (!offs)
 	return FSBadAlloc;
-    left = (reply.length << 2) - SIZEOF(fsQueryXBitmaps8Reply)
-	- (SIZEOF(fsOffset32) * reply.num_chars);
+#if (SIZE_MAX >> 2) <= UINT_MAX
     /* XXX This thest is incomplete */
     if (reply.length > (SIZE_MAX >> 2)) {
 	FSfree((char *) offs);
 	return FSBadAlloc;
     }
+#endif
+    left = (reply.length << 2) - SIZEOF(fsQueryXBitmaps8Reply)
+	- (SIZEOF(fsOffset32) * reply.num_chars);
     gd = (unsigned char *) FSmalloc(left);
     *glyphdata = gd;
     if (!gd) {
@@ -170,19 +174,23 @@ FSQueryXBitmaps16(svr, fid, format, range_type, str, str_len,
 		  fsFalse))
 	return FSBadAlloc;
 
+#if SIZE_MAX <= UINT_MAX
     if(reply.num_chars > SIZE_MAX/sizeof(FSOffset))
        return FSBadAlloc;
+#endif
     offs = (FSOffset *) FSmalloc(sizeof(FSOffset) * reply.num_chars);
     *offsets = offs;
     if (!offs)
 	return FSBadAlloc;
-    left = (reply.length << 2) - SIZEOF(fsQueryXBitmaps16Reply)
-	- (SIZEOF(fsOffset32) * reply.num_chars);
+#if (SIZE_MAX >> 2) <= UINT_MAX
     /* XXX - this test is incomplete */
     if (reply.length > (SIZE_MAX>>2)) {
 	FSfree((char *) offs);
 	return FSBadAlloc;
     }
+#endif
+    left = (reply.length << 2) - SIZEOF(fsQueryXBitmaps16Reply)
+	- (SIZEOF(fsOffset32) * reply.num_chars);
     gd = (unsigned char *) FSmalloc(left);
     *glyphdata = gd;
     if (!gd) {

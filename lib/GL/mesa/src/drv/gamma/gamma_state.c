@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_state.c,v 1.5 2002/11/05 17:46:07 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_state.c,v 1.6tsi Exp $ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -589,6 +589,7 @@ static void gammaUpdateFogAttrib( GLcontext *ctx )
    }
 }
 
+#if 0
 static void gammaDDFogfv( GLcontext *ctx, GLenum pname, const GLfloat *param )
 {
    gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);
@@ -596,6 +597,7 @@ static void gammaDDFogfv( GLcontext *ctx, GLenum pname, const GLfloat *param )
    FLUSH_BATCH( gmesa );
    gmesa->new_state |= GAMMA_NEW_FOG;
 }
+#endif
 
 /* =============================================================
  * Lines

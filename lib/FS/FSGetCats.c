@@ -23,7 +23,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/FS/FSGetCats.c,v 1.6tsi Exp $ */
 
 /*
 
@@ -72,8 +72,12 @@ FSGetCatalogues(svr, num)
 	SyncHandle();
 	return (char **) NULL;
     }
-    if (rep.num_catalogues && rep.num_catalogues <= SIZE_MAX/sizeof(char *)
-	&& rep.length <= (SIZE_MAX >> 2)) {
+    if (rep.num_catalogues
+#if (SIZE_MAX >> 2) <= UINT_MAX
+	&& rep.num_catalogues <= SIZE_MAX/sizeof(char *)
+	&& rep.length <= (SIZE_MAX >> 2)
+#endif
+	) {
 	list = (char **)
 	       FSmalloc((unsigned) (rep.num_catalogues * sizeof(char *)));
 	rlen = (rep.length << 2) - SIZEOF(fsGetCataloguesReply);

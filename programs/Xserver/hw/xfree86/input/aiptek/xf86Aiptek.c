@@ -35,7 +35,7 @@
  * TORTIOUS ACTIONS, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/aiptek/xf86Aiptek.c,v 0.0 2003/01/01 00:00:00 bheadley Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/aiptek/xf86Aiptek.c,v 1.1tsi Exp $ */
 
 /*
  *
@@ -1681,7 +1681,7 @@ xf86AiptekSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
     LocalDevicePtr  local  = (LocalDevicePtr)dev->public.devicePrivate;
     AiptekDevicePtr device = (AiptekDevicePtr)(local->private);
 
-    DBG(3, ErrorF("xf86AiptekSwitchMode() dev=0x%02x mode=%d\n", dev, mode));
+    DBG(3, ErrorF("xf86AiptekSwitchMode() dev=%p mode=%d\n", dev, mode));
 
     switch(mode)
     {
@@ -1699,7 +1699,7 @@ xf86AiptekSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
 
         default:
         {
-            DBG(1, ErrorF("xf86AiptekSwitchMode dev=0x%02x invalid mode=%d\n",
+            DBG(1, ErrorF("xf86AiptekSwitchMode dev=%p invalid mode=%d\n",
                    dev, mode));
             return BadMatch;
         }

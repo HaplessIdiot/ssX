@@ -23,7 +23,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/FS/FSFtNames.c,v 1.6tsi Exp $ */
 
 /*
 
@@ -78,8 +78,12 @@ FSListFonts(svr, pattern, maxNames, actualCount)
 	  (SIZEOF(fsListFontsReply) - SIZEOF(fsGenericReply)) >> 2, fsFalse))
 	return (char **) 0;
 
-    if (rep.nFonts && rep.nFonts <= SIZE_MAX / sizeof(char *)
-	&& rep.length <= (SIZE_MAX >> 2)) {
+    if (rep.nFonts
+#if (SIZE_MAX >> 2) <= UINT_MAX
+	&& rep.nFonts <= SIZE_MAX / sizeof(char *)
+	&& rep.length <= (SIZE_MAX >> 2)
+#endif
+	) {
 	flist = (char **) FSmalloc((unsigned) rep.nFonts * sizeof(char *));
 	rlen = (rep.length << 2) - SIZEOF(fsListFontsReply);
 	c = (char *) FSmalloc((unsigned) (rlen + 1));

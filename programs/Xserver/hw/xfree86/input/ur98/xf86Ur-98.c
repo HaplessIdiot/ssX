@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/ur98/xf86Ur-98.c,v 1.1tsi Exp $ */
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -21,7 +21,6 @@
 
 #ifdef XFree86LOADER
 #include "xf86Module.h"
-#endif
 
 static const char *reqSymbols[] = {
 	"AddEnabledDevice",
@@ -65,6 +64,7 @@ static const char *reqSymbols[] = {
 	"xf86XInputSetSendCoreEvents",
 	NULL
 };
+#endif
 
 
 

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
-/* $XFree86: xc/programs/xrx/plugin/PProcess.c,v 1.5 2001/10/28 03:34:42 tsi Exp $ */
+/* $XFree86: xc/programs/xrx/plugin/PProcess.c,v 1.6tsi Exp $ */
 
 #include "RxPlugin.h"
 #include "XUrls.h"
@@ -114,6 +114,7 @@ IsInWinList(Window *list, int count, Window win)
     return False;
 }
 
+#ifdef UNUSED
 static void
 AppendToWinList(Window **new_list, int *new_count,
 		Window *list, int count, Window win)
@@ -123,6 +124,7 @@ AppendToWinList(Window **new_list, int *new_count,
     memcpy(*new_list, list, sizeof(Window) * count);
     (*new_list)[count] = win;
 }
+#endif
 
 static void
 PrependToWinList(Window **new_list, int *new_count,
@@ -187,6 +189,7 @@ RemoveFromWinList(Window **wlist, int *count, Window win)
         list[0] = list[1];
 }
 
+#ifdef UNUSED
 static void
 ConcatWinLists(Window **list, int *count,
 	       Window *list1, int count1,
@@ -218,6 +221,7 @@ SubstractWinLists(Window **wlist, int *count,
     for (; i < *count; i++, list++)
 	list[0] = list[j];
 }
+#endif
 
 /***********************************************************************
  * Add window to the WM_COLORMAP_WINDOWS property on the Netscape

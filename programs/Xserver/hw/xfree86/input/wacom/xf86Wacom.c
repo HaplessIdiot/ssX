@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.42 2003/11/22 16:42:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.43tsi Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -1148,7 +1148,7 @@ static void usbParseChannel(WacomCommonPtr common, int channel, int serial)
     WacomDeviceState* ds;
     struct input_event* event;
 
-    #define MOD_BUTTONS(bit, value) do { \
+#   define MOD_BUTTONS(bit, value) do { \
 		ds->buttons = (((value) != 0) ? \
                 (ds->buttons | (bit)) : (ds->buttons & ~(bit))); \
                 } while (0)
@@ -3384,7 +3384,7 @@ static void
 xf86WcmDevReadInput(LocalDevicePtr local)
 {
     int loop=0;
-    #define MAX_READ_LOOPS 10
+#   define MAX_READ_LOOPS 10
 
     WacomCommonPtr common = ((WacomDevicePtr)local->private)->common;
 
@@ -3701,7 +3701,7 @@ static void commonDispatchDevice(WacomCommonPtr common,
 
 	/* User-requested transformations come last */
 
-	#if 0
+#if 0
 
 	/* not quite ready for prime-time;
 	 * it needs to be possible to disable,
@@ -3742,7 +3742,7 @@ static void commonDispatchDevice(WacomCommonPtr common,
 	else
 	    priv->throttleLimit = priv->throttleStart + ticks;
 
-	#endif /* throttle */
+#endif /* throttle */
 
 	/* force out-prox when height is greater than 112.
 	 * This only applies to USB protocol V tablets
@@ -4563,7 +4563,7 @@ xf86WcmDevChangeControl(LocalDevicePtr	local,
 	}
 	case 4:
 	{
-	    DBG(10,ErrorF("xf86WcmDevChangeControl: %p, %p\n", (void *)param, (void *)value));
+	    DBG(10,ErrorF("xf86WcmDevChangeControl: 0x%x, 0x%x\n", param, value));
 	    return xf86WcmSetParam(local,param,value);
 	}
 	default:
