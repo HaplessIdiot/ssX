@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_driver.c,v 1.2 2002/12/11 22:50:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_driver.c,v 1.3 2003/01/14 09:34:30 alanh Exp $ */
 /*
  * $Workfile: nsc_driver.c $
  * $Revision$
@@ -224,10 +224,10 @@
 /* This should match the durango code version.
  * The patchlevel may be used to indicate changes in geode.c 
  */
-#define NSC_VERSION_NAME    "2.7.5"
+#define NSC_VERSION_NAME    "2.7.6"
 #define NSC_VERSION_MAJOR   2
 #define NSC_VERSION_MINOR   7
-#define NSC_PATCHLEVEL      5
+#define NSC_PATCHLEVEL      6
 
 #define NSC_VERSION_CURRENT ((NSC_VERSION_MAJOR << 24) | \
 		(NSC_VERSION_MINOR << 16) | NSC_PATCHLEVEL)
