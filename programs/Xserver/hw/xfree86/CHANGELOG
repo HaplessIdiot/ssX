@@ -1,4 +1,10 @@
 XFree86 3.9Nd (5 September 1998)
+1809. Add Latin2 support to the Speedo and Type1 font code (#1792,
+      Robert Wilhelm).
+1808. Updates to XFree86 specific parts of FreeType (#1792, 1933,
+      Robert Wilhelm, Juliusz Chroboczek).
+1807. Add the base FreeType 1.1 distribution to /xc/extras/FreeType, and
+      update the build procedure to get the source from there.
 1806. Map the pseudo-DMA transfer window used on newer MGA chips, and use
       it for solid rects and spans (#1953, Mark Vojkovich).
 1805. Fix C&T HiQV detection (#1952, Taketoshi Sano).
@@ -6445,4 +6451,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.617 1998/08/30 04:49:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.618 1998/09/05 06:36:20 dawes Exp $

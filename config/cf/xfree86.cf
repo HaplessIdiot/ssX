@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.183 1998/08/29 05:42:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.184 1998/09/05 06:36:03 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -410,6 +410,13 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  */
 #ifndef BuildFontServer
 #define BuildFontServer		YES
+#endif
+
+/*
+ * Include TrueType fonts support
+ */
+#ifndef BuildFreeType
+#define BuildFreeType		YES
 #endif
 
 /*

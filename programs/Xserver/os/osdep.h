@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osdep.h /main/42 1996/12/15 21:27:39 rws $ */
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.5 1998/08/14 13:35:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.6 1998/08/15 03:19:05 dawes Exp $ */
 
 #ifdef AMOEBA
 #include <stddef.h>
@@ -126,7 +126,7 @@ SOFTWARE.
 /* MAXSELECT is the number of fds that select() can handle */
 #define MAXSELECT (sizeof(fd_set) * NBBY)
 
-#ifndef hpux
+#if !defined(hpux) && !defined(SVR4) && !defined(SYSV)
 #define HAS_GETDTABLESIZE
 #endif
 

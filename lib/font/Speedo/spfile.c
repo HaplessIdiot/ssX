@@ -51,7 +51,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.2.2.2 1998/07/12 13:47:42 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.5 1998/07/25 06:56:53 dawes Exp $ */
 
 #include "fntfilst.h"
 #ifndef FONTMODULE
@@ -180,9 +180,10 @@ sp_load_char_data(file_offset, num, cb_offset)
 }
 
 int
-sp_open_master(filename, master)
+sp_open_master(filename, master, encoding)
     char       *filename;
     SpeedoMasterFontPtr *master;
+    int encoding;
 {
     SpeedoMasterFontPtr spmf;
     ufix8       tmp[16];
@@ -279,9 +280,13 @@ sp_open_master(filename, master)
     spmf->first_char_id = read_2b(f_buffer + FH_FCHRF);
     spmf->num_chars = read_2b(f_buffer + FH_NCHRL);
 
-
-    spmf->enc = sp_bics_map;
-    spmf->enc_size = sp_bics_map_size;
+    if(encoding == 2) {
+      spmf->enc = sp_bics_l2_map;
+      spmf->enc_size = sp_bics_l2_map_size;
+    } else {
+      spmf->enc = sp_bics_map;
+      spmf->enc_size = sp_bics_map_size;
+    }
 
 #ifdef EXTRAFONTS
     {				/* choose the proper encoding */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.129 1998/07/25 05:57:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.130 1998/09/05 06:36:02 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -278,6 +278,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.129 1998/07/25 05:57:18 dawes Exp 
  * To disable building the font server, uncomment this.
  *
 #define BuildFontServer		NO
+ */
+
+/*
+ * To disable support for TrueType fonts, uncomment this.
+ *
+#define BuildFreeType		NO
  */
 
 /*

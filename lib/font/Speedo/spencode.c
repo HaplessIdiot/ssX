@@ -55,6 +55,7 @@ from the X Consortium.
 #include	"bics-iso.h"
 
 int sp_bics_map_size = (sizeof(sp_bics_map) / (sizeof(int) * 2));
+int sp_bics_l2_map_size = (sizeof(sp_bics_l2_map) / (sizeof(int) * 2));
 
 #ifdef EXTRAFONTS
 #include	"adobe-iso.h"

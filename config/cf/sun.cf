@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: sun.cf /main/176 1997/12/09 17:27:51 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.42 1998/06/28 08:41:26 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.43 1998/07/25 05:57:17 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -288,6 +288,10 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 #  define BuildPexExt	  (XsunServer || Xsun24Server)
 # endif
 #endif /* not i386Architecture */
+
+#if OSMajorVersion >= 4
+#define HasUsableFileMap YES
+#endif
 
 #if (OSMajorVersion > 4) && defined(i386Architecture)
 #ifndef HasSolx86ApertureDriver

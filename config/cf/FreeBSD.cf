@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.75 1998/08/02 05:16:48 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.76 1998/09/05 06:36:01 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName OSBinaryFormat
@@ -41,6 +41,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #define HasWChar32		YES
 #define DlLibrary		/**/
+#define HasUsableFileMmap	YES
 
 #define AvoidNullMakeCommand	YES
 #define StripInstalledPrograms	YES
