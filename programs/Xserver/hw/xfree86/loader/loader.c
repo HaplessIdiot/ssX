@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.54 2001/06/13 23:10:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.55 2001/10/28 03:33:59 tsi Exp $ */
 
 /*
  *
@@ -1150,6 +1150,7 @@ LoaderOpen(const char *module, const char *cname, int handle,
     if ( new_handle == MAX_HANDLE ) {
 	xf86Msg(X_ERROR, "Out of loader space\n" ) ; /* XXX */
 	if(errmaj) *errmaj = LDR_NOSPACE;
+	if(errmin) *errmin = LDR_NOSPACE;
 	return -1 ;
     }
 
@@ -1168,6 +1169,7 @@ LoaderOpen(const char *module, const char *cname, int handle,
 	xf86Msg(X_ERROR, "%s is an unrecognized module type\n", module ) ;
         freeHandles[new_handle] = HANDLE_FREE ;
 	if(errmaj) *errmaj = LDR_UNKTYPE;
+	if(errmin) *errmin = LDR_UNKTYPE;
 	return -1;
     }
 
@@ -1185,6 +1187,7 @@ LoaderOpen(const char *module, const char *cname, int handle,
 	_LoaderListPop(new_handle);
         freeHandles[new_handle] = HANDLE_FREE ;
 	if(errmaj) *errmaj = LDR_NOLOAD;
+	if(errmin) *errmin = LDR_NOLOAD;
 	return -1;
     }
 
