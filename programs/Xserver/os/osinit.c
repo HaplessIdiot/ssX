@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.21 2001/01/17 22:37:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.22 2001/05/11 08:16:55 alanh Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -61,7 +61,7 @@ SOFTWARE.
 #endif
 #endif
 
-#if defined(Lynx)
+#if defined(Lynx) || defined(SCO) || defined(SCO325)
 #include <sys/wait.h>
 #endif
 

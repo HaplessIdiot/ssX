@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.54 2001/04/10 16:07:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.55 2001/05/07 21:38:51 tsi Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -64,8 +64,12 @@ Bool xf86DoConfigurePass1 = TRUE;
 Bool foundMouse = FALSE;
 
 #ifndef __EMX__
+#if defined(SCO)
+static char *DFLT_MOUSE_PROTO = "OSMouse";
+#else
 static char *DFLT_MOUSE_DEV = "/dev/mouse";
 static char *DFLT_MOUSE_PROTO = "auto";
+#endif
 #else
 #define DFLT_MOUSE_DEV "mouse$"
 #define DFLT_MOUSE_PROTO "OS2Mouse"
@@ -297,11 +301,15 @@ configureInputSection (void)
 	}
 #endif
 
+#ifndef SCO
 	fd = open(DFLT_MOUSE_DEV, 0);
 	if (fd != -1) {
 	    foundMouse = TRUE;
 	    close(fd);
 	}
+#else
+	foundMouse = TRUE;
+#endif
     }
 
     mouse = xf86confmalloc(sizeof(XF86ConfInputRec));
@@ -310,8 +318,10 @@ configureInputSection (void)
     mouse->inp_driver = "mouse";
     mouse->inp_option_lst = 
 		xf86addNewOption(mouse->inp_option_lst, "Protocol", DFLT_MOUSE_PROTO);
+#ifndef SCO
     mouse->inp_option_lst = 
 		xf86addNewOption(mouse->inp_option_lst, "Device", DFLT_MOUSE_DEV);
+#endif
     ptr = (XF86ConfInputPtr)xf86addListItem((glp)ptr, (glp)mouse);
     return ptr;
 }
@@ -761,6 +771,9 @@ DoConfigure()
 #ifdef __EMX__
 #define PATH_MAX 2048
 #endif
+#if defined(SCO) || defined(SCO325)
+#define PATH_MAX 1024
+#endif
         const char* configfile = XF86CONFIGFILE".new";
     	char homebuf[PATH_MAX];
     	/* getenv might return R/O memory, as with OS/2 */
@@ -877,17 +890,23 @@ DoConfigure()
 
     ErrorF("\n");
 
+#ifdef SCO
+    ErrorF("\nXFree86 is using the kernel event driver to access the mouse.\n"
+	    "If you wish to use the internal XFree86 mouse drivers, please\n"
+	    "edit the file and correct the Device.\n");
+#else /* !SCO */
     if (!foundMouse) {
 	ErrorF("\nXFree86 is not able to detect your mouse.\n"
 		"Edit the file and correct the Device.\n");
     } else {
-#ifndef __EMX__ /* OS/2 definitely has a mouse */
+#ifndef __EMX__  /* OS/2 definitely has a mouse */
 	ErrorF("\nXFree86 detected your mouse at device %s.\n"
 		"Please check your config if the mouse is still not\n"
 		"operational, as by default XFree86 tries to autodetect\n"
 		"the protocol.\n",DFLT_MOUSE_DEV);
 #endif
     }
+#endif /* !SCO */
 
     if (xf86NumScreens > 1) {
 	ErrorF("\nXFree86 has configured a multihead system, please check your config.\n");

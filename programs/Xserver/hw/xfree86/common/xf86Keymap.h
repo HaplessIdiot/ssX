@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.15 2001/05/01 22:31:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.16 2001/05/28 02:42:29 tsi Exp $ */
 /*
  *
  * For Scancodes see notes in atKeynames.h  !!!!
@@ -86,7 +86,7 @@ static KeySym map[NUM_KEYCODES * GLYPHS_PER_KEY] = {
     /* 0x49 */  XK_KP_Prior,	XK_KP_9,	NoSymbol,	NoSymbol,
     /* 0x4a */  XK_KP_Subtract, NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x4b */  XK_KP_Left,	XK_KP_4,	NoSymbol,	NoSymbol,
-    /* 0x4c */  NoSymbol,	XK_KP_5,	NoSymbol,	NoSymbol,
+    /* 0x4c */  XK_KP_Begin,	XK_KP_5,	NoSymbol,	NoSymbol,
     /* 0x4d */  XK_KP_Right,	XK_KP_6,	NoSymbol,	NoSymbol,
     /* 0x4e */  XK_KP_Add,      NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x4f */  XK_KP_End,	XK_KP_1,	NoSymbol,	NoSymbol,

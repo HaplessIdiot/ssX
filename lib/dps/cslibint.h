@@ -47,6 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
+/* $XFree86$ */
  
 /*
  *	XlibInternal.h - Header definition and support file for the internal
@@ -64,9 +65,15 @@
 
 /* For SYSV, no gethostname, so fake it */
 #include <sys/param.h>
+#if defined(SCO) || defined(SCO325)
+/* SCO systems define MAXHOSTNAMELEN here */
+#include <sys/socket.h>
+#endif
+
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64
 #endif
+
 
 /* === MACROS === */
 
