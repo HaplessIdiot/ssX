@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.2 1998/03/20 21:06:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.3tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -22,127 +22,122 @@
  */
 
 #include "atichip.h"
-#include "aticlock.h"
-#include "atidepth.h"
+#include "aticrtc.h"
 #include "atidsp.h"
 #include "atiio.h"
 #include "atividmem.h"
-
-/* Various memory-related things needed to set DSP registers */
-static int ATIXCLKFeedbackDivider,
-           ATIXCLKReferenceDivider,
-           ATIXCLKPostDivider;
-
-static CARD16 ATIXCLKMaxRASDelay,
-              ATIXCLKPageFaultDelay,
-              ATIDisplayLoopLatency,
-              ATIDisplayFIFODepth;
+#include "xf86.h"
 
 /*
- * ATIDSPProbe --
+ * ATIDSPPreInit --
  *
  * This function initializes global variables used to set DSP registers on a
- * VT-B or later.  It is called by ATIProbe.
+ * VT-B or later.
  */
 Bool
-ATIDSPProbe(void)
+ATIDSPPreInit
+(
+    ScrnInfoPtr pScreenInfo,
+    ATIPtr      pATI
+)
 {
-    CARD32 IO_Value;
+    CARD32 IOValue;
     int trp;
 
     /* Set DSP register port numbers */
-    ATIIOPortDSP_CONFIG = ATIIOPort(DSP_CONFIG);
-    ATIIOPortDSP_ON_OFF = ATIIOPort(DSP_ON_OFF);
+    pATI->CPIO_DSP_CONFIG = ATIIOPort(DSP_CONFIG);
+    pATI->CPIO_DSP_ON_OFF = ATIIOPort(DSP_ON_OFF);
 
     /*
      * VT-B's and later have additional post-dividers that are not powers of
      * two.
      */
-    ATIClockDescriptor->NumD = 8;
+    pATI->ClockDescriptor.NumD = 8;
 
     /* Retrieve XCLK settings */
-    IO_Value = ATIGetMach64PLLReg(PLL_XCLK_CNTL);
-    ATIXCLKPostDivider = GetBits(IO_Value, PLL_XCLK_SRC_SEL);
-    ATIXCLKReferenceDivider = ATIClockDescriptor->MinM;
-    switch (ATIXCLKPostDivider)
+    IOValue = ATIGetMach64PLLReg(PLL_XCLK_CNTL);
+    pATI->XCLKPostDivider = GetBits(IOValue, PLL_XCLK_SRC_SEL);
+    pATI->XCLKReferenceDivider = pATI->ClockDescriptor.MinM;
+    switch (pATI->XCLKPostDivider)
     {
         case 0: case 1: case 2: case 3:
             break;
 
         case 4:
-            ATIXCLKReferenceDivider *= 3;
-            ATIXCLKPostDivider = 0;
+            pATI->XCLKReferenceDivider *= 3;
+            pATI->XCLKPostDivider = 0;
             break;
 
         default:
-            ErrorF("Unsupported XCLK source: %d", ATIXCLKPostDivider);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                "Unsupported XCLK source:  %d", pATI->XCLKPostDivider);
             return FALSE;
     }
 
-    ATIXCLKPostDivider -= GetBits(IO_Value, PLL_MFB_TIMES_4_2B);
-    ATIXCLKFeedbackDivider = ATIGetMach64PLLReg(PLL_MCLK_FB_DIV);
+    pATI->XCLKPostDivider -= GetBits(IOValue, PLL_MFB_TIMES_4_2B);
+    pATI->XCLKFeedbackDivider = ATIGetMach64PLLReg(PLL_MCLK_FB_DIV);
 
     /* Compute maximum RAS delay and friends */
-    IO_Value = inl(ATIIOPortMEM_INFO);
-    trp = GetBits(IO_Value, CTL_MEM_TRP);
-    ATIXCLKPageFaultDelay = GetBits(IO_Value, CTL_MEM_TRCD) +
-        GetBits(IO_Value, CTL_MEM_TCRD) + trp + 2;
-    ATIXCLKMaxRASDelay = GetBits(IO_Value, CTL_MEM_TRAS) + trp + 2;
-    ATIDisplayFIFODepth = 32;
+    IOValue = inl(pATI->CPIO_MEM_INFO);
+    trp = GetBits(IOValue, CTL_MEM_TRP);
+    pATI->XCLKPageFaultDelay = GetBits(IOValue, CTL_MEM_TRCD) +
+        GetBits(IOValue, CTL_MEM_TCRD) + trp + 2;
+    pATI->XCLKMaxRASDelay = GetBits(IOValue, CTL_MEM_TRAS) + trp + 2;
+    pATI->DisplayFIFODepth = 32;
 
-    if (ATIChip < ATI_CHIP_264VT4)
+    if (pATI->Chip < ATI_CHIP_264VT4)
     {
-        ATIXCLKPageFaultDelay += 2;
-        ATIXCLKMaxRASDelay += 3;
-        ATIDisplayFIFODepth = 24;
+        pATI->XCLKPageFaultDelay += 2;
+        pATI->XCLKMaxRASDelay += 3;
+        pATI->DisplayFIFODepth = 24;
     }
-        
-    switch (ATIMemoryType)
+
+    switch (pATI->MemoryType)
     {
         case MEM_264_DRAM:
-            if (ATIvideoRam <= 1024)
-                ATIDisplayLoopLatency = 10;
+            if (pATI->VideoRAM <= 1024)
+                pATI->DisplayLoopLatency = 10;
             else
             {
-                ATIDisplayLoopLatency = 8;
-                ATIXCLKPageFaultDelay += 2;
+                pATI->DisplayLoopLatency = 8;
+                pATI->XCLKPageFaultDelay += 2;
             }
             break;
 
         case MEM_264_EDO:
         case MEM_264_PSEUDO_EDO:
-            if (ATIvideoRam <= 1024)
-                ATIDisplayLoopLatency = 9;
+            if (pATI->VideoRAM <= 1024)
+                pATI->DisplayLoopLatency = 9;
             else
             {
-                ATIDisplayLoopLatency = 8;
-                ATIXCLKPageFaultDelay++;
+                pATI->DisplayLoopLatency = 8;
+                pATI->XCLKPageFaultDelay++;
             }
             break;
 
         case MEM_264_SDRAM:
-            if (ATIvideoRam <= 1024)
-                ATIDisplayLoopLatency = 11;
+            if (pATI->VideoRAM <= 1024)
+                pATI->DisplayLoopLatency = 11;
             else
             {
-                ATIDisplayLoopLatency = 10;
-                ATIXCLKPageFaultDelay++;
+                pATI->DisplayLoopLatency = 10;
+                pATI->XCLKPageFaultDelay++;
             }
             break;
 
         case MEM_264_SGRAM:
-            ATIDisplayLoopLatency = 8;
-            ATIXCLKPageFaultDelay += 3;
+            pATI->DisplayLoopLatency = 8;
+            pATI->XCLKPageFaultDelay += 3;
             break;
 
         default:                /* Set maximums */
-            ATIDisplayLoopLatency = 11;
-            ATIXCLKPageFaultDelay += 3;
+            pATI->DisplayLoopLatency = 11;
+            pATI->XCLKPageFaultDelay += 3;
             break;
     }
 
-    if (ATIXCLKMaxRASDelay <= ATIXCLKPageFaultDelay)
-        ATIXCLKMaxRASDelay = ATIXCLKPageFaultDelay + 1;
+    if (pATI->XCLKMaxRASDelay <= pATI->XCLKPageFaultDelay)
+        pATI->XCLKMaxRASDelay = pATI->XCLKPageFaultDelay + 1;
 
     return TRUE;
 }
@@ -150,19 +145,23 @@ ATIDSPProbe(void)
 /*
  * ATIDSPSave --
  *
- * This function is called by ATISave() to remember DSP register values on VT-B
- * and later controllers.
+ * This function is called to remember DSP register values on VT-B and later
+ * controllers.
  */
 void
-ATIDSPSave(ATIHWPtr save)
+ATIDSPSave
+(
+    ATIPtr   pATI,
+    ATIHWPtr pATIHW
+)
 {
-    save->dsp_on_off = inl(ATIIOPortDSP_ON_OFF);
-    save->dsp_config = inl(ATIIOPortDSP_CONFIG);
+    pATIHW->dsp_on_off = inl(pATI->CPIO_DSP_ON_OFF);
+    pATIHW->dsp_config = inl(pATI->CPIO_DSP_CONFIG);
 }
 
 
 /*
- * ATIDSPInit --
+ * ATIDSPCalculate --
  *
  * This function sets up DSP register values for a VTB or later.  Note that
  * this would be slightly different if VCLK 0 or 1 were used for the mode
@@ -172,27 +171,32 @@ ATIDSPSave(ATIHWPtr save)
  * than DSP_CONFIG.
  */
 void
-ATIDSPInit(void)
+ATIDSPCalculate
+(
+    ScrnInfoPtr pScreenInfo,
+    ATIPtr      pATI,
+    ATIHWPtr    pATIHW
+)
 {
     int Multiplier, Divider;
     int dsp_precision, dsp_on, dsp_off, dsp_xclks;
     int tmp, vshift, xshift;
 
-#   define Maximum_DSP_PRECISION ((int)GetBits(DSP_PRECISION, DSP_PRECISION))
+#   define Maximum_DSP_PRECISION ((int)MaxBits(DSP_PRECISION))
 
     /* Compute a memory-to-screen bandwidth ratio */
-    Multiplier = ATINewHWPtr->ReferenceDivider * ATIXCLKFeedbackDivider *
-        ATIClockDescriptor->PostDividers[ATINewHWPtr->PostDivider];
-    Divider = ATINewHWPtr->FeedbackDivider * ATIXCLKReferenceDivider;
-    if (!ATIUsingPlanarModes)
-        Divider *= vga256InfoRec.bitsPerPixel / 4;
+    Multiplier = pATIHW->ReferenceDivider * pATI->XCLKFeedbackDivider *
+        pATI->ClockDescriptor.PostDividers[pATIHW->PostDivider];
+    Divider = pATIHW->FeedbackDivider * pATI->XCLKReferenceDivider;
+    if (pScreenInfo->depth >= 8)
+        Divider *= pScreenInfo->bitsPerPixel / 4;
     /* Start by assuming a display FIFO width of 32 bits */
-    vshift = (5 - 2) - ATIXCLKPostDivider;
-    if (ATINewHWPtr->crtc != ATI_CRTC_VGA)
+    vshift = (5 - 2) - pATI->XCLKPostDivider;
+    if (pATIHW->crtc != ATI_CRTC_VGA)
         vshift++;               /* Nope, it's 64 bits wide */
 
     /* Determine dsp_precision first */
-    tmp = ATIDivide(Multiplier * ATIDisplayFIFODepth, Divider, vshift, 1);
+    tmp = ATIDivide(Multiplier * pATI->DisplayFIFODepth, Divider, vshift, 1);
     for (dsp_precision = -5;  tmp;  dsp_precision++)
         tmp >>= 1;
     if (dsp_precision < 0)
@@ -204,11 +208,11 @@ ATIDSPInit(void)
     vshift += xshift;
 
     /* Move on to dsp_off */
-    dsp_off = ATIDivide(Multiplier * (ATIDisplayFIFODepth - 1), Divider,
+    dsp_off = ATIDivide(Multiplier * (pATI->DisplayFIFODepth - 1), Divider,
         vshift, 1);
 
     /* Next is dsp_on */
-    if ((ATINewHWPtr->crtc == ATI_CRTC_VGA) && (dsp_precision < 3))
+    if ((pATIHW->crtc == ATI_CRTC_VGA) && (dsp_precision < 3))
     {
         /*
          * TODO:  I don't yet know why something like this appears necessary.
@@ -219,32 +223,35 @@ ATIDSPInit(void)
     else
     {
         dsp_on = ATIDivide(Multiplier, Divider, vshift, -1);
-        tmp = ATIDivide(ATIXCLKMaxRASDelay, 1, xshift, 1);
+        tmp = ATIDivide(pATI->XCLKMaxRASDelay, 1, xshift, 1);
         if (dsp_on < tmp)
             dsp_on = tmp;
-        dsp_on += tmp + ATIDivide(ATIXCLKPageFaultDelay, 1, xshift, 1);
+        dsp_on += tmp + ATIDivide(pATI->XCLKPageFaultDelay, 1, xshift, 1);
     }
 
     /* Last but not least:  dsp_xclks */
     dsp_xclks = ATIDivide(Multiplier, Divider, vshift + 5, 1);
 
     /* Build DSP register contents */
-    ATINewHWPtr->dsp_on_off = SetBits(dsp_on, DSP_ON) |
+    pATIHW->dsp_on_off = SetBits(dsp_on, DSP_ON) |
         SetBits(dsp_off, DSP_OFF);
-    ATINewHWPtr->dsp_config = SetBits(dsp_precision, DSP_PRECISION) |
+    pATIHW->dsp_config = SetBits(dsp_precision, DSP_PRECISION) |
         SetBits(dsp_xclks, DSP_XCLKS_PER_QW) |
-        SetBits(ATIDisplayLoopLatency, DSP_LOOP_LATENCY);
+        SetBits(pATI->DisplayLoopLatency, DSP_LOOP_LATENCY);
 }
 
 /*
- * ATIDSPRestore --
+ * ATIDSPSet --
  *
- * This function is called by ATIRestore to set DSP registers on VT-B and later
- * controllers.
+ * This function is called to set DSP registers on VT-B and later controllers.
  */
 void
-ATIDSPRestore(ATIHWPtr restore)
+ATIDSPSet
+(
+    ATIPtr   pATI,
+    ATIHWPtr pATIHW
+)
 {
-    outl(ATIIOPortDSP_ON_OFF, restore->dsp_on_off);
-    outl(ATIIOPortDSP_CONFIG, restore->dsp_config);
+    outl(pATI->CPIO_DSP_ON_OFF, pATIHW->dsp_on_off);
+    outl(pATI->CPIO_DSP_CONFIG, pATIHW->dsp_config);
 }

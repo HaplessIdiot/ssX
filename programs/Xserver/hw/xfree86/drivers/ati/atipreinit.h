@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atireset.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.h,v 1.0tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,12 +21,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATIRESET_H___
-#define ___ATIRESET_H___ 1
+#ifndef ___ATIPREINIT_H___
+#define ___ATIPREINIT_H___ 1
 
 #include "atiproto.h"
-#include "misc.h"
+#include "xf86str.h"
 
-extern void ATISaveScreen FunctionPrototype((const Bool));
+extern Bool ATIPreInit FunctionPrototype((ScrnInfoPtr, int));
 
-#endif /* ___ATIRESET_H___ */
+#endif /* ___ATIPREINIT_H___ */

@@ -546,13 +546,18 @@ entity from the resource broker list.
 IV.3. ScreenInit() phase
 ------------------------
 
-Setting up  the rac-flags  is all that  remains to do  in ScreenInit()
+Setting up  the rac flags  is all that  remains to do  in ScreenInit()
 phase (Note that these flags might also be set up in PreInit() phase).
-the racIoFlags and  racMemFlags in the ScrnInfoRec need  to be set. It
-specifies which  graphics operations might  require the use  of shared
-resources.  This  can  be  specified  separately for  memory  and  I/O
-resources.   The   avaliable  flags  are   defined  in  rac/xf86RAC.h.
-Alvailable are:
+The  ScrnInfoRec  has  separate  flags  for  memory  and  PIO  access:
+racIoFlags and  racMemFlags. They specifies  which graphics operations
+might require  the use of resources  which might be  disabled for some
+reason.  Note that even exclusive  resources might be disabled if they
+are disabled along with shared  resources. For example if a driver has
+registered the  VGA PIO  resources and lets  the common  level disable
+these by disabling PIO access  in PCI config space (the standard way),
+exclusive PCI PIO ranges will  also be disabled.  Therefore the driver
+has to flag any operations  requiring PCI PIO resources in racIoFlags.
+The avaliable flags are defined in rac/xf86RAC.h.  Alvailable are:
 
  RAC_FB       for framebuffer operations (including hw acceleration)
  RAC_CURSOR   for Cursor operations

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,61 +24,60 @@
 #ifndef ___ATICLOCK_H___
 #define ___ATICLOCK_H___ 1
 
-#include "aticrtc.h"
+#include "atipriv.h"
+#include "atiproto.h"
+#include "xf86str.h"
 
 /*
  * Definitions related to non-programmable clock generators.
  */
-#define ATI_CLOCK_NONE      0    /* Must be zero */
-#define ATI_CLOCK_VGA       1    /* Must be one */
-#define ATI_CLOCK_CRYSTALS  2    /* Must be two */
-#define ATI_CLOCK_18810     3
-#define ATI_CLOCK_18811_0   4
-#define ATI_CLOCK_18811_1   5
-#define ATI_CLOCK_MACH64A   6
-#define ATI_CLOCK_MACH64B   7
-#define ATI_CLOCK_MACH64C   8
-extern CARD8 ATIClock;
+typedef enum
+{
+    ATI_CLOCK_NONE = 0,
+    ATI_CLOCK_VGA = 1,
+    ATI_CLOCK_CRYSTALS = 2,
+    ATI_CLOCK_18810,
+    ATI_CLOCK_18811_0,
+    ATI_CLOCK_18811_1,
+    ATI_CLOCK_MACH64A,
+    ATI_CLOCK_MACH64B,
+    ATI_CLOCK_MACH64C
+} ATIClockType;
 extern const char *ATIClockNames[];
 
 /*
  * Definitions related to programmable clock generators.
  */
-#define ATI_CLOCK_FIXED     0   /* Further described above */
-#define ATI_CLOCK_ICS2595   1
-#define ATI_CLOCK_STG1703   2
-#define ATI_CLOCK_CH8398    3
-#define ATI_CLOCK_INTERNAL  4
-#define ATI_CLOCK_ATT20C408 5
-#define ATI_CLOCK_IBMRGB514 6
-#define ATI_CLOCK_MAX       7   /* Must be last */
-extern CARD8 ATIProgrammableClock;
+typedef enum
+{
+    ATI_CLOCK_FIXED = 0,        /* Further described by ATIClockType */
+    ATI_CLOCK_ICS2595,
+    ATI_CLOCK_STG1703,
+    ATI_CLOCK_CH8398,
+    ATI_CLOCK_INTERNAL,
+    ATI_CLOCK_ATT20C408,
+    ATI_CLOCK_IBMRGB514,
+    ATI_CLOCK_MAX               /* Must be last */
+} ATIProgrammableClockType;
+
 typedef struct
 {
-        CARD16 MinN, MaxN;              /* Feedback divider and ... */
-        CARD16 NAdjust;                 /* ... its adjustment and ... */
-        CARD16 N1, N2;                  /* ... its restrictions */
-        CARD16 MinM, MaxM;              /* Reference divider and ... */
-        CARD16 MAdjust;                 /* ... its adjustment */
-        CARD16 NumD, *PostDividers;     /* Post-dividers */
-        const char *ClockName;
+    CARD16 MinN, MaxN;          /* Feedback divider and ... */
+    CARD16 NAdjust;             /* ... its adjustment and ... */
+    CARD16 N1, N2;              /* ... its restrictions */
+    CARD16 MinM, MaxM;          /* Reference divider and ... */
+    CARD16 MAdjust;             /* ... its adjustment */
+    CARD16 NumD, *PostDividers; /* Post-dividers */
+    const char *ClockName;
 } ClockRec, *ClockPtr;
 extern ClockRec ATIClockDescriptors[];
-extern int ATIClockNumberToProgramme;
-extern int ATIReferenceNumerator,
-           ATIReferenceDenominator;
-extern ClockPtr ATIClockDescriptor;
-extern CARD16 ATIBIOSClocks[16];
 
-/*
- * Clock maps.
- */
-extern const CARD8 *ATIClockMap;
-extern const CARD8 *ATIClockUnMap;
-
-extern void ATIClockProbe   FunctionPrototype((void));
-extern void ATIClockSave    FunctionPrototype((ATIHWPtr));
-extern Bool ATIClockInit    FunctionPrototype((DisplayModePtr));
-extern void ATIClockRestore FunctionPrototype((ATIHWPtr));
+extern void ATIClockPreInit   FunctionPrototype((ScrnInfoPtr, ATIPtr, GDevPtr,
+                                                 ClockRangePtr));
+extern void ATIClockSave      FunctionPrototype((ScrnInfoPtr, ATIPtr,
+                                                 ATIHWPtr));
+extern Bool ATIClockCalculate FunctionPrototype((ScrnInfoPtr, ATIPtr,
+                                                 ATIHWPtr, DisplayModePtr));
+extern void ATIClockSet       FunctionPrototype((ATIPtr, ATIHWPtr));
 
 #endif /* ___ATICLOCK_H___ */

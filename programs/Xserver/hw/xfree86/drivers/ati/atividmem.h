@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,55 +24,53 @@
 #ifndef ___ATIVIDMEM_H___
 #define ___ATIVIDMEM_H___ 1
 
-#include "Xmd.h"
-
-/*
- * The number of banks and planes the driver needs to deal with when saving or
- * setting a video mode.
- */
-extern unsigned int ATICurrentBanks, ATIMaximumBanks, ATICurrentPlanes;
-
-/*
- * The amount of video memory that is on the adapter, as opposed to the amount
- * to be made available to the server.
- */
-extern int ATIvideoRam;
-
-extern CARD8 ATIUsingSmallApertures;
-
-extern CARD8 ATIMemoryType;
+#include "atiproto.h"
+#include "atipriv.h"
+#include "xf86str.h"
 
 /* Memory types for 68800's and 88800GX's */
-#define MEM_MACH_DRAMx4         0
-#define MEM_MACH_VRAM           1
-#define MEM_MACH_VRAMssr        2
-#define MEM_MACH_DRAMx16        3
-#define MEM_MACH_GDRAM          4
-#define MEM_MACH_EVRAM          5
-#define MEM_MACH_EVRAMssr       6
-#define MEM_MACH_TYPE_7         7
+typedef enum
+{
+    MEM_MACH_DRAMx4,
+    MEM_MACH_VRAM,
+    MEM_MACH_VRAMssr,
+    MEM_MACH_DRAMx16,
+    MEM_MACH_GDRAM,
+    MEM_MACH_EVRAM,
+    MEM_MACH_EVRAMssr,
+    MEM_MACH_TYPE_7
+} ATIMachMemoryType;
 extern const char *ATIMemoryTypeNames_Mach[];
 
 /* Memory types for 88800CX's */
-#define MEM_CX_DRAM             0
-#define MEM_CX_EDO              1
-#define MEM_CX_TYPE_2           2
-#define MEM_CX_DRAM_A           3
-#define MEM_CX_TYPE_4           4
-#define MEM_CX_TYPE_5           5
-#define MEM_CX_TYPE_6           6
-#define MEM_CX_TYPE_7           7
+typedef enum
+{
+    MEM_CX_DRAM,
+    MEM_CX_EDO,
+    MEM_CX_TYPE_2,
+    MEM_CX_DRAM_A,
+    MEM_CX_TYPE_4,
+    MEM_CX_TYPE_5,
+    MEM_CX_TYPE_6,
+    MEM_CX_TYPE_7
+} ATICXMemoryType;
 extern const char *ATIMemoryTypeNames_88800CX[];
 
 /* Memory types for 264xT's */
-#define MEM_264_NONE            0
-#define MEM_264_DRAM            1
-#define MEM_264_EDO             2
-#define MEM_264_PSEUDO_EDO      3
-#define MEM_264_SDRAM           4
-#define MEM_264_SGRAM           5
-#define MEM_264_TYPE_6          6
-#define MEM_264_TYPE_7          7
+typedef enum
+{
+    MEM_264_NONE,
+    MEM_264_DRAM,
+    MEM_264_EDO,
+    MEM_264_PSEUDO_EDO,
+    MEM_264_SDRAM,
+    MEM_264_SGRAM,
+    MEM_264_TYPE_6,
+    MEM_264_TYPE_7
+} ATI264MemoryType;
 extern const char *ATIMemoryTypeNames_264xT[];
+
+extern Bool ATIMapApertures   FunctionPrototype((ScrnInfoPtr, ATIPtr));
+extern void ATIUnmapApertures FunctionPrototype((ScrnInfoPtr, ATIPtr));
 
 #endif /* ___ATIVIDMEM_H___ */

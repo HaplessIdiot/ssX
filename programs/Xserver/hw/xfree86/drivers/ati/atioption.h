@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticmap.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.h,v 1.0tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,14 +21,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATICMAP_H___
-#define ___ATICMAP_H___ 1
+#ifndef ___ATIOPTION_H___
+#define ___ATIOPTION_H___ 1
 
+#include "atipriv.h"
 #include "atiproto.h"
-#include "Xproto.h"
-#include "screenint.h"
+#include "xf86str.h"
 
-extern void ATIStoreColours
-            FunctionPrototype((ColormapPtr, int, xColorItem *));
+extern void ATIProcessOptions FunctionPrototype((ScrnInfoPtr, ATIPtr));
 
-#endif /* ___ATICMAP_H___ */
+#endif /* ___ATIOPTION_H___ */

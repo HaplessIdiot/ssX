@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.c,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,31 +23,6 @@
 
 #include "atichip.h"
 #include "atiio.h"
-#include "vga.h"
-
-/* The following are port numbers that are determined by ATIProbe */
-CARD16 ATIIOPortVGAWonder = 0x01CEU;
-
-CARD16 ATIIOPortCRTC_H_TOTAL_DISP, ATIIOPortCRTC_H_SYNC_STRT_WID,
-       ATIIOPortCRTC_V_TOTAL_DISP, ATIIOPortCRTC_V_SYNC_STRT_WID,
-       ATIIOPortCRTC_OFF_PITCH, ATIIOPortCRTC_INT_CNTL, ATIIOPortCRTC_GEN_CNTL,
-       ATIIOPortDSP_CONFIG, ATIIOPortDSP_ON_OFF, ATIIOPortOVR_CLR,
-       ATIIOPortOVR_WID_LEFT_RIGHT, ATIIOPortOVR_WID_TOP_BOTTOM,
-       ATIIOPortCLOCK_CNTL, ATIIOPortBUS_CNTL, ATIIOPortMEM_INFO,
-       ATIIOPortMEM_VGA_WP_SEL, ATIIOPortMEM_VGA_RP_SEL,
-       ATIIOPortDAC_REGS, ATIIOPortDAC_CNTL,
-       ATIIOPortGEN_TEST_CNTL, ATIIOPortCONFIG_CNTL;
-
-/* These port numbers are to be determined by ATISave & ATIRestore */
-CARD16 ATIIOPortDAC_MASK, ATIIOPortDAC_DATA,
-       ATIIOPortDAC_READ, ATIIOPortDAC_WRITE;
-
-/* I/O decoding definitions */
-CARD16 ATIIOBase;
-CARD8 ATIIODecoding;
-
-CARD8 ATIB2Reg = 0;             /* The B2 mirror */
-CARD8 ATIVGAOffset = 0x80U;     /* Low index for ATIIOPortVGAWonder */
 
 /*
  * ATISetVGAIOBase --
@@ -56,9 +31,13 @@ CARD8 ATIVGAOffset = 0x80U;     /* Low index for ATIIOPortVGAWonder */
  * miscellaneous output register.
  */
 void
-ATISetVGAIOBase(const CARD8 misc)
+ATISetVGAIOBase
+(
+    ATIPtr      pATI,
+    const CARD8 misc
+)
 {
-    vgaIOBase = (misc & 0x01U) ? ColourIOBase : MonochromeIOBase;
+    pATI->CPIO_VGABase = (misc & 0x01U) ? ColourIOBase : MonochromeIOBase;
 }
 
 /*
@@ -70,19 +49,25 @@ ATISetVGAIOBase(const CARD8 misc)
  * server hangs on older adapters.
  */
 void
-ATIModifyExtReg(const CARD8 Index, int Current_Value,
-                const CARD8 Current_Mask, CARD8 New_Value)
+ATIModifyExtReg
+(
+    ATIPtr      pATI,
+    const CARD8 Index,
+    int         CurrentValue,
+    const CARD8 CurrentMask,
+    CARD8       NewValue
+)
 {
     /* Possibly retrieve the current value */
-    if (Current_Value < 0)
-        Current_Value = ATIGetExtReg(Index);
+    if (CurrentValue < 0)
+        CurrentValue = ATIGetExtReg(Index);
 
     /* Compute new value */
-    New_Value &= (CARD8)(~Current_Mask);
-    New_Value |= Current_Value & Current_Mask;
+    NewValue &= (CARD8)(~CurrentMask);
+    NewValue |= CurrentValue & CurrentMask;
 
     /* Check if value will be changed */
-    if (Current_Value == New_Value)
+    if (CurrentValue == NewValue)
         return;
 
     /*
@@ -92,23 +77,23 @@ ATIModifyExtReg(const CARD8 Index, int Current_Value,
      * after its die was cast.  18800-1 and later chips do not exhibit this
      * problem.
      */
-    if ((ATIChip <= ATI_CHIP_18800) && (Index == 0xB2U) &&
-       ((New_Value ^ 0x40U) & Current_Value & 0x40U))
+    if ((pATI->Chip <= ATI_CHIP_18800) && (Index == 0xB2U) &&
+       ((NewValue ^ 0x40U) & CurrentValue & 0x40U))
     {
         CARD8 misc = inb(R_GENMO);
         CARD8 bb = ATIGetExtReg(0xBBU);
 
         outb(GENMO, (misc & 0xF3U) | 0x04U | ((bb & 0x10U) >> 1));
-        Current_Value &= (CARD8)(~0x40U);
-        ATIPutExtReg(0xB2U, Current_Value);
+        CurrentValue &= (CARD8)(~0x40U);
+        ATIPutExtReg(0xB2U, CurrentValue);
         ATIDelay(5);
         outb(GENMO, misc);
         ATIDelay(5);
-        if (Current_Value != New_Value)
-            ATIPutExtReg(0xB2U, New_Value);
+        if (CurrentValue != NewValue)
+            ATIPutExtReg(0xB2U, NewValue);
     }
     else
-        ATIPutExtReg(Index, New_Value);
+        ATIPutExtReg(Index, NewValue);
 }
 
 /*
@@ -118,12 +103,17 @@ ATIModifyExtReg(const CARD8 Index, int Current_Value,
  * a 264xT's PLL registers.
  */
 void
-ATIAccessMach64PLLReg(const CARD8 Index, const Bool Write)
+ATIAccessMach64PLLReg
+(
+    ATIPtr      pATI,
+    const CARD8 Index,
+    const Bool  Write
+)
 {
-    CARD8 clock_cntl1 = inb(ATIIOPortCLOCK_CNTL + 1) &
+    CARD8 clock_cntl1 = inb(pATI->CPIO_CLOCK_CNTL + 1) &
         ~GetByte(PLL_WR_EN | PLL_ADDR, 1);
 
     /* Set PLL register to be read or written */
-    outb(ATIIOPortCLOCK_CNTL + 1, clock_cntl1 |
+    outb(pATI->CPIO_CLOCK_CNTL + 1, clock_cntl1 |
         GetByte(SetBits(Index, PLL_ADDR) | SetBits(Write, PLL_WR_EN), 1));
 }

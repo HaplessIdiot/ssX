@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,13 +24,9 @@
 #include "atiadapter.h"
 #include "atichip.h"
 #include "aticrtc.h"
-#include "atiregs.h"
+#include "atistruct.h"
 #include "ativalid.h"
-
-/*
- * NOTE:  The numbers in here should eventually be related to the appropriate
- *        bit-field #define's.
- */
+#include "xf86.h"
 
 /*
  * ATIValidMode --
@@ -39,101 +35,69 @@
  * xf86CheckMode has already done some basic consistency checks.
  */
 int
-ATIValidMode(DisplayModePtr mode, const Bool verbose, const int Flag)
+ATIValidMode
+(
+    int iScreen,
+    DisplayModePtr pMode,
+    Bool Verbose,
+    int flags
+)
 {
-    int Limit;
-    int VDisplay = mode->VDisplay;
-    int VTotal = mode->VTotal;
+    ATIPtr pATI = ATIPTR(xf86Screens[iScreen]);
+    int    VDisplay, VTotal;
+    int    HBlankWidth = (pMode->HTotal >> 3) - (pMode->HDisplay >> 3);
 
-    if (mode->Flags & V_DBLSCAN)
-    {
-        VDisplay <<= 1;
-        VTotal <<= 1;
-    }
+    if (!HBlankWidth)
+        return MODE_HBLANK_NARROW;
 
-    switch (ATICRTC)
+    switch (pATI->NewHW.crtc)
     {
         case ATI_CRTC_VGA:
-            if ((mode->HDisplay >= 2056) || (mode->HTotal >= 2088))
+            /* Prevent overscans */
+            if (HBlankWidth > 63)
+                return MODE_HBLANK_WIDE;
+
+            if (pMode->HDisplay > 2048)
+                return MODE_BAD_HVALUE;
+
+            VDisplay = pMode->VDisplay;
+            VTotal = pMode->VTotal;
+
+            if (pMode->VScan > 1)
             {
-                if (verbose)
-                    ErrorF("Mode \"%s\" is too wide.  Deleted.\n", mode->name);
-                return MODE_HSYNC;
+                if (pMode->VScan > 32)
+                    return MODE_BAD_VSCAN;
+
+                VDisplay *= pMode->VScan;
+                VTotal *= pMode->VScan;
             }
 
-            if ((mode->Flags & V_INTERLACE) && (ATIChip < ATI_CHIP_264CT))
+            if (pMode->Flags & V_DBLSCAN)
+            {
+                VDisplay <<= 1;
+                VTotal <<= 1;
+            }
+
+            if ((pMode->Flags & V_INTERLACE) && (pATI->Chip < ATI_CHIP_264CT))
             {
                 VDisplay >>= 1;
                 VTotal >>= 1;
             }
 
             if ((VDisplay > 2048) || (VTotal > 2050))
-            {
-                if (verbose)
-                    ErrorF("Mode \"%s\" is too high.  Deleted.\n", mode->name);
-                return MODE_VSYNC;
-            }
+                return MODE_BAD_VVALUE;
 
-            if (ATIAdapter != ATI_ADAPTER_VGA)
+            if (pATI->Adapter != ATI_ADAPTER_VGA)
                 break;
 
-            if (mode->Flags & V_INTERLACE)
-            {
-                if (verbose)
-                    ErrorF("Interlaced modes not supported by generic VGA."
-                           "  Mode \"%s\" deleted.\n", mode->name);
-                return MODE_VSYNC;
-            }
-
             if ((VDisplay > 1024) || (VTotal > 1025))
-            {
-                if (verbose)
-                    ErrorF("Mode \"%s\" is too high for generic VGA."
-                           "  Deleted.\n", mode->name);
-                return MODE_VSYNC;
-            }
+                return MODE_BAD_VVALUE;
+
             break;
 
         case ATI_CRTC_MACH64:
-            Limit = (GetBits(CRTC_H_TOTAL, CRTC_H_TOTAL) + 1) << 3;
-            if (ATIChip < ATI_CHIP_264VT)
-                Limit >>= 1;            /* CRTC_H_TOTAL is 1 bit narrower */
-            if (mode->HTotal > Limit)
-            {
-                if (verbose)
-                    ErrorF("Mode \"%s\" is too wide.  Deleted.\n", mode->name);
-                return MODE_HSYNC;
-            }
-
-            if ((mode->HTotal >> 3) == (mode->HDisplay >> 3))
-            {
-                if (verbose)
-                    ErrorF("Horizontal sync pulse too narrow.  Mode \"%s\""
-                           " deleted.\n", mode->name);
-                return MODE_HSYNC;
-            }
-
-            if (VTotal > ((int)GetBits(CRTC_V_TOTAL, CRTC_V_TOTAL) + 1))
-            {
-                if (verbose)
-                    ErrorF("Mode \"%s\" is too high.  Deleted.\n", mode->name);
-                return MODE_VSYNC;
-            }
-
-            /*
-             * ATI finally fixed accelerated doublescanning in the 264VT and
-             * later.  On 88800's, the bit is documented to exist, but only
-             * doubles the vertical timings.  On the 264CT & 264ET, the bit is
-             * ignored.
-             */
-            if ((ATIChip < ATI_CHIP_264VT) && (mode->Flags & V_DBLSCAN))
-            {
-                if (verbose)
-                    ErrorF("The %s does not support accelerated doublescanned"
-                           " modes.\n Mode \"%s\" deleted.\n",
-                        ATIChipNames[ATIChip], mode->name);
-                return MODE_VSYNC;
-            }
+            if (pMode->VScan > 1)
+                return MODE_NO_VSCAN;
 
             break;
 

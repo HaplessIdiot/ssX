@@ -6,6 +6,7 @@ maintained here.
 
 Each module is required to have a unique name.  Registered names are:
 
+ati
 bitmap
 cfb
 cfb16
@@ -13,25 +14,25 @@ cfb24
 cfb32
 chips
 dbe
+ddc
 extmod
+glide
 glint
+i2c
 mfb
 mga
 pex5
+rac
 ramdac
 speedo
 tseng
 type1
 vga
 vgahw
+xaa
 xf1bpp
 xf4bpp
-xaa
 xie
-i2c
-rac
-ddc
-glide
 
 2. External Module Object Symbols.
 
@@ -39,20 +40,21 @@ Each module is required to use a unique prefix or prefixes for all of
 its externally visible symbols. They should be unique without regard to
 case.  Registered prefixes are:
 
+ati
 cfb
 chips
+glide
 glint
 mfb
 mga
+neo
 permedia
 tseng
 vga
 vgahw
+xaa
 xf1bpp
 xf4bpp
-XAA
-neo
-glide
 
 3. Chipset Names.
 
@@ -61,6 +63,8 @@ white space and underscore characters are ignored when comparing chipset
 names.  All names listed here are in lower case with all white space and
 underscores removed.  Registered chipset names are:
 
+ati
+ativga
 ct64200
 ct64300
 ct65520
@@ -83,18 +87,24 @@ et4000w32p
 et6000
 et6100
 generic
+ibmvga
+ibm8514
+mach32
+mach64
+mach8
 mga2064w
 mga1064sg
 mga2164w
 mga2164wagp
-tipm2
 neo2070
 neo2090
 neo2093
 neo2097
 neo2160
 neo2200
-Voodoo
+tipm2
+vgawonder
+voodoo
 
 4. Option Names.
 
@@ -171,6 +181,7 @@ Vtime                     I     I    Tty VTIME
 8Plus24                   B     V    Enable depth 8 + depth 24 with overlay
 BlockWrite                B     V    Enable/disable block write
 ColorKey                  I     V    Set the color key for overlay modes
+CompositeSync             B     V    Composite sync
 EarlyRasPrecharge         O     V    Early RAS pre-charge
 FastDRAM                  O     V    Fast DRAM
 FifoAggressive            O     V    Aggressive FIFO setting
@@ -210,6 +221,7 @@ Overlay                   A     V    Enable multi-depth/overlay.  An optional
                                      M, N are the depths.
 PciBurst                  B     V    Enable/disable PCI burst mode
 PciRetry                  B     V    Enable/disable PCI retries
+ProbeClocks               B     V    Force probe for non-programmable clocks
 RGBbits                   I     V    Number of significant bits per rgb
 SetLCDClk                 Q     V    Set LCD clock (MHz)
 SetMclk                   Q     V    Set Memory Clock (MHz)
@@ -277,7 +289,6 @@ NoProgramClocks
 NoSplitXfer
 OverrideBIOS
 OverrideValidateMode
-ProbeClocks
 ProgLcdModeRegs
 ProgLcdModeStretch
 SlowDRAMrefresh
@@ -304,4 +315,4 @@ and underscores removed.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.11 1999/04/27 12:05:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.12 1999/06/20 08:41:29 dawes Exp $

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -61,68 +61,21 @@
  * and Network Services at the University of Alberta, in Edmonton, Alberta,
  * Canada.
  *
- * The driver is intended to support the ATI VGA Wonder series of adapters and
- * its OEM counterpart, the VGA1024 series.  It will also work with Mach32's
- * and Mach64's but will not use their accelerated features.  This includes
- * Mach64's based on the 264xT series of integrated controllers.
+ * The driver is intended to support all ATI adapters since their VGA Wonder
+ * V3, including OEM counterparts.
  */
 
-/*************************************************************************/
-
-#include "ati.h"
-#include "atiadjust.h"
-#include "aticonsole.h"
-#include "aticrtc.h"
-#include "atifbinit.h"
-#include "atigetmode.h"
 #include "atiident.h"
 #include "atiprobe.h"
-#include "atireset.h"
-#include "ativalid.h"
+#include "ativersion.h"
 
-/*
- * This data structure defines the driver itself.  The data structure is
- * initialized with the functions that make up the driver and some data that
- * defines how the driver operates.  Some elements of this structure will be
- * modified by ATIProbe.
- */
-vgaVideoChipRec ATI =
+/* The root of all evil... */
+DriverRec ATI =
 {
-    ATIProbe,                   /* Probe */
-    ATIIdent,                   /* Ident */
-    ATIEnterLeave,              /* EnterLeave */
-    ATIInit,                    /* Init */
-    ATIValidMode,               /* ValidMode */
-    ATISave,                    /* Save */
-    ATIRestore,                 /* Restore */
-    ATIAdjust,                  /* Adjust */
-    ATISaveScreen,              /* SaveScreen */
-    ATIGetMode,                 /* GetMode */
-    ATIFbInit,                  /* FbInit */
-    ATISetRead,                 /* SetRead */
-    ATISetWrite,                /* SetWrite */
-    ATISetReadWrite,            /* SetReadWrite */
-    0x10000U,                   /* Mapped memory window size (64k) */
-    0x10000U,                   /* Video memory bank size (64k) */
-    16,                         /* Shift factor to get bank number */
-    0xFFFFU,                    /* Bit mask for address within a bank */
-    0x00000U, 0x10000U,         /* Boundaries for reads within a bank */
-    0x00000U, 0x10000U,         /* Boundaries for writes within a bank */
-    TRUE,                       /* Read & write banks can be different */
-    -1,                         /* Not used in this driver */
-    {{0,}},                     /* Options are set by ATIProbe */
-    16,                         /* Virtual X rounding */
-    FALSE,                      /* No linear frame buffer */
-    0,                          /* Linear frame buffer base address */
-    0,                          /* Linear frame buffer size */
-    TRUE,                       /* Planar 1bpp supported */
-    TRUE,                       /* Planar 4bpp supported */
-    TRUE,                       /* Packed 8bpp supported */
-    FALSE,                      /* No support for 15 bits per pixel (yet) */
-    FALSE,                      /* No support for 16 bits per pixel (yet) */
-    FALSE,                      /* No support for 24 bits per pixel (yet) */
-    FALSE,                      /* No support for 32 bits per pixel (yet) */
-    NULL,                       /* List of builtin modes */
-    1,                          /* ChipClockMulFactor */
-    1                           /* ChipClockDivFactor */
+    ATI_VERSION_CURRENT,
+    "ATI driver",
+    ATIIdentify,
+    ATIProbe,
+    NULL,
+    0
 };

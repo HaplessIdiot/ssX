@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -22,14 +22,11 @@
  */
 
 #include "atidac.h"
-#include "atidepth.h"
-#include "atiio.h"
 #include "atimono.h"
 
 /*
  * RAMDAC-related definitions.
  */
-CARD16 ATIDac = ATI_DAC_GENERIC;
 const DACRec ATIDACDescriptors[] =
 {   /* Keep this table in ascending DACType order */
     {ATI_DAC_ATI68830,      "ATI 68830 or similar"},
@@ -64,29 +61,33 @@ const DACRec ATIDACDescriptors[] =
  * This function sets up DAC access I/O port numbers.
  */
 void
-ATISetDACIOPorts(CARD8 crtc)
+ATISetDACIOPorts
+(
+    ATIPtr      pATI,
+    ATICRTCType crtc
+)
 {
     switch (crtc)
     {
         case ATI_CRTC_VGA:
-            ATIIOPortDAC_DATA = VGA_DAC_DATA;
-            ATIIOPortDAC_MASK = VGA_DAC_MASK;
-            ATIIOPortDAC_READ = VGA_DAC_READ;
-            ATIIOPortDAC_WRITE = VGA_DAC_WRITE;
+            pATI->CPIO_DAC_DATA = VGA_DAC_DATA;
+            pATI->CPIO_DAC_MASK = VGA_DAC_MASK;
+            pATI->CPIO_DAC_READ = VGA_DAC_READ;
+            pATI->CPIO_DAC_WRITE = VGA_DAC_WRITE;
             break;
 
         case ATI_CRTC_8514:
-            ATIIOPortDAC_DATA = DAC_DATA;
-            ATIIOPortDAC_MASK = DAC_MASK;
-            ATIIOPortDAC_READ = DAC_R_INDEX;
-            ATIIOPortDAC_WRITE = DAC_W_INDEX;
+            pATI->CPIO_DAC_DATA = DAC_DATA;
+            pATI->CPIO_DAC_MASK = DAC_MASK;
+            pATI->CPIO_DAC_READ = DAC_R_INDEX;
+            pATI->CPIO_DAC_WRITE = DAC_W_INDEX;
             break;
 
         case ATI_CRTC_MACH64:
-            ATIIOPortDAC_DATA = ATIIOPortDAC_REGS + 1;
-            ATIIOPortDAC_MASK = ATIIOPortDAC_REGS + 2;
-            ATIIOPortDAC_READ = ATIIOPortDAC_REGS + 3;
-            ATIIOPortDAC_WRITE = ATIIOPortDAC_REGS + 0;
+            pATI->CPIO_DAC_DATA = pATI->CPIO_DAC_REGS + 1;
+            pATI->CPIO_DAC_MASK = pATI->CPIO_DAC_REGS + 2;
+            pATI->CPIO_DAC_READ = pATI->CPIO_DAC_REGS + 3;
+            pATI->CPIO_DAC_WRITE = pATI->CPIO_DAC_REGS + 0;
             break;
 
         default:
@@ -95,145 +96,215 @@ ATISetDACIOPorts(CARD8 crtc)
 }
 
 /*
- * ATIGetMach64DACCmdReg --
+ * ATIGetDACCmdReg --
  *
  * Setup to access a RAMDAC's command register.
  */
 CARD8
-ATIGetMach64DACCmdReg(void)
+ATIGetDACCmdReg
+(
+    ATIPtr pATI
+)
 {
-    (void) inb(ATIIOPortDAC_WRITE);     /* Reset to PEL mode */
-    (void) inb(ATIIOPortDAC_MASK);      /* Get command register */
-    (void) inb(ATIIOPortDAC_MASK);
-    (void) inb(ATIIOPortDAC_MASK);
-    return inb(ATIIOPortDAC_MASK);
+    (void) inb(pATI->CPIO_DAC_WRITE);   /* Reset to PEL mode */
+    (void) inb(pATI->CPIO_DAC_MASK);
+    (void) inb(pATI->CPIO_DAC_MASK);
+    (void) inb(pATI->CPIO_DAC_MASK);
+    return inb(pATI->CPIO_DAC_MASK);
 }
 
 /*
- * ATIDACSave --
+ * ATIDACPreInit --
  *
- * This function is called by ATISave to save the current RAMDAC state into an
- * ATIHWRec structure occurrence.
+ * This function initializes the fields in an ATIHWRec that relate to DACs.
  */
 void
-ATIDACSave(ATIHWPtr save)
-{
-    int Index;
-
-    ATISetDACIOPorts(save->crtc);
-
-    save->dac_read = inb(ATIIOPortDAC_READ);
-    save->dac_write = inb(ATIIOPortDAC_WRITE);
-    save->dac_mask = inb(ATIIOPortDAC_MASK);
-
-    /* Save DAC's colour lookup table */
-    outb(ATIIOPortDAC_MASK, 0xFFU);
-    outb(ATIIOPortDAC_READ, 0x00U);
-    for (Index = 0;  Index < NumberOf(save->std.DAC);  Index++)
-    {
-        save->std.DAC[Index] = inb(ATIIOPortDAC_DATA);
-        DACDelay;
-    }
-}
-
-/*
- * ATIDACInit --
- *
- * This function is called by ATIInit to initialize RAMDAC data in an ATIHWRec
- * structure occurrence.
- */
-void
-ATIDACInit(DisplayModePtr mode)
+ATIDACPreInit
+(
+    ScrnInfoPtr pScreenInfo,
+    ATIHWPtr    pATIHW
+)
 {
     int Index, Index2;
+    CARD8 maxColour = (1 << pScreenInfo->rgbBits) - 1;
 
-    if (!mode)
-    {
-        ATINewHWPtr->dac_read = ATINewHWPtr->dac_write = 0x00U;
-        ATINewHWPtr->dac_mask = 0xFFU;
+    pATIHW->dac_read = pATIHW->dac_write = 0x00U;
+    pATIHW->dac_mask = 0xFFU;
 
-        /*
-         * Set colour lookup table.  The first entry has already been zeroed
-         * out.
-         */
-        if (vga256InfoRec.depth > 8)
-            for (Index = 1;
-                 Index < (NumberOf(ATINewHWPtr->std.DAC) / 3);
-                 Index++)
-            {
-                Index2 = Index * 3;
-                ATINewHWPtr->std.DAC[Index2 + 0] =
-                    ATINewHWPtr->std.DAC[Index2 + 1] =
-                    ATINewHWPtr->std.DAC[Index2 + 2] = Index;
-            }
-        else
+    /*
+     * Set colour lookup table.  The first entry has already been zeroed out.
+     */
+    if (pScreenInfo->depth > 8)
+        for (Index = 1;  Index < (NumberOf(pATIHW->lut) / 3);  Index++)
         {
-            /*
-             * Initialize hardware colour map so that use of uninitialized
-             * software colour map entries can easily be seen.
-             */
-            ATINewHWPtr->std.DAC[3] =
-                ATINewHWPtr->std.DAC[4] =
-                ATINewHWPtr->std.DAC[5] = 0xFFU;
-            for (Index = 2;
-                Index < NumberOf(ATINewHWPtr->std.DAC) / 3;
-                Index++)
-            {
-                Index2 = Index * 3;
-                ATINewHWPtr->std.DAC[Index2 + 0] = 0xFFU;
-                ATINewHWPtr->std.DAC[Index2 + 1] = 0x00U;
-                ATINewHWPtr->std.DAC[Index2 + 2] = 0xFFU;
-            }
-            if (ATIUsing1bppModes)
-            {
-                ATINewHWPtr->std.DAC[(MONO_BLACK * 3) + 0] =
-                    vga256InfoRec.blackColour.red;
-                ATINewHWPtr->std.DAC[(MONO_BLACK * 3) + 1] =
-                    vga256InfoRec.blackColour.green;
-                ATINewHWPtr->std.DAC[(MONO_BLACK * 3) + 2] =
-                    vga256InfoRec.blackColour.blue;
-                ATINewHWPtr->std.DAC[(MONO_WHITE * 3) + 0] =
-                    vga256InfoRec.whiteColour.red;
-                ATINewHWPtr->std.DAC[(MONO_WHITE * 3) + 1] =
-                    vga256InfoRec.whiteColour.green;
-                ATINewHWPtr->std.DAC[(MONO_WHITE * 3) + 2] =
-                    vga256InfoRec.whiteColour.blue;
-            }
+            Index2 = Index * 3;
+            pATIHW->lut[Index2 + 0] =
+                pATIHW->lut[Index2 + 1] =
+                pATIHW->lut[Index2 + 2] = Index;
+        }
+    else
+    {
+        /*
+         * Initialize hardware colour map so that use of uninitialized
+         * software colour map entries can easily be seen.  For 256-colour
+         * modes, this doesn't remain effective for very long...
+         */
+        pATIHW->lut[3] = pATIHW->lut[4] = pATIHW->lut[5] = 0xFFU;
+        for (Index = 2;  Index < (NumberOf(pATIHW->lut) / 3);  Index++)
+        {
+            Index2 = Index * 3;
+            pATIHW->lut[Index2 + 0] = maxColour;
+            pATIHW->lut[Index2 + 1] = 0x00U;
+            pATIHW->lut[Index2 + 2] = maxColour;
+        }
 
-            if (ATICRTC == ATI_CRTC_VGA)
-            {
-                /* Initialize overscan to black */
-                Index = ATINewHWPtr->std.Attribute[17] * 3;
-                ATINewHWPtr->std.DAC[Index + 0] =
-                    ATINewHWPtr->std.DAC[Index + 1] =
-                    ATINewHWPtr->std.DAC[Index + 2] = 0x00U;
-            }
+        if (pScreenInfo->depth == 1)
+        {
+            rgb blackColour = pScreenInfo->display->whiteColour,
+                whiteColour = pScreenInfo->display->whiteColour;
+
+            /* Check for defaults */
+            if (!blackColour.red && !blackColour.green && !blackColour.blue &&
+                !whiteColour.red && !whiteColour.green && !whiteColour.blue)
+                whiteColour.red = whiteColour.green = whiteColour.blue =
+                    maxColour;
+
+            pATIHW->lut[(MONO_BLACK * 3) + 0] = blackColour.red;
+            pATIHW->lut[(MONO_BLACK * 3) + 1] = blackColour.green;
+            pATIHW->lut[(MONO_BLACK * 3) + 2] = blackColour.blue;
+            pATIHW->lut[(MONO_WHITE * 3) + 0] = whiteColour.red;
+            pATIHW->lut[(MONO_WHITE * 3) + 1] = whiteColour.green;
+            pATIHW->lut[(MONO_WHITE * 3) + 2] = whiteColour.blue;
+        }
+
+        if (pATIHW->crtc == ATI_CRTC_VGA)
+        {
+            /* Initialize overscan to black */
+            Index = pATIHW->attr[17] * 3;
+            pATIHW->lut[Index + 0] =
+                pATIHW->lut[Index + 1] =
+                pATIHW->lut[Index + 2] = 0x00U;
         }
     }
 }
 
 /*
- * ATIDACRestore --
+ * ATIDACSave --
  *
- * This function is called by ATIRestore to load RAMDAC data from an ATIHWRec
+ * This function is called to save the current RAMDAC state into an ATIHWRec
  * structure occurrence.
  */
 void
-ATIDACRestore(ATIHWPtr restore)
+ATIDACSave
+(
+    ATIPtr   pATI,
+    ATIHWPtr pATIHW
+)
 {
     int Index;
 
-    ATISetDACIOPorts(restore->crtc);
+    ATISetDACIOPorts(pATI, pATIHW->crtc);
 
-    /* Load colour lookup table */
-    outb(ATIIOPortDAC_MASK, 0xFFU);
-    outb(ATIIOPortDAC_WRITE, 0x00U);
-    for (Index = 0;  Index < NumberOf(restore->std.DAC);  Index++)
+    pATIHW->dac_read = inb(pATI->CPIO_DAC_READ);
+    DACDelay;
+    pATIHW->dac_write = inb(pATI->CPIO_DAC_WRITE);
+    DACDelay;
+    pATIHW->dac_mask = inb(pATI->CPIO_DAC_MASK);
+    DACDelay;
+
+    /* Save DAC's colour lookup table */
+    outb(pATI->CPIO_DAC_MASK, 0xFFU);
+    DACDelay;
+    outb(pATI->CPIO_DAC_READ, 0x00U);
+    DACDelay;
+    for (Index = 0;  Index < NumberOf(pATIHW->lut);  Index++)
     {
-        outb(ATIIOPortDAC_DATA, restore->std.DAC[Index]);
+        pATIHW->lut[Index] = inb(pATI->CPIO_DAC_DATA);
         DACDelay;
     }
 
-    outb(ATIIOPortDAC_READ, restore->dac_read);
-    outb(ATIIOPortDAC_WRITE, restore->dac_write);
+    outb(pATI->CPIO_DAC_MASK, pATIHW->dac_mask);
+    DACDelay;
+    outb(pATI->CPIO_DAC_READ, pATIHW->dac_read);
+    DACDelay;
+}
+
+/*
+ * ATIDACSet --
+ *
+ * This function loads RAMDAC data from an ATIHWRec structure occurrence.
+ */
+void
+ATIDACSet
+(
+    ATIPtr   pATI,
+    ATIHWPtr pATIHW
+)
+{
+    int Index;
+
+    ATISetDACIOPorts(pATI, pATIHW->crtc);
+
+    /* Load DAC's colour lookup table */
+    outb(pATI->CPIO_DAC_MASK, 0xFFU);
+    DACDelay;
+    outb(pATI->CPIO_DAC_WRITE, 0x00U);
+    DACDelay;
+    for (Index = 0;  Index < NumberOf(pATIHW->lut);  Index++)
+    {
+        outb(pATI->CPIO_DAC_DATA, pATIHW->lut[Index]);
+        DACDelay;
+    }
+
+    outb(pATI->CPIO_DAC_MASK, pATIHW->dac_mask);
+    DACDelay;
+    outb(pATI->CPIO_DAC_READ, pATIHW->dac_read);
+    DACDelay;
+    outb(pATI->CPIO_DAC_WRITE, pATIHW->dac_write);
+    DACDelay;
+}
+
+/*
+ * ATILoadPalette --
+ *
+ * This function updates the RAMDAC's LUT and the in-memory copy of it in
+ * NewHW.
+ */
+void
+ATILoadPalette
+(
+    ScrnInfoPtr pScreenInfo,
+    int         nColours,
+    int         *Indices,
+    LOCO        *Colours,
+    short       VisualClass
+)
+{
+    ATIPtr pATI = ATIPTR(pScreenInfo);
+    CARD8  *LUTEntry;
+    int    i, Index;
+
+    for (i = 0;  i < nColours;  i++)
+    {
+        Index = Indices[i];
+        if ((Index < 0) || (Index > 255))
+            continue;
+
+        LUTEntry = &pATI->NewHW.lut[Index * 3];
+        LUTEntry[0] = Colours[Index].red;
+        LUTEntry[1] = Colours[Index].green;
+        LUTEntry[2] = Colours[Index].blue;
+
+        if (pScreenInfo->vtSema)
+        {
+            outb(pATI->CPIO_DAC_WRITE, Index);
+            DACDelay;
+            outb(pATI->CPIO_DAC_DATA, LUTEntry[0]);
+            DACDelay;
+            outb(pATI->CPIO_DAC_DATA, LUTEntry[1]);
+            DACDelay;
+            outb(pATI->CPIO_DAC_DATA, LUTEntry[2]);
+            DACDelay;
+        }
+    }
 }

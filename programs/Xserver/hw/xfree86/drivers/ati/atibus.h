@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,21 +24,22 @@
 #ifndef ___ATIBUS_H___
 #define ___ATIBUS_H___ 1
 
-#include "Xmd.h"
-
 /*
  * Definitions related to an adapter's system bus interface.
  */
-#define ATI_BUS_ISA     0
-#define ATI_BUS_EISA    1
-#define ATI_BUS_MCA16   2
-#define ATI_BUS_MCA32   3
-#define ATI_BUS_SXLB    4
-#define ATI_BUS_DXLB    5
-#define ATI_BUS_VLB     6
-#define ATI_BUS_PCI     7
-#define ATI_BUS_AGP     8
-extern CARD8 ATIBusType;
+typedef enum
+{
+    ATI_BUS_ISA = 0,
+    ATI_BUS_EISA,
+    ATI_BUS_MCA16,
+    ATI_BUS_MCA32,
+    ATI_BUS_SXLB,
+    ATI_BUS_DXLB,
+    ATI_BUS_VLB,
+    ATI_BUS_PCI,
+    ATI_BUS_AGP
+} ATIBusType;
+
 extern const char *ATIBusNames[];
 
 #endif /* ___ATIBUS_H___ */

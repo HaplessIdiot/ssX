@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,11 +24,17 @@
 #ifndef ___ATIMACH64_H___
 #define ___ATIMACH64_H___ 1
 
-#include "aticrtc.h"
-#include "xf86.h"
+#include "atipriv.h"
+#include "atiproto.h"
+#include "xf86str.h"
 
-extern void ATIMach64Save    FunctionPrototype((ATIHWPtr));
-extern void ATIMach64Init    FunctionPrototype((DisplayModePtr));
-extern void ATIMach64Restore FunctionPrototype((ATIHWPtr));
+extern void ATIMach64PreInit    FunctionPrototype((ScrnInfoPtr, ATIPtr,
+                                                   ATIHWPtr));
+extern void ATIMach64Save       FunctionPrototype((ATIPtr, ATIHWPtr));
+extern void ATIMach64Calculate  FunctionPrototype((ScrnInfoPtr, ATIPtr,
+                                                   ATIHWPtr, DisplayModePtr));
+extern void ATIMach64Set        FunctionPrototype((ATIPtr, ATIHWPtr));
+
+extern void ATIMach64SaveScreen FunctionPrototype((ATIPtr, int));
 
 #endif /* ___ATIMACH64_H___ */

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atifbinit.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.h,v 1.0tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,11 +21,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATIFBINIT_H___
-#define ___ATIFBINIT_H___ 1
+#if defined(XFree86LOADER) && !defined(___ATI_MODULE_H___)
+#define ___ATI_MODULE_H___ 1
 
 #include "atiproto.h"
+#include "xf86str.h"
 
-extern void ATIFbInit FunctionPrototype((void));
+extern Bool ATILoadModules FunctionPrototype((ScrnInfoPtr));
 
-#endif /* ___ATIFBINIT_H___ */
+#endif

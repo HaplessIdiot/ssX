@@ -1,6 +1,6 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/Imakefile,v 1.6 1998/06/04 16:43:24 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/Imakefile,v 1.7tsi Exp $
 XCOMM
-XCOMM Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+XCOMM Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
 XCOMM
 XCOMM Permission to use, copy, modify, distribute, and sell this software and
 XCOMM its documentation for any purpose is hereby granted without fee, provided
@@ -19,11 +19,7 @@ XCOMM SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
 XCOMM RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 XCOMM CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 XCOMM CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-XCOMM 
-
-#if 1
- This Imakefile has been temporarily disabled.
-#endif
+XCOMM
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -33,108 +29,37 @@ CCOPTIONS = ATIDriverCCOptions
 #endif
 
 #if DoLoadableServer
-LOAD_SRCS = atimodule.c
-LOAD_OBJS = atimodule.o
+ATIMODSRC = atimodule.c
+ATIMODOBJ = atimodule.o
 #endif
 
-SRCS = ati.c atiadapter.c atiadjust.c atibank.c atibanks.s atibus.c atichip.c \
-       aticlock.c aticmap.c aticonsole.c aticrtc.c atidac.c atidsp.c \
-       atifbinit.c atigetmode.c atiident.c atiio.c atimach64.c $(LOAD_SRCS) \
-       atiprint.c atiprobe.c atireset.c atiscrinit.c atiutil.c ativalid.c \
-       ativga.c atividmem.c atiwonder.c
+SRCS = ati.c atiadapter.c atiadjust.c atibank.c atibus.c atichip.c aticlock.c \
+       aticonsole.c aticrtc.c atidac.c atidsp.c atiident.c atiio.c atilock.c \
+       atimach64.c $(ATIMODSRC) atioption.c atipreinit.c atiprint.c \
+       atiprobe.c atiscreen.c atiutil.c ativalid.c ativga.c atividmem.c \
+       atiwonder.c
 
-OBJS = ati.o atiadapter.o atiadjust.o atibank.o atibanks.o atibus.o atichip.o \
-       aticlock.o aticmap.o aticonsole.o aticrtc.o atidac.o atidsp.o \
-       atifbinit.o atigetmode.o atiident.o atiio.o atimach64.o $(LOAD_OBJS) \
-       atiprint.o atiprobe.o atireset.o atiscrinit.o atiutil.o ativalid.o \
-       ativga.o atividmem.o atiwonder.o
+OBJS = ati.o atiadapter.o atiadjust.o atibank.o atibus.o atichip.o aticlock.o \
+       aticonsole.o aticrtc.o atidac.o atidsp.o atiident.o atiio.o atilock.o \
+       atimach64.o $(ATIMODOBJ) atioption.o atipreinit.o atiprint.o \
+       atiprobe.o atiscreen.o atiutil.o ativalid.o ativga.o atividmem.o \
+       atiwonder.o
 
-#if XF86LinkKit
-INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
-#else
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) -I$(XF86SRC) \
-           -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(SERVERSRC)/cfb \
-           -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(XINCLUDESRC)
-#endif
-
-#if XF86Vga2Banked
-MONODEFS = -DBANKEDMONOVGA
-#endif
-
-DEFINES = -DPSZ=8 $(MONODEFS)
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86SRC)/rac -I$(XF86SRC) \
+           -I$(XF86SRC)/xf4bpp -I$(XF86SRC)/xf1bpp \
+           -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb \
+           -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+           -I$(XINCLUDESRC) -I$(FONTINCSRC)
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
 #endif
-NormalLibraryObjectRule()
-NormalAsmObjectRule()
 
-NormalRelocatableTarget(ati_drv,$(OBJS))
+ModuleObjectRule()
 
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(ati.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(ati.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiadapter.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiadapter.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiadjust.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiadjust.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atibank.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atibank.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atibanks.s,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atibus.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atibus.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atichip.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atichip.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(aticlock.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(aticlock.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(aticmap.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(aticmap.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(aticonsole.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(aticonsole.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(aticrtc.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(aticrtc.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atidac.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atidac.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atidepth.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atidsp.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atidsp.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atifbinit.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atifbinit.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atigetmode.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atigetmode.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiident.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiident.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiio.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiio.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atimach64.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atimach64.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atimodule.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atimono.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiprint.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiprint.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiprobe.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiprobe.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiproto.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiregs.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atireset.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atireset.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiscrinit.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiscrinit.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiutil.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiutil.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(ativalid.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(ativalid.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(ativersion.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(ativga.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(ativga.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atividmem.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atividmem.h,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiwonder.c,$(LINKKITDIR)/drivers/svga/ati)
-InstallLinkKitNonExecFile(atiwonder.h,$(LINKKITDIR)/drivers/svga/ati)
+ObjectModuleTarget(ati,$(OBJS))
 
-#if DoLoadableServer
-InstallDynamicModule(ati_drv.o,$(MODULEDIR))
-#endif
+InstallObjectModule(ati,$(MODULEDIR),drivers)
 
 #ifndef OS2Architecture
 DependTarget()

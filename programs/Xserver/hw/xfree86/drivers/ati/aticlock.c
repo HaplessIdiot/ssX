@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.2 1998/03/20 21:06:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.3tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -66,7 +66,7 @@
  *    0       1       1       0        (*1)   92.400   92.400
  *    0       1       1       1      36.000   36.000   36.000
  *    1       0       0       0      40.000   39.910   39.910
- *    1       0       0       1      56.644   44.900   44.900
+ *    1       0       0       1        (*4)   44.900   44.900
  *    1       0       1       0      75.000   75.000   75.000
  *    1       0       1       1      65.000   65.000   65.000
  *    1       1       0       0      50.350   50.350   50.350
@@ -77,6 +77,8 @@
  * (*1) External 0 (supposedly 16.657 Mhz)
  * (*2) External 1 (supposedly 28.322 MHz)
  * (*3) This setting doesn't seem to generate anything
+ * (*4) This setting is documented to be 56.644 MHz, but something close to 82
+ *      MHz has also been encountered.
  *
  * Mach32 Clock Frequencies
  * R E G I S T E R S
@@ -97,13 +99,15 @@
  *    1       0       1       0        (*2)     (*3)     (*3)
  *    1       0       1       1      44.900   44.900   44.900
  *    1       1       0       0      40.000   39.910   39.910
- *    1       1       0       1      56.644   44.900   44.900
+ *    1       1       0       1        (*4)   44.900   44.900
  *    1       1       1       0      75.000   75.000   75.000
  *    1       1       1       1      65.000   65.000   65.000
  *
  * (*1) External 0 (supposedly 16.657 Mhz)
  * (*2) External 1 (supposedly 28.322 MHz)
  * (*3) This setting doesn't seem to generate anything
+ * (*4) This setting is documented to be 56.644 MHz, but something close to 82
+ *      MHz has also been encountered.
  *
  * Note that, to reduce confusion, this driver masks out the different clock
  * ordering.
@@ -185,18 +189,13 @@
 #include "ati.h"
 #include "atiadapter.h"
 #include "atichip.h"
-#include "aticlock.h"
 #include "atidac.h"
 #include "atidsp.h"
-#include "atiio.h"
-#include "xf86_Config.h"
-#include "xf86_HWlib.h"
-#include "xf86Priv.h"
+#include "atividmem.h"
 
 /*
  * Definitions related to non-programmable clock generators.
  */
-CARD8 ATIClock = ATI_CLOCK_NONE;
 const char *ATIClockNames[] =
 {
     "unknown",
@@ -213,7 +212,6 @@ const char *ATIClockNames[] =
 /*
  * Definitions related to programmable clock generators.
  */
-CARD8 ATIProgrammableClock = ATI_CLOCK_FIXED;
 static CARD16 ATIPostDividers[] = {1, 2, 4, 8, 16, 32, 64, 128},
               ATI264xTPostDividers[] = {1, 2, 4, 8, 3, 0, 6, 12};
 ClockRec ATIClockDescriptors[] =
@@ -261,12 +259,6 @@ ClockRec ATIClockDescriptors[] =
         "IBM RGB 514 or similar"
     }
 };
-int ATIClockNumberToProgramme = -1;
-int ATIReferenceNumerator = 157500,
-    ATIReferenceDenominator = 11;
-ClockPtr ATIClockDescriptor = ATIClockDescriptors;
-CARD16 ATIBIOSClocks[16] =
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /*
  * XF86Config clocks line that start with the following will either be rejected
@@ -292,7 +284,7 @@ ATICrystalFrequencies[] =
 ATI18810Frequencies[] =
 {
      30240,  32000,  37500,  39000,  42954,  48771,      0,  36000,
-     40000,  56644,  75000,  65000,  50350,  56640,      0,  44900
+     40000,      0,  75000,  65000,  50350,  56640,      0,  44900
 },
 ATI188110Frequencies[] =
 {
@@ -319,7 +311,7 @@ ATIMach64CFrequencies[] =
          0,      0,      0,      0,  25180,  28320,      0,      0,
          0,      0,      0,      0,      0,      0,      0,      0
 },
-*ClockLine[] =
+*SpecificationClockLine[] =
 {
     NULL,
     ATIVGAClocks,
@@ -341,7 +333,7 @@ static const int
 ATIPre_2_1_1_Clocks_A[] =       /* Based on 18810 */
 {
      18000,  22450,  25175,  28320,  36000,  44900,  50350,  56640,
-     30240,  32000,  37500,  39000,  40000,  56644,  75000,  65000,
+     30240,  32000,  37500,  39000,  40000,      0,  75000,  65000,
         -1
 },
 ATIPre_2_1_1_Clocks_B[] =       /* Based on 18811-0 */
@@ -383,51 +375,54 @@ ATIPre_2_1_1_Clocks_E[] =       /* Based on programmable setting 2 */
 /*
  * Clock maps.
  */
-static const CARD8 Clock_Maps[][16] =
+static const CARD8 ClockMaps[][4] =
 {
     /* Null map */
-    {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15},
+    { 0, 1, 2, 3},
     /* VGA Wonder map <-> Mach{8,32,64} */
-    {  4,  5,  6,  7,  0,  1,  2,  3, 12, 13, 14, 15,  8,  9, 10, 11},
+    { 1, 0, 3, 2},
     /* VGA Wonder map <-> Accelerator */
-    {  0,  1,  2,  3,  8,  9, 10, 11,  4,  5,  6,  7, 12, 13, 14, 15},
+    { 0, 2, 1, 3},
     /* VGA -> Accelerator map */
-    {  8,  9, 10, 11,  0,  1,  2,  3, 12, 13, 14, 15,  4,  5,  6,  7},
+    { 2, 0, 3, 1},
     /* Accelerator -> VGA map */
-    {  4,  5,  6,  7, 12, 13, 14, 15,  0,  1,  2,  3,  8,  9, 10, 11}
+    { 1, 3, 0, 2}
 };
-#define ATIVGAWonderClockMap         Clock_Maps[0]
-#define ATIVGAWonderClockUnMap       ATIVGAWonderClockMap
-#define ATIMachVGAClockMap           Clock_Maps[1]
-#define ATIMachVGAClockUnMap         ATIMachVGAClockMap
-#define ATIVGAProgrammableClockMap   Clock_Maps[2]
-#define ATIVGAProgrammableClockUnMap ATIVGAProgrammableClockMap
-#define ATIAcceleratorClockMap       Clock_Maps[3]
-#define ATIAcceleratorClockUnMap     Clock_Maps[4]
-#define ATIProgrammableClockMap      Clock_Maps[0]
-#define ATIProgrammableClockUnMap    ATIProgrammableClockMap
-const CARD8 *ATIClockMap   = ATIVGAWonderClockMap;
-const CARD8 *ATIClockUnMap = ATIVGAWonderClockUnMap;
+#define ATIVGAWonderClockMap         ClockMaps[0]
+#define ATIVGAWonderClockUnmap       ATIVGAWonderClockMap
+#define ATIMachVGAClockMap           ClockMaps[1]
+#define ATIMachVGAClockUnmap         ATIMachVGAClockMap
+#define ATIVGAProgrammableClockMap   ClockMaps[2]
+#define ATIVGAProgrammableClockUnmap ATIVGAProgrammableClockMap
+#define ATIAcceleratorClockMap       ClockMaps[3]
+#define ATIAcceleratorClockUnmap     ClockMaps[4]
+#define ATIProgrammableClockMap      ClockMaps[0]
+#define ATIProgrammableClockUnmap    ATIProgrammableClockMap
+#define MapClockIndex(_ClockMap, _Index) \
+    (SetBits((_ClockMap)[GetBits((_Index), 0x0CU)], 0x0CU) | \
+     ((_Index) & ~0x0CU))
 
 /*
  * ATIClockSelect --
  *
- * This function selects the dot-clock with index 'Index'.  This is done by
- * setting bits in various registers (generic VGA uses two bits in the
- * miscellaneous output register to select from 4 clocks).  Care is taken to
- * protect any other bits in these registers by fetching their values and
- * masking off the other bits.
+ * This function sets clock select bits in various registers to a specified
+ * value.
  */
 static Bool
-ATIClockSelect(int Index)
+ATIClockSelect
+(
+    ScrnInfoPtr pScreenInfo,
+    int         Index
+)
 {
-    CARD8 misc;
+    ATIPtr   pATI   = ATIPTR(pScreenInfo);
+    CARD8    genmo;
 
-    switch(Index)
+    switch (Index)
     {
         case CLK_REG_SAVE:
-            if ((ATICurrentHWPtr->crtc == ATI_CRTC_VGA) && ATIChipHasVGAWonder)
-                ATIModifyExtReg(0xB5U, ATICurrentHWPtr->b5, 0x7FU, 0x00U);
+            if (pATI->CPIO_VGAWonder && (pATI->OldHW.crtc == ATI_CRTC_VGA))
+                ATIModifyExtReg(pATI, 0xB5U, pATI->OldHW.b5, 0x7FU, 0x00U);
             break;
 
         case CLK_REG_RESTORE:
@@ -435,16 +430,15 @@ ATIClockSelect(int Index)
 
         default:
             /* Remap clock number */
-            Index = ATICurrentHWPtr->ClockMap[Index & 0x0FU] |
-                (Index & ~0x0FU);
+            Index = MapClockIndex(pATI->OldHW.ClockMap, Index);
 
-            switch (ATICurrentHWPtr->crtc)
+            switch (pATI->OldHW.crtc)
             {
                 case ATI_CRTC_VGA:
-                    /* Set the generic two low-order bits */
-                    misc = (inb(R_GENMO) & 0xF3U) | ((Index << 2) & 0x0CU);
+                    /* Get generic two low-order bits */
+                    genmo = (inb(R_GENMO) & 0xF3U) | ((Index << 2) & 0x0CU);
 
-                    if (ATIChipHasVGAWonder)
+                    if (pATI->CPIO_VGAWonder)
                     {
                         /*
                          * On adapters with crystals, switching to one of the
@@ -453,56 +447,62 @@ ATIClockSelect(int Index)
                          * their selection.
                          */
                         if (((Index & 0x03U) == 0x02U) &&
-                           ((ATIChip <= ATI_CHIP_18800) ||
-                            (ATIAdapter == ATI_ADAPTER_V4)))
+                            ((pATI->Chip <= ATI_CHIP_18800) ||
+                             (pATI->Adapter == ATI_ADAPTER_V4)))
                             return FALSE;
 
                         /* Start sequencer reset */
-                        PutReg(SEQX, 0x00, 0x00);
+                        PutReg(SEQX, 0x00U, 0x00U);
 
-                        /* Set the high order bits */
-                        if (ATIChip <= ATI_CHIP_18800)
-                            ATIModifyExtReg(0xB2U, -1, 0xBFU, Index << 4);
+                        /* Set high-order bits */
+                        if (pATI->Chip <= ATI_CHIP_18800)
+                            ATIModifyExtReg(pATI, 0xB2U, -1, 0xBFU,
+                                Index << 4);
                         else
                         {
-                            ATIModifyExtReg(0xBEU, -1, 0xEFU, Index << 2);
-                            if (ATIAdapter != ATI_ADAPTER_V4)
+                            ATIModifyExtReg(pATI, 0xBEU, -1, 0xEFU,
+                                Index << 2);
+                            if (pATI->Adapter != ATI_ADAPTER_V4)
                             {
                                 Index >>= 1;
-                                ATIModifyExtReg(0xB9U, -1, 0xFDU, Index >> 1);
+                                ATIModifyExtReg(pATI, 0xB9U, -1, 0xFDU,
+                                    Index >> 1);
                             }
                         }
 
                         /* Set clock divider bits */
-                        ATIModifyExtReg(0xB8U, -1, 0x00U,
+                        ATIModifyExtReg(pATI, 0xB8U, -1, 0x00U,
                             (Index << 3) & 0xC0U);
                     }
-                    /*
-                     * Reject clocks that cannot be selected.
-                     */
                     else
                     {
-                        if (Index & 0xFCU)
+                        /*
+                         * Reject clocks that cannot be selected.
+                         */
+                        if (Index & ~0x03U)
                             return FALSE;
 
                         /* Start sequencer reset */
-                        PutReg(SEQX, 0x00, 0x00);
+                        PutReg(SEQX, 0x00U, 0x00U);
                     }
 
                     /* Must set miscellaneous output register last */
-                    outb(GENMO, misc);
+                    outb(GENMO, genmo);
 
-                    PutReg(SEQX, 0x00U, 0x03U); /* End sequencer reset */
+                    /* End sequencer reset */
+                    PutReg(SEQX, 0x00U, 0x03U);
+
                     break;
 
                 case ATI_CRTC_MACH64:
-                    outl(ATIIOPortCLOCK_CNTL, CLOCK_STROBE |
+                    outl(pATI->CPIO_CLOCK_CNTL, CLOCK_STROBE |
                         SetBits(Index, CLOCK_SELECT | CLOCK_DIVIDER));
                     break;
 
                 default:
                     return FALSE;
             }
+
             break;
     }
 
@@ -513,103 +513,116 @@ ATIClockSelect(int Index)
  * ATIMatchClockLine --
  *
  * This function tries to match the XF86Config clocks to one of an array of
- * clock lines.  It returns a clock line number (or 0).
+ * clock lines.  It returns a clock line number or 0.
  */
 static const int
-ATIMatchClockLine(const int **Clock_Line,
-                  const unsigned short int Number_Of_Clocks,
-                  const int Calibration_Clock_Number, const int Clock_Map)
+ATIMatchClockLine
+(
+    ScrnInfoPtr              pScreenInfo,
+    ATIPtr                   pATI,
+    const                int **ClockLine,
+    const unsigned short int NumberOfClocks,
+    const                int CalibrationClockNumber,
+    const                int ClockMap
+)
 {
-    int Clock_Chip = 0, Clock_Chip_Index = 0;
-    int Number_Of_Matching_Clocks = 0;
-    int Minimum_Gap = CLOCK_TOLERANCE + 1;
+    int ClockChip = 0, ClockChipIndex = 0;
+    int NumberOfMatchingClocks = 0;
+    int MinimumGap = CLOCK_TOLERANCE + 1;
 
-    /* For ATI boards, reject generic VGA clocks */
-    if ((ATIAdapter != ATI_ADAPTER_VGA) && (Clock_Line == ClockLine))
-        Clock_Chip_Index++;
+    /* For ATI adapters, reject generic VGA clocks */
+    if ((pATI->Adapter != ATI_ADAPTER_VGA) &&
+        (ClockLine == SpecificationClockLine))
+        ClockChipIndex++;
     /* If checking for XF86Config clock order, skip crystals */
-    if (Clock_Map)
-        Clock_Chip_Index++;
+    if (ClockMap)
+        ClockChipIndex++;
 
-    for (;  Clock_Line[++Clock_Chip_Index];  )
+    for (;  ClockLine[++ClockChipIndex];  )
     {
-        int Maximum_Gap = 0, Clock_Count = 0, Clock_Index = 0;
+        int MaximumGap = 0, ClockCount = 0, ClockIndex = 0;
 
-        for (;  Clock_Index < Number_Of_Clocks;  Clock_Index++)
+        for (;  ClockIndex < NumberOfClocks;  ClockIndex++)
         {
-            int Gap, XF86Config_Clock, Specification_Clock;
+            int Gap, XF86ConfigClock, SpecificationClock;
 
-            Specification_Clock = Clock_Line[Clock_Chip_Index]
-                  [Clock_Maps[Clock_Map][Clock_Index]];
-            if (Specification_Clock < 0)
+            SpecificationClock = ClockLine[ClockChipIndex]
+                [MapClockIndex(ClockMaps[ClockMap], ClockIndex)];
+            if (SpecificationClock < 0)
                 break;
-            if (!Specification_Clock ||
-               (Specification_Clock > vga256InfoRec.maxClock))
+            if (!SpecificationClock)
                 continue;
 
-            XF86Config_Clock = vga256InfoRec.clock[Clock_Index];
-            if (!XF86Config_Clock ||
-                (XF86Config_Clock > vga256InfoRec.maxClock))
+            XF86ConfigClock = pScreenInfo->clock[ClockIndex];
+            if (!XF86ConfigClock)
                 continue;
 
-            Gap = abs(XF86Config_Clock - Specification_Clock);
-            if (Gap >= Minimum_Gap)
-                goto skip_this_clock_generator;
+            Gap = abs(XF86ConfigClock - SpecificationClock);
+            if (Gap >= MinimumGap)
+                goto SkipThisClockGenerator;
             if (!Gap)
             {
-                if (Clock_Index == Calibration_Clock_Number)
+                if (ClockIndex == CalibrationClockNumber)
                     continue;
             }
-            else if (Gap > Maximum_Gap)
-                Maximum_Gap = Gap;
-            Clock_Count++;
+            else if (Gap > MaximumGap)
+                MaximumGap = Gap;
+            ClockCount++;
         }
 
-        if (Clock_Count <= Number_Of_Matching_Clocks)
+        if (ClockCount <= NumberOfMatchingClocks)
             continue;
-        Number_Of_Matching_Clocks = Clock_Count;
-        Clock_Chip = Clock_Chip_Index;
-        if (!(Minimum_Gap = Maximum_Gap))
+        NumberOfMatchingClocks = ClockCount;
+        ClockChip = ClockChipIndex;
+        if (!(MinimumGap = MaximumGap))
             break;
-    skip_this_clock_generator:
+
+SkipThisClockGenerator:
         /* For non-ATI adapters, only normalize standard VGA clocks */
-        if (ATIAdapter == ATI_ADAPTER_VGA)
+        if (pATI->Adapter == ATI_ADAPTER_VGA)
             break;
     }
 
-    return Clock_Chip;
+    return ClockChip;
 }
 
 /*
- * ATIClockProbe --
+ * ATIClockPreInit --
  *
- * This function is called by ATIProbe and handles the XF86Config clocks line
- * (or lack thereof).
+ * This function is called by ATIPreInit() and handles the XF86Config clocks
+ * line (or lack thereof).
  */
 void
-ATIClockProbe(void)
+ATIClockPreInit
+(
+    ScrnInfoPtr   pScreenInfo,
+    ATIPtr        pATI,
+    GDevPtr       pGDev,
+    ClockRangePtr pRange
+)
 {
-    unsigned short int Number_Of_Undivided_Clocks;
-    unsigned short int Number_Of_Dividers, Number_Of_Clocks;
-    int Calibration_Clock_Number, Calibration_Clock_Value;
-    int Clock_Index, Specification_Clock, Clock_Map = 0;
-    pointer saved_vgaBase = NULL;
-    CARD16 VSyncRegister = GENS1(vgaIOBase);
+    unsigned short int NumberOfUndividedClocks;
+    unsigned short int NumberOfDividers, NumberOfClocks;
+    int CalibrationClockNumber, CalibrationClockValue;
+    int ClockIndex, SpecificationClock, ClockMap = 0;
+    CARD16 VSyncRegister = GENS1(pATI->CPIO_VGABase);
     CARD8 VSyncBit = 0x08U;
 
     /*
      * Decide what to do about the XF86Config clocks for programmable clock
      * generators.
      */
-    if (ATIProgrammableClock != ATI_CLOCK_FIXED)
+    if (pATI->ProgrammableClock != ATI_CLOCK_FIXED)
     {
         /* Check for those that are not (yet) handled */
-        if (ATIProgrammableClock >= NumberOf(ATIClockDescriptors))
-            ErrorF("Unknown programmable clock generator type (0x%02X)"
-                   " detected.\n", ATIProgrammableClock);
-        else if (ATIClockDescriptor->MaxN <= 0)
-            ErrorF("Unsupported programmable clock generator detected:  %s.",
-               ATIClockDescriptor->ClockName);
+        if (pATI->ProgrammableClock > NumberOf(ATIClockDescriptors))
+            xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_WARNING, 0,
+                "Unknown programmable clock generator type (0x%02X)"
+                " detected.\n", pATI->ProgrammableClock);
+        else if (pATI->ClockDescriptor.MaxN <= 0)
+            xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_WARNING, 0,
+                "Unsupported programmable clock generator detected:  %s.\n",
+                pATI->ClockDescriptor.ClockName);
         else
         {
             /*
@@ -617,170 +630,174 @@ ATIClockProbe(void)
              * rest of the server about it and (re-)initializing the XF86Config
              * clocks line.
              */
-            OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
+            pRange->clockIndex = -1;
+            pScreenInfo->progClock = TRUE;
 
             /* Set internal clock ordering */
-            if (ATICRTC == ATI_CRTC_VGA)
+            if (pATI->NewHW.crtc == ATI_CRTC_VGA)
             {
-                ATIClockMap = ATIVGAProgrammableClockMap;
-                ATIClockUnMap = ATIVGAProgrammableClockUnMap;
+                pATI->NewHW.ClockMap = ATIVGAProgrammableClockMap;
+                pATI->NewHW.ClockUnmap = ATIVGAProgrammableClockUnmap;
             }
             else
             {
-                ATIClockMap = ATIProgrammableClockMap;
-                ATIClockUnMap = ATIProgrammableClockUnMap;
+                pATI->NewHW.ClockMap = ATIProgrammableClockMap;
+                pATI->NewHW.ClockUnmap = ATIProgrammableClockUnmap;
             }
 
-            if (xf86Verbose)
-            {
-                ErrorF("%s programmable clock generator detected.\n",
-                    ATIClockDescriptor->ClockName);
-                if (ATIReferenceDenominator == 1)
-                    ErrorF("Reference clock %.3f MHz.\n",
-                        ((double)ATIReferenceNumerator) / 1000.0);
-                else
-                    ErrorF("Reference clock %.6g/%d (%.3f) MHz.\n",
-                        ((double)ATIReferenceNumerator) / 1000.0,
-                        ATIReferenceDenominator,
-                        ((double)ATIReferenceNumerator) /
-                            ((double)ATIReferenceDenominator * 1000.0));
-            }
-
-            /* Clobber XF86Config clock line */
-            if (OFLG_ISSET(XCONFIG_CLOCKS, &vga256InfoRec.xconfigFlag))
-            {
-                OFLG_CLR(XCONFIG_CLOCKS, &vga256InfoRec.xconfigFlag);
-                ErrorF("XF86Config clocks specification ignored.\n");
-            }
-            if (ATIProgrammableClock == ATI_CLOCK_CH8398)
-            {   /* The first two are fixed */
-                vga256InfoRec.clocks = 2;
-                vga256InfoRec.clock[0] = 25175;
-                vga256InfoRec.clock[1] = 28322;
-            }
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+                "%s programmable clock generator detected.\n",
+                pATI->ClockDescriptor.ClockName);
+            if (pATI->ReferenceDenominator == 1)
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+                    "Reference clock %.3f MHz.\n",
+                    (double)pATI->ReferenceNumerator / 1000.0);
             else
-            {
-                vga256InfoRec.clocks = 0;
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+                    "Reference clock %.6g/%d (%.3f) MHz.\n",
+                    (double)pATI->ReferenceNumerator / 1000.0,
+                    pATI->ReferenceDenominator,
+                    (double)pATI->ReferenceNumerator /
+                        ((double)pATI->ReferenceDenominator * 1000.0));
 
-                if (ATIProgrammableClock == ATI_CLOCK_INTERNAL)
-                    /*
-                     * The integrated PLL generates clocks as if the reference
-                     * frequency were doubled.
-                     */
-                    ATIReferenceNumerator <<= 1;
+            /* Clobber XF86Config clocks line */
+            if (pGDev->numclocks)
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
+                    "XF86Config clocks specification ignored.\n");
+
+            if (pATI->ProgrammableClock == ATI_CLOCK_CH8398)
+            {   /* First two are fixed */
+                pScreenInfo->numClocks = 2;
+                pScreenInfo->clock[0] = 25175;
+                pScreenInfo->clock[1] = 28322;
             }
+            else if (pATI->ProgrammableClock == ATI_CLOCK_INTERNAL)
+            /*
+             * The integrated PLL generates clocks as if the reference
+             * frequency were doubled.
+             */
+                pATI->ReferenceNumerator <<= 1;
 
-            return;     /* to ATIProbe */
+            return;     /* ... to ATIPreInit() */
         }
     }
+
+    /* Set default clock maps */
+    pATI->NewHW.ClockMap = ATIVGAWonderClockMap;
+    pATI->NewHW.ClockUnmap = ATIVGAWonderClockUnmap;
 
     /*
      * Determine the number of clock values the adapter should be able to
      * generate and the dot clock to use for probe calibration.
      */
-probe_clocks:
-    if (ATIAdapter == ATI_ADAPTER_VGA)
+ProbeClocks:
+    if (pATI->Adapter == ATI_ADAPTER_VGA)
     {
-        Number_Of_Dividers = 1;
-        Number_Of_Undivided_Clocks = 4;
-        Calibration_Clock_Number = 1;
-        Calibration_Clock_Value = 28322;
+        NumberOfDividers = 1;
+        NumberOfUndividedClocks = 4;
+        CalibrationClockNumber = 1;
+        CalibrationClockValue = 28322;
     }
     else
     {
-        Number_Of_Dividers = 4;
-        if ((ATIChip <= ATI_CHIP_18800) || (ATIAdapter == ATI_ADAPTER_V4))
+        NumberOfDividers = 4;
+        if ((pATI->Chip <= ATI_CHIP_18800) ||
+            (pATI->Adapter == ATI_ADAPTER_V4))
         {
-            Number_Of_Undivided_Clocks = 8;
+            NumberOfUndividedClocks = 8;
             /* Actually, any undivided clock will do */
-            Calibration_Clock_Number = 1;
-            Calibration_Clock_Value = 56644;
+            CalibrationClockNumber = 1;
+            CalibrationClockValue = 56644;
         }
         else
         {
-            Number_Of_Undivided_Clocks = 16;
-            Calibration_Clock_Number = 10 /* or 11 */;
-            Calibration_Clock_Value = 75000 /* or 65000 */;
-            if (ATIChip >= ATI_CHIP_68800)
+            NumberOfUndividedClocks = 16;
+            CalibrationClockNumber = 10 /* or 11 */;
+            CalibrationClockValue = 75000 /* or 65000 */;
+            if (pATI->Chip >= ATI_CHIP_68800)
             {
-                Number_Of_Dividers = 2;
-                if (ATIChip >= ATI_CHIP_264CT)
+                NumberOfDividers = 2;
+                if (pATI->Chip >= ATI_CHIP_264CT)
                 {
-                    Number_Of_Dividers = 1;
-                    Number_Of_Undivided_Clocks = 4;
-                    Calibration_Clock_Number = 1;
-                    Calibration_Clock_Value = 28322;
+                    NumberOfDividers = 1;
+                    NumberOfUndividedClocks = 4;
+                    CalibrationClockNumber = 1;
+                    CalibrationClockValue = 28322;
                 }
 
                 /*
                  * When selecting clocks, all ATI accelerators use a different
                  * clock ordering.
                  */
-                if (ATICRTC == ATI_CRTC_VGA)
+                if (pATI->NewHW.crtc == ATI_CRTC_VGA)
                 {
-                    ATIClockMap = ATIMachVGAClockMap;
-                    ATIClockUnMap = ATIMachVGAClockUnMap;
+                    pATI->NewHW.ClockMap = ATIMachVGAClockMap;
+                    pATI->NewHW.ClockUnmap = ATIMachVGAClockUnmap;
                 }
                 else
                 {
-                    ATIClockMap = ATIAcceleratorClockMap;
-                    ATIClockUnMap = ATIAcceleratorClockUnMap;
+                    pATI->NewHW.ClockMap = ATIAcceleratorClockMap;
+                    pATI->NewHW.ClockUnmap = ATIAcceleratorClockUnmap;
                 }
             }
         }
     }
-    Number_Of_Clocks = Number_Of_Undivided_Clocks * Number_Of_Dividers;
+
+    pATI->OldHW.ClockMap = pATI->NewHW.ClockMap;
+    pATI->OldHW.ClockUnmap = pATI->NewHW.ClockUnmap;
+
+    NumberOfClocks = NumberOfUndividedClocks * NumberOfDividers;
 
     /*
      * Respect any XF86Config clocks line.  Well, that's the theory, anyway.
      * In practice, however, the regular use of probed values is widespread, at
      * times causing otherwise inexplicable results.  So, attempt to normalize
-     * the clocks to known (specification) values.
+     * the clocks to known (i.e. specification) values.
      */
-    if ((!vga256InfoRec.clocks) || xf86ProbeOnly ||
-        (OFLG_ISSET(OPTION_PROBE_CLKS, &vga256InfoRec.options)))
+    if (!pGDev->numclocks || pATI->OptionProbeClocks ||
+        xf86ServerIsOnlyProbing())
     {
-        if (ATIProgrammableClock != ATI_CLOCK_FIXED)
+        if (pATI->ProgrammableClock != ATI_CLOCK_FIXED)
         {
             /*
              * For unsupported programmable clock generators, pick the highest
              * frequency set by BIOS initialization for clock calibration.
              */
-            Calibration_Clock_Number = Calibration_Clock_Value = 0;
-            for (Clock_Index = 0;
-                 Clock_Index < Number_Of_Undivided_Clocks;
-                 Clock_Index++)
-                if (Calibration_Clock_Value < ATIBIOSClocks[Clock_Index])
+            CalibrationClockNumber = CalibrationClockValue = 0;
+            for (ClockIndex = 0;
+                 ClockIndex < NumberOfUndividedClocks;
+                 ClockIndex++)
+                if (CalibrationClockValue < pATI->BIOSClocks[ClockIndex])
                 {
-                    Calibration_Clock_Number = Clock_Index;
-                    Calibration_Clock_Value = ATIBIOSClocks[Clock_Index];
+                    CalibrationClockNumber = ClockIndex;
+                    CalibrationClockValue = pATI->BIOSClocks[ClockIndex];
                 }
-            Calibration_Clock_Number = ATIClockUnMap[Calibration_Clock_Number];
-            Calibration_Clock_Value *= 10;
+            CalibrationClockNumber =
+                MapClockIndex(pATI->NewHW.ClockUnmap, CalibrationClockNumber);
+            CalibrationClockValue *= 10;
         }
 
-        if (ATIVGAAdapter != ATI_ADAPTER_NONE)
+        if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
         {
             /*
              * The current video state needs to be saved before the clock
-             * probe, and restored after.  On some older adapters, the
-             * sequencer resets that occur during the clock probe cause memory
-             * corruption.
+             * probe, and restored after.  Video memory corruption and other
+             * effects occur because, at this early stage, the clock probe
+             * cannot reliably be prevented from enabling frequencies that are
+             * greater than what the adapter can handle.
              */
-            saved_vgaBase = vgaBase;
-            vgaBase = xf86MapVidMem(vga256InfoRec.scrnIndex, VGA_REGION,
-                (pointer)vga256InfoRec.VGAbase, ATI.ChipMapSize);
-            ATICurrentHWPtr = ATISave(NULL);
+            ATIMapApertures(pScreenInfo, pATI);
+            ATICRTCSave(pScreenInfo, pATI, &pATI->OldHW);
         }
 
-        switch (ATICurrentHWPtr->crtc)
+        switch (pATI->OldHW.crtc)
         {
             case ATI_CRTC_VGA:
                 /* Already set */
                 break;
 
             case ATI_CRTC_MACH64:
-                VSyncRegister = ATIIOPortCRTC_INT_CNTL + 0;
+                VSyncRegister = pATI->CPIO_CRTC_INT_CNTL;
                 VSyncBit = GetByte(CRTC_VBLANK, 0);
                 break;
 
@@ -789,38 +806,39 @@ probe_clocks:
         }
 
         /* Probe the adapter for clock values */
-        xf86GetClocks(Number_Of_Clocks, ATIClockSelect, (void (*)())NoopDDA,
-            (SaveScreenProcPtr)NoopDDA, VSyncRegister, VSyncBit,
-            Calibration_Clock_Number, Calibration_Clock_Value, &vga256InfoRec);
+        xf86GetClocks(pScreenInfo, NumberOfClocks, ATIClockSelect,
+            NULL, NULL, VSyncRegister, VSyncBit,
+            CalibrationClockNumber, CalibrationClockValue);
 
-        if (ATIVGAAdapter != ATI_ADAPTER_NONE)
+        if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
         {
             /* Restore video state */
-            ATIRestore(ATICurrentHWPtr);
-            xfree(ATICurrentHWPtr);
-            xf86UnMapVidMem(vga256InfoRec.scrnIndex, VGA_REGION, vgaBase,
-                ATI.ChipMapSize);
-            vgaBase = saved_vgaBase;
+            ATICRTCSet(pScreenInfo, pATI, &pATI->OldHW);
+            ATIUnmapApertures(pScreenInfo, pATI);
+            xfree(pATI->OldHW.frame_buffer);
+            pATI->OldHW.frame_buffer = NULL;
         }
 
         /* Tell user clocks were probed, instead of supplied */
-        OFLG_CLR(XCONFIG_CLOCKS, &vga256InfoRec.xconfigFlag);
+        pATI->OptionProbeClocks = TRUE;
 
         /* Attempt to match probed clocks to a known specification */
-        ATIClock = ATIMatchClockLine(ClockLine, Number_Of_Undivided_Clocks,
-            Calibration_Clock_Number, 0);
+        pATI->Clock = ATIMatchClockLine(pScreenInfo, pATI,
+            SpecificationClockLine, NumberOfUndividedClocks,
+            CalibrationClockNumber, 0);
 
-        if ((ATIChip <= ATI_CHIP_18800) || (ATIAdapter == ATI_ADAPTER_V4))
+        if ((pATI->Chip <= ATI_CHIP_18800) ||
+            (pATI->Adapter == ATI_ADAPTER_V4))
         {
             /* V3 and V4 adapters don't have clock chips */
-            if (ATIClock > ATI_CLOCK_CRYSTALS)
-                ATIClock = ATI_CLOCK_NONE;
+            if (pATI->Clock > ATI_CLOCK_CRYSTALS)
+                pATI->Clock = ATI_CLOCK_NONE;
         }
         else
         {
             /* All others don't have crystals */
-            if (ATIClock == ATI_CLOCK_CRYSTALS)
-                ATIClock = ATI_CLOCK_NONE;
+            if (pATI->Clock == ATI_CLOCK_CRYSTALS)
+                pATI->Clock = ATI_CLOCK_NONE;
         }
     }
     else
@@ -829,116 +847,154 @@ probe_clocks:
          * Allow for an initial subset of specification clocks.  Can't allow
          * for any more than that though...
          */
-        if (Number_Of_Clocks > vga256InfoRec.clocks)
+        if (NumberOfClocks > pGDev->numclocks)
         {
-            Number_Of_Clocks = vga256InfoRec.clocks;
-            if (Number_Of_Undivided_Clocks > Number_Of_Clocks)
-                Number_Of_Undivided_Clocks = Number_Of_Clocks;
+            NumberOfClocks = pGDev->numclocks;
+            if (NumberOfUndividedClocks > NumberOfClocks)
+                NumberOfUndividedClocks = NumberOfClocks;
         }
-        else
-            vga256InfoRec.clocks = Number_Of_Clocks;
+
+        /* Move XF86Config clocks into the ScrnInfoRec */
+        for (ClockIndex = 0;  ClockIndex < NumberOfClocks;  ClockIndex++)
+            pScreenInfo->clock[ClockIndex] = pGDev->clock[ClockIndex];
+        pScreenInfo->numClocks = NumberOfClocks;
 
         /* Attempt to match clocks to a known specification */
-        ATIClock =
-            ATIMatchClockLine(ClockLine, Number_Of_Undivided_Clocks, -1, 0);
+        pATI->Clock = ATIMatchClockLine(pScreenInfo, pATI,
+            SpecificationClockLine, NumberOfUndividedClocks, -1, 0);
 
-        if (ATIAdapter != ATI_ADAPTER_VGA)
+        if (pATI->Adapter != ATI_ADAPTER_VGA)
         {
-            if (ATIClock == ATI_CLOCK_NONE)
+            if (pATI->Clock == ATI_CLOCK_NONE)
             {
                 /*
                  * Reject certain clock lines that are obviously wrong.  This
-                 * includes the standard VGA clocks, and clock lines that could
-                 * have been used with the pre-2.1.1 driver.
+                 * includes the standard VGA clocks for non-ATI adapters, and
+                 * clock lines that could have been used with the pre-2.1.1
+                 * driver.
                  */
-                if (ATIMatchClockLine(InvalidClockLine, Number_Of_Clocks, -1, 0))
-                    vga256InfoRec.clocks = 0;
-                else if ((ATIChip > ATI_CHIP_18800) &&
-                         (ATIAdapter != ATI_ADAPTER_V4))
-                /*
-                 * Check for clocks that are specified in the wrong order.
-                 * This is meant to catch those who are trying to use the clock
-                 * order intended for the accelerated servers.
-                 */
-                while((++Clock_Map, Clock_Map %= NumberOf(Clock_Maps)))
-                    if ((ATIClock = ATIMatchClockLine(ClockLine,
-                        Number_Of_Undivided_Clocks, -1, Clock_Map)))
+                if (ATIMatchClockLine(pScreenInfo, pATI, InvalidClockLine,
+                    NumberOfClocks, -1, 0))
+                    pATI->OptionProbeClocks = TRUE;
+                else if ((pATI->Chip >= ATI_CHIP_18800) &&
+                         (pATI->Adapter != ATI_ADAPTER_V4))
+                {
+                    /*
+                     * Check for clocks that are specified in the wrong order.
+                     * This is meant to catch those who are trying to use the
+                     * clock order intended for the old accelerated servers.
+                     */
+                    while ((++ClockMap, ClockMap %= NumberOf(ClockMaps)))
                     {
-                        ErrorF("XF86Config clocks ordering incorrect.  Clocks"
-                               " will be reordered.\n See README.ati for more"
-                               " information.\n");
-                        break;
+                        pATI->Clock = ATIMatchClockLine(pScreenInfo, pATI,
+                            SpecificationClockLine, NumberOfUndividedClocks,
+                            -1, ClockMap);
+                        if (pATI->Clock != ATI_CLOCK_NONE)
+                        {
+                            xf86DrvMsgVerb(pScreenInfo->scrnIndex,
+                                X_WARNING, 0,
+                                "XF86Config clock ordering incorrect.  Clocks"
+                                " will be reordered." ATI_README);
+                            break;
+                        }
                     }
+                }
             }
             else
             /* Ensure crystals are not matched to clock chips, and vice versa */
-            if ((ATIChip <= ATI_CHIP_18800) || (ATIAdapter == ATI_ADAPTER_V4))
+            if ((pATI->Chip <= ATI_CHIP_18800) ||
+                (pATI->Adapter == ATI_ADAPTER_V4))
             {
-                if (ATIClock > ATI_CLOCK_CRYSTALS)
-                    vga256InfoRec.clocks = 0;
+                if (pATI->Clock > ATI_CLOCK_CRYSTALS)
+                    pATI->OptionProbeClocks = TRUE;
             }
             else
             {
-                if (ATIClock == ATI_CLOCK_CRYSTALS)
-                    vga256InfoRec.clocks = 0;
+                if (pATI->Clock == ATI_CLOCK_CRYSTALS)
+                    pATI->OptionProbeClocks = TRUE;
             }
 
-            if (!vga256InfoRec.clocks)
+            if (pATI->OptionProbeClocks)
             {
-                ErrorF("Invalid or obsolete XF86Config clocks line rejected.\n"
-                       " Clocks will be probed.  See README.ati for more"
-                       " information.\n");
-                goto probe_clocks;
+                xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_WARNING, 0,
+                    "Invalid or obsolete XF86Config clocks line rejected.\n"
+                    " Clocks will be probed." ATI_README);
+                goto ProbeClocks;
             }
         }
     }
 
-    if (ATIProgrammableClock != ATI_CLOCK_FIXED)
-        ATIProgrammableClock = ATI_CLOCK_FIXED;
-    else if (ATIClock == ATI_CLOCK_NONE)
-        ErrorF("Unknown clock generator detected.\n");
-    else if (xf86Verbose)
-        if (ATIClock == ATI_CLOCK_CRYSTALS)
-            ErrorF("This adapter uses crystals to generate clock"
-                   " frequencies.\n");
-        else if (ATIClock != ATI_CLOCK_VGA)
-            ErrorF("%s clock chip detected.\n", ATIClockNames[ATIClock]);
+    if (pATI->ProgrammableClock != ATI_CLOCK_FIXED)
+        pATI->ProgrammableClock = ATI_CLOCK_FIXED;
+    else if (pATI->Clock == ATI_CLOCK_NONE)
+        xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_WARNING, 0,
+            "Unknown clock generator detected.\n");
+    else if (pATI->Clock == ATI_CLOCK_CRYSTALS)
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+            "This adapter uses crystals to generate clock frequencies.\n");
+    else if (pATI->Clock != ATI_CLOCK_VGA)
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+            "%s clock chip detected.\n", ATIClockNames[pATI->Clock]);
 
-    if (ATIClock == ATI_CLOCK_NONE)
-        return;                 /* Don't touch the clocks */
-
-    /* Replace the undivided clocks with specification values */
-    for (Clock_Index = 0;
-         Clock_Index < Number_Of_Undivided_Clocks;
-         Clock_Index++)
+    if (pATI->Clock != ATI_CLOCK_NONE)
     {
-        /*
-         * Don't replace clocks that are probed, documented, or set by the user
-         * to zero.  One exception is that we need to override the user's value
-         * for the spare settings on a crystal-based adapter.  Another
-         * exception is when the user specifies the clock ordering intended for
-         * the accelerated servers.
-         */
-        Specification_Clock = ClockLine[ATIClock][Clock_Index];
-        if (Specification_Clock < 0)
-            break;
-        if (!Clock_Map)
+        /* Replace undivided clocks with specification values */
+        for (ClockIndex = 0;
+             ClockIndex < NumberOfUndividedClocks;
+             ClockIndex++)
         {
-            if (!vga256InfoRec.clock[Clock_Index])
-                continue;
-            if ((!Specification_Clock) && (ATIClock != ATI_CLOCK_CRYSTALS))
-                continue;
+            /*
+             * Don't replace clocks that are probed, documented, or set by the
+             * user to zero.  One exception is that we need to override the
+             * user's value for the spare settings on a crystal-based adapter.
+             * Another exception is when the user specifies the clock ordering
+             * intended for the old accelerated servers.
+             */
+            SpecificationClock =
+                SpecificationClockLine[pATI->Clock][ClockIndex];
+            if (SpecificationClock < 0)
+                break;
+            if (!ClockMap)
+            {
+                if (!pScreenInfo->clock[ClockIndex])
+                    continue;
+                if (!SpecificationClock)
+                {
+                    if (pATI->Clock != ATI_CLOCK_CRYSTALS)
+                        continue;
+                }
+                else
+                {
+                    /*
+                     * Due to the way clock lines are matched, the following
+                     * can prevent the override if the clock is probed,
+                     * documented or set by the user to a value greater than
+                     * MaximumClock.
+                     */
+                    if (abs(SpecificationClock -
+                            pScreenInfo->clock[ClockIndex]) > CLOCK_TOLERANCE)
+                        continue;
+                }
+            }
+            pScreenInfo->clock[ClockIndex] = SpecificationClock;
         }
-        vga256InfoRec.clock[Clock_Index] = Specification_Clock;
+
+        /* Adjust divided clocks */
+        for (ClockIndex = NumberOfUndividedClocks;
+             ClockIndex < NumberOfClocks;
+             ClockIndex++)
+            pScreenInfo->clock[ClockIndex] = ATIDivide(
+                pScreenInfo->clock[ClockIndex % NumberOfUndividedClocks],
+                (ClockIndex / NumberOfUndividedClocks) + 1, 0, 0);
     }
 
-    /* Adjust the divided clocks */
-    for (Clock_Index = Number_Of_Undivided_Clocks;
-         Clock_Index < Number_Of_Clocks;
-         Clock_Index++)
-        vga256InfoRec.clock[Clock_Index] = ATIDivide(
-            vga256InfoRec.clock[Clock_Index % Number_Of_Undivided_Clocks],
-                (Clock_Index / Number_Of_Undivided_Clocks) + 1, 0, 0);
+    /* Tell user about fixed clocks */
+    xf86ShowClocks(pScreenInfo, pATI->OptionProbeClocks ? X_PROBED : X_CONFIG);
+
+    /* Prevent selection of high clocks, even by V_CLKDIV2 modes */
+    for (ClockIndex = 0;  ClockIndex < NumberOfClocks;  ClockIndex++)
+        if (pScreenInfo->clock[ClockIndex] > pRange->maxClock)
+            pScreenInfo->clock[ClockIndex] = 0;
 }
 
 /*
@@ -947,115 +1003,123 @@ probe_clocks:
  * This function saves that part of an ATIHWRec that relates to clocks.
  */
 void
-ATIClockSave(ATIHWPtr save)
+ATIClockSave
+(
+    ScrnInfoPtr pScreenInfo,
+    ATIPtr      pATI,
+    ATIHWPtr    pATIHW
+)
 {
-    if (!xf86ProbeFailed && (ATIProgrammableClock != ATI_CLOCK_FIXED))
+    if (pScreenInfo->vtSema && (pATI->ProgrammableClock != ATI_CLOCK_FIXED))
     {
-        if (save->crtc == ATI_CRTC_VGA)
+        if (pATIHW->crtc == ATI_CRTC_VGA)
         {
-            save->ClockMap = ATIVGAProgrammableClockMap;
-            save->ClockUnMap = ATIVGAProgrammableClockUnMap;
+            pATIHW->ClockMap = ATIVGAProgrammableClockMap;
+            pATIHW->ClockUnmap = ATIVGAProgrammableClockUnmap;
         }
         else
         {
-            save->ClockMap = ATIProgrammableClockMap;
-            save->ClockUnMap = ATIProgrammableClockUnMap;
+            pATIHW->ClockMap = ATIProgrammableClockMap;
+            pATIHW->ClockUnmap = ATIProgrammableClockUnmap;
         }
     }
     else
     {
-        if (save->crtc != ATI_CRTC_VGA)
+        if (pATIHW->crtc != ATI_CRTC_VGA)
         {
-            save->ClockMap = ATIAcceleratorClockMap;
-            save->ClockUnMap = ATIAcceleratorClockUnMap;
+            pATIHW->ClockMap = ATIAcceleratorClockMap;
+            pATIHW->ClockUnmap = ATIAcceleratorClockUnmap;
         }
-        else if (ATIChip < ATI_CHIP_68800)
+        else if (pATI->Chip < ATI_CHIP_68800)
         {
-            save->ClockMap = ATIVGAWonderClockMap;
-            save->ClockUnMap = ATIVGAWonderClockUnMap;
+            pATIHW->ClockMap = ATIVGAWonderClockMap;
+            pATIHW->ClockUnmap = ATIVGAWonderClockUnmap;
         }
         else
         {
-            save->ClockMap = ATIMachVGAClockMap;
-            save->ClockUnMap = ATIMachVGAClockUnMap;
+            pATIHW->ClockMap = ATIMachVGAClockMap;
+            pATIHW->ClockUnmap = ATIMachVGAClockUnmap;
         }
     }
 }
 
 /*
- * ATIClockInit --
+ * ATIClockCalculate --
  *
- * This function is called by ATIInit to generate, if necessary, the data
- * needed for clock programming, and set the clock select bits in various
- * register values.
+ * This function is called to generate, if necessary, the data needed for clock
+ * programming, and set clock select bits in various register values.
  */
 Bool
-ATIClockInit(DisplayModePtr mode)
+ATIClockCalculate
+(
+    ScrnInfoPtr    pScreenInfo,
+    ATIPtr         pATI,
+    ATIHWPtr       pATIHW,
+    DisplayModePtr pMode
+)
 {
     int N, M, D;
-    int ClockSelect, N1, TargetClock, MinimumGap;
+    int ClockSelect, N1, MinimumGap;
     int Frequency, Multiple;            /* Used as temporaries */
 
     /* Set default values */
-    ATINewHWPtr->FeedbackDivider = ATINewHWPtr->ReferenceDivider =
-        ATINewHWPtr->PostDivider = 0;
+    pATIHW->FeedbackDivider = pATIHW->ReferenceDivider = pATIHW->PostDivider = 0;
 
-    if ((ATIProgrammableClock == ATI_CLOCK_FIXED) ||
-        ((ATIProgrammableClock == ATI_CLOCK_CH8398) && (mode->Clock < 2)))
+    if ((pATI->ProgrammableClock == ATI_CLOCK_FIXED) ||
+        ((pATI->ProgrammableClock == ATI_CLOCK_CH8398) &&
+         (pMode->ClockIndex < 2)))
     {
         /* Use a fixed clock */
-        ClockSelect = mode->Clock;
+        ClockSelect = pMode->ClockIndex;
     }
     else
     {
         /* Generate clock programme word, using units of kHz */
-        if (mode == ATI.ChipBuiltinModes)
-            TargetClock = mode->SynthClock;
-        else
-            TargetClock = vga256InfoRec.clock[mode->Clock];
-
         MinimumGap = ((unsigned int)(-1)) >> 1;
 
         /* Loop through reference dividers */
-        for (M = ATIClockDescriptor->MinM;  M <= ATIClockDescriptor->MaxM;  M++)
+        for (M = pATI->ClockDescriptor.MinM;
+             M <= pATI->ClockDescriptor.MaxM;
+             M++)
+        {
             /* Loop through post-dividers */
-            for (D = 0;  D < ATIClockDescriptor->NumD;  D++)
+            for (D = 0;  D < pATI->ClockDescriptor.NumD;  D++)
             {
-                if (!ATIClockDescriptor->PostDividers[D])
+                if (!pATI->ClockDescriptor.PostDividers[D])
                     continue;
 
                 /*
                  * Calculate closest feedback divider and apply its
                  * restrictions.
                  */
-                Multiple = M * ATIReferenceDenominator *
-                    ATIClockDescriptor->PostDividers[D];
-                N = ATIDivide(TargetClock * Multiple, ATIReferenceNumerator, 0,
-                    0);
-                if (N < ATIClockDescriptor->MinN)
-                    N = ATIClockDescriptor->MinN;
-                else if (N > ATIClockDescriptor->MaxN)
-                    N = ATIClockDescriptor->MaxN;
-                N -= ATIClockDescriptor->NAdjust;
-                N1 = (N / ATIClockDescriptor->N1) * ATIClockDescriptor->N2;
+                Multiple = M * pATI->ReferenceDenominator *
+                    pATI->ClockDescriptor.PostDividers[D];
+                N = ATIDivide(pMode->Clock * Multiple,
+                    pATI->ReferenceNumerator, 0, 0);
+                if (N < pATI->ClockDescriptor.MinN)
+                    N = pATI->ClockDescriptor.MinN;
+                else if (N > pATI->ClockDescriptor.MaxN)
+                    N = pATI->ClockDescriptor.MaxN;
+                N -= pATI->ClockDescriptor.NAdjust;
+                N1 = (N / pATI->ClockDescriptor.N1) * pATI->ClockDescriptor.N2;
                 if (N > N1)
-                    N = ATIDivide(N1 + 1, ATIClockDescriptor->N1, 0, 1);
-                N += ATIClockDescriptor->NAdjust;
-                N1 += ATIClockDescriptor->NAdjust;
+                    N = ATIDivide(N1 + 1, pATI->ClockDescriptor.N1, 0, 1);
+                N += pATI->ClockDescriptor.NAdjust;
+                N1 += pATI->ClockDescriptor.NAdjust;
 
                 for (;  ;  N = N1)
                 {
                     /* Pick the closest setting */
-                    Frequency = abs(ATIDivide(N * ATIReferenceNumerator,
-                        Multiple, 0, 0) - TargetClock);
+                    Frequency = abs(ATIDivide(N * pATI->ReferenceNumerator,
+                        Multiple, 0, 0) - pMode->Clock);
                     if ((Frequency < MinimumGap) ||
-                       ((Frequency == MinimumGap) &&
-                        (ATINewHWPtr->FeedbackDivider < N)))
+                        ((Frequency == MinimumGap) &&
+                         (pATIHW->FeedbackDivider < N)))
                     {
                         /* Save settings */
-                        ATINewHWPtr->FeedbackDivider = N;
-                        ATINewHWPtr->ReferenceDivider = M;
-                        ATINewHWPtr->PostDivider = D;
+                        pATIHW->FeedbackDivider = N;
+                        pATIHW->ReferenceDivider = M;
+                        pATIHW->PostDivider = D;
                         MinimumGap = Frequency;
                     }
 
@@ -1063,73 +1127,70 @@ ATIClockInit(DisplayModePtr mode)
                         break;
                 }
             }
+        }
 
-        Multiple = ATINewHWPtr->ReferenceDivider * ATIReferenceDenominator *
-            ATIClockDescriptor->PostDividers[ATINewHWPtr->PostDivider];
-        Frequency = ATINewHWPtr->FeedbackDivider * ATIReferenceNumerator;
+        Multiple = pATIHW->ReferenceDivider * pATI->ReferenceDenominator *
+            pATI->ClockDescriptor.PostDividers[pATIHW->PostDivider];
+        Frequency = pATIHW->FeedbackDivider * pATI->ReferenceNumerator;
         Frequency = ATIDivide(Frequency, Multiple, 0, 0);
-        if (abs(Frequency - TargetClock) > CLOCK_TOLERANCE)
+        if (abs(Frequency - pMode->Clock) > CLOCK_TOLERANCE)
         {
-            ErrorF("Unable to programme clock %.3fMHz for mode %s.\n",
-                (double)TargetClock / 1000.0, mode->name);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                "Unable to programme clock %.3fMHz for mode %s.\n",
+                (double)(pMode->Clock) / 1000.0, pMode->name);
             return FALSE;
         }
-        vga256InfoRec.clock[mode->Clock] = mode->SynthClock = Frequency;
-        ClockSelect = ATIClockNumberToProgramme;
+        pMode->SynthClock = Frequency;
+        ClockSelect = pATI->ClockNumberToProgramme;
 
-        if (xf86Verbose > 1)
-        {
-            ErrorF("\nProgramming clock %d to %.3fMHz for mode %s.\n",
-                mode->Clock, (double)Frequency / 1000.0, mode->name);
-            ErrorF(" N=%d, M=%d, D=%d, L=%d.\n",
-                ATINewHWPtr->FeedbackDivider, ATINewHWPtr->ReferenceDivider,
-                ATINewHWPtr->PostDivider, ClockSelect);
-        }
+        xf86ErrorFVerb(4,
+            "\n Programming clock %d to %.3fMHz for mode %s."
+            "  N=%d, M=%d, D=%d.\n",
+            ClockSelect, (double)Frequency / 1000.0, pMode->name,
+            pATIHW->FeedbackDivider, pATIHW->ReferenceDivider,
+            pATIHW->PostDivider);
 
-        if ((ATIChip >= ATI_CHIP_264VTB) && (ATIIODecoding == BLOCK_IO))
-            ATIDSPInit();               /* Setup DSP registers */
-
+        if ((pATI->Chip >= ATI_CHIP_264VTB) &&
+            (pATI->CPIODecoding == BLOCK_IO))
+            ATIDSPCalculate(pScreenInfo, pATI, pATIHW);
     }
 
     /* Set clock select bits, after remapping them */
-    ATINewHWPtr->std.NoClock = ClockSelect;     /* Save pre-map clock number */
-    ClockSelect = ATINewHWPtr->ClockMap[ClockSelect & 0x0FU] |
-        (ClockSelect & ~0x0FU);
+    pATIHW->clock = ClockSelect;        /* Save pre-map clock number */
+    ClockSelect = MapClockIndex(pATIHW->ClockMap, ClockSelect);
 
-    switch (ATICRTC)
+    switch (pATIHW->crtc)
     {
         case ATI_CRTC_VGA:
-            /* Set generic VGA clock select bits */
-            ATINewHWPtr->std.MiscOutReg =
-                (ATINewHWPtr->std.MiscOutReg & 0xF3U) |
-                    ((ClockSelect << 2) & 0x0CU);
+            pATIHW->genmo = (pATIHW->genmo & 0xF3U) |
+                ((ClockSelect << 2) & 0x0CU);
 
-            if (ATIChipHasVGAWonder)
+            if (pATI->CPIO_VGAWonder)
             {
                 /* Set ATI clock select bits */
-                if (ATIChip <= ATI_CHIP_18800)
-                    ATINewHWPtr->b2 = (ATINewHWPtr->b2 & 0xBFU) |
+                if (pATI->Chip <= ATI_CHIP_18800)
+                    pATIHW->b2 = (pATIHW->b2 & 0xBFU) |
                         ((ClockSelect << 4) & 0x40U);
                 else
                 {
-                    ATINewHWPtr->be = (ATINewHWPtr->be & 0xEFU) |
+                    pATIHW->be = (pATIHW->be & 0xEFU) |
                         ((ClockSelect << 2) & 0x10U);
-                    if (ATIAdapter != ATI_ADAPTER_V4)
+                    if (pATI->Adapter != ATI_ADAPTER_V4)
                     {
                         ClockSelect >>= 1;
-                        ATINewHWPtr->b9 = (ATINewHWPtr->b9 & 0xFDU) |
+                        pATIHW->b9 = (pATIHW->b9 & 0xFDU) |
                             ((ClockSelect >> 1) & 0x02U);
                     }
                 }
 
                 /* Set clock divider bits */
-                ATINewHWPtr->b8 = (ATINewHWPtr->b8 & 0x3FU) |
+                pATIHW->b8 = (pATIHW->b8 & 0x3FU) |
                     ((ClockSelect << 3) & 0xC0U);
             }
             break;
 
         case ATI_CRTC_MACH64:
-            ATINewHWPtr->clock_cntl = CLOCK_STROBE |
+            pATIHW->clock_cntl = CLOCK_STROBE |
                 SetBits(ClockSelect, CLOCK_SELECT | CLOCK_DIVIDER);
             break;
 
@@ -1141,48 +1202,51 @@ ATIClockInit(DisplayModePtr mode)
 }
 
 /*
- * ATIClockRestore --
+ * ATIClockSet --
  *
- * This function is called by ATIRestore to programme a clock for the mode
- * being set.
+ * This function is called to programme a clock for the mode being set.
  */
 void
-ATIClockRestore(ATIHWPtr restore)
+ATIClockSet
+(
+    ATIPtr      pATI,
+    ATIHWPtr    pATIHW
+)
 {
-    CARD8 saved_clock_cntl0, saved_crtc_gen_cntl3;
+    CARD8 clock_cntl0, crtc_gen_cntl3;
     CARD8 tmp, tmp2, tmp3;
     unsigned int Programme;
-    int N = restore->FeedbackDivider - ATIClockDescriptor->NAdjust;
-    int M = restore->ReferenceDivider - ATIClockDescriptor->MAdjust;
-    int D = restore->PostDivider;
+    int N = pATIHW->FeedbackDivider - pATI->ClockDescriptor.NAdjust;
+    int M = pATIHW->ReferenceDivider - pATI->ClockDescriptor.MAdjust;
+    int D = pATIHW->PostDivider;
 
     /* Temporarily switch to accelerator mode */
-    saved_crtc_gen_cntl3 = inb(ATIIOPortCRTC_GEN_CNTL + 3);
-    outb(ATIIOPortCRTC_GEN_CNTL + 3, saved_crtc_gen_cntl3 |
-        GetByte(CRTC_EXT_DISP_EN, 3));
+    crtc_gen_cntl3 = inb(pATI->CPIO_CRTC_GEN_CNTL + 3);
+    outb(pATI->CPIO_CRTC_GEN_CNTL + 3,
+        crtc_gen_cntl3 | GetByte(CRTC_EXT_DISP_EN, 3));
 
-    ATISetDACIOPorts(ATI_CRTC_MACH64);
+    ATISetDACIOPorts(pATI, ATI_CRTC_MACH64);
 
-    switch (ATIProgrammableClock)
+    switch (pATI->ProgrammableClock)
     {
         case ATI_CLOCK_ICS2595:
-            saved_clock_cntl0 = inb(ATIIOPortCLOCK_CNTL);
+            clock_cntl0 = inb(pATI->CPIO_CLOCK_CNTL);
 
-            Programme = (SetBits(restore->std.NoClock, ICS2595_CLOCK) |
+            Programme = (SetBits(pATIHW->clock, ICS2595_CLOCK) |
                 SetBits(N, ICS2595_FB_DIV) | SetBits(D, ICS2595_POST_DIV)) ^
                 ICS2595_TOGGLE;
 
             ATIDelay(50000);            /* 50 milliseconds */
 
-            (void) xf86DisableInterrupts();
+            (void)xf86DisableInterrupts();
 
             /* Send all 20 bits of programme word */
             while (Programme >= CLOCK_BIT)
             {
                 tmp = (Programme & CLOCK_BIT) | CLOCK_STROBE;
-                outb(ATIIOPortCLOCK_CNTL, tmp);
+                outb(pATI->CPIO_CLOCK_CNTL, tmp);
                 ATIDelay(26);           /* 26 microseconds */
-                outb(ATIIOPortCLOCK_CNTL, tmp | CLOCK_PULSE);
+                outb(pATI->CPIO_CLOCK_CNTL, tmp | CLOCK_PULSE);
                 ATIDelay(26);           /* 26 microseconds */
                 Programme >>= 1;
             }
@@ -1190,34 +1254,36 @@ ATIClockRestore(ATIHWPtr restore)
             xf86EnableInterrupts();
 
             /* Restore register */
-            outb(ATIIOPortCLOCK_CNTL, saved_clock_cntl0 | CLOCK_STROBE);
+            outb(pATI->CPIO_CLOCK_CNTL, clock_cntl0 | CLOCK_STROBE);
             break;
 
         case ATI_CLOCK_STG1703:
-            (void) ATIGetMach64DACCmdReg();
-            (void) inb(ATIIOPortDAC_MASK);
-            outb(ATIIOPortDAC_MASK, (restore->std.NoClock << 1) + 0x20U);
-            outb(ATIIOPortDAC_MASK, 0);
-            outb(ATIIOPortDAC_MASK, SetBits(N, 0xFFU));
-            outb(ATIIOPortDAC_MASK, SetBits(M, 0x1FU) | SetBits(D, 0xE0U));
+            (void)ATIGetDACCmdReg(pATI);
+            (void)inb(pATI->CPIO_DAC_MASK);
+            outb(pATI->CPIO_DAC_MASK, (pATIHW->clock << 1) + 0x20U);
+            outb(pATI->CPIO_DAC_MASK, 0);
+            outb(pATI->CPIO_DAC_MASK, SetBits(N, 0xFFU));
+            outb(pATI->CPIO_DAC_MASK, SetBits(M, 0x1FU) | SetBits(D, 0xE0U));
             break;
 
         case ATI_CLOCK_CH8398:
-            tmp = inb(ATIIOPortDAC_CNTL);
-            outb(ATIIOPortDAC_CNTL, tmp | (DAC_EXT_SEL_RS2 | DAC_EXT_SEL_RS3));
-            outb(ATIIOPortDAC_WRITE, restore->std.NoClock);
-            outb(ATIIOPortDAC_DATA, SetBits(N, 0xFFU));
-            outb(ATIIOPortDAC_DATA, SetBits(M, 0x3FU) | SetBits(D, 0xC0U));
-            outb(ATIIOPortDAC_CNTL, (tmp & ~DAC_EXT_SEL_RS2) | DAC_EXT_SEL_RS3);
+            tmp = inb(pATI->CPIO_DAC_CNTL);
+            outb(pATI->CPIO_DAC_CNTL,
+                tmp | (DAC_EXT_SEL_RS2 | DAC_EXT_SEL_RS3));
+            outb(pATI->CPIO_DAC_WRITE, pATIHW->clock);
+            outb(pATI->CPIO_DAC_DATA, SetBits(N, 0xFFU));
+            outb(pATI->CPIO_DAC_DATA, SetBits(M, 0x3FU) | SetBits(D, 0xC0U));
+            outb(pATI->CPIO_DAC_CNTL, tmp);
             break;
 
         case ATI_CLOCK_INTERNAL:
             /* Reset VCLK generator */
-            tmp3 = ATIGetMach64PLLReg(PLL_VCLK_CNTL) | PLL_VCLK_RESET;
+            tmp3 = ATIGetMach64PLLReg(PLL_VCLK_CNTL) |
+                (/* PLL_VCLK_SRC_SEL | */ PLL_VCLK_RESET);
             ATIPutMach64PLLReg(PLL_VCLK_CNTL, tmp3);
 
             /* Set post-divider */
-            tmp2 = restore->std.NoClock << 1;
+            tmp2 = pATIHW->clock << 1;
             tmp = ATIGetMach64PLLReg(PLL_VCLK_POST_DIV);
             tmp &= ~(0x03U << tmp2);
             tmp |= SetBits(D, 0x03U) << tmp2;
@@ -1225,12 +1291,12 @@ ATIClockRestore(ATIHWPtr restore)
 
             /* Set extended post-divider */
             tmp = ATIGetMach64PLLReg(PLL_XCLK_CNTL);
-            tmp &= ~(SetBits(1, PLL_VCLK0_XDIV) << restore->std.NoClock);
-            tmp |= SetBits(D >> 2, PLL_VCLK0_XDIV) << restore->std.NoClock;
+            tmp &= ~(SetBits(1, PLL_VCLK0_XDIV) << pATIHW->clock);
+            tmp |= SetBits(D >> 2, PLL_VCLK0_XDIV) << pATIHW->clock;
             ATIPutMach64PLLReg(PLL_XCLK_CNTL, tmp);
 
             /* Set feedback divider */
-            tmp = PLL_VCLK0_FB_DIV + restore->std.NoClock;
+            tmp = PLL_VCLK0_FB_DIV + pATIHW->clock;
             ATIPutMach64PLLReg(tmp, SetBits(N, 0xFFU));
 
             /* End VCLK generator reset */
@@ -1238,48 +1304,50 @@ ATIClockRestore(ATIHWPtr restore)
             ATIPutMach64PLLReg(PLL_VCLK_CNTL, tmp3);
 
             /* Reset write bit */
-            ATIAccessMach64PLLReg(0, FALSE);
+            ATIAccessMach64PLLReg(pATI, 0, FALSE);
             break;
 
         case ATI_CLOCK_ATT20C408:
-            (void) ATIGetMach64DACCmdReg();
-            tmp = inb(ATIIOPortDAC_MASK);
-            (void) ATIGetMach64DACCmdReg();
-            outb(ATIIOPortDAC_MASK, tmp | 1);
-            outb(ATIIOPortDAC_WRITE, 1);
-            outb(ATIIOPortDAC_MASK, tmp | 9);
+            (void)ATIGetDACCmdReg(pATI);
+            tmp = inb(pATI->CPIO_DAC_MASK);
+            (void)ATIGetDACCmdReg(pATI);
+            outb(pATI->CPIO_DAC_MASK, tmp | 1);
+            outb(pATI->CPIO_DAC_WRITE, 1);
+            outb(pATI->CPIO_DAC_MASK, tmp | 9);
             ATIDelay(400);              /* 400 microseconds */
-            tmp2 = (restore->std.NoClock << 2) + 0x40U;
-            outb(ATIIOPortDAC_WRITE, tmp2);
-            outb(ATIIOPortDAC_MASK, SetBits(N, 0xFFU));
-            outb(ATIIOPortDAC_WRITE, ++tmp2);
-            outb(ATIIOPortDAC_MASK, SetBits(M, 0x3FU) | SetBits(D, 0xC0U));
-            outb(ATIIOPortDAC_WRITE, ++tmp2);
-            outb(ATIIOPortDAC_MASK, 0x77U);
+            tmp2 = (pATIHW->clock << 2) + 0x40U;
+            outb(pATI->CPIO_DAC_WRITE, tmp2);
+            outb(pATI->CPIO_DAC_MASK, SetBits(N, 0xFFU));
+            outb(pATI->CPIO_DAC_WRITE, ++tmp2);
+            outb(pATI->CPIO_DAC_MASK, SetBits(M, 0x3FU) | SetBits(D, 0xC0U));
+            outb(pATI->CPIO_DAC_WRITE, ++tmp2);
+            outb(pATI->CPIO_DAC_MASK, 0x77U);
             ATIDelay(400);              /* 400 microseconds */
-            outb(ATIIOPortDAC_WRITE, 1);
-            outb(ATIIOPortDAC_MASK, tmp);
+            outb(pATI->CPIO_DAC_WRITE, 1);
+            outb(pATI->CPIO_DAC_MASK, tmp);
             break;
 
         case ATI_CLOCK_IBMRGB514:
-            tmp = inb(ATIIOPortDAC_CNTL);
-            outb(ATIIOPortDAC_CNTL, (tmp & ~DAC_EXT_SEL_RS3) | DAC_EXT_SEL_RS2);
-            tmp = (restore->std.NoClock << 1) + 0x20U;
-            outb(ATIIOPortDAC_WRITE, tmp);
-            outb(ATIIOPortDAC_DATA, 0);
-            outb(ATIIOPortDAC_MASK,
+            tmp = inb(pATI->CPIO_DAC_CNTL);
+            outb(pATI->CPIO_DAC_CNTL,
+                (tmp & ~DAC_EXT_SEL_RS3) | DAC_EXT_SEL_RS2);
+            tmp2 = (pATIHW->clock << 1) + 0x20U;
+            outb(pATI->CPIO_DAC_WRITE, tmp2);
+            outb(pATI->CPIO_DAC_DATA, 0);
+            outb(pATI->CPIO_DAC_MASK,
                 (SetBits(N, 0x3FU) | SetBits(D, 0xC0U)) ^ 0xC0U);
-            outb(ATIIOPortDAC_WRITE, tmp + 1);
-            outb(ATIIOPortDAC_DATA, 0);
-            outb(ATIIOPortDAC_MASK, SetBits(M, 0x3FU));
+            outb(pATI->CPIO_DAC_WRITE, tmp2 + 1);
+            outb(pATI->CPIO_DAC_DATA, 0);
+            outb(pATI->CPIO_DAC_MASK, SetBits(M, 0x3FU));
+            outb(pATI->CPIO_DAC_CNTL, tmp);
             break;
 
         default:
             break;
     }
 
-    (void) inb(ATIIOPortDAC_WRITE);     /* Clear DAC counter */
+    (void)inb(pATI->CPIO_DAC_WRITE);    /* Clear DAC counter */
 
     /* Restore register */
-    outl(ATIIOPortCRTC_GEN_CNTL + 3, saved_crtc_gen_cntl3);
+    outb(pATI->CPIO_CRTC_GEN_CNTL + 3, crtc_gen_cntl3);
 }

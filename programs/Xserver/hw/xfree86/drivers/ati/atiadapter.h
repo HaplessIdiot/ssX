@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,28 +24,28 @@
 #ifndef ___ATIADAPTER_H___
 #define ___ATIADAPTER_H___ 1
 
-#include "Xmd.h"
-
 /*
  * Adapter-related definitions.
  */
-#define ATI_ADAPTER_NONE        0
-#define ATI_ADAPTER_EGA         1
-#define ATI_ADAPTER_EGA_PLUS    2
-#define ATI_ADAPTER_VGA         3
-#define ATI_ADAPTER_BASIC       4
-#define ATI_ADAPTER_V3          5
-#define ATI_ADAPTER_V4          6
-#define ATI_ADAPTER_V5          7
-#define ATI_ADAPTER_PLUS        8
-#define ATI_ADAPTER_XL          9
-#define ATI_ADAPTER_NONISA     10
-#define ATI_ADAPTER_8514A      11
-#define ATI_ADAPTER_MACH8      12
-#define ATI_ADAPTER_MACH32     13
-#define ATI_ADAPTER_MACH64     14
-extern CARD8 ATIAdapter;
-extern CARD8 ATIVGAAdapter;
+typedef enum
+{
+    ATI_ADAPTER_NONE = 0,
+    ATI_ADAPTER_EGA,
+    ATI_ADAPTER_EGA_PLUS,
+    ATI_ADAPTER_VGA,
+    ATI_ADAPTER_BASIC,
+    ATI_ADAPTER_V3,
+    ATI_ADAPTER_V4,
+    ATI_ADAPTER_V5,
+    ATI_ADAPTER_PLUS,
+    ATI_ADAPTER_XL,
+    ATI_ADAPTER_NONISA,
+    ATI_ADAPTER_8514A,
+    ATI_ADAPTER_MACH8,
+    ATI_ADAPTER_MACH32,
+    ATI_ADAPTER_MACH64
+} ATIAdapterType;
+
 extern const char *ATIAdapterNames[];
 
 #endif /* ___ATIADAPTER_H___ */

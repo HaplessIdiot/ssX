@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.3 1998/03/20 21:06:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.4tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,69 +24,89 @@
 #ifndef ___ATICHIP_H___
 #define ___ATICHIP_H___ 1
 
-#include "atiproto.h"
-#include "Xmd.h"
+#include "atipriv.h"
+#include "atiregs.h"
 
 /*
  * Chip-related definitions.
  */
-#define ATI_CHIP_NONE      0
-#define ATI_CHIP_VGA       1    /* Generic VGA */
-#define ATI_CHIP_18800     2
-#define ATI_CHIP_18800_1   3
-#define ATI_CHIP_28800_2   4
-#define ATI_CHIP_28800_4   5
-#define ATI_CHIP_28800_5   6
-#define ATI_CHIP_28800_6   7
-#define ATI_CHIP_8514A     8    /* 8514/A */
-#define ATI_CHIP_CT480     9    /* 8514/A clone */
-#define ATI_CHIP_38800_1  10    /* Mach8 */
-#define ATI_CHIP_68800    11    /* Mach32 */
-#define ATI_CHIP_68800_3  12    /* Mach32 */
-#define ATI_CHIP_68800_6  13    /* Mach32 */
-#define ATI_CHIP_68800LX  14    /* Mach32 */
-#define ATI_CHIP_68800AX  15    /* Mach32 */
-#define ATI_CHIP_88800GXC 16    /* Mach64 */
-#define ATI_CHIP_88800GXD 17    /* Mach64 */
-#define ATI_CHIP_88800GXE 18    /* Mach64 */
-#define ATI_CHIP_88800GXF 19    /* Mach64 */
-#define ATI_CHIP_88800GX  20    /* Mach64 */
-#define ATI_CHIP_88800CX  21    /* Mach64 */
-#define ATI_CHIP_264CT    22    /* Mach64 */
-#define ATI_CHIP_264ET    23    /* Mach64 */
-#define ATI_CHIP_264VT    24    /* Mach64 */
-#define ATI_CHIP_264GT    25    /* Mach64 */
-#define ATI_CHIP_264VTB   26    /* Mach64 */
-#define ATI_CHIP_264GTB   27    /* Mach64 */
-#define ATI_CHIP_264VT3   28    /* Mach64 */
-#define ATI_CHIP_264GTDVD 29    /* Mach64 */
-#define ATI_CHIP_264LT    30    /* Mach64 */
-#define ATI_CHIP_264VT4   31    /* Mach64 */
-#define ATI_CHIP_264GT2C  32    /* Mach64 */
-#define ATI_CHIP_264GTPRO 33    /* Mach64 */
-#define ATI_CHIP_264LTPRO 34    /* Mach64 */
-#define ATI_CHIP_Mach64   35    /* Mach64 */
-extern CARD8 ATIChip;
+typedef enum
+{
+    ATI_CHIP_NONE = 0,
+    ATI_CHIP_VGA,       /* Generic VGA */
+    ATI_CHIP_18800,
+    ATI_CHIP_18800_1,
+    ATI_CHIP_28800_2,
+    ATI_CHIP_28800_4,
+    ATI_CHIP_28800_5,
+    ATI_CHIP_28800_6,
+    ATI_CHIP_8514A,     /* 8514/A */
+    ATI_CHIP_CT480,     /* 8514/A clone */
+    ATI_CHIP_38800_1,   /* Mach8 */
+    ATI_CHIP_68800,     /* Mach32 */
+    ATI_CHIP_68800_3,   /* Mach32 */
+    ATI_CHIP_68800_6,   /* Mach32 */
+    ATI_CHIP_68800LX,   /* Mach32 */
+    ATI_CHIP_68800AX,   /* Mach32 */
+    ATI_CHIP_88800GXC,  /* Mach64 */
+    ATI_CHIP_88800GXD,  /* Mach64 */
+    ATI_CHIP_88800GXE,  /* Mach64 */
+    ATI_CHIP_88800GXF,  /* Mach64 */
+    ATI_CHIP_88800GX,   /* Mach64 */
+    ATI_CHIP_88800CX,   /* Mach64 */
+    ATI_CHIP_264CT,     /* Mach64 */
+    ATI_CHIP_264ET,     /* Mach64 */
+    ATI_CHIP_264VT,     /* Mach64 */
+    ATI_CHIP_264GT,     /* Mach64 */
+    ATI_CHIP_264VTB,    /* Mach64 */
+    ATI_CHIP_264GTB,    /* Mach64 */
+    ATI_CHIP_264VT3,    /* Mach64 */
+    ATI_CHIP_264GTDVD,  /* Mach64 */
+    ATI_CHIP_264LT,     /* Mach64 */
+    ATI_CHIP_264VT4,    /* Mach64 */
+    ATI_CHIP_264GT2C,   /* Mach64 */
+    ATI_CHIP_264GTPRO,  /* Mach64 */
+    ATI_CHIP_264LTPRO,  /* Mach64 */
+    ATI_CHIP_264XL,     /* Mach64 */
+    ATI_CHIP_Mach64     /* Mach64 */
+} ATIChipType;
+
 extern const char *ATIChipNames[];
 
 /*
  * Foundry codes for 264xT's.
  */
-#define ATI_FOUNDRY_SGS  0      /* SGS-Thompson */
-#define ATI_FOUNDRY_NEC  1      /* NEC */
-#define ATI_FOUNDRY_KSC  2      /* KSC (?) */
-#define ATI_FOUNDRY_UMC  3      /* United Microelectronics Corporation */
-#define ATI_FOUNDRY_4    4
-#define ATI_FOUNDRY_5    5
-#define ATI_FOUNDRY_6    6
-#define ATI_FOUNDRY_UMCA 7      /* UMC alternate */
-extern CARD16 ATIChipType, ATIChipClass, ATIChipRevision;
-extern CARD16 ATIChipVersion, ATIChipFoundry;
-extern CARD8 ATIChipHasSUBSYS_CNTL;
-extern CARD8 ATIChipHasVGAWonder;
+typedef enum
+{
+    ATI_FOUNDRY_SGS,    /* SGS-Thompson */
+    ATI_FOUNDRY_NEC,    /* NEC */
+    ATI_FOUNDRY_KSC,    /* KSC (?) */
+    ATI_FOUNDRY_UMC,    /* United Microelectronics Corporation */
+    ATI_FOUNDRY_4,
+    ATI_FOUNDRY_5,
+    ATI_FOUNDRY_6,
+    ATI_FOUNDRY_UMCA    /* UMC alternate */
+} ATIFoundryType;
+
 extern const char *ATIFoundryNames[];
 
-extern void ATIMach32ChipID FunctionPrototype((void));
-extern void ATIMach64ChipID FunctionPrototype((const CARD16));
+extern void        ATIMach32ChipID FunctionPrototype((ATIPtr));
+extern void        ATIMach64ChipID FunctionPrototype((ATIPtr, const CARD16));
+extern ATIChipType ATIChipID       FunctionPrototype((const CARD16,
+                                                      const CARD8));
+
+#define OldChipID(_1, _0) \
+    (SetBits(_0 - 'A', CHIP_CODE_0) | SetBits(_1 - 'A', CHIP_CODE_1))
+
+#define NewChipID(_1, _0) \
+    (SetBits(_0, CFG_CHIP_TYPE0) | SetBits(_1, CFG_CHIP_TYPE1))
+
+#define OldToNewChipID(_ChipID) \
+    (SetBits(GetBits(_ChipID, CHIP_CODE_0) + 'A', CFG_CHIP_TYPE0) | \
+     SetBits(GetBits(_ChipID, CHIP_CODE_1) + 'A', CFG_CHIP_TYPE1))
+
+#define NewToOldChipID(_ChipID) \
+    (SetBits(GetBits(_ChipID, CFG_CHIP_TYPE0) - 'A', CHIP_CODE_0) | \
+    (SetBits(GetBits(_ChipID, CFG_CHIP_TYPE1) - 'A', CHIP_CODE_1))
 
 #endif /* ___ATICHIP_H___ */

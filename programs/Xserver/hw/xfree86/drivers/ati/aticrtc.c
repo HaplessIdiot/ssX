@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.4tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,117 +23,110 @@
 
 #include "ati.h"
 #include "atiadapter.h"
-#include "atiadjust.h"
 #include "atichip.h"
-#include "aticlock.h"
-#include "aticonsole.h"
 #include "atidac.h"
-#include "atidepth.h"
 #include "atidsp.h"
-#include "atiio.h"
 #include "atimach64.h"
 #include "atiprint.h"
 #include "ativga.h"
-#include "atividmem.h"
 #include "atiwonder.h"
-#include "xf86Procs.h"
-#include "xf86_ansic.h"
-
-/* The CRTC to use for server generated video modes */
-CARD8 ATICRTC = ATI_CRTC_VGA;
-
-/* The current video mode */
-ATIHWPtr ATICurrentHWPtr;
 
 /*
  * ATICopyVGAMemory --
  *
- * This function is called by ATISwap to copy to/from one or all banks of a VGA
- * plane.
+ * This function is called to copy one or all banks of a VGA plane.
  */
 static void
-ATICopyVGAMemory(void **saveptr, void **from, void **to)
+ATICopyVGAMemory
+(
+    ATIPtr   pATI,
+    ATIHWPtr pATIHW,
+    pointer  *saveptr,
+    pointer  *from,
+    pointer  *to
+)
 {
-    unsigned int Bank;
+    unsigned int iBank;
 
-    for (Bank = 0;  Bank < ATICurrentBanks;  Bank++)
+    for (iBank = 0;  iBank < pATIHW->nBank;  iBank++)
     {
-        ATISelectBank(Bank);
-        (void) memmove(*to, *from, ATI.ChipSegmentSize);
-        *saveptr = (char *)(*saveptr) + ATI.ChipSegmentSize;
+        (*pATIHW->SetBank)(pATI, iBank);
+        (void) memcpy(*to, *from, 0x00010000U);
+        *saveptr = (char *)(*saveptr) + 0x00010000U;
     }
 }
 
 /*
  * ATISwap --
  *
- * This function saves/restores video memory contents during sequencer resets.
- * This is used to remember the mode on server entry and during mode switches.
+ * This function saves/restores video memory contents during video mode
+ * switches.
  */
 static void
-ATISwap(ATIHWPtr mode, Bool ToFB)
+ATISwap
+(
+    ScrnInfoPtr pScreenInfo,
+    ATIPtr      pATI,
+    ATIHWPtr    pATIHW,
+    Bool        ToFB
+)
 {
-    void *save, **from, **to;
+    pointer save, *from, *to;
+    unsigned int iPlane = 0, PlaneMask = 1;
     CARD8 seq2, seq4, gra1, gra3, gra4, gra5, gra6, gra8;
-    unsigned int Plane = 0, PlaneMask = 1;
 
     /*
      * This is only done for non-accelerator modes.  If the video state on
      * server entry was an accelerator mode, the application that relinquished
      * the console had better do the Right Thing (tm) anyway by saving and
-     * restoring its own video memory.
+     * restoring its own video memory contents.
      */
-    if (mode->crtc != ATI_CRTC_VGA)
-        return;
-
-    /*
-     * There's also no need to do this if the VGA aperture isn't accessible
-     * through the adapter being driven.
-     */
-    if ( /* (mode->crtc == ATI_CRTC_VGA) && */
-        (mode != ATINewHWPtr) && (ATIVGAAdapter == ATI_ADAPTER_NONE))
+    if (pATIHW->crtc != ATI_CRTC_VGA)
         return;
 
     if (ToFB)
     {
-        if (!mode->frame_buffer)
+        if (!pATIHW->frame_buffer)
             return;
 
         from = &save;
-        to = &vgaBase;
+        to = &pATI->pBank;
     }
     else
     {
         /* Allocate the memory */
-        if (!mode->frame_buffer)
+        if (!pATIHW->frame_buffer)
         {
-            mode->frame_buffer =
-                (pointer)xalloc(ATI.ChipSegmentSize * ATICurrentPlanes *
-                    ATICurrentBanks);
-            if (!mode->frame_buffer)
+            pATIHW->frame_buffer =
+                (pointer)xalloc(pATIHW->nBank * pATIHW->nPlane * 0x00010000U);
+            if (!pATIHW->frame_buffer)
             {
-                ErrorF("Warning:  Temporary frame buffer could not be"
-                       " allocated.\n");
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                    "Temporary frame buffer could not be allocated.\n");
                 return;
             }
         }
 
-        from = &vgaBase;
+        from = &pATI->pBank;
         to = &save;
     }
 
-    /* Save register values to be changed */
+    /* Turn off screen */
+    ATIVGASaveScreen(pATI, FALSE);
+
+    /* Save register values to be modified */
     seq2 = GetReg(SEQX, 0x02U);
     seq4 = GetReg(SEQX, 0x04U);
     gra1 = GetReg(GRAX, 0x01U);
     gra3 = GetReg(GRAX, 0x03U);
+    gra4 = GetReg(GRAX, 0x04U);
     gra5 = GetReg(GRAX, 0x05U);
     gra6 = GetReg(GRAX, 0x06U);
     gra8 = GetReg(GRAX, 0x08U);
 
-    save = mode->frame_buffer;
+    save = pATIHW->frame_buffer;
 
-    /* Temporarily normalize the current mode */
+    /* Temporarily normalize the mode */
     if (gra1 != 0x00U)
         PutReg(GRAX, 0x01U, 0x00U);
     if (gra3 != 0x00U)
@@ -150,7 +143,7 @@ ATISwap(ATIHWPtr mode, Bool ToFB)
             PutReg(SEQX, 0x02U, 0x0FU);
         if (seq4 != 0x0AU)
             PutReg(SEQX, 0x04U, 0x0AU);
-        if (ATIChip < ATI_CHIP_264CT)
+        if (pATI->Chip < ATI_CHIP_264CT)
         {
             if (gra5 != 0x00U)
                 PutReg(GRAX, 0x05U, 0x00U);
@@ -161,13 +154,13 @@ ATISwap(ATIHWPtr mode, Bool ToFB)
                 PutReg(GRAX, 0x05U, 0x40U);
         }
 
-        ATICopyVGAMemory(&save, from, to);
+        ATICopyVGAMemory(pATI, pATIHW, &save, from, to);
 
         if (seq2 != 0x0FU)
             PutReg(SEQX, 0x02U, seq2);
         if (seq4 != 0x0AU)
             PutReg(SEQX, 0x04U, seq4);
-        if (ATIChip < ATI_CHIP_264CT)
+        if (pATI->Chip < ATI_CHIP_264CT)
         {
             if (gra5 != 0x00U)
                 PutReg(GRAX, 0x05U, gra5);
@@ -188,11 +181,11 @@ ATISwap(ATIHWPtr mode, Bool ToFB)
         if (gra5 != 0x00U)
             PutReg(GRAX, 0x05U, 0x00U);
 
-        for (;  Plane < ATICurrentPlanes;  Plane++)
+        for (;  iPlane < pATIHW->nPlane;  iPlane++)
         {
             PutReg(SEQX, 0x02U, PlaneMask);
-            PutReg(GRAX, 0x04U, Plane);
-            ATICopyVGAMemory(&save, from, to);
+            PutReg(GRAX, 0x04U, iPlane);
+            ATICopyVGAMemory(pATI, pATIHW, &save, from, to);
             PlaneMask <<= 1;
         }
 
@@ -214,311 +207,153 @@ ATISwap(ATIHWPtr mode, Bool ToFB)
     if (gra8 != 0xFFU)
         PutReg(GRAX, 0x08U, gra8);
 
-    ATISelectBank(0);                   /* Reset to bank 0 */
+    /* Back to bank 0 */
+    (*pATIHW->SetBank)(pATI, 0);
 
     /*
      * If restoring video memory for a server video mode, free the frame buffer
      * save area.
      */
-    if (ToFB && (mode != (ATIHWPtr)vgaOrigVideoState))
+    if (ToFB && (pATIHW == &pATI->NewHW))
     {
-        xfree(mode->frame_buffer);
-        mode->frame_buffer = NULL;
+        xfree(pATIHW->frame_buffer);
+        pATIHW->frame_buffer = NULL;
     }
 }
 
 /*
- * ATISave --
+ * ATICRTCPreInit --
  *
- * This function saves the video state.  It reads all of the SVGA registers
- * into the ATIHWRec data structure.  There is in general no need to mask out
- * bits here - just read the registers.
+ * This function initializes an ATIHWRec with information common to all video
+ * states generated by the driver.
  */
-void *
-ATISave(void *data)
+void
+ATICRTCPreInit
+(
+    ScrnInfoPtr pScreenInfo,
+    ATIPtr      pATI,
+    ATIHWPtr    pATIHW
+)
 {
-    ATIHWPtr save = data;
-
-    /* If need be, allocate the data structure */
-    if (!save)
-        save = (ATIHWPtr)xcalloc(1, SizeOf(ATIHWRec));
-
-    /* Unlock registers */
-    ATIEnterLeave(ENTER);
-
-    /* Figure out what CRTC got us into this mess */
-    save->crtc = ATI_CRTC_VGA;
-#if 0   /* Not yet */
-    if (ATIChipHasSUBSYS_CNTL)
+    if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
     {
-    }
-    else
-#endif
-    if (ATIChip >= ATI_CHIP_88800GXC)
-    {
-        save->crtc_gen_cntl = inl(ATIIOPortCRTC_GEN_CNTL);
-        if (save->crtc_gen_cntl & CRTC_EXT_DISP_EN)
-            save->crtc = ATI_CRTC_MACH64;
+        /* Fill in VGA data */
+        ATIVGAPreInit(pScreenInfo, pATI, pATIHW);
+
+        /* Fill in VGA Wonder data */
+        if (pATI->CPIO_VGAWonder)
+            ATIVGAWonderPreInit(pScreenInfo, pATI, pATIHW);
     }
 
-    ATISelectBank(0);                   /* Get back to bank 0 */
-    save->bank_function = ATISelectBankFunction;
-    save->banks = ATICurrentBanks;
-    save->planes = ATICurrentPlanes;
+    /* Fill in Mach64 data */
+    if (pATI->Chip >= ATI_CHIP_88800GXC)
+        ATIMach64PreInit(pScreenInfo, pATI, pATIHW);
+
+    /* For now disable extended reference and feedback dividers */
+    if (pATI->Chip >= ATI_CHIP_264LT)
+        pATIHW->pll_ext_vpll_cntl = ATIGetMach64PLLReg(PLL_EXT_VPLL_CNTL) &
+            ~(PLL_EXT_VPLL_EN | PLL_EXT_VPLL_VGA_EN | PLL_EXT_VPLL_INSYNC);
+
+    /* Set RAMDAC data */
+    ATIDACPreInit(pScreenInfo, pATIHW);
+}
+
+/*
+ * ATICRTCSave --
+ *
+ * This function saves the curent video state.
+ */
+void
+ATICRTCSave
+(
+    ScrnInfoPtr pScreenInfo,
+    ATIPtr      pATI,
+    ATIHWPtr    pATIHW
+)
+{
+    /* Get bank to bank 0 */
+    (*pATIHW->SetBank)(pATI, 0);
 
     /* Save clock data */
-    ATIClockSave(save);
+    ATIClockSave(pScreenInfo, pATI, pATIHW);
+    if (pATI->Chip >= ATI_CHIP_264LT)
+        pATIHW->pll_ext_vpll_cntl = ATIGetMach64PLLReg(PLL_EXT_VPLL_CNTL);
 
-    switch (save->crtc)
+    if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
     {
-        case ATI_CRTC_VGA:
-            if (ATIVGAAdapter != ATI_ADAPTER_NONE)
-            {
-                /* Save VGA Wonder registers */
-                if (ATIChipHasVGAWonder)
-                    ATIVGAWonderSave(save);
+        /* Save VGA data */
+        ATIVGASave(pATI, pATIHW);
 
-                /* Save VGA registers */
-                ATIVGASave(save);
-            }
-
-            if (ATIChip >= ATI_CHIP_88800GXC)
-            {
-                save->crtc_off_pitch = inl(ATIIOPortCRTC_OFF_PITCH);
-                save->config_cntl = inl(ATIIOPortCONFIG_CNTL);
-                save->mem_vga_wp_sel = inl(ATIIOPortMEM_VGA_WP_SEL);
-                save->mem_vga_rp_sel = inl(ATIIOPortMEM_VGA_RP_SEL);
-                save->dac_cntl = inl(ATIIOPortDAC_CNTL);
-                if (ATIChip >= ATI_CHIP_264VTB)
-                    save->bus_cntl = inl(ATIIOPortBUS_CNTL);
-            }
-            break;
-
-        case ATI_CRTC_MACH64:
-            /* Save VGA registers */
-            ATIVGASave(save);
-
-            /* Save Mach64 data */
-            ATIMach64Save(save);
-            break;
-
-        default:
-            break;
+        /* Save VGA Wonder data */
+        if (pATI->CPIO_VGAWonder)
+            ATIVGAWonderSave(pATI, pATIHW);
     }
 
-    if ((ATIChip >= ATI_CHIP_264VTB) && (ATIIODecoding == BLOCK_IO))
-        ATIDSPSave(save);
+    /* Save Mach64 data */
+    if (pATI->Chip >= ATI_CHIP_88800GXC)
+        ATIMach64Save(pATI, pATIHW);
 
-    /* Save RAMDAC state */
-    ATIDACSave(save);
+    /* Save DSP data */
+    if ((pATI->Chip >= ATI_CHIP_264VTB) && (pATI->CPIODecoding == BLOCK_IO))
+        ATIDSPSave(pATI, pATIHW);
 
     /*
-     * The server has already saved video memory when switching out of its
-     * virtual console, so don't do it again.
+     * For some unknown reason, CLKDIV2 needs to be turned off to save the
+     * DAC's LUT reliably on VGA Wonder VLB adapters.
      */
-    if (save != ATINewHWPtr)
-    {
-        ATICurrentHWPtr = save;         /* Keep track of current mode */
-        save->mode = NULL;              /* No corresponding mode line */
-        save->FeedbackDivider = 0;      /* Don't programme clock */
+    if ((pATI->Adapter == ATI_ADAPTER_NONISA) && (pATIHW->seq[1] & 0x08U))
+        PutReg(SEQX, 0x01U, pATIHW->seq[1] & ~0x08U);
 
-        ATISwap(save, FALSE);           /* Save video memory */
+    /* Save RAMDAC state */
+    ATIDACSave(pATI, pATIHW);
+
+    if ((pATI->Adapter == ATI_ADAPTER_NONISA) && (pATIHW->seq[1] & 0x08U))
+        PutReg(SEQX, 0x01U, pATIHW->seq[1]);
+
+    /*
+     * The server has already saved video memory contents when switching out of
+     * its virtual console, so don't do it again.
+     */
+    if (pATIHW != &pATI->NewHW)
+    {
+        pATIHW->FeedbackDivider = 0;    /* Don't programme clock */
+
+        ATISwap(pScreenInfo, pATI, pATIHW, FALSE);      /* Save video memory */
     }
 
-    (void) inb(GENS1(vgaIOBase));       /* Reset flip-flop */
-    outb(ATTRX, 0x20U);                 /* Turn on PAS */
-
-    SetTimeSinceLastInputEvent();
-
-    return save;
+    if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
+        ATIVGASaveScreen(pATI, TRUE);                   /* Turn on screen */
 }
 
 /*
- * ATIInit --
+ * ATICRTCCalculate --
  *
- * This function fills in the ATIHWRec with all of the register values needed
- * to enable a video mode.  It's important that this be done without modifying
+ * This function fills in the an ATIHWRec with all register values needed to
+ * enable a video state.  It's important that this be done without modifying
  * the current video state.
  */
 Bool
-ATIInit(DisplayModePtr mode)
+ATICRTCCalculate
+(
+    ScrnInfoPtr    pScreenInfo,
+    ATIPtr         pATI,
+    ATIHWPtr       pATIHW,
+    DisplayModePtr pMode
+)
 {
-    /* Unlock registers */
-    ATIEnterLeave(ENTER);
-
-    if (ATINewHWPtr == NULL)
-    {
-        /* Initialize ATIAdjust */
-        ATIAdjustInit();
-
-        /*
-         * Check limits related to the virtual width.  A better place for this
-         * would be in ATIValidMode were it not for the fact that the virtual
-         * width isn't necessarily known then.
-         */
-        switch (ATICRTC)
-        {
-            case ATI_CRTC_VGA:
-                if (vga256InfoRec.displayWidth >= 4096)
-                {
-                    ErrorF("Virtual resolution is too wide.\n");
-                    return FALSE;
-                }
-
-                if (ATIUsing1bppModes)
-                {
-                    /*
-                     * Prune interlaced modes if the virtual width is too
-                     * large.
-                     */
-                    if ((ATIChip <= ATI_CHIP_28800_6) &&
-                        (vga256InfoRec.displayWidth >= 2048))
-                    {
-                        DisplayModePtr Next, Deleted = NULL;
-                        DisplayModePtr Original = mode;
-
-                        for (;  mode;  mode = Next)
-                        {
-                            Next = mode->next;
-                            if (Next == vga256InfoRec.modes)
-                                Next = NULL;
-                            if (!(mode->Flags & V_INTERLACE))
-                                continue;
-                            if (!Deleted)
-                            {
-                                Deleted = mode;
-                                ErrorF("Interlaced modes are not supported at"
-                                       " this virtual width.\n See README.ati"
-                                       " for more information.\n");
-                            }
-                            xf86DeleteMode(&vga256InfoRec, mode);
-                        }
-
-                        /* Reset to first remaining mode */
-                        if (!(mode = vga256InfoRec.modes))
-                        {
-                            ErrorF("Oops!  No modes left!\n");
-                            return FALSE;
-                        }
-
-                        /* The physical screen dimensions might have changed */
-                        if (mode != Original)
-                            xf86InitViewport(&vga256InfoRec);
-                    }
-                }
-                else if (!ATIUsingPlanarModes)
-                /* Packed modes have lower limits in some cases */
-                if ((vga256InfoRec.displayWidth >= 2048) &&
-                    ((ATIChip >= ATI_CHIP_264CT) ||
-                     ((ATIChip <= ATI_CHIP_18800) && (ATIvideoRam == 256))))
-                {
-                    ErrorF("Virtual resolution is too wide.\n");
-                    return FALSE;
-                }
-                break;
-
-            case ATI_CRTC_MACH64:
-                if (vga256InfoRec.displayWidth <=
-                    (int)(GetBits(CRTC_PITCH, CRTC_PITCH) << 3))
-                    break;
-                ErrorF("Virtual resolution is too wide.\n");
-                return FALSE;
-
-            default:
-                break;
-        }
-
-        /*
-         * Allocate and clear the data structure.  Then, initialize it with the
-         * data that is to remain constant for all modes used by the server.
-         */
-        vgaNewVideoState = (void *)xcalloc(1, SizeOf(ATIHWRec));
-
-        /* Set the CRTC that will be used to generate the modes */
-        ATINewHWPtr->crtc = ATICRTC;
-
-        /* Set clock maps */
-        ATINewHWPtr->ClockMap = ATIClockMap;
-        ATINewHWPtr->ClockUnMap = ATIClockUnMap;
-
-        /* Setup for ATISwap */
-        ATINewHWPtr->bank_function = ATI.ChipSetReadWrite;
-        ATINewHWPtr->banks = ATIMaximumBanks;
-        if (ATIUsingPlanarModes)
-            ATINewHWPtr->planes = 4;
-        else
-            ATINewHWPtr->planes = 1;
-
-        switch (ATICRTC)
-        {
-            case ATI_CRTC_VGA:
-                /* Fill in VGA Wonder data */
-                if (ATIChipHasVGAWonder)
-                    ATIVGAWonderInit(NULL);
-
-                /* Fill in VGA data */
-                ATIVGAInit(NULL);
-
-                if (ATIChip >= ATI_CHIP_264CT)
-                {
-                    ATINewHWPtr->config_cntl = inl(ATIIOPortCONFIG_CNTL);
-                    ATINewHWPtr->mem_vga_wp_sel =
-                        /* SetBits(0, MEM_VGA_WPS0) + */
-                        SetBits(ATINewHWPtr->planes, MEM_VGA_WPS1);
-                    ATINewHWPtr->mem_vga_rp_sel =
-                        /* SetBits(0, MEM_VGA_RPS0) + */
-                        SetBits(ATINewHWPtr->planes, MEM_VGA_RPS1);
-                    ATINewHWPtr->dac_cntl = inl(ATIIOPortDAC_CNTL);
-                    if (vga256InfoRec.depth > 8)
-                        ATINewHWPtr->dac_cntl |= DAC_8BIT_EN;
-                    else
-                        ATINewHWPtr->dac_cntl &= ~DAC_8BIT_EN;
-                    if (ATIUsingSmallApertures)
-                        ATINewHWPtr->config_cntl |= CFG_MEM_VGA_AP_EN;
-                    else
-                        ATINewHWPtr->config_cntl &= ~CFG_MEM_VGA_AP_EN;
-                    if (ATIChip >= ATI_CHIP_264VTB)
-                        ATINewHWPtr->bus_cntl = (inl(ATIIOPortBUS_CNTL) &
-                            ~(BUS_HOST_ERR_INT_EN | BUS_ROM_DIS)) |
-                            (BUS_HOST_ERR_INT | BUS_APER_REG_DIS);
-                }
-                break;
-
-            case ATI_CRTC_MACH64:
-                /* Fill in VGA Wonder data */
-                if (ATIChipHasVGAWonder)
-                    ATIVGAWonderInit(NULL);
-
-                /* Fill in mode-independent VGA data */
-                ATIVGAInit(NULL);
-
-                /* Fill in Mach64 accelerator data */
-                ATIMach64Init(NULL);
-                break;
-
-            default:
-                break;
-        }
-
-        /* Set RAMDAC data */
-        ATIDACInit(NULL);
-    }
-
-    ATINewHWPtr->mode = mode;           /* Link with mode line */
-
-    switch (ATINewHWPtr->crtc)
+    switch (pATIHW->crtc)
     {
         case ATI_CRTC_VGA:
             /* Fill in VGA data */
-            ATIVGAInit(mode);
+            ATIVGACalculate(pATI, pATIHW, pMode);
 
             /* Fill in VGA Wonder data */
-            if (ATIChipHasVGAWonder)
-                ATIVGAWonderInit(mode);
+            if (pATI->CPIO_VGAWonder)
+                ATIVGAWonderCalculate(pScreenInfo, pATI, pATIHW, pMode);
 
-            if (ATIChip >= ATI_CHIP_88800GXC)
+            if (pATI->Chip >= ATI_CHIP_88800GXC)
             {
-                ATINewHWPtr->crtc_gen_cntl = inl(ATIIOPortCRTC_GEN_CNTL) &
+                pATIHW->crtc_gen_cntl = inl(pATI->CPIO_CRTC_GEN_CNTL) &
                     ~(CRTC_DBL_SCAN_EN | CRTC_INTERLACE_EN |
                       CRTC_HSYNC_DIS | CRTC_VSYNC_DIS | CRTC_CSYNC_EN |
                       CRTC_PIX_BY_2_EN | CRTC_DISPLAY_DIS |
@@ -529,147 +364,110 @@ ATIInit(DisplayModePtr mode)
                       CRTC_DISP_REQ_EN | CRTC_VGA_LINEAR | CRTC_VGA_TEXT_132 |
                       CRTC_CUR_B_TEST);
 #if 0           /* This isn't needed, but is kept for reference */
-                if (mode->Flags & V_DBLSCAN)
-                    ATINewHWPtr->crtc_gen_cntl |= CRTC_DBL_SCAN_EN;
+                if (pMode->Flags & V_DBLSCAN)
+                    pATIHW->crtc_gen_cntl |= CRTC_DBL_SCAN_EN;
 #endif
-                if (mode->Flags & V_INTERLACE)
-                    ATINewHWPtr->crtc_gen_cntl |= CRTC_INTERLACE_EN;
-                if ((mode->Flags & (V_CSYNC | V_PCSYNC)) ||
-                    (OFLG_ISSET(OPTION_CSYNC, &vga256InfoRec.options)))
-                    ATINewHWPtr->crtc_gen_cntl |= CRTC_CSYNC_EN;
-                if (ATIUsingPlanarModes)
-                {
-                    ATINewHWPtr->crtc_gen_cntl |= CRTC_EN | CRTC_CNT_EN;
-                    ATINewHWPtr->crtc_off_pitch =
-                        SetBits(vga256InfoRec.displayWidth >> 4, CRTC_PITCH);
-                }
+                if (pMode->Flags & V_INTERLACE)
+                    pATIHW->crtc_gen_cntl |= CRTC_INTERLACE_EN;
+                if ((pMode->Flags & (V_CSYNC | V_PCSYNC)) || pATI->OptionCSync)
+                    pATIHW->crtc_gen_cntl |= CRTC_CSYNC_EN;
+                if (pScreenInfo->depth <= 4)
+                    pATIHW->crtc_gen_cntl |= CRTC_EN | CRTC_CNT_EN;
                 else
-                {
-                    ATINewHWPtr->crtc_gen_cntl |=
+                    pATIHW->crtc_gen_cntl |=
                         CRTC_EN | CRTC_VGA_LINEAR | CRTC_CNT_EN;
-                    ATINewHWPtr->crtc_off_pitch =
-                        SetBits(vga256InfoRec.displayWidth >> 3, CRTC_PITCH);
-                }
             }
             break;
 
         case ATI_CRTC_MACH64:
-            /* Fill in Mach64 accelerator data */
-            ATIMach64Init(mode);
+            /*
+             * Fill in Mach64 data.
+             */
+            ATIMach64Calculate(pScreenInfo, pATI, pATIHW, pMode);
             break;
 
         default:
             break;
     }
 
-    /* Fill in RAMDAC data */
-    ATIDACInit(mode);
-
-    /* Setup clock programming and selection */
-    return ATIClockInit(mode);
+    /* Fill in clock data */
+    return ATIClockCalculate(pScreenInfo, pATI, pATIHW, pMode);
 }
 
 /*
- * ATIRestore --
+ * ATICRTCSet --
  *
- * This function sets a video mode.  It basically writes out all of the
- * registers that have previously been saved in the ATIHWRec data structure.
- *
- * Note that "Restore" is slightly incorrect.  This function is also used when
- * the server enters/changes video modes.  The mode definitions have previously
- * been initialized by the ATIInit() function.
+ * This function sets a video mode.  It writes out all video state data that
+ * has been previously calculated or saved.
  */
 void
-ATIRestore(void *data)
+ATICRTCSet
+(
+    ScrnInfoPtr pScreenInfo,
+    ATIPtr      pATI,
+    ATIHWPtr    pATIHW
+)
 {
-    ATIHWPtr restore = data;
+    /* Get back to bank 0 */
+    (*pATIHW->SetBank)(pATI, 0);
 
-    /* Unlock registers */
-    ATIEnterLeave(ENTER);
+    if (pATI->Chip >= ATI_CHIP_264LT)
+        ATIPutMach64PLLReg(PLL_EXT_VPLL_CNTL, pATIHW->pll_ext_vpll_cntl);
 
-    ATISelectBank(0);                   /* Get back to bank 0 */
-
-    /*
-     * If switching from one server-generated mode to another, preserve video
-     * memory contents across sequencer resets.  This is only necessary for
-     * 18800 and 18800-1 adapters.
-     */
-    if ((ATIChip <= ATI_CHIP_18800_1) &&
-        (ATICurrentHWPtr != (ATIHWPtr)vgaOrigVideoState) &&
-        (restore != (ATIHWPtr)vgaOrigVideoState))
-        ATISwap(restore, FALSE);
-    ATICurrentHWPtr = restore;
-
-    /* Reset ATISwap setup to that needed by the mode to be restored */
-    ATISelectBankFunction = restore->bank_function;
-    ATICurrentBanks = restore->banks;
-    ATICurrentPlanes = restore->planes;
-
-    switch (restore->crtc)
+    switch (pATIHW->crtc)
     {
         case ATI_CRTC_VGA:
-            if (ATIVGAAdapter != ATI_ADAPTER_NONE)
+            /* Stop CRTC */
+            if (pATI->Chip >= ATI_CHIP_88800GXC)
+                outl(pATI->CPIO_CRTC_GEN_CNTL,
+                    pATIHW->crtc_gen_cntl & ~CRTC_EN);
+
+            /* Start sequencer reset */
+            PutReg(SEQX, 0x00U, 0x00U);
+
+            /* Set pixel clock */
+            if ((pATIHW->FeedbackDivider > 0) &&
+                (pATI->ProgrammableClock != ATI_CLOCK_FIXED))
+                ATIClockSet(pATI, pATIHW);
+
+            /* Load VGA Wonder */
+            if (pATI->CPIO_VGAWonder)
+                ATIVGAWonderSet(pATI, pATIHW);
+
+            /* Load VGA device */
+            ATIVGASet(pATI, pATIHW);
+
+            /* Load Mach64 registers */
+            if (pATI->Chip >= ATI_CHIP_88800GXC)
             {
-                ATISetVGAIOBase(restore->std.MiscOutReg);
-
-                if (ATIChip >= ATI_CHIP_88800GXC)
-                    outl(ATIIOPortCRTC_GEN_CNTL,
-                        restore->crtc_gen_cntl & ~CRTC_EN);
-
-                /* Start sequencer reset */
-                PutReg(SEQX, 0x00U, 0x00U);
-            }
-
-            /* Set the pixel clock */
-            if ((restore->FeedbackDivider > 0) &&
-                (ATIProgrammableClock != ATI_CLOCK_FIXED))
-                ATIClockRestore(restore);
-
-            if (ATIVGAAdapter != ATI_ADAPTER_NONE)
-            {
-                /* Restore VGA Wonder registers */
-                if (ATIChipHasVGAWonder)
-                    ATIVGAWonderRestore(restore);
-
-                /* Load VGA device */
-                ATIVGARestore(restore);
-            }
-
-            if (ATIChip >= ATI_CHIP_88800GXC)
-            {
-                outl(ATIIOPortCRTC_GEN_CNTL, restore->crtc_gen_cntl);
-                outl(ATIIOPortMEM_VGA_WP_SEL, restore->mem_vga_wp_sel);
-                outl(ATIIOPortMEM_VGA_RP_SEL, restore->mem_vga_rp_sel);
-                if (ATIChip >= ATI_CHIP_264CT)
+                outl(pATI->CPIO_CRTC_GEN_CNTL, pATIHW->crtc_gen_cntl);
+                outl(pATI->CPIO_MEM_VGA_WP_SEL, pATIHW->mem_vga_wp_sel);
+                outl(pATI->CPIO_MEM_VGA_RP_SEL, pATIHW->mem_vga_rp_sel);
+                if (pATI->Chip >= ATI_CHIP_264CT)
                 {
-                    outl(ATIIOPortCRTC_OFF_PITCH, restore->crtc_off_pitch);
-                    outl(ATIIOPortDAC_CNTL, restore->dac_cntl);
-                    outl(ATIIOPortCONFIG_CNTL, restore->config_cntl);
-                    outl(ATIIOPortBUS_CNTL, restore->bus_cntl);
+                    outl(pATI->CPIO_CRTC_OFF_PITCH, pATIHW->crtc_off_pitch);
+                    outl(pATI->CPIO_BUS_CNTL, pATIHW->bus_cntl);
+                    outl(pATI->CPIO_DAC_CNTL, pATIHW->dac_cntl);
+                    outl(pATI->CPIO_CONFIG_CNTL, pATIHW->config_cntl);
                 }
             }
 
-            if (ATIVGAAdapter != ATI_ADAPTER_NONE)
-            {
-                /* Give LUT access to CRTC */
-                (void) inb(GENS1(vgaIOBase));
-                outb(ATTRX, 0x20U);
-            }
             break;
 
         case ATI_CRTC_MACH64:
-            /* Load Mach64 CRTC registers */
-            ATIMach64Restore(restore);
+            /* Load Mach64 CRTC regsiters */
+            ATIMach64Set(pATI, pATIHW);
 
-            if (ATIUsingSmallApertures)
+            if (pATI->UseSmallApertures)
             {
-                /* Oddly enough, these need to be set also, maybe others */
-                PutReg(SEQX, 0x02U, restore->std.Sequencer[2]);
-                PutReg(SEQX, 0x04U, restore->std.Sequencer[4]);
-                PutReg(GRAX, 0x06U, restore->std.Graphics[6]);
-                if (ATIChipHasVGAWonder)
-                    ATIModifyExtReg(0xB6, -1, 0x00U, restore->b6);
+                /* Oddly enough, thses need to be set also, maybe others */
+                PutReg(SEQX, 0x02U, pATIHW->seq[2]);
+                PutReg(SEQX, 0x04U, pATIHW->seq[4]);
+                PutReg(GRAX, 0x06U, pATIHW->gra[6]);
+                if (pATI->CPIO_VGAWonder)
+                    ATIModifyExtReg(pATI, 0xB6, -1, 0x00U, pATIHW->b6);
             }
+
             break;
 
         default:
@@ -678,22 +476,25 @@ ATIRestore(void *data)
 
     /*
      * Set DSP registers.  Note that sequencer resets clear the DSP_CONFIG
-     * register.
+     * register, for some reason.
      */
-    if ((ATIChip >= ATI_CHIP_264VTB) && (ATIIODecoding == BLOCK_IO))
-        ATIDSPRestore(restore);
+    if ((pATI->Chip >= ATI_CHIP_264VTB) && (pATI->CPIODecoding == BLOCK_IO))
+        ATIDSPSet(pATI, pATIHW);
 
     /* Load RAMDAC */
-    ATIDACRestore(restore);
+    ATIDACSet(pATI, pATIHW);
 
-    ATISwap(restore, TRUE);             /* Restore video memory */
+    /* Restore video memory */
+    ATISwap(pScreenInfo, pATI, pATIHW, TRUE);
 
-    SetTimeSinceLastInputEvent();
+    if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
+        ATIVGASaveScreen(pATI, TRUE);           /* Turn screen back on */
 
-    if ((xf86Verbose > 2) && (restore->mode))
+    if ((xf86GetVerbosity() > 3) && (pATIHW == &pATI->NewHW))
     {
-        ErrorF("\n After setting mode \"%s\":\n\n", restore->mode->name);
-        ATIPrintMode(restore->mode);
-        ATIPrintRegisters();
+        xf86ErrorFVerb(4, "\n After setting mode \"%s\":\n\n",
+            pScreenInfo->currentMode->name);
+        ATIPrintMode(pScreenInfo->currentMode);
+        ATIPrintRegisters(pATI);
     }
 }

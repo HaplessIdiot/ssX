@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/39 1997/02/26 18:09:44 kaleb $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.28 1999/06/06 15:32:41 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.29 1999/06/21 10:06:13 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -82,7 +82,7 @@ LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext Xt \
 	     PEX5 $(XKBLIBDIR) $(XKBUILIBDIR) $(LBXUTILDIR) $(XALIBDIR) \
 	     Xp $(XVLIB) $(XANTILIB) $(GLXLIB) $(ZLIBDIR) $(REGEXDIR)
 #else
-#if XnestServer
+#if XnestServer || BuildGLXLibrary
 XEXTDIR = Xext
 #endif
 

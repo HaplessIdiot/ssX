@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidepth.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipriv.h,v 1.0tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,14 +21,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATIDEPTH_H___
-#define ___ATIDEPTH_H___ 1
+#ifndef ___ATIPRIV_H___
+#define ___ATIPRIV_H___ 1
 
-#include "vga.h"
+/* Forward pointer definitions */
+typedef struct _ATIHWRec *ATIHWPtr;
+typedef struct _ATIRec   *ATIPtr;
 
-/* As a temporary measure, I need these in a prominent location */
-#define ATIUsing1bppModes       (vga256InfoRec.depth == 1)
-#define ATIUsing4bppModes       (vga256InfoRec.depth == 4)
-#define ATIUsingPlanarModes     (vga256InfoRec.depth <= 4)
-
-#endif /* ___ATIDEPTH_H___ */
+#endif /* ___ATIPRIV_H___ */

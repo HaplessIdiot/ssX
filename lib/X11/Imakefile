@@ -3,7 +3,7 @@ XCOMM $TOG: Imakefile /main/196 1997/05/20 10:06:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.24 1998/12/20 11:56:56 dawes Exp $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.25 1999/04/28 15:04:48 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoExtraLib SharedLibX11
@@ -901,7 +901,7 @@ LCOBJS = \
 
 OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 
-#if !BuildServersOnly || XnestServer
+#if !BuildServersOnly || XnestServer || BuildGLXLibrary
 #include <Library.tmpl>
 
 SpecialCLibObjectRule(ErrDes,$(ICONFIGFILES),$(EDB_DEFINES))

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,8 +24,18 @@
 #ifndef ___ATI_H___
 #define ___ATI_H___ 1
 
-#include "vga.h"
+#include "xf86Pci.h"
+#include "xf86PciInfo.h"
 
-extern vgaVideoChipRec ATI;
+#define  PCI_CMD_ENABLE ((CARD32)(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE))
+
+#include "xf86.h"
+
+#include "xf86_ansic.h"
+#include "xf86_OSproc.h"
+
+#define ATI_README "\n See README.ati for details.\n"
+
+extern DriverRec ATI;
 
 #endif /* ___ATI_H___ */

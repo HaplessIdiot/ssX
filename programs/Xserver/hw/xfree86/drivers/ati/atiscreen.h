@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atireset.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.h,v 1.0tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,27 +21,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "atiio.h"
-#include "atireset.h"
-#include "vga.h"
+#ifndef ___ATISCREEN_H___
+#define ___ATISCREEN_H___ 1
 
-/*
- * ATISaveScreen --
- *
- * This is called "SaveScreen" for historical reasons.  It actually only
- * performs a VGA sequencer reset.
- */
-void
-ATISaveScreen(const Bool start)
-{
-    static Bool started = SS_FINISH;
+#include "atiproto.h"
+#include "screenint.h"
 
-    if (start == started)
-        return;
-    started = start;
+extern Bool ATIScreenInit  FunctionPrototype((int, ScreenPtr, int, char **));
+extern Bool ATICloseScreen FunctionPrototype((int, ScreenPtr));
 
-    if (start == SS_START)
-        PutReg(SEQX, 0x00U, 0x02U);     /* Start sequencer reset */
-    else
-        PutReg(SEQX, 0x00U, 0x03U);     /* End sequencer reset */
-}
+#endif /* ___ATISCREEN_H___ */

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimono.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimono.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,6 +23,10 @@
 
 #ifndef ___ATIMONO_H___
 #define ___ATIMONO_H___ 1
+
+#ifndef BIT_PLANE
+#   define BIT_PLANE 3
+#endif
 
 #ifndef MONO_BLACK
 #   define MONO_BLACK 0x00U

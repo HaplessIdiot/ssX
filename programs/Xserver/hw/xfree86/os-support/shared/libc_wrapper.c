@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.47 1999/06/27 09:20:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.48 1999/06/27 14:08:29 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -288,6 +288,17 @@ xf86sprintf(char *s, const char *format, ...)
     va_list args;
     va_start(args, format);
     ret = vsprintf(s, format, args);
+    va_end(args);
+    return ret;
+}
+
+int
+xf86snprintf(char *s, xf86size_t len, const char *format, ...)
+{
+    int ret;
+    va_list args;
+    va_start(args, format);
+    ret = vsnprintf(s, len, format, args);
     va_end(args);
     return ret;
 }
@@ -672,6 +683,12 @@ int
 xf86vsprintf(char *s, const char *format, va_list ap)
 {
 	return vsprintf(s, format, ap);
+}
+
+int
+xf86vsnprintf(char *s, xf86size_t len, const char *format, va_list ap)
+{
+	return vsnprintf(s, len, format, ap);
 }
 
 #ifdef HAVE_VFSCANF
