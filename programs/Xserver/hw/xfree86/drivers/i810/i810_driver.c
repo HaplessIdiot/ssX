@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.100 2004/01/02 06:08:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.101 2004/01/02 20:15:47 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -2222,9 +2222,38 @@ Bool
 I810SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+   I810Ptr pI810 = I810PTR(pScrn);
 
    if (I810_DEBUG & DEBUG_VERBOSE_CURSOR)
       ErrorF("I810SwitchMode %p %x\n", (void *)mode, flags);
+
+#ifdef XF86DRI
+   if (pI810->directRenderingEnabled) {
+      if (I810_DEBUG & DEBUG_VERBOSE_DRI)
+	 ErrorF("calling dri lock\n");
+      DRILock(screenInfo.screens[scrnIndex], 0);
+      pI810->LockHeld = 1;
+   }
+#endif
+
+   if (pI810->AccelInfoRec != NULL) {
+      I810RefreshRing(pScrn);
+      I810Sync(pScrn);
+      pI810->AccelInfoRec->NeedToSync = FALSE;
+   }
+   I810Restore(pScrn);
+
+#ifdef XF86DRI
+   if (!I810DRIEnter(pScrn)) {
+      return FALSE;
+   }
+   if (pI810->directRenderingEnabled) {
+      if (I810_DEBUG & DEBUG_VERBOSE_DRI)
+	 ErrorF("calling dri unlock\n");
+      DRIUnlock(screenInfo.screens[scrnIndex]);
+      pI810->LockHeld = 0;
+   }
+#endif
 
    return I810ModeInit(pScrn, mode);
 }

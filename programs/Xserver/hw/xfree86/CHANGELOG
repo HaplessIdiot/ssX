@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 730. Workaround for lockup at mode switch with an i810 (David Dawes).
  729. Fix transparent mono 8x8 pattern fills for the i810 (David Dawes).
  728. Disable XKB by default in XDarwin (Torrey T. Lyons).
  727. Fix manpage build warnings on Panther (Matthieu Herrb).
@@ -18474,7 +18475,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3075 2004/01/02 19:41:16 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3076 2004/01/02 20:22:13 dawes Exp $
 
 
 
