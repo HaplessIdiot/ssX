@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.9 1997/10/26 13:25:30 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.10 1997/12/06 09:26:14 hohndel Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -887,10 +887,8 @@ Status		status;
 	    exit(1);
 	}
 	if (outputFile!=NULL) {
-	    if (uStringEqual(outputFile,"-")) {
-		static char *of= "stdout";
-		outputFile= of;
-	    }
+	    if (uStringEqual(outputFile,"-"))
+		outputFile= "stdout";
 	    else {
 		out= fopen(outputFile,"w");
 		if (out==NULL) {

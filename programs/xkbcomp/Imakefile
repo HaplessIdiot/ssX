@@ -2,10 +2,9 @@ XCOMM $TOG: Imakefile /main/16 1997/09/03 17:04:58 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.12 1998/01/01 14:51:46 robin Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.13 1998/06/04 16:43:46 hohndel Exp $
 #define IHaveSubdirs
-
-#define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)" LDSTRIPFLAGS="$(LDSTRIPFLAGS)"
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
           SRCS = xkbcomp.c xkbscan.c expr.c vmod.c indicators.c misc.c \
 		 keymap.c keycodes.c keytypes.c compat.c action.c alias.c \
@@ -24,32 +23,15 @@ ROOT_DEFINES = -DDFLT_XKB_CONFIG_ROOT=\"$(LIBDIR)/xkb\"
 
 INCLUDES = -I$(EXTINCSRC)
 
-
 all::
+
+SpecialCObjectRule(xkbpath,$(ICONFIGFILES),$(ROOT_DEFINES))
 
 YaccFile(xkbparse,$(YFLAGS))
 
-ComplexProgramTarget(xkbcomp)
-SpecialCObjectRule(xkbpath,$(ICONFIGFILES),$(ROOT_DEFINES))
-
-LinkBuildBinary(ProgramTargetName(xkbcomp))
-
-#ifndef OS2Architecture
-all::	ProgramTargetName(xkbcomp)
-	@MakeFlagsToShellFlags(ik,set +e); \
-	for i in $(SUBDIRS); \
-	do \
-		echo "making all in $(CURRENT_DIR)/$$i..."; \
-		MakeNamedTargetSubdir($$i,PassCDebugFlags,all); \
-	done
-#else
-all::	ProgramTargetName(xkbcomp)
-	for %i in ($(SUBDIRS)) do ImakeIndir %i $(MAKE) SHELL= MAKE=x11make $(MFLAGS) PassCDebugFlags all
-#endif
 
 install::
 	@echo "Creating $(LIBDIR)/xkb"
-	InstallSubdirs($(SUBDIRS))
 	MakeDir($(DESTDIR)$(LIBDIR)/xkb)
 
 LinkVarDirectory(xkb,xkb,compiled,compiled)
@@ -59,6 +41,11 @@ InstallProgram(xkbcomp,$(LIBDIR)/xkb)
 clean::
 	RemoveFiles(test.h *.xkm *.xkb)
 
+ComplexProgramTarget(xkbcomp)
+
+LinkBuildBinary(ProgramTargetName(xkbcomp))
+
+MakeSubdirs($(SUBDIRS))
 
 #ifdef OS2Architecture
 all::

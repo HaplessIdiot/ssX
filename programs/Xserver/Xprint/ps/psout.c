@@ -1,4 +1,25 @@
-/* $XConsortium: psout.c /main/3 1996/12/30 14:58:54 kaleb $ */
+/* $TOG: psout.c /main/6 1998/02/09 15:42:56 kaleb $ */
+/*
+
+Copyright 1996, 1998  The Open Group
+
+All Rights Reserved.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
+*/
 /*
  * (c) Copyright 1996 Hewlett-Packard Company
  * (c) Copyright 1996 International Business Machines Corp.
@@ -43,12 +64,12 @@
 **    *
 **    *  Created By:    Roger Helmendach (Liberty Systems)
 **    *
-**    *  Copyright:     Copyright 1996 X Consortium, Inc.
+**    *  Copyright:     Copyright 1996 The Open Group, Inc.
 **    *
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.2 1996/12/30 13:59:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.3 1996/12/31 07:06:36 dawes Exp $ */
 
 #include <stdlib.h>
 #include "os.h"
@@ -433,7 +454,7 @@ PsOut_BeginFile(FILE *fp)
  *  Output PostScript header
  */
   S_Comment(psout, "%!PS-Adobe-3.0 EPSF-3.0");
-  S_Comment(psout, "%%Creator: X Consortium PostScript Print Server");
+  S_Comment(psout, "%%Creator: The Open Group PostScript Print Server");
   /*### BoundingBox ###*/
   S_Comment(psout, "%%EndComments");
   S_Comment(psout, "%%BeginProlog");
@@ -503,7 +524,7 @@ PsOut_BeginPage(PsOutPtr self, int orient, int count, int plex, int res,
   S_OutTok(self, "/Orientation", 0);
   S_OutNum(self, (float) orient);
   
-  S_OutTok(self, "/HWResolution [", 0);
+  S_OutTok(self, "d/HWResolution [", 0);
   S_OutNum(self, (float)res);
   S_OutNum(self, (float)res);
   S_OutTok(self, "] d/PageSize [pWd pHt]d de spd}stp p", 1);

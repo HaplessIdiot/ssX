@@ -1,15 +1,9 @@
-/* $TOG: PProcess.c /main/32 1997/09/09 11:13:55 kaleb $ */
+/* $TOG: PProcess.c /main/34 1998/02/25 14:00:05 barstow $ */
 /*
 
-Copyright (C) 1996 X Consortium
+Copyright 1996, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Soft-
-ware"), to deal in the Software without restriction, including without
-limitation the rights to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Software, and to permit persons to
-whom the Software is furnished to do so, subject to the following condi-
-tions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT
-SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABIL-
+SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABIL-
 ITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization from
-the X Consortium.
+The Open Group.
 
 */
 
@@ -708,7 +702,7 @@ RxpTeardown (PluginInstance* This)
  * Process the given RxParams and make the RxReturnParams
  ***********************************************************************/
 
-static void
+static int
 ProcessUIParams(PluginInstance* This,
 		Boolean trusted, Boolean use_fwp, Boolean use_lbx,
 		RxParams *in, RxReturnParams *out, char **x_ui_auth_ret)
@@ -807,8 +801,14 @@ requested, APPGROUP extension not supported\n");
 	RxGlobal.fwp_dpyname = GetXFwpDisplayName(display_name);
 	if (RxGlobal.fwp_dpyname != NULL)
 	    RxGlobal.has_ui_fwp = RxTrue;
-	else
-	    RxGlobal.has_ui_fwp = RxFalse;
+	else {
+	    /*
+	     * We were supposed to use the firewall proxy but we
+	     * couldn't get a connection.  There is no need to
+	     * continue.
+	     */
+	    return 1;
+	}
     }
     if (use_fwp == True && RxGlobal.has_ui_fwp == RxTrue)
 	out->ui = GetXUrl(RxGlobal.fwp_dpyname, *x_ui_auth_ret, in->action);
@@ -839,9 +839,11 @@ LBX extension not supported\n");
 	    out->x_ui_lbx = RxFalse;
     } else			/* it's either RxFalse or RxUndef */
 	out->x_ui_lbx = in->x_ui_lbx;
+
+    return 0;
 }
 
-static void
+static int
 ProcessPrintParams(PluginInstance* This,
 		   Boolean trusted, Boolean use_fwp, Boolean use_lbx,
 		   RxParams *in, RxReturnParams *out, char *x_ui_auth)
@@ -874,7 +876,7 @@ ProcessPrintParams(PluginInstance* This,
     if (RxGlobal.has_printer == RxFalse) {
 	fprintf(stderr, "Warning: Cannot setup X printer as requested, \
 no server found\n");
-	return;
+	return 0;
     }
 
     /* create a key only when the video server is not the print
@@ -896,8 +898,14 @@ no server found\n");
 	RxGlobal.pfwp_dpyname = GetXFwpDisplayName(DisplayString(RxGlobal.pdpy));
 	if (RxGlobal.pfwp_dpyname != NULL)
 	    RxGlobal.has_print_fwp = RxTrue;
-	else
-	    RxGlobal.has_print_fwp = RxFalse;
+	else {
+	    /*
+	     * We were supposed to use the firewall proxy but we
+	     * couldn't get a connection.  There is no need to
+	     * continue.
+	     */
+	    return 1;
+	}
     }
     if (use_fwp == True && RxGlobal.has_print_fwp == RxTrue)
 	out->print = GetXPrintUrl(RxGlobal.pfwp_dpyname,
@@ -952,6 +960,8 @@ requested, LBX extension not supported\n");
 	    out->x_print_lbx = RxFalse;
     } else		/* it's either RxFalse or RxUndef */
 	out->x_print_lbx = in->x_print_lbx;
+
+    return 0;
 }
 
 int
@@ -960,6 +970,7 @@ RxpProcessParams(PluginInstance* This, RxParams *in, RxReturnParams *out)
     char *x_ui_auth = NULL;
     char webserver[MAXHOSTNAMELEN];
     Boolean trusted, use_fwp, use_lbx;
+    int return_value = 0;
 
 #ifdef PLUGIN_TRACE
     fprintf (stderr, "%s\n", "RxpProcessParams");
@@ -989,14 +1000,15 @@ RxpProcessParams(PluginInstance* This, RxParams *in, RxReturnParams *out)
        &trusted, &use_fwp, &use_lbx);
 
     if (in->ui[0] == XUI)	/* X display needed */
-	ProcessUIParams(This, trusted, use_fwp, use_lbx, in, out, &x_ui_auth);
+	return_value = ProcessUIParams(This, trusted, use_fwp, use_lbx, 
+			   in, out, &x_ui_auth);
 
     if (in->print[0] == XPrint) /* XPrint server needed */
-	ProcessPrintParams(This, trusted, use_fwp, use_lbx,
+	return_value = ProcessPrintParams(This, trusted, use_fwp, use_lbx,
 			   in, out, x_ui_auth);
 
     if (x_ui_auth != NULL)
 	NPN_MemFree(x_ui_auth);
 
-    return 0;
+    return return_value;
 }

@@ -1,14 +1,9 @@
-/* $TOG: cfbinit.c /main/11 1998/01/07 16:07:16 kaleb $ */
+/* $TOG: cfbinit.c /main/14 1998/03/17 17:41:19 kaleb $ */
 /***********************************************************
 
-Copyright (c) 1991  X Consortium
+Copyright 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 Copyright 1991 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -229,7 +224,11 @@ colorNameToColor( pname, pred, pgreen, pblue)
     }
 }
 
+#ifndef LOWMEMFTPT
 extern Bool mfbScreenInit (), mcfbScreenInit(), cfbScreenInit();
+#else
+extern Bool mcfbScreenInit(), cfbScreenInit();
+#endif /* ifndef LOWMEMFTPT */
 extern Bool cfb16ScreenInit(), cfb32ScreenInit();
 
 Bool
@@ -367,9 +366,13 @@ fbInitProc(index, pScreen, argc, argv)
 
     switch (dd->bits_per_pixel)
     {
+#ifndef LOWMEMFTPT
     case 1:
 	screenInit = mfbScreenInit;
 	break;
+#else
+    case 1:
+#endif /* ifndef LOWMEMFTPT */
     case 8:
     case 16:
     case 32:
@@ -404,16 +407,15 @@ fbInitProc(index, pScreen, argc, argv)
 
     }
 
-    if (!(*screenInit) (pScreen, 
-#ifndef __alpha
-	dd->pixmap, 
+#ifdef ultrix
+#define FB_BITS dd->pixmap
 #else
-	(pointer)(((char*)dd->pixmap) - 4096),
+#define FB_BITS dd->plane_mask
 #endif
-	wsp->screenDesc->width,
-	wsp->screenDesc->height, 
-	dpix, dpiy, 
-	dd->fb_width, dd->bits_per_pixel, dd->depth))
+
+    if (!(*screenInit) (pScreen, FB_BITS,
+	dd->fb_width, dd->fb_height, 
+	dpix, dpiy, dd->fb_width, dd->bits_per_pixel, dd->depth))
     {
 	return FALSE;
     }
@@ -422,7 +424,11 @@ fbInitProc(index, pScreen, argc, argv)
  
     if (dd->depth == 1)
     {
+#ifndef LOWMEMFTPT
         mfbCreateDefColormap(pScreen);
+#else
+        cfbCreateDefColormap(pScreen);
+#endif /* ifndef LOWMEMFTPT */
     }
     else
     {

@@ -1,4 +1,4 @@
-XCOMM $TOG: Imakefile /main/40 1997/12/11 10:40:09 kaleb $
+XCOMM $TOG: Imakefile /main/44 1998/03/10 10:44:27 barstow $
 
 XCOMM This isn't an option we must build a shared lib
 #define DoSharedLib YES
@@ -47,6 +47,9 @@ VENDOR_INCLUDES = -I/usr/openwin/include
  */
 #undef DefaultCCOptions
 #define DefaultCCOptions -Xc 
+#if OSMajorVersion == 4
+FUNCPROTO_DEFINES = -DXFUNCPROTO_NOT_AVAILABLE
+#endif
 #endif
 
 #ifdef HPArchitecture
@@ -69,14 +72,14 @@ VENDOR_INCLUDES = -I/usr/openwin/include
 #endif
 
 #ifdef IBMArchitecture
-# No clue when IBM might ship R6
+/* No clue when IBM might ship R6 */
      XT_DEFINES = -DXUSE_XTREGISTERWINDOW
 #endif
 
  PLUGIN_DEFINES = -DXP_UNIX
 PLUGIN_INCLUDES = -I./include
 
-        DEFINES = StrcasecmpDefines -DNETSCAPE_PLUGIN $(PLUGIN_DEFINES) $(XT_DEFINES) $(SOCKET_DEFINES)
+        DEFINES = StrcasecmpDefines -DNETSCAPE_PLUGIN $(PLUGIN_DEFINES) $(XT_DEFINES) $(SOCKET_DEFINES) $(FUNCPROTO_DEFINES)
        INCLUDES = -I. $(PLUGIN_INCLUDES) $(RX_INCLUDES) $(VENDOR_INCLUDES)
 
     PARAMS_SRCS = PRead.c PParse.c BuildReq.c
@@ -97,6 +100,12 @@ X11R6_3_EXTENSIONS = ../libxplugin/libxplugin.a
 #ifdef SunArchitecture
 PLUGIN_LDOPTIONS = -L/usr/openwin/lib
 CCENVSETUP =
+#if OSMajorVersion == 5 && OSMinorVersion > 5
+RXICELIB = $(ICELIB)
+#endif
+#if OSMajorVersion == 4
+    EXTENSIONLIB =
+#endif
 #endif
 #ifdef HPArchitecture
 #if OSMajorVersion < 10 || (OSMajorVersion == 10 && OSMinorVersion < 2)
@@ -104,6 +113,14 @@ CCENVSETUP =
 #else
        LDPRELIBS = -L/usr/lib/X11R5
 #endif
+#endif
+#ifdef IBMArchitecture
+    XTOOLONLYLIB = -lXm -lXt
+    EXTENSIONLIB = -lXext
+        XONLYLIB = -lX11
+        RXICELIB = $(ICELIB)
+      LDPOSTLIBS =
+       LDPRELIBS =
 #endif
 #else
 PLUGIN_LDOPTIONS = $(LDPRELIBS)
@@ -114,11 +131,6 @@ PLUGIN_LDOPTIONS = $(LDPRELIBS)
 RXICELIB = $(ICELIB)
 #endif
 
-#ifdef SunArchitecture
-#if OSMajorVersion == 5 && OSMinorVersion > 5
-RXICELIB = $(ICELIB)
-#endif
-#endif
 
     REQUIREDLIBS =  $(X11R6_3_EXTENSIONS) $(PLUGIN_LDOPTIONS) $(RXICELIB) $(XTOOLONLYLIB) $(XLIB)
 
@@ -134,3 +146,9 @@ LinkFile(Prefs.c,$(RXSRC)/Prefs.c)
 
 DependTarget()
 InstallManPage(libxrx,$(MANDIR))
+
+#ifdef IBMArchitecture
+install:: shr.o
+	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) shr.o $(DESTDIR)$(SHLIBDIR)/lib$(LIBNAME).so
+	$(RM) $(DESTDIR)$(SHLIBDIR)/lib$(LIBNAME).a
+#endif

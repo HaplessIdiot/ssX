@@ -1,5 +1,5 @@
-XCOMM $TOG: Imakefile /main/30 1997/08/05 09:00:19 kaleb $
-XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.9 1997/07/05 15:17:05 dawes Exp $
+XCOMM $TOG: Imakefile /main/31 1998/06/16 15:16:14 msr $
+XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.11 1998/01/01 14:51:45 robin Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -26,7 +26,7 @@ SUBDIRS = $(FSDIRS)
 
 FSLIBDIR = $(LIBDIR)/fs
 FSERRORS = $(FSLIBDIR)/fs-errors
-DEFAULTFONTPATH = DefaultFontPath
+DEFAULTFONTPATH = DefaultFSFontPath
 SITE_CONFIG = -DDEFAULTFONTPATH=$(DEFAULTFONTPATH) -DFSERRORS=$(FSERRORS)
 
 $(OSLIB):	$(OSDIR)

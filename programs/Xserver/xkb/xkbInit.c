@@ -1,4 +1,4 @@
-/* $TOG: xkbInit.c /main/24 1997/05/20 11:42:06 kaleb $ */
+/* $TOG: xkbInit.c /main/25 1997/09/26 14:26:56 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.13 1997/05/21 15:17:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.14 1997/07/10 08:17:46 hohndel Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -909,15 +909,6 @@ XkbProcessArguments(argc,argv,i)
 	noXkbExtension= False;
 	return 1;
     }
-    else if (strncmp(argv[i], "-xkbdir", 7) == 0) {
-	if(++i < argc) {
-	    XkbBaseDirectory= argv[i];
-	    return 2;
-	}
-	else {
-	    return -1;
-	}
-    }
     else if (strncmp(argv[i], "-xkbmap", 7) == 0) {
 	if(++i < argc) {
 	    XkbInitialMap= argv[i];
@@ -1008,6 +999,5 @@ XkbUseMsg()
     ErrorF("-noloadxkb             don't load XKB keymap description\n");
     ErrorF("-xkbcomp               default keymap compiler\n");
     ErrorF("-xkbdb                 file that contains default XKB keymaps\n");
-    ErrorF("-xkbdir                base directory for XKB layout files\n");
     ErrorF("-xkbmap                XKB keyboard description to load on startup\n");
 }

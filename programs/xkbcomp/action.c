@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/action.c,v 3.4 1997/07/26 12:59:08 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/action.c,v 3.5 1997/10/26 13:25:28 dawes Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"
@@ -34,6 +34,7 @@
 #include "vmod.h"
 #include "misc.h"
 #include "action.h"
+#include "misc.h"
 
 static Bool	actionsInitialized;
 static ExprDef	constTrue;

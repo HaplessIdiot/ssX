@@ -1,13 +1,9 @@
+/* $TOG: utils.c /main/44 1998/02/23 10:36:34 barstow $ */
 /***********************************************************
 
-Copyright (c) 1987, 1996  X Consortium
+Copyright 1987, 1996, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -15,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -45,12 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $TOG: utils.c /main/42 1997/09/12 14:31:50 barstow $ */
-
-
-
-
-/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.6 1997/07/05 15:16:51 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.7 1997/10/26 13:25:15 dawes Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -253,6 +244,8 @@ void UseMsg()
     ErrorF("-[terminate|reset]     terminate or reset after last client exits\n");
     ErrorF("                         (default is continue running)\n");
     ErrorF("-I                     ignore all remaining arguments\n");
+    ErrorF("-reconnect             reset if server connection is broken\n");
+    ErrorF("                         (default is to exit if connection is broken)\n");
     ErrorF("-nolbx                 disable LBX reencoding of X requests\n");
     ErrorF("-nocomp                disable stream compression\n");
     ErrorF("-nodelta               disable request deltas\n");
@@ -266,6 +259,9 @@ void UseMsg()
     ErrorF("-nowinattr             disable GetWindowAttributes/GetGeometry\n");
     ErrorF("                          grouping into one round trip\n");
     ErrorF("-nograbcmap            disable colormap grabbing\n");
+    ErrorF("-norgbfile             disables color name to RGB resolution\n");
+    ErrorF("-rgbfile <path>        path specifies an alternate RGB database\n");
+    ErrorF("                          for color name to RGB resolution\n");
     ErrorF("-tagcachesize #        set tag cache size\n");
     ErrorF("-maxservers #          maximum number of servers to use\n");
     ErrorF("                          default is 20, but this is overrided\n");

@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile /main/10 1996/12/02 10:20:33 lehors $
-XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.16 1998/04/05 20:59:20 robin Exp $
+XCOMM $TOG: Imakefile /main/13 1998/03/24 13:27:03 kaleb $
+XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.17 1998/08/13 14:45:40 dawes Exp $
 #include <Server.tmpl>
 
 #if HasShm
@@ -16,9 +16,9 @@ SRCS1 = os2_stubs.c
 OBJS1 = os2_stubs.o
 #endif
 
-SRCSA = 	InitInput.c InitOutput.c stubs.c $(SRCS1) miinitext.c
+SRCSA =	InitInput.c InitOutput.c stubs.c $(SRCS1) miinitext.c
 
-OBJSA = 	InitInput.o InitOutput.o stubs.o $(OBJS1) miinitext.o
+OBJSA =	InitInput.o InitOutput.o stubs.o $(OBJS1) miinitext.o
 
 INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 	   -I../../cfb -I../../mfb -I../../mi -I../../include -I../../os  \
@@ -27,13 +27,20 @@ INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 DEFINES = ServerOSDefines $(SHMDEF) $(MMAPDEF)
 DEPEND_DEFINES = -UXFree86LOADER
 
-#if BuildDPMS
-SRCSC =		dpmsstubs.c
-OBJSC =		dpmsstubs.o
+
+#if BuildXinerama
+PAN_DEFINES =	-DNO_PANORAMIX
+SRCSB =	panoramiXstubs.c
+OBJSB =	panoramiXstubs.o
 #endif
 
-SRCS =		$(SRCSA) $(SRCSB) $(SRCSC)
-OBJS =		$(OBJSA) $(OBJSB) $(OBJSC)
+#if BuildDPMS
+SRCSC =	dpmsstubs.c
+OBJSC =	dpmsstubs.o
+#endif
+
+SRCS =	$(SRCSA) $(SRCSB) $(SRCSC)
+OBJS =	$(OBJSA) $(OBJSB) $(OBJSC)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(vfb,$(OBJS))
@@ -48,6 +55,11 @@ SpecialCObjectRule(InitInput,$(ICONFIGFILES),$(EXT_DEFINES))
 
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES) -DNO_HW_ONLY_EXTS -DNO_MODULE_EXTS $(EXT_MODULE_DEFINES) -UXFree86LOADER)
+
+#if BuildXinerama
+LinkSourceFile(panoramiXstubs.c,$(SERVERSRC)/Xext)
+SpecialCObjectRule(panoramiXstubs,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES))
+#endif
 
 #if BuildDPMS
 LinkSourceFile(dpmsstubs.c,$(SERVERSRC)/Xext)

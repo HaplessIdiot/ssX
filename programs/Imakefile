@@ -1,8 +1,8 @@
-XCOMM $TOG: Imakefile /main/84 1997/10/14 16:18:23 kaleb $
+XCOMM $TOG: Imakefile /main/85 1998/02/26 17:14:44 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/Imakefile,v 3.16 1997/02/12 08:54:59 hohndel Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.17 1997/11/16 06:17:48 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -44,7 +44,9 @@ SCREENSAVESRCDIR = beforelight
 XFINDPROXYSRCDIR = xfindproxy
       XFWPSRCDIR = xfwp
      XHOSTSRCDIR = xhost
+#if BuildPlugin
        XRXSRCDIR = xrx
+#endif
        XSMSRCDIR = xsm
      XTERMSRCDIR = xterm
       SCRIPTSDIR = scripts
@@ -54,20 +56,19 @@ XFINDPROXYSRCDIR = xfindproxy
 SUBDIRS = $(XSSRCDIR)
 #else
 SUBDIRS = \
-	appres bdftopcf bitmap $(SCREENSAVESRCDIR) editres fsinfo \
-	fslsfonts fstobdf \
-	iceauth mkfontdir oclock setxkbmap $(PROXYMGRSRCDIR) \
-	$(RGBSRCDIR) $(RSTARTSRCDIR) $(SMPROXYSRCDIR) $(TWMSRCDIR) x11perf \
-	xauth xclipboard xclock xcmsdb $(XCONSOLESRCDIR) $(XDMSRCDIR) \
-	xdpyinfo $(XF86DGASRCDIR) xfd $(XFSSRCDIR) $(XFINDPROXYSRCDIR) \
-	$(XFWPSRCDIR) \
-	$(XHOSTSRCDIR) xieperf $(XINITSRCDIR) $(XKBSRCDIRS) xkill xlogo \
-	xlsatoms xlsclients xlsfonts xmag xmodmap xprop \
-	xrdb xrefresh $(XRXSRCDIR) xset xsetroot $(XSMSRCDIR) xstdcmap \
-	xsetmode xsetpointer \
+	appres bdftopcf bitmap \
+	$(SCREENSAVESRCDIR) editres fsinfo fslsfonts fstobdf iceauth \
+	mkfontdir oclock $(PROXYMGRSRCDIR) $(RGBSRCDIR) $(RSTARTSRCDIR) \
+	setxkbmap \
+	$(SMPROXYSRCDIR) $(TWMSRCDIR) x11perf xauth xclipboard xclock \
+	xcmsdb $(XCONSOLESRCDIR) $(XDMSRCDIR) xdpyinfo \
+	$(XF86DGASRCDIR) xfd $(XFSSRCDIR) \
+	$(XFINDPROXYSRCDIR) $(XFWPSRCDIR) $(XHOSTSRCDIR) xieperf \
+	$(XINITSRCDIR) $(XKBSRCDIRS) xkill xlogo xlsatoms xlsclients \
+	xlsfonts xmag xmodmap xprop xrdb xrefresh $(XRXSRCDIR) xset \
+	xsetroot $(XSMSRCDIR) xstdcmap xsetmode xsetpointer \
 	$(XTERMSRCDIR) $(XVIDTUNESRCDIR) xwd xwininfo xwud \
-	$(XSSRCDIR) $(XASSRCDIR) \
-	$(LBXPROXYSRCDIR) $(SCRIPTSDIR)
+	$(XSSRCDIR) $(XASSRCDIR) $(LBXPROXYSRCDIR) $(SCRIPTSDIR)
 #endif
 
 MakeSubdirs($(SUBDIRS))

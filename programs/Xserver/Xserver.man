@@ -1,14 +1,7 @@
-.\" $TOG: Xserver.man /main/67 1997/11/08 19:26:20 barstow $
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.9 1997/12/06 09:37:41 dawes Exp $
-.\" Copyright (c) 1984 - 1991, 1993, 1994  X Consortium
+.\" $TOG: Xserver.man /main/68 1998/02/09 14:12:35 kaleb $
+.\" Copyright 1984 - 1991, 1993, 1994, 1998  The Open Group
 .\" 
-.\" Permission is hereby granted, free of charge, to any person obtaining
-.\" a copy of this software and associated documentation files (the
-.\" "Software"), to deal in the Software without restriction, including
-.\" without limitation the rights to use, copy, modify, merge, publish,
-.\" distribute, sublicense, and/or sell copies of the Software, and to
-.\" permit persons to whom the Software is furnished to do so, subject to
-.\" the following conditions:
+.\" All Rights Reserved.
 .\" 
 .\" The above copyright notice and this permission notice shall be included
 .\" in all copies or substantial portions of the Software.
@@ -16,16 +9,17 @@
 .\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 .\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 .\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 .\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 .\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 .\" OTHER DEALINGS IN THE SOFTWARE.
 .\" 
-.\" Except as contained in this notice, the name of the X Consortium shall
+.\" Except as contained in this notice, the name of The Open Group shall
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
-.\" from the X Consortium.
-.TH XSERVER 1 "Release 6.3"  "X Version 11"
+.\" from The Open Group.
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.10 1998/04/05 02:28:24 dawes Exp $
+.TH XSERVER 1 "Release 6.4"  "X Version 11"
 .SH NAME
 Xserver \- X Window System display server
 .SH SYNOPSIS
@@ -220,6 +214,9 @@ the client that it is doing so.
 .B \-x \fIextension\fP
 loads the specified extension at init.
 This is a no-op for most implementations.
+.TP 8
+.B [+-]xinerama
+enable(+) or disable(-) XINERAMA extension. Default is disabled.
 .SH SERVER DEPENDENT OPTIONS
 Some X servers accept the following options:
 .TP 8
@@ -414,7 +411,7 @@ the actions that the server should take in response to those operations.
 .PP
 <operation> can be r (read), w (write), or d (delete).  The following
 table shows how X Protocol property requests map to these operations
-in the X Consortium server implementation.
+in The Open Group server implementation.
 .PP
 .nf
 GetProperty	r, or r and d if delete = True

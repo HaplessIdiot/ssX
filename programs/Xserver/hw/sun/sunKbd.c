@@ -1,6 +1,6 @@
-/* $TOG: sunKbd.c /main/77 1997/03/26 16:50:17 kaleb $ */
+/* $TOG: sunKbd.c /main/78 1998/02/10 13:16:57 kaleb $ */
 /*-
- * Copyright (c) 1987 by the Regents of the University of California
+ * Copyright 1987 by the Regents of the University of California
  *
  * Permission to use, copy, modify, and distribute this
  * software and its documentation for any purpose and without
@@ -21,10 +21,10 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or X Consortium
+mentation,  and  that the names of Sun or The Open Group
 not be used in advertising or publicity pertaining to 
 distribution  of  the software  without specific prior 
-written permission. Sun and X Consortium make no 
+written permission. Sun and The Open Group make no 
 representations about the suitability of this software for 
 any purpose. It is provided "as is" without any express or 
 implied warranty.

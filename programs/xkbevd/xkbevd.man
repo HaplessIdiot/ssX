@@ -1,5 +1,5 @@
-.\" $XConsortium: xkbevd.man /main/3 1996/12/09 17:12:41 kaleb $
-.TH XKBCOMP 1 "Release 6.3" "X Version 11"
+.\" $TOG: xkbevd.man /main/6 1998/02/12 09:34:24 kaleb $
+.TH XKBCOMP 1 "Release 6.4" "X Version 11"
 .SH NAME
 xkbevd \- XKB event daemon
 .SH SYNOPSIS
@@ -88,7 +88,8 @@ specifications of \fI-v\fP cause more output, to a point.
 .SH "SEE ALSO"
 X(1)
 .SH COPYRIGHT
-Copyright 1995, Silicon Graphics Computer Systems and X Consortium, Inc.
+Copyright 1995, Silicon Graphics Computer Systems
+Copyright 1995, 1998  The Open Group
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR

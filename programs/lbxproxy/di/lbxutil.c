@@ -1,4 +1,4 @@
-/* $TOG: lbxutil.c /main/26 1997/09/12 14:30:38 barstow $ */
+/* $TOG: lbxutil.c /main/28 1998/02/23 09:14:38 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -228,7 +228,7 @@ FlushDelayedReplies(client)
 #ifdef SEQ_DEBUG
 	fprintf(stderr, " 0x%x", cur->delay_seq_no);
 #endif
-	if (cur->delay_seq_no == LBXLastResponse(client) + 1) {
+	if ((cur->delay_seq_no & 0xffff) == LBXLastResponse(client) + 1) {
 	    WriteToClient(client, sizeof(xReply), (char *) &cur->reply);
 	    if (cur->dlen)
 		WriteToClient(client, cur->dlen, (char *) cur->data);

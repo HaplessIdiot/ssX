@@ -1,9 +1,9 @@
-/* $TOG: sunInit.c /main/revisionist/1 1997/11/17 14:52:20 kaleb $ */
+/* $TOG: sunInit.c /main/81 1998/02/10 13:16:47 kaleb $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
  *
- * Copyright (c) 1987 by the Regents of the University of California
+ * Copyright 1987 by the Regents of the University of California
  *
  * Permission to use, copy, modify, and distribute this
  * software and its documentation for any purpose and without
@@ -15,7 +15,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.5 1998/04/05 16:42:05 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.6 1998/06/27 12:53:53 hohndel Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -27,10 +27,10 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or X Consortium
+mentation,  and  that the names of Sun or The Open Group
 not be used in advertising or publicity pertaining to 
 distribution  of  the software  without specific prior 
-written permission. Sun and X Consortium make no 
+written permission. Sun and The Open Group make no 
 representations about the suitability of this software for 
 any purpose. It is provided "as is" without any express or 
 implied warranty.
@@ -70,6 +70,11 @@ extern Bool sunBW2Init(
 );
 #define BW2I sunBW2Init
 #endif /* } */
+
+#ifdef LOWMEMFTPT
+#define BW2I NULL
+#endif /* ifdef LOWMEMFTPT */
+
 #if SUNMAXDEPTH == 1 /* { */
 #define CG2I NULL
 #define CG3I NULL

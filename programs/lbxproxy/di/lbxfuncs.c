@@ -1,4 +1,4 @@
-/* $TOG: lbxfuncs.c /main/47 1997/09/12 14:30:30 barstow $ */
+/* $TOG: lbxfuncs.c /main/49 1998/02/23 09:14:27 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  * Copyright 1996 X Consortium, Inc.
@@ -1366,8 +1366,10 @@ HandleReply(client, data, len)
     if (reply->type != KeymapNotify &&
 	reply->sequenceNumber > LBXSequenceNumber(client))
     {
+#ifdef SEQ_DEBUG
 	fprintf(stderr, "lbxproxy: reply seq #0x%x > internal seq 0x%x\n",
 		reply->sequenceNumber, LBXSequenceNumber(client));
+#endif
 	reply->sequenceNumber = LBXSequenceNumber(client);
     }
 

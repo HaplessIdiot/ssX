@@ -1,15 +1,9 @@
-/* $TOG: XUrls.c /main/14 1997/11/30 21:22:10 kaleb $ */
+/* $TOG: XUrls.c /main/15 1998/02/10 18:37:16 kaleb $ */
 /*
 
-Copyright (C) 1996 X Consortium
+Copyright 1996, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Soft-
-ware"), to deal in the Software without restriction, including without
-limitation the rights to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Software, and to permit persons to
-whom the Software is furnished to do so, subject to the following condi-
-tions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT
-SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABIL-
+SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABIL-
 ITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization from
-the X Consortium.
+The Open Group.
 
 */
 
@@ -75,7 +69,6 @@ MyBestHostname (
   struct utsname host;
   int s, rv, namelen;
   char dest_hostname[MAXHOSTNAMELEN + 1];
-  unsigned short tmp;   /* to avoid nested asm calls on SVR4.0 */
 
   *myname = '\0';
 
@@ -107,15 +100,13 @@ MyBestHostname (
       if (s != -1) {
 	do {
 	  rv = bind (s, (struct sockaddr*) &local, sizeof local);
-	  tmp = ntohs (local.sin_port);
-	  local.sin_port = htons (tmp + 1);
+	  local.sin_port = htons (ntohs (local.sin_port) + 1);
 	} while (rv == -1 && errno == EADDRINUSE);
 
 	if (rv != -1) {
 	  do {
 	    rv = connect (s, (struct sockaddr*) &remote, sizeof remote);
-	    tmp = ntohs (remote.sin_port);
-	    remote.sin_port = htons (tmp + 1);
+	    remote.sin_port = htons (ntohs (remote.sin_port) + 1);
 	  } while (rv == -1 && errno == EADDRINUSE);
 
 	  if (rv != -1) {

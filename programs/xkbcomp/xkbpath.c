@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbpath.c,v 3.1 1996/08/26 10:52:31 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbpath.c,v 3.2 1997/10/26 13:25:31 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
@@ -320,7 +320,7 @@ XkbFindFileInPath(name,type,pathRtrn)
 #endif
 {
 register int i;
-FILE	*file = 0;
+FILE	*file= NULL;
 int	 nameLen,typeLen,pathLen;
 char	 buf[PATH_MAX],*typeDir;
 

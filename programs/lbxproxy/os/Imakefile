@@ -14,7 +14,7 @@ INCLUDES = -I../include -I$(TOP)/include -I$(EXTINCSRC) \
     OBJS = connection.o io.o WaitFor.o osinit.o transport.o
 
 CONN_DEFINES = -DLBXPROXY_t -DTRANS_SERVER
- 
+
 #if HasBSD44Sockets
 SOCK_DEFINES = -DBSD44SOCKETS
 #endif

@@ -1,8 +1,8 @@
-XCOMM $TOG: Imakefile /main/235 1997/05/25 15:12:21 kaleb $
+XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.137 1998/09/05 10:38:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.138 1998/09/19 12:14:37 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -21,7 +21,11 @@ INSTPGMFLAGS =
 #define BarePostFbLibs $(MFB) $(XPFBLIBS) $(MI)
 #define PostFbLibs BarePostFbLibs $(EXTENSIONS)
 #define NoMfbBarePostFbLibs $(XPFBLIBS) $(MI)
+#ifndef BuildXinerama
 #define NoMfbPostFbLibs NoMfbBarePostFbLibs $(EXTENSIONS)
+#else
+#define NoMfbPostFbLibs $(EXTENSIONS) NoMfbBarePostFbLibs $(EXTENSIONS)
+#endif
 
 #define MFBBareLibs PreFbLibs BarePostFbLibs
 #define NoMFBBareLibs PreFbLibs NoMfbBarePostFbLibs
@@ -29,10 +33,16 @@ INSTPGMFLAGS =
 #define NoMFBLibs PreFbLibs NoMfbPostFbLibs
 #define CFBLibs PreFbLibs $(CFB) PostFbLibs
 #define CFB4Libs PreFbLibs $(CFB4) PostFbLibs
+#if BuildLowMem
+#define LMFCFBLibs PreFbLibs $(LMFCFB) NoMfbBarePostFbLibs $(EXTENSIONS)
+#endif
 #define CFB8Libs PreFbLibs $(CFB8) PostFbLibs
 #define CFB16Libs PreFbLibs $(CFB16) PostFbLibs
 #define CFB24Libs PreFbLibs $(CFB24) PostFbLibs
 #define CFB32Libs PreFbLibs $(CFB32) PostFbLibs
+
+#define NoMFBCFBLibs PreFbLibs $(CFB) NoMfbPostFbLibs
+#define NoMFBCFB8Libs PreFbLibs $(CFB8) NoMfbPostFbLibs
 
 #if BuildPexExt
          PEXLIBS = PEX5/dipex/dispatch/ModuleLibraryTargetName(didipex) \
@@ -136,7 +146,11 @@ XPDDXFBLIBS = $(MFB) $(CFB32)
       XPDDXDIR = Xprint
 #endif
 #if !BuildXprint || PrintOnlyServer
+#if BuildXinerama
+XPFBLIBS = pandix/LibraryTargetName(xpstubs)
+#else
 XPFBLIBS = dix/LibraryTargetName(xpstubs)
+#endif
 #endif
 
 #if DoLoadableServer
@@ -166,7 +180,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 		  cfb24/ModuleLibraryTargetName(cfb24) \
 		  cfb32/ModuleLibraryTargetName(cfb32)
            CFB8 = cfb/ModuleLibraryTargetName(cfb)
-          CFB4  = cfb/ModuleLibraryTargetName(cfb) \
+           CFB4 = cfb/ModuleLibraryTargetName(cfb) \
 		  cfb4/ModuleLibraryTargetName(cfb4)
           CFB16 = cfb/ModuleLibraryTargetName(cfb) \
 		  cfb16/ModuleLibraryTargetName(cfb16)
@@ -179,14 +193,23 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
             CFB = cfb/LibraryTargetName(cfb) cfb16/LibraryTargetName(cfb16) \
 		  cfb24/LibraryTargetName(cfb24) cfb32/LibraryTargetName(cfb32)
            CFB8 = cfb/LibraryTargetName(cfb)
-          CFB4  = cfb/LibraryTargetName(cfb) cfb4/LibraryTargetName(cfb4)
+           CFB4 = cfb/LibraryTargetName(cfb) cfb4/LibraryTargetName(cfb4)
           CFB16 = cfb/LibraryTargetName(cfb) cfb16/LibraryTargetName(cfb16)
           CFB24 = cfb/LibraryTargetName(cfb) cfb24/LibraryTargetName(cfb24)
           CFB32 = cfb/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb32)
 #endif
+#if BuildLowMem
+         LMFCFB = lmfcfb/LibraryTargetName(cfb)
+#endif
+#if BuildXinerama
+             MI = panmi/LibraryTargetName(mi)
+   MIINITEXTOBJ = panmi/miinitext.o
+            DIX = pandix/LibraryTargetName(dix)
+#else
              MI = mi/LibraryTargetName(mi)
    MIINITEXTOBJ = mi/miinitext.o
             DIX = dix/LibraryTargetName(dix)
+#endif
        FONTBASE = $(FONTLIBSRC)/fontfile/module/fontbase.o \
 		  $(FONTLIBSRC)/LibraryTargetName(fontbase)
            FONT = $(DEPFONTLIB)
@@ -198,8 +221,13 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #else
         SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)
 #endif
+#if BuildXinerama
+           CBRT = panmi/LibraryTargetName(cbrt)
+        STDDIRS = include pandix os panmi $(XPDDXDIR) $(EXTDIRS)
+#else
            CBRT = mi/LibraryTargetName(cbrt)
         STDDIRS = include dix os mi $(XPDDXDIR) $(EXTDIRS)
+#endif
 
 XCOMM
 XCOMM This turns off the default rule for compiling .c files because
@@ -234,6 +262,10 @@ XCOMM
  *  even if multiple servers that share subdirectories are being built.
  */
 
+#if BuildLowMem
+LMFCFBDIR = lmfcfb
+#endif
+
 #if XdecServer
 XCOMM
 XCOMM Digital MIPS based WS server (ultrix 4.2 and beyond)
@@ -241,9 +273,17 @@ XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
 DDXDIR1 = hw/dec/ws
+#if BuildLowMem
+DECDIRS = $(STDDIRS) $(LMFCFBDIR) $(DDXDIR1) $(DEPDIRS)
+#else
 DECDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+#endif
 DECOBJS = hw/dec/ws/init.o hw/dec/ws/sdepthinit.o
+#if BuildLowMem
+DECLIBS = hw/dec/ws/LibraryTargetName(dec) LMFCFBLibs
+#else
 DECLIBS = hw/dec/ws/LibraryTargetName(dec) CFB8Libs
+#endif
 ServerTarget(Xdec,$(DECDIRS),$(DECOBJS),$(DECLIBS),$(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xdec
@@ -276,7 +316,7 @@ ServerTarget(Xdec_md,$(DECDIRS1),$(DECOBJS1),$(DECLIBS1),$(SYSLIBS))
 XCOMM
 XCOMM Sun server
 XCOMM
-MFBDIR = mfb
+MFBDIR  = mfb
 CFB8DIR = cfb
 DDXDIR1 = hw/sun
 #ifndef AmoebaArchitecture
@@ -284,8 +324,13 @@ SUNOBJS = hw/sun/sunInit.o
 #else
 SUNOBJS = hw/sun/sunInitColor.o
 #endif
+#if BuildLowMem
+SUNDIRS = $(STDDIRS) $(LMFCFBDIR) $(DDXDIR1) $(DEPDIRS)
+SUNLIBS = hw/sun/LibraryTargetName(sun) LMFCFBLibs
+#else
 SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 SUNLIBS = hw/sun/LibraryTargetName(sun) CFB8Libs
+#endif
 SUNSYSLIBS = $(WIDECHARSYSLIB) $(SYSLIBS)
 SetUIDServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 #ifndef ServerToInstall
@@ -427,8 +472,13 @@ CFB8DIR = cfb
 CFB32DIR = cfb32
 DDXDIR1 = hw/hp
 HPOBJS = hw/hp/hp.o
+#if BuildLowMem
+HPSUBDIRS = $(STDDIRS) $(LMFCFBDIR) $(DDXDIR1) $(DEPDIRS)
+HPLIBS = LMFCFBLibs
+#else
 HPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 HPLIBS = CFB32Libs
+#endif
 HPSYSLIBS = $(CBRT) $(SYSLIBS)
 ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #ifndef ServerToInstall
@@ -614,10 +664,13 @@ CFB8DIR = cfb
 CFB32DIR = cfb32
 XPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DEPDIRS)
 #if PrintOnlyServer
+#if BuildXinerama
+XPPANSTUBOBJS = Xprint/panoramiXstubs.o
+#endif
 #if BuildDPMS
 XPDPMSSTUBOBJS = Xprint/dpmsstubs.o
 #endif
-XPOBJS = Xprint/ddxInit.o Xprint/miinitext.o $(XPDPMSSTUBOBJS)
+XPOBJS = Xprint/ddxInit.o Xprint/miinitext.o $(XPPANSTUBOBJS) $(XPDPMSSTUBOBJS)
 XPLIBS = PreFbLibs $(XPDDXLIBS) $(XPDDXFBLIBS) PostFbLibs
 #else
 XPOBJS = Xprint/ddxInit.o
@@ -716,7 +769,14 @@ XVFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $
 #if BuildDPMS
 XVFBDPMSSTUBOBJS = hw/vfb/dpmsstubs.o
 #endif
-XVFBOBJS = hw/vfb/stubs.o hw/vfb/miinitext.o $(XVFBDPMSSTUBOBJS)
+#ifndef Win32Architecture
+#if BuildXinerama
+XVFBPANSTUBOBJS = hw/vfb/panoramiXstubs.o
+#endif
+#if BuildDPMS
+XVFBDPMSSTUBOBJS = hw/vfb/dpmsstubs.o
+#endif
+XVFBOBJS = hw/vfb/stubs.o hw/vfb/miinitext.o $(XVFBPANSTUBOBJS) $(XVFBDPMSSTUBOBJS)
 #else
 XVFBOBJS = dix/main.o hw/vfb/stubs.o hw/vfb/miinitext.o
 #endif
@@ -744,7 +804,7 @@ CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
 IPLANDIRS = $(IPLAN2P2DIR) $(IPLAN2P4DIR) $(IPLAN2P8DIR)
 DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(XVFBDDXDIR) $(XNESTDDXDIR)
 SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIRS) $(IPLANDIRS) $(ILBMDIR) $(AFBDIR) \
-          $(DDXDIRS)
+          $(LMFCFBDIR) $(DDXDIRS)
 
 #if defined(ServerToInstall) && !defined(OS2Architecture)
 install::
