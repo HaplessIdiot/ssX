@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.96 2004/03/21 11:27:06 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.97tsi Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -256,6 +256,7 @@ typedef signed long xf86ssize_t;
 # include <sys/fbio.h>
 # include <sys/kbd.h>
 # include <sys/kbio.h>
+# include <sys/ioctl.h>
 
 # define LED_CAP LED_CAPS_LOCK
 # define LED_NUM LED_NUM_LOCK
