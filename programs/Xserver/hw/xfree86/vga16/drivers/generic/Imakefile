@@ -1,9 +1,10 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:33:58 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
-SRCS = drivergen.c
+SRCS = gen_driver.c
 
-OBJS = drivergen.o
+OBJS = gen_driver.o
 
 #if XF86LinkKit
 VGA2DIR = ../../vga2
@@ -14,11 +15,13 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
 VGA2DIR = ../../../vga2/drivers
 #endif
 
+DEFINES = -DXF86VGA16
+
 NormalLibraryObjectRule()
 
 NormalRelocatableTarget(gen_drv, $(OBJS))
 
-ObjectFromSpecialSource(drivergen,$(VGA2DIR)/generic/gen_driver,-DXF86VGA16)
+LinkSourceFile(gen_driver.c,$(VGA2DIR)/generic)
 
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga16/generic)
 

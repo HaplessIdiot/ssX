@@ -1,17 +1,10 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:50:53 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
-#if i386Mach
-SRCS = et4_driver.c
-#else
-SRCS = et4_driver.c bank.s
-#endif
+SRCS = et4_driver.c et4_bank.s
 
-#if defined(i386BsdArchitecture)
-OBJS = driver4.o bank4.o
-#else
-OBJS = et4_driver.o bank.o
-#endif
+OBJS = et4_driver.o et4_bank.o
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../..
@@ -25,10 +18,7 @@ NormalAsmObjectRule()
 
 NormalRelocatableTarget(et4_drv, $(OBJS))
 
-#if defined(i386BsdArchitecture)
-ObjectFromSpecialAsmSource(bank4,bank,NullParameter)
-ObjectFromSpecialSource(driver4,et4_driver,NullParameter)
-#endif
+ObjectFromSpecialAsmSource(et4_bank,bank,NullParameter)
 
 InstallLinkKitNonExecFile(et4_driver.c,$(LINKKITDIR)/drivers/vga256/et4000)
 InstallLinkKitNonExecFile(bank.s,$(LINKKITDIR)/drivers/vga256/et4000)

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:27:13 dpw Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.0 1994/05/08 05:23:31 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -24,20 +24,8 @@ OS_SUBDIR = sysv
 OS_SUBDIR = linux
 #endif
 
-/*
- * This would be "cleaner", but I don't understand all of the BSD stuff yet
- *
-#if defined(BSD386Architecture)
-OS_SUBDIR = bsdi
-#endif
-
-#if defined(BSDArchitecture)
-OS_SUBDIR = bsd
-#endif
-*/
-
 #if defined(i386BsdArchitecture)
-# if defined(i386Bsdi)
+# if defined(BSD386Architecture)
 OS_SUBDIR = bsdi
 # else
 OS_SUBDIR = bsd

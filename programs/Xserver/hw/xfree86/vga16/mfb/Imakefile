@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:40:43 dpw Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/mfb/Imakefile,v 3.0 1994/05/04 15:04:15 dawes Exp $
 #include <Server.tmpl>
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
@@ -32,44 +32,53 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 INCLUDES = -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
            -I$(INCLUDESRC) -I$(FONTINCSRC)
 
+LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
+           -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite \
+           -DEQWHOLEWORD=\=\~0 -DOPEQ=\|=
+LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln \
+           $(SERVERSRC)/mi/llib-lmi.ln
+
 DEFINES = -DXF86VGA16
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
+NormalLintTarget($(LINTDEFS) $(SRCS1))
 
-ObjectFromSpecialSource(maskbits,$(SERVERSRC)/mfb/maskbits,/**/)
-ObjectFromSpecialSource(mfbbitblt,$(SERVERSRC)/mfb/mfbbitblt,/**/)
-ObjectFromSpecialSource(mfbblt,$(SERVERSRC)/mfb/mfbblt,/**/)
-ObjectFromSpecialSource(mfbbres,$(SERVERSRC)/mfb/mfbbres,/**/)
-ObjectFromSpecialSource(mfbbresd,$(SERVERSRC)/mfb/mfbbresd,/**/)
-ObjectFromSpecialSource(mfbbstore,$(SERVERSRC)/mfb/mfbbstore,/**/)
-ObjectFromSpecialSource(mfbclip,$(SERVERSRC)/mfb/mfbclip,/**/)
-ObjectFromSpecialSource(mfbcmap,$(SERVERSRC)/mfb/mfbcmap,/**/)
-ObjectFromSpecialSource(mfbfillarc,$(SERVERSRC)/mfb/mfbfillarc,/**/)
-ObjectFromSpecialSource(mfbfillrct,$(SERVERSRC)/mfb/mfbfillrct,/**/)
-ObjectFromSpecialSource(mfbfillsp,$(SERVERSRC)/mfb/mfbfillsp,/**/)
-ObjectFromSpecialSource(mfbfont,$(SERVERSRC)/mfb/mfbfont,/**/)
-ObjectFromSpecialSource(mfbgc,$(SERVERSRC)/mfb/mfbgc,/**/)
-ObjectFromSpecialSource(mfbgetsp,$(SERVERSRC)/mfb/mfbgetsp,/**/)
-ObjectFromSpecialSource(mfbhrzvert,$(SERVERSRC)/mfb/mfbhrzvert,/**/)
-ObjectFromSpecialSource(mfbimage,$(SERVERSRC)/mfb/mfbimage,/**/)
-ObjectFromSpecialSource(mfbimggblt,$(SERVERSRC)/mfb/mfbimggblt,/**/)
-ObjectFromSpecialSource(mfbline,$(SERVERSRC)/mfb/mfbline,/**/)
-ObjectFromSpecialSource(mfbmisc,$(SERVERSRC)/mfb/mfbmisc,/**/)
-ObjectFromSpecialSource(mfbpixmap,$(SERVERSRC)/mfb/mfbpixmap,/**/)
-ObjectFromSpecialSource(mfbplygblt,$(SERVERSRC)/mfb/mfbplygblt,/**/)
-ObjectFromSpecialSource(mfbply1rct,$(SERVERSRC)/mfb/mfbply1rct,/**/)
-ObjectFromSpecialSource(mfbpntarea,$(SERVERSRC)/mfb/mfbpntarea,/**/)
-ObjectFromSpecialSource(mfbpntwin,$(SERVERSRC)/mfb/mfbpntwin,/**/)
-ObjectFromSpecialSource(mfbpolypnt,$(SERVERSRC)/mfb/mfbpolypnt,/**/)
-ObjectFromSpecialSource(mfbpushpxl,$(SERVERSRC)/mfb/mfbpushpxl,/**/)
-ObjectFromSpecialSource(mfbscrclse,$(SERVERSRC)/mfb/mfbscrclse,/**/)
-ObjectFromSpecialSource(mfbscrinit,$(SERVERSRC)/mfb/mfbscrinit,/**/)
-ObjectFromSpecialSource(mfbsetsp,$(SERVERSRC)/mfb/mfbsetsp,/**/)
-ObjectFromSpecialSource(mfbtegblt,$(SERVERSRC)/mfb/mfbtegblt,/**/)
-ObjectFromSpecialSource(mfbtile,$(SERVERSRC)/mfb/mfbtile,/**/)
-ObjectFromSpecialSource(mfbwindow,$(SERVERSRC)/mfb/mfbwindow,/**/)
-ObjectFromSpecialSource(mfbzerarc,$(SERVERSRC)/mfb/mfbzerarc,/**/)
+#define MfbSourceDir $(SERVERSRC)/mfb
+
+LinkSourceFile(maskbits.c,MfbSourceDir)
+LinkSourceFile(mfbbitblt.c,MfbSourceDir)
+LinkSourceFile(mfbblt.c,MfbSourceDir)
+LinkSourceFile(mfbbres.c,MfbSourceDir)
+LinkSourceFile(mfbbresd.c,MfbSourceDir)
+LinkSourceFile(mfbbstore.c,MfbSourceDir)
+LinkSourceFile(mfbclip.c,MfbSourceDir)
+LinkSourceFile(mfbcmap.c,MfbSourceDir)
+LinkSourceFile(mfbfillarc.c,MfbSourceDir)
+LinkSourceFile(mfbfillrct.c,MfbSourceDir)
+LinkSourceFile(mfbfillsp.c,MfbSourceDir)
+LinkSourceFile(mfbfont.c,MfbSourceDir)
+LinkSourceFile(mfbgc.c,MfbSourceDir)
+LinkSourceFile(mfbgetsp.c,MfbSourceDir)
+LinkSourceFile(mfbhrzvert.c,MfbSourceDir)
+LinkSourceFile(mfbimage.c,MfbSourceDir)
+LinkSourceFile(mfbimggblt.c,MfbSourceDir)
+LinkSourceFile(mfbline.c,MfbSourceDir)
+LinkSourceFile(mfbmisc.c,MfbSourceDir)
+LinkSourceFile(mfbpixmap.c,MfbSourceDir)
+LinkSourceFile(mfbply1rct.c,MfbSourceDir)
+LinkSourceFile(mfbplygblt.c,MfbSourceDir)
+LinkSourceFile(mfbpntarea.c,MfbSourceDir)
+LinkSourceFile(mfbpntwin.c,MfbSourceDir)
+LinkSourceFile(mfbpolypnt.c,MfbSourceDir)
+LinkSourceFile(mfbpushpxl.c,MfbSourceDir)
+LinkSourceFile(mfbscrclse.c,MfbSourceDir)
+LinkSourceFile(mfbscrinit.c,MfbSourceDir)
+LinkSourceFile(mfbsetsp.c,MfbSourceDir)
+LinkSourceFile(mfbtegblt.c,MfbSourceDir)
+LinkSourceFile(mfbtile.c,MfbSourceDir)
+LinkSourceFile(mfbwindow.c,MfbSourceDir)
+LinkSourceFile(mfbzerarc.c,MfbSourceDir)
 
 ObjectFromSpecialSource(mfbseg,mfbline,-DPOLYSEGMENT)
 
