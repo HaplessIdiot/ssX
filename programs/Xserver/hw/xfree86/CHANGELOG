@@ -1,4 +1,6 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 587. Fix the XKB definitions for the "Hiragana_Katakana" key, and fix
+      some incorrect definitions in symbols/jp (Chisato Yamauchi).
  586. Change the mkfontdir wrapper script to invoke mkfontscale via its full
       path name (Chisato Yamauchi).
  585. Modify xf86config and xf86cfg to enable loading the "freetype" module
@@ -18180,7 +18182,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2959 2003/11/14 02:40:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2960 2003/11/14 02:42:05 dawes Exp $
 
 
 
