@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.137 2002/11/22 22:56:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.138tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1190,7 +1190,7 @@ xf86SigMemDebug(int signo)
 static void
 xf86VTSwitch()
 {
-  int i;
+  int i, prevSIGIO;
   InputInfoPtr pInfo;
   IHPtr ih;
 
@@ -1248,6 +1248,7 @@ xf86VTSwitch()
 #ifdef DEBUG
       ErrorF("xf86VTSwitch: Leave failed\n");
 #endif
+      prevSIGIO = xf86BlockSIGIO();
       xf86AccessEnter();
       xf86EnterServerState(SETUP);
       for (i = 0; i < xf86NumScreens; i++) {
@@ -1271,8 +1272,10 @@ xf86VTSwitch()
 	pInfo = pInfo->next;
       }
 #endif /* !__UNIXOS2__ */
-    for (ih = InputHandlers; ih; ih = ih->next)
-      xf86EnableInputHandler(ih);
+      for (ih = InputHandlers; ih; ih = ih->next)
+        xf86EnableInputHandler(ih);
+
+      xf86UnblockSIGIO(prevSIGIO);
 
     } else {
 	  if (xf86OSPMClose)
@@ -1291,10 +1294,13 @@ xf86VTSwitch()
       xf86DisableIO();
     }
   } else {
+
 #ifdef DEBUG
     ErrorF("xf86VTSwitch: Entering\n");
 #endif
     if (!xf86VTSwitchTo()) return;
+
+    prevSIGIO = xf86BlockSIGIO();
     xf86OSPMClose = xf86OSPMOpen();
 
     xf86EnableIO();
@@ -1325,6 +1331,8 @@ xf86VTSwitch()
     
     for (ih = InputHandlers; ih; ih = ih->next)
       xf86EnableInputHandler(ih);
+
+    xf86UnblockSIGIO(prevSIGIO);
   }
 }
 
