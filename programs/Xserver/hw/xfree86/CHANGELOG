@@ -1,4 +1,12 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 378. Fix RenderCreateCursor's conversion from an ARGB cursor to a 2-color
+      cursor when the cursor is wider than 8 pixels (#5353, Greg Parker).
+ 377. Fix 24bpp displays with the fbdev driver when not using shadowfb
+      (#5351, Michel Lanners).
+ 376. Fixes and improvements for the en_US.UTF8 compose rules (#5346,
+      Alexandre Oliva).
+ 375. Fix compose rules for some dead accents for iso8859-1 and iso8859-15
+      (#5338, 5339, Alexandre Oliva).
  374. Add support for th_TH.UTF-8. with XIM (#5336, Theppitak Karoonboonyanan).
  373. Fix some bugs in the Thai XIM:
        - excessive '(' char when switching XKB keyboard group
@@ -15270,4 +15278,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2330 2002/10/08 23:55:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2331 2002/10/09 00:09:01 dawes Exp $
