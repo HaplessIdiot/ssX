@@ -1,5 +1,5 @@
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.17 1996/08/21 08:40:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.18 1996/08/24 12:54:11 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -1385,13 +1385,13 @@ CHIPSProbe()
 		ctLinearSupport = FALSE;
 		ctHDepth = FALSE;
 		ctAccelSupport = FALSE;
-#endif		
+#endif	
+	    }
 #ifdef CHIPS_SUPPORT_MMIO
 	    /* Turn on the MMIO addressing for 6554x chips with PCI */
 	    if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options) && ctSupportMMIO)
 		ctUseMMIO = TRUE;
 #endif
-	    }
 	} else {		       /* XR08: Linear addressing base, not for PCI */
 	    switch (temp) {
 	    case 3:

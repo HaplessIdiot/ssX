@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.43 1996/08/18 03:54:21 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.44 1996/08/20 12:07:06 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -13,7 +13,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.43 1996/08/18 03:54:21 dawe
 #if UseElfFormat
 #define OSName			Linux [ELF]
 #else
-#if AlphaArchitecture
+#ifdef AlphaArchitecture
 #define OSName			Linux [ECOFF]
 #else
 #define OSName			Linux [a.out]
@@ -57,6 +57,9 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.43 1996/08/18 03:54:21 dawe
 #define HasPutenv		YES
 #define HasShm			YES
 #define HasSockets		YES
+#if UseElfFormat || defined(AlphaArchitecture)
+#define HasSnprintf		YES
+#endif
 
 #define AvoidNullMakeCommand	YES
 #define StripInstalledPrograms	YES
