@@ -1,4 +1,32 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_kqueue_apm.c,v 1.1 2001/09/19 19:51:33 herrb Exp $ */
+/* $XFree86$ */
+/*
+ * Copyright (C) 2001 The XFree86 Project, Inc.  All Rights Reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE XFREE86 PROJECT BE LIABLE FOR ANY CLAIM, DAMAGES
+ * OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of the XFree86 Project
+ * shall not be used in advertising or otherwise to promote the sale, use
+ * or other dealings in this Software without prior written authorization
+ * from the XFree86 Project.
+ */
+/* $OpenBSD: bsd_kqueue_apm.c,v 1.2 2001/08/20 22:17:19 matthieu Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -11,8 +39,9 @@
 #include <sys/event.h>
 #include <machine/apmvar.h>
 
-#define APM_DEVICE "/dev/apm"
-#define APM_CTL_DEVICE "/dev/apm_ctl"
+#define _PATH_APM_SOCKET	"/var/run/apmdev"
+#define _PATH_APM_DEV		"/dev/apm"
+#define _PATH_APM_CTLDEV	"/dev/apmctl"
 
 static pointer APMihPtr = NULL;
 static int devFd = -1;
@@ -61,12 +90,18 @@ static int
 bsdPMGetEventFromOS(int kq, pmEvent *events, int num)
 {
     struct kevent ev;
-    int i;
+    int i, result;
+    struct timespec ts = { 0, 0 };
     
     for (i = 0; i < num; i++) {
-	if (kevent(kq, NULL, 0, &ev, 1, NULL) < 0) {
-	    xf86Msg(X_WARNING, "bsdPMGetEventFromOS: kevent"
+	result = kevent(kq, NULL, 0, &ev, 1, &ts);
+	if (result == 0) {
+	    /* no event */
+	    break;
+	} else if (result < 0) {
+	    xf86Msg(X_WARNING, "bsdPMGetEventFromOS: kevent returns"
 		    " errno = %d\n", errno);
+	    break;
 	}
 	events[i] = bsdToXF86(APM_EVENT_TYPE(ev.data));
     }
@@ -74,18 +109,20 @@ bsdPMGetEventFromOS(int kq, pmEvent *events, int num)
 }
 
 /*
- * XXX this doesn't work if apmd(8) is running
- *     We should either use kill apmd
- *     or talk to it (but its protocol is not publically available)...
+ * If apmd(8) is running, he will get the events and handle them,
+ * so, we've nothing to do here. 
+ * Otherwise, opening /dev/apmctl will succeed and we have to send the 
+ * confirmations to /dev/apmctl. 
  */
 static pmWait
 bsdPMConfirmEventToOs(int dummyfd, pmEvent event)
 {
     if (ctlFd < 0) {
-	if ((ctlFd = open(APM_CTL_DEVICE, O_RDWR)) < 0) {
+	if ((ctlFd = open(_PATH_APM_CTLDEV, O_RDWR)) < 0) {
 	    return PM_NONE;
 	}
     }
+    /* apmctl open succeedeed */
     switch (event) {
       case XF86_APM_SYS_STANDBY:
       case XF86_APM_USER_STANDBY:
@@ -123,11 +160,10 @@ xf86OSPMOpen(void)
     if (APMihPtr || !xf86Info.pmFlag) {
 	return NULL;
     }
-    if ((devFd = open(APM_DEVICE, O_RDONLY)) == -1) {
+    if ((devFd = open(_PATH_APM_DEV, O_RDONLY)) == -1) {
 	return NULL;
     }
-    kq = kqueue();
-    if (kq <= 0) {
+    if ((kq = kqueue()) <= 0) {
 	close(devFd);
 	return NULL;
     }
