@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/ico/ico.c,v 1.3 2000/02/18 12:20:14 tsi Exp $ */
+/* $XFree86: xc/programs/ico/ico.c,v 1.4 2001/07/25 15:05:13 dawes Exp $ */
 
 /******************************************************************************
  * Description
@@ -72,6 +72,7 @@ SOFTWARE.
  *  support for ICCCM delete window message
  *  better thread support - mutex and condition to control termination
  */
+#include <math.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -371,7 +372,6 @@ FormatRotateMat(axis, angle, m)
     Transform3D m;
 {
 	double s, c;
-	double sin(), cos();
 
 	IdentMat(m);
 
@@ -1186,7 +1186,6 @@ int main(argc, argv)
     const char **argv;
 {
 	const char *display = NULL;
-	extern int _Xdebug;
 #ifdef MULTIBUFFER
 	int mbevbase, mberrbase;
 #endif
