@@ -1,4 +1,12 @@
 XFree86 4.2.99.901 (4 February 2003)
+ 837. Resync with DRI mesa-4-0-4 branch:
+       - radeon DRM: only acknowledge interrupts we handle -- others could
+         be used outside the DRM (Michel Dänzer).
+       - Fix PCI and AGP posting problems (based on testing by Chris Ison
+         and suggestions by Benjamin Herrenschmidt and Arjan van de Ven).
+       - Remove radeon_flush_write_combine() which has been unused for a while
+         (Michel Dänzer).
+       - Disable strict aliasing when building the DRM (Michel Dänzer).
  836. Fix xfs crash on Darwin by making libXfont a flat namespace image
       (Torrey T. Lyons).
  835. Avoid endless loop when initializing an PS/2 mouse behind a 
@@ -16237,4 +16245,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2517 2003/02/04 15:21:14 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2518 2003/02/04 23:04:59 torrey Exp $
