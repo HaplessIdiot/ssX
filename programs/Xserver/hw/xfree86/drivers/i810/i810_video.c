@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.8 2000/09/07 01:32:39 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.9 2000/09/08 22:43:06 mvojkovi Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -117,7 +117,7 @@ static Atom xvBrightness, xvContrast, xvColorKey;
 #define HL_DOWN_INTERPOLATION	0x00300000
 
 #define Y_ADJUST			0x00010000	
-#define BYTE_ORDER			0x0000C000
+#define OV_BYTE_ORDER			0x0000C000
 #define UV_SWAP			0x00004000
 #define Y_SWAP			0x00008000
 #define Y_AND_UV_SWAP		0x0000C000
@@ -871,7 +871,7 @@ I810DisplayVideo(
 	overlay->OV0STRIDE = IMAGE_MAX_WIDTH << 1;
 	overlay->OV0CMD &= ~SOURCE_FORMAT;
 	overlay->OV0CMD |= YUV_422;
-	overlay->OV0CMD &= ~BYTE_ORDER;
+	overlay->OV0CMD &= ~OV_BYTE_ORDER;
 	if (id == FOURCC_UYVY)
 	    overlay->OV0CMD |= Y_SWAP;
 	default: /* we may have to do something different here ? */
