@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_swov.c,v 1.8 2003/12/17 18:57:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_swov.c,v 1.9 2003/12/17 18:58:35 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -79,7 +79,7 @@ unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurface
     if ( lpDDSurfaceDesc == NULL )
         return PI_ERR;
         
-    ErrorF("Creating %d surface\n", lpDDSurfaceDesc->dwFourCC);
+    ErrorF("Creating %lu surface\n", lpDDSurfaceDesc->dwFourCC);
 
     switch (lpDDSurfaceDesc->dwFourCC)
     {

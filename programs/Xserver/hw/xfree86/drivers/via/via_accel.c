@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.4 2003/08/04 10:32:27 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.5 2003/12/17 18:57:17 dawes Exp $ */
 
 /*************************************************************************
  *
@@ -525,7 +525,9 @@ VIAInitAccel(ScreenPtr pScreen)
     {
 	unsigned long offset = 2048 * pVia->Bpl;
 	unsigned long size = (pVia->FBFreeEnd - offset);
+#ifdef XFREE_44	
 	int bpp = (pScrn->bitsPerPixel + 7) / 8;
+#endif
 	AvailFBArea.y2 = 2047;
 	xf86InitFBManager(pScreen, &AvailFBArea);
 #ifdef XFREE_44	
