@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.12 2001/01/17 22:36:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.13 2001/08/01 00:44:58 tsi Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -162,7 +162,11 @@ extern long SmartScheduleTime;
 extern long SmartScheduleInterval;
 extern long SmartScheduleSlice;
 extern long SmartScheduleMaxSlice;
+extern unsigned long SmartScheduleIdleCount;
 extern Bool SmartScheduleDisable;
+extern Bool SmartScheduleIdle;
+extern Bool SmartScheduleTimerStopped;
+extern Bool SmartScheduleStartTimer(void);
 #define SMART_MAX_PRIORITY  20
 #define SMART_MIN_PRIORITY  -20
 

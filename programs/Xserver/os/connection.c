@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.49 2001/08/01 00:44:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.50 2001/08/16 08:23:34 alanh Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -163,7 +163,6 @@ extern __const__ int _nfiles;
 #include <netdnet/dn.h>
 #endif /* DNETCONN */
 
-extern char *display;		/* The display number */
 int lastfdesc;			/* maximum file descriptor */
 
 fd_set WellKnownConnections;	/* Listener mask */
@@ -207,8 +206,6 @@ XtransConnInfo 	*ListenTransConns = NULL;
 int	       	*ListenTransFds = NULL;
 int		ListenTransCount;
 
-extern int auditTrailLevel;
-
 static void ErrorConnMax(
 #if NeedFunctionPrototypes
 XtransConnInfo /* trans_conn */
@@ -230,7 +227,6 @@ void CloseDownFileDescriptor(
 
 #ifdef LBX
 extern int LbxFlushClient();
-extern void LbxCloseClient();
 #endif /* LBX */
 
 static XtransConnInfo
@@ -247,10 +243,6 @@ lookup_trans_conn (fd)
 
     return (NULL);
 }
-
-#ifdef XDMCP
-void XdmcpOpenDisplay(), XdmcpInit(), XdmcpReset(), XdmcpCloseDisplay();
-#endif
 
 /* Set MaxClients and lastfdesc, and allocate ConnectionTranslation */
 
@@ -318,7 +310,7 @@ InitConnectionLimits()
 void
 CreateWellKnownSockets()
 {
-    int		request, i;
+    int		i;
     int		partial;
     char 	port[20];
 
@@ -586,7 +578,7 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     char	 	*reason = NULL;
     XtransConnInfo	trans_conn;
     int			restore_trans_conn = 0;
-    ClientPtr           lbxpc;
+    ClientPtr           lbxpc = NULL;
 
     priv = (OsCommPtr)client->osPrivate;
     trans_conn = priv->trans_conn;
@@ -873,7 +865,7 @@ EstablishNewConnections(clientUnused, closure)
     /* kill off stragglers */
     for (i=1; i<currentMaxClients; i++)
     {
-	if (client = clients[i])
+	if ((client = clients[i]))
 	{
 	    oc = (OsCommPtr)(client->osPrivate);
 	    if (oc && (oc->conn_time != 0) &&

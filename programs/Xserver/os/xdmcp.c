@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.15 2001/05/01 07:53:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.16 2001/07/23 13:15:50 dawes Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -67,9 +67,6 @@
 #undef REQUEST
 #include "Xdmcp.h"
 
-extern char *display;
-extern fd_set EnabledDevices;
-extern fd_set AllClients;
 extern char *defaultDisplayClass;
 
 static int		    xdmcpSocket, sessionSocket;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.4 1998/10/04 09:39:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.5 2001/01/17 22:37:11 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -172,7 +172,7 @@ lookup(name, len, create)
      Bool create;
 {
   unsigned int h = 0, g;
-  dbEntryPtr   entry, *prev;
+  dbEntryPtr   entry, *prev = NULL;
   char         *str = name;
 
   if (!(name = (char*)ALLOCATE_LOCAL(len +1))) return NULL;
@@ -186,7 +186,7 @@ lookup(name, len, create)
   }
   h %= HASHSIZE;
 
-  if ( entry = hashTab[h] )
+  if ( (entry = hashTab[h]) )
     {
       for( ; entry; prev = (dbEntryPtr*)entry, entry = entry->link )
 	if (! strcmp(name, entry->name) ) break;
@@ -251,7 +251,7 @@ OsInitColors()
 		  green >= 0 && green <= 0xff &&
 		  blue >= 0  && blue <= 0xff)
 		{
-		  if (entry = lookup(name, strlen(name), TRUE))
+		  if ((entry = lookup(name, strlen(name), TRUE)))
 		    {
 		      entry->red   = (red * 65535)   / 255;
 		      entry->green = (green * 65535) / 255;
@@ -286,7 +286,7 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
 {
   dbEntryPtr entry;
 
-  if (entry = lookup(name, len, FALSE))
+  if ((entry = lookup(name, len, FALSE)))
     {
       *pred   = entry->red;
       *pgreen = entry->green;

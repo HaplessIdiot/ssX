@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.72 2001/08/01 00:44:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.73 2001/08/17 16:58:42 dawes Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -1491,7 +1491,6 @@ SmartScheduleInit (void)
 {
 #ifdef SMART_SCHEDULE_POSSIBLE
     struct sigaction	act;
-    struct itimerval	timer;
 
     if (SmartScheduleDisable)
 	return TRUE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.13 2001/07/25 15:05:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.14 2001/08/01 00:44:59 tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -155,7 +155,7 @@ AppendFakeRequest (client, data, count)
 
     if (!oci)
     {
-	if (oci = FreeInputs)
+	if ((oci = FreeInputs))
 	    FreeInputs = oci->next;
 	else if (!(oci = AllocateInputBuffer()))
 	    return FALSE;
@@ -277,7 +277,7 @@ LbxAppendOutput(proxy, client, oco)
 	int n;
 
 	if (!noco || (noco->size - noco->count) < sz_xLbxSwitchEvent) {
-	    if (noco = FreeOutputs)
+	    if ((noco = FreeOutputs))
 		FreeOutputs = noco->next;
 	    else
 		noco = AllocateOutputBuffer();
@@ -323,7 +323,7 @@ LbxClientOutput(client, oc, extraBuf, extraCount, nocompress)
     ConnectionOutputPtr oco;
     int len;
 
-    if (oco = oc->output) {
+    if ((oco = oc->output)) {
 	oc->output = NULL;
 	if (!LbxAppendOutput(oc->proxy, client, oco))
 	    return -1;
@@ -376,7 +376,7 @@ LbxForceOutput(proxy)
 	if (!lbxClient)
 	    continue;
 	coc = (OsCommPtr)lbxClient->client->osPrivate;
-	if (oco = coc->output) {
+	if ((oco = coc->output)) {
 	    coc->output = NULL;
 	    LbxAppendOutput(proxy, lbxClient->client, oco);
 	}
@@ -393,7 +393,7 @@ LbxFlushClient(who, oc, extraBuf, extraCount)
     LbxProxyPtr proxy;
     ConnectionOutputPtr oco;
     int n;
-    XtransConnInfo trans_conn;
+    XtransConnInfo trans_conn = NULL;
 
     if (extraBuf)
 	return LbxClientOutput(who, oc, extraBuf, extraCount, FALSE);
@@ -403,7 +403,7 @@ LbxFlushClient(who, oc, extraBuf, extraCount)
     LbxForceOutput(proxy);
     if (!proxy->compHandle)
 	trans_conn = ((OsCommPtr)LbxProxyClient(proxy)->osPrivate)->trans_conn;
-    while (oco = proxy->ofirst) {
+    while ((oco = proxy->ofirst)) {
 	/* XXX bundle up into writev someday */
 	if (proxy->compHandle) {
 	    if (oco->nocompress)
@@ -469,7 +469,7 @@ LbxFreeOsBuffers(proxy)
 {
     ConnectionOutputPtr oco;
 
-    while (oco = proxy->ofirst) {
+    while ((oco = proxy->ofirst)) {
 	proxy->ofirst = oco->next;
 	xfree(oco->buf);
 	xfree(oco);
@@ -485,7 +485,7 @@ AllocateLargeReqBuffer(client, size)
     register ConnectionInputPtr oci;
 
     if (!(oci = oc->largereq)) {
-	if (oci = FreeInputs)
+	if ((oci = FreeInputs))
 	    FreeInputs = oci->next;
 	else {
 	    oci = (ConnectionInputPtr)xalloc(sizeof(ConnectionInput));

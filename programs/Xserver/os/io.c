@@ -48,7 +48,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.28 2001/07/25 15:05:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.29 2001/08/01 00:44:59 tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -248,7 +248,7 @@ ReadRequestFromClient(client)
 
     if (!oci)
     {
-	if (oci = FreeInputs)
+	if ((oci = FreeInputs))
 	{
 	    FreeInputs = oci->next;
 	}
@@ -540,7 +540,7 @@ InsertFakeRequest(client, data, count)
     }
     if (!oci)
     {
-	if (oci = FreeInputs)
+	if ((oci = FreeInputs))
 	    FreeInputs = oci->next;
 	else if (!(oci = AllocateInputBuffer()))
 	    return FALSE;
@@ -595,7 +595,6 @@ ResetCurrentRequest(client)
     register xReq *request;
     int gotnow, needed;
 #ifdef LBX
-    Bool part;
     LbxClientPtr lbxClient = LbxClient(client);
 
     if (lbxClient) {
@@ -914,7 +913,7 @@ WriteToClient (who, count, buf)
 
     if (!oco)
     {
-	if (oco = FreeOutputs)
+	if ((oco = FreeOutputs))
 	{
 	    FreeOutputs = oco->next;
 	}
@@ -1230,7 +1229,7 @@ FreeOsBuffers(oc)
 
     if (AvailableInput == oc)
 	AvailableInput = (OsCommPtr)NULL;
-    if (oci = oc->input)
+    if ((oci = oc->input))
     {
 	if (FreeInputs)
 	{
@@ -1246,7 +1245,7 @@ FreeOsBuffers(oc)
 	    oci->lenLastReq = 0;
 	}
     }
-    if (oco = oc->output)
+    if ((oco = oc->output))
     {
 	if (FreeOutputs)
 	{
@@ -1261,7 +1260,7 @@ FreeOsBuffers(oc)
 	}
     }
 #ifdef LBX
-    if (oci = oc->largereq) {
+    if ((oci = oc->largereq)) {
 	xfree(oci->buffer);
 	xfree(oci);
     }
@@ -1274,13 +1273,13 @@ ResetOsBuffers()
     register ConnectionInputPtr oci;
     register ConnectionOutputPtr oco;
 
-    while (oci = FreeInputs)
+    while ((oci = FreeInputs))
     {
 	FreeInputs = oci->next;
 	xfree(oci->buffer);
 	xfree(oci);
     }
-    while (oco = FreeOutputs)
+    while ((oco = FreeOutputs))
     {
 	FreeOutputs = oco->next;
 	xfree(oco->buf);
