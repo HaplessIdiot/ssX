@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.6 1997/04/12 13:45:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.7 1997/04/17 08:17:12 hohndel Exp $ */
 
 /*
  *
@@ -49,7 +49,9 @@ void S3AccelInit()
 
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS  | PIXMAP_CACHE |
 				COP_FRAMEBUFFER_CONCURRENCY |
-				LINE_PATTERN_MSBFIRST_INCREASING; 
+				LINE_PATTERN_MSBFIRST_INCREASING |
+				DELAYED_SYNC;
+ 
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_NOT_LINEAR;
 	
     xf86AccelInfoRec.Sync = S3Sync;

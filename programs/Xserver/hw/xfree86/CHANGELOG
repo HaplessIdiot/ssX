@@ -1,4 +1,7 @@
 XFree86 3.9a (17 April 1997)
+ 708. Several fixes to TE and NonTE fonts. The server now passes CH06
+      drwimgstr, drwimgst16, drwstr, drwstr16, drwtxt and drwtxt16 xtest tests
+      (#305,307, Sebastien Marineau).
  707. Add Latin2 Type1 fonts (Peter Soos).
  706. Add Latin2 bdf fonts (Petr Kolar).
  705. Add SubsequentDashedTwoPointLine to XAA (#296, Mark Vojkovich).
@@ -22,7 +25,7 @@ XFree86 3.9a (17 April 1997)
  693. Fix building PC98 modules, resync PC98 Imakefile (#297, Takaaki Nomura).
  692. Fix ch8398 ramdac command byte for 8bpp in tseng driver (#294,
       Krajcsovits Gyorgy).
- 691. Fix NonTE fonts in XAA (#292, David Bateman).
+ 691. Fix NonTE fonts in XAA (#292,309 David Bateman).
  690. Disable XAA matchcommon logic to fix problem with grayed out fonts
       (#291, David Bateman).
  689. Fix sis driver for 8x8 color expand pattern fill pattern flags and XAA's  
@@ -4400,4 +4403,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.451 1997/04/17 08:16:46 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.453 1997/04/17 13:03:20 dawes Exp $

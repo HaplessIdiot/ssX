@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/glxStub/glxstub.c,v 1.2 1997/04/12 15:34:29 hohndel Exp $ */
 
 /*
  * Copyright 1997  The XFree86 Project
@@ -36,7 +36,7 @@ GlxExtensionInit(INITARGS)
    ErrorF("GLX extension library not linked, use linkkit\n");
 }
 
-Bool
+int
 GlxInitVisuals (
 #if NeedFunctionPrototypes
     VisualPtr * 	/*visualp*/,
