@@ -6,15 +6,15 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>14 January 2002
+<date>15 January 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.64 2002/01/11 17:20:09 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.65 2002/01/14 18:02:58 dawes Exp $
 </ident>
 
 <abstract>
 
-This document contains some information about the features present
+This document contains some information about features present
 in XFree86 &relvers; and their status.
 
 </abstract>
@@ -90,372 +90,122 @@ don't have enough space to cover them all here.
 
 <sect>Summary of new features in &fullrelvers;.
 
-<sect1>Video driver enhancements
+<sect1>Video Driver Enhancements
 
 <p>
 <itemize>
+<!--
 <item> more drivers converted from the cfb to fb framebuffer layer
 <item> more drivers support the RENDER extension
 <item> big-endian support for the mga and tdfx drivers
 <item> support for ATI Radeon on Linux/Alpha
-<item> vmware driver for use by X servers running under a VMWare guest OS
-<item> Matrox G450 support
-<item> Support for Trident *BladeXP chipsets (currently not-accelerated)
-<item> Xv support for Trident TGUI series chips (not 9440 though)
-<item> Support the older Trident chipsets again for ISA/VLBus (not tested)
-<item> Support for 3DLabs Permedia4, GLINT R4 and Gamma 2 chipsets.
-<item> support for NVidia GeForce 3
-<item> XvImage support for GeForce 3 chips
-<item> add 1400x1050 builtin modes
-<item> savage driver updates
-<item> GLINT driver updates, including support for the SGI 1600SW flat panel
-<item> cirrus driver updates
-<item> DRI driver for Radeon
-<item> acceleration for Trident Cyber9388
+-->
+<item> Some vmware driver problems are fixed, and the driver is updated
+	to take advantage of VMWare Workstation 3.0 features.  These
+	include improved hardware cursor handling and support for 8 bit
+	emulation.
+
+<item> Support added for Trident *BladeXP chipsets (currently not-accelerated).
+<item> Xv support added for Trident TGUI series chips (not 9440 though).
+<item> Support added for the older Trident chipsets again for ISA/VLBus (not tested)
+<item> Support added for 3DLabs Permedia4, GLINT R4 and Gamma 2 chipsets.
+<item> Support added for Intel i830 (tested on Linux only).
+<item> Support added for ATI Radeon 7500 (2D and 3D), Radeon 8500 (2D only),
+	and Rage128ProII.
+<item> Support added for the Matrox G550 support.  This included dual-head support.
+<item> Support added for NVIDIA nForce integrated graphics.
+<item> Fixes for the savage driver on 64-bit platforms, XVideo support for the
+	SuperSavage, and other savage driver updates.
+<item> The s3 driver is updated to support the Aurora64V+ and a console
+	restoration problem is fixed.
+<item> Cirrus driver updates.
 
 </itemize>
 
-<sect1>Miscellaneous X Server / Extensions updates
+<sect1>Input Driver Enhancements
 
 <p>
 <itemize>
-<item> Mesa 3.4.2
-<item> FreeType 2.0.2
-<item> UCS versions of most bitmap fonts
-<item> more locale/international keyboards support
-<item> initial DPS extension support
-<item> support several 'internet' keyboards additional keys
-<item> X11R6.6 merge
-<item> lots of int10 support bug fixes
-<item> add XvMC extension (an experimental, not yet finished video
-  acceleration extension)
-<item> fix a crash in Shape extension
-<item> XFree86-VidModeExtension now allows setting of gamma ramps rather
-  than just gamma values
+<item> The mouse driver now has support for mouse wheel emulation.
+<item> The "Min/Max X/Y Position" options in the elographics and mutouch
+	drivers are changed to "Min/Max X/Y" to be consistent with the other
+	input drivers.
+<item> Linux USB keyboard access is fixed when no PS/2 controller is present.
+<item> Added calcomp input driver.
+<item> Added DMC input driver.
+<item> Added hyperpen input driver.
 </itemize>
 
-<sect1>New clients - updates to existing clients 
+<sect1>X Server and Extension Updates
 
 <p>
 <itemize>
-<item> add glxgears
-<item> add libXmuu (Xmu version that does not rely on Xt/Xaw)
-<item> add libGLU
-<item> security problem in XAsyncReply
-<item> make xdm xinerama-aware (avoid the split login widget)
+<item> Resynced with X.Org's X11R6.6.
+<item> Mesa updated to the post-3.4.2 3.4 branch version as of November 2001.
+<item> DRI drivers resynced with the latest from the DRI project.
+<item> Various updates to the Xft library.
+<item> The DEC-XTRAP extension is now available.
+<item> The PEX and XIE extensions are no longer built/distributed by default.
+<item> A security problem related to glyph clipping for large origins is fixed.
+<item> An i810 XvMC (motion compensation) driver is now available (Linux only).
 </itemize>
 
-<sect1>Os support
+<sect1>Client and Library Updates
 
 <p>
 <itemize>
-<item> support for DRI on Linux/ppc
-<item> i810 and i815 support on FreeBSD
-<item> lots for XDarwin updates
-<item> lots of Cygwin support updates
+<item> FreeType2 updated to version 2.0.6.
+<item> Added libGL man pages.
+<item> Xload now has support for displaying the load of remote hosts.
+<item> Xterm updated to patch level 165.
+<item> SuperProbe is removed.
+<item> Sample xtrap clients added.
 </itemize>
 
-<sect1>Build updates
+<sect1>I18N and Font Updates
 
 <p>
 <itemize>
-<item> new distclean make target
-<item> makedepend scripts updates
+<item> New Luxi scalable fonts (TrueType and Type&nbsp;1) from Bigelow &amp;
+	Holmes.
+	These fonts are original designs by Kris Holmes and Charles Bigelow.
+	See <ref id="luxi" name="below"> for further information.
+<item> More locale/international keyboards supported.
+<item> Modularized I18N support in Xlib is included from X11R6.6.
+<item> A problem that caused bdftopcf to sometimes write corrupted fonts
+	is fixed.
+<item> Some problem with Xlib's handling of CTEXT and multi-byte
+	characters are fixed.
+<item> The fontenc layer is updated, and the fontenc library is now installed
+	and available for other applications.
+<item> Improvements to the input method framework in Xlib for UTF-8 locales.
+<item> A filter called "luit" is added, which provides locale and ISO&nbsp;2022
+	support for Unicode terminals.
 </itemize>
 
+<sect1>OS Support Updates
+
+<p>
+<itemize>
+<item> Build problems on both QNX4 and QNX6 are fixed.
+<item> VT switching problems with the i810 driver on FreeBSD are worked around.
+<item> Problems building modules with some enhanced versions of gcc are fixed.
+<item> Lots of updates for Darwin.
+<item> Lots of Cygwin support updates.
+<item> Support added for OpenBSD/powerpc.
+<item> Build support added for Linux on IBM S/390.
+<item> Removed stale support for Amoeba and Minix.
+<item> Client-side support added for sparc64 on NetBSD and OpenBSD.
+<item> Support added for building the X server on Linux/m68k.
+<item> Support added for building on Linux/arm32.
+<item> Updates to Linux/mips support.
+</itemize>
+
+
+<!--
 <sect>Summary of new features in &prevrelvers;.
 <p>
-<sect1>X server
-<p>
-<itemize>
-  <item>Darwin/Mac OS X is now supported on PowerPC and Intel/x86.  The X
-	server runs from the console or in cooperation with the Mac OS X
-	Aqua GUI.  The X server for this platform is called "XDarwin", and
-	its installation and configuration is different from the "XFree86"
-	server used on other platforms.  Please read the <htmlurl
-	url="Darwin.html" name="XFree86 on Darwin and Mac OS X"> document
-	for further information.
-
-  <item>Mesa has been updated to the 3.4 stable release.
-
-  <item>A driver for ATI Radeon adapters has been added.
-
-  <item>ATI driver support for multi-head configurations and non-Intel
-        platforms has been improved.
-
-  <item>The ATI driver has been changed to invoke the appropriate driver for
-        any Rage 128 and Radeon adapters that it finds in the system.
-
-  <item>A driver (i128) for Number Nine chipsets has been added.
-
-  <item>A driver (savage) for S3 Savage chipsets has been added.
-
-  <item>A driver (siliconmotion) for some Silicon Motion chipsets has been
-	added.
-
-  <item>The driver (ark) for Ark Logic chips has been ported to 4.x.
-
-  <item>A VESA driver has been added.
- 
-  <item>A driver for SGI newport cards has been added (Linux/mips).
-
-  <item>The trident driver has lots of fixes to the CyberBlade/Blade
-	support, XVideo support for the Image/Blade series (although
-	scaling doesn't work yet on the Image series).
-
-  <item>The s3virge driver has stabilized ViRGE GX2 support, includes
-	ViRGE DX and ViRGE support for XVideo YUV images, and various fixes.
-
-  <item>The 3Dlabs (glint) driver now has Permedia3 support.
-
-  <item>The SiS driver has had many updates, and XVideo support for the 630
-	is included.
-
-  <item>The NVIDIA (nv) driver has been updated to include support for the
-	GeForce2, and line acceleration has been added.  Also, DDC support
-	has been improved, and support added for Alpha platforms (dense only).
-
-  <item>The neomagic driver has had various bug fixes and extended acceleration
-	support.  DGA support has also been added.
-
-  <item>The Chips and Technologies driver (chips) has initial support for
-	the 69030.
-
-  <item>The tseng driver has multi-head fixes and DGA support has been added.
-
-  <item>Most video drivers have been converted to use the integrated "fb"
-	framebuffer code instead of the old "cfb" code.
-	
-  <item>DRI support has been updated for the Rage 128, 3Dfx Voodoo3 and
-	Voodoo5, Intel i810/i815 and Matrox G400.  DRI support for SiS
-	and Sun Creator3D is available.  The DRI is now also available on
-	Alpha platforms.
-
-  <item>An input driver (citron) for Citron Infrared Touch devices has been
-	added.
-
-  <item>An input driver (penmount) for PenMount devices has been added.
-
-  <item>An input driver (digitaledge) for DigitalEdge devices has been added.
-
-  <item>Big endian problems in Xinerama have been fixed.
-
-  <item>The new "render" extension has been added (see <ref id="render"
-	name="below">).  The design has been
-	extended in the following ways:<p>
-
-	<itemize>
-	  <item>A new FillRectangles request was added.
-
-	  <item>The 'mask' operand was changed to allow per-channel alphas.
-
-	</itemize>
-
-	<p>Server implementation:
-
-	<itemize>
-	  <item>Implemented remaining code for client clip lists.
-
-	  <item>Fixed plenty of bugs related to text rendering.
-
-	  <item>Complete compositing code, except for separate alpha.
-
-	</itemize>
-
-	<p>Todo:
-
-	<itemize>
-	  <item>Polygons
-
-	  <item>Image scaling
-
-	  <item>Separate alpha channels
-
-	  <item>Support for visuals other than TrueColor.
-
-	</itemize>
-
-	<p>Drivers with render extension support include: i128, glint, ati (r128
-	and radeon), chips, cirrus, mga, neomagic, nv, tdfx, trident, tseng,
-	vesa, s3virge.
-
-	<p>Acceleration for the render extension:
-
-	<itemize>
-	  <item>XAA infrastructure for acceleration.
-
-	  <item>Experimental MGA acceleration using XAA
-
-	  <item>kdrive (TinyX) infrastructure
-
-	  <item>Experimental TinyX Trident 9525DVD acceleration
-
-	</itemize>
-
-	<p>Xft library:
-
-	<itemize>
-	  <item>New font naming/access library.
-
-	  <item>Abstraction for core/Render text.
-
-	  <item>Uses FreeType2 rasterizer.
-
-	  <item>Allows anti-aliased/subpixel sampled text.
-
-	  <item>Gracefully falls back to core rendering.
-
-	  <item>Complicated font matching mechanism.
-
-	  <item>Uses server DPI to convert point sizes to pixel sizes, even
-		for core fonts.
-
-	</itemize>
-
-	<p>xterm:
-
-	<itemize>
-	  <item>Can use Xft, by default uses core fonts.
-
-	  <item>Uses new options '<tt>-fa</tt>' for family name and
-		'<tt>-fs</tt>' for font size (in points).
-
-	</itemize>
-
-	<p>x11perf:
-
-	<itemize>
-	  <item>Add tests for anti-aliased, subpixel sampled and aliased
-		fonts using the Xft library.
-
-	</itemize>
-
-	<p>xditview:
-
-	<itemize>
-	  <item>When the Xft library is build, uses Xft for all font access.
-
-	</itemize>
-
-	<p>Qt, Gtk, twm:
-
-	<itemize>
-	  <item>Qt changes available <url
-		url="http://XFree86.org/~keithp/download/qtkernel.tar.bz2"
-		name="here">.
-
-	  <item>Gtk changes in process.
-
-	  <item>twm hacks should never see the light of day.
-
-	</itemize>
-	
-
-  <item><tt>xf86cfg</tt>, a new graphical configuration tool for XFree86 4.x,
-	and can be used to either write the initial configuration or make
-	customisations to the current configuration.  <tt>xf86cfg</tt> is
-	a work in progress, and allows configuration of:<p>
-
-	<itemize>
-	  <item>Specific setup of monitors, cards, keyboards and mice, as
-		well as adding or removing them.
-	  <item>Server layout setup, allowing complex configuration of
-		physical monitor positions, default color depth and/or
-		rotated monitors.
-	  <item>Mode line editor that can be used to configure multiple
-		monitors, and allows adding a modeline specific to a
-		monitor directly to the configuration file.
-	  <item>AccessX configuration interface, that provides an interface
-		to easy setup of most AccessX options, including:<p>
-
-		<itemize>
-		  <item>Timeout to reset controls.
-		  <item>StickyKeys, for people with disabilities that cannot
-			press two keys at the same time.
-		  <item>MouseKeys, mouse control only with the keyboard.
-		  <item>RepeatKeys, repeat rate and repeat delay.
-		  <item>SlowKeys, to avoid pressing keys accidentally, they're
-			only accepted if pressed for some specific amount
-			of time.
-		  <item>BounceKeys, helps avoiding multiple key presses by
-			only accepting a key if it is pressed only once and
-			not pressed again in a specific amount of time.
-		</itemize>
-	</itemize>
-	
-	<p>New configuration options are being worked on, as well as correcting
-	some of the bugs in the current options.  A protocol for plugging
-	in external modules is also planned.
-
-</itemize>
-</sect1>
-
-<sect1>X libraries and clients.
-<p>
-<itemize>
-  <item>Significant updates to the internationalisation support in Xlib
-	(see <ref id="i18n" name="below">).
-
-  <item>Some xfs updates, including font path verification, and new options.
-
-  <item>XTerm updates.
-
-  <item>New "xvinfo" client for querying the XVideo extension.
-
-</itemize>
-
-<sect1>Fonts and Internationalisation <label id="i18n">
-<p>
-<itemize>
-  <item>Many of the "misc" bdf fonts have been updated and extended, and
-	a wider range of ISO-8859 subsets have been added.  These are now
-	auto-generated from ISO-10646 encoded master fonts.
-
-  <item>The ClearlyU ISO-10646 encoded fonts have been updated.
-
-  <item>Functions to read keyboard input in locale independent UTF-8 encoding
-        have been added to libX11: Xutf8LookupString, Xutf8ResetIC.
-
-  <item>Functions to output strings in locale independent UTF-8 encoding
-        have been added to libX11: Xutf8DrawString, Xutf8DrawImageString,
-        Xutf8TextEscapement, Xutf8TextExtents, Xutf8TextPerCharExtents,
-        Xutf8DrawText.
-
-  <item>Functions to convert between Compound Text or locale dependent encoding
-        and UTF-8 have been added to libX11: Xutf8TextListToTextProperty,
-        Xutf8TextPropertyToTextList. The converter between Compound Text
-        and UTF-8 in Xlib has been improved; a round-trip conversion
-        now correctly converts all graphic Unicode characters back and
-        forth.
-
-  <item>libXaw now offers selected text using both selection targets,
-        UTF8_STRING and COMPOUND_TEXT.
-
-  <item>Locales with UTF-8 encodings are now supported; but the UTF-8
-        displaying facilities are not adequate yet.
-
-  <item>XKB keyboard definitions have been added and updated for some
-	countries.
-
-</itemize>
-</sect1>
-
-<sect1>Platforms
-<p>
-<itemize>
-  <item>Darwin/Mac OS X.
-
-  <item>Greatly improved IA-64 support.
-
-  <item>Improved Linux/mips support.
-
-  <item>Support has been added for more Alpha platforms under Linux.  This
-	now includes all platforms that require sparse memory mapping.
-
-</itemize>
-</sect1>
-
-</sect>
+-->
 
 <sect>Drivers
 <p>
@@ -509,6 +259,7 @@ XFree86 &relvers; includes the following video drivers:
    <tabrow><tt>rendition</tt><colsep>Rendition<colsep><htmlurl
 		name="README.rendition" url="rendition.html">, <htmlurl
 		name="rendition(4)" url="rendition.4.html"></tabrow>
+   <tabrow><tt>s3</tt><colsep>S3 (not ViRGE or Savage)<colsep>&nbsp;</tabrow>
    <tabrow><tt>s3virge</tt><colsep>S3 ViRGE<colsep><htmlurl
 		name="README.s3virge" url="s3virge.html">, <htmlurl
 		name="s3virge(4)" url="s3virge.4.html"></tabrow>
@@ -563,12 +314,18 @@ XFree86 &relvers; includes the following input drivers:
 <tabular ca="|l|l|l|">
    <tabrow>Driver Name<colsep>Description<colsep>Further Information</tabrow>
    <hline>
+<!--
    <tabrow><tt>acecad</tt><colsep>AceCad<colsep>&nbsp;</tabrow>
+-->
+   <tabrow><tt>calcomp</tt><colsep>Calcomp<colsep>&nbsp;</tabrow>
    <tabrow><tt>citron</tt><colsep>Citron<colsep><htmlurl
 		name="citron(4)" url="citron.4.html"></tabrow>
    <tabrow><tt>digitaledge</tt><colsep>DigitalEdge<colsep>&nbsp;</tabrow>
+   <tabrow><tt>dmc</tt><colsep>DMC<colsep><htmlurl
+		name="dmc(4)" url="dmc.4.html"></tabrow>
    <tabrow><tt>dynapro</tt><colsep>Dynapro<colsep>&nbsp;</tabrow>
    <tabrow><tt>elographics</tt><colsep>EloGraphics<colsep>&nbsp;</tabrow>
+   <tabrow><tt>hyperpen</tt><colsep>HyperPen<colsep>&nbsp;</tabrow>
    <tabrow><tt>keyboard</tt><colsep>generic keyboards<colsep><htmlurl
 		name="keyboard(4)" url="keyboard.4.html"></tabrow>
    <tabrow><tt>microtouch</tt><colsep>MicroTouch<colsep>&nbsp;</tabrow>
@@ -682,8 +439,6 @@ Section "Module"
     Load "dbe"
     Load "record"
     Load "glx"
-    Load "pex5"
-    Load "xie"
     Load "extmod"
 
     Load "type1"
@@ -1064,8 +819,6 @@ of the config file.
 <p>
 
 <url name="Precision Insight" url="http://www.precisioninsight.com">
-(now part of the Professional Services group at <url name="VA Linux Systems"
-url="http://www.valinux.com">)
 was provided with funding and support from <url name="Red Hat"
 url="http://www.redhat.com">, <url name="SGI" url="http://www.sgi.com">,
 <url name="3Dfx" url="http://www.3dfx.com">, <url name="Intel"
@@ -1454,21 +1207,38 @@ What is included in 4.x:
 
 </itemize>
 
-<sect1>Lucidux fonts from Bigelow and Holmes
+<sect1>Luxi fonts from Bigelow and Holmes <label id="luxi">
 <p>
 
-XFree86 now includes the ``Lucidux'' family of professionally hinted
-Type 1 fonts.  This family consists of the fonts ``Lucidux Serif'',
-``Lucidux Sans'' and ``Lucidux Mono'' in Roman and oblique variants,
-and includes over 370 glyphs in each font covering among others the
-glyphs needed for ISO 8859-1, 2, 3, 4, 9 and 15.  Bold variants will be
-included in a future release.  The design and font outlines were donated
-by Charles Bigelow and Kris Holmes from Bigelow and Holmes Inc., and
-the hinting was donated by Berthold Horn and Blenda Horn from Y&amp;Y, Inc.
-For more information, please contact
+XFree86 now includes the ``Luxi'' family of Type&nbsp;1 fonts and TrueType
+fonts.  This family consists of the fonts ``Luxi&nbsp;Serif'',
+``Luxi&nbsp;Sans'' and ``Luxi&nbsp;Mono'' in Roman, oblique, bold and
+bold oblique variants.  The TrueType version have glyphs covering the
+basic ASCII Unicode range, the Latin&nbsp;1 range, as well as the
+<it/Extended Latin/ range and some additional punctuation characters.
+In particular, these fonts include all the glyphs needed for ISO&nbsp;8859
+parts 1, 2, 3, 4, 9, 13 and 15, as well as all the glyphs in the Adobe
+Standard encoding and the Windows 3.1  character set.
+
+The glyph coverage of the Type&nbsp;1 versions is somewhat reduced,
+and only covers ISO&nbsp;8859 parts 1, 2 and 15 as well as the Adobe
+Standard encoding.
+
+The Luxi fonts are original designs by Kris Holmes and Charles Bigelow
+from Bigelow and Holmes Inc., who developed the Luxi typeface designs
+in Ikarus digital format.  URW++ Design and Development GmbH converted
+the Ikarus format fonts to TrueType and Type&nbsp;1 font programs and
+implemented the grid-fitting "hints" and kerning tables in the Luxi
+fonts.
+
+The license terms for the Luxi fonts are included in the file
+`<tt/COPYRIGHT.BH/', as well as in the <htmlurl
+name="License document" url="LICENSE.html">.  For further information,
+please contact
 <email>design@bigelowandholmes.com</email> or
-<email>sales@yandy.com</email>, or consult <url name="Y&amp;Y's web site"
-url="http://www.yandy.com">.
+<email>info@urwpp.de</email>, or consult
+<url name="the URW++ web site" url="http://www.urwpp.de">.
+
 
 <!--
 <sect>Miscellaneous
