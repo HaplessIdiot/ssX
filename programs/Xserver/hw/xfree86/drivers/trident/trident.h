@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.34 2000/12/28 15:03:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.36 2001/03/08 17:12:13 eich Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -107,7 +107,7 @@ typedef struct {
     int			y;
     int                 lcdMode;
     Bool                lcdActive;
-    Bool                doInt;
+    Bool                doInit;
 #ifdef READOUT
     Bool                DontSetClock;
 #endif
