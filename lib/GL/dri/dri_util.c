@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.7 2003/04/28 17:01:25 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.8tsi Exp $ */
 /**
  * \file dri_util.c
  * DRI utility functions.
@@ -42,25 +42,6 @@ static void *driCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
                                VisualID vid, __DRIdrawable *pdraw);
 
 static void driDestroyDrawable(Display *dpy, void *drawablePrivate);
-
-
-
-
-static Bool driFeatureOn(const char *name)
-{
-    char *env = getenv(name);
-
-    if (!env) return GL_FALSE;
-    if (!strcasecmp(env, "enable")) return GL_TRUE;
-    if (!strcasecmp(env, "1"))      return GL_TRUE;
-    if (!strcasecmp(env, "on"))     return GL_TRUE;
-    if (!strcasecmp(env, "true"))   return GL_TRUE;
-    if (!strcasecmp(env, "t"))      return GL_TRUE;
-    if (!strcasecmp(env, "yes"))    return GL_TRUE;
-    if (!strcasecmp(env, "y"))      return GL_TRUE;
-
-    return GL_FALSE;
-}
 
 
 /**

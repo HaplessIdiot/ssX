@@ -4,7 +4,7 @@
  *
  *    Arithmetic Computations (specification).
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -14,6 +14,7 @@
  *  understand and accept it fully.
  *
  ******************************************************************/
+/* $XFree86$ */
 
 #ifndef TTCALC_H
 #define TTCALC_H
@@ -39,7 +40,12 @@
 #define SQRT_64( x )       Sqrt64( x )
 #define SQRT_32( x )       Sqrt32( x )
 
+#if !defined(TT_MAKE_OPTION_SINGLE_OBJECT) || \
+    !defined(TT_CONFIG_OPTION_NO_INTERPRETER)
+
   LOCAL_DEF TT_Int32  Sqrt64( TT_Int64  l );
+
+#endif
 
 #else /* LONG64 */
 
@@ -69,21 +75,21 @@
 
   LOCAL_DEF int  Order64( TT_Int64*  z );
 
+#if !defined(TT_MAKE_OPTION_SINGLE_OBJECT) || \
+    !defined(TT_CONFIG_OPTION_NO_INTERPRETER)
+
   LOCAL_DEF TT_Int32  Sqrt64( TT_Int64*  l );
+
+#endif
 
 #endif /* LONG64 */
 
-  /* The two following functions are exported, as they're now part */
-  /* of the API!                                                   */
+  /* The two following functions are now part of the API!          */
 
-  EXPORT_DEF
-  TT_Long  TT_MulDiv( TT_Long  a, TT_Long  b, TT_Long  c );
-
-  EXPORT_DEF
-  TT_Long  TT_MulFix( TT_Long  a, TT_Long  b );
+  /* TT_Long  TT_MulDiv( TT_Long  a, TT_Long  b, TT_Long  c );     */
+  /* TT_Long  TT_MulFix( TT_Long  a, TT_Long  b );                 */
 
 
-#define MUL_FIXED( a, b )      MulDiv_Round( (a), (b), 1 << 16 )
 #define INT_TO_F26DOT6( x )    ( (Long)(x) << 6  )
 #define INT_TO_F2DOT14( x )    ( (Long)(x) << 14 )
 #define INT_TO_FIXED( x )      ( (Long)(x) << 16 )
