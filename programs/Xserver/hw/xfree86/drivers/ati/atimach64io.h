@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.5 2001/01/06 20:58:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.6 2001/01/11 03:36:57 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -46,10 +46,12 @@
  * inm/outm     32-bit R/W through MMIO space.  The register is specified as
  *              the actual MMIO offset (with Block 1 following Block 0), which,
  *              in this case, is equivalent to the register's IOPortTag from
- *              atiregs.h.  Can only be used for those few non-FIFO'ed
- *              registers outside of Block 0's first 256 bytes.  pATI->pBlock
- *              array elements must have been previously set up by
- *              ATIMapApertures().
+ *              atiregs.h.  Can be used for those few non-FIFO'ed registers
+ *              outside of Block 0's first 256 bytes.  inm() can also be used
+ *              for FIFO'ed registers if, and only if, it can be guaranteed to
+ *              not have been previously FIFO'ed (e.g. when the engine is
+ *              idle).  pATI->pBlock array elements must have been previously
+ *              set up by ATIMapApertures().
  *
  * outf         32-bit write through MMIO cache.  Identical to outm() but
  *              intended for FIFO'ed registers.  There is no inf() provided.
