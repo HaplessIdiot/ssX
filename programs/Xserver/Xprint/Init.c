@@ -1,4 +1,4 @@
-/* $XConsortium: Init.c /main/3 1996/11/16 15:23:29 rws $ */
+/* $XConsortium: Init.c /main/4 1996/12/30 14:55:45 kaleb $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -50,7 +50,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.2 1996/12/30 13:58:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.3 1996/12/31 04:16:22 dawes Exp $ */
 
 #include <unistd.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-/* $XConsortium: PclWindow.c /main/1 1996/09/28 17:03:03 rws $ */
+/* $XConsortium: PclWindow.c /main/3 1996/12/30 16:37:28 kaleb $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclWindow.c,v 1.3 1996/12/25 04:01:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclWindow.c,v 1.4 1996/12/30 13:59:10 dawes Exp $ */
 
 
 #include <stdio.h>
@@ -91,7 +91,7 @@ PclCreateWindow(
 {
     PclWindowPrivPtr pPriv;
     
-/*
+#if 0
     Bool status = Success;
     ScreenPtr pScreen = pWin->drawable.pScreen;
     PclScreenPrivPtr pScreenPriv = (PclScreenPrivPtr) 
@@ -101,15 +101,15 @@ PclCreateWindow(
 
     /*
      * Initialize this window's private struct.
-     *
+     */
     pWinPriv->jobFileName = (char *)NULL;
     pWinPriv->pJobFile = (FILE *)NULL;
     pWinPriv->pageFileName = (char *)NULL;
     pWinPriv->pPageFile = (FILE *)NULL;
     
-    if(pWin->parent == (WindowPtr)NULL)  /* root window?
+    if(pWin->parent == (WindowPtr)NULL)  /* root window? */
     {
-	Atom propName; /* type = XA_STRING
+	Atom propName; /* type = XA_STRING */
 	char *propVal;
 	int i;
         XrmDatabase rmdb = pScreenPriv->resDB;
@@ -117,7 +117,7 @@ PclCreateWindow(
         /*
          * Put the defaults spec'd in the config files in properties on this
 	 * screen's root window.
-         *
+         */
 	for(i = 0; propStrings[i] != (char *)NULL; i++)
 	{
             if((propVal = _DtPrintGetPrinterResource(pWin, rmdb, 
@@ -135,7 +135,7 @@ PclCreateWindow(
     }
 
     return status;
-*/
+#endif
 
     /*
      * Invalidate the window's private print context.

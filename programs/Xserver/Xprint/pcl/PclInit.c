@@ -1,4 +1,4 @@
-/* $XConsortium: PclInit.c /main/1 1996/09/28 17:01:28 rws $ */
+/* $XConsortium: PclInit.c /main/3 1996/12/30 16:37:06 kaleb $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -76,7 +76,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.2 1996/12/25 04:01:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.3 1996/12/30 13:59:03 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>

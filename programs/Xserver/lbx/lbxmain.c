@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c /main/71 1996/12/22 12:36:03 rws $ */
+/* $XConsortium: lbxmain.c /main/72 1996/12/27 16:19:32 kaleb $ */
 /*
  * Copyright 1992 Network Computing Devices
  * Copyright 1996 X Consortium, Inc.
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.2 1996/12/26 01:40:20 dawes Exp $ */
  
 #include <sys/types.h>
 #define NEED_REPLIES

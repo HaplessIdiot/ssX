@@ -1,4 +1,5 @@
 XFree86 3.2l (31 December 1996)
+ 159. Tseng acceleration updates (Koen Gadeyne).
  158. Add config support for using the system's standard version of libz
       when it exists (Chris Demetriou).
  157. Add rules for ELF shared libraries on BSD (Chris Demetriou).

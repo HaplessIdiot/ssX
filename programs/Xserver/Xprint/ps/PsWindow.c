@@ -1,4 +1,4 @@
-/* $XConsortium: PsWindow.c /main/2 1996/11/16 15:25:53 rws $ */
+/* $XConsortium: PsWindow.c /main/4 1996/12/30 16:38:52 kaleb $ */
 /*
  * (c) Copyright 1996 Hewlett-Packard Company
  * (c) Copyright 1996 International Business Machines Corp.
@@ -48,7 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsWindow.c,v 1.3 1996/12/25 04:02:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsWindow.c,v 1.4 1996/12/30 13:59:23 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -93,7 +93,7 @@ PsCreateWindow(WindowPtr pWin)
 {
   PsWindowPrivPtr pPriv;
 
-/*
+#if 0
     Bool status = Success;
     ScreenPtr pScreen = pWin->drawable.pScreen;
     PsScreenPrivPtr pScreenPriv = (PsScreenPrivPtr) 
@@ -103,15 +103,15 @@ PsCreateWindow(WindowPtr pWin)
 
     /*
      * Initialize this window's private struct.
-     *
+     */
     pWinPriv->jobFileName = (char *)NULL;
     pWinPriv->pJobFile = (FILE *)NULL;
     pWinPriv->pageFileName = (char *)NULL;
     pWinPriv->pPageFile = (FILE *)NULL;
     
-    if(pWin->parent == (WindowPtr)NULL)  /* root window?
+    if(pWin->parent == (WindowPtr)NULL)  /* root window? */
     {
-	Atom propName; /* type = XA_STRING
+	Atom propName; /* type = XA_STRING */
 	char *propVal;
 	int i;
         XrmDatabase rmdb = pScreenPriv->resDB;
@@ -119,7 +119,7 @@ PsCreateWindow(WindowPtr pWin)
         /*
          * Put the defaults spec'd in the config files in properties on this
 	 * screen's root window.
-         *
+         */
 	for(i = 0; propStrings[i] != (char *)NULL; i++)
 	{
             if((propVal = _DtPrintGetPrinterResource(pWin, rmdb, 
@@ -137,7 +137,7 @@ PsCreateWindow(WindowPtr pWin)
     }
 
     return status;
-*/
+#endif
 
   pPriv = (PsWindowPrivPtr)pWin->devPrivates[PsWindowPrivateIndex].ptr;
   pPriv->validContext = 0;
