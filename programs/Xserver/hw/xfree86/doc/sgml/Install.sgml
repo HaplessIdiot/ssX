@@ -9,7 +9,7 @@
 <date>24 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.15 2002/12/21 03:37:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.16 2003/02/24 17:04:24 dawes Exp $
 </ident>
 
 <abstract>
@@ -34,7 +34,7 @@ called "extract" and an installation script.  We recommend that these
 be used to install the binaries.  (The source for this customized version
 of GNU tar can be found in the XFree86 CVS repository's "utils" module,
 and from our <url name="ftp site"
-url="ftp://ftp.xfree86.org/pub/XFree86/misc/utils-1.1.0.tgz">.)
+url="ftp://ftp.xfree86.org/pub/XFree86/misc/utils-&utilsvers;.tgz">.)
 
 <![ %snapshot [
 <p>
