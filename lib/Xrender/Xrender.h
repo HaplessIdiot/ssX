@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.h,v 1.16 2002/09/29 23:39:44 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.h,v 1.17 2002/11/06 22:47:49 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -164,6 +164,10 @@ typedef struct _XIndexValue {
     unsigned short   red, green, blue, alpha;
 } XIndexValue;
 
+typedef struct _XAnimCursor {
+    Cursor	    cursor;
+    unsigned long   delay;
+} XAnimCursor;
 
 _XFUNCPROTOBEGIN
 
@@ -454,6 +458,11 @@ XRenderSetPictureFilter (Display    *dpy,
 			 char	    *filter,
 			 XFixed	    *params,
 			 int	    nparams);
+
+Cursor
+XRenderCreateAnimCursor (Display	*dpy,
+			 int		ncursor,
+			 XAnimCursor	*cursors);
 
 _XFUNCPROTOEND
 

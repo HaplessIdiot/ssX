@@ -49,3 +49,29 @@ XRenderCreateCursor (Display	    *dpy,
     return cid;
 }
 
+Cursor
+XRenderCreateAnimCursor (Display	*dpy,
+			 int		ncursor,
+			 XAnimCursor	*cursors)
+{
+    XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
+    Cursor			cid;
+    xRenderCreateCursorReq	*req;
+    long			len;
+
+    RenderCheckExtension (dpy, info, 0);
+    LockDisplay(dpy);
+    GetReq(RenderCreateAnimCursor, req);
+    req->reqType = info->codes->major_opcode;
+    req->renderReqType = X_RenderCreateAnimCursor;
+    req->cid = cid = XAllocID (dpy);
+    
+    len = (long) ncursor * SIZEOF (xAnimCursorElt) >> 2;
+    SetReqLen (req, len, len);
+    len <<= 2;
+    Data32 (dpy, (long *) cursors, len);
+    
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return cid;
+}

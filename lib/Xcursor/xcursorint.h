@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/xcursorint.h,v 1.1 2002/08/29 04:40:34 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/xcursorint.h,v 1.2 2002/09/05 07:29:55 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -71,6 +71,7 @@ typedef struct _XcursorDisplayInfo {
     Display			*display;
     XExtCodes			*codes;
     XcursorBool			has_render_cursor;
+    XcursorBool			has_anim_cursor;
     XcursorBool			theme_core;
     int				size;
     XcursorFontInfo		*fonts;
