@@ -1,4 +1,5 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 500. Use unique local Imake define for fonts.conf dir (#5482, Mike A. Harris)
  499. Fix xc/lib/Imakefile to not break HasFontconfig (#5481, Mike A. Harris)
  498. Refresh screen after wake from sleep in XDarwin full screen mode
       (Torrey T. Lyons).
