@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.7 2000/05/06 21:09:32 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.8 2001/05/29 04:54:09 keithp Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -41,7 +41,8 @@ fbCopyNtoN (DrawablePtr	pSrcDrawable,
 	    Pixel	bitplane,
 	    void	*closure)
 {
-    FbGCPrivPtr	pPriv = fbGetGCPrivate(pGC);
+    CARD8	alu = pGC ? pGC->alu : GXcopy;
+    FbBits	pm = pGC ? fbGetGCPrivate(pGC)->pm : FB_ALLONES;
     FbBits	*src;
     FbStride	srcStride;
     int		srcBpp;
@@ -67,8 +68,8 @@ fbCopyNtoN (DrawablePtr	pSrcDrawable,
 	       (pbox->x2 - pbox->x1) * dstBpp,
 	       (pbox->y2 - pbox->y1),
     
-	       pGC->alu,
-	       pPriv->pm,
+	       alu,
+	       pm,
 	       dstBpp,
     
 	       reverse,
