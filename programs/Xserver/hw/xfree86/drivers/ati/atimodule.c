@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.7 2000/08/04 21:07:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.8 2000/10/11 22:52:57 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -24,7 +24,6 @@
 #ifdef XFree86LOADER
 
 #include "ati.h"
-#include "atimodule.h"
 #include "atistruct.h"
 #include "ativersion.h"
 
@@ -80,107 +79,5 @@ XF86ModuleData atiModuleData =
     ATISetup,
     NULL
 };
-
-/*
- * ATILoadModule --
- *
- * Load a specific module and register its main entry with the loader.
- */
-static Bool
-ATILoadModule
-(
-    ScrnInfoPtr pScreenInfo,
-    const char *Module,
-    const char *Symbol
-)
-{
-    if (!xf86LoadSubModule(pScreenInfo, Module))
-        return FALSE;
-
-    xf86LoaderReqSymbols(Symbol, NULL);
-
-    return TRUE;
-}
-
-/*
- * ATILoadModules --
- *
- * This function loads other modules required for a screen.
- */
-Bool
-ATILoadModules
-(
-    ScrnInfoPtr pScreenInfo,
-    ATIPtr      pATI
-)
-{
-    /*
-     * Tell loader about symbols from other modules that this module might
-     * refer to.
-     */
-    LoaderRefSymbols(
-
-#ifndef AVOID_CPIO
-
-        "xf1bppScreenInit",
-        "xf4bppScreenInit",
-
-#endif /* AVOID_CPIO */
-
-        "cfbScreenInit",
-        "cfb16ScreenInit",
-        "cfb24ScreenInit",
-        "cfb32ScreenInit",
-        "ShadowFBInit",
-        "XAACreateInfoRec",
-        "XAADestroyInfoRec",
-        "XAAInit",
-        NULL);
-
-    /* Load shadow frame buffer code if needed */
-    if (pATI->OptionShadowFB &&
-        !ATILoadModule(pScreenInfo, "shadowfb", "ShadowFBInit"))
-        return FALSE;
-
-    /* Load XAA if needed */
-    if (pATI->OptionAccel)
-    {
-        if (!ATILoadModule(pScreenInfo, "xaa", "XAAInit"))
-            return FALSE;
-
-        /* Require more XAA symbols */
-        xf86LoaderReqSymbols("XAACreateInfoRec", "XAADestroyInfoRec", NULL);
-    }
-
-    /* Load depth-specific entry points */
-    switch (pATI->bitsPerPixel)
-    {
-
-#ifndef AVOID_CPIO
-
-        case 1:
-            return ATILoadModule(pScreenInfo, "xf1bpp", "xf1bppScreenInit");
-
-        case 4:
-            return ATILoadModule(pScreenInfo, "xf4bpp", "xf4bppScreenInit");
-
-#endif /* AVOID_CPIO */
-
-        case 8:
-            return ATILoadModule(pScreenInfo, "cfb", "cfbScreenInit");
-
-        case 16:
-            return ATILoadModule(pScreenInfo, "cfb16", "cfb16ScreenInit");
-
-        case 24:
-            return ATILoadModule(pScreenInfo, "cfb24", "cfb24ScreenInit");
-
-        case 32:
-            return ATILoadModule(pScreenInfo, "cfb32", "cfb32ScreenInit");
-
-        default:
-            return FALSE;
-    }
-}
 
 #endif /* XFree86LOADER */

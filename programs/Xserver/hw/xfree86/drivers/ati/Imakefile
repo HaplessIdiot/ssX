@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/Imakefile,v 1.20 2000/09/26 15:57:08 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/Imakefile,v 1.21 2000/10/11 22:52:53 tsi Exp $
 XCOMM
 XCOMM Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
 XCOMM
@@ -29,8 +29,8 @@ CCOPTIONS = ATIDriverCCOptions
 #endif
 
 #if DoLoadableServer
-ATIMODSRC = atimodule.c
-ATIMODOBJ = atimodule.o
+MODSRCS = atiload.c atimodule.c
+MODOBJS = atiload.o atimodule.o
 #endif
 
 /*
@@ -79,15 +79,15 @@ DEFINES = -DAVOID_CPIO
 
 SRCS = ati.c atiadapter.c atiadjust.c atibus.c atichip.c aticlock.c \
        aticonfig.c aticonsole.c atidac.c atidga.c atidsp.c atiident.c \
-       atilock.c atimach64.c atimach64io.c atimode.c $(ATIMODSRC) atioption.c \
-       atipreinit.c atiprint.c atiprobe.c atiscreen.c atiutil.c ativalid.c \
-       atividmem.c $(CPIOSRCS)
+       atilock.c atimach64.c atimach64io.c atimode.c atioption.c atipreinit.c \
+       atiprint.c atiprobe.c atiscreen.c atiutil.c ativalid.c atividmem.c \
+       $(MODSRCS) $(CPIOSRCS)
 
 OBJS = ati.o atiadapter.o atiadjust.o atibus.o atichip.o aticlock.o \
        aticonfig.o aticonsole.o atidac.o atidga.o atidsp.o atiident.o \
-       atilock.o atimach64.o atimach64io.o atimode.o $(ATIMODOBJ) atioption.o \
-       atipreinit.o atiprint.o atiprobe.o atiscreen.o atiutil.o ativalid.o \
-       atividmem.o $(CPIOOBJS)
+       atilock.o atimach64.o atimach64io.o atimode.o atioption.o atipreinit.o \
+       atiprint.o atiprobe.o atiscreen.o atiutil.o ativalid.o atividmem.o \
+       $(MODOBJS) $(CPIOOBJS)
 
 #if defined(XF86DriverSDK)
 INCLUDES = -I. -I../../include
@@ -151,6 +151,8 @@ InstallDriverSDKNonExecFile(atidsp.h,$(DRIVERSDKDIR)/drivers/ati)
 InstallDriverSDKNonExecFile(atiident.c,$(DRIVERSDKDIR)/drivers/ati)
 InstallDriverSDKNonExecFile(atiident.h,$(DRIVERSDKDIR)/drivers/ati)
 InstallDriverSDKNonExecFile(atiio.h,$(DRIVERSDKDIR)/drivers/ati)
+InstallDriverSDKNonExecFile(atiload.c,$(DRIVERSDKDIR)/drivers/ati)
+InstallDriverSDKNonExecFile(atiload.h,$(DRIVERSDKDIR)/drivers/ati)
 InstallDriverSDKNonExecFile(atilock.c,$(DRIVERSDKDIR)/drivers/ati)
 InstallDriverSDKNonExecFile(atilock.h,$(DRIVERSDKDIR)/drivers/ati)
 InstallDriverSDKNonExecFile(atimach64.c,$(DRIVERSDKDIR)/drivers/ati)
@@ -160,7 +162,6 @@ InstallDriverSDKNonExecFile(atimach64io.h,$(DRIVERSDKDIR)/drivers/ati)
 InstallDriverSDKNonExecFile(atimode.c,$(DRIVERSDKDIR)/drivers/ati)
 InstallDriverSDKNonExecFile(atimode.h,$(DRIVERSDKDIR)/drivers/ati)
 InstallDriverSDKNonExecFile(atimodule.c,$(DRIVERSDKDIR)/drivers/ati)
-InstallDriverSDKNonExecFile(atimodule.h,$(DRIVERSDKDIR)/drivers/ati)
 InstallDriverSDKNonExecFile(atimono.h,$(DRIVERSDKDIR)/drivers/ati)
 InstallDriverSDKNonExecFile(atioption.c,$(DRIVERSDKDIR)/drivers/ati)
 InstallDriverSDKNonExecFile(atioption.h,$(DRIVERSDKDIR)/drivers/ati)
