@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.10 1997/12/06 09:26:14 hohndel Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.11 1998/10/04 09:41:27 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -305,8 +305,8 @@ register int i,tmp;
 	else if ((strncmp(argv[i],"-I",2)==0)&&(!xkblist)) {
 	    if (!XkbAddDirectoryToPath(&argv[i][2])) {
 		ACTION("Exiting\n");
+		exit(1);
 	    }
-	    exit(1);
 	}
 	else if ((strncmp(argv[i],"-l",2)==0)&&(!xkblist)) {
 	    if (outputFormat!=WANT_DEFAULT) {

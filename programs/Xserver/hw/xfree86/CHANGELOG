@@ -1,4 +1,6 @@
 XFree86 3.9Pn (16 May 1999)
+2649. Fix for sysv_video.c on Interactive UNIX (#2792, Michael Rohleder).
+2648. Fix handling of xkbcomp's -I flag (Stanislav Meduna).
 2647. CID updates (third submission) (#2769, Ivan Bach, SGI).
 2646. Kludge to allow a server with the glint driver to link without XInput
       (#2788, Marc La France).
@@ -8000,4 +8002,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.747 1999/05/15 06:24:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.748 1999/05/15 12:10:13 dawes Exp $

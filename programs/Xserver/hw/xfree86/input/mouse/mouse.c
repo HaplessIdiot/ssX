@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.1 1999/05/09 06:06:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.2 1999/05/14 14:11:18 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -188,7 +188,7 @@ static MouseProtocolRec mouseProtocols[] = {
     { "Auto",			MSE_AUTO,	NULL,		PROT_AUTO },
 
     /* Misc (usually OS-specific) */
-    { "SysMouse",		MSE_MISC	mscDefaults,	PROT_SYSMOUSE },
+    { "SysMouse",		MSE_MISC,	mscDefaults,	PROT_SYSMOUSE },
 
     /* end of list */
     { NULL,			MSE_NONE,	NULL,		PROT_UNKNOWN }
@@ -267,9 +267,7 @@ InitProtocols(void)
 {
     int classes;
     int i;
-    const char **names = NULL;
-    int j;
-    Bool found;
+    const char *osname = NULL;
 
     if (osInfo)
 	return TRUE;
@@ -289,22 +287,18 @@ InitProtocols(void)
 	if (!(mouseProtocols[i].class & classes))
 	    mouseProtocols[i].id = PROT_UNSUP;
 
-    if (osInfo->CheckProtocol)
-	names = osInfo->CheckProtocol();
-
     for (i = 0; mouseProtocols[i].name; i++)
-	if (mouseProtocols[i].class & MSE_MISC) {
-	    found = FALSE;
-	    for (j = 0; names && names[j]; j++)
-		if (xf86NameCmp(names[j], mouseProtocols[i].name) == 0) {
-		    found = TRUE;
-		    break;
-		}
-	    if (!found)
+	if (mouseProtocols[i].class & MSE_MISC)
+	    if (!osInfo->CheckProtocol ||
+		!osInfo->CheckProtocol(mouseProtocols[i].name))
 		mouseProtocols[i].id = PROT_UNSUP;
-	}
 
-    /* XXX Handle NetBSD's use of PROT_BM for "PS/2" */
+    /* NetBSD uses PROT_BM for "PS/2". */
+    xf86GetOS(&osname, NULL, NULL, NULL);
+    if (osname && xf86NameCmp(osname, "netbsd") == 0)
+	for (i = 0; mouseProtocols[i].name; i++)
+	    if (mouseProtocols[i].id == PROT_PS2)
+		mouseProtocols[i].id = PROT_BM;
 
     return TRUE;
 }
@@ -771,7 +765,8 @@ SetupMouse(InputInfoPtr pInfo)
 
     case PROT_BM:		/* bus/InPort mouse */
 	if (osInfo->SetBMRes)
-	    osInfo->SetBMRes(pInfo, pMse->sampleRate, pMse->resolution);
+	    osInfo->SetBMRes(pInfo, pMse->protocol, pMse->sampleRate,
+			     pMse->resolution);
 	break;
 
     case PROT_IMPS2:		/* IntelliMouse */
@@ -813,7 +808,8 @@ SetupMouse(InputInfoPtr pInfo)
 
     case PROT_SYSMOUSE:
 	if (osInfo->SetMiscRes)
-	    osInfo->SetMiscRes(pInfo, pMse->sampleRate, pMse->resolution);
+	    osInfo->SetMiscRes(pInfo, pMse->protocol, pMse->sampleRate,
+			       pMse->resolution);
 	break;
 
     default:
@@ -840,7 +836,8 @@ SetupMouse(InputInfoPtr pInfo)
     }
     if (pMse->class & (MSE_PS2 | MSE_XPS2)) {
 	if (osInfo->SetPS2Res) {
-	    osInfo->SetPS2Res(pInfo, pMse->sampleRate, pMse->resolution);
+	    osInfo->SetPS2Res(pInfo, pMse->protocol, pMse->sampleRate,
+			      pMse->resolution);
 	} else {
 	    unsigned char c2[2];
 
