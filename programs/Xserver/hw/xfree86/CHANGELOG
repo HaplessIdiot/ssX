@@ -1,4 +1,9 @@
 XFree86 4.0.1a (2 August 2000)
+ 472. Save/restore the text mode colourmap for Solaris, to fix a blank
+      screen problem on Solaris 8 after exiting the X server (#A.104,
+      Richard Coley).
+ 471. Patch for SuperProbe on Linux with devfs (#A.103, Adam J. Richter).
+ 470. Enable BSD/gcc-2.95.2 workaround for BSD/OS 4.2 (#4072, Kurt Lidl).
  469. Fix a problem with the header symlinks in Xserver/GL/mesa/include/GL
       (#4071, Matthieu Herrb).
  468. Finish integrating the SiS DRI driver support (Can-Ru Yeou, SiS).
@@ -10905,4 +10910,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1252 2000/08/01 20:28:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1253 2000/08/01 20:52:21 dawes Exp $
