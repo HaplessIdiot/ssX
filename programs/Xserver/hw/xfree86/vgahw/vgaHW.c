@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.4 1998/08/19 12:48:33 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.5 1998/08/29 05:44:03 dawes Exp $
  *
  * Copyright 1991-1998 by The XFree86 Project, Inc.
  *
@@ -581,8 +581,8 @@ VGANAME(vgaHWSave)(ScrnInfoPtr scrninfp, vgaRegPtr save, Bool saveFonts)
        * save the default lookup table
        */
       memmove(save->DAC, defaultDAC, 768);
-      ErrorF("%s: Cannot read colourmap from VGA.",scrninfp->name);
-      ErrorF("  Will restore with default\n");
+      xf86DrvMsg(scrninfp->scrnIndex, X_WARNING,
+	   "Cannot read colourmap from VGA.  Will restore with default\n");
     }
     else
     {
