@@ -1509,8 +1509,6 @@ XF86Config file to the devices:
 
                SymTabPtr chipsets, PciChipsets *PCIchipsets,
 
-               GDevPtr *devList, int numDevs,
-
                GDevPtr *devList, int numDevs, DriverPtr drvp,
 
                int **foundEntities)
@@ -6366,7 +6364,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.50 2003/01/22 18:04:47 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.51 2003/02/19 01:02:47 dawes Exp $
 
 
 $XFree86: $
