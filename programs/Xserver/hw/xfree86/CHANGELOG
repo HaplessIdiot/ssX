@@ -1,4 +1,6 @@
 XFree86 4.0b (?? April 2000)
+ 125. Fix a DGA 2.0 crash that happened when bogus mode numbers were sent
+      by the client (Lionel Ulmer).
  124. Make a recent shm pixmap fix Xinerama aware (Mark Vojkovich).
  123. Fix mode setting bug in ATI driver (Marc La France).
  122. Add int10, DDC & VBE support to ATI driver
