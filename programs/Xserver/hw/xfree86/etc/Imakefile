@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/24 1996/10/28 04:24:12 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.44tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.45tsi Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -62,7 +62,6 @@ XINST = Xinstall.sh
 SERVEREXTRASYSLIBS = ServerExtraSysLibs
 #endif
 
-
 all:: $(FILES)
 
 #if defined(FreeBSDArchitecture) || defined(NetBSDArchitecture) || defined(OpenBSDArchitecture)
@@ -88,7 +87,7 @@ DEFINES = -DUSE_I386_IOPL
 
 AllTarget(ProgramTargetName(scanpci))
 
-NormalProgramTarget(scanpci,scanpci.o,$(XF86OSSRC)/libxf86_os.a,-L../os-support -lxf86_os -L../scanpci -lscanpci -L../dummylib -ldummy $(SERVEREXTRASYSLIBS),NullParameter)
+NormalProgramTarget(scanpci,scanpci.o,$(XF86OSSRC)/libxf86_os.a ../scanpci/libscanpci.a ../dummylib/libdummy.a,-L../os-support -lxf86_os -L../scanpci -lscanpci -L../dummylib -ldummy $(SERVEREXTRASYSLIBS),NullParameter)
 InstallProgram(scanpci,$(BINDIR))
 InstallManPage(scanpci,$(MANDIR))
 #endif
@@ -105,7 +104,7 @@ InstallProgram(joycal,$(BINDIR))
         SRCS4 = pcitweak.c
 
 AllTarget(ProgramTargetName(pcitweak))
-NormalProgramTarget(pcitweak,pcitweak.o,$(XF86OSSRC)/libxf86_os.a,-L../os-support -lxf86_os -L../dummylib -ldummy $(SERVEREXTRASYSLIBS),NullParameter)
+NormalProgramTarget(pcitweak,pcitweak.o,$(XF86OSSRC)/libxf86_os.a ../dummylib/libdummy.a,-L../os-support -lxf86_os -L../dummylib -ldummy $(SERVEREXTRASYSLIBS),NullParameter)
 InstallProgram(pcitweak,$(BINDIR))
 InstallManPage(pcitweak,$(MANDIR))
 
@@ -120,7 +119,7 @@ SYS_LIBRARIES = -li386
 
 AllTarget(ProgramTargetName(matchagp))
 
-NormalProgramTarget(matchagp,matchagp.o,$(XF86OSSRC)/libxf86_os.a,-L../os-support -lxf86_os -L../scanpci -lscanpci -L../dummylib -ldummy $(SERVEREXTRASYSLIBS),NullParameter)
+NormalProgramTarget(matchagp,matchagp.o,$(XF86OSSRC)/libxf86_os.a ../dummylib/libdummy.a,-L../os-support -lxf86_os -L../scanpci -lscanpci -L../dummylib -ldummy $(SERVEREXTRASYSLIBS),NullParameter)
 InstallProgram(matchagp,$(BINDIR))
 #endif /* BuildMatchagp */
 
@@ -136,7 +135,43 @@ AllTarget(ProgramTargetName(mmapw))
 NormalProgramTarget(mmapw,mmapw.o,NullParameter,NullParameter,NullParameter)
 InstallProgram(mmapw,$(BINDIR))
 
-        SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4) $(SRCS5) $(SRCS6) $(SRCS7)
+#if defined(i386Architecture) || \
+    defined(AlphaArchitecture) || \
+    defined(ia64Architecture) || \
+    defined(x86_64Architecture)
+
+       SRCS8 = ioport.c
+
+AllTarget(ProgramTargetName(ioport))
+NormalProgramTarget(ioport,ioport.o,$(XF86OSSRC)/libxf86_os.a ../dummylib/libdummy.a,-L../os-support -lxf86_os -L../dummylib -ldummy $(SERVEREXTRASYSLIBS),NullParameter)
+InstallProgram(ioport,$(BINDIR))
+
+IOPORT_NAMES = ProgramTargetName(inb) \
+	       ProgramTargetName(inw) \
+	       ProgramTargetName(inl) \
+	       ProgramTargetName(outb) \
+	       ProgramTargetName(outw) \
+	       ProgramTargetName(outl)
+
+all:: $(IOPORT_NAMES)
+
+$(IOPORT_NAMES): ProgramTargetName(ioport)
+	RemoveFile($@)
+	$(LN) $? $@
+
+clean::
+	RemoveFiles($(IOPORT_NAMES))
+
+install::
+	@for i in $(IOPORT_NAMES); do (set -x; \
+	$(RM) $(DESTDIR)$(BINDIR)/$$i; \
+	(cd $(DESTDIR)/$(BINDIR); $(LN) ioport $$i)); \
+	done
+
+#endif
+
+        SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4) $(SRCS5) $(SRCS6) $(SRCS7) \
+	       $(SRCS8)
 
 #if (SystemV && !defined(i386ScoArchitecture)) || SystemV4
 InstallNamedProg($(INSTPROG),xf86install,$(LIBDIR)/etc)
