@@ -216,9 +216,7 @@ void Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 /* pm3_accel.c */
 Bool Permedia3AccelInit(ScreenPtr pScreen);
-/*
 void Permedia3Sync(ScrnInfoPtr pScrn);
-*/
 void Permedia3InitializeEngine(ScrnInfoPtr pScrn);
 /* End of pm3 stuff */
 
