@@ -2,6 +2,7 @@
  *  Copyright (c) 1999,  The XFree86 Project Inc. 
  *  based on code written by Mark Vojkovich <markv@valinux.com>
  */
+/* $XFree86: $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
