@@ -979,7 +979,7 @@ SISSense30x(ScrnInfoPtr pScrn)
     unsigned short svhs=0, svhs_c=0;
     unsigned short cvbs=0, cvbs_c=0;
     unsigned short vga2=0, vga2_c=0;
-    int myflag, result, i;
+    int myflag, result; /* , i; */
 
     inSISIDXREG(SISPART4,0x0d,backupP4_0d);
     outSISIDXREG(SISPART4,0x0d,(backupP4_0d | 0x04));
@@ -1036,24 +1036,26 @@ SISSense30x(ScrnInfoPtr pScrn)
 	     if(pSiS->BIOS[0x5d] & 0x04) biosflag |= 0x01;
 	  }
        } else if(!pSiS->ROM661New) {
-          myflag = 0; i = 0xf3;
+#if 0	  /* eg. 1.15.23 has wrong values here */
+          myflag = 0;
           if(pSiS->VBFlags & VB_301) {
 	     if(pSiS->Chipset == PCI_CHIP_SIS330) {
 	        myflag = 0xe5; i = 0x11b;
 	     } else {
-	        myflag = 0xbd;
+	        myflag = 0xbd; i = 0xf3
 	     }
 	  } else if(pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV)) {
 	     if(pSiS->Chipset == PCI_CHIP_SIS330) {
 	        myflag = 0xeb; i = 0x11b;
 	     } else {
-	        myflag = 0xc3;
+	        myflag = 0xc3; i = 0xf3
 	     }
 	  }
 	  if(myflag) {
 	     biosflag = pSiS->BIOS[i];    vga2 = GETROMWORD(myflag);
 	     svhs = GETROMWORD(myflag+2); cvbs = GETROMWORD(myflag+4);
 	  }
+#endif
        }
     }
 
