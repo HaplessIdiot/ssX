@@ -1,4 +1,6 @@
 XFree86 4.3.99.2 (xx March 2003)
+  31. Fix lockup on server shutdown/restart with the radeon driver
+      (Bugzilla #94, Michel Dänzer).
   30. Add missing symbols to reference list that show up when DRI is not
       loaded in r128 driver (Bugzilla #83, Leif Delgass).
   29. Add missing symbols to reference list that show up when DRI is not
@@ -16587,4 +16589,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2606 2003/04/02 17:33:26 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2607 2003/04/03 10:56:28 alanh Exp $
