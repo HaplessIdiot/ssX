@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.8 2000/12/20 11:13:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.9 2000/12/21 16:37:22 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -578,10 +578,8 @@ Permedia3SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     TRACE_ENTER("Permedia3SetupForFillRectSolid");
-    REPLICATE(color);
-    /* Prepapre Common Render2D & Config2D data */
+    /* Prepare Common Render2D & Config2D data */
     pGlint->PM3_Render2D =
-	PM3Render2D_SpanOperation |
 	PM3Render2D_XPositive |
 	PM3Render2D_YPositive |
 	PM3Render2D_Operation_Normal;
@@ -590,19 +588,21 @@ Permedia3SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 	PM3Config2D_ForegroundROPEnable |
 	PM3Config2D_ForegroundROP(rop) |
 	PM3Config2D_FBWriteEnable;
+    GLINT_WAIT(3);
+    REPLICATE(color);
+    /* Can't do block fills at 32bpp */
+    if ((rop != GXcopy) || (pScrn->bitsPerPixel == 32)) {
+	pGlint->PM3_Render2D |= PM3Render2D_SpanOperation;
+    	GLINT_WRITE_REG(color, PM3ForegroundColor);
+    } else {
+    	GLINT_WRITE_REG(color, PM3FBBlockColor);
+    }
     if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXcopy)&&(rop!=GXcopyInverted))
 	pGlint->PM3_Config2D |= PM3Config2D_FBDestReadEnable;
-    /* Clipping is not working ok yet, let's disable it.
+#if 0
     if (pGlint->ClippingOn)
 	pGlint->PM3_Config2D |= PM3Config2D_UserScissorEnable;
-    */
-    GLINT_WAIT(3);
-    /* Using FBClockColor (have to disable SpanOperation) will fill only the
-     * first 32 pixels of the 64 pixels of a span. Lets use ForegroundColor 
-     * instead (from the LogicOps unit)
-    GLINT_WRITE_REG(color, PM3FBBlockColor);
-     */
-    GLINT_WRITE_REG(color, PM3ForegroundColor);
+#endif
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
     TRACE_EXIT("Permedia3SetupForFillRectSolid");

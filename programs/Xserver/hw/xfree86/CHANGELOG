@@ -1,3 +1,4 @@
+1227. Add BlockFills to Permedia3 (Alan Hourihane).
 1226. Fix pixmap cache when more than 16MB of memory on Permedia 3
       (Alan Hourihane).
 1225. Fix colourmap problems at depth15/16 on Permedia3 (Alan Hourihane).
@@ -12144,4 +12145,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1497 2000/12/21 12:22:54 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1498 2000/12/21 16:37:20 alanh Exp $
