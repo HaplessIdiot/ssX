@@ -1,4 +1,6 @@
 XFree86 3.9.17b (24 January 2000)
+3589. Add a rule to lnxdoc.rules for maintainers to use to update the
+      formatted docs (David Dawes).
 3588. Add new -configure option to generate a clean XF86Config without the
       need for a config tool. But hopefully could be used with XF86Setup.
       (Needs some OS based updates - tested only on linux so far)
@@ -9351,4 +9353,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.953 2000/01/24 23:22:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.957 2000/01/25 00:23:13 alanh Exp $
