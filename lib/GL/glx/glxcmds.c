@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.17 2002/02/27 21:09:32 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.18tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -1414,6 +1414,7 @@ static int __glXQueryContextInfo(Display *dpy, GLXContext ctx)
     xGLXQueryContextInfoEXTReply reply;
     CARD8 opcode;
     GLuint numValues;
+    int retval;
 
     if (ctx == NULL) {
 	return GLX_BAD_CONTEXT;
@@ -1433,12 +1434,13 @@ static int __glXQueryContextInfo(Display *dpy, GLXContext ctx)
     req->vendorCode = X_GLXvop_QueryContextInfoEXT;
     req->context = (unsigned int)(ctx->xid);
     _XReply(dpy, (xReply*) &reply, 0, False);
-    UnlockDisplay(dpy);
 
     numValues = reply.n;
-    if (numValues == 0) return Success;
-    if (numValues > __GLX_MAX_CONTEXT_PROPS) return 0;
-
+    if (numValues == 0)
+	retval = Success;
+    else if (numValues > __GLX_MAX_CONTEXT_PROPS)
+	retval = 0;
+    else
     {
 	int *propList, *pProp;
 	int nPropListBytes;
@@ -1447,30 +1449,33 @@ static int __glXQueryContextInfo(Display *dpy, GLXContext ctx)
 	nPropListBytes = numValues << 3;
 	propList = (int *) Xmalloc(nPropListBytes);
 	if (NULL == propList) {
-	    return 0;
-	}
-	_XRead(dpy, (char *)propList, nPropListBytes);
-	pProp = propList;
-	for (i=0; i < numValues; i++) {
-	    switch (*pProp++) {
-	    case GLX_SHARE_CONTEXT_EXT:
-		ctx->share_xid = *pProp++;
-		break;
-	    case GLX_VISUAL_ID_EXT:
-		ctx->vid = *pProp++;
-		break;
-	    case GLX_SCREEN_EXT:
-		ctx->screen = *pProp++;
-		break;
-	    default:
-		pProp++;
-		continue;
+	    retval = 0;
+	} else {
+	    _XRead(dpy, (char *)propList, nPropListBytes);
+	    pProp = propList;
+	    for (i=0; i < numValues; i++) {
+		switch (*pProp++) {
+		case GLX_SHARE_CONTEXT_EXT:
+		    ctx->share_xid = *pProp++;
+		    break;
+		case GLX_VISUAL_ID_EXT:
+		    ctx->vid = *pProp++;
+		    break;
+		case GLX_SCREEN_EXT:
+		    ctx->screen = *pProp++;
+		    break;
+		default:
+		    pProp++;
+		    continue;
+		}
 	    }
+	    Xfree((char *)propList);
+	    retval = Success;
 	}
-	Xfree((char *)propList);
     }
+    UnlockDisplay(dpy);
     SyncHandle();
-    return Success;
+    return retval;
 }
 
 int GLX_PREFIX(glXQueryContextInfoEXT)(Display *dpy, GLXContext ctx, 
