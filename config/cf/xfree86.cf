@@ -696,7 +696,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 /* Build Render extension */
 #ifndef BuildRender
-# define BuildRender		NO
+# define BuildRender		YES
 #endif
 
 #if 0
