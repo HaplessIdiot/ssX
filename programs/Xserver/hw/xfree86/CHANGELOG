@@ -1,4 +1,8 @@
 
+3836. Support for YUV offscreen surfaces in Xv and have the MGA driver
+      offer them (Mark Vojkovich).
+3835. Reorder generic Xv adaptor registration to allow V4L to use
+      driver-managed YUV offscreen surfaces (Gerd Knorr).
 3834. Preliminary IA-64 support (Mark Vojkovich, Johannes Erdfelt).
 
 XFree86 3.9.18 (21 February 2000)
