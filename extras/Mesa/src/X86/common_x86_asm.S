@@ -32,6 +32,7 @@
  *
  * Cleaned up and simplified by Gareth Hughes <gareth@valinux.com>
  */
+/* $XFree86$ */
 
 #include "assyntax.h"
 #include "common_x86_features.h"
