@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.2 1997/02/17 09:46:08 hohndel Exp $ */
 
 
 
@@ -123,28 +123,23 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(LoaderDefaultFunc)
 
 /*
- * these here are hacks until Stuart and I have sorted out how to 
- * handle them
- *
- * this first set obviously simply needs internal wrappers
+ * these here are our own interfaces to libc functions
  */
-   SYMFUNC(memmove)
-   SYMFUNC(memset)
-   SYMFUNC(memcpy)
-   SYMFUNC(strcat)
-   SYMFUNC(strcpy)
+   SYMFUNC(xf86memmove)
+   SYMFUNC(xf86memset)
+   SYMFUNC(xf86memcpy)
+   SYMFUNC(xf86memcmp)
+   SYMFUNC(xf86strcat)
+   SYMFUNC(xf86strcpy)
+   SYMFUNC(xf86strncmp)
+   SYMFUNC(xf86strcmp)
+   SYMFUNC(xf86strlen)
+   SYMFUNC(xf86getsecs)
 /*
  * these are only needed for the /tmp/accelswitch in the mga driver
  */
-   SYMFUNC(strncmp)
-   SYMFUNC(strcmp)
-   SYMFUNC(strlen)
    SYMFUNC(fscanf)
    SYMFUNC(fopen)
-/*
- * this is needed for the benchmarks in xaa
- */
-   SYMFUNC(gettimeofday)
 
 /*
  * not sure yet about these here
