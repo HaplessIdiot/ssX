@@ -1,10 +1,19 @@
 
 	       XFree86 P9000 Server Beta Release Notes
-		       Last Modified 1994.07.08
+		       Last Modified 1994.07.21
 		     Erik Nygren (nygren@mit.edu)
 
-Recent changes since last patch:
+----====<<<<< Change Log >>>>>====----
 
+1994.07.21: (This patch)
+	* Preliminary Viper PCI support - totally untested so disabled
+	  (Erik Nygren)
+	* Preliminary Orchid P9000 support - incomplete and totally
+	  untested so disabled (Erik Nygren)
+	* Preliminary accelerated support - incomplete and not fully tested
+	  so disabled (Erik Nygren and Chris Mason)
+
+1994.07.08:
 	* 16 and 32 bpp TrueColor support (Erik Nygren)
 	* Color restoration hopefully fixed (Erik Nygren)
 	* Changes to how "Modes" line in Xconfig is processed
@@ -14,6 +23,23 @@ The code is stable and various incarnations of it have been tested by
 many people.  However, it should still be considered as Beta code.  No
 hardware acceleration is in place except for a hardware cursor.  Use
 with interlaced monitors is untested.
+
+I've started adding in support for other cards and for acceleration.
+Due to its untested nature, it is disabled.  A define at the top of
+p9000.h controls all of these features.  The Viper PCI code is
+untested and probably won't work the first time!  The Orchid P9000
+code is incomplete and is waiting for a few mods by Harry to chage the
+way it deals with the clock.  The acceleration code has been started
+on but probably won't work.  It's provided more to give our developers
+a common base to start from.  Notice the new global variable
+p9000BytesPerPixel, BTW.  Before working on any acceleration, please
+contact nygren@mit.edu so we don't duplicate efforts.  The code
+in p9000blt.c should work, but the stuff in p9000im.c probably won't.
+
+For Diamond Viper PCI owners, you'll need to get the PCIDUMP.EXE
+program from the Unixware P9000 server for now.  Run it under DOS and
+use the values to fill in MemBase and IOBase in Xconfig.  These values
+will change whenever you move cards around or add cards.
 
 Support for 16 and 24 bit truecolor is now supported.  Note that 24
 bit color is really 32 bits per pixel.  Use the -bpp option when
@@ -51,13 +77,14 @@ are valid and have the same dimensions are also used.  And other modes
 are ignored.
 
 Only the Diamond Viper VLB is supported.  Adding support for other
-vendors should be straightforward.  The ease of modifying the code for
-PCI systems is unknown because I haven't yet looked into it (and I
-don't have a board or machine to test it with).  I've never heard of
-anyone with an EISA board so I don't know if they'll work...  Diamond has
-actually been fairly open and helpful.  No NDA's were signed by anyone
-who wrote code and Diamond claims that none of the information
-they provided is proprietary.
+vendors should be straightforward.  I have no Viper PCI to test code
+for it on so please send email to nygren@mit.edu if you have one.  If
+you have an Orchid P9000 or no-name P9000 card, contact
+harry@brain.jpl.nasa.gov.  I've never heard of anyone with an EISA
+board so I don't know if they'll work...  Diamond has actually been
+fairly open and helpful.  No NDA's were signed by anyone who wrote
+code and Diamond claims that none of the information they provided is
+proprietary.
 
 One unresolved issue is the maximum clock speed.  It is currently set
 to 135 MHz with a warning printed over 110 MHz.  Diamond claims that
@@ -112,4 +139,4 @@ whose banking patch could unfortunately not be included.
 --------------------------------------------------------------------
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.P9000,v 3.0 1994/05/29 02:06:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.P9000,v 3.1 1994/07/15 07:03:28 dawes Exp $
