@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.25 2002/08/12 22:16:08 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.26 2002/09/26 00:31:23 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -295,7 +295,7 @@ XftLockFace (XftFont *public)
 {
     XftFontInt	*font = (XftFontInt *) public;
     XftFontInfo	*fi = &font->info;
-    FT_Face	*face
+    FT_Face	face;
     
     face = _XftLockFile (fi->file);
     /*
