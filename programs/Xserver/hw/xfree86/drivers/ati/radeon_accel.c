@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.26 2002/06/02 03:00:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.27 2002/09/18 18:14:58 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -363,7 +363,7 @@ void RADEONEngineInit(ScrnInfoPtr pScrn)
 #undef OUT_ACCEL_REG
 #undef FINISH_ACCEL
 
-#if XF86DRI
+#ifdef XF86DRI
 
 #define ACCEL_CP
 #define ACCEL_PREAMBLE()						\
