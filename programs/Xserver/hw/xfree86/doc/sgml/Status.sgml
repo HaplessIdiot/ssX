@@ -9,7 +9,7 @@
 <date>1 June 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.31 2001/06/01 18:26:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.32 2001/08/09 19:14:12 dawes Exp $
 </ident>
 
 <abstract>
@@ -469,8 +469,8 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 
 <tag>Summary:</tag>
 	All chipsets supported in &legacyvers; except the NV1 are also
-	supported in &relvers;.  Support for the newer chips (GeForce2 and
-	later) is only available in &relvers;.
+	supported in &relvers;.  Support for the newer chips listed above
+	(starting with the GeForce2) is only available in &relvers;.
 
 </descrip>
 
@@ -567,7 +567,7 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 <tag>&legacyvers;:</tag>
 	Support (accelerated) for the S3 911, 924, 801, 805, 928, 864, 868,
 	964, 968, Trio32, Trio64, Trio64V+, Trio64UV+, Aurora64V+,
-	Trio64V2, PLATO/PX is provided by the XF86_S3 server and the
+	Trio64V2, and PLATO/PX is provided by the XF86_S3 server and the
 	XF86_SVGA server with the s3_svga driver.  Support (accelerated)
 	for the ViRGE, ViRGE/VX, ViRGE/DX, ViRGE/GX, ViRGE/GX2, ViRGE/MX,
 	ViRGE/MX+ is provided by the XF86_S3V server.  Support
@@ -578,15 +578,21 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 	driver on some OSes (Linux, *BSD).
 
 <tag>&relvers;:</tag>
-	Support (accelerated) for the ViRGE, ViRGE/VX, ViRGE/DX, ViRGE/GX,
-	ViRGE/GX2, ViRGE/MX, ViRGE/MX+, Trio3D and Trio3D/2X is provided by
-	the "s3virge" driver.  Support (accelerated) for the Savage3D,
-	Savage3D/MV, Savage4, and Savage2000, is provided by the "savage"
-	driver.  Support for the other S3 chipsets has not yet been ported.
+	Support (accelerated) for the 964 (revisions 0 and 1), 968, Trio32,
+	Trio64, Trio64, Trio64V+, Trio64UV+, Aurora64V+, Trio64V2, and
+	PLATO/PX is provided by the "s3" driver (however, only models using
+	the IBM RGB 524, Texas Instruments 3025, or an internal TrioDAC
+	RAMDAC chip are supported).  Support (accelerated) for the ViRGE,
+	ViRGE/VX, ViRGE/DX, ViRGE/GX, ViRGE/GX2, ViRGE/MX, ViRGE/MX+,
+	Trio3D and Trio3D/2X is provided by the "s3virge" driver.  Support
+	(accelerated) for the Savage3D, Savage3D/MV, Savage4, and
+	Savage2000, is provided by the "savage" driver.  Support for the
+	other S3 chipsets has not yet been ported.
 
 <tag>Summary:</tag>
-	Only the ViRGE, Trio3D and Savage chipsets are supported in &relvers;.
-	All of the other chipsets are supported only in &legacyvers;.
+	All hardware supported in &legacyvers; is also support in &relvers;
+	except for the 911, 924, 801, 805, 928, 864, and 868, and versions
+	of the 964 and 968 that do not use the RAMDAC chips listed above.
 
 </descrip>
 
