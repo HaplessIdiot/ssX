@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.15 2001/01/06 21:29:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.16 2001/04/25 17:46:42 alanh Exp $ */
 
 
 #define COMPILER_H_EXTRAS
@@ -302,10 +302,12 @@ ApmAccelInit(ScreenPtr pScreen)
     SETROP(ROP_S_xor_D);
     SETROP(ROP_S);
 
+#if 0
     if (XAAPixmapOps.CopyArea != ApmCopyAreaPixmap) {
 	SaveCopyAreaPixmap = XAAPixmapOps.CopyArea;
 	XAAPixmapOps.CopyArea = ApmCopyAreaPixmap;
     }
+#endif
 
     ApmSetupXAAInfo(pApm, pXAAinfo);
 

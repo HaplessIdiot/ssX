@@ -1,6 +1,6 @@
 // Latvian keyboard map by Ilya Ketris <Ilya.Ketris@ipro.lv>
 //
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/lv,v 1.1 2001/05/19 00:35:43 dawes Exp $
 
 partial default alphanumeric_keys modifier_keys 
 xkb_symbols "basic" {
@@ -32,7 +32,7 @@ xkb_symbols "basic" {
     key <AC02> {        [         s,    S               ],
 			[    scaron,	Scaron		]};
     key <AC05> {        [         g,    G               ],
-			[    gcedila,	Gcedilla	]};
+			[    gcedilla,	Gcedilla	]};
     key <AC08> {        [         k,    K               ],
 			[    kcedilla,	Kcedilla	]};
     key <AC09> {        [         l,    L               ],
