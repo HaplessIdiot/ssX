@@ -1,14 +1,15 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mi/mioverlay.h,v 3.3 2000/02/29 00:16:03 mvojkovi Exp $ */
 
 #ifndef __MIOVERLAY_H
 #define __MIOVERLAY_H
 
 typedef void (*miOverlayTransFunc)(ScreenPtr, int, BoxPtr);
+typedef Bool (*miOverlayInOverlayFunc)(WindowPtr);
 
 Bool
 miInitOverlay(
    ScreenPtr pScreen, 
-   int overlayDepth, 
+   miOverlayInOverlayFunc inOverlay,
    miOverlayTransFunc trans
 );
 
