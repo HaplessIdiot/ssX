@@ -40,18 +40,17 @@ extern const customttable mycustomttable[];
 typedef enum {
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
-/*  OPTION_PCI_RETRY,  */
     OPTION_NOACCEL,
     OPTION_TURBOQUEUE,
     OPTION_FAST_VRAM,
     OPTION_NOHOSTBUS,
-/*  OPTION_SET_MEMCLOCK,   */
     OPTION_RENDER,
     OPTION_FORCE_CRT1TYPE,
     OPTION_FORCE_CRT2TYPE,
     OPTION_SHADOW_FB,
     OPTION_DRI,
     OPTION_AGP_SIZE,
+    OPTION_AGP_SIZE2,
     OPTION_ROTATE,
     OPTION_NOXVIDEO,
     OPTION_VESA,
@@ -156,6 +155,7 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_SHADOW_FB,         	"ShadowFB",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_DRI,         		"DRI",               	  OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_AGP_SIZE,			"AGPSize",      	  OPTV_INTEGER,   {0}, FALSE },
+    { OPTION_AGP_SIZE2,			"GARTSize",      	  OPTV_INTEGER,   {0}, FALSE },
     { OPTION_ROTATE,            	"Rotate",                 OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_NOXVIDEO,          	"NoXvideo",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_VESA,			"Vesa",		          OPTV_BOOLEAN,   {0}, FALSE },
@@ -229,20 +229,20 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_STOREDPBRIB,		"StoredGammaPreBrightnessBlue",   OPTV_INTEGER,   {0}, -1    },
 #ifdef SISMERGED
     { OPTION_MERGEDFB,			"MergedFB",		  OPTV_BOOLEAN,	  {0}, FALSE },
+    { OPTION_MERGEDFB2,			"TwinView",		  OPTV_BOOLEAN,	  {0}, FALSE },	  /* alias */
     { OPTION_MERGEDFBAUTO,		"MergedFBAuto",		  OPTV_BOOLEAN,	  {0}, FALSE },
     { OPTION_CRT2HSYNC,			"CRT2HSync",		  OPTV_ANYSTR,	  {0}, FALSE },
+    { OPTION_CRT2HSYNC2,		"SecondMonitorHorizSync", OPTV_ANYSTR,	  {0}, FALSE },   /* alias */
     { OPTION_CRT2VREFRESH,		"CRT2VRefresh",		  OPTV_ANYSTR,    {0}, FALSE },
+    { OPTION_CRT2VREFRESH2,		"SecondMonitorVertRefresh", OPTV_ANYSTR,  {0}, FALSE },   /* alias */
     { OPTION_CRT2POS,   		"CRT2Position",		  OPTV_ANYSTR,	  {0}, FALSE },
+    { OPTION_CRT2POS2,   		"TwinViewOrientation",	  OPTV_ANYSTR,	  {0}, FALSE },   /* alias */
     { OPTION_METAMODES,   		"MetaModes",  		  OPTV_ANYSTR,	  {0}, FALSE },
     { OPTION_MERGEDDPI,			"MergedDPI", 		  OPTV_ANYSTR,	  {0}, FALSE },
-    { OPTION_MERGEDFB2,			"TwinView",		  OPTV_BOOLEAN,	  {0}, FALSE },		/* alias */
-    { OPTION_CRT2HSYNC2,		"SecondMonitorHorizSync", OPTV_ANYSTR,	  {0}, FALSE }, 	/* alias */
-    { OPTION_CRT2VREFRESH2,		"SecondMonitorVertRefresh",	  OPTV_ANYSTR,    {0}, FALSE }, /* alias */
-    { OPTION_CRT2POS2,   		"TwinViewOrientation",	  OPTV_ANYSTR,	  {0}, FALSE }, 	/* alias */
 #ifdef SISXINERAMA
     { OPTION_NOSISXINERAMA,		"NoMergedXinerama",	  OPTV_BOOLEAN,	  {0}, FALSE },
-    { OPTION_CRT2ISSCRN0,		"MergedXineramaCRT2IsScreen0",	  OPTV_BOOLEAN,	  {0}, FALSE },
-    { OPTION_NOSISXINERAMA2,		"NoTwinviewXineramaInfo",  OPTV_BOOLEAN,  {0}, FALSE }, 	/* alias */
+    { OPTION_NOSISXINERAMA2,		"NoTwinviewXineramaInfo",  OPTV_BOOLEAN,  {0}, FALSE },   /* alias */
+    { OPTION_CRT2ISSCRN0,		"MergedXineramaCRT2IsScreen0",OPTV_BOOLEAN,{0},FALSE },
 #endif
 #endif
 #ifdef SIS_CP
@@ -1497,11 +1497,17 @@ SiSOptions(ScrnInfoPtr pScrn)
     /* AGPSize */
     {
        int vali;
+       Bool gotit = FALSE;
        if(xf86GetOptValInteger(pSiS->Options, OPTION_AGP_SIZE, &vali)) {
+          gotit = TRUE;
+       } else if(xf86GetOptValInteger(pSiS->Options, OPTION_AGP_SIZE2, &vali)) {
+          gotit = TRUE;
+       }
+       if(gotit) {
 	  if((vali >= 8) && (vali <= 512)) {
 	     pSiS->agpWantedPages = (vali * 1024 * 1024) / AGP_PAGE_SIZE;
 	  } else {
-	     xf86DrvMsg(pScrn->scrnIndex, X_WARNING, ilrangestr, "AGPSize", 8, 512);
+	     xf86DrvMsg(pScrn->scrnIndex, X_WARNING, ilrangestr, "AGPSize (alias GARTSize)", 8, 512);
 	  }
        }
     }
