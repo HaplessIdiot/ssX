@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.46 1996/10/23 13:11:16 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.47 1996/10/24 12:31:29 dawes Exp $
 
 #Chips & Technologies
 
@@ -1273,42 +1273,42 @@ LINE     #Clocks 44.297                      # Must match Mclk
 
 NAME Avance Logic 2101
 CHIPSET Avance Logic
-LINE   chipset "al2101"
+LINE   #chipset "al2101"
 SERVER SVGA
 
 NAME Avance Logic 2228
 CHIPSET Avance Logic
-LINE   chipset "ali2228"
+LINE   #chipset "ali2228"
 SERVER SVGA
 
 NAME Avance Logic 2301
 CHIPSET Avance Logic
-LINE   chipset "ali2301"
+LINE   #chipset "ali2301"
 SERVER SVGA
 
 NAME Avance Logic 2302
 CHIPSET Avance Logic
-LINE   chipset "ali2302"
+LINE   #chipset "ali2302"
 SERVER SVGA
 
 NAME Avance Logic 2308
 CHIPSET Avance Logic
-LINE   chipset "ali2308"
+LINE   #chipset "ali2308"
 SERVER SVGA
 
 NAME Avance Logic 2401
 CHIPSET Avance Logic
-LINE   chipset "ali2401"
+LINE   #chipset "ali2401"
 SERVER SVGA
 
 NAME Hercules Stingray
 CHIPSET ALG-2228/2301/2302
-LINE   chipset "ali2228"
+LINE   #chipset "ali2228"
 SERVER SVGA
 
 NAME SPEA/V7 Mirage VEGA Plus
 CHIPSET ALG-2228
-LINE   chipset "ali2228"
+LINE   #chipset "ali2228"
 SERVER SVGA
 
 # ARK Logic

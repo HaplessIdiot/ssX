@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.16 1996/09/14 13:06:35 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.17 1996/09/29 12:51:12 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -88,7 +88,7 @@ proc Mouse_proto_select { win } {
 			[Mouse_defaultdevice $mseType]
 		Mouse_setlistbox $w $w.mouse.device.list.lb
 	}
-	Mouse_setsettings $win
+#	Mouse_setsettings $win
 }
 
 proc Mouse_create_widgets { win } {
@@ -290,16 +290,20 @@ proc Mouse_popup_help { win } {
         toplevel .mousehelp -bd 5 -relief ridge
         wm title .mousehelp "Help"
 	wm geometry .mousehelp +30+30
-        text .mousehelp.text -takefocus 0 -width 90 -height 27
+        text .mousehelp.text -takefocus 0 -width 90 -height 30
         .mousehelp.text insert end \
 { First select the protocol for your mouse using 'p', then if needed, change the device
- name.  If applicable, also set the baud rate (1200 should work).  Press 'a' to apply
- the changes and try moving your mouse around.  If the mouse pointer does not move
- properly, try a different protocol or device name.
+ name.  If applicable, also set the baud rate (1200 should work).  Avoid moving the
+ mouse or pressing buttons before the correct protocol has been selected.  Press 'a'
+ to apply the changes and try moving your mouse around.  If the mouse pointer does
+ not move properly, try a different protocol or device name.
 
    Once the mouse is moving properly, test that the various buttons also work correctly.
  If you have a three button mouse and the middle button does not work, try the buttons
  labeled ChordMiddle and Emulate3Buttons.
+
+   Note: the `Logitech' protocol is only used by older Logitech mice.  Most current
+ models use the `Microsoft' or `MouseMan' protocol.
 
        Key    Function
      ------------------------------------------------------

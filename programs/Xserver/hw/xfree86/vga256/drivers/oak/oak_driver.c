@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.24 1996/09/29 14:02:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.25 1996/10/16 14:43:19 dawes Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -31,7 +31,7 @@
  *  - oti067
  *  - oti077
  *  - oti087  (with some accelerated features)
- *  - oti037c (hopefully, I haven't tested it)
+ *  - oti037c (hopefully, I haven't tested it (disabled for now))
  */
 
 /* Version information:
@@ -505,13 +505,18 @@ OAKProbe()
 	  case 0x05 : /* oti 77 */
 	    OTI_chipset = OTI77;
 	    break;
+#ifdef OTI37_PROBE
 	  case 0x00 : /* oti 37c */
 	    OTI_chipset = OTI37C;
 	    break;
+#endif
 	  default : /* don't know it by these bits */
+#if 0
+	    /* Some Avance Logic chipsets get this far */
 	    ErrorF("%s %s: oak: unknown chipset, perhaps a 083?.\n", 
 		   XCONFIG_PROBED,
 		   vga256InfoRec.name);
+#endif
 	    OAKEnterLeave(LEAVE);
 	    return(FALSE);
 	  }

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.9 1996/10/19 15:15:52 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.10 1996/10/24 12:31:06 dawes Exp $
 #
 # postinst.sh (for XFree86 3.2)
 #
@@ -31,7 +31,8 @@ if [ -d $TERMCAP1DIR ]; then
 	if [ x"$TERMCAP1" != x ]; then
 		TERMCAPFILE="$TERMCAP1"
 	fi
-else
+fi
+if [ x"$TERMCAPFILE" = x ]; then
 	if [ -f $TERMCAP2 ]; then
 		TERMCAPFILE="$TERMCAP2"
 	fi

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase5.tcl,v 3.3 1996/09/03 06:48:29 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase5.tcl,v 3.4 1996/09/03 15:11:55 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -35,7 +35,8 @@ if { ![getuid] } {
         set server [set Device_${devid}(Server)]
 	set linkname $Xwinhome/bin/X
 	for {set nlinks 0} \
-		{[file type $linkname]=="link" && $nlinks<20} \
+		{[file exists $linkname] && [file type $linkname]=="link" \
+		 && $nlinks<20} \
 		{incr nlinks} {
 	    set linkname [readlink $linkname]
 	}

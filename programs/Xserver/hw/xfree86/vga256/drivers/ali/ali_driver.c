@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.12 1996/09/29 14:01:42 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.13 1996/10/16 14:42:17 dawes Exp $
  */
 
 #include "X.h"
@@ -224,7 +224,7 @@ ALIClockSelect(no)
   {
     case CLK_REG_SAVE:
       save1 = inb(0x3CC);				/* save clk_0 & clk_1 */
-      outb(0x3CE, 0x0C); save2 = inb(0x3CF) | 0x10; 	/* save clk_2 & 8-map ON */
+      outb(0x3CE, 0x0C); save2 = inb(0x3CF) /*| 0x10*/; 	/* save clk_2 & 8-map ON */
       outb(0x3CE, 0x0B); save4 = inb(0x3CF);    	/* save clk/2 bits */
       outb(0x3CE, 0x1F); save3 = inb(0x3CF);    	/* save clk_3 */
       break;
@@ -498,6 +498,7 @@ ALISave(save)
   temp1 = inb(0x3D6);  
   temp2 = inb(0x3D7);
   outb(0x3D6, 0x00); /* segment select */
+  outb(0x3D7, 0x00); /* segment select */
 
   save = (vgaALIPtr)vgaHWSave((vgaHWPtr)save, sizeof(vgaALIRec));
   save->RSegSel = temp1;

@@ -4,7 +4,7 @@
 
  <title>README for XFree86&tm; 3.2
  <author> The XFree86 Project, Inc
- <date>31 October 1996
+ <date>26 October 1996
 
 
 <abstract>
@@ -103,7 +103,7 @@ Note: Not all systems listed here have been tested with the current release.
 
     <tag/PC98:/
 	<itemize>
-	<ITEM>FreeBSD(98) 2.0.5, 2.1, 2.1.5
+	<ITEM>FreeBSD(98) 2.0.5, 2.1, 2.1.5, 2.2-current
 	<ITEM>NetBSD/pc98 (based on NetBSD 1.2)
 	<ITEM>PANIX 5.0 for 98
 	</itemize>
@@ -968,7 +968,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.62 1996/10/23 13:10:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.63 1996/10/24 12:30:22 dawes Exp $
 
 
 

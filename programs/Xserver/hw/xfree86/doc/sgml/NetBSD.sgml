@@ -53,17 +53,15 @@ url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD">
 url="ftp://ftp.laas.fr/pub/ii/NetBSD">
 
 <p>
-As of version 3.1.2G, there is a separate binary distribution for
-OpenBSD.  Binaries for OpenBSD are available from:
+Binaries for OpenBSD are available from:
 
 <htmlurl name="ftp.XFree86.org:/pub/XFree86/current/binaries/OpenBSD"
 url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/OpenBSD">
 
 <p>
-<bf/Note:/ the OpenBSD binary distribution only support recent
-OpenBSD snapshots (after August 23) where ttyC0 is used for the
-console device. Prior OpenBSD snapshots can run the NetBSD binary
-distribution.
+<bf/Note:/ the OpenBSD binary distribution only support 
+OpenBSD 2.0 and later snapshots  where ttyC0 is used for the
+console device.
 
 <p>
 Other NetBSD versions:
@@ -101,7 +99,7 @@ this file and we'll revise it.
 The binary distribution is composed of a number of  tar archives
 which are the executables, servers, fonts, libraries, include files,
 man pages, config files, and the server link kit.  The full distribution
-takes over 55MB of disk space.  
+takes over 67MB of disk space.  
 
 All archives are now made using the NetBSD package tools. We recommend
 that you install these tools first.  All packages can be installed
@@ -171,6 +169,8 @@ using <tt/pkg_add/.
     <tag/X32set/  XF86Setup configuration utility, needs X32VG16
     <tag/X32nest/ Nested X server
     <tag/X32vfb/ Virtual framebuffer X server
+    <tag/X32html/ HTML format version of the documentation
+    <tag/X32ps/   PostScript format version of the documentation
     </descrip>
 </descrip>
 
@@ -403,7 +403,7 @@ The OpenBSD pms driver  provides both "raw" and "cooked"
 XFree86 would use the <bf>PS/2</bf> protocol for talking to the device
 in that mode.  "cooked" mode is the old BusMouse translation.
 By default, the driver runs in "cooked" mode.  It can be switched using
-ioctls or by opening the first minor device which is <tt>/dev/pms0r</tt>.
+ioctls or by opening the first minor device which is <tt>/dev/psm0</tt>.
 
 <sect1>Other input devices
 <p>
@@ -800,7 +800,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.39 1996/10/23 13:10:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.40 1996/10/24 12:30:20 dawes Exp $
 
 
 

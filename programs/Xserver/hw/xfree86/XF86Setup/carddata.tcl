@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.9 1996/10/19 15:14:43 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.10 1996/10/20 13:32:36 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -358,7 +358,7 @@ set rdmelist ""
 foreach idx [array names CardReadmes SVGA-*] {
 	eval lappend rdmelist $CardReadmes($idx)
 }
-set CardReadmes(SVGA)	   [concat generic [lrmdups $rdmelist]]
+set CardReadmes(SVGA)	   [concat [lrmdups $rdmelist]]
 
 set CardReadmes(VGA16-ati)	$CardReadmes(SVGA-ati)
 set CardReadmes(VGA16-cl64xx)	$CardReadmes(SVGA-cl64xx)
@@ -370,7 +370,7 @@ set rdmelist ""
 foreach idx [array names CardReadmes VGA16-*] {
 	eval lappend rdmelist $CardReadmes($idx)
 }
-set CardReadmes(VGA16)	   [concat generic [lrmdups $rdmelist]]
+set CardReadmes(VGA16)	   [concat [lrmdups $rdmelist]]
 
 
 set CardReadmes(Mono-ati)	$CardReadmes(SVGA-ati)
@@ -386,7 +386,7 @@ set rdmelist ""
 foreach idx [array names CardReadmes Mono-*] {
 	eval lappend rdmelist $CardReadmes($idx)
 }
-set CardReadmes(Mono)	   [concat generic [lrmdups $rdmelist]]
+set CardReadmes(Mono)	   [concat [lrmdups $rdmelist]]
 
 
 set CardReadmes(8514)	   {}

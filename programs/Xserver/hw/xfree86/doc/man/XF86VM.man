@@ -1,5 +1,5 @@
 .\" Copyright (c) 1996  Joe Moss, The XFree86 Project
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.2 1996/08/16 12:30:01 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.3 1996/10/03 08:34:32 dawes Exp $
 .\" 
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
@@ -7,7 +7,7 @@
 ..
 .TH XF86VIDMODE 3X11 "3.2" "XFree86" "X FUNCTIONS"
 .SH NAME
-XF86VidModeQueryExtension, XF86VidModeQueryVersion, XF86VidModeGetModeLine, XF86VidModeGetAllModeLines, XF86VidModeAddModeLine, XF86VidModeDeleteModeLine, XF86VidModeModModeLine, XF86VidModeValidateModeLine, XF86VidModeSwitchMode, XF86VidModeSwitchToMode, XF86VidModeLockModeSwitch, XF86VidModeGetMonitor, XF86VidModeGetViewPort, XF86VidModeSetViewPort \- XFree86-VidMode extension interface functions
+XF86VidModeQueryExtension, XF86VidModeQueryVersion, XF86VidModeGetModeLine, XF86VidModeGetAllModeLines, XF86VidModeDeleteModeLine, XF86VidModeModModeLine, XF86VidModeValidateModeLine, XF86VidModeSwitchMode, XF86VidModeSwitchToMode, XF86VidModeLockModeSwitch, XF86VidModeGetMonitor, XF86VidModeGetViewPort, XF86VidModeSetViewPort \- XFree86-VidMode extension interface functions
 .SH SYNTAX
 .nf
 .LP
@@ -34,12 +34,14 @@ Bool XF86VidModeGetAllModeLines(
     int \fIscreen\fP\^,
     int *\fImodecount_return\fP\^,
     XF86VidModeModeInfo **\fImodesinfo\fP\^);
+.ig
 .LP
 Bool XF86VidModeAddModeLine(
     Display *\fIdisplay\fP\^,
     int \fIscreen\fP\^,
     XF86VidModeModeInfo *\fImodeline\fP\,
     XF86VidModeModeInfo *\fIaftermode\fP\^);
+..
 .LP
 Bool XF86VidModeDeleteModeLine(
     Display *\fIdisplay\fP\^,
@@ -112,9 +114,11 @@ the next mode, otherwise switch to the previous mode.
 Indicates that mode switching should be locked, if non-zero.
 .IP \fImodeline\fP 2i
 Specifies or returns the timing values for a video mode.
+.ig
 .IP \fIaftermode\fP 2i
 Specifies the timing values for the video mode after which the
 new mode will added.
+..
 .IP \fImodesinfo\fP 2i
 Returns the timing values and dotclocks for all of the available
 video modes.
@@ -218,6 +222,7 @@ function can be used to change the settings of the current video mode
 provided the requested settings are valid (e.g. they don't exceed the
 capabilities of the monitor).
 .PP
+.ig
 To add a mode to the list of available modes, the
 .ZN XF86VidModeAddModeLine
 function can be used.
@@ -237,12 +242,17 @@ If the
 parameter is zero, the mode will be added
 after the current mode.
 .PP
+..
 Modes can be deleted with the
 .ZN XF86VidModeDeleteModeLine
-function.  The specified mode must match an existing mode in the same
-manner used by the
-.ZN XF86VidModeAddModeLine
-function.
+function.  The specified mode must match an existing mode.
+To be considered a match, all of the fields of the given
+.ZN XF86VidModeModeInfo
+structure must match, except the
+.ZN privsize
+and
+.ZN private
+fields.
 If the mode to be deleted is the current mode, a mode switch
 to the next mode will occur first.  The last remaining mode can not
 be deleted.

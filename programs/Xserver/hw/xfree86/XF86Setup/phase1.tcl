@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.10 1996/08/27 03:23:40 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.11 1996/09/03 06:48:28 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -155,7 +155,8 @@ proc set_xf86config_defaults {} {
 		    [lsearch -exact $ServerList [set $varname]] < 0} {
 		set filename $Xwinhome/bin/X
 		for {set nlinks 0} \
-			{[file type $filename]=="link" && $nlinks<20} \
+			{[file exists $filename] && \
+			 [file type $filename]=="link" && $nlinks<20} \
 			{incr nlinks} {
 		    set filename [readlink $filename]
 		}

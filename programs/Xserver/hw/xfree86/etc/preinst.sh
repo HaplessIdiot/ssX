@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.4 1996/09/01 04:46:22 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.5 1996/10/19 15:15:53 dawes Exp $
 #
 # preinst.sh  (for XFree86 3.2)
 #
@@ -70,7 +70,7 @@ if [ "`uname`" = Linux ]; then
 				else
 					echo ""
 					echo "Before continuing you will need to get a current version of ld.so."
-					echo "Versions newer than 1.7.14 will do."
+					echo "Version 1.7.14 or newer will do."
 					NEEDSOMETHING=YES
 				fi
 			fi

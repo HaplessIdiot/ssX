@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.2
  <author>The XFree86 Project, Inc
- <date>24 October 1996
+ <date>26 October 1996
 
 <abstract>
 
@@ -453,11 +453,6 @@ Note, items marked with `*' have been added since the last beta release
   <item>TGUI9660/9680 chipsets are now fully supported
   <item>Check <htmlurl name="README.trident" url="trident.html"> distributed
 	with this release for full details.
-  <item>Known problems: ?
-	<itemize>
-	  <item>There is a problem with interlaced modes with the SVGA
-		driver.
-	</itemize>
 </itemize>
 <sect1> Ark driver (SVGA server)
 <p>
@@ -785,6 +780,19 @@ X32VG16.tgz     16 colour VGA server (XF86Setup needs this server)
 </verb>
 </quote>
 
+The following is required for new installations, and optional for existing
+installations:
+<quote>
+<verb>
+X32cfg.tgz     sample config files for xinit, xdm
+</verb>
+</quote>
+
+NOTE: Be very careful about installing X32cfg.tgz over an existing
+installation if you have customised your xinit and/or xdm config files.
+Installing X32cfg.tgz will overwrite any existing files.  If you do have
+customised files, there is no need to install X32cfg.tgz.
+
 The following X servers are for PC/AT hardware.  Choose at least one which
 matches your hardware, as well as the VGA16 server.  The VGA16 server is
 required by the new configuration utility (XF86Setup).
@@ -824,7 +832,7 @@ X329GA9.tgz     PC98 GA-968V4/PCI(S3 968) server
 X329GAN.tgz     PC98 GANB-WAP(cirrus) server
 X329480.tgz     PC98 PEGC-480(generic) server
 X329NKV.tgz     PC98 NKV-NEC(cirrus) server
-X329WBS.tgz     PC98 WABS(cirrus) server
+X329WS.tgz      PC98 WABS(cirrus) server
 X329WEP.tgz     PC98 WAB-EP(cirrus) server
 X329WSN.tgz     PC98 WSN-A2F(cirrus) server
 X329TGU.tgz     PC98 TGUI server
@@ -838,7 +846,6 @@ X32fcyr.tgz    Cyrillic fonts
 X32fnon.tgz    Other fonts (Chinese, Japanese, Korean, Hebrew)
 X32fscl.tgz    Scalable fonts (Speedo and Type1)
 X32fsrv.tgz    Font server and config files
-X32cfg.tgz     sample config files for xinit, xdm
 X32prog.tgz    X header files, config files and compile-time libs
 X32lkit.tgz    X server LinkKit
 X32lk98.tgz    PC98 X server LinkKit
@@ -848,11 +855,6 @@ X32ps.tgz      PostScript version of the documentation
 X32html.tgz    HTML version of the documentation
 </verb>
 </quote>
-
-NOTE: Be very careful about installing X32cfg.tgz if you have customised
-your xinit and/or xdm config files.  Installing X32cfg.tgz will overwrite
-any existing files.  If you do have customised files, there is no need to
-install X32cfg.tgz.
 
 If you already have a version of XFree86 installed, <bf>MAKE A BACKUP OF</bf>
 <tt>/usr/X11R6</tt> <bf>BEFORE DOING ANYTHING ELSE</bf>.  The standard
@@ -902,7 +904,7 @@ If you have GNU cpio (as Linux does) or SVR4 cpio, a more reliable (and
 highly recommended) way of doing this is to extract the <tt>.tgz</tt>
 files with:
 <tscreen><verb>
-	gzip -d < X32file.tgz | cpio -i -v -u -H ustar
+	gzip -d < X32file.tgz | cpio -i -v -d -u -H ustar
 </verb></tscreen>
 
 Once the required <tt>.tgz</tt> files have been extracted, copy the
@@ -922,7 +924,7 @@ boot time.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.45 1996/10/23 13:10:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.46 1996/10/24 12:30:23 dawes Exp $
 </verb>
 
 </article>

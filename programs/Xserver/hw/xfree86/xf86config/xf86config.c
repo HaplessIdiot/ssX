@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.33 1996/09/14 13:13:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.34 1996/09/23 13:27:37 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -973,10 +973,11 @@ static char *cardunsupported_text =
 "this card definition was based on, there's a chance that it is now\n"
 "supported.\n";
 
-#define NU_ACCELSERVER_IDS 9
+#define NU_ACCELSERVER_IDS 10
 
 static char *accelserver_id[NU_ACCELSERVER_IDS] = {
-	"S3", "Mach32", "Mach8", "8514", "P9000", "AGX", "W32", "Mach64", "I128"
+	"S3", "Mach32", "Mach8", "8514", "P9000", "AGX", "W32", "Mach64",
+	"I128", "S3V"
 };
 
 void carddb_configuration() {
@@ -1088,11 +1089,8 @@ static char *screenintro_text =
 "    a number of SVGA chipsets. On some chipsets it is accelerated or\n"
 "    supports higher color depths.\n"
 " 4  The accelerated servers. These include XF86_S3, XF86_Mach32, XF86_Mach8,\n"
-#if XFREE86_VERSION >= 311
-"    XF86_8514, XF86_P9000, XF86_AGX, XF86_W32, XF86_Mach64 and XF86_I128.\n"
-#else
-"    XF86_8514, XF86_P9000, XF86_AGX, and XF86_W32.\n"
-#endif
+"    XF86_8514, XF86_P9000, XF86_AGX, XF86_W32, XF86_Mach64, XF86_I128 and\n"
+"    XF86_S3V.\n"
 "\n"
 "These four server types correspond to the four different \"Screen\" sections in\n"
 CONFIGNAME " (vga2, vga16, svga, accel).\n"
@@ -1291,18 +1289,11 @@ static char *virtual_text =
 "differently-sized virtual screen\n"
 "\n";
 
-#if XFREE86_VERSION >= 311
-#define NU_ACCEL_SERVERS 9
-#else
-#define NU_ACCEL_SERVERS 7
-#endif
+#define NU_ACCEL_SERVERS 10
 
 static char *accelserver_name[NU_ACCEL_SERVERS] = {
 	"XF86_S3", "XF86_Mach32", "XF86_Mach8", "XF86_8514", "XF86_P9000",
-	"XF86_AGX", "XF86_W32"
-#if XFREE86_VERSION >= 311
-	,"XF86_Mach64", "XF86_I128"
-#endif
+	"XF86_AGX", "XF86_W32" ,"XF86_Mach64", "XF86_I128", "XF86_S3V"
 };
 
 static int videomemory[5] = {
@@ -1380,6 +1371,8 @@ void screen_configuration() {
 		4 + (card_screentype != -1 ? 1 : 0));
 	getstring(s);
 	config_screentype = atoi(s);
+	if (config_screentype == 0)
+		config_screentype = 4 + (card_screentype != -1 ? 1 : 0);
 	usecardscreentype = 0;
 	if (config_screentype == 5) {
 		config_screentype = card_screentype;	/* From definition. */

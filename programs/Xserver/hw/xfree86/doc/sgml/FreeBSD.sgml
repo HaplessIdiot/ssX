@@ -1,9 +1,9 @@
 <!doctype linuxdoc system>
 
 <article>
-<title> README for XFree86 3.2 on FreeBSD 2.1.5
+<title> README for XFree86 3.2 on FreeBSD
 <author>Rich Murphey, David Dawes
-<date>24 Oct 1996
+<date>26 Oct 1996
 
 <toc>
  
@@ -25,13 +25,21 @@ The sources for XFree86 are available by anonymous ftp from:
 url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
 
-Binaries for XFree86 on FreeBSD are available from:
+Binaries for XFree86 on FreeBSD 2.1.5 are available from:
 
 <url name="ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-2.1.5"
 url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.1.5">
 <p>
 <url name="XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-2.1.5"
 url="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.1.5">
+
+Binaries for XFree86 on FreeBSD 2.2-current are available from:
+
+<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-current"
+url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-current">
+<p>
+<url name="XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-current"
+url="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-current">
 
 Send email to <em/Rich-Murphey@Rice.edu/ or <em/XFree86@XFree86.org/
 if you have comments or suggestions about this file and we'll revise
@@ -49,7 +57,7 @@ archives plus at least one server that matches your vga card.  You'll
 need 13Mb for the minimum required run-time binaries only.
 
 <descrip>
-<tag/Required (10.4Mb):/
+<tag/Required (10.7Mb):/
 
 <descrip>
 <tag/X32bin.tgz/
@@ -69,7 +77,7 @@ need 13Mb for the minimum required run-time binaries only.
      customizable xinit and xdm runtime configuration files
 </descrip>
 
-<tag/Choose at least one server (~2.3Mb):/
+<tag/Choose at least one server (max 2.5Mb):/
 
 <descrip>
 <tag/X328514.tgz/
@@ -420,9 +428,9 @@ and <em/startx/ man pages.
 <sect>Rebuilding Kernels for X
 <p>
 
-The GENERIC FreeBSD 2.1.0 and 2.1.5 kernels support XFree86 without any
-modifications required.  You do not need to make any changes to the
-GENERIC kernel or any kernel configuration which is a superset.
+The GENERIC FreeBSD 2.1.0, 2.1.5 and 2.2-current kernels support XFree86
+without any modifications required.  You do not need to make any changes
+to the GENERIC kernel or any kernel configuration which is a superset.
 
 For a general description of BSD kernel configuration get <url
 name="smm.02.config.ps.Z"
@@ -439,9 +447,9 @@ are both required for X support:
  options		UCONSOLE		#X Console support
 </verb></tscreen>
 
-The generic FreeBSD 2.1.0 and 2.1.5 kernels are configured by default with the
-syscons driver.  To configure your kernel similarly it should have a
-line like this in <tt>/usr/src/sys/i386/conf/GENERIC</tt>:
+The generic FreeBSD 2.1.0, 2.1.5 and 2.2-current kernels are configured
+by default with the syscons driver.  To configure your kernel similarly
+it should have a line like this in <tt>/usr/src/sys/i386/conf/GENERIC</tt>:
 
 <tscreen><verb>
  device		sc0	at isa? port "IO_KBD" tty irq 1 vector scintr
@@ -550,7 +558,7 @@ Many thanks to:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.18 1996/10/23 13:09:54 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.19 1996/10/24 12:30:17 dawes Exp $ 
 
 
 
