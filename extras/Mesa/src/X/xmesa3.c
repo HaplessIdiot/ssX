@@ -1,8 +1,8 @@
-/* $Id: xmesa3.c,v 1.1 1999/12/14 01:32:12 robin Exp $ */
+/* $Id: xmesa3.c,v 1.2 2000/02/08 17:18:14 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,7 +25,6 @@
  */
 
 
-
 /*
  * Mesa/X11 interface, part 3.
  *
@@ -33,31 +32,14 @@
  * It should be fairly easy to write new special-purpose point, line or
  * triangle functions and hook them into this module.
  */
-/* $XFree86: xc/lib/GL/mesa/src/X/xmesa3.c,v 1.2 1999/03/14 03:21:02 dawes Exp $ */
 
-struct timespec;  /* this silences a compiler warning on several systems */
-struct itimerspec;
 
-#ifdef HAVE_CONFIG_H
-#include "conf.h"
-#endif
-
-#ifndef XFree86Server
-#include <sys/time.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <X11/Xlib.h>
-#endif
+#include "glxheader.h"
 #include "depth.h"
 #include "macros.h"
 #include "vb.h"
 #include "types.h"
 #include "xmesaP.h"
-#ifdef XFree86Server
-#include "gcstruct.h"
-#include "GL/xf86glx.h"
-#endif
 
 
 
@@ -87,8 +69,8 @@ static void draw_points_ANY_pixmap( GLcontext *ctx, GLuint first, GLuint last )
             unsigned long pixel = xmesa_color_to_pixel( xmesa,
 				      color[0], color[1], color[2], color[3] );
             XMesaSetForeground( dpy, gc, pixel );
-            x =       (GLint) VB->Win.data[i][0];
-            y = FLIP( (GLint) VB->Win.data[i][1] );
+            x =                         (GLint) VB->Win.data[i][0];
+            y = FLIP( xmesa->xm_buffer, (GLint) VB->Win.data[i][1] );
             XMesaDrawPoint( dpy, buffer, gc, x, y);
          }
       }
@@ -99,8 +81,8 @@ static void draw_points_ANY_pixmap( GLcontext *ctx, GLuint first, GLuint last )
          if (VB->ClipMask[i]==0) {
             register int x, y;
             XMesaSetForeground( dpy, gc, VB->IndexPtr->data[i] );
-            x =       (GLint) VB->Win.data[i][0];
-            y = FLIP( (GLint) VB->Win.data[i][1] );
+            x =                         (GLint) VB->Win.data[i][0];
+            y = FLIP( xmesa->xm_buffer, (GLint) VB->Win.data[i][1] );
             XMesaDrawPoint( dpy, buffer, gc, x, y);
          }
       }
@@ -158,10 +140,10 @@ static void flat_pixmap_line( GLcontext *ctx,
    gc = xmesa->xm_buffer->gc2;
    XMesaSetForeground( xmesa->display, gc, pixel );
 
-   x0 =       (GLint) VB->Win.data[vert0][0];
-   y0 = FLIP( (GLint) VB->Win.data[vert0][1] );
-   x1 =       (GLint) VB->Win.data[vert1][0];
-   y1 = FLIP( (GLint) VB->Win.data[vert1][1] );
+   x0 =                         (GLint) VB->Win.data[vert0][0];
+   y0 = FLIP( xmesa->xm_buffer, (GLint) VB->Win.data[vert0][1] );
+   x1 =                         (GLint) VB->Win.data[vert1][0];
+   y1 = FLIP( xmesa->xm_buffer, (GLint) VB->Win.data[vert1][1] );
    XMesaDrawLine( xmesa->display, xmesa->xm_buffer->buffer, gc,
 		  x0, y0, x1, y1 );
 }
@@ -182,7 +164,7 @@ static void flat_TRUECOLOR_line( GLcontext *ctx,
 
 #define INTERP_XY 1
 #define CLIP_HACK 1
-#define PLOT(X,Y) XMesaPutPixel( img, X, FLIP(Y), pixel );
+#define PLOT(X,Y) XMesaPutPixel( img, X, FLIP(xmesa->xm_buffer, Y), pixel );
 
 #include "linetemp.h"
 }
@@ -201,7 +183,7 @@ static void flat_8A8B8G8R_line( GLcontext *ctx,
 
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR4(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y) *pixelPtr = pixel;
 
@@ -221,7 +203,7 @@ static void flat_8R8G8B_line( GLcontext *ctx,
 
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR4(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y) *pixelPtr = pixel;
 
@@ -240,7 +222,7 @@ static void flat_8R8G8B24_line( GLcontext *ctx,
 
 #define PIXEL_TYPE bgr_t
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR3(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR3(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y) {			\
       pixelPtr->r = color[RCOMP];	\
@@ -264,7 +246,7 @@ static void flat_5R6G5B_line( GLcontext *ctx,
 
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR2(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y) *pixelPtr = pixel;
 
@@ -283,7 +265,7 @@ static void flat_DITHER_5R6G5B_line( GLcontext *ctx,
 
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR2(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y) PACK_TRUEDITHER( *pixelPtr, X, Y, color[0], color[1], color[2] );
 
@@ -306,7 +288,7 @@ static void flat_DITHER8_line( GLcontext *ctx,
 #define INTERP_XY 1
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y) *pixelPtr = DITHER(X,Y,r,g,b);
 
@@ -328,7 +310,7 @@ static void flat_LOOKUP8_line( GLcontext *ctx,
 
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y) *pixelPtr = pixel;
 
@@ -349,7 +331,7 @@ static void flat_HPCR_line( GLcontext *ctx,
 #define INTERP_XY 1
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y) *pixelPtr = (GLubyte) DITHER_HPCR(X,Y,r,g,b);
 
@@ -373,10 +355,10 @@ static void flat_TRUECOLOR_z_line( GLcontext *ctx,
 #define INTERP_XY 1
 #define INTERP_Z 1
 #define CLIP_HACK 1
-#define PLOT(X,Y)					\
-	if (Z < *zPtr) {				\
-	   *zPtr = Z;					\
-           XMesaPutPixel( img, X, FLIP(Y), pixel );	\
+#define PLOT(X,Y)							\
+	if (Z < *zPtr) {						\
+	   *zPtr = Z;							\
+           XMesaPutPixel( img, X, FLIP(xmesa->xm_buffer, Y), pixel );	\
 	}
 
 #include "linetemp.h"
@@ -396,7 +378,7 @@ static void flat_8A8B8G8R_z_line( GLcontext *ctx,
 #define INTERP_Z 1
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR4(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y)		\
 	if (Z < *zPtr) {	\
@@ -421,7 +403,7 @@ static void flat_8R8G8B_z_line( GLcontext *ctx,
 #define INTERP_Z 1
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR4(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y)		\
 	if (Z < *zPtr) {	\
@@ -445,7 +427,7 @@ static void flat_8R8G8B24_z_line( GLcontext *ctx,
 #define INTERP_Z 1
 #define PIXEL_TYPE bgr_t
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR3(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR3(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y)			\
 	if (Z < *zPtr) {		\
@@ -472,7 +454,7 @@ static void flat_5R6G5B_z_line( GLcontext *ctx,
 #define INTERP_Z 1
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR2(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y)		\
 	if (Z < *zPtr) {	\
@@ -495,7 +477,7 @@ static void flat_DITHER_5R6G5B_z_line( GLcontext *ctx,
 #define INTERP_Z 1
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR2(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y)		\
 	if (Z < *zPtr) {	\
@@ -521,7 +503,7 @@ static void flat_DITHER8_z_line( GLcontext *ctx,
 #define INTERP_Z 1
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y)						\
 	if (Z < *zPtr) {					\
@@ -547,7 +529,7 @@ static void flat_LOOKUP8_z_line( GLcontext *ctx,
 #define INTERP_Z 1
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y)		\
 	if (Z < *zPtr) {	\
@@ -573,7 +555,7 @@ static void flat_HPCR_z_line( GLcontext *ctx,
 #define INTERP_Z 1
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define CLIP_HACK 1
 #define PLOT(X,Y)						\
 	if (Z < *zPtr) {					\

@@ -1,8 +1,8 @@
-/* $Id: triangle.c,v 1.1 1999/12/14 01:31:55 robin Exp $ */
+/* $Id: triangle.c,v 1.2 2000/02/08 17:17:40 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,8 +25,6 @@
  */
 
 
-
-
 /*
  * Triangle rasterizers
  * When the device driver doesn't implement triangle rasterization Mesa
@@ -37,17 +35,11 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <assert.h>
-#include <math.h>
-#include <stdio.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "context.h"
 #include "depth.h"
 #include "feedback.h"
-#include "macros.h"
+#include "mem.h"
 #include "mmath.h"
 #include "span.h"
 #include "texstate.h"
@@ -173,8 +165,8 @@ static void flat_rgba_triangle( GLcontext *ctx,
 		 ffz += fdzdx;					\
 	      }							\
               gl_write_monocolor_span( ctx, n, LEFT, Y, zspan,	\
-                                    VB->ColorPtr->data[pv],	\
-			            GL_POLYGON );		\
+                                       VB->ColorPtr->data[pv],	\
+			               GL_POLYGON );		\
 	   }							\
 	}
 
@@ -365,7 +357,7 @@ static void affine_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    GLint comp, tbytesline, tsize;                                       \
    GLfixed er, eg, eb, ea;                                              \
    GLint tr, tg, tb, ta;                                                \
-   if (envmode == GL_BLEND || envmode == GL_ADD) {                      \
+   if (envmode == GL_BLEND) {                                           \
       /* potential off-by-one error here? (1.0f -> 2048 -> 0) */        \
       er = FloatToFixed(unit->EnvColor[0]);                             \
       eg = FloatToFixed(unit->EnvColor[1]);                             \
@@ -456,12 +448,6 @@ static void affine_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
         dest[2] = tb; \
         dest[3] = ta
 
-#define ADD                                                          \
-        dest[0] = ((ffr << 8) + (tr + 1) * er) >> (FIXED_SHIFT + 8); \
-        dest[1] = ((ffg << 8) + (tg + 1) * eg) >> (FIXED_SHIFT + 8); \
-        dest[2] = ((ffb << 8) + (tb + 1) * eb) >> (FIXED_SHIFT + 8); \
-	dest[3] = ffa * (ta + 1) >> (FIXED_SHIFT + 8)
-
 /* shortcuts */
 
 #define NEAREST_RGB_REPLACE  NEAREST_RGB;REPLACE
@@ -544,9 +530,8 @@ static void affine_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
                     case GL_BLEND:                         \
                        SPAN1(NEAREST_RGB;BLEND,3);         \
                        break;                              \
-                    case GL_ADD:                           \
-                       SPAN1(NEAREST_RGB;ADD,3);           \
-                       break;                              \
+                    default: /* unexpected env mode */     \
+                       abort();                            \
 	            }                                      \
                     break;                                 \
 		 case GL_RGBA:                             \
@@ -563,9 +548,8 @@ static void affine_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 		    case GL_REPLACE:                       \
                        SPAN1(NEAREST_RGBA_REPLACE,4);      \
                        break;                              \
-		    case GL_ADD:                           \
-                       SPAN1(NEAREST_RGBA;ADD,4);          \
-                       break;                              \
+                    default: /* unexpected env mode */     \
+                       abort();                            \
 		    }                                      \
                     break;                                 \
 	         }                                         \
@@ -586,9 +570,8 @@ static void affine_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 		    case GL_BLEND:                         \
 		       SPAN2(LINEAR_RGB;BLEND,3);          \
 		       break;                              \
-		    case GL_ADD:                           \
-		       SPAN2(LINEAR_RGB;ADD,3);            \
-		       break;                              \
+                    default: /* unexpected env mode */     \
+                       abort();                            \
 		    }                                      \
 		    break;                                 \
 		 case GL_RGBA:                             \
@@ -605,9 +588,8 @@ static void affine_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 		    case GL_REPLACE:                       \
 		       SPAN2(LINEAR_RGBA;REPLACE,4);       \
 		       break;                              \
-		    case GL_ADD:                           \
-		       SPAN2(LINEAR_RGBA;ADD,4);           \
-		       break;                              \
+                    default: /* unexpected env mode */     \
+                       abort();                            \
 		    }                                      \
 		    break;                                 \
 	         }                                         \
@@ -660,7 +642,7 @@ static void persp_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    GLint comp, tbytesline, tsize;                                       \
    GLfixed er, eg, eb, ea;                                              \
    GLint tr, tg, tb, ta;                                                \
-   if (envmode == GL_BLEND || envmode == GL_ADD) {                      \
+   if (envmode == GL_BLEND) {                                           \
       er = FloatToFixed(unit->EnvColor[0]);                             \
       eg = FloatToFixed(unit->EnvColor[1]);                             \
       eb = FloatToFixed(unit->EnvColor[2]);                             \
@@ -781,9 +763,8 @@ static void persp_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
                     case GL_BLEND:                         \
                        SPAN1(NEAREST_RGB;BLEND,3);         \
                        break;                              \
-                    case GL_ADD:                           \
-                       SPAN1(NEAREST_RGB;ADD,3);           \
-                       break;                              \
+                    default: /* unexpected env mode */     \
+                       abort();                            \
 	            }                                      \
                     break;                                 \
 		 case GL_RGBA:                             \
@@ -800,9 +781,8 @@ static void persp_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 		    case GL_REPLACE:                       \
                        SPAN1(NEAREST_RGBA_REPLACE,4);      \
                        break;                              \
-		    case GL_ADD:                           \
-                       SPAN1(NEAREST_RGBA;ADD,4);          \
-                       break;                              \
+                    default: /* unexpected env mode */     \
+                       abort();                            \
 		    }                                      \
                     break;                                 \
 	         }                                         \
@@ -823,9 +803,8 @@ static void persp_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 		    case GL_BLEND:                         \
 		       SPAN2(LINEAR_RGB;BLEND,3);          \
 		       break;                              \
-		    case GL_ADD:                           \
-		       SPAN2(LINEAR_RGB;ADD,3);            \
-		       break;                              \
+                    default: /* unexpected env mode */     \
+                       abort();                            \
 		    }                                      \
 		    break;                                 \
 		 case GL_RGBA:                             \
@@ -842,9 +821,8 @@ static void persp_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 		    case GL_REPLACE:                       \
 		       SPAN2(LINEAR_RGBA;REPLACE,4);       \
 		       break;                              \
-		    case GL_ADD:                           \
-		       SPAN2(LINEAR_RGBA;ADD,4);           \
-		       break;                              \
+                    default: /* unexpected env mode */     \
+                       abort();                            \
 		    }                                      \
 		    break;                                 \
 	         }                                         \
@@ -1532,8 +1510,14 @@ void gl_set_triangle_function( GLcontext *ctx )
 		  }
 	       }
 	       else {
-		  ctx->Driver.TriangleFunc = affine_textured_triangle;
-		  dputs("affine_textured_triangle");
+                  if (ctx->Texture.Unit[0].EnvMode==GL_ADD) {
+                     ctx->Driver.TriangleFunc = general_textured_triangle;
+                     dputs("general_textured_triangle");
+                  }
+                  else {
+                     ctx->Driver.TriangleFunc = affine_textured_triangle;
+                     dputs("affine_textured_triangle");
+                  }
 	       }
 	    }
 	    else {

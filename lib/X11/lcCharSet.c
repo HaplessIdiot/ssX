@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcCharSet.c,v 3.1 1997/11/22 12:50:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCharSet.c,v 3.2 1999/05/09 10:50:38 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -147,6 +147,7 @@ _XlcCreateDefaultCharSet(name, ct_sequence)
     char *ct_sequence;
 {
     XlcCharSet charset;
+    char *ptr = NULL;
 
     charset = (XlcCharSet) Xmalloc(sizeof(XlcCharSetRec));
     if (charset == NULL)
@@ -159,6 +160,15 @@ _XlcCreateDefaultCharSet(name, ct_sequence)
 	return (XlcCharSet) NULL;
     }
     strcpy(charset->name, name);
+    charset->xrm_name = XrmStringToQuark(charset->name);
+
+    if (ptr = strchr(charset->name, ':'))
+        *ptr = '\0';
+    charset->xrm_encoding_name = XrmStringToQuark(charset->name);
+    charset->encoding_name = XrmQuarkToString(charset->xrm_encoding_name);
+    if (ptr)
+        *ptr = ':';
+
     charset->ct_sequence = charset->name + strlen(name) + 1;
     strcpy(charset->ct_sequence, ct_sequence);
     charset->get_values = get_values;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/glx/pixel.c,v 1.2 1999/06/14 07:23:38 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -421,7 +421,7 @@ void __glEmptyImage(__GLXcontext *gc, GLint width, GLint height, GLenum format,
     GLint skipPixels = gc->state.storePack.skipPixels;
     GLint skipRows = gc->state.storePack.skipRows;
     GLint components, elementSize, rowSize, padding, groupsPerRow, groupSize;
-    GLint elementsPerRow, sourceRowSize, sourcePadding, i, j, k;
+    GLint elementsPerRow, sourceRowSize, sourcePadding, i;
     GLubyte *start, *iter;
 
     if (type == GL_BITMAP) {

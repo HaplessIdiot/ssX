@@ -1,4 +1,4 @@
-/* $Id: enums.h,v 1.1 1999/12/14 01:31:31 robin Exp $ */
+/* $Id: enums.h,v 1.2 2000/02/08 17:17:10 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

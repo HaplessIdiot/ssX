@@ -1,8 +1,8 @@
-/* $Id: vector.c,v 1.1 1999/12/14 01:32:00 robin Exp $ */
+/* $Id: vector.c,v 1.2 2000/02/08 17:17:45 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -29,15 +29,17 @@
  */
 
 
-#ifndef XFree86Server
-#include <stdlib.h>
-#include <stdio.h>
+#ifdef PC_HEADER
+#include "all.h"
 #else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "config.h"
 #include "macros.h"
+#include "mem.h"
 #include "vector.h"
+#endif
+
+
 
 static const GLubyte elem_bits[4] = {
    VEC_DIRTY_0,

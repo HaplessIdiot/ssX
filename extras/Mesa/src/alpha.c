@@ -1,8 +1,8 @@
-/* $Id: alpha.c,v 1.1 1999/12/14 01:31:18 robin Exp $ */
+/* $Id: alpha.c,v 1.2 2000/02/08 17:16:56 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -23,17 +23,12 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/alpha.c,v 1.2 1999/04/04 00:20:18 dawes Exp $ */
-
 
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "alpha.h"
 #include "context.h"
 #include "types.h"
@@ -43,8 +38,10 @@
 
 
 
-void gl_AlphaFunc( GLcontext* ctx, GLenum func, GLclampf ref )
+void
+_mesa_AlphaFunc( GLenum func, GLclampf ref )
 {
+   GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glAlphaFunc");
 
    switch (func) {
@@ -72,7 +69,6 @@ void gl_AlphaFunc( GLcontext* ctx, GLenum func, GLclampf ref )
          break;
    }
 }
-
 
 
 

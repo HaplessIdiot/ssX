@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.c,v 1.12 95/04/05 19:58:47 kaleb Exp $
- *	$XFree86: xc/programs/xterm/data.c,v 3.16 1999/09/25 14:38:29 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.c,v 3.17 1999/09/27 06:30:19 dawes Exp $
  */
 
 /*
@@ -60,12 +60,7 @@ int debug = 0; 		/* true causes error messages to be displayed */
 XtAppContext app_con;
 XtermWidget term;	/* master data structure for client */
 char *xterm_name;	/* argv[0] */
-Boolean sunFunctionKeys;
 int hold_screen;
-
-#if OPT_HP_FUNC_KEYS
-Boolean hpFunctionKeys;
-#endif
 
 #if OPT_ZICONBEEP
 int zIconBeep;  /* non-zero means beep; see charproc.c for details -IAN! */
@@ -78,15 +73,17 @@ Boolean sameName;            /* Don't change the title or icon name if it
 			the cost of an extra request to the server */
 #endif
 
-#if OPT_SUNPC_KBD
-Boolean sunKeyboard;
-#endif
-
 int am_slave = 0;	/* set to 1 if running as a slave process */
 int max_plus1;
+#ifdef VMS
+int Select_mask;
+int X_mask;
+int pty_mask;
+#else /* VMS */
 fd_set Select_mask;
 fd_set X_mask;
 fd_set pty_mask;
+#endif /* VMS */
 char *ptydev;
 char *ttydev;
 #ifdef ALLOWLOGGING

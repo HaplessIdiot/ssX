@@ -1,4 +1,4 @@
-/* $Id: alphabuf.h,v 1.1 1999/12/14 01:31:19 robin Exp $ */
+/* $Id: alphabuf.h,v 1.2 2000/02/08 17:16:56 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

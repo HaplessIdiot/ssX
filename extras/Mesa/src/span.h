@@ -1,4 +1,4 @@
-/* $Id: span.h,v 1.1 1999/12/14 01:31:51 robin Exp $ */
+/* $Id: span.h,v 1.2 2000/02/08 17:17:35 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -78,12 +78,12 @@ extern void gl_write_multitexture_span( GLcontext *ctx, GLuint texSets,
                                         GLenum primitive );
 
 
-extern void gl_read_rgba_span( GLcontext *ctx,
+extern void gl_read_rgba_span( GLcontext *ctx, GLframebuffer *buffer,
                                GLuint n, GLint x, GLint y,
                                GLubyte rgba[][4] );
 
 
-extern void gl_read_index_span( GLcontext *ctx,
+extern void gl_read_index_span( GLcontext *ctx, GLframebuffer *buffer,
                                 GLuint n, GLint x, GLint y, GLuint indx[] );
 
 

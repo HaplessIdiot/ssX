@@ -1,4 +1,4 @@
-/* $Id: vbxform.h,v 1.1 1999/12/14 01:32:00 robin Exp $ */
+/* $Id: vbxform.h,v 1.2 2000/02/08 17:17:45 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

@@ -1,4 +1,4 @@
-/* $Id: lowpc.c,v 1.1 1999/12/14 01:31:39 robin Exp $ */
+/* $Id: lowpc.c,v 1.2 2000/02/08 17:17:23 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

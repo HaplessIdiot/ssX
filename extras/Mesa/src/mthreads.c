@@ -1,8 +1,8 @@
-/* $Id: mthreads.c,v 1.1 1999/12/14 01:31:41 robin Exp $ */
+/* $Id: mthreads.c,v 1.2 2000/02/08 17:17:25 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,8 +25,6 @@
  */
 
 
-
-
 /*
  * mthreads.c -- platform dependent thread support for Mesa 
  *
@@ -34,19 +32,16 @@
  *                and Christoph Poliwoda (poliwoda@volumegraphics.com)
  *
  * Revised by Keith Whitwell
+ *
  */
 
 
-#ifndef XFree86Server
-#include <stdio.h>  /* for printing errors etc. */
-#include <stdlib.h> /* malloc/free and the boys. */
-#include <errno.h>  /* error determination for system calls */
-                    /* NOTE: Some platforms will do bad things with errno  */
-                    /*       if correct compile-time options are not used. */
-                    /*       See mthreads.h for specific examples.         */
+#ifdef PC_ALL
+#include "all.h"
 #else
-#include "GL/xf86glx.h"
+#include "glheader.h"
 #endif
+
 
 
 /*
@@ -54,6 +49,7 @@
  * This is to make things easier to deal with on the makefile scene..
  */
 #ifdef THREADS
+#include <errno.h>
 #include "mthreads.h" 
 
 

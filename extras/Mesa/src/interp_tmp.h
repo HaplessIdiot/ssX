@@ -1,4 +1,4 @@
-/* $Id: interp_tmp.h,v 1.1 1999/12/14 01:31:37 robin Exp $ */
+/* $Id: interp_tmp.h,v 1.2 2000/02/08 17:17:20 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -28,7 +28,7 @@
 static void NAME( struct vertex_buffer *VB,
 		  GLuint dst, GLfloat t, GLuint in, GLuint out )
 {
-#if (IND & (CLIP_RGBA0|CLIP_FOG_COORD))
+#if (IND & CLIP_RGBA0)
    GLfloat col[3][4];
 #endif
 
@@ -57,25 +57,17 @@ static void NAME( struct vertex_buffer *VB,
    {
       UBYTE_RGBA_TO_FLOAT_RGBA(col[1], VB->Spec[0][in]);
       UBYTE_RGBA_TO_FLOAT_RGBA(col[2], VB->Spec[0][out]);
-      INTERP_SZ( t, col, 0, 1, 2, 3 );
+      INTERP_SZ( t, col, 0, 1, 2, 4 );
       FLOAT_RGBA_TO_UBYTE_RGBA(VB->Spec[0][dst], col[0]);
 
       if (VB->ctx->TriangleCaps & DD_TRI_LIGHT_TWOSIDE) {
 	 UBYTE_RGBA_TO_FLOAT_RGBA(col[1], VB->Spec[1][in]);
 	 UBYTE_RGBA_TO_FLOAT_RGBA(col[2], VB->Spec[1][out]);
-	 INTERP_SZ( t, col, 0, 1, 2, 3 );
+	 INTERP_SZ( t, col, 0, 1, 2, 4 );
 	 FLOAT_RGBA_TO_UBYTE_RGBA(VB->Spec[1][dst], col[0]);
       }
    }      
 #endif
-
-#if (IND & CLIP_FOG_COORD)
-   col[0][0] = UBYTE_COLOR_TO_FLOAT_COLOR( VB->Spec[0][in][3]);
-   col[0][1] = UBYTE_COLOR_TO_FLOAT_COLOR( VB->Spec[0][out][3]);
-   col[0][2] = LINTERP( t, col[0][0], col[0][1] );
-   FLOAT_COLOR_TO_UBYTE_COLOR(VB->Spec[0][dst][3], col[0][2]);
-#endif
-
 
 #if (IND & CLIP_INDEX0)
    VB->IndexPtr->data[dst] = (GLuint) (GLint) 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/regs3v.h,v 1.4 1999/03/14 03:22:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/regs3v.h,v 1.5 1999/03/21 07:35:16 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -117,32 +117,14 @@ in this Software without prior written authorization from the XFree86 Project.
 
 
 #define S3_ViRGE_SERIES(chip)     ((chip&0xfff0)==0x31e0)
-#define S3_ViRGE_GX2_SERIES(chip) (chip == S3_ViRGE_GX2)
+#define S3_ViRGE_GX2_SERIES(chip) (chip == S3_ViRGE_GX2 || chip == S3_TRIO_3D_2X)
 #define S3_ViRGE_MX_SERIES(chip)  (chip == S3_ViRGE_MX || chip == S3_ViRGE_MXP)
 #define S3_ViRGE_MXP_SERIES(chip) (chip == S3_ViRGE_MXP)
 #define S3_ViRGE_VX_SERIES(chip)  ((chip&0xfff0)==0x3de0)
-
-#if 0
-#define S3_ANY_ViRGE_SERIES(chip) (    S3_ViRGE_SERIES(chip)		\
-				    || S3_ViRGE_VX_SERIES(chip))
-#define S3_ANY_SERIES(chip)       (    S3_ViRGE_SERIES(chip)		\
-				    || S3_ViRGE_VX_SERIES(chip))
-#endif /* 0 */
-
-#if 0
-/* take these from ../../common/xf86PciInfo.h instead */
-/* PCI data */
-#define PCI_S3_VENDOR_ID	0x5333
-#define PCI_ViRGE		0x5631
-#define PCI_ViRGE_VX		0x883D
-#define PCI_ViRGE_DXGX 		0x8A01
-#define PCI_ViRGE_GX2 		0x8A10
-#define PCI_ViRGE_MX		0x8C01
-#define PCI_ViRGE_MXP 		0x8C03
-#endif /* 0 */
+#define S3_TRIO_3D_SERIES(chip)		(chip == S3_TRIO_3D)
+#define S3_TRIO_3D_2X_SERIES(chip)	(chip == S3_TRIO_3D_2X)
 
 /* Chip tags */
-#if 1
 #define PCI_S3_VENDOR_ID	PCI_VENDOR_S3
 #define S3_UNKNOWN		 0
 #define S3_ViRGE		 PCI_CHIP_VIRGE
@@ -151,15 +133,8 @@ in this Software without prior written authorization from the XFree86 Project.
 #define S3_ViRGE_GX2	 PCI_CHIP_VIRGE_GX2
 #define S3_ViRGE_MX		 PCI_CHIP_VIRGE_MX
 #define S3_ViRGE_MXP	 PCI_CHIP_VIRGE_MXP
-#else
-#define S3_UNKNOWN		 0
-#define S3_ViRGE		 1
-#define S3_ViRGE_VX		 2
-#define S3_ViRGE_DXGX	 3
-#define S3_ViRGE_GX2	 4
-#define S3_ViRGE_MX		 5
-#define S3_ViRGE_MXP	 6
-#endif /* 1 */
+#define S3_TRIO_3D	PCI_CHIP_Trio3D
+#define S3_TRIO_3D_2X	PCI_CHIP_Trio3D_2X
 
 #if 0
 
@@ -338,36 +313,6 @@ in this Software without prior written authorization from the XFree86 Project.
 
 #endif
 
-#if 0
-
-typedef struct {
-   unsigned char r, g, b;
-}
-LUTENTRY;
-
-#endif /* 0 */
-
-#if 0  /* delete me 3.9Nn */
-/* Wait until "v" queue entries are free */
-#define	WaitQueue(v)	 if (ps3v->NoPCIRetry) { do { mem_barrier(); \
-	while (((IN_SUBSYS_STAT()) & 0x1f00) < (((v)+2) << 8)); \
-	} while (0); }
-
-/* Wait until GP is idle and queue is empty */
-#define	WaitIdleEmpty()  do { mem_barrier(); \
-	while ((IN_SUBSYS_STAT() & 0x3f00) != 0x3000); } while (0)
-
-/* Wait until GP is idle */
-#define WaitIdle()       do { mem_barrier(); while (!(IN_SUBSYS_STAT() & 0x2000)); } while (0)
-
-/* Wait until Command FIFO is empty */
-#define WaitCommandEmpty()       do { mem_barrier(); \
-	while (!(((((mmtr)s3vMmioMem)->subsys_regs.regs.adv_func_cntl)) & 0x200)); } while (0)
-
-/* Wait until a DMA transfer is done */ 
-#define WaitDMAEmpty()    do { mem_barrier(); while  ((((mmtr)s3vMmioMem)->dma_regs.regs.cmd.write_pointer) != (((mmtr)s3vMmioMem)->dma_regs.regs.cmd.read_pointer)); } while(0)
-#endif /* 0 */
-
 
 #define MAXLOOP 0xffffff /* timeout value for engine waits, ~6 secs */
 
@@ -382,6 +327,10 @@ LUTENTRY;
 /* Wait until GP is idle and queue is empty */
 #define	WaitIdleEmpty()  \
   do { int loop=0; mem_barrier(); \
+    if(S3_TRIO_3D_SERIES(ps3v->Chipset)) \
+       while (((IN_SUBSYS_STAT() & 0x3f802000 & 0x20002000) != 0x20002000) && \
+             (loop++<MAXLOOP)); \
+    else \
        while (((IN_SUBSYS_STAT() & 0x3f00) != 0x3000) && (loop++<MAXLOOP)); \
        if (loop >= MAXLOOP) S3VGEReset(pScrn,1,__LINE__,__FILE__); \
   } while (0)
@@ -396,8 +345,10 @@ LUTENTRY;
 
 /* Wait until Command FIFO is empty */
 #define WaitCommandEmpty()       do { int loop=0; mem_barrier(); 			\
-	if (ps3v->Chipset == S3_ViRGE_GX2 || ps3v->Chipset == S3_ViRGE_MX || ps3v->Chipset == S3_ViRGE_MXP) 		\
+	if (S3_ViRGE_GX2_SERIES(S3_ViRGE_GX2) || S3_ViRGE_MX_SERIES(ps3v->Chipset)) 		\
 	     while ((!(((((mmtr)s3vMmioMem)->subsys_regs.regs.adv_func_cntl)) & 0x400)) && (loop++<MAXLOOP));	\
+	else if (S3_TRIO_3D_SERIES(ps3v->Chipset)) \
+	     while (((IN_SUBSYS_STAT() & 0x5f00) != 0x5f00) && (loop++<MAXLOOP)); \
 	  else 										\
 	     while ((!(((((mmtr)s3vMmioMem)->subsys_regs.regs.adv_func_cntl)) & 0x200)) && (loop++<MAXLOOP));	\
           if (loop >= MAXLOOP) S3VGEReset(pScrn,1,__LINE__,__FILE__); \

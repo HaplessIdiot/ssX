@@ -1,4 +1,4 @@
-/* $Id: shade_tmp.h,v 1.1 1999/12/14 01:31:50 robin Exp $ */
+/* $Id: shade_tmp.h,v 1.2 2000/02/08 17:17:35 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -135,7 +135,7 @@ static void TAG(shade_rgba_spec)( struct vertex_buffer *VB )
 	       SUB_3V(VP, light->Position, vertex);
 	    }
 
-	    d = LEN_3FV( VP );
+	    d = (GLfloat) LEN_3FV( VP );
 
 	    if (d > 1e-6) {
 	       GLfloat invd = 1.0F / d;
@@ -157,7 +157,7 @@ static void TAG(shade_rgba_spec)( struct vertex_buffer *VB )
 	       else {
 		  double x = PV_dot_dir * (EXP_TABLE_SIZE-1);
 		  int k = (int) x;
-		  GLfloat spot = (light->SpotExpTable[k][0]
+		  GLfloat spot = (GLfloat) (light->SpotExpTable[k][0]
 				  + (x-k)*light->SpotExpTable[k][1]);
 		  attenuation *= spot;
 	       }
@@ -234,7 +234,7 @@ static void TAG(shade_rgba_spec)( struct vertex_buffer *VB )
 	    }
 	    
 	    if (n_dot_h>1.0) {
-	       spec_coef = pow( n_dot_h, tab->shininess );
+	       spec_coef = (GLfloat) pow( n_dot_h, tab->shininess );
 	    } else 
 	       GET_SHINE_TAB_ENTRY( tab, n_dot_h, spec_coef );
 	    
@@ -733,7 +733,7 @@ static void TAG(shade_ci)( struct vertex_buffer *VB )
 	       SUB_3V(VP, light->Position, vertex);
 	    }
 
-	    d = (GLfloat) LEN_3FV( VP );
+	    d = LEN_3FV( VP );
 	    if ( d > 1e-6) {
 	       GLfloat invd = 1.0F / d;
 	       SELF_SCALE_SCALAR_3V(VP, invd);
@@ -753,7 +753,7 @@ static void TAG(shade_ci)( struct vertex_buffer *VB )
 	       else {
 		  double x = PV_dot_dir * (EXP_TABLE_SIZE-1);
 		  int k = (int) x;
-		  GLfloat spot = (GLfloat) (light->SpotExpTable[k][0]
+		  GLfloat spot = (light->SpotExpTable[k][0]
 				  + (x-k)*light->SpotExpTable[k][1]);
 		  attenuation *= spot;
 	       }
@@ -816,7 +816,7 @@ static void TAG(shade_ci)( struct vertex_buffer *VB )
 	    }
 	    
 	    if (n_dot_h>1.0) {
-	       spec_coef = (GLfloat) pow( n_dot_h, tab->shininess );
+	       spec_coef = pow( n_dot_h, tab->shininess );
 	    } else {
 	       GET_SHINE_TAB_ENTRY( tab, n_dot_h, spec_coef);
 	    }

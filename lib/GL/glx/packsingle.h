@@ -1,7 +1,7 @@
 #ifndef __GLX_packsingle_h__
 #define __GLX_packsingle_h__
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/glx/packsingle.h,v 1.2 1999/06/14 07:23:38 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -48,7 +48,10 @@
     xGLXSingleReq *req
 
 #define __GLX_SINGLE_LOAD_VARIABLES() \
-    pc = gc->pc
+    pc = gc->pc;           \
+    (void) pixelHeaderPC;  \
+    (void) compsize;       \
+    (void) cmdlen
 
 /* Start a single command */
 #define __GLX_SINGLE_BEGIN(opcode,bytes)	   \

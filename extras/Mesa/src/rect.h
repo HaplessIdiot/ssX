@@ -1,8 +1,8 @@
-/* $Id: rect.h,v 1.1 1999/12/14 01:31:48 robin Exp $ */
+/* $Id: rect.h,v 1.2 2000/02/08 17:17:33 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,18 +25,36 @@
  */
 
 
-
-
-
 #ifndef RECT_H
 #define RECT_H
 
 
-#include "types.h"
+#include "glheader.h"
 
 
-extern void gl_Rectf( GLcontext *ctx,
-                      GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2 );
+extern void
+_mesa_Rectd(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2);
+
+extern void
+_mesa_Rectdv(const GLdouble *v1, const GLdouble *v2);
+
+extern void
+_mesa_Rectf(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2);
+
+extern void
+_mesa_Rectfv(const GLfloat *v1, const GLfloat *v2);
+
+extern void
+_mesa_Recti(GLint x1, GLint y1, GLint x2, GLint y2);
+
+extern void
+_mesa_Rectiv(const GLint *v1, const GLint *v2);
+
+extern void
+_mesa_Rects(GLshort x1, GLshort y1, GLshort x2, GLshort y2);
+
+extern void
+_mesa_Rectsv(const GLshort *v1, const GLshort *v2);
 
 
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.14 1999/10/14 02:45:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.15 1999/11/02 16:16:42 tsi Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -209,10 +209,47 @@ S3VAccelInit32(ScreenPtr pScreen)
 }
 
 void
+S3VNopAllCmdSets(ScrnInfoPtr pScrn)
+{
+  int i;
+  int max_it=1000;
+  S3VPtr ps3v = S3VPTR(pScrn);
+
+  if (xf86GetVerbosity() > 1) {
+     ErrorF("\tTrio3D -- S3VNopAllCmdSets: SubsysStats#1 = 0x%08lx\n",
+        IN_SUBSYS_STAT() & 0x3f802000 & 0x20002000);
+  }
+
+  mem_barrier();
+  for(i=0;i<max_it;i++) {
+    if( (IN_SUBSYS_STAT() & 0x3f802000 & 0x20002000) == 0x20002000) {
+      break;
+    }
+  }
+
+  if(i!=max_it) {
+    if (xf86GetVerbosity() > 1) ErrorF("\tTrio3D -- S3VNopAllCmdSets: state changed after %d iterations\n",i);
+  } else {
+    if (xf86GetVerbosity() > 1) ErrorF("\tTrio3D -- S3VNopAllCmdSets: state DIDN'T changed after %d iterations\n",max_it);
+  }
+
+  WaitQueue(5);
+
+  OUTREG(CMD_SET, CMD_NOP);
+
+  if (xf86GetVerbosity() > 1) {
+     ErrorF("\tTrio3D -- S3VNopAllCmdSets: SubsysStats#2 = 0x%08lx\n",
+        IN_SUBSYS_STAT() & 0x3f802000 & 0x20002000);;
+  }
+}
+
+void
 S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
 {
-    unsigned char tmp;
+    unsigned long gs1, gs2;   /* -- debug info for graphics state -- */
+    unsigned char tmp, sr1, resetidx=0x66;  /* FIXME */
     int r;
+    int ge_was_on = 0;
     CARD32 fifo_control = 0, miu_control = 0;
     CARD32 streams_timeout = 0, misc_timeout = 0;
     vgaHWPtr hwp = VGAHWPTR(pScrn);
@@ -223,12 +260,27 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
   	vgaCRReg = vgaIOBase + 5;  	  
 
 
+    if (S3_TRIO_3D_SERIES(ps3v->Chipset)) {
+      VGAOUT8(0x3c4,0x01);
+      sr1 = VGAIN8(0x3c5);
+
+      if (sr1 & 0x20) {
+        if (xf86GetVerbosity() > 1)
+          ErrorF("\tTrio3D -- Display is on...turning off\n");
+        VGAOUT8(0x3c5,sr1 & ~0x20);
+        VerticalRetraceWait();
+      }     
+    }
+
     if (from_timeout) {
       if (ps3v->GEResetCnt++ < 10 || xf86GetVerbosity() > 1)
 	ErrorF("\tS3VGEReset called from %s line %d\n",file,line);
     }
-    else
+    else {
+      if (S3_TRIO_3D_SERIES(ps3v->Chipset))
+        S3VNopAllCmdSets(pScrn);
       WaitIdleEmpty();
+    }
 
 
     if (from_timeout && (ps3v->Chipset == S3_ViRGE || ps3v->Chipset == S3_ViRGE_VX || ps3v->Chipset == S3_ViRGE_DXGX)) {
@@ -245,6 +297,7 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
     else {
         VGAOUT8(vgaCRIndex, 0x66);
         }
+  if (!S3_TRIO_3D_SERIES(ps3v->Chipset)) {
     tmp = VGAIN8(vgaCRReg);
     
     usleep(10000);
@@ -269,6 +322,78 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
       else
 	break;
     } 
+    } else {
+    usleep(10000);
+
+    for (r=1; r<10; r++) {
+      VerticalRetraceWait();
+      VGAOUT8(vgaCRIndex,resetidx);
+      tmp = VGAIN8(vgaCRReg);
+
+      VGAOUT8(0x3c4,0x01);
+      sr1 = VGAIN8(0x3c5);
+
+      if(sr1 & 0x20) {
+        if(xf86GetVerbosity() > 1) {
+          ErrorF("\tTrio3D -- Upps Display is on again ...turning off\n");
+        }
+        VGAOUT8(0x3c4,0x01);
+        VerticalRetraceWait();
+        VGAOUT8(0x3c5,sr1 & ~0x20);
+      }
+
+      VerticalRetraceWait();
+      gs1   = (long) IN_SUBSYS_STAT();
+
+      /* turn off the GE */
+
+      if(tmp & 0x01) {
+        tmp &= ~0x01;
+        VGAOUT8(vgaCRReg, tmp);
+        ge_was_on = 1;
+        usleep(10000);
+      }
+
+      gs2   = (long) IN_SUBSYS_STAT();
+      VGAOUT8(vgaCRReg, (tmp | 0x02));
+      usleep(10000);
+
+      VerticalRetraceWait();
+      VGAOUT8(vgaCRReg, (tmp & ~0x02));
+      usleep(10000);
+
+      if(ge_was_on) {
+        tmp |= 0x01;
+        VGAOUT8(vgaCRReg, tmp);
+        usleep(10000);
+      }
+
+      if (xf86GetVerbosity() > 2) {
+          ErrorF("\tTrio3D -- GE was %s ST#1: 0x%08lx ST#2: 0x%08lx\n",
+             (ge_was_on) ? "on" : "off",
+             (long)(gs1 & 0x3f802000 & 0x20002000),
+             (long)(gs2 & 0x3f802000 & 0x20002000) );
+      }
+
+      VerticalRetraceWait();
+
+      if (!from_timeout) {
+      S3VNopAllCmdSets(pScrn);
+        WaitIdleEmpty();
+      }
+
+      OUTREG(DEST_SRC_STR, ps3v->Bpl << 16 | ps3v->Bpl);
+      usleep(10000);
+
+      if((IN_SUBSYS_STAT() & 0x3f802000 & 0x20002000) != 0x20002000) {
+        if(xf86GetVerbosity() > 1)
+          ErrorF("restarting S3 graphics engine reset %2d ..."
+                 "%lx\n",r,IN_SUBSYS_STAT() & 0x3f802000 & 0x20002000);
+      }
+        else
+          break;
+    }
+    }
     
     if (from_timeout && (ps3v->Chipset == S3_ViRGE || ps3v->Chipset == S3_ViRGE_VX
 			 || ps3v->Chipset == S3_ViRGE_DXGX)) {
@@ -291,6 +416,8 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
     OUTREG(MONO_PAT_0, ~0);
     OUTREG(MONO_PAT_1, ~0);
 
+    if (!from_timeout && S3_TRIO_3D_SERIES(ps3v->Chipset))
+      S3VNopAllCmdSets(pScrn);
 }
 
 /* The sync function for the GE */

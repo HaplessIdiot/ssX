@@ -1,10 +1,10 @@
-/* $Id: vbrender.c,v 1.1 1999/12/14 01:31:59 robin Exp $ */
+/* $Id: vbrender.c,v 1.2 2000/02/08 17:17:44 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -41,11 +41,7 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <stdio.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "clip.h"
 #include "context.h"
 #include "light.h"
@@ -161,6 +157,7 @@ static void unfilled_polygon( GLcontext *ctx,
    }
    else if (mode==GL_LINE) {
       GLuint i, j0, j1;
+      ctx->StippleCounter = 0;
 
       /* draw the edges */
       for (i=0;i<n-1;i++) {
@@ -293,6 +290,11 @@ static void render_triangle( GLcontext *ctx,
 }
 
 
+static void null_triangle( GLcontext *ctx,
+			   GLuint v0, GLuint v1, GLuint v2, GLuint pv )
+{
+}
+
 
 /* Implements triangle_rendering when (IndirectTriangles & DD_SW_SETUP)
  * is non-zero.
@@ -348,7 +350,10 @@ static void render_quad( GLcontext *ctx, GLuint v0, GLuint v1,
 }
 
 
-
+static void null_quad( GLcontext *ctx, GLuint v0, GLuint v1,
+		       GLuint v2, GLuint v3, GLuint pv )
+{
+}
 
 
 extern const char *gl_prim_name[];
@@ -449,12 +454,10 @@ do {							\
     const GLubyte *cullmask = VB->CullMask;	\
     GLuint vlist[VB_SIZE];			\
     GLubyte *eflag = VB->EdgeFlagPtr->data;    	\
-    GLuint *stipplecounter = &VB->ctx->StippleCounter; \
     (void) vlist; (void) eflag;
 
 #define TAG(x) x##_cull
 #define INIT(x)  FLUSH_PRIM(x)
-#define RESET_STIPPLE *stipplecounter = 0
 #include "render_tmp.h"
 
 
@@ -488,11 +491,9 @@ do {						\
 #define LOCAL_VARS  				\
     GLcontext *ctx = VB->ctx;			\
     GLubyte *eflag = VB->EdgeFlagPtr->data;	\
-    GLuint *stipplecounter = &VB->ctx->StippleCounter; \
     (void) eflag;
 
 #define INIT(x)  FLUSH_PRIM(x);
-#define RESET_STIPPLE *stipplecounter = 0
 #include "render_tmp.h"
 
 
@@ -519,20 +520,13 @@ do {						\
   gl_render_clipped_triangle2(ctx,i3,i1,i,pv);	\
 } while (0)
 
-/*    gl_render_clipped_triangle2(ctx,i3,i2,i,pv); */
-/*    gl_render_clipped_triangle2(ctx,i2,i1,i,pv); */
-
 
 #define LOCAL_VARS  				\
     GLcontext *ctx = VB->ctx;			\
     GLubyte *eflag = VB->EdgeFlagPtr->data;	\
-    GLuint *stipplecounter = &VB->ctx->StippleCounter; \
     (void) eflag;
-
 #define INIT(x)  FLUSH_PRIM(x);
 #define TAG(x) x##_clipped
-#define RESET_STIPPLE *stipplecounter = 0
-
 #include "render_tmp.h"
 
 /* Bits:
@@ -556,11 +550,12 @@ do {						\
  *
  * Keith. 
  */
-void gl_setup_edgeflag( struct vertex_buffer *VB, 
-			GLenum prim, 
-			GLuint start, 
-			GLuint count,
-			GLuint parity )
+static void 
+setup_edgeflag( struct vertex_buffer *VB, 
+                GLenum prim, 
+                GLuint start, 
+                GLuint count,
+                GLuint parity )
 {
    GLubyte *flag = VB->EdgeFlagPtr->data + start;
    GLuint n = count - start;
@@ -643,7 +638,7 @@ void gl_render_vb( struct vertex_buffer *VB )
 	 next = VB->NextPrimitive[i];
 
 	 if (ctx->TriangleCaps & DD_TRI_UNFILLED) 
-	    gl_setup_edgeflag(VB, prim, i, next, parity);
+	    setup_edgeflag(VB, prim, i, next, parity);
 
 	 tab[prim]( VB, i, next, parity );
 
@@ -673,13 +668,10 @@ void gl_reduced_prim_change( GLcontext *ctx, GLenum prim )
 
    ctx->PB->count = 0;				
    ctx->PB->mono = GL_FALSE;			
-   
-   if (ctx->PB->primitive != prim) {
-      ctx->PB->primitive = prim;			
+   ctx->PB->primitive = prim;			
 
-      if (ctx->Driver.ReducedPrimitiveChange)
-	 ctx->Driver.ReducedPrimitiveChange( ctx, prim );
-   }
+   if (ctx->Driver.ReducedPrimitiveChange)
+      ctx->Driver.ReducedPrimitiveChange( ctx, prim );
 }
 
 
@@ -694,22 +686,25 @@ void gl_set_render_vb_function( GLcontext *ctx )
    if (ctx->Driver.RenderVBRawTab == 0)
       ctx->Driver.RenderVBRawTab = render_tab_raw;
 
-   /* Culling will be done earlier by gl_cull_vb().
-    */
-   if (ctx->IndirectTriangles & (DD_SW_SETUP & ~DD_TRI_CULL)) {
-      ctx->TriangleFunc = render_triangle;
-      ctx->QuadFunc = render_quad;
-   } else {
-      ctx->TriangleFunc = ctx->Driver.TriangleFunc;
-      ctx->QuadFunc = ctx->Driver.QuadFunc;
-   }
+   ctx->TriangleFunc = ctx->Driver.TriangleFunc;
+   ctx->QuadFunc = ctx->Driver.QuadFunc;
+   ctx->ClippedTriangleFunc = ctx->TriangleFunc;
 
-   if (ctx->IndirectTriangles & (DD_SW_SETUP)) {
+   if (ctx->IndirectTriangles & DD_SW_SETUP) {
+
       ctx->ClippedTriangleFunc = render_triangle;
-   } else {
-      ctx->ClippedTriangleFunc = ctx->TriangleFunc;
-   }
 
+      if (ctx->IndirectTriangles & (DD_SW_SETUP & ~DD_TRI_CULL)) {
+	 if (ctx->IndirectTriangles & DD_TRI_CULL_FRONT_BACK) {
+	    ctx->TriangleFunc = null_triangle;
+	    ctx->QuadFunc = render_quad;
+	    ctx->ClippedTriangleFunc = null_triangle;
+	 } else {
+	    ctx->TriangleFunc = render_triangle;
+	    ctx->QuadFunc = render_quad;
+	 }
+      }
+   }
 }
 
 void gl_init_vbrender( void )

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.44 1999/12/14 01:33:54 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.46 2000/02/08 13:13:28 eich Exp $ */
 
 
 
@@ -246,6 +246,8 @@ typedef int xf86key_t;
 #define free(vp)		xf86free(vp)
 #undef freopen
 #define freopen(ccp1,ccp2,FP)	xf86freopen(ccp1,ccp2,FP)
+#undef frexp
+#define frexp(x,exp)            xf86frexp(x,exp)
 #undef fscanf
 #define fscanf			xf86fscanf
 #undef fseek
@@ -282,6 +284,8 @@ typedef int xf86key_t;
 #define isxdigit(i)		xf86isxdigit(i)
 #undef labs
 #define labs(l)			xf86labs(l)
+#undef ldexp
+#define ldexp(x, exp)           xf86ldexp(x, exp)
 #undef log
 #define log(d)			xf86log(d)
 #undef log10
@@ -425,6 +429,11 @@ typedef int xf86key_t;
 #define mkdir(a,b)              xf86mkdir(a,b)
 #undef getpagesize
 #define getpagesize		xf86getpagesize
+#define shmget(a,b,c)		xf86shmget(a,b,c)
+#define shmat(a,b,c)		xf86shmat(a,b,c)
+#define shmdt(a)		xf86shmdt(a)
+#define shmctl(a,b,c)		xf86shmctl(a,b,c)
+
 #undef S_ISUID
 #define S_ISUID XF86_S_ISUID
 #undef S_ISGID

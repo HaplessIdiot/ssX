@@ -1,0 +1,42 @@
+XCOMM $XFree86$
+XCOMM $PI$
+
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+#if BuildXF86DRI
+  DRI_DEFINES = GlxDefines
+ DRI_INCLUDES = -I../../glx -I../../dri \
+		-I$(TOP)/include -I$(TOP)/include/GL \
+		-I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri
+#endif
+
+MESA_INCLUDES = -I. -I.. -I../include
+
+      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES)
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(DRI_INCLUDES) $(MESA_INCLUDES)
+         SRCS = dri_mesa.c
+         OBJS = dri_mesa.o
+
+#if !GlxUseBuiltInDRIDriver
+#undef DoNormalLib NormalLibGlx
+#undef DoExtraLib SharedLibGlx
+#undef DoDebugLib DebugLibGlx
+#undef DoProfileLib ProfileLibGlx
+#endif
+
+#include <Library.tmpl>
+
+LibraryObjectRule()
+
+SubdirLibraryRule($(OBJS))
+NormalLintTarget($(SRCS))
+
+DependTarget()

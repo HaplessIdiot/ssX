@@ -1,8 +1,8 @@
-/* $Id: lines.h,v 1.1 1999/12/14 01:31:38 robin Exp $ */
+/* $Id: lines.h,v 1.2 2000/02/08 17:17:21 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,9 +25,6 @@
  */
 
 
-
-
-
 #ifndef LINES_H
 #define LINES_H
 
@@ -35,11 +32,14 @@
 #include "types.h"
 
 
-extern void gl_LineWidth( GLcontext *ctx, GLfloat width );
+extern void
+_mesa_LineWidth( GLfloat width );
 
-extern void gl_LineStipple( GLcontext *ctx, GLint factor, GLushort pattern );
+extern void
+_mesa_LineStipple( GLint factor, GLushort pattern );
 
-extern void gl_set_line_function( GLcontext *ctx );
+extern void
+gl_set_line_function( GLcontext *ctx );
 
 
 #endif

@@ -1,8 +1,8 @@
-/* $Id: span.c,v 1.1 1999/12/14 01:31:50 robin Exp $ */
+/* $Id: span.c,v 1.2 2000/02/08 17:17:35 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,24 +25,16 @@
  */
 
 
-
-
-
 /*
  * pixel span rasterization:
- * These functions simulate the rasterization pipeline.
+ * These functions implement the rasterization pipeline.
  */
 
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <assert.h>
-#include <string.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "alpha.h"
 #include "alphabuf.h"
 #include "blend.h"
@@ -51,6 +43,7 @@
 #include "logic.h"
 #include "macros.h"
 #include "masking.h"
+#include "mem.h"
 #include "scissor.h"
 #include "span.h"
 #include "stencil.h"
@@ -96,27 +89,27 @@ static GLuint clip_span( GLcontext *ctx,
    GLint i;
 
    /* Clip to top and bottom */
-   if (y<0 || y>=ctx->Buffer->Height) {
+   if (y < 0 || y >= ctx->DrawBuffer->Height) {
       return 0;
    }
 
    /* Clip to left and right */
-   if (x>=0 && x+n<=ctx->Buffer->Width) {
+   if (x >= 0 && x + n <= ctx->DrawBuffer->Width) {
       /* no clipping needed */
       return 1;
    }
-   else if (x+n<=0) {
+   else if (x + n <= 0) {
       /* completely off left side */
       return 0;
    }
-   else if (x>=ctx->Buffer->Width) {
+   else if (x >= ctx->DrawBuffer->Width) {
       /* completely off right side */
       return 0;
    }
    else {
       /* clip-test each pixel, this could be done better */
       for (i=0;i<n;i++) {
-         if (x+i<0 || x+i>=ctx->Buffer->Width) {
+         if (x + i < 0 || x + i >= ctx->DrawBuffer->Width) {
             mask[i] = 0;
          }
       }
@@ -145,13 +138,13 @@ static void multi_write_index_span( GLcontext *ctx, GLuint n,
          ASSERT(n < MAX_WIDTH);
 
          if (bufferBit == FRONT_LEFT_BIT)
-            (*ctx->Driver.SetBuffer)( ctx, GL_FRONT_LEFT);
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_FRONT_LEFT);
          else if (bufferBit == FRONT_RIGHT_BIT)
-            (*ctx->Driver.SetBuffer)( ctx, GL_FRONT_RIGHT);
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_FRONT_RIGHT);
          else if (bufferBit == BACK_LEFT_BIT)
-            (*ctx->Driver.SetBuffer)( ctx, GL_BACK_LEFT);
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_BACK_LEFT);
          else
-            (*ctx->Driver.SetBuffer)( ctx, GL_BACK_RIGHT);
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_BACK_RIGHT);
 
          /* make copy of incoming indexes */
          MEMCPY( indexTmp, indexes, n * sizeof(GLuint) );
@@ -166,7 +159,7 @@ static void multi_write_index_span( GLcontext *ctx, GLuint n,
    }
 
    /* restore default dest buffer */
-   (void) (*ctx->Driver.SetBuffer)( ctx, ctx->Color.DriverDrawBuffer);
+   (void) (*ctx->Driver.SetDrawBuffer)( ctx, ctx->Color.DriverDrawBuffer);
 }
 
 
@@ -226,15 +219,13 @@ void gl_write_index_span( GLcontext *ctx,
 
    if (ctx->Stencil.Enabled) {
       /* first stencil test */
-      if (gl_stencil_span( ctx, n, x, y, mask )==0) {
+      if (gl_stencil_and_depth_test_span(ctx, n, x, y, z, mask) == GL_FALSE) {
 	 return;
       }
-      /* depth buffering w/ stencil */
-      gl_depth_stencil_span( ctx, n, x, y, z, mask );
    }
    else if (ctx->Depth.Test) {
       /* regular depth testing */
-      if ((*ctx->Driver.DepthTestSpan)( ctx, n, x, y, z, mask )==0)  return;
+      if (gl_depth_test_span( ctx, n, x, y, z, mask )==0)  return;
    }
 
    if (ctx->RasterMask & MULTI_DRAW_BIT) {
@@ -288,15 +279,13 @@ void gl_write_monoindex_span( GLcontext *ctx,
 
    if (ctx->Stencil.Enabled) {
       /* first stencil test */
-      if (gl_stencil_span( ctx, n, x, y, mask )==0) {
+      if (gl_stencil_and_depth_test_span(ctx, n, x, y, z, mask) == GL_FALSE) {
 	 return;
       }
-      /* depth buffering w/ stencil */
-      gl_depth_stencil_span( ctx, n, x, y, z, mask );
    }
    else if (ctx->Depth.Test) {
       /* regular depth testing */
-      if ((*ctx->Driver.DepthTestSpan)( ctx, n, x, y, z, mask )==0)  return;
+      if (gl_depth_test_span( ctx, n, x, y, z, mask )==0)  return;
    }
 
    if (ctx->Color.DrawBuffer == GL_NONE) {
@@ -378,20 +367,20 @@ static void multi_write_rgba_span( GLcontext *ctx, GLuint n,
          ASSERT(n < MAX_WIDTH);
 
          if (bufferBit == FRONT_LEFT_BIT) {
-            (*ctx->Driver.SetBuffer)( ctx, GL_FRONT_LEFT);
-            ctx->Buffer->Alpha = ctx->Buffer->FrontLeftAlpha;
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_FRONT_LEFT);
+            ctx->DrawBuffer->Alpha = ctx->DrawBuffer->FrontLeftAlpha;
          }
          else if (bufferBit == FRONT_RIGHT_BIT) {
-            (*ctx->Driver.SetBuffer)( ctx, GL_FRONT_RIGHT);
-            ctx->Buffer->Alpha = ctx->Buffer->FrontRightAlpha;
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_FRONT_RIGHT);
+            ctx->DrawBuffer->Alpha = ctx->DrawBuffer->FrontRightAlpha;
          }
          else if (bufferBit == BACK_LEFT_BIT) {
-            (*ctx->Driver.SetBuffer)( ctx, GL_BACK_LEFT);
-            ctx->Buffer->Alpha = ctx->Buffer->BackLeftAlpha;
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_BACK_LEFT);
+            ctx->DrawBuffer->Alpha = ctx->DrawBuffer->BackLeftAlpha;
          }
          else {
-            (*ctx->Driver.SetBuffer)( ctx, GL_BACK_RIGHT);
-            ctx->Buffer->Alpha = ctx->Buffer->BackRightAlpha;
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_BACK_RIGHT);
+            ctx->DrawBuffer->Alpha = ctx->DrawBuffer->BackRightAlpha;
          }
 
          /* make copy of incoming colors */
@@ -417,7 +406,7 @@ static void multi_write_rgba_span( GLcontext *ctx, GLuint n,
    }
 
    /* restore default dest buffer */
-   (void) (*ctx->Driver.SetBuffer)( ctx, ctx->Color.DriverDrawBuffer );
+   (void) (*ctx->Driver.SetDrawBuffer)( ctx, ctx->Color.DriverDrawBuffer );
 }
 
 
@@ -482,16 +471,14 @@ void gl_write_rgba_span( GLcontext *ctx,
 
    if (ctx->Stencil.Enabled) {
       /* first stencil test */
-      if (gl_stencil_span( ctx, n, x, y, mask )==0) {
+      if (gl_stencil_and_depth_test_span(ctx, n, x, y, z, mask) == GL_FALSE) {
 	 return;
       }
-      /* depth buffering w/ stencil */
-      gl_depth_stencil_span( ctx, n, x, y, z, mask );
       write_all = GL_FALSE;
    }
    else if (ctx->Depth.Test) {
       /* regular depth testing */
-      GLuint m = (*ctx->Driver.DepthTestSpan)( ctx, n, x, y, z, mask );
+      GLuint m = gl_depth_test_span( ctx, n, x, y, z, mask );
       if (m==0) {
          return;
       }
@@ -594,16 +581,14 @@ void gl_write_monocolor_span( GLcontext *ctx,
 
    if (ctx->Stencil.Enabled) {
       /* first stencil test */
-      if (gl_stencil_span( ctx, n, x, y, mask )==0) {
+      if (gl_stencil_and_depth_test_span(ctx, n, x, y, z, mask) == GL_FALSE) {
 	 return;
       }
-      /* depth buffering w/ stencil */
-      gl_depth_stencil_span( ctx, n, x, y, z, mask );
       write_all = GL_FALSE;
    }
    else if (ctx->Depth.Test) {
       /* regular depth testing */
-      GLuint m = (*ctx->Driver.DepthTestSpan)( ctx, n, x, y, z, mask );
+      GLuint m = gl_depth_test_span( ctx, n, x, y, z, mask );
       if (m==0) {
          return;
       }
@@ -785,16 +770,14 @@ void gl_write_texture_span( GLcontext *ctx,
 
    if (ctx->Stencil.Enabled) {
       /* first stencil test */
-      if (gl_stencil_span( ctx, n, x, y, mask )==0) {
+      if (gl_stencil_and_depth_test_span(ctx, n, x, y, z, mask) == GL_FALSE) {
 	 return;
       }
-      /* depth buffering w/ stencil */
-      gl_depth_stencil_span( ctx, n, x, y, z, mask );
       write_all = GL_FALSE;
    }
    else if (ctx->Depth.Test) {
       /* regular depth testing */
-      GLuint m = (*ctx->Driver.DepthTestSpan)( ctx, n, x, y, z, mask );
+      GLuint m = gl_depth_test_span( ctx, n, x, y, z, mask );
       if (m==0) {
          return;
       }
@@ -912,16 +895,14 @@ void gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
 
    if (ctx->Stencil.Enabled) {
       /* first stencil test */
-      if (gl_stencil_span( ctx, n, x, y, mask )==0) {
+      if (gl_stencil_and_depth_test_span(ctx, n, x, y, z, mask) == GL_FALSE) {
 	 return;
       }
-      /* depth buffering w/ stencil */
-      gl_depth_stencil_span( ctx, n, x, y, z, mask );
       write_all = GL_FALSE;
    }
    else if (ctx->Depth.Test) {
       /* regular depth testing */
-      GLuint m = (*ctx->Driver.DepthTestSpan)( ctx, n, x, y, z, mask );
+      GLuint m = gl_depth_test_span( ctx, n, x, y, z, mask );
       if (m==0) {
          return;
       }
@@ -960,13 +941,15 @@ void gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
  * Read RGBA pixels from frame buffer.  Clipping will be done to prevent
  * reading ouside the buffer's boundaries.
  */
-void gl_read_rgba_span( GLcontext *ctx,
+void gl_read_rgba_span( GLcontext *ctx, GLframebuffer *buffer,
                         GLuint n, GLint x, GLint y,
                         GLubyte rgba[][4] )
 {
-   if (y<0 || y>=ctx->Buffer->Height || x>=ctx->Buffer->Width) {
+   if (y < 0 || y >= buffer->Height
+       || x + (GLint) n < 0 || x >= buffer->Width) {
       /* completely above, below, or right */
-      MEMSET( rgba, 0, 4 * n * sizeof(GLubyte)); /*XXX maybe leave undefined?*/
+      /* XXX maybe leave undefined? */
+      MEMSET( rgba, 0, 4 * n * sizeof(GLubyte));
    }
    else {
       GLint skip, length;
@@ -978,14 +961,14 @@ void gl_read_rgba_span( GLcontext *ctx,
             /* completely left of window */
             return;
          }
-         if (length > ctx->Buffer->Width) {
-            length = ctx->Buffer->Width;
+         if (length > buffer->Width) {
+            length = buffer->Width;
          }
       }
-      else if ((GLint) (x + n) > ctx->Buffer->Width) {
+      else if ((GLint) (x + n) > buffer->Width) {
          /* right edge clipping */
          skip = 0;
-         length = ctx->Buffer->Width - x;
+         length = buffer->Width - x;
          if (length < 0) {
             /* completely to right of window */
             return;
@@ -1011,16 +994,13 @@ void gl_read_rgba_span( GLcontext *ctx,
  * Read CI pixels from frame buffer.  Clipping will be done to prevent
  * reading ouside the buffer's boundaries.
  */
-void gl_read_index_span( GLcontext *ctx,
+void gl_read_index_span( GLcontext *ctx, GLframebuffer *buffer,
                          GLuint n, GLint x, GLint y, GLuint indx[] )
 {
-   register GLuint i;
-
-   if (y<0 || y>=ctx->Buffer->Height || x>=ctx->Buffer->Width) {
+   if (y < 0 || y >= buffer->Height
+       || x + (GLint) n < 0 || x >= buffer->Width) {
       /* completely above, below, or right */
-      for (i=0;i<n;i++) {
-	 indx[i] = 0;
-      }
+      MEMSET(indx, 0, n * sizeof(GLuint));
    }
    else {
       GLint skip, length;
@@ -1032,14 +1012,14 @@ void gl_read_index_span( GLcontext *ctx,
             /* completely left of window */
             return;
          }
-         if (length > ctx->Buffer->Width) {
-            length = ctx->Buffer->Width;
+         if (length > buffer->Width) {
+            length = buffer->Width;
          }
       }
-      else if ((GLint) (x + n) > ctx->Buffer->Width) {
+      else if ((GLint) (x + n) > buffer->Width) {
          /* right edge clipping */
          skip = 0;
-         length = ctx->Buffer->Width - x;
+         length = buffer->Width - x;
          if (length < 0) {
             /* completely to right of window */
             return;

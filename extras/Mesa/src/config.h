@@ -1,10 +1,10 @@
-/* $Id: config.h,v 1.1 1999/12/14 01:31:24 robin Exp $ */
+/* $Id: config.h,v 1.2 2000/02/08 17:17:03 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,10 +25,6 @@
  */
 
 
-
-
-
-
 /*
  * Tunable configuration parameters.
  */
@@ -42,12 +38,10 @@
 #include "conf.h"
 #endif
 
-/*
- *
- * OpenGL implementation limits
- *
- */
 
+/*
+ * OpenGL implementation limits
+ */
 
 /* Maximum modelview matrix stack depth: */
 #define MAX_MODELVIEW_STACK_DEPTH 32
@@ -116,10 +110,9 @@
 #define MAX_ARRAY_LOCK_SIZE 3000
 
 
+
 /*
- *
  * Mesa-specific parameters
- *
  */
 
 
@@ -129,6 +122,9 @@
 #define ACCUM_BITS 16
 
 
+/*
+ * Bits per depth buffer value:  16 or 32
+ */
 #ifdef MESAD3D
    /* Mesa / Direct3D driver only */
    extern float g_DepthScale, g_MaxDepth;
@@ -136,9 +132,6 @@
 #  define DEPTH_SCALE 	g_DepthScale
 #  define MAX_DEPTH 	g_MaxDepth
 #else
-   /*
-    * Bits per depth buffer value:  16 or 32
-    */
 #  define DEPTH_BITS 16
 #  if DEPTH_BITS==16
 #     define MAX_DEPTH 0xffff
@@ -180,14 +173,11 @@
  * this number, though things may go better for you if you choose a
  * value of 12n + 3.  
  */
-
 #define VB_START  3
 
-#if defined(FX) && !defined(MITS)
-#  define VB_MAX 72 + VB_START  /* better performance */
-#else
-#  define VB_MAX 480 + VB_START
-#endif
+#define VB_MAX (216 + VB_START)
+
+
 
 /*
  * Actual vertex buffer size.
@@ -201,22 +191,13 @@
 #define VB_SIZE  (VB_MAX + VB_MAX_CLIPPED_VERTS)
 
 
-/*
- *
- * For X11 driver only:
- *
- */
-
-/*
- * When defined, use 6x6x6 dithering instead of 5x9x5.
- * 5x9x5 better for general colors, 6x6x6 better for grayscale.
- */
-/*#define DITHER666*/
-
-
 
 typedef struct gl_context GLcontext;
 
-extern void gl_read_config_file( struct gl_context *ctx );
+extern void
+gl_read_config_file( struct gl_context *ctx );
+
+extern void
+gl_register_config_var(const char *name, void (*notify)( const char *, int ));
 
 #endif

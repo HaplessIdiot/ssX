@@ -1,8 +1,8 @@
-/* $Id: vb.c,v 1.1 1999/12/14 01:31:57 robin Exp $ */
+/* $Id: vb.c,v 1.2 2000/02/08 17:17:42 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,18 +25,11 @@
  */
 
 
-
-
-
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <stdlib.h>
-#include <stdio.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
+#include "mem.h"
 #include "types.h"
 #include "vb.h"
 #include "vbxform.h"
@@ -262,8 +255,9 @@ struct immediate *gl_immediate_alloc( GLcontext *ctx )
       return IM;
    }
 
-   IM= (struct immediate *) MALLOC(sizeof(*IM));
-   if (!IM) return 0;
+   IM = MALLOC_STRUCT(immediate);
+   if (!IM)
+      return 0;
 
    IM->id = id++;
    IM->ref_count = 1;

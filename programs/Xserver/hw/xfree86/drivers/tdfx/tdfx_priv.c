@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.2 1999/12/16 02:26:29 robin Exp $ */
 
 
 #include <sys/time.h>
@@ -13,9 +13,8 @@
   Memory layout of card is as follows:
 
   000000-003fff: Cursor 
-  001000-010fff: Fifo0 (3D fifo)
-  011000-020fff: Fifo1 (2D fifo)
-  021000-420fff: Texture maps
+  001000-xxxxxx: Fifo (Min of CMDFIFO pages)
+  xxxxxx-420fff: Texture maps
   421000- A-1  : Framebuffer
    A    - B-1  : Offscreen pixmaps
    B    - C-1  : Back buffer
@@ -42,6 +41,31 @@ void TDFXSendNOPPrivate(TDFXPtr pTDFX)
   TDFXSendNOPPrivate3D(pTDFX);
 }
 
+void InstallFifo(TDFXPtr pTDFX)
+{
+  /* Install the fifo */
+  TDFXWriteLongMMIO(pTDFX, SST_FIFO_BASEADDR0, pTDFX->fifoOffset>>12);
+  TDFXWriteLongMMIO(pTDFX, SST_FIFO_BUMP0, 0);
+  TDFXWriteLongMMIO(pTDFX, SST_FIFO_RDPTRL0, pTDFX->fifoOffset);
+  TDFXWriteLongMMIO(pTDFX, SST_FIFO_RDPTRH0, 0);
+  TDFXWriteLongMMIO(pTDFX, SST_FIFO_AMIN0, pTDFX->fifoOffset-4);
+  TDFXWriteLongMMIO(pTDFX, SST_FIFO_AMAX0, pTDFX->fifoOffset-4);
+  TDFXWriteLongMMIO(pTDFX, SST_FIFO_DEPTH0, 0);
+  TDFXWriteLongMMIO(pTDFX, SST_FIFO_HOLECNT0, 0);
+  if (pTDFX->PciInfo->chipType == PCI_CHIP_BANSHEE) 
+    TDFXWriteLongMMIO(pTDFX, SST_FIFO_FIFOTHRESH, (0x9<<5) | 0x2);
+  else 
+    TDFXWriteLongMMIO(pTDFX, SST_FIFO_FIFOTHRESH, (0xf<<5) | 0x8);
+  TDFXWriteLongMMIO(pTDFX, SST_FIFO_BASESIZE0, ((pTDFX->fifoSize>>12)-1) | 
+		    SST_EN_CMDFIFO);
+  /* Set the internal state */
+  pTDFX->fifoRead = pTDFX->fifoBase;
+  pTDFX->fifoPtr = pTDFX->fifoBase;
+  pTDFX->fifoSlots = (pTDFX->fifoSize>>2) - 1;
+  pTDFX->fifoEnd = pTDFX->fifoBase+pTDFX->fifoSlots;
+  TDFXSendNOPPrivate(pTDFX);
+}
+
 void TDFXResetFifo(TDFXPtr pTDFX)
 {
   int oldValue;
@@ -65,25 +89,7 @@ void TDFXResetFifo(TDFXPtr pTDFX)
     xf86getsecs(&end_sec, &dummy);
   } while (end_sec-start_sec<2);
   TDFXWriteLongMMIO(pTDFX, MISCINIT1, oldValue);
-  /* Reset the fifo */
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_BASEADDR0, pTDFX->fifoOffset>>12);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_BUMP0, 0);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_RDPTRL0, pTDFX->fifoOffset);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_RDPTRH0, 0);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_AMIN0, pTDFX->fifoOffset-4);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_AMAX0, pTDFX->fifoOffset-4);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_DEPTH0, 0);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_HOLECNT0, 0);
-  if (pTDFX->PciInfo->chipType == PCI_CHIP_BANSHEE) 
-    TDFXWriteLongMMIO(pTDFX, SST_FIFO_FIFOTHRESH, (0x9<<5) | 0x2);
-  else 
-    TDFXWriteLongMMIO(pTDFX, SST_FIFO_FIFOTHRESH, (0xf<<5) | 0x8);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_BASESIZE0, (CMDFIFO_PAGES-1) | SST_EN_CMDFIFO);
-  /* Reset the internal state */
-  pTDFX->fifoRead = pTDFX->fifoBase;
-  pTDFX->fifoPtr = pTDFX->fifoBase;
-  pTDFX->fifoSlots = CMDFIFO_PAGES*4096/4 - 1;
-  TDFXSendNOPPrivate(pTDFX);
+  InstallFifo(pTDFX);
 }
 
 /*
@@ -133,6 +139,7 @@ Bool TDFXInitPrivate(ScreenPtr pScreen)
 {
   ScrnInfoPtr pScrn;
   TDFXPtr pTDFX;
+  int memRemaining, texSize, fifoSize, screenSizeInTiles;
 
   pScrn = xf86Screens[pScreen->myNum];
   pTDFX=TDFXPTR(pScrn);
@@ -140,37 +147,45 @@ Bool TDFXInitPrivate(ScreenPtr pScreen)
   pTDFX->fifoMirrorBase=0;
 #endif
   pTDFX->fifoOffset = (pTDFX->lowMemLoc+4095)&~0xFFF;
-  pTDFX->lowMemLoc = pTDFX->fifoOffset+CMDFIFO_PAGES*4096;
+  /* Start with all the ram */
+  memRemaining=pScrn->videoRam<<10;
+  /* Remove the cursor space */
+  memRemaining-=pTDFX->fifoOffset;
+  /* Remove one scanline for scanline alignment of front buffer */
+  memRemaining-=pScrn->virtualX*2;
+  /* Remove the main screen and offscreen pixmaps */
+  memRemaining-=pScrn->virtualX*(pScrn->virtualY+128)*2;
+  /* Bump down to the next page */
+  memRemaining=memRemaining&~0xFFF;
+  /* Remove the back and Z buffers */
+  screenSizeInTiles=(pScrn->virtualX*pScrn->virtualY+4095)&~0xFFF;
+  screenSizeInTiles*=2;
+  memRemaining-=screenSizeInTiles*2;
+
+  /* Make it round down */
+  texSize=memRemaining&~0xFFFFF;
+  /* Make sure there's enough room for the fifo */
+  if (memRemaining-texSize<CMDFIFO_PAGES<<12)
+    texSize=(memRemaining-(CMDFIFO_PAGES<<12))&~0xFFFFF;
+  /* Fifo uses the remaining space up to 255 pages */
+  fifoSize = (memRemaining-texSize)&~0xFFF;
+  if (fifoSize>255<<12) fifoSize=255<<12;
+  pTDFX->lowMemLoc = pTDFX->fifoOffset+fifoSize;
   pTDFX->texOffset = pTDFX->lowMemLoc;
-  pTDFX->texSize = 8*1024*1024;
+  xf86DrvMsg(pScreen->myNum, X_INFO, "Textures Memory %0.02f MB\n",
+	     (float)texSize/1024.0/1024.0);
+  pTDFX->texSize = texSize;
   pTDFX->lowMemLoc += pTDFX->texSize;
-  /* Find the location of the box given to us and round up to page boundary */
-  pTDFX->fifoSize = CMDFIFO_PAGES*4096;
+
+  pTDFX->fifoSize = fifoSize;
   pTDFX->fifoBase = (uint32*)(pTDFX->FbBase+pTDFX->fifoOffset);
-  pTDFX->fifoRead = pTDFX->fifoBase;
-  pTDFX->fifoPtr = pTDFX->fifoBase;
-  pTDFX->fifoSlots = CMDFIFO_PAGES*4096/4 - 1;
-  pTDFX->fifoEnd = pTDFX->fifoBase+pTDFX->fifoSlots;
 #ifdef DEBUG_FIFO
-  pTDFX->fifoMirrorBase = xalloc(pTDFX->fifoSlots*sizeof(uint32));
+  pTDFX->fifoMirrorBase = xalloc(pTDFX->fifoSize);
   pTDFX->fifoMirrorPtr = pTDFX->fifoMirrorBase;
 #endif
 
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_BASEADDR0, pTDFX->fifoOffset>>12);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_BUMP0, 0);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_RDPTRL0, pTDFX->fifoOffset);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_RDPTRH0, 0);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_AMIN0, pTDFX->fifoOffset-4);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_AMAX0, pTDFX->fifoOffset-4);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_DEPTH0, 0);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_HOLECNT0, 0);
-  if (pTDFX->PciInfo->chipType == PCI_CHIP_BANSHEE) 
-    TDFXWriteLongMMIO(pTDFX, SST_FIFO_FIFOTHRESH, (0x9<<5) | 0x2);
-  else 
-    TDFXWriteLongMMIO(pTDFX, SST_FIFO_FIFOTHRESH, (0xf<<5) | 0x8);
-  TDFXWriteLongMMIO(pTDFX, SST_FIFO_BASESIZE0, (CMDFIFO_PAGES-1) | SST_EN_CMDFIFO);
-
   pTDFX->sync=TDFXSyncFifo;
+  InstallFifo(pTDFX);
   return TRUE;
 }
 
@@ -236,11 +251,7 @@ void TDFXSwapContextPrivate(ScreenPtr pScreen)
       (sPriv->fifoRead<pTDFX->fifoOffset) ||
       (sPriv->fifoRead>(int)pTDFX->fifoOffset+pTDFX->fifoSize)) {
     ErrorF("Invalid offsets passed between client and X server\n");
-    TDFXWriteLongMMIO(pTDFX, SST_FIFO_BASESIZE0, 0);
-    TDFXWriteLongMMIO(pTDFX, MISCINIT1, 0x23); /* Reset some things */
-    pTDFX->fifoRead = pTDFX->fifoPtr = pTDFX->fifoBase;
-    TDFXWriteLongMMIO(pTDFX, SST_FIFO_BASESIZE0, 
-		      (CMDFIFO_PAGES-1) | SST_EN_CMDFIFO);
+    ResetFifo(pTDFX);
   } else {
     pTDFX->fifoPtr = (unsigned int *)(pTDFX->FbBase+sPriv->fifoPtr);
     pTDFX->fifoRead = (unsigned int *)(pTDFX->FbBase+sPriv->fifoRead);

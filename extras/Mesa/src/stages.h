@@ -1,8 +1,8 @@
-/* $Id: stages.h,v 1.1 1999/12/14 01:31:51 robin Exp $ */
+/* $Id: stages.h,v 1.2 2000/02/08 17:17:36 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 

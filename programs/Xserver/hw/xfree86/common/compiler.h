@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.47 1999/12/27 00:39:41 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.49 2000/02/08 13:13:03 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -554,7 +554,7 @@ outw(unsigned short port, unsigned short value)
 		"sthbrx %0,%1,%2\n\t"
 		"eieio"
                   : 
-		  : "r" (value), "r" (ioBase), "r" (port) 
+		  : "r" (value), "b" (ioBase), "r" (port) 
 		  : "memory"
         );
 }
@@ -566,7 +566,7 @@ outl(unsigned short port, unsigned int value)
 		"stwbrx %0,%1,%2\n\t"
 		"eieio"
                   : 
-		  : "r" (value), "r" (ioBase), "r" (port) 
+		  : "r" (value), "b" (ioBase), "r" (port) 
 		  : "memory"
         );
 }
@@ -589,7 +589,7 @@ inw(unsigned short port)
         __asm__ ("lhbrx %0,%1,%2\n\t"
         	 "eieio"
                   : "=r" (val) 
-                  : "r" (ioBase), "r" (port)
+                  : "b" (ioBase), "r" (port)
         );
 	return(val);
 }
@@ -602,7 +602,7 @@ inl(unsigned short port)
         __asm__ ("lwbrx %0,%1,%2\n\t"
         	 "eieio"
                   : "=r" (val) 
-                  : "r" (ioBase), "r" (port)
+                  : "b" (ioBase), "r" (port)
         );
 	return(val);
 }

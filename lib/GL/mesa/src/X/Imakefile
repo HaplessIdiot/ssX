@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.2 1999/06/27 14:07:27 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.3 1999/12/14 01:33:34 robin Exp $
 XCOMM $PI: xc/lib/GL/mesa/src/X/Imakefile,v 1.4 1999/06/21 05:13:55 martin Exp $
 
 #define DoNormalLib NormalLibGlx
@@ -11,6 +11,8 @@ LinkSourceFile(xmesa1.c, ../../../../../extras/Mesa/src/X)
 LinkSourceFile(xmesa2.c, ../../../../../extras/Mesa/src/X)
 LinkSourceFile(xmesa3.c, ../../../../../extras/Mesa/src/X)
 LinkSourceFile(xmesa4.c, ../../../../../extras/Mesa/src/X)
+LinkSourceFile(xmesaP.h, ../../../../../extras/Mesa/src/X)
+LinkSourceFile(glxheader.h, ../../../../../extras/Mesa/src/X)
 
 
 #if Malloc0ReturnsNull
@@ -19,16 +21,10 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
 #if BuildXF86DRI
   DRI_DEFINES = GlxDefines
- DRI_INCLUDES = -I../../../dri -I../../../glx \
+ DRI_INCLUDES = -I../../../dri -I../../../glx -I../../dri \
 		-I$(TOP)/include -I$(TOP)/include/GL \
 		-I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri
 #endif
-
-LinkSourceFile(xmesa1.c, ../../../../../extras/Mesa/src/X)
-LinkSourceFile(xmesa2.c, ../../../../../extras/Mesa/src/X)
-LinkSourceFile(xmesa3.c, ../../../../../extras/Mesa/src/X)
-LinkSourceFile(xmesa4.c, ../../../../../extras/Mesa/src/X)
-LinkSourceFile(xmesaP.h, ../../../../../extras/Mesa/src/X)
 
 MESA_INCLUDES = -I. -I.. -I../../include
 

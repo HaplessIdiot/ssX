@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_pci.c,v 3.2 1999/12/06 03:54:34 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_pci.c,v 3.3 1999/12/31 15:38:33 robin Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -38,8 +38,10 @@ xf86GetPciSizeFromOS(PCITAG tag, int index, int* bits)
 	    num = sscanf(res,"%02x%02x\t%*04x%*04x\t%*x"ILF LF,
 			 &bus,&devfn,&size[0],&size[1],&size[2],&size[3],
 			 &size[4],&size[5],&size[6]);
-	    if (num != 9)   /* appearantly not 2.3 style */
+	    if (num != 9) {  /* apparantly not 2.3 style */ 
+		fclose(file);
 		return FALSE;
+	    }
 	    dev = devfn >> 3;
 	    fn = devfn & 0x7;
 	    if (tag == pciTag(bus,dev,fn)) {
@@ -51,10 +53,12 @@ xf86GetPciSizeFromOS(PCITAG tag, int index, int* bits)
 			(*bits)++;
 		    }
 		}
+		fclose(file);
 		return TRUE;
 	    }
 	}
     } while (res);
 
+    fclose(file);
     return FALSE;
 }

@@ -1,8 +1,8 @@
-/* $Id: logic.c,v 1.1 1999/12/14 01:31:38 robin Exp $ */
+/* $Id: logic.c,v 1.2 2000/02/08 17:17:22 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,17 +25,10 @@
  */
 
 
-
-
-
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <stdlib.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "alphabuf.h"
 #include "context.h"
 #include "logic.h"
@@ -47,8 +40,10 @@
 
 
 
-void gl_LogicOp( GLcontext *ctx, GLenum opcode )
+void
+_mesa_LogicOp( GLenum opcode )
 {
+   GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glLogicOp");
    switch (opcode) {
       case GL_CLEAR:
@@ -375,7 +370,7 @@ void gl_logicop_rgba_span( GLcontext *ctx,
                            GLubyte rgba[][4], const GLubyte mask[] )
 {
    GLubyte dest[MAX_WIDTH][4];
-   gl_read_rgba_span( ctx, n, x, y, dest );
+   gl_read_rgba_span( ctx, ctx->DrawBuffer, n, x, y, dest );
    rgba_logicop( ctx, n, mask, (GLuint *) rgba, (const GLuint *) dest );
 }
 

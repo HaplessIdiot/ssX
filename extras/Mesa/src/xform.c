@@ -1,8 +1,8 @@
-/* $Id: xform.c,v 1.1 1999/12/14 01:32:02 robin Exp $ */
+/* $Id: xform.c,v 1.2 2000/02/08 17:17:47 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  *
@@ -25,8 +25,6 @@
  */
 
 
-/* $XFree86: xc/lib/GL/mesa/src/xform.c,v 1.4 1999/04/04 00:20:36 dawes Exp $ */
-
 /*
  * Matrix/vertex/vector transformation stuff
  *
@@ -41,20 +39,14 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#else
-#include "GL/xf86glx.h"
-#endif
-#include "vb.h"
+#include "glheader.h"
 #include "context.h"
 #include "mmath.h"
 #include "types.h"
 #include "vb.h"
 #include "xform.h"
 #endif
+
 
 #ifdef DEBUG
 #include "debug_xform.h"

@@ -20,7 +20,7 @@ FILTER=CXXFILT			# C++ symbol demangler
 AWK=nawk			# Awk
 
 XCOMM For nm, cat, pr, expand, awk, c++filt
-PATH=/usr/bin:/bin:/usr/ccs/bin:/usr/ucb:/opt/SUNWspro/bin
+PATH=/usr/bin:/bin:/usr/ccs/bin:/usr/ucb:$PATH
 
 XCOMM Try to detect broken versions of c++filt.
 if [ `echo _okay | ${FILTER:-cat}` != "_okay" ]; then
@@ -49,12 +49,12 @@ echo "# "
 XCOMM Extract the globally visible symbols from target library
 XCOMM The NMLIST generated here is later used to cross-check the symbols in the
 XCOMM nm stopped working on Solaris 2.5, use dump instead.
-XCOMM nm -p $1 | $AWK '/ [ TDBS] /{print $3}' > $NMLIST
-/usr/ccs/bin/dump -t -v $1 | $AWK '/(FUNC|OBJT).(GLOB|WEAK)/{print $8}' > $NMLIST
+nm -p $1 | $AWK '/ [ TDBS] /{print $3}' > $NMLIST
+XCOMM /usr/ccs/bin/dump -t -v $1 | $AWK '/(FUNC|OBJT).(GLOB|WEAK)/{print $8}' > $NMLIST
 
 XCOMM Extract the globally visible symbols from target library
 XCOMM The NMLIST generated here is later used to cross-check the symbols in the
-${FILTER:-cat} $NMLIST > $FILTLIST
+${FILTER:-cat} < $NMLIST > $FILTLIST
 
 XCOMM Clean up the export-list description file.  Sort the directives.
 $AWK '

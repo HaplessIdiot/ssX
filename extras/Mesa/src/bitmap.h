@@ -1,4 +1,4 @@
-/* $Id: bitmap.h,v 1.1 1999/12/14 01:31:21 robin Exp $ */
+/* $Id: bitmap.h,v 1.2 2000/02/08 17:17:01 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -32,12 +32,11 @@
 #include "types.h"
 
 
-extern void gl_Bitmap( GLcontext *ctx,
-                       GLsizei width, GLsizei height,
-                       GLfloat xorig, GLfloat yorig,
-                       GLfloat xmove, GLfloat ymove,
-                       const GLubyte *bitmap,
-                       const struct gl_pixelstore_attrib *packing );
+
+extern void
+_mesa_Bitmap( GLsizei width, GLsizei height,
+              GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove,
+              const GLubyte *bitmap );
 
 
 #endif

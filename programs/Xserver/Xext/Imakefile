@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/63 1997/11/24 16:48:40 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.29 2000/01/24 23:22:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.30 2000/01/31 19:33:25 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -40,6 +40,14 @@ SUBDIRS = extmod
 #if BuildXF86MiscExt
 XF86MISCSRCS = xf86misc.c
 XF86MISCOBJS = xf86misc.o
+#endif
+
+#if BuildXF86BigfontExt
+XF86BIGFSRCS = xf86bigfont.c
+XF86BIGFOBJS = xf86bigfont.o
+#if HasShm
+ SHM_DEFINES = -DHAS_SHM
+#endif
 #endif
 
 #if BuildXF86DGA
@@ -85,19 +93,20 @@ XF86MISCOBJS = xf86misc.o
        SRCS = shape.c $(SHMSRCS) $(MULTIBUFSRC) \
               mitmisc.c xtest.c xtest1di.c xtest1dd.c sleepuntil.c \
 	      bigreq.c sync.c $(SCRNSAVSRC) xcmisc.c $(VIDMODESRCS) \
-	      $(XF86MISCSRCS) $(XF86DGASRCS) $(SECURITYSRCS) \
+	      $(XF86MISCSRCS) $(XF86BIGFSRCS) $(XF86DGASRCS) $(SECURITYSRCS) \
 	      $(APPGROUPSRCS) xprint.c $(CUPSRCS) $(PNRXSRCS) $(DPMSSRCS) \
 	      $(EVISRCS) $(XVSRCS) $(XANTISRCS)
 
        OBJS = shape.o $(SHMOBJS) $(MULTIBUFOBJ) \
               mitmisc.o xtest.o xtest1di.o xtest1dd.o sleepuntil.o \
               bigreq.o sync.o $(SCRNSAVOBJ) xcmisc.o $(VIDMODEOBJS) \
-	      $(XF86MISCOBJS) $(XF86DGAOBJS) $(SECURITYOBJS) \
+	      $(XF86MISCOBJS) $(XF86BIGFOBJS) $(XF86DGAOBJS) $(SECURITYOBJS) \
 	      $(APPGROUPOBJS) xprint.o $(CUPOBJS) $(PNRXOBJS) $(DPMSOBJS) \
 	      $(EVIOBJS) $(XVOBJS) $(XANTIOBJS)
 
       SOBJS = $(SHMOBJS) $(APPGROUPOBJS) $(SECURITYOBJS) xprint.o \
-	      xtest.o xtest1di.o xtest1dd.o sleepuntil.o $(PNRXOBJS)
+	      xtest.o xtest1di.o xtest1dd.o sleepuntil.o $(PNRXOBJS) \
+	      $(XF86BIGFOBJS)
 
 XF86INCLUDES = -I$(XF86COMSRC)
     INCLUDES = -I. -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) \
@@ -122,6 +131,9 @@ NormalLintTarget($(SRCS))
 NormalLibraryTarget(exts,$(SOBJS))
 #endif
 
+#if BuildXF86BigfontExt
+SpecialCObjectRule(xf86bigfont,$(ICONFIGFILES),$(SHM_DEFINES))
+#endif
 #if BuildXCSecurity
 SpecialCObjectRule(security,$(ICONFIGFILES),$(POLICYFILEDEF))
 #endif

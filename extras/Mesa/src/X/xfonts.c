@@ -1,8 +1,8 @@
-/* $Id: xfonts.c,v 1.1 1999/12/14 01:32:11 robin Exp $ */
+/* $Id: xfonts.c,v 1.2 2000/02/08 17:18:13 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  *
@@ -43,8 +43,7 @@
 #include "GL/glx.h"
 #include "GL/xmesa.h"
 #include "context.h"
-#include "fakeglx.h"
-#include "macros.h"
+#include "mem.h"
 #include "xmesaP.h"
 
 /* Some debugging info.  */
@@ -338,7 +337,8 @@ void Fake_glXUseXFont( Font font, int first, int count, int listbase )
       width = ch->rbearing - ch->lbearing;
       height = ch->ascent + ch->descent;
       x0 = - ch->lbearing;
-      y0 = ch->descent - 1;
+      y0 = ch->descent - 0;  /* XXX used to subtract 1 here */
+                             /* but that caused a conformace failure */
       dx = ch->width;
       dy = 0;
 

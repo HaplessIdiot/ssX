@@ -1,4 +1,4 @@
-/* $Id: clip_tmp.h,v 1.1 1999/12/14 01:31:23 robin Exp $ */
+/* $Id: clip_tmp.h,v 1.2 2000/02/08 17:17:02 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -35,7 +35,7 @@
  * the case where the cliptest passes.  This isn't essential,
  * and an asm implementation needn't replicate that behaviour.
  */
-static GLvector4f * TAG(cliptest_points4)( GLvector4f *clip_vec, 
+static GLvector4f * _XFORMAPI TAG(cliptest_points4)( GLvector4f *clip_vec, 
 					   GLvector4f *proj_vec, 
 					   GLubyte clipMask[],
 					   GLubyte *orMask, 
@@ -54,7 +54,7 @@ static GLvector4f * TAG(cliptest_points4)( GLvector4f *clip_vec,
       const GLfloat cy = from[1];
       const GLfloat cz = from[2];
       const GLfloat cw = from[3];
-   #if defined(macintosh)
+#if defined(macintosh)
       /* on powerpc cliptest is 17% faster in this way. */
       GLuint mask;
       mask = (((cw < cx) << CLIP_RIGHT_SHIFT));
@@ -63,7 +63,7 @@ static GLvector4f * TAG(cliptest_points4)( GLvector4f *clip_vec,
       mask |= (((cw < -cy) << CLIP_BOTTOM_SHIFT));
       mask |= (((cw < cz) << CLIP_FAR_SHIFT));
       mask |= (((cw < -cz) << CLIP_NEAR_SHIFT));
-    #else /* !defined(macintosh)) */
+#else /* !defined(macintosh)) */
       GLubyte mask = 0;
       if (-cx + cw < 0) mask |= CLIP_RIGHT_BIT;
       if ( cx + cw < 0) mask |= CLIP_LEFT_BIT;
@@ -71,7 +71,7 @@ static GLvector4f * TAG(cliptest_points4)( GLvector4f *clip_vec,
       if ( cy + cw < 0) mask |= CLIP_BOTTOM_BIT;
       if (-cz + cw < 0) mask |= CLIP_FAR_BIT;
       if ( cz + cw < 0) mask |= CLIP_NEAR_BIT;
-    #endif /* defined(macintosh) */
+#endif /* defined(macintosh) */
 
       clipMask[i] = mask;
       if (mask) {
@@ -100,7 +100,7 @@ static GLvector4f * TAG(cliptest_points4)( GLvector4f *clip_vec,
    return proj_vec;
 }
 
-static GLvector4f * TAG(cliptest_points3)( GLvector4f *clip_vec, 
+static GLvector4f * _XFORMAPI TAG(cliptest_points3)( GLvector4f *clip_vec, 
 					   GLvector4f *proj_vec, 
 					   GLubyte clipMask[],
 					   GLubyte *orMask, 
@@ -134,7 +134,7 @@ static GLvector4f * TAG(cliptest_points3)( GLvector4f *clip_vec,
    return clip_vec;
 }
 
-static GLvector4f * TAG(cliptest_points2)( GLvector4f *clip_vec, 
+static GLvector4f * _XFORMAPI TAG(cliptest_points2)( GLvector4f *clip_vec, 
 					   GLvector4f *proj_vec, 
 					   GLubyte clipMask[],
 					   GLubyte *orMask, 

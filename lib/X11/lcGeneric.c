@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.6 1998/10/03 08:41:39 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.7 1999/05/09 10:50:40 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -528,6 +528,7 @@ XLCdGenericPart *gen;
             charsetd->xrm_encoding_name =
                 XrmStringToQuark(tmp);
         }
+        _XlcAddCT(name, charsetd->ct_sequence);
     }
 
 }

@@ -1,8 +1,8 @@
-/* $Id: xform.h,v 1.1 1999/12/14 01:32:02 robin Exp $ */
+/* $Id: xform.h,v 1.2 2000/02/08 17:17:47 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -34,6 +34,13 @@
 
 #include "types.h"
 
+#ifdef USE_X86_ASM
+#define _XFORMAPI _ASMAPI
+#define _XFORMAPIP _ASMAPIP
+#else
+#define _XFORMAPI
+#define _XFORMAPIP *
+#endif
 
 /*
  * Transform a point (column vector) by a matrix:   Q = M * P
@@ -103,12 +110,11 @@ extern void gl_init_transformation( void );
  * into a straight-forward matrix transformation, with asm acceleration
  * automatically available.  
  */
-typedef GLvector4f *(*clip_func)( GLvector4f *vClip, 
+typedef GLvector4f * (_XFORMAPIP clip_func)( GLvector4f *vClip,
 				  GLvector4f *vProj, 
 				  GLubyte clipMask[],
 				  GLubyte *orMask, 
 				  GLubyte *andMask );
-
 
 typedef void (*dotprod_func)( GLvector4f *out_vec, 
 			      GLuint elt,
@@ -128,7 +134,7 @@ typedef void (*vec_copy_func)( GLvector4f *to,
  *     when the mask byte is zero.  This is always present as a
  *     parameter, to allow a unified interface.  
  */
-typedef void (*transform_func)( GLvector4f *to_vec, 
+typedef void (_XFORMAPIP transform_func)( GLvector4f *to_vec,
 				const GLmatrix *mat, 
 				const GLvector4f *from_vec, 
 				const GLubyte *clipmask,

@@ -1,10 +1,10 @@
-/* $Id: vbindirect.c,v 1.1 1999/12/14 01:31:58 robin Exp $ */
+/* $Id: vbindirect.c,v 1.2 2000/02/08 17:17:44 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -29,13 +29,21 @@
  */
 
 
+#ifdef PC_HEADER
+#include "all.h"
+#else
+#include "glheader.h"
+#include "pb.h"
+#include "pipeline.h"
+#include "stages.h"
+#include "types.h"
 #include "vb.h"
 #include "vbcull.h"
+#include "vbindirect.h"
 #include "vbrender.h"
-#include "pipeline.h"
-#include "pb.h"
-#include "types.h"
-#include "stages.h"
+#endif
+
+
 
 static struct gl_prim_state next_lines[3] = {
    { 1, 2, 0, 0, &next_lines[1] },

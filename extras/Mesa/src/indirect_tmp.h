@@ -1,4 +1,4 @@
-/* $Id: indirect_tmp.h,v 1.1 1999/12/14 01:31:36 robin Exp $ */
+/* $Id: indirect_tmp.h,v 1.2 2000/02/08 17:17:20 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

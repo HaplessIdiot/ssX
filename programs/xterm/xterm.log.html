@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.42 2000/01/24 22:21:59 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.43 2000/01/29 18:58:42 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_125">Patch #125 - 2000/1/31 - XFree86 3.9.17c</A>
 <LI><A HREF="#xterm_124">Patch #124 - 2000/1/27 - XFree86 3.9.17b</A>
 <LI><A HREF="#xterm_123">Patch #123 - 2000/1/22 - XFree86 3.9.17a</A>
 <LI><A HREF="#xterm_122">Patch #122 - 1999/12/28 - XFree86 3.9.16f</A>
@@ -167,6 +168,41 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_125">Patch #125 - 2000/1/31 - XFree86 3.9.17c</A></H1>
+<ul>
+	<li>integrate patch by David Mathog
+	  &lt;mathog@seqaxp.bio.caltech.edu&gt; to make this work on OpenVMS
+
+	<li>rename some functions, e.g., <code>Index</code> to
+	  <code>xtermIndex</code> so that ports such as VMS which link
+	  externals ignoring case will not have library conflicts (reported by
+	  David Mathog).
+
+	<li>correct logic of <code>do_reversevideo()</code>, which did not
+	  update the corresponding popup menu check mark (reported by David
+	  Mathog, this was a detail overlooked in patch #94).
+
+	<li>change TRACE macro so semicolon is not within definition, making
+	  <em>indent</em> and similar programs work better.
+
+	<li>add <code>depend</code> rule to Makefile.in
+
+	<li>modify logic of boldColors resource to suppress it if an extended
+	  color control has been used, e.g., for 88-color or 256-color mode
+	  (patch by Todd Larason).
+
+	<li>revise logic that handles menus and input translation for keyboard
+	  type so only one can be selected at a time.
+
+	<li>restore kdch1=\177 for the Sun function-key type, and make the
+	  the Delete key send DEL (\177) if the oldXtermFKeys resource is set.
+
+	<li>rephrase logic and ifdef's for POSIX VDISABLE to avoid preprocessor
+	  expression that will not compile on NetBSD/x86 1.4.1 (reported by
+	  Takaaki Nomura &lt;amadeus@yk.rim.or.jp&gt;).
+
+</ul>
 
 <H1><A NAME="xterm_124">Patch #124 - 2000/1/27 - XFree86 3.9.17b</A></H1>
 <ul>

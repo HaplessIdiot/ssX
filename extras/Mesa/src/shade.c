@@ -1,8 +1,8 @@
-/* $Id: shade.c,v 1.1 1999/12/14 01:31:49 robin Exp $ */
+/* $Id: shade.c,v 1.2 2000/02/08 17:17:34 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -26,24 +26,17 @@
 
 
 
-
-
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <math.h>
-#include <stdio.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "light.h"
 #include "macros.h"
 #include "mmath.h"
-#include "shade.h"
 #include "pipeline.h"
-#include "types.h"
+#include "shade.h"
 #include "simple_list.h"
+#include "types.h"
 #endif
 
 
@@ -373,4 +366,3 @@ void gl_shade_rastpos( GLcontext *ctx,
    }
 
 }
-

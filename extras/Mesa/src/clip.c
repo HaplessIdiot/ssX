@@ -1,8 +1,8 @@
-/* $Id: clip.c,v 1.1 1999/12/14 01:31:22 robin Exp $ */
+/* $Id: clip.c,v 1.2 2000/02/08 17:17:01 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,19 +25,10 @@
  */
 
 
-
-
-
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "clip.h"
 #include "context.h"
 #include "macros.h"
@@ -49,15 +40,6 @@
 #endif
 
 
-
-
-#define CLIP_RGBA0    0x1
-#define CLIP_RGBA1    0x2
-#define CLIP_TEX0     0x4
-#define CLIP_TEX1     0x8
-#define CLIP_INDEX0   0x10
-#define CLIP_INDEX1   0x20
-#define CLIP_FOG_COORD 0x40
 
 
 /* Linear interpolation between A and B: */
@@ -76,7 +58,16 @@ do {								\
 } while(0)
    
 
-static clip_interp_func clip_interp_tab[0x80]; 
+
+
+#define CLIP_RGBA0    0x1
+#define CLIP_RGBA1    0x2
+#define CLIP_TEX0     0x4
+#define CLIP_TEX1     0x8
+#define CLIP_INDEX0   0x10
+#define CLIP_INDEX1   0x20
+
+static clip_interp_func clip_interp_tab[0x40]; 
 
 #define IND 0
 #define NAME clip_nil
@@ -122,50 +113,6 @@ static clip_interp_func clip_interp_tab[0x80];
 #define NAME clipINDEX0_INDEX1
 #include "interp_tmp.h"
 
-#define IND (CLIP_FOG_COORD)
-#define NAME clip_FOG
-#include "interp_tmp.h"
-
-#define IND (CLIP_RGBA0|CLIP_FOG_COORD)
-#define NAME clipRGBA0_FOG
-#include "interp_tmp.h"
-
-#define IND (CLIP_RGBA0|CLIP_RGBA1|CLIP_FOG_COORD)
-#define NAME clipRGBA0_RGBA1_FOG
-#include "interp_tmp.h"
-
-#define IND (CLIP_TEX0|CLIP_RGBA0|CLIP_FOG_COORD)
-#define NAME clipTEX0_RGBA0_FOG
-#include "interp_tmp.h"
-
-#define IND (CLIP_TEX0|CLIP_RGBA0|CLIP_RGBA1|CLIP_FOG_COORD)
-#define NAME clipTEX0_RGBA0_RGBA1_FOG
-#include "interp_tmp.h"
-
-#define IND (CLIP_TEX1|CLIP_TEX0|CLIP_RGBA0|CLIP_FOG_COORD)
-#define NAME clipTEX1_TEX0_RGBA0_FOG
-#include "interp_tmp.h"
-
-#define IND (CLIP_TEX0|CLIP_FOG_COORD)
-#define NAME clipTEX0_FOG
-#include "interp_tmp.h"
-
-#define IND (CLIP_TEX1|CLIP_TEX0|CLIP_FOG_COORD)
-#define NAME clipTEX1_TEX0_FOG
-#include "interp_tmp.h"
-
-#define IND (CLIP_TEX1|CLIP_TEX0|CLIP_RGBA0|CLIP_RGBA1|CLIP_FOG_COORD)
-#define NAME clipTEX1_TEX0_RGBA0_RGBA1_FOG
-#include "interp_tmp.h"
-
-#define IND (CLIP_INDEX0|CLIP_FOG_COORD)
-#define NAME clipINDEX0_FOG
-#include "interp_tmp.h"
-
-#define IND (CLIP_INDEX0|CLIP_INDEX1|CLIP_FOG_COORD)
-#define NAME clipINDEX0_INDEX1_FOG
-#include "interp_tmp.h"
-
 
 
 
@@ -175,9 +122,17 @@ static clip_interp_func clip_interp_tab[0x80];
 
 
 
-void gl_ClipPlane( GLcontext* ctx, GLenum plane, const GLfloat *equation )
+void
+_mesa_ClipPlane( GLenum plane, const GLdouble *eq )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLint p;
+   GLfloat equation[4];
+
+   equation[0] = eq[0];
+   equation[1] = eq[1];
+   equation[2] = eq[2];
+   equation[3] = eq[3];
 
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glClipPlane");
 
@@ -228,8 +183,10 @@ void gl_update_userclip( GLcontext *ctx )
    }
 }
 
-void gl_GetClipPlane( GLcontext* ctx, GLenum plane, GLdouble *equation )
+void
+_mesa_GetClipPlane( GLenum plane, GLdouble *equation )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLint p;
 
    ASSERT_OUTSIDE_BEGIN_END(ctx, "glGetClipPlane");
@@ -396,8 +353,6 @@ void gl_update_clipmask( GLcontext *ctx )
 	 mask |= CLIP_INDEX1;
    }
 
-   if (ctx->FogMode == FOG_FRAGMENT && (ctx->TriangleCaps & DD_CLIP_FOG_COORD))
-      mask |= CLIP_FOG_COORD;
    
    ctx->ClipInterpFunc = clip_interp_tab[mask];
    ctx->poly_clip_tab = gl_poly_clip_tab[0];
@@ -493,22 +448,11 @@ void gl_init_clip(void)
    clip_interp_tab[CLIP_TEX1|CLIP_TEX0|CLIP_RGBA0] = clipTEX1_TEX0_RGBA0;
    clip_interp_tab[CLIP_TEX1|CLIP_TEX0|CLIP_RGBA0|CLIP_RGBA1] = 
       clipTEX1_TEX0_RGBA0_RGBA1;
+
    clip_interp_tab[CLIP_TEX0] = clipTEX0;
    clip_interp_tab[CLIP_TEX1|CLIP_TEX0] = clipTEX1_TEX0;
+
    clip_interp_tab[CLIP_INDEX0] = clipINDEX0;
    clip_interp_tab[CLIP_INDEX0|CLIP_INDEX1] = clipINDEX0_INDEX1;
-
-   clip_interp_tab[CLIP_FOG_COORD] = clip_FOG;
-   clip_interp_tab[CLIP_RGBA0|CLIP_FOG_COORD] = clipRGBA0_FOG;
-   clip_interp_tab[CLIP_RGBA0|CLIP_RGBA1|CLIP_FOG_COORD] = clipRGBA0_RGBA1_FOG;
-   clip_interp_tab[CLIP_TEX0|CLIP_RGBA0|CLIP_FOG_COORD] = clipTEX0_RGBA0_FOG;
-   clip_interp_tab[CLIP_TEX0|CLIP_RGBA0|CLIP_RGBA1|CLIP_FOG_COORD] = clipTEX0_RGBA0_RGBA1_FOG;
-   clip_interp_tab[CLIP_TEX1|CLIP_TEX0|CLIP_RGBA0|CLIP_FOG_COORD] = clipTEX1_TEX0_RGBA0_FOG;
-   clip_interp_tab[CLIP_TEX1|CLIP_TEX0|CLIP_RGBA0|CLIP_RGBA1|CLIP_FOG_COORD] = 
-      clipTEX1_TEX0_RGBA0_RGBA1_FOG;
-   clip_interp_tab[CLIP_TEX0|CLIP_FOG_COORD] = clipTEX0_FOG;
-   clip_interp_tab[CLIP_TEX1|CLIP_TEX0|CLIP_FOG_COORD] = clipTEX1_TEX0_FOG;
-   clip_interp_tab[CLIP_INDEX0|CLIP_FOG_COORD] = clipINDEX0_FOG;
-   clip_interp_tab[CLIP_INDEX0|CLIP_INDEX1|CLIP_FOG_COORD] = clipINDEX0_INDEX1_FOG;
 }
 

@@ -1,7 +1,6 @@
 #ifndef _GLX_client_h_
 #define _GLX_client_h_
 
-/* $XFree86$ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -20,7 +19,6 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** $SGI$
 */
 
 /*
@@ -29,7 +27,6 @@
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/glx/glxclient.h,v 1.7 1999/04/05 05:24:32 martin Exp $
  */
 
 #define NEED_REPLIES
@@ -41,9 +38,6 @@
 #include <X11/Xlibint.h>
 #include <string.h>
 #include <stdlib.h>
-#ifdef GLX_DIRECT_RENDERING
-#include "dri_glapi.h"
-#endif
 
 #define GLX_MAJOR_VERSION	1	/* current version numbers */
 #define GLX_MINOR_VERSION	2
@@ -64,6 +58,7 @@ typedef struct __GLXdisplayPrivateRec __GLXdisplayPrivate;
 ** #define NEED_WRAP_GL_FUNCS in the appropriate source files.
 */
 #include "indirect.h"
+#include "dri_glapi.h"
 
 /*
 ** The following structures define the interface between the GLX client
@@ -87,10 +82,11 @@ struct __DRIdisplayRec {
     void (*destroyDisplay)(Display *dpy, void *private);
 
     /*
-    ** Method to create the private DRI screen data and initialize the
+    ** Methods to create the private DRI screen data and initialize the
     ** screen dependent methods.
+    ** This is an array [indexed by screen number] of function pointers.
     */
-    void *(*createScreen)(Display *dpy, int scrn, __DRIscreen *psc,
+    void *(**createScreen)(Display *dpy, int scrn, __DRIscreen *psc,
 			  int numConfigs, __GLXvisualConfig *config);
 
     /*
@@ -199,6 +195,8 @@ struct __DRIdrawableRec {
 ** dependent methods.
 */
 extern void *driCreateDisplay(Display *dpy, __DRIdisplay *pdisp);
+
+extern void DRI_glXUseXFont( Font font, int first, int count, int listbase );
 
 #endif
 
@@ -429,12 +427,6 @@ struct __GLXcontextRec {
 
 #ifdef GLX_DIRECT_RENDERING
     /*
-    ** API function pointers for this context.  The function pointers
-    ** can be changed by the DRI library.
-    */
-    __GLapi glAPI;
-
-    /*
     ** Per context direct rendering interface functions and data.
     */
     __DRIcontext driContext;
@@ -555,6 +547,7 @@ extern int __glXDebug;
 extern __GLXcontext *__glXcurrentContext;
 #define __glXGetCurrentContext()	__glXcurrentContext
 #define __glXSetCurrentContext(gc)	__glXcurrentContext = gc
+
 
 /*
 ** Global lock for all threads in this address space using the GLX

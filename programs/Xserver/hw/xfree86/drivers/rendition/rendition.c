@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.15 2000/01/17 21:10:06 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.21 2000/02/08 13:13:19 eich Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -121,8 +121,6 @@ DriverRec RENDITION={
     0
 };
 
-#ifdef XFree86LOADER
-
 static const char *vgahwSymbols[]={
     "vgaHWGetHWRec",
     "vgaHWUnlock",
@@ -186,6 +184,8 @@ static const char *fbSymbols[]={
     "cfb32ScreenInit",
     NULL
 };
+
+#ifdef XFree86LOADER
 
 /* Module loader interface */
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.9 1999/07/10 07:24:35 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.10 1999/12/14 01:32:21 robin Exp $
 XCOMM $PI: xc/lib/GL/Imakefile,v 1.11 1999/06/14 21:10:34 faith Exp $
 
 #define IHaveSubdirs
@@ -12,7 +12,7 @@ XCOMM $PI: xc/lib/GL/Imakefile,v 1.11 1999/06/14 21:10:34 faith Exp $
 
 #if BuildXF86DRI
 DRIDIRS = dri
-MESADIRS = mesa/src
+MESADIRS = mesa/dri mesa/include/GL mesa/src
 #endif
 SUBDIRS = glx $(DRIDIRS) $(MESADIRS)
 
@@ -33,17 +33,12 @@ DependSubdirs($(SUBDIRS))
     GLXDONES = glx/DONE
 
 #if BuildXF86DRI
-     DRIOBJS = dri/?*.o
-    DRIUOBJS = dri/unshared/?*.o
-    DRIDOBJS = dri/debugger/?*.o
-    DRIPOBJS = dri/profiled/?*.o
+     DRIOBJS = dri/XF86dri.o dri/dri_glx.o
+    DRIUOBJS = dri/unshared/XF86dri.o dri/unshared/dri_glx.o
+    DRIDOBJS = dri/debugger/XF86dri.o dri/debugger/dri_glx.o
+    DRIPOBJS = dri/profiled/XF86dri.o dri/profiled/dri_glx.o
     DRIDONES = dri/DONE
 
-     DRMOBJS = dri/drm/?*.o
-    DRMUOBJS = dri/drm/unshared/?*.o
-    DRMDOBJS = dri/drm/debugger/?*.o
-    DRMPOBJS = dri/drm/profiled/?*.o
-    DRMDONES = dri/drm/DONE
 #if !GlxUseSGISI
 #if GlxBuiltInGamma
      DRVOBJS = mesa/src/drv/gamma/?*.o
@@ -52,22 +47,37 @@ DependSubdirs($(SUBDIRS))
     DRVPOBJS = mesa/src/drv/gamma/profiled/?*.o
     DRVDONES = mesa/src/drv/gamma/DONE
 #elif GlxBuiltInTdfx
+     DRMOBJS = dri/drm/?*.o
+    DRMUOBJS = dri/drm/unshared/?*.o
+    DRMDOBJS = dri/drm/debugger/?*.o
+    DRMPOBJS = dri/drm/profiled/?*.o
+    DRMDONES = dri/drm/DONE
+
     TDFXOBJS = mesa/src/drv/tdfx/?*.o
    TDFXUOBJS = mesa/src/drv/tdfx/unshared/?*.o
    TDFXDOBJS = mesa/src/drv/tdfx/debugger/?*.o
    TDFXPOBJS = mesa/src/drv/tdfx/profiled/?*.o
    TDFXDONES = mesa/src/drv/tdfx/DONE
+
     MESAOBJS = mesa/src/?*.o mesa/src/X86/?*.o
    MESAUOBJS = mesa/src/unshared/?*.o mesa/src/X86/unshared/?*.o
    MESADOBJS = mesa/src/debugger/?*.o mesa/src/X86/debugger/?*.o
    MESAPOBJS = mesa/src/profiled/?*.o mesa/src/X86/profiled/?*.o
    MESADONES = mesa/src/DONE mesa/src/X86/DONE
-     DRVOBJS = $(TDFXOBJS) $(MESAOBJS)
-    DRVUOBJS = $(TDFXUOBJS) $(MESAUOBJS)
-    DRVDOBJS = $(TDFXDOBJS) $(MESADOBJS)
-    DRVPOBJS = $(TDFXPOBJS) $(MESAPOBJS)
-    DRVDONES = $(TDFXDONES) $(MESADONES)
-REQUIREDLIBS += -lglide3x
+
+ DRIMESAOBJS = mesa/dri/?*.o
+DRIMESAUOBJS = mesa/dri/unshared/?*.o
+DRIMESADOBJS = mesa/dri/debugger/?*.o
+DRIMESAPOBJS = mesa/dri/profiled/?*.o
+DRIMESADONES = mesa/dri/DONE
+
+     DRVOBJS = $(TDFXOBJS) $(MESAOBJS) $(DRIMESAOBJS) $(DRMOBJS)
+    DRVUOBJS = $(TDFXUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
+    DRVDOBJS = $(TDFXDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
+    DRVPOBJS = $(TDFXPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
+    DRVDONES = $(TDFXDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
+
+ REQUIREDLIBS += -lglide3x
 #elif GlxBuiltInMesa
 #ifndef GlxDriverUsesMesa
      DRVOBJS = mesa/src/?*.o mesa/src/X/?*.o
@@ -83,16 +93,16 @@ REQUIREDLIBS += -lglide3x
 #ifdef OS2Architecture
         OBJS = $(LIBNAME).a
 #else
-        OBJS = $(GLXOBJS)  $(DRIOBJS)  $(DRMOBJS)  $(DRVOBJS)
+       OBJS = $(GLXOBJS)  $(DRIOBJS)   $(DRVOBJS)
 #endif
 #if HasSharedLibraries
-       UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRMUOBJS) $(DRVUOBJS)
+       UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRVUOBJS)
 #else
        UOBJS = $(OBJS)
 #endif
-       DOBJS = $(GLXDOBJS) $(DRIDOBJS) $(DRMDOBJS) $(DRVDOBJS)
-       POBJS = $(GLXPOBJS) $(DRIPOBJS) $(DRMPOBJS) $(DRVPOBJS)
-       DONES = $(GLXDONES) $(DRIDONES) $(DRMDONES) $(DRVDONES)
+       DOBJS = $(GLXDOBJS) $(DRIDOBJS) $(DRVDOBJS)
+       POBJS = $(GLXPOBJS) $(DRIPOBJS) $(DRVPOBJS)
+       DONES = $(GLXDONES) $(DRIDONES) $(DRVDONES)
 
 #include <Library.tmpl>
 
@@ -115,3 +125,4 @@ InstallLibrary($(LIBNAME)_d,$(USRLIBDIR))
 ProfiledDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(POBJS))
 InstallLibrary($(LIBNAME)_p,$(USRLIBDIR))
 #endif
+

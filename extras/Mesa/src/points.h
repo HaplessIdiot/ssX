@@ -1,8 +1,8 @@
-/* $Id: points.h,v 1.1 1999/12/14 01:31:46 robin Exp $ */
+/* $Id: points.h,v 1.2 2000/02/08 17:17:28 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -35,11 +35,19 @@
 #include "types.h"
 
 
-extern void gl_PointSize( GLcontext *ctx, GLfloat size );
+extern void
+_mesa_PointSize( GLfloat size );
+
+
+extern void
+_mesa_PointParameterfEXT( GLenum pname, GLfloat param);
+
+
+extern void
+_mesa_PointParameterfvEXT( GLenum pname, const GLfloat *params );
+
 
 extern void gl_set_point_function( GLcontext *ctx );
 
-extern void gl_PointParameterfvEXT( GLcontext *ctx, GLenum pname, 
-                                    const GLfloat *params );
 
 #endif

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.13 1999/05/09 10:50:26 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.14 2000/01/29 18:58:13 dawes Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1
@@ -1073,6 +1073,12 @@ extern void _XDeq(
     Display*	/* dpy */,
     _XQEvent*	/* prev */,
     _XQEvent*	/* qelt */
+#endif
+);
+
+extern int _XFreeExtData(
+#if NeedFunctionPrototypes
+    XExtData*	/* extension */
 #endif
 );
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.257 2000/01/19 22:37:03 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.259 2000/02/08 13:13:02 eich Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -580,7 +580,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * Build the XFree86-Bigfont extension
  */
 #ifndef BuildXF86BigfontExt
-#define BuildXF86BigfontExt		HasShm
+#define BuildXF86BigfontExt		YES
 #endif
 
 /*

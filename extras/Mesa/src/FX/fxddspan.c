@@ -72,14 +72,9 @@
 static FxBool writeRegionClipped(fxMesaContext fxMesa, GrBuffer_t dst_buffer,
 			  FxU32 dst_x, FxU32 dst_y, GrLfbSrcFmt_t src_format,
 			  FxU32 src_width, FxU32 src_height, FxI32 src_stride,
-			  void *src_data);
-
-FxBool writeRegionClipped(fxMesaContext fxMesa, GrBuffer_t dst_buffer,
-			  FxU32 dst_x, FxU32 dst_y, GrLfbSrcFmt_t src_format,
-			  FxU32 src_width, FxU32 src_height, FxI32 src_stride,
 			  void *src_data)
 {
-  int i, x, w;
+  int i, x, w, srcElt;
   void *data;
 
   if (src_width==1 && src_height==1) { /* Easy case writing a point */
@@ -89,16 +84,22 @@ FxBool writeRegionClipped(fxMesaContext fxMesa, GrBuffer_t dst_buffer,
 	  (dst_y>=fxMesa->pClipRects[i].y1) && 
 	  (dst_y<fxMesa->pClipRects[i].y2)) {
 	FX_grLfbWriteRegion(dst_buffer, dst_x, dst_y, src_format,
-			    src_width, src_height, src_stride, src_data);
+			    1, 1, src_stride, src_data);
 	return GL_TRUE;
       }
     }
   } else if (src_height==1) { /* Writing a span */
+    if (src_format==GR_LFB_SRC_FMT_8888) srcElt=4;
+    else if (src_format==GR_LFB_SRC_FMT_ZA16) srcElt=2;
+    else {
+      fprintf(stderr, "Unknown src_format passed to writeRegionClipped\n");
+      return GL_FALSE;
+    }
     for (i=0; i<fxMesa->numClipRects; i++) {
       if (dst_y>=fxMesa->pClipRects[i].y1 && dst_y<fxMesa->pClipRects[i].y2) {
 	if (dst_x<fxMesa->pClipRects[i].x1) {
 	  x=fxMesa->pClipRects[i].x1;
-	  data=((char*)src_data)+2*(dst_x-x);
+	  data=((char*)src_data)+srcElt*(dst_x-x);
 	  w=src_width-(x-dst_x);
 	} else {
 	  x=dst_x;
@@ -108,7 +109,7 @@ FxBool writeRegionClipped(fxMesaContext fxMesa, GrBuffer_t dst_buffer,
 	if (x+w>fxMesa->pClipRects[i].x2) {
 	  w=fxMesa->pClipRects[i].x2-x;
 	}
-	FX_grLfbWriteRegion(dst_buffer, x, dst_y, src_format, w, src_height,
+	FX_grLfbWriteRegion(dst_buffer, x, dst_y, src_format, w, 1,
 			    src_stride, data);
       }
     }
@@ -395,7 +396,7 @@ static void fxDDReadRGBAPixels(const GLcontext *ctx,
 {
   fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
   GLuint i;
-  GLint bottom=fxMesa->height+fxMesa->y_offset-1;
+  GLint bottom=fxMesa->y_delta-1;
 
   if (MESA_VERBOSE&VERBOSE_DRIVER) {
      fprintf(stderr,"fxmesa: fxDDReadRGBAPixels(...)\n");
@@ -418,30 +419,37 @@ static void fxDDReadRGBAPixels(const GLcontext *ctx,
 /*****                    Depth functions                           *****/
 /************************************************************************/
 
-void fxDDReadDepthSpanFloat(GLcontext *ctx,
-			    GLuint n, GLint x, GLint y, GLfloat depth[])
+void fxDDWriteDepthSpan(GLcontext *ctx,
+                        GLuint n, GLint x, GLint y, const GLdepth depth[],
+                        const GLubyte mask[])
 {
   fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  GLuint i;
   GLint bottom=fxMesa->height+fxMesa->y_offset-1;
-  GLushort data[MAX_WIDTH];
 
   if (MESA_VERBOSE&VERBOSE_DRIVER) {
-     fprintf(stderr,"fxmesa: fxDDReadDepthSpanFloat(...)\n");
+     fprintf(stderr,"fxmesa: fxDDReadDepthSpanInt(...)\n");
   }
 
-  x+=fxMesa->x_offset;
-  FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x,bottom-y,n,1,0,data);
+  x += fxMesa->x_offset;
 
-  /*
-    convert the read values to float values [0.0 .. 1.0].
-  */
-  for(i=0;i<n;i++)
-    depth[i]=data[i]/65535.0f;
+  if (mask) {
+    GLint i;
+    for (i = 0; i < n; i++) {
+      if (mask[i]) {
+        writeRegionClipped(fxMesa, GR_BUFFER_AUXBUFFER, x + i, bottom-y,
+                           GR_LFB_SRC_FMT_ZA16, 1, 1, 0, (void *) &depth[i]);
+      }
+    }
+  }
+  else {
+    writeRegionClipped(fxMesa, GR_BUFFER_AUXBUFFER, x, bottom-y,
+                       GR_LFB_SRC_FMT_ZA16, n, 1, 0, (void *) depth);
+  }
 }
 
-void fxDDReadDepthSpanInt(GLcontext *ctx,
-			  GLuint n, GLint x, GLint y, GLdepth depth[])
+
+void fxDDReadDepthSpan(GLcontext *ctx,
+                       GLuint n, GLint x, GLint y, GLdepth depth[])
 {
   fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
   GLint bottom=fxMesa->height+fxMesa->y_offset-1;
@@ -454,439 +462,52 @@ void fxDDReadDepthSpanInt(GLcontext *ctx,
   FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x,bottom-y,n,1,0,depth);
 }
 
-GLuint fxDDDepthTestSpanGeneric(GLcontext *ctx,
-                                       GLuint n, GLint x, GLint y, const GLdepth z[],
-                                       GLubyte mask[])
+
+
+void fxDDWriteDepthPixels(GLcontext *ctx,
+                          GLuint n, const GLint x[], const GLint y[],
+                          const GLdepth depth[], const GLubyte mask[])
 {
   fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  GLushort depthdata[MAX_WIDTH];
-  GLdepth *zptr=depthdata;
-  GLubyte *m=mask;
-  GLuint i;
-  GLuint passed=0;
   GLint bottom=fxMesa->height+fxMesa->y_offset-1;
+  GLuint i;
 
   if (MESA_VERBOSE&VERBOSE_DRIVER) {
-     fprintf(stderr,"fxmesa: fxDDDepthTestSpanGeneric(...)\n");
+     fprintf(stderr,"fxmesa: fxDDReadDepthSpanInt(...)\n");
   }
 
-  x+=fxMesa->x_offset;
-  FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x,bottom-y,n,1,0,depthdata);
-
-  /* switch cases ordered from most frequent to less frequent */
-  switch (ctx->Depth.Func) {
-  case GL_LESS:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0; i<n; i++,zptr++,m++) {
-        if (*m) {
-          if (z[i] < *zptr) {
-            /* pass */
-            *zptr = z[i];
-            passed++;
-          } else {
-            /* fail */
-            *m = 0;
-          }
-        }
-      }
-    } else {
-      /* Don't update Z buffer */
-      for (i=0; i<n; i++,zptr++,m++) {
-        if (*m) {
-          if (z[i] < *zptr) {
-            /* pass */
-            passed++;
-          } else {
-            *m = 0;
-          }
-        }
-      }
+  for (i = 0; i < n; i++) {
+    if (mask[i]) {
+      int xpos = x[i] + fxMesa->x_offset;
+      int ypos = bottom - y[i];
+      writeRegionClipped(fxMesa, GR_BUFFER_AUXBUFFER, xpos, ypos,
+                         GR_LFB_SRC_FMT_ZA16, 1, 1, 0, (void *) &depth[i]);
     }
-    break;
-  case GL_LEQUAL:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0;i<n;i++,zptr++,m++) {
-        if (*m) {
-          if (z[i] <= *zptr) {
-            *zptr = z[i];
-            passed++;
-          } else {
-            *m = 0;
-          }
-        }
-      }
-    } else {
-      /* Don't update Z buffer */
-      for (i=0;i<n;i++,zptr++,m++) {
-        if (*m) {
-          if (z[i] <= *zptr) {
-            /* pass */
-            passed++;
-          } else {
-            *m = 0;
-          }
-        }
-      }
-    }
-    break;
-  case GL_GEQUAL:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0;i<n;i++,zptr++,m++) {
-        if (*m) {
-          if (z[i] >= *zptr) {
-            *zptr = z[i];
-            passed++;
-          } else {
-            *m = 0;
-          }
-        }
-      }
-    } else {
-      /* Don't update Z buffer */
-      for (i=0;i<n;i++,zptr++,m++) {
-        if (*m) {
-          if (z[i] >= *zptr) {
-            /* pass */
-            passed++;
-          } else {
-            *m = 0;
-          }
-        }
-      }
-    }
-    break;
-  case GL_GREATER:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0;i<n;i++,zptr++,m++) {
-        if (*m) {
-          if (z[i] > *zptr) {
-            *zptr = z[i];
-            passed++;
-          } else {
-            *m = 0;
-          }
-        }
-      }
-    } else {
-      /* Don't update Z buffer */
-      for (i=0;i<n;i++,zptr++,m++) {
-        if (*m) {
-          if (z[i] > *zptr) {
-            /* pass */
-            passed++;
-          } else {
-            *m = 0;
-          }
-        }
-      }
-    }
-    break;
-  case GL_NOTEQUAL:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0;i<n;i++,zptr++,m++) {
-        if (*m) {
-          if (z[i] != *zptr) {
-            *zptr = z[i];
-            passed++;
-          } else {
-            *m = 0;
-          }
-        }
-      }
-    } else {
-      /* Don't update Z buffer */
-      for (i=0;i<n;i++,zptr++,m++) {
-        if (*m) {
-          if (z[i] != *zptr) {
-            /* pass */
-            passed++;
-          } else {
-            *m = 0;
-          }
-        }
-      }
-    }
-    break;
-  case GL_EQUAL:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0;i<n;i++,zptr++,m++) {
-        if (*m) {
-          if (z[i] == *zptr) {
-            *zptr = z[i];
-            passed++;
-          } else {
-            *m =0;
-          }
-        }
-      }
-    } else {
-      /* Don't update Z buffer */
-      for (i=0;i<n;i++,zptr++,m++) {
-        if (*m) {
-          if (z[i] == *zptr) {
-            /* pass */
-            passed++;
-          } else {
-            *m =0;
-          }
-        }
-      }
-    }
-    break;
-  case GL_ALWAYS:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0;i<n;i++,zptr++,m++) {
-        if (*m) {
-          *zptr = z[i];
-          passed++;
-        }
-      }
-    } else {
-      /* Don't update Z buffer or mask */
-      passed = n;
-    }
-    break;
-  case GL_NEVER:
-    for (i=0;i<n;i++) {
-      mask[i] = 0;
-    }
-    break;
-  default:
-    ;
-  } /*switch*/
-
-  if(passed)
-    writeRegionClipped(fxMesa, GR_BUFFER_AUXBUFFER,x,bottom-y,GR_LFB_SRC_FMT_ZA16,n,1,0,depthdata);
-
-  return passed;
+  }
 }
 
-void fxDDDepthTestPixelsGeneric(GLcontext* ctx,
-                                       GLuint n, const GLint x[], const GLint y[],
-                                       const GLdepth z[], GLubyte mask[])
+
+void fxDDReadDepthPixels(GLcontext *ctx, GLuint n,
+                         const GLint x[], const GLint y[], GLdepth depth[])
 {
   fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  GLdepth zval;
-  GLuint i;
   GLint bottom=fxMesa->height+fxMesa->y_offset-1;
+  GLuint i;
 
   if (MESA_VERBOSE&VERBOSE_DRIVER) {
-     fprintf(stderr,"fxmesa: fxDDDepthTestPixelsGeneric(...)\n");
+     fprintf(stderr,"fxmesa: fxDDReadDepthSpanInt(...)\n");
   }
 
-  /* switch cases ordered from most frequent to less frequent */
-  switch (ctx->Depth.Func) {
-  case GL_LESS:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],1,1,0,&zval);
-          if (z[i] < zval) {
-            /* pass */
-            writeRegionClipped(fxMesa, GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],GR_LFB_SRC_FMT_ZA16,1,1,0,(void*)&z[i]);
-          } else {
-            /* fail */
-            mask[i] = 0;
-          }
-        }
-      }
-    } else {
-      /* Don't update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],1,1,0,&zval);
-          if (z[i] < zval) {
-            /* pass */
-          }
-          else {
-            /* fail */
-            mask[i] = 0;
-          }
-        }
-      }
-    }
-    break;
-  case GL_LEQUAL:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],1,1,0,&zval);
-          if (z[i] <= zval) {
-            /* pass */
-            writeRegionClipped(fxMesa, GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],GR_LFB_SRC_FMT_ZA16,1,1,0,(void*)&z[i]);
-          } else {
-            /* fail */
-            mask[i] = 0;
-          }
-        }
-      }
-    } else {
-      /* Don't update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],1,1,0,&zval);
-          if (z[i] <= zval) {
-            /* pass */
-          } else {
-            /* fail */
-            mask[i] = 0;
-          }
-        }
-      }
-    }
-    break;
-  case GL_GEQUAL:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],1,1,0,&zval);
-          if (z[i] >= zval) {
-            /* pass */
-            writeRegionClipped(fxMesa, GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],GR_LFB_SRC_FMT_ZA16,1,1,0,(void*)&z[i]);
-          } else {
-            /* fail */
-            mask[i] = 0;
-          }
-        }
-      }
-    } else {
-      /* Don't update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],1,1,0,&zval);
-          if (z[i] >= zval) {
-            /* pass */
-          } else {
-            /* fail */
-            mask[i] = 0;
-          }
-        }
-      }
-    }
-    break;
-  case GL_GREATER:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],1,1,0,&zval);
-          if (z[i] > zval) {
-            /* pass */
-            writeRegionClipped(fxMesa, GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],GR_LFB_SRC_FMT_ZA16,1,1,0,(void*)&z[i]);
-          } else {
-            /* fail */
-            mask[i] = 0;
-          }
-        }
-      }
-    } else {
-      /* Don't update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],1,1,0,&zval);
-          if (z[i] > zval) {
-            /* pass */
-          } else {
-            /* fail */
-            mask[i] = 0;
-          }
-        }
-      }
-    }
-    break;
-  case GL_NOTEQUAL:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],1,1,0,&zval);
-          if (z[i] != zval) {
-            /* pass */
-            writeRegionClipped(fxMesa, GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],GR_LFB_SRC_FMT_ZA16,1,1,0,(void*)&z[i]);
-          } else {
-            /* fail */
-            mask[i] = 0;
-          }
-        }
-      }
-    } else {
-      /* Don't update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],1,1,0,&zval);
-          if (z[i] != zval) {
-            /* pass */
-          }
-          else {
-            /* fail */
-            mask[i] = 0;
-          }
-        }
-      }
-    }
-    break;
-  case GL_EQUAL:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],1,1,0,&zval);
-          if (z[i] == zval) {
-            /* pass */
-            writeRegionClipped(fxMesa, GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],GR_LFB_SRC_FMT_ZA16,1,1,0,(void*)&z[i]);
-          } else {
-            /* fail */
-            mask[i] = 0;
-          }
-        }
-      }
-    } else {
-      /* Don't update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],1,1,0,&zval);
-          if (z[i] == zval) {
-            /* pass */
-          } else {
-            /* fail */
-            mask[i] = 0;
-          }
-        }
-      }
-    }
-    break;
-  case GL_ALWAYS:
-    if (ctx->Depth.Mask) {
-      /* Update Z buffer */
-      for (i=0; i<n; i++) {
-        if (mask[i]) {
-          writeRegionClipped(fxMesa, GR_BUFFER_AUXBUFFER,x[i]+fxMesa->x_offset,bottom-y[i],GR_LFB_SRC_FMT_ZA16,1,1,0,(void*)&z[i]);
-        }
-      }
-    } else {
-      /* Don't update Z buffer or mask */
-    }
-    break;
-  case GL_NEVER:
-    /* depth test never passes */
-    for (i=0;i<n;i++) {
-      mask[i] = 0;
-    }
-    break;
-  default:
-    ;
-  } /*switch*/
+
+  for (i = 0; i < n; i++) {
+    int xpos = x[i] + fxMesa->x_offset;
+    int ypos = bottom - y[i];
+    FX_grLfbReadRegion(GR_BUFFER_AUXBUFFER,xpos,ypos,1,1,0,&depth[i]);
+  }
 }
+
+
+
 
 /************************************************************************/
 

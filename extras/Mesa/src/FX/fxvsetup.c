@@ -312,22 +312,16 @@ tfxSetupFunc fxDDChooseSetupFunction(GLcontext *ctx)
 
    if ((ctx->Texture.ReallyEnabled & (TEXTURE1_2D|TEXTURE1_3D)) == TEXTURE1_2D)
    {
-      if (setupindex & SETUP_TMU0) {
-	 struct gl_texture_object *tObj=ctx->Texture.Unit[0].CurrentD[2];
-	 tfxTexInfo *ti=fxTMGetTexInfo(tObj);
+     setupindex |= SETUP_TMU1|SETUP_W;
+     if (setupindex & SETUP_TMU0) { /* both TMUs in use */
+       struct gl_texture_object *tObj=ctx->Texture.Unit[0].CurrentD[2];
+       tfxTexInfo *ti=fxTMGetTexInfo(tObj);
 
-	 setupindex |= SETUP_TMU1|SETUP_W;
-
-	 if(ti->whichTMU!=FX_TMU0) {
-	    fxMesa->tmu_source[0] = 1; fxMesa->tex_dest[1] = SETUP_TMU0;
-	    fxMesa->tmu_source[1] = 0; fxMesa->tex_dest[0] = SETUP_TMU1;
-	 }
-      } else {
-	 setupindex |= SETUP_TMU0|SETUP_W;
+       if (ti->whichTMU!=FX_TMU0) { /* TMU0 and TMU1 are swapped */
 	 fxMesa->tmu_source[0] = 1; fxMesa->tex_dest[1] = SETUP_TMU0;
-	 /* not used: */
-	 fxMesa->tmu_source[1] = 0; fxMesa->tex_dest[0] = SETUP_TMU1; 
-      }
+	 fxMesa->tmu_source[1] = 0; fxMesa->tex_dest[0] = SETUP_TMU1;
+       }
+     }
    }
 
    if (ctx->Color.BlendEnabled)

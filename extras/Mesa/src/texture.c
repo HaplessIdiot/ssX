@@ -1,8 +1,8 @@
-/* $Id: texture.c,v 1.1 1999/12/14 01:31:54 robin Exp $ */
+/* $Id: texture.c,v 1.2 2000/02/08 17:17:39 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -28,13 +28,7 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "context.h"
 #include "macros.h"
 #include "mmath.h"
@@ -43,6 +37,7 @@
 #include "types.h"
 #include "xform.h"
 #endif
+
 
 /***********************************************************************
  * Automatic texture coordinate generation (texgen) code.
@@ -250,15 +245,15 @@ static void palette_sample(const struct gl_texture_object *tObj,
    const GLubyte *palette;
 
    if (ctx->Texture.SharedPalette) {
-      palette = ctx->Texture.Palette;
+      palette = ctx->Texture.Palette.Table;
    }
    else {
-      palette = tObj->Palette;
+      palette = tObj->Palette.Table;
    }
 
-   switch (tObj->PaletteFormat) {
+   switch (tObj->Palette.Format) {
       case GL_ALPHA:
-         rgba[ACOMP] = tObj->Palette[index];
+         rgba[ACOMP] = palette[index];
          return;
       case GL_LUMINANCE:
       case GL_INTENSITY:
@@ -543,19 +538,13 @@ static void sample_1d_linear( const struct gl_texture_object *tObj,
       GLubyte t0[4], t1[4];  /* texels */
 
       if (useBorderColor & I0BIT) {
-         t0[RCOMP] = tObj->BorderColor[0];
-         t0[GCOMP] = tObj->BorderColor[1];
-         t0[BCOMP] = tObj->BorderColor[2];
-         t0[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t0, tObj->BorderColor);
       }
       else {
          get_1d_texel( tObj, img, i0, t0 );
       }
       if (useBorderColor & I1BIT) {
-         t1[RCOMP] = tObj->BorderColor[0];
-         t1[GCOMP] = tObj->BorderColor[1];
-         t1[BCOMP] = tObj->BorderColor[2];
-         t1[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t1, tObj->BorderColor);
       }
       else {
          get_1d_texel( tObj, img, i1, t1 );
@@ -928,37 +917,25 @@ static void sample_2d_linear( const struct gl_texture_object *tObj,
       GLubyte t11[4];
 
       if (useBorderColor & (I0BIT | J0BIT)) {
-         t00[RCOMP] = tObj->BorderColor[0];
-         t00[GCOMP] = tObj->BorderColor[1];
-         t00[BCOMP] = tObj->BorderColor[2];
-         t00[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t00, tObj->BorderColor);
       }
       else {
          get_2d_texel( tObj, img, i0, j0, t00 );
       }
       if (useBorderColor & (I1BIT | J0BIT)) {
-         t10[RCOMP] = tObj->BorderColor[0];
-         t10[GCOMP] = tObj->BorderColor[1];
-         t10[BCOMP] = tObj->BorderColor[2];
-         t10[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t10, tObj->BorderColor);
       }
       else {
          get_2d_texel( tObj, img, i1, j0, t10 );
       }
       if (useBorderColor & (I0BIT | J1BIT)) {
-         t01[RCOMP] = tObj->BorderColor[0];
-         t01[GCOMP] = tObj->BorderColor[1];
-         t01[BCOMP] = tObj->BorderColor[2];
-         t01[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t01, tObj->BorderColor);
       }
       else {
          get_2d_texel( tObj, img, i0, j1, t01 );
       }
       if (useBorderColor & (I1BIT | J1BIT)) {
-         t11[RCOMP] = tObj->BorderColor[0];
-         t11[GCOMP] = tObj->BorderColor[1];
-         t11[BCOMP] = tObj->BorderColor[2];
-         t11[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t11, tObj->BorderColor);
       }
       else {
          get_2d_texel( tObj, img, i1, j1, t11 );
@@ -1423,74 +1400,50 @@ static void sample_3d_linear( const struct gl_texture_object *tObj,
       GLubyte t100[4], t110[4], t101[4], t111[4];
 
       if (useBorderColor & (I0BIT | J0BIT | K0BIT)) {
-         t000[RCOMP] = tObj->BorderColor[0];
-         t000[GCOMP] = tObj->BorderColor[1];
-         t000[BCOMP] = tObj->BorderColor[2];
-         t000[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t000, tObj->BorderColor);
       }
       else {
          get_3d_texel( tObj, img, i0, j0, k0, t000 );
       }
       if (useBorderColor & (I1BIT | J0BIT | K0BIT)) {
-         t100[RCOMP] = tObj->BorderColor[0];
-         t100[GCOMP] = tObj->BorderColor[1];
-         t100[BCOMP] = tObj->BorderColor[2];
-         t100[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t100, tObj->BorderColor);
       }
       else {
          get_3d_texel( tObj, img, i1, j0, k0, t100 );
       }
       if (useBorderColor & (I0BIT | J1BIT | K0BIT)) {
-         t010[RCOMP] = tObj->BorderColor[0];
-         t010[GCOMP] = tObj->BorderColor[1];
-         t010[BCOMP] = tObj->BorderColor[2];
-         t010[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t010, tObj->BorderColor);
       }
       else {
          get_3d_texel( tObj, img, i0, j1, k0, t010 );
       }
       if (useBorderColor & (I1BIT | J1BIT | K0BIT)) {
-         t110[RCOMP] = tObj->BorderColor[0];
-         t110[GCOMP] = tObj->BorderColor[1];
-         t110[BCOMP] = tObj->BorderColor[2];
-         t110[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t110, tObj->BorderColor);
       }
       else {
          get_3d_texel( tObj, img, i1, j1, k0, t110 );
       }
 
       if (useBorderColor & (I0BIT | J0BIT | K1BIT)) {
-         t001[RCOMP] = tObj->BorderColor[0];
-         t001[GCOMP] = tObj->BorderColor[1];
-         t001[BCOMP] = tObj->BorderColor[2];
-         t001[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t001, tObj->BorderColor);
       }
       else {
          get_3d_texel( tObj, img, i0, j0, k1, t001 );
       }
       if (useBorderColor & (I1BIT | J0BIT | K1BIT)) {
-         t101[RCOMP] = tObj->BorderColor[0];
-         t101[GCOMP] = tObj->BorderColor[1];
-         t101[BCOMP] = tObj->BorderColor[2];
-         t101[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t101, tObj->BorderColor);
       }
       else {
          get_3d_texel( tObj, img, i1, j0, k1, t101 );
       }
       if (useBorderColor & (I0BIT | J1BIT | K1BIT)) {
-         t011[RCOMP] = tObj->BorderColor[0];
-         t011[GCOMP] = tObj->BorderColor[1];
-         t011[BCOMP] = tObj->BorderColor[2];
-         t011[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t011, tObj->BorderColor);
       }
       else {
          get_3d_texel( tObj, img, i0, j1, k1, t011 );
       }
       if (useBorderColor & (I1BIT | J1BIT | K1BIT)) {
-         t111[RCOMP] = tObj->BorderColor[0];
-         t111[GCOMP] = tObj->BorderColor[1];
-         t111[BCOMP] = tObj->BorderColor[2];
-         t111[ACOMP] = tObj->BorderColor[3];
+         COPY_4UBV(t111, tObj->BorderColor);
       }
       else {
          get_3d_texel( tObj, img, i1, j1, k1, t111 );
@@ -1871,7 +1824,7 @@ static void apply_texture( const GLcontext *ctx,
 	       }
 	       break;
             default:
-               gl_problem(ctx, "Bad format in apply_texture");
+               gl_problem(ctx, "Bad format (GL_REPLACE) in apply_texture");
                return;
 	 }
 	 break;
@@ -1937,7 +1890,7 @@ static void apply_texture( const GLcontext *ctx,
 	       }
 	       break;
             default:
-               gl_problem(ctx, "Bad format (2) in apply_texture");
+               gl_problem(ctx, "Bad format (GL_MODULATE) in apply_texture");
                return;
 	 }
 	 break;
@@ -1970,7 +1923,7 @@ static void apply_texture( const GLcontext *ctx,
 	       }
 	       break;
             default:
-               gl_problem(ctx, "Bad format (3) in apply_texture");
+               gl_problem(ctx, "Bad format (GL_DECAL) in apply_texture");
                return;
 	 }
 	 break;
@@ -2040,7 +1993,82 @@ static void apply_texture( const GLcontext *ctx,
 	       }
 	       break;
             default:
-               gl_problem(ctx, "Bad format (4) in apply_texture");
+               gl_problem(ctx, "Bad format (GL_BLEND) in apply_texture");
+               return;
+	 }
+	 break;
+
+      case GL_ADD:  /* GL_EXT_texture_add_env */
+         switch (format) {
+            case GL_ALPHA:
+               for (i=0;i<n;i++) {
+                  /* Rv = Rf */
+                  /* Gv = Gf */
+                  /* Bv = Bf */
+                  rgba[i][ACOMP] = PROD(rgba[i][ACOMP], texel[i][ACOMP]);
+               }
+               break;
+            case GL_LUMINANCE:
+               for (i=0;i<n;i++) {
+                  GLuint Lt = texel[i][RCOMP];
+                  GLuint r = rgba[i][RCOMP] + Lt;
+                  GLuint g = rgba[i][GCOMP] + Lt;
+                  GLuint b = rgba[i][BCOMP] + Lt;
+                  rgba[i][RCOMP] = r < 256 ? (GLubyte) r : 255;
+                  rgba[i][GCOMP] = g < 256 ? (GLubyte) g : 255;
+                  rgba[i][BCOMP] = b < 256 ? (GLubyte) b : 255;
+                  /* Av = Af */
+               }
+               break;
+            case GL_LUMINANCE_ALPHA:
+               for (i=0;i<n;i++) {
+                  GLuint Lt = texel[i][RCOMP];
+                  GLuint r = rgba[i][RCOMP] + Lt;
+                  GLuint g = rgba[i][GCOMP] + Lt;
+                  GLuint b = rgba[i][BCOMP] + Lt;
+                  rgba[i][RCOMP] = r < 256 ? (GLubyte) r : 255;
+                  rgba[i][GCOMP] = g < 256 ? (GLubyte) g : 255;
+                  rgba[i][BCOMP] = b < 256 ? (GLubyte) b : 255;
+                  rgba[i][ACOMP] = PROD(rgba[i][ACOMP], texel[i][ACOMP]);
+               }
+               break;
+            case GL_INTENSITY:
+               for (i=0;i<n;i++) {
+                  GLubyte It = texel[i][RCOMP];
+                  GLuint r = rgba[i][RCOMP] + It;
+                  GLuint g = rgba[i][GCOMP] + It;
+                  GLuint b = rgba[i][BCOMP] + It;
+                  GLuint a = rgba[i][ACOMP] + It;
+                  rgba[i][RCOMP] = r < 256 ? (GLubyte) r : 255;
+                  rgba[i][GCOMP] = g < 256 ? (GLubyte) g : 255;
+                  rgba[i][BCOMP] = b < 256 ? (GLubyte) b : 255;
+                  rgba[i][ACOMP] = a < 256 ? (GLubyte) a : 255;
+               }
+               break;
+	    case GL_RGB:
+	       for (i=0;i<n;i++) {
+                  GLuint r = rgba[i][RCOMP] + texel[i][RCOMP];
+                  GLuint g = rgba[i][GCOMP] + texel[i][GCOMP];
+                  GLuint b = rgba[i][BCOMP] + texel[i][BCOMP];
+		  rgba[i][RCOMP] = r < 256 ? (GLubyte) r : 255;
+		  rgba[i][GCOMP] = g < 256 ? (GLubyte) g : 255;
+		  rgba[i][BCOMP] = b < 256 ? (GLubyte) b : 255;
+		  /* Av = Af */
+	       }
+	       break;
+	    case GL_RGBA:
+	       for (i=0;i<n;i++) {
+                  GLuint r = rgba[i][RCOMP] + texel[i][RCOMP];
+                  GLuint g = rgba[i][GCOMP] + texel[i][GCOMP];
+                  GLuint b = rgba[i][BCOMP] + texel[i][BCOMP];
+		  rgba[i][RCOMP] = r < 256 ? (GLubyte) r : 255;
+		  rgba[i][GCOMP] = g < 256 ? (GLubyte) g : 255;
+		  rgba[i][BCOMP] = b < 256 ? (GLubyte) b : 255;
+                  rgba[i][ACOMP] = PROD(rgba[i][ACOMP], texel[i][ACOMP]);
+               }
+               break;
+            default:
+               gl_problem(ctx, "Bad format (GL_ADD) in apply_texture");
                return;
 	 }
 	 break;

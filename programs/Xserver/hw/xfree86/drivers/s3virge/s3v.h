@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.17 1999/12/03 19:17:35 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.19 2000/02/08 13:13:20 eich Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -121,7 +121,7 @@ void S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file);
 /* Driver data structure; this should contain all needed info for a mode */
 /* used to be in s3v_driver.h for pre 4.0 */
 typedef struct {      
-   unsigned char SR8;
+   unsigned char SR08, SR0A, SR0F;
    unsigned char SR10, SR11, SR12, SR13, SR15, SR18; /* SR9-SR1C, ext seq. */
    unsigned char SR29;
    unsigned char SR54, SR55, SR56, SR57;
@@ -228,6 +228,7 @@ typedef struct {
   Bool 		fifo_aggressive;
   /* Set memory options */
   Bool 		slow_edodram;
+  Bool 		slow_dram;
   Bool 		fast_dram;
   Bool 		fpm_vram;
   /* Disable Acceleration */

@@ -1,4 +1,4 @@
-/* $Id: 3dnow.h,v 1.1 1999/12/14 01:32:13 robin Exp $ */
+/* $Id: 3dnow.h,v 1.2 2000/02/08 17:18:17 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

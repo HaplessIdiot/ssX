@@ -1,12 +1,12 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.5 1999/12/31 22:30:29 robin Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.6 2000/01/23 18:23:14 dawes Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
 <!-- XFree86 version string -->
-<!ENTITY relvers CDATA "3.9.17">
-<!ENTITY prevrelvers CDATA "3.9.16">
-<!ENTITY srcvers CDATA "3917">
-<!ENTITY prevsrcvers CDATA "3916">
+<!ENTITY relvers CDATA "3.9.18">
+<!ENTITY prevrelvers CDATA "3.9.17">
+<!ENTITY srcvers CDATA "3918">
+<!ENTITY prevsrcvers CDATA "3917">
 <!-- Version of the most recent 3.3.x release -->
 <!ENTITY legacyvers CDATA "3.3.6">
 

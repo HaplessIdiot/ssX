@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.3 1999/08/14 10:49:16 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.4 1999/12/14 01:33:38 robin Exp $
 XCOMM $PI: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.6 1999/06/21 05:13:55 martin Exp $
 
 #define DoNormalLib NormalLibGlx
@@ -14,6 +14,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #if BuildXF86DRI
   DRI_DEFINES = GlxDefines
  DRI_INCLUDES = -I../../../../dri -I../../../../glx \
+		-I../../../dri \
 		-I$(TOP)/include -I$(TOP)/include/GL \
 		-I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri \
 		-I$(XF86DRIVERSRC)/glint \
@@ -24,10 +25,32 @@ MESA_INCLUDES = -I. -I.. -I../../include
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)
-         SRCS = gamma_gl.c gamma_xmesa.c gamma_init.c gamma_matrix.c \
+
+      DRISRCS = ../../../dri/dri_mesa.c \
+		../../../../dri/dri_tmm.c
+
+      DRIOBJS = ../../../dri/dri_mesa.o \
+		../../../../dri/dri_tmm.o
+
+      DRMSRCS = ../../../../dri/drm/xf86drm.c \
+		../../../../dri/drm/xf86drmHash.c \
+		../../../../dri/drm/xf86drmRandom.c \
+		../../../../dri/drm/xf86drmSL.c
+
+      DRMOBJS = ../../../../dri/drm/xf86drm.o \
+		../../../../dri/drm/xf86drmHash.o \
+		../../../../dri/drm/xf86drmRandom.o \
+		../../../../dri/drm/xf86drmSL.o
+
+    GAMMASRCS = gamma_gl.c gamma_xmesa.c gamma_init.c gamma_matrix.c \
                 gamma_inithw.c gamma_texture.c
-         OBJS = gamma_gl.o gamma_xmesa.o gamma_init.o gamma_matrix.o \
+
+    GAMMAOBJS = gamma_gl.o gamma_xmesa.o gamma_init.o gamma_matrix.o \
                 gamma_inithw.o gamma_texture.o
+
+	 SRCS = $(DRISRCS) $(DRMSRCS) $(GAMMASRCS)
+	 OBJS = $(DRIOBJS) $(DRMOBJS) $(GAMMAOBJS)
+
 
 #if !GlxUseBuiltInDRIDriver
 #undef DoNormalLib NormalLibGlx

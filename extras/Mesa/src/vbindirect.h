@@ -1,4 +1,4 @@
-/* $Id: vbindirect.h,v 1.1 1999/12/14 01:31:59 robin Exp $ */
+/* $Id: vbindirect.h,v 1.2 2000/02/08 17:17:44 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

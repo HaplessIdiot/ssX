@@ -172,7 +172,13 @@ XMesaContext XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
   c->private = (void *)cPriv;
 
   cPriv->glVis=v->gl_visual;
-  cPriv->glBuffer=gl_create_framebuffer(v->gl_visual);
+  cPriv->glBuffer=gl_create_framebuffer(v->gl_visual,
+                                        GL_FALSE,  /* software depth buffer? */
+                                        v->gl_visual->StencilBits > 0,
+                                        v->gl_visual->AccumBits > 0,
+                                        v->gl_visual->AlphaBits > 0
+                                        );
+
   cPriv->screen_width=sPriv->width;
   cPriv->screen_height=sPriv->height;
 
@@ -200,9 +206,14 @@ void XMesaDestroyContext(XMesaContext c)
   tdfxContextPrivate *cPriv;
 
   cPriv=(tdfxContextPrivate*)c->private;
+  fprintf(stderr, "Destory context cPriv=%x\n", cPriv);
   if (cPriv) {
     gl_destroy_context(cPriv->glCtx);
     gl_destroy_framebuffer(cPriv->glBuffer);
+  }
+  if (c==gCC) {
+    gCC=0;
+    gCCPriv=0;
   }
 }
 
@@ -225,6 +236,11 @@ void XMesaDestroyBuffer(XMesaBuffer b)
 void XMesaSwapBuffers(XMesaBuffer b)
 {
   FxI32 result;
+#ifdef STATS
+  int stalls;
+  extern int texSwaps;
+  static int prevStalls=0;
+#endif
   /*
   ** NOT_DONE: This assumes buffer is currently bound to a context.
   ** This needs to be able to swap buffers when not currently bound.
@@ -234,6 +250,17 @@ void XMesaSwapBuffers(XMesaBuffer b)
   FLUSH_VB( gCCPriv->glCtx, "swap buffers" );
 
   if (gCCPriv->haveDoubleBuffer) {
+#ifdef STATS
+    stalls=grFifoGetStalls();
+    if (stalls!=prevStalls) {
+      fprintf(stderr, "%d stalls occurred\n", stalls-prevStalls);
+      prevStalls=stalls;
+    }
+    if (texSwaps) {
+      fprintf(stderr, "%d texture swaps occurred\n", texSwaps);
+      texSwaps=0;
+    }
+#endif
     FX_grDRIBufferSwap(gCCPriv->swapInterval);
     do {
       result=FX_grGetInteger(FX_PENDING_BUFFERSWAPS);
@@ -254,7 +281,6 @@ GLboolean XMesaMakeCurrent(XMesaContext c, XMesaBuffer b)
     gCC     = c;
     gCCPriv = (tdfxContextPrivate *)c->private;
 
-    fprintf(stderr, "Make current\n");
     driDrawPriv = gCC->driContextPriv->driDrawablePriv;
     if (!gCCPriv->initDone) {
       gCCPriv->width=driDrawPriv->w;
@@ -319,6 +345,7 @@ XMesaWindowMoved() {
   }
 }
 
+/* This is called from within the LOCK_HARDWARE routine */
 void XMesaUpdateState(int windowMoved) {
   __DRIdrawablePrivate *dPriv = gCC->driContextPriv->driDrawablePriv;
   __DRIscreenPrivate *sPriv = dPriv->driScreenPriv;
@@ -334,7 +361,7 @@ void XMesaUpdateState(int windowMoved) {
     /* FX_grConstantColorValue_NoLock(FXCOLOR4(&gCCPriv->constColor)); */
   }
   if (saPriv->texOwner!=dPriv->driContextPriv->hHWContext) {
-    fxTMRestoreTextures(gCCPriv);
+    fxTMRestoreTextures_NoLock(gCCPriv);
   }
   if (windowMoved)
     XMesaWindowMoved();

@@ -957,25 +957,23 @@ fxMesaContext GLAPIENTRY fxMesaCreateContext(GLuint win,
    fxMesa->verbose=verbose;
    fxMesa->board=glbCurrentBoard;
 
+
+   fxMesa->glideContext = FX_grSstWinOpen((FxU32)win,res,ref,
 #if  FXMESA_USE_ARGB
-   fxMesa->glideContext = FX_grSstWinOpen((FxU32)win,res,ref,
-					GR_COLORFORMAT_ARGB,
-					GR_ORIGIN_LOWER_LEFT,
-					2,aux);
+					  GR_COLORFORMAT_ARGB,
 #else
-   fxMesa->glideContext = FX_grSstWinOpen((FxU32)win,res,ref,
-					GR_COLORFORMAT_ABGR,
-					GR_ORIGIN_LOWER_LEFT,
-					2,aux);
+					  GR_COLORFORMAT_ABGR,
 #endif
+					  GR_ORIGIN_LOWER_LEFT,
+					  2,aux);
    if (!fxMesa->glideContext){
       errorstr = "grSstWinOpen"; 
       goto errorhandler;
    }
-   
+
    /* Pixel tables are use during pixel read-back */
 #if FXMESA_USE_ARGB 
-   fxInitPixelTables(GL_FALSE); /* Force RGB pixel order */	
+   fxInitPixelTables(fxMesa, GL_FALSE); /* Force RGB pixel order */	
 #else
    if (glbHWConfig.SSTs[glbCurrentBoard].type == GR_SSTTYPE_VOODOO) {
       /* jk991130 - GROSS HACK!!! - Voodoo 3s don't use BGR!!
@@ -985,14 +983,14 @@ fxMesaContext GLAPIENTRY fxMesaCreateContext(GLuint win,
        * Thanks to Joseph Kain for that one
        */
       if (glbHWConfig.SSTs[glbCurrentBoard].sstBoard.VoodooConfig.nTexelfx == 2) {
-         fxInitPixelTables(GL_FALSE); /* use RGB pixel order (Voodoo3) */
+         fxInitPixelTables(fxMesa, GL_FALSE); /* use RGB pixel order (Voodoo3) */
       }
       else {
-         fxInitPixelTables(GL_TRUE); /* use BGR pixel order on Voodoo1/2 */
+         fxInitPixelTables(fxMesa, GL_TRUE); /* use BGR pixel order on Voodoo1/2 */
       }
    }
    else {
-      fxInitPixelTables(GL_FALSE); /* use RGB pixel order otherwise */
+      fxInitPixelTables(fxMesa, GL_FALSE); /* use RGB pixel order otherwise */
    }
 #endif
 
@@ -1045,7 +1043,11 @@ fxMesaContext GLAPIENTRY fxMesaCreateContext(GLuint win,
    }
 
 
-   fxMesa->glBuffer=gl_create_framebuffer(fxMesa->glVis);
+   fxMesa->glBuffer=gl_create_framebuffer(fxMesa->glVis,
+                                          GL_FALSE,  /* no software depth */
+                                          fxMesa->glVis->StencilBits > 0,
+                                          fxMesa->glVis->AccumBits > 0,
+                                          fxMesa->glVis->AlphaBits > 0 );
    if (!fxMesa->glBuffer) {
       errorstr = "gl_create_framebuffer";
       goto errorhandler;

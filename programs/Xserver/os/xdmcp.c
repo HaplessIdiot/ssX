@@ -1,5 +1,5 @@
 /* $XConsortium: xdmcp.c /main/34 1996/12/02 10:23:29 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.11 1998/12/13 07:37:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.12 1999/02/24 03:21:58 dawes Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -308,7 +308,10 @@ XdmcpOptions(int argc, char **argv, int i)
 	return (i + 1);
     }
     if (strcmp(argv[i], "-port") == 0) {
-	++i;
+        if (++i == argc)  {
+	    ErrorF("Xserver: missing port number in command line\n");
+	    exit(1);
+	}
 	xdm_udp_port = atoi(argv[i]);
 	return (i + 1);
     }
@@ -322,18 +325,28 @@ XdmcpOptions(int argc, char **argv, int i)
     }
     if (strcmp(argv[i], "-class") == 0) {
 	++i;
+        if (++i == argc)  {
+	    ErrorF("Xserver: missing class name in command line\n");
+	    exit(1);
+	}
 	defaultDisplayClass = argv[i];
 	return (i + 1);
     }
 #ifdef HASXDMAUTH
     if (strcmp(argv[i], "-cookie") == 0) {
-	++i;
+        if (++i == argc)  {
+	    ErrorF("Xserver: missing cookie data in command line\n");
+	    exit(1);
+	}
 	xdmAuthCookie = argv[i];
 	return (i + 1);
     }
 #endif
     if (strcmp(argv[i], "-displayID") == 0) {
-	++i;
+        if (++i == argc)  {
+	    ErrorF("Xserver: missing displayID in command line\n");
+	    exit(1);
+	}
 	XdmcpRegisterManufacturerDisplayID (argv[i], strlen (argv[i]));
 	return (i + 1);
     }

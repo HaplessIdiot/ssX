@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.1 1999/06/14 07:23:37 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -37,16 +37,44 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "indirect_init.h"
 #include "indirect.h"
-#include "dri_glapi.h"
+#include "glapi.h"
 
-void glInitIndirectAPI(__GLapi *glAPI)
+
+/*
+** No-op function
+*/
+static int NoOp(void)
 {
-    static initialized = 0;
+    return 0;
+}
 
-    if (initialized)
-	return;
-    initialized = 1;
 
+/*
+** Initialize the given dispatch table to all no-op functions.
+*/
+static void InitNoOpAPI(__GLapi *glAPI)
+{
+    const int entries = sizeof(__GLapi) / sizeof(void *);
+    int i;
+    void **dispatch = (void **) glAPI;
+
+    for (i = 0; i < entries; i++) {
+       dispatch[i] = (void *) NoOp;
+    }
+}
+
+
+__GLapi *__glXNewIndirectAPI(void)
+{
+    __GLapi *glAPI;
+    const GLuint entries = _glapi_get_dispatch_table_size();
+
+    glAPI = (__GLapi *) Xmalloc(entries * sizeof(void *));
+
+    /* first, set all entries to point to no-op functions */
+    InitNoOpAPI(glAPI);
+
+    /* now, initialize the entries we understand */
     glAPI->Accum = __indirect_glAccum;
     glAPI->AlphaFunc = __indirect_glAlphaFunc;
     glAPI->AreTexturesResident = __indirect_glAreTexturesResident;
@@ -383,6 +411,8 @@ void glInitIndirectAPI(__GLapi *glAPI)
     glAPI->Vertex4sv = __indirect_glVertex4sv;
     glAPI->VertexPointer = __indirect_glVertexPointer;
     glAPI->Viewport = __indirect_glViewport;
+
+    return glAPI;
 }
 
 #endif

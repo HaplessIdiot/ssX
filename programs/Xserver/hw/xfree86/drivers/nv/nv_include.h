@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_include.h,v 1.4 1999/10/31 23:54:39 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_include.h,v 1.5 2000/01/30 17:58:44 dawes Exp $ */
 
 #ifndef __NV_INCLUDE_H__
 #define __NV_INCLUDE_H__
@@ -52,6 +52,7 @@
 
 #include "region.h"
 
+#include "nv_local.h"
 #include "nv_const.h"
 #include "nv_type.h"
 #include "nv_proto.h"

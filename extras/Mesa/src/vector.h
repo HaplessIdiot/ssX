@@ -1,8 +1,8 @@
-/* $Id: vector.h,v 1.1 1999/12/14 01:32:00 robin Exp $ */
+/* $Id: vector.h,v 1.2 2000/02/08 17:17:45 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -32,7 +32,8 @@
 #ifndef _VECTOR_H_
 #define _VECTOR_H_
 
-#include "GL/gl.h"
+#include "glheader.h"
+
 
 /* Wrap all the information about vertices up in a struct.  Has
  * additional fields compared to the other vectors to help us track of

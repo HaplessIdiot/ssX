@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/xtermcfg.hin,v 3.28 2000/01/18 16:36:05 tsi Exp $
+ * $XFree86: xc/programs/xterm/xtermcfg.hin,v 3.29 2000/01/24 22:22:00 dawes Exp $
  */
 
 /************************************************************
@@ -41,7 +41,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #undef DFT_TERMTYPE		/* AC_ARG_WITH(default-term-type) */
 #undef HAVE_LASTLOG_H		/* CF_LASTLOG */
 #undef HAVE_PATHS_H		/* CF_LASTLOG */
-#undef HAVE_POSIX_VDISABLE	/* CF_POSIX_VDISABLE */
 #undef HAVE_STDLIB_H		/* AC_CHECK_HEADERS(stdlib.h) */
 #undef HAVE_STRERROR		/* AC_CHECK_FUNCS(strerror) */
 #undef HAVE_SYS_WAIT_H		/* AC_HEADER_SYS_WAIT */

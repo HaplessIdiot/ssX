@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-/* $XFree86: xc/include/GL/gl.h,v 1.3 1999/12/14 01:32:21 robin Exp $ */
+/* $XFree86: xc/include/GL/gl.h,v 1.4 2000/01/20 21:46:16 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -1552,6 +1552,8 @@ extern void glArrayElementEXT (GLint i);
 extern void glBegin (GLenum mode);
 extern void glBindTexture (GLenum target, GLuint texture);
 extern void glBitmap (GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove, const GLubyte *bitmap);
+extern void glBlendColorEXT (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+extern void glBlendEquationEXT (GLenum mode);
 extern void glBlendFunc (GLenum sfactor, GLenum dfactor);
 extern void glCallList (GLuint list);
 extern void glCallLists (GLsizei n, GLenum type, const GLvoid *lists);
@@ -1603,6 +1605,7 @@ extern void glCopyTexImage1D (GLenum target, GLint level, GLenum internalformat,
 extern void glCopyTexImage2D (GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
 extern void glCopyTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width);
 extern void glCopyTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
+extern void glCopyTexSubImage3D( GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height );
 extern void glCullFace (GLenum mode);
 extern void glDeleteLists (GLuint list, GLsizei range);
 extern void glDeleteTextures (GLsizei n, const GLuint *textures);
@@ -1615,6 +1618,7 @@ extern void glDrawArrays (GLenum mode, GLint first, GLsizei count);
 extern void glDrawBuffer (GLenum mode);
 extern void glDrawElements (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
 extern void glDrawPixels (GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
+extern void glDrawRangeElements (GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
 extern void glEdgeFlag (GLboolean flag);
 extern void glEdgeFlagPointer (GLsizei stride, const GLvoid *pointer);
 extern void glEdgeFlagPointerEXT (GLsizei stride, GLsizei count, const GLboolean *pointer);
@@ -1854,12 +1858,14 @@ extern void glTexGeni (GLenum coord, GLenum pname, GLint param);
 extern void glTexGeniv (GLenum coord, GLenum pname, const GLint *params);
 extern void glTexImage1D (GLenum target, GLint level, GLint components, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 extern void glTexImage2D (GLenum target, GLint level, GLint components, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
+extern void glTexImage3D (GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 extern void glTexParameterf (GLenum target, GLenum pname, GLfloat param);
 extern void glTexParameterfv (GLenum target, GLenum pname, const GLfloat *params);
 extern void glTexParameteri (GLenum target, GLenum pname, GLint param);
 extern void glTexParameteriv (GLenum target, GLenum pname, const GLint *params);
 extern void glTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels);
 extern void glTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
+extern void glTexSubImage3D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
 extern void glTranslated (GLdouble x, GLdouble y, GLdouble z);
 extern void glTranslatef (GLfloat x, GLfloat y, GLfloat z);
 extern void glUnlockArraysEXT (void);

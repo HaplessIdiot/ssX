@@ -1,8 +1,8 @@
-/* $Id: translate.c,v 1.1 1999/12/14 01:31:55 robin Exp $ */
+/* $Id: translate.c,v 1.2 2000/02/08 17:17:40 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -29,9 +29,19 @@
  */
 
 
-#include "types.h"
-#include "translate.h"
+#ifdef PC_HEADER
+#include "all.h"
+#else
+#include "glheader.h"
+#include "mem.h"
 #include "mmath.h"
+#include "translate.h"
+#include "types.h"
+#endif
+
+/* This macro is used on other systems, so undefine it for this module */
+
+#undef	CHECK
 
 trans_1ui_func gl_trans_1ui_tab[MAX_TYPES];
 trans_1ub_func gl_trans_1ub_tab[MAX_TYPES];
@@ -49,7 +59,7 @@ trans_elt_4f_func  gl_trans_elt_4f_tab[5][MAX_TYPES];
 #define PTR_ELT(ptr, elt) (((SRC *)ptr)[elt])
 
 
-#define TAB(x) gl_trans_##x##_tab
+#define TAB(x) gl_trans##x##_tab
 #define ARGS   GLuint start, GLuint n
 #define SRC_START  start
 #define DST_START  0
@@ -412,13 +422,13 @@ static void trans_4_GLubyte_4ub_raw (GLubyte (*t)[4],
 
 static void init_translate_raw(void)
 {
-   MEMSET( TAB(1ui), 0, sizeof(TAB(1ui)) );
-   MEMSET( TAB(1ub), 0, sizeof(TAB(1ub)) );
-   MEMSET( TAB(3f),  0, sizeof(TAB(3f)) );
-   MEMSET( TAB(4ub), 0, sizeof(TAB(4ub)) );
-   MEMSET( TAB(4f),  0, sizeof(TAB(4f)) );
+   MEMSET( TAB(_1ui), 0, sizeof(TAB(_1ui)) );
+   MEMSET( TAB(_1ub), 0, sizeof(TAB(_1ub)) );
+   MEMSET( TAB(_3f),  0, sizeof(TAB(_3f)) );
+   MEMSET( TAB(_4ub), 0, sizeof(TAB(_4ub)) );
+   MEMSET( TAB(_4f),  0, sizeof(TAB(_4f)) );
 
-   TAB(4ub)[4][TYPE_IDX(GL_UNSIGNED_BYTE)] = trans_4_GLubyte_4ub_raw;
+   TAB(_4ub)[4][TYPE_IDX(GL_UNSIGNED_BYTE)] = trans_4_GLubyte_4ub_raw;
 
    init_trans_4_GLbyte_raw();
    init_trans_3_GLbyte_raw();
@@ -475,13 +485,13 @@ static void init_translate_raw(void)
  *
  * That the correct value for normal is used.  
  */
-#define TAB(x) gl_trans_elt_##x##_tab
+#define TAB(x) gl_trans_elt##x##_tab
 #define ARGS   GLuint *flags, GLuint *elts, GLuint match, \
                GLuint start, GLuint n
 #define SRC_START  0
 #define DST_START  start
 #define CHECK  if ((flags[i]&match) == VERT_ELT)
-#define NEXT_F  1
+#define NEXT_F  (void)1
 #define NEXT_F2 f = first + elts[i] * stride; 
 
 
@@ -842,13 +852,13 @@ static void trans_4_GLubyte_4ub(GLubyte (*t)[4],
 
 static void init_translate_elt(void)
 {
-   MEMSET( TAB(1ui), 0, sizeof(TAB(1ui)) );
-   MEMSET( TAB(1ub), 0, sizeof(TAB(1ub)) );
-   MEMSET( TAB(3f),  0, sizeof(TAB(3f)) );
-   MEMSET( TAB(4ub), 0, sizeof(TAB(4ub)) );
-   MEMSET( TAB(4f),  0, sizeof(TAB(4f)) );
+   MEMSET( TAB(_1ui), 0, sizeof(TAB(_1ui)) );
+   MEMSET( TAB(_1ub), 0, sizeof(TAB(_1ub)) );
+   MEMSET( TAB(_3f),  0, sizeof(TAB(_3f)) );
+   MEMSET( TAB(_4ub), 0, sizeof(TAB(_4ub)) );
+   MEMSET( TAB(_4f),  0, sizeof(TAB(_4f)) );
 
-   TAB(4ub)[4][TYPE_IDX(GL_UNSIGNED_BYTE)] = trans_4_GLubyte_4ub;
+   TAB(_4ub)[4][TYPE_IDX(GL_UNSIGNED_BYTE)] = trans_4_GLubyte_4ub;
 
    init_trans_4_GLbyte_elt();
    init_trans_3_GLbyte_elt();

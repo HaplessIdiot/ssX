@@ -1,4 +1,4 @@
-/* $Id: lnaatemp.h,v 1.4 2000/01/18 17:14:25 tsi Exp $ */
+/* $Id: lnaatemp.h,v 1.5 2000/02/08 17:17:22 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -47,7 +47,7 @@
  *
  * This code was designed for the origin to be in the lower-left corner.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/lnaatemp.h,v 1.4 2000/01/18 17:14:25 tsi Exp $ */
 
 /* void aa_line( GLcontext *ctx, GLuint vert0, GLuint vert1, GLuint pvert ) */
 {

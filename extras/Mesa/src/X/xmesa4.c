@@ -1,8 +1,8 @@
-/* $Id: xmesa4.c,v 1.1 1999/12/14 01:32:13 robin Exp $ */
+/* $Id: xmesa4.c,v 1.2 2000/02/08 17:18:15 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,7 +25,6 @@
  */
 
 
-
 /*
  * Mesa/X11 interface, part 4.
  *
@@ -33,33 +32,15 @@
  * fairly easy to write new special-purpose triangle functions and hook
  * them into this module.
  */
-/* $XFree86: xc/lib/GL/mesa/src/X/xmesa4.c,v 1.2 1999/03/14 03:21:03 dawes Exp $ */
-
-struct timespec;  /* this silences a compiler warning on several systems */
-struct itimerspec;
 
 
-#ifdef HAVE_CONFIG_H
-#include "conf.h"
-#endif
-
-
-#ifndef XFree86Server
-#include <sys/time.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <X11/Xlib.h>
-#endif
+#include "glxheader.h"
 #include "depth.h"
 #include "macros.h"
 #include "vb.h"
 #include "types.h"
 #include "xmesaP.h"
-#ifdef XFree86Server
-#include "gcstruct.h"
-#include "GL/xf86glx.h"
-#endif
+
 
 
 
@@ -95,12 +76,12 @@ static void flat_pixmap_triangle( GLcontext *ctx,
       gc = xmesa->xm_buffer->gc2;
       XMesaSetForeground( xmesa->display, gc, pixel );
    }
-   p[0].x =       (GLint) (VB->Win.data[v0][0] + 0.5f);
-   p[0].y = FLIP( (GLint) (VB->Win.data[v0][1] - 0.5f) );
-   p[1].x =       (GLint) (VB->Win.data[v1][0] + 0.5f);
-   p[1].y = FLIP( (GLint) (VB->Win.data[v1][1] - 0.5f) );
-   p[2].x =       (GLint) (VB->Win.data[v2][0] + 0.5f);
-   p[2].y = FLIP( (GLint) (VB->Win.data[v2][1] - 0.5f) );
+   p[0].x =                         (GLint) (VB->Win.data[v0][0] + 0.5f);
+   p[0].y = FLIP( xmesa->xm_buffer, (GLint) (VB->Win.data[v0][1] - 0.5f) );
+   p[1].x =                         (GLint) (VB->Win.data[v1][0] + 0.5f);
+   p[1].y = FLIP( xmesa->xm_buffer, (GLint) (VB->Win.data[v1][1] - 0.5f) );
+   p[2].x =                         (GLint) (VB->Win.data[v2][0] + 0.5f);
+   p[2].y = FLIP( xmesa->xm_buffer, (GLint) (VB->Win.data[v2][1] - 0.5f) );
    XMesaFillPolygon( xmesa->display, xmesa->xm_buffer->buffer, gc,
 		     p, 3, Convex, CoordModeOrigin );
 }
@@ -120,7 +101,8 @@ static void smooth_TRUECOLOR_z_triangle( GLcontext *ctx,
 #define INTERP_RGB 1
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint i, xx = LEFT, yy = FLIP(Y), len = RIGHT-LEFT;			\
+   GLint i, xx = LEFT, yy = FLIP(xmesa->xm_buffer, Y);			\
+   GLint len = RIGHT-LEFT;						\
    for (i=0;i<len;i++,xx++) {						\
       GLdepth z = FixedToDepth(ffz);					\
       if (z < zRow[i]) {						\
@@ -149,7 +131,7 @@ static void smooth_8A8B8G8R_z_triangle( GLcontext *ctx,
    (void) pv;
 #define INTERP_Z 1
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR4(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
@@ -181,7 +163,7 @@ static void smooth_8R8G8B_z_triangle( GLcontext *ctx,
    (void) pv;
 #define INTERP_Z 1
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR4(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
@@ -213,7 +195,7 @@ static void smooth_8R8G8B24_z_triangle( GLcontext *ctx,
    (void) pv;
 #define INTERP_Z 1
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR3(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR3(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE bgr_t
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
@@ -250,7 +232,7 @@ static void smooth_TRUEDITHER_z_triangle( GLcontext *ctx,
 #define INTERP_RGB 1
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint i, xx = LEFT, yy = FLIP(Y), len = RIGHT-LEFT;			\
+   GLint i, xx = LEFT, yy = FLIP(xmesa->xm_buffer,Y), len = RIGHT-LEFT;	\
    for (i=0;i<len;i++,xx++) {						\
       GLdepth z = FixedToDepth(ffz);					\
       if (z < zRow[i]) {						\
@@ -279,7 +261,7 @@ static void smooth_5R6G5B_z_triangle( GLcontext *ctx,
    (void) pv;
 #define INTERP_Z 1
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR2(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
@@ -311,7 +293,7 @@ static void smooth_DITHER_5R6G5B_z_triangle( GLcontext *ctx,
    (void) pv;
 #define INTERP_Z 1
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR2(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
@@ -343,12 +325,12 @@ static void smooth_DITHER8_z_triangle( GLcontext *ctx,
    (void) pv;
 #define INTERP_Z 1
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint i, xx = LEFT, yy = FLIP(Y), len = RIGHT-LEFT;			\
+   GLint i, xx = LEFT, yy = FLIP(xmesa->xm_buffer,Y), len = RIGHT-LEFT;	\
    XDITHER_SETUP(yy);							\
    for (i=0;i<len;i++,xx++) {						\
       GLdepth z = FixedToDepth(ffz);					\
@@ -377,12 +359,12 @@ static void smooth_DITHER_z_triangle( GLcontext *ctx,
    (void) pv;
 #define INTERP_Z 1
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint i, xx = LEFT, yy = FLIP(Y), len = RIGHT-LEFT;			\
+   GLint i, xx = LEFT, yy = FLIP(xmesa->xm_buffer,Y), len = RIGHT-LEFT;	\
    XDITHER_SETUP(yy);							\
    for (i=0;i<len;i++,xx++) {						\
       GLdepth z = FixedToDepth(ffz);					\
@@ -410,7 +392,7 @@ static void smooth_LOOKUP8_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    (void) pv;
 #define INTERP_Z 1
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
@@ -443,12 +425,12 @@ static void smooth_HPCR_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    (void) pv;
 #define INTERP_Z 1
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint i, xx = LEFT, yy = FLIP(Y), len = RIGHT-LEFT;			\
+   GLint i, xx = LEFT, yy = FLIP(xmesa->xm_buffer,Y), len = RIGHT-LEFT;	\
    for (i=0;i<len;i++,xx++) {						\
       GLdepth z = FixedToDepth(ffz);					\
       if (z < zRow[i]) {						\
@@ -480,7 +462,7 @@ static void flat_TRUECOLOR_z_triangle( GLcontext *ctx,
 
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint i, xx = LEFT, yy = FLIP(Y), len = RIGHT-LEFT;			\
+   GLint i, xx = LEFT, yy = FLIP(xmesa->xm_buffer,Y), len = RIGHT-LEFT;	\
    for (i=0;i<len;i++,xx++) {						\
       GLdepth z = FixedToDepth(ffz);					\
       if (z < zRow[i]) {						\
@@ -502,7 +484,7 @@ static void flat_8A8B8G8R_z_triangle( GLcontext *ctx, GLuint v0,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
 #define INTERP_Z 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR4(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define SETUP_CODE					\
@@ -532,7 +514,7 @@ static void flat_8R8G8B_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
 #define INTERP_Z 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR4(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define SETUP_CODE					\
@@ -563,7 +545,7 @@ static void flat_8R8G8B24_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    const GLubyte *color = ctx->VB->ColorPtr->data[pv];
 #define INTERP_Z 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR3(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR3(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE bgr_t
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )			\
@@ -596,7 +578,7 @@ static void flat_TRUEDITHER_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 #define INTERP_Z 1
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint i, xx = LEFT, yy = FLIP(Y), len = RIGHT-LEFT;			\
+   GLint i, xx = LEFT, yy = FLIP(xmesa->xm_buffer,Y), len = RIGHT-LEFT;	\
    for (i=0;i<len;i++,xx++) {						\
       GLdepth z = FixedToDepth(ffz);					\
       if (z < zRow[i]) {						\
@@ -621,7 +603,7 @@ static void flat_5R6G5B_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
 #define INTERP_Z 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR2(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define SETUP_CODE							\
@@ -652,7 +634,7 @@ static void flat_DITHER_5R6G5B_z_triangle( GLcontext *ctx, GLuint v0,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    const GLubyte *color = ctx->VB->ColorPtr->data[pv];
 #define INTERP_Z 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR2(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )				\
@@ -680,7 +662,7 @@ static void flat_DITHER8_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
 #define INTERP_Z 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define SETUP_CODE	\
@@ -689,7 +671,7 @@ static void flat_DITHER8_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 #define INNER_LOOP( LEFT, RIGHT, Y )				\
 {								\
    GLint i, xx = LEFT, len = RIGHT-LEFT;			\
-   FLAT_DITHER_ROW_SETUP(FLIP(Y));				\
+   FLAT_DITHER_ROW_SETUP(FLIP(xmesa->xm_buffer, Y));		\
    for (i=0;i<len;i++,xx++) {					\
       GLdepth z = FixedToDepth(ffz);				\
       if (z < zRow[i]) {					\
@@ -717,7 +699,7 @@ static void flat_DITHER_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint i, xx = LEFT, yy = FLIP(Y), len = RIGHT-LEFT;			\
+   GLint i, xx = LEFT, yy = FLIP(xmesa->xm_buffer,Y), len = RIGHT-LEFT;	\
    FLAT_DITHER_ROW_SETUP(yy);						\
    for (i=0;i<len;i++,xx++) {						\
       GLdepth z = FixedToDepth(ffz);					\
@@ -741,7 +723,7 @@ static void flat_HPCR_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
 #define INTERP_Z 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define SETUP_CODE				\
@@ -750,7 +732,7 @@ static void flat_HPCR_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    GLubyte b = VB->ColorPtr->data[pv][2];
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint i, xx = LEFT, yy = FLIP(Y), len = RIGHT-LEFT;			\
+   GLint i, xx = LEFT, yy = FLIP(xmesa->xm_buffer,Y), len = RIGHT-LEFT;	\
    for (i=0;i<len;i++,xx++) {						\
       GLdepth z = FixedToDepth(ffz);					\
       if (z < zRow[i]) {						\
@@ -772,7 +754,7 @@ static void flat_LOOKUP8_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
 #define INTERP_Z 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define SETUP_CODE				\
@@ -810,7 +792,7 @@ static void smooth_TRUECOLOR_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 #define INTERP_RGB 1
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint xx, yy = FLIP(Y);						\
+   GLint xx, yy = FLIP(xmesa->xm_buffer, Y);				\
    for (xx=LEFT;xx<RIGHT;xx++) {					\
       unsigned long p;							\
       PACK_TRUECOLOR(p, FixedToInt(ffr), FixedToInt(ffg), FixedToInt(ffb));\
@@ -831,7 +813,7 @@ static void smooth_8A8B8G8R_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR4(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
@@ -857,7 +839,7 @@ static void smooth_8R8G8B_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR4(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
@@ -883,7 +865,7 @@ static void smooth_8R8G8B24_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR3(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR3(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE bgr_t
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )				\
@@ -914,7 +896,7 @@ static void smooth_TRUEDITHER_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 #define INTERP_RGB 1
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint xx, yy = FLIP(Y);						\
+   GLint xx, yy = FLIP(xmesa->xm_buffer, Y);				\
    for (xx=LEFT;xx<RIGHT;xx++) {					\
       unsigned long p;							\
       PACK_TRUEDITHER( p, xx, yy, FixedToInt(ffr), FixedToInt(ffg),	\
@@ -936,7 +918,7 @@ static void smooth_5R6G5B_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR2(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
@@ -962,7 +944,7 @@ static void smooth_DITHER_5R6G5B_triangle( GLcontext *ctx, GLuint v0,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR2(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
@@ -988,12 +970,12 @@ static void smooth_DITHER8_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint xx, yy = FLIP(Y);						\
+   GLint xx, yy = FLIP(xmesa->xm_buffer, Y);				\
    PIXEL_TYPE *pixel = pRow;						\
    XDITHER_SETUP(yy);							\
    for (xx=LEFT;xx<RIGHT;xx++,pixel++) {				\
@@ -1018,7 +1000,7 @@ static void smooth_DITHER_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 #define INTERP_RGB 1
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint xx, yy = FLIP(Y);						\
+   GLint xx, yy = FLIP(xmesa->xm_buffer, Y);				\
    XDITHER_SETUP(yy);							\
    for (xx=LEFT;xx<RIGHT;xx++) {					\
       unsigned long p = XDITHER( xx, FixedToInt(ffr),			\
@@ -1040,7 +1022,7 @@ static void smooth_LOOKUP8_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
@@ -1068,12 +1050,12 @@ static void smooth_HPCR_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_RGB 1
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint xx, yy = FLIP(Y);						\
+   GLint xx, yy = FLIP(xmesa->xm_buffer, Y);				\
    PIXEL_TYPE *pixel = pRow;						\
    for (xx=LEFT;xx<RIGHT;xx++,pixel++) {				\
       *pixel = DITHER_HPCR( xx, yy, FixedToInt(ffr),			\
@@ -1099,7 +1081,7 @@ static void flat_TRUECOLOR_triangle( GLcontext *ctx, GLuint v0,
 
 #define INNER_LOOP( LEFT, RIGHT, Y )				\
 {								\
-   GLint xx, yy = FLIP(Y);					\
+   GLint xx, yy = FLIP(xmesa->xm_buffer, Y);			\
    for (xx=LEFT;xx<RIGHT;xx++) {				\
       XMesaPutPixel( img, xx, yy, pixel );			\
    }								\
@@ -1115,7 +1097,7 @@ static void flat_8A8B8G8R_triangle( GLcontext *ctx, GLuint v0,
                         	    GLuint v1, GLuint v2, GLuint pv )
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-#define PIXEL_ADDRESS(X,Y) PIXELADDR4(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define SETUP_CODE					\
@@ -1140,7 +1122,7 @@ static void flat_8R8G8B_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
                                   GLuint v2, GLuint pv )
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-#define PIXEL_ADDRESS(X,Y) PIXELADDR4(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define SETUP_CODE					\
@@ -1166,7 +1148,7 @@ static void flat_8R8G8B24_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    const GLubyte *color = ctx->VB->ColorPtr->data[pv];
-#define PIXEL_ADDRESS(X,Y) PIXELADDR3(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR3(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE bgr_t
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )			\
@@ -1193,7 +1175,7 @@ static void flat_TRUEDITHER_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaImage *img = xmesa->xm_buffer->backimage;
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
-   GLint xx, yy = FLIP(Y);						\
+   GLint xx, yy = FLIP(xmesa->xm_buffer, Y);				\
    for (xx=LEFT;xx<RIGHT;xx++) {					\
       unsigned long p;							\
       PACK_TRUEDITHER( p, xx, yy, VB->ColorPtr->data[pv][0],		\
@@ -1213,7 +1195,7 @@ static void flat_5R6G5B_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
                                   GLuint v2, GLuint pv )
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-#define PIXEL_ADDRESS(X,Y) PIXELADDR2(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define SETUP_CODE					\
@@ -1239,7 +1221,7 @@ static void flat_DITHER_5R6G5B_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    const GLubyte *color = ctx->VB->ColorPtr->data[pv];
-#define PIXEL_ADDRESS(X,Y) PIXELADDR2(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define INNER_LOOP( LEFT, RIGHT, Y )			\
@@ -1262,7 +1244,7 @@ static void flat_DITHER8_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
                                    GLuint v2, GLuint pv )
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define SETUP_CODE	\
@@ -1272,7 +1254,7 @@ static void flat_DITHER8_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {							\
    GLint xx;						\
    PIXEL_TYPE *pixel = pRow;				\
-   FLAT_DITHER_ROW_SETUP(FLIP(Y));			\
+   FLAT_DITHER_ROW_SETUP(FLIP(xmesa->xm_buffer, Y));	\
    for (xx=LEFT;xx<RIGHT;xx++,pixel++) {		\
       *pixel = (PIXEL_TYPE) FLAT_DITHER(xx);		\
    }							\
@@ -1294,7 +1276,7 @@ static void flat_DITHER_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 
 #define INNER_LOOP( LEFT, RIGHT, Y )			\
 {							\
-   GLint xx, yy = FLIP(Y);				\
+   GLint xx, yy = FLIP(xmesa->xm_buffer, Y);		\
    FLAT_DITHER_ROW_SETUP(yy);				\
    for (xx=LEFT;xx<RIGHT;xx++) {			\
       unsigned long p = FLAT_DITHER(xx);		\
@@ -1312,7 +1294,7 @@ static void flat_HPCR_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
                                 GLuint v2, GLuint pv )
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define SETUP_CODE				\
@@ -1321,7 +1303,7 @@ static void flat_HPCR_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    GLubyte b = VB->ColorPtr->data[pv][2];
 #define INNER_LOOP( LEFT, RIGHT, Y )				\
 {								\
-   GLint xx, yy = FLIP(Y);					\
+   GLint xx, yy = FLIP(xmesa->xm_buffer, Y);			\
    PIXEL_TYPE *pixel = pRow;					\
    for (xx=LEFT;xx<RIGHT;xx++,pixel++) {			\
       *pixel = (PIXEL_TYPE) DITHER_HPCR( xx, yy, r, g, b );	\
@@ -1338,7 +1320,7 @@ static void flat_LOOKUP8_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
                         	   GLuint v2, GLuint pv )
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-#define PIXEL_ADDRESS(X,Y) PIXELADDR1(X,Y)
+#define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
 #define SETUP_CODE				\

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadext.c,v 1.3 2000/01/29 17:25:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadext.c,v 1.5 2000/02/08 13:13:27 eich Exp $ */
 
 /* Copyright 2000 by The XFree86 Project, Inc */
 
@@ -390,7 +390,7 @@ LoaderSortExtensions()
 #endif
 		if (ext->initDependencies)
 			for (j = 0; ext->initDependencies[j]; j++) {
-			    add_arc(ext->initDependencies[j], ext->name);
+				add_arc(ext->initDependencies[j], ext->name);
 #ifdef DEBUG
 				ErrorF("\t%s\n", ext->initDependencies[j]);
 #endif
@@ -400,7 +400,7 @@ LoaderSortExtensions()
 	newList = xnfalloc((numExtensionModules + 1) * sizeof(ExtensionModule));
 	i = 0;
 	for (node = sorted; node; node = node->n_next) {
-	    for (j = 0; j < numExtensionModules; j++)
+		for (j = 0; j < numExtensionModules; j++)
 			if (!strcmp(node->n_name, ExtensionModuleList[j].name))
 				break;
 		if (j != numExtensionModules)

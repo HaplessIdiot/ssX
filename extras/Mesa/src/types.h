@@ -1,11 +1,11 @@
 /* -*- mode: C; tab-width:8; c-basic-offset:8 -*- */
-/* $Id: types.h,v 1.1 1999/12/14 01:31:56 robin Exp $ */
+/* $Id: types.h,v 1.2 2000/02/08 17:17:41 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,43 +30,15 @@
 #define TYPES_H
  
 
-#include "GL/gl.h"
-#ifdef HAVE_CONFIG_H
-#include "conf.h"
-#endif
+#include "glheader.h"
 #include "config.h"
-#include "macros.h"
-#include "fixed.h"
 #include "extensions.h"
-#include "vector.h"
+#include "fixed.h"
+#include "glapitable.h"
+#include "macros.h"
 #include "matrix.h"
 #include "vb.h"
-
-/*
-#if !defined(MESA_MINOR_VERSION) || !defined(MESA_MAJOR_VERSION)
-#error "Compiling with non-Mesa GL.h"
-#endif
-
-#if (MESA_MINOR_VERSION != 1) || (MESA_MAJOR_VERSION != 3)
-#error "Compiling with GL.h from a different Mesa version"
-#endif
-*/
-
-/* This should rev. quite quickly - perhaps every time this file is
- * committed, to allow dependent projects to track changes to mesa's
- * internals.
- */
-#define MESA_BRANCH 0
-#define MESA_TINY_VERSION 2
-#define MESA_VERSION MESA_VER(MESA_MAJOR_VERSION, \
-                              MESA_MINOR_VERSION, \
-                              MESA_BRANCH, \
-                              MESA_TINY_VERSION)
-
-#define MESA_VER(x,y,z,w) ((x<<24)+(y<<16)+(z<<10)+w)
-
-
-#define GL_MAX_TEXTURES GL_MAX_TEXTURES_SGIS
+#include "vector.h"
 
 
 /*
@@ -100,12 +72,11 @@
    typedef GLubyte GLstencil;
 #  define STENCIL_MAX 0xff
 #elif STENCIL_BITS==16
-   typedef GLushort GLstencil
+   typedef GLushort GLstencil;
 #  define STENCIL_MAX 0xffff
 #else
 #  error "illegal number of stencil bits"
 #endif
-
 
 
 /*
@@ -124,19 +95,17 @@
 /*
  * Some forward type declarations
  */
-struct HashTable;
+struct _mesa_HashTable;
 
 typedef struct gl_visual GLvisual;
 
 typedef struct gl_frame_buffer GLframebuffer;
 
-struct gl_pixelstore_attrib;
-
 
 /*
  * Functions for transformation of normals in the VB.
  */
-typedef void (*normal_func)( const GLmatrix *mat,
+typedef void (_NORMAPIP normal_func)( const GLmatrix *mat,
 			     GLfloat scale,
 			     const GLvector3f *in,
 			     const GLfloat lengths[],
@@ -177,11 +146,24 @@ typedef void (*clip_interp_func)( struct vertex_buffer *VB, GLuint dst,
 typedef void (*render_vb_func)( GLcontext *ctx );
 
 
+
+typedef void (*render_func)( struct vertex_buffer *VB, 
+			     GLuint start,
+			     GLuint count,
+			     GLuint parity );
+
+
 /*
  * Blending function
  */
+#ifdef USE_MMX_ASM
+typedef void (_ASMAPIP blend_func)( GLcontext *ctx, GLuint n,
+                                    const GLubyte mask[],
+                                    GLubyte src[][4], CONST GLubyte dst[][4] );
+#else
 typedef void (*blend_func)( GLcontext *ctx, GLuint n, const GLubyte mask[],
                             GLubyte src[][4], CONST GLubyte dst[][4] );
+#endif
 
 
 
@@ -195,21 +177,6 @@ typedef void (*TextureSampleFunc)( const struct gl_texture_object *tObj,
                                    const GLfloat s[], const GLfloat t[],
                                    const GLfloat u[], const GLfloat lambda[],
                                    GLubyte rgba[][4] );
-
-
-
-/* Generic internal image format */
-struct gl_image {
-	GLint Width;
-	GLint Height;
-	GLint Depth;		/* for 3-D texturing */
-	GLint Components;	/* 1, 2, 3 or 4 */
-        GLenum Format;		/* GL_COLOR_INDEX, GL_RED, GL_RGB, etc */
-	GLenum Type;		/* GL_UNSIGNED_BYTE or GL_FLOAT or GL_BITMAP */
-	GLvoid *Data;
-	GLboolean ErrorFlag;
-	GLint RefCount;
-};
 
 
 
@@ -245,212 +212,13 @@ struct gl_texture_image {
 };
 
 
-/*
- * All gl* API functions in api*.c jump through pointers in this struct.
- */
-struct gl_api_table {
-   void (*Accum)( GLcontext *, GLenum, GLfloat );
-   void (*AlphaFunc)( GLcontext *, GLenum, GLclampf );
-   GLboolean (*AreTexturesResident)( GLcontext *, GLsizei,
-                                     const GLuint *, GLboolean * );
-   void (*BindTexture)( GLcontext *, GLenum, GLuint );
-   void (*Bitmap)( GLcontext *, GLsizei, GLsizei, GLfloat, GLfloat,
-                   GLfloat, GLfloat, const GLubyte *,
-                   const struct gl_pixelstore_attrib *packing );
-   void (*BlendColor)( GLcontext *, GLclampf, GLclampf, GLclampf, GLclampf);
-   void (*BlendEquation)( GLcontext *, GLenum );
-   void (*BlendFunc)( GLcontext *, GLenum, GLenum );
-   void (*BlendFuncSeparate)( GLcontext *, GLenum, GLenum, GLenum, GLenum );
-   void (*CallList)( GLcontext *, GLuint list );
-   void (*CallLists)( GLcontext *, GLsizei, GLenum, const GLvoid * );
-   void (*Clear)( GLcontext *, GLbitfield );
-   void (*ClearAccum)( GLcontext *, GLfloat, GLfloat, GLfloat, GLfloat );
-   void (*ClearColor)( GLcontext *, GLclampf, GLclampf, GLclampf, GLclampf );
-   void (*ClearDepth)( GLcontext *, GLclampd );
-   void (*ClearIndex)( GLcontext *, GLfloat );
-   void (*ClearStencil)( GLcontext *, GLint );
-   void (*ClipPlane)( GLcontext *, GLenum, const GLfloat * );
-   void (*ColorMask)( GLcontext *,
-			GLboolean, GLboolean, GLboolean, GLboolean );
-   void (*ColorMaterial)( GLcontext *, GLenum, GLenum );
-   void (*ColorTable)( GLcontext *, GLenum, GLenum, struct gl_image * );
-   void (*ColorSubTable)( GLcontext *, GLenum, GLsizei, struct gl_image * );
-   void (*CopyPixels)( GLcontext *, GLint, GLint, GLsizei, GLsizei, GLenum );
-   void (*CopyTexImage1D)( GLcontext *, GLenum, GLint, GLenum,
-                           GLint, GLint, GLsizei, GLint );
-   void (*CopyTexImage2D)( GLcontext *, GLenum, GLint, GLenum,
-                           GLint, GLint, GLsizei, GLsizei, GLint );
-   void (*CopyTexSubImage1D)( GLcontext *, GLenum, GLint, GLint,
-                              GLint, GLint, GLsizei );
-   void (*CopyTexSubImage2D)( GLcontext *, GLenum, GLint, GLint, GLint,
-                              GLint, GLint, GLsizei, GLsizei );
-   void (*CopyTexSubImage3D)(GLcontext *, GLenum, GLint, GLint, GLint, GLint,
-                             GLint, GLint, GLsizei, GLsizei  );
-   void (*CullFace)( GLcontext *, GLenum );
-   void (*DeleteLists)( GLcontext *, GLuint, GLsizei );
-   void (*DeleteTextures)( GLcontext *, GLsizei, const GLuint *);
-   void (*DepthFunc)( GLcontext *, GLenum );
-   void (*DepthMask)( GLcontext *, GLboolean );
-   void (*DepthRange)( GLcontext *, GLclampd, GLclampd );
-   void (*Disable)( GLcontext *, GLenum );
-   void (*DisableClientState)( GLcontext *, GLenum );
-   void (*DrawBuffer)( GLcontext *, GLenum );
-   void (*DrawPixels)( GLcontext *, struct gl_image *image );
-   void (*Enable)( GLcontext *, GLenum );
-   void (*Error)( GLcontext *, GLenum, const char * );
-   void (*EnableClientState)( GLcontext *, GLenum );
-   void (*EndList)( GLcontext * );
-   void (*EvalMesh1)( GLcontext *, GLenum, GLint, GLint );
-   void (*EvalMesh2)( GLcontext *, GLenum, GLint, GLint, GLint, GLint );
-   void (*FeedbackBuffer)( GLcontext *, GLsizei, GLenum, GLfloat * );
-   void (*Finish)( GLcontext * );
-   void (*Flush)( GLcontext * );
-   void (*Fogfv)( GLcontext *, GLenum, const GLfloat * );
-   void (*FrontFace)( GLcontext *, GLenum );
-   void (*Frustum)( GLcontext *, GLdouble, GLdouble, GLdouble, GLdouble,
-                    GLdouble, GLdouble );
-   GLuint (*GenLists)( GLcontext *, GLsizei );
-   void (*GenTextures)( GLcontext *, GLsizei, GLuint * );
-   void (*GetBooleanv)( GLcontext *, GLenum, GLboolean * );
-   void (*GetClipPlane)( GLcontext *, GLenum, GLdouble * );
-   void (*GetColorTable)( GLcontext *, GLenum, GLenum, GLenum, GLvoid *);
-   void (*GetColorTableParameteriv)( GLcontext *, GLenum, GLenum, GLint *);
-   void (*GetDoublev)( GLcontext *, GLenum, GLdouble * );
-   GLenum (*GetError)( GLcontext * );
-   void (*GetFloatv)( GLcontext *, GLenum, GLfloat * );
-   void (*GetIntegerv)( GLcontext *, GLenum, GLint * );
-   const GLubyte* (*GetString)( GLcontext *, GLenum name );
-   void (*GetLightfv)( GLcontext *, GLenum light, GLenum, GLfloat * );
-   void (*GetLightiv)( GLcontext *, GLenum light, GLenum, GLint * );
-   void (*GetMapdv)( GLcontext *, GLenum, GLenum, GLdouble * );
-   void (*GetMapfv)( GLcontext *, GLenum, GLenum, GLfloat * );
-   void (*GetMapiv)( GLcontext *, GLenum, GLenum, GLint * );
-   void (*GetMaterialfv)( GLcontext *, GLenum, GLenum, GLfloat * );
-   void (*GetMaterialiv)( GLcontext *, GLenum, GLenum, GLint * );
-   void (*GetPixelMapfv)( GLcontext *, GLenum, GLfloat * );
-   void (*GetPixelMapuiv)( GLcontext *, GLenum, GLuint * );
-   void (*GetPixelMapusv)( GLcontext *, GLenum, GLushort * );
-   void (*GetPointerv)( GLcontext *, GLenum, GLvoid ** );
-   void (*GetPolygonStipple)( GLcontext *, GLubyte * );
-   void (*PrioritizeTextures)( GLcontext *, GLsizei, const GLuint *,
-                               const GLclampf * );
-   void (*GetTexEnvfv)( GLcontext *, GLenum, GLenum, GLfloat * );
-   void (*GetTexEnviv)( GLcontext *, GLenum, GLenum, GLint * );
-   void (*GetTexGendv)( GLcontext *, GLenum coord, GLenum, GLdouble * );
-   void (*GetTexGenfv)( GLcontext *, GLenum coord, GLenum, GLfloat * );
-   void (*GetTexGeniv)( GLcontext *, GLenum coord, GLenum, GLint * );
-   void (*GetTexImage)( GLcontext *, GLenum, GLint level, GLenum, GLenum,
-                        GLvoid * );
-   void (*GetTexLevelParameterfv)( GLcontext *,
-				     GLenum, GLint, GLenum, GLfloat * );
-   void (*GetTexLevelParameteriv)( GLcontext *,
-				     GLenum, GLint, GLenum, GLint * );
-   void (*GetTexParameterfv)( GLcontext *, GLenum, GLenum, GLfloat *);
-   void (*GetTexParameteriv)( GLcontext *, GLenum, GLenum, GLint * );
-   GLboolean (*Hint)( GLcontext *, GLenum, GLenum );
-   void (*IndexMask)( GLcontext *, GLuint );
-   void (*InitNames)( GLcontext * );
-   GLboolean (*IsEnabled)( GLcontext *, GLenum );
-   GLboolean (*IsList)( GLcontext *, GLuint );
-   GLboolean (*IsTexture)( GLcontext *, GLuint );
-   void (*LightModelfv)( GLcontext *, GLenum, const GLfloat * );
-   void (*Lightfv)( GLcontext *, GLenum light, GLenum, const GLfloat *, GLint);
-   void (*LineStipple)( GLcontext *, GLint factor, GLushort );
-   void (*LineWidth)( GLcontext *, GLfloat );
-   void (*ListBase)( GLcontext *, GLuint );
-   void (*LoadIdentity)( GLcontext * );
-   /* LoadMatrixd implemented with glLoadMatrixf */
-   void (*LoadMatrixf)( GLcontext *, const GLfloat * );
-   void (*LoadName)( GLcontext *, GLuint );
-   void (*LogicOp)( GLcontext *, GLenum );
-   void (*Map1f)( GLcontext *, GLenum, GLfloat, GLfloat, GLint, GLint,
-		  const GLfloat *, GLboolean );
-   void (*Map2f)( GLcontext *, GLenum, GLfloat, GLfloat, GLint, GLint,
-		  GLfloat, GLfloat, GLint, GLint, const GLfloat *,
-		  GLboolean );
-   void (*MapGrid1f)( GLcontext *, GLint, GLfloat, GLfloat );
-   void (*MapGrid2f)( GLcontext *, GLint, GLfloat, GLfloat,
-			GLint, GLfloat, GLfloat );
-   void (*MatrixMode)( GLcontext *, GLenum );
-   /* MultMatrixd implemented with glMultMatrixf */
-   void (*MultMatrixf)( GLcontext *, const GLfloat * );
-   void (*NewList)( GLcontext *, GLuint list, GLenum );
-   void (*Ortho)( GLcontext *, GLdouble, GLdouble, GLdouble, GLdouble,
-                  GLdouble, GLdouble );
-   void (*PassThrough)( GLcontext *, GLfloat );
-   void (*PixelMapfv)( GLcontext *, GLenum, GLint, const GLfloat * );
-   void (*PixelStorei)( GLcontext *, GLenum, GLint );
-   void (*PixelTransferf)( GLcontext *, GLenum, GLfloat );
-   void (*PixelZoom)( GLcontext *, GLfloat, GLfloat );
-   void (*PointParameterfvEXT)( GLcontext *, GLenum, const GLfloat * );
-   void (*PointSize)( GLcontext *, GLfloat );
-   void (*PolygonMode)( GLcontext *, GLenum, GLenum );
-   void (*PolygonOffset)( GLcontext *, GLfloat, GLfloat );
-   void (*PolygonStipple)( GLcontext *, const GLuint * );
-   void (*PopAttrib)( GLcontext * );
-   void (*PopClientAttrib)( GLcontext * );
-   void (*PopMatrix)( GLcontext * );
-   void (*PopName)( GLcontext * );
-   void (*PushAttrib)( GLcontext *, GLbitfield );
-   void (*PushClientAttrib)( GLcontext *, GLbitfield );
-   void (*PushMatrix)( GLcontext * );
-   void (*PushName)( GLcontext *, GLuint );
-   void (*RasterPos4f)( GLcontext *,
-                        GLfloat x, GLfloat y, GLfloat z, GLfloat w );
-   void (*ReadBuffer)( GLcontext *, GLenum );
-   void (*ReadPixels)( GLcontext *, GLint, GLint, GLsizei, GLsizei, GLenum,
-			 GLenum, GLvoid * );
-   void (*Rectf)( GLcontext *, GLfloat, GLfloat, GLfloat, GLfloat );
-   GLint (*RenderMode)( GLcontext *, GLenum );
-   void (*Rotatef)( GLcontext *, GLfloat, GLfloat, GLfloat, GLfloat );
-   void (*Scalef)( GLcontext *, GLfloat, GLfloat, GLfloat );
-   void (*Scissor)( GLcontext *, GLint, GLint, GLsizei, GLsizei);
-   void (*SelectBuffer)( GLcontext *, GLsizei, GLuint * );
-   void (*ShadeModel)( GLcontext *, GLenum );
-   void (*StencilFunc)( GLcontext *, GLenum, GLint, GLuint );
-   void (*StencilMask)( GLcontext *, GLuint );
-   void (*StencilOp)( GLcontext *, GLenum, GLenum, GLenum );
-
-   void (*TexEnvfv)( GLcontext *, GLenum, GLenum, const GLfloat * );
-   void (*TexGenfv)( GLcontext *, GLenum coord, GLenum, const GLfloat * );
-   void (*TexImage1D)( GLcontext *, GLenum, GLint, GLint, GLsizei,
-                       GLint, GLenum, GLenum, const GLvoid * );
-   void (*TexImage2D)( GLcontext *, GLenum, GLint, GLint, GLsizei, GLsizei,
-                       GLint, GLenum, GLenum, const GLvoid *);
-   void (*TexSubImage1D)( GLcontext *, GLenum, GLint, GLint, GLsizei,
-                          GLenum, GLenum, const GLvoid * );
-   void (*TexSubImage2D)( GLcontext *, GLenum, GLint, GLint, GLint,
-                          GLsizei, GLsizei, GLenum, GLenum, const GLvoid *);
-   void (*TexImage3D)(GLcontext *, GLenum, GLint, GLint, GLsizei, GLsizei,
-                      GLsizei, GLint, GLenum, GLenum, const GLvoid *);
-   void (*TexSubImage3D)(GLcontext *, GLenum, GLint, GLint, GLint, GLint,
-                         GLsizei, GLsizei, GLsizei, GLenum, GLenum,
-                         const GLvoid *);
-   void (*TexParameterfv)( GLcontext *, GLenum, GLenum, const GLfloat * );
-   /* Translated implemented by Translatef */
-   void (*Translatef)( GLcontext *, GLfloat, GLfloat, GLfloat );
-
-   void (*Viewport)( GLcontext *, GLint, GLint, GLsizei, GLsizei );
-
-   /* GL_MESA_window_pos extension */
-   void (*WindowPos4fMESA)( GLcontext *, GLfloat, GLfloat, GLfloat, GLfloat );
-
-   /* GL_MESA_resize_buffers extension */
-   void (*ResizeBuffersMESA)( GLcontext * );
-
-   /* GL_ARB_multitexture */
-   void (*ActiveTexture)( GLcontext *, GLenum );
-   void (*ClientActiveTexture)( GLcontext *, GLenum );
+/* Data structure for color tables */
+struct gl_color_table {
+	GLubyte Table[4 * MAX_TEXTURE_PALETTE_SIZE];
+	GLuint Size;           /* number of entries (rows) in table */
+	GLenum Format;
+	GLenum IntFormat;
 };
-
-
-
-typedef void (*render_func)( struct vertex_buffer *VB, 
-			     GLuint start,
-			     GLuint count,
-			     GLuint parity );
-
-
 
 
 
@@ -597,7 +365,6 @@ struct gl_colorbuffer_attrib {
 
 
 struct gl_current_attrib {
-
 	/* KW: These values valid only when the VB is flushed.  
 	 */
 	GLuint Flag;		                /* Contains size information */
@@ -959,10 +726,7 @@ struct gl_texture_object {
 	struct gl_texture_image *Image[MAX_TEXTURE_LEVELS];
 
 	/* GL_EXT_paletted_texture */
-	GLubyte Palette[MAX_TEXTURE_PALETTE_SIZE*4];
-	GLuint PaletteSize;
-	GLenum PaletteIntFormat;
-	GLenum PaletteFormat;
+        struct gl_color_table Palette;
 
 	/* For device driver: */
 	GLboolean Dirty;	/* Is this texture object in dirty list? */
@@ -1041,11 +805,8 @@ struct gl_texture_attrib {
 	struct gl_texture_object *Proxy3D;
 
 	/* GL_EXT_shared_texture_palette */
-	GLboolean SharedPalette;
-	GLubyte Palette[MAX_TEXTURE_PALETTE_SIZE*4];
-	GLuint PaletteSize;
-	GLenum PaletteIntFormat;
-	GLenum PaletteFormat;
+        GLboolean SharedPalette;
+        struct gl_color_table Palette;
 };
 
 
@@ -1352,7 +1113,6 @@ struct gl_1d_map {
 	GLuint Order;		/* Number of control points */
 	GLfloat u1, u2, du;	/* u1, u2, 1.0/(u2-u1) */
 	GLfloat *Points;	/* Points to contiguous control points */
-	GLboolean Retain;	/* Reference counter */
 };
 	
 
@@ -1365,7 +1125,6 @@ struct gl_2d_map {
 	GLfloat u1, u2, du;
 	GLfloat v1, v2, dv;
 	GLfloat *Points;	/* Points to contiguous control points */
-	GLboolean Retain;	/* Reference counter */
 };
 
 
@@ -1403,8 +1162,8 @@ struct gl_evaluators {
  */
 struct gl_shared_state {
    GLint RefCount;			   /* Reference count */
-   struct HashTable *DisplayList;	   /* Display lists hash table */
-   struct HashTable *TexObjects;	   /* Texture objects hash table */
+   struct _mesa_HashTable *DisplayList;	   /* Display lists hash table */
+   struct _mesa_HashTable *TexObjects;	   /* Texture objects hash table */
    struct gl_texture_object *TexObjectList;/* Linked list of texture objects */
    struct gl_texture_object *DirtyTexObjList; /* List of dirty tex objects */
 
@@ -1449,18 +1208,23 @@ struct gl_visual {
 struct gl_frame_buffer {
 	GLvisual *Visual;	/* The corresponding visual */
 
-	GLint Width;		/* Width of frame buffer in pixels */
-	GLint Height;		/* Height of frame buffer in pixels */
+	GLint Width, Height;	/* size of frame buffer in pixels */
 
+        GLboolean UseSoftwareDepthBuffer;
+        GLboolean UseSoftwareAccumBuffer;
+        GLboolean UseSoftwareStencilBuffer;
+        GLboolean UseSoftwareAlphaBuffers;
+
+	/* Software depth (aka Z) buffer */
 	GLdepth *Depth;		/* array [Width*Height] of GLdepth values */
 
-	/* Stencil buffer */
+	/* Software stencil buffer */
 	GLstencil *Stencil;	/* array [Width*Height] of GLstencil values */
 
-	/* Accumulation buffer */
+	/* Software accumulation buffer */
 	GLaccum *Accum;		/* array [4*Width*Height] of GLaccum values */
 
-	/* Software alpha planes: */
+	/* Software alpha planes */
 	GLubyte *FrontLeftAlpha;  /* array [Width*Height] of GLubyte */
 	GLubyte *BackLeftAlpha;   /* array [Width*Height] of GLubyte */
 	GLubyte *FrontRightAlpha; /* array [Width*Height] of GLubyte */
@@ -1564,7 +1328,6 @@ struct gl_extensions {
 #define DD_TRI_CULL_FRONT_BACK      0x400000 /* not supported by most drivers */
 #define DD_Z_NEVER                  0x800000 
 #define DD_STENCIL                  0x1000000 
-#define DD_CLIP_FOG_COORD           0x2000000
 
 #define DD_SW_SETUP           (DD_TRI_CULL|		\
                                DD_TRI_CULL_FRONT_BACK|	\
@@ -1768,7 +1531,6 @@ typedef union node Node;
 #define VERT_EVAL_P1         0x4000000  /*  */
 #define VERT_EVAL_P2         0x8000000  /*  */
 #define VERT_FLOAT_RGBA      0x10000000	/* allow partial support for this */
-#define VERT_FOG_COORD       0x20000000	/* internal use only, currently */
 
 #define VERT_EYE             VERT_BEGIN /* for pipeline management & cva */
 #define VERT_WIN             VERT_END   /* some overlaps can be tolerated */
@@ -1819,7 +1581,7 @@ typedef union node Node;
 #define VERT_DATA          (VERT_TEX0_ANY|VERT_TEX1_ANY|VERT_RGBA| \
 			    VERT_INDEX|VERT_EDGE|VERT_NORM| \
 	                    VERT_OBJ_ANY|VERT_MATERIAL|VERT_ELT| \
-	                    VERT_EVAL_ANY|VERT_FOG_COORD)
+	                    VERT_EVAL_ANY)
 
 
 #define VERT_TO_PIPE      (~VERT_END_VB)
@@ -1858,12 +1620,13 @@ struct gl_context {
 	struct gl_shared_state *Shared;
 
 	/* API function pointer tables */
-	struct gl_api_table API;		/* For api.c */
-	struct gl_api_table Save;		/* Display list save funcs */
-	struct gl_api_table Exec;		/* Execute funcs */
+	struct _glapi_table Save;	/* Display list save funcs */
+	struct _glapi_table Exec;	/* Execute funcs */
+        struct _glapi_table *CurrentDispatch;  /* == Save or Exec !! */
 
         GLvisual *Visual;
-        GLframebuffer *Buffer;
+        GLframebuffer *DrawBuffer;	/* buffer for writing */
+        GLframebuffer *ReadBuffer;	/* buffer for reading */
 
 	/* Driver function pointer table */
 	struct dd_function_table Driver;
@@ -2055,6 +1818,7 @@ struct gl_context {
         GLuint SwapCount;	/* number of swap-buffer calls */
         GLdouble SwapTime;	/* seconds spent in swap-buffers */
 #endif
+
 
         /* Should 3Dfx Glide driver catch signals? */
         GLboolean CatchSignals;

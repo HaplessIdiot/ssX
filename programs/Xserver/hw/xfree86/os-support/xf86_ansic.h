@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.32 1999/12/27 01:33:59 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.34 2000/02/08 13:13:28 eich Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -144,6 +144,7 @@ extern char* xf86fgets(char*,INT32,XF86FILE*);
 extern double xf86floor(double);
 extern double xf86fmod(double,double);
 extern XF86FILE* xf86fopen(const char*,const char*);
+extern double xf86frexp(double, int*);
 extern int xf86printf(const char*,...);
 extern int xf86fprintf(XF86FILE*,const char*,...);
 extern int xf86fputc(int,XF86FILE*);
@@ -174,6 +175,7 @@ extern int xf86isspace(int);
 extern int xf86isupper(int);
 extern int xf86isxdigit(int);
 extern long xf86labs(long);
+extern double xf86ldexp(double,int);
 extern double xf86log(double);
 extern double xf86log10(double);
 extern void* xf86malloc(xf86size_t);
@@ -185,6 +187,8 @@ extern void* xf86memset(void*,int,xf86size_t);
 extern double xf86modf(double,double*);
 extern void xf86perror(const char*);
 extern double xf86pow(double,double);
+extern void xf86qsort(void*, xf86size_t, xf86size_t, 
+                      int(*)(const void*, const void*));
 extern void* xf86realloc(void*,xf86size_t);
 extern int xf86remove(const char*);
 extern int xf86rename(const char*,const char*);
@@ -248,8 +252,6 @@ extern int xf86GetErrno(void);
 extern double xf86HUGE_VAL;
 
 extern double xf86hypot(double,double);
-extern void xf86qsort(void *, xf86size_t, xf86size_t,
-		      int (*)(const void *, const void *));
 
 /* non-ANSI C functions */
 extern XF86DIR* xf86opendir(const char*);
@@ -282,6 +284,10 @@ extern int xf86shmctl(int id, int xf86cmd, pointer *buf);
 #include <errno.h>
 #include <fcntl.h>
 #include <ctype.h>
+#ifdef HAVE_SYSV_IPC
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#endif
 #endif /* XFree86LOADER NEED_XF86_TYPES */
 
 /*

@@ -1,8 +1,8 @@
-/* $Id: stages.c,v 1.1 1999/12/14 01:31:51 robin Exp $ */
+/* $Id: stages.c,v 1.2 2000/02/08 17:17:36 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  *
@@ -25,14 +25,10 @@
  */
 
 
-#ifdef HAVE_CONFIG_H
-#include "conf.h"
-#endif
-#ifndef XFree86Server
-#include <stdio.h>
-#else 
-#include "GL/xf86glx.h"
-#endif
+#ifdef PC_HEADER
+#include "all.h"
+#else
+#include "glheader.h"
 #include "bbox.h"
 #include "clip.h"
 #include "context.h"
@@ -43,13 +39,14 @@
 #include "pipeline.h"
 #include "shade.h"
 #include "stages.h"
-#include "types.h"
 #include "translate.h"
+#include "types.h"
 #include "vbcull.h"
 #include "vbindirect.h"
 #include "vbrender.h"
 #include "vbxform.h"
 #include "xform.h"
+#endif
 
 
 static GLmatrix gl_identity_mat;
@@ -515,7 +512,7 @@ static void check_fog( GLcontext *ctx, struct gl_pipeline_stage *d )
 {
    d->type = 0;
 
-   if (ctx->FogMode==FOG_VERTEX)
+   if (ctx->Fog.Enabled && ctx->FogMode==FOG_VERTEX)
    {
       GLuint flags;
 

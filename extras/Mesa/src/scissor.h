@@ -1,8 +1,8 @@
-/* $Id: scissor.h,v 1.1 1999/12/14 01:31:49 robin Exp $ */
+/* $Id: scissor.h,v 1.2 2000/02/08 17:17:34 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,9 +25,6 @@
  */
 
 
-
-
-
 #ifndef SCISSOR_H
 #define SCISSOR_H
 
@@ -35,17 +32,17 @@
 #include "types.h"
 
 
-extern void gl_Scissor( GLcontext *ctx,
-                        GLint x, GLint y, GLsizei width, GLsizei height );
+extern void
+_mesa_Scissor( GLint x, GLint y, GLsizei width, GLsizei height );
 
 
-extern GLint gl_scissor_span( GLcontext *ctx,
-                              GLuint n, GLint x, GLint y, GLubyte mask[] );
+extern GLint
+gl_scissor_span( GLcontext *ctx, GLuint n, GLint x, GLint y, GLubyte mask[] );
 
 
-extern GLuint gl_scissor_pixels( GLcontext *ctx,
-                                 GLuint n, const GLint x[], const GLint y[],
-                                 GLubyte mask[] );
+extern GLuint
+gl_scissor_pixels( GLcontext *ctx, GLuint n, const GLint x[], const GLint y[],
+                   GLubyte mask[] );
 
 
 #endif

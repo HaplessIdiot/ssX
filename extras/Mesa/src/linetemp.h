@@ -1,4 +1,4 @@
-/* $Id: linetemp.h,v 1.4 2000/01/18 17:14:25 tsi Exp $ */
+/* $Id: linetemp.h,v 1.5 2000/02/08 17:17:22 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -71,7 +71,7 @@
  * This code was designed for the origin to be in the lower-left corner.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/linetemp.h,v 1.4 2000/01/18 17:14:25 tsi Exp $ */
 
 
 /*void line( GLcontext *ctx, GLuint vert0, GLuint vert1, GLuint pvert )*/
@@ -181,8 +181,8 @@
  */
 #ifdef CLIP_HACK
    {
-      GLint w = ctx->Buffer->Width;
-      GLint h = ctx->Buffer->Height;
+      GLint w = ctx->DrawBuffer->Width;
+      GLint h = ctx->DrawBuffer->Height;
       if ((x0==w) | (x1==w)) {
          if ((x0==w) & (x1==w))
            return;
@@ -254,7 +254,7 @@
       ystep = -1;
 #endif
 #ifdef INTERP_Z
-      zPtrYstep = -ctx->Buffer->Width * ((GLint)sizeof(GLdepth));
+      zPtrYstep = -ctx->DrawBuffer->Width * ((GLint)sizeof(GLdepth));
 #endif
 #ifdef PIXEL_ADDRESS
       pixelYstep = BYTES_PER_ROW;
@@ -265,7 +265,7 @@
       ystep = 1;
 #endif
 #ifdef INTERP_Z
-      zPtrYstep = ctx->Buffer->Width * ((GLint)sizeof(GLdepth));
+      zPtrYstep = ctx->DrawBuffer->Width * ((GLint)sizeof(GLdepth));
 #endif
 #ifdef PIXEL_ADDRESS
       pixelYstep = -(BYTES_PER_ROW);

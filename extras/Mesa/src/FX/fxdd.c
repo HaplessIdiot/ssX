@@ -70,9 +70,11 @@ GLubyte FX_PixelToB[0x10000];
  * Initialize the FX_PixelTo{RGB} arrays.
  * Input: bgrOrder - if TRUE, pixels are in BGR order, else RGB order.
  */
-void fxInitPixelTables(GLboolean bgrOrder)
+void fxInitPixelTables(fxMesaContext fxMesa, GLboolean bgrOrder)
 {
   GLuint pixel;
+
+  fxMesa->bgrOrder=bgrOrder;
   for (pixel = 0; pixel <= 0xffff; pixel++) {
     GLuint r, g, b;
     if (bgrOrder) {
@@ -172,78 +174,82 @@ static GLbitfield fxDDClear(GLcontext *ctx, GLbitfield mask, GLboolean all,
                             GLint x, GLint y, GLint width, GLint height )
 {
   fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  GLbitfield newmask;
+  const GLuint colorMask = *((GLuint *) &ctx->Color.ColorMask);
+  GLbitfield softwareMask = mask & (DD_STENCIL_BIT | DD_ACCUM_BIT);
+  GLbitfield newMask = mask & ~(DD_STENCIL_BIT | DD_ACCUM_BIT);
+
 
   if (MESA_VERBOSE&VERBOSE_DRIVER) {
     fprintf(stderr,"fxmesa: fxDDClear(%d,%d,%d,%d)\n",x,y,width,height);
   }
 
-  switch(mask & (GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)) {
-  case (GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT):
-    /* clear color and depth buffer */
+  if (mask == (DD_BACK_LEFT_BIT | DD_DEPTH_BIT)
+      && colorMask == 0xffffffff) {
+    /* common case: clear back color buffer and depth buffer */
+    FX_grRenderBuffer(GR_BUFFER_BACKBUFFER);
+    FX_grBufferClear(fxMesa->clearC, fxMesa->clearA,
+                     (FxU16)(ctx->Depth.Clear*0xffff));
+    return 0;
+  }
 
-    if (ctx->Color.DrawDestMask & BACK_LEFT_BIT) {
-      FX_grRenderBuffer(GR_BUFFER_BACKBUFFER);
-      FX_grBufferClear(fxMesa->clearC, fxMesa->clearA,
-		       (FxU16)(ctx->Depth.Clear*0xffff));
-    }
-    if (ctx->Color.DrawDestMask & FRONT_LEFT_BIT) {
+  /* depth masking */
+  if (newMask & DD_DEPTH_BIT) {
+    FX_grDepthMask(FXTRUE);
+    CLEAR_BITS(newMask, DD_DEPTH_BIT);
+  }
+  else {
+    FX_grDepthMask(FXFALSE);
+  }
+
+  if (colorMask != 0xffffffff) {
+    /* do masked color clear in software */
+    softwareMask |= (newMask & (DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT));
+    CLEAR_BITS(newMask, (DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT));
+  }
+
+  if (newMask & (DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT)) {
+    if (newMask & DD_FRONT_LEFT_BIT) {
       FX_grRenderBuffer(GR_BUFFER_FRONTBUFFER);
       FX_grBufferClear(fxMesa->clearC, fxMesa->clearA,
-		       (FxU16)(ctx->Depth.Clear*0xffff));
+                       (FxU16)(ctx->Depth.Clear*0xffff));
     }
 
-    newmask=mask & (~(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT));
-    break;
-  case (GL_COLOR_BUFFER_BIT):
-    /* clear color buffer */
-
-    if(ctx->Color.ColorMask) {
-      FX_grDepthMask(FXFALSE);
-
-      if (ctx->Color.DrawDestMask & BACK_LEFT_BIT) {
-        FX_grRenderBuffer(GR_BUFFER_BACKBUFFER);
-        FX_grBufferClear(fxMesa->clearC, fxMesa->clearA, 0);
-      }
-      if (ctx->Color.DrawDestMask & FRONT_LEFT_BIT) {
-        FX_grRenderBuffer(GR_BUFFER_FRONTBUFFER);
-        FX_grBufferClear(fxMesa->clearC, fxMesa->clearA, 0);
-      }
-
-      if(ctx->Depth.Mask) {
-        FX_grDepthMask(FXTRUE);
-      }
-    }
-
-    newmask=mask & (~(GL_COLOR_BUFFER_BIT));
-    break;
-  case (GL_DEPTH_BUFFER_BIT):
-    /* clear depth buffer */
-
-    if(ctx->Depth.Mask) {
-      FX_grColorMask(FXFALSE,FXFALSE);
+    if (newMask & DD_BACK_LEFT_BIT) {
+      FX_grRenderBuffer(GR_BUFFER_BACKBUFFER);
       FX_grBufferClear(fxMesa->clearC, fxMesa->clearA,
-		       (FxU16)(ctx->Depth.Clear*0xffff));
-
-      FX_grColorMask(ctx->Color.ColorMask[RCOMP] ||
-		     ctx->Color.ColorMask[GCOMP] ||
-		     ctx->Color.ColorMask[BCOMP],
-		     ctx->Color.ColorMask[ACOMP] && fxMesa->haveAlphaBuffer);
+                       (FxU16)(ctx->Depth.Clear*0xffff));
     }
 
-    newmask=mask & (~(GL_DEPTH_BUFFER_BIT));
-    break;
-  default:
-    newmask=mask;
-    break;
+    CLEAR_BITS(newMask, (DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT));
   }
-   
-  return newmask;
+  else if (mask & DD_DEPTH_BIT) {
+    /* clear depth but not color */
+    FX_grColorMask(FXFALSE,FXFALSE);
+    FX_grBufferClear(fxMesa->clearC, fxMesa->clearA,
+                     (FxU16)(ctx->Depth.Clear*0xffff));
+    FX_grColorMask(ctx->Color.ColorMask[RCOMP] ||
+                   ctx->Color.ColorMask[GCOMP] ||
+                   ctx->Color.ColorMask[BCOMP],
+                   ctx->Color.ColorMask[ACOMP] && fxMesa->haveAlphaBuffer);
+  }
+
+  /* Restore depth mask state */
+  if (mask & DD_DEPTH_BIT) {
+    if (ctx->Depth.Mask) {
+      FX_grDepthMask(FXTRUE);
+    }
+    else {
+      FX_grDepthMask(FXFALSE);
+    }
+  }
+
+  return newMask | softwareMask;
 }
 
 
-/*  Set the buffer used in double buffering */
-static GLboolean fxDDSetBuffer(GLcontext *ctx, GLenum mode )
+/* Set the buffer used for drawing */
+/* XXX support for separate read/draw buffers hasn't been tested */
+static GLboolean fxDDSetDrawBuffer(GLcontext *ctx, GLenum mode )
 {
   fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
 
@@ -263,6 +269,29 @@ static GLboolean fxDDSetBuffer(GLcontext *ctx, GLenum mode )
   }
   else {
     return GL_FALSE;
+  }
+}
+
+
+/* Set the buffer used for reading */
+/* XXX support for separate read/draw buffers hasn't been tested */
+static void fxDDSetReadBuffer(GLcontext *ctx, GLframebuffer *buffer,
+                              GLenum mode )
+{
+  fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
+  (void) buffer;
+
+  if (MESA_VERBOSE&VERBOSE_DRIVER) {
+    fprintf(stderr,"fxmesa: fxDDSetBuffer(%x)\n",mode);
+  }
+
+  if (mode == GL_FRONT_LEFT) {
+    fxMesa->currentFB = GR_BUFFER_FRONTBUFFER;
+    FX_grRenderBuffer(fxMesa->currentFB);
+  }
+  else if (mode == GL_BACK_LEFT) {
+    fxMesa->currentFB = GR_BUFFER_BACKBUFFER;
+    FX_grRenderBuffer(fxMesa->currentFB);
   }
 }
 
@@ -374,10 +403,16 @@ static GLboolean fxDDDrawBitMap(GLcontext *ctx, GLint px, GLint py,
   g=(GLint)(ctx->Current.RasterColor[1]*255.0f);
   b=(GLint)(ctx->Current.RasterColor[2]*255.0f);
   a=(GLint)(ctx->Current.RasterColor[3]*255.0f);
-  color=(FxU16)
-    ( ((FxU16)0xf8 & b) <<(11-3))  |
-    ( ((FxU16)0xfc & g) <<(5-3+1)) |
-    ( ((FxU16)0xf8 & r) >> 3);
+  if (fxMesa->bgrOrder)
+    color=(FxU16)
+      ( ((FxU16)0xf8 & b) <<(11-3))  |
+      ( ((FxU16)0xfc & g) <<(5-3+1)) |
+      ( ((FxU16)0xf8 & r) >> 3);
+  else
+    color=(FxU16)
+      ( ((FxU16)0xf8 & r) <<(11-3))  |
+      ( ((FxU16)0xfc & g) <<(5-3+1)) |
+      ( ((FxU16)0xf8 & b) >> 3);
 
   stride=info.strideInBytes>>1;
 
@@ -787,11 +822,10 @@ void fxSetupDDPointers(GLcontext *ctx)
 
   ctx->Driver.UpdateState=fxDDUpdateDDPointers;
 
-  ctx->Driver.AllocDepthBuffer=fxAllocDepthBuffer;
-  ctx->Driver.DepthTestSpan=fxDDDepthTestSpanGeneric;
-  ctx->Driver.DepthTestPixels=fxDDDepthTestPixelsGeneric;
-  ctx->Driver.ReadDepthSpanFloat=fxDDReadDepthSpanFloat;
-  ctx->Driver.ReadDepthSpanInt=fxDDReadDepthSpanInt;
+  ctx->Driver.WriteDepthSpan=fxDDWriteDepthSpan;
+  ctx->Driver.WriteDepthPixels=fxDDWriteDepthPixels;
+  ctx->Driver.ReadDepthSpan=fxDDReadDepthSpan;
+  ctx->Driver.ReadDepthPixels=fxDDReadDepthPixels;
          
   ctx->Driver.GetString=fxDDGetString;
 
@@ -808,7 +842,8 @@ void fxSetupDDPointers(GLcontext *ctx)
   ctx->Driver.Index=NULL;
   ctx->Driver.Color=fxDDSetColor;
 
-  ctx->Driver.SetBuffer=fxDDSetBuffer;
+  ctx->Driver.SetDrawBuffer=fxDDSetDrawBuffer;
+  ctx->Driver.SetReadBuffer=fxDDSetReadBuffer;
   ctx->Driver.GetBufferSize=fxDDBufferSize;
 
   ctx->Driver.Bitmap=fxDDDrawBitMap;

@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.31 1999/11/19 13:53:25 hohndel Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.32 1999/12/30 03:46:12 robin Exp $
 .\"
 .\"
 .\" Copyright 1999 by Thomas E. Dickey <dickey@clark.net>
@@ -749,7 +749,7 @@ and use Alternate Screen Buffer, clearing it first (unless
 disabled by the \fBtiteInhibit\fP resource)
   \*(Ps = \*1\*0\*5\*1 \(-> Set Sun function-key mode.
   \*(Ps = \*1\*0\*5\*2 \(-> Set HP function-key mode.
-  \*(Ps = \*1\*0\*6\*1 \(-> Set Sun/PC keyboard mode.
+  \*(Ps = \*1\*0\*6\*1 \(-> Set Sun/PC keyboard emulation of VT220 keyboard.
 .
 .IP \\*(Cs\\*(Pm\\*s\\*i
 Media Copy (MC)
@@ -819,7 +819,7 @@ as in DECRC (unless
 disabled by the \fBtiteInhibit\fP resource)
   \*(Ps = \*1\*0\*5\*1 \(-> Reset Sun function-key mode.
   \*(Ps = \*1\*0\*5\*2 \(-> Reset HP function-key mode.
-  \*(Ps = \*1\*0\*6\*1 \(-> Reset Sun/PC keyboard mode.
+  \*(Ps = \*1\*0\*6\*1 \(-> Reset Sun/PC keyboard emulation of VT220 keyboard.
 .
 .IP \\*(Cs\\*(Pm\\*s\\*m
 Character Attributes (SGR)

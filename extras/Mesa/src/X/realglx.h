@@ -1,4 +1,4 @@
-/* $Id: realglx.h,v 1.1 1999/12/14 01:32:11 robin Exp $ */
+/* $Id: realglx.h,v 1.2 2000/02/08 17:18:13 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

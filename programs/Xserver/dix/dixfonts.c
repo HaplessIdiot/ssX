@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.18 1999/01/26 10:40:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.21 2000/01/22 01:59:56 mvojkovi Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -505,6 +505,9 @@ CloseFont(value, fid)
 	    defaultFont = NULL;
 #ifdef LBX
 	LbxFreeFontTag(pfont);
+#endif
+#ifdef XF86BIGFONT
+	XF86BigfontFreeFontShm(pfont);
 #endif
 	fpe = pfont->fpe;
 	(*fpe_functions[fpe->type].close_font) (fpe, pfont);

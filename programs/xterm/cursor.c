@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: cursor.c,v 1.14 93/09/20 17:42:23 hersh Exp $
- *	$XFree86: xc/programs/xterm/cursor.c,v 3.11 1999/07/11 08:49:36 dawes Exp $
+ *	$XFree86: xc/programs/xterm/cursor.c,v 3.12 1999/12/30 02:05:53 robin Exp $
  */
 
 /*
@@ -158,7 +158,7 @@ CursorUp(register TScreen *screen, int n)
  * Won't leave scrolling region. No carriage return.
  */
 void
-Index(register TScreen *screen, register int amount)
+xtermIndex(register TScreen *screen, register int amount)
 {
 	register int j;
 
@@ -173,7 +173,7 @@ Index(register TScreen *screen, register int amount)
 	}
 
 	CursorDown(screen, j = screen->bot_marg - screen->cur_row);
-	Scroll(screen, amount - j);
+	xtermScroll(screen, amount - j);
 }
 
 /*

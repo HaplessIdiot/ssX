@@ -2,7 +2,7 @@
    Copyright (c) 1999,  The XFree86 Project Inc. 
    Written by Mark Vojkovich <markv@valinux.com>
 */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_shadow.c,v 1.3 1999/12/28 18:27:58 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -12,6 +12,7 @@
 #include "xf86Pci.h"
 #include "shadowfb.h"
 #include "servermd.h"
+#include "nv_local.h"
 #include "nv_type.h"
 
 

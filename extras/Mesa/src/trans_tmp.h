@@ -1,4 +1,4 @@
-/* $Id: trans_tmp.h,v 1.1 1999/12/14 01:31:54 robin Exp $ */
+/* $Id: trans_tmp.h,v 1.2 2000/02/08 17:17:39 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -152,21 +152,21 @@ static void INIT(void)
 {
 #ifdef DEST_1UI
    ASSERT(SZ == 1);
-   TAB(1ui)[SRC_IDX] = DEST_1UI;
+   TAB(_1ui)[SRC_IDX] = DEST_1UI;
 #endif
 #ifdef DEST_1UB
    ASSERT(SZ == 1);
-   TAB(1ub)[SRC_IDX] = DEST_1UB;
+   TAB(_1ub)[SRC_IDX] = DEST_1UB;
 #endif
 #ifdef DEST_3F
    ASSERT(SZ == 3);
-   TAB(3f)[SRC_IDX] = DEST_3F;
+   TAB(_3f)[SRC_IDX] = DEST_3F;
 #endif
 #ifdef DEST_4UB
-   TAB(4ub)[SZ][SRC_IDX] = DEST_4UB;
+   TAB(_4ub)[SZ][SRC_IDX] = DEST_4UB;
 #endif
 #ifdef DEST_4F
-   TAB(4f)[SZ][SRC_IDX] = DEST_4F;
+   TAB(_4f)[SZ][SRC_IDX] = DEST_4F;
 #endif
    
 }

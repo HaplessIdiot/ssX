@@ -1,8 +1,8 @@
-/* $Id: winpos.c,v 1.1 1999/12/14 01:32:01 robin Exp $ */
+/* $Id: winpos.c,v 1.2 2000/02/08 17:17:46 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -23,10 +23,6 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/winpos.c,v 1.2 1999/04/04 00:20:36 dawes Exp $ */
-
-
-
 
 
 /*
@@ -49,38 +45,89 @@
  */
 
 
-
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#include "GL/gl.h"
-#endif
-
-#ifdef GL_MESA_window_pos
-
-
-#ifndef PC_HEADER
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
+#include "context.h"
+#include "feedback.h"
+#include "mmath.h"
 #include "rastpos.h"
 #include "winpos.h"
 #endif
 
 
-
 /*
- * Mesa implementation of glWindowPos*MESA()
+ * This is a MESA extension function.  Pretty much just like glRasterPos
+ * except we don't apply the modelview or projection matrices; specify a
+ * window coordinate directly.
+ * Caller:  context->API.WindowPos4fMESA pointer.
  */
-void gl_WindowPos4fMESA( GLcontext *ctx,
-                         GLfloat x, GLfloat y, GLfloat z, GLfloat w )
+void
+_mesa_WindowPos4fMESA( GLfloat x, GLfloat y, GLfloat z, GLfloat w )
 {
-   gl_windowpos( ctx, x, y, z, w );
+   /* KW: Assume that like rasterpos, this must be outside begin/end.
+    */
+   GET_CURRENT_CONTEXT(ctx);
+   ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH( ctx, "glWindowPosMESA" );
+
+   /* set raster position */
+   ctx->Current.RasterPos[0] = x;
+   ctx->Current.RasterPos[1] = y;
+   ctx->Current.RasterPos[2] = CLAMP( z, 0.0F, 1.0F );
+   ctx->Current.RasterPos[3] = w;
+
+   ctx->Current.RasterPosValid = GL_TRUE;
+
+   /* raster color */
+   if (0 && ctx->Light.Enabled) {
+
+      /* KW: I don't see how this can work - would have to take the
+       *     inverse of the projection matrix or the combined
+       *     modelProjection matrix, transform point and normal, and
+       *     do the lighting.  Those inverses are not used for
+       *     anything else.  This is not an object-space lighting
+       *     issue - what this is trying to do is something like
+       *     clip-space or window-space lighting...
+       *
+       *     Anyway, since the implementation was never correct, I'm
+       *     not fixing it now - just use the unlit color. 
+       */
+
+      /* KW:  As a reprise, we now *do* keep the inverse of the projection
+       *      matrix, so it is not infeasible to try to swim up stream
+       *      in this manner.  I still don't want to implement it,
+       *      however.
+       */
+   }
+   else {
+      /* use current color or index */
+      if (ctx->Visual->RGBAflag) {
+	 UBYTE_RGBA_TO_FLOAT_RGBA(ctx->Current.RasterColor, 
+				  ctx->Current.ByteColor);
+      }
+      else {
+	 ctx->Current.RasterIndex = ctx->Current.Index;
+      }
+   }
+
+   ctx->Current.RasterDistance = 0.0;
+
+   {
+      GLuint texSet;
+      for (texSet=0; texSet<MAX_TEXTURE_UNITS; texSet++) {
+         COPY_4FV( ctx->Current.RasterMultiTexCoord[texSet],
+                  ctx->Current.Texcoord[texSet] );
+      }
+   }
+
+   if (ctx->RenderMode==GL_SELECT) {
+      gl_update_hitflag( ctx, ctx->Current.RasterPos[2] );
+   }
 }
 
 
-#else
-
+#ifndef GL_MESA_window_pos
 
 /*
  * OpenGL implementation of glWindowPos*MESA()
@@ -116,8 +163,4 @@ void glWindowPos4fMESA( GLfloat x, GLfloat y, GLfloat z, GLfloat w )
    glPopAttrib();
 }
 
-
 #endif
-
-
-

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.2 1999/06/14 07:23:30 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.3 1999/12/14 01:32:22 robin Exp $
 XCOMM $PI: xc/lib/GL/dri/Imakefile,v 1.11 1999/05/16 14:00:45 faith Exp $
 
 #define DoNormalLib NormalLibGlx
@@ -12,8 +12,8 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
 #if !GlxUseSGISI
-     DRI_SRCS = dri_mesa.c dri_mesa_init.c
-     DRI_OBJS = dri_mesa.o dri_mesa_init.o
+     DRI_SRCS = dri_glx.c
+     DRI_OBJS = dri_glx.o
      DRI_INCS = -I. -I../glx -I$(TOP)/include -I$(TOP)/include/GL \
 		-I$(SERVERSRC)/GL/dri \
 		-I../mesa/include -I../mesa/src -I../mesa/src/drv/gamma
@@ -23,7 +23,13 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
     TDFX_DEFS = -DUSE_TDFX
 #endif
 
-      DEFINES = $(ALLOC_DEFINES) GlxDefines $(TDFX_DEFS)
+#if GlxUseBuiltInDRIDriver
+     GLX_DEFS = -DBUILT_IN_DRI_DRIVER
+#endif
+
+  PATHDEFINES = -DDEFAULT_DRIVER_DIR="$(MODULEDIR)/dri"
+
+      DEFINES = $(ALLOC_DEFINES) GlxDefines $(TDFX_DEFS) $(GLX_DEFS) $(PATHDEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I$(XF86OSSRC) $(DRI_INCS)
          SRCS = XF86dri.c dri_tmm.c $(DRI_SRCS)
          OBJS = XF86dri.o dri_tmm.o $(DRI_OBJS)

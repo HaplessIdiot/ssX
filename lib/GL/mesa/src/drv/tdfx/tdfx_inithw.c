@@ -94,6 +94,8 @@ GLboolean tdfxInitHW(XMesaContext c)
   if (!fxMesa->glideContext || !fxDDInitFxMesaContext( fxMesa ))
     return GL_FALSE;
 
+  fxInitPixelTables(fxMesa, GL_FALSE); /* Load tables of pixel colors */
+
   cPriv->initDone=GL_TRUE;
   return GL_TRUE;
 

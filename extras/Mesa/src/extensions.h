@@ -1,8 +1,8 @@
-/* $Id: extensions.h,v 1.1 1999/12/14 01:31:32 robin Exp $ */
+/* $Id: extensions.h,v 1.2 2000/02/08 17:17:12 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -39,14 +39,13 @@
  */
 extern int gl_extensions_add( struct gl_context *ctx, int state, 
 			      const char *name, void (*notify)( void ) );
-extern GLboolean gl_extension_is_enabled( GLcontext *ctx, const char *name);
+
 extern int gl_extensions_enable( struct gl_context *ctx, const char *name );
 extern int gl_extensions_disable( struct gl_context *ctx, const char *name );
+extern GLboolean gl_extension_is_enabled( GLcontext *ctx, const char *name);
 extern void gl_extensions_dtr( struct gl_context *ctx );
 extern void gl_extensions_ctr( struct gl_context *ctx );
 extern const char *gl_extensions_get_string( struct gl_context *ctx );
-
-extern void (*gl_get_proc_address( const GLubyte *procName ))();
 
 #endif
 

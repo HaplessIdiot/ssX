@@ -1,8 +1,8 @@
-/* $Id: pb.c,v 1.1 1999/12/14 01:31:42 robin Exp $ */
+/* $Id: pb.c,v 1.2 2000/02/08 17:17:26 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -26,8 +26,6 @@
 
 
 
-
-
 /*
  * Pixel buffer:
  *
@@ -38,25 +36,19 @@
  * maximize the number of pixels processed inside loops and to minimize
  * the number of function calls.
  */
-/* $XFree86: xc/lib/GL/mesa/src/pb.c,v 1.3 1999/04/04 00:20:28 dawes Exp $ */
 
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <stdlib.h>
-#include <string.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "alpha.h"
 #include "alphabuf.h"
 #include "blend.h"
 #include "depth.h"
 #include "fog.h"
 #include "logic.h"
-#include "macros.h"
+#include "mem.h"
 #include "masking.h"
 #include "pb.h"
 #include "scissor.h"
@@ -73,7 +65,7 @@
 struct pixel_buffer *gl_alloc_pb(void)
 {
    struct pixel_buffer *pb;
-   pb = (struct pixel_buffer *) calloc(sizeof(struct pixel_buffer), 1);
+   pb = CALLOC_STRUCT(pixel_buffer);
    if (pb) {
       int i, j;
       /* set non-zero fields */
@@ -113,13 +105,13 @@ static void multi_write_index_pixels( GLcontext *ctx, GLuint n,
          ASSERT(n < MAX_WIDTH);
 
          if (bufferBit == FRONT_LEFT_BIT)
-            (*ctx->Driver.SetBuffer)( ctx, GL_FRONT_LEFT);
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_FRONT_LEFT);
          else if (bufferBit == FRONT_RIGHT_BIT)
-            (*ctx->Driver.SetBuffer)( ctx, GL_FRONT_RIGHT);
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_FRONT_RIGHT);
          else if (bufferBit == BACK_LEFT_BIT)
-            (*ctx->Driver.SetBuffer)( ctx, GL_BACK_LEFT);
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_BACK_LEFT);
          else
-            (*ctx->Driver.SetBuffer)( ctx, GL_BACK_RIGHT);
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_BACK_RIGHT);
 
          /* make copy of incoming indexes */
          MEMCPY( indexTmp, indexes, n * sizeof(GLuint) );
@@ -134,7 +126,7 @@ static void multi_write_index_pixels( GLcontext *ctx, GLuint n,
    }
 
    /* restore default dest buffer */
-   (void) (*ctx->Driver.SetBuffer)( ctx, ctx->Color.DriverDrawBuffer);
+   (void) (*ctx->Driver.SetDrawBuffer)( ctx, ctx->Color.DriverDrawBuffer);
 }
 
 
@@ -159,20 +151,20 @@ static void multi_write_rgba_pixels( GLcontext *ctx, GLuint n,
          ASSERT(n < MAX_WIDTH);
 
          if (bufferBit == FRONT_LEFT_BIT) {
-            (*ctx->Driver.SetBuffer)( ctx, GL_FRONT_LEFT);
-            ctx->Buffer->Alpha = ctx->Buffer->FrontLeftAlpha;
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_FRONT_LEFT);
+            ctx->DrawBuffer->Alpha = ctx->DrawBuffer->FrontLeftAlpha;
          }
          else if (bufferBit == FRONT_RIGHT_BIT) {
-            (*ctx->Driver.SetBuffer)( ctx, GL_FRONT_RIGHT);
-            ctx->Buffer->Alpha = ctx->Buffer->FrontRightAlpha;
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_FRONT_RIGHT);
+            ctx->DrawBuffer->Alpha = ctx->DrawBuffer->FrontRightAlpha;
          }
          else if (bufferBit == BACK_LEFT_BIT) {
-            (*ctx->Driver.SetBuffer)( ctx, GL_BACK_LEFT);
-            ctx->Buffer->Alpha = ctx->Buffer->BackLeftAlpha;
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_BACK_LEFT);
+            ctx->DrawBuffer->Alpha = ctx->DrawBuffer->BackLeftAlpha;
          }
          else {
-            (*ctx->Driver.SetBuffer)( ctx, GL_BACK_RIGHT);
-            ctx->Buffer->Alpha = ctx->Buffer->BackRightAlpha;
+            (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_BACK_RIGHT);
+            ctx->DrawBuffer->Alpha = ctx->DrawBuffer->BackRightAlpha;
          }
 
          /* make copy of incoming colors */
@@ -198,7 +190,7 @@ static void multi_write_rgba_pixels( GLcontext *ctx, GLuint n,
    }
 
    /* restore default dest buffer */
-   (void) (*ctx->Driver.SetBuffer)( ctx, ctx->Color.DriverDrawBuffer);
+   (void) (*ctx->Driver.SetDrawBuffer)( ctx, ctx->Color.DriverDrawBuffer);
 }
 
 
@@ -238,10 +230,10 @@ void gl_flush_pb( GLcontext *ctx )
 
    /* initialize mask array and clip pixels simultaneously */
    {
-      GLint xmin = ctx->Buffer->Xmin;
-      GLint xmax = ctx->Buffer->Xmax;
-      GLint ymin = ctx->Buffer->Ymin;
-      GLint ymax = ctx->Buffer->Ymax;
+      GLint xmin = ctx->DrawBuffer->Xmin;
+      GLint xmax = ctx->DrawBuffer->Xmax;
+      GLint ymin = ctx->DrawBuffer->Ymin;
+      GLint ymax = ctx->DrawBuffer->Ymax;
       GLint *x = PB->x;
       GLint *y = PB->y;
       GLuint i, n = PB->count;
@@ -285,7 +277,8 @@ void gl_flush_pb( GLcontext *ctx )
          }
 
 	 if (ctx->Fog.Enabled
-             && (ctx->FogMode == FOG_FRAGMENT || PB->primitive==GL_BITMAP)) {
+             && (ctx->Hint.Fog==GL_NICEST || PB->primitive==GL_BITMAP
+                 || ctx->Texture.ReallyEnabled)) {
 	    gl_fog_rgba_pixels( ctx, PB->count, PB->z, PB->rgba );
 	 }
 
@@ -300,16 +293,14 @@ void gl_flush_pb( GLcontext *ctx )
 
 	 if (ctx->Stencil.Enabled) {
 	    /* first stencil test */
-	    if (gl_stencil_pixels( ctx, PB->count, PB->x, PB->y, mask )==0) {
+	    if (gl_stencil_and_depth_test_pixels(ctx, PB->count,
+                                       PB->x, PB->y, PB->z, mask) == 0) {
 	       goto CleanUp;
 	    }
-	    /* depth buffering w/ stencil */
-	    gl_depth_stencil_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
 	 }
 	 else if (ctx->Depth.Test) {
 	    /* regular depth testing */
-	    (*ctx->Driver.DepthTestPixels)( ctx, PB->count, PB->x, PB->y,
-                                            PB->z, mask );
+	    gl_depth_test_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
 	 }
 
          
@@ -354,15 +345,14 @@ void gl_flush_pb( GLcontext *ctx )
 
 	 if (ctx->Stencil.Enabled) {
 	    /* first stencil test */
-	    if (gl_stencil_pixels( ctx, PB->count, PB->x, PB->y, mask )==0) {
+	    if (gl_stencil_and_depth_test_pixels(ctx, PB->count,
+                                       PB->x, PB->y, PB->z, mask) == 0) {
 	       goto CleanUp;
 	    }
-	    /* depth buffering w/ stencil */
-	    gl_depth_stencil_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
 	 }
 	 else if (ctx->Depth.Test) {
 	    /* regular depth testing */
-	    (*ctx->Driver.DepthTestPixels)( ctx, PB->count, PB->x, PB->y, PB->z, mask );
+	    gl_depth_test_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
 	 }
 
          if (ctx->Color.DrawBuffer == GL_NONE) {
@@ -419,7 +409,7 @@ void gl_flush_pb( GLcontext *ctx )
       if (ctx->MutablePixels || !PB->mono) {
 
 	 if (ctx->Fog.Enabled
-             && (ctx->FogMode==FOG_FRAGMENT || PB->primitive==GL_BITMAP)) {
+             && (ctx->Hint.Fog==GL_NICEST || PB->primitive==GL_BITMAP)) {
 	    gl_fog_ci_pixels( ctx, PB->count, PB->z, PB->i );
 	 }
 
@@ -427,15 +417,14 @@ void gl_flush_pb( GLcontext *ctx )
 
 	 if (ctx->Stencil.Enabled) {
 	    /* first stencil test */
-	    if (gl_stencil_pixels( ctx, PB->count, PB->x, PB->y, mask )==0) {
+	    if (gl_stencil_and_depth_test_pixels(ctx, PB->count,
+                                       PB->x, PB->y, PB->z, mask) == 0) {
 	       goto CleanUp;
 	    }
-	    /* depth buffering w/ stencil */
-	    gl_depth_stencil_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
 	 }
 	 else if (ctx->Depth.Test) {
 	    /* regular depth testing */
-	    (*ctx->Driver.DepthTestPixels)( ctx, PB->count, PB->x, PB->y, PB->z, mask );
+	    gl_depth_test_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
 	 }
 
          if (ctx->RasterMask & MULTI_DRAW_BIT) {
@@ -464,15 +453,14 @@ void gl_flush_pb( GLcontext *ctx )
 
 	 if (ctx->Stencil.Enabled) {
 	    /* first stencil test */
-	    if (gl_stencil_pixels( ctx, PB->count, PB->x, PB->y, mask )==0) {
+	    if (gl_stencil_and_depth_test_pixels(ctx, PB->count,
+                                       PB->x, PB->y, PB->z, mask) == 0) {
 	       goto CleanUp;
 	    }
-	    /* depth buffering w/ stencil */
-	    gl_depth_stencil_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
 	 }
 	 else if (ctx->Depth.Test) {
 	    /* regular depth testing */
-	    (*ctx->Driver.DepthTestPixels)( ctx, PB->count, PB->x, PB->y, PB->z, mask );
+	    gl_depth_test_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
 	 }
          
          if (ctx->RasterMask & MULTI_DRAW_BIT) {

@@ -1,8 +1,8 @@
-/* $Id: quads.c,v 1.1 1999/12/14 01:31:47 robin Exp $ */
+/* $Id: quads.c,v 1.2 2000/02/08 17:17:31 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -23,10 +23,6 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/quads.c,v 1.2 1999/04/04 00:20:30 dawes Exp $ */
-
-
-
 
 
 /*
@@ -37,13 +33,9 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <stdio.h>
-#else
-#include "GL/xf86glx.h"
-#endif
-#include "types.h"
+#include "glheader.h"
 #include "quads.h"
+#include "types.h"
 #endif
 
 

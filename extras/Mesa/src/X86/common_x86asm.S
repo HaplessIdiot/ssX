@@ -46,7 +46,7 @@
 #define  GL_CPU_GenuineIntel     CONST(1)
 #define  GL_CPU_MMX              CONST(2)
 #define  GL_CPU_3Dnow            CONST(4)
-
+#define  GL_CPU_Katmai		 CONST(8)
 
 
 GLOBL GLNAME(gl_identify_x86_cpu_features)
@@ -80,7 +80,7 @@ LLBL (Gidcpu_intel):
     CMP_L  ( CONST(0x6c65746e), ECX )
     JNE    ( LLBL ( Gidcpu_amd ) )
     OR_L   ( GL_CPU_GenuineIntel, ESI )
-    JMP    ( LLBL ( Gidcpu_mmx ) )
+    JMP    ( LLBL ( Gidcpu_katmai ) )
 
 
 LLBL ( Gidcpu_amd ):
@@ -98,6 +98,13 @@ LLBL ( Gidcpu_other ):
 
 JMP    ( LLBL ( Gidcpu_mmx ) )
 
+LLBL ( Gidcpu_katmai ):
+    MOV_L   ( CONST(0x1), EAX )
+    CPUID				/* test for Katmai */
+    TEST_L  ( CONST(0x002000000), EDX ) /* is Bit 25 set ? */
+    JZ	    ( LLBL ( Gidcpu_mmx ) )	/* streaming SIMD-extensions not found... */
+    OR_L    ( GL_CPU_Katmai, ESI )	/* Katmai detected ! :) */
+    JMP     ( LLBL ( Gidcpu_mmx ) )	/* check for mmx */
 
 LLBL ( Gidcpu_3dnow ): 
     MOV_L   ( CONST(0x80000000), EAX )  /*  extended functions supported ?    */

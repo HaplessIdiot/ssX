@@ -274,6 +274,9 @@ void fxDDChooseRenderState( GLcontext *ctx )
 	 fxMesa->QuadFunc = 0;
 	 fxMesa->render_index = FX_FALLBACK;		
 	 ctx->IndirectTriangles |= DD_SW_RASTERIZE;
+#if 0
+	 fprintf(stderr, "Fallback select|feeback\n");
+#endif
 	 return;
       }
    
@@ -281,7 +284,15 @@ void fxDDChooseRenderState( GLcontext *ctx )
       if (flags & DD_TRI_LIGHT_TWOSIDE)            ind |= FX_TWOSIDE;
       if (flags & DD_MULTIDRAW)                    ind |= FX_FRONT_BACK;
       if (flags & DD_POINT_SMOOTH)                 ind |= FX_ANTIALIAS;
-      if (flags & (DD_POINT_SIZE|DD_POINT_ATTEN))  ind |= FX_FALLBACK;
+      if (flags & (DD_POINT_SIZE|DD_POINT_ATTEN))  {
+	ind |= FX_FALLBACK;
+#if 0
+	if (flags&DD_POINT_SIZE)
+	  fprintf(stderr, "Fallback point size = %f\n", ctx->Point.Size);
+	if (flags&DD_POINT_ATTEN)
+	  fprintf(stderr, "Fallback point atten\n");
+#endif
+      }
 
       fxMesa->render_index = ind;
       fxMesa->PointsFunc = points_tab[ind];
@@ -290,7 +301,15 @@ void fxDDChooseRenderState( GLcontext *ctx )
       ind &= ~(FX_ANTIALIAS|FX_FALLBACK);
 
       if (flags & DD_LINE_SMOOTH)                   ind |= FX_ANTIALIAS;
-      if (flags & (DD_LINE_WIDTH|DD_LINE_STIPPLE))  ind |= FX_FALLBACK;
+      if (flags & (DD_LINE_WIDTH|DD_LINE_STIPPLE))  {
+	ind |= FX_FALLBACK;
+#if 0
+	if (flags&DD_LINE_WIDTH)
+	  fprintf(stderr, "Fallback line wide=%f\n", ctx->Line.Width);
+	if (flags&DD_LINE_STIPPLE)
+	  fprintf(stderr, "Fallback line stipple\n");
+#endif
+      }
 
       fxMesa->render_index |= ind;
       fxMesa->LineFunc = line_tab[ind];
@@ -300,7 +319,15 @@ void fxDDChooseRenderState( GLcontext *ctx )
 
       if (flags & DD_TRI_SMOOTH)                    ind |= FX_ANTIALIAS;
       if (flags & DD_TRI_OFFSET)                    ind |= FX_OFFSET;
-      if (flags & (DD_TRI_UNFILLED|DD_TRI_STIPPLE)) ind |= FX_FALLBACK;	
+      if (flags & (DD_TRI_UNFILLED|DD_TRI_STIPPLE)) {
+	ind |= FX_FALLBACK;	
+#if 0
+	if (flags&DD_TRI_UNFILLED)
+	  fprintf(stderr, "Fallback tri unfilled\n");
+	if (flags&DD_TRI_STIPPLE)
+	  fprintf(stderr, "Fallback tri stippled\n");
+#endif
+      }
 
       fxMesa->render_index |= ind;
       fxMesa->TriangleFunc = tri_tab[ind];

@@ -1,4 +1,4 @@
-/* $Id: bbox.c,v 1.1 1999/12/14 01:31:21 robin Exp $ */
+/* $Id: bbox.c,v 1.2 2000/02/08 17:16:58 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -29,9 +29,16 @@
  */
 
 
+#ifdef PC_HEADER
+#include "all.h"
+#else
+#include "glheader.h"
 #include "bbox.h"
 #include "types.h"
 #include "xform.h"
+#endif
+
+
 
 static void cliptest_bounds( GLubyte *orMask, 
 			     GLubyte *andMask,

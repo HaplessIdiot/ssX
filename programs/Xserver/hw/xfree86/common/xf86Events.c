@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.84 2000/01/21 01:12:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.86 2000/02/08 13:13:04 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -431,6 +431,8 @@ xf86PostKbdEvent(unsigned key)
        * Ignore virtual shifts (E0 2A, E0 AA, E0 36, E0 B6)
        */
     default:
+      xf86MsgVerb(X_INFO, 2, "Unreported Prefix0 scancode: 0x%02x\n",
+		  scanCode);
       return;                                  /* skip illegal */
     }
   }
@@ -1045,6 +1047,9 @@ xf86SigHandler(int signo)
 {
   signal(signo,SIG_IGN);
   xf86Info.caughtSignal = TRUE;
+#ifdef XF86BIGFONT
+  XF86BigfontCleanup();
+#endif
 #if defined(DEBUG) && defined(XFree86LOADER)
   if (signo == SIGSEGV)
       LoaderDumpSymbols();

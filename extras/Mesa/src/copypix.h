@@ -1,8 +1,8 @@
-/* $Id: copypix.h,v 1.1 1999/12/14 01:31:25 robin Exp $ */
+/* $Id: copypix.h,v 1.2 2000/02/08 17:17:05 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,9 +25,6 @@
  */
 
 
-
-
-
 #ifndef COPYPIXELS_H
 #define COPYPIXELS_H
 
@@ -35,10 +32,9 @@
 #include "types.h"
 
 
-extern void gl_CopyPixels( GLcontext* ctx,
-                           GLint srcx, GLint srcy,
-                           GLsizei width, GLsizei height,
-			   GLenum type );
+extern void
+_mesa_CopyPixels( GLint srcx, GLint srcy, GLsizei width, GLsizei height,
+                  GLenum type );
 
 
 #endif

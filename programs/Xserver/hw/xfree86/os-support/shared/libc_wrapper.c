@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.56 1999/12/27 01:34:00 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.58 2000/02/08 13:13:31 eich Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1491,6 +1491,12 @@ xf86labs(long x)
 }
 
 double
+xf86ldexp(double x, int exp)
+{
+	return ldexp(x, exp);
+}
+
+double
 xf86log(double x)
 {
 	return(log(x));
@@ -1672,6 +1678,12 @@ void
 xf86free(void* p)
 {
 	xfree(p);
+}
+
+double
+xf86frexp(double x, int *exp)
+{
+        return frexp(x, exp);
 }
 
 void*

@@ -31,7 +31,11 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.12 1999/05/30 02:27:59 dawes Exp $ */
+/*
+ *  2000
+ *  Modifier: Ivan Pascal   The XFree86 Project
+ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.13 1999/06/06 14:05:53 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -53,8 +57,8 @@ typedef struct _CTDataRec {
 
 typedef struct _CTInfoRec {
     XlcCharSet charset;
-    int encoding_len;
-    char *encoding;		/* Compound Text encoding */
+    unsigned int type;
+    unsigned char final_byte;
     int ext_segment_len;
     char *ext_segment;		/* extended segment */
     struct _CTInfoRec *next;
@@ -114,6 +118,7 @@ static CTDataRec default_ct_data[] =
 #define XctC1		0x0080
 #define XctCSI		0x009b
 #define XctGR		0x00a0
+#define XctSTX		0x0002
 
 #define XctCntrlFunc	0x0023
 #define XctMB		0x0024
@@ -137,18 +142,6 @@ static CTDataRec default_ct_data[] =
 #define XctESCSeq	0x1b00
 #define XctCSISeq	0x9b00
 
-#define SKIP_I(str)	while (*(str) >= 0x20 && *(str) <=  0x2f) (str)++;
-#define SKIP_P(str)	while (*(str) >= 0x30 && *(str) <=  0x3f) (str)++;
-
-typedef struct {
-    XlcSide side;
-    int char_size;
-    int set_size;
-    int ext_seg_length;
-    int version;
-    CTInfo ct_info;
-} CTParseRec, *CTParse;
-
 CTDataRec *default_ct_data_list()
 {
 	return(default_ct_data);
@@ -162,178 +155,123 @@ size_t default_ct_data_list_num()
 
 static CTInfo ct_list = NULL;
 
-static CTInfo
-_XlcGetCTInfoFromEncoding(encoding, length)
-    register char *encoding;
-    register int length;
-{
-    register CTInfo ct_info;
-
-    for (ct_info = ct_list; ct_info; ct_info = ct_info->next) {
-	if (length >= ct_info->encoding_len) {
-	    if (ct_info->ext_segment) {
-		if (!strncmp(ct_info->encoding, encoding, 4) &&
-		    !strncmp(ct_info->ext_segment, encoding + 6,
-			     ct_info->ext_segment_len))
-		    return ct_info;
-	    } else if (!strncmp(ct_info->encoding, encoding,
-				ct_info->encoding_len)) {
-		return ct_info;
-	    }
-	}
-    }
-
-    return (CTInfo) NULL;
-}
-
 static unsigned int
-_XlcParseCT(parse, text, length)
-    register CTParse parse;
+_XlcParseCT(text, length, extra_data)
     char **text;
     int *length;
+    unsigned int *extra_data;
 {
-    unsigned int ret = 0;
+    unsigned int ret = 0, char_size = 1, dummy, *data = extra_data;
     unsigned char ch;
     register unsigned char *str = (unsigned char *) *text;
 
-    bzero((char *) parse, sizeof(CTParseRec));
+    if (data == NULL)
+       data = &dummy;
+    *data = 0;
 
     switch (ch = *str++) {
-	case XctESC:
-	    if (*str == XctOtherCoding && *(str + 1) == XctNonStandard
-		&& *(str + 2) >= 0x30 && *(str + 2) <= 0x3f && *length >= 6) {
+       case XctESC:
+          switch (ch = *str++) {
+             case XctOtherCoding:             /* % */
+                ch = *str++;
+                if (ch == XctNonStandard) {
+                   ret = XctExtSeg;
+                   ch = *str++;
+                } else {
+                   ret = XctOtherCoding;
+                }
+                *data = (unsigned int) ch;
+                break;
 
-		/* non-standard encodings */
-		parse->side = XlcGLGR;
-		parse->set_size = 0;
-		str += 2;
-		if (*str <= 0x34) {
-		    parse->char_size = *str - 0x30;
-		    if (parse->char_size == 0) parse->char_size = 1;
-		    ret = XctExtSeg;
-		    parse->ct_info = _XlcGetCTInfoFromEncoding(*text, *length);
-		} else
-		    ret = XctOtherSeg;
-		str++;
-		parse->ext_seg_length = (*str - 128) * 128 + *(str + 1) - 128;
-		str += 2;
+             case XctCntrlFunc:               /* # */
+                *data = (unsigned int) *str++;
+                switch (*str++){
+                   case XctIgnoreExt:
+                      ret = XctIgnoreExt;
+                      break;
+                   case XctNotIgnoreExt:
+                      ret = XctNotIgnoreExt;
+                      break;
+                   default:
+                      ret = 0;
+                      break;
+                }
+                break;
 
-		goto done;
-	    } else if (*str == XctCntrlFunc && *length >= 4 &&
-		       *(str + 1) >= 0x20 && *(str + 1) <= 0x2f &&
-		       (*(str + 2) == XctIgnoreExt ||
-			*(str + 2) == XctNotIgnoreExt)) {
-		
-		/* ignore extension or not */
-		str++;
-		parse->version = *str++ - 0x20;
-		ret = *str++;
+             case XctMB:                      /* $ */
+                ch = *str++;
+	        switch (ch) {
+	           case XctGL94:
+		      ret = XctGL94MB;
+		      break;
+	           case XctGR94:
+                      ret = XctGR94MB;
+	              break;
+                   default:
+                      ret = 0;
+                      break;
+                }
+                *data = (unsigned int) *str++;
+                break;
 
-		goto done;
-	    }
-	    
-	    if (*str == XctMB) {	/* multiple-byte sets */
-		parse->char_size = 2;
-		str++;
-	    } else
-		parse->char_size = 1;
-	
-	    switch (*str) {
-		case XctGL94:
-		    parse->side = XlcGL;
-		    parse->set_size = 94;
-		    ret = (parse->char_size == 1) ? XctGL94 : XctGL94MB;
-		    break;
-		case XctGR94:
-		    parse->side = XlcGR;
-		    parse->set_size = 94;
-		    ret = (parse->char_size == 1) ? XctGR94 : XctGR94MB;
-		    break;
-		case XctGR96:
-		    if (parse->char_size == 1) {
-			parse->side = XlcGR;
-			parse->set_size = 96;
-			ret = XctGR96;
-		    }
-		    break;
-	    }
-	    if (ret) {
-		str++;
-		if (*str >= 0x24 && *str <= 0x2f) {	/* non-standard */
-		    ret = 0;
-		    str++;
-		}
-	    }
-
-	    SKIP_I(str)
-
-	    if (ret && *str < 0x40)			/* non-standard */
-		ret = 0;
-
-	    if (*str < 0x30 || *str > 0x7e || (char *) str - *text >= *length)
+	     case XctGL94:
+		ret = XctGL94;
+                *data = (unsigned int) *str++;
 		break;
-	    
-	    if (ret == 0)
-		ret = XctESCSeq;
-	    else {
-		if (parse->char_size == 2) {
-		    if (*str >= 0x70)
-			parse->char_size = 4;
-		    else if (*str >= 0x60)
-			parse->char_size = 3;
-		}
-		parse->ct_info = _XlcGetCTInfoFromEncoding(*text, *length);
-	    }
-	    str++;
-	    goto done;
-	case XctCSI:
-	    /* direction */
-	    if (*str == XctLeftToRight && *(str + 1) == XctDirection) {
-		ret = XctLeftToRight;
-		str += 2;
-		goto done;
-	    } else if (*str == XctRightToLeft && *(str + 1) == XctDirection) {
-		ret = XctRightToLeft;
-		str += 2;
-		goto done;
-	    } else if (*str == XctDirectionEnd) {
-		ret = XctDirectionEnd;
-		str++;
-		goto done;
-	    }
-
-	    SKIP_P(str)
-	    SKIP_I(str)
-
-	    if (*str < 0x40 && *str > 0x7e)
-		break;
-
-	    ret = XctCSISeq;
-	    str++;
-	    goto done;
+	     case XctGR94:
+                ret = XctGR94;
+                *data = (unsigned int) *str++;
+	        break;
+             case XctGR96:
+                ret = XctGR96;
+                *data = (unsigned int) *str++;
+                break;
+          }
+          break;
+       case XctCSI:
+	  /* direction */
+	  if (*str == XctLeftToRight && *(str + 1) == XctDirection) {
+	     ret = XctLeftToRight;
+	     str += 2;
+	  } else if (*str == XctRightToLeft && *(str + 1) == XctDirection) {
+	     ret = XctRightToLeft;
+	     str += 2;
+	  } else if (*str == XctDirectionEnd) {
+	     ret = XctDirectionEnd;
+	     str++;
+	  } else {
+             ret = 0;
+	  }
+          break;
     }
 
-    if (ch & 0x80) {
-	if (ch < 0xa0)
-	    ret = XctC1;
-	else
-	    ret = XctGR;
-    } else {
-	if (ch == XctHT || ch == XctNL)
-	    ret = ch;
-	else if (ch < 0x20)
-	    ret = XctC0;
-	else
-	    ret = XctGL;
+    if (ret) {
+       *length -= (char *) str - *text;
+       *text = (char *) str;
     }
-
     return ret;
+}
 
-done:
-    *length -= (char *) str - *text;
-    *text = (char *) str;
+static CTInfo
+_XlcGetCTInfo(text, type, final_byte)
+   char *text;
+   unsigned int type;
+   unsigned char final_byte;
+{
+   CTInfo ct_info;
 
-    return ret;
+   for (ct_info = ct_list; ct_info; ct_info = ct_info->next) {
+      if (ct_info->type == type && ct_info->final_byte == final_byte) {
+         if (ct_info->ext_segment) {
+            if (text &&
+                !strncmp(text, ct_info->ext_segment, ct_info->ext_segment_len))
+               return ct_info;
+         } else {
+            return ct_info;
+         }
+      }
+   }
+   return (CTInfo) NULL;
 }
 
 XlcCharSet
@@ -343,48 +281,59 @@ _XlcAddCT(name, encoding)
 {
     CTInfo ct_info;
     XlcCharSet charset;
-    CTParseRec parse;
     char *ct_ptr = encoding;
     int length;
-    unsigned int type;
+    unsigned int type, final_byte;
 
     length = strlen(encoding);
 
-    switch (type = _XlcParseCT(&parse, &ct_ptr, &length)) {
+    charset = _XlcGetCharSet((char *) name);
+    if (charset == NULL) {
+        charset = _XlcCreateDefaultCharSet(name, encoding);
+        if (charset == NULL)
+	    return (XlcCharSet) NULL;
+        _XlcAddCharSet(charset);
+    }
+
+    ct_info = (CTInfo) Xmalloc(sizeof(CTInfoRec));
+    if (ct_info == NULL)
+	return (XlcCharSet) NULL;
+
+    ct_info->ext_segment = NULL;
+    ct_info->ext_segment_len = 0;
+ 
+    type = _XlcParseCT(&ct_ptr, &length, &final_byte);
+
+    switch (type) {
 	case XctExtSeg:
+	   if (strlen(charset->ct_sequence) > 6) {
+              ct_info->ext_segment = charset->ct_sequence + 6;
+              ct_info->ext_segment_len = strlen(ct_info->ext_segment) - 1;
+	   } else {
+              ct_info->ext_segment = charset->encoding_name;
+              ct_info->ext_segment_len = strlen(ct_info->ext_segment);
+	   }
 	case XctGL94:
 	case XctGL94MB:
 	case XctGR94:
 	case XctGR94MB:
 	case XctGR96:
-	    if (parse.ct_info)		/* existed */
-		return parse.ct_info->charset;
-	    break;
+	case XctOtherCoding:
+           ct_info->type = type;
+           ct_info->final_byte = (unsigned char) final_byte;
+           ct_info->charset = charset;
+           break;
 	default:
-	    return (XlcCharSet) NULL;
+           Xfree(ct_info);
+	   return (XlcCharSet) NULL;
     }
 
-    charset = _XlcCreateDefaultCharSet(name, encoding);
-    if (charset == NULL)
-	return (XlcCharSet) NULL;
-    _XlcAddCharSet(charset);
-
-    ct_info = (CTInfo) Xmalloc(sizeof(CTInfoRec));
-    if (ct_info == NULL)
-	return (XlcCharSet) NULL;
-    
-    ct_info->charset = charset;
-    ct_info->encoding = charset->ct_sequence;
-    ct_info->encoding_len = strlen(ct_info->encoding);
-    if (type == XctExtSeg) {
-	ct_info->ext_segment = ct_info->encoding + 6;
-	ct_info->ext_segment_len = strlen(ct_info->ext_segment);
+    if (!_XlcGetCTInfo( ct_info->ext_segment, type, ct_info->final_byte)) {
+       ct_info->next = ct_list;
+       ct_list = ct_info;
     } else {
-	ct_info->ext_segment = NULL;
-	ct_info->ext_segment_len = 0;
+       Xfree(ct_info);
     }
-    ct_info->next = ct_list;
-    ct_list = ct_info;
 
     return charset;
 }
@@ -406,44 +355,58 @@ Bool
 _XlcParseCharSet(charset)
     XlcCharSet charset;
 {
-    CTParseRec parse;
-    char *ptr, *bufp, buf[BUFSIZ];
+    unsigned int type, final_byte;
+    char *ptr = charset->ct_sequence;
     int length;
+    int char_size = 1;
+    
+    if (ptr == NULL || *ptr == '\0')
+    	return False;
 
-    if (charset->ct_sequence == NULL)
-	return False;
-
-    if (charset->name && strlen(charset->name) >= sizeof(buf))
-	return False;
-
-    ptr = charset->ct_sequence;
     length = strlen(ptr);
 
-    (void) _XlcParseCT(&parse, &ptr, &length);
-	
-    if (charset->name) {
-	charset->xrm_name = XrmStringToQuark(charset->name);
+    type = _XlcParseCT(&ptr, &length, &final_byte);
 
-	if ((length = strlen (charset->name)) < sizeof buf) bufp = buf;
-	else bufp = Xmalloc (length + 1);
-
-	if (bufp == NULL) return False;
-	strcpy(bufp, charset->name);
-	if ((ptr = strchr(bufp, ':')))
-	    *ptr = '\0';
-	charset->xrm_encoding_name = XrmStringToQuark(bufp);
-	if (bufp != buf) Xfree (bufp);
-	charset->encoding_name = XrmQuarkToString(charset->xrm_encoding_name);
-    } else {
-	charset->xrm_name = 0;
-	charset->encoding_name = NULL;
-	charset->xrm_encoding_name = 0;
+    if (type == XctGR94MB || type == XctGL94MB) {
+       if (final_byte < 0x60) {
+          char_size = 2;
+       } else if (final_byte < 0x70) {
+          char_size = 3;
+       } else {
+          char_size = 4;
+       }
     }
 
-    charset->side = parse.side;
-    charset->char_size = parse.char_size;
-    charset->set_size = parse.set_size;
+    if (type == XctExtSeg) {
+       char_size = final_byte - '0';
+       if ((char_size < 1) || (char_size > 4))
+          char_size = 1;
+    }
 
+    switch (type) {
+       case XctGR94MB :
+       case XctGR94 :
+          charset->side = XlcGR;
+          charset->set_size = 94;
+          charset->char_size = char_size;
+          break;
+       case XctGL94MB :
+       case XctGL94 :
+          charset->side = XlcGL;
+          charset->set_size = 94;
+          charset->char_size = char_size;
+          break;
+       case XctGR96:
+          charset->side = XlcGR;
+          charset->set_size = 96;
+          charset->char_size = char_size;
+          break;
+       case XctOtherCoding:
+       case XctExtSeg:
+          charset->side = XlcGLGR;
+          charset->char_size = char_size;
+          break;
+    }
     return True;
 }
 
@@ -469,44 +432,60 @@ _XlcInitCTInfo()
     return True;
 }
 
+typedef enum { resOK, resNotCTSeq, resNotInList } CheckResult;
+/*  resNotCTSeq - EscSeq not recognized, pointers not changed
+*   resNotInList - EscSeq recognized but charset not found,
+*                  sequence skiped
+*   resOK - OK. Charset saved in 'state', sequence skiped
+*/  
 
-static int
+static CheckResult
 _XlcCheckCTSequence(state, ctext, ctext_len)
     State state;
     char **ctext;
     int *ctext_len;
 {
     XlcCharSet charset;
-    CTParseRec parse;
     CTInfo ct_info;
     int length;
+    unsigned int type, final_byte;
+    unsigned int ext_seg_left;
 
-    _XlcParseCT(&parse, ctext, ctext_len);
+    type = _XlcParseCT(ctext, ctext_len, &final_byte);
 
-    ct_info = parse.ct_info;
-    if (parse.ext_seg_length > 0) {	/* XctExtSeg or XctOtherSeg */
-	if (ct_info) {
-	    length = ct_info->ext_segment_len;
-	    *ctext += length;
-	    *ctext_len -= length;
-	    state->ext_seg_left = parse.ext_seg_length - length;
-	    state->ext_seg_charset = ct_info->charset;
-	} else {
-	    state->ext_seg_left = parse.ext_seg_length;
-	    state->ext_seg_charset = NULL;
-	}
-    } else if (ct_info) {
-	if ((charset = ct_info->charset)) {
-	    if (charset->side == XlcGL)
-		state->GL_charset = charset;
-	    else if (charset->side == XlcGR)
-		state->GR_charset = charset;
-	}
+    if (!type)
+       return resNotCTSeq;
+
+    if ((type == XctExtSeg) && (*ctext_len > 2)) {
+    	ext_seg_left = (*(*ctext)++ - 128) << 7 + (*(*ctext)++ - 128) - 2;
+        *ctext_len -= 2;
     }
 
-    return 0;
-}
+    ct_info = _XlcGetCTInfo(*ctext, type, (unsigned char) final_byte);
 
+    if (ct_info) {
+       charset = ct_info->charset;
+       if (ct_info->ext_segment_len) {
+          *ctext += ct_info->ext_segment_len + 1;
+          *ctext_len -= ct_info->ext_segment_len + 1;
+       }
+       if (charset->side == XlcGL) {
+          state->GL_charset = charset;
+       } else if (charset->side == XlcGR) {
+          state->GR_charset = charset;
+       } else {
+          state->GL_charset = charset;
+          state->GR_charset = charset;
+       }
+    } else {
+       if (type == XctExtSeg) {
+          *ctext += ext_seg_left;
+          *ctext_len -= ext_seg_left;
+       }
+       return resNotInList;
+    }
+    return resOK;
+}
 
 static void
 init_state(conv)
@@ -539,66 +518,38 @@ cttocs(conv, from, from_left, to, to_left, args, num_args)
 {
     register State state = (State) conv->state;
     register unsigned char ch;
-    int length;
+    int ret;
     XlcCharSet charset = NULL;
     char *ctptr, *bufptr;
     int ctext_len, buf_len;
 
-    ctptr = *((char **) from);
-    bufptr = *((char **) to);
+    ctptr = (unsigned char *) *from;
+    bufptr = (unsigned char *) *to;
     ctext_len = *from_left;
     buf_len = *to_left;
 
     while (ctext_len > 0 && buf_len > 0) {
-	if (state->ext_seg_left > 0) {
-	    length = min(state->ext_seg_left, ctext_len);
-	    length = min(length, buf_len);
+       ch = *ctptr;
+       if (ch == XctCSI) {
+          /* do nothing except skip sequence if recognized*/
+          if(_XlcParseCT(&ctptr, &ctext_len, NULL))
+             continue;
+       }
+       if (ch == XctESC) {
+          ret = _XlcCheckCTSequence(state, &ctptr, &ctext_len);
+          if (ret == resOK || ret == resNotInList)
+             continue;
+       }
+       if (charset) {
+          if (charset != (ch & 0x80 ? state->GR_charset : state->GL_charset))
+             break; 
+       } else {
+          charset = ch & 0x80 ? state->GR_charset : state->GL_charset;
+       }
 
-	    ctext_len -= length;
-	    state->ext_seg_left -= length;
-
-	    if (state->ext_seg_charset) {
-		charset = state->ext_seg_charset;
-		buf_len -= length;
-		if (charset->side == XlcGL) {
-		    while (length-- > 0)
-			*bufptr++ = *ctptr++ & 0x7f;
-		} else if (charset->side == XlcGR) {
-		    while (length-- > 0)
-			*bufptr++ = *ctptr++ | 0x80;
-		} else {
-		    while (length-- > 0)
-			*bufptr++ = *ctptr++;
-		}
-
-		if (state->ext_seg_left < 1)
-		    state->ext_seg_charset = NULL;
-	    }
-	    break;
-	}
-	ch = *((unsigned char *) ctptr);
-	if (ch == 0x1b || ch == 0x9b) {
-	    length = _XlcCheckCTSequence(state, &ctptr, &ctext_len);
-	    if (length < 0)
-		return -1;
-	    if (state->ext_seg_left > 0 && charset)
-		break;
-	} else {
-	    if (charset) {
-		if (charset != (ch & 0x80 ? state->GR_charset :
-				state->GL_charset))
-		    break;
-	    } else
-		charset = ch & 0x80 ? state->GR_charset : state->GL_charset;
-
-	    if ((ch < 0x20 && ch != '\0' && ch != '\n' && ch != '\t') ||
-		    (ch >= 0x80 && ch < 0xa0))
-		return -1;
-
-	    *bufptr++ = *ctptr++;
-	    ctext_len--;
-	    buf_len--;
-	}
+       *bufptr++ = *ctptr++;
+       ctext_len--;
+       buf_len--;
     }
 
     if (charset)
@@ -650,72 +601,72 @@ cstoct(conv, from, from_left, to, to_left, args, num_args)
 	return -1;
 
     side = charset->side;
+    length = strlen(charset->ct_sequence);
 
-    if (ct_info->ext_segment) {
-	if (charset != state->ext_seg_charset && state->ext_seg_left < 1) {
-	    length = ct_info->encoding_len;
-	    if (ct_len < length)
-		return -1;
-	    strcpy(ctptr, ct_info->encoding);
-	    ctptr[4] = ((ct_info->ext_segment_len + csstr_len) / 128) | 0x80;
-	    ctptr[5] = ((ct_info->ext_segment_len + csstr_len) % 128) | 0x80;
-	    ctptr += length;
-	    ct_len -= length;
-	    state->ext_seg_left = csstr_len;
-	}
-	length = min(state->ext_seg_left, csstr_len);
-	state->ext_seg_left -= length;
+    if (((side == XlcGR || side == XlcGLGR) &&
+          charset != state->GR_charset) ||
+        ((side == XlcGL || side == XlcGLGR) &&
+          charset != state->GL_charset) ) {
 
-	if (side == XlcGL) {
-	    while (length-- > 0)
-		*ctptr++ = *csptr++ & 0x7f;
-	} else if (side == XlcGR) {
-	    while (length-- > 0)
-		*ctptr++ = *csptr++ | 0x80;
-	} else {
-	    while (length-- > 0)
-		*ctptr++ = *csptr++;
-	}
-	state->ext_seg_charset = (state->ext_seg_left > 0) ? charset : NULL;
-    } else {
-	if ((side == XlcGR && charset != state->GR_charset) ||
-	    (side == XlcGL && charset != state->GL_charset)) {
+        /* output esc-sequence */
+        if ((ct_info->type == XctExtSeg) && (length < 7)) {
+           int comp_len = length + strlen(ct_info->ext_segment) + 3;
 
-	    ct_len -= ct_info->encoding_len;
-	    if (ct_len < 0)
-		return -1;
-	    strcpy(ctptr, ct_info->encoding);
-	    ctptr += ct_info->encoding_len;
-	}
+           if (ct_len < comp_len)
+              return -1;
 
-	min_ch = 0x20;
-	max_ch = 0x7f;
+	   strcpy(ctptr, ct_info->charset->ct_sequence);
+	   ctptr += length;
 
-	if (charset->set_size == 94) {
-	    max_ch--;
-	    if (charset->char_size > 1 || side == XlcGR)
-		min_ch++;
-	}
+	   length = ct_info->ext_segment_len;
+	   *ctptr++ = ((length + 3) / 128) | 0x80;
+	   *ctptr++ = ((length + 3) % 128) | 0x80;	   
+   	   strncpy(ctptr, ct_info->ext_segment, length);
+	   ctptr += length;
+	   *ctptr++ = XctSTX;
+           ct_len -= comp_len;
 
-	while (csstr_len > 0 && ct_len > 0) {
-	    ch = *((unsigned char *) csptr++) & 0x7f;
-	    if (ch < min_ch || ch > max_ch)
-		if (ch != 0x00 && ch != 0x09 && ch != 0x0a && ch != 0x1b)
-		    continue;	/* XXX */
-	    if (side == XlcGL)
-		*ctptr++ = ch & 0x7f;
-	    else if (side == XlcGR)
-		*ctptr++ = ch | 0x80;
-	    else
-		*ctptr++ = ch;
-	    csstr_len--;
-	    ct_len--;
-	}
-	if (side == XlcGR)
-	    state->GR_charset = charset;
-	else if (side == XlcGL)
-	    state->GL_charset = charset;
+        } else {
+           if (ct_len < length)
+              return -1;
+
+	   strcpy(ctptr, ct_info->charset->ct_sequence);
+	   ctptr += length;
+           ct_len -= length;
+        }
     }
+    min_ch = 0x20;
+    max_ch = 0x7f;
+
+    if (charset->set_size == 94) {
+       max_ch--;
+    if (charset->char_size > 1 || side == XlcGR)
+       min_ch++;
+    }
+
+    while (csstr_len > 0 && ct_len > 0) {
+       ch = *((unsigned char *) csptr) & 0x7f;
+       if (ch < min_ch || ch > max_ch)
+          if (ch != 0x00 && ch != 0x09 && ch != 0x0a && ch != 0x1b) {
+             csptr++;
+             csstr_len--;
+             continue;	/* XXX */
+          }
+
+       if (side == XlcGL)
+          *ctptr++ = *csptr++ & 0x7f;
+       else if (side == XlcGR)
+          *ctptr++ = *csptr++ | 0x80;
+       else
+          *ctptr++ = *csptr++;
+       csstr_len--;
+       ct_len--;
+    }
+
+    if (side == XlcGR || side == XlcGLGR)
+       state->GR_charset = charset;
+    if (side == XlcGL || side == XlcGLGR)
+       state->GL_charset = charset;
 
     *from_left -= csptr - *((char **) from);
     *from = (XPointer) csptr;
