@@ -62,6 +62,8 @@
         levels at which this can be handled:
 
 
+
+
         1. There is a kernel tunable that determines which mode is the
            default.  The tunable is the initialisation of kd_2keysw in
            /etc/conf/pack.d/kd/space.c.  When set to 1 (the default),
@@ -130,11 +132,11 @@
 
      3. The BOOTSTRAPCFLAGS required are:
 
-     For Unixware:     "-DUSL"
+          For Unixware:     "-DUSL"
 
-     For NCR:          "-DNCR"
+          For NCR:          "-DNCR"
 
-     For other SVR4:   "-DSVR4 -Di386"
+          For other SVR4:   "-DSVR4 -Di386"
 
 
   5.  Notes for running XFree86 on SVR4
@@ -191,7 +193,11 @@
         aren't spelled out in the SAS README are:
 
         - An example of the line you should add to /etc/ap/chan.ap is:
+
+
+
               MAJOR    0       255     ldterm ttcompat
+
 
      where MAJOR is replaced by the major number used for SAS devices.
      To determine what that is, check /etc/conf/cf.d/mdevice after
@@ -255,6 +261,7 @@
   Unix-domain sockets in such a way that making local connections via
   UNIXCONN does not work properly (this bug is known to exist on
   Consensys SVR4.2 and Novell UnixWare).  The manifestation of this bug
+
   is that windows remain on the screen after the client program exits,
   until you move the mouse into the window, or otherwise cause the
   server to try to write to the client.
@@ -273,9 +280,11 @@
         require -DSYSV when building under SVR4.  This will not be set
         when using the default configuration.  A quick fix is to add
         something like the following to the client's Imakefile:
+
               #if SystemV4
                    DEFINES = -DSYSV OTHER_CLIENT_DEPENDENT_DEFINES
               #endif
+
 
      The best solution is to modify the code so it compiles correctly
      without -DSYSV.
@@ -304,6 +313,7 @@
         matching the pattern `*pc???.bdf').  These will likely be
         /usr/lib/X11/fonts/misc.  Go to the directory where these files
         are located, and execute the following (using `sh' or `ksh'):
+
                 for i in *pc???.bdf
                 do
                     /usr/X11R6/bin/bdftopcf $i > \
@@ -315,6 +325,9 @@
                 /usr/X11R6/bin/xset fp rehash
 
 
+
+
+
      4. The `dos' client program uses a translation table to map from an
         internal key representation to the X keymap.  It is likely that
         the table supplied with Merge 2.2 use the mapping for SCO's
@@ -323,16 +336,20 @@
         installed in /usr/lib/merge/xc.  In addition, you must add the
         following resource to the `dos' client's application-defaults
         file (usually in /usr/lib/X11/app-defaults/DOS):
+
                 dos*xcodetable: /usr/lib/merge/xc/xcode.xfree86
+
 
      It will be obvious if this new code table is needed, as the arrow
      keys on the keypad will fail to function in the `dos' client if the
      wrong table is installed.
+
      5. For the "zoom" feature to work correctly, you must run `dos'
         with $DISPLAY set to "unix:N" or "host_name:N".  If you use just
         ":0", the client will not function properly.  `dos' does not
         accept a `-display' parameter.  Hence it is probably a good idea
         to replace the `dos' program with something like this:
+
                 #!/usr/bin/ksh
                 if [ "X${DISPLAY}" != "X" ]
                 then
@@ -343,6 +360,7 @@
                         esac
                 fi
                 /usr/bin/dos.real "$@"
+
 
 
   9.  Keyboard mapping problems with some Esix systems
@@ -357,7 +375,9 @@
   /usr/X11R6/lib/X11/etc/xmodmap.std, and can be installed automatically
   by adding the line:
 
+
          xmodmap /usr/X11R6/lib/X11/etc/xmodmap.std
+
 
 
 
@@ -372,6 +392,7 @@
   that works around the problem, and provided scripts for you that will
   both install and back out the patch.  You must install this if you
   intend to use the S3, 8514, Mach8, Mach32, P9000, AGX or W32 servers.
+
 
   Dell 2.2 is known to not need the patch, because Thomas Roell found
   and fixed the bug while he was working for Dell.  Microport has fixed
@@ -394,13 +415,13 @@
   information.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.6 1995/07/21 14:40:56 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.7 1996/02/04 09:08:25 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.SVR4 /main/8 1995/11/12 19:48:39 kaleb $
+  $XConsortium: SVR4.sgml /main/4 1995/11/12 20:00:10 kaleb $
 
 
 
@@ -440,25 +461,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SVR4,v 3.12 1995/07/24 06:52:43 dawes Exp $
+$XFree86$

@@ -25,18 +25,26 @@
   flags to set, start the server with the -probeonly flag from an 80x25
   text mode and look at the information printed by the server.  If the
   line:
+
     VGAXXX: ET4000: Initial hibit state: low
 
+
   is printed, put the following in the SVGA, VGA16 and VGA2 sections of
   your XF86Config:
+
     Option "hibit_low"
 
+
   If the line:
+
     VGAXXX: ET4000: Initial hibit state: high
+
 
   is printed, put the following in the SVGA, VGA16 and VGA2 sections of
   your XF86Config:
+
     Option "hibit_high"
+
 
 
   3.  Text mode restore problems
@@ -47,13 +55,6 @@
   default, hence the flag has been removed.  Hopefully the past text-
   restoration problems are alleviated in XFree86 2.0.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.4 1995/01/28 16:03:19 dawes Exp $
-
-
-
-
-
-  $XConsortium: README.tseng /main/8 1995/11/12 19:49:10 kaleb $
 
 
 
@@ -63,6 +64,71 @@
 
 
 
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.5 1996/02/04 09:08:39 dawes Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.tseng,v 3.10 1995/07/24 06:53:04 dawes Exp $
+
+
+
+  $XConsortium: tseng.sgml /main/3 1995/11/12 20:00:47 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$XFree86$

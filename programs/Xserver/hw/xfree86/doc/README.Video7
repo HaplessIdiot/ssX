@@ -15,7 +15,9 @@
   It also does not probe for memory, so in your XF86Config file, make
   sure that you use the following line:
 
+
           Videoram XXX
+
 
   Where XXX is the amount of RAM in your card. Most of them have at
   least 512k, so this is a good value to start with.
@@ -23,7 +25,9 @@
   Also, the clock probing function of XFree86 doesn't seem to correctly
   get the clocks. The documentation I used (vgadoc3) suggests using the
   following values for the Clocks line in your XF86Config file:
+
           Clocks        25.175 28.322 30.000 32.514 34.000 36.000 38.000 40.000
+
 
   For 800x600 mode, use a dot clock of 38 instead of 36 or 40 as sug-
   gested in most of the sample XF86Config files and modeDB.txt.  This
@@ -57,6 +61,9 @@
 
   Craig Struble (cstruble@acm.vt.edu) Video 7 driver
 
+
+
+
   4.  Acknowledgments
 
   4.1.  Thanks to:
@@ -64,6 +71,7 @@
 
      o  Cara Cocking for loving me and supporting me. Without her I'd be
         a bowl of jello.
+
      o  XFree86 team for the great stub code that allowed me to get this
         going.
 
@@ -103,20 +111,14 @@
        USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Video7.sgml,v 3.2 1995/01/28 16:02:44 dawes Exp $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Video7.sgml,v 3.3 1996/02/04 09:08:29 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.Video7 /main/7 1995/11/12 19:48:42 kaleb $
-
-
-
-
-
-
-
+  $XConsortium: Video7.sgml /main/2 1995/11/12 20:00:20 kaleb $
 
 
 
@@ -129,6 +131,4 @@
 
 
 
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Video7,v 3.8 1995/07/24 06:52:44 dawes Exp $
+$XFree86$

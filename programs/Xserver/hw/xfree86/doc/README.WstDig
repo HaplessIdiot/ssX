@@ -97,7 +97,9 @@
         windows drivers may only support the WD90c24a chips.  If this
         turns out to be a problem with the WD90C24, acceleration can be
         disabled by adding the line:
+
               Option "noaccel"
+
 
 
      to the Device section of the XF86Config file.
@@ -114,9 +116,11 @@
   The VRAM clock (Mclk) is adjusted by adding ONE of the following
   option lines to the Device section of the XF86Config:
 
+
           Option      "slow_dram"     # Set Mclk to 47.429 MHz
           Option      "med_dram"      # Set Mclk to 49.219 MHz
           Option      "fast_dram"     # Set Mclk to 55.035 MHz
+
 
 
 
@@ -140,6 +144,7 @@
   clocks defined which are not directly provided by the chip.  The NON-
   programmable clocks (1-4 and 9-12) MUST be set as indicated here.
 
+
      Clocks     25.175 28.322 65     36     # These are *not* programmable
 
      Clocks     29.979 77.408 62.195 59.957 # these are programmable
@@ -147,6 +152,7 @@
      Clocks     39.822 72.038 44.744 80.092 # these are programmable
      Clocks     44.297                      # Change this if you change
                                             #   Mclk above.
+
 
 
   You can program the clocks in increments of .447443 MHz.  The server
@@ -162,7 +168,9 @@
   The BIOS on some systems may not allow switching from CRT to LCD
   unless the correct clock and/or mode is used.  Try the following mode
   line for 640x480 LCD displays.
+
      ModeLine "640x480"  25.175   640 664 760 800     480 491 493 525 #CRT/LCD
+
 
 
   The following modelines have been tested with the above Clocks lines
@@ -171,6 +179,22 @@
   clocks.  The modelines below have been reported to circumvent these
   problems.  Do not assume your monitor will not be damaged by any of
   these.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
    # VESA 800x600@72Hz Non-Interlaced mode
      ModeLine  "800x600.50"  50  800  856  976 1040 600 637 643 666  +hsync +vsync
@@ -194,8 +218,6 @@
 
 
 
-
-
   5.  Additional WD90C24 information
 
   Standard disclaimers apply.  Use this driver at your own risk.  If you
@@ -207,20 +229,14 @@
   darin@castle.net or dernst@pppl.gov.  I only provided the WD90C24
   specific code.  You can reach me (Brad Bosch) at brad@Lachman.com.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/WstDig.sgml,v 3.3 1995/07/15 04:26:15 dawes Exp $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/WstDig.sgml,v 3.4 1996/02/04 09:08:31 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.WstDig /main/7 1995/11/12 19:48:47 kaleb $
-
-
-
-
-
-
-
+  $XConsortium: WstDig.sgml /main/4 1995/11/12 20:00:25 kaleb $
 
 
 
@@ -247,20 +263,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.WstDig,v 3.10 1995/07/24 06:52:47 dawes Exp $
+$XFree86$

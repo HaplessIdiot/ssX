@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.116 1996/01/31 11:46:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.117 1996/02/04 09:04:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -932,7 +932,9 @@ s3Probe()
    }
 
    if (find_bios_string(s3InfoRec.BIOSbase,"Stealth",
-			"Diamond Computer Systems, Inc.") != NULL) {
+			"Diamond Computer Systems, Inc.") != NULL ||
+       find_bios_string(s3InfoRec.BIOSbase,"Stealth",
+			"Diamond Multimedia Systems, Inc.") != NULL) {
       if (s3BiosVendor == UNKNOWN_BIOS) 
 	 s3BiosVendor = DIAMOND_BIOS;
       if (xf86Verbose)
@@ -3185,7 +3187,7 @@ s3Probe()
       if (S3_964_SERIES(s3ChipId) || S3_968_SERIES(s3ChipId)) {
 	 if (!pMode->PrivSize || !pMode->Private) {
 	    pMode->PrivSize = S3_MODEPRIV_SIZE;
-	    pMode->Private = (INT32 *)Xcalloc(S3_MODEPRIV_SIZE);
+	    pMode->Private = (INT32 *)xcalloc(sizeof(INT32), S3_MODEPRIV_SIZE);
 	    pMode->Private[0] = 0;
 	 }
 

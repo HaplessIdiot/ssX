@@ -896,18 +896,15 @@
   ______________________________________________________________________
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.32 1996/01/16 15:04:28 dawes Exp $
+
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.33 1996/02/04 09:08:21 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.S3 /main/15 1996/01/16 15:35:02 kaleb $
-
-
-
-
-
+  $XConsortium: S3.sgml /main/13 1996/01/16 15:36:43 kaleb $
 
 
 
@@ -926,5 +923,4 @@
 
 
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.43 1996/01/16 15:33:09 dawes Exp $
+$XFree86$

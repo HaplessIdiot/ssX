@@ -59,9 +59,9 @@
   RAMDAC, but it must be used with care.
 
   To run XF86_SVGA at 16 bpp, pass options to the X server as follows:
+
   startx -- -bpp 16               5-6-5 RGB ('64K color', XGA)
   startx -- -bpp 16 -weight 555   5-5-5 RGB ('Hicolor')
-
 
 
   3.  Basic configuration
@@ -80,8 +80,10 @@
   (so there's no need to probe clocks for this card, just insert the
   following line in the Device section of the XF86Config file):
 
+
       Clocks 25.175 28.3 40 70 50 75 36 44.9
       Clocks 0 118 80 31.5 110 65 72 95
+
 
   The higher frequencies have not been tested, there might be a mismatch
   in the 60-80 MHz range.
@@ -91,17 +93,14 @@
   maintainer can be reached at hhanemaa@cs.ruu.nl), or post in the
   Usenet newsgroup "comp.windows.x.i386unix".
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.1 1995/07/07 15:40:20 dawes Exp $
 
-
-
-
-  $XConsortium: README.ark /main/2 1995/11/12 19:48:53 kaleb $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.2 1996/02/04 09:08:33 dawes Exp $
 
 
 
 
 
+  $XConsortium: ark.sgml /main/2 1995/11/12 20:00:30 kaleb $
 
 
 
@@ -132,4 +131,4 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ark,v 3.3 1995/07/24 06:52:51 dawes Exp $
+$XFree86$

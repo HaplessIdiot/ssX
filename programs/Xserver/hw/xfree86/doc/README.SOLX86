@@ -59,9 +59,16 @@
   First verify the chanmux device driver's major number is 100:
 
 
-               # grep -i chanmux /etc/name_to_major
-               chanmux 100
-               #
+
+
+
+
+
+          # grep -i chanmux /etc/name_to_major
+          chanmux 100
+          #
+
+
 
 
   If the number after 'chanmux' is anything but 100, I would suggest you
@@ -72,6 +79,7 @@
 
   However, if it is 100, then as root type the following commands to
   create the maximum allowable number of virtual terminals.
+
 
 
                # cd /dev
@@ -85,6 +93,7 @@
 
 
 
+
   There is no need for a reconfiguration boot.
 
   Secondly, for both 2.1, and 2.4 x86 systems, add a few lines to the
@@ -93,12 +102,14 @@
   (Note, do NOT make a mistake here, you could lock yourself out of the
   system)
 
+
   --------------------->Snip Snip<-----------------------------------------------
   v1:234:respawn:/usr/lib/saf/ttymon -g -h -p "`uname -n` VT01 login: " -T AT386 -d /dev/vt01 -l console
   v2:234:respawn:/usr/lib/saf/ttymon -g -h -p "`uname -n` VT02 login: " -T AT386 -d /dev/vt02 -l console
   v3:234:respawn:/usr/lib/saf/ttymon -g -h -p "`uname -n` VT03 login: " -T AT386 -d /dev/vt03 -l console
   v4:234:respawn:/usr/lib/saf/ttymon -g -h -p "`uname -n` VT04 login: " -T AT386 -d /dev/vt04 -l console
   ---------------------->End Here<-----------------------------------------------
+
 
   These four lines enable four VT's on Alt-SysReq-F1 through Alt-SysReq-
   F4.
@@ -144,6 +155,7 @@
         Under Solaris 2.1 for x86, sun.cf needs to read (near the top of
         the file)
 
+
                 #ifdef SVR4Architecture
                 #ifdef i386Architecture
                 #define OSName                  SunOS 5.1 x86
@@ -152,8 +164,10 @@
                 #define OSMinorVersion          1
 
 
+
      Under Solaris 2.4 for x86, sun.cf needs to read (near the top of
      the file)
+
 
              #ifdef SVR4Architecture
              #ifdef i386Architecture
@@ -161,6 +175,7 @@
              XCOMM operating system:  OSName
              #define OSMajorVersion          5
              #define OSMinorVersion          4
+
 
 
      2. Both Gcc, and ProWorks are supported by XFree86. Gcc-2.5.8 is
@@ -195,7 +210,6 @@
         be found before any other possible GNU versions. (Most notably
         GNU 'ar' does not work during the build).
 
-
      5. If you wish to use the "memory aperture" feature of the S3, and
         Mach32 servers, you need to compile, and install the Solaris x86
         aperture driver for memory mapped I/O support.  This driver is
@@ -212,7 +226,9 @@
      6. The BOOTSTRAPCFLAGS for Solaris x86 is:
 
 
+
                           "-Dsun -Di386 -DSVR4"
+
 
 
 
@@ -224,7 +240,9 @@
         correct device is vt00 so your xinit command would look like so:
 
 
+
                           xinit -- vt00
+
 
 
 
@@ -259,7 +277,10 @@
 
         The work around, add:
 
+
                           Option "sw_cursor"
+
+
 
 
      to you XF86Config.
@@ -280,20 +301,14 @@
   Solaris support, or the Solaris distribution need to be made to
   davidh@use.com, or danson@lgc.com.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.6 1995/07/19 12:43:28 dawes Exp $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.7 1996/02/04 09:08:24 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.SOLX86 /main/7 1995/11/12 19:48:36 kaleb $
-
-
-
-
-
-
-
+  $XConsortium: SOLX86.sgml /main/4 1995/11/12 20:00:07 kaleb $
 
 
 
@@ -314,19 +329,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SOLX86,v 3.11 1995/07/24 06:52:40 dawes Exp $
+$XFree86$

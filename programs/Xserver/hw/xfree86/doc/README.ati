@@ -18,9 +18,11 @@
   resolutions (based on the Golden Ratio of x/y = (1 + sqrt(5))/2) are
   possible depending on the video memory available on the board (and the
   capabilities of your monitor):
+
       256k    640x409x256    896x585x16
       512k    896x585x256   1280x819x16
       1M     1280x819x256  1824x1149x16
+
 
   Higher resolutions are also possible on Mach32 (but not Mach64) boards
   with more than 1M of video memory.
@@ -47,9 +49,11 @@
 
   Most boards harbouring the following ATI video controller chips will
   work with this driver:
+
   VGA Wonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
       Mach32 series:  68800-3, 68800-6, 68800AX, 68800LX
       Mach64 series:  88800CX, 88800GX
+
 
   Some early Mach32 boards will not work with this driver because they
   do not provide VGA functionality.  Also, early Mach8 boards will not
@@ -59,6 +63,7 @@
 
   These boards are available with a variety of clock generators and
   RAMDACs.  See the XF86Config section below for details.  These boards
+
   are available with or without a mouse.  When they do have a mouse (ISA
   boards only), it is either a proprietary ATIXL busmouse, or one that
   uses the Logitech busmouse protocol.
@@ -90,12 +95,15 @@
   For all boards, one of the following clocks specifications (or an
   initial subset thereof) can be used depending on what the board uses
   to generate dot clocks:
+
   Crystals (VGA Wonder V3 and V4 boards only):
 
     Clocks  50.175  56.644   0.000  44.900  44.900  50.175   0.000  36.000
             25.088  28.322   0.000  22.450  22.450  25.088   0.000  18.000
             16.725  18.881   0.000  14.967  14.967  16.725   0.000  12.000
             12.544  14.161   0.000  11.225  11.225  12.544   0.000   9.000
+
+
 
   ATI 18810 clock generator:
 
@@ -108,6 +116,8 @@
              7.560   8.000   9.375   9.750  10.739  12.193   0.000   9.000
             10.000  14.161  18.750  16.250  12.586  14.160   0.000  11.225
 
+
+
   ATI 18811-0 and ATI 18812-0 clock generators:
 
     Clocks  30.240  32.000 110.000  80.000  42.954  48.771  92.400  36.000
@@ -118,6 +128,7 @@
             13.303  14.967  25.000  21.667  16.783  18.880   0.000  14.967
              7.560   8.000  27.500  20.000  10.739  12.193  23.100   9.000
              9.978  11.225  18.750  16.250  12.588  14.160   0.000  11.225
+
 
   ATI 18811-1 and ATI 18811-2 clock generators:
 
@@ -130,6 +141,7 @@
             33.750   8.000  27.500  20.000  25.000  31.500  23.100   9.000
              9.978  11.225  18.750  16.250  12.588  14.160   0.000  11.225
 
+
   Mach32 and Mach64 owners should only specify up to the first 32 fre-
   quencies.
 
@@ -139,6 +151,7 @@
   way to duplicate this behaviour in the driver has not yet been found.
   In the meantime, one of the following clocks specification can be
   used:
+
   ATI 18818 clock generator (primary BIOS setting):
 
     Clocks   0.000 110.000 126.000 135.000  50.350  56.644  63.000  72.000
@@ -146,12 +159,15 @@
              0.000  55.000  63.000  67.500  25.175  28.322  31.500  36.000
              0.000  40.000  37.500  32.500  20.000  22.450  24.750  25.000
 
+
+
   ATI 18818 clock generator (alternate BIOS setting):
 
     Clocks   0.000 110.000 126.000 135.000  25.175  28.322  31.500  36.000
              0.000  80.000  75.000  65.000  40.000  44.900  49.500  50.000
              0.000  55.000  63.000  67.500  12.588  14.161  15.750  18.000
              0.000  40.000  37.500  32.500  20.000  22.450  24.750  25.000
+
 
   Other clock generators that have been used on ATI boards (which can
   all be said to be clones of one of the above) might generate non-zero
@@ -179,6 +195,7 @@
   the alpha Mach64 server, you will need to change it to use it for this
   version.  Specifically, you should run the server with the -probeonly
   flag and the the XF86Config derived from the Xconfig you used with the
+
   older XFree86.  This will cause the clocks to be probed.  You should
   replace the XF86Config clocks with the clocks reported by the probe.
   You should then change the chipset specification to "vgawonder".
@@ -220,20 +237,14 @@
   Please e-mail any bug reports, comments, etc. to Marc Aurele La
   France, tsi@ualberta.ca
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.5 1995/06/25 09:53:45 dawes Exp $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.6 1996/02/04 09:08:34 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.ati /main/9 1995/11/12 19:48:56 kaleb $
-
-
-
-
-
-
-
+  $XConsortium: ati.sgml /main/3 1995/11/12 20:00:33 kaleb $
 
 
 
@@ -252,15 +263,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.15 1995/07/24 06:52:53 dawes Exp $
+$XFree86$

@@ -1032,8 +1032,13 @@
         (714) 932-4900
 
 
-  $XConsortium: VGADriver.Doc /main/5 1996/01/12 12:01:51 kaleb $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.7 1996/01/10 05:39:30 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.8 1996/02/04 09:08:26 dawes Exp $
+
+
+
+
+
+  $XConsortium: VGADriv.sgml /main/6 1996/01/10 11:12:02 kaleb $
 
 
 
@@ -1050,9 +1055,4 @@
 
 
 
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/VGADriver.Doc,v 3.17 1996/01/12 14:33:31 dawes Exp $
+$XFree86$

@@ -1,4 +1,6 @@
-XFree86 3.1.2Ca (4 February 1996)
+XFree86 3.1.2Ca (5 February 1996)
+306. Improve S3 Diamond BIOS detection.
+305. XC fix-trackers to seq-4104 (mostly a new XKB snapshot).
 304. Don't include the compaq driver by default -- it is broken.
 
 XFree86 3.1.2C (31 January 1996)

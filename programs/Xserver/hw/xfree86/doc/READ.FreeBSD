@@ -62,8 +62,11 @@
 
      Choose at least one server ( 2.3Mb):
 
+
+
         X3128514.tgz
            8-bit color for IBM 8514 and true compatibles.
+
         X312AGX.tgz
            8 and 16-bit color for AGX and XGA boards.
 
@@ -150,8 +153,10 @@
         ``umask'' value of 022 because the X server requires special
         permissions.
 
+
            % su
            # umask 022
+
 
 
 
@@ -161,9 +166,11 @@
         and sym link it into /usr:
 
 
+
            # cd /usr/local
            # mkdir X11R6
            # ln -s /usr/local/X11R6 /usr/X11R6
+
 
 
 
@@ -173,6 +180,7 @@
         If you are using sh (as root usually does):
 
 
+
            # for i in X312*.tgz; do
            #   tar -xzf $i
            # done
@@ -180,11 +188,18 @@
 
 
 
+
      Else, if you are using csh:
 
-           % foreach i (X312*.tgz)
-           %   tar -xzf $i
-           % end
+
+
+
+
+
+      % foreach i (X312*.tgz)
+      %   tar -xzf $i
+      % end
+
 
 
 
@@ -196,7 +211,8 @@
 
 
 
-      # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
+           # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
+
 
 
 
@@ -205,9 +221,11 @@
   First do numbers 1 and 2 above. Then unpack the required archives:
 
 
+
         # for i in bin fnts lib xicf; do
         #   tar -xzf  X312$i.tgz
         # done
+
 
 
 
@@ -217,8 +235,10 @@
   card you will use the XF86_SVGA server:
 
 
+
         # tar -xzf X312SVGA.tgz
         # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
+
 
 
 
@@ -228,8 +248,10 @@
   csh in /etc/csh.login if they are not already there:
 
 
+
         # echo 'set path = ($path /usr/X11R6/bin)' >>/etc/csh.login
         # echo 'PATH=$PATH:/usr/X11R6/bin' >>/etc/profile
+
 
 
 
@@ -241,6 +263,7 @@
 
 
         # ldconfig /usr/lib /usr/local/lib /usr/X11R6/lib
+
 
 
 
@@ -262,10 +285,12 @@
        abort with the message ``could not open default font
        'fixed'''.
 
+
   If you are running a stock FreeBSD 1.1.5 system you can ignore the
   rest of this section.  If not, make sure you have a spare virtual
   console which is running a login process (getty).  First check how
   many virtual consoles you have:
+
 
 
         % dmesg|grep sc
@@ -274,9 +299,11 @@
 
 
 
+
   Then check /etc/ttys to make sure there is at least one ttyv? devices
   which doesn't have a getty enabled.  FreeBSD 1.1.5 has the first three
   ``on'' and the last ``off'' so that getty runs on only three:
+
 
 
         % grep ttyv /etc/ttys
@@ -284,6 +311,7 @@
         ttyv1  "/usr/libexec/getty Pc" cons25  on secure
         ttyv2  "/usr/libexec/getty Pc" cons25  on secure
         ttyv3  "/usr/libexec/getty Pc" cons25  off secure
+
 
 
 
@@ -300,8 +328,8 @@
   to add a line in /etc/ttys to start it on one of the unoccupied
   virtual terminals:
 
-
         ttyv4  "/usr/X11R6/bin/xdm -nodaemon" xterm    on secure
+
 
 
 
@@ -331,7 +359,9 @@
   translate part of it into the new format:
 
 
+
         # reconfig <Xconfig >XF86Config
+
 
 
 
@@ -358,7 +388,9 @@
   moved or clicked:
 
 
+
         % cat < /dev/tty00
+
 
 
 
@@ -366,8 +398,10 @@
   to get a list of devices that were detected upon booting:
 
 
+
         % dmesg|grep sio
         sio0 at 0x3f8-0x3ff irq 4 on isa
+
 
 
 
@@ -376,8 +410,10 @@
   exist:
 
 
+
         % cd /dev
         % sh MAKEDEV tty00
+
 
 
 
@@ -419,9 +455,9 @@
   required for X support:
 
 
+
         options                XSERVER                 #Xserver
         options                UCONSOLE                #X Console support
-
 
 
   The generic FreeBSD 2.0 and 2.0.5 kernels are configured by default
@@ -429,14 +465,18 @@
   have a line like this in /usr/src/sys/i386/conf/GENERIC:
 
 
+
         device         sc0     at isa? port "IO_KBD" tty irq 1 vector scintr
+
 
 
 
   The number of virtual consoles can be set using the NCONS option:
 
 
+
         options                "NCONS=4"               #4 virtual consoles
+
 
 
 
@@ -466,9 +506,11 @@
   file:
 
 
+
         options                SYSVSHM                 # System V shared memory
         options                SYSVSEM                 # System V semaphores
         options                SYSVMSG                 # System V message queues
+
 
 
 
@@ -483,6 +525,7 @@
 
   The server link kit allows you to build an X server using a minimum
   amount of disk space.  Just unpack it, make the appropriate changes to
+
   xf86site.def, type ``./mkmf' and ``make'' to link the server.  See
   README.LinkKit <LinkKit.html> for more info.
 
@@ -494,7 +537,9 @@
   library support, add the following line to site.def:
 
 
+
         #define BuildBsdSharedLibs             NO
+
 
 
 
@@ -503,7 +548,9 @@
   the MIT-SHM extension by adding the following line to site.def:
 
 
+
         #define HasShm                         NO
+
 
 
 
@@ -512,16 +559,17 @@
   and then type:
 
 
+
         make World
+
 
 
 
   If you are running an old version of FreeBSD (before 1.1), then type:
 
 
+
         make World BOOTSTRAPCFLAGS=-D__FreeBSD__
-
-
 
 
 
@@ -543,6 +591,7 @@
   Note: Starting with XFree86 2.1 and FreeBSD 1.1, the symbol __386BSD__
   no longer gets defined either by the compiler or via the X config
   files for FreeBSD systems.  When porting clients to BSD systems, make
+
   use of the symbol BSD for code which is truly BSD-specific.  The value
   of the symbol can be used to distinguish different BSD releases.  For
   example, code specific to the Net-2 and later releases can use:
@@ -577,13 +626,14 @@
      o  Orest Zborowski, Simon Cooper and Dirk Hohndel for ideas from
         the Linux distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.13 1995/07/24 05:56:18 dawes Exp $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.14 1996/02/04 09:08:06 dawes Exp $
 
 
 
 
 
-  $XConsortium: READ.FreeBSD /main/8 1995/11/12 19:47:55 kaleb $
+  $XConsortium: FreeBSD.sgml /main/5 1995/11/12 19:59:27 kaleb $
 
 
 
@@ -593,4 +643,20 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/READ.FreeBSD,v 3.16 1995/07/24 06:52:16 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$XFree86$

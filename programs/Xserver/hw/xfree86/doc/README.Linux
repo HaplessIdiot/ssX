@@ -63,6 +63,7 @@
 
   XFree86 has the ability to perform VT switching to and from the X
   server. When first started, XFree86 will automatically locate the
+
   first available VT (one that hasn't been opened by any process), and
   run on that VT.  If there isn't one available, XFree86 will terminate
   with an error message.  The server can be run on a specific VT by
@@ -128,8 +129,10 @@
   been updated to use the new (/usr/bin) location of the tools. The
   server has been compiled with -m486, which optimizes it for the 486
   processor, but the binary will run on the 386 processor (there is a
+
   slight increase in binary size over using -m386, but no loss of
   performance).
+
   All extensions and clients have been ported and tested. By default,
   the servers are compiled without any extra extensions (PEX, XIE, etc),
   but libraries for those extensions are always generated. By modifying
@@ -166,18 +169,14 @@
   comp.windows.x.i386unix newsgroup. Questions or comments about Linux
   support or the Linux distribution should be made to orestz@eskimo.com.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.5 1995/01/28 16:01:43 dawes Exp $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.6 1996/02/04 09:08:11 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.Linux /main/9 1995/11/12 19:48:10 kaleb $
-
-
-
-
-
+  $XConsortium: Linux.sgml /main/3 1995/11/12 19:59:39 kaleb $
 
 
 
@@ -197,4 +196,5 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Linux,v 3.11 1995/07/24 06:52:25 dawes Exp $
+
+$XFree86$

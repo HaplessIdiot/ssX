@@ -63,6 +63,7 @@
 
         o  Note: the ordering of drivers determines the order in which
            the probing is done.  The `generic' driver should be the last
+
            one included in the Mono and VGA16 and SVGA servers because
            its probe always succeeds.
 
@@ -93,7 +94,9 @@
         more details).
 
      5. To build the Makefile, run
+
           ./mkmf
+
 
 
      6. Run `make' to link the server(s) as configured.
@@ -114,19 +117,18 @@
         by running it with the `-showconfig' flag.  To check which
         extensions are included, start the Xserver and run `xdpyinfo'.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.7 1995/07/12 13:20:41 dawes Exp $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.8 1996/02/04 09:08:10 dawes Exp $
+
+
+
+
+
+  $XConsortium: LinkKit.sgml /main/4 1995/11/12 19:59:36 kaleb $
 
 
 
 
 
 
-
-
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/README,v 3.11 1995/07/24 11:17:53 dawes Exp $
-$XConsortium: README /main/5 1995/09/04 19:49:50 kaleb $
+$XFree86$

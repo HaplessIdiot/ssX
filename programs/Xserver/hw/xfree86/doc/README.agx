@@ -553,20 +553,14 @@
   is not known whether the clockprobing will work. Some XGA-1 chips may
   support 16bpp.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.14 1995/12/28 03:49:35 dawes Exp $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.15 1996/02/04 09:08:32 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.agx /main/11 1995/12/29 15:57:47 kaleb $
-
-
-
-
-
-
-
+  $XConsortium: agx.sgml /main/7 1995/12/29 15:59:45 kaleb $
 
 
 
@@ -599,13 +593,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.28 1995/12/28 03:52:28 dawes Exp $
+$XFree86$

@@ -172,18 +172,14 @@
   necessary for Mach is that the X servers be able to open /dev/iopl for
   read/write.  There are many ways to achieve this effect.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.6 1995/12/28 03:49:30 dawes Exp $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.7 1996/02/04 09:08:13 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.Mach /main/10 1995/12/29 15:56:22 kaleb $
-
-
-
-
-
+  $XConsortium: Mach.sgml /main/6 1995/12/29 15:58:48 kaleb $
 
 
 
@@ -200,4 +196,5 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Mach,v 3.12 1995/12/28 03:52:20 dawes Exp $
+
+$XFree86$

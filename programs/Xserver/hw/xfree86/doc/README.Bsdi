@@ -129,12 +129,16 @@
      1. create some destination directory in which you'd like the X
         distribution to live.  /usr/X11R6 is recommended, but if that
         partition is full (as it is on my machine), then just create an
+
         alternate directory, and sym-link /usr/X11R6 to this place.
+
         ie, on my machine, I do the following:
+
 
             % cd /usr/local
             % mkdir X11R6
             % ln -s /usr/local/X11R6 /usr/X11R6
+
 
 
      2. You must be logged in as root to unpack the archives and use a
@@ -148,9 +152,11 @@
         to the server that matches your video card: See the XF86_* man
         pages for hardware details. For example, if you have an ET4000
         based SVGA card:
+
             cd /usr/X11R6/bin
             rm -f X
             ln -s XF86_SVGA X
+
 
 
   Note: you don't need to uncompress the fonts files in lib/X11/fonts.
@@ -167,14 +173,18 @@
   You can start xdm automatically on bootup by disabling the console
   getty and adding the following code to /etc/rc.local:
 
+
     if [ -x /usr/X11R6/bin/xdm ]; then
       echo -n ' xdm'; /usr/X11R6/bin/xdm
     fi
 
 
+
   To disable the console getty, change `on' to `off' in the console
   entry in /etc/ttys:
+
   console "/usr/libexec/getty std.9600"   ibmpc3  off secure
+
 
 
   5.  Configuring X for Your Hardware
@@ -185,11 +195,14 @@
 
   XFree86 3.1 and later releases uses a new configuration file format.
   Consult the XF86Config man page and the general INSTALL file for
+
   instructions.
 
   If you have a Xconfig file for XFree86 2.x, use reconfig to translate
   part of it into the new format:
+
      # reconfig <Xconfig >XF86Config
+
 
   and complete the rest according to the XF86Config man page and the
   XF86Config.sample file as a template.
@@ -212,12 +225,16 @@
   use `cat' or `kermit' to look at the output of the mouse.  Connect to
   it and just make sure that it generates output when the mouse is moved
   or clicked:
+
     % cat < /dev/tty00
+
 
   If you can't find the right mouse device then use `dmesg|grep com' to
   get a list of devices that were detected upon booting:
+
     % dmesg|grep com
     com0 at isa0 iobase 0x3f8 irq 4
+
 
   com0 is the hardware port used for /dev/tty00 and com1 is /dev/tty01.
   If you plan to fine tune the screen size or position on your monitor
@@ -252,7 +269,9 @@
   You should configure the distribution by editing
   xc/config/cf/xf86site.def before compiling.  To compile the sources,
   invoke
+
     make World
+
 
   in the xc directory.
 
@@ -274,7 +293,9 @@
   distinguish different BSD releases.  For example, code specific to the
   Net-2 and later releases can use:
 
+
   #if (BSD >= 199103)
+
 
   To ensure that this symbol is correctly defined, include <sys/param.h>
   in the source that requires it.  Note that the symbol CSRG_BASED is
@@ -305,6 +326,8 @@
      o  reboot.
 
   vga.c patch:
+
+
   *** vga.c.orig  Sun Dec 19 09:35:01 1993
   --- vga.c       Mon Oct 24 01:38:44 1994
   ***************
@@ -328,13 +351,13 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.14 1995/07/24 05:56:15 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.15 1996/02/04 09:08:02 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.Bsdi /main/9 1995/11/12 19:48:05 kaleb $
+  $XConsortium: Bsdi.sgml /main/5 1995/11/12 19:59:15 kaleb $
 
 
 
@@ -372,27 +395,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Bsdi,v 3.18 1995/07/24 06:52:21 dawes Exp $
+$XFree86$

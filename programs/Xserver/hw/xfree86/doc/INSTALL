@@ -71,12 +71,15 @@
 
 
 
+
         If you don't need to build the fonts, xc/fonts can be removed
         saving 30MB.  If you don't want to build PEX or XIE you can
         remove:
 
+
               xc/programs/Xserver/XIE       3MB
               xc/programs/Xserver/PEX5      2MB
+
 
 
 
@@ -102,6 +105,7 @@
            R6 contrib release (not the initial contrib-0 version):
 
 
+
                        contrib/Imakefile
                        contrib/programs/Imakefile
                        contrib/programs/ico/
@@ -124,14 +128,17 @@
 
 
 
+
+
      2. If you are starting from the stock X Consortium PL12 source
         distribution, go to the directory above your xc directory, and
         run:
 
 
 
-           gzip -d < XFree86-3.1.2.diff.gz | patch -p -E
-           gzip -d < cfont312.tgz | tar vxf -
+                gzip -d < XFree86-3.1.2.diff.gz | patch -p -E
+                gzip -d < cfont312.tgz | tar vxf -
+
 
 
 
@@ -152,7 +159,9 @@
      tory above your contrib directory, and run:
 
 
+
                 gzip -d < XFree86-3.1.2-contrib.diff.gz | patch -p -E
+
 
 
 
@@ -161,8 +170,10 @@
         go to the directory above your xc directory, and run:
 
 
+
                 gzip -d < 3.1.1-3.1.2.diff.gz | patch -p -E
                 gzip -d < cfont312.tgz | tar vxf -
+
 
 
 
@@ -184,7 +195,9 @@
      tory above your contrib directory, and run:
 
 
-                gzip -d < contrib-3.1.1-3.1.2.diff.gz | patch -p -E
+
+           gzip -d < contrib-3.1.1-3.1.2.diff.gz | patch -p -E
+
 
 
 
@@ -204,6 +217,7 @@
         Set the defines to specify which server(s) you want to build:
 
 
+
            Colour SVGA server (XF86_SVGA):           XF86SVGAServer
            16 colour (S)VGA server (XF86_VGA16):     XF86VGA16Server
            ET4000/W32 accelerated server (XF86_W32): XF86W32Server
@@ -215,6 +229,7 @@
            Mach64 accelerated server (XF86_Mach64):  XF86Mach64Server
            P9000 accelerated server (XF86_P9000):    XF86P9000Server
            AGX accelerated server (XF86_AGX):        XF86AGXServer
+
 
 
 
@@ -237,9 +252,12 @@
      include all supplied drivers.  Similarly the following parameters
      specify drivers for the other servers:
 
+
            XF86Vga16Drivers            XF86_VGA16
            XF86Vga2Drivers             XF86_Mono (vga2 drivers)
            XF86MonoDrivers             XF86_Mono, XF86_VGA16 (other mono drivers)
+
+
 
 
 
@@ -286,7 +304,9 @@
         the following from the xc directory (when using either the full
         source distribution or the ServersOnly distribution):
 
+
                make install.linkkit
+
 
 
 
@@ -307,6 +327,7 @@
         are: /etc/XF86Config, /usr/X11R6/lib/X11/XF86Config.hostname,
         and /usr/X11R6/lib/X11/XF86Config.  The recommended way to
         generate an XF86Config file is to use the xf86config utility.
+
         Also, there is a sample file installed as
         /usr/X11R6/lib/X11/XF86Config.eg, which can be used as a
         starting point.
@@ -327,7 +348,6 @@
   To build a different set of servers or servers with a different set of
   drivers installed:
 
-
      1. Make sure the source for any new drivers is in the correct place
         (e.g., driver source for the SVGA server should be in a
         subdirectory of xc/programs/Xserver/hw/xfree86/vga256/drivers).
@@ -338,6 +358,7 @@
         needs.
 
      3. From xc/programs/Xserver, run:
+
 
                make Makefile
                make Makefiles
@@ -354,8 +375,14 @@
   For details of how to do this, please refer to the README.LinkKit
   <LinkKit.html> file.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.12 1995/07/22 09:42:53 dawes Exp $
-  $XConsortium: INSTALL /main/10 1995/12/03 09:31:31 kaleb $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.13 1996/02/04 09:08:07 dawes Exp $
+
+
+
+
+
+  $XConsortium: INSTALL.sgml /main/6 1995/11/12 19:59:30 kaleb $
 
 
 
@@ -368,9 +395,4 @@
 
 
 
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/INSTALL,v 3.18 1995/07/24 06:52:14 dawes Exp $
+$XFree86$

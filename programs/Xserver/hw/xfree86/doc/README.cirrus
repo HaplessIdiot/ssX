@@ -1,6 +1,5 @@
   Information for Cirrus Chipset Users
-  Harm Hanemaayer (hhanemaa@cs.ruu.nl), Randy Hendry
-  (randy@sgi.com)
+  Harm Hanemaayer (hhanemaa@cs.ruu.nl), Randy Hendry (randy@sgi.com)
   26 June 1995
 
   1.  Supported chipsets
@@ -64,6 +63,7 @@
         Next generation `Alpine' family chip with 64-bit internal memory
         interface. Used by the Orchid Kelvin 64. The chip can only
         support 64-bit mode if equipped with 2 Mbytes of memory; cards
+
         with only 1 Mbyte are severely limited.  Supports dot clocks up
         to 110 MHz (recent chips support 135 MHz).
 
@@ -72,6 +72,7 @@
         untested.
 
   Here's a list of maximum dot clocks for each supported depth:
+
 
 
                        mono        8 bpp (256c)    16 bpp____      32 bpp
@@ -93,8 +94,10 @@
 
 
 
+
   Rough virtual/physical screen resolution limits for different amounts
   of video memory:
+
 
                    mono          8bpp          16 bpp        32 bpp
        256K_       800x600__     640x400__     _________     ________
@@ -105,14 +108,17 @@
 
 
 
+
   The virtual width must be a multiple of 32 if acceleration is used.
   The horizontal monitor timings must be below 2048.
 
   To run XF86_SVGA at 16 or 32 bpp, pass options to the X server as
   follows:
+
   startx -- -bpp 16               5-6-5 RGB ('64K color', XGA)
   startx -- -bpp 16 -weight 555   5-5-5 RGB ('Hicolor')
   startx -- -bpp 32               8-8-8 XRGB truecolor (5434)
+
 
 
   2.  Basic configuration
@@ -189,6 +195,7 @@
         effects can be caused by an MCLK setting that is too low).
 
         Upon start-up, the driver will report the value of the MCLK
+
         register (check this first), and also any changes that are made.
 
         Typical MCLK values:
@@ -196,6 +203,7 @@
         0x1c (50 MHz)
            This is usually the BIOS default.  It is forced by the
            "slow_dram" option.
+
         0x1f (55 MHz)
            Value used by the "med_dram" option.  Highest value that 542x
            based cards seem to be able to handle with linear addressing
@@ -253,6 +261,7 @@
         This option will set the CRT FIFO threshold to a conservative
         value for high dot clocks (>= 65 MHz), reducing performance but
         hopefully alleviating problems with what can be described as
+
         flashing `streaks', `jitter' or horizontally repeated display
         areas on the screen (especially when a BitBLT operation is in
         progress, e.g.  scrolling).
@@ -283,8 +292,10 @@
         probably also screwed.
 
         Correct clocks:
+
                 25.2  28.3  41.1  36.1  31.5  40.0  45.1  49.9
                 65.0  72.2  75.0  80.0  85.2
+
 
 
      Clockchip "cirrus"
@@ -315,6 +326,8 @@
         CPU-loaded system (e.g. running gcc and other programs at the
         same time) in certain situations.
 
+
+
      Option "mmio" (543x)
         This enables the use of memory-mapped I/O to talk to the BitBLT
         engine on the 543x/5429, which is a bit faster. It also enables
@@ -328,6 +341,7 @@
         use this when using dot clocks greater than 85 MHz on the 5434/6
         since the chip doesn't fully support the hardware cursor at
         those clocks.
+
      Option "clgd6225_lcd"
         Provides a work-around for problems on the LCD screen of some
         62x5 laptop chipsets with maximum white colors.
@@ -434,16 +448,19 @@
   in their initial Windows drivers). The driver assumes a default of
   64Mb if MemBase isn't specified. A few examples for MemBase:
 
+
                MemBase 0x02000000      32Mb
                MemBase 0x04000000      64Mb
                MemBase 0x80000000      2048Mb
 
 
 
+
   The 16bpp and 32bpp modes have limited acceleration (scroll, text)
   which means they can be slow, although a good local bus host interface
-  (like the 543x has) helps a lot. Note that the standard cfb frame-
-  buffer code can be very slow for monochrome stipples and bitmaps.
+  (like the 543x has) helps a lot. Note that the standard cfb
+
+  framebuffer code can be very slow for monochrome stipples and bitmaps.
   32bpp mode is only supported on a 5434 with 2Mb or more of memory.
 
   In the XF86Config "Screen" section, a "Display" subsection must be
@@ -451,38 +468,30 @@
   virtual screen size. Example (2Mb of video memory):
 
 
+       Section "screen"
+           SubSection "Display"
+               Depth 8
+               Virtual 1152 900
+               ViewPort 0 0
+               Modes "640x480" "800x600" "1024x768"
+               Option "linear"
+           EndSubSection
+           SubSection "Display"
+               Depth 16
+               Virtual 1152 900
+               ViewPort 0 0
+               Modes "640x480" "800x600" "1024x768"
+               Option "linear"
+           EndSubSection
+           SubSection "Display"
+               Depth 32
+               Virtual 800 600
+               ViewPort 0 0
+               Modes "640x480" "800x600"
+               Option "linear"
+           EndSubSection
+       EndSection
 
-
-
-
-
-
-
-
-
-  Section "screen"
-      SubSection "Display"
-          Depth 8
-          Virtual 1152 900
-          ViewPort 0 0
-          Modes "640x480" "800x600" "1024x768"
-          Option "linear"
-      EndSubSection
-      SubSection "Display"
-          Depth 16
-          Virtual 1152 900
-          ViewPort 0 0
-          Modes "640x480" "800x600" "1024x768"
-          Option "linear"
-      EndSubSection
-      SubSection "Display"
-          Depth 32
-          Virtual 800 600
-          ViewPort 0 0
-          Modes "640x480" "800x600"
-          Option "linear"
-      EndSubSection
-  EndSection
 
 
 
@@ -516,6 +525,7 @@
 
   The data book indicates that only a configuration of one megabyte of
   video memory is supported by the chip.  This size has been directly
+
   set in the driver.  If one finds a need, one should be able to
   override the default size in XF86Config.  Also, with 1MB of video
   memory, one should be able to have a virtual screen size of e.g.
@@ -526,6 +536,7 @@
   modes is about 0.75MB e.g.  1024x768.  If you set the virtual
   resolution above this, you will see what might be described as a
   compressed aliased band when the accelerated area is displayed.
+
   Currently, the driver does not support switching of screen modes among
   LCD, CRT, and SimulScan, and, at least on the NP9200, the mode must be
   chosen at OS boot time (e.g. Linux's LILO) while the BIOS is still
@@ -579,6 +590,8 @@
         dot clock.  If that is not sufficient, the "noaccel" option or
         "no_bitblt" will probably help.
 
+
+
      `Wavy' screen.
         Horizontal waving or jittering of the whole screen, continuously
         (independent from drawing operations).  You are probably using a
@@ -587,7 +600,9 @@
         also try to tweak the mode timings; try increasing the second
         horizontal value somewhat. Here's a 65 MHz dot clock 1024x768
         mode (about 60 Hz) that might help:
+
          "1024x768"     65      1024 1116 1228 1328     768  783  789  818
+
 
      If you are using programmable clocks with Clockchip "cirrus", try
      disabling it and using the default set of clocks.
@@ -641,6 +656,7 @@
         requiring a Chipset line. Normally you should be able to restore
         the textmode font using a utility that sets it (setfont, runx,
         restorefont on Linux).
+
 
      Erratic system behaviour at very high dot clocks
         It is possible that high dot clocks on the video card interfere
@@ -706,6 +722,8 @@
      o  Sanity check added to avoid potential server crash with negative
         size rectangle fill.
 
+
+
      o  Fix display error occurring when scrolling without BitBLT
         engine.
 
@@ -715,14 +733,62 @@
 
      o  Default VLB base address for 5429 is 0x03e00000.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.10 1995/07/03 08:50:57 dawes Exp $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.11 1996/02/04 09:08:35 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.cirrus /main/10 1995/11/12 19:48:58 kaleb $
+  $XConsortium: cirrus.sgml /main/6 1995/11/12 20:00:36 kaleb $
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.cirrus,v 3.19 1995/07/24 06:52:56 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$XFree86$

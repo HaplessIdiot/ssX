@@ -63,6 +63,7 @@
 
         o  Added p9000line.c and p9000seg.c for accelerated line drawing
            code using the p9000 quad/clipping engine.  Blazingly fast
+
            for 1 clipping rectangle, could be made faster for multiple
            clipping regions by using software clipping. There is still a
            bug which causes xtest to report Cap style incorrect for thin
@@ -127,8 +128,9 @@
 
         o  Fixes to Orchid P9000 support (Harry Langenbacher)
 
-        o  Changing of datatypes in clock code (Harry Langenbacher)
 
+
+        o  Changing of datatypes in clock code (Harry Langenbacher)
 
         o  Fixed clock and misc reg restoration so now works fine with
            svgalib (Chris Mason, Harry, Erik)
@@ -193,6 +195,7 @@
   For Diamond Viper PCI owners, you'll need to use scanpci to find the
   values to fill in for MemBase and IOBase in the Device section of
   XF86Config.  These values will change whenever you move cards around
+
   or add cards.  This should now work, thanks to help from Bob Hollinger
   and Matt Thomas.  You may need to specify the chipset "viperpci" in
   your XF86Config file.  You'll also need to specify an IOBase and a
@@ -202,6 +205,7 @@
   <ftp://ftp.xfree86.org/pub/XFree86/3.1.1/ScanPCI> Part of the output
   of this program will look like:
 
+
   pci slot at 0xce00, vendor 0x100e device 0x9001
    Diamond Viper/PCI
     STATUS    0x0400  COMMAND 0x0003
@@ -209,6 +213,7 @@
     BASE0     0xa0000000  addr 0xa0000000  MEM
     BASE1     0x0000e001  addr 0x0000e000  I/O
     BASEROM   0xff800000  addr 0xff800000  not-decode-enabled
+
 
 
   In this case, you would specify 0xe000 as the IOBase and 0xa0000000 as
@@ -255,10 +260,13 @@
   Support for 16 and 24 bit truecolor is now supported.  Note that 24
   bit color is really 32 bits per pixel.  Use the -bpp option when
   starting the server.  Examples:
+
+
           startx -- -bpp 32
           startx -- -bpp 16
           startx -- -bpp 16 -weight 555
           startx -- -bpp 16 -weight 565
+
 
   Note that many programs do not yet work properly with these modes.
   Don't tell me.  Tell the authors unless they've already fixed it.
@@ -319,6 +327,7 @@
 
   The modes line in the XF86Config file is now handled differently.  The
   virtual line is now ignored entirely.  Each mode on the mode line is
+
   looked at and the first usable mode is selected (ie the first one
   which works with available memory, etc).  Any other modes which are
   valid and have the same dimensions are also used.  And other modes are
@@ -326,7 +335,6 @@
 
   The current supported keywords in the Device section of the XF86Config
   file are:
-
 
      VideoRAM
         1024 or 2048  (use 2048 for ``3MB'' Orchid P9000's)
@@ -385,6 +393,7 @@
 
      Depth
 
+
         8: use 8 bits per pixel for 256 colors (default)
 
         15 or 16:
@@ -399,6 +408,7 @@
         These are the Red, Green, and Blue bits per pixel (default=565)
 
   Here's a portion of a sample XF86Config file for the Viper VLB:
+
   Section "Device"
       Identifier "ViperVLB"
       VendorName "Diamond"
@@ -417,6 +427,7 @@
           Modes "1024x768" "800x600"
       EndSubsection
   EndSection
+
 
 
   10.  Known Bugs
@@ -448,6 +459,7 @@
   Thanks to Matt Thomas (thomas@lkg.dec.com) and Bob Hollinger
   (bob@interaccess.com) for helping to get the Viper PCI server working.
 
+
   Special thanks to David Moews (dmoews@xraysgi.ims.uconn.edu) whose
   banking patch could unfortunately not be included.
 
@@ -457,14 +469,14 @@
   During the course of the next few months, people will be working on
   acceleration, etc.  Please send any patches to me (nygren@mit.edu).
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.12 1995/07/21 14:40:49 dawes Exp $
 
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.13 1996/02/04 09:08:19 dawes Exp $
 
 
 
 
-  $XConsortium: README.P9000 /main/9 1995/11/12 19:48:27 kaleb $
 
+  $XConsortium: P9000.sgml /main/6 1995/11/12 19:59:55 kaleb $
 
 
 
@@ -515,21 +527,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.P9000,v 3.23 1995/07/24 06:52:34 dawes Exp $
+$XFree86$

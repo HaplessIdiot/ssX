@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.9 1995/12/17 05:03:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.10 1996/02/04 09:03:21 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -219,7 +219,7 @@ mach64CacheInit(w, h)
        }
 
        if (cache_sets > 0)
-          mach64CacheInfo = (CacheInfoPtr)Xcalloc(sizeof(CacheInfo));
+          mach64CacheInfo = (CacheInfoPtr)xcalloc(MaxSlots, sizeof(CacheInfo));
 
        switch (cache_sets) {
        case 0:

@@ -37,9 +37,9 @@
         2.6.3, but not 2.7.0 yet.
 
         With 2.6.3 the current source tree should be able to compile
-        with a little bit more Optimization:  #define DefaultCDebugFlags
-        -O3 -fomit-frame-pointer inside xf86site.def to overwrite the
-        default -O2.
+        with a little bit more Optimization:
+         #define DefaultCDebugFlags -O3 -fomit-frame-pointer inside
+        xf86site.def to overwrite the default -O2.
 
       libg++-2.6.x
         The needed g++ Libraries for use with g++ 2.6.x
@@ -80,6 +80,7 @@
 
   and gcc-lib/include/sys/limits.h
 
+
             #ifndef OPEN_MAX
             #ifdef ISC
             #define OPEN_MAX        256
@@ -89,16 +90,19 @@
             #endif
 
 
+
   OPEN_MAX had to be increased to prevent Xlib Errors (max no. of
   clients reached).
 
   3.2.  /usr/include/sys/ioctl.h
 
   surrounded by
+
           #ifndef _IOCTL_H
           #define _IOCTL_H
           ...
           #endif
+
 
 
   to prevent multiple includes.
@@ -106,16 +110,20 @@
   3.3.  /usr/include/errno.h
 
   (and the corresponding gcc-include-file) add
+
           #include <net/errno.h>
+
 
 
   because of EWOULDBLOCK undefined in several places regarding lbx.
   Surround /usr/include/net/errno.h with
 
+
           #ifndef _NET_ERRNO_H
           #define _NET_ERRNO_H
           ...
           #endif
+
 
 
 
@@ -128,11 +136,10 @@
   declaration of malloc() to
 
 
-
-
            #if !defined(__cplusplus)
            extern char *malloc();
            #endif
+
 
 
 
@@ -140,9 +147,11 @@
 
   4.  make World
 
+
   ______________________________________________________________________
   BOOTSTRAPCFLAGS="-DISC [-DISC30 | -DISC40] -DSYSV [-Di386]"
   ______________________________________________________________________
+
 
 
 
@@ -156,8 +165,8 @@
         from Version 4.x using the S5L Filesystem)
 
         If you could use long filenames, you could enable the
-        installation of expanded Manual Pages by including  #define
-        ExpandManNames      YES inside xf86site.def.
+        installation of expanded Manual Pages by including
+         #define ExpandManNames      YES inside xf86site.def.
 
         A build on ISC 4.x only needs -DISC40 defined in the
         BOOTSTRAPCFLAGS -- the -DISC30 will be included automatically.
@@ -174,7 +183,9 @@
 
         If you want to include support for linear addressing into the
         server binaries, you have to define
+
         #define HasSVR3mmapDrv          YES
+
 
      in xf86site.def.  This is necessary to get the correct setup to be
      defined for the build.
@@ -182,7 +193,11 @@
      You need the mmap-2.2.3 driver installed on your system.  If you
      don't have the mmap-2.2.3 driver installed, you could use the
      driver source in the file
+
+
+
      xc/programs/Xserver/hw/xfree86/etc/mmapSVR3.shar
+
 
      Build and install the driver as instructed. You'll need the file
      /usr/include/sys/mmap.h for compiling the X11R6/XFree86 source
@@ -194,7 +209,9 @@
         the mmap Driver by Thomas Wolfram (Version 2.2.3) installed in
         your Kernel.  If you have installed it, most servers will use
         linear addressing by default.  Others may require setting the
+
         Option "linear"
+
 
      in your XF86Config.   Check the appropriate manual pages for
      details.  Maybe you need also the MemBase specified in XF86Config.
@@ -218,12 +235,16 @@
            like Mosaic-2.4 or xplan. This results in a crash of the
            XServer.
 
+
                       !!! You could workaround this !!!
 
 
+
         Expand your .Xdefaults with
+
                    *blinkRate:                  0
                    *cursorPositionVisible:      false
+
 
 
 
@@ -234,9 +255,12 @@
 
         If you want to include the build of the Fresco library, you have
         to setup
+
         #define BuildFresco             YES
 
+
      in either xf86site.def (just uncomment the appropriate definition.
+
 
      o  Using ...
 
@@ -250,7 +274,9 @@
         mechanism, this could maybe improved by using another XLOCAL
         configuration).  The fdraw window is closed with the following
         message:
+
         XIO:  fatal IO error 11 (Resource temporarily unavailable) on X server ":0.0"
+
 
      As a workaround you could specify local-machinename:0 to the -dis-
      play Argument when starting the Fresco application. On TCP/IP
@@ -259,19 +285,25 @@
   7.  Installation
 
   After your make World BOOTSTRAPCFLAGS="... succeed,
+
   make install
 
 
   to install in /usr/X11R6. Make sure you have enough space, and
   /usr/X11R6 exists either as a directory or a symlink to another direc-
   tory maybe in another filesystem.
+
   make install.man
+
 
   to install the compressed nroff versions of the manual pages into
   /usr/X11R6/man. This directory will by generated if it doesn't exist.
+
   make install.linkkit
 
+
   to install the server binary LinkKit into /usr/X11R6/lib/Server.
+
 
   ______________________________________________________________________
          You could tune the Kernel using the command-file
@@ -285,6 +317,7 @@
   ______________________________________________________________________
 
 
+
   8.  Using ...
 
 
@@ -292,6 +325,7 @@
 
         You don't need any modmap-File to get your keyboard working with
         any iso-8859-1 Font. Simply enable
+
 
 
         +  LeftAlt  Meta
@@ -307,6 +341,7 @@
         if you want to get the German 'Umlaut' inside your ISC X11R4
         client xpcterm when you are using the ega/vga font. Set up the
         user's .Xdefaults to contain:
+
                  XEga*AT386.Translations: #override \
                            Shift<Key>odiaeresis: string(0x99) \n\
                                 <Key>odiaeresis: string(0x94) \n\
@@ -317,6 +352,7 @@
                            Shift<Key>ssharp: string(0x3f) \n\
                             Meta<Key>ssharp: string(0x5c)  \n\
                                 <Key>ssharp: string(0xe1)
+
 
 
 
@@ -351,13 +387,6 @@
   great work and the X Consortium for their Public Release of X11R6, as
   to all who contribute to this excellent piece of free software.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.7 1995/07/07 15:40:21 dawes Exp $
-
-
-
-
-
-  $XConsortium: README.isc /main/7 1995/11/12 19:49:04 kaleb $
 
 
 
@@ -365,12 +394,13 @@
 
 
 
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.8 1996/02/04 09:08:37 dawes Exp $
 
 
 
 
 
-
+  $XConsortium: isc.sgml /main/4 1995/11/12 20:00:42 kaleb $
 
 
 
@@ -395,4 +425,40 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.isc,v 3.14 1995/07/24 06:53:00 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$XFree86$

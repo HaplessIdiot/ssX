@@ -42,8 +42,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
 
-extern	CARD16	xkbDebugFlags;
-
 #ifdef AMOEBA
 #define LED_CAP	IOP_LED_CAP
 #define LED_NUM	IOP_LED_NUM

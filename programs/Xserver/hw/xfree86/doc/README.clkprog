@@ -63,6 +63,7 @@
 
   A sample clock switching program is provided for use with many ET4000
   cards that have a fixed set of 8 clocks.  This program is only
+
   intended as a sample, and it is not intended for general use (the
   internal server code handles this type of card).  The program is
   xc/programs/Xserver/hw/xfree86/etc/et4000clock.c in the source tree,
@@ -71,20 +72,14 @@
   The idea of using an external clock program was suggested by Frank
   Klemm <pfk@rz.uni-jena.de>
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/clkprog.sgml,v 3.2 1995/01/28 16:03:06 dawes Exp $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/clkprog.sgml,v 3.3 1996/02/04 09:08:36 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.clkprog /main/7 1995/11/12 19:49:02 kaleb $
-
-
-
-
-
-
-
+  $XConsortium: clkprog.sgml /main/2 1995/11/12 20:00:39 kaleb $
 
 
 
@@ -131,4 +126,9 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.clkprog,v 3.9 1995/07/24 06:52:59 dawes Exp $
+
+
+
+
+
+$XFree86$
