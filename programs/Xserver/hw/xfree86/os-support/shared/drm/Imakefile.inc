@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.inc,v 1.2 2005/01/31 18:23:58 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.inc,v 1.3 2005/01/31 18:41:21 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -56,9 +56,14 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.i
 
 DRM_COPY_DIR = DRMCopySubdir
 
+HostProgramTargetName(revpath):
+	@echo "checking $@ over in $(TOP)/config/util first..."; \
+	cd $(TOP)/config/util && $(MAKE) HostProgramTargetName(revpath); \
+	echo "okay, continuing in $(CURRENT_DIR)"
+
 #ifndef LinkSourceFileListToSubdir
 #define LinkSourceFileListToSubdir(step,list,srcdir,subdir)		@@\
-step::									@@\
+step:: HostProgramTargetName(revpath)					@@\
 	MakeDir(subdir)							@@\
 	@MakeFlagsToShellFlags(i,set +e); \				@@\
 	UP="`$(REVPATH) subdir`"; export UP; \				@@\
