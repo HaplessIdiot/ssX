@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.c,v 1.1 1998/12/05 14:40:18 dawes Exp $ */
 
 #define _MAGELLAN_C_
 /*****************************************************************************
@@ -58,7 +58,7 @@ static XF86ModuleVersionInfo VersionRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	0x00010001,
+	1, 0, 0,
 	ABI_CLASS_XINPUT,
 	ABI_XINPUT_VERSION,
 	{0, 0, 0, 0}				/* signature, to be patched into the file by

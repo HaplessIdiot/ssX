@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHWmodule.c,v 1.2 1998/07/25 16:58:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHWmodule.c,v 1.3 1998/09/20 14:41:09 dawes Exp $ */
 
 /*
  * Copyright 1998 by The XFree86 Project, Inc
@@ -16,7 +16,7 @@ static XF86ModuleVersionInfo VersRec = {
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	0x00000001,			/* version 0.1 */
+	0, 1, 0,
 	ABI_CLASS_VIDEODRV,
 	ABI_VIDEODRV_VERSION,
 	{0, 0, 0, 0}

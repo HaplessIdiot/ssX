@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.40 1998/11/29 10:50:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.41 1998/12/13 05:32:42 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -436,11 +436,9 @@ static DisplayModeRec ChipsNTSCMode = {
 #define VERSION 4000
 #define CHIPS_NAME "CHIPS"
 #define CHIPS_DRIVER_NAME "chips"
-/*
- * The major version is the 0xffff0000 part and the minor version is the
- * 0x0000ffff part.
- */
-#define CHIPS_DRIVER_VERSION 0x00010001
+#define CHIPS_MAJOR_VERSION 1
+#define CHIPS_MINOR_VERSION 0
+#define CHIPS_PATCHLEVEL 0
 
 /*
  * This contains the functions needed by the server after loading the driver
@@ -661,7 +659,7 @@ static XF86ModuleVersionInfo chipsVersRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	CHIPS_DRIVER_VERSION,
+	CHIPS_MAJOR_VERSION, CHIPS_MINOR_VERSION, CHIPS_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,
 	ABI_VIDEODRV_VERSION,
 	{0,0,0,0}

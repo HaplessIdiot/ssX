@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.42 1998/11/01 12:36:01 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.43 1998/11/29 10:50:30 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -101,7 +101,9 @@ static Bool ET4000DetailedProbe(t_tseng_type * chiptype, t_w32_revid * rev);
 #define VERSION 4000
 #define TSENG_NAME "TSENG"
 #define TSENG_DRIVER_NAME "tseng"
-#define TSENG_DRIVER_VERSION 0x00010001
+#define TSENG_MAJOR_VERSION 1
+#define TSENG_MINOR_VERSION 0
+#define TSENG_PATCHLEVEL 0
 
 /* 
  * This contains the functions needed by the server after loading the
@@ -218,7 +220,7 @@ static XF86ModuleVersionInfo tsengVersRec =
     MODINFOSTRING1,
     MODINFOSTRING2,
     XF86_VERSION_CURRENT,
-    TSENG_DRIVER_VERSION,
+    TSENG_MAJOR_VERSION, TSENG_MINOR_VERSION, TSENG_PATCHLEVEL,
     ABI_CLASS_VIDEODRV,		       /* This is a video driver */
     ABI_VIDEODRV_VERSION,
     {0, 0, 0, 0}

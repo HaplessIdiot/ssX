@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgamodule.c,v 1.1.2.2 1998/07/18 17:54:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgamodule.c,v 1.2 1998/07/25 16:59:45 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -38,7 +38,7 @@ static XF86ModuleVersionInfo VersRec =
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,
-        0x00010001,
+        1, 0, 0,
         ABI_CLASS_ANSIC,	/* Only need ansic layer */
         ABI_ANSIC_VERSION,
         {0,0,0,0}       /* signature, to be patched into the file by a tool */

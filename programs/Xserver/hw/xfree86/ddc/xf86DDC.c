@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.1 1998/11/28 10:43:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.2 1998/12/06 06:08:27 dawes Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -30,7 +30,7 @@ static XF86ModuleVersionInfo ddcVersRec =
     MODINFOSTRING1,
     MODINFOSTRING2,
     XF86_VERSION_CURRENT,
-    0x00010001,			/* 1.1 */
+    1, 0, 0,
     ABI_CLASS_VIDEODRV,		/* a video driver module */
     ABI_VIDEODRV_VERSION,
     {0,0,0,0}
