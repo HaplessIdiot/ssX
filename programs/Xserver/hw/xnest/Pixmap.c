@@ -30,6 +30,10 @@ is" without express or implied warranty.
 #include "Screen.h"
 #include "XNPixmap.h"
 
+#ifdef PIXPRIV
+int xnestPixmapPrivateIndex;	    
+#endif
+
 PixmapPtr xnestCreatePixmap(pScreen, width, height, depth)
     ScreenPtr   pScreen;
     int         width;
@@ -55,8 +59,8 @@ PixmapPtr xnestCreatePixmap(pScreen, width, height, depth)
   pPixmap->refcnt = 1;
   pPixmap->devKind = PixmapBytePad(width, depth);
 #ifdef PIXPRIV
-  pPixmap->devPrivate.ptr = (pointer)((char *)pPixmap +
-				      pScreen->totalPixmapSize);
+  pPixmap->devPrivates[xnestPixmapPrivateIndex].ptr =
+      (pointer)((char *)pPixmap + pScreen->totalPixmapSize);
 #else
   pPixmap->devPrivate.ptr = (pointer)(pPixmap + 1);
 #endif

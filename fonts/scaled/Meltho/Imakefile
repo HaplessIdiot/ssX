@@ -10,7 +10,7 @@ FONTS = SyrCOMAdiabene.otf SyrCOMAntioch.otf SyrCOMBatnan.otf \
 
 OBJS = $(FONTS)
 
-FONTINSTDIR = $(FONTDIR)/TTF
+FONTINSTDIR = $(FONTDIR)/OTF
 
 MakeFontsDir(fonts.scale)
 
