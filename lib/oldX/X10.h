@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * The X Window System is a Trademark of The Open Group.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/oldX/X10.h,v 1.3 2004/04/03 22:38:52 tsi Exp $ */
 
 
 /*
@@ -86,5 +86,10 @@ typedef struct {
 
 XAssocTable *XCreateAssocTable(int size);
 char *XLookUpAssoc(Display *dpy, XAssocTable *table, register XID x_id);
+int XMakeAssoc(Display *dpy, XAssocTable *table, XID x_id, XPointer data);
+int XDestroyAssocTable(XAssocTable *table);
+int XDeleteAssoc(Display *dpy, XAssocTable *table, XID x_id);
+Status XDraw(Display *dpy, Drawable d, GC gc, Vertex *vlist, int vcount);
+Status XDrawFilled(Display *dpy, Drawable d, GC gc, Vertex *vlist, int vcount);
 
 #endif /* _X10_H_ */
