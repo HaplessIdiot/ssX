@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.20 2003/09/28 20:15:02 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.21 2003/10/02 22:10:30 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -2976,7 +2976,7 @@ void (*glXGetProcAddressARB(const GLubyte *procName))( void )
 
 /* GLX 1.4 */
 void (*glXGetProcAddress(const GLubyte *procName))( void )
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(GLX_ALIAS_UNSUPPORTED)
     __attribute__ ((alias ("glXGetProcAddressARB")));
 #else
 {

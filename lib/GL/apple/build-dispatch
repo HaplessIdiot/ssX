@@ -5,6 +5,7 @@ exec rep "$0" "$@"
 ;; build-dispatch
 
 ;; $Id$
+;; $XFree86: $
 
 ;; Copyright (c) 2002 Apple Computer, Inc. All rights reserved.
 
@@ -53,7 +54,7 @@ exec rep "$0" "$@"
 		   (expand-last-match "\\1")))
 	    (string-split "," s)))
 
-  (@ "/* dri_dispatch.h -- built automatically, DO NOT EDIT\n   $%s$ */\n\n" "Id")
+  (@ "/* dri_dispatch.h -- built automatically, DO NOT EDIT\n   $%s$\n   $%s$ */\n\n" "Id" "XFree86: ")
 
   (condition-case nil
       (while t
