@@ -37,6 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <X11/Xlibint.h>
 #include "gamma_init.h"
 #include "glapi.h"
+#include "glint_dri.h"
 
 
 XMesaContext         nullCC  = NULL;
@@ -155,6 +156,7 @@ XMesaContext XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
     gammaContextPrivate *cPriv;
     __DRIscreenPrivate *driScrnPriv = driContextPriv->driScreenPriv;
     gammaScreenPrivate *gPriv = (gammaScreenPrivate *)driScrnPriv->private;
+    GLINTDRIPtr         gDRIPriv = (GLINTDRIPtr)driScrnPriv->pDevPriv;
 
     if (!Dispatch) {
        GLuint size = _glapi_get_dispatch_table_size() * sizeof(GLvoid *);
@@ -216,27 +218,26 @@ XMesaContext XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
 		cPriv->ModelViewProj[i] =
 		cPriv->Texture[i] = 0.0;
 
-    /*
-    ** NOT_DONE: The 0xe4 in LBReadMode and FBReadMode refers to the
-    ** partial products for the 640x480 mode.  We will need to look up
-    ** the partial products in a table (c.f., glint_driver.c) to support
-    ** other FB sizes.
-    */
     cPriv->LBReadMode = (LBReadSrcDisable |
 			 LBReadDstDisable |
 			 LBDataTypeDefault |
 			 LBWindowOriginBot |
-			 LBScanLineInt2 |
-			 0xe4); /* NOT_DONE: 640x480 partial products */
+			 gDRIPriv->pprod);
     cPriv->FBReadMode = (FBReadSrcDisable |
 			 FBReadDstDisable |
 			 FBDataTypeDefault |
 			 FBWindowOriginBot |
-			 FBScanLineInt2 |
-			 0xe4); /* NOT_DONE: 640x480 partial products */
-
-    cPriv->FBWindowBase = driScrnPriv->fbWidth * (driScrnPriv->fbHeight/2 - 1);
-    cPriv->LBWindowBase = driScrnPriv->fbWidth * (driScrnPriv->fbHeight/2 - 1);
+			 gDRIPriv->pprod);
+ 
+    if (gDRIPriv->numMXDevices == 2) {
+	cPriv->LBReadMode |= LBScanLineInt2;
+	cPriv->FBReadMode |= FBScanLineInt2;
+    	cPriv->FBWindowBase =driScrnPriv->fbWidth*(driScrnPriv->fbHeight/2 - 1);
+    	cPriv->LBWindowBase =driScrnPriv->fbWidth*(driScrnPriv->fbHeight/2 - 1);
+    } else {
+    	cPriv->FBWindowBase = driScrnPriv->fbWidth * driScrnPriv->fbHeight;
+    	cPriv->LBWindowBase = driScrnPriv->fbWidth * driScrnPriv->fbHeight;
+    }
 
     cPriv->Begin = (B_AreaStippleDisable |
 		    B_LineStippleDisable |

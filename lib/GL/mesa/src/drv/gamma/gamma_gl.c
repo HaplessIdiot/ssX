@@ -37,6 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <math.h>
 #include "gamma_gl.h"
 #include "gamma_init.h"
+#include "glint_dri.h"
 #ifdef RANDOMIZE_COLORS
 #include <stdlib.h>
 #endif
@@ -358,10 +359,12 @@ void _gamma_CallLists(GLsizei n, GLenum type, const GLvoid *lists)
 
 void _gamma_Clear(GLbitfield mask)
 {
+    int temp;
     unsigned int depth = 0;
     int do_clear = 0;
 #ifdef DO_VALIDATE
     __DRIscreenPrivate *driScrnPriv = gCC->driContextPriv->driScreenPriv;
+    GLINTDRIPtr         gDRIPriv = (GLINTDRIPtr)driScrnPriv->pDevPriv;
 #endif
 
     DEBUG_GLCMDS(("Clear: %04x\n", (int)mask));
@@ -437,11 +440,12 @@ void _gamma_Clear(GLbitfield mask)
 	gCCPriv->FrameCount &= 0xff;
 #endif
 
+	temp = (gCCPriv->LBReadMode & LBPartialProdMask) | LBWindowOriginBot;
+	/* UGH - move this later ! */
+	if (gDRIPriv->numMXDevices == 2) temp |= LBScanLineInt2;
+
 	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
-	WRITE(gCCPriv->buf, LBReadMode, 
-	      ((gCCPriv->LBReadMode & LBPartialProdMask) |
-	       LBScanLineInt2 |
-	       LBWindowOriginBot));
+	WRITE(gCCPriv->buf, LBReadMode, temp);
 
 	/* Force FCP to be written */
 	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);

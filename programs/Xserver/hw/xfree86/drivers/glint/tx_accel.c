@@ -285,6 +285,7 @@ static void TXLoadCoord(
 ){
     GLINTPtr pGlint = GLINTPTR(pScrn);
     
+#if 0
     if (w != pGlint->startxsub) {
     	GLINT_WRITE_REG(w<<16, StartXSub);
 	pGlint->startxsub = w;
@@ -309,6 +310,19 @@ static void TXLoadCoord(
     	GLINT_WRITE_REG(d<<16,dY);
 	pGlint->dy = d;
     }
+#endif
+    	GLINT_WRITE_REG(w<<16, StartXSub);
+	pGlint->startxsub = w;
+    	GLINT_WRITE_REG(x<<16,StartXDom);
+	pGlint->startxdom = x;
+    	GLINT_WRITE_REG(y<<16,StartY);
+	pGlint->starty = y;
+    	GLINT_WRITE_REG(h,GLINTCount);
+	pGlint->count = h;
+    	GLINT_WRITE_REG(a<<16,dXDom);
+	pGlint->dxdom = a;
+    	GLINT_WRITE_REG(d<<16,dY);
+	pGlint->dy = d;
 }
 
 static void MoveDWORDS(

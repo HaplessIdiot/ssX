@@ -105,7 +105,6 @@ DualMXInitializeEngine(ScrnInfoPtr pScrn)
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
     pGlint->rasterizerMode = RMMultiGLINT;
-    pGlint->pprod |= FBRM_ScanlineInt2;
 
     /* Initialize the Accelerator Engine to defaults */
 
@@ -120,8 +119,10 @@ DualMXInitializeEngine(ScrnInfoPtr pScrn)
     /* Make sure the rest of the register writes go to both MX's */
     GLINT_SLOW_WRITE_REG(3, BroadcastMask);
 
+    GLINT_SLOW_WRITE_REG(pGlint->rasterizerMode, RasterizerMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE, ScissorMode);
-    GLINT_SLOW_WRITE_REG(pGlint->pprod,	LBReadMode);
+    GLINT_SLOW_WRITE_REG(pGlint->pprod | LBRM_ScanlineInt2,	LBReadMode);
+    pGlint->pprod |= FBRM_ScanlineInt2;
     GLINT_SLOW_WRITE_REG(pGlint->pprod,	FBReadMode);
     GLINT_SLOW_WRITE_REG(0, dXSub);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	LBWriteMode);
@@ -149,7 +150,6 @@ DualMXInitializeEngine(ScrnInfoPtr pScrn)
     GLINT_SLOW_WRITE_REG(0x400,		FilterMode);
     GLINT_SLOW_WRITE_REG(0xffffffff,	FBHardwareWriteMask);
     GLINT_SLOW_WRITE_REG(0xffffffff,	FBSoftwareWriteMask);
-    GLINT_SLOW_WRITE_REG(pGlint->rasterizerMode, RasterizerMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	GLINTDepth);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	FBSourceOffset);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	FBPixelOffset);
@@ -172,6 +172,7 @@ DualMXInitializeEngine(ScrnInfoPtr pScrn)
 	    GLINT_SLOW_WRITE_REG(0x0,	PixelSize);
 	    break;
     }
+
     pGlint->ROP = 0xFF;
     pGlint->ClippingOn = FALSE;
     pGlint->startxsub = 0;
@@ -212,18 +213,15 @@ DualMXAccelInit(ScreenPtr pScreen)
     infoPtr->SetClippingRectangle = DualMXSetClippingRectangle;
     infoPtr->DisableClipping = DualMXDisableClipping;
     infoPtr->ClippingFlags = HARDWARE_CLIP_MONO_8x8_FILL |
+#if 0
 			     HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY |
+#endif
 			     HARDWARE_CLIP_SOLID_FILL;
 
     infoPtr->SolidFillFlags = 0;
     infoPtr->SetupForSolidFill = DualMXSetupForFillRectSolid;
     infoPtr->SubsequentSolidFillRect = DualMXSubsequentFillRectSolid;
 
-    /*
-     * The following optimized routines are copied from tx_accel.c, 
-     * but haven't been ported to a dual MX board. 
-     */
-#ifdef NOT_DONE 
     infoPtr->SolidLineFlags = 0;
     infoPtr->PolySegmentThinSolidFlags = 0;
     infoPtr->PolylinesThinSolidFlags = 0;
@@ -237,10 +235,12 @@ DualMXAccelInit(ScreenPtr pScreen)
     infoPtr->PolySegmentThinSolid = DualMXPolySegmentThinSolidWrapper;
     infoPtr->PolylinesThinSolid = DualMXPolylinesThinSolidWrapper;
 
+#if 0
     infoPtr->ScreenToScreenCopyFlags = NO_TRANSPARENCY |
 				       ONLY_LEFT_TO_RIGHT_BITBLT;
     infoPtr->SetupForScreenToScreenCopy = DualMXSetupForScreenToScreenCopy;
     infoPtr->SubsequentScreenToScreenCopy = DualMXSubsequentScreenToScreenCopy;
+#endif
 
     infoPtr->Mono8x8PatternFillFlags = HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
 				       HARDWARE_PATTERN_SCREEN_ORIGIN |
@@ -302,7 +302,6 @@ DualMXAccelInit(ScreenPtr pScreen)
 					  pScrn->bitsPerPixel / 8);
 
     xf86InitFBManager(pScreen, &AvailFBArea);
-#endif /* NOT_DONE */
 
     return (XAAInit(pScreen, infoPtr));
 }
@@ -315,11 +314,6 @@ static void DualMXLoadCoord(
 ){
     GLINTPtr pGlint = GLINTPTR(pScrn);
     
-    /*
-     * Optimization from tx_accel.c where these values are cached on the
-     * host doesn't appear to work.  We definitely need to reload at least
-     * the StartXDom value.  I'll play it safe and reload them all.
-     */
     GLINT_WRITE_REG(w<<16, StartXSub);
     GLINT_WRITE_REG(x<<16,StartXDom);
     GLINT_WRITE_REG(y<<16,StartY);
@@ -689,14 +683,15 @@ DualMXSubsequentMono8x8PatternFillRect(
     if (pGlint->FrameBufferReadMode != -1) {
 	if (pGlint->ROP == GXcopy) {
 	  GLINT_WRITE_REG(pGlint->BackGroundColor, FBBlockColor);
-	  GLINT_WRITE_REG(PrimitiveTrapezoid | FastFillEnable,Render);
+	  span = 0;
 	} else {
   	  GLINT_WRITE_REG(pGlint->BackGroundColor, PatternRamData0);
-	  GLINT_WRITE_REG(2<<1|2<<4|patternx<<7|patterny<<12|ASM_InvertPattern |
-					UNIT_ENABLE, AreaStippleMode);
-	  GLINT_WRITE_REG(AreaStippleEnable | SpanOperation | FastFillEnable | 
-						PrimitiveTrapezoid, Render);
+	  span = SpanOperation;
 	}
+	GLINT_WRITE_REG(2<<1|2<<4|patternx<<7|patterny<<12|ASM_InvertPattern |
+					UNIT_ENABLE, AreaStippleMode);
+	GLINT_WRITE_REG(AreaStippleEnable | span | FastFillEnable | 
+						PrimitiveTrapezoid, Render);
     }
 
     if (pGlint->ROP == GXcopy) {

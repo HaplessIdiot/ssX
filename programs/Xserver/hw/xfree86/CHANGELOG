@@ -1,5 +1,12 @@
 XFree86 4.0b (?? May 2000)
- 154. Use MMIO_xx macros in glint driver (#3904, Michel Danzer)
+ 157. Fix DRM for gamma for single and dual MX chips (Alan Hourihane).
+ 156. Fix Mesa for single and dual MX chips (Alan Hourihane).
+ 155. Add DGA support to the glint driver.
+      - Fix initialization of DRI when using single or dual MX's.
+      - Turn on more acceleration for DualMX boards.
+      - Fix DualMX boards displaywidth problems at >640 widths.
+      - Fix depth15/16 for PM2v and PM3 chipsets (Alan Hourihane).
+ 154. Use MMIO_xx macros in glint driver (#3904, Michel Danzer).
  153. Fix lib/GL/mesa/src/X86/Imakefile for m4 (Alan Hourihane).
  152. Fix m4 rules in Imake.tmpl (Alan Hourihane).
  151. ATI documentation update (Marc La France).

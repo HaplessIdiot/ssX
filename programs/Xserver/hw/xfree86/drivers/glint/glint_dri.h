@@ -50,6 +50,8 @@ typedef struct {
     drmMapFlags 	flagsControlRegs1;
     drmMapFlags 	flagsControlRegs2;
     drmMapFlags		flagsControlRegs3;
+    int			numMXDevices;
+    int			pprod;
 } GLINTDRIRec, *GLINTDRIPtr;
 
 #define GLINT_DRI_BUF_COUNT 20

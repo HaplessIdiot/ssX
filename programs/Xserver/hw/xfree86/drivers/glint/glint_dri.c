@@ -40,11 +40,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb32.h"
+#include "fb.h"
 
 #include "miline.h"
 
@@ -61,18 +57,7 @@ static void GLINTDestroyContext(ScreenPtr pScreen, drmContext hwContext,
                                 DRIContextType contextStore);
 
 static int 
-GLINTDRIControlInitSingleMX(int drmSubFD, int irq)
-{
-    
-    int retcode;
-
-				/* Perhaps add flag to for single mx here? */
-    if ((retcode = drmCtlInstHandler(drmSubFD, irq))) return 1;
-    return 0;
-}
-
-static int 
-GLINTDRIControlInitDualMX(int drmSubFD, int irq)
+GLINTDRIControlInit(int drmSubFD, int irq)
 {
     int retcode;
 
@@ -412,6 +397,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	DRIDestroyInfoRec(pGlint->pDRIInfo);
 	return FALSE;
     }
+
     pDRIInfo->devPrivate     = pGlintDRI;
     pDRIInfo->devPrivateSize = sizeof(GLINTDRIRec);
     pDRIInfo->contextSize    = sizeof(GLINTDRIContextRec);
@@ -430,6 +416,11 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	return FALSE;
     }
 
+    /* Tell the client driver how many MX's we have */
+    pGlintDRI->numMXDevices = pGlint->numMXDevices;
+    /* Tell the client about our screen size setup */
+    pGlintDRI->pprod = pGlint->pprod;
+   
     /* setup device specific direct rendering memory maps */
 
     /* pci region 0: control regs, first 4k page, priveledged writes */
@@ -567,26 +558,13 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 						->thisCard)->funcnum);
     }
     
-    if (pGlint->numMXDevices == 2) {
-    	if ( (pGlint->irq <= 0) || 
-	      GLINTDRIControlInitDualMX(pGlint->drmSubFD, pGlint->irq) ) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "[drm] cannot initialize dma with IRQ %d\n",
-		   pGlint->irq);
-	    DRICloseScreen(pScreen);
-	    return FALSE;
-	}
-    }
-
-    if (pGlint->numMXDevices == 1) {
-    	if ( (pGlint->irq <= 0) || 
-	      GLINTDRIControlInitSingleMX(pGlint->drmSubFD, pGlint->irq) ) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "[drm] cannot initialize dma with IRQ %d\n",
-		   pGlint->irq);
-	    DRICloseScreen(pScreen);
-	    return FALSE;
-	}
+   if ( (pGlint->irq <= 0) || 
+	      GLINTDRIControlInit(pGlint->drmSubFD, pGlint->irq) ) {
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	   "[drm] cannot initialize dma with IRQ %d\n",
+	   pGlint->irq);
+	DRICloseScreen(pScreen);
+	return FALSE;
     }
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -634,7 +612,8 @@ Bool
 GLINTCreateContext(ScreenPtr pScreen,
                    VisualPtr visual,
                    drmContext hwContext,
-                   void *pVisualConfigPriv)
+                   void *pVisualConfigPriv,
+		   DRIContextType contextStore)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     GLINTPtr pGlint = GLINTPTR(pScrn);
@@ -730,9 +709,9 @@ GLINTDRISwapContext(
     ScreenPtr pScreen,
     DRISyncType syncType,
     DRIContextType readContextType,
-    void** readContextStore,
+    void* readContextStore,
     DRIContextType writeContextType,
-    void** writeContextStore)
+    void* writeContextStore)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     GLINTPtr pGlint = GLINTPTR(pScrn);
@@ -1125,7 +1104,7 @@ GLINTDRISwapContext(
 
 	    /* send gamma the context dump command */
 	    GLINT_WAIT(3);
-            if (pGlint->numMXDevices > 1)
+            if (pGlint->numMXDevices == 2)
 	    	GLINT_WRITE_REG(1, BroadcastMask);
 	    GLINT_WRITE_REG(3<<14, FilterMode);  /* context bits on gamma */
 	    GLINT_WRITE_REG(GLINT_GAMMA_CONTEXT_MASK, ContextDump);
@@ -1170,7 +1149,7 @@ dumpIndex,readValue);
 
 	    /* send context restore command */
 	    GLINT_WAIT(1);
-            if (pGlint->numMXDevices > 1)
+            if (pGlint->numMXDevices == 2)
 	    	GLINT_WRITE_REG(1, BroadcastMask);
 
 	    GLINT_WAIT(3);
@@ -1199,7 +1178,7 @@ dumpIndex,pWC->Gamma[dumpIndex]);
 	    pGlint->AccelInfoRec->NeedToSync = TRUE;
 	    
 	    /* finally the MX portions */
-            if (pGlint->numMXDevices > 1)
+            if (pGlint->numMXDevices == 2)
 	    	GLINT_SLOW_WRITE_REG(1, BroadcastMask);
 	    GLINT_SLOW_WRITE_REG(pWC->MX1.CSStart,                  SStart);
 	    GLINT_SLOW_WRITE_REG(pWC->MX1.CdSdx,                    dSdx);
@@ -1452,7 +1431,7 @@ dumpIndex,pWC->Gamma[dumpIndex]);
 	/* restore the 2D portion of the new context */
 
 	/* Restore MX1's registers */
-        if (pGlint->numMXDevices > 1)
+        if (pGlint->numMXDevices == 2)
 	    GLINT_SLOW_WRITE_REG(1, BroadcastMask);
 	GLINT_SLOW_WRITE_REG(pWC->MX1.CStartXDom,               StartXDom);
 	GLINT_SLOW_WRITE_REG(pWC->MX1.CdXDom,                   dXDom);
