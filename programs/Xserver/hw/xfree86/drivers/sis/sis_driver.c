@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.14 1999/01/31 12:22:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.16 1999/03/06 13:12:37 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -61,6 +61,7 @@
 
 #ifdef DPMSExtension
 #include "globals.h"
+#define DPMS_SERVER
 #include "extensions/dpms.h"
 #endif
 

@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/difs/tables.c,v 1.3 1998/10/25 12:48:00 dawes Exp $ */
 
 #include <dispatch.h>
 #include <swaprep.h>
@@ -51,20 +51,17 @@ in this Software without prior written authorization from The Open Group.
 
 #include "globals.h"
 #include "client.h"
+#include "extentst.h"
+#include "difs.h"
 
-extern int ProcListExtensions();
-extern int ProcQueryExtension();
-extern void NotImplemented();
-
-
-int         (*InitialVector[3]) () =
+InitialFunc InitialVector[3] =
 {
     0,
     ProcInitialConnection,
     ProcEstablishConnection
 };
 
-int         (*ProcVector[NUM_PROC_VECTORS]) () =
+ProcFunc ProcVector[NUM_PROC_VECTORS] =
 {
     ProcNoop,			/* 0 */
     ProcListExtensions,
@@ -93,7 +90,7 @@ int         (*ProcVector[NUM_PROC_VECTORS]) () =
     0
 };
 
-int         (*SwappedProcVector[NUM_PROC_VECTORS]) () =
+SwappedProcFunc SwappedProcVector[NUM_PROC_VECTORS] =
 {
     SProcSimpleRequest,		/* 0 */
     SProcSimpleRequest,
@@ -122,10 +119,10 @@ int         (*SwappedProcVector[NUM_PROC_VECTORS]) () =
     0
 };
 
-void        (*EventSwapVector[NUM_EVENT_VECTORS]) () =
+EventSwapFunc EventSwapVector[NUM_EVENT_VECTORS] =
 {
     SErrorEvent,
-    NotImplemented,
+    (EventSwapFunc)NotImplemented,
     0,
     0,
     0,
@@ -134,20 +131,20 @@ void        (*EventSwapVector[NUM_EVENT_VECTORS]) () =
     0
 };
 
-void        (*ReplySwapVector[NUM_PROC_VECTORS]) () =
+ReplySwapFunc ReplySwapVector[NUM_PROC_VECTORS] =
 {
-    NotImplemented,		/* NoOp */
+    (ReplySwapFunc)NotImplemented,		/* NoOp */
     SListExtensionsReply,
     SQueryExtensionReply,	/* SQueryExtensionReply */
     SListCataloguesReply,
-    NotImplemented,		/* SetCatalogues */
+    (ReplySwapFunc)NotImplemented,		/* SetCatalogues */
     SGenericReply,		/* GetCatalogues */
-    NotImplemented,		/* SetEventMask */
+    (ReplySwapFunc)NotImplemented,		/* SetEventMask */
     SGetEventMaskReply,
     SCreateACReply,
-    NotImplemented,		/* FreeAC */
-    NotImplemented,		/* SetAuthorization - 10 */
-    NotImplemented,		/* SetResolution */
+    (ReplySwapFunc)NotImplemented,		/* FreeAC */
+    (ReplySwapFunc)NotImplemented,		/* SetAuthorization - 10 */
+    (ReplySwapFunc)NotImplemented,		/* SetResolution */
     SGetResolutionReply,
     SListFontsReply,
     SListFontsWithXInfoReply,
@@ -157,7 +154,7 @@ void        (*ReplySwapVector[NUM_PROC_VECTORS]) () =
     SQueryXExtentsReply,
     SQueryXBitmapsReply,
     SQueryXBitmapsReply,	/* 20 */
-    NotImplemented,		/* Close */
-    NotImplemented,
-    NotImplemented
+    (ReplySwapFunc)NotImplemented,		/* Close */
+    (ReplySwapFunc)NotImplemented,
+    (ReplySwapFunc)NotImplemented
 };

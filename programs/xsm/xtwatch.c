@@ -1,14 +1,9 @@
-/* $XConsortium: xtwatch.c,v 1.8 95/05/24 20:43:29 mor Exp $ */
+/* $TOG: xtwatch.c /main/9 1998/02/09 14:16:15 kaleb $ */
 /******************************************************************************
 
-Copyright (c) 1993  X Consortium
+Copyright 1993, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,48 +11,41 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
 #include <X11/Intrinsic.h>
 #include "xsm.h"
+#include "xtwatch.h"
 
-extern void CloseDownClient ();
-
+static void _XtIceWatchProc(IceConn ice_conn, IcePointer client_data, 
+			    Bool opening, IcePointer *watch_data );
+static void _XtProcessIceMsgProc(XtPointer client_data, int *source, 
+				 XtInputId *id);
 
 
 Status
-InitWatchProcs (appContext)
-
-XtAppContext appContext;
-
+InitWatchProcs(XtAppContext appContext)
 {
-    void _XtIceWatchProc ();
 
     return (IceAddConnectionWatch (_XtIceWatchProc, (IcePointer) appContext));
 }
 
 
-void
-_XtIceWatchProc (ice_conn, client_data, opening, watch_data)
-
-IceConn 	ice_conn;
-IcePointer	client_data;
-Bool		opening;
-IcePointer	*watch_data;
-
+static void
+_XtIceWatchProc(IceConn ice_conn, IcePointer client_data, Bool opening, 
+		IcePointer *watch_data)
 {
     if (opening)
     {
 	XtAppContext appContext = (XtAppContext) client_data;
-	void _XtProcessIceMsgProc ();
 
 	*watch_data = (IcePointer) XtAppAddInput (
 	    appContext,
@@ -73,13 +61,8 @@ IcePointer	*watch_data;
 }
 
 
-void
-_XtProcessIceMsgProc (client_data, source, id)
-
-XtPointer	client_data;
-int 		*source;
-XtInputId	*id;
-
+static void
+_XtProcessIceMsgProc(XtPointer client_data, int *source, XtInputId *id)
 {
     IceConn			ice_conn = (IceConn) client_data;
     IceProcessMessagesStatus	status;

@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.7 1999/03/02 11:49:25 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -128,7 +128,7 @@ DGASetDGAMode(
    if(!num) {
 	if(pScreenPriv->current) {
 	    if(pScreenPriv->current->pPix)
-		(*pScreen->DestroyPixmap)(pPix);
+		(*pScreen->DestroyPixmap)(pScreenPriv->current->pPix);
 	    xfree(pScreenPriv->current);
 	    pScreenPriv->current = NULL;
 	    (*pScreenPriv->funcs->SetMode)(pScreenPriv->pScrn, NULL);
@@ -180,7 +180,7 @@ DGASetDGAMode(
 	    (*pScreen->ModifyPixmapHeader)(pPix, 
 			pMode->pixmapWidth, pMode->pixmapHeight,
 			pMode->depth, pMode->bitsPerPixel, 
-			pMode->bytesPerScanline / (pMode->bitsPerPixel >> 3),
+			pMode->bytesPerScanline,
  			(pointer)pMode->memBase);
         }
    }
@@ -267,7 +267,7 @@ DGASetMode(
     /* We rely on the extension to check that DGA is available */ 
 
     ret = (*pScrn->SetDGAMode)(index, num, &device);
-    if(ret == Success) {
+    if((ret == Success) && num) {
 	DGACopyDeviceInfo(device.mode, devRet);
 	devRet->pPix = device.pPix;
     }
@@ -528,16 +528,18 @@ DGAStealEvent(int index, xEvent *e)
       DGA 1.0 compatibility.  Hopefully, we can remove this
       some day */
 
-#if 0
    switch(e->u.u.type) { 
    case MotionNotify:
    case ButtonPress:
    case ButtonRelease:
 	if(((DeviceIntPtr)(xf86Info.pMouse))->grab) {
-	    e->u.keyButtonPointer.eventX = dx;
-	    e->u.keyButtonPointer.eventY = dy;
-	    e->u.keyButtonPointer.rootX = dx;
-	    e->u.keyButtonPointer.rootY = dy;
+#if 0
+	ErrorF("%i %i %i %i\n",
+	    e->u.keyButtonPointer.eventX,
+	    e->u.keyButtonPointer.eventY,
+	    e->u.keyButtonPointer.rootX,
+	    e->u.keyButtonPointer.rootY);
+#endif
 	    DeliverGrabbedEvent(e, (xf86Info.pMouse), FALSE, 1);
 	}
 	break;
@@ -546,6 +548,7 @@ DGAStealEvent(int index, xEvent *e)
 	if(((DeviceIntPtr)(xf86Info.pKeyboard))->grab){
 	    DeviceIntPtr keybd = (DeviceIntPtr)xf86Info.pKeyboard;
 	    KeyClassPtr keyc = keybd->key;
+	    int keycode = e->u.u.detail;
 	    BYTE *kptr;
 
 	    kptr = &keyc->down[keycode >> 3];
@@ -557,7 +560,6 @@ DGAStealEvent(int index, xEvent *e)
 	}
 	break;
    }
-#endif
 
    /* Direct mode but the client doesn't want the events.
       We have to keep them from hitting the other windows. 

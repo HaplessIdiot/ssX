@@ -6,7 +6,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.6 1999/02/07 06:18:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.7 1999/02/28 11:19:34 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1248,11 +1248,11 @@ xf86XVStopVideo(
 
   if(!portPriv->pScrn->vtSema) return Success; /* Success ? */
 
-  if(portPriv->isOn) { 
-     (*portPriv->AdaptorRec->StopVideo)(
-	portPriv->pScrn, portPriv->DevPriv.ptr, TRUE);
-     portPriv->isOn = FALSE;
-  }
+  /* Must free resources. */
+
+  (*portPriv->AdaptorRec->StopVideo)(
+      portPriv->pScrn, portPriv->DevPriv.ptr, TRUE);
+  portPriv->isOn = FALSE;
 
   return Success;
 }

@@ -30,7 +30,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
   ----------------------------------------------------------------------- **/
-/* $XFree86: xc/programs/xwd/list.c,v 3.1 1996/12/23 07:14:46 dawes Exp $ */
+/* $XFree86: xc/programs/xwd/list.c,v 3.2 1998/10/04 09:42:01 dawes Exp $ */
 
 #include <stdio.h>
 
@@ -95,7 +95,7 @@ list_ptr new_list ()
 {
     list_ptr lp;
 
-    if (lp = (list_ptr) malloc( sizeof( list_item))) {
+    if ((lp = (list_ptr) malloc( sizeof( list_item)))) {
 	lp->next = NULL;
 	lp->ptr.item = NULL;
     }

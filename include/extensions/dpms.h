@@ -1,3 +1,4 @@
+/* $TOG: dpms.h /main/1 1997/11/12 14:36:52 kaleb $ */
 /*****************************************************************
 
 Copyright (c) 1996 Digital Equipment Corporation, Maynard, Massachusetts.
@@ -25,6 +26,7 @@ dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 
 ******************************************************************/
+/* $XFree86$ */
 
 /*
  * HISTORY
@@ -39,5 +41,16 @@ Equipment Corporation.
 #define DPMSModeSuspend	2
 #define DPMSModeOff	3
 
+#ifndef DPMS_SERVER
+extern Bool DPMSQueryExtension(Display *, int *, int *);
+extern Status DPMSGetVersion(Display *, int *, int *);
+extern Bool DPMSCapable(Display *);
+extern Status DPMSSetTimeouts(Display *, CARD16, CARD16, CARD16);
+extern Bool DPMSGetTimeouts(Display *, CARD16 *, CARD16 *, CARD16 *);
+extern Status DPMSEnable(Display *);
+extern Status DPMSDisable(Display *);
+extern Status DPMSForceLevel(Display *, CARD16);
+extern Status DPMSInfo(Display *, CARD16 *, BOOL *);
+#endif
 
 

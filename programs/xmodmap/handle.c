@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmodmap/handle.c,v 3.1 1998/10/04 09:41:42 dawes Exp $ */
+/* $XFree86: xc/programs/xmodmap/handle.c,v 3.2 1998/12/13 05:33:07 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -55,10 +55,8 @@ struct wq work_queue = {NULL, NULL};
  * common utility routines
  */
 
-KeyCode *KeysymToKeycodes(dpy, keysym, pnum_kcs)
-    Display *dpy;
-    KeySym keysym;
-    int *pnum_kcs;
+static KeyCode *
+KeysymToKeycodes(Display *dpy, KeySym keysym, int *pnum_kcs)
 {
     KeyCode *kcs = NULL;
     int i, j;
@@ -81,9 +79,8 @@ KeyCode *KeysymToKeycodes(dpy, keysym, pnum_kcs)
     return kcs;
 }
 
-char *copy_to_scratch (s, len)
-    char *s;
-    int len;
+static char *
+copy_to_scratch(char *s, int len)
 {
     static char *buf = NULL;
     static int buflen = 0;
@@ -102,33 +99,48 @@ char *copy_to_scratch (s, len)
     return (buf);
 }
 
-static badheader ()
+static void
+badheader(void)
 {
     fprintf (stderr, "%s:  %s:%d:  bad ", ProgramName, inputFilename, lineno);
     parse_errors++;
 }
+
+#define badmsg0(what) { badheader(); fprintf (stderr, what); \
+			   putc ('\n', stderr); }
 
 #define badmsg(what,arg) { badheader(); fprintf (stderr, what, arg); \
 			   putc ('\n', stderr); }
 
 #define badmsgn(what,s,len) badmsg (what, copy_to_scratch (s, len))
 
-void initialize_map ()
+void 
+initialize_map (void)
 {
     map = XGetModifierMapping (dpy);
     return;
 }
 
-static void do_keycode(), do_keysym(), finish_keycodes();
-static void do_add(), do_remove(), do_clear(), do_pointer();
-static int get_keysym_list();
+static void do_keycode ( char *line, int len );
+static void do_keysym ( char *line, int len );
+static void finish_keycodes ( char *line, int len, KeyCode *keycodes, 
+			      int count );
+static void do_add ( char *line, int len );
+static void do_remove ( char *line, int len );
+static void do_clear ( char *line, int len );
+static void do_pointer ( char *line, int len );
+static int get_keysym_list ( char *line, int len, int *np, KeySym **kslistp );
 
-int skip_word(), skip_space(), skip_chars();
+static void print_opcode(union op *op);
+
+static int skip_word ( char *s, int len );
+static int skip_chars ( char *s, int len );
+static int skip_space ( char *s, int len );
 
 static struct dt {
     char *command;			/* name of input command */
     int length;				/* length of command */
-    void (*proc)();			/* handler */
+    void (*proc)(char *, int);		/* handler */
 } dispatch_table[] = {
     { "keycode", 7, do_keycode },
     { "keysym", 6, do_keysym },
@@ -143,9 +155,9 @@ static struct dt {
  * and trailing whitespace removed) and builds up the work queue.
  */
 
-void handle_line (line, len)
-    char *line;				/* string to parse */
-    int len;				/* length of line */
+void 
+handle_line(char *line,		/* string to parse */
+	    int len)		/* length of line */
 {
     int n;
     struct dt *dtp;
@@ -177,9 +189,8 @@ void handle_line (line, len)
  * the following routines are useful for parsing
  */ 
 
-int skip_word (s, len)
-    register char *s;
-    register int len;
+static int 
+skip_word (char *s, int len)
 {
     register int n;
 
@@ -187,9 +198,8 @@ int skip_word (s, len)
     return (n + skip_space (s+n, len-n));
 }
 
-int skip_chars (s, len)
-    register char *s;
-    register int len;
+static int 
+skip_chars(char *s, int len)
 {
     register int i;
 
@@ -201,9 +211,8 @@ int skip_chars (s, len)
     return (i);
 }
 
-int skip_space (s, len)
-    register char *s;
-    register int len;
+static int 
+skip_space(char *s, int len)
 {
     register int i;
 
@@ -216,10 +225,8 @@ int skip_space (s, len)
 }
 
 
-int skip_until_char (s, len, c)
-    register char *s;
-    register int len;
-    register char c;
+static int 
+skip_until_char(char *s, int len, char c)
 {
     register int i;
 
@@ -229,11 +236,9 @@ int skip_until_char (s, len, c)
     return (i);
 }
 
-int skip_until_chars (s, len, cs, cslen)
-    char *s;
-    int len;
-    register char *cs;
-    register int cslen;
+#if 0
+static int 
+skip_until_chars(char *s, int len, char *cs, int cslen)
 {
     int i;
 
@@ -248,6 +253,7 @@ int skip_until_chars (s, len, cs, cslen)
   done:
     return (i);
 }
+#endif
 
 /*
  * The action routines.
@@ -263,9 +269,8 @@ int skip_until_chars (s, len, cs, cslen)
  *     inputFilename      name of the file being processed
  *     lineno             line number of current line in input file
  */
-
-add_to_work_queue (p)			/* this can become a macro someday */
-    union op *p;
+static void
+add_to_work_queue(union op *p)	/* this can become a macro someday */
 {
     if (work_queue.head == NULL) {	/* nothing on the list */
 	work_queue.head = work_queue.tail = p;	/* head, tail, no prev */
@@ -281,9 +286,9 @@ add_to_work_queue (p)			/* this can become a macro someday */
     return;
 }
 
-char *copystring (s, len)
-    char *s;
-    int len;
+#if 0
+static char *
+copystring(char *s, int len)
 {
     char *retval;
 
@@ -294,10 +299,10 @@ char *copystring (s, len)
     }
     return (retval);
 }
+#endif
 
-static Bool parse_number (str, val)
-    char *str;
-    unsigned long *val;
+static Bool 
+parse_number(char *str, unsigned long *val)
 {
     char *fmt = "%ld";
 
@@ -316,11 +321,8 @@ static Bool parse_number (str, val)
     return (sscanf (str, fmt, val) == 1);
 }
 
-static Bool parse_keysym (line, n, name, keysym)
-    char *line;
-    int n;
-    char **name;
-    KeySym *keysym;
+static Bool 
+parse_keysym(char *line, int n, char **name, KeySym *keysym)
 {
     *name = copy_to_scratch (line, n);
     if (!strcmp(*name, "NoSymbol")) {
@@ -343,16 +345,15 @@ static Bool parse_keysym (line, n, name, keysym)
  * listed.
  */
 
-static void do_keycode (line, len)
-    char *line;
-    int len;
+static void 
+do_keycode(char *line, int len)
 {
     int dummy;
     char *fmt = "%d";
     KeyCode keycode;
 
     if (len < 3 || !line || *line == '\0') {  /* 5=a minimum */
-	badmsg ("keycode input line", NULL);
+	badmsg0 ("keycode input line");
 	return;
     }
 
@@ -365,12 +366,12 @@ static void do_keycode (line, len)
 
 	dummy = 0;
 	if (sscanf (line, fmt, &dummy) != 1 || dummy == 0) {
-	    badmsg ("keycode value", NULL);
+	    badmsg0 ("keycode value");
 	    return;
 	}
 	keycode = (KeyCode) dummy;
 	if ((int)keycode < min_keycode || (int)keycode > max_keycode) {
-	    badmsg ("keycode value (out of range)", NULL);
+	    badmsg0 ("keycode value (out of range)");
 	    return;
 	}
     }
@@ -388,9 +389,8 @@ static void do_keycode (line, len)
  * The left keysyms has to be checked for validity and evaluated.
  */
 
-static void do_keysym (line, len)
-    char *line;
-    int len;
+static void 
+do_keysym(char *line, int len)
 {
     int n;
     KeyCode *keycodes;
@@ -398,13 +398,13 @@ static void do_keysym (line, len)
     char *tmpname;
 
     if (len < 3 || !line || *line == '\0') {  /* a=b minimum */
-	badmsg ("keysym input line", NULL);
+	badmsg0 ("keysym input line");
 	return;
     }
 
     n = skip_chars (line, len);
     if (n < 1) {
-	badmsg ("target keysym name", NULL);
+	badmsg0 ("target keysym name");
 	return;
     }
     if (!parse_keysym(line, n, &tmpname, &keysym)) {
@@ -430,11 +430,8 @@ static void do_keysym (line, len)
     finish_keycodes (line, len, keycodes, n);
 }
 
-static void finish_keycodes (line, len, keycodes, count)
-    char *line;
-    int len;
-    KeyCode *keycodes;
-    int count;
+static void 
+finish_keycodes(char *line, int len, KeyCode *keycodes, int count)
 {
     int n;
     KeySym *kslist;
@@ -445,7 +442,7 @@ static void finish_keycodes (line, len, keycodes, count)
     line += n, len -= n;
     
     if (len < 1 || *line != '=') {	/* = minimum */
-	badmsg ("keycode command (missing keysym list),", NULL);
+	badmsg0 ("keycode command (missing keysym list),");
 	return;
     }
     line++, len--;			/* skip past the = */
@@ -497,9 +494,8 @@ struct modtab modifier_table[] = {	/* keep in order so it can be index */
     { "ctrl", 4, 2 },
     { NULL, 0, 0 }};
 
-static int parse_modifier (line, n)
-    register char *line;
-    register int n;
+static int 
+parse_modifier(char *line, int n)
 {
     register int i;
     struct modtab *mt;
@@ -526,9 +522,8 @@ static int parse_modifier (line, n)
  * is not important.  There should also be an alias Ctrl for control.
  */
 
-static void do_add (line, len)
-    char *line;
-    int len;
+static void 
+do_add(char *line, int len)
 {
     int n;
     int modifier;
@@ -537,7 +532,7 @@ static void do_add (line, len)
     struct op_addmodifier *opam;
 
     if (len < 6 || !line || *line == '\0') {  /* Lock=a minimum */
-	badmsg ("add modifier input line", NULL);
+	badmsg0 ("add modifier input line");
 	return;
     }
 
@@ -556,7 +551,7 @@ static void do_add (line, len)
     line += n, len -= n;
     n = skip_until_char (line, len, '=');
     if (n < 0) {
-	badmsg ("add modifier = keysym", NULL);
+	badmsg0 ("add modifier = keysym");
 	return;
     }
 
@@ -567,7 +562,7 @@ static void do_add (line, len)
     if (get_keysym_list (line, len, &n, &kslist) < 0)
 	return;
     if (n == 0) {
-	badmsg ("add modifier keysym list (empty)", NULL);
+	badmsg0 ("add modifier keysym list (empty)");
 	return;
     }
 
@@ -591,9 +586,8 @@ static void do_add (line, len)
 /*
  * make_add - stick a single add onto the queue
  */
-static void make_add (modifier, keysym)
-    int modifier;
-    KeySym keysym;
+static void 
+make_add(int modifier, KeySym keysym)
 {
     union op *uop;
     struct op_addmodifier *opam;
@@ -632,9 +626,8 @@ static void make_add (modifier, keysym)
  * is not important.  There should also be an alias Ctrl for control.
  */
 
-static void do_remove (line, len)
-    char *line;
-    int len;
+static void 
+do_remove(char *line, int len)
 {
     int n;
     int nc;
@@ -647,7 +640,7 @@ static void do_remove (line, len)
     struct op_removemodifier *oprm;
 
     if (len < 6 || !line || *line == '\0') {  /* Lock=a minimum */
-	badmsg ("remove modifier input line", NULL);
+	badmsg0 ("remove modifier input line");
 	return;
     }
 
@@ -666,7 +659,7 @@ static void do_remove (line, len)
     line += n, len -= n;
     n = skip_until_char (line, len, '=');
     if (n < 0) {
-	badmsg ("remove modifier = keysym", NULL);
+	badmsg0 ("remove modifier = keysym");
 	return;
     }
 
@@ -677,7 +670,7 @@ static void do_remove (line, len)
     if (get_keysym_list (line, len, &n, &kslist) < 0)
 	return;
     if (n == 0) {
-	badmsg ("remove modifier keysym list (empty)", NULL);
+	badmsg0 ("remove modifier keysym list (empty)");
 	return;
     }
 
@@ -715,7 +708,6 @@ static void do_remove (line, len)
 	    printf("\n");
 	}
 	if (nc + num_kcs > tot) {
-	    int j;
 	    tot = nc + num_kcs;
 	    kclist = (KeyCode *)realloc((char *)kclist, tot * sizeof(KeyCode));
 	    if (!kclist) {
@@ -751,9 +743,8 @@ static void do_remove (line, len)
 /*
  * make_remove - stick a single remove onto the queue
  */
-static void make_remove (modifier, keycode)
-    int modifier;
-    KeyCode keycode;
+static void 
+make_remove(int modifier, KeyCode keycode)
 {
     union op *uop;
     struct op_removemodifier *oprm;
@@ -791,9 +782,8 @@ static void make_remove (modifier, keycode)
  *                       ^
  */
 
-static void do_clear (line, len)
-    char *line;
-    int len;
+static void 
+do_clear(char *line, int len)
 {
     int n;
     int modifier;
@@ -801,7 +791,7 @@ static void do_clear (line, len)
     struct op_clearmodifier *opcm;
 
     if (len < 4 || !line || *line == '\0') {  /* Lock minimum */
-	badmsg ("clear modifier input line", NULL);
+	badmsg0 ("clear modifier input line");
 	return;
     }
 
@@ -820,7 +810,7 @@ static void do_clear (line, len)
 
     uop = AllocStruct (union op);
     if (!uop) {
-	badmsg ("attempt to allocate %d byte clearmodifier opcode",
+	badmsg ("attempt to allocate %ld byte clearmodifier opcode",
 		(long) sizeof (struct op_clearmodifier));
 	return;
     }
@@ -832,9 +822,8 @@ static void do_clear (line, len)
     add_to_work_queue (uop);
 }
 
-static int strncmp_nocase (a, b, n)
-    char *a, *b;
-    int n;
+static int 
+strncmp_nocase(char *a, char *b, int n)
 {
     int i;
     int a1, b1;
@@ -860,9 +849,8 @@ static int strncmp_nocase (a, b, n)
  *                         ^
  */
 
-static void do_pointer (line, len)
-    char *line;
-    int len;
+static void 
+do_pointer(char *line, int len)
 {
     int n;
     int i;
@@ -875,7 +863,7 @@ static void do_pointer (line, len)
     Bool ok;
 
     if (len < 2 || !line || *line == '\0') {  /* =1 minimum */
-	badmsg ("buttons input line", NULL);
+	badmsg0 ("buttons input line");
 	return;
     }
 
@@ -885,7 +873,7 @@ static void do_pointer (line, len)
     line += n, len -= n;
 
     if (line[0] != '=') {
-	badmsg ("buttons pointer code list, missing equal sign", NULL);
+	badmsg0 ("buttons pointer code list, missing equal sign");
 	return;
     }
 
@@ -951,11 +939,8 @@ static void do_pointer (line, len)
  * and adding it to the list.
  */
 
-static int get_keysym_list (line, len, np, kslistp)
-    char *line;
-    int len;
-    int *np;
-    KeySym **kslistp;
+static int 
+get_keysym_list(char *line, int len, int *np, KeySym **kslistp)
 {
     int havesofar, maxcanhave;
     KeySym *keysymlist;
@@ -985,7 +970,7 @@ static int get_keysym_list (line, len, np, kslistp)
 
 	n = skip_chars (line, len);
 	if (n < 0) {
-	    badmsg ("keysym name list", NULL);
+	    badmsg0 ("keysym name list");
 	    return (-1);
 	}
 
@@ -1032,10 +1017,8 @@ static int get_keysym_list (line, len, np, kslistp)
  * 8 by map->max_keypermod keycodes.
  */
 
-static void check_special_keys (keycode, n, kslist)
-    KeyCode keycode;
-    int n;
-    KeySym *kslist;
+static void 
+check_special_keys(KeyCode keycode, int n, KeySym *kslist)
 {
     int i;				/* iterator variable */
     KeyCode *kcp;			/* keycode pointer */
@@ -1092,7 +1075,8 @@ static void check_special_keys (keycode, n, kslist)
  * print_work_queue - disassemble the work queue and print it on stdout
  */
 
-void print_work_queue ()
+void 
+print_work_queue(void)
 {
     union op *op;
 
@@ -1103,8 +1087,8 @@ void print_work_queue ()
     return;
 }
 
-void print_opcode (op)
-    union op *op;
+static void 
+print_opcode(union op *op)
 {
     int i;
 
@@ -1160,11 +1144,15 @@ void print_opcode (op)
  * execute_work_queue - do the real meat and potatoes now that we know what
  * we need to do and that all of the input is correct.
  */
+static int exec_keycode ( struct op_keycode *opk );
+static int exec_add ( struct op_addmodifier *opam );
+static int exec_remove ( struct op_removemodifier *oprm );
+static int exec_clear ( struct op_clearmodifier *opcm );
+static int exec_pointer ( struct op_pointer *opp );
 
-static int exec_keycode(), exec_add(), exec_remove(), exec_clear();
-static int exec_pointer();
 
-int execute_work_queue ()
+int 
+execute_work_queue (void)
 {
     union op *op;
     int errors;
@@ -1205,26 +1193,26 @@ int execute_work_queue ()
 	dosync = 0;
 	switch (op->generic.type) {
 	  case doKeycode:
-	    if (exec_keycode (op) < 0) errors++;
+	    if (exec_keycode (&op->keycode) < 0) errors++;
 	    if (op->keycode.target_keycode)
 		dosync = 1;
 	    else
 		dosync = -1;
 	    break;
 	  case doAddModifier:
-	    if (exec_add (op) < 0) errors++;
+	    if (exec_add (&op->addmodifier) < 0) errors++;
 	    else update_map = True;
 	    break;
 	  case doRemoveModifier:
-	    if (exec_remove (op) < 0) errors++;
+	    if (exec_remove (&op->removemodifier) < 0) errors++;
 	    else update_map = True;
 	    break;
 	  case doClearModifier:
-	    if (exec_clear (op) < 0) errors++;
+	    if (exec_clear (&op->clearmodifier) < 0) errors++;
 	    else update_map = True;
 	    break;
 	  case doPointer:
-	    if (exec_pointer (op) < 0) errors++;
+	    if (exec_pointer (&op->pointer) < 0) errors++;
 	    break;
 	  default:
 	    fprintf (stderr, "%s:  unknown opcode %d\n", 
@@ -1240,8 +1228,8 @@ int execute_work_queue ()
     return (errors > 0 ? -1 : 0);
 }
 
-static int exec_keycode (opk)
-    struct op_keycode *opk;
+static int 
+exec_keycode(struct op_keycode *opk)
 {
     if (!opk->target_keycode) {
 	int i, j;
@@ -1282,8 +1270,8 @@ static int exec_keycode (opk)
     return (0);
 }
 
-static int exec_add (opam)
-    struct op_addmodifier *opam;
+static int 
+exec_add(struct op_addmodifier *opam)
 {
     int i;
     int status;
@@ -1304,8 +1292,8 @@ static int exec_add (opam)
     return (status);
 }
 
-static int exec_remove (oprm)
-    struct op_removemodifier *oprm;
+static int 
+exec_remove(struct op_removemodifier *oprm)
 {
     int i;
     int status;
@@ -1318,33 +1306,35 @@ static int exec_remove (oprm)
     return (status);
 }
 
-static int exec_clear (opcm)
-    struct op_clearmodifier *opcm;
+static int 
+exec_clear(struct op_clearmodifier *opcm)
 {
     return (ClearModifier (&map, opcm->modifier));
 }
 
 
-static int exec_pointer (opp)
-    struct op_pointer *opp;
+static int 
+exec_pointer(struct op_pointer *opp)
 {
     return (SetPointerMap (opp->button_codes, opp->count));
 }
 
-void print_modifier_map ()
+void 
+print_modifier_map(void)
 {
     PrintModifierMapping (map, stdout);
     return;
 }
 
-void print_key_table (exprs)
-    Bool exprs;
+void 
+print_key_table(Bool exprs)
 {
     PrintKeyTable (exprs, stdout);
     return;
 }
 
-void print_pointer_map ()
+void 
+print_pointer_map(void)
 {
     PrintPointerMap (stdout);
     return;

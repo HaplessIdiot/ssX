@@ -42,12 +42,13 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/difs/extensions.c,v 1.3 1998/10/25 12:47:59 dawes Exp $ */
 
 #include	"FSproto.h"
 #include	"misc.h"
 #include	"clientstr.h"
 #include	"extentst.h"
+#include	"difs.h"
 
 #define	EXTENSION_BASE	128
 #define	EXTENSION_EVENT_BASE	64
@@ -55,7 +56,6 @@ in this Software without prior written authorization from The Open Group.
 #define	LAST_ERROR	255
 
 static ExtensionEntry **extensions = (ExtensionEntry **) NULL;
-extern void (*ReplySwapVector[]) ();
 
 int         lastEvent = EXTENSION_EVENT_BASE;
 static int  lastError = FirstExtensionError;
@@ -67,10 +67,10 @@ AddExtension(
     char       *name,
     int         num_events,
     int         num_errors,
-    int         (*main_proc) (),
-    int         (*smain_proc) (),
-    void        (*closedown_proc) (),
-    unsigned short (*minorop_proc) ())
+    int         (*main_proc) (ClientPtr),
+    int         (*smain_proc) (ClientPtr),
+    void        (*closedown_proc) (struct _ExtensionEntry *),
+    unsigned short (*minorop_proc) (ClientPtr))
 {
     int         i;
     ExtensionEntry *ext,

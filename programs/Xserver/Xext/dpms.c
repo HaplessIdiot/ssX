@@ -32,7 +32,7 @@ Equipment Corporation.
  * @(#)RCSfile: dpms.c,v Revision: 1.1.4.5  (DEC) Date: 1996/03/04 15:27:00
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/dpms.c,v 3.5 1998/07/25 08:48:37 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -41,28 +41,40 @@ Equipment Corporation.
 #include "dixstruct.h"
 #include "extnsionst.h"
 #include "opaque.h"
+#define DPMS_SERVER
 #include "dpms.h"
 #include "dpmsstr.h"
-#include <stdio.h>
+#include "dpmsproc.h"
 
 static unsigned char DPMSCode;
-static int ProcDPMSDispatch(), SProcDPMSDispatch();
-static void DPMSResetProc();
-static int ProcDPMSGetVersion(), SProcDPMSGetVersion();
-static int ProcDPMSGetTimeouts(), SProcDPMSGetTimeouts();
-static int ProcDPMSSetTimeouts(), ProcDPMSSetTimeouts();
-static int ProcDPMSEnable(), ProcDPMSEnable();
-static int ProcDPMSDisable(), ProcDPMSDisable();
-static int ProcDPMSForceLevel(), ProcDPMSForceLevel();
+static DISPATCH_PROC(ProcDPMSDispatch);
+static DISPATCH_PROC(SProcDPMSDispatch);
+static DISPATCH_PROC(ProcDPMSGetVersion);
+static DISPATCH_PROC(SProcDPMSGetVersion);
+static DISPATCH_PROC(ProcDPMSGetTimeouts);
+static DISPATCH_PROC(SProcDPMSGetTimeouts);
+static DISPATCH_PROC(ProcDPMSSetTimeouts);
+static DISPATCH_PROC(SProcDPMSSetTimeouts);
+static DISPATCH_PROC(ProcDPMSEnable);
+static DISPATCH_PROC(SProcDPMSEnable);
+static DISPATCH_PROC(ProcDPMSDisable);
+static DISPATCH_PROC(SProcDPMSDisable);
+static DISPATCH_PROC(ProcDPMSForceLevel);
+static DISPATCH_PROC(SProcDPMSForceLevel);
+static DISPATCH_PROC(ProcDPMSInfo);
+static DISPATCH_PROC(SProcDPMSInfo);
+static DISPATCH_PROC(ProcDPMSCapable);
+static DISPATCH_PROC(SProcDPMSCapable);
+static void DPMSResetProc(ExtensionEntry* extEntry);
 
 void
 DPMSExtensionInit()
 {
-    ExtensionEntry *extEntry, *AddExtension();
+    ExtensionEntry *extEntry;
     
-    if (extEntry = AddExtension(DPMSExtensionName, 0, 0,
+    if ((extEntry = AddExtension(DPMSExtensionName, 0, 0,
 				ProcDPMSDispatch, SProcDPMSDispatch,
-				DPMSResetProc, StandardMinorOpcode))
+				DPMSResetProc, StandardMinorOpcode)))
 	DPMSCode = (unsigned char)extEntry->base;
     return;
 }
@@ -99,12 +111,10 @@ ProcDPMSGetVersion(client)
 }
 
 static int
-ProcDPMSCapable(client)
-    register ClientPtr client;
+ProcDPMSCapable(register ClientPtr client)
 {
     REQUEST(xDPMSCapableReq);
     xDPMSCapableReply rep;
-    register int n;
 
     REQUEST_SIZE_MATCH(xDPMSCapableReq);
 
@@ -149,7 +159,6 @@ ProcDPMSSetTimeouts(client)
     register ClientPtr client;
 {
     REQUEST(xDPMSSetTimeoutsReq);
-    register int n;
 
     REQUEST_SIZE_MATCH(xDPMSSetTimeoutsReq);
 
@@ -234,8 +243,7 @@ ProcDPMSForceLevel(client)
 }
 
 static int
-ProcDPMSInfo(client)
-    register ClientPtr client;
+ProcDPMSInfo(register ClientPtr client)
 {
     REQUEST(xDPMSInfoReq);
     xDPMSInfoReply rep;
@@ -301,8 +309,7 @@ SProcDPMSGetVersion(client)
 }
 
 static int
-SProcDPMSCapable(client)
-    register ClientPtr client;
+SProcDPMSCapable(register ClientPtr client)
 {
     REQUEST(xDPMSCapableReq);
     register int n;

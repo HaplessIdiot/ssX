@@ -45,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * This file was once on the other side of
  * the font library interface as util/fsfuncs.c.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.5 1998/10/25 12:47:58 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include "misc.h"
@@ -53,9 +53,10 @@ in this Software without prior written authorization from The Open Group.
 #include "clientstr.h"
 #define FSMD_H
 #include "FSproto.h"
+#include "difs.h"
 
-extern void TwoByteSwap();
-extern void FourByteSwap();
+extern void TwoByteSwap(unsigned char *, int);
+extern void FourByteSwap(unsigned char *, int);
 
 #define GLWIDTHBYTESPADDED(bits,nbytes) \
 	((nbytes) == 1 ? (((bits)+7)>>3)        /* pad to 1 byte */ \
@@ -72,6 +73,9 @@ extern void FourByteSwap();
                          ((pfi)->lastCol - (pfi)->firstCol + 1))
 
 static CharInfoRec  junkDefault;
+
+typedef int (*MetricsFunc)(FontPtr, unsigned long, unsigned char *, 
+			   FontEncoding, unsigned long *, CharInfoPtr *);
 
 static int
 getCharInfos (
@@ -91,8 +95,6 @@ getCharInfos (
     int         firstRow = pinfo->firstRow;
     int         lastRow = pinfo->lastRow;
     int         lastCol = pinfo->lastCol;
-    int		minCol, maxCol;
-    int         num_cols = lastCol - firstCol + 1;
     fsRange	local_range, *rp;
     int		i;
     FontEncoding    encoding;
@@ -100,7 +102,7 @@ getCharInfos (
     unsigned long   glyphCount;
     unsigned short  defaultCh;
     CharInfoPtr	    defaultPtr;
-    int (*metrics_func) ();
+    MetricsFunc	    metrics_func;
     
     /*
      * compute nchars
@@ -132,7 +134,7 @@ getCharInfos (
 	return AllocError;
 
     if (ink_metrics)
-	metrics_func = pfont->get_metrics;
+	metrics_func = (MetricsFunc)pfont->get_metrics;
     else
 	metrics_func = pfont->get_glyphs;
 
@@ -255,16 +257,16 @@ packGlyphs (
     pointer     gdata,
     gd;
     int         bitorder, byteorder, scanlinepad, scanlineunit, mappad;
-    int		height, dstbpr, charsize;
-    int		dst_off, src_off;
+    int		height = 0, dstbpr = 0, charsize = 0;
+    int		dst_off = 0, src_off;
     Bool	contiguous, reformat;
     int		nchars;
     int         src_glyph_pad = pfont->glyph;
     int         src_bit_order = pfont->bit;
     int         src_byte_order = pfont->byte;
     int         err;
-    int		max_ascent, max_descent;
-    int		min_left, max_right;
+    int		max_ascent = 0, max_descent = 0;
+    int		min_left = 0, max_right;
     int		srcbpr;
     int		lshift = 0, rshift = 0, dst_left_bytes = 0, src_left_bytes = 0;
     unsigned char   *srcp;
@@ -615,7 +617,8 @@ GetBitmaps(
     *size = 0;
     *data = (pointer) 0;
 
-    err = LoadGlyphRanges(client, pfont, TRUE, num_ranges * 2, 0, range);
+    err = LoadGlyphRanges(client, pfont, TRUE, num_ranges * 2, 0, 
+			  (fsChar2b *)range);
 
     if (err != Successful)
 	return err;

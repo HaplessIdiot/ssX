@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xauth/gethost.c,v 3.10 1998/10/04 09:40:44 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/gethost.c,v 3.11 1999/02/28 11:20:04 dawes Exp $ */
 
 /* sorry, streams support does not really work yet */
 #if defined(STREAMSCONN) && defined(SVR4)
@@ -35,7 +35,6 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xwinsock.h>
 #define EPROTOTYPE WSAEPROTOTYPE
 #endif
-#include "xauth.h"
 #include <X11/X.h>
 #include <signal.h>
 #include <setjmp.h>
@@ -117,7 +116,7 @@ char *
 get_hostname (auth)
     Xauth *auth;
 {
-    struct hostent *hp = NULL;
+    static struct hostent *hp = NULL;
 #if !defined(WIN32) && defined(X_NOT_STDC_ENV)
     char *inet_ntoa();
 #endif

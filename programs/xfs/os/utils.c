@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.7 1998/10/25 07:12:35 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.8 1999/01/31 12:22:28 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
@@ -55,6 +55,7 @@ in this Software without prior written authorization from The Open Group.
 #ifdef MEMBUG
 #include	<util/memleak/memleak.h>
 #endif
+#include	<sys/wait.h>
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
@@ -92,7 +93,6 @@ char *realloc();
 extern char *configfilename;
 char       *progname;
 Bool        CloneSelf;
-extern int  ListenPort;
 
 OldListenRec *OldListen = NULL;
 int 	     OldListenCount = 0;
@@ -221,7 +221,7 @@ void
 ProcessLSoption (char *str)
 {
     char *ptr = str;
-    char *slash, *next;
+    char *slash;
     char number[20];
     int count = 0;
     int len, i;

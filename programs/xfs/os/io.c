@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/io.c,v 3.7 1998/10/04 09:41:13 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/io.c,v 3.8 1998/10/25 07:12:35 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	<stdio.h>
@@ -64,6 +64,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"X11/Xpoll.h"
 #include	"osdep.h"
 #include	"globals.h"
+#include	"dispatch.h"
 
 #ifdef X_NOT_STDC_ENV
 extern int errno;
@@ -132,7 +133,7 @@ ReadRequest(ClientPtr client)
     int         fd = oc->fd;
     int         result,
                 gotnow,
-                needed;
+                needed = 0;
 
     if (AvailableInput) {
 	if (AvailableInput != oc) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.1.2.2 1998/01/30 07:31:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.2 1998/07/25 16:57:16 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -63,11 +63,14 @@ xf86WriteConfigFile (const char *filename, XF86ConfigPtr cptr)
 	printPointerSection (cf, cptr->conf_pointer);
 	fprintf (cf, "EndSection\n\n");
 
+	printVideoAdaptorSection (cf, cptr->conf_videoadaptor_lst);
+
 	printMonitorSection (cf, cptr->conf_monitor_lst);
 
 	printDeviceSection (cf, cptr->conf_device_lst);
 
 	printScreenSection (cf, cptr->conf_screen_lst);
 
+	fclose(cf);
 	return 1;
 }

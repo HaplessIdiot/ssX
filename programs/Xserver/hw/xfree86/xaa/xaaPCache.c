@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.13 1999/02/07 06:18:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.14 1999/03/06 13:12:48 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1040,7 +1040,7 @@ XAAInitPixmapCache(
 	infoRec->CanDoColor8x8 = TRUE;
     }
 
-    if(serverGeneration == 1) {
+    if(!infoRec->pixmapCacheInit) {
 	xf86ErrorF("\tSetting up tile and stipple cache:\n");
 	if(NumPartial) 
 	   xf86ErrorF("\t\t%i %ix%i slots\n", 
@@ -1053,9 +1053,11 @@ XAAInitPixmapCache(
     } 
 
     if(!(NumPartial | Num128 | Num256 | Num512 | NumColor | NumMono)) {
-	if(serverGeneration == 1)
+	if(!infoRec->pixmapCacheInit)
 	   xf86ErrorF("\t\tNot enough video memory for pixmap cache\n");
     } else infoRec->UsingPixmapCache = TRUE;
+
+    infoRec->pixmapCacheInit = TRUE;
 }
 
 static CARD32 StippleMasks[4] = {

@@ -1,77 +1,101 @@
 XFree86 3.9Pd (9 March 1999)
-2315. Implement backward compatibility for the server side of the VidMode
+2327. Preliminary DGA support for the mga driver (#2527, Mark Vojkovich).
+2326. Fix some DGA bugs and turn on events in the DGA compatibility code
+      (#2526, Mark Vojkovich).
+2325. Fix the memory units in the old DGA (#2525, Mark Vojkovich).
+2324. Allow drivers to limit the size of XAA offscreen pixmaps (#2524,
+      Mark Vojkovich).
+2323. Fix the problem with XAA pixmap cache messages only being printed
+      for the first screen (#2524, Mark Vojkovich).
+2322. Temporarily disable rops without a source in the s3virge driver,
+      and add the ShowCache option (#2523, Mark Vojkovich).
+2321. Add XF86Config parser for VideoAdaptor configuration (#2521,
+      Michael Schimek).
+2320. Fis Permedia DPMS bug and Permedia 2 hw cursor (#2521, Michael Schimek).
+2319. Move include/Xvlib.h to include/X11/extensions/, add missing
+      XvPortNotify, and fix Xv DDX StopVideo deficiency (#2521,
+      Michael Schimek).
+2318. More ansifications/gcc warning removal for the clients (#2520,
+      Matthieu Herrb).
+2317. Implement backward compatibility for the server side of the VidMode
       extension, which relies on the new clients informing the server of
       their version (David Dawes).
-2314. Initial conversion of the VidMode extension for 4.0 (David Bateman).
-2313. Add DPMS support to the TGA driver (#2518, Matt Grossman).
-2312. Fix a bug in xaaInitAccel.c that affects disabling offscreen pixmaps
+2316. Initial conversion of the VidMode extension for 4.0 (David Bateman).
+2315. Add DPMS support to the TGA driver (#2518, Matt Grossman).
+2314. Fix a bug in xaaInitAccel.c that affects disabling offscreen pixmaps
       (#2519, Andrew Aitchison).
-2311. Some SiS driver fixes/updates (#2517, Juanjo Santamarta).
-2310. Fix a server crash when assiging the primary device (#2516,
+2313. Some SiS driver fixes/updates (#2517, Juanjo Santamarta).
+2312. Fix a server crash when assiging the primary device (#2516,
       Alan Hourihane).
-2309. Don't save/restore the VGA colourmap in the glint driver (#2515,
+2311. Don't save/restore the VGA colourmap in the glint driver (#2515,
       Alan Hourihane).
-2308. Fix a problem of using freed data in xgc (#2512, Jeff Anton).
-2307. Make the server fail gracefully when it can't load its base modules
+2310. Fix a problem of using freed data in xgc (#2512, Jeff Anton).
+2309. Make the server fail gracefully when it can't load its base modules
       (#2511, Alan Hourihane).
-2306. Fix a global declaration clash in panoramiXprocs.c (#2510,
+2308. Fix a global declaration clash in panoramiXprocs.c (#2510,
       Alan Hourihane).
-2305. Fix installation of GLX man pages (based on #2509, Matthieu Herrb).
-2304. Update the Linux/ppc section of xfree86.cf (#2507, Gerd Knorr).
-2303. Add a fbdev module that provides a simple non-accelerated driver that
+2307. Fix installation of GLX man pages (based on #2509, Matthieu Herrb).
+2306. Update the Linux/ppc section of xfree86.cf (#2507, Gerd Knorr).
+2305. Add code to the mga driver for using the fbdevhw module (#2507, 2522,
+      Gerd Knorr).
+2304. Add a fbdev module that provides a simple non-accelerated driver that
       works on top of fbdevhw (#2507, Gerd Knorr).
-2302. Add a fbdevhw module that provides the functions needed to access
+2303. Add a fbdevhw module that provides the functions needed to access
       Linux framebuffer devices (#2507, Gerd Knorr).
-2301. Add a wrapper for mmap and munmap (#2507, Gerd Knorr).
-2300. Fix an XAA FillPoly problem that shows up with the noblank screen
+2302. Add a wrapper for mmap and munmap (#2507, Gerd Knorr).
+2301. Fix an XAA FillPoly problem that shows up with the noblank screen
       saver (#2513, Mark Vojkovich).
-2299. Fix some problems in XAA's 32->24bpp image conversion (Mark Vojkovich).
-2298. Fix padding in the xf24_32bpp layer (#2508, Mark Vojkovich).
+2300. Fix some problems in XAA's 32->24bpp image conversion (Mark Vojkovich).
+2299. Fix padding in the xf24_32bpp layer (#2508, Mark Vojkovich).
 
 XFree86 3.9Pc (2 March 1999)
-2297. Preliminary work on new DGA event support (#2506, Mark Vojkovich).
-2296. Add rewrite of s3virge driver's accel code (#2505, Mark Vojkovich,
+2298. Preliminary work on new DGA event support (#2506, Mark Vojkovich).
+2297. Add rewrite of s3virge driver's accel code (#2505, Mark Vojkovich,
       Kevin Brosius).
-2295. Remove typos and inconsistencies between the Xv manual pages and
-      the implementation (#2504, Michael Schimek).
-2294. Ansification and gcc warning elimnation in xfwp, xhost, xieperf,
+2296. Remove typos and inconsistencies between the Xv manual pages and
+      the implementation (#2504, Michael Schimek).,
+      and add the ShowCache option (#2523, Mark Vojkovich).
+2295. Ansification and gcc warning elimnation in xfwp, xhost, xieperf,
       xinit, xkbevd, xkbprint, xkbutils, xkill, xlogo (#2502, Matthieu Herrb).
-2293. Fix an MGA driver crash that shows up when running xtest (#2501
+2294. Fix an MGA driver crash that shows up when running xtest (#2501
       Alan Hourihane).
-2292. Correctly indicate when the MGA driver auto-detects SDRAM cards
+2293. Correctly indicate when the MGA driver auto-detects SDRAM cards
       (#2500, Alan Hourihane).
-2291. Add "noddc1" and "noddc2" options to the DDC layer to allow DDC to
+2292. Add "noddc1" and "noddc2" options to the DDC layer to allow DDC to
       be disabled (#2499, Alan Hourihane).
-2290. Change PsAttVal.c (Xprt/PS) so that values other then {PostScript 2}
+2291. Change PsAttVal.c (Xprt/PS) so that values other then {PostScript 2}
       can be put into xp-raw-formats-supported (#2498, Noah Roberts).
-2289. Fix a 'make includes' problem in lib/font that shows up on SVR4.
-2288. Integrate SGI's GLX and the Mesa core rendering library
+2290. Fix a 'make includes' problem in lib/font that shows up on SVR4.
+2289. Integrate SGI's GLX and the Mesa core rendering library
       (#2492, Precision Insight, SGI, Mesa).
-2287. Remove pixmaps from offscreen memory when they are used to tile
+2288. Remove pixmaps from offscreen memory when they are used to tile
       drawables that aren't in videomemory (#2497, Mark Vojkovich).
-2286. New DGA DDX layer (not finished yet) (#2495, Mark Vojkovich).
-2285. Backwards compatibility layer translating DGA 1.0 into the new DDX
+2287. New DGA DDX layer (not finished yet) (#2495, Mark Vojkovich).
+2286. Backwards compatibility layer translating DGA 1.0 into the new DDX
       (#2494, Mark Vojkovich).
-2284. Disable old DGA support in the cirrus driver (#2493, Mark Vojkovich).
-2283. Ansification and gcc warning elimnation in xclipboard, xclock, xcmsdb,
+2285. Disable old DGA support in the cirrus driver (#2493, Mark Vojkovich).
+2284. Ansification and gcc warning elimnation in xclipboard, xclock, xcmsdb,
       xconsole, xdm, xdpyinfo, xedit, xfd and xfindproxy (#2491,
       Matthieu Herrb).
-2282. Fix 8 plane TGA 8x8 pattern fill (#2490, Matt Grossman).
-2281. Fix pitch padding in the xf24_32bpp layer (#2489, 2496, Itai Nahshon).
-2280. Add DPMS support for the Cirrus Laguna chips (#2489, 2496, Itai Nahshon).
-2279. Add loader req/ref symbol lists to the cirrus module (#2489, 2496,
+2283. Fix 8 plane TGA 8x8 pattern fill (#2490, Matt Grossman).
+2282. Fix pitch padding in the xf24_32bpp layer (#2489, 2496, Itai Nahshon).
+2281. Add DPMS support for the Cirrus Laguna chips (#2489, 2496, Itai Nahshon).
+2280. Add loader req/ref symbol lists to the cirrus module (#2489, 2496,
       Itai Nahshon).
-2278. Fix cirrus display corruption with acceleration and SW cursor
+2279. Fix cirrus display corruption with acceleration and SW cursor
       (#2489, 2496, Itai Nahshon).
-2277. Add minimal 5430 support to the cirrus driver (#2489, 2496,
+2278. Add minimal 5430 support to the cirrus driver (#2489, 2496,
       Itai Nahshon).
-2276. Resync LynxOS support (#2486, Thomas Mueller).
-2275. Remove the driver for the never-released P3D chipset (#2285, Dejan Ilic).
-2274. Change xf86XVScreenInit's arguments so that it's easier to initialize
+2277. Resync LynxOS support (#2486, Thomas Mueller).
+2276. Remove the driver for the never-released P3D chipset (#2285, Dejan Ilic).
+2275. Change xf86XVScreenInit's arguments so that it's easier to initialize
       the Xv DDX when adaptors come from multiple sources (#2484,
       Mark Vojkovich).
-2273. Ansification and gcc warning elimnation in x11perf and xauth
+2274. Ansification and gcc warning elimnation in x11perf and xauth
       (#2483, Matthieu Herrb).
+2273. Fix a backing store bug in the 24/32 layer, and add a local version
+      of a 24->24bpp copy routine since the performance in cfb24 is too
+      poor (#2481, Mark Vojkovich).
 2272. Add support for setting write-combining for the frame buffer memory,
       and disabling WC for MMIO memory via the PPro/PII MTRR facility
       provided in Linux 2.2 (#2480, 2503, David Wragg).
@@ -7394,4 +7418,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.698 1999/03/06 13:12:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.699 1999/03/07 08:29:33 dawes Exp $

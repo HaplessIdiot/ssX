@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.2 1998/10/04 09:41:09 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.3 1998/10/25 07:12:23 dawes Exp $ */
 
 #include        "FS.h"
 #include        "FSproto.h"
@@ -54,9 +54,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"fontstruct.h"
 #include	"closestr.h"
 #include	"globals.h"
-
-extern void (*ReplySwapVector[NUM_PROC_VECTORS]) ();
-extern FSID FakeClientID();
+#include	"difs.h"
 
 static FontPathElementPtr *font_path_elements = (FontPathElementPtr *) 0;
 static int  num_fpes = 0;
@@ -266,8 +264,8 @@ static Bool
 do_open_font(ClientPtr client, pointer data)
 {
     FontPtr     pfont = NullFont;
-    FontPathElementPtr fpe;
-    int         err;
+    FontPathElementPtr fpe = NULL;
+    int         err = 0;
     int         i;
     char       *alias,
                *newname;
@@ -779,7 +777,7 @@ do_list_fonts_and_aliases(ClientPtr client, pointer data)
     fsListFontsReply reply;
     char	*bufptr;
     char	*bufferStart;
-    int		aliascount;
+    int		aliascount = 0;
 
     if (client->clientGone == CLIENT_GONE) {
 	if (cPtr->current.current_fpe < cPtr->num_fpes) {
@@ -1100,7 +1098,7 @@ do_list_fonts_with_info(ClientPtr client, pointer data)
     fsPropInfo *prop_info;
     int         lenpropdata;
     int         i;
-    int		aliascount;
+    int		aliascount = 0;
 
     if (client->clientGone == CLIENT_GONE) {
 	if (cPtr->current.current_fpe < cPtr->num_fpes) {
@@ -1379,80 +1377,6 @@ LoadGlyphRanges(
 	return Successful;
 }
 
-/* FIXME: this is derived from fontstruct.h; should integrate it */
-typedef int (*InitFpeFunc) (FontPathElementPtr fpe);
-typedef int (*FreeFpeFunc) (FontPathElementPtr fpe);
-typedef int (*ResetFpeFunc) (FontPathElementPtr fpe);
-typedef int (*OpenFontFunc) (
-		pointer client,
-		FontPathElementPtr fpe,
-		int flags,
-		char* name,
-		int namelen,
-		fsBitmapFormat format,
-		fsBitmapFormatMask fmask,
-		unsigned long id,
-		FontPtr* pFont,
-		char** aliasName,
-		FontPtr non_cachable_font);
-typedef int (*CloseFontFunc) (FontPathElementPtr fpe, FontPtr pFont);
-typedef int (*ListFontsFunc) (
-		pointer client,
-		FontPathElementPtr fpe,
-		char* pat,
-		int len,
-		int max,
-		FontNamesPtr names);
-
-typedef int (*StartLfwiFunc) (
-		pointer client,
-		FontPathElementPtr fpe,
-		char* pat,
-		int len,
-		int max,
-		pointer* privatep);
-
-typedef int (*NextLfwiFunc) (
-		pointer client,
-		FontPathElementPtr fpe,
-		char** name,
-		int* namelen,
-		FontInfoPtr* info,
-		int* numFonts,
-		pointer private);
-
-typedef int (*WakeupFpeFunc) (
-		FontPathElementPtr fpe,
-		unsigned long* LastSelectMask);
-
-typedef int (*ClientDiedFunc) (
-		pointer client,
-		FontPathElementPtr fpe);
-
-typedef int (*LoadGlyphsFunc) (
-		pointer client,
-		FontPtr pfont,
-		Bool range_flag,
-		unsigned int nchars,
-		int item_size,
-		unsigned char* data);
-
-typedef int (*StartLaFunc) (
-		pointer client,
-		FontPathElementPtr fpe,
-		char* pat,
-		int len,
-		int max,
-		pointer* privatep);
-
-typedef int (*NextLaFunc) (
-		pointer client,
-		FontPathElementPtr fpe,
-		char** namep,
-		int* namelenp,
-		char** resolvedp,
-		int* resolvedlenp,
-		pointer private);
 
 int
 RegisterFPEFunctions(

@@ -1,15 +1,9 @@
-/* $XConsortium: exec.c,v 1.13 94/04/17 20:24:20 rws Exp $ */
+/* $TOG: exec.c /main/14 1998/02/09 14:11:16 kaleb $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -65,8 +59,8 @@ from the X Consortium.
 #include "xmodmap.h"
 #include "wq.h"
 
-static mapping_busy_key (timeout)
-    int timeout;
+static void
+mapping_busy_key(int timeout)
 {
     int i;
     unsigned char keymap[32];
@@ -83,15 +77,15 @@ static mapping_busy_key (timeout)
 	    KeySym ks = XKeycodeToKeysym (dpy, (KeyCode) i, 0);
 	    char *cp = XKeysymToString (ks);
 	    fprintf (stderr, "    %s (keysym 0x%x, keycode %d)\n",
-		     cp ? cp : "UNNAMED", ks, i);
+		     cp ? cp : "UNNAMED", (unsigned int)ks, i);
 	}
     }
     sleep (timeout);
     return;
 }
 
-static mapping_busy_pointer (timeout)
-    int timeout;
+static void
+mapping_busy_pointer(int timeout)
 {
     int i;
     Window root, child;			/* dummy variables */
@@ -121,8 +115,8 @@ static mapping_busy_pointer (timeout)
  * and deals with retransmissions due to the keyboard being busy.
  */
 
-int UpdateModifierMapping (map)
-    XModifierKeymap *map;
+int 
+UpdateModifierMapping(XModifierKeymap *map)
 {
     int retries, timeout;
 
@@ -157,10 +151,8 @@ int UpdateModifierMapping (map)
  * AddModifier - this adds a keycode to the modifier list
  */
 
-int AddModifier (mapp, keycode, modifier)
-    XModifierKeymap **mapp;
-    KeyCode keycode;
-    int modifier;
+int 
+AddModifier(XModifierKeymap **mapp, KeyCode keycode, int modifier)
 {
     if (keycode) {
 	*mapp = XInsertModifiermapEntry (*mapp, keycode, modifier);
@@ -176,10 +168,8 @@ int AddModifier (mapp, keycode, modifier)
  * DeleteModifier - this removes a keycode from the modifier list
  */
 
-int RemoveModifier (mapp, keycode, modifier)
-    XModifierKeymap **mapp;
-    KeyCode keycode;
-    int modifier;
+int 
+RemoveModifier(XModifierKeymap **mapp, KeyCode keycode, int modifier)
 {
     if (keycode) {
 	*mapp = XDeleteModifiermapEntry (*mapp, keycode, modifier);
@@ -195,9 +185,8 @@ int RemoveModifier (mapp, keycode, modifier)
  * ClearModifier - this removes all entries from the modifier list
  */
 
-int ClearModifier (mapp, modifier)
-    XModifierKeymap **mapp;
-    int modifier;
+int 
+ClearModifier(XModifierKeymap **mapp, int modifier)
 {
     int i;
     XModifierKeymap *map = *mapp;
@@ -214,10 +203,8 @@ int ClearModifier (mapp, modifier)
 /*
  * print the contents of the map
  */
-
-PrintModifierMapping (map, fp)
-    XModifierKeymap *map;
-    FILE *fp;
+void
+PrintModifierMapping(XModifierKeymap *map, FILE *fp)
 {
     int i, k = 0;
 
@@ -244,10 +231,8 @@ PrintModifierMapping (map, fp)
     return;
 }
 
-
-PrintKeyTable (exprs, fp)
-    Bool exprs;
-    FILE *fp;
+void
+PrintKeyTable(Bool exprs, FILE *fp)
 {
     int         i;
     int min_keycode, max_keycode, keysyms_per_keycode;
@@ -289,11 +274,12 @@ PrintKeyTable (exprs, fp)
 	    else
 		s = "NoSymbol";
 	    if (!exprs)
-		fprintf (fp, "0x%04x (%s)\t", ks, s ? s : "no name");
+		fprintf (fp, "0x%04x (%s)\t", 
+			 (unsigned int)ks, s ? s : "no name");
 	    else if (s)
 		fprintf (fp, " %s", s);
 	    else
-		fprintf (fp, " 0x%04x", ks);
+		fprintf (fp, " 0x%04x", (unsigned int)ks);
 	}
 	keymap += keysyms_per_keycode;
 	fprintf (fp, "\n");
@@ -303,9 +289,8 @@ PrintKeyTable (exprs, fp)
     return;
 }
 
-
-PrintPointerMap (fp)
-    FILE *fp;
+void
+PrintPointerMap(FILE *fp)
 {
     unsigned char pmap[256];		/* there are 8 bits of buttons */
     int count, i;
@@ -329,9 +314,8 @@ PrintPointerMap (fp)
  * SetPointerMap - set the pointer map
  */
 
-int SetPointerMap (map, n)
-    unsigned char *map;
-    int n;
+int 
+SetPointerMap(unsigned char *map, int n)
 {
     unsigned char defmap[MAXBUTTONCODES];
     int j;

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.79 1999/03/02 10:41:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.80 1999/03/06 13:12:35 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -117,14 +117,10 @@ static Bool	MGAPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool	MGAScreenInit(int Index, ScreenPtr pScreen, int argc,
 			      char **argv);
 static Bool	MGAEnterVT(int scrnIndex, int flags);
+static Bool	MGAEnterVTFBDev(int scrnIndex, int flags);
 static void	MGALeaveVT(int scrnIndex, int flags);
 static Bool	MGACloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool	MGASaveScreen(ScreenPtr pScreen, Bool unblank);
-
-/* Required if the driver supports mode switching */
-static Bool	MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
-/* Required if the driver supports moving the viewport */
-static void	MGAAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 /* Optional functions */
 static void	MGAFreeScreen(int scrnIndex, int flags);
@@ -1121,7 +1117,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	pScrn->SwitchMode    = fbdevHWSwitchMode;
 	pScrn->AdjustFrame   = fbdevHWAdjustFrame;
-	pScrn->EnterVT       = fbdevHWEnterVT;
+	pScrn->EnterVT       = MGAEnterVTFBDev;
 	pScrn->LeaveVT       = fbdevHWLeaveVT;
 	pScrn->ValidMode     = fbdevHWValidMode;
     }
@@ -2011,6 +2007,8 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	fbdevHWSave(pScrn);
 	if (!fbdevHWModeInit(pScrn, pScrn->currentMode))
 	    return FALSE;
+	MGAStormSync(pScrn);
+	MGAStormEngineInit(pScrn);
     } else {
 	/* Save the current state */
 	MGASave(pScrn);
@@ -2163,6 +2161,8 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if(pMga->ShadowFB)
 	ShadowFBInit(pScreen, MGARefreshArea);
+    else
+	MGADGAInit(pScreen);
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
@@ -2197,7 +2197,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 
 /* Usually mandatory */
-static Bool
+Bool
 MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
     return MGAModeInit(xf86Screens[scrnIndex], mode);
@@ -2209,23 +2209,20 @@ MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  * displayed location in the video memory.
  */
 /* Usually mandatory */
-static void 
+void 
 MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn;
     int Base, tmp, count;
     MGAPtr pMga;
-    vgaHWPtr hwp;
 
     pScrn = xf86Screens[scrnIndex];
-    hwp = VGAHWPTR(pScrn);
     pMga = MGAPTR(pScrn);
 
-    if(pMga->ShowCache && y) {
+    if(pMga->ShowCache && y && pScrn->vtSema) {
 	int lastline = pMga->FbUsableSize / 
 		(pScrn->displayWidth * pScrn->bitsPerPixel/8);
 
-	if(lastline > 4095) lastline = 4095; /* is that right ? */
 	lastline -= pScrn->currentMode->VDisplay;
 	y += pScrn->virtualY - 1;
         if(y > lastline) y = lastline;
@@ -2272,6 +2269,16 @@ MGAEnterVT(int scrnIndex, int flags)
     return TRUE;
 }
 
+static Bool
+MGAEnterVTFBDev(int scrnIndex, int flags)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+
+    fbdevHWEnterVT(scrnIndex,flags);
+    MGAStormSync(pScrn);
+    MGAStormEngineInit(pScrn);
+    return TRUE;
+}
 
 /*
  * This is called when VT switching away from the X server.  Its job is
@@ -2323,6 +2330,8 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     	xf86DestroyCursorInfoRec(pMga->CursorInfoRec);
     if (pMga->ShadowPtr)
 	xfree(pMga->ShadowPtr);
+    if (pMga->DGAModes)
+	xfree(pMga->DGAModes);
     pScrn->vtSema = FALSE;
 
     pScreen->CloseScreen = pMga->CloseScreen;

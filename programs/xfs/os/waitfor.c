@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)waitfor.c,v 4.5 1991/06/24 11:59:20 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.7 1998/10/25 07:12:35 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.8 1999/01/31 12:22:28 dawes Exp $ */
 
 #include	<X11/Xos.h>	/* strings, time, etc */
 
@@ -60,6 +60,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"globals.h"
 #include	"X11/Xpoll.h"
 #include	"osdep.h"
+#include	"os.h"
 
 #ifdef MINIX
 #include <sys/nbio.h>
@@ -76,9 +77,6 @@ extern WorkQueuePtr workQueue;
 extern int errno;
 #endif
 
-
-extern void MakeNewConnections();
-extern void FlushAllOutput();
 
 extern fd_set WellKnownConnections;
 extern fd_set LastSelectMask;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.14 1999/01/31 12:22:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.15 1999/02/07 06:18:49 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -415,10 +415,13 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
     PixmapPtr pPix = NULL;
     int size = w * h;
     
-    if((infoRec->Flags & OFFSCREEN_PIXMAPS) && pScrn->vtSema &&
-	(depth != 1) && ((BitsPerPixel(depth) == pScrn->bitsPerPixel) || 
+    if((infoRec->Flags & OFFSCREEN_PIXMAPS) && pScrn->vtSema && (depth != 1) &&
+	((BitsPerPixel(depth) == pScrn->bitsPerPixel) || 
 		!(infoRec->Flags & OVERLAY_8_32)) && 
-	(size >= MIN_OFFPIX_SIZE)){
+	(size >= MIN_OFFPIX_SIZE) && 
+	(!infoRec->maxOffPixWidth || (w <= infoRec->maxOffPixWidth)) &&
+	(!infoRec->maxOffPixHeight || (h <= infoRec->maxOffPixHeight)) )
+    {
 
 	PixmapPtr pScreenPix;
 

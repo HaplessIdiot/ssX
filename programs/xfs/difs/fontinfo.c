@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/difs/fontinfo.c,v 1.3 1998/10/25 12:47:59 dawes Exp $ */
 
 #include        "FS.h"
 #include        "FSproto.h"
@@ -53,10 +53,9 @@ in this Software without prior written authorization from The Open Group.
 #include        "fontstruct.h"
 #include        "closestr.h"
 #include        "globals.h"
+#include	"difs.h"
 #include	<swapreq.h>
 #include	<swaprep.h>
-
-extern void (*ReplySwapVector[NUM_PROC_VECTORS]) ();
 
 extern int
 QueryBitmaps(
@@ -361,7 +360,8 @@ static Bool
 do_query_bitmaps(ClientPtr client, pointer data)
 {
     int         err;
-    unsigned long num_glyphs, data_size;
+    unsigned long num_glyphs;
+    int data_size;
     fsOffset32   *offsets;
     pointer     glyph_data;
     fsQueryXBitmaps8Reply reply;

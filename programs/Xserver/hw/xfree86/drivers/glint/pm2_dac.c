@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.9 1999/02/07 06:18:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.10 1999/02/12 22:52:04 hohndel Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -161,9 +161,11 @@ Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->glintRegs[PMVsStart >> 3] = temp2;
     pReg->glintRegs[PMVbEnd >> 3] = mode->CrtcVTotal - mode->CrtcVDisplay;
 
-    pReg->glintRegs[PMVideoControl >> 3] = 
- 	    (((mode->Flags & V_PHSYNC) ? 0x1 : 0x3) << 3) |  
- 	    (((mode->Flags & V_PVSYNC) ? 0x1 : 0x3) << 5) | 1; 
+    /* The hw cursor needs /VSYNC to recognize vert retrace. We'll stick
+       both sync lines to active low here and if needed invert them
+       using the RAMDAC's MCR below. */
+    pReg->glintRegs[PMVideoControl >> 3] =
+	(1 << 5) | (1 << 3) | 1;
 
     if (pScrn->bitsPerPixel > 8) {
 	/* When != 8bpp then we stick the RAMDAC into 64bit mode */
@@ -213,6 +215,11 @@ Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->DacRegs[PM2DACIndexMCR] = 0x02; /* 8bit DAC */
     else
         pReg->DacRegs[PM2DACIndexMCR] = 0x00; /* 6bit DAC */
+
+    if (!(mode->Flags & V_PHSYNC))
+        pReg->DacRegs[PM2DACIndexMCR] |= 0x04; /* invert hsync */
+    if (!(mode->Flags & V_PVSYNC))
+        pReg->DacRegs[PM2DACIndexMCR] |= 0x08; /* invert vsync */
 
     switch (pScrn->bitsPerPixel)
     {
@@ -423,15 +430,17 @@ Permedia2SetCursorPosition(
    int x, int y
 )
 {
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+
     x += 64;
     y += 64;
 
-    /* Output position - "only" 12 bits of location documented */
-   
-    Permedia2OutIndReg(pScrn, PM2DACCursorXLsb, 0x00, x & 0xFF);
-    Permedia2OutIndReg(pScrn, PM2DACCursorXMsb, 0x00, (x>>8) & 0x0F);
-    Permedia2OutIndReg(pScrn, PM2DACCursorYLsb, 0x00, y & 0xFF);
-    Permedia2OutIndReg(pScrn, PM2DACCursorYMsb, 0x00, (y>>8) & 0x0F);
+    /* Output position - "only" 11 bits of location documented */
+
+    GLINT_WRITE_REG(x & 0xFF,	   PM2DACCursorXLsb);
+    GLINT_WRITE_REG((x>>8) & 0x07, PM2DACCursorXMsb);
+    GLINT_WRITE_REG(y & 0xFF,	   PM2DACCursorYLsb);
+    GLINT_WRITE_REG((y>>8) & 0x07, PM2DACCursorYMsb);
 }
 
 static void

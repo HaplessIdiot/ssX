@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.31 1999/02/01 11:55:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.32 1999/03/06 13:12:35 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -150,6 +150,9 @@ typedef struct {
     int			StyleLen;
     XAAInfoRecPtr	AccelInfoRec;
     xf86CursorInfoPtr	CursorInfoRec;
+    DGAModePtr		DGAModes;
+    int			numDGAModes;
+    Bool		DGAactive;
     CARD32		*Atype;
     CARD32		*AtypeNoBLK;
     void		(*PreInit)(ScrnInfoPtr pScrn);
@@ -182,6 +185,9 @@ extern CARD32 MGAAtypeNoBLK[16];
 
 /* Prototypes */
 
+void MGAAdjustFrame(int scrnIndex, int x, int y, int flags);
+Bool MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+
 void MGAHandleColormaps(ScreenPtr pScreen, ScrnInfoPtr pScrn);
 
 void MGA2064SetupFuncs(ScrnInfoPtr pScrn);
@@ -198,5 +204,7 @@ Bool Mga24AccelInit(ScreenPtr pScreen);
 Bool Mga32AccelInit(ScreenPtr pScreen);
 
 void MGAPolyArcThinSolid(DrawablePtr, GCPtr, int, xArc*);
+
+Bool MGADGAInit(ScreenPtr pScreen);
 
 #endif

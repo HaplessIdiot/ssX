@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.4 1998/08/14 13:35:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.5 1998/09/19 12:14:43 dawes Exp $ */
 
 /*
 ** File: 
@@ -1122,6 +1122,8 @@ XvdiSetPortAttribute(
   Atom attribute,
   INT32 value
 ){
+
+    XvdiSendPortNotify(pPort, attribute, value);
 
   return 
     (* pPort->pAdaptor->ddSetPortAttribute)(client, pPort, attribute, value);

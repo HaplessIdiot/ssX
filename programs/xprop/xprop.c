@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xprop/xprop.c,v 1.4 1998/03/20 21:08:31 hohndel Exp $ */
+/* $XFree86: xc/programs/xprop/xprop.c,v 1.5 1998/10/04 09:41:43 dawes Exp $ */
 
 
 #include <X11/Xlib.h>
@@ -108,7 +108,6 @@ extern void Display_Property(thunk *, char *, char *);
 extern long Extract_Value(char **, int *, int, int);
 extern long Extract_Len_String(char **, int *, int, char **);
 extern thunk *Break_Down_Property(char *, int, char *, int);
-extern void usage(void);
 extern void grammar(void);
 extern void Parse_Format_Mapping(int *, char ***);
 extern int main(int, char **);
@@ -303,76 +302,76 @@ typedef struct _propertyRec {
     char *	dformat;
 } propertyRec;
 
-#define ARC_DFORMAT	":\n\
-\t\tarc at $0, $1\n\
-\t\tsize: $2 by $3\n\
-\t\tfrom angle $4 to angle $5\n"
+#define ARC_DFORMAT	":\n"\
+"\t\tarc at $0, $1\n"\
+"\t\tsize: $2 by $3\n"\
+"\t\tfrom angle $4 to angle $5\n"
 
-#define RECTANGLE_DFORMAT	":\n\
-\t\tupper left corner: $0, $1\n\
-\t\tsize: $2 by $3\n"
+#define RECTANGLE_DFORMAT	":\n"\
+"\t\tupper left corner: $0, $1\n"\
+"\t\tsize: $2 by $3\n"
 
-#define RGB_COLOR_MAP_DFORMAT	":\n\
-\t\tcolormap id #: $0\n\
-\t\tred-max: $1\n\
-\t\tred-mult: $2\n\
-\t\tgreen-max: $3\n\
-\t\tgreen-mult: $4\n\
-\t\tblue-max: $5\n\
-\t\tblue-mult: $6\n\
-\t\tbase-pixel: $7\n\
-\t\tvisual id #: $8\n\
-\t\tkill id #: $9\n"
+#define RGB_COLOR_MAP_DFORMAT	":\n"\
+"\t\tcolormap id #: $0\n"\
+"\t\tred-max: $1\n"\
+"\t\tred-mult: $2\n"\
+"\t\tgreen-max: $3\n"\
+"\t\tgreen-mult: $4\n"\
+"\t\tblue-max: $5\n"\
+"\t\tblue-mult: $6\n"\
+"\t\tbase-pixel: $7\n"\
+"\t\tvisual id #: $8\n"\
+"\t\tkill id #: $9\n"
 
-#define WM_HINTS_DFORMAT	":\n\
-?m0(\t\tClient accepts input or input focus: $1\n)\
-?m1(\t\tInitial state is \
-?$2=0(Don't Care State)\
-?$2=1(Normal State)\
-?$2=2(Zoomed State)\
-?$2=3(Iconic State)\
-?$2=4(Inactive State)\
-.\n)\
-?m2(\t\tbitmap id # to use for icon: $3\n)\
-?m5(\t\tbitmap id # of mask for icon: $7\n)\
-?m3(\t\twindow id # to use for icon: $4\n)\
-?m4(\t\tstarting position for icon: $5, $6\n)\
-?m6(\t\twindow id # of group leader: $8\n)\
-?m8(\t\tThe visible hint bit is set\n)"
+#define WM_HINTS_DFORMAT	":\n"\
+"?m0(\t\tClient accepts input or input focus: $1\n)"\
+"?m1(\t\tInitial state is "\
+"?$2=0(Don't Care State)"\
+"?$2=1(Normal State)"\
+"?$2=2(Zoomed State)"\
+"?$2=3(Iconic State)"\
+"?$2=4(Inactive State)"\
+".\n)"\
+"?m2(\t\tbitmap id # to use for icon: $3\n)"\
+"?m5(\t\tbitmap id # of mask for icon: $7\n)"\
+"?m3(\t\twindow id # to use for icon: $4\n)"\
+"?m4(\t\tstarting position for icon: $5, $6\n)"\
+"?m6(\t\twindow id # of group leader: $8\n)"\
+"?m8(\t\tThe visible hint bit is set\n)"
 
-#define WM_ICON_SIZE_DFORMAT	":\n\
-\t\tminimum icon size: $0 by $1\n\
-\t\tmaximum icon size: $2 by $3\n\
-\t\tincremental size change: $4 by $5\n"
+#define WM_ICON_SIZE_DFORMAT	":\n"\
+"\t\tminimum icon size: $0 by $1\n"\
+"\t\tmaximum icon size: $2 by $3\n"\
+"\t\tincremental size change: $4 by $5\n"
 
-#define WM_SIZE_HINTS_DFORMAT ":\n\
-?m0(\t\tuser specified location: $1, $2\n)\
-?m2(\t\tprogram specified location: $1, $2\n)\
-?m1(\t\tuser specified size: $3 by $4\n)\
-?m3(\t\tprogram specified size: $3 by $4\n)\
-?m4(\t\tprogram specified minimum size: $5 by $6\n)\
-?m5(\t\tprogram specified maximum size: $7 by $8\n)\
-?m6(\t\tprogram specified resize increment: $9 by $10\n)\
-?m7(\t\tprogram specified minimum aspect ratio: $11/$12\n\
-\t\tprogram specified maximum aspect ratio: $13/$14\n)\
-?m8(\t\tprogram specified base size: $15 by $16\n)\
-?m9(\t\twindow gravity: \
-?$17=0(Forget)\
-?$17=1(NorthWest)\
-?$17=2(North)\
-?$17=3(NorthEast)\
-?$17=4(West)\
-?$17=5(Center)\
-?$17=6(East)\
-?$17=7(SouthWest)\
-?$17=8(South)\
-?$17=9(SouthEast)\
-?$17=10(Static)\
-\n)"
+#define WM_SIZE_HINTS_DFORMAT ":\n"\
+"?m0(\t\tuser specified location: $1, $2\n)"\
+"?m2(\t\tprogram specified location: $1, $2\n)"\
+"?m1(\t\tuser specified size: $3 by $4\n)"\
+"?m3(\t\tprogram specified size: $3 by $4\n)"\
+"?m4(\t\tprogram specified minimum size: $5 by $6\n)"\
+"?m5(\t\tprogram specified maximum size: $7 by $8\n)"\
+"?m6(\t\tprogram specified resize increment: $9 by $10\n)"\
+"?m7(\t\tprogram specified minimum aspect ratio: $11/$12\n"\
+"\t\tprogram specified maximum aspect ratio: $13/$14\n)"\
+"?m8(\t\tprogram specified base size: $15 by $16\n)"\
+"?m9(\t\twindow gravity: "\
+"?$17=0(Forget)"\
+"?$17=1(NorthWest)"\
+"?$17=2(North)"\
+"?$17=3(NorthEast)"\
+"?$17=4(West)"\
+"?$17=5(Center)"\
+"?$17=6(East)"\
+"?$17=7(SouthWest)"\
+"?$17=8(South)"\
+"?$17=9(SouthEast)"\
+"?$17=10(Static)"\
+"\n)"
 
-#define WM_STATE_DFORMAT	 ":\n\
-\t\twindow state: ?$0=0(Withdrawn)?$0=1(Normal)?$0=3(Iconic)\n\
-\t\ticon window: $1\n"
+#define WM_STATE_DFORMAT	 ":\n"\
+"\t\twindow state: ?$0=0(Withdrawn)?$0=1(Normal)?$0=3(Iconic)\n"\
+"\t\ticon window: $1\n"
 
 propertyRec windowPropTable[] = {
     {"ARC",		XA_ARC,		"16iiccii",   ARC_DFORMAT },
@@ -414,58 +413,58 @@ propertyRec fontPropTable[] = {
 
     /* XLFD name properties */
 
-    "FOUNDRY",			0, 	 		"32a",	0,
-    "FAMILY_NAME",		XA_FAMILY_NAME,		"32a",	0,
-    "WEIGHT_NAME",		0,			"32a",	0,
-    "SLANT",			0,			"32a",	0,
-    "SETWIDTH_NAME",		0,			"32a",	0,
-    "ADD_STYLE_NAME",		0,			"32a",	0,
-    "PIXEL_SIZE",		0,			"32c",	0,
-    "POINT_SIZE",		XA_POINT_SIZE,		"32c",	0,
-    "RESOLUTION_X",		0,			"32c",	0,
-    "RESOLUTION_Y",		0,			"32c",	0,
-    "SPACING",			0,			"32a",	0,
-    "AVERAGE_WIDTH",		0,			"32c",	0,
-    "CHARSET_REGISTRY",		0,			"32a",	0,
-    "CHARSET_ENCODING",		0,			"32a",	0,
+    { "FOUNDRY",		0, 	 		"32a",	0 },
+    { "FAMILY_NAME",		XA_FAMILY_NAME,		"32a",	0 },
+    { "WEIGHT_NAME",		0,			"32a",	0 },
+    { "SLANT",			0,			"32a",	0 },
+    { "SETWIDTH_NAME",		0,			"32a",	0 },
+    { "ADD_STYLE_NAME",		0,			"32a",	0 },
+    { "PIXEL_SIZE",		0,			"32c",	0 },
+    { "POINT_SIZE",		XA_POINT_SIZE,		"32c",	0 },
+    { "RESOLUTION_X",		0,			"32c",	0 },
+    { "RESOLUTION_Y",		0,			"32c",	0 },
+    { "SPACING",		0,			"32a",	0 },
+    { "AVERAGE_WIDTH",		0,			"32c",	0 },
+    { "CHARSET_REGISTRY",	0,			"32a",	0 },
+    { "CHARSET_ENCODING",	0,			"32a",	0 },
 
     /* other font properties referenced in the XLFD */
 
-    "QUAD_WIDTH",		XA_QUAD_WIDTH,		"32i",	0,
-    "RESOLUTION",		XA_RESOLUTION,		"32c",	0,
-    "MIN_SPACE",		XA_MIN_SPACE,		"32c",	0,
-    "NORM_SPACE",		XA_NORM_SPACE,		"32c",	0,
-    "MAX_SPACE",		XA_MAX_SPACE,		"32c",	0,
-    "END_SPACE",		XA_END_SPACE,		"32c",	0,
-    "SUPERSCRIPT_X",		XA_SUPERSCRIPT_X,	"32i",	0,
-    "SUPERSCRIPT_Y",		XA_SUPERSCRIPT_Y,	"32i",	0,
-    "SUBSCRIPT_X",		XA_SUBSCRIPT_X,		"32i",	0,
-    "SUBSCRIPT_Y",		XA_SUBSCRIPT_Y,		"32i",	0,
-    "UNDERLINE_POSITION",	XA_UNDERLINE_POSITION,	"32i",	0,
-    "UNDERLINE_THICKNESS",	XA_UNDERLINE_THICKNESS,	"32i",	0,
-    "STRIKEOUT_ASCENT",		XA_STRIKEOUT_ASCENT,	"32i",	0,
-    "STRIKEOUT_DESCENT",	XA_STRIKEOUT_DESCENT,	"32i",	0,
-    "ITALIC_ANGLE",		XA_ITALIC_ANGLE,	"32i",	0,
-    "X_HEIGHT",			XA_X_HEIGHT,		"32i",	0,
-    "WEIGHT",			XA_WEIGHT,		"32i",	0,
-    "FACE_NAME",		0,			"32a",	0,
-    "COPYRIGHT",		XA_COPYRIGHT,		"32a",	0,
-    "AVG_CAPITAL_WIDTH",	0,			"32i",	0,
-    "AVG_LOWERCASE_WIDTH",	0,			"32i",	0,
-    "RELATIVE_SETWIDTH",	0,			"32c",	0,
-    "RELATIVE_WEIGHT",		0,			"32c",	0,
-    "CAP_HEIGHT",		XA_CAP_HEIGHT,		"32c",	0,
-    "SUPERSCRIPT_SIZE",		0,			"32c",	0,
-    "FIGURE_WIDTH",		0,			"32i",	0,
-    "SUBSCRIPT_SIZE",		0,			"32c",	0,
-    "SMALL_CAP_SIZE",		0,			"32i",	0,
-    "NOTICE",			XA_NOTICE,		"32a",	0,
-    "DESTINATION",		0,			"32c",	0,
+    { "QUAD_WIDTH",		XA_QUAD_WIDTH,		"32i",	0 },
+    { "RESOLUTION",		XA_RESOLUTION,		"32c",	0 },
+    { "MIN_SPACE",		XA_MIN_SPACE,		"32c",	0 },
+    { "NORM_SPACE",		XA_NORM_SPACE,		"32c",	0 },
+    { "MAX_SPACE",		XA_MAX_SPACE,		"32c",	0 },
+    { "END_SPACE",		XA_END_SPACE,		"32c",	0 },
+    { "SUPERSCRIPT_X",		XA_SUPERSCRIPT_X,	"32i",	0 },
+    { "SUPERSCRIPT_Y",		XA_SUPERSCRIPT_Y,	"32i",	0 },
+    { "SUBSCRIPT_X",		XA_SUBSCRIPT_X,		"32i",	0 },
+    { "SUBSCRIPT_Y",		XA_SUBSCRIPT_Y,		"32i",	0 },
+    { "UNDERLINE_POSITION",	XA_UNDERLINE_POSITION,	"32i",	0 },
+    { "UNDERLINE_THICKNESS",	XA_UNDERLINE_THICKNESS,	"32i",	0 },
+    { "STRIKEOUT_ASCENT",	XA_STRIKEOUT_ASCENT,	"32i",	0 },
+    { "STRIKEOUT_DESCENT",	XA_STRIKEOUT_DESCENT,	"32i",	0 },
+    { "ITALIC_ANGLE",		XA_ITALIC_ANGLE,	"32i",	0 },
+    { "X_HEIGHT",		XA_X_HEIGHT,		"32i",	0 },
+    { "WEIGHT",			XA_WEIGHT,		"32i",	0 },
+    { "FACE_NAME",		0,			"32a",	0 },
+    { "COPYRIGHT",		XA_COPYRIGHT,		"32a",	0 },
+    { "AVG_CAPITAL_WIDTH",	0,			"32i",	0 },
+    { "AVG_LOWERCASE_WIDTH",	0,			"32i",	0 },
+    { "RELATIVE_SETWIDTH",	0,			"32c",	0 },
+    { "RELATIVE_WEIGHT",	0,			"32c",	0 },
+    { "CAP_HEIGHT",		XA_CAP_HEIGHT,		"32c",	0 },
+    { "SUPERSCRIPT_SIZE",	0,			"32c",	0 },
+    { "FIGURE_WIDTH",		0,			"32i",	0 },
+    { "SUBSCRIPT_SIZE",		0,			"32c",	0 },
+    { "SMALL_CAP_SIZE",		0,			"32i",	0 },
+    { "NOTICE",			XA_NOTICE,		"32a",	0 },
+    { "DESTINATION",		0,			"32c",	0 },
 
     /* other font properties */
 
-    "FONT",			XA_FONT,		"32a",	0,
-    "FONT_NAME",		XA_FONT_NAME,		"32a",	0,
+    { "FONT",			XA_FONT,		"32a",	0 },
+    { "FONT_NAME",		XA_FONT_NAME,		"32a",	0 },
 };    
 
 static int XpropMode;
@@ -597,7 +596,7 @@ char *Format_Atom(atom)
   char *name;
   XErrorHandler handler;
 
-  if (name = GetAtomName(atom)) {
+  if ((name = GetAtomName(atom))) {
       strncpy(_formatting_buffer, name, MAXSTR);
       return(_formatting_buffer);
   }
@@ -706,7 +705,7 @@ char *Format_String(string)
 	_buf_len = MAXSTR;
 	_put_char('\"');
 
-	while (c = string++[0])
+	while ((c = string++[0]))
 	  _format_char(c);
 
 	_buf_len += 3;
@@ -1071,7 +1070,7 @@ Display_Property(thunks, dformat, format)
 {
   char c;
 
-  while (c = *(dformat++))
+  while ((c = *(dformat++)))
     switch (c) {
 	  case ')':
 	    continue;
@@ -1296,7 +1295,7 @@ char **argv;
 	  break;
       }
   Setup_Mapping();
-  if (name = getenv("XPROPFORMATS")) {
+  if ((name = getenv("XPROPFORMATS"))) {
 	  if (!(stream=fopen(name, "r")))
 	    Fatal_Error("unable to open file %s for reading.", name);
 	  Read_Mappings(stream);

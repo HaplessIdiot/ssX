@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.16 1999/02/12 22:52:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.17 1999/03/06 13:12:38 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -52,6 +52,7 @@
 
 #ifdef DPMSExtension
 #include "globals.h"
+#define DPMS_SERVER
 #include "extensions/dpms.h"
 #endif
 

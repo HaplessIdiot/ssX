@@ -23,10 +23,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.15 1998/10/04 09:41:56 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.16 1998/12/20 11:58:26 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
+#include <stdarg.h>
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
@@ -107,18 +108,36 @@ char *progName;
 
 int error_status = 0;
 
-int local_xerror();
+static int is_number(char *arg, int maximum);
+static void set_click(Display *dpy, int percent);
+static void set_bell_vol(Display *dpy, int percent);
+static void set_bell_pitch(Display *dpy, int pitch);
+static void set_bell_dur(Display *dpy, int duration);
+static void set_font_path(Display *dpy, char *path, int special, 
+			  int before, int after);
+static void set_led(Display *dpy, int led, int led_mode);
+static void set_mouse(Display *dpy, int acc_num, int acc_denom, int threshold);
+static void set_saver(Display *dpy, int mask, int value);
+static void set_repeat(Display *dpy, int key, int auto_repeat_mode);
+static void set_pixels(Display *dpy, unsigned long *pixels, caddr_t *colors, 
+		       int numpixels);
+static void set_lock(Display *dpy, Bool onoff);
+static char * on_or_off(int val, int onval, char *onstr, 
+			int offval, char *offstr, char buf[]);
+static void query(Display *dpy);
+static void usage(char *fmt, ...);
+static void error(char *message);
+static int local_xerror(Display *dpy, XErrorEvent *rep);
 
-main(argc, argv)
-int argc;
-char **argv;
+int
+main(int argc, char *argv[])
 {
 register char *arg;
 register int i;
 int percent;
 int acc_num, acc_denom, threshold;
 #ifdef DPMSExtension
-int standby_timeout, suspend_timeout, off_timeout;
+CARD16 standby_timeout, suspend_timeout, off_timeout;
 #endif
 int key, auto_repeat_mode;
 XKeyboardControl values;
@@ -377,15 +396,15 @@ for (i = 1; i < argc; ) {
 	  }
 	  arg = argv[i];
 	  if (*arg >= '0' && *arg <= '9') {
-	      sscanf(arg, "%d", &standby_timeout);
+	      sscanf(arg, "%hd", &standby_timeout);
 	      i++;
 	      arg = argv[i];
 	      if ((arg)&&(*arg >= '0' && *arg <= '9')) {
-		  sscanf(arg, "%d", &suspend_timeout);
+		  sscanf(arg, "%hd", &suspend_timeout);
 		  i++;
 		  arg = argv[i];
 		  if ((arg)&&(*arg >= '0' && *arg <= '9')) {
-		      sscanf(arg, "%d", &off_timeout);
+		      sscanf(arg, "%hd", &off_timeout);
 		      i++;
 		      arg = argv[i];
 		  }
@@ -570,7 +589,7 @@ for (i = 1; i < argc; ) {
     auto_repeat_mode = ON;
     key = ALL;          /* None specified */
     arg = argv[i];
-    if (i < argc)
+    if (i < argc) {
     if (strcmp(arg, "on") == 0) {
       i++;
     } 
@@ -610,6 +629,7 @@ for (i = 1; i < argc; ) {
     else if (is_number(arg, 255)) {
       key = atoi(arg);
       i++;
+    }
     } 
     set_repeat(dpy, key, auto_repeat_mode);
   } 
@@ -649,10 +669,8 @@ XCloseDisplay (dpy);
 exit(error_status);    /*  Done.  We can go home now.  */
 }
 
-
-is_number(arg, maximum)
-	char *arg;
-	int maximum;
+static int
+is_number(char *arg, int maximum)
 {
 	register char *p;
 
@@ -666,9 +684,8 @@ is_number(arg, maximum)
 
 /*  These next few functions do the real work (xsetting things).
  */
-set_click(dpy, percent)
-Display *dpy;
-int percent;
+static void
+set_click(Display *dpy, int percent)
 {
 XKeyboardControl values;
 XKeyboardState kbstate;
@@ -686,9 +703,8 @@ if (percent == DEFAULT_ON) {
 return;
 }
 
-set_bell_vol(dpy, percent)
-Display *dpy;
-int percent;
+static void
+set_bell_vol(Display *dpy, int percent)
 {
 XKeyboardControl values;
 XKeyboardState kbstate;
@@ -706,9 +722,8 @@ if (percent == DEFAULT_ON) {
 return;
 }
 
-set_bell_pitch(dpy, pitch)
-Display *dpy;
-int pitch;
+static void
+set_bell_pitch(Display *dpy, int pitch)
 {
 XKeyboardControl values;
 values.bell_pitch = pitch;
@@ -716,9 +731,8 @@ XChangeKeyboardControl(dpy, KBBellPitch, &values);
 return;
 }
 
-set_bell_dur(dpy, duration)
-Display *dpy;
-int duration;
+static void
+set_bell_dur(Display *dpy, int duration)
 {
 XKeyboardControl values;
 values.bell_duration = duration;
@@ -737,11 +751,8 @@ return;
  *	   1      0	FontPath := path + current
  *	   0      1	FontPath := current + path
  */
-
-set_font_path(dpy, path, special, before, after)
-    Display *dpy;
-    char *path;
-    int special, before, after;
+static void
+set_font_path(Display *dpy, char *path, int special, int before, int after)
 {
     char **directoryList = NULL; int ndirs = 0;
     char **currentList = NULL; int ncurrent = 0;
@@ -874,10 +885,8 @@ set_font_path(dpy, path, special, before, after)
     return;
 }
 
-
-set_led(dpy, led, led_mode)
-Display *dpy;
-int led, led_mode;
+static void
+set_led(Display *dpy, int led, int led_mode)
 {
   XKeyboardControl values;
   values.led_mode = led_mode;
@@ -891,9 +900,8 @@ int led, led_mode;
   return;
 }
 
-set_mouse(dpy, acc_num, acc_denom, threshold)
-Display *dpy;
-int acc_num, acc_denom, threshold;
+static void
+set_mouse(Display *dpy, int acc_num, int acc_denom, int threshold)
 {
 int do_accel = True, do_threshold = True;
 
@@ -911,9 +919,8 @@ XChangePointerControl(dpy, do_accel, do_threshold, acc_num,
 return;
 }
 
-set_saver(dpy, mask, value)
-Display *dpy;
-int mask, value;
+static void
+set_saver(Display *dpy, int mask, int value)
 {
   int timeout, interval, prefer_blank, allow_exp;
   XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, 
@@ -939,9 +946,8 @@ int mask, value;
   return;
 }
 
-set_repeat(dpy, key, auto_repeat_mode)
-Display *dpy;
-int key, auto_repeat_mode;
+static void
+set_repeat(Display *dpy, int key, int auto_repeat_mode)
 {
   XKeyboardControl values;
   values.auto_repeat_mode = auto_repeat_mode;
@@ -956,9 +962,8 @@ int key, auto_repeat_mode;
 }
 
 #ifdef XF86MISC
-set_repeatrate(dpy, delay, rate)
-Display *dpy;
-int delay, rate;
+static void 
+set_repeatrate(Display *dpy, int delay, int rate)
 {
   XF86MiscKbdSettings values;
 
@@ -970,11 +975,8 @@ int delay, rate;
 }
 #endif
 
-set_pixels(dpy, pixels, colors, numpixels)
-Display *dpy;
-unsigned long *pixels;
-caddr_t *colors;
-int numpixels;
+static void
+set_pixels(Display *dpy, unsigned long *pixels, caddr_t *colors, int numpixels)
 {
   XColor def;
   int scr = DefaultScreen (dpy);
@@ -990,7 +992,7 @@ int numpixels;
   vip = XGetVisualInfo (dpy, VisualIDMask, &viproto, &nvisuals);
   if (!vip) {
       fprintf (stderr, "%s: Can't get visual for visualID 0x%x\n",
-	       progName, viproto.visualid);
+	       progName, (unsigned int)viproto.visualid);
       return;
   }
 
@@ -1040,9 +1042,8 @@ int numpixels;
   return;
 }
 
-set_lock(dpy, onoff)
-Display *dpy;
-Bool onoff;
+static void
+set_lock(Display *dpy, Bool onoff)
 {
   XModifierKeymap *mods;
   mods = XGetModifierMapping(dpy);
@@ -1055,10 +1056,9 @@ Bool onoff;
   return;
 }
 
-char *on_or_off (val, onval, onstr, offval, offstr, buf)
-    int val, onval, offval;
-    char *onstr, *offstr;
-    char buf[];
+static char *
+on_or_off(int val, int onval, char *onstr, 
+	  int offval, char *offstr, char buf[])
 {
     if (val == onval) 
       return onstr;
@@ -1074,8 +1074,8 @@ char *on_or_off (val, onval, onstr, offval, offstr, buf)
 /*  This is the information-getting function for telling the user what the
  *  current "xsettings" are.
  */
-query(dpy)
-Display *dpy;
+static void
+query(Display *dpy)
 {
 int scr = DefaultScreen (dpy);
 XKeyboardState values;
@@ -1128,7 +1128,7 @@ printf ("allow exposures:  %s\n",
 printf ("  timeout:  %d    cycle:  %d\n", timeout, interval);
 
 printf ("Colors:\n");
-printf ("  default colormap:  0x%lx    BlackPixel:  %d    WhitePixel:  %d\n",
+printf ("  default colormap:  0x%lx    BlackPixel:  %ld    WhitePixel:  %ld\n",
 	DefaultColormap (dpy, scr), 
 	BlackPixel (dpy, scr), WhitePixel (dpy, scr));
 
@@ -1205,14 +1205,18 @@ return;
 
 /*  This is the usage function */
 
-usage (fmt, arg)
-    char *fmt;
-    char *arg;
+static void
+usage(char *fmt, ...)
 {
+    va_list ap;
+
     if (fmt) {
 	fprintf (stderr, "%s:  ", progName);
-	fprintf (stderr, fmt, arg);
+	va_start(ap, fmt);
+	vfprintf (stderr, fmt, ap);
+	va_end(ap);
 	fprintf (stderr, "\n\n");
+	
     }
 
     fprintf (stderr, "usage:  %s [-display host:dpy] option ...\n", progName);
@@ -1273,21 +1277,20 @@ usage (fmt, arg)
     exit(0);
 }
 
-error( message )
-    char *message;
+static void
+error(char *message)
 {
     fprintf( stderr, "%s: %s\n", progName, message );
     exit( 1 );
 }
 
 
-int local_xerror (dpy, rep)
-    Display *dpy;
-    XErrorEvent *rep;
+static int 
+local_xerror(Display *dpy, XErrorEvent *rep)
 {
     if (rep->request_code == X_SetFontPath && rep->error_code == BadValue) {
 	fprintf(stderr,
-		"%s:  bad font path element (#%d), possible causes are:\n",
+		"%s:  bad font path element (#%ld), possible causes are:\n",
 		progName, rep->resourceid);
 	fprintf(stderr,"    Directory does not exist or has wrong permissions\n");
 	fprintf(stderr,"    Directory missing fonts.dir\n");

@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)osglue.c,v 4.6 1991/07/09 14:07:30 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.7 1997/05/23 12:28:05 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.8 1998/10/04 09:41:14 dawes Exp $ */
 
 /*
  * this is miscellaneous OS specific stuff.
@@ -61,7 +61,6 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 Bool        drone_server = FALSE;
-extern Bool CloneSelf;
 extern char *progname;
 extern char *configfilename;
 
@@ -85,10 +84,7 @@ extern int		ListenTransCount;
 static char *catalogue_name = "all";
 
 static Bool			/* stolen from R4 Match() */
-pattern_match(pat, plen, string)
-    char       *pat;
-    int         plen;
-    char       *string;
+pattern_match(char *pat, int plen, char *string)
 {
     register int i,
                 l;
@@ -148,7 +144,7 @@ pattern_match(pat, plen, string)
     if (m < j)
 	return 0;
     l = (l + m) - j;
-    while (cp = pat[i]) {
+    while ((cp = pat[i])) {
 	if ((cp != string[l]) && (cp != XK_question))
 	    return 0;
 	l++;
@@ -158,12 +154,8 @@ pattern_match(pat, plen, string)
 }
 
 int
-ListCatalogues(pattern, patlen, maxnames, catalogues, len)
-    char       *pattern;
-    int         patlen;
-    int         maxnames;
-    char      **catalogues;
-    int        *len;
+ListCatalogues(char *pattern, int patlen, int maxnames, 
+	       char **catalogues, int *len)
 {
     int         count = 0;
     char       *catlist = NULL;
@@ -192,9 +184,7 @@ bail:
  */
 
 int
-ValidateCatalogues(num, cats)
-    int        *num;
-    char       *cats;
+ValidateCatalogues(int *num, char *cats)
 {
     char       *c = cats;
     int         i,
@@ -212,8 +202,7 @@ ValidateCatalogues(num, cats)
 }
 
 int
-SetAlternateServers(list)
-    char       *list;
+SetAlternateServers(char *list)
 {
     char       *t,
                *st;
@@ -272,8 +261,7 @@ SetAlternateServers(list)
 }
 
 int
-ListAlternateServers(svrs)
-    AlternateServerPtr *svrs;
+ListAlternateServers(AlternateServerPtr *svrs)
 {
     *svrs = alt_servers;
     return num_alts;
@@ -285,8 +273,9 @@ ListAlternateServers(svrs)
  * socket open, and sends it to itself.  the child stops listening,
  * and becomes a drone, hanging out till it loses all its clients.
  */
+
 int
-CloneMyself()
+CloneMyself(void)
 {
     int         child;
     char        old_listen_arg[256];
@@ -294,7 +283,6 @@ CloneMyself()
     int         i, j;
     int         lastfdesc;
     char	portnum[20];
-    extern int	ListenPort;
 
     assert(!drone_server);	/* a drone shouldn't hit this */
 
@@ -386,4 +374,5 @@ CloneMyself()
 	FatalError("Failed to clone self\n");
     }
     /* NOTREACHED */
+    return 0;
 }

@@ -39,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/include/misc.h,v 3.3 1998/10/25 12:48:05 dawes Exp $ */
 
 #ifndef _MISC_H_
 #define _MISC_H_
@@ -119,8 +119,10 @@ typedef unsigned long Atom;
 		 ((char *) &(dst))[1] = ((char *) &(src))[0];
 
 
+#if 0
 extern void NoopDDA(void);
 extern char *NameForAtom(Atom atom);
+#endif
 extern void BitOrderInvert(unsigned char *buf, int nbytes);
 
 

@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)os.h,v 4.2 1991/05/10 07:59:16 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/include/os.h,v 3.5 1998/10/25 07:12:31 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/os.h,v 3.6 1999/01/31 12:22:27 dawes Exp $ */
 
 #ifndef	_OS_H_
 #define	_OS_H_
@@ -75,6 +75,11 @@ typedef pointer FID;
 #define	fsrealloc(ptr, size)	FSrealloc((pointer)ptr, (unsigned long)size)
 #define	fsfree(ptr)		FSfree((pointer)ptr)
 
+extern int  ListenPort;
+extern Bool UseSyslog;
+extern Bool CloneSelf;
+extern char ErrorFile[];
+
 struct _osComm;	/* FIXME: osCommPtr */
 
 /* os/config.c */
@@ -88,6 +93,7 @@ extern	void	IgnoreClient(ClientPtr client);
 extern	void	MakeNewConnections(void);
 extern	void	ReapAnyOldClients(void);
 extern	void	ResetSockets(void);
+extern	void	CloseSockets(void);
 extern	void	StopListening(void);
 
 /* os/error.c */
@@ -109,6 +115,16 @@ extern	void	ResetOsBuffers(void);
 extern	void	WriteToClient(ClientPtr client, int count, char *buf);
 extern	void	WriteToClientUnpadded(ClientPtr client, int count, char *buf);
 
+/* os/osglue.c */
+extern int 	ListCatalogues(char *pattern, int patlen, int maxnames, char **catalogues, int *len);
+extern int 	ValidateCatalogues(int *num, char *cats);
+extern int 	SetAlternateServers(char *list);
+extern int 	ListAlternateServers(AlternateServerPtr *svrs);
+extern int 	CloneMyself(void);
+
+/* os/osinit.c */
+extern	void	OsInit(void);
+
 /* os/utils.c */
 extern	SIGVAL	AutoResetServer (int n);
 extern	SIGVAL	CleanupChild (int n);
@@ -129,6 +145,5 @@ extern	int	WaitForSomething(int *pClientsReady);
 
 extern void	SetConfigValues(void);
 
-extern int  ListAlternateServers(AlternateServerPtr *svrs);
 
 #endif				/* _OS_H_ */

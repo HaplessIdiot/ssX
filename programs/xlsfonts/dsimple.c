@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xlsfonts/dsimple.c,v 3.1 1998/03/20 21:08:27 hohndel Exp $ */
+/* $XFree86: xc/programs/xlsfonts/dsimple.c,v 3.2 1998/10/04 09:41:39 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -61,9 +61,7 @@ char *program_name = "unknown_program";
 Display *dpy;
 int screen;
 
-#if NeedFunctionPrototypes
 static void _bitmap_error(int, char *);
-#endif
 
 /*
  * Malloc: like malloc but handles out of memory using Fatal_Error.
@@ -327,9 +325,6 @@ Window Select_Window_Args(rargc, argv)
  *
  * Written by Mark Lillibridge.   Last updated 7/1/87
  */
-
-extern Display *dpy;
-extern int screen;
 
 /*
  * Resolve_Color: This routine takes a color name and returns the pixel #

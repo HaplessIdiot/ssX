@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.37 1998/12/05 14:40:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.38 1999/03/02 10:41:56 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -38,6 +38,7 @@
 #include "mipointer.h"
 
 #ifdef DPMSExtension
+#define DPMS_SERVER
 #include "extensions/dpms.h"
 #include "dpmsproc.h"
 #endif

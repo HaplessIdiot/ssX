@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.5 1999/01/26 10:40:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.6 1999/03/02 10:41:59 dawes Exp $ */
 
 #ifndef _S3V_H
 #define _S3V_H
@@ -202,6 +202,7 @@ typedef struct {
     Bool		NoAccel;
     					/* Adjust memory ras precharge */ 
 					/* timing */
+    Bool		ShowCache;
     Bool 		early_ras_precharge;
     Bool 		late_ras_precharge;
     					/* MX LCD centering		*/

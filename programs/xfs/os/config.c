@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)config.c,v 4.6 1991/07/09 14:08:09 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/config.c,v 3.5 1998/10/04 09:41:12 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/config.c,v 3.6 1998/10/25 07:12:34 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -53,6 +53,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"osdep.h"
 #include	"globals.h"
 #include	"access.h"
+#include	"difsutils.h"
 
 static char *font_catalogue = NULL;
 
@@ -172,7 +173,7 @@ static int
 parse_config(char *data)
 {
     char       *c,
-               *val,
+               *val = NULL,
                *next_eq,
                *consumed,
                *p;
@@ -435,8 +436,6 @@ config_set_int(
 {
     int         ival,
                 ret;
-    extern int  ListenPort;
-    extern void SetDefaultPointSize();
 
     val = config_parse_int(val, &ret, &ival);
     if (ret == -1)
@@ -461,9 +460,6 @@ config_set_bool(
     int
                 ret;
     Bool        bval;
-    extern int  ClientLimit;
-    extern Bool UseSyslog,
-                CloneSelf;
 
     val = config_parse_bool(val, &ret, &bval);
     if (ret == -1)
@@ -483,7 +479,6 @@ config_set_file(
     ConfigOptionPtr parm,
     char       *val)
 {
-    extern char ErrorFile[];
     char       *start = val,
                 t;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.11 1998/07/25 08:48:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.12 1999/02/28 11:19:22 dawes Exp $ */
 
 /*
 
@@ -135,8 +135,9 @@ ProcXF86DGAGetVideoLL(ClientPtr client)
     rep.offset = (CARD32)device.data;
     rep.width = device.mode.bytesPerScanline / 
 		(device.mode.bitsPerPixel >> 3);
-    rep.bank_size = rep.ram_size = 
-		device.mode.bytesPerScanline * device.mode.imageHeight;
+    rep.bank_size = device.mode.bytesPerScanline * device.mode.imageHeight;
+    rep.bank_size = (rep.bank_size + 1023) & ~1023;
+    rep.ram_size = rep.bank_size >> 10;
 
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);

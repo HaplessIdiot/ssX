@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/events.c,v 3.3 1998/10/25 07:12:22 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/events.c,v 3.4 1998/12/20 11:58:16 dawes Exp $ */
 
 #include	<swaprep.h>
 
@@ -50,8 +50,9 @@ in this Software without prior written authorization from The Open Group.
 #include	"FSproto.h"
 #include	"globals.h"
 #include	"fsevents.h"
+#include	"dispatch.h"
+#include	"difs.h"
 
-extern void (*EventSwapVector[NUM_EVENT_VECTORS]) ();
 
 static Mask lastEventMask = FontChangeNotifyMask;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.23 1999/01/13 08:30:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.24 1999/01/26 10:40:07 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -95,6 +95,7 @@ SOFTWARE.
 #endif
 
 #ifdef DPMSExtension
+#define DPMS_SERVER
 #include "dpms.h"
 #endif
 

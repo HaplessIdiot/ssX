@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/xfs/include/difsutils.h,v 1.1 1998/10/25 07:12:29 dawes Exp $
  */
 
 /************************************************************
@@ -48,7 +48,9 @@ extern Bool RegisterBlockAndWakeupHandlers (DifsBlockFunc blockHandler, DifsWake
 extern Bool ValidHost (HostList list, HostAddress *addr);
 extern Bool XpClientIsBitmapClient (ClientPtr client);
 extern Bool XpClientIsPrintClient (ClientPtr client, FontPathElementPtr fpe);
+#if 0
 extern FontResolutionPtr GetClientResolutions (int *num);
+#endif
 extern int AddHost (HostList *list, HostAddress *addr);
 extern int GetDefaultPointSize (void);
 extern int RemoveHost (HostList *list, HostAddress *addr);

@@ -1,14 +1,9 @@
-/* $XConsortium: choose.c,v 1.24 95/05/24 20:43:29 mor Exp $ */
+/* $TOG: choose.c /main/26 1998/02/09 14:13:08 kaleb $ */
 /******************************************************************************
 
-Copyright (c) 1993  X Consortium
+Copyright 1993, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,18 +11,19 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
 
 #include "xsm.h"
 #include "saveutil.h"
 #include "lock.h"
+#include "choose.h"
 #include <sys/types.h>
 
 #include <X11/Shell.h>
@@ -72,13 +68,8 @@ Widget chooseSessionCancelButton;
 
 
 int
-GetSessionNames (count_ret, short_names_ret, long_names_ret, locked_ret)
-
-int *count_ret;
-String **short_names_ret;
-String **long_names_ret;
-Bool **locked_ret;
-
+GetSessionNames(int *count_ret, String **short_names_ret, 
+		String **long_names_ret, Bool **locked_ret)
 {
     DIR *dir;
     struct dirent *entry;
@@ -133,7 +124,7 @@ Bool **locked_ret;
 	{
 	    char *name = (char *) entry->d_name + 5;
 	    char *id = NULL;
-	    Bool locked = CheckSessionLocked (name, long_names_ret, &id);
+	    Bool locked = CheckSessionLocked (name, long_names_ret!=NULL, &id);
 
 	    (*short_names_ret)[*count_ret] = XtNewString (name);
 	    (*locked_ret)[*count_ret] = locked;
@@ -175,13 +166,8 @@ Bool **locked_ret;
 
 
 void
-FreeSessionNames (count, namesShort, namesLong, lockFlags)
-
-int count;
-String *namesShort;
-String *namesLong;
-Bool *lockFlags;
-
+FreeSessionNames(int count, String *namesShort, String *namesLong, 
+		 Bool *lockFlags)
 {
     int i;
 
@@ -203,11 +189,7 @@ Bool *lockFlags;
 
 
 static void
-SessionSelected (number, highlight)
-
-int number;
-Bool highlight;
-
+SessionSelected(int number, Bool highlight)
 {
     if (number >= 0)
     {
@@ -231,11 +213,7 @@ Bool highlight;
 
 
 static void
-AddSessionNames (count, names)
-
-int count;
-String *names;
-
+AddSessionNames(int count, String *names)
 {
     int i;
 
@@ -255,13 +233,9 @@ String *names;
 
 
 void
-ChooseWindowStructureNotifyXtHandler (w, closure, event, continue_to_dispatch)
-
-Widget w;
-XtPointer closure;
-XEvent *event;
-Boolean *continue_to_dispatch;
-
+ChooseWindowStructureNotifyXtHandler(Widget w, XtPointer closure, 
+				     XEvent *event, 
+				     Boolean *continue_to_dispatch)
 {
     if (event->type == MapNotify)
     {
@@ -285,8 +259,7 @@ Boolean *continue_to_dispatch;
 
 
 void
-ChooseSession ()
-
+ChooseSession(void)
 {
     Dimension   width, height;
     Position	x, y;
@@ -349,8 +322,7 @@ ChooseSession ()
 
 
 static void
-CheckDeleteCancel ()
-
+CheckDeleteCancel (void)
 {
     if (delete_session_phase > 0)
     {
@@ -364,8 +336,7 @@ CheckDeleteCancel ()
 
 
 static void
-CheckBreakLockCancel ()
-
+CheckBreakLockCancel(void)
 {
     if (break_lock_phase > 0)
     {
@@ -380,13 +351,7 @@ CheckBreakLockCancel ()
 
 
 static void
-ChooseSessionUp (w, event, params, numParams)
-
-Widget w;
-XEvent *event;
-String *params;
-Cardinal *numParams;
-
+ChooseSessionUp(Widget w, XEvent *event, String *params, Cardinal *numParams)
 {
     XawListReturnStruct *current;
     
@@ -401,13 +366,7 @@ Cardinal *numParams;
 
 
 static void
-ChooseSessionDown (w, event, params, numParams)
-
-Widget w;
-XEvent *event;
-String *params;
-Cardinal *numParams;
-
+ChooseSessionDown(Widget w, XEvent *event, String *params, Cardinal *numParams)
 {
     XawListReturnStruct *current;
     
@@ -423,13 +382,8 @@ Cardinal *numParams;
 
 
 static void
-ChooseSessionBtn1Down (w, event, params, numParams)
-
-Widget w;
-XEvent *event;
-String *params;
-Cardinal *numParams;
-
+ChooseSessionBtn1Down(Widget w, XEvent *event, String *params, 
+		      Cardinal *numParams)
 {
     XawListReturnStruct *current;
 
@@ -444,12 +398,7 @@ Cardinal *numParams;
 
 
 static void
-ChooseSessionLoadXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+ChooseSessionLoadXtProc(Widget w, XtPointer client_data, XtPointer callData)
 {
     XawListReturnStruct *current;
 
@@ -462,7 +411,11 @@ XtPointer 	callData;
     {
 	if (current)
 	    XtFree ((char *) current);
+#ifdef XKB
+	XkbStdBell(XtDisplay(topLevel),XtWindow(topLevel),0,XkbBI_BadValue);
+#else
 	XBell (XtDisplay (topLevel), 0);
+#endif
 	return;
     }
 
@@ -494,12 +447,7 @@ XtPointer 	callData;
 
 
 static void
-ChooseSessionDeleteXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+ChooseSessionDeleteXtProc(Widget w, XtPointer client_data, XtPointer callData)
 {
     XawListReturnStruct *current;
     int longest;
@@ -513,7 +461,11 @@ XtPointer 	callData;
     {
 	if (current)
 	    XtFree ((char *) current);
+#ifdef XKB
+	XkbStdBell(XtDisplay(w),XtWindow(w),0,XkbBI_BadValue);
+#else
 	XBell (XtDisplay (topLevel), 0);
+#endif
 	return;
     }
 
@@ -525,7 +477,11 @@ XtPointer 	callData;
 	    XtNforeground, save_message_foreground,
             NULL);
 
+#ifdef XKB
+	XkbStdBell(XtDisplay(w),XtWindow(w),0,XkbBI_BadValue);
+#else
 	XBell (XtDisplay (topLevel), 0);
+#endif
     }
     else
     {
@@ -585,12 +541,8 @@ XtPointer 	callData;
 
 
 static void
-ChooseSessionBreakLockXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+ChooseSessionBreakLockXtProc(Widget w, XtPointer client_data, 
+			     XtPointer callData)
 {
     XawListReturnStruct *current;
     char *name;
@@ -603,7 +555,11 @@ XtPointer 	callData;
     {
 	if (current)
 	    XtFree ((char *) current);
+#ifdef XKB
+	XkbStdBell(XtDisplay(topLevel),XtWindow(topLevel),0,XkbBI_BadValue);
+#else
 	XBell (XtDisplay (topLevel), 0);
+#endif
 	return;
     }
 
@@ -615,7 +571,11 @@ XtPointer 	callData;
 	    XtNforeground, save_message_foreground,
             NULL);
 
+#ifdef XKB
+	XkbStdBell(XtDisplay(topLevel),XtWindow(topLevel),0,XkbBI_BadValue);
+#else
 	XBell (XtDisplay (topLevel), 0);
+#endif
     }
     else
     {
@@ -655,12 +615,8 @@ XtPointer 	callData;
 
 
 static void
-ChooseSessionFailSafeXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+ChooseSessionFailSafeXtProc(Widget w, XtPointer client_data, 
+			    XtPointer callData)
 {
     /*
      * Pop down choice of sessions, and start the fail safe session.
@@ -694,12 +650,7 @@ XtPointer 	callData;
 
 
 static void
-ChooseSessionCancelXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+ChooseSessionCancelXtProc(Widget w, XtPointer client_data, XtPointer callData)
 {
     if (delete_session_phase > 0 || break_lock_phase > 0)
     {
@@ -717,7 +668,7 @@ XtPointer 	callData;
 
 
 void
-create_choose_session_popup ()
+create_choose_session_popup(void)
 
 {
     static XtActionsRec choose_actions[] = {

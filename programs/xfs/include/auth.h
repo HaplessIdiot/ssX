@@ -43,13 +43,11 @@ in this Software without prior written authorization from The Open Group.
  * @(#)auth.h	4.1	91/05/02
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/include/auth.h,v 1.3 1998/10/25 12:48:02 dawes Exp $ */
 
 #ifndef _AUTH_H_
 #define _AUTH_H_
 
 typedef struct	_authcontext	*AuthContextPtr;
-
-extern AuthContextPtr GetClientAuthorization(void);
 
 #endif				/* _AUTH_H_ */

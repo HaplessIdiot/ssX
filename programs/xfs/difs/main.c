@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/main.c,v 3.1 1998/10/04 09:41:09 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/main.c,v 3.2 1998/12/20 11:58:17 dawes Exp $ */
 
 #include	"FS.h"
 #include	"FSproto.h"
@@ -53,6 +53,9 @@ in this Software without prior written authorization from The Open Group.
 #include	"servermd.h"
 #include	"cache.h"
 #include	"site.h"
+#include	"dispatch.h"
+#include	"extentst.h"
+#include	"difs.h"
 
 char       *ConnectionInfo;
 int         ConnInfoLen;
@@ -65,24 +68,16 @@ Cache       serverCache;
 
 #define	SERVER_CACHE_SIZE	10000	/* for random server cacheables */
 
-extern void InitProcVectors();
-extern void InitFonts();
-extern void InitAtoms();
-extern void InitExtensions();
-extern void ProcessCmdLine();
-static Bool create_connection_block();
+static Bool create_connection_block(void);
 
-extern ClientPtr currentClient;
 char       *configfilename;
 extern Bool drone_server;
 
 extern OldListenRec *OldListen;
 extern int 	     OldListenCount;
 
-
-main(argc, argv)
-    int         argc;
-    char      **argv;
+int
+main(int argc, char *argv[])
 {
     int         i;
 
@@ -167,14 +162,14 @@ main(argc, argv)
 }
 
 void
-NotImplemented()
+NotImplemented(void)
 {
     NoopDDA();			/* dummy to get difsutils.o to link */
     FatalError("Not implemented\n");
 }
 
 static Bool
-create_connection_block()
+create_connection_block(void)
 {
     fsConnSetupAccept setup;
     char       *pBuf;

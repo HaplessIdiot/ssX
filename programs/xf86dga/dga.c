@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.14 1996/10/18 15:05:41 dawes Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.15 1997/11/08 16:24:37 hohndel Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Intrinsic.h>
@@ -27,8 +27,8 @@
 
 /* copied from xf86Io.c */
 #if !defined(AMOEBA) && !defined(MINIX)
-int
-GetTimeInMillis()
+static int
+GetTimeInMillis(void)
 {
     struct timeval  tp;
 
@@ -37,7 +37,7 @@ GetTimeInMillis()
 }
 #endif /* !AMOEBA && !MINIX */
 
-
+int
 main(int argc, char *argv[])
 {
     int MajorVersion, MinorVersion;
@@ -49,8 +49,6 @@ main(int argc, char *argv[])
     XEvent event;
     Colormap cmap;
     Visual *vis;
-    Window root;
-    XSetWindowAttributes xswa;
 
     if (geteuid()) {
 	fprintf(stderr, "Must be suid root\n");
@@ -131,7 +129,7 @@ main(int argc, char *argv[])
     */
 
    XF86DGAGetVideo(dis, DefaultScreen(dis), &addr, &width, &bank, &ram);
-   fprintf(stderr, "%x addr:0x%X, width %d, bank size %d, depth %d planes\n", True,
+   fprintf(stderr, "%x addr:%p, width %d, bank size %d, depth %d planes\n", True,
 	   addr, width, bank, bpp);
 
    XF86DGADirectVideo(dis, DefaultScreen(dis),
@@ -165,6 +163,7 @@ main(int argc, char *argv[])
       char buf[21];
       KeySym ks = 0;
       
+      i = 0;
       XNextEvent(dis, &event);
       switch (event.type) {
        case KeyPress:
@@ -203,7 +202,7 @@ main(int argc, char *argv[])
 		    (size * 1000 * cycles) / diff_clock);
 
 	    /* get read timings */
-	    if (membuf=malloc(size*1024))
+	    if ((membuf=malloc(size*1024)))
 	    {
 		XF86DGASetVidPage(dis, DefaultScreen(dis), i);
 
@@ -271,6 +270,7 @@ main(int argc, char *argv[])
    XUngrabPointer(dis, CurrentTime);
    XUngrabKeyboard(dis, CurrentTime);
    fprintf(stderr, "Thats all folks\n");
+   exit(0);
 }
 
 

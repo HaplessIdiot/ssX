@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.4 1999/01/12 06:24:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.5 1999/02/12 22:52:10 hohndel Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -158,6 +158,28 @@ typedef struct
 }
 XF86ConfModeLineRec, *XF86ConfModeLinePtr;
 
+typedef struct
+{
+	GenericListRec list;
+	char *vp_identifier;
+	XF86OptionPtr vp_option_lst;
+}
+XF86ConfVideoPortRec, *XF86ConfVideoPortPtr;
+
+typedef struct
+{
+	GenericListRec list;
+	char *va_identifier;
+	char *va_vendor;
+	char *va_board;
+	char *va_busid;
+	char *va_driver;
+	XF86OptionPtr va_option_lst;
+	XF86ConfVideoPortPtr va_port_lst;
+	char *va_fwdref;
+}
+XF86ConfVideoAdaptorRec, *XF86ConfVideoAdaptorPtr;
+
 #define CONF_MAX_HSYNC 8
 #define CONF_MAX_VREFRESH 8
 
@@ -255,6 +277,14 @@ XF86ConfFlagsRec, *XF86ConfFlagsPtr;
 typedef struct
 {
 	GenericListRec list;
+	char *al_adaptor_str;
+	XF86ConfVideoAdaptorPtr al_adaptor;
+}
+XF86ConfAdaptorLinkRec, *XF86ConfAdaptorLinkPtr;
+
+typedef struct
+{
+	GenericListRec list;
 	char *scrn_identifier;
 	char *scrn_obso_driver;
 	int scrn_defaultdepth;
@@ -264,6 +294,7 @@ typedef struct
 	XF86ConfMonitorPtr scrn_monitor;
 	char *scrn_device_str;
 	XF86ConfDevicePtr scrn_device;
+	XF86ConfAdaptorLinkPtr scrn_adaptor_lst;
 	XF86ConfDisplayPtr scrn_display_lst;
 	XF86OptionPtr scrn_option_lst;
 }
@@ -318,6 +349,7 @@ typedef struct
 	XF86ConfFlagsPtr conf_flags;
 	XF86ConfKeyboardPtr conf_keyboard;
 	XF86ConfPointerPtr conf_pointer;
+	XF86ConfVideoAdaptorPtr conf_videoadaptor_lst;
 	XF86ConfMonitorPtr conf_monitor_lst;
 	XF86ConfDevicePtr conf_device_lst;
 	XF86ConfScreenPtr conf_screen_lst;

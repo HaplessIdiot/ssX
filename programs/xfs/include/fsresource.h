@@ -48,7 +48,7 @@ in this Software without prior written authorization from the X Consortium.
  * @(#)resource.h	4.1	91/05/02
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/include/fsresource.h,v 1.3 1998/10/25 12:48:04 dawes Exp $ */
 
 #ifndef _RESOURCE_H_
 #define _RESOURCE_H_
@@ -93,5 +93,6 @@ extern pointer LookupIDByType(int cid, FSID id, RESTYPE rtype);
 extern void FreeAllResources(void);
 extern void FreeClientResources(ClientPtr client);
 extern void FreeResource(int cid, FSID id, RESTYPE skipDeleteFuncType);
+int NoneDeleteFunc (void *ptr, FSID id);
 
 #endif				/* _RESOURCE_H_ */

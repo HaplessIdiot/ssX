@@ -519,7 +519,7 @@ XImage *ReadAreaToImage(disp, srcRootWinid, x, y, width, height,
     image_region_type	*reg;
     XRectangle		bbox;		/* bounding box of grabbed area */
     int 		depth ;
-    XImage		*ximage, *ximage_ipm ;
+    XImage		*ximage, *ximage_ipm = NULL;
     Visual		fakeVis ;
     int 	x1, y1;
     XImage	*image;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.19 1999/02/07 06:18:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.20 1999/02/13 08:00:02 hohndel Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -1204,6 +1204,9 @@ typedef struct _XAAInfoRec {
    unsigned int FullPlanemask;
 
    PixmapLinkPtr OffscreenPixmaps;
+   int maxOffPixWidth;
+   int maxOffPixHeight;   
+
    XAACacheInfoRec ScratchCacheInfoRec;
 
    BoxPtr ClipBox;
@@ -1219,6 +1222,8 @@ typedef struct _XAAInfoRec {
    CopyWindowProcPtr CopyWindow;
    BackingStoreSaveAreasProcPtr SaveAreas;
    BackingStoreRestoreAreasProcPtr RestoreAreas;
+
+   Bool pixmapCacheInit;  /* private flag */
 
 } XAAInfoRec, *XAAInfoRecPtr;
 

@@ -1426,5 +1426,13 @@ void DisableClipping (ScrnInfoPtr pScrn)
    manager has been initialized and when the LINEAR_FRAMEBUFFER flag is
    also set.
 
+   int maxOffPixWidth
+   int maxOffPixHeight
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.8 1998/12/06 06:08:38 dawes Exp $
+       These two fields allow the driver to limit the maximum dimensions
+     of an offscreen pixmap.  If one of these is not set, it is assumed
+     that there is no limit on that dimension.  Note that if an offscreen
+     pixmap with a particular dimension is allowed, then your driver will be
+     expected to render primitives as large as that pixmap.  
+
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.9 1999/01/31 12:22:09 dawes Exp $

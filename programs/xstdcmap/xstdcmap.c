@@ -1,15 +1,10 @@
 /*
- * $XConsortium: xstdcmap.c,v 1.10 94/04/17 20:38:44 hersh Exp $
+ * $TOG: xstdcmap.c /main/11 1998/02/09 14:16:26 kaleb $
  *
  * 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Donna Converse, MIT X Consortium
  */
@@ -36,7 +31,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xatom.h>
 #include <X11/Xmu/StdCmap.h>
 
+#ifdef X_NOT_STDC_ENV
 extern void exit();
+#endif
 
 #define REPLACE		1
 #define DO_NOT_REPLACE  0
@@ -108,9 +105,10 @@ static XrmOptionDescRec optionTable[]=
 };
 #define NOPTIONS (sizeof optionTable / sizeof optionTable[0])
 
-static void parse(argc, argv)
-    int		argc;
-    char	**argv;
+static void usage(Status status);
+
+static void 
+parse(int argc, char **argv)
 {
     XrmDatabase		database = NULL;
     char		*type;
@@ -180,16 +178,16 @@ static void parse(argc, argv)
 	verbose++;
 }
 
-Exit(status)
-    Status	status;
+static void
+Exit(Status status)
 {
     if (dpy)
 	XCloseDisplay(dpy);
     exit(status);
 }
 
-usage(status)
-    Status		status;
+static void
+usage(Status status)
 {
     register char	**i;
     (void) fprintf(stderr, "usage:  %s [-options]\n\n", program_name);
@@ -202,10 +200,10 @@ usage(status)
 /* Determine the visual of greatest depth in a given visual class.
  * If no such visual exists, return NULL.  
  */
-static XVisualInfo *getDeepestVisual(visual_class, vinfo, nvisuals)
-    int		visual_class;	/* specifies the desired visual class */
-    XVisualInfo	*vinfo;		/* specifies all visuals for a screen */
-    int		nvisuals;	/* specifies number of visuals in the list */
+static XVisualInfo *
+getDeepestVisual(int visual_class,   /* specifies the desired visual class */
+		 XVisualInfo *vinfo, /* specifies all visuals for a screen */
+		 int nvisuals)	/* specifies number of visuals in the list */
 {
     register int	i;
     unsigned int	maxdepth = 0;
@@ -223,10 +221,10 @@ static XVisualInfo *getDeepestVisual(visual_class, vinfo, nvisuals)
 /* Determine the ``best'' visual of the screen for a standard colormap
  * property.  Return NULL if no visual is appropriate.
  */
-static XVisualInfo *getBestVisual(property, vinfo, nvisuals)
-    Atom	property;	/* specifies the standard colormap */
-    XVisualInfo *vinfo;		/* specifies all visuals of the screen */
-    int		nvisuals;	/* specifies number of visuals of screen */
+static XVisualInfo *
+getBestVisual(Atom property,	/* specifies the standard colormap */
+	      XVisualInfo *vinfo, /* specifies all visuals of the screen */
+	      int nvisuals)	/* specifies number of visuals of screen */
 {	
     XVisualInfo	*v1 = NULL, *v2 = NULL;
 
@@ -254,8 +252,8 @@ static XVisualInfo *getBestVisual(property, vinfo, nvisuals)
 
 }
 
-static char *visualStringFromClass(class)
-    int	class;
+static char *
+visualStringFromClass(int class)
 {
     switch (class) {
       case PseudoColor: return "PseudoColor";
@@ -268,10 +266,11 @@ static char *visualStringFromClass(class)
     return "unknown visual class";
 }
 
-static int doIndividualColormaps()
+static int 
+doIndividualColormaps(void)
 {
     int			i, screen, nvisuals;
-    Status		status;
+    Status		status = -1;
     XVisualInfo		*vinfo = NULL, *v = NULL, template;
     
     screen = DefaultScreen(dpy);
@@ -326,13 +325,12 @@ static int doIndividualColormaps()
 }
 
 /* Bare bones standard colormap generation utility */
-main(argc, argv)
-    int		argc;
-    char	**argv;
+int
+main(int argc, char *argv[])
 {
     Status	status = 0;
 
-    if (program_name = strrchr(*argv, '/'))
+    if ((program_name = strrchr(*argv, '/')))
 	program_name++;
     else
 	program_name = *argv;
@@ -366,5 +364,5 @@ main(argc, argv)
 	    (void) fprintf(stderr, 
 		    "Not all new colormap definitions will be retained.\n");
     }
-    Exit((status == 0) ? 1 : 0);
+    exit((status == 0) ? 1 : 0);
 }
