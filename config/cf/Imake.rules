@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules,v 1.197.1.1 95/06/19 18:01:48 gildea Exp $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.17 1995/07/12 15:27:17 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.18 1995/07/22 09:39:32 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -432,7 +432,7 @@ clean clean.tc::							@@\
 
 #ifndef BuildIncludesTop
 #define BuildIncludesTop(srclist)					@@\
-includes::								@@\
+includes:: srclist							@@\
 	MakeDir($(BUILDINCDIR))						@@\
 	@(set -x; cd $(BUILDINCDIR); for i in srclist; do \		@@\
 		RemoveFile($$i); \					@@\
@@ -442,7 +442,7 @@ includes::								@@\
 
 #ifndef BuildIncludes
 #define BuildIncludes(srclist,dstsubdir,dstupdir)			@@\
-includes::								@@\
+includes:: srclist							@@\
 	MakeDir($(BUILDINCDIR)/dstsubdir)				@@\
 	@(set -x; cd $(BUILDINCDIR)/dstsubdir; for i in srclist; do \	@@\
 		RemoveFile($$i); \					@@\
