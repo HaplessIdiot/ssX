@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.19 2001/04/05 17:42:27 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.20 2001/11/06 16:11:36 alanh Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -1343,7 +1343,7 @@ ScaleBitmap(FontPtr pFont, CharInfoPtr opci, CharInfoPtr pci,
 		thisrow = diffusion_workspace + 1;
 		nextrow = diffusion_workspace + newWidth + 3;
      } else {
-  printf(stderr, "Warning: Couldn't allocate character grayscale (%d)\n", (width + 1) * (height + 1));
+  fprintf(stderr, "Warning: Couldn't allocate character grayscale (%d)\n", (width + 1) * (height + 1));
 	    }
 	}
     }
