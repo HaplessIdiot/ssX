@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.25 2003/07/20 16:12:20 tsi Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.26 2003/07/27 14:05:45 herrb Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS
@@ -671,6 +671,7 @@ get_hostname(XHostAddress *ha)
 	int saddrlen;
 
 	inetname[0] = '\0';
+	memset(&saddr, 0, sizeof saddr);
 	if (ha->family == FamilyInternet) {
 	    struct sockaddr_in *sin = (struct sockaddr_in *) &saddr;
 #ifdef BSD44SOCKETS
