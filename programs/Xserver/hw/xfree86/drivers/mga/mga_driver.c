@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.192 2001/03/21 17:02:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.193 2001/04/05 17:42:32 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1371,6 +1371,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     /* Process the options */
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, MGAOptions);
 
+#if !defined(__powerpc__)
     pMga->softbooted = FALSE;
     if (xf86ReturnOptValBool(MGAOptions, OPTION_INT10, FALSE) &&
         xf86LoadSubModule(pScrn, "int10")) {
@@ -1381,6 +1382,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	if (pInt) pMga->softbooted = TRUE;
         xf86FreeInt10(pInt);
     }
+#endif
 
     /* Set the bits per RGB for 8bpp mode */
     if (pScrn->depth == 8)
@@ -1645,6 +1647,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
 	       (unsigned long)pMga->FbAddress);
 
+#if !defined(__powerpc__)
     if (pMga->device->IOBase != 0) {
 	/* Require that the config file value matches one of the PCI values. */
 	if (!xf86CheckPciMemBase(pMga->PciInfo, pMga->device->IOBase)) {
@@ -1670,6 +1673,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     }
+#else
+    pMga->IOAddress = pMga->PciInfo->memBase[0];
+#endif
     xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
 	       (unsigned long)pMga->IOAddress);
 
@@ -1685,6 +1691,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
 
+#if !defined(__powerpc__)
     /*
      * Find the BIOS base.  Get it from the PCI config if possible.  Otherwise
      * use the VGA default.  Allow the config file to override this.
@@ -1725,6 +1732,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
 		   "MGABios.RamdacType = 0x%x\n", pMga->Bios.RamdacType);
+#endif /* !__powerpc__ */
 
     /* HW bpp matches reported bpp */
     pMga->HwBpp = pScrn->bitsPerPixel;
@@ -1818,6 +1826,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      */
     (*pMga->PreInit)(pScrn);
 
+#if !defined(__powerpc__)
     /* Load DDC if we have the code to use it */
     /* This gives us DDC1 */
     if (pMga->ddc1Read || pMga->i2cInit) {
@@ -1847,6 +1856,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Read and print the Monitor DDC info */
     pScrn->monitor->DDC = MGAdoDDC(pScrn);
+#endif /* !__powerpc__ */
 
     /*
      * If the driver can do gamma correction, it should call xf86SetGamma()

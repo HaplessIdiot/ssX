@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.11 2000/12/01 14:29:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.14 2001/03/21 17:02:26 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -26,7 +26,22 @@
   voodoo5 and 2048 on voodoo3/4 applies.
 */
 
-void TDFXSendNOPFifo3D(ScrnInfoPtr pScrn)
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+void TDFXWriteFifo_24(TDFXPtr pTDFX, int val) {
+  *pTDFX->fifoPtr++ = val;
+}
+ 
+void TDFXWriteFifo_16(TDFXPtr pTDFX, int val) {
+  *pTDFX->fifoPtr++ = BE_WSWAP32(val);
+}
+
+void TDFXWriteFifo_8(TDFXPtr pTDFX, int val) {
+  *pTDFX->fifoPtr++ = BE_BSWAP32(val);
+}
+#endif
+
+
+static void TDFXSendNOPFifo3D(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
 
@@ -36,7 +51,7 @@ void TDFXSendNOPFifo3D(ScrnInfoPtr pScrn)
   WRITE_FIFO(pTDFX, 0, 0);
 }
 
-void TDFXSendNOPFifo2D(ScrnInfoPtr pScrn)
+static void TDFXSendNOPFifo2D(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
 
@@ -56,7 +71,7 @@ void TDFXSendNOPFifo(ScrnInfoPtr pScrn)
   TDFXSendNOPFifo3D(pScrn);
 }
 
-void InstallFifo(ScrnInfoPtr pScrn)
+static void InstallFifo(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
 
@@ -84,7 +99,7 @@ void InstallFifo(ScrnInfoPtr pScrn)
   TDFXSendNOPFifo(pScrn);
 }
 
-void TDFXResetFifo(ScrnInfoPtr pScrn)
+static void TDFXResetFifo(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
   int oldValue;
@@ -285,8 +300,13 @@ TDFXMakeSpace(TDFXPtr pTDFX, uint32 slots)
     /*
     ** Put a jump command in command fifo to wrap to the beginning.
     */
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    WRITE_FIFO(pTDFX, 0, (pTDFX->fifoOffset >> 2) << SSTCP_PKT0_ADDR_SHIFT |
+      SSTCP_PKT0_JMP_LOCAL);
+#else
     *pTDFX->fifoPtr = (pTDFX->fifoOffset >> 2) << SSTCP_PKT0_ADDR_SHIFT |
       SSTCP_PKT0_JMP_LOCAL;
+#endif
     FLUSH_WCB();
 
     /*

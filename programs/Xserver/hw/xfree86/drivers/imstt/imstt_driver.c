@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.9 2000/08/23 22:10:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.10 2000/12/02 15:30:43 tsi Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -374,8 +374,7 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 			return FALSE;
 	}
 
-	if (pScrn->depth == 8)
-		pScrn->rgbBits = 8;
+	pScrn->rgbBits = 8;
 
 	if (!xf86SetDefaultVisual(pScrn, -1))
 		return FALSE;
@@ -422,6 +421,9 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 	} else {
 		iptr->FBDev = FALSE;
 	}
+
+	/* hack */
+	iptr->FBDev = TRUE;
 
 	if (iptr->FBDev) {
 		if (!xf86LoadSubModule(pScrn, "fbdevhw"))
@@ -558,7 +560,6 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86SetDpi(pScrn, 0, 0);
 
 	xf86LoadSubModule(pScrn, "fb");
-/*	xf86LoaderReqSymbols(fbSymbols, NULL); */
 	xf86LoaderReqSymbols("fbScreenInit", NULL);
 
 	if (!xf86LoadSubModule(pScrn, "xaa"))
@@ -772,6 +773,8 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 		}
 	}
 
+	iptr->pitch = pScrn->displayWidth;
+
 	if (iptr->FBDev) {
 		if (!fbdevHWModeInit(pScrn, pScrn->currentMode))
 			return FALSE;
@@ -786,7 +789,7 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 
 	if (pScrn->bitsPerPixel > 8) {
 		if (!miSetVisualTypes(pScrn->depth, TrueColorMask,
-				      pScrn->rgbBits, pScrn->defaultVisual))
+				      pScrn->rgbBits, TrueColor))
 			return FALSE;
 	} else {
 		if (!miSetVisualTypes(pScrn->depth, miGetDefaultVisualMask(pScrn->depth),
@@ -813,8 +816,6 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 		return FALSE;
 	}
 
-	xf86SetBlackWhitePixels(pScreen);
-
 	if (pScrn->bitsPerPixel > 8) {
 		visual = pScreen->visuals + pScreen->numVisuals;
 		while (--visual >= pScreen->visuals) {
@@ -829,6 +830,7 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 		}
 	}
 
+	xf86SetBlackWhitePixels(pScreen);
 	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);
 
@@ -848,8 +850,8 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 	if (!miCreateDefColormap(pScreen))
 		return FALSE;
 
-	if (!xf86HandleColormaps(pScreen, 256, 8, (iptr->FBDev ? fbdevHWLoadPalette : NULL),
-				 NULL, CMAP_RELOAD_ON_MODE_SWITCH))
+	if (!xf86HandleColormaps(pScreen, 256, 8, fbdevHWLoadPalette,
+				 NULL, CMAP_PALETTED_TRUECOLOR))
 		return FALSE;
 
 	if (serverGeneration == 1)

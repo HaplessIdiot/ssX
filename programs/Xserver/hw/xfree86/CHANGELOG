@@ -1,4 +1,13 @@
 XFree86 4.0.99.2 (?? April 2001)
+ 349. Big endian and PowerPC support for the mga driver (#4540, Ani Joshi).
+ 348. Big endian support for the tdfx driver (#4539, Ani Joshi,
+      Nicolas Dimitrijevic).
+ 347. Build the tdfx and imstt drivers on PowerPC platforms (#4538, Ani Joshi).
+ 346. Add IMS (Integrated Micro Solutions) PCI data for the TwinTurbo128
+      and TwinTurbo3D (#4537, Ani Joshi).
+ 345. Fix some color and accel glitches in the imstt driver (#4536, Ani Joshi).
+ 344. Add ISA I/O support for PowerPC Linux using the __NR_pciconfig_iobase
+      syscall (#4535, Ani Joshi).
  343. New Xwin server code from the Cygwin/XFree86 project.  This version
       is more portable across Win32 platforms.  Changes include:
        - Use fb and shadowfb, and use the faster of GDI blitter,
@@ -12861,4 +12870,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1666 2001/04/05 19:29:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1667 2001/04/05 20:13:44 dawes Exp $

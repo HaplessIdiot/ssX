@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.65 2001/03/21 17:02:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.66 2001/03/24 18:47:40 herrb Exp $ */
 
 /*
  * Authors:
@@ -546,11 +546,13 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
   return memSize*1024;
 }
 
+#if 0
 static int TDFXCfgToSize(int cfg)
 {
   if (cfg<4) return 0x8000000<<cfg;
   return 0x4000000>>(cfg-4);
 }
+#endif
 
 static int TDFXSizeToCfg(int size)
 {
@@ -660,10 +662,12 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   pTDFX->initDone=FALSE;
   pTDFX->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
 
+#if !defined(__powerpc__)
   if (flags & PROBE_DETECT) {
     TDFXProbeDDC(pScrn, pTDFX->pEnt->index);
     return TRUE;
   }
+#endif
 
   if (pTDFX->pEnt->location.type != BUS_PCI) return FALSE;
 
@@ -675,6 +679,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   /* Allocate a vgaHWRec */
   if (!vgaHWGetHWRec(pScrn)) return FALSE;
 
+#if !defined(__powerpc__)
   if (xf86LoadSubModule(pScrn, "int10")) {
     xf86Int10InfoPtr pInt;
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
@@ -692,6 +697,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
       xf86FreeInt10(pInt);
     }
   }
+#endif
 
   match=pTDFX->PciInfo=xf86GetPciInfoForEntity(pTDFX->pEnt->index);
   TDFXFindChips(pScrn, match);
@@ -986,6 +992,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(ramdacSymbols, NULL);
   }
 
+#if !defined(__powerpc__)
   /* Load DDC if needed */
   /* This gives us DDC1 - we should be able to get DDC2B using i2c */
   if (!xf86LoadSubModule(pScrn, "ddc")) {
@@ -1000,10 +1007,41 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
       pMon = vbeDoEDID(VBEInit(NULL,pTDFX->pEnt->index), NULL);
       xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
   }
+#endif
 
   if (xf86ReturnOptValBool(TDFXOptions, OPTION_USE_PIO, FALSE)) {
     pTDFX->usePIO=TRUE;
   }
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+  pTDFX->ModeReg.miscinit0 = pTDFX->readLong(pTDFX, MISCINIT0);
+  pTDFX->SavedReg.miscinit0 = pTDFX->ModeReg.miscinit0;
+
+  switch (pScrn->bitsPerPixel) {
+  case 8:
+    pTDFX->writeFifo = TDFXWriteFifo_8;
+    pTDFX->ModeReg.miscinit0 &= ~BIT(30); /* LFB byte swizzle */
+    pTDFX->ModeReg.miscinit0 &= ~BIT(31); /* LFB word swizzle */
+    break;
+  case 15:
+  case 16:
+    pTDFX->writeFifo = TDFXWriteFifo_16;
+    pTDFX->ModeReg.miscinit0 |= BIT(30); /* LFB byte swizzle */
+    pTDFX->ModeReg.miscinit0 |= BIT(31); /* LFB word swizzle */
+    break;
+  case 24:
+  case 32:
+    pTDFX->writeFifo = TDFXWriteFifo_24;
+    pTDFX->ModeReg.miscinit0 |= BIT(30); /* LFB byte swizzle */
+    pTDFX->ModeReg.miscinit0 &= ~BIT(31); /* LFB word swizzle */
+    break;
+  default:
+    return FALSE;
+    break;
+  }
+  pTDFX->writeLong(pTDFX, MISCINIT0, pTDFX->ModeReg.miscinit0);
+#endif
+
 
   return TRUE;
 }
@@ -1057,6 +1095,7 @@ TDFXUnmapMem(ScrnInfoPtr pScrn)
   return TRUE;
 }
 
+#ifdef DEBUG
 static void
 PrintRegisters(ScrnInfoPtr pScrn, TDFXRegPtr regs)
 {
@@ -1112,6 +1151,7 @@ PrintRegisters(ScrnInfoPtr pScrn, TDFXRegPtr regs)
 #endif
 #endif
 }
+#endif
 
 /*
  * TDFXSave --
@@ -1211,6 +1251,9 @@ DoRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TDFXRegPtr tdfxReg,
   TDFXWriteLongMMIO(pTDFX, SST_2D_CLIP1MIN, tdfxReg->clip1min);
   TDFXWriteLongMMIO(pTDFX, SST_2D_CLIP1MAX, tdfxReg->clip1max);
   pTDFX->writeLong(pTDFX, VGAINIT0, tdfxReg->vgainit0);
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+  pTDFX->writeLong(pTDFX, MISCINIT0, tdfxReg->miscinit0);
+#endif
   pTDFX->writeLong(pTDFX, VIDPROCCFG, tdfxReg->vidcfg);
   TDFXWriteLongMMIO(pTDFX, SST_2D_SRCBASEADDR, tdfxReg->srcbaseaddr);
   TDFXWriteLongMMIO(pTDFX, SST_2D_DSTBASEADDR, tdfxReg->dstbaseaddr);
@@ -1634,6 +1677,7 @@ calcBufferHeightInTiles(int yres)
 
 } /* calcBufferHeightInTiles */
 
+#if 0
 static int
 calcBufferSizeInTiles(int xres, int yres, int cpp) {
   int bufSizeInTiles;           /* Size of buffer in tiles */
@@ -1644,6 +1688,7 @@ calcBufferSizeInTiles(int xres, int yres, int cpp) {
   return bufSizeInTiles;
 
 } /* calcBufferSizeInTiles */
+#endif
 
 static int
 calcBufferSize(int xres, int yres, Bool tiled, int cpp)
@@ -1787,7 +1832,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   pTDFX->pixmapCacheLinesMin = ((720*480*2) + pTDFX->stride - 1)/pTDFX->stride;
 
   allocateMemory(pScrn);
-
 #if 0
   if (pTDFX->numChips>1) {
     if (xf86ReturnOptValBool(TDFXOptions, OPTION_NO_SLI, FALSE)) {
@@ -1822,7 +1866,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
     "%i lines of offscreen memory available for 2D and video\n", 
 	pTDFX->pixmapCacheLinesMax);
-
      
   MemBox.y1 = 0;
   MemBox.x1 = 0;
@@ -1833,8 +1876,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   TDFXSave(pScrn);
   if (!TDFXModeInit(pScrn, pScrn->currentMode)) return FALSE;
-
-  TDFXSetLFBConfig(pTDFX);
 
   miClearVisualTypes();
 
