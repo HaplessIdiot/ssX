@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/animcur.c,v 1.1 2002/11/23 02:38:15 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/animcur.c,v 1.2 2002/11/23 08:42:29 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -158,10 +158,18 @@ AnimCurScreenBlockHandler (int screenNum,
 	{
 	    AnimCurPtr	ac = GetAnimCur(as->pCursor);
 	    int		elt = (as->elt + 1) % ac->nelt;
+	    DisplayCursorProcPtr    DisplayCursor;
 
-	    Unwrap (as, pScreen, DisplayCursor);
+	    /*
+	     * Not a simple Unwrap/Wrap as this
+	     * isn't called along the DisplayCursor 
+	     * wrapper chain.
+	     */
+	    DisplayCursor = pScreen->DisplayCursor;
+	    pScreen->DisplayCursor = as->DisplayCursor;
 	    (void) (*pScreen->DisplayCursor) (pScreen, ac->elts[elt].pCursor);
-	    Wrap (as, pScreen, DisplayCursor, AnimCurDisplayCursor);
+	    as->DisplayCursor = pScreen->DisplayCursor;
+	    pScreen->DisplayCursor = DisplayCursor;
 
 	    as->elt = elt;
 	    as->time = now + ac->elts[elt].delay;

@@ -509,19 +509,13 @@ extern void NoopDDA(
 #endif
 );
 
-extern int AlterSaveSetForClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/,
-    WindowPtr /*pWin*/,
-    unsigned /*mode*/
-#endif
-);
+int AlterSaveSetForClient(ClientPtr client,
+			  WindowPtr pWin,
+			  unsigned mode,
+			  Bool  toRoot,
+			  Bool  remap);
 
-extern void DeleteWindowFromAnySaveSet(
-#if NeedFunctionPrototypes
-    WindowPtr /*pWin*/
-#endif
-);
+void DeleteWindowFromAnySaveSet(WindowPtr pWin);
 
 extern void BlockHandler(
 #if NeedFunctionPrototypes
@@ -1097,5 +1091,22 @@ typedef struct {
     xEventPtr events;
     int count;
 } DeviceEventInfoRec;
+
+/*
+ * SelectionCallback stuff
+ */
+
+extern CallbackListPtr SelectionCallback;
+
+typedef enum {
+    SelectionSetOwner,
+    SelectionWindowDestroy,
+    SelectionClientClose
+} SelectionCallbackKind;
+
+typedef struct {
+    struct _Selection	    *selection;
+    SelectionCallbackKind   kind;
+} SelectionInfoRec;
 
 #endif /* DIX_H */

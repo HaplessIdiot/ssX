@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.64 2002/03/06 21:14:39 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.65 2002/11/08 00:46:24 alanh Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -229,6 +229,9 @@ extern void RenderExtensionInit(INITARGS);
 #ifdef RANDR
 extern void RRExtensionInit(INITARGS);
 #endif
+#ifdef XFIXES
+extern void XFixesExtensionInit(INITARGS);
+#endif
 #ifdef RES
 extern void ResExtensionInit(INITARGS);
 #endif
@@ -358,6 +361,10 @@ InitExtensions(argc, argv)
     DPSExtensionInit();
 #endif
 #endif
+#ifdef XFIXES
+    /* must be before Render to layer DisplayCursor correctly */
+    XFixesExtensionInit();
+#endif
 #ifdef RENDER
     RenderExtensionInit();
 #endif
@@ -479,6 +486,10 @@ static ExtensionModule staticExtensions[] = {
 #endif
 #ifdef XF86BIGFONT
     { XFree86BigfontExtensionInit, XF86BIGFONTNAME, NULL, NULL, NULL },
+#endif
+#ifdef XFIXES
+    /* must be before Render to layer DisplayCursor correctly */
+    { XFixesExtensionInit, "XFIXES", NULL, NULL, NULL },
 #endif
 #ifdef RENDER
     { RenderExtensionInit, "RENDER", NULL, NULL, NULL },
