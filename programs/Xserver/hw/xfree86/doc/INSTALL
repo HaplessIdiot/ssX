@@ -36,14 +36,14 @@
 
         o  X Consortium X11R6 distribution with fixes 01-12 applied.
 
-        o  XFree86-3.1.2.diff.gz
+        o  XFree86-3.1.2.diff.gz, cfont312.tgz
 
         o  XFree86-contrib-3.1.2.diff.gz (an optional patch for some of
            the X Consortium's ``contrib'' distribution)
 
         o  If upgrading from XFree86 version 3.1.1 you will only need
-           the 3.1.1-3.1.2.diff.gz patch, and optionally the
-           contrib-3.1.1-3.1.2.diff.gz patch.
+           the 3.1.1-3.1.2.diff.gz patch, cfont312.tgz, and optionally
+           the contrib-3.1.1-3.1.2.diff.gz patch.
 
         o  If you want to only build the XFree86 X servers, you only
            need the X312servonly.tgz file which is the ``ServersOnly''
@@ -131,6 +131,7 @@
 
 
            gzip -d < XFree86-3.1.2.diff.gz | patch -p -E
+           gzip -d < cfont312.tgz | tar vxf -
 
 
 
@@ -161,6 +162,7 @@
 
 
                 gzip -d < 3.1.1-3.1.2.diff.gz | patch -p -E
+                gzip -d < cfont312.tgz | tar vxf -
 
 
 
@@ -326,8 +328,6 @@
 
   To build a different set of servers or servers with a different set of
   drivers installed:
-
-
      1. Make sure the source for any new drivers is in the correct place
         (e.g., driver source for the SVGA server should be in a
         subdirectory of xc/programs/Xserver/hw/xfree86/vga256/drivers).
@@ -355,7 +355,7 @@
   <LinkKit.html> file.
 
   $XConsortium: INSTALL.sgml,v 1.4 95/01/27 16:14:24 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.11 1995/07/07 15:40:13 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.12 1995/07/22 09:42:53 dawes Exp $
 
 
 
