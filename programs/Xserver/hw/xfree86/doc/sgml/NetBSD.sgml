@@ -12,7 +12,7 @@ Matthieu Herrb
 <Date>Last modified on: 9 November 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.66 2003/01/20 17:06:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.67 2003/02/16 17:19:22 dawes Exp $
 </ident>
 <toc>
 
@@ -22,8 +22,8 @@ $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.66 2003/01/20 
 <p>
 XFree86 is an Open Source version of the X Window System that supports
 several UNIX(R) and UNIX-like operating systems (such as Linux, the BSDs
-and Solaris x86) operating systems on Intel and other platforms.  This
-version is compatible with X11R6.6.
+and Solaris x86) on Intel and other platforms.  This version is compatible
+with X11R6.6.
 
 See the <htmlurl url="COPYRIGHT.html" name="Copyright Notice">.
 
