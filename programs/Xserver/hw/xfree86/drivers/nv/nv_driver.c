@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.75 2001/10/08 22:28:53 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.77 2001/11/30 12:11:57 eich Exp $ */
 
 #include "nv_include.h"
 
@@ -906,19 +906,14 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 
     pNv->Primary = xf86IsPrimaryPci(pNv->PciInfo);
 
-#if !defined(__alpha__) && !defined(__powerpc__)
     /* Initialize the card through int10 interface if needed */
-#if 0
-     if ( !pNv->Primary &&)
-#endif
-       if (xf86LoadSubModule(pScrn, "int10")){
- 
+    if (xf86LoadSubModule(pScrn, "int10")){
  	xf86LoaderReqSymLists(int10Symbols, NULL);
- 
-         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
-         pNv->pInt = xf86InitInt10(pNv->pEnt->index);
-     }
+#if !defined(__alpha__) && !defined(__powerpc__)
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
+        pNv->pInt = xf86InitInt10(pNv->pEnt->index);
 #endif
+     }
    
     {
         resRange vgaio[] =      { {ResShrIoBlock,0x3B0,0x3BB},
