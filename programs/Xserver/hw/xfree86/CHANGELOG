@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+  93. Fix Darwin bindist files so that dynamic shared libraries are put in
+      Xbin.tgz instead of Xprog.tgz (Torrey T. Lyons).
   92. Fix problem in Ib/Xaw/AsciiSrc.c:nitStringOrFile() when descriptor 0
       is closed, as a zero return value from open(2) is taken as an error
       (splite at purdue.edu).
@@ -13476,4 +13478,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1840 2001/06/08 10:53:36 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1841 2001/06/08 19:03:40 paulo Exp $
