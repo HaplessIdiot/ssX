@@ -1,4 +1,8 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 125. Add missing tests for vtSema to xaa 'Picture' functions.
+      These missing checks caused strange behavior with some drivers
+      when RENDER extension requests were made while X was switched away.
+      (Egbert Eich).
  124. i810 driver: call drmCtlUninstHandler() on CloseScreen() 
       (?,Leif Delgass).
  123. Savage driver updated to 1.1.1.27: several fixes for video glitches
@@ -16839,7 +16843,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2652 2003/04/23 01:47:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2653 2003/04/23 14:18:33 eich Exp $
 
 
 
