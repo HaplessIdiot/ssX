@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.2 1999/04/25 10:02:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.6 1999/10/14 17:20:26 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -306,8 +306,8 @@ BladeSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
     }
 #endif
  
+    REPLICATE(planemask);
     if (planemask != -1) {
-	REPLICATE(planemask);
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
@@ -367,8 +367,8 @@ BladeSetupForSolidLine(ScrnInfoPtr pScrn, int color,
     BLADE_OUT(0x2160, color);
     BLADE_OUT(0x2148, XAACopyROP[rop]);
     pTrident->BltScanDirection = 0;
+    REPLICATE(planemask);
     if (planemask != -1) {
-	REPLICATE(planemask);
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
@@ -464,8 +464,8 @@ BladeSetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
     BLADE_OUT(0x2164, bg);
     BLADE_OUT(0x2148, XAACopyROP[rop]);
     pTrident->BltScanDirection = 0;
+    REPLICATE(planemask);
     if (planemask != -1) {
-	REPLICATE(planemask);
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
@@ -502,8 +502,8 @@ BladeSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
     BLADE_OUT(0x2160, color);
     BLADE_OUT(0x2148, XAACopyROP[rop]);
     pTrident->BltScanDirection = 0;
+    REPLICATE(planemask);
     if (planemask != -1) {
-	REPLICATE(planemask);
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
@@ -536,8 +536,8 @@ BladeSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
     IMAGE_OUT(0x48, bg);
     IMAGE_OUT(0x20, 0x90000000 | XAACopyROP[rop]);
     pTrident->BltScanDirection = 0;
+    REPLICATE(planemask);
     if (planemask != -1) {
-	REPLICATE(planemask);
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
@@ -578,8 +578,8 @@ BladeSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn,
     	BLADE_OUT(0x2160, fg);
     	BLADE_OUT(0x2164, bg);
     }
+    REPLICATE(planemask);
     if (planemask != -1) {
-	REPLICATE(planemask);
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
@@ -656,8 +656,8 @@ BladeSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
     BLADE_OUT(0x2178, bg);
     }
     pTrident->BltScanDirection = 0;
+    REPLICATE(planemask);
     if (planemask != -1) {
-	REPLICATE(planemask);
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
@@ -697,8 +697,8 @@ BladeSetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
 	pTrident->BltScanDirection |= 1<<6;
     }
     TGUI_FMIX(XAAPatternROP[rop]);
+    REPLICATE(planemask);
     if (planemask != -1) {
-	REPLICATE(planemask);
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
@@ -729,8 +729,8 @@ static void BladeSetupForImageWrite(
 
     BLADE_OUT(0x2148, XAACopyROP[rop]);
     pTrident->BltScanDirection = 0;
+    REPLICATE(planemask);
     if (planemask != -1) {
-	REPLICATE(planemask);
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }

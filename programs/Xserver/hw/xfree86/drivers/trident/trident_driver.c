@@ -28,10 +28,10 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.99 2000/06/13 02:28:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.100 2000/06/21 17:28:16 dawes Exp $ */
 
-#include "cfb24_32.h"
-
+#include "xf1bpp.h"
+#include "xf4bpp.h"
 #include "fb.h"
 
 #include "mibank.h"
@@ -415,7 +415,7 @@ tridentLCD LCD[] = {
     { 0xff,"", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
-    static const char *xaaSymbols[] = {
+static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
     "XAAHelpPatternROP",
@@ -445,7 +445,8 @@ static const char *vgahwSymbols[] = {
 
 static const char *fbSymbols[] = {
     "fbScreenInit",
-    "cfb24_32ScreenInit",
+    "xf1bppScreenInit",
+    "xf4bppScreenInit",
     NULL
 };
 
@@ -1896,7 +1897,15 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
     case 1:
+	pTrident->EngineOperation |= 0x00;
+	mod = "xf1bpp";
+	Sym = "xf1bppScreenInit";
+	break;
     case 4:
+	pTrident->EngineOperation |= 0x00;
+	mod = "xf4bpp";
+	Sym = "xf4bppScreenInit";
+	break;
     case 8:
 	pTrident->EngineOperation |= 0x00;
 	mod = "fb";
@@ -1909,13 +1918,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     case 24:
 	pTrident->EngineOperation |= 0x03;
-	if (pix24bpp == 24) {
-	    mod = "fb";
-	    Sym = "fbScreenInit";
-	} else {
-	    mod = "xf24_32bpp";
-	    Sym = "cfb24_32ScreenInit";
-	}
+	mod = "fb";
+	Sym = "fbScreenInit";
 	break;
     case 32:
 	pTrident->EngineOperation |= 0x02;
@@ -2337,23 +2341,22 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     switch (pScrn->bitsPerPixel) {
     case 1:
+	ret = xf1bppScreenInit(pScreen, FBStart, pScrn->virtualX,
+			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
+			pScrn->displayWidth);
+	break;
     case 4:
+	ret = xf4bppScreenInit(pScreen, FBStart, pScrn->virtualX,
+			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
+			pScrn->displayWidth);
+	break;
     case 8:
     case 16:
+    case 24:
     case 32:
 	ret = fbScreenInit(pScreen, FBStart, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
 			pScrn->displayWidth, pScrn->bitsPerPixel);
-	break;
-    case 24:
-	if (pix24bpp == 24)
-	    ret = fbScreenInit(pScreen, FBStart, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth, pScrn->bitsPerPixel);
-	else
-	    ret = cfb24_32ScreenInit(pScreen, FBStart, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
