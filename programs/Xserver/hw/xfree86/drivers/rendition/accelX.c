@@ -3,7 +3,7 @@
  *
  * accelerator functions for X
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/accelX.c,v 1.3 1999/11/19 13:54:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/accelX.c,v 1.4 1999/12/14 03:12:09 robin Exp $ */
 
 
 
@@ -117,7 +117,7 @@ void RENDITIONAccelPreInit(ScrnInfoPtr pScreenInfo)
 
 #ifdef DEBUG
     ErrorF("RENDITION: RENDITIONAccelPreInit called\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 
 #ifdef DEBUG
@@ -126,11 +126,11 @@ void RENDITIONAccelPreInit(ScrnInfoPtr pScreenInfo)
 #endif
 
     if (V1000_DEVICE == pRendition->board.chip){
-      c=v_load_ucfile(pScreenInfo, xf86strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
+      c=v_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
     }
     else {
       /* V2x00 chip */
-      c=v_load_ucfile(pScreenInfo, xf86strcat ((char *)MICROCODE_DIR,"v20002d.uc"));
+      c=v_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v20002d.uc"));
     }
 
     if (c == -1) {
@@ -146,7 +146,7 @@ void RENDITIONAccelPreInit(ScrnInfoPtr pScreenInfo)
 #ifdef DEBUG
     ErrorF("RENDITION: Offset is now %d\n",pRendition->board.fbOffset);
     ErrorF("RENDITION: RENDITIONAccelPreInit End \n");
-    xf86sleep(2);
+    sleep(2);
 #endif
 
 }
@@ -159,9 +159,9 @@ void RENDITIONAccelXAAInit(ScreenPtr pScreen)
 
     BoxRec AvailFBArea;
 
-#if DEBUG
+#ifdef DEBUG
     ErrorF("RENDITION: RENDITIONAccelInit called\n");
-    xf86sleep(2);
+    sleep(2);
 #endif
 
     pRendition->AccelInfoRec = pXAAinfo = XAACreateInfoRec();
@@ -207,7 +207,7 @@ void RENDITIONAccelXAAInit(ScreenPtr pScreen)
 
 #ifdef DEBUG
     ErrorF("RENDITION: RENDITIONAccelInit restore\n");
-    xf86sleep(2);
+    sleep(2);
 #endif
 
     /* Restore u-code previously loaded in PreInit-stage */
@@ -251,7 +251,7 @@ void RENDITIONAccelXAAInit(ScreenPtr pScreen)
 
 #ifdef DEBUG
     ErrorF("RENDITION: RENDITIONAccelInit End\n");
-    xf86sleep(2);
+    sleep(2);
 #endif
 }
 
@@ -288,7 +288,7 @@ int RENDITIONLoadUcode(ScrnInfoPtr pScreenInfo)
 
     static int ucode_loaded=0;
 
-#if DEBUG
+#ifdef DEBUG
     ErrorF("RENDITION: RENDITIONLoadUcode called\n");
 #endif
 
@@ -377,7 +377,7 @@ void RENDITIONRestoreUcode(ScrnInfoPtr pScreenInfo)
 
 #ifdef DEBUG
     ErrorF("RENDITION: RENDITIONRestoreUcode called\n");
-    xf86sleep(2);
+    sleep(2);
 #endif
 
     v1k_stop(pScreenInfo);
@@ -414,7 +414,7 @@ void RENDITIONSaveUcode(ScrnInfoPtr pScreenInfo)
 
 #if 1
     ErrorF("RENDITION: RENDITIONSaveUcode called\n");
-    xf86sleep(2);
+    sleep(2);
 #endif
 
     v1k_stop(pScreenInfo);
@@ -615,7 +615,7 @@ void RENDITIONSubsequentSolidFillRect(ScrnInfoPtr pScreenInfo,
 #ifdef DEBUG
     ErrorF("#SubsequentSolidFill# FIFO_INFREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
     ErrorF("#SubsequentSolidFill# FIFO_OUTVALID 0x%x -- \n",v_in8(iob+FIFOOUTVALID));
-    xf86sleep(1);
+    sleep(1);
 #endif
     v_out32(iob, P2(pRendition->board.Rop, CMD_RECT_SOLID_ROP));
     v_out32(iob, pRendition->board.Color);

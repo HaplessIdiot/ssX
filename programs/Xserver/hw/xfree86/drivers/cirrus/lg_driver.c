@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.13 1999/06/13 16:30:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.14 1999/12/26 18:24:19 robin Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 /*#include "compiler.h"*/
@@ -396,7 +396,8 @@ LgDoDDC(ScrnInfoPtr pScrn)
 		return FALSE;
 
 	{
-		volatile CARD16 *rambus = pLg->CirRec.IOBase + 0x200;
+		volatile CARD16 *rambus =
+			(volatile CARD16 *)(pLg->CirRec.IOBase + 0x200);
 
 		ErrorF("RIF Control %#04x,  RAC Control %#04x\n",
 			rambus[0], rambus[1]);

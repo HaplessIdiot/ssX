@@ -1,7 +1,8 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.2 1999/12/06 03:57:06 robin Exp $ */
 
 #include "xf86.h"
 #include "vbe.h"
+#include "Xarch.h"
 
 #define VERSION(x) *((CARD8*)(&x) + 1),(CARD8)(x)
 

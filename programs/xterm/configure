@@ -1211,7 +1211,7 @@ else
 #include "confdefs.h"
 
 #include <sys/types.h>
-#if STDC_HEADERS
+#ifdef STDC_HEADERS
 #include <stdlib.h>
 #include <stddef.h>
 #endif
@@ -2201,10 +2201,10 @@ else
 #line 2202 "configure"
 #include "confdefs.h"
 
-#if HAVE_TERMIOS_H && HAVE_TCGETATTR
+#if defined(HAVE_TERMIOS_H) && defined(HAVE_TCGETATTR)
 #include <termios.h>
 #endif
-#if HAVE_UNISTD_H
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 int main() {
@@ -2231,10 +2231,10 @@ else
 #line 2232 "configure"
 #include "confdefs.h"
 
-#if HAVE_TERMIOS_H && HAVE_TCGETATTR
+#if defined(HAVE_TERMIOS_H) && defined(HAVE_TCGETATTR)
 #include <termios.h>
 #endif
-#if HAVE_UNISTD_H
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #if defined(_POSIX_VDISABLE)
@@ -2276,7 +2276,7 @@ else
 #line 2277 "configure"
 #include "confdefs.h"
 
-#if HAVE_STDLIB_H
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.13 1999/12/14 03:12:09 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.15 2000/01/17 21:10:06 alanh Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -344,18 +344,18 @@ renditionClockSelect(ScrnInfoPtr pScreenInfo, int ClockNumber)
 static renditionPtr
 renditionGetRec(ScrnInfoPtr pScreenInfo)
 {
-#if DEBUG
+#ifdef DEBUG
     ErrorF("GetRec ...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
     if (!pScreenInfo->driverPrivate)
         pScreenInfo->driverPrivate=xcalloc(sizeof(renditionRec), 1);
 
     /* perhaps some initialization? <ml> */
 
-#if DEBUG
+#ifdef DEBUG
     ErrorF("GetRec ...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
     return (renditionPtr)pScreenInfo->driverPrivate;
 }
@@ -364,18 +364,18 @@ renditionGetRec(ScrnInfoPtr pScreenInfo)
 static void
 renditionFreeRec(ScrnInfoPtr pScreenInfo)
 {
-#if DEBUG
+#ifdef DEBUG
     ErrorF("FreeRec...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 
     vgaHWFreeHWRec(pScreenInfo);
     xfree(pScreenInfo->driverPrivate);
     pScreenInfo->driverPrivate=NULL;
 
-#if DEBUG
+#ifdef DEBUG
     ErrorF("FreeRec OK...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 }
 
@@ -383,16 +383,16 @@ renditionFreeRec(ScrnInfoPtr pScreenInfo)
 static void
 renditionProtect(ScrnInfoPtr pScreenInfo, Bool On)
 {
-#if DEBUG
+#ifdef DEBUG
     ErrorF("Protect...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 
     vgaHWProtect(pScreenInfo, On);
 
-#if DEBUG
+#ifdef DEBUG
     ErrorF("Protect OK...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 }
 
@@ -400,9 +400,9 @@ renditionProtect(ScrnInfoPtr pScreenInfo, Bool On)
 static Bool
 renditionSaveScreen(ScreenPtr pScreen, Bool Unblank)
 {
-#if DEBUG
+#ifdef DEBUG
     ErrorF("Savescreen...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 
     return vgaHWSaveScreen(pScreen, Unblank);
@@ -411,15 +411,15 @@ renditionSaveScreen(ScreenPtr pScreen, Bool Unblank)
 static void
 renditionBlankScreen(ScrnInfoPtr pScreenInfo, Bool Unblank)
 {
-#if DEBUG
+#ifdef DEBUG
     ErrorF("Blankscreen...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 
     vgaHWBlankScreen(pScreenInfo, Unblank);
-#if DEBUG
+#ifdef DEBUG
     ErrorF("Blankscreen OK...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 }
 
@@ -761,7 +761,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
 #if USE_ACCEL
     ErrorF("PreInit OK...!!!!\n");
-    xf86sleep(2);
+    sleep(2);
 #endif
 
     return TRUE;        /* Tada! */
@@ -774,13 +774,13 @@ renditionSave(ScrnInfoPtr pScreenInfo)
 {
 #if USE_ACCEL
     ErrorF("Save...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
     vgaHWSave(pScreenInfo, &VGAHWPTR(pScreenInfo)->SavedReg,VGA_SR_ALL);
 	
 #if USE_ACCEL
     ErrorF("Save OK...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 }
 
@@ -789,9 +789,9 @@ renditionSave(ScrnInfoPtr pScreenInfo)
 static void
 renditionRestore(ScrnInfoPtr pScreenInfo)
 {
-#if DEBUG
+#ifdef DEBUG
     ErrorF("Restore...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 
     vgaHWProtect(pScreenInfo, TRUE);
@@ -800,9 +800,9 @@ renditionRestore(ScrnInfoPtr pScreenInfo)
 
     v_setmode(pScreenInfo, &RENDITIONPTR(pScreenInfo)->mode);
 
-#if DEBUG
+#ifdef DEBUG
     ErrorF("Restore OK...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 }
 
@@ -817,7 +817,7 @@ renditionSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
 #ifdef DEBUG
     ErrorF("RENDITION: renditionSetMode() called\n");
     ErrorF("Setmode...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 
     pvgaHW = VGAHWPTR(pScreenInfo);
@@ -894,9 +894,9 @@ renditionSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
 
     v_setmode(pScreenInfo,&RENDITIONPTR(pScreenInfo)->mode);
 
-#if DEBUG
+#ifdef DEBUG
     ErrorF("Setmode OK...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
     return TRUE;
 }
@@ -911,7 +911,7 @@ renditionEnterGraphics(ScreenPtr pScreen, ScrnInfoPtr pScreenInfo)
     ErrorF("RENDITION: renditionEnterGraphics() called\n");
 
     ErrorF("Entergraphics...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 
     /* Map VGA aperture */
@@ -936,7 +936,7 @@ renditionEnterGraphics(ScreenPtr pScreen, ScrnInfoPtr pScreenInfo)
 
 #ifdef DEBUG
     ErrorF("Entergraphics OK...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 
     return TRUE;
@@ -950,16 +950,16 @@ renditionLeaveGraphics(ScrnInfoPtr pScreenInfo)
     ErrorF("RENDITION: renditionLeaveGraphics() called\n");
 
     ErrorF("Leavegraphics..!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 
     renditionRestore(pScreenInfo);
     vgaHWLock(VGAHWPTR(pScreenInfo));
 
     v_textmode(&RENDITIONPTR(pScreenInfo)->board);
-#if DEBUG
+#ifdef DEBUG
     ErrorF("Leavegraphics OK...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 }
 
@@ -975,7 +975,7 @@ renditionCloseScreen(int scrnIndex, ScreenPtr pScreen)
 #ifdef DEBUG
     ErrorF("RENDITION: renditionCloseScreen() called\n");
 
-    xf86sleep(1);
+    sleep(1);
 #endif
 
     if (prenditionPriv->board.hwcursor_used)
@@ -993,9 +993,9 @@ renditionCloseScreen(int scrnIndex, ScreenPtr pScreen)
     renditionLeaveGraphics(pScreenInfo);
     pScreenInfo->vtSema = FALSE;
 
-#if DEBUG
+#ifdef DEBUG
     ErrorF("Closescreen OK...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
     return Closed;
 }
@@ -1028,7 +1028,7 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef DEBUG
     ErrorF("RENDITION: renditionScreenInit() called\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
 
     /* Get driver private */
@@ -1177,9 +1177,9 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (serverGeneration == 1)
       xf86ShowUnusedOptions(pScreenInfo->scrnIndex, pScreenInfo->options);
 
-#if DEBUG
+#ifdef DEBUG
     ErrorF("ScreenInit OK...!!!!\n");
-    xf86sleep(1);
+    sleep(1);
 #endif
     return Inited;
 }

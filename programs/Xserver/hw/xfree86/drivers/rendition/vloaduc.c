@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.7 1999/12/05 00:22:56 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.8 1999/12/14 03:12:10 robin Exp $ */
 /*
  * includes
  */
@@ -60,7 +60,7 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
   Elf32_Shdr *pshdr, *orig_pshdr=NULL;
   Elf32_Ehdr ehdr ;
 
-#if DEBUG
+#ifdef DEBUG
   ErrorF("RENDITION: Loading microcode %s\n", file_name); 
 #endif
 
@@ -68,12 +68,12 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
   v1k_stop (pScreenInfo);
 
   /* open file and read ELF-header */
-  if (-1 == (fd=xf86open(file_name, O_RDONLY))) {
+  if (-1 == (fd=open(file_name, O_RDONLY, 0))) {
     ErrorF("RENDITION: Cannot open microcode %s\n", file_name); 
     return -1;
   }
 
-  if (xf86read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
+  if (read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
     ErrorF("RENDITION: Cannot read microcode header %s\n", file_name); 
     return -1;
   }
