@@ -1,0 +1,16 @@
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = XF98CardDrivers
+
+SRCS = */?*.c
+
+OBJS = */?*_drv.o
+
+MakeSubdirs($(SUBDIRS))
+
+NormalLibraryObjectRule()
+
+ForceSubdirs($(SUBDIRS))
+
+DependSubdirs($(SUBDIRS))
