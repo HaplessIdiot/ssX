@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                          Last modified 6 July 1999
+                         Last modified 17 July 1999
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -2401,7 +2401,7 @@ use the colormap layer, a driver calls the xf86HandleColormaps() function.
 
      void LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 
-               LOCO *colors, short visualClass)
+               LOCO *colors, VisualPtr pVisual)
 
           LoadPalette() is a driver-provide function for loading a
           colormap into hardware.  colors is the array of RGB val-
@@ -4532,6 +4532,14 @@ WRec.  They are defined in vgaHW.h.
                     #define VGA_NUM_GFX   9
                     #define VGA_NUM_ATTR 21
 
+     Bool vgaHWCopyReg(vgaRegPtr dst, vgaRegPtr src)
+
+          This function copies the contents of the VGA saved regis-
+          ters in src to dst.  Note that it isn't possible to sim-
+          ply do this with memcpy() (or similar).  This function
+          returns TRUE unless there is a problem allocating space
+          for the CRTC and related fields in dst.
+
      void vgaHWSetStdFuncs(vgaHWPtr hwp)
 
           This function initialises the register access function
@@ -5904,7 +5912,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.7 1999/07/11 08:49:22 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.9 1999/07/18 03:26:51 dawes Exp $
 
 
 $XFree86$

@@ -317,7 +317,18 @@ Known problems:
    o ISO 10646 Level 2 combining characters not yet supported by xterm (will
      be needed for instance for the Thai script).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.7 1999/07/12 07:47:50 dawes Exp $
+4.  Miscellaneous
+
+4.1  Directory rearrangements
+
+Some changes to the installed XFree86 directory structure have been planned
+for 4.0.  Not all of these changes have been implemented in this snapshot,
+and they will appear in a future snapshot.  One important change that has
+been implemented is a modified search path for the X server's XF86Config
+file.  The details of this can be found above in the Configuration File (sec-
+tion 1.2, page 1) section.
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.8 1999/07/17 05:30:57 dawes Exp $
 
 
 $XFree86$
