@@ -23,17 +23,13 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.14 2000/12/06 01:40:49 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.15 2001/01/25 02:34:19 mvojkovi Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
  *
  * Authors: 
  * 	Jonathan Bian <jonathan.bian@intel.com>
- *
- * Notes:
- * 	This module currently allocates 810*2KB out of "SysMem" for the YUV 
- * 	buffers.  This may not be the best solution ...
  *
  */
 
@@ -132,6 +128,9 @@ static Atom xvBrightness, xvContrast, xvColorKey;
 #define	BUFFER0_FIELD0		0x00000000
 #define	BUFFER1_FIELD0		0x00000004
 #define OVERLAY_ENABLE		0x00000001
+
+#define UV_VERT_BUF1 		0x02
+#define UV_VERT_BUF0 		0x04
 
 /*
  * DOV0STA - Display/Overlay 0 Status Register
@@ -859,6 +858,9 @@ I810DisplayVideo(
     switch(id) {
     case FOURCC_YV12:
     case FOURCC_I420:
+	/* set UV vertical phase to -0.25 */
+	overlay->UV_VPH = 0x30003000;
+	overlay->INIT_PH = UV_VERT_BUF0 | UV_VERT_BUF1;
 	overlay->OV0STRIDE = (dstPitch << 1) | (dstPitch << 16);
 	overlay->OV0CMD &= ~SOURCE_FORMAT;
 	overlay->OV0CMD |= YUV_420;
@@ -866,6 +868,8 @@ I810DisplayVideo(
     case FOURCC_UYVY:
     case FOURCC_YUY2:
     default:
+	overlay->UV_VPH = 0;
+	overlay->INIT_PH = 0;
 	overlay->OV0STRIDE = dstPitch;
 	overlay->OV0CMD &= ~SOURCE_FORMAT;
 	overlay->OV0CMD |= YUV_422;
