@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.106 2003/04/04 23:27:55 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.107 2003/04/09 17:58:51 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -152,9 +152,9 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0317, "0x0317" },
   { 0x10DE0318, "0x0318" },
   { 0x10DE0319, "0x0319" },
-  { 0x10DE031A, "0x031A" },
-  { 0x10DE031B, "0x031B" },
-  { 0x10DE031C, "0x031C" },
+  { 0x10DE031A, "GeForce FX Go5600" },
+  { 0x10DE031B, "GeForce FX Go5650" },
+  { 0x10DE031C, "Quadro FX Go700" },
   { 0x10DE031D, "0x031D" },
   { 0x10DE031E, "0x031E" },
   { 0x10DE031F, "0x031F" },
@@ -168,6 +168,9 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE032C, "0x032C" },
   { 0x10DE032D, "0x032D" },
   { 0x10DE032F, "0x032F" },
+  { 0x10DE0330, "0x330" },
+  { 0x10DE0331, "0x331" },
+  { 0x10DE0338, "0x338" },
   {-1, NULL}
 };
 
@@ -193,7 +196,6 @@ static const char *vgahwSymbols[] = {
     "vgaHWRestore",
     "vgaHWSave",
     "vgaHWSaveScreen",
-    "vgaHWddc1SetSpeed",
     NULL
 };
 
@@ -220,22 +222,17 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
-#define NVuseI2C 1
-
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
-    "xf86DoEDID_DDC1",
-#if NVuseI2C
     "xf86DoEDID_DDC2",
-#endif
     "xf86SetDDCproperties",
     NULL
 };
 
 static const char *vbeSymbols[] = {
     "VBEInit",
-    "vbeDoEDID",
     "vbeFree",
+    "vbeDoEDID",
     NULL
 };
 
@@ -734,119 +731,6 @@ NVValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     return (MODE_OK);
 }
 
-static xf86MonPtr
-nvDoDDC2(ScrnInfoPtr pScrn)
-{
-    NVPtr pNv = NVPTR(pScrn);
-    xf86MonPtr MonInfo = NULL;
-
-    if (!pNv->i2cInit) return NULL;
-
-    /* - DDC can use I2C bus */
-    /* Load I2C if we have the code to use it */
-    if ( xf86LoadSubModule(pScrn, "i2c") ) {
-        xf86LoaderReqSymLists(i2cSymbols,NULL);
-        if (pNv->i2cInit(pScrn)) {
-	    DEBUG(ErrorF("I2C initialized on %p\n",pNv->I2C));
-	    if ((MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex,pNv->I2C))) {  
-	        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n",
-			   MonInfo);
-		xf86PrintEDID( MonInfo );
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor "
-			   "info\n\n");
-		xf86SetDDCproperties(pScrn,MonInfo);
-	    }
-	}
-    }
-    return MonInfo;
-}
-
-#if 0
-static xf86MonPtr
-nvDoDDC1(ScrnInfoPtr pScrn)
-{
-    NVPtr pNv = NVPTR(pScrn);
-    xf86MonPtr MonInfo = NULL;
-
-    if (!pNv->ddc1Read || !pNv->DDC1SetSpeed) return NULL;
-    if (!pNv->Primary 
-	&& (pNv->DDC1SetSpeed == vgaHWddc1SetSpeed)) return NULL;
-
-    if ((MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex, pNv->DDC1SetSpeed,
-				  pNv->ddc1Read ))) {
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n",
-		   MonInfo);
-	xf86PrintEDID( MonInfo );
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n\n");
-	xf86SetDDCproperties(pScrn,MonInfo);
-    }
-    return MonInfo;
-}
-#endif
- 
-/*
-static xf86MonPtr
-nvDoDDCVBE(ScrnInfoPtr pScrn)
-{
-    NVPtr pNv = NVPTR(pScrn);
-    xf86MonPtr MonInfo = NULL;
-    vbeInfoPtr pVbe;
-
-    if (xf86LoadSubModule(pScrn, "vbe")) {
-        xf86LoaderReqSymLists(vbeSymbols,NULL);
-	pVbe = VBEInit(pNv->pInt,pNv->pEnt->index);
-	if (pVbe) {
-	    if ((MonInfo = vbeDoEDID(pVbe,NULL))) {
-	        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n",
- 			   MonInfo);
- 		xf86PrintEDID( MonInfo );       
- 		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n\n");
- 		xf86SetDDCproperties(pScrn,MonInfo);
- 	    }
- 	    vbeFree(pVbe);
- 	}
-     }
-     return MonInfo;
-}
-*/ 
-
-/* Internally used */
-xf86MonPtr
-NVdoDDC(ScrnInfoPtr pScrn)
-{
-    NVPtr pNv;
-    NVRamdacPtr NVdac;
-    xf86MonPtr MonInfo = NULL;
-
-    pNv = NVPTR(pScrn);
-    NVdac = &pNv->Dac;
-
-    /* Load DDC if we have the code to use it */
-
-    if (!xf86LoadSubModule(pScrn, "ddc")) return NULL;
-    
-    xf86LoaderReqSymLists(ddcSymbols, NULL);
-
-    /*    if ((MonInfo = nvDoDDCVBE(pScrn))) return MonInfo;      */
-
-    /* Enable access to extended registers */
-    pNv->riva.LockUnlock(&pNv->riva, 0);
-    /* Save the current state */
-    NVSave(pScrn);
-
-    if ((MonInfo = nvDoDDC2(pScrn))) goto done;
-#if 0 /* disable for now - causes problems on AXP */
-    if ((MonInfo = nvDoDDC1(pScrn))) goto done;
-#endif
-
- done:
-    /* Restore previous state */
-    NVRestore(pScrn);
-    pNv->riva.LockUnlock(&pNv->riva, 1);
-
-    return MonInfo;
-}
-
 static void
 nvProbeDDC(ScrnInfoPtr pScrn, int index)
 {
@@ -857,6 +741,27 @@ nvProbeDDC(ScrnInfoPtr pScrn, int index)
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
     }
+}
+
+
+Bool NVI2CInit(ScrnInfoPtr pScrn)
+{
+    char *mod = "i2c";
+
+    if (xf86LoadSubModule(pScrn, mod)) {
+        xf86LoaderReqSymLists(i2cSymbols,NULL);
+
+        mod = "ddc";
+        if(xf86LoadSubModule(pScrn, mod)) {
+            xf86LoaderReqSymLists(ddcSymbols, NULL);
+            return NVDACi2cInit(pScrn);
+        } 
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+              "Couldn't load %s module.  DDC probing can't be done\n", mod);
+
+    return FALSE;
 }
 
 /* Mandatory */
@@ -1175,15 +1080,17 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86GetOptValBool(pNv->Options, OPTION_FP_DITHER, &(pNv->FPDither))) 
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "enabling flat panel dither\n");
 
-    if (xf86GetOptValInteger(pNv->Options, OPTION_CRTC_NUMBER, 
-                                &pNv->forceCRTC)) 
+    if (xf86GetOptValInteger(pNv->Options, OPTION_CRTC_NUMBER,
+                             &pNv->CRTCnumber)) 
     {
-	if((pNv->forceCRTC < 0) || (pNv->forceCRTC > 1)) {
-           pNv->forceCRTC = -1;
+	if((pNv->CRTCnumber < 0) || (pNv->CRTCnumber > 1)) {
+           pNv->CRTCnumber = -1;
            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
                       "Invalid CRTC number.  Must be 0 or 1\n");
         }
-    } else pNv->forceCRTC = -1;
+    } else {
+        pNv->CRTCnumber = -1; /* autodetect later */
+    }
 
     
     if (pNv->pEnt->device->MemBase != 0) {
@@ -1570,17 +1477,18 @@ NVModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	return FALSE;
     pScrn->vtSema = TRUE;
 
-    if(!(*pNv->ModeInit)(pScrn, mode))
-        return FALSE;
-
     vgaReg = &hwp->ModeReg;
     nvReg = &pNv->ModeReg;
 
+    if(!(*pNv->ModeInit)(pScrn, mode))
+        return FALSE;
+
+    pNv->riva.LockUnlock(&pNv->riva, 0);
     if(pNv->riva.twoHeads) {
         VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x44);
         VGA_WR08(pNv->riva.PCIO, 0x03D5, nvReg->crtcOwner);
         pNv->riva.LockUnlock(&pNv->riva, 0);
-     }
+    }
 
     /* Program the registers */
     vgaHWProtect(pScrn, TRUE);
@@ -1626,6 +1534,8 @@ NVRestore(ScrnInfoPtr pScrn)
         VGA_WR08(pNv->riva.PCIO, 0x03D5, nvReg->crtcOwner);
         pNv->riva.LockUnlock(&pNv->riva, 0);
     }
+
+    pNv->riva.LockUnlock(&pNv->riva, 0);
 
     /* Only restore text mode fonts/text for the primary card */
     vgaHWProtect(pScrn, TRUE);
@@ -1719,7 +1629,6 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
     } else {
 	/* Save the current state */
-        pNv->riva.LockUnlock(&pNv->riva, 0);
 	NVSave(pScrn);
 	/* Initialise the first mode */
 	if (!NVModeInit(pScrn, pScrn->currentMode))
