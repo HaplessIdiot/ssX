@@ -1770,15 +1770,15 @@ CvtAsciiTypeToString(Display *dpy, XrmValuePtr args, Cardinal *num_args,
 static void
 GetDefaultPieceSize(Widget w, int offset, XrmValue *value)
 {
-    static int pagesize;
+    static XPointer pagesize;
 
     if (pagesize == 0) {
-	pagesize = _XawGetPageSize();
-	if (pagesize < BUFSIZ)
-	    pagesize = BUFSIZ;
+	pagesize = (XPointer)((long)_XawGetPageSize());
+	if (pagesize < (XPointer)BUFSIZ)
+	    pagesize = (XPointer)BUFSIZ;
     }
 
-    value->addr = (XtPointer)&pagesize;
+    value->addr = (XPointer)&pagesize;
 }
 
 #if (defined(ASCII_STRING) || defined(ASCII_DISK))
