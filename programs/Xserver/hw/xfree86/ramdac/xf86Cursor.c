@@ -329,6 +329,9 @@ xf86CursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
     PointPriv = pScreen->devPrivates[miPointerScreenIndex].ptr;
 
     if (infoPtr->pScrn->vtSema &&
+#ifdef ARGB_CURSOR
+	(pCurs->bits->argb == 0) &&
+#endif
 	(pCurs->bits->height <= infoPtr->MaxHeight) &&
 	(pCurs->bits->width <= infoPtr->MaxWidth) &&
 	(!infoPtr->UseHWCursor || (*infoPtr->UseHWCursor)(pScreen, pCurs))) {

@@ -46,22 +46,7 @@ typedef struct _miIndexed {
 #define miIndexToEnt15(mif,rgb15) ((mif)->ent[rgb15])
 #define miIndexToEnt24(mif,rgb24) miIndexToEnt15(mif,miCvtR8G8B8to15(rgb24))
 
-/*
- * Standard NTSC luminance conversions:
- *
- *  y = r * 0.299 + g * 0.587 + b * 0.114
- *
- * Approximate this for a bit more speed:
- *
- *  y = (r * 153 + g * 301 + b * 58) / 512
- *
- * This gives 17 bits of luminance; to get 15 bits, lop the low two
- */
-
-#define miCvtR8G8B8toY15(s)	(((((s) >> 16) & 0xff) * 153 + \
-				  (((s) >>  8) & 0xff) * 301 + \
-				  (((s)      ) & 0xff) * 58) >> 2)
-#define miIndexToEntY24(mif,rgb24) ((mif)->ent[miCvtR8G8B8toY15(rgb24)])
+#define miIndexToEntY24(mif,rgb24) ((mif)->ent[CvtR8G8B8toY15(rgb24)])
 
 int
 miCreatePicture (PicturePtr pPicture);

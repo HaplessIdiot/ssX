@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx August 2002)
+ 227. Add CreateCursor request to Render extension (Keith Packard)
  226. Change scanpci to not disable I/O too early (Marc La France).
  225. Better error handling in xfs -ls argument parsing (Mordy Ovits).
  224. Make loader ignore ELF objects that don't define any symbols (H. J. Lu)

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.h,v 1.10 2002/05/17 18:08:31 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.h,v 1.13 2002/08/22 08:03:10 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -158,5 +158,21 @@ typedef	xFixed_16_16	xFixed;
 
 #define xFixedFraction(f)	((f) & xFixed1MinusE)
 #define xFixedMod2(f)		((f) & (xFixed1 | xFixed1MinusE))
+
+/*
+ * Standard NTSC luminance conversions:
+ *
+ *  y = r * 0.299 + g * 0.587 + b * 0.114
+ *
+ * Approximate this for a bit more speed:
+ *
+ *  y = (r * 153 + g * 301 + b * 58) / 512
+ *
+ * This gives 17 bits of luminance; to get 15 bits, lop the low two
+ */
+
+#define CvtR8G8B8toY15(s)	(((((s) >> 16) & 0xff) * 153 + \
+				  (((s) >>  8) & 0xff) * 301 + \
+				  (((s)      ) & 0xff) * 58) >> 2)
 
 #endif /* _PICTURE_H_ */
