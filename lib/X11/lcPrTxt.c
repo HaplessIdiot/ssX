@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcPrTxt.c,v 1.7 2001/10/28 03:32:35 tsi Exp $ */
+/* $XFree86: xc/lib/X11/lcPrTxt.c,v 1.8 2002/06/03 22:36:00 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -154,7 +154,6 @@ _XTextPropertyToTextList(
 	    buf_len = text_prop->nitems * 6 + 1;
 	else
 	    buf_len = text_prop->nitems * XLC_PUBLIC(lcd, mb_cur_max) + 1;
-	buf = (XPointer) Xmalloc(buf_len);
     }
     buf = (XPointer) Xmalloc(buf_len);
     if (buf == NULL)
