@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.5 2000/10/10 16:06:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.6 2000/10/10 16:38:19 alanh Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -9,11 +9,7 @@
 
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb32.h"
+#include "fb.h"
 
 #include "miline.h"
 

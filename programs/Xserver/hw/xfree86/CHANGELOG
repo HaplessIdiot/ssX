@@ -1,4 +1,5 @@
 XFree86 4.0.1f (xx November 2000)
+ 918. Changed SiS driver to use fb instead of cfb (Alan Hourihane).
  917. Fix r128 and radeon driver source code formatting that was munged
       during ATI merge (Kevin Martin).
  916. Update Markus Kuhn's UCS fonts, and add his scripts for extracting
@@ -11508,4 +11509,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1386 2000/11/09 01:35:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1387 2000/11/09 03:24:31 martin Exp $
