@@ -1,3 +1,4 @@
+XCOMM $XFree86$
 
 #include <Threads.tmpl>
 
@@ -11,13 +12,6 @@
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
-#if defined(LinuxArchitecture)
-OS_SUBDIR = linux
-#endif
-#if defined(FreeBSDArchitecture) || defined(BSDOSArchitecture)
-OS_SUBDIR = bsd
-#endif
-
 #if BuildXF86DRI
   DRI_DEFINES = GlxDefines -DDRIVERTS
  DRI_INCLUDES = -I../../../../dri -I../../../../glx \
@@ -25,8 +19,7 @@ OS_SUBDIR = bsd
 		-I$(TOP)/include -I$(TOP)/include/GL \
 		-I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri \
 		-I$(XF86DRIVERSRC)/i810  \
-		-I../../../include -I../.. -I../common -I../../X \
-	        -I$(XF86OSSRC)/$(OS_SUBDIR)/drm/kernel
+		-I../../../include -I../.. -I../common -I../../X
 #endif
 
 MESA_INCLUDES = -I. -I.. -I../../include

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.10 2000/06/20 20:34:36 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.11 2000/06/25 14:44:26 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -19,8 +19,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 		-I$(TOP)/include -I$(TOP)/include/GL \
 		-I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri \
 		-I$(XF86DRIVERSRC)/glint \
-		-I../../../include -I../.. -I../../X -I../common \
-	        -I$(XF86OSSRC)/linux/drm/kernel
+		-I../../../include -I../.. -I../../X -I../common
 #endif
 
 MESA_INCLUDES = -I. -I.. -I../../include

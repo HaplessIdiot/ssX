@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.4 2000/08/11 17:27:10 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.5 2000/08/16 01:45:28 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -18,13 +18,6 @@ XCOMM DEBUG_DEFINES = -DSIS_DEBUG
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
-#if defined(LinuxArchitecture)
-OS_SUBDIR = linux
-#endif
-#if defined(FreeBSDArchitecture) || defined(BSDOSArchitecture)
-OS_SUBDIR = bsd
-#endif
-
 #ifdef i386Architecture
 #ifdef MesaUse3DNow
      ASM_DEFS = -DUSE_MMX_ASM -DUSE_X86_ASM -DUSE_3DNOW_ASM
@@ -37,13 +30,12 @@ OS_SUBDIR = bsd
 #if BuildXF86DRI
   DRI_DEFINES = GlxDefines $(SIS_DEFINES)
   DRI_INCLUDES = -I../../../../dri -I../../../../glx \
-		-I../../../dri \
+		-I../../../dri -I../../../../dri/drm \
       		-I$(TOP)/include -I$(TOP)/include/GL \
     		-I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri \
 		-I$(XF86DRIVERSRC)/sis \
 		-I../../../include -I../.. -I../../X \
-                -I../common/ \
-                -I$(XF86OSSRC)/$(OS_SUBDIR)/drm/kernel
+                -I../common/
 #endif
 
 MESA_INCLUDES = -I. -I.. -I../../include

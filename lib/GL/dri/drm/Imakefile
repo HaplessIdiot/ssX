@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.7 2000/08/09 23:40:11 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.8 2000/08/16 01:45:28 dawes Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -28,7 +28,7 @@ OS_SUBDIR2 = linux
 OS_SUBDIR = bsd
 OS_SUBDIR2 = linux
 #endif
-#if defined(cygwinArchitecture)
+#if defined(cygwinArchitecture) && 0	/* XXX FIX ME */
 OS_SUBDIR = cygwin
 OS_SUBDIR2 = cygwin
 #endif
@@ -38,6 +38,12 @@ LinkSourceFile(xf86drmHash.c,$(XF86OSSRC)/$(OS_SUBDIR2)/drm)
 LinkSourceFile(xf86drmRandom.c,$(XF86OSSRC)/$(OS_SUBDIR2)/drm)
 LinkSourceFile(xf86drmSL.c,$(XF86OSSRC)/$(OS_SUBDIR2)/drm)
 LinkSourceFile(xf86drmR128.c,$(XF86OSSRC)/$(OS_SUBDIR2)/drm)
+
+LinkSourceFile(drm.h,$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel)
+LinkSourceFile(i810_drm.h,$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel)
+LinkSourceFile(mga_drm.h,$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel)
+LinkSourceFile(r128_drm.h,$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel)
+LinkSourceFile(sis_drm_public.h,$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel)
 
 #include <Library.tmpl>
 
