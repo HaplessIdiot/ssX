@@ -1,65 +1,84 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.4 2001/06/15 21:23:00 dawes Exp $ */
 /*
- * Xv driver for SiS 300 and 310/325 series.
+ * Xv driver for SiS 300, 315 and 330 series.
  *
- * (Based on the mga Xv driver by Mark Vojkovich and i810 Xv
- * driver by Jonathan Bian <jonathan.bian@intel.com>.)
- *
- * Copyright 2000 Silicon Integrated Systems Corp, Inc., HsinChu, Taiwan.
  * Copyright 2002,2003 by Thomas Winischhofer, Vienna, Austria.
  * All Rights Reserved.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
+ * Formerly based on the mga Xv driver by Mark Vojkovich and i810 Xv
+ * driver by Jonathan Bian <jonathan.bian@intel.com>.
  *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
+ * Formerly based on a mostly non-working fragment for the 630 by
+ * Silicon Integrated Systems Corp, Inc., HsinChu, Taiwan.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
- * IN NO EVENT SHALL INTEL, AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of the copyright holder not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  The copyright holder makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
+ *
+ * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  *
  * Authors:
- *      Sung-Ching Lin <sclin@sis.com.tw>
- *
  *	Thomas Winischhofer <thomas@winischhofer.net>:
- *              - 310/325 series (315/550/650/651/740/M650) support
- *		- (possibly incomplete) Xabre (SiS330) support
- *              - new mode switching code for 300, 310/325 and 330 series
- *              - many fixes for 300/540/630/730 chipsets,
- *              - many fixes for 5597/5598, 6326 and 530/620 chipsets,
- *              - VESA mode switching (deprecated),
- *              - extended CRT2/video bridge handling support,
- *              - dual head support on 300, 310/325 and 330 series
- *              - 650/LVDS (up to 1400x1050), 650/Chrontel 701x support
- *              - 30xB/30xLV/30xLVX video bridge support (300, 310/325, 330 series)
- *              - Xv support for 5597/5598, 6326, 530/620 and 310/325 series
- *              - video overlay enhancements for 300 series
- *              - TV and hi-res support for the 6326
- *              - etc.
+ *      (Original code fragment for 630 by
+ *            Sung-Ching Lin <sclin@sis.com.tw>)
  *
- * TW: This supports the following chipsets:
- *  SiS300: No registers >0x65, offers one overlay
- *  SiS630/730: No registers >0x6b, offers two overlays (one used for CRT1, one for CRT2)
- *  SiS550: Full register range, offers two overlays (one used for CRT1, one for CRT2)
- *  SiS315: Full register range, offers one overlay (used for both CRT1 and CRT2 alt.)
- *  SiS650/740: Full register range, offers one overlay (used for both CRT1 and CRT2 alt.)
+ *
+ * All comments in this file are by Thomas Winischhofer.
+ *
+ * This supports the following chipsets:
+ *  SiS300: No registers >0x65, two overlays (one used for CRT1, one for CRT2)
+ *  SiS630/730: No registers >0x6b, two overlays (one used for CRT1, one for CRT2)
+ *  SiS550: Full register range, two overlays (one used for CRT1, one for CRT2)
+ *  SiS315: Full register range, one overlay (used for both CRT1 and CRT2 alt.)
+ *  SiS650/740: Full register range, one overlay (used for both CRT1 and CRT2 alt.)
  *  SiSM650/651: Full register range, two overlays (one used for CRT1, one for CRT2)
+ *  SiS330: Full register range, one overlay (used for both CRT1 and CRT2 alt.)
+ *  SiS660: Full register range, two overlays (one used for CRT1, one for CRT2)
  *
  * Help for reading the code:
- * 315/550/650/740/M650/651 = SIS_315_VGA
- * 300/630/730              = SIS_300_VGA
+ * 315/550/650/740/M650/651/330/660 = SIS_315_VGA
+ * 300/630/730                      = SIS_300_VGA
  * For chipsets with 2 overlays, hasTwoOverlays will be true
+ *
+ * Notes on display modes:
+ *
+ * -) dual head mode:
+ *    DISPMODE is either SINGLE1 or SINGLE2, hence you need to check dualHeadMode flag
+ *    DISPMODE is _never_ MIRROR.
+ *    a) Chipsets with 2 overlays:
+ *       315/330 series: Only half sized overlays available (width 960)
+ *       Overlay 1 is used on CRT1, overlay 2 for CRT2.
+ *    b) Chipsets with 1 overlay:
+ *       Full size overlays available.
+ *       Overlay is used for either CRT1 or CRT2
+ * -) merged fb mode:
+ *    a) Chipsets with 2 overlays:
+ *       315/330 series: Only half sized overlays available (width 960)
+ *       DISPMODE is always MIRROR. Overlay 1 is used for CRT1, overlay 2 for CRT2.
+ *    b) Chipsets with 1 overlay:
+ *       Full size overlays available.
+ *       DISPMODE is either SINGLE1 or SINGLE2. Overlay is used accordingly on either
+ *       CRT1 or CRT2 (automatically, where it is located)
+ * -) mirror mode (without dualhead or mergedfb)
+ *    a) Chipsets with 2 overlays:
+ *       315/330 series: Only half sized overlays available (width 960)
+ *       DISPMODE is MIRROR. Overlay 1 is used for CRT1, overlay 2 for CRT2.
+ *    b) Chipsets with 1 overlay:
+ *       Full size overlays available.
+ *       DISPMODE is either SINGLE1 or SINGLE2. Overlay is used depending on
+ * 	 XvOnCRT2 flag.
  */
 
 #include "xf86.h"
@@ -82,17 +101,6 @@
 
 #include "sis_regs.h"
 
-#define OFF_DELAY   	200  /* milliseconds */
-#define FREE_DELAY  	60000
-
-#define OFF_TIMER   	0x01
-#define FREE_TIMER  	0x02
-#define CLIENT_VIDEO_ON 0x04
-
-#define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
-
-#define WATCHDOG_DELAY  500000 /* Watchdog counter for Vertical Restrace waiting */
-
 static 		XF86VideoAdaptorPtr SISSetupImageVideo(ScreenPtr);
 static void 	SISStopVideo(ScrnInfoPtr, pointer, Bool);
 static int 	SISSetPortAttribute(ScrnInfoPtr, Atom, INT32, pointer);
@@ -106,24 +114,37 @@ static int 	SISQueryImageAttributes(ScrnInfoPtr,
     			int, unsigned short *, unsigned short *, int *, int *);
 static void 	SISVideoTimerCallback(ScrnInfoPtr pScrn, Time now);
 static void     SISInitOffscreenImages(ScreenPtr pScrn);
+extern BOOLEAN  SiSBridgeIsInSlaveMode(ScrnInfoPtr pScrn);
+
+#define OFF_DELAY   	200  /* milliseconds */
+#define FREE_DELAY  	60000
+
+#define OFF_TIMER   	0x01
+#define FREE_TIMER  	0x02
+#define CLIENT_VIDEO_ON 0x04
+
+#define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
+
+#define WATCHDOG_DELAY  500000 /* Watchdog counter for Vertical Restrace waiting */
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
-extern BOOLEAN  SiSBridgeIsInSlaveMode(ScrnInfoPtr pScrn);
-
-#define IMAGE_MIN_WIDTH         32  /* Minimum and maximum source image sizes */
+#define IMAGE_MIN_WIDTH         32  	/* Minimum and maximum source image sizes */
 #define IMAGE_MIN_HEIGHT        24
-#define IMAGE_MAX_WIDTH        720
-#define IMAGE_MAX_HEIGHT       576
-#define IMAGE_MAX_WIDTH_M650  1920
-#define IMAGE_MAX_HEIGHT_M650 1080
+#define IMAGE_MAX_WIDTH_300    720
+#define IMAGE_MAX_HEIGHT_300   576
+#define IMAGE_MAX_WIDTH_315   1920
+#define IMAGE_MAX_HEIGHT_315  1080
 
-#define OVERLAY_MIN_WIDTH       32  /* Minimum overlay sizes */
+#define OVERLAY_MIN_WIDTH       32  	/* Minimum overlay sizes */
 #define OVERLAY_MIN_HEIGHT      24
 
-#define DISPMODE_SINGLE1 0x1  /* TW: CRT1 only */
-#define DISPMODE_SINGLE2 0x2  /* TW: CRT2 only */
-#define DISPMODE_MIRROR  0x4  /* TW: CRT1 + CRT2 MIRROR (see note below) */
+#define DISPMODE_SINGLE1 0x1  		/* CRT1 only */
+#define DISPMODE_SINGLE2 0x2  		/* CRT2 only */
+#define DISPMODE_MIRROR  0x4  		/* CRT1 + CRT2 MIRROR (see note below) */
+
+#define LINEBUFLIMIT1    384		/* Limits at which line buffers must be merged */
+#define LINEBUFLIMIT2    720
 
 #ifdef SISDUALHEAD
 #define HEADOFFSET (pSiS->dhmOffset)
@@ -157,6 +178,13 @@ static void _siswrite(SISPtr pSiS, CARD32 reg, CARD32 data)
 }
 #endif
 
+static CARD8 getsrreg(SISPtr pSiS, CARD8 reg)
+{
+    CARD8 ret;
+    inSISIDXREG(SISSR, reg, ret);
+    return(ret);
+}
+
 static CARD8 getvideoreg(SISPtr pSiS, CARD8 reg)
 {
     CARD8 ret;
@@ -164,15 +192,14 @@ static CARD8 getvideoreg(SISPtr pSiS, CARD8 reg)
     return(ret);
 }
 
-static void setvideoreg(SISPtr pSiS, CARD8 reg, CARD8 data)
+static __inline void setvideoreg(SISPtr pSiS, CARD8 reg, CARD8 data)
 {
     outSISIDXREG(SISVID, reg, data);
 }
 
-static void setvideoregmask(SISPtr pSiS, CARD8 reg, CARD8 data, CARD8 mask)
+static __inline void setvideoregmask(SISPtr pSiS, CARD8 reg, CARD8 data, CARD8 mask)
 {
     CARD8   old;
-
     inSISIDXREG(SISVID, reg, old);
     data = (data & mask) | (old & (~mask));
     outSISIDXREG(SISVID, reg, data);
@@ -186,15 +213,6 @@ static void setsrregmask(SISPtr pSiS, CARD8 reg, CARD8 data, CARD8 mask)
     data = (data & mask) | (old & (~mask));
     outSISIDXREG(SISSR, reg, data);
 }
-
-#if 0
-static CARD8 getsisreg(SISPtr pSiS, CARD8 index_offset, CARD8 reg)
-{
-    CARD8 ret;
-    inSISIDXREG(index_offset, reg, ret);
-    return(ret);
-}
-#endif
 
 /* VBlank */
 static CARD8 vblank_active_CRT1(SISPtr pSiS)
@@ -278,15 +296,7 @@ static XF86VideoEncodingRec DummyEncoding =
 {
    0,
    "XV_IMAGE",
-   IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT,
-   {1, 1}
-};
-
-static XF86VideoEncodingRec DummyEncoding_M650 =
-{
-   0,
-   "XV_IMAGE",
-   IMAGE_MAX_WIDTH_M650, IMAGE_MAX_HEIGHT_M650,
+   0, 0,		/* Will be filled in */
    {1, 1}
 };
 
@@ -299,8 +309,10 @@ static XF86VideoFormatRec SISFormats[NUM_FORMATS] =
    {24, TrueColor}
 };
 
-#define NUM_ATTRIBUTES_300 5
-#define NUM_ATTRIBUTES_325 7
+#ifndef SIS_CP
+#define NUM_ATTRIBUTES_300 9
+#define NUM_ATTRIBUTES_315 12
+#endif
 
 static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
 {
@@ -308,37 +320,60 @@ static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
    {XvSettable | XvGettable, -128, 127,        "XV_BRIGHTNESS"},
    {XvSettable | XvGettable, 0, 7,             "XV_CONTRAST"},
    {XvSettable | XvGettable, 0, 1,             "XV_AUTOPAINT_COLORKEY"},
-   {XvSettable             , 0, 0,             "XV_SET_DEFAULTS"}
+   {XvSettable             , 0, 0,             "XV_SET_DEFAULTS"},
+   {XvSettable | XvGettable, -32, 32,          "XV_TVXPOSITION"},
+   {XvSettable | XvGettable, -32, 32,          "XV_TVYPOSITION"},
+   {XvSettable | XvGettable, 0, 1,             "XV_DISABLE_GRAPHICS"},
+   {XvSettable | XvGettable, 0, 1,             "XV_DISABLE_GRAPHICS_LR"},
+#ifdef SIS_CP
+   SIS_CP_VIDEO_ATTRIBUTES
+#endif
 };
 
-static XF86AttributeRec SISAttributes_325[NUM_ATTRIBUTES_325] =
+static XF86AttributeRec SISAttributes_315[NUM_ATTRIBUTES_315] =
 {
    {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"},
    {XvSettable | XvGettable, -128, 127,        "XV_BRIGHTNESS"},
    {XvSettable | XvGettable, 0, 7,             "XV_CONTRAST"},
    {XvSettable | XvGettable, -7, 7,            "XV_SATURATION"},
-   {XvSettable | XvGettable, -8, 7,            "XV_HUE"},	
+   {XvSettable | XvGettable, -8, 7,            "XV_HUE"},
    {XvSettable | XvGettable, 0, 1,             "XV_AUTOPAINT_COLORKEY"},
-   {XvSettable             , 0, 0,             "XV_SET_DEFAULTS"}
+   {XvSettable             , 0, 0,             "XV_SET_DEFAULTS"},
+   {XvSettable | XvGettable, -32, 32,          "XV_TVXPOSITION"},
+   {XvSettable | XvGettable, -32, 32,          "XV_TVYPOSITION"},
+   {XvSettable | XvGettable, 0, 1,             "XV_DISABLE_GRAPHICS"},
+   {XvSettable | XvGettable, 0, 1,             "XV_DISABLE_GRAPHICS_LR"},
+#ifdef SIS_CP
+   SIS_CP_VIDEO_ATTRIBUTES
+#endif
+   {XvSettable | XvGettable, 0, 1,             "XV_SWITCHCRT"},
 };
 
-#define NUM_IMAGES 6
+#define NUM_IMAGES_300 6
+#define NUM_IMAGES_315 7
+#define NUM_IMAGES_330 9
 #define PIXEL_FMT_YV12 FOURCC_YV12  /* 0x32315659 */
 #define PIXEL_FMT_UYVY FOURCC_UYVY  /* 0x59565955 */
 #define PIXEL_FMT_YUY2 FOURCC_YUY2  /* 0x32595559 */
 #define PIXEL_FMT_I420 FOURCC_I420  /* 0x30323449 */
 #define PIXEL_FMT_RGB5 0x35315652
 #define PIXEL_FMT_RGB6 0x36315652
+#define PIXEL_FMT_YVYU 0x55595659   /* 315/330 only */
+#define PIXEL_FMT_NV12 0x3231564e   /* 330 only */
+#define PIXEL_FMT_NV21 0x3132564e   /* 330 only */
 
-static XF86ImageRec SISImages[NUM_IMAGES] =
+/* TODO: */
+#define PIXEL_FMT_RAW8 0x38574152
+
+static XF86ImageRec SISImages[NUM_IMAGES_330] =
 {
-    XVIMAGE_YUY2, /* TW: If order is changed, SISOffscreenImages must be adapted */
+    XVIMAGE_YUY2, /* If order is changed, SISOffscreenImages must be adapted */
     XVIMAGE_YV12,
     XVIMAGE_UYVY,
     XVIMAGE_I420
     ,
     { /* RGB 555 */
-      0x35315652,
+      PIXEL_FMT_RGB5,
       XvRGB,
       LSBFirst,
       {'R','V','1','5',
@@ -356,7 +391,7 @@ static XF86ImageRec SISImages[NUM_IMAGES] =
       XvTopToBottom
     },
     { /* RGB 565 */
-      0x36315652,
+      PIXEL_FMT_RGB6,
       XvRGB,
       LSBFirst,
       {'R','V','1','6',
@@ -372,7 +407,58 @@ static XF86ImageRec SISImages[NUM_IMAGES] =
       {'R', 'V', 'B',0,
        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
       XvTopToBottom
-    }
+    },
+    {  /* YVYU */
+      PIXEL_FMT_YVYU, \
+      XvYUV, \
+      LSBFirst, \
+      {'Y','V','Y','U',
+	0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
+      16,
+      XvPacked,
+      1,
+      0, 0, 0, 0,
+      8, 8, 8,
+      1, 2, 2,
+      1, 1, 1,
+      {'Y','V','Y','U',
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+      XvTopToBottom
+   },
+   {   /* NV12 */
+      PIXEL_FMT_NV12,
+      XvYUV,
+      LSBFirst,
+      {'N','V','1','2',
+       0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
+      12,
+      XvPlanar,
+      2,
+      0, 0, 0, 0,
+      8, 8, 8,
+      1, 2, 2,
+      1, 2, 2,
+      {'Y','U','V',0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+      XvTopToBottom
+   },
+   {   /* NV21 */
+      PIXEL_FMT_NV21,
+      XvYUV,
+      LSBFirst,
+      {'N','V','2','1',
+       0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
+      12,
+      XvPlanar,
+      2,
+      0, 0, 0, 0,
+      8, 8, 8,
+      1, 2, 2,
+      1, 2, 2,
+      {'Y','V','U',0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+      XvTopToBottom
+   },
 };
 
 typedef struct {
@@ -395,19 +481,43 @@ typedef struct {
     CARD32  PSY;
     CARD32  PSV;
     CARD32  PSU;
+
+    CARD16  SCREENheight;
+
+    CARD8   lineBufSize;
+
+    DisplayModePtr  currentmode;
+
+#ifdef SISMERGED
+    CARD16  pitch2;
+    CARD16  HUSF2;
+    CARD16  VUSF2;
+    CARD8   IntBit2;
+    CARD8   wHPre2;
+
+    CARD16  srcW2;
+    CARD16  srcH2;
+    BoxRec  dstBox2;
+    CARD32  PSY2;
+    CARD32  PSV2;
+    CARD32  PSU2;
+    CARD16  SCREENheight2;
+    CARD8   lineBufSize2;
+
+    DisplayModePtr  currentmode2;
+
+    Bool    DoFirst, DoSecond;
+#endif
+
     CARD8   bobEnable;
 
     CARD8   contrastCtrl;
     CARD8   contrastFactor;
 
-    CARD8   lineBufSize;
-
     CARD8   (*VBlankActiveFunc)(SISPtr);
 #if 0
     CARD32  (*GetScanLineFunc)(SISPtr pSiS);
 #endif
-
-    CARD16  SCREENheight;
 
 #if 0
     /* TW: The following are not used yet */
@@ -430,7 +540,7 @@ typedef struct {
 } SISOverlayRec, *SISOverlayPtr;
 
 typedef struct {
-    FBLinearPtr  linear;	/* TW: We now use Linear, not Area */
+    FBLinearPtr  linear;
     CARD32       bufAddr[2];
 
     unsigned char currentBuf;
@@ -449,45 +559,97 @@ typedef struct {
     CARD32       colorKey;
     Bool 	 autopaintColorKey;
 
+    Bool 	 disablegfx;
+    Bool	 disablegfxlr;
+
     CARD32       videoStatus;
+    BOOLEAN	 overlayStatus; 
     Time         offTime;
     Time         freeTime;
 
     CARD32       displayMode;
     Bool	 bridgeIsSlave;
 
-    Bool         hasTwoOverlays;   /* TW: Chipset has two overlays */
-    Bool         dualHeadMode;     /* TW: We're running in DHM */
+    Bool         hasTwoOverlays;   /* Chipset has two overlays */
+    Bool         dualHeadMode;     /* We're running in DHM */
+    
+    Bool  	 NoOverlay;	
+    Bool	 PrevOverlay;
+    
+    Bool	 AllowSwitchCRT;   
+    int 	 crtnum;	   /* 0=CRT1, 1=CRT2 */
 
-    Bool         needToScale;      /* TW: Need to scale video */
+    Bool         needToScale;      /* Need to scale video */
 
-    int          shiftValue;       /* 550/650 need word addr/pitch, 630 double word */
+    int          shiftValue;       /* 315/330 series need word addr/pitch, 300 series double word */
+
+    short  	 linebufMergeLimit;
+    CARD8        linebufmask;
 
     short        oldx1, oldx2, oldy1, oldy2;
+#ifdef SISMERGED
+    short        oldx1_2, oldx2_2, oldy1_2, oldy2_2;
+#endif
     int          mustwait;
 
     Bool         grabbedByV4L;	   /* V4L stuff */
     int          pitch;
     int          offset;
 
-} SISPortPrivRec, *SISPortPrivPtr;        
+    int 	 modeflags;	   /* Flags field of current display mode */
+
+    int 	 tvxpos, tvypos;
+    Bool 	 updatetvxpos, updatetvypos;
+
+} SISPortPrivRec, *SISPortPrivPtr;
 
 #define GET_PORT_PRIVATE(pScrn) \
    (SISPortPrivPtr)((SISPTR(pScrn))->adaptor->pPortPrivates[0].ptr)
 
 static void
-SISSetPortDefaults (ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
+SISSetPortDefaults(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 {
+    SISPtr    pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+    SISEntPtr pSiSEnt = pSiS->entityPrivate;;
+#endif    
+    
     pPriv->colorKey    = 0x000101fe;
     pPriv->videoStatus = 0;
-    pPriv->brightness  = 0;
-    pPriv->contrast    = 4;
-    pPriv->hue         = 0;
-    pPriv->saturation  = 0;
+    pPriv->brightness  = pSiS->XvDefBri; /* 0;  - see sis_opt.c */
+    pPriv->contrast    = pSiS->XvDefCon; /* 4;  */
+    pPriv->hue         = pSiS->XvDefHue; /* 0;  */
+    pPriv->saturation  = pSiS->XvDefSat; /* 0;  */
     pPriv->autopaintColorKey = TRUE;
+    pPriv->disablegfx  = pSiS->XvDefDisableGfx;
+    pPriv->disablegfxlr= pSiS->XvDefDisableGfxLR;
+    if(pPriv->dualHeadMode) {
+#ifdef SISDUALHEAD
+       if(!pSiS->SecondHead) {
+          pPriv->tvxpos      = pSiS->tvxpos;
+          pPriv->tvypos      = pSiS->tvypos;
+	  pPriv->updatetvxpos = TRUE;
+          pPriv->updatetvypos = TRUE;
+       }
+#endif
+    } else {
+       pPriv->tvxpos      = pSiS->tvxpos;
+       pPriv->tvypos      = pSiS->tvypos;
+       pPriv->updatetvxpos = TRUE;
+       pPriv->updatetvypos = TRUE;
+    }
+#ifdef SIS_CP
+    SIS_CP_VIDEO_DEF
+#endif
+    if(pPriv->dualHeadMode)
+       pPriv->crtnum =
+	  pSiSEnt->curxvcrtnum =
+	     pSiSEnt->XvOnCRT2 ? 1 : 0;
+    else
+       pPriv->crtnum = pSiS->XvOnCRT2 ? 1 : 0;
 }
 
-static void 
+static void
 SISResetVideo(ScrnInfoPtr pScrn)
 {
     SISPtr pSiS = SISPTR(pScrn);
@@ -506,19 +668,31 @@ SISResetVideo(ScrnInfoPtr pScrn)
 
     /* Initialize first overlay (CRT1) ------------------------------- */
 
-    /* Write-enable video registers */
-    setvideoregmask(pSiS, Index_VI_Control_Misc2,         0x80, 0x81);
+    /* This bit has obviously a different meaning on 315 series (linebuffer-related) */
+    if(pSiS->VGAEngine == SIS_300_VGA) {
+       /* Write-enable video registers */
+       setvideoregmask(pSiS, Index_VI_Control_Misc2,      0x80, 0x81);
+    } else {
+       /* Select overlay 2, clear all linebuffer related bits */
+       setvideoregmask(pSiS, Index_VI_Control_Misc2,      0x00, 0xb1);
+    }
 
     /* Disable overlay */
     setvideoregmask(pSiS, Index_VI_Control_Misc0,         0x00, 0x02);
 
-    /* Disable bobEnable */
-    setvideoregmask(pSiS, Index_VI_Control_Misc1,         0x02, 0x02);
+    /* Disable bob de-interlacer */
+    setvideoregmask(pSiS, Index_VI_Control_Misc1,         0x00, 0x02);
+
+#if 0
+    /* TEST: Enable vertical interpolation @@@ */
+    setvideoregmask(pSiS, Index_VI_Control_Misc2,         0x08, 0x08);
+#endif
 
     /* Reset scale control and contrast */
+    /* (Enable DDA (interpolation)) */
     setvideoregmask(pSiS, Index_VI_Scale_Control,         0x60, 0x60);
     setvideoregmask(pSiS, Index_VI_Contrast_Enh_Ctrl,     0x04, 0x1F);
-  
+
     setvideoreg(pSiS, Index_VI_Disp_Y_Buf_Preset_Low,     0x00);
     setvideoreg(pSiS, Index_VI_Disp_Y_Buf_Preset_Middle,  0x00);
     setvideoreg(pSiS, Index_VI_UV_Buf_Preset_Low,         0x00);
@@ -527,18 +701,39 @@ SISResetVideo(ScrnInfoPtr pScrn)
     setvideoreg(pSiS, Index_VI_Play_Threshold_Low,        0x00);
     setvideoreg(pSiS, Index_VI_Play_Threshold_High,       0x00);
 
-    /* Initialize second overlay (CRT2) ---- only for 630/730, 550, M650/651 */
+    if((pSiS->Chipset == PCI_CHIP_SIS330) || (pSiS->Chipset == PCI_CHIP_SIS660)) {
+       /* What does this do? */
+       setvideoregmask(pSiS, Index_VI_Key_Overlay_OP, 0x00, 0x10);
+    }
+
+    if(pSiS->ChipFlags & SiSCF_Is65x) {
+       setvideoregmask(pSiS, Index_VI_Control_Misc2,  0x00, 0x04);
+    }
+
+    /* Initialize second overlay (CRT2) ---- only for 300, 630/730, 550, M650/651/652/653, 660 */
     if (pPriv->hasTwoOverlays) {
-    	/* Write-enable video registers */
-    	setvideoregmask(pSiS, Index_VI_Control_Misc2,         0x81, 0x81);
+
+        if(pSiS->VGAEngine == SIS_300_VGA) {
+    	   /* Write-enable video registers */
+    	   setvideoregmask(pSiS, Index_VI_Control_Misc2,      0x81, 0x81);
+	} else {
+	   /* Select overlay 2, clear all linebuffer related bits */
+           setvideoregmask(pSiS, Index_VI_Control_Misc2,      0x01, 0xb1);
+        }
 
     	/* Disable overlay */
     	setvideoregmask(pSiS, Index_VI_Control_Misc0,         0x00, 0x02);
 
-    	/* Disable bobEnable */
-    	setvideoregmask(pSiS, Index_VI_Control_Misc1,         0x02, 0x02);
+    	/* Disable bob de-interlacer */
+    	setvideoregmask(pSiS, Index_VI_Control_Misc1,         0x00, 0x02);
+
+#if 0
+	/* TEST: Enable vertical interpolation @@@ */
+        setvideoregmask(pSiS, Index_VI_Control_Misc2,         0x08, 0x08);
+#endif
 
     	/* Reset scale control and contrast */
+	/* (Enable DDA (interpolation)) */
     	setvideoregmask(pSiS, Index_VI_Scale_Control,         0x60, 0x60);
     	setvideoregmask(pSiS, Index_VI_Contrast_Enh_Ctrl,     0x04, 0x1F);
 
@@ -549,25 +744,30 @@ SISResetVideo(ScrnInfoPtr pScrn)
     	setvideoreg(pSiS, Index_VI_Disp_Y_UV_Buf_Preset_High, 0x00);
     	setvideoreg(pSiS, Index_VI_Play_Threshold_Low,        0x00);
     	setvideoreg(pSiS, Index_VI_Play_Threshold_High,       0x00);
+
+	if((pSiS->Chipset == PCI_CHIP_SIS330) || (pSiS->Chipset == PCI_CHIP_SIS660)) {
+	   /* What does this do? */
+           setvideoregmask(pSiS, Index_VI_Key_Overlay_OP, 0x00, 0x10);
+        }
     }
 
     /* set default properties for overlay 1 (CRT1) -------------------------- */
-    setvideoregmask (pSiS, Index_VI_Control_Misc2,        0x00, 0x01);
-    setvideoregmask (pSiS, Index_VI_Contrast_Enh_Ctrl,    0x04, 0x07);
-    setvideoreg (pSiS, Index_VI_Brightness,               0x20);
-    if (pSiS->VGAEngine == SIS_315_VGA) {
-      	setvideoreg (pSiS, Index_VI_Hue,          	   0x00);
-       	setvideoreg (pSiS, Index_VI_Saturation,            0x00);
+    setvideoregmask(pSiS, Index_VI_Control_Misc2,         0x00, 0x01);
+    setvideoregmask(pSiS, Index_VI_Contrast_Enh_Ctrl,     0x04, 0x07);
+    setvideoreg(pSiS, Index_VI_Brightness,                0x20);
+    if(pSiS->VGAEngine == SIS_315_VGA) {
+       setvideoreg(pSiS, Index_VI_Hue,          	  0x00);
+       setvideoreg(pSiS, Index_VI_Saturation,             0x00);
     }
 
-    /* set default properties for overlay 2(CRT2) only 630/730 and 550 ------ */
-    if (pPriv->hasTwoOverlays) {
-    	setvideoregmask (pSiS, Index_VI_Control_Misc2,        0x01, 0x01);
-    	setvideoregmask (pSiS, Index_VI_Contrast_Enh_Ctrl,    0x04, 0x07);
-    	setvideoreg (pSiS, Index_VI_Brightness,               0x20);
-    	if (pSiS->VGAEngine == SIS_315_VGA) {
-       		setvideoreg (pSiS, Index_VI_Hue,              0x00);
-       		setvideoreg (pSiS, Index_VI_Saturation,       0x00);
+    /* set default properties for overlay 2(CRT2)  -------------------------- */
+    if(pPriv->hasTwoOverlays) {
+    	setvideoregmask(pSiS, Index_VI_Control_Misc2,     0x01, 0x01);
+    	setvideoregmask(pSiS, Index_VI_Contrast_Enh_Ctrl, 0x04, 0x07);
+    	setvideoreg(pSiS, Index_VI_Brightness,            0x20);
+    	if(pSiS->VGAEngine == SIS_315_VGA) {
+       	   setvideoreg(pSiS, Index_VI_Hue,                0x00);
+       	   setvideoreg(pSiS, Index_VI_Saturation,    	  0x00);
     	}
     }
 }
@@ -583,7 +783,7 @@ static void
 set_dispmode(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 {
     SISPtr pSiS = SISPTR(pScrn);
-
+    
     pPriv->dualHeadMode = pPriv->bridgeIsSlave = FALSE;
 
     if(SiSBridgeIsInSlaveMode(pScrn)) pPriv->bridgeIsSlave = TRUE;
@@ -591,27 +791,25 @@ set_dispmode(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
     if( (pSiS->VBFlags & VB_DISPMODE_MIRROR) ||
         ((pPriv->bridgeIsSlave) && (pSiS->VBFlags & DISPTYPE_DISP2)) )  {
 	if(pPriv->hasTwoOverlays)
-           pPriv->displayMode = DISPMODE_MIRROR;     /* TW: CRT1 + CRT2 (2 overlays) */
-	else if(pSiS->XvOnCRT2)
-	   pPriv->displayMode = DISPMODE_SINGLE2;
+           pPriv->displayMode = DISPMODE_MIRROR;     /* CRT1+CRT2 (2 overlays) */
+	else if(pPriv->crtnum)
+	   pPriv->displayMode = DISPMODE_SINGLE2;    /* CRT2 only */
 	else
-	   pPriv->displayMode = DISPMODE_SINGLE1;
+	   pPriv->displayMode = DISPMODE_SINGLE1;    /* CRT1 only */
     } else {
 #ifdef SISDUALHEAD
       if(pSiS->DualHeadMode) {
          pPriv->dualHeadMode = TRUE;
       	 if(pSiS->SecondHead)
-	     /* TW: Slave is always CRT1 */
-	     pPriv->displayMode = DISPMODE_SINGLE1;
+	    pPriv->displayMode = DISPMODE_SINGLE1;   /* CRT1 only */
 	 else
-	     /* TW: Master is always CRT2 */
-	     pPriv->displayMode = DISPMODE_SINGLE2;
+	    pPriv->displayMode = DISPMODE_SINGLE2;   /* CRT2 only */
       } else
 #endif
       if(pSiS->VBFlags & DISPTYPE_DISP1) {
-      	pPriv->displayMode = DISPMODE_SINGLE1;  /* TW: CRT1 only */
+      	pPriv->displayMode = DISPMODE_SINGLE1;       /* CRT1 only */
       } else {
-        pPriv->displayMode = DISPMODE_SINGLE2;  /* TW: CRT2 only */
+        pPriv->displayMode = DISPMODE_SINGLE2;       /* CRT2 only */
       }
     }
 }
@@ -620,6 +818,12 @@ static void
 set_disptype_regs(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 {
     SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+    SISEntPtr pSiSEnt = pSiS->entityPrivate;
+    int crtnum = 0;
+    
+    if(pPriv->dualHeadMode) crtnum = pSiSEnt->curxvcrtnum;
+#endif 
 
     /* TW:
      *     SR06[7:6]
@@ -636,48 +840,67 @@ set_disptype_regs(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
      * On chipsets with two overlays, we can freely select and also
      * have a mirror mode. However, we use overlay 1 for CRT1 and
      * overlay 2 for CRT2.
+     * ATTENTION: CRT2 can only take up to 1 (one) overlay. Setting
+     * SR06/32 to 0xc0 DOES NOT WORK. THAT'S CONFIRMED.
+     * Therefore, we use overlay 1 on CRT2 if in SINGLE2 mode.
+     *
      * For chipsets with only one overlay, user must choose whether
      * to display the overlay on CRT1 or CRT2 by setting XvOnCRT2
-     * to TRUE (CRT2) or FALSE (CRT1). The hardware does not
-     * support any kind of "Mirror" mode on these chipsets.
+     * to TRUE (CRT2) or FALSE (CRT1). The driver does this auto-
+     * matically if only CRT1 or only CRT2 is used.
      */
 #ifdef UNLOCK_ALWAYS
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
+
     switch (pPriv->displayMode)
     {
-        case DISPMODE_SINGLE1:				/* TW: CRT1 only */
-	  if (pPriv->hasTwoOverlays) {
-	      if (pPriv->dualHeadMode) {
-	         setsrregmask (pSiS, 0x06, 0x00, 0x40);
-      	         setsrregmask (pSiS, 0x32, 0x00, 0x40);
+        case DISPMODE_SINGLE1:				/* CRT1-only mode: */
+	  if(pPriv->hasTwoOverlays) {
+	      if(pPriv->dualHeadMode) {
+	         setsrregmask(pSiS, 0x06, 0x00, 0x40);  /* overlay 1 -> CRT1 */
+      	         setsrregmask(pSiS, 0x32, 0x00, 0x40);
 	      } else {
-      	         setsrregmask (pSiS, 0x06, 0x00, 0xc0);
-      	         setsrregmask (pSiS, 0x32, 0x00, 0xc0);
+      	         setsrregmask(pSiS, 0x06, 0x00, 0xc0);  /* both overlays -> CRT1 */
+      	         setsrregmask(pSiS, 0x32, 0x00, 0xc0);
               }
 	  } else {
-	      setsrregmask (pSiS, 0x06, 0x00, 0xc0);
-	      setsrregmask (pSiS, 0x32, 0x00, 0xc0);
+#ifdef SISDUALHEAD
+	      if((!pPriv->dualHeadMode) || (crtnum == 0)) {
+#endif
+	         setsrregmask(pSiS, 0x06, 0x00, 0xc0);  /* only overlay -> CRT1 */
+	         setsrregmask(pSiS, 0x32, 0x00, 0xc0);
+#ifdef SISDUALHEAD
+	      }
+#endif
 	  }
 	  break;
-       	case DISPMODE_SINGLE2:  			/* TW: CRT2 only */
-	  if (pPriv->hasTwoOverlays) {
-	      if (pPriv->dualHeadMode) {
-	         setsrregmask (pSiS, 0x06, 0x80, 0x80);
-      	         setsrregmask (pSiS, 0x32, 0x80, 0x80);
+
+       	case DISPMODE_SINGLE2:  			/* CRT2-only mode: */
+	  if(pPriv->hasTwoOverlays) {
+	      if(pPriv->dualHeadMode) {
+	         setsrregmask(pSiS, 0x06, 0x80, 0x80);  /* overlay 2 -> CRT2 */
+      	         setsrregmask(pSiS, 0x32, 0x80, 0x80);
 	      } else {
-   	         setsrregmask (pSiS, 0x06, 0x80, 0xc0);
-      	         setsrregmask (pSiS, 0x32, 0x80, 0xc0);
+   	         setsrregmask(pSiS, 0x06, 0x40, 0xc0);  /* overlay 1 -> CRT2 */
+      	         setsrregmask(pSiS, 0x32, 0xc0, 0xc0);  /* (although both clocks for CRT2!) */
 	      }
 	  } else {
-              setsrregmask (pSiS, 0x06, 0x40, 0xc0);
-	      setsrregmask (pSiS, 0x32, 0x40, 0xc0);
+#ifdef SISDUALHEAD
+	      if((!pPriv->dualHeadMode) || (crtnum == 1)) {
+#endif
+                 setsrregmask(pSiS, 0x06, 0x40, 0xc0);  /* only overlay -> CRT2 */
+	         setsrregmask(pSiS, 0x32, 0x40, 0xc0);
+#ifdef SISDUALHEAD
+              }
+#endif
 	  }
 	  break;
-    	case DISPMODE_MIRROR:				/* TW: CRT1 + CRT2 */
-	default:					
-          setsrregmask (pSiS, 0x06, 0x80, 0xc0);
-      	  setsrregmask (pSiS, 0x32, 0x80, 0xc0);
+
+    	case DISPMODE_MIRROR:				/* CRT1+CRT2-mode: (only on chips with 2 overlays) */
+	default:
+          setsrregmask(pSiS, 0x06, 0x80, 0xc0);         /* overlay 1 -> CRT1, overlay 2 -> CRT2 */
+      	  setsrregmask(pSiS, 0x32, 0x80, 0xc0);
 	  break;
     }
 }
@@ -697,29 +920,51 @@ SISSetupImageVideo(ScreenPtr pScreen)
 
     adapt->type = XvWindowMask | XvInputMask | XvImageMask;
     adapt->flags = VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT;
-    adapt->name = "SIS 300/310/325 series Video Overlay";
+    adapt->name = "SIS 300/315/330 series Video Overlay";
     adapt->nEncodings = 1;
-    if(pSiS->Flags650 & SiS650_LARGEOVERLAY) {
-       adapt->pEncodings = &DummyEncoding_M650;
-    } else {
-       adapt->pEncodings = &DummyEncoding;
-    }
+    adapt->pEncodings = &DummyEncoding;
+
     adapt->nFormats = NUM_FORMATS;
     adapt->pFormats = SISFormats;
     adapt->nPorts = 1;
     adapt->pPortPrivates = (DevUnion*)(&adapt[1]);
 
     pPriv = (SISPortPrivPtr)(&adapt->pPortPrivates[1]);
-
+    
+    /* Setup chipset type helpers */
+    if(pSiS->hasTwoOverlays) {
+       pPriv->hasTwoOverlays = TRUE;
+       pPriv->AllowSwitchCRT = FALSE;
+    } else {
+       pPriv->hasTwoOverlays = FALSE;
+       pPriv->AllowSwitchCRT = TRUE;
+       if(pSiS->XvOnCRT2) {
+          if(!(pSiS->VBFlags & DISPTYPE_DISP1)) {
+	     pPriv->AllowSwitchCRT = FALSE;
+	  }
+       } else {
+          if(!(pSiS->VBFlags & DISPTYPE_DISP2)) {
+	     pPriv->AllowSwitchCRT = FALSE;
+	  }
+       }
+    }
+    
     adapt->pPortPrivates[0].ptr = (pointer)(pPriv);
-    adapt->nImages = NUM_IMAGES;
     if(pSiS->VGAEngine == SIS_300_VGA) {
+       adapt->nImages = NUM_IMAGES_300;
        adapt->pAttributes = SISAttributes_300;
        adapt->nAttributes = NUM_ATTRIBUTES_300;
     } else {
-       adapt->pAttributes = SISAttributes_325;
-       adapt->nAttributes = NUM_ATTRIBUTES_325;
+       if(pSiS->sishw_ext.jChipType >= SIS_330) {
+          adapt->nImages = NUM_IMAGES_330;
+       } else {
+          adapt->nImages = NUM_IMAGES_315;
+       }
+       adapt->pAttributes = SISAttributes_315;
+       adapt->nAttributes = NUM_ATTRIBUTES_315;
+       if(pPriv->hasTwoOverlays) adapt->nAttributes--;
     }
+    
     adapt->pImages = SISImages;
     adapt->PutVideo = NULL;
     adapt->PutStill = NULL;
@@ -736,8 +981,8 @@ SISSetupImageVideo(ScreenPtr pScreen)
     pPriv->currentBuf  = 0;
     pPriv->linear      = NULL;
     pPriv->grabbedByV4L= FALSE;
-
-    SISSetPortDefaults(pScrn, pPriv);
+    pPriv->NoOverlay   = FALSE;
+    pPriv->PrevOverlay = FALSE;
 
     /* gotta uninit this someplace */
     REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
@@ -750,18 +995,20 @@ SISSetupImageVideo(ScreenPtr pScreen)
     if(pSiS->VGAEngine == SIS_315_VGA) {
        pSiS->xvSaturation = MAKE_ATOM("XV_SATURATION");
        pSiS->xvHue        = MAKE_ATOM("XV_HUE");
+       pSiS->xvSwitchCRT  = MAKE_ATOM("XV_SWITCHCRT");
     }
     pSiS->xvAutopaintColorKey = MAKE_ATOM("XV_AUTOPAINT_COLORKEY");
     pSiS->xvSetDefaults       = MAKE_ATOM("XV_SET_DEFAULTS");
+    pSiS->xvDisableGfx        = MAKE_ATOM("XV_DISABLE_GRAPHICS");
+    pSiS->xvDisableGfxLR      = MAKE_ATOM("XV_DISABLE_GRAPHICS_LR");
+    pSiS->xvTVXPosition       = MAKE_ATOM("XV_TVXPOSITION");
+    pSiS->xvTVYPosition       = MAKE_ATOM("XV_TVYPOSITION");
+#ifdef SIS_CP
+    SIS_CP_VIDEO_ATOMS
+#endif
 
-    /* TW: Setup chipset type helpers */
-    if (pSiS->hasTwoOverlays)
-       pPriv->hasTwoOverlays = TRUE;
-    else
-       pPriv->hasTwoOverlays = FALSE;
-
-    /* TW: 300 series require double words for addresses and pitches,
-     *     310/325 series accept word.
+    /* 300 series require double words for addresses and pitches,
+     * 315 series require word.
      */
     switch (pSiS->VGAEngine) {
     case SIS_315_VGA:
@@ -776,6 +1023,68 @@ SISSetupImageVideo(ScreenPtr pScreen)
     /* Set displayMode according to VBFlags */
     set_dispmode(pScrn, pPriv);
 
+    /* Now for the linebuffer stuff.
+     * All chipsets have a certain number of linebuffers, each of a certain
+     * size. The number of buffers is per overlay.
+     * Chip        number     size        	  max video size
+     *  300          2         ?			?
+     *  630/730      2         ?			?
+     *  315          2         960?	    	    1920x1080
+     *  650/740      2         960 ("120x128")	    1920x1080
+     *  M650/651..   4         480	    	    1920x1080
+     *  330          2         960?	    	    1920x1080?
+     *  660	     ?	       ? 		       	?
+     * The unit of size is unknown; I just know that a size of 480 limits
+     * the video source width to 384. Beyond that, line buffers must be
+     * merged (otherwise the video output is garbled).
+     * To use the maximum width (eg 1920x1080 on the 315 series, including
+     * the M650, 651 and later), *all* line buffers must be merged. Hence,
+     * we can only use one overlay. This should be set up for modes where
+     * either only CRT1 or only CRT2 is used.
+     * If both overlays are going to be used (such as in modes were both
+     * CRT1 and CRT2 are active), we are limited to the half of the
+     * maximum width.
+     */
+
+    pPriv->linebufMergeLimit = LINEBUFLIMIT1;
+
+    if(pSiS->VGAEngine == SIS_300_VGA) {
+
+       DummyEncoding.width = IMAGE_MAX_WIDTH_300;
+       DummyEncoding.height = IMAGE_MAX_HEIGHT_300;
+       pPriv->linebufmask = 0x11;
+
+    } else {
+
+       DummyEncoding.width = IMAGE_MAX_WIDTH_315;
+       DummyEncoding.height = IMAGE_MAX_HEIGHT_315;
+       pPriv->linebufmask = 0xb1;
+       if(pPriv->hasTwoOverlays) {
+#ifdef SISDUALHEAD
+          if(pSiS->DualHeadMode) {
+             DummyEncoding.width >>= 1;
+          } else
+#endif
+#ifdef SISMERGED
+          if(pSiS->MergedFB) {
+             DummyEncoding.width >>= 1;
+          } else
+#endif
+          if(pPriv->displayMode == DISPMODE_MIRROR) {
+             DummyEncoding.width >>= 1;
+          }
+       } else {
+          /* On machines with only one overlay, the linebuffers are
+           * generally larger, so our merging-limit is higher, too.
+	   */
+          pPriv->linebufMergeLimit = LINEBUFLIMIT2;
+       }
+
+    }
+    
+    /* Reset the properties to their defaults */
+    SISSetPortDefaults(pScrn, pPriv);
+
     /* Set SR(06, 32) registers according to DISPMODE */
     set_disptype_regs(pScrn, pPriv);
 
@@ -784,32 +1093,96 @@ SISSetupImageVideo(ScreenPtr pScreen)
     return adapt;
 }
 
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+static Bool
+RegionsEqual(RegionPtr A, RegionPtr B)
+{
+    int *dataA, *dataB;
+    int num;
+
+    num = REGION_NUM_RECTS(A);
+    if(num != REGION_NUM_RECTS(B))
+    return FALSE;
+
+    if((A->extents.x1 != B->extents.x1) ||
+       (A->extents.x2 != B->extents.x2) ||
+       (A->extents.y1 != B->extents.y1) ||
+       (A->extents.y2 != B->extents.y2))
+    return FALSE;
+
+    dataA = (int*)REGION_RECTS(A);
+    dataB = (int*)REGION_RECTS(B);
+
+    while(num--) {
+      if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
+        return FALSE;
+      dataA += 2;
+      dataB += 2;
+    }
+
+    return TRUE;
+}
+#endif
+
 static int
 SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
   		    INT32 value, pointer data)
 {
   SISPortPrivPtr pPriv = (SISPortPrivPtr)data;
   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+  SISEntPtr pSiSEnt = pSiS->entityPrivate;;
+#endif  
 
   if(attribute == pSiS->xvBrightness) {
-    if((value < -128) || (value > 127))
-       return BadValue;
-    pPriv->brightness = value;
+     if((value < -128) || (value > 127))
+        return BadValue;
+     pPriv->brightness = value;
   } else if(attribute == pSiS->xvContrast) {
-    if((value < 0) || (value > 7))
-       return BadValue;
-    pPriv->contrast = value;
+     if((value < 0) || (value > 7))
+        return BadValue;
+     pPriv->contrast = value;
   } else if(attribute == pSiS->xvColorKey) {
-    pPriv->colorKey = value;
-    REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
+     pPriv->colorKey = value;
+     REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
   } else if(attribute == pSiS->xvAutopaintColorKey) {
-     if ((value < 0) || (value > 1))
-       return BadValue;
+     if((value < 0) || (value > 1))
+        return BadValue;
      pPriv->autopaintColorKey = value;
   } else if(attribute == pSiS->xvSetDefaults) {
-        SISSetPortDefaults(pScrn, pPriv);
+     SISSetPortDefaults(pScrn, pPriv);
+  } else if(attribute == pSiS->xvDisableGfx) {
+     if((value < 0) || (value > 1))
+        return BadValue;
+     pPriv->disablegfx = value;
+  } else if(attribute == pSiS->xvDisableGfxLR) {
+     if((value < 0) || (value > 1))
+        return BadValue;
+     pPriv->disablegfxlr = value;
+  } else if(attribute == pSiS->xvTVXPosition) {
+     if((value < -32) || (value > 32))
+        return BadValue;
+     pPriv->tvxpos = value;
+     pPriv->updatetvxpos = TRUE;
+  } else if(attribute == pSiS->xvTVYPosition) {
+     if((value < -32) || (value > 32))
+        return BadValue;
+     pPriv->tvypos = value;
+     pPriv->updatetvypos = TRUE;
+#ifdef SIS_CP
+  SIS_CP_VIDEO_SETATTRIBUTE
+#endif
   } else if(pSiS->VGAEngine == SIS_315_VGA) {
-     if(attribute == pSiS->xvHue) {
+     if(attribute == pSiS->xvSwitchCRT) {
+        if(pPriv->AllowSwitchCRT) {
+           if((value < 0) || (value > 1))
+              return BadValue;
+	   pPriv->crtnum = value;
+#ifdef SISDUALHEAD
+           if(pPriv->dualHeadMode) pSiSEnt->curxvcrtnum = value;
+#endif
+        }
+     } else if(attribute == pSiS->xvHue) {
        if((value < -8) || (value > 7))
          return BadValue;
        pPriv->hue = value;
@@ -831,21 +1204,42 @@ SISGetPortAttribute(
 ){
   SISPortPrivPtr pPriv = (SISPortPrivPtr)data;
   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+  SISEntPtr pSiSEnt = pSiS->entityPrivate;;
+#endif  
 
   if(attribute == pSiS->xvBrightness) {
-    *value = pPriv->brightness;
+     *value = pPriv->brightness;
   } else if(attribute == pSiS->xvContrast) {
-    *value = pPriv->contrast;
+     *value = pPriv->contrast;
   } else if(attribute == pSiS->xvColorKey) {
-    *value = pPriv->colorKey;
+     *value = pPriv->colorKey;
   } else if (attribute == pSiS->xvAutopaintColorKey) {
-    *value = (pPriv->autopaintColorKey) ? 1 : 0;
+     *value = (pPriv->autopaintColorKey) ? 1 : 0;
+  } else if (attribute == pSiS->xvDisableGfx) {
+     *value = (pPriv->disablegfx) ? 1 : 0;
+  } else if (attribute == pSiS->xvDisableGfxLR) {
+     *value = (pPriv->disablegfxlr) ? 1 : 0;
+  } else if(attribute == pSiS->xvTVXPosition) {
+     *value = pPriv->tvxpos;
+  } else if(attribute == pSiS->xvTVYPosition) {
+     *value = pPriv->tvypos;
+#ifdef SIS_CP
+  SIS_CP_VIDEO_GETATTRIBUTE
+#endif
   } else if(pSiS->VGAEngine == SIS_315_VGA) {
-    if(attribute == pSiS->xvHue) {
-       *value = pPriv->hue;
-    } else if(attribute == pSiS->xvSaturation) {
-       *value = pPriv->saturation;
-    } else return BadMatch;
+     if(attribute == pSiS->xvSwitchCRT) {
+#ifdef SISDUALHEAD
+        if(pPriv->dualHeadMode)
+           *value = pSiSEnt->curxvcrtnum;
+        else
+#endif
+           *value = pPriv->crtnum;
+     } else if(attribute == pSiS->xvHue) {
+        *value = pPriv->hue;
+     } else if(attribute == pSiS->xvSaturation) {
+        *value = pPriv->saturation;
+     } else return BadMatch;
   } else return BadMatch;
   return Success;
 }
@@ -878,43 +1272,47 @@ calc_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
   CARD16 LCDheight = pSiS->LCDheight;
   int srcPitch = pOverlay->origPitch;
   int origdstH = dstH;
+  int modeflags = pOverlay->currentmode->Flags;
 
-  /* TW: Stretch image due to idiotic LCD "auto"-scaling on LVDS (and 630+301B) */
+  /* TW: Stretch image due to panel link scaling */
   if(pSiS->VBFlags & CRT2_LCD) {
      if(pPriv->bridgeIsSlave) {
-  	if(pSiS->VBFlags & VB_LVDS) {
-  	   dstH = (dstH * LCDheight) / pOverlay->SCREENheight;
-        } else if( (pSiS->VGAEngine == SIS_300_VGA) &&
-		   (pSiS->VBFlags & (VB_301B|VB_302B|VB_30xLV|VB_30xLVX)) ) {
-  	   dstH = (dstH * LCDheight) / pOverlay->SCREENheight;
-        }
+        if(pSiS->VBFlags & (VB_LVDS | VB_30xBDH)) {
+           if(pSiS->MiscFlags & MISC_PANELLINKSCALER) {
+  	      dstH = (dstH * LCDheight) / pOverlay->SCREENheight;
+           }
+	}
      } else if(iscrt2) {
-  	if (pSiS->VBFlags & VB_LVDS) {
-   		dstH = (dstH * LCDheight) / pOverlay->SCREENheight;
-		if (pPriv->displayMode == DISPMODE_MIRROR) flag = 1;
-        } else if ( (pSiS->VGAEngine == SIS_300_VGA) &&
-                    (pSiS->VBFlags & (VB_301B|VB_302B|VB_30xLV|VB_30xLVX)) ) {
-    		dstH = (dstH * LCDheight) / pOverlay->SCREENheight;
-		if (pPriv->displayMode == DISPMODE_MIRROR) flag = 1;
+  	if(pSiS->VBFlags & (VB_LVDS | VB_30xBDH)) {
+	   if(pSiS->MiscFlags & MISC_PANELLINKSCALER) {
+   	      dstH = (dstH * LCDheight) / pOverlay->SCREENheight;
+	      if (pPriv->displayMode == DISPMODE_MIRROR) flag = 1;
+	   }
         }
      }
   }
+
   /* TW: For double scan modes, we need to double the height
-   *     (Perhaps we also need to scale LVDS, but I'm not sure.)
-   *     On 310/325 series, we need to double the width as well.
+   *     On 315 and 550 (?), we need to double the width as well.
    *     Interlace mode vice versa.
    */
-  if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
+  if(modeflags & V_DBLSCAN) {
 	   	dstH = origdstH << 1;
 		flag = 0;
-		if(pSiS->VGAEngine == SIS_315_VGA) {
+		if((pSiS->sishw_ext.jChipType >= SIS_315H) &&
+		   (pSiS->sishw_ext.jChipType <= SIS_550)) {
 			dstW <<= 1;
 		}
   }
-  if(pSiS->CurrentLayout.mode->Flags & V_INTERLACE) {
+  if(modeflags & V_INTERLACE) {
   		dstH = origdstH >> 1;
 		flag = 0;
   }
+
+#if 0
+  /* TEST @@@ */
+  if(pOverlay->bobEnable & 0x08) dstH <<= 1;
+#endif
 
   if(dstW < OVERLAY_MIN_WIDTH) dstW = OVERLAY_MIN_WIDTH;
   if (dstW == srcW) {
@@ -931,7 +1329,7 @@ calc_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
 
 	/* TW: It seems, the hardware can't scale below factor .125 (=1/8) if the
 	       pitch isn't a multiple of 256.
-	       TODO: Test this on the 310/325 series!
+	       TODO: Test this on the 315 series!
 	 */
 	if((srcPitch % 256) || (srcPitch < 256)) {
 	   if(((dstW * 1000) / srcW) < 125) dstW = tmpW = ((srcW * 125) / 1000) + 1;
@@ -968,7 +1366,7 @@ calc_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
         if (I < 2) {
             pOverlay->VUSF = ((srcH - dstH) << 16) / dstH;
 	    /* TW: Needed for LCD-scaling modes */
-	    if ((flag) && (mult = (srcH / origdstH)) >= 2)
+	    if((flag) && (mult = (srcH / origdstH)) >= 2)
 	    		pOverlay->pitch /= mult;
         } else {
 #if 0
@@ -995,16 +1393,144 @@ calc_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
 }
 
 static void
-set_line_buf_size(SISOverlayPtr pOverlay)
+calc_scale_factor_2(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
+                 SISPortPrivPtr pPriv, int index, int iscrt2)
+{
+  SISPtr pSiS = SISPTR(pScrn);
+  CARD32 I=0,mult=0;
+  int flag=0;
+
+  int dstW = pOverlay->dstBox2.x2 - pOverlay->dstBox2.x1;
+  int dstH = pOverlay->dstBox2.y2 - pOverlay->dstBox2.y1;
+  int srcW = pOverlay->srcW2;
+  int srcH = pOverlay->srcH2;
+  CARD16 LCDheight = pSiS->LCDheight;
+  int srcPitch = pOverlay->origPitch;
+  int origdstH = dstH;
+  int modeflags = pOverlay->currentmode2->Flags;
+
+  /* TW: Stretch image due to panel link scaling */
+  if(pSiS->VBFlags & CRT2_LCD) {
+     if(pSiS->VBFlags & (VB_LVDS | VB_30xBDH)) {
+	if(pSiS->MiscFlags & MISC_PANELLINKSCALER) {
+   	   dstH = (dstH * LCDheight) / pOverlay->SCREENheight2;
+	   flag = 1;
+	}
+     }
+  }
+  /* TW: For double scan modes, we need to double the height
+   *     On 315 and 550 (?), we need to double the width as well.
+   *     Interlace mode vice versa.
+   */
+  if(modeflags & V_DBLSCAN) {
+	   	dstH = origdstH << 1;
+		flag = 0;
+		if((pSiS->sishw_ext.jChipType >= SIS_315H) &&
+		   (pSiS->sishw_ext.jChipType <= SIS_550)) {
+			dstW <<= 1;
+		}
+  }
+  if(modeflags & V_INTERLACE) {
+  		dstH = origdstH >> 1;
+		flag = 0;
+  }
+
+#if 0
+  /* TEST @@@ */
+  if(pOverlay->bobEnable & 0x08) dstH <<= 1;
+#endif
+
+  if(dstW < OVERLAY_MIN_WIDTH) dstW = OVERLAY_MIN_WIDTH;
+  if (dstW == srcW) {
+        pOverlay->HUSF2   = 0x00;
+        pOverlay->IntBit2 = 0x05;
+	pOverlay->wHPre2  = 0;
+  } else if (dstW > srcW) {
+        dstW += 2;
+        pOverlay->HUSF2   = (srcW << 16) / dstW;
+        pOverlay->IntBit2 = 0x04;
+	pOverlay->wHPre2  = 0;
+  } else {
+        int tmpW = dstW;
+
+	/* TW: It seems, the hardware can't scale below factor .125 (=1/8) if the
+	       pitch isn't a multiple of 256.
+	       TODO: Test this on the 315 series!
+	 */
+	if((srcPitch % 256) || (srcPitch < 256)) {
+	   if(((dstW * 1000) / srcW) < 125) dstW = tmpW = ((srcW * 125) / 1000) + 1;
+	}
+
+        I = 0;
+        pOverlay->IntBit2 = 0x01;
+        while (srcW >= tmpW) {
+            tmpW <<= 1;
+            I++;
+        }
+        pOverlay->wHPre2 = (CARD8)(I - 1);
+        dstW <<= (I - 1);
+        if ((srcW % dstW))
+            pOverlay->HUSF2 = ((srcW - dstW) << 16) / dstW;
+        else
+            pOverlay->HUSF2 = 0x00;
+  }
+
+  if(dstH < OVERLAY_MIN_HEIGHT) dstH = OVERLAY_MIN_HEIGHT;
+  if(dstH == srcH) {
+        pOverlay->VUSF2   = 0x00;
+        pOverlay->IntBit2 |= 0x0A;
+  } else if(dstH > srcH) {
+        dstH += 0x02;
+        pOverlay->VUSF2 = (srcH << 16) / dstH;
+        pOverlay->IntBit2 |= 0x08;
+  } else {
+        CARD32 realI;
+
+        I = realI = srcH / dstH;
+        pOverlay->IntBit2 |= 0x02;
+
+        if(I < 2) {
+            pOverlay->VUSF2 = ((srcH - dstH) << 16) / dstH;
+	    /* TW: Needed for LCD-scaling modes */
+	    if(flag && ((mult = (srcH / origdstH)) >= 2))
+	       pOverlay->pitch2 /= mult;
+        } else {
+#if 0
+            if (((pOverlay->bobEnable & 0x08) == 0x00) &&
+                (((srcPitch * I)>>2) > 0xFFF)){
+                pOverlay->bobEnable |= 0x08;
+                srcPitch >>= 1;
+            }
+#endif
+            if (((srcPitch * I)>>2) > 0xFFF) {
+                I = (0xFFF*2/srcPitch);
+                pOverlay->VUSF2 = 0xFFFF;
+            } else {
+                dstH = I * dstH;
+                if (srcH % dstH)
+                    pOverlay->VUSF2 = ((srcH - dstH) << 16) / dstH;
+                else
+                    pOverlay->VUSF2 = 0x00;
+            }
+            /* set video frame buffer offset */
+            pOverlay->pitch2 = (CARD16)(srcPitch*I);
+        }
+   }
+}
+
+static CARD8
+calc_line_buf_size(CARD32 srcW, CARD8 wHPre, CARD32 pixelFormat)
 {
     CARD8  preHIDF;
     CARD32 I;
-    CARD32 line = pOverlay->srcW;
+    CARD32 line = srcW;
 
-    if ( (pOverlay->pixelFormat == PIXEL_FMT_YV12) ||
-         (pOverlay->pixelFormat == PIXEL_FMT_I420) )
+    if ( (pixelFormat == PIXEL_FMT_YV12) ||
+         (pixelFormat == PIXEL_FMT_I420) ||
+	 (pixelFormat == PIXEL_FMT_NV12) ||
+	 (pixelFormat == PIXEL_FMT_NV21) )
     {
-        preHIDF = pOverlay->wHPre & 0x07;
+        preHIDF = wHPre & 0x07;
         switch (preHIDF)
         {
             case 3 :
@@ -1012,124 +1538,227 @@ set_line_buf_size(SISOverlayPtr pOverlay)
                    I = (line >> 8);
                 else
                    I = (line >> 8) + 1;
-                pOverlay->lineBufSize = (CARD8)(I * 32 - 1);
-                break;
+                return((CARD8)(I * 32 - 1));
             case 4 :
                 if ((line & 0xfffffe00) == line)
                    I = (line >> 9);
                 else
                    I = (line >> 9) + 1;
-                pOverlay->lineBufSize = (CARD8)(I * 64 - 1);
-                break;
+                return((CARD8)(I * 64 - 1));
             case 5 :
                 if ((line & 0xfffffc00) == line)
                    I = (line >> 10);
                 else
                    I = (line >> 10) + 1;
-                pOverlay->lineBufSize = (CARD8)(I * 128 - 1);
-                break;
+                return((CARD8)(I * 128 - 1));
             case 6 :
-                if ((line & 0xfffff800) == line)
-                   I = (line >> 11);
-                else
-                   I = (line >> 11) + 1;
-                pOverlay->lineBufSize = (CARD8)(I * 256 - 1);
-                break;
+                return((CARD8)(255));
             default :
                 if ((line & 0xffffff80) == line)
                    I = (line >> 7);
                 else
                    I = (line >> 7) + 1;
-                pOverlay->lineBufSize = (CARD8)(I * 16 - 1);
-                break;
+                return((CARD8)(I * 16 - 1));
         }
     } else { /* YUV2, UYVY */
         if ((line & 0xffffff8) == line)
             I = (line >> 3);
         else
             I = (line >> 3) + 1;
-        pOverlay->lineBufSize = (CARD8)(I - 1);
+        return((CARD8)(I - 1));
     }
 }
 
-static void
-merge_line_buf(SISPtr pSiS, SISPortPrivPtr pPriv, Bool enable)
+static __inline void
+set_line_buf_size_1(SISOverlayPtr pOverlay)
 {
-  if(enable) {
-    switch (pPriv->displayMode){
+    pOverlay->lineBufSize = calc_line_buf_size(pOverlay->srcW,pOverlay->wHPre, pOverlay->pixelFormat);
+}
+
+#ifdef SISMERGED
+static __inline void
+set_line_buf_size_2(SISOverlayPtr pOverlay)
+{
+    pOverlay->lineBufSize2 = calc_line_buf_size(pOverlay->srcW2,pOverlay->wHPre2, pOverlay->pixelFormat);
+}
+
+static void
+merge_line_buf_mfb(SISPtr pSiS, SISPortPrivPtr pPriv, Bool enable1, Bool enable2,
+                   short width1, short width2, short limit)
+{
+  unsigned char misc1, misc2, mask = pPriv->linebufmask;
+
+  if(pPriv->hasTwoOverlays) {     /* This means we are in MIRROR mode */
+
+     misc2 = 0x00;
+     if(enable1) misc1 = 0x04;
+     else 	 misc1 = 0x00;
+     setvideoregmask(pSiS, Index_VI_Control_Misc2, misc2, mask);
+     setvideoregmask(pSiS, Index_VI_Control_Misc1, misc1, 0x04);
+
+     misc2 = 0x01;
+     if(enable2) misc1 = 0x04;
+     else        misc1 = 0x00;
+     setvideoregmask(pSiS, Index_VI_Control_Misc2, misc2, mask);
+     setvideoregmask(pSiS, Index_VI_Control_Misc1, misc1, 0x04);
+
+  } else {			/* This means we are either in SINGLE1 or SINGLE2 mode */
+
+     misc2 = 0x00;
+     if(enable1 || enable2) misc1 = 0x04;
+     else                   misc1 = 0x00;
+
+     setvideoregmask(pSiS, Index_VI_Control_Misc2, misc2, mask);
+     setvideoregmask(pSiS, Index_VI_Control_Misc1, misc1, 0x04);
+
+  }
+}
+#endif
+
+/* About linebuffer merging:
+ *
+ * For example the 651:
+ * Each overlay has 4 line buffers, 384 bytes each (<-- Is that really correct? 1920 / 384 = 5 !!!)
+ * If the source width is greater than 384, line buffers must be merged.
+ * Dual merge: Only O1 usable (uses overlay 2's linebuffer), maximum width 384*2
+ * Individual merge: Both overlays available, maximum width 384*2
+ * All merge: Only overlay 1 available, maximum width = 384*4 (<--- should be 1920, is 1536...)
+ *
+ *
+ *        Normally:                  Dual merge:                 Individual merge
+ *  Overlay 1    Overlay 2         Overlay 1 only!                Both overlays
+ *  ___1___      ___5___           ___1___ ___2___ -\         O1  ___1___ ___2___
+ *  ___2___      ___6___           ___3___ ___4___   \_ O 1   O1  ___3___ ___4___
+ *  ___3___      ___7___	   ___5___ ___6___   /        O2  ___5___ ___6___
+ *  ___4___      ___8___           ___7___ ___8___ -/         O2  ___7___ ___8___
+ *
+ *
+ * All merge:          ___1___ ___2___ ___3___ ___4___
+ * (Overlay 1 only!)   ___5___ ___6___ ___7___ ___8___
+ *
+ * Individual merge is supported on all chipsets.
+ * Dual merge is only supported on the 300 series and M650/651 and later.
+ * All merge is only supported on the M650/651 and later.
+ *
+ */
+
+
+static void
+merge_line_buf(SISPtr pSiS, SISPortPrivPtr pPriv, Bool enable, short width, short limit)
+{
+  unsigned char misc1, misc2, mask = pPriv->linebufmask;
+
+  if(enable) { 		/* ----- enable linebuffer merge */
+
+    switch(pPriv->displayMode){
     case DISPMODE_SINGLE1:
-        if (pPriv->hasTwoOverlays) {
-           if (pPriv->dualHeadMode) {
-	       /* line merge */
-	       setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, 0x11);
-      	       setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x04, 0x04);
+        if(pSiS->VGAEngine == SIS_300_VGA) {
+           if(pPriv->dualHeadMode) {
+	       misc2 = 0x00;
+	       misc1 = 0x04;
 	   } else {
-	       /* dual line merge */
-	       setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x10, 0x11);
-      	       setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x04);
+	       misc2 = 0x10;
+	       misc1 = 0x00;
 	   }
         } else {
-      	   setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x10, 0x11);
-      	   setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x04);
-	}
-      	break;
-    case DISPMODE_SINGLE2:
-    	if (pPriv->hasTwoOverlays) {
-	   if (pPriv->dualHeadMode) {
-	      /* line merge */
-	      setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x01, 0x11);
-     	      setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x04, 0x04);
+	   if(pPriv->hasTwoOverlays) {
+	      if(pPriv->dualHeadMode) {
+	         misc2 = 0x00;
+		 misc1 = 0x04;
+	      } else {
+	         if(width > (limit * 2)) {
+		    misc2 = 0x20;
+		 } else {
+	            misc2 = 0x10;
+		 }
+		 misc1 = 0x00;
+	      }
 	   } else {
-	      /* line merge */
-      	      setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x01, 0x11); 
-     	      setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x04, 0x04);
+	      misc2 = 0x00;
+	      misc1 = 0x04;
+	   }
+	}
+	setvideoregmask(pSiS, Index_VI_Control_Misc2, misc2, mask);
+	setvideoregmask(pSiS, Index_VI_Control_Misc1, misc1, 0x04);
+      	break;
+
+    case DISPMODE_SINGLE2:
+        if(pSiS->VGAEngine == SIS_300_VGA) {
+	   if(pPriv->dualHeadMode) {
+	      misc2 = 0x01;
+	      misc1 = 0x04;
+	   } else {
+	      misc2 = 0x10;
+	      misc1 = 0x00;
 	   }
 	} else {
-	   setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x10, 0x11);
-      	   setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x04);
+	   if(pPriv->hasTwoOverlays) {
+	      if(pPriv->dualHeadMode) {
+	         misc2 = 0x01;
+		 misc1 = 0x04;
+	      } else {
+	         if(width > (limit * 2)) {
+		    misc2 = 0x20;
+		 } else {
+	            misc2 = 0x10;
+		 }
+		 misc1 = 0x00;
+	      }
+	   } else {
+	      misc2 = 0x00;
+	      misc1 = 0x04;
+	   }
 	}
+	setvideoregmask(pSiS, Index_VI_Control_Misc2, misc2, mask);
+	setvideoregmask(pSiS, Index_VI_Control_Misc1, misc1, 0x04);
      	break;
-    case DISPMODE_MIRROR:
+
+    case DISPMODE_MIRROR:   /* This can only be on chips with 2 overlays */
     default:
-        /* line merge */
-      	setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, 0x11);
+        setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, mask);
       	setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x04, 0x04);
-	if (pPriv->hasTwoOverlays) {
-	   /* line merge */
-      	   setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x01, 0x11);
-      	   setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x04, 0x04);
-	}
-      	break;
+	setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x01, mask);
+      	setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x04, 0x04);
+        break;
     }
-  } else {
-    switch (pPriv->displayMode) {
+
+  } else {  		/* ----- disable linebuffer merge */
+
+    switch(pPriv->displayMode) {
+
     case DISPMODE_SINGLE1:
-    	setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, 0x11);
+	setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, mask);
     	setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x04);
     	break;
+
     case DISPMODE_SINGLE2:
-    	if (pPriv->hasTwoOverlays) {
-    	   setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x01, 0x11);
-    	   setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x04);
-	} else {
-	   setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, 0x11);
-    	   setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x04);
+        if(pSiS->VGAEngine == SIS_300_VGA) {
+	   if(pPriv->dualHeadMode) misc2 = 0x01;
+	   else       		   misc2 = 0x00;
+    	} else {
+    	   if(pPriv->hasTwoOverlays) {
+	      if(pPriv->dualHeadMode) misc2 = 0x01;
+	      else                    misc2 = 0x00;
+	   } else {
+	      misc2 = 0x00;
+	   }
 	}
-	break;
-    case DISPMODE_MIRROR:
-    default:
-    	setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, 0x11);
+	setvideoregmask(pSiS, Index_VI_Control_Misc2, misc2, mask);
     	setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x04);
-	if (pPriv->hasTwoOverlays) {
-	   setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x01, 0x11);
-    	   setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x04);
-	}
+	break;
+
+    case DISPMODE_MIRROR:   /* This can only be on chips with 2 overlays */
+    default:
+        setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, mask);
+    	setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x04);
+	setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x01, mask);
+    	setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x04);
         break;
     }
   }
 }
 
-static void
+static __inline void
 set_format(SISPtr pSiS, SISOverlayPtr pOverlay)
 {
     CARD8 fmt;
@@ -1140,11 +1769,20 @@ set_format(SISPtr pSiS, SISOverlayPtr pOverlay)
         fmt = 0x0c;
         break;
     case PIXEL_FMT_YUY2:
-        fmt = 0x28; 
+        fmt = 0x28;
         break;
     case PIXEL_FMT_UYVY:
         fmt = 0x08;
         break;
+    case PIXEL_FMT_YVYU:
+        fmt = 0x38;
+	break;
+    case PIXEL_FMT_NV12:
+        fmt = 0x4c;
+	break;
+    case PIXEL_FMT_NV21:
+        fmt = 0x5c;
+	break;
     case PIXEL_FMT_RGB5:   /* D[5:4] : 00 RGB555, 01 RGB 565 */
         fmt = 0x00;
 	break;
@@ -1155,10 +1793,10 @@ set_format(SISPtr pSiS, SISOverlayPtr pOverlay)
         fmt = 0x00;
         break;
     }
-    setvideoregmask(pSiS, Index_VI_Control_Misc0, fmt, 0x7c);
+    setvideoregmask(pSiS, Index_VI_Control_Misc0, fmt, 0xfc);
 }
 
-static void
+static __inline void
 set_colorkey(SISPtr pSiS, CARD32 colorkey)
 {
     CARD8 r, g, b;
@@ -1167,7 +1805,6 @@ set_colorkey(SISPtr pSiS, CARD32 colorkey)
     g = (CARD8)((colorkey>>8) & 0xFF);
     r = (CARD8)((colorkey>>16) & 0xFF);
 
-    /* Activate the colorkey mode */
     setvideoreg(pSiS, Index_VI_Overlay_ColorKey_Blue_Min  ,(CARD8)b);
     setvideoreg(pSiS, Index_VI_Overlay_ColorKey_Green_Min ,(CARD8)g);
     setvideoreg(pSiS, Index_VI_Overlay_ColorKey_Red_Min   ,(CARD8)r);
@@ -1177,52 +1814,1534 @@ set_colorkey(SISPtr pSiS, CARD32 colorkey)
     setvideoreg(pSiS, Index_VI_Overlay_ColorKey_Red_Max   ,(CARD8)r);
 }
 
-static void
+static __inline void
 set_brightness(SISPtr pSiS, CARD8 brightness)
 {
     setvideoreg(pSiS, Index_VI_Brightness, brightness);
 }
 
-static void
+static __inline void
 set_contrast(SISPtr pSiS, CARD8 contrast)
 {
     setvideoregmask(pSiS, Index_VI_Contrast_Enh_Ctrl, contrast, 0x07);
 }
 
-/* 310/325 series only */
-static void
+/* 315 series and later only */
+static __inline void
 set_saturation(SISPtr pSiS, char saturation)
 {
     CARD8 temp = 0;
-    
+
     if(saturation < 0) {
     	temp |= 0x88;
 	saturation = -saturation;
     }
     temp |= (saturation & 0x07);
     temp |= ((saturation & 0x07) << 4);
-    
+
     setvideoreg(pSiS, Index_VI_Saturation, temp);
 }
 
-/* 310/325 series only */
-static void
+/* 315 series and later only */
+static __inline void
 set_hue(SISPtr pSiS, CARD8 hue)
 {
     setvideoreg(pSiS, Index_VI_Hue, (hue & 0x08) ? (hue ^ 0x07) : hue);
 }
 
+static __inline void
+set_disablegfx(SISPtr pSiS, Bool mybool, SISOverlayPtr pOverlay)
+{
+    /* This is not supported on M65x or 65x (x>0) */
+    /* For CRT1 ONLY!!! */
+    if(!(pSiS->ChipFlags & SiSCF_Is65x)) {
+       setvideoregmask(pSiS, Index_VI_Control_Misc2, mybool ? 0x04 : 0x00, 0x04);
+       if(mybool) pOverlay->keyOP = VI_ROP_Always;
+    }
+}
+
+static __inline void
+set_disablegfxlr(SISPtr pSiS, Bool mybool, SISOverlayPtr pOverlay)
+{
+    setvideoregmask(pSiS, Index_VI_Control_Misc1, mybool ? 0x01 : 0x00, 0x01);
+    if(mybool) pOverlay->keyOP = VI_ROP_Always;
+}
+
+#ifdef SIS_CP
+    SIS_CP_VIDEO_SUBS
+#endif
+
+static void
+set_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index, int iscrt2)
+{
+    ScrnInfoPtr pScrn = pSiS->pScrn;
+
+    CARD16 pitch=0;
+    CARD8  h_over=0, v_over=0;
+    CARD16 top, bottom, left, right;
+    CARD16 screenX, screenY;
+    int    modeflags;
+    CARD8  data;
+    CARD32 watchdog;
+    CARD32 PSY;
+
+#ifdef SISMERGED
+    if(pSiS->MergedFB && iscrt2) {
+       screenX = pOverlay->currentmode2->HDisplay;
+       screenY = pOverlay->currentmode2->VDisplay;
+       modeflags = pOverlay->currentmode2->Flags;
+       top = pOverlay->dstBox2.y1;
+       bottom = pOverlay->dstBox2.y2;
+       left = pOverlay->dstBox2.x1;
+       right = pOverlay->dstBox2.x2;
+       pitch = pOverlay->pitch2 >> pPriv->shiftValue;
+    } else {
+#endif
+       screenX = pOverlay->currentmode->HDisplay;
+       screenY = pOverlay->currentmode->VDisplay;
+       modeflags = pOverlay->currentmode->Flags;
+       top = pOverlay->dstBox.y1;
+       bottom = pOverlay->dstBox.y2;
+       left = pOverlay->dstBox.x1;
+       right = pOverlay->dstBox.x2;
+       pitch = pOverlay->pitch >> pPriv->shiftValue;
+#ifdef SISMERGED
+    }
+#endif
+
+    if(bottom > screenY) {
+        bottom = screenY;
+    }
+    if(right > screenX) {
+        right = screenX;
+    }
+
+    /* TW: DoubleScan modes require Y coordinates * 2 */
+    if(modeflags & V_DBLSCAN) {
+    	 top <<= 1;
+	 bottom <<= 1;
+    }
+    /* TW: Interlace modes require Y coordinates / 2 */
+    if(modeflags & V_INTERLACE) {
+    	 top >>= 1;
+	 bottom >>= 1;
+    }
+
+    h_over = (((left>>8) & 0x0f) | ((right>>4) & 0xf0));
+    v_over = (((top>>8) & 0x0f) | ((bottom>>4) & 0xf0));
+
+    /* set line buffer size */
+#ifdef SISMERGED
+    if(pSiS->MergedFB && iscrt2)
+       setvideoreg(pSiS, Index_VI_Line_Buffer_Size, pOverlay->lineBufSize2);
+    else
+#endif
+       setvideoreg(pSiS, Index_VI_Line_Buffer_Size, pOverlay->lineBufSize);
+
+    /* set color key mode */
+    setvideoregmask(pSiS, Index_VI_Key_Overlay_OP, pOverlay->keyOP, 0x0f);
+
+    /* We don't have to wait for vertical retrace in all cases */
+    if(pPriv->mustwait) {
+	watchdog = WATCHDOG_DELAY;
+    	while (pOverlay->VBlankActiveFunc(pSiS) && --watchdog);
+	watchdog = WATCHDOG_DELAY;
+	while ((!pOverlay->VBlankActiveFunc(pSiS)) && --watchdog);
+	if (!watchdog) xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+			"Xv: Waiting for vertical retrace timed-out\n");
+    }
+
+    /* Unlock address registers */
+    data = getvideoreg(pSiS, Index_VI_Control_Misc1);
+    setvideoreg(pSiS, Index_VI_Control_Misc1, data | 0x20);
+    /* Is this required? */
+    setvideoreg(pSiS, Index_VI_Control_Misc1, data | 0x20);
+
+    /* Is this required? (seems so) */
+    if (pSiS->Chipset == SIS_315_VGA)
+    	setvideoregmask(pSiS, Index_VI_Control_Misc3, 0x00, (1 << index));
+
+    /* Set Y buf pitch */
+    setvideoreg(pSiS, Index_VI_Disp_Y_Buf_Pitch_Low, (CARD8)(pitch));
+    setvideoregmask(pSiS, Index_VI_Disp_Y_UV_Buf_Pitch_Middle, (CARD8)(pitch >> 8), 0x0f);
+
+    /* Set Y start address */
+#ifdef SISMERGED
+    if(pSiS->MergedFB && iscrt2) {
+       PSY = pOverlay->PSY2;
+    } else
+#endif
+       PSY = pOverlay->PSY;
+
+    setvideoreg(pSiS, Index_VI_Disp_Y_Buf_Start_Low,    (CARD8)(PSY));
+    setvideoreg(pSiS, Index_VI_Disp_Y_Buf_Start_Middle, (CARD8)(PSY >> 8));
+    setvideoreg(pSiS, Index_VI_Disp_Y_Buf_Start_High,   (CARD8)(PSY >> 16));
+
+    /* set 315 series overflow bits for Y plane */
+    if (pSiS->VGAEngine == SIS_315_VGA) {
+        setvideoreg(pSiS, Index_VI_Disp_Y_Buf_Pitch_High, (CARD8)(pitch >> 12));
+    	setvideoreg(pSiS, Index_VI_Y_Buf_Start_Over, ((CARD8)(PSY >> 24) & 0x03));
+    }
+
+    /* Set U/V data if using planar formats */
+    if ( (pOverlay->pixelFormat == PIXEL_FMT_YV12) ||
+    	 (pOverlay->pixelFormat == PIXEL_FMT_I420) ||
+	 (pOverlay->pixelFormat == PIXEL_FMT_NV12) ||
+	 (pOverlay->pixelFormat == PIXEL_FMT_NV21) )  {
+
+        CARD32  PSU=0, PSV=0, uvpitch = pitch;
+
+        PSU = pOverlay->PSU;
+        PSV = pOverlay->PSV;
+#ifdef SISMERGED
+        if(pSiS->MergedFB && iscrt2) {
+	   PSU = pOverlay->PSU2;
+           PSV = pOverlay->PSV2;
+	}
+#endif
+        if((pOverlay->pixelFormat == PIXEL_FMT_YV12) ||
+    	   (pOverlay->pixelFormat == PIXEL_FMT_I420)) {
+	   uvpitch >>= 1;
+	}
+
+	/* Set U/V pitch */
+	setvideoreg (pSiS, Index_VI_Disp_UV_Buf_Pitch_Low, (CARD8)uvpitch);
+        setvideoregmask (pSiS, Index_VI_Disp_Y_UV_Buf_Pitch_Middle, (CARD8)(uvpitch >> 4), 0xf0);
+
+        /* set U/V start address */
+        setvideoreg (pSiS, Index_VI_U_Buf_Start_Low,   (CARD8)PSU);
+        setvideoreg (pSiS, Index_VI_U_Buf_Start_Middle,(CARD8)(PSU >> 8));
+        setvideoreg (pSiS, Index_VI_U_Buf_Start_High,  (CARD8)(PSU >> 16));
+
+        setvideoreg (pSiS, Index_VI_V_Buf_Start_Low,   (CARD8)PSV);
+        setvideoreg (pSiS, Index_VI_V_Buf_Start_Middle,(CARD8)(PSV >> 8));
+        setvideoreg (pSiS, Index_VI_V_Buf_Start_High,  (CARD8)(PSV >> 16));
+
+	/* 315 series overflow bits */
+	if (pSiS->VGAEngine == SIS_315_VGA) {
+	   setvideoreg (pSiS, Index_VI_Disp_UV_Buf_Pitch_High, (CARD8)(uvpitch >> 12));
+	   setvideoreg (pSiS, Index_VI_U_Buf_Start_Over, ((CARD8)(PSU >> 24) & 0x03));
+	   setvideoreg (pSiS, Index_VI_V_Buf_Start_Over, ((CARD8)(PSV >> 24) & 0x03));
+	}
+    }
+
+    /* set scale factor */
+#ifdef SISMERGED
+    if(pSiS->MergedFB && iscrt2) {
+       setvideoreg (pSiS, Index_VI_Hor_Post_Up_Scale_Low, (CARD8)(pOverlay->HUSF2));
+       setvideoreg (pSiS, Index_VI_Hor_Post_Up_Scale_High,(CARD8)((pOverlay->HUSF2) >> 8));
+       setvideoreg (pSiS, Index_VI_Ver_Up_Scale_Low,      (CARD8)(pOverlay->VUSF2));
+       setvideoreg (pSiS, Index_VI_Ver_Up_Scale_High,     (CARD8)((pOverlay->VUSF2) >> 8));
+
+       setvideoregmask (pSiS, Index_VI_Scale_Control,     (pOverlay->IntBit2 << 3)
+                                                         |(pOverlay->wHPre2), 0x7f);
+    } else {
+#endif
+       setvideoreg (pSiS, Index_VI_Hor_Post_Up_Scale_Low, (CARD8)(pOverlay->HUSF));
+       setvideoreg (pSiS, Index_VI_Hor_Post_Up_Scale_High,(CARD8)((pOverlay->HUSF) >> 8));
+       setvideoreg (pSiS, Index_VI_Ver_Up_Scale_Low,      (CARD8)(pOverlay->VUSF));
+       setvideoreg (pSiS, Index_VI_Ver_Up_Scale_High,     (CARD8)((pOverlay->VUSF)>>8));
+
+       setvideoregmask (pSiS, Index_VI_Scale_Control,     (pOverlay->IntBit << 3)
+                                                         |(pOverlay->wHPre), 0x7f);
+#ifdef SISMERGED
+    }
+#endif
+
+    /* set destination window position */
+    setvideoreg(pSiS, Index_VI_Win_Hor_Disp_Start_Low, (CARD8)left);
+    setvideoreg(pSiS, Index_VI_Win_Hor_Disp_End_Low,   (CARD8)right);
+    setvideoreg(pSiS, Index_VI_Win_Hor_Over,           (CARD8)h_over);
+
+    setvideoreg(pSiS, Index_VI_Win_Ver_Disp_Start_Low, (CARD8)top);
+    setvideoreg(pSiS, Index_VI_Win_Ver_Disp_End_Low,   (CARD8)bottom);
+    setvideoreg(pSiS, Index_VI_Win_Ver_Over,           (CARD8)v_over);
+
+    setvideoregmask(pSiS, Index_VI_Control_Misc1, pOverlay->bobEnable, 0x1a);
+
+    /* Lock the address registers */
+    setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x20);
+}
+
+/* TW: Overlay MUST NOT be switched off while beam is over it */
+static void
+close_overlay(SISPtr pSiS, SISPortPrivPtr pPriv)
+{
+  CARD32 watchdog;
+
+  if(!(pPriv->overlayStatus)) return;
+  pPriv->overlayStatus = FALSE;
+
+  if(pPriv->displayMode & (DISPMODE_MIRROR | DISPMODE_SINGLE2)) {
+
+     /* CRT2: MIRROR or SINGLE2
+      * 1 overlay:  Uses overlay 0
+      * 2 overlays: Uses Overlay 1 if MIRROR or DUAL HEAD
+      *             Uses Overlay 0 if SINGLE2 and not DUAL HEAD
+      */
+
+     if(pPriv->hasTwoOverlays) {
+
+        if((pPriv->dualHeadMode) || (pPriv->displayMode == DISPMODE_MIRROR)) {
+     	   setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x01, 0x01);
+	} else {
+	   setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, 0x01);
+	}
+
+     } else if(pPriv->displayMode == DISPMODE_SINGLE2) {
+
+#ifdef SISDUALHEAD
+        if(pPriv->dualHeadMode) {
+	   /* Check if overlay already grabbed by other head */
+	   if(!(getsrreg(pSiS, 0x06) & 0x40)) return;
+	}
+#endif
+      	setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, 0x01);
+
+     }
+
+     setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x01);
+     watchdog = WATCHDOG_DELAY;
+     while(vblank_active_CRT2(pSiS) && --watchdog);
+     watchdog = WATCHDOG_DELAY;
+     while((!vblank_active_CRT2(pSiS)) && --watchdog);
+     setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
+     watchdog = WATCHDOG_DELAY;
+     while(vblank_active_CRT2(pSiS) && --watchdog);
+     watchdog = WATCHDOG_DELAY;
+     while((!vblank_active_CRT2(pSiS)) && --watchdog);
+
+#ifdef SIS_CP
+     SIS_CP_RESET_CP
+#endif
+
+  }
+
+  if(pPriv->displayMode & (DISPMODE_SINGLE1 | DISPMODE_MIRROR)) {
+
+     /* CRT1: Always uses overlay 0
+      */
+
+#ifdef SISDUALHEAD
+     if(pPriv->dualHeadMode) {
+        if(!pPriv->hasTwoOverlays) {
+	   /* Check if overlay already grabbed by other head */
+	   if(getsrreg(pSiS, 0x06) & 0x40) return;
+	}
+     }
+#endif	
+     setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, 0x05);
+     setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x01);
+     watchdog = WATCHDOG_DELAY;
+     while(vblank_active_CRT1(pSiS) && --watchdog);
+     watchdog = WATCHDOG_DELAY;
+     while((!vblank_active_CRT1(pSiS)) && --watchdog);
+     setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
+     watchdog = WATCHDOG_DELAY;
+     while(vblank_active_CRT1(pSiS) && --watchdog);
+     watchdog = WATCHDOG_DELAY;
+     while((!vblank_active_CRT1(pSiS)) && --watchdog);
+
+  }
+}
+
+static void
+SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+   SISEntPtr pSiSEnt = pSiS->entityPrivate;
+#endif   
+   short srcPitch = pPriv->srcPitch;
+   short height = pPriv->height;
+   unsigned short screenwidth;
+   SISOverlayRec overlay; 
+   int srcOffsetX=0, srcOffsetY=0;
+   int sx=0, sy=0;
+   int index = 0, iscrt2 = 0;
+   unsigned char temp;
+   CARD32 watchdog;
+#ifdef SISMERGED
+   unsigned short screen2width=0;
+   int srcOffsetX2=0, srcOffsetY2=0;
+   int sx2=0, sy2=0;
+#endif
+   
+   pPriv->NoOverlay = FALSE;
+#ifdef SISDUALHEAD
+   if(pPriv->dualHeadMode) {
+      if(!pPriv->hasTwoOverlays) {
+         if(pSiS->SecondHead) {
+	    if(pSiSEnt->curxvcrtnum != 0) {
+	       if(pPriv->overlayStatus) {
+	          close_overlay(pSiS, pPriv);
+	       }  
+	       pPriv->NoOverlay = TRUE;
+	       return;
+	    }
+         } else {
+	    if(pSiSEnt->curxvcrtnum != 1) {
+	       if(pPriv->overlayStatus) {
+	          close_overlay(pSiS, pPriv);
+	       }  
+	       pPriv->NoOverlay = TRUE;
+	       return;
+	    }
+	 }
+      }
+   }
+#endif
+   
+   /* TW: setup dispmode (MIRROR, SINGLEx) */
+   set_dispmode(pScrn, pPriv);
+   
+   /* TW: Check if overlay is supported with current mode */
+   if(pPriv->displayMode & (DISPMODE_SINGLE1 | DISPMODE_MIRROR)) {
+      if(!(pSiS->MiscFlags & MISC_CRT1OVERLAY)) {
+         if(pPriv->overlayStatus) {
+	    close_overlay(pSiS, pPriv);
+	 }
+	 pPriv->NoOverlay = TRUE;
+	 return;
+      }
+   }
+
+   memset(&overlay, 0, sizeof(overlay));
+
+   overlay.pixelFormat = pPriv->id;
+   overlay.pitch = overlay.origPitch = srcPitch;
+   overlay.keyOP = VI_ROP_DestKey;
+   /* overlay.bobEnable = 0x02; */
+   overlay.bobEnable = 0x00;    /* Disable BOB de-interlacer */
+
+#ifdef SISMERGED
+   if(pSiS->MergedFB) {
+      overlay.DoFirst = TRUE;
+      overlay.DoSecond = TRUE;
+      overlay.pitch2 = overlay.origPitch;
+      overlay.currentmode = ((SiSMergedDisplayModePtr)pSiS->CurrentLayout.mode->Private)->CRT1;
+      overlay.currentmode2 = ((SiSMergedDisplayModePtr)pSiS->CurrentLayout.mode->Private)->CRT2;
+      overlay.SCREENheight  = overlay.currentmode->VDisplay;
+      overlay.SCREENheight2 = overlay.currentmode2->VDisplay;
+      screenwidth = overlay.currentmode->HDisplay;
+      screen2width = overlay.currentmode2->HDisplay;
+      overlay.dstBox.x1  = pPriv->drw_x - pSiS->CRT1frameX0;
+      overlay.dstBox.x2  = overlay.dstBox.x1 + pPriv->drw_w;
+      overlay.dstBox.y1  = pPriv->drw_y - pSiS->CRT1frameY0;
+      overlay.dstBox.y2  = overlay.dstBox.y1 + pPriv->drw_h;
+      overlay.dstBox2.x1 = pPriv->drw_x - pSiS->CRT2pScrn->frameX0;
+      overlay.dstBox2.x2 = overlay.dstBox2.x1 + pPriv->drw_w;
+      overlay.dstBox2.y1 = pPriv->drw_y - pSiS->CRT2pScrn->frameY0;
+      overlay.dstBox2.y2 = overlay.dstBox2.y1 + pPriv->drw_h;
+      /* xf86DrvMsg(0, X_INFO, "DV(1): %d %d %d %d  | %d %d %d %d\n",
+         overlay.dstBox.x1,overlay.dstBox.x2,overlay.dstBox.y1,overlay.dstBox.y2,
+         overlay.dstBox2.x1,overlay.dstBox2.x2,overlay.dstBox2.y1,overlay.dstBox2.y2); */
+   } else {
+#endif
+      overlay.currentmode = pSiS->CurrentLayout.mode;
+      overlay.SCREENheight = overlay.currentmode->VDisplay;
+      screenwidth = overlay.currentmode->HDisplay;
+      overlay.dstBox.x1 = pPriv->drw_x - pScrn->frameX0;
+      overlay.dstBox.x2 = pPriv->drw_x + pPriv->drw_w - pScrn->frameX0;
+      overlay.dstBox.y1 = pPriv->drw_y - pScrn->frameY0;
+      overlay.dstBox.y2 = pPriv->drw_y + pPriv->drw_h - pScrn->frameY0;
+#ifdef SISMERGED
+   }
+#endif
+
+   if((overlay.dstBox.x1 > overlay.dstBox.x2) ||
+      (overlay.dstBox.y1 > overlay.dstBox.y2)) {
+#ifdef SISMERGED
+      if(pSiS->MergedFB) overlay.DoFirst = FALSE;
+      else
+#endif
+           return;
+   }
+
+   if((overlay.dstBox.x2 < 0) || (overlay.dstBox.y2 < 0)) {
+#ifdef SISMERGED
+      if(pSiS->MergedFB) overlay.DoFirst = FALSE;
+      else
+#endif
+           return;
+   }
+
+   if((overlay.dstBox.x1 >= screenwidth) || (overlay.dstBox.y1 >= overlay.SCREENheight)) {
+#ifdef SISMERGED
+      if(pSiS->MergedFB) overlay.DoFirst = FALSE;
+      else
+#endif
+           return;
+   }
+
+   if(overlay.dstBox.x1 < 0) {
+      srcOffsetX = pPriv->src_w * (-overlay.dstBox.x1) / pPriv->drw_w;
+      overlay.dstBox.x1 = 0;
+   }
+   if(overlay.dstBox.y1 < 0) {
+      srcOffsetY = pPriv->src_h * (-overlay.dstBox.y1) / pPriv->drw_h;
+      overlay.dstBox.y1 = 0;
+   }
+
+#ifdef SISMERGED
+   if(pSiS->MergedFB) {
+      if((overlay.dstBox2.x1 > overlay.dstBox2.x2) ||
+         (overlay.dstBox2.y1 > overlay.dstBox2.y2))
+	 overlay.DoSecond = FALSE;
+
+      if((overlay.dstBox2.x2 < 0) || (overlay.dstBox2.y2 < 0))
+         overlay.DoSecond = FALSE;
+
+      if((overlay.dstBox2.x1 >= screen2width) || (overlay.dstBox2.y1 >= overlay.SCREENheight2))
+ 	 overlay.DoSecond = FALSE;
+
+      if(overlay.dstBox2.x1 < 0) {
+         srcOffsetX2 = pPriv->src_w * (-overlay.dstBox2.x1) / pPriv->drw_w;
+         overlay.dstBox2.x1 = 0;
+      }
+      if(overlay.dstBox2.y1 < 0) {
+         srcOffsetY2 = pPriv->src_h * (-overlay.dstBox2.y1) / pPriv->drw_h;
+         overlay.dstBox2.y1 = 0;
+      }
+
+      /* If neither overlay is to be displayed, disable them if they are currently enabled */
+      if((!overlay.DoFirst) && (!overlay.DoSecond)) {
+	 setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, 0x05);
+         setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x01);
+	 temp = getvideoreg(pSiS,Index_VI_Control_Misc0);
+	 if(temp & 0x02) {
+	    watchdog = WATCHDOG_DELAY;
+	    if(pPriv->hasTwoOverlays) {
+     	       while(vblank_active_CRT1(pSiS) && --watchdog);
+     	       watchdog = WATCHDOG_DELAY;
+     	       while((!vblank_active_CRT1(pSiS)) && --watchdog);
+	    } else {
+	       temp = getsrreg(pSiS, 0x06);
+	       if(!(temp & 0x40)) {
+     	          while(vblank_active_CRT1(pSiS) && --watchdog);
+     	          watchdog = WATCHDOG_DELAY;
+     	          while((!vblank_active_CRT1(pSiS)) && --watchdog);
+	       } else {
+	          while(vblank_active_CRT2(pSiS) && --watchdog);
+     	          watchdog = WATCHDOG_DELAY;
+     	          while((!vblank_active_CRT2(pSiS)) && --watchdog);
+	       }
+	    }
+     	    setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
+	 }
+	 if(pPriv->hasTwoOverlays) {
+            setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x01, 0x01);
+            setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x01);
+	    temp = getvideoreg(pSiS,Index_VI_Control_Misc0);
+	    if(temp & 0x02) {
+	       watchdog = WATCHDOG_DELAY;
+     	       while(vblank_active_CRT2(pSiS) && --watchdog);
+     	       watchdog = WATCHDOG_DELAY;
+     	       while((!vblank_active_CRT2(pSiS)) && --watchdog);
+     	       setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
+	    }
+         }
+	 pPriv->overlayStatus = FALSE;
+         return;
+      }
+   }
+#endif
+
+   /* xf86DrvMsg(0, X_INFO, "DV(2): %d %d %d %d  | %d %d %d %d\n",
+         overlay.dstBox.x1,overlay.dstBox.x2,overlay.dstBox.y1,overlay.dstBox.y2,
+         overlay.dstBox2.x1,overlay.dstBox2.x2,overlay.dstBox2.y1,overlay.dstBox2.y2);  */
+
+   switch(pPriv->id) {
+
+     case PIXEL_FMT_YV12:
+#ifdef SISMERGED
+       if((!pSiS->MergedFB) || (overlay.DoFirst)) {
+#endif
+          sx = (pPriv->src_x + srcOffsetX) & ~7;
+          sy = (pPriv->src_y + srcOffsetY) & ~1;
+          overlay.PSY = pPriv->bufAddr[pPriv->currentBuf] + sx + sy*srcPitch;
+          overlay.PSV = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch + ((sx + sy*srcPitch/2) >> 1);
+          overlay.PSU = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch*5/4 + ((sx + sy*srcPitch/2) >> 1);
+#ifdef SISDUALHEAD
+          overlay.PSY += HEADOFFSET;
+          overlay.PSV += HEADOFFSET;
+          overlay.PSU += HEADOFFSET;
+#endif
+          overlay.PSY >>= pPriv->shiftValue;
+          overlay.PSV >>= pPriv->shiftValue;
+          overlay.PSU >>= pPriv->shiftValue;
+#ifdef SISMERGED
+       }
+       if((pSiS->MergedFB) && (overlay.DoSecond)) {
+          sx2 = (pPriv->src_x + srcOffsetX2) & ~7;
+          sy2 = (pPriv->src_y + srcOffsetY2) & ~1;
+          overlay.PSY2 = pPriv->bufAddr[pPriv->currentBuf] + sx2 + sy2*srcPitch;
+          overlay.PSV2 = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch + ((sx2 + sy2*srcPitch/2) >> 1);
+          overlay.PSU2 = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch*5/4 + ((sx2 + sy2*srcPitch/2) >> 1);
+          overlay.PSY2 >>= pPriv->shiftValue;
+          overlay.PSV2 >>= pPriv->shiftValue;
+          overlay.PSU2 >>= pPriv->shiftValue;
+       }
+#endif
+       break;
+
+     case PIXEL_FMT_I420:
+#ifdef SISMERGED
+       if((!pSiS->MergedFB) || (overlay.DoFirst)) {
+#endif
+          sx = (pPriv->src_x + srcOffsetX) & ~7;
+          sy = (pPriv->src_y + srcOffsetY) & ~1;
+          overlay.PSY = pPriv->bufAddr[pPriv->currentBuf] + sx + sy*srcPitch;
+          overlay.PSV = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch*5/4 + ((sx + sy*srcPitch/2) >> 1);
+          overlay.PSU = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch + ((sx + sy*srcPitch/2) >> 1);
+#ifdef SISDUALHEAD
+          overlay.PSY += HEADOFFSET;
+          overlay.PSV += HEADOFFSET;
+          overlay.PSU += HEADOFFSET;
+#endif
+          overlay.PSY >>= pPriv->shiftValue;
+          overlay.PSV >>= pPriv->shiftValue;
+          overlay.PSU >>= pPriv->shiftValue;
+#ifdef SISMERGED
+       }
+       if((pSiS->MergedFB) && (overlay.DoSecond)) {
+          sx2 = (pPriv->src_x + srcOffsetX2) & ~7;
+          sy2 = (pPriv->src_y + srcOffsetY2) & ~1;
+          overlay.PSY2 = pPriv->bufAddr[pPriv->currentBuf] + sx2 + sy2*srcPitch;
+          overlay.PSV2 = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch*5/4 + ((sx2 + sy2*srcPitch/2) >> 1);
+          overlay.PSU2 = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch + ((sx2 + sy2*srcPitch/2) >> 1);
+          overlay.PSY2 >>= pPriv->shiftValue;
+          overlay.PSV2 >>= pPriv->shiftValue;
+          overlay.PSU2 >>= pPriv->shiftValue;
+       }
+#endif
+       break;
+
+     case PIXEL_FMT_NV12:
+     case PIXEL_FMT_NV21:
+#ifdef SISMERGED
+       if((!pSiS->MergedFB) || (overlay.DoFirst)) {
+#endif
+          sx = (pPriv->src_x + srcOffsetX) & ~7;
+          sy = (pPriv->src_y + srcOffsetY) & ~1;
+          overlay.PSY = pPriv->bufAddr[pPriv->currentBuf] + sx + sy*srcPitch;
+          overlay.PSV =	pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch + ((sx + sy*srcPitch/2) >> 1);
+#ifdef SISDUALHEAD
+          overlay.PSY += HEADOFFSET;
+          overlay.PSV += HEADOFFSET;
+#endif
+          overlay.PSY >>= pPriv->shiftValue;
+          overlay.PSV >>= pPriv->shiftValue;
+          overlay.PSU = overlay.PSV;
+#ifdef SISMERGED
+       }
+       if((pSiS->MergedFB) && (overlay.DoSecond)) {
+          sx2 = (pPriv->src_x + srcOffsetX2) & ~7;
+          sy2 = (pPriv->src_y + srcOffsetY2) & ~1;
+          overlay.PSY2 = pPriv->bufAddr[pPriv->currentBuf] + sx2 + sy2*srcPitch;
+          overlay.PSV2 = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch + ((sx2 + sy2*srcPitch/2) >> 1);
+          overlay.PSY2 >>= pPriv->shiftValue;
+          overlay.PSV2 >>= pPriv->shiftValue;
+          overlay.PSU2 = overlay.PSV2;
+       }
+#endif
+       break;
+
+     case PIXEL_FMT_YUY2:
+     case PIXEL_FMT_UYVY:
+     case PIXEL_FMT_YVYU:
+     case PIXEL_FMT_RGB6:
+     case PIXEL_FMT_RGB5:
+     default:
+#ifdef SISMERGED
+       if((!pSiS->MergedFB) || (overlay.DoFirst)) {
+#endif
+          sx = (pPriv->src_x + srcOffsetX) & ~1;
+          sy = (pPriv->src_y + srcOffsetY);
+          overlay.PSY = (pPriv->bufAddr[pPriv->currentBuf] + sx*2 + sy*srcPitch);
+#ifdef SISDUALHEAD
+          overlay.PSY += HEADOFFSET;
+#endif
+          overlay.PSY >>= pPriv->shiftValue;
+#ifdef SISMERGED
+       }
+       if((pSiS->MergedFB) && (overlay.DoSecond)) {
+          sx2 = (pPriv->src_x + srcOffsetX2) & ~1;
+          sy2 = (pPriv->src_y + srcOffsetY2);
+          overlay.PSY2 = (pPriv->bufAddr[pPriv->currentBuf] + sx2*2 + sy2*srcPitch);
+          overlay.PSY2 >>= pPriv->shiftValue;
+       }
+#endif
+       break;
+   }
+
+   /* Some clipping checks */
+#ifdef SISMERGED
+   if((!pSiS->MergedFB) || (overlay.DoFirst)) {
+#endif
+      overlay.srcW = pPriv->src_w - (sx - pPriv->src_x);
+      overlay.srcH = pPriv->src_h - (sy - pPriv->src_y);
+      if( (pPriv->oldx1 != overlay.dstBox.x1) ||
+   	  (pPriv->oldx2 != overlay.dstBox.x2) ||
+	  (pPriv->oldy1 != overlay.dstBox.y1) ||
+	  (pPriv->oldy2 != overlay.dstBox.y2) ) {
+	 pPriv->mustwait = 1;
+	 pPriv->oldx1 = overlay.dstBox.x1; pPriv->oldx2 = overlay.dstBox.x2;
+	 pPriv->oldy1 = overlay.dstBox.y1; pPriv->oldy2 = overlay.dstBox.y2;
+      }
+#ifdef SISMERGED
+   }
+   if((pSiS->MergedFB) && (overlay.DoSecond)) {
+      overlay.srcW2 = pPriv->src_w - (sx2 - pPriv->src_x);
+      overlay.srcH2 = pPriv->src_h - (sy2 - pPriv->src_y);
+      if( (pPriv->oldx1_2 != overlay.dstBox2.x1) ||
+   	  (pPriv->oldx2_2 != overlay.dstBox2.x2) ||
+	  (pPriv->oldy1_2 != overlay.dstBox2.y1) ||
+	  (pPriv->oldy2_2 != overlay.dstBox2.y2) ) {
+	 pPriv->mustwait = 1;
+	 pPriv->oldx1_2 = overlay.dstBox2.x1; pPriv->oldx2_2 = overlay.dstBox2.x2;
+	 pPriv->oldy1_2 = overlay.dstBox2.y1; pPriv->oldy2_2 = overlay.dstBox2.y2;
+      }
+   }
+#endif
+
+#ifdef SISMERGED
+   /* Disable an overlay if it is not to be displayed (but enabled currently) */
+   if((pSiS->MergedFB) && (pPriv->hasTwoOverlays)) {
+      if(!overlay.DoFirst) {
+	 setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, 0x05);
+         setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x01);
+	 temp = getvideoreg(pSiS,Index_VI_Control_Misc0);
+	 if(temp & 0x02) {
+	    watchdog = WATCHDOG_DELAY;
+     	    while(vblank_active_CRT1(pSiS) && --watchdog);
+     	    watchdog = WATCHDOG_DELAY;
+     	    while((!vblank_active_CRT1(pSiS)) && --watchdog);
+     	    setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
+	 }
+      } else if(!overlay.DoSecond) {
+         setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x01, 0x01);
+         setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x01);
+	 temp = getvideoreg(pSiS,Index_VI_Control_Misc0);
+	 if(temp & 0x02) {
+	    watchdog = WATCHDOG_DELAY;
+     	    while(vblank_active_CRT2(pSiS) && --watchdog);
+     	    watchdog = WATCHDOG_DELAY;
+     	    while((!vblank_active_CRT2(pSiS)) && --watchdog);
+     	    setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
+	 }
+      }
+   }
+#endif
+
+   /* Loop head */
+   if(pPriv->displayMode & DISPMODE_SINGLE2) {
+      if(pPriv->hasTwoOverlays) {    			/* We have 2 overlays: */
+         if(pPriv->dualHeadMode) {
+	    /* Dual head: We use overlay 2 for CRT2 */
+      	    index = 1; iscrt2 = 1;
+	 } else {
+	    /* Single head: We use overlay 1 for CRT2 */
+	    index = 0; iscrt2 = 1;
+	 }
+      } else {			     			/* We have 1 overlay */
+         /* We use that only overlay for CRT2 */
+         index = 0; iscrt2 = 1;
+      }
+      overlay.VBlankActiveFunc = vblank_active_CRT2;
+#ifdef SISMERGED
+      if(!pPriv->hasTwoOverlays) {
+         if((pSiS->MergedFB) && (!overlay.DoSecond)) {
+	    index = 0; iscrt2 = 0;
+            overlay.VBlankActiveFunc = vblank_active_CRT1;
+	    pPriv->displayMode = DISPMODE_SINGLE1;
+	 }
+      }
+#endif
+   } else {
+      index = 0; iscrt2 = 0;
+      overlay.VBlankActiveFunc = vblank_active_CRT1;
+#ifdef SISMERGED
+      if((pSiS->MergedFB) && (!overlay.DoFirst)) {
+         if(pPriv->hasTwoOverlays) index = 1;
+         iscrt2 = 1;
+	 overlay.VBlankActiveFunc = vblank_active_CRT2;
+	 if(!pPriv->hasTwoOverlays) {
+	    pPriv->displayMode = DISPMODE_SINGLE2;
+	 }
+      }
+#endif
+   }
+
+   /* TW: set display mode SR06,32 (CRT1, CRT2 or mirror) */
+   set_disptype_regs(pScrn, pPriv);
+
+   /* set (not only calc) merge line buffer */
+#ifdef SISMERGED
+   if(!pSiS->MergedFB) {
+#endif
+      merge_line_buf(pSiS, pPriv, (overlay.srcW > pPriv->linebufMergeLimit), overlay.srcW,
+      		     pPriv->linebufMergeLimit);
+#ifdef SISMERGED
+   } else {
+      Bool temp1 = FALSE, temp2 = FALSE;
+      if(overlay.DoFirst) {
+         if(overlay.srcW > pPriv->linebufMergeLimit)  temp1 = TRUE;
+      }
+      if(overlay.DoSecond) {
+         if(overlay.srcW2 > pPriv->linebufMergeLimit) temp2 = TRUE;
+      }
+      merge_line_buf_mfb(pSiS, pPriv, temp1, temp2, overlay.srcW, overlay.srcW2, pPriv->linebufMergeLimit);
+   }
+#endif
+
+   /* calculate (not set!) line buffer length */
+#ifdef SISMERGED
+   if((!pSiS->MergedFB) || (overlay.DoFirst))
+#endif
+      set_line_buf_size_1(&overlay);
+#ifdef SISMERGED
+   if((pSiS->MergedFB) && (overlay.DoSecond))
+      set_line_buf_size_2(&overlay);
+#endif
+
+   /* TW: Do the following in a loop for CRT1 and CRT2 ----------------- */
+MIRROR:
+
+   /* calculate (not set!) scale factor */
+#ifdef SISMERGED
+   if(pSiS->MergedFB && iscrt2)
+      calc_scale_factor_2(&overlay, pScrn, pPriv, index, iscrt2);
+   else
+#endif
+      calc_scale_factor(&overlay, pScrn, pPriv, index, iscrt2);
+
+   /* Select video1 (used for CRT1/or CRT2) or video2 (used for CRT2) */
+   setvideoregmask(pSiS, Index_VI_Control_Misc2, index, 0x01);
+
+   /* set format */
+   set_format(pSiS, &overlay);
+
+   /* set color key */
+   set_colorkey(pSiS, pPriv->colorKey);
+
+   /* set brightness, contrast, hue, saturation */
+   set_brightness(pSiS, pPriv->brightness);
+   set_contrast(pSiS, pPriv->contrast);
+   if(pSiS->VGAEngine == SIS_315_VGA) {
+      set_hue(pSiS, pPriv->hue);
+      set_saturation(pSiS, pPriv->saturation);
+   }
+
+   if(pPriv->dualHeadMode) {
+#ifdef SISDUALHEAD
+      if(!pSiS->SecondHead) {
+         if(pPriv->updatetvxpos) {
+            SiS_SetTVxposoffset(pScrn, pPriv->tvxpos);
+            pPriv->updatetvxpos = FALSE;
+         }
+         if(pPriv->updatetvypos) {
+            SiS_SetTVyposoffset(pScrn, pPriv->tvypos);
+            pPriv->updatetvypos = FALSE;
+         }
+      }
+#endif
+   } else {
+      if(pPriv->updatetvxpos) {
+         SiS_SetTVxposoffset(pScrn, pPriv->tvxpos);
+         pPriv->updatetvxpos = FALSE;
+      }
+      if(pPriv->updatetvypos) {
+         SiS_SetTVyposoffset(pScrn, pPriv->tvypos);
+         pPriv->updatetvypos = FALSE;
+      }
+   }
+
+   /* enable/disable graphics display around overlay
+    * (Since disabled overlays don't get treated in this
+    * loop, we omit respective checks here)
+    */
+
+   if(!iscrt2) set_disablegfx(pSiS, pPriv->disablegfx, &overlay);
+   else if(!pPriv->hasTwoOverlays) {
+     set_disablegfx(pSiS, FALSE, &overlay);
+   }
+   set_disablegfxlr(pSiS, pPriv->disablegfxlr, &overlay);
+
+#ifdef SIS_CP
+   SIS_CP_VIDEO_SET_CP
+#endif
+
+   /* set overlay parameters */
+   set_overlay(pSiS, &overlay, pPriv, index, iscrt2);
+
+   if(pSiS->VGAEngine == SIS_315_VGA) {
+      /* Trigger register copy for 315 series */
+      setvideoregmask(pSiS, Index_VI_Control_Misc3, (1 << index), (1 << index));
+   }
+
+   /* enable overlay */
+   setvideoregmask (pSiS, Index_VI_Control_Misc0, 0x02, 0x02);
+
+   /* loop foot */
+   if(pPriv->displayMode & DISPMODE_MIRROR &&
+      index == 0 		           &&
+      pPriv->hasTwoOverlays) {
+#ifdef SISMERGED
+      if((!pSiS->MergedFB) || overlay.DoSecond) {
+#endif
+         index = 1; iscrt2 = 1;
+         overlay.VBlankActiveFunc = vblank_active_CRT2;
+         goto MIRROR;
+#ifdef SISMERGED
+     }
+#endif
+   }
+   
+   pPriv->mustwait = 0;
+   pPriv->overlayStatus = TRUE;
+}
+
+static FBLinearPtr
+SISAllocateOverlayMemory(
+  ScrnInfoPtr pScrn,
+  FBLinearPtr linear,
+  int size
+){
+   ScreenPtr pScreen;
+   FBLinearPtr new_linear;
+
+   if(linear) {
+	if(linear->size >= size)
+	   return linear;
+
+	if(xf86ResizeOffscreenLinear(linear, size))
+	   return linear;
+
+	xf86FreeOffscreenLinear(linear);
+   }
+
+   pScreen = screenInfo.screens[pScrn->scrnIndex];
+
+   new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8,
+                                            NULL, NULL, NULL);
+
+   if(!new_linear) {
+        int max_size;
+
+        xf86QueryLargestOffscreenLinear(pScreen, &max_size, 8,
+				       PRIORITY_EXTREME);
+
+        if(max_size < size) return NULL;
+
+        xf86PurgeUnlockedOffscreenAreas(pScreen);
+        new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8,
+                                                 NULL, NULL, NULL);
+   }
+   if (!new_linear)
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	           "Xv: Failed to allocate %dK of video memory\n", size/1024);
+#ifdef TWDEBUG
+   else
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	           "Xv: Allocated %dK of video memory\n", size/1024);
+#endif
+
+   return new_linear;
+}
+
+static void
+SISFreeOverlayMemory(ScrnInfoPtr pScrn)
+{
+    SISPortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);
+
+    if(pPriv->linear) {
+        xf86FreeOffscreenLinear(pPriv->linear);
+	pPriv->linear = NULL;
+    }
+}
+
+static void
+SISStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
+{
+  SISPortPrivPtr pPriv = (SISPortPrivPtr)data;
+  SISPtr pSiS = SISPTR(pScrn);
+
+  if(pPriv->grabbedByV4L)
+  	return;
+
+  REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
+
+  if(shutdown) {
+     if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
+       close_overlay(pSiS, pPriv);
+       pPriv->mustwait = 1;
+     }
+     SISFreeOverlayMemory(pScrn);
+     pPriv->videoStatus = 0;
+     pSiS->VideoTimerCallback = NULL;
+  } else {
+     if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
+       pPriv->videoStatus = OFF_TIMER | CLIENT_VIDEO_ON;
+       pPriv->offTime = currentTime.milliseconds + OFF_DELAY;
+       pSiS->VideoTimerCallback = SISVideoTimerCallback;
+     }
+  }
+}
+
+static int
+SISPutImage(
+  ScrnInfoPtr pScrn,
+  short src_x, short src_y,
+  short drw_x, short drw_y,
+  short src_w, short src_h,
+  short drw_w, short drw_h,
+  int id, unsigned char* buf,
+  short width, short height,
+  Bool sync,
+  RegionPtr clipBoxes, pointer data
+){
+   SISPtr pSiS = SISPTR(pScrn);
+   SISPortPrivPtr pPriv = (SISPortPrivPtr)data;
+
+   int totalSize=0;
+   int depth = pSiS->CurrentLayout.bitsPerPixel >> 3;
+   int myreds[] = { 0x000000ff, 0x0000f800, 0, 0x00ff0000 };
+
+   if(pPriv->grabbedByV4L)
+   	return Success;
+
+   pPriv->drw_x = drw_x;
+   pPriv->drw_y = drw_y;
+   pPriv->drw_w = drw_w;
+   pPriv->drw_h = drw_h;
+   pPriv->src_x = src_x;
+   pPriv->src_y = src_y;
+   pPriv->src_w = src_w;
+   pPriv->src_h = src_h;
+   pPriv->id = id;
+   pPriv->height = height;
+
+   /* TW: Pixel formats:
+      1. YU12:  3 planes:       H    V
+               Y sample period  1    1   (8 bit per pixel)
+	       V sample period  2    2	 (8 bit per pixel, subsampled)
+	       U sample period  2    2   (8 bit per pixel, subsampled)
+
+ 	 Y plane is fully sampled (width*height), U and V planes
+	 are sampled in 2x2 blocks, hence a group of 4 pixels requires
+	 4 + 1 + 1 = 6 bytes. The data is planar, ie in single planes
+	 for Y, U and V.
+      2. UYVY: 3 planes:        H    V
+               Y sample period  1    1   (8 bit per pixel)
+	       V sample period  2    1	 (8 bit per pixel, subsampled)
+	       U sample period  2    1   (8 bit per pixel, subsampled)
+	 Y plane is fully sampled (width*height), U and V planes
+	 are sampled in 2x1 blocks, hence a group of 4 pixels requires
+	 4 + 2 + 2 = 8 bytes. The data is bit packed, there are no separate
+	 Y, U or V planes.
+	 Bit order:  U0 Y0 V0 Y1  U2 Y2 V2 Y3 ...
+      3. I420: Like YU12, but planes U and V are in reverse order.
+      4. YUY2: Like UYVY, but order is
+                     Y0 U0 Y1 V0  Y2 U2 Y3 V2 ...
+      5. YVYU: Like YUY2, but order is
+      		     Y0 V0 Y1 U0  Y2 V2 Y3 U2 ...
+   */
+
+   switch(id){
+     case PIXEL_FMT_YV12:
+     case PIXEL_FMT_I420:
+     case PIXEL_FMT_NV12:
+     case PIXEL_FMT_NV21:
+       pPriv->srcPitch = (width + 7) & ~7;
+       /* Size = width * height * 3 / 2 */
+       totalSize = (pPriv->srcPitch * height * 3) >> 1; /* Verified */
+       break;
+     case PIXEL_FMT_YUY2:
+     case PIXEL_FMT_UYVY:
+     case PIXEL_FMT_YVYU:
+     case PIXEL_FMT_RGB6:
+     case PIXEL_FMT_RGB5:
+     default:
+       pPriv->srcPitch = ((width << 1) + 3) & ~3;	/* Verified */
+       /* Size = width * 2 * height */
+       totalSize = pPriv->srcPitch * height;
+   }
+
+   /* make it a multiple of 16 to simplify to copy loop */
+   totalSize += 15;
+   totalSize &= ~15;
+
+   /* allocate memory (we do doublebuffering) */
+   if(!(pPriv->linear = SISAllocateOverlayMemory(pScrn, pPriv->linear,
+						 totalSize<<1)))
+	return BadAlloc;
+
+   /* fixup pointers */
+   pPriv->bufAddr[0] = (pPriv->linear->offset * depth);
+   pPriv->bufAddr[1] = pPriv->bufAddr[0] + totalSize;
+
+   /* copy data */
+   if((pSiS->XvUseMemcpy) || (totalSize < 16)) {
+      xf86memcpy(pSiS->FbBase + pPriv->bufAddr[pPriv->currentBuf], buf, totalSize);
+   } else {
+      unsigned long i;
+#if 0
+      if(pSiS->sishw_ext.jChipType == SIS_730 || pSiS->sishw_ext.jChipType == SIS_740) {
+         char *dest = (char *)(pSiS->FbBase + pPriv->bufAddr[pPriv->currentBuf]);
+         char *src  = (char *)buf;
+         for(i = 0; i < totalSize; i++) {
+            dest[i] = src[i];
+         }
+      } else {
+#endif
+         CARD32 *src = (CARD32 *)buf;
+	 CARD32 *dest = (CARD32 *)(pSiS->FbBase + pPriv->bufAddr[pPriv->currentBuf]);
+         for(i = 0; i < (totalSize/16); i++) {
+            *dest++ = *src++;
+	    *dest++ = *src++;
+	    *dest++ = *src++;
+	    *dest++ = *src++;
+         }
+#if 0
+      }
+#endif
+   }
+
+   SISDisplayVideo(pScrn, pPriv);
+
+   /* update cliplist */
+   if(pPriv->autopaintColorKey &&
+      (pPriv->grabbedByV4L ||
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+       (!RegionsEqual(&pPriv->clip, clipBoxes)) ||
+#else
+       (!REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) ||
+#endif
+       (pPriv->PrevOverlay != pPriv->NoOverlay))) {
+     /* We always paint the colorkey for V4L */
+     if(!pPriv->grabbedByV4L)
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+     	REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
+#else
+        REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
+#endif
+     /* draw these */
+     pPriv->PrevOverlay = pPriv->NoOverlay;
+     if(pPriv->NoOverlay) {
+        XAAFillMono8x8PatternRects(pScrn, myreds[depth-1], 0x000000, GXcopy, ~0,
+			REGION_NUM_RECTS(clipBoxes),
+			REGION_RECTS(clipBoxes),
+			0x00422418, 0x18244200, 0, 0);
+     } else {
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+        XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
+                        REGION_NUM_RECTS(clipBoxes),
+                        REGION_RECTS(clipBoxes));
+#else
+	xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
+#endif
+     }
+
+   }
+
+   pPriv->currentBuf ^= 1;
+
+   pPriv->videoStatus = CLIENT_VIDEO_ON;
+
+   pSiS->VideoTimerCallback = SISVideoTimerCallback;
+
+   return Success;
+}
+
+static int
+SISQueryImageAttributes(
+  ScrnInfoPtr pScrn,
+  int id,
+  unsigned short *w, unsigned short *h,
+  int *pitches, int *offsets
+){
+    int    pitchY, pitchUV;
+    int    size, sizeY, sizeUV;
+
+    if(*w < IMAGE_MIN_WIDTH) *w = IMAGE_MIN_WIDTH;
+    if(*h < IMAGE_MIN_HEIGHT) *h = IMAGE_MIN_HEIGHT;
+
+    if(*w > DummyEncoding.width) *w = DummyEncoding.width;
+    if(*h > DummyEncoding.height) *h = DummyEncoding.height;
+
+    switch(id) {
+    case PIXEL_FMT_YV12:
+    case PIXEL_FMT_I420:
+        *w = (*w + 7) & ~7;
+        *h = (*h + 1) & ~1;
+        pitchY = *w;
+    	pitchUV = *w >> 1;
+    	if(pitches) {
+      	    pitches[0] = pitchY;
+            pitches[1] = pitches[2] = pitchUV;
+        }
+    	sizeY = pitchY * (*h);
+    	sizeUV = pitchUV * ((*h) >> 1);
+    	if(offsets) {
+          offsets[0] = 0;
+          offsets[1] = sizeY;
+          offsets[2] = sizeY + sizeUV;
+        }
+        size = sizeY + (sizeUV << 1);
+    	break;
+    case PIXEL_FMT_NV12:
+    case PIXEL_FMT_NV21:
+        *w = (*w + 7) & ~7;
+        *h = (*h + 1) & ~1;
+	pitchY = *w;
+    	pitchUV = *w;
+    	if(pitches) {
+      	    pitches[0] = pitchY;
+            pitches[1] = pitchUV;
+        }
+    	sizeY = pitchY * (*h);
+    	sizeUV = pitchUV * ((*h) >> 1);
+    	if(offsets) {
+          offsets[0] = 0;
+          offsets[1] = sizeY;
+        }
+        size = sizeY + (sizeUV << 1);
+        break;
+    case PIXEL_FMT_YUY2:
+    case PIXEL_FMT_UYVY:
+    case PIXEL_FMT_YVYU:
+    case PIXEL_FMT_RGB6:
+    case PIXEL_FMT_RGB5:
+    default:
+        *w = (*w + 1) & ~1;
+        pitchY = *w << 1;
+    	if(pitches) pitches[0] = pitchY;
+    	if(offsets) offsets[0] = 0;
+    	size = pitchY * (*h);
+    	break;
+    }
+
+    return size;
+}
+
+static void
+SISVideoTimerCallback(ScrnInfoPtr pScrn, Time now)
+{
+    SISPtr         pSiS = SISPTR(pScrn);
+    SISPortPrivPtr pPriv = NULL;
+    unsigned char  sridx, cridx;
+
+    pSiS->VideoTimerCallback = NULL;
+
+    if(!pScrn->vtSema) return;
+
+    if(pSiS->adaptor) {
+       pPriv = GET_PORT_PRIVATE(pScrn);
+       if(!pPriv->videoStatus)
+	  pPriv = NULL;
+    }
+
+    if(pPriv) {
+       if(pPriv->videoStatus & TIMER_MASK) {
+          UpdateCurrentTime();
+	  if(pPriv->offTime < currentTime.milliseconds) {
+             if(pPriv->videoStatus & OFF_TIMER) {
+                /* Turn off the overlay */
+	        sridx = inSISREG(SISSR); cridx = inSISREG(SISCR);
+                close_overlay(pSiS, pPriv);
+	        outSISREG(SISSR, sridx); outSISREG(SISCR, cridx);
+	        pPriv->mustwait = 1;
+                pPriv->videoStatus = FREE_TIMER;
+                pPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
+	        pSiS->VideoTimerCallback = SISVideoTimerCallback;
+             } else if(pPriv->videoStatus & FREE_TIMER) {
+                SISFreeOverlayMemory(pScrn);
+	        pPriv->mustwait = 1;
+                pPriv->videoStatus = 0;
+             }
+          } else
+	     pSiS->VideoTimerCallback = SISVideoTimerCallback;
+      }
+   }
+}
+
+/* TW: Offscreen surface stuff */
+
+static int
+SISAllocSurface (
+    ScrnInfoPtr pScrn,
+    int id,
+    unsigned short w,
+    unsigned short h,
+    XF86SurfacePtr surface
+)
+{
+    SISPtr pSiS = SISPTR(pScrn);
+    SISPortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);
+    int size, depth;
+
+#ifdef TWDEBUG
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Xv: SISAllocSurface called\n");
+#endif
+
+    if((w < IMAGE_MIN_WIDTH) || (h < IMAGE_MIN_HEIGHT))
+          return BadValue;
+    if((w > DummyEncoding.width) || (h > DummyEncoding.height))
+    	  return BadValue;
+
+    if(pPriv->grabbedByV4L)
+    	return BadAlloc;
+
+    depth = pSiS->CurrentLayout.bitsPerPixel >> 3;
+    w = (w + 1) & ~1;
+    pPriv->pitch = ((w << 1) + 63) & ~63; /* Only packed pixel modes supported */
+    size = h * pPriv->pitch; /*  / depth;   - Why? */
+    pPriv->linear = SISAllocateOverlayMemory(pScrn, pPriv->linear, size);
+    if(!pPriv->linear)
+    	return BadAlloc;
+
+    pPriv->offset    = pPriv->linear->offset * depth;
+
+    surface->width   = w;
+    surface->height  = h;
+    surface->pScrn   = pScrn;
+    surface->id      = id;
+    surface->pitches = &pPriv->pitch;
+    surface->offsets = &pPriv->offset;
+    surface->devPrivate.ptr = (pointer)pPriv;
+
+    close_overlay(pSiS, pPriv);
+    pPriv->videoStatus = 0;
+    REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
+    pSiS->VideoTimerCallback = NULL;
+    pPriv->grabbedByV4L = TRUE;
+    return Success;
+}
+
+static int
+SISStopSurface (XF86SurfacePtr surface)
+{
+    SISPortPrivPtr pPriv = (SISPortPrivPtr)(surface->devPrivate.ptr);
+    SISPtr pSiS = SISPTR(surface->pScrn);
+
+    if(pPriv->grabbedByV4L && pPriv->videoStatus) {
+        close_overlay(pSiS, pPriv);
+	pPriv->mustwait = 1;
+	pPriv->videoStatus = 0;
+    }
+    return Success;
+}
+
+static int
+SISFreeSurface (XF86SurfacePtr surface)
+{
+    SISPortPrivPtr pPriv = (SISPortPrivPtr)(surface->devPrivate.ptr);
+
+    if(pPriv->grabbedByV4L) {
+	SISStopSurface(surface);
+	SISFreeOverlayMemory(surface->pScrn);
+	pPriv->grabbedByV4L = FALSE;
+    }
+    return Success;
+}
+
+static int
+SISGetSurfaceAttribute (
+    ScrnInfoPtr pScrn,
+    Atom attribute,
+    INT32 *value
+)
+{
+    SISPortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);
+
+    return SISGetPortAttribute(pScrn, attribute, value, (pointer)pPriv);
+}
+
+static int
+SISSetSurfaceAttribute(
+    ScrnInfoPtr pScrn,
+    Atom attribute,
+    INT32 value
+)
+{
+    SISPortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);;
+
+    return SISSetPortAttribute(pScrn, attribute, value, (pointer)pPriv);
+}
+
+static int
+SISDisplaySurface (
+    XF86SurfacePtr surface,
+    short src_x, short src_y,
+    short drw_x, short drw_y,
+    short src_w, short src_h,
+    short drw_w, short drw_h,
+    RegionPtr clipBoxes
+)
+{
+   ScrnInfoPtr pScrn = surface->pScrn;
+   SISPtr pSiS = SISPTR(pScrn);
+   SISPortPrivPtr pPriv = (SISPortPrivPtr)(surface->devPrivate.ptr);
+   int myreds[] = { 0x000000ff, 0x0000f800, 0, 0x00ff0000 };
+
+#ifdef TWDEBUG
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Xv: DisplaySurface called\n");
+#endif
+
+   if(!pPriv->grabbedByV4L)
+    	return Success;
+
+   pPriv->drw_x = drw_x;
+   pPriv->drw_y = drw_y;
+   pPriv->drw_w = drw_w;
+   pPriv->drw_h = drw_h;
+   pPriv->src_x = src_x;
+   pPriv->src_y = src_y;
+   pPriv->src_w = src_w;
+   pPriv->src_h = src_h;
+   pPriv->id = surface->id;
+   pPriv->height = surface->height;
+   pPriv->bufAddr[0] = surface->offsets[0];
+   pPriv->currentBuf = 0;
+   pPriv->srcPitch = surface->pitches[0];
+
+   SISDisplayVideo(pScrn, pPriv);
+
+   if(pPriv->autopaintColorKey) {
+      if(pPriv->NoOverlay) {
+         XAAFillMono8x8PatternRects(pScrn, 
+	  		myreds[(pSiS->CurrentLayout.bitsPerPixel >> 3) - 1], 
+	 		0x000000, GXcopy, ~0,
+			REGION_NUM_RECTS(clipBoxes),
+			REGION_RECTS(clipBoxes),
+			0x00422418, 0x18244200, 0, 0);
+	
+      } else {
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+   	 XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
+                        REGION_NUM_RECTS(clipBoxes),
+                        REGION_RECTS(clipBoxes));
+#else
+         xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
+#endif
+      }
+   }
+
+   pPriv->videoStatus = CLIENT_VIDEO_ON;
+
+   return Success;
+}
+
+#define NUMOFFSCRIMAGES_300 4
+#define NUMOFFSCRIMAGES_315 5
+
+static XF86OffscreenImageRec SISOffscreenImages[NUMOFFSCRIMAGES_315] =
+{
+ {
+   &SISImages[0],  	/* YUV2 */
+   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
+   SISAllocSurface,
+   SISFreeSurface,
+   SISDisplaySurface,
+   SISStopSurface,
+   SISGetSurfaceAttribute,
+   SISSetSurfaceAttribute,
+   0, 0,  			/* Rest will be filled in */
+   0,
+   NULL
+ },
+ {
+   &SISImages[2],	/* UYVY */
+   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
+   SISAllocSurface,
+   SISFreeSurface,
+   SISDisplaySurface,
+   SISStopSurface,
+   SISGetSurfaceAttribute,
+   SISSetSurfaceAttribute,
+   0, 0,  			/* Rest will be filled in */
+   0,
+   NULL
+ }
+ ,
+ {
+   &SISImages[4],	/* RV15 */
+   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
+   SISAllocSurface,
+   SISFreeSurface,
+   SISDisplaySurface,
+   SISStopSurface,
+   SISGetSurfaceAttribute,
+   SISSetSurfaceAttribute,
+   0, 0,  			/* Rest will be filled in */
+   0,
+   NULL
+ },
+ {
+   &SISImages[5],	/* RV16 */
+   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
+   SISAllocSurface,
+   SISFreeSurface,
+   SISDisplaySurface,
+   SISStopSurface,
+   SISGetSurfaceAttribute,
+   SISSetSurfaceAttribute,
+   0, 0,  			/* Rest will be filled in */
+   0,
+   NULL
+ },
+ {
+   &SISImages[6],	/* YVYU */
+   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
+   SISAllocSurface,
+   SISFreeSurface,
+   SISDisplaySurface,
+   SISStopSurface,
+   SISGetSurfaceAttribute,
+   SISSetSurfaceAttribute,
+   0, 0,  			/* Rest will be filled in */
+   0,
+   NULL
+ }
+};
+
+static void
+SISInitOffscreenImages(ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    SISPtr pSiS = SISPTR(pScrn);
+    SISPortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);
+    int i, num;
+
+    if(pSiS->VGAEngine == SIS_300_VGA) 	num = NUMOFFSCRIMAGES_300;
+    else 				num = NUMOFFSCRIMAGES_315;
+
+    for(i = 0; i <= num; i++) {
+       SISOffscreenImages[i].max_width  = DummyEncoding.width;
+       SISOffscreenImages[i].max_height = DummyEncoding.height;
+       if(pSiS->VGAEngine == SIS_300_VGA) {
+	  SISOffscreenImages[i].num_attributes = NUM_ATTRIBUTES_300;
+	  SISOffscreenImages[i].attributes = &SISAttributes_300[0];
+       } else {
+	  if(pPriv->hasTwoOverlays) {
+	     SISOffscreenImages[i].num_attributes = NUM_ATTRIBUTES_315;
+	  } else {
+	     SISOffscreenImages[i].num_attributes = NUM_ATTRIBUTES_315 - 1;
+	  }
+	  SISOffscreenImages[i].attributes = &SISAttributes_315[0];
+       }
+    }
+    xf86XVRegisterOffscreenImages(pScreen, SISOffscreenImages, num);
+}
+
 #ifdef NOT_YET_IMPLEMENTED /* ----------- TW: FOR FUTURE USE -------------------- */
 
-/* TW: Set Alpha */
+/* Set alpha - does not work */
 static void
 set_alpha(SISPtr pSiS, CARD8 alpha)
 {
-    CARD8 data;
-
-    data = getvideoreg(pSiS, Index_VI_Key_Overlay_OP);
-    data &= 0x0F;
-    setvideoreg(pSiS,Index_VI_Key_Overlay_OP, data | (alpha << 4));
+    setvideoregmask(pSiS, Index_VI_Key_Overlay_OP, ((alpha & 0x0f) << 4), 0xf0);
 }
 
 /* TW: Set SubPicture Start Address (yet unused) */
@@ -1281,7 +3400,7 @@ set_subpict_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
   int origdstH = dstH;
 
   /* TW: Stretch image due to idiotic LCD "auto"-scaling */
-  /* INCOMPLETE - See set_scale_factor() */
+  /* INCOMPLETE and INCORRECT - See set_scale_factor() */
   if ( (pPriv->bridgeIsSlave) && (pSiS->VBFlags & CRT2_LCD) ) {
   	dstH = (dstH * LCDheight) / pOverlay->SCREENheight;
   } else if ((index) && (pSiS->VBFlags & CRT2_LCD)) {
@@ -1420,1001 +3539,5 @@ set_mpegfield_scale(SISPtr pSiS, SISOverlayPtr pOverlay)
 
 #endif /* ------------------------------------------------------------------- */
 
-static void
-set_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index)
-{
-    ScrnInfoPtr pScrn = pSiS->pScrn;
 
-    CARD16 pitch=0;
-    CARD8  h_over=0, v_over=0;
-    CARD16 top, bottom, left, right;
-    CARD16 screenX = pSiS->CurrentLayout.mode->HDisplay;
-    CARD16 screenY = pSiS->CurrentLayout.mode->VDisplay;
-    CARD8  data;
-    CARD32 watchdog;
 
-    top = pOverlay->dstBox.y1;
-    bottom = pOverlay->dstBox.y2;
-    if (bottom > screenY) {
-        bottom = screenY;
-    }
-
-    left = pOverlay->dstBox.x1;
-    right = pOverlay->dstBox.x2;
-    if (right > screenX) {
-        right = screenX;
-    }
-
-    /* TW: DoubleScan modes require Y coordinates * 2 */
-    if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
-    	 top <<= 1;
-	 bottom <<= 1;
-    }
-    /* TW: Interlace modes require Y coordinates / 2 */
-    if(pSiS->CurrentLayout.mode->Flags & V_INTERLACE) {
-    	 top >>= 1;
-	 bottom >>= 1;
-    }
-
-    h_over = (((left>>8) & 0x0f) | ((right>>4) & 0xf0));
-    v_over = (((top>>8) & 0x0f) | ((bottom>>4) & 0xf0));
-
-    pitch = pOverlay->pitch >> pPriv->shiftValue;
-
-    /* set line buffer size */
-    setvideoreg(pSiS, Index_VI_Line_Buffer_Size, pOverlay->lineBufSize);
-
-    /* set color key mode */
-    setvideoregmask (pSiS, Index_VI_Key_Overlay_OP, pOverlay->keyOP, 0x0f);
-
-    /* TW: We don't have to wait for vertical retrace in all cases */
-    if(pPriv->mustwait) {
-	watchdog = WATCHDOG_DELAY;
-    	while (pOverlay->VBlankActiveFunc(pSiS) && --watchdog);
-	watchdog = WATCHDOG_DELAY;
-	while ((!pOverlay->VBlankActiveFunc(pSiS)) && --watchdog);
-	if (!watchdog) xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-			"Xv: Waiting for vertical retrace timed-out\n");
-    }
-
-    /* Unlock address registers */
-    data = getvideoreg(pSiS, Index_VI_Control_Misc1);
-    setvideoreg (pSiS, Index_VI_Control_Misc1, data | 0x20);
-    /* TEST: Is this required? */
-    setvideoreg (pSiS, Index_VI_Control_Misc1, data | 0x20);
-    /* TEST end */
-
-    /* TEST: Is this required? */
-    if (pSiS->Chipset == SIS_315_VGA)
-    	setvideoreg (pSiS, Index_VI_Control_Misc3, 0x00);
-    /* TEST end */
-
-    /* Set Y buf pitch */
-    setvideoreg (pSiS, Index_VI_Disp_Y_Buf_Pitch_Low, (CARD8)(pitch));
-    setvideoregmask (pSiS, Index_VI_Disp_Y_UV_Buf_Pitch_Middle, (CARD8)(pitch>>8), 0x0f);
-
-    /* Set Y start address */
-    setvideoreg (pSiS, Index_VI_Disp_Y_Buf_Start_Low,    (CARD8)(pOverlay->PSY));
-    setvideoreg (pSiS, Index_VI_Disp_Y_Buf_Start_Middle, (CARD8)((pOverlay->PSY)>>8));
-    setvideoreg (pSiS, Index_VI_Disp_Y_Buf_Start_High,   (CARD8)((pOverlay->PSY)>>16));
-
-    /* set 310/325 series overflow bits for Y plane */
-    if (pSiS->VGAEngine == SIS_315_VGA) {
-        setvideoreg (pSiS, Index_VI_Disp_Y_Buf_Pitch_High, (CARD8)(pitch>>12));
-    	setvideoreg (pSiS, Index_VI_Y_Buf_Start_Over, ((CARD8)((pOverlay->PSY)>>24) & 0x01));
-    }
-
-    /* Set U/V data if using plane formats */
-    if ( (pOverlay->pixelFormat == PIXEL_FMT_YV12) ||
-    	 (pOverlay->pixelFormat == PIXEL_FMT_I420) )  {
-
-        CARD32  PSU=0, PSV=0;
-
-        PSU = pOverlay->PSU;
-        PSV = pOverlay->PSV;
-
-	/* Set U/V pitch */
-	setvideoreg (pSiS, Index_VI_Disp_UV_Buf_Pitch_Low, (CARD8)(pitch >> 1));
-        setvideoregmask (pSiS, Index_VI_Disp_Y_UV_Buf_Pitch_Middle, (CARD8)(pitch >> 5), 0xf0);
-
-        /* set U/V start address */
-        setvideoreg (pSiS, Index_VI_U_Buf_Start_Low,   (CARD8)PSU);
-        setvideoreg (pSiS, Index_VI_U_Buf_Start_Middle,(CARD8)(PSU>>8));
-        setvideoreg (pSiS, Index_VI_U_Buf_Start_High,  (CARD8)(PSU>>16));
-
-        setvideoreg (pSiS, Index_VI_V_Buf_Start_Low,   (CARD8)PSV);
-        setvideoreg (pSiS, Index_VI_V_Buf_Start_Middle,(CARD8)(PSV>>8));
-        setvideoreg (pSiS, Index_VI_V_Buf_Start_High,  (CARD8)(PSV>>16));
-
-	/* 310/325 series overflow bits */
-	if (pSiS->VGAEngine == SIS_315_VGA) {
-	   setvideoreg (pSiS, Index_VI_Disp_UV_Buf_Pitch_High, (CARD8)(pitch>>13));
-	   setvideoreg (pSiS, Index_VI_U_Buf_Start_Over, ((CARD8)(PSU>>24) & 0x01));
-	   setvideoreg (pSiS, Index_VI_V_Buf_Start_Over, ((CARD8)(PSV>>24) & 0x01));
-	}
-    }
-
-    if (pSiS->VGAEngine == SIS_315_VGA) {
-	/* Trigger register copy for 310 series */
-	setvideoreg(pSiS, Index_VI_Control_Misc3, 1 << index);
-    }
-
-    /* set scale factor */
-    setvideoreg (pSiS, Index_VI_Hor_Post_Up_Scale_Low, (CARD8)(pOverlay->HUSF));
-    setvideoreg (pSiS, Index_VI_Hor_Post_Up_Scale_High,(CARD8)((pOverlay->HUSF)>>8));
-    setvideoreg (pSiS, Index_VI_Ver_Up_Scale_Low,      (CARD8)(pOverlay->VUSF));
-    setvideoreg (pSiS, Index_VI_Ver_Up_Scale_High,     (CARD8)((pOverlay->VUSF)>>8));
-
-    setvideoregmask (pSiS, Index_VI_Scale_Control,     (pOverlay->IntBit << 3)
-                                                      |(pOverlay->wHPre), 0x7f);
-
-    /* set destination window position */
-    setvideoreg(pSiS, Index_VI_Win_Hor_Disp_Start_Low, (CARD8)left);
-    setvideoreg(pSiS, Index_VI_Win_Hor_Disp_End_Low,   (CARD8)right);
-    setvideoreg(pSiS, Index_VI_Win_Hor_Over,           (CARD8)h_over);
-
-    setvideoreg(pSiS, Index_VI_Win_Ver_Disp_Start_Low, (CARD8)top);
-    setvideoreg(pSiS, Index_VI_Win_Ver_Disp_End_Low,   (CARD8)bottom);
-    setvideoreg(pSiS, Index_VI_Win_Ver_Over,           (CARD8)v_over);
-
-    setvideoregmask(pSiS, Index_VI_Control_Misc1, pOverlay->bobEnable, 0x1a);
-
-    /* Lock the address registers */
-    setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x20);
-}
-
-/* TW: Overlay MUST NOT be switched off while beam is over it */
-static void
-close_overlay(SISPtr pSiS, SISPortPrivPtr pPriv)
-{
-  CARD32 watchdog;
-
-  if ((pPriv->displayMode == DISPMODE_SINGLE2) ||
-      (pPriv->displayMode == DISPMODE_MIRROR)) {
-     if (pPriv->hasTwoOverlays) {
-     	setvideoregmask (pSiS, Index_VI_Control_Misc2, 0x01, 0x01);
-     	watchdog = WATCHDOG_DELAY;
-     	while(vblank_active_CRT2(pSiS) && --watchdog);
-     	watchdog = WATCHDOG_DELAY;
-     	while((!vblank_active_CRT2(pSiS)) && --watchdog);
-     	setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
-     	watchdog = WATCHDOG_DELAY;
-     	while(vblank_active_CRT2(pSiS) && --watchdog);
-     	watchdog = WATCHDOG_DELAY;
-     	while((!vblank_active_CRT2(pSiS)) && --watchdog);
-     } else if (pPriv->displayMode == DISPMODE_SINGLE2) {
-      	setvideoregmask (pSiS, Index_VI_Control_Misc2, 0x00, 0x01);
-     	watchdog = WATCHDOG_DELAY;
-     	while(vblank_active_CRT1(pSiS) && --watchdog);
-     	watchdog = WATCHDOG_DELAY;
-     	while((!vblank_active_CRT1(pSiS)) && --watchdog);
-     	setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
-     	watchdog = WATCHDOG_DELAY;
-     	while(vblank_active_CRT1(pSiS) && --watchdog);
-     	watchdog = WATCHDOG_DELAY;
-     	while((!vblank_active_CRT1(pSiS)) && --watchdog);
-     }
-  }
-  if ((pPriv->displayMode == DISPMODE_SINGLE1) ||
-      (pPriv->displayMode == DISPMODE_MIRROR)) {
-     setvideoregmask (pSiS, Index_VI_Control_Misc2, 0x00, 0x01);
-     watchdog = WATCHDOG_DELAY;
-     while(vblank_active_CRT1(pSiS) && --watchdog);
-     watchdog = WATCHDOG_DELAY;
-     while((!vblank_active_CRT1(pSiS)) && --watchdog);
-     setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
-     watchdog = WATCHDOG_DELAY;
-     while(vblank_active_CRT1(pSiS) && --watchdog);
-     watchdog = WATCHDOG_DELAY;
-     while((!vblank_active_CRT1(pSiS)) && --watchdog);
-  }
-}
-
-static void
-SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
-{
-   SISPtr pSiS = SISPTR(pScrn);
-   
-   short srcPitch = pPriv->srcPitch;
-   short height = pPriv->height;
-   SISOverlayRec overlay; 
-   int srcOffsetX=0, srcOffsetY=0;
-   int sx, sy;
-   int index = 0, iscrt2 = 0;
-
-   memset(&overlay, 0, sizeof(overlay));
-   overlay.pixelFormat = pPriv->id;
-   overlay.pitch = overlay.origPitch = srcPitch;
-   overlay.keyOP = 0x03;	/* DestKey mode */
-   /* overlay.bobEnable = 0x02; */
-   overlay.bobEnable = 0x00;    /* Disable BOB (whatever that is) */
-
-   overlay.SCREENheight = pSiS->CurrentLayout.mode->VDisplay;
-   
-   overlay.dstBox.x1 = pPriv->drw_x - pScrn->frameX0;
-   overlay.dstBox.x2 = pPriv->drw_x + pPriv->drw_w - pScrn->frameX0;
-   overlay.dstBox.y1 = pPriv->drw_y - pScrn->frameY0;
-   overlay.dstBox.y2 = pPriv->drw_y + pPriv->drw_h - pScrn->frameY0;
-
-   if((overlay.dstBox.x1 > overlay.dstBox.x2) ||
-   		(overlay.dstBox.y1 > overlay.dstBox.y2))
-     return;
-
-   if((overlay.dstBox.x2 < 0) || (overlay.dstBox.y2 < 0))
-     return;
-
-   if(overlay.dstBox.x1 < 0) {
-     srcOffsetX = pPriv->src_w * (-overlay.dstBox.x1) / pPriv->drw_w;
-     overlay.dstBox.x1 = 0;
-   }
-   if(overlay.dstBox.y1 < 0) {
-     srcOffsetY = pPriv->src_h * (-overlay.dstBox.y1) / pPriv->drw_h;
-     overlay.dstBox.y1 = 0;   
-   }
-
-   switch(pPriv->id){
-     case PIXEL_FMT_YV12:
-       sx = (pPriv->src_x + srcOffsetX) & ~7;
-       sy = (pPriv->src_y + srcOffsetY) & ~1;
-       overlay.PSY = pPriv->bufAddr[pPriv->currentBuf] + sx + sy*srcPitch;
-       overlay.PSV = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch + ((sx + sy*srcPitch/2) >> 1);
-       overlay.PSU = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch*5/4 + ((sx + sy*srcPitch/2) >> 1);
-#ifdef SISDUALHEAD
-       overlay.PSY += HEADOFFSET;
-       overlay.PSV += HEADOFFSET;
-       overlay.PSU += HEADOFFSET;
-#endif
-       overlay.PSY >>= pPriv->shiftValue;
-       overlay.PSV >>= pPriv->shiftValue;
-       overlay.PSU >>= pPriv->shiftValue;
-       break;
-     case PIXEL_FMT_I420:
-       sx = (pPriv->src_x + srcOffsetX) & ~7;
-       sy = (pPriv->src_y + srcOffsetY) & ~1;
-       overlay.PSY = pPriv->bufAddr[pPriv->currentBuf] + sx + sy*srcPitch;
-       overlay.PSV = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch*5/4 + ((sx + sy*srcPitch/2) >> 1);
-       overlay.PSU = pPriv->bufAddr[pPriv->currentBuf] + height*srcPitch + ((sx + sy*srcPitch/2) >> 1);
-#ifdef SISDUALHEAD
-       overlay.PSY += HEADOFFSET;
-       overlay.PSV += HEADOFFSET;
-       overlay.PSU += HEADOFFSET;
-#endif
-       overlay.PSY >>= pPriv->shiftValue;
-       overlay.PSV >>= pPriv->shiftValue;
-       overlay.PSU >>= pPriv->shiftValue;
-       break;
-     case PIXEL_FMT_YUY2:
-     case PIXEL_FMT_UYVY:
-     case PIXEL_FMT_RGB6:
-     case PIXEL_FMT_RGB5:
-     default:
-       sx = (pPriv->src_x + srcOffsetX) & ~1;
-       sy = (pPriv->src_y + srcOffsetY);
-       overlay.PSY = (pPriv->bufAddr[pPriv->currentBuf] + sx*2 + sy*srcPitch);
-#ifdef SISDUALHEAD
-       overlay.PSY += HEADOFFSET;
-#endif
-       overlay.PSY >>= pPriv->shiftValue;
-       break;      
-   }
-
-   /* FIXME: is it possible that srcW < 0 */
-   overlay.srcW = pPriv->src_w - (sx - pPriv->src_x);
-   overlay.srcH = pPriv->src_h - (sy - pPriv->src_y);
-
-   if ( (pPriv->oldx1 != overlay.dstBox.x1) ||
-   	(pPriv->oldx2 != overlay.dstBox.x2) ||
-	(pPriv->oldy1 != overlay.dstBox.y1) ||
-	(pPriv->oldy2 != overlay.dstBox.y2) ) {
-	pPriv->mustwait = 1;
-	pPriv->oldx1 = overlay.dstBox.x1; pPriv->oldx2 = overlay.dstBox.x2;
-	pPriv->oldy1 = overlay.dstBox.y1; pPriv->oldy2 = overlay.dstBox.y2;
-   }
-
-   /* TW: setup dispmode (MIRROR, SINGLEx) */
-   set_dispmode(pScrn, pPriv);
-
-   /* TW: set display mode SR06,32 (CRT1, CRT2 or mirror) */
-   set_disptype_regs(pScrn, pPriv);
-
-   /* set (not only calc) merge line buffer */
-   merge_line_buf(pSiS, pPriv, (overlay.srcW > 384));
-
-   /* calculate (not set!) line buffer length */
-   set_line_buf_size(&overlay);
-
-   if (pPriv->displayMode == DISPMODE_SINGLE2) {
-     if (pPriv->hasTwoOverlays) {
-	  /* TW: On chips with two overlays we use
-	   * overlay 2 for CRT2 */
-      	  index = 1; iscrt2 = 1;
-     } else {
-     	  /* TW: On chips with only one overlay we
-	   * use that only overlay for CRT2 */
-          index = 0; iscrt2 = 1;
-     }
-     overlay.VBlankActiveFunc = vblank_active_CRT2;
-     /* overlay.GetScanLineFunc = get_scanline_CRT2; */
-   } else {
-     index = 0; iscrt2 = 0;
-     overlay.VBlankActiveFunc = vblank_active_CRT1;
-     /* overlay.GetScanLineFunc = get_scanline_CRT1; */
-   }
-
-   /* TW: Do the following in a loop for CRT1 and CRT2 ----------------- */
-MIRROR:
-
-   /* calculate (not set!) scale factor */
-   calc_scale_factor(&overlay, pScrn, pPriv, index, iscrt2);
-
-   /* Select video1 (used for CRT1) or video2 (used for CRT2) */
-   setvideoregmask(pSiS, Index_VI_Control_Misc2, index, 0x01);
-
-   /* set format */
-   set_format(pSiS, &overlay);
-
-   /* set color key */
-   set_colorkey(pSiS, pPriv->colorKey);
-
-   /* set brightness, contrast, hue and saturation */
-   set_brightness(pSiS, pPriv->brightness);
-   set_contrast(pSiS, pPriv->contrast);
-   if (pSiS->VGAEngine == SIS_315_VGA) {
-   	set_hue(pSiS, pPriv->hue);
-   	set_saturation(pSiS, pPriv->saturation);
-   }
-
-   /* set overlay */
-   set_overlay(pSiS, &overlay, pPriv, index);
-
-   /* enable overlay */
-   setvideoregmask (pSiS, Index_VI_Control_Misc0, 0x02, 0x02);
-
-   if(index == 0 &&
-      pPriv->displayMode == DISPMODE_MIRROR &&
-      pPriv->hasTwoOverlays) {
-     index = 1; iscrt2 = 1;
-     overlay.VBlankActiveFunc = vblank_active_CRT2;
-     /* overlay.GetScanLineFunc = get_scanline_CRT2; */
-     goto MIRROR;
-   }
-   pPriv->mustwait = 0;
-}
-
-static FBLinearPtr
-SISAllocateOverlayMemory(
-  ScrnInfoPtr pScrn,
-  FBLinearPtr linear,
-  int size
-){
-   ScreenPtr pScreen;
-   FBLinearPtr new_linear;
-
-   if(linear) {
-	if(linear->size >= size)
-	   return linear;
-
-	if(xf86ResizeOffscreenLinear(linear, size))
-	   return linear;
-
-	xf86FreeOffscreenLinear(linear);
-   }
-
-   pScreen = screenInfo.screens[pScrn->scrnIndex];
-
-   new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8,
-                                            NULL, NULL, NULL);
-
-   if(!new_linear) {
-        int max_size;
-
-        xf86QueryLargestOffscreenLinear(pScreen, &max_size, 8,
-				       PRIORITY_EXTREME);
-
-        if(max_size < size) return NULL;
-
-        xf86PurgeUnlockedOffscreenAreas(pScreen);
-        new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8,
-                                                 NULL, NULL, NULL);
-   }
-   if (!new_linear)
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	           "Xv: Failed to allocate %dK of video memory\n", size/1024);
-#ifdef TWDEBUG
-   else
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	           "Xv: Allocated %dK of video memory\n", size/1024);
-#endif
-
-   return new_linear;
-}
-
-static void
-SISFreeOverlayMemory(ScrnInfoPtr pScrn)
-{
-    SISPortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);
-
-    if(pPriv->linear) {
-        xf86FreeOffscreenLinear(pPriv->linear);
-	pPriv->linear = NULL;
-    }
-}
-
-static void
-SISStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
-{
-  SISPortPrivPtr pPriv = (SISPortPrivPtr)data;
-  SISPtr pSiS = SISPTR(pScrn);
-
-  if(pPriv->grabbedByV4L)
-  	return;
-
-  REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
-
-  if(shutdown) {
-     if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
-       close_overlay(pSiS, pPriv);
-       pPriv->mustwait = 1;
-     }
-     SISFreeOverlayMemory(pScrn);
-     pPriv->videoStatus = 0;
-     pSiS->VideoTimerCallback = NULL;
-  } else {
-     if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
-       pPriv->videoStatus = OFF_TIMER | CLIENT_VIDEO_ON;
-       pPriv->offTime = currentTime.milliseconds + OFF_DELAY;
-       pSiS->VideoTimerCallback = SISVideoTimerCallback;
-     }
-  }
-}
-
-static int
-SISPutImage(
-  ScrnInfoPtr pScrn,
-  short src_x, short src_y,
-  short drw_x, short drw_y,
-  short src_w, short src_h,
-  short drw_w, short drw_h,
-  int id, unsigned char* buf,
-  short width, short height,
-  Bool sync,
-  RegionPtr clipBoxes, pointer data
-){
-   SISPtr pSiS = SISPTR(pScrn);
-   SISPortPrivPtr pPriv = (SISPortPrivPtr)data;
-
-   int totalSize=0;
-   int depth = pSiS->CurrentLayout.bitsPerPixel >> 3;
-
-   if(pPriv->grabbedByV4L)
-   	return Success;
-
-   pPriv->drw_x = drw_x;
-   pPriv->drw_y = drw_y;
-   pPriv->drw_w = drw_w;
-   pPriv->drw_h = drw_h;
-   pPriv->src_x = src_x;
-   pPriv->src_y = src_y;
-   pPriv->src_w = src_w;
-   pPriv->src_h = src_h;
-   pPriv->id = id;
-   pPriv->height = height;
-
-   /* TW: Pixel formats:
-      1. YU12:  3 planes:       H    V
-               Y sample period  1    1   (8 bit per pixel)
-	       V sample period  2    2	 (8 bit per pixel, subsampled)
-	       U sample period  2    2   (8 bit per pixel, subsampled)
-
- 	 Y plane is fully sampled (width*height), U and V planes
-	 are sampled in 2x2 blocks, hence a group of 4 pixels requires
-	 4 + 1 + 1 = 6 bytes. The data is planar, ie in single planes
-	 for Y, U and V.
-      2. UYVY: 3 planes:        H    V
-               Y sample period  1    1   (8 bit per pixel)
-	       V sample period  2    1	 (8 bit per pixel, subsampled)
-	       U sample period  2    1   (8 bit per pixel, subsampled)
-	 Y plane is fully sampled (width*height), U and V planes
-	 are sampled in 2x1 blocks, hence a group of 4 pixels requires
-	 4 + 2 + 2 = 8 bytes. The data is bit packed, there are no separate
-	 Y, U or V planes.
-	 Bit order:  U0 Y0 V0 Y1  U2 Y2 V2 Y3 ...
-      3. I420: Like YU12, but planes U and V are in reverse order.
-      4. YUY2: Like UYVY, but order is
-                     Y0 U0 Y1 V0  Y2 U2 Y3 V2 ...
-   */
-
-   switch(id){
-     case PIXEL_FMT_YV12:
-     case PIXEL_FMT_I420:
-       pPriv->srcPitch = (width + 7) & ~7;
-       /* Size = width * height * 3 / 2 */
-       totalSize = (pPriv->srcPitch * height * 3) >> 1; /* Verified */
-       break;
-     case PIXEL_FMT_YUY2:
-     case PIXEL_FMT_UYVY:
-     case PIXEL_FMT_RGB6:
-     case PIXEL_FMT_RGB5:
-     default:
-       pPriv->srcPitch = ((width << 1) + 3) & ~3;	/* Verified */
-       /* Size = width * 2 * height */
-       totalSize = pPriv->srcPitch * height;
-   }
-
-   /* allocate memory (we do doublebuffering) */
-   if(!(pPriv->linear = SISAllocateOverlayMemory(pScrn, pPriv->linear,
-						 totalSize<<1)))
-	return BadAlloc;
-
-   /* fixup pointers */
-   pPriv->bufAddr[0] = (pPriv->linear->offset * depth);
-   pPriv->bufAddr[1] = pPriv->bufAddr[0] + totalSize;
-
-   /* copy data */
-   /* TODO: subimage */
-   memcpy(pSiS->FbBase + pPriv->bufAddr[pPriv->currentBuf], buf, totalSize);
-
-   SISDisplayVideo(pScrn, pPriv);
-
-   /* update cliplist */
-   if(pPriv->autopaintColorKey &&
-        (pPriv->grabbedByV4L ||
-	 !REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes))) {
-     /* We always paint colorkey for V4L */
-     if (!pPriv->grabbedByV4L)
-     	REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
-     /* draw these */
-     xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
-   }
-
-   pPriv->currentBuf ^= 1;
-
-   pPriv->videoStatus = CLIENT_VIDEO_ON;
-
-   pSiS->VideoTimerCallback = SISVideoTimerCallback;
-
-   return Success;
-}
-
-static int
-SISQueryImageAttributes(
-  ScrnInfoPtr pScrn,
-  int id,
-  unsigned short *w, unsigned short *h,
-  int *pitches, int *offsets
-){
-    int    pitchY, pitchUV;
-    int    size, sizeY, sizeUV;
-    SISPtr pSiS = SISPTR(pScrn);
-
-    if(*w < IMAGE_MIN_WIDTH) *w = IMAGE_MIN_WIDTH;
-    if(*h < IMAGE_MIN_HEIGHT) *h = IMAGE_MIN_HEIGHT;
-
-    if(pSiS->Flags650 & SiS650_LARGEOVERLAY) {
-       if(*w > IMAGE_MAX_WIDTH_M650) *w = IMAGE_MAX_WIDTH_M650;
-       if(*h > IMAGE_MAX_HEIGHT_M650) *h = IMAGE_MAX_HEIGHT_M650;
-    } else {
-       if(*w > IMAGE_MAX_WIDTH) *w = IMAGE_MAX_WIDTH;
-       if(*h > IMAGE_MAX_HEIGHT) *h = IMAGE_MAX_HEIGHT;
-    }
-
-    switch(id) {
-    case PIXEL_FMT_YV12:
-    case PIXEL_FMT_I420:
-        *w = (*w + 7) & ~7;
-        *h = (*h + 1) & ~1;
-        pitchY = *w;
-    	pitchUV = *w >> 1;
-    	if(pitches) {
-      	    pitches[0] = pitchY;
-            pitches[1] = pitches[2] = pitchUV;
-        }
-    	sizeY = pitchY * (*h);
-    	sizeUV = pitchUV * ((*h) >> 1);
-    	if(offsets) {
-          offsets[0] = 0;
-          offsets[1] = sizeY;
-          offsets[2] = sizeY + sizeUV;
-        }
-        size = sizeY + (sizeUV << 1);
-    	break;
-    case PIXEL_FMT_YUY2:
-    case PIXEL_FMT_UYVY:
-    case PIXEL_FMT_RGB6:
-    case PIXEL_FMT_RGB5:
-    default:
-        *w = (*w + 1) & ~1;
-        pitchY = *w << 1;
-    	if(pitches) pitches[0] = pitchY;
-    	if(offsets) offsets[0] = 0;
-    	size = pitchY * (*h);
-    	break;
-    }
-
-    return size;
-}
-
-static void
-SISVideoTimerCallback (ScrnInfoPtr pScrn, Time now)
-{
-    SISPtr         pSiS = SISPTR(pScrn);
-    SISPortPrivPtr pPriv = NULL;
-    unsigned char  sridx, cridx;
-
-    pSiS->VideoTimerCallback = NULL;
-
-    if(!pScrn->vtSema) return;
-
-    if (pSiS->adaptor) {
-    	pPriv = GET_PORT_PRIVATE(pScrn);
-	if(!pPriv->videoStatus)
-	   pPriv = NULL;
-    }
-
-    if (pPriv) {
-      if(pPriv->videoStatus & TIMER_MASK) {
-        UpdateCurrentTime();
-	if(pPriv->offTime < currentTime.milliseconds) {
-          if(pPriv->videoStatus & OFF_TIMER) {
-              /* Turn off the overlay */
-	      sridx = inSISREG(SISSR); cridx = inSISREG(SISCR);
-              close_overlay(pSiS, pPriv);
-	      outSISREG(SISSR, sridx); outSISREG(SISCR, cridx);
-	      pPriv->mustwait = 1;
-              pPriv->videoStatus = FREE_TIMER;
-              pPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
-	      pSiS->VideoTimerCallback = SISVideoTimerCallback;
-          } else
-	  if(pPriv->videoStatus & FREE_TIMER) {  
-              SISFreeOverlayMemory(pScrn);
-	      pPriv->mustwait = 1;
-              pPriv->videoStatus = 0;
-          }
-        } else
-	  pSiS->VideoTimerCallback = SISVideoTimerCallback;
-      }
-   }
-}
-
-/* TW: Offscreen surface stuff */
-
-static int
-SISAllocSurface (
-    ScrnInfoPtr pScrn,
-    int id,
-    unsigned short w,
-    unsigned short h,
-    XF86SurfacePtr surface
-)
-{
-    SISPtr pSiS = SISPTR(pScrn);
-    SISPortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);
-    int size, depth;
-
-#ifdef TWDEBUG
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Xv: SISAllocSurface called\n");
-#endif
-
-    if((w < IMAGE_MIN_WIDTH) || (h < IMAGE_MIN_HEIGHT))
-          return BadValue;
-    if(pSiS->Flags650 & SiS650_LARGEOVERLAY) {
-       if((w > IMAGE_MAX_WIDTH_M650) || (h > IMAGE_MAX_HEIGHT_M650))
-    	  return BadValue;   
-    } else {
-       if((w > IMAGE_MAX_WIDTH) || (h > IMAGE_MAX_HEIGHT))
-    	  return BadValue;
-    }
-
-    if(pPriv->grabbedByV4L)
-    	return BadAlloc;
-
-    depth = pSiS->CurrentLayout.bitsPerPixel >> 3;
-    w = (w + 1) & ~1;
-    pPriv->pitch = ((w << 1) + 63) & ~63; /* Only packed pixel modes supported */
-    size = h * pPriv->pitch; /*  / depth;   - Why? */
-    pPriv->linear = SISAllocateOverlayMemory(pScrn, pPriv->linear, size);
-    if(!pPriv->linear)
-    	return BadAlloc;
-
-    pPriv->offset    = pPriv->linear->offset * depth;
-
-    surface->width   = w;
-    surface->height  = h;
-    surface->pScrn   = pScrn;
-    surface->id      = id;
-    surface->pitches = &pPriv->pitch;
-    surface->offsets = &pPriv->offset;
-    surface->devPrivate.ptr = (pointer)pPriv;
-
-    close_overlay(pSiS, pPriv);
-    pPriv->videoStatus = 0;
-    REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
-    pSiS->VideoTimerCallback = NULL;
-    pPriv->grabbedByV4L = TRUE;
-    return Success;
-}
-
-static int
-SISStopSurface (XF86SurfacePtr surface)
-{
-    SISPortPrivPtr pPriv = (SISPortPrivPtr)(surface->devPrivate.ptr);
-    SISPtr pSiS = SISPTR(surface->pScrn);
-
-    if(pPriv->grabbedByV4L && pPriv->videoStatus) {
-        close_overlay(pSiS, pPriv);
-	pPriv->mustwait = 1;
-	pPriv->videoStatus = 0;
-    }
-    return Success;
-}
-
-static int
-SISFreeSurface (XF86SurfacePtr surface)
-{
-    SISPortPrivPtr pPriv = (SISPortPrivPtr)(surface->devPrivate.ptr);
-
-    if(pPriv->grabbedByV4L) {
-	SISStopSurface(surface);
-	SISFreeOverlayMemory(surface->pScrn);
-	pPriv->grabbedByV4L = FALSE;
-    }
-    return Success;
-}
-
-static int
-SISGetSurfaceAttribute (
-    ScrnInfoPtr pScrn,
-    Atom attribute,
-    INT32 *value
-)
-{
-    SISPortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);
-
-    return SISGetPortAttribute(pScrn, attribute, value, (pointer)pPriv);
-}
-
-static int
-SISSetSurfaceAttribute(
-    ScrnInfoPtr pScrn,
-    Atom attribute,
-    INT32 value
-)
-{
-    SISPortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);;
-
-    return SISSetPortAttribute(pScrn, attribute, value, (pointer)pPriv);
-}
-
-static int
-SISDisplaySurface (
-    XF86SurfacePtr surface,
-    short src_x, short src_y,
-    short drw_x, short drw_y,
-    short src_w, short src_h,
-    short drw_w, short drw_h,
-    RegionPtr clipBoxes
-)
-{
-   ScrnInfoPtr pScrn = surface->pScrn;
-   SISPortPrivPtr pPriv = (SISPortPrivPtr)(surface->devPrivate.ptr);
-
-#ifdef TWDEBUG
-   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Xv: DisplaySurface called\n");
-#endif
-
-   if(!pPriv->grabbedByV4L)
-    	return Success;
-
-   pPriv->drw_x = drw_x;
-   pPriv->drw_y = drw_y;
-   pPriv->drw_w = drw_w;
-   pPriv->drw_h = drw_h;
-   pPriv->src_x = src_x;
-   pPriv->src_y = src_y;
-   pPriv->src_w = src_w;
-   pPriv->src_h = src_h;
-   pPriv->id = surface->id;
-   pPriv->height = surface->height;
-   pPriv->bufAddr[0] = surface->offsets[0];
-   pPriv->currentBuf = 0;
-   pPriv->srcPitch = surface->pitches[0];
-
-   SISDisplayVideo(pScrn, pPriv);
-
-   if(pPriv->autopaintColorKey)
-	xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
-
-   pPriv->videoStatus = CLIENT_VIDEO_ON;
-
-   return Success;
-}
-
-#define NUMOFFSCRIMAGES 4
-
-static XF86OffscreenImageRec SISOffscreenImages_300[NUMOFFSCRIMAGES] =
-{
- {
-   &SISImages[0],  	/* YUV2 */
-   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
-   SISAllocSurface,
-   SISFreeSurface,
-   SISDisplaySurface,
-   SISStopSurface,
-   SISGetSurfaceAttribute,
-   SISSetSurfaceAttribute,
-   IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT,
-   NUM_ATTRIBUTES_300,
-   &SISAttributes_300[0]  /* Support all attributes */
- },
- {
-   &SISImages[2],	/* UYVY */
-   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
-   SISAllocSurface,
-   SISFreeSurface,
-   SISDisplaySurface,
-   SISStopSurface,
-   SISGetSurfaceAttribute,
-   SISSetSurfaceAttribute,
-   IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT,
-   NUM_ATTRIBUTES_300,
-   &SISAttributes_300[0]  /* Support all attributes */
- }
- ,
- {
-   &SISImages[4],	/* RV15 */
-   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
-   SISAllocSurface,
-   SISFreeSurface,
-   SISDisplaySurface,
-   SISStopSurface,
-   SISGetSurfaceAttribute,
-   SISSetSurfaceAttribute,
-   IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT,
-   NUM_ATTRIBUTES_300,
-   &SISAttributes_300[0]  /* Support all attributes */
- },
- {
-   &SISImages[5],	/* RV16 */
-   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
-   SISAllocSurface,
-   SISFreeSurface,
-   SISDisplaySurface,
-   SISStopSurface,
-   SISGetSurfaceAttribute,
-   SISSetSurfaceAttribute,
-   IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT,
-   NUM_ATTRIBUTES_300,
-   &SISAttributes_300[0]  /* Support all attributes */
- }
-};
-
-static XF86OffscreenImageRec SISOffscreenImages_325[NUMOFFSCRIMAGES] =
-{
- {
-   &SISImages[0],  	/* YUV2 */
-   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
-   SISAllocSurface,
-   SISFreeSurface,
-   SISDisplaySurface,
-   SISStopSurface,
-   SISGetSurfaceAttribute,
-   SISSetSurfaceAttribute,
-   IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT,
-   NUM_ATTRIBUTES_325,
-   &SISAttributes_325[0]  /* Support all attributes */
- },
- {
-   &SISImages[2],	/* UYVY */
-   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
-   SISAllocSurface,
-   SISFreeSurface,
-   SISDisplaySurface,
-   SISStopSurface,
-   SISGetSurfaceAttribute,
-   SISSetSurfaceAttribute,
-   IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT,
-   NUM_ATTRIBUTES_325,
-   &SISAttributes_325[0]  /* Support all attributes */
- }
- ,
- {
-   &SISImages[4],	/* RV15 */
-   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
-   SISAllocSurface,
-   SISFreeSurface,
-   SISDisplaySurface,
-   SISStopSurface,
-   SISGetSurfaceAttribute,
-   SISSetSurfaceAttribute,
-   IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT,
-   NUM_ATTRIBUTES_325,
-   &SISAttributes_325[0]  /* Support all attributes */
- },
- {
-   &SISImages[5],	/* RV16 */
-   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
-   SISAllocSurface,
-   SISFreeSurface,
-   SISDisplaySurface,
-   SISStopSurface,
-   SISGetSurfaceAttribute,
-   SISSetSurfaceAttribute,
-   IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT,
-   NUM_ATTRIBUTES_325,
-   &SISAttributes_325[0]  /* Support all attributes */
- }
-};
-
-static XF86OffscreenImageRec SISOffscreenImages_M650[NUMOFFSCRIMAGES] =
-{
- {
-   &SISImages[0],  	/* YUV2 */
-   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
-   SISAllocSurface,
-   SISFreeSurface,
-   SISDisplaySurface,
-   SISStopSurface,
-   SISGetSurfaceAttribute,
-   SISSetSurfaceAttribute,
-   IMAGE_MAX_WIDTH_M650, IMAGE_MAX_HEIGHT_M650,
-   NUM_ATTRIBUTES_325,
-   &SISAttributes_325[0]  /* Support all attributes */
- },
- {
-   &SISImages[2],	/* UYVY */
-   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
-   SISAllocSurface,
-   SISFreeSurface,
-   SISDisplaySurface,
-   SISStopSurface,
-   SISGetSurfaceAttribute,
-   SISSetSurfaceAttribute,
-   IMAGE_MAX_WIDTH_M650, IMAGE_MAX_HEIGHT_M650,
-   NUM_ATTRIBUTES_325,
-   &SISAttributes_325[0]  /* Support all attributes */
- }
- ,
- {
-   &SISImages[4],	/* RV15 */
-   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
-   SISAllocSurface,
-   SISFreeSurface,
-   SISDisplaySurface,
-   SISStopSurface,
-   SISGetSurfaceAttribute,
-   SISSetSurfaceAttribute,
-   IMAGE_MAX_WIDTH_M650, IMAGE_MAX_HEIGHT_M650,
-   NUM_ATTRIBUTES_325,
-   &SISAttributes_325[0]  /* Support all attributes */
- },
- {
-   &SISImages[5],	/* RV16 */
-   VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
-   SISAllocSurface,
-   SISFreeSurface,
-   SISDisplaySurface,
-   SISStopSurface,
-   SISGetSurfaceAttribute,
-   SISSetSurfaceAttribute,
-   IMAGE_MAX_WIDTH_M650, IMAGE_MAX_HEIGHT_M650,
-   NUM_ATTRIBUTES_325,
-   &SISAttributes_325[0]  /* Support all attributes */
- }
-};
-
-static void
-SISInitOffscreenImages(ScreenPtr pScreen)
-{
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    SISPtr pSiS = SISPTR(pScrn);
-    
-    if(pSiS->VGAEngine == SIS_300_VGA) {
-       xf86XVRegisterOffscreenImages(pScreen, SISOffscreenImages_300, NUMOFFSCRIMAGES);
-    } else {
-       if(pSiS->Flags650 & SiS650_LARGEOVERLAY) {
-          xf86XVRegisterOffscreenImages(pScreen, SISOffscreenImages_M650, NUMOFFSCRIMAGES);
-       } else {
-          xf86XVRegisterOffscreenImages(pScreen, SISOffscreenImages_325, NUMOFFSCRIMAGES);
-       }
-    }
-}

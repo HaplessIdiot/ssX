@@ -1,14 +1,32 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/oem300.h.c,v 1.0 2001/11/30 12:12:01 eich Exp $ */
+/*
+ * OEM Data for 315/330 series
+ *
+ * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of the copyright holder not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  The copyright holder makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
+ *
+ * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Author: 	Thomas Winischhofer <thomas@winischhofer.net>
+ *
+ */
 
-/* OEM Data for 310/325 series */
-
-const UCHAR SiS310_CRT2DelayCompensation1 = 0x04;   /* 301 */
-
-const UCHAR SiS310_CRT2DelayCompensation2 = 0x00;   /* 301B */
-
-const UCHAR SiS310_CRT2DelayCompensation3 = 0x00;   /* LVDS */
-
-const UCHAR SiS310_LCDDelayCompensation1[] =	    /* 301 */
+const UCHAR SiS310_LCDDelayCompensation_301[] =	    	/* 301 */
 {
 		 0x00,0x00,0x00,    /*   800x600 */
 		 0x0b,0x0b,0x0b,    /*  1024x768 */
@@ -27,7 +45,8 @@ const UCHAR SiS310_LCDDelayCompensation1[] =	    /* 301 */
 		 0x00,0x00,0x00
 };
 
-UCHAR SiS310_LCDDelayCompensation2[] =		   /* 30xB,LV,LVX */
+/* This is contained in 650+301B BIOSes, but it is wrong - so we don't use it */
+UCHAR SiS310_LCDDelayCompensation_650301B[] =	   	/* 30xB,LV */
 {
 		 0x01,0x01,0x01,    /*   800x600 */
 		 0x01,0x01,0x01,    /*  1024x768 */
@@ -46,7 +65,27 @@ UCHAR SiS310_LCDDelayCompensation2[] =		   /* 30xB,LV,LVX */
 		 0x02,0x02,0x02
 };
 
-const UCHAR SiS310_LCDDelayCompensation3[] =	   /* LVDS */
+/* This data is correct, so we use it instead of the table above */
+UCHAR SiS310_LCDDelayCompensation_3xx301B[] =	   	/* 30xB,LV */
+{
+		 0x01,0x01,0x01,    /*   800x600 */
+		 0x0C,0x0C,0x0C,    /*  1024x768 */
+		 0x0C,0x0C,0x0C,    /* 1280x1024 */
+                 0x08,0x08,0x08,    /*   640x480 */
+		 0x0C,0x0C,0x0C,    /*  1024x600 (guessed) */
+		 0x0C,0x0C,0x0C,    /*  1152x864 (guessed) */
+		 0x0C,0x0C,0x0C,    /*  1280x960 (guessed) */
+		 0x0C,0x0C,0x0C,    /*  1152x768 (guessed) */
+		 0x0C,0x0C,0x0C,    /* 1400x1050 (guessed) */
+		 0x0C,0x0C,0x0C,    /*  1280x768 (guessed) */
+		 0x0C,0x0C,0x0C,    /* 1600x1200 (guessed) */
+		 0x02,0x02,0x02,
+		 0x02,0x02,0x02,
+		 0x02,0x02,0x02,
+		 0x02,0x02,0x02
+};
+
+const UCHAR SiS310_LCDDelayCompensation_LVDS650[] =   	/* LVDS */
 {
                  0x00,0x00,0x00,    /*   800x600 */
 		 0x00,0x00,0x00,    /*  1024x768 */
@@ -65,45 +104,26 @@ const UCHAR SiS310_LCDDelayCompensation3[] =	   /* LVDS */
 		 0x00,0x00,0x00
 };
 
-const UCHAR SiS310_LCDDelayCompensation4[] =	   /* 650 */
+const UCHAR SiS310_LCDDelayCompensation_LVDS740[] =   	/* LVDS */
 {
-                 0x01,0x01,0x01,    /*   800x600 (guessed)*/
-		 0x01,0x01,0x01,    /*  1024x768 */
-		 0x01,0x01,0x01,    /* 1280x1024 */
-		 0x01,0x01,0x01,    /*   640x480 (unknown) */
-		 0x01,0x01,0x01,    /*  1024x600 (unknown) */
-		 0x01,0x01,0x01,    /*  1152x864 (unknown) */
-		 0x01,0x01,0x01,    /*  1280x960 (guessed) */
-		 0x01,0x01,0x01,    /*  1152x768 (unknown) */
-		 0x01,0x01,0x01,    /* 1400x1050 */
-		 0x01,0x01,0x01,    /*  1280x768  (guessed) */
-		 0x01,0x01,0x01,    /* 1600x1200 */
-		 0x01,0x01,0x01,
-		 0x01,0x01,0x01,
-		 0x01,0x01,0x01,
-		 0x01,0x01,0x01
+                 0x03,0x03,0x03,    /*   800x600 */
+		 0x03,0x03,0x03,    /*  1024x768 */
+		 0x03,0x03,0x03,    /* 1280x1024 */
+		 0x03,0x03,0x03,    /*   640x480 (unknown) */
+		 0x03,0x03,0x03,    /*  1024x600 (unknown) */
+		 0x03,0x03,0x03,    /*  1152x864 (unknown) */
+		 0x03,0x03,0x03,    /*  1280x960 (guessed) */
+		 0x03,0x03,0x03,    /*  1152x768 (unknown) */
+		 0x03,0x03,0x03,    /* 1400x1050 */
+		 0x03,0x03,0x03,    /*  1280x768  (guessed) */
+		 0x03,0x03,0x03,    /* 1600x1200 */
+		 0x00,0x00,0x00,
+		 0x00,0x00,0x00,
+		 0x00,0x00,0x00,
+		 0x00,0x00,0x00
 };
 
-const UCHAR SiS310_LCDDelayCompensation5[] =	   /* 650 LVX */
-{
-                 0x01,0x01,0x01,    /*   800x600 (guessed) */
-		 0x01,0x01,0x01,    /*  1024x768 */
-		 0x01,0x01,0x01,    /* 1280x1024 */
-		 0x01,0x01,0x01,    /*   640x480 (unknown) */
-		 0x01,0x01,0x01,    /*  1024x600 (unknown) */
-		 0x01,0x01,0x01,    /*  1152x864 (unknown) */
-		 0x01,0x01,0x01,    /*  1280x960 (guessed) */
-		 0x01,0x01,0x01,    /*  1152x768 (unknown) */
-		 0x01,0x01,0x01,    /* 1400x1050 */
-		 0x01,0x01,0x01,    /*  1280x768  (guessed) */
-		 0x01,0x01,0x01,    /* 1600x1200 */
-		 0x01,0x01,0x01,
-		 0x01,0x01,0x01,
-		 0x01,0x01,0x01,
-		 0x01,0x01,0x01
-};
-
-const UCHAR SiS310_LCDDelayCompensation6[] =	   /* M650/651 */
+const UCHAR SiS310_LCDDelayCompensation_651301LV[] =	  /* M650/651 301LV */
 {
                  0x33,0x33,0x33,    /*   800x600 (guessed) */
 		 0x33,0x33,0x33,    /*  1024x768 */
@@ -122,7 +142,7 @@ const UCHAR SiS310_LCDDelayCompensation6[] =	   /* M650/651 */
 		 0x33,0x33,0x33
 };
 
-const UCHAR SiS310_LCDDelayCompensation7[] =	   /* M650/651 301LVX */
+const UCHAR SiS310_LCDDelayCompensation_651302LV[] =	   /* M650/651 302LV */
 {
                  0x33,0x33,0x33,    /*   800x600 (guessed) */
 		 0x33,0x33,0x33,    /*  1024x768 */
@@ -141,49 +161,42 @@ const UCHAR SiS310_LCDDelayCompensation7[] =	   /* M650/651 301LVX */
 		 0x33,0x33,0x33
 };
 
-const UCHAR SiS310_TVDelayCompensation1[] = 		/* 301 */
+const UCHAR SiS310_TVDelayCompensation_301[] = 		/* 301 */
 {
 		 0x02,0x02,    /* NTSC Enhanced, Standard */
                  0x02,0x02,    /* PAL */
 		 0x08,0x0b     /* HiVision */
 };
 
-const UCHAR SiS310_TVDelayCompensation2[] =		/* 301B;LV */
+const UCHAR SiS310_TVDelayCompensation_301B[] =		/* 30xB, 30xLV */
 {
 		 0x03,0x03,
 		 0x03,0x03,
 		 0x03,0x03
 };
 
-const UCHAR SiS310_TVDelayCompensation3[] =		/* LVDS */
+const UCHAR SiS310_TVDelayCompensation_740301B[] =	/* 740 + 30xB (30xLV?) */
+{
+		 0x05,0x05,
+		 0x05,0x05,
+		 0x05,0x05
+};
+
+const UCHAR SiS310_TVDelayCompensation_LVDS[] =		/* LVDS */
 {
 		 0x0a,0x0a,
 		 0x0a,0x0a,
 		 0x0a,0x0a
 };
 
-const UCHAR SiS310_TVDelayCompensation4[] =		/* 650 */
-{
-		 0x03,0x03,
-		 0x03,0x03,
-		 0x03,0x03
-};
-
-const UCHAR SiS310_TVDelayCompensation5[] =		/* 650 LVX */
-{
-		 0x03,0x03,
-		 0x03,0x03,
-		 0x03,0x03
-};
-
-const UCHAR SiS310_TVDelayCompensation6[] =		/* M650, 651 */
+const UCHAR SiS310_TVDelayCompensation_651301LV[] =	/* M650, 651, 301LV */
 {
 		 0x33,0x33,
 		 0x33,0x33,
 		 0x33,0x33
 };
 
-const UCHAR SiS310_TVDelayCompensation7[] =		/* M650, 651, LVX */
+const UCHAR SiS310_TVDelayCompensation_651302LV[] =	/* M650, 651, 302LV */
 {
 		 0x33,0x33,
 		 0x33,0x33,
