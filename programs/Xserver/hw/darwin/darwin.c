@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.30 2001/08/01 05:34:05 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.31 2001/08/06 04:14:36 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -260,7 +260,7 @@ static Bool DarwinAddScreen(
             return FALSE;
         }
     } else {
-        if (! XFIOKitInitCursor(pScreen)) {
+        if (! XFIOKitSetupScreen(index, pScreen)) {
             return FALSE;
         }
     }

@@ -3,7 +3,7 @@
 
   IOKit specific functions and definitions
 */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.h,v 1.3 2001/04/01 07:12:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.h,v 1.4 2001/08/01 05:34:05 torrey Exp $ */
 
 #ifndef _XFIOKIT_H
 #define _XFIOKIT_H
@@ -13,6 +13,7 @@
 #include "darwin.h"
 
 Bool XFIOKitAddScreen(int index, ScreenPtr pScreen);
+Bool XFIOKitSetupScreen(int index, ScreenPtr pScreen);
 Bool XFIOKitInitCursor(ScreenPtr pScreen);
 void XFIOKitInitOutput(void);
 void XFIOKitGiveUp(void);
