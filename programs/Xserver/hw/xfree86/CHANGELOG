@@ -1,4 +1,5 @@
 XFree86 4.0.1h (xx November 2000)
+1025. Fix an unaligned access on Alpha with the tdfx driver (Jay Estabrook).
 1024. Add detection for CyberBlade/Ai1 Socket A chipsets (Alan Hourihane).
 
 XFree86 4.0.1g (29 November 2000)
@@ -11701,4 +11702,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1420 2000/11/29 18:12:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1421 2000/11/30 10:19:46 alanh Exp $
