@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.14 2001/12/14 19:56:46 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.15tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -152,7 +152,7 @@ BitmapOpenBitmap (FontPathElementPtr fpe, FontPtr *ppFont, int flags,
     if (!file)
 	return BadFontName;
     if (!(pFont = CreateFontRec())) {
-      fprintf(stderr, "Error: Couldn't allocate pFont (%d)\n", sizeof(FontRec));
+      fprintf(stderr, "Error: Couldn't allocate pFont (%ld)\n", sizeof(FontRec));
 	FontFileClose (file);
 	return AllocError;
     }

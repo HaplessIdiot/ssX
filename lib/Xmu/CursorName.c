@@ -25,11 +25,12 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CursorName.c,v 3.6 2001/03/30 02:15:19 keithp Exp $ */
+/* $XFree86: xc/lib/Xmu/CursorName.c,v 3.7tsi Exp $ */
 
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/CurUtil.h>
 #include <X11/cursorfont.h>
+#include <string.h>
 
 int
 XmuCursorNameToIndex(_Xconst char *name)

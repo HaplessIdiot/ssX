@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.13 2001/09/27 08:34:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.14tsi Exp $ */
 
 
 #ifndef _S3_H
@@ -96,8 +96,8 @@ typedef struct _S3Rec {
         pciVideoPtr             PciInfo;
         PCITAG                  PciTag;
         EntityInfoPtr           pEnt;
-        CARD32                  IOAddress;
-        CARD32                  FBAddress; 
+        unsigned long           IOAddress;
+        unsigned long           FBAddress; 
         unsigned char *         FBBase;   
         unsigned char *         MMIOBase;
         unsigned long           videoRam;

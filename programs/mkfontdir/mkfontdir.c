@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.16 2001/08/20 14:00:57 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.17tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1988  X Consortium
@@ -483,7 +483,7 @@ LoadScalable (char *dirName, FontTablePtr table)
 	    fclose(file);
 	    return BadFontPath;
 	}
-	(void) sprintf(dir_format, "%%%ds %%%d[^\n]\n",
+	(void) sprintf(dir_format, "%%%lds %%%ld[^\n]\n",
 		       sizeof(file_name)-1, sizeof(font_name)-1);
 	while (fgets(dir_line, sizeof(dir_line), file) != NULL) {
 	    count = sscanf(dir_line, dir_format, file_name, font_name);

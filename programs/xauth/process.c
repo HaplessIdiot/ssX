@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.12 2001/12/14 20:01:15 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.13tsi Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -1453,7 +1453,7 @@ do_add(char *inputfilename, int lineno, int argc, char **argv)
     auth = (Xauth *) malloc (sizeof (Xauth));
     if (!auth) {
 	prefix (inputfilename, lineno);
-	fprintf (stderr, "unable to allocate %d bytes for Xauth structure\n",
+	fprintf (stderr, "unable to allocate %ld bytes for Xauth structure\n",
 		 sizeof (Xauth));
 	free (key);
 	return 1;
@@ -1490,7 +1490,7 @@ do_add(char *inputfilename, int lineno, int argc, char **argv)
     list = (AuthList *) malloc (sizeof (AuthList));
     if (!list) {
 	prefix (inputfilename, lineno);
-	fprintf (stderr, "unable to allocate %d bytes for auth list\n",
+	fprintf (stderr, "unable to allocate %ld bytes for auth list\n",
 		 sizeof (AuthList));
 	free (auth);
 	free (key);

@@ -25,7 +25,7 @@
  *    Keith Whitwell <keithw@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.h,v 1.8 2001/04/10 16:07:50 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.h,v 1.9tsi Exp $ */
 
 #ifndef MGA_IOCTL_H
 #define MGA_IOCTL_H
@@ -102,7 +102,7 @@ do {									\
    if ( ret < 0 ) {							\
       drmMGAEngineReset( mmesa->driFd );				\
       UNLOCK_HARDWARE( mmesa );						\
-      fprintf( stderr, __FUNCTION__ ": flush ret=%d\n", ret );		\
+      fprintf( stderr, "%s: flush ret=%d\n", __FUNCTION__, ret );	\
       /*fprintf( stderr, "drmMGAFlushDMA: return = %d\n", ret );*/	\
       exit( 1 );							\
    }									\

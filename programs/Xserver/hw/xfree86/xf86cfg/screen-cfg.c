@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.9 2001/05/21 22:21:57 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.10tsi Exp $
  */
 
 #include "xf86config.h"
@@ -377,10 +377,13 @@ MoveCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	return;
 
     tmp = defmodes[unsel_index];
-    if (down)
-	defmodes[unsel_index] = defmodes[++unsel_index];
-    else
-	defmodes[unsel_index] = defmodes[--unsel_index];
+    if (down) {
+	defmodes[unsel_index] = defmodes[unsel_index + 1];
+	unsel_index++;
+    } else {
+	defmodes[unsel_index] = defmodes[unsel_index - 1];
+	unsel_index--;
+    }
     defmodes[unsel_index] = tmp;
 
     XawListUnhighlight(listR);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp.c,v 1.9 2002/07/22 07:26:26 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.10tsi Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -38,6 +38,7 @@
 #include <locale.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <stdlib.h>
 
 /*
  * Prototypes

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.1 2002/09/08 02:29:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.2tsi Exp $ */
 
 #include <stdio.h>
 #include "rep.h"
@@ -2372,10 +2372,10 @@ rec_build_stl(re_inf *inf, rec_stl *stl)
 	    }
 	    else {
 		if (len == 1)
-		    inf->cod[inf->len++] = (int)stl->strs[i];
+		    inf->cod[inf->len++] = (long)stl->strs[i];
 		else {
-		    inf->cod[inf->len++] = (int)stl->strs[i] & 0xff;
-		    inf->cod[inf->len++] = ((int)stl->strs[i] & 0xff00) >> 8;
+		    inf->cod[inf->len++] = (long)stl->strs[i] & 0xff;
+		    inf->cod[inf->len++] = ((long)stl->strs[i] & 0xff00) >> 8;
 		}
 	    }
 	}
@@ -2412,10 +2412,10 @@ rec_build_stl(re_inf *inf, rec_stl *stl)
 	    }
 	    else {
 		if (len == 1)
-		    inf->cod[inf->len++] = (int)stl->strs[i];
+		    inf->cod[inf->len++] = (long)stl->strs[i];
 		else {
-		    inf->cod[inf->len++] = (int)stl->strs[i] & 0xff;
-		    inf->cod[inf->len++] = ((int)stl->strs[i] & 0xff00) >> 8;
+		    inf->cod[inf->len++] = (long)stl->strs[i] & 0xff;
+		    inf->cod[inf->len++] = ((long)stl->strs[i] & 0xff00) >> 8;
 		}
 	    }
 	}

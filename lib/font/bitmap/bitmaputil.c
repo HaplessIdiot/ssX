@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitmaputil.c,v 1.6 2001/11/06 16:11:36 alanh Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmaputil.c,v 1.7tsi Exp $ */
 
 #include "fntfilst.h"
 #include "bitmap.h"
@@ -210,7 +210,7 @@ bitmapAddInkMetrics(FontPtr pFont)
     bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
     bitmapFont->ink_metrics = (xCharInfo *) xalloc(bitmapFont->num_chars * sizeof(xCharInfo));
     if (!bitmapFont->ink_metrics) {
-      fprintf(stderr, "Error: Couldn't allocate ink_metrics (%d*%d)\n", bitmapFont->num_chars, sizeof(xCharInfo));
+      fprintf(stderr, "Error: Couldn't allocate ink_metrics (%d*%ld)\n", bitmapFont->num_chars, sizeof(xCharInfo));
 	return FALSE;
     }
     for (i = 0; i < bitmapFont->num_chars; i++)

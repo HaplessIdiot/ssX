@@ -25,7 +25,7 @@
  *    Keith Whitwell <keithw@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.5 2002/02/26 23:37:35 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.6tsi Exp $ */
 
 #include "enums.h"
 #include "mtypes.h"
@@ -42,12 +42,12 @@
 
 #include "swrast/swrast.h"
 
-#define IS_AGP_MEM( mmesa, p )						\
-   ((GLuint)mmesa->mgaScreen->buffers.map <= ((GLuint)p) &&		\
-    (GLuint)mmesa->mgaScreen->buffers.map +				\
-    (GLuint)mmesa->mgaScreen->buffers.size > ((GLuint)p))
-#define AGP_OFFSET( mmesa, p )						\
-     (((GLuint)p) - (GLuint)mmesa->mgaScreen->buffers.map )
+#define IS_AGP_MEM( mmesa, p )						  \
+   ((unsigned long)mmesa->mgaScreen->buffers.map <= ((unsigned long)p) && \
+    (unsigned long)mmesa->mgaScreen->buffers.map +			  \
+    (unsigned long)mmesa->mgaScreen->buffers.size > ((unsigned long)p))
+#define AGP_OFFSET( mmesa, p )						  \
+     (((unsigned long)p) - (unsigned long)mmesa->mgaScreen->buffers.map)
 
 
 #if defined(MESA_packed_depth_stencil)

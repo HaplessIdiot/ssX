@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/XTrap/xtrapdi.c,v 1.3 2002/01/23 03:31:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XTrap/xtrapdi.c,v 1.4tsi Exp $ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991 by Digital Equipment Corp., Maynard, MA
 X11R6 Changes Copyright (c) 1994 by Robert Chesler of Absol-Puter, Hudson, NH.
@@ -191,7 +191,7 @@ static void GetSendColorPlanesRep (ClientPtr client , xResourceReq *req );
 int XETrapDestroyEnv(pointer value, XID id)
 {
     xXTrapReq request;
-    XETrapEnv *penv = XETenv[(int)value];
+    XETrapEnv *penv = XETenv[(long)value];
 
     XETrapReset(&request,penv->client);
     /* Free any memory malloc'd for a particular client here */
@@ -217,7 +217,7 @@ int XETrapDestroyEnv(pointer value, XID id)
 #endif
 
     Xfree(penv);
-    XETenv[(int)value] = NULL;
+    XETenv[(long)value] = NULL;
 
     return 0;
 }                       
@@ -237,7 +237,7 @@ int XETrapDestroyEnv(pointer value, XID id)
  */
 void XETrapCloseDown(ExtensionEntry *extEntry)
 {                                           
-    int i;
+    long i;
 
     for (i=0L; i<MAXCLIENTS; i++)
     {
@@ -500,7 +500,7 @@ int XETrapCreateEnv(ClientPtr client)
         penv->protocol = 31;    /* default to backwards compatibility */
         /* prep for client's departure (for memory dealloc, cleanup) */
         AddResource(FakeClientID(client->index),XETrapType,
-            (pointer)(client->index));
+            (pointer)(long)(client->index));
         if (XETrapRedirectDevices() == False)
         {
             status = XETrapErrorBase + BadDevices;

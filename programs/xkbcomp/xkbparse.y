@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbparse.y,v 3.9 2001/01/17 23:45:45 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbparse.y,v 3.10tsi Exp $ */
 
 %token
 	END_OF_FILE	0
@@ -98,6 +98,8 @@
 #include "parseutils.h"
 #include <X11/keysym.h>
 #include <X11/extensions/XKBgeom.h>
+#include <stdlib.h>
+
 
 %}
 %right	EQUALS

@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/Xcursor/file.c,v 1.1tsi Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -24,6 +24,7 @@
 
 #include "xcursorint.h"
 #include <stdlib.h>
+#include <string.h>
 
 XcursorImage *
 XcursorImageCreate (int width, int height)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.6 2002/03/16 05:53:53 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.7tsi Exp $ */
 
 #include "mp.h"
 
@@ -1449,7 +1449,7 @@ mpi_geti(mpi *op)
 
     value = op->digs[0];
     if (op->size > 1)
-	value |= op->digs[1] << BNSBITS;
+	value |= (BNS)(op->digs[1]) << BNSBITS;
 
     return (op->sign && value != MINSLONG ? -value : value);
 }
