@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.80 2000/03/02 23:15:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.81 2000/03/05 17:04:14 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -137,6 +137,7 @@ xf86AllocateScreen(DriverPtr drv, int flags)
     xf86Screens[i]->CurrentAccess = &xf86CurrentAccess;
     xf86Screens[i]->resourceType = MEM_IO;
 
+#ifdef DEBUG
     /* OOps -- What's this ? */
     ErrorF("xf86AllocateScreen - xf86Screens[%d]->pScreen = %p\n",
 	   i, xf86Screens[i]->pScreen );
@@ -144,6 +145,7 @@ xf86AllocateScreen(DriverPtr drv, int flags)
       ErrorF("xf86Screens[%d]->pScreen->CreateWindow = %p\n",
 	     i, xf86Screens[i]->pScreen->CreateWindow );
     }
+#endif
 
     return xf86Screens[i];
 }

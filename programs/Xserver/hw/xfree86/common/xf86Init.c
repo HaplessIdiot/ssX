@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.155 2000/03/03 00:21:58 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.156 2000/03/04 03:58:06 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -115,7 +115,9 @@ xf86CreateRootWindow(WindowPtr pWin)
   CreateWindowProcPtr CreateWindow =
     (CreateWindowProcPtr)(pScreen->devPrivates[xf86CreateRootWindowIndex].ptr);
 
-ErrorF("xf86CreateRootWindow(%p)\n", pWin);
+#ifdef DEBUG
+  ErrorF("xf86CreateRootWindow(%p)\n", pWin);
+#endif
 
   if ( pScreen->CreateWindow != xf86CreateRootWindow ) {
     /* Can't find hook we are hung on */
@@ -169,13 +171,15 @@ ErrorF("xf86CreateRootWindow(%p)\n", pWin);
       }  
       xf86RegisteredPropertiesTable[pScreen->myNum] = NULL;
     } else {
-      ErrorF("xf86CreateRootWindow unexpectedly called with non-root window %p (parent %p)\n",
-	     pWin, pWin->parent);
+      xf86Msg(X_ERROR, "xf86CreateRootWindow unexpectedly called with "
+	      "non-root window %p (parent %p)\n", pWin, pWin->parent);
       ret = FALSE;
     }
   }
 
+#ifdef DEBUG
   ErrorF("xf86CreateRootWindow() returns %d\n", ret);
+#endif
   return (ret);
 }
 
@@ -812,10 +816,12 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	FatalError("AddScreen/ScreenInit failed for driver %d\n", i);
       }
 
+#ifdef DEBUG
       ErrorF("InitOutput - xf86Screens[%d]->pScreen = %p\n",
 	     i, xf86Screens[i]->pScreen );
       ErrorF("xf86Screens[%d]->pScreen->CreateWindow = %p\n",
 	     i, xf86Screens[i]->pScreen->CreateWindow );
+#endif
 
       screenInfo.screens[scr_index]->devPrivates[xf86CreateRootWindowIndex].ptr
 	= (void*)(xf86Screens[i]->pScreen->CreateWindow);
@@ -1489,6 +1495,7 @@ ddxUseMsg()
   ErrorF("-screen name           specify the Screen section name\n");
   ErrorF("-keyboard name         specify the core keyboard InputDevice name\n");
   ErrorF("-pointer name          specify the core pointer InputDevice name\n");
+  ErrorF("-nosilk                disable Silken Mouse\n");
   ErrorF("-flipPixels            swap default black/white Pixel values\n");
 #ifdef XF86VIDMODE
   ErrorF("-disableVidMode        disable mode adjustments with xvidtune\n");

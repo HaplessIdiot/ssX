@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.11 2000/02/24 05:36:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.12 2000/03/05 17:04:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -349,35 +349,35 @@ FindPCIVideoInfo(void)
 	    	xf86Msg(X_PROBED, "PCI: (%d:%d:%d) ", info->bus, info->device,
 		    info->func);
 	    if (vendorname)
-		ErrorF("%s ", vendorname);
+		xf86ErrorF("%s ", vendorname);
 	    else
-		ErrorF("unknown vendor (0x%04x) ", info->vendor);
+		xf86ErrorF("unknown vendor (0x%04x) ", info->vendor);
 	    if (chipname)
-		ErrorF("%s ", chipname);
+		xf86ErrorF("%s ", chipname);
 	    else
-		ErrorF("unknown chipset (0x%04x) ", info->chipType);
-	    ErrorF("rev %d", info->chipRev);
+		xf86ErrorF("unknown chipset (0x%04x) ", info->chipType);
+	    xf86ErrorF("rev %d", info->chipRev);
 	    for (i = 0; i < 6; i++) {
 		if (info->memBase[i]) {
 		    if (!memdone) {
-			ErrorF(", Mem @ ");
+			xf86ErrorF(", Mem @ ");
 			memdone = TRUE;
 		    } else
-			ErrorF(", ");
-		    ErrorF("0x%08x/%d", info->memBase[i], info->size[i]);
+			xf86ErrorF(", ");
+		    xf86ErrorF("0x%08x/%d", info->memBase[i], info->size[i]);
 		}
 	    }
 	    for (i = 0; i < 6; i++) {
 		if (info->ioBase[i]) {
 		    if (!iodone) {
-			ErrorF(", I/O @ ");
+			xf86ErrorF(", I/O @ ");
 			iodone = TRUE;
 		    } else
-			ErrorF(", ");
-		    ErrorF("0x%04x/%d", info->ioBase[i], info->size[i]);
+			xf86ErrorF(", ");
+		    xf86ErrorF("0x%04x/%d", info->ioBase[i], info->size[i]);
 		}
 	    }
-	    ErrorF("\n");
+	    xf86ErrorF("\n");
 	}
     }
 }

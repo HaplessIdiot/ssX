@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.27 1999/12/29 14:47:06 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.29 2000/02/02 21:24:22 alanh Exp $ */
 
 
 /*
@@ -248,6 +248,7 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(LocalClient)
   /* util.c */
   SYMFUNC(Error)
+  SYMFUNC(VErrorF)
   SYMFUNC(ErrorF)
   SYMFUNC(FatalError)
   SYMFUNC(Xstrdup)
