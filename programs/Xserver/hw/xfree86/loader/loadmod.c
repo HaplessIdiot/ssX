@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.58 2000/12/13 16:52:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.59 2001/01/06 21:29:19 tsi Exp $ */
 
 /*
  *
@@ -183,6 +183,7 @@ static const char *stdSubdirs[] =
 {
 	"drivers/",
 	"input/",
+	"multimedia/",
 	"extensions/",
 	"fonts/",
 	"internal/",

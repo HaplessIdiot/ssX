@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.7 1999/11/12 02:12:41 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.8 2000/02/08 17:19:11 dawes Exp $ */
 
 #include "nv_local.h"
 #include "riva_hw.h"
@@ -1087,7 +1087,6 @@ static void nv10UpdateArbitrationSettings
 static int CalcVClock
 (
     int           clockIn,
-    int           double_scan,
     int          *clockOut,
     int          *mOut,
     int          *nOut,
@@ -1103,8 +1102,6 @@ static int CalcVClock
     DeltaOld = 0xFFFFFFFF;
 
     VClk     = (unsigned)clockIn;
-    if (double_scan)
-        VClk *= 2;
     
     if (chip->CrystalFreqKHz == 14318)
     {
@@ -1164,7 +1161,8 @@ static void CalcStateExt
     int            vStart,
     int            vEnd,
     int            vTotal,
-    int            dotClock
+    int            dotClock,
+    int		   doubleScan
 )
 {
     int pixelDepth, VClk, m, n, p;
@@ -1178,8 +1176,7 @@ static void CalcStateExt
      * Extended RIVA registers.
      */
     pixelDepth = (bpp + 1)/8;
-    CalcVClock(dotClock, hDisplaySize < 512,  /* double scan? */
-               &VClk, &m, &n, &p, chip);
+    CalcVClock(dotClock, &VClk, &m, &n, &p, chip);
 
     switch (chip->Architecture)
     {
@@ -1191,6 +1188,8 @@ static void CalcStateExt
                                          chip);
             state->cursor0  = 0x00;
             state->cursor1  = 0x78;
+	    if (doubleScan)
+		state->cursor1 |= 2;
             state->cursor2  = 0x00000000;
             state->pllsel   = 0x10010100;
             state->config   = ((width + 31)/32)
@@ -1207,6 +1206,8 @@ static void CalcStateExt
                                          chip);
             state->cursor0  = 0x00;
             state->cursor1  = 0xFC;
+	    if (doubleScan)
+		state->cursor1 |= 2;
             state->cursor2  = 0x00000000;
             state->pllsel   = 0x10000700;
             state->config   = 0x00001114;
@@ -1221,6 +1222,8 @@ static void CalcStateExt
                                           chip);
             state->cursor0  = 0x00;
             state->cursor1  = 0xFC;
+	    if (doubleScan)
+		state->cursor1 |= 2;
             state->cursor2  = 0x00000000;
             state->pllsel   = 0x10000700;
             state->config   = chip->PFB[0x00000200/4];
@@ -1798,7 +1801,7 @@ static void nv3GetConfig
                 break;
         }
     }        
-    chip->CrystalFreqKHz   = (chip->PEXTDEV[0x00000000/4] & 0x00000020) ? 14318 : 13500;
+    chip->CrystalFreqKHz   = (chip->PEXTDEV[0x00000000/4] & 0x00000020) ? 13500 : 14318;	/* this was reversed, not sure that it is right this way either (HCS) */
     chip->CURSOR           = &(chip->PRAMIN[0x00008000/4 - 0x0800/4]);
     chip->CURSORPOS        = &(chip->PRAMDAC[0x0300/4]);
     chip->VBLANKENABLE     = &(chip->PGRAPH[0x0140/4]);
