@@ -1,3 +1,22 @@
+XFree86 3.1.2El (23 August 1996)
+695. NetBSD/OpenBSD doc updates (Matthieu Herrb).
+694. Fix typo in rules/xfree86 (Joe Moss).
+693. Fix some virtual desktop scrolling bugs with the CL-GD5462 in the
+     Cirrus driver (Corin Anderson).
+692. Set BSD (syscons/pcvt) keyboard to K_RAW after establishing the tty
+     settings (was done in the opposite order) (Naofumi Honda).
+691. Fix PCVT_SUPPORT in BSD xf86KbdOn/Off functions (Naofumi Honda).
+690. Add correct handling of PCI connect/disconnect for the PC98 S3 968
+     server (Naofumi Honda).
+689. Fix PCI probing for PC98 machines (Michio Jinbo).
+688. Fix mask used for TGUI fb address when membase is supplied (Michio Jinbo).
+687. Add an xterm option/resource to allow text selection to be shown
+     differently -- ie, only highlight the characters selected when selecting
+     beyone the end of a line (Thomas E. Dickey).
+686. Fix PCI base address for S3 868/968, and newmmio fixes (Harald Koenig).
+685. Fix problem with memory allocation in XKB that could cause the server
+     to crash (Joe Moss).
+
 XFree86 3.1.2Ek (21 August 1996)
 684. Fixes for m68k support (Geert Uytterhoeven).
 683. Naming changes for m68k servers and config options (Geert Uytterhoeven).

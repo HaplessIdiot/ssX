@@ -1,5 +1,5 @@
 /* $XConsortium: xkbInit.c /main/18 1996/05/24 14:51:19 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.7 1996/03/16 12:47:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.8 1996/08/13 11:32:26 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -650,6 +650,10 @@ XkbEventCauseRec	cause;
     return;
 }
 
+#if MAP_LENGTH > XkbMaxKeyCount
+#undef  XkbMaxKeyCount
+#define XkbMaxKeyCount MAP_LENGTH
+#endif
 
 Bool
 #if NeedFunctionPrototypes

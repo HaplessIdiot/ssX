@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.32 1996/08/13 11:36:53 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.33 1996/08/20 12:33:47 dawes Exp $
  */
 
 /*
@@ -174,6 +174,7 @@ static void StopBlinking PROTO((TScreen *screen));
 #define XtNeightBitOutput "eightBitOutput"
 #define XtNeightBitControl "eightBitControl"
 #define XtNgeometry "geometry"
+#define XtNhighlightSelection "highlightSelection"
 #define XtNtekGeometry "tekGeometry"
 #define XtNinternalBorder "internalBorder"
 #define XtNjumpScroll "jumpScroll"
@@ -247,6 +248,7 @@ static void StopBlinking PROTO((TScreen *screen));
 #define XtCEightBitOutput "EightBitOutput"
 #define XtCEightBitControl "EightBitControl"
 #define XtCGeometry "Geometry"
+#define XtCHighlightSelection "HighlightSelection"
 #define XtCJumpScroll "JumpScroll"
 #ifdef ALLOWLOGGING
 #define XtCLogfile "Logfile"
@@ -439,6 +441,9 @@ static XtResource resources[] = {
 {XtNcutToBeginningOfLine, XtCCutToBeginningOfLine, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.cutToBeginningOfLine),
 	XtRBoolean, (XtPointer) &defaultTRUE},
+{XtNhighlightSelection,XtCHighlightSelection,XtRBoolean,
+        sizeof(Boolean),XtOffsetOf(XtermWidgetRec, screen.highlight_selection),
+        XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
 	XtOffsetOf(XtermWidgetRec, core.background_pixel),
 	XtRString, "XtDefaultBackground"},
@@ -3119,6 +3124,7 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    new->screen.charClass = request->screen.charClass;
    new->screen.cutNewline = request->screen.cutNewline;
    new->screen.cutToBeginningOfLine = request->screen.cutToBeginningOfLine;
+   new->screen.highlight_selection = request->screen.highlight_selection;
    new->screen.always_highlight = request->screen.always_highlight;
    new->screen.pointer_cursor = request->screen.pointer_cursor;
    new->screen.input_eight_bits = request->screen.input_eight_bits;

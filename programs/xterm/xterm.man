@@ -1,5 +1,5 @@
 .\" $XConsortium: xterm.man /main/83 1995/12/15 14:06:17 gildea $
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.8 1996/08/11 13:04:55 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.9 1996/08/13 11:37:13 dawes Exp $
 .\" Copyright (c) 1989  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -769,11 +769,18 @@ Specifies the name of the sixth alternative font.
 .B "geometry (\fPclass\fB Geometry)"
 Specifies the preferred size and position of the VT102 window.
 .TP 8
+.B "highlightSelection (\fPclass\fB HighlightSelection)"
+If false, selecting with the mouse highlights all positions on the screen
+between the beginning of the selection and the current position.
+If true, \fIxterm\fP highlights only the positions that contain text that
+can be selected.
+The default is ``false.''
+.TP 8
 .B "hpLowerleftBugCompat (\fPclass\fB HpLowerleftBugCompat)"
 Specifies whether to work around a bug in HP's \fIxdb\fP,
 which ignores termcap and always sends
 ESC F to move to the lower left corner.
-``true'' causes xterm to interpret ESC F as a request to move to the
+``true'' causes \fIxterm\fP to interpret ESC F as a request to move to the
 lower left corner of the screen.  The default is ``false.''
 .TP 8
 .B "internalBorder (\fPclass\fB BorderWidth)"

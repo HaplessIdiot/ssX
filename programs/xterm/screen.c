@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: screen.c,v 1.33 94/04/02 17:34:36 gildea Exp $
- *	$XFree86: xc/programs/xterm/screen.c,v 3.7 1996/08/11 13:04:51 dawes Exp $
+ *	$XFree86: xc/programs/xterm/screen.c,v 3.8 1996/08/13 11:37:08 dawes Exp $
  */
 
 /*
@@ -500,6 +500,28 @@ Boolean force;			/* ... leading/trailing spaces */
 			       maxcol - screen->endHCol + 1, force);
 		   maxcol = screen->endHCol - 1;
 	       }
+
+	       /*
+		* If we're highlighting because the user is doing cut/paste,
+		* trim the trailing blanks from the highlighted region so we're
+		* showing the actual extent of the text that'll be cut.  If
+		* we're selecting a blank line, we'll highlight one column
+		* anyway.
+		*
+		* We don't do this if the mouse-hilite mode is set because that
+		* would be too confusing.
+		*
+		* The default if the highlightSelection resource isn't set will
+		* highlight the whole width of the terminal, which is easy to
+		* see, but harder to use (because trailing blanks aren't as
+		* apparent).
+	        */
+	       if (screen->highlight_selection
+	        && maxcol >= screen->max_col
+		&& screen->send_mouse_pos != 3)
+	           while (maxcol > 0 && !(attrs[maxcol] & CHARDRAWN))
+                       maxcol--;
+
 	       /* remaining piece should be hilited */
 	       hilite = True;
 	   }
