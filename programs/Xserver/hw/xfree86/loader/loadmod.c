@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.10 1997/03/11 13:06:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.11 1997/04/08 10:13:49 hohndel Exp $ */
 
 
 
@@ -43,11 +43,28 @@ int  *xf86ccdScreenPrivateIndex = NULL;
 void (*xf86ccdDoBitblt)() = NULL;
 int  (*xf86ccdXAAScreenInit)() = NULL;
 void *(*xf86xaacfbfuncs)() = NULL;
+
 #ifdef PEXEXT
 extern void (*PexExtensionInitPtr)(void);
 #endif
+
 #ifdef XIE
 extern void (*XieInitPtr)(void);
+#endif
+
+#ifdef GLXEXT
+extern void (*GlxExtensionInitPtr)(void);
+typedef Bool (*GlxInitVisualsType)(
+    VisualPtr *         /*visualp*/,
+    DepthPtr *          /*depthp*/,
+    int *               /*nvisualp*/,
+    int *               /*ndepthp*/,
+    int *               /*rootDepthp*/,
+    VisualID *          /*defaultVisp*/,
+    unsigned long       /*sizes*/,
+    int                 /*bitsPerRGB*/
+);
+GlxInitVisualsType GlxInitVisualsPtr;
 #endif
 
 extern int check_unresolved_sema;
