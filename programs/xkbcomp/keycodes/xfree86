@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.17 2001/11/30 12:12:04 eich Exp $
+// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.18 2002/10/15 02:11:38 dawes Exp $
 
 // "standard" XFree86 codes
 // It seems that the "default" must be the first entry in the file.
@@ -164,11 +164,11 @@ xkb_keycodes "basic" {
     // The entries commented out are never generated because the raw codes
     // in those positions are already used for well-defined keys.
 
-    alias <XFER> = <I01>;
+    alias <I01> = <XFER>;
     <I02> =   130;
-    alias <NFER> = <I03>;
+    alias <I03> = <NFER>;
     <I04> =   132;
-    alias <AE13> = <I05>;
+    alias <I05> = <AE13>;
     <I06> =   134;
     <I07> =   135;
     <I08> =   136;
