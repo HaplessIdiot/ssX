@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.7 2002/01/08 18:59:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.9 2002/04/04 14:05:43 eich Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -111,17 +111,20 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "dri.h"
 #endif
 
+#define BDG845G_WORKAROUND
 #define BIT(x) (1 << (x))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define NB_OF(x) (sizeof (x) / sizeof (*x))
 
 static SymTabRec I830BIOSChipsets[] = {
    { PCI_CHIP_I830_M,	  "i830"},
+   { PCI_CHIP_845_G,      "845G"},
    { -1, NULL }
 };
 
 static PciChipsets I830BIOSPciChipsets[] = {
    { PCI_CHIP_I830_M,	  PCI_CHIP_I830_M,	       RES_SHARED_VGA },
+   { PCI_CHIP_845_G,      PCI_CHIP_845_G,          RES_SHARED_VGA},
    { -1, -1, RES_UNDEFINED }
 };
 
@@ -1795,6 +1798,139 @@ static Bool I830VESASetMode (ScrnInfoPtr pScrn,DisplayModePtr pMode)
    pScrn->vtSema = TRUE;
    return (TRUE);
 }
+static Bool I830VESASetMode_845G (ScrnInfoPtr pScrn,DisplayModePtr pMode)
+{
+   I810Ptr pI810;
+   VESAPtr pVesa;
+   ModeInfoData *data;
+   int mode;
+
+   pI810 = I810PTR (pScrn);
+   pVesa = pI810->vesa;
+
+   data = (ModeInfoData *) pMode->Private;
+
+   /* Always Enable Linear Addressing */
+   mode = data->mode | (1 << 15) | (1 << 14);
+   
+
+
+#ifdef XF86DRI
+   if(pI810->directRenderingEnabled)
+	 {
+		DRILock (screenInfo.screens[pScrn->scrnIndex],0);
+		pI810->LockHeld = 1;
+	 }
+#endif
+
+
+
+
+   if (I830VESASetVBEMode (pScrn,mode,data->block) == FALSE)
+	 {
+		if ((data->block || (data->mode & (1 << 11))) &&
+			I830VESASetVBEMode (pScrn,(mode & ~(1 << 11)),NULL) == TRUE)
+		  {
+			 xf86DrvMsg (pScrn->scrnIndex,X_WARNING,"Set VBE Mode rejected this modeline. Trying current mode instead!\n");
+			 DPRINTF (PFX,"OOPS!\n");
+			 xfree (data->block);
+			 data->block = NULL;
+			 data->mode &= ~(1 << 11);
+		  }
+		else
+		  {
+			 xf86DrvMsg (pScrn->scrnIndex,X_ERROR,"Set VBE Mode failed!\n");
+			 return (FALSE);
+		  }
+	 }
+
+
+   /* test if CRT display is present */
+   pVesa->pInt->num = 0x10;
+   pVesa->pInt->ax = 0x5f55;
+   xf86ExecX86int10_wrapper (pVesa->pInt,pScrn);
+
+   /* is this a CRT? */
+   if (pVesa->pInt->ax == 0x005f && pVesa->pInt->bx != 0x0002)
+	 {
+		DPRINTF (PFX,
+				 "data->data = {\n"
+				 "   XResolution: %d\n"
+				 "   YResolution: %d\n"
+				 "}\n",
+				 data->data->XResolution,data->data->YResolution);
+		if (data->block != NULL)
+		  DPRINTF (PFX,
+				   "data->block = {\n"
+				   "       HorizontalTotal: %d\n"
+				   "   HorizontalSyncStart: %d\n"
+				   "     HorizontalSyncEnd: %d\n"
+				   "         VerticalTotal: %d\n"
+				   "     VerticalSyncStart: %d\n"
+				   "       VerticalSyncEnd: %d\n"
+				   "                 Flags: %d\n"
+				   "            PixelClock: %d\n"
+				   "           RefreshRate: %d\n"
+				   "}\n",
+				   data->block->HorizontalTotal,data->block->HorizontalSyncStart,data->block->HorizontalSyncEnd,
+				   data->block->VerticalTotal,data->block->VerticalSyncStart,data->block->VerticalSyncEnd,
+				   data->block->Flags,data->block->PixelClock,data->block->RefreshRate / 100);
+
+		/* make double sure it's not an LCD */
+		pVesa->pInt->num = 0x10;
+		pVesa->pInt->ax = 0x5f64;
+		pVesa->pInt->bx = 0x0100;
+		xf86ExecX86int10_wrapper (pVesa->pInt,pScrn);
+		if (data->data != NULL && data->block != NULL && pVesa->pInt->ax == 0x005f && !(pVesa->pInt->cx & 0x0008))
+		  {
+			 int i;
+			 static const int VesaRefresh[] = { 43, 56, 60, 70, 72, 75, 85, 100, 120, -1 };
+
+			 for (i = 0; VesaRefresh[i] != -1 && VesaRefresh[i] != data->block->RefreshRate / 100; i++) ;
+
+			 if (VesaRefresh[i] == data->block->RefreshRate / 100)
+			   {
+				  DPRINTF (PFX,
+						   "Setting refresh rate to %dHz for mode %d\n",
+						   VesaRefresh[i],
+						   mode & 0xff);
+
+				  pVesa->pInt->num = 0x10;
+				  pVesa->pInt->ax = 0x5f05;
+				  pVesa->pInt->bx = mode & 0xff;
+				  pVesa->pInt->cx = 1 << i;
+				  xf86ExecX86int10_wrapper (pVesa->pInt,pScrn);
+
+				  if (pVesa->pInt->ax != 0x5f)
+					xf86DrvMsg (pScrn->scrnIndex,X_WARNING,"Failed to set refresh rate to %dHz!\n",VesaRefresh[i]);
+			   }
+		  }
+	 }
+
+   if (data->data->XResolution != pScrn->displayWidth)
+	 I830VESASetLogicalScanline (pScrn,pScrn->displayWidth);
+
+   if (pScrn->bitsPerPixel >= 8 && pVesa->vbeInfo->Capabilities[0] & 0x01)
+	 I830VESASetGetDACPaletteFormat (pScrn,8);
+
+
+#ifndef BDG845G_WORKAROUND
+   I830BIOSSetRegisters (pScrn,SET_CURRENT_MODE);
+   I810SetRingRegs (pScrn);   
+#endif
+   
+   
+#ifdef XF86DRI
+   if (pI810->directRenderingEnabled)
+	 {
+		DRIUnlock (screenInfo.screens[pScrn->scrnIndex]);
+		pI810->LockHeld = 0;
+	 }
+#endif
+
+   pScrn->vtSema = TRUE;
+   return (TRUE);
+}
 
 CARD32 *
 I830VESASetGetPaletteData(ScrnInfoPtr pScrn, Bool set, int first, int num,
@@ -2092,8 +2228,13 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
    if (!xf86ReturnOptValBool(I810AvailableOptions(0,0), OPTION_NOACCEL, 
 			     FALSE) &&
-       xf86ReturnOptValBool(I810AvailableOptions(0,0), OPTION_DRI, TRUE)) {
-      pI810->directRenderingEnabled = I830DRIScreenInit(pScreen); 
+      xf86ReturnOptValBool(I810AvailableOptions(0,0), OPTION_DRI, TRUE)) {
+
+      /* Disable direct rendering for 845_G - doesn't work yet */
+      if (IS_845G (pI810)) {
+         pI810->directRenderingEnabled = FALSE;
+      else
+     	 pI810->directRenderingEnabled = I830DRIScreenInit(pScreen); 
    } else {
       pI810->directRenderingEnabled = FALSE;
    }
@@ -2369,13 +2510,47 @@ I830BIOSEnterVT (int scrnIndex,int flags) {
 Bool
 I830BIOSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
+   
+   int _head;
+   int _tail;
+   int _i;
+   I810Ptr pI810;       
+   ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+   pI810 = I810PTR (pScrn);
+   if (IS_845G(pI810))  /*Stops head pointer freezes for 845G*/
+	 { 
+   		do
+		 {
+			_head = INREG(LP_RING + RING_HEAD) & HEAD_ADDR;
+			_tail = INREG(LP_RING + RING_TAIL) & TAIL_ADDR;
+			 for(_i = 0; _i < 65535; _i++);
+		 } while (_head != _tail);
+	 }
    DPRINTF (PFX,"mode == %s\n",mode);
-   return I830VESASetMode(xf86Screens[scrnIndex], mode);
+
+if (IS_845G (pI810))
+	 {
+			
+		#ifdef BDG845G_WORKAROUND   
+		return I830VESASetMode_845G(xf86Screens[scrnIndex], mode);
+		#else
+	    return I830VESASetMode(xf86Screens[scrnIndex], mode);
+		#endif
+		
+	 }
+else
+	 {
+	    return I830VESASetMode(xf86Screens[scrnIndex], mode);		
+	 }
+   
+   
+	  
 }
 
 Bool
 I830BIOSSaveScreen(ScreenPtr pScreen, Bool unblack)
 {
+   
    return vgaHWSaveScreen(pScreen, unblack);
 }
 
@@ -2407,27 +2582,45 @@ I830BIOSCloseScreen(int scrnIndex, ScreenPtr pScreen)
    vgaHWPtr hwp = VGAHWPTR(pScrn);
    I810Ptr pI810 = I810PTR(pScrn);
    VESAPtr pVesa = pI810->vesa;
-   XAAInfoRecPtr infoPtr = pI810->AccelInfoRec;
+   XAAInfoRecPtr infoPtr = pI810->AccelInfoRec;   
 
 #ifdef XF86DRI
    if (pI810->directRenderingEnabled) {
        I830DRICloseScreen(pScreen);
        pI810->directRenderingEnabled = FALSE;
    }
-#endif
+#endif   
 
    if (pScrn->vtSema == TRUE) {
       if(pI810->AccelInfoRec) {
-	 I810Sync(pScrn);
-	 DO_RING_IDLE();
-      }
+		 
+#ifdef BDG845G_WORKAROUND		 
+   if (IS_845G(pI810))
+	 {
+			  
+	 if ((pScrn->virtualY != 1200 && pScrn->virtualX != 1600))
+		   {
+			DPRINTF(PFX,"Xres = %d  Yres = %d",pScrn->virtualX,pScrn->virtualY);  
+	 		I810Sync(pScrn);
+	 		DO_RING_IDLE();       
+		   }
+		
+	  }		 
+#else
+	 		I810Sync(pScrn);
+	 		DO_RING_IDLE();
+		 
+#endif
+	  }
+	  
       I830VESASaveRestore(pScrn, MODE_RESTORE);
       I830VESASetGetPaletteData(pScrn, TRUE, 0, 256,
 				pVesa->savedPal, FALSE, TRUE);
-      I810UnbindGARTMemory(pScrn);
+	  I810UnbindGARTMemory(pScrn);
       vgaHWLock(hwp);
    }
-
+   
+   DPRINTF(PFX,"\nUnmapping memory\n");
    I810UnmapMem(pScrn);
    vgaHWUnmapMem(pScrn);
 
