@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.39 1999/02/07 06:18:09 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.40 1999/03/01 02:13:57 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -588,11 +588,11 @@ $(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
 #define ScreenSaverExtensionDefines /**/
 #endif
 #endif
-#ifndef VidTuneExtensionDefines
+#ifndef VidModeExtensionDefines
 #if BuildXF86VidModeExt
-#define VidTuneExtensionDefines -DXF86VIDMODE
+#define VidModeExtensionDefines -DXF86VIDMODE
 #else
-#define VidTuneExtensionDefines /**/
+#define VidModeExtensionDefines /**/
 #endif
 #endif
 #ifndef XF86MiscExtensionDefines
@@ -684,7 +684,7 @@ $(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
 #define BaseExtensionDefines \
 	MultibufferDefines MITMiscDefines XTestDefines XSyncDefines \
 	XCMiscDefines RECORDDefines \
-	PexDefines ShmDefines XieDefines BigReqDefines VidTuneExtensionDefines \
+	PexDefines ShmDefines XieDefines BigReqDefines VidModeExtensionDefines \
 	XF86MiscExtensionDefines DBEDefines DPMSDefines EVIDefines \
 	ScreenSaverExtensionDefines XvExtensionDefines XantiExtensionDefines \
 	GlxDefines SiteExtensionDefines

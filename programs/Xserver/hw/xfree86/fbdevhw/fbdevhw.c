@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.1 1999/03/06 13:12:39 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -269,8 +269,9 @@ fbdev_open_pci(pciVideoPtr pPci)
 
 	for (i = 0; i < 4; i++) {
 		sprintf(filename,"/dev/fb%d",i);
-		if (-1 == (fd = open(filename,O_RDWR,0)))
+		if (-1 == (fd = open(filename,O_RDWR,0))) {
 			continue;
+		}
 		if (-1 == ioctl(fd,FBIOGET_FSCREENINFO,(void*)&fix)) {
 			close(fd);
 			continue;

@@ -1,4 +1,8 @@
 XFree86 3.9Pd (9 March 1999)
+2315. Implement backward compatibility for the server side of the VidMode
+      extension, which relies on the new clients informing the server of
+      their version (David Dawes).
+2314. Initial conversion of the VidMode extension for 4.0 (David Bateman).
 2313. Add DPMS support to the TGA driver (#2518, Matt Grossman).
 2312. Fix a bug in xaaInitAccel.c that affects disabling offscreen pixmaps
       (#2519, Andrew Aitchison).
@@ -7390,4 +7394,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.697 1999/03/02 10:41:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.698 1999/03/06 13:12:25 dawes Exp $
