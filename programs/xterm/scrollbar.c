@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: scrollbar.c /main/47 1996/12/01 23:47:08 swick $
- *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.19 1998/07/17 12:05:25 dawes Exp $
+ *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.20 1998/10/25 07:12:48 dawes Exp $
  */
 
 /*
@@ -404,6 +404,22 @@ ScrollBarOff(register TScreen *screen)
 	    XClearWindow (screen->display, XtWindow (term));
 	    Redraw ();
 	}
+}
+
+/*
+ * Toggle the visibility of the scrollbars.
+ */
+void
+ToggleScrollBar(XtermWidget w)
+{
+    register TScreen *screen = &w->screen;
+
+    if (screen->fullVwin.scrollbar) {
+	ScrollBarOff (screen);
+    } else {
+	ScrollBarOn (w, FALSE, FALSE);
+    }
+    update_scrollbar();
 }
 
 /*ARGSUSED*/

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/fontfile/fontencI.h,v 1.1 1999/01/31 04:59:33 dawes Exp $ */
 
 /* Private types and functions for the encoding code. */
 /* Used by the files `fontenc.h' and `encparse.h' */
@@ -42,4 +42,4 @@ unsigned font_encoding_undefined_recode(unsigned, void*);
 char *font_encoding_simple_name(unsigned, void*);
 char *font_encoding_undefined_name(unsigned, void*);
 
-struct font_encoding* loadEncodingFile(char*, char*);
+struct font_encoding* loadEncodingFile(const char*, const char*);

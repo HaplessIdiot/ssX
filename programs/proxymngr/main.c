@@ -1,15 +1,9 @@
-/* $XConsortium: main.c /main/31 1996/12/02 13:19:19 swick $ */
+/* $TOG: main.c /main/36 1998/03/04 11:30:05 barstow $ */
 
 /*
-Copyright (c) 1996  X Consortium
+Copyright 1996, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,17 +11,19 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 */
+/* $XFree86$ */
 
+#include <stdlib.h>
 #include "pmint.h"
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
@@ -38,6 +34,11 @@ from the X Consortium.
 #include "pmdb.h"
 #include "config.h"
 #include <assert.h>
+
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 void InstallIOErrorHandler ();
 void NewConnectionXtProc ();
@@ -55,8 +56,8 @@ IcePaVersionRec	PMReplyVersions[] = {{PM_MAJOR_VERSION, PM_MINOR_VERSION,
 IcePoVersionRec	PMSetupVersions[] = {{PM_MAJOR_VERSION, PM_MINOR_VERSION,
 				      PMSetupProcessMessages}};
 
-char *PM_VENDOR_STRING = "X Consortium, Inc.";
-char *PM_VENDOR_RELEASE = "Release 6.3";
+char *PM_VENDOR_STRING = "The Open Group, Inc.";
+char *PM_VENDOR_RELEASE = "Release 6.4";
 
 int verbose = 0;
 
@@ -66,14 +67,26 @@ XtAppContext	appContext;
 
 char *configFile = NULL;
 
-
+void
 Usage ()
-
 {
     fprintf (stderr, "Usage: proxymngr [-config file] [-verbose]\n");
     exit (1);
 }
 
+void 
+SetCloseOnExec (fd)
+    int	fd;
+{
+    int ret;
+#ifdef F_SETFD
+#ifdef FD_CLOEXEC
+    ret = fcntl (fd, F_SETFD, FD_CLOEXEC);
+#else
+    ret = fcntl (fd, F_SETFD, 1);
+#endif /* FD_CLOEXEC */
+#endif /* F_SETFD */
+}
 
 /*
  * Main program
@@ -113,13 +126,10 @@ char **argv;
     if (verbose)
 	fprintf (stderr, "config file = %s\n", configFile);
 
-
     /*
      * Install an IO error handler.
      */
-
     InstallIOErrorHandler ();
-
 
     /*
      * Register support for PROXY_MANAGEMENT.
@@ -143,7 +153,7 @@ char **argv;
     }
 
     /* For Unmanaged proxies, we do the Setup
-    /* ICElib doesn't specify that the same opCode will be returned
+     * ICElib doesn't specify that the same opCode will be returned
      * so don't bet on it.
      */
     if ((PMOriginatorOpcode = IceRegisterForProtocolSetup (
@@ -186,12 +196,13 @@ char **argv;
 	    NewConnectionXtProc, (XtPointer) listenObjs[i]);
 
 	IceSetHostBasedAuthProc (listenObjs[i], HostBasedAuthProc);
+
+        SetCloseOnExec (IceGetListenConnectionNumber (listenObjs[i]));
     }
 
     /*
      * Main loop
      */
-
     XtAppMainLoop (appContext);
 }
 
@@ -200,6 +211,7 @@ char **argv;
  * Xt callback invoked when a client attempts to connect.
  */
 
+/* ARGSUSED */
 void
 NewConnectionXtProc (client_data, source, id)
 
@@ -218,6 +230,11 @@ XtInputId	*id;
 	    printf ("IceAcceptConnection failed\n");
     } else {
 	IceConnectStatus cstatus;
+
+        /*
+	 * Mark this fd to be closed upon exec
+	 */
+        SetCloseOnExec (IceConnectionNumber (ice_conn));
 
 	while ((cstatus = IceConnectionStatus (ice_conn))==IceConnectPending) {
 	    XtAppProcessEvent (appContext, XtIMAll);
@@ -450,6 +467,53 @@ Bool		 swap;
 	    EXTRACT_STRING (pData, swap, authName);
 	    authData = (char *) malloc (authLen);
 	    memcpy (authData, pData, authLen);
+	}
+
+	if (serverAddress)
+	{  
+	    /*
+	     * Assume that if serverAddress is something like :0 or :0.0
+	     * then the request is for a server on the client's host.
+	     *
+	     * However, the proxy handling this request may be on a 
+	     * different host than the client or the client host, 
+	     * proxy host and the server host may all be different, 
+	     * thus a serverAddress of :0 or :0.0 is not useful.  
+	     * Therefore, change serverAddrees to use the client's 
+	     * hostname.
+	     */
+	    char		*tmpName;
+
+	    tmpName = strchr (serverAddress, ':');
+
+	    if (tmpName && ((serverAddress[0] == ':') || 
+			    (!strncmp (serverAddress, "unix:", 5))))
+	    {
+		struct sockaddr_in	serverSock;
+		int 			retVal;
+		int 			addrLen = sizeof(serverSock);
+
+		retVal = getpeername(IceConnectionNumber(iceConn),
+				     (struct sockaddr *) &serverSock,
+				     &addrLen);
+		if (!retVal) 
+		{
+		    struct hostent *hostent;
+
+		    hostent = gethostbyname (inet_ntoa(serverSock.sin_addr));
+
+		    if (hostent && hostent->h_name) 
+		    {
+			int		len;
+			char		* pch = strdup (tmpName);
+
+			len = strlen(hostent->h_name) + strlen(tmpName) + 1;
+			serverAddress = (char *) realloc (serverAddress, len);
+			sprintf (serverAddress, "%s%s", hostent->h_name, pch);
+			free (pch);
+		    }
+		}
+	    }
 	}
 
 	if (verbose) {
@@ -792,7 +856,7 @@ Bool		 swap;
 
 	fprintf(stderr, "Received ICE Error: class=0x%x\n  offending minor opcode=%d, severity=%d, sequence=%d\n",
 		pMsg->errorClass, pMsg->offendingMinorOpcode, pMsg->severity,
-		pMsg->offendingSequenceNum);
+		(int)pMsg->offendingSequenceNum);
 
 	IceDisposeCompleteMessage (iceConn, pStart);
 
@@ -925,6 +989,7 @@ ForwardRequest( requestor, serviceName, serverAddress, hostAddress,
 }
 
 
+/* ARGSUSED */
 void
 _XtProcessIceMsgProc (client_data, source, id)
 

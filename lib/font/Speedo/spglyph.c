@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/Speedo/spglyph.c,v 1.2 1999/01/31 12:45:25 dawes Exp $ */
 
 #include	<X11/X.h>	/* for bit order #defines */
 #include	"spint.h"
@@ -59,12 +59,12 @@ static int  bit_order,
             scan;
 
 unsigned long
-sp_compute_data_size(pfont, mappad, scanlinepad, start, end)
-    FontPtr     pfont;
+sp_compute_data_size(
+    FontPtr     pfont,
     int         mappad,
-                scanlinepad;
+    int         scanlinepad,
     unsigned long start,
-                end;
+    unsigned long end)
 {
     unsigned long ch;
     unsigned long size = 0;
@@ -118,8 +118,7 @@ sp_compute_data_size(pfont, mappad, scanlinepad, start, end)
 }
 
 static void
-finish_line(spf)
-    SpeedoFontPtr spf;
+finish_line(SpeedoFontPtr spf)
 {
     int         bpr = cfv->bpr;
     CharInfoPtr ci = &spf->encoding[cfv->char_id - spf->master->first_char_id];
@@ -303,10 +302,10 @@ sp_close_bitmap()
 }
 
 int
-sp_build_all_bitmaps(pfont, format, fmask)
-    FontPtr     pfont;
-    fsBitmapFormat format;
-    fsBitmapFormatMask fmask;
+sp_build_all_bitmaps(
+    FontPtr     pfont,
+    fsBitmapFormat format,
+    fsBitmapFormatMask fmask)
 {
     int         ret,
                 glyph = 1,

@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.23 1999/01/26 05:54:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.24 1999/01/26 10:40:26 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -198,6 +198,7 @@ static const char *fbSymbols[] = {
     "cfbScreenInit",
     "cfb16ScreenInit",
     "cfb24ScreenInit",
+    "cfb24_32ScreenInit",
     "cfb32ScreenInit",
     "cfbGCPrivateIndex",
     "cfb16GCPrivateIndex",
@@ -210,6 +211,24 @@ static const char *fbSymbols[] = {
 
 static const char *racSymbols[] = {
     "xf86RACInit",
+    NULL
+};
+
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC1",
+    "xf86DoEDID_DDC2",
+    NULL
+};
+
+static const char *i2cSymbols[] = {
+    "xf86CreateI2CBusRec",
+    "xf86DestroyI2CBusRec",
+    "xf86I2CBusInit",
+    "xf86I2CDevInit",
+    "xf86I2CProbeAddress",
+    "xf86I2CWriteByte",
+    "xf86I2CWriteVec",    
     NULL
 };
 
@@ -241,7 +260,8 @@ glintSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     if (!setupDone) {
 	setupDone = TRUE;
 	xf86AddDriver(&GLINT, module, 0);
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols, NULL);
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols,
+	    ddcSymbols, i2cSymbols, NULL);
 	return (pointer)TRUE;
     }
 
@@ -294,19 +314,19 @@ static int partprod500TX[] = {
 		     -1,              -1,              -1, PARTPROD(0,7,7),
 		      0};
 
-static int partprodPermedia[] = {
+int partprodPermedia[] = {
 	-1,
 	PARTPROD(0,0,1), PARTPROD(0,1,1), PARTPROD(1,1,1), PARTPROD(1,1,2),
 	PARTPROD(1,2,2), PARTPROD(1,2,2), PARTPROD(1,2,3), PARTPROD(2,2,3),
-	PARTPROD(1,3,3), PARTPROD(2,3,3),              -1, PARTPROD(3,3,3),
+	PARTPROD(1,3,3), PARTPROD(2,3,3), PARTPROD(1,2,4), PARTPROD(3,3,3),
 	PARTPROD(1,3,4), PARTPROD(2,3,4),              -1, PARTPROD(3,3,4), 
 	PARTPROD(1,4,4), PARTPROD(2,4,4),              -1, PARTPROD(3,4,4), 
-	             -1,              -1,              -1, PARTPROD(4,4,4), 
+	             -1, PARTPROD(2,3,5),              -1, PARTPROD(4,4,4), 
 	PARTPROD(1,4,5), PARTPROD(2,4,5), PARTPROD(3,4,5),              -1,
 	             -1,              -1,              -1, PARTPROD(4,4,5), 
 	PARTPROD(1,5,5), PARTPROD(2,5,5),              -1, PARTPROD(3,5,5), 
 	             -1,              -1,              -1, PARTPROD(4,5,5), 
-	             -1,              -1,              -1,              -1,
+	             -1,              -1,              -1, PARTPROD(3,4,6),
 	             -1,              -1,              -1, PARTPROD(5,5,5), 
 	PARTPROD(1,5,6), PARTPROD(2,5,6),              -1, PARTPROD(3,5,6),
 	             -1,              -1,              -1, PARTPROD(4,5,6),
@@ -867,7 +887,12 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     while (i>0) {
 	if ( ((pciList[i]->vendor == PCI_VENDOR_3DLABS) ||
 	      (pciList[i]->vendor == PCI_VENDOR_TI)) &&
-	      (pciList[i]->chipType == PCI_CHIP_DELTA) )
+	      ((pciList[i]->chipType == PCI_CHIP_DELTA) ||
+	       (pciList[i]->chipType == PCI_CHIP_GAMMA)) )
+		if (pciList[i]->chipType == PCI_CHIP_GAMMA) 
+		    pGlint->RefClock = 28322;
+		else
+		    pGlint->RefClock = 40000;
 		pGlint->PciInfoDelta = pciList[i];
 	i--;
     }
@@ -1037,6 +1062,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
 	    maxheight = 2048;
 	    maxwidth = 2048;
+	    pGlint->RefClock = 14318;
 	    pGlint->RamDacRec = RamDacCreateInfoRec();
 	    pGlint->RamDacRec->ReadDAC = Permedia2InIndReg;
 	    pGlint->RamDacRec->WriteDAC = Permedia2OutIndReg;
@@ -1052,6 +1078,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
 	    maxheight = 2048;
 	    maxwidth = 2048;
+	    pGlint->RefClock = 14318;
 	    pGlint->RamDacRec = RamDacCreateInfoRec();
 	    pGlint->RamDacRec->ReadDAC = Permedia2vInIndReg;
 	    pGlint->RamDacRec->WriteDAC = Permedia2vOutIndReg;
@@ -1068,6 +1095,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	    maxheight = 1024;
 	    maxwidth = 1536;
+	    pGlint->RefClock = 14318;
 	    pGlint->RamDacRec = RamDacCreateInfoRec();
 	    pGlint->RamDacRec->ReadDAC = glintInIBMRGBIndReg;
 	    pGlint->RamDacRec->WriteDAC = glintOutIBMRGBIndReg;
@@ -1329,6 +1357,49 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    GLINTFreeRec(pScrn);
 	    return FALSE;
 	}
+
+    /* Load DDC */
+    if (!xf86LoadSubModule(pScrn, "ddc")) {
+	GLINTFreeRec(pScrn);
+	return FALSE;
+    }
+
+    /* Load I2C if needed */
+    if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) ||
+	(pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2)) {
+	if (xf86LoadSubModule(pScrn, "i2c")) {
+	    I2CBusPtr pBus;
+
+	    if ((pBus = xf86CreateI2CBusRec())) {
+		pBus->BusName = "DDC";
+		pBus->scrnIndex = pScrn->scrnIndex;
+		pBus->I2CUDelay = Permedia2I2CUDelay;
+		pBus->I2CPutBits = Permedia2I2CPutBits;
+		pBus->I2CGetBits = Permedia2I2CGetBits;
+		pBus->DriverPrivate.ptr = pGlint;
+		if (!xf86I2CBusInit(pBus)) {
+		    xf86DestroyI2CBusRec(pBus, TRUE, TRUE);
+		} else
+		    pGlint->DDCBus = pBus; 
+	    }
+
+	    /* Permedia 2 Video Streams I2C Bus */
+	    if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) ||
+		(pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2))
+		if ((pBus = xf86CreateI2CBusRec())) {
+		    pBus->BusName = "Video";
+		    pBus->scrnIndex = pScrn->scrnIndex;
+		    pBus->I2CUDelay = Permedia2I2CUDelay;
+		    pBus->I2CPutBits = Permedia2I2CPutBits;
+		    pBus->I2CGetBits = Permedia2I2CGetBits;
+		    pBus->DriverPrivate.ptr = pGlint;
+		    if (!xf86I2CBusInit(pBus)) {
+			xf86DestroyI2CBusRec(pBus, TRUE, TRUE);
+		    } else
+			pGlint->VSBus = pBus;
+		}
+	}
+    }
 
     return TRUE;
 }
@@ -1636,9 +1707,11 @@ GLINTRestore(ScrnInfoPtr pScrn)
     switch (pGlint->Chipset) {
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
+	Permedia2VideoReset(pScrn);
 	Permedia2Restore(pScrn, glintReg);
 	break;
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+	Permedia2VideoReset(pScrn);
 	Permedia2VRestore(pScrn, glintReg);
 	break;
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
@@ -1697,6 +1770,19 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Save the current state */
     GLINTSave(pScrn);
 
+    /* DDC */
+    {
+	xf86MonPtr pMon = NULL;
+	
+	if (pGlint->DDCBus)
+	    pMon = xf86DoEDID_DDC2(pScrn->scrnIndex, pGlint->DDCBus);
+	    
+	if (!pMon)
+	    /* Try DDC1 */;
+	    
+	xf86PrintEDID(pMon);
+    }
+    
     /* Initialise the first mode */
     GLINTModeInit(pScrn, pScrn->currentMode);
 
@@ -1894,6 +1980,13 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
     }
 
+    switch (pGlint->Chipset) {
+        case PCI_VENDOR_TI_CHIP_PERMEDIA2:
+        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
+        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+	    Permedia2VideoInit(pScreen);
+    }
+
     /* Done */
     return TRUE;
 }
@@ -1993,6 +2086,13 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
+    switch (pGlint->Chipset) {
+        case PCI_VENDOR_TI_CHIP_PERMEDIA2:
+        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
+        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+	    Permedia2VideoUninit(xf86Screens[scrnIndex]);
+    }
+
     if (pScrn->vtSema) {
         GLINTRestore(pScrn);
         vgaHWLock(hwp);
@@ -2078,3 +2178,23 @@ GLINTSaveScreen(ScreenPtr pScreen, Bool unblank)
 {
     return vgaHWSaveScreen(pScreen, unblank);
 }
+
+#if DEBUG
+void
+GLINT_VERB_WRITE_REG(GLINTPtr pGlint, CARD32 v, int r, char *file, int line)
+{
+    if (xf86GetVerbosity() > 2)
+	ErrorF("[0x%04x] <- 0x%08x (%s, %d)\n",	r, v, file, line);
+    *(volatile CARD32 *)((char *) pGlint->IOBase + r) = v;
+}
+
+CARD32
+GLINT_VERB_READ_REG(GLINTPtr pGlint, CARD32 r, char *file, int line)
+{
+    CARD32 v = *(volatile CARD32 *)((char *) pGlint->IOBase + r);
+
+    if (xf86GetVerbosity() > 2)
+	ErrorF("[0x%04x] -> 0x%08x (%s, %d)\n", r, v, file, line);
+    return v;
+}
+#endif

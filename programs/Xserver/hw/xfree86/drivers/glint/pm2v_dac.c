@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.6 1998/08/29 14:34:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.7 1998/11/28 10:43:12 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -38,8 +38,6 @@
 
 #include "glint_regs.h"
 #include "glint.h"
-
-#define PERMEDIA2V_REF_CLOCK 14318
 
 static int
 Shiftbpp(ScrnInfoPtr pScrn, int value)
@@ -176,9 +174,9 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* Get the programmable clock values */
     	unsigned char m,n,p;
     	unsigned long clockused;
-    	unsigned long fref = PERMEDIA2V_REF_CLOCK;
 	
-    	clockused = PM2VDAC_CalculateClock(mode->Clock/2,fref,&m,&n,&p);
+    	clockused = PM2VDAC_CalculateClock(mode->Clock/2,pGlint->RefClock,
+								&m,&n,&p);
 	pReg->DacRegs[PM2VDACRDDClk0PreScale] = m;
 	pReg->DacRegs[PM2VDACRDDClk0FeedbackScale] = n;
 	pReg->DacRegs[PM2VDACRDDClk0PostScale] = p;

@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.8 1999/01/31 04:59:26 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.9 1999/01/31 12:45:25 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "fontenc.h"
@@ -125,8 +125,7 @@ static ufix8 mkey[] =
 
 
 static      fix15
-read_2b(ptr)
-    ufix8      *ptr;
+read_2b(ufix8 *ptr)
 {
     fix15       tmp;
 
@@ -136,8 +135,7 @@ read_2b(ptr)
 }
 
 static      fix31
-read_4b(ptr)
-    ufix8      *ptr;
+read_4b(ufix8 *ptr)
 {
     fix31       tmp;
 
@@ -180,7 +178,8 @@ struct speedo_encoding {
 
 /* Takes care of caching encodings already referenced */
 static int
-find_encoding(char *fontname, char *filename, int **enc, int *enc_size)
+find_encoding(const char *fontname, const char *filename,
+		int **enc, int *enc_size)
 {
   static struct speedo_encoding *known_encodings=0;
   static int number_known_encodings=0;
@@ -284,10 +283,8 @@ find_encoding(char *fontname, char *filename, int **enc, int *enc_size)
 }
 
 int
-sp_open_master(fontname, filename, master)
-    char       *fontname;
-    char       *filename;
-    SpeedoMasterFontPtr *master;
+sp_open_master(const char *fontname, const char *filename,
+		SpeedoMasterFontPtr *master)
 {
     SpeedoMasterFontPtr spmf;
     ufix8       tmp[16];
@@ -424,8 +421,7 @@ cleanup:
 }
 
 void
-sp_close_master_font(spmf)
-    SpeedoMasterFontPtr spmf;
+sp_close_master_font(SpeedoMasterFontPtr spmf)
 {
     if (!spmf)
 	return;
@@ -440,8 +436,7 @@ sp_close_master_font(spmf)
 }
 
 void
-sp_close_master_file(spmf)
-    SpeedoMasterFontPtr spmf;
+sp_close_master_file(SpeedoMasterFontPtr spmf)
 {
     (void) fclose(spmf->fp);
     spmf->state &= ~MasterFileOpen;
@@ -452,8 +447,7 @@ sp_close_master_file(spmf)
  * reset the encryption key, and make sure the file is opened
  */
 void
-sp_reset_master(spmf)
-    SpeedoMasterFontPtr spmf;
+sp_reset_master(SpeedoMasterFontPtr spmf)
 {
     sp_set_key(spmf->key);
     if (!(spmf->state & MasterFileOpen)) {

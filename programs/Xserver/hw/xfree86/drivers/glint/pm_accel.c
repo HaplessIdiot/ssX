@@ -28,7 +28,7 @@
  * 
  * Permedia accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.9 1998/11/28 10:43:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.10 1998/12/13 05:32:46 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -73,6 +73,7 @@ static void PermediaSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir,
 				int transparency_color);
 static void PermediaSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, 
 				int x2, int y2);
+static void PermediaDisableClipping(ScrnInfoPtr pScrn);
 static void PermediaSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 				int fg, int bg, int rop,unsigned int planemask);
 static void PermediaSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
@@ -201,6 +202,13 @@ PermediaAccelInit(ScreenPtr pScreen)
 		     OFFSCREEN_PIXMAPS;
  
     infoPtr->Sync = PermediaSync;
+
+    infoPtr->SetClippingRectangle = PermediaSetClippingRectangle;
+    infoPtr->DisableClipping = PermediaDisableClipping;
+    infoPtr->ClippingFlags = 	HARDWARE_CLIP_SOLID_LINE |
+				HARDWARE_CLIP_SOLID_FILL |
+				HARDWARE_CLIP_MONO_8x8_FILL |
+				HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY;
 
     infoPtr->SolidFillFlags = 0;
     infoPtr->SetupForSolidFill = PermediaSetupForFillRectSolid;
@@ -394,6 +402,16 @@ PermediaSetClippingRectangle(
     GLINT_WRITE_REG (((y2&0x0FFF) << 16) | (x2&0x0FFF), ScissorMaxXY);
     GLINT_WRITE_REG (1, ScissorMode);
     pGlint->ClippingOn = TRUE;
+}
+
+static void
+PermediaDisableClipping(
+	ScrnInfoPtr pScrn
+){
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    GLINT_WAIT(1);
+    GLINT_WRITE_REG (0, ScissorMode);
+    pGlint->ClippingOn = FALSE;
 }
 
 static void

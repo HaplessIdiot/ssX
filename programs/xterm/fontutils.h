@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/fontutils.h,v 1.3 1998/11/22 10:37:46 dawes Exp $
+ * $XFree86: xc/programs/xterm/fontutils.h,v 1.4 1998/12/20 11:58:33 dawes Exp $
  */
 
 /************************************************************
@@ -38,12 +38,16 @@ authorization.
 #define included_fontutils_h 1
 
 #include <ptyx.h>
+#include <proto.h>
 
 extern int xtermLoadFont (TScreen *screen, char *nfontname, char *bfontname, Bool doresize, int fontnum);
+extern void HandleSetFont PROTO_XT_ACTIONS_ARGS;
+extern void SetVTFont (int i, Bool doresize, char *name1, char *name2);
 extern void xtermComputeFontInfo (TScreen *screen, struct _vtwin *win, XFontStruct *font, int sbwidth);
 extern void xtermSaveFontInfo (TScreen *screen, XFontStruct *font);
-extern void xtermUpdateFontInfo (TScreen *screen, Bool doresize);
 extern void xtermSetCursorBox (TScreen *screen);
+extern void xtermUpdateFontInfo (TScreen *screen, Bool doresize);
+
 
 #if OPT_DEC_CHRSET
 extern char *xtermSpecialFont(unsigned atts, unsigned chrset);
@@ -52,6 +56,11 @@ extern char *xtermSpecialFont(unsigned atts, unsigned chrset);
 #if OPT_BOX_CHARS
 extern Bool xtermMissingChar(int ch, XFontStruct *font);
 extern void xtermDrawBoxChar(TScreen *screen, int ch, unsigned flags, GC gc, int x, int y);
+#endif
+
+#if OPT_SHIFT_KEYS
+extern void HandleSmallerFont PROTO_XT_ACTIONS_ARGS;
+extern void HandleLargerFont PROTO_XT_ACTIONS_ARGS;
 #endif
 
 #endif /* included_fontutils_h */

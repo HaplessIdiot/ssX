@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.1 1999/01/31 04:59:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.2 1999/01/31 13:45:18 dawes Exp $ */
 
 /* Backend-independent encoding code */
 
@@ -31,7 +31,7 @@ THE SOFTWARE.
 
 /* Functions local to this file */
 
-static struct font_encoding *loadEncoding(char*, char*);
+static struct font_encoding *loadEncoding(const char*, const char*);
 
 /* Of course, one could add millions of tables here.  In order for a table
  * to be suitable for inclusion, it must satisfy the following condition:
@@ -593,9 +593,10 @@ define_initial_encoding_info(void)
 
 
 char*
-font_encoding_from_xlfd(char *name, int length)
+font_encoding_from_xlfd(const char *name, int length)
 {
-  char *p,*q;
+  const char *p;
+  char *q;
   static char charset[256];
   int len;
 
@@ -622,7 +623,7 @@ font_encoding_from_xlfd(char *name, int length)
   charset[len]=0;
 
   /* check for a subset specification */
-  if(q=strchr(charset,(int)'['))
+  if((q=strchr(charset,(int)'[')))
     *q=0;
 
   return charset;
@@ -647,7 +648,7 @@ font_encoding_name(unsigned code, struct font_encoding_mapping *mapping)
 }
 
 struct font_encoding *
-font_encoding_find(char *encoding_name, char *filename)
+font_encoding_find(const char *encoding_name, const char *filename)
 {
   struct font_encoding *encoding;
   char **alias;
@@ -669,7 +670,7 @@ font_encoding_find(char *encoding_name, char *filename)
 
 
 struct font_encoding*
-loadEncoding(char *encoding_name, char *filename)
+loadEncoding(const char *encoding_name, const char *filename)
 {
   struct font_encoding *encoding;
 

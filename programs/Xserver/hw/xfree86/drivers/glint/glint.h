@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.12 1998/11/28 10:43:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.13 1998/12/06 06:08:31 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -33,6 +33,8 @@
 #include "xaa.h"
 #include "xf86RamDac.h"
 #include "xf86cmap.h"
+#include "xf86i2c.h"
+#include "xf86DDC.h"
 
 typedef struct {
 	unsigned long glintRegs[0x2000];
@@ -83,17 +85,22 @@ typedef struct {
     Bool		VGAcore;
     int			MinClock;
     int			MaxClock;
+    int			RefClock;
     GLINTRegRec		SavedReg;
     GLINTRegRec		ModeReg;
     CARD32		AccelFlags;
     CARD32		ROP;
     CARD32		FrameBufferReadMode;
     CARD32		BltScanDirection;
+    CARD32		TexMapFormat;
+    CARD32		PixelWidth;
     RamDacRecPtr	RamDacRec;
     xf86CursorInfoPtr	CursorInfoRec;
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
     GCPtr		CurrentGC;
+    I2CBusPtr		DDCBus, VSBus;
+    Bool		VideoIO;
 } GLINTRec, *GLINTPtr;
 
 /* Defines for PCI data */
@@ -125,6 +132,7 @@ void Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void Permedia2Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool Permedia2AccelInit(ScreenPtr pScreen);
+void Permedia2InitializeEngine(ScrnInfoPtr pScrn);
 Bool Permedia2HWCursorInit(ScreenPtr pScreen);
 
 void PermediaRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
@@ -162,9 +170,20 @@ void Permedia2LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
     			  LOCO *colors, short visualClass);
 void Permedia2LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
     			  LOCO *colors, short visualClass);
+void Permedia2I2CUDelay(I2CBusPtr b, int usec);
+void Permedia2I2CPutBits(I2CBusPtr b, int scl, int sda);
+void Permedia2I2CGetBits(I2CBusPtr b, int *scl, int *sda);
+
+void Permedia2VideoUninit(ScrnInfoPtr pScrn);
+void Permedia2VideoReset(ScrnInfoPtr pScrn);
+void Permedia2VideoInit(ScreenPtr pScreen);
 
 void Permedia2vOutIndReg(ScrnInfoPtr pScrn,
 		   CARD32, unsigned char mask, unsigned char data);
 unsigned char Permedia2vInIndReg(ScrnInfoPtr pScrn, CARD32);
-#endif /* _GLINT_H_ */
 
+extern int partprodPermedia[];
+
+void GLINT_VERB_WRITE_REG(GLINTPtr, CARD32 v, int r, char *file, int line);
+CARD32 GLINT_VERB_READ_REG(GLINTPtr, CARD32 r, char *file, int line);
+#endif /* _GLINT_H_ */

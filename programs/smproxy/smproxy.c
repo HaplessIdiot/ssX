@@ -343,7 +343,7 @@ Bool fast;
 
 	    if (debug)
 	    {
-		printf ("Sent SAVE YOURSELF to 0x%x\n", winInfo->window);    
+		printf ("Sent SAVE YOURSELF to %p\n", winInfo->window);    
 		printf ("\n");
 	    }
 	}
@@ -351,7 +351,7 @@ Bool fast;
 	{
 	    if (debug)
 	    {
-		printf ("Failed to send SAVE YOURSELF to 0x%x\n",
+		printf ("Failed to send SAVE YOURSELF to %p\n",
 		    winInfo->window);    
 		printf ("\n");
 	    }

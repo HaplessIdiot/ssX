@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/14 1998/06/16 15:23:15 msr $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.18 1999/01/31 02:24:39 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.19 1999/01/31 13:12:35 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -15,6 +15,22 @@ STATIC_OBJSDIR = unshared/
 REQUIREDLIBS = SharedXfontReqs
 #endif
 
+#if BuildSpeedo
+         SPEEDODIRS = Speedo
+   SPEEDOSHAREDOBJS = Speedo/?*.o
+   SPEEDOSTATICOBJS = Speedo/$(STATIC_OBJSDIR)?*.o
+    SPEEDODEBUGOBJS = Speedo/debugger/?*.o
+  SPEEDOPROFILEOBJS = Speedo/profiled/?*.o
+        SPEEDODONES = Speedo/DONE
+#endif
+#if BuildType1
+          TYPE1DIRS = Type1
+    TYPE1SHAREDOBJS = Type1/?*.o
+    TYPE1STATICOBJS = Type1/$(STATIC_OBJSDIR)?*.o
+     TYPE1DEBUGOBJS = Type1/debugger/?*.o
+   TYPE1PROFILEOBJS = Type1/profiled/?*.o
+         TYPE1DONES = Type1/DONE
+#endif
 #if BuildFreeType
        FREETYPEDIRS = FreeType
  FREETYPESHAREDOBJS = FreeType/?*.o
@@ -34,22 +50,31 @@ FREETYPEPROFILEOBJS = FreeType/profiled/?*.o
 #endif
 #endif
 
-       SUBDIRS = bitmap fontfile fc Speedo Type1 $(FREETYPEDIRS) \
-		 $(XTTDIRS) util stubs
-   SHARED_OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o Speedo/?*.o Type1/?*.o \
-		 $(FREETYPESHAREDOBJS) $(XTTSHAREDOBJS) util/?*.o
+       SUBDIRS = bitmap fontfile fc \
+		 $(SPEEDODIRS) $(TYPE1DIRS) \
+		 $(FREETYPEDIRS) $(XTTDIRS) \
+		 util stubs
+   SHARED_OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o \
+		 $(SPEEDOSHAREDOBJS) $(TYPE1SHAREDOBJS) \
+		 $(FREETYPESHAREDOBJS) $(XTTSHAREDOBJS) \
+		 util/?*.o
    STATIC_OBJS = bitmap/$(STATIC_OBJSDIR)?*.o fontfile/$(STATIC_OBJSDIR)?*.o \
-		 fc/$(STATIC_OBJSDIR)?*.o Speedo/$(STATIC_OBJSDIR)?*.o \
-		 Type1/$(STATIC_OBJSDIR)?*.o $(FREETYPESTATICOBJS) \
-		 $(XTTSTATICOBJS) util/$(STATIC_OBJSDIR)?*.o
+		 fc/$(STATIC_OBJSDIR)?*.o \
+		 $(SPEEDOSTATICOBJS) $(TYPE1STATICOBJS) \
+		 $(FREETYPESTATICOBJS) $(XTTSTATICOBJS) \
+		 util/$(STATIC_OBJSDIR)?*.o
     DEBUG_OBJS = bitmap/debugger/?*.o fontfile/debugger/?*.o fc/debugger/?*.o \
-		 Speedo/debugger/?*.o Type1/debugger/?*.o \
-		 $(FREETYPEDEBUGOBJS) $(XTTDEBUGOBJS) \util/debugger/?*.o
+		 $(SPEEDODEBUGOBJS) $(TYPE1DEBUGOBJS) \
+		 $(FREETYPEDEBUGOBJS) $(XTTDEBUGOBJS) \
+		 util/debugger/?*.o
   PROFILE_OBJS = bitmap/profiled/?*.o fontfile/profiled/?*.o fc/profiled/?*.o \
-		 Speedo/profiled/?*.o Type1/profiled/?*.o \
-		 $(FREETYPEPROFILEOBJS) $(XTTPROFILEOBJS) util/profiled/?*.o
-         DONES = bitmap/DONE fontfile/DONE fc/DONE Speedo/DONE Type1/DONE \
-		 $(FREETYPEDONES) $(XTTDONES) util/DONE
+		 $(SPEEDOPROFILEOBJS) $(TYPE1PROFILEOBJS) \
+		 $(FREETYPEPROFILEOBJS) $(XTTPROFILEOBJS) \
+		 util/profiled/?*.o
+         DONES = bitmap/DONE fontfile/DONE fc/DONE \
+		 $(SPEEDODONES) $(TYPE1DONES) \
+		 $(FREETYPEDONES) $(XTTDONES) \
+		 util/DONE
 
 #if DoLoadableServer
       BASEDIRS = fontfile fc util

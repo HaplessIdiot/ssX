@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/112 1996/11/29 10:34:07 swick $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.31 1998/08/29 05:44:16 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.32 1998/10/25 07:12:45 dawes Exp $
  */
 
 /*
@@ -46,6 +46,7 @@
 #include <data.h>
 #include <error.h>
 #include <menu.h>
+#include <fontutils.h>
 #include <xcharmouse.h>
 
 #if XtSpecificationRelease < 6

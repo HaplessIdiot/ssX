@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
-XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.8 1999/01/31 04:59:32 dawes Exp $
+XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.9 1999/01/31 13:45:17 dawes Exp $
 #include <Server.tmpl>
 
 #if DoLoadableServer
@@ -14,6 +14,12 @@ SUBDIRS = module
 FORMAT_DEFS = FontFormatDefines
 #endif
 
+#if BuildSpeedo
+SPEEDO_DEFINES = -DBUILD_SPEEDO
+#endif
+#if BuildType1
+TYPE1_DEFINES = -DBUILD_TYPE1
+#endif
 #if BuildFreeType
 FREETYPE_DEFINES = -DBUILD_FREETYPE
 #endif
@@ -26,9 +32,9 @@ FREETYPE_DEFINES = -DBUILD_FREETYPE
 
  ATTRIBDEFS = -DFONTDIRATTRIB
 
-    DEFINES = $(ATTRIBDEFS) $(FREETYPE_DEFINES) StrcasecmpDefines
-
-
+    DEFINES = $(ATTRIBDEFS) \
+	      $(SPEEDO_DEFINES) $(TYPE1_DEFINES) $(FREETYPE_DEFINES) \
+	      StrcasecmpDefines
 
        SRCS = dirfile.c fontdir.c fontfile.c fileio.c fontscale.c \
               defaults.c bitsource.c register.c renderers.c bufio.c \

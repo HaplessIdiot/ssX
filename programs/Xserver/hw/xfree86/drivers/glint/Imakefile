@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/Imakefile,v 1.6 1999/01/26 10:40:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/Imakefile,v 1.7 1999/01/31 12:21:51 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the GLINT driver.  
 XCOMM
@@ -7,9 +7,9 @@ XCOMM
 #include <Server.tmpl>
 
 SRCS = glint_driver.c pm2_dac.c pm2ramdac.c pm2_accel.c pm_dac.c IBMramdac.c \
-       pm_accel.c tx_dac.c tx_accel.c pm2v_dac.c pm2vramdac.c
+       pm_accel.c tx_dac.c tx_accel.c pm2v_dac.c pm2vramdac.c pm2_video.c
 OBJS = glint_driver.o pm2_dac.o pm2ramdac.o pm2_accel.o pm_dac.o IBMramdac.o \
-       pm_accel.o tx_dac.o tx_accel.o pm2v_dac.o pm2vramdac.o
+       pm_accel.o tx_dac.o tx_accel.o pm2v_dac.o pm2vramdac.o pm2_video.o
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
@@ -20,7 +20,8 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
            -I$(XF86SRC)/vgahw -I$(XF86SRC)/ramdac \
 	   -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
 	   -I$(XF86SRC)/xf24_32bpp -I$(FONTINCSRC) \
-           -I$(XF86SRC)/xf4bpp -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+           -I$(XF86SRC)/xf4bpp -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+	   -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c -I$(EXTINCSRC)
 #endif
 
 #if MakeHasPosixVariableSubstitutions

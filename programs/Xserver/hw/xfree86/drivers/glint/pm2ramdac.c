@@ -24,7 +24,7 @@
  * Permedia2OutIndReg() and Permedia2InIndReg() are used to access 
  * the indirect Permedia2 RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2ramdac.c,v 1.4 1998/08/13 14:45:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2ramdac.c,v 1.5 1998/12/06 06:08:33 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -114,6 +114,12 @@ void Permedia2LoadPalette(
 	Permedia2WriteData(pScrn, colors[index].red);
 	Permedia2WriteData(pScrn, colors[index].green);
 	Permedia2WriteData(pScrn, colors[index].blue);
+	/* for video i/o */
+        GLINT_SLOW_WRITE_REG(index, TexelLUTIndex);
+	GLINT_SLOW_WRITE_REG((colors[index].red & 0xFF) |
+			     ((colors[index].green & 0xFF) << 8) |
+			     ((colors[index].blue & 0xFF) << 16),
+			     TexelLUTData);
     }
 }
 
@@ -134,6 +140,11 @@ void Permedia2LoadPalette16(
 	Permedia2WriteData(pScrn, colors[index >> 1].red);
 	Permedia2WriteData(pScrn, colors[index].green);
 	Permedia2WriteData(pScrn, colors[index >> 1].blue);
+        GLINT_SLOW_WRITE_REG(index, TexelLUTIndex);
+	GLINT_SLOW_WRITE_REG((colors[index].red & 0xFF) |
+			     ((colors[index].green & 0xFF) << 8) |
+			     ((colors[index].blue & 0xFF) << 16),
+			     TexelLUTData);
 
 	if(index <= 31) {
 	    Permedia2WriteAddress(pScrn, index << 3);

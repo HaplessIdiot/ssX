@@ -19,7 +19,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.2 1998/10/25 12:47:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.3 1999/01/31 14:45:51 dawes Exp $ */
 
 
 #include "X.h"
@@ -86,6 +86,7 @@ MGAZeroArc(
     dyoffset = 0;
     mask = info.initialMask;
     if (!(arc->width & 1)) {
+	WAITFIFO(4);
 	if (mask & 2)
 	    DRAW_POINT(info.xorgo, org.y);
 	if (mask & 8)
@@ -108,6 +109,7 @@ MGAZeroArc(
 	orgo.x += info.xorg;
 	orghb.x += info.h;
 	while (1) {
+	    WAITFIFO(16);
 	    DRAW_POINT(org.x + x, org.y + yoffset);
 	    DRAW_POINT(org.x - x, org.y + yoffset);
 	    DRAW_POINT(orgo.x - x, orgo.y - yoffset);
@@ -128,6 +130,7 @@ MGAZeroArc(
     else if (do360) {
 	while (y < info.h || x < info.w) {
 	    MIARCOCTANTSHIFT(dyoffset = 1;);
+	    WAITFIFO(8);
 	    DRAW_POINT(org.x + info.xorg + x, org.y + yoffset);
 	    DRAW_POINT(org.x + info.xorgo - x, org.y + yoffset);
 	    DRAW_POINT(orgo.x - info.xorgo - x, orgo.y - yoffset);
@@ -142,6 +145,7 @@ MGAZeroArc(
 		mask = info.start.mask;
 		info.start = info.altstart;
 	    }
+	    WAITFIFO(8);
 	    if (mask & 1)
 		DRAW_POINT(org.x + info.xorg + x, org.y + yoffset);
 	    if (mask & 2)
@@ -159,11 +163,14 @@ MGAZeroArc(
     }
     if ((x == info.start.x) || (y == info.start.y))
 	mask = info.start.mask;
+     
+    WAITFIFO(4);
     if (mask & 1)
 	DRAW_POINT(org.x + info.xorg + x, org.y + yoffset);
     if (mask & 4)
 	DRAW_POINT(orgo.x + info.xorgo - x, orgo.y - yoffset);
     if (arc->height & 1) {
+	WAITFIFO(4);
 	if (mask & 2)
 	    DRAW_POINT(org.x + info.xorgo - x, org.y + yoffset);
 	if (mask & 8)

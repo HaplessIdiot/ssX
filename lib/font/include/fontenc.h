@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/include/fontenc.h,v 1.1 1999/01/31 04:59:33 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontenc.h,v 1.2 1999/01/31 13:45:19 dawes Exp $ */
 
 /* Header for backend-independent encoding code */
 
@@ -73,12 +73,12 @@ struct font_encoding {
 
 /* extract an encoding name from an XLFD name.  Returns a pointer to a
  * *static* buffer, or NULL */
-char *font_encoding_from_xlfd(char*, int);
+char *font_encoding_from_xlfd(const char*, int);
 
 /* find the encoding data for a given encoding name; second parameter
  * is the filename of the font for which the encoding is needed.
  * Returns NULL on failure. */
-struct font_encoding *font_encoding_find(char*, char*);
+struct font_encoding *font_encoding_find(const char*, const char*);
 
 /* Recode a code.  Always succeeds. */
 unsigned font_encoding_recode(unsigned, struct font_encoding_mapping*);

@@ -269,7 +269,7 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 #else
 
-#define GDECL SPEEDO_GLOBALS* sp_global_ptr;
+#define GDECL SPEEDO_GLOBALS* sp_global_ptr,
 
 #define get_char_id(char_index) sp_get_char_id(sp_global_ptr,char_index)
 #define get_char_width(char_index) sp_get_char_width(sp_global_ptr,char_index)

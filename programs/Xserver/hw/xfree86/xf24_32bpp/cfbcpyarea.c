@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbcpyarea.c,v 1.1 1999/01/23 09:56:13 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -55,11 +55,6 @@ cfb24_32CopyArea(
 
 
 
-/* This is probably the slowest way to transfer data across the
-   bus - a byte at a time.  This is temporary until somebody wants
-   to optimize it */
-
-
 void 
 cfbDoBitblt24To32(
     DrawablePtr pSrc, 
@@ -72,8 +67,8 @@ cfbDoBitblt24To32(
 ){
     BoxPtr pbox = REGION_RECTS(prgnDst);
     int nbox = REGION_NUM_RECTS(prgnDst);
-    unsigned char *ptr24, *ptr32;
     unsigned char *data24, *data32;
+    unsigned char *ptr24, *ptr32;
     int pitch24, pitch32;
     int height, width, i, j;
     unsigned char *pm;
@@ -85,18 +80,88 @@ cfbDoBitblt24To32(
     pm = (unsigned char*)(&planemask);
 
     if((planemask == 0x00ffffff) && (rop == GXcopy)) {
+	CARD32 *dst, *src;
+	CARD32 tmp, phase;
+
 	for(;nbox; pbox++, pptSrc++, nbox--) {
-	    data24 = ptr24 + (pptSrc->y * pitch24) + (pptSrc->x * 3);
-	    data32 = ptr32 + (pbox->y1 * pitch32) + (pbox->x1 << 2);
-	    width = (pbox->x2 - pbox->x1) << 2;
+            data24 = ptr24 + (pptSrc->y * pitch24) + (pptSrc->x * 3);
+            data32 = ptr32 + (pbox->y1 * pitch32) + (pbox->x1 << 2);
+	    width = pbox->x2 - pbox->x1;
 	    height = pbox->y2 - pbox->y1;
 
+	    phase = (long)data24 & 3L;
+	    data24 = (unsigned char*)((long)data24 & ~3L);
+
 	    while(height--) {
-		for(i = j = 0; i < width; i += 4, j += 3) {
-		    data32[i] = data24[j];
-		    data32[i + 1] = data24[j + 1];
-		    data32[i + 2] = data24[j + 2];
+		src = (CARD32*)data24;
+		dst = (CARD32*)data32;
+		i = width;
+
+		switch(phase) {
+		case 0: break;
+		case 1:
+		    dst[0] = src[0] >> 8;
+		    dst++;
+		    src++;
+		    i--;
+		    break;
+		case 2:
+		    dst[0] = src[0] >> 16;
+		    tmp = src[1];
+		    dst[0] |= tmp << 16;
+		    if(!(--i)) break;
+		    dst[1] = tmp >> 8;
+		    dst += 2;
+		    src += 2;
+		    i--;
+		    break;
+		default:
+		    dst[0] = src[0] >> 24;
+		    tmp = src[1];
+		    dst[0] |= tmp << 8;
+		    if(!(--i)) break;
+		    dst[1] = tmp >> 16;
+		    tmp = src[2];
+		    dst[1] |= tmp << 16;
+		    if(!(--i)) break;
+		    dst[2] = tmp >> 8;
+		    dst += 3;
+		    src += 3;
+		    i--;
+		    break;
 		}
+
+		while(i >= 4) {
+		    dst[0] = src[0];
+		    tmp = src[1];
+		    dst[3] = src[2];
+		    dst[1] = (dst[0] >> 24) | (tmp << 8);
+		    dst[2] = (tmp >> 16) | (dst[3] << 16);
+		    dst[3] >>= 8;
+
+		    src += 3;
+		    dst += 4;
+		    i -= 4;
+		}
+
+		switch(i) {
+		case 0: break;
+		case 1:
+		    dst[0] = src[0];
+		    break;
+		case 2:
+		    dst[0] = src[0];
+		    dst[1] = (dst[0] >> 24) | (src[1] << 8);
+		    break;
+		default:
+		    dst[0] = src[0];
+		    tmp = src[1];
+		    dst[2] = src[2] << 16;
+		    dst[1] = (dst[0] >> 24) | (tmp << 8);
+		    dst[2] |= tmp >> 16;
+		    break;
+		}
+
 		data24 += pitch24;
 		data32 += pitch32;
 	    }
@@ -314,31 +379,29 @@ cfbDoBitblt32To24(
 	    width = pbox->x2 - pbox->x1;
 	    height = pbox->y2 - pbox->y1;
 	    
-	    phase = (long)data32 & 3L;
+	    phase = (long)data24 & 3L;
 
 	    while(height--) {
 		src = (CARD32*)data32;
 		dst = data24;
 		j = width;
 
-#if 1
-	/* Why doesn't this help performance on my machine ? */
 		switch(phase) {
 		case 0: break;
 		case 1:
 		    dst[0] = src[0];
 		    *((CARD16*)(dst + 1)) = src[0] >> 8;
 		    dst += 3;
-		    src = (CARD32*)(data32 + 3);
+		    src++;
 		    j--;
 		    break;
 		case 2:
 		    if(j == 1) break;
 		    *((CARD16*)dst) = src[0];
-		    *((CARD32*)dst) = ((src[0] >> 16) & 0x000000ff) | 
+		    *((CARD32*)(dst + 2)) = ((src[0] >> 16) & 0x000000ff) | 
 							(src[1] << 8);
 		    dst += 6;
-		    src = (CARD32*)(data32 + 6);
+		    src += 2;
 		    j -= 2;
 		    break;
 		default:
@@ -349,10 +412,9 @@ cfbDoBitblt32To24(
 		    *((CARD32*)(dst + 5)) = ((src[1] >> 16) & 0x000000ff) | 
 							(src[2] << 8);
 		    dst += 9;
-		    src = (CARD32*)(data32 + 9);
+		    src += 3;
 		    j -= 3;
 		}
-#endif
 
 		while(j >= 4) {
 		    *((CARD32*)dst) = (src[0] & 0x00ffffff) | (src[1] << 24);

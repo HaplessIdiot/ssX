@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.4 1999/02/01 12:52:24 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -116,11 +116,15 @@ static unsigned long ShadowGeneration = 0;
     if(box.y2 > extents->y2) box.y2 = extents->y2; \
     }
 
-#define TRIM_AND_TRANSLATE_BOX(box, pDraw, pGC) { \
+#define TRANSLATE_BOX(box, pDraw) { \
     box.x1 += pDraw->x; \
     box.x2 += pDraw->x; \
     box.y1 += pDraw->y; \
     box.y2 += pDraw->y; \
+    }
+
+#define TRIM_AND_TRANSLATE_BOX(box, pDraw, pGC) { \
+    TRANSLATE_BOX(box, pDraw); \
     TRIM_BOX(box, pGC); \
     }
 
@@ -802,39 +806,100 @@ ShadowPolyRectangle(
     SHADOW_GC_OP_EPILOGUE(pGC);
 
     if(IS_VISIBLE(pDraw) && nRects) {
-	int extra = pGC->lineWidth >> 1;
-	BoxRec box;
+	if(nRects >= 32) {
+	    int extra = pGC->lineWidth >> 1;
+	    BoxRec box;
 
-	box.x1 = pRects->x;
-	box.x2 = box.x1 + pRects->width;
-	box.y1 = pRects->y;
-	box.y2 = box.y1 + pRects->height;
+	    box.x1 = pRects->x;
+	    box.x2 = box.x1 + pRects->width;
+	    box.y1 = pRects->y;
+	    box.y2 = box.y1 + pRects->height;
 
-	/* should I break these up instead ? */
+	    while(--nRects) {
+		pRects++;
+		if(box.x1 > pRects->x) box.x1 = pRects->x;
+		if(box.x2 < (pRects->x + pRects->width))
+			box.x2 = pRects->x + pRects->width;
+		if(box.y1 > pRects->y) box.y1 = pRects->y;
+		if(box.y2 < (pRects->y + pRects->height))
+			box.y2 = pRects->y + pRects->height;
+	    }
 
-	while(--nRects) {
-	   pRects++;
-	   if(box.x1 > pRects->x) box.x1 = pRects->x;
-	   if(box.x2 < (pRects->x + pRects->width))
-		box.x2 = pRects->x + pRects->width;
-	   if(box.y1 > pRects->y) box.y1 = pRects->y;
-	   if(box.y2 < (pRects->y + pRects->height))
-		box.y2 = pRects->y + pRects->height;
-        }
+	    if(extra) {
+		box.x1 -= extra;
+		box.x2 += extra;
+		box.y1 -= extra;
+		box.y2 += extra;
+	    }
 
-	if(extra) {
-	   box.x1 -= extra;
-	   box.x2 += extra;
-	   box.y1 -= extra;
-	   box.y2 += extra;
-        }	
+	    box.x2++;
+	    box.y2++;
 
-	box.x2++;
-	box.y2++;
+	    TRIM_AND_TRANSLATE_BOX(box, pDraw, pGC);
+	    if(BOX_NOT_EMPTY(box))
+		(*pPriv->refresh)(pPriv->pScrn, 1, &box);
+	} else {
+	    BoxPtr pbox, pBoxInit;
+	    int offset1, offset2, offset3;
+	    int num = 0;
 
-	TRIM_AND_TRANSLATE_BOX(box, pDraw, pGC);
-	if(BOX_NOT_EMPTY(box))
-	   (*pPriv->refresh)(pPriv->pScrn, 1, &box);
+	    offset2 = pGC->lineWidth;
+	    if(!offset2) offset2 = 1;
+	    offset1 = offset2 >> 1;
+	    offset3 = offset2 - offset1;
+
+	    pBoxInit = (BoxPtr)ALLOCATE_LOCAL(nRects * 4 * sizeof(BoxRec));
+	    pbox = pBoxInit;
+
+	    while(nRects--) {
+		pbox->x1 = pRects->x - offset1;
+		pbox->y1 = pRects->y - offset1;
+		pbox->x2 = pbox->x1 + pRects->width + offset2;
+		pbox->y2 = pbox->y1 + offset2;		
+		TRIM_AND_TRANSLATE_BOX((*pbox), pDraw, pGC);
+		if(BOX_NOT_EMPTY((*pbox))) {
+		   num++;
+		   pbox++;
+		}
+
+		pbox->x1 = pRects->x - offset1;
+		pbox->y1 = pRects->y + offset3;
+		pbox->x2 = pbox->x1 + offset2;
+		pbox->y2 = pbox->y1 + pRects->height - offset2;		
+		TRIM_AND_TRANSLATE_BOX((*pbox), pDraw, pGC);
+		if(BOX_NOT_EMPTY((*pbox))) {
+		   num++;
+		   pbox++;
+		}
+
+		pbox->x1 = pRects->x + pRects->width - offset1;
+		pbox->y1 = pRects->y + offset3;
+		pbox->x2 = pbox->x1 + offset2;
+		pbox->y2 = pbox->y1 + pRects->height - offset2;		
+		TRIM_AND_TRANSLATE_BOX((*pbox), pDraw, pGC);
+		if(BOX_NOT_EMPTY((*pbox))) {
+		   num++;
+		   pbox++;
+		}
+
+		pbox->x1 = pRects->x - offset1;
+		pbox->y1 = pRects->y + pRects->height - offset1;
+		pbox->x2 = pbox->x1 + pRects->width + offset2;
+		pbox->y2 = pbox->y1 + offset2;		
+		TRIM_AND_TRANSLATE_BOX((*pbox), pDraw, pGC);
+		if(BOX_NOT_EMPTY((*pbox))) {
+		   num++;
+		   pbox++;
+		}
+
+		pRects++;
+	    }
+	    
+	    if(num)
+		(*pPriv->refresh)(pPriv->pScrn, num, pBoxInit);
+
+	    DEALLOCATE_LOCAL(pBoxInit);
+	}
     }
  }
 

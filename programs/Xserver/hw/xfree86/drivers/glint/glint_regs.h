@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.6 1998/09/05 06:36:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.7 1998/11/28 10:43:11 dawes Exp $ */
 
 /*
  * glint register file 
@@ -192,7 +192,12 @@
 #define PMVideoControl							0x3058
 #define PMInterruptLine							0x3060
 #define PMDDCData							0x3068
+#define   DataIn             						(1<<0)
+#define   ClkIn              						(1<<1)
+#define   DataOut            						(1<<2)
+#define   ClkOut             						(1<<3)
 #define PMLineCount							0x3070
+#define PMFifoControl							0x3078
 
 /* Permedia 2 RAMDAC Registers */
 #define PM2DACWriteAddress						0x4000
@@ -274,6 +279,93 @@
 #define PM2VDACIndexRegHigh						0x4028
 #define PM2VDACIndexData						0x4030
 #define PM2VDACIndexControl						0x4038
+
+/* Permedia 2 Video Streams Unit Registers */
+#define   VSBIntFlag            					(1<<8)
+#define   VSAIntFlag            					(1<<9)
+
+#define VSConfiguration							0x5800
+#define   VS_UnitMode_ROM						0
+#define   VS_UnitMode_AB8						3
+#define   VS_UnitMode_Mask						7
+#define   VS_GPBusMode_A        					(1<<3)
+#define   VS_HRefPolarityA      					(1<<9)
+#define   VS_VRefPolarityA      					(1<<10)
+#define   VS_VActivePolarityA   					(1<<11)
+#define   VS_UseFieldA          					(1<<12)
+#define   VS_FieldPolarityA						(1<<13)
+#define   VS_FieldEdgeA         					(1<<14)
+#define   VS_VActiveVBIA						(1<<15)
+#define   VS_InterlaceA         					(1<<16)
+#define   VS_ReverseDataA       					(1<<17)
+#define   VS_HRefPolarityB      					(1<<18)
+#define   VS_VRefPolarityB      					(1<<19)
+#define   VS_VActivePolarityB   					(1<<20)
+#define   VS_UseFieldB							(1<<21)
+#define   VS_FieldPolarityB						(1<<22)
+#define   VS_FieldEdgeB							(1<<23)
+#define   VS_VActiveVBIB						(1<<24)
+#define   VS_InterlaceB							(1<<25)
+#define   VS_ColorSpaceB_RGB						(1<<26)
+#define   VS_ReverseDataB						(1<<27)
+#define   VS_DoubleEdgeB						(1<<28)
+
+#define VSStatus							0x5808
+#define   VS_FieldOne0A							(1<<9)
+#define   VS_FieldOne1A							(1<<10)
+#define   VS_FieldOne2A							(1<<11)
+#define   VS_InvalidInterlaceA						(1<<12)
+#define   VS_FieldOne0B							(1<<17)
+#define   VS_FieldOne1B							(1<<18)
+#define   VS_FieldOne2B							(1<<19)
+#define   VS_InvalidInterlaceB						(1<<20)
+
+#define VSSerialBusControl						0x5810
+
+#define VSABase          						0x5900
+#define   VSA_Video             					(1<<0)
+#define   VSA_VBI               					(1<<1)
+#define   VSA_BufferCtl         					(1<<2)
+#define   VSA_MirrorX           					(1<<7)
+#define   VSA_MirrorY           					(1<<8)
+#define   VSA_Discard_None      					(0<<9)
+#define   VSA_Discard_FieldOne  					(1<<9)
+#define   VSA_Discard_FieldTwo  					(2<<9)
+#define   VSA_CombineFields     					(1<<11)
+#define   VSA_LockToStreamB     					(1<<12)
+#define VSBBase								0x5A00
+#define   VSB_Video             					(1<<0)
+#define   VSB_VBI               					(1<<1)
+#define   VSB_BufferCtl         					(1<<2)
+#define   VSB_CombineFields     					(1<<3)
+#define   VSB_RGBOrder          					(1<<11)
+#define   VSB_GammaCorrect      					(1<<12)
+#define   VSB_LockToStreamA     					(1<<13)
+
+#define VSControl							0x0000
+#define VSInterrupt            						0x0008
+#define VSCurrentLine          						0x0010
+#define VSVideoAddressHost     						0x0018
+#define VSVideoAddressIndex    						0x0020
+#define VSVideoAddress0        						0x0028
+#define VSVideoAddress1        						0x0030
+#define VSVideoAddress2        						0x0038
+#define VSVideoStride          						0x0040
+#define VSVideoStartLine       						0x0048
+#define VSVideoEndLine     						0x0050
+#define VSVideoStartData       						0x0058
+#define VSVideoEndData         						0x0060
+#define VSVBIAddressHost       						0x0068
+#define VSVBIAddressIndex      						0x0070
+#define VSVBIAddress0          						0x0078
+#define VSVBIAddress1          						0x0080
+#define VSVBIAddress2          						0x0088
+#define VSVBIStride            						0x0090
+#define VSVBIStartLine         						0x0098
+#define VSVBIEndLine           						0x00A0
+#define VSVBIStartData         						0x00A8
+#define VSVBIEndData           						0x00B0
+#define VSFifoControl          						0x00B8
 
 /**********************************
  * GLINT Delta Region 0 Registers *
@@ -420,6 +512,9 @@
   #define TextureCacheControlInvalidate 1
 
 #define GLINTBorderColor					GLINT_TAG_ADDR(0x09,0x05)
+
+#define TexelLUTIndex						GLINT_TAG_ADDR(0x09,0x08)
+#define TexelLUTData						GLINT_TAG_ADDR(0x09,0x09)
 
 #define TxBaseAddr						GLINT_TAG_ADDR(0x0a,0x00)
 #define TxBaseAddrLR						GLINT_TAG_ADDR(0x0a,0x01)
@@ -878,27 +973,32 @@
 
 #if DEBUG
 #define GLINT_WRITE_REG(v,r)					\
-{								\
-	if( xf86Verbose > 2)					\
-		ErrorF("reg 0x%04x to 0x%08x\n",r,v);		\
-	*(volatile CARD32 *)((char*)pGlint->IOBase+r) = v;		\
-}
+	GLINT_VERB_WRITE_REG(pGlint,v,r,__FILE__,__LINE__)
+#define GLINT_READ_REG(r)					\
+	GLINT_VERB_READ_REG(pGlint,r,__FILE__,__LINE__)
 #else
 #define GLINT_WRITE_REG(v,r)					\
-        *(volatile CARD32 *)((char*)pGlint->IOBase+r) = v;		
+do{								\
+	*(volatile CARD32 *)((char *)pGlint->IOBase+(r))=v;	\
+}while(0)
+#define GLINT_READ_REG(r)					\
+	(*(volatile CARD32 *)((char *)pGlint->IOBase+(r)))
 #endif
 
+#define GLINT_WAIT(n)						\
+do{								\
+	if(!pGlint->UsePCIRetry)				\
+		while(GLINT_READ_REG(InFIFOSpace)<(n));		\
+}while(0)
 
-#define GLINT_READ_REG(r) \
-	*(volatile CARD32 *)((char*)pGlint->IOBase+r)
+#define GLINT_MASK_WRITE_REG(v,m,r)				\
+	GLINT_WRITE_REG((GLINT_READ_REG(r)&(m))|(v),r)
 
-#define GLINT_WAIT(n)	\
- 	if (!pGlint->UsePCIRetry)  \
-	  while(GLINT_READ_REG(InFIFOSpace)<n)
-
-#define GLINT_SLOW_WRITE_REG(v,r) 		\
-      { while(GLINT_READ_REG(InFIFOSpace)<1); 	\
-        GLINT_WRITE_REG(v,r); }			\
+#define GLINT_SLOW_WRITE_REG(v,r)				\
+do{								\
+	while(GLINT_READ_REG(InFIFOSpace)<1);			\
+        GLINT_WRITE_REG(v,r);					\
+}while(0)							\
 
 #define GLINT_LOAD_PAR(v,r) \
         *(unsigned long *)((char*)pGlint->IOBase+r) = *((unsigned long *) &v)
@@ -909,8 +1009,9 @@
 		r = ((r & 0xFFFF) << 16) | (r & 0xFFFF);	\
 	} else							\
 	if (pScrn->bitsPerPixel == 8) { 			\
-		r = (r & 0xFF);					\
-		r = (r<<24) | (r<<16) | (r<<8) | r;		\
+		r &= 0xFF;					\
+		r |= (r<<8);					\
+		r |= (r<<16);					\
 	}							\
 }
 

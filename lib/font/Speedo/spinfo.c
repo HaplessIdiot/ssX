@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spinfo.c,v 1.5 1998/07/25 06:56:54 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spinfo.c,v 1.6 1998/10/03 09:07:12 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "spint.h"
@@ -131,9 +131,9 @@ sp_make_standard_props()
 }
 
 void
-sp_make_header(spf, pinfo)
-    SpeedoFontPtr spf;
-    FontInfoPtr pinfo;
+sp_make_header(
+    SpeedoFontPtr spf,
+    FontInfoPtr pinfo)
 {
     int         pixel_size;
     SpeedoMasterFontPtr spmf = spf->master;
@@ -173,10 +173,10 @@ sp_make_header(spf, pinfo)
 }
 
 static void
-adjust_min_max(minc, maxc, tmp)
+adjust_min_max(
     xCharInfo  *minc,
-               *maxc,
-               *tmp;
+    xCharInfo  *maxc,
+    xCharInfo  *tmp)
 {
 #define MINMAX(field,ci) \
 	if (minc->field > (ci)->field) \
@@ -200,11 +200,11 @@ adjust_min_max(minc, maxc, tmp)
 
 
 void
-sp_compute_bounds(spf, pinfo, flags, sWidth)
-    SpeedoFontPtr spf;
-    FontInfoPtr pinfo;
-    unsigned long flags;
-    long *sWidth;
+sp_compute_bounds(
+    SpeedoFontPtr spf,
+    FontInfoPtr pinfo,
+    unsigned long flags,
+    long *sWidth)
 {
     int         i,
                 id,
@@ -328,11 +328,11 @@ sp_compute_bounds(spf, pinfo, flags, sWidth)
 }
 
 void
-sp_compute_props(spf, fontname, pinfo, sWidth)
-    SpeedoFontPtr spf;
-    char       *fontname;
-    FontInfoPtr pinfo;
-    long	sWidth;
+sp_compute_props(
+    SpeedoFontPtr spf,
+    char       *fontname,
+    FontInfoPtr pinfo,
+    long	sWidth)
 {
     FontPropPtr pp;
     int         i,
