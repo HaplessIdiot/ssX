@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.75 2004/02/29 19:54:12 twini Exp $ */
 /*
  * Mode initializing code (CRT2 section)
  * for SiS 300/305/540/630/730 and
@@ -7562,11 +7562,15 @@ static void
 SiS_SetGroup3(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
               PSIS_HW_INFO HwInfo)
 {
-  USHORT modeflag, i;
+#if 0
+  USHORT modeflag;
+#endif
+  USHORT i;
   const UCHAR  *tempdi;
 
   if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCDA) return;
 
+#if 0
   if(ModeNo<=0x13) {
      modeflag = SiS_Pr->SiS_SModeIDTable[ModeIdIndex].St_ModeFlag;
   } else if(SiS_Pr->UseCustomMode) {
@@ -7574,12 +7578,11 @@ SiS_SetGroup3(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
   } else {
      modeflag = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].Ext_ModeFlag;
   }
+#endif
 
 #ifndef SIS_CP
   SiS_SetReg(SiS_Pr->SiS_Part3Port,0x00,0x00);
-#endif
-
-#ifdef SIS_CP
+#else
   SIS_CP_INIT301_CP
 #endif
 
