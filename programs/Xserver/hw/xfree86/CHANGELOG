@@ -1,3 +1,22 @@
+XFree86 3.1.2Gq (19 October 1996)
+1040. Some updates to use the native setlocale() in the GNU libc used
+      by Linux/Alpha/ELF (Ulrich Drepper, Harald Koenig).
+1039. MGA README (Andrew Vanderstock and Dirk Hohndel).
+1038. Fix REQUIREDLIBS problem with dynamic xie.so (Alan Hourihane).
+1037. Update man page versions (Takaaki Nomura).
+1036. Add xf86VTSema checks to the MGA server, move blitter init to
+      HWRestore, and wait for drawing engine before enter/leave VT
+      (Radoslaw Kapitan).
+1035. TGA and Trident doc updates (Alan Hourihane).
+1034. Remove an unused TGA server file (Alan Hourihane).
+1033. Update to the Chips&Tech screen corruption fix (Egbert Eich).
+1032. Fix a typo in the Chips&Tech driver which prevents the "hw_clocks"
+      option from working (David Bateman).
+1031. Move the SVGA 'mx' driver to after the 'chips' driver, because its
+      probe causes problems for the chips driver.  Also, fix a problem
+      in the 'mx' probe where it writes to a register without first saving
+      its contents.
+
 XFree86 3.1.2Gp (18 October 1996)
 1030. Fix the cursor colour not being correctly set in 15/16/32bpp modes
       on the CT, ET, VT and GT chips (Kevin Martin).

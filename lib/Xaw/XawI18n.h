@@ -1,5 +1,5 @@
 /* $XConsortium: XawI18n.h,v 1.12 95/01/25 00:48:44 kaleb Exp $ */
-/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.1 1994/08/20 07:28:54 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.2 1995/01/28 15:43:29 dawes Exp $ */
 
 /************************************************************
 
@@ -30,10 +30,12 @@ in this Software without prior written authorization from the X Consortium.
 
 #ifdef HAS_WCTYPE_H
 #include <wctype.h>
+#ifndef NO_WIDEC_H
 #include <widec.h>
 #define wcslen(c) wslen(c)
 #define wcscpy(d,s) wscpy(d,s)
 #define wcsncpy(d,s,l) wsncpy(d,s,l)
+#endif
 #endif
 
 #ifdef HAS_WCHAR_H
