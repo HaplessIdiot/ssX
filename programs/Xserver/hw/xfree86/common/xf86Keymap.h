@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.13 2000/08/11 17:27:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.14 2001/03/08 23:23:32 dawes Exp $ */
 /*
  *
  * For Scancodes see notes in atKeynames.h  !!!!
@@ -138,7 +138,7 @@ static KeySym map[NUM_KEYCODES * GLYPHS_PER_KEY] = {
     /* 0x7f */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
 };
 
-#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(linux) && !defined(CSRG_BASED)
+#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(linux) && !defined(CSRG_BASED) && !defined(__CYGWIN__)
 static KeySym map84[NUM_KEYCODES * GLYPHS_PER_KEY] = {
     /* 0x00 */  NoSymbol,       NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x01 */  XK_Escape,      NoSymbol,	NoSymbol,	NoSymbol,
