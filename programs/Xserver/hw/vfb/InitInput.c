@@ -1,4 +1,5 @@
 /* $XConsortium: InitInput.c /main/11 1996/01/15 21:06:13 kaleb $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993  X Consortium
