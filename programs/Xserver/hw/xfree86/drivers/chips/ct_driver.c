@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.66 1999/08/30 14:36:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.67 1999/10/13 16:49:17 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1101,20 +1101,10 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	 * If the modepool isn't empty, we'll need to delete it
 	 * before revalidating the mode list
 	 */
-	{
-	    DisplayModePtr first, p, n;
-	    p = pScrn->modes;
-	    if ( p != NULL) {
-		do {
-		    if (!(first = pScrn->modes))
-			break;
-		    n = p->next;
-		    xf86DeleteMode(&(pScrn->modes), p);
-		    p = n;
-		} while (p != NULL && p != first);
-	    }
-	    pScrn->modePool = NULL;
-	}
+	while (pScrn->modes)
+	    xf86DeleteMode(&pScrn->modes, pScrn->modes);
+	while (pScrn->modePool)
+	    xf86DeleteMode(&pScrn->modePool, pScrn->modePool);
 	
 	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			      pScrn->display->modes, clockRanges,

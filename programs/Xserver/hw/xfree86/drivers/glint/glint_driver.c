@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.48 1999/10/13 16:49:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.49 1999/10/14 02:45:23 dawes Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.37 1999/07/02 18:38:31 faith Exp $ */
 
 #define PSZ 8
@@ -2616,24 +2616,28 @@ GLINTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 	      "HDisplay %d not divisible by 8, fixing...\n", mode->HDisplay);
 	    mode->HDisplay -= (mode->HDisplay % 8);
+	    mode->CrtcHDisplay = mode->CrtcHBlankStart = mode->HDisplay;
           }
 	
           if (mode->HSyncStart % 8) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 	     "HSyncStart %d not divisible by 8, fixing...\n", mode->HSyncStart);
 	    mode->HSyncStart -= (mode->HSyncStart % 8);
+	    mode->CrtcHSyncStart = mode->HSyncStart;
           }
 
           if (mode->HSyncEnd % 8) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 	      "HSyncEnd %d not divisible by 8, fixing...\n", mode->HSyncEnd);
 	    mode->HSyncEnd -= (mode->HSyncEnd % 8);
+	    mode->CrtcHSyncEnd = mode->HSyncEnd;
           }
 
           if (mode->HTotal % 8) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 	      "HTotal %d not divisible by 8, fixing...\n", mode->HTotal);
 	    mode->HTotal -= (mode->HTotal % 8);
+	    mode->CrtcHBlankEnd = mode->CrtcHTotal = mode->HTotal;
           }
           break;
 	}

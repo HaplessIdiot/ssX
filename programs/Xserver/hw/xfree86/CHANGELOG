@@ -1,3 +1,24 @@
+3272. Mode validation changes (Marc La France).
+      - Remove assumption that modes of the same name are also of the same
+        size.
+      - Even if Display subsection mode names include duplicates, no two names
+        will ever match the same mode.
+      - If the supplied mode names do not yield a usable mode (including the
+        case where no names are supplied), scan the mode pool until a usable
+        mode is found.  This is a step towards allowing successful server
+        runs with XF86Config's that specify no mode information whatsoever.
+      - Implement minHeight and maxHeight checks.
+      - Call the driver's ValidMode() for a final OK just before accepting a
+        mode.
+      - Free mode pool on xf86PruneDriverModes() calls.
+      - Documentation updates.
+      - Minor fixes to C&T and GLINT drivers.
+3271. ATI driver updates (Marc La France).
+      - Disallow interlaced modes when scanline pitch exceeds hardware limits.
+      - LCD support no longer depends on the mode on server entry.
+      - Fix bug introduced by CHANGELOG entry 3245.
+      - Re-lock adapters on ATIPreInit() failures.
+      - Make default sync polarities consistent.
 3270. Trident updates for ISA cards and DGA support (Alan Hourihane).
 3269. mibank bug fixes (Marc La France).
 3268. Add -withrevinfo flag to lndir to allow shadowing of RCS, SCCS, CVS and
@@ -8961,4 +8982,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.840 1999/10/19 16:32:39 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.842 1999/10/24 18:01:45 alanh Exp $

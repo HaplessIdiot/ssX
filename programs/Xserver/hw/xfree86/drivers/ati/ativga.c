@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.5 1999/08/01 07:57:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.6 1999/09/25 14:37:23 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -246,6 +246,8 @@ ATIVGACalculate
     }
     else
     {
+        pMode->Flags &= ~(V_PHSYNC | V_NHSYNC | V_PVSYNC | V_NVSYNC);
+
         if (!pATI->OptionCRT && (pATI->LCDPanelID >= 0))
             VDisplay = pATI->LCDVertical;
         else

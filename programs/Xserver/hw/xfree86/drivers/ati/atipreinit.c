@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.6 1999/10/13 04:21:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.7 1999/10/13 16:49:15 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -444,6 +444,8 @@ ATIPreInit
                 pATI->BankInfo.SetDestinationBank =
                 pATI->BankInfo.SetSourceAndDestinationBanks =
                     (miBankProcPtr)NoopDDA;
+            break;
+
         case ATI_ADAPTER_V3:
             pATI->NewHW.SetBank = ATIV3SetBank;
             pATI->BankInfo.SetSourceBank = ATIV3SetRead;
@@ -963,6 +965,7 @@ ATIPreInit
             xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_ERROR, 0,
                 "Unable to determine dimensions of panel (ID %d).\n",
                 pATI->LCDPanelID);
+            ATILock(pATI);
             return FALSE;
         }
 
@@ -1011,6 +1014,7 @@ ATIPreInit
         case ATI_CHIPSET_MACH8:
         case ATI_CHIPSET_MACH32:
         case ATI_CHIPSET_MACH64:
+        case ATI_CHIPSET_RAGE128:
             pATI->Chipset = ATI_CHIPSET_ATI;
             break;
 
@@ -1038,6 +1042,7 @@ ATIPreInit
             xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
                 "Driver does not support depth %d.\n",
                 pScreenInfo->depth);
+            ATILock(pATI);
             return FALSE;
     }
 
@@ -1048,6 +1053,7 @@ ATIPreInit
         xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
             "Depth %d is not supported through this adapter.\n",
             pScreenInfo->depth);
+        ATILock(pATI);
         return FALSE;
     }
 
@@ -1066,7 +1072,10 @@ ATIPreInit
     else
         pScreenInfo->rgbBits = 8;
     if (!xf86SetWeight(pScreenInfo, defaultWeight, defaultWeight))
+    {
+        ATILock(pATI);
         return FALSE;
+    }
 
     if ((pScreenInfo->depth > 8) &&
         ((pScreenInfo->weight.red != pScreenInfo->weight.blue) ||
@@ -1079,6 +1088,7 @@ ATIPreInit
             "Driver does not support weight %d%d%d for depth %d.\n",
             pScreenInfo->weight.red, pScreenInfo->weight.green,
             pScreenInfo->weight.blue, pScreenInfo->depth);
+        ATILock(pATI);
         return FALSE;
     }
 
@@ -1087,7 +1097,10 @@ ATIPreInit
      */
 
     if (!xf86SetDefaultVisual(pScreenInfo, -1))
+    {
+        ATILock(pATI);
         return FALSE;
+    }
 
     if ((pScreenInfo->depth > 8) &&
         ((pScreenInfo->defaultVisual | DynamicClass) != DirectColor))
@@ -1096,6 +1109,7 @@ ATIPreInit
             "Driver does not support default visual %s for depth %d.\n",
             xf86GetVisualName(pScreenInfo->defaultVisual),
             pScreenInfo->depth);
+        ATILock(pATI);
         return FALSE;
     }
 
@@ -1104,7 +1118,10 @@ ATIPreInit
      */
 
     if ((pScreenInfo->depth > 1) && !xf86SetGamma(pScreenInfo, defaultGamma))
+    {
+        ATILock(pATI);
         return FALSE;
+    }
 
     /*
      * Determine which CRT controller to use for video modes.
@@ -1125,6 +1142,7 @@ ATIPreInit
         {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
                 "VGA is not available through this adapter.\n");
+            ATILock(pATI);
             return FALSE;
         }
 
@@ -1283,6 +1301,7 @@ ATIPreInit
                     xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
                         "A linear aperture is not available through this"
                         " adapter.\n");
+                    ATILock(pATI);
                     return FALSE;
                 }
 
@@ -1511,7 +1530,10 @@ ATIPreInit
     /* 264VT-B's and later have DSP registers */
     if ((pATI->Chip >= ATI_CHIP_264VTB) && (pATI->CPIODecoding == BLOCK_IO) &&
         !ATIDSPPreInit(pScreenInfo, pATI))
+    {
+        ATILock(pATI);
         return FALSE;
+    }
 
     /*
      * Determine maxClock.  For adapters with supported programmable clock
@@ -1635,7 +1657,10 @@ ATIPreInit
              (pATI->Chip <= ATI_CHIP_18800_1) &&
              (pATI->VideoRAM == 256) &&
              (pScreenInfo->depth >= 8))
+    {
         minPitch = 32;          /* Very strange, but true */
+        maxPitch = 0x3FU;
+    }
     else
         minPitch = 16;
 
@@ -1647,14 +1672,9 @@ ATIPreInit
     {
         case ATI_CRTC_VGA:
             /*
-             * IBM's VGA doesn't allow for interlaced modes.  Neither do ATI
-             * VGA Wonder adapters when the virtual width is too high.  Here,
-             * only the requested virtual width can be factored in.  The actual
-             * virtual width will be factored in later.
+             * IBM's VGA doesn't allow for interlaced modes.
              */
-            if ((pATI->Adapter <= ATI_ADAPTER_VGA) /* XXX ||
-                ((pATI->Chip <= ATI_CHIP_28800_6) &&
-                 (pScreenInfo->display->virtualX > 2032)) */ )
+            if (pATI->Adapter <= ATI_ADAPTER_VGA)
                 ATIClockRange.interlaceAllowed = FALSE;
 
             pScreenInfo->maxHValue = (0xFFU + 1) << 3;  /* max HTotal */
@@ -1675,14 +1695,17 @@ ATIPreInit
 
             /*
              * 18800-x and 28800-x do not support interlaced modes when the
-             * scanline pitch is 2048 pixels or more.
+             * scanline pitch is 2048 pixels or more.  For 18800-x's with 256
+             * kB of video memory, the limit for 8bpp is 1024.
              */
-            if (pATI->Chip > ATI_CHIP_28800_6)
-                maxPitch = 0xFFU;
-            else if (minPitch == 32)
-                maxPitch = 0x3FU;
-            else
-                maxPitch = 0x7FU;
+            if (ATIClockRange.interlaceAllowed &&
+                (pATI->Chip <= ATI_CHIP_28800_6))
+            {
+                if (minPitch == 32)
+                    pATI->MaximumInterlacedPitch = 0x1FU * 32;
+                else
+                    pATI->MaximumInterlacedPitch = 0x7FU * minPitch;
+            }
 
             Strategy |= LOOKUP_CLKDIV2;
 
@@ -1723,7 +1746,10 @@ ATIPreInit
             pScreenInfo->display->virtualX, pScreenInfo->display->virtualY,
             pATI->ApertureSize, Strategy);
     if (i <= 0)
+    {
+        ATILock(pATI);
         return FALSE;
+    }
 
     /* Remove invalid modes */
     xf86PruneDriverModes(pScreenInfo);
@@ -1740,7 +1766,10 @@ ATIPreInit
 #ifdef XFree86LOADER
     /* Load required modules */
     if (!ATILoadModules(pScreenInfo, pATI))
+    {
+        ATILock(pATI);
         return FALSE;
+    }
 #endif
 
     /* Initialize for panning */
