@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.22 2002/03/08 04:33:17 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.23 2002/03/10 04:57:46 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -73,8 +73,18 @@ LispEqual(LispMac *mac, LispObj *left, LispObj *right)
 		if (left->data.integer == right->data.integer)
 		    result = T;
 		break;
-	    case LispAtom_t:
-		if (ATOMID(left) == ATOMID(right))
+	    case LispRatio_t:
+		if (left->data.ratio.numerator ==
+		    right->data.ratio.numerator &&
+		    left->data.ratio.denominator ==
+		    right->data.ratio.denominator)
+		    result = T;
+		break;
+	    case LispComplex_t:
+		if (LispEqual(mac, left->data.complex.real,
+			      right->data.complex.real) &&
+		    LispEqual(mac, left->data.complex.imag,
+			      right->data.complex.imag))
 		    result = T;
 		break;
 	    case LispString_t:
@@ -89,11 +99,12 @@ LispEqual(LispMac *mac, LispObj *left, LispObj *right)
 	    case LispQuote_t:
 	    case LispBackquote_t:
 	    case LispPathname_t:
-		result = LispEqual(mac, left->data.pathname, right->data.pathname);
+		result = LispEqual(mac, left->data.pathname,
+				   right->data.pathname);
 		break;
 	    case LispLambda_t:
 		result = LispEqual(mac, CAR(left->data.lambda.name),
-				 CAR(right->data.lambda.name));
+				   CAR(right->data.lambda.name));
 		break;
 	    case LispOpaque_t:
 		if (left->data.opaque.data == right->data.opaque.data)

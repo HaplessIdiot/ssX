@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.32 2002/03/10 08:56:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.33 2002/03/12 23:28:54 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -257,17 +257,37 @@ Lisp_Apply(LispMac *mac, LispBuiltin *builtin)
     if (more_args != NIL) {
  	ERROR_CHECK_LIST(more_args);
     }
-    if (more_args == NIL) {
+    else if (arg != NIL) {
 	ERROR_CHECK_LIST(arg);
     }
 
-    if (length + 1 >= mac->protect.space)
-	LispMoreProtects(mac);
-    if (more_args != NIL || !CONS_P(arg))
-	result = CONS(arg, more_args);
-    else
+    if (more_args == NIL)
 	result = arg;
-    mac->protect.objects[mac->protect.length++] = result;
+    else {
+	LispObj *cons;
+
+	if (length + 1 >= mac->protect.space)
+	    LispMoreProtects(mac);
+	result = cons = CONS(arg, NIL);
+	mac->protect.objects[mac->protect.length++] = result;
+
+	for (;; more_args = CDR(more_args)) {
+	    if (CONS_P(CDR(more_args))) {
+		CDR(cons) = CONS(CAR(more_args), NIL);
+		cons = CDR(cons);
+	    }
+	    else {
+		arg = CDR(cons) = CAR(more_args);
+		if (CONS_P(arg))
+		    for (; CONS_P(arg); arg = CDR(arg))
+			;
+		if (arg != NIL)
+		    LispDestroy(mac, "%s: argument to %s is a dotted list",
+				STRFUN(builtin), STROBJ(function));
+		break;
+	    }
+	}
+    }
 
     result = APPLY(function, result);
 
@@ -853,20 +873,7 @@ Lisp_Eq(LispMac *mac, LispBuiltin *builtin)
     right = ARGUMENT(1);
     left = ARGUMENT(0);
 
-    result = NIL;
-
-    if (left->type == right->type)
-	switch (left->type) {
-	    case LispAtom_t:
-		/* must be 'eq' when referencing the same data */
-		if (left->data.atom == right->data.atom)
-		    result = T;
-		break;
-	    default:
-		if (left == right)
-		    result = T;
-		break;
-	}
+    result = left == right ? T : NIL;
 
     return (result);
 }
@@ -887,25 +894,14 @@ Lisp_Eql(LispMac *mac, LispBuiltin *builtin)
     if (left->type == right->type)
 	switch (left->type) {
 	    case LispAtom_t:
-		if (left->data.atom == right->data.atom)
-		    result = T;
-		break;
 	    case LispReal_t:
-		if (left->data.real == right->data.real)
-		    result = T;
-		break;
 	    case LispCharacter_t:
 	    case LispInteger_t:
-		if (left->data.integer == right->data.integer)
-		    result = T;
-		break;
+	    case LispRatio_t:
 	    case LispBigInteger_t:
-		if (mpi_cmp(left->data.mp.integer, right->data.mp.integer) == 0)
-		    result = T;
-		break;
 	    case LispBigRatio_t:
-		if (mpr_cmp(left->data.mp.ratio, right->data.mp.ratio) == 0)
-		    result = T;
+	    case LispComplex_t:
+		result = LispEqual(mac, left, right);
 		break;
 	    default:
 		if (left == right)
