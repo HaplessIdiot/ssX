@@ -1,4 +1,5 @@
 /* $XConsortium: mach8.h,v 1.1 94/03/28 21:10:02 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -687,6 +688,13 @@ void mach8RealImageFill(
     int,
     short,
     short 
+#endif
+);
+void mach8InitFrect(
+#if NeedFunctionPrototypes
+    int,
+    int,
+    int
 #endif
 );
 #endif /* MACH8_H */

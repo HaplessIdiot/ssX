@@ -1,5 +1,5 @@
 /* $XConsortium: mach32dseg.c,v 1.2 94/04/17 20:30:44 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dseg.c,v 3.1 1994/06/01 03:18:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dseg.c,v 3.2 1994/06/05 05:56:08 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -66,7 +66,7 @@ Modified for the mach32 by Mike Bernson (mike@mbsun.mlb.org)
 #include "miline.h"
 
 #include "cfb.h"
-#include "mach32cfb.h"
+#include "cfb16.h"
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"

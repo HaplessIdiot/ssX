@@ -1,5 +1,5 @@
 /* $XConsortium: mach32win.c,v 1.2 94/04/17 20:30:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32win.c,v 3.0 1994/05/08 05:19:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32win.c,v 3.1 1994/05/08 06:21:38 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -62,7 +62,7 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "windowstr.h"
 #include "gcstruct.h"
 #include "cfb.h"
-#include "mach32cfb.h"
+#include "cfb16.h"
 #include "mistruct.h"
 #include "regionstr.h"
 #include "cfbmskbits.h"

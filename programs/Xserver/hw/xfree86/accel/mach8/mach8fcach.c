@@ -1,5 +1,5 @@
 /* $XConsortium: mach8fcach.c,v 1.1 94/03/28 21:10:58 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fcach.c,v 3.0 1994/05/30 08:24:02 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -48,6 +48,7 @@ extern Bool xf86Verbose;
 
 #define ALIGNMENT 8
 #define N_PLANES 8
+#define PIXMAP_WIDTH 64
 
 void
 mach8FontCache8Init()
@@ -57,16 +58,25 @@ mach8FontCache8Init()
     unsigned int BitPlane;
     CachePool FontPool;
 
-    x = 0;
+    x = PIXMAP_WIDTH;
     y = mach8InfoRec.virtualY;
-    w = ( mach8InfoRec.videoRam > 512 ? 1024 : mach8InfoRec.virtualX );
+    w = ( mach8InfoRec.videoRam > 512 ? 1024 - x : mach8InfoRec.virtualX - x );
     h = ( mach8InfoRec.videoRam > 512 ? 1024 - y :
 		  (mach8InfoRec.videoRam * 1024) / mach8InfoRec.virtualX - y );
+    if( h >= PIXMAP_WIDTH && first ) {
+      mach8InitFrect( 0, y, PIXMAP_WIDTH );
+      ErrorF( "%s %s: Using a single %dx%d area for expanding pixmaps\n",
+	      XCONFIG_PROBED, mach8InfoRec.name, PIXMAP_WIDTH, PIXMAP_WIDTH );
+    }
+    else if( first )
+      ErrorF( "%s %s: No pixmap expanding area available\n",
+	      XCONFIG_PROBED, mach8InfoRec.name );
+
     /*
      * Don't allow a font cache if we don't have room for at least
      * 2 complete 6x13 fonts.
      */
-    if( w >= 6*32 && h > 2*13 ) {
+    if( w >= 6*32 && h >= 2*13 ) {
       if( first ) {
         FontPool = xf86CreateCachePool( ALIGNMENT );
         for( BitPlane = 0; BitPlane < N_PLANES; BitPlane++ )

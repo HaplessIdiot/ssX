@@ -1,4 +1,5 @@
 /* $XConsortium: mach8frect.c,v 1.2 94/04/17 20:30:56 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Fill rectangles.
  */
@@ -42,6 +43,9 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
 Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 
+Simple expansion of tiles added by incorporating parts of the code from
+mach8pcach.c 94-07-12, Hans Nasten ( nasten@everyware.se ).
+
 */
 
 
@@ -65,6 +69,477 @@ Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 
 #define NUM_STACK_RECTS	1024
 
+typedef struct _CacheInfo {
+    int x;
+    int y;
+    int w;
+    int h;
+    int nx;
+    int ny;
+    int pix_w;
+    int pix_h;
+} CacheInfo, *CacheInfoPtr;
+
+static CacheInfo cInfo;
+static int pixmap_x;
+static int pixmap_y;
+static int pixmap_size = 0;
+
+void mach8InitFrect( x, y, size )
+int x, y, size;
+{
+
+  pixmap_x = x;
+  pixmap_y = y;
+  pixmap_size = size;
+
+}
+
+static void DoCacheExpandPixmap( pci )
+CacheInfoPtr pci;
+{
+    int cur_w = pci->pix_w;
+    int cur_h = pci->pix_h;
+
+    WaitQueue(7);
+    outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
+    outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
+    outw(MULTIFUNC_CNTL, SCISSORS_R | 1023);
+    outw(MULTIFUNC_CNTL, SCISSORS_B | 1023);
+    outw(FRGD_MIX, FSS_BITBLT | MIX_SRC);
+    outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+    outw(WRT_MASK, 0xffff);
+
+    /* Expand in the x direction */
+    while (cur_w * 2 <= pci->w) {
+	WaitQueue(7);
+	outw(CUR_X, (short)pci->x);
+	outw(CUR_Y, (short)pci->y);
+	outw(DESTX_DIASTP, (short)(pci->x + cur_w));
+	outw(DESTY_AXSTP, (short)pci->y);
+	outw(MAJ_AXIS_PCNT, (short)(cur_w - 1));
+	outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(cur_h -  1));
+	outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	cur_w *= 2;
+    }
+
+    if (cur_w != pci->w) {
+	WaitQueue(7);
+	outw(CUR_X, (short)pci->x);
+	outw(CUR_Y, (short)pci->y);
+	outw(DESTX_DIASTP, (short)(pci->x + cur_w));
+	outw(DESTY_AXSTP, (short)pci->y);
+	outw(MAJ_AXIS_PCNT, (short)(pci->w - cur_w - 1));
+	outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(cur_h -  1));
+	outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	cur_w = pci->w;
+    }
+
+    /* Expand in the y direction */
+    while (cur_h * 2 <= pci->h) {
+	WaitQueue(7);
+	outw(CUR_X, (short)pci->x);
+	outw(CUR_Y, (short)pci->y);
+	outw(DESTX_DIASTP, (short)pci->x);
+	outw(DESTY_AXSTP, (short)(pci->y + cur_h));
+	outw(MAJ_AXIS_PCNT, (short)(cur_w - 1));
+	outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(cur_h -  1));
+	outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	cur_h *= 2;
+    }
+
+    if (cur_h != pci->h) {
+	WaitQueue(7);
+	outw(CUR_X, (short)pci->x);
+	outw(CUR_Y, (short)pci->y);
+	outw(DESTX_DIASTP, (short)pci->x);
+	outw(DESTY_AXSTP, (short)(pci->y + cur_h));
+	outw(MAJ_AXIS_PCNT, (short)(cur_w - 1));
+	outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - cur_h -  1));
+	outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+    }
+
+    WaitQueue(2);
+    outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+    outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+}
+
+
+static CacheInfoPtr DoCacheTile( pix )
+PixmapPtr pix;
+{
+    CacheInfoPtr pci = &cInfo;
+
+    if( pixmap_size && pix->drawable.width <= pixmap_size
+    && pix->drawable.height <= pixmap_size ) {
+      pci->pix_w = pix->drawable.width;
+      pci->pix_h = pix->drawable.height;
+      pci->nx = pixmap_size/pix->drawable.width;
+      pci->ny = pixmap_size/pix->drawable.height;
+      pci->x = pixmap_x;
+      pci->y = pixmap_y;
+      pci->w = pci->nx * pci->pix_w;
+      pci->h = pci->ny * pci->pix_h;
+      (mach8ImageWriteFunc)( pci->x, pci->y, pci->pix_w, pci->pix_h,
+			     pix->devPrivate.ptr, pix->devKind, 0, 0,
+			     MIX_SRC, 0xffff );
+
+      DoCacheExpandPixmap( pci );
+      return( pci );
+    }
+    else
+      return( NULL );
+}
+
+static CacheInfoPtr DoCacheOpStipple( pix )
+PixmapPtr pix;
+{
+    CacheInfoPtr pci = &cInfo;
+
+    if( pixmap_size && pix->drawable.width <= pixmap_size
+    && pix->drawable.height <= pixmap_size ) {
+      pci->pix_w = pix->drawable.width;
+      pci->pix_h = pix->drawable.height;
+      pci->nx = pixmap_size/pix->drawable.width;
+      pci->ny = pixmap_size/pix->drawable.height;
+      pci->x = pixmap_x;
+      pci->y = pixmap_y;
+      pci->w = pci->nx * pci->pix_w;
+      pci->h = pci->ny * pci->pix_h;
+      (mach8ImageStippleFunc)( pci->x, pci->y, pci->pix_w, pci->pix_h,
+			       pix->devPrivate.ptr, pix->devKind,
+			       pci->pix_w, pci->pix_h, pci->x, pci->y,
+			       255, 0, MIX_SRC, 0xffff, 1 );
+
+      DoCacheExpandPixmap( pci );
+      return( pci );
+    }
+    else
+      return( NULL );
+}
+
+
+static void DoCacheImageFill( pci, x, y, w, h, pox, poy, fgalu, bgalu,
+			      fgmix, bgmix, planemask)
+CacheInfoPtr pci;
+int x;
+int y;
+int w;
+int h;
+int pox;
+int poy;
+short fgalu;
+short bgalu;
+short fgmix;
+short bgmix;
+short planemask;
+{
+    int xwmid, ywmid, orig_xwmid;
+    int startx, starty, endx, endy;
+    int orig_x = x;
+
+    if (w == 0 || h == 0)
+	return;
+
+    modulus(x - pox, pci->w, startx);
+    modulus(y - poy, pci->h, starty);
+    modulus(x - pox + w - 1, pci->w, endx);
+    modulus(y - poy + h - 1, pci->h, endy);
+
+    orig_xwmid = xwmid = w - (pci->w - startx + endx + 1);
+    ywmid = h - (pci->h - starty + endy + 1);
+
+    WaitQueue(7);
+    outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
+    outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
+    outw(MULTIFUNC_CNTL, SCISSORS_R | 1023);
+    outw(MULTIFUNC_CNTL, SCISSORS_B | 1023);
+    outw(FRGD_MIX, fgmix | fgalu);
+    outw(BKGD_MIX, bgmix | bgalu);
+    outw(WRT_MASK, planemask);
+
+    if (starty + h - 1 < pci->h) {
+	if (startx + w - 1 < pci->w) {
+	    WaitQueue(7);
+	    outw(CUR_X, (short)(pci->x + startx));
+	    outw(CUR_Y, (short)(pci->y + starty));
+	    outw(DESTX_DIASTP, (short)x);
+	    outw(DESTY_AXSTP, (short)y);
+	    outw(MAJ_AXIS_PCNT, (short)(w - 1));
+	    outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(h -  1));
+	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+	} else {
+	    WaitQueue(7);
+	    outw(CUR_X, (short)(pci->x + startx));
+	    outw(CUR_Y, (short)(pci->y + starty));
+	    outw(DESTX_DIASTP, (short)x);
+	    outw(DESTY_AXSTP, (short)y);
+	    outw(MAJ_AXIS_PCNT, (short)(pci->w - startx - 1));
+	    outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(h -  1));
+	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	    x += pci->w - startx;
+
+	    while (xwmid > 0) {
+		WaitQueue(7);
+		outw(CUR_X, (short)pci->x);
+		outw(CUR_Y, (short)(pci-> y + starty));
+		outw(DESTX_DIASTP, (short)x);
+		outw(DESTY_AXSTP, (short)y);
+		outw(MAJ_AXIS_PCNT, (short)(pci->w - 1));
+		outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(h -  1));
+		outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR |
+			   WRTDATA);
+		x += pci->w;
+		xwmid -= pci->w;
+	    }
+
+	    WaitQueue(7);
+	    outw(CUR_X, (short)pci->x);
+	    outw(CUR_Y, (short)(pci->y + starty));
+	    outw(DESTX_DIASTP, (short)x);
+	    outw(DESTY_AXSTP, (short)y);
+	    outw(MAJ_AXIS_PCNT, (short)endx);
+	    outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(h -  1));
+	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+	}
+    } else if (startx + w - 1 < pci->w) {
+	WaitQueue(7);
+	outw(CUR_X, (short)(pci->x + startx));
+	outw(CUR_Y, (short)(pci->y + starty));
+	outw(DESTX_DIASTP, (short)x);
+	outw(DESTY_AXSTP, (short)y);
+	outw(MAJ_AXIS_PCNT, (short)(w - 1));
+	outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - starty -  1));
+	outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	y += pci->h - starty;
+
+	while (ywmid > 0) {
+	    WaitQueue(7);
+	    outw(CUR_X, (short)(pci->x + startx));
+	    outw(CUR_Y, (short)pci->y);
+	    outw(DESTX_DIASTP, (short)x);
+	    outw(DESTY_AXSTP, (short)y);
+	    outw(MAJ_AXIS_PCNT, (short)(w - 1));
+	    outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h -  1));
+	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	    y += pci->h;
+	    ywmid -= pci->h;
+	}
+
+	WaitQueue(7);
+	outw(CUR_X, (short)(pci->x + startx));
+	outw(CUR_Y, (short)pci->y);
+	outw(DESTX_DIASTP, (short)x);
+	outw(DESTY_AXSTP, (short)y);
+	outw(MAJ_AXIS_PCNT, (short)(w - 1));
+	outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)endy);
+	outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+    } else {
+	WaitQueue(7);
+	outw(CUR_X, (short)(pci->x + startx));
+	outw(CUR_Y, (short)(pci->y + starty));
+	outw(DESTX_DIASTP, (short)x);
+	outw(DESTY_AXSTP, (short)y);
+	outw(MAJ_AXIS_PCNT, (short)(pci->w - startx - 1));
+	outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - starty -  1));
+	outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	x += pci->w - startx;
+
+	while (xwmid > 0) {
+	    WaitQueue(7);
+	    outw(CUR_X, (short)pci->x);
+	    outw(CUR_Y, (short)(pci->y + starty));
+	    outw(DESTX_DIASTP, (short)x);
+	    outw(DESTY_AXSTP, (short)y);
+	    outw(MAJ_AXIS_PCNT, (short)(pci->w - 1));
+	    outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT |
+				  (short)(pci->h - starty - 1));
+	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	    x += pci->w;
+	    xwmid -= pci->w;
+	}
+
+	WaitQueue(7);
+	outw(CUR_X, (short)pci->x);
+	outw(CUR_Y, (short)(pci->y + starty));
+	outw(DESTX_DIASTP, (short)x);
+	outw(DESTY_AXSTP, (short)y);
+	outw(MAJ_AXIS_PCNT, (short)endx);
+	outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - starty - 1));
+	outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	y += pci->h - starty;
+
+	while (ywmid > 0) {
+	    x = orig_x;
+	    xwmid = orig_xwmid;
+
+	    WaitQueue(7);
+	    outw(CUR_X, (short)(pci-> x + startx));
+	    outw(CUR_Y, (short)pci->y);
+	    outw(DESTX_DIASTP, (short)x);
+	    outw(DESTY_AXSTP, (short)y);
+	    outw(MAJ_AXIS_PCNT, (short)(pci->w - startx - 1));
+	    outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - 1));
+	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	    x += pci->w - startx;
+
+	    while (xwmid > 0) {
+		WaitQueue(7);
+		outw(CUR_X, (short)pci->x);
+		outw(CUR_Y, (short)pci->y);
+		outw(DESTX_DIASTP, (short)x);
+		outw(DESTY_AXSTP, (short)y);
+		outw(MAJ_AXIS_PCNT, (short)(pci->w - 1));
+		outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - 1));
+		outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR |
+			   WRTDATA);
+
+		x += pci->w;
+		xwmid -= pci->w;
+	    }
+
+	    WaitQueue(7);
+	    outw(CUR_X, (short)pci->x);
+	    outw(CUR_Y, (short)pci->y);
+	    outw(DESTX_DIASTP, (short)x);
+	    outw(DESTY_AXSTP, (short)y);
+	    outw(MAJ_AXIS_PCNT, (short)endx);
+	    outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - 1));
+	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	    y += pci->h;
+	    ywmid -= pci->h;
+	}
+
+	x = orig_x;
+	xwmid = orig_xwmid;
+
+	WaitQueue(7);
+	outw(CUR_X, (short)(pci->x + startx));
+	outw(CUR_Y, (short)pci->y);
+	outw(DESTX_DIASTP, (short)x);
+	outw(DESTY_AXSTP, (short)y);
+	outw(MAJ_AXIS_PCNT, (short)(pci->w - startx - 1));
+	outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)endy);
+	outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	x += pci->w - startx;
+
+	while (xwmid > 0) {
+	    WaitQueue(7);
+	    outw(CUR_X, (short)pci->x);
+	    outw(CUR_Y, (short)pci->y);
+	    outw(DESTX_DIASTP, (short)x);
+	    outw(DESTY_AXSTP, (short)y);
+	    outw(MAJ_AXIS_PCNT, (short)(pci->w - 1));
+	    outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)endy);
+	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	    x += pci->w;
+	    xwmid -= pci->w;
+	}
+
+	WaitQueue(7);
+	outw(CUR_X, (short)pci->x);
+	outw(CUR_Y, (short)pci->y);
+	outw(DESTX_DIASTP, (short)x);
+	outw(DESTY_AXSTP, (short)y);
+	outw(MAJ_AXIS_PCNT, (short)endx);
+	outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)endy);
+	outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+    }
+
+    WaitQueue(2);
+    outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+    outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+}
+
+
+static void mach8CImageFill( pci, x, y, w, h, pox, poy, alu, planemask )
+CacheInfoPtr pci;
+int x;
+int y;
+int w;
+int h;
+int pox;
+int poy;
+short alu;
+short planemask;
+{
+
+    DoCacheImageFill( pci, x, y, w, h, pox, poy, alu,
+		      MIX_SRC, FSS_BITBLT, BSS_BITBLT, planemask );
+
+}
+
+static void mach8CImageStipple( pci, x, y, w, h, pox, poy, fg, alu, planemask )
+CacheInfoPtr pci;
+int x;
+int y;
+int w;
+int h;
+int pox;
+int poy;
+int fg;
+short alu;
+short planemask;
+{
+
+    WaitQueue(3);
+    outw(FRGD_COLOR, fg);
+    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
+    outw(RD_MASK, 0x01);
+
+    DoCacheImageFill( pci, x, y, w, h, pox, poy, alu,
+		      MIX_DST, FSS_FRGDCOL, BSS_BKGDCOL, planemask );
+
+    WaitQueue(2);
+    outw(RD_MASK, 0xff);
+    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+
+}
+
+static void mach8CImageOpStipple( pci, x, y, w, h, pox, poy,
+				  fg, bg, alu, planemask )
+CacheInfoPtr pci;
+int x;
+int y;
+int w;
+int h;
+int pox;
+int poy;
+int fg;
+int bg;
+short alu;
+short planemask;
+{
+
+    WaitQueue(4);
+    outw(FRGD_COLOR, fg);
+    outw(BKGD_COLOR, bg);
+    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
+    outw(RD_MASK, 0x01);
+
+    DoCacheImageFill( pci, x, y, w, h, pox, poy, alu, alu,
+		      FSS_FRGDCOL, BSS_BKGDCOL, planemask );
+
+    WaitQueue(2);
+    outw(RD_MASK, 0xff);
+    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+
+}
+
+
 void
 mach8PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     DrawablePtr pDrawable;
@@ -87,6 +562,7 @@ mach8PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     PixmapPtr	    pPix;
     int		    pixWidth;
     int		    xrot, yrot;
+    CacheInfoPtr    pci;
 
 /* 11-jun-93 TCG : is VT visible */
     if (!xf86VTSema)
@@ -257,29 +733,16 @@ mach8PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
 	    pboxClipped = pboxClippedBase;
-#ifdef PIXPRIV
-	    if (mach8CacheTile(pPix)) {
-		int w, h;
+	    if( pci = DoCacheTile( pPix ) ) {
 		while (n--) {
-		    w = pboxClipped->x2 - pboxClipped->x1;
-		    h = pboxClipped->y2 - pboxClipped->y1;
-		    if ((w > 9) || (h > 9))
-		    mach8CImageFill(pPix->slot,
-				      pboxClipped->x1, pboxClipped->y1,
-					 w, h,
-				      xrot, yrot,
-				      mach8alu[pGC->alu], pGC->planemask);
-		    else
-			mach8ImageFill(pboxClipped->x1, pboxClipped->y1,
-					w, h,
-					pPix->devPrivate.ptr, pixWidth,
-					width, height, xrot, yrot,
-					mach8alu[pGC->alu], pGC->planemask);
+		    mach8CImageFill( pci, pboxClipped->x1, pboxClipped->y1,
+				     pboxClipped->x2 - pboxClipped->x1,
+				     pboxClipped->y2 - pboxClipped->y1,
+				     xrot, yrot,
+				     mach8alu[pGC->alu], pGC->planemask );
 		    pboxClipped++;
 		}
-	    } else
-#endif
-	    {
+	    } else {
 		while (n--) {
 		    mach8ImageFill(pboxClipped->x1, pboxClipped->y1,
 				     pboxClipped->x2 - pboxClipped->x1,
@@ -301,33 +764,16 @@ mach8PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
 	    pboxClipped = pboxClippedBase;
-#ifdef PIXPRIV
-	    if (mach8CacheStipple(pPix)) {
-		int w, h;
+	    if( pci = DoCacheOpStipple( pPix ) ) {
 		while (n--) {
-		    w = pboxClipped->x2 - pboxClipped->x1;
-		    h = pboxClipped->y2 - pboxClipped->y1;
-		    if ((w > 9) || (h > 9))
-		    mach8CImageStipple(pPix->slot,
-					 pboxClipped->x1, pboxClipped->y1,
-					    w, h,
-					 xrot, yrot, pGC->fgPixel,
-					    mach8alu[pGC->alu],
-					    pGC->planemask);
-		    else
-			(mach8ImageStippleFunc)(pboxClipped->x1,
-						pboxClipped->y1,
-						w, h,
-						pPix->devPrivate.ptr, pixWidth,
-						width, height, xrot, yrot,
-						pGC->fgPixel, 0,
-						mach8alu[pGC->alu],
-						pGC->planemask, 0);
+		    mach8CImageStipple( pci, pboxClipped->x1, pboxClipped->y1,
+					pboxClipped->x2 - pboxClipped->x1,
+					pboxClipped->y2 - pboxClipped->y1,
+					xrot, yrot, pGC->fgPixel,
+					mach8alu[pGC->alu],pGC->planemask );
 		    pboxClipped++;
 		}
-	    } else
-#endif
-	    {
+	    } else {
 		while (n--) {
 		    (mach8ImageStippleFunc)(pboxClipped->x1, pboxClipped->y1,
 					    pboxClipped->x2 - pboxClipped->x1,
@@ -351,35 +797,17 @@ mach8PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
 	    pboxClipped = pboxClippedBase;
-#ifdef PIXPRIV
-	    if (mach8CacheOpStipple(pPix)) {
-		int w, h;
+	    if( pci = DoCacheOpStipple( pPix ) ) {
 		while (n--) {
-		    w = pboxClipped->x2 - pboxClipped->x1;
-		    h = pboxClipped->y2 - pboxClipped->y1;
-		    if ((w > 9) || (h > 9))
-		    mach8CImageOpStipple(pPix->slot,
-					   pboxClipped->x1, pboxClipped->y1,
-					      w, h,
-					      xrot, yrot,
-					      pGC->fgPixel, pGC->bgPixel,
-					      mach8alu[pGC->alu],
-					      pGC->planemask);
-		    else
-			(mach8ImageStippleFunc)(pboxClipped->x1,
-						pboxClipped->y1,
-						w, h,
-						pPix->devPrivate.ptr, pixWidth,
-						width, height,
-						xrot, yrot,
-						pGC->fgPixel, pGC->bgPixel,
-						mach8alu[pGC->alu],
-						pGC->planemask, 1);
+		    mach8CImageOpStipple( pci, pboxClipped->x1,pboxClipped->y1,
+					  pboxClipped->x2 - pboxClipped->x1,
+					  pboxClipped->y2 - pboxClipped->y1,
+					  xrot, yrot,
+					  pGC->fgPixel, pGC->bgPixel,
+					  mach8alu[pGC->alu], pGC->planemask );
 		    pboxClipped++;
 		}
-	    } else
-#endif
-	    {
+	    } else {
 		while (n--) {
 		    (mach8ImageStippleFunc)(pboxClipped->x1, pboxClipped->y1,
 					    pboxClipped->x2 - pboxClipped->x1,

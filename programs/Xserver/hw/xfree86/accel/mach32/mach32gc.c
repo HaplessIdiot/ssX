@@ -1,5 +1,5 @@
 /* $XConsortium: mach32gc.c,v 1.2 94/04/17 20:30:46 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gc.c,v 3.0 1994/05/08 05:19:29 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -64,7 +64,7 @@ Modified for 16 bpp and VTSema-dependent validation by
 #include "Xmd.h"
 #include "Xproto.h"
 #include "cfb.h"
-#include "mach32cfb.h"
+#include "cfb16.h"
 #include "fontstruct.h"
 #include "dixfontstr.h"
 #include "gcstruct.h"

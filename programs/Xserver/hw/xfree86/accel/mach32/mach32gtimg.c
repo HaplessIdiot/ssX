@@ -1,5 +1,5 @@
 /* $XConsortium: mach32gtimg.c,v 1.1 94/03/28 21:08:16 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gtimg.c,v 3.0 1994/05/08 05:19:32 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -32,7 +32,7 @@
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "cfb.h"
-#include "mach32cfb.h"
+#include "cfb16.h"
 #include "cfbmskbits.h"
 #include "mach32.h"
 

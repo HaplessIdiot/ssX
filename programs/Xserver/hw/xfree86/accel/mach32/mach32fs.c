@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fs.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.0 1994/04/29 14:06:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.1 1994/05/08 05:19:27 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -102,7 +102,7 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "windowstr.h"
 
 #include "cfb.h"
-#include "mach32cfb.h"
+#include "cfb16.h"
 
 #include "regmach32.h"
 #include "mach32.h"

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fcach.c,v 1.1 94/03/28 21:07:38 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.0 1994/05/08 05:19:24 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -32,7 +32,7 @@
 #include	"Xmd.h"
 #include	"Xproto.h"
 #include	"cfb.h"
-#include	"mach32cfb.h"
+#include	"cfb16.h"
 #include	"misc.h"
 #include	"windowstr.h"
 #include	"gcstruct.h"

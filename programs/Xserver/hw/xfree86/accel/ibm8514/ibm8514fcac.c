@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514fcac.c,v 1.1 94/03/28 21:03:58 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514fcac.c,v 3.0 1994/05/30 08:23:31 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -40,6 +40,7 @@ extern Bool xf86Verbose;
 
 #define ALIGNMENT 8
 #define N_PLANES 8
+#define PIXMAP_WIDTH 64
 
 void
 ibm8514FontCache8Init()
@@ -49,15 +50,24 @@ ibm8514FontCache8Init()
     unsigned int BitPlane;
     CachePool FontPool;
 
-    x = 0;
+    x = PIXMAP_WIDTH;
     y = ibm8514InfoRec.virtualY;
-    w = ibm8514InfoRec.virtualX;
+    w = ibm8514InfoRec.virtualX - x;
     h = 1024 - ibm8514InfoRec.virtualY;
+    if( h >= PIXMAP_WIDTH && first ) {
+      ibm8514InitFrect( 0, y, PIXMAP_WIDTH );
+      ErrorF( "%s %s: Using a single %dx%d area for expanding pixmaps\n",
+              XCONFIG_PROBED, ibm8514InfoRec.name, PIXMAP_WIDTH,PIXMAP_WIDTH );
+    }
+    else if( first )
+      ErrorF( "%s %s: No pixmap expanding area available\n",
+              XCONFIG_PROBED, ibm8514InfoRec.name );
+
     /*
      * Don't allow a font cache if we don't have room for at least
      * 2 complete 6x13 fonts.
      */
-    if( w >= 6*32 && h > 2*13 ) {
+    if( w >= 6*32 && h >= 2*13 ) {
       if( first ) {
         FontPool = xf86CreateCachePool( ALIGNMENT );
         for( BitPlane = 0; BitPlane < N_PLANES; BitPlane++ )
