@@ -166,7 +166,7 @@ Neo2097AccelInit(ScreenPtr pScreen)
     infoPtr->ScanlineColorExpandBuffers[0] = (unsigned char *)(nPtr->NeoMMIOBase + 0x100000);
     infoPtr->NumScanlineColorExpandBuffers = 1;
     infoPtr->ScanlineCPUToScreenColorExpandFillFlags = ( NO_PLANEMASK |
-#ifdef DO_CLIPPING
+#ifdef NEO_DO_CLIPPING
 							 LEFT_EDGE_CLIPPING |
 #endif
 							 CPU_TRANSFER_PAD_DWORD |
@@ -354,29 +354,42 @@ Neo2097SetupScanlineForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     if (bg == -1) {
 	/* transparent setup */
 	WAIT_ENGINE_IDLE();
+#ifdef NEO_DO_CLIPPING
 	OUTREG(NEOREG_BLTCNTL, nAcl->BltCntlFlags  |
 			       NEO_BC0_SYS_TO_VID   |
 			       NEO_BC0_SRC_MONO     |
 			       NEO_BC0_SRC_TRANS    |
 			       NEO_BC3_SKIP_MAPPING |
-#ifdef DO_CLIPPING
 	                       NEO_BC3_CLIP_ON      |
-#endif
 	                       NEO_BC3_DST_XY_ADDR  | neo2097Rop[rop]);
+#else
+	OUTREG(NEOREG_BLTCNTL, nAcl->BltCntlFlags  |
+			       NEO_BC0_SYS_TO_VID   |
+			       NEO_BC0_SRC_MONO     |
+			       NEO_BC0_SRC_TRANS    |
+			       NEO_BC3_SKIP_MAPPING |
+	                       NEO_BC3_DST_XY_ADDR  | neo2097Rop[rop]);
+#endif
 
 	OUTREG(NEOREG_FGCOLOR, fg |= (fg << nAcl->ColorShiftAmt));
     }
     else {
 	/* opaque setup */
 	WAIT_ENGINE_IDLE();
+#ifdef NEO_DO_CLIPPING
 	OUTREG(NEOREG_BLTCNTL, nAcl->BltCntlFlags  |
 			       NEO_BC0_SYS_TO_VID   |
 			       NEO_BC0_SRC_MONO     |
 			       NEO_BC3_SKIP_MAPPING |
-#if DO_CLIPPING
 	                       NEO_BC3_CLIP_ON      |
-#endif
 			       NEO_BC3_DST_XY_ADDR  | neo2097Rop[rop]);
+#else
+	OUTREG(NEOREG_BLTCNTL, nAcl->BltCntlFlags  |
+			       NEO_BC0_SYS_TO_VID   |
+			       NEO_BC0_SRC_MONO     |
+			       NEO_BC3_SKIP_MAPPING |
+			       NEO_BC3_DST_XY_ADDR  | neo2097Rop[rop]);
+#endif
 
 	OUTREG(NEOREG_FGCOLOR, fg |= (fg << nAcl->ColorShiftAmt));
 	OUTREG(NEOREG_BGCOLOR, bg |= (bg << nAcl->ColorShiftAmt));
@@ -392,7 +405,7 @@ Neo2097SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     NEOPtr nPtr = NEOPTR(pScrn);
     NEOACLPtr nAcl = NEOACLPTR(pScrn);
 
-#if DO_CLIPPING
+#ifdef NEO_DO_CLIPPING
     w = (w + 31) & ~31;
 #else
     nAcl->CPUToScreenColorExpandFill_x = x;
@@ -401,7 +414,7 @@ Neo2097SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     nAcl->CPUToScreenColorExpandFill_h = h;
 #endif
     WAIT_ENGINE_IDLE();
-#if DO_CLIPPING
+#ifdef NEO_DO_CLIPPING
     OUTREG(NEOREG_CLIPLT, (y << 16) | (x + skipleft));
     OUTREG(NEOREG_CLIPRB, ((y + h) << 16) | (x + w));
 #endif
@@ -413,7 +426,7 @@ Neo2097SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 static void
 Neo2097SubsequentColorExpandScanline(ScrnInfoPtr pScrn,	int bufno)
 {
-#ifdef DO_CLIPPING
+#ifdef NEO_DO_CLIPPING
     /* Should I be waiting for fifo slots to prevent retries ?
        How do I do that on this engine ? */
 #else
