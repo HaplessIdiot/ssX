@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.44 1995/06/25 08:41:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.45 1995/06/27 06:57:10 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -274,6 +274,14 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.44 1995/06/25 08:41:57 dawes Exp $
  * framebuffer access) uncomment this.
  *
 #define HasSVR3mmapDrv	YES
+ */
+
+/*
+ * If you are using an SVR3 (like ISC 4.x) which supports long file names,
+ * you can * uncomment this to have manual pages installed under their
+ * full names
+ *
+#define ExpandManNames		YES
  */
 
 /*
