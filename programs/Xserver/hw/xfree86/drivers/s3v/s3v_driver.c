@@ -602,6 +602,9 @@ unsigned char config1, config2;
          case 4:
             vga256InfoRec.videoRam = 2 * 1024;
             break;
+         case 6:
+            vga256InfoRec.videoRam = 1 * 1024;
+            break;
          }
       }
 

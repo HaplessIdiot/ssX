@@ -1,4 +1,5 @@
 XFree86 3.2Ar (28 March 1997)
+ 626. Remove the old driver subdirectories.
  625. Fix setting of CRTC[22] on VGA compatibles (#220, Marc Aurele La France).
  624. Fix vga16 & banked vga2; don't remap *fb's endtab. Use the correct
       banking functions, displayWidth handling (#219, Marc Aurele La France).
@@ -4258,4 +4259,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.439 1997/03/27 08:29:25 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.440 1997/03/27 18:37:51 hohndel Exp $
