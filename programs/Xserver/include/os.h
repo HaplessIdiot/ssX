@@ -46,13 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $TOG: os.h /main/61 1997/09/19 09:30:37 kaleb $ */
-
-
-
-
-
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.18 1997/09/14 13:15:07 dawes Exp $ */
+/* $XConsortium: os.h /main/60 1996/12/15 21:25:13 rws $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.17.2.7 1998/06/04 17:36:20 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -60,6 +55,9 @@ SOFTWARE.
 #define ALLOCATE_LOCAL_FALLBACK(_size) Xalloc((unsigned long)(_size))
 #define DEALLOCATE_LOCAL_FALLBACK(_ptr) Xfree((pointer)(_ptr))
 #include "Xalloca.h"
+#if NeedVarargsPrototypes
+#include <stdarg.h>
+#endif
 
 #define NullFID ((FID) 0)
 
@@ -80,14 +78,14 @@ typedef struct _FontPathRec *FontPathPtr;
 typedef struct _NewClientRec *NewClientPtr;
 
 #define xnfalloc(size) XNFalloc((unsigned long)(size))
+#define xnfcalloc(_num, _size) XNFcalloc((unsigned long)(_num)*(unsigned long)(_size))
 #define xnfrealloc(ptr, size) XNFrealloc((pointer)(ptr), (unsigned long)(size))
 
 #define xalloc(size) Xalloc((unsigned long)(size))
-#define xnfalloc(size) XNFalloc((unsigned long)(size))
 #define xcalloc(_num, _size) Xcalloc((unsigned long)(_num)*(unsigned long)(_size))
 #define xrealloc(ptr, size) Xrealloc((pointer)(ptr), (unsigned long)(size))
-#define xnfrealloc(ptr, size) XNFrealloc((pointer)(ptr), (unsigned long)(size))
 #define xfree(ptr) Xfree((pointer)(ptr))
+#define xstrdup(s) Xstrdup(s)
 
 #ifdef SCO
 #include <stdio.h>
@@ -389,6 +387,12 @@ extern unsigned long *Xcalloc(
 #endif
 );
 
+extern unsigned long *XNFcalloc(
+#if NeedFunctionPrototypes
+    unsigned long /*amount*/
+#endif
+);
+
 extern unsigned long *Xrealloc(
 #if NeedFunctionPrototypes
     pointer /*ptr*/,
@@ -414,6 +418,8 @@ extern void OsInitAllocator(
     void
 #endif
 );
+
+extern char *Xstrdup(const char *s);
 
 typedef SIGVAL (*OsSigHandlerPtr)(
 #if NeedFunctionPrototypes
@@ -450,10 +456,14 @@ __attribute((noreturn))
 
 extern void ErrorF(
 #if NeedVarargsPrototypes
-    char* /*f*/,
+    const char* /*f*/,
     ...
 #endif
 );
+
+#if NeedVarargsPrototypes
+extern void VErrorF(const char *f, va_list args);
+#endif
 
 #ifdef SERVER_LOCK
 extern void LockServer(
@@ -511,24 +521,9 @@ extern int OsInitColors(
 );
 
 #if !defined(WIN32) && !defined(__EMX__)
-extern int System(
-#if NeedFunctionPrototypes
-    char *
-#endif
-);
-
-extern pointer Popen(
-#if NeedFunctionPrototypes
-    char *,
-    char *
-#endif
-);
-
-extern int Pclose(
-#if NeedFunctionPrototypes
-    pointer
-#endif
-);
+extern int System(char *);
+extern pointer Popen(char *, char *);
+extern int Pclose(pointer);
 #else
 #define System(a) system(a)
 #define Popen(a,b) popen(a,b)
@@ -720,6 +715,8 @@ extern int ddxProcessArgument(
 #endif
 );
 
+extern void ddxUseMsg(void);
+
 /*
  *  idiom processing stuff
  */
@@ -779,5 +776,10 @@ typedef struct {
 
 /* stuff for FlushCallback */
 extern CallbackListPtr FlushCallback;
+
+extern void AbortDDX(void);
+extern void ddxGiveUp(void);
+extern int TimeSinceLastInputEvent(void);
+extern int defaultColorVisualClass;
 
 #endif /* OS_H */

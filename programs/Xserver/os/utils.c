@@ -51,7 +51,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.36 1998/03/20 21:08:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.37 1998/04/05 02:28:46 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -145,7 +145,7 @@ int auditTrailLevel = 1;
 
 void ddxUseMsg();
 #if NeedVarargsPrototypes
-void VErrorF(char*, va_list);
+void VErrorF(const char*, va_list);
 #endif
 
 Bool Must_have_memory = FALSE;
@@ -1210,6 +1210,24 @@ Xcalloc (amount)
 }
 
 /*****************
+ * XNFcalloc
+ *****************/
+
+unsigned long *
+XNFcalloc (amount)
+    unsigned long   amount;
+{
+    unsigned long   *ret;
+
+    ret = Xalloc (amount);
+    if (ret)
+	bzero ((char *) ret, (int) amount);
+    else if ((long)amount > 0)
+        FatalError("Out of memory");
+    return ret;
+}
+
+/*****************
  * Xrealloc
  *****************/
 
@@ -1258,7 +1276,8 @@ XNFrealloc (ptr, amount)
 {
     if (( ptr = (pointer)Xrealloc( ptr, amount ) ) == NULL)
     {
-        FatalError( "Out of memory" );
+	if ((long)amount > 0)
+            FatalError( "Out of memory" );
     }
     return ((unsigned long *)ptr);
 }
@@ -1289,7 +1308,23 @@ OsInitAllocator ()
 	been_here = 1;
 #endif
 }
-#endif
+#endif /* !INTERNAL_MALLOC */
+
+
+char *
+Xstrdup(const char *s)
+{
+    char *sd;
+
+    if (s == NULL)
+	return NULL;
+
+    sd = (char *)Xalloc(strlen(s) + 1);
+    if (sd != NULL)
+	strcpy(sd, s);
+    return sd;
+}
+
 
 void
 AuditPrefix(f)
@@ -1367,6 +1402,9 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 #ifdef DDXOSFATALERROR
     OsVendorFatalError();
 #endif
+#ifdef ABORTONFATALERROR
+    abort();
+#endif
     AbortServer();
     /*NOTREACHED*/
 }
@@ -1374,7 +1412,7 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 #if NeedVarargsPrototypes
 void
 VErrorF(f, args)
-    char *f;
+    const char *f;
     va_list args;
 {
 #ifdef AIXV3
@@ -1404,7 +1442,7 @@ VFatalError(const char *msg, va_list args)
 void
 ErrorF(
 #if NeedVarargsPrototypes
-    char * f, ...)
+    const char * f, ...)
 #else
  f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *f;

@@ -21,7 +21,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: dixstruct.h /main/43 1996/12/15 21:25:06 rws $ */
-/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.7 1996/12/23 07:09:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.8.4.2 1998/06/03 16:28:47 dawes Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -226,7 +226,7 @@ extern int (*k5_Vector[256])() =
 );
 #endif
 
-extern void (* ReplySwapVector[256]) ();
+extern ReplySwapPtr ReplySwapVector[256];
 
 extern int ProcBadRequest(
 #if NeedFunctionPrototypes

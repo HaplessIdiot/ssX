@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.15 1997/10/25 13:51:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.16 1998/04/07 11:32:35 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -468,6 +468,25 @@ Xcalloc (amount)
     unsigned long   *ret;
 
     ret = Xalloc (amount);
+    if (ret
+#if defined(HAS_MMAP_ANON) || defined(MMAP_DEV_ZERO)
+	    && (amount < MIN_LARGE)	/* mmaped anonymous mem is already cleared */
+#endif
+       )
+	bzero ((char *) ret, (int) amount);
+    return ret;
+}
+
+/*****************
+ * XNFcalloc
+ *****************/
+unsigned long *
+XNFcalloc (amount)
+    unsigned long   amount;
+{
+    unsigned long   *ret;
+
+    ret = XNFalloc (amount);
     if (ret
 #if defined(HAS_MMAP_ANON) || defined(MMAP_DEV_ZERO)
 	    && (amount < MIN_LARGE)	/* mmaped anonymous mem is already cleared */

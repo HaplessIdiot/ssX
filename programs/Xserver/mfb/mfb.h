@@ -49,15 +49,16 @@ SOFTWARE.
 /* $XConsortium: mfb.h,v 5.31 94/04/17 20:28:15 dpw Exp $ */
 
 
+#if !defined(_MFB_H_) || defined(MFB_PROTOTYPES_ONLY)
+#ifndef MFB_PROTOTYPES_ONLY
+#define _MFB_H_
+#endif
 
 
-/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.9 1998/03/21 14:23:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.3.2.6 1998/06/27 14:48:57 dawes Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
-#ifndef __MFB_H__
-#define __MFB_H__
-
 #include "pixmap.h"
 #include "region.h"
 #include "gc.h"
@@ -1023,6 +1024,7 @@ extern void mfbZeroPolyArcSS(
 #endif
 );
 
+#ifndef MFB_PROTOTYPES_ONLY
 /*
    private filed of pixmap
    pixmap.devPrivate = (PixelType *)pointer_to_bits
@@ -1054,6 +1056,7 @@ typedef struct {
 		);
     } mfbPrivGC;
 typedef mfbPrivGC	*mfbPrivGCPtr;
+#endif
 
 extern int  mfbGCPrivateIndex;		/* index into GC private array */
 extern int  mfbWindowPrivateIndex;	/* index into Window private array */
@@ -1061,6 +1064,7 @@ extern int  mfbWindowPrivateIndex;	/* index into Window private array */
 extern int  frameWindowPrivateIndex;	/* index into Window private array */
 #endif
 
+#ifndef MFB_PROTOTYPES_ONLY
 /* private field of window */
 typedef struct {
     unsigned char fastBorder;	/* non-zero if border tile is 32 bits wide */
@@ -1288,10 +1292,10 @@ than a switch on the rop per item (span or rectangle.)
 
 /*
  * if MFB is built as a module, it shouldn't call libc functions.
- * The following macros should wrap all calls in MFB
  */
-#if defined(XFree86LOADER) && !defined(NOXF86DEFS)
+#ifdef XFree86LOADER
 #include "xf86_ansic.h"
 #endif
 
-#endif /* __MFB_H__ */
+#endif /* MFB_PROTOTYPES_ONLY */
+#endif /* _MFB_H_ */

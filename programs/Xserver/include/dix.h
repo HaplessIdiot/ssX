@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: dix.h /main/44 1996/12/15 21:24:57 rws $ */
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.6 1996/12/24 02:27:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.7.4.1 1998/06/03 15:50:18 dawes Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -654,11 +654,13 @@ extern void SetMaskForEvent(
 #endif
 );
 
+#if 0
 extern Bool PointerConfinedToScreen(
 #if NeedFunctionPrototypes
     void
 #endif
 );
+#endif
 
 extern Bool IsParent(
 #if NeedFunctionPrototypes
@@ -679,12 +681,14 @@ extern WindowPtr GetSpriteWindow(
 #endif
 );
 
+#if 0
 extern void GetSpritePosition(
 #if NeedFunctionPrototypes
     int * /* px */,
     int * /* py */
 #endif
 );
+#endif
 
 extern void NoticeEventTime(
 #if NeedFunctionPrototypes
@@ -880,11 +884,13 @@ extern void DeleteWindowFromAnyEvents(
 #endif
 );
 
+#if 0
 extern void CheckCursorConfinement(
 #if NeedFunctionPrototypes
     WindowPtr /* pWin */
 #endif
 );
+#endif
 
 extern Mask EventMaskForClient(
 #if NeedFunctionPrototypes

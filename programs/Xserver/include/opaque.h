@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/Xserver/include/opaque.h,v 1.2 1997/01/12 10:48:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/opaque.h,v 1.3.2.2 1998/07/18 17:54:22 dawes Exp $ */
 
 #ifndef OPAQUE_H
 #define OPAQUE_H
@@ -42,6 +42,8 @@ extern char *rgbPath;
 extern int MaxClients;
 extern char isItTimeToYield;
 extern char dispatchException;
+extern Bool loadableFonts;
+extern int monitorResolution;
 
 /* bit values for dispatchException */
 #define DE_RESET     1

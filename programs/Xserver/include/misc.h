@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: misc.h /main/28 1996/12/02 10:22:01 lehors $ */
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.11 1998/03/21 11:08:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.7.2.2 1998/06/05 16:23:35 dawes Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -91,12 +91,8 @@ extern unsigned long serverGeneration;
 #endif
 #endif
 
-#ifdef MetroLink
-#define MAXSCREENS	4
-#endif
-
 #ifndef MAXSCREENS
-#define MAXSCREENS	3
+#define MAXSCREENS	4
 #endif
 #define MAXCLIENTS	128
 #define MAXDITS		1
@@ -164,16 +160,16 @@ typedef struct _xReq *xReqPtr;
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
-#if !defined(AMOEBA) && !defined(__EMX__) && (!defined(NCR)  && defined(MetroLink)) && !defined(PowerMAX_OS)
+#ifdef X_NOT_STDC_ENV
 #ifndef abs
 #define abs(a) ((a) > 0 ? (a) : -(a))
 #endif
-#else /* AMOEBA || __EMX__ */
+#else
 /* abs() is a function, not a macro; include the file declaring
  * it in case we haven't done that yet.
  */  
 #include <stdlib.h>
-#endif /* AMOEBA */
+#endif /* X_NOT_STDC_ENV */
 #ifndef Fabs
 #define Fabs(a) ((a) > 0.0 ? (a) : -(a))	/* floating absolute value */
 #endif

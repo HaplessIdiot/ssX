@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.29 1997/12/14 02:55:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.22.2.8 1998/07/03 13:44:15 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -54,6 +54,7 @@ SOFTWARE.
 #ifdef NOPEXEXT /* sleaze for Solaris cpp building XsunMono */
 #undef PEXEXT
 #endif
+
 extern Bool noTestExtensions;
 #ifdef XKB
 extern Bool noXkbExtension;
@@ -67,7 +68,7 @@ extern Bool noXkbExtension;
 #endif
 typedef void (*InitExtension)(INITARGS);
 #else /* XFree86Loader */
-#include "xf86_ldext.h"
+#include "xf86Module.h"
 #endif
 
 /* FIXME: this whole block of externs should be from the appropriate headers */
@@ -84,12 +85,7 @@ extern void ShapeExtensionInit(INITARGS);
 extern void ShmExtensionInit(INITARGS);
 #endif
 #ifdef PEXEXT
-#ifndef PEX_MODULE
 extern void PexExtensionInit(INITARGS);
-#endif
-#ifndef XFree86LOADER
-InitExtension PexExtensionInitPtr = NULL;
-#endif
 #endif
 #ifdef MULTIBUFFER
 extern void MultibufferExtensionInit(INITARGS);
@@ -119,12 +115,7 @@ extern void ScreenSaverExtensionInit (INITARGS);
 extern void XvExtensionInit(INITARGS);
 #endif
 #ifdef XIE
-#ifndef XIE_MODULE
 extern void XieInit(INITARGS);
-#endif
-#ifndef XFree86LOADER
-InitExtension XieInitPtr = NULL;
-#endif
 #endif
 #ifdef XSYNC
 extern void SyncExtensionInit(INITARGS);
@@ -166,11 +157,7 @@ extern void XFree86MiscExtensionInit(INITARGS);
 extern void XFree86DGAExtensionInit(INITARGS);
 #endif
 #ifdef GLXEXT
-#ifndef GLX_MODULE
 extern void GlxExtensionInit(INITARGS);
-#else
-InitExtension GlxExtensionInitPtr = NULL;
-#endif
 #endif
 
 #ifndef XFree86LOADER
@@ -193,17 +180,8 @@ InitExtensions(argc, argv)
 #ifdef MITSHM
     ShmExtensionInit();
 #endif
-#if defined(PEXEXT) && !(defined(PEX_MODULE) && defined(NO_MODULES_EXTS))
-#ifndef PEX_MODULE
+#ifdef PEXEXT
     PexExtensionInit();
-#else
-    if (PexExtensionInitPtr != NULL) {
-	(*PexExtensionInitPtr)();
-    } else {
-	if (serverGeneration == 1)
-	    ErrorF("(--) PEX extension module not loaded\n");
-    }
-#endif
 #endif
 #ifdef MULTIBUFFER
     MultibufferExtensionInit();
@@ -232,22 +210,13 @@ InitExtensions(argc, argv)
 #ifdef XV
     XvExtensionInit();
 #endif
-#if defined(XIE) && !(defined(PEX_MODULE) && defined(NO_MODULES_EXTS))
-#ifndef XIE_MODULE
+#ifdef XIE
     XieInit();
-#else
-    if (XieInitPtr != NULL) {
-	(*XieInitPtr)();
-    } else {
-	if (serverGeneration == 1)
-	    ErrorF("(--) XIE extension module not loaded\n");
-    }
-#endif
 #endif
 #ifdef XSYNC
     SyncExtensionInit();
 #endif
-#if defined(XKB) && !defined(PRINT_ONLY_SERVER)
+#ifdef XKB
     if (!noXkbExtension) XkbExtensionInit();
 #endif
 #ifdef XCMISC
@@ -271,33 +240,21 @@ InitExtensions(argc, argv)
 #ifdef XPRINT
     XpExtensionInit();
 #endif
-#if defined(DPMSExtension) && !defined(PRINT_ONLY_SERVER)
-    DPMSExtensionInit();
-#endif
-#if defined(XF86VIDMODE) && !defined(PRINT_ONLY_SERVER) && \
-	!defined(NO_HW_ONLY_EXTS)
+#if defined(XF86VIDMODE) && !defined(PRINT_ONLY_SERVER)
     XFree86VidModeExtensionInit();
 #endif
-#if defined(XF86MISC) && !defined(PRINT_ONLY_SERVER) && \
-	!defined(NO_HW_ONLY_EXTS)
+#if defined(XF86MISC) && !defined(PRINT_ONLY_SERVER)
     XFree86MiscExtensionInit();
 #endif
-#if defined(XFreeXDGA) && !defined(PRINT_ONLY_SERVER) && \
-	!defined(NO_HW_ONLY_EXTS)
+#if defined(XFreeXDGA) && !defined(PRINT_ONLY_SERVER)
     XFree86DGAExtensionInit();
 #endif
-#if defined(GLXEXT) && !defined(NO_HW_ONLY_EXTS)
-#ifndef GLX_MODULE
+#if defined(DPMSExtension)
+    DPMSExtensionInit();
+#endif
+#ifdef GLXEXT
 #ifndef XPRINT	/* we don't want Glx in the Xprint server */
     GlxExtensionInit();
-#endif
-#else
-    if (GlxExtensionInitPtr != NULL) {
-        (*GlxExtensionInitPtr)();
-    } else {
-        if (serverGeneration == 1)
-            ErrorF("(--) GLX extension module not loaded\n");
-    }
 #endif
 #endif
 }
@@ -305,6 +262,8 @@ InitExtensions(argc, argv)
 #else /* XFree86LOADER */
 /* FIXME:The names here must come from the headers. those with ?? are 
    not included in X11R6.3 sample implementation, so there's a problem... */
+/* XXX use the correct #ifdefs for symbols not present when an extension
+   is disabled */
 ExtensionModule extension[] =
 {
     { NULL, "BEZIER", NULL },	/* ?? */
@@ -320,10 +279,14 @@ ExtensionModule extension[] =
     { NULL, "XIDLE", NULL },	/* ?? */
     { NULL, "XTRAP", &noTestExtensions }, /* ?? */
     { NULL, "MIT-SCREEN-SAVER", NULL },
-    { NULL, "XV", NULL },	/* ?? */
+    { NULL, "XVideo", NULL },	/* ?? */
     { NULL, "XIE", NULL },
     { NULL, "SYNC", NULL },
+#ifdef XKB
     { NULL, "XKEYBOARD", &noXkbExtension },
+#else
+    { NULL, "NOXKEYBOARD", NULL },
+#endif
     { NULL, "XC-MISC", NULL },
     { NULL, "RECORD", &noTestExtensions },
     { NULL, "LBX", NULL },
@@ -346,7 +309,7 @@ InitExtensions(argc, argv)
     char	*argv[];
 {
     int i;
- 
+#if 1 
    /* Add static extensions */
 #ifdef BEZIER
     extension[0].initFunc = BezierExtensionInit;
@@ -375,16 +338,16 @@ InitExtensions(argc, argv)
     extension[11].initFunc = DEC_XTRAPIbit;
 #endif
     /* 12 - ScreenSaver */
-#ifdef XV
-    extension[13].initFunc = XvExtensionInit;
-#endif
+    /* 13 - XVideo */
     /* 14 - XIE */
     /* 15 - XSYNC */
 #ifdef XKB
     extension[16].initFunc = XkbExtensionInit;
 #endif
     /* 17 - XCMISC */
-    /* 18 - RECORD */
+#ifdef XRECORD
+    extension[18].initFunc = RecordExtensionInit;
+#endif
 #ifdef LBX
     extension[19].initFunc = LbxExtensionInit;
 #endif
@@ -403,14 +366,13 @@ InitExtensions(argc, argv)
     /* 26 - XF86DGA */
     /* 27 - DPMS */
     /* 28 - GLX */
-
-    for (i = 0; extension[i].name != NULL; i++) {
+#endif
+    for (i = 0; extension[i].name != NULL; i++) 
 	if (extension[i].initFunc != NULL && 
 	    (extension[i].disablePtr == NULL || 
-	     extension[i].disablePtr != NULL && !*extension[i].disablePtr)) {
+	     (extension[i].disablePtr != NULL && !*extension[i].disablePtr))) {
 	    (*extension[i].initFunc)();
 	}
-    }
 }
 
 #endif /* XFree86LOADER */

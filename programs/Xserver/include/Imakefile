@@ -1,9 +1,15 @@
 XCOMM $XConsortium: Imakefile,v 1.2 95/01/13 20:28:14 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.9 1997/11/16 11:51:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.8.2.4 1998/06/21 15:38:28 dawes Exp $
 
+#ifdef XFree86Version
 #if DoLoadableServer
-LinkFile(xf86_libc.h,$(XF86OSSRC)/xf86_libc.h)
-LinkFile(xf86_ansic.h,$(XF86OSSRC)/xf86_ansic.h)
+LinkSourceFile(xf86_libc.h,$(XF86OSSRC))
+LinkSourceFile(xf86_ansic.h,$(XF86OSSRC))
+LinkSourceFile(xf86Module.h,$(XF86COMSRC))
+LinkSourceFile(xf86Version.h,$(XF86SRC))
+LinkSourceFile(xf86Opt.h,$(XF86COMSRC))
+#endif
+LinkSourceFile(compiler.h,$(XF86COMSRC))
 #endif
 
 all::

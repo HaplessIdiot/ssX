@@ -52,7 +52,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.25 1997/10/25 13:51:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.26 1997/11/16 06:42:18 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -484,6 +484,7 @@ typedef struct _PaddingInfo {
 	int     padBytesLog2;	/* log 2 (bytes per pad unit) */
 	int	notPower2;	/* bitsPerPixel not a power of 2 */
 	int	bytesPerPixel;	/* only set when notPower2 is TRUE */
+	int	bitsPerPixel;	/* bits per pixel */
 } PaddingInfo;
 extern PaddingInfo PixmapWidthPaddingInfo[];
 
