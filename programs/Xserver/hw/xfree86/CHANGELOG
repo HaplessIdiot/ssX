@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 280. Fix Trident 96xx high clock setting, acceleration fixes (Alan Hourihane).
  279. Fix XDarwin rootless crashing bug when window resizing with the Mac menu
       bar not on X11 main screen (Gregory Parker).
  278. Define X_LOCALE on Darwin as Darwin's setlocale() does not work
@@ -13816,4 +13817,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1947 2001/09/21 02:39:41 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1948 2001/09/21 22:57:15 torrey Exp $
