@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c,v 1.32 94/04/17 20:27:38 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.3 1995/03/08 10:16:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.4 1995/06/08 06:41:37 dawes Exp $ */
 
 #include "misc.h"
 
@@ -192,8 +192,8 @@ InitExtensions(argc, argv)
     LbxExtensionInit();
 #endif
 #ifdef XFREE86
-#ifdef VGAHELP
-    VGAHelpExtensionInit();
+#ifdef XF86VIDMODE
+    XFree86VidModeExtensionInit();
 #endif
 #endif
 }

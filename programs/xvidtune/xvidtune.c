@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/vgahelp/vgahelp.c,v 3.6 1995/06/06 13:01:16 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.7 1995/06/08 06:56:04 dawes Exp $ */
 
 /*
 
@@ -182,7 +182,7 @@ static int vidmodeError(dis, err)
 Display *dis;
 XErrorEvent *err;
 {
-  if (err->error_code >= ErrorBase &&
+  if (0 && err->error_code >= ErrorBase &&
       err->error_code < ErrorBase + XF86VidModeNumberErrors) {
      hitError=1;
   } else {
@@ -1012,6 +1012,7 @@ int main (argc, argv)
 	return 0;
 
     if (MinorVersion > 0 || MajorVersion > 0) {
+	/* This should probably be done differently */
 	if (argc > 1) {
 	    int i = 0;
 	    if (!strcmp(argv[1], "-next"))
