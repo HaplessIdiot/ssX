@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.74 2003/02/07 20:41:14 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.75 2003/02/19 01:19:41 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -275,6 +275,7 @@ static const char *drmSymbols[] = {
     "drmAddMap",
     "drmAgpAcquire",
     "drmAgpAlloc",
+    "drmAgpBase",
     "drmAgpBind",
     "drmAgpDeviceId",
     "drmAgpEnable",
@@ -288,8 +289,11 @@ static const char *drmSymbols[] = {
     "drmCommandRead",
     "drmCommandWrite",
     "drmCommandWriteRead",
+    "drmCtlInstHandler",
+    "drmCtlUninstHandler",
     "drmFreeBufs",
     "drmFreeVersion",
+    "drmGetInterruptFromBusID",
     "drmGetLibVersion",
     "drmGetVersion",
     "drmMap",
@@ -307,6 +311,7 @@ static const char *driSymbols[] = {
     "DRICreateInfoRec",
     "DRIDestroyInfoRec",
     "DRIFinishScreenInit",
+    "DRIGetDeviceInfo",
     "DRIGetSAREAPrivate",
     "DRILock",
     "DRIQueryVersion",
