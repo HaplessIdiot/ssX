@@ -1,19 +1,19 @@
   README for XFree86 3.1 on FreeBSD 1.1.5
-  Rich Murphey,	David Dawes
+  Rich Murphey, David Dawes
   12 December 1994
 
-  1.  What and Where is	XFree86?
+  1.  What and Where is XFree86?
 
   XFree86 is a port of X11R6 that supports several versions of Intel-
-  based	Unix.  It is derived from X386 1.2, which was the X server
-  distributed with X11R5.  This	release	consists of many new features
+  based Unix.  It is derived from X386 1.2, which was the X server
+  distributed with X11R5.  This release consists of many new features
   and performance improvements as well as many bug fixes.  The release
-  is available as source patches against the X Consortium X11R6	code, as
-  well as binary distributions for many	architectures.
+  is available as source patches against the X Consortium X11R6 code, as
+  well as binary distributions for many architectures.
 
   See the Copyright Notice (COPYRIGHT.html).
 
-  The sources for XFree86 are available	by anonymous ftp from:
+  The sources for XFree86 are available by anonymous ftp from:
 
   (ftp://ftp.XFree86.org/pub/XFree86/current)
 
@@ -24,244 +24,244 @@
 
   (ftp://XFree86.cdrom.com/pub/XFree86)
 
-  Send email to	Rich-Murphey@Rice.edu or XFree86@XFree86.org if	you have
-  comments or suggestions about	this file and we'll revise it.
+  Send email to Rich-Murphey@Rice.edu or XFree86@XFree86.org if you have
+  comments or suggestions about this file and we'll revise it.
 
 
 
   2.  Installing the Binaries
 
-  If you want to save space, first select which	archives you want to
-  unpack.  If you can't	decide what to pick and	you have 36Mb of disk
+  If you want to save space, first select which archives you want to
+  unpack.  If you can't decide what to pick and you have 36Mb of disk
   space, it's safe to unpack everything.
 
-  At a minimum you need	to unpack the REQUIRED XFree86-3.1-*.tar.gz
-  archives plus	at least one SERVER that matches your vga card.	 You'll
-  need 8.3Mb minimum for the required run-time binaries	only.
+  At a minimum you need to unpack the REQUIRED XFree86-3.1-*.tar.gz
+  archives plus at least one SERVER that matches your vga card.  You'll
+  need 8.3Mb minimum for the required run-time binaries only.
 
 
      Required (8.2Mb):
 
-	bin
-	   all the executable X	client applications and	shared libs
+        bin
+           all the executable X client applications and shared libs
 
 
-	fonts
-	   the misc and	75 dpi fonts
+        fonts
+           the misc and 75 dpi fonts
 
 
-	lib
-	   data	files needed at	runtime
+        lib
+           data files needed at runtime
 
 
-	xinit-config
-	   customizable	xinit runtime configuration file
+        xinit-config
+           customizable xinit runtime configuration file
 
 
-     Choose one	server ( 2Mb):
+     Choose one server ( 2Mb):
 
-	8514
-	   8-bit color for IBM 8514 and	true compatibles.
-
-
-	AGX
-	   8-bit color for AGX boards.
+        8514
+           8-bit color for IBM 8514 and true compatibles.
 
 
-	Mach32
-	   8-bit color for ATI Mach32 boards.
+        AGX
+           8-bit color for AGX boards.
 
 
-	Mach8
-	   8-bit color for ATI Mach8 boards.
+        Mach32
+           8-bit color for ATI Mach32 boards.
 
 
-	Mono
-	   1-bit monochrome for	VGA, Super-VGA,	Hercules, and others.
+        Mach8
+           8-bit color for ATI Mach8 boards.
 
 
-	P9000
-	   8-bit color for Weitek P9000	boards (Diamond	Viper).
+        Mono
+           1-bit monochrome for VGA, Super-VGA, Hercules, and others.
 
 
-	S3 8-bit color for S3 boards (#9 GXE, Actix GE32, SPEA Mercury,
-	   STB Pegasus)
+        P9000
+           8-bit color for Weitek P9000 boards (Diamond Viper).
 
 
-	SVGA
-	   8-bit color for Super-VGA cards.
+        S3 8-bit color for S3 boards (#9 GXE, Actix GE32, SPEA Mercury,
+           STB Pegasus)
 
 
-	VGA16
-	   4-bit color for VGA and Super-VGA cards
+        SVGA
+           8-bit color for Super-VGA cards.
+
+
+        VGA16
+           4-bit color for VGA and Super-VGA cards
 
 
      Optional:
 
 
-	doc
-	   (.3Mb) READMEs and XFree86 specific man pages
+        doc
+           (.3Mb) READMEs and XFree86 specific man pages
 
 
-	man
-	   (1.7Mb) man pages except XFree86 specific ones in etc archive
+        man
+           (1.7Mb) man pages except XFree86 specific ones in etc archive
 
 
-	fonts-100dpi
-	   (1.6Mb) 100dpi fonts
+        fonts-100dpi
+           (1.6Mb) 100dpi fonts
 
 
-	fonts-scaled
-	   (1.6Mb) Speedo and Type1 fonts
+        fonts-scaled
+           (1.6Mb) Speedo and Type1 fonts
 
 
-	fonts-other
-	   (3.3Mb) Japanese, Chinese, etc. fonts
+        fonts-other
+           (3.3Mb) Japanese, Chinese, etc. fonts
 
 
-	prog
-	   (3.7Mb) config, lib*.a and *.h files	needed only for
-	   compiling
+        prog
+           (3.7Mb) config, lib*.a and *.h files needed only for
+           compiling
 
 
-	fontserver
-	   (.3Mb) the font server and it's man page
+        fontserver
+           (.3Mb) the font server and it's man page
 
 
-	xdm-des
-	   (.1Mb) xdm executable for systems with secrdist installed.
-	xdm-nodes
-	   (.1Mb) xdm executable for systems without secrdist installed.
+        xdm-des
+           (.1Mb) xdm executable for systems with secrdist installed.
+        xdm-nodes
+           (.1Mb) xdm executable for systems without secrdist installed.
 
 
-	linkkit
-	   (1.6Mb) X server reconfiguration kit
+        linkkit
+           (1.6Mb) X server reconfiguration kit
 
 
-	pex
-	   (.7Mb) include files	and libraries for compiling PEX
-	   applications.
+        pex
+           (.7Mb) include files and libraries for compiling PEX
+           applications.
 
 
-	lbx
-	   (.7Mb) low bandwidth	X proxy	server and libraries.
+        lbx
+           (.7Mb) low bandwidth X proxy server and libraries.
 
 
-  2.1.	Full Install:
+  2.1.  Full Install:
 
 
-  1. You must be logged	in as root to unpack the archives because
-     several executables are set-user-id.  Otherwise the server	may
-     abort if you unpack it as an ordinary user.  You must also	use a
-     ``umask'' value of	022 because the	X server requires special
+  1. You must be logged in as root to unpack the archives because
+     several executables are set-user-id.  Otherwise the server may
+     abort if you unpack it as an ordinary user.  You must also use a
+     ``umask'' value of 022 because the X server requires special
      permissions.
 
-	% su
-	# umask	022
+        % su
+        # umask 022
 
 
 
 
-  2. If	you have 36Mb free in the /usr partion ``cd /usr'' and skip to
-     no. 3.  Otherwise,	create a directory on another partion and sym
+  2. If you have 36Mb free in the /usr partion ``cd /usr'' and skip to
+     no. 3.  Otherwise, create a directory on another partion and sym
      link it into /usr:
 
 
-	# cd /usr/local
-	# mkdir	X11R6
-	# ln -s	/usr/local/X11R6 /usr/X11R6
+        # cd /usr/local
+        # mkdir X11R6
+        # ln -s /usr/local/X11R6 /usr/X11R6
 
 
 
 
   3. Unpack everything:
 
-     If	you are	using sh (as root usually does):
+     If you are using sh (as root usually does):
 
 
-	# for i	in XFree86-3.1-*.tar.gz; do
-	#   tar	-xzf $i
-	# done
+        # for i in XFree86-3.1-*.tar.gz; do
+        #   tar -xzf $i
+        # done
 
 
 
 
-  Else,	if you are using csh:
+  Else, if you are using csh:
 
-	% foreach i (XFree86-3.1-*.tar.gz)
-	%   tar	-xzf $i
-	% end
+        % foreach i (XFree86-3.1-*.tar.gz)
+        %   tar -xzf $i
+        % end
 
 
 
 
 
   4. Create a symbolic link ``X'' that points to the server that matches
-     your video	card.  The XF86_* man pages list which vga chip	sets are
-     supported by each server.	For example, if	you have an ET4000 based
+     your video card.  The XF86_* man pages list which vga chip sets are
+     supported by each server.  For example, if you have an ET4000 based
      card you will use the XF86_SVGA server:
 
 
-	# cd /usr/X11R6/bin; rm	X; ln -s XF86_SVGA X
+        # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 
 
 
 
-  2.2.	Minimal	Install:
+  2.2.  Minimal Install:
 
-  First	do numbers 1 and 2 above. Then unpack the required archives:
-
-
-	# for i	in bin fonts lib xinit-config; do
-	#   tar	-xzf  XFree86-3.1-$i.tar.gz
-	# done
+  First do numbers 1 and 2 above. Then unpack the required archives:
 
 
-
-  Then unpack a	server archive corresponding to	your vga card.	The
-  server man pages, X11R6/man/man1/XF86_*, list	the vga	chip sets
-  supported by each server.  For example, if you have an ET4000	based
-  card you will	use the	XF86_SVGA server:
-
-
-	# tar -xzf XFree86-3.1-SVGA.tar.gz
-	# cd /usr/X11R6/bin; rm	X; ln -s XF86_SVGA X
+        # for i in bin fonts lib xinit-config; do
+        #   tar -xzf  XFree86-3.1-$i.tar.gz
+        # done
 
 
 
-
-  2.3.	After either Full or Minimal Install above:
-
-  Add /usr/X11R6/bin to	the default path for sh	in /etc/profile	and for
-  csh in /etc/csh.login	if they	are not	already	there:
-
-
-	# echo 'set path = ($path /usr/X11R6/bin)' >>/etc/csh.login
-	# echo 'PATH=$PATH:/usr/X11R6/bin' >>/etc/profile
+  Then unpack a server archive corresponding to your vga card.  The
+  server man pages, X11R6/man/man1/XF86_*, list the vga chip sets
+  supported by each server.  For example, if you have an ET4000 based
+  card you will use the XF86_SVGA server:
 
 
+        # tar -xzf XFree86-3.1-SVGA.tar.gz
+        # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 
-  Or make sure all who use X put /usr/X11R6/bin	in their shell's
+
+
+
+  2.3.  After either Full or Minimal Install above:
+
+  Add /usr/X11R6/bin to the default path for sh in /etc/profile and for
+  csh in /etc/csh.login if they are not already there:
+
+
+        # echo 'set path = ($path /usr/X11R6/bin)' >>/etc/csh.login
+        # echo 'PATH=$PATH:/usr/X11R6/bin' >>/etc/profile
+
+
+
+  Or make sure all who use X put /usr/X11R6/bin in their shell's
   ``path'' variable.
 
-  Next either reboot or	invoke ldconfig	as root	to put the shared
+  Next either reboot or invoke ldconfig as root to put the shared
   libraries in ld.so's cache:
 
 
-	# ldconfig /usr/lib /usr/local/lib /usr/X11R6/lib
+        # ldconfig /usr/lib /usr/local/lib /usr/X11R6/lib
 
 
 
-  If you had already configured	X11R6/lib/X11/xinit/xinitrc or
+  If you had already configured X11R6/lib/X11/xinit/xinitrc or
   X11R6/lib/X11/xdm/* omit the xinit-config or xdm-config archive or
   unpack it separately and merge in your customizations.
 
   The fonts-scaled and fonts-100dpi archives are optional and can be
   omitted if you are short on space.  The optional linkkit archive
-  allows you to	reconfigure and	customize a X server binary.  The
-  optional prog	archive	is needed only for writing or compiling	X
-  applications.	 The optional pex archive contains pex clients and
-  libraries for	building 3D graphics applications.
+  allows you to reconfigure and customize a X server binary.  The
+  optional prog archive is needed only for writing or compiling X
+  applications.  The optional pex archive contains pex clients and
+  libraries for building 3D graphics applications.
        NOTE: You don't need to uncompress the font files, but if
        you uncompress them anyway you must run mkfontdir in the
        corresponding font directory; otherwise your server will
@@ -270,179 +270,179 @@
 
 
   If you are running a stock FreeBSD 1.1.5 system you can ignore the
-  rest of this section.	 If not, make sure you have a spare virtual
-  console which	is running a login process (getty).  First check how
-  many virtual consoles	you have:
+  rest of this section.  If not, make sure you have a spare virtual
+  console which is running a login process (getty).  First check how
+  many virtual consoles you have:
 
 
-	% dmesg|grep sc
-	sc0 at 0x60-0x6f irq 1 on motherboard
-	sc0: VGA color <8 virtual consoles>
+        % dmesg|grep sc
+        sc0 at 0x60-0x6f irq 1 on motherboard
+        sc0: VGA color <8 virtual consoles>
 
 
 
-  Then check /etc/ttys to make sure there is at	least one ttyv?	devices
-  which	doesn't	have a getty enabled.  FreeBSD 1.1.5 has the first three
+  Then check /etc/ttys to make sure there is at least one ttyv? devices
+  which doesn't have a getty enabled.  FreeBSD 1.1.5 has the first three
   ``on'' and the last ``off'' so that getty runs on only three:
 
 
-	% grep ttyv /etc/ttys
-	ttyv0  "/usr/libexec/getty Pc" cons25  on secure
-	ttyv1  "/usr/libexec/getty Pc" cons25  on secure
-	ttyv2  "/usr/libexec/getty Pc" cons25  on secure
-	ttyv3  "/usr/libexec/getty Pc" cons25  off secure
+        % grep ttyv /etc/ttys
+        ttyv0  "/usr/libexec/getty Pc" cons25  on secure
+        ttyv1  "/usr/libexec/getty Pc" cons25  on secure
+        ttyv2  "/usr/libexec/getty Pc" cons25  on secure
+        ttyv3  "/usr/libexec/getty Pc" cons25  off secure
 
 
 
   If your kernel has least 4 VTs and only 3 gettys, this is fine.  If
-  not, either disable a	getty in /etc/ttys by changing ``on'' to ``off''
-  or build another kernel with more VTs	as described below.
+  not, either disable a getty in /etc/ttys by changing ``on'' to ``off''
+  or build another kernel with more VTs as described below.
 
 
 
   3.  Installing The Display Manager (xdm)
 
   The display manager makes your PC look like an X terminal.  That is,
-  it presents you with a login screen that runs	under X.
+  it presents you with a login screen that runs under X.
 
-  Because encryption is	an optional part of FreeBSD there are two
-  different xdm	binaries, one for systems without DES encription of
-  passwords and	one for	systems	with.  If you have installed FreeBSD's
-  security distribution	set (secrdist) then your password database is
+  Because encryption is an optional part of FreeBSD there are two
+  different xdm binaries, one for systems without DES encription of
+  passwords and one for systems with.  If you have installed FreeBSD's
+  security distribution set (secrdist) then your password database is
   DES encripted.
 
-  To determine whether you have	DES encryption,	run this:
+  To determine whether you have DES encryption, run this:
 
 
-	ldd /usr/bin/login|grep	crypt
+        ldd /usr/bin/login|grep crypt
 
 
 
-  If the output	is ``-lcrypt.1 => ...''	then you do have DES installed
+  If the output is ``-lcrypt.1 => ...'' then you do have DES installed
   and you should install xdm-des.
 
 
-	gzcat XFree86-3.1-xdm-des.tar.gz | tar xf -
-	cd /usr/X11R6/bin; ln -s xdm-des xdm
+        gzcat XFree86-3.1-xdm-des.tar.gz | tar xf -
+        cd /usr/X11R6/bin; ln -s xdm-des xdm
 
 
 
 
-  If the output	is blank then you don't	have DES installed and you
+  If the output is blank then you don't have DES installed and you
   should install xdm-nodes.
 
 
-	gzcat XFree86-3.1-xdm-nodes.tar.gz | tar xf -
-	cd /usr/X11R6/bin; ln -s xdm-nodes xdm
+        gzcat XFree86-3.1-xdm-nodes.tar.gz | tar xf -
+        cd /usr/X11R6/bin; ln -s xdm-nodes xdm
 
 
 
   The easiest way to automaticly start the display manager on boot is to
-  add a	line in	/etc/ttys to start it on one of	the unocupied virtual
+  add a line in /etc/ttys to start it on one of the unocupied virtual
   terminals:
 
 
-	ttyv4  "/usr/X11R6/bin/xdm -nodaemon" xterm    on secure
+        ttyv4  "/usr/X11R6/bin/xdm -nodaemon" xterm    on secure
 
 
 
-  You should also make sure that /usr/X11R6/bin/X is a symbolic	link to
-  the Xserver that matches your	video card or edit the file Xservers in
-  /usr/X11R6/lib/X11/xdm to specify the	pathname of the	X server.
+  You should also make sure that /usr/X11R6/bin/X is a symbolic link to
+  the Xserver that matches your video card or edit the file Xservers in
+  /usr/X11R6/lib/X11/xdm to specify the pathname of the X server.
 
-  The change to	/etc/ttys won't	take effect untill you either reboot or
+  The change to /etc/ttys won't take effect untill you either reboot or
   ``kill -HUP 1'' to force initd to reread /etc/ttys.  You can also test
   the display manager manually by loging in as root on the console and
   typing ``xdm -nodaemon''.
 
 
 
-  4.  Configuring X for	Your Hardware
+  4.  Configuring X for Your Hardware
 
-  The XF86Config file tells the	X server what kind of monitor, video
-  card and mouse you have.  You	must create it to tell the xerver what
-  specific hardware you	have.
+  The XF86Config file tells the X server what kind of monitor, video
+  card and mouse you have.  You must create it to tell the xerver what
+  specific hardware you have.
 
   XFree86 3.1 uses a new configuration file format. Consult the
   XF86Config man page and the general INSTALL (INSTALL.html) file for
   instructions.
 
-  If you have a	Xconfig	file for XFree86 2.x, use reconfig to translate
+  If you have a Xconfig file for XFree86 2.x, use reconfig to translate
   part of it into the new format:
 
 
-	# reconfig <Xconfig >XF86Config
+        # reconfig <Xconfig >XF86Config
 
 
 
-  and complete the rest	according to the XF86Config man	page and the
+  and complete the rest according to the XF86Config man page and the
   XF86Config.sample file as a template.
 
   In order to protect your hardware from damage, the server no longer
-  will read XF86Config files from a user's home	directory, but requires
-  that it be in	/etc/XF86Config, /usr/X11R6/lib/X11/XF86Config.hostname
+  will read XF86Config files from a user's home directory, but requires
+  that it be in /etc/XF86Config, /usr/X11R6/lib/X11/XF86Config.hostname
   or /usr/X11R6/lib/X11/XF86Config.
 
   You'll need info on your hardware:
 
 
-  o  Your mouse	type, baud rate	and it's /dev entry.
+  o  Your mouse type, baud rate and it's /dev entry.
 
-  o  The video card's chipset (e.g. ET4000, S3,	etc).
+  o  The video card's chipset (e.g. ET4000, S3, etc).
 
   o  Your monitor's sync frequencies.
 
-  The easiest way to find which	device your mouse is plugged into is to
-  use ``cat'' or ``kermit'' to look at the output of the mouse.	 Connect
-  to it	and just make sure that	it generates output when the mouse is
-  moved	or clicked:
+  The easiest way to find which device your mouse is plugged into is to
+  use ``cat'' or ``kermit'' to look at the output of the mouse.  Connect
+  to it and just make sure that it generates output when the mouse is
+  moved or clicked:
 
 
-	% cat <	/dev/tty00
-
-
-
-  If you can't find the	right mouse device then	use ``dmesg|grep sio''
-  to get a list	of devices that	were detected upon booting:
-
-
-	% dmesg|grep sio
-	sio0 at	0x3f8-0x3ff irq	4 on isa
+        % cat < /dev/tty00
 
 
 
-  Then double check the	/dev entries corresponding to these devices.
-  Use the script /dev/MAKEDEV to create	entries	if they	don't already
+  If you can't find the right mouse device then use ``dmesg|grep sio''
+  to get a list of devices that were detected upon booting:
+
+
+        % dmesg|grep sio
+        sio0 at 0x3f8-0x3ff irq 4 on isa
+
+
+
+  Then double check the /dev entries corresponding to these devices.
+  Use the script /dev/MAKEDEV to create entries if they don't already
   exist:
 
 
-	% cd /dev
-	% sh MAKEDEV tty00
+        % cd /dev
+        % sh MAKEDEV tty00
 
 
 
   If you plan to fine tune the screen size or position on your monitor
-  you'll need the specs	for sync frequencies from your monitor's manual.
+  you'll need the specs for sync frequencies from your monitor's manual.
 
 
 
 
   5.  Running X
 
-  8mb of memory	is a recommended minimum for running X.	 The server,
-  window manager and an	xterm take about 4Mb of	memory themselves.  On a
-  4Mb system that would	leave nothing left over	for other applications
-  like gcc that	expect a few meg free.	X may work with	4Mb of memory,
+  8mb of memory is a recommended minimum for running X.  The server,
+  window manager and an xterm take about 4Mb of memory themselves.  On a
+  4Mb system that would leave nothing left over for other applications
+  like gcc that expect a few meg free.  X may work with 4Mb of memory,
   but in practice compilation while running X can take 5 or 10 times as
   long due to constant paging.
 
-  The easiest way for new users	to start X windows is to type ``startx
-  >& startx.log''.  Error messages are lost unless you redirect	them
-  because the server takes over	the screen.
+  The easiest way for new users to start X windows is to type ``startx
+  >& startx.log''.  Error messages are lost unless you redirect them
+  because the server takes over the screen.
 
-  To get out of	X windows, type: ``exit'' in the console xterm.	 You can
-  customize your X by creating .xinitrc, .xserverrc, and .twmrc	files in
-  your home directory as described in the xinit	and startx man pages.
+  To get out of X windows, type: ``exit'' in the console xterm.  You can
+  customize your X by creating .xinitrc, .xserverrc, and .twmrc files in
+  your home directory as described in the xinit and startx man pages.
 
 
 
@@ -450,123 +450,123 @@
   6.  Rebuilding Kernels for X
 
 
-  The server supports several console drivers: pccons, syscons,	codrv
-  and pcvt.  The syscons driver	is the default in FreeBSD 1.1.5	and
-  higher.  They	are detected at	runtime	and no configuration of	the
-  server itself	is required.
+  The server supports several console drivers: pccons, syscons, codrv
+  and pcvt.  The syscons driver is the default in FreeBSD 1.1.5 and
+  higher.  They are detected at runtime and no configuration of the
+  server itself is required.
 
-  For a	general	description of BSD kernel configuration	get
+  For a general description of BSD kernel configuration get
   (ftp://gatekeeper.dec.com/pub/BSD/manuals/smm.02.config.ps.Z).  It is
-  a ready postscript copy of the kernel	configuration chapter from the
+  a ready postscript copy of the kernel configuration chapter from the
   systems maintainers manual.
 
-  Do not remove	the two	lines below from your kernel configuration file
-  (in /sys/arch/i386/conf).  They are both required for	X support:
+  Do not remove the two lines below from your kernel configuration file
+  (in /sys/arch/i386/conf).  They are both required for X support:
 
 
-	options		       XSERVER		       #Xserver
-	options		       UCONSOLE		       #X Console support
+        options                XSERVER                 #Xserver
+        options                UCONSOLE                #X Console support
 
 
 
   The generic FreeBSD 1.1.5 kernel is configured by default with the
-  syscons driver.  To configure	your kernel add	a line like that in
+  syscons driver.  To configure your kernel add a line like that in
   /sys/i386/conf/GENERICISA:
 
 
-	device	       sc0     at isa? port "IO_KBD" tty irq 1 vector scintr
+        device         sc0     at isa? port "IO_KBD" tty irq 1 vector scintr
 
 
 
-  The number of	virtual	consoles can be	set using the NCONS option:
+  The number of virtual consoles can be set using the NCONS option:
 
 
-	options		       "NCONS=8"	       #8 virtual consoles
+        options                "NCONS=8"               #8 virtual consoles
 
 
 
-  Otherwise, the default without a line	like this is 12.  You must have
-  more VTs than	gettys as described in the end of section 3, and 8 is a
+  Otherwise, the default without a line like this is 12.  You must have
+  more VTs than gettys as described in the end of section 3, and 8 is a
   reasonable minimum.
 
-  The codrv console driver is not bundled with FreeBSD.	 It is available
-  from	(ftp://ftp.uni-duisburg.de/pub/unix/386bsd-0.1/unofficial/codrv)
+  The codrv console driver is not bundled with FreeBSD.  It is available
+  from  (ftp://ftp.uni-duisburg.de/pub/unix/386bsd-0.1/unofficial/codrv)
   and from bsd386.first.gmd.de in ~veit/codrv (no ANON FTP, login with
   ``guest''/``guest'', cd to ~veit/codrv).
 
-  The pcvt console driver is bundled in	/usr/ports/util/pcvt in	FreeBSD
-  versions 1.0.2 and above.  It	can also be ftp-ed from:
+  The pcvt console driver is bundled in /usr/ports/util/pcvt in FreeBSD
+  versions 1.0.2 and above.  It can also be ftp-ed from:
 
   (ftp://FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt)
 
-  Refer	to the README.FreeBSD
+  Refer to the README.FreeBSD
   (ftp:/FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt/README.FreeBSD)
   file there for complete installation instructions.
 
   The XFree86 servers include support for the MIT-SHM extension.  If you
-  want to make use of this, you	will need a kernel configured with SYSV
-  shared memory	support.  To do	this, add the following	line to	your
-  kernel config	file:
+  want to make use of this, you will need a kernel configured with SYSV
+  shared memory support.  To do this, add the following line to your
+  kernel config file:
 
 
-	options		       SYSVSHM		       # System	V shared memory
-	options		       SYSVSEM		       # System	V semaphores
-	options		       SYSVMSG		       # System	V message queues
+        options                SYSVSHM                 # System V shared memory
+        options                SYSVSEM                 # System V semaphores
+        options                SYSVMSG                 # System V message queues
 
 
 
-  However, the last report on FreeBSD 2.x was that this	feature	had not
-  been added yet to the	2.x kernel sources.
+  However, the last report on FreeBSD 2.x was that this feature had not
+  been added yet to the 2.x kernel sources.
 
-  If you are using a SoundBlaster 16 on	IRQ 2 (9), then	you need a patch
+  If you are using a SoundBlaster 16 on IRQ 2 (9), then you need a patch
   for sb16_dsp.c.  Otherwise a kernel configured with the SoundBlaster
-  driver will claim interrupt 9	doesn't	exist and X server will	lock up.
+  driver will claim interrupt 9 doesn't exist and X server will lock up.
 
-  You can't use	S3 cards and COM 4 togeather because the I/O ports
+  You can't use S3 cards and COM 4 togeather because the I/O ports
   conflict.
 
 
   7.  Rebuilding XFree86
 
 
-  The server link kit allow you	to rebuild just	the X server with a
-  minimum amount of disk space.	 Just unpack it, make the appropriate
+  The server link kit allow you to rebuild just the X server with a
+  minimum amount of disk space.  Just unpack it, make the appropriate
   changes to the xf86site.def and/or site.def, type ``./mkmf' and
-  ``make'' to link the server.	See /usr/X11R6/lib/Server/README for
+  ``make'' to link the server.  See /usr/X11R6/lib/Server/README for
   more info.
 
-  The source tree takes	about 110Mb before compiling and 170Mb after
-  ``make World''.  You should configure	the distribution by editing
+  The source tree takes about 110Mb before compiling and 170Mb after
+  ``make World''.  You should configure the distribution by editing
   xf86site.def and site.def in xc/config/cf before compiling.  By
-  default, the config files are	set up to build	shared libraries.  If
+  default, the config files are set up to build shared libraries.  If
   you are running a version of FreeBSD that doesn't include shared
   library support, add the following line to site.def:
 
 
-	#define	BuildBsdSharedLibs	       NO
+        #define BuildBsdSharedLibs             NO
 
 
 
   If your system doesn't have support or SYSV shared memory (for
-  example, if you don't	have the <sys/shm.h> header), you should disable
-  the MIT-SHM extension	by adding the following	line to	site.def:
+  example, if you don't have the <sys/shm.h> header), you should disable
+  the MIT-SHM extension by adding the following line to site.def:
 
 
-	#define	HasShm			       NO
-
-
-
-  To compile the sources on FreeBSD 1.1	and later, type:
-
-
-	make World
+        #define HasShm                         NO
 
 
 
-  If you are running an	old version of FreeBSD (before 1.1), then type:
+  To compile the sources on FreeBSD 1.1 and later, type:
 
 
-	make World BOOTSTRAPCFLAGS=-D__FreeBSD__
+        make World
+
+
+
+  If you are running an old version of FreeBSD (before 1.1), then type:
+
+
+        make World BOOTSTRAPCFLAGS=-D__FreeBSD__
 
 
 
@@ -576,30 +576,30 @@
   8.  Building Other X Clients
 
 
-  The easiest way to build a new client	(X application)	is to use xmkmf
-  if an	Imakefile is included with it.	Type ``xmkmf -a'' to create the
+  The easiest way to build a new client (X application) is to use xmkmf
+  if an Imakefile is included with it.  Type ``xmkmf -a'' to create the
   Makefiles, then type ``make''.  Whenever you install additional man
-  pages	you should update whatis.db by running ``makewhatis
+  pages you should update whatis.db by running ``makewhatis
   /usr/X11R6/man''.
 
-  To avoid the ``Virtual memory	exhausted'' message from cc while
+  To avoid the ``Virtual memory exhausted'' message from cc while
   compiling, increase the data and stack size limits (in csh type
   ``limit datasize 32M'' and ``limit stacksize 16M'').
 
-  Note:	Starting with XFree86 2.1 and FreeBSD 1.1, the symbol __386BSD__
-  no longer gets defined either	by the compiler	or via the X config
-  files	for FreeBSD systems.  When porting clients to BSD systems, make
-  use of the symbol BSD	for code which is truly	BSD-specific.  The value
-  of the symbol	can be used to distinguish different BSD releases.  For
-  example, code	specific to the	Net-2 and later	releases can use:
-       #if (BSD	>= 199103)
+  Note: Starting with XFree86 2.1 and FreeBSD 1.1, the symbol __386BSD__
+  no longer gets defined either by the compiler or via the X config
+  files for FreeBSD systems.  When porting clients to BSD systems, make
+  use of the symbol BSD for code which is truly BSD-specific.  The value
+  of the symbol can be used to distinguish different BSD releases.  For
+  example, code specific to the Net-2 and later releases can use:
+       #if (BSD >= 199103)
 
 
 
-  To ensure that this symbol is	correctly defined, include either
-  <X11/Xos.h> (best) or	<sys/param.h> in the source that requires it.
+  To ensure that this symbol is correctly defined, include either
+  <X11/Xos.h> (best) or <sys/param.h> in the source that requires it.
 
-  For code that	really is specific to a	particular i386	BSD port, use
+  For code that really is specific to a particular i386 BSD port, use
   __FreeBSD__ for FreeBSD, __NetBSD__ for NetBSD, __386BSD__ for 386BSD,
   and __bsdi__ for BSD/386.
 
@@ -609,14 +609,14 @@
 
   Many thanks to:
 
-  o  Pace Willison  for	providing initial *BSD support.
+  o  Pace Willison  for providing initial *BSD support.
 
   o  Amancio Hasty for 386BSD kernel and S3 chipset support.
 
   o  David Greenman, Nate Williams, Jordan Hubbard for FreeBSD kernel
      support.
 
-  o  Rod Grimes	and Jack Velte for the use of Walnut Creek Cdrom's
+  o  Rod Grimes and Jack Velte for the use of Walnut Creek Cdrom's
      resources.
 
   o  Simon Cooper and Dirk Hohndel for ideas from the Linux README.
