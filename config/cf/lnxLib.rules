@@ -1,5 +1,5 @@
 XCOMM $Xorg: lnxLib.rules,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.49 2003/10/09 22:43:18 herrb Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.50 2003/10/11 09:40:14 herrb Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -145,9 +145,9 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
 Concat(lib,libname.so.rev):  solist $(EXTRALIBRARYDEPS)			@@\
 	$(RM) $@~							@@\
-	@SONAME=`echo $@ | sed 's/\.[^\.]*$$//'`; set -x; \		@@\
-		(cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs); \ @@\
-		$(RM) $$SONAME; $(LN) $@ $$SONAME; \			@@\
+	@SONAME=`echo $@ | sed 's/\.[^\.]*$$//'`; (set -x; \		@@\
+		cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs) || exit 1; \ @@\
+		(set -x; $(RM) $$SONAME; $(LN) $@ $$SONAME); \		@@\
 		LinkBuildSonameLibrary($$SONAME)			@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
@@ -171,17 +171,19 @@ AllTarget(Concat(lib,libname.so))					@@\
 									@@\
 Concat(lib,libname.so):  solist $(EXTRALIBRARYDEPS)			@@\
 	$(RM) $@~							@@\
-	@set +e; SetRevisions(rev); \					@@\
+	@set +e; SetRevisions(rev); set -e; \				@@\
 		SONAME=$@.$$MAJ; \					@@\
-		set -xe; \						@@\
+		(set -x; \						@@\
 		$(RM) $@.$$MAJ.$$MIN~; \				@@\
-		(cd down; $(CC) -o up/$@.$$MAJ.$$MIN~ $(SHLIBLDFLAGS) -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs); \ @@\
-		$(RM) $$SONAME; $(LN) $@.$$MAJ.$$MIN $$SONAME; \	@@\
+		cd down; $(CC) -o up/$@.$$MAJ.$$MIN~ $(SHLIBLDFLAGS) -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs) || exit 1; \ @@\
+		(set -x; \						@@\
+		$(RM) $$SONAME; $(LN) $@.$$MAJ.$$MIN $$SONAME); \	@@\
 		LinkBuildSonameLibrary($$SONAME); \			@@\
+		(set -x; \						@@\
 		$(RM) $@.$$MAJ.$$MIN; \					@@\
 		$(MV) $@.$$MAJ.$$MIN~ $@.$$MAJ.$$MIN; \			@@\
 	  	$(RM) $@; \						@@\
-	  	$(LN) $@.$$MAJ.$$MIN $@; \				@@\
+	  	$(LN) $@.$$MAJ.$$MIN $@); \				@@\
 		LinkBuildLibraryInline($@.$$MAJ.$$MIN); \		@@\
 		LinkBuildLibraryInline($@)				@@\
 									@@\
