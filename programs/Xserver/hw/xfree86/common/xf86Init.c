@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.221 2004/11/07 04:22:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.222 2004/11/18 22:41:31 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -6,7 +6,7 @@
  *   Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  */
 /*
- * Copyright (c) 1992-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1992-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -52,8 +52,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Automatic configuration support is
- * Copyright 2003, 2004 by X-Oz Technologies.
+ * Automatic configuration and related support is
+ * Copyright © 2003, 2004, 2005 David H. Dawes.
+ * Copyright © 2003, 2004, 2005 X-Oz Technologies.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -167,6 +168,7 @@ static void xf86PrintMarkers(void);
 static void xf86RunVtInit(void);
 
 static Bool autoconfig = FALSE;
+static Bool appendauto = FALSE;
 static Bool noHardware = FALSE;
 static Bool noVT = FALSE;
 
@@ -182,6 +184,8 @@ extern void os2ServerVideoAccess();
 void (*xf86OSPMClose)(void) = NULL;
 
 #ifdef XFree86LOADER
+static const char **probeModules = NULL;
+static int numProbeModules = 0;
 static const char **baseModules = NULL;
 static int numBaseModules = 0;
 #endif
@@ -396,11 +400,20 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
     /* Read and parse the config file */
     if (!autoconfig && !xf86DoProbe && !xf86DoConfigure) {
-      switch (xf86HandleConfigFile(FALSE)) {
+      switch (xf86LoadConfigFile(NULL, FALSE)) {
       case CONFIG_OK:
+	if (!xf86CheckForLayoutOrScreen() && !noHardware) {
+	    xf86MsgVerb(X_INFO, 0,
+		    "No Screen or Layout sections in the config file.\n"
+		    "\tAppending default built-in configuration.\n");
+	    appendauto = TRUE;
+	} else if (appendauto) {
+	    xf86MsgVerb(X_CMDLINE, 0,
+			"Appending default built-in configuration.\n");
+	}
 	break;
       case CONFIG_PARSE_ERROR:
-	xf86Msg(X_ERROR, "Error parsing the config file\n");
+	xf86Msg(X_ERROR, "Error parsing the config file.\n");
 	return;
       case CONFIG_NOFILE:
 	/* For now, don't enable autoconfig when -nohw is enabled. */
@@ -408,16 +421,70 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	    autoconfig = TRUE;
 	break;
       }
+    } else {
+	appendauto = FALSE;
     }
-
-    if (!autoconfig)
-	PostConfigInit();
 
 #ifdef XFree86LOADER
     /* Initialise the loader */
     LoaderInit();
 
-    /* Tell the loader the default module search path */
+    /* Setup probe and base module lists. */
+    LoaderSetPath(xf86ModulePath);
+    /* Load modules required for hardware probing. */
+    if (!noHardware) {
+	numProbeModules = 1;
+	probeModules = xnfalloc(sizeof(*probeModules) * (numProbeModules + 1));
+	probeModules[0] = "pcidata";
+	probeModules[numProbeModules] = NULL;
+    }
+    numBaseModules = 1;
+    baseModules = xnfalloc(sizeof(*baseModules) * (numBaseModules + 1));
+    baseModules[0] = "bitmap";
+    baseModules[numBaseModules] = NULL;
+#endif
+
+    if (autoconfig || appendauto) {
+	if (!noVT)
+	    xf86OpenConsole();
+
+	if (!noHardware) {
+
+#ifdef XFree86LOADER
+	    /* Load modules required for hardware probing. */
+	    if (probeModules) {
+		if (!xf86LoadModules(probeModules, NULL)) {
+		    FatalError(
+			"Unable to load required probe modules, Exiting...\n");
+		}
+		xfree(probeModules);
+		probeModules = NULL;
+	    }
+#endif
+
+	    /* Enable full I/O access */
+	    xf86EnableIO();
+
+	    /*
+	     * Do a general bus probe.
+	     * This will be a PCI probe for x86 platforms.
+	     */
+	    xf86BusProbe();
+	}
+	if (!xf86AutoConfig()) {
+	    xf86Msg(X_ERROR, "Auto configuration failed.\n");
+	    return;
+	}
+    }
+
+    if (xf86ProcessConfiguration() != CONFIG_OK) {
+	xf86Msg(X_ERROR, "Error processing configuration data.\n");
+	return;
+    }
+
+    PostConfigInit();
+
+#ifdef XFree86LOADER
     LoaderSetPath(xf86ModulePath);
 
 #ifdef TESTING
@@ -453,52 +520,41 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     }
 #endif
 	
-    /* Force load mandatory base modules */
-
-    numBaseModules = 1;
-    baseModules = xnfalloc(sizeof(*baseModules) * (numBaseModules + 1));
-    baseModules[0] = "bitmap";
-    if (!noHardware) {
-	numBaseModules++;
-	baseModules = xnfrealloc(baseModules,
-				 sizeof(*baseModules) * (numBaseModules + 1));
-	baseModules[numBaseModules - 1] = "pcidata";
+    /* Load mandatory probe and base modules. */
+    if (probeModules) {
+	if (!xf86LoadModules(probeModules, NULL))
+	    FatalError("Unable to load required probe modules, Exiting...\n");
+	xfree(probeModules);
+	probeModules = NULL;
     }
-    baseModules[numBaseModules] = NULL;
-
-    if (!xf86LoadModules(baseModules, NULL))
-	FatalError("Unable to load required base modules, Exiting...\n");
-
-    xfree(baseModules);
-    
+    if (baseModules) {
+	if (!xf86LoadModules(baseModules, NULL))
+	    FatalError("Unable to load required base modules, Exiting...\n");
+	xfree(baseModules);
+	baseModules = NULL;
+    }
 #endif
 
-    if (!noVT)
-	xf86OpenConsole();
+    if (!autoconfig && !appendauto) {
+	if (!noVT)
+	    xf86OpenConsole();
 
-    if (!noHardware) {
-	/* Enable full I/O access */
-	xf86EnableIO();
+	if (!noHardware) {
+	    /* Enable full I/O access */
+	    xf86EnableIO();
 
-	/*
-	 * Do a general bus probe.
-	 * This will be a PCI probe for x86 platforms.
-	 */
-	xf86BusProbe();
+	    /*
+	     * Do a general bus probe.
+	     * This will be a PCI probe for x86 platforms.
+	     */
+	    xf86BusProbe();
 
-	if (xf86DoProbe)
-	    DoProbe();
+	    if (xf86DoProbe)
+	        DoProbe();
 
-	if (xf86DoConfigure)
-	    DoConfigure();
-    }
-
-    if (autoconfig) {
-	if (!xf86AutoConfig()) {
-	    xf86Msg(X_ERROR, "Auto configuration failed\n");
-	    return;
+	    if (xf86DoConfigure)
+	        DoConfigure();
 	}
-	PostConfigInit();
     }
 
 retry:
@@ -1543,6 +1599,11 @@ ddxProcessArgument(int argc, char **argv, int i)
     autoconfig = TRUE;
     return 1;
   }
+  if (!strcmp(argv[i],"-appendauto"))
+  {
+    appendauto = TRUE;
+    return 1;
+  }
   if (!strcmp(argv[i],"-probeonly"))
   {
     xf86ProbeOnly = TRUE;
@@ -1857,6 +1918,7 @@ ddxUseMsg()
     ErrorF("                       XF86Config search path, only root can use absolute\n");
   }
   ErrorF("-autoconfig            automatic configuration, even when a config file exits\n");
+  ErrorF("-appendauto            append automatic config to existing config file\n");
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-scanpci               execute the scanpci module and exit\n");
   ErrorF("-nohw                  disable video hardware and hardware probing\n");

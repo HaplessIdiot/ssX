@@ -1,4 +1,17 @@
 XFree86 4.4.99.21 (xx December 2004)
+ 257. Automatic configuration updates, including:
+       - Modify the parser/config support to allow multiple configuration
+         sources to be combined.
+       - Modify the parser/config support to allow multiple ServerFlags,
+         Files, and Module sections.
+       - Allow the automatically-generated configuration to be appended to
+         a partial static configuration.
+       - Use a more complete set of the probed EDID information in determining
+         the monitor parameters.
+       - Add a "preferred" mode type, which can be obtained from the probed
+         EDID information or from the configuration.
+       - Some parser interface cleanups.
+      (David Dawes, X-Oz Technologies).
  256. Extend the parser/config support to allow multiple Monitor sections
       to be referenced from a Screen section (David Dawes).
  255. Fix the omission of the Mesa shader component from the GLcore module
@@ -19238,7 +19251,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3375 2005/01/06 19:08:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3376 2005/01/07 17:19:30 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.244 2004/06/02 22:43:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.245 2005/01/07 17:19:32 dawes Exp $ */
 
 /*
  *
@@ -556,6 +556,10 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(xf86SetCrtcForModes)
     SYMFUNC(xf86PrintModes)
     SYMFUNC(xf86ShowClockRanges)
+    SYMFUNC(xf86ModeIsPresent)
+    SYMFUNC(xf86AddModeAfter)
+    SYMFUNC(xf86AddModeBefore)
+    SYMFUNC(xf86AddModeToMonitor)
 
     /* xf86Option.c */
     SYMFUNC(xf86CollectOptions)
@@ -590,6 +594,7 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(xf86CheckIfOptionUsed)
     SYMFUNC(xf86CheckIfOptionUsedByName)
     SYMFUNC(xf86ShowUnusedOptions)
+    SYMFUNC(xf86ShowUnusedOptionsVerb)
     SYMFUNC(xf86ProcessOptions)
     SYMFUNC(xf86TokenToOptinfo)
     SYMFUNC(xf86TokenToOptName)

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.24 2003/11/12 19:06:46 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.25 2005/01/07 17:19:31 dawes Exp $
 .\"
 .\" Copyright (c) 1994-2005 by The XFree86 Project, Inc.
 .\" All rights reserved.
@@ -45,6 +45,49 @@
 .\" OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 .\" EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
+.\" Copyright © 2003, 2004, 2005 David H. Dawes.
+.\" Copyright © 2003, 2004, 2005 X-Oz Technologies.
+.\" All rights reserved.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\" 
+.\"  1. Redistributions of source code must retain the above copyright
+.\"     notice, this list of conditions, and the following disclaimer.
+.\"
+.\"  2. Redistributions in binary form must reproduce the above
+.\"     copyright notice, this list of conditions and the following
+.\"     disclaimer in the documentation and/or other materials provided
+.\"     with the distribution.
+.\" 
+.\"  3. The end-user documentation included with the redistribution,
+.\"     if any, must include the following acknowledgment: "This product
+.\"     includes software developed by X-Oz Technologies
+.\"     (http://www.x-oz.com/)."  Alternately, this acknowledgment may
+.\"     appear in the software itself, if and wherever such third-party
+.\"     acknowledgments normally appear.
+.\"
+.\"  4. Except as contained in this notice, the name of X-Oz
+.\"     Technologies shall not be used in advertising or otherwise to
+.\"     promote the sale, use or other dealings in this Software without
+.\"     prior written authorization from X-Oz Technologies.
+.\"
+.\" THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL X-OZ TECHNOLOGIES OR ITS CONTRIBUTORS
+.\" BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+.\" OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+.\" OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+.\" BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+.\" WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+.\" OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+.\" EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\" 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -73,6 +116,12 @@ file is provided.  The initial version of this automatic configuration
 support is targeted at the most popular hardware and software platforms
 supported by XFree86.  Some details about how this works can be found
 in the XFree86(1) and getconfig(1) manual pages.
+.PP
+Starting with version 4.5, it is possible for this automatically generated
+configuration to supplement a partial static configuration.  The partial
+static configuration can be used to provide non-default configuration
+details for things that are not currently handled by the automatic
+configuration mechanism.
 .SH DESCRIPTION
 .B XFree86
 uses a configuration file called
@@ -319,12 +368,20 @@ the value and the expectations of the appropriate range of the value.
 It is recommended that the units always be specified when using frequency
 option values to avoid any errors in determining the value.
 .SH FILES SECTION
-The
+The config file may have multiple
 .B Files
-section is used to specify some path names required by the server.
-Some of these paths can also be set from the command line (see Xserver(1)
-and XFree86(1)).  The command line settings override the values specified
-in the config file.  The
+sections.  These are used to specify some path names required by the
+server.  Earlier
+.B Files
+sections have priority over later sections.  This means that a path name
+specified in a
+.B Files
+section cannot be overridden by a later
+.B Files
+section (this behaviour may change in the future).  Some of these paths
+can also be set from the command line (see Xserver(1) and XFree86(1)).
+The command line settings override the values specified in the config
+file.  The
 .B Files
 section is optional, as are all of the entries that may appear in it.
 .PP
@@ -430,10 +487,17 @@ where
 is the display number for the XFree86 server.
 ..
 .SH SERVERFLAGS SECTION
-The
+The config file may have multiple
 .B ServerFlags
-section is used to specify some global
-XFree86 server options.  All of the entries in this section are
+sections.  These are used to specify some global XFree86 server options.
+Earlier
+.B ServerFlags
+sections have priority over later sections.  This means that an option
+specified in a
+.B ServerFlags
+section cannot be overridden by a later
+.B ServerFlags
+section.  All of the entries in this section are
 .BR Options ,
 although for compatibility purposes some of the old style entries are
 still recognised.  Those old style entries are not documented here, and
@@ -658,14 +722,14 @@ the keymap for a mapping to the
 action and, if found, use XKEYBOARD for processing actions, otherwise
 the builtin handler will be used.
 .SH MODULE SECTION
-The
+The config file may have multiple
 .B Module
-section is used to specify which XFree86 server modules should be loaded.
-This section is ignored when the XFree86 server is built in static form.
-The types of modules normally loaded in this section are XFree86 server
-extension modules, and font rasteriser modules.  Most other module types
-are loaded automatically when they are needed via other mechanisms.
-The
+section.  They are used to specify additional XFree86 server modules to
+be loaded.  This section is ignored when the XFree86 server is built in
+static form.  The types of modules normally loaded in this section are
+XFree86 server extension modules, and font rasteriser modules.  Most
+other module types are loaded automatically when they are needed via
+other mechanisms.  The
 .B Module
 section is optional, as are all of the entries that may be specified in
 it.
@@ -799,7 +863,7 @@ sections recognise some driver-independent
 which are described here.  See the individual input driver manual pages
 for a description of the device-specific options.
 .TP 7
-.BI "Option \*qCorePointer\*q"
+.B "Option \*qCorePointer\*q"
 When this is set, the input device is installed as the core (primary)
 pointer device.  There must be exactly one core pointer.  If this option
 is not set here, or in the
@@ -812,7 +876,7 @@ This option is implicitly set when the obsolete
 .B Pointer
 section is used.
 .TP 7
-.BI "Option \*qCoreKeyboard\*q"
+.B "Option \*qCoreKeyboard\*q"
 When this is set, the input device is to be installed as the core
 (primary) keyboard device.  There must be exactly one core keyboard.  If
 this option is not set here, in the
@@ -1250,15 +1314,44 @@ options mentioned above in the
 entry description can also be used here.
 .RE
 .TP 7
+.BI "Option \*qDPMS\*q \*q" boolean \*q
+Set whether DPMS is enabled for the monitor.  The default is taken from
+the monitor's DDC/EDID information if available, or false if not.
+.TP 7
+.BI "Option \*qTargetRefresh\*q \*q" refresh \*q
+Sets a target refresh rate to use for the monitor.  If the monitor has
+valid modes with a refresh rate greater or equal to this value, those with
+a lower refresh rate will not be considered when determining the default
+resolution to use.  This is improves the default resolution selection when
+none is specified explicitly.  Default:
+.B TargetRefresh
+not used.
+.TP 7
+.BI "Option \*qSyncOnGreen\*q \*q" boolean \*q
+Set whether sync-on-green should be enabled.  The availability of this
+option is driver-specific.  Default: false.
+.TP 7
+.BI "Option \*qPreferredMode\*q \*q" Xres x Yres \*q
+Sets a preferred resolution to use for the default mode.  By default
+the preferred mode resolution is taken from the DDC/EDID data if it is
+available and if it is provides a default mode preference.  This is typically
+true for flat panel displays, which have a native/preferred resolution.
+This option is not used of the
+.B UsePreferredMode
+option is false.
+.TP 7
+.BI "Option \*qUsePreferredMode\*q \*q" boolean \*q
+Controls whether or not a preferred mode, either detected from the
+monitor's DDC/EDID data or provided explicitly with the
+.B PreferredMode
+option, is used.  Default: true.
+.TP 7
 .B Options
-Some
+Additional
 .B Option
-flags that may be useful to include in
+flags, including driver-specific options, may be included in
 .B Monitor
-sections (when needed) include
-.BR \*qDPMS\*q ,
-and
-.BR \*qSyncOnGreen\*q .
+sections.
 
 .SH MODES SECTION
 The config file may have multiple
@@ -1817,10 +1910,13 @@ section being referenced.  The
 field is optional, and may be used to specify the screen number
 in multi-head configurations.  When this field is omitted, the
 screens will be numbered in the order that they are listed in.
-The numbering starts from 0, and must be consecutive.  The
+The numbering starts from 0, and must be consecutive.  The optional
 .I position-information
-field describes the way multiple screens are positioned.  There are
-a number of different ways that this information can be provided:
+field describes the way multiple screens are positioned.  When this
+information is not provided, the positioning of the screen defaults to
+.B Absolute
+.IR "0 0" .
+There are a number of different ways that this information can be provided:
 .RS 7
 .TP 4
 .I  "x y"
@@ -1830,8 +1926,8 @@ These both specify that the upper left corner's coordinates are
 .RI ( x , y ).
 The
 .B Absolute
-keyword is optional.  Some older versions of XFree86 (4.2 and earlier) don't
-recognise the
+keyword is optional.  Some older versions of XFree86 (4.2 and earlier)
+don't recognise the
 .B Absolute
 keyword, so it's safest to just specify the coordinates without it.
 .TP 4
@@ -1844,10 +1940,10 @@ keyword, so it's safest to just specify the coordinates without it.
 .BI "Below     \*q" screen-id \*q
 .TP 4
 .BI "Relative  \*q" screen-id \*q " x y"
-These give the screen's location relative to another screen.  The first four
-position the screen immediately to the right, left, above or below the
-other screen.  When positioning to the right or left, the top edges are
-aligned.  When positioning above or below, the left edges are aligned.
+These give the screen's location relative to another screen.  The first
+four position the screen immediately to the right, left, above or below
+the other screen.  When positioning to the right or left, the top edges
+are aligned.  When positioning above or below, the left edges are aligned.
 The
 .B Relative
 form specifies the offset of the screen's origin (upper left corner)
@@ -1855,8 +1951,8 @@ relative to the origin of another screen.
 .RE
 .TP 7
 .BI "InputDevice  \*q" idev-id "\*q \*q" option \*q " ..."
-One of these entries should be given for each input device being used in
-a session.  Normally at least two are required, one each for the core
+One of these entries should be given for each input device being used
+in a session.  Normally at least two are required, one each for the core
 pointer and keyboard devices.  If either of those is missing, suitable
 .B InputDevice
 entries are searched for using the method described above in the

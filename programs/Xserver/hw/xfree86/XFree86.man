@@ -1,4 +1,96 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.66 2004/06/01 01:23:49 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.67 2004/12/08 22:27:10 dawes Exp $
+.\"
+.\" Copyright (c) 1994-2005 by The XFree86 Project, Inc.
+.\" All rights reserved.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject
+.\" to the following conditions:
+.\"
+.\"   1.  Redistributions of source code must retain the above copyright
+.\"       notice, this list of conditions, and the following disclaimer.
+.\"
+.\"   2.  Redistributions in binary form must reproduce the above copyright
+.\"       notice, this list of conditions and the following disclaimer
+.\"       in the documentation and/or other materials provided with the
+.\"       distribution, and in the same place and form as other copyright,
+.\"       license and disclaimer information.
+.\"
+.\"   3.  The end-user documentation included with the redistribution,
+.\"       if any, must include the following acknowledgment: "This product
+.\"       includes software developed by The XFree86 Project, Inc
+.\"       (http://www.xfree86.org/) and its contributors", in the same
+.\"       place and form as other third-party acknowledgments.  Alternately,
+.\"       this acknowledgment may appear in the software itself, in the
+.\"       same form and location as other such third-party acknowledgments.
+.\"
+.\"   4.  Except as contained in this notice, the name of The XFree86
+.\"       Project, Inc shall not be used in advertising or otherwise to
+.\"       promote the sale, use or other dealings in this Software without
+.\"       prior written authorization from The XFree86 Project, Inc.
+.\"
+.\" THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+.\" WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+.\" IN NO EVENT SHALL THE XFREE86 PROJECT, INC OR ITS CONTRIBUTORS BE
+.\" LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+.\" OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+.\" OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+.\" BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+.\" WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+.\" OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+.\" EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\" Information related to automatic configuration is:
+.\"
+.\" Copyright © 2003, 2004, 2005 David H. Dawes.
+.\" Copyright © 2003, 2004, 2005 X-Oz Technologies.
+.\" All rights reserved.
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a
+.\" copy of this software and associated documentation files (the "Software"),
+.\" to deal in the Software without restriction, including without limitation
+.\" the rights to use, copy, modify, merge, publish, distribute, sublicense,
+.\" and/or sell copies of the Software, and to permit persons to whom the
+.\" Software is furnished to do so, subject to the following conditions:
+.\" 
+.\"  1. Redistributions of source code must retain the above copyright
+.\"     notice, this list of conditions, and the following disclaimer.
+.\"
+.\"  2. Redistributions in binary form must reproduce the above
+.\"     copyright notice, this list of conditions and the following
+.\"     disclaimer in the documentation and/or other materials provided
+.\"     with the distribution.
+.\" 
+.\"  3. The end-user documentation included with the redistribution,
+.\"     if any, must include the following acknowledgment: "This product
+.\"     includes software developed by X-Oz Technologies
+.\"     (http://www.x-oz.com/)."  Alternately, this acknowledgment may
+.\"     appear in the software itself, if and wherever such third-party
+.\"     acknowledgments normally appear.
+.\"
+.\"  4. Except as contained in this notice, the name of X-Oz
+.\"     Technologies shall not be used in advertising or otherwise to
+.\"     promote the sale, use or other dealings in this Software without
+.\"     prior written authorization from X-Oz Technologies.
+.\"
+.\" THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL X-OZ TECHNOLOGIES OR ITS CONTRIBUTORS
+.\" BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+.\" OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+.\" OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+.\" BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+.\" WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+.\" OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+.\" EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\" 
+.\"
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -167,6 +259,17 @@ to the
 XF86Config(__filemansuffix__) file option.  By default non-local
 connections are not allowed.
 .TP 8
+.B \-appendauto
+Append the automatic XFree86 server configuration data to an existing
+configuration file.  By default this is only done when an existing
+configuration file does not contain any
+.B ServerLayout
+sections or any
+.B Screen
+sections.  This can be useful for providing configuration details for
+things not currently handled by the automatic configuration mechanism,
+such as input devices, font paths, etc.
+.TP 8
 .B \-autoconfig
 Use automatic XFree86 server configuration, even if a configuration file
 is available.  By default automatic configuration is only used when a
@@ -280,19 +383,19 @@ Use the XF86Config(__filemansuffix__) file
 section called
 .I keyboard-name
 as the core keyboard.  This option is ignored when the
-.B Layout
-section specifies a core keyboard.  In the absence of both a Layout
+.B ServerLayout
+section specifies a core keyboard.  In the absence of both a ServerLayout
 section and this option, the first relevant
 .B InputDevice
 section is used for the core keyboard.
 .TP 8
 .BI \-layout " layout-name"
 Use the XF86Config(__filemansuffix__) file
-.B Layout
+.B ServerLayout
 section called
 .IR layout-name .
 By default the first
-.B Layout
+.B ServerLayout
 section is used.
 .TP 8
 .BI \-logfile " filename"
@@ -354,8 +457,8 @@ Use the XF86Config(__filemansuffix__) file
 section called
 .I pointer-name
 as the core pointer.  This option is ignored when the
-.B Layout
-section specifies a core pointer.  In the absence of both a Layout
+.B ServerLayout
+section specifies a core pointer.  In the absence of both a ServerLayout
 section and this option, the first relevant
 .B InputDevice
 section is used for the core pointer.
@@ -392,11 +495,11 @@ Use the XF86Config(__filemansuffix__) file
 section called
 .IR screen-name .
 By default the screens referenced by the default
-.B Layout
+.B ServerLayout
 section are used, or the first
 .B Screen
 section when there are no
-.B Layout
+.B ServerLayout
 sections.
 .TP 8
 .B \-showconfig

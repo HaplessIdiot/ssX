@@ -1,8 +1,7 @@
-/* $DHD: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.15 2003/09/24 19:39:36 dawes Exp $ */
 
 /*
- * Copyright 2003 by David H. Dawes.
- * Copyright 2003 by X-Oz Technologies.
+ * Copyright © 2003, 2004, 2005 David H. Dawes.
+ * Copyright © 2003, 2004, 2005 X-Oz Technologies.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -44,10 +43,10 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
- * Author: David Dawes <dawes@XFree86.Org>.
+ * Author: David Dawes <dawes@x-oz.com>.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.2 2003/11/03 05:11:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.3 2003/12/12 00:39:16 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86Parser.h"
@@ -190,7 +189,6 @@ xf86AutoConfig(void)
     pciVideoPtr *pciptr, info = NULL;
     char *driver = NULL;
     FILE *gp = NULL;
-    ConfigStatus ret;
 
     /* Find the primary device, and get some information about it. */
     if (xf86PciVideoInfo) {
@@ -357,14 +355,12 @@ xf86AutoConfig(void)
     xf86MsgVerb(X_DEFAULT, 3, "--- End of built-in configuration ---\n");
     
     xf86setBuiltinConfig(builtinConfig);
-    ret = xf86HandleConfigFile(TRUE);
+    xf86configptr = xf86parseConfigFile(xf86configptr);
     FreeConfig();
-    switch(ret) {
-    case CONFIG_OK:
-	return TRUE;
-    default:
+    if (!xf86configptr) {
 	xf86Msg(X_ERROR, "Error parsing the built-in default configuration.\n");
 	return FALSE;
     }
+    return TRUE;
 }
 

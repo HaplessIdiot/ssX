@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.279 2004/11/07 04:20:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.280 2005/01/07 17:19:32 dawes Exp $ */
 
 
 /*
@@ -80,8 +80,9 @@
  * authorization from the copyright holder(s) and author(s).
  */
 /*
- * Automatic configuration support is
- * Copyright 2003, 2004 by X-Oz Technologies.
+ * Automatic configuration and related support is
+ * Copyright © 2003, 2004, 2005 David H. Dawes.
+ * Copyright © 2003, 2004, 2005 X-Oz Technologies.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -337,6 +338,7 @@ xf86ModulelistFromConfig(pointer **optlist)
     const char **modulearray;
     pointer *optarray;
     XF86LoadPtr modp;
+    XF86ConfModulePtr modListp;
     
     /*
      * make sure the config file has been parsed and that we have a
@@ -348,16 +350,18 @@ xf86ModulelistFromConfig(pointer **optlist)
         return NULL;
     }
     
-    if (xf86configptr->conf_modules) {
+    modListp = xf86configptr->conf_modules_lst;
+    while (modListp) {
 	/*
 	 * Walk the list of modules in the "Module" section to determine how
 	 * many we have.
 	 */
-	modp = xf86configptr->conf_modules->mod_load_lst;
+	modp = modListp->mod_load_lst;
 	while (modp) {
 	    count++;
 	    modp = (XF86LoadPtr) modp->list.next;
 	}
+	modListp = modListp->list.next;
     }
     if (count == 0)
 	return NULL;
@@ -368,14 +372,16 @@ xf86ModulelistFromConfig(pointer **optlist)
     modulearray = xnfalloc((count + 1) * sizeof(char*));
     optarray = xnfalloc((count + 1) * sizeof(pointer));
     count = 0;
-    if (xf86configptr->conf_modules) {
-	modp = xf86configptr->conf_modules->mod_load_lst;
+    modListp = xf86configptr->conf_modules_lst;
+    while (modListp) {
+	modp = modListp->mod_load_lst;
 	while (modp) {
 	    modulearray[count] = modp->load_name;
 	    optarray[count] = modp->load_opt;
 	    count++;
 	    modp = (XF86LoadPtr) modp->list.next;
 	}
+	modListp = modListp->list.next;
     }
     modulearray[count] = NULL;
     optarray[count] = NULL;
@@ -688,14 +694,36 @@ static Bool
 configFiles(XF86ConfFilesPtr fileconf)
 {
   MessageType pathFrom = X_DEFAULT;
+  XF86ConfFilesPtr combinedConf = NULL;
+
+  if (fileconf) {
+    /*
+     * First, combine multiple Files section data into a single data structure,
+     * giving precedence to the first one.
+     */
+    combinedConf = xnfcalloc(1, sizeof(*combinedConf));
+    while (fileconf) {
+      if (!combinedConf->file_logfile)
+        combinedConf->file_logfile = fileconf->file_logfile;
+      if (!combinedConf->file_rgbpath)
+        combinedConf->file_rgbpath = fileconf->file_rgbpath;
+      if (!combinedConf->file_modulepath)
+        combinedConf->file_modulepath = fileconf->file_modulepath;
+      if (!combinedConf->file_inputdevs)
+        combinedConf->file_inputdevs = fileconf->file_inputdevs;
+      if (!combinedConf->file_fontpath)
+        combinedConf->file_fontpath = fileconf->file_fontpath;
+      fileconf = fileconf->list.next;
+    }
+  }
 
   /* FontPath */
 
   /* Try XF86Config FontPath first */
   if (!xf86fpFlag) {
-   if (fileconf) {
-    if (fileconf->file_fontpath) {
-      char *f = xf86ValidateFontPath(fileconf->file_fontpath);
+   if (combinedConf) {
+    if (combinedConf->file_fontpath) {
+      char *f = xf86ValidateFontPath(combinedConf->file_fontpath);
       pathFrom = X_CONFIG;
       if (*f)
         defaultFontPath = f;
@@ -719,7 +747,7 @@ configFiles(XF86ConfFilesPtr fileconf)
     }
     pathFrom = X_CMDLINE;
   }
-  if (!fileconf) {
+  if (!combinedConf) {
       /* xf86ValidateFontPath will write into it's arg, but defaultFontPath
        could be static, so we make a copy. */
     char *f = xnfalloc(strlen(defaultFontPath) + 1);
@@ -728,8 +756,8 @@ configFiles(XF86ConfFilesPtr fileconf)
     defaultFontPath = xf86ValidateFontPath(f);
     xfree(f);
   } else {
-   if (fileconf) {
-    if (!fileconf->file_fontpath) {
+   if (combinedConf) {
+    if (!combinedConf->file_fontpath) {
       /* xf86ValidateFontPath will write into it's arg, but defaultFontPath
        could be static, so we make a copy. */
      char *f = xnfalloc(strlen(defaultFontPath) + 1);
@@ -754,17 +782,17 @@ configFiles(XF86ConfFilesPtr fileconf)
 
   if (xf86coFlag)
     pathFrom = X_CMDLINE;
-  else if (fileconf) {
-    if (fileconf->file_rgbpath) {
-      rgbPath = fileconf->file_rgbpath;
+  else if (combinedConf) {
+    if (combinedConf->file_rgbpath) {
+      rgbPath = combinedConf->file_rgbpath;
       pathFrom = X_CONFIG;
     }
   }
 
   xf86Msg(pathFrom, "RgbPath set to \"%s\"\n", rgbPath);
 
-  if (fileconf && fileconf->file_inputdevs) {
-      xf86InputDeviceList = fileconf->file_inputdevs;
+  if (combinedConf && combinedConf->file_inputdevs) {
+      xf86InputDeviceList = combinedConf->file_inputdevs;
       xf86Msg(X_CONFIG, "Input device list set to \"%s\"\n",
 	  xf86InputDeviceList);
   }
@@ -773,9 +801,9 @@ configFiles(XF86ConfFilesPtr fileconf)
 #ifdef XFree86LOADER
   /* ModulePath */
 
-  if (fileconf) {
-    if (xf86ModPathFrom != X_CMDLINE && fileconf->file_modulepath) {
-      xf86ModulePath = fileconf->file_modulepath;
+  if (combinedConf) {
+    if (xf86ModPathFrom != X_CMDLINE && combinedConf->file_modulepath) {
+      xf86ModulePath = combinedConf->file_modulepath;
       xf86ModPathFrom = X_CONFIG;
     }
   }
@@ -794,11 +822,14 @@ configFiles(XF86ConfFilesPtr fileconf)
    * A problem with this is what happens if the server exits before that
    * happens.
    */
-  if (xf86LogFileFrom == X_DEFAULT && fileconf->file_logfile) {
-    xf86LogFile = fileconf->file_logfile;
+  if (xf86LogFileFrom == X_DEFAULT && combinedConf->file_logfile) {
+    xf86LogFile = combinedConf->file_logfile;
     xf86LogFileFrom = X_CONFIG;
   }
 #endif
+
+  if (combinedConf)
+    xfree(combinedConf);
 
   return TRUE;
 }
@@ -932,19 +963,59 @@ detectPC98(void)
 static Bool
 configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 {
-    XF86OptionPtr optp, tmp;
+    XF86OptionPtr optp = NULL, tmp;
     int i;
     Pix24Flags pix24 = Pix24DontCare;
     Bool value;
     MessageType from;
+    XF86ConfFlagsPtr reversedFlags = NULL, last = NULL, p, newp;
+
+    if (flagsconf) {
+	/*
+	 * Merge multiple ServerLayout sections, giving precedence to those
+	 * that appear first.
+	 */
+	/* Create a new flags list with the order reversed. */
+	do {
+	    p = flagsconf;
+	    while (p->list.next && p->list.next != last)
+		p = p->list.next;
+	    if (p) {
+		newp = xnfcalloc(1, sizeof(*newp));
+		newp->flg_option_lst = p->flg_option_lst;
+		reversedFlags =
+			(XF86ConfFlagsPtr)xf86addListItem((glp)reversedFlags,
+							  (glp)newp);
+	    }
+	    last = p;
+	} while (last != flagsconf);
+	if (reversedFlags) {
+	    if (reversedFlags->flg_option_lst)
+		optp = xf86optionListDup(reversedFlags->flg_option_lst);
+	    p = reversedFlags;
+	    while (p && p->list.next) {
+		p = p->list.next;
+		if (p->flg_option_lst) {
+		    tmp = xf86optionListDup(p->flg_option_lst);
+		    if (optp)
+			optp = xf86optionListMerge(optp, tmp);
+		    else
+			optp = tmp;
+		}
+	    }
+	    p = reversedFlags;
+	    while (p) {
+		XF86ConfFlagsPtr prev = p;
+		p = p->list.next;
+		xf86conffree(prev);
+	    }
+	}
+    }
 
     /*
      * Merge the ServerLayout and ServerFlags options.  The former have
      * precedence over the latter.
      */
-    optp = NULL;
-    if (flagsconf && flagsconf->flg_option_lst)
-	optp = xf86optionListDup(flagsconf->flg_option_lst);
     if (layoutopts) {
 	tmp = xf86optionListDup(layoutopts);
 	if (optp)
@@ -1159,6 +1230,9 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     if (!noPanoramiXExtension)
       xf86Msg(from, "Xinerama: enabled\n");
 #endif
+
+    xf86MsgVerb(X_INFO, 3, "Checking for unused ServerFlags options:\n");
+    xf86ShowUnusedOptionsVerb(-1, optp, 3);
 
     return TRUE;
 }
@@ -1690,7 +1764,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	if (confInput) {
 	    foundKeyboard = TRUE;
 	    from = X_DEFAULT;
-	    pointerMsg = "first keyboard device";
+	    keyboardMsg = "first keyboard device";
 	}
     }
 
@@ -1834,8 +1908,8 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
         count++;
         adjp = (XF86ConfAdjacencyPtr)adjp->list.next;
     }
-    xf86MsgVerb(X_INFO, 4, "Found %d screens in the layout section %s\n",
-		count, conf_layout->lay_identifier);
+    xf86MsgVerb(X_INFO, 4, "Found %d screen%s in the layout section \"%s\".\n",
+		count, PLURAL(count), conf_layout->lay_identifier);
     slp = xnfcalloc(1, (count + 1) * sizeof(screenLayoutRec));
     slp[count].screen = NULL;
     /*
@@ -1969,8 +2043,8 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
         idp = (XF86ConfInactivePtr)idp->list.next;
     }
     xf86MsgVerb(X_INFO, 4,
-		"Found %d inactive devices in the layout section %s\n",
-		count, conf_layout->lay_identifier);
+		"Found %d inactive device%s in the layout section \"%s\".\n",
+		count, PLURAL(count), conf_layout->lay_identifier);
     gdp = xnfalloc((count + 1) * sizeof(GDevRec));
     gdp[count].identifier = NULL;
     idp = conf_layout->lay_inactive_lst;
@@ -1990,8 +2064,9 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
         count++;
         irp = (XF86ConfInputrefPtr)irp->list.next;
     }
-    xf86MsgVerb(X_INFO, 4, "Found %d input devices in the layout section %s\n",
-		count, conf_layout->lay_identifier);
+    xf86MsgVerb(X_INFO, 4,
+		"Found %d input device%s in the layout section \"%s\".\n",
+		count, PLURAL(count), conf_layout->lay_identifier);
     indp = xnfalloc((count + 1) * sizeof(IDevRec));
     indp[count].identifier = NULL;
     irp = conf_layout->lay_input_lst;
@@ -2199,12 +2274,15 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen, int scrnum,
 
     if (defaultMonitor) {
 	xf86MsgVerb(X_INFO, 4,
-		    "Created %d default Monitors for the Screen section %s.\n",
-		    screenp->numMonitors, conf_screen->scrn_identifier);
+		    "Created %d default Monitor%s for the "
+		    "Screen section \"%s\".\n",
+		    screenp->numMonitors, PLURAL(screenp->numMonitors),
+		    conf_screen->scrn_identifier);
     } else {
 	xf86MsgVerb(X_INFO, 4,
-		    "Found %d Monitors in the Screen section %s.\n",
-		    screenp->numMonitors, conf_screen->scrn_identifier);
+		    "Found %d Monitor%s in the Screen section \"%s\".\n",
+		    screenp->numMonitors, PLURAL(screenp->numMonitors),
+		    conf_screen->scrn_identifier);
     }
 
     screenp->device     = xnfcalloc(1, sizeof(GDevRec));
@@ -2584,81 +2662,51 @@ configInput(IDevPtr inputp, XF86ConfInputPtr conf_input, MessageType from)
 }
 
 static Bool
-modeIsPresent(char * modename,MonPtr monitorp)
-{
-    DisplayModePtr knownmodes = monitorp->Modes;
-
-    /* all I can think of is a linear search... */
-    while(knownmodes != NULL)
-    {
-	if(!strcmp(modename,knownmodes->name) &&
-	   !(knownmodes->type & M_T_DEFAULT))
-	    return TRUE;
-	knownmodes = knownmodes->next;
-    }
-    return FALSE;
-}
-
-static Bool
 addDefaultModes(MonPtr monitorp)
 {
     DisplayModePtr mode;
-    DisplayModePtr last = monitorp->Last;
     int i = 0;
 
-    while (xf86DefaultModes[i].name != NULL)
-    {
-	if ( ! modeIsPresent(xf86DefaultModes[i].name,monitorp) )
-	    do
-	    {
+    while (xf86DefaultModes[i].name != NULL) {
+	if (!xf86ModeIsPresent(xf86DefaultModes[i].name, monitorp->Modes,
+			       0, M_T_DEFAULT)) {
+	    do {
 		mode = xnfalloc(sizeof(DisplayModeRec));
-		memcpy(mode,&xf86DefaultModes[i],sizeof(DisplayModeRec));
+		memcpy(mode, &xf86DefaultModes[i], sizeof(DisplayModeRec));
 		if (xf86DefaultModes[i].name)
 		    mode->name = xnfstrdup(xf86DefaultModes[i].name);
-		if( last ) {
-		    mode->prev = last;
-		    last->next = mode;
-		}
-		else {
-		    /* this is the first mode */
-		    monitorp->Modes = mode;
-		    mode->prev = NULL;
-		}
-		last = mode;
+		xf86AddModeToMonitor(monitorp, mode);
 		i++;
-	    }
-	    while((xf86DefaultModes[i].name != NULL) &&
-		  (!strcmp(xf86DefaultModes[i].name,xf86DefaultModes[i-1].name)));
-	else
+	    } while((xf86DefaultModes[i].name != NULL) &&
+		    (!strcmp(xf86DefaultModes[i].name,
+			     xf86DefaultModes[i-1].name)));
+	} else
 	    i++;
     }
-    monitorp->Last = last;
 
     return TRUE;
 }
 
-/*
- * load the config file and fill the global data structure
- */
+/* Load a config file. */
+
 ConfigStatus
-xf86HandleConfigFile(Bool autoconfig)
+xf86LoadConfigFile(const char *filename, Bool append)
 {
-    const char *filename;
     char *searchpath;
     MessageType from = X_DEFAULT;
 
     /* Free any previously allocated config. */
-    if (xf86configptr) {
+    if (!append && xf86configptr) {
 	xf86freeConfig(xf86configptr);
 	xf86configptr = NULL;
     }
 
-    if (!autoconfig) {
-	if (getuid() == 0)
-	    searchpath = ROOT_CONFIGPATH;
-	else
-	    searchpath = USER_CONFIGPATH;
+    if (getuid() == 0)
+	searchpath = ROOT_CONFIGPATH;
+    else
+	searchpath = USER_CONFIGPATH;
 
+    if (!filename) {
 	if (xf86ConfigFile)
 	    from = X_CMDLINE;
 
@@ -2674,22 +2722,45 @@ xf86HandleConfigFile(Bool autoconfig)
 	    return CONFIG_NOFILE;
 	}
     }
-     
-    if ((xf86configptr = xf86readConfigFile()) == NULL) {
-	xf86Msg(X_ERROR, "Problem parsing the config file\n");
+
+    if ((xf86configptr = xf86parseConfigFile(xf86configptr)) == NULL) {
+	xf86Msg(X_ERROR, "Problem parsing the config file \"%s\".\n",
+		filename);
 	return CONFIG_PARSE_ERROR;
     }
-    xf86closeConfigFile ();
 
-    /* Initialise a few things. */
+    xf86closeConfigFile ();
+    return CONFIG_OK;
+}
+
+Bool
+xf86CheckForLayoutOrScreen()
+{
+    if (xf86configptr &&
+	(xf86configptr->conf_layout_lst || xf86configptr->conf_screen_lst)) {
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Process the configuration data from the parser.
+ */
+ConfigStatus
+xf86ProcessConfiguration()
+{
+    /*
+     * Validate the config.  This has the side-effect of filling in various
+     * fields in the parser data.
+     */
+    if (!xf86validateConfig(xf86configptr)) {
+	xf86Msg(X_ERROR, "Error validating the configuration.\n");
+	return CONFIG_PARSE_ERROR;
+    }
 
     /*
-     * now we convert part of the information contained in the parser
-     * structures into our own structures.
-     * The important part here is to figure out which Screen Sections
-     * in the XF86Config file are active so that we can piece together
-     * the modes that we need later down the road.
-     * And while we are at it, we'll decode the rest of the stuff as well
+     * Convert the information contained in the parser structures into our
+     * own structures.
      */
 
     /* First check if a layout section is present, and if it is valid. */
@@ -2705,9 +2776,9 @@ xf86HandleConfigFile(Bool autoconfig)
 	    return CONFIG_PARSE_ERROR;
 	}
     } else {
-	if (xf86configptr->conf_flags != NULL) {
+	if (xf86configptr->conf_flags_lst) {
 	  char *dfltlayout = NULL;
- 	  pointer optlist = xf86configptr->conf_flags->flg_option_lst;
+ 	  pointer optlist = xf86configptr->conf_flags_lst->flg_option_lst;
 	
 	  if (optlist && xf86FindOption(optlist, "defaultserverlayout"))
 	    dfltlayout = xf86SetStrOption(optlist, "defaultserverlayout", NULL);
@@ -2727,8 +2798,8 @@ xf86HandleConfigFile(Bool autoconfig)
 
     /* Now process everything else */
 
-    if (!configFiles(xf86configptr->conf_files) ||
-        !configServerFlags(xf86configptr->conf_flags,
+    if (!configFiles(xf86configptr->conf_files_lst) ||
+        !configServerFlags(xf86configptr->conf_flags_lst,
 			   xf86ConfigLayout.options)
 #ifdef XF86DRI
 	|| !configDRI(xf86configptr->conf_dri)

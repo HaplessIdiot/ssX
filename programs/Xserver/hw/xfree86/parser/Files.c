@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.16 2003/08/24 17:37:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.17 2004/02/13 23:58:49 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -72,6 +72,50 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Copyright © 2003, 2004, 2005 David H. Dawes.
+ * Copyright © 2003, 2004, 2005 X-Oz Technologies.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ *  1. Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions, and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ * 
+ *  3. The end-user documentation included with the redistribution,
+ *     if any, must include the following acknowledgment: "This product
+ *     includes software developed by X-Oz Technologies
+ *     (http://www.x-oz.com/)."  Alternately, this acknowledgment may
+ *     appear in the software itself, if and wherever such third-party
+ *     acknowledgments normally appear.
+ *
+ *  4. Except as contained in this notice, the name of X-Oz
+ *     Technologies shall not be used in advertising or otherwise to
+ *     promote the sale, use or other dealings in this Software without
+ *     prior written authorization from X-Oz Technologies.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL X-OZ TECHNOLOGIES OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 
 /* View/edit this file with tab stops set to 4 */
@@ -105,7 +149,7 @@ prependRoot (char *pathname)
 #endif
 }
 
-#define CLEANUP xf86freeFiles
+#define CLEANUP xf86freeFilesList
 
 XF86ConfFilesPtr
 xf86parseFilesSection (void)
@@ -238,74 +282,81 @@ xf86printFileSection (FILE * cf, XF86ConfFilesPtr ptr)
 {
 	char *p, *s;
 
-	if (ptr == NULL)
-		return;
+	while (ptr)
+	{
+		fprintf(cf, "Section \"Files\"\n");
 
-	if (ptr->file_comment)
-		fprintf (cf, "%s", ptr->file_comment);
-	if (ptr->file_logfile)
-		fprintf (cf, "\tLogFile      \"%s\"\n", ptr->file_logfile);
-	if (ptr->file_rgbpath)
-		fprintf (cf, "\tRgbPath      \"%s\"\n", ptr->file_rgbpath);
-	if (ptr->file_modulepath)
-	{
-		s = ptr->file_modulepath;
-		p = index (s, ',');
-		while (p)
+		if (ptr->file_comment)
+			fprintf (cf, "%s", ptr->file_comment);
+		if (ptr->file_logfile)
+			fprintf (cf, "\tLogFile      \"%s\"\n", ptr->file_logfile);
+		if (ptr->file_rgbpath)
+			fprintf (cf, "\tRgbPath      \"%s\"\n", ptr->file_rgbpath);
+		if (ptr->file_modulepath)
 		{
-			*p = '\000';
+			s = ptr->file_modulepath;
+			p = index (s, ',');
+			while (p)
+			{
+				*p = '\000';
+				fprintf (cf, "\tModulePath   \"%s\"\n", s);
+				*p = ',';
+				s = p;
+				s++;
+				p = index (s, ',');
+			}
 			fprintf (cf, "\tModulePath   \"%s\"\n", s);
-			*p = ',';
-			s = p;
-			s++;
-			p = index (s, ',');
 		}
-		fprintf (cf, "\tModulePath   \"%s\"\n", s);
-	}
-	if (ptr->file_inputdevs)
-	{
-		s = ptr->file_inputdevs;
-		p = index (s, ',');
-		while (p)
+		if (ptr->file_inputdevs)
 		{
-			*p = '\000';
-			fprintf (cf, "\tInputDevices   \"%s\"\n", s);
-			*p = ',';
-			s = p;
-			s++;
+			s = ptr->file_inputdevs;
 			p = index (s, ',');
+			while (p)
+			{
+				*p = '\000';
+				fprintf (cf, "\tInputDevices   \"%s\"\n", s);
+				*p = ',';
+				s = p;
+				s++;
+				p = index (s, ',');
+			}
+			fprintf (cf, "\tInputdevs   \"%s\"\n", s);
 		}
-		fprintf (cf, "\tInputdevs   \"%s\"\n", s);
-	}
-	if (ptr->file_fontpath)
-	{
-		s = ptr->file_fontpath;
-		p = index (s, ',');
-		while (p)
+		if (ptr->file_fontpath)
 		{
-			*p = '\000';
+			s = ptr->file_fontpath;
+			p = index (s, ',');
+			while (p)
+			{
+				*p = '\000';
+				fprintf (cf, "\tFontPath     \"%s\"\n", s);
+				*p = ',';
+				s = p;
+				s++;
+				p = index (s, ',');
+			}
 			fprintf (cf, "\tFontPath     \"%s\"\n", s);
-			*p = ',';
-			s = p;
-			s++;
-			p = index (s, ',');
 		}
-		fprintf (cf, "\tFontPath     \"%s\"\n", s);
+		fprintf(cf, "EndSection\n");
+		ptr = ptr->list.next;
 	}
 }
 
 void
-xf86freeFiles (XF86ConfFilesPtr p)
+xf86freeFilesList (XF86ConfFilesPtr ptr)
 {
-	if (p == NULL)
-		return;
+	XF86ConfFilesPtr prev;
 
-	TestFree (p->file_logfile);
-	TestFree (p->file_rgbpath);
-	TestFree (p->file_modulepath);
-	TestFree (p->file_inputdevs);
-	TestFree (p->file_fontpath);
-	TestFree (p->file_comment);
-
-	xf86conffree (p);
+	while (ptr)
+	{
+		TestFree (ptr->file_logfile);
+		TestFree (ptr->file_rgbpath);
+		TestFree (ptr->file_modulepath);
+		TestFree (ptr->file_inputdevs);
+		TestFree (ptr->file_fontpath);
+		TestFree (ptr->file_comment);
+		prev = ptr;
+		ptr = ptr->list.next;
+		xf86conffree(prev);
+	}
 }
