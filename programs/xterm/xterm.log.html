@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_152">Patch #152 - 2001/3/13 - XFree86 4.0.2</A>
 <LI><A HREF="#xterm_151">Patch #151 - 2001/3/10 - XFree86 4.0.2</A>
 <LI><A HREF="#xterm_150">Patch #150 - 2000/12/29 - XFree86 4.0.2</A>
 <LI><A HREF="#xterm_149">Patch #149 - 2000/12/6 - XFree86 4.0.1h</A>
@@ -195,6 +196,23 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_152">Patch #152 - 2001/3/13 - XFree86 4.0.2</A></H1>
+<ul>
+	<li>correct index in inner loop in <code>VTInitI18N()</code> from
+	  patch #151 changes, which resulted in infinite loop under some
+	  conditions (report/analysis by Paul Gilmartin).
+
+	<li>remove spurious "%|" from terminfo sgr capabilities
+	  (report/analysis by Adam M Costello, Debian bug #89222).
+
+	<li>add shell script to adjust list of dynamic libraries linked by
+	  <code>resize</code> when building with the standalone configure
+	  script.  Otherwise it uses the same list as for xterm, which is
+	  excessive.
+
+	<li>fix a few compiler warnings reported by the 20010305 gcc snapshot.
+</ul>
 
 <H1><A NAME="xterm_151">Patch #151 - 2001/3/10 - XFree86 4.0.2</A></H1>
 <ul>

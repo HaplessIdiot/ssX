@@ -2,7 +2,7 @@
  *	$Xorg: util.c,v 1.3 2000/08/17 19:55:10 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/util.c,v 3.63 2001/01/17 23:46:39 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/util.c,v 3.64 2001/02/17 11:06:53 dickey Exp $ */
 
 /*
  * Copyright 1999,2000,2001 by Thomas E. Dickey
@@ -1943,8 +1943,8 @@ extract_bg (
 unsigned
 makeColorPair (int fg, int bg)
 {
-	unsigned my_bg = (bg >= 0) && (bg < NUM_ANSI_COLORS) ? bg : 0;
-	unsigned my_fg = (fg >= 0) && (fg < NUM_ANSI_COLORS) ? fg : my_bg;
+	unsigned my_bg = (bg >= 0) && (bg < NUM_ANSI_COLORS) ? (unsigned) bg : 0;
+	unsigned my_fg = (fg >= 0) && (fg < NUM_ANSI_COLORS) ? (unsigned) fg : my_bg;
 #if OPT_EXT_COLORS
 	return (my_fg << 8) | my_bg;
 #else
