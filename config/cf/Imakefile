@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/36 1995/12/15 18:56:01 matt $
-XCOMM $XFree86: xc/config/cf/Imakefile,v 3.9 1996/01/05 13:06:27 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imakefile,v 3.10 1996/01/24 21:51:49 dawes Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -29,6 +29,7 @@ oldlib.rules \
 os2.rules \
 os2Lib.rules \
 osfLib.rules \
+scoLib.rules \
 sgiLib.rules \
 sunLib.rules \
 sv4Lib.rules \
@@ -93,7 +94,6 @@ sony.cf \
 sun.cf \
 svr4.cf \
 svr3.cf \
-sco.cf \
 ultrix.cf \
 usl.cf \
 lynx.cf \

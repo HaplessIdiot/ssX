@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/r61_main/3 1996/02/02 18:57:32 gildea $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.20 1996/01/05 13:06:26 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.21 1996/02/10 10:35:23 dawes Exp $
 XCOMM
 
 /*
@@ -143,6 +143,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 
 #include <Imake.rules>
+#ifdef BUILD_MOTIF
+#include <Motif.rules>
+#endif
 
 #ifndef HasSharedLibraries
 #define HasSharedLibraries NO
@@ -1137,6 +1140,9 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
  * get project-specific configuration and rules
  */
 #include <Project.tmpl>
+#ifdef BUILD_MOTIF
+#include <Motif.tmpl>
+#endif
 #ifndef LocalTmplFile
 /* need this to make ANSI-style preprocessors happy */
 #define LocalTmplFile <noop.rules>
