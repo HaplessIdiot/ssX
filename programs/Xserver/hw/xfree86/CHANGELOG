@@ -1,4 +1,14 @@
 XFree86 4.0.99.1 (16 February 2001)
+ 200. Redadding space as delimiter in locale.alias and locale.dir
+      (Egbert Eich).
+ 199. Modified memory debugger script to retieve backtrace information
+      with an unmodified version of gdb (Egbert Eich).
+ 198. Modified memory debugger to print out backtrace of call where 
+      a referenced freed pointer was once allocated (Egbert Eich). 
+ 197. Several more fixes for memory leaks and several "referenced freed"
+      to keep memory debugger quiet (Egbert Eich). 
+ 196. Fixed "referenced freed" memory debugger message in xf8_24bpp code 
+      (Egbert Eich).
  195. Add a new rule for building DRI (client) modules, so that only the
       relevant symbols are exported (#4454, Red Hat).
  194. Fixed several memleaks in PCI bus code (Egbert Eich).
@@ -12546,4 +12556,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1581 2001/02/15 20:52:45 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1582 2001/02/16 01:26:12 dawes Exp $

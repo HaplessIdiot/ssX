@@ -293,6 +293,8 @@ CloseDownDevices()
 	next = dev->next;
 	CloseDevice(dev);
     }
+    inputInfo.devices = NULL;
+    inputInfo.off_devices = NULL;
     inputInfo.keyboard = NULL;
     inputInfo.pointer = NULL;
 }

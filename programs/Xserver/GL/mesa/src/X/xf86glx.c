@@ -580,13 +580,16 @@ extern void __MESA_resetExtension(void)
 
     for (i = 0; i < screenInfo.numScreens; i++) {
 	for (j = 0; j < MESAScreens[i].num_vis; j++) {
-	    if (MESAScreens[i].xm_vis[j])
+	  if (MESAScreens[i].xm_vis[j]) {
 	        XMesaDestroyVisual(MESAScreens[i].xm_vis[j]);
+		MESAScreens[i].xm_vis[j] = NULL;
+	  }
 	}
 	__glXFree(MESAScreens[i].glx_vis);
 	MESAScreens[i].glx_vis = NULL;
 	MESAScreens[i].num_vis = 0;
     }
+    __glDDXScreenInfo.pGlxVisual = NULL;
     MESA_CC = NULL;
 }
 

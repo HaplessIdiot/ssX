@@ -97,7 +97,11 @@ parse_line(
 	    break;
 	}
 	argv[argc++] = p;
+#if 0
+	while (!isspace(*p) && *p != ':' && *p != '\0') {
+#else
 	while (*p != ':' && *p != '\n' && *p != '\0') {
+#endif
 	    ++p;
 	}
 	if (*p == '\0') {

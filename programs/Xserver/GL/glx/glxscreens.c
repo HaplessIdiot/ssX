@@ -274,3 +274,17 @@ void __glXScreenInit(GLint numscreens)
     }
     __glXNumActiveScreens = numscreens;
 }
+
+void __glXScreenReset(void)
+{
+  int i;
+
+  for (i = 0; i < __glXNumActiveScreens; i++) {
+      __glXFree(__glXActiveScreens[i].GLXvendor);
+      __glXFree(__glXActiveScreens[i].GLXversion);
+      __glXFree(__glXActiveScreens[i].GLXextensions);
+  }
+  xfree(__glXActiveScreens);
+  __glXActiveScreens = NULL;
+  __glXNumActiveScreens = 0;
+}

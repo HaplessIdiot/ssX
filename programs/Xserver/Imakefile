@@ -635,6 +635,9 @@ XF86INT10LIB = $(XF86OSSRC)/LibraryTargetName(int10)
 #else
 XF86INT10LIB = $(XF86SRC)/int10/LibraryTargetName(int10)
 #endif
+#if UseMemLeak
+MEMDEBUGLIB = $(TOP)/util/memleak/LibraryTargetName(memleak)
+#endif
 XF86IDRIVERLIB = $(XF86SRC)/input/LibraryTargetName(idriver)
 #if !DoLoadableServer
 XF86DRVOBJS = $(XF86SRC)/drivers/drvConf.o
@@ -646,10 +649,10 @@ XF86DRVLIBS = $(XF86DRIVERLIB) $(XF86RAMDACLIB) $(XF86DDCLIB) $(XF86I2CLIB) \
 XF86IDRVOBJS = $(XF86SRC)/input/drvConf.o
 XF86IDRVLIBS = $(XF86IDRIVERLIB)
 XF86SCANLIB = $(XF86SRC)/scanpci/LibraryTargetName(scanpci)
-XF86LIBS  = $(XF86INIT) $(XF86COMLIB) $(XF86RACLIB) $(XF86PARSLIB) \
-	    $(XF86OSLIB) $(XF86INT10LIB)
+XF86LIBS  = $(MEMDEBUGLIB) $(XF86INIT) $(XF86COMLIB) $(XF86RACLIB) $(XF86PARSLIB) \
+	    $(XF86OSLIB) $(XF86INT10LIB) 
 #else
-XF86LIBS  = $(XF86INIT) $(XF86COMLIB) $(XF86PARSLIB) $(XF86OSLIB) 
+XF86LIBS  = $(MEMDEBUGLIB) $(XF86INIT) $(XF86COMLIB) $(XF86PARSLIB) $(XF86OSLIB) 
 #endif
 #if DoLoadableServer
 XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)

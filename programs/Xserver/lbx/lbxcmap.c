@@ -48,6 +48,7 @@ static int lbxColormapPrivIndex;	/* lbx colormap private index */
 typedef struct {			/* lbx screen private */
     CreateColormapProcPtr CreateColormap;
     DestroyColormapProcPtr DestroyColormap;
+  CloseScreenProcPtr CloseScreen;
 } LbxScreenPriv;
 
 typedef struct _LbxStalled {
@@ -140,6 +141,20 @@ LbxDestroyColormap (ColormapPtr pmap)
     pScreen->DestroyColormap = LbxDestroyColormap;
 }
 
+static Bool
+LbxCloseScreen(int i, ScreenPtr pScreen)
+{
+    LbxScreenPriv* pLbxScrPriv = ((LbxScreenPriv *) 
+			     (pScreen->devPrivates[lbxScreenPrivIndex].ptr));
+    
+    pScreen->CloseScreen = pLbxScrPriv->CloseScreen;
+
+    xfree(pScreen->devPrivates[lbxScreenPrivIndex].ptr);
+    pScreen->devPrivates[lbxScreenPrivIndex].ptr = NULL;
+
+    return pScreen->CloseScreen(i, pScreen);
+}
+
 /*
  * Initialize LBX colormap private.
  */
@@ -181,12 +196,13 @@ LbxCmapInit (void)
 	pScreen->CreateColormap = LbxCreateColormap;
 	pScreenPriv->DestroyColormap = pScreen->DestroyColormap;
 	pScreen->DestroyColormap = LbxDestroyColormap;
+	pScreenPriv->CloseScreen = pScreen->CloseScreen;
+	pScreen->CloseScreen = LbxCloseScreen;
 	pScreen->devPrivates[lbxScreenPrivIndex].ptr = (pointer) pScreenPriv;
     }
 
     return 1;
 }
-
 
 /*
  * Return the number of allocated cells in the PSEUDO colormap.

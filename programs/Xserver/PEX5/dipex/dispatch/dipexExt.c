@@ -146,6 +146,7 @@ PexExtensionInit()
 	   in the SI but maybe some vendors versions might...
 	*/
   	diFreePEXBuffer(pPEXBuffer);
+	pPEXBuffer = NULL;
 	return; 
     }
 
@@ -156,6 +157,7 @@ PexExtensionInit()
     if (!pPEXFont) {
 	ErrorF("PEXExtensionInit: Memory error--could not allocate default PEX font\n");
   	diFreePEXBuffer(pPEXBuffer);
+	pPEXBuffer = NULL;
 	return; 
     }
 	
@@ -186,6 +188,7 @@ PexExtensionInit()
 	xfree(pPEXFont);
 	defaultPEXFont = 0; 
   	diFreePEXBuffer(pPEXBuffer);
+	pPEXBuffer = NULL;
 	return; 
     }
     
@@ -205,6 +208,7 @@ PexExtensionInit()
 	xfree(pPEXFont);
 	defaultPEXFont = 0; 
   	diFreePEXBuffer(pPEXBuffer);
+	pPEXBuffer = NULL;
 	return;
     }
 
@@ -216,6 +220,7 @@ PexExtensionInit()
 	xfree(pPEXFont);
 	defaultPEXFont = 0; 
   	diFreePEXBuffer(pPEXBuffer);
+	pPEXBuffer = NULL;
 	return; 
     }
 
@@ -312,6 +317,7 @@ void PEXResetProc()
 
     ddpexReset();
     diFreePEXBuffer(pPEXBuffer);
+    pPEXBuffer = NULL;
 }
 
 

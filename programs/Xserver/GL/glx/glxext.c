@@ -48,6 +48,7 @@ static void ResetExtension(ExtensionEntry* extEntry)
 {
     __glXFlushContextCache();
     (*__glXExt->resetExtension)();
+    __glXScreenReset();
 }
 
 /*

@@ -4074,6 +4074,14 @@ InitEvents()
     }
 }
 
+void
+CloseDownEvents(void)
+{
+  xfree(spriteTrace);
+  spriteTrace = NULL;
+  spriteTraceSize = 0;
+}
+
 int
 ProcSendEvent(client)
     ClientPtr client;

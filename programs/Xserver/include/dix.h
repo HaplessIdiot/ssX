@@ -891,6 +891,8 @@ extern void InitEvents(
 #endif
 );
 
+extern void CloseDownEvents(void);
+
 extern void DeleteWindowFromAnyEvents(
 #if NeedFunctionPrototypes
     WindowPtr	/* pWin */,
