@@ -26,7 +26,6 @@
 #include "Xproto.h"
 #include "inputstr.h"
 #include "scrnintstr.h"
-
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Xinput.h"
@@ -141,37 +140,72 @@ static symtab_t *gettoken(symtab_t *, char *, int);
 static MouseProtocolID getPs2ProtocolPnP(InputInfoPtr pInfo);
 static MouseProtocolID probePs2ProtocolPnP(InputInfoPtr pInfo);
 
+static int
+MouseGetSerialPnpProtocol(InputInfoPtr pInfo)
+{
+    char buf[256];	/* PnP ID string may be up to 256 bytes long */
+    pnpid_t pnpid;
+    symtab_t *t;
+    int len;
+    Bool prePNP;
+
+    if ((len = pnpgets(pInfo, buf, &prePNP)) > 0) 
+    {
+	if (!prePNP) {
+	    if (pnpparse(pInfo, &pnpid, buf, len) &&
+		(t = pnpproto(&pnpid)) != NULL) {
+		xf86MsgVerb(X_INFO, 2, "%s: PnP-detected protocol ID: %d\n",
+			    pInfo->name, t->val);
+		return (t->val);
+	    }
+	} else
+	    return prepnpparse(pInfo,buf);
+    }
+    return PROT_UNKNOWN;
+}
 
 int
 MouseGetPnpProtocol(InputInfoPtr pInfo)
 {
     MouseDevPtr  pMse = pInfo->private;
     mousePrivPtr mPriv = (mousePrivPtr)pMse->mousePriv;
-    char buf[256];	/* PnP ID string may be up to 256 bytes long */
-    pnpid_t pnpid;
-    symtab_t *t;
-    int len;
-    Bool prePNP;
-    int id;
+    int val;
+    CARD32 last;
     
-    if ((len = pnpgets(pInfo, buf, &prePNP)) > 0) 
-    {
-	if (!prePNP) {
-	    if (pnpparse(pInfo, &pnpid, buf, len) &&
-		(t = pnpproto(&pnpid)) == NULL) {
-		xf86MsgVerb(X_INFO, 2, "%s: PnP-detected protocol ID: %d\n",
-			    pInfo->name, t->val);
-		return (t->val);
-	    }
-	} else {
-	    if ((id = prepnpparse(pInfo,buf)) != PROT_UNKNOWN)
-		return id;
-	}
+    if ((val = MouseGetSerialPnpProtocol(pInfo)) != PROT_UNKNOWN) {
+	if (val == MouseGetSerialPnpProtocol(pInfo))
+	    return val;
     }
+
+#if 1
+    last = mPriv->pnpLast;
+    mPriv->pnpLast = currentTime.milliseconds;
+
+    if (last) {
+	if (last - currentTime.milliseconds < 100
+	    || (mPriv->disablePnPauto
+		&& (last - currentTime.milliseconds < 10000))) {
+#ifdef EXTMOUSEDEBUG
+	    xf86ErrorF("Mouse: Disabling PnP\n");
+#endif
+	    mPriv->disablePnPauto = TRUE;
+	    return PROT_UNKNOWN;
+	} 
+    }
+    
+#ifdef EXTMOUSEDEBUG
+    if (mPriv->disablePnPauto)
+	xf86ErrorF("Mouse: Enabling PnP\n");
+#endif
+    mPriv->disablePnPauto = FALSE;
+
     if (mPriv->soft)
 	return getPs2ProtocolPnP(pInfo);
     else
 	return probePs2ProtocolPnP(pInfo);
+#else
+    return PROT_UNKNOWN;
+#endif
 }
 
 /*
@@ -533,26 +567,35 @@ readMouse(InputInfoPtr pInfo, unsigned char *u)
     return TRUE;
 }
 
-static Bool
-sendPacket(InputInfoPtr pInfo, unsigned char *bytes, int len)
+Bool
+ps2SendPacket(InputInfoPtr pInfo, unsigned char *bytes, int len)
 {
     unsigned char c;
     int i;
+    
+#ifdef DEBUG
+    xf86ErrorF("Ps/2 data package:");
+    for (i = 0; i < len; i++)
+	xf86ErrorF(" %x", *(bytes + i));
+    xf86ErrorF("\n");
+#endif
 
     for (i = 0; i < len; i++) {
 	xf86WriteSerial(pInfo->fd, bytes + i, 1);
+	usleep(10000);
 	if (!readMouse(pInfo,&c)) {
 #ifdef DEBUG
-	    ErrorF("sending 0x%x to PS/2 unsuccessful\n",*(bytes + i));
+	    xf86ErrorF("sending 0x%x to PS/2 unsuccessful\n",*(bytes + i));
 #endif
 	    return FALSE;
 	}
 #ifdef DEBUG
-	ErrorF("Recieved: 0x%x\n",c);
+	xf86ErrorF("Recieved: 0x%x\n",c);
 #endif
 	if (c != 0xFA)
 	    return FALSE;
     }
+    
     return TRUE;
 }
     
@@ -560,14 +603,14 @@ static Bool
 ps2DisableDataReporting(InputInfoPtr pInfo)
 {
     unsigned char packet[] = { 0xF5 };
-    return sendPacket(pInfo, packet, sizeof(packet));
+    return ps2SendPacket(pInfo, packet, sizeof(packet));
 }
 
-static Bool
+Bool
 ps2EnableDataReporting(InputInfoPtr pInfo)
 {
     unsigned char packet[] = { 0xF4 };
-    return sendPacket(pInfo, packet, sizeof(packet));
+    return ps2SendPacket(pInfo, packet, sizeof(packet));
 }
 
 static int
@@ -575,25 +618,31 @@ ps2GetDeviceID(InputInfoPtr pInfo)
 {
     unsigned char u;
     unsigned char packet[] = { 0xf2 };
-    if (!sendPacket(pInfo, packet, sizeof(packet))) 
+    if (!ps2SendPacket(pInfo, packet, sizeof(packet))) 
 	return -1;
-    if (!readMouse(pInfo,&u))
-	return -1;
+    while (1) {
+	if (!readMouse(pInfo,&u))
+	    return -1;
+	if (u != 0xFA)
+	    break;
+    }
 #ifdef DEBUG
-    ErrorF("Obtained Mouse Type: %x\n",u);
+    xf86ErrorF("Obtained Mouse Type: %x\n",u);
 #endif
     return (int) u;
 }
 
-static Bool
+Bool
 ps2Reset(InputInfoPtr pInfo)
 {
     unsigned char u;
     unsigned char packet[] = { 0xff };
     unsigned char reply[] = { 0xaa, 0x00 };
     int i;
-    
-    if (!sendPacket(pInfo, packet, sizeof(packet))) 
+#ifdef DEBUG
+   xf86ErrorF("PS/2 Mouse reset\n");
+#endif
+    if (!ps2SendPacket(pInfo, packet, sizeof(packet))) 
 	return FALSE;
     /* we need a little delay here */
     xf86WaitForInput(pInfo->fd, 500000);
@@ -620,20 +669,22 @@ probePs2ProtocolPnP(InputInfoPtr pInfo)
     xf86FlushInput(pInfo->fd);
 
     ps2DisableDataReporting(pInfo);
+    
     if (ps2Reset(pInfo)) { /* Reset PS2 device */
 	unsigned char seq[] = { 243, 200, 243, 100, 243, 80, 242 };
 	/* Try to identify Intelli Mouse */
-	if (sendPacket(pInfo, seq, sizeof(seq))) {
+	if (ps2SendPacket(pInfo, seq, sizeof(seq))) {
 	    readMouse(pInfo,&u);
 	    if (u == 0x03) {
 		/* found IntelliMouse now try IntelliExplorer */
 		unsigned char seq[] = { 243, 200, 243, 200, 243, 80, 242 };
-		if (sendPacket(pInfo,seq,sizeof(seq))) {
+		if (ps2SendPacket(pInfo,seq,sizeof(seq))) {
 		    readMouse(pInfo,&u);
 		    if (u == 0x05)
 			ret =  PROT_EXPPS2;
-		} else 
-		    ret = PROT_IMPS2;
+		    else 
+			ret = PROT_IMPS2;
+		} 
 	    } else if (ps2Reset(pInfo))  /* reset again to find sane state */
 		ret = PROT_PS2;
 	}
@@ -651,7 +702,7 @@ static struct ps2protos {
     { 0x0, PROT_PS2 },
     { 0x3, PROT_IMPS2 },
     { 0x5, PROT_EXPPS2 },
-    { -1 , PROT_UNKNOWN}
+    { -1 , PROT_UNKNOWN }
 };
 
 
@@ -661,15 +712,24 @@ getPs2ProtocolPnP(InputInfoPtr pInfo)
     int Id;
     int i;
     MouseProtocolID proto;
+    int count = 4;
 
-    if (!ps2DisableDataReporting(pInfo)) {
+    xf86FlushInput(pInfo->fd);
+
+    while (--count)
+	if (ps2DisableDataReporting(pInfo))
+	    break;
+    
+    if (!count) {
 	proto = PROT_UNKNOWN;
 	goto EXIT;
     }
+    
     if ((Id = ps2GetDeviceID(pInfo)) == -1) {
 	proto = PROT_UNKNOWN;
 	goto EXIT;
     }
+
     if (-1 == ps2EnableDataReporting(pInfo)) {
 	proto = PROT_UNKNOWN;
 	goto EXIT;

@@ -196,10 +196,10 @@ DrawStringWithFontSet(dpy, d, oc, fs, gc, x, y, text, length)
 	* *always* contain good data.   We should probably remove
 	* the check for "fd->font", but we won't :-) -- jjw/pma (HP)
 	*/
-        if(fd == (FontData) NULL ||
-	   (font = fs->font) == (XFontStruct *) NULL){
+        if((font = fs->font) == (XFontStruct *) NULL){
 
-	    if((font = fd->font) == (XFontStruct *) NULL)
+	    if(fd == (FontData) NULL ||
+	       (font = fd->font) == (XFontStruct *) NULL)
 		break;
         }
 

@@ -79,8 +79,8 @@ neo_I2CInit(ScrnInfoPtr pScrn)
     NEOPtr pNeo = NEOPTR(pScrn);
     I2CBusPtr I2CPtr;
 
-
     I2CPtr = xf86CreateI2CBusRec();
+
     if(!I2CPtr) return FALSE;
 
     pNeo->I2C = I2CPtr;

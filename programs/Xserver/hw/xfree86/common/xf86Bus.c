@@ -1856,7 +1856,6 @@ setAccess(EntityPtr pEnt, xf86State state)
 	pEnt->access->rt = MEM_IO;
     }
     
-    
     switch(pEnt->access->rt) {
     case IO:
 	pEnt->access->pAccess = acc_io;
@@ -1882,6 +1881,7 @@ setAccess(EntityPtr pEnt, xf86State state)
 	    org_io->AccessEnable(org_io->arg);
 	}
     }
+
     if (org_mem_io) {
 	/* does the driver want the old access func? */
 	if (pEnt->rac->old) {
@@ -1892,6 +1892,7 @@ setAccess(EntityPtr pEnt, xf86State state)
 	    org_mem_io->AccessEnable(org_mem_io->arg);
 	}
     }
+
     if (org_mem) {
 	/* does the driver want the old access func? */
 	if (pEnt->rac->old) {
@@ -1905,19 +1906,20 @@ setAccess(EntityPtr pEnt, xf86State state)
 
     if (!(prop & NEED_MEM_SHARED)){
 	if (prop & NEED_MEM) {
-	    if (acc_mem->AccessEnable)
+	    if (acc_mem && acc_mem->AccessEnable)
 		acc_mem->AccessEnable(acc_mem->arg);
 	} else {
-	    if (acc_mem->AccessDisable)
+	    if (acc_mem && acc_mem->AccessDisable)
 		acc_mem->AccessDisable(acc_mem->arg);
 	}
     }
+
     if (!(prop & NEED_IO_SHARED)) {
 	if (prop & NEED_IO) {
-	    if (acc_io->AccessEnable)
+	    if (acc_io && acc_io->AccessEnable)
 	    acc_io->AccessEnable(acc_io->arg);
 	} else {
-	    if (acc_io->AccessDisable)
+	    if (acc_io && acc_io->AccessDisable)
 		acc_io->AccessDisable(acc_io->arg);
 	}
     }
@@ -1946,22 +1948,12 @@ setAccess(EntityPtr pEnt, xf86State state)
 
 typedef enum { TRI_UNSET, TRI_TRUE, TRI_FALSE } TriState;
 
-void
-xf86EnterServerState(xf86State state)
+static void
+SetSIGIOForState(xf86State state)
 {
-    EntityPtr pEnt;
-    ScrnInfoPtr pScrn;
-    int i,j;
-    resType rt;
     static int sigio_state;
     static TriState sigio_blocked = TRI_UNSET;
 
-    /* 
-     * This is a good place to block SIGIO during SETUP state.
-     * SIGIO should be blocked in SETUP state otherwise (u)sleep()
-     * might get interrupted early. 
-     * We take care not to call xf86BlockSIGIO() twice. 
-     */
     if ((state == SETUP) && (sigio_blocked != TRI_TRUE)) {
         sigio_state = xf86BlockSIGIO();
 	sigio_blocked = TRI_TRUE;
@@ -1969,6 +1961,22 @@ xf86EnterServerState(xf86State state)
         xf86UnblockSIGIO(sigio_state);
         sigio_blocked = TRI_FALSE;
     }
+}
+
+void
+xf86EnterServerState(xf86State state)
+{
+    EntityPtr pEnt;
+    ScrnInfoPtr pScrn;
+    int i,j;
+    resType rt;
+    /* 
+     * This is a good place to block SIGIO during SETUP state.
+     * SIGIO should be blocked in SETUP state otherwise (u)sleep()
+     * might get interrupted early. 
+     * We take care not to call xf86BlockSIGIO() twice. 
+     */
+    SetSIGIOForState(state);
 #ifdef DEBUG
     if (state == SETUP)
 	ErrorF("Entering SETUP state\n");
@@ -2014,7 +2022,6 @@ xf86EnterServerState(xf86State state)
 	
 	for (j = 0; j<xf86Screens[i]->numEntities; j++) {
 	    pEnt = xf86Entities[xf86Screens[i]->entityList[j]];
-
 	    setAccess(pEnt,state);
 
 	    if (pEnt->access->rt != NONE) {
@@ -2455,7 +2462,10 @@ xf86PostScreenInit(void)
 	pointer xf86RACInit = NULL;
 #endif
 
-    if (doFramebufferMode) return;
+	if (doFramebufferMode) {
+	    SetSIGIOForState(OPERATING);
+	    return;
+	}
 
 #ifdef XFree86LOADER
 	if (needRAC) {

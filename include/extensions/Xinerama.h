@@ -11,6 +11,8 @@ typedef struct {
    short height;
 } XineramaScreenInfo;
 
+_XFUNCPROTOBEGIN
+
 Bool XineramaQueryExtension (
    Display *dpy,
    int     *event_base,
@@ -39,6 +41,8 @@ XineramaQueryScreens(
    Display *dpy,
    int     *number
 );
+
+_XFUNCPROTOEND
 
 #endif /* _Xinerama_h */
 

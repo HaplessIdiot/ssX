@@ -1214,8 +1214,11 @@ VWrite(int verb, const char *f, va_list args)
     if ((verb < 0 || xf86LogVerbose >= verb) && len > 0) {
 	if (logfile) {
 	    fwrite(buffer, len, 1, logfile);
-	    if (xf86Info.syncLog)
+	    if (xf86Info.log) {
 		fflush(logfile);
+		if (xf86Info.log == LogSync)
+		    fsync(fileno(logfile));
+	    }
 	} else {
 	    /*
 	     * Note, this code is used before OsInit() has been called, so
@@ -1385,7 +1388,8 @@ xf86LogInit()
     char *lf;
 
 #define LOGSUFFIX ".log"
-
+#define LOGOLDSUFFIX ".old"
+    
     /* Get the log file name */
     if (xf86LogFileFrom == X_DEFAULT) {
 	/* Append the display number and ".log" */
@@ -1396,6 +1400,20 @@ xf86LogInit()
 	sprintf(lf, "%s%s" LOGSUFFIX, xf86LogFile, display);
 	xf86LogFile = lf;
     }
+    {
+	struct stat buf;
+	if (!stat(xf86LogFile,&buf) && S_ISREG(buf.st_mode)) {
+	    char *oldlog = (char *)malloc(strlen(xf86LogFile)
+					  + strlen(LOGOLDSUFFIX));
+	    if (!oldlog)
+		FatalError("Cannot allocate space for the log file name\n");
+	    sprintf(oldlog, "%s" LOGOLDSUFFIX, xf86LogFile);
+	    if (rename(xf86LogFile,oldlog) == -1)
+		FatalError("Cannot move old logfile \"%s\"\n",oldlog);
+	    free(oldlog);
+	}
+    }
+    
     if ((logfile = fopen(xf86LogFile, "w")) == NULL)
 	FatalError("Cannot open log file \"%s\"\n", xf86LogFile);
     xf86LogFileWasOpened = TRUE;
@@ -1408,8 +1426,11 @@ xf86LogInit()
     /* Flush saved log information */
     if (saveBuffer && size > 0) {
 	fwrite(saveBuffer, pos, 1, logfile);
-	if (xf86Info.syncLog)
+	if (xf86Info.log) {
 	    fflush(logfile);
+	    if (xf86Info.log == LogFlush)
+		fsync(fileno(logfile));
+	}
 	free(saveBuffer);	/* Note, must be free(), not xfree() */
 	saveBuffer = 0;
 	size = 0;

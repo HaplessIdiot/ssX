@@ -245,7 +245,6 @@ _XkbFilterSetState(xkbi,filter,keycode,pAction)
     XkbAction *		pAction;
 #endif
 {
-
     if (filter->keycode==0) {		/* initial press */
 	filter->keycode = keycode;
 	filter->active = 1;

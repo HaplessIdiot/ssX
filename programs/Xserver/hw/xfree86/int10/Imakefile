@@ -39,7 +39,7 @@ XCOMM Check the x86_64Architecture
 # if defined(i386Architecture) || defined(x86_64Architecture)
 ARCHDEFINES = -D_PC
 # elif defined(ia64Architecture)
-ARCHDEFINES = -D_PC_IO -D_PC_PCI
+/* ARCHDEFINES = -D_PC_IO -D_PC_PCI */
 # elif defined(SparcArchitecture) || defined(PpcArchitecture)
 ARCHDEFINES = -D__BIG_ENDIAN__
 # endif

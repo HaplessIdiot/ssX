@@ -31,13 +31,11 @@ DLOBJ=dlloader.o
 #endif
 
 #if defined (x86_64Architecture)
-# if 0
 ARCHDEFINES = -DUseMMAP -DMmapPageAlign
-# endif
 #endif
 
 DEFINES = $(DBMALLOCDEFINE) $(DLOPENDEFINES) $(OS_DEFINES) $(COMPAT_DEFINES) \
-	  $(SHM_DEFINES)
+	  $(SHM_DEFINES) $(ARCHDEFINES)
 
 MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 

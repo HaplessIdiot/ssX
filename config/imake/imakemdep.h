@@ -86,7 +86,6 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #endif
 #endif
-
 #ifdef _CRAY
 #define imake_ccflags "-DSYSV -DUSG"
 #endif
@@ -340,6 +339,10 @@ char *cpp_argv[ARGUMENTS] = {
 #if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(MACH) || defined(linux) || defined(__GNU__) || defined(__bsdi__)
 # ifdef __i386__
 	"-D__i386__",
+#  if defined (__GNUC__) && __GNUC__ > 3 || \
+           (__GNUC__ == 3 && __GNUC_MINOR__ >0)
+	"-m32",
+#  endif
 # endif
 # ifdef __i486__
 	"-D__i486__",
@@ -697,7 +700,6 @@ char *cpp_argv[ARGUMENTS] = {
         "-D__i386__",
 # endif
 #endif
-
 };
 #endif /* CROSSCOMPILE */
 

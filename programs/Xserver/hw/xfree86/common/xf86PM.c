@@ -38,6 +38,8 @@ suspend (pmEvent event, Bool undo)
 {
     int i;
     InputInfoPtr pInfo;
+
+   xf86inSuspend = TRUE;
     
     for (i = 0; i < xf86NumScreens; i++) {
         xf86EnableAccess(xf86Screens[i]);
@@ -45,7 +47,6 @@ suspend (pmEvent event, Bool undo)
 	    (*xf86Screens[i]->EnableDisableFBAccess) (i, FALSE);
     }
 #if !defined(__EMX__)
-    DisableDevice((DeviceIntPtr)xf86Info.pKeyboard);
     pInfo = xf86InputDevs;
     while (pInfo) {
 	DisableDevice(pInfo->dev);
@@ -96,8 +97,8 @@ resume(pmEvent event, Bool undo)
 	EnableDevice(pInfo->dev);
 	pInfo = pInfo->next;
     }
-    EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
 #endif
+    xf86inSuspend = FALSE;
 }
 
 static void

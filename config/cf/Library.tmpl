@@ -178,7 +178,11 @@ LIB_MT_DEFINES = LibraryMTDefines
 #  define _NormalCleanDir() LibCleanDir(unshared)
 # else
 #  define _NormalLibMkdir() $(_NULLCMD_)
-#  define _NormalObjCompile(options) NormalLibObjCompile(options)
+#  if !DoSharedLib &&  defined(IncludeNormalLibInSharedObject)
+#   define _NormalObjCompile(options) NormalRelocLibObjCompile(options)
+#  else
+#   define _NormalObjCompile(options) NormalLibObjCompile(options)
+#  endif
 #  define _NormalObjCplusplusCompile(options) NormalLibObjCplusplusCompile(options)
 #  define _NormalCleanDir() $(_NULLCMD_)
 # endif

@@ -618,6 +618,8 @@ typedef struct
 #define SHT_LOUSER	0x80000000
 #define SHT_HIUSER	0xffffffff
 
+#define SHT_IA_64_UNWIND	(SHT_LOPROC + 1) /* unwind bits */
+
 /* sh_flags */
 #define SHF_WRITE	0x1
 #define SHF_ALLOC	0x2

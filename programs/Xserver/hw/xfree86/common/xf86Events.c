@@ -289,6 +289,9 @@ xf86PostKbdEvent(unsigned key)
 #if defined(__sparc__)
   static int  kbdSun = -1;
 #endif
+  /* Disable any keyboard processing while in suspend */
+  if (xf86inSuspend)
+      return;
 
 #if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT)
   if (first_time)
@@ -1122,7 +1125,7 @@ xf86VTSwitch()
 #ifdef DEBUG
   ErrorF("xf86VTSwitch()\n");
 #endif
-
+  
 #ifdef XFreeXDGA
   if(!DGAVTSwitch())
 	return;

@@ -387,6 +387,8 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	pVMWARE = VMWAREPTR(pScrn);
 
+	pVMWARE->vtSemaPtr = &pScrn->vtSema;
+	
 	pVMWARE->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
 	if (pVMWARE->pEnt->location.type != BUS_PCI) {
 		return FALSE;
@@ -397,15 +399,15 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	if (pVMWARE->PciInfo->chipType == PCI_CHIP_VMWARE0710) {
-		pVMWARE->indexReg = pScrn->domainIOBase +
+	    pVMWARE->indexReg =  pScrn->domainIOBase +
 		   SVGA_LEGACY_BASE_PORT + SVGA_INDEX_PORT*sizeof(uint32);
-		pVMWARE->valueReg = pScrn->domainIOBase +
+	    pVMWARE->valueReg =  pScrn->domainIOBase +
 		   SVGA_LEGACY_BASE_PORT + SVGA_VALUE_PORT*sizeof(uint32);
 	} else {
 		/* Note:  This setting of valueReg causes unaligned I/O */
-		pVMWARE->indexReg = pScrn->domainIOBase +
+	    pVMWARE->indexReg =  pScrn->domainIOBase  +
 		   pVMWARE->PciInfo->ioBase[0] + SVGA_INDEX_PORT;
-		pVMWARE->valueReg = pScrn->domainIOBase +
+	    pVMWARE->valueReg =  pScrn->domainIOBase  +
 		   pVMWARE->PciInfo->ioBase[0] + SVGA_VALUE_PORT;
 	}
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
@@ -475,6 +477,8 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_PROBED, 2, "pbase: %p\n", pVMWARE->memPhysBase);
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_PROBED, 2, "mwidt: %d\n", pVMWARE->maxWidth);
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_PROBED, 2, "mheig: %d\n", pVMWARE->maxHeight);
+
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "VMWARE_COLORDEPTH: %d\n", pVMWARE->depth);
 
 	switch (pVMWARE->depth) {
 		case 16:
@@ -813,7 +817,7 @@ VMWAREModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (!vgaHWInit(pScrn, mode))
 		return FALSE;
 	pScrn->vtSema = TRUE;
-
+	
 	if (!vgaHWInit(pScrn, mode))
 		return FALSE;
 
@@ -881,13 +885,14 @@ VMWARECloseScreen(int scrnIndex, ScreenPtr pScreen)
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 	VMWAREPtr pVMWARE = VMWAREPTR(pScrn);
 
-	VMWARERestore(pScrn);
-	VMWAREStopFIFO(pScrn);
-	VMWAREUnmapMem(pScrn);
-        if (pVMWARE->CursorInfoRec)
-            xf86DestroyCursorInfoRec(pVMWARE->CursorInfoRec);
-
-	pScrn->vtSema = FALSE;
+	if (pScrn->vtSema) {
+	    VMWARERestore(pScrn);
+	    VMWAREStopFIFO(pScrn);
+	    VMWAREUnmapMem(pScrn);
+	    pScrn->vtSema = FALSE;
+	}
+	if (pVMWARE->CursorInfoRec)
+	    xf86DestroyCursorInfoRec(pVMWARE->CursorInfoRec);
 	ScreenFromPrivate(pScreen, pScrn);
 	return (*pScreen->CloseScreen)(scrnIndex, pScreen);
 }
@@ -1006,7 +1011,6 @@ VMWAREScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			}
 		}
 	}
-
 	/* must be after RGB ordering fixed */
 	fbPictureInit (pScreen, 0, 0);
 
@@ -1077,6 +1081,7 @@ static Bool
 VMWAREEnterVT(int scrnIndex, int flags)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+	VMWAREPTR(pScrn)->vmwareBBLevel = 0;
 	return VMWAREModeInit(pScrn, pScrn->currentMode);
 }
 
@@ -1085,6 +1090,7 @@ VMWARELeaveVT(int scrnIndex, int flags)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 	VMWARERestore(pScrn);
+	VMWAREPTR(pScrn)->vmwareBBLevel = 1;
 }
 
 static void
@@ -1206,8 +1212,10 @@ static void
 ScreenToPrivate(ScreenPtr pScreen, ScrnInfoPtr pScrn)
 {
     VMWAREPtr pVMWARE = VMWAREPTR(pScrn);
+    PictureScreenPtr	ps = GetPictureScreenIfSet(pScreen);
 
     pVMWARE->ScrnFuncs = *pScreen;
+    
     funcglob = &pVMWARE->ScrnFuncs;
     scrnglob = pScrn;
 
@@ -1291,6 +1299,14 @@ ScreenToPrivate(ScreenPtr pScreen, ScrnInfoPtr pScrn)
     pScreen->GetImage               = vmwareGetImage;
     pScreen->SaveDoomedAreas        = vmwareSaveDoomedAreas;
     pScreen->RestoreAreas           = vmwareRestoreAreas;
+    if (ps) {
+	pVMWARE->Picture.Composite = ps->Composite;
+	ps->Composite = vmwareComposite;
+	pVMWARE->Picture.Glyphs = ps->Glyphs;
+	ps->Glyphs = vmwareGlyphs;
+	pVMWARE->Picture.Rects = ps->CompositeRects;
+	ps->CompositeRects = vmwareRects;
+    }
 
     vmwareGCPrivateIndex = AllocateGCPrivateIndex();
     if (!AllocateGCPrivate(pScreen, vmwareGCPrivateIndex,
@@ -1317,6 +1333,7 @@ static void ScreenFromPrivate(ScreenPtr pScreen, ScrnInfoPtr p)
 {
     VMWAREPtr pVMWARE = VMWAREPTR(p);
     ScreenPtr save = &pVMWARE->ScrnFuncs;
+    PictureScreenPtr	ps = GetPictureScreenIfSet(pScreen);
 
     /* Random screen procedures */
 
@@ -1379,6 +1396,12 @@ static void ScreenFromPrivate(ScreenPtr pScreen, ScrnInfoPtr p)
     pScreen->UnrealizeCursor        = save->UnrealizeCursor;
     pScreen->RecolorCursor          = save->RecolorCursor;
     pScreen->SetCursorPosition      = save->SetCursorPosition;
+
+    if (ps) {
+	ps->Composite = pVMWARE->Picture.Composite;
+	ps->Glyphs = pVMWARE->Picture.Glyphs;
+	ps->CompositeRects = pVMWARE->Picture.Rects;
+    }
 
     /* GC procedures */
 

@@ -24,6 +24,8 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
          OBJS = Xv.o
      LINTLIBS = $(LINTXLIB)
 
+#define IncludeNormalLibInSharedObject
+
 #include <Library.tmpl>
 
 DependTarget()

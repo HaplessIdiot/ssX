@@ -232,8 +232,10 @@ typedef enum {
     OPTION_XV_VSYNC,
     OPTION_XV_BSKEW,
     OPTION_XV_RSKEW,
+    OPTION_FP_DELAY,
     OPTION_1400_DISPLAY,
-    OPTION_DISPLAY
+    OPTION_DISPLAY,
+    OPTION_GB
 } TRIDENTOpts;
 
 static const OptionInfoRec TRIDENTOptions[] = {
@@ -254,8 +256,10 @@ static const OptionInfoRec TRIDENTOptions[] = {
     { OPTION_XV_VSYNC,          "XvVsync",      OPTV_INTEGER,   {0}, FALSE },
     { OPTION_XV_BSKEW,          "XvBskew",      OPTV_INTEGER,   {0}, FALSE },
     { OPTION_XV_RSKEW,          "XvRskew",      OPTV_INTEGER,   {0}, FALSE },
+    { OPTION_FP_DELAY,          "FpDelay",      OPTV_INTEGER,   {0}, FALSE },
     { OPTION_1400_DISPLAY,	"Display1400",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_DISPLAY,		"Display",	OPTV_ANYSTR,	{0}, FALSE },
+    { OPTION_GB,		"GammaBrightness",	OPTV_ANYSTR,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1304,7 +1308,52 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    xf86DrvMsg(pScrn->scrnIndex,X_ERROR,
 		       "%s is an unknown display option\n",s);
     }
-    
+    if ((s = xf86GetOptValString(pTrident->Options, OPTION_GB))) {
+	int brightness = -1;
+	double gamma = -1.0;
+	Bool error = FALSE;
+	int i;
+	
+	i = xf86sscanf(s,"%lf %i",&gamma,&brightness);
+	
+	if (i != 2 || brightness == -1 || gamma == -1.0) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Invalid Gamma/Brightness argument: %s\n",s);
+	    error = TRUE;
+	} else {
+	    if (brightness < 0 || brightness > 128) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "brightness out of range [0,128]: %i\n",brightness);
+		error = TRUE;
+	    }
+	    if (gamma <= 0.0 || gamma > 10.0) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "gamma out of range (0,10.0]: %f\n",gamma);
+		error = TRUE;
+	    }
+	}
+	
+	if (!error) {
+	    pTrident->GammaBrightnessOn = TRUE;
+	    pTrident->gamma = gamma;
+	    pTrident->brightness = brightness;
+	    xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,"Gamma: %f Brightness: %i\n",
+		       gamma,brightness);
+	}
+    }
+
+    /* The following is a temporary hack */
+    pTrident->FPDelay = 7; /* invalid value */
+    if (xf86GetOptValInteger(pTrident->Options, OPTION_FP_DELAY,
+			     &pTrident->FPDelay)) {
+	if (pTrident->FPDelay < -2 || pTrident->FPDelay > 5) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "FPDelay %i out if range "
+		       "(-2 < FPDelay < 5)\n",pTrident->FPDelay);
+	    pTrident->FPDelay = 7;
+	} else 
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "FP Delay set to %i\n",
+		   pTrident->FPDelay);
+    }
     if (xf86ReturnOptValBool(pTrident->Options, OPTION_CYBER_SHADOW, FALSE)) {
 	pTrident->CyberShadow = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Shadow enabled\n");
@@ -1319,6 +1368,18 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 						&pTrident->MUXThreshold)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MUX Threshold set to %d\n",
 						pTrident->MUXThreshold);
+    }
+    pTrident->OverrideHsync = 0;
+    if (xf86GetOptValInteger(pTrident->Options, OPTION_XV_HSYNC, 
+						&pTrident->OverrideHsync)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Xv Hsync set to %d\n",
+						pTrident->OverrideHsync);
+    }
+    pTrident->OverrideVsync = 0;
+    if (xf86GetOptValInteger(pTrident->Options, OPTION_XV_VSYNC, 
+						&pTrident->OverrideVsync)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Xv Vsync set to %d\n",
+						pTrident->OverrideVsync);
     }
     pTrident->OverrideHsync = 0;
     if (xf86GetOptValInteger(pTrident->Options, OPTION_XV_HSYNC, 
@@ -1453,6 +1514,15 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
         xf86LoaderReqSymLists(vbeSymbols, NULL);
 	pVbe =  VBEInit(NULL,pTrident->pEnt->index);
 	pMon = vbeDoEDID(pVbe, NULL);
+#ifdef VBE_INFO
+	{
+	    VbeInfoBlock* vbeInfoBlockPtr;
+	    if ((vbeInfoBlockPtr = VBEGetVBEInfo(pVbe))) {
+		pTrident->vbeModes = VBEBuildVbeModeList(pVbe,vbeInfoBlockPtr);
+		VBEFreeVBEInfo(vbeInfoBlockPtr);
+	    }
+	}
+#endif
 	vbeFree(pVbe);
 	if (pMon) {
 	    if (!xf86LoadSubModule(pScrn, "ddc")) {
@@ -1466,7 +1536,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	    
     }
-
+    
     if (IsPciCard && UseMMIO) {
     	if (!TRIDENTMapMem(pScrn))
 	    return FALSE;
@@ -2611,18 +2681,6 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     return TRUE;
 }
 
-#if 0
-Bool
-TridentCyberBIOSModeInit(ScrnInfoPtr pScrn)
-{
-    int mode = TridentFindMode(pScrn->currentMode->HDisplay,
-			pScrn->currentMode->VDisplay,
-			pScrn->depth);
-    TridentUnstretch();
-    
-}
-#endif
-
 /*
  * Restore the initial (text) mode.
  */
@@ -2686,10 +2744,18 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
 
     if (!xf86IsPc98()) {
-	if (xf86LoadSubModule(pScrn, "int10")) {
-	    xf86LoaderReqSymLists(int10Symbols, NULL);
-	    xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Initializing int10\n");
-	    pTrident->Int10 = xf86InitInt10(pTrident->pEnt->index);
+#ifdef VBE_INFO
+	if (pTrident->vbeModes) {
+	    pTrident->pVbe = VBEInit(NULL,pTrident->pEnt->index);
+	    pTrident->Int10 = pTrident->pVbe->pInt10;
+	} else
+#endif
+	{
+	    if (xf86LoadSubModule(pScrn, "int10")) {
+		xf86LoaderReqSymLists(int10Symbols, NULL);
+		xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Initializing int10\n");
+		pTrident->Int10 = xf86InitInt10(pTrident->pEnt->index);
+	    }
 	}
     }
     
@@ -2745,7 +2811,10 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!miSetVisualTypes(pScrn->depth, 
 			  miGetDefaultVisualMask(pScrn->depth),
 			  pScrn->rgbBits, pScrn->defaultVisual)) {
-      xf86FreeInt10(pTrident->Int10);
+	if (pTrident->pVbe)
+	    	vbeFree(pTrident->pVbe);
+	else
+	    xf86FreeInt10(pTrident->Int10);
       return FALSE;
     }
 
@@ -2805,7 +2874,10 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	break;
     }
     if (!ret) {
-        xf86FreeInt10(pTrident->Int10);
+	if (pTrident->pVbe)
+	    vbeFree(pTrident->pVbe);
+	else
+	    xf86FreeInt10(pTrident->Int10);
 	return FALSE;
     }
     if (pScrn->bitsPerPixel > 8) {
@@ -2845,7 +2917,10 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* Setup the vga banking variables */
 	pBankInfo = xnfcalloc(sizeof(miBankInfoRec),1);
 	if (pBankInfo == NULL) {
-	    xf86FreeInt10(pTrident->Int10);
+	    if (pTrident->pVbe)
+		vbeFree(pTrident->pVbe);
+	    else
+		xf86FreeInt10(pTrident->Int10);
 	    return FALSE;
 	}
 	pBankInfo->pBankA = pTrident->FbBase;
@@ -2863,7 +2938,10 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				 pScrn->displayWidth, pBankInfo)) {
 	    xfree(pBankInfo);
 	    pBankInfo = NULL;
-	    xf86FreeInt10(pTrident->Int10);
+	    if (pTrident->pVbe)
+	    	vbeFree(pTrident->pVbe);
+	    else
+		xf86FreeInt10(pTrident->Int10);
 	    return FALSE;
 	}
     }
@@ -2903,12 +2981,18 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen)) {
-        xf86FreeInt10(pTrident->Int10);
+	if (pTrident->pVbe)
+	    vbeFree(pTrident->pVbe);
+	else
+	    xf86FreeInt10(pTrident->Int10);
 	return FALSE;
     }
     if(!xf86HandleColormaps(pScreen, 256, 6, TridentLoadPalette,
 			    TridentSetOverscan, CMAP_RELOAD_ON_MODE_SWITCH|CMAP_PALETTED_TRUECOLOR)) {
-        xf86FreeInt10(pTrident->Int10);
+	if (pTrident->pVbe)
+	    vbeFree(pTrident->pVbe);
+	else
+	    xf86FreeInt10(pTrident->Int10);
 	return FALSE;
     }
     if(pTrident->ShadowFB) {
@@ -3101,7 +3185,10 @@ TRIDENTCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if(pTrident->BlockHandler)
 	pScreen->BlockHandler = pTrident->BlockHandler;
     
-    xf86FreeInt10(pTrident->Int10);
+    if (pTrident->pVbe)
+	vbeFree(pTrident->pVbe);
+    else
+	xf86FreeInt10(pTrident->Int10);
     pScreen->CloseScreen = pTrident->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
 }
@@ -3495,6 +3582,26 @@ tridentSetModeBIOS(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
+
+#ifdef VBE_INFO
+    if (pTrident->vbeModes) {
+	vbeSaveRestoreRec vbesr;
+	vbesr.stateMode = VBECalcVbeModeIndex(pTrident->vbeModes,
+					     mode, pScrn->bitsPerPixel);
+	vbesr.pstate = NULL;
+	if (vbesr.stateMode) {
+	    if (IsPciCard && UseMMIO) 
+		TRIDENTDisableMMIO(pScrn);
+	    VBEVesaSaveRestore(pTrident->pVbe,&vbesr,MODE_RESTORE);
+	    if (IsPciCard && UseMMIO) 
+		TRIDENTEnableMMIO(pScrn);
+	    return;
+	} else
+	    xf86DrvMsg(pScrn->scrnIndex,X_WARNING,"No BIOS Mode matches "
+		       "%ix%I@%ibpp\n",mode->HDisplay,mode->VDisplay,
+		       pScrn->bitsPerPixel);
+    } 
+#endif
     /* This function is only for LCD screens, and also when we have
      * int10 available */
 
@@ -3504,7 +3611,7 @@ tridentSetModeBIOS(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    || (pScrn->currentMode->VDisplay != LCD[i].display_y)) {
 	    if (pTrident->lcdActive)  { /* LCD Active ?*/
 	        int h_str, v_str;
-
+		
 		OUTB(0x3CE,HorStretch);  h_str = INB(0x3CF) & 0x01;
 		OUTB(0x3CE,VertStretch); v_str = INB(0x3CF) & 0x01;
 		if (h_str || v_str) {
@@ -3513,12 +3620,13 @@ tridentSetModeBIOS(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		    pTrident->Int10->ax = 0x3;
 		    pTrident->Int10->num = 0x10;
 		    if (IsPciCard && UseMMIO) 
-		      TRIDENTDisableMMIO(pScrn);
+			TRIDENTDisableMMIO(pScrn);
 		    xf86ExecX86int10(pTrident->Int10);
 		    if (IsPciCard && UseMMIO) 
-		      TRIDENTEnableMMIO(pScrn);
+			TRIDENTEnableMMIO(pScrn);
 		}
 	    }
 	}
     }
 }
+

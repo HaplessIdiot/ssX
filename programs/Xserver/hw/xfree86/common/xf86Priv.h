@@ -53,10 +53,12 @@ extern Bool xf86BestRefresh;
 extern Gamma xf86Gamma;
 extern char *xf86ServerName;
 extern Bool xf86ShowUnresolved;
+extern Bool xf86inSuspend;
 
 /* Other parameters */
 
 extern xf86InfoRec xf86Info;
+extern const char *xf86InputDeviceList;
 extern const char *xf86ModulePath;
 extern MessageType xf86ModPathFrom;
 extern const char *xf86LogFile;

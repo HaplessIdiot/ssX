@@ -56,7 +56,7 @@ typedef int X86EMU_pioAddr;
 
 /*---------------------- Macros and type definitions ----------------------*/
 
-#pragma	pack(1)
+/*  #pragma	pack(1) */  /* Don't pack structs with function pointers! */
 
 /****************************************************************************
 REMARKS:
@@ -130,7 +130,7 @@ extern void X86API wrb(u32 addr, u8 val);
 extern void X86API wrw(u32 addr, u16 val);
 extern void X86API wrl(u32 addr, u32 val);
  
-#pragma	pack()
+/*  #pragma	pack() */
 
 /*--------------------- type definitions -----------------------------------*/
 

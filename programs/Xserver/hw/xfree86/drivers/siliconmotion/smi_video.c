@@ -32,6 +32,7 @@ this is a heavy modified version of the V1.2.2 original siliconmotion driver.
 - SAA7111 support
 - supports attributes: XV_ENCODING, XV_BRIGHTNESS, XV_CONTRAST,
   XV_SATURATION, XV_HUE, XV_COLORKEY, XV_INTERLACED
+  XV_CAPTURE_BRIGHTNESS can be used to set brightness in the capture device
 - bug fixes
 - tries not to use acceleration functions (if USE_XAA = 0)
 - interlaced video for double vertical resolution
@@ -170,7 +171,7 @@ static int SetAttrSAA7111(ScrnInfoPtr pScrn, int i, int value);
 
 static Atom xvColorKey;
 static Atom xvEncoding;
-static Atom xvBrightness, xvContrast, xvSaturation, xvHue;
+static Atom xvBrightness,xvCapBrightness, xvContrast, xvSaturation, xvHue;
 static Atom xvInterlaced;
 
 
@@ -256,6 +257,7 @@ static XF86VideoFormatRec SMI_VideoFormats[] =
 
 #define XV_ENCODING_NAME        "XV_ENCODING"
 #define XV_BRIGHTNESS_NAME      "XV_BRIGHTNESS"
+#define XV_CAPTURE_BRIGHTNESS_NAME      "XV_CAPTURE_BRIGHTNESS"
 #define XV_CONTRAST_NAME        "XV_CONTRAST"
 #define XV_SATURATION_NAME      "XV_SATURATION"
 #define XV_HUE_NAME             "XV_HUE"
@@ -267,6 +269,7 @@ static XF86VideoFormatRec SMI_VideoFormats[] =
 static XF86AttributeRec SMI_VideoAttributesSAA711x[N_ATTRS] = {
     {XvSettable | XvGettable,        0, N_ENCODINGS-1, XV_ENCODING_NAME},
     {XvSettable | XvGettable,        0,           255, XV_BRIGHTNESS_NAME},
+    {XvSettable | XvGettable,        0,           255, XV_CAPTURE_BRIGHTNESS_NAME},
     {XvSettable | XvGettable,        0,           127, XV_CONTRAST_NAME},
     {XvSettable | XvGettable,        0,           127, XV_SATURATION_NAME},
     {XvSettable | XvGettable,     -128,           127, XV_HUE_NAME},
@@ -399,7 +402,7 @@ static I2CByte SAA7111VideoStd[3][8] = {
 };
 
 
-
+#if 0
 static I2CByte SAA7110InitData[] =
 {
 	/* Configuration */
@@ -424,7 +427,7 @@ static I2CByte SAA7110InitData[] =
     0x22, 0x40, 0x2C, 0x03,
 
 };
-
+#endif
 
 static I2CByte SAA7111InitData[] =
 {
@@ -641,6 +644,7 @@ SMI_InitVideo(ScreenPtr pScreen)
  *  Video codec controls
  */
 
+#if 0
 /**
  * scales value value of attribute i to range min, max
  */
@@ -650,7 +654,7 @@ Scale(int i, int value, int min, int max)
     return min + (value - SMI_VideoAttributes[i].min_value) * (max - min) /
 	(SMI_VideoAttributes[i].max_value - SMI_VideoAttributes[i].min_value);
 }
-
+#endif
 /**
  * sets video decoder attributes channel, encoding, brightness, contrast, saturation, hue
  */
@@ -667,21 +671,21 @@ SetAttr(ScrnInfoPtr pScrn, int i, int value)
     value = CLAMP(value, SMI_VideoAttributes[i].min_value,
 		  SMI_VideoAttributes[i].max_value);
 
-    if (pPort->I2CDev.SlaveAddr == SAA7110) {
+    if (i == XV_BRIGHTNESS) {
+	int my_value = (value <= 128? value + 128 : value - 128);
+	WRITE_VPR(pSmi, 0x5C, 0xEDEDED | (my_value << 24));
+    } else if (pPort->I2CDev.SlaveAddr == SAA7110) {
 	return SetAttrSAA7110(pScrn, i, value);
     }
     else if (pPort->I2CDev.SlaveAddr == SAA7111) {
 	return SetAttrSAA7111(pScrn, i, value);
-    }
-    else if (i == XV_BRIGHTNESS) {
-	WRITE_VPR(pSmi, 0x5C, 0xEDEDED | (value << 24));
     }
 #if 0
     else {
 	return XvBadAlloc;
     }
 #endif
-    
+
     return Success;
 }
 
@@ -739,12 +743,12 @@ SetAttrSAA7111(ScrnInfoPtr pScrn, int i, int value)
 	    }
 	}
     }
-    else if (i >= XV_BRIGHTNESS && i <= XV_HUE) {
+    else if (i >= XV_CAPTURE_BRIGHTNESS && i <= XV_HUE) {
 	int slave_adr = 0;
 
 	switch (i) {
 
-	case XV_BRIGHTNESS:
+	case XV_CAPTURE_BRIGHTNESS:
 	    DEBUG((VERBLEV, "SetAttribute XV_BRIGHTNESS: %d\n", value));
 	    slave_adr = 0x0a;
 	    break;
@@ -774,8 +778,6 @@ SetAttrSAA7111(ScrnInfoPtr pScrn, int i, int value)
 	return BadMatch;
     }
 
-    pPort->Attribute[i] = value;
-    
     /* debug: show registers */
     {
 	I2CByte i2c_bytes[32];
@@ -925,6 +927,7 @@ SMI_SetupVideo(
     
     xvColorKey   = MAKE_ATOM(XV_COLORKEY_NAME);
     xvBrightness = MAKE_ATOM(XV_BRIGHTNESS_NAME);
+    xvCapBrightness = MAKE_ATOM(XV_CAPTURE_BRIGHTNESS_NAME);
     
     SMI_ResetVideo(pScrn);
     LEAVE_PROC("SMI_SetupVideo");
@@ -945,6 +948,7 @@ SMI_ResetVideo(
 
     SetAttr(pScrn, XV_ENCODING, 0);     /* Encoding = pal-composite-0 */
     SetAttr(pScrn, XV_BRIGHTNESS, 128); /* Brightness = 128 (CCIR level) */
+    SetAttr(pScrn, XV_CAPTURE_BRIGHTNESS, 128); /* Brightness = 128 (CCIR level) */
     SetAttr(pScrn, XV_CONTRAST, 71);    /* Contrast = 71 (CCIR level) */
     SetAttr(pScrn, XV_SATURATION, 64);  /* Color saturation = 64 (CCIR level) */
     SetAttr(pScrn, XV_HUE, 0);          /* Hue = 0 */
@@ -1426,6 +1430,9 @@ SMI_SetPortAttribute(
     else if (attribute == xvBrightness) {
         res = SetAttr(pScrn, XV_BRIGHTNESS, value);
     }
+    else if (attribute == xvCapBrightness) {
+        res = SetAttr(pScrn, XV_CAPTURE_BRIGHTNESS, value);
+    }
     else if (attribute == xvContrast) {
         res = SetAttr(pScrn, XV_CONTRAST, value);
     }
@@ -1457,8 +1464,10 @@ SMI_GetPortAttribute(
 	ENTER_PROC("SMI_GetPortAttribute");
     if (attribute == xvEncoding)
         *value = pPort->Attribute[XV_ENCODING];
-	else if (attribute == xvBrightness)
+    else if (attribute == xvBrightness)
         *value = pPort->Attribute[XV_BRIGHTNESS];
+    else if (attribute == xvCapBrightness)
+        *value = pPort->Attribute[XV_CAPTURE_BRIGHTNESS];
     else if (attribute == xvContrast)
         *value = pPort->Attribute[XV_CONTRAST];
     else if (attribute == xvSaturation)

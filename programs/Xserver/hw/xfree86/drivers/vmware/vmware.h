@@ -21,6 +21,8 @@
 
 #include "vgaHW.h"		/* VGA hardware */
 #include "fb.h"
+#include "picturestr.h"
+#include "mipict.h"
 
 #include "xf86cmap.h"		/* xf86HandleColormaps */
 
@@ -39,6 +41,12 @@ typedef struct {
 typedef struct {
 	DisplayModePtr	mode;
 } VMWAREFBLayout;
+
+typedef struct {
+    CompositeProcPtr Composite;
+    GlyphsProcPtr Glyphs;
+    CompositeRectsProcPtr Rects;
+} vmwarePictFuncs;
 
 typedef struct {
 	EntityInfoPtr	pEnt;
@@ -99,7 +107,9 @@ typedef struct {
 	IOADDRESS       indexReg, valueReg;
 
 	ScreenRec	ScrnFuncs;
-	/* ... */
+	vmwarePictFuncs Picture;
+    Bool		*vtSemaPtr;
+       /* ... */
 } VMWARERec, *VMWAREPtr;
 
 #define VMWAREPTR(p) ((VMWAREPtr)((p)->driverPrivate))
@@ -162,7 +172,7 @@ static __inline ScrnInfoPtr infoFromScreen(ScreenPtr s) {
 
 #define HIDE_CURSOR(vmPtr,_box) \
 { \
-    if (!(vmPtr)->cursorHidden) { \
+    if (!(vmPtr)->cursorHidden && *vmPtr->vtSemaPtr) { \
 	if ((vmPtr)->hwCursor && (vmPtr)->cursorDefined && \
 	    BOX_INTERSECT((vmPtr)->hwcur.box, _box)) { \
 		(vmPtr)->cursorHidden = TRUE; \
@@ -175,7 +185,7 @@ static __inline ScrnInfoPtr infoFromScreen(ScreenPtr s) {
 
 #define SHOW_CURSOR(vmPtr,_box) \
 { \
-    if ((vmPtr)->cursorHidden) { \
+    if ((vmPtr)->cursorHidden && *vmPtr->vtSemaPtr) { \
 	if ((vmPtr)->hwCursor && (vmPtr)->cursorDefined && \
 	    BOX_INTERSECT((vmPtr)->hwcur.box, _box)) { \
 		(vmPtr)->cursorHidden = FALSE; \
@@ -218,14 +228,15 @@ extern int vmwareGCPrivateIndex;
                                                                        \
 	    setBB;						       \
 	    HIDE_CURSOR(pVMWARE, BB);                                  \
-	    vmwareWaitForFB(pVMWARE);                                  \
+            vmwareWaitForFB(pVMWARE);                                  \
 	    pVMWARE->vmwareBBLevel++;                                  \
 	    op;                                                        \
-	    pVMWARE->vmwareBBLevel--;                                  \
-	    vmwareSendSVGACmdUpdate(pVMWARE, &BB);                     \
+	    pVMWARE->vmwareBBLevel--;				       \
+            vmwareSendSVGACmdUpdate(pVMWARE, &BB);                     \
 	    SHOW_CURSOR(pVMWARE, BB);                                  \
-	} else {                                                       \
-	    vmwareWaitForFB(pVMWARE);                                  \
+	} else {						       \
+	    if (*pVMWARE->vtSemaPtr)				       \
+                vmwareWaitForFB(pVMWARE);                              \
 	    op;                                                        \
 	}                                                              \
     } else {                                                           \
@@ -240,7 +251,7 @@ extern int vmwareGCPrivateIndex;
 #define GC_FUNC_ACCEL_WRAPPER(cond,screen,setBB,accelcond,accel,op)	\
     GEN_FUNC_WRAPPER(cond,						\
 	VMWAREPtr pVMWARE = VMWAREPTR(infoFromScreen(screen));		\
-        if (accelcond) {						\
+        if (accelcond && *pVMWARE->vtSemaPtr) {				\
 	    BoxRec BB;							\
 									\
 	    setBB;							\
@@ -627,4 +638,15 @@ void vmwarePushPixels(
     );
 
 /* END GCOps */
+
+extern void vmwareComposite(CARD8 op, PicturePtr pSrc,  PicturePtr pMask,
+			    PicturePtr pDst, INT16 xSrc, INT16 ySrc,
+			    INT16 xMask, INT16 yMask, INT16 xDst,
+			    INT16 yDst, CARD16 width, CARD16 height);
+extern void vmwareGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst,
+			 PictFormatPtr maskFormat, INT16 xSrc, INT16 ySrc,
+			 int nlist, GlyphListPtr list, GlyphPtr *glyphs);
+extern void vmwareRects(CARD8 op, PicturePtr pDst, xRenderColor *color,
+			int nRect, xRectangle *rects);
+
 #endif

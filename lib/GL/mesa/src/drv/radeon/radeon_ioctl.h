@@ -89,7 +89,7 @@ do {									\
 do {									\
    if ( rmesa->store.primnr || rmesa->dma.low != rmesa->dma.last ) {	\
       if ( 0 )								\
-	 fprintf( stderr, "RADEON_FIREVERTICES in "__FUNCTION__"\n" );	\
+	 fprintf( stderr, "RADEON_FIREVERTICES in %s\n",__FUNCTION__ );	\
       radeonFlushPrims( rmesa );					\
    }									\
 } while (0)

@@ -288,7 +288,6 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 # ifndef XF86AFB
 #  define XF86AFB		YES
 # endif
-
 # if HasAgpGart || XFree86Devel
 #  define AgpGartDrivers	i810
 # else
@@ -314,7 +313,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 				cirrus vmware tseng trident chips apm \
 				GlideDriver fbdev i128 \
 				ati AgpGartDrivers DevelDrivers ark cyrix \
-				siliconmotion \
+				siliconmotion dummy\
 				vesa vga XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 
@@ -404,12 +403,20 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 
 /* Pure PCI drivers should go first */
 # ifndef XF86CardDrivers
-#  define XF86CardDrivers	vga  tdfx mga glint nv ati
+#  define XF86CardDrivers	mga glint nv tga s3 s3virge sis rendition \
+				neomagic tdfx savage cirrus tseng trident \
+				chips apm i128 ati ark cyrix siliconmotion \
+				vga dummy
 # endif
 
+/* DRI tdfx driver needs Glide, which is not available for x86_64 */
 # define TdfxDriDriver		/**/
-# define DriDrivers		/**/
-#endif
+
+# define DevelDRIDrivers	/**/
+
+# define DriDrivers		gamma i810 mga r128 radeon \
+				TdfxDriDriver DevelDRIDrivers
+#endif /*x86_64Arcitecture*/
 
 /* Sparc drivers */
 
@@ -486,7 +493,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
     */
 #   define DevelDrivers		apm ark chips cirrus i128 i740 i810 imstt \
 				neomagic newport nv rendition s3virge savage \
-				siliconmotion tga trident vmware
+				siliconmotion tga trident vmware dummy
 #  else
 #   define DevelDrivers		/* */
 #  endif
@@ -995,7 +1002,11 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * The server-side of PEX is not 64-bit clean.
  */
 #if !defined(BuildPexExt)
-# if XF86Server && !defined(AlphaArchitecture) && !defined(ia64Architecture) && !defined(s390xArchitecture) && !defined (x86_64Architecture)
+# if XF86Server \
+  && !defined(AlphaArchitecture) \
+  && !defined(ia64Architecture) \
+  && !defined(s390xArchitecture) \
+  && !defined (x86_64Architecture)
 #  define BuildPexExt		NO	/* But we turn off PEX anyway now */
 # else
 #  define BuildPexExt		NO
@@ -1156,9 +1167,11 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #    define GlxCoreLibDefines /**/
 #  endif
 
-#  if defined(SparcArchitecture) || defined(Sparc64Architecture) \
-      || defined(ia64Architecture) || defined(s390xArchitecture) \
-      || defined(x86_64Architecture)
+#  if defined(SparcArchitecture)  \
+   || defined (Sparc64Architecture) \
+   || defined(ia64Architecture) \
+   || defined(s390xArchitecture) \
+   || defined(x86_64Architecture)
 #    define GlxArchDefines -D__GLX_ALIGN64
 #  elif defined(AlphaArchitecture)
 /* On the Alpha we need to ensure floating point accuracy for 3D */
@@ -1721,25 +1734,25 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 
 #if HasGcc2 && defined(i386Architecture)
 # ifndef DefaultGcc2i386Opt
-#  define DefaultGcc2i386Opt -O2 -fno-strength-reduce
+#  define DefaultGcc2i386Opt -O2 -fno-strength-reduce GccAliasingArgs
 # endif
 #endif
 
 #if HasGcc2 && defined(x86_64Architecture)
 # ifndef DefaultGcc2x86_64Opt
-#  define DefaultGcc2x86_64Opt -O2 -fno-strength-reduce
+#  define DefaultGcc2x86_64Opt -O2 -fno-strength-reduce GccAliasingArgs
 # endif
 #endif
 
 #if HasGcc2 && defined(AlphaArchitecture)
 # ifndef DefaultGcc2AxpOpt
-#  define DefaultGcc2AxpOpt -O2
+#  define DefaultGcc2AxpOpt -O2 GccAliasingArgs
 # endif
 #endif
 
 #if HasGcc2 && defined(PpcArchitecture)
 # ifndef DefaultGcc2PpcOpt
-#  define DefaultGcc2PpcOpt -O2
+#  define DefaultGcc2PpcOpt -O2 GccAliasingArgs
 # endif
 #endif
 
@@ -1776,7 +1789,17 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # ifndef Has3DNowSupport
 #  define Has3DNowSupport NO
 # endif
-#else
+#elseif defined (x86_64Architecture)
+# ifndef HasMMXSupport
+#  define HasMMXSupport NO
+# endif
+# ifndef HasKatmaiSupport
+#  define HasKatmaiSupport NO
+# endif
+# ifndef Has3DNowSupport
+#  define Has3DNowSupport YES
+# endif
+#else 
 # ifndef HasMMXSupport
 #  define HasMMXSupport NO
 # endif
@@ -1785,6 +1808,19 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # endif
 # ifndef Has3DNowSupport
 #  define Has3DNowSupport NO
+# endif
+#endif
+
+#ifndef StaticNeedsPicForShared
+# if defined (x86_64Architecture)\
+  || defined (AlphaArchitecture) \
+  || defined (ia64Architecture) \
+  || defined (PpcArchitecture) \
+  || defined (SparcArchitecture) \
+  || defined (s390xArchitecture) 
+#  define StaticNeedsPicForShared YES
+# else
+#  define StaticNeedsPicForShared NO
 # endif
 #endif
 

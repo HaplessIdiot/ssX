@@ -914,7 +914,7 @@ DGAProcessKeyboardEvent (ScreenPtr pScreen, dgaEvent *de, DeviceIntPtr keybd)
     de->u.event.dy = 0;
     de->u.event.screen = pScreen->myNum;
     de->u.event.state = keyc->state | (inputInfo.pointer)->button->state;
-    
+
     /*
      * Keep the core state in sync by duplicating what
      * CoreProcessKeyboardEvent does
@@ -929,14 +929,16 @@ DGAProcessKeyboardEvent (ScreenPtr pScreen, dgaEvent *de, DeviceIntPtr keybd)
 	inputInfo.pointer->valuator->motionHintWindow = NullWindow;
 	*kptr |= bit;
 	keyc->prev_state = keyc->state;
-	for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
-	{
-	    if (mask & modifiers)
+	if (noXkbExtension) {
+	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
 	    {
-		/* This key affects modifier "i" */
-		keyc->modifierKeyCount[i]++;
-		keyc->state |= mask;
-		modifiers &= ~mask;
+		if (mask & modifiers)
+		{
+		    /* This key affects modifier "i" */
+		    keyc->modifierKeyCount[i]++;
+		    keyc->state |= mask;
+		    modifiers &= ~mask;
+		}
 	    }
 	}
 	break;
@@ -944,20 +946,21 @@ DGAProcessKeyboardEvent (ScreenPtr pScreen, dgaEvent *de, DeviceIntPtr keybd)
 	inputInfo.pointer->valuator->motionHintWindow = NullWindow;
 	*kptr &= ~bit;
 	keyc->prev_state = keyc->state;
-	for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
-	{
-	    if (mask & modifiers) {
-		/* This key affects modifier "i" */
-		if (--keyc->modifierKeyCount[i] <= 0) {
-		    keyc->state &= ~mask;
-		    keyc->modifierKeyCount[i] = 0;
+	if (noXkbExtension) {
+	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
+	    {
+		if (mask & modifiers) {
+		    /* This key affects modifier "i" */
+		    if (--keyc->modifierKeyCount[i] <= 0) {
+			keyc->state &= ~mask;
+			keyc->modifierKeyCount[i] = 0;
+		    }
+		    modifiers &= ~mask;
 		}
-		modifiers &= ~mask;
 	    }
 	}
 	break;
     }
-
     /*
      * Deliver the DGA event
      */

@@ -263,8 +263,10 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif
 
 #ifndef XF86INT10_BUILD
-# ifdef i386Architecture
+# if defined (i386Architecture)
 #  define XF86INT10_BUILD	X86VM
+# elif defined (x86_64Architecture)
+#  define XF86INT10_BUILD	X86EMU_OS
 # else
 #  define XF86INT10_BUILD	X86EMU_GENERIC
 # endif
@@ -273,15 +275,12 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 /* The DRM module requires kernel services that appeared in late 2.1.x
    kernels and are known to be present in 2.2.x kernels. */
 #ifndef BuildXF86DRI
-#  if defined(i386Architecture) || defined(ia64Architecture)
+#  if defined(i386Architecture) || defined(ia64Architecture) || defined(x86_64Architecture)
 #    if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
 #      define BuildXF86DRI	YES
 #    else
 #      define BuildXF86DRI	NO
 #    endif
-XCOMM This may change soon
-#  elif defined(x86_64Architecture)
-#    define BuildXF86DRI        NO
 #  elif defined(SparcArchitecture)
 #    define BuildXF86DRI	YES
 #  elif defined(AlphaArchitecture)
@@ -313,7 +312,7 @@ XCOMM This may change soon
    kernel revisions.  So, we'll only build the module for kernels that are
    known to be supported by the module. */
 #ifndef BuildXF86DRM
-#  if defined(i386Architecture) || defined(ia64Architecture) || defined(SparcArchitecture) || defined(AlphaArchitecture)
+#  if defined(i386Architecture) || defined(ia64Architecture) || defined(SparcArchitecture) || defined(AlphaArchitecture) || defined(x86_64Architecture)
 #    if OSMajorVersion == 2
        /* Only tested for Linux 2.2.0 through 2.2.12 */
 #      if OSMinorVersion == 2 && OSTeenyVersion <= 12
@@ -337,7 +336,7 @@ XCOMM This may change soon
 #endif
 
 #ifndef HasAgpGart
-#  if defined(i386Architecture) || defined(ia64Architecture)
+#  if defined(i386Architecture) || defined(ia64Architecture) || defined(x86_64Architecture)
      /* The AGPGART header file is included in os-support/linux, which
         allows all drivers that depend on AGP to build properly. */
 #    define HasAgpGart	YES
@@ -350,7 +349,7 @@ XCOMM This may change soon
  * Streaming SIMD Extensions, was introduced in the 2.4.x kernels.
  */
 #ifndef HasKatmaiSupport
-#  ifdef i386Architecture
+#  if defined (i386Architecture)
 #    if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 4)
 #      define HasKatmaiSupport		YES
 #    else
@@ -499,6 +498,10 @@ XCOMM This may change soon
 # endif
 #endif
 
+#if  (GccMajorVersion == 3) &&  (GccMinorVersion >= 1)
+# define GccAliasingArgs      -fno-strict-aliasing
+#endif
+
 #if LinuxElfDefault
 # if UseElfFormat
 #  ifdef MipsArchitecture
@@ -509,27 +512,21 @@ XCOMM This may change soon
 #     define MakeDllModules	YES
 #   endif
 #  endif /* MipsArchitecure */
-#  ifdef x86_64Architecture
-#   ifndef DoLoadableServer
-#     define DoLoadableServer	YES
-#   endif
-#   if DoLoadableServer
-#    define CcCmd                 gcc -mcmodel=medium
-#   else
-#    define CcCmd                 gcc
-#   endif
+#  if defined (i386Architecture) && ((GccMajorVersion >3) \
+   || ((GccMajorVersion == 3) &&  (GccMinorVersion >= 1)))
+#   define CcCmd		gcc -m32
 #  endif
 #  ifndef CcCmd
 #   define CcCmd		gcc
 #  endif
+#  define CplusplusCmd		c++
 #  ifndef AsCmd
-#   define AsCmd		as
-#  endif
-#  ifndef LdCmd
-#   define LdCmd		ld
+#   define AsCmd		CcCmd -c -x assembler-with-cpp
 #  endif
 #  define AsmDefines		-D__ELF__
-#  define CplusplusCmd		c++
+#  ifndef LdCmd
+#   define LdCmd		CcCmd -nostdlib
+#  endif
 #  ifndef LinuxUsesNcurses
 #   if LinuxCLibMajorVersion >= 6 || (LinuxDistribution == LinuxSuSE)
 #    define LinuxUsesNcurses	YES
@@ -564,50 +561,43 @@ XCOMM This may change soon
 #  ifdef AlphaArchitecture
 #   define CcCmd		gcc -b alpha-linuxecoff
 #   define CplusplusCmd		g++ -b alpha-linuxecoff
-#   define AsCmd		/usr/alpha-linuxecoff/bin/as
-#   define LdCmd		/usr/alpha-linuxecoff/bin/ld -m alpha
+#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define LdCmd		CcCmd -nostdlib -Wl,"-m alpha"
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* AlphaArchitecture */
 #  ifdef HPArchitecture
 #   define CcCmd		gcc
 #   define CplusplusCmd		g++
-#   define AsCmd		as
-#   define LdCmd		ld
+#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define LdCmd		CcCmd -nostdlib
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* HPArchitecture */
 #  ifdef ia64Architecture
 #   define CcCmd		gcc
 #   define CplusplusCmd		g++
-#   define AsCmd		as
-#   define LdCmd		ld
+#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define LdCmd		CcCmd -nostdlib
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* ia64Architecture */
 #  ifdef x86_64Architecture
-#   ifndef DoLoadableServer
-#     define DoLoadableServer	YES
-#   endif
-#   if DoLoadableServer
-#    define CcCmd                 gcc -mcmodel=medium
-#   else
-#    define CcCmd                 gcc
-#   endif
+#   define CcCmd                 gcc
 #   define CplusplusCmd          g++
-#   define AsCmd                 as
-#   define LdCmd                 ld
+#   define AsCmd                 CcCmd -c -x assembler-with-cpp
+#   define LdCmd                 CcCmd -nostdlib
 #   define AsmDefines            -DUSE_GAS -U__ELF__
 #  endif /* x86_64Architecture */
 #  ifdef i386Architecture
 #   define CcCmd		gcc -b i486-linuxaout
 #   define CplusplusCmd		g++ -b i486-linuxaout
-#   define AsCmd		/usr/i486-linuxaout/bin/as
-#   define LdCmd		/usr/i486-linuxaout/bin/ld -m i386linux
+#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define LdCmd		CcCmd -nostdlib -Wl,"-m i386linux"
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* i386Architecture */
 #  ifdef Mc68020Architecture
 #   define CcCmd		gcc -b m68k-linuxaout
 #   define CplusplusCmd		g++ -b m68k-linuxaout
-#   define AsCmd		/usr/m68k-linuxaout/bin/as
-#   define LdCmd		/usr/m68k-linuxaout/bin/ld -m m68klinux
+#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define LdCmd		CcCmd -nostdlib -Wl'"-m m68klinux"
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* Mc68020Architecture */
 # endif
@@ -615,61 +605,58 @@ XCOMM This may change soon
 # if UseElfFormat
 #  ifdef AlphaArchitecture
 #   define CcCmd		gcc -b alpha-linux
-#   define AsCmd		/usr/alpha-linux/bin/as
-#   define LdCmd		ld -m elf64alpha
+#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define LdCmd		CcCmd -nostdlib -Wl,"-m elf64alpha"
 #   define AsmDefines		-D__ELF__
 #   define CplusplusCmd		c++ -b alpha-linux
 #  endif /* AlphaArchitecture */
 #  ifdef ia64Architecture
 #   define CcCmd		gcc
 #   define CplusplusCmd		g++
-#   define AsCmd		as
-#   define LdCmd		ld
+#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define LdCmd		CcCmd -nostdlib
 #   define AsmDefines		-D__ELF__
 #  endif /* ia64Architecture */
 #  ifdef HPArchitecture
 #   define CcCmd		gcc
 #   define CplusplusCmd		g++
-#   define AsCmd		as
-#   define LdCmd		ld
+#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define LdCmd		CcCmd -nostdlib
 #   define AsmDefines		-D__ELF__
 #   define SharedLibXau		YES
 #  endif /* HPArchitecture */
 #  ifdef x86_64Architecture
-#   ifndef DoLoadableServer
-#     define DoLoadableServer	YES
-#   endif
-#   if DoLoadableServer
-#    define CcCmd                 gcc -mcmodel=medium
-#   else
-#    define CcCmd                 gcc
-#   endif
+#   define CcCmd                 gcc
 #   define CplusplusCmd          g++
-#   define AsCmd                 as
-#   define LdCmd                 ld
+#   define AsCmd                 CcCmd -c -x assembler-with-cpp
+#   define LdCmd                 CcCmd -nostdlib
 #   define AsmDefines            -D__ELF__
 #  endif /* x86_64Architecture */
 #  ifdef i386Architecture
 #   define CcCmd		gcc -b i486-linux
-#   define AsCmd		/usr/i486-linux/bin/as
-#   define LdCmd		ld -m elf_i386
+#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define LdCmd		CcCmd -nosdlib -Wl,"-m elf_i386"
 #   define AsmDefines		-D__ELF__
 #   define CplusplusCmd		c++ -b i486-linux
 #  endif /* i386Architecture */
 #  ifdef Mc68020Architecture
 #   define CcCmd		gcc -b m68k-linux
-#   define AsCmd		/usr/m68k-linux/bin/as
-#   define LdCmd		ld -m m68kelf
+#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define LdCmd		CcCmd -nostdlib -W,l"-m m68kelf"
 #   define AsmDefines		-D__ELF__
 #   define CplusplusCmd		c++ -b m68k-linux
 #  endif /* Mc68020Architecture */
 # else
 #  define CcCmd			gcc
-#  define AsCmd			as
-#  define LdCmd			ld
+#  define AsCmd			CcCmd -c -x assembler-with-cpp
+#  define LdCmd			CcCmd -nostdlib
 #  define AsmDefines		-DUSE_GAS
 # endif
 #endif
+#ifndef GccAliasingArgs
+# define GccAliasingArgs  /* */
+#endif
+
 #if UseElfFormat
 # ifndef DoLoadableServer
 #  ifdef HPArchitecture
@@ -720,7 +707,7 @@ XCOMM This may change soon
 
 #ifdef s390Architecture
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	-O2
+#  define OptimizedCDebugFlags	-O2 -fomit-frame-pointer GccAliasingArgs
 # endif
 # define LinuxMachineDefines	-D__s390__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
@@ -729,7 +716,7 @@ XCOMM This may change soon
 
 #ifdef s390xArchitecture
 /*#define DefaultCCOptions	-fsigned-char */
-#define OptimizedCDebugFlags	-O3
+#define OptimizedCDebugFlags	-O3 -fomit-frame-pointer
 #define LinuxMachineDefines	-D__s390x__
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
@@ -759,7 +746,7 @@ XCOMM This may change soon
 
 #ifdef ia64Architecture
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	-O2
+#  define OptimizedCDebugFlags	-O2  GccAliasingArgs
 # endif
 # define LinuxMachineDefines	-D__ia64__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
@@ -777,7 +764,7 @@ XCOMM This may change soon
 
 #ifdef Mc68020Architecture
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	-O2
+#  define OptimizedCDebugFlags	-O2  GccAliasingArgs
 # endif
 # define LinuxMachineDefines 	-D__mc68000__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
@@ -798,7 +785,7 @@ XCOMM This may change soon
 
 #ifdef SparcArchitecture
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	-O2
+#  define OptimizedCDebugFlags	-O2  GccAliasingArgs
 # endif
 # define LinuxMachineDefines	-D__sparc__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
@@ -813,7 +800,7 @@ XCOMM This may change soon
 
 #ifdef MipsArchitecture
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	-O2
+#  define OptimizedCDebugFlags	-O2  GccAliasingArgs
 # endif
 # define LinuxMachineDefines	-D__mips__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
@@ -821,7 +808,7 @@ XCOMM This may change soon
 #endif
 
 #ifdef HPArchitecture
-# define OptimizedCDebugFlags	-O2
+# define OptimizedCDebugFlags	-O2  GccAliasingArgs
 # define LinuxMachineDefines	-D__hppa__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
@@ -845,7 +832,7 @@ XCOMM This may change soon
 #  endif
 # endif
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	-O2 SuperHArchOptFlags SuperHEndianFlags
+#  define OptimizedCDebugFlags	-O2 SuperHArchOptFlags SuperHEndianFlags  GccAliasingArgs
 # endif
 # define LinuxMachineDefines	-D__sh__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET

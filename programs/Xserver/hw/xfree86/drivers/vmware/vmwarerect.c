@@ -17,8 +17,11 @@ static void
 computeBBrect(DrawablePtr pDrawable,
     GCPtr pGC, int nrectFill, xRectangle * prectInit, BoxPtr pBB)
 {
-    if (nrectFill <= 0)
+    if (nrectFill <= 0) {
+	pBB->x1 = pBB->x2 = pBB->y1 = pBB->y2 = 0;
 	return;
+    }
+    
     pBB->x1 = prectInit->x;
     pBB->y1 = prectInit->y;
     pBB->x2 = prectInit->x + prectInit->width + 1;

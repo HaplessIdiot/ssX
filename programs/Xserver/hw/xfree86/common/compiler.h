@@ -87,7 +87,7 @@ extern int ffs(unsigned long);
 
 # if defined(NO_INLINE) || defined(DO_PROTOTYPES)
 
-#  if !defined(__sparc__)
+#  if !defined(__sparc__) && !defined(__arm32__)
 
 extern void outb(unsigned short, unsigned char);
 extern void outw(unsigned short, unsigned short);
@@ -845,43 +845,48 @@ static __inline__ void stw_u(unsigned long val, unsigned short *p)
 #    define write_mem_barrier()   /* XXX: nop for now */
 
 #   elif defined(__mips__) || defined(__arm32__)
+#ifdef __arm32__
+#define PORT_SIZE long
+#else
+#define PORT_SIZE short
+#endif
 
 unsigned int IOPortBase;  /* Memory mapped I/O port area */
 
 static __inline__ void
-outb(unsigned short port, unsigned char val)
+outb(unsigned PORT_SIZE port, unsigned char val)
 {
-	*(volatile unsigned char*)(((unsigned short)(port))+IOPortBase) = val;
+	*(volatile unsigned char*)(((unsigned PORT_SIZE)(port))+IOPortBase) = val;
 }
 
 static __inline__ void
-outw(unsigned short port, unsigned short val)
+outw(unsigned PORT_SIZE port, unsigned short val)
 {
-	*(volatile unsigned short*)(((unsigned short)(port))+IOPortBase) = val;
+	*(volatile unsigned short*)(((unsigned PORT_SIZE)(port))+IOPortBase) = val;
 }
 
 static __inline__ void
-outl(unsigned short port, unsigned int val)
+outl(unsigned PORT_SIZE port, unsigned int val)
 {
-	*(volatile unsigned int*)(((unsigned short)(port))+IOPortBase) = val;
+	*(volatile unsigned int*)(((unsigned PORT_SIZE)(port))+IOPortBase) = val;
 }
 
 static __inline__ unsigned int
-inb(unsigned short port)
+inb(unsigned PORT_SIZE port)
 {
-	return *(volatile unsigned char*)(((unsigned short)(port))+IOPortBase);
+	return *(volatile unsigned char*)(((unsigned PORT_SIZE)(port))+IOPortBase);
 }
 
 static __inline__ unsigned int
-inw(unsigned short port)
+inw(unsigned PORT_SIZE port)
 {
-	return *(volatile unsigned short*)(((unsigned short)(port))+IOPortBase);
+	return *(volatile unsigned short*)(((unsigned PORT_SIZE)(port))+IOPortBase);
 }
 
 static __inline__ unsigned int
-inl(unsigned short port)
+inl(unsigned PORT_SIZE port)
 {
-	return *(volatile unsigned int*)(((unsigned short)(port))+IOPortBase);
+	return *(volatile unsigned int*)(((unsigned PORT_SIZE)(port))+IOPortBase);
 }
 
 

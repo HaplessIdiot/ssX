@@ -72,6 +72,7 @@ fbCreatePixmapBpp (ScreenPtr pScreen, int width, int height, int depth, int bpp)
     pPixmap->devPrivate.ptr = (void *) ((char *) pPixmap->devPrivate.ptr + paddedWidth);
     fbInitializeDrawable (&pPixmap->drawable);
 #endif
+
     return pPixmap;
 }
 

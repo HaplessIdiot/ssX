@@ -89,6 +89,7 @@ int xf86GetIsaInfoForScreen(int scrnIndex);
 int  xf86GetFbInfoForScreen(int scrnIndex);
 Bool xf86ParseIsaBusString(const char *busID);
 int xf86ClaimFbSlot(DriverPtr drvp, int chipset, GDevPtr dev, Bool active);
+int xf86ClaimNoSlot(DriverPtr drvp, int chipset, GDevPtr dev, Bool active);
 void xf86EnableAccess(ScrnInfoPtr pScrn);
 void xf86SetCurrentAccess(Bool Enable, ScrnInfoPtr pScrn);
 Bool xf86IsPrimaryPci(pciVideoPtr pPci);

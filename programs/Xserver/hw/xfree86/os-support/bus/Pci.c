@@ -979,7 +979,7 @@ xf86scanpci(int flags)
 	}
 
 	devp->listed_class = 0;
-
+	
 #ifdef OLD_FORMAT
 	xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%.2x,0x%02x,0x%1x "
 		    "ID 0x%04x,0x%04x Rev 0x%02x Class 0x%02x,0x%02x\n",

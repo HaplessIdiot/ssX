@@ -22,7 +22,8 @@ vmwareCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
     VMWAREPtr pVMWARE = VMWAREPTR(infoFromScreen(pWin->drawable.pScreen));
 
     TRACEPOINT
-    if (!(pVMWARE->vmwareCapability & SVGA_CAP_RECT_COPY)) {
+    if (!(pVMWARE->vmwareCapability & SVGA_CAP_RECT_COPY)
+	|| !*pVMWARE->vtSemaPtr) {
 	pVMWARE->ScrnFuncs.CopyWindow(pWin, ptOldOrg, prgnSrc);
 	return;
     }
@@ -90,10 +91,11 @@ vmwarePaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
     VMWAREPtr pVMWARE = VMWAREPTR(infoFromScreen(pWin->drawable.pScreen));
 
     TRACEPOINT
+
     /* Accelerate solid fills */
     if ((pVMWARE->vmwareCapability & SVGA_CAP_RECT_FILL) && 
 	((what == PW_BACKGROUND && pWin->backgroundState == BackgroundPixel)
-	    || (what == PW_BORDER && pWin->borderIsPixel))) {
+	 || (what == PW_BORDER && pWin->borderIsPixel)) && *pVMWARE->vtSemaPtr) {
 	BoxPtr pBB;
 
 	pBB = REGION_EXTENTS(pWin->drawable.pScreen, pRegion);
@@ -115,7 +117,8 @@ vmwarePaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
 	SHOW_CURSOR(pVMWARE, *pBB);
     } else {
 	VmwareLog(("vmwarePaintWindow not called at top level\n"));
-	vmwareWaitForFB(pVMWARE);
+	if (*pVMWARE->vtSemaPtr)
+	    vmwareWaitForFB(pVMWARE);
 	pVMWARE->ScrnFuncs.PaintWindowBackground(pWin, pRegion, what);
     }
 }

@@ -224,7 +224,7 @@ typedef struct _drmTextureRegion {
 #define DRM_LOCK_CONT  0x40000000 /* Hardware lock is contended            */
 
 #if __GNUC__ >= 2
-# if defined(__i386)
+# if defined(__i386) || defined(__x86_64__)
 				/* Reflect changes here to drmP.h */
 #define DRM_CAS(lock,old,new,__ret)                                    \
 	do {                                                           \

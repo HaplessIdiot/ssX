@@ -58,6 +58,12 @@ GCPtr pGC, int srcx, int srcy, int width, int height, int dstx, int dsty)
     VMWAREPtr pVMWARE = VMWAREPTR(infoFromScreen(pGC->pScreen));
 
     TRACEPOINT
+
+    if (!*pVMWARE->vtSemaPtr)
+	return GC_OPS(pGC)->CopyArea(pSrcDrawable, pDstDrawable,
+				     pGC, srcx, srcy, width, height,
+				     dstx, dsty);
+
     if ((pVMWARE->vmwareCapability & SVGA_CAP_RECT_COPY) &&
 	(pGC->alu == GXcopy || (pVMWARE->vmwareCapability & SVGA_CAP_RASTER_OP)) &&
 	pSrcDrawable->type == DRAWABLE_WINDOW &&
@@ -141,6 +147,11 @@ int srcx, int srcy, int width, int height, int dstx, int dsty, unsigned long bit
 
     TRACEPOINT
 
+    if (!*pVMWARE->vtSemaPtr)
+	return fbCopyPlane(pSrcDrawable, pDstDrawable,
+			   pGC, srcx, srcy, width, height,
+			   dstx, dsty, bitPlane);
+	
     if (pDstDrawable->type == DRAWABLE_WINDOW ||
 	pSrcDrawable->type == DRAWABLE_WINDOW) {
 	if (pVMWARE->vmwareBBLevel == 0) {

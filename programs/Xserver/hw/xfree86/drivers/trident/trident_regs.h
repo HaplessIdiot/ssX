@@ -48,6 +48,14 @@
 #define SSetup 0x20
 #define SKey 0x37
 #define SPKey 0x57
+#define GBslope1 0xB4
+#define GBslope2 0xB5
+#define GBslope3 0xB6
+#define GBslope4 0xB7
+#define GBintercept1 0xB8
+#define GBintercept2 0xB9
+#define GBintercept3 0xBA
+#define GBintercept4 0xBB
 
 /* 3x4 */
 #define Offset 0x13

@@ -163,6 +163,7 @@ typedef struct {
     unsigned char PanelHorizCenterReg3;
     unsigned char PanelHorizCenterReg4;
     unsigned char PanelHorizCenterReg5;
+    unsigned char Sequencer1;
     Bool ProgramVCLK;
     unsigned char VCLK3NumeratorLow;
     unsigned char VCLK3NumeratorHigh;
@@ -235,6 +236,7 @@ typedef struct neoRec
     OptionInfoPtr Options;
     Bool noLinear;
     Bool noAccel;
+    Bool noAccelSet;
     Bool swCursor;
     Bool noMMIO;
     Bool internDisp;

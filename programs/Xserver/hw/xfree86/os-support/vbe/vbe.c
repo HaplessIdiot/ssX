@@ -34,7 +34,7 @@
 static unsigned char * vbeReadEDID(vbeInfoPtr pVbe);
 static Bool vbeProbeDDC(vbeInfoPtr pVbe);
 
-static const char *ddcSymbols[] = {
+const char *vbe_ddcSymbols[] = {
     "xf86InterpretEDID",
     NULL
 };
@@ -313,7 +313,7 @@ vbeDoEDID(vbeInfoPtr pVbe, pointer pDDCModule)
 	if (!pModule)
 	    return NULL;
 
-	xf86LoaderReqSymLists(ddcSymbols, NULL);
+	xf86LoaderReqSymLists(vbe_ddcSymbols, NULL);
     }
         
     DDC_data = vbeReadEDID(pVbe);

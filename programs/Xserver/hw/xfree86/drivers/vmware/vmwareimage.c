@@ -53,7 +53,3 @@ vmwareGetImage(DrawablePtr pDrawable,
     		    vmwareImageToBox(&BB, pDrawable, x, y, w, h),
 		    pVMWARE->ScrnFuncs.GetImage(pDrawable, x, y, w, h, format, planeMask, pBinImage));
 }
-
-
-
-

@@ -26,3 +26,4 @@
 #		subvendor subdevice  subsystem_name	<-- two tabs
 #
 # Use lower-case hex digits for all numeric values.
+	0c30  F69030

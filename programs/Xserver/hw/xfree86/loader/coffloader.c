@@ -1139,7 +1139,7 @@ COFFModulePtr	cofffile;
 		   ".stab.", strlen(".stab.") ) == 0 ) {
 	    continue;
 	}
-	ErrorF("Not loading %s\n", cofffile->sections[i].s_name );
+	ErrorF("COFF: Not loading %s\n", cofffile->sections[i].s_name );
     }
 }
 

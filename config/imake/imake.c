@@ -482,8 +482,8 @@ wrapup(void)
 		unlink(tmpMakefile);
 	if (cleanedImakefile && cleanedImakefile != Imakefile)
 		unlink(cleanedImakefile);
-	if (haveImakefileC)
-		unlink(ImakefileC);
+ 	if (haveImakefileC)
+ 		unlink(ImakefileC);
 }
 
 #ifdef SIGNALRETURNSINT
@@ -1266,7 +1266,7 @@ get_gcc(char *cmd)
 	"/usr/bin/cc",	/* for Linux PostIncDir */
 # endif
 	"/usr/local/bin/gcc",
-	"/opt/gnu/bin/gcc"
+	"/opt/gnu/bin/gcc",
 	"/usr/pkg/bin/gcc"
     };
 

@@ -504,9 +504,8 @@ extern ClientPtr LookupClient(
 );
 
 extern void NoopDDA(
-#if NeedVarargsPrototypes
-    void *,
-    ...
+#if NeedFunctionPrototypes
+    void
 #endif
 );
 

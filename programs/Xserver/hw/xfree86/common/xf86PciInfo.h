@@ -284,8 +284,15 @@
 #define PCI_CHIP_SIS6326		0x6326
 #define PCI_CHIP_SIS7001		0x7001
 #define PCI_CHIP_SIS300			0x0300
+#define PCI_CHIP_SIS315H                0x0310
+#define PCI_CHIP_SIS315PRO              0x0325
+#define PCI_CHIP_SIS330                 0x0330
 #define PCI_CHIP_SIS630			0x6300
 #define PCI_CHIP_SIS540			0x5300
+#define PCI_CHIP_SIS550                 0x5315 
+#define PCI_CHIP_SIS650                 0x6325 
+#define PCI_CHIP_SIS730                 0x7300
+
 
 /* SGS */
 #define PCI_CHIP_STG2000		0x0008

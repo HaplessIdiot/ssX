@@ -46,6 +46,7 @@
 #include "xf86Resources.h"
 #include "xf86fbman.h"
 #include "xf86cmap.h"
+#include "xf86RAC.h"
 #include "compiler.h"
 #include "xaa.h"
 #include "mipointer.h"
@@ -173,8 +174,9 @@ RamDacSupportedInfoRec IBMRamdacs[] = {
 
 #ifdef S3_USEFB
 static const char *fbSymbols[] = {
-        "fbScreenInit",
-        NULL
+    "fbPictureInit",
+    "fbScreenInit",
+    NULL
 };
 #else
 static const char *cfbSymbols[] = {
@@ -491,8 +493,8 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 
         pS3->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
         xf86RegisterResources(pEnt->index, NULL, ResNone);
-        xf86SetOperatingState(resVgaIo, pEnt->index, ResUnusedOpr);
-        xf86SetOperatingState(resVgaMem, pEnt->index, ResDisableOpr);
+	/* don't disable PIO funcs */
+        xf86SetOperatingState(resVgaMemShared, pEnt->index, ResDisableOpr);
 
         if (pEnt->device->chipset && *pEnt->device->chipset) {
                 pScrn->chipset = pEnt->device->chipset;
@@ -777,7 +779,8 @@ static Bool S3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
 #if 0
 	S3Regdump(pScrn);
 #endif
-
+	pScrn->vtSema = TRUE;
+	
 	S3SaveScreen(pScreen, SCREEN_SAVER_ON);
 
         miClearVisualTypes();
@@ -850,7 +853,9 @@ static Bool S3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
                         }
                 } 
         }
-
+#ifdef S3_USEFB
+	fbPictureInit (pScreen, 0, 0);
+#endif
 	S3DGAInit(pScreen);
 
         miInitializeBackingStore(pScreen);
@@ -896,8 +901,9 @@ static Bool S3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
 
         if (!miCreateDefColormap(pScreen))
                 return FALSE;
-        
-        if (!xf86HandleColormaps(pScreen, 256, pScrn->rgbBits, pS3->LoadPalette, NULL,
+
+        if (!xf86HandleColormaps(pScreen, 256, pScrn->rgbBits,
+				 pS3->LoadPalette, NULL,
                                  CMAP_RELOAD_ON_MODE_SWITCH))
                 return FALSE;
 
@@ -909,9 +915,14 @@ static Bool S3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
 
 	xf86DPMSInit(pScreen, S3DisplayPowerManagementSet, 0);
 
+	/* XXX Check if I/O and Mem flags need to be the same. */
+	pScrn->racIoFlags = pScrn->racMemFlags = RAC_COLORMAP
+	    | RAC_FB | RAC_VIEWPORT | RAC_CURSOR;
+
 #if 0
 	S3InitVideo(pScreen);
 #endif
+	
         return TRUE;
 }                 
 
@@ -1034,8 +1045,9 @@ Bool S3CloseScreen(int scrnIndex, ScreenPtr pScreen)
 
 
 Bool S3SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
-{
-	return S3ModeInit(xf86Screens[scrnIndex], mode);
+{    
+	return S3ModeInit(xf86Screens[scrnIndex], xf86Screens[scrnIndex]->currentMode);
+
 }
 
 
@@ -1044,7 +1056,7 @@ static void S3GenericLoadPalette(ScrnInfoPtr pScrn, int numColors,
                                  VisualPtr pVisual)
 {               
         int i, index;
-
+	
         for (i=0; i<numColors; i++) {
                 index = indicies[i];
                 outb(0x3c8, index);
@@ -1155,6 +1167,8 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         if (!vgaHWInit(pScrn, mode))
                 return FALSE;
 
+
+
 	pVga->MiscOutReg |= 0x0c;
 	pVga->Sequencer[0] = 0x03;
 	pVga->CRTC[19] = pS3->s3BppDisplayWidth >> 3;
@@ -1169,6 +1183,7 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* ok i give up also, i'm writing in here */
 
 	vgaHWProtect(pScrn, TRUE);
+
 
 	if (pS3->RamDac->RamDacType == TI3025_RAMDAC) {
 		outb(vgaCRIndex, 0x5c);
@@ -1186,6 +1201,8 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		outw(0x3c4, (pVga->Sequencer[r] << 8) | r);
 	}
 
+	/* We need to set this first - S3 *is* broken */
+	outw(vgaCRIndex, (pVga->CRTC[17] << 8) | 17);
 	for(r=0; r<25; r++)
 		outw(vgaCRIndex, (pVga->CRTC[r] << 8) | r);
 
@@ -1622,7 +1639,6 @@ static Bool S3EnterVT(int scrnIndex, int flags)
         vgaHWPtr hwp = VGAHWPTR(pScrn);
 
         vgaHWUnlock(hwp);
-
         if (!S3ModeInit(pScrn, pScrn->currentMode))
                 return FALSE;
         
@@ -1639,7 +1655,6 @@ static void S3Restore(ScrnInfoPtr pScrn)
 	int i;
 
 	vgaHWProtect(pScrn, TRUE);
-
 	WaitQueue(8);
 
 	S3BankZero(pScrn);

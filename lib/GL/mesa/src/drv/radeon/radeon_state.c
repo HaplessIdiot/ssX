@@ -917,7 +917,7 @@ static void radeonEnable( GLcontext *ctx, GLenum cap, GLboolean state )
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_API )
-      fprintf( stderr, __FUNCTION__"( %s = %s )\n",
+       fprintf( stderr, "%s( %s = %s )\n",__FUNCTION__,
 	       _mesa_lookup_enum_by_nr( cap ),
 	       state ? "GL_TRUE" : "GL_FALSE" );
 

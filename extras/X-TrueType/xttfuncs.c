@@ -1100,7 +1100,7 @@ freetype_compute_bounds(FreeTypeFont *ft,
                                 char_width);
                 }
 
-            if (!tmpchar->characterWidth)
+            if (!tmpchar || !tmpchar->characterWidth)
                 continue;
 
                 adjust_min_max(&minchar, &maxchar, tmpchar);

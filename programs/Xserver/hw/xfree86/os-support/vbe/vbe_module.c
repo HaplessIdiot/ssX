@@ -4,6 +4,7 @@
 #include "xf86str.h"
 #include "vbe.h"
 
+extern const char *vbe_ddcSymbols[];
 
 #ifdef XFree86LOADER
 
@@ -32,6 +33,7 @@ vbeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     
     if (!setupDone) {
 	setupDone = TRUE;
+	LoaderRefSymLists(vbe_ddcSymbols,NULL);
 	/*
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.

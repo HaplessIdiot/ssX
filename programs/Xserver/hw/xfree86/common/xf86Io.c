@@ -400,25 +400,20 @@ GetTimeInMillis()
 {
     struct timeval  tp;
     register CARD32 val;
+    register INT32 diff;
     static CARD32 oldval = 0;
-    static CARD32 skew = 0;
+    static CARD32 time = 0;
 
     gettimeofday(&tp, 0);
-    val = (tp.tv_sec * 1000) + (tp.tv_usec / 1000) + skew;
-    /* On some systems the clock is not monothonic */
-    if ((val < oldval) && ((oldval - val) < HALFMONTH)) {
-      /* if clock is not monothonic find out clock skew skew */
-        xf86MsgVerb(X_WARNING,4,"System time not monotonic!\n");
-	skew += oldval - val;
-	val = (tp.tv_sec * 1000) + (tp.tv_usec / 1000) + skew;
-    } else if (skew && ((val - oldval) < HALFMONTH)) {
-      /* try to reduce skew */
-        INT32 diff = skew - (val - oldval);
-	skew = diff < 0 ? 0 : diff;
-	val = (tp.tv_sec * 1000) + (tp.tv_usec / 1000) + skew;
+    val = (tp.tv_sec * 1000) + (tp.tv_usec / 1000);
+    if (oldval) {
+	diff = val - oldval;
+	if (diff > 0)
+	    time += diff;
     }
     oldval = val;
-    return val;
+
+    return time;
 }
 #endif /* DDXTIME && !QNX4 */
 

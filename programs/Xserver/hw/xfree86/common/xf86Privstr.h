@@ -26,6 +26,12 @@ typedef enum {
     PCIOsConfig
 } PciProbeType;
 
+typedef enum {
+    LogNone,
+    LogFlush,
+    LogSync
+} Log;
+
 /*
  * xf86InfoRec contains global parameters which the video drivers never
  * need to access.  Global parameters which the video drivers do need
@@ -122,7 +128,7 @@ typedef struct {
     Bool		pc98;
 #endif
     Bool                pmFlag;
-    Bool		syncLog;
+    Log			log;
     int                 estimateSizesAggressively;
     Bool                kbdCustomKeycodes;
     struct {

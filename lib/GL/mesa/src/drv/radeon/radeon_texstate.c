@@ -734,8 +734,8 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
    GLuint i, numColorArgs = 0, numAlphaArgs = 0;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
-      fprintf( stderr, __FUNCTION__"( %p, %d ) format=%s\n",
-	       ctx, unit, _mesa_lookup_enum_by_nr( format ) );
+       fprintf( stderr, "%s( %p, %d ) format=%s\n",__FUNCTION__,
+	       (void*)ctx, unit, _mesa_lookup_enum_by_nr( format ) );
    }
 
    /* Set the texture environment state.  Isn't this nice and clean?

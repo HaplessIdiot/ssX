@@ -254,7 +254,8 @@ configureInputSection (void)
     /* Crude mechanism to auto-detect mouse (os dependent) */
     { 
 	int fd;
-#ifdef linux
+#if 0 && defined linux
+	/* Our autodetection code can do a better job */
 	int len;
 	char path[32];
 

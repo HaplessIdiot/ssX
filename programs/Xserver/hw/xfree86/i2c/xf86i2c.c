@@ -855,9 +855,9 @@ xf86I2CFindBus(int scrnIndex, char *name)
 
     if (name != NULL)
 	for (p = I2CBusList; p != NULL; p = p->NextBus)
-	    if (scrnIndex < 0 || p->scrnIndex == scrnIndex) 
+	    if (scrnIndex < 0 || p->scrnIndex == scrnIndex)
 		if (!strcmp(p->BusName, name))
 		    return p;
-
+    
     return NULL;
 }

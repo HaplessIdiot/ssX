@@ -49,7 +49,7 @@ xf86VTRequest(int sig)
 Bool
 xf86VTSwitchPending()
 {
-	return(xf86Info.vtRequestsPending ? TRUE : FALSE);
+    return(xf86Info.vtRequestsPending ? TRUE : FALSE);
 }
 
 Bool

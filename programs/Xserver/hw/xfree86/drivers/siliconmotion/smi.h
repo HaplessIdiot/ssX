@@ -212,8 +212,7 @@ typedef struct
 	int			lcdHeight;	/* LCD height */
 
 	I2CBusPtr		I2C;		/* Pointer into I2C module */
-	xf86Int10InfoPtr	pInt;		/* Pointer to INT10 module */
-	vbeInfoPtr		pVbe;		/* Pointer to VBE module */
+	xf86Int10InfoPtr	pInt10;		/* Pointer to INT10 module */
 
 	/* Shadow frame buffer (rotation) */
 	Bool			shadowFB;	/* Flag if shadow buffer is

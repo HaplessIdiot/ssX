@@ -1218,12 +1218,13 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->minClock = cPtr->MinClock;
     clockRanges->maxClock = cPtr->MaxClock;
     clockRanges->clockIndex = -1;		/* programmable */
-    if (cPtr->PanelType & ChipsLCD)
+    if (cPtr->PanelType & ChipsLCD) {
 	clockRanges->interlaceAllowed = FALSE;
-    else
+	clockRanges->doubleScanAllowed = FALSE;
+    } else {
 	clockRanges->interlaceAllowed = TRUE;
-    clockRanges->doubleScanAllowed = FALSE;
-
+        clockRanges->doubleScanAllowed = TRUE;
+    }
     /* 
      * Reduce the amount of video ram for the modes, so that they
      * don't overlap with the DSTN framebuffer
@@ -1475,7 +1476,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* Set the bits per RGB */
     if (pScrn->depth > 1) {
 	/* Default to 6, is this right for HiQV?? */
-	pScrn->rgbBits = 6;
+	pScrn->rgbBits = 8;
 	if (xf86GetOptValInteger(cPtr->Options, OPTION_RGB_BITS, &val)) {
 	    if (val == 6 || val == 8) {
 		pScrn->rgbBits = val;
@@ -2264,7 +2265,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     
     /* Check if maxClock is limited by the MemClk. Only 70% to allow for */
     /* RAS/CAS. Extra byte per memory clock needed if framebuffer used   */
-    /* Extra byte if the overlay plane is avtivated                      */
+    /* Extra byte if the overlay plane is activated                      */
     /* We have a 64bit wide memory bus on the 69030 and 69000, and 32bits */
     /* on the others. Thus multiply by a suitable factor                 */  
     if ((cPtr->Chipset == CHIPS_CT69030) || (cPtr->Chipset == CHIPS_CT69000)) {
@@ -4160,6 +4161,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	cAcl->CacheEnd = currentaddr;
 
 	/* Setup the acceleration primitives */
+	/* Calculate space needed of offscreen pixmaps etc. */
 	if (cPtr->Flags & ChipsAccelSupport) {
 	    /* 
 	     * A scratch area is now allocated in the video ram. This is used
@@ -4225,15 +4227,13 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		cAcl->BltDataWindow = cPtr->FbBase;
 	    }
 	    
-	    if (IS_HiQV(cPtr)) {
-		CHIPSHiQVAccelInit(pScreen);
-	    } else if (cPtr->UseMMIO) {
-		CHIPSMMIOAccelInit(pScreen);
-	    } else {
-		CHIPSAccelInit(pScreen);
-	    }
 	}
-
+	/*
+	 * Initialize FBManager: 
+	 * we do even with no acceleration enabled
+	 * so that video support can allocate space.
+	 */
+	   
 	{
 	    BoxRec AvailFBArea;
 	    AvailFBArea.x1 = 0;
@@ -4246,7 +4246,16 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		xf86InitFBManager(pScreen, &AvailFBArea); 
 	    }
 	}
-
+	if (cPtr->Flags & ChipsAccelSupport) {
+	    if (IS_HiQV(cPtr)) {
+		CHIPSHiQVAccelInit(pScreen);
+	    } else if (cPtr->UseMMIO) {
+		CHIPSMMIOAccelInit(pScreen);
+	    } else {
+		CHIPSAccelInit(pScreen);
+	    }
+	}
+	
 	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);
 #ifdef ENABLE_SILKEN_MOUSE

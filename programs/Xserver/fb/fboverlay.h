@@ -58,8 +58,9 @@ typedef struct _fbOverlayScrPriv {
 } FbOverlayScrPrivRec, *FbOverlayScrPrivPtr;
 
 #define fbOverlayGetScrPriv(s)	((FbOverlayScrPrivPtr) \
-				 (s)->devPrivates[fbOverlayScreenPrivateIndex].ptr)
-
+				 (fbOverlayScreenPrivateIndex != -1) \
+                          ? (s)->devPrivates[fbOverlayScreenPrivateIndex].ptr\
+				: NULL)
 Bool
 fbOverlayCreateWindow(WindowPtr pWin);
 

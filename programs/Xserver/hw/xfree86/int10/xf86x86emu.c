@@ -46,23 +46,23 @@ Bool
 xf86Int10ExecSetup(xf86Int10InfoPtr pInt)
 {
     int i;
-    static X86EMU_intrFuncs intFuncs[256];
-    static X86EMU_pioFuncs pioFuncs = {
-	x_inb,
-	x_inw,
-	x_inl,
-	x_outb,
-	x_outw,
-	x_outl
+    X86EMU_intrFuncs intFuncs[256];
+    X86EMU_pioFuncs pioFuncs = {
+	(&x_inb),
+	(&x_inw),
+	(&x_inl),
+	(&x_outb),
+	(&x_outw),
+	(&x_outl)
     };
 
-    static X86EMU_memFuncs memFuncs = {
-	Mem_rb,
-	Mem_rw,
-	Mem_rl,
-	Mem_wb,
-	Mem_ww,
-	Mem_wl
+    X86EMU_memFuncs memFuncs = {
+	(&Mem_rb),
+	(&Mem_rw),
+	(&Mem_rl),
+	(&Mem_wb),
+	(&Mem_ww),
+	(&Mem_wl)
     };
 
     X86EMU_setupMemFuncs(&memFuncs);

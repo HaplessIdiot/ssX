@@ -138,11 +138,12 @@ xf86InfoRec xf86Info = {
 	FALSE,		/* pc98 */
 #endif
 	TRUE,		/* pmFlag */
-	FALSE,          /* syncLog */
+	LogNone,	/* syncLog */
 	0,		/* estimateSizesAggressively */
 	FALSE           /* kbdCustomKeycodes */
 };
 const char *xf86ConfigFile = NULL;
+const char *xf86InputDeviceList = NULL;
 const char *xf86ModulePath = DEFAULT_MODULE_PATH;
 MessageType xf86ModPathFrom = X_DEFAULT;
 const char *xf86LogFile = DEFAULT_LOGPREFIX;
@@ -208,6 +209,7 @@ Bool xf86MiscModInDevDisabled = FALSE;
 Bool xf86MiscModInDevAllowNonLocal = FALSE;
 #endif
 PropertyPtr *xf86RegisteredPropertiesTable = NULL;
+Bool xf86inSuspend = FALSE;
 
 #ifdef DLOPEN_HACK
 /*

@@ -76,7 +76,7 @@ xkb_symbols "basic" {
     key <BKSL> {   [],	[ backslash,	bar		]	};
 
     key <LCTL> {   [],	[ 	 Control_L		]	};
-    key <SPCE> {   [],	[ 	 space			]	};
+    key <SPCE> {   [],	[     space,    space		]	};
     // End alphanumeric section
 
     // begin modifier mappings

@@ -633,6 +633,13 @@ configFiles(XF86ConfFilesPtr fileconf)
 
   xf86Msg(pathFrom, "RgbPath set to \"%s\"\n", rgbPath);
 
+  if (fileconf && fileconf->file_inputdevs) {
+      xf86InputDeviceList = fileconf->file_inputdevs;
+      xf86Msg(X_CONFIG, "Input device list set to \"%s\"\n",
+	  xf86InputDeviceList);
+  }
+  
+  
 #ifdef XFree86LOADER
   /* ModulePath */
 
@@ -694,7 +701,7 @@ typedef enum {
     FLAG_XINERAMA,
     FLAG_ALLOW_DEACTIVATE_GRABS,
     FLAG_ALLOW_CLOSEDOWN_GRABS,
-    FLAG_SYNCLOG
+    FLAG_LOG
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {
@@ -752,7 +759,7 @@ static OptionInfoRec FlagOptions[] = {
 	{0}, FALSE },
   { FLAG_ALLOW_CLOSEDOWN_GRABS, "AllowClosedownGrabs",		OPTV_BOOLEAN,
 	{0}, FALSE },
-  { FLAG_SYNCLOG,		"SyncLog",			OPTV_BOOLEAN,
+  { FLAG_LOG,			"Log",				OPTV_STRING,
 	{0}, FALSE },
   { -1,				NULL,				OPTV_NONE,
 	{0}, FALSE },
@@ -862,9 +869,19 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     xf86Info.pmFlag = TRUE;
     if (xf86GetOptValBool(FlagOptions, FLAG_NOPM, &value)) 
 	xf86Info.pmFlag = !value;
-    if (xf86GetOptValBool(FlagOptions, FLAG_SYNCLOG, &value)) {
-	xf86Msg(X_CONFIG, "SyncLog %s\n",value?"enabled":"disabled");
-	xf86Info.syncLog = value;
+    {
+	const char *s;
+	if ((s = xf86GetOptValString(FlagOptions, FLAG_LOG))) {
+	    if (!xf86NameCmp(s,"flush")) {
+		xf86Msg(X_CONFIG, "Flushing logfile enabled\n");
+		xf86Info.log = LogFlush;
+	    } else if (!xf86NameCmp(s,"sync")) {
+		xf86Msg(X_CONFIG, "Syncing logfile enabled\n");
+		xf86Info.log = LogSync;
+	    } else {
+		xf86Msg(X_WARNING,"Unknown Log option\n");
+	    }
+        }
     }
     
     i = -1;

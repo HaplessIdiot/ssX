@@ -168,7 +168,7 @@ static radeonTexObjPtr radeonAllocTexObj( struct gl_texture_object *texObj )
       return NULL;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
-      fprintf( stderr, __FUNCTION__"( %p, %p )\n", texObj, t );
+      fprintf( stderr, "%s( %p, %p )\n",__FUNCTION__, (void*)texObj, (void*)t );
    }
 
    /* Initialize non-image-dependent parts of the state:
@@ -585,7 +585,7 @@ static void radeonTexParameter( GLcontext *ctx, GLenum target,
    radeonTexObjPtr t = (radeonTexObjPtr) texObj->DriverData;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
-      fprintf( stderr, __FUNCTION__"( %s )\n",
+       fprintf( stderr, "%s( %s )\n",__FUNCTION__,
 	       _mesa_lookup_enum_by_nr( pname ) );
    }
 
@@ -645,7 +645,7 @@ static void radeonBindTexture( GLcontext *ctx, GLenum target,
    GLuint unit = ctx->Texture.CurrentUnit;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
-      fprintf( stderr, __FUNCTION__"( %p ) unit=%d\n", texObj, unit );
+      fprintf( stderr, "%s( %p ) unit=%d\n",__FUNCTION__, (void*)texObj, unit );
    }
 
    if ( target == GL_TEXTURE_2D || target == GL_TEXTURE_1D ) {
@@ -663,7 +663,7 @@ static void radeonDeleteTexture( GLcontext *ctx,
    radeonTexObjPtr t = (radeonTexObjPtr) texObj->DriverData;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
-      fprintf( stderr, __FUNCTION__"( %p )\n", texObj );
+      fprintf( stderr, "%s( %p )\n",__FUNCTION__, (void*)texObj );
    }
 
    if ( t ) {
