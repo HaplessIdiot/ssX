@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.14 1999/05/16 10:13:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.16 2000/09/01 05:10:24 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -69,12 +69,14 @@ XAAValidateGC(
     (*pGC->funcs->ValidateGC)(pGC, changes, pDraw);
 
     if((changes & GCPlaneMask) &&
-       ((pGC->planemask & infoRec->FullPlanemask) == infoRec->FullPlanemask))
+       ((pGC->planemask & infoRec->FullPlanemask) == infoRec->FullPlanemask))	
 	pGC->planemask = ~0;
 
     if(pGC->depth != 32) {
 	if(pGC->bgPixel == -1) /* -1 is reserved for transparency */
 	    pGC->bgPixel = 0x7fffffff; 
+	if(pGC->fgPixel == -1) /* -1 is reserved for transparency */
+	    pGC->fgPixel = 0x7fffffff; 
     }
 
     if((pDraw->type == DRAWABLE_PIXMAP) && !IS_OFFSCREEN_PIXMAP(pDraw)){

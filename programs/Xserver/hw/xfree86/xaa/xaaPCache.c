@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.23 1999/10/31 23:52:57 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.29 2000/06/13 02:51:24 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -2171,12 +2171,13 @@ XAAOpaqueStippledFillChooser(GCPtr pGC)
     PixmapPtr pPixmap = pGC->stipple;
     XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pPixmap);
 
+    if(XAA_DEPTH_BUG(pGC))
+	 return 0;
 
     if(!(pPriv->flags & REDUCIBILITY_CHECKED) &&
 	(infoRec->CanDoMono8x8 || infoRec->CanDoColor8x8)) {
 	XAACheckStippleReducibility(pPixmap);
     }
-
 
     if(pPriv->flags & REDUCIBLE_TO_8x8) {
 	if(infoRec->CanDoMono8x8 && 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.16 1999/07/04 06:39:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.19 2000/04/01 22:42:04 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -401,10 +401,13 @@ XAAPutImage(
 ){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     int bpp = BitsPerPixel(depth);
+    Bool depthBug = FALSE;
     if(!w || !h) return;
 
     if(!REGION_NUM_RECTS(pGC->pCompositeClip))
 	return;
+
+    depthBug = XAA_DEPTH_BUG(pGC);
 
     if(((format == ZPixmap) && infoRec->WritePixmap &&
 	     ((pDraw->bitsPerPixel == bpp) ||
@@ -414,13 +417,13 @@ XAAPutImage(
 	     CHECK_ROPSRC(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_PLANEMASK(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_NO_GXCOPY(pGC,infoRec->WritePixmapFlags)) ||
-       ((format == XYBitmap) && infoRec->WriteBitmap &&
+       ((format == XYBitmap) && !depthBug && infoRec->WriteBitmap &&
 	     CHECK_ROP(pGC,infoRec->WriteBitmapFlags) &&
 	     CHECK_ROPSRC(pGC,infoRec->WriteBitmapFlags) &&
 	     CHECK_PLANEMASK(pGC,infoRec->WriteBitmapFlags) &&
 	     CHECK_COLORS(pGC,infoRec->WriteBitmapFlags) &&
 	     !(infoRec->WriteBitmapFlags & TRANSPARENCY_ONLY)) ||
-       ((format == XYPixmap) && infoRec->WriteBitmap &&
+       ((format == XYPixmap) && !depthBug && infoRec->WriteBitmap &&
 	     CHECK_ROP(pGC,infoRec->WriteBitmapFlags) &&
 	     CHECK_ROPSRC(pGC,infoRec->WriteBitmapFlags) &&
 	     !(infoRec->WriteBitmapFlags & NO_PLANEMASK) &&

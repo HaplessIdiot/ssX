@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.25 2000/06/13 02:51:25 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.27 2000/09/20 02:05:41 keithp Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -1627,6 +1627,9 @@ CARD32 XAAReverseBitOrder(CARD32 data);
 
 #define OFFSCREEN_PIXMAP_LOCKED(pPix)\
         ((XAA_GET_PIXMAP_PRIVATE((PixmapPtr)(pPix)))->flags & LOCKED_PIXMAP)
+
+#define XAA_DEPTH_BUG(pGC) \
+        ((pGC->depth == 32) && (pGC->bgPixel == 0xffffffff))
 
 #define DELIST_OFFSCREEN_PIXMAP(pPix) { \
 	PixmapLinkPtr _pLink, _prev; \

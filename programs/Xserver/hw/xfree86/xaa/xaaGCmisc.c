@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.13 1999/09/25 14:38:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.14 2000/05/03 00:44:23 tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -261,7 +261,7 @@ XAAValidateImageGlyphBlt(
 
 
    /* Check for TE Fonts */
-   if(!TERMINALFONT(pGC->font) || BigFont) {
+   if(!TERMINALFONT(pGC->font) || BigFont || (pGC->depth == 32)) {
 	if(infoRec->ImageGlyphBltNonTE &&
 		CHECK_PLANEMASK(pGC,infoRec->ImageGlyphBltNonTEFlags) &&
 		CHECK_FG(pGC,infoRec->ImageGlyphBltNonTEFlags) &&
@@ -384,8 +384,8 @@ XAAValidatePolylines(
 	   if(pGC->ops->Polylines != XAAFallbackOps.Polylines)
 		pGC->ops->PolyRectangle = miPolyRectangle;
 
-	} else if(pGCPriv->DashPattern) { /* LineDoubleDash */
-
+	} else if(pGCPriv->DashPattern && (pGC->depth != 32)) { 
+           /* LineDoubleDash */
 	   if(infoRec->PolySegmentThinDashed &&
 		!(infoRec->PolySegmentThinDashedFlags & TRANSPARENCY_ONLY) &&
 		CHECK_PLANEMASK(pGC,infoRec->PolySegmentThinDashedFlags) &&

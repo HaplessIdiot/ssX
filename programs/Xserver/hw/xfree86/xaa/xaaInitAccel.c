@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.23 2000/05/03 14:54:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.24 2000/06/20 05:08:49 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -431,6 +431,20 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->SubsequentImageWriteScanline = NULL;
     }
 
+#ifndef __i386__
+   /* XAA makes some unaligned accesses when clipping is not available */
+   #define CLIP_FLAGS (LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X)
+   if(HaveImageWriteRect &&
+      ((infoRec->ImageWriteFlags & CLIP_FLAGS) != CLIP_FLAGS))
+   {
+        HaveImageWriteRect = FALSE;
+   }
+   if(HaveScanlineImageWriteRect &&
+      ((infoRec->ScanlineImageWriteFlags & CLIP_FLAGS) != CLIP_FLAGS))
+   {
+        HaveScanlineImageWriteRect = FALSE;
+   }
+#endif
 
     if (serverGeneration == 1) {
 	if(HaveScreenToScreenCopy)
@@ -1321,9 +1335,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->PolylinesMask = 
 		infoRec->FillSpansMask | GCLineStyle | GCLineWidth;
 
-	if(infoRec->PolySegmentThinDashed || infoRec->PolylinesThinDashed)
+	if(infoRec->PolySegmentThinDashed || infoRec->PolylinesThinDashed) 
 	    infoRec->PolylinesMask |= GCDashList;
-
 	if(compositeFlags & NO_PLANEMASK)
 	    infoRec->PolylinesMask |= GCPlaneMask;
 	if((compositeFlags & GXCOPY_ONLY) ||
