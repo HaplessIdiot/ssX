@@ -1,5 +1,5 @@
-/* $XConsortium: button.c,v 1.69 94/04/02 12:41:50 gildea Exp $ */
-/* $XFree86: xc/programs/xterm/button.c,v 3.1 1995/09/17 06:33:13 dawes Exp $ */
+/* $XConsortium: button.c /main/70 1996/01/14 16:52:34 kaleb $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.2 1996/01/10 05:44:07 dawes Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -1485,13 +1485,13 @@ void HandleGINInput (w, event, param_list, nparamsp)
 	  case 'L': case 'M': case 'R':
 	    break;
 	  default:
-	    Bell ();			/* let them know they goofed */
-	    c = 'l';			/* provide a default */
+	    Bell (XkbBI_MinorError,0);	/* let them know they goofed */
+	    c = 'l';				/* provide a default */
 	}
 	TekEnqMouse (c | 0x80);
 	TekGINoff();
     } else {
-	Bell ();
+	Bell (XkbBI_MinorError,0);
     }
 }
 

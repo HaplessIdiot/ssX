@@ -3,7 +3,7 @@
 
 <title> Information for Trident Chipset Users
 <author> The XFree86 Project, Inc.
-<date> 11 January 1996
+<date> 14 January 1996
 <toc>
 
 <sect> Supported chipsets <p>
@@ -26,7 +26,7 @@ but should work in this way according to the chipset documentation.
 <bf> NOTES: </bf>
 <itemize>
 <item>The TGUI9440/9660/9680 are now fully supported by the SVGA server.
-<item>16 bits per pixel is now suppored for the 8900D, 9200CXr, 9400CXi,
+<item>16 bits per pixel is now supported for the 8900D, 9200CXr, 9400CXi,
 9420DGi, 9430DGi, 9440AGi, 9660XGi and 9680, but only the 9440AGi and 9400CXi
 have been tested.
 <item>Linear access has been implemented for chipsets that support it.
@@ -39,9 +39,10 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 <tag>Option &dquot;nolinear&dquot;</tag>
 	Turn off linear mapping
 <tag>Option &dquot;linear&dquot;</tag>
-	Force linear mapping.  Use this if you have an 8900CL/D card, but
-	you must have less than 16MB of memory for this to work.  For
-	the 8900D, linear mode is required for 16bpp support.
+	Force linear mapping.  Use this if you have a non-PCI card and
+	require 16bpp support.  Note: ISA cards can only access up to
+	16MB of memory, so be sure you have less than this or it could
+	cause a system hang.
 <tag>Option &dquot;fast_dram&dquot;</tag>
 	45ns DRAM
 <tag>Option &dquot;med_dram&dquot;</tag>
@@ -53,7 +54,7 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 <tag>Option &dquot;pci_burst_on&dquot;</tag>
 	Turn on PCI burst mode
 <tag>Option &dquot;pci_burst_off&dquot;</tag>
-	Turn off PCI burst mode.  If you appear to be sufferent screen
+	Turn off PCI burst mode.  If you appear to be suffering screen
 	corruption use this setting.
 <tag>ClockChip &dquot;tgui&dquot;</tag>
 	Turn on programmable clocks.  This is the default for TGUIs.
@@ -125,7 +126,7 @@ be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
 $XConsortium: trident.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.5 1996/01/12 13:09:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.6 1996/01/14 13:38:29 dawes Exp $
 </verb>
 
 </article>

@@ -3,7 +3,7 @@
 <article>
 <title> Information for S3 Chipset Users
 <author>The XFree86 Project Inc.
-<date>7 July 1995
+<date>15 January 1996
 <toc>
 
 <sect> Supported hardware
@@ -513,11 +513,76 @@ AT&amp;T 20C409				==> ClockChip "att20c409"
 AT&amp;T 20C499 (untested)		==> ClockChip "att20c499"
 </verb></tscreen>
 
-<sect> Additional Notes
+<sect>List of Supported RAMDAC Chips
 <p>
 If you have a RAMDAC that is not listed here, be VERY careful not to
 overdrive it using XF86_S3. Better contact the XFree86 team first to
 verify that running XF86_S3 will not damage your board.
+
+RAMDACs that are grouped together below are treated as compatible
+with each other as far as the server is concerned. For example, the
+server will report <tt>"bt485"</tt> when you actually specify
+<tt>RAMDAC "bt9485"</tt>, or <tt>"s3_gendac"</tt> when you specify
+<tt>RAMDAC "ics5300"</tt>.
+
+<tscreen><verb>
+ATT20C409                               ==> RAMDAC "att20c409"
+
+ATT20C490                               ==> RAMDAC "att20c490"
+ATT20C491                               ==> RAMDAC "att20c491"
+CH8391                                  ==> RAMDAC "ch8391"
+
+ATT20C498                               ==> RAMDAC "att20c498"
+ATT21C498                               ==> RAMDAC "att21c498"
+
+ATT22C498                               ==> RAMDAC "att22c498"
+
+ATT20C505                               ==> RAMDAC "att20c505"
+
+BT485                                   ==> RAMDAC "bt485"
+BT9485                                  ==> RAMDAC "bt9485"
+
+IBMRGB514                               ==> RAMDAC "ibm_rgb514"
+IBMRGB525                               ==> RAMDAC "ibm_rgb525"
+
+IBMRGB524                               ==> RAMDAC "ibm_rgb524"
+IBMRGB526                               ==> RAMDAC "ibm_rgb526"
+
+IBMRGB528                               ==> RAMDAC "ibm_rgb528"
+
+S3_GENDAC                               ==> RAMDAC "s3gendac"
+ICS5300                                 ==> RAMDAC "ics5300"
+
+S3_SDAC                                 ==> RAMDAC "s3_sdac"
+ICS5342                                 ==> RAMDAC "ics5342"
+
+S3_TRIO32                               ==> RAMDAC "s3_trio32"
+
+S3_TRIO64                               ==> RAMDAC "s3_trio64"
+S3_TRIO64                               ==> RAMDAC "s3_trio"
+
+SC11482                                 ==> RAMDAC "sc11482"
+SC11483                                 ==> RAMDAC "sc11483"
+SC11484                                 ==> RAMDAC "sc11484"
+
+SC11485                                 ==> RAMDAC "sc11485"
+SC11487                                 ==> RAMDAC "sc11487"
+SC11489                                 ==> RAMDAC "sc11489"
+
+SC15025                                 ==> RAMDAC "sc15025"
+
+STG1700                                 ==> RAMDAC "stg1700"
+
+STG1703                                 ==> RAMDAC "stg1703"
+
+TI3020                                  ==> RAMDAC "ti3020"
+
+TI3025                                  ==> RAMDAC "ti3025"
+
+TI3026                                  ==> RAMDAC "ti3026"
+
+None of the above                       ==> RAMDAC "normal"
+</verb></tscreen>
 
 If you feel adventurous you could also open up your computer and have
 a peek at your RAMDAC. The RAMDAC is usually one of the larger chips
@@ -570,6 +635,15 @@ IBM 37RGB514CF17   ==>  DacSpeed 170
 IBM 37RGB524CF22   ==>  DacSpeed 220
               ^^
 </verb></tscreen>
+
+<sect> Additional Notes
+<p>
+Note that the Sierra SC1148{5,7,9} will not be distinguished from the
+Sierra SC1148{2,3,4} by the probe. The only difference between the
+two series as far as the server is concerned is that the {2,3,4} is
+capable of 15bpp, while the {5,7,9} is capable of 16bpp. So if you
+have a SC1148{5,7,9} and want to use 16bpp instead of 15bpp, you will
+have to specify a <tt>RAMDAC "sc11485"</tt> line as shown above.
 
 Some RAMDACs (like the Ti3025) require some mode timing consideration
 for their hardware cursor to work correctly.  The Ti3025 requires that
@@ -716,7 +790,7 @@ exit
 
 <verb>
 $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.30 1995/12/02 05:05:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.31 1995/12/28 03:49:34 dawes Exp $
 </verb>
 
 </article>

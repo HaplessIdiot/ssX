@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.23 1996/01/13 14:02:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.24 1996/01/14 13:41:06 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -892,7 +892,7 @@ TVGA8900Probe()
 		}
 	}
 
-	if ( (OFLG_ISSET(OPTION_NOLINEAR, &vga256InfoRec.options)) &&
+	if ( (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)) &&
 	     (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)) )
 	{
 		TVGA8900EnterLeave(LEAVE);

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 95/01/16 12:30:46 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/Imakefile,v 3.3 1995/10/22 10:40:29 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/Imakefile,v 3.4 1996/01/05 06:29:11 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -7,8 +7,9 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/Imakefile,v 3.3 1995
 OSREADME = README.Linux
 #endif
 
-MAINDOCS = COPYRIGHT README README.Config INSTALL AccelCards VideoModes.doc \
-	   README.S3 README.Mach64 README.ati README.cirrus LinkKit
+MAINDOCS = COPYRIGHT README README.Config INSTALL AccelCards \
+	   /*VideoModes.doc*/ README.S3 README.Mach64 README.ati \
+	   README.cirrus LinkKit
 
 FILES = $(MAINDOCS) $(OSREADME)
 

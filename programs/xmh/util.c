@@ -1,6 +1,6 @@
 /*
- * $XConsortium: util.c,v 2.45 94/11/28 23:43:16 gildea Exp $
- * $XFree86: xc/programs/xmh/util.c,v 3.1 1994/09/22 16:38:39 dawes Exp $
+ * $XConsortium: util.c /main/42 1996/01/14 16:51:55 kaleb $
+ * $XFree86: xc/programs/xmh/util.c,v 3.2 1996/01/05 13:22:51 dawes Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -361,10 +361,16 @@ char *name;
     return result;
 }
 
-
-void Feep()
+void Feep(type,volume,win)
+    int		type;
+    int		volume;
+    Window	win;
 {
-    XBell(theDisplay, 0);
+#ifdef XKB
+    XkbStdBell(theDisplay, win, volume, type);
+#else
+    XBell(theDisplay, volume);
+#endif
 }
 
 

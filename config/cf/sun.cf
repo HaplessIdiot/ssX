@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: sun.cf /main/148 1995/12/14 15:31:52 matt $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.22 1995/09/22 07:06:33 dawes Exp $
+XCOMM platform:  $XConsortium: sun.cf /main/149 1996/01/14 16:42:01 kaleb $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.23 1996/01/05 13:06:44 dawes Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -159,6 +159,8 @@ XCOMM operating system:  OSName
 #define ServerExtraDefines AllocateLocalDefines
 #define ServerOSDefines   -DDDXOSINIT
 #endif
+
+#define XkbServerDefines  -DXKB_ALWAYS_USES_SOFT_REPEAT
 
 #if OSMajorVersion > 4
 #ifndef XawI18nDefines

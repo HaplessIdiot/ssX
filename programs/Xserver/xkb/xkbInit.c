@@ -1,4 +1,7 @@
-/* $XConsortium: xkbInit.c /main/11 1996/01/01 10:57:03 kaleb $ */
+/*
+ * @(#)$RCSfile: xkbInit.c,v $ $Revision: 3.3 $ (DEC) $Date: 1996/01/16 15:08:18 $
+ */
+/* $XConsortium: xkbInit.c /main/12 1996/01/14 16:46:29 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -92,6 +95,9 @@ typedef struct	_SrvXkmInfo {
 #ifndef XKB_DFLT_KB_TYPE
 #define	XKB_DFLT_KB_TYPE	"dflt"
 #endif
+#ifndef XKB_DFLT_DISABLED
+#define	XKB_DFLT_DISABLED	True
+#endif
 
 char	*		XkbBaseDirectory=	XKB_BASE_DIRECTORY;
 char	*		XkbInitialMap=		NULL;
@@ -102,10 +108,15 @@ char *			XkbDB=			NULL;
 int			XkbAutoLoad=		1;
 char *			XkbDDX_kbLangDflt=	XKB_DFLT_KB_LANG;
 char *			XkbDDX_kbTypeDflt=	XKB_DFLT_KB_TYPE;
+int			_XkbClientMajor=	XkbMajorVersion;
+int			_XkbClientMinor=	XkbMinorVersion;
+
+Bool			noXkbExtension=		XKB_DFLT_DISABLED;
 
 #if defined(luna)
 #define	XKB_DDX_PERMANENT_LOCK	1
 #endif
+
 #include "xkbDflts.h"
 
 static Bool
@@ -266,38 +277,30 @@ XkbInitIndicatorMap(xkbi,file)
     SrvXkmInfo *	file;
 #endif
 {
-XkbDescPtr	xkb;
-XkbIndicatorPtr	map;
+XkbDescPtr		xkb;
+XkbIndicatorPtr		map;
+XkbSrvLedInfoPtr	sli;
 
     xkb= xkbi->desc;
     if (XkbAllocIndicatorMaps(xkb)!=Success)
 	return BadAlloc;
-    if (file->xkbinfo.defined&XkmIndicatorsMask) {
-	XkbCheckIndicatorMaps(xkbi,~((unsigned)0));
-	return Success;
+    if ((file->xkbinfo.defined&XkmIndicatorsMask)==0) {
+	map= xkb->indicators;
+	map->phys_indicators = PHYS_LEDS;
+	map->maps[LED_CAPS-1].flags= XkbIM_NoExplicit;
+	map->maps[LED_CAPS-1].which_mods= XkbIM_UseLocked;
+	map->maps[LED_CAPS-1].mods.mask= LockMask;
+	map->maps[LED_CAPS-1].mods.real_mods= LockMask;
+
+	map->maps[LED_NUM-1].flags= XkbIM_NoExplicit;
+	map->maps[LED_NUM-1].which_mods= XkbIM_UseLocked;
+	map->maps[LED_NUM-1].mods.mask= 0;
+	map->maps[LED_NUM-1].mods.real_mods= 0;
+	map->maps[LED_NUM-1].mods.vmods= vmod_NumLockMask;
     }
-    map= xkb->indicators;
-    map->phys_indicators = PHYS_LEDS;
-    xkbi->iStateAuto= 0;
-    xkbi->iStateExplicit= 0;
-    xkbi->iStateEffective= 0;
-    bzero(map->maps,XkbNumIndicators*sizeof(XkbIndicatorMapRec));
-    map->maps[LED_CAPS-1].flags= XkbIM_NoExplicit;
-    map->maps[LED_CAPS-1].which_mods= XkbIM_UseLocked;
-    map->maps[LED_CAPS-1].mods.mask= LockMask;
-    map->maps[LED_CAPS-1].mods.real_mods= LockMask;
-    xkbi->iAccel.usesLocked|= (1<<(LED_CAPS-1));
-    xkbi->iAccel.haveMap|= (1<<(LED_CAPS-1));
-
-    map->maps[LED_NUM-1].flags= XkbIM_NoExplicit;
-    map->maps[LED_NUM-1].which_mods= XkbIM_UseLocked;
-    map->maps[LED_NUM-1].mods.mask= 0;
-    map->maps[LED_NUM-1].mods.real_mods= 0;
-    map->maps[LED_NUM-1].mods.vmods= vmod_NumLockMask;
-    xkbi->iAccel.usesLocked|= (1<<(LED_NUM-1));
-    xkbi->iAccel.haveMap|= (1<<(LED_NUM-1));
-
-    xkbi->iAccel.usedComponents|= XkbModifierLockMask;
+    sli= XkbFindSrvLedInfo(xkbi->device,XkbDfltXIClass,XkbDfltXIId,0);
+    if (sli)
+	XkbCheckIndicatorMaps(xkbi->device,sli,XkbAllIndicatorsMask);
     return Success;
 }
 
@@ -345,11 +348,12 @@ XkbInitDevice(pXDev)
     DeviceIntPtr pXDev;
 #endif
 {
-int		i;
-XkbSrvInfoPtr	xkbi;
-XkbChangesRec	changes;
-SrvXkmInfo	file;
-unsigned	check;
+int			i;
+XkbSrvInfoPtr		xkbi;
+XkbChangesRec		changes;
+SrvXkmInfo		file;
+unsigned		check;
+XkbEventCauseRec	cause;
 
     file.dev= pXDev;
     file.file=NULL;
@@ -445,8 +449,9 @@ unsigned	check;
 	else {
 	    XkbUpdateCoreDescription(pXDev);
 	}
+	XkbSetCauseUnknown(&cause);
 	XkbUpdateActions(pXDev,xkb->min_key_code, XkbNumKeys(xkb),&changes,
-								&check);
+								&check,&cause);
 #ifndef NO_DEC_BUG_FIX
         /* For sanity.  The first time the connection
          * is opened, the client side min and max are set
@@ -548,29 +553,33 @@ XPointer	config;
 
 	/*
 	 * InitKeyClassDeviceStruct initializes the key class before it
-	 * initializes the keyboard feedback class for a device. UpdateActions
-	 * can't set up the correct autorepeat for keyboard initialization
-	 * because the keyboard feedback isn't created yet.   Instead, 
-	 * UpdateActions notes the "correct" autorepeat in the SrvInfo
-	 * structure and InitKbdFeedbackClass calls UpdateAutoRepeat to
-	 * apply the computed autorepeat once the feedback class exists.
+	 * initializes the keyboard feedback class for a device. 
+	 * UpdateActions can't set up the correct autorepeat for keyboard 
+	 * initialization because the keyboard feedback isn't created yet.   
+	 * Instead, UpdateActions notes the "correct" autorepeat in the 
+	 * SrvInfo structure and InitKbdFeedbackClass calls UpdateAutoRepeat 
+	 * to apply the computed autorepeat once the feedback class exists.
 	 *
 	 * DIX will apply the changed autorepeat, so there's no need to
 	 * do so here.   This function returns True if both RepeatKeys and
 	 * the core protocol autorepeat ctrls are set (i.e. should use 
 	 * software autorepeat), false otherwise.
+	 *
+	 * This function also computes the autorepeat accelerators for the
+	 * default indicator feedback.
 	 */
 int
 #if NeedFunctionPrototypes
-XkbUpdateAutoRepeat(DeviceIntPtr pXDev)
+XkbFinishDeviceInit(DeviceIntPtr pXDev)
 #else
-XkbUpdateAutoRepeat(pXDev)
+XkbFinishDeviceInit(pXDev)
     DeviceIntPtr pXDev;
 #endif
 {
-XkbSrvInfoPtr	xkbi;
-XkbDescPtr	xkb;
-int		softRepeat;
+XkbSrvInfoPtr		xkbi;
+XkbDescPtr		xkb;
+int			softRepeat;
+XkbSrvLedInfoPtr	sli;
 
     if (pXDev && pXDev->key && pXDev->key->xkbInfo && pXDev->kbdfeed) {
 	xkbi= pXDev->key->xkbInfo;
@@ -589,6 +598,12 @@ int		softRepeat;
 	}
     }
     else softRepeat= 0;
+    sli= XkbFindSrvLedInfo(pXDev,XkbDfltXIClass,XkbDfltXIId,0);
+    if (sli)
+	XkbCheckIndicatorMaps(xkbi->device,sli,XkbAllIndicatorsMask);
+#ifdef DEBUG
+    else ErrorF("No indicator feedback in XkbFinishInit (shouldn't happen)!\n");
+#endif
     return softRepeat;
 }
 
@@ -664,7 +679,15 @@ XkbProcessArguments(argc,argv,i)
     int		i;
 #endif
 {
-    if (strncmp(argv[i], "-xkbdir", 7) == 0) {
+    if (strcmp(argv[i],"-kb")==0) {
+	noXkbExtension= True;
+	return 1;
+    }
+    else if (strcmp(argv[i],"+kb")==0) {
+	noXkbExtension= False;
+	return 1;
+    }
+    else if (strncmp(argv[i], "-xkbdir", 7) == 0) {
 	if(++i < argc) {
 	    XkbBaseDirectory= argv[i];
 	    return 2;
@@ -717,6 +740,11 @@ XkbProcessArguments(argc,argv,i)
 		j++;
 
 		if ( ((i+1)<argc) && (isdigit(argv[i+1][0])) ) {
+		    /*
+		     * presumption that the reasonably useful range of
+		     * values fits in 0..MAXINT since SunOS 4 doesn't
+		     * have strtoul.
+		     */
 		    XkbDfltAccessXTimeoutMask=(unsigned int)
 					      strtol(argv[++i],NULL,16); 
 		    j++;
@@ -761,14 +789,16 @@ XkbUseMsg(void)
 XkbUseMsg()
 #endif
 {
+    ErrorF("The X Keyboard Extension adds the following arguments:\n");
+    ErrorF("-kb                    disable the X Keyboard Extension\n");
+    ErrorF("+kb                    enable the X Keyboard Extension\n");
     ErrorF("[+-]accessx [ timeout [ timeout_mask [ feedback [ options_mask] ] ] ]\n");
     ErrorF("                       enable/disable accessx key sequences\n");
     ErrorF("-ar1                   set XKB autorepeat delay\n");
     ErrorF("-ar2                   set XKB autorepeat interval\n");
     ErrorF("-noloadxkb             don't load XKB keymap description\n");
-    ErrorF("-xkbcmd                default keymap compiler\n");
+    ErrorF("-xkbcomp               default keymap compiler\n");
     ErrorF("-xkbdb                 file that contains default XKB keymaps\n");
     ErrorF("-xkbdir                base directory for XKB layout files\n");
     ErrorF("-xkbmap                XKB keyboard description to load on startup\n");
 }
-

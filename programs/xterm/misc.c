@@ -1,6 +1,6 @@
 /*
- *	$XConsortium: misc.c /main/104 1995/12/08 17:18:13 kaleb $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.5 1996/01/10 05:44:19 dawes Exp $
+ *	$XConsortium: misc.c /main/105 1996/01/14 16:53:00 kaleb $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.6 1996/01/14 13:42:22 dawes Exp $
  */
 
 /*
@@ -276,7 +276,7 @@ Boolean *cont;
 			       (event->detail == NotifyPointer) ? INWINDOW :
 								  FOCUS);
 		if (screen->grabbedKbd && (event->mode == NotifyUngrab)) {
-		    XBell(screen->display, 100);
+		    Bell(XkbBI_Info, 100);
 		    ReverseVideo(term);
 		    screen->grabbedKbd = FALSE;
 		    update_securekbd();
@@ -339,7 +339,9 @@ register int flag;
 static long lastBellTime;	/* in milliseconds */
 
 void
-Bell()
+Bell(which,percent)
+     int which;
+     int percent;
 {
     register TScreen *screen = &term->screen;
     struct timeval curtime;
@@ -368,7 +370,11 @@ Bell()
     if (screen->visualbell)
 	VisualBell();
     else
-	XBell(screen->display, 0);
+#ifdef XKB
+	XkbStdBell(screen->display,TWindow(screen),percent,which);
+#else
+	XBell(screen->display, percent);
+#endif
 
     if(screen->bellSuppressTime) {
 	/* now we change a property and wait for the notify event to come

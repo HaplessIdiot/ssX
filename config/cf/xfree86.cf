@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf /main/15 1995/12/17 08:02:41 kaleb $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.78 1996/01/06 00:47:35 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.79 1996/01/06 05:20:41 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -256,11 +256,20 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.78 1996/01/06 00:47:35 dawes Exp $
 #endif
 
 /*
- * Build the ExtraExtension lib even when not including the extra extensions
+ * Build the extra extension libs even when not including the extra extensions
  * in the servers
  */
-#ifndef BuildExtraExtensionLibrary
-#define BuildExtraExtensionLibrary	YES
+#ifndef BuildScreenSaverLibrary
+#define BuildScreenSaverLibrary	YES
+#endif
+#ifndef BuildXF86MiscLibrary
+#define BuildXF86MiscLibrary	YES
+#endif
+#ifndef BuildXF86DGALibrary
+#define BuildXF86DGALibrary	YES
+#endif
+#ifndef BuildXF86VidModeLibrary
+#define BuildXF86VidModeLibrary	YES
 #endif
 
 /*
@@ -268,6 +277,13 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.78 1996/01/06 00:47:35 dawes Exp $
  */
 #ifndef BuildXF86VidModeExt
 #define BuildXF86VidModeExt		YES
+#endif
+
+/*
+ * Build the XFree86-Misc extension
+ */
+#ifndef BuildXF86MiscExt
+#define BuildXF86MiscExt		YES
 #endif
 
 /*

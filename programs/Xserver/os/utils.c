@@ -1,5 +1,5 @@
-/* $XConsortium: utils.c /main/121 1995/12/19 14:11:06 matt $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.10 1995/11/30 13:05:42 dawes Exp $ */
+/* $XConsortium: utils.c /main/122 1996/01/14 16:45:32 kaleb $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.11 1996/01/05 13:20:06 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -129,8 +129,6 @@ extern Bool defeatAccessControl;
 
 Bool CoreDump;
 Bool noTestExtensions;
-
-Bool noXkbExtension = TRUE;
 
 int auditTrailLevel = 1;
 
@@ -485,11 +483,6 @@ void UseMsg()
     ErrorF("-fp string             default font path\n");
     ErrorF("-help                  prints message with these options\n");
     ErrorF("-I                     ignore all remaining arguments\n");
-#ifdef XKB
-    ErrorF("-kb                    disable XKB extension\n");
-    ErrorF("+kb                    enable XKB extension\n");
-    XkbUseMsg();
-#endif
 #ifdef RLIMIT_DATA
     ErrorF("-ld int                limit data space to N Kb\n");
 #endif
@@ -527,6 +520,9 @@ void UseMsg()
     XdmcpUseMsg();
 #endif
 #endif /* !AIXrt && ! AIX386 */
+#ifdef XKB
+    XkbUseMsg();
+#endif
     ddxUseMsg();
 }
 
@@ -701,14 +697,6 @@ char	*argv[];
 	    exit(0);
 	}
 #ifdef XKB
-	else if ( strcmp( argv[i], "-kb") == 0)
-	{
-	    noXkbExtension = TRUE;
-	}
-	else if ( strcmp( argv[i], "+kb") == 0)
-	{
-	    noXkbExtension = FALSE;
-	}
         else if ( (skip=XkbProcessArguments(argc,argv,i))!=0 ) {
 	    if (skip>0)
 		 i+= skip-1;

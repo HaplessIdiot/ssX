@@ -1,6 +1,6 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.44 94/04/02 12:42:01 gildea Exp $
- *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.1 1995/09/23 07:09:28 dawes Exp $
+ *	$XConsortium: scrollbar.c /main/45 1996/01/14 16:53:05 kaleb $
+ *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.2 1996/01/10 05:44:24 dawes Exp $
  */
 
 /*
@@ -336,7 +336,7 @@ ScrollBarOn (xw, init, doalloc)
 	    /* make it a dummy size and resize later */
 	    if ((screen->scrollWidget = CreateScrollBar (xw, -1, - 1, 5))
 		== NULL) {
-		Bell();
+		Bell(XkbBI_MinorError,0);
 		return;
 	    }
 
@@ -345,8 +345,8 @@ ScrollBarOn (xw, init, doalloc)
 	}
 
 	if (!screen->scrollWidget) {
-	    Bell ();
-	    Bell ();
+	    Bell (XkbBI_MinorError,0);
+	    Bell (XkbBI_MinorError,0);
 	    return;
 	}
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.35 1995/12/23 09:38:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.36 1996/01/11 10:37:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -280,7 +280,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    } else {
 	       if (S3_x64_SERIES(s3ChipId) && 
 		   !(S3_TRIO64_SERIES(s3ChipId) &&
-		     s3InfoRec.videoRam > 1024 && s3VLB)) {
+		     /*s3InfoRec.videoRam > 1024 &&*/ s3VLB)) {
 		  /* So far, only tested for the PCI ELSA W2000Pro */
 		  s3DisableLinear();
 	          outb(vgaCRIndex, 0x59);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.9 1996/01/07 03:45:44 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.10 1996/01/16 11:00:30 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -71,7 +71,7 @@ typedef struct {
 
 typedef struct _XF86VidModeGetModeLine {
     CARD8	reqType;		/* always XF86VidModeReqCode */
-    CARD8	xf86vidmodeReqType;	/* always X_XF86VidModeGetModeLine */
+    CARD8	xf86vidmodeReqType;
     CARD16	length B16;
     CARD16	screen B16;
     CARD16	pad B16;

@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl /main/r61_main/4 1996/01/04 20:14:03 kaleb $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.23 1996/01/06 05:20:38 dawes Exp $
+XCOMM $XConsortium: Project.tmpl /main/r61_main/5 1996/01/14 16:41:49 kaleb $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.24 1996/01/07 03:45:09 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -90,7 +90,15 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.23 1996/01/06 05:20:38 dawes Exp $
 #define BuildXKB		YES
 #endif
 #ifndef BuildXKBlib
-#define BuildXKBlib		YES	/* not yet a standard part of Xlib */
+#define BuildXKBlib		YES
+#endif
+	/*
+	 * WARNING: Setting UseXKBInClients to YES cause incompatibilities
+	 *          between many clients (such as xterm) and pre-XKB shared
+	 *          libraries.
+	 */
+#ifndef UseXKBInClients
+#define	UseXKBInClients		NO	/* use XKB in "normal" clients? */
 #endif
 #ifndef BuildDBE
 #define BuildDBE		YES
@@ -106,6 +114,9 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.23 1996/01/06 05:20:38 dawes Exp $
 #endif
 #ifndef BuildXF86VidModeExt
 #define BuildXF86VidModeExt	NO
+#endif
+#ifndef BuildXF86MiscExt
+#define BuildXF86MiscExt	NO
 #endif
 
 #ifndef InstallLibManPages
@@ -247,11 +258,14 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.23 1996/01/06 05:20:38 dawes Exp $
 #endif
 #endif
 #ifndef XkbClientDefines
-#if BuildXKB
+#if UseXKBInClients
 #define XkbClientDefines -DXKB
 #else
 #define XkbClientDefines /**/
 #endif
+#endif
+#ifndef XkbServerDefines
+#define XkbServerDefines /**/
 #endif
 #ifndef BigReqDefines
 #define BigReqDefines -DBIGREQS
@@ -291,6 +305,13 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.23 1996/01/06 05:20:38 dawes Exp $
 #define VidTuneExtensionDefines /**/
 #endif
 #endif
+#ifndef XF86MiscExtensionDefines
+#if BuildXF86MiscExt
+#define XF86MiscExtensionDefines -DXF86MISC
+#else
+#define XF86MiscExtensionDefines /**/
+#endif
+#endif
 
 #ifndef RECORDDefines
 #if BuildRECORD
@@ -310,7 +331,7 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.23 1996/01/06 05:20:38 dawes Exp $
 #define SiteExtensionDefines /**/
 #endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines MultibufferDefines -DMITMISC -DXTEST -DXSYNC -DXCMISC RECORDDefines PexDefines ShmDefines XieDefines BigReqDefines VidTuneExtensionDefines DBEDefines SiteExtensionDefines ScreenSaverExtensionDefines
+#define BaseExtensionDefines MultibufferDefines -DMITMISC -DXTEST -DXSYNC -DXCMISC RECORDDefines PexDefines ShmDefines XieDefines BigReqDefines VidTuneExtensionDefines XF86MiscExtensionDefines DBEDefines SiteExtensionDefines ScreenSaverExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
@@ -604,18 +625,63 @@ UnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC))
 #endif
 #endif
 
-#if BuildExtraExtensionLibrary
-#ifndef SharedLibXExExt
-#define SharedLibXExExt	NO
+#if BuildScreenSaverLibrary
+#ifndef SharedLibXss
+#define SharedLibXss	NO
 #endif
-#ifndef NormalLibXExExt
-#define NormalLibXExExt  YES
+#ifndef NormalLibXss
+#define NormalLibXss	YES
 #endif
-#ifndef DebugLibXExExt
-#define DebugLibXExExt	NO
+#ifndef DebugLibXss
+#define DebugLibXss	NO
 #endif
-#ifndef ProfileLibXExExt
-#define ProfileLibXExExt	NO
+#ifndef ProfileLibXss
+#define ProfileLibXss	NO
+#endif
+#endif
+
+#if BuildXF86MiscLibrary
+#ifndef SharedLibXxf86misc
+#define SharedLibXxf86misc	NO
+#endif
+#ifndef NormalLibXxf86misc
+#define NormalLibXxf86misc	YES
+#endif
+#ifndef DebugLibXxf86misc
+#define DebugLibXxf86misc	NO
+#endif
+#ifndef ProfileLibXxf86misc
+#define ProfileLibXxf86misc	NO
+#endif
+#endif
+
+#if BuildXF86VidModeLibrary
+#ifndef SharedLibXxf86vm
+#define SharedLibXxf86vm	NO
+#endif
+#ifndef NormalLibXxf86vm
+#define NormalLibXxf86vm	YES
+#endif
+#ifndef DebugLibXxf86vm
+#define DebugLibXxf86vm		NO
+#endif
+#ifndef ProfileLibXxf86vm
+#define ProfileLibXxf86vm	NO
+#endif
+#endif
+
+#if BuildXF86DGALibrary
+#ifndef SharedLibXxf86dga
+#define SharedLibXxf86dga	NO
+#endif
+#ifndef NormalLibXxf86dga
+#define NormalLibXxf86dga	YES
+#endif
+#ifndef DebugLibXxf86dga
+#define DebugLibXxf86dga	NO
+#endif
+#ifndef ProfileLibXxf86dga
+#define ProfileLibXxf86dga	NO
 #endif
 #endif
 
@@ -632,9 +698,6 @@ UnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC))
 #define ProfileLibXext		NO	/* profiled Xext library */
 #endif
       XEXTLIBSRC = $(LIBSRC)/Xext
-#if BuildExtraExtensionLibrary
-    XEXEXTLIBSRC = $(LIBSRC)/XExExt
-#endif
 #if SharedLibXext
 #ifndef SharedXextRev
 #define SharedXextRev 6.1
@@ -644,20 +707,58 @@ SharedLibReferences(XEXT,Xext,$(XEXTLIBSRC),SOXEXTREV,SharedXextRev)
 UnsharedLibReferences(XEXT,Xext,$(XEXTLIBSRC))
 #endif
 
-#if BuildExtraExtensionLibrary
-#if SharedLibXExExt
-#ifndef SharedXExExtRev
-#define SharedXExExtRev 6.0
+#if BuildScreenSaverLibrary
+    XSSLIBSRC = $(LIBSRC)/Xss
+#if SharedLibXss
+#ifndef SharedXssRev
+#define SharedXssRev 1.0
 #endif
-SharedLibReferences(XEXEXT,XExExt,$(XEXEXTLIBSRC),SOXEXEXTREV,SharedXExExtRev)
+SharedLibReferences(XSS,Xss,$(XSSLIBSRC),SOXSSREV,SharedXssRev)
 #else
-UnsharedLibReferences(XEXEXT,XExExt,$(XEXEXTLIBSRC))
+UnsharedLibReferences(XSS,Xss,$(XSSLIBSRC))
 #endif
 #endif
 
-     EXTENSIONLIB = $(XEXEXTLIB) $(XEXTLIB)
-  DEPEXTENSIONLIB = $(DEPXEXEXTLIB) $(DEPXEXTLIB)
-    LINTEXTENSION = $(LINTXEXEXT) $(LINTXEXT)
+#if BuildXF86MiscLibrary
+    XXF86MISCLIBSRC = $(LIBSRC)/Xxf86misc
+#if SharedLibXxf86misc
+#ifndef SharedXxf86miscRev
+#define SharedXxf86miscRev 1.0
+#endif
+SharedLibReferences(XXF86MISC,Xxf86misc,$(XXF86MISCLIBSRC),SOXXF86MISCREV,SharedXxf86miscRev)
+#else
+UnsharedLibReferences(XXF86MISC,Xxf86misc,$(XXF86MISCLIBSRC))
+#endif
+#endif
+
+#if BuildXF86VidModeLibrary
+    XXF86VMLIBSRC = $(LIBSRC)/Xxf86vm
+#if SharedLibXxf86vm
+#ifndef SharedXxf86vmRev
+#define SharedXxf86vmRev 1.0
+#endif
+SharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC),SOXXF86VMREV,SharedXxf86vmRev)
+#else
+UnsharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC))
+#endif
+#endif
+
+#if BuildXF86DGALibrary
+    XXF86DGALIBSRC = $(LIBSRC)/Xxf86dga
+#if SharedLibXxf86dga
+#ifndef SharedXxf86dgaRev
+#define SharedXxf86dgaRev 1.0
+#endif
+SharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),SOXXF86DGAREV,SharedXxf86dgaRev)
+#else
+UnsharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC))
+#endif
+#endif
+
+
+     EXTENSIONLIB = $(XEXTLIB)
+  DEPEXTENSIONLIB = $(DEPXEXTLIB)
+    LINTEXTENSION = $(LINTXEXT)
 
  LINTEXTENSIONLIB = $(LINTEXTENSION)
           DEPXLIB = $(DEPEXTENSIONLIB) $(DEPXONLYLIB)
@@ -978,10 +1079,18 @@ UnsharedLibReferences(FONT,font,$(FONTLIBSRC))
     XKBFILELIBSRC = $(LIBSRC)/xkbfile
 UnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC))
 #ifndef XkbClientDepLibs
+#if UseXKBInClients
 #define	XkbClientDepLibs $(DEPXKBFILELIB)
+#else
+#define	XkbClientDepLibs /**/
+#endif
 #endif
 #ifndef XkbClientLibs
+#if UseXKBInClients
 #define	XkbClientLibs $(XKBFILELIB)
+#else
+#define	XkbClientLibs /**/
+#endif
 #endif
 #else /* !BuildXKBlib */
 #ifndef XkbClientDepLibs

@@ -1,5 +1,5 @@
-/* $XConsortium: XKBMAlloc.c /main/4 1996/01/01 11:27:11 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: XKBMAlloc.c /main/5 1996/01/14 16:43:37 kaleb $ */
+/* $XFree86: xc/lib/X11/XKBMAlloc.c,v 3.0 1996/01/11 10:33:13 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -406,6 +406,90 @@ register int i,rtrn;
     return Success;
 }
 
+XkbKeyTypePtr
+#if NeedFunctionPrototypes
+XkbAddKeyType(	XkbDescPtr	xkb,
+		Atom 		name,
+		int 		map_count,
+		Bool 		want_preserve,
+		int		num_lvls)
+#else
+XkbAddKeyType(xkb,name,map_count,want_preserve,num_lvls)
+    XkbDescPtr	xkb;
+    Atom	name;
+    int		map_count;
+    Bool	want_preserve;
+    int		num_lvls;
+#endif
+{
+register int 	i;
+unsigned	tmp;
+XkbKeyTypePtr	type;
+XkbClientMapPtr	map;
+
+    if ((!xkb)||(num_lvls<1))
+	return NULL;
+    map= xkb->map;
+    if ((map)&&(map->types)) {
+	for (i=0;i<map->num_types;i++) {
+	    if (map->types[i].name==name) {
+		Status status;
+		status=XkbResizeKeyType(xkb,i,map_count,want_preserve,num_lvls);
+		return (status==Success?type:NULL);
+	    }
+	}
+    }
+    if ((!map)||(!map->types)||(!map->num_types<XkbNumRequiredTypes)) {
+	tmp= XkbNumRequiredTypes+1;
+	if (XkbAllocClientMap(xkb,XkbKeyTypesMask,tmp)!=Success)
+	    return NULL;
+	tmp= 0;
+	if (map->num_types<=XkbKeypadIndex)
+	    tmp|= XkbKeypadMask;
+	if (map->num_types<=XkbAlphabeticIndex)
+	    tmp|= XkbAlphabeticMask;
+	if (map->num_types<=XkbTwoLevelIndex)
+	    tmp|= XkbTwoLevelMask;
+	if (map->num_types<=XkbOneLevelIndex)
+	    tmp|= XkbOneLevelMask;
+	if (XkbInitCanonicalKeyTypes(xkb,tmp,XkbNoModifier)==Success) {
+	    for (i=0;i<map->num_types;i++) {
+		Status status;
+		if (map->types[i].name!=name)
+		    continue;
+		status=XkbResizeKeyType(xkb,i,map_count,want_preserve,num_lvls);
+		return (status==Success?type:NULL);
+	    }
+	}
+    }
+    if ((map->num_types<=map->size_types)&&
+	(XkbAllocClientMap(xkb,XkbKeyTypesMask,map->num_types+1)!=Success)) {
+	return NULL;
+    }
+    type= &map->types[map->num_types];
+    map->num_types++;
+    bzero((char *)type,sizeof(XkbKeyTypeRec));
+    type->num_levels=	num_lvls;
+    type->map_count=	map_count;
+    type->name=		name;
+    if (map_count>0) {
+	type->map=	_XkbTypedCalloc(map_count,XkbKTMapEntryRec);
+	if (!type->map) {
+	    map->num_types--;
+	    return NULL;
+	}
+	if (want_preserve) {
+	    type->preserve=	_XkbTypedCalloc(map_count,XkbModsRec);
+	    if (!type->preserve) {
+		_XkbFree(type->map);
+		map->num_types--;
+		return NULL;
+	    }
+	}
+    }
+    return type;
+}
+
 Status
 #if NeedFunctionPrototypes
 XkbResizeKeyType(	XkbDescPtr	xkb,
@@ -428,6 +512,18 @@ KeyCode		matchingKeys[XkbMaxKeyCount],nMatchingKeys;
     if ((type_ndx<0)||(type_ndx>=xkb->map->num_types)||(map_count<0)||
     							(new_num_lvls<1))
 	return BadValue;
+    switch (type_ndx) {
+	case XkbOneLevelIndex:
+	    if (new_num_lvls!=1)
+		return BadMatch;
+	    break;
+	case XkbTwoLevelIndex:
+	case XkbAlphabeticIndex:
+	case XkbKeypadIndex:
+	    if (new_num_lvls!=2)
+		return BadMatch;
+	    break;
+    }
     type= &xkb->map->types[type_ndx];
     if (map_count==0) {
 	if (type->map!=NULL)

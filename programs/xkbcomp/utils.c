@@ -1,7 +1,7 @@
 
   /*\
-   * $XConsortium: utils.c /main/2 1996/01/01 10:57:59 kaleb $
-   * $XFree86$
+   * $XConsortium: utils.c /main/3 1996/01/14 16:48:22 kaleb $
+   * $XFree86: xc/programs/xkbcomp/utils.c,v 3.0 1996/01/10 05:42:57 dawes Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -38,8 +38,12 @@ char *malloc();
 /***====================================================================***/
 
 Opaque
+#if NeedFunctionPrototypes
+uAlloc(unsigned size)
+#else
 uAlloc(size)
     unsigned	size;
+#endif
 {
     return((Opaque)malloc(size));
 }
@@ -47,9 +51,13 @@ uAlloc(size)
 /***====================================================================***/
 
 Opaque
+#if NeedFunctionPrototypes
+uCalloc(unsigned n,unsigned size)
+#else
 uCalloc(n,size)
     unsigned	n;
     unsigned	size;
+#endif
 {
     return((Opaque)calloc(n,size));
 }
@@ -57,9 +65,13 @@ uCalloc(n,size)
 /***====================================================================***/
 
 Opaque
+#if NeedFunctionPrototypes
+uRealloc(Opaque old,unsigned newSize)
+#else
 uRealloc(old,newSize)
     Opaque	old;
     unsigned	newSize;
+#endif
 {
     if (old==NULL)
 	 return((Opaque)malloc(newSize));
@@ -69,11 +81,15 @@ uRealloc(old,newSize)
 /***====================================================================***/
 
 Opaque
+#if NeedFunctionPrototypes
+uRecalloc(Opaque old,unsigned nOld,unsigned nNew,unsigned itemSize)
+#else
 uRecalloc(old,nOld,nNew,itemSize)
     Opaque	old;
     unsigned	nOld;
     unsigned	nNew;
     unsigned	itemSize;
+#endif
 {
 char *rtrn;
 
@@ -91,8 +107,12 @@ char *rtrn;
 /***====================================================================***/
 
 void
+#if NeedFunctionPrototypes
+uFree(Opaque ptr)
+#else
 uFree(ptr)
     Opaque ptr;
+#endif
 {
     if (ptr!=(Opaque)NULL)
 	free((char *)ptr);
@@ -111,8 +131,12 @@ static	FILE	*entryFile=	NULL;
 	int	 uEntryLevel;
 
 Boolean
+#if NeedFunctionPrototypes
+uSetEntryFile(char *name)
+#else
 uSetEntryFile(name)
     char *name;
+#endif
 {
     if ((entryFile!=NULL)&&(entryFile!=stderr)) {
 	fprintf(entryFile,"switching to %s\n",name?name:"stderr");
@@ -128,25 +152,34 @@ uSetEntryFile(name)
 }
 
 void
-uEntry(l,s,a1,a2,a3,a4,a5,a6,a7,a8)
+#if NeedFunctionPrototypes
+uEntry(int l,char *s,Opaque a1,Opaque a2,Opaque a3,Opaque a4,Opaque a5,
+								Opaque a6)
+#else
+uEntry(l,s,a1,a2,a3,a4,a5,a6)
 int	l;
 char	*s;
-Opaque	a1,a2,a3,a4,a5,a6,a7,a8;
+Opaque	a1,a2,a3,a4,a5,a6;
+#endif
 {
 int	i;
 
     for (i=0;i<uEntryLevel;i++) {
 	putc(' ',entryFile);
     }
-    fprintf(entryFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    fprintf(entryFile,s,a1,a2,a3,a4,a5,a6);
     uEntryLevel+= l;
     return;
 }
 
 void
+#if NeedFunctionPrototypes
+uExit(int l,char *rtVal)
+#else
 uExit(l,rtVal)
     int		l;
     char *	rtVal;
+#endif
 {
 int	i;
 
@@ -172,8 +205,12 @@ int	i;
 	int	 uDebugIndentSize=	4;
 
 Boolean
+#if NeedFunctionPrototypes
+uSetDebugFile(char *name)
+#else
 uSetDebugFile(name)
     char *name;
+#endif
 {
     if ((uDebugFile!=NULL)&&(uDebugFile!=stderr)) {
 	fprintf(uDebugFile,"switching to %s\n",name?name:"stderr");
@@ -189,28 +226,34 @@ uSetDebugFile(name)
 }
 
 void
-uDebug(s,a1,a2,a3,a4,a5,a6,a7,a8)
+#if NeedFunctionPrototypes
+uDebug(char *s,Opaque a1,Opaque a2,Opaque a3,Opaque a4,Opaque a5,Opaque a6)
+#else
+uDebug(s,a1,a2,a3,a4,a5,a6)
 char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+Opaque a1,a2,a3,a4,a5,a6;
+#endif
 {
 int	i;
 
     for (i=(uDebugIndentLevel*uDebugIndentSize);i>0;i--) {
 	putc(' ',uDebugFile);
     }
-    fprintf(uDebugFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    fprintf(uDebugFile,s,a1,a2,a3,a4,a5,a6);
     fflush(uDebugFile);
     return;
 }
 
 void
-uDebugNOI(s,a1,a2,a3,a4,a5,a6,a7,a8)
+#if NeedFunctionPrototypes
+uDebugNOI(char *s,Opaque a1,Opaque a2,Opaque a3,Opaque a4,Opaque a5,Opaque a6)
+#else
+uDebugNOI(s,a1,a2,a3,a4,a5,a6)
 char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+Opaque a1,a2,a3,a4,a5,a6;
+#endif
 {
-int	i;
-
-    fprintf(uDebugFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    fprintf(uDebugFile,s,a1,a2,a3,a4,a5,a6);
     fflush(uDebugFile);
     return;
 }
@@ -228,8 +271,12 @@ static	char	*postMsg=	NULL;
 static	char	*prefix=	NULL;
 
 Boolean
+#if NeedFunctionPrototypes
+uSetErrorFile(char *name)
+#else
 uSetErrorFile(name)
     char *name;
+#endif
 {
     if ((errorFile!=NULL)&&(errorFile!=stderr)) {
 	fprintf(errorFile,"switching to %s\n",name?name:"stderr");
@@ -245,11 +292,16 @@ uSetErrorFile(name)
 }
 
 void
-uInformation(s,a1,a2,a3,a4,a5,a6,a7,a8)
+#if NeedFunctionPrototypes
+uInformation(char *s,Opaque a1,Opaque a2,Opaque a3,Opaque a4,Opaque a5,
+								Opaque a6)
+#else
+uInformation(s,a1,a2,a3,a4,a5,a6)
 char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+Opaque a1,a2,a3,a4,a5,a6;
+#endif
 {
-    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6);
     fflush(errorFile);
     return;
 }
@@ -257,14 +309,18 @@ Opaque a1,a2,a3,a4,a5,a6,a7,a8;
 /***====================================================================***/
 
 void
-uAction(s,a1,a2,a3,a4,a5,a6,a7,a8)
+#if NeedFunctionPrototypes
+uAction(char *s,Opaque a1,Opaque a2,Opaque a3,Opaque a4,Opaque a5,Opaque a6)
+#else
+uAction(s,a1,a2,a3,a4,a5,a6)
 char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+Opaque a1,a2,a3,a4,a5,a6;
+#endif
 {
     if (prefix!=NULL)
 	fprintf(errorFile,"%s",prefix);
     fprintf(errorFile,"                  ");
-    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6);
     fflush(errorFile);
     return;
 }
@@ -272,16 +328,20 @@ Opaque a1,a2,a3,a4,a5,a6,a7,a8;
 /***====================================================================***/
 
 void
-uWarning(s,a1,a2,a3,a4,a5,a6,a7,a8)
+#if NeedFunctionPrototypes
+uWarning(char *s,Opaque a1,Opaque a2,Opaque a3,Opaque a4,Opaque a5,Opaque a6)
+#else
+uWarning(s,a1,a2,a3,a4,a5,a6)
 char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+Opaque a1,a2,a3,a4,a5,a6;
+#endif
 {
     if ((outCount==0)&&(preMsg!=NULL))
 	fprintf(errorFile,"%s\n",preMsg);
     if (prefix!=NULL)
 	fprintf(errorFile,"%s",prefix);
     fprintf(errorFile,"Warning:          ");
-    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6);
     fflush(errorFile);
     outCount++;
     return;
@@ -290,16 +350,20 @@ Opaque a1,a2,a3,a4,a5,a6,a7,a8;
 /***====================================================================***/
 
 void
-uError(s,a1,a2,a3,a4,a5,a6,a7,a8)
+#if NeedFunctionPrototypes
+uError(char *s,Opaque a1,Opaque a2,Opaque a3,Opaque a4,Opaque a5,Opaque a6)
+#else
+uError(s,a1,a2,a3,a4,a5,a6)
 char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+Opaque a1,a2,a3,a4,a5,a6;
+#endif
 {
     if ((outCount==0)&&(preMsg!=NULL))
 	fprintf(errorFile,"%s\n",preMsg);
     if (prefix!=NULL)
 	fprintf(errorFile,"%s",prefix);
     fprintf(errorFile,"Error:            ");
-    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6);
     fflush(errorFile);
     outCount++;
     return;
@@ -308,16 +372,20 @@ Opaque a1,a2,a3,a4,a5,a6,a7,a8;
 /***====================================================================***/
 
 void
-uFatalError(s,a1,a2,a3,a4,a5,a6,a7,a8)
+#if NeedFunctionPrototypes
+uFatalError(char *s,Opaque a1,Opaque a2,Opaque a3,Opaque a4,Opaque a5,Opaque a6)
+#else
+uFatalError(s,a1,a2,a3,a4,a5,a6)
 char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+Opaque a1,a2,a3,a4,a5,a6;
+#endif
 {
     if ((outCount==0)&&(preMsg!=NULL))
 	fprintf(errorFile,"%s\n",preMsg);
     if (prefix!=NULL)
 	fprintf(errorFile,"%s",prefix);
     fprintf(errorFile,"Fatal Error:      ");
-    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6);
     fprintf(errorFile,"                  Exiting\n");
     fflush(errorFile);
     outCount++;
@@ -328,24 +396,33 @@ Opaque a1,a2,a3,a4,a5,a6,a7,a8;
 /***====================================================================***/
 
 void
-uInternalError(s,a1,a2,a3,a4,a5,a6,a7,a8)
+#if NeedFunctionPrototypes
+uInternalError(char *s,Opaque a1,Opaque a2,Opaque a3,Opaque a4,Opaque a5,
+								Opaque a6)
+#else
+uInternalError(s,a1,a2,a3,a4,a5,a6)
 char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+Opaque a1,a2,a3,a4,a5,a6;
+#endif
 {
     if ((outCount==0)&&(preMsg!=NULL))
 	fprintf(errorFile,"%s\n",preMsg);
     if (prefix!=NULL)
 	fprintf(errorFile,"%s",prefix);
     fprintf(errorFile,"Internal error:   ");
-    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6);
     fflush(errorFile);
     outCount++;
     return;
 }
 
 void
+#if NeedFunctionPrototypes
+uSetPreErrorMessage(char *msg)
+#else
 uSetPreErrorMessage(msg)
     char *msg;
+#endif
 {
     outCount= 0;
     preMsg= msg;
@@ -353,23 +430,35 @@ uSetPreErrorMessage(msg)
 }
 
 void
+#if NeedFunctionPrototypes
+uSetPostErrorMessage(char *msg)
+#else
 uSetPostErrorMessage(msg)
     char *msg;
+#endif
 {
     postMsg= msg;
     return;
 }
 
 void
+#if NeedFunctionPrototypes
+uSetErrorPrefix(char *pre)
+#else
 uSetErrorPrefix(pre)
     char *pre;
+#endif
 {
     prefix= pre;
     return;
 }
 
 void
+#if NeedFunctionPrototypes
+uFinishUp(void)
+#else
 uFinishUp()
+#endif
 {
     if ((outCount>0)&&(postMsg!=NULL))
 	fprintf(errorFile,"%s\n",postMsg);
@@ -380,8 +469,12 @@ uFinishUp()
 
 #ifndef HAVE_STRDUP
 char *
+#if NeedFunctionPrototypes
+uStringDup(char *str)
+#else
 uStringDup(str)
     char *str;
+#endif
 {
 char *rtrn;
 
@@ -395,8 +488,12 @@ char *rtrn;
 
 #ifndef HAVE_STRCASECMP
 int
+#if NeedFunctionPrototypes
+uStrCaseCmp(char *str1,char *str2)
+#else
 uStrCaseCmp(str1, str2)
     char *str1, *str2;
+#endif
 {
     char buf1[512],buf2[512];
     char c, *s;
@@ -422,8 +519,12 @@ uStrCaseCmp(str1, str2)
 }
 
 int
+#if NeedFunctionPrototypes
+uStrCasePrefix(char *prefix,char *str)
+#else
 uStrCasePrefix(prefix, str)
     char *prefix, *str;
+#endif
 {
     char c1;
     char c2;

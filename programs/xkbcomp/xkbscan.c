@@ -1,5 +1,5 @@
-/* $XConsortium: xkbscan.c /main/4 1995/12/07 21:26:48 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: xkbscan.c /main/6 1996/01/14 16:48:58 kaleb $ */
+/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.0 1996/01/10 05:43:00 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -29,10 +29,11 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <X11/Xos.h>
-#include <X11/X.h>
-#include <X11/extensions/XKB.h>
+#include <X11/Xlib.h>
+#include <X11/XKBlib.h>
 
 #include "tokens.h"
+#include "utils.h"
 
 #ifndef Lynx
 FILE	*yyin = stdin;
@@ -60,14 +61,18 @@ static	char	buf[BUFSIZE];
 extern	unsigned debugFlags;
 
 static char *
+#if NeedFunctionPrototypes
+tokText(int tok)
+#else
 tokText(tok)
     int tok;
+#endif
 {
 static char buf[32];
 
     switch (tok) {
 	case END_OF_FILE:	sprintf(buf, "END_OF_FILE");break;
-	case ERROR:		sprintf(buf, "ERROR");	break;
+	case ERROR_TOK:		sprintf(buf, "ERROR");	break;
 
 	case XKB_KEYMAP:	sprintf(buf, "XKB_KEYMAP"); break;
 	case XKB_KEYCODES:	sprintf(buf, "XKB_KEYCODES"); break;
@@ -86,7 +91,7 @@ static char buf[32];
 	case VIRTUAL_MODS:	sprintf(buf, "VIRTUAL_MODS"); break;
 	case TYPE:		sprintf(buf, "TYPE"); break;
 	case INTERPRET:		sprintf(buf, "INTERPRET"); break;
-	case ACTION:		sprintf(buf, "ACTION"); break;
+	case ACTION_TOK:	sprintf(buf, "ACTION"); break;
 	case KEY:		sprintf(buf, "KEY"); break;
 	case ALIAS:		sprintf(buf, "ALIAS"); break;
 	case GROUP:		sprintf(buf, "GROUP"); break;
@@ -139,9 +144,13 @@ static char buf[32];
 #endif
 
 int
+#if NeedFunctionPrototypes
+setScanState(char *file,int line)
+#else
 setScanState(file,line)
     char *	file;
     int 	line;
+#endif
 {
     if (file!=NULL)
 	strncpy(scanFile,file,1024);
@@ -151,7 +160,11 @@ setScanState(file,line)
 }
 
 int
+#if NeedFunctionPrototypes
+yyGetString(void)
+#else
 yyGetString()
+#endif
 {
 int ch;
 
@@ -195,7 +208,7 @@ int ch;
 		    }
 		}
 	    }
-	    else return ERROR;
+	    else return ERROR_TOK;
 	}
 
 	if ( nInBuf < BUFSIZE-1 ) 
@@ -204,16 +217,20 @@ int ch;
     if ( ch == '"' ) {
 	buf[nInBuf++] = '\0';
 	if  ( scanStr )
-	    free( scanStr );
+	    uFree( scanStr );
 	scanStr = (char *)uStringDup(buf);
 	scanStrLine = lineNum;
 	return STRING;
     }
-    return ERROR;
+    return ERROR_TOK;
 }
 
 int
+#if NeedFunctionPrototypes
+yyGetKeyName(void)
+#else
 yyGetKeyName()
+#endif
 {
 int ch;
 
@@ -257,7 +274,7 @@ int ch;
 		    }
 		}
 	    }
-	    else return ERROR;
+	    else return ERROR_TOK;
 	}
 
 	if ( nInBuf < BUFSIZE-1 ) 
@@ -266,12 +283,12 @@ int ch;
     if (( ch == '>' )&&(nInBuf<5)) {
 	buf[nInBuf++] = '\0';
 	if  ( scanStr )
-	    free( scanStr );
+	    uFree( scanStr );
 	scanStr = (char *)uStringDup(buf);
 	scanStrLine = lineNum;
 	return KEYNAME;
     }
-    return ERROR;
+    return ERROR_TOK;
 }
 
 struct _Keyword {
@@ -299,7 +316,7 @@ struct _Keyword {
     { "virtual_modifiers",	VIRTUAL_MODS		},
     { "type",			TYPE			},
     { "interpret",		INTERPRET		},
-    { "action",			ACTION			},
+    { "action",			ACTION_TOK		},
     { "key",			KEY			},
     { "alias",			ALIAS			},
     { "group",			GROUP			},
@@ -321,8 +338,12 @@ struct _Keyword {
 int	numKeywords = sizeof(keywords)/sizeof(struct _Keyword);
 
 int
+#if NeedFunctionPrototypes
+yyGetIdent(int first)
+#else
 yyGetIdent(first)
     int first;
+#endif
 {
 int ch,i,found;
 int	rtrn;
@@ -343,7 +364,7 @@ int	rtrn;
     }
     if (!found) {
 	if  ( scanStr )
-	    free( scanStr );
+	    uFree( scanStr );
 	scanStr = (char *)uStringDup(buf);
 	scanStrLine = lineNum;
 	rtrn = IDENT;
@@ -358,8 +379,12 @@ int	rtrn;
 }
 
 int
+#if NeedFunctionPrototypes
+yyGetNumber(int ch)
+#else
 yyGetNumber(ch)
     int ch;
+#endif
 {
 int	isFloat= 0;
 
@@ -389,11 +414,15 @@ int	isFloat= 0;
     else if ( sscanf(buf,"%i",&scanInt)==1 )
 	return INTEGER;
     fprintf(stderr,"Malformed number %s\n",buf);
-    return ERROR;
+    return ERROR_TOK;
 }
 
 int
+#if NeedFunctionPrototypes
+yylex(void)
+#else
 yylex()
+#endif
 {
 int	ch;
 int	rtrn;
@@ -445,7 +474,7 @@ int	rtrn;
     else if ( ch == EOF )		rtrn = END_OF_FILE;
     else {
 	fprintf(stderr,"Unexpected character %c (%d) in input stream\n",ch,ch);
-	rtrn = ERROR;
+	rtrn = ERROR_TOK;
     }
 #ifdef DEBUG
     if (debugFlags&0x2)

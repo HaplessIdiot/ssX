@@ -61,12 +61,13 @@ xf86InitXkb()
 {
 }
 
+#if 0
 void
-XkbDDXUpdateIndicators(pXDev,old,new)
+XkbDDXUpdateIndicators(pXDev,new)
     DeviceIntPtr  pXDev;
-    CARD32 old;
     CARD32 new;
 {
+    CARD32 old;
 #ifdef DEBUG
 /*    if (xkbDebugFlags)*/
         ErrorF("XkbDDXUpdateIndicators(...,0x%x) -- XFree86 version\n",new);
@@ -81,3 +82,4 @@ XkbDDXUpdateIndicators(pXDev,old,new)
     xf86SetKbdLeds(new);
     return;
 }
+#endif

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: Tekproc.c /main/117 1995/08/28 14:32:16 kaleb $
- * $XFree86: xc/programs/xterm/Tekproc.c,v 3.6 1996/01/05 13:23:05 dawes Exp $
+ * $XConsortium: Tekproc.c /main/118 1996/01/14 16:52:29 kaleb $
+ * $XFree86: xc/programs/xterm/Tekproc.c,v 3.7 1996/01/10 05:44:05 dawes Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -442,7 +442,7 @@ static void Tekparse()
 			if(screen->TekGIN)
 				TekGINoff();
 			if(!TekRefresh)
-				Bell();
+				Bell(XkbBI_TerminalBell,0);
 			Tparsestate = curstate;	/* clear bypass condition */
 			break;
 
@@ -1740,11 +1740,11 @@ TekCopy()
 	 tp->tm_mon + 1, tp->tm_mday, tp->tm_hour, tp->tm_min, tp->tm_sec);
 	if(access(buf, F_OK) >= 0) {	/* file exists */
 		if(access(buf, W_OK) < 0) {
-			Bell();
+			Bell(XkbBI_MinorError,0);
 			return;
 		}
 	} else if(access(".", W_OK) < 0) {	/* can't write in directory */
-		Bell();
+		Bell(XkbBI_MinorError,0);
 		return;
 	}
 
@@ -1777,7 +1777,7 @@ TekCopy()
 	    _exit(0);
 	}
 	case -1:		/* error */
-	    Bell();
+	    Bell(XkbBI_MinorError,0);
 	    return;
 	default:		/* parent */
 #ifdef HAS_WAITPID

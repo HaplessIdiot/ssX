@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.11 1995/12/02 05:03:24 dawes Exp $ */
+/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.12 1995/12/09 11:04:35 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -23,10 +23,10 @@ OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the Kaleb S. KEITHLEY 
+Except as contained in this notice, the name of Kaleb S. KEITHLEY 
 shall not be used in advertising or otherwise to promote the sale, use 
 or other dealings in this Software without prior written authorization
-from the Kaleb S. KEITHLEY.
+from Kaleb S. KEITHLEY.
 
 */
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
@@ -38,12 +38,12 @@ from the Kaleb S. KEITHLEY.
 #include "Xext.h"
 #include "extutil.h"
 
-static XExtensionInfo _vgahelp_info_data;
-static XExtensionInfo *vgahelp_info = &_vgahelp_info_data;
-static char *vgahelp_extension_name = XF86VIDMODENAME;
+static XExtensionInfo _xf86vidmode_info_data;
+static XExtensionInfo *xf86vidmode_info = &_xf86vidmode_info_data;
+static char *xf86vidmode_extension_name = XF86VIDMODENAME;
 
 #define XF86VidModeCheckExtension(dpy,i,val) \
-  XextCheckExtension (dpy, i, vgahelp_extension_name, val)
+  XextCheckExtension (dpy, i, xf86vidmode_extension_name, val)
 
 /*****************************************************************************
  *                                                                           *
@@ -52,7 +52,7 @@ static char *vgahelp_extension_name = XF86VIDMODENAME;
  *****************************************************************************/
 
 static int close_display();
-static /* const */ XExtensionHooks vgahelp_extension_hooks = {
+static /* const */ XExtensionHooks xf86vidmode_extension_hooks = {
     NULL,				/* create_gc */
     NULL,				/* copy_gc */
     NULL,				/* flush_gc */
@@ -66,12 +66,12 @@ static /* const */ XExtensionHooks vgahelp_extension_hooks = {
     NULL,				/* error_string */
 };
 
-static XEXT_GENERATE_FIND_DISPLAY (find_display, vgahelp_info, 
-				   vgahelp_extension_name, 
-				   &vgahelp_extension_hooks, 
+static XEXT_GENERATE_FIND_DISPLAY (find_display, xf86vidmode_info, 
+				   xf86vidmode_extension_name, 
+				   &xf86vidmode_extension_hooks, 
 				   0, NULL)
 
-static XEXT_GENERATE_CLOSE_DISPLAY (close_display, vgahelp_info)
+static XEXT_GENERATE_CLOSE_DISPLAY (close_display, xf86vidmode_info)
 
 
 /*****************************************************************************
@@ -101,15 +101,15 @@ Bool XF86VidModeQueryVersion(dpy, majorVersion, minorVersion)
     int* minorVersion;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    xVGAHelpQueryVersionReply rep;
-    xVGAHelpQueryVersionReq *req;
+    xXF86VidModeQueryVersionReply rep;
+    xXF86VidModeQueryVersionReq *req;
 
     XF86VidModeCheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
-    GetReq(VGAHelpQueryVersion, req);
+    GetReq(XF86VidModeQueryVersion, req);
     req->reqType = info->codes->major_opcode;
-    req->vgahelpReqType = X_VGAHelpQueryVersion;
+    req->xf86vidmodeReqType = X_XF86VidModeQueryVersion;
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
@@ -129,18 +129,18 @@ Bool XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
     XF86VidModeModeLine* modeline;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    xVGAHelpGetModeLineReply rep;
-    xVGAHelpGetModeLineReq *req;
+    xXF86VidModeGetModeLineReply rep;
+    xXF86VidModeGetModeLineReq *req;
 
     XF86VidModeCheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
-    GetReq(VGAHelpGetModeLine, req);
+    GetReq(XF86VidModeGetModeLine, req);
     req->reqType = info->codes->major_opcode;
-    req->vgahelpReqType = X_VGAHelpGetModeLine;
+    req->xf86vidmodeReqType = X_XF86VidModeGetModeLine;
     req->screen = screen;
     if (!_XReply(dpy, (xReply *)&rep, 
-        (SIZEOF(xVGAHelpGetModeLineReply) - SIZEOF(xReply)) >> 2, xFalse)) {
+        (SIZEOF(xXF86VidModeGetModeLineReply) - SIZEOF(xReply)) >> 2, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return False;
@@ -177,14 +177,14 @@ Bool XF86VidModeModModeLine (dpy, screen, modeline)
     XF86VidModeModeLine* modeline;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    xVGAHelpModModeLineReq *req;
+    xXF86VidModeModModeLineReq *req;
 
     XF86VidModeCheckExtension (dpy, info, 0);
 
     LockDisplay(dpy);
-    GetReq(VGAHelpModModeLine, req);
+    GetReq(XF86VidModeModModeLine, req);
     req->reqType = info->codes->major_opcode;
-    req->vgahelpReqType = X_VGAHelpModModeLine;
+    req->xf86vidmodeReqType = X_XF86VidModeModModeLine;
     req->screen = screen;
     req->hdisplay = modeline->hdisplay;
     req->hsyncstart = modeline->hsyncstart;
@@ -212,14 +212,14 @@ Bool XF86VidModeSwitchMode(dpy, screen, zoom)
     int zoom;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    xVGAHelpSwitchModeReq *req;
+    xXF86VidModeSwitchModeReq *req;
 
     XF86VidModeCheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
-    GetReq(VGAHelpSwitchMode, req);
+    GetReq(XF86VidModeSwitchMode, req);
     req->reqType = info->codes->major_opcode;
-    req->vgahelpReqType = X_VGAHelpSwitchMode;
+    req->xf86vidmodeReqType = X_XF86VidModeSwitchMode;
     req->screen = screen;
     req->zoom = zoom;
     UnlockDisplay(dpy);
@@ -240,7 +240,7 @@ Bool XF86VidModeLockModeSwitch(dpy, screen, lock)
     LockDisplay(dpy);
     GetReq(XF86VidModeLockModeSwitch, req);
     req->reqType = info->codes->major_opcode;
-    req->vgahelpReqType = X_XF86VidModeLockModeSwitch;
+    req->xf86vidmodeReqType = X_XF86VidModeLockModeSwitch;
     req->screen = screen;
     req->lock = lock;
     UnlockDisplay(dpy);
@@ -261,7 +261,7 @@ Bool XF86VidModeSetSaver(dpy, screen, suspendTime, offTime)
     LockDisplay(dpy);
     GetReq(XF86VidModeSetSaver, req);
     req->reqType = info->codes->major_opcode;
-    req->vgahelpReqType = X_XF86VidModeSetSaver;
+    req->xf86vidmodeReqType = X_XF86VidModeSetSaver;
     req->screen = screen;
     req->suspendTime = suspendTime;
     req->offTime = offTime;
@@ -285,7 +285,7 @@ Bool XF86VidModeGetSaver(dpy, screen, suspendTime, offTime)
     LockDisplay(dpy);
     GetReq(XF86VidModeGetSaver, req);
     req->reqType = info->codes->major_opcode;
-    req->vgahelpReqType = X_XF86VidModeGetSaver;
+    req->xf86vidmodeReqType = X_XF86VidModeGetSaver;
     req->screen = screen;
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
@@ -307,17 +307,17 @@ Bool XF86VidModeGetMonitor(dpy, screen, monitor)
     XF86VidModeMonitor* monitor;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    xVGAHelpGetMonitorReply rep;
-    xVGAHelpGetMonitorReq *req;
+    xXF86VidModeGetMonitorReply rep;
+    xXF86VidModeGetMonitorReq *req;
     CARD32 syncrange;
     int i;
 
     XF86VidModeCheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
-    GetReq(VGAHelpGetMonitor, req);
+    GetReq(XF86VidModeGetMonitor, req);
     req->reqType = info->codes->major_opcode;
-    req->vgahelpReqType = X_VGAHelpGetMonitor;
+    req->xf86vidmodeReqType = X_XF86VidModeGetMonitor;
     req->screen = screen;
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);

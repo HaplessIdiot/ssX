@@ -1,5 +1,5 @@
-/* $XConsortium: XKBCvt.c /main/19 1996/01/01 11:26:24 kaleb $ */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.3 1996/01/06 05:21:22 dawes Exp $ */
+/* $XConsortium: XKBCvt.c /main/20 1996/01/14 16:43:06 kaleb $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.4 1996/01/07 03:46:04 dawes Exp $ */
 /*
 
 Copyright (c) 1988, 1989  X Consortium
@@ -282,13 +282,13 @@ _XkbKSToKnownSet (priv, keysym, buffer, nbytes, status)
         } else {
 	    count= 1;
 	    if ((keysymSet == sHebrew) && (keysym == XK_multiply))
-		 buffer[0] = 0xaa;
+		 buffer[0] = (char)0xaa;
             else if ((keysymSet == sHebrew) && (keysym == XK_division))
-		 buffer[0] = 0xba;
+		 buffer[0] = (char)0xba;
             else if ((keysymSet == sCyrillic) && (keysym == XK_section))
-		 buffer[0] = 0xfd;
+		 buffer[0] = (char)0xfd;
             else if ((keysymSet == sX0201) && (keysym == XK_yen))
-		 buffer[0] = 0x5c;
+		 buffer[0] = (char)0x5c;
             else count = 0;
 	}
     } else if (isLatin1) {

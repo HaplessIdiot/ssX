@@ -22,11 +22,12 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.3 1995/12/17 05:02:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.4 1996/01/11 10:35:42 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
 #include "xf86_HWlib.h"
+#include "xf86_PCI.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "Ti302X.h"
@@ -145,7 +146,6 @@ int i128DisplayWidth;
 int i128Weight;
 int i128AdjustCursorXPos = 0;
 pointer i128VideoMem = NULL;
-struct i128pci i128pci;
 struct i128io i128io;
 struct i128mem i128mem;
 unsigned long i128io_config1_save, i128io_config2_save;
@@ -208,68 +208,18 @@ i128Probe()
    int Num_I128_IOPorts = 2;
    unsigned char n, m, p, mdc;
    float mclk;
+   struct pci_config_reg *pcrp;
 
-
-   for (i=0; i<16; i++)
-      PCI_DevIOPorts[i] = 0xC000 + (i*0x0100);
-
-   xf86ClearIOPortList(i128InfoRec.scrnIndex);
-   xf86AddIOPorts(i128InfoRec.scrnIndex, Num_PCI_CtrlIOPorts, PCI_CtrlIOPorts);
-   xf86AddIOPorts(i128InfoRec.scrnIndex, Num_PCI_DevIOPorts, PCI_DevIOPorts);
-
-   /* Enable I/O access */
-   xf86EnableIOPorts(i128InfoRec.scrnIndex);
-
-   outb(0xCF8, 0x80);
-   outb(0xCFA, 0x00);
-
-   for (ioaddr = 0xC000; ioaddr < 0xD000; ioaddr += 0x0100) {
-      i128pci.devicevendor = inl(ioaddr);
-
-#ifdef DEBUG
-      printf("pci slot at 0x%04x, devicevendor 0x%08x\n",
-             ioaddr, i128pci.devicevendor);
-#endif
-
-      if ((i128pci.devicevendor == 0x2309105D) ||
-	  (i128pci.devicevendor == 0x2339105D))
-	 break;
+   xf86scanpci();
+   i = 0;
+   while ((pcrp = pci_devp[i]) != (struct pci_config_reg *)NULL) {
+      if ((pcrp->_device_vendor == I128_DEVICE_ID1) ||
+          (pcrp->_device_vendor == I128_DEVICE_ID2))
+        break;
+      i++;
    }
 
-   xf86DisableIOPorts(i128InfoRec.scrnIndex);
-   xf86ClearIOPortList(i128InfoRec.scrnIndex);
-
-   if (ioaddr == 0xD000)
-      return(FALSE);
-
-
-   for (i=0; i<16; i++)  /* 16 long I/O address registers (0x00-0x3C) */
-      PCI_DevIOPorts[i] = ioaddr + (i*4);
-
-   xf86AddIOPorts(i128InfoRec.scrnIndex, 16, PCI_DevIOPorts);
-   xf86EnableIOPorts(i128InfoRec.scrnIndex);
-
-   i128pci.devicevendor =  inl(ioaddr);
-   i128pci.statuscommand = inl(ioaddr + 0x04);
-   i128pci.classrev =      inl(ioaddr + 0x08);
-   i128pci.bhlc =          inl(ioaddr + 0x0C);
-   i128pci.base0 =         inl(ioaddr + 0x10);
-   i128pci.base1 =         inl(ioaddr + 0x14);
-   i128pci.base2 =         inl(ioaddr + 0x18);
-   i128pci.base3 =         inl(ioaddr + 0x1C);
-   i128pci.base4 =         inl(ioaddr + 0x20);
-   i128pci.base5 =         inl(ioaddr + 0x24);
-   i128pci.rsvd0 =         inl(ioaddr + 0x28);
-   i128pci.rsvd1 =         inl(ioaddr + 0x2C);
-   i128pci.baserom =       inl(ioaddr + 0x30);
-   i128pci.rsvd2 =         inl(ioaddr + 0x34);
-   i128pci.rsvd3 =         inl(ioaddr + 0x38);
-   i128pci.lgii =          inl(ioaddr + 0x3C);
-
-   xf86DisableIOPorts(i128InfoRec.scrnIndex);
-   xf86ClearIOPortList(i128InfoRec.scrnIndex);
-
-   iobase = (unsigned short )i128pci.base5 & 0xFF00;
+   iobase = (unsigned short )pcrp->_base5 & 0xFF00;
 
    for (i=0; i<11; i++)  /* 11 long I/O address registers (0x00-0x28) */
       PCI_DevIOPorts[i] = iobase + (i*4);
@@ -291,22 +241,22 @@ i128Probe()
 #ifdef DEBUG
    printf("  PCI Registers\n");
    printf("    MW0_AD    0x%08x  addr 0x%08x  %spre-fetchable\n",
-	    i128pci.base0, i128pci.base0 & 0xFFC00000,
-	    i128pci.base0 & 0x8 ? "" : "not-");
+	    pcrp->_base0, pcrp->_base0 & 0xFFC00000,
+	    pcrp->_base0 & 0x8 ? "" : "not-");
    printf("    MW1_AD    0x%08x  addr 0x%08x  %spre-fetchable\n",
-	    i128pci.base1, i128pci.base1 & 0xFFC00000,
-	    i128pci.base1 & 0x8 ? "" : "not-");
+	    pcrp->_base1, pcrp->_base1 & 0xFFC00000,
+	    pcrp->_base1 & 0x8 ? "" : "not-");
    printf("    XYW_AD(A) 0x%08x  addr 0x%08x\n",
-	    i128pci.base2, i128pci.base2 & 0xFFC00000);
+	    pcrp->_base2, pcrp->_base2 & 0xFFC00000);
    printf("    XYW_AD(B) 0x%08x  addr 0x%08x\n",
-	    i128pci.base3, i128pci.base3 & 0xFFC00000);
+	    pcrp->_base3, pcrp->_base3 & 0xFFC00000);
    printf("    RBASE_G   0x%08x  addr 0x%08x\n",
-	    i128pci.base4, i128pci.base4 & 0xFFFF0000);
+	    pcrp->_base4, pcrp->_base4 & 0xFFFF0000);
    printf("    IO        0x%08x  addr 0x%08x\n",
-	    i128pci.base5, i128pci.base5 & 0xFFFFFF00);
+	    pcrp->_base5, pcrp->_base5 & 0xFFFFFF00);
    printf("    RBASE_E   0x%08x  addr 0x%08x  %sdecode-enabled\n\n",
-	    i128pci.baserom, i128pci.baserom & 0xFFFF8000,
-	    i128pci.baserom & 0x1 ? "" : "not-");
+	    pcrp->_baserom, pcrp->_baserom & 0xFFFF8000,
+	    pcrp->_baserom & 0x1 ? "" : "not-");
 
    printf("  IO Mapped Registers\n");
    printf("    RBASE_G   0x%08x  addr 0x%08x\n",
@@ -344,12 +294,6 @@ i128Probe()
 
    xf86DisableIOPorts(i128InfoRec.scrnIndex);
    xf86ClearIOPortList(i128InfoRec.scrnIndex);
-   xf86AddIOPorts(i128InfoRec.scrnIndex, Num_PCI_CtrlIOPorts, PCI_CtrlIOPorts);
-   xf86EnableIOPorts(i128InfoRec.scrnIndex);
-   outb(0xCF8, 0x00);
-   xf86DisableIOPorts(i128InfoRec.scrnIndex);
-   xf86ClearIOPortList(i128InfoRec.scrnIndex);
-
 
    xf86ProbeFailed = FALSE;
 
@@ -446,33 +390,33 @@ i128Probe()
  
    /* Now we can map the rest of the chip into memory */
 
-   i128mem.mw0_ad =  xf86MapVidMem(0, 0, (pointer)(i128pci.base0 & 0xFFC00000),
+   i128mem.mw0_ad =  xf86MapVidMem(0, 0, (pointer)(pcrp->_base0 & 0xFFC00000),
                                    i128InfoRec.videoRam * 1024);
    i128VideoMem = (pointer )i128mem.mw0_ad;
 #ifdef TOOMANYMMAPS
-   i128mem.mw1_ad =  xf86MapVidMem(0, 1, (pointer)(i128pci.base1 & 0xFFC00000),
+   i128mem.mw1_ad =  xf86MapVidMem(0, 1, (pointer)(pcrp->_base1 & 0xFFC00000),
                                    i128InfoRec.videoRam * 1024);
 #endif
-   i128mem.xyw_ada = xf86MapVidMem(0, 2, (pointer)(i128pci.base2 & 0xFFC00000),
+   i128mem.xyw_ada = xf86MapVidMem(0, 2, (pointer)(pcrp->_base2 & 0xFFC00000),
                                    i128InfoRec.videoRam * 1024);
 #ifdef TOOMANYMMAPS
-   i128mem.xyw_adb = xf86MapVidMem(0, 3, (pointer)(i128pci.base3 & 0xFFC00000),
+   i128mem.xyw_adb = xf86MapVidMem(0, 3, (pointer)(pcrp->_base3 & 0xFFC00000),
                                    i128InfoRec.videoRam * 1024);
 #endif
    i128mem.rbase_g = (unsigned long *)xf86MapVidMem(0, 4,
-			(pointer)(i128pci.base4 & 0xFFFF0000), 64 * 1024);
+			(pointer)(pcrp->_base4 & 0xFFFF0000), 64 * 1024);
    i128mem.rbase_w = i128mem.rbase_g + ( 8 * 1024)/4;
    i128mem.rbase_a = i128mem.rbase_g + (16 * 1024)/4;
    i128mem.rbase_b = i128mem.rbase_g + (24 * 1024)/4;
    i128mem.rbase_i = i128mem.rbase_g + (32 * 1024)/4;
    i128mem.rbase_g_b = (unsigned char *)i128mem.rbase_g;
 
-   if (i128pci.devicevendor == I128_DEVICE_ID1) {
+   if (pcrp->_device_vendor == I128_DEVICE_ID1) {
       if (i128io.id & 0x0400)       /* 2 banks VRAM   */
 	 i128RamdacType = IBM528_DAC;
       else
 	 i128RamdacType = TI3025_DAC;
-   } if (i128pci.devicevendor == I128_DEVICE_ID2) {
+   } if (pcrp->_device_vendor == I128_DEVICE_ID2) {
       if (i128io.config1 & 0x40000000)       /* 2 banks VRAM   */
 	 i128RamdacType = IBM524_DAC;
       else

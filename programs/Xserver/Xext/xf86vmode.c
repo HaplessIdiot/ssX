@@ -1,5 +1,5 @@
 /* $XConsortium: xf86vmode.c /main/2 1995/11/14 18:18:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.14 1995/12/16 08:18:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.15 1996/01/16 11:00:13 dawes Exp $ */
 
 /*
 
@@ -546,31 +546,6 @@ ProcXF86VidModeLockModeSwitch(client)
 }
 
 static int
-ProcXF86VidModeSetSaver(client)
-    register ClientPtr client;
-{
-    REQUEST(xXF86VidModeSetSaverReq);
-    ScrnInfoPtr vptr;
-
-    if (stuff->screen > screenInfo.numScreens)
-	return BadValue;
-
-    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
-
-    REQUEST_SIZE_MATCH(xXF86VidModeSetSaverReq);
-
-    if (stuff->suspendTime < 0)
-	return BadValue;
-    if (stuff->offTime < 0)
-	return BadValue;
-
-    vptr->suspendTime = stuff->suspendTime;
-    vptr->offTime = stuff->offTime;
-
-    return (client->noClientException);
-}
-
-static int
 ProcXF86VidModeGetMonitor(client)
     register ClientPtr client;
 {
@@ -644,37 +619,6 @@ ProcXF86VidModeGetMonitor(client)
     return (client->noClientException);
 }
 
-static int
-ProcXF86VidModeGetSaver(client)
-    register ClientPtr client;
-{
-    REQUEST(xXF86VidModeGetSaverReq);
-    xXF86VidModeGetSaverReply rep;
-    register int n;
-    ScrnInfoPtr vptr;
-
-    if (stuff->screen > screenInfo.numScreens)
-	return BadValue;
-
-    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
-
-    REQUEST_SIZE_MATCH(xXF86VidModeGetSaverReq);
-    rep.type = X_Reply;
-    rep.length = 0;
-    rep.sequenceNumber = client->sequence;
-    rep.suspendTime = vptr->suspendTime;
-    rep.offTime = vptr->offTime;
-    
-    if (client->swapped) {
-    	swaps(&rep.sequenceNumber, n);
-    	swapl(&rep.length, n);
-    	swapl(&rep.suspendTime, n);
-    	swapl(&rep.offTime, n);
-    }
-    WriteToClient(client, SIZEOF(xXF86VidModeGetSaverReply), (char *)&rep);
-    return (client->noClientException);
-}
-
 /* 
  * lifted from xc/programs/Xserver/os/access.c.
  */
@@ -710,8 +654,6 @@ ProcXF86VidModeDispatch (client)
 	return ProcXF86VidModeGetModeLine(client);
     case X_XF86VidModeGetMonitor:
 	return ProcXF86VidModeGetMonitor(client);
-    case X_XF86VidModeGetSaver:
-	return ProcXF86VidModeGetSaver(client);
     default:
 	if (!xf86VidModeEnabled)
 	    return vidmodeErrorBase + XF86VidModeExtensionDisabled;
@@ -723,8 +665,6 @@ ProcXF86VidModeDispatch (client)
 		return ProcXF86VidModeSwitchMode(client);
 	    case X_XF86VidModeLockModeSwitch:
 		return ProcXF86VidModeLockModeSwitch(client);
-	    case X_XF86VidModeSetSaver:
-		return ProcXF86VidModeSetSaver(client);
 	    default:
 		return BadRequest;
 	    }
@@ -753,32 +693,6 @@ SProcXF86VidModeGetModeLine(client)
     REQUEST_SIZE_MATCH(xXF86VidModeGetModeLineReq);
     swaps(&stuff->screen, n);
     return ProcXF86VidModeGetModeLine(client);
-}
-
-static int
-SProcXF86VidModeGetSaver(client)
-    ClientPtr client;
-{
-    register int n;
-    REQUEST(xXF86VidModeGetSaverReq);
-    swaps(&stuff->length, n);
-    REQUEST_SIZE_MATCH(xXF86VidModeGetSaverReq);
-    swaps(&stuff->screen, n);
-    return ProcXF86VidModeGetSaver(client);
-}
-
-static int
-SProcXF86VidModeSetSaver(client)
-    ClientPtr client;
-{
-    register int n;
-    REQUEST(xXF86VidModeSetSaverReq);
-    swaps(&stuff->length, n);
-    REQUEST_SIZE_MATCH(xXF86VidModeSetSaverReq);
-    swaps(&stuff->screen, n);
-    swapl(&stuff->suspendTime, n);
-    swapl(&stuff->offTime, n);
-    return ProcXF86VidModeSetSaver(client);
 }
 
 static int
@@ -855,8 +769,6 @@ SProcXF86VidModeDispatch (client)
 	return SProcXF86VidModeGetModeLine(client);
     case X_XF86VidModeGetMonitor:
 	return SProcXF86VidModeGetMonitor(client);
-    case X_XF86VidModeGetSaver:
-	return SProcXF86VidModeGetSaver(client);
     default:
 	if (!xf86VidModeEnabled)
 	    return vidmodeErrorBase + XF86VidModeExtensionDisabled;
@@ -868,8 +780,6 @@ SProcXF86VidModeDispatch (client)
 		return SProcXF86VidModeSwitchMode(client);
 	    case X_XF86VidModeLockModeSwitch:
 		return SProcXF86VidModeLockModeSwitch(client);
-	    case X_XF86VidModeSetSaver:
-		return SProcXF86VidModeSetSaver(client);
 	    default:
 		return BadRequest;
 	    }

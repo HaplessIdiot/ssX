@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.32 1996/01/12 14:33:40 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.33 1996/01/16 11:01:02 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -58,8 +58,10 @@ Bool xf86Exiting = FALSE;
 Bool xf86Resetting = FALSE;
 Bool xf86ProbeFailed = TRUE;
 Bool xf86FlipPixels = FALSE;
-Bool xf86VidModeEnabled = FALSE;
+#ifdef XF86VIDMODE
+Bool xf86VidModeEnabled = TRUE;
 Bool xf86VidModeAllowNonLocal = FALSE;
+#endif
 Bool xf86ScreensOpen = FALSE;
 int xf86Verbose = 1;
 Bool xf86fpFlag = FALSE;
@@ -485,9 +487,10 @@ ddxProcessArgument (argc, argv, i)
     xf86FlipPixels = TRUE;
     return 1;
   }
-  if (!strcmp(argv[i],"-enableVidMode"))
+#ifdef XF86VIDMODE
+  if (!strcmp(argv[i],"-disableVidMode"))
   {
-    xf86VidModeEnabled = TRUE;
+    xf86VidModeEnabled = FALSE;
     return 1;
   }
   if (!strcmp(argv[i],"-allowNonLocalXvidtune"))
@@ -495,6 +498,7 @@ ddxProcessArgument (argc, argv, i)
     xf86VidModeAllowNonLocal = TRUE;
     return 1;
   }
+#endif
   if (!strcmp(argv[i],"-verbose"))
   {
     xf86Verbose = 2;
@@ -503,10 +507,6 @@ ddxProcessArgument (argc, argv, i)
   if (!strcmp(argv[i],"-quiet"))
   {
     xf86Verbose = 0;
-    return 1;
-  }
-  if (!strcmp(argv[i],"+vgahelp"))
-  {
     return 1;
   }
   if (!strcmp(argv[i],"-showconfig") || !strcmp(argv[i],"-version"))
@@ -617,6 +617,10 @@ ddxUseMsg()
   ErrorF("-weight nnn            set RGB weighting at 16 bpp.  Default: 565\n");
 #endif /* XF86MONOVGA */
   ErrorF("-flipPixels            swap default black/white Pixel values\n");
+#ifdef XF86VIDMODE
+  ErrorF("-disableVidMode        disable mode adjustments with xvidtune\n");
+  ErrorF("-allowNonLocalXvidtune allow xvidtune to be run as a non-local client\n");
+#endif
   ErrorF(
    "-showconfig            show which drivers are included in the server\n");
   xf86UseMsg();

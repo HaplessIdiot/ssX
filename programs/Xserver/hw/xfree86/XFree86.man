@@ -1,5 +1,5 @@
 .\" $XConsortium: XFree86.man,v 1.6 95/01/23 15:33:32 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.21 1996/01/14 14:08:06 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.22 1996/01/16 11:01:20 dawes Exp $
 .TH XFree86 1 "Version 3.1.2C"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -144,11 +144,13 @@ only to those servers which support 16 bpp.
 .B \-flipPixels
 Swap the default values for the black and white pixels.
 .TP 8
-.B \-enableVidMode
-Enable the VidMode extension for use by the xvidtune client.
+.B \-disableVidMode
+Disable the the parts of the VidMode extension used by the xvidtune client
+that can be used to change the video modes.
 .TP 8
 .B \-allowNonLocalXvidtune
-Allow the xvidtune client to connect from another host.
+Allow the xvidtune client to connect from another host.  By default non-local
+connections are not allowed.
 .TP 8
 .B \-gamma \fIvalue\fP
 Set the gamma correction.  \fIvalue\fP must be between 0.1 and 10.  The

@@ -1,6 +1,6 @@
 /*
- *	$XConsortium: input.c /main/19 1995/12/08 17:18:10 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.2 1996/01/05 13:23:08 dawes Exp $
+ *	$XConsortium: input.c /main/20 1996/01/14 16:52:52 kaleb $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.3 1996/01/10 05:44:11 dawes Exp $
  */
 
 /*
@@ -35,6 +35,7 @@
 #include <stdio.h>
 
 #include "xterm.h"
+#include "data.h"
 
 static char *kypd_num = " XXXXXXXX\tXXX\rXXXxxxxXXXXXXXXXXXXXXXXXXXXX*+,-./0123456789XXX=";
 static char *kypd_apl = " ABCDEFGHIJKLMNOPQRSTUVWXYZ??????abcdefghijklmnopqrstuvwxyzXXX";
@@ -57,7 +58,7 @@ register TScreen *screen;
 		if(screen->bellarmed >= 0) {
 			if(screen->bellarmed == screen->cur_row) {
 			    if(screen->cur_col >= col) {
-				Bell();
+				Bell(XkbBI_MarginBell,0);
 				screen->bellarmed = -1;
 			    }
 			} else

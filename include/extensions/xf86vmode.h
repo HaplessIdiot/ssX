@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.11 1996/01/07 03:45:44 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.12 1996/01/16 11:00:28 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -43,8 +43,6 @@ from Kaleb S. KEITHLEY
 #define X_XF86VidModeSwitchMode		3
 #define X_XF86VidModeGetMonitor		4
 #define X_XF86VidModeLockModeSwitch	5
-#define X_XF86VidModeGetSaver		6
-#define X_XF86VidModeSetSaver		7
 #define X_XF86VidModeGetServerName	8
 
 #ifdef XF86VIDMODE_EVENTS
@@ -171,24 +169,6 @@ Status XF86VidModeGetMonitor(
     Display*		/* dpy */,
     int			/* screen */,
     XF86VidModeMonitor*	/* monitor */
-#endif
-);
-
-Status XF86VidModeGetSaver(
-#if NeedFunctionPrototypes
-    Display*			/* dpy */,
-    int				/* screen */,
-    int*			/* suspendtime */,
-    int*			/* offtime */
-#endif
-);
-
-Status XF86VidModeSetSaver(
-#if NeedFunctionPrototypes
-    Display*			/* dpy */,
-    int				/* screen */,
-    int				/* suspendtime */,
-    int				/* offtime */
 #endif
 );
 

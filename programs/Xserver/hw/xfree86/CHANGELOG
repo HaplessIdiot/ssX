@@ -1,4 +1,13 @@
-XFree86 3.1.2Bj (15 January 1996)
+XFree86 3.1.2Bj (16 January 1996)
+245. Remove the XExExt library, and replace it with individual libraries
+     for each extension.
+244. Remove the GetSaver/SetSaver functions from the VidMode extension
+     and add them to a new extension: XFree86-Misc.
+243. Cleanup VidMode extension code -- removing "vgahelp" referenced
+     (Kaleb Keithley).
+242. Allow the write functions of the VidMode extension to be disabled
+     for non-local clients (default), and all clients (Kaleb Keithley).
+241. XC fix-trackers to seq-4052 (new XKB snapshot).
 240. README.S3 updates (Paul Gortmaker).
 239. Do framebuffer address scan for all VLB Trio64 cards, not just those
      with > 1MB.
