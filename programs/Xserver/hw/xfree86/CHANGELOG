@@ -1,4 +1,7 @@
 XFree86 4.3.99.904 (xx February 2004)
+ 810. Fix compile issue in imstt driver (#6140, Rene Rebe)
+ 809. Only reset primary head of a Radeon (#6133, Rene Rebe).
+ 808. Fix big-endian typo in xf86CopyYUV12ToPacked (#6131, Rene Rebe).
  807. Fix neomagic white screen/lockup bug introduced in 4.3.99.15 (Bugzilla
       #1179, #1157, David Dawes).
  806. Fixing DPMS: let modification of DPMS timeout take effect immeditately,
@@ -18650,7 +18653,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3146 2004/02/17 15:30:24 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3147 2004/02/18 04:20:25 dawes Exp $
 
 
 
