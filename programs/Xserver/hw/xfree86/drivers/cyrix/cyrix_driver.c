@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.5 2000/02/27 02:46:09 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.8 2000/04/19 16:57:43 eich Exp $ */
 
 #include "compiler.h"
 #include "fb.h"
@@ -726,7 +726,7 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = (ClockRangePtr)xnfalloc(sizeof(ClockRange));
+    clockRanges = (ClockRangePtr)xnfcalloc(sizeof(ClockRange), 1);
     clockRanges->next = NULL;
     clockRanges->minClock = pCyrix->MinClock;
     clockRanges->maxClock = pCyrix->MaxClock;

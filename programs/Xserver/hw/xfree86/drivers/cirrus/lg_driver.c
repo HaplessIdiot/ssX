@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.28 2000/04/27 16:26:47 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.29 2000/05/18 23:46:22 dawes Exp $ */
 
 #define EXPERIMENTAL
 
@@ -804,7 +804,7 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	 * Setup the ClockRanges, which describe what clock ranges are available,
 	 * and what sort of modes they can be used for.
 	 */
-	clockRanges = xnfalloc(sizeof(ClockRange));
+	clockRanges = xnfcalloc(sizeof(ClockRange), 1);
 	clockRanges->next = NULL;
 	clockRanges->minClock = pCir->MinClock;
 	clockRanges->maxClock = pCir->MaxClock;

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.19 2000/04/17 16:30:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.20 2000/04/20 21:28:37 tsi Exp $ */
 
 /*
  * Authors:
@@ -720,7 +720,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
       pI740->MaxClock = 86000;
     }
   }
-  clockRanges = xnfalloc(sizeof(ClockRange));
+  clockRanges = xnfcalloc(sizeof(ClockRange), 1);
   clockRanges->next=NULL;
   clockRanges->minClock= 12000; /* !!! What's the min clock? !!! */
   clockRanges->maxClock=pI740->MaxClock;

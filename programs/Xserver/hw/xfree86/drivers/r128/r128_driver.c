@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.34 2000/06/14 00:16:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.35 2000/06/17 00:03:22 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -1152,7 +1152,7 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 
 				/* Get mode information */
     pScrn->progClock               = TRUE;
-    clockRanges                    = xnfalloc(sizeof(*clockRanges));
+    clockRanges                    = xnfcalloc(sizeof(*clockRanges), 1);
     clockRanges->next              = NULL;
     clockRanges->minClock          = info->pll.min_pll_freq;
     clockRanges->maxClock          = info->pll.max_pll_freq * 10;

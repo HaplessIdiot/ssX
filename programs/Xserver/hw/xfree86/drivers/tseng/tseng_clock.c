@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.13 1999/04/27 12:05:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.14 1999/06/12 07:18:58 dawes Exp $ */
 
 
 
@@ -175,7 +175,7 @@ void tseng_clock_setup(ScrnInfoPtr pScrn)
      *
      * First, we set up the default case, and modify it later if needed.
      */
-    pTseng->clockRange[0] = xnfalloc(sizeof(ClockRange));
+    pTseng->clockRange[0] = xnfcalloc(sizeof(ClockRange), 1);
     pTseng->clockRange[0]->next = NULL;
     pTseng->clockRange[0]->minClock = pTseng->MinClock;
     pTseng->clockRange[0]->maxClock = dacspeed;
@@ -199,7 +199,7 @@ void tseng_clock_setup(ScrnInfoPtr pScrn)
 	(!(DAC_is_GenDAC && pTseng->NoClockchip)) ) {
 	pTseng->clockRange[0]->maxClock = MAX_TSENG_CLOCK;
 	/* set up 2nd clock range for PIXMUX modes */
-	pTseng->clockRange[1] = xnfalloc(sizeof(ClockRange));
+	pTseng->clockRange[1] = xnfcalloc(sizeof(ClockRange), 1);
 	pTseng->clockRange[0]->next = pTseng->clockRange[1];
 	pTseng->clockRange[1]->next = NULL;
 	pTseng->clockRange[1]->minClock = 75000;
@@ -225,7 +225,7 @@ void tseng_clock_setup(ScrnInfoPtr pScrn)
 	pTseng->clockRange[0]->ClockDivFactor = 1;
 	/* in addition, 16-bit DACs can also transport 2 bytes per clock */
 	if (pTseng->DacInfo.DacPort16) {
-	    pTseng->clockRange[1] = xnfalloc(sizeof(ClockRange));
+	    pTseng->clockRange[1] = xnfcalloc(sizeof(ClockRange), 1);
 	    pTseng->clockRange[0]->next = pTseng->clockRange[1];
 	    pTseng->clockRange[1]->next = NULL;
 	    pTseng->clockRange[1]->minClock = pTseng->MinClock;

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.156 2000/06/17 00:03:20 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.158 2000/06/21 13:58:58 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1719,7 +1719,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = xnfalloc(sizeof(ClockRange));
+    clockRanges = xnfcalloc(sizeof(ClockRange), 1);
     clockRanges->next = NULL;
     clockRanges->minClock = pMga->MinClock;
     clockRanges->maxClock = pMga->MaxClock;

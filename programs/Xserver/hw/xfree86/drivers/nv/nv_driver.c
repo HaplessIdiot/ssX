@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.41 2000/03/13 18:49:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.43 2000/04/17 16:30:05 eich Exp $ */
 
 #include "nv_include.h"
 
@@ -1151,7 +1151,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     pNv->MinClock = 12000;
     pNv->MaxClock = pNv->riva.MaxVClockFreqKHz;
 
-    clockRanges = xnfalloc(sizeof(ClockRange));
+    clockRanges = xnfcalloc(sizeof(ClockRange), 1);
     clockRanges->next = NULL;
     clockRanges->minClock = pNv->MinClock;
     clockRanges->maxClock = pNv->MaxClock;

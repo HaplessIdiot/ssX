@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.33 2000/04/20 21:28:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.34 2000/06/17 00:03:25 martin Exp $ */
 
 /*
  * Authors:
@@ -882,7 +882,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
       break;
     }
   }
-  clockRanges = xnfalloc(sizeof(ClockRange));
+  clockRanges = xnfcalloc(sizeof(ClockRange), 1);
   clockRanges->next=NULL;
   clockRanges->minClock= 12000; /* !!! What's the min clock? !!! */
   clockRanges->maxClock=pTDFX->MaxClock;

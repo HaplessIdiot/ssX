@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.3 2000/06/14 02:36:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.4 2000/06/19 15:01:02 tsi Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -497,7 +497,7 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->clock[0] = 110000;
 	pScrn->clock[1] = 220000;
 
-	clockRanges = xnfalloc(sizeof(ClockRange));
+	clockRanges = xnfcalloc(sizeof(ClockRange), 1);
 	clockRanges->next = NULL;
 	clockRanges->minClock = 20000;
 	clockRanges->maxClock = 120000;	/* i don't want to blow up anything */

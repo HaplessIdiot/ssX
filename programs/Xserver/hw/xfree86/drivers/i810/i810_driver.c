@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.11 2000/06/17 00:03:18 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.12 2000/06/20 05:08:46 dawes Exp $ */
 
 /*
  * Authors:
@@ -668,7 +668,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
 	 pI810->MaxClock = 86000;
       }
    }
-   clockRanges = xnfalloc(sizeof(ClockRange));
+   clockRanges = xnfcalloc(sizeof(ClockRange), 1);
    clockRanges->next=NULL;
    clockRanges->minClock= 12000; /* !!! What's the min clock? !!! */
    clockRanges->maxClock=pI810->MaxClock;
