@@ -24,12 +24,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.15 2003/11/10 18:21:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.16tsi Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
 #include "windowstr.h"
 #include "inputstr.h"
+#include "scrnintstr.h"
 #include "gcstruct.h"
 #include "colormapst.h"
 #include "propertyst.h"

@@ -1,4 +1,6 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 647. Build fix after recent REGION_* changes (Part of #5983, Oswald
+      Buddenhagen, and #5984, Alexander Stohr).
  646. Fix for XKB map 'altwin' to avoid one keysym to more than one modifier
       mapping (Ivan Pascal).
  
@@ -18328,7 +18330,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3014 2003/12/03 05:05:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3015 2003/12/03 14:11:48 pascal Exp $
 
 
 
