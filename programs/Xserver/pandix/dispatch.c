@@ -62,6 +62,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -3545,7 +3546,7 @@ InitProcVectors()
 	if(!ProcVector[i])
 	{
             ProcVector[i] = SwappedProcVector[i] = ProcBadRequest;
-	    ReplySwapVector[i] = NotImplemented;
+	    ReplySwapVector[i] = ReplyNotSwappd;
 	}
 #ifdef K5AUTH
 	if (!k5_Vector[i])

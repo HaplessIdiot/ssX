@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/pandix/dixfonts.c,v 1.4 1998/12/13 05:33:03 dawes Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -66,39 +66,6 @@ SOFTWARE.
 #endif
 
 #define QUERYCHARINFO(pci, pr)  *(pr) = (pci)->metrics
-
-static Mask FontFormat = 
-#if IMAGE_BYTE_ORDER == LSBFirst
-    BitmapFormatByteOrderLSB |
-#else
-    BitmapFormatByteOrderMSB |
-#endif
-
-#if BITMAP_BIT_ORDER == LSBFirst
-    BitmapFormatBitOrderLSB |
-#else
-    BitmapFormatBitOrderMSB |
-#endif
-
-    BitmapFormatImageRectMin |
-
-#if GLYPHPADBYTES == 1
-    BitmapFormatScanlinePad8 |
-#endif
-
-#if GLYPHPADBYTES == 2
-    BitmapFormatScanlinePad16 |
-#endif
-
-#if GLYPHPADBYTES == 4
-    BitmapFormatScanlinePad32 |
-#endif
-
-#if GLYPHPADBYTES == 8
-    BitmapFormatScanlinePad64 |
-#endif
-
-    BitmapFormatScanlineUnit8;
 
 extern pointer fosNaturalParams;
 extern FontPtr defaultFont;
@@ -275,6 +242,37 @@ doOpenFont(client, c)
     int         newlen;
     int		aliascount = 20;
 
+    /*
+     * Decide at runtime what FontFormat to use.
+     */
+    Mask FontFormat = 
+
+	((screenInfo.imageByteOrder == LSBFirst) ?
+	    BitmapFormatByteOrderLSB : BitmapFormatByteOrderMSB) |
+
+	((screenInfo.bitmapBitOrder == LSBFirst) ?
+	    BitmapFormatBitOrderLSB : BitmapFormatBitOrderMSB) |
+
+	BitmapFormatImageRectMin |
+ 
+#if GLYPHPADBYTES == 1
+	BitmapFormatScanlinePad8 |
+#endif
+
+#if GLYPHPADBYTES == 2
+	BitmapFormatScanlinePad16 |
+#endif
+
+#if GLYPHPADBYTES == 4
+	BitmapFormatScanlinePad32 |
+#endif
+
+#if GLYPHPADBYTES == 8
+	BitmapFormatScanlinePad64 |
+#endif
+ 
+	BitmapFormatScanlineUnit8;
+ 
     if (client->clientGone)
     {
 	if (c->current_fpe < c->num_fpes)
@@ -322,7 +320,7 @@ doOpenFont(client, c)
 	if (err == Suspended) {
 	    if (!c->slept) {
 		c->slept = TRUE;
-		ClientSleep(client, doOpenFont, (pointer) c);
+		ClientSleep(client, (ClientSleepProcPtr)doOpenFont, (pointer) c);
 	    }
 	    return TRUE;
 	}
@@ -519,7 +517,7 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
     xFontProp       *prFP;
     xCharInfo       *prCI;
     xCharInfo       *charInfos[256];
-    char             chars[512];
+    unsigned char    chars[512];
     int              ninfos;
     unsigned long    ncols;
     unsigned long    count;
@@ -559,7 +557,7 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
 	    chars[i++] = r;
 	    chars[i++] = c;
 	}
-	(*pFont->get_metrics) (pFont, ncols, (unsigned char *)chars, 
+	(*pFont->get_metrics) (pFont, ncols, chars, 
 				TwoD16Bit, &count, charInfos);
 	i = 0;
 	for (i = 0; i < (int) count && ninfos < nProtoCCIStructs; i++) {
@@ -915,7 +913,7 @@ doListFontsWithInfo(client, c)
  	    {
 		if (!c->slept)
  		{
-		    ClientSleep(client, doListFontsWithInfo, c);
+		    ClientSleep(client, (ClientSleepProcPtr)doListFontsWithInfo, c);
 		    c->slept = TRUE;
 		}
 		return TRUE;
@@ -934,7 +932,7 @@ doListFontsWithInfo(client, c)
  	    {
 		if (!c->slept)
  		{
-		    ClientSleep(client, doListFontsWithInfo, c);
+		    ClientSleep(client, (ClientSleepProcPtr)doListFontsWithInfo, c);
 		    c->slept = TRUE;
 		}
 		return TRUE;
@@ -1349,7 +1347,7 @@ doPolyText(client, c)
 		    ValidateGC(c->pDraw, c->pGC);
 		    
 		    c->slept = TRUE;
-		    ClientSleep(client, doPolyText, (pointer) c);
+		    ClientSleep(client, (ClientSleepProcPtr)doPolyText, (pointer) c);
 
 		    /* Set up to perform steps 3 and 4 */
 		    client_state = START_SLEEP;
