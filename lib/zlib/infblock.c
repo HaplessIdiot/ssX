@@ -327,6 +327,7 @@ int r;
           r = t;
           LEAVE
         }
+        ZFREE(z, s->sub.trees.blens);
         Tracev((stderr, "inflate:       trees ok, %d * %d bytes used\n",
               inflate_hufts, sizeof(inflate_huft)));
         if ((c = inflate_codes_new(bl, bd, tl, td, z)) == Z_NULL)
@@ -340,7 +341,6 @@ int r;
         s->sub.decode.tl = tl;
         s->sub.decode.td = td;
       }
-      ZFREE(z, s->sub.trees.blens);
       s->mode = CODES;
     case CODES:
       UPDATE
