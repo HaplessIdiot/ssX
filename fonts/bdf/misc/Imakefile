@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/36 1998/05/20 15:10:33 kaleb $
-XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.14 2000/12/08 16:37:16 dawes Exp $
+XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.15 2000/12/08 19:37:48 dawes Exp $
 
 
 /*
@@ -210,12 +210,6 @@ PREDERIVEDOBJS = \
 	FontObj(9x15-ISO8859-1) \
 	FontObj(9x15B-ISO8859-1) \
 	FontObj(10x20-ISO8859-1)
-#else
-/*
- * PREDERIVEDOBJS is the list of fonts referenced by fonts.alias that would
- * normally be derived from the UCS versions.  This is hopefully a temporary
- * issue.
- */
 #endif
 
 MISCOBJS = FontObj(8x16) FontObj(8x16rk) \
