@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.11 2001/08/06 11:02:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.12 2001/08/31 07:58:29 alanh Exp $ */
 
 #include "Xatom.h"
 
@@ -56,8 +56,10 @@ winWindowProc (HWND hWnd, UINT message,
   RECT				rcClient, rcSrc;
   int				iScanCode;
   int				i;
+#if 0
   HGLOBAL			hGlobal;
   char				*pGlobal;
+#endif
 
   /* Watch for server regeneration */
   if (g_ulServerGeneration != ulServerGeneration)
@@ -107,10 +109,13 @@ winWindowProc (HWND hWnd, UINT message,
       /* Store the mode key states so restore doesn't try to restore them */
       winStoreModeKeyStates (pScreen);
 
+#if 0
       /* Add ourselves to the clipboard viewer chain */
       pScreenPriv->hwndNextViewer = SetClipboardViewer (hWnd);
+#endif
       return 0;
 
+#if 0
     case WM_CHANGECBCHAIN:
       /* We can't do anything without privates */
       if (pScreenPriv == NULL)
@@ -163,6 +168,7 @@ winWindowProc (HWND hWnd, UINT message,
       GlobalUnlock (hGlobal);
       CloseClipboard ();
       return 0;
+#endif
 
     case WM_PAINT:
 #if CYGDEBUG

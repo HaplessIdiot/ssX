@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.13 2001/07/31 09:46:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.14 2001/08/31 07:58:28 alanh Exp $ */
 
 #include "win.h"
 
@@ -521,8 +521,10 @@ winCloseScreenShadowDD (int nIndex, ScreenPtr pScreen)
   if (!pScreenPriv->fCursor)
       ShowCursor (TRUE);
 
+#if 0
   /* Remove our window from the clipboard viewer chain */
   ChangeClipboardChain (pScreenPriv->hwndScreen, pScreenPriv->hwndNextViewer);
+#endif
 
   /* Kill our window */
   if (pScreenPriv->hwndScreen)

@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 265. Disable clipboard viewer, external program xwinclip handles this (fow now)
+      (#4932, Harold Hunt).
  264. Add ability to let Aqua and X use different display modes while running
       XDarwin full screen (Torrey T. Lyons).
  263. Fix build dependency problem in xedit/lisp/lisp.rules
@@ -13781,4 +13783,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1931 2001/09/05 18:13:13 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1932 2001/09/06 05:08:09 torrey Exp $
