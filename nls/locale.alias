@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.55 2002/12/10 04:23:52 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.56 2002/12/11 03:31:55 dawes Exp $
 XCOMM
 
 POSIX:						C
@@ -246,6 +246,7 @@ fi_FI.ISO-8859-1:				fi_FI.ISO8859-1
 fi_FI.ISO_8859-1:				fi_FI.ISO8859-1
 fi_FI.iso885915:				fi_FI.ISO8859-15
 fi_FI@euro:					fi_FI.ISO8859-15
+fi_FI.UTF-8@euro:				fi_FI.UTF-8
 fo:						fo_FO.ISO8859-1
 fo_FO:						fo_FO.ISO8859-1
 fo_FO.iso88591:					fo_FO.ISO8859-1
@@ -526,6 +527,7 @@ pt_PT.ISO-8859-1:				pt_PT.ISO8859-1
 pt_PT.ISO_8859-1:				pt_PT.ISO8859-1
 pt_PT.iso885915:				pt_PT.ISO8859-15
 pt_PT@euro:					pt_PT.ISO8859-15
+pt_PT.UTF-8@euro:				pt_PT.UTF-8
 ro:						ro_RO.ISO8859-2
 ro_RO:						ro_RO.ISO8859-2
 ro_RO.iso88592:					ro_RO.ISO8859-2
@@ -618,6 +620,7 @@ tr:						tr_TR.ISO8859-9
 tr_TR:						tr_TR.ISO8859-9
 tr_TR.iso88599:					tr_TR.ISO8859-9
 tr_TR.ISO-8859-9:				tr_TR.ISO8859-9
+tr_TR.utf8:					tr_TR.UTF-8
 tt:						tt_RU.TATAR-CYR
 tt_RU:						tt_RU.TATAR-CYR
 tt_RU.tatarcyr:					tt_RU.TATAR-CYR
