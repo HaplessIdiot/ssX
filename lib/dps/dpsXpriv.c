@@ -35,12 +35,13 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/lib/dps/dpsXpriv.c,v 1.3 2000/05/18 23:46:13 dawes Exp $ */
+/* $XFree86: xc/lib/dps/dpsXpriv.c,v 1.4 2001/04/01 14:00:03 tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/time.h>
 
 #ifdef GC
 #undef GC

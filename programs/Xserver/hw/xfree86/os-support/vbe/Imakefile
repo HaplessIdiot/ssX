@@ -1,11 +1,15 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/Imakefile,v 1.8 2000/05/23 04:47:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/Imakefile,v 1.9 2001/08/13 19:35:00 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
-SRCS = vbe.c vbe_module.c
+#if DoLoadableServer
+MODSRC = vbe_module.c
+MODOBJ = vbe_module.o
+#endif
 
-OBJS = vbe.o vbe_module.o
+SRCS = vbe.c $(MODSRC)
+OBJS = vbe.o $(MODOBJ)
 
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
@@ -14,9 +18,16 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 
 ModuleObjectRule()
 
-LibraryModuleTarget(vbe, $(OBJS))
+#if DoLoadableServer
 
+LibraryModuleTarget(vbe, $(OBJS))
 InstallLibraryModule(vbe,$(MODULEDIR),.)
+
+#else
+
+SubdirLibraryRule($(OBJS))
+
+#endif
 
 DependTarget()
 

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.33 1999/06/20 08:41:22 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.34 2001/01/17 19:43:47 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -2232,7 +2232,7 @@ TRANS(LocalReopenCLTSServer)(Xtransport *thistrans, int fd, char *port)
 
 
 
-static
+static int
 TRANS(LocalSetOption)(XtransConnInfo ciptr, int option, int arg)
 
 {
@@ -2244,7 +2244,7 @@ TRANS(LocalSetOption)(XtransConnInfo ciptr, int option, int arg)
 
 #ifdef TRANS_SERVER
 
-static
+static int
 TRANS(LocalCreateListener)(XtransConnInfo ciptr, char *port)
 
 {
@@ -2293,7 +2293,7 @@ TRANS(LocalAccept)(XtransConnInfo ciptr, int *status)
 
 #ifdef TRANS_CLIENT
 
-static
+static int
 TRANS(LocalConnect)(XtransConnInfo ciptr, char *host, char *port)
 
 {

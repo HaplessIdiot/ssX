@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.28 2001/01/17 22:13:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.29 2001/05/01 17:03:35 alanh Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -33,6 +33,7 @@ in this Software without prior written authorization from The Open Group.
 #include <ipc.h>
 #include <shm.h>
 #endif
+#include <unistd.h>
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "X.h"

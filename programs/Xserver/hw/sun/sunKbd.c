@@ -39,12 +39,13 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/sun/sunKbd.c,v 1.5 2001/01/17 22:36:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunKbd.c,v 1.6 2001/08/01 00:44:48 tsi Exp $ */
 
 #define NEED_EVENTS
 #include "sun.h"
 #include "keysym.h"
 #include "Sunkeysym.h"
+#include "mi.h"
 
 #ifdef XKB
 #include <X11/extensions/XKB.h>

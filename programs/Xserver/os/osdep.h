@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.13 2001/07/25 15:05:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.14 2001/08/01 00:44:59 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -156,6 +156,9 @@ typedef struct _LbxProxy *OsProxyPtr;
 
 struct _osComm;
 
+#define AuthInitArgs void
+typedef void (*AuthInitFunc) (AuthInitArgs);
+
 #define AuthAddCArgs unsigned short data_length, char *data, XID id
 typedef int (*AuthAddCFunc) (AuthAddCArgs);
 
@@ -278,6 +281,7 @@ extern int  XdmResetCookie    (AuthRstCArgs);
 
 /* in rpcauth.c */
 #ifdef SECURE_RPC
+extern void SecureRPCInit     (AuthInitArgs);
 extern XID  SecureRPCCheck    (AuthCheckArgs);
 extern XID  SecureRPCToID     (AuthToIDArgs);
 extern int  SecureRPCAdd      (AuthAddCArgs);

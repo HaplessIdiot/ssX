@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.5 2001/03/03 22:26:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.6 2001/07/25 08:04:43 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -136,20 +136,20 @@ static void RADEONLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 {
     RADEONInfoPtr info        = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
-    CARD32        *s          = (CARD32 *)image;
-    CARD32        *d          = (CARD32 *)(info->FB + info->cursor_start);
+    CARD32        *s          = (pointer)image;
+    CARD32        *d          = (pointer)(info->FB + info->cursor_start);
     int           y;
     CARD32        save;
 
     if(!info->IsSecondary)
     {
     save = INREG(RADEON_CRTC_GEN_CNTL);
-        OUTREG(RADEON_CRTC_GEN_CNTL, save & ~RADEON_CRTC_CUR_EN);
+        OUTREG(RADEON_CRTC_GEN_CNTL, save & (CARD32)~RADEON_CRTC_CUR_EN);
     }
     else
     { 
         save = INREG(RADEON_CRTC2_GEN_CNTL);
-        OUTREG(RADEON_CRTC2_GEN_CNTL, save & ~RADEON_CRTC2_CUR_EN);
+        OUTREG(RADEON_CRTC2_GEN_CNTL, save & (CARD32)~RADEON_CRTC2_CUR_EN);
     }
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN

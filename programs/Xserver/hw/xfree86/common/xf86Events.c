@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.114 2001/08/16 14:33:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.115 2001/08/17 16:58:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -244,7 +244,7 @@ ProcessInputEvents ()
 }
 
 void
-xf86GrabServerCallback(pointer callbacks, pointer data, pointer args)
+xf86GrabServerCallback(CallbackListPtr *callbacks, pointer data, pointer args)
 {
     ServerGrabInfoRec *grab = (ServerGrabInfoRec*)args;
 

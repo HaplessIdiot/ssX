@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/Imakefile,v 1.1 2001/05/28 02:42:31 tsi Exp $
 XCOMM
 XCOMM Copyright 2001 The XFree86 Project, Inc.  All Rights Reserved.
 XCOMM
@@ -60,7 +60,7 @@ OBJS = sun_bios.o sun_init.o $(IO_OBJ) $(KBD_OBJS) $(PROWORKS_INOUT_OBJ) \
        posix_tty.o sigiostubs.o stdPci.o stdResource.o $(VTSW_OBJ)
 
 INCLUDES = -I. -I$(XF86OSSRC) -I$(XF86COMSRC) \
-	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext \
 	   -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
 DEFINES = -DUSESTDRES

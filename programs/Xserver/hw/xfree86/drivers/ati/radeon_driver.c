@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.32 2001/07/25 08:04:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.33 2001/08/07 07:04:43 keithp Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1344,7 +1344,7 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 }
 
 static void
-RADEONI2CGetBits(I2CBusPtr b, int *clock, int *data)
+RADEONI2CGetBits(I2CBusPtr b, int *Clock, int *data)
 {
     ScrnInfoPtr   pScrn       = xf86Screens[b->scrnIndex];
     RADEONInfoPtr info = RADEONPTR(pScrn);
@@ -1354,13 +1354,13 @@ RADEONI2CGetBits(I2CBusPtr b, int *clock, int *data)
     /* Get the result. */
     val = INREG(info->DDCReg);
 
-    *clock = (val & RADEON_GPIO_Y_1) != 0;
+    *Clock = (val & RADEON_GPIO_Y_1) != 0;
     *data  = (val & RADEON_GPIO_Y_0) != 0;
 
 }
 
 static void
-RADEONI2CPutBits(I2CBusPtr b, int clock, int data)
+RADEONI2CPutBits(I2CBusPtr b, int Clock, int data)
 {
     ScrnInfoPtr   pScrn       = xf86Screens[b->scrnIndex];
     RADEONInfoPtr info = RADEONPTR(pScrn);
@@ -1368,8 +1368,8 @@ RADEONI2CPutBits(I2CBusPtr b, int clock, int data)
     unsigned char *RADEONMMIO = info->MMIO;
 
     val = INREG(info->DDCReg) & 
-              ~RADEON_GPIO_EN_0 & ~RADEON_GPIO_EN_1;
-    val |= (clock ? 0:RADEON_GPIO_EN_1);
+              (CARD32)~(RADEON_GPIO_EN_0 | RADEON_GPIO_EN_1);
+    val |= (Clock ? 0:RADEON_GPIO_EN_1);
     val |= (data ? 0:RADEON_GPIO_EN_0);
     OUTREG(info->DDCReg, val);
 }
@@ -1466,7 +1466,7 @@ RADEONDoDDC(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
         /*OUTREG(RADEON_I2C_CNTL_1, 0);
         OUTREG(RADEON_DVI_I2C_CNTL_1, 0);*/
         OUTREG(info->DDCReg, INREG(info->DDCReg) &
-                 ~RADEON_GPIO_A_0 & ~RADEON_GPIO_A_1);
+                 (CARD32)~(RADEON_GPIO_A_0 | RADEON_GPIO_A_1));
 
         MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex, info->pI2CBus);
         if(!MonInfo) info->ddc2 = FALSE;
@@ -3813,7 +3813,8 @@ static Bool RADEONInitCrtc2Registers(ScrnInfoPtr pScrn, RADEONSavePtr save,
     else
 	{
         save->disp_output_cntl = 
-            ((info->SavedReg.disp_output_cntl & ~RADEON_DISP_DAC_SOURCE_MASK)
+            ((info->SavedReg.disp_output_cntl &
+	      (CARD32)~RADEON_DISP_DAC_SOURCE_MASK)
             | RADEON_DISP_DAC_SOURCE_CRTC2);
     }
 
@@ -3929,14 +3930,15 @@ static void RADEONInitFPRegisters(ScrnInfoPtr pScrn, RADEONSavePtr orig,
     }
     save->fp_vert_stretch &= ~RADEON_VERT_AUTO_RATIO_EN;
 
-    save->fp_gen_cntl = (orig->fp_gen_cntl & ~(RADEON_FP_SEL_CRTC2 |
-			                RADEON_FP_RMX_HVSYNC_CONTROL_EN |
-					RADEON_FP_DFP_SYNC_SEL |	
-                                        RADEON_FP_CRT_SYNC_SEL | 
-					RADEON_FP_CRTC_LOCK_8DOT |	
-					RADEON_FP_USE_SHADOW_EN |
-					       RADEON_FP_CRTC_USE_SHADOW_VEND |
-					RADEON_FP_CRT_SYNC_ALT));
+    save->fp_gen_cntl = (orig->fp_gen_cntl & (CARD32)
+					~(RADEON_FP_SEL_CRTC2 |
+			                  RADEON_FP_RMX_HVSYNC_CONTROL_EN |
+					  RADEON_FP_DFP_SYNC_SEL |	
+                                          RADEON_FP_CRT_SYNC_SEL | 
+					  RADEON_FP_CRTC_LOCK_8DOT |	
+					  RADEON_FP_USE_SHADOW_EN |
+					  RADEON_FP_CRTC_USE_SHADOW_VEND |
+					  RADEON_FP_CRT_SYNC_ALT));
 	save->fp_gen_cntl |= (RADEON_FP_CRTC_DONT_SHADOW_VPAR |
                           RADEON_FP_CRTC_DONT_SHADOW_HEND );
 

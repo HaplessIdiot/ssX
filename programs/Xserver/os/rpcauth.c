@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/rpcauth.c,v 3.3 2001/01/17 22:37:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/rpcauth.c,v 3.4 2001/01/30 22:06:21 tsi Exp $ */
 
 /*
  * SUN-DES-1 authentication mechanism
@@ -39,6 +39,11 @@ from The Open Group.
 #include "dixstruct.h"
 
 #include <rpc/rpc.h>
+
+#ifdef sun
+/* <rpc/auth.h> only includes this if _KERNEL is #defined... */
+extern bool_t xdr_opaque_auth(XDR *, struct opaque_auth *);
+#endif
 
 #if defined(DGUX)
 #include <time.h>
@@ -153,8 +158,8 @@ SecureRPCCheck (data_length, data, client, reason)
     return (XID) ~0L;
 }
     
-
-SecureRPCInit ()
+void
+SecureRPCInit (void)
 {
     if (rpc_id == ~0L)
 	AddAuthorization (9, "SUN-DES-1", 0, (char *) 0);
@@ -185,6 +190,7 @@ SecureRPCToID (data_length, data)
     return rpc_id;
 }
 
+int
 SecureRPCFromID (id, data_lenp, datap)
      XID id;
      unsigned short	*data_lenp;
@@ -193,6 +199,7 @@ SecureRPCFromID (id, data_lenp, datap)
     return 0;
 }
 
+int
 SecureRPCRemove (data_length, data)
      unsigned short	data_length;
      char	*data;

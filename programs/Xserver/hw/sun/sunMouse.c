@@ -1,6 +1,6 @@
-/* $XConsortium: sunMouse.c,v 5.21 94/04/17 20:29:47 kaleb Exp $ */
+/* $Xorg: sunMouse.c,v 1.3 2000/08/17 19:48:32 cpqbld Exp $ */
 /*-
- * Copyright (c) 1987 by the Regents of the University of California
+ * Copyright 1987 by the Regents of the University of California
  *
  * Permission to use, copy, modify, and distribute this
  * software and its documentation for any purpose and without
@@ -21,10 +21,10 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or X Consortium
+mentation,  and  that the names of Sun or The Open Group
 not be used in advertising or publicity pertaining to 
 distribution  of  the software  without specific prior 
-written permission. Sun and X Consortium make no 
+written permission. Sun and The Open Group make no 
 representations about the suitability of this software for 
 any purpose. It is provided "as is" without any express or 
 implied warranty.
@@ -50,9 +50,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * any purpose.  It is provided "as is" without express or 
  * implied warranty.
  */
+/* $XFree86$ */
 
 #define NEED_EVENTS
 #include    "sun.h"
+#include    "mi.h"
 
 Bool sunActiveZaphod = TRUE;
 
@@ -164,6 +166,7 @@ int sunMouseProc (device, what)
 	    break;
 
 	case DEVICE_CLOSE:
+	    pMouse->on = FALSE;
 	    if (ioctl (sunPtrPriv.fd, VUIDSFORMAT, &oformat) == -1)
 		Error ("sunMouseProc ioctl VUIDSFORMAT");
 	    break;
@@ -194,11 +197,13 @@ int sunMouseProc (device, what)
 #if NeedFunctionPrototypes
 Firm_event* sunMouseGetEvents (
     int		fd,
+    Bool	on,
     int*	pNumEvents,
     Bool*	pAgain)
 #else
-Firm_event* sunMouseGetEvents (fd, pNumEvents, pAgain)
+Firm_event* sunMouseGetEvents (fd, on, pNumEvents, pAgain)
     int		fd;
+    Bool	on;
     int*	pNumEvents;
     Bool*	pAgain;
 #endif
@@ -215,8 +220,13 @@ Firm_event* sunMouseGetEvents (fd, pNumEvents, pAgain)
 	    FatalError ("Could not read from mouse");
 	}
     } else {
-	*pNumEvents = nBytes / sizeof (Firm_event);
-	*pAgain = (nBytes == sizeof (evBuf));
+	if (on) {
+	    *pNumEvents = nBytes / sizeof (Firm_event);
+	    *pAgain = (nBytes == sizeof (evBuf));
+	} else {
+	    *pNumEvents = 0;
+	    *pAgain = FALSE;
+	}
     }
     return evBuf;
 }
