@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.49 1994/11/19 07:53:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.50 1994/11/26 12:44:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -50,9 +50,6 @@
 #include "s3ELSA.h"
 
 extern int s3MaxClock;
-extern int s3MaxBt485Clock, s3MaxBt485MuxClock;
-extern int s3MaxTi3020Clock, s3MaxTi3020Clock175, s3MaxTi3020ClockFast;
-extern int s3MaxATT498Clock, s3MaxATT498MuxClock;
 char s3Mbanks;
 int s3Weight = RGB8_PSEUDO;
 extern char *xf86VisualNames[];
