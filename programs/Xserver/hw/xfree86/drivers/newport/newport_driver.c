@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.15 2001/12/17 20:52:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.16 2001/12/19 15:59:36 tsi Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -643,7 +643,6 @@ NewportModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	NewportBackupRex3(pScrn);
 	pNewport->txt_vc2ctrl = NewportVc2Get( pNewportRegs, VC2_IREG_CONTROL);
 	NewportBackupPalette(pScrn);
-	/* XXX move this into a generic backup_xmap9 function */
 	if( pNewport->Bpp == 3) { /* at 24bpp we have to backup some more registers */
 		NewportBackupXmap9s( pScrn );
 	}
@@ -662,11 +661,7 @@ NewportModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 		/* tell the xmap9s that we are using 24bpp */
 		NewportBfwait(pNewport->pNewportRegs);
-		pNewportRegs->set.dcbmode = (DCB_XMAP0 | R_DCB_XMAP9_PROTOCOL |
-				XM9_CRS_CONFIG | NPORT_DMODE_W1 );
-		pNewportRegs->set.dcbdata0.bytes.b3 &= ~(XM9_8_BITPLANES | XM9_PUPMODE);
-		NewportBfwait(pNewport->pNewportRegs);
-		pNewportRegs->set.dcbmode = (DCB_XMAP1 | W_DCB_XMAP9_PROTOCOL |
+		pNewportRegs->set.dcbmode = (DCB_XMAP_ALL | R_DCB_XMAP9_PROTOCOL |
 				XM9_CRS_CONFIG | NPORT_DMODE_W1 );
 		pNewportRegs->set.dcbdata0.bytes.b3 &= ~(XM9_8_BITPLANES | XM9_PUPMODE);
 		NewportBfwait(pNewport->pNewportRegs);
@@ -724,7 +719,7 @@ NewportRestore(ScrnInfoPtr pScrn, Bool Closing)
 	NewportVc2Set( pNewportRegs, VC2_IREG_CONTROL, pNewport->txt_vc2ctrl );
 	NewportRestorePalette( pScrn );
 	if( pNewport->Bpp == 3) {
-		NewportRestoreXmap9s( pScrn);
+		NewportRestoreXMap9s( pScrn);
 	}
 }
 
