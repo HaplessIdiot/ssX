@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.35 2003/06/01 23:02:09 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.36 2003/06/19 11:01:54 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -257,6 +257,7 @@ void TRIDENTResetVideo(ScrnInfoPtr pScrn)
 
     WaitForVBlank(pScrn);
     OUTW(vgaIOBase + 4, 0x848E);
+    WaitForVBlank(pScrn);
 
     if (pTrident->Chipset >= CYBER9388) {
     	OUTW(vgaIOBase + 4, 0x80B9); 
@@ -421,6 +422,7 @@ TRIDENTStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
     	WaitForVBlank(pScrn);
 	OUTW(vgaIOBase + 4, 0x848E);
+    	WaitForVBlank(pScrn);
 	OUTW(vgaIOBase + 4, 0x0091);
      }
      if(pPriv->linear) {
@@ -781,6 +783,7 @@ TRIDENTDisplayVideo(
     	OUTW(vgaIOBase + 4, 0x04BE); 
 	WaitForVBlank(pScrn);
     	OUTW(vgaIOBase + 4, 0x948E);
+    	WaitForVBlank(pScrn);
     } else {
 	
     	OUTW(vgaIOBase + 4, ((((id == FOURCC_YV12) || (id == FOURCC_YUY2)) 
@@ -790,6 +793,7 @@ TRIDENTDisplayVideo(
 
 	WaitForVBlank(pScrn);
     	OUTW(vgaIOBase + 4, 0x948E);
+    	WaitForVBlank(pScrn);
 	OUTB(0x83C8, 0x00);
 	OUTB(0x83C6, 0x95);
     }
@@ -1026,6 +1030,7 @@ TRIDENTStopSurface(
     	int vgaIOBase = VGAHWPTR(surface->pScrn)->IOBase;
 	WaitForVBlank(surface->pScrn);
  	OUTW(vgaIOBase + 4, 0x848E);
+    	WaitForVBlank(pScrn);
 	OUTW(vgaIOBase + 4, 0x0091);
 	pPriv->isOn = FALSE;
     }
@@ -1173,6 +1178,7 @@ TRIDENTVideoTimerCallback(ScrnInfoPtr pScrn, Time time)
 	    if(pPriv->offTime < time) {
 		WaitForVBlank(pScrn);
   		OUTW(vgaIOBase + 4, 0x848E);
+    		WaitForVBlank(pScrn);
 		OUTW(vgaIOBase + 4, 0x0091);
 		pPriv->videoStatus = FREE_TIMER;
 		pPriv->freeTime = time + FREE_DELAY;
@@ -1325,6 +1331,14 @@ WaitForVBlank(ScrnInfoPtr pScrn)
 {
     register vgaHWPtr hwp = VGAHWPTR(pScrn);
 
+    /* We have to wait for one full VBlank to let the video engine start/stop.
+     * So the first may be waiting for too short a period as it may already
+     * be part way through the video frame. So we wait a second time to ensure
+     * full vblank has passed. 
+     * - Alan.
+     */
+    while (!(hwp->readST01(hwp)&0x8)) {};
+    while (hwp->readST01(hwp)&0x8) {};
     while (!(hwp->readST01(hwp)&0x8)) {};
     while (hwp->readST01(hwp)&0x8) {};
 }

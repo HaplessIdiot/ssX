@@ -1,4 +1,6 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 266. Fix a lockup with the trident driver when stopping/starting Xv
+      applications (Alan Hourihane).
  265. Fix initialisation in xauth (Martin Birgmeier).
  264. Calling RADEONSaveFPRegisters() regardless of display type to catch
       register restauration problems (Bugzilla #193, Hui Yu).
@@ -17198,7 +17200,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2762 2003/07/01 15:56:31 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2763 2003/07/02 02:13:52 dawes Exp $
 
 
 
