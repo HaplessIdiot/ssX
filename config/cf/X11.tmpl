@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.187 2002/11/30 06:21:26 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.188 2002/12/07 15:22:24 herrb Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -606,13 +606,6 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildRandRLibrary	!BuildServersOnly
 #endif
 
-#ifndef BuildXFixes
-#define BuildXFixes		YES
-#endif
-#ifndef BuildXFixesLibrary
-#define BuildXFixesLibrary	!BuildServersOnly
-#endif
-
 #ifndef BuildXcursorLibrary
 #define BuildXcursorLibrary	BuildRenderLibrary
 #endif
@@ -1106,14 +1099,6 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #endif
 
-#ifndef XFixesDefiens
-#if BuildXFixes
-#define XFixesDefines -DXFIXES
-#else
-#define XFixesDefines /**/
-#endif
-#endif
-
 #ifndef FontCacheExtentionDefines
 #if BuildFontCache
 #define FontCacheExtensionDefines	-DFONTCACHE
@@ -1130,7 +1115,7 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 	ShapeDefines XInputDefines XkbDefines LbxDefines AppgroupDefines \
 	XCSecurityDefines CupDefines PervasiveDBEDefines \
 	XF86BigfontExtensionDefines DPMSDefines \
-	LowMemDefines XprintDefines XineramaDefines XFixesDefines \
+	LowMemDefines XprintDefines XineramaDefines \
 	SitePervasiveExtensionDefines RenderDefines RandRDefines
 #endif
 #ifndef SiteExtensionDefines
@@ -2088,30 +2073,6 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #define ProfileLibXrandr	NO
 #endif
 
-#if BuildXFixesLibrary
-#ifndef SharedLibXfixes
-#define SharedLibXfixes		HasSharedLibraries
-#endif
-#ifndef NormalLibXfixes
-#define NormalLibXfixes		(!SharedLibXfixes || ForceNormalLib)
-#endif
-#ifndef DebugLibXfixes
-#define DebugLibXfixes		NO
-#endif
-#ifndef ProfileLibXfixes
-#define ProfileLibXfixes	NO
-#endif
-#else
-#undef  SharedLibXfixes
-#define SharedLibXfixes		NO
-#undef  NormalLibXfixes
-#define NormalLibXfixes		NO
-#undef  DebugLibXfixes
-#define DebugLibXfixes		NO
-#undef  ProfileLibXfixes
-#define ProfileLibXfixes	NO
-#endif
-
 #if BuildXcursorLibrary
 #ifndef SharedLibXcursor
 #define SharedLibXcursor	HasSharedLibraries
@@ -2432,16 +2393,6 @@ ProjectUnsharedLibReferences(XRENDER,Xrender,$(XRENDERLIBSRC),XBuildLibDir)
 SharedLibReferences(XRANDR,Xrandr,$(XRANDRLIBSRC),SOXRANDRREV,SharedXrandrRev)
 #else
 ProjectUnsharedLibReferences(XRANDR,Xrandr,$(XRANDRLIBSRC),XBuildLibDir)
-#endif
-
-    XFIXESRLIBSRC = $(LIBSRC)/Xfixes
-#if SharedLibXfixes
-#ifndef SharedXfixesRev
-#define SharedXfixesRev 1.0
-#endif
-SharedLibReferences(XFIXES,Xfixes,$(XFIXESLIBSRC),SOXFIXESREV,SharedXfixesRev)
-#else
-ProjectUnsharedLibReferences(XFIXES,Xfixes,$(XFIXESLIBSRC),XBuildLibDir)
 #endif
 
    XCURSORRLIBSRC = $(LIBSRC)/Xcursor
