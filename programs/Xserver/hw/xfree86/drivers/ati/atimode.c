@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.7 2001/08/15 11:54:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.8 2001/11/25 13:42:30 tsi Exp $ */
 /*
- * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -731,7 +731,7 @@ ATIModeCalculate
              * a certain threshold (440 for a 1024-wide panel).  It doesn't
              * stretch such modes enough.  Use pixel replication instead of
              * blending to stretch modes that can be made to exactly fit the
-             * panel width.  The undocumented "NoLCDBlend" options allows the
+             * panel width.  The undocumented "NoLCDBlend" option allows the
              * pixel-replicated mode to be slightly wider or narrower than the
              * panel width.  It also causes a mode that is exactly half as wide
              * as the panel to be pixel-replicated, rather than blended.
