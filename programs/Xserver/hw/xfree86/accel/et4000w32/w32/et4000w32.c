@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.24 1997/05/03 09:16:32 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.25 1997/08/26 10:00:55 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -39,7 +39,6 @@
 
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"

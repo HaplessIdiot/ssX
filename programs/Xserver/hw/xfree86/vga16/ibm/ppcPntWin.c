@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPntWin.c,v 3.4 1996/12/23 06:53:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPntWin.c,v 3.5 1997/03/13 15:11:19 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -79,6 +79,7 @@ SOFTWARE.
 #include "regionstr.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
+#include "mi.h"
 
 #include "ppc.h"
 

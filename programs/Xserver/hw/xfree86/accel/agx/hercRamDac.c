@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.c,v 3.9 1996/12/23 06:33:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.c,v 3.10 1997/08/26 10:00:55 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -40,7 +40,7 @@
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86RamDac.h"
 #include "Bt485.h"
 #include "Bt481.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/oak/oak_driver.c,v 1.3 1997/06/03 14:12:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/oak/oak_driver.c,v 1.4 1997/08/26 10:01:21 hohndel Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -98,7 +98,6 @@
 #include "xf86Version.h"
 #include "xf86Procs.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 
 #include "xf86_Config.h"    /* Header for extra options */
@@ -497,7 +496,7 @@ static Bool
 OAKProbe()
 {
   unsigned char save, temp1, temp, temp2;
-    
+
   /* See if this is one of the Oak Tech. Inc. chipsets */
 
   if (vga256InfoRec.chipset)      /* if harcoded.... */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga256.h,v 3.5 1996/12/23 06:59:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga256.h,v 3.6 1997/01/12 10:45:31 dawes Exp $ */
 
 
 
@@ -71,8 +71,22 @@ typedef struct _Cfbfunc{
 		BoxPtr
 #endif
 );
-    void (*fillRectTransparentStippled32)();
-    void (*fillRectOpaqueStippled32)();
+    void (*fillRectTransparentStippled32)(
+#if NeedFunctionPrototypes
+		DrawablePtr /*pDrawable*/,
+		GCPtr /*pGC*/,
+		int /*nBox*/,
+		BoxPtr /*pBox*/
+#endif
+);
+    void (*fillRectOpaqueStippled32)(
+#if NeedFunctionPrototypes
+		DrawablePtr /*pDrawable*/,
+		GCPtr /*pGC*/,
+		int /*nBox*/,
+		BoxPtr /*pBox*/
+#endif
+);
     void (*segmentSS)(
 #if NeedFunctionPrototypes
 		DrawablePtr,
@@ -1319,5 +1333,7 @@ void vga256FillPoly1RectGeneral(
 #endif
 );
 /* vgafuncs.c */
+
+extern void vga256ValidateGC(GCPtr, Mask, DrawablePtr);
 
 #endif /* _VGA256_H */

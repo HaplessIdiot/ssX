@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.14 1997/01/05 11:53:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.15 1997/07/29 12:07:36 hohndel Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -150,9 +150,12 @@ static int First64Slot;
 
 static unsigned int pixmap_cache_clock = 1;
 
-static void DoCacheExpandPixmap();
-static void DoCacheTile();
-static void DoCacheOpStipple();
+static void DoCacheExpandPixmap(CacheInfoPtr);
+static void DoCacheTile(PixmapPtr);
+static void DoCacheOpStipple(PixmapPtr, int, int);
+static Bool mach64CachableOpStipple(PixmapPtr);
+static Bool mach64CachableStipple(PixmapPtr);
+static Bool mach64CachableTile(PixmapPtr);
 
 void
 mach64CacheInit(w, h)
@@ -741,7 +744,7 @@ mach64CacheOpStipple(pix, fg, bg)
     return (0);
 }
 
-Bool
+static Bool
 mach64CachableTile(pix)
     PixmapPtr pix;
 {
@@ -750,14 +753,14 @@ mach64CachableTile(pix)
    return (pix->drawable.width <= 128 && pix->drawable.height <= 128);
 }
 
-Bool
+static Bool
 mach64CachableStipple(pix)
     PixmapPtr pix;
 {
    return (pix->drawable.width <= 128 && pix->drawable.height <= 128);
 }
 
-Bool
+static Bool
 mach64CachableOpStipple(pix)
     PixmapPtr pix;
 {

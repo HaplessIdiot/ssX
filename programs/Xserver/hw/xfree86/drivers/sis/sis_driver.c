@@ -25,7 +25,7 @@
  * Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.6 1997/07/29 12:08:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.7 1997/08/26 10:01:25 hohndel Exp $ */
 
 /*#define DEBUG*/
 /*#define IO_DEBUG*/
@@ -41,7 +41,7 @@
 #include "xf86.h"
 #include "xf86Version.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
@@ -183,7 +183,7 @@ Bool sisUseMMIO = TRUE;
 Bool sisUseXAAcolorExp = TRUE;
 static int SISDisplayableMemory;
 unsigned char *sisMMIOBase = NULL;
-unsigned int PCIMMIOBase=0 ;
+unsigned long PCIMMIOBase=0;
 
 
 #ifdef XFree86LOADER
@@ -516,9 +516,53 @@ SISProbe()
 {
   	int numClocks;
   	unsigned char temp;
-
+	pciConfigPtr pcr, *pcrpp;
+	int i;
 
 	SISchipset = -1;
+	SIS.ChipLinearBase = -1;
+
+	pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
+	for (i = 0, pcr = pcrpp[0]; pcr; pcr = pcrpp[++i]) {
+	    if (pcr->_vendor == PCI_VENDOR_SIS)
+		break;
+	}
+
+	if (pcr) {
+	    switch (pcr->_device) {
+	    case PCI_CHIP_SG86C201: 	/* 86C201 */
+		SISchipset = SIS86C201;
+		break;
+	    case PCI_CHIP_SG86C202:		/* 86C202 */
+		SISchipset = SIS86C202;
+		break;
+	    case PCI_CHIP_SG86C205:		/* 86C205 */
+		SISchipset = SIS86C205;
+		break;
+	    }
+	    if (pcr->_base0)
+		if (pcr->_base0 & 1)
+		    PCIMMIOBase = pcr->_base0 & 0xfffffffc;
+		else
+		    SIS.ChipLinearBase = pcr->_base0 & 0xfffffff0;
+	    if (pcr->_base1)
+		if (pcr->_base1 & 1)
+		    PCIMMIOBase = pcr->_base1 & 0xfffffffc;
+		else
+		    SIS.ChipLinearBase = pcr->_base1 & 0xfffffff0;
+
+	    if (SIS.ChipLinearBase != -1)
+		SIS.ChipLinearBase &= 0xfff80000;
+	    else
+		ErrorF("%s %s: %s: Can't find valid PCI "
+		       "Base Address\n", XCONFIG_PROBED,
+		       vga256InfoRec.name, vga256InfoRec.chipset);
+
+	} else {
+	    ErrorF("%s %s: %s: Can't find PCI device in "
+		   "configuration space\n", XCONFIG_PROBED,
+		   vga256InfoRec.name, vga256InfoRec.chipset);
+	}
 
   	if (vga256InfoRec.chipset)
     	{
@@ -537,22 +581,6 @@ SISProbe()
 	else
 	{
 		/* Aparently there are only PCI based 86C201's */
-
-		if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_SIS)
-		{
-			switch(vgaPCIInfo->ChipType)
-			{
-			case PCI_CHIP_SG86C201: 	/* 86C201 */
-				SISchipset = SIS86C201;
-				break;
-			case PCI_CHIP_SG86C202:		/* 86C202 */
-				SISchipset = SIS86C202;
-				break;
-			case PCI_CHIP_SG86C205:		/* 86C205 */
-				SISchipset = SIS86C205;
-				break;
-			}
-		}
 		if (SISchipset == -1)
 			return (FALSE);
 		vga256InfoRec.chipset = SISIdent(SISchipset);
@@ -644,37 +672,6 @@ SISProbe()
     	return(TRUE);
 }
 
-static int 
-sisPCIMemBase()
-{
-
-    if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_SIS) {
-	if (vgaPCIInfo->MemBase != 0) {
-	    return vgaPCIInfo->MemBase & 0xFFF80000;
-	} else {
-	    ErrorF("%s %s: %s: Can't find valid PCI "
-		"Base Address\n", XCONFIG_PROBED,
-		vga256InfoRec.name, vga256InfoRec.chipset);
-	    return -1;
-	}
-    } else {
-	ErrorF("%s %s: %s: Can't find PCI device in "
-	    "configuration space\n", XCONFIG_PROBED,
-	    vga256InfoRec.name, vga256InfoRec.chipset);
-	return -1;
-    }
-}
-
-static unsigned int
-sisPCIMMIOBase()
-{
-    
-    if ( vgaPCIInfo->IOBase ) 
-	return vgaPCIInfo->IOBase ;
-    else 
-	return -1;
-}
-
 /*
  * SISScrnInit --
  *
@@ -735,7 +732,6 @@ SISFbInit()
 		       XCONFIG_GIVEN, vga256InfoRec.name, SIS.ChipLinearBase);
 	    }	
 	    else {
-		SIS.ChipLinearBase = sisPCIMemBase();
 		if (SIS.ChipLinearBase == -1) {
 		    unsigned long addr,addr2 ;
 
@@ -784,9 +780,8 @@ SISFbInit()
 	}
 
 	if ( sisUseMMIO ){
-	    PCIMMIOBase = sisPCIMMIOBase() ;
 	    sisUseMMIO = TRUE ;
-	    if ( PCIMMIOBase == -1 ) {
+	    if (PCIMMIOBase == 0) {
 		/* use default base */
 		if ( sisUseLinear) 
 		    /* sisMMIOBase = vgaBase , but not yet mapped here */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.62 1997/09/19 09:01:18 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.63 1997/10/25 13:50:54 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -49,20 +49,16 @@
 #define _NEED_SYSI86
 #endif
 
+#include <errno.h>
 #include "X.h"
 #include "misc.h"
-
 #include "compiler.h"
-
 #include "xf86.h"
 #include "xf86Priv.h"
-#if 0
-#include <errno.h>
-#else
-#include "xf86_OSlib.h"
-#endif
 #include "xf86_HWlib.h"
+#include "xf86_ansic.h"
 #include "vga.h"
+
 #ifdef PC98_EGC
 /* I/O port address define for extended EGC */
 #define		EGC_READ	0x4a2	/* EGC FGC,EGC,Read Plane  */
@@ -376,7 +372,7 @@ vgaDPMSSet(PowerManagementMode)
   outb(0x3C5, seq1);
   outb(vgaIOBase+4, 0x17); /* Select CRTC17 */
   crtc17 |= inb(vgaIOBase+5) & ~0x80;
-  xf86usleep(10000);
+  usleep(10000);
   outb(vgaIOBase+5, crtc17);
   outw(0x3C4, 0x0300);	/* End Reset */
 #endif
@@ -770,7 +766,7 @@ vgaHWSave(save, size)
       /*			 
        * save the default lookup table
        */
-      xf86memmove(save->DAC, defaultDAC, 768);
+      memmove(save->DAC, defaultDAC, 768);
       ErrorF("%s: Cannot read colourmap from VGA.", vga256InfoRec.name);
       ErrorF("  Will restore with default\n");
     }
@@ -886,7 +882,7 @@ vgaHWSave(save, size)
   tmp = inb(vgaIOBase + 0x0A);
   outb(0x3C0, 0x20);
 #endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
-  
+
   return ((void *) save);
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.21 1997/12/28 21:28:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.22 1998/01/11 03:48:24 dawes Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -36,7 +36,6 @@
 
 #include "xf86Procs.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "xf86Version.h"
@@ -113,10 +112,10 @@ int glintValidTokens[] =
 #endif
 
 ScrnInfoRec glintInfoRec = {
+    glintProbe,      	/* Bool (* Probe)() */
     FALSE,		/* Bool configured */
     -1,			/* int tmpIndex */
     -1,			/* int scrnIndex */
-    glintProbe,      	/* Bool (* Probe)() */
     glintInitialize,	/* Bool (* Init)() */
     glintValidMode,	/* Bool (* ValidMode)() */
     glintEnterLeaveVT,	/* void (* EnterLeaveVT)() */
@@ -386,9 +385,7 @@ glintProbe()
         switch (pcrp->_device)
 	{
 	case PCI_CHIP_3DLABS_300SX:
-		glintcopro = PCI_EN |
-			(pcrp->_bus << 16) |
-			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+		glintcopro = PCI_MAKE_TAG(pcrp->_bus, pcrp->_cardnum, pcrp->_func);
 		basecopro = pcrp->_base0;
 		pcrpglint = pcrp;
 		coprotype = PCI_CHIP_3DLABS_300SX;
@@ -411,9 +408,7 @@ glintProbe()
 		}
 		break;
 	case PCI_CHIP_3DLABS_500TX:
-		glintcopro = PCI_EN |
-			(pcrp->_bus << 16) |
-			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+		glintcopro = PCI_MAKE_TAG(pcrp->_bus, pcrp->_cardnum, pcrp->_func);
 		basecopro = pcrp->_base0;
 		pcrpglint = pcrp;
 		coprotype = PCI_CHIP_3DLABS_500TX;
@@ -436,9 +431,7 @@ glintProbe()
 		}
 		break;
 	case PCI_CHIP_3DLABS_MX:
-		glintcopro = PCI_EN |
-			(pcrp->_bus << 16) |
-			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+		glintcopro = PCI_MAKE_TAG(pcrp->_bus, pcrp->_cardnum, pcrp->_func);
 		basecopro = pcrp->_base0;
 		pcrpglint = pcrp;
 		coprotype = PCI_CHIP_3DLABS_MX;
@@ -461,9 +454,7 @@ glintProbe()
 		}
 		break;
 	case PCI_CHIP_3DLABS_PERMEDIA:
-		glintcopro = PCI_EN |
-			(pcrp->_bus << 16) |
-			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+		glintcopro = PCI_MAKE_TAG(pcrp->_bus, pcrp->_cardnum, pcrp->_func);
 		basecopro = pcrp->_base0;
 		pcrpglint = pcrp;
 		coprotype = PCI_CHIP_3DLABS_PERMEDIA;
@@ -486,9 +477,7 @@ glintProbe()
 		}
 		break;
 	case PCI_CHIP_3DLABS_PERMEDIA2:
-		glintcopro = PCI_EN |
-			(pcrp->_bus << 16) |
-			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+		glintcopro = PCI_MAKE_TAG(pcrp->_bus, pcrp->_cardnum, pcrp->_func);
 		basecopro = pcrp->_base0;
 		pcrpglint = pcrp;
 		coprotype = PCI_CHIP_3DLABS_PERMEDIA2;
@@ -511,9 +500,7 @@ glintProbe()
 		}
 		break;
 	case PCI_CHIP_3DLABS_DELTA:
-		glintdelta = PCI_EN |
-			(pcrp->_bus << 16) |
-			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+		glintcopro = PCI_MAKE_TAG(pcrp->_bus, pcrp->_cardnum, pcrp->_func);
 		basedelta = pcrp->_base0;
 		delta_pci_basep = &(pcrp->_base0);
 		pcrpdelta = pcrp;
@@ -543,9 +530,7 @@ glintProbe()
         switch (pcrp->_device)
 	{
 	case PCI_CHIP_TI_PERMEDIA:
-		glintcopro = PCI_EN |
-			(pcrp->_bus << 16) |
-			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+		glintcopro = PCI_MAKE_TAG(pcrp->_bus, pcrp->_cardnum, pcrp->_func);
 		basecopro = pcrp->_base0;
 		pcrpglint = pcrp;
 		coprotype = PCI_CHIP_3DLABS_PERMEDIA;
@@ -568,9 +553,7 @@ glintProbe()
 		}
 		break;
 	case PCI_CHIP_TI_PERMEDIA2:
-		glintcopro = PCI_EN |
-			(pcrp->_bus << 16) |
-			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+		glintcopro = PCI_MAKE_TAG(pcrp->_bus, pcrp->_cardnum, pcrp->_func);
 		basecopro = pcrp->_base0;
 		pcrpglint = pcrp;
 		coprotype = PCI_CHIP_TI_PERMEDIA2;
@@ -647,8 +630,7 @@ glintProbe()
          } else {
  		offset = 0x1c; /* base3 */
  	}
- 	outl(PCI_MODE1_ADDRESS_REG, glintcopro | offset); 
-	base3copro  = inl(PCI_MODE1_DATA_REG);
+	base3copro = pciReadLong(glintcopro, offset);
 	if( (basecopro & 0x20000) ^ (base3copro & 0x20000) )
 	{
 	    /*
@@ -664,26 +646,19 @@ glintProbe()
 	 * read value
 	 * write new value
 	 */
-	outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
-	temp = inl(PCI_MODE1_DATA_REG);
-	outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
-	outl(PCI_MODE1_DATA_REG,0xffffffff);
-	outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
-	temp = inl(PCI_MODE1_DATA_REG);
-	outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
-	outl(PCI_MODE1_DATA_REG,base3copro);
+	temp = pciReadLong(glintdelta, 0x10);
+	pciWriteLong(glintdelta, 0x10, 0xffffffff);
+	temp = pciReadLong(glintdelta, 0x10);
+	pciWriteLong(glintdelta, 0x10, base3copro);
+
 	/*
 	 * additionally, sometimes we see the baserom which might
 	 * confuse the chip, so let's make sure that is disabled
 	 */
-	outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x30);
-	temp = inl(PCI_MODE1_DATA_REG);
-	outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x30);
-	outl(PCI_MODE1_DATA_REG,0xffffffff);
-	outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x30);
-	temp = inl(PCI_MODE1_DATA_REG);
-	outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x30);
-	outl(PCI_MODE1_DATA_REG,0x0);
+	temp = pciReadLong(glintcopro, 0x30);
+	pciWriteLong(glintcopro, 0x30, 0xffffffff);
+	temp = pciReadLong(glintcopro, 0x30);
+	pciWriteLong(glintcopro, 0x30, 0);
 
 	/*
 	 * now update our internal structure accordingly
@@ -694,12 +669,13 @@ glintProbe()
   }
 
   if (glintcopro) {
+    unsigned long temp2;
+    
     xf86EnableIOPorts(glintInfoRec.scrnIndex);
 
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x04);
-    temp = inl(PCI_MODE1_DATA_REG);
-    outl(PCI_MODE1_DATA_REG, temp | 0x04); /* Master enable */
-    temp = inl(PCI_MODE1_DATA_REG);
+    temp = pciReadLong(glintcopro, 0x04);
+    pciWriteLong(glintcopro, 0x04, temp | 0x04); /* Master enable */
+    temp = pciReadLong(glintcopro, 0x04);
 
     /*
      * and now for the magic.
@@ -710,84 +686,54 @@ glintProbe()
      * write old value
      */
     if (glintdelta) {
-	outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
-	temp = inl(PCI_MODE1_DATA_REG);
-	outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
-	outl(PCI_MODE1_DATA_REG,0xffffffff);
-	outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
+	temp = pciReadLong(glintdelta, 0x10);
+	pciWriteLong(glintdelta, 0x10, 0xffffffff);
+	temp2 = pciReadLong(glintdelta, 0x10);
 #ifdef DEBUG
-	ErrorF("Delta - Control Register size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
-#else
-	inl(PCI_MODE1_DATA_REG);
+	ErrorF("Delta - Control Register size: 0x%08x\n", ~temp2);
 #endif
-	outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
-	outl(PCI_MODE1_DATA_REG,temp);
+	pciWriteLong(glintdelta, 0x10, temp & 0xfffffff0);
     }
     
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x10);
-    temp = inl(PCI_MODE1_DATA_REG);
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x10);
-    outl(PCI_MODE1_DATA_REG,0xffffffff);
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x10);
+    temp = pciReadLong(glintcopro, 0x10);
+    pciWriteLong(glintcopro, 0x10, 0xffffffff);
+    temp2 = pciReadLong(glintcopro, 0x10);
 #ifdef DEBUG
-    ErrorF("500TX - Control Register size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
-#else
-    inl(PCI_MODE1_DATA_REG);
+    ErrorF("500TX - Control Register size: 0x%08x\n", ~temp2);
 #endif
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x10);
-    outl(PCI_MODE1_DATA_REG,temp);
+    pciWriteLong(glintcopro, 0x10, temp);
     
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x14);
-    temp = inl(PCI_MODE1_DATA_REG);
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x14);
-    outl(PCI_MODE1_DATA_REG,0xffffffff);
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x14);
+    temp = pciReadLong(glintcopro, 0x14);
+    pciWriteLong(glintcopro, 0x14, 0xffffffff);
+    temp2 = pciReadLong(glintcopro, 0x14);
 #ifdef DEBUG
-    ErrorF("500TX - Localbuffer0 size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
-#else
-    inl(PCI_MODE1_DATA_REG);
+    ErrorF("500TX - Localbuffer0 size: 0x%08x\n", ~temp2);
 #endif
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x14);
-    outl(PCI_MODE1_DATA_REG,temp);
+    pciWriteLong(glintcopro, 0x14, temp);
     
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x18);
-    temp = inl(PCI_MODE1_DATA_REG);
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x18);
-    outl(PCI_MODE1_DATA_REG,0xffffffff);
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x18);
+    temp = pciReadLong(glintcopro, 0x18);
+    pciWriteLong(glintcopro, 0x18, 0xffffffff);
+    temp2 = pciReadLong(glintcopro, 0x18);
 #ifdef DEBUG
-    ErrorF("500TX - Framebuffer0 size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
-#else
-    inl(PCI_MODE1_DATA_REG);
+    ErrorF("500TX - Framebuffer0 size: 0x%08x\n", ~temp2);
 #endif
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x18);
-    outl(PCI_MODE1_DATA_REG,temp);
+    pciWriteLong(glintcopro, 0x18, temp);
     
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x1C);
-    temp = inl(PCI_MODE1_DATA_REG);
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x1C);
-    outl(PCI_MODE1_DATA_REG,0xffffffff);
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x1C);
+    temp = pciReadLong(glintcopro, 0x1c);
+    pciWriteLong(glintcopro, 0x1c, 0xffffffff);
+    temp2 = pciReadLong(glintcopro, 0x1c);
 #ifdef DEBUG
-    ErrorF("500TX - Localbuffer1 size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
-#else
-    inl(PCI_MODE1_DATA_REG);
-#endif
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x1C);
-    outl(PCI_MODE1_DATA_REG,temp);
-    
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x20);
-    temp = inl(PCI_MODE1_DATA_REG);
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x20);
-    outl(PCI_MODE1_DATA_REG,0xffffffff);
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x20);
+    ErrorF("500TX - Localbuffer1 size: 0x%08x\n", ~temp2);
+#endif 
+    pciWriteLong(glintcopro, 0x1c, temp);
+   
+    temp = pciReadLong(glintcopro, 0x20);
+    pciWriteLong(glintcopro, 0x20, 0xffffffff);
+    temp2 = pciReadLong(glintcopro, 0x20);
 #ifdef DEBUG
-    ErrorF("500TX - Framebuffer1 size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
-#else
-    inl(PCI_MODE1_DATA_REG);
+    ErrorF("500TX - Framebuffer1 size: 0x%08x\n", ~temp2);
 #endif
-    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x20);
-    outl(PCI_MODE1_DATA_REG,temp);
+    pciWriteLong(glintcopro, 0x20, temp);
     
     xf86DisableIOPorts(glintInfoRec.scrnIndex);
   }

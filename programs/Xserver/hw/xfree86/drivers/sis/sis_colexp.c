@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_colexp.c,v 1.3 1997/02/17 09:48:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_colexp.c,v 1.1 1997/03/06 23:16:52 hohndel Exp $ */
 
 /*
  *
@@ -46,7 +46,6 @@
 #include "vgaBank.h"
 #include "vga.h"		       /* For vgaInfoRec. */
 #include "xf86_HWlib.h"
-#include "xf86_OSlib.h"
 
 #include "compiler.h"
 #include "sis_driver.h"
@@ -294,7 +293,7 @@ sisBitmapTransfer(w, h, srcpitch, srcaddr, base)
         for(i = 0; i < (((w + 3) & ~3) >> 2); i++)
             *(unsigned int *)base=*(unsigned int *)(data + 4 * i);
 #else
-	xf86memcpy(base, data, ((w + 3) & ~3));	/* Multiple of Double-Word */
+	memcpy(base, data, ((w + 3) & ~3));	/* Multiple of Double-Word */
 #endif
 	srcaddr += srcpitch;
 	line++;

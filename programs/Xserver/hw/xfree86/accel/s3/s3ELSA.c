@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.22 1997/02/27 13:58:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.23 1997/03/18 10:31:57 hohndel Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -18,7 +18,6 @@
 
 #include "s3.h"
 #include "s3ELSA.h"
-#include "xf86_OSlib.h"
 
 #ifdef ELSA_MAIN
 #include <stdio.h>
@@ -226,9 +225,9 @@ static int check_ELSA_bios(int BIOSbase)
    if ((bios[0] != 0x55) || (bios[1] != 0xaa))
       return -2;
 
-   l = xf86strlen(match);
+   l = strlen(match);
    for (i=0; i<BIOS_BSIZE-l; i++) 
-      if (bios[i] == match[0] && !xf86memcmp(&bios[i],match,l))
+      if (bios[i] == match[0] && !memcmp(&bios[i],match,l))
 	 return 1;
    return 0;
 }
@@ -367,9 +366,9 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
    if (pcard) {
       *pcard  = (char*) xalloc(80);
       if (elsa_board_types[i].code)
-	 xf86sprintf(*pcard,"%s detected",elsa_board_types[i].name);
+	 sprintf(*pcard,"%s detected",elsa_board_types[i].name);
       else 
-	 xf86sprintf(*pcard,"unknown ELSA Winner board code %04x detected, please report\n"
+	 sprintf(*pcard,"unknown ELSA Winner board code %04x detected, please report\n"
 		 , eedata->board_code);
    }
 
@@ -380,7 +379,7 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
       for (i= 26; i<ndata-9; i+=9) {
 	 eetim  = (elsa_eeprom_timing_t *) (data + i);
 	 if (ELSA_ET_VM_VALID(eetim))
-	    xf86sprintf(p,"\t\"%dx%dx%d\" \t %7.3f   %4d %4d %4d %4d   %4d %4d %4d %4d\n"
+	    sprintf(p,"\t\"%dx%dx%d\" \t %7.3f   %4d %4d %4d %4d   %4d %4d %4d %4d\n"
 		    ,ELSA_TIM_xres(*eetim),ELSA_TIM_yres(*eetim),ELSA_TIM_bpp(*eetim)
 		    ,(ELSA_TIM_pixfrq4(*eetim)*4)/1000.0
 		    ,ELSA_TIM_xres(*eetim)
@@ -392,14 +391,14 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
 		    ,ELSA_TIM_yres(*eetim)+ELSA_TIM_vfp(*eetim)+ELSA_TIM_vsw(*eetim)
 		    ,ELSA_TIM_vtot(*eetim)
 		    );
-	 p += xf86strlen(p);
+	 p += strlen(p);
       }   
    }
 
    if (pserno) {
       *pserno = (char*) xalloc(20);
       serno = (eedata->serno_h<<16) | eedata->serno_l;
-      xf86sprintf(*pserno,"%c-%04ld.%03ld.%03ld",
+      sprintf(*pserno,"%c-%04ld.%03ld.%03ld",
 	      (char)('A' + ((serno>>27) & 0x0f)),
 	      ((serno>>17) & 0x3ff) | ((serno>>21) & 0x400),
 	      (serno & 0x1ffff) / 1000,

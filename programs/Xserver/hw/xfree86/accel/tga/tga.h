@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.h,v 3.3 1996/12/27 07:03:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.h,v 3.4 1997/01/18 06:55:24 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -49,7 +49,6 @@
 #include "misc.h"
 #include "xf86.h"
 #include "regionstr.h"
-#include "xf86_OSlib.h"
 #include "xf86bcache.h"
 #include "xf86fcache.h"
 #include "xf86Procs.h"
@@ -66,7 +65,6 @@ extern volatile unsigned long *VidBase;
 #include "input.h"
 #include "misc.h"
 #include "xf86.h"
-#include "xf86_OSlib.h"
 #endif /* !LINKKIT */
 
 #if !defined(__GNUC__) || defined(NO_INLINE)

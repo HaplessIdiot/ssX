@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.1 1997/07/29 13:25:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.2 1997/10/25 13:50:21 hohndel Exp $ */
 /*
  * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -57,7 +57,7 @@ ATICopyVGAMemory(void **saveptr, void **from, void **to)
     for (Bank = 0;  Bank < ATICurrentBanks;  Bank++)
     {
         ATISelectBank(Bank);
-        (void) xf86memmove(*to, *from, ATI.ChipSegmentSize);
+        (void) memmove(*to, *from, ATI.ChipSegmentSize);
         *saveptr = (char *)(*saveptr) + ATI.ChipSegmentSize;
     }
 }

@@ -1,38 +1,45 @@
 /* $XConsortium: i128.c /main/13 1996/10/27 11:04:19 kaleb $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
+ * Copyright 1997 by Metro Link Incorporated ("Metro Link")
+ *
+ *                         All Rights Reserved
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Robin Cutshaw not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  Robin Cutshaw makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * documentation, and that the name of Robin Cutshaw or Metro Link
+ * ("copyright holders") not be used in advertising or publicity pertaining to
+ * distribution of the software without specific, written prior permission.
+ * The copyright holders make no representations about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or
+ * implied warranty.
  *
- * ROBIN CUTSHAW DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL ROBIN CUTSHAW BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+ * IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.38 1997/11/22 00:00:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.39 1997/12/05 22:01:32 hohndel Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "xf86_Config.h"
+/* #include "xf86_libc.h" */
+/* #include "xf86_ansic.h" */
 #include "Ti302X.h"
 #include "IBMRGB.h"
 
 #include "xf86xaa.h"
+#include "xf86Version.h"
 
 extern char *xf86VisualNames[];
 extern int defaultColorVisualClass;
@@ -53,20 +60,9 @@ int i128ValidMode(
 
 #define MAX_I128_CLOCK		175000
 
+extern void *videoDrivers[];
+
 int i128MaxClock = MAX_I128_CLOCK;
-
-ScrnInfoPtr xf86Screens[] = 
-{
-  &i128InfoRec,
-};
-
-int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
-
-int xf86ScreenNames[] =
-{
-  ACCEL,
-  -1
-};
 
 int i128ValidTokens[] =
 {
@@ -90,10 +86,10 @@ int i128ValidTokens[] =
 
 ScrnInfoRec i128InfoRec =
 {
+   i128Probe,			/* Bool (* Probe)() */
    FALSE,			/* Bool configured */
    -1,				/* int tmpIndex */
    -1,				/* int scrnIndex */
-   i128Probe,			/* Bool (* Probe)() */
    i128Initialize,		/* Bool (* Init)() */
    i128ValidMode,		/* int (* ValidMode)() */
    i128EnterLeaveVT,		/* void (* EnterLeaveVT)() */
@@ -110,9 +106,9 @@ ScrnInfoRec i128InfoRec =
    -1, -1,			/* int virtualX,virtualY */
    -1,				/* int displayWidth */
    -1, -1, -1, -1,		/* int frameX0, frameY0, frameX1, frameY1 */
-   {0, },			/* OFlagSet options */
-   {0, },			/* OFlagSet clockOptions */   
-   {0, },              		/* OFlagSet xconfigFlag */
+   {{0, }},			/* OFlagSet options */
+   {{0, }},			/* OFlagSet clockOptions */   
+   {{0, }},              		/* OFlagSet xconfigFlag */
    NULL,			/* char *chipset */
    NULL,			/* char *ramdac */
    {0, 0, 0, 0},		/* int dacSpeeds[MAXDACSPEEDS] */
@@ -151,12 +147,12 @@ ScrnInfoRec i128InfoRec =
    0,				/* int textClockFreq */
    NULL,                        /* char* DCConfig */
    NULL,                        /* char* DCOptions */
-   0				/* int MemClk */
+   0,				/* int MemClk */
 #ifdef XFreeXDGA
-   ,0,				/* int directMode */
+   0,				/* int directMode */
    0,				/* Set Vid Page */
    0,				/* unsigned long physBase */
-   0				/* int physSize */
+   0,				/* int physSize */
 #endif
 };
 
@@ -209,12 +205,24 @@ void (*i128ImageFillFunc)(
 
 
 ScrnInfoRec *
-ServerInit()
+ServerInit(void)
 {
 return &i128InfoRec;
 }
 
 
+XF86ModuleVersionInfo i128VersRec =
+{
+	"libi128.a",
+	MODULEVENDORSTRING,
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0},
+};
+
+#ifdef XFree86LOADER
 void
 ModuleInit(data,magic)
     pointer	* data;
@@ -225,19 +233,29 @@ ModuleInit(data,magic)
     switch(cnt++)
     {
     case 0:
+	* data = (pointer) &i128VersRec;
+	* magic= MAGIC_VERSION;
+	break;
+    case 1:
         * data = (pointer) &i128InfoRec;
         * magic= MAGIC_ADD_VIDEO_CHIP_REC;
         break;
-    case 1:
-        * data = (pointer) "libmfb.a";
-        * magic= MAGIC_LOAD;
-        break;
+    case 2:
+	* data = (pointer) "libxf86cache";
+	* magic= MAGIC_LOAD;
+	break;
+    case 3:
+	* data = (pointer) "libxaa";
+	* magic= MAGIC_LOAD;
+	xf86xaaloaded = TRUE;
+	break;
     default:
         * magic= MAGIC_DONE;
         break;
     }
     return;
 }
+#endif
 
 /*
  * i128PrintIdent -- print identification message
@@ -320,9 +338,9 @@ i128Probe()
    ErrorF("    IO        0x%08x  addr 0x%08x\n",
 	    pcrp->_base5, pcrp->_base5 & 0xFFFFFF00);
    ErrorF("    R1        0x%08x  addr 0x%08x\n",
-	    pcrp->rsvd1, pcrp->rsvd1 & 0xFFFFFF00);
+	    pcrp->_rsvd1, pcrp->_rsvd1 & 0xFFFFFF00);
    ErrorF("    R2        0x%08x  addr 0x%08x\n",
-	    pcrp->rsvd2, pcrp->rsvd2 & 0xFFFFFF00);
+	    pcrp->_rsvd2, pcrp->_rsvd2 & 0xFFFFFF00);
    ErrorF("    RBASE_E   0x%08x  addr 0x%08x  %sdecode-enabled\n\n",
 	    pcrp->_baserom, pcrp->_baserom & 0xFFFF8000,
 	    pcrp->_baserom & 0x1 ? "" : "not-");
@@ -370,7 +388,7 @@ i128Probe()
 		i128MemoryType = I128_MEMORY_WRAM;
    } else if (i128DeviceType == I128_DEVICE_ID2) {
    	if (((pcrp->_status_command & 0x03) == 0x03) &&
-   	    ((pcrp->rsvd2 >>16) == 0x08))
+   	    ((pcrp->_rsvd2 >>16) == 0x08))
    	   i128MemoryType = I128_MEMORY_DRAM;
    }
 
@@ -398,7 +416,7 @@ i128Probe()
    i128InfoRec.videoRam = 0;
 
    if (i128DeviceType == I128_DEVICE_ID3) {
-      switch ((pcrp->rsvd2>>16)&0xFFF7) {
+      switch ((pcrp->_rsvd2>>16)&0xFFF7) {
 	 case 0x00:	/* 4MB card, no daughtercard */
 	    i128InfoRec.videoRam = 4 * 1024; break;
 	 case 0x01:	/* 4MB card, 4MB daughtercard */
@@ -428,7 +446,7 @@ i128Probe()
 
    if (xf86Verbose)
       ErrorF("%s %s: videoram:  %dk\n", 
-              XCONFIG_GIVEN, i128InfoRec.name, i128InfoRec.videoRam);
+              XCONFIG_PROBED, i128InfoRec.name, i128InfoRec.videoRam);
 
    if (xf86bpp < 0)
       xf86bpp = i128InfoRec.depth;
@@ -970,7 +988,7 @@ i128ProgramIBMRGB(freq, flags)
    	i128mem.rbase_g[IDXL_I] = IBMRGB_sysclk_vco_div;		MB;
    	i128mem.rbase_g[DATA_I] = 0x41;					MB;
 	/* should delay at least a millisec so we'll wait 50 */
-   	xf86usleep(50000);
+   	usleep(50000);
    }
 
    switch (i128InfoRec.depth) {
@@ -1177,7 +1195,7 @@ int freq;
    i128mem.rbase_g[INDEX_TI] = TI_OUTPUT_CLOCK_SELECT;			MB;
    i128mem.rbase_g[DATA_TI] = oclk;					MB;
 
-   xf86usleep(150000);
+   usleep(150000);
    return(TRUE);
 }
 

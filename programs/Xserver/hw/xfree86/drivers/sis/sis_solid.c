@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_solid.c,v 1.1 1997/01/12 10:43:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_solid.c,v 1.1 1997/03/06 23:16:57 hohndel Exp $ */
 
 /*
  * 
@@ -107,6 +107,8 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 #include "windowstr.h"
+#include "mi.h"
+#include "mispans.h"
 
 #include "xf86.h"
 #include "vga256.h"

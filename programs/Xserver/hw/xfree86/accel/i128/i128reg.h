@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.9 1997/08/12 12:02:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.10 1997/11/22 00:00:11 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -69,19 +69,6 @@ struct i128mem {
     CARD32 *rbase_b;
     CARD32 *rbase_i;
 };
-
-/* save the registers needed for restoration in this structure */
-typedef struct {
-	unsigned short iobase;		/* saved only for iobase indexing    */
-	CARD32 config1;			/* iobase+0x1C register              */
-	CARD32 config2;			/* iobase+0x20 register              */
-	CARD32 vga_ctl;			/* iobase+0x30 register              */
-	CARD32 i128_base_g[0x60/4];	/* base g registers                  */
-	CARD32 i128_base_w[0x28/4];	/* base w registers                  */
-	unsigned char Ti302X[0x40];	/* Ti302[05] registers               */
-	unsigned char Ti3025[9];	/* Ti3025 N,M,P for PCLK, MCLK, LCLK */
-	unsigned char IBMRGB[0x101];	/* IBMRGB registers                  */
-} i128Registers;
 
 
 #define I128_DEVICE_ID1		0x2309105D
@@ -286,10 +273,6 @@ typedef struct {
 
 #define I128_WAIT_READY 1
 #define I128_WAIT_DONE  2
-
-typedef struct {
-	unsigned char r, b, g;
-} LUTENTRY;
 
 #define RGB8_PSEUDO      (-1)
 #define RGB16_565         0

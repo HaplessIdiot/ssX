@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.16 1997/09/09 10:27:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.17 1997/10/25 13:50:55 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -58,6 +58,7 @@ vgaGetPCIInfo()
 	    info->Vendor = pcrp->_vendor;
 	    info->ChipType = pcrp->_device;
 	    info->ChipRev = pcrp->_rev_id;
+	    info->Tag = pcrp->tag;
 	    info->Bus = pcrp->_bus;
 	    info->Card = pcrp->_cardnum;
 	    info->Func = pcrp->_func;

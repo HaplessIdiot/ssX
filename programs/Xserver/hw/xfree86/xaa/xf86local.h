@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.12 1997/10/25 13:51:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.13 1998/01/11 03:48:28 dawes Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -641,9 +641,8 @@ xf86WideLineSolid1Rect (
 
 
 void
-xf86Bench();
+xf86Bench(void);
 
-extern int xf86PixmapIndex;
 extern unsigned int byte_expand3[256], byte_reversed_expand3[256];
 
 /*

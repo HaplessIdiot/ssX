@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.11 1997/10/25 13:50:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.12 1997/11/01 15:04:36 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -100,13 +100,10 @@ extern int xf86StringToToken(
 
 extern void xf86ConfigError(
 #if NeedFunctionPrototypes
-	char *			/* msg */
+	char *,			/* msg */
+	...
 #endif
-)
-#if __GNUC__
-__attribute__((noreturn))
-#endif
-;
+);
 
 /* xf86Cursor.c */
 
@@ -297,6 +294,25 @@ extern void xf86InitXkb(
 	void
 #endif
 );
+
+extern void xf86SetCurrentScreen(
+#if NeedFunctionPrototypes
+	ScreenPtr
+#endif
+);
+
+extern ScreenPtr xf86GetCurrentScreen(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
+
+extern int xf86GetConsoleFD(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
+
 
 _XFUNCPROTOEND
 

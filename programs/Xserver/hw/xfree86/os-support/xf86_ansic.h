@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.3 1997/09/09 10:27:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.4 1997/11/16 11:51:14 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -155,6 +155,9 @@ extern Bool xf86setexternclock(char *, int, int);
 extern int xf86execl();
 extern long xf86fpossize();
 
+#else /* XFree86LOADER */
+#include <unistd.h>
+#include <stdio.h>
 #endif /* XFree86LOADER */
   
 #endif /* _XF86_ANSIC_H */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.72 1997/05/18 12:12:07 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.73 1997/06/15 07:12:24 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -27,6 +27,13 @@
 #include <stdlib.h>
 #else
 extern int atoi();
+#endif
+
+#if !defined(AMOEBA) && !defined(MINIX)
+#if defined(MetroLink) && defined(Lynx)
+#include <sys/types.h>
+#endif
+#include <sys/wait.h>
 #endif
 
 #define NEED_EVENTS
@@ -71,6 +78,11 @@ extern int xtest_command_key;
 #define setruid(x) /*nothing*/
 #endif
 
+extern void xf86WrapperInit(void);
+#ifdef XFree86LOADER
+extern void LoaderInit(void);
+#endif
+
 /* xf86Exiting is set while the screen is shutting down (even on a reset) */
 Bool xf86Exiting = FALSE;
 Bool xf86Resetting = FALSE;
@@ -105,7 +117,7 @@ int   vgaIOBase = 0x3d0;
 int   vgaCRIndex = 0x3d4;
 int   vgaCRReg = 0x3d5;
 
-static void xf86PrintBanner(
+void xf86PrintBanner(
 #if NeedFunctionPrototypes
 	void
 #endif
@@ -128,7 +140,12 @@ static char *expKey = NULL;
 
 extern ScrnInfoPtr xf86Screens[];
 extern int xf86MaxScreens;
+/* argh if you include <math.h> it redefines MINSHORT and MAXSHORT */
+#if NeedFunctionPrototypes
+extern double pow(double,double);
+#else
 extern double pow();
+#endif
 #ifdef USE_XF86_SERVERLOCK
 extern void xf86UnlockServer();
 #endif
@@ -138,6 +155,7 @@ extern void os2ServerVideoAccess();
 
 xf86InfoRec xf86Info;
 int         xf86ScreenIndex;
+int         xf86PixmapIndex;
 
 /*
  * InitOutput --
@@ -179,6 +197,13 @@ InitOutput(pScreenInfo, argc, argv)
     pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
 
     xf86WrapperInit();
+#ifdef XFree86LOADER
+    LoaderInit();
+#endif
+    if (generation != serverGeneration) {
+	xf86PixmapIndex = AllocatePixmapPrivateIndex();
+    }
+
 
     if ((xf86ServerName = strrchr(argv[0], '/')) != 0)
       xf86ServerName++;
@@ -247,7 +272,7 @@ InitOutput(pScreenInfo, argc, argv)
     formats[0].bitsPerPixel = 1;
     formats[0].scanlinePad = BITMAP_SCANLINE_PAD;
     numFormats++;
-  
+
     for ( i=0;
           i < xf86MaxScreens && xf86Screens[i] && xf86Screens[i]->configured;
           i++ )
@@ -521,7 +546,7 @@ DPMSSupported(void)
 
     /* For each screen, check if DPMS is supported */
     for (i = 0; i < screenInfo.numScreens; i++) {
-	if (XF86SCRNINFO(screenInfo.screens[i])->DPMSSet != (void (*)())NoopDDA)
+	if (XF86SCRNINFO(screenInfo.screens[i])->DPMSSet != (void (*)(int))NoopDDA)
 	    return TRUE;
     }
     return FALSE;
@@ -828,9 +853,15 @@ ddxUseMsg()
 #define OSVENDOR ""
 #endif
 
-static void
+void
 xf86PrintBanner()
 {
+#if defined(MetroLink)
+  ErrorF("\nMetro Link, Inc Version %s/ X Window System\n",METRO_VERSION);
+  ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
+         X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
+  ErrorF("Operating System: %s %s\n", OSNAME, OSVENDOR);
+#else
   ErrorF("\nXFree86 Version%s/ X Window System\n",XF86_VERSION);
   ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
          X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
@@ -841,6 +872,7 @@ xf86PrintBanner()
 	 "reporting\n"
 	 "\tproblems.  (see http://www.XFree86.Org/FAQ)\n");
   ErrorF("Operating System: %s %s\n", OSNAME, OSVENDOR);
+#endif
 }
 
 static void
@@ -854,3 +886,22 @@ xf86PrintConfig()
       (xf86Screens[i]->PrintIdent)();
 }
 
+
+void
+xf86SetCurrentScreen(pScr)
+ScreenPtr pScr;
+{
+xf86Info.currentScreen = pScr;
+}
+
+ScreenPtr
+xf86GetCurrentScreen()
+{
+return xf86Info.currentScreen;
+}
+
+int
+xf86GetConsoleFD()
+{
+return xf86Info.consoleFd;
+}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/hercules/herc_driver.c,v 1.2 1997/06/03 14:12:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/hercules/herc_driver.c,v 1.3 1997/08/26 10:01:17 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -27,7 +27,7 @@
 #include "xf86.h"
 #include "xf86Version.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_Config.h"
 
 #include "mono.h"
@@ -181,7 +181,7 @@ HGA6845Probe()
 {
 
     if (monoInfoRec.chipset) {
-	if (xf86strcmp(monoInfoRec.chipset, HGA6845Ident(0)))
+	if (strcmp(monoInfoRec.chipset, HGA6845Ident(0)))
 	    return (FALSE);
 	else
 	    HGA6845EnterLeave(ENTER);
@@ -432,7 +432,7 @@ static PixelType *HGA6845ScanlineOffset(p, offset)
 static void HGA6845ClearScreen()
 {
     if (NULL!=monoBankABottom)
-	xf86memset(monoBankABottom,0,HGA6845MapSize);
+	memset(monoBankABottom,0,HGA6845MapSize);
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.20 1997/05/04 05:26:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.21 1997/06/03 14:11:39 hohndel Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -35,7 +35,6 @@
 #include "site.h"
 
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
 
@@ -1076,7 +1075,6 @@ InitLUT()
    }
 
    if (s3InfoRec.bitsPerPixel > 8 && S3_ViRGE_VX_SERIES(s3ChipId)) {
-      extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
       extern LUTENTRY currents3dac[];
 
       if (!LUTInited) {

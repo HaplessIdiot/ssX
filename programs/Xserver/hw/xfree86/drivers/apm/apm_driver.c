@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.8 1997/08/26 10:01:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.9 1997/10/25 13:50:19 hohndel Exp $ */
 
 /* 
    This is the Alliance Promotion driver. It can be used with
@@ -76,7 +76,6 @@
 #include "xf86Version.h"
 #include "xf86Priv.h"
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"

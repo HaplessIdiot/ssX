@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ATTDac.c,v 3.4 1996/05/06 05:57:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ATTDac.c,v 3.5 1996/12/23 06:44:00 dawes Exp $ */
 /*
  * Copyright 1994 by David Wexelblat <dwex@goblin.org>
  *
@@ -32,6 +32,8 @@
 
 #define ATT409_CC	0x06
 #define ATT409_CR0	0x01
+
+static int xf86testdacindexed(void);
 
 void xf86dactopel()
 {
@@ -147,8 +149,8 @@ unsigned char val;
 	return;
 }
 
-int
-xf86testdacindexed()
+static int
+xf86testdacindexed(void)
 {
 	/*
 	 * figure out whether we are in indexed addressing mode

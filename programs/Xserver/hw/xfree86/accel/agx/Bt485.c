@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt485.c,v 3.5 1996/08/10 13:04:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt485.c,v 3.6 1996/12/23 06:32:20 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth  <haw30@eng.amdahl.com>
@@ -40,7 +40,6 @@
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86RamDac.h"
 #include "Bt485.h"
 

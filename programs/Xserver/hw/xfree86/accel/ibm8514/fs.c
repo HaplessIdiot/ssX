@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/fs.c,v 3.3 1996/02/04 09:01:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/fs.c,v 3.4 1996/12/23 06:37:48 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -98,6 +98,8 @@ Modified by Tiago Gons (tiago@comosjn.hobby.nl)
 #include "scrnintstr.h"
 #include "windowstr.h"
 
+#include "mi.h"
+#include "mispans.h"
 #include "cfb.h"
 
 #include "reg8514.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.43 1997/05/03 09:16:33 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.44 1997/06/03 14:11:18 hohndel Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -40,7 +40,6 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
 #include "xf86_Config.h"
 #include "vga.h"
 #include "vgaPCI.h"

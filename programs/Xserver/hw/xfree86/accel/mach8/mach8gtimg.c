@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8gtimg.c,v 3.3 1996/02/04 09:03:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8gtimg.c,v 3.4 1996/12/23 06:39:57 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -31,6 +31,7 @@
 #include "windowstr.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
+#include "mi.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "mach8.h"

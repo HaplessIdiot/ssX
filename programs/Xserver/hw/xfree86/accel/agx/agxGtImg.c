@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGtImg.c,v 3.4 1996/02/04 08:58:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGtImg.c,v 3.5 1996/12/23 06:32:48 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -28,6 +28,7 @@
 #include "windowstr.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
+#include "mi.h"
 #include "cfb.h"
 #include "cfb16.h"
 #ifdef AGX_32BPP

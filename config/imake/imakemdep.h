@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.26 1997/07/05 08:45:12 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.27 1997/08/26 10:00:44 hohndel Exp $ */
 
 
 /* 
@@ -128,6 +128,10 @@ in this Software without prior written authorization from the X Consortium.
 # endif
 #endif
 
+#ifdef Lynx
+#define imake_ccflags "-DLynx"
+#endif /* Lynx */
+
 #ifdef __convex__
 #define imake_ccflags "-fn -tm c1"
 #endif
@@ -204,7 +208,7 @@ in this Software without prior written authorization from the X Consortium.
  *     all colons).  One way to tell if you need this is to see whether or not
  *     your Makefiles have no tabs in them and lots of @@ strings.
  */
-#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32) || defined(sco) || (defined(AMOEBA) && defined(CROSS_COMPILE))
+#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32) || defined(sco) || (defined(AMOEBA) && defined(CROSS_COMPILE)) || defined(__QNX__)
 #define FIXUP_CPP_WHITESPACE
 #endif
 #ifdef WIN32
@@ -222,6 +226,10 @@ in this Software without prior written authorization from the X Consortium.
  *     If use cc -E but want a different compiler, define DEFAULT_CC.
  *     If the cpp you need is not in /lib/cpp, define DEFAULT_CPP.
  */
+#ifdef Lynx
+#define DEFAULT_CC "gcc"
+#define USE_CC_E
+#endif
 #ifdef hpux
 #define USE_CC_E
 #endif
@@ -492,6 +500,21 @@ char *cpp_argv[ARGUMENTS] = {
         "-traditional",
         "-Dlinux",
 #endif
+#ifdef Lynx
+        "-traditional",
+        "-DLYNX",
+	"-DLynx",
+# ifdef ppc
+	"-Dppc",
+# endif
+# if defined(m68k)  || defined(M68k) || defined(m68040)
+	"-Dm68k",
+	"-DM68k",
+# endif
+# ifdef uSPARC1
+	"-Dsparc",
+# endif
+#endif
 #ifdef __uxp__
 	"-D__uxp__",
 #endif
@@ -536,6 +559,21 @@ char *cpp_argv[ARGUMENTS] = {
 #if defined(__EMX__)
 	"-traditional",
 	"-Demxos2",
+#endif
+#ifdef MetroLink
+	"-DMetroLink",
+# ifdef SVR4
+	"-DSVR4",
+# endif
+# ifdef __powerpc__
+	"-D__powerpc__",
+# endif
+# ifdef PowerMAX_OS
+	"-DPowerMAX_OS",
+# endif
+#endif
+#ifdef __QNX__
+	"-D__QNX__",
 #endif
 
 };
@@ -805,6 +843,11 @@ struct symtab	predefs[] = {
 #ifdef m68k
         {"m68k", "1"},
 #endif
+#if defined(MetroLink)
+#ifdef M68k
+        {"M68k", "1"},
+#endif
+#endif /* MetroLink */
 #ifdef m88k
         {"m88k", "1"},
 #endif
@@ -904,6 +947,14 @@ struct symtab	predefs[] = {
 #endif
 #ifdef __EMX__
 	{"__EMX__", "1"},
+#endif
+#if defined(MetroLink)
+# ifdef __powerpc__
+	{"__powerpc__", "1"},
+# endif
+# ifdef PowerMAX_OS
+	{"PowerMAX_OS", "1"},
+# endif
 #endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}

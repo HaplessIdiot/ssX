@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.7 1997/11/01 15:49:18 hohndel Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -28,10 +28,29 @@
 
 #include "vga.h"
 #include "scrnintstr.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86cursor.h"
 #include "ct_driver.h"
 #include <xf86Priv.h>
+
+#if NeedFunctionPrototypes
+static Bool CHIPSRealizeCursor(ScreenPtr, CursorPtr);
+static Bool CHIPSUnrealizeCursor(ScreenPtr, CursorPtr);
+static void CHIPSSetCursor(ScreenPtr, CursorPtr, int, int);
+static void CHIPSMoveCursor(ScreenPtr, int, int);
+static void CHIPSRecolorCursor(ScreenPtr, CursorPtr, Bool);
+static void CHIPSLoadCursor(ScreenPtr, CursorPtr, int, int);
+static void CHIPSShowCursor(void);
+static void CHIPSHideCursor(void);
+static void CHIPSLoadCursorToCard(ScreenPtr, CursorPtr, int, int);
+#else
+static Bool CHIPSRealizeCursor();
+static Bool CHIPSUnrealizeCursor();
+static void CHIPSSetCursor();
+static void CHIPSMoveCursor();
+static void CHIPSRecolorCursor();
+static void CHIPSHideCursor();
+#endif
 
 extern vgaHWCursorRec vgaHWCursor;
 Bool ctHWcursorShown = FALSE;
@@ -59,7 +78,9 @@ void CHIPSShowCursor() {
     ctHWcursorShown = TRUE;
 }
 
-void CHIPSHideCursor() {
+static void
+CHIPSHideCursor(void)
+{
     unsigned char tmp;
   
     /* turn the cursor off */

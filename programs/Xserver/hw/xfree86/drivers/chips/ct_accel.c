@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.15 1997/11/22 00:00:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.16 1997/12/05 22:01:41 hohndel Exp $ */
 
 
 
@@ -36,6 +36,7 @@
 #include "vga.h"
 #include "xf86xaa.h"
 #include "ct_driver.h"
+#include "xf86_ansic.h"
 
 #ifdef	CHIPS_HIQV
 #include "xf86local.h"
@@ -60,33 +61,33 @@
 #define CTNAME(subname) CATNAME(ct,subname)
 #endif
 
-void CTNAME(Sync)();
-void CTNAME(8SetupForFillRectSolid)();
-void CTNAME(16SetupForFillRectSolid)();
-void CTNAME(24SetupForFillRectSolid)();
-void CTNAME(SubsequentFillRectSolid)();
+void CTNAME(Sync)(void);
+void CTNAME(8SetupForFillRectSolid)(int, int, unsigned);
+void CTNAME(16SetupForFillRectSolid)(int, int, unsigned);
+void CTNAME(24SetupForFillRectSolid)(int, int, unsigned);
+void CTNAME(SubsequentFillRectSolid)(int, int, int, int);
 #ifndef CHIPS_HIQV
-void CTNAME(24SubsequentFillRectSolid)();
+void CTNAME(24SubsequentFillRectSolid)(int, int, int, int);
 #else
-void CTNAME(32SetupForFillRectSolid)();
-void CTNAME(32SubsequentFillRectSolid)();
+void CTNAME(32SetupForFillRectSolid)(int, int, unsigned);
+void CTNAME(32SubsequentFillRectSolid)(int, int, int, int);
 #endif
-void CTNAME(SetupForScreenToScreenCopy)();
-void CTNAME(SubsequentScreenToScreenCopy)();
-void CTNAME(SetupForScanlineScreenToScreenColorExpand)();
-void CTNAME(SubsequentScanlineScreenToScreenColorExpand)();
-void CTNAME(SetupForScanlineCPUToScreenColorExpand)();
-void CTNAME(SubsequentScanlineCPUToScreenColorExpand)();
-void CTNAME(SetupForScreenToScreenColorExpand)();
-void CTNAME(SubsequentScreenToScreenColorExpand)();
-void CTNAME(SetupForCPUToScreenColorExpand)();
-void CTNAME(SubsequentCPUToScreenColorExpand)();
-void CTNAME(SetupForFill8x8Pattern)();
-void CTNAME(SubsequentFill8x8Pattern)();
-void CTNAME(SetupFor8x8PatternColorExpand)();
-void CTNAME(Subsequent8x8PatternColorExpand)();
-void CTNAME(SetupForImageWrite)();
-void CTNAME(SubsequentImageWrite)();
+void CTNAME(SetupForScreenToScreenCopy)(int, int, int, unsigned, int);
+void CTNAME(SubsequentScreenToScreenCopy)(int, int, int, int, int, int);
+void CTNAME(SetupForScanlineScreenToScreenColorExpand)(int, int, int, int, int, int, int, unsigned int);
+void CTNAME(SubsequentScanlineScreenToScreenColorExpand)(int);
+void CTNAME(SetupForScanlineCPUToScreenColorExpand)(int, int, int, int, int, int, unsigned int);
+void CTNAME(SubsequentScanlineCPUToScreenColorExpand)(void);
+void CTNAME(SetupForScreenToScreenColorExpand)(int, int, int, unsigned int);
+void CTNAME(SubsequentScreenToScreenColorExpand)(int, int, int, int, int, int);
+void CTNAME(SetupForCPUToScreenColorExpand)(int, int, int, unsigned int);
+void CTNAME(SubsequentCPUToScreenColorExpand)(int, int, int, int, int);
+void CTNAME(SetupForFill8x8Pattern)(int, int, int, unsigned int, int);
+void CTNAME(SubsequentFill8x8Pattern)(int, int, int, int, int, int);
+void CTNAME(SetupFor8x8PatternColorExpand)(int, int, int, int, int, unsigned int);
+void CTNAME(Subsequent8x8PatternColorExpand)(int, int, int, int, int, int);
+void CTNAME(SetupForImageWrite)(int, unsigned int, int);
+void CTNAME(SubsequentImageWrite)(int, int, int, int, int);
 
 #ifdef CHIPS_HIQV
 void CTNAME(DoPixWinBitBltCopy)();
@@ -100,7 +101,7 @@ static unsigned int old_planemask;
     case 8: \
         if (old_planemask != mask&0xFF) { \
             old_planemask = mask&0xFF; \
-	    xf86memset((unsigned char *)vgaLinearBase + addr, mask&0xFF, 64); \
+	    memset((unsigned char *)vgaLinearBase + addr, mask&0xFF, 64); \
 	} \
 	break; \
     case 16: \
@@ -108,7 +109,7 @@ static unsigned int old_planemask;
             old_planemask = mask&0xFFFF; \
 	    {   int i; \
 	        for (i = 0; i < 64; i++) { \
-		    xf86memcpy((unsigned char *)vgaLinearBase + addr + i * 2, \
+		    memcpy((unsigned char *)vgaLinearBase + addr + i * 2, \
 			   &mask, 2); \
 	        } \
 	    } \
@@ -142,8 +143,8 @@ static unsigned int CommandFlags;
 #endif
 void _ctAccelInit() {
     unsigned int ctCacheStart;
-    unsigned int ctColorExpandScratchAddr;
-    unsigned int ctColorExpandScratchSize;
+    unsigned int ctColorExpandScratchAddr = 0;
+    unsigned int ctColorExpandScratchSize = 0;
 
     /* Set up the addresses for the start and end of the pixmap cache
      * and for the ping-pong buffers
@@ -814,12 +815,11 @@ void CTNAME(SubsequentScanlineScreenToScreenColorExpand)(srcaddr)
     scanlinedestaddr += vga256InfoRec.displayWidth * vgaBytesPerPixel;
 }
 
-void CTNAME(SetupForScanlineCPUToScreenColorExpand)(x, y, w, h, bg, fg, rop,
+void CTNAME(SetupForScanlineCPUToScreenColorExpand)(x, y, w, bg, fg, rop,
 planemask)
-    int x, y, w, h, bg, fg, rop;
+    int x, y, w, bg, fg, rop;
     unsigned int planemask;
 {
-    unsigned int mask;
     scanlinedestaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
     scanlinewidth = w * vgaBytesPerPixel;
     CommandFlags = 0;

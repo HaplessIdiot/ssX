@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.28 1997/11/08 16:24:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.29 1997/11/08 17:07:27 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -304,7 +304,8 @@ xf86MouseProtocol(device, rBuf, nBytes)
     unsigned char *rBuf;
     int nBytes;
 {
-  int                  i, buttons, dx, dy;
+  int                  i, buttons, DX, DY;
+  signed char          dx, dy;
   static int           pBufP = 0;
   static unsigned char pBuf[8];
   MouseDevPtr          mouse = MOUSE_DEV(device);
@@ -426,37 +427,51 @@ xf86MouseProtocol(device, rBuf, nBytes)
 		  | ((int)(pBuf[0] & 0x20) >> 3)
 		  | ((int)(pBuf[0] & 0x10) >> 4);
       }
-      dx = (char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
-      dy = (char)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
+      dx = (signed char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
+      dy = (signed char)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
+      DX = (int) dx;
+      DY = (int) dy;
       break;
 
     case P_GLIDEPOINT:      /* ALPS GlidePoint */
        buttons =  (mouse->lastButtons & (8 + 2))
 		| ((int)(pBuf[0] & 0x20) >> 3)
 		| ((int)(pBuf[0] & 0x10) >> 4);
-      dx = (char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
-      dy = (char)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
+      dx = (signed char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
+      dy = (signed char)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
+      DX = (int) dx;
+      DY = (int) dy;
       break;
 
     case P_MSC:             /* Mouse Systems Corp */
       buttons = (~pBuf[0]) & 0x07;
-      dx =    (char)(pBuf[1]) + (char)(pBuf[3]);
-      dy = - ((char)(pBuf[2]) + (char)(pBuf[4]));
+      DX = 0;
+      dx = (signed char)(pBuf[1]);
+      DX += (int) dx;
+      dx = (signed char)(pBuf[3]);
+      DX += (int) dx;
+
+      DY = 0;
+      dy = (signed char)(pBuf[2]);
+      DY -= (int) dy;
+      dy = (signed char)(pBuf[4]);
+      DY -= (int) dy;
       break;
       
     case P_MMHIT:           /* MM_HitTablet */
       buttons = pBuf[0] & 0x07;
       if (buttons != 0)
         buttons = 1 << (buttons - 1);
-      dx = (pBuf[0] & 0x10) ?   pBuf[1] : - pBuf[1];
-      dy = (pBuf[0] & 0x08) ? - pBuf[2] :   pBuf[2];
+
+      DX = (pBuf[0] & 0x10) ? (int)pBuf[1] : - (int)pBuf[1];
+      DY = (pBuf[0] & 0x08) ? - (int)pBuf[2] :  (int)pBuf[2];
       break;
 
     case P_MM:              /* MM Series */
     case P_LOGI:            /* Logitech Mice */
       buttons = pBuf[0] & 0x07;
-      dx = (pBuf[0] & 0x10) ?   pBuf[1] : - pBuf[1];
-      dy = (pBuf[0] & 0x08) ? - pBuf[2] :   pBuf[2];
+      DX = (pBuf[0] & 0x10) ?   (int)pBuf[1] : - (int)pBuf[1];
+      DY = (pBuf[0] & 0x08) ? - (int)pBuf[2] :  (int)pBuf[2];
       break;
       
     case P_BM:              /* BusMouse */
@@ -464,8 +479,10 @@ xf86MouseProtocol(device, rBuf, nBytes)
     case P_PS2:
 #endif
       buttons = (~pBuf[0]) & 0x07;
-      dx =   (char)pBuf[1];
-      dy = - (char)pBuf[2];
+      dx = (signed char)pBuf[1];
+      dy = (signed char)pBuf[2];
+      DX = (int) dx;
+      DY = - (int) dx;
       break;
 
 #if !defined(__NetBSD__)
@@ -473,13 +490,20 @@ xf86MouseProtocol(device, rBuf, nBytes)
       buttons = (pBuf[0] & 0x04) >> 1 |       /* Middle */
 	        (pBuf[0] & 0x02) >> 1 |       /* Right */
 		(pBuf[0] & 0x01) << 2;        /* Left */
-      dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
-      dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
+      DX = (pBuf[0] & 0x10) ?     (int)pBuf[1]-256  :   (int)pBuf[1];
+      DY = (pBuf[0] & 0x20) ?  - ((int)pBuf[2]-256) : - (int)pBuf[2];
       break;
 #endif
     case P_IMSERIAL:              /* Microsoft serial IntelliMouse */
+#if defined(MetroLink)
+      dx = (signed char) ((pBuf[0] & 0x03) << 6 | pBuf[1]);
+      dy = (signed char) ((pBuf[0] & 0x0c) << 4 | pBuf[2]);
+      DX = (int) dx;
+      DY = (int) dy;
+#else
       dx = (char) ((pBuf[0] & 0x03) << 6 | pBuf[1]);
       dy = (char) ((pBuf[0] & 0x0c) << 4 | pBuf[2]);
+#endif
       buttons = 
 	((pBuf[0] & 0x10) ? 1 : 0) |
 	((pBuf[3] & 0x10) ? 2 : 0) |
@@ -513,7 +537,11 @@ xf86MouseProtocol(device, rBuf, nBytes)
 	continue;
     }
 
+#if defined(MetroLink)
+    xf86PostMseEvent(device, buttons, DX, DY);
+#else
     xf86PostMseEvent(device, buttons, dx, dy);
+#endif
 
     /* Intellimouse wheel roll maps to button 4 or 5 Press event; now
     generate a Release event. */
@@ -574,7 +602,9 @@ xf86MouseConfig(array, inx, max, val)
     ErrorF("xf86MouseConfig mouse=0x%x\n", mouse);
 #endif
     
+/*
     configPointerSection(mouse, ENDSUBSECTION, &dev->name);
+*/
 
     return Success;
 }
@@ -605,7 +635,6 @@ xf86MouseProc(device, what)
     } else {
 	if ((what == DEVICE_INIT) &&
 	    (ret == Success)) {
-	    AssignTypeAndName(device, local->atom, local->name);
 #ifdef EXTMOUSEDEBUG
 	    ErrorF("assigning 0x%x atom=%d name=%s\n", device,
 		   local->atom, local->name);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.10 1997/02/25 14:20:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.11 1997/07/29 12:07:39 hohndel Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -26,7 +26,7 @@
 #include "input.h"
 
 #include "xf86.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_Config.h"
 
 #include "p9000.h"
@@ -115,7 +115,7 @@ p9000OrchidProbe()
     return FALSE; /* This OS can't probe the BIOS */
   bios_sig[ORCHID_BIOS_LENGTH] = '\0';
   if (0 == strncmp(bios_sig, VPR_VLB_BIOS_SIGNATURE,
-		   xf86strlen(VPR_VLB_BIOS_SIGNATURE)))
+		   strlen(VPR_VLB_BIOS_SIGNATURE)))
     {
       if (xf86Verbose)
 	ErrorF("%s BIOS signature for Orchid P9000 found:\n\t<%s>\n",
@@ -270,7 +270,7 @@ void p9000OrchidDisable()
           (int)( ( p9000OrchidSaveMisc ) | ORCHID_CLKSELBITS_P9000 )) ;
 #endif
 
-  xf86usleep(30000);  /* Wait at least 10 msecs (ICD2061 timeout) for 
+  usleep(30000);  /* Wait at least 10 msecs (ICD2061 timeout) for 
 		   * the clock chip output freq to change */
 
   p9000BtRestore();
@@ -337,7 +337,7 @@ void p9000OrchidSetClock(dotclock, memclock)
   ActualHertz = ICD2061AGetClock (clock_ctrl_word);
   /* Wait at least 10 msecs (ICD2061 timeout) for the clock chip 
    * to change output */
-  xf86usleep(30000); 
+  usleep(30000); 
   
 #ifdef DEBUG
   ErrorF("Mem clock actually set to %d Hz.  Wanted %ld\n",ActualHertz,

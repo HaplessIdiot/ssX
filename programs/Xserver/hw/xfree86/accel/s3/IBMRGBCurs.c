@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.8 1996/12/23 06:41:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.9 1997/01/08 20:33:36 dawes Exp $ */
 /*
  *
  * Copyright 1995 The XFree86 Project, Inc.
@@ -19,7 +19,6 @@
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "s3.h"
 #include "regs3.h"
 #include "IBMRGB.h"

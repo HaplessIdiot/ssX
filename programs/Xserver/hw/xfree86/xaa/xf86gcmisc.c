@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.19 1997/11/22 00:00:19 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.20 1998/01/11 03:48:28 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -216,7 +216,9 @@ void xf86GCNewLine(pGC, pDrawable)
 #endif
           CHECKPLANEMASK(xf86GCInfoRec.PolyLineSolidZeroWidthFlags) &&
           CHECKROP(xf86GCInfoRec.PolyLineSolidZeroWidthFlags) &&
-          CHECKRGBEQUAL(xf86GCInfoRec.PolyLineSolidZeroWidthFlags))
+          CHECKRGBEQUAL(xf86GCInfoRec.PolyLineSolidZeroWidthFlags) &&
+          (pGC->capStyle != CapNotLast || 
+          !(xf86GCInfoRec.PolyLineSolidZeroWidthFlags & NO_CAP_NOT_LAST)))
               PolyLineFunc = xf86GCInfoRec.PolyLineSolidZeroWidth;
 
 
@@ -240,7 +242,9 @@ void xf86GCNewLine(pGC, pDrawable)
 #endif
            CHECKPLANEMASK(xf86GCInfoRec.PolyLineDashedZeroWidthFlags) &&
            CHECKROP(xf86GCInfoRec.PolyLineDashedZeroWidthFlags) &&
-           CHECKRGBEQUAL(xf86GCInfoRec.PolyLineDashedZeroWidthFlags))
+           CHECKRGBEQUAL(xf86GCInfoRec.PolyLineDashedZeroWidthFlags) &&
+           (pGC->capStyle != CapNotLast || 
+            !(xf86GCInfoRec.PolyLineDashedZeroWidthFlags & NO_CAP_NOT_LAST)))
                PolyLineFunc = xf86GCInfoRec.PolyLineDashedZeroWidth;
 
 

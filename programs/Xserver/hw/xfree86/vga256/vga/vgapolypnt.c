@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapolypnt.c,v 3.6 1996/12/23 06:59:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapolypnt.c,v 3.7 1997/02/24 17:47:14 hohndel Exp $ */
 
 #include "vga256.h"
 
@@ -108,7 +108,7 @@ vga256PolyPoint(pDrawable, pGC, mode, npt, pptInit)
     {
 	if (!(nbwidth & (nbwidth - 1)))
 	{
-	    nbwidth = xf86ffs(nbwidth) - 1;
+	    nbwidth = ffs(nbwidth) - 1;
 	    PointLoop(addrbt = addrb + (intToY(pt) << nbwidth) + intToX(pt);
 		      SETRW(addrbt); *addrbt = xor;)
 	}

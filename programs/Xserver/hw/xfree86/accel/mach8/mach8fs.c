@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fs.c,v 3.4 1996/02/04 09:03:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fs.c,v 3.5 1996/12/23 06:39:54 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -100,6 +100,8 @@ Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 #include "scrnintstr.h"
 #include "windowstr.h"
 
+#include "mi.h"
+#include "mispans.h"
 #include "cfb.h"
 
 #include "regmach8.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.27 1997/08/26 10:01:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.28 1997/10/25 13:50:13 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -48,6 +48,9 @@
 #  ifdef PC98
 #   define __inline__ /**/
 #  endif
+#  ifdef __HIGHC__
+#   define __inline__ _Inline
+#  endif
 # endif /* __GNUC__ */
 #endif /* !__STDC__ */
 
@@ -62,13 +65,25 @@
 
 #ifdef NO_INLINE
 
-extern void outb();
-extern void outw();
-extern void outl();
-extern unsigned int inb();
-extern unsigned int inw();
-extern unsigned int inl();
 #if NeedFunctionPrototypes
+extern void outb(unsigned short, unsigned char);
+extern void outw(unsigned short, unsigned short);
+extern void outl(unsigned short, unsigned long);
+extern unsigned char inb(unsigned short);
+extern unsigned short inw(unsigned short);
+extern unsigned long inl(unsigned short);
+extern unsigned long ldq_u(void *);
+extern unsigned long ldl_u(void *);
+extern unsigned short ldw_u(void *);
+extern void stl_u(unsigned long, void *);
+extern void stq_u(unsigned long, void *);
+extern void stw_u(unsigned short, void *);
+extern void mem_barrier(void);
+extern void write_mem_barrier(void);
+extern void stl_brx(unsigned long, volatile unsigned char *, int);
+extern void stw_brx(unsigned short, volatile unsigned char *, int);
+extern unsigned long ldl_brx(volatile unsigned char *, int);
+extern unsigned short ldw_brx(volatile unsigned char *, int);
 extern unsigned char rdinx(unsigned short int, unsigned char);
 extern void wrinx(unsigned short int, unsigned char, unsigned char);
 extern void modinx(unsigned short int, unsigned char, unsigned char, unsigned char);
@@ -76,6 +91,23 @@ extern int testrg(unsigned short int, unsigned char);
 extern int testinx2(unsigned short int, unsigned char, unsigned char);
 extern int testinx(unsigned short int, unsigned char);
 #else /* NeedFunctionProtoypes */
+extern void outb();
+extern void outw();
+extern void outl();
+extern unsigned char inb();
+extern unsigned short inw();
+extern unsigned long inl();
+extern unsigned long ldq_u();
+extern unsigned long ldl_u();
+extern unsigned short ldw_u();
+extern void stl_u();
+extern void stq_u();
+extern void stw_u();
+extern void mem_barrier();
+extern void write_mem_barrier();
+extern void stl_brx();
+extern void stw_brx();
+extern unsigned long ldl_brx();
 extern unsigned char rdinx();
 extern void wrinx();
 extern void modinx();
@@ -377,55 +409,59 @@ static __inline__ unsigned long ldw_u(unsigned short * r11)
 
 #if defined(Lynx) && defined(__powerpc__)
 
+#define eieio() \
+  __asm__ __volatile__ ("eieio")
+
+#define stl_brx(val, base, ndx) \
+  __asm__ ( "stwbrx %0,%1,%2" : : "r" (val), "r" (base), "r" (ndx) : "memory" )
+
+#define stw_brx(val, base, ndx) \
+  __asm__ ( "sthbrx %0,%1,%2" : : "r" (val), "r" (base), "r" (ndx) : "memory" )
+
 static __inline__ unsigned long
-_LE_to_BE_long(unsigned long val)
+ldl_brx(volatile unsigned char *base, int ndx)
 {
-	unsigned char *p = (unsigned char *)&val;
-	return ((p[3] << 24) | (p[2] << 16) | (p[1] << 8) | (p[0] << 0));
+        register unsigned long rv;
+        __asm__ ( "lwbrx %0,%1,%2"
+                  : "=r" (rv) 
+                  : "r" (base), "r" (ndx)
+        );
+        return(rv);
 }
 
 static __inline__ unsigned short
-_LE_to_BE_short(unsigned short val)
+ldw_brx(volatile unsigned char *base, int ndx)
 {
-	unsigned char *p = (unsigned char *)&val;
-	return ((p[1] << 8) | (p[0] << 0));
+	register unsigned short rv;
+        __asm__ ( "lhbrx %0,%1,%2"
+                  : "=r" (rv) 
+                  : "r" (base), "r" (ndx)
+        );
+	return(rv);
 }
 
-extern unsigned char *ioBase;
+extern volatile unsigned char *ioBase;
 
 static __inline__ void
-eieio()
+outb(unsigned short port, unsigned char value)
 {
-	__asm__ __volatile__ ("eieio");
-}
-
-static __inline__ void
-outb(port, value)
-short port;
-unsigned char value;
-{
-	*(volatile unsigned char *)(ioBase + port) = value; eieio();
+	*((volatile unsigned char *)(ioBase + port)) = value; eieio();
 }
 
 static __inline__ void
-outw(port, value)
-short port;
-unsigned short value;
+outw(unsigned short port, unsigned short value)
 {
-	*(volatile unsigned short *)(ioBase + port) = _LE_to_BE_short(value); eieio();
+	stw_brx(value, ioBase, port); eieio();
 }
 
 static __inline__ void
-outl(port, value)
-short port;
-unsigned long value;
+outl(unsigned short port, unsigned long value)
 {
-	*(volatile unsigned long *)(ioBase + port) = _LE_to_BE_long(value); eieio();
+	stl_brx(value, ioBase, port); eieio();
 }
 
 static __inline__ unsigned char
-inb(port)
-short port;
+inb(unsigned short port)
 {
 	unsigned char val;
 
@@ -434,38 +470,42 @@ short port;
 }
 
 static __inline__ unsigned short
-inw(port)
-short port;
+inw(unsigned short port)
 {
 	unsigned short val;
 
-	val = *((volatile unsigned short *)(ioBase + port)); eieio();
-	val = _LE_to_BE_short(val);
+	val = ldw_brx(ioBase, port); eieio();
 	return(val);
 }
 
 static __inline__ unsigned long
-inl(port)
-short port;
+inl(unsigned short port)
 {
 	unsigned long val;
 
-	val = *((volatile unsigned long *)(ioBase + port)); eieio();
-	val = _LE_to_BE_long(val);
+	val = ldl_brx(ioBase, port); eieio();
 	return(val);
 }
 
 #define ldq_u(p)	ldl_u(p)
-#define ldl_u(p)	_LE_to_BE_long(*(p))
-#define ldw_u(p)	_LE_to_BE_short(*(p))
+#define ldl_u(p)	((*(unsigned char *)(p))	| \
+			(*((unsigned char *)(p)+1)<<8)	| \
+			(*((unsigned char *)(p)+2)<<16)	| \
+			(*((unsigned char *)(p)+3)<<24))
+#define ldw_u(p)	((*(unsigned char *)(p)) | (*((unsigned char *)(p)+1)<<8))
 
 #define stq_u(v,p)	stl_u(v,p)
-#define stl_u(v,p)	(*(unsigned long *)(p)) = _LE_to_BE_long(v)
-#define stw_u(v,p)	(*(unsigned short *)(p)) = _LE_to_BE_short(v)
+/* ?? */
+#define stl_u(v,p)	(*(unsigned char *)(p)) = (v); \
+			(*((unsigned char *)(p)+1)) = ((v) >> 8);  \
+			(*((unsigned char *)(p)+2)) = ((v) >> 16); \
+			(*((unsigned char *)(p)+3)) = ((v) >> 24)
 
-#define mem_barrier()   __asm__ __volatile__("eieio")
-/* is this correct... ? */
-#define write_mem_barrier()   __asm__ __volatile__("sync")
+#define stw_u(v,p)	(*(unsigned char *)(p)) = (v); \
+			(*((unsigned char *)(p)+1)) = ((v) >> 8)
+
+#define mem_barrier()        eieio()
+#define write_mem_barrier()  eieio()
 
 #else /* defined(Lynx) && defined(__powerpc__) */
 
@@ -1086,7 +1126,87 @@ unsigned short int port;
 #endif /* defined(mips) */
 #endif /* defined(AlphaArchitecture) && defined(LinuxArchitecture) */
 
-#else /* __GNUC__ */
+#elif defined(__powerpc__) /* && !__GNUC__ */
+/*
+ * NON-GCC PowerPC - Presumed to be PowerMAX OS for now
+ */
+# ifndef PowerMAX_OS
+# error - Non-gcc PowerPC and !PowerMAXOS ???
+# endif
+
+#define PPCIO_DEBUG  0
+#define PPCIO_INLINE 1
+#define USE_ABS_MACRO 1
+/*
+ * Use compiler intrinsics to access certain PPC machine instructions
+ */
+#define eieio() 	      __inst_eieio()
+#define stw_brx(val,base,ndx) __inst_sthbrx(val,base,ndx)
+#define stl_brx(val,base,ndx) __inst_stwbrx(val,base,ndx)
+#define ldw_brx(base,ndx)     __inst_lhbrx(base,ndx)
+#define ldl_brx(base,ndx)     __inst_lwbrx(base,ndx)
+
+#define ldq_u(p)	(*((unsigned long long  *)(p)))
+#define ldl_u(p)	(*((unsigned long   *)(p)))
+#define ldw_u(p)	(*((unsigned short *)(p)))
+#define stq_u(v,p)	((unsigned long long *)(p)) = (v)
+#define stl_u(v,p)	((unsigned long  *)(p)) = (v)
+#define stw_u(v,p)	((unsigned short *)(p)) = (v)
+#define mem_barrier()         eieio()
+#define write_mem_barrier()   eieio()
+
+extern volatile unsigned char *ioBase;
+
+#if !defined(abs) && defined(USE_ABS_MACRO)
+#define abs(x) ((x) >= 0 ? (x) : -(x))
+#endif
+
+#undef inb
+#undef inw
+#undef inl
+#undef outb
+#undef outw
+#undef outl
+
+#if PPCIO_DEBUG
+
+extern void debug_outb(unsigned int a, unsigned char b, int line, char *file); 
+extern void debug_outw(unsigned int a, unsigned short w, int line, char *file); 
+extern void debug_outl(unsigned int a, unsigned long l, int line, char *file); 
+extern unsigned char debug_inb(unsigned int a, int line, char *file); 
+extern unsigned short debug_inw(unsigned int a, int line, char *file); 
+extern unsigned long debug_inl(unsigned int a, int line, char *file); 
+
+#define outb(a,b) debug_outb(a,b, __LINE__, __FILE__)
+#define outw(a,w) debug_outw(a,w, __LINE__, __FILE__)
+#define outl(a,l) debug_outl(a,l, __LINE__, __FILE__)
+#define inb(a)    debug_inb(a, __LINE__, __FILE__)
+#define inw(a)    debug_inw(a, __LINE__, __FILE__)
+#define inl(a)    debug_inl(a, __LINE__, __FILE__)
+
+#else /* !PPCIO_DEBUG */
+
+extern unsigned char  inb(unsigned int a);
+extern unsigned short inw(unsigned int a);
+extern unsigned long  inl(unsigned int a);
+
+# if PPCIO_INLINE
+
+#define outb(a,b) (*((volatile unsigned char *)(ioBase + (a))) = (b), eieio())
+#define outw(a,w) (stw_brx((w),ioBase,(a)), eieio())
+#define outl(a,l) (stl_brx((l),ioBase,(a)), eieio())
+
+# else /* !PPCIO_INLINE */
+
+extern void outb(unsigned int a, unsigned char b);
+extern void outw(unsigned int a, unsigned char w);
+extern void outl(unsigned int a, unsigned char l);
+
+# endif /* PPCIO_INLINE */
+
+#endif /* !PPCIO_DEBUG */
+
+#else /* !GNUC && !PPC */
 #if !defined(AMOEBA) && !defined(MINIX)
 # if defined(__STDC__) && (__STDC__ == 1)
 #  ifndef asm
@@ -1441,7 +1561,11 @@ static int inb(port)
  */
 
 #ifndef __GNUC__
+#ifdef __HIGHC__
+#define __inline__ _Inline
+#else
 #define __inline__ /**/
+#endif
 #endif
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.67 1997/10/25 13:50:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.68 1997/11/01 15:04:35 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -29,6 +29,10 @@
 #include "misc.h"
 #include "input.h"
 #include "scrnintstr.h"
+
+typedef unsigned long PCITAG;		/* See Pci.h */
+
+#include <xf86Parser.h>
 
 #include "xf86_Option.h"
 
@@ -121,14 +125,14 @@ typedef struct x_ClockRange {
  * the graphic device
  */
 typedef struct {
-  Bool           configured;
-  int            tmpIndex;
-  int            scrnIndex;
   Bool           (* Probe)(
 #if NeedNestedPrototypes
     void
 #endif
 );
+  Bool           configured;
+  int            tmpIndex;
+  int            scrnIndex;
   Bool           (* Init)(
 #if NeedNestedPrototypes
     int          scr_index,
@@ -230,6 +234,8 @@ typedef struct {
   char          *DCConfig;
   char          *DCOptions;
   int            MemClk;          /* General flag used for memory clocking */
+  int            busType;
+  PCITAG         pciTag;
 #ifdef XFreeXDGA
   int            directMode;
   void           (*setBank)(
@@ -303,6 +309,8 @@ typedef enum {
 
 #define MAGIC_GLX_VISUALS_INIT		11      /* GLX visuals init function */
 #define MAGIC_ADD_XINPUT_DEVICE         12      /* register xinput device */
+#define MAGIC_SETUP_PROC		13      /* Where to pass the options */
+#define MAGIC_TEARDOWN_PROC		14      /* cleanup before unloading */
 
 #define LD_RESOLV_IFDONE		0	/* only check if no more 
 						   delays pending */
@@ -311,6 +319,14 @@ typedef enum {
 
 #define MODINFOSTRING1	0xef23fdc5
 #define MODINFOSTRING2	0x10dc023a
+
+
+
+#ifdef MetroLink
+#define MODULEVENDORSTRING	"Metro Link, Inc."
+#endif
+
+
 
 #ifndef MODULEVENDORSTRING
 #define MODULEVENDORSTRING	"The XFree86 Project"
@@ -328,9 +344,32 @@ typedef struct {
 				/* version info structure */
 } XF86ModuleVersionInfo;
 
+typedef void (* xf86ccdDoBitbltProcPtr)(
+#if NeedNestedPrototypes
+	DrawablePtr,
+	DrawablePtr,
+	int,
+	RegionPtr,
+	DDXPointPtr,
+	unsigned long
+#endif
+);
+
+typedef int (* xf86ccdXAAScreenInitProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/,
+	pointer /*pbits*/,
+	int /*xsize*/,
+	int /*ysize*/,
+	int /*dpix*/,
+	int /*dpiy*/,
+	int /*width*/
+#endif
+);
+
 extern int *xf86ccdScreenPrivateIndex;
-extern void (*xf86ccdDoBitblt)();
-extern int  (*xf86ccdXAAScreenInit)();
+extern xf86ccdDoBitbltProcPtr xf86ccdDoBitblt;
+extern xf86ccdXAAScreenInitProcPtr xf86ccdXAAScreenInit;
 extern int xf86xaaloaded;
 extern int xf86issvgatype;
 extern int xf86ismonotype;
@@ -392,6 +431,15 @@ extern int xf86ismonotype;
 
 extern Bool        xf86VTSema;
 
+/* busType */
+#define XF86_BUS_UNKNOWN	0
+#define XF86_BUS_ISA		1
+#define XF86_BUS_VESA		2
+#define XF86_BUS_EISA		3
+#define XF86_BUS_PCI		4
+#define XF86_BUS_AGP		5
+
+
 /* Mouse device private record */
 
 typedef struct _MouseDevRec {
@@ -433,9 +481,19 @@ typedef struct _MouseDevRec {
 #define MOUSE_DEV(dev) (MouseDevPtr) (dev)->public.devicePrivate
 #endif
 
+
+/* dix globals */
+extern int monitorResolution;
+
+
 /* Global data */
+extern ColormapPtr InstalledMaps[MAXSCREENS];
+extern const unsigned char byte_reversed[256];
+extern unsigned char xf86rGammaMap[256], xf86gGammaMap[256], xf86bGammaMap[256];
+
 /* xf86Init.c */
 extern double xf86rGamma, xf86gGamma, xf86bGamma;
+extern int xf86PixmapIndex;
 
 #ifdef XF86VIDMODE
 extern Bool xf86VidModeEnabled;
@@ -589,6 +647,12 @@ void xf86ZoomViewport(
 #if NeedFunctionPrototypes
     ScreenPtr pScreen,
     int zoom
+#endif
+);
+
+void xf86SetScreenLayout(
+#if NeedFunctionPrototypes
+    int, int, int, int, int
 #endif
 );
 

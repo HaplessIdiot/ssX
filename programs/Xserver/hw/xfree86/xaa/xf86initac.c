@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.27 1997/10/25 13:51:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.28 1997/11/08 16:24:34 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -48,7 +48,7 @@
 XF86ModuleVersionInfo xf86XAAVersionRec =
 {
 	"libxaa.a",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
@@ -82,7 +82,7 @@ ModuleInit(data,magic)
  * This is a convenient place to declare this variable (this file is only
  * compiled once).
  */
-int xf86PixmapIndex;
+/* int xf86PixmapIndex; */
 #endif
 
 #define STIPPLE_COLOR_EXPANSION
@@ -582,14 +582,17 @@ xf86InitializeAcceleration(pScreen)
             if (xf86AccelInfoRec.SubsequentTwoPointLine)
                 xf86AccelInfoRec.Flags |= USE_TWO_POINT_LINE;
             if (!xf86AccelInfoRec.SubsequentBresenhamLine &&
-            !(xf86AccelInfoRec.Flags & TWO_POINT_LINE_NOT_LAST))
+            !(xf86AccelInfoRec.Flags & TWO_POINT_LINE_NOT_LAST)) {
                 /*
                  * If there's only TwoPointLine, and it doesn't support
-                 * skipping of the last pixel, then PolySegment cannot
-                 * be supported with the CapNotLast line style.
+                 * skipping of the last pixel, then PolyLine and PolySegment
+                 * cannot be supported with the CapNotLast line style.
                  */
                 xf86GCInfoRec.PolySegmentSolidZeroWidthFlags |=
                     NO_CAP_NOT_LAST;
+                xf86GCInfoRec.PolyLineSolidZeroWidthFlags |=
+                    NO_CAP_NOT_LAST;
+	    }
             if (xf86Verbose)
                 ErrorF("%s %s: XAA: General lines and segments\n",
 	            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
@@ -631,14 +634,17 @@ xf86InitializeAcceleration(pScreen)
 						xf86PolyDashedSegment;
 
             if (!xf86AccelInfoRec.SubsequentDashedBresenhamLine &&
-            !(xf86AccelInfoRec.Flags & TWO_POINT_LINE_NOT_LAST))
+            !(xf86AccelInfoRec.Flags & TWO_POINT_LINE_NOT_LAST)) {
                 /*
                  * If there's only TwoPointLine, and it doesn't support
-                 * skipping of the last pixel, then PolySegment cannot
-                 * be supported with the CapNotLast line style.
+                 * skipping of the last pixel, then PolyLine and PolySegment
+                 * cannot be supported with the CapNotLast line style.
                  */
                 xf86GCInfoRec.PolySegmentDashedZeroWidthFlags |=
                     NO_CAP_NOT_LAST;
+                xf86GCInfoRec.PolyLineDashedZeroWidthFlags |=
+                    NO_CAP_NOT_LAST;
+	    }
             if (xf86Verbose)
                 ErrorF("%s %s: XAA: Dashed lines and segments\n",
 	            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);

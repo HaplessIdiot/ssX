@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.125 1997/10/25 13:49:54 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.126 1997/12/05 22:01:14 hohndel Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -221,6 +221,32 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.125 1997/10/25 13:49:54 hohndel Ex
  * The following server is supported on Mips/Arc platforms:
  *
 #define XF86S3Server            NO
+ */
+
+/*
+ * Which servers do you wish to build, you can save a lot of disk space
+ * by only compiling the server you will be using.  It will also save you
+ * considerable compile time.
+ *
+ * The following servers/modules have been compiled for PowerPC
+ * platforms, but not all have been tested.
+ *
+#define XF86LoaderServer        NO
+#define XF86SVGAModule          NO
+#define XF86VGA16Module         NO
+#define XF86MonoModule          NO
+#define XF86S3Module            NO
+#define XF86S3VModule           NO
+#define XF86I128Module		NO
+#define XF86GLINTModule         NO
+
+#define XF86SVGAServer          NO
+#define XF86VGA16Server         NO
+#define XF86MonoServer          NO
+#define XF86S3Server            NO
+#define XF86S3VServer           NO
+#define XF86I128Server		NO
+#define XF86GLINTServer         NO
  */
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.5 1997/11/01 15:04:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.6 1997/11/08 16:24:34 hohndel Exp $ */
 /*
  * Copyright 1996  The XFree86 Project
  *
@@ -74,7 +74,9 @@ typedef struct {
 #define SW_CURSOR 0x2
 
 
+#if !defined(MetroLink)
 extern unsigned char byte_reversed[256];
+#endif
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
 static Bool CharRealizeCursor(ScreenPtr pScr, CursorPtr pCurs);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.29 1997/06/15 07:12:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.30 1997/07/29 12:08:08 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -100,7 +100,7 @@ extern int    vga256ValidTokens[];
 
 
 /*
- * structure for accessing the video chip`s functions
+ * structure for accessing the video chip's functions
  */
 typedef struct {
   Bool (* ChipProbe)(
@@ -206,9 +206,6 @@ typedef struct {
   int ChipClockMulFactor;	    /* Factor to multiply pixel clock by, to get RAMDAC clock */
   int ChipClockDivFactor;	    /* Factor to divide pixel clock by, to get RAMDAC clock */
 } vgaVideoChipRec, *vgaVideoChipPtr;
-
-/* Tables in vgatables.c */
-extern unsigned char byte_reversed[256];
 
 /* Allow each driver to set a display pitch other than virtualX */
 void vgaSetPitchAdjustHook(int (* ChipPitchAdjust)(
@@ -365,11 +362,10 @@ typedef struct {
 #define BITS_PER_GUN 6
 #define COLORMAP_SIZE 256
 
-#define DACDelay \
-	{ \
+#define DACDelay do { \
 		unsigned char temp = inb(vgaIOBase + 0x0A); \
 		temp = inb(vgaIOBase + 0x0A); \
-	}
+	} while (0)
 
 /*#ifndef XFree86LOADER*/
 #ifdef MONOVGA

@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.125 1997/12/05 22:01:16 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.126 1997/12/14 02:55:36 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -446,16 +446,17 @@ XF86LINIT  = $(XF86COMSRC)/xf86Init_L.o $(XF86CONFIGSRC)/xf86IniExt.o
 XF86CONFIG = $(XF86CONFIGSRC)/xf86_Option.o
 XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 XF86OSLIB  = $(XF86OSSRC)/LibraryTargetName(xf86_os)
+XF86CONFLIB= $(XF86SRC)/config/LibraryTargetName(xf86config)
 #if DoLoadableServer
 XF86OSDOBJ = $(XF86OSSRC)/misc/xf86dummy.o
 #endif
 XF86HWLIB  = $(XF86HWSRC)/LibraryTargetName(xf86_hw)
 XF86LIBS   = $(XF86INIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86OSLIB) \
-             $(XF86HWLIB) $(XF86OSLIB)
+             $(XF86HWLIB) $(XF86OSLIB) $(XF86CONFLIB)
 XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86OSLIB) \
-             $(XF86HWLIB) $(XF86OSLIB)
+             $(XF86HWLIB) $(XF86OSLIB) $(XF86CONFLIB)
 XF86LLIBS  = $(XF86LINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86OSLIB) \
-             $(XF86HWLIB) $(XF86OSLIB)
+             $(XF86HWLIB) $(XF86OSLIB) $(XF86CONFLIB)
  
 XF68INIT   = $(XF68COMSRC)/xf86Init.o $(XF68CONFIGSRC)/xf86IniExt.o
 XF68MINIT  = $(XF68COMSRC)/xf86Init_m.o $(XF68CONFIGSRC)/xf86MIniExt.o
@@ -946,8 +947,15 @@ DDXDIR1  = hw/xfree86
 XF86LOADERSUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
 XF86LOADEROBJS = $(XF86COMSRC)/XF86_LOADER.o
 XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
-XF86LOADERLIBS = $(XF86LLIBS) $(XF86COMLIB) $(XF86LOADERLIB)  $(XF86HWLIB) \
-                 $(XF86OSLIB) PreFbLibs $(OTHEREXTS) NoMfbPostFbLibs
+XF86LOADERLIBS = $(XF86LLIBS) \
+	$(XF86COMLIB) \
+	$(XF86LOADERLIB) \
+	$(XF86COMLIB) \
+	$(XF86HWLIB) \
+	$(XF86OSLIB) \
+	PreFbLibs \
+	$(OTHEREXTS) \
+	NoMfbPostFbLibs
 XF86LOADERSYSLIBS = $(SYSLIBS) $(LIBDL)
 #if HasParallelMake
 MakeMutex($(XF86LOADERSUBDIRS) $(XF86LOADEROBJS) $(XF86LOADERLIBS) $(XF86LOADERSYSLIBS))

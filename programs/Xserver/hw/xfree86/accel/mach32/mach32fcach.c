@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.14 1996/12/23 06:38:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.15 1997/07/29 12:07:33 hohndel Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -98,7 +98,7 @@ mach32FontCache8Init()
 
    /*
     * Don't allow a font cache if we don't have room for at least
-    * 2 mcomplete 6x13 fonts.
+    * 2 complete 6x13 fonts.
     */
    if (w >= 6*32 && h >= 2*13) {
       if (first)  {

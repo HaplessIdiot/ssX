@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.h,v 3.1 1997/01/02 04:38:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.h,v 3.2 1997/01/18 06:57:28 dawes Exp $ */
 
 
 typedef struct _CacheInfo {
@@ -40,6 +40,6 @@ int xf86CacheStipple(
 #endif
 );
 
-void xf86InitPixmapCacheSlots();
+void xf86InitPixmapCacheSlots(void);
 
-void xf86InvalidatePixmapCache();
+void xf86InvalidatePixmapCache(void);

@@ -8,7 +8,7 @@
  *
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glintdriver.c,v 1.3 1997/06/03 14:12:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glintdriver.c,v 1.4 1997/08/26 10:01:16 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -17,7 +17,6 @@
 #include "compiler.h"
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "vga.h"
@@ -288,7 +287,8 @@ static Bool
 GLINTProbe()
 {
 	pciConfigPtr pcr = NULL;
-	int i=0;
+	pciConfigPtr *pcrpp;
+	int i;
 
 	/*
 	 * First we attempt to figure out if one of the supported chipsets
@@ -298,13 +298,14 @@ GLINTProbe()
 		if (StrCaseCmp(vga256InfoRec.chipset, GLINTIdent(0)))
 			return(FALSE);
 
-	if (vgaPCIInfo && vgaPCIInfo->AllCards) {
-	  while (pcr = vgaPCIInfo->AllCards[i++]) {
-		if (pcr->_vendor == PCI_VENDOR_3DLABS)
-			if (pcr->_device == PCI_CHIP_500TX)
-				break;
-	  }
-	} else return(FALSE);
+	pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
+	for (i = 0, pcr = pcrpp[0]; pcr; pcr = pcrpp[++i]) {
+	    if (pcr->_vendor == PCI_VENDOR_3DLABS)
+		if (pcr->_device == PCI_CHIP_500TX)
+		    break;
+	}
+	if (!pcr)
+	    return(FALSE);
 
 
 
@@ -320,8 +321,7 @@ GLINTProbe()
 	/*
 	 *	OK. It's MGA Millennium
 	 */
-	 
-	MGAPciTag = pcibusTag(pcr->_bus, pcr->_cardnum, pcr->_func);
+	MGAPciTag = pcr->tag;
 
 	/* ajv changes to reflect actual values. see sdk pp 3-2. */
 	/* these masks just get rid of the crap in the lower bits */

@@ -1,8 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/laguna_acl.c,v 1.4 1997/08/15 07:19:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/laguna_acl.c,v 1.5 1997/09/15 07:18:50 hohndel Exp $ */
 
 /*
  * New-style acceleration for the Laguna-family (CL-GD5462/5464).
  */
+#include "compiler.h"
 
 #include "vga256.h"
 #include "xf86.h"
@@ -135,8 +136,7 @@ void LagunaAccelInit() {
   xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
     LagunaSubsequentScreenToScreenColorExpand;
 
-  xf86AccelInfoRec.CPUToScreenColorExpandBase = (unsigned int *)
-    (cirrusMMIOBase + HOSTDATA);
+  xf86AccelInfoRec.CPUToScreenColorExpandBase = CIR_MMIO_READ32(HOSTDATA);
   xf86AccelInfoRec.CPUToScreenColorExpandRange = HOSTDATASIZE;
 
 
@@ -186,7 +186,7 @@ int LgReady(void)
 {
   volatile unsigned char status;
 
-  status = *(unsigned char *)(cirrusMMIOBase + STATUS);
+  status = CIR_MMIO_READ8(STATUS);
   if (status & 0x07)
     return 0;
   else
@@ -215,7 +215,7 @@ void LagunaWaitQAvail(int n) {
   volatile unsigned char qfree;
 
   do
-    qfree = *(unsigned char *)(cirrusMMIOBase + QFREE);
+    qfree = CIR_MMIO_READ8(QFREE);
   while (qfree < n);
 #endif
 }

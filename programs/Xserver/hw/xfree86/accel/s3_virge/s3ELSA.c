@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ELSA.c,v 3.3 1996/12/27 07:02:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ELSA.c,v 3.5 1997/02/17 09:45:39 hohndel Exp $ */
 /*
  * s3ELSA.c
  *
@@ -18,7 +18,6 @@
 
 #include "s3v.h"
 #include "s3ELSA.h"
-#include "xf86_OSlib.h"
 
 #ifdef ELSA_MAIN
 #include <stdio.h>
@@ -225,9 +224,9 @@ static int check_ELSA_bios(int BIOSbase)
    if ((bios[0] != 0x55) || (bios[1] != 0xaa))
       return -2;
 
-   l = xf86strlen(match);
+   l = strlen(match);
    for (i=0; i<BIOS_BSIZE-l; i++)
-      if (bios[i] == match[0] && !xf86memcmp(&bios[i],match,l))
+      if (bios[i] == match[0] && !memcmp(&bios[i],match,l))
 	 return 1;
    return 0;
 }

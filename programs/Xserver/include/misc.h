@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: misc.h /main/28 1996/12/02 10:22:01 lehors $ */
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.6 1997/02/14 12:20:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.7 1997/04/12 13:47:09 hohndel Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -91,6 +91,10 @@ extern unsigned long serverGeneration;
 #endif
 #endif
 
+#ifdef MetroLink
+#define MAXSCREENS	4
+#endif
+
 #ifndef MAXSCREENS
 #define MAXSCREENS	3
 #endif
@@ -105,7 +109,9 @@ typedef void *pointer;
 #else
 typedef unsigned char *pointer;
 #endif
+#if !defined(Bool)
 typedef int Bool;
+#endif
 typedef unsigned long PIXEL;
 typedef unsigned long ATOM;
 
@@ -158,7 +164,7 @@ typedef struct _xReq *xReqPtr;
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
-#if !defined(AMOEBA) && !defined(__EMX__)
+#if !defined(AMOEBA) && !defined(__EMX__) && (!defined(NCR)  && defined(MetroLink)) && !defined(PowerMAX_OS)
 #ifndef abs
 #define abs(a) ((a) > 0 ? (a) : -(a))
 #endif

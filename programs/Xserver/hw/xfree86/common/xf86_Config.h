@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.70 1997/06/20 09:24:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.71 1997/11/08 17:07:26 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -75,6 +75,7 @@ typedef struct {
    unsigned long COPbase;
    unsigned int  POSbase;
    int instance;
+   PCITAG pciTag;
    int s3Madjust;
    int s3Nadjust;
    int s3MClk;
@@ -431,6 +432,7 @@ static SymTabRec KeyMapTab[] = {
 #define S3REFCLK       101
 #define S3BLANKDELAY   102
 #define TEXTCLOCKFRQ   103
+#define PCI_TAG        104
 
 #ifdef INIT_CONFIG
 SymTabRec DeviceTab[] = {
@@ -466,6 +468,8 @@ SymTabRec DeviceTab[] = {
   { TEXTCLOCKFRQ, "textclockfreq" },
   { MEMCLOCK,   "set_memclk" },
   { MEMCLOCK,   "set_mclk" },
+  { PCI_TAG,    "pcitag" },
+  { PCI_TAG,    "pci_tag" },
   { -1,		"" },
 };
 #else
@@ -680,6 +684,7 @@ static SymTabRec VendorTab[] = {
 #define XCONFIG_MODULEPATH      21      /* XF86Config or default */
 #define XCONFIG_MEMCLOCK        22      /* XF86Config or default */
 #define XCONFIG_LOGFILEPATH     23      /* XF86Config or default */
+#define XCONFIG_PCI_TAG         24      /* XF86Config or default */
 
 #define XCONFIG_GIVEN		"(**)"
 #define XCONFIG_PROBED		"(--)"
@@ -700,4 +705,25 @@ void *
 #endif
 );
 
+/* xf86Config.c */
+extern int xf86GetNearestClock(ScrnInfoPtr, int);
+extern char *xf86GetPathElem(char **);
+extern void xf86ConfigError(char *, ...);
+extern void xf86SetErrorLog(char *);
+extern ScrnInfoPtr loadDevice(char *, XF86OptionPtr);
+extern ScrnInfoPtr configDevice(XF86ConfDevicePtr);
+extern DisplayModePtr configDisplayModes(XF86ModePtr);
+extern int lookupVisual(char *);
+extern int configScreen(XF86ConfScreenPtr);
+extern int ScreentoIndex(XF86ConfScreenPtr);
+extern int configLayout(XF86ConfLayoutPtr);
+extern int configFrameBuffers(void);
+extern void xf86Config(int);
+extern Bool xf86LookupMode(DisplayModePtr, ScrnInfoPtr, int);
+extern void addChipRec(void *);
+extern int xf86CheckMode(ScrnInfoPtr, DisplayModePtr, MonPtr, Bool);
+extern void xf86DeleteMode(ScrnInfoPtr, DisplayModePtr);
+extern char *xf86TokenToString(SymTabPtr, int);
+extern int xf86StringToToken(SymTabPtr, char *);
+extern void xf86VerifyOptions(OFlagSet *, ScrnInfoPtr);
 #endif /* _xf86_config_h */

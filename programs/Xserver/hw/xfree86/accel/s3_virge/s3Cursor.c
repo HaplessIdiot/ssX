@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3Cursor.c,v 3.6 1997/03/10 10:11:46 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3Cursor.c,v 3.7 1997/06/03 14:11:36 hohndel Exp $
  *
  * Copyright 1991 MIPS Computer Systems, Inc.
  *
@@ -49,7 +49,6 @@
 #include "mi.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
 #include "vga.h"
 #include "s3v.h"
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.31 1996/12/23 06:41:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.32 1997/01/08 20:33:41 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -49,7 +49,6 @@
 #include "mi.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
 #include "vga.h"
 #include "s3.h"
 #include "regs3.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.11 1997/11/08 16:24:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.12 1997/12/14 10:04:03 hohndel Exp $ */
 
 /***********************************************************
 
@@ -92,6 +92,7 @@ SOFTWARE.
 #include "xf86gcmap.h"
 #include "xf86maploc.h"
 #include "xf86local.h"
+#include "xf86pcache.h"
 
 static GCFuncs xf86GCFuncs = {
     xf86ValidateGC,

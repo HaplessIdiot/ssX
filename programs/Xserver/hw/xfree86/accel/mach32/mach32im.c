@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.11 1996/12/23 06:38:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.12 1997/02/24 17:46:46 hohndel Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -33,6 +33,7 @@
 #include "X.h"
 #include "misc.h"
 #include "xf86.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "mach32.h"
 #include "mach32im.h"
@@ -699,7 +700,7 @@ mach32ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 	    count = pw - mod;
 	    if (i + count > w)
 		count = w - i;
-	    xf86memmove(curvm,pline + mod*BytesPerPixel,count * BytesPerPixel);
+	    memmove(curvm,pline + mod*BytesPerPixel,count * BytesPerPixel);
 	    curvm += count * BytesPerPixel;
 	    mod += count;
 	    while(mod >= pw)
@@ -775,7 +776,7 @@ mach32ImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 		count = pw - mod;
 		if (i + count > w)
 		    count = w - i;
-		xf86memmove(curvm,pline + mod*BytesPerPixel,count * BytesPerPixel);
+		memmove(curvm,pline + mod*BytesPerPixel,count * BytesPerPixel);
 		curvm += count * BytesPerPixel;
 		mod += count;
 		while(mod >= pw)
@@ -786,7 +787,7 @@ mach32ImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 		count = pw - mod;
 		if (i + count > mach32VideoPageBoundary[j]-x)
 		    count = mach32VideoPageBoundary[j] - x - i;
-		xf86memmove(curvm,pline + mod*BytesPerPixel,count * BytesPerPixel);
+		memmove(curvm,pline + mod*BytesPerPixel,count * BytesPerPixel);
 		curvm += count * BytesPerPixel;
 		mod += count;
 		while(mod >= pw)
@@ -799,7 +800,7 @@ mach32ImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 		count = pw - mod;
 		if (i + count > w)
 		    count = w - i;
-		xf86memmove(curvm,pline + mod*BytesPerPixel,count * BytesPerPixel);
+		memmove(curvm,pline + mod*BytesPerPixel,count * BytesPerPixel);
 		curvm += count * BytesPerPixel;
 		mod += count;
 		while(mod >= pw)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCmap.c,v 3.9 1996/12/23 06:32:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCmap.c,v 3.10 1997/11/16 06:18:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994    by Henry A. Worth, Sunnyvale, California.
@@ -32,6 +32,7 @@
 #include "scrnintstr.h"
 #include "colormapst.h"
 #include "windowstr.h"
+#include "cfb.h"
 #include "compiler.h"
 
 #include "agx.h"

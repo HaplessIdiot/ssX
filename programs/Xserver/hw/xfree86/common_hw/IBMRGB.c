@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IBMRGB.c,v 3.5 1996/12/23 06:44:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IBMRGB.c,v 3.6 1997/01/18 06:55:39 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -115,6 +115,9 @@ long fref;
 #define FREQ_MIN   16250  /* 1000 * (0+65) / 4 */
 #define FREQ_MAX  dacspeed
 
+   if (dacspeed < 170000)
+       dacspeed = 170000;
+
    if (freq < FREQ_MIN)
       ffreq = FREQ_MIN / 1000.0;
    else if (freq > FREQ_MAX)
@@ -143,8 +146,8 @@ long fref;
 
       /* the remaining formula is  ffreq = (m+65) / n */
 
-      if (df < 3) max_n = fref/1000/2;
-      else        max_n = fref/1000;
+      if (df < 3) max_n = fref / 1000.0 / 2.0;
+      else        max_n = fref / 1000.0;
       if (max_n > 31)  max_n = 31;
       
       for (n=2; n <= max_n; n++) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_teblt8.c,v 1.1 1997/03/06 23:15:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_teblt8.c,v 1.2 1997/04/13 13:57:16 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -292,25 +292,22 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	/* Gather bytes until we have a dword to write. Doubleword is   */
 	/* LSByte first, and MSBit first in each byte, as required for  */
 	/* the blit data. */
-
+#ifdef i386
 	if (ISSPECIALWIDTH(glyphWidth))
 		CirrusTransferText32bitSpecial(nglyph, h, glyphp, glyphWidth,
 			CIRRUSBASE());
 	else
-#if 0
-		if (glyphWidth > 16 || HAVE543X() ||
-		    HAVE755X() || cirrusChip == CLGD5446 ||
-		    cirrusChip == CLGD5480)
-			CirrusTransferText32bit(nglyph, h, glyphp, glyphWidth,
-				CIRRUSBASE());
-		else
-			CirrusTransferText(nglyph, h, glyphp, glyphWidth,
-				CIRRUSBASE());
-#else
 		/* The new 542x databook says to use DWORD transfers. */
 		CirrusTransferText32bit(nglyph, h, glyphp, glyphWidth,
 			CIRRUSBASE());
-#endif
+#else /* !i386 */
+       /*
+	* Cirrus TransferText handles all cases, but it uses 16 bit xfers
+	* It really should be rewritten (in C) to use 32 bit xfers ala
+	* cir_textblt.s....
+	*/
+       CirrusTransferText(nglyph, h, glyphp, glyphWidth, CIRRUSBASE());
+#endif /* !i386 */
 
 	WAITUNTILFINISHED();
 
@@ -521,82 +518,7 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	DEALLOCATE_LOCAL(glyphp);
 }
 
-
-#ifndef CIRRUS_MMIO	/* Compile these functions only once. */
-
-/*
- * Low-level text transfer routines.
- */
-
-#if 0	/* Replaced by assembler routines in cir_textblt.s. */
-
-void CirrusTransferText(nglyph, h, glyphp, glyphwidth, base)
-	int nglyph;
-	int h;
-	unsigned long **glyphp;
-	unsigned char *base;
-{
-	int shift;
-	unsigned long dworddata;
-	int i, line;
-
-	/* Other character widths. Tricky, bit order is very awkward.  */
-	/* We maintain a word straightforwardly LSB, and do the */
-	/* bit order converting when writing 16-bit words. */
-
-	dworddata = 0;
-	line = 0;
-	shift = 0;
-	while (line < h) {
-		i = 0;
-		while (i < nglyph) {
-			dworddata += glyphp[i][line] << shift;
-			shift += glyphwidth;
-			if (shift >= 16) {
-				/* Write a 16-bit word. */
-				*(unsigned short *)base =
-					byte_reversed[dworddata & 0xff] +
-					(byte_reversed[(dworddata & 0xff00) >> 8] << 8);
-				shift -= 16;
-				dworddata >>= 16;
-			}
-			i++;
-		}
-		if (shift > 0) {
-			/* Make sure last bits of scanline are padded to byte
-			 * boundary. */
-			shift = (shift + 7) & ~7;
-			if (shift >= 16) {
-				/* Write a 16-bit word. */
-				*(unsigned short *)base =
-					byte_reversed[dworddata & 0xff] +
-					(byte_reversed[(dworddata & 0xff00) >> 8] << 8);
-				shift -= 16;
-				dworddata >>= 16;
-			}
-		}
-		line++;
-	}
-
-	{
-		/* There are (shift) bits left. */
-		unsigned data;
-		int bytes;
-		data = byte_reversed[dworddata & 0xff] +
-			(byte_reversed[(dworddata & 0xff00) >> 8] << 8);
-		/* Number of bytes of real bitmap data. */
-		bytes = ((nglyph * glyphwidth + 7) >> 3) * h;
-		/* We must transfer a multiple of 4 bytes in total. */
-		if ((bytes - ((shift + 7) >> 3)) & 2)
-			*(unsigned short *)base = data;
-		else
-			if (shift != 0)
-				*(unsigned long *)base = data;
-	}
-}
-
-#endif
-
+#ifndef CIRRUS_MMIO  /* Only compile these functions once */    
 
 /*
  * Color expansion framebuffer transparent text write routines.
@@ -679,4 +601,4 @@ glyphwidth, fg)
 	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
 }
 
-#endif /* !defined(CIRRUSMMIO) */
+#endif /* !CIRRUS_MMIO */

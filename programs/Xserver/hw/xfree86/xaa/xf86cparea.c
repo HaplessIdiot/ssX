@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.7 1997/11/08 16:24:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.8 1998/01/24 01:53:22 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -762,13 +762,4 @@ void xf86ImageWrite(x, y, w, h, src, srcwidth, rop, planemask)
     REGION_UNINIT(pScreen, &rgnDst);
     FreeScratchPixmapHeader(pix);
 }
-
-
-
-
-
-
-
-
-
 

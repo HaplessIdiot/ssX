@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.18 1997/11/01 15:04:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.19 1997/11/08 17:07:28 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -80,7 +80,7 @@
 #include "xf86.h"
 #include "xf86Version.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "vga.h"
@@ -129,12 +129,12 @@ Bool ctisWINGINE = FALSE;         /* WINGINE support */
 Bool ctSyncResetIgn = FALSE;
 
 /* Display related */
-int  ctMonitor;
-Bool ctLCD = TRUE;
-Bool ctCRT = FALSE;
-Bool ctPCI = FALSE;
-Bool ctISA = FALSE;
-Bool ctVLB = FALSE;
+static int  ctMonitor;
+static Bool ctLCD = TRUE;
+static Bool ctCRT = FALSE;
+static Bool ctPCI = FALSE;
+static Bool ctISA = FALSE;
+static Bool ctVLB = FALSE;
 
 /* Panel Types */
 unsigned char ctPanelType = 0;
@@ -192,9 +192,15 @@ typedef struct {
 } ctMemClockReg, *ctMemClockPtr;
 
 Bool ctForceVClk1 = FALSE;        /* Use VClk1 as prog clock on HiQV chips */
+#if 0
+static int ctCurrentClock;
+static ctMemClockReg ctMemClkSpaz;
+static ctMemClockPtr ctMemClk = &ctMemClkSpaz;
+#else
 int ctCurrentClock;
 ctMemClockReg ctMemClkReg;
 ctMemClockPtr ctMemClk = &ctMemClkReg;
+#endif
 static unsigned char ctClockType;
 static unsigned char ctConsole_clk[3];
 
@@ -211,12 +217,6 @@ static unsigned char ctConsole_clk[3];
 #define CRT_TEXT_CLK_FREQ 28000     /* crt textclock if TYPE_PROGRAMMABLE */
 #define Fref 14318180               /* The reference clock in Hertz       */
 
-
-static void ctClockSave();
-static void ctClockLoad();
-static Bool ctClockFind();
-static void ctCalcClock();
-static void ctScaleClock();
 
 
 /* Blitter related */
@@ -386,7 +386,30 @@ typedef struct {
 } vgaCHIPSRec, *vgaCHIPSPtr;
 
 
-/* Forward definitions for the functions that make up the driver. */
+#if NeedFunctionPrototypes
+static Bool CHIPSProbe(void);
+static char *CHIPSIdent(int);
+static Bool CHIPSClockSelect(int);
+static void CHIPSEnterLeave(Bool);
+static Bool CHIPSInit(DisplayModePtr);
+static Bool CHIPSInit655xx(DisplayModePtr);
+static Bool CHIPSInitWINGINE(DisplayModePtr);
+static Bool CHIPSInitHiQV32(DisplayModePtr);
+static int  CHIPSValidMode(DisplayModePtr, Bool, int);
+static void *CHIPSSave(void *);
+static void CHIPSSaveScreen(Bool);
+static void CHIPSRestore(void *);
+static void CHIPSAdjust(int, int);
+static void CHIPSFbInit(void);
+static void CHIPSDisplayPowerManagementSet(int);
+static int  CHIPSPitchAdjust(void);
+static void ctCalcClock(int, unsigned char *);
+static void ctClockSave(unsigned char, ctClockPtr);
+static Bool ctClockFind(unsigned char, int, ctClockPtr);
+static void ctClockLoad(unsigned char, ctClockPtr);
+static void ctScaleClock(Bool, int *);
+static int  ctSetMonitor(void);
+#else
 static Bool CHIPSProbe();
 static char *CHIPSIdent();
 static Bool CHIPSClockSelect();
@@ -406,46 +429,27 @@ static int  CHIPSPitchAdjust();
 static void CHIPSGetMode();
 #endif
 static void CHIPSDisplayPowerManagementSet();
-
-/* Bank select functions. */
-extern void CHIPSSetRead();
-extern void CHIPSSetWrite();
-extern void CHIPSSetReadWrite();
-extern void CHIPSWINSetRead();
-extern void CHIPSWINSetWrite();
-extern void CHIPSWINSetReadWrite();
-extern void CHIPSHiQVSetRead();
-extern void CHIPSHiQVSetWrite();
-extern void CHIPSHiQVSetReadWrite();
-
-/* Bank select functions for 1 and 4bpp */
-extern void CHIPSSetReadPlanar();
-extern void CHIPSSetWritePlanar();
-extern void CHIPSSetReadWritePlanar();
-extern void CHIPSWINSetReadPlanar();
-extern void CHIPSWINSetWritePlanar();
-extern void CHIPSWINSetReadWritePlanar();
-extern void CHIPSHiQVSetReadPlanar();
-extern void CHIPSHiQVSetWritePlanar();
-extern void CHIPSHiQVSetReadWritePlanar();
+static void ctClockSave();
+static void ctClockLoad();
+static Bool ctClockFind();
+static void ctCalcClock();
+static void ctScaleClock();
+#endif
 
 /*internal functions */
-static void ctRestore();
-int ctVideoMode();
-#if defined(DEBUG) && defined(CT_HW_DEBUG)
-void ctHWDebug();
-#endif
-int ctProbeMonitor();
-char ctTestDACComp(unsigned char, unsigned char, unsigned char);
+static int ctProbeMonitor(void);
+static void ctRestore(vgaCHIPSPtr);
+static void ctRestoreStretching(unsigned char, unsigned char);
+static char ctTestDACComp(unsigned char, unsigned char, unsigned char);
 
 /* probing */
-Bool ctProbe();
-Bool ctProbeHiQV();
-Bool ctProbeWINGINE();
+static Bool ctProbe(void);
+static Bool ctProbeHiQV(void);
+static Bool ctProbeWINGINE(void);
 
 /* Enter/Leave */
-Bool ctEnterLeave(Bool);
-Bool ctEnterLeaveHiQV32(Bool);
+static void ctEnterLeave(Bool);
+static void ctEnterLeaveHiQV32(Bool);
 
 vgaVideoChipRec CHIPS =
 {
@@ -471,7 +475,7 @@ vgaVideoChipRec CHIPS =
     0x08000, 0x10000,
     TRUE,
     VGA_DIVIDE_VERT,
-    {0,},
+    {{0,}},
     8,				       /* ChipRounding */
     FALSE,			       /* ChipUseLinearAddressing */
     0,				       /* ChipLinearBase */
@@ -651,7 +655,7 @@ CHIPSClockSelect(no)
     int no;
 {
     static ctClockReg SaveClock;
-    static ctClockPtr Clock = &SaveClock;
+    /* static ctClockPtr Clock = &SaveClock; */
     ctClockReg TmpClock;
 
     switch (no) {
@@ -691,6 +695,7 @@ CHIPSClockSelect(no)
 
 static void
 ctClockSave(Type,Clock)
+    unsigned char Type;
     ctClockPtr Clock;
 {
     unsigned char temp;
@@ -849,6 +854,7 @@ unsigned char Type;
 }
 static void
 ctClockLoad(Type, Clock)
+    unsigned char Type;
     ctClockPtr Clock;
 {
     volatile unsigned char temp, tempmsr, tempfcr, temp02;
@@ -955,7 +961,7 @@ ctClockLoad(Type, Clock)
  * calculation code just modified a little bit to fit in here.
  */
 
-void
+static void
 ctCalcClock(int Clock, unsigned char *vclk)
 {
     int M, N, P, PSN, PSNx;
@@ -1427,7 +1433,7 @@ CHIPSProbe()
 Bool ctProbeHiQV()
 {
   unsigned char temp;
-  int tmp, NoClocks, i;
+  int NoClocks;
 
 #ifdef DEBUG
   ErrorF("ctProbeHiQV\n");
@@ -1933,7 +1939,7 @@ Bool ctProbeHiQV()
 Bool ctProbeWINGINE()
 {
   unsigned char temp;
-  int tmp, NoClocks, i;
+  int NoClocks, i;
 
 #ifdef DEBUG
   ErrorF("ctProbeWINGINE\n");
@@ -2194,7 +2200,7 @@ Bool ctProbeWINGINE()
 Bool ctProbe()
 {
   unsigned char temp;
-  int tmp, NoClocks, i;
+  int NoClocks, i;
 
 #ifdef DEBUG
   ErrorF("ctProbe\n");
@@ -2697,6 +2703,7 @@ CHIPSEnterLeave(enter)
       ctEnterLeave(enter);
 }
 
+static void
 ctEnterLeave(enter)
     Bool enter;
 {
@@ -2844,8 +2851,10 @@ ctEnterLeave(enter)
 #endif
       xf86DisableIOPorts(vga256InfoRec.scrnIndex);
     }
+    return;
 }
 
+static void
 ctEnterLeaveHiQV32(enter)
     Bool enter;
 {
@@ -2928,16 +2937,17 @@ ctEnterLeaveHiQV32(enter)
 #endif
       xf86DisableIOPorts(vga256InfoRec.scrnIndex);
     }
+    return;
 }
 
 
 
 static void
-CHIPSRestore(restore)
-    vgaCHIPSPtr restore;
+CHIPSRestore(void *arg)
 {
     int i;
     unsigned char tmp;
+    vgaCHIPSPtr restore = (vgaCHIPSPtr) arg;
 
 #ifdef DEBUG
     ErrorF("CHIPSRestore\n");
@@ -3095,11 +3105,11 @@ CHIPSRestore(restore)
  */
 
 static void *
-CHIPSSave(save)
-    vgaCHIPSPtr save;
+CHIPSSave(void *arg)
 {
     int i;
     unsigned char tmp;
+    vgaCHIPSPtr save = (vgaCHIPSPtr) arg;
 
 #ifdef DEBUG
     ErrorF("CHIPSSave\n");
@@ -3196,11 +3206,11 @@ CHIPSInit655xx(mode)
     DisplayModePtr mode;
 {
     unsigned char tmp;
-    int i, k, temp;
+    int i, temp;
     static int HSyncStart, HDisplay;
     int lcdHTotal, lcdHDisplay;
     int lcdVTotal, lcdVDisplay;
-    int lcdHBlankStart, lcdHBlankEnd, lcdHRetraceStart, lcdHRetraceEnd;
+    int /* lcdHBlankStart, lcdHBlankEnd, */ lcdHRetraceStart, lcdHRetraceEnd;
     int lcdVRetraceStart, lcdVRetraceEnd;
     int CrtcHDisplay;
 
@@ -3685,13 +3695,8 @@ CHIPSInitWINGINE(mode)
     DisplayModePtr mode;
 {
     unsigned char tmp;
-    int i, k, temp;
-    static int HSyncStart, HDisplay;
-    int lcdHTotal, lcdHDisplay;
-    int lcdVTotal, lcdVDisplay;
-    int lcdHBlankStart, lcdHBlankEnd, lcdHRetraceStart, lcdHRetraceEnd;
-    int lcdVRetraceStart, lcdVRetraceEnd;
-    int CrtcHDisplay;
+    int i, temp;
+    static int HDisplay;
 
 #ifdef DEBUG
     ErrorF("CHIPSInitWINGINE\n");
@@ -3889,6 +3894,7 @@ CHIPSInitWINGINE(mode)
     /* set mode */
     new->XMode = TRUE;		       /*  we want to switch to X */
 
+    return TRUE;
 }
 
 static Bool
@@ -3896,7 +3902,7 @@ CHIPSInitHiQV32(mode)
     DisplayModePtr mode;
 {
     unsigned char tmp;
-    int i, k, temp;
+    int i, temp;
     int lcdHTotal, lcdHDisplay;
     int lcdVTotal, lcdVDisplay;
     int lcdHRetraceStart, lcdHRetraceEnd;
@@ -4112,7 +4118,7 @@ CHIPSInitHiQV32(mode)
 	if (xf86weight.green != 5)
 	    new->Port_3D6[0x81] |= 0x01;	/*16bpp */
     } else if (vgaBitsPerPixel == 24) {
-	new->Port_3D6[0x81] = new->Port_3D6[0x81] & 0xF0 | 0x6;
+	new->Port_3D6[0x81] = (new->Port_3D6[0x81] & 0xF0) | 0x6;
 	/* 24bpp colour              */
 	new->Port_3D6[0x20] = 0x20;    /*BitBLT Draw Mode for 24 bpp */
     } else if (vgaBitsPerPixel == 32) {
@@ -4433,6 +4439,7 @@ CHIPSFbInit()
 #endif
 }
 
+static void
 ctRestoreStretching(ctHorizontalStretch, ctVerticalStretch)
     unsigned char ctHorizontalStretch, ctVerticalStretch;
 {
@@ -4455,11 +4462,11 @@ ctRestoreStretching(ctHorizontalStretch, ctVerticalStretch)
 }
 
 
-void
+static void
 ctRestore(restore)
     vgaCHIPSPtr restore;
 {
-    int i, j;
+    int i;
     unsigned char tmp;
 
     if (ctisHiQV32) {
@@ -4640,7 +4647,6 @@ int *clock;
      * program needs the frequency - not the number.
      */
     static int saveClock;
-    static int saveTextClock;
 
     if(enter) {
 	if (*clock < MAXCLOCKS){
@@ -4664,13 +4670,13 @@ int *clock;
     }
 }
 
-void
+static void
 CHIPSSaveScreen(start)
      Bool start;
 { 
-
+#ifdef DEBUG
   static char counter = 0;
-  unsigned char tmp;
+#endif
   
 #ifdef DEBUG
   ErrorF("CHIPSSaveScreen\n");
@@ -4706,8 +4712,7 @@ int ctProbeMonitor()
 {
   unsigned char dacmask;
   unsigned char dacdata[3];
-  unsigned char xr1, xr2, xr3;
-  int i;
+  unsigned char xr1, xr2;
   int type = 2;  /* no monitor */
 
   dacmask = inb(0x3C6);    /* save registers */ 
@@ -4769,7 +4774,6 @@ int ctProbeMonitor()
 
 char ctTestDACComp(unsigned char a, unsigned char b, unsigned char c)
 {
-  int i;
   unsigned char type;
 
   outb(0x3C8,00);
@@ -4847,6 +4851,8 @@ int PowerManagementMode;
 	seqreg = 0x20;
 	lcdoff = 0x1;
 	break;
+    default:
+	return;
     }
     outb(0x3C4, 0x01);
     seqreg |= inb(0x3C5) & ~0x20;

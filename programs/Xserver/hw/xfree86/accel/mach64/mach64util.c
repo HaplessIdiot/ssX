@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64util.c,v 3.4 1996/05/06 05:57:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64util.c,v 3.5 1996/12/23 06:39:29 dawes Exp $ */
 /*
  * Copyright 1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -26,61 +26,50 @@
 
 #include "X.h"
 #include "input.h"
+#include "mach64.h"
 #include "regmach64.h"
 
-#ifdef __alpha__
-/*
- * on the Alpha, there are "write buffers" that hold data to be written
- *  to memory; the data is *not* necessarily flushed to memory immediately.
- * so, we use a "memory barrier" instruction to force the flush of these
- *  buffers, so that writing to the memory-mapped Mach64 registers *will*
- *  take place immediately.
- */
-#define barrier() __asm__ __volatile__("mb": : :"memory")
-#else /* __alpha__ */
-#define barrier()
-#endif /* __alpha__ */
+#define vc32p volatile CARD32 *
+#define vc8p volatile CARD8 *
 
-extern pointer mach64MemReg;
-
-__inline__ void regw(unsigned int regindex, unsigned long regdata)
+volatile void regw(unsigned int regindex, unsigned long regdata)
 {
     unsigned long appaddr;
 
     /* calculate aperture address */
     appaddr = (unsigned long)mach64MemReg + regindex;
 
-    *(int *)appaddr = regdata;
+    *(vc32p)appaddr = regdata;
     barrier();
 }
 
-__inline__ unsigned long regr(unsigned int regindex)
+volatile unsigned long regr(unsigned int regindex)
 {
     unsigned long appaddr;
 
     /* calculate aperture address */
     appaddr = (unsigned long)mach64MemReg + regindex;
 
-    return (*(int *)appaddr);
+    return (*(vc32p)appaddr);
 }
 
-__inline__ void regwb(unsigned int regindex, unsigned char regdata)
+volatile void regwb(unsigned int regindex, unsigned char regdata)
 {
     unsigned long appaddr;
 
     /* calculate aperture address */
     appaddr = (unsigned long)mach64MemReg + regindex;
 
-    *(char *)appaddr = regdata;
+    *(vc8p)appaddr = regdata;
     barrier();
 }
 
-__inline__ unsigned char regrb(unsigned int regindex)
+volatile unsigned char regrb(unsigned int regindex)
 {
     unsigned long appaddr;
 
     /* calculate aperture address */
     appaddr = (unsigned long)mach64MemReg + regindex;
 
-    return (*(char *)appaddr);
+    return (*(vc8p)appaddr);
 }

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/24 1996/10/28 04:24:12 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.22 1996/10/19 15:15:51 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.23 1996/12/23 06:47:03 dawes Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -29,6 +29,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.22 1996/10/19 1
 #endif
 
 #ifdef LynxOSArchitecture
+#undef Lynx
  CONFIGFILES = pty.cfg
    MISCFILES = BM-Lynx.shar 
 #endif

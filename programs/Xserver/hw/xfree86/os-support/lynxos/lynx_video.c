@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.5 1997/08/26 10:01:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.6 1997/10/25 13:50:46 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -49,9 +49,14 @@ typedef struct
 }
 _SMEMS;
 
-#define MAX_SMEMS	8
+#define MAX_SMEMS	16
 
 static _SMEMS	smems[MAX_SMEMS];
+
+
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
 
 static void
 smemCleanup()
@@ -105,19 +110,19 @@ unsigned long Size;
 	sprintf(smems[i].name, "Video-%d", i);
 	smems[i].Base = Base;
 	smems[i].Size = Size;
-#if defined(__powerpc__)
+	
 	if (xf86Verbose > 1)
-		ErrorF("xf86MapVidMem: Base=0x%x\n", Base);
-	if (Base == (pointer)0xA0000) {
-		/* this is where atcdrvr.c maps the Cirrus */
-		Base = (pointer)0xC1000000;
-	} else if (((unsigned long)Base & PHYS_IO_MEM_START) != PHYS_IO_MEM_START) {
+		ErrorF("xf86MapVidMem: Base=0x%x, Size=0x%x\n", Base, Size);
+
+#if defined(__powerpc__)
+	if (((unsigned long)Base & PHYS_IO_MEM_START) != PHYS_IO_MEM_START) {
 		Base = (pointer)((unsigned long)Base | PHYS_IO_MEM_START);
 	}
 #endif
-	smems[i].ptr = smem_create(smems[i].name, Base, Size, SM_READ|SM_WRITE);
 	if (xf86Verbose > 1)
-		ErrorF("xf86MapVidMem: smem_create(%s, 0x%08x, 0x%08x) = 0x%08x\n", smems[i].name, Base, Size, smems[i].ptr);
+		ErrorF("xf86MapVidMem: Base=0x%x, Size=0x%x\n", Base, Size);
+
+	smems[i].ptr = smem_create(smems[i].name, Base, Size, SM_READ|SM_WRITE);
 	smems[i].RefCnt = 1;
 	if (smems[i].ptr == NULL)
 	{
@@ -190,7 +195,7 @@ void xf86EnableInterrupts()
 
 #if defined(__powerpc__)
 
-unsigned char *ioBase = NULL;
+unsigned char *ioBase = MAP_FAILED;
 static int IOEnabled;
 
 
@@ -200,8 +205,7 @@ int ScreenNum;
 	if (IOEnabled++ == 0) {
        		ioBase = (unsigned char *) smem_create("IOBASE",
        			(char *)0x80000000, 64*1024, SM_READ|SM_WRITE);
-	       	if (ioBase == (void *) -1) {
-       			ioBase = NULL;
+	       	if (ioBase == MAP_FAILED) {
        			--IOEnabled;
 			FatalError("xf86EnableIOPorts: Failed to map I/O\n");
        		}
@@ -215,13 +219,29 @@ int ScreenNum;
 	if (!IOEnabled)
 		return;
 
+#if defined(MetroLink)
+        if (--IOEnabled == 0) {
+        	smem_create(NULL, (char *) ioBase, 0, SM_DETACH);
+#else
         if (IOEnabled) {
         	IOEnabled = 0;
         	smem_create(NULL, (char *) ioBase, 0, SM_DETACH);
+#endif
         	smem_remove("IOBASE");
-        	ioBase = NULL;
+        	ioBase = MAP_FAILED;
         }
 	return;
+}
+
+void xf86DisableIOPrivs()
+{
+	return;
+}
+
+void *
+ppcPciIoMap(int bus)
+{
+	xf86EnableIOPorts(0);
 }
 
 #endif

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.15 1997/05/12 13:28:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.16 1997/06/15 07:12:27 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -189,6 +189,9 @@ xf86eqEnqueue (
 		struct _xEvent * /*event */
 #endif
 );
+
+void
+xf86eqSwitchScreen(ScreenPtr, Bool);
 
 void
 xf86eqProcessInputEvents (

@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS1562.c,v 3.0 1996/10/18 15:02:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS1562.c,v 3.1 1996/12/27 07:04:01 dawes Exp $ */
 
 #ifdef TEST
 #include <stdio.h>
@@ -12,7 +12,6 @@
 #include "Xfuncproto.h"
 #define NO_OSLIB_PROTOTYPES
 #include "xf86.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #endif
 

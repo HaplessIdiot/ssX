@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFArc.c,v 3.3 1996/02/04 08:57:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFArc.c,v 3.4 1996/12/23 06:32:37 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -38,6 +38,7 @@ Author:  Bob Scheifler, MIT X Consortium
 #include "pixmapstr.h"
 #include "mifpoly.h"
 #include "mi.h"
+#include "mispans.h"
 #include "cfb.h"
 #include "mifillarc.h"
 #include "agx.h"

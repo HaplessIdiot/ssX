@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.174 1997/07/31 07:16:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.175 1997/08/26 10:01:01 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -143,10 +143,10 @@ int s3ValidTokens[] =
 
 ScrnInfoRec s3InfoRec =
 {
+   s3Probe,			/* Bool (* Probe)() */
    FALSE,			/* Bool configured */
    -1,				/* int tmpIndex */
    -1,				/* int scrnIndex */
-   s3Probe,			/* Bool (* Probe)() */
    (Bool (*)())NoopDDA,		/* Bool (* Init)() */
    s3ValidMode,			/* int (* ValidMode)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveVT)() */
@@ -525,7 +525,7 @@ s3PrintIdent()
       {
         ErrorF(",");
         c++;
-        if (c + 1 + xf86strlen(id) < 70)
+        if (c + 1 + strlen(id) < 70)
         {
           ErrorF(" ");
           c++;
@@ -537,7 +537,7 @@ s3PrintIdent()
         }
       }
       ErrorF("%s", id);
-      c += xf86strlen(id);
+      c += strlen(id);
     }
   ErrorF("\n");
 #ifdef PC98
@@ -565,19 +565,19 @@ unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
    if (match1 == NULL)
       return NULL;
 
-   l1 = xf86strlen(match1);
+   l1 = strlen(match1);
    if (match2 != NULL) 
-      l2 = xf86strlen(match2);
+      l2 = strlen(match2);
    else	/* for compiler-warnings */
       l2 = 0;
 
    for (i=0; i<BIOS_BSIZE-l1; i++)
-      if (bios[i] == match1[0] && !xf86memcmp(&bios[i],match1,l1))
+      if (bios[i] == match1[0] && !memcmp(&bios[i],match1,l1))
 	 if (match2 == NULL) 
 	    return &bios[i+l1];
 	 else
 	    for(j=i+l1; (j<BIOS_BSIZE-l2) && bios[j]; j++) 
-	       if (bios[j] == match2[0] && !xf86memcmp(&bios[j],match2,l2))
+	       if (bios[j] == match2[0] && !memcmp(&bios[j],match2,l2))
 		  return &bios[j+l2];
    return NULL;
 }

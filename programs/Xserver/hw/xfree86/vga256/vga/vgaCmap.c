@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.19 1997/06/15 07:12:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.20 1997/11/16 06:42:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -43,8 +43,6 @@
 
 extern Bool clgd6225Lcd;
 
-static ColormapPtr InstalledMaps[MAXSCREENS];
-				/* current colormap for each screen */
 
 int
 vgaListInstalledColormaps(pScreen, pmaps)
@@ -301,7 +299,7 @@ vgaInstallColormap(pmap)
         }
     }
 
-  pmap->pScreen->StoreColors( pmap, entries, defs);
+  (*pmap->pScreen->StoreColors)(pmap, entries, defs);
 
   WalkTree(pmap->pScreen, TellGainedMap, &pmap->mid);
   

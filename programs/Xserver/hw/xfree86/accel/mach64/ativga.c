@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/ativga.c,v 3.7 1996/12/23 06:39:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/ativga.c,v 3.8 1997/07/29 12:07:34 hohndel Exp $ */
 /***************************************************************************
  * Start of VGA font saving and restoration code.
  * Created: Sun Jun 27 12:50:09 1993 by faith@cs.unc.edu
@@ -48,7 +48,6 @@
 #include "dix.h"
 #include "os.h"
 #include "xf86.h"
-#include "xf86_OSlib.h"
 #include "vga.h"
 #include "regmach64.h"
 #include "mach64.h"

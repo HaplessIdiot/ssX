@@ -1,6 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.24 1997/07/31 07:16:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.25 1997/08/26 10:01:05 hohndel Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
+ * Copyright 1997 Metro Link Incorporated, Fort Lauderdale, Florida
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -44,6 +45,7 @@
 #endif
 
 static pciConfigPtr pci_devp[MAX_PCI_DEVICES + 1] = {NULL, };
+static pciConfigPtr pci_locked_devp[MAX_PCI_DEVICES + 1] = {NULL, };
 
 #ifdef USE_OLD_PCI_CODE /* { */
 pciConfigPtr *
@@ -145,7 +147,7 @@ int scrnIndex;
                 continue;
 
 #ifdef DEBUGPCI
-	    printf("\npci bus 0x%x cardnum 0x%02x, vendor 0x%04x device 0x%04x\n",
+	    printf("\npci bus 0x%x device 0x%02x, vendor 0x%04x device 0x%04x\n",
 	        pcr._pcibuses[pcr._pcibusidx], pcr._cardnum, pcr._vendor,
                 pcr._device);
 #endif
@@ -325,10 +327,10 @@ int scrnIndex;
 }
 
 void
-xf86writepci(scrnIndex, bus, cardnum, func, reg, mask, value)
+xf86writepci(scrnIndex, bus, device, func, reg, mask, value)
     int scrnIndex;
     int bus;
-    int cardnum;
+    int device;
     int func;
     int reg;
     unsigned long mask;
@@ -383,7 +385,7 @@ xf86writepci(scrnIndex, bus, cardnum, func, reg, mask, value)
 
     if (configtype == 1)
     {
-	config_cmd = PCI_EN | (bus << 16) | (cardnum << 11) | (func << 8);
+	config_cmd = PCI_EN | (bus << 16) | (device << 11) | (func << 8);
 
         outl(PCI_MODE1_ADDRESS_REG, config_cmd | reg);
 	tmp = inl(PCI_MODE1_DATA_REG) & ~mask;
@@ -396,7 +398,7 @@ xf86writepci(scrnIndex, bus, cardnum, func, reg, mask, value)
 	/* The code here doesn't handle multifunction devices. */
     	/* it doesn't seem to handle multiple busses fully either */
 
-	int ioaddr = 0xC000 + (cardnum * 0x100);
+	int ioaddr = 0xC000 + (device * 0x100);
 
 	outb(PCI_MODE2_ENABLE_REG, 0xF1);
 	outb(PCI_MODE2_FORWARD_REG, 0x00); /* bus 0 for now */
@@ -848,7 +850,7 @@ pcibusSetup()
 }
 
 pciTagRec
-pcibusTag(CARD8 bus, CARD8 cardnum, CARD8 func)
+pcibusTag(CARD8 bus, CARD8 device, CARD8 func)
 {
     pciTagRec tag;
 
@@ -859,19 +861,19 @@ pcibusTag(CARD8 bus, CARD8 cardnum, CARD8 func)
 
     switch (pciConfigType) {
     case 1:
-	if (cardnum < PCI_CONFIG1_MAXDEV) {
+	if (device < PCI_CONFIG1_MAXDEV) {
 	    tag.cfg1 = 
 #if !defined(__alpha__)
 			PCI_EN |
 #endif
 	      		((CARD32)bus << 16) |
-			((CARD32)cardnum << 11) |
+			((CARD32)device << 11) |
 			((CARD32)func << 8);
 	}
 	break;
     case 2:
-	if (cardnum < PCI_CONFIG2_MAXDEV) {
-	    tag.cfg2.port    = 0xc000 | ((CARD16)cardnum << 8);
+	if (device < PCI_CONFIG2_MAXDEV) {
+	    tag.cfg2.port    = 0xc000 | ((CARD16)device << 8);
 	    tag.cfg2.enable  = 0xf0 | (func << 1);
 	    tag.cfg2.forward = bus;
 	}
@@ -1125,14 +1127,14 @@ pciDisableIO(int scrnIndex)
 }
 
 static Bool
-pciMfDev(CARD8 bus, CARD8 cardnum)
+pciMfDev(CARD8 bus, CARD8 device)
 {
     pciTagRec tag0, tag1;
     CARD32 id0, id1;
 
     /* Detect a multi-function device that complies to the PCI 2.0 spec */
 
-    tag0 = pcibusTag(bus, cardnum, 0);
+    tag0 = pcibusTag(bus, device, 0);
     if (pcibusRead(tag0, PCI_HEADER_MISC) & PCI_HEADER_MULTIFUNCTION)
 	return TRUE;
 
@@ -1142,7 +1144,7 @@ pciMfDev(CARD8 bus, CARD8 cardnum)
      * are different, or the base0 values of func 0 and 1 are differend,
      * then assume there is a multi-function device.
      */
-    tag1 = pcibusTag(bus, cardnum, 1);
+    tag1 = pcibusTag(bus, device, 1);
     id1 = pcibusRead(tag1, PCI_ID_REG);
     if (id1 != 0xffffffff) {
 	id0 = pcibusRead(tag0, PCI_ID_REG);
@@ -1244,7 +1246,7 @@ xf86scanpci(int scrnIndex)
 }
 
 void
-xf86writepci(int scrnIndex, int bus, int cardnum, int func, int reg,
+xf86writepci(int scrnIndex, int bus, int device, int func, int reg,
 	     CARD32 mask, CARD32 value)
 {
     pciTagRec tag;
@@ -1258,14 +1260,14 @@ xf86writepci(int scrnIndex, int bus, int cardnum, int func, int reg,
     if (pciConfigType == 0)
 	return;
 
-    tag = pcibusTag(bus, cardnum, func);
-    data = pcibusRead(tag, reg) & ~mask | (value & mask);
+    tag = pcibusTag(bus, device, func);
+    data = (pcibusRead(tag, reg) & ~mask) | (value & mask);
     pcibusWrite(tag, reg, data);
 
     if (xf86Verbose > 2) {
 	ErrorF("PCI: xf86writepci: Bus=0x%x Card=0x%x Func=0x%x Reg=0x%02x "
 	       "Mask=0x%08x Val=0x%08x\n",
-	       bus, cardnum, func, reg, mask, value);
+	       bus, device, func, reg, mask, value);
     }
 
     pciDisableIO(scrnIndex);
@@ -1282,4 +1284,28 @@ xf86cleanpci()
     pci_devp[0] = (pciConfigPtr)NULL;
 }
 
+int
+xf86lockpci(int bus, int device, int function)
+{
+    pciConfigPtr *p, *q;
+    int i;
+    int ret = -1;
+
+    for (i = 0, p = pci_devp; *p; p++, i++) {
+	if ((*p)->_bus == bus
+	    && (*p)->_device == device
+	    && (*p)->_func == function) {
+	    /* put on locked list */
+	    for (q = pci_locked_devp; *q; q++)
+		;
+	    *q = *p;
+	    memmove(&(pci_devp[i]), &(pci_devp[i+1]),
+		    (MAX_PCI_DEVICES - i) * sizeof (pciConfigPtr));
+	    pci_devp[MAX_PCI_DEVICES] = 0;
+	    ret = 0;
+	    break;
+	}
+    }
+    return ret;
+}
 #endif /* USE_OLD_PCI_CODE */	/* } */

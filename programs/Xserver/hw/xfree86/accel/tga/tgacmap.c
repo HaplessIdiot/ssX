@@ -24,7 +24,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgacmap.c,v 3.1 1996/12/27 07:03:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgacmap.c,v 3.2 1997/11/16 06:18:52 dawes Exp $ */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs
@@ -46,7 +46,6 @@
 #include "tga_regs.h"
 #include "tga_presets.h"
 
-extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
 extern struct tgamem tgamem;
 
 #define NOMAPYET        (ColormapPtr) 0

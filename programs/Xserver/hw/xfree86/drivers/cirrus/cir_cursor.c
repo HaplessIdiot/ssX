@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_cursor.c,v 1.3 1997/05/31 13:51:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_cursor.c,v 1.4 1997/10/25 13:50:26 hohndel Exp $ */
 /*
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -40,15 +40,19 @@
 #include "scrnintstr.h"
 #include "servermd.h"
 #include "windowstr.h"
+#include "mfb.h"
 #include "xf86.h"
+#include "xf86_ansic.h"
 #include "mipointer.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
+#include "compiler.h"
 #include "vga.h"
 #include "cir_driver.h"
 #include "cirBlitter.h"
 
+static void cirrusFindLastTile(int *, int *, long unsigned *,
+			       long unsigned *);
 static Bool cirrusRealizeCursor();
 static Bool cirrusUnrealizeCursor();
 static void cirrusSetCursor();
@@ -95,17 +99,16 @@ cirrusShowCursor()
 {
   /* turn the cursor on */
   if (HAVE546X()) {
-    volatile unsigned short *pS = (unsigned short *)(cirrusMMIOBase + 0xE6);
-    volatile unsigned short *pCursorAddr = 
-      (unsigned short *)(cirrusMMIOBase + 0xE8);
+    unsigned short tmp16;
     unsigned long curAddr;
 
     cirrusFindLastTile(NULL, NULL, &curAddr, NULL);
 
     curAddr >>= 8;           /* Keep only bits 22:10 */
-    *pCursorAddr = curAddr & 0x7FFC;
+    CIR_MMIO_WRITE16(0xE8, curAddr & 0x7FFC);
 
-    *pS |= 0x0001;
+    tmp16 = CIR_MMIO_READ16(0xE6);
+    CIR_MMIO_WRITE16(0xE6, tmp16 |= 0x0001);
   } else {
     outw (0x3C4, ((cirrusCur.cur_size<<2)+1)<<8 | 0x12);
   }
@@ -124,19 +127,15 @@ cirrusHideCursor()
        We don't just clear the cursor enable bit because doesn't work in some
        cases (like when switching back to text mode).
        */
-    volatile unsigned short *pY = (unsigned short *)(cirrusMMIOBase + 0xE2);
-    volatile unsigned short *pX = (unsigned short *)(cirrusMMIOBase + 0xE0);
-    volatile unsigned short *pCursorAddr = 
-      (unsigned short *)(cirrusMMIOBase + 0xE8);
     unsigned long curAddr;
 
     cirrusFindLastTile(NULL, NULL, NULL, &curAddr);
 
     curAddr >>= 8;           /* Keep only bits 22:10 */
-    *pCursorAddr = curAddr & 0x7FFC;
+    CIR_MMIO_WRITE16(0xE8, curAddr & 0x7FFC);
 
-    *pX = 0xFFFF;
-    *pY = 0xFFFF;
+    CIR_MMIO_WRITE16(0xE0, 0xFFFF);
+    CIR_MMIO_WRITE16(0xE2, 0xFFFF);
 
   } else {
     outw (0x3C4, (0x0)<<8 | 0x12);
@@ -166,7 +165,7 @@ cirrusRealizeCursor(pScr, pCurs)
    /* Clear out enough memory for the entire cursor.  There are 
       width*height*2 bits (plane 0, plan 1), and thus width*height*2/8
       or width*height>>2 bytes */
-   xf86memset (ram, 0, (cirrusCur.width>>2)*cirrusCur.height);
+   memset (ram, 0, (cirrusCur.width>>2)*cirrusCur.height);
 
    curp = (unsigned short *)ram;
    if (HAVE546X()) {
@@ -229,6 +228,14 @@ cirrusRealizeCursor(pScr, pCurs)
 	   m = *pServMsk++;
 	   s = *pServSrc++;
 
+#if BITMAP_BIT_ORDER == MSBFirst
+	   ((char *)&m)[0] = byte_reversed[((unsigned char *)&m)[0]];
+	   ((char *)&m)[1] = byte_reversed[((unsigned char *)&m)[1]];
+	   
+	   ((char *)&s)[0] = byte_reversed[((unsigned char *)&s)[0]];
+	   ((char *)&s)[1] = byte_reversed[((unsigned char *)&s)[1]];
+#endif		  
+
 	   /*
 	      There are two bitmaps for the X cursor:  the Source and
 	      the Mask.  The following table decodes these bits:
@@ -272,7 +279,7 @@ cirrusRealizeCursor(pScr, pCurs)
 		 m = *pServMsk++;
 		 s = *pServSrc++;
 
-#ifndef __powerpc__
+#if BITMAP_BIT_ORDER == LSBFirst
 		 ((char *)&m)[0] = byte_reversed[((unsigned char *)&m)[0]];
 		 ((char *)&m)[1] = byte_reversed[((unsigned char *)&m)[1]];
 
@@ -319,6 +326,7 @@ cirrusUnrealizeCursor(pScr, pCurs)
    buffer.  This function works only with the Laguna family of Cirrus chips,
    which use Rambus memory.
    */
+static void
 cirrusFindLastTile(int *x, int *y, long unsigned *curAddr, 
 		   long unsigned *hiddenAddr)
 {
@@ -500,37 +508,21 @@ cirrusLoadCursorToCard (pScr, pCurs, x, y)
   if (HAVE546X()) {
     int xStorage, yStorage;
     int cursorWidth, cursorHeight;
+    unsigned char tmp;
 
-    volatile unsigned long *pOP1_opRDRAM;
 #if USE_MBITBLT
-    volatile unsigned long *pMBLTEXT_EX, *pOP0_opMRDRAM;
+#define OP0    0x524
+#define BLTEXT 0x720    
 #else
-    volatile unsigned long *pBLTEXT_EX, *pOP0_opRDRAM;
+#define OP0    0x520
+#define BLTEXT 0x700    
 #endif
-    volatile unsigned long *pHOSTDATA;
-    volatile unsigned short *pDRAWDEF, *pBLTDEF;
-    volatile unsigned char *pQFREE;
-
-    /* Point all the MMIO registers to their appropriate addresses */
-    pOP1_opRDRAM = (unsigned long *)(cirrusMMIOBase + 0x540);
-    pDRAWDEF = (unsigned short *)(cirrusMMIOBase + 0x584);
-    pBLTDEF = (unsigned short *)(cirrusMMIOBase + 0x586);
-#if USE_MBITBLT
-    pOP0_opMRDRAM = (unsigned long *)(cirrusMMIOBase + 0x524);
-    pMBLTEXT_EX = (unsigned long *)(cirrusMMIOBase + 0x720);
-#else
-    pOP0_opRDRAM = (unsigned long *)(cirrusMMIOBase + 0x520);
-    pBLTEXT_EX = (unsigned long *)(cirrusMMIOBase + 0x700);
-#endif
-    pQFREE = (unsigned char *)(cirrusMMIOBase + 0x404);
-    pHOSTDATA = (unsigned long *)(cirrusMMIOBase + 0x800);
 
     /* Wait until there's ample room in the chip's queue */
-    while (*pQFREE < 10)
-      ;
+    do { tmp = CIR_MMIO_READ8(0x404); } while (tmp < 10);
 
-    *pBLTDEF = 0x1120;         /* Host-to-screen blit */
-    *pDRAWDEF = 0x00CC;        /* Source copy */
+    CIR_MMIO_WRITE16(0x586, 0x1120);         /* Host-to-screen blit */
+    CIR_MMIO_WRITE16(0x584, 0x00CC);         /* Source copy */
 
     /* Find where we'll be saving the cursor's image. */
     cirrusFindLastTile(&xStorage, &yStorage, NULL, NULL);
@@ -548,52 +540,36 @@ cirrusLoadCursorToCard (pScr, pCurs, x, y)
 
     /* First, copy our transparent cursor image to the next 1/2 tile boundry */
     /* Destination */
-#if USE_MBITBLT
-    *pOP0_opMRDRAM = (yStorage << 16) | (xStorage+cursorWidth);
-#else
-    *pOP0_opRDRAM = (yStorage << 16) | (xStorage+cursorWidth);
-#endif
+    CIR_MMIO_WRITE32(OP0, (yStorage << 16) | (xStorage+cursorWidth));
 
     /* Set the source pitch.  0 means that, worst case, the source is 
        alligned only on a byte boundry */
-    *pOP1_opRDRAM = 0;
+    CIR_MMIO_WRITE32(0x540, 0);
 
-    
-#if USE_MBITBLT
-    *pMBLTEXT_EX = (cursorHeight << 16) | cursorWidth;
-#else
-    *pBLTEXT_EX = (cursorHeight << 16) | cursorWidth;
-#endif
+    CIR_MMIO_WRITE32(BLTEXT, (cursorHeight << 16) | cursorWidth);
 
     for (l = 0; l < cirrusCur.height; l++)
-      for (w = 0; w < cirrusCur.width >> 4; w++) 
-	*pHOSTDATA = 0x00000000;
+      for (w = 0; w < cirrusCur.width >> 4; w++) {
+	CIR_MMIO_WRITE32(0x800, 0x00000000);
+      }
 
     /* Now, copy the real cursor image */
     
     /* Set the destination */
-#if USE_MBITBLT
-    *pOP0_opMRDRAM = (yStorage << 16) | (xStorage);
-#else
-    *pOP0_opRDRAM = (yStorage << 16) | (xStorage);
-#endif
+    CIR_MMIO_WRITE32(OP0, (yStorage << 16) | (xStorage));
 
     /* Set the source pitch.  0 means that, worst case, the source is 
        alligned only on a byte boundry */
-    *pOP1_opRDRAM = 0;
-
+    CIR_MMIO_WRITE32(0x540, 0);
 
     /* Always copy an entire cursor image to the card. */
-#if USE_MBITBLT
-    *pMBLTEXT_EX = (cursorHeight << 16) | (cursorWidth);
-#else
-    *pBLTEXT_EX = (cursorHeight << 16) | (cursorWidth);
-#endif
+    CIR_MMIO_WRITE32(BLTEXT, (cursorHeight << 16) | cursorWidth);
 
     if (x == 0 && y == 0) {
       pSrcM -= count - 1;
-      for (l = 0 ; l < 256; l++)
-	*pHOSTDATA = *pSrcM++;
+      for (l = 0 ; l < 256; l++) {
+	CIR_MMIO_WRITE32(0x800, *pSrcM++);
+      }
     } else {  /* !(x == 0 && y == 0) */
 
       unsigned long *pDstS = pDstM - 32;
@@ -615,12 +591,14 @@ cirrusLoadCursorToCard (pScr, pCurs, x, y)
 	      pSrcM++;           /* Skip over this part of the cursor */
 	      fillerDwords++;
 	    }
-	    else
-	      *pHOSTDATA = *pSrcM++;
+	    else {
+	      CIR_MMIO_WRITE32(0x800, *pSrcM++);
+            }
 	}
 
-	while(fillerDwords--)
-	  *pHOSTDATA = 0x00000000;
+	while(fillerDwords--) {
+	  CIR_MMIO_WRITE32(0x800, 0x00000000);
+        }
 
       } else {  /* !(x == 0) */
 	/* We've bumped into the left hand border, and maybe even the
@@ -667,13 +645,14 @@ cirrusLoadCursorToCard (pScr, pCurs, x, y)
 
 	  /* Copy this scanline to the cursor image */
 	  for (w = 0; w < cirrusCur.width >> 4; w++) {
-	    *pHOSTDATA = curScanline[w];
+	    CIR_MMIO_WRITE32(0x800, curScanline[w]);
 	  }
 	}
 
 	/* Copy in any extra filler dwords */
-	while(fillerDwords--)
-	  *pHOSTDATA = 0x00000000;
+	while(fillerDwords--) {
+	    CIR_MMIO_WRITE32(0x800, 0x00000000);
+        }
       }
     }
   } else {     /* !HAVE546X() */
@@ -798,12 +777,11 @@ cirrusLoadCursor(pScr, pCurs, x, y)
 
      if (cirrusMMIOBase) {
        unsigned long curAddr;
-       unsigned short *pCursorAddr = (unsigned short *)(cirrusMMIOBase + 0xE8);
 
        cirrusFindLastTile(NULL, NULL, &curAddr, NULL);
 
        curAddr >>= 8;  /* Keep only bits 22:10 */
-       *pCursorAddr = curAddr & 0x7FFC;
+       CIR_MMIO_WRITE16(0xE8, curAddr & 0x7FFC);
      }
        
 
@@ -901,21 +879,21 @@ cirrusMoveCursor(pScr, x, y)
   if (XF86SCRNINFO(pScr)->modes->Flags & V_DBLSCAN)
       y *= 2;
 
-  if (XF86SCRNINFO(pScr)->modes->CrtcHAdjusted) {
-      /* 5434 palette-clock doubling mode; cursor is squashed but */
-      /* get at least the position right. */
-      x /= 2;
-      if (XF86SCRNINFO(pScr)->modes->CrtcVAdjusted)
-          y /= 2;
+  if (XF86SCRNINFO(pScr)->modes->CrtcHAdjusted &&
+	  cirrusChip != CLGD5446 && cirrusChip != CLGD5436) { 
+    /* 5434 palette-clock doubling mode; cursor is squashed but */
+    /* get at least the position right. */
+    x /= 2;
+	  
+    if (XF86SCRNINFO(pScr)->modes->CrtcVAdjusted &&
+		cirrusChip != CLGD5446 && cirrusChip != CLGD5436) 
+      y /= 2;
   }
 
   if (HAVE546X()) {
-    unsigned short *pX = (unsigned short *)(cirrusMMIOBase + 0xE0);
-    unsigned short *pY = (unsigned short *)(cirrusMMIOBase + 0xE2);
-
     /* Account for desktop being restricted to tile allignment */
-    *pX = x;
-    *pY = y;
+    CIR_MMIO_WRITE16(0xE0, x);
+    CIR_MMIO_WRITE16(0xE2, y);
   } else {
     /* Your eyes do not deceive you - the low order bits form part of the
      * the INDEX
@@ -967,9 +945,10 @@ cirrusRecolorCursor(pScr, pCurs, displayed)
    shift = 16 - 6;
 
    if (HAVE546X()) {
-     unsigned char *pPalStateReg = (unsigned char *)(cirrusMMIOBase + 0xB0);
+     unsigned char tmp8;
 
-     *pPalStateReg |= 0x08;    /* Enable access to cursor colors */
+     tmp8 = CIR_MMIO_READ8(0xB0);
+     CIR_MMIO_WRITE8(0xB0, tmp8 | 0x08);    /* Enable access to cursor colors */
 
    } else {
      outb (0x3c4, 0x12);       /* SR12 allows access to DAC extended colors */
@@ -1002,9 +981,10 @@ cirrusRecolorCursor(pScr, pCurs, displayed)
    outb (0x3c9, (blue>>shift));
 
    if (HAVE546X()) {
-     unsigned char *pPalStateReg = (unsigned char *)(cirrusMMIOBase + 0xB0);
+     unsigned char tmp8;
 
-     *pPalStateReg &= ~0x08;    /* Disable access to cursor colors */
+     tmp8 = CIR_MMIO_READ8(0xB0);
+     CIR_MMIO_WRITE8(0xB0, tmp8 & ~0x08);    /* Disable access to cursor colors */
 
    } else {
                                /* Restore the state of SR12 */

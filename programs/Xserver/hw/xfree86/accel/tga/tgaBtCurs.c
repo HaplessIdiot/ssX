@@ -25,7 +25,7 @@
  * Modified by Alan Hourihane (alanh@fairlite.demon.co.uk) for use with TGA
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgaBtCurs.c,v 3.2 1996/10/17 15:18:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgaBtCurs.c,v 3.3 1996/12/27 07:03:44 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <X.h>
@@ -40,7 +40,6 @@
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "tga.h"
 #include "tga_regs.h"
 #include "tga_presets.h"

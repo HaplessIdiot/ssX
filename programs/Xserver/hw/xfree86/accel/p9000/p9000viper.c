@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.15 1997/02/25 14:20:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.16 1997/07/29 12:07:40 hohndel Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -25,7 +25,7 @@
 #include "input.h"
 
 #include "xf86.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_Config.h"
 
 #include "p9000.h"
@@ -158,7 +158,7 @@ p9000ViperVlbProbe()
     return FALSE; /* This OS can't probe the BIOS */
   bios_sig[VPR_VLB_BIOS_LENGTH] = '\0';
   if (0 == strncmp(bios_sig, VPR_VLB_BIOS_SIGNATURE,
-		   xf86strlen(VPR_VLB_BIOS_SIGNATURE)))
+		   strlen(VPR_VLB_BIOS_SIGNATURE)))
     {
       if (xf86Verbose)
 	ErrorF("%s BIOS signature for Diamond Viper VLB found:\n\t<%s>\n",
@@ -316,7 +316,7 @@ void p9000ViperVlbDisable()
           (int) p9000ViperSaveMisc ) ;
 #endif
   
-  xf86usleep(30000);   /* Wait at least 10 msecs (ICD2061 timeout) for the
+  usleep(30000);   /* Wait at least 10 msecs (ICD2061 timeout) for the
 		    * clock to change */
 
   p9000BtRestore();
@@ -560,7 +560,7 @@ void p9000ViperPciDisable()
           (int) p9000ViperSaveMisc ) ;
 #endif
   
-  xf86usleep(30000);  /* Wait at least 10 msecs (ICD2061 timeout)
+  usleep(30000);  /* Wait at least 10 msecs (ICD2061 timeout)
 		   * for the clock freq to change */
   
   p9000BtRestore();
@@ -640,7 +640,7 @@ void p9000ViperSetClock(dotclock, memclock)
   ICD2061ASetClock (clock_ctrl_word);
   ActualHertz = ICD2061AGetClock (clock_ctrl_word);
   /* Wait at least 10 msecs (ICD2061 timeout) for the clock to change */
-  xf86usleep(30000); 
+  usleep(30000); 
   
 #ifdef DEBUG
   ErrorF("Mem clock actually set to %d Hz.  Wanted %ld\n",ActualHertz,

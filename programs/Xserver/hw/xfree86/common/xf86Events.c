@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.47 1997/07/19 05:43:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.48 1997/10/25 13:50:14 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1223,6 +1223,20 @@ xf86Block(blockData, pTimeout, pReadmask)
      OSTimePtr pTimeout;
      pointer  pReadmask;
 {
+#if defined(MetroLink) && defined(SVR4)
+/*
+ * On MP SVR4 boxes, and race condition exists because the XQUEUE does
+ * not have anyway to lock it for exclusive access. This results in one
+ * processor putting something on the queue at the same time the other
+ * processor is taking it soemthing off. The count of items int he queue
+ * can get off by 1. This just goes and checks to see if an extra event
+ * was put in the queue a during this period. The signal for this event
+ * was ignored while processing the previous event.
+ */
+   
+  if(xf86VTSema)
+    xf86XqueRequest();
+#endif
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.h,v 1.3 1997/04/08 13:16:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.h,v 1.4 1997/04/13 13:57:15 hohndel Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -35,7 +35,8 @@
 
 _XFUNCPROTOBEGIN
 
-extern void CirrusFillRectSolidCopy();		/* GXcopy fill. */
+extern void CirrusFillRectSolidCopy(DrawablePtr, GCPtr, int, BoxPtr);
+/* GXcopy fill. */
 extern void CirrusFillRectSolidGeneral();	/* Non-GXcopy fill. */
 /* In cir_blt.c: */
 extern void CirrusPolyBitBlt();
@@ -64,6 +65,15 @@ extern void CirrusFillSpans();
 
 /* Low-level graphics display functions: */
 
+/* cirrus_acl.c */
+extern void CirrusAccelInit(void);
+extern void CirrusInitializeBitBLTEngine(void);
+extern void CirrusSync(void);
+/* cirrus_aclm.c */
+extern void CirrusAccelInitMMIO(void);
+extern void CirrusInitializeBitBLTEngineMMIO(void);
+extern void CirrusSyncMMIO(void);
+
 /* In cir_blt.c: */
 extern void CirrusBitBlt();
 #ifdef CIRRUS_INCLUDE_COPYPLANE1TO8
@@ -90,6 +100,12 @@ extern void CirrusBitmapTransfer();
 extern void CirrusColorExpand32bitFill( int x, int y, int w, int h,
 	unsigned long *bits, int sh, int sox, int soy, int bg, int fg,
 	int destpitch );
+extern void CirrusColorExpandOpaqueStippleFill(int, int, int, int,
+					       unsigned long *,
+					       int, int, int, int, int, int);
+extern void CirrusColorExpandSolidFill(int, int, int, int, int, int);
+extern void CirrusColorExpandStippleFill(int, int, int, int, unsigned long *,
+					 int, int, int, int, int);
 extern void Cirrus32bitFillSmall( int x, int y, int w, int h,
 	unsigned long *bits, int sh, int sox, int soy, int bg, int fg,
 	int destpitch );
@@ -99,6 +115,8 @@ extern void CirrusLatchedBitBltReversed( int x1, int y1, int x2, int y2,
 	int w, int h, int destpitch );
 extern void CirrusSimpleBitBlt( int x1, int y1, int x2, int y2,
   	int w, int h, int destpitch );
+extern void CirrusColorExpandFillTile8(int, int, int, int,
+				       int, int, int, int, int, int);
 extern void CirrusColorExpandFillTile32( int x, int y, int w, int h,
 	unsigned char *src, int tpitch, int twidth, int theight, int toy,
 	int destpitch );
@@ -126,10 +144,16 @@ extern void CirrusBLT16x16PatternFill( unsigned destaddr, int w, int h,
 	unsigned char *pattern, int patternpitch, int destpitch, int rop );
 extern void CirrusMMIOBLT16x16PatternFill( unsigned destaddr, int w, int h,
 	unsigned char *pattern, int patternpitch, int destpitch, int rop );
+extern void CirrusBLT32x32PatternFill(unsigned int, int, int,
+				      unsigned char *, int, int, int);
+extern void CirrusMMIOBLT32x32PatternFill(unsigned int, int, int,
+					  unsigned char *, int, int, int);
 extern void CirrusBLTBitBlt( unsigned dstAddr, unsigned srcAddr,
 	int dstPitch, int srcPitch, int w, int h, int dir );
 extern void CirrusMMIOBLTBitBlt( unsigned dstAddr, unsigned srcAddr,
 	int dstPitch, int srcPitch, int w, int h, int dir );
+extern void CirrusBLTWaitEmpty(void);
+extern void CirrusMMIOBLTWaitEmpty(void);
 extern void CirrusBLTWaitUntilFinished(void);	
 extern void CirrusMMIOBLTWaitUntilFinished(void);	
 #else
@@ -158,6 +182,10 @@ extern RegionPtr Cirrus16CopyArea();
 extern RegionPtr Cirrus24CopyArea();
 extern RegionPtr Cirrus32CopyArea();
 extern void CirrusCopyWindow();
+/* cir_cursor.c */
+extern Bool cirrusCursorInit(char *, ScreenPtr);
+extern void cirrusShowCursor(void);
+extern void cirrusHideCursor(void);
 /* cir_fillsp.c */
 extern void CirrusFillSolidSpansGeneral();
 extern void CirrusMMIOFillRectSolid();
@@ -172,6 +200,12 @@ extern void CirrusMMIOSegmentSS();
 extern void Cirrus8PolyRectangle();
 extern void Cirrus16PolyRectangle();
 extern void Cirrus32PolyRectangle();
+/* cir_textblt.s */
+extern void CirrusTextTransfer(int nglyph, int height, unsigned long **glyphp,
+int glyphwidth, void *vaddr);
+extern void CirrusTransferText32bitSpecial(int, int, unsigned long **,
+int, void *);
+
 
 _XFUNCPROTOEND
 
@@ -314,8 +348,6 @@ enum {CLGD5420 = 0,
 extern int cirrus_rop[];
 
 /* Look-up table for per-byte bit order reversal. */
-
-extern unsigned char byte_reversed[];
 
 typedef struct
 {
@@ -765,8 +797,22 @@ typedef struct
 #define CIRRUSREVERSEDWRITEREGIONLINES(addr, pitch) \
 	(cirrusUseLinear ? 0xf0000 : (addr) / (pitch))
 
+/*
+ * Macros for accessing MMIO space
+ */
+#if defined(__powerpc__)
+#define CIR_MMIO_READ8(offset) *(volatile CARD8 *)(cirrusMMIOBase + (offset)); eieio()
+#define CIR_MMIO_READ16(offset) ldw_brx(cirrusMMIOBase, (offset)); eieio()
+#define CIR_MMIO_READ32(offset) ldl_brx(cirrusMMIOBase, (offset)); eieio()
+#define CIR_MMIO_WRITE8(offset,val) ( *((volatile CARD8 *)(cirrusMMIOBase + (offset))) = (val), eieio() )
+#define CIR_MMIO_WRITE16(offset,val) ( stw_brx((val), cirrusMMIOBase, (offset)), eieio() )
+#define CIR_MMIO_WRITE32(offset,val) ( stl_brx((val), cirrusMMIOBase, (offset)), eieio() )
 
-#if !defined(__GNUC__) || defined(NO_INLINE)
-#undef __inline__
-#define __inline__ /**/
+#else
+#define CIR_MMIO_READ8(offset) *((volatile CARD8 *)(cirrusMMIOBase + (offset)))
+#define CIR_MMIO_READ16(offset) *((volatile CARD16 *)(cirrusMMIOBase + (offset)))
+#define CIR_MMIO_READ32(offset) *((volatile CARD32 *)(cirrusMMIOBase + (offset)))
+#define CIR_MMIO_WRITE8(offset,val) *((volatile CARD8 *)(cirrusMMIOBase + (offset))) = (val)
+#define CIR_MMIO_WRITE16(offset,val) *((volatile CARD16 *)(cirrusMMIOBase + (offset))) = (val)
+#define CIR_MMIO_WRITE32(offset,val) *((volatile CARD32 *)(cirrusMMIOBase + (offset))) = (val)
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3TiCursor.c,v 1.4 1997/12/05 22:01:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3TiCursor.c,v 1.5 1997/12/14 10:04:01 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -35,7 +35,6 @@
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "s3.h"
 #include "s3reg.h"
 #define S3_SERVER

@@ -22,15 +22,13 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.29 1997/10/25 13:50:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.30 1997/11/16 11:51:13 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
  */
 
 #include "Xos.h"
-#include <signal.h>
-#include <stdio.h>
 
 #define NEED_EVENTS
 #include "X.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000BtCurs.c,v 3.8 1996/03/05 05:42:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000BtCurs.c,v 3.9 1996/12/23 06:40:34 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -35,10 +35,10 @@
 #include <scrnintstr.h>
 #include <servermd.h>
 #include <windowstr.h>
+#include "mi.h"
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "p9000.h"
 #include "p9000reg.h"
 #include "p9000Bt485.h"

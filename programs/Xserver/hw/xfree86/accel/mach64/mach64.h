@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.14 1997/01/18 06:54:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.15 1997/12/20 14:20:55 hohndel Exp $ */
 /*
  * Copyright 1992,1993,1994,1995,1996,1997 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -49,13 +49,13 @@
 #include "misc.h"
 #include "xf86.h"
 #include "regionstr.h"
-#include "xf86_OSlib.h"
 #include "xf86Procs.h"
 
 #include "regionstr.h"
 #include "regmach64.h"
 
 extern pointer mach64VideoMem;
+extern pointer mach64MemReg;
 extern pointer vgaBase;
 extern Bool xf86VTSema;
 extern int mach64MaxX, mach64MaxY;
@@ -221,7 +221,9 @@ void mach64RestoreColor0(
     ScreenPtr pScreen
 #endif
 );
+
 /* mach64gc.c */
+extern Bool mach64DestroyPixmap(PixmapPtr);
 void mach64InitGC(
 #if NeedFunctionPrototypes
     void
@@ -733,4 +735,76 @@ void mach64Dsegment(
     register xSegment *pSeg
 #endif
 );
+
+/* mach64util.c */
+#if defined(__alpha__) && defined(__GNUC__)
+/*
+ * on the Alpha, there are "write buffers" that hold data to be written
+ *  to memory; the data is *not* necessarily flushed to memory immediately.
+ * so, we use a "memory barrier" instruction to force the flush of these
+ *  buffers, so that writing to the memory-mapped Mach64 registers *will*
+ *  take place immediately.
+ */
+#define barrier() __asm__ __volatile__("mb": : :"memory")
+#else
+#define barrier()
 #endif
+
+extern volatile void regw(unsigned int, unsigned long);
+extern volatile unsigned long regr(unsigned int);
+extern volatile void regwb(unsigned int, unsigned char);
+extern volatile unsigned char regrb(unsigned int);
+#ifdef __GNUC__
+
+#define vc32p volatile CARD32 *
+#define vc8p volatile CARD8 *
+
+extern __inline__ volatile void
+regw(unsigned int regindex, unsigned long regdata)
+{
+    unsigned long appaddr;
+
+    /* calculate aperture address */
+    appaddr = (unsigned long)mach64MemReg + regindex;
+
+    *(vc32p) appaddr = regdata;
+    barrier();
+}
+
+extern __inline__ volatile unsigned long
+regr(unsigned int regindex)
+{
+    unsigned long appaddr;
+
+    /* calculate aperture address */
+    appaddr = (unsigned long)mach64MemReg + regindex;
+
+    return (*(vc32p)appaddr);
+}
+
+extern __inline__ volatile void
+regwb(unsigned int regindex, unsigned char regdata)
+{
+    unsigned long appaddr;
+
+    /* calculate aperture address */
+    appaddr = (unsigned long)mach64MemReg + regindex;
+
+    *(vc8p)appaddr = regdata;
+    barrier();
+}
+
+extern __inline__ volatile unsigned char
+regrb(unsigned int regindex)
+{
+    unsigned long appaddr;
+
+    /* calculate aperture address */
+    appaddr = (unsigned long)mach64MemReg + regindex;
+
+    return (*(vc8p)appaddr);
+}
+#undef vc32p
+#undef vc8p
+#endif /* GNUC */
+#endif /* MACH64_H */

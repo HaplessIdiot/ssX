@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirFillSt.c,v 1.3 1997/04/13 13:57:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirFillSt.c,v 1.4 1997/10/25 13:50:25 hohndel Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -36,6 +36,7 @@
 #include "mergerop.h"
 #include "vgaBank.h"
 #include "xf86.h"
+#include "xf86_ansic.h"
 #include "vga.h"	/* For vga256InfoRec */
 
 #include "compiler.h"
@@ -270,13 +271,13 @@ tile8x8:
 			 */
 			pattern = (unsigned char *)ALLOCATE_LOCAL(16 * 16);
 			for (i = 0; i < 8; i++) {
-			    	xf86memcpy(pattern + i * 16,
+			    	memcpy(pattern + i * 16,
 				       (unsigned char *)src + i * pixWidth, 8);
-			    	xf86memcpy(pattern + i * 16 + 8,
+			    	memcpy(pattern + i * 16 + 8,
 				       (unsigned char *)src + i * pixWidth, 8);
-			    	xf86memcpy(pattern + (i + 8) * 16,
+			    	memcpy(pattern + (i + 8) * 16,
 				       (unsigned char *)src + i * pixWidth, 8);
-			    	xf86memcpy(pattern + (i + 8) * 16 + 8,
+			    	memcpy(pattern + (i + 8) * 16 + 8,
 				       (unsigned char *)src + i * pixWidth, 8);
 			}
 		}
@@ -317,13 +318,13 @@ tile16x16:
 			 */
 			pattern = (unsigned char *)ALLOCATE_LOCAL(32 * 32);
 			for (i = 0; i < 16; i++) {
-			    	xf86memcpy(pattern + i * 32,
+			    	memcpy(pattern + i * 32,
 				       (unsigned char *)src + i * pixWidth, 16);
-			    	xf86memcpy(pattern + i * 32 + 16,
+			    	memcpy(pattern + i * 32 + 16,
 				       (unsigned char *)src + i * pixWidth, 16);
-			    	xf86memcpy(pattern + (i + 16) * 32,
+			    	memcpy(pattern + (i + 16) * 32,
 				       (unsigned char *)src + i * pixWidth, 16);
-			    	xf86memcpy(pattern + (i + 16) * 32 + 16,
+			    	memcpy(pattern + (i + 16) * 32 + 16,
 				       (unsigned char *)src + i * pixWidth, 16);
 			}
 		}
@@ -368,13 +369,13 @@ tile32x32:
 			 */
 			pattern = (unsigned char *)ALLOCATE_LOCAL(64 * 64);
 			for (i = 0; i < 32; i++) {
-			    	xf86memcpy(pattern + i * 64,
+			    	memcpy(pattern + i * 64,
 				       (unsigned char *)src + i * pixWidth, 32);
-			    	xf86memcpy(pattern + i * 64 + 32,
+			    	memcpy(pattern + i * 64 + 32,
 				       (unsigned char *)src + i * pixWidth, 32);
-			    	xf86memcpy(pattern + (i + 32) * 64,
+			    	memcpy(pattern + (i + 32) * 64,
 				       (unsigned char *)src + i * pixWidth, 32);
-			    	xf86memcpy(pattern + (i + 32) * 64 + 32,
+			    	memcpy(pattern + (i + 32) * 64 + 32,
 				       (unsigned char *)src + i * pixWidth, 32);
 			}
 		}

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/Imakefile,v 1.3 1997/10/25 13:50:25 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/Imakefile,v 1.4 1997/10/26 09:39:10 hohndel Exp $
 
 
 
@@ -13,8 +13,8 @@ ASM_OBJS = cir_imblt.o cir_textblt.o cir_span.o
 #else
 BANK_SRCS = cir_bankc.c
 BANK_OBJS = cir_bankc.o
-OTHER_SRCS = cir_imbltc.c cir_textbltc.c
-OTHER_OBJS = cir_imbltc.o cir_textbltc.o
+OTHER_SRCS = cir_imbltc.c cir_textbltc.c cir_spanc.c
+OTHER_OBJS = cir_imbltc.o cir_textbltc.o cir_spanc.o
 #endif
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c $(BANK_SRCS) \
@@ -23,7 +23,7 @@ SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c $(BANK_SRCS) \
        cir_blitmm.c cir_immm.c cir_tebltmm.c cir_alloc.c \
        /* cir_blt16.c */ cir_solid.c /* cir_line.c cir_seg.c cir_orect.c */ \
        /* cir_orect16.c cir_orect32.c linearline.c cir_fillLG.c cir_blitLG.c */ \
-       cirrus_acl.c cirrus_aclm.c laguna_acl.c
+       cirrus_acl.c cirrus_aclm.c laguna_acl.c $(XSRCS)
 
 OBJS = cir_driver.o cir_fill.o cir_blt.o cir_bltC.o cir_im.o $(BANK_OBJS) \
        $(ASM_OBJS) $(OTHER_OBJS) cir_colexp.o cirFillSt.o cir_teblt8.o \
@@ -31,13 +31,9 @@ OBJS = cir_driver.o cir_fill.o cir_blt.o cir_bltC.o cir_im.o $(BANK_OBJS) \
        cir_blitmm.o cir_immm.o cir_tebltmm.o cir_alloc.o \
        /* cir_blt16.o */ cir_solid.o /* cir_line.o cir_seg.o cir_orect.o */ \
        /* cir_orect16.o cir_orect32.o linearline.o cir_fillLG.o cir_blitLG.o */ \
-       cirrus_acl.o cirrus_aclm.o laguna_acl.o
+       cirrus_acl.o cirrus_aclm.o laguna_acl.o $(XOBJS)
 
-#if defined(i386Architecture)
 DEFINES = -DPSZ=8
-#else
-DEFINES = -DPSZ=8 -DAVOID_ASM_ROUTINES
-#endif
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
@@ -51,8 +47,12 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
 #endif
+
 NormalLibraryObjectRule()
+
+#if defined(i386Architecture)
 NormalAsmObjectRule()
+#endif
 
 NormalRelocatableTarget(cir_drv, $(OBJS))
 
@@ -80,6 +80,7 @@ InstallLinkKitNonExecFile(cir_span.s,$(LINKKITDIR)/drivers/svga/cirrus)
 InstallLinkKitNonExecFile(cir_bankc.c,$(LINKKITDIR)/drivers/svga/cirrus)
 InstallLinkKitNonExecFile(cir_imbltc.c,$(LINKKITDIR)/drivers/svga/cirrus)
 InstallLinkKitNonExecFile(cir_textbltc.c,$(LINKKITDIR)/drivers/svga/cirrus)
+InstallLinkKitNonExecFile(cir_spanc.c,$(LINKKITDIR)/drivers/svga/cirrus)
 #endif
 InstallLinkKitNonExecFile(cir_colexp.c,$(LINKKITDIR)/drivers/svga/cirrus)
 InstallLinkKitNonExecFile(cirFillSt.c,$(LINKKITDIR)/drivers/svga/cirrus)

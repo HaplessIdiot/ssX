@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.75 1997/07/29 12:07:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.76 1997/08/26 10:00:58 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -50,6 +50,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Procs.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "xf86Version.h"
 #include "mach32.h"
@@ -98,19 +99,6 @@ int mach32MaxClock = MAX_MACH32_CLOCK;
 int mach32MaxTlc34075Clock = MAX_MACH32_TLC34075_CLOCK;
 int mach32Max16bppClock = MAX_MACH32_16BPP_CLOCK;
 
-ScrnInfoPtr xf86Screens[] =
-{
-  &mach32InfoRec,
-};
-
-int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
-
-int xf86ScreenNames[] =
-{
-  ACCEL,
-  -1
-};
-
 int mach32ValidTokens[] =
 {
   STATICGRAY,
@@ -134,10 +122,10 @@ int mach32ValidTokens[] =
 #endif
 
 ScrnInfoRec mach32InfoRec = {
+    mach32Probe,      	/* Bool (* Probe)() */
     FALSE,		/* Bool configured */
     -1,			/* int tmpIndex */
     -1,			/* int scrnIndex */
-    mach32Probe,      	/* Bool (* Probe)() */
     mach32Initialize,	/* Bool (* Init)() */
     mach32ValidMode,	/* int (* ValidMode)() */
     mach32EnterLeaveVT, /* void (* EnterLeaveVT)() */
@@ -241,7 +229,7 @@ ModuleInit(data,magic)
         * magic= MAGIC_ADD_VIDEO_CHIP_REC;
         break;
     case 2:
-        * data = (pointer) "libxf86cache.a";
+        * data = (pointer) "libxf86cache";
         * magic= MAGIC_LOAD;
         break;
     default:
@@ -393,7 +381,7 @@ static ATIInformationBlock *GetATIInformationBlock()
 		    (unsigned char *)bios_signature, 10) != 10) {
       return NULL;
    }
-   if (xf86strncmp( signature, bios_signature, 10 ))
+   if (strncmp( signature, bios_signature, 10 ))
 	 return NULL;
 
    if (xf86ReadBIOS(mach32InfoRec.BIOSbase, 0x00,
@@ -409,7 +397,7 @@ static ATIInformationBlock *GetATIInformationBlock()
    info.asic_identifier        = bios_data[ 0x43 ];
    info.bios_major             = bios_data[ 0x4c ];
    info.bios_minor             = bios_data[ 0x4d ];
-   xf86strncpy( info.bios_date, bios_data + 0x50, 20 );
+   strncpy( info.bios_date, bios_data + 0x50, 20 );
    
    info.VGA_Wonder_Present     = bios_data[ 0x44 ] & 0x40;
    info.Graphics_Ultra_Present = !(bios_data[ 0x44 ] & 0x40);

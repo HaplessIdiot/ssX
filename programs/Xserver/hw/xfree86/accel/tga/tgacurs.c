@@ -20,7 +20,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgacurs.c,v 3.2 1996/10/17 15:18:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgacurs.c,v 3.3 1996/12/27 07:03:48 dawes Exp $ */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs and Erik Nygren
@@ -50,7 +50,6 @@
 #include "mfb.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
 #include "tga.h"
 #include "tgacurs.h"
 

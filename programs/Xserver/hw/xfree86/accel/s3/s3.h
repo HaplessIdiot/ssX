@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.48 1997/01/18 06:54:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.49 1997/03/22 09:34:56 hohndel Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -55,8 +55,7 @@
 #include "misc.h"
 #include "xf86.h"
 #include "regionstr.h"
-#include "xf86_OSlib.h"
-#include "xf86bcache.h"
+#include "xf86_ansic.h"
 #include "xf86fcache.h"
 #include "xf86Procs.h"
 
@@ -118,7 +117,6 @@
 #include "input.h"
 #include "misc.h"
 #include "xf86.h"
-#include "xf86_OSlib.h"
 #endif /* !LINKKIT */
 
 #if !defined(__GNUC__) || defined(NO_INLINE)

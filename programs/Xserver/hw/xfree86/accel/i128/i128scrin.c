@@ -44,7 +44,7 @@ Modified for the I128 by Robin Cutshaw (robin@XFree86.Org)
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128scrin.c,v 3.3 1996/02/20 14:33:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128scrin.c,v 3.4 1996/12/23 06:35:45 dawes Exp $ */
 
 
 #include "X.h"
@@ -68,55 +68,8 @@ Modified for the I128 by Robin Cutshaw (robin@XFree86.Org)
 #include "i128reg.h"
 #include "xf86Priv.h"
 
-extern RegionPtr mfbPixmapToRegion();
-extern Bool cfbAllocatePrivates();
-extern Bool cfb16AllocatePrivates();
-extern Bool cfb32AllocatePrivates();
-extern Bool cfbInitVisuals();
-extern Bool miScreenInit();
-extern Bool mfbRegisterCopyPlaneProc();
-
 extern int defaultColorVisualClass;
 extern xrgb xf86weight;
-
-extern RegionPtr miCopyPlane();
-
-#if 0
-#define _RZ(d) (((d) + 2) / 3)
-#define _RS(d) 0
-#define _RM(d) ((1 << _RZ(d)) - 1)
-#define _GZ(d) (((d) - _RZ(d) + 1) / 2)
-#define _GS(d) _RZ(d)
-#define _GM(d) (((1 << _GZ(d)) - 1) << _GS(d))
-#define _BZ(d) ((d) - _RZ(d) - _GZ(d))
-#define _BS(d) (_RZ(d) + _GZ(d))
-#define _BM(d) (((1 << _BZ(d)) - 1) << _BS(d))
-#define _CE(d) (1 << _RZ(d))
-
-static VisualRec visuals[] = {
-/* vid  class        bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
-#ifndef STATIC_COLOR
-    0,  PseudoColor, _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
-    0,  DirectColor, _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
-    0,  GrayScale,   _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
-    0,  StaticGray,  _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
-#endif
-    0,  StaticColor, _BP,  1<<PSZ,   PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
-    0,  TrueColor,   _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS
-};
-
-#define	NUMVISUALS	((sizeof visuals)/(sizeof visuals[0]))
-
-static  VisualID VIDs[NUMVISUALS];
-
-static DepthRec depths[] = {
-/* depth	numVid		vids */
-    1,		0,		NULL,
-    8,		NUMVISUALS,	VIDs
-};
-
-#define NUMDEPTHS	((sizeof depths)/(sizeof depths[0]))
-#endif
 
 static unsigned long cfbGeneration = 0;
 
@@ -125,25 +78,25 @@ miBSFuncRec i128BSFuncRec;
 miBSFuncRec i128BSFuncRec8 = {
     cfbSaveAreas,
     cfbRestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    0,
+    0,
+    0,
 };
 
 miBSFuncRec i128BSFuncRec16 = {
     cfb16SaveAreas,
     cfb16RestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    0,
+    0,
+    0,
 };
 
 miBSFuncRec i128BSFuncRec32 = {
     cfb32SaveAreas,
     cfb32RestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    0,
+    0,
+    0,
 };
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */

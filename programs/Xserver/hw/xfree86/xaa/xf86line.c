@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line.c,v 3.3 1997/04/18 09:12:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line.c,v 3.4 1997/05/26 15:35:03 dawes Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line.c,v 3.3 1997/04/18 09:12:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line.c,v 3.4 1997/05/26 15:35:03 dawes Exp $ */
 
 /*
  * Generic accelerated general lines.
@@ -176,10 +176,8 @@ xf86PolyLine(pDrawable, pGC, mode, npt, pptInit)
 
     UseTwoPointLine = FALSE;
     if (xf86AccelInfoRec.Flags & USE_TWO_POINT_LINE) {
-#ifdef POLYSEGMENT
         if (xf86AccelInfoRec.Flags & TWO_POINT_LINE_NOT_LAST ||
         pGC->capStyle != CapNotLast)
-#endif
             UseTwoPointLine = TRUE;
     }
 
@@ -538,6 +536,7 @@ xf86PolyLine(pDrawable, pGC, mode, npt, pptInit)
     */
 
     if ((pGC->capStyle != CapNotLast) &&
+	!UseTwoPointLine &&
 	((ppt->x + xorg != pptInit->x + pDrawable->x) ||
 	 (ppt->y + yorg != pptInit->y + pDrawable->y) ||
 	 (ppt == pptInit + 1)))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_teblt8.c,v 1.3 1997/01/18 06:56:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_teblt8.c,v 1.1 1997/03/06 23:16:58 hohndel Exp $ */
 
 /*
  * Copyright (c) 1989  X Consortium
@@ -47,7 +47,6 @@
 #include	"xf86.h"
 #include	"vga.h"		       /* For vgaBase. */
 #include        "vgaBank.h"
-#include	"xf86_OSlib.h"
 
 #include "compiler.h"
 

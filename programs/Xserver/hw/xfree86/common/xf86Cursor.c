@@ -1,20 +1,22 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.12 1996/08/23 11:03:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.13 1996/12/23 06:43:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
+ * Copyright 1997 Metro Link Incorporated, Fort Lauderdale, Florida
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Thomas Roell not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  Thomas Roell makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * documentation, and that the name of Thomas Roell or Metro Link
+ * ("copyright holders") not be used in advertising or publicity pertaining to
+ * distribution of the software without specific, written prior permission.
+ * The copyright holders make no representations about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or
+ * implied warranty.
  *
- * THOMAS ROELL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
  * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THOMAS ROELL BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
@@ -51,6 +53,10 @@
 #include "xf86Xinput.h"
 #endif
 
+typedef struct _screen_layout {
+    short left, right, up, down;
+} xf86ScreenLayoutRec;
+
 /* #include "atKeynames.h" -hv- dont need that include here */
 
 
@@ -81,8 +87,16 @@ miPointerScreenFuncRec xf86PointerScreenFuncs = {
   xf86WrapCursor,
 #ifdef XINPUT
   xf86eqEnqueue,
+  xf86eqSwitchScreen,
+#else
+  /* let miPointerInitialize take care of these */
+  NULL,
+  NULL,
 #endif
 };
+
+static xf86ScreenLayoutRec xf86ScreenLayout[MAXSCREENS];
+static int have_screen_layout;
 
 
 
@@ -90,7 +104,7 @@ miPointerScreenFuncRec xf86PointerScreenFuncs = {
  * xf86InitViewport --
  *      Initialize paning & zooming parameters, so that a driver must only
  *      check what resolutions are possible and whether the virtual area
- *      is valid if specifyed.
+ *      is valid if specified.
  */
 
 void
@@ -265,29 +279,60 @@ xf86ZoomViewport (pScreen, zoom)
  *      Check whether it is necessary to switch to another screen
  */
 
-/* ARGSUSED */
 static Bool
 xf86CursorOffScreen (pScreen, x, y)
      ScreenPtr   *pScreen;
      int         *x, *y;
 {
-  int		i;
+    int		new_x, new_y;
+    int		new_screen = -1;
+    ScreenPtr	oldScreen = *pScreen;
+    xf86ScreenLayoutRec *layout = &(xf86ScreenLayout[(*pScreen)->myNum]);
 
-  if ((screenInfo.numScreens > 1) && ((*x < 0) || ((*pScreen)->width <= *x))) {
-    i = (*pScreen)->myNum;
-    if (*x < 0) {
-      i = (i ? i : screenInfo.numScreens) -1;
-      *pScreen = screenInfo.screens[i];
-      *x += (*pScreen)->width;
+    /* This is a trivial case but it is not checked anywhere else. */
+    if (screenInfo.numScreens == 1)
+	return FALSE;
+
+    new_x = *x;
+    new_y = *y;
+
+    /* Find the new screen number from the screen layout array. */
+    if (*y < 0) {
+	new_screen = layout->up;
+    } else if (*y >= (*pScreen)->height) {
+	new_screen = layout->down;
+    } else if (*x < 0) {
+	new_screen = layout->left;
+    } else if (*x >= (*pScreen)->width) {
+	new_screen = layout->right;
     }
-    else {
-      *x -= (*pScreen)->width;
-      i = (i+1) % screenInfo.numScreens;
-      *pScreen = screenInfo.screens[i];
+
+    if (new_screen < 0 || new_screen >= MAXSCREENS)
+	return FALSE;
+
+    /* Set pScreen, adjust x and y, set x and y. */
+    *pScreen = screenInfo.screens[new_screen];
+
+    /* In case the screen did not configure completely */
+    if (!*pScreen ) {
+	*pScreen = oldScreen;
+	return FALSE;
+	}
+
+    if (*y < 0) {
+	new_y += (*pScreen)->height;
+    } else if (*y >= oldScreen->height) {
+	new_y -= oldScreen->height;
+    } else if (*x < 0) {
+	new_x += (*pScreen)->width;
+    } else if (*x >= oldScreen->width) {
+	new_x -= oldScreen->width;
     }
-    return(TRUE);
-  }
-  return(FALSE);
+
+    *x = new_x;
+    *y = new_y;
+
+    return TRUE;
 }
 
 
@@ -323,4 +368,23 @@ xf86WrapCursor (pScreen, x, y)
   miPointerWarpCursor(pScreen,x,y);
 
   xf86Info.currentScreen = pScreen;
+}
+
+
+void
+xf86SetScreenLayout(int num, int left, int right, int up, int down)
+{
+#ifdef DEBUG
+    ErrorF("xf86SetScreenLayout: %d %d %d %d %d\n", num, left,right,up,down);
+#endif
+    if (num >= MAXSCREENS) {
+	ErrorF("xf86SetScreenLayout: Screen number %d .gt. MAXSCREENS\n",
+	       num);
+	return;
+    }
+
+    xf86ScreenLayout[num].left  = left;
+    xf86ScreenLayout[num].right = right;
+    xf86ScreenLayout[num].up    = up;
+    xf86ScreenLayout[num].down  = down;
 }

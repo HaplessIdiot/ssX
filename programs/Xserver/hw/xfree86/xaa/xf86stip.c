@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.8 1997/09/15 07:18:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.9 1997/09/19 08:30:09 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -41,14 +41,16 @@
 #include "xf86local.h"
 #include "xf86expblt.h"
 
+#if !defined(MetroLink)
 extern unsigned char byte_reversed[256];
+#endif
 extern unsigned int stipplemask[33];
 
-#if defined(__GNUC__) && defined(__i386__)
+#if defined(__GNUC__) && defined(__i386__) && defined(__OPTIMIZE__)
 static __inline__ unsigned int reverse_bitorder(data) {
 #if defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || (defined(linux) || defined (__OS2ELF__)) && defined(__ELF__)
 	__asm__(
-		"movl $0,%%ecx\n"
+		"xorl %%ecx,%%ecx\n"
 		"movb %%al,%%cl\n"
 		"movb byte_reversed(%%ecx),%%al\n"
 		"movb %%ah,%%cl\n"
@@ -60,11 +62,11 @@ static __inline__ unsigned int reverse_bitorder(data) {
 		"movb byte_reversed(%%ecx),%%ah\n"
 		"roll $16,%%eax\n"
 		: "=a" (data) : "0" (data)
-		: "cx"
+		: "ecx"
 		);
 #else
 	__asm__(
-		"movl $0,%%ecx\n"
+		"xorl %%ecx,%%ecx\n"
 		"movb %%al,%%cl\n"
 		"movb _byte_reversed(%%ecx),%%al\n"
 		"movb %%ah,%%cl\n"
@@ -76,7 +78,7 @@ static __inline__ unsigned int reverse_bitorder(data) {
 		"movb _byte_reversed(%%ecx),%%ah\n"
 		"roll $16,%%eax\n"
 		: "=a" (data) : "0" (data)
-		: "cx"
+		: "ecx"
 		);
 #endif
 #else	/* If no (gcc on i386), don't use asm. */

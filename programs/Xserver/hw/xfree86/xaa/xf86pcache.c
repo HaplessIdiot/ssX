@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.25 1997/11/01 15:05:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.26 1997/12/28 21:28:37 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -85,13 +85,13 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_Config.h"
+#include "xf86_ansic.h"
 #include "xf86xaa.h"
 #include "xf86gcmap.h"
 #include "xf86local.h"
 #include "xf86pcache.h"
 
 extern WindowPtr *WindowTable;
-extern unsigned char byte_reversed[256];
 
 static void DoCacheTile(
 #if NeedFunctionPrototypes
@@ -527,10 +527,10 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
     /* Write and expand horizontally. */
     for (i = 0; i < h; i++) {
          int nw;
-         xf86memcpy(bufp, pSrc, w * bytespp);
+         memcpy(bufp, pSrc, w * bytespp);
          nw = w;
          while (nw != 8) {
-            xf86memcpy(bufp + nw * bytespp, bufp, nw * bytespp);
+            memcpy(bufp + nw * bytespp, bufp, nw * bytespp);
             nw *= 2;
          }
          pSrc += srcwidth;
@@ -539,7 +539,7 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
     nh = h;
     /* Expand vertically. */
     while (nh != 8) {
-        xf86memcpy(buf + nh * 8 * bytespp, buf, nh * 8 * bytespp);
+        memcpy(buf + nh * 8 * bytespp, buf, nh * 8 * bytespp);
         nh *= 2;
     }
     if (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
@@ -567,7 +567,7 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
         return;
     }
     /* Make it two copies. */
-    xf86memcpy(buf + 64 * bytespp, buf, 64 * bytespp);
+    memcpy(buf + 64 * bytespp, buf, 64 * bytespp);
     /* Write to video memory. */
     xf86ImageWrite(x, y, 128, 1, buf, 128 * bytespp,
         GXcopy, 0xFFFFFFFF);
@@ -575,12 +575,12 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
     for (i = 1; i < 8; i++) {
         int j;
         for (j = 0; j < 8; j++) {
-            xf86memcpy(buf2 + (j * 8) * bytespp, buf + (j * 8 + i) * bytespp,
+            memcpy(buf2 + (j * 8) * bytespp, buf + (j * 8 + i) * bytespp,
                 (8 - i) * bytespp);
-            xf86memcpy(buf2 + (j * 8 + 8 - i) * bytespp, buf + j * 8 * bytespp,
+            memcpy(buf2 + (j * 8 + 8 - i) * bytespp, buf + j * 8 * bytespp,
                 i * bytespp);
         }
-        xf86memcpy(buf2 + 64 * bytespp, buf2, 64 * bytespp);
+        memcpy(buf2 + 64 * bytespp, buf2, 64 * bytespp);
         xf86ImageWrite(x, y + i, 128, 1, buf2,
             128 * bytespp, GXcopy, 0xFFFFFFFF);
     }
@@ -707,7 +707,7 @@ static void WriteRotatedMonoPatterns(x, y, pattern)
                 buf[k] = byte_reversed[pattern[k]];
         }
         else
-            xf86memcpy(buf, pattern, 8);
+            memcpy(buf, pattern, 8);
         if (xf86AccelInfoRec.PatternFlags
         & HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
             /* Special case; we need just one copy. */
@@ -719,8 +719,8 @@ static void WriteRotatedMonoPatterns(x, y, pattern)
             return;
         }
         for (j = 1; j < 8; j++) {
-            xf86memcpy(buf + j * 8, buf + j, 8 - j);
-            xf86memcpy(buf + j * 8 + 8 - j, buf, j);
+            memcpy(buf + j * 8, buf + j, 8 - j);
+            memcpy(buf + j * 8 + 8 - j, buf, j);
         }
         xf86ImageWrite(x, y + i,
             64 / (xf86AccelInfoRec.BitsPerPixel / 8) + 1, 1, buf,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.34 1997/08/26 10:01:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.35 1997/10/25 13:50:12 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -128,10 +128,10 @@ int s3ValidTokens[] =
 
 ScrnInfoRec s3InfoRec =
 {
+   s3Probe,			/* Bool (* Probe)() */
    FALSE,			/* Bool configured */
    -1,				/* int tmpIndex */
    -1,				/* int scrnIndex */
-   s3Probe,			/* Bool (* Probe)() */
    (Bool (*)())NoopDDA,		/* Bool (* Init)() */
    s3ValidMode,			/* int (* ValidMode)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveVT)() */
@@ -382,7 +382,7 @@ s3PrintIdent()
       {
         ErrorF(",");
         c++;
-        if (c + 1 + xf86strlen(id) < 70)
+        if (c + 1 + strlen(id) < 70)
         {
           ErrorF(" ");
           c++;
@@ -394,7 +394,7 @@ s3PrintIdent()
         }
       }
       ErrorF("%s", id);
-      c += xf86strlen(id);
+      c += strlen(id);
     }
   ErrorF("\n");
 #ifdef PC98

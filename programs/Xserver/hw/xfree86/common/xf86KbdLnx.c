@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.11 1996/08/18 01:51:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.12 1996/12/23 06:43:31 dawes Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -226,7 +226,11 @@ static KeySym linux_to_x[256] = {
 	XK_p,		XK_q,		XK_r,		XK_s,
 	XK_t,		XK_u,		XK_v,		XK_w,
 	XK_x,		XK_y,		XK_z,		XK_braceleft,
+#if defined (MetroLink)
+	XK_bar,		XK_braceright,	XK_asciitilde,	XK_BackSpace,
+#else
 	XK_bar,		XK_braceright,	XK_asciitilde,	XK_Delete,
+#endif
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,

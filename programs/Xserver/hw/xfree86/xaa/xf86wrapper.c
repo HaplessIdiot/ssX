@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.9 1997/11/22 00:00:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.10 1998/01/24 01:53:22 hohndel Exp $ */
 
 
 #include "gcstruct.h"
@@ -19,8 +19,8 @@
 #endif
 
 #include "xf86.h"
-#include "xf86xaa.h"
 #include "xf86gcmap.h"
+#include "xf86xaa.h"
 #include "xf86maploc.h"
 #include "xf86local.h"
 
@@ -42,6 +42,24 @@
 # define usePolyGlyphBlt	miPolyGlyphBlt
 #endif
 
+
+/* prototypes for static functions */
+void static xf86FillPolygonWrapper(DrawablePtr, GCPtr, int, int, int, DDXPointPtr);
+void static xf86PolyArcWrapper(DrawablePtr, GCPtr, int, xArc *);
+void static xf86PolyLinesWrapper(DrawablePtr, GCPtr, int, int, DDXPointPtr);
+void static xf86PolySegmentWrapper(DrawablePtr, GCPtr, int, register xSegment *);
+void static xf86ImageGlyphBltWrapper(DrawablePtr, GC *, int, int, unsigned int, CharInfoPtr *, unsigned char *);
+void static xf86PolyGlyphBltWrapper(DrawablePtr, GC *, int, int, unsigned int, CharInfoPtr *, unsigned char *);
+void static xf86FillSpansWrapper(DrawablePtr, GC *, int, DDXPointPtr, int *, int);
+void static xf86PolyFillArcWrapper(DrawablePtr, GCPtr, int, xArc *);
+void static xf86PolyFillRectWrapper(DrawablePtr, GCPtr, int, xRectangle *);
+RegionPtr static xf86CopyAreaWrapper(register DrawablePtr, register DrawablePtr, GC *, int, int, int, int, int, int);
+void static xf86PutImageWrapper(DrawablePtr, GCPtr, int, int, int, int, int, int, int, char *);
+void static xf86PolyPointWrapper(DrawablePtr, GCPtr, int, int, xPoint *);
+void static xf86SetSpansWrapper(DrawablePtr, GCPtr, char *, register DDXPointPtr, int *, int, int);
+void static xf86PushPixelsWrapper(GCPtr, PixmapPtr, DrawablePtr, int, int, int, int);
+void static xf86SaveAreasWrapper(PixmapPtr, RegionPtr, int, int, WindowPtr);
+void static xf86RestoreAreasWrapper(PixmapPtr, RegionPtr, int, int, WindowPtr);
 
 void static
 xf86FillPolygonWrapper(pDrawable, pGC, shape, mode, count, ptsIn)
@@ -177,7 +195,16 @@ xf86FillSpansWrapper(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int *pwidthInit;		
     int fSorted;
 {
-    void (*FillSpansFunc) ();
+    void (*FillSpansFunc) (
+#if NeedNestedPrototypes
+	DrawablePtr /*pDrawable*/,
+	GCPtr /*pGC*/,
+	int /*nInit*/,
+	DDXPointPtr /*pptInit*/,
+	int * /*pwidthInit*/,
+	int /*fSorted*/
+#endif
+	);
     cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
 
     switch (pGC->fillStyle) {
@@ -271,8 +298,8 @@ xf86CopyAreaWrapper(pSrcDrawable, pDstDrawable,
 {
     SYNC_CHECK;     
 
-    cfbCopyArea(pSrcDrawable, pDstDrawable,
-            pGC, srcx, srcy, width, height, dstx, dsty);
+    return cfbCopyArea(pSrcDrawable, pDstDrawable,
+		       pGC, srcx, srcy, width, height, dstx, dsty);
 }
 
 void static
@@ -368,7 +395,7 @@ xf86RestoreAreasWrapper(pPixmap, prgnRestore, xorg, yorg, pWin)
     cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
 }
 
-void XF86NAME(xf86InitWrappers)()
+void XF86NAME(xf86InitWrappers)(void)
 {
     if(!xf86GCInfoRec.FillPolygonWrapper)
 	xf86GCInfoRec.FillPolygonWrapper = xf86FillPolygonWrapper;

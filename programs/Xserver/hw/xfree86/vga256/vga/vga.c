@@ -1,20 +1,22 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.105 1997/10/25 15:52:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.106 1997/11/01 15:04:56 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
+ * Copyright 1997 Metro Link Incorporated ("Metro Link")
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Thomas Roell not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  Thomas Roell makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * documentation, and that the names of Thomas Roell or Metro Link
+ * ("copyright holders") not be used in advertising or publicity pertaining
+ * to distribution of the software without specific, written prior permission.
+ * The copyright holders make no representations about the suitability of
+ * this software for any purpose.  It is provided "as is" without express
+ * or implied warranty.
  *
- * THOMAS ROELL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
  * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THOMAS ROELL BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
@@ -40,7 +42,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_Config.h"
 #include "vga.h"
 #include "vgaPCI.h"
@@ -102,10 +104,10 @@ extern Bool miDCInitialize();
 extern int vga256ValidTokens[];
 
 ScrnInfoRec vga256InfoRec = {
+  vgaProbe,		/* Bool (* Probe)() */
   FALSE,		/* Bool configured */
   -1,			/* int tmpIndex */
   -1,			/* int scrnIndex */
-  vgaProbe,		/* Bool (* Probe)() */
   vgaScreenInit,	/* Bool (* Init)() */
   vgaValidMode,		/* Bool (* ValidMode)() */
   vgaEnterLeaveVT,	/* void (* EnterLeaveVT)() */
@@ -184,12 +186,12 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int textClockFreq */
   NULL,			/* char* DCConfig */
   NULL,			/* char* DCOptions */
-  0			/* int MemClk */
+  0,			/* int MemClk */
 #ifdef XFreeXDGA
-  ,0,                    /* int directMode */
+  0,                    /* int directMode */
   NULL,                 /* Set Vid Page */
   0,                    /* unsigned long physBase */
-  0                    /* int physSize */
+  0,                    /* int physSize */
 #endif
 };
 
@@ -261,7 +263,7 @@ ModuleInit(data,magic)
     switch(cnt++)
     {
     case 0:
-      * data = (int) "libxaa.a";
+      * data = (int) "libxaa";
       * magic= MAGIC_LOAD;
       xf86xaaloaded = TRUE;
       break;
@@ -368,6 +370,13 @@ vgaHWCursorRec vgaHWCursor;
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 extern int defaultColorVisualClass;
 
+/*
+ * xf86 ccd functions are defined here where they are used.
+ * Would be a good idea to make these static.
+ */
+xf86ccdDoBitbltProcPtr xf86ccdDoBitblt = NULL;
+xf86ccdXAAScreenInitProcPtr xf86ccdXAAScreenInit = NULL;
+
 /* 
  * we now have a unified pool of drivers
  */
@@ -396,7 +405,7 @@ vgaPrintIdent()
       {
         ErrorF(",");
         c++;
-        if (c + 1 + xf86strlen(id) < 70)
+        if (c + 1 + strlen(id) < 70)
         {
           ErrorF(" ");
           c++;
@@ -408,7 +417,7 @@ vgaPrintIdent()
         }
       }
       ErrorF("%s", id);
-      c += xf86strlen(id);
+      c += strlen(id);
     }
   ErrorF("\n");
 #ifdef PC98
@@ -939,7 +948,7 @@ vgaProbe()
               vga256InfoRec.displayWidth != 1024)
 	    {
 	      ErrorF(
-                "%s %s: SpeedUp code selection modified because virtualX != 1024\n",
+                "%s %s: SpeedUp code selection modified because display width != 1024\n",
                 XCONFIG_PROBED, vga256InfoRec.name);
 	      vga256InfoRec.speedup &= SPEEDUP_ANYWIDTH;
 	      OFLG_CLR(XCONFIG_SPEEDUP,&vga256InfoRec.xconfigFlag);
@@ -1206,10 +1215,6 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   if (!vgaOrigVideoState)
     vgaOrigVideoState = (pointer)(*vgaSaveFunc)(vgaOrigVideoState);
   (*vgaRestoreFunc)(vgaNewVideoState);
-#ifndef DIRTY_STARTUP
-  vgaSaveScreen(NULL, FALSE); /* blank the screen */
-#endif
-  (*vgaAdjustFunc)(vga256InfoRec.frameX0, vga256InfoRec.frameY0);
 
   /*
    * Take display resolution from the -dpi flag if specified
@@ -1249,7 +1254,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     default:
   	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
 #ifdef XFree86LOADER		/* { */
-	if (vgaBitsPerPixel == 8)
+	if (vgaBitsPerPixel == 8) {
 	    if (!xf86ccdXAAScreenInit(pScreen,
 		     (pointer) (vgaUseLinearAddressing ? vgaLinearBase : 
 							vgaVirtBase),
@@ -1258,6 +1263,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     displayResolution, displayResolution,
 		     vga256InfoRec.displayWidth))
 	        return(FALSE);
+	}
 	if((vgaBitsPerPixel == 16) || 
 	   (vgaBitsPerPixel == 24) ||
 	   (vgaBitsPerPixel == 32))
@@ -1326,7 +1332,12 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 			 vga256InfoRec.displayWidth))
       return FALSE;
   }
-  
+
+#ifndef DIRTY_STARTUP
+  (*pScreen->SaveScreen)(NULL, FALSE);
+#endif
+  (*vgaAdjustFunc)(vga256InfoRec.frameX0, vga256InfoRec.frameY0);
+
   if (vgaHWCursor.Initialized)
   {
     xf86PointerScreenFuncs.WarpCursor = vgaHWCursor.Warp;
@@ -1373,14 +1384,14 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		outb(0xae, 0x00);
 		for(i=0;i<10;i++) {
 			*(vramwindow+2) = i;
-			xf86memset(vgaBase, 0xff, 0x8000);
+			memset(vgaBase, 0xff, 0x8000);
 		}
 		*(vramwindow+2) = 0;
 	}
 #else /* PC98_PEGC */		/* }{ */
 #ifndef BANKEDMONOVGA		/* { */
     if (xf86bpp == 1) 
-    	xf86memset(vgaBase,pScreen->blackPixel,vgaSegmentSize);
+    	memset(vgaBase,pScreen->blackPixel,vgaSegmentSize);
     else
 #endif /* BANKEDMONOVGA */	/* } */
     {
@@ -1390,7 +1401,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
       outw(EGC_PLANE, 0);
       outw(EGC_MODE, EGC_COPY_MODE);
       outw(EGC_FGC, pScreen->blackPixel);
-      xf86memset(vgaBase, 0xff, 0x8000);
+      memset(vgaBase, 0xff, 0x8000);
     }
 #else		/* }{ */
     vgaFillSolid( pScreen->blackPixel, GXcopy, 0x0F /* planes */, 0, 0,
@@ -1402,7 +1413,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 
     if (vgaUseLinearAddressing){
         /* use original linear base from MapVidMem() */
-        xf86memset(vgaLinearOrig, pScreen->blackPixel,
+        memset(vgaLinearOrig, pScreen->blackPixel,
              vga256InfoRec.videoRam * 1024);
       }
     else /* banked */
@@ -1432,14 +1443,14 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 #endif
 			vgaPhysPtr=vgaSetWrite(vgaVirtPtr);
             }
-            xf86memset(vgaPhysPtr,pScreen->blackPixel,vgaSegmentSize);
+            memset(vgaPhysPtr,pScreen->blackPixel,vgaSegmentSize);
         }
     }
 #endif /* !PC98_EGC */		/* } */
     }
 #endif /* !PC98_PEGC */	/* } */
   }
-  vgaSaveScreen(NULL, TRUE); /* unblank the screen */
+  (*pScreen->SaveScreen)(NULL, TRUE); /* unblank the screen */
 #endif /* ! DIRTY_STARTUP */	/* } */
 
   savepScreen = pScreen;
@@ -1749,7 +1760,7 @@ vgaCloseScreen(screen_idx, pScreen)
     outw(EGC_PLANE, 0);
     outw(EGC_MODE, EGC_COPY_MODE);
     outw(EGC_FGC, 0);
-    xf86memset(vgaBase, 0xff, 0x8000);
+    memset(vgaBase, 0xff, 0x8000);
   }
   outb(0x6a, 0x07);
   outb(0x6a, 0x04);
@@ -1767,7 +1778,7 @@ vgaCloseScreen(screen_idx, pScreen)
 		outb(0xae, 0x00);
 		for(i=0;i<10;i++) {
 			*(vramwindow+2) = i;
-			xf86memset(vgaBase, 0xff, 0x8000);
+			memset(vgaBase, 0xff, 0x8000);
 		}
 		*(vramwindow+2) = 0;
 	}

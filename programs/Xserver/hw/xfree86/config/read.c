@@ -1,0 +1,204 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.1.2.2 1997/07/22 04:55:40 hohndel Exp $ */
+/* 
+ * 
+ * Copyright (c) 1997  Metro Link Incorporated
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of the Metro Link shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from Metro Link.
+ * 
+ */
+
+#include "xf86Parser.h"
+#include "xf86tokens.h"
+#include "Configint.h"
+
+extern LexRec val;
+
+static xf86ConfigSymTabRec TopLevelTab[] =
+{
+	{SECTION, "section"},
+	{-1, ""},
+};
+
+#define CLEANUP XF86FreeConfig
+
+XF86ConfigPtr
+xf86ReadConfigFile (void)
+{
+	int token;
+	XF86ConfigPtr ptr = NULL;
+
+	if ((ptr = (XF86ConfigPtr) xf86confmalloc (sizeof (XF86ConfigRec))) == NULL)
+	{
+		return NULL;
+	}
+	memset (ptr, 0, sizeof (XF86ConfigRec));
+
+	while ((token = xf86GetToken (TopLevelTab)) != EOF_TOKEN)
+	{
+		switch (token)
+		{
+		case SECTION:
+			if (xf86GetToken (NULL) != STRING)
+			{
+				xf86ParseError (QUOTE_MSG, "Section");
+				CLEANUP (ptr);
+				return (NULL);
+			}
+			SetSection (val.str);
+			if (StrCaseCmp (val.str, "files") == 0)
+			{
+				HANDLE_RETURN (conf_files, parseFilesSection ());
+			}
+			else if (StrCaseCmp (val.str, "serverflags") == 0)
+			{
+				HANDLE_RETURN (conf_flags, parseFlagsSection ());
+			}
+			else if (StrCaseCmp (val.str, "keyboard") == 0)
+			{
+				HANDLE_RETURN (conf_keyboard, parseKeyboardSection ());
+			}
+			else if (StrCaseCmp (val.str, "pointer") == 0)
+			{
+				HANDLE_RETURN (conf_pointer, parsePointerSection ());
+			}
+			else if (StrCaseCmp (val.str, "device") == 0)
+			{
+				HANDLE_LIST (conf_device_lst, parseDeviceSection,
+							 XF86ConfDevicePtr);
+			}
+			else if (StrCaseCmp (val.str, "monitor") == 0)
+			{
+				HANDLE_LIST (conf_monitor_lst, parseMonitorSection,
+							 XF86ConfMonitorPtr);
+			}
+			else if (StrCaseCmp (val.str, "screen") == 0)
+			{
+				HANDLE_LIST (conf_screen_lst, parseScreenSection,
+							 XF86ConfScreenPtr);
+			}
+/* 
+ * This section is not yet implemented. It may be replaced by a more generic
+ * extension section.
+#ifdef XINPUT
+			else if ( StrCaseCmp(val.str, "xinput") == 0 ) {
+				HANDLE_RETURN(xf86ConfigExtendedInputSection(&val));
+			}
+#endif
+*/
+			else if (StrCaseCmp (val.str, "module") == 0)
+			{
+				HANDLE_RETURN (conf_modules, parseModuleSection ());
+			}
+			else if (StrCaseCmp (val.str, "serverlayout") == 0)
+			{
+				HANDLE_LIST (conf_layout_lst, parseLayoutSection,
+							 XF86ConfLayoutPtr);
+			}
+			else if (StrCaseCmp (val.str, "vendor") == 0)
+			{
+				HANDLE_LIST (conf_vendor_lst, parseVendorSection,
+							 XF86ConfVendorPtr);
+			}
+			else
+			{
+				Error (INVALID_SECTION_MSG, xf86TokenString ());
+			}
+			break;
+		default:
+			Error (INVALID_KEYWORD_MSG, xf86TokenString ());
+		}
+	}
+
+	if (validateConfig (ptr))
+		return (ptr);
+	else
+	{
+		CLEANUP (ptr);
+		return (NULL);
+	}
+}
+
+#undef CLEANUP
+
+/* 
+ * This function resolves name references and reports errors if the named
+ * objects cannot be found.
+ */
+int
+validateConfig (XF86ConfigPtr p)
+{
+	if (!validateDevice (p))
+		return FALSE;
+	if (!validateScreen (p))
+		return FALSE;
+	if (!validateLayout (p))
+		return FALSE;
+
+	return (TRUE);
+}
+
+/* 
+ * adds an item to the end of the linked list. Any record whose first field
+ * is a GenericListRec can be cast to this type and used with this function.
+ * A pointer to the head of the list is returned to handle the addition of
+ * the first item.
+ */
+GenericListPtr
+addListItem (GenericListPtr head, GenericListPtr new)
+{
+	GenericListPtr p = head;
+	GenericListPtr last = NULL;
+
+	while (p)
+	{
+		last = p;
+		p = p->next;
+	}
+
+	if (last)
+	{
+		last->next = new;
+		return (head);
+	}
+	else
+		return (new);
+}
+
+void
+XF86FreeConfig (XF86ConfigPtr p)
+{
+	if (p == NULL)
+		return;
+
+	freeFiles (p->conf_files);
+	freeModules (p->conf_modules);
+	freeFlags (p->conf_flags);
+	freeKeyboard (p->conf_keyboard);
+	freePointer (p->conf_pointer);
+	freeMonitorList (p->conf_monitor_lst);
+	freeDeviceList (p->conf_device_lst);
+	freeScreenList (p->conf_screen_lst);
+	freeLayoutList (p->conf_layout_lst);
+
+	xf86conffree (p);
+}

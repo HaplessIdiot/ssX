@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.25 1997/03/27 08:30:35 hohndel Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.26 1997/06/03 14:11:51 hohndel Exp $ */ 
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -13,7 +13,6 @@
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
 #include "xf86.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 
 #define CLK_MCLK         10

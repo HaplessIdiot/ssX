@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3BtCursor.c,v 1.4 1997/09/30 04:51:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3BtCursor.c,v 1.5 1997/12/14 10:04:01 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -36,7 +36,6 @@
 #include "inputstr.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
 #include "s3.h"
 #include "s3reg.h"
 #include "s3Bt485.h"

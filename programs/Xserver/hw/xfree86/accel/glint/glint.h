@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.h,v 1.1 1997/06/17 08:17:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.h,v 1.2 1997/12/05 22:01:29 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -52,6 +52,7 @@
 #include "misc.h"
 #include "xf86.h"
 #include "regionstr.h"
+#include "xf86_ansic.h"
 #include "xf86Procs.h"
 
 #include "glintcurs.h"
@@ -66,7 +67,6 @@ extern volatile unsigned long *VidBase;
 #include "input.h"
 #include "misc.h"
 #include "xf86.h"
-#include "xf86_OSlib.h"
 #endif /* !LINKKIT */
 
 #if !defined(__GNUC__) || defined(NO_INLINE)

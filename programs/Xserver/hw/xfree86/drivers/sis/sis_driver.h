@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_driver.h,v 1.1 1997/01/12 10:43:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.1 1997/03/06 23:16:55 hohndel Exp $ */
 
 /*
  *
@@ -26,6 +26,8 @@
 
 
 /*#define DEBUG*/
+
+#include "xf86_ansic.h"
 
 #define SIS86C201 0
 #define SIS86C202 1

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.34 1997/07/29 12:07:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.35 1997/08/26 10:00:57 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -42,7 +42,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "ibm8514.h"
 #include "reg8514.h"
 #include "xf86bcache.h"
@@ -67,19 +67,6 @@ static int ibm8514ValidMode(
 
 #if defined(XFree86LOADER)
 
-ScrnInfoPtr xf86Screens[] = 
-{
-  &ibm8514InfoRec,
-};
-
-int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
-
-int xf86ScreenNames[] =
-{
-  ACCEL,
-  -1
-};
-
 int ibm8514ValidTokens[] =
 {
   STATICGRAY,
@@ -103,10 +90,10 @@ int ibm8514ValidTokens[] =
 #endif
 
 ScrnInfoRec ibm8514InfoRec = {
+    ibm8514Probe,      	/* Bool (* Probe)() */
     FALSE,		/* Bool configured */
     -1,			/* int tmpIndex */
     -1,			/* int scrnIndex */
-    ibm8514Probe,      	/* Bool (* Probe)() */
     ibm8514Initialize,	/* Bool (* Init)() */
     ibm8514ValidMode,	/* int (* ValidMode)() */
     ibm8514EnterLeaveVT,/* void (* EnterLeaveVT)() */
@@ -183,7 +170,7 @@ return &ibm8514InfoRec;
 XF86ModuleVersionInfo ibm8514VersRec =
 {
         "lib8514.a",
-        "The XFree86 Project",
+        MODULEVENDORSTRING,
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,
@@ -210,7 +197,7 @@ ModuleInit(data,magic)
         * magic= MAGIC_ADD_VIDEO_CHIP_REC;
         break;
     case 2:
-        * data = (pointer) "libxf86cache.a";
+        * data = (pointer) "libxf86cache";
         * magic= MAGIC_LOAD;
         break;
     default:

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga8cppl.c,v 3.3 1996/12/23 06:59:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga8cppl.c,v 3.4 1997/02/24 17:47:10 hohndel Exp $ */
 /*
  *
 Copyright (c) 1990  X Consortium
@@ -121,7 +121,7 @@ vga256CopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask
 
     BANK_FLAG(psrcBase)
 
-    bitPos = xf86ffs (bitPlane) - 1;
+    bitPos = ffs (bitPlane) - 1;
 
     nbox = REGION_NUM_RECTS(prgnDst);
     pbox = REGION_RECTS(prgnDst);

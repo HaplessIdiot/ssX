@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.17 1996/12/23 06:41:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.18 1997/11/16 06:18:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -47,8 +47,6 @@
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
 #endif
-
-extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
 
 #define NOMAPYET        (ColormapPtr) 0
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.14 1997/11/22 00:00:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.15 1997/12/05 22:01:32 hohndel Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -42,7 +42,6 @@ static unsigned char vgamem[VGA_SAVE_COUNT];    /* vga text memory */
 int i128InitCursorFlag = TRUE;
 int i128HDisplay;
 
-extern struct i128mem i128mem;
 extern struct i128io i128io;
 extern int i128Weight;
 extern int i128DisplayWidth;
@@ -54,10 +53,10 @@ extern int i128RamdacType;
 
 
 #if NeedFunctionPrototypes
-void
+static void
 saveI128state(void)
 #else
-void
+static void
 saveI128state()
 #endif
 {
@@ -203,10 +202,10 @@ saveI128state()
 
 
 #if NeedFunctionPrototypes
-void
+static void
 restoreI128state(void)
 #else
-void
+static void
 restoreI128state()
 #endif
 {
@@ -306,7 +305,7 @@ restoreI128state()
    		i128mem.rbase_g[IDXL_I] = IBMRGB_sysclk_vco_div;	MB;
    		i128mem.rbase_g[DATA_I] =
 			iR.IBMRGB[IBMRGB_sysclk_vco_div];		MB;
-		xf86usleep(50000);
+		usleep(50000);
 	}
 
         xf86EnableIOPorts(i128InfoRec.scrnIndex);
@@ -537,7 +536,7 @@ static void
 InitLUT()
 #endif
 {
-   short i, j;
+   short i;
 
    i128mem.rbase_g[PEL_MASK] = 0xff;					MB;
 
@@ -563,8 +562,6 @@ InitLUT()
       int r,g,b;
       int mr,mg,mb;
       int nr=5, ng=5, nb=5;
-      extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
-      extern LUTENTRY currenti128dac[];
 
       if (!LUTInited) {
 	 if (i128Weight == RGB32_888) {

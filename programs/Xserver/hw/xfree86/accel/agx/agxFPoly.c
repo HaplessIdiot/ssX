@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFPoly.c,v 3.2 1996/02/04 08:58:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFPoly.c,v 3.3 1996/12/23 06:32:39 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -52,6 +52,8 @@ SOFTWARE.
 #include "pixmap.h"
 #include "miscanfill.h"
 #include "mipoly.h"
+#include "mi.h"
+#include "mispans.h"
 #include "cfb.h"
 #include "agx.h"
 #include "regagx.h"

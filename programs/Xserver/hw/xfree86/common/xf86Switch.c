@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.1 1997/06/15 07:12:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.2 1997/06/17 12:33:25 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -228,7 +228,9 @@ xf86SwtProc(pSwt, what)
 	  /* allocate the motion history buffer if needed */
 	  xf86MotionHistoryAllocate(local);
 
+/***
           AssignTypeAndName(pSwt, local->atom, local->name);
+***/
         }
 
       break; 
@@ -266,20 +268,14 @@ xf86SwtAllocate()
   
   local->name = "SWITCH";
   local->flags = 0;
-#if !defined(sun) || defined(i386)
-  local->device_config = NULL;
-#endif
-  local->device_control = xf86SwtProc;
   local->read_input = NULL;
   local->close_proc = NULL;
   local->control_proc = NULL;
   local->switch_mode = NULL;
   local->conversion_proc = xf86SwtConvert;
   local->fd = -1;
-  local->atom = 0;
   local->dev = NULL;
   local->private = priv;
-  local->type_name = "Switch";
   local->history_size  = 0;
   
   priv->last = -1;

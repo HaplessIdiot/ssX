@@ -27,7 +27,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.8 1997/07/29 12:07:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.9 1997/08/12 12:02:01 hohndel Exp $ */
 
 #include "servermd.h"
 
@@ -50,7 +50,6 @@ static PixmapPtr ppix = NULL;
 extern int i128DisplayWidth;
 extern pointer vgaBase;
 extern pointer i128VideoMem;
-extern struct i128mem i128mem;
 
 extern Bool xf86Exiting, xf86Resetting;
 
@@ -72,7 +71,6 @@ i128Initialize(scr_index, pScreen, argc, argv)
      char **argv;		/* The arguments themselves. Don't change! */
 {
    int displayResolution = 75;	/* default to 75dpi */
-   extern int monitorResolution;
    Bool (*ScreenInitFunc)(register ScreenPtr, pointer, int, int, int, int, int);
 
  /*

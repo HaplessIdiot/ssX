@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/regmach32.h,v 3.6 1996/08/11 12:45:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/regmach32.h,v 3.7 1996/12/23 06:38:51 dawes Exp $ */
 /* regmach32.h
  *
  * Written by Jake Richter
@@ -27,7 +27,6 @@
 #define REGMACH32_H
 
 #include "compiler.h"
-#include "Xos.h"
 
 /* VESA Approved Register Definitions */
 #define	DAC_MASK		0x02ea

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.13 1996/12/23 06:35:21 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.14 1997/06/03 14:11:19 hohndel Exp $ */ 
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -35,7 +35,6 @@ glenn@cs.utexas.edu)
 #include "X.h"
 #include "misc.h"
 #include "vgaBank.h"
-#include <stdio.h>
 
 typedef unsigned char *ByteP; 
 typedef volatile unsigned char *VByteP;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.24 1997/08/26 10:01:39 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.25 1997/12/05 22:01:50 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -26,7 +26,15 @@
 #include <X.h>
 #include <Xmd.h>
 #include <sys/types.h>
+#if defined(__bsdi__)
+#undef _POSIX_SOURCE
+#undef _ANSI_SOURCE
+#endif
 #include <sys/time.h>
+#if defined(__bsdi__)
+#define _POSIX_SOURCE
+#define _ANSI_SOURCE
+#endif
 #include <math.h>
 #include <stdarg.h>
 #include <fcntl.h>
@@ -40,9 +48,15 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#include <sys/ioctl.h>
 #if (!defined (i386) || !defined (SVR4)) && !defined(ISC)
 #include <stdlib.h>
 #endif
+
+#define NEED_XF86_TYPES
+#define DONT_DEFINE_WRAPPERS
+#include "xf86_libc.h"
+
 #define NO_OSLIB_PROTOTYPES
 #include "xf86Procs.h"
 #if NeedVarargsPrototypes
@@ -72,25 +86,6 @@ int xf86execl();
 #endif
 #endif
 typedef struct dirent DIRENTRY;
-
-#if 0 /* Don't duplicate this stuff or it will get out of sync, like now */
-#ifndef XFree86LOADER
-typedef pointer XF86FILE;	/* opaque FILE* replacement */
-typedef pointer XF86fpos_t;	/* opaque fpos_t* replacement */
-
-#define _XF86NAMELEN	263	/* enough for a larger filename */
-				/* (divisble by 8) */
-typedef pointer XF86DIR;	/* opaque DIR* replacement */
-
-/* Note: the following is POSIX! POSIX only requires the d_name member. 
- * Normal Unix has often a number of other members, but don't rely on that
- */
-struct _xf86dirent {		/* types in struct dirent/direct: */
-	char	d_name[_XF86NAMELEN+1];	/* char [MAXNAMLEN]; might be smaller or unaligned */
-};
-typedef struct _xf86dirent XF86DIRENT;
-#endif
-#endif
 
 #ifdef __EMX__
 #define _POSIX_SOURCE
@@ -731,7 +726,7 @@ xf86freopen(const char* fname,const char* mode,XF86FILE* fold)
 	fp->fname = xf86strdup(fname);
 #ifdef DEBUG
 	ErrorF("xf86freopen(%s,%s,%p) yields FILE %p XF86FILE %p\n",
-		fn,mode,fold,f,fp);
+		fname,mode,fold,fnew,fp);
 #endif
 	return (XF86FILE*)fp;
 }

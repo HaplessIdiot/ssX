@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64blt.c,v 3.8 1996/12/23 06:39:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64blt.c,v 3.9 1997/02/24 17:46:52 hohndel Exp $ */
 /*
  * Copyright 1989 by the Massachusetts Institute of Technology
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -46,6 +46,7 @@
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 #include	"fastblt.h"
+#include	"xf86_ansic.h"
 #include	"mach64.h"
 #include	"mi.h"
 
@@ -468,8 +469,8 @@ mach64BitBlt (pSrc, pDst, pGC, srcX, srcY, copyWidth, copyHeight,
 	    clippedDstRgn.extents.x2 = srcX2;
 	    clippedDstRgn.extents.y2 = srcY2;
 	    clippedDstRgn.data = (RegDataPtr)NULL;
-	    (*pGC->pScreen->Intersect)(&clippedDstRgn, &clippedDstRgn, 
-				       pRgnDstClip);
+	    REGION_INTERSECT(pGC->pScreen, &clippedDstRgn, &clippedDstRgn, 
+			     pRgnDstClip);
 	}
     } /* end section that set up a dest region with fastClip turned on */
     else
@@ -479,11 +480,11 @@ mach64BitBlt (pSrc, pDst, pGC, srcX, srcY, copyWidth, copyHeight,
 	clippedDstRgn.extents.x2 = srcX2;
 	clippedDstRgn.extents.y2 = srcY2;
 	clippedDstRgn.data = (RegDataPtr)NULL;
-	(*pGC->pScreen->Intersect)(&clippedDstRgn, &clippedDstRgn,
-				   pRgnSrcClip);
-        (*pGC->pScreen->TranslateRegion)(&clippedDstRgn, -dx, -dy);
-	(*pGC->pScreen->Intersect)(&clippedDstRgn, &clippedDstRgn, 
-				   pRgnDstClip);
+	REGION_INTERSECT(pGC->pScreen, &clippedDstRgn, &clippedDstRgn,
+			 pRgnSrcClip);
+        REGION_TRANSLATE(pGC->pScreen, &clippedDstRgn, -dx, -dy);
+	REGION_INTERSECT(pGC->pScreen, &clippedDstRgn, &clippedDstRgn, 
+			 pRgnDstClip);
     } /* end section that set up a dest region with fastClip turned off */
 
     if (!fastClip) 
@@ -506,10 +507,10 @@ mach64BitBlt (pSrc, pDst, pGC, srcX, srcY, copyWidth, copyHeight,
 
 	    if(!(pClippedSrcPt))
 	    {
-	        (*pGC->pScreen->RegionUninit)(&clippedDstRgn);
+	        REGION_UNINIT(pGC->pScreen, &clippedDstRgn);
 	        if (freeSrcClip)
 		{
-		    (*pGC->pScreen->RegionDestroy)(pRgnSrcClip);
+		    REGION_DESTROY(pGC->pScreen, pRgnSrcClip);
 		}
 	        return NULL;
 	    }
@@ -528,7 +529,7 @@ mach64BitBlt (pSrc, pDst, pGC, srcX, srcY, copyWidth, copyHeight,
 		        bitPlane);
 	    DEALLOCATE_LOCAL(pClippedSrcPt);
         }
-        (*pGC->pScreen->RegionUninit)(&clippedDstRgn);
+        REGION_UNINIT(pGC->pScreen, &clippedDstRgn);
     }
 
 
@@ -545,7 +546,7 @@ mach64BitBlt (pSrc, pDst, pGC, srcX, srcY, copyWidth, copyHeight,
 
     if (freeSrcClip)
     {
-	(*pGC->pScreen->RegionDestroy)(pRgnSrcClip);
+	REGION_DESTROY(pGC->pScreen, pRgnSrcClip);
     }
 
     return pRgnExposed;
@@ -1127,7 +1128,7 @@ cfbCopyPlane32to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
     cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, unsigned long)
     cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, unsigned long)
 
-    bitPos = xf86ffs (bitPlane) - 1;
+    bitPos = ffs (bitPlane) - 1;
 
     nbox = REGION_NUM_RECTS(prgnDst);
     pbox = REGION_RECTS(prgnDst);
@@ -1466,7 +1467,7 @@ cfbCopyPlane16to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 
     widthSrc = widthSrc << 1;
 
-    bitPos = xf86ffs (bitPlane) - 1;
+    bitPos = ffs (bitPlane) - 1;
 
     nbox = REGION_NUM_RECTS(prgnDst);
     pbox = REGION_RECTS(prgnDst);

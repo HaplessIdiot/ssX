@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.8 1996/02/04 08:58:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.9 1996/12/23 06:33:09 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  * 
@@ -38,7 +38,6 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 
 #define XCONFIG_FLAGS_ONLY

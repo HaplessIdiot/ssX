@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64cmap.c,v 3.9 1996/12/23 06:39:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64cmap.c,v 3.10 1997/11/16 06:18:50 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -37,6 +37,7 @@
 #include "scrnintstr.h"
 #include "colormapst.h"
 #include "windowstr.h"
+#include "cfb.h"
 #include "compiler.h"
 #include "mach64.h"
 

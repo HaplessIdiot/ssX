@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.29 1997/02/17 09:44:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.30 1997/07/29 12:07:28 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -47,7 +47,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "agx.h"
 #include "regagx.h"
@@ -246,7 +246,7 @@ agxHWSave( save, size )
 
    if( save == NULL ) {
       save = (agxSaveBlock*)xalloc(size);
-      xf86memset( save, 0x00, size );
+      memset( save, 0x00, size );
    }
 
    if( saveRamDac )

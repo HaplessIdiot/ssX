@@ -528,7 +528,7 @@ NO_TRANSPARENCY
 
 NO_CAP_NOT_LAST
 
-    Indicates that the graphics operation (typically PolySegment) does
+    Indicates that the graphics operation (PolyLine or PolySegment) does
     not support not drawing of the last pixel.
 
 TRANSPARENCY_GXCOPY
@@ -593,7 +593,7 @@ Flags
 
     Use two-point lines (TwoPointLine) instead of Bresenham lines for
     general lines. This flag is automatically set if appropriate. It
-    should not be set in a driver in any case.
+    must be set in a driver.
 
     HORIZONTAL_TWOPOINTLINE
 
@@ -604,7 +604,7 @@ Flags
 
     Indicates that TwoPointLine supports the notlast flag that indicates
     whether the last pixel should be drawn. If this is not supported,
-    PolySegment cannot support the CapNotLast CapStyle.
+    PolyLine and PolySegment cannot support the CapNotLast CapStyle.
 
     TWO_POINT_LINE_ERROR_TERM
 
@@ -1901,4 +1901,4 @@ Mach64 server provided a baseline for what to implement first.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES,v 3.16 1997/09/30 04:51:03 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES,v 3.17 1997/10/25 13:50:59 hohndel Exp $

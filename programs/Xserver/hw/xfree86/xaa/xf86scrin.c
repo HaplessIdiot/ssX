@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.20 1997/08/26 10:01:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.21 1998/01/11 03:48:29 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -112,7 +112,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #endif
 
 /* This is defined in cfbscrinit.c */
-extern Bool cfbCreateScreenResources();
+extern Bool cfbCreateScreenResources(ScreenPtr);
 
 static void
 GetImageWrapper(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
@@ -151,19 +151,19 @@ GetSpansWrapper(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 static miBSFuncRec xf86BSFuncRec = {
     cfbSaveAreas,
     cfbRestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    0,
+    0,
+    0,
 };
 
-static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
+static Bool
+vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
     int xsize, ysize;		/* in pixels */
     int dpix, dpiy;		/* dots per inch */
     int width;			/* pixel width of frame buffer */
 {
-    int	i, j;
 #ifdef CFB_NEED_SCREEN_PRIVATE
     pointer oldDevPrivate;
 #endif
@@ -173,9 +173,14 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     int		ndepths;
     int		rootdepth;
     VisualID	defaultVisual;
+#if PSZ > 8
+    int	i;
     VisualPtr	visual;
+#endif
     int		BitsPerRGB;
 
+	extern Bool vgaUseLinearAddressing;
+	
     rootdepth = 0;
 
     BitsPerRGB = xf86weight.green;
@@ -281,7 +286,6 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 #endif
 
 #ifdef PIXPRIV
-    xf86PixmapIndex = AllocatePixmapPrivateIndex();
     if (!AllocatePixmapPrivate(pScreen, xf86PixmapIndex,
 			       sizeof(xf86PixPrivRec)))
 	return FALSE;
@@ -296,8 +300,14 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
      */
     xf86GCInfoRec.cfbBitBltDispatch = cfbBitBlt;
 #ifdef VGA256
-    xf86AccelInfoRec.VerticalLineGXcopyFallBack = fastvga256VertS;
-    xf86AccelInfoRec.BresenhamLineFallBack = fastvga256BresS;
+	if (vgaUseLinearAddressing) {
+		xf86AccelInfoRec.VerticalLineGXcopyFallBack = cfbVertS;
+		xf86AccelInfoRec.BresenhamLineFallBack = cfbBresS;
+	}
+	else {
+		xf86AccelInfoRec.VerticalLineGXcopyFallBack = fastvga256VertS;
+		xf86AccelInfoRec.BresenhamLineFallBack = fastvga256BresS;
+	}		
     xf86AccelInfoRec.UsingVGA256 = TRUE;
 #else
     xf86AccelInfoRec.VerticalLineGXcopyFallBack = cfbVertS;

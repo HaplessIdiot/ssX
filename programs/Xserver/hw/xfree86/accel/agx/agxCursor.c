@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.8 1997/02/17 09:44:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.9 1997/05/31 13:51:27 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -49,7 +49,6 @@
 #include "inputstr.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "agx.h"
 #include "regagx.h"
@@ -240,7 +239,7 @@ agxRealizeCursor(pScr, pCurs)
       for(; j < AGX_CURSMAX / 8; j++)
 	  *ram++ = 0xaaaa;
    }
-   xf86memset(ram, 0xaa, (AGX_CURSMAX-h)*16);
+   memset(ram, 0xaa, (AGX_CURSMAX-h)*16);
 
    return(TRUE);
 }

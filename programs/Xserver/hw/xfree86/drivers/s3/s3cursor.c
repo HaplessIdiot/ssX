@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.8 1997/12/05 22:01:47 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.9 1997/12/14 10:04:01 hohndel Exp $
 *
 */
 
@@ -23,7 +23,6 @@
 #include "mipointer.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
 #include "vga.h"
 #include "xf86cursor.h"
 

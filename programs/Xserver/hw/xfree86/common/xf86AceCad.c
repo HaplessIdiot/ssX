@@ -22,11 +22,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AceCad.c,v 3.3 1997/07/06 05:30:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AceCad.c,v 3.4 1997/11/16 11:51:11 dawes Exp $ */
 
 #include "Xos.h"
-#include <signal.h>
-#include <stdio.h>
 
 #define NEED_EVENTS
 #include "X.h"

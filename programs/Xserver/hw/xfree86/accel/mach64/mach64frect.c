@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64frect.c,v 3.3 1996/02/04 09:03:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64frect.c,v 3.4 1996/12/23 06:39:15 dawes Exp $ */
 /*
  * Copyright 1989 by the Massachusetts Institute of Technology
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -39,6 +39,7 @@
 #include "scrnintstr.h"
 #include "windowstr.h"
 
+#include "mi.h"
 #include "cfb.h"
 #include "cfb16.h"
 #include "cfb32.h"
@@ -48,7 +49,11 @@
 #include "mach64im.h"
 
 
+#if NeedFunctionPrototypes
+static void mach64TileFillRect(DrawablePtr, GCPtr, int, xRectangle *);
+#else
 static void mach64TileFillRect();
+#endif
 
 void
 mach64PolyFillRect(pDrawable, pGC, nrectFill, prectInit)

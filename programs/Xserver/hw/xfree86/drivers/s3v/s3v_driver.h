@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.h,v 1.6 1997/06/03 14:12:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.h,v 1.7 1997/07/29 12:08:02 hohndel Exp $ */
 
 /* Header file for ViRGE server */
 
@@ -63,11 +63,14 @@ typedef struct {
 
 /* Function prototypes */
 
-S3PCIInformation * s3vGetPCIInfo();
-extern Bool S3VCursorInit();
-extern void S3VRestoreCursor();
-extern void S3VWarpCursor();
-extern void S3VQueryBestSize();
+S3PCIInformation *s3vGetPCIInfo(void);
+extern void S3VAccelInit(void);
+extern void S3VAccelInit32(void);
+extern Bool S3VCursorInit(char *, ScreenPtr);
+extern void S3VGEReset(void);
+extern void S3VRestoreCursor(ScreenPtr);
+extern void S3VWarpCursor(ScreenPtr, int, int);
+extern void S3VQueryBestSize(int, unsigned short *, unsigned short *, ScreenPtr);
 
 
 /* Various defines which are used to pass flags between the Setup and 
@@ -129,8 +132,7 @@ static __inline__ int S3VCheckBltWidth(int w)
  * data is written to the image transfer area. 
  */
 
-static __inline__ Bool S3VROPHasSrc(shifted_rop)
-int shifted_rop;
+static __inline__ Bool S3VROPHasSrc(int shifted_rop)
 {
     int rop = (shifted_rop & (0xff << 17)) >> 17;
 
@@ -148,8 +150,7 @@ int shifted_rop;
  * have to be neither 0x00, 0x03, 0x0c or 0x0f. 
  */
 
-static __inline__ Bool S3VROPHasDst(shifted_rop)
-int shifted_rop;
+static __inline__ Bool S3VROPHasDst(int shifted_rop)
 {
     int rop = (shifted_rop & (0xff << 17)) >> 17;
 

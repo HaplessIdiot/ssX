@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.2 1997/06/16 00:26:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.3 1997/11/22 08:17:35 dawes Exp $ */
 
 #ifdef DPMSExtension
 
@@ -7,6 +7,7 @@
 #include "xf86.h"
 
 #include "vga.h"
+#include "tseng.h"
 
 /*
  * TsengCrtcDPMSSet --
@@ -26,6 +27,7 @@ TsengCrtcDPMSSet(Mode)
   switch (Mode)
     {
     case DPMSModeOn:
+    default:
       /* Screen: On; HSync: On, VSync: On */
       seq1 = 0x00;
       crtc34 = 0x00;
@@ -70,7 +72,7 @@ TsengCrtcDPMSSet(Mode)
  *    syncs (=VESA DPMS power down), but will also disable DRAM refresh cycles"
  *
  * The method used here is derived from the same tech note, which describes
- * a mathod to disable specific sync signals on chips that do not have
+ * a method to disable specific sync signals on chips that do not have
  * direct support for it:
  *
  *    To get vsync off, program VSYNC_START > VTOTAL
@@ -123,7 +125,7 @@ TsengHVSyncDPMSSet(Mode)
   VSync = inb(vgaIOBase+5);
   outb(vgaIOBase+4, 0x07);
   tmp = inb(vgaIOBase+5);
-  VSync += (tmp & 0x04)<< 6 + (tmp & 0x80) << 2;
+  VSync += ((tmp & 0x04) << 6) + ((tmp & 0x80) << 2);
   outb(vgaIOBase+4, 0x35);
   VSync += (inb(vgaIOBase+5) & 0x08) << 7;
   /*  HTOT:
@@ -143,7 +145,7 @@ TsengHVSyncDPMSSet(Mode)
   VTot = inb(vgaIOBase+5);
   outb(vgaIOBase+4, 0x07);
   tmp = inb(vgaIOBase+5);
-  VTot += (tmp & 0x01)<< 8 + (tmp & 0x20) << 4;
+  VTot += ((tmp & 0x01) << 8) + ((tmp & 0x20) << 4);
   outb(vgaIOBase+4, 0x35);
   VTot += (inb(vgaIOBase+5) & 0x02) << 9;
 
@@ -153,6 +155,7 @@ TsengHVSyncDPMSSet(Mode)
   switch (Mode)
     {
     case DPMSModeOn:
+    default:
       /* Screen: On; HSync: On, VSync: On */
       seq1 = 0x00;
       if(HSync > HTot +3) { /* Sync is off now, turn it on. */
@@ -202,10 +205,18 @@ TsengHVSyncDPMSSet(Mode)
       break;
     }
 
+  /* If the new hsync or vsync overflows, don't change anything. */
+  if (HSync >= 1 << 9 || VSync >= 1 << 11) {
+      ErrorF("tseng: warning: Cannot go into DPMS from this resolution.\n");
+      chgVSync = chgHSync = FALSE;
+  }
+
   /* The code to turn on and off video output is equal for all. */
-  outb(0x3C4, 0x01);	/* Select SEQ1 */
-  seq1 |= inb(0x3C5) & ~0x20;
-  outb(0x3C5, seq1);
+  if (chgHSync || chgVSync) {
+      outb(0x3C4, 0x01);	/* Select SEQ1 */
+      seq1 |= inb(0x3C5) & ~0x20;
+      outb(0x3C5, seq1);
+  }
 
   /* Then the code to write VSync and HSync to the card.
    *  HSYNC:

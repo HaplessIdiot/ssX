@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPushPxl.c,v 3.5 1997/03/13 15:11:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPushPxl.c,v 3.6 1997/04/12 13:46:02 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -34,6 +34,7 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 #include "miscstruct.h"
+#include "mi.h"
 
 #include "ppc.h"
 #include "maskbits.h"

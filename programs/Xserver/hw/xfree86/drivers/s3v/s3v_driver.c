@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.14 1997/08/26 10:01:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.15 1997/10/25 13:50:36 hohndel Exp $ */
 
 /*
  *
@@ -52,7 +52,8 @@
 #include "compiler.h"
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
+#include "xf86Procs.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "xf86Version.h"
 #include "vga.h"
@@ -75,26 +76,24 @@
 #include "s3v_driver.h"
 #include "regs3v.h"
 
-static Bool    S3VProbe();
-static char *  S3VIdent();
-static Bool    S3VClockSelect();
-static void    S3VEnterLeave();
-static Bool    S3VInit();
-static int     S3VValidMode();
-static void *  S3VSave();
-static void    S3VRestore();
-static void    S3VAdjust();
-static void    S3VFbInit();
-void           S3VSetRead();
-void           S3VAccelInit();
-void           S3VAccelInit32();
-void           S3VInitSTREAMS();
-void           S3VDisableSTREAMS();
-void           S3VRestoreSTREAMS();
-void           S3VSaveSTREAMS();
+static Bool	S3VProbe(void);
+static char *	S3VIdent(int);
+static void	S3VEnterLeave(Bool);
+static Bool	S3VInit(DisplayModePtr);
+static int	S3VValidMode(DisplayModePtr, Bool, int);
+static void *	S3VSave(vgaS3VPtr);
+static void	S3VRestore(vgaS3VPtr);
+static void	S3VAdjust(int, int);
+static void	S3VFbInit(void);
+static unsigned char *find_bios_string(int, char *, char *);
+
+static void	S3VInitSTREAMS(unsigned int *, DisplayModePtr);
+static void	S3VDisableSTREAMS(void);
+static void	S3VRestoreSTREAMS(unsigned int *);
+static void	S3VSaveSTREAMS(unsigned int *);
 
 /* Temporary debug function to print virge regs */
-void S3VPrintRegs();
+static void S3VPrintRegs(void);
 
 /*
  * And the data structure which defines the driver itself 
@@ -125,7 +124,7 @@ vgaVideoChipRec S3V = {
   0x00000, 0x10000,     /* int ChipWriteBottom, int ChipWriteTop */
   FALSE,                /* Bool ChipUse2Banks */
   VGA_DIVIDE_VERT,      /* int ChipInterlaceType */
-  {0,},                 /* OFlagSet ChipOptionFlags */
+  {{0,}},               /* OFlagSet ChipOptionFlags */
   8,                    /* int ChipRounding */
   TRUE,                 /* Bool ChipUseLinearAddressing */
   0,                    /* int ChipLinearBase */
@@ -475,12 +474,16 @@ unsigned char tmp, cr3a, cr53, cr66, cr67;
     */
 
 
+#ifndef MetroLink
    if(s3vPriv.chip == S3_ViRGE_VX) {
       if(restore->CR63 & 0x01) S3VGEReset();
       }
    else {
       if(restore->CR66 & 0x01) S3VGEReset();
       }
+#else
+   S3VGEReset();
+#endif
 
    VerticalRetraceWait();
    ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control = restore->MMPR0;
@@ -530,7 +533,6 @@ static void *
 S3VSave (save)
 vgaS3VPtr save;
 {
-int i;
 unsigned char cr3a, cr53, cr66;
 
    /*
@@ -698,19 +700,19 @@ static unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
    if (match1 == NULL)
       return NULL;
 
-   l1 = xf86strlen(match1);
+   l1 = strlen(match1);
    if (match2 != NULL) 
-      l2 = xf86strlen(match2);
+      l2 = strlen(match2);
    else	/* for compiler-warnings */
       l2 = 0;
 
    for (i=0; i<BIOS_BSIZE-l1; i++)
-      if (bios[i] == match1[0] && !xf86memcmp(&bios[i],match1,l1))
+      if (bios[i] == match1[0] && !memcmp(&bios[i],match1,l1))
 	 if (match2 == NULL) 
 	    return &bios[i+l1];
 	 else
 	    for(j=i+l1; (j<BIOS_BSIZE-l2) && bios[j]; j++) 
-	       if (bios[j] == match2[0] && !xf86memcmp(&bios[j],match2,l2))
+	       if (bios[j] == match2[0] && !memcmp(&bios[j],match2,l2))
 		  return &bios[j+l2];
    return NULL;
 }
@@ -742,9 +744,8 @@ DisplayModePtr pMode, pEnd;
    if (!pciInfo)
       return FALSE;
 
-   if (pciInfo && pciInfo->MemBase)
+   if (pciInfo->MemBase)
       vga256InfoRec.MemBase = pciInfo->MemBase;
-   if (pciInfo)
       if(pciInfo->ChipType != S3_ViRGE && 
          pciInfo->ChipType != S3_ViRGE_VX &&
 	 pciInfo->ChipType != S3_ViRGE_DXGX &&
@@ -934,8 +935,9 @@ DisplayModePtr pMode, pEnd;
    n1 = n & 0x1f;
    n2 = (n>>5) & 0x03;
    mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
-   ErrorF("%s %s: Detected current MCLK value of %1.3f MHz\n",XCONFIG_PROBED, 
-      vga256InfoRec.name, mclk / 1000.0);
+   if (xf86Verbose > 1)
+      ErrorF("%s %s: Detected current MCLK value of %1.3f MHz\n",
+	     XCONFIG_PROBED, vga256InfoRec.name, mclk / 1000.0);
 
 
    /* Now check if the user has specified "set_memclk" value in XConfig */
@@ -1123,8 +1125,7 @@ static void
 S3VAdjust(x, y)
 int x, y;
 {
-int Base, hwidth;
-unsigned char tmp;
+int Base;
 
    if(s3vPriv.STREAMSRunning == FALSE) {
       Base = ((y * vga256InfoRec.displayWidth + x)
@@ -1500,7 +1501,7 @@ S3VFbInit()
  */
 void
 S3VInitSTREAMS(streams, mode)
-int * streams;
+unsigned int *streams;
 DisplayModePtr mode;
 {
   
@@ -1573,7 +1574,7 @@ DisplayModePtr mode;
 
 void
 S3VSaveSTREAMS(streams)
-int * streams;
+unsigned int *streams;
 {
 
    streams[0] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_stream_cntl;
@@ -1605,7 +1606,7 @@ int * streams;
 
 void
 S3VRestoreSTREAMS(streams)
-int * streams;
+unsigned int *streams;
 {
 
 /* For now, set most regs to their default values for 24bpp 
@@ -1667,65 +1668,65 @@ unsigned char tmp;
 void
 S3VPrintRegs(void)
 {
-unsigned char tmp1, tmp2;
+    unsigned char tmp1, tmp2;
 
-   outb(0x3c4, 0x10);
-   tmp1 = inb(0x3c5);
-   outb(0x3c4, 0x11);
-   tmp2 = inb(0x3c5);
-   ErrorF("SR10: %d SR11: %d\n", tmp1, tmp2);
+    outb(0x3c4, 0x10);
+    tmp1 = inb(0x3c5);
+    outb(0x3c4, 0x11);
+    tmp2 = inb(0x3c5);
+    ErrorF("SR10: %d SR11: %d\n", tmp1, tmp2);
 
-   outb(0x3c4, 0x12);
-   tmp1 = inb(0x3c5);
-   outb(0x3c4, 0x13);
-   tmp2 = inb(0x3c5);
-   ErrorF("SR12: %d SR13: %d\n", tmp1, tmp2);
+    outb(0x3c4, 0x12);
+    tmp1 = inb(0x3c5);
+    outb(0x3c4, 0x13);
+    tmp2 = inb(0x3c5);
+    ErrorF("SR12: %d SR13: %d\n", tmp1, tmp2);
 
-   outb(0x3c4, 0x0a);
-   tmp1 = inb(0x3c5);
-   outb(0x3c4, 0x15);
-   tmp2 = inb(0x3c5);
-   ErrorF("SR0A: %d SR15: %d\n", tmp1, tmp2);
+    outb(0x3c4, 0x0a);
+    tmp1 = inb(0x3c5);
+    outb(0x3c4, 0x15);
+    tmp2 = inb(0x3c5);
+    ErrorF("SR0A: %d SR15: %d\n", tmp1, tmp2);
 
-   /* Now load and print a whole rnage of other regs */
-for(tmp1=0x0;tmp1<=0x0f;tmp1++){
-   outb(vgaCRIndex, tmp1);
-   ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
-   }
-   ErrorF("\n");
-for(tmp1=0x10;tmp1<=0x1f;tmp1++){
-   outb(vgaCRIndex, tmp1);
-   ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
-   }
-   ErrorF("\n");
-for(tmp1=0x20;tmp1<=0x2f;tmp1++){
-   outb(vgaCRIndex, tmp1);
-   ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
-   }
-   ErrorF("\n");
-for(tmp1=0x30;tmp1<=0x3f;tmp1++){
-   outb(vgaCRIndex, tmp1);
-   ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
-   }
-   ErrorF("\n");
-for(tmp1=0x40;tmp1<=0x4f;tmp1++){
-   outb(vgaCRIndex, tmp1);
-   ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
-   }
-   ErrorF("\n");
-for(tmp1=0x50;tmp1<=0x59;tmp1++){
-   outb(vgaCRIndex, tmp1);
-   ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
-   }
-   ErrorF("\n");
-for(tmp1=0x5d;tmp1<=0x67;tmp1++){
-   outb(vgaCRIndex, tmp1);
-   ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
-   }
-   ErrorF("\n");
-for(tmp1=0x68;tmp1<=0x6f;tmp1++){
-   outb(vgaCRIndex, tmp1);
-   ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
-   }
-   ErrorF("\n\n");
+    /* Now load and print a whole rnage of other regs */
+    for(tmp1=0x0;tmp1<=0x0f;tmp1++){
+	outb(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
+    }
+    ErrorF("\n");
+    for(tmp1=0x10;tmp1<=0x1f;tmp1++){
+	outb(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
+    }
+    ErrorF("\n");
+    for(tmp1=0x20;tmp1<=0x2f;tmp1++){
+	outb(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
+    }
+    ErrorF("\n");
+    for(tmp1=0x30;tmp1<=0x3f;tmp1++){
+	outb(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
+    }
+    ErrorF("\n");
+    for(tmp1=0x40;tmp1<=0x4f;tmp1++){
+	outb(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
+    }
+    ErrorF("\n");
+    for(tmp1=0x50;tmp1<=0x59;tmp1++){
+	outb(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
+    }
+    ErrorF("\n");
+    for(tmp1=0x5d;tmp1<=0x67;tmp1++){
+	outb(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
+    }
+    ErrorF("\n");
+    for(tmp1=0x68;tmp1<=0x6f;tmp1++){
+	outb(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
+    }
+    ErrorF("\n\n");
 }

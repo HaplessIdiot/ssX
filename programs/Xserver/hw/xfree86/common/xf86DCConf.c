@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DCConf.c,v 3.1 1996/12/09 11:52:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DCConf.c,v 3.2 1997/01/05 11:58:05 dawes Exp $ */
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
@@ -52,7 +52,7 @@ SymTabRec otab[];
   int          c, i;
 
   static int pos = 0;
-  char *currpointer;
+  signed char *currpointer;
   char dummy ='\0';
 
   int  token = 0;

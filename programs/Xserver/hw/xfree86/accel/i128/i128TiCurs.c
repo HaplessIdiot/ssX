@@ -22,9 +22,10 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128TiCurs.c,v 3.4 1996/12/23 06:35:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128TiCurs.c,v 3.5 1997/08/12 12:02:00 hohndel Exp $ */
 
 #include "servermd.h"
+#include "mi.h" /* miRecolorCursor */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -33,7 +34,6 @@
 #define MAX_CURS_HEIGHT 64   /* 64 scan lines */
 #define MAX_CURS_WIDTH  64   /* 64 pixels     */
 
-extern struct i128mem i128mem;
 extern Bool i128BlockCursor;
 
 
@@ -160,7 +160,6 @@ i128TiMoveCursor(pScr, x, y)
      int   x, y;
 {
    CARD32 tmp;
-   extern int i128AdjustCursorXPos;
 
    if (i128BlockCursor)
       return;
@@ -234,12 +233,10 @@ i128TiLoadCursor(pScr, pCurs, x, y)
      CursorPtr pCurs;
      int x, y;
 {
-   extern int i128hotX, i128hotY;
    int   index = pScr->myNum;
    register int   i;
    unsigned char *ram, *p;
    CARD32 tmp, tmp1, tmpcurs;
-   extern int i128InitCursorFlag;
 
    if (!xf86VTSema)
       return;

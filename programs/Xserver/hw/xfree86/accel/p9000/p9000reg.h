@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.10 1996/12/23 06:40:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.11 1997/07/29 12:07:40 hohndel Exp $ */
 /* p9000reg.h
  *
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
@@ -19,7 +19,6 @@
 #define INC_P9000_REG_H
 
 #include "compiler.h"
-#include "Xos.h"
 
 /* VGA Registers - many of these are taken from libvga.h in svgalib */ 
 #define CRT_IC        0x3D4

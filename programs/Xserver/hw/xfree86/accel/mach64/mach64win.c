@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64win.c,v 3.2 1996/02/04 09:03:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64win.c,v 3.3 1996/12/23 06:39:30 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -85,13 +85,13 @@ mach64CopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pWinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
-    prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 1);
+    prgnDst = REGION_CREATE(pWin->drawable.pScreen, NULL, 1);
 
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;
 
-    (* pWin->drawable.pScreen->TranslateRegion)(prgnSrc, -dx, -dy);
-    (* pWin->drawable.pScreen->Intersect)(prgnDst, &pWin->borderClip, prgnSrc);
+    REGION_TRANSLATE(pWin->drawable.pScreen, prgnSrc, -dx, -dy);
+    REGION_INTERSECT(pWin->drawable.pScreen, prgnDst, &pWin->borderClip, prgnSrc);
 
     pboxOrig = REGION_RECTS(prgnDst);
     nbox = REGION_NUM_RECTS(prgnDst);
@@ -111,5 +111,5 @@ mach64CopyWindow(pWin, ptOldOrg, prgnSrc)
                    &dummyGC, prgnDst, pptInit, 0);
 
     DEALLOCATE_LOCAL(pptInit);
-    (* pWin->drawable.pScreen->RegionDestroy)(prgnDst);
+    REGION_DESTROY(pWin->drawable.pScreen, prgnDst);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fs.c,v 3.2 1996/02/04 09:03:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fs.c,v 3.3 1996/12/23 06:39:16 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -75,6 +75,8 @@ Modified for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 #include "windowstr.h"
+#include "mi.h"
+#include "mispans.h"
 #include "cfb.h"
 #include "cfb16.h"
 #include "cfb32.h"
@@ -410,7 +412,7 @@ DoPatternedFillSpans (pDrawable, pGC, nInit, pptInit, pwidthInit)
     nullBox.x2 = mach64VirtX;
     nullBox.y2 = mach64VirtY;
 
-    (*pGC->pScreen->RegionInit)(&nullClip, &nullBox, 1); 
+    REGION_INIT(pGC->pScreen, &nullClip, &nullBox, 1); 
 
     oldpCompositeClip = devPriv->pCompositeClip;
     devPriv->pCompositeClip = &nullClip;
@@ -419,6 +421,6 @@ DoPatternedFillSpans (pDrawable, pGC, nInit, pptInit, pwidthInit)
 
     devPriv->pCompositeClip = oldpCompositeClip;
 
-    (*pGC->pScreen->RegionUninit)(&nullClip);
+    REGION_UNINIT(pGC->pScreen, &nullClip);
     DEALLOCATE_LOCAL(pRectInit);
 }

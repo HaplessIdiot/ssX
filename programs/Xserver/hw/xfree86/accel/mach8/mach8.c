@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.39 1997/07/29 12:07:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.40 1997/08/26 10:01:00 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -45,7 +45,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "mach8.h"
 #include "regmach8.h"
@@ -81,19 +81,6 @@ static int mach8ValidMode(
 
 int mach8MaxClock = MAX_MACH8_CLOCK;
 
-ScrnInfoPtr xf86Screens[] = 
-{
-  &mach8InfoRec,
-};
-
-int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
-
-int xf86ScreenNames[] =
-{
-  ACCEL,
-  -1
-};
-
 int mach8ValidTokens[] =
 {
   STATICGRAY,
@@ -117,10 +104,10 @@ int mach8ValidTokens[] =
 #endif
 
 ScrnInfoRec mach8InfoRec = {
+    mach8Probe,      	/* Bool (* Probe)() */
     FALSE,		/* Bool configured */
     -1,			/* int tmpIndex */
     -1,			/* int scrnIndex */
-    mach8Probe,      	/* Bool (* Probe)() */
     mach8Initialize,	/* Bool (* Init)() */
     mach8ValidMode,	/* int (* ValidMode)() */
     mach8EnterLeaveVT,	/* void (* EnterLeaveVT)() */

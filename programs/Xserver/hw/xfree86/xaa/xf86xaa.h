@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.20 1997/11/16 11:51:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.21 1998/01/11 03:48:30 dawes Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -256,7 +256,7 @@ typedef struct {
 #if NeedNestedPrototypes
         DrawablePtr	pSrcDrawable,
         DrawablePtr	pDstDrawable,
-        GC		*pGC,
+        GCPtr		pGC,
         int		srcx,
         int		srcy,
         int		width,
@@ -334,7 +334,7 @@ typedef struct {
 #if NeedNestedPrototypes
         DrawablePtr	pSrcDrawable,
         DrawablePtr	pDstDrawable,
-        GC		*pGC,
+        GCPtr		pGC,
         int		srcx,
         int		srcy,
         int		width,
@@ -347,7 +347,7 @@ typedef struct {
 #if NeedNestedPrototypes
         DrawablePtr	pSrcDrawable,
         DrawablePtr	pDstDrawable,
-        GC 		*pGC,
+        GCPtr 		pGC,
         int		srcx,
         int		srcy,
         int		width,
@@ -426,7 +426,7 @@ typedef struct {
     void (*ImageGlyphBltWrapper)(
 #if NeedNestedPrototypes
     	DrawablePtr 	pDrawable,
-    	GC 		*pGC,
+    	GCPtr 		pGC,
     	int 		x, 
 	int		y,
     	unsigned int 	nglyph,
@@ -439,7 +439,7 @@ typedef struct {
     void (*PolyGlyphBltWrapper)(
 #if NeedNestedPrototypes
     	DrawablePtr 	pDrawable,
-   	GC 		*pGC,
+   	GCPtr 		pGC,
     	int 		x, 
 	int		y,
     	unsigned int 	nglyph,
@@ -451,7 +451,7 @@ typedef struct {
     void (*FillSpansWrapper)(
 #if NeedNestedPrototypes
     	DrawablePtr 	pDrawable,
-    	GC		*pGC,
+    	GCPtr		pGC,
     	int		nInit,	
     	DDXPointPtr 	pptInit,	
     	int 		*pwidthInit,		
@@ -481,7 +481,7 @@ typedef struct {
 #if NeedNestedPrototypes
     	DrawablePtr 	pSrcDrawable,
     	DrawablePtr 	pDstDrawable,
-    	GC 		*pGC,
+    	GCPtr		pGC,
     	int 		srcx,	
 	int 		srcy,
     	int 		width, 
@@ -912,6 +912,7 @@ typedef struct {
     );
     void (*SubsequentScanlineCPUToScreenColorExpand)(
 #if NeedNestedPrototypes
+	void
 #endif
     );
     void (*SetupForScanlineScreenToScreenColorExpand)(
@@ -1037,7 +1038,11 @@ typedef struct {
 #endif
     );
 
-    void (*Sync)();
+    void (*Sync)(
+#if NeedNestedPrototypes
+	void
+#endif
+    );
     int Flags;
     int ColorExpandFlags;
     unsigned int *CPUToScreenColorExpandBase;
@@ -1082,7 +1087,7 @@ void xf86InitializeAcceleration(
 #endif
 );
 
-void xf86InitWrappers();
+void xf86InitWrappers(void);
 extern Bool NeedToSync;
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000Bt485.c,v 3.5 1996/02/04 09:04:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000Bt485.c,v 3.6 1996/12/23 06:40:31 dawes Exp $ */
 /*
  * Copyright 1993 By David Wexelblat <dwex@aib.com>
  *
@@ -35,7 +35,6 @@
 
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "p9000.h"
 #include "p9000reg.h"

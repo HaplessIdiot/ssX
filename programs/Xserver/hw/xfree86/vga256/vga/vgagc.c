@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.6 1996/12/09 11:54:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.7 1996/12/23 06:59:46 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -50,8 +50,6 @@ SOFTWARE.
 
 #include "vga256.h"
 #include "migc.h"
-
-void vga256ValidateGC();
 
 static GCFuncs vga256Funcs = {
     vga256ValidateGC,

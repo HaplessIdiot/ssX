@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.28 1997/07/29 12:07:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.29 1997/12/20 14:20:55 hohndel Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -28,7 +28,7 @@
 #include "input.h"
 
 #include "xf86.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "mach64.h"
 #include "ativga.h"
 #include "mach64fifo.h"
@@ -57,6 +57,8 @@
 #define XF_PAGE_MASK (PAGE_MASK)
 #endif
 #endif
+
+static int mach64FIFOdepth(int cdepth, int clock, int width);
 
 static LUTENTRY oldlut[256];
 static Bool LUTInited = FALSE;
@@ -335,7 +337,7 @@ void mach64CalcCRTCRegs(crtcRegs, mode)
  *	Calculates the correct FIFO depth for the Mach64 depending on the
  *	color depth and clock selected.
  */
-int mach64FIFOdepth(cdepth, clock, width)
+static int mach64FIFOdepth(cdepth, clock, width)
     int cdepth;
     int clock;
     int width;

@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.23 1997/06/11 12:24:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.24 1997/07/29 12:07:49 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -37,7 +37,6 @@
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "tga.h"
 #include "tga_presets.h"
@@ -70,10 +69,10 @@ static int tgaValidMode(
 );
 
 ScrnInfoRec tgaInfoRec = {
+    tgaProbe,      	/* Bool (* Probe)() */
     FALSE,		/* Bool configured */
     -1,			/* int tmpIndex */
     -1,			/* int scrnIndex */
-    tgaProbe,      	/* Bool (* Probe)() */
     tgaInitialize,	/* Bool (* Init)() */
     tgaValidMode,	/* Bool (* ValidMode)() */
     tgaEnterLeaveVT,	/* void (* EnterLeaveVT)() */

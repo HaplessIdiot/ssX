@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Att490.c,v 3.1 1996/02/04 08:57:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Att490.c,v 3.2 1996/12/23 06:32:16 dawes Exp $ */
 /*
  *
  */
@@ -18,7 +18,6 @@
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86RamDac.h"
 #include "Att490.h"
 

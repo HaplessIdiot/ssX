@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.30 1997/07/06 05:30:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.31 1997/09/19 08:30:03 hohndel Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -1467,4 +1467,11 @@ xf86GetMotionEvents(DeviceIntPtr	dev,
     return num;
 }
 
+void
+xf86eqSwitchScreen(ScreenPtr pScreen, Bool fromDIX)
+{
+    xf86EventQueue.pEnqueueScreen = pScreen;
+    if (fromDIX)
+	xf86EventQueue.pDequeueScreen = pScreen;
+}
 /* end of xf86Xinput.c */

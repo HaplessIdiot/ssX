@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Ti3026Curs.c,v 3.5 1996/11/18 13:10:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Ti3026Curs.c,v 3.6 1996/12/23 06:41:20 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -40,7 +40,6 @@
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "s3.h"
 #include "regs3.h"
 #include "Ti302X.h"

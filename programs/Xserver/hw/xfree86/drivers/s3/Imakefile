@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/Imakefile,v 1.4 1997/06/15 07:12:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/Imakefile,v 1.3 1997/06/10 12:30:28 hohndel Exp $
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -8,13 +8,21 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/Imakefile,v 1.4 1997/0
 #define IHaveModules
 #include <Server.tmpl>
 
+#if defined(i386Architecture)
+XSRCS = s3bank.s
+XOBJS = s3bank.o
+#else
+XSRCS = s3bankc.c
+XOBJS = s3bankc.o
+#endif
+
 SRCS = s3driver.c s3probe.c s3BtCursor.c s3ELSA.c s3ramdacs.c s3init.c  \
        s3fbinit.c s3save.c s3TiCursor.c Ti3026Curs.c s3misc.c s3accel.c \
-       s3cursor.c IBMRGBCurs.c s3bank.s 
+       s3cursor.c IBMRGBCurs.c $(XSRCS)
 
 OBJS = s3driver.o s3probe.o s3BtCursor.o s3ELSA.o s3ramdacs.o s3init.o  \
        s3fbinit.o s3save.o s3TiCursor.o Ti3026Curs.o s3misc.o s3accel.o \
-       s3cursor.o IBMRGBCurs.o s3bank.o 
+       s3cursor.o IBMRGBCurs.o $(XOBJS)
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
@@ -28,8 +36,12 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
 #endif
+
 NormalLibraryObjectRule()
+
+#if defined(i386Architecture)
 NormalAsmObjectRule()
+#endif
 
 #ifdef S3_NEWMMIO
  DEFINES = -DS3_NEWMMIO
@@ -56,12 +68,16 @@ LinkSourceFile(s3misc.c,LinkDirectory)
 LinkSourceFile(s3accel.c,LinkDirectory)
 LinkSourceFile(s3cursor.c,LinkDirectory)
 LinkSourceFile(IBMRGBCurs.c,LinkDirectory)
-LinkSourceFile(s3bank.s,LinkDirectory)
 LinkSourceFile(s3.h,LinkDirectory)
 LinkSourceFile(s3Bt485.h,LinkDirectory)
 LinkSourceFile(s3ELSA.h,LinkDirectory)
 LinkSourceFile(s3reg.h,LinkDirectory)
 LinkSourceFile(newmmio.h,LinkDirectory)
+#if defined(i386Architecture)
+LinkSourceFile(s3bank.s,LinkDirectory)
+#else
+LinkSourceFile(s3bankc.c,LinkDirectory)
+#endif
 
 #endif	/* LinkDirectory */
 

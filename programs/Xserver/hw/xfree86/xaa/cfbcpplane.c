@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/cfbcpplane.c,v 3.0 1996/11/18 13:22:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/cfbcpplane.c,v 3.1 1997/02/24 17:47:17 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -65,6 +65,7 @@
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 #include	"fastblt.h"
+#include	"xf86_ansic.h"
 
 
 #define mfbmaskbits(x, w, startmask, endmask, nlw) \
@@ -472,7 +473,7 @@ cfbCopyPlane32to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
     widthSrc <<= 1;
 #endif
 
-    bitPos = xf86ffs (bitPlane) - 1;
+    bitPos = ffs (bitPlane) - 1;
 
     nbox = REGION_NUM_RECTS(prgnDst);
     pbox = REGION_RECTS(prgnDst);

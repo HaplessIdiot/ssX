@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MuTouch.c,v 3.2 1997/06/30 05:49:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MuTouch.c,v 3.3 1997/11/16 11:51:12 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -40,8 +40,6 @@
  */
 
 #include "Xos.h"
-#include <signal.h>
-#include <stdio.h>
 
 #define	 NEED_EVENTS
 #include "X.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.54 1997/08/26 10:01:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.55 1997/11/22 08:17:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -50,7 +50,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "p9000.h"
 #include "p9000reg.h"
@@ -90,10 +90,10 @@ static int p9000ValidMode(
 );
 
 ScrnInfoRec p9000InfoRec = {
+    p9000Probe,      	/* Bool (* Probe)() */
     FALSE,		/* Bool configured */
     -1,			/* int tmpIndex */
     -1,			/* int scrnIndex */
-    p9000Probe,      	/* Bool (* Probe)() */
     p9000Initialize,	/* Bool (* Init)() */
     p9000ValidMode,	/* int (* ValidMode)() */
     p9000EnterLeaveVT,	/* void (* EnterLeaveVT)() */
@@ -310,7 +310,7 @@ p9000Probe()
       {
 	for (curvendor = 0; curvendor < Num_p9000_Vendors; curvendor++)
 	  {
-	    if (0 == xf86strcmp(p9000VendorList[curvendor]->Vendor,
+	    if (0 == strcmp(p9000VendorList[curvendor]->Vendor,
 			    p9000InfoRec.chipset))
 	      {
 		p9000VendorPtr = p9000VendorList[curvendor];
@@ -1030,7 +1030,7 @@ p9000DPMSSet(PowerManagementMode)
 	/* Power down the RAMDAC output to blank the screen.  No data
 	 * will be lost and MPU reads and writes should continue to work. */
 	p9000OutBtReg(BT_COMMAND_REG_0, 0xFE, BT_CR0_POWERDOWN);
-	xf86usleep(10000);
+	usleep(10000);
 	/* disable video in the video controller */
 	p9000Store(SRTCTL,CtlBase,0x01C4L);
 	break;

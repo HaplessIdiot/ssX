@@ -1,18 +1,23 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/Imakefile,v 3.4 1997/07/10 08:17:37 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/Imakefile,v 3.5 1997/08/26 10:01:37 hohndel Exp $
 #include <Server.tmpl>
 
-#if !defined(ppcArchitecture)
+#if !defined(PpcArchitecture)
 IOPERM_SRCS=ioperm_noop.c
 IOPERM_OBJS=ioperm_noop.o
 #endif
 
+#if defined(PpcArchitecture)
+PPC_SRCS=lynx_noinline.c lynx_ppc.s
+PPC_OBJS=lynx_noinline.o lynx_ppc.o
+#endif
+
 SRCS = lynx_init.c lynx_video.c lynx_io.c lynx_mmap.c mapVT_noop.c \
-       VTsw_usl.c std_kbdEv.c sysv_tty.c std_mouse.c std_mseEv.c $(IOPERM_SRCS) \
-       libc_wrapper.c
+       VTsw_usl.c std_kbdEv.c posix_tty.c std_mouse.c std_mseEv.c $(IOPERM_SRCS) \
+       libc_wrapper.c $(PPC_SRCS)
 
 OBJS = lynx_init.o lynx_video.o lynx_io.o lynx_mmap.o mapVT_noop.o \
-       VTsw_usl.o std_kbdEv.o sysv_tty.o std_mouse.o std_mseEv.o $(IOPERM_OBJS) \
-       libc_wrapper.o
+       VTsw_usl.o std_kbdEv.o posix_tty.o std_mouse.o std_mseEv.o $(IOPERM_OBJS) \
+       libc_wrapper.o $(PPC_OBJS)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC)
@@ -20,13 +25,13 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
-#if !defined(ppcArchitecture)
+#if !defined(PpcArchitecture)
 ObjectFromSpecialSource(ioperm_noop,../shared/ioperm_noop,/**/)
 #endif
 ObjectFromSpecialSource(mapVT_noop,../shared/mapVT_noop,/**/)
 ObjectFromSpecialSource(VTsw_usl,../shared/VTsw_usl,/**/)
 ObjectFromSpecialSource(std_kbdEv,../shared/std_kbdEv,/**/)
-ObjectFromSpecialSource(sysv_tty,../shared/sysv_tty,/**/)
+ObjectFromSpecialSource(posix_tty,../shared/posix_tty,/**/)
 ObjectFromSpecialSource(std_mouse,../shared/std_mouse,/**/)
 ObjectFromSpecialSource(std_mseEv,../shared/std_mseEv,/**/)
 ObjectFromSpecialSource(libc_wrapper,../shared/libc_wrapper,/**/)

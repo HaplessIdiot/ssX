@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.21 1997/06/29 07:54:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.22 1997/11/16 11:51:11 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -47,8 +47,6 @@
 
 
 #include "Xos.h"
-#include <signal.h>
-#include <stdio.h>
 
 #define	 NEED_EVENTS
 #include "X.h"

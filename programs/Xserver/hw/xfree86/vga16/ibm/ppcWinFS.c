@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcWinFS.c,v 3.3 1996/12/23 06:53:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcWinFS.c,v 3.4 1997/03/13 15:11:28 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -54,6 +54,8 @@ SOFTWARE.
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 #include "windowstr.h"
+#include "mi.h"
+#include "mispans.h"
 
 #include "maskbits.h"
 

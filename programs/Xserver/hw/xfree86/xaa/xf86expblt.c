@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.17 1997/10/13 17:16:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.18 1997/11/09 08:03:45 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -30,6 +30,7 @@
 #include "gcstruct.h"
 #include "regionstr.h"
 
+#include "servermd.h"
 #include "xf86.h"
 #include "xf86xaa.h"
 #include "xf86local.h"
@@ -50,7 +51,9 @@
 #define UINT64_ASSIGN(uint64, int32, int32_2) \
     uint64##low32 = int32; uint64##high32 = int32_2
 #define UINT64_LOW32(uint64) uint64##low32
+#define UINT64_HIGH32(uint64) uint64##high32
 #define UINT64_SHIFTRIGHT32(uint64) uint64##low32 = uint64##high32; uint64##high32 = 0
+#define UINT64_SHIFTLEFT32(uint64) uint64##high32 = uint64##low32; uint64##low32 = 0
 /*
  * Something fishy is going on with ">> 32". This seems to be equivalent to
  * ">> 0" on my system. I'm not sure whether this is a CPU or compiler bug.
@@ -62,30 +65,20 @@
     if (shift > 0) \
         uint64##high32 |= int32 >> (32 - shift)
 
+#define UINT64_ORRIGHTSHIFTEDINT(uint64, int32, shift) \
+    uint64##high32 |= int32 >> shift; \
+    if (shift > 0) \
+        uint64##low32 |= int32 << (32 - shift);
 
-extern unsigned char byte_reversed[256];
-
-/* Macros to write a word, converting the per-byte bit order if required. */
-
-#ifndef MSBFIRST
-
-#ifdef FIXEDBASE
-
-#define WRITE_IN_BITORDER(dest, offset, data) *(dest) = data;
-
-#else  /* Increasing base address. */
-
-#define WRITE_IN_BITORDER(dest, offset, data) *(dest + offset) = data;
-
-#endif
-
-#else	/* "Nasty" bit order within bytes. */
-
-#if defined(__GNUC__) && defined(__i386__)
+/*
+ * reverse_bitorder() - reverses bit order within bytes for each
+ *                      byte of a 32 bit
+ */
+#if defined(__GNUC__) && defined(__i386__) && defined(__OPTIMIZE__)
 static __inline__ unsigned int reverse_bitorder(data) {
 #if defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || (defined(linux) || defined (__OS2ELF__)) && defined(__ELF__)
 	__asm__(
-		"movl $0,%%ecx\n"
+		"xorl %%ecx,%%ecx\n"
 		"movb %%al,%%cl\n"
 		"movb byte_reversed(%%ecx),%%al\n"
 		"movb %%ah,%%cl\n"
@@ -97,11 +90,11 @@ static __inline__ unsigned int reverse_bitorder(data) {
 		"movb byte_reversed(%%ecx),%%ah\n"
 		"roll $16,%%eax\n"
 		: "=a" (data) : "0" (data)
-		: "cx"
+		: "ecx"
 		);
 #else
 	__asm__(
-		"movl $0,%%ecx\n"
+		"xorl %%ecx,%%ecx\n"
 		"movb %%al,%%cl\n"
 		"movb _byte_reversed(%%ecx),%%al\n"
 		"movb %%ah,%%cl\n"
@@ -113,27 +106,52 @@ static __inline__ unsigned int reverse_bitorder(data) {
 		"movb _byte_reversed(%%ecx),%%ah\n"
 		"roll $16,%%eax\n"
 		: "=a" (data) : "0" (data)
-		: "cx"
+		: "ecx"
 		);
-#endif
-#else	/* If no (gcc on i386), don't use asm. */
-static unsigned int reverse_bitorder(data) {
-	data = byte_reversed[(data & 0xFF)] |
-		(byte_reversed[((data >> 8) & 0xFF)] << 8) |
-		(byte_reversed[((data >> 16) & 0xFF)] << 16) |
-		(byte_reversed[((data >> 24) & 0xFF)] << 24);
 #endif
 	return data;
 }
-#ifdef FIXEDBASE
-#define WRITE_IN_BITORDER(dest, offset, data) *(dest) = reverse_bitorder(data);
-#else
-#define WRITE_IN_BITORDER(dest, offset, data) \
-    *(dest + offset) = reverse_bitorder(data);
-#endif
 
-#endif
+#else	/* If no (gcc on i386), don't use asm. */
 
+static __inline__ unsigned int
+reverse_bitorder(data)
+{
+    unsigned int data2;
+    
+    data2 = byte_reversed[data & 0xFF];
+    data2 |= byte_reversed[(data & 0xFF00) >> 8] << 8;
+    data2 |= byte_reversed[(data & 0xFF0000) >> 16] << 16;
+    data2 |= byte_reversed[(data & 0xFF000000) >> 24] << 24;
+
+    return(data2);
+}
+
+#endif /* i386 && GCC */
+
+
+/* Macros to write a word, converting the per-byte bit order if required. */
+
+#if (defined(MSBFIRST) && BITMAP_BIT_ORDER == MSBFirst) || \
+    (!defined(MSBFIRST) && BITMAP_BIT_ORDER == LSBFirst)
+
+# ifdef FIXEDBASE
+#  define WRITE_IN_BITORDER(dest, offset, data) do { *(dest) = data; mem_barrier(); } while (0)
+# else
+#  define WRITE_IN_BITORDER(dest, offset, data) do { *(dest + offset) = data; mem_barrier(); } while (0)
+# endif
+
+#else	/* "Nasty" bit order within bytes. */
+
+# ifdef FIXEDBASE
+# define WRITE_IN_BITORDER(dest, offset, data) \
+	do { *(dest) = reverse_bitorder(data); mem_barrier(); } while (0)
+# else
+# define WRITE_IN_BITORDER(dest, offset, data) \
+	do { *(dest + offset) = reverse_bitorder(data); mem_barrier(); } while (0)
+# endif
+
+#endif /* "Nasty" bit order */
 
 /*
  * Macros for 24bpp color expansion in 8bpp pixel mode (each bit is
@@ -163,7 +181,8 @@ static unsigned int reverse_bitorder(data) {
 	WRITE_IN_BITORDER3_SECONDWORD_MACRO(dest + 1, data, mapping) \
 	WRITE_IN_BITORDER3_THIRDWORD_MACRO(dest + 2, data, mapping)
 
-#ifdef MSBFIRST
+#if (defined(MSBFIRST) && BITMAP_BIT_ORDER == LSBFirst) || \
+    (!defined(MSBFIRST) && BITMAP_BIT_ORDER == MSBFirst)
 #define BYTE_EXPAND byte_reversed_expand3
 #else
 #define BYTE_EXPAND byte_expand3
@@ -615,21 +634,38 @@ unsigned int *xf86DrawTextScanline(base, glyphp, line, nglyph, glyphwidth)
     shift = 0;
     i = 0;
     while (i < nglyph) {
+#if BITMAP_BIT_ORDER == MSBFirst	    
+        UINT64_ORRIGHTSHIFTEDINT(bits, glyphp[i][line], shift);
+#else	
         UINT64_ORLEFTSHIFTEDINT(bits, glyphp[i][line], shift);
+#endif	
         shift += glyphwidth;
         if (shift >= 32) {
             /* Write a 32-bit word. */
+#if BITMAP_BIT_ORDER == MSBFirst	    
+            WRITE_IN_BITORDER(base, 0, UINT64_HIGH32(bits));
+#else
             WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#endif
 #ifndef FIXEDBASE
             base++;
 #endif
             shift -= 32;
+	    
+#if BITMAP_BIT_ORDER == MSBFirst	    
+            UINT64_SHIFTLEFT32(bits);
+#else
             UINT64_SHIFTRIGHT32(bits);
+#endif
         }
         i++;
     }
     if (shift > 0) {
-        WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#if BITMAP_BIT_ORDER == MSBFirst	    
+            WRITE_IN_BITORDER(base, 0, UINT64_HIGH32(bits));
+#else
+            WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#endif
 #ifndef FIXEDBASE
         base++;
 #endif
@@ -662,16 +698,28 @@ unsigned int *xf86DrawTextNoPad(base, glyphp, height, nglyph, glyphwidth)
     for (line = 0; line < height; line++) {
         i = 0;
         while (i < nglyph) {
+#if BITMAP_BIT_ORDER == MSBFirst		
+            UINT64_ORRIGHTSHIFTEDINT(bits, glyphp[i][line], shift);
+#else	    
             UINT64_ORLEFTSHIFTEDINT(bits, glyphp[i][line], shift);
+#endif	    
             shift += glyphwidth;
             if (shift >= 32) {
                 /* Write a 32-bit word. */
+#if BITMAP_BIT_ORDER == MSBFirst		
+                WRITE_IN_BITORDER(base, 0, UINT64_HIGH32(bits));
+#else	    
                 WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#endif	    
     #ifndef FIXEDBASE
                 base++;
     #endif
                 shift -= 32;
+#if BITMAP_BIT_ORDER == MSBFirst
+                UINT64_SHIFTLEFT32(bits);
+#else
                 UINT64_SHIFTRIGHT32(bits);
+#endif		
             }
             i++;
         }
@@ -683,7 +731,11 @@ unsigned int *xf86DrawTextNoPad(base, glyphp, height, nglyph, glyphwidth)
 #endif
     }
     if (shift > 0) {
-        WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#if BITMAP_BIT_ORDER == MSBFirst
+	    WRITE_IN_BITORDER(base, 0, UINT64_HIGH32(bits));
+#else
+	    WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#endif	    
 #ifndef FIXEDBASE
         base++;
 #endif
@@ -710,16 +762,28 @@ unsigned int *xf86DrawTextBytePad(base, glyphp, height, nglyph, glyphwidth)
     for (line = 0; line < height; line++) {
         i = 0;
         while (i < nglyph) {
-            UINT64_ORLEFTSHIFTEDINT(bits, glyphp[i][line], shift);
+#if BITMAP_BIT_ORDER == MSBFirst
+		UINT64_ORRIGHTSHIFTEDINT(bits, glyphp[i][line], shift);
+#else
+		UINT64_ORLEFTSHIFTEDINT(bits, glyphp[i][line], shift);
+#endif		
             shift += glyphwidth;
             if (shift >= 32) {
                 /* Write a 32-bit word. */
-                WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#if BITMAP_BIT_ORDER == MSBFirst
+		    WRITE_IN_BITORDER(base, 0, UINT64_HIGH32(bits));
+#else
+		    WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#endif		    
 #ifndef FIXEDBASE
                 base++;
 #endif
                 shift -= 32;
-                UINT64_SHIFTRIGHT32(bits);
+#if BITMAP_BIT_ORDER == MSBFirst
+		    UINT64_SHIFTLEFT32(bits);
+#else
+		    UINT64_SHIFTRIGHT32(bits);
+#endif		    
             }
             i++;
         }
@@ -727,12 +791,20 @@ unsigned int *xf86DrawTextBytePad(base, glyphp, height, nglyph, glyphwidth)
         shift = (shift + 7) & (~7);
         if (shift >= 32) {
             /* Write a 32-bit word. */
-            WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#if BITMAP_BIT_ORDER == MSBFirst
+		WRITE_IN_BITORDER(base, 0, UINT64_HIGH32(bits));
+#else
+		WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#endif		
 #ifndef FIXEDBASE
             base++;
 #endif
             shift -= 32;
-            UINT64_SHIFTRIGHT32(bits);
+#if BITMAP_BIT_ORDER == MSBFirst
+		UINT64_SHIFTLEFT32(bits);
+#else
+		UINT64_SHIFTRIGHT32(bits);
+#endif		
         }
 #ifndef FIXEDBASE
         if ((unsigned char *)base >= (unsigned char *)
@@ -742,7 +814,11 @@ unsigned int *xf86DrawTextBytePad(base, glyphp, height, nglyph, glyphwidth)
 #endif
     }
     if (shift > 0) {
-        WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#if BITMAP_BIT_ORDER == MSBFirst
+	    WRITE_IN_BITORDER(base, 0, UINT64_HIGH32(bits));
+#else
+	    WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#endif	    
 #ifndef FIXEDBASE
         base++;
 #endif
@@ -767,24 +843,40 @@ unsigned int *xf86DrawNonTETextScanline(base, glyphinfop, line, nglyph)
         /* Check whether the current glyph has bits for this scanline. */
         if (line >= glyphinfop[i].firstline
         && line <= glyphinfop[i].lastline) {
-            UINT64_ORLEFTSHIFTEDINT(bits, glyphinfop[i].bitsp[line], shift);
+#if BITMAP_BIT_ORDER == MSBFirst
+		UINT64_ORRIGHTSHIFTEDINT(bits, glyphinfop[i].bitsp[line], shift);
+#else
+		UINT64_ORLEFTSHIFTEDINT(bits, glyphinfop[i].bitsp[line], shift);
+#endif		
         }
         shift += glyphinfop[i].width;
         if (shift >= 32) {
             /* Write a 32-bit word. */
-            WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#if BITMAP_BIT_ORDER == MSBFirst
+	    WRITE_IN_BITORDER(base, 0, UINT64_HIGH32(bits));
+#else
+	    WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#endif		
 #ifndef FIXEDBASE
-            base++;
+	    base++;
 #endif
-            shift -= 32;
-            UINT64_SHIFTRIGHT32(bits);
+	    shift -= 32;
+#if BITMAP_BIT_ORDER == MSBFirst
+	    UINT64_SHIFTLEFT32(bits);
+#else
+	    UINT64_SHIFTRIGHT32(bits);
+#endif		
         }
         i++;
     }
     if (shift > 0) {
-        WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#if BITMAP_BIT_ORDER == MSBFirst
+	WRITE_IN_BITORDER(base, 0, UINT64_HIGH32(bits));
+#else
+	WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#endif	    
 #ifndef FIXEDBASE
-        base++;
+	base++;
 #endif
     }
     return base;
@@ -805,31 +897,55 @@ unsigned int *xf86DrawTextScanline3(base, glyphp, line, nglyph, glyphwidth)
     shift = 0;
     i = 0;
     while (i < nglyph) {
+#if BITMAP_BIT_ORDER == MSBFirst	    
+        UINT64_ORRIGHTSHIFTEDINT(bits, glyphp[i][line], shift);
+#else	
         UINT64_ORLEFTSHIFTEDINT(bits, glyphp[i][line], shift);
+#endif	
         shift += glyphwidth;
         if (shift >= 32) {
             /* Write a 32-bit word. */
+#if BITMAP_BIT_ORDER == MSBFirst		
+            WRITE_IN_BITORDER3(base, 0, UINT64_HIGH32(bits));
+#else	    
             WRITE_IN_BITORDER3(base, 0, UINT64_LOW32(bits));
+#endif	    
 #ifndef FIXEDBASE
             base += 3;
 #endif
             shift -= 32;
+#if BITMAP_BIT_ORDER == MSBFirst	    
+            UINT64_SHIFTLEFT32(bits);
+#else	    
             UINT64_SHIFTRIGHT32(bits);
+#endif	    
         }
         i++;
     }
     if (shift > 0) {
+#if BITMAP_BIT_ORDER == MSBFirst	    
+        WRITE_IN_BITORDER3_FIRSTWORD(base, 0, UINT64_HIGH32(bits));
+#else	
         WRITE_IN_BITORDER3_FIRSTWORD(base, 0, UINT64_LOW32(bits));
+#endif	
 #ifndef FIXEDBASE
         base++;
 #endif
         if (shift >= 11) {
+#if BITMAP_BIT_ORDER == MSBFirst		
+            WRITE_IN_BITORDER3_SECONDWORD(base, 0, UINT64_HIGH32(bits));
+#else	    
             WRITE_IN_BITORDER3_SECONDWORD(base, 0, UINT64_LOW32(bits));
+#endif	    
 #ifndef FIXEDBASE
             base++;
 #endif
             if (shift >= 22) {
+#if BITMAP_BIT_ORDER == MSBFirst		    
+                WRITE_IN_BITORDER3_THIRDWORD(base, 0, UINT64_HIGH32(bits));
+#else		
                 WRITE_IN_BITORDER3_THIRDWORD(base, 0, UINT64_LOW32(bits));
+#endif		
 #ifndef FIXEDBASE
                 base++;
 #endif
@@ -856,32 +972,56 @@ unsigned int *xf86DrawNonTETextScanline3(base, glyphinfop, line, nglyph)
         /* Check whether the current glyph has bits for this scanline. */
         if (line >= glyphinfop[i].firstline
         && line <= glyphinfop[i].lastline) {
+#if BITMAP_BIT_ORDER == MSBFirst		
+            UINT64_ORRIGHTSHIFTEDINT(bits, glyphinfop[i].bitsp[line], shift);
+#else	    
             UINT64_ORLEFTSHIFTEDINT(bits, glyphinfop[i].bitsp[line], shift);
+#endif	    
         }
         shift += glyphinfop[i].width;
         if (shift >= 32) {
             /* Write a 32-bit word. */
+#if BITMAP_BIT_ORDER == MSBFirst		
+            WRITE_IN_BITORDER3(base, 0, UINT64_HIGH32(bits));
+#else	    
             WRITE_IN_BITORDER3(base, 0, UINT64_LOW32(bits));
+#endif	    
 #ifndef FIXEDBASE
             base += 3;
 #endif
             shift -= 32;
+#if BITMAP_BIT_ORDER == MSBFirst	    
+            UINT64_SHIFTLEFT32(bits);
+#else	    
             UINT64_SHIFTRIGHT32(bits);
+#endif	    
         }
         i++;
     }
     if (shift > 0) {
+#if BITMAP_BIT_ORDER == MSBFirst	    
+        WRITE_IN_BITORDER3_FIRSTWORD(base, 0, UINT64_HIGH32(bits));
+#else	
         WRITE_IN_BITORDER3_FIRSTWORD(base, 0, UINT64_LOW32(bits));
+#endif	
 #ifndef FIXEDBASE
         base++;
 #endif
         if (shift >= 11) {
+#if BITMAP_BIT_ORDER == MSBFirst		
+            WRITE_IN_BITORDER3_SECONDWORD(base, 0, UINT64_HIGH32(bits));
+#else	    
             WRITE_IN_BITORDER3_SECONDWORD(base, 0, UINT64_LOW32(bits));
+#endif	    
 #ifndef FIXEDBASE
             base++;
 #endif
             if (shift >= 22) {
+#if BITMAP_BIT_ORDER == MSBFirst		    
+                WRITE_IN_BITORDER3_THIRDWORD(base, 0, UINT64_HIGH32(bits));
+#else		
                 WRITE_IN_BITORDER3_THIRDWORD(base, 0, UINT64_LOW32(bits));
+#endif		
 #ifndef FIXEDBASE
                 base++;
 #endif
@@ -905,6 +1045,29 @@ static unsigned int *DrawTextScanlineWidth6(base, glyphp, line, nglyph)
 {
     while (nglyph >= 16) {
         unsigned int bits;
+#if (BITMAP_BIT_ORDER == MSBFirst)
+        bits = glyphp[0][line];
+        bits |= glyphp[1][line] >> 6;
+        bits |= glyphp[2][line] >> 12;
+        bits |= glyphp[3][line] >> 18;
+        bits |= glyphp[4][line] >> 24;
+        bits |= glyphp[5][line] >> 30;
+        WRITE_IN_BITORDER(base, 0, bits);
+        bits = glyphp[5][line] << 2;
+        bits |= glyphp[6][line] >> 4;
+        bits |= glyphp[7][line] >> 10;
+        bits |= glyphp[8][line] >> 16;
+        bits |= glyphp[9][line] >> 22;
+        bits |= glyphp[10][line] >> 28;
+        WRITE_IN_BITORDER(base, 1, bits);
+        bits = glyphp[10][line] << 4;
+        bits |= glyphp[11][line] >> 2;
+        bits |= glyphp[12][line] >> 8;
+        bits |= glyphp[13][line] >> 14;
+        bits |= glyphp[14][line] >> 20;
+        bits |= glyphp[15][line] >> 26;
+        WRITE_IN_BITORDER(base, 2, bits);
+#else	
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 6;
         bits |= glyphp[2][line] << 12;
@@ -926,6 +1089,7 @@ static unsigned int *DrawTextScanlineWidth6(base, glyphp, line, nglyph)
         bits |= glyphp[14][line] << 20;
         bits |= glyphp[15][line] << 26;
         WRITE_IN_BITORDER(base, 2, bits);
+#endif	
 #ifndef FIXEDBASE
         base += 3;
 #endif
@@ -941,51 +1105,37 @@ static unsigned int *DrawTextScanlineWidth8(base, glyphp, line, nglyph)
     int line;
     int nglyph;
 {
-#ifdef MSBFIRST
-    /*
-     * For this font width (and only this one), there's a seperate
-     * MSB-first version.
-     */
     while (nglyph >= 8) {
         unsigned int bits;
-        bits = byte_reversed[glyphp[0][line]];
-        bits |= byte_reversed[glyphp[1][line]] << 8;
-        bits |= byte_reversed[glyphp[2][line]] << 16;
-        bits |= byte_reversed[glyphp[3][line]] << 24;
-        *base = bits;
-        bits = byte_reversed[glyphp[4][line]];
-        bits |= byte_reversed[glyphp[5][line]] << 8;
-        bits |= byte_reversed[glyphp[6][line]] << 16;
-        bits |= byte_reversed[glyphp[7][line]] << 24;
-#ifndef FIXEDBASE
-        *(base + 1) = bits;
-        base += 2;
-#else
-	*base = bits;
-#endif
-        nglyph -= 8;	    
-        glyphp += 8;
-    }
-#else
-    while (nglyph >= 8) {
-        unsigned int bits;
+#if (BITMAP_BIT_ORDER == MSBFirst)
+        bits = glyphp[0][line];
+        bits |= glyphp[1][line] >> 8;
+        bits |= glyphp[2][line] >> 16;
+        bits |= glyphp[3][line] >> 24;
+	WRITE_IN_BITORDER(base, 0, bits);
+        bits = glyphp[4][line];
+        bits |= glyphp[5][line] >> 8;
+        bits |= glyphp[6][line] >> 16;
+        bits |= glyphp[7][line] >> 24;
+	WRITE_IN_BITORDER(base, 1, bits);
+#else	
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 8;
         bits |= glyphp[2][line] << 16;
         bits |= glyphp[3][line] << 24;
-        WRITE_IN_BITORDER(base, 0, bits);
+	WRITE_IN_BITORDER(base, 0, bits);
         bits = glyphp[4][line];
         bits |= glyphp[5][line] << 8;
         bits |= glyphp[6][line] << 16;
         bits |= glyphp[7][line] << 24;
-        WRITE_IN_BITORDER(base, 1, bits);
+	WRITE_IN_BITORDER(base, 1, bits);
+#endif	
 #ifndef FIXEDBASE
         base += 2;
 #endif
         nglyph -= 8;	    
         glyphp += 8;
     }
-#endif
 #ifdef WHOLE_SCANLINE
     if (nglyph == 0)
         return base;
@@ -1030,6 +1180,57 @@ static unsigned int *DrawTextScanlineWidth9(base, glyphp, line, nglyph)
 {
     while (nglyph >= 32) {
         unsigned int bits;
+#if BITMAP_BIT_ORDER == MSBFirst
+        bits = glyphp[0][line];
+        bits |= glyphp[1][line] >> 9;
+        bits |= glyphp[2][line] >> 18;
+        bits |= glyphp[3][line] >> 27;
+        WRITE_IN_BITORDER(base, 0, bits);
+        bits = glyphp[3][line] << 5;
+        bits |= glyphp[4][line] >> 4;
+        bits |= glyphp[5][line] >> 13;
+        bits |= glyphp[6][line] >> 22;
+        bits |= glyphp[7][line] >> 31;
+        WRITE_IN_BITORDER(base, 1, bits);
+        bits = glyphp[7][line] << 1;
+        bits |= glyphp[8][line] >> 8;
+        bits |= glyphp[9][line] >> 17;
+        bits |= glyphp[10][line] >> 26;
+        WRITE_IN_BITORDER(base, 2, bits);
+        bits = glyphp[10][line] << 6;
+        bits |= glyphp[11][line] >> 3;
+        bits |= glyphp[12][line] >> 12;
+        bits |= glyphp[13][line] >> 21;
+        bits |= glyphp[14][line] >> 30;
+        WRITE_IN_BITORDER(base, 3, bits);
+        bits = glyphp[14][line] << 2;
+        bits |= glyphp[15][line] >> 7;
+        bits |= glyphp[16][line] >> 16;
+        bits |= glyphp[17][line] >> 25;
+        WRITE_IN_BITORDER(base, 4, bits);
+        bits = glyphp[17][line] << 7;
+        bits |= glyphp[18][line] >> 2;
+        bits |= glyphp[19][line] >> 11;
+        bits |= glyphp[20][line] >> 20;
+        bits |= glyphp[21][line] >> 29;
+        WRITE_IN_BITORDER(base, 5, bits);
+        bits = glyphp[21][line] << 3;
+        bits |= glyphp[22][line] >> 6;
+        bits |= glyphp[23][line] >> 15;
+        bits |= glyphp[24][line] >> 24;
+        WRITE_IN_BITORDER(base, 6, bits);
+        bits = glyphp[24][line] << 8;
+        bits |= glyphp[25][line] >> 1;
+        bits |= glyphp[26][line] >> 10;
+        bits |= glyphp[27][line] >> 19;
+        bits |= glyphp[28][line] >> 28;
+        WRITE_IN_BITORDER(base, 7, bits);
+        bits = glyphp[28][line] << 4;
+        bits |= glyphp[29][line] >> 5;
+        bits |= glyphp[30][line] >> 14;
+        bits |= glyphp[31][line] >> 23;
+        WRITE_IN_BITORDER(base, 8, bits);
+#else	
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 9;
         bits |= glyphp[2][line] << 18;
@@ -1079,6 +1280,7 @@ static unsigned int *DrawTextScanlineWidth9(base, glyphp, line, nglyph)
         bits |= glyphp[30][line] << 14;
         bits |= glyphp[31][line] << 23;
         WRITE_IN_BITORDER(base, 8, bits);
+#endif	
 #ifndef FIXEDBASE
         base += 9;
 #endif
@@ -1096,6 +1298,33 @@ static unsigned int *DrawTextScanlineWidth10(base, glyphp, line, nglyph)
 {
     while (nglyph >= 16) {
         unsigned int bits;
+#if BITMAP_BIT_ORDER == MSBFirst	
+        bits = glyphp[0][line];
+        bits |= glyphp[1][line] >> 10;
+        bits |= glyphp[2][line] >> 20;
+        bits |= glyphp[3][line] >> 30;
+        WRITE_IN_BITORDER(base, 0, bits);
+        bits = glyphp[3][line] << 2;
+        bits |= glyphp[4][line] >> 8;
+        bits |= glyphp[5][line] >> 18;
+        bits |= glyphp[6][line] >> 28;
+        WRITE_IN_BITORDER(base, 1, bits);
+        bits = glyphp[6][line] << 4;
+        bits |= glyphp[7][line] >> 6;
+        bits |= glyphp[8][line] >> 16;
+        bits |= glyphp[9][line] >> 26;
+        WRITE_IN_BITORDER(base, 2, bits);
+        bits = glyphp[9][line] << 6;
+        bits |= glyphp[10][line] >> 4;
+        bits |= glyphp[11][line] >> 14;
+        bits |= glyphp[12][line] >> 24;
+        WRITE_IN_BITORDER(base, 3, bits);
+        bits = glyphp[12][line] << 8;
+        bits |= glyphp[13][line] >> 2;
+        bits |= glyphp[14][line] >> 12;
+        bits |= glyphp[15][line] >> 22;
+        WRITE_IN_BITORDER(base, 4, bits);
+#else
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 10;
         bits |= glyphp[2][line] << 20;
@@ -1121,6 +1350,7 @@ static unsigned int *DrawTextScanlineWidth10(base, glyphp, line, nglyph)
         bits |= glyphp[14][line] << 12;
         bits |= glyphp[15][line] << 22;
         WRITE_IN_BITORDER(base, 4, bits);
+#endif
 #ifndef FIXEDBASE
         base += 5;
 #endif
@@ -1138,6 +1368,21 @@ static unsigned int *DrawTextScanlineWidth12(base, glyphp, line, nglyph)
 {
     while (nglyph >= 8) {
         unsigned int bits;
+#if BITMAP_BIT_ORDER == MSBFirst	
+        bits = glyphp[0][line];
+        bits |= glyphp[1][line] >> 12;
+        bits |= glyphp[2][line] >> 24;
+        WRITE_IN_BITORDER(base, 0, bits);
+        bits = glyphp[2][line] << 8;
+        bits |= glyphp[3][line] >> 4;
+        bits |= glyphp[4][line] >> 16;
+        bits |= glyphp[5][line] >> 28;
+        WRITE_IN_BITORDER(base, 1, bits);
+        bits = glyphp[5][line] << 4;
+        bits |= glyphp[6][line] >> 8;
+        bits |= glyphp[7][line] >> 20;
+        WRITE_IN_BITORDER(base, 2, bits);
+#else
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 12;
         bits |= glyphp[2][line] << 24;
@@ -1151,6 +1396,7 @@ static unsigned int *DrawTextScanlineWidth12(base, glyphp, line, nglyph)
         bits |= glyphp[6][line] << 8;
         bits |= glyphp[7][line] << 20;
         WRITE_IN_BITORDER(base, 2, bits);
+#endif
 #ifndef FIXEDBASE
         base += 3;
 #endif
@@ -1168,6 +1414,37 @@ static unsigned int *DrawTextScanlineWidth14(base, glyphp, line, nglyph)
 {
     while (nglyph >= 16) {
         unsigned int bits;
+#if BITMAP_BIT_ORDER == MSBFirst
+        bits = glyphp[0][line];
+        bits |= glyphp[1][line] >> 14;
+        bits |= glyphp[2][line] >> 28;
+        WRITE_IN_BITORDER(base, 0, bits);
+        bits = glyphp[2][line] << 4;
+        bits |= glyphp[3][line] >> 10;
+        bits |= glyphp[4][line] >> 24;
+        WRITE_IN_BITORDER(base, 1, bits);
+        bits = glyphp[4][line] << 8;
+        bits |= glyphp[5][line] >> 6;
+        bits |= glyphp[6][line] >> 20;
+        WRITE_IN_BITORDER(base, 2, bits);
+        bits = glyphp[6][line] << 12;
+        bits |= glyphp[7][line] >> 2;
+        bits |= glyphp[8][line] >> 16;
+        bits |= glyphp[9][line] >> 30;
+        WRITE_IN_BITORDER(base, 3, bits);
+        bits = glyphp[9][line] << 2;
+        bits |= glyphp[10][line] >> 12;
+        bits |= glyphp[11][line] >> 26;
+        WRITE_IN_BITORDER(base, 4, bits);
+        bits = glyphp[11][line] << 6;
+        bits |= glyphp[12][line] >> 8;
+        bits |= glyphp[13][line] >> 22;
+        WRITE_IN_BITORDER(base, 5, bits);
+        bits = glyphp[13][line] << 10;
+        bits |= glyphp[14][line] >> 4;
+        bits |= glyphp[15][line] >> 18;
+        WRITE_IN_BITORDER(base, 6, bits);
+#else
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 14;
         bits |= glyphp[2][line] << 28;
@@ -1197,6 +1474,7 @@ static unsigned int *DrawTextScanlineWidth14(base, glyphp, line, nglyph)
         bits |= glyphp[14][line] << 4;
         bits |= glyphp[15][line] << 18;
         WRITE_IN_BITORDER(base, 6, bits);
+#endif
 #ifndef FIXEDBASE
         base += 7;
 #endif
@@ -1214,6 +1492,20 @@ static unsigned int *DrawTextScanlineWidth16(base, glyphp, line, nglyph)
 {
     while (nglyph >= 8) {
         unsigned int bits;
+#if BITMAP_BIT_ORDER == MSBFirst
+        bits = glyphp[0][line];
+        bits |= glyphp[1][line] >> 16;
+        WRITE_IN_BITORDER(base, 0, bits);
+        bits = glyphp[2][line];
+        bits |= glyphp[3][line] >> 16;
+        WRITE_IN_BITORDER(base, 1, bits);
+        bits = glyphp[4][line];
+        bits |= glyphp[5][line] >> 16;
+        WRITE_IN_BITORDER(base, 2, bits);
+        bits = glyphp[6][line];
+        bits |= glyphp[7][line] >> 16;
+        WRITE_IN_BITORDER(base, 3, bits);
+#else
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 16;
         WRITE_IN_BITORDER(base, 0, bits);
@@ -1226,6 +1518,7 @@ static unsigned int *DrawTextScanlineWidth16(base, glyphp, line, nglyph)
         bits = glyphp[6][line];
         bits |= glyphp[7][line] << 16;
         WRITE_IN_BITORDER(base, 3, bits);
+#endif	
 #ifndef FIXEDBASE
         base += 4;
 #endif
@@ -1243,6 +1536,41 @@ static unsigned int *DrawTextScanlineWidth18(base, glyphp, line, nglyph)
 {
     while (nglyph >= 16) {
         unsigned int bits;
+#if BITMAP_BIT_ORDER == MSBFirst
+        bits = glyphp[0][line];
+        bits |= glyphp[1][line] >> 18;
+        WRITE_IN_BITORDER(base, 0, bits);
+        bits = glyphp[1][line] << 14;
+        bits |= glyphp[2][line] >> 4;
+        bits |= glyphp[3][line] >> 22;
+        WRITE_IN_BITORDER(base, 1, bits);
+        bits = glyphp[3][line] << 10;
+        bits |= glyphp[4][line] >> 8;
+        bits |= glyphp[5][line] >> 26;
+        WRITE_IN_BITORDER(base, 2, bits);
+        bits = glyphp[5][line] << 6;
+        bits |= glyphp[6][line] >> 12;
+        bits |= glyphp[7][line] >> 30;
+        WRITE_IN_BITORDER(base, 3, bits);
+        bits = glyphp[7][line] << 2;
+        bits |= glyphp[8][line] >> 16;
+        WRITE_IN_BITORDER(base, 4, bits);
+        bits = glyphp[8][line] << 16;
+        bits |= glyphp[9][line] >> 2;
+        bits |= glyphp[10][line] >> 20;
+        WRITE_IN_BITORDER(base, 5, bits);
+        bits = glyphp[10][line] << 12;
+        bits |= glyphp[11][line] >> 6;
+        bits |= glyphp[12][line] >> 24;
+        WRITE_IN_BITORDER(base, 6, bits);
+        bits = glyphp[12][line] << 8;
+        bits |= glyphp[13][line] >> 10;
+        bits |= glyphp[14][line] >> 28;
+        WRITE_IN_BITORDER(base, 7, bits);
+        bits = glyphp[14][line] << 4;
+        bits |= glyphp[15][line] >> 14;
+        WRITE_IN_BITORDER(base, 8, bits);
+#else
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 18;
         WRITE_IN_BITORDER(base, 0, bits);
@@ -1276,6 +1604,7 @@ static unsigned int *DrawTextScanlineWidth18(base, glyphp, line, nglyph)
         bits = glyphp[14][line] >> 4;
         bits |= glyphp[15][line] << 14;
         WRITE_IN_BITORDER(base, 8, bits);
+#endif	
 #ifndef FIXEDBASE
         base += 9;
 #endif
@@ -1293,6 +1622,17 @@ static unsigned int *DrawTextScanlineWidth24(base, glyphp, line, nglyph)
 {
     while (nglyph >= 4) {
         unsigned int bits;
+#if BITMAP_BIT_ORDER == MSBFirst
+        bits = glyphp[0][line];
+        bits |= glyphp[1][line] >> 24;
+        WRITE_IN_BITORDER(base, 0, bits);
+        bits = glyphp[1][line] << 8;
+        bits |= glyphp[2][line] >> 16;
+        WRITE_IN_BITORDER(base, 1, bits);
+        bits = glyphp[2][line] << 16;
+        bits |= glyphp[3][line] >> 8;
+        WRITE_IN_BITORDER(base, 2, bits);
+#else
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 24;
         WRITE_IN_BITORDER(base, 0, bits);
@@ -1302,6 +1642,7 @@ static unsigned int *DrawTextScanlineWidth24(base, glyphp, line, nglyph)
         bits = glyphp[2][line] >> 16;
         bits |= glyphp[3][line] << 8;
         WRITE_IN_BITORDER(base, 2, bits);
+#endif
 #ifndef FIXEDBASE
         base += 3;
 #endif
@@ -1357,27 +1698,44 @@ srcoffset, w)
 
         dw = min(w, sw);
         if (dw >= 32) {
+#if BITMAP_BIT_ORDER == MSBFirst
+	    UINT64_ORRIGHTSHIFTEDINT(bits, ldl_u((unsigned int *)srcp), shift);
+#else	    
 	    UINT64_ORLEFTSHIFTEDINT(bits, ldl_u((unsigned int *)srcp), shift);
+#endif	    
             shift += 32;
             sw -= 32;
             w -= 32;
             srcp += 4;
         }
         else {
+#if BITMAP_BIT_ORDER == MSBFirst		
+	    UINT64_ORRIGHTSHIFTEDINT(bits, ((ldl_u((unsigned int *)srcp))
+					   & stipplemask[dw]), shift);
+#else					   
 	    UINT64_ORLEFTSHIFTEDINT(bits, ((ldl_u((unsigned int *)srcp))
 					   & stipplemask[dw]), shift);
+#endif					   
             shift += dw;
             sw = 0;
             w -= dw;
         }
         if (shift >= 32) {
             /* Write a 32-bit word. */
+#if BITMAP_BIT_ORDER == MSBFirst		
+            WRITE_IN_BITORDER(base, 0, UINT64_HIGH32(bits));
+#else	    
             WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#endif	    
 #ifndef FIXEDBASE
             base++;
 #endif
             shift -= 32;
+#if BITMAP_BIT_ORDER == MSBFirst	    
+            UINT64_SHIFTLEFT32(bits);
+#else	    
             UINT64_SHIFTRIGHT32(bits);
+#endif	    
         }
         if (w == 0)
             break;
@@ -1387,7 +1745,11 @@ srcoffset, w)
         }
     }
     if (shift > 0) {
+#if BITMAP_BIT_ORDER == MSBFirst	    
+        WRITE_IN_BITORDER(base, 0, UINT64_HIGH32(bits));
+#else	
         WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#endif	
 #ifndef FIXEDBASE
         base++;
 #endif
@@ -1418,27 +1780,44 @@ srcoffset, w)
 
         dw = min(w, sw);
         if (dw >= 32) {
+#if BITMAP_BIT_ORDER == MSBFirst		
+	    UINT64_ORRIGHTSHIFTEDINT(bits, ldl_u((unsigned int *)srcp), shift);
+#else	    
 	    UINT64_ORLEFTSHIFTEDINT(bits, ldl_u((unsigned int *)srcp), shift);
+#endif	    
             shift += 32;
             sw -= 32;
             w -= 32;
             srcp += 4;
         }
         else {
+#if BITMAP_BIT_ORDER == MSBFirst		
+	    UINT64_ORRIGHTSHIFTEDINT(bits, ((ldl_u((unsigned int *)srcp))
+					   & stipplemask[dw]), shift);
+#else					   
 	    UINT64_ORLEFTSHIFTEDINT(bits, ((ldl_u((unsigned int *)srcp))
 					   & stipplemask[dw]), shift);
+#endif					   
             shift += dw;
             sw = 0;
             w -= dw;
         }
         if (shift >= 32) {
             /* Write a 32-bit word. */
+#if BITMAP_BIT_ORDER == MSBFirst		
+            WRITE_IN_BITORDER3(base, 0, UINT64_HIGH32(bits));
+#else	    
             WRITE_IN_BITORDER3(base, 0, UINT64_LOW32(bits));
+#endif	    
 #ifndef FIXEDBASE
             base +=3;
 #endif
             shift -= 32;
+#if BITMAP_BIT_ORDER == MSBFirst	    
+            UINT64_SHIFTLEFT32(bits);
+#else	    
             UINT64_SHIFTRIGHT32(bits);
+#endif	    
         }
         if (w == 0)
             break;
@@ -1448,17 +1827,29 @@ srcoffset, w)
         }
     }
     if (shift > 0) {
+#if BITMAP_BIT_ORDER == MSBFirst	    
+        WRITE_IN_BITORDER3_FIRSTWORD(base, 0, UINT64_HIGH32(bits));
+#else	
         WRITE_IN_BITORDER3_FIRSTWORD(base, 0, UINT64_LOW32(bits));
+#endif	
 #ifndef FIXEDBASE
         base++;
 #endif
         if (shift >= 11) {
+#if BITMAP_BIT_ORDER == MSBFirst		
+            WRITE_IN_BITORDER3_SECONDWORD(base, 0, UINT64_HIGH32(bits));
+#else	    
             WRITE_IN_BITORDER3_SECONDWORD(base, 0, UINT64_LOW32(bits));
+#endif	    
 #ifndef FIXEDBASE
             base++;
 #endif
             if (shift >= 22) {
+#if BITMAP_BIT_ORDER == MSBFirst		    
+                WRITE_IN_BITORDER3_THIRDWORD(base, 0, UINT64_HIGH32(bits));
+#else		
                 WRITE_IN_BITORDER3_THIRDWORD(base, 0, UINT64_LOW32(bits));
+#endif		
 #ifndef FIXEDBASE
                 base++;
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitMM.h,v 3.9 1996/12/23 06:56:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirBlitMM.h,v 1.1 1997/03/06 23:15:12 hohndel Exp $ */
 
 /* Definitions for BitBLT engine communication. */
 /* Using Memory-Mapped I/O. */
@@ -53,63 +53,55 @@
 #define MMIOTRANSPARENCYCOLORMASK 0x20
 #define MMIOBLTSTATUS		0x40
 
-extern unsigned char *cirrusMMIOBase;
-
 /* Address: the 5426 adresses 2MBytes, the 5434 can address 4MB. */
 
-#define SETDESTADDR(dstAddr) \
-  *(unsigned int *)(cirrusMMIOBase + MMIODESTADDR) = dstAddr;
+#define SETDESTADDR(dstAddr) 	CIR_MMIO_WRITE32(MMIODESTADDR, dstAddr)
 
-#define SETSRCADDR(srcAddr) \
-  *(unsigned int *)(cirrusMMIOBase + MMIOSRCADDR) = srcAddr;
+#define SETSRCADDR(srcAddr)  	CIR_MMIO_WRITE32(MMIOSRCADDR, srcAddr)
 
 #define SETSRCADDRUNMODIFIED SETSRCADDR
 
 /* Pitch: the 5426 goes up to 4095, the 5434 can do 8191. */
 
-#define SETDESTPITCH(dstPitch) \
-  *(unsigned short *)(cirrusMMIOBase + MMIODESTPITCH) = dstPitch;
+#define SETDESTPITCH(dstPitch)	CIR_MMIO_WRITE16(MMIODESTPITCH, dstPitch)
 
-#define SETSRCPITCH(srcPitch) \
-  *(unsigned short *)(cirrusMMIOBase + MMIOSRCPITCH) = srcPitch;
+#define SETSRCPITCH(srcPitch)	CIR_MMIO_WRITE16(MMIOSRCPITCH, srcPitch)
 
 /* Width: the 5426 goes up to 2048, the 5434 can do 8192. */
 
-#define SETWIDTH(fillWidth) \
-  *(unsigned short *)(cirrusMMIOBase + MMIOWIDTH) = fillWidth - 1;
+#define SETWIDTH(fillWidth)	CIR_MMIO_WRITE16(MMIOWIDTH, fillWidth - 1)
 
 /* Height: the 5426 goes up to 1024, the 5434 can do 2048. */
 
-#define SETHEIGHT(fillHeight) \
-  *(unsigned short *)(cirrusMMIOBase + MMIOHEIGHT) = fillHeight - 1;
+#define SETHEIGHT(fillHeight)	CIR_MMIO_WRITE16(MMIOHEIGHT, fillHeight - 1)
 
-#define SETBLTMODE(m) \
-  *(unsigned char *)(cirrusMMIOBase + MMIOBLTMODE) = m;
+#define SETBLTMODE(m)	CIR_MMIO_WRITE8(MMIOBLTMODE, m)
 
-#define SETBLTMODEEXT(m) \
-  *(unsigned char *)(cirrusMMIOBase + MMIOBLTMODEEXT) = m;
+#define SETBLTMODEEXT(m)	 CIR_MMIO_WRITE8(MMIOBLTMODEEXT, m)
 
-#define SETBLTWRITEMASK(m) \
-  *(unsigned char *)(cirrusMMIOBase + MMIOBLTWRITEMASK) = m;
+#define SETBLTWRITEMASK(m) 	CIR_MMIO_WRITE8(MMIOBLTWRITEMASK, m)
 
-#define SETROP(rop) \
-  *(unsigned char *)(cirrusMMIOBase + MMIOROP) = rop;
+#define SETROP(rop) 	CIR_MMIO_WRITE8(MMIOROP, rop)
 
-#define STARTBLT() \
-  *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) = 0x02;
+#define STARTBLT() 	CIR_MMIO_WRITE8(MMIOBLTSTATUS, 0x02)
 
-#define SETBLTSTATUS(v) \
-  *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) = v;
+#define SETBLTSTATUS(v) CIR_MMIO_WRITE8(MMIOBLTSTATUS, v)
 
-#define BLTBUSY(s) \
-  s = *(volatile unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) & 1;
-#define BLTEMPTY(s) \
-  s = (*(volatile unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) & 0x10) == 0;
+#define BLTBUSY(s)	(s) = CIR_MMIO_READ8(MMIOBLTSTATUS); (s) &= 1
+
+#define SPIN_WHILE_BLTBUSY(s) \
+			do { BLTBUSY(s) ; } while (s);
+
+#define BLTEMPTY(s)	(s) = CIR_MMIO_READ8(MMIOBLTSTATUS); (s) = (((s) & 0x10) == 0)
 
 /* BitBLT reset: temporarily set bit 2 of GR31 */
-#define BLTRESET() \
-  *(volatile unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) ^= 0x04; \
-  *(volatile unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) ^= 0x04;
+#define BLTRESET() { \
+  unsigned char tmp8 = CIR_MMIO_READ8(MMIOBLTSTATUS); \
+  tmp8 ^= 0x04; \
+  CIR_MMIO_WRITE8(MMIOBLTSTATUS, tmp8); \
+  tmp8 ^= 0x04; \
+  CIR_MMIO_WRITE8(MMIOBLTSTATUS, tmp8); \
+}
 
 #define WAITUNTILFINISHED() CirrusBLTWaitUntilFinished()  
 
@@ -124,54 +116,53 @@ extern unsigned char *cirrusMMIOBase;
  * be preserved (they are used even in 8bpp on the 543x). */
 
 #undef SETBACKGROUNDCOLOR
-#define SETBACKGROUNDCOLOR(c) \
-  *(unsigned char *)(cirrusMMIOBase + MMIOBACKGROUNDCOLOR) = c; \
-  *(unsigned char *)(&cirrusBackgroundColorShadow) = c;
+#define SETBACKGROUNDCOLOR(c) { \
+  CIR_MMIO_WRITE8(MMIOBACKGROUNDCOLOR, c); \
+  *(unsigned char *)(&cirrusBackgroundColorShadow) = c; \
+}
 
 #undef SETFOREGROUNDCOLOR
-#define SETFOREGROUNDCOLOR(c) \
-  *(unsigned char *)(cirrusMMIOBase + MMIOFOREGROUNDCOLOR) = c; \
-  *(unsigned char *)(&cirrusForegroundColorShadow) = c;
+#define SETFOREGROUNDCOLOR(c) { \
+  CIR_MMIO_WRITE8(MMIOFOREGROUNDCOLOR, c); \
+  *(unsigned char *)(&cirrusForegroundColorShadow) = c; \
+}
 
 #undef SETBACKGROUNDCOLOR16
-#define SETBACKGROUNDCOLOR16(c) \
-  *(unsigned short *)(cirrusMMIOBase + MMIOBACKGROUNDCOLOR) = c; \
-  *(unsigned short *)(&cirrusBackgroundColorShadow) = c;
+#define SETBACKGROUNDCOLOR16(c) { \
+  CIR_MMIO_WRITE16(MMIOBACKGROUNDCOLOR, c); \
+  *(unsigned short *)(&cirrusBackgroundColorShadow) = c; \
+}
 
 #undef SETFOREGROUNDCOLOR16
-#define SETFOREGROUNDCOLOR16(c) \
-  *(unsigned short *)(cirrusMMIOBase + MMIOFOREGROUNDCOLOR) = c; \
-  *(unsigned short *)(&cirrusForegroundColorShadow) = c;
+#define SETFOREGROUNDCOLOR16(c) { \
+  CIR_MMIO_WRITE16(MMIOFOREGROUNDCOLOR, c); \
+  *(unsigned short *)(&cirrusForegroundColorShadow) = c; \
+}
 
 /* 32-bit colors are exclusive to the BitBLT engine. */
 
-#define SETBACKGROUNDCOLOR32(c) \
-  *(unsigned int *)(cirrusMMIOBase + MMIOBACKGROUNDCOLOR) = c; \
-  cirrusBackgroundColorShadow = c;
+#define SETBACKGROUNDCOLOR32(c) { \
+  CIR_MMIO_WRITE32(MMIOBACKGROUNDCOLOR, c); \
+  cirrusBackgroundColorShadow = c; \
+}
 
-#define SETFOREGROUNDCOLOR32(c) \
-  *(unsigned int *)(cirrusMMIOBase + MMIOFOREGROUNDCOLOR) = c; \
-  cirrusForegroundColorShadow = c;
+#define SETFOREGROUNDCOLOR32(c) { \
+  CIR_MMIO_WRITE32(MMIOFOREGROUNDCOLOR, c); \
+  cirrusForegroundColorShadow = c; \
+}
 
 /*
  * Extra definitions added for XAA driver.
  */
 
-#define SETBLTMODEANDROP(m, mext, rop) \
-    *(unsigned int *)(cirrusMMIOBase + MMIOBLTMODE) = \
-        (m) | ((rop) << 16) | ((mext) << 24);
+#define SETBLTMODEANDROP(m, mext, rop)	CIR_MMIO_WRITE32(MMIOBLTMODE, (m) | ((rop)<<16) | ((mext) << 24))
 
-#define SETWIDTHANDHEIGHT(w, h) \
-  *(unsigned int *)(cirrusMMIOBase + MMIOWIDTH) = ((w) - 1) | (((h) - 1) << 16);
+#define SETWIDTHANDHEIGHT(w, h)		CIR_MMIO_WRITE32(MMIOWIDTH, ((w) - 1) | (((h) - 1) << 16))
 
-#define SETTRANSPARENCYCOLOR(c) \
-  *(unsigned short *)(cirrusMMIOBase + MMIOTRANSPARENCYCOLOR) = c;
+#define SETTRANSPARENCYCOLOR(c)		CIR_MMIO_WRITE16(MMIOTRANSPARENCYCOLOR, c)
 
-#define SETTRANSPARENCYCOLOR16(c) \
-  *(unsigned short *)(cirrusMMIOBase + MMIOTRANSPARENCYCOLOR) = c;
+#define SETTRANSPARENCYCOLOR16(c)	CIR_MMIO_WRITE16(MMIOTRANSPARENCYCOLOR, c)
 
-#define SETTRANSPARENCYCOLORMASK(c) \
-  *(unsigned short *)(cirrusMMIOBase + MMIOTRANSPARENCYCOLORMASK) = c;
+#define SETTRANSPARENCYCOLORMASK(c)	CIR_MMIO_WRITE16(MMIOTRANSPARENCYCOLORMASK, c)
 
-#define SETTRANSPARENCYCOLORMASK16(c) \
-  *(unsigned short *)(cirrusMMIOBase + MMIOTRANSPARENCYCOLORMASK) = c;
+#define SETTRANSPARENCYCOLORMASK16(c)	CIR_MMIO_WRITE16(MMIOTRANSPARENCYCOLORMASK, c)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86spans.c,v 3.3 1997/04/18 09:12:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86spans.c,v 3.4 1998/01/11 03:48:29 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -34,6 +34,8 @@
 #include "regionstr.h"
 /* PSZ doesn't matter. */
 #define PSZ 8
+#include "mi.h"
+#include "mispans.h"
 #include "cfb.h"
 
 #include "xf86.h"
@@ -321,7 +323,7 @@ DoPatternedFillSpans (pDrawable, pGC, nInit, pptInit, pwidthInit)
     nullBox.x2 = 32767;
     nullBox.y2 = 32767;
 
-    (*pGC->pScreen->RegionInit)(&nullClip, &nullBox, 1); 
+    REGION_INIT(pGC->pScreen, &nullClip, &nullBox, 1); 
 
     oldpCompositeClip = devPriv->pCompositeClip;
     devPriv->pCompositeClip = &nullClip;
@@ -330,6 +332,6 @@ DoPatternedFillSpans (pDrawable, pGC, nInit, pptInit, pwidthInit)
 
     devPriv->pCompositeClip = oldpCompositeClip;
 
-    (*pGC->pScreen->RegionUninit)(&nullClip);
+    REGION_UNINIT(pGC->pScreen, &nullClip);
     DEALLOCATE_LOCAL(pRectInit);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.36 1997/06/03 14:12:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.37 1997/07/29 12:08:05 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -30,7 +30,7 @@
 
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_Config.h"
 #include "xf86Procs.h"
 #include "mono.h"
@@ -310,7 +310,7 @@ monoPrintIdent()
 	    if (n) {
 		ErrorF(",");
 		c++;
-		if (c + 1 + xf86strlen(id) < 70) {
+		if (c + 1 + strlen(id) < 70) {
 		    ErrorF(" ");
 		    c++;
 		} else {
@@ -319,7 +319,7 @@ monoPrintIdent()
 		}
 	    }
 	    ErrorF("%s",id);
-	    c += xf86strlen(id);
+	    c += strlen(id);
 	}
     ErrorF("\n");
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.14 1997/10/25 13:51:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.15 1998/01/11 03:48:27 dawes Exp $ */
 
 
 #include "windowstr.h"
@@ -58,7 +58,7 @@ xf86GCInfoRecType xf86GCInfoRec = {
     NULL,	/* SetSpansWrapper */
     NULL,	/* PushPixelsWrapper */
     NULL, 	/* SaveAreasWrapper */
-    NULL	/* RestoreAreasWrapper */
+    NULL,	/* RestoreAreasWrapper */
 };
 
 xf86AccelInfoRecType xf86AccelInfoRec = {
@@ -134,7 +134,7 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     NULL,	/* ImageWriteBase */
     0,		/* ImageWriteRange */
     0,		/* ImageWriteFlags */
-    0		/* ImageWriteOffset */
+    0,		/* ImageWriteOffset */
 };
 
 XAACursorInfoRecType XAACursorInfoRec = {
@@ -148,5 +148,5 @@ XAACursorInfoRecType XAACursorInfoRec = {
     NULL,	/* LoadCursorImage */
     NULL,	/* HideCursor */
     NULL,	/* ShowCursor */
-    NULL 	/* GetInstalledColormaps */
+    NULL, 	/* GetInstalledColormaps */
 };

@@ -22,26 +22,15 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128Cursor.c,v 3.4 1996/12/23 06:35:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128Cursor.c,v 3.5 1997/05/31 13:51:27 dawes Exp $ */
 
+#include "mfb.h"
 #include "i128.h"
 #include "i128reg.h"
 #include "i128Cursor.h"
 
-static Bool i128UnrealizeCursor();
-static void i128SetCursor();
-
-extern Bool i128TiRealizeCursor();
-extern void i128TiCursorOn();
-extern void i128TiCursorOff();
-extern void i128TiLoadCursor();
-extern void i128TiMoveCursor();
-
-extern Bool i128IBMRealizeCursor();
-extern void i128IBMCursorOn();
-extern void i128IBMCursorOff();
-extern void i128IBMLoadCursor();
-extern void i128IBMMoveCursor();
+static Bool i128UnrealizeCursor(ScreenPtr, CursorPtr);
+static void i128SetCursor(ScreenPtr, CursorPtr, int, int);
 
 static miPointerSpriteFuncRec i128TiPointerSpriteFuncs =
 {
@@ -134,20 +123,20 @@ i128UnrealizeCursor(pScr, pCurs)
 
 
 static void
-i128SetCursor(pScr, pCurs, x, y, generateEvent)
+i128SetCursor(pScr, pCurs, x, y)
      ScreenPtr pScr;
      CursorPtr pCurs;
      int   x, y;
-     Bool  generateEvent;
-
 {
    int index = pScr->myNum;
 
-   if (!pCurs)
-      return;
-
    if (useSWCursor) 
       return;
+
+   if (!pCurs) {
+       i128HideCursor();
+       return;
+   }
 
    i128hotX = pCurs->bits->xhot;
    i128hotY = pCurs->bits->yhot;

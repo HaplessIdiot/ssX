@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pntwn.c,v 3.2 1996/02/04 09:03:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pntwn.c,v 3.3 1996/12/23 06:39:25 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -174,7 +174,7 @@ mach64FillBoxTile (pDrawable, pRegion, pPixmap)
     box.y1 = 0;
     box.x2 = mach64VirtX;
     box.y2 = mach64VirtY;
-    (*pGC->pScreen->RegionInit)(&NullClip, &box, 1);
+    REGION_INIT(pGC->pScreen, &NullClip, &box, 1);
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
     oldpCompositeClip = devPriv->pCompositeClip;
@@ -199,7 +199,7 @@ mach64FillBoxTile (pDrawable, pRegion, pPixmap)
     pGC->fillStyle = old_fillStyle;
     pGC->tile = old_tile;
 
-    (*pGC->pScreen->RegionUninit)(&NullClip);
+    REGION_UNINIT(pGC->pScreen, &NullClip);
     FreeScratchGC(pGC);
     DEALLOCATE_LOCAL(pRectInit);
 }

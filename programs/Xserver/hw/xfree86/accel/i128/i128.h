@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.h,v 3.4 1996/08/13 11:29:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.h,v 3.5 1996/12/23 06:35:36 dawes Exp $ */
 
 #ifndef _I128_H_
 #define _I128_H_
@@ -48,9 +48,8 @@
 #include "compiler.h"
 #include "misc.h"
 #include "xf86.h"
+#include "xf86_ansic.h"
 #include "regionstr.h"
-#include "xf86_OSlib.h"
-#include "xf86bcache.h"
 #include "xf86fcache.h"
 #include "xf86Procs.h"
 
@@ -61,7 +60,7 @@
 #include "input.h"
 #include "misc.h"
 #include "xf86.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #endif /* !LINKKIT */
 
 #if !defined(__GNUC__) || defined(NO_INLINE)
@@ -75,6 +74,44 @@ extern ScrnInfoRec i128InfoRec;
 #define IBM524_DAC   1
 #define IBM526_DAC   2
 #define IBM528_DAC   3
+
+
+/* Types */
+typedef struct {
+	unsigned char r, b, g;
+} LUTENTRY;
+
+/* save the registers needed for restoration in this structure */
+typedef struct {
+	unsigned short iobase;		/* saved only for iobase indexing    */
+	CARD32 config1;			/* iobase+0x1C register              */
+	CARD32 config2;			/* iobase+0x20 register              */
+	CARD32 vga_ctl;			/* iobase+0x30 register              */
+	CARD32 i128_base_g[0x60/4];	/* base g registers                  */
+	CARD32 i128_base_w[0x28/4];	/* base w registers                  */
+	unsigned char Ti302X[0x40];	/* Ti302[05] registers               */
+	unsigned char Ti3025[9];	/* Ti3025 N,M,P for PCLK, MCLK, LCLK */
+	unsigned char IBMRGB[0x101];	/* IBMRGB registers                  */
+} i128Registers;
+
+
+/* i128 globals */
+extern LUTENTRY	currenti128dac[];
+extern int	i128AdjustCursorXPos;
+extern Bool	i128DAC8Bit;
+extern int	i128DisplayOffset;
+extern int	i128DisplayWidth;
+extern int	i128HDisplay;
+extern int	i128InitCursorFlag;
+extern int	i128ValidTokens[];
+extern pointer	i128VideoMem;
+extern short	i128alu[];
+extern int	i128hotX;
+extern int	i128hotY;
+extern ScreenPtr i128savepScreen;
+extern i128Registers iR;
+
+
 
 #ifndef LINKKIT
 _XFUNCPROTOBEGIN
@@ -95,18 +132,11 @@ extern void (*i128ImageFillFunc)(
 #endif
 );
 
-extern short i128alu[];
-extern pointer i128VideoMem;
-extern ScreenPtr i128savepScreen;
-
-extern int i128ValidTokens[];
-
-extern Bool i128DAC8Bit;
-
 /* Function Prototypes */
 
 /* i128Conf.c */
 /* i128.c */
+ScrnInfoRec *ServerInit(void);
 void i128PrintIdent(
 #if NeedFunctionPrototypes
     void
@@ -117,6 +147,8 @@ Bool i128Probe(
     void
 #endif
 );
+Bool i128ProgramIBMRGB(int /*freq*/, int /*flags*/);
+Bool i128ProgramTi3025(int /*freq*/);
 /* i128misc.c */
 Bool i128Initialize(
 #if NeedFunctionPrototypes
@@ -720,5 +752,6 @@ void i128IBMLoadCursor(
 _XFUNCPROTOEND
 
 #endif /* !LINKKIT */
-#endif /* _I128_H_ */
 
+extern struct i128mem i128mem;
+#endif /* _I128_H_ */

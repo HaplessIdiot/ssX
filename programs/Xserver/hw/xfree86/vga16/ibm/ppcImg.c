@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcImg.c,v 3.6 1996/12/23 06:53:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcImg.c,v 3.7 1997/03/13 15:11:16 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -33,6 +33,7 @@
 #include "scrnintstr.h"
 #include "regionstr.h"
 #include "servermd.h"
+#include "mi.h"
 
 #include "OScompiler.h"
 

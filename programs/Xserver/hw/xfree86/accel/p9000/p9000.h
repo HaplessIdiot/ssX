@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.16 1996/12/23 06:40:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.17 1997/02/18 12:04:04 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -65,7 +65,6 @@
 #include "misc.h"
 #include "xf86.h"
 #include "regionstr.h"
-#include "xf86_OSlib.h"
 #include "xf86Procs.h"
 
 #include "p9000reg.h"

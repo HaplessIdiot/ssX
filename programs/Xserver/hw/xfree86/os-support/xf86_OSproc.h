@@ -59,7 +59,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.13 1997/10/25 13:50:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.14 1997/12/05 06:39:05 hohndel Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -328,6 +328,40 @@ extern void xf86SetMouseSpeed(
 	int,
 	int,
 	unsigned
+#endif
+);
+extern int xf86OpenSerial (
+#if NeedFunctionPrototypes
+XF86OptionPtr
+#endif
+);
+extern int xf86SetSerial (
+#if NeedFunctionPrototypes
+int,
+XF86OptionPtr
+#endif
+);
+
+typedef unsigned long xf86size_t;
+typedef signed long xf86ssize_t;
+
+extern xf86ssize_t xf86ReadSerial (
+#if NeedFunctionPrototypes
+int,
+void *,
+xf86size_t
+#endif
+);
+extern xf86ssize_t xf86WriteSerial (
+#if NeedFunctionPrototypes
+int,
+void *,
+xf86size_t
+#endif
+);
+extern int xf86CloseSerial (
+#if NeedFunctionPrototypes
+int
 #endif
 );
 extern void xf86MouseInit(

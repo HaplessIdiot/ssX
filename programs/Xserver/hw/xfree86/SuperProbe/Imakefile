@@ -4,10 +4,14 @@ XCOMM $XConsortium: Imakefile /main/14 1996/10/27 11:03:56 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.26 1997/03/27 08:29:43 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.27 1997/08/15 07:19:15 hohndel Exp $
 
 #if defined(SVR3Architecture) || defined(SVR4Architecture) || defined(SCOArchitecture)
 # define OSModule OS_SYSV
+#endif
+
+#if defined(MetroLink) && defined(NCR)
+#undef NCR
 #endif
 
 #if defined(SVR4Architecture)

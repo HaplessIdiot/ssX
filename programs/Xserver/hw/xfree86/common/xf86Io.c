@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.30 1997/06/15 07:12:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.31 1997/11/08 17:07:26 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -29,6 +29,7 @@
 #include "Xproto.h"
 #include "inputstr.h"
 #include "scrnintstr.h"
+#include "mipointer.h"
 
 #include "compiler.h"
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.h,v 3.7 1996/12/23 06:33:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.h,v 3.8 1997/01/08 20:33:31 dawes Exp $ */
 
 /*
  * Data structures and function prototypes for the font cache.
@@ -8,6 +8,8 @@
 
 #ifndef _XF86_FCACHE_H
 #define _XF86_FCACHE_H
+
+#include "xf86bcache.h"
 
 /*
  * This struct contains all info for a cached font.

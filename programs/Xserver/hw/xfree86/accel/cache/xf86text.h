@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86text.h,v 3.3 1996/02/04 08:58:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86text.h,v 3.4 1996/12/23 06:33:23 dawes Exp $ */
 
 /*
  * Function prototypes for the text output functions.
@@ -8,6 +8,8 @@
 
 #ifndef _XF86_TEXT_H
 #define _XF86_TEXT_H
+
+#include "xf86fcache.h"
 
 /*
  * Entrypoints into text code.

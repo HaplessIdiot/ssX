@@ -20,11 +20,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.10 1997/07/06 05:30:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.11 1997/11/16 11:51:12 dawes Exp $ */
 
 #include "Xos.h"
-#include <signal.h>
-#include <stdio.h>
 
 #define NEED_EVENTS
 #include "X.h"

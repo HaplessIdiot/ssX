@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000curs.c,v 3.5 1996/12/23 06:40:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000curs.c,v 3.6 1997/05/31 13:51:29 dawes Exp $ */
 /*
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -48,7 +48,6 @@
 #include "mfb.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
 #include "p9000.h"
 #include "p9000reg.h"
 #include "p9000curs.h"

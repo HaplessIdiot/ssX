@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.38 1997/11/01 15:04:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.39 1997/11/22 00:00:18 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -181,6 +181,7 @@ typedef struct vgaPCIInformation {
     CARD32 MemBase;
     CARD32 MMIOBase;
     CARD32 IOBase;
+    PCITAG Tag;
     int Bus;
     int Card;
     int Func;

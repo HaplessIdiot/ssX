@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64seg.c,v 3.2 1996/02/04 09:03:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64seg.c,v 3.3 1996/12/23 06:39:27 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -213,6 +213,7 @@ mach64Segment(pDrawable, pGC, nseg, pSeg)
             register int dx, dy;
             register int minDelta, maxDelta;
             register int x_dir, y_dir, y_major;
+            unsigned int dir;
 
 
             /* determine x & y deltas and x & y direction bits */
@@ -253,7 +254,9 @@ mach64Segment(pDrawable, pGC, nseg, pSeg)
             }
 
 	    if (pGC->capStyle != CapNotLast)
-		maxDelta++;
+	        dir = y_major | y_dir | x_dir | DST_LAST_PEL;
+	    else
+	        dir = y_major | y_dir | x_dir;
 
 	    while(nbox--)
 	    {
@@ -273,7 +276,7 @@ mach64Segment(pDrawable, pGC, nseg, pSeg)
 		    pbox++;
 
                     regw(DST_Y_X, (x1 << 16) | (y1 & 0x0000ffff));
-                    regw(DST_CNTL, (y_major | y_dir | x_dir));
+                    regw(DST_CNTL, dir);
                     regw(DST_BRES_ERR, ((minDelta << 1) - maxDelta));
                     regw(DST_BRES_INC, (minDelta << 1));
                     regw(DST_BRES_DEC, (0x3ffff - ((maxDelta - minDelta) <<1)));

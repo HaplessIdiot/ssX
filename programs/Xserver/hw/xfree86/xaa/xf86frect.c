@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.17 1997/04/18 09:12:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.18 1998/01/11 03:48:28 dawes Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.17 1997/04/18 09:12:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.18 1998/01/11 03:48:28 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -53,6 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "regionstr.h"
 /* PSZ doesn't matter. */
 #define PSZ 8
+#include "mi.h"
 #include "cfb.h"
 #include "cfb16.h"
 #include "cfb24.h"
@@ -109,7 +110,6 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		    nboxFill;
     extern CacheInfoPtr xf86CacheInfo;
 
-    /* No bullshit please. */
     if (nrectFill <= 0)
         return;
 

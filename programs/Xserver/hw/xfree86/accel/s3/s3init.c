@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.115 1997/06/03 14:11:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.116 1997/06/20 09:24:41 hohndel Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -35,7 +35,6 @@
 #include "site.h"
 
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
 
@@ -1383,7 +1382,6 @@ InitLUT()
       int r,g,b;
       int mr,mg,mb;
       int nr=5, ng=5, nb=5;
-      extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
       extern LUTENTRY currents3dac[];
 
       if (!LUTInited) {

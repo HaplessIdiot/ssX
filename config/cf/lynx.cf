@@ -1,19 +1,23 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.18 1997/10/25 13:49:53 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.19 1997/11/22 08:17:31 dawes Exp $
 
-#ifdef i386Architecture
-# define OSName			LynxOS AT
-#endif
-#ifdef ppcArchitecture
-# define OSName			LynxOS PowerPC
-#endif
-#ifdef SparcArchitecture
-# define OSName			LynxOS microSPARC
+#ifndef OSName
+# ifdef i386Architecture
+#  define OSName			LynxOS AT
+# endif
+# ifdef PpcArchitecture
+#  define OSName			LynxOS PowerPC
+# endif
+# ifdef SparcArchitecture
+#  define OSName			LynxOS microSPARC
+# endif
 #endif
 #define OSVendor		(LYNX Real-Time Systems, Inc)
 #define OSMajorVersion		2
 #define OSMinorVersion		5
 #define OSTeenyVersion		0
 
+#ifndef MetroLink
+/* We have our own cross stuff */
 /* CrossCompile stuff vvv */
 
 #define HostLinkRule(target, flags, src, libs)  cc -o target src
@@ -52,6 +56,7 @@ ComplexHostProgramTarget(program)
 #endif /* SimpleHostProgramTarget */
 
 /* CrossCompile stuff ^^^ */
+#endif /* !MetroLink */
 
 #define HasGcc			YES
 #if OSMajorVersion == 2 && OSMinorVersion > 2
@@ -142,9 +147,11 @@ ComplexHostProgramTarget(program)
 #define LdCmd			ld
 #define AsmDefines		-DUSE_GAS
 #define CppCmd			/lib/cpp
+#if !CrossCompiling
 #define YaccCmd			bison -y
 /* make sure we take the right flex on 2.3.0 and 2.4.0 */
 #define LexCmd			/bin/flex
+#endif
 #if OSMinorVersion >= 5
 # define LexLib			-lfl
 #else
@@ -189,6 +196,7 @@ ComplexHostProgramTarget(program)
 
 #else	/* !CrossCompiling */
 
+#ifndef MetroLink
 /* adjust these manually per target platform please... */
 
 #define CplusplusCmd		ppc-unknown-lynxos2.5-g++
@@ -210,11 +218,12 @@ ComplexHostProgramTarget(program)
 #define LdCombineFlags		-r
 #define OptimizedCDebugFlags	-O2
 #define StandardDefines		-DLynx -DX_LOCALE
+#endif
 
 #endif	/* !CrossCompiling */
 
 #define StandardCppDefines	-traditional StandardDefines
-#if defined(i386Architecture) || defined(ppcArchitecture)
+#if defined(i386Architecture) || defined(PpcArchitecture)
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #else
@@ -242,7 +251,7 @@ ComplexHostProgramTarget(program)
 # define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #endif
 
-#if (defined(i386Architecture) /* || defined(ppcArchitecture) */) && (OSMajorVersion > 2 || OSMinorVersion > 2)
+#if (defined(i386Architecture) /* || defined(PpcArchitecture) */) && (OSMajorVersion > 2 || OSMinorVersion > 2)
 # define DoLoadableServer	YES
 #endif
 
@@ -252,6 +261,8 @@ ComplexHostProgramTarget(program)
 #ifndef HasMotif
 # define HasMotif 		NO
 #endif
+#ifndef MetroLink
+/* We handle the Motif stuff elsewhere */
 #if HasMotif
 # ifndef UseInstalledMotif
 #  define UseInstalledMotif	YES
@@ -261,6 +272,7 @@ ComplexHostProgramTarget(program)
 # endif
 # define LocalTmplFile		<Motif.tmpl>
 # define LocalRulesFile		<Motif.rules>
+#endif
 #endif
 
 #define ManSourcePath   $(MANPATH)/cat
@@ -377,7 +389,7 @@ install.man:: list                                                      @@\
 # endif
 #endif
 
-#if !defined(i386Architecture) && !defined(ppcArchitecture)
+#if !defined(i386Architecture) && !defined(PpcArchitecture)
 # define BuildXF86DGA NO
 #endif
 

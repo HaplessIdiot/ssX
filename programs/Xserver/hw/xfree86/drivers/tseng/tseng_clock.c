@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.3 1997/06/11 12:24:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.4 1997/08/12 12:02:08 hohndel Exp $ */
 
 /*
  *
@@ -17,7 +17,7 @@
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 
 #include "tseng.h"
@@ -155,7 +155,7 @@ Tseng_ET6000ClockSelect(freq)
       {
         ET6000SetClock(freq, 2);
         result = Tseng_ET4000ClockSelect(2);
-        xf86usleep(150000);
+        usleep(150000);
       }
    }
    return(result);
@@ -186,7 +186,7 @@ Tseng_GenDACClockSelect(freq)
 	 */
         ET4000gendacSetClock(freq, 2); /* can't fail */
         result = Tseng_ET4000ClockSelect(2);
-        xf86usleep(150000);
+        usleep(150000);
       }
    }
    return(result);
@@ -217,7 +217,7 @@ Tseng_STG1703ClockSelect(freq)
 	 */
         ET4000stg1703SetClock(freq, 2); /* can't fail */
         result = Tseng_ET4000ClockSelect(2);
-        xf86usleep(150000);
+        usleep(150000);
       }
    }
    return(result);
@@ -244,7 +244,7 @@ Tseng_ICD2061AClockSelect(freq)
       {
         Et4000AltICD2061SetClock((long)freq*1000, 2); /* can't fail */
         result = Tseng_ET4000ClockSelect(2);
-        xf86usleep(150000);
+        usleep(150000);
       }
    }
    return(result);

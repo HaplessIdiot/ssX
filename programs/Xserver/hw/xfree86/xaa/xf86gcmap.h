@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmap.h,v 3.3 1997/01/12 10:48:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmap.h,v 3.4 1997/08/15 07:19:23 hohndel Exp $ */
 
 
 #ifdef VGA256
@@ -44,3 +44,5 @@
 #define xf86CopyPlane1toN XF86NAME(xf86CopyPlane1toN)
 #define xf86PassColorsToCopyPlane1toN XF86NAME(xf86PassColorsToCopyPlane1toN)
 #endif
+/* xf86wrapper.c */
+#define xf86InitWrappers XF86NAME(xf86InitWrappers)

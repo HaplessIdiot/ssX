@@ -24,7 +24,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128cmap.c,v 3.3 1997/08/12 12:02:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128cmap.c,v 3.4 1997/11/16 06:18:48 dawes Exp $ */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs
@@ -41,13 +41,11 @@
 #include "colormapst.h"
 #include "windowstr.h"
 #include "compiler.h"
+#include "cfb.h"	/* cfbExpandDirectColors */
 
 #include "i128.h"
 #include "i128reg.h"
 #include "i128Cursor.h"
-
-extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
-extern struct i128mem i128mem;
 
 #define NOMAPYET        (ColormapPtr) 0
 
@@ -108,7 +106,6 @@ i128StoreColors(pmap, ndef, pdefs)
 {
    int   i;
    xColorItem directDefs[256];
-   extern Bool i128DAC8Bit;
 
    if (pmap != InstalledMaps[pmap->pScreen->myNum])
       return;
@@ -254,7 +251,6 @@ i128RestoreColor0(pScreen)
 {
    Pixel pix = 0;
    xrgb  rgb;
-   extern Bool i128DAC8Bit;
    
    if (InstalledMaps[pScreen->myNum] == NOMAPYET)
       return;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.17 1997/02/17 09:45:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.18 1997/05/31 13:51:28 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -44,12 +44,13 @@
 #include <servermd.h>
 #include <windowstr.h>
 #include <mipointer.h>
+#include "mi.h"
 #include "mfb.h"
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "mach64.h"
 
@@ -223,7 +224,7 @@ mach64RealizeCursor(pScr, pCurs)
       for(; j < MACH64_CURSMAX / 8; j++)
 	  *ram++ = 0xaaaa;
   }
-  xf86memset(ram, 0xaa, (MACH64_CURSMAX-h)*16);
+  memset(ram, 0xaa, (MACH64_CURSMAX-h)*16);
 
   cursPriv->yExtra = MACH64_CURSMAX - h;
   return(TRUE);
@@ -300,7 +301,7 @@ mach64RepositionCursor(pScr)
     
     if(pScr && mach64SaveCursors[pScr->myNum]) {
 	miPointerPosition(&x, &y);
-	mach64CursLastEnabled = FALSE;
+	mach64CursorOff();
 	mach64MoveCursor(pScr, x, y);
     }
 }
@@ -352,7 +353,13 @@ mach64MoveCursor(pScr, x, y)
 	    mach64CursLastEnabled = FALSE;
 	}
 
+#if !defined(MetroLink)
+/*
+ * The cursor registers are not part of the FIFO. Therefore they don't
+ * need to be concerned with the FIFO at all.
+ */
 	WaitIdleEmpty();
+#endif
 	return;
     }
 
@@ -386,7 +393,9 @@ mach64MoveCursor(pScr, x, y)
 
     if (enabled) 
     {
+#if !defined(MetroLink)
 	WaitQueue(4);
+#endif
 	regw(CUR_OFFSET, (mach64CursorOffset >> 3) + (yoff << 1));
 	switch (mach64RamdacSubType) {
 	case DAC_CH8398:
@@ -417,12 +426,16 @@ mach64MoveCursor(pScr, x, y)
     }
     else if (mach64CursLastEnabled)
     {
+#if !defined(MetroLink)
 	WaitQueue(4);
+#endif
 	regw(GEN_TEST_CNTL, regr(GEN_TEST_CNTL) & (~HWCURSOR_ENABLE));
     }
 
     mach64CursLastEnabled = enabled;
+#if !defined(MetroLink)
     WaitIdleEmpty();
+#endif
 }
 
 void

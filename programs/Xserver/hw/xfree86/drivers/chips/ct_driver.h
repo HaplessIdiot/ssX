@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.3 1997/07/29 12:07:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.4 1997/11/01 15:04:47 hohndel Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
@@ -58,7 +58,6 @@ extern unsigned long ctFrameBufferSize;		/* Frame buffer size */
 extern unsigned int ctCacheEnd;			/* Pixmap Cache End */
 
 /* Byte reversal functions */
-extern unsigned char byte_reversed[];
 extern unsigned int byte_reversed3[];
 
 /* 
@@ -85,73 +84,52 @@ extern unsigned int CHIPS_ExtPorts32[];
  * the definitions of these functions for the real scoop.
  */
 
-/* in ct_blitter.c */
-extern void ctBitBlt();
-extern void ctMMIOBitBlt();
-extern void ctHiQVBitBlt();
+/* ct_accel.c */
+extern void ctAccelInit(void);
+/* ct_accelhi.c */
+extern void ctHiQVAccelInit(void);
+/* ct_accelmm.c */
+extern void ctMMIOAccelInit(void);
+/* ct_alloc.c */
+extern int ctInitializeAllocator(void);
+extern int ctAllocate(int, unsigned int);
+extern void ctFree(int);
+/* ct_config.c */
+extern void ctConfig(void);
+/* ct_cursor.c */
+extern Bool CHIPSCursorInit(char *, ScreenPtr);
+extern void CHIPSRestoreCursor(ScreenPtr);
+extern void CHIPSWarpCursor(ScreenPtr, int, int);
+extern void CHIPSQueryBestSize(int, unsigned short *, unsigned short *, ScreenPtr);
+/* ct_driver.c */
+extern void ModuleInit(pointer *, INT32 *);
+extern int ctGetHWClock(unsigned char);
+extern int ctVideoMode(int, int, int);
+/* ct_pci.c */
+extern int ctPCIMemBase(Bool);
+extern int ctPCIChipset(void);
 
-/* in ct_BitBlt.c */
-extern void ctcfbDoBitbltCopy();
-extern void ctcfbFillBoxSolid();
-extern void ctcfbCopyPlane1to8();
+/* Bank select functions. */
+extern void CHIPSSetRead(int);
+extern void CHIPSSetWrite(int);
+extern void CHIPSSetReadWrite(int);
+extern void CHIPSWINSetRead(int);
+extern void CHIPSWINSetWrite(int);
+extern void CHIPSWINSetReadWrite(int);
+extern void CHIPSHiQVSetRead(int);
+extern void CHIPSHiQVSetWrite(int);
+extern void CHIPSHiQVSetReadWrite(int);
 
-/* in ct_solid.c */
-extern void ctcfbFillRectSolid();
-extern void ctcfbFillSolidSpansGeneral();
-extern void ctMMIOFillRectSolid();
-extern void ctMMIOFillSolidSpansGeneral();
-extern void ctHiQVFillRectSolid();
-extern void ctHiQVFillSolidSpansGeneral();
-extern void ctcfbFillRectSolid24();
-extern void ctMMIOFillRectSolid24();
-
-/* in ct_blt16.c */
-extern RegionPtr ctcfb16CopyArea();
-extern RegionPtr ctcfb24CopyArea();
-
-/* in ct_pci.c */
-extern int ctPCIMemBase();
-extern int ctPCIIOBase();
-
-/* in ct_FillRct.c */
-extern void ctcfbPolyFillRect();
-
-/* in ct_FillRct.c */
-extern void ctcfbFillRectOpaqueStippled32();
-extern void ctcfbFillRectTransparentStippled32();
-extern void ctMMIOFillRectOpaqueStippled32();
-extern void ctMMIOFillRectTransparentStippled32();
-extern void ctHiQVFillRectOpaqueStippled32();
-extern void ctHiQVFillRectTransparentStippled32();
-
-/* in ct_line.c */
-extern void ctMMIOLineSS();
-extern void ctMMIOSegmentSS();
-extern void ctHiQVLineSS();
-extern void ctHiQVSegmentSS();
-
-/* in ct_teblt8.c */
-extern void ctTransferText();
-extern void ctTransferText24();
-extern void ctcfbImageGlyphBlt();
-extern void ctcfbPolyGlyphBlt();
-extern void ctMMIOImageGlyphBlt();
-extern void ctMMIOPolyGlyphBlt();
-extern void ctHiQVImageGlyphBlt();
-extern void ctHiQVPolyGlyphBlt();
-
-/* in ct_colexp.c */
-extern void ctcfbColorExpandStippleFill();
-extern void ctMMIOColorExpandStippleFill();
-extern void ctHiQVColorExpandStippleFill();
-extern void ctcfbBLTWriteBitmap();
-extern void ctMMIOBLTWriteBitmap();
-extern void ctHiQVBLTWriteBitmap();
-
-/* in ct_accel.c */
-extern void ctAccelInit();
-extern void ctMMIOAccelInit();
-extern void ctHiQVAccelInit();
+/* Bank select functions for 1 and 4bpp */
+extern void CHIPSSetReadPlanar(int);
+extern void CHIPSSetWritePlanar(int);
+extern void CHIPSSetReadWritePlanar(int);
+extern void CHIPSWINSetReadPlanar(int);
+extern void CHIPSWINSetWritePlanar(int);
+extern void CHIPSWINSetReadWritePlanar(int);
+extern void CHIPSHiQVSetReadPlanar(int);
+extern void CHIPSHiQVSetWritePlanar(int);
+extern void CHIPSHiQVSetReadWritePlanar(int);
 
 /* in ct_cursor.c */
 extern void  CHIPSInitCursor();
@@ -161,7 +139,7 @@ extern void  CHIPSInitCursor();
 
 /* To aid debugging of 32 bit register access we make the following defines */
 #if defined(DEBUG) & defined(CT_HW_DEBUG)
-extern void ctHWDebug();
+extern void ctHWDebug(int);
 #define HW_DEBUG(x) ctHWDebug((x))
 #else
 #define HW_DEBUG(x)

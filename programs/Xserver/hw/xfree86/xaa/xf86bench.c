@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.7 1997/04/12 13:46:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.8 1997/10/25 13:51:00 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -36,11 +36,19 @@
 #include "regionstr.h"
 #include "mi.h"
 #include "fcntl.h"
+#if defined(__bsdi__)
+#undef _ANSI_SOURCE
+#undef _POSIX_SOURCE
+#endif
 #include "time.h"
 #ifndef Lynx
 #include "sys/time.h"
 #else
 #include <time.h>
+#endif
+#if defined(__bsdi__)
+#define _ANSI_SOURCE
+#define _POSIX_SOURCE
 #endif
 
 #include "xf86.h"

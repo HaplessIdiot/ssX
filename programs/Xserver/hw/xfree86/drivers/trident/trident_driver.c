@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.24 1998/01/11 03:36:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.25 1998/01/24 01:53:20 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -64,7 +64,6 @@
 #include "xf86.h"
 #include "xf86Version.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
@@ -227,6 +226,8 @@ static int CyberLCDHeight, CyberLCDWidth;
 static unsigned char DRAMspeed;
 static int TridentDisplayableMemory;
 unsigned char *tguiMMIOBase = NULL;
+static pciConfigPtr pcr;
+
 int TridentCursorAddress;
 Bool ClipOn = FALSE;
 int dashdrawflag = 0;
@@ -696,6 +697,8 @@ TVGA8900Probe()
 {
   	unsigned char temp;
 	char *REV, *LCD, *SIZE;
+	pciConfigPtr *pcrpp;
+	pciConfigPtr fallback_pcr = 0;
 	int i;
 
 #ifdef PC98_TGUI
@@ -1436,7 +1439,22 @@ TVGA8900Probe()
 	}
 	}
 
-	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
+
+	pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
+	for (i = 0, pcr = pcrpp[0]; pcr; pcr = pcrpp[++i]) {
+	    if (pcr->_vendor == PCI_VENDOR_TRIDENT) {
+		if (pcr->_sub_class == PCI_SUBCLASS_DISPLAY_VGA) {
+		    break;
+		} else {
+		    fallback_pcr = pcr;
+		}
+	    }
+	}
+	if (!pcr && fallback_pcr)
+	    pcr = fallback_pcr;
+
+
+	if (pcr && pcr->_vendor == PCI_VENDOR_TRIDENT)
 	{
 		OFLG_SET(OPTION_TGUI_PCI_READ_ON,
 			&TRIDENT.ChipOptionFlags);
@@ -1583,10 +1601,10 @@ TVGA8900FbInit()
 
 	TRIDENT.ChipLinearSize = vga256InfoRec.videoRam * 1024;
 
-	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
+	if (pcr && pcr->_vendor == PCI_VENDOR_TRIDENT)
 	{
-		if (vgaPCIInfo->MemBase != 0) {
-		  TRIDENT.ChipLinearBase = vgaPCIInfo->MemBase;
+		if (pcr->_base0 != 0) {
+		  TRIDENT.ChipLinearBase = pcr->_base0 & 0xfffffff0;
 		  tridentUseLinear = TRUE;
 		} else {
 		  ErrorF("%s %s: Unable to locate valid FrameBuffer,"
@@ -1931,7 +1949,7 @@ TVGA8900Restore(restore)
 		}
 	}
 
-	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
+	if (pcr && pcr->_vendor == PCI_VENDOR_TRIDENT)
 		outw(vgaIOBase + 4, ((restore->PCIReg) << 8) | 0x39);
 
 	outw(0x3C4, ((restore->NewMode1 ^ 0x02) << 8) | 0x0E);
@@ -2119,7 +2137,7 @@ TVGA8900Save(save)
 		}
 	}
 
-	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
+	if (pcr && pcr->_vendor == PCI_VENDOR_TRIDENT)
 	{
 		outb(vgaIOBase + 4, 0x39);
 		save->PCIReg = inb(vgaIOBase + 5);
@@ -2396,7 +2414,7 @@ TVGA8900Init(mode)
 	}
 	}
 
-	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
+	if (pcr && pcr->_vendor == PCI_VENDOR_TRIDENT)
 	{
 		outb(vgaIOBase + 4, 0x39);
 		new->PCIReg = inb(vgaIOBase + 5);

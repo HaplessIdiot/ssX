@@ -1,5 +1,5 @@
 XCOMM $TOG: svr4.cf /main/17 1997/06/08 20:08:31 kaleb $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.28 1997/07/05 15:14:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.30 1998/01/01 14:51:30 robin Exp $
 /*
  * A default OS name
  */
@@ -204,7 +204,7 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.28 1997/07/05 15:14:46 dawes Exp $
 #endif
 #endif
 
-#ifdef i386Architecture
+#if defined(i386Architecture) || defined(PpcArchitecture)
 #ifndef DoLoadableServer
 #define DoLoadableServer	YES
 #endif

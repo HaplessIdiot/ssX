@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gtimg.c,v 3.5 1996/02/04 09:02:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gtimg.c,v 3.6 1996/12/23 06:38:38 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -30,13 +30,13 @@
 #include "windowstr.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
+#include "mi.h"
 #include "cfb.h"
 #include "cfb16.h"
 #include "cfbmskbits.h"
 #include "mach32.h"
 
 extern void mfbGetImage();
-extern void miGetImage();
 
 void
 mach32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)

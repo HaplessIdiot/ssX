@@ -29,14 +29,10 @@
 /*
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaLinec.c,v 3.1 1997/07/10 08:17:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaLinec.c,v 3.2 1997/10/25 13:50:50 hohndel Exp $ */
 
 #include "X.h"
 #include "misc.h"
-#include "vga256.h"
-#include "miline.h"
-#include "cfbrrop.h"
-
 #include "compiler.h"
 
 /*
@@ -61,6 +57,10 @@
 
 #include "vga.h"
 #include "cfb.h"
+
+#include "vga256.h"
+#include "miline.h"
+#include "cfbrrop.h"
 
 /* vgabres.s */
 void fastvga256BresS(

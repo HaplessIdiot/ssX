@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.13 1996/12/23 06:41:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.14 1997/01/08 20:33:40 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -37,7 +37,6 @@
 #include "inputstr.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
 #include "s3.h"
 #include "regs3.h"
 #include "s3Bt485.h"

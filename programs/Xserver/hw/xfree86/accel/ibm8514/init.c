@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/init.c,v 3.4 1996/08/10 13:05:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/init.c,v 3.5 1996/12/23 06:37:59 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -26,7 +26,6 @@
 #include "reg8514.h"
 #include "ibm8514.h"
 #include "xf86.h"
-#include "xf86_OSlib.h"
 #include "xf86Procs.h"
 
 static short numPlanes = -1;

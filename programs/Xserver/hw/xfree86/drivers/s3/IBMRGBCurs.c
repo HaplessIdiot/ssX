@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/IBMRGBCurs.c,v 1.3 1997/09/25 16:13:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/IBMRGBCurs.c,v 1.4 1997/12/14 10:04:00 hohndel Exp $ */
 /*
  *
  * Copyright 1995 The XFree86 Project, Inc.
@@ -17,7 +17,6 @@
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "s3.h"
 #include "s3reg.h"
 #include "mipointer.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.86 1997/12/20 14:20:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.87 1998/01/24 01:53:03 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996,1997 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -52,7 +52,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "xf86Version.h"
 #include "mach64.h"
@@ -81,11 +81,6 @@
 
 extern int defaultColorVisualClass;
 extern Bool xf86Resetting, xf86Exiting;
-extern void mach64QueryBestSize();
-extern void mach64WarpCursor();
-extern void mach64RepositionCursor();
-extern Bool miDCInitialize();
-extern void SetTimeSinceLastInputEvent();
 unsigned int mach64MemorySize = 0;
 unsigned int mach64ApertureSize = 0;
 unsigned long mach64ApertureAddr = 0;
@@ -116,19 +111,6 @@ static int mach64ValidMode(
 
 int mach64MaxClock = MAX_MACH64_CLOCK;
 
-ScrnInfoPtr xf86Screens[] =
-{
-  &mach64InfoRec,
-};
-
-int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
-
-int xf86ScreenNames[] =
-{
-  ACCEL,
-  -1
-};
-
 int mach64ValidTokens[] =
 {
   STATICGRAY,
@@ -154,10 +136,10 @@ extern int mach64MaxClock;
 #endif
 
 ScrnInfoRec mach64InfoRec = {
+    mach64Probe,      	/* Bool (* Probe)() */
     FALSE,		/* Bool configured */
     -1,			/* int tmpIndex */
     -1,			/* int scrnIndex */
-    mach64Probe,      	/* Bool (* Probe)() */
     mach64Initialize,	/* Bool (* Init)() */
     mach64ValidMode,	/* int (* ValidMode)() */
     mach64EnterLeaveVT, /* void (* EnterLeaveVT)() */
@@ -174,7 +156,7 @@ ScrnInfoRec mach64InfoRec = {
     -1, -1,		/* int virtualX,virtualY */
     -1,                 /* int displayWidth */
     -1, -1, -1, -1,	/* int frameX0, frameY0, frameX1, frameY1 */
-    {0, },	       	/* OFlagSet options */
+    {{0, }},	       	/* OFlagSet options */
     {0, },	       	/* OFlagSet clockOptions */
     {0, },	       	/* OFlagSet xconfigFlag */
     NULL,	       	/* char *chipset */
@@ -261,7 +243,7 @@ ModuleInit(data,magic)
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
     case 2:
-        * data = (pointer) "libxf86cache.a";
+        * data = (pointer) "libxf86cache";
         * magic= MAGIC_LOAD;
         break;
     default:
@@ -495,7 +477,7 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
 		    (unsigned char *)bios_signature, 10) != 10) {
       return NULL;
    }
-   if (xf86strncmp( signature, bios_signature, 10 )) {
+   if (strncmp( signature, bios_signature, 10 )) {
 #ifdef DEBUG
 	 ErrorF("Mach64 probe failed on BIOS signature\n");
 #endif
@@ -515,7 +497,7 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
    info.asic_identifier        = bios_data[ 0x43 ];
    info.bios_major             = bios_data[ 0x4c ];
    info.bios_minor             = bios_data[ 0x4d ];
-   xf86strncpy( info.bios_date, bios_data + 0x50, 20 );
+   strncpy( info.bios_date, bios_data + 0x50, 20 );
    
    info.VGA_Wonder_Present     = bios_data[ 0x44 ] & 0x40;
 
@@ -2178,13 +2160,18 @@ void
 mach64AdjustFrame(x, y)
     int x, y;
 {
-    int byte_offset = ((x + y*mach64VirtX) *
+    int byte_offset;
+
+    if (mach64InfoRec.bitsPerPixel == 24)
+	x &= ~7;
+
+    byte_offset = ((x + y*mach64VirtX) *
                         (mach64InfoRec.bitsPerPixel / 8)) >> 3;
 
     if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options))
 	mach64CursorOff();
 
-    regw(CRTC_OFF_PITCH, (regr(CRTC_OFF_PITCH) & 0xfff00000) | byte_offset);
+    regw(CRTC_OFF_PITCH, (regr(CRTC_OFF_PITCH) & 0xffc00000) | byte_offset);
 
     if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options))
 	mach64RepositionCursor(savepScreen);

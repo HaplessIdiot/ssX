@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.10 1997/05/03 09:17:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.11 1997/06/03 14:11:42 hohndel Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -55,8 +55,7 @@
 #include "misc.h"
 #include "xf86.h"
 #include "regionstr.h"
-#include "xf86_OSlib.h"
-#include "xf86bcache.h"
+#include "xf86_ansic.h"
 #include "xf86fcache.h"
 #include "xf86Procs.h"
 
@@ -98,7 +97,6 @@
 #include "input.h"
 #include "misc.h"
 #include "xf86.h"
-#include "xf86_OSlib.h"
 #endif /* !LINKKIT */
 
 #if !defined(__GNUC__) || defined(NO_INLINE)
