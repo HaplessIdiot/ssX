@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.50 2000/11/16 19:44:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.51 2000/12/02 15:30:46 tsi Exp $ */
 
 #include "nv_include.h"
 
@@ -110,6 +110,7 @@ static SymTabRec NVChipsets[] = {
     { NV_CHIP_GEFORCE2MX,   "GeForce2 MX"},
     { NV_CHIP_GEFORCE2MXDDR, "GeForce2 MX DDR"},
     { NV_CHIP_QUADRO2MXR,   "Quadro 2 MXR"},
+    { NV_CHIP_GEFORCE2GO,   "GeForce 2 Go"},
     {-1,                        NULL }
 };
 
@@ -131,6 +132,7 @@ static PciChipsets NVPciChipsets[] = {
     { NV_CHIP_GEFORCE2MX,       NV_CHIP_GEFORCE2MX,     RES_SHARED_VGA },
     { NV_CHIP_GEFORCE2MXDDR,    NV_CHIP_GEFORCE2MXDDR,  RES_SHARED_VGA },
     { NV_CHIP_QUADRO2MXR,       NV_CHIP_QUADRO2MXR,     RES_SHARED_VGA },
+    { NV_CHIP_GEFORCE2GO,       NV_CHIP_GEFORCE2GO,     RES_SHARED_VGA },
     { -1,                       -1,                     RES_UNDEFINED  }
 };
 
@@ -1163,6 +1165,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         case NV_CHIP_GEFORCE2MX:
         case NV_CHIP_GEFORCE2MXDDR:
         case NV_CHIP_QUADRO2MXR:
+	case NV_CHIP_GEFORCE2GO:
             NV10Setup(pScrn);
             break;
     }
