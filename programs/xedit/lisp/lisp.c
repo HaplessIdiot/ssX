@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.57 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.58 2002/08/25 02:48:31 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -534,9 +534,9 @@ static LispBuiltin extbuiltins[] = {
     {LispFunction, Lisp_PipeErrorStream, "pipe-error-stream pipe-stream"},
     {LispFunction, Lisp_PipeInputDescriptor, "pipe-input-descriptor pipe-stream"},
     {LispFunction, Lisp_PipeErrorDescriptor, "pipe-error-descriptor pipe-stream"},
-    {LispFunction, Lisp_Regcomp, "regcomp pattern &key (extended t) nospec icase nosub newline"},
-    {LispFunction, Lisp_Regexec, "regexec regex string &key count start end notbol noteol"},
-    {LispFunction, Lisp_Regexp, "regexp object"},
+    {LispFunction, Lisp_Recomp, "re-comp pattern &key nospec icase nosub newline"},
+    {LispFunction, Lisp_Reexec, "re-exec regex string &key count start end notbol noteol"},
+    {LispFunction, Lisp_Rep, "re-p object"},
     {LispFunction, Lisp_Setenv, "setenv name value &optional overwrite"},
     {LispFunction, Lisp_Unsetenv, "unsetenv name"},
     {LispMacro, Lisp_Until, "until test &rest body", 0, 0, Com_Until},
@@ -955,7 +955,7 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 			entry->type = LispCons_t;
 			break;
 		    case LispRegex_t:
-			regfree(entry->data.regex.regex);
+			refree(entry->data.regex.regex);
 			free(entry->data.regex.regex);
 			entry->type = LispCons_t;
 			break;

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.8 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.9 2002/08/25 02:48:31 paulo Exp $ */
 
 #include "write.h"
 #include <math.h>
@@ -410,26 +410,14 @@ write_again:
 	    length += LispWriteStr(mac, stream, "#<REGEX ", 8);
 	    length += LispDoWriteObject(mac, stream,
 					object->data.regex.pattern, 1);
-#ifdef REG_EXTENDED
-	    if (object->data.regex.options & REG_EXTENDED)
-		length += LispWriteStr(mac, stream, " :EXTENDED", 10);
-#endif
-#ifdef REG_NOSPEC
-	    if (object->data.regex.options & REG_NOSPEC)
+	    if (object->data.regex.options & RE_NOSPEC)
 		length += LispWriteStr(mac, stream, " :NOSPEC", 8);
-#endif
-#ifdef REG_ICASE
-	    if (object->data.regex.options & REG_ICASE)
+	    if (object->data.regex.options & RE_ICASE)
 		length += LispWriteStr(mac, stream, " :ICASE", 7);
-#endif
-#ifdef REG_NOSUB
-	    if (object->data.regex.options & REG_NOSUB)
+	    if (object->data.regex.options & RE_NOSUB)
 		length += LispWriteStr(mac, stream, " :NOSUB", 7);
-#endif
-#ifdef REG_NEWLINE
-	    if (object->data.regex.options & REG_NEWLINE)
+	    if (object->data.regex.options & RE_NEWLINE)
 		length += LispWriteStr(mac, stream, " :NEWLINE", 9);
-#endif
 	    length += LispWriteChar(mac, stream, '>');
 	    break;
 	case LispBytecode_t:

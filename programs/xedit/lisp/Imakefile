@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.17 2002/07/16 05:19:38 paulo Exp $
+XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.18 2002/08/25 02:48:30 paulo Exp $
 
 #include "lisp.cf"
 #include "lisp.rules"
@@ -50,7 +50,7 @@ SAMP		= lsp
 SAMPSRC		= lsp.c
 SAMPOBJ		= lsp.o
 
-SUBDIRS		= mp modules
+SUBDIRS		= mp re modules
 
 SRCS		= $(SYS_SRCS) \
 		bytecode.c \
@@ -104,9 +104,9 @@ SHARED_DEFINES	= -DSHARED_MODULES
 
         DEFINES = -DLISP $(SHARED_DEFINES) -DLISPDIR='"$(LISPDIR)"' \
 		  $(SNPRINTF_DEFS) $(SYS_DEFINES) $(SIGNAL_DEFINES)
-        DEPLIBS = mp
-       INCLUDES = -I. -Imp -I- $(MISC_INCLUDES)
-LOCAL_LIBRARIES = -L. -llisp -Lmp -lmp -lm $(DLLIB) RegexLibrary
+        DEPLIBS = mp re
+       INCLUDES = -I. -Imp -Ire -I- $(MISC_INCLUDES)
+LOCAL_LIBRARIES = -L. -llisp -Lmp -lmp -Lre -lre -lm $(DLLIB)
 
 #ifdef IHaveSubdirs
 ForceSubdirs($(SUBDIRS))

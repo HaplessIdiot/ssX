@@ -334,8 +334,9 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
 	      item->flags = EXISTS_BIT;
 	  }
 	  else {
-	      if (!item)
-		  item = flist.itens[0];
+	      item = flist.itens[0];
+	      XtRemoveCallback(scratch, XtNcallback, SourceChanged,
+			       (XtPointer)item);
 	      item->source = scratch =
 		  XtVaCreateWidget("textSource", international ?
 				   multiSrcObjectClass : asciiSrcObjectClass,
@@ -620,13 +621,16 @@ FindFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	XawTextReplace(filenamewindow, 0, end, &block);
     XawTextSetInsertionPoint(filenamewindow, end);
     XtSetKeyboardFocus(topwindow, filenamewindow);
+    line_edit = False;
 }
 
 /*ARGSUSED*/
 void
 LoadFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-    if (ReallyDoLoad(GetString(filenamewindow), ResolveName(NULL))) {
+    if (line_edit)
+	LineEdit(textwindow);
+    else if (ReallyDoLoad(GetString(filenamewindow), ResolveName(NULL))) {
 	SwitchDirWindow(False);
 	XtSetKeyboardFocus(topwindow, textwindow);
     }
@@ -639,7 +643,6 @@ CancelFindFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
     Arg args[1];
     xedit_flist_item *item;
 
-    Feep();
     XtSetKeyboardFocus(topwindow, textwindow);
 
     item = FindTextSource(XawTextGetSource(textwindow), NULL);
@@ -653,6 +656,8 @@ CancelFindFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
    if (XtIsManaged(XtParent(dirwindow)))
 	SwitchDirWindow(False);
+
+    line_edit = False;
 }
 
 static int
@@ -682,6 +687,10 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
     if (!text) {
 	Feep();
 	return;
+    }
+    else if (line_edit) {
+	Feep();
+	line_edit = 0;
     }
 
     {

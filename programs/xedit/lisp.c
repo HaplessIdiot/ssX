@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp.c,v 1.8 2002/07/16 05:19:37 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.9 2002/07/22 07:26:26 paulo Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -139,13 +139,13 @@ XeditDoLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params)
     XeditLispInitialize();
 
     if (XtClass(w) != asciiTextWidgetClass) {
-/*	Feep();*/
+	Feep();
 	return;
     }
 
     /* get lisp expression */
     if ((position = XawTextGetInsertionPoint(w)) == 0) {
-/*	Feep();*/
+	Feep();
 	return;
     }
     end = position;
@@ -176,7 +176,7 @@ XeditDoLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	}
 	++position;
 	if (position == end || gotchars <= 0) {
-/*	    Feep();*/
+	    Feep();
 	    return;
 	}
 	if ((block.ptr[0] == '\'' || block.ptr[0] == '`') && position > 0)
@@ -195,7 +195,7 @@ XeditDoLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    block.ptr[0] = '(';
 	    position = XawTextSourceSearch(src, last, XawsdLeft, &block);
 	    if (position == XawTextSearchError) {
-/*		Feep();*/
+		Feep();
 		return;
 	    }
 	    block.ptr[0] = ')';
@@ -203,7 +203,7 @@ XeditDoLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    do {
 		tmp = XawTextSourceSearch(src, tmp, XawsdRight, &block);
 		if (tmp == XawTextSearchError) {
-/*		    Feep();*/
+		    Feep();
 		    return;
 		}
 		if (tmp <= last)
@@ -347,7 +347,6 @@ LispInputCallback(XtPointer closure, int *source, XtInputId *id)
 		if (XeditProto(start + 1, &result) == False) {
 		    /* error parsing xedit-proto call */
 
-/*		    Feep();*/
 		    if (result)
 			XeditPrintf(result);
 		    write(lisp.ofd[1], "NIL", 3);
@@ -384,7 +383,6 @@ LispInputCallback(XtPointer closure, int *source, XtInputId *id)
 	if (start == lisp.buffer) {
 	    if (end == lisp.buffer + sizeof(lisp.buffer)) {
 		/* xedit-proto command too large */
-/*		Feep();*/
 		XeditPrintf("Error: xedit-proto command too large.\n");
 		/* buffer could be increased, but always there must be a limit */
 		XeditLispTextReplace(start, ptr - start);
@@ -415,7 +413,6 @@ LispErrorInputCallback(XtPointer closure, int *source, XtInputId *id)
     int len;
     char str[1024];
 
-/*    Feep();*/
     len = read(lisp.efd[0], str, sizeof(str) - 1);
     if (len > 0) {
 	str[len] = '\0';

@@ -164,7 +164,8 @@ m<Key>I:	no-op(r)
 *baseTranslations: #override \
 <Ctrl>X,<Ctrl>C:quit()\n\
 <Ctrl>X,<Ctrl>S:save-file()\n\
-<Ctrl>X,<Ctrl>F:find-file()
+<Ctrl>X,<Ctrl>F:find-file()\n\
+<Key>Escape:	line-edit()
 
 *messageWindow.Translations: #override \
 <Ctrl>X,<Ctrl>C:quit()\n\

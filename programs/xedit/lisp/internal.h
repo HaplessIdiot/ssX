@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.28 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.29 2002/08/25 02:48:30 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -36,9 +36,7 @@
 #include "lisp.h"
 
 #include "mp.h"
-
-#include <sys/types.h>
-#include <regex.h>
+#include "re.h"
 
 /*
  * Defines
@@ -472,7 +470,7 @@ struct _LispObj {
 	    LispPackage *package;
 	} package;
 	struct {
-	    regex_t *regex;
+	    re_cod *regex;
 	    LispObj *pattern;		/* regex string */
 	    int options;		/* regex compile flags */
 	} regex;

@@ -98,6 +98,7 @@ extern struct _app_resources {
 extern Widget topwindow, textwindow, labelwindow, filenamewindow, messwidget;
 extern Widget dirlabel, dirwindow;
 extern Boolean international;
+extern Boolean line_edit;
 
 /*	externals in xedit.c 	*/
 
@@ -153,6 +154,8 @@ void UpdateTextProperties(void);
 
 /*	externs in hook.c	*/
 Bool StartHooks(XtAppContext);
+void LineEditAction(Widget, XEvent*, String*, Cardinal*);
+void LineEdit(Widget);
 
 /*	externs in lisp.c	*/
 void XeditLispEval(Widget, XEvent*, String*, Cardinal*);

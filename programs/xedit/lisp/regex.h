@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/regex.h,v 1.1 2002/07/16 05:19:39 paulo Exp $ */
 
 #ifndef Lisp_regex_h
 #define Lisp_regex_h
@@ -39,8 +39,8 @@
  */
 void LispRegexInit(LispMac*);
 
-LispObj *Lisp_Regcomp(LispMac*, LispBuiltin*);		/* regcomp */
-LispObj *Lisp_Regexec(LispMac*, LispBuiltin*);		/* regexec */
-LispObj *Lisp_Regexp(LispMac*, LispBuiltin*);		/* regexp */
+LispObj *Lisp_Recomp(LispMac*, LispBuiltin*);		/* re-comp */
+LispObj *Lisp_Reexec(LispMac*, LispBuiltin*);		/* re-exec */
+LispObj *Lisp_Rep(LispMac*, LispBuiltin*);		/* re-p */
 
 #endif /* Lisp_regex_h */
