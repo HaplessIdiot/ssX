@@ -8,22 +8,20 @@
    subject to change. Applications should only use zlib.h.
  */
 
-/* @(#) $Id$ */
-
 #ifndef _Z_UTIL_H
 #define _Z_UTIL_H
 
 #include "zlib.h"
 
+#if defined(MSDOS)||defined(VMS)||defined(CRAY)||defined(WIN32)||defined(RISCOS)||defined(__UNIXOS2__)||defined(STDC)
+#   include <stddef.h>
+#   include <errno.h>
+#else
+    extern int errno;
+#endif
 #ifdef STDC
-#  include <stddef.h>
 #  include <string.h>
 #  include <stdlib.h>
-#endif
-#ifdef NO_ERRNO_H
-    extern int errno;
-#else
-#   include <errno.h>
 #endif
 
 #ifndef local
