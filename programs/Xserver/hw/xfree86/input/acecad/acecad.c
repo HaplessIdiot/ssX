@@ -23,7 +23,7 @@
  *
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/acecad/acecad.c,v 1.1 2001/08/13 19:35:00 dawes Exp $ */
 
 #define _ACECAD_C_
 /*****************************************************************************
@@ -130,18 +130,18 @@ SetupProc(	pointer module,
 static void
 TearDownProc( pointer p )
 {
+#if 0
 	LocalDevicePtr local = (LocalDevicePtr) p;
 	AceCadPrivatePtr priv = (AceCadPrivatePtr) local->private;
 
 	DeviceOff (local->dev);
-
-	xf86RemoveLocalDevice (local);
 
 	xf86CloseSerial (local->fd);
 	XisbFree (priv->buffer);
 	xfree (priv);
 	xfree (local->name);
 	xfree (local);
+#endif
 }
 
 static int
