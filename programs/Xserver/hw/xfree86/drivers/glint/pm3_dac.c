@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.26 2001/09/03 08:13:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.27 2001/11/20 00:09:14 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -34,6 +34,7 @@
 
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
+#include "xf86int10.h"
 
 #include "glint_regs.h"
 #include "pm3_regs.h"
@@ -281,6 +282,7 @@ Permedia3PreInit(ScrnInfoPtr pScrn)
     CARD32 LocalMemCaps;
 
     TRACE_ENTER("Permedia3PreInit");
+
     if (IS_J2000) {
     	unsigned char m,n,p;
     	unsigned long clockused;
@@ -321,6 +323,44 @@ Permedia3PreInit(ScrnInfoPtr pScrn)
 	    PM3RD_SClkControl_SOURCE_PCLK |
 	    PM3RD_SClkControl_ENABLE);
     }
+
+#if defined(__alpha__)
+    /*
+     * On Alpha, we have to "int10" secondary VX1 cards early;
+     * otherwise, some information taken from registers, like
+     * memory size, is incorrect.
+     */
+    if (!xf86IsPrimaryPci(pGlint->PciInfo)) {
+        if ( IS_QVX1 ) {
+
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		       "VX1 secondary enabling VGA before int10\n");
+
+	    /* Enable VGA on the current card. */
+	    pciWriteByte( pGlint->PciTag, 0xf8, 0 );
+	    pciWriteByte( pGlint->PciTag, 0xf4, 0 );
+	    pciWriteByte( pGlint->PciTag, 0xfc, 0 );
+
+	    /* The card we are on should be VGA-enabled now, so run int10. */
+	    if (xf86LoadSubModule(pScrn, "int10")) {
+	        xf86Int10InfoPtr pInt;
+
+	        xf86LoaderReqSymLists(GLINTint10Symbols, NULL);
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
+		pInt = xf86InitInt10(pGlint->pEnt->index);
+		xf86FreeInt10(pInt);
+	    }
+
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		       "VX1 secondary disabling VGA after int10\n");
+
+	    /* Finally, disable VGA on the current card. */
+	    pciWriteByte( pGlint->PciTag, 0xf8, 0x70 );
+	    pciWriteByte( pGlint->PciTag, 0xf4, 0x01 );
+	    pciWriteByte( pGlint->PciTag, 0xfc, 0x00 );
+	}
+    }
+#endif /* __alpha__ */
 
     /* If we have SDRAM instead of SGRAM, we have to do some things
        differently in the FillRectSolid code. */       

@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 532. Add support in glint driver for booting secondary cards that have
+      the VGA disable jumper set (so no access to the BIOS) (Jay Estabrook).
  531. Add Spanish localization of XDarwin front end (Pablo Di Noto).
  530. Set the r128 DRI driver version back to 2.2 so that the major version is
       the same as for the version in XFree86 4.1.0.
@@ -14246,4 +14248,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2065 2001/11/26 21:46:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2066 2001/11/27 21:11:48 torrey Exp $

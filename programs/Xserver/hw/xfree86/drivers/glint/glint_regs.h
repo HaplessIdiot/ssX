@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.28 2001/08/18 11:37:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.29 2001/11/20 00:09:13 alanh Exp $ */
 
 /*
  * glint register file 
@@ -36,6 +36,9 @@
 #define IS_GLORIAXXL	((pGlint->PciInfo->subsysVendor == 0x1048) && \
 			 (pGlint->PciInfo->subsysCard   == 0x0a42))
 
+#define IS_GLORIASYNERGY ((pGlint->PciInfo->subsysVendor == 0x1048) && \
+			 (pGlint->PciInfo->subsysCard   == 0x0a32))
+
 #define IS_GMX2000	((pGlint->PciInfo->subsysVendor == 0x3d3d) && \
 			 (pGlint->PciInfo->subsysCard   == 0x0106))
 
@@ -44,6 +47,32 @@
 
 #define IS_JPRO		((pGlint->PciInfo->subsysVendor == 0x1097) && \
 			 (pGlint->PciInfo->subsysCard   == 0x3db3))
+
+/* COMPAQ OEM VX1 PCI
+ *   subsys == 0x0121 if VGA is enabled
+ *   subsys == 0x000a if VGA has never been enabled
+ */
+#define IS_PCI_QVX1	(pGlint->PciInfo->subsysVendor == 0x3d3d &&  \
+                         ((pGlint->PciInfo->subsysCard == 0x0121) ||  \
+			  (pGlint->PciInfo->subsysCard == 0x000a)))
+
+/* COMPAQ OEM VX1 AGP
+ *   subsys == 0x0144 if VGA is enabled
+ *   subsys == 0x000c if VGA has never been enabled
+ */
+#define IS_AGP_QVX1	(pGlint->PciInfo->subsysVendor == 0x3d3d &&  \
+			 ((pGlint->PciInfo->subsysCard == 0x0144) ||  \
+			  (pGlint->PciInfo->subsysCard == 0x000c)))
+
+#define IS_QVX1		(IS_PCI_QVX1 || IS_AGP_QVX1)
+
+#define IS_ELSA_SYNERGY	((pGlint->PciInfo->subsysVendor == 0x1048) && \
+			 (pGlint->PciInfo->subsysCard   == 0x0a32))
+
+/* COMPAQ OEM Permedia 2V with VGA disable jumper - 0x13e9 ? */
+#define IS_QPM2V	((pGlint->PciInfo->subsysVendor == 0x13e9) && \
+			 ((pGlint->PciInfo->subsysCard == 0x0100) ||  \
+			  (pGlint->PciInfo->subsysCard == 0x0002)))
 
 /**********************************************
 *  GLINT 500TX Configuration Region Registers *
