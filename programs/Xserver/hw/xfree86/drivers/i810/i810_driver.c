@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.74 2002/12/10 01:27:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.75 2002/12/12 04:52:26 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -425,7 +425,7 @@ I810FreeRec(ScrnInfoPtr pScrn)
 static void
 I810Identify(int flags)
 {
-   xf86PrintChipsets(I810_NAME, "Driver for Intel i810 chipset",
+   xf86PrintChipsets(I810_NAME, "Driver for Intel Integrated Graphics Chipsets",
 		     I810Chipsets);
 }
 
