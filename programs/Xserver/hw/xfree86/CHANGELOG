@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 485. Fix problems with clipping in fb when the clip list contains negative
+      coordinates (Gregory Parker).
  484. Fix return value of VBEBankSwitch() (Norm Raden).
  483. Updates/fixes for the QNX6 (aka Neutrino) port (#4990, Frank Liu).
  482. Autodetect when -fno-merge-constants is needed for building modules,
@@ -14165,4 +14167,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2044 2001/11/16 16:47:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2045 2001/11/16 19:17:22 dawes Exp $
