@@ -38,7 +38,9 @@ XCOMM $XConsortium: sunLib.tmpl,v 1.36 94/04/08 19:13:50 rws Exp $
 #else				/* else it's Solaris */
 
 #if ThreadedX
+#ifndef i386Architecture
 #define SharedX11Reqs -lthread
+#endif
 #endif
 #define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #define FixupLibReferences() /**/

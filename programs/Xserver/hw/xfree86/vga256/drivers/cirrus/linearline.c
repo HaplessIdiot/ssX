@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/linearline.c,v 3.0 1994/12/25 12:35:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/linearline.c,v 3.1 1995/01/04 04:42:32 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -93,6 +93,7 @@ void LinearFramebufferVerticalLine(destp, fg, lineheight, destpitch)
     }
     while (lineheight > 0) {
 	DOPIXELVERTICAL(destp, 0, fg, destpitch);
+	destp += destpitch;
 	lineheight--;
     }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.3 1994/12/25 12:36:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.4 1995/01/02 05:03:01 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -420,7 +420,7 @@ void keyboard_configuration() {
 	printf("Do you want to enable these bindings for the Alt keys? ");
 	getstring(s);
 	config_altmeta = 0;
-	if (!answerisyes(s))
+	if (answerisyes(s))
 		config_altmeta = 1;
 	printf("\n");
 }
@@ -1271,7 +1271,7 @@ skipramdacselection:
 		write_XF86Config(TEMPORARY_XF86CONFIG_FILENAME);
 		sync();
 		if (system("X -probeonly -pn -xf86config "
-		TEMPORARY_XF86CONFIG_FILENAME "2>/tmp/dumbconfig.2")) {
+		TEMPORARY_XF86CONFIG_FILENAME " 2>/tmp/dumbconfig.2")) {
 			printf("X -probeonly call failed.\n");
 			printf("No Clocks line inserted.\n");
 			goto clocksprobefailed;

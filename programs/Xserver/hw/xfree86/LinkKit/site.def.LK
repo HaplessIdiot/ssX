@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.11 1994/12/25 13:45:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.12 1995/01/04 04:39:14 dawes Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -87,6 +87,9 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.11 1994/1
 
 /* The W32 server */
 #define XF86W32Server		YES
+
+/* Xnest server */
+#define XnestServer		YES
 
 /*
  * Set the default server (ie the one that gets the sym-link to "X")

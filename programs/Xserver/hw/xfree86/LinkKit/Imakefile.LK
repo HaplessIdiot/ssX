@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.15 1994/12/25 12:17:14 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.16 1994/12/25 13:45:38 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -322,6 +322,18 @@ SetUIDServerTarget(XF86_AGX,$(XF86AGXSUBDIRS),$(XF86AGXOBJS),$(XF86AGXLIBS),$(XF
 #define ServerToInstall XF86_AGX
 #endif
 #endif	/* XF86AGXServer */
+
+#if XnestServer
+XCOMM
+XCOMM Server with Xlib-based ddx
+XCOMM
+XNESTOBJS =
+XNESTDIRS =
+XNEST = lib/libxnest.a
+XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(EXTENSIONS)
+XNESTSYSLIBS = $(LDPRELIB) $(XLIB) $(XNEST) $(SYSLIBS)
+ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(XNESTSYSLIBS))
+#endif /* XnestServer */
 
 CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB32DIR)
 DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(DDXDIR4) $(DDXDIR5) $(DDXDIR6)

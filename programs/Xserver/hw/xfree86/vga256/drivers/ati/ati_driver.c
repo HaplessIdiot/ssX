@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.15 1995/01/04 04:41:48 dawes Exp $ */
 /*
  * Copyright 1994 and 1995 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -942,7 +942,7 @@ probe_clocks:
          * widespread, at times causing otherwise inexplicable results.  So,
          * attempt to normalize the clocks to known (specification) values.
          */
-        if ((!vga256InfoRec.clocks) ||
+        if ((!vga256InfoRec.clocks) || xf86ProbeOnly ||
             (OFLG_ISSET(OPTION_PROBE_CLKS, &vga256InfoRec.options)))
         {
                 /*

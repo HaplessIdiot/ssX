@@ -1,3 +1,12 @@
+XFree86 3.1.0Ba (x January 1995)
+170. Fix for Xnest (and Xvfb) not calling OsInitColors().
+169. Add support for relinking the Xnest server with the LinkKit.
+168. Modify vgawonder to probe clocks when -probeonly is used
+     (Marc Aurele La France).
+167. Fix some cirrus line drawing problems and fix non-interlaced modes
+     with vertical timings > 1024 (Harm Hanemaayer).
+166. Avoid use of the threads lib for SolX86 (David Holland).
+
 XFree86 3.1.0B (4 January 1995)
 165. Support for C&T 65540/45 added to the SVGA server (Régis Cridlig).
 164. Change cirrus programmable clock code to use a tested set of clock

@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.3 1994/08/31 04:19:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.4 1994/11/26 12:39:26 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -54,6 +54,10 @@
 #include <sys/immu.h>
 #if !defined(sun)
 # include <sys/region.h>
+#endif
+#if defined(sun)
+/* Fix for Solaris */
+#define __EXTENSIONS__
 #endif
 #include <sys/proc.h>
 #include <sys/tss.h>

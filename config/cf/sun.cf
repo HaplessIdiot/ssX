@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf,v 1.134 94/08/17 18:56:43 matt Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.12 1994/12/10 01:16:47 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.13 1994/12/17 09:32:49 dawes Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -165,13 +165,17 @@ XCOMM operating system:  OSName
 #define ThreadsCompileFlags -mt
 #else
 #define SystemMTDefines -D_REENTRANT
+#ifndef i386Architecture
 #define ThreadsLibraries -lthread
+#endif
 #endif
 #if HasSunCplusplus && CplusplusCompilerMajorVersion > 3
 #define ThreadsCplusplusCompileFlags -mt
 #else
 #define CplusplusSystemMTDefines -D_REENTRANT
+#ifndef i386Architecture
 #define ThreadsCplusplusLibraries -lthread
+#endif
 #endif
 #endif 		/* OSMinorVersion > 1 */
 #define HasVFork          NO

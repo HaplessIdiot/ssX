@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.24 1994/12/25 12:34:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.25 1995/01/04 04:42:21 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1465,10 +1465,12 @@ nolinear:
 	        cfb16TEOps.PolyFillRect = CirrusPolyFillRect;
 	        cfb16NonTEOps1Rect.PolyFillRect = CirrusPolyFillRect;
 	        cfb16NonTEOps.PolyFillRect = CirrusPolyFillRect;
+#if 0
 	        cfb16TEOps1Rect.PolyRectangle = Cirrus16PolyRectangle;
 	        cfb16TEOps.PolyRectangle = Cirrus16PolyRectangle;
 	        cfb16NonTEOps1Rect.PolyRectangle = Cirrus16PolyRectangle;
 	        cfb16NonTEOps.PolyRectangle = Cirrus16PolyRectangle;
+#endif
             }
             else { /* vgaBitsPerPixel == 32 */
 		cfb32TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
@@ -1481,10 +1483,12 @@ nolinear:
 	        cfb32TEOps.PolyFillRect = CirrusPolyFillRect;
 	        cfb32NonTEOps1Rect.PolyFillRect = CirrusPolyFillRect;
 	        cfb32NonTEOps.PolyFillRect = CirrusPolyFillRect;
+#if 0
 	        cfb32TEOps1Rect.PolyRectangle = Cirrus32PolyRectangle;
 	        cfb32TEOps.PolyRectangle = Cirrus32PolyRectangle;
 	        cfb32NonTEOps1Rect.PolyRectangle = Cirrus32PolyRectangle;
 	        cfb32NonTEOps.PolyRectangle = Cirrus32PolyRectangle;
+#endif
             }
         }
     }
@@ -1913,6 +1917,17 @@ cirrusInit(mode)
 #endif
 #endif
 
+  if (mode->VTotal >= 1024 && !(mode->Flags & V_INTERLACE)
+  && !mode->CrtcVAdjusted) {
+      /* For non-interlaced vertical timing >= 1024, the vertical timings */
+      /* are divided by 2 and VGA CRTC 0x17 bit 2 is set. */
+      mode->CrtcVDisplay >>= 1;
+      mode->CrtcVSyncStart >>= 1;
+      mode->CrtcVSyncEnd >>= 1;
+      mode->CrtcVTotal >>= 1;
+      mode->CrtcVAdjusted = TRUE;
+  }
+
   if (!vgaHWInit(mode,sizeof(vgacirrusRec)))
     return(FALSE);
 
@@ -2192,6 +2207,10 @@ cirrusInit(mode)
          new->SR7 |= 0x0E << 4;	/* Map at 14Mb. */
 #endif
 
+     if (mode->VTotal >= 1024 && !(mode->Flags & V_INTERLACE))
+         /* For non-interlaced vertical timing >= 1024, the pogrammed */
+         /* vertical timings are multiplied by 2 by setting this bit. */
+         new->std.CRTC[0x17] |= 0x04;
 
 				/* Fill up all the overflows - ugh! */
 #ifdef DEBUG_CIRRUS

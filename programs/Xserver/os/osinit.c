@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osinit.c,v 1.48 94/04/17 20:27:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.6 1994/12/29 10:21:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.7 1995/01/04 10:50:10 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -80,6 +80,8 @@ int limitStackSpace = -1;
 #ifdef RLIMIT_NOFILE
 int limitNoFile = -1;
 #endif
+
+Bool OsDelayInitColors = FALSE;
 
 void
 OsInit()
@@ -191,9 +193,8 @@ OsInit()
     OsVendorInit();
 #endif
     OsInitAllocator();
-#ifndef XFREE86
-    OsInitColors();
-#endif
+    if (!OsDelayInitColors)
+	OsInitColors();
 }
 
 void
