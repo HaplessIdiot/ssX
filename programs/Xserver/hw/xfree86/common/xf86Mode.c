@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.47 2001/12/04 17:41:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.48 2001/12/06 15:40:27 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1897,8 +1897,13 @@ xf86PrintModes(ScrnInfoPtr scrp)
 	else
 	    prefix = "Mode";
 	if (hsync == 0 || refresh == 0) {
-	    xf86DrvMsg(scrp->scrnIndex, X_CONFIG,
-			"%s \"%s\"\n", prefix, p->name);
+	    if (p->name)
+		xf86DrvMsg(scrp->scrnIndex, X_CONFIG,
+			   "%s \"%s\"\n", prefix, p->name);
+	    else
+		xf86DrvMsg(scrp->scrnIndex, X_PROBED,
+			   "%s %dx%d (internal)\n", prefix, p->HDisplay,
+			    p->VDisplay);
 	} else if (p->Clock == p->SynthClock) {
 	    xf86DrvMsg(scrp->scrnIndex, X_CONFIG,
 			"%s \"%s\": %.1f MHz, %.1f kHz, %.1f Hz%s%s\n",
