@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.22 2004/01/03 02:11:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.23 2004/06/10 13:08:28 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -351,6 +351,7 @@ I810SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
     I810Ptr pI810 = I810PTR(pScrn);
     int src, dst;
     int w_back = w;
+    int mwidth;
 
     if (I810_DEBUG & DEBUG_VERBOSE_ACCEL)
 	ErrorF( "I810SubsequentScreenToScreenCopy %d,%d - %d,%d %dx%d\n",
@@ -360,12 +361,15 @@ I810SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
      * This was developed empirically so it may not catch all
      * cases.
      */
-#define I810_MWIDTH 8
+    if (pI810->depth > 16)
+	mwidth = 4;
+    else
+	mwidth = 8;
 
     if ( !(pI810->BR[13] & BR13_RIGHT_TO_LEFT) && (y2 - y1) < 3 
-	 && (y2 - y1) >= 0 && (x2 - x1) <= (w + I810_MWIDTH)
-	 && (w > I810_MWIDTH))
-	w = I810_MWIDTH;
+	 && (y2 - y1) >= 0 && (x2 - x1) <= (w + mwidth)
+	 && (w > mwidth))
+	w = mwidth;
     do {
 
 	if (pI810->BR[13] & BR13_PITCH_SIGN_BIT) {
@@ -403,8 +407,8 @@ I810SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 	    break;
 	x2 += w;
 	x1 += w;
-	if (w_back > I810_MWIDTH)
-	    w = I810_MWIDTH;
+	if (w_back > mwidth)
+	    w = mwidth;
 	else
 	    w = w_back;
     }  while (1);
