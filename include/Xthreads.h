@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  * *
  */
-/* $XFree86: xc/include/Xthreads.h,v 3.5 1998/10/02 07:38:52 dawes Exp $ */
+/* $XFree86: xc/include/Xthreads.h,v 3.6 1999/10/13 04:20:47 dawes Exp $ */
 
 #ifndef _XTHREADS_H_
 #define _XTHREADS_H_
@@ -238,7 +238,7 @@ static xthread_t _X_no_thread_id;
 #define xthread_clear_id(id) id = 0
 #define xthread_equal(id1,id2) pthread_equal(id1, id2)
 #endif /* linux */
-#if _CMA_VENDOR_ == _CMA__IBM
+#if defined(_CMA_VENDOR_) && defined(_CMA__IBM) && (_CMA_VENDOR_ == _CMA__IBM)
 #ifdef DEBUG			/* too much of a hack to enable normally */
 /* see also cma__obj_set_name() */
 #define xmutex_set_name(m,str) ((char**)(m)->field1)[5] = (str)

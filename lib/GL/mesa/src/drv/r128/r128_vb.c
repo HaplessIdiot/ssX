@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.1 2000/06/17 00:03:09 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.2 2000/06/20 05:08:41 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -93,7 +93,7 @@ do {                                                                    \
     }                                                                   \
 } while (0)
 
-#if USE_RHW2
+#ifdef USE_RHW2
 #define TEX1_4                                                          \
 do {                                                                    \
     if (VB->TexCoordPtr[1]->size == 4) {                                \
@@ -112,7 +112,7 @@ do {                                                                    \
 #endif
 #endif
 
-#if USE_RHW2
+#ifdef USE_RHW2
 #define COORD                                                           \
 do {                                                                    \
     GLfloat *win = VB->Win.data[i];                                     \
