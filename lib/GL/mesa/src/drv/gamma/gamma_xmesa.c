@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.7 2000/11/27 10:59:37 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.8 2000/12/07 20:26:05 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -59,9 +59,9 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
     {
        int major, minor, patch;
        if (XF86DRIQueryVersion(sPriv->display, &major, &minor, &patch)) {
-          if (major != 3 || minor != 0 || patch < 0) {
+          if (major != 3 || minor != 1 || patch < 0) {
              char msg[1000];
-             sprintf(msg, "gamma DRI driver expected DRI version 3.0.x but got version %d.%d.%d", major, minor, patch);
+             sprintf(msg, "gamma DRI driver expected DRI version 3.1.x but got version %d.%d.%d", major, minor, patch);
              __driMesaMessage(msg);
              return GL_FALSE;
           }
