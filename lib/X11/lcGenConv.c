@@ -35,7 +35,7 @@
  *  2000  
  *  Modifier: Ivan Pascal      The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.24tsi Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.25 2002/04/10 16:20:05 tsi Exp $ */
 
 /*
  * A generic locale loader for all kinds of ISO-2022 based codesets.
@@ -1001,7 +1001,7 @@ wcstombs_org(
 
     } /* end of while */
 
-    *from = (XPointer) ((const char *) *from + from_size);
+    *from = (XPointer) ((const wchar_t *) *from + from_size);
     *from_left = 0;
     *to = (XPointer) outbufptr;
 
@@ -1194,7 +1194,7 @@ wcstocts(
         *ext_seg_len   = i % 128 + 128;
     }
 
-    *from = (XPointer) ((const char *) *from + from_size);
+    *from = (XPointer) ((const wchar_t *) *from + from_size);
     *from_left = 0;
     *to = (XPointer) outbufptr;
 
@@ -2046,7 +2046,7 @@ wcstostr(
 
     } /* end of while */
 
-    *from = (XPointer) ((const char *) *from + from_size);
+    *from = (XPointer) ((const wchar_t *) *from + from_size);
     *from_left = 0;
     *to = (XPointer) outbufptr;
 
@@ -2164,7 +2164,7 @@ end:
 
      /* error end */
     if (unconv_num) {
-        *from = (XPointer) ((const char *) *from + from_size);
+        *from = (XPointer) ((const wchar_t *) *from + from_size);
         *from_left = 0;
         *to = (XPointer) outbufptr;
         return -1;
@@ -2219,7 +2219,7 @@ stdc_wctocs(
 end:
      /* error end */
     if (save_from == (XPointer) src) {
-        *from = (XPointer) ((const char *) *from + from_size);
+        *from = (XPointer) ((const wchar_t *) *from + from_size);
         *from_left = 0;
 	return -1;
     }
