@@ -1,5 +1,6 @@
 /* $XConsortium: fLineV.s,v 1.3 94/10/13 13:16:19 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineV.s,v 3.2 1994/09/21 10:59:44 dawes Exp $ */
+/* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 
 		All Rights Reserved
 

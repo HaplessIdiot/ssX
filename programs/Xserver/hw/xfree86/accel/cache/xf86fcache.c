@@ -1,5 +1,6 @@
 /* $XConsortium: xf86fcache.c,v 1.4 95/01/05 20:25:04 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.5 1994/11/26 12:40:20 dawes Exp $ */
+/*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
  * Permission to use, copy, modify, distribute, and sell this software and its

@@ -1,5 +1,6 @@
 XCOMM $XConsortium: Imakefile,v 1.3 95/01/06 20:58:15 kaleb Exp $
 XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.1 1994/12/10 02:14:51 dawes Exp $
+#include <Server.tmpl>
 
 SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c bios_devmem.c mapVT_noop.c \
        ioperm_noop.c std_kbdEv.c posix_tty.c std_mouse.c \

@@ -1,5 +1,6 @@
 /* $XConsortium: xf86text.h,v 1.2 94/10/12 19:48:30 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86text.h,v 3.0 1994/08/01 12:09:19 dawes Exp $ */
+/*
  * Function prototypes for the text output functions.
  */
 #ifndef _XF86_TEXT_H

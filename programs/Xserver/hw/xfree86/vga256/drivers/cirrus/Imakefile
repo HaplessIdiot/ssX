@@ -1,5 +1,6 @@
 XCOMM $XConsortium: Imakefile,v 1.5 95/01/26 15:38:28 kaleb Exp $
 XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/Imakefile,v 3.8 1995/01/26 02:20:53 dawes Exp $
+#include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
        cir_imblt.s cir_colexp.c cirFillSt.c cir_teblt8.c \

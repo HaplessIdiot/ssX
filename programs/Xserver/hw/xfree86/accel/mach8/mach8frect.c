@@ -1,5 +1,6 @@
 /* $XConsortium: mach8frect.c,v 1.6 95/01/12 20:19:35 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8frect.c,v 3.1 1994/11/26 12:43:26 dawes Exp $ */
+/*
  * Fill rectangles.
  */
 

@@ -1,5 +1,6 @@
 /* $XConsortium: mach8fs.c,v 1.4 95/01/05 20:28:29 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fs.c,v 3.1 1994/11/26 12:43:28 dawes Exp $ */
+/************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
                     All Rights Reserved

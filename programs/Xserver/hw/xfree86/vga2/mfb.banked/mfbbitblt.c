@@ -48,6 +48,7 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: mfbbitblt.c,v 1.3 94/10/12 21:20:46 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfbbitblt.c,v 3.0 1994/05/31 08:13:32 dawes Exp $ */
+#include "X.h"
 #include "Xprotostr.h"
 
 #include "miscstruct.h"

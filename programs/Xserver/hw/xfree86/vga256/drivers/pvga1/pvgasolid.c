@@ -1,6 +1,7 @@
 /*
  * $XConsortium: pvgasolid.c,v 1.6 94/10/13 13:26:38 kaleb Exp $
  * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgasolid.c,v 3.0 1994/07/24 11:57:07 dawes Exp $
+ *
 Copyright (c) 1990  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
