@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.46 2001/08/17 13:27:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.48 2001/11/30 12:12:03 eich Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -513,7 +513,7 @@ MouseCommonOptions(InputInfoPtr pInfo)
 	pMse->wheelButtonMask = 1 << (wheelButton - 1);
 	
 	pMse->wheelInertia = xf86SetIntOption(pInfo->options,
-					"EmulateWheelInertia", 50);
+					"EmulateWheelInertia", 10);
 	if (pMse->wheelInertia <= 0) {
 	    xf86Msg(X_WARNING, "%s: Invalid EmulateWheelInertia value: %d\n",
 			pInfo->name, pMse->wheelInertia);
@@ -1919,7 +1919,7 @@ MouseDoPostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
     MouseDevPtr pMse;
     int truebuttons, emulateButtons;
     int id, change;
-    int emuWheelDelta, emuWheelButton;
+    int emuWheelDelta, emuWheelButton, emuWheelButtonMask;
 
     pMse = pInfo->private;
 
@@ -1941,14 +1941,16 @@ MouseDoPostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
 		emuWheelDelta = pMse->wheelInertia;
 		emuWheelButton = pMse->positiveY;
 	    }
+	    emuWheelButtonMask = 1 << (emuWheelButton - 1);
 	    while (abs(pMse->wheelYDistance) > pMse->wheelInertia) {
 		pMse->wheelYDistance -= emuWheelDelta;
 
 		/*
-		 * Synthesize the press and release, but not when the button.
+		 * Synthesize the press and release, but not when the button
 		 * to be synthesized is already pressed "for real".
 		 */
-		if (!((1 << (emuWheelButton - 1)) & buttons)) {
+		if (!(emuWheelButtonMask & buttons) ||
+		    (emuWheelButtonMask & pMse->wheelButtonMask)) {
 		    xf86PostButtonEvent(pInfo->dev, 0, emuWheelButton, 1, 0, 0);
 		    xf86PostButtonEvent(pInfo->dev, 0, emuWheelButton, 0, 0, 0);
 		}
@@ -1969,10 +1971,11 @@ MouseDoPostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
 		pMse->wheelXDistance -= emuWheelDelta;
 
 		/*
-		 * Synthesize the press and release, but not when the button.
+		 * Synthesize the press and release, but not when the button
 		 * to be synthesized is already pressed "for real".
 		 */
-		if (!((1 << (emuWheelButton - 1)) & buttons)) {
+		if (!(emuWheelButtonMask & buttons) ||
+		    (emuWheelButtonMask & pMse->wheelButtonMask)) {
 		    xf86PostButtonEvent(pInfo->dev, 0, emuWheelButton, 1, 0, 0);
 		    xf86PostButtonEvent(pInfo->dev, 0, emuWheelButton, 0, 0, 0);
 		}

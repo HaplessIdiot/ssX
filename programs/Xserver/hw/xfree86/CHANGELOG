@@ -1,4 +1,11 @@
 XFree86 4.1.99.2 (xx December 2001)
+ 561. Implement double buffering for XVputimage in the mga driver (#A.601,
+      Didier Gautheron).
+ 560. Fix a wheel emulation problem that prevented delivery of button
+      events when the wheel button was the same as one of the emulated
+      button (#A.600, Antonio Larrosa Jiménez).
+ 559. Fix some 'make install.sdk' problems (#A.586, Stanislav Brabec).
+ 558. Fix mga DGA when UseFBDev is enabled (#A.584, Wayne Whitney).
  557. Fix dri module build when BuildXinerama is set to NO (David Dawes,
       based on #A.599, Pontus Lidman).
  556. Fix libXext build when BuildLBX is set to NO (based on #A.582,
@@ -14305,4 +14312,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2080 2001/12/09 15:54:54 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2081 2001/12/10 19:07:20 dawes Exp $
