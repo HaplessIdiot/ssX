@@ -1,5 +1,5 @@
 /* $XConsortium: miTextLUT.c,v 5.2 94/04/17 20:37:46 rws Exp $ */
-/* $XFree86 $ */
+/* $XFree86: $ */
 
 /*
 

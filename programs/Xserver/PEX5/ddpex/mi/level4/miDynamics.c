@@ -1,5 +1,5 @@
 /* $XConsortium: miDynamics.c,v 5.3 94/04/17 20:37:31 hersh Exp $ */
-/* $XFree86 $ */
+/* $XFree86: $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

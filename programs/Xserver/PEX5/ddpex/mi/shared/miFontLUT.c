@@ -1,5 +1,5 @@
 /* $XConsortium: miFontLUT.c,v 5.2 94/04/17 20:37:40 rws Exp $ */
-/* $XFree86 $ */
+/* $XFree86: $ */
 /*
 
 Copyright (c) 1990, 1991  X Consortium

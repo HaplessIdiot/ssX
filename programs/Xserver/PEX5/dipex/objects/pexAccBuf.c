@@ -1,5 +1,5 @@
 /* $XConsortium: pexAccBuf.c,v 1.1 94/09/08 19:48:15 hersh Exp $ */
-/* $XFree86 $ */
+/* $XFree86: $ */
 /*
 
 Copyright (c) 1994  X Consortium

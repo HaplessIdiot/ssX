@@ -1,5 +1,5 @@
 /* $XConsortium: miPattLUT.c,v 5.4 94/04/17 20:37:46 hersh Exp $ */
-/* $XFree86 $ */
+/* $XFree86: $ */
 /*
 
 Copyright (c) 1990, 1991  X Consortium

@@ -1,5 +1,5 @@
 /* $XConsortium: miWks.c /main/16 1996/09/28 16:54:30 rws $ */
-/* $XFree86 $ */
+/* $XFree86: $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

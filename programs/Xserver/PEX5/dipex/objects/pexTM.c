@@ -1,5 +1,5 @@
 /* $XConsortium: pexTM.c,v 1.2 94/09/09 20:32:50 hersh Exp $ */
-/* $XFree86 $ */
+/* $XFree86: $ */
 /*
 
 Copyright (c) 1994  X Consortium
