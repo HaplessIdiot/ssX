@@ -39,13 +39,13 @@
 *				user library.
 *
 ****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/x86emu/src/x86emu/sys.c,v 1.2 2000/04/05 18:13:14 dawes Exp $ */
 
 #include "x86emu.h"
 #include "x86emu/regs.h"
 #include "x86emu/debug.h"
 #include "x86emu/prim_ops.h"
-#if IN_MODULE
+#ifdef IN_MODULE
 #include "xf86_ansic.h"
 #else
 #include <string.h>
