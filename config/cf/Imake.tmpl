@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.130 2002/10/12 16:06:38 herrb Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.131 2002/10/25 23:57:44 keithp Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -672,6 +672,9 @@ TCLIBDIR = TclLibDir
 #else
 #define TclLibrary
 #endif
+#endif
+#ifndef HasTsLib
+#define HasTsLib NO
 #endif
 /*
  * Libtool has two different behaviours for version numbers.
