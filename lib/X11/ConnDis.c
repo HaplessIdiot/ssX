@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.28 2003/12/02 23:33:17 herrb Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.29 2003/12/19 02:05:37 dawes Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -1098,14 +1098,14 @@ GetAuthorization(
 		/* Port number */
 		for (i=2; i<4; i++)
 		    xdmcp_data[j++] = ((char *)addr)[i];
-		break;
 	    } else {
 		/* Fake data to keep the data aligned. Otherwise the 
 		   the server will bail about incorrect timing data */
-		for (i = 0; i < 8; i++) {
+		for (i = 0; i < 6; i++) {
 		    xdmcp_data[j++] = 0;
 		}
 	    }
+	    break;
 	}
 #endif /* AF_INET6 */
 #ifdef AF_UNIX
