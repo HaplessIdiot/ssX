@@ -5,7 +5,7 @@
 # Last modified: 1994-03-25
 # Public domain
 #
-# $Header: /vol1/history/xf86/xc/programs/xterm/mkdirs.sh,v 3.1 1997/05/23 09:19:53 dawes Exp $
+# Header: /usr2/foxharp/src/pgf/vile/RCS/mkdirs.sh,v 1.2 1994/07/11 22:56:20 pgf Exp
 #
 
 errstatus=0

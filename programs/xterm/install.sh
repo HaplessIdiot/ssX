@@ -9,7 +9,7 @@
 # This script is compatible with the BSD install script, but was written
 # from scratch.
 #
-# $Header: /vol1/history/xf86/xc/programs/xterm/install.sh,v 3.1 1997/05/23 09:19:50 dawes Exp $
+# Header: /usr2/foxharp/src/pgf/vile/RCS/install.sh,v 1.2 1994/07/11 22:56:20 pgf Exp
 
 
 # set DOITPROG to echo to test this script

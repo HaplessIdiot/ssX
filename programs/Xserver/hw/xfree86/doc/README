@@ -701,7 +701,7 @@ README for XFree86[tm] 3.2A
 
       AGX accelerated code by:
 
-	       o Henry Worth <henry.worth@amail.amdahl.com>,
+	       o Henry Worth <haworth@wco.com>,
 
       Number Nine I128 driver by:
 
@@ -879,6 +879,8 @@ README for XFree86[tm] 3.2A
 
       Matrox SVGA driver by:
 
+	       o Guy Desbief <g.desbief@aix.pacwan.net>
+
 	       o Radoslaw Kapitan <kapitan@student.uci.agh.edu.pl>
 
 	       o Andrew Vanderstock <vanderaj@mail2.svhm.org.au>
@@ -914,8 +916,6 @@ README for XFree86[tm] 3.2A
       Linux
 	    m68k Frame Buffer Device driver by:  /
 
-	       o Martin Schaller
-
 
 
 
@@ -928,6 +928,8 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+	       o Martin Schaller
 
 	       o Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
 
@@ -981,8 +983,6 @@ README for XFree86[tm] 3.2A
 
 	       o Eric Raymond <esr@snark.thyrsus.com> (new video mode documen-
 		 tation),
-
-
 
 
 
@@ -1304,7 +1304,7 @@ Ensure that you are getting XFree86 3.2A - some of these sites may archive
 older releases as well.  Check the RELNOTES to find which files you need to
 take from the archive.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.82 1997/05/22 14:22:25 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.83 1997/05/23 12:28:03 dawes Exp $
 
 
 
