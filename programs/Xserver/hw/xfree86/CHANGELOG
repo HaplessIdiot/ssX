@@ -1,4 +1,16 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 119. Major Radeon driver code cleanup (Kevin Martin).
+ 118. Radeon Xv fixes and video key support added (Keith Packard).
+ 117. DPMS support for DFP/LCD and second head added for Radeon (Hui Yu@ATI).
+ 116. Option to disable line acceleration added since Radeon only has 14 bits
+      for lines and clipping.  This will be changed to an XAA option for 14
+      bit support in the future (Hui Yu@ATI, Kevin Martin).
+ 115. Radeon DDC and DFP handling improvements (Hui Yu@ATI).
+ 114. Fixes for DRI lockup problems with Radeon 7500/VE and the AMD 761
+      chipset (Hui Yu@ATI).
+ 113. Radeon PLL routines rewritten with ATOMIC_UPDATE enabled (Hui Yu@ATI).
+ 112. Clone mode added to Radeon driver (not yet functional and disabled
+      by default) (Hui Yu@ATI, Kevin Martin).
  111. Fix usage of BuildBinTop in Cygwin/XFree86 (#5223, Harold Hunt).
  110. Implement WarpCursor for Cygwin/XFree86, and use GetProcAddress
       instead of relying on ddraw.dll (#5220-#5222, Harold Hunt).
@@ -14760,4 +14772,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2200 2002/04/11 08:25:15 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2201 2002/04/15 09:24:10 alanh Exp $

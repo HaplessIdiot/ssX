@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.11 2001/03/03 22:26:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.12 2001/07/19 02:22:50 tsi Exp $ */
 
 #include "radeon.h"
 #include "radeon_reg.h"
@@ -136,6 +136,42 @@ static XF86ImageRec Images[NUM_IMAGES] =
 	XVIMAGE_I420
 };
 
+static void RADEONSetColorKey(ScrnInfoPtr pScrn, CARD32 colorKey)
+{
+    RADEONInfoPtr info = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
+    CARD32 min, max;
+    CARD8 r, g, b;
+
+    if (info->CurrentLayout.depth > 8)
+    {
+	CARD32	rbits, gbits, bbits;
+
+	rbits = (colorKey & pScrn->mask.red) >> pScrn->offset.red;
+	gbits = (colorKey & pScrn->mask.green) >> pScrn->offset.green;
+	bbits = (colorKey & pScrn->mask.blue) >> pScrn->offset.blue;
+
+	r = rbits << (8 - pScrn->weight.red);
+	g = gbits << (8 - pScrn->weight.green);
+	b = bbits << (8 - pScrn->weight.blue);
+    }
+    else
+    {
+	CARD32	bits;
+
+	bits = colorKey & ((1 << info->CurrentLayout.depth) - 1);
+	r = bits;
+	g = bits;
+	b = bits;
+    }
+    min = (r << 16) | (g << 8) | (b);
+    max = (0xff << 24) | (r << 16) | (g << 8) | (b);
+
+    RADEONWaitForFifo(pScrn, 2);
+    OUTREG(RADEON_OV0_GRAPHICS_KEY_CLR_HIGH, max);
+    OUTREG(RADEON_OV0_GRAPHICS_KEY_CLR_LOW, min);
+}
+
 static void
 RADEONResetVideo(ScrnInfoPtr pScrn)
 {
@@ -144,17 +180,18 @@ RADEONResetVideo(ScrnInfoPtr pScrn)
     RADEONPortPrivPtr pPriv = info->adaptor->pPortPrivates[0].ptr;
 
 
+    RADEONWaitForIdle(pScrn);
     OUTREG(RADEON_OV0_SCALE_CNTL, 0x80000000);
-    OUTREG(RADEON_OV0_EXCLUSIVE_HORZ, 0);
     OUTREG(RADEON_OV0_AUTO_FLIP_CNTL, 0);   /* maybe */
+    OUTREG(RADEON_OV0_EXCLUSIVE_HORZ, 0);
     OUTREG(RADEON_OV0_FILTER_CNTL, 0x0000000f);
-    OUTREG(RADEON_OV0_COLOUR_CNTL, (pPriv->brightness & 0x7f) |
-				 (pPriv->saturation << 8) |
-				 (pPriv->saturation << 16));
-    OUTREG(RADEON_OV0_GRAPHICS_KEY_MSK, (1 << pScrn->depth) - 1);
-    OUTREG(RADEON_OV0_GRAPHICS_KEY_CLR, pPriv->colorKey);
-    OUTREG(RADEON_OV0_KEY_CNTL, RADEON_GRAPHIC_KEY_FN_NE);
+    OUTREG(RADEON_OV0_KEY_CNTL, RADEON_GRAPHIC_KEY_FN_EQ |
+				RADEON_VIDEO_KEY_FN_FALSE |
+				RADEON_CMP_MIX_OR);
     OUTREG(RADEON_OV0_TEST, 0);
+    OUTREG(RADEON_FCP_CNTL, RADEON_FCP_CNTL__GND);
+    OUTREG(RADEON_CAP0_TRIG_CNTL, 0);
+    RADEONSetColorKey(pScrn, pPriv->colorKey);
 }
 
 
@@ -368,6 +405,7 @@ RADEONStopVideo(ScrnInfoPtr pScrn, pointer data, Bool cleanup)
 
   if(cleanup) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
+	RADEONWaitForFifo(pScrn, 2);
 	OUTREG(RADEON_OV0_SCALE_CNTL, 0);
      }
      if(pPriv->linear) {
@@ -390,25 +428,29 @@ RADEONSetPortAttribute(
   INT32 value,
   pointer data
 ){
-  RADEONInfoPtr info = RADEONPTR(pScrn);
-  unsigned char *RADEONMMIO = info->MMIO;
+/*  RADEONInfoPtr info = RADEONPTR(pScrn); */
+/*  unsigned char *RADEONMMIO = info->MMIO; */
   RADEONPortPrivPtr pPriv = (RADEONPortPrivPtr)data;
 
   if(attribute == xvBrightness) {
 	if((value < -64) || (value > 63))
 	   return BadValue;
 	pPriv->brightness = value;
+#if 0
 	OUTREG(RADEON_OV0_COLOUR_CNTL, (pPriv->brightness & 0x7f) |
 				     (pPriv->saturation << 8) |
 				     (pPriv->saturation << 16));
+#endif
   } else
   if(attribute == xvSaturation) {
 	if((value < 0) || (value > 31))
 	   return BadValue;
 	pPriv->saturation = value;
+#if 0
 	OUTREG(RADEON_OV0_COLOUR_CNTL, (pPriv->brightness & 0x7f) |
 				     (pPriv->saturation << 8) |
 				     (pPriv->saturation << 16));
+#endif
   } else
   if(attribute == xvDoubleBuffer) {
 	if((value < 0) || (value > 1))
@@ -417,7 +459,7 @@ RADEONSetPortAttribute(
   } else
   if(attribute == xvColorKey) {
 	pPriv->colorKey = value;
-	OUTREG(RADEON_OV0_GRAPHICS_KEY_CLR, pPriv->colorKey);
+	RADEONSetColorKey (pScrn, pPriv->colorKey);
 
 	REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
   } else return BadMatch;
@@ -464,7 +506,7 @@ RADEONQueryBestSize(
 	drw_w = vid_w >> 4;
    if(vid_h > (drw_h << 4))
 	drw_h = vid_h >> 4;
-	
+
   *p_w = drw_w;
   *p_h = drw_h;
 }
@@ -578,7 +620,7 @@ static void
 RADEONDisplayVideo(
     ScrnInfoPtr pScrn,
     int id,
-    int offset,
+    int offset1, int offset2,
     short width, short height,
     int pitch,
     int left, int right, int top,
@@ -603,7 +645,8 @@ RADEONDisplayVideo(
 
     /* keep everything in 16.16 */
 
-    offset += ((left >> 16) & ~7) << 1;
+    offset1 += ((left >> 16) & ~7) << 1;
+    offset2 += ((left >> 16) & ~7) << 1;
 
     tmp = (left & 0x0003ffff) + 0x00028000 + (h_inc << 3);
     p1_h_accum_init = ((tmp <<  4) & 0x000f8000) |
@@ -622,6 +665,7 @@ RADEONDisplayVideo(
     OUTREG(RADEON_OV0_REG_LOAD_CNTL, 1);
     while(!(INREG(RADEON_OV0_REG_LOAD_CNTL) & (1 << 3)));
 
+    RADEONWaitForFifo(pScrn, 15);
     OUTREG(RADEON_OV0_H_INC, h_inc | ((h_inc >> 1) << 16));
     OUTREG(RADEON_OV0_STEP_BY, step_by | (step_by << 8));
     OUTREG(RADEON_OV0_Y_X_START, (dstBox->x1 + 8) | (dstBox->y1 << 16));
@@ -629,19 +673,42 @@ RADEONDisplayVideo(
     OUTREG(RADEON_OV0_V_INC, v_inc);
     OUTREG(RADEON_OV0_P1_BLANK_LINES_AT_TOP, 0x00000fff | ((src_h - 1) << 16));
     OUTREG(RADEON_OV0_VID_BUF_PITCH0_VALUE, pitch);
+    OUTREG(RADEON_OV0_VID_BUF_PITCH1_VALUE, pitch);
     OUTREG(RADEON_OV0_P1_X_START_END, (src_w + left - 1) | (left << 16));
     left >>= 1; src_w >>= 1;
     OUTREG(RADEON_OV0_P2_X_START_END, (src_w + left - 1) | (left << 16));
     OUTREG(RADEON_OV0_P3_X_START_END, (src_w + left - 1) | (left << 16));
-    OUTREG(RADEON_OV0_VID_BUF0_BASE_ADRS, offset & 0xfffffff0);
+    OUTREG(RADEON_OV0_VID_BUF0_BASE_ADRS, offset1 & 0xfffffff0);
+    OUTREG(RADEON_OV0_VID_BUF1_BASE_ADRS, offset2 & 0xfffffff0);
+    OUTREG(RADEON_OV0_VID_BUF2_BASE_ADRS, offset1 & 0xfffffff0);
+
+    RADEONWaitForFifo(pScrn, 9);
+    OUTREG(RADEON_OV0_VID_BUF3_BASE_ADRS, offset2 & 0xfffffff0);
+    OUTREG(RADEON_OV0_VID_BUF4_BASE_ADRS, offset1 & 0xfffffff0);
+    OUTREG(RADEON_OV0_VID_BUF5_BASE_ADRS, offset2 & 0xfffffff0);
     OUTREG(RADEON_OV0_P1_V_ACCUM_INIT, p1_v_accum_init);
     OUTREG(RADEON_OV0_P1_H_ACCUM_INIT, p1_h_accum_init);
     OUTREG(RADEON_OV0_P23_H_ACCUM_INIT, p23_h_accum_init);
 
+#if 0
     if(id == FOURCC_UYVY)
        OUTREG(RADEON_OV0_SCALE_CNTL, 0x41008C03);
     else
        OUTREG(RADEON_OV0_SCALE_CNTL, 0x41008B03);
+#endif
+
+    if(id == FOURCC_UYVY)
+       OUTREG(RADEON_OV0_SCALE_CNTL, RADEON_SCALER_SOURCE_YVYU422 \
+       	       | RADEON_SCALER_ADAPTIVE_DEINT \
+	       | RADEON_SCALER_SMART_SWITCH \
+	       | RADEON_SCALER_DOUBLE_BUFFER \
+	       | RADEON_SCALER_ENABLE);
+    else
+       OUTREG(RADEON_OV0_SCALE_CNTL,  RADEON_SCALER_SOURCE_VYUY422 \
+       	       | RADEON_SCALER_ADAPTIVE_DEINT \
+	       | RADEON_SCALER_SMART_SWITCH \
+	       | RADEON_SCALER_DOUBLE_BUFFER \
+	       | RADEON_SCALER_ENABLE);
 
     OUTREG(RADEON_OV0_REG_LOAD_CNTL, 0);
 }
@@ -787,7 +854,7 @@ RADEONPutImage(
 					REGION_RECTS(clipBoxes));
     }
 
-    RADEONDisplayVideo(pScrn, id, offset, width, height, dstPitch,
+    RADEONDisplayVideo(pScrn, id, offset, offset, width, height, dstPitch,
 		     xa, xb, ya, &dstBox, src_w, src_h, drw_w, drw_h);
 
     pPriv->videoStatus = CLIENT_VIDEO_ON;
