@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_io.c,v 3.7 2001/06/30 22:41:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_io.c,v 3.8 2002/06/03 21:22:10 dawes Exp $ */
 /*
  * Copyright 2001 by J. Kean Johnston <jkj@sco.com>
  *
@@ -262,4 +262,12 @@ xf86KbdOff()
   ioctl(xf86Info.consoleFd, XCSETA, &orig_termios);
 
   return(xf86Info.consoleFd);
+}
+
+#include "xf86OSKbd.h"
+
+Bool
+xf86OSKbdPreInit(KbdDevPtr pKbd)
+{
+    return FALSE;
 }

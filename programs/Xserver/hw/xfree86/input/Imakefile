@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/Imakefile,v 1.14 2000/03/05 19:26:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/Imakefile,v 1.15 2002/05/31 18:46:00 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -8,13 +8,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/Imakefile,v 1.14 2000/03/05
 JOYSTICKDIR = joystick
 #endif
 
-/*
- * The keyboard directory only has a man page so far!  The driver is
- * still built in to the common layer.
- */
-KBDDIR = keyboard
-
-SUBDIRS = XInputDrivers $(JOYSTICKDIR) $(KBDDIR)
+SUBDIRS = XInputDrivers $(JOYSTICKDIR)
 DRIVERS = XInputDrivers
 
 OBJS = `cat idriver.list`

@@ -24,7 +24,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Sebastien Marineau.
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/nto/nto_io.c,v 1.2 1999/12/27 00:45:45 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/nto/nto_io.c,v 1.3 2001/11/16 16:47:56 dawes Exp $
  */
 
 /* This module contains the NTO-specific functions to access the keyboard
@@ -105,3 +105,10 @@ int xf86KbdOff()
 	return (-1);
 }
 
+#include "xf86OSKbd.h"
+
+Bool
+xf86OSKbdPreInit(KbdDevPtr pKbd)
+{
+    return FALSE;
+}

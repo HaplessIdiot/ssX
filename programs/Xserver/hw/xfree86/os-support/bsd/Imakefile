@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.51 2002/05/22 21:38:29 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.52 2002/08/06 13:08:38 herrb Exp $
 
 #include <Server.tmpl>
 
@@ -56,6 +56,9 @@ DRI_OBJ = sigio.o
 
 MOUSESRC = bsd_mouse.c
 MOUSEOBJ = bsd_mouse.o
+
+KBDSRC = bsd_kbd.c bsd_KbdMap.c at_scancode.c
+KBDOBJ = bsd_kbd.o bsd_KbdMap.o at_scancode.o
 
 #if HasMTRRSupport
 MTRRDEFINES = -DHAS_MTRR_SUPPORT
@@ -143,12 +146,12 @@ VIDEO_OBJ = sparc64_video.o
 SRCS = bsd_init.c $(VIDEO_SRC) bsd_io.c bsd_VTsw.c \
        libc_wrapper.c $(IOPERM_SRC) std_kbdEv.c posix_tty.c $(MOUSESRC) \
        $(RES_SRC) stdPci.c vidmem.c $(JOYSTICK_SRC) sigio.c $(APMSRC) \
-       $(AXP_SRC) $(KMODSRC) $(AGP_SRC)
+       $(AXP_SRC) $(KMODSRC) $(AGP_SRC) $(KBDSRC)
 
 OBJS = bsd_init.o $(VIDEO_OBJ) bsd_io.o bsd_VTsw.o \
        libc_wrapper.o $(IOPERM_OBJ) std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
        $(RES_OBJ) stdPci.o vidmem.o $(JOYSTICK_OBJ) sigio.o $(APMOBJ) \
-       $(AXP_OBJ) $(KMODOBJ) $(AGP_OBJ)
+       $(AXP_OBJ) $(KMODOBJ) $(AGP_OBJ) $(KBDOBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi $(APINCLUDES) \
@@ -196,6 +199,7 @@ LinkSourceFile(pm_noop.c,../shared)
 #endif
 LinkSourceFile(ioperm_noop.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
+LinkSourceFile(at_scancode.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
