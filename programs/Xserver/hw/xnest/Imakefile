@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:53:28 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.18 2000/06/28 19:06:18 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.19 2001/01/17 22:36:55 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -58,13 +58,13 @@ OBJS =	Args.o \
 INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 	   -I../../mi -I../../include -I../../os \
            -I$(EXTINCSRC) -I$(XINCLUDESRC)
-DEFINES = $(OS_DEFINES) -UXINPUT -UXF86VIDMODE -UXFreeXDGA -UXF86MISC \
-	  -UMITSHM -UXF86DRI -UXFree86LOADER
+DEFINES = $(OS_DEFINES) $(EXT_DEFINES) -UXINPUT -UMITSHM \
+	  -UXF86VIDMODE -UXFreeXDGA -UXF86MISC -UXF86DRI -UXFree86LOADER
 
 all:: $(OBJS)
 
 LinkSourceFile(stubs.c,$(SERVERSRC)/Xi)
-SpecialCObjectRule(Init,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(Init,$(ICONFIGFILES),$(_NOOP_))
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),-UDPMSExtension)
 
