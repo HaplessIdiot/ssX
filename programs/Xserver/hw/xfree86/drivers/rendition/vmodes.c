@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.6 1999/11/19 13:54:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.7 2000/02/25 21:03:05 dawes Exp $ */
 /*
  * file vmodes.c
  *
@@ -205,7 +205,7 @@ static double V2200CalcClock(double target, int *m, int *n, int *p);
  */
 
 int
-v_setmodefixed(ScrnInfoPtr pScreenInfo)
+verite_setmodefixed(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
@@ -213,40 +213,40 @@ v_setmodefixed(ScrnInfoPtr pScreenInfo)
     int tmp;
 
 #ifdef DEBUG
-    ErrorF ("Rendition: Debug v_setmodefixed called\n");
+    ErrorF ("Rendition: Debug verite_setmodefixed called\n");
 #endif
 
 #ifdef SAVEVGA
-    v_savetextmode(pRendition->board);
+    verite_savetextmode(pRendition->board);
 #endif
 
     v1k_softreset(pScreenInfo);
 
     /* switching to native mode */
-    v_out8(iob+MODEREG, NATIVE_MODE);
+    verite_out8(iob+MODEREG, NATIVE_MODE);
 
     /* flipping some bytes */
-    v_out8(iob+MEMENDIAN, MEMENDIAN_HW);
+    verite_out8(iob+MEMENDIAN, MEMENDIAN_HW);
 
     /* try programming 1024x768@70 in highcolor */
-    tmp=v_in32(iob+DRAMCTL)&0xdfff;              /* reset bit 13 */
-    v_out32(iob+DRAMCTL, tmp|DEFAULT_WREFRESH);
+    tmp=verite_in32(iob+DRAMCTL)&0xdfff;              /* reset bit 13 */
+    verite_out32(iob+DRAMCTL, tmp|DEFAULT_WREFRESH);
 
     /* program pixel clock */
     if (pRendition->board.chip == V1000_DEVICE) {
         set_PLL(iob, combineNMP(21, 55, 0));
     } 
     else {
-	tmp = (~0x1800) & v_in32(iob+DRAMCTL);
-        v_out32(iob+DRAMCTL, tmp);
-        v_out32(iob+PCLKPLL, v2kcombineNMP(2, 21, 2));
+	tmp = (~0x1800) & verite_in32(iob+DRAMCTL);
+        verite_out32(iob+DRAMCTL, tmp);
+        verite_out32(iob+PCLKPLL, v2kcombineNMP(2, 21, 2));
     }
     usleep(500);
   
-    v_initdac(pScreenInfo, 16, 0);
+    verite_initdac(pScreenInfo, 16, 0);
   
-    v_out32(iob+CRTCHORZ, HORZ(24, 136, 144, 1024));
-    v_out32(iob+CRTCVERT, VERT(3, 6, 29, 768));
+    verite_out32(iob+CRTCHORZ, HORZ(24, 136, 144, 1024));
+    verite_out32(iob+CRTCVERT, VERT(3, 6, 29, 768));
 
     pRendition->board.mode.screenwidth=1024;
     pRendition->board.mode.virtualwidth=1024;
@@ -257,7 +257,7 @@ v_setmodefixed(ScrnInfoPtr pScreenInfo)
     (*pScreenInfo->AdjustFrame)(pScreenInfo->scrnIndex,
         pScreenInfo->frameX0, pScreenInfo->frameY0, 0);
 
-    v_out32(iob+CRTCCTL, CTL(0, 0, 0)
+    verite_out32(iob+CRTCCTL, CTL(0, 0, 0)
                          |V_PIXFMT_565 
                          |CRTCCTL_VIDEOFIFOSIZE128
                          |CRTCCTL_HSYNCENABLE
@@ -270,7 +270,7 @@ v_setmodefixed(ScrnInfoPtr pScreenInfo)
 
 
 int
-v_setmode(ScrnInfoPtr pScreenInfo, struct v_modeinfo_t *mode)
+verite_setmode(ScrnInfoPtr pScreenInfo, struct verite_modeinfo_t *mode)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
@@ -280,43 +280,44 @@ v_setmode(ScrnInfoPtr pScreenInfo, struct v_modeinfo_t *mode)
     int iob=pRendition->board.io_base;
 
 #ifdef DEBUG
-    ErrorF ("Rendition: Debug v_setmode called\n");
+    ErrorF ("Rendition: Debug verite_setmode called\n");
 #endif
  
     /* switching to native mode */
-    v_out8(iob+MODEREG, NATIVE_MODE|VESA_MODE);
+    verite_out8(iob+MODEREG, NATIVE_MODE|VESA_MODE);
 
     /* flipping some bytes */
     /* Must be something better to do than this -- FIX */
     switch (mode->bitsperpixel) {
     case 32:
-      v_out8(iob+MEMENDIAN, MEMENDIAN_NO);
+      verite_out8(iob+MEMENDIAN, MEMENDIAN_NO);
       break;
     case 16:
-      v_out8(iob+MEMENDIAN, MEMENDIAN_HW);
+      verite_out8(iob+MEMENDIAN, MEMENDIAN_HW);
       break;
     case 8:
-      v_out8(iob+MEMENDIAN, MEMENDIAN_END);
+      verite_out8(iob+MEMENDIAN, MEMENDIAN_END);
       break;
     }
 
     if (pRendition->board.chip != V1000_DEVICE) {
       if(!pRendition->board.overclock_mem){
-	v_out32(iob+SCLKPLL, 0xa484d);  /* mclk=110 sclk=50 */
+	verite_out32(iob+SCLKPLL, 0xa484d);  /* mclk=110 sclk=50 */
                                         /* M/N/P/P = 77/5/2/4 */
       }
       else{
-	ErrorF ("RENDITION: *** OVERCLOCKING MEM/CLK mclk=125 sclk=60 ***\n");
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+		   (" *** OVERCLOCKING MEM/CLK mclk=125 sclk=60 ***\n"));
 	/* increase Mem/Sys clock on request */
-	v_out32(iob+SCLKPLL, 0xa4854);  /* mclk=125 sclk=60 */
+	verite_out32(iob+SCLKPLL, 0xa4854);  /* mclk=125 sclk=60 */
                                         /* M/N/P/P = 84/5/2/4 */
       }
       usleep(500);
     }
 
     /* this has something to do with memory */
-    tmp=v_in32(iob+DRAMCTL)&0xdfff;              /* reset bit 13 */
-    v_out32(iob+DRAMCTL, tmp|0x330000);
+    tmp=verite_in32(iob+DRAMCTL)&0xdfff;              /* reset bit 13 */
+    verite_out32(iob+DRAMCTL, tmp|0x330000);
  
     /* program pixel clock */
     if (pRendition->board.chip == V1000_DEVICE) {
@@ -327,27 +328,27 @@ v_setmode(ScrnInfoPtr pScreenInfo, struct v_modeinfo_t *mode)
         set_PLL(iob, combineNMP(N, M, P));
     } 
     else {
-	tmp = (~0x1800) & v_in32(iob+DRAMCTL);
-        v_out32(iob+DRAMCTL, tmp);
+	tmp = (~0x1800) & verite_in32(iob+DRAMCTL);
+        verite_out32(iob+DRAMCTL, tmp);
         V2200CalcClock(mode->clock/1000.0, &M, &N, &P);
-        v_out32(iob+PCLKPLL, v2kcombineNMP(N, M, P));
+        verite_out32(iob+PCLKPLL, v2kcombineNMP(N, M, P));
     }
     usleep(500);
 
     /* init the ramdac */
-    v_initdac(pScreenInfo, mode->bitsperpixel, doubleclock);
+    verite_initdac(pScreenInfo, mode->bitsperpixel, doubleclock);
 
-    v_out32(iob+CRTCHORZ, HORZ(mode->hsyncstart-mode->hdisplay, 
+    verite_out32(iob+CRTCHORZ, HORZ(mode->hsyncstart-mode->hdisplay, 
                                mode->hsyncend-mode->hsyncstart,
                                mode->htotal-mode->hsyncend,
                                mode->hdisplay));
-    v_out32(iob+CRTCVERT, VERT(mode->vsyncstart-mode->vdisplay, 
+    verite_out32(iob+CRTCVERT, VERT(mode->vsyncstart-mode->vdisplay, 
                                mode->vsyncend-mode->vsyncstart,
                                mode->vtotal-mode->vsyncend,
                                mode->vdisplay));
 
     /* fill in the mode parameters */
-    memcpy(&(pRendition->board.mode), mode, sizeof(struct v_modeinfo_t));
+    memcpy(&(pRendition->board.mode), mode, sizeof(struct verite_modeinfo_t));
     pRendition->board.mode.fifosize=128;
     pRendition->board.mode.pll_m=M;
     pRendition->board.mode.pll_n=N;
@@ -363,7 +364,7 @@ v_setmode(ScrnInfoPtr pScreenInfo, struct v_modeinfo_t *mode)
     /* Need to fix up syncs */
 
     /* enable the display */
-    v_out32(iob+CRTCCTL, CTL(0, mode->hsynchi, mode->vsynchi)
+    verite_out32(iob+CRTCCTL, CTL(0, mode->hsynchi, mode->vsynchi)
                         |mode->pixelformat
                         |CRTCCTL_VIDEOFIFOSIZE128
                         |CRTCCTL_HSYNCENABLE
@@ -381,7 +382,7 @@ v_setmode(ScrnInfoPtr pScreenInfo, struct v_modeinfo_t *mode)
 
 
 void
-v_setframebase(ScrnInfoPtr pScreenInfo, vu32 framebase)
+verite_setframebase(ScrnInfoPtr pScreenInfo, vu32 framebase)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
@@ -394,7 +395,7 @@ v_setframebase(ScrnInfoPtr pScreenInfo, vu32 framebase)
     int fifo_size=pRendition->board.mode.fifosize;
 
 #ifdef DEBUG
-    ErrorF( "Rendition: Debug v_setframebase w=%d v=%d b=%d f=%d\n", 
+    ErrorF( "Rendition: Debug verite_setframebase w=%d v=%d b=%d f=%d\n", 
         swidth, vwidth, bytespp, fifo_size);
 #endif
 
@@ -411,9 +412,9 @@ v_setframebase(ScrnInfoPtr pScreenInfo, vu32 framebase)
     /* wait for vertical retrace */
 #ifndef DEBUG
     if (!pRendition->board.init) {
-        while ((v_in32(iob+CRTCSTATUS) & CRTCSTATUS_VERT_MASK) !=
+        while ((verite_in32(iob+CRTCSTATUS) & CRTCSTATUS_VERT_MASK) !=
                CRTCSTATUS_VERT_ACTIVE) ;
-        while ((v_in32(iob+CRTCSTATUS) & CRTCSTATUS_VERT_MASK) ==
+        while ((verite_in32(iob+CRTCSTATUS) & CRTCSTATUS_VERT_MASK) ==
                CRTCSTATUS_VERT_ACTIVE) ;
     }
     else
@@ -421,17 +422,17 @@ v_setframebase(ScrnInfoPtr pScreenInfo, vu32 framebase)
 #endif
 
     /* framebase */
-    v_out32(iob+FRAMEBASEA, framebase);
+    verite_out32(iob+FRAMEBASEA, framebase);
 
     /* crtc offset */
-    v_out32(iob+CRTCOFFSET, offset&0xffff);
+    verite_out32(iob+CRTCOFFSET, offset&0xffff);
 
 }
 
 
 
 int
-v_getstride(ScrnInfoPtr pScreenInfo, int *width, vu16 *stride0, vu16 *stride1)
+verite_getstride(ScrnInfoPtr pScreenInfo, int *width, vu16 *stride0, vu16 *stride1)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     int bytesperline;
@@ -477,12 +478,12 @@ set_PLL(vu16 iob, vu32 value)
     /* shift out the 20 serial bits */
     for (b=19; b>=0; b--) {
         ulD=(value>>b)&1;
-        v_out8(iob+PLLDEV, (vu8)ulD);
+        verite_out8(iob+PLLDEV, (vu8)ulD);
     }
   
     /* read PLL device so the latch is filled with the previously 
      * written value */
-    (void)v_in8(iob+PLLDEV);
+    (void)verite_in8(iob+PLLDEV);
 }
 
 

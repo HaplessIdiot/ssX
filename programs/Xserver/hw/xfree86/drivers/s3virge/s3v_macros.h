@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.7 1999/06/12 15:37:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.8 1999/08/21 13:48:40 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -93,11 +93,17 @@ in this Software without prior written authorization from the XFree86 Project.
 #define MONO_TRANS_BUG	0x00000002
 
 
+#define MAXLOOP 0x0fffff /* timeout value for engine waits, 0.5 secs */
+
 
 #define WAITFIFO(n) if(ps3v->NoPCIRetry) \
 	 while(((INREG(SUBSYS_STAT_REG) >> 8) & 0x1f) < n){}
 
-#define WAITIDLE()  while((INREG(SUBSYS_STAT_REG) & 0x3f00) < 0x3000){}
+#define WAITIDLE()\
+  do { int loop=0; mem_barrier(); \
+         while(((INREG(SUBSYS_STAT_REG) & 0x3f00) < 0x3000) && (loop++<MAXLOOP)) \
+         if (loop >= MAXLOOP) S3VGEReset(pScrn,1,__LINE__,__FILE__); \
+  } while (0)
 
 #define CHECK_DEST_BASE(y,h)\
     if((y < ps3v->DestBaseY) || ((y + h) > (ps3v->DestBaseY + 2048))) {\

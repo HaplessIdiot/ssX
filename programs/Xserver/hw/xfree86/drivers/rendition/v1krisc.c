@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/v1krisc.c,v 1.4 1999/11/19 13:54:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/v1krisc.c,v 1.5 2000/02/25 21:03:03 dawes Exp $ */
 /*
  *
  */
@@ -72,7 +72,7 @@
 #define WRITE_SHORT	1
 #define WRITE_WORD	2
 
-#define V_MAX_POLLS	100
+#define VERITE_MAX_POLLS	100
 
 
 
@@ -80,8 +80,8 @@
  * local function prototypes
  */
 
-static void v_iopoll(vu16 port, vu32 data, vu32 mask);
-static void v_iopoll8(vu16 port, vu8 data, vu8 mask);
+static void verite_iopoll(vu16 port, vu32 data, vu32 mask);
+static void verite_iopoll8(vu16 port, vu8 data, vu8 mask);
 
 static vu32 readRF(vu16 io_base, vu8 index);
 static void writeRF(vu16 io_base, vu8 index, vu32 data);
@@ -151,39 +151,41 @@ v1k_stop(ScrnInfoPtr pScreenInfo)
   vu16 STATUS = 0x4A;   /* v2x00 io register offset */
   int c;
 
-  debugreg=v_in8(io_base+DEBUGREG);
+  debugreg=verite_in8(io_base+DEBUGREG);
 
   if (pRendition->board.chip == V2000_DEVICE){
     c=0;
     do {
-/*      if(!(c%10000))ErrorF("#S1# !0x%x! -- ",v_in8((vu16)(io_base+STATUS))); */
-      statusreg = v_in8((vu16)(io_base+STATUS));
+/*      if(!(c%10000))ErrorF("#S1# !0x%x! -- ",verite_in8((vu16)(io_base+STATUS))); */
+      statusreg = verite_in8((vu16)(io_base+STATUS));
       if ((statusreg & 0x8C) == 0x8C)
 	break;
     } while (c++<0xfffff);
     if (c >= 0xfffff)
-      ErrorF ("RENDITION: Status timeout (1)\n");
+      xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+		 ("Status timeout (1)\n"));
 
-    v_out8(io_base+DEBUGREG, debugreg|HOLDRISC);
+    verite_out8(io_base+DEBUGREG, debugreg|HOLDRISC);
 
     if (pRendition->board.chip == V2000_DEVICE){
       c=0;
       do {
-/*	if(!(c%10000))ErrorF("#S2# !0x%x! -- ",v_in8((vu16)(io_base+STATUS))); */
-	statusreg = v_in8((vu16)(io_base+STATUS));
+/*	if(!(c%10000))ErrorF("#S2# !0x%x! -- ",verite_in8((vu16)(io_base+STATUS))); */
+	statusreg = verite_in8((vu16)(io_base+STATUS));
 	if (statusreg & HOLDRISC) break;
       } while (c++<0xfffff);
       if (c >= 0xfffff)
-	ErrorF ("RENDITION: Status timeout (2)\n");
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+		   ("Status timeout (2)\n"));
     }
   }   
   else {
     /* V1000 stop */
-    v_out8(io_base+DEBUGREG, debugreg|HOLDRISC);
+    verite_out8(io_base+DEBUGREG, debugreg|HOLDRISC);
 
-    v_iopoll(io_base+STATEDATA, 0, 0); /* short pause */
-    v_iopoll(io_base+STATEDATA, 0, 0); /* short pause */
-    v_iopoll(io_base+STATEDATA, 0, 0); /* short pause */
+    verite_iopoll(io_base+STATEDATA, 0, 0); /* short pause */
+    verite_iopoll(io_base+STATEDATA, 0, 0); /* short pause */
+    verite_iopoll(io_base+STATEDATA, 0, 0); /* short pause */
   }
 }
 
@@ -250,32 +252,32 @@ v1k_softreset(ScrnInfoPtr pScreenInfo)
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
   vu16 io_base=pRendition->board.io_base;
 
-  v_out8(io_base+DEBUGREG, SOFTRESET|HOLDRISC);
-  v_out8(io_base+STATEINDEX, STATEINDEX_PC);
-  v_iopoll(io_base+STATEDATA, 0, 0xffffffff);
-  v_iopoll(io_base+STATEDATA, 0, 0xffffffff);
-  v_iopoll(io_base+STATEDATA, 0, 0xffffffff);
+  verite_out8(io_base+DEBUGREG, SOFTRESET|HOLDRISC);
+  verite_out8(io_base+STATEINDEX, STATEINDEX_PC);
+  verite_iopoll(io_base+STATEDATA, 0, 0xffffffff);
+  verite_iopoll(io_base+STATEDATA, 0, 0xffffffff);
+  verite_iopoll(io_base+STATEDATA, 0, 0xffffffff);
 
-  v_out8(io_base+DEBUGREG, HOLDRISC);
-  v_iopoll(io_base+STATEDATA, 0, 0);
-  v_iopoll(io_base+STATEDATA, 0, 0);
-  v_iopoll(io_base+STATEDATA, 0, 0);
+  verite_out8(io_base+DEBUGREG, HOLDRISC);
+  verite_iopoll(io_base+STATEDATA, 0, 0);
+  verite_iopoll(io_base+STATEDATA, 0, 0);
+  verite_iopoll(io_base+STATEDATA, 0, 0);
 
   /* turn icache on */
   risc_forcestep(io_base, LI_INSTR(LI_OP, RISC_RA, ICACHE_ONOFF_MASK&0xffff));
   risc_forcestep(io_base, INT_INSTR(ADDIFI_OP, RISC_FLAG, RISC_RA, 
                                     ICACHE_ONOFF_MASK>>16));
   /* clear any interrupts */
-  v_out8(io_base+INTR, 0xff);
+  verite_out8(io_base+INTR, 0xff);
   /* byte swap mode=word */
-  v_out8(io_base+MEMENDIAN, MEMENDIAN_NO);	
+  verite_out8(io_base+MEMENDIAN, MEMENDIAN_NO);	
 }
 
 
 
 /*
 void
-v1k_getriscprocs(v_board_desc *boardDesc)
+v1k_getriscprocs(verite_board_desc *boardDesc)
 {
     boardDesc->risc_procs.risc_softreset = v1krisc_softreset;
     boardDesc->risc_procs.risc_flushicache = v1krisc_flushicache;
@@ -293,32 +295,32 @@ v1k_getriscprocs(v_board_desc *boardDesc)
  */
 
 /* 
- * static void v_iopoll(vu16 port, vu32 data, vu32 mask)
+ * static void verite_iopoll(vu16 port, vu32 data, vu32 mask)
  *
- * Loop on IO read until expected data is read or V_MAX_POLLS is reached.
+ * Loop on IO read until expected data is read or VERITE_MAX_POLLS is reached.
  */
 static void
-v_iopoll(vu16 port, vu32 data, vu32 mask)
+verite_iopoll(vu16 port, vu32 data, vu32 mask)
 {
   vu32 c, d;
 
   c=0;
   do {
     c++;
-    if (((d=v_in32(port))&mask) == (data&mask))
+    if (((d=verite_in32(port))&mask) == (data&mask))
       break;
-  } while (c <= V_MAX_POLLS);
+  } while (c <= VERITE_MAX_POLLS);
 }
 
 
 
 /* 
- * static void v_iopoll8(vu16 port, vu8 data, vu8 mask)
+ * static void verite_iopoll8(vu16 port, vu8 data, vu8 mask)
  *
- * Loop on IO read until expected data is read or V_MAX_POLLS is reached.
+ * Loop on IO read until expected data is read or VERITE_MAX_POLLS is reached.
  */
 static void
-v_iopoll8(vu16 port, vu8 data, vu8 mask)
+verite_iopoll8(vu16 port, vu8 data, vu8 mask)
 {
   vu32 c;
   vu8 d;
@@ -326,9 +328,9 @@ v_iopoll8(vu16 port, vu8 data, vu8 mask)
   c=0;
   do {
 	c++;
-	if (((d=v_in8(port))&mask) == (data&mask))
+	if (((d=verite_in8(port))&mask) == (data&mask))
 	  break;
-  } while (c <= V_MAX_POLLS);
+  } while (c <= VERITE_MAX_POLLS);
 }
 
 
@@ -344,27 +346,27 @@ readRF(vu16 io_base, vu8 index)
   vu32 data, instr;
   vu8 debug, stateindex;
     
-  debug=v_in8(io_base+DEBUGREG);
-  stateindex=v_in8(io_base+STATEINDEX);
+  debug=verite_in8(io_base+DEBUGREG);
+  stateindex=verite_in8(io_base+STATEINDEX);
 
   /* force RISC instruction: add zero,zero,index
    * S1 reg address = reg index to read
    * write to the DEC_IR, but no need to step it! */
-  v_out8(io_base+DEBUGREG, debug|HOLDRISC);
+  verite_out8(io_base+DEBUGREG, debug|HOLDRISC);
 
   instr=INT_INSTR(ADD_OP, 0, 0, index);
-  v_out32(io_base+STATEDATA, instr);
+  verite_out32(io_base+STATEDATA, instr);
 
   /* wait for instruction to get to RISC IR. */
-  v_out8(io_base+STATEINDEX, STATEINDEX_IR);  /* point at DEC_IR */
-  v_iopoll(io_base+STATEDATA, instr, 0xffffffff);
+  verite_out8(io_base+STATEINDEX, STATEINDEX_IR);  /* point at DEC_IR */
+  verite_iopoll(io_base+STATEDATA, instr, 0xffffffff);
 
-  v_out8(io_base+STATEINDEX, STATEINDEX_S1);  /* point at RISCS1 */
-  v_iopoll(io_base+STATEINDEX, 0, 0);         /* short pause */
-  data=v_in32(io_base+STATEDATA);             /* read RF */
+  verite_out8(io_base+STATEINDEX, STATEINDEX_S1);  /* point at RISCS1 */
+  verite_iopoll(io_base+STATEINDEX, 0, 0);         /* short pause */
+  data=verite_in32(io_base+STATEDATA);             /* read RF */
     
-  v_out8(io_base+STATEINDEX, stateindex);     /* restore state_index */
-  v_out8(io_base+DEBUGREG, debug);            /* restore debug */
+  verite_out8(io_base+STATEINDEX, stateindex);     /* restore state_index */
+  verite_out8(io_base+DEBUGREG, debug);            /* restore debug */
     
   return data;
 }
@@ -472,11 +474,11 @@ risc_step(vu16 io_base, vu32 count)
   /* RISC is already held; just single step it */
     
   for (c=0; c<count; c++) {
-    debugreg=v_in8(io_base+DEBUGREG);
-    v_out8(io_base+DEBUGREG, debugreg|STEPRISC); 
+    debugreg=verite_in8(io_base+DEBUGREG);
+    verite_out8(io_base+DEBUGREG, debugreg|STEPRISC); 
     
     for (d=0; d<1000; d++)
-      if(0 == (v_in8(io_base+DEBUGREG)&STEPRISC))
+      if(0 == (verite_in8(io_base+DEBUGREG)&STEPRISC))
 		break;
 
     if (1000 == d)
@@ -498,21 +500,21 @@ risc_forcestep(vu16 io_base, vu32 instruction)
   vu8 debugreg, stateindex;
     
     
-  debugreg=v_in8(io_base+DEBUGREG);
-  stateindex=v_in8(io_base+STATEINDEX);
-  v_out8(io_base+STATEINDEX, STATEINDEX_IR);
-  v_iopoll8(io_base+STATEINDEX, STATEINDEX_IR, 0xff);    /* wait */
-  v_out32(io_base+STATEDATA, instruction);               /* load instruction */
-  v_iopoll(io_base+STATEDATA, instruction, 0xffffffff);  /* wait */
-  v_out8(io_base+DEBUGREG, debugreg|HOLDRISC|STEPRISC);  /* step */
-  v_iopoll(io_base+STATEDATA, 0, 0);                     /* short pause */
+  debugreg=verite_in8(io_base+DEBUGREG);
+  stateindex=verite_in8(io_base+STATEINDEX);
+  verite_out8(io_base+STATEINDEX, STATEINDEX_IR);
+  verite_iopoll8(io_base+STATEINDEX, STATEINDEX_IR, 0xff);    /* wait */
+  verite_out32(io_base+STATEDATA, instruction);               /* load instruction */
+  verite_iopoll(io_base+STATEDATA, instruction, 0xffffffff);  /* wait */
+  verite_out8(io_base+DEBUGREG, debugreg|HOLDRISC|STEPRISC);  /* step */
+  verite_iopoll(io_base+STATEDATA, 0, 0);                     /* short pause */
     
-  for (c=0; c<V_MAX_POLLS; c++)
-    if (HOLDRISC == (v_in8(io_base+DEBUGREG) & (HOLDRISC|STEPRISC)))
+  for (c=0; c<VERITE_MAX_POLLS; c++)
+    if (HOLDRISC == (verite_in8(io_base+DEBUGREG) & (HOLDRISC|STEPRISC)))
       break;
 
   /* restore */
-  v_out8(io_base+STATEINDEX, stateindex);
+  verite_out8(io_base+STATEINDEX, stateindex);
 }
 
 
@@ -527,9 +529,9 @@ risc_continue(vu16 io_base)
 {
   vu8 debugreg;
 
-  debugreg=v_in8(io_base+DEBUGREG);
-  v_out8(io_base+DEBUGREG, debugreg&(~HOLDRISC));
-  v_iopoll(io_base+STATEDATA, 0, 0);    /* short pause */
+  debugreg=verite_in8(io_base+DEBUGREG);
+  verite_out8(io_base+DEBUGREG, debugreg&(~HOLDRISC));
+  verite_iopoll(io_base+STATEDATA, 0, 0);    /* short pause */
 }
 
 

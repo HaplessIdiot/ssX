@@ -4,57 +4,170 @@
 
 #include "sis.h"
 #include "sis_regs.h"
-
-#define	LCD_DISABLE		0x00000000
-#define	LCD_ENABLE		0x00000001
-#define	PANEL_LINK		0x00000002
-#define	LCD_SCALED		0x00000004
-#define	SIS_VB_301		0x00010000
-#define	SIS_VB_LVDS		0x00020000
+#include "sis_lcd.h"
 
 
-static Bool	SiS530LCDModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
-static void	SiS530LCDSave(void);
-static void	SiS530LCDRestore(void);
-static Bool	SiS301LCDModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
-static void	SiS301LCDSave(void);
-static void	SiS301LCDRestore(void);
-static Bool	SiSLVDSModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
-static void	SiSLVDSSave(void);
-static void	SiSLVDSRestore(void);
 
+static	Bool	SIS301LCDInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+
+
+static	int	XYToRes(int x, int y);
+static	int	BppToColor(int bpp);
 
 static Bool
-SiS301LCDModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
+SIS301LCDInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
-	SISPtr	pSiS = SISPTR(pScrn);
+	SISPtr pSiS = SISPTR(pScrn);
+	SISRegPtr	sisReg = &pSiS->ModeReg;
+	int	res, color;
+	unsigned short	offset, Threshold_Low, Threshold_High;
 
-	return TRUE;
+	if (mode->Flags & V_INTERLACE)
+		res = XYToRes(mode->CrtcHDisplay, mode->CrtcVDisplay*2);
+	else
+		res = XYToRes(mode->CrtcHDisplay, mode->CrtcVDisplay);
+	color = BppToColor(pScrn->bitsPerPixel);
+	if ((res == -1) || (color == -1))
+		return FALSE;
+
+	switch (pSiS->VBFlags & LCD_TYPE)  {
+	case LCD_1024x768:
+		if (mode->CrtcHDisplay > 1024)
+			return FALSE;
+		memcpy(sisReg->VBPart1, sis301_PANEL_1024[res].VBPart1, 0x29);
+		memcpy(sisReg->VBPart2, sis301_PANEL_1024[res].VBPart2, 0x46);
+		memcpy(sisReg->VBPart3, sis301_PANEL_1024[res].VBPart3, 0x3F);
+		memcpy(sisReg->VBPart4, sis301_PANEL_1024[res].VBPart4, 0x1C);
+		break;
+	case LCD_1280x1024:
+		if (mode->CrtcHDisplay > 1280)
+			return FALSE;
+/*
+		memcpy(sisReg->VBPart1, sis301_PANEL_1024[res].VBPart1, 0x29);
+		memcpy(sisReg->VBPart2, sis301_PANEL_1024[res].VBPart2, 0x46);
+		memcpy(sisReg->VBPart3, sis301_PANEL_1024[res].VBPart3, 0x3F);
+		memcpy(sisReg->VBPart4, sis301_PANEL_1024[res].VBPart4, 0x1C);
+*/
+		break;
+	case LCD_800x600:
+	default:
+		if (mode->CrtcHDisplay > 800)
+			return FALSE;
+/*
+		memcpy(sisReg->VBPart1, sis301_VESA[res].VBPart1, 0x29);
+		memcpy(sisReg->VBPart2, sis301_VESA[res].VBPart2, 0x46);
+		memcpy(sisReg->VBPart3, sis301_VESA[res].VBPart3, 0x3F);
+		memcpy(sisReg->VBPart4, sis301_VESA[res].VBPart4, 0x1C);
+*/
+	}
+	sisReg->VBPart2[0x00] &= ~0x20;	/* Temp Disable VB Processor */
+
+	sisReg->VBPart1[0x00] &= ~GENMASK(4:0);
+	sisReg->VBPart4[0x0d] &= ~GENMASK(4:3);
+	switch (pScrn->bitsPerPixel)  {
+	case 8:
+		sisReg->VBPart4[0x0d] |=0x10;
+		sisReg->VBPart1[0] |= 0x10;
+		break;
+	case 16:
+		if (pScrn->depth==15)
+			sisReg->VBPart1[0] |= 0x08;
+		else
+			sisReg->VBPart1[0] |= 0x04;
+		break;
+	case 24:
+		sisReg->VBPart1[0] |= 0x02;
+		break;
+	case 32:
+		sisReg->VBPart1[0] |= 0x01;
+		break;
+	default:
+		return FALSE;
+	}
+	offset = pSiS->scrnOffset >> 3;		/* Scrn Offset */
+	sisReg->VBPart1[0x07] = GETVAR8(offset);	
+	sisReg->VBPart1[0x09] &= 0xF0;
+	sisReg->VBPart1[0x09] |= GETBITS(offset, 11:8);
+
+	sisReg->VBPart1[3] = (offset >> 3)+1;	/* CRT2 FIFO Stop */
+
+	(*pSiS->SetThreshold2)(pScrn, mode, &Threshold_Low, &Threshold_High);
+	sisReg->VBPart1[1] &= ~GENMASK(4:0);
+	sisReg->VBPart1[1] |= GETBITS(Threshold_High, 4:0);
+	sisReg->VBPart1[2] &= ~GENMASK(4:0);
+	sisReg->VBPart1[2] |= GETBITS(Threshold_Low, 4:0);
+
+	sisReg->sisRegs3D4[0x30] |= 0x01;	/* Set Needed Scratch Regs */
+	sisReg->sisRegs3D4[0x31] &= ~0x02;
+	sisReg->sisRegs3D4[0x31] |= 0x40;
+
+	return	TRUE;
 }
 
+static int
+BppToColor(int bpp)
+{
+	if (bpp == 8)	return 0;
+	if (bpp == 15)	return 1;
+	if (bpp == 16)	return 2;
+	if (bpp == 24)	return 3;
+	if (bpp == 32)	return 4;
+	return -1;
+}
 
-void SiSLCDPreInit(ScrnInfoPtr pScrn)
+static int
+XYToRes(int x, int y)
+{
+	if (x==640 && y==480)  {
+		return 0;
+	}
+	if (x==800 && y==600)  {
+		return 1;
+	}
+	if (x==1024 && y==768)  {
+		return 2;
+	}
+	if (x==1280 && y==1024)  {
+		return 3;
+	}
+	return -1;
+}
+
+static void
+SIS300_LCDPreInit(ScrnInfoPtr pScrn)
 {
 	SISPtr	pSiS = SISPTR(pScrn);
 	int	temp;
 
-	pSiS->LCDFlags = LCD_DISABLE;
 
-	switch(pSiS->Chipset)  {
-	case PCI_CHIP_SIS530:
-		break;
+	inSISIDXREG(pSiS->RelIO+SROFFSET, 0x38, temp);
+	if (!(temp & 0x20))
+		return;
+
+	inSISIDXREG(pSiS->RelIO+CROFFSET, 0x30, temp);
+	if (!(temp & 0x20))
+		return;
+
+	inSISIDXREG(pSiS->RelIO+CROFFSET, 0x36, temp);
+	if (temp == 1)
+		pSiS->VBFlags = CRT2_LCD | LCD_800x600;
+	if (temp == 2)
+		pSiS->VBFlags = CRT2_LCD | LCD_1024x768;
+	if (temp == 3)
+		pSiS->VBFlags = CRT2_LCD | LCD_1280x1024;
+	pSiS->ModeInit2 = SIS301LCDInit;
+}
+
+void
+SISLCDPreInit(ScrnInfoPtr pScrn)
+{
+	SISPtr	pSiS = SISPTR(pScrn);
+
+	switch (pSiS->Chipset) {
 	case PCI_CHIP_SIS300:
 	case PCI_CHIP_SIS630:
 	case PCI_CHIP_SIS540:
-		inSISIDXREG(pSiS->RelIO+SROFFSET, 0x38, temp);
-		if (!(temp & 0x20))
-			break;
-		inSISIDXREG(pSiS->RelIO+CROFFSET, 0x32, temp);
-		if (!(temp & 0x08))
-			break;
-		pSiS->LCDFlags = LCD_ENABLE;
-		
-		pSiS->ModeInit2 = SiS301LCDModeInit;
+		SIS300_LCDPreInit(pScrn);
 		break;
 	}
 }

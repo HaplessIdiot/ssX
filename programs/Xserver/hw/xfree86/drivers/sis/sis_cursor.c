@@ -25,7 +25,7 @@
  *	     Mitani Hiroshi <hmitani@drl.mei.co.jp>
  *	     David Thomas <davtom@dream.org.uk>.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.1 2000/02/12 20:45:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.2 2000/02/14 19:20:52 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -39,12 +39,12 @@
 static void
 SiSShowCursor(ScrnInfoPtr pScrn)
 {
-	unsigned char temp;
+        unsigned char temp;
 
-	outw(VGA_SEQ_INDEX, 0x8605);	/* Unlock Registers */
-	outb(VGA_SEQ_INDEX, 0x06);
-	temp = inb(VGA_SEQ_DATA) | 0x40;
-	outb(VGA_SEQ_DATA, temp);
+        outw(VGA_SEQ_INDEX, 0x8605);    /* Unlock Registers */
+        outb(VGA_SEQ_INDEX, 0x06);
+        temp = inb(VGA_SEQ_DATA) | 0x40;
+        outb(VGA_SEQ_DATA, temp);
 }
 
 static void
@@ -53,7 +53,7 @@ SiS300ShowCursor(ScrnInfoPtr pScrn)
 	SISPtr	pSiS = SISPTR(pScrn);
 
 	sis300EnableHWCursor()
-	if (pSiS->VBFlags)  {
+	if (pSiS->VBFlags & CRT2_ENABLE)  {
 		sis301EnableHWCursor();
 	}
 }
@@ -61,12 +61,12 @@ SiS300ShowCursor(ScrnInfoPtr pScrn)
 static void
 SiSHideCursor(ScrnInfoPtr pScrn)
 {
-	unsigned char temp;
+        unsigned char temp;
 
-	outw(VGA_SEQ_INDEX, 0x8605);	/* Unlock Registers */
-	outb(VGA_SEQ_INDEX, 0x06);
-	temp = inb(VGA_SEQ_DATA) & 0xBF;
-	outb(VGA_SEQ_DATA, temp);
+        outw(VGA_SEQ_INDEX, 0x8605);    /* Unlock Registers */
+        outb(VGA_SEQ_INDEX, 0x06);
+        temp = inb(VGA_SEQ_DATA) & 0xBF;
+        outb(VGA_SEQ_DATA, temp);
 }
 
 static void
@@ -75,7 +75,7 @@ SiS300HideCursor(ScrnInfoPtr pScrn)
 	SISPtr	pSiS = SISPTR(pScrn);
 
 	sis300DisableHWCursor()
-	if (pSiS->VBFlags)  {
+	if (pSiS->VBFlags & CRT2_ENABLE)  {
 		sis301DisableHWCursor()
 	}
 }
@@ -125,8 +125,8 @@ SiS300SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 	}
 	sis300SetCursorPositionX(x, x_preset)
 	sis300SetCursorPositionY(y, y_preset)
-	if (pSiS->VBFlags)  {
-		sis301SetCursorPositionX(x, x_preset)
+	if (pSiS->VBFlags & CRT2_ENABLE)  {
+		sis301SetCursorPositionX(x+13, x_preset)
 		sis301SetCursorPositionY(y, y_preset)
 	}
 }
@@ -161,7 +161,7 @@ SiS300SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 
 	sis300SetCursorBGColor(bg)
 	sis300SetCursorFGColor(fg)
-	if (pSiS->VBFlags)  {
+	if (pSiS->VBFlags & CRT2_ENABLE)  {
 		sis301SetCursorBGColor(bg)
 		sis301SetCursorFGColor(fg)
 	}
@@ -187,19 +187,19 @@ SiSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 	/* if set, store the bit [22] to SR3E */
 	if (cursor_addr & 0x1000) {
 		outb(VGA_SEQ_INDEX, 0x3E);
-		temp = inb(VGA_SEQ_DATA) | 0x04;
-		outb(VGA_SEQ_DATA, temp);
+                temp = inb(VGA_SEQ_DATA) | 0x04;
+                outb(VGA_SEQ_DATA, temp);
 	}
 
 	/* set HW cursor pattern, use pattern 0xF */
 	outb(VGA_SEQ_INDEX, 0x1E);
-	temp = inb(VGA_SEQ_DATA) | 0xF0;
-	outb(VGA_SEQ_DATA, temp);
+        temp = inb(VGA_SEQ_DATA) | 0xF0;
+        outb(VGA_SEQ_DATA, temp);
 
 	/* disable the hardware cursor side pattern */
 	outb(VGA_SEQ_INDEX, 0x1E);
-	temp = inb(VGA_SEQ_DATA) & 0xF7;
-	outb(VGA_SEQ_DATA, temp);
+        temp = inb(VGA_SEQ_DATA) & 0xF7;
+        outb(VGA_SEQ_DATA, temp);
 }
 
 static void
@@ -216,7 +216,7 @@ SiS300LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 	memcpy((unsigned char *)pSiS->FbBase + cursor_addr * 1024, src, 1024);
 	sis300SetCursorAddress(cursor_addr)
 	sis300SetCursorPatternSelect(0)
-	if (pSiS->VBFlags)  {
+	if (pSiS->VBFlags & CRT2_ENABLE)  {
 		sis301SetCursorAddress(cursor_addr)
 		sis301SetCursorPatternSelect(0)
 	}
@@ -232,13 +232,17 @@ static Bool
 SiS300UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-	SISPtr pSiS = SISPTR(pScrn);
+	DisplayModePtr 	mode = pScrn->currentMode;
+	SISPtr	pSiS = SISPTR(pScrn);
 
-	if ( (pSiS->Chipset==PCI_CHIP_SIS540) ||
-		!(pScrn->currentMode->Flags & V_INTERLACE) )
-		return TRUE;
-	else
-		return FALSE;
+	switch (pSiS->Chipset)  {
+	case PCI_CHIP_SIS300:
+	case PCI_CHIP_SIS630:
+		if (mode->Flags & V_INTERLACE)
+			return FALSE;
+		break;
+	}
+	return TRUE;
 }
 
 #ifdef	IMP_REALIZE_CURSOR

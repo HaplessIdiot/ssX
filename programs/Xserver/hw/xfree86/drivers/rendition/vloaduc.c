@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.9 2000/01/18 16:35:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.10 2000/02/25 21:03:04 dawes Exp $ */
 /*
  * includes
  */
@@ -45,7 +45,7 @@ static void mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr);
  */
 
 /* 
- * int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
+ * int verite_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
  *
  * Loads verite elf file microcode file in |name| onto the board.
  * NOTE: Assumes the ucode loader is already running on the board!
@@ -53,7 +53,7 @@ static void mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr);
  * Returns the program's entry point, on error -1;
  */
 int
-v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
+verite_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
 {
   /* renditionPtr pRendition = RENDITIONPTR(pScreenInfo); */
 
@@ -64,7 +64,7 @@ v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
   Elf32_Shdr *pshdr, *orig_pshdr=NULL;
   Elf32_Ehdr ehdr ;
 
-#if 1 /* DEBUG */
+#if DEBUG
   ErrorF("RENDITION: Loading microcode %s\n", file_name); 
 #endif
 
@@ -188,7 +188,7 @@ loadSegment2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Phdr *phdr)
   }
 
   if (read(fd, data, size) != size){
-	ErrorF("RENDITION: v_readfile Failure, couldn't read %x bytes ", size);
+	ErrorF("RENDITION: verite_readfile Failure, couldn't read %x bytes ", size);
 	return;
   }
 
@@ -223,8 +223,8 @@ mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr)
   vu8 *vmb=pRendition->board.vmem_base;
 
   /* swap bytes 3<>0, 2<>1 */
-  memend=v_in8(pRendition->board.io_base+MEMENDIAN);
-  v_out8(pRendition->board.io_base+MEMENDIAN, MEMENDIAN_END);
+  memend=verite_in8(pRendition->board.io_base+MEMENDIAN);
+  verite_out8(pRendition->board.io_base+MEMENDIAN, MEMENDIAN_END);
 
   dataout=(vu32 *)data;
 
@@ -232,13 +232,13 @@ mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr)
   v1k_stop(pScreenInfo);
 
   while (size > 0) {
-    v_write_memory32(vmb, phys_addr, *dataout);
+    verite_write_memory32(vmb, phys_addr, *dataout);
         phys_addr+=4;
         dataout++;
 	size-=4;
   }
 
-  v_out8(pRendition->board.io_base+MEMENDIAN, memend);
+  verite_out8(pRendition->board.io_base+MEMENDIAN, memend);
 }
 
 /*

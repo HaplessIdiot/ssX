@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/hwcursor.c,v 1.4 1999/11/19 13:54:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/hwcursor.c,v 1.6 2000/02/25 21:03:00 dawes Exp $ */
 /*
  * includes
  */
@@ -138,11 +138,11 @@ RENDITIONShowCursor(ScrnInfoPtr pScreenInfo)
 #endif
 
     /* enable cursor - X11 mode */
-    v_enablecursor(pScreenInfo, V_3COLORS,
+    verite_enablecursor(pScreenInfo, VERITE_3COLORS,
 #ifdef BIGCURSOR
-        V_CURSOR64
+        VERITE_CURSOR64
 #else 
-        V_CURSOR32
+        VERITE_CURSOR32
 #endif
         );
 }
@@ -157,7 +157,7 @@ RENDITIONHideCursor(ScrnInfoPtr pScreenInfo)
 #endif
 
     /* Disable cursor */
-    v_enablecursor(pScreenInfo, V_NOCURSOR, 0);
+    verite_enablecursor(pScreenInfo, VERITE_NOCURSOR, 0);
 }
 
 
@@ -169,7 +169,7 @@ RENDITIONSetCursorPosition(ScrnInfoPtr pScreenInfo, int x, int y)
     ErrorF( "RENDITION: SetCursorPosition(%d, %d) called\n", x, y);
 #endif
 
-    v_movecursor(pScreenInfo, x, y, 1 /* xorigin */, 1 /* yorigin */);
+    verite_movecursor(pScreenInfo, x, y, 1 /* xorigin */, 1 /* yorigin */);
 }
 
 
@@ -181,7 +181,7 @@ RENDITIONSetCursorColors(ScrnInfoPtr pScreenInfo, int bg, int fg)
     ErrorF( "RENDITION: SetCursorColors(%x, %x) called\n", fg, bg);
 #endif
 
-    v_setcursorcolor(pScreenInfo, bg, fg);
+    verite_setcursorcolor(pScreenInfo, bg, fg);
 }
 
 
@@ -192,11 +192,11 @@ RENDITIONLoadCursorImage(ScrnInfoPtr pScreenInfo, unsigned char* src)
 #ifdef DEBUG
     ErrorF( "RENDITION: loadcursor called\n");
 #endif
-    v_loadcursor(pScreenInfo,
+    verite_loadcursor(pScreenInfo,
 #ifdef BIGCURSOR
-        V_CURSOR64, 
+        VERITE_CURSOR64, 
 #else
-        V_CURSOR32, 
+        VERITE_CURSOR32, 
 #endif
         (vu8 *)src);
 }

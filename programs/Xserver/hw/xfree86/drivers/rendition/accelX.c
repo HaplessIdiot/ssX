@@ -3,7 +3,7 @@
  *
  * accelerator functions for X
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/accelX.c,v 1.5 2000/01/18 16:35:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/accelX.c,v 1.6 2000/02/25 21:02:59 dawes Exp $ */
 
 
 
@@ -36,17 +36,17 @@ char MICROCODE_DIR [PATH_MAX] = MODULEDIR;
 
 
 #define waitfifo(size)  do { int c=0; \
-                          while ((c++<0xfffff)&&((v_in8(iob+FIFOINFREE)&0x1f)<size)) /* if(!(c%0xffff))ErrorF("#1# !0x%x! -- ",v_in8(iob+FIFOINFREE)) */; \
+                          while ((c++<0xfffff)&&((verite_in8(iob+FIFOINFREE)&0x1f)<size)) /* if(!(c%0xffff))ErrorF("#1# !0x%x! -- ",verite_in8(iob+FIFOINFREE)) */; \
                           if (c >= 0xfffff) { \
-                              ErrorF("RENDITION: Input fifo full (1) FIFO in == %d\n",v_in8(iob+FIFOINFREE)&0x1f); \
+                              ErrorF("RENDITION: Input fifo full (1) FIFO in == %d\n",verite_in8(iob+FIFOINFREE)&0x1f); \
                               return; \
                           } \
                         } while (0)
 
 #define waitfifo2(size, rv) do { int c=0; \
-                          while ((c++<0xfffff)&&((v_in8(iob+FIFOINFREE)&0x1f)<size)) /* if(!(c%0xffff))ErrorF("#2# !0x%x! -- ",v_in8(iob+FIFOINFREE)) */; \
+                          while ((c++<0xfffff)&&((verite_in8(iob+FIFOINFREE)&0x1f)<size)) /* if(!(c%0xffff))ErrorF("#2# !0x%x! -- ",verite_in8(iob+FIFOINFREE)) */; \
                           if (c >= 0xfffff) { \
-                              ErrorF("RENDITION: Input fifo full (2) FIFO in ==%d\n",v_in8(iob+FIFOINFREE)&0x1f); \
+                              ErrorF("RENDITION: Input fifo full (2) FIFO in ==%d\n",verite_in8(iob+FIFOINFREE)&0x1f); \
                               RENDITIONAccelNone(pScreenInfo); \
                               pRendition->board.accel=0; \
                               return rv; \
@@ -137,25 +137,29 @@ RENDITIONAccelPreInit(ScrnInfoPtr pScreenInfo)
 
 #if 1 /* Test */
     if (V1000_DEVICE == pRendition->board.chip){
-      c=v_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
+      c=verite_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
     }
     else {
       /* V2x00 chip */
-      c=v_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v20002d.uc"));
+      c=verite_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v20002d.uc"));
     }
 
     if (c == -1) {
-      ErrorF( "RENDITION: Microcode loading failed !!!\n");
+      xf86DrvMsg(pScreenInfo->scrnIndex,X_ERROR, 
+		 "Microcode loading failed !!!\n");
       return;
     }
 
     pRendition->board.ucode_entry=c;
 
+#ifdef DEBUG
     ErrorF("UCode_Entry == 0x%x\n",pRendition->board.ucode_entry);
 #endif
+#endif
+
+    pRendition->board.fbOffset += MC_SIZE;
 
 #ifdef DEBUG
-    pRendition->board.fbOffset += MC_SIZE;
     ErrorF("RENDITION: Offset is now %d\n",pRendition->board.fbOffset);
     sleep(2);
 #endif
@@ -180,7 +184,8 @@ RENDITIONAccelXAAInit(ScreenPtr pScreen)
     pRendition->AccelInfoRec = pXAAinfo = XAACreateInfoRec();
 
     if(!pXAAinfo){
-      ErrorF("RENDITION; Failed to set up XAA structure!\n");
+      xf86DrvMsg(pScreenInfo->scrnIndex,X_ERROR,
+		 ("Failed to set up XAA structure!\n"));
       return;
     }
 
@@ -220,15 +225,16 @@ RENDITIONAccelXAAInit(ScreenPtr pScreen)
 
 #if 1 /* Testingcode */
     if (V1000_DEVICE == pRendition->board.chip){
-      c=v_load_ucfile(pScreenInfo, MICROCODE_DIR);
+      c=verite_load_ucfile(pScreenInfo, MICROCODE_DIR);
     }
     else {
       /* V2x00 chip */
-      c=v_load_ucfile(pScreenInfo, MICROCODE_DIR);
+      c=verite_load_ucfile(pScreenInfo, MICROCODE_DIR);
     }
 
     if (c == -1) {
-      ErrorF( "RENDITION: Microcode loading failed !!!\n");
+      xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+		 "Microcode loading failed !!!\n");
       return;
     }
 
@@ -236,8 +242,8 @@ RENDITIONAccelXAAInit(ScreenPtr pScreen)
 #endif
     if (RENDITIONInitUcode(pScreenInfo)) return;
 
-    v_check_csucode(pScreenInfo);
-    /* the remaining code was copied from s3v_accel.c.
+    verite_check_csucode(pScreenInfo);
+    /* the remaining code was copied from s3verite_accel.c.
      * we need to check it if it is suitable <ml> */
 
     /* make sure offscreen pixmaps aren't bigger than our address space */
@@ -313,7 +319,7 @@ RENDITIONLoadUcode(ScrnInfoPtr pScreenInfo)
 
     /* load or restore ucode */
     if (!ucode_loaded) {
-      if (0 != v_initboard(pScreenInfo)) {
+      if (0 != verite_initboard(pScreenInfo)) {
             RENDITIONAccelNone(pScreenInfo);
             pRendition->board.accel=0;
             return 1;
@@ -323,8 +329,8 @@ RENDITIONLoadUcode(ScrnInfoPtr pScreenInfo)
     else
         RENDITIONRestoreUcode(pScreenInfo);
 
-    ErrorF("RENDITION: Ucode successfully %s\n", 
-        (ucode_loaded ? "restored" : "loaded"));
+    ErrorF ("Rendition: Ucode successfully %s\n", 
+		(ucode_loaded ? "restored" : "loaded"));
 
     ucode_loaded=1;
     return 0;
@@ -337,25 +343,28 @@ RENDITIONInitUcode(ScrnInfoPtr pScreenInfo)
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     vu16 iob = pRendition->board.io_base;
 
-    if (0 == v_getstride(pScreenInfo, NULL,
+    if (0 == verite_getstride(pScreenInfo, NULL,
 			 &pRendition->board.mode.stride0, 
                          &pRendition->board.mode.stride1)) {
-        ErrorF("RENDITION: Acceleration for this resolution not available\n");
+      xf86DrvMsg(pScreenInfo->scrnIndex,X_ERROR,
+		   ("Acceleration for this resolution not available\n"));
         RENDITIONAccelNone(pScreenInfo);
         pRendition->board.accel=0;
         return 1;
     }
     else
-        ErrorF("RENDITION: Stride 0: %d, stride 1: %d\n",
-	       pRendition->board.mode.stride0, 
-	       pRendition->board.mode.stride1);
+      ErrorF ("Rendition: Stride 0: %d, stride 1: %d\n",
+	      pRendition->board.mode.stride0, 
+	      pRendition->board.mode.stride1);
 
     /* NOTE: for 1152x864 only! 
     stride0=6;
     stride1=1;
     */
 
-    ErrorF("#InitUcode(1)# FIFOIN_FREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
+#ifdef DEBUG
+    ErrorF("#InitUcode(1)# FIFOIN_FREE 0x%x -- \n",verite_in8(iob+FIFOINFREE));
+#endif
 
     /* init the ucode */
 
@@ -363,36 +372,44 @@ RENDITIONInitUcode(ScrnInfoPtr pScreenInfo)
     v1k_flushicache(pScreenInfo);
     v1k_start(pScreenInfo, pRendition->board.csucode_base);
 
-    ErrorF("#InitUcode(2)# FIFOIN_FREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
+#ifdef DEBUG
+    ErrorF("#InitUcode(2)# FIFOIN_FREE 0x%x -- \n",verite_in8(iob+FIFOINFREE));
+#endif
 
-    v_out32(iob, 0);     /* a0 - ucode init command */
-    v_out32(iob, 0);     /* a1 - 1024 byte context store area */
-    v_out32(iob, 0);     /* a2 */
-    v_out32(iob, pRendition->board.ucode_entry);
+    verite_out32(iob, 0);     /* a0 - ucode init command */
+    verite_out32(iob, 0);     /* a1 - 1024 byte context store area */
+    verite_out32(iob, 0);     /* a2 */
+    verite_out32(iob, pRendition->board.ucode_entry);
 
-    ErrorF("#InitUcode(3)# FIFOIN_FREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
+#ifdef DEBUG
+    ErrorF("#InitUcode(3)# FIFOIN_FREE 0x%x -- \n",verite_in8(iob+FIFOINFREE));
+#endif
 
     waitfifo2(6, 1);
 
-    ErrorF("#InitUcode(4)# FIFOIN_FREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
+#ifdef DEBUG
+    ErrorF("#InitUcode(4)# FIFOIN_FREE 0x%x -- \n",verite_in8(iob+FIFOINFREE));
+#endif
 
-    v_out32(iob, CMD_SETUP);
-    v_out32(iob, P2(pRendition->board.mode.virtualwidth,
+    verite_out32(iob, CMD_SETUP);
+    verite_out32(iob, P2(pRendition->board.mode.virtualwidth,
 		    pRendition->board.mode.virtualheight));
-    v_out32(iob, P2(pRendition->board.mode.bitsperpixel,
+    verite_out32(iob, P2(pRendition->board.mode.bitsperpixel,
 		    pRendition->board.mode.pixelformat));
-    v_out32(iob, MC_SIZE);
+    verite_out32(iob, MC_SIZE);
 
-    v_out32(iob, (pRendition->board.mode.virtualwidth)*
+    verite_out32(iob, (pRendition->board.mode.virtualwidth)*
 	    (pRendition->board.mode.bitsperpixel>>3));
-    v_out32(iob, (pRendition->board.mode.stride1<<12)|
+    verite_out32(iob, (pRendition->board.mode.stride1<<12)|
 	    (pRendition->board.mode.stride0<<8)); 
 
-    ErrorF("#InitUcode(5)# FIFOIN_FREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
+#ifdef DEBUG
+    ErrorF("#InitUcode(5)# FIFOIN_FREE 0x%x -- \n",verite_in8(iob+FIFOINFREE));
+#endif
 
 #if 0
-    v_out32(iob+0x60, 129);
-    ErrorF("RENDITION: PC at %x\n", v_in32(iob+0x64));
+    verite_out32(iob+0x60, 129);
+    ErrorF("RENDITION: PC at %x\n", verite_in32(iob+0x64));
 #endif
 
     return 0;
@@ -416,26 +433,26 @@ RENDITIONRestoreUcode(ScrnInfoPtr pScreenInfo)
 #endif
 
     v1k_stop(pScreenInfo);
-    memend=v_in8(iob+MEMENDIAN);
-    v_out8(iob+MEMENDIAN, MEMENDIAN_NO);
+    memend=verite_in8(iob+MEMENDIAN);
+    verite_out8(iob+MEMENDIAN, MEMENDIAN_NO);
 #if 1
     memcpy(pRendition->board.vmem_base, pRendition->board.ucode_buffer, MC_SIZE);
 #else
     /* SlowBcopy has inverted src and dst */
     xf86SlowBcopy(pRendition->board.ucode_buffer,pRendition->board.vmem_base,MC_SIZE);
 #endif
-    v_out8(iob+MEMENDIAN, memend);
+    verite_out8(iob+MEMENDIAN, memend);
 
     v1k_flushicache(pScreenInfo);
     v1k_start(pScreenInfo, pRendition->board.csucode_base);
-    v_out32(iob, 0);     /* a0 - ucode init command */
-    v_out32(iob, 0);     /* a1 - 1024 byte context store area */
-    v_out32(iob, 0);     /* a2 */
-    v_out32(iob, pRendition->board.ucode_entry);
+    verite_out32(iob, 0);     /* a0 - ucode init command */
+    verite_out32(iob, 0);     /* a1 - 1024 byte context store area */
+    verite_out32(iob, 0);     /* a2 */
+    verite_out32(iob, pRendition->board.ucode_entry);
 
 #if 0
-    v_out32(iob+0x60, 129);
-    ErrorF("RENDITION: PC at %x\n", v_in32(iob+0x64));
+    verite_out32(iob+0x60, 129);
+    ErrorF("RENDITION: PC at %x\n", verite_in32(iob+0x64));
 #endif
 }
 
@@ -454,8 +471,8 @@ RENDITIONSaveUcode(ScrnInfoPtr pScreenInfo)
 #endif
 
     v1k_stop(pScreenInfo);
-    memend=v_in8(iob+MEMENDIAN);
-    v_out8(iob+MEMENDIAN, MEMENDIAN_NO);
+    memend=verite_in8(iob+MEMENDIAN);
+    verite_out8(iob+MEMENDIAN, MEMENDIAN_NO);
 
 #if 1
     memcpy(pRendition->board.ucode_buffer, pRendition->board.vmem_base, MC_SIZE);
@@ -463,7 +480,7 @@ RENDITIONSaveUcode(ScrnInfoPtr pScreenInfo)
     /* SlowBcopy has inverted src and dst */
     xf86SlowBcopy(pRendition->board.vmem_base,pRendition->board.ucode_buffer,MC_SIZE);
 #endif
-    v_out8(iob+MEMENDIAN, memend);
+    verite_out8(iob+MEMENDIAN, memend);
     v1k_continue(pScreenInfo);
 }
 
@@ -486,80 +503,79 @@ RENDITIONSyncV1000(ScrnInfoPtr pScreenInfo)
 
 #ifdef DEBUG
     ErrorF("RENDITION: RENDITIONSyncV1000 called\n");
-#endif
-#ifdef DEBUG
-    ErrorF("#Sync (1)# FIFO_INFREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
-    ErrorF("#Sync (1)# FIFO_OUTVALID 0x%x -- \n",v_in8(iob+FIFOOUTVALID));
+
+    ErrorF("#Sync (1)# FIFO_INFREE 0x%x -- \n",verite_in8(iob+FIFOINFREE));
+    ErrorF("#Sync (1)# FIFO_OUTVALID 0x%x -- \n",verite_in8(iob+FIFOOUTVALID));
 #endif
 
     c=0;
     /* empty output fifo,
        i.e. if there is any valid data in the output fifo then read it */
 
-    while ((c++<0xfffff) && ((v_in8(iob+FIFOOUTVALID)&0x7)>0))
-      (void)v_in32(iob);
+    while ((c++<0xfffff) && ((verite_in8(iob+FIFOOUTVALID)&0x7)>0))
+      (void)verite_in32(iob);
 
-/*       if(!(c%0xffff))ErrorF("#F1# !0x%x! -- ",v_in8(iob+FIFOOUTVALID)); */
+/*       if(!(c%0xffff))ErrorF("#F1# !0x%x! -- ",verite_in8(iob+FIFOOUTVALID)); */
 
     if (c >= 0xfffff) { 
         ErrorF("RENDITION: RISC synchronization failed (1) FIFO out == %d!\n",
-	       v_in8(iob+FIFOOUTVALID)&0x1f);
+	       verite_in8(iob+FIFOOUTVALID)&0x1f);
         return; 
     }
 
     /* sync RISC */
     waitfifo(2);
-    v_out32(iob, CMD_GET_PIXEL);
-    v_out32(iob, 0);
+    verite_out32(iob, CMD_GET_PIXEL);
+    verite_out32(iob, 0);
 
     c=0;
-    while ((c++<0xfffff) && ((v_in8(iob+FIFOOUTVALID)&0x7)>0))
-      (void)v_in32(iob);
+    while ((c++<0xfffff) && ((verite_in8(iob+FIFOOUTVALID)&0x7)>0))
+      (void)verite_in32(iob);
 
-/*       if(!(c%0xffff))ErrorF("#F2# !0x%x! -- ",v_in8(iob+FIFOOUTVALID)); */
+/*       if(!(c%0xffff))ErrorF("#F2# !0x%x! -- ",verite_in8(iob+FIFOOUTVALID)); */
 
 
     if (c >= 0xfffff) { 
-        ErrorF("RENDITION: RISC synchronization failed (2) FIFO out == %d!\n",
-	       v_in8(iob+FIFOOUTVALID)&0x1f);
+      ErrorF ("Rendition: RISC synchronization failed (2) FIFO out == %d!\n",
+	      verite_in8(iob+FIFOOUTVALID)&0x1f);
         return; 
     }
 
     /* sync pixel engine using csucode -- I suppose this is quite slow <ml> */
     v1k_stop(pScreenInfo);
     v1k_start(pScreenInfo, pRendition->board.csucode_base);
-    v_out32(iob, 2);     /* a0 - sync command */
+    verite_out32(iob, 2);     /* a0 - sync command */
 
     c=0;
-    while ((c++<0xfffff) && ((v_in8(iob+FIFOOUTVALID)&0x7)>0))
-      (void)v_in32(iob);
+    while ((c++<0xfffff) && ((verite_in8(iob+FIFOOUTVALID)&0x7)>0))
+      (void)verite_in32(iob);
 
-/*      if(!(c%0xffff))ErrorF("#F3# !0x%x! -- ",v_in8(iob+FIFOOUTVALID)); */
+/*      if(!(c%0xffff))ErrorF("#F3# !0x%x! -- ",verite_in8(iob+FIFOOUTVALID)); */
 
     if (c == 0xfffff) { 
-        ErrorF("RENDITION: Pixel engine synchronization failed FIFO out == %d!\n",
-	       v_in8(iob+FIFOOUTVALID)&0x1f);
-        return; 
+        ErrorF ("Rendition: Pixel engine synchronization failed FIFO out == %d!\n",
+		verite_in8(iob+FIFOOUTVALID)&0x1f);
+        return;
     }
 
     /* restart the ucode */
-    v_out32(iob, 0);     /* a0 - ucode init command */
-    v_out32(iob, 0);     /* a1 - 1024 byte context store area */
-    v_out32(iob, 0);     /* a2 */
-    v_out32(iob, pRendition->board.ucode_entry);
+    verite_out32(iob, 0);     /* a0 - ucode init command */
+    verite_out32(iob, 0);     /* a1 - 1024 byte context store area */
+    verite_out32(iob, 0);     /* a2 */
+    verite_out32(iob, pRendition->board.ucode_entry);
 
     /* init the ucode */
     waitfifo(6);
-    v_out32(iob, CMD_SETUP);
-    v_out32(iob, P2(pRendition->board.mode.virtualwidth,
+    verite_out32(iob, CMD_SETUP);
+    verite_out32(iob, P2(pRendition->board.mode.virtualwidth,
 		    pRendition->board.mode.virtualheight));
-    v_out32(iob, P2(pRendition->board.mode.bitsperpixel,
+    verite_out32(iob, P2(pRendition->board.mode.bitsperpixel,
 		    pRendition->board.mode.pixelformat));
-    v_out32(iob, MC_SIZE);
+    verite_out32(iob, MC_SIZE);
 
-    v_out32(iob, pRendition->board.mode.virtualwidth  *
+    verite_out32(iob, pRendition->board.mode.virtualwidth  *
 	    (pRendition->board.mode.bitsperpixel>>3));
-    v_out32(iob, (pRendition->board.mode.stride1<<12) |
+    verite_out32(iob, (pRendition->board.mode.stride1<<12) |
 	    (pRendition->board.mode.stride0<<8)); 
 }
 
@@ -601,16 +617,16 @@ RENDITIONSubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo,
 
 
 #if 1 /* def DEBUG */
-    ErrorF("#ScreentoScreen# FIFO_INFREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
-    ErrorF("#ScreentoScreen# FIFO_OUTVALID 0x%x -- \n",v_in8(iob+FIFOOUTVALID));
+    ErrorF("#ScreentoScreen# FIFO_INFREE 0x%x -- \n",verite_in8(iob+FIFOINFREE));
+    ErrorF("#ScreentoScreen# FIFO_OUTVALID 0x%x -- \n",verite_in8(iob+FIFOOUTVALID));
 #endif
 
     waitfifo(5);
-    v_out32(iob, CMD_SCREEN_BLT);
-    v_out32(iob, pRendition->board.Rop); 
-    v_out32(iob, P2(srcX, srcY));
-    v_out32(iob, P2(w, h));
-    v_out32(iob, P2(dstX, dstY));
+    verite_out32(iob, CMD_SCREEN_BLT);
+    verite_out32(iob, pRendition->board.Rop); 
+    verite_out32(iob, P2(srcX, srcY));
+    verite_out32(iob, P2(w, h));
+    verite_out32(iob, P2(dstX, dstY));
 }
 
 
@@ -652,14 +668,14 @@ RENDITIONSubsequentSolidFillRect(ScrnInfoPtr pScreenInfo,
 
     waitfifo(4);
 #ifdef DEBUG
-    ErrorF("#SubsequentSolidFill# FIFO_INFREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
-    ErrorF("#SubsequentSolidFill# FIFO_OUTVALID 0x%x -- \n",v_in8(iob+FIFOOUTVALID));
+    ErrorF("#SubsequentSolidFill# FIFO_INFREE 0x%x -- \n",verite_in8(iob+FIFOINFREE));
+    ErrorF("#SubsequentSolidFill# FIFO_OUTVALID 0x%x -- \n",verite_in8(iob+FIFOOUTVALID));
     sleep(1);
 #endif
-    v_out32(iob, P2(pRendition->board.Rop, CMD_RECT_SOLID_ROP));
-    v_out32(iob, pRendition->board.Color);
-    v_out32(iob, P2(x, y));
-    v_out32(iob, P2(w, h));
+    verite_out32(iob, P2(pRendition->board.Rop, CMD_RECT_SOLID_ROP));
+    verite_out32(iob, pRendition->board.Color);
+    verite_out32(iob, P2(x, y));
+    verite_out32(iob, P2(w, h));
 }
 
 
@@ -684,11 +700,11 @@ RENDITIONSubsequentTwoPointLine(ScrnInfoPtr pScreenInfo,
 #endif
 
     waitfifo(5);
-    v_out32(iob, P2(1, CMD_LINE_SOLID));
-    v_out32(iob, pRendition->board.Rop);
-    v_out32(iob, pRendition->board.Color);
-    v_out32(iob, P2(x1, y1));
-    v_out32(iob, P2(x2, y2));
+    verite_out32(iob, P2(1, CMD_LINE_SOLID));
+    verite_out32(iob, pRendition->board.Rop);
+    verite_out32(iob, pRendition->board.Color);
+    verite_out32(iob, P2(x1, y1));
+    verite_out32(iob, P2(x2, y2));
 }
 
 /*

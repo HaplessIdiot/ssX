@@ -25,7 +25,8 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.10 2000/02/12 20:45:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.11 2000/02/12
+23:07:55 dawes Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -35,6 +36,7 @@
 #include "xf86Cursor.h"
 #include "compiler.h"
 #include "xaa.h"
+#include "vgaHW.h"
 
 #define SIS_NAME		"SIS"
 #define SIS_DRIVER_NAME		"sis"
@@ -52,9 +54,31 @@
 #define	BIOS_BASE		0xC0000
 #define	BIOS_SIZE		0x10000
 
-#define	CRT2_LCD		0x00000001
-#define	CRT2_TV			0x00000002
-#define	CRT2_VGA		0x00000004
+#define	CRT2_LCD		0x00000010
+#define	CRT2_TV			0x00000020
+#define	CRT2_VGA		0x00000040
+#define	CRT2_ENABLE		0x00000070
+#define	LCD_800x600		0x00000100
+#define	LCD_1024x768		0x00000200
+#define	LCD_1280x1024		0x00000400
+#define	LCD_TYPE		0x00000700
+#define	TV_NTSC			0x00001000
+#define	TV_PAL			0x00002000
+#define	TV_HIVISION		0x00004000
+#define	TV_TYPE			0x00007000
+#define	TV_AVIDEO		0x00010000
+#define	TV_SVIDEO		0x00020000
+#define	TV_SCART		0x00040000
+#define	TV_INTERFACE		0x00070000
+#define	SIS301			0x00100000
+#define	SIS302			0x00200000
+#define	LVDS			0x01000000
+#define	CHRONTEL_TV		0x02000000
+#define	SINGLE_MODE		0x00000000
+#define	SIMU_MODE		0x10000000
+#define	MM_MODE			0x20000000
+#define	DISPLAY_MODE		0x30000000
+
 
 #ifdef	DEBUG
 #define	PDEBUG(p)	p
@@ -63,14 +87,13 @@
 #endif
 
 typedef struct {
-	unsigned char sisRegs3x4[0x100];
-	unsigned char sisRegs3C4[0x100];
-	unsigned char sisRegs3C2[0x100];
+	unsigned char sisRegs3C4[0x50];
+	unsigned char sisRegs3D4[0x40];
+	unsigned char sisRegs3C2;
 	unsigned char VBPart1[0x29];
 	unsigned char VBPart2[0x46];
 	unsigned char VBPart3[0x3F];
 	unsigned char VBPart4[0x1C];
-	unsigned char VBPart5[0x100];
 } SISRegRec, *SISRegPtr;
 
 #define SISPTR(p)	((SISPtr)((p)->driverPrivate))
@@ -129,33 +152,37 @@ typedef struct {
     XAAInfoRecPtr	AccelInfoPtr;
     CloseScreenProcPtr	CloseScreen;
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
-    Bool		(*FindThreshold)(ScrnInfoPtr pScrn, int mclk, int vclk,
-					int bpp, int buswidth, int flags,
-					int *ThresaholdLow, int *ThresholdHigh);
     Bool		(*ModeInit)(ScrnInfoPtr pScrn, DisplayModePtr mode);
     Bool		(*ModeInit2)(ScrnInfoPtr pScrn, DisplayModePtr mode);
     void		(*SiSSave)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
-    void		(*SiSSave1)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
+    void		(*SiSSave2)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void		(*SiSRestore)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
-    void		(*SiSRestore1)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
+    void		(*SiSRestore2)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
+    void		(*SetThreshold)(ScrnInfoPtr pScrn, DisplayModePtr mode,
+				unsigned short *Low, unsigned short *High);
+    void		(*SetThreshold2)(ScrnInfoPtr pScrn, DisplayModePtr mode,
+				unsigned short *Low, unsigned short *High);
+    void		(*LoadCRT2Palette)(ScrnInfoPtr pScrn, int numColors,
+				int *indicies, LOCO *colors, VisualPtr pVisual);
 } SISRec, *SISPtr;
 
 /* Prototypes */
 
-void	SiSOptions(ScrnInfoPtr pScrn);
-void	SiSVGASetup(ScrnInfoPtr pScrn);
-void	SiSLCDPreInit(ScrnInfoPtr pScrn);
-void	SiSTVPreInit(ScrnInfoPtr pScrn);
+void    SiSOptions(ScrnInfoPtr pScrn);
+void	SISVGAPreInit(ScrnInfoPtr pScrn);
+void	SISLCDPreInit(ScrnInfoPtr pScrn);
+void	SISTVPreInit(ScrnInfoPtr pScrn);
 OptionInfoPtr SISAvailableOptions(int chipid, int busid);
 
+void	SISDACPreInit(ScrnInfoPtr pScrn);
+void	SISLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies,
+					LOCO *colors, VisualPtr pVisual);
 
 int compute_vclk(int Clock, int *out_n, int *out_dn, int *out_div,
 					int *out_sbit, int *out_scale);
 void SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD,
 					unsigned int *vclk);
 unsigned int SiSddc1Read(ScrnInfoPtr pScrn);
-void SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg);
-void SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg);
 Bool SiSAccelInit(ScreenPtr pScreen);
 Bool SiS530AccelInit(ScreenPtr pScreen);
 Bool SiS300AccelInit(ScreenPtr pScreen);

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.48 2000/02/29 03:09:35 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.49 2000/03/03 20:02:35 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_131">Patch #131 - 2000/3/3 - XFree86 3.9.18b</A>
 <LI><A HREF="#xterm_130">Patch #130 - 2000/3/1 - XFree86 3.9.18a</A>
 <LI><A HREF="#xterm_129">Patch #129 - 2000/2/26 - XFree86 3.9.18a</A>
 <LI><A HREF="#xterm_128">Patch #128 - 2000/2/17 - XFree86 3.9.18</A>
@@ -173,6 +174,43 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_131">Patch #131 - 2000/3/3 - XFree86 3.9.18b</A></H1>
+<ul>
+	<li>integrate patch by Branden Robinson for improving logfile
+	  security:
+	  <ul>
+	  <li>make the <code>creat_as()</code> function more strict by using
+	    O_EXCL rather than O_APPEND.
+	  <li>fixes to make DEBUG ifdef's compile/run, including making the
+	    debug logfile more unique by appending a timestamp to its name.
+	  <li>include &lt;term.h&gt; in resize.c, to fix a missing-prototype
+	    warning.
+	  </ul>
+	    
+	<li>modified <code>creat_as()</code> a little more, retaining the
+	  ability to append to a logfile If the user specifies the name.
+	  Also, check if the opened file (which patch #130 ensures is
+	  owned by the effective user) is not writable by other users.
+
+	<li>use <code>creat_as()</code> logic to make tek4014 screen-copy
+	  more secure (noted by Branden Robinson).
+
+	<li>ifdef'd some of Branden's changes to build/work on older machines. 
+
+	<li>correct missing initialization of the <code>.mode</code> flag in
+	  <code>ColorRes</code> struct, from patch #129.  This worked on Linux
+	  because <code>malloc()</code> zeroes memory on that platform
+	  (reported by Christian Weisgerber).
+
+	<li>modify logic for <code>deleteIsDEL</code> resource so it has
+	  internally 3 states:  unspecified, true and false.  If unspecified,
+	  the keyboard type determines whether the Delete key transmits
+	  <code>&lt;esc&gt;[3~</code> or <code>\177</code>, and the popup menu
+	  entry reflects the internal state.  Otherwise, the popup menu entry
+	  overrides the keyboard type (suggested by Dr Werner Fink, to make it
+	  simpler to set resources that imitate the legacy X11R6 xterm).
+</ul>
 
 <H1><A NAME="xterm_130">Patch #130 - 2000/3/1 - XFree86 3.9.18a</A></H1>
 <ul>

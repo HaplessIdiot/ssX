@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.53 2000/03/05 16:59:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.54 2000/03/06 22:59:29 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -111,6 +111,7 @@ static void S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 #endif
 static Bool S3Vddc1(int scrnIndex);
 static unsigned int S3Vddc1Read(ScrnInfoPtr pScrn);
+static void S3VProbeDDC(ScrnInfoPtr pScrn, int index);
 
 /*
  * This is intentionally screen-independent.  It indicates the binding
@@ -118,6 +119,11 @@ static unsigned int S3Vddc1Read(ScrnInfoPtr pScrn);
  */
 static int pix24bpp = 0;
  
+/*
+ * For DDC Monitor detection
+ */
+extern xf86MonPtr ConfiguredMonitor;
+
 
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
@@ -573,10 +579,13 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     
     vgaHWPtr hwp;
     int vgaCRIndex, vgaCRReg, vgaIOBase;
-
-    if (flags & PROBE_DETECT) return FALSE;
-    
+   
     PVERB5("	S3VPreInit 1\n");
+
+    if (flags & PROBE_DETECT) {
+	  S3VProbeDDC( pScrn, xf86GetEntityInfo(pScrn->entityList[0])->index );
+      return TRUE;
+      }
     	      
     /*
      * Note: This function is only called once at server startup, and
@@ -2040,7 +2049,24 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
 #endif
 
    VerticalRetraceWait();
+   if (S3_ViRGE_GX2_SERIES(ps3v->Chipset) )
+     {
+      VGAOUT8(vgaCRIndex, 0x85);    
+      /* primary stream threshold */
+      VGAOUT8(vgaCRReg, (restore->MMPR0>>12) & 0x1f ); 
+      VGAOUT8(vgaCRIndex, 0x86);
+      /* primary stream 2 threshold (set high) */    
+      VGAOUT8(vgaCRReg, 0x1f ); 
+      VGAOUT8(vgaCRIndex, 0x87);    
+      /* secondary stream threshold */
+      VGAOUT8(vgaCRReg, (restore->MMPR0>>6 ) & 0x1f ); 
+      /* cep - kjb - test */
+
+     }
+   else
+     {
    OUTREG(FIFO_CONTROL_REG, restore->MMPR0);
+     }
    WaitIdle();                  /* Don't ask... */
    OUTREG(MIU_CONTROL_REG, restore->MMPR1);
    WaitIdle();                  
@@ -3612,6 +3638,18 @@ S3Vddc1(int scrnIndex)
     OUTREG(DDC_REG,(tmp));
     return success;
 }
+
+
+static void
+S3VProbeDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+        pVbe = VBEInit(NULL,index);
+        ConfiguredMonitor = vbeDoEDID(pVbe);
+    }
+}
+
 /*EOF*/
 
 

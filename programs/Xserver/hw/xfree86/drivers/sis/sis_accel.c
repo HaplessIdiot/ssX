@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.14 2000/02/12 20:45:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.15 2000/02/18 12:19:59 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -61,7 +61,7 @@ static void SiSSubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
         int x, int y, int len, int dir);
 
 
-Bool
+Bool 
 SiSAccelInit(ScreenPtr pScreen)
 {
     XAAInfoRecPtr infoPtr;

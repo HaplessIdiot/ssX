@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.29 1999/06/20 15:02:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.1 2000/02/12 20:45:37 dawes Exp $ */
 
 
 #define PSZ 8
@@ -85,7 +85,6 @@ sisOldChipSetup(ScrnInfoPtr pScrn)
 {
 	int	ramsize[4] = {1024, 2048, 4096, 1024};
 
-	SISPTR(pScrn)->MaxClock = 135000;
 	SISPTR(pScrn)->TurboQueue = FALSE;
 
 	outb(VGA_SEQ_INDEX, RAMSize);
@@ -102,7 +101,6 @@ sis530Setup(ScrnInfoPtr pScrn)
 	int		temp;
 
 	if (pSiS->Chipset == PCI_CHIP_SIS5597)  {
-		pSiS->MaxClock = 135000;
 		outb(VGA_SEQ_INDEX, FBSize);
 		pScrn->videoRam = ((inb(VGA_SEQ_DATA) & 7) + 1)*256;
 		outb(VGA_SEQ_INDEX, Mode64);
@@ -110,10 +108,6 @@ sis530Setup(ScrnInfoPtr pScrn)
 			pScrn->videoRam *= 2;
 	}
 	else  {
-		if (pSiS->Chipset == PCI_CHIP_SIS6326)
-			pSiS->MaxClock = 175000;
-		if (pSiS->Chipset == PCI_CHIP_SIS530)
-			pSiS->MaxClock = 230000;
 		outb(VGA_SEQ_INDEX, RAMSize);
 		temp = inb(VGA_SEQ_DATA);
 		config = ((temp & 0x10) >> 2 ) | ((temp & 6) >> 1);
@@ -148,7 +142,6 @@ sis300Setup(ScrnInfoPtr pScrn)
 	config = inb(VGA_SEQ_DATA);
 	pScrn->videoRam = ((config & 0x3F) + 1) * 1024;
 	pSiS->BusWidth =bus[config >> 6];
-	pSiS->MaxClock = sis300MemBandWidth(pScrn);
 
 	outb(VGA_SEQ_INDEX, 0x3A);
 	config = inb(VGA_SEQ_DATA) & 3;
@@ -160,9 +153,6 @@ sis300Setup(ScrnInfoPtr pScrn)
 			pSiS->MemClock/1000.0);
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
                         "Detected VRAM bus width is %d\n", pSiS->BusWidth);
-	inSISIDXREG(0x3D4, 0x32, config);
-	if (config & 0x5F)
-		pSiS->VBFlags = 1;
 }
 
 void
@@ -187,4 +177,3 @@ SiSSetup(ScrnInfoPtr pScrn)
 		break;
 	}
 }
-

@@ -1,4 +1,32 @@
-XFree86 4.0a (xx March 2000)
+XFree86 4.0a (31 March 2000)
+  54. Add an entry for the GeForce to the Cards file (#A.6, Oliver Lau).
+  53. Fix pswrap build problem when cross compiling (#3815, Jim Gettys).
+  52. Fix a typo in itsy.cf (#3814, Jim Gettys).
+  51. SiS driver fixes:
+       - 630/540/300 display abnormal for all modes.
+       - 630/540/300 cannot enter true color modes.
+       - 530/620 1600x1200x8bpp display abnormal.
+      (#3807, Can-Ru Yeou, SiS).
+  50. Fix a -configure crash in the nv driver (#3805, Jarno Paananen).
+  49. Rendition driver updates:
+       - rename most v_ to verite_ to avoid potential namespace clashes.
+       - add support for VBE DDC and "XFree86 -configure".
+       - fix PROBE_DETECT issues.
+       - Replace a number of ErrorF's with xf86DrvMsg to reduce noise
+         when not requested. A number of debugging messages #ifdef'ed also.
+       - Option "MTRR" reenabled. Was disabled when acceleration was debugged.
+      (#3785, 3808, Dejan Ilic).
+  48. S3virge driver updates:
+       - Revert WAITIDLE to cleanly abort a segfaulting imagewrite.
+       - Start of GX2 fixes.
+       - Add DDC monitor X -configure code.
+       - Update copyrights
+      (#3783, Kevin Brosius).
+  47. Update XSetWMProperties() to set the WM_LOCALE_NAME property (#3780,
+      Peter Novodvorsky).
+  46. Xterm patch #131 (#3777, Thomas Dickey).
+  45. Add some xtest tests to cover some accelerated cases implemented by
+      XAA, and fix some Linux/glibc build problems (#3767, Rik Faith).
   44. Xineramification of XvImage support (Mark Vojkovich).
   43. By default, cache writes to selected Mach64 MMIO registers and allow this
       cache to be disabled (Marc La France).
@@ -166,7 +194,7 @@ XFree86 3.9.18Z (3 March 2000)
       Thomas Mueller).
 3920. Update the wacom input driver to suppor the PL400 model and the
       stroking pen on the Intuos model (#3778, Frederic Lepied).
-3919. Xterm patch #131 (#3777, Thomas Dickey).
+3919. -
 3918. -
 3917. Add prototypes for xman, and eliminate most of the compiler warnings
       (#3772, Thomas Dickey).
@@ -237,7 +265,7 @@ XFree86 3.9.18b (29 February 2000)
 3883. Update Xinstall.sh for NetBSD-current-ELF (#3754, Matthieu Herrb).
 3882. Update NetBSD and OpenBSD bindist files (#3753, Matthieu Herrb).
 3881. Apm driver update, including extending the Rush extension to allow
-      initialisation of the Rush chip in a legal way (#3751, Loic Grenie).
+      initialisation of the Rush chip in a legal way (#3752, Loic Grenie).
 3880. Xterm patch #129 (#3751, Thomas Dickey).
 3879. Add DDC support to the tdfx driver via the vbe interface (#3750,
       Jarno Paananen).
@@ -10108,4 +10136,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1108 2000/03/28 22:40:34 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1110 2000/03/30 19:52:00 mvojkovi Exp $

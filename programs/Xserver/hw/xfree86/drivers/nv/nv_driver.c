@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.39 2000/03/01 16:01:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.41 2000/03/13 18:49:29 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -729,18 +729,6 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     if (pScrn->numEntities != 1)
 	return FALSE;
 
-    /* The vgahw module should be loaded here when needed */
-    if (!xf86LoadSubModule(pScrn, "vgahw"))
-	return FALSE;
-
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
-
-    /*
-     * Allocate a vgaHWRec
-     */
-    if (!vgaHWGetHWRec(pScrn))
-	return FALSE;
-
     /* Allocate the NVRec driverPrivate */
     if (!NVGetRec(pScrn)) {
 	return FALSE;
@@ -891,6 +879,18 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     bytesPerPixel = pScrn->bitsPerPixel / 8;
+
+    /* The vgahw module should be loaded here when needed */
+    if (!xf86LoadSubModule(pScrn, "vgahw"))
+	return FALSE;
+
+    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+
+    /*
+     * Allocate a vgaHWRec
+     */
+    if (!vgaHWGetHWRec(pScrn))
+	return FALSE;
 
     /* We use a programamble clock */
     pScrn->progClock = TRUE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.h,v 1.2 1999/04/17 07:06:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.h,v 1.3 1999/10/13 04:21:23 dawes Exp $ */
 
 /*
  * file vloaduc.h
@@ -30,7 +30,7 @@
  * function prototypes
  */
 
-int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name);
+int verite_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name);
 
 
 

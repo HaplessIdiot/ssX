@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vtypes.h,v 1.4 1999/11/19 13:54:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vtypes.h,v 1.5 2000/03/01 00:25:25 dawes Exp $ */
 #ifndef _VTYPES_H_
 #define _VTYPES_H_
 
@@ -66,7 +66,7 @@ typedef enum {
  * structs
  */
 
-struct v_modeinfo_t {
+struct verite_modeinfo_t {
     int clock;              /* pixel clock */
     int hdisplay;           /* horizontal timing */
     int hsyncstart;
@@ -99,7 +99,7 @@ struct v_modeinfo_t {
 
 
 /* structure describing the Verite board and its functionality */
-struct v_board_t {
+struct verite_board_t {
     /* type of chip */
     vu16  chip;
 
@@ -125,7 +125,7 @@ struct v_board_t {
     int Color;
 
     /* mode information */
-    struct v_modeinfo_t mode;
+    struct verite_modeinfo_t mode;
     
     /* saved text mode settings */
     vu8 cursor_hi;
@@ -158,8 +158,8 @@ struct v_board_t {
  */
 typedef struct _renditionRec
 {
-    struct v_board_t board;             /* information on the board */
-    struct v_modeinfo_t mode;           /* information on the mode */
+    struct verite_board_t board;             /* information on the board */
+    struct verite_modeinfo_t mode;           /* information on the mode */
     int pcitag;                         /* tag for the PCI config space */
     pciVideoPtr PciInfo;                /* PCI config data */
     EntityInfoPtr pEnt;                 /* entity information */

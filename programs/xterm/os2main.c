@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.31 1999/11/19 13:55:21 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.32 2000/02/08 17:19:39 dawes Exp $ */
 
 /***********************************************************
 
@@ -1062,7 +1062,7 @@ main (int argc, char **argv, char **envp)
 	 so the debug feature is disabled by default. */
 	int i = -1;
 	if(debug) {
-	        creat_as (getuid(), getgid(), "xterm.debug.log", 0666);
+	        creat_as (getuid(), getgid(), True, "xterm.debug.log", 0666);
 		i = open ("xterm.debug.log", O_WRONLY | O_TRUNC, 0666);
 	}
 	if(i >= 0) {
