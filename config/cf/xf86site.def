@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.107 1997/03/04 10:37:27 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.108 1997/03/11 13:04:48 hohndel Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -250,7 +250,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.107 1997/03/04 10:37:27 hohndel Ex
 /*
  * SVGA server:
  *
-#define XF86SvgaDrivers		nv et4000 et3000 pvga1 gvga ati sis tvga8900 \
+#define XF86SvgaDrivers		nv et4000 et3000 pvga1 gvga ati sis trident \
 				cirrus ncr77c22 mga oak al2101 ali cl64xx \
 				video7 chips ark mx realtek apm s3 generic
  */
@@ -258,14 +258,14 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.107 1997/03/04 10:37:27 hohndel Ex
 /*
  * VGA16 server:
  *
-#define XF86Vga16Drivers	et4000 et3000 ncr77c22 ati sis tvga8900 oak \
+#define XF86Vga16Drivers	et4000 et3000 ncr77c22 ati sis trident oak \
 				cl64xx generic 
  */
 
 /*
  * VGA2 driver in Mono server:
  *
-#define XF86Vga2Drivers		et4000 et3000 pvga1 gvga ati sis tvga8900 \
+#define XF86Vga2Drivers		et4000 et3000 pvga1 gvga ati sis trident \
 				cirrus ncr77c22 oak cl64xx generic
  */
 
