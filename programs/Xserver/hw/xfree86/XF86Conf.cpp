@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.34 1999/01/23 09:55:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.35 1999/01/24 03:13:49 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM
@@ -482,7 +482,7 @@ Section "Screen"
 XCOMM The Identifier, Device and Monitor lines must be present
 
     Identifier	"Screen 1"
-    Device	"Generic SVGA"
+    Device	"Generic VGA"
     Monitor	"Generic Monitor"
 
 XCOMM The favoured Depth and/or Bpp may be specified here

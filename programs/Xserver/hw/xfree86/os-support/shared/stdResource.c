@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.2 1999/04/03 06:50:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.3 1999/04/04 10:59:50 dawes Exp $ */
 
 /* Standard resource information code */
 
@@ -106,6 +106,9 @@ xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo, resPtr *sysMem,
     /* Initialise the pointers to the system exclusive lists */
     pSysMem = sysMem;
     pSysIo = sysIo;
+
+    if (!pciInfo)
+	return;
 
     /* Make a local copy of the current non-system PCI allocations */
     PciMem = xf86DupResList(pciMem);

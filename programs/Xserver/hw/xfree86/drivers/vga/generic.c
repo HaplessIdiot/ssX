@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.25 1999/03/28 15:32:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.26 1999/04/04 08:46:21 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -50,6 +50,8 @@
 
 #include "xf4bpp.h"
 #include "xf1bpp.h"
+
+#include "shadowfb.h"
 
 #include "mipointer.h"
 #include "micmap.h"
@@ -121,11 +123,17 @@ static const char *fbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
     "cfbScreenInit",
+    "mfbScreenInit",
     NULL
 };
 
 static const char *racSymbols[] = {
     "xf86RACInit",
+    NULL
+};
+
+static const char *shadowfbSymbols[] = {
+    "ShadowFBInit",
     NULL
 };
 
@@ -164,7 +172,8 @@ GenericSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
     {
         Initialised = TRUE;
         xf86AddDriver(&VGA, Module, 0);
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols, NULL);
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols, shadowfbSymbols,
+			  NULL);
         return (pointer)TRUE;
     }
 
@@ -364,6 +373,7 @@ GenericClockSelect(ScrnInfoPtr pScreenInfo, int ClockNumber)
  */
 typedef struct _GenericRec
 {
+    Bool ShadowFB;
     CARD8 * ShadowPtr;
     CARD32 ShadowPitch;
     CloseScreenProcPtr CloseScreen;
@@ -445,6 +455,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     char             *Module;
     const char	     *Sym;
     vgaHWPtr          pvgaHW;
+    GenericPtr        pGenericPriv;
 
     xf86AddControlledResource(pScreenInfo,IO);
     xf86EnableAccess(&pScreenInfo->Access);
@@ -539,12 +550,6 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
-    /* Ensure depth-specific entry points are available */
-    if (!xf86LoadSubModule(pScreenInfo, Module))
-        return FALSE;
-
-    xf86LoaderReqSymbols(Sym, NULL);
-
     if (!xf86LoadSubModule(pScreenInfo, "rac")){
         GenericFreeRec(pScreenInfo);
 	return FALSE;
@@ -553,7 +558,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     xf86LoaderReqSymLists(racSymbols, NULL);
 
     /* Allocate driver private structure */
-    if (!GenericGetRec(pScreenInfo))
+    if (!(pGenericPriv = GenericGetRec(pScreenInfo)))
         return FALSE;
 
     /* Ensure vgahw private structure is allocated */
@@ -658,9 +663,24 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     if (xf86ReturnOptValBool(GenericOptions,OPTION_SHADOW_FB,FALSE)) {
         pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
+	pGenericPriv->ShadowFB = TRUE;
         xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
 		   "Using \"Shadow Framebuffer\"\n");
+	switch (pScreenInfo->depth)
+	{
+            case 1:  Module = "mfb"; Sym = "mfbScreenInit";  break;
+            case 4:  Module = "cfb"; Sym = "cfbScreenInit";  break;
+	}
+	if (!xf86LoadSubModule(pScreenInfo, "shadowfb"))
+	    return FALSE;
+	xf86LoaderReqSymLists(shadowfbSymbols, NULL);
     }
+
+    /* Ensure depth-specific entry points are available */
+    if (!xf86LoadSubModule(pScreenInfo, Module))
+	return FALSE;
+
+    xf86LoaderReqSymbols(Sym, NULL);
 
     /* Only one chipset here */
     if (!pScreenInfo->chipset)
@@ -1051,7 +1071,7 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     switch (pScreenInfo->depth)
     {
         case 1:
-	    if (xf86ReturnOptValBool(GenericOptions,OPTION_SHADOW_FB,FALSE)) {
+	    if (pGenericPriv->ShadowFB) {
 		pGenericPriv->ShadowPitch = 
 				((pScreenInfo->virtualX + 31) >> 3) & ~3L;
 		pGenericPriv->ShadowPtr = xalloc(pGenericPriv->ShadowPitch *
@@ -1073,7 +1093,7 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    }
             break;
         case 4:
-	    if (xf86ReturnOptValBool(GenericOptions,OPTION_SHADOW_FB,FALSE)) {
+	    if (pGenericPriv->ShadowFB) {
 		/* in order to use ShadowFB we do depth 4 / bpp 8 */
 		pScreenInfo->bitsPerPixel = 8;
 		pGenericPriv->ShadowPitch = (pScreenInfo->virtualX + 3) & ~3L;
