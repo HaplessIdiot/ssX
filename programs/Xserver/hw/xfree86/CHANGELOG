@@ -1,4 +1,7 @@
 XFree86 4.2.99.2 (xx July 2002)
+ 207. Fix Finder warnings about XDarwin plist format on Jaguar
+      (Torrey T. Lyons).
+ 206. Fix XDarwin build issues on Jaguar (Sean Fagan).
  205. Fix Radeon DDC for non-Dell cards, and fix a radeon pci id-related
       build problem (#5326, Andrew C Aitchison).
  204. Change the X server (and scanpci) to use the pci.ids file (from
@@ -14949,4 +14952,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2264 2002/07/15 20:45:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2265 2002/07/16 13:31:37 dawes Exp $
