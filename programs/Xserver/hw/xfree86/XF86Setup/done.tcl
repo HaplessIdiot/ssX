@@ -1,4 +1,13 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/done.tcl,v 3.1 1996/06/30 10:44:01 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/done.tcl,v 3.2 1996/08/13 11:28:22 dawes Exp $
+#
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+#
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
+
+#
+# Routines run to end the main configuration phase (phase 2)
 #
 
 proc Done_create_widgets { win } {
@@ -33,7 +42,8 @@ proc Done_deactivate { win } {
 }
 
 proc Done_popup_help { win } {
-	toplevel .donehelp
+	catch {destroy .donehelp}
+	toplevel .donehelp -bd 5 -relief ridge
 	wm title .donehelp "Help"
 	wm geometry .donehelp +30+30
 	text .donehelp.text
@@ -56,12 +66,13 @@ proc Done_nextphase { win } {
 
 	set w [winpathprefix $win]
 	if $StartServer {
+		mesg "Just a moment..." info
 		catch {destroy .}
 		catch {server_running -close $env(DISPLAY)}
 		save_state
 	} else {
 		destroy $w.menu $w.done $w.buttons
-		source $XF86Setup_library/phase4.tcl
+		uplevel #0 source $XF86Setup_library/phase4.tcl
 	}
 }
 

@@ -31,13 +31,13 @@ new facilities provided in the X11R6 Libraries against them.
 <sect> Things needed for compiling the sources<p>
 
 <descrip>
-    <tag> gcc-2.6.x </tag>
+    <tag> gcc-2.x.x </tag>
           Use the highest number for x you found.
           Fresco will only build 2.6.3 and later.
-	  I'd tried gcc Version 2.5.8, 2.6.0, 2.6.2 and 2.6.3,
-          but not 2.7.0 yet.  
+	  I'd tried gcc Version 2.5.8, 2.6.0, 2.6.2 and 2.6.3.
+          I'm currently using 2.7.2.
           <p>
-          With 2.6.3 the current source tree should be able to compile
+          Since 2.6.3 the current source tree should be able to compile
           with a little bit more Optimization:
           <tt> &num;define DefaultCDebugFlags -O3 -fomit-frame-pointer</tt>
           inside xf86site.def to overwrite the default -O2.
@@ -47,8 +47,9 @@ new facilities provided in the X11R6 Libraries against them.
           This is necessary to build the sources successfully.
           Versions prior to 2.7.0 could define it, but don't need it for a
           clean build.
-    <tag> libg++-2.6.x </tag>
-          The needed g++ Libraries for use with g++ 2.6.x
+    <tag> libg++-2.x.x </tag>
+          The needed g++ Libraries for use with g++ 2.x.x. As this is only 
+          necessary for Fresco, it isn't needed anymore since X11R6.1.
     <tag> binutils-2.5.2 </tag>
           You could use the assembler and linker
           the assembler is most preferred,and the linker is needed
@@ -136,7 +137,22 @@ referred to as <tt>"gcc-lib"</tt>
          </verb>
 
          Note that this is only necessary if you want to build Fresco
+<p>
+      <sect1><tt>/usr/include/sys/un.h</tt><p>
+         such a file does not exist on Interactive. You may like to generate
+         it, if you don't like a warning from depend. It isn't needed to compile
+         the sources successfully.
           
+         You could use the following to produce it:
+         <verb>
+         #ifndef X_NO_SYS_UN
+         struct  sockaddr_un {
+                 short   sun_family;             /* AF_UNIX */
+                 char    sun_path[108];          /* path name (gag) */
+         };
+         #endif
+         </verb>
+         
 
 <sect> make World <p>
 <code>
@@ -231,7 +247,18 @@ I could only test two cards against the linear addressing.
 
            This bug seems to be fixed since 3.1.2, and therefore the 
            workaround is not needed anymore.
- 
+	<item>ELSA Winner 2000PRO/X Revision G<p>
+           be carefull with the newmmio Driver in XF86_S3. It may be the case
+           that the Server fails because xf86MapVidMem says:<p>
+           Could not mmap framebuffer [s=1010000,a=f8000000] (Not enough space)
+           <p>If you declare 
+           <verb>
+           Chipset "mmio_928"
+           </verb>
+           inside your XF86Config, everything will be allright again.<p>
+           This seems to be a problem with mmap. I will look further, but
+           any help will be welcome.
+
 </itemize>
 
 </itemize>
@@ -243,96 +270,66 @@ I could only test two cards against the linear addressing.
 Here is a sample XKeyboard Definition to include inside the Keyboard Section
 of your XF86Config File.
 <verb>
-    Xkbkeycodes "keycodes/xfree86"
-    XkbSymbols  "symbols/us(pc101)+de_nodead"
-    XkbTypes    "types/default"
-    XkbCompat   "compat/default"
-    XkbGeometry "geometry/pc"
+    Xkbkeycodes "xfree86"
+/*    XkbSymbols  "us(pc101)+de_nodead"  */
+/*    This has changed between 3.1.2E and 3.1.2F */
+/*    it is now:                                 */
+    XkbSymbols  "us(pc102)+de(nodeadkeys)"
+    XkbTypes    "default"
+    XkbCompat   "default"
+    XkbGeometry "pc"
 </verb>
 
-This works, at least for me. Please note the XkbSymbols Option where I use 
-a special version of the file symbols/de. With the normal Version you have 
-the dead keys working. This means, you have to hit another key to compose
-special characters like e-acute. I really don't like this behavior, so I 
-change the dead keys accordingly. Please see the next item for the changes.
-
-<item> symbols/de_nodead &hellip; <p>
-
-This file is located under /usr/X11R6/lib/X11/xkb, and is a special version
-of the file symbols/de.
+or you could use this one with the new Options:
 <verb>
+   XkbRules        "xfree86"
+   XkbModel        "pc102"
+   XkbLayout       "de"
+   XkbVariant      "nodeadkeys"
+</verb>
 
-default partial xkb_symbols "basic" {
+You may notice a change (again) with the Keys for Apostrophe (needed to mask
+something completely in the shell) and Acute. Here is a patch you could apply
+in your directory containing the xc directory to get back the (I think) 
+correct behavior.<p>
+This isn't needed in the binary distribution.<p>
 
-    // Describes the differences between a very simple US/ASCII
-    // keyboard and a very simple German keyboard
-
-    // Alphanumeric section
-    name[Group1]= "German";
-    key <TLDE> {	[ asciicircum,	degree	],
-			[   notsign 			]	};
-    key <AE02> {	[	  2,	quotedbl	],
-			[ twosuperior			]	};
-    key <AE03> {	[	  3,	section	],
-			[ threesuperior,sterling	]	};
-    key <AE04> {	[	  4,	dollar		],
-			[ onequarter,	currency	]	};
-    key <AE05> {	[	  5,	percent		],
-			[   onehalf			]	};
-    key <AE06> {	[	  6,	ampersand	],
-			[ threequarters			]	};
-    key <AE07> {	[	  7,	slash		],
-			[ braceleft			]	};
-    key <AE08> {	[	  8,	parenleft	],
-			[ bracketleft			]	};
-    key <AE09> {	[	  9,	parenright	],
-			[ bracketright,	plusminus	]	};
-    key <AE10> {	[	  0,	equal		],
-			[ braceright,	degree		]	};
-    key <AE11> {	[    ssharp,	question	],
-			[ backslash,	questiondown	]	};
-    key <AE12> {	[ apostrophe,	grave	],
-			[ dead_cedilla			]	};
-
-    key <AD01> {	[	  q,	Q 		],
-			[	 at			]	};
-    key <AD05> {	[	  t,	T		]	};
-    key <AD06> {	[	  z,	Z		]	};
-    key <AD07> {	[	  u,	U		]	};
-    key <AD08> {	[	  i,	I		]	};
-    key <AD11> {	[ udiaeresis,	Udiaeresis	],
-			[ dead_diaeresis 		]	};
-    key <AD12> {	[      plus,	asterisk	],
-			[ asciitilde,	dead_macron	]	};
-    key <AC04> {	[	  f,	F		]	};
-    key <AC05> {	[	  g,	G		]	};
-    key <AC10> {	[ odiaeresis,	Odiaeresis	],
-			[ dead_acute			]	};
-    key <AC11> {	[ adiaeresis,	Adiaeresis	],
-			[ dead_circumflex		]	};
-
-    key <LSGT> {	[      less,	greater		],
-			[       bar			]	};
-    key <AB01> {	[	  y,	Y 		],
-			[ guillemotleft,less		]	};
-    key <AB07> {	[	  m,	M		],
-			[	 mu			]	};
-    key <AB08> {	[     comma,	semicolon	]	};
-    key <AB09> {	[    period,	colon		],
-			[ periodcentered, division	]	};
-    key <AB10> {	[     minus,	underscore	]	};
-    key <BKSL> {	[ numbersign,	acute		],
-			[ dead_grave			]	};
-    key <RALT> {	[ Mode_switch,	Multi_key	]	};
-
-    // End alphanumeric section
-
-    // begin modifier mappings
-    modifier_map Shift  { Shift_L };
-    modifier_map Lock   { Caps_Lock };
-    modifier_map Control{ Control_L };
-    modifier_map Mod3	{ Mode_switch };
-};
+<verb>
+diff -c xc/programs/xkbcomp/symbols/de.orig xc/programs/xkbcomp/symbols/de
+*** xc/programs/xkbcomp/symbols/de.orig	Fri Aug 16 18:20:13 1996
+--- xc/programs/xkbcomp/symbols/de	Fri Aug 16 19:24:42 1996
+***************
+*** 77,83 ****
+      include "de(basic)"
+      key <TLDE> {	[ asciicircum,	degree		],
+  			[   notsign 			]	};
+!     key <AE12> {	[ acute,	grave		],
+  			[ cedilla			]	};
+      key <AD11> {	[ udiaeresis,	Udiaeresis	],
+  			[ diaeresis 			]	};
+--- 77,83 ----
+      include "de(basic)"
+      key <TLDE> {	[ asciicircum,	degree		],
+  			[   notsign 			]	};
+!     key <AE12> {	[ apostrophe,	grave		],
+  			[ cedilla			]	};
+      key <AD11> {	[ udiaeresis,	Udiaeresis	],
+  			[ diaeresis 			]	};
+***************
+*** 88,93 ****
+      key <AC11> {	[ adiaeresis,	Adiaeresis	],
+  			[ asciicircum			]	};
+  
+!     key <BKSL> {	[ numbersign,	apostrophe	],
+  			[ grave				]	};
+  };
+--- 88,93 ----
+      key <AC11> {	[ adiaeresis,	Adiaeresis	],
+  			[ asciicircum			]	};
+  
+!     key <BKSL> {	[ numbersign,	acute		],
+  			[ grave				]	};
+  };
 </verb>
 </itemize>
 
@@ -341,34 +338,22 @@ default partial xkb_symbols "basic" {
 This is an obsolete Extension. Anyway, if you want to include this Extension 
 inside your build, you have to add:
  <tt>&num;define BuildMultibuffer        YES</tt> inside xf86site.def
-<p>
-And you need to patch programs/Xserver/Imakefile with the following diff:
+
+<sect> Sample Definitions <p>
+
+This is my current host.def, if I build the sources. (So no more changes were
+necessary in xf86site.def, either it isn't to bad to have a look inside it ;-)
 <verb>
-*** xc/programs/Xserver/Imakefile.orig  Mon Feb 12 21:16:12 1996
---- xc/programs/Xserver/Imakefile       Mon Feb 12 08:46:05 1996
-***************
-*** 81,87 ****
---- 81,92 ----
-                    $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
-          EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) \
-                    $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(SITEEXTDIRS)
-+ #if defined(i386IscArchitecture) && defined(BuildMultibuffer) && \
-+     defined(XFree86Version)
-+      EXTENSIONS = $(PEXLIBS) $(OTHEREXTS)
-+ #else
-       EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
-+ #endif
-           XAULIB = $(XAUTHSRC)/LibraryTargetName(Xau)
-         XDMCPLIB = $(XDMCPLIBSRC)/LibraryTargetName(Xdmcp)
-               OS = os/LibraryTargetName(os) $(XAULIB) $(XDMCPLIB)
 
-</verb>
+#ifdef BeforeVendorCF
 
+/* Try it out */
+/* #define BuildLBX                YES */
 
-<sect> Sample Definition for xf86site.def <p>
-
-These are my additions to xf86site.def, if I build the sources. 
-<verb>
+/* Only when building official binaries
+#define InstallEmptyHostDef 
+#define InstallJapaneseDocs     YES
+*/
 
 /* Try MultiBuffer Extension */
 #define BuildMultibuffer        YES
@@ -380,6 +365,7 @@ These are my additions to xf86site.def, if I build the sources.
 
 /* gcc 2.6.3 tested Optimization Flags                               */
 # define DefaultGcc2i386Opt	-O3 -fomit-frame-pointer -fstrength-reduce
+/* # define DefaultGcc2i386Opt	-O2 -fomit-frame-pointer -fstrength-reduce*/
 
 /* For a POSIXized build on Interactive maybe needed to use gcc2.7.2 */
 # define UsePosix		YES
@@ -408,6 +394,11 @@ These are my additions to xf86site.def, if I build the sources.
 # define InstallXdmConfig      YES
 # define InstallFSConfig               YES
 
+/* for the new XF86Setup Util */
+#define HasTk			YES
+#define HasTcl			YES
+
+#endif /* BeforeVendorCF */
 </verb>
 <sect> Installation <p>
 
@@ -512,7 +503,7 @@ as to all who contribute to this excellent piece of free software.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.10 1996/02/19 09:50:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.11 1996/02/24 05:59:14 dawes Exp $
 
 
 

@@ -1,4 +1,10 @@
 # $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase4.tcl,v 3.3 1996/08/20 13:09:27 dawes Exp $
+#
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+#
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
 
 #
 # Phase IV - Commands run after second server is started
@@ -16,7 +22,11 @@ if $StartServer {
 	pack  $w.waitmsg -expand yes -fill both
 	update idletasks
 
+	mesg "The program is running on a different virtual terminal\n\n\
+		Please switch to the correct virtual terminal" info
+
 	source $tk_library/tk.tcl
+	set_default_arrow_bindings
 	set msg "Congratulations, you've got a running server!\n\n"
 } else {
 	set msg ""
@@ -29,67 +39,76 @@ proc Phase4_run_xvidtune { win } {
 }
 
 proc Phase4_nextphase { win } {
-	global Confname ConfigFile StartServer PID
+	global Confname StartServer ConfigFile
 
 	set w [winpathprefix $win]
-	writeXF86Config $Confname-3 -displayof $win
-	set text "The configuration has been completed.\n"
-	set delete_conf_3 1
-	if { [getuid] != 0 } {
-		set text "$text\
-			No changes were made to the file $ConfigFile,\n\
-			because you are not running as root.  However,\n\
-			the file $Confname-3 contains the configuration\n
-			settings that would have been used."
-		set delete_conf_3 0
+	set saveto [$w.saveto.entry get]
+	set backupmsg ""
+	if [file exists $saveto] {
+	    if {[catch {exec mv $saveto $saveto.bak} ret] != 0} {
+		bell
+		$w.mesg configure -text \
+		    "Unable to backup $saveto as $saveto.bak!\n\
+		    The configuration has not been saved!\n\
+		    Try again, with a different file name"
+		return
+	    }
+	    set backupmsg "A backup of the previous configuration has\n\
+		been saved to the file $saveto.bak"
 	}
-	if {![getuid] && ![catch {exec mv $ConfigFile $ConfigFile.bak} ret]} {
-           set text "$text\
-		A copy of your old configuration file has been saved as\n\
-		$ConfigFile.bak"
+	if {[catch {exec cp $Confname-3 $ConfigFile} ret] != 0} {
+	    bell
+            $w.mesg configure -text \
+		"Unable to save the configuration to\n\
+		the file $ConfigFile.\n\n\
+		Try again, with a different file name"
+	    return
 	}
-	if {![getuid] && [catch {exec cp $Confname-3 $ConfigFile} ret] != 0} {
-           set text "$text\n\
-		However, I am unable to save the configuration to\n
-		the file $ConfigFile.  The file $Confname-3, contains
-		the settings that should be used"
-		set delete_conf_3 0
-	}
-	$w.text configure -text $text
-	pack   forget $w.buttons
-	set cmd shutdown
-	if !$StartServer {
-		append cmd {;source $XF86Setup_library/phase5.tcl}
+	$w.text configure -text \
+		"The configuration has been completed.\n\n\
+		$backupmsg"
+	pack forget $w.buttons $w.mesg
+	if $StartServer {
+		set cmd {mesg "Just a moment..." info; shutdown}
+	} else {
+		set cmd {shutdown;source $XF86Setup_library/phase5.tcl}
 	}
 	button $w.okay -text "Okay"  -command $cmd
 	pack   $w.text $w.okay -side top
-	foreach fname [glob -nocomplain /tmp/XS*$PID*] {
-		if { !$delete_conf_3
-				&& ![string compare $fname $Confname-3] } {
-			continue
-		}
-		if [string match *.err $fname] {
-			continue
-		}
-		unlink $fname
-	}
 }
 
+writeXF86Config $Confname-3 -displayof $w -realdevice
 label  $w.text -text " $msg\
 	You can now run xvidtune to adjust your display settings,\n\
 	if you want to change the size or placement of the screen image\n\n\
-	If not, go ahead and exit"
+	If not, go ahead and exit\n\n\n\
+	If you choose to save the configuration, a backup copy will be\n\
+	made, if the file already exists"
+frame  $w.saveto
+label  $w.saveto.title -text "Save configuration to:"
+entry  $w.saveto.entry -bd 2 -width 40
+pack   $w.saveto.title $w.saveto.entry -side left
+if [getuid] {
+	if [info exists env(HOME)] {
+		$w.saveto.entry insert end $env(HOME)/XF86Config
+	} else {
+		$w.saveto.entry insert end /tmp/XF86Config.$PID
+	}
+} else {
+	$w.saveto.entry insert end $ConfigFile
+}
+label  $w.mesg -text ""
 frame  $w.buttons
 button $w.buttons.xvidtune -text "Run xvidtune" \
 	-command [list Phase4_run_xvidtune $w]
 button $w.buttons.save -text "Save the configuration and exit" \
 	-command [list Phase4_nextphase $w]
 button $w.buttons.abort -text "Abort - Don't save the configuration" \
-	-command "puts stderr Aborted;shutdown 1"
+	-command "clear_scrn;puts stderr Aborted;shutdown 1"
 pack   $w.buttons.xvidtune $w.buttons.save $w.buttons.abort -side top \
 	-pady 5m -fill x
 
 catch {destroy $w.waitmsg}
-pack    $w.text $w.buttons -side top -pady 10m
+pack    $w.text $w.saveto $w.buttons $w.mesg -side top -pady 8m
 focus   $w.buttons.save
 

@@ -6,9 +6,8 @@ Finish writing the help text
 
 Write documentation (modify the QuickStart guide)
 
-Check for symlink loops
-
 Update man page
+
 
 
 ITEMS THAT WOULD BE NICE TO HAVE BEFORE FIRST PUBLIC RELEASE:
@@ -20,19 +19,7 @@ When using the SVGA server, further restrict the list of available
 Add keybindings to enter and/or space in listboxes to match the
    button-up binding
 
-Change behaviour (with a 'u' for David :-) of "Probed" buttons as per
-Harald's request:
-
-> the functionality of "RAMDAC max speed" and "Video RAM" is somewhat different.
-> while it's possible to just select the memory size if wanted/needed I can't
-> change the ramdac speed without "unlocking" the slider first (not too intuitiv
-e).
->
-> would it be possible to change the text of those "Probed" buttons if not in
-> probed state (either show "User defined" or the actual value).
-
-Reset clocks when a programmable clock chip is selected or when
-  changing servers or whenever else would be appropriate
+Improve keybindings for the arrow keys
 
 More reasonable default Device and Monitor identifiers
 
@@ -58,6 +45,8 @@ Add support for Modules
 Add ability to select modes and their order
 
 Internationalization of messages
+
+List all of the files that are found to be missing
 
 
 RELATED CHANGES TO OTHER PARTS OF THE X SOURCE TREE:

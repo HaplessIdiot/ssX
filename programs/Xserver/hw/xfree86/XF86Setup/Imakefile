@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.6 1996/08/18 09:47:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.7 1996/08/19 13:37:45 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -17,20 +17,22 @@ includes::
 
 #else
             SRCS = main.c tclmisc.c tclvidmode.c tclcards.c tclother.c \
-		   tclkbd.c tclxfconf.c xf86Config.c cards.c tclxkbui.c
+		   tclkbd.c tclxfconf.c xf86Config.c cards.c tclxkbui.c \
+		   tkother.c
             OBJS = main.o tclmisc.o tclvidmode.o tclcards.o tclother.o \
-		   tclkbd.o tclxfconf.o xf86Config.o cards.o tclxkbui.o
+		   tclkbd.o tclxfconf.o xf86Config.o cards.o tclxkbui.o \
+		   tkother.o
        TCL_FILES = phase1.tcl phase2.tcl phase3.tcl phase4.tcl phase5.tcl \
 		   setuplib.tcl srvflags.tcl carddata.tcl \
 		   card.tcl done.tcl filelist.tcl keyboard.tcl \
-		   mondata.tcl monitor.tcl mouse.tcl
+		   mondata.tcl monitor.tcl mouse.tcl LICENSE
     TCLLIB_FILES = tcllib/button.tcl tcllib/combobox.tcl tcllib/misc.tcl \
 		   tcllib/downarrow.xbm tcllib/dialog.tcl tcllib/entry.tcl \
 		   tcllib/focus.tcl tcllib/init.tcl tcllib/listbox.tcl \
 		   tcllib/menu.tcl tcllib/optionMenu.tcl tcllib/palette.tcl \
 		   tcllib/scale.tcl tcllib/scrollbar.tcl tcllib/tclIndex \
 		   tcllib/tearoff.tcl tcllib/text.tcl tcllib/tk.tcl \
-		   tcllib/tkerror.tcl tcllib/uparrow.xbm
+		   tcllib/tkerror.tcl tcllib/uparrow.xbm tcllib/license.terms
       PICS_FILES = pics/vidcard.xbm pics/vidcard.msk \
 		   pics/XFree86.xbm pics/XFree86.msk
          SUBDIRS = scripts
@@ -60,6 +62,7 @@ includes::
      XCONFIGFILE = XF86Config
 
  XCONFIG_DEFINES = $(EXT_DEFINES) -DXF86SETUP \
+		   '-DPROJECTROOT="$(PROJECTROOT)"' \
 		   '-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"'
 
  XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup

@@ -1,7 +1,16 @@
 # $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.5 1996/08/20 12:26:25 dawes Exp $
 #
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+#
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
+
+#
 # Phase I - Initial text mode interaction w/user and starting of VGA16 server
 #
+
+set clicks1 [clock clicks]
 
 # load the autoload stuff
 source $tcl_library/init.tcl
@@ -10,12 +19,6 @@ source $XF86Setup_library/setuplib.tcl
 source $XF86Setup_library/filelist.tcl
 source $XF86Setup_library/carddata.tcl
 source $XF86Setup_library/mondata.tcl
-
-if { [info exists env(TMPDIR)] } {
-	set TmpDir $env(TMPDIR)
-} else {
-	set TmpDir /tmp
-}
 
 proc find_dialog {} {
 	global env
@@ -240,9 +243,9 @@ if { [string length $ConfigFile] > 0 } {
 	initconfig $Xwinhome
 }
 
-set gotlink 0
+set clicks2 [clock clicks]
 
-if { [getuid] && !$UseConfigFile } {
+if { ![getuid] && !$UseConfigFile } {
     # Check for the SysV Xqueue mouse driver
     if { [file exists /etc/conf/pack.d/xque]
 		&& [file exists /usr/lib/mousemgr] } {
@@ -253,7 +256,6 @@ if { [getuid] && !$UseConfigFile } {
 		set Pointer(Protocol)	Xqueue
 		set Pointer(Device)	""
 		set Pointer_realdevice	""
-		set gotlink 1
 	}
     }
 
@@ -266,109 +268,67 @@ if { [getuid] && !$UseConfigFile } {
 		set Pointer(Protocol)	OsMouse
 		set Pointer(Device)	""
 		set Pointer_realdevice	""
-		set gotlink 1
 	}
-    }
-} else {
-    if { ![string compare $Pointer(Protocol) OsMouse]
-	    || ![string compare $Pointer(Protocol) Xqueue] } {
-	set gotlink 1
     }
 }
 
 if { [getuid] } {
-	set gotlink 1
+	set Pointer(Device) ""
 }
 
-while { !$gotlink } {
-    if { !$UseConfigFile || ![file exists $Pointer(Device)]
-	    || [file type $Pointer(Device)] != "link" } {
-        if { $Pointer(Device) == "/dev/mouse" } {
-	    if { [file exists /dev/mouse]
-			&& [file type /dev/mouse] != "link" } {
-		set Pointer(Device) /dev/pointer
-	    }
-	}
-	if { ![string length $Dialog] } {
-		puts "This program needs to make a link to the real mouse device."
-		puts {What name should be used for the link (press [Enter] to accept}
-		puts -nonewline "the default of $Pointer(Device))? "
-		flush stdout
-		gets stdin response
-		if [string length $response] {
-			set Pointer(Device) $response
-		}
+if [file exists $Pointer(Device)] {
+	if { [file type $Pointer(Device)] == "link" } {
+		set Pointer_realdevice [readlink $Pointer(Device)]
+		set Pointer(OldLink) $Pointer(Device)
 	} else {
-		set text "This program needs to make a link to the\n\
-			real mouse device.\n\
-			\n\
-			What name should be used for the link?"
-		set retval [catch {
-			exec $Dialog --inputbox $text 12 50 \
-				$Pointer(Device) >@stdout
-		} output]
-		if [string match "chil*proc*exit*abnormally" $output] {
-			puts "Aborted"
-
-			exit 1
-		}
-		if [string length $output] {
-			set Pointer(Device) $output
-		}
+		set Pointer_realdevice $Pointer(Device)
 	}
-    }
-
-    if { [file exists $Pointer(Device)] && [has_symlinks]
-	    && [file type $Pointer(Device)] != "link" } {
-	mesg "The file $Pointer(Device) already exists, but is not a\n\
-		symbolic link. The name of a file that can be linked\n\
-		to the actual mouse device is what is needed." okay
-	set gotlink 0
-	continue
-    }
-    set gotlink 1
-
-    file lstat [file dirname $Pointer(Device)] fstat
-    if { $fstat(uid) != 0 || ($fstat(mode) & 002)
-		|| ($fstat(gid) > 99 && ($fstat(mode) & 020)) } {
-	set chgperm [mesg "Warning! The directory\
-		[file dirname $Pointer(Device)]\n\
-		is writable by users other than root.\n\
-		By creating the link to the mouse in this directory\n\
-		you may be opening a huge security hole.\n\n\
-		Do you want to change the location of the link?" yesno]
-	if $chgperm {set gotlink 0}
-    }
 }
 
-if { [file exists $Pointer(Device)]
-		&& [file type $Pointer(Device)] == "link"
-		&& ![info exists Pointer_realdevice] } {
-	set Pointer_realdevice [file readlink $Pointer(Device)]
+set PID [pid]
+if { [info exists env(TMPDIR)] } {
+	set XF86SetupDir $env(TMPDIR)/.XF86Setup$PID
+} else {
+	set XF86SetupDir /tmp/.XF86Setup$PID
 }
-set Confname "$TmpDir/XS.[pid]"
+
+
+if ![mkdir $XF86SetupDir 0700] {
+	mesg "Unable to make directory $XF86SetupDir\n\
+		 for storing temporary files" okay
+	exit 1
+}
+
+set rand1 [random 1073741823]
+random seed [expr $clicks2-$clicks1]
+set rand2 [random 1073741823]
+
+set TmpDir $XF86SetupDir/[format "%x-%x" $rand1 $rand2]
+if ![mkdir $TmpDir 0700] {
+	mesg "Unable to make directory $TmpDir\n\
+		 for storing temporary files" okay
+	exit 1
+}
+check_tmpdirs
+
+if [string length $Pointer(Device)] {
+	set Pointer(Device) $TmpDir/mouse
+	if [info exists Pointer_realdevice] {
+		link $Pointer_realdevice $Pointer(Device)
+	}
+}
+
+set Confname $TmpDir/Config
 
 if $StartServer {
 	# write out a temp XF86Config file
-	writeXF86Config $Confname-1 -vgamode
+	writeXF86Config $Confname-1 -vgamode -generic
 
 	mesg "Press \[Enter\] to switch to graphics mode.\n\
 		\nThis may take a while..." okay
 
-	#set ServerPID1 [start_server VGA16 $Confname-1 XSout[pid].1]
-	set ServerPID [start_server VGA16 $Confname-1 XSout[pid].1]
+	set ServerPID [start_server VGA16 $Confname-1 ServerOut-1]
 
-	if { $ServerPID < 1 } {
-		set devid   $Scrn_VGA16(Device)
-		set chipset [set Device_${devid}(Chipset)]
-		if {"X$chipset" != "Xgeneric"} {
-			mesg "Hmmm.. server start-up failed!\
-				Let me try one more time..." info
-			writeXF86Config $Confname-1g -vgamode -generic
-			set ServerPID [start_server VGA16 \
-				$Confname-1g XSout[pid].1]
-		}
-	}
 	if { $ServerPID == 0 } {
 		mesg "Unable to start X server!" info
 		exit 1

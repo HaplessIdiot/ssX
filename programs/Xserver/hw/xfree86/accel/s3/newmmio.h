@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/newmmio.h,v 3.0 1996/08/20 12:26:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/newmmio.h,v 3.1 1996/08/23 11:02:55 dawes Exp $ */
 /***************************************************************************
  * 
  * typedefs and macros for old and new MMIO mode, Trio64V+ and 868/968
@@ -272,7 +272,7 @@ typedef struct {
 	S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | x); \
 	S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | y); \
 }
-#define SET_MULT_MISC(val) 	S3_OUTW(MULTIFUNC_CNTL, MULT_MISC)
+#define SET_MULT_MISC(val) 	S3_OUTW(MULTIFUNC_CNTL, MULT_MISC | (val))
 
 #define SET_SCISSORS(x1,y1,x2,y2) {\
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | y1);\

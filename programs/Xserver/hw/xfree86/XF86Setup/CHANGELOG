@@ -308,3 +308,54 @@
 			  is probably not yet working when this list
 			  is used)
 
+0.17	23 Aug 1996	Add new C&T README to list and use the
+			  Oak, WstDig, ati, etc. READMEs for the
+			  Mono & VGA16 servers, as well as SVGA
+			Add ProjectRoot to the list of search directories
+			Start the VGA16 server just w/ Chipset "generic"
+			Add tcl commands for changing the umask and
+			  for adding and removing directories
+			Add random function
+			Add "clock clicks" and "clock seconds" commands
+			  to Tcl 7.4 interpreters
+			Move all temp files to a randomly named subdir
+			  of a .XF86Setup* subdir
+			Place the mouse link with the rest of the
+			  temp files and then write the actual mouse
+			  device to the config file
+			Check the permissions of the temp subdirs
+			  before any write to a file
+			When writing the config file, use the link
+			  for the mouse device, except for the final
+			  config file to which the actual device is
+			  written (unless there was an existing
+			  /dev/mouse link which already pointed to
+			  the correct device - in that case write
+			  /dev/mouse as the device name)
+			If the dacspeed "Probed" button is depressed,
+			  and the user clicks on the slider, switch to
+			  using the slider value
+			Add a pretty border to the popup help windows
+			Destroy existing help popups if the user
+			  clicks on help, while one is already up
+			Don't show the mouse device entry box or
+			  device list, if the user won't be able to
+			  make any changes
+			Print messages to the text screen while in
+			  graphics mode directing them to switch
+			  to the correct VT
+			Let the user choose where to write the
+			  config file (with the existing location,
+			  as the default)
+			Reset list of clocks when a clock chip or a
+			  different card or server is selected
+			Reset mouse button canvas when a new protocol
+			  is selected
+			Change welcome screen to state that the
+			  underlined letters indicate Ctrl or Alt
+			  bindings
+			Add copyright and disclaimer notices
+			Add function to search along an axis for a
+			  focus window
+			Add keybindings for the arrow keys
+

@@ -1,4 +1,12 @@
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tcllib/combobox.tcl,v 3.3 1996/08/20 13:09:35 dawes Exp $
+#
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+#
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
+
+# Implements a simple combobox widget
 
 proc combobox {w args} {
 	global tcl_library

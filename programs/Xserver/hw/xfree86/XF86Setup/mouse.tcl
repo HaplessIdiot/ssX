@@ -1,6 +1,13 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.6 1996/08/18 12:34:01 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.7 1996/08/20 12:26:24 dawes Exp $
+#
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+#
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
 
 #
+# Mouse configuration routines
 #
 
 set mseTypeList { Microsoft MouseSystems MMSeries Logitech BusMouse
@@ -23,6 +30,9 @@ proc Mouse_proto_select { win } {
 	global Pointer_realdevice
 
 	set w [winpathprefix $win]
+	set canv $w.mouse.mid.right.canvas
+	$canv itemconfigure mbut  -fill white
+	$canv itemconfigure coord -fill black
 	if {[lsearch -exact {BusMouse Xqueue OSMouse PS/2} $mseType] == -1} {
 		foreach rate {1200 2400 4800 9600} {
 			$w.mouse.brate.$rate configure -state normal
@@ -101,6 +111,7 @@ proc Mouse_create_widgets { win } {
 		radiobutton $w.mouse.type.$type -text $Type \
 			-indicatoron false \
 			-variable mseType -value $Type \
+			-highlightthickness 1 \
 			-command [list Mouse_proto_select $win]
 		pack $w.mouse.type.$type -side left -anchor n
 	}
@@ -268,12 +279,12 @@ proc Mouse_deactivate { win } {
 }
 
 proc Mouse_popup_help { win } {
-        toplevel .mousehelp
+        toplevel .mousehelp -bd 5 -relief ridge
         wm title .mousehelp "Help"
 	wm geometry .mousehelp +30+30
         text .mousehelp.text -takefocus 0 -width 90 -height 27
         .mousehelp.text insert end \
-{   First select the protocol for your mouse using 'p', then if needed, change the device name.
+{ First select the protocol for your mouse using 'p', then if needed, change the device name.
  If applicable, also set the baud rate (1200 should work).  Press 'a' to apply the changes
  and try moving your mouse around.  If the mouse pointer does not move properly, try a
  different protocol or device name.
@@ -422,11 +433,13 @@ proc Mouse_setsettings { win } {
 	if { "$mseType" == "MouseSystems" } {lappend flags ReOpen}
 	if {[string length $Pointer(Device)] && [string length $msedev]} {
 		set Pointer_realdevice $msedev
+		check_tmpdirs
 		unlink $Pointer(Device)
 		if [link $Pointer_realdevice $Pointer(Device)] {
 			lappend flags ReOpen
 		}
 	}
+	check_tmpdirs
 	set result [catch { eval [list xf86misc_setmouse \
 		$msedev $mseType $baudRate $sampleRate \
 		$em3but $emulate3Timeout $chdmid] $flags } ]
@@ -461,7 +474,7 @@ proc Mouse_setsettings { win } {
 proc Mouse_getsettings { win } {
 	global mseType mseTypeList baudRate sampleRate clearDTR
 	global emulate3Buttons emulate3Timeout chordMiddle clearRTS
-	global Pointer_realdevice
+	global Pointer Pointer_realdevice
 
 	set w [winpathprefix $win]
 	set initlist	[xf86misc_getmouse]
@@ -497,11 +510,14 @@ proc Mouse_getsettings { win } {
 				configure -state disabled
 		}
 		$w.mouse.type.$mtype  configure -state normal
-		$w.mouse.device.entry configure -state disabled
-		pack forget $w.mouse.device.list
 	} else {
 		$w.mouse.type.osmouse configure -state disabled
 		$w.mouse.type.xqueue  configure -state disabled
+	}
+	if ![string length $Pointer(Device)] {
+		pack forget $w.mouse.device.title
+		pack forget $w.mouse.device.entry
+		pack forget $w.mouse.device.list
 	}
 	$w.mouse.type.$mtype invoke
 }

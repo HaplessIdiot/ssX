@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.50 1996/08/13 11:27:48 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.51 1996/08/16 12:28:20 dawes Exp $ 
 .TH XF86_Accel 1 "Version 3.1.2F"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -85,7 +85,8 @@ The servers support the following chipsets:
 .TP 13
 XF86_S3:
 86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C928-P,
-86C732 (Trio32), 86C764 (Trio64), 86C864, 86C868, 86C964, 86C968
+86C732 (Trio32), 86C764 (Trio64), 86C765 (Trio64V+), 86C864, 86C868,
+86C964, 86C968
 .TP 13
 XF86_Mach8:
 ATI Mach8, ATI Mach32

@@ -42,7 +42,7 @@
  *    Modified again for use with Chips chipsets
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_blt16.c,v 3.0 1996/08/11 13:02:43 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -198,6 +198,10 @@ ctcfbCopyWindow(pWin, ptOldOrg, prgnSrc)
     register int i, nbox;
     WindowPtr pwinRoot;
 
+#ifdef DEBUG
+    ErrorF("ctcfbCopyWindow\n");
+#endif
+
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
     REGION_INIT(pWin->drawable.pScreen, &rgnDst, NullBox, 0);
@@ -259,6 +263,10 @@ ctcfbBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     int ydir;			       /* 1 = top down, -1 = bottom up */
     int careful;
 
+#ifdef DEBUG
+    ErrorF("ctcfbBppDoBitbltCopy\n");
+#endif
+
 #if 0
     /* This doesn't work because we need to deal with cfb16 and cfb24
      * at the same time. */
@@ -286,7 +294,7 @@ ctcfbBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     pboxNew2 = NULL;
     pptNew2 = NULL;
     if (careful && (pptSrc->y < pbox->y1)) {
-	/* walk source botttom to top */
+	/* walk source bottom to top */
 	ydir = -1;
 
 	if (nbox > 1) {
@@ -393,6 +401,9 @@ ctcfbBppPolyBitblt(pdstBase, psrcBase, widthSrc, widthDst, nbox, pptSrc,
     int xdir, ydir;
     unsigned long planemask;
 {
+#ifdef DEBUG
+    ErrorF("ctcfbBppPolyBitblt");
+#endif
 #ifdef DEBUG
     ErrorF("planemask: 0x%X \n", planemask);
 #endif

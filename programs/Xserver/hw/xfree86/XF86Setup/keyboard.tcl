@@ -1,6 +1,13 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.4 1996/08/13 11:28:24 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.5 1996/08/18 09:47:32 dawes Exp $
 #
-# Keyboard configuration
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+#
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
+
+#
+# Keyboard configuration routines
 #
 
 proc Keyboard_create_widgets { win } {
@@ -266,7 +273,8 @@ proc Keyboard_loadsettings { win loadflag } {
 }
 
 proc Keyboard_popup_help { win } {
-        toplevel .keyboardhelp
+	catch {destroy .keyboardhelp}
+        toplevel .keyboardhelp -bd 5 -relief ridge
         wm title .keyboardhelp "Help"
 	wm geometry .keyboardhelp +30+30
         text .keyboardhelp.text

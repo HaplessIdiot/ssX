@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_pci.c,v 3.0 1996/08/11 13:02:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_pci.c,v 3.1 1996/08/21 08:40:23 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -40,15 +40,3 @@ ctPCIMemBase(ctisHiQV32)
     }
 }
 
-unsigned int 
-ctPCIIOBase()
-{
-  if (vgaPCIInfo->IOBase != 0) {
-    return vgaPCIInfo->IOBase & 0xFFFFFC00;
-  } else {
-    ErrorF("%s %s: %s: Can't find valid PCI "
-	   "IOBase Address\n", XCONFIG_PROBED,
-	   vga256InfoRec.name, vga256InfoRec.chipset);
-    return 0;
-  }
-}

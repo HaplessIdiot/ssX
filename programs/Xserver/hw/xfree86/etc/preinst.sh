@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.0 1996/03/02 02:28:29 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.1 1996/03/03 03:57:23 dawes Exp $
 #
-# preinst.sh
+# preinst.sh  (for XFree86 3.1.2F)
 #
 # This script should be run before installing a beta version.
 # It removes symbolic links to old beta versions.

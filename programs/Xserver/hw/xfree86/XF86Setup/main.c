@@ -1,4 +1,26 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.5 1996/08/18 09:47:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.6 1996/08/20 12:26:21 dawes Exp $ */
+/*
+ * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Joseph Moss not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Joseph Moss makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
+ *
+ * JOSEPH MOSS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL JOSEPH MOSS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+
 
 /*
  * Main procedure for XF86Setup, by Joe Moss
@@ -42,11 +64,15 @@ static int  usescriptdir = 0;		/* Use script dir, not PATH */
       the existence of the startup file (phase1)
 */
 
+#ifndef PROJECTROOT
+#define PROJECTROOT ""
+#endif
+
 static char Set_InitVars[] =
 	"if [info exists env(XWINHOME)] {\n"
 	"    set Xwinhome $env(XWINHOME)\n"
 	"} else {\n"
-	"    set xdirs [list /usr/X11R6 /usr/X11 "
+	"    set xdirs [list " PROJECTROOT " /usr/X11R6 /usr/X11 "
 		"/usr/X /var/X11R6 /var/X11 /var/X /usr/X11R6.1 "
 		"/usr/local/X11R6 /usr/local/X11 /usr/local/X]\n"
 	"    foreach dir $xdirs {\n"
@@ -124,6 +150,12 @@ static Tk_ArgvInfo argTable[] = {
 };
 
 extern int	XF86Other_Init(
+#if NeedFunctionProtoTypes
+	Tcl_Interp *interp
+#endif
+);
+
+extern int	XF86TkOther_Init(
 #if NeedFunctionProtoTypes
 	Tcl_Interp *interp
 #endif
@@ -459,6 +491,12 @@ main(argc, argv)
     if (XF86Kbd_Init(interp) == TCL_ERROR)
 	print_result_and_exit;
 
+    /****  Add the commands to the Tcl interpreter for the
+           Tk convenience functions ****/
+
+    if (XF86TkOther_Init(interp) == TCL_ERROR)
+	print_result_and_exit;
+
     if (filename != NULL) {
         /****  Load the default bindings ****/
 	strcpy(buf, "source $tk_library/init.tcl");
@@ -496,12 +534,18 @@ main(argc, argv)
 		"Executing second copy of XF86Setup (%s -statefile %s)...\n",
 		argv[0], statefile);
 #endif
-	    if (statefile)
+	    if (statefile) {
 	        execlp(argv[0], argv[0], "-statefile", statefile, (char *)0);
-	    fprintf(stderr,
-	        "Exec of 2nd XF86Setup failed! Returned error #%d\n", errno);
-	    Tcl_Eval(interp, "exit 1");
-	    exit(1);
+		fprintf(stderr,
+	            "Exec of 2nd XF86Setup failed! Returned error #%d\n",
+		    errno);
+		Tcl_Eval(interp, "exit 1");
+		exit(1);
+	    }
+#ifdef DEBUG
+	    else
+		fprintf(stderr, "The StateFileName variable isn't set!\n");
+#endif
 	} else {
             /****  Lastly, execute the Phase V commands ****/
             XF86Setup_TclEvalFile(interp, PHASE5);

@@ -77,7 +77,7 @@ xkb_symbols "nodeadkeys" {
     include "de(basic)"
     key <TLDE> {	[ asciicircum,	degree		],
 			[   notsign 			]	};
-    key <AE12> {	[ acute,	grave		],
+    key <AE12> {	[ apostrophe,	grave		],
 			[ cedilla			]	};
     key <AD11> {	[ udiaeresis,	Udiaeresis	],
 			[ diaeresis 			]	};
@@ -88,6 +88,6 @@ xkb_symbols "nodeadkeys" {
     key <AC11> {	[ adiaeresis,	Adiaeresis	],
 			[ asciicircum			]	};
 
-    key <BKSL> {	[ numbersign,	apostrophe	],
+    key <BKSL> {	[ numbersign,	acute		],
 			[ grave				]	};
 };

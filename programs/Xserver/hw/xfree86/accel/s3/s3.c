@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.137 1996/08/20 12:26:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.138 1996/08/23 11:02:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -299,7 +299,7 @@ unsigned char s3Port40;
 unsigned char s3Port51;
 unsigned char s3Port54;
 unsigned char s3Port59 = 0x00;
-unsigned char s3Port5A = 0x0A;
+unsigned char s3Port5A = 0x00;
 unsigned char s3Port31 = 0x8d;
 void (*s3ImageReadFunc)(
 #if NeedFunctionPrototypes
@@ -666,13 +666,17 @@ s3GetPCIInfo()
        || info.ChipType == S3_968 
        || info.ChipType == S3_TRIO_32_64  /* only needed for Trio64V+ */
        || info.ChipType == S3_ViRGE) {
-      unsigned long base0 = info.MemBase;
-      char *probed = XCONFIG_PROBED;
+      unsigned long base0;
+      char *probed;
       char map_64m[64];
       int j;
       
-      if (s3InfoRec.MemBase != 0) {
-	 base0 = s3InfoRec.MemBase;
+      if (s3InfoRec.MemBase == 0) {
+	 base0  = info.MemBase;
+	 probed = XCONFIG_PROBED;
+      }
+      else {
+	 base0  = s3InfoRec.MemBase;
 	 probed = XCONFIG_GIVEN;
       }
 
@@ -702,20 +706,32 @@ s3GetPCIInfo()
 	  map_64m[(base0 >> 26) & 0x3f] || 
 	  map_64m[((base0+0x3ffffff) >> 26) & 0x3f]) {
 	 for (j=63; j>=16 && map_64m[j]; j--);
+	 info.MemBase = ((unsigned long)j) << 26;
 	 ErrorF("%s %s: PCI: base address not correctly aligned or address conflict\n",
 		probed, info.ChipRev);
 	 ErrorF("\t\tbase address changed from 0x%08lx to 0x%08lx\n",
-		base0, ((unsigned long)j) << 26);
-	 info.MemBase = ((unsigned long)j) << 26;
+		base0, info.MemBase);
          xf86writepci(s3InfoRec.scrnIndex, pci_devp[i]->_cardnum, 0x10,
-		      ~0L, ((unsigned long)j) << 26);
+		      ~0L, info.MemBase);
+      }
+      s3Port59 = (info.MemBase >> 24) & 0xfc;
+      s3Port5A = 0;
+   }
+   else {
+      if (s3InfoRec.MemBase != 0) {
+	 s3Port59 =  s3InfoRec.MemBase >> 24;
+	 s3Port5A = (s3InfoRec.MemBase >> 16) & 0x08;
+      }
+      else {
+	 s3Port59 =  info.MemBase >> 24;
+	 s3Port5A = (info.MemBase >> 16) & 0x08;
       }
    }
+
    /* Free PCI information */
    xf86cleanpci();
 
    if (found && xf86Verbose) {
-
       if (info.ChipType != S3_UNKNOWN) {
 	 ErrorF("%s %s: PCI: %s rev %x, Linear FB @ 0x%08lx\n", XCONFIG_PROBED,
 		s3InfoRec.name, xf86TokenToString(s3ChipTable, info.ChipType),
@@ -1142,8 +1158,8 @@ s3Probe()
 	    chipname = "968";
 	 } else if (S3_964_SERIES(s3ChipId)) {
 	    chipname = "964";
-/*	 } else if (S3_ViRGE_SERIES(s3ChipId)) {
-	    chipname = "ViRGE"; */
+	 } else if (S3_ViRGE_SERIES(s3ChipId)) {
+	    chipname = "ViRGE";
 	 } else if (S3_TRIO32_SERIES(s3ChipId)) {
 	    chipname = "Trio32";
 	 } else if (S3_TRIO64V_SERIES(s3ChipId /* , s3ChipRev */)) {
@@ -3713,6 +3729,20 @@ redo_mode_lookup:
       s3PCIHack = TRUE;
    if (OFLG_ISSET(OPTION_POWER_SAVER, &s3InfoRec.options))
       s3PowerSaver = TRUE;
+
+   if (! (s3Port59 | s3Port5A)) { /* s3Port59/s3Port5A not yet initialized */
+      if (s3InfoRec.MemBase != 0) {
+	 s3Port59 =  s3InfoRec.MemBase >> 24;
+	 s3Port5A = (s3InfoRec.MemBase >> 16) & 0x08;
+      }
+      else {
+	 outb(vgaCRIndex, 0x59);
+	 s3Port59 = inb(vgaCRReg);
+	 outb(vgaCRIndex, 0x5a);
+	 s3Port5A = inb(vgaCRReg);
+      }
+   }
+
 
 #ifdef XFreeXDGA
       s3InfoRec.displayWidth = s3DisplayWidth;

@@ -1,5 +1,4 @@
 /*
- *
  * Modified 1996 by Egbert Eich <Egbert.Eich@Physik.TH-Darmstadt.DE>
  * Modified 1996 by David Bateman <dbateman@ee.uts.edu.au>
  *
@@ -22,7 +21,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.0 1996/08/11 13:02:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.1 1996/08/21 08:40:22 dawes Exp $ */
+
+/*#define DEBUG
+#define CT_HW_DEBUG */
+#define CT_DEBUG_WAIT 500000
+#define HWCUR_MMIO
 
 extern Bool ctLinearSupport;	       /*linear addressing enable */
 extern Bool ctAccelSupport;	       /*acceleration enable */
@@ -31,6 +35,7 @@ extern Bool ctHDepth;		       /*Chip has 16/24bpp */
 extern Bool ctDSTN;
 extern Bool ctLCD;
 extern Bool ctCRT;
+extern Bool ctHWCursor;
 
 extern unsigned int ctCursorAddress;   /* The address in video ram of cursor */
 
@@ -83,7 +88,16 @@ extern void ctcfbPolyFillRect();
 #ifdef CHIPS_SUPPORT_MMIO
 extern void ctMMIOLineSS();
 extern void ctMMIOSegmentSS();
-
 #endif
 
-#define MMIOmem(x) *(unsigned int *)(ctMMIOBase + x)
+#define MMIOmeml(x) *(unsigned int *)(ctMMIOBase + x)
+#define MMIOmemw(x) *(unsigned short *)(ctMMIOBase + x)
+
+/* To aid debugging of 32 bit register access we make the following defines */
+#if defined(DEBUG) & defined(CT_HW_DEBUG)
+extern void ctHWDebug();
+#define HW_DEBUG(x) ctHWDebug(x)
+#else
+#define HW_DEBUG(x)
+#endif
+

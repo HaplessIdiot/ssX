@@ -1,4 +1,26 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclother.c,v 3.4 1996/08/13 11:28:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclother.c,v 3.5 1996/08/18 01:47:27 dawes Exp $ */
+/*
+ * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Joseph Moss not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Joseph Moss makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
+ *
+ * JOSEPH MOSS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL JOSEPH MOSS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+
 
 /*
 
@@ -13,6 +35,7 @@
 #include <X11/Xfuncs.h>
 #include <tcl.h>
 #include <tk.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 
 static int	TCL_XF86GetUID(
@@ -69,6 +92,33 @@ static int	TCL_XF86UnLink(
 #endif
 );
 
+static int	TCL_XF86Umask(
+#if NeedNestedProtoTypes
+    ClientData clientData,
+    Tcl_Interp *interp,
+    int argc,
+    char *argv[]
+#endif
+);
+
+static int	TCL_XF86MkDir(
+#if NeedNestedProtoTypes
+    ClientData clientData,
+    Tcl_Interp *interp,
+    int argc,
+    char *argv[]
+#endif
+);
+
+static int	TCL_XF86RmDir(
+#if NeedNestedProtoTypes
+    ClientData clientData,
+    Tcl_Interp *interp,
+    int argc,
+    char *argv[]
+#endif
+);
+
 static int	TCL_XF86Sleep(
 #if NeedNestedProtoTypes
     ClientData clientData,
@@ -77,6 +127,17 @@ static int	TCL_XF86Sleep(
     char *argv[]
 #endif
 );
+
+#if TCL_MAJOR_VERSION == 7 && TCL_MINOR_VERSION == 4
+static int	TCL_XF86Clock(
+#if NeedNestedProtoTypes
+    ClientData clientData,
+    Tcl_Interp *interp,
+    int argc,
+    char *argv[]
+#endif
+);
+#endif
 
 /*
    Adds all the new commands to the Tcl interpreter
@@ -110,9 +171,27 @@ XF86Other_Init(interp)
 		TCL_XF86UnLink, (ClientData) NULL,
 		(void (*)()) NULL);
 
+	Tcl_CreateCommand(interp, "umask",
+		TCL_XF86Umask, (ClientData) NULL,
+		(void (*)()) NULL);
+
+	Tcl_CreateCommand(interp, "mkdir",
+		TCL_XF86MkDir, (ClientData) NULL,
+		(void (*)()) NULL);
+
+	Tcl_CreateCommand(interp, "rmdir",
+		TCL_XF86MkDir, (ClientData) NULL,
+		(void (*)()) NULL);
+
 	Tcl_CreateCommand(interp, "sleep",
 		TCL_XF86Sleep, (ClientData) NULL,
 		(void (*)()) NULL);
+
+#if TCL_MAJOR_VERSION == 7 && TCL_MINOR_VERSION == 4
+	Tcl_CreateCommand(interp, "clock",
+		TCL_XF86Clock, (ClientData) NULL,
+		(void (*)()) NULL);
+#endif
 
 	return TCL_OK;
 }
@@ -314,6 +393,86 @@ TCL_XF86UnLink(clientData, interp, argc, argv)
 }
 
 /*
+  Set the umask
+*/
+
+int
+TCL_XF86Umask(clientData, interp, argc, argv)
+    ClientData	clientData;
+    Tcl_Interp	*interp;
+    int		argc;
+    char	*argv[];
+{
+	int mode;
+
+	if (argc != 2) {
+		Tcl_SetResult(interp, "Usage: umask <value>", TCL_STATIC);
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetInt(interp, argv[1], &mode) != TCL_OK)
+		return TCL_ERROR;
+	if (umask((mode_t) mode) == -1)
+		Tcl_SetResult(interp, "0", TCL_STATIC);
+	else
+		Tcl_SetResult(interp, "1", TCL_STATIC);
+	return TCL_OK;
+}
+
+/*
+  Create the named directory
+*/
+
+int
+TCL_XF86MkDir(clientData, interp, argc, argv)
+    ClientData	clientData;
+    Tcl_Interp	*interp;
+    int		argc;
+    char	*argv[];
+{
+	int mode = 0777;
+
+	if (argc < 2 || argc > 3) {
+		Tcl_SetResult(interp, "Usage: mkdir <dirname> [<mode>]", TCL_STATIC);
+		return TCL_ERROR;
+	}
+
+	if (argc == 3) {
+		if (Tcl_GetInt(interp, argv[2], &mode) != TCL_OK)
+			return TCL_ERROR;
+	}
+
+	if (mkdir(argv[1], mode) == -1)
+		Tcl_SetResult(interp, "0", TCL_STATIC);
+	else
+		Tcl_SetResult(interp, "1", TCL_STATIC);
+	return TCL_OK;
+}
+
+/*
+  Remove the specified directory
+*/
+
+int
+TCL_XF86RmDir(clientData, interp, argc, argv)
+    ClientData	clientData;
+    Tcl_Interp	*interp;
+    int		argc;
+    char	*argv[];
+{
+	if (argc != 2) {
+		Tcl_SetResult(interp, "Usage: rmdir <dirname>", TCL_STATIC);
+		return TCL_ERROR;
+	}
+
+	if (rmdir(argv[1]) == -1)
+		Tcl_SetResult(interp, "0", TCL_STATIC);
+	else
+		Tcl_SetResult(interp, "1", TCL_STATIC);
+	return TCL_OK;
+}
+
+/*
   Pause for the specified number of seconds
 */
 
@@ -332,4 +491,62 @@ TCL_XF86Sleep(clientData, interp, argc, argv)
 	sleep(atoi(argv[1]));
 	return TCL_OK;
 }
+
+#if TCL_MAJOR_VERSION == 7 && TCL_MINOR_VERSION == 4
+/*
+  Emulate a subset of the Tcl 7.5 clock command
+*/
+
+#ifdef X_NOT_STDC_ENV
+extern long time();
+#else
+#include <time.h>
+#endif
+
+int
+TCL_XF86Clock(clientData, interp, argc, argv)
+    ClientData	clientData;
+    Tcl_Interp	*interp;
+    int		argc;
+    char	*argv[];
+{
+	if (argc < 2) {
+		Tcl_AppendResult(interp, "wrong # args: should be \"",
+			argv[0], " option ?arg ...?\"", (char *) NULL);
+		return TCL_ERROR;
+	}
+
+	if (!strcmp(argv[1], "clicks")) {
+		if (argc != 2) {
+			Tcl_AppendResult(interp, "wrong # arguments: must be \"",
+				argv[0], " clicks\"", (char *) NULL);
+			return TCL_ERROR;
+		}
+#ifndef AMOEBA
+		{
+		    struct timeval  tp;
+
+		    X_GETTIMEOFDAY(&tp);
+		    sprintf(interp->result, "%lu",
+			    tp.tv_sec*1000000 + tp.tv_usec);
+		}
+#else
+		sprintf(interp->result, "%lu", sys_milli());
+#endif
+		return TCL_OK;
+	} else if (!strcmp(argv[1], "seconds")) {
+		if (argc != 2) {
+			Tcl_AppendResult(interp, "wrong # arguments: must be \"",
+				argv[0], " seconds\"", (char *) NULL);
+			return TCL_ERROR;
+		}
+		sprintf(interp->result, "%ld", (long) time(0));
+	} else {
+		Tcl_AppendResult(interp, "unknown option \"", argv[1],
+			"\": must be clicks, format, scan, or seconds",
+			(char *) NULL);
+		return TCL_ERROR;
+	}
+}
+#endif
 

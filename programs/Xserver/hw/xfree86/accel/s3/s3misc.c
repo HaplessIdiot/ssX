@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.47 1996/08/20 12:27:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.48 1996/08/23 11:03:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -273,7 +273,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	     * Normally only 6 bits are set in hw, but the Diamond Stealth
 	     * Pro is different.
 	     */
-		if (s3NewMmio) 
+	    if (s3NewMmio) 
 			s3LBWindow = 0x1010000; 	/* BL: 16 MB + 64k */
 	    else 
 			s3LBWindow = s3BankSize;
@@ -569,6 +569,13 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	 ErrorF("%s %s: BITBLT %2d %02x\n",
 		XCONFIG_PROBED, s3InfoRec.name, i, pat[i]&0xff);
       ErrorF("\n");
+
+      ErrorF("%s %s:            ",
+	     XCONFIG_PROBED, s3InfoRec.name);
+      for(i=k=0; i<8; i++)
+	 for(j=0; j<s3Bpp; j++,k++)
+	    ErrorF(" %02x", (k ^ ((dash_test_pattern & (1<<(15-i))) ? 0xff : 0)));
+      ErrorF("\n\n");
 #endif
       if (pat[0] == 0xff && pat[3 * s3Bpp] == 0xff)
 	 break;  /* BITBLT worked */
@@ -1053,7 +1060,7 @@ Bool
 s3SwitchMode(mode)
      DisplayModePtr mode;
 {
-  WaitIdle();  /* wait till idle */
+   WaitIdle();  /* wait till idle */
 
    if (OFLG_ISSET(OPTION_SHOWCACHE, &s3InfoRec.options)) {
       debugcache++;

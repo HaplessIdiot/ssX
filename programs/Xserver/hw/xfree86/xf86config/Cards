@@ -18,7 +18,63 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.32 1996/06/10 09:16:35 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.33 1996/08/16 12:33:40 dawes Exp $
+
+#Chips & Technologies
+
+#untested
+NAME Chips & Technologies CT65520
+CHIPSET ct65520
+SERVER SVGA
+LINE # Device section for C&T cards.
+LINE # Option "suspend_hack"
+LINE # Option "STN"
+LINE # Option "no_stretch"
+LINE # Option "no_center"
+LINE # Option "use_modeline"
+LINE # videoram 512
+
+NAME Chips & Technologies CT65530
+CHIPSET ct65530
+LINE # Option "nolinear"
+LINE # MemBase 0x03b00000
+SEE Chips & Technologies CT65520
+
+NAME Chips & Technologies CT65540
+CHIPSET ct65540
+NOCLOCKPROBE
+LINE # Option "ext_fram_buf"
+LINE # Textclockfreq 25.175
+SEE Chips & Technologies CT65530
+
+NAME Chips & Technologies CT65545
+CHIPSET ct65545
+NOCLOCKPROBE
+LINE # Option "noaccel"
+LINE # Option "no_bitblt"
+LINE # Option "sw_cursor"
+LINE # Option "mmio"
+SEE Chips & Technologies CT65540
+
+NAME Chips & Technologies CT65546
+CHIPSET ct65546
+SEE Chips & Technologies CT65545
+
+NAME Chips & Technologies CT65548
+CHIPSET ct65548
+SEE Chips & Technologies CT65545
+
+NAME Chips & Technologies CT65550
+CHIPSET ct65550
+NOCLOCKPROBE
+LINE # Option "noaccel"
+LINE # Option "no_bitblt"
+LINE # Option "sw_cursor"
+SEE Chips & Technologies CT65540
+
+NAME Chips & Technologies CT65554
+CHIPSET ct65554
+SEE Chips & Technologies CT65550
 
 # Cirrus Logic
 
@@ -106,9 +162,17 @@ NAME STB Nitro
 CHIPSET CL-GD5434
 SEE Cirrus Logic GD543x
 
+NAME STB Nitro 64
+CHIPSET CL-GD5446
+SEE Cirrus Logic GD543x
+
 NAME STB Horizon
 CHIPSET CL-GD5426/28
 SEE Cirrus Logic GD542x
+
+#NAME STB Horizon Video (not supported??)
+#CHIPSET CL-GD5440
+#SEE Cirrus Logic GD543x
 
 NAME Genoa 8500VL(-28)
 CHIPSET CL-GD5426/28
@@ -375,6 +439,18 @@ LINE     # the following settings should be detected and set automatically by XF
 LINE     # if the serial number of the ELSA card is printed correctly:
 LINE     #ClockChip "icd2061a"
 
+NAME Cardex Trio64
+SEE S3-Trio64 (generic)
+
+NAME Cardex Trio64Pro
+SEE S3-Trio64 (generic)
+
+NAME Miro Crystal 12SD
+SEE S3-Trio32 (generic)
+
+NAME Miro Crystal 22SD
+SEE S3-Trio64 (generic)
+
 NAME Miro Crystal 20SD with ICS2494 (BIOS 1.xx)
 SEE S3-864 with ATT 20C498 or 21C498
 
@@ -382,8 +458,11 @@ NAME Miro Crystal 20SD with ICD2061A (BIOS 2.xx)
 CLOCKCHIP icd2061a
 SEE S3-864 with ATT 20C498 or 21C498
 
-NAME Miro Crystal 20SD with S3-SDAC (BIOS 3.xx)
+NAME Miro Crystal 20SD VLB with S3-SDAC (BIOS 3.xx)
 SEE S3-864 with SDAC (86C716)
+
+NAME Miro Crystal 20SD PCI with S3-SDAC
+SEE S3-868 with SDAC (86C716)
 
 NAME Elsa Winner 1000AVI (SDAC version)
 SEE S3-868 with SDAC (86C716)
@@ -407,6 +486,9 @@ SEE S3-Trio64 (generic)
 NAME Number Nine FX Vision 330
 SEE S3-Trio64 (generic)
 
+NAME Number Nine FX Motion 331
+SEE S3-Trio64V+ (generic)
+
 NAME ASUS Video Magic PCI V864
 SEE S3-864 (generic)
 
@@ -415,6 +497,15 @@ SEE S3-Trio64 (generic)
 
 NAME VidTech FastMax P20
 SEE S3-864 (generic)
+
+NAME VideoLogic GrafixStar 500
+SEE S3-868 with SDAC (86C716)
+
+NAME VideoLogic GrafixStar 400
+SEE S3-Trio64V+ (generic)
+
+NAME VideoLogic GrafixStar 300
+SEE S3-Trio64 (generic)
 
 # S3-964/968
 
@@ -469,7 +560,7 @@ LINE    #s3RefClk  50
 LINE    #DACspeed 170
 SEE S3-968 (generic)
 
-NAME STB Velocity 64
+NAME STB Velocity 64 Video
 CHIPSET S3-968
 LINE    #s3RefClk  24
 LINE    #DACspeed 220
@@ -481,13 +572,19 @@ SEE S3-Trio64V+ (generic)
 NAME STB Powergraph 64
 SEE S3-Trio64 (generic)
 
-NAME Hercules Graphics Terminator 64
+NAME Hercules Graphite Terminator 64
 LINE     Option "slow_vram"
 LINE    #s3RefClk  50
 LINE    #DACspeed 170
 SEE S3-964 (generic)
 
-NAME Hercules Graphics Terminator Pro 64
+NAME Hercules Terminator 64/Video
+SEE S3-Trio64V+ (generic)
+
+NAME Hercules Graphite Terminator 64/DRAM
+SEE S3-Trio64
+
+NAME Hercules Graphite Terminator Pro 64
 LINE    #s3RefClk  16
 LINE    #DACspeed 220
 SEE S3-968 (generic)
@@ -509,7 +606,7 @@ CHIPSET S3-964
 SERVER S3
 CLOCKCHIP ti3025
 
-NAME Miro VIDEO 20SV
+NAME Miro Video 20SV
 CHIPSET S3-968
 SERVER S3
 RAMDAC att20c505
@@ -532,6 +629,11 @@ NAME Elsa Winner 2000PRO/X
 CHIPSET S3-968
 SERVER S3
 LINE     #Option "sync_on_green"
+NOCLOCKPROBE
+
+NAME VideoLogic GrafixStar 700
+CHIPSET S3-968
+SERVER S3
 NOCLOCKPROBE
 
 # S3-928
@@ -627,13 +729,17 @@ LINE     #Probable clocks:
 LINE     #Clocks 25.2 28.3 39.7 1.7 49.9 76.7 35.7 44 
 LINE     #Clocks 130.2 119.5 79.4 31.2 110.0 65.2 74.9 71.3
 
-# ET4000
+# ET4000/ET6000
 
 NAME ET4000/W32, W32i, W32p (generic)
 CHIPSET ET4000/W32(i/p)
 SERVER W32
 
-NAME Diamond Stealth 32 (not fully supported)
+NAME ET6000 (generic)
+CHIPSET ET6000
+SERVER W32
+
+NAME Diamond Stealth 32
 SEE ET4000/W32, W32i, W32p (generic)
 
 NAME Cardex Cobra
@@ -677,6 +783,15 @@ SEE ET4000/W32, W32i, W32p (generic)
 
 NAME ViewTop PCI
 SEE ET4000/W32, W32i, W32p (generic)
+
+NAME Hercules Dynamite 128/Video
+SEE ET6000 (generic)
+
+NAME STB LightSpeed 128
+SEE ET6000 (generic)
+
+NAME VideoLogic GrafixStar 600
+SEE ET6000 (generic)
 
 # ATI
 
@@ -738,20 +853,33 @@ CHIPSET ATI-Mach64
 SERVER Mach64
 NOCLOCKPROBE
 
-NAME ATI Xpression with STG1702 RAMDAC
+NAME ATI Mach64 VT (264VT), Internal RAMDAC
+CHIPSET ATI-Mach64
+SERVER Mach64
+NOCLOCKPROBE
+
+NAME ATI Mach64 GT (264GT), Internal RAMDAC
+CHIPSET ATI-Mach64
+SERVER Mach64
+NOCLOCKPROBE
+
+NAME ATI Graphics Xpression with STG1702 RAMDAC
 SEE ATI Mach64
 
-NAME ATI Xpression with 68875 RAMDAC
+NAME ATI Graphics Xpression with 68875 RAMDAC
 SEE ATI Mach64
 
-NAME ATI Xpression with CH8398 RAMDAC
+NAME ATI Graphics Xpression with CH8398 RAMDAC
 SEE ATI Mach64 with CH8398 RAMDAC
 
-NAME ATI Xpression with AT&T 20C408 RAMDAC
+NAME ATI Graphics Xpression with AT&T 20C408 RAMDAC
 SEE ATI Mach64 with AT&T 20C408 RAMDAC
 
-NAME ATI Xpression with Mach64 CT (264CT)
+NAME ATI Graphics Xpression with Mach64 CT (264CT)
 SEE ATI Mach64 CT (264CT), Internal RAMDAC
+
+NAME ATI Video Xpression
+SEE ATI Mach64 VT (264VT), Internal RAMDAC
 
 NAME ATI Win Boost with STG1702 RAMDAC
 SEE ATI Mach64
@@ -864,7 +992,9 @@ NAME Hercules Graphite Power
 CHIPSET AGX-016
 SERVER AGX
 # Card specific DAC, doesn't appear in ramdac menu
-LINE     Ramdac "herc_dual_dac"
+#   The glue logic state machine for RAMDAC switching doesn't work as
+#   documented, for now we're stuck with the small RAMDAC
+LINE     Ramdac "herc_small_dac"
 LINE     Chipset "AGX-016"
 LINE     Option "dac_8_bit"
 LINE     Option "no_wait_state"
@@ -1047,6 +1177,10 @@ SERVER VGA16
 # Number 9 I128
 
 NAME Number Nine Imagine I-128 (2-4MB)
+CHIPSET I128
+SERVER I128
+
+NAME Number Nine Imagine I-128 Series 2 (2-4MB)
 CHIPSET I128
 SERVER I128
 

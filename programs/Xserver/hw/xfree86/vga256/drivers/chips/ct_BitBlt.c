@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_BitBlt.c,v 3.0 1996/08/11 13:02:32 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -115,7 +115,7 @@ ctcfbDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     pboxNew2 = NULL;
     pptNew2 = NULL;
     if (careful && (pptSrc->y < pbox->y1)) {
-	/* walk source botttom to top */
+	/* walk source bottom to top */
 	ydir = -1;
 
 	if (nbox > 1) {

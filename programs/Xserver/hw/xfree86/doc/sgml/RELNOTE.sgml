@@ -2,18 +2,19 @@
 
  <article>
 
- <title>Release Notes for XFree86&tm; 3.1.2E (beta version)
+ <title>Release Notes for XFree86&tm; 3.1.2F (beta version)
  <author>The XFree86 Project, Inc
- <date>25 May 1996
+ <date>25 August 1996
 
 
 <abstract>
 
 This document describes the rationale and conditions of this beta release,
-what is new in the XFree86 beta versions 3.1.2E, 3.1.2D, 3.1.2B and 3.1.2A
+what is new in the XFree86 beta versions 3.1.2F, 3.1.2E, 3.1.2D,
+3.1.2B and 3.1.2A
 compared with the current release version 3.1.2, and how to install this
-beta release.  Note: version 3.1.2C was an internal-only release, but
-it will appear in source form in the X Consortium's X11R6.1 release.
+beta release.  Note: version 3.1.2C is included (in source form)
+in the X Consortium's X11R6.1 release.
 
 </abstract>
 
@@ -936,7 +937,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.32 1996/05/15 03:34:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.33 1996/06/10 09:15:16 dawes Exp $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 /* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.32tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.33tsi Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -3190,11 +3190,8 @@ ATIEnterLeave(const Bool enter)
                 }
                 else if (ATIChip >= ATI_CHIP_88800GXC)
                 {
-                        unsigned int config_cntl;
-
                         /* Save register values to be modified */
                         saved_config_cntl = inl(CONFIG_CNTL_IOPort);
-                        saved_crtc_gen_cntl = inl(CRTC_GEN_CNTL_IOPort);
                         saved_mem_info = inl(MEM_INFO_IOPort);
                         saved_dac_cntl = inl(DAC_CNTL_IOPort);
 
@@ -3212,18 +3209,21 @@ ATIEnterLeave(const Bool enter)
                         outl(GEN_TEST_CNTL_IOPort, tmp | GEN_GUI_EN);
                         outl(GEN_TEST_CNTL_IOPort, tmp);
                         outl(GEN_TEST_CNTL_IOPort, tmp | GEN_GUI_EN);
+                        saved_crtc_gen_cntl = inl(CRTC_GEN_CNTL_IOPort) &
+                                ~CRTC_EN;
+                        tmp = saved_crtc_gen_cntl & ~CRTC_EXT_DISP_EN;
+                        outl(CRTC_GEN_CNTL_IOPort, tmp | CRTC_EN);
+                        outl(CRTC_GEN_CNTL_IOPort, tmp);
+                        outl(CRTC_GEN_CNTL_IOPort, tmp | CRTC_EN);
 
                         /* Ensure VGA aperture is enabled */
                         outl(DAC_CNTL_IOPort, saved_dac_cntl | DAC_VGA_ADR_EN);
-                        config_cntl = saved_config_cntl &
+                        tmp = saved_config_cntl &
                                 ~(CFG_MEM_AP_SIZE | CFG_VGA_DIS |
                                         CFG_MEM_VGA_AP_EN);
                         if (Using_Small_Apertures)
-                                config_cntl |= CFG_MEM_VGA_AP_EN;
-                        outl(CONFIG_CNTL_IOPort, config_cntl);
-                        outl(CRTC_GEN_CNTL_IOPort,
-                                (saved_crtc_gen_cntl & ~CRTC_EXT_DISP_EN) |
-                                CRTC_EN);
+                                tmp |= CFG_MEM_VGA_AP_EN;
+                        outl(CONFIG_CNTL_IOPort, tmp);
                         outl(MEM_INFO_IOPort, saved_mem_info &
                                 ~(CTL_MEM_BNDRY | CTL_MEM_BNDRY_EN));
                 }
@@ -3389,10 +3389,14 @@ ATIEnterLeave(const Bool enter)
                         outl(GEN_TEST_CNTL_IOPort, saved_gen_test_cntl);
                         outl(GEN_TEST_CNTL_IOPort,
                                 saved_gen_test_cntl | GEN_GUI_EN);
+                        outl(CRTC_GEN_CNTL_IOPort,
+                                saved_crtc_gen_cntl | CRTC_EN);
+                        outl(CRTC_GEN_CNTL_IOPort, saved_crtc_gen_cntl);
+                        outl(CRTC_GEN_CNTL_IOPort,
+                                saved_crtc_gen_cntl | CRTC_EN);
 
                         /* Restore registers */
                         outl(CONFIG_CNTL_IOPort, saved_config_cntl);
-                        outl(CRTC_GEN_CNTL_IOPort, saved_crtc_gen_cntl);
                         outl(MEM_INFO_IOPort, saved_mem_info);
                         outl(DAC_CNTL_IOPort, saved_dac_cntl);
                 }
@@ -4065,7 +4069,7 @@ ATIInit(DisplayModePtr mode)
                         else
                         {
                                 if (vga256InfoRec.videoRam > 256)
-                                        new->b0 |= 0x18U;
+                                        new->b0 |= 0x10U;
                                 else
                                         new->b0 |= 0x06U;
                         }

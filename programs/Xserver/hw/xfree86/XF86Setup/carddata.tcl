@@ -1,6 +1,15 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.3 1996/08/18 01:47:18 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.4 1996/08/20 12:26:20 dawes Exp $
 #
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
+
+#
+#  Data used by the card configuration routines
+#
+
 
 set ServerList {	Mono  VGA16  SVGA   8514  AGX I128
 			Mach8 Mach32 Mach64 P9000 S3  W32 }
@@ -307,11 +316,11 @@ set CardOptions(W32)	   { clkdiv2 fast_dram hibit_high hibit_low \
 			     w32_interleave_off w32_interleave_on }
 
 # For each server, what readme files are applicable?
-set CardReadmes(Mono)	   {}
-set CardReadmes(VGA16)	   {}
 set CardReadmes(SVGA)	   {README.Oak README.Video7 README.WstDig \
-			    README.ark README.ati README.cirrus \
-			    README.trident README.tseng}
+			    README.ark README.ati README.chips \
+			    README.cirrus README.trident README.tseng}
+set CardReadmes(Mono)	   $CardReadmes(SVGA)
+set CardReadmes(VGA16)	   $CardReadmes(SVGA)
 set CardReadmes(8514)	   {}
 set CardReadmes(AGX)	   README.agx
 set CardReadmes(I128)	   {}

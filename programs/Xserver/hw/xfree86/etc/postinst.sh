@@ -1,48 +1,67 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.4 1996/02/24 10:20:25 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.5 1996/02/24 10:48:17 dawes Exp $
 #
-# postinst.sh
+# postinst.sh (for XFree86 3.1.2F)
 #
-# This script should be run after installing a beta version into $NEWDIR.
-# It makes a backup of the old version of files that will be replaced, and
-# puts the backups into $SAVEDIR.  The beta version of the files is then
-# linked into the normal installed location $RUNDIR.
-#
-# This script should be more portable.  On some OSs, 'ln -s' may need to
-# be replaced with 'ln', and 'mkdir -p' may need to be replaced with
-# '/usr/X11R6/bin/mkdirhier'.
+# This script should be run after installing a new version of XFree86.
 #
 
-ORIGVERSION=3.1.2
-BETAVERSION=3.1.2D
-NEWDIR=/usr/XFree86-$BETAVERSION
 RUNDIR=/usr/X11R6
-SAVEDIR=/usr/XFree86-$ORIGVERSION
 
-if [ ! -d $NEWDIR/. ]; then
-	echo $NEWDIR does not exist
-	exit 1
-fi
 if [ ! -d $RUNDIR/. ]; then
 	echo $RUNDIR does not exist
 	exit 1
 fi
-cd $NEWDIR
-for i in `find * -type f -print`; do
-	d=`dirname $i`
-	if [ ! -d $SAVEDIR/$d ]; then
-		mkdir -p $SAVEDIR/$d
+
+# Since the misc fonts are distributed in two parts, make sure that the
+# fonts.dir file is correct if only one part has been installed.
+echo "Updating fonts.dir file in $RUNDIR/lib/X11/fonts/misc"
+$RUNDIR/bin/mkfontdir $RUNDIR/lib/X11/fonts/misc
+
+# Check if the system has a termcap file
+TERMCAP1DIR=/usr/share
+TERMCAP2=/etc/termcap
+if [ -d $TERMCAP1DIR ]; then
+	TERMCAP1=`find $TERMCAP1DIR -type f -name termcap -print 2> /dev/null`
+	if [ x"$TERMCAP1" != x ]; then
+		TERMCAPFILE="$TERMCAP1"
 	fi
-	if [ ! -d $RUNDIR/$d ]; then
-		mkdir -p $RUNDIR/$d
+else
+	if [ -f $TERMCAP2 ]; then
+		TERMCAPFILE="$TERMCAP2"
 	fi
-	if [ -f $RUNDIR/$i -a ! -f $SAVEDIR/$i ]; then
-		mv $RUNDIR/$i $SAVEDIR/$i
-		echo saved $ORIGVERSION version of $i to $SAVEDIR
-	fi
-	rm -f $RUNDIR/$i
-	ln -s $NEWDIR/$i $RUNDIR/$i
-	echo installed $BETAVERSION version of $i in $RUNDIR
-done
+fi
+if [ x"$TERMCAPFILE" != x ]; then
+	echo ""
+	echo "You appear to have a termcap file: $TERMCAPFILE"
+	echo "This should be edited manually to replace the xterm entries"
+	echo "with those in $RUNDIR/lib/X11/etc/xterm.termcap"
+fi
+
+# Check for terminfo, and update the xterm entry
+TINFODIR=/usr/lib/terminfo
+OLDTINFO="x/xterms\
+	  v/vs100"
+	
+if [ -d $TINFODIR ]; then
+	echo ""
+	for t in "$OLDTINFO"; do
+		if [ -f $TINFODIR/$t ]; then
+			echo "Removing old terminfo file $TINFODIR/$t"
+			rm -f $TINFODIR/$t
+		fi
+	done
+	echo "Installing new terminfo entries for xterm"
+	tic /usr/X11R6/lib/X11/etc/xterm.terminfo
+fi
+
+case `uname` in
+	Linux|FreeBSD|NetBSD|OpenBSD)
+		echo ""
+		echo "You may need to reboot (or run ldconfig) before the"
+		echo "newly installed shared libraries can be used."
+		;;
+esac
+
 exit 0

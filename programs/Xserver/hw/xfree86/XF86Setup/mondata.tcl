@@ -1,5 +1,13 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mondata.tcl,v 3.2 1996/08/16 12:29:40 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mondata.tcl,v 3.3 1996/08/18 01:47:20 dawes Exp $
 #
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+#
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
+
+#
+# Data used by the monitor configuration routines
 #
 
 array set MonitorVsyncRanges {

@@ -1,4 +1,11 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.3 1996/06/30 10:44:03 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/srvflags.tcl,v 3.0 1996/08/13 11:28:36 dawes Exp $
+#
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+#
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
+
 #
 # Configuration of misc server flags
 #
@@ -15,7 +22,7 @@ proc Other_create_widgets { win } {
 	pack  $w.srvflags -in $w.other \
 		-fill both -expand yes -padx 20m -pady 20m
 	label $w.srvflags.title -text "Optional server settings\n\n\
-		These should be set to reasonable values, by default\n\
+		These should be set to reasonable values, by default,\n\
 		so you probably don't need to change anything"
 	pack  $w.srvflags.title -side top -fill both -expand yes
 	frame $w.srvflags.line -height 2 -bd 2 -relief sunken
@@ -74,7 +81,8 @@ proc Other_deactivate { win } {
 }
 
 proc Other_popup_help { win } {
-        toplevel .otherhelp
+	catch {destroy .otherhelp}
+        toplevel .otherhelp -bd 5 -relief ridge
         wm title .otherhelp "Help"
 	wm geometry .otherhelp +30+30
         text   .otherhelp.text

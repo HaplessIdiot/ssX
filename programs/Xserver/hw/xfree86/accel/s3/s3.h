@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.37 1996/08/20 12:26:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.38 1996/08/23 11:03:01 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -94,28 +94,24 @@
     S3_OUTW(p,n)
 
 #ifdef S3_NEWMMIO
-#define WaitQueue16_32(n16,n32) \
-  	 if (s3InfoRec.bitsPerPixel == 32) { \
-	    WaitQueue(n32); \
-	 } \
-	 else \
-	    WaitQueue(n16)
+#define CMD_REG_WIDTH  0x200  	/* select 32bit command register */
 #else
+#define CMD_REG_WIDTH  0  	/* select 16bit command register */
+#endif
+
 #define WaitQueue16_32(n16,n32) \
   	 if (s3InfoRec.bitsPerPixel == 32) { \
 	    if (n32 < 8) { \
 	       WaitQueue(n32+1); \
-	       SET_MULT_MISC(MULT_MISC); \
+	       SET_MULT_MISC(CMD_REG_WIDTH); \
 	    } else { \
 	       WaitQueue(1); \
-	       SET_MULT_MISC(MULT_MISC); \
+	       SET_MULT_MISC(CMD_REG_WIDTH); \
 	       WaitQueue(n32); \
 	    } \
 	 } \
 	 else \
 	    WaitQueue(n16)
-#endif
-
 
 #else /* !LINKKIT */
 #include "X.h"

@@ -1,4 +1,11 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.3 1996/08/13 11:28:30 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.4 1996/08/18 01:47:24 dawes Exp $
+#
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+#
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
+
 #
 # Phase II - Commands run after connection is made to VGA16 server
 #
@@ -13,6 +20,9 @@ create_main_window [set w .xf86setup]
 label $w.waitmsg -text "Loading  -  Please wait...\n\n\n"
 pack  $w.waitmsg -expand yes -fill both
 update idletasks
+
+mesg "The program is running on a different virtual terminal\n\n\
+	Please switch to the correct virtual terminal" info
 
 set XKBrules $Xwinhome/lib/X11/xkb/rules/xfree86
 
@@ -100,12 +110,14 @@ proc Intro_create_widgets { win } {
 		\tMonitor\t\t- Use this to enter your\
 			monitor's capabilities\n\
 		\tOther\t\t- Configure some miscellaneous settings\n\n\
-		When you've finished configuring all of these, press the\
-			done button.\n\
+		You'll probably want to start with configuring your\
+			mouse (you can just press \[Enter\] to do so)\n\
+		and when you've finished configuring all five of these,\
+			select the Done button.\n\n\
+		To select any of the buttons, press the underlined\
+			letter together with either Control or Alt.\n\
 		You can also press ? or click on the Help button at\
-			any time for additional instructions\n\n\
-		You probably will want to start with configuring your\
-			mouse -- Just press \[Enter\] to start\n\n"
+			any time for additional instructions\n\n"
 	pack $w.intro.text -fill both -expand yes -padx 10 -pady 10
 	$w.intro.text configure -state disabled
 }
@@ -121,7 +133,8 @@ proc Intro_deactivate { win } {
 }
 
 proc Intro_popup_help { win } {
-	toplevel .introhelp
+	catch {destroy .introhelp}
+	toplevel .introhelp -bd 5 -relief ridge
 	wm title .introhelp "Help"
 	wm geometry .introhelp +30+30
 	text   .introhelp.text
@@ -175,7 +188,7 @@ frame $w.buttons
 	-foreground black
 #pack $w.buttons.xlogo -side left -anchor w -expand no -padx 0 -fill x
 button $w.buttons.abort -text Abort -underline 0 \
-	-command "puts stderr Aborted;shutdown 1"
+	-command "clear_scrn;puts stderr Aborted;shutdown 1"
 button $w.buttons.done  -text Done  -underline 0 \
 	-command [list Done_execute $w]
 button $w.buttons.help  -text Help  -underline 0 \
@@ -191,17 +204,22 @@ Monitor_create_widgets	$w
 Other_create_widgets	$w
 Done_create_widgets	$w
 
-#bind $w <Alt-x>		[list I'm an error]
-bind $w <Alt-a>		[list $w.buttons.abort invoke]
-bind $w <Control-c>	[list $w.buttons.abort invoke]
-bind $w <Alt-d>		[list $w.buttons.done invoke]
-bind $w <Alt-h>		[list config_help $w]
+proc ac_bind { win letter command } {
+	bind $win <Alt-$letter>		$command
+	bind $win <Control-$letter>	$command
+}
+
+bind $w <Alt-x>		[list I'm an error]
+ac_bind $w a		[list $w.buttons.abort invoke]
+ac_bind $w d		[list $w.buttons.done invoke]
+ac_bind $w h		[list config_help $w]
 bind $w ?		[list config_help $w]
-bind $w <Alt-m>		[list $w.menu.mouse invoke]
-bind $w <Alt-c>		[list $w.menu.card invoke]
-bind $w <Alt-k>		[list $w.menu.keyboard invoke]
-bind $w <Alt-n>		[list $w.menu.monitor invoke]
-bind $w <Alt-o>		[list $w.menu.other invoke]
+ac_bind $w m		[list $w.menu.mouse invoke]
+ac_bind $w c		[list $w.menu.card invoke]
+ac_bind $w k		[list $w.menu.keyboard invoke]
+ac_bind $w n		[list $w.menu.monitor invoke]
+ac_bind $w o		[list $w.menu.other invoke]
+set_default_arrow_bindings
 
 set CfgSelection  Intro
 set prevSelection Intro

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.23 1996/08/20 12:27:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.24 1996/08/23 11:03:02 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -546,6 +546,8 @@ s3ImageFillBanked (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 #define s3EnableLinear()
 #define s3DisableLinear()
 #define s3BankSelect(X)
+#undef  SET_MULT_MISC
+#define SET_MULT_MISC(val) outw(MULTIFUNC_CNTL, MULT_MISC) /* for WaitQueue16_32 */
 #endif
 /* end BL */
 
@@ -1092,6 +1094,11 @@ static int _internal_s3_mskbits[17] =
 };
 
 #define MSKBIT(n) (_internal_s3_mskbits[(n)])
+
+#ifdef S3_NEWMMIO
+#undef  SET_MULT_MISC
+#define SET_MULT_MISC(val)	((mmtr)s3VideoMem)->pk_enh_regs.regs.mult_misc = (val)
+#endif
 
 static void
 s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,

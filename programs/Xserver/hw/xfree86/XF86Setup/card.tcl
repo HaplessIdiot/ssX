@@ -1,6 +1,15 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.4 1996/08/18 01:47:17 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.5 1996/08/20 12:26:19 dawes Exp $
 #
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
+
+#
+# Card configuration routines
+#
+
 
 proc Card_create_widgets { win } {
 	global ServerList XF86Setup_library cardDevNum DeviceIDs
@@ -20,7 +29,7 @@ proc Card_create_widgets { win } {
 		eval [list $w.card.cardselect linsert end] $DeviceIDs
 		Card_cbox_setentry $w.card.cardselect [lindex $DeviceIDs 0]
 		bind $w.card.cardselect.popup.list <ButtonRelease-1> \
-			"+Card_cardselect $win"
+			"+[list Card_cardselect $win]"
 	} else {
 		label $w.card.title -text "Card selected: None" -anchor w
 		pack  $w.card.title -side left -fill x -padx 5m -in $w.card.top
@@ -105,6 +114,8 @@ proc Card_create_widgets { win } {
 	label $w.card.clockchip.title -text ClockChip
 	combobox $w.card.clockchip.cbox -state disabled -bd 2
 	pack  $w.card.clockchip.title $w.card.clockchip.cbox
+	bind $w.card.clockchip.cbox <ButtonPress-1> \
+		"+set cardClocks {};[list $w.card.clocks.text delete 0.0 end]"
 
 	frame $w.card.clocks
 	label $w.card.clocks.title -text "Clock rates:"
@@ -131,6 +142,8 @@ proc Card_create_widgets { win } {
 			-highlightthickness 0
 		scale $extr.dacspeed.value -variable cardDacSpeed \
 			-orient horizontal -from 60 -to 300 -resolution 5
+		bind  $extr.dacspeed.value <ButtonPress> \
+			"set cardDacProbe 0; [list Card_dacspeed $win]"
 		pack  $extr.dacspeed.title -side top -fill x -expand yes
 		pack  $extr.dacspeed.probe -side top -expand yes
 		pack  $extr.dacspeed.value -side top -fill x -expand yes
@@ -238,7 +251,7 @@ proc Card_dacspeed { win } {
 	if { $cardDacProbe } {
 		#$w.card.extra.dacspeed.probe configure -text "Probed: Yes"
 		$w.card.extra.dacspeed.value configure \
-			-foreground [option get $w.card background *] -state disabled
+			-foreground [option get $w.card background *] ;# -state disabled
 	} else {
 		#$w.card.extra.dacspeed.probe configure -text "Probed: No"
 		$w.card.extra.dacspeed.value configure \
@@ -248,10 +261,9 @@ proc Card_dacspeed { win } {
 
 proc Card_clockprobe { win } {
 	global cardServer Xwinhome Confname cardClocks cardDevNum
-	global serverNumber cardDetail
+	global cardDetail cardReadmeWasSeen
 
 	set w [winpathprefix $win]
-	writeXF86Config $Confname-probe -noclocks -defaultmodes
 
 	set server $cardServer
 	if { ![file exists $Xwinhome/bin/XF86_$server] } {
@@ -260,21 +272,19 @@ proc Card_clockprobe { win } {
 		bell
 		return
 	}
-	#catch {exec $Xwinhome/bin/XF86_$server :[incr serverNumber] \
-		-probeonly -xf86config $Confname-probe >& $Confname-pout}
-	catch {exec $Xwinhome/bin/XF86_$server :5 \
-		-probeonly -xf86config $Confname-probe >& $Confname-pout}
-	#set fd [open $Confname-pout w]
-	#puts $fd "(--) S3: clocks:  80.0 56.2 0.00 124.2 76.5  35.1 31.5 48.0"
-	#puts $fd "(--) S3: clocks:  45.0 66.3 70.00 28.2 76.5  90.1 37.5 40.0"
-	#close $fd
-	if { ![file exists $Confname-pout] || ![file size $Confname-pout] } {
+
+	writeXF86Config $Confname-probe -noclocks -defaultmodes
+	set outfile $TmpDir/ServerOut-probe
+	check_tmpdirs
+	catch {exec $Xwinhome/bin/XF86_$server :6 \
+		-probeonly -xf86config $Confname-probe >& $outfile}
+	if { ![file exists $outfile] || ![file size $outfile] } {
 		$w.card.bot.message configure -text \
 			"Unable to run clock probe!\n "
 		bell
 		return
 	}
-	set fd [open $Confname-pout r]
+	set fd [open $outfile r]
 	set cardClocks ""
 	set zerocount 0
 	while {[gets $fd line] >= 0} {
@@ -442,7 +452,7 @@ proc Card_selected { win lbox } {
 
 proc Card_set_cboxlists { win } {
 	global CardChipSets CardRamDacs CardClockChips cardServer
-	global CardReadmes cardReadmeWasSeen CardOptions
+	global CardReadmes cardReadmeWasSeen CardOptions cardClocks
 
 	set w [winpathprefix $win]
 	if { [llength $CardReadmes($cardServer)] > 0 } {
@@ -450,6 +460,8 @@ proc Card_set_cboxlists { win } {
 	} else {
 		$w.card.readme configure -state disabled
 	}
+	set cardClocks ""
+	$w.card.clocks.text delete 0.0 end
 	$w.card.chipset.cbox ldelete 0 end
 	if [llength $CardChipSets($cardServer)] {
 		$w.card.chipset.cbox.button configure -state normal
@@ -633,7 +645,7 @@ proc Card_get_configvars { win } {
 
 proc Card_popup_help { win } {
 	catch {destroy .cardhelp}
-        toplevel .cardhelp
+        toplevel .cardhelp -bd 5 -relief ridge
         wm title .cardhelp "Help"
 	wm geometry .cardhelp +30+30
         text .cardhelp.text

@@ -1,5 +1,13 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.4 1996/08/18 09:47:34 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.5 1996/08/20 12:26:23 dawes Exp $
 #
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+#
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
+
+#
+# Monitor configuration routines
 #
 
 proc Monitor_create_widgets { win } {
@@ -185,7 +193,8 @@ proc Monitor_cbox_setentry { cb text } {
 }
 
 proc Monitor_popup_help { win } {
-        toplevel .monitorhelp
+	catch {destroy .monitorhelp}
+        toplevel .monitorhelp -bd 5 -relief ridge
         wm title .monitorhelp "Help"
 	wm geometry .monitorhelp +30+30
         text .monitorhelp.text

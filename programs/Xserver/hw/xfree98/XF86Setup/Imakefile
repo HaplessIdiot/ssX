@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.2 1996/08/18 12:34:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.3 1996/08/19 13:39:36 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -18,20 +18,22 @@ includes::
 
 #else
             SRCS = main.c tclmisc.c tclvidmode.c tclcards.c tclother.c \
-		   tclkbd.c tclxfconf.c xf86Config.c cards.c tclxkbui.c
+		   tclkbd.c tclxfconf.c xf86Config.c cards.c tclxkbui.c \
+		   tkother.c
             OBJS = main.o tclmisc.o tclvidmode.o tclcards.o tclother.o \
-		   tclkbd.o tclxfconf.o xf86Config.o cards.o tclxkbui.o
+		   tclkbd.o tclxfconf.o xf86Config.o cards.o tclxkbui.o \
+		   tkother.o
        TCL_FILES = phase1.tcl phase2.tcl phase3.tcl phase4.tcl phase5.tcl \
 		   setuplib.tcl srvflags.tcl carddata.tcl \
 		   card.tcl done.tcl filelist.tcl keyboard.tcl \
-		   mondata.tcl monitor.tcl mouse.tcl
+		   mondata.tcl monitor.tcl mouse.tcl LICENSE
     TCLLIB_FILES = tcllib/button.tcl tcllib/combobox.tcl tcllib/misc.tcl \
 		   tcllib/downarrow.xbm tcllib/dialog.tcl tcllib/entry.tcl \
 		   tcllib/focus.tcl tcllib/init.tcl tcllib/listbox.tcl \
 		   tcllib/menu.tcl tcllib/optionMenu.tcl tcllib/palette.tcl \
 		   tcllib/scale.tcl tcllib/scrollbar.tcl tcllib/tclIndex \
 		   tcllib/tearoff.tcl tcllib/text.tcl tcllib/tk.tcl \
-		   tcllib/tkerror.tcl tcllib/uparrow.xbm
+		   tcllib/tkerror.tcl tcllib/uparrow.xbm license.terms
       PICS_FILES = pics/vidcard.xbm pics/vidcard.msk \
 		   pics/XFree86.xbm pics/XFree86.msk
       SUBDIRS    = tcllib pics scripts
@@ -61,6 +63,7 @@ includes::
      XCONFIGFILE = XF86Config
 
  XCONFIG_DEFINES = $(EXT_DEFINES) -DXF86SETUP \
+		   '-DPROJECTROOT="$(PROJECTROOT)"' \
 		   '-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"'
 
  XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup
@@ -84,6 +87,7 @@ LinkSourceFile(xf86Config.c,$(XF86SRC)/common)
 LinkSourceFile(xf86_Config.h,$(XF86SRC)/common)
 
 LinkSourceFile(CHANGELOG,$(XF86SRC)/XF86Setup)
+LinkSourceFile(LICENSE,$(XF86SRC)/XF86Setup)
 LinkSourceFile(README,$(XF86SRC)/XF86Setup)
 LinkSourceFile(README.html,$(XF86SRC)/XF86Setup)
 LinkSourceFile(TODO,$(XF86SRC)/XF86Setup)
@@ -113,6 +117,7 @@ LinkSourceFile(tclvidmode.c,$(XF86SRC)/XF86Setup)
 LinkSourceFile(tclvidmode.h,$(XF86SRC)/XF86Setup)
 LinkSourceFile(tclxfconf.c,$(XF86SRC)/XF86Setup)
 LinkSourceFile(tclxkbui.c,$(XF86SRC)/XF86Setup)
+LinkSourceFile(tkother.c,$(XF86SRC)/XF86Setup)
 LinkSourceFile(xfsconf.h,$(XF86SRC)/XF86Setup)
 
 NormalProgramTarget(XF86Setup,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES) $(SYSTEM_LIBRARIES),NullParameter)

@@ -1,5 +1,5 @@
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.16 1996/08/20 12:30:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.17 1996/08/21 08:40:21 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -99,6 +99,7 @@ Bool ctHDepth = FALSE;		       /*Chip has 16/24bpp */
 Bool ctLCD = TRUE;
 Bool ctCRT = FALSE;
 Bool ctPCI = FALSE;
+Bool ctHWCursor = FALSE;
 unsigned char ctPanelType = 0;
 int ct65545subtype = 0;
 int ctBusType = 0;
@@ -108,6 +109,8 @@ unsigned char ctSWTmp;
 unsigned char ctVgaIOBaseFlag = 0xFF;
 unsigned int ctCRindex;
 unsigned int ctCRvalue;
+unsigned char ctHorizontalStretch ;
+unsigned char ctVerticalStretch ;
 
 extern void CHIPSCursorInit();
 extern void CHIPSRestoreCursor();
@@ -180,10 +183,9 @@ static void CHIPSRestore();
 static void ctRestore();
 static void CHIPSAdjust();
 static void CHIPSFbInit();
-#if 0
-static void CHIPSSaveScreen();
+#if defined(DEBUG) && defined(CT_HW_DEBUG)
+void ctHWDebug();
 #endif
-static void ctSetupIO();
 
 #if 0				       /*it is not used but leaved for the future */
 static void CHIPSGetMode();
@@ -1370,28 +1372,26 @@ CHIPSProbe()
 		ctAccelSupport = FALSE;
 	    }
 	    if ((CHIPSchipset == CT_545) || (CHIPSchipset == CT_546)){
-	      PCIIOBase = ctPCIIOBase();
-	      if (PCIIOBase == 0){
+	      ErrorF("%s %s: ct65545+: 32Bit IO not supported on 65545 PCI.", 
+		     XCONFIG_PROBED, vga256InfoRec.name);
 #ifdef CHIPS_SUPPORT_MMIO
-		ErrorF("%s %s: ct65545+: IO not supported enabling MMIO\n",
-		       XCONFIG_PROBED, vga256InfoRec.name);
-		ctUseMMIO = TRUE;
+	      ErrorF("%s %s: ct65545+: Enabling MMIO\n", 
+		     XCONFIG_PROBED, vga256InfoRec.name);
+	      ctSupportMMIO = TRUE;
+	      ctUseMMIO = TRUE;
 #else 
-		ErrorF("%s %s: ct65545+: Disabling Linear Addressing\n",
-		    XCONFIG_PROBED, vga256InfoRec.name);
+	      ErrorF("%s %s: ct65545+: Disabling Linear Addressing\n",
+		     XCONFIG_PROBED, vga256InfoRec.name);
 		ctLinearSupport = FALSE;
 		ctHDepth = FALSE;
 		ctAccelSupport = FALSE;
 #endif		
-	      }else
-	      ctSetupIO(PCIIOBase);
-	    }
 #ifdef CHIPS_SUPPORT_MMIO
 	    /* Turn on the MMIO addressing for 6554x chips with PCI */
 	    if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options) && ctSupportMMIO)
 		ctUseMMIO = TRUE;
 #endif
-
+	    }
 	} else {		       /* XR08: Linear addressing base, not for PCI */
 	    switch (temp) {
 	    case 3:
@@ -1641,13 +1641,16 @@ CHIPSEnterLeave(enter)
 		outb(0x3D6, 0xA0);
 		outb(0x3D7, ctHWcursorContents & 0xFF);
 	    } else {
-#ifdef CHIPS_SUPPORT_MMIO
-	      if(!ctUseMMIO)
+#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
+	      if(!ctUseMMIO){
 #endif
-		  outl(DR(0x8), ctHWcursorContents);
-#ifdef CHIPS_SUPPORT_MMIO
-	      else
-		  MMIOmem(0xA3D0) = ctHWcursorContents;
+		HW_DEBUG(0x8);
+		outl(DR(0x8), ctHWcursorContents);
+#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
+	      } else {
+		HW_DEBUG(0xA3D0);
+		MMIOmeml(0xA3D0) = ctHWcursorContents;
+	      }
 #endif
 	    }
 	}
@@ -1662,15 +1665,17 @@ CHIPSEnterLeave(enter)
 		ctHWcursorContents = inb(0x3D7);
 		outb(0x3D7, ctHWcursorContents & 0xF8);
 	    } else {
-#ifdef CHIPS_SUPPORT_MMIO
+#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
 	      if(!ctUseMMIO){
 #endif
+		HW_DEBUG(0x8);
 		ctHWcursorContents = inl(DR(0x8));
 		outw(DR(0x8), ctHWcursorContents & 0xFFFE);
-#ifdef CHIPS_SUPPORT_MMIO
+#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
 	      } else {
-		ctHWcursorContents = MMIOmem(0xA3D0);
-		MMIOmem(0xA3D0) = ctHWcursorContents & 0xFFFE;
+		HW_DEBUG(0xA3D0);
+		ctHWcursorContents = MMIOmeml(0xA3D0);
+		MMIOmemw(0xA3D0) = ctHWcursorContents & 0xFFFE;
 	      }
 #endif
 	    }
@@ -1750,37 +1755,7 @@ CHIPSRestore(restore)
 			      tmp57 & (~0x20)); /* disable v-stretching*/
 	}
     }
-#ifdef USE
-    if (restore->XMode) {
-	/* 
-	 *  We have to initialize the generic VGA registers before 
-	 *  we switch to 24bpp 
-	 */
-	if (!ctisHiQV32)
-	    ctLoadSWFlag;
-	vgaHWRestore((vgaHWPtr) restore);
-	if (!ctisHiQV32)
-	    ctRestoreSWFlag;
-	ctRestore(restore);
-	if (ctisHiQV32) {
-	  ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);
-	  /* why twice ? :
-           * some times console is not well restored even if these registers 
-	   * are good, re-write the registers works around 
-	   */
-	  /*ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);*/
-	}
-	else {
-	  ctRestoreStretching(restore->Port_3D6[0x55],restore->Port_3D6[0x57]);
-	}
-	/* Flag valid start address, if using CRT extensions */
-	if (ctisHiQV32 && (restore->Port_3D6[0x09] & 0x1) == 0x1) {
-	    outb(0x3D4, 0x40);
-	    tmp = inb(0x3D5);
-	    outb(0x3D5, tmp | 0x80);
-	}
-    } else {
-#endif /*USE*/
+
 	ctRestore(restore);
 	if (!ctisHiQV32)
 	    outw(0x3D6, 0x15);	       /* do we have to do this again? */
@@ -1814,15 +1789,9 @@ CHIPSRestore(restore)
 	    tmp = inb(0x3D5);
 	    outb(0x3D5, tmp | 0x80);
 	}
-#ifdef USE
-    }
-#endif
 
     outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) | ctVgaIOBaseFlag));
     ctXMode = restore->XMode;
-#ifdef USE1
-    outw(0x3C4, 0x0300);	       /* now reenable the timing sequencer */
-#endif
 
     /* debug - dump out all the extended registers... */
 
@@ -1859,8 +1828,6 @@ CHIPSSave(save)
     vgaCHIPSPtr save;
 {
     int i;
-    unsigned char ctHorizontalStretch ;
-    unsigned char ctVerticalStretch ;
 
 #ifdef DEBUG
     ErrorF("CHIPSSave\n");
@@ -1954,21 +1921,21 @@ CHIPSSave(save)
 	save->Port_3D6[0x55] = ctHorizontalStretch ;
 	save->Port_3D6[0x57] = ctVerticalStretch ;
 
-#ifdef CHIPS_SUPPORT_MMIO
+#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
 	if(!ctUseMMIO){ 
 #endif
-	    save->Port_83D0 = inl(DR(0x0));
-	    save->Port_A3D0 = inl(DR(0x8));
-	    save->Port_A7D0 = inl(DR(0x9));
-	    save->Port_ABD0 = inl(DR(0xA));
-	    save->Port_B3D0 = inl(DR(0xC));
-#ifdef CHIPS_SUPPORT_MMIO
+	    HW_DEBUG(0x0); save->Port_83D0 = inl(DR(0x0));
+	    HW_DEBUG(0x8); save->Port_A3D0 = inl(DR(0x8));
+	    HW_DEBUG(0x9); save->Port_A7D0 = inl(DR(0x9));
+	    HW_DEBUG(0xA); save->Port_ABD0 = inl(DR(0xA));
+	    HW_DEBUG(0xC); save->Port_B3D0 = inl(DR(0xC));
+#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
 	} else {
-	    save->Port_83D0 = MMIOmem(0x83D0);
-	    save->Port_A3D0 = MMIOmem(0xA3D0);
-	    save->Port_A7D0 = MMIOmem(0xA7D0);
-	    save->Port_ABD0 = MMIOmem(0xABD0);
-	    save->Port_B3D0 = MMIOmem(0xB3D0);
+	    HW_DEBUG(0x83D0); save->Port_83D0 = MMIOmeml(0x83D0);
+	    HW_DEBUG(0xA3D0); save->Port_A3D0 = MMIOmeml(0xA3D0);
+	    HW_DEBUG(0xA7D0); save->Port_A7D0 = MMIOmeml(0xA7D0);
+	    HW_DEBUG(0xABD0); save->Port_ABD0 = MMIOmeml(0xABD0);
+	    HW_DEBUG(0xB3D0); save->Port_B3D0 = MMIOmeml(0xB3D0);
 	}
 #endif
     }
@@ -2227,6 +2194,10 @@ CHIPSInit655xx(mode)
 	new->Port_3D6[0x55] &= 0xC0;   /* Mask off Polarity bits          */
 	new->Port_3D6[0x55] |= 0x01;   /* enable horizontal-compensation  */
 
+    if(OFLG_ISSET(OPTION_SUSPEND_HACK, &vga256InfoRec.options)) {
+      new->Port_3D6[0x55] =  ctHorizontalStretch ;
+      new->Port_3D6[0x57] =  ctVerticalStretch ; 
+    } else {
 	if (OFLG_ISSET(OPTION_LCD_CENTER, &vga256InfoRec.options)){
 	    if (mode->CrtcHDisplay < 1489)      /* HWBug                  */ 
 		new->Port_3D6[0x55] |= 0x02;	/* enable h-centering     */
@@ -2244,6 +2215,7 @@ CHIPSInit655xx(mode)
 	        temp = (temp == 0 ? 1 : temp);  /* HWCursorBug when doubling */
 	    new->Port_3D6[0x5A] = temp > 0x0F ? 0 : (unsigned char)temp;
 	}
+      }
     }
 
     new->Port_3D6[0x2B] = ctVideoMode(vgaBitsPerPixel, xf86weight.green,
@@ -2531,6 +2503,10 @@ CHIPSInitHiQV32(mode)
     new->Port_3D4[0x33] = (mode->CrtcVSyncStart & 0xF00) >> 8;
     new->Port_3D4[0x40] |= 0x80;
 
+    if(OFLG_ISSET(OPTION_SUSPEND_HACK, &vga256InfoRec.options)) {
+	new->Port_3D0[0x40] = ctHorizontalStretch ;
+	new->Port_3D0[0x48] = ctVerticalStretch ; 
+      } else {
     if (OFLG_ISSET(OPTION_LCD_STRETCH, &vga256InfoRec.options)) {
 	new->Port_3D0[0x40] = 0x01;    /* Disable Horizontal stretching */
 	new->Port_3D0[0x48] = 0x01;    /* Disable vertical stretching */
@@ -2538,7 +2514,7 @@ CHIPSInitHiQV32(mode)
 	new->Port_3D0[0x40] = 0x21;    /* Enable Horizontal stretching */
 	new->Port_3D0[0x48] = 0x05;    /* Enable vertical stretching */
     }
-
+  }
     if (OFLG_ISSET(OPTION_LCD_CENTER, &vga256InfoRec.options)) {
 	new->Port_3D0[0x40] |= 0x2;    /* Enable Horizontal centering */
 	new->Port_3D0[0x48] |= 0x2;    /* Enable Vertical centering */
@@ -2983,38 +2959,13 @@ CHIPSFbInit()
 	    vgaHWCursor.Restore = CHIPSRestoreCursor;
 	    vgaHWCursor.Warp = CHIPSWarpCursor;
 	    vgaHWCursor.QueryBestSize = CHIPSQueryBestSize;
+	    ctHWCursor = TRUE;
 	}
     }
 #ifdef DEBUG
     ErrorF("CHIPSFbInit: exit\n");
 #endif
 }
-
-#if 0
-void
-CHIPSSaveScreen(start)
-    Bool start;
-{
-#ifdef DEBUG
-  ErrorF("CHIPSSaveScreen(");
-    if (start==SS_START)
-	ErrorF("SS_START)\n");
-    else
-	ErrorF("SS_FINISH)\n");
-#endif
-#if 0
-    /* 
-     * what is done for ?
-     * do we need this ?
-     */
-    vgaHWSaveScreen(start);
-#endif
-    /*
-     *	Do not reset timing sequencer.
-     *  Some changes must be synchronized with VSync.
-     */
-}
-#endif
 
 ctRestoreStretching(ctHorizontalStretch, ctVerticalStretch)
     unsigned char ctHorizontalStretch, ctVerticalStretch;
@@ -3119,21 +3070,21 @@ ctRestore(restore)
 		outb(ctCRvalue, restore->Port_3D4[i]);
 	}
     } else {
-#ifdef CHIPS_SUPPORT_MMIO
+#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
 	if(!ctUseMMIO){
 #endif
-	    outl(DR(0x0), restore->Port_83D0);
-	    outl(DR(0x8), restore->Port_A3D0);
-	    outl(DR(0x9), restore->Port_A7D0);
-	    outl(DR(0xA), restore->Port_ABD0);
-	    outl(DR(0xC), restore->Port_B3D0);
-#ifdef CHIPS_SUPPORT_MMIO
+	     HW_DEBUG(0x0); outl(DR(0x0), restore->Port_83D0);
+	     HW_DEBUG(0x8); outl(DR(0x8), restore->Port_A3D0);
+	     HW_DEBUG(0x9); outl(DR(0x9), restore->Port_A7D0);
+	     HW_DEBUG(0xA); outl(DR(0xA), restore->Port_ABD0);
+	     HW_DEBUG(0xC); outl(DR(0xC), restore->Port_B3D0);
+#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
 	} else {
-	    MMIOmem(0x83D0) = restore->Port_83D0;
-	    MMIOmem(0xA3D0) = restore->Port_A3D0;
-	    MMIOmem(0xA7D0) = restore->Port_A7D0;
-	    MMIOmem(0xABD0) = restore->Port_ABD0;
-	    MMIOmem(0xB3D0) = restore->Port_B3D0;
+	     HW_DEBUG(0x83D0); MMIOmeml(0x83D0) = restore->Port_83D0;
+	     HW_DEBUG(0xA3D0); MMIOmeml(0xA3D0) = restore->Port_A3D0;
+	     HW_DEBUG(0xA7D0); MMIOmeml(0xA7D0) = restore->Port_A7D0;
+	     HW_DEBUG(0xABD0); MMIOmeml(0xABD0) = restore->Port_ABD0;
+	     HW_DEBUG(0xB3D0); MMIOmeml(0xB3D0) = restore->Port_B3D0;
 	}
 #endif
 	for (i = 0; i < 0x30; i++) {
@@ -3219,22 +3170,13 @@ ctVideoMode(vgaBitsPerPixel, weightGreen, displaySize)
     return videoMode;
 }
 
-void ctSetupIO(IOBase)
-unsigned int IOBase;    
+#if defined(DEBUG) && defined(CT_HW_DEBUG)
+void ctHWDebug(addr)
+     int addr;
 {
-#if NOTYET
-  DR(0x0) = IOBase + 0;
-  DR(0x1) = IOBase + 0;
-  DR(0x2) = IOBase + 0;
-  DR(0x3) = IOBase + 0;
-  DR(0x4) = IOBase + 0;
-  DR(0x5) = IOBase + 0;
-  DR(0x6) = IOBase + 0;
-  DR(0x7) = IOBase + 0;
-  DR(0x8) = IOBase + 0;
-  DR(0x9) = IOBase + 0;
-  DR(0xA) = IOBase + 0;
-  DR(0xB) = IOBase + 0;
-  DR(0xC) = IOBase + 0;
-#endif  
+#if CT_DEBUG_WAIT
+  usleep(CT_DEBUG_WAIT);
+#endif
+  ErrorF("Register/Address: %X\n",addr);
 }
+#endif

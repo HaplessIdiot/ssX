@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.95 1996/08/20 12:27:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.96 1996/08/23 11:03:05 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1571,6 +1571,11 @@ s3Init(mode)
       outb(0x3c4, 0x08);
       sr8 = inb(0x3c5);
       outb(0x3c5, 0x06);
+
+      outb(0x3c4, 0x0d);        /* fix for VideoLogic GrafixStar cards: */
+      tmp = inb(0x3c5);         /* disable feature connector to use 64bit DRAM bus */
+      outb(0x3c5, tmp & ~1);
+
       outb(0x3c4, 0x15);
       sr15 = inb(0x3c5) & ~0x10;  /* XXXX ~0x40 and SynthClock /= 2 in s3.c might be better... */
       outb(0x3c4, 0x18);
@@ -2664,6 +2669,14 @@ s3Init(mode)
 
       outb(vgaCRReg, s3Port51);
 
+      outb(vgaCRIndex, 0x58);
+      outb(vgaCRReg, s3SAM256);
+
+      outb(vgaCRIndex, 0x59);
+      outb(vgaCRReg, s3Port59);
+      outb(vgaCRIndex, 0x5A);
+      outb(vgaCRReg, s3Port5A);
+      
       outb(vgaCRIndex, 0x53);
       tmp = inb(vgaCRReg) & ~0x18;
       if (s3Mmio928)
@@ -2693,6 +2706,11 @@ s3Init(mode)
 	    tmp &= ~0x20;
       }
       outb(vgaCRReg, tmp);
+
+      if (s3NewMmio) {      
+	 outb (vgaCRIndex, 0x58);
+	 outb (vgaCRReg, s3LinApOpt & ~0x04 | s3SAM256);  /* window size for linear mode */
+      }
 
       n = 255;
       outb(vgaCRIndex, 0x54);
@@ -2740,19 +2758,6 @@ s3Init(mode)
 	outb(vgaCRIndex, 0x55);
 	tmp = inb(vgaCRReg) & 0x08;       /* save the external serial bit  */
 	outb(vgaCRReg, tmp | 0x40);	/* remove mysterious dot at 60Hz */
-      }
-
-      outb(vgaCRIndex, 0x58);
-      outb(vgaCRReg, s3SAM256);
-
-      outb(vgaCRIndex, 0x59);
-      outb(vgaCRReg, s3Port59);
-      outb(vgaCRIndex, 0x5A);
-      outb(vgaCRReg, s3Port5A);
-
-      if (s3NewMmio) {      
-	 outb (vgaCRIndex, 0x58);
-	 outb (vgaCRReg, s3LinApOpt & ~0x04 | s3SAM256);  /* window size for linear mode */
       }
 
       /* This shouldn't be needed -- they should be set by vgaHWInit() */
@@ -2824,7 +2829,8 @@ s3Init(mode)
 	 i = mode->HDisplay * s3Bpp / 4 + 1; /* XXX should be checked for 801/805 */
       
       outb(vgaCRIndex, 0x61);
-      outb(vgaCRReg, (i >> 8) | 0x80);
+      tmp = inb(vgaCRReg);
+      outb(vgaCRReg, 0x80 | (tmp & 0x60) | (i >> 8));
       outb(vgaCRIndex, 0x62);
       outb(vgaCRReg, i & 0xff);
    }

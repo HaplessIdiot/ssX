@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_blitter.c,v 3.0 1996/08/11 13:02:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_blitter.c,v 3.1 1996/08/21 08:40:18 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -240,13 +240,15 @@ _ctcfbBLT8x8PatternFill(destaddr, w, h, pattern, yrot, patternpitch,
     /* The cursor must be hidden during this operation, otherwise 
      * with the depth set to the wrong value it might be corrupted
      */
-    if (ctisHiQV32) {
+    if (ctHWCursor){
+      if (ctisHiQV32) {
 	outb(0x3D6, 0xA0);
 	curreg = inb(0x3D7);
 	outb(0x3D7, curreg & 0xF7);
-    } else {
-	curreg = inl(DR(0x8));
-	outw(DR(0x8), curreg & 0xFFF7);
+      } else {
+	ctGETHWCUR(curreg);
+	ctPUTHWCUR(curreg & 0xFFF7);
+      }
     }
     if (patternpitch == 8)
 	memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress,
@@ -262,14 +264,15 @@ _ctcfbBLT8x8PatternFill(destaddr, w, h, pattern, yrot, patternpitch,
     ctSETDSTADDR(destaddr * vgaBytesPerPixel);
     ctSETPATSRCADDR(ctBLTPatternAddress);
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
-    if (ctisHiQV32) {
-	ctBLTWAIT;
+    ctBLTWAIT;
+    if (ctHWCursor) {
+      if (ctisHiQV32) {
 	outb(0x3D6, 0xA0);
 	outb(0x3D7, curreg);
-    } else {
-	ctBLTWAIT;
-	outw(DR(0x8), curreg);
-    }
+      } else {
+	ctPUTHWCUR(curreg);
+      }
+  }
 }
 
 /*
@@ -308,13 +311,15 @@ _ctcfbBLT16x16PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
     /* The cursor must be hidden during this operation, otherwise 
      * with the depth set to the wrong value it might be corrupted
      */
-    if (ctisHiQV32) {
+    if (ctHWCursor) {
+      if (ctisHiQV32) {
 	outb(0x3D6, 0xA0);
 	curreg = inb(0x3D7);
 	outb(0x3D7, curreg & 0xF7);
-    } else {
-	curreg = inl(DR(0x8));
-	outw(DR(0x8), curreg & 0xFFF7);
+      } else {
+	ctGETHWCUR(curreg);
+	ctPUTHWCUR(curreg & 0xFFF7);
+      }
     }
 
     if (vgaBitsPerPixel == 8) {
@@ -511,11 +516,13 @@ _ctcfbBLT16x16PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
 
 	ctBLTWAIT;
     }
-    if (ctisHiQV32) {
+    if (ctHWCursor) {
+      if (ctisHiQV32) {
 	outb(0x3D6, 0xA0);
 	outb(0x3D7, curreg);
-    } else {
-	outw(DR(0x8), curreg);
+      } else {
+	ctPUTHWCUR(curreg);
+      }
     }
 }
 
@@ -565,13 +572,15 @@ _ctcfbBLT32x32PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
      * The cursor must be hidden during this operation, otherwise 
      * with the depth set to the wrong value it might be corrupted
      */
-    if (ctisHiQV32) {
+    if (ctHWCursor) {
+      if (ctisHiQV32) {
 	outb(0x3D6, 0xA0);
 	curreg = inb(0x3D7);
 	outb(0x3D7, curreg & 0xF7);
-    } else {
-	curreg = inl(DR(0x8));
-	outw(DR(0x8), curreg & 0xFFF7);
+      } else {
+	ctGETHWCUR(curreg);
+	ctPUTHWCUR(curreg & 0xFFF7);
+      }
     }
 
     ctSETPITCH(8, destpitch * 4);      /* Four-way interleave */
@@ -728,12 +737,15 @@ _ctcfbBLT32x32PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
 	ctBLTWAIT;
 	outb(0x3D6, 0x20);
 	outb(0x3D7, bltreg);
-	outb(0x3D6, 0xA0);
-	outb(0x3D7, curreg);
+	if (ctHWCursor){
+	  outb(0x3D6, 0xA0);
+	  outb(0x3D7, curreg);
+	}
     } else {
 	ctBLTWAIT;
 	outb(0x3D6, 0x40);
 	outb(0x3D7, bltreg);
-	outw(DR(0x8), curreg);
+	if (ctHWCursor) 
+	  ctPUTHWCUR(curreg);	
     }
 }
