@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 361. Fix high-res modes in the nv driver.  Add interlaced support for
+      chips older than NV11 (Mark Vojkovich).
  360. Cross compilation fixes (#4981, Harold Hunt, Alan Hourihane).
  359. Fix cursor artifacts when running XDarwin in full screen Quartz mode
       with 8 bit depth (Torrey T. Lyons).
@@ -13981,4 +13983,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1980 2001/10/07 18:47:48 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1981 2001/10/08 17:20:12 alanh Exp $
