@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:41:52 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.36 2001/04/26 21:09:39 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.37 2001/06/25 08:12:31 alanh Exp $
 
 #if UseCCMakeDepend
 CCMDEP_PROG = ccmakedep
@@ -33,9 +33,6 @@ RMAN_PROG = ProgramTargetName(rman)
 QNXCopyInstaller($(PROJECTROOT)/bin/install.qnx,./install.sh)
 #endif
 
-PROGRAMS = xmkmf $(CCMDEP_PROG) $(GCCMDEP_PROG) mergelib $(LNDIR_PROG) \
-	   $(RMAN_PROG) ProgramTargetName(revpath) \
-	   HostProgramTargetName(makestrs) $(EXPORTLISTGEN) $(CMKDIRHIER)
 DEPLIBS =
 #ifndef Win32Architecture
   EXTRA_LIBRARIES =
@@ -55,7 +52,9 @@ XCOMM not exist.  Since BUILDLIBDIR may not exist yet suppress its use.
         LDPOSTLIB = 
 #endif
 
-all:: $(PROGRAMS)
+all:: xmkmf $(GCCMDEP_PROG) mergelib $(LNDIR_PROG) $(RMAN_PROG) \
+      $(CCMDEP_PROG) ProgramTargetName(revpath) \
+      HostProgramTargetName(makestrs) $(EXPORTLISTGEN) $(CMKDIRHIER)
 
 #if HasGcc
 GCCCMD = $(CC)
