@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.87 2003/02/13 03:12:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.88 2003/02/19 01:19:42 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -324,7 +324,7 @@ static const char *driSymbols[] = {
 };
 
 static const char *driShadowFBSymbols[] = {
-    "ShadowFBInit2",
+    "ShadowFBInit",
     NULL
 };
 #endif

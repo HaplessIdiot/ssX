@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.30 2003/02/08 23:27:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.31 2003/02/19 01:19:42 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -1549,7 +1549,7 @@ Bool RADEONDRIFinishScreenInit(ScreenPtr pScreen)
 
     /* Have shadowfb run only while there is 3d active. */
     if (info->allowPageFlip /* && info->drmMinor >= 3 */) {
-	ShadowFBInit2( pScreen, NULL, RADEONDRIRefreshArea, FALSE );
+	ShadowFBInit( pScreen, RADEONDRIRefreshArea );
     } else {
        info->allowPageFlip = 0;
     }
