@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.6 2004/04/08 10:08:01 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.7 2004/06/01 00:16:58 dawes Exp $
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -65,6 +65,7 @@ SUBDIRS = module
 #define MesaSwrastBuildDir ../swrast/
 #define MesaSwrastSetupBuildDir ../swrast_setup/
 #define MesaTnlBuildDir ../tnl/
+#define MesaShaderBuildDir ../shader/
 #define MesaXBuildDir ../X/
 
 #include "../../../../../lib/GL/mesa/array_cache/Imakefile.inc"
@@ -73,6 +74,7 @@ SUBDIRS = module
 #include "../../../../../lib/GL/mesa/tnl/Imakefile.inc"
 #include "../../../../../lib/GL/mesa/main/Imakefile.inc"
 #include "../../../../../lib/GL/mesa/math/Imakefile.inc"
+#include "../../../../../lib/GL/mesa/shader/Imakefile.inc"
 #include "../../../../../lib/GL/mesa/drivers/x11/Imakefile.inc"
 #include "../../../../../lib/GL/mesa/Imakefile.inc"
 
@@ -87,7 +89,7 @@ SUBDIRS = module
 
         DONES = ../main/DONE ../X/DONE ../array_cache/DONE \
 		../math/DONE ../swrast/DONE ../swrast_setup/DONE \
-		../tnl/DONE
+		../tnl/DONE ../shader/DONE
 
      INCLUDES = -I$(INCLUDESRC) -I$(XINCLUDESRC) -I$(EXTINCSRC) \
 		-I$(MESASRCDIR)/include -I$(GLXLIBSRC)/include \
