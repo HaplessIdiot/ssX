@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_kqueue_apm.c,v 1.3 2001/09/30 16:31:49 herrb Exp $ */
 /*
  * Copyright (C) 2001 The XFree86 Project, Inc.  All Rights Reserved.
  * 
@@ -95,7 +95,7 @@ bsdPMGetEventFromOS(int kq, pmEvent *events, int num)
     
     for (i = 0; i < num; i++) {
 	result = kevent(kq, NULL, 0, &ev, 1, &ts);
-	if (result == 0) {
+	if (result == 0 || APM_EVENT_TYPE(ev.data) == APM_NOEVENT) {
 	    /* no event */
 	    break;
 	} else if (result < 0) {
