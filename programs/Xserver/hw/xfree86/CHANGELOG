@@ -1,4 +1,10 @@
 XFree86 3.9Pg (29 March 1999)
+2454. Add OS-specific subdirectories to the loader subdirectory search lists,
+      and install OS-specific modules in such directories (David Dawes).
+2453. Set the screen numbering in multihead configurations based on the
+      ordering of the Screen entries in the ServerLayout section,
+      and allow an optional numerical argument to follow the Screen
+      keyword to indicate a different ordering (David Dawes).
 2452. Fix some signedness discrepancies in the libc_wrapper code.
 2451. Add missing parts to the parser's printKeyboardSection routine (#2621,
       Joe Moss).
@@ -7634,4 +7640,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.715 1999/03/28 15:32:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.716 1999/03/29 07:06:29 dawes Exp $

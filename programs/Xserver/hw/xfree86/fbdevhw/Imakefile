@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/Imakefile,v 1.1 1999/03/06 13:12:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/Imakefile,v 1.2 1999/03/14 03:22:11 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -24,7 +24,7 @@ LibraryModuleTarget(fbdevhw,$(OBJS))
 NormalLintTarget($(SRCS))
 InstallLinkKitNonExecFile(fbdevhw.c,$(LINKKITDIR)/VGADriverDoc)
 #ifdef LinuxArchitecture
-InstallLibraryModule(fbdevhw,$(MODULEDIR),.)
+InstallLibraryModule(fbdevhw,$(MODULEDIR),linux)
 #endif
 
 #ifndef OS2Architecture

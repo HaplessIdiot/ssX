@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.2 1998/07/25 16:57:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.3 1999/01/14 13:05:13 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -265,11 +265,11 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 		if (ptr->dev_videoram)
 			fprintf (cf, "\tVideoRam    %d\n", ptr->dev_videoram);
 		if (ptr->dev_bios_base)
-			fprintf (cf, "\tBiosBase    %d\n", ptr->dev_bios_base);
+			fprintf (cf, "\tBiosBase    0x%lx\n", ptr->dev_bios_base);
 		if (ptr->dev_mem_base)
-			fprintf (cf, "\tMemBase     %d\n", ptr->dev_mem_base);
+			fprintf (cf, "\tMemBase     0x%lx\n", ptr->dev_mem_base);
 		if (ptr->dev_io_base)
-			fprintf (cf, "\tIOBase      %d\n", ptr->dev_io_base);
+			fprintf (cf, "\tIOBase      0x%lx\n", ptr->dev_io_base);
 		if (ptr->dev_clockchip)
 			fprintf (cf, "\tClockChip   \"%s\"", ptr->dev_clockchip);
 		if (ptr->dev_chipid != -1)

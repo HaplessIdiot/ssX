@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.3 1999/03/07 11:40:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.4 1999/03/21 07:35:27 dawes Exp $ */
 
 /* Private procs.  Public procs are in xf86Parser.h and xf86Optrec.h */
 
@@ -67,7 +67,6 @@ void freeVendorList(XF86ConfVendorPtr p);
 void printVendorSection(FILE * cf, XF86ConfVendorPtr ptr);
 /* read.c */
 int validateConfig(XF86ConfigPtr p);
-GenericListPtr addListItem(GenericListPtr head, GenericListPtr new);
 /* scan.c */
 unsigned int StrToUL(char *str);
 int xf86GetToken(xf86ConfigSymTabRec *tab);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.5 1999/03/07 11:40:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.6 1999/03/21 07:35:26 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -136,7 +136,7 @@ else\
 #define WEIGHT_MSG \
 "The Weight keyword must be followed by red, green and blue values."
 #define SCREEN_MSG \
-"The Screen keyword must be followed by 1 or 5 screen names in quotes."
+"The Screen keyword must be followed by an optional number and 1 or 5 \n\tscreen names in quotes."
 #define INACTIVE_MSG \
 "The Inactive keyword must be followed by a Device name in quotes."
 #define UNDEFINED_SCREEN_MSG \

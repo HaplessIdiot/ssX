@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.77 1999/03/29 01:39:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.78 1999/03/29 07:06:35 dawes Exp $ */
 
 /*
  *
@@ -29,11 +29,11 @@
 #include "cursor.h"
 #include "mipointer.h"
 #include "loaderProcs.h"
+#include "xf86Pci.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #define XF86_OS_PRIVS
 #include "xf86_OSproc.h"
-#include "xf86Pci.h"
 #define DECLARE_CARD_DATASTRUCTURES
 #include "xf86PciInfo.h"
 #include "xf86Parser.h"
