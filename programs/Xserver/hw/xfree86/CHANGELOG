@@ -1,4 +1,5 @@
-XFree86 3.1.0Ba (x January 1995)
+XFree86 3.1.0Ba (8 January 1995)
+171. Change "ct5??" chips&tech names to "ct655??".
 170. Fix for Xnest (and Xvfb) not calling OsInitColors().
 169. Add support for relinking the Xnest server with the LinkKit.
 168. Modify vgawonder to probe clocks when -probeonly is used

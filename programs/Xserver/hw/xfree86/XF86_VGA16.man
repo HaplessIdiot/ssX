@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_VGA16.man,v 1.2 94/04/11 16:03:12 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.4 1994/09/26 15:30:29 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.5 1995/01/07 05:43:27 dawes Exp $
 .TH XF86_VGA16 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_VGA16 - 4 bit non-accelerated X Window System server for UNIX on
@@ -31,10 +31,10 @@ Trident:
 TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000
 .TP 4
 Cirrus:
-CL6420
+CL6410, CL6412, CL6420, CL6440
 .TP 4
 Oak:
-OTI067, OTI077
+OTI067, OTI077, OTI087
 .RE
 .PP
 Additionally it
@@ -82,10 +82,10 @@ Trident:
 tvga8800cs, tvga8900b, tvga8900c, tvga8900cl, tvga9000
 .TP 4
 Cirrus:
-cl6420
+cl6410, cl6412, cl6420, cl6440
 .TP 4
 Oak:
-oti067, oti077
+oti067, oti077, oti087
 .TP 4
 Generic VGA:
 generic 

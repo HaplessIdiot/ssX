@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.1 1995/01/02 05:01:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.2 1995/01/04 04:42:03 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@>
@@ -284,8 +284,8 @@ CHIPSIdent(n)
 int n;
 {
     static char *chipsets[] = { "ct451", "ct452", "ct453", "ct455",
-				"ct456", "ct457", "ct520", "ct530",
-			        "ct540", "ct545" };
+				"ct456", "ct457", "ct65520", "ct65530",
+			        "ct65540", "ct65545" };
 #ifdef DEBUG	
     ErrorF("CHIPSIdent\n");
 #endif
