@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.71 2001/07/25 15:05:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.72 2001/08/01 00:44:59 tsi Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -1579,6 +1579,9 @@ OsReleaseSignals (void)
  * all privs before running a command.
  *
  * This is based on the code in FreeBSD 2.2 libc.
+ *
+ * XXX It'd be good to redirect stderr so that it ends up in the log file
+ * as well.  As it is now, xkbcomp messages don't end up in the log file.
  */
 
 int

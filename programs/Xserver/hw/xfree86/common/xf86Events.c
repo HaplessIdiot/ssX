@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.113 2001/08/15 16:25:21 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.114 2001/08/16 14:33:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -401,7 +401,7 @@ xf86PostKbdEvent(unsigned key)
     case 0x36:
 	return;
     default:
-      xf86MsgVerb(X_INFO, 3, "Unreported Prefix0 scancode: 0x%02x\n",
+      xf86MsgVerb(X_INFO, 4, "Unreported Prefix0 scancode: 0x%02x\n",
 		  scanCode);
       /*
        * "Internet" keyboards are generating lots of new codes.  Let them
