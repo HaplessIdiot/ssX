@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.62 2000/06/25 12:35:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.63 2000/07/26 01:52:18 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -551,7 +551,7 @@ outw(unsigned short port, unsigned short val)
 static __inline__ void
 outl(unsigned short port, unsigned int val)
 {
-	*(volatile unsigned long*)(((unsigned short)(port))+IOPortBase) = val;
+	*(volatile unsigned int*)(((unsigned short)(port))+IOPortBase) = val;
 }
 
 static __inline__ unsigned int
@@ -569,7 +569,7 @@ inw(unsigned short port)
 static __inline__ unsigned int
 inl(unsigned short port)
 {
-	return(*(volatile unsigned long*)(((unsigned short)(port))+IOPortBase));
+	return(*(volatile unsigned int*)(((unsigned short)(port))+IOPortBase));
 }
 
 
@@ -710,7 +710,7 @@ xf86ReadMmio32Le(void *base, const unsigned long offset)
 
 static __inline__ void
 xf86WriteMmioNB8(void *base, const unsigned long offset,
-               const unsigned int val)
+               const unsigned char val)
 {
         __asm__ __volatile__(
                         "stbx %1,%2,%3\n\t"
@@ -720,7 +720,7 @@ xf86WriteMmioNB8(void *base, const unsigned long offset,
 
 static __inline__ void
 xf86WriteMmioNB16Le(void *base, const unsigned long offset,
-                  const unsigned int val)
+                  const unsigned short val)
 {
         __asm__ __volatile__(
                         "sthbrx %1,%2,%3\n\t"
@@ -730,7 +730,7 @@ xf86WriteMmioNB16Le(void *base, const unsigned long offset,
 
 static __inline__ void
 xf86WriteMmioNB16Be(void *base, const unsigned long offset,
-                  const unsigned int val)
+                  const unsigned short val)
 {
         __asm__ __volatile__(
                         "sthx %1,%2,%3\n\t"
@@ -740,7 +740,7 @@ xf86WriteMmioNB16Be(void *base, const unsigned long offset,
 
 static __inline__ void
 xf86WriteMmioNB32Le(void *base, const unsigned long offset,
-                  const unsigned long val)
+                  const unsigned int val)
 {
         __asm__ __volatile__(
                         "stwbrx %1,%2,%3\n\t"
@@ -750,7 +750,7 @@ xf86WriteMmioNB32Le(void *base, const unsigned long offset,
 
 static __inline__ void
 xf86WriteMmioNB32Be(void *base, const unsigned long offset,
-                  const unsigned long val)
+                  const unsigned int val)
 {
         __asm__ __volatile__(
                         "stwx %1,%2,%3\n\t"
@@ -760,7 +760,7 @@ xf86WriteMmioNB32Be(void *base, const unsigned long offset,
 
 static __inline__ void
 xf86WriteMmio8(void *base, const unsigned long offset,
-               const unsigned int val)
+               const unsigned char val)
 {
         xf86WriteMmioNB8(base,offset,val);
         eieio();
@@ -768,7 +768,7 @@ xf86WriteMmio8(void *base, const unsigned long offset,
 
 static __inline__ void
 xf86WriteMmio16Le(void *base, const unsigned long offset,
-                  const unsigned int val)
+                  const unsigned short val)
 {
         xf86WriteMmioNB16Le(base,offset,val);
         eieio();
@@ -776,7 +776,7 @@ xf86WriteMmio16Le(void *base, const unsigned long offset,
 
 static __inline__ void
 xf86WriteMmio16Be(void *base, const unsigned long offset,
-                  const unsigned int val)
+                  const unsigned short val)
 {
         xf86WriteMmioNB16Be(base,offset,val);
         eieio();
@@ -784,7 +784,7 @@ xf86WriteMmio16Be(void *base, const unsigned long offset,
 
 static __inline__ void
 xf86WriteMmio32Le(void *base, const unsigned long offset,
-                  const unsigned long val)
+                  const unsigned int val)
 {
         xf86WriteMmioNB32Le(base,offset,val);
         eieio();
@@ -792,7 +792,7 @@ xf86WriteMmio32Le(void *base, const unsigned long offset,
 
 static __inline__ void
 xf86WriteMmio32Be(void *base, const unsigned long offset,
-                  const unsigned long val)
+                  const unsigned int val)
 {
         xf86WriteMmioNB32Be(base,offset,val);
         eieio();
@@ -1305,10 +1305,10 @@ extern volatile unsigned char *ioBase;
 
 extern void debug_outb(unsigned int a, unsigned char b, int line, char *file); 
 extern void debug_outw(unsigned int a, unsigned short w, int line, char *file); 
-extern void debug_outl(unsigned int a, unsigned long l, int line, char *file); 
+extern void debug_outl(unsigned int a, unsigned int l, int line, char *file); 
 extern unsigned char debug_inb(unsigned int a, int line, char *file); 
 extern unsigned short debug_inw(unsigned int a, int line, char *file); 
-extern unsigned long debug_inl(unsigned int a, int line, char *file); 
+extern unsigned int debug_inl(unsigned int a, int line, char *file); 
 
 #define outb(a,b) debug_outb(a,b, __LINE__, __FILE__)
 #define outw(a,w) debug_outw(a,w, __LINE__, __FILE__)
@@ -1321,7 +1321,7 @@ extern unsigned long debug_inl(unsigned int a, int line, char *file);
 
 extern unsigned char  inb(unsigned int a);
 extern unsigned short inw(unsigned int a);
-extern unsigned long  inl(unsigned int a);
+extern unsigned int   inl(unsigned int a);
 
 # if PPCIO_INLINE
 
@@ -1332,8 +1332,8 @@ extern unsigned long  inl(unsigned int a);
 # else /* !PPCIO_INLINE */
 
 extern void outb(unsigned int a, unsigned char b);
-extern void outw(unsigned int a, unsigned char w);
-extern void outl(unsigned int a, unsigned char l);
+extern void outw(unsigned int a, unsigned short w);
+extern void outl(unsigned int a, unsigned int l);
 
 # endif /* PPCIO_INLINE */
 
@@ -1696,7 +1696,7 @@ extern void outl(unsigned port, unsigned val);
 #undef outl
 #define inb(a) __extension__ ({unsigned char __c=RealInb(a); ErrorF("inb(0x%03x) = 0x%02x\t@ line %4d, file %s\n", a, __c, __LINE__, __FILE__);__c;})
 #define inw(a) __extension__ ({unsigned short __c=RealInw(a); ErrorF("inw(0x%03x) = 0x%04x\t@ line %4d, file %s\n", a, __c, __LINE__, __FILE__);__c;})
-#define inl(a) __extension__ ({unsigned long __c=RealInl(a); ErrorF("inl(0x%03x) = 0x%08x\t@ line %4d, file %s\n", a, __c, __LINE__, __FILE__);__c;})
+#define inl(a) __extension__ ({unsigned int __c=RealInl(a); ErrorF("inl(0x%03x) = 0x%08x\t@ line %4d, file %s\n", a, __c, __LINE__, __FILE__);__c;})
 
 #define outb(a,b) (ErrorF("outb(0x%03x, 0x%02x)\t@ line %4d, file %s\n", a, b, __LINE__, __FILE__),RealOutb(a,b))
 #define outw(a,b) (ErrorF("outw(0x%03x, 0x%04x)\t@ line %4d, file %s\n", a, b, __LINE__, __FILE__),RealOutw(a,b))
