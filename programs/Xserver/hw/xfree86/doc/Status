@@ -51,12 +51,13 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             Support is provided by the XF86_3DLabs server.
 
       4.0.2:
-            Support (including acceleration) for Permedia, Permedia 2, 2v
-            (and 2a??) GLINT 500TX, GLINT MX, GLINT Gamma, and Glint Delta
-            coproc.  Support is provided by the "glint" driver.
+            Support (including acceleration) for Permedia, Permedia 2, 2v,
+            (and 2a??), 3, GLINT 500TX, GLINT MX, GLINT Gamma, and Glint
+            Delta coproc.  Support is provided by the "glint" driver.
 
       Summary:
-            All hardware supported in 3.3.6 is also supported in 4.0.2.
+            All hardware supported in 3.3.6 is also supported in 4.0.2.  The
+            Permedia 3 is only supported in 4.0.2.
 
 4.  Alliance
 
@@ -568,7 +569,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 4.0.2.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.21 2000/12/04 19:31:05 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.22 2000/12/12 17:01:59 dawes Exp $
 
 
 $XFree86$
