@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.101 2004/01/02 20:15:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.102tsi Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -1154,13 +1154,14 @@ void
 I810PrintErrorState(ScrnInfoPtr pScrn)
 {
    I810Ptr pI810 = I810PTR(pScrn);
+   typedef unsigned int CARD32;		/* ... sigh ... */
 
-   ErrorF("pgetbl_ctl: 0x%lx pgetbl_err: 0x%lx\n",
+   ErrorF("pgetbl_ctl: 0x%x pgetbl_err: 0x%x\n",
 	  INREG(PGETBL_CTL), INREG(PGE_ERR));
 
-   ErrorF("ipeir: %lx iphdr: %lx\n", INREG(IPEIR), INREG(IPEHR));
+   ErrorF("ipeir: %x iphdr: %x\n", INREG(IPEIR), INREG(IPEHR));
 
-   ErrorF("LP ring tail: %lx head: %lx len: %lx start %lx\n",
+   ErrorF("LP ring tail: %x head: %x len: %x start %x\n",
 	  INREG(LP_RING + RING_TAIL),
 	  INREG(LP_RING + RING_HEAD) & HEAD_ADDR,
 	  INREG(LP_RING + RING_LEN), INREG(LP_RING + RING_START));
@@ -1170,7 +1171,7 @@ I810PrintErrorState(ScrnInfoPtr pScrn)
 
    ErrorF("instdone: %x instpm: %x\n", INREG16(INST_DONE), INREG8(INST_PM));
 
-   ErrorF("memmode: %lx instps: %lx\n", INREG(MEMMODE), INREG(INST_PS));
+   ErrorF("memmode: %x instps: %x\n", INREG(MEMMODE), INREG(INST_PS));
 
    ErrorF("hwstam: %x ier: %x imr: %x iir: %x\n",
 	  INREG16(HWSTAM), INREG16(IER), INREG16(IMR), INREG16(IIR));

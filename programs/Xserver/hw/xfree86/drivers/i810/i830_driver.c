@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.51 2004/02/25 12:53:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.52tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2520,7 +2520,8 @@ I830VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
    vbeInfoPtr pVbe = pI830->pVbe;
    VbeModeInfoData *data;
    int mode, i;
-   CARD32 planeA, planeB, temp;
+   CARD32 planeA, planeB;
+   unsigned int temp;
    int refresh = 60;
 #ifdef XF86DRI
    Bool didLock = FALSE;
@@ -2689,10 +2690,10 @@ I830VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
     * Print out the PIPEACONF and PIPEBCONF registers.
     */
    temp = INREG(PIPEACONF);
-   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEACONF is 0x%08lx\n", temp);
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEACONF is 0x%08x\n", temp);
    if (IS_MOBILE(pI830)) {
       temp = INREG(PIPEBCONF);
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEBCONF is 0x%08lx\n", temp);
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEBCONF is 0x%08x\n", temp);
    }
 
 #if PRINT_MODE_INFO
@@ -2802,13 +2803,14 @@ void
 I830PrintErrorState(ScrnInfoPtr pScrn)
 {
    I830Ptr pI830 = I830PTR(pScrn);
+   typedef unsigned int CARD32;		/* ... sigh ... */
 
-   ErrorF("pgetbl_ctl: 0x%lx pgetbl_err: 0x%lx\n",
+   ErrorF("pgetbl_ctl: 0x%x pgetbl_err: 0x%x\n",
 	  INREG(PGETBL_CTL), INREG(PGE_ERR));
 
-   ErrorF("ipeir: %lx iphdr: %lx\n", INREG(IPEIR), INREG(IPEHR));
+   ErrorF("ipeir: %x iphdr: %x\n", INREG(IPEIR), INREG(IPEHR));
 
-   ErrorF("LP ring tail: %lx head: %lx len: %lx start %lx\n",
+   ErrorF("LP ring tail: %x head: %x len: %x start %x\n",
 	  INREG(LP_RING + RING_TAIL),
 	  INREG(LP_RING + RING_HEAD) & HEAD_ADDR,
 	  INREG(LP_RING + RING_LEN), INREG(LP_RING + RING_START));
@@ -2818,7 +2820,7 @@ I830PrintErrorState(ScrnInfoPtr pScrn)
 
    ErrorF("instdone: %x instpm: %x\n", INREG16(INST_DONE), INREG8(INST_PM));
 
-   ErrorF("memmode: %lx instps: %lx\n", INREG(MEMMODE), INREG(INST_PS));
+   ErrorF("memmode: %x instps: %x\n", INREG(MEMMODE), INREG(INST_PS));
 
    ErrorF("hwstam: %x ier: %x imr: %x iir: %x\n",
 	  INREG16(HWSTAM), INREG16(IER), INREG16(IMR), INREG16(IIR));
