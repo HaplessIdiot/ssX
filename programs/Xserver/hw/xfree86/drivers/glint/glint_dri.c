@@ -365,6 +365,8 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 
     if (pGlint->numMultiDevices > 2) return FALSE;
 
+    if (pGlint->MultiChip != PCI_CHIP_MX) return FALSE;
+
     pDRIInfo = DRICreateInfoRec();
     if(pDRIInfo == NULL)
 	return FALSE;
