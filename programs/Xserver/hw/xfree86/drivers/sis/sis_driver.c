@@ -25,7 +25,7 @@
  * Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.4 1997/05/04 05:26:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.5 1997/06/03 14:12:19 hohndel Exp $ */
 
 /*#define DEBUG*/
 /*#define IO_DEBUG*/
@@ -795,7 +795,7 @@ SISFbInit()
 		/* use default base */
 		if ( sisUseLinear) 
 		    /* sisMMIOBase = vgaBase , but not yet mapped here */
-		    PCIMMIOBase = 0xA0000 ;
+		    PCIMMIOBase = vga256InfoRec.VGAbase;
 		else {
 		    PCIMMIOBase = 0xB0000 ;
 		    sisMMIOBase = xf86MapVidMem(vga256InfoRec.scrnIndex, 

@@ -1,4 +1,50 @@
-XFree86 3.9k (14 July 1997)
+XFree86 3.9k (29 July 1997)
+1159. Preliminary support for Millennium on PC98 (#825, Shuichiro Urata,
+      Takaaki Nomura).
+1158. update XKB for PC98 (#825, Isao Ohishi).
+1157. Support XF86Setup for PC98 (#825, Takaaki Nomura, Kazunori Ueno).
+1156. PC98 resync (#825, Michio "Karl" Jinbo).
+1155. Add common Imakefiles for some PC98 sub directories (#825,
+      Michio "Karl" Jinbo).
+1154. Add code to fine tune memory access on ET6000 boards and cleanup some
+      W32 specific code that would write to illegal registers on ET6000 cards
+      (#818, Harald Nordgard Hansen).
+1153. Ensure accelerator CRTC registers are unlocked before writting them and 
+      horizontal & vertical syncs are not disabled on mode switches (#817,
+      Marc La France).
+1152. Change xsetroot -mod option to count pixels from left to right within 
+      each 16-pixel slice, instead of right to left (#817, Marc La France). 
+1151. Cleanup declarations for xf86Verbose, xf86ProbeOnly & xf86ProbeFailed, 
+      make VGABase XF86Config option recognized by more servers, HSkew wasn't 
+      being dealt with correctly in matching modes to clocks, fixup default 
+      mode for the generic VGA driver (#817, Marc La France).
+1150. Fix a few bugs in ATI driver, break it up in multiple files, add
+      support for Mach64 accelerator CTRC, which now is used by default, and
+      generic VGA (untested) (#817, Marc La France). 
+1149. Fix build problem on Solaris (#810, Dirk Hohndel).
+1148. Re-enable LEFT_EDGE_CLIPPING_NEGATIVE for the HiQV chips and tidy up the
+      ScreenToScreenColorExpand stuff (#808, David Bateman).
+1147. Enable the sw_cursor option and add support for the no_accel option (#806,
+      Joe Moss).
+1146. Avoid source overruns in xf86DrawStippleScanline() and remove the
+      restrictions on TRIPLE_BITS_24BPP, LEFT_EDGE_CLIPPING 
+      and LEFT_EDGE_CLIPPING_NEGATIVE_X (#805, David Bateman).
+1145. Allow keywords with underscores in XF86Setup (#802, Harald Koenig).
+1144. Explicitly enable hsync and vsync on Mach64 boards (#799, Marc La France).
+1143. Small fix for norwegian keyboard in xkb (#797, Harald Nordgard Hansen).
+1142. Add 32bpp to HiQV driver and get CopyArea and Solid Fills accelerated 
+      in 32bpp (#790,796, David Bateman).
+1141. Fix clock calculation on HiQV chips (#783, David Bateman).
+1140. Fix hardware clipping and get closer to a working 8x8pattern color expand
+      (#781,811, Alan Hourihane).
+1139. Disable C&T HiQV ImageWrite (#780, David Bateman).
+1138. Change how patterns are packed for LINE_PATTERN_MSBFIRST_INCREASING
+      (#779, Mark Vojkovich).
+1137. SVGA/S3 acceleration improvements (#778, Mark Vojkovich).
+1136. Fix xclock problem that shows up on Cirrus 542x chips 
+      (#777, Corin Anderson).
+1135. Small fix for C&T driver (#775,776 David Bateman).
+1134. Merge missing ViRGE code from 3.3* into 3.9* (#773, Harald Koenig).
 1133. Support for I128 DRAM cards (#816, Robin Cutshaw).
 1132. PCI updates required for the I128 server (#815, Robin Cutshaw).
 1131. Fix for Xt/Error.c (#813, Kaleb Keithley).
@@ -5145,4 +5191,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.511 1997/07/19 05:43:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.512 1997/07/26 12:59:02 dawes Exp $

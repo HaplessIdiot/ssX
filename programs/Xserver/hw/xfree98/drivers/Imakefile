@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/Imakefile,v 1.6 1997/04/08 14:55:39 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/Imakefile,v 1.7 1997/04/17 08:17:40 hohndel Exp $
 
 
 #define IHaveModules
@@ -53,13 +53,24 @@ TGUISRCS = trident/?*.c
 TGUIOBJS = trident/trident_drv.o
 #endif
 
+#if XF98MGAServer || XF98MGAModule
+MGADIR  = mga
+MGASRCS = mga/?*.c
+MGAOBJS = mga/mga_drv.o
+#endif
+
 SUBDIRS = $(EGCDIR) $(GANBWAPDIR) $(PEGCDIR) $(NKVNECDIR) $(WABSDIR) \
-	  $(WABEPDIR) $(WSNADIR) $(TGUIDIR)
+	  $(WABEPDIR) $(WSNADIR) $(TGUIDIR) $(MGADIR)
 
 #if 0
 MakeSubdirs($(SUBDIRS))
 #endif
 
+#if MakeHasPosixVariableSubstitutions
+DONES = $(SUBDIRS:%=%/DONE)
+#if HasGnuMake || HasBsdMake
+$(DONES): $(SUBDIRS)
+#endif
 #if XF98EGCServer || XF98EGCModule
 NormalDepLibraryTarget(driveregc,$(EGCDIR) $(EGCOBJS),$(EGCOBJS))
 #endif
@@ -83,6 +94,38 @@ NormalDepLibraryTarget(driverwsna,$(WSNADIR) $(WSNAOBJS),$(WSNAOBJS))
 #endif
 #if XF98TGUIServer || XF98TGUIModule
 NormalDepLibraryTarget(drivertrident,$(TGUIDIR) $(TGUIOBJS),$(TGUIOBJS))
+#endif
+#if XF98MGAServer || XF98MGAModule
+NormalDepLibraryTarget(drivermga,$(MGADIR) $(MGAOBJS),$(MGAOBJS))
+#endif
+#else
+#if XF98EGCServer || XF98EGCModule
+NormalDepLibraryTarget(driveregc,$(EGCDIR),$(EGCOBJS))
+#endif
+#if XF98GANBWAPServer || XF98GANBWAPModule
+NormalDepLibraryTarget(driverganbwap,$(GANBWAPDIR),$(GANBWAPOBJS))
+#endif
+#if XF98PEGCServer || XF98PEGCModule
+NormalDepLibraryTarget(driverpegc,$(PEGCDIR),$(PEGCOBJS))
+#endif
+#if XF98NKVNECServer || XF98NKVNECModule
+NormalDepLibraryTarget(drivernkvnec,$(NKVNECDIR),$(NKVNECOBJS))
+#endif
+#if XF98WABSServer || XF98WABSModule
+NormalDepLibraryTarget(driverwabs,$(WABSDIR),$(WABSOBJS))
+#endif
+#if XF98WABEPServer || XF98WABEPModule
+NormalDepLibraryTarget(driverwabep,$(WABEPDIR),$(WABEPOBJS))
+#endif
+#if XF98WSNAServer || XF98WSNAModule
+NormalDepLibraryTarget(driverwsna,$(WSNADIR),$(WSNAOBJS))
+#endif
+#if XF98TGUIServer || XF98TGUIModule
+NormalDepLibraryTarget(drivertrident,$(TGUIDIR),$(TGUIOBJS))
+#endif
+#endif
+#if XF98MGAServer || XF98MGAModule
+NormalDepLibraryTarget(drivermga,$(MGADIR),$(MGAOBJS))
 #endif
 
 NormalLibraryObjectRule()

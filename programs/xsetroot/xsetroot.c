@@ -33,7 +33,7 @@ in this Software without prior written authorization from the X Consortium.
  *  Author:	Mark Lillibridge, MIT Project Athena
  *		11-Jun-87
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xsetroot/xsetroot.c,v 1.2 1996/12/28 08:22:33 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -416,7 +416,7 @@ Pixmap MakeModulaBitmap(mod_x, mod_y)
     long pattern_line = 0;
     char modula_data[16*16/8];
 
-    for (i=0; i<16; i++) {
+    for (i=16; i--; ) {
 	pattern_line <<=1;
 	if ((i % mod_x) == 0) pattern_line |= 0x0001;
     }

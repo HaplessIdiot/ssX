@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.11 1997/05/18 12:12:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.12 1997/06/03 14:12:17 hohndel Exp $ */
 
 /*
  *
@@ -364,6 +364,8 @@ unsigned char tmp, cr3a, cr53, cr66, cr67;
    outb(vgaCRReg, restore->CR43);
    outb(vgaCRIndex, 0x65);             
    outb(vgaCRReg, restore->CR65);
+   outb(vgaCRIndex, 0x6d);
+   outb(vgaCRReg, restore->CR6D);
 
 
    /* Restore the desired video mode with CR67 */
@@ -371,6 +373,8 @@ unsigned char tmp, cr3a, cr53, cr66, cr67;
    outb(vgaCRIndex, 0x67);             
    cr67 = inb(vgaCRReg) & 0xf; /* Possible hardware bug on VX? */
    outb(vgaCRReg, 0x50 | cr67); 
+   usleep(10000);
+   outb(vgaCRIndex, 0x67);             
    outb(vgaCRReg, restore->CR67 & ~0x0c); /* Don't enable STREAMS yet */
 
    /* Other mode timing and extended regs */
@@ -422,18 +426,17 @@ unsigned char tmp, cr3a, cr53, cr66, cr67;
    outb(0x3c4, 0x13);
    outb(0x3c5, restore->SR13);
 
-   outb(0x3c4, 0x15);
-   outb(0x3c5, restore->SR15);
    outb(0x3c4, 0x18);
    outb(0x3c5, restore->SR18); 
 
-   /* Load new m,n PLL values for DCLK */
+   /* Load new m,n PLL values for DCLK & MCLK */
    outb(0x3c4, 0x15);
-   tmp = inb(0x3c5);
+   tmp = inb(0x3c5) & ~0x21;
 
-   outb(0x3c4, tmp & ~0x20);
-   outb(0x3c4, tmp |  0x20);
-   outb(0x3c4, tmp & ~0x20);
+   outb(0x3c5, tmp | 0x03);
+   outb(0x3c5, tmp | 0x23);
+   outb(0x3c5, tmp | 0x03);
+   outb(0x3c5, restore->SR15);
 
 
    /* Now write out CR67 in full, possibly starting STREAMS */
@@ -441,6 +444,8 @@ unsigned char tmp, cr3a, cr53, cr66, cr67;
    VerticalRetraceWait();
    outb(vgaCRIndex, 0x67);    
    outb(vgaCRReg, 0x50);   /* For possible bug on VX?! */          
+   usleep(10000);
+   outb(vgaCRIndex, 0x67);
    outb(vgaCRReg, restore->CR67); 
 
 
@@ -533,7 +538,19 @@ unsigned char cr3a, cr53, cr66;
     * in the generic VGA portion.
     */
 
+   outb(vgaCRIndex, 0x66);
+   cr66 = inb(vgaCRReg);
+   outb(vgaCRReg, cr66 | 0x80);
+   outb(vgaCRIndex, 0x3a);
+   cr3a = inb(vgaCRReg);
+   outb(vgaCRReg, cr3a | 0x80);
+
    save = (vgaS3VPtr)vgaHWSave((vgaHWPtr)save, sizeof(vgaS3VRec));
+
+   outb(vgaCRIndex, 0x66);
+   outb(vgaCRReg, cr66);
+   outb(vgaCRIndex, 0x3a);             
+   outb(vgaCRReg, cr3a);
 
    /* First unlock extended sequencer regs */
    outb(0x3c4, 0x08);
@@ -592,6 +609,8 @@ unsigned char cr3a, cr53, cr66;
    save->CR5E = inb(vgaCRReg);  
    outb(vgaCRIndex, 0x65);             
    save->CR65 = inb(vgaCRReg);
+   outb(vgaCRIndex, 0x6d);
+   save->CR6D = inb(vgaCRReg);
 
 
    /* Save sequencer extended regs for DCLK PLL programming */
@@ -660,6 +679,43 @@ unsigned char cr3a, cr53, cr66;
 
 
 
+static unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
+{
+#define BIOS_BSIZE 1024
+#define BIOS_BASE  0xc0000
+
+   static unsigned char bios[BIOS_BSIZE];
+   static int init=0;
+   int i,j,l1,l2;
+
+   if (!init) {
+      init = 1;
+      if (xf86ReadBIOS(BIOSbase, 0, bios, BIOS_BSIZE) != BIOS_BSIZE)
+	 return NULL;
+      if ((bios[0] != 0x55) || (bios[1] != 0xaa))
+	 return NULL;
+   }
+   if (match1 == NULL)
+      return NULL;
+
+   l1 = xf86strlen(match1);
+   if (match2 != NULL) 
+      l2 = xf86strlen(match2);
+   else	/* for compiler-warnings */
+      l2 = 0;
+
+   for (i=0; i<BIOS_BSIZE-l1; i++)
+      if (bios[i] == match1[0] && !xf86memcmp(&bios[i],match1,l1))
+	 if (match2 == NULL) 
+	    return &bios[i+l1];
+	 else
+	    for(j=i+l1; (j<BIOS_BSIZE-l2) && bios[j]; j++) 
+	       if (bios[j] == match2[0] && !xf86memcmp(&bios[j],match2,l2))
+		  return &bios[j+l2];
+   return NULL;
+}
+
+
 /* 
  * This is the main probe function for the virge chipsets.
  * Right now, I have taken a shortcut and get most of the info from
@@ -670,8 +726,9 @@ static Bool
 S3VProbe()
 {
 S3PCIInformation *pciInfo = NULL;
-unsigned char config1, config2, m, n, n1, n2;
+unsigned char config1, config2, m, n, n1, n2, cr66;
 int mclk;
+DisplayModePtr pMode, pEnd;
 
    if (vga256InfoRec.chipset) {
       if (StrCaseCmp(vga256InfoRec.chipset,S3VIdent(0)))
@@ -691,10 +748,11 @@ int mclk;
       if(pciInfo->ChipType != S3_ViRGE && 
          pciInfo->ChipType != S3_ViRGE_VX &&
 	 pciInfo->ChipType != S3_ViRGE_DXGX){
-          ErrorF("%s %s: S3V: unidentified S3 chipset (non-ViRGE?) detected!\n", 
-             XCONFIG_PROBED, vga256InfoRec.name);
-          return FALSE;
-          }
+	 if (xf86Verbose > 1)
+	    ErrorF("%s %s: S3V: Unsupported (non-ViRGE) S3 chipset detected!\n", 
+		   XCONFIG_PROBED, vga256InfoRec.name);
+	 return FALSE;
+         }
       else {
          s3vPriv.chip = pciInfo->ChipType;
          ErrorF("%s %s: Detected S3 %s\n",XCONFIG_PROBED,
@@ -790,53 +848,79 @@ int mclk;
    }
 
 
+   /* reset S3 graphics engine to avoid memory corruption */
+   if (s3vPriv.chip != S3_ViRGE_VX) {
+      outb(vgaCRIndex, 0x66);
+      cr66 = inb(vgaCRReg);
+      outb(vgaCRReg, cr66 | 0x02);
+      usleep(10000);  /* wait a little bit... */
+   }
+
+   if (find_bios_string(vga256InfoRec.BIOSbase,"S3 86C325",
+			"MELCO WGP-VG VIDEO BIOS") != NULL) {
+      if (xf86Verbose)
+	 ErrorF("%s %s: MELCO BIOS found\n",
+		XCONFIG_PROBED, vga256InfoRec.name);
+      if (vga256InfoRec.MemClk <= 0)       vga256InfoRec.MemClk       =  74000;
+      if (vga256InfoRec.dacSpeeds[0] <= 0) vga256InfoRec.dacSpeeds[0] = 191500;
+      if (vga256InfoRec.dacSpeeds[1] <= 0) vga256InfoRec.dacSpeeds[1] = 162500;
+      if (vga256InfoRec.dacSpeeds[2] <= 0) vga256InfoRec.dacSpeeds[2] = 111500;
+      if (vga256InfoRec.dacSpeeds[3] <= 0) vga256InfoRec.dacSpeeds[3] =  83500;
+   }
+
+   if (s3vPriv.chip != S3_ViRGE_VX) {
+      outb(vgaCRIndex, 0x66);
+      outb(vgaCRReg, cr66 & ~0x02);  /* clear reset flag */
+      usleep(10000);  /* wait a little bit... */
+   }
+
    /* ViRGE built-in ramdac speeds */
 
+   if (vga256InfoRec.dacSpeeds[3] <= 0 && vga256InfoRec.dacSpeeds[2] > 0)
+      vga256InfoRec.dacSpeeds[3] = vga256InfoRec.dacSpeeds[2];
+
    if (s3vPriv.chip == S3_ViRGE_VX) {
-      vga256InfoRec.dacSpeeds[0] = 220000;
-      }
-   else if(s3vPriv.chip == S3_ViRGE_DXGX) {
-      vga256InfoRec.dacSpeeds[0] = 170000;
-      }
+      if (vga256InfoRec.dacSpeeds[0] <= 0) vga256InfoRec.dacSpeeds[0] = 220000;
+      if (vga256InfoRec.dacSpeeds[1] <= 0) vga256InfoRec.dacSpeeds[1] = 220000;
+      if (vga256InfoRec.dacSpeeds[2] <= 0) vga256InfoRec.dacSpeeds[2] = 135000;
+      if (vga256InfoRec.dacSpeeds[3] <= 0) vga256InfoRec.dacSpeeds[3] = 135000;
+   }
+   else if (s3vPriv.chip == S3_ViRGE_DXGX) {
+      if (vga256InfoRec.dacSpeeds[0] <= 0) vga256InfoRec.dacSpeeds[0] = 170000;
+      if (vga256InfoRec.dacSpeeds[1] <= 0) vga256InfoRec.dacSpeeds[1] = 170000;
+      if (vga256InfoRec.dacSpeeds[2] <= 0) vga256InfoRec.dacSpeeds[2] = 135000;
+      if (vga256InfoRec.dacSpeeds[3] <= 0) vga256InfoRec.dacSpeeds[3] = 135000;
+   }
    else {
-      vga256InfoRec.dacSpeeds[0] = 135000;
-      }
+      if (vga256InfoRec.dacSpeeds[0] <= 0) vga256InfoRec.dacSpeeds[0] = 135000;
+      if (vga256InfoRec.dacSpeeds[1] <= 0) vga256InfoRec.dacSpeeds[1] =  95000;
+      if (vga256InfoRec.dacSpeeds[2] <= 0) vga256InfoRec.dacSpeeds[2] =  57000;
+      if (vga256InfoRec.dacSpeeds[3] <= 0) vga256InfoRec.dacSpeeds[3] =  57000;
+   }
+
+   if (vga256InfoRec.dacSpeedBpp <= 0)
+      if (xf86bpp > 24 && vga256InfoRec.dacSpeeds[3] > 0)
+	 vga256InfoRec.dacSpeedBpp = vga256InfoRec.dacSpeeds[3];
+      else if (xf86bpp >= 24 && vga256InfoRec.dacSpeeds[2] > 0)
+	 vga256InfoRec.dacSpeedBpp = vga256InfoRec.dacSpeeds[2];
+      else if (xf86bpp > 8 && xf86bpp < 24 && vga256InfoRec.dacSpeeds[1] > 0)
+	 vga256InfoRec.dacSpeedBpp = vga256InfoRec.dacSpeeds[1];
+      else if (xf86bpp <= 8 && vga256InfoRec.dacSpeeds[0] > 0)
+	 vga256InfoRec.dacSpeedBpp = vga256InfoRec.dacSpeeds[0];
+
+   if (xf86Verbose) {
+      ErrorF("%s %s: Ramdac speed: %d MHz",
+	     OFLG_ISSET(XCONFIG_DACSPEED, &vga256InfoRec.xconfigFlag) ?
+	     XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name,
+	     vga256InfoRec.dacSpeeds[0] / 1000);
+      if (vga256InfoRec.dacSpeedBpp != vga256InfoRec.dacSpeeds[0])
+	 ErrorF("  (%d MHz for %d bpp)",vga256InfoRec.dacSpeedBpp / 1000, xf86bpp);
+      ErrorF("\n");
+   }
+
 
    /* Now set RAMDAC limits */
-
-   if (s3vPriv.chip == S3_ViRGE_VX){
-      if (vgaBitsPerPixel == 8){
-         vga256InfoRec.maxClock=220000;
-         }
-      else if (vgaBitsPerPixel == 16){
-         vga256InfoRec.maxClock=220000;
-         }
-      else {
-         vga256InfoRec.maxClock=135000;
-         }
-      }
-   else if (s3vPriv.chip == S3_ViRGE_DXGX){
-      if (vgaBitsPerPixel == 8){
-         vga256InfoRec.maxClock=170000;
-         }
-      else if (vgaBitsPerPixel == 16){
-         vga256InfoRec.maxClock=110000;  /* Try these from Harald */
-         }
-      else {
-         vga256InfoRec.maxClock=60000;
-         }
-      }
-   else {     /* ViRGE chip */
-      if (vgaBitsPerPixel == 8) {
-         vga256InfoRec.maxClock=135000;
-         }
-      else if (vgaBitsPerPixel == 16) {
-         vga256InfoRec.maxClock=94500;
-         }
-      else {
-         vga256InfoRec.maxClock=56600;
-         }
-      }
+   vga256InfoRec.maxClock = vga256InfoRec.dacSpeedBpp;
 
    /* Detect current MCLK and print it for user */
    outb(0x3c4, 0x08);
@@ -849,20 +933,22 @@ int mclk;
    n1 = n & 0x1f;
    n2 = (n>>5) & 0x03;
    mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
-   ErrorF("%s %s: Detected current MCLK value of %1.3f kHz\n",XCONFIG_PROBED, 
+   ErrorF("%s %s: Detected current MCLK value of %1.3f MHz\n",XCONFIG_PROBED, 
       vga256InfoRec.name, mclk / 1000.0);
 
 
    /* Now check if the user has specified "set_memclk" value in XConfig */
    if (vga256InfoRec.MemClk > 0) {
-      if(vga256InfoRec.MemClk <= 75000) {
-         ErrorF("%s %s: Using Memory Clock value of %d KHz\n",
-              XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.MemClk);
+      if(vga256InfoRec.MemClk <= 100000) {
+         ErrorF("%s %s: Using Memory Clock value of %1.3f MHz\n",
+		OFLG_ISSET(XCONFIG_DACSPEED, &vga256InfoRec.xconfigFlag) ?
+		XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name, 
+		vga256InfoRec.MemClk/1000.0);
          s3vPriv.MCLK = vga256InfoRec.MemClk;
          }
       else {
-         ErrorF("%s %s: Memory Clock value of %d KHz is larger than limit of 75000 KHz\n",
-              XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.MemClk);
+         ErrorF("%s %s: Memory Clock value of %1.3f MHz is larger than limit of 100 MHz\n",
+              XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.MemClk/1000.0);
          s3vPriv.MCLK = 0;
          }
       }
@@ -897,6 +983,51 @@ int mclk;
    if (vgaBitsPerPixel >= 24) s3vPriv.NeedSTREAMS = TRUE;
       else s3vPriv.NeedSTREAMS = FALSE;
    s3vPriv.STREAMSRunning = FALSE;
+
+
+   pEnd = pMode = vga256InfoRec.modes;
+   do {
+      /* Setup the Mode.Private if required */
+      if (!pMode->PrivSize || !pMode->Private) {
+	 pMode->PrivSize = S3_MODEPRIV_SIZE;
+	 pMode->Private = (INT32 *)xcalloc(sizeof(INT32), S3_MODEPRIV_SIZE);
+	 pMode->Private[0] = 0;
+      }
+      
+      /* Set default for invert_vclk */
+      if (!(pMode->Private[0] & (1 << S3_INVERT_VCLK))) {
+	 pMode->Private[S3_INVERT_VCLK] = 0;
+	 pMode->Private[0] |= 1 << S3_INVERT_VCLK;
+      }
+      
+      /* Set default for blank_delay */
+      if (!(pMode->Private[0] & (1 << S3_BLANK_DELAY))) {
+	 pMode->Private[0] |= (1 << S3_BLANK_DELAY);
+	 if(s3vPriv.chip == S3_ViRGE_VX)
+	    /* these values need to be changed once CR67_1 is set
+	       for gamma correction (see S3V server) ! */
+	    if (vgaBitsPerPixel == 8)
+	       pMode->Private[S3_BLANK_DELAY] = 0x00;
+	    else if (vgaBitsPerPixel == 16)
+	       pMode->Private[S3_BLANK_DELAY] = 0x00;
+	    else
+	       pMode->Private[S3_BLANK_DELAY] = 0x51;
+	 else
+	    if (vgaBitsPerPixel == 8)
+	       pMode->Private[S3_BLANK_DELAY] = 0x00;
+	    else if (vgaBitsPerPixel == 16)
+	       pMode->Private[S3_BLANK_DELAY] = 0x02;
+	    else
+	       pMode->Private[S3_BLANK_DELAY] = 0x04;
+      }
+      
+      /* Set default for early_sc */
+      if (!(pMode->Private[0] & (1 << S3_EARLY_SC))) {
+	 pMode->Private[0] |= 1 << S3_EARLY_SC;
+	 pMode->Private[S3_EARLY_SC] = 0;
+      }
+      pMode = pMode->next;
+   } while (pMode != pEnd);
 
    /* And finally set various possible option flags */
 
@@ -958,7 +1089,7 @@ int flag;
         }
    if((mode->Flags & V_INTERLACE) && (vgaBitsPerPixel >= 24)){
       if(verbose)
-          ErrorF("%s %s: %s: Interlace modes are not supported at %d bpp\n",
+          ErrorF("%s %s: Interlace modes are not supported at %d bpp\n",
                   XCONFIG_PROBED, vga256InfoRec.name,
                   vgaBitsPerPixel);
           return MODE_BAD;
@@ -1100,7 +1231,7 @@ int i, j;
    new->SR15 = 0x03 | 0x80; 
    new->SR18 = 0x00;
    new->CR43 = 0x00;
-   new->CR65 = 0x20;
+   new->CR65 = 0x00;
    new->CR54 = 0x00;
    
    /* Memory controller registers. Optimize for better graphics engine 
@@ -1126,7 +1257,7 @@ int i, j;
    /* And setup here the new value for MCLK. We use the XConfig 
     * option "set_mclk", whose value gets stored in vga256InfoRec.s3MClk.
     * I'm not sure what the maximum "permitted" value should be, probably
-    * 75 MHz is more than enough for now.  
+    * 100 MHz is more than enough for now.  
     */
 
    if(s3vPriv.MCLK> 0) {
@@ -1252,7 +1383,6 @@ int i, j;
    width = (vga256InfoRec.displayWidth * (vgaBitsPerPixel / 8))>> 3;
    new->std.CRTC[19] = 0xFF & width;
    new->CR51 = (0x300 & width) >> 4; /* Extension bits */
-   new->CR65 = 0x20;
    
    /* And finally, select clock source 2 for programmable PLL */
    new->std.MiscOutReg |= 0x0c;      
@@ -1282,10 +1412,39 @@ int i, j;
       outb(vgaCRIndex, 0x36);
       new->CR36 = inb(vgaCRReg);
       if(OFLG_ISSET(OPTION_FPM_VRAM, &vga256InfoRec.options)) 
-         new->CR36 = new->CR36 | 0x0c;
+         new->CR36 |=  0x0c;
       else 
          new->CR36 &= ~0x0c;
       }
+
+   if (mode->Private) {
+      if (mode->Private[0] & (1 << S3_INVERT_VCLK)) {
+	 if (mode->Private[S3_INVERT_VCLK])
+	    new->CR67 |= 1;
+	 else
+	    new->CR67 &= ~1;
+      }
+      if (mode->Private[0] & (1 << S3_BLANK_DELAY)) {
+	 if (s3vPriv.chip == S3_ViRGE_VX)
+	    new->CR6D = mode->Private[S3_BLANK_DELAY];
+	 else {
+	    new->CR65 = (new->CR65 & ~0x38) 
+	       | (mode->Private[S3_BLANK_DELAY] & 0x07) << 3;
+	    outb(vgaCRIndex, 0x6d);
+	    new->CR6D = inb(vgaCRReg);
+	 }
+      }
+      if (mode->Private[0] & (1 << S3_EARLY_SC)) {
+	 if (mode->Private[S3_EARLY_SC])
+	    new->CR65 |= 2;
+	 else
+	    new->CR65 &= ~2;
+      }
+   }
+   else {
+      outb(vgaCRIndex, 0x6d);
+      new->CR6D = inb(vgaCRReg);
+   }
 
    outb(vgaCRIndex, 0x68);
    new->CR68 = inb(vgaCRReg);
@@ -1317,7 +1476,7 @@ S3VFbInit()
       else {
          s3vPriv.NoPCIRetry = 1;   
          ErrorF("%s %s: \"pci_retry\" option requires \"pci_burst\".\n",
-              XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.MemClk);
+              XCONFIG_GIVEN, vga256InfoRec.name);
          }
    if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options)) {
       vgaHWCursor.Initialized = TRUE;

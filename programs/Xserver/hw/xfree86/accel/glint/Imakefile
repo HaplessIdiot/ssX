@@ -1,5 +1,5 @@
 
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/Imakefile,v 1.3 1997/06/10 13:52:06 hohndel Exp $
 
 
 #include <Server.tmpl>
@@ -24,7 +24,7 @@ NormalAsmObjectRule()
 
 NormalLibraryTarget(glint,$(OBJS))
 
-InstallLinkKitLibrary(glint_Drv,$(LINKKITDIR)/drivers)
+InstallLinkKitLibrary(glint,$(LINKKITDIR)/drivers)
 
 #if DoLoadableServer
 InstallDynamicModule(LibraryTargetName(glint),$(MODULEDIR))

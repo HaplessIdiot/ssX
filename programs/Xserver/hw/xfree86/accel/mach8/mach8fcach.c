@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fcach.c,v 3.6 1996/02/04 09:03:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fcach.c,v 3.7 1996/12/23 06:39:51 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -43,7 +43,6 @@
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
-extern int xf86Verbose;
 
 #define ALIGNMENT 8
 #define N_PLANES 8

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.14 1997/07/06 05:30:56 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.15 1997/07/19 05:43:16 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -23,7 +23,6 @@
  *
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  *          ET6000 and ET4000W32 16/24/32 bpp support by Koen Gadeyne
- *          DPMS support by Harald Nordgård Hansen
  */
 /* $XConsortium: et4_driver.c /main/27 1996/10/28 04:48:15 kaleb $ */
 
@@ -101,6 +100,7 @@ static unsigned char    initialIMAPortCtrl = 0x20;
 static unsigned char    initialET6KMemBase = 0xF0;
 static unsigned char    initialET6KMclkM = 0x56, initialET6KMclkN = 0x25;
 static unsigned char    initialET6KPerfContr = 0x3a;
+static unsigned char	initialET6KRasCas = 0x15;
 
 static unsigned char    save_VSConf1=0x03;
 
@@ -655,11 +655,8 @@ static int et6000_check_videoram(int ram)
     ram = 4096;
   }
   
- /* vga256InfoRec.VGAbase is NULL at this point, because the VGA aperture
-  * hasn't been memory-mapped yet when we enter the probing code.
-  */
   check_vgabase = xf86MapVidMem(vga256InfoRec.scrnIndex, VGA_REGION,
-                           (pointer)0xA0000, 0x10000);
+                           (pointer)vga256InfoRec.VGAbase, 0x10000);
 
  /*
   * We need to set the VGA controller in VGA graphics mode, or else we won't
@@ -1166,19 +1163,19 @@ ET4000Probe()
         ErrorF("%s %s: ET4000: Initial hibit state: %s\n", XCONFIG_PROBED,
                vga256InfoRec.name, tseng_save_divide & 0x40 ? "high" : "low");
       }
-  } /* et4000_type < ET6000 */
-
     /* Save initial RCConf value */
     outb(vgaIOBase + 4, 0x32); initialRCConf = inb(vgaIOBase + 5);
+  } /* et4000_type < ET6000 */
+
     if (et4000_type > TYPE_ET4000) {
       /* Save initial Auxctrl (CRTC 0x34) value */
       outb(vgaIOBase + 4, 0x34); initialCompatibility = inb(vgaIOBase + 5);
-      /* Save initial VSConf1 (CRTC 0x36) value */
-      outb(vgaIOBase + 4, 0x36); initialVSConf1 = inb(vgaIOBase + 5);
-      /* Save initial VSConf2 (CRTC 0x37) value */
-      outb(vgaIOBase + 4, 0x37); initialVSConf2 = inb(vgaIOBase + 5);
       if (et4000_type < TYPE_ET6000)
       {
+	/* Save initial VSConf1 (CRTC 0x36) value */
+	outb(vgaIOBase + 4, 0x36); initialVSConf1 = inb(vgaIOBase + 5);
+	/* Save initial VSConf2 (CRTC 0x37) value */
+	outb(vgaIOBase + 4, 0x37); initialVSConf2 = inb(vgaIOBase + 5);
         /* Save initial IMAPortCtrl value */
         outb(0x217a, 0xF7); initialIMAPortCtrl = inb(0x217b);
       }
@@ -1188,12 +1185,18 @@ ET4000Probe()
       int tmp = inb(ET6Kbase+0x67);
       initialET6KMemBase   = inb(ET6Kbase+0x13);
       initialET6KPerfContr = inb(ET6Kbase+0x41);
+      initialET6KRasCas    = inb(ET6Kbase+0x44);
       outb(ET6Kbase+0x67, 10);
       initialET6KMclkM = inb(ET6Kbase+0x69);
       initialET6KMclkN = inb(ET6Kbase+0x69);
       outb(ET6Kbase+0x67, tmp);
-      ErrorF("%s %s: ET6000: MClk: %3.2f MHz\n", XCONFIG_PROBED,
-             vga256InfoRec.name, gendacMNToClock(initialET6KMclkM, initialET6KMclkN)/1000.0);
+      ErrorF("%s %s: ET6000: MClk: %3.2f MHz, R/C: 0x%x\n", XCONFIG_PROBED,
+             vga256InfoRec.name,
+	     gendacMNToClock(initialET6KMclkM, initialET6KMclkN)/1000.0,
+	     initialET6KRasCas);
+      OFLG_SET(OPTION_SLOW_DRAM, &TSENG.ChipOptionFlags);
+      OFLG_SET(OPTION_MED_DRAM, &TSENG.ChipOptionFlags);
+      OFLG_SET(OPTION_FAST_DRAM, &TSENG.ChipOptionFlags);
     }
 
   if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
@@ -1453,6 +1456,7 @@ ET4000Restore(restore)
     outb(ET6Kbase+0x40, restore->ET6KMMAPCtrl);
     outb(ET6Kbase+0x58, restore->ET6KVidCtrl1);
     outb(ET6Kbase+0x41, restore->ET6KPerfContr);
+    outb(ET6Kbase+0x44, restore->ET6KRasCas);
     outb(ET6Kbase+0x46, restore->ET6KDispFeat);
   }
   
@@ -1470,7 +1474,7 @@ ET4000Restore(restore)
   if (restore->std.NoClock >= 0)
     outw(vgaIOBase + 4, (restore->Compatibility << 8) | 0x34);
   outw(vgaIOBase + 4, (restore->OverflowHigh << 8)  | 0x35);
-  if (et4000_type > TYPE_ET4000)
+  if (et4000_type > TYPE_ET4000 && et4000_type < TYPE_ET6000)
   {
     outw(vgaIOBase + 4, (restore->VSConf1 << 8)  | 0x36);
     /* 
@@ -1480,15 +1484,14 @@ ET4000Restore(restore)
      */
     save_VSConf1 = restore->VSConf1;
     outw(vgaIOBase + 4, (restore->VSConf2 << 8)  | 0x37);
-    if (et4000_type < TYPE_ET6000)
-    {
-      outw(0x217a, (restore->IMAPortCtrl << 8)  | 0xF7);
-    }
+    outw(0x217a, (restore->IMAPortCtrl << 8)  | 0xF7);
   }
+  if (et4000_type < TYPE_ET6000) {
 #ifdef WHY_WOULD_YOU_RESTRICT_THAT_TO_THIS_OPTION
   if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
 #endif
     outw(vgaIOBase + 4, (restore->RCConf << 8)  | 0x32);
+  }
   outb(0x3CD, restore->SegSel1);
   if (et4000_type > TYPE_ET4000)
     outb(0x3CB, restore->SegSel2);
@@ -1546,19 +1549,18 @@ ET4000Save(save)
 
   outb(vgaIOBase + 4, 0x33); save->ExtStart     = inb(vgaIOBase + 5);
   outb(vgaIOBase + 4, 0x35); save->OverflowHigh = inb(vgaIOBase + 5);
-  if (et4000_type > TYPE_ET4000)
+  if (et4000_type > TYPE_ET4000 && et4000_type < TYPE_ET6000)
   {
     outb(vgaIOBase + 4, 0x36); save->VSConf1 = inb(vgaIOBase + 5);
     outb(vgaIOBase + 4, 0x37); save->VSConf2 = inb(vgaIOBase + 5);
-    if (et4000_type < TYPE_ET6000)
-    {
-      outb(0x217a, 0xF7); save->IMAPortCtrl = inb(0x217b);
-    }
+    outb(0x217a, 0xF7); save->IMAPortCtrl = inb(0x217b);
   }
+  if (et4000_type < TYPE_ET6000) {
 #ifdef WHY_WOULD_YOU_RESTRICT_THAT_TO_THIS_OPTION
   if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
 #endif
     outb(vgaIOBase + 4, 0x32); save->RCConf = inb(vgaIOBase + 5);
+  }
   outb(0x3C4, 6); save->StateControl  = inb(0x3C5);
   outb(0x3C4, 7); save->AuxillaryMode = inb(0x3C5);
   save->AuxillaryMode |= 0x14;
@@ -1632,6 +1634,7 @@ ET4000Save(save)
     save->ET6KMMAPCtrl  = inb(ET6Kbase+0x40);
     save->ET6KVidCtrl1  = inb(ET6Kbase+0x58);
     save->ET6KPerfContr = inb(ET6Kbase+0x41);
+    save->ET6KRasCas    = inb(ET6Kbase+0x44);
     save->ET6KDispFeat  = inb(ET6Kbase+0x46);
   }
   
@@ -1705,7 +1708,8 @@ ET4000Init(mode)
 
   new->RCConf = initialRCConf;
   if (vgaBitsPerPixel >= 8) {
-  if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
+  if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options) &&
+      et4000_type < TYPE_ET6000)
   {
     /*
      *  make sure Trsp is no more than 75ns
@@ -1735,7 +1739,8 @@ ET4000Init(mode)
    * (those 135 MHz ramdac's...)
    */
    if (et4000_type > TYPE_ET4000) {
-     if (! OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
+     if (! OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options) &&
+	 et4000_type < TYPE_ET6000)
        new->Compatibility = (initialCompatibility & 0x7F) | 0x80;
      new->VSConf1 = initialVSConf1;
      new->VSConf2 = initialVSConf2;
@@ -1862,6 +1867,19 @@ ET4000Init(mode)
          new->ET6KMclkN = initialET6KMclkN;
        }
 #endif
+       /* 
+	* Even when we don't allow setting the MClk value as described
+	* above, we can use the FAST/MED/SLOW DRAM options to set up
+	* the RAS/CAS delays as decided by the value of ET6KRasCas.
+	* This is also a more correct use of the flags, as it describes
+	* how fast the RAM works. [HNH].
+	*/
+       if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
+	 new->ET6KRasCas = 0x04; /* Fastest speed(?) */
+       else if (OFLG_ISSET(OPTION_MED_DRAM, &vga256InfoRec.options))
+	 new->ET6KRasCas = 0x15; /* Medium speed */
+       else if (OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
+	 new->ET6KRasCas = 0x35; /* Slow speed */
 
        /* force clock #2 */
        new->Compatibility = (new->Compatibility & 0xFD);   
@@ -2028,7 +2046,7 @@ Bool start;
 #ifndef PC98_EGC
   if (start == SS_START)
   {
-    if (et4000_type > TYPE_ET4000)
+    if (et4000_type > TYPE_ET4000 && et4000_type < TYPE_ET6000)
     {
       outb(vgaIOBase + 4, 0x36);
       save_VSConf1 = inb(vgaIOBase + 5);
@@ -2038,7 +2056,7 @@ Bool start;
   else
   {
     vgaHWSaveScreen(start);
-    if (et4000_type > TYPE_ET4000)
+    if (et4000_type > TYPE_ET4000 && et4000_type < TYPE_ET6000)
     {
       outw(vgaIOBase + 4, (save_VSConf1 << 8) | 0x36);
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.1 1997/06/25 08:25:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.2 1997/07/06 13:12:08 dawes Exp $ */
 
 
 
@@ -28,9 +28,9 @@ typedef unsigned long u32;
 #define RDXB_DYN(addr)     (apmMMIO_Init ? RDXB(addr) : RDXB_IOP(addr))
 #define RDXW_DYN(addr)     (apmMMIO_Init ? RDXW(addr) : RDXW_IOP(addr))
 #define RDXL_DYN(addr)     (apmMMIO_Init ? RDXL(addr) : RDXL_IOP(addr))
-#define WRXB_DYN(addr,val) (apmMMIO_Init ? WRXB(addr,val) : WRXB_IOP(addr,val))
-#define WRXW_DYN(addr,val) (apmMMIO_Init ? WRXW(addr,val) : WRXW_IOP(addr,val))
-#define WRXL_DYN(addr,val) (apmMMIO_Init ? WRXL(addr,val) : WRXL_IOP(addr,val))
+#define WRXB_DYN(addr,val) (apmMMIO_Init ? WRXB(addr,val) : (void) WRXB_IOP(addr,val))
+#define WRXW_DYN(addr,val) (apmMMIO_Init ? WRXW(addr,val) : (void) WRXW_IOP(addr,val))
+#define WRXL_DYN(addr,val) (apmMMIO_Init ? WRXL(addr,val) : (void) WRXL_IOP(addr,val))
 
 #define STATUS() (RDXL(0x1fc))
 #define STATUS_HOSTBLTBUSY (1 << 8)

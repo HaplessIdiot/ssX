@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_misc.c,v 1.5 1997/05/17 13:11:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_misc.c,v 1.6 1997/06/03 14:12:18 hohndel Exp $ */
 
 /*
  *
@@ -141,8 +141,8 @@ s3vGetPCIInfo()
 		probed, vga256InfoRec.name);
 	 ErrorF("\t\tbase address changed from 0x%08lx to 0x%08lx\n",
 		base0, info.MemBase);
-         xf86writepci(vga256InfoRec.scrnIndex, pcrpp[i]->_bus, pcrpp[i]->_cardnum,
-		    pcrpp[i]->_func, PCI_MAP_REG_START, ~0L,
+         xf86writepci(vga256InfoRec.scrnIndex, pcrpp[i]->_bus,
+		    pcrpp[i]->_device, pcrpp[i]->_func, PCI_MAP_REG_START, ~0L,
 		    info.MemBase | PCI_MAP_MEMORY | PCI_MAP_MEMORY_TYPE_32BIT);
       }
    }

@@ -1,10 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.4 1997/06/03 14:12:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.5 1997/06/15 07:12:34 dawes Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
  * interface.
  */
 
+#include "compiler.h"
 #include "vga256.h"
 #include "xf86.h"
 #include "vga.h"
