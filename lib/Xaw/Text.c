@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.46 2001/10/31 07:14:31 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.47 2001/11/03 16:07:22 paulo Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -3871,12 +3871,12 @@ _XawTextSetSource(Widget w, Widget source,
 
     ctx->text.source_changed = SRC_CHANGE_OVERLAP;
 #endif
-    top = FindGoodPosition(ctx, top);
-    startPos = FindGoodPosition(ctx, startPos);
     ctx->text.source = source;
     ctx->text.s.left = ctx->text.s.right = 0;
     ctx->text.insertPos = ctx->text.old_insert = startPos;
     ctx->text.lastPos = GETLASTPOS;
+    top = FindGoodPosition(ctx, top);
+    startPos = FindGoodPosition(ctx, startPos);
     _XawTextPrepareToUpdate(ctx);
 
     _XawTextBuildLineTable(ctx, top, True);
