@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.40tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.41tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -790,6 +790,11 @@ ADDRESS	      pciHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr);
 PCITAG	      pciTag(int busnum, int devnum, int funcnum);
 int	      pciGetBaseSize(PCITAG tag, int indx, Bool destructive, Bool *min);
 CARD32	      pciCheckForBrokenBase(PCITAG tag,int basereg);
+Bool          xf86LocatePciMemoryArea(PCITAG tag,
+				      char **devName, unsigned int *devOffset,
+				      unsigned int *fbSize,
+				      unsigned int *fbOffset,
+				      unsigned int *flags);
 pointer	      xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag,
 			    ADDRESS Base, unsigned long Size);
 int	      xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,

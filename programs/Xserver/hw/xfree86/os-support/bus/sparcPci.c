@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.17tsi Exp $ */
 /*
  * Copyright (C) 2001-2003 The XFree86 Project, Inc.
  * All rights reserved.
@@ -809,6 +809,48 @@ xf86AccResFromOS(resPtr pRes)
     }
 
     return pRes;
+}
+
+/* Remap a PCI framebuffer (or portion thereof) */
+Bool
+xf86LocatePciMemoryArea(PCITAG Tag, char **devName, unsigned int *devOffset,
+			unsigned int *fbSize, unsigned int *fbOffset,
+			unsigned int *flags)
+{
+    unsigned long long offset, offset2;
+    sparcDomainPtr     pDomain;
+    int                domain;
+
+    if (!devName || !devOffset)
+	return FALSE;
+
+    domain = PCI_DOM_FROM_TAG(Tag);
+    if ((domain <= 0) || (domain >= pciNumDomains) ||
+	!(pDomain = xf86DomainInfo[domain]))
+	return FALSE;
+
+    offset = (((unsigned long long)devOffset[1]) << 32) | devOffset[0];
+    if (offset > pDomain->mem_size)
+	return FALSE;
+
+    offset2 = offset;
+    if (fbOffset)
+	offset2 += *fbOffset;
+    if (*fbSize)
+	offset2 += *fbSize;
+    if (offset2 > pDomain->mem_size)
+	return FALSE;
+
+    *devName = NULL;			/* mmap(2) CPU address space */
+    offset += pDomain->mem_addr;	/* Relocate address */
+
+    devOffset[0] = (unsigned int)offset;
+    devOffset[1] = (unsigned int)(offset >> 32);
+
+    if (flags)
+	*flags = 0;
+
+    return TRUE;
 }
 
 #endif /* !INCLUDE_XF86_NO_DOMAIN */
