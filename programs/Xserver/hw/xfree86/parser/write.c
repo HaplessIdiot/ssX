@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.15 2001/07/25 15:05:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.16 2002/05/31 18:46:03 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -44,7 +44,7 @@
 extern char *sys_errlist[];
 extern int sys_nerr;
 #define strerror(n) \
-    (((n) >= 0 && (n) < sys_nerr) ? sys_errlist[n] : "unknown error")
+	(((n) >= 0 && (n) < sys_nerr) ? sys_errlist[n] : "unknown error")
 #endif
 #endif
 

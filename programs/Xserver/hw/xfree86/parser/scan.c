@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.19 2001/07/23 13:15:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.20 2002/05/31 18:46:02 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -965,10 +965,10 @@ xf86validationError (char *format,...)
 void
 xf86setSection (char *section)
 {
-  if (configSection)
-      xf86conffree(configSection);
-  configSection = xf86confmalloc(strlen (section) + 1);
-  strcpy (configSection, section);
+	if (configSection)
+		xf86conffree(configSection);
+	configSection = xf86confmalloc(strlen (section) + 1);
+	strcpy (configSection, section);
 }
 
 /* 
