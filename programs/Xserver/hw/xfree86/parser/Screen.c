@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.8 1999/05/23 14:38:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.10 2000/01/26 02:00:51 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -96,7 +96,7 @@ parseDisplaySubSection (void)
 			break;
 		case VISUAL:
 			if (xf86GetToken (NULL) != STRING)
-				Error (NUMBER_MSG, "Display");
+				Error (QUOTE_MSG, "Display");
 			ptr->disp_visual = val.str;
 			break;
 		case WEIGHT:
@@ -381,7 +381,7 @@ printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 		{
 			fprintf (cf, "\tSubSection \"Display\"\n");
 			if (dptr->disp_comment)
-				fprintf (cf, "\t\t###        %d %d\n",
+				fprintf (cf, "\t\t###        %s\n",
 						 dptr->disp_comment);
 			if (dptr->disp_frameX0 != 0 || dptr->disp_frameY0 != 0)
 			{
