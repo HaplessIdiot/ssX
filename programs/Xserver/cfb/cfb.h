@@ -1,5 +1,5 @@
 /* $XConsortium: cfb.h,v 5.37 94/04/17 20:28:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.9 1997/11/16 11:51:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.10 1998/03/20 21:05:00 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -1505,10 +1505,7 @@ extern int cfbScreenPrivateIndex;
  * The following macros should wrap all calls in CFB
  */
 #if defined(XFree86LOADER) && !defined(NOXF86DEFS)
-#define memmove(a,b,c)	xf86memmove(a,b,c)
-#define memcpy(a,b,c)	xf86memcpy(a,b,c)
-#define memset(a,b,c)	xf86memset(a,b,c)
-#define ffs(a)		xf86ffs(a)
+#include "xf86_libc.h"
 #endif
 
 #endif /*  __CFB_H__ */
