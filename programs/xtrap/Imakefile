@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xtrap/Imakefile,v 1.1 2001/11/02 23:29:34 dawes Exp $
+XCOMM $XFree86: xc/programs/xtrap/Imakefile,v 1.2 2001/11/03 18:51:04 dawes Exp $
 
         DEPLIBS = $(DEPXTRAPLIB) $(DEPEXTENSIONLIB) $(DEPXTOOLLIB) $(DEPXLIB)
          KEYSRC = XEKeybCtrl.c
@@ -19,8 +19,13 @@ XCOMM $XFree86: xc/programs/xtrap/Imakefile,v 1.1 2001/11/02 23:29:34 dawes Exp 
           OBJS7 = xtrapchar.o chparse.o  $(KEYOBJ)
 LOCAL_LIBRARIES = $(XTRAPLIB) $(XTOOLLIB) $(XLIB)
 
-      PROGRAMS = xtrapinfo xtrapout xtrapreset xtrapstats xtrapin \
-                 xtrapproto xtrapchar
+      PROGRAMS = ProgramTargetName(xtrapinfo) \
+		 ProgramTargetName(xtrapout) \
+		 ProgramTargetName(xtrapreset) \
+		 ProgramTargetName(xtrapstats) \
+		 ProgramTargetName(xtrapin) \
+                 ProgramTargetName(xtrapproto) \
+		 ProgramTargetName(xtrapchar)
          SRCS  = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4) $(SRCS5) $(SRCS6) $(SRCS7) $(SRCS8)
          OBJS  = $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) $(OBJS6) $(OBJS7) $(OBJS8)
 
