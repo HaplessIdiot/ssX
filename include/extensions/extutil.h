@@ -189,7 +189,7 @@ XExtDisplayInfo *proc (Display *dpy) \
 }
 
 #define XEXT_FIND_DISLPAY_PROTO(proc) \
-	XExtDisplayInfo *proc(Display dpy)
+	XExtDisplayInfo *proc(Display *dpy)
 
 #define XEXT_GENERATE_CLOSE_DISPLAY(proc,extinfo) \
 int proc (Display *dpy, XExtCodes *codes) \
