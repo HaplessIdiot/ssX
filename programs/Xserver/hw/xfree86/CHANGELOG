@@ -1,3 +1,5 @@
+1214. Add font/face sharing and a minumum vertical space option
+      to Xft (Keith Packard)
 1213. Fix 64 bit DGA bug (Mark Vojkovich).
 1212. Rewrite DRI back buffer handling to minimize the impact on 2D
       performance (Mark Vojkovich).
@@ -12118,4 +12120,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1486 2000/12/20 00:17:43 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1487 2000/12/20 00:21:03 mvojkovi Exp $
