@@ -1,4 +1,6 @@
 XFree86 4.4.99.20 (xx December 2004)
+ 240. Fix an error in bdftopcf's usage message (Bugzilla #1520,
+      Matthew Fischer).
  239. Add support for the newer UltraSPARC variants into the SunOS/Solaris port
       (Marc La France).
  238. Ensure __i386__ or __sparc__ is defined when using Sun's compiler on
@@ -19209,7 +19211,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3364 2004/12/15 01:30:55 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3365 2004/12/15 01:35:40 tsi Exp $
 
 
 
