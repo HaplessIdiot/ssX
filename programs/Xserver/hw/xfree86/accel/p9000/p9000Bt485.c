@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000Bt485.c,v 3.0 1994/05/29 02:05:34 dawes Exp $ */
 /*
  * Copyright 1993 By David Wexelblat <dwex@aib.com>
  *
@@ -37,6 +37,9 @@
 #include "p9000.h"
 #include "p9000reg.h"
 #include "p9000Bt485.h"
+
+extern xrgb xf86weight;
+
 
 #ifndef __GNUC__
 # define __inline__ /**/
@@ -134,6 +137,8 @@ void
 p9000BtEnable(crtcRegs)
      p9000CRTCRegPtr crtcRegs;
 {
+  Bool weight555;  /* Is the 16 bpp weighting 555 (as opposed to 565)? */
+
   if (!bt_saved)
     {
       bt_cr0_save = p9000InBtReg(BT_COMMAND_REG_0);
@@ -154,11 +159,16 @@ p9000BtEnable(crtcRegs)
     p9000OutBtReg(BT_COMMAND_REG_1, 0x0, BT_CR1_BP8); /* 4:1 mux */
 
   else if (crtcRegs->BytesPerPixel == 2)  /* 16 bit color */
-    p9000OutBtReg(BT_COMMAND_REG_1, 0x0,
-		  BT_CR1_BP16 | BT_CR1_BYPASS_PAL
-		  | BT_CR1_555RGB | BT_CR1_16B_21MUX);
-  
-  else                                    /* 24 bit color */
+    {      
+      weight555 = (xf86weight.red == 5 && xf86weight.green == 5
+		   && xf86weight.blue == 5);
+
+      p9000OutBtReg(BT_COMMAND_REG_1, 0x0,
+		    BT_CR1_BP16 | BT_CR1_BYPASS_PAL
+		    | (weight555 ? BT_CR1_555RGB : BT_CR1_565RGB)
+		    | BT_CR1_16B_21MUX );
+    }
+  else                        /* sparse 32 bit color (24 bit depth) */
     p9000OutBtReg(BT_COMMAND_REG_1, 0x0, BT_CR1_BP24 | BT_CR1_BYPASS_PAL);
 }
 
@@ -178,3 +188,8 @@ p9000BtRestore()
   p9000OutBtReg(BT_COMMAND_REG_2, 0x0, bt_cr2_save);
   p9000OutBtReg(BT_COMMAND_REG_0, 0x0, bt_cr0_save);
 }
+
+
+
+
+

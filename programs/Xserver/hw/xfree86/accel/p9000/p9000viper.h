@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.h,v 3.0 1994/05/29 02:05:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.h,v 3.1 1994/06/26 13:05:21 dawes Exp $ */
 /*
  * Written by Erik Nygren
  *
@@ -17,12 +17,11 @@
 
 /* Bits for the Output Control Register */
 
-#define VPR_OCR_BASE_A0000000     0x01
-#define VPR_OCR_BASE_20000000     0x02
-#define VPR_OCR_BASE_80000000     0x03
-#define VPR_OCR_BANKED_MEMORY     0x04
-#define VPR_OCR_RESERVED_MASK     0x08
-#define VPR_OCR_ENABLE_P9000      0x10
-#define VPR_OCR_ENABLE_W5186      0x80
+#define VPR_VLB_OCR_BASE_A0000000     0x01
+#define VPR_VLB_OCR_BASE_20000000     0x02
+#define VPR_VLB_OCR_BASE_80000000     0x03
+#define VPR_VLB_OCR_RESERVED_MASK     0x0C
+#define VPR_VLB_OCR_ENABLE_P9000      0x10
+#define VPR_VLB_OCR_ENABLE_W5186      0x80
 
 extern p9000VendorRec p9000ViperVendor;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.0 1994/05/29 02:05:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.1 1994/06/26 13:05:20 dawes Exp $ */
 /*
  * Written by Erik Nygren
  *
@@ -12,8 +12,6 @@
  * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
  * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * Bank switching code added by David Moews (dmoews@xraysgi.ims.uconn.edu)
  *
  */
 
@@ -31,8 +29,7 @@
 
 static unsigned p9000ViperSaveMisc;        /* Stored value of misc register  */
 static unsigned p9000ViperInited = FALSE;  /* Has the Viper been initialized */
-static unsigned MemBaseFlags = 0x03;
-
+static unsigned MemBaseFlags = VPR_VLB_OCR_BASE_80000000;
 
 /* Prototypes */
 Bool p9000ViperProbe(
@@ -109,14 +106,12 @@ p9000ViperEnable(crtcRegs)
   p9000ViperSaveMisc = inb(MISC_IN_REG);       /* Save VGA Clocks */
 
   if (p9000InfoRec.MemBase == 0xA0000000)
-    MemBaseFlags = VPR_OCR_BASE_A0000000;
+    MemBaseFlags = VPR_VLB_OCR_BASE_A0000000;
   else if (p9000InfoRec.MemBase == 0x20000000)
-    MemBaseFlags = VPR_OCR_BASE_20000000;
+    MemBaseFlags = VPR_VLB_OCR_BASE_20000000;
   else if (p9000InfoRec.MemBase == 0x80000000)
-    MemBaseFlags = VPR_OCR_BASE_80000000;
-  else /* Banked memory */
-    MemBaseFlags = VPR_OCR_BANKED_MEMORY;
-  
+    MemBaseFlags = VPR_VLB_OCR_BASE_80000000;
+
   p9000BtEnable(crtcRegs);
 
   /* The Diamond Viper uses the w5[12]86's Output Control Register to select
@@ -134,14 +129,11 @@ p9000ViperEnable(crtcRegs)
   OutputCtlBits = (  MemBaseFlags      /* Select memory base */
 		   | (crtcRegs->hp)<<5 /* Horiz Sync Polarity */
 		   | (crtcRegs->vp)<<6 /* Vert Sync Polarity */
-		   | VPR_OCR_ENABLE_P9000
+		   | VPR_VLB_OCR_ENABLE_P9000
 		   /* These bits are reserved.  Lets not change them.
 		    * Should be 0x08. */
-		   | (inb(SEQ_PORT) & VPR_OCR_RESERVED_MASK)
+		   | (inb(SEQ_PORT) & VPR_VLB_OCR_RESERVED_MASK)
 		   );
-
-  if (p9000BankSwitching)
-     outb(VGA_BANK_REG, 0x20);   /* Page 0 of P9000 memory */
 
   outb(SEQ_INDEX_REG, SEQ_OUTPUT_CTL_INDEX);
   outb(SEQ_PORT, OutputCtlBits);
@@ -181,18 +173,16 @@ void p9000ViperDisable()
    * doesn't matter here?
    */
 
-  if (p9000BankSwitching)
-     outb(VGA_BANK_REG, 0);   /* default value? */
   outb(SEQ_INDEX_REG, SEQ_OUTPUT_CTL_INDEX);
 
-  OutputCtlBits = ( /* Select memory base or none if banked... */  
-		   (p9000BankSwitching ? 0x0 : MemBaseFlags) 
+  OutputCtlBits = ( /* Select memory base... */  
+		   MemBaseFlags
 		   | SP_POSITIVE<<5  /* Horiz Sync Polarity */
 		   | SP_POSITIVE<<6  /* Vert Sync Polarity */
-		   | VPR_OCR_ENABLE_W5186
+		   | VPR_VLB_OCR_ENABLE_W5186
 		   /* These bits are reserved.  Lets not change them.  
 		    * Should be 0x08. */
-		   | (inb(SEQ_PORT) & VPR_OCR_RESERVED_MASK)
+		   | (inb(SEQ_PORT) & VPR_VLB_OCR_RESERVED_MASK)
 		   );
   outb(SEQ_INDEX_REG, SEQ_OUTPUT_CTL_INDEX);
   outb(SEQ_PORT, OutputCtlBits);
@@ -273,51 +263,3 @@ void p9000ViperSetClock(dotclock, memclock)
 #endif
 }
 
-#ifdef P9000_BANKED  /* These routines will only work with the Viper... */
-/* Banked memory fetch & store routines */
-extern pointer vgaBase;
-
-void p9000Store(unsigned long offset, volatile unsigned long *base, unsigned long val)
-{ 
-  char b;
-  volatile unsigned long *p;
-
-  if (!p9000BankSwitching)
-  {
-    *(base + (offset >> 2)) = val;
-  }
-  else
-  {
-    offset /= sizeof(unsigned long);
-    offset += base - ((unsigned long *)p9000VideoMem);
-    b = inb(VGA_BANK_REG);
-    outb(VGA_BANK_REG, offset >> 14);
-    p = ((unsigned long *)vgaBase) + (offset & 0x3fff);
-    *p = val;
-    outb(VGA_BANK_REG, b);
-  }
-}
-
-unsigned long p9000Fetch(unsigned long offset, volatile unsigned long *base)
-{
-  char b;
-  unsigned long retval;
-  volatile unsigned long *p;
-
-  if (!p9000BankSwitching)
-  {
-    return(*(base + (offset >> 2)));
-  }
-  else
-  {
-    offset /= sizeof(unsigned long);
-    offset += base - ((unsigned long *)p9000VideoMem);
-    b = inb(VGA_BANK_REG);
-    outb(VGA_BANK_REG, offset >> 14);
-    p = ((unsigned long *)vgaBase) + (offset & 0x3fff);
-    retval = *p;
-  }
-  outb(VGA_BANK_REG, b);
-  return(retval);
-}
-#endif /* P9000_BANKED */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.0 1994/05/29 02:05:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.1 1994/06/26 13:05:16 dawes Exp $ */
 /* p9000reg.h
  *
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
@@ -65,8 +65,6 @@
                                  * can be before we see jitter */
 #define MEMSPEED      50000000L /* The primary value for the memory clock */
 #define MEMSPEED_ALT  55000000L /* alternate: default to 55MHz (0x65AC3DL) */
-
-
 
 /************* P9000 Registers and Contents ****************/
 /* Note: Registers relative to CtlBase */
@@ -173,6 +171,17 @@
 /* Packs two 16-bit values for MC_YX and DC_YX */
 #define YX_PACK(x,y)   (((long)(x)<<16)|(long)(y))
 
+
+/*** True Color parameters ***/
+
+#define RGB16_565         0
+#define RGB16_555         1
+#define RGB32_888         2
+
+#define P9000_MAX_32BPP_CLOCK 80000  /* The maximum clock at 32 bpp 
+				      * (I think it's really 90 but I'd
+				      * rather be safe given that you can't
+				      * do over 800x600 anyways.  */
 
 
 

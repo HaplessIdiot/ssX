@@ -1,11 +1,7 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/Imakefile,v 3.0 1994/05/29 02:05:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/Imakefile,v 3.1 1994/06/26 13:05:09 dawes Exp $
 XCOMM Id: Imakefile,v 4.0 1994/05/28 01:24:17 nygren Exp
 
 #include <Server.tmpl>
-
-#define IHaveSubdirs
-
-SUBDIRS = banked
 
 SRCS = 	p9000.c p9000cmap.c p9000init.c p9000viper.c \
 	p9000BtCurs.c p9000Bt485.c p9000vga.c \
@@ -30,12 +26,7 @@ NormalAsmObjectRule()
 
 NormalLibraryTarget(p9000,$(OBJS))
 
-MakeSubdirs($(SUBDIRS))
-
 InstallLinkKitLibrary(p9000,$(LINKKITDIR)/drivers)
 
 DependTarget()
-
-DependSubdirs($(SUBDIRS))
-
 

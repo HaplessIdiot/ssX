@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000vga.c,v 3.0 1994/05/29 02:05:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000vga.c,v 3.1 1994/06/26 13:05:19 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -142,6 +142,8 @@ int p9000VGASetRegs(const unsigned char *regs)
   /* update misc output register */
   outb(MISC_OUT_REG, regs[MIS]);         
 
+  usleep(40000);  /* Wait for the clock to settle */
+
   /* synchronous reset on */
   outb(SEQ_INDEX_REG, 0x00); 
   outb(SEQ_PORT, 0x01);               
@@ -233,37 +235,3 @@ void p9000RestoreVT()
   p9000WriteLUT(vga_lut);
   outb(BT_PIXEL_MASK,vga_dac_mask);
 }
-
-#ifdef P9000_BANKED
-
-/* FOR BANK SWITCHING: Added by David Moews (dmoews@xraysgi.ims.uconn.edu) */
-
-void (*vgaSetReadFunc)();
-void (*vgaSetWriteFunc)();
-void (*vgaSetReadWriteFunc)();
-
-int vgaSegmentShift;
-int vgaSegmentMask;
-void *vgaReadBottom;
-void *vgaReadTop;
-void *vgaWriteBottom;
-void *vgaWriteTop;
-int vgaSegmentSize;
-Bool vgaReadFlag;
-Bool vgaWriteFlag;
-
-extern void p9000VGASelectBank();
-extern void OneBankvgaBitBlt();
-
-void p9000VGABankInit()
-{
-  cfbLowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
-  vgaWriteBottom = vgaReadBottom = vgaBase;
-  vgaWriteTop = vgaReadTop = (void *)(((unsigned int)vgaBase) + 0x10000);
-  vgaSegmentShift = 16;
-  vgaSegmentMask = 0xffff;
-  vgaSegmentSize = 0x10000;
-  vgaSetReadFunc = vgaSetWriteFunc = vgaSetReadWriteFunc = p9000VGASelectBank;
-}
-
-#endif /* P9000_BANKED */

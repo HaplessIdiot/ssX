@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.0 1994/05/29 02:05:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.1 1994/06/26 13:05:15 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -83,10 +83,15 @@ void p9000CalcCRTCRegs(crtcRegs, mode)
   crtcRegs->YSize = mode->VDisplay;
   crtcRegs->BytesPerPixel = p9000InfoRec.bitsPerPixel / 8;
   
-  crtcRegs->hrzt  = (mode->HTotal / 4) - 1 ;
-  crtcRegs->hrzsr = ((mode->HSyncEnd - mode->HSyncStart) / 4 ) - 1 ;
-  crtcRegs->hrzbr = ((mode->HTotal - mode->HSyncStart) / 4 ) - 1 ;
-  crtcRegs->hrzbf = ((mode->HDisplay+(mode->HTotal-mode->HSyncStart)) /4) - 1 ;
+  /* Where the BytesPerPixel gets multiplied in SHOULD CHANGE!!! *TO*DO* */
+  crtcRegs->hrzt  = (crtcRegs->BytesPerPixel) * (mode->HTotal / 4) - 1 ;
+  crtcRegs->hrzsr = (crtcRegs->BytesPerPixel) * 
+    ((mode->HSyncEnd - mode->HSyncStart) / 4 ) - 1 ;
+  crtcRegs->hrzbr = (crtcRegs->BytesPerPixel) * 
+    ((mode->HTotal - mode->HSyncStart) / 4 ) - 1 ;
+  crtcRegs->hrzbf = (crtcRegs->BytesPerPixel) * 
+    ((mode->HDisplay+(mode->HTotal-mode->HSyncStart)) /4) - 1 ;
+
   crtcRegs->vrtt  = mode->VTotal ;
   crtcRegs->vrtsr = mode->VSyncEnd - mode->VSyncStart ;
   crtcRegs->vrtbr = mode->VTotal - mode->VSyncStart ;
@@ -281,12 +286,9 @@ void p9000InitAperture(screen_idx)
 			  0x10000);  /* 64k Banks */
 
   /* Map the P9000 in */
-  if (p9000BankSwitching)
-    p9000VideoMem = 0;   /* No need to map  */
-  else
-    p9000VideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION, 
-  				  (pointer)(p9000InfoRec.MemBase),
-				  0x400000L);  /* 4 Megabytes */
+  p9000VideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION, 
+				(pointer)(p9000InfoRec.MemBase),
+				0x400000L);  /* 4 Megabytes */
   
   /* the start of video memory */
   VidBase = (volatile unsigned long *)((unsigned char *)p9000VideoMem +
