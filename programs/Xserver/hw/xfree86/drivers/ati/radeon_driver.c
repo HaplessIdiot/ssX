@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.26 2001/05/23 16:29:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.27 2001/05/25 02:44:37 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -305,6 +305,106 @@ static const char *vbeSymbols[] = {
     NULL
 };
 #endif
+
+#if !defined(__alpha__)
+# define RADEONPreInt10Save(s, r1, r2)
+# define RADEONPostInt10Check(s, r1, r2)
+#else /* __alpha__ */
+static void
+RADEONSaveRegsZapMemCntl(ScrnInfoPtr pScrn, CARD32 *MEM_CNTL, CARD32 *MEMSIZE)
+{
+    RADEONInfoPtr info = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO;
+    int mapped = 0;
+
+    /*
+     * First make sure we have the pci and mmio info and that mmio is mapped
+     */
+    if (!info->PciInfo)
+	info->PciInfo = xf86GetPciInfoForEntity(info->pEnt->index);
+    if (!info->PciTag)
+	info->PciTag = pciTag(info->PciInfo->bus, info->PciInfo->device,
+			      info->PciInfo->func);
+    if (!info->MMIOAddr) 
+	info->MMIOAddr = info->PciInfo->memBase[2] & 0xffffff00;
+    if (!info->MMIO) {
+	RADEONMapMMIO(pScrn);
+	mapped = 1;
+    }
+    RADEONMMIO = info->MMIO;
+
+    /*
+     * Save the values and zap MEM_CNTL
+     */
+    *MEM_CNTL = INREG(RADEON_MEM_CNTL);
+    *MEMSIZE = INREG(RADEON_CONFIG_MEMSIZE);
+    OUTREG(RADEON_MEM_CNTL, 0);
+
+    /*
+     * Unmap mmio space if we mapped it
+     */
+    if (mapped) 
+	RADEONUnmapMMIO(pScrn);
+}
+
+static void
+RADEONCheckRegs(ScrnInfoPtr pScrn, CARD32 Saved_MEM_CNTL, CARD32 Saved_MEMSIZE)
+{
+    RADEONInfoPtr info = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO;
+    CARD32 MEM_CNTL;
+    int mapped = 0;
+
+    /*
+     * If we don't have a valid (non-zero) saved MEM_CNTL, get out now
+     */
+    if (!Saved_MEM_CNTL)
+	return;
+
+    /*
+     * First make sure that mmio is mapped
+     */
+    if (!info->MMIO) {
+	RADEONMapMMIO(pScrn);
+	mapped = 1;
+    }
+    RADEONMMIO = info->MMIO;
+
+    /*
+     * If either MEM_CNTL is currently zero or inconistent (configured for 
+     * two channels with the two channels configured differently), restore
+     * the saved registers.
+     */
+    MEM_CNTL = INREG(RADEON_MEM_CNTL);
+    if (!MEM_CNTL || 
+	((MEM_CNTL & 1) && 
+	 (((MEM_CNTL >> 8) & 0xff) != ((MEM_CNTL >> 24) & 0xff)))) {
+	/*
+	 * Restore the saved registers
+	 */
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "Restoring MEM_CNTL (%08x), setting to %08x\n",
+		   MEM_CNTL, Saved_MEM_CNTL);
+	OUTREG(RADEON_MEM_CNTL, Saved_MEM_CNTL);
+
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "Restoring CONFIG_MEMSIZE (%08x), setting to %08x\n",
+		   INREG(RADEON_CONFIG_MEMSIZE), Saved_MEMSIZE);
+	OUTREG(RADEON_CONFIG_MEMSIZE, Saved_MEMSIZE);
+    }
+
+    /*
+     * Unmap mmio space if we mapped it
+     */
+    if (mapped) 
+	RADEONUnmapMMIO(pScrn);
+}
+
+# define RADEONPreInt10Save(s, r1, r2) 		\
+    RADEONSaveRegsZapMemCntl((s), (r1), (r2))
+# define RADEONPostInt10Check(s, r1, r2)	\
+    RADEONCheckRegs((s), (r1), (r2))
+#endif /* __alpha__ */
 
 /* Allocate our private RADEONInfoRec. */
 static Bool RADEONGetRec(ScrnInfoPtr pScrn)
@@ -1220,6 +1320,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 {
     RADEONInfoPtr    info;
     xf86Int10InfoPtr pInt10 = NULL;
+    CARD32 save1, save2;
 
 #ifdef XFree86LOADER
     /*
@@ -1257,8 +1358,11 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     info->pEnt         = xf86GetEntityInfo(pScrn->entityList[0]);
     if (info->pEnt->location.type != BUS_PCI) goto fail;
 
+    RADEONPreInt10Save(pScrn, &save1, &save2);
+
     if (flags & PROBE_DETECT) {
 	RADEONProbeDDC(pScrn, info->pEnt->index);
+	RADEONPostInt10Check(pScrn, save1, save2);
 	return TRUE;
     }
 
@@ -1317,6 +1421,8 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     if (!info->FBDev)
 	if (!RADEONPreInitInt10(pScrn, &pInt10)) goto fail;
 
+    RADEONPostInt10Check(pScrn, save1, save2);
+
     if (!RADEONPreInitConfig(pScrn))             goto fail;
 
     if (!RADEONGetBIOSParameters(pScrn, pInt10)) goto fail;
@@ -1325,6 +1431,8 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* shouldn't fail just because we can't get DDC */
     RADEONPreInitDDC(pScrn, pInt10);
+
+    RADEONPostInt10Check(pScrn, save1, save2);
 
     if (!RADEONPreInitGamma(pScrn))              goto fail;
 
