@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.c,v 1.5 1999/01/26 05:54:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.c,v 1.6 1999/03/06 13:12:40 dawes Exp $ */
 
 #define _MAGELLAN_C_
 /*****************************************************************************
@@ -154,10 +154,7 @@ SetupProc(	pointer module,
 	/* this results in an xstrdup that must be freed later */
 	local->name = xf86SetStrOption( merged, "DeviceName", "Magellan Space Mouse" );
 
-	local->type = XI_SPACEBALL;
-	/* this function handles any generic XInput options that apply to any
-	 * device */
-	xf86XInputProcessOptions( local, merged );
+	local->type_name = XI_SPACEBALL;
 	/* 
 	 * Standard setup for the local device record
 	 */

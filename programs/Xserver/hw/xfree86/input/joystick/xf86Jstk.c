@@ -1,6 +1,6 @@
 /* $XConsortium: xf86Jstk.c /main/14 1996/10/25 14:11:36 kaleb $ */
 /*
- * Copyright 1995-1997 by Frederic Lepied, France. <Frederic.Lepied@sugix.frmug.org>       
+ * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>       
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is  hereby granted without fee, provided that
@@ -22,7 +22,42 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/xf86Jstk.c,v 1.1 1998/12/05 14:40:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/xf86Jstk.c,v 1.2 1999/01/14 13:04:44 dawes Exp $ */
+
+#include <xf86Version.h>
+
+#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(3,9,0,0,0)
+#define XFREE86_V4 1
+#endif
+
+#ifdef XFREE86_V4
+/* post 3.9 headers */
+
+#include <misc.h>
+#include <xf86.h>
+#include <xf86_ansic.h>
+#include <xf86_OSproc.h>
+#include <xf86Xinput.h>
+#include <xisb.h>
+#include <exevents.h>		/* Needed for InitValuator/Proximity stuff */
+#include <keysym.h>
+
+#ifdef XFree86LOADER
+#include <xf86Module.h>
+#endif
+
+#define sleep(t) xf86WaitForInput(-1, 1000 * (t))
+#define wait_for_fd(fd) xf86WaitForInput((fd), 1000)
+#define tcflush(fd, n) xf86FlushInput((fd))
+#undef read
+#define read(a,b,c) xf86ReadSerial((a),(b),(c))
+#undef write
+#define write(a,b,c) xf86WriteSerial((a),(char*)(b),(c))
+#define XCONFIG_PROBED "(==)"
+#define XCONFIG_GIVEN "(**)"
+#define xf86Verbose 1
+
+#else /* pre 3.9 headers */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -43,9 +78,8 @@
 #include "xf86Version.h"
 
 #include "osdep.h"
-#ifdef XFree86LOADER
-#define strdup(a) xf86strdup(a)
-#endif
+
+#endif /* pre 3.9 headers */
 
 /******************************************************************************
  * debugging macro
@@ -87,6 +121,7 @@ typedef struct
   int           jstkDelta;      /* delta cursor */
 } JoystickDevRec, *JoystickDevPtr;
 
+#ifndef XFREE86_V4
 /******************************************************************************
  * configuration stuff
  *****************************************************************************/
@@ -127,50 +162,39 @@ static SymTabRec JstkTab[] = {
  *****************************************************************************/
 
 extern void xf86eqEnqueue(
-#if NeedFunctionPrototypes
     xEventPtr /*e*/
-#endif
 );
 
 extern void miPointerDeltaCursor(
-#if NeedFunctionPrototypes
     int /*dx*/,
     int /*dy*/,
     unsigned long /*time*/
-#endif
 );
 
+#endif /* ! XFREE86_V4 */
+
 extern int xf86JoystickGetState(
-#ifdef NeedFunctionPrototypes
     int   /*fd*/,
     int * /*x*/,
     int * /*y*/,
     int * /*buttons*/
-#endif
     );
 
-extern void xf86JoystickInit(
-#ifdef NeedFunctionPrototypes
-void
-#endif
-);
+extern void xf86JoystickInit(void);
 
 extern int xf86JoystickOff(
-#ifdef NeedFunctionPrototypes
 int * /*fd*/,
 int /*doclose*/
-#endif
 );
 
 extern int xf86JoystickOn(
-#ifdef NeedFunctionPrototypes
 char * /*name*/,
 int * /*timeout*/,
 int * /*centerX*/,
 int * /*centerY*/
-#endif
 );
 
+#ifndef XFREE86_V4
 /*
  * xf86JstkConfig --
  *      Configure the device.
@@ -309,6 +333,7 @@ xf86JstkConfig(LocalDevicePtr    *array,
   }
   return Success;
 }
+#endif
 
 /*
  ***************************************************************************
@@ -350,7 +375,7 @@ xf86JstkEvents(OsTimerPtr        timer,
                pointer           arg)
 {
   DeviceIntPtr          device = (DeviceIntPtr)arg;
-  JoystickDevPtr        priv = (JoystickDevPtr) XI_PRIVATE(device);
+  JoystickDevPtr        priv = (JoystickDevPtr) PRIVATE(device);
   int                   timeout = priv->jstkTimeout;
   int                   x, y, buttons;
 
@@ -410,17 +435,15 @@ xf86JstkControlProc(DeviceIntPtr	device,
  *      Handle the initialization, etc. of a joystick
  */
 static int
-xf86JstkProc(pJstk, what)
-     DeviceIntPtr       pJstk;
-     int                what;
+xf86JstkProc(DeviceIntPtr       pJstk,
+	     int                what)
 {
   CARD8                 map[5];
   int                   nbaxes;
   int                   nbbuttons;
   int                   jstkfd;
-  int                   loop;
   LocalDevicePtr        local = (LocalDevicePtr)pJstk->public.devicePrivate;
-  JoystickDevPtr        priv = (JoystickDevPtr)XI_PRIVATE(pJstk);
+  JoystickDevPtr        priv = (JoystickDevPtr)PRIVATE(pJstk);
 
   DBG(2, ErrorF("BEGIN xf86JstkProc dev=0x%x priv=0x%x xf86JstkEvents=0x%x\n",
                 pJstk, priv, xf86JstkEvents));
@@ -488,7 +511,9 @@ xf86JstkProc(pJstk, what)
 	  xf86MotionHistoryAllocate(local);
 
           xf86JoystickInit();
+#ifndef XFREE86_V4
           AssignTypeAndName(pJstk, local->atom, local->name);
+#endif
         }
 
       break; 
@@ -539,14 +564,16 @@ xf86JstkProc(pJstk, what)
  *      Allocate Joystick device structures.
  */
 static LocalDevicePtr
-xf86JstkAllocate()
+xf86JstkAllocate(void)
 {
   LocalDevicePtr        local = xalloc(sizeof(LocalDeviceRec));
   JoystickDevPtr        priv = xalloc(sizeof(JoystickDevRec));
   
   local->name = "JOYSTICK";
   local->flags = XI86_NO_OPEN_ON_INIT;
+#ifndef XFREE86_V4
   local->device_config = xf86JstkConfig;
+#endif
   local->device_control = xf86JstkProc;
   local->read_input = NULL;
   local->close_proc = NULL;
@@ -587,6 +614,8 @@ DeviceAssocRec joystick_assoc =
   xf86JstkAllocate              /* device_allocate */
 };
 
+#ifndef XFREE86_V4
+
 #ifdef DYNAMIC_MODULE
 /*
  * entry point of dynamic loading
@@ -609,60 +638,156 @@ init_xf86Jstk(unsigned long     server_version)
 }
 #endif
 
-#ifdef XFree86LOADER
+#else /* ! XFREE86_V4 */
+
 /*
- * Entry point for the loader code
+ ***************************************************************************
+ *
+ * Dynamic loading functions
+ *
+ ***************************************************************************
  */
-XF86ModuleVersionInfo xf86JstkVersion = {
-    "xf86Jstk",
-    MODULEVENDORSTRING,
-    MODINFOSTRING1,
-    MODINFOSTRING2,
-    XF86_VERSION_CURRENT,
-    0x00010000,
-    {0,0,0,0}
+#ifdef XFree86LOADER
+
+/*
+ * xf86JstckUnplug --
+ *
+ * called when the module subsection is found in XF86Config
+ */
+static void
+xf86JstkUnplug(pointer	p)
+{
+    LocalDevicePtr local = (LocalDevicePtr) p;
+    JoystickDevPtr priv = (JoystickDevPtr) local->private;
+    
+    ErrorF("xf86JstckUnplug\n");
+    
+    xf86JstkProc(local->dev, DEVICE_OFF);
+    
+    xf86RemoveLocalDevice(local);
+    
+    xfree (priv);
+    xfree (local);
+}
+
+/*
+ * xf86JstckPlug --
+ *
+ * called when the module subsection is found in XF86Config
+ */
+static pointer
+xf86JstkPlug(pointer	module,
+	     pointer	options,
+	     int	*errmaj,
+	     int	*errmin )
+{
+    LocalDevicePtr	local = NULL;
+    JoystickDevPtr	priv = NULL;
+    char		*s;
+
+    local = xf86JstkAllocate();
+
+    if (!local || !priv) {
+	*errmaj = LDR_NOMEM;
+	goto SetupProc_fail;
+    }
+
+    priv = (JoystickDevPtr) local->private;
+
+    /* Joytsick device is mandatory */
+    priv->jstkDevice = xf86FindOptionValue(options, "Device");
+
+    if (!priv->jstkDevice) {
+	xf86Msg (X_ERROR, "WACOM: No Device specified.\n");
+	*errmaj = LDR_BADUSAGE;
+	goto SetupProc_fail;
+    }
+
+    /* Optional configuration */
+
+    s = xf86SetStrOption(options, "DeviceName", NULL);
+    if (s != NULL)
+	local->name = s;
+
+    xf86Msg(X_CONFIG, "%s name is %s\n", local->type_name, local->name);
+    xf86Msg(X_CONFIG, "JOYSTICK device is %s\n", priv->jstkDevice);
+
+    debug_level = xf86SetIntOption(options, "DebugLevel", 0);
+    if (debug_level > 0) {
+	xf86Msg(X_CONFIG, "JOYSTICK: debug level set to %d\n", debug_level);
+    }
+
+    priv->jstkMaxX = xf86SetIntOption(options, "MaxX", 1000);
+    if (priv->jstkMaxX != 1000) {
+	xf86Msg(X_CONFIG, "JOYSTICK: max x = %d\n", priv->jstkMaxX);
+    }
+    priv->jstkMaxY = xf86SetIntOption(options, "MaxY", 1000);
+    if (priv->jstkMaxY != 1000) {
+	xf86Msg(X_CONFIG, "JOYSTICK: max y = %d\n", priv->jstkMaxY);
+    }
+    priv->jstkMinX = xf86SetIntOption(options, "MinX", 0);
+    if (priv->jstkMinX != 0) {
+	xf86Msg(X_CONFIG, "JOYSTICK: min x = %d\n", priv->jstkMinX);
+    }
+    priv->jstkMinY = xf86SetIntOption(options, "MinY", 0);
+    if (priv->jstkMinY != 0) {
+	xf86Msg(X_CONFIG, "JOYSTICK: min y = %d\n", priv->jstkMinY);
+    }
+	    
+    priv->jstkCenterX = xf86SetIntOption(options, "CenterX", -1);
+    if (priv->jstkCenterX != -1) {
+	xf86Msg(X_CONFIG, "JOYSTICK: center x = %d\n", priv->jstkCenterX);
+    }
+    priv->jstkCenterY = xf86SetIntOption(options, "CenterY", -1);
+    if (priv->jstkCenterY != 0) {
+	xf86Msg(X_CONFIG, "JOYSTICK: center y = %d\n", priv->jstkCenterY);
+    }
+
+    priv->jstkTimeout = xf86SetIntOption(options, "Timeout", -1);
+    if (priv->jstkTimeout != -1) {
+	xf86Msg(X_CONFIG, "JOYSTICK: timeout = %d\n", priv->jstkTimeout);
+    }
+
+    priv->jstkDelta = xf86SetIntOption(options, "Delta", 0);
+    if (priv->jstkDelta != 0) {
+	xf86Msg(X_CONFIG, "JOYSTICK: delta = %d\n", priv->jstkDelta);
+    }
+
+    /* Register the device into XFree86 XInput layer */
+    xf86AddLocalDevice(local, options);
+
+    /* return the LocalDevice */
+    return (local);
+
+  SetupProc_fail:
+    if (priv)
+	xfree(priv);
+    if (local)
+	xfree(local);
+    return NULL;
+}
+
+static XF86ModuleVersionInfo xf86JstkVersionRec =
+{
+	"joystick",
+	MODULEVENDORSTRING,
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	1, 0, 0,
+	ABI_CLASS_XINPUT,
+	ABI_XINPUT_VERSION,
+	MOD_CLASS_XINPUT,
+	{0, 0, 0, 0}		/* signature, to be patched into the file by */
+				/* a tool */
 };
 
-void
-xf86JstkModuleInit(data, magic)
-    pointer *data;
-    INT32 *magic;
-{
-    static int cnt = 0;
+XF86ModuleData joystickModuleData = {&xf86JstkVersionRec,
+					 xf86JstkPlug,
+					 xf86JstkUnplug};
+#endif /* XFree86LOADER */
 
-    switch (cnt) {
-      case 0:
-	*magic = MAGIC_VERSION;
-	*data = &xf86JstkVersion;
-	cnt++;
-	break;
-	
-      case 1:
-	*magic = MAGIC_LOAD;
-#ifdef linux
-	*data = "lnx_jstk.o";
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined (__OpenBSD__)
-	*data = "bsd_jstk.o";
-#else
-#error "Joystick XInput module not supported on this machine"
-#endif
-	cnt++;
-	break;
-
-      case 2:
-	*magic = MAGIC_ADD_XINPUT_DEVICE;
-	*data = &joystick_assoc;
-	cnt++;
-	break;
-
-      default:
-	*magic = MAGIC_DONE;
-	*data = NULL;
-	break;
-    } 
-}
-#endif
+#endif /* ! XFREE86_V4 */
 
 	
 /* end of xf86Jstk.c */
-

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.19 1999/03/14 11:18:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.20 1999/03/23 05:00:06 dawes Exp $ */
 
 
 /*
@@ -77,8 +77,10 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(Ones)
   SYMFUNC(InitButtonClassDeviceStruct)
   SYMFUNC(InitFocusClassDeviceStruct)
+  SYMFUNC(InitLedFeedbackClassDeviceStruct)
   SYMFUNC(InitPtrFeedbackClassDeviceStruct)
   SYMFUNC(InitValuatorClassDeviceStruct)
+  SYMFUNC(InitKeyClassDeviceStruct)
   /* dispatch.c */
   SYMFUNC(SetInputCheck)
   SYMFUNC(SendErrorToClient)
