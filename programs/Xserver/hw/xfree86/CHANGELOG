@@ -1,3 +1,4 @@
+1218. Switch misc (non-radeon, non-r128) ATI driver to fb (Keith Packard).
 1217. 3DFX driver changes (Mark Vojkovich).
       - fix some DGA issues.
       - 2D and 3D now share offscreen memory (much faster 2D now).
@@ -12128,4 +12129,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1490 2000/12/20 00:31:14 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1491 2000/12/20 01:34:58 mvojkovi Exp $
