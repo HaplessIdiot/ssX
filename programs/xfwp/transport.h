@@ -1,16 +1,9 @@
-/* $TOG: transport.h /main/2 1997/11/12 08:16:42 barstow $ */
+/* $TOG: transport.h /main/3 1998/02/09 13:58:40 kaleb $ */
 /*
 
-Copyright "1986-1997 The Open Group All Rights Reserved
+Copyright "1986-1997, 1998  The Open Group 
 
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to use the Software without restriction,
-including, without limitation, the rights to copy, modify,
-merge, publish, distribute and sublicense the Software, to make,
-have made, license and distribute derivative works thereof, and
-to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
+All Rights Reserved
 
 The above copyright notice and the following permission notice
 shall be included in all copies of the Software:

@@ -1,5 +1,4 @@
-
-.\" $TOG: appF /main/1 1997/10/27 17:15:11 barstow $
+.\" $TOG: appF /main/2 1998/01/13 14:38:05 kaleb $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -50,7 +49,7 @@
 .sp 2
 .LP
 .XS
-\fBAppendix B \- Resource Configuration Management\fP
+\fBAppendix F \(em Resource Configuration Management\fP
 .XE
 Setting and changing resources in X applications can be difficult for
 both the application programmer and the end user.  \fBResource

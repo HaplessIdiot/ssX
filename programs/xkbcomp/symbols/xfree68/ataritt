@@ -2,7 +2,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/symbols/ataritt,v 3.0 1996/08/18 01:55:51 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/xfree68/ataritt,v 1.1.1.1 1998/09/27 08:55:50 dawes Exp $
 default xkb_symbols "us" {
 
     name[Group1]= "US/ASCII";
