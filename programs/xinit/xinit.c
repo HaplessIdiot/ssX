@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.26 2001/04/16 06:51:46 torrey Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.27 2001/07/25 15:05:24 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
@@ -629,7 +629,7 @@ startClient(char *client[])
 		fprintf (stderr,
 "is in your path.\r\n");
 		fprintf (stderr, "\n");
-		exit (ERR_EXIT);
+		_exit (ERR_EXIT);
 	}
 	return (clientpid);
 }
