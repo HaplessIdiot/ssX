@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.192 2003/02/04 02:18:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.193 2003/02/05 00:26:58 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1570,7 +1570,6 @@ XCOMM X Window System make variables; these need to be coordinated with rules
               RGB = $(BINDIR)/rgb
             FONTC = $(BINDIR)/bdftopcf
         MKFONTDIR = $(BINDIR)/mkfontdir
-          FCCACHE = $(BINDIR)/fc-cache
       MKHTMLINDEX = $(BINDIR)/mkhtmlindex
           UCS2ANY = $(BINDIR)/ucs2any
       BDFTRUNCATE = $(BINDIR)/bdftruncate
@@ -1581,7 +1580,6 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 # if !CrossCompiling
             FONTC = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/bdftopcf
         MKFONTDIR = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/mkfontdir
-          FCCACHE = set -x; $(CLIENTENVSETUP) $(PRELOADXFTSETUP) FONTCONFIG_PATH=$(FONTCONFIGLIBSRC) $(XBUILDBINDIR)/fc-cache
        XCURSORGEN = $(CLIENTENVSETUP) $(PRELOADSETUP) $(XBUILDBINDIR)/xcursorgen
 # elif UseInstalledOnCrossCompile
         MKFONTDIR = $(BINDIR)/mkfontdir
@@ -2947,6 +2945,10 @@ SharedLibReferences(XPM,Xpm,$(XPMLIBSRC),SOXPMREV,SharedXpmRev)
 ProjectUnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC),XBuildLibDir)
 #endif
 
+#if UseFreetype2
+
+#if BuildFreetype2Library
+
 #ifndef SharedLibFreetype2
 #define SharedLibFreetype2 HasSharedLibraries
 #endif
@@ -2979,10 +2981,6 @@ SharedLibReferences(FREETYPE2,freetype,$(FREETYPE2LIBSRC),SOFREETYPE2REV,SharedF
 ProjectUnsharedLibReferences(FREETYPE2,freetype,$(FREETYPE2LIBSRC),XBuildLibDir)
 #endif
 
-#if UseFreetype2
-
-#if BuildFreetype2Library
-
 #ifdef UseInstalled
 FREETYPE2INCDIR=$(INCDIR)/freetype2
 #else
@@ -2995,10 +2993,22 @@ FREETYPE2INCDIR=$(BUILDINCDIR)/freetype2
 
 #ifndef Freetype2Dir
 #define Freetype2Dir /usr
+#ifndef Freetype2DirStandard
+# define Freetype2DirStandard YES
+#endif
+#endif
+#ifndef Freetype2DirStandard
+#define Freetype2DirStandard NO
 #endif
 
 #ifndef Freetype2LibDir
 #define Freetype2LibDir Freetype2Dir/LibDirName
+# if Freetype2DirStandard
+#  define Freetype2LibDirStandard YES
+# endif
+#endif
+#ifndef Freetype2LibDirStandard
+# define Freetype2LibDirStandard NO
 #endif
 
 #ifndef Freetype2IncDir
@@ -3008,7 +3018,11 @@ FREETYPE2INCDIR=$(BUILDINCDIR)/freetype2
 FREETYPE2DIR = Freetype2Dir
 FREETYPE2LIBDIR = Freetype2LibDir
 FREETYPE2INCDIR = Freetype2IncDir
+#if Freetype2LibDirStandard
+FREETYPE2LIB = -lfreetype
+#else
 FREETYPE2LIB = -L$(FREETYPE2LIBDIR) -lfreetype
+#endif
 
 #endif /* HasFreetype2 */
 
@@ -3060,21 +3074,45 @@ EXPATDEFINES=-DEXPAT
 
 #ifndef ExpatDir
 #define ExpatDir /usr
+#define ExpatDirStandard YES
+#endif
+#ifndef ExpatDirStandard
+#define ExpatDirStandard NO
 #endif
 
 #ifndef ExpatLibDir
 #define ExpatLibDir ExpatDir/LibDirName
+# if ExpatDirStandard
+#  define ExpatLibDirStandard YES
+# endif
+#endif
+#ifndef ExpatLibDirStandard
+#define ExpatLibDirStandard NO
 #endif
 
 #ifndef ExpatIncDir
 #define ExpatIncDir ExpatDir/include
+# if ExpatDirStandard
+#  define ExpatIncDirStandard YES
+# endif
+#endif
+#ifndef ExpatIncDirStandard
+#define ExpatIncDirStandard NO
 #endif
 
 EXPATDIR = ExpatDir
 EXPATLIBDIR = ExpatLibDir
 EXPATINCDIR = ExpatIncDir
+#if ExpatIncDirStandard
+EXPATINCLUDES =
+#else
 EXPATINCLUDES = -I$(EXPATINCDIR)
+#endif
+#if ExpatLibDirStandard
+EXPATLIB = -lexpat
+#else
 EXPATLIB = -L$(EXPATLIBDIR) -lexpat
+#endif
 EXPATDEFINES = -DEXPAT
 #endif /* HasExpat */
 
@@ -3153,6 +3191,10 @@ ProjectUnsharedLibReferences(XFT,Xft,$(XFTLIBSRC),XBuildLibDir)
 
 XFTINCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES)
 
+#if UseFontconfig
+
+#if BuildFontconfigLibrary
+
 #ifndef SharedLibFontconfig
 #define SharedLibFontconfig HasSharedLibraries
 #endif
@@ -3182,43 +3224,83 @@ ProjectUnsharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),XBuildLib
 #define FontconfigClientLibs $(FONTCONFIGLIB) $(FREETYPE2LIB) ExpatClientLibs
 #endif
 
-#if UseFontconfig
-
-#if BuildFontconfigLibrary
-
 #ifdef UseInstalled
 FONTCONFIGINCDIR=$(INCDIR)
 #else
 FONTCONFIGINCDIR=$(BUILDINCDIR)
 #endif
 
+FONTCONFIGINCLUDES = -I$(FONTCONFIGINCDIR)
+
+#if UseInstalledX11
+FCCACHE = $(BINDIR)/fc-cache
+#else
+FCCACHE = set -x; $(CLIENTENVSETUP) $(PRELOADXFTSETUP) FONTCONFIG_PATH=$(FONTCONFIGLIBSRC) $(XBUILDBINDIR)/fc-cache
+#endif
+	  
 #else /* BuildFontconfigLibrary */
 
 #if HasFontconfig
 
 #ifndef FontconfigDir
-#define FontconfigDir /usr
+# define FontconfigDir /usr
+# ifndef FontconfigDirStandard
+#  define FontconfigDirStandard YES
+# endif
+#endif
+
+#ifndef FontconfigDirStandard
+# define FontconfigDirStandard NO
 #endif
 
 #ifndef FontconfigLibDir
-#define FontconfigLibDir FontconfigDir/LibDirName
+# define FontconfigLibDir FontconfigDir/LibDirName
+# if FontconfigDirStandard
+#  define FontconfigLibDirStandard YES
+# endif
+#endif
+#ifndef FontconfigLibDirStandard
+# define FontconfigLibDirStandard NO
+#endif
+
+#ifndef FontconfigBinDir
+# define FontconfigBinDir FontconfigDir/bin
 #endif
 
 #ifndef FontconfigIncDir
-#define FontconfigIncDir FontconfigDir/include
+# define FontconfigIncDir FontconfigDir/include
+# if FontconfigDirStandard
+#  define FontconfigIncDirStandard YES
+# endif
+#endif
+
+#ifndef FontconfigIncDirStandard
+# define FontconfigIncDirStandard NO
 #endif
 
 FONTCONFIGDIR = FontconfigDir
 FONTCONFIGLIBDIR = FontconfigLibDir
 FONTCONFIGINCDIR = FontconfigIncDir
+FONTCONFIGBINDIR = FontconfigBinDir
+#if FontconfigLibDirStandard
+FONTCONFIGLIB = -lfontconfig
+#else
 FONTCONFIGLIB = -L$(FONTCONFIGLIBDIR) -lfontconfig
+#endif
+
+#if FontconfigIncDirStandard
+FONTCONFIGINCLUDES =
+#else
+FONTCONFIGINCLUDES = -I$(FONTCONFIGINCDIR)
+#endif
+
+FCCACHE = $(FONTCONFIGBINDIR)/fc-cache
 
 #endif /* HasFontconfig */
 
 #endif /* else BuildFontconfigLibrary */
 
 #if BuildFontconfigLibrary || HasFontconfig
-FONTCONFIGINCLUDES = -I$(FONTCONFIGINCDIR)
 FONTCONFIGDEFINES = -DFONTCONFIG
 #endif
 
