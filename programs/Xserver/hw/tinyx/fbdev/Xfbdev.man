@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/tinyx/fbdev/Xfbdev.man,v 1.5 2001/02/13 21:15:15 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/tinyx/fbdev/Xfbdev.man,v 1.1 2004/06/02 22:43:01 dawes Exp $
 .\"
 .TH Xfbdev 1 __vendorversion__
 .SH NAME
@@ -17,10 +17,8 @@ provided by the Linux framebuffer device.
 .B Xfbdev
 accepts the common options of the TinyX family of servers.  Please
 see TinyX(1).
-.SH KEYBOARD
-To be written.
 .SH SEE ALSO
-X(__miscmansuffix__), Xserver(1), TinyX(1), xdm(1), xinit(1).
+X(__miscmansuffix__), Xserver(1), TinyX(1), xdm(1), xinit(1), XFree86(1).
 .SH AUTHORS
 The
 .B Xfbdev

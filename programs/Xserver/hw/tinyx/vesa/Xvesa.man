@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/tinyx/vesa/Xvesa.man,v 1.7 2003/11/01 04:49:15 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/tinyx/vesa/Xvesa.man,v 1.1 2004/06/02 22:43:03 dawes Exp $
 .TH Xvesa 1 __vendorversion__
 .SH NAME
 Xvesa \- VESA Bios Extensions tiny X server
@@ -19,19 +19,14 @@ VESA BIOS if available.
 .B Xvesa
 runs untrusted code with full privileges, and is therefore a fairly
 insecure X server.
-.B Run at your own risk.
+.B The Xvesa server should only be used in trusted environments.
 .SH OPTIONS
-In addition to the normal TinyX server's options (see TinyX(1)),
+Besides the normal TinyX server's options (see TinyX(1)),
 .B Xvesa
 accepts the following command line switches:
 .TP 8
 .B \-mode \fIn\fB
-specifies the VESA video mode to use.  If mode
-.I n
-is not supported by your BIOS and hardware,
-.B Xvesa
-will fail, hang your system, damage your hardware, or cause a global
-thermonuclear war; you are on your own.  This option overrides any
+specifies the VESA video mode to use.  This option overrides any
 .B \-screen
 options.
 .TP 8
@@ -64,7 +59,7 @@ the colours are wrong in PseudoColor and 16 colour modes.
 .B \-map\-holes
 use a contiguous (hole-less) memory map.  This fixes a segmentation
 violation with some rare BIOSes that violate the VESA specification,
-but may cause slightly higher memory usage on systems that overcommit
+but may cause slightly higher memory usage on systems that over-commit
 memory.
 .TP 8
 .B \-verbose
@@ -79,23 +74,10 @@ Immediately kill the server.
 .TP 8
 .B Ctrl+Alt+F1...F12
 Switch to virtual console 1 through 12.
-.SH BUGS
-.B Xvesa
-opens all IO ports and runs your VESA BIOS, which may be assumed to be
-buggy.  Allowing your users to run
-.B Xvesa
-is probably a security hole.
 
-.B Xvesa
-records the current BIOS mode when it starts and restores that mode on
-termination; if the video card has been reprogrammed by another application,
-the display will almost certainly be trashed.  The alternative of saving and
-restoring the complete video card state has proven unreliable on most video
-cards.
 .SH SEE ALSO
-X(__miscmansuffix__), Xserver(1), TinyX(1), xdm(1), xinit(1).
+X(__miscmansuffix__), Xserver(1), TinyX(1), xdm(1), xinit(1), XFree86(1).
 .SH AUTHORS
-The VESA driver was written by Juliusz Chroboczek who didn't realise
-what he was doing until it was too late.  Keith Packard then added
+The VESA driver was written by Juliusz Chroboczek.  Keith Packard added
 support for standard VGA BIOS modes and is especially proud of 320x200
 16 colour mode.

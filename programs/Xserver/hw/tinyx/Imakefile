@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.2 2004/06/23 19:40:15 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.3 2005/01/31 04:32:48 dawes Exp $
 /*
  * Copyright (c) 2004, 2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -105,5 +105,5 @@ LinkSourceFile(stubs.c,$(SERVERSRC)/Xi)
 SpecialCObjectRule(stubs,$(ICONFIGFILES),-UXINPUT)
 
 InstallManPage(TinyX,$(MANDIR))
-InstallManPageAliases(TinyX,$(MANDIR),Xchips Xi810 Xigs Xipaq Xmach64 Xsavage Xsis530 Xtrident Xtrio Xts300)
+InstallManPageAliases(TinyX,$(MANDIR),Xchips Xi810 Xigs Xipaq Xmach64 Xsavage Xsis530 Xtrident Xtrio Xts300 Xkdrive kdrive)
 DependTarget()
