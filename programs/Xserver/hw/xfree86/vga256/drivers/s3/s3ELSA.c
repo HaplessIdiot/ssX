@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3ELSA.c,v 3.18 1996/12/27 06:56:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3ELSA.c,v 1.2 1997/02/17 09:47:48 hohndel Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -362,6 +362,10 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
    for (i=0; elsa_board_types[i].code; i++)
       if (elsa_board_types[i].code == eedata->board_code) break;
 
+#ifndef XFree86LOADER
+   /*
+    * at this point we don't support sprintf from within modules
+    */
    if (pcard) {
       *pcard  = (char*) xalloc(80);
       if (elsa_board_types[i].code)
@@ -380,6 +384,7 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
 	      (serno & 0x1ffff) / 1000,
 	      (serno & 0x1ffff) % 1000);
    }
+#endif
 
    if (max_pix_clock) 
       *max_pix_clock = eedata->max_pixclock * 4;

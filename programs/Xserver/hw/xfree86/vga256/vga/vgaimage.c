@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaimage.c,v 3.2 1996/02/04 09:15:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaimage.c,v 3.3 1996/12/23 06:59:49 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -80,7 +80,7 @@ vga256GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 	if (!pPixmap)
 	    return;
 	if ((planeMask & PMSK) != PMSK)
-	    bzero((char *)pdstLine, pPixmap->devKind * h);
+	    xf86memset((char *)pdstLine,0, pPixmap->devKind * h);
         ptSrc.x = sx + pDrawable->x;
         ptSrc.y = sy + pDrawable->y;
         box.x1 = 0;

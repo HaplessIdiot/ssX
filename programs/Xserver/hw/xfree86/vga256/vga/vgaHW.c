@@ -784,7 +784,7 @@ vgaHWSave(save, size)
       /*			 
        * save the default lookup table
        */
-      bcopy(defaultDAC, save->DAC, 768);
+      xf86memmove(defaultDAC, save->DAC, 768);
       ErrorF("%s: Cannot read colourmap from VGA.", vga256InfoRec.name);
       ErrorF("  Will restore with default\n");
     }

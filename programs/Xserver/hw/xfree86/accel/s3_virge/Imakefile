@@ -62,6 +62,7 @@ InstallLinkKitNonExecFile(regs3v.h,$(LINKKITDIR)/drivers)
 
 #if DoLoadableServer
 InstallDynamicModule(libs3v.a,$(MODULEDIR))
+InstallDynamicModule(s3vConf.o,$(MODULEDIR))
 #endif
 
 
