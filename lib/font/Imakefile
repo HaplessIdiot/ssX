@@ -1,8 +1,17 @@
 XCOMM $TOG: Imakefile /main/14 1998/06/16 15:23:15 msr $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.23 1999/05/15 12:10:05 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.24 1999/06/06 11:38:02 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
+
+#define DoNormalLib NormalLibFont
+#define DoSharedLib SharedLibFont
+#define DoExtraLib SharedLibFont
+#define DoDebugLib DebugLibFont
+#define DoProfileLib ProfileLibFont
+
+LIBNAME = Xfont
+SOREV = $(SOFONTREV)
 
 #ifndef SeparateSharedCompile
 #define SeparateSharedCompile YES
@@ -94,23 +103,23 @@ $(DONES): $(SUBDIRS)
 #include <Library.tmpl>
 
 #if NormalLibFont
-NormalDepLibraryTarget(Xfont,$(SUBDIRS) $(DONES),$(STATIC_OBJS))
-InstallLibrary(Xfont,$(USRLIBDIR))
+NormalDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(STATIC_OBJS))
+InstallLibrary($(LIBNAME),$(USRLIBDIR))
 #endif /* NormalLibFont */
 
 #if SharedLibFont
-SharedDepLibraryTarget(Xfont,$(SOFONTREV),$(SUBDIRS) $(DONES),$(SHARED_OBJS),.,.)
-InstallSharedLibrary(Xfont,$(SOFONTREV),$(SHLIBDIR))
+SharedDepLibraryTarget($(LIBNAME),$(SOREV),$(SUBDIRS) $(DONES),$(SHARED_OBJS),.,.)
+InstallSharedLibrary($(LIBNAME),$(SOREV),$(SHLIBDIR))
 #endif /* SharedLibFont */
 
 #if DebugLibFont
 DebuggedDepLibraryTarget(Xfont,$(SUBDIRS) $(DONES),$(DEBUG_OBJS))
-InstallLibrary(Xfont_d,$(USRLIBDIR))
+InstallLibrary($(LIBNAME)_d,$(USRLIBDIR))
 #endif /* DebugLibFont */
 
 #if ProfileLibFont
 ProfiledDepLibraryTarget(Xfont,$(SUBDIRS) $(DONES),$(PROFILE_OBJS))
-InstallLibrary(Xfont_p,$(USRLIBDIR))
+InstallLibrary($(LIBNAME)_p,$(USRLIBDIR))
 #endif /* ProfileLibFont */
 
 #if DoLoadableServer

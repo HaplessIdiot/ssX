@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.55 1999/04/27 12:05:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.56 1999/06/07 08:50:22 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -2041,9 +2041,6 @@ static Bool
 TRIDENTEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    unsigned char temp;
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     TRIDENTEnableMMIO(pScrn);
 
@@ -2068,9 +2065,6 @@ TRIDENTLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     vgaHWPtr hwp = VGAHWPTR(pScrn);
-    int vgaIOBase = hwp->IOBase;
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    unsigned char temp;
 
     TRIDENTRestore(pScrn);
     vgaHWLock(hwp);
