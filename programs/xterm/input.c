@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: input.c /main/21 1996/04/17 15:54:23 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.10 1996/12/23 07:14:28 dawes Exp $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.11 1997/01/08 20:52:26 dawes Exp $
  */
 
 /*
@@ -145,7 +145,8 @@ Input (keyboard, screen, event, eightbit)
 	 	keysym == DXK_Remove || keysym == XK_KP_Delete ||
 		keysym == XK_KP_Insert) {
 		int dec_code = funcvalue(keysym);
-		if ((string = udk_lookup(dec_code, &nbytes)) != 0) {
+		if ((event->state & ShiftMask)
+		 && ((string = udk_lookup(dec_code, &nbytes)) != 0)) {
 			while (nbytes-- > 0)
 				unparseputc(*string++, pty);
 		}

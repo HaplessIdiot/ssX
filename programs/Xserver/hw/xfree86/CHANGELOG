@@ -1,4 +1,6 @@
 XFree86 3.9c (xx May 1997)
+ 772. Fix an error in xterm's vt220 emulation: the DECUDK is only supposed
+      to be interpreted for _shifted_ function keys (#384, Thomas E. Dickey).
  771. Patch to GLX comment/example in xf86site.def (#409, Henry Worth).
  770. Improve handling of screen pitch for accelerated C&T driver (#407,
       David Bateman).
@@ -4531,4 +4533,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.464 1997/05/11 13:47:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.465 1997/05/12 13:27:52 hohndel Exp $
