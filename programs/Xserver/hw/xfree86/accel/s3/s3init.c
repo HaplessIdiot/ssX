@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.44 1995/01/11 03:47:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.45 1995/01/12 12:03:12 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1955,9 +1955,11 @@ s3Init(mode)
 	  * some Diamond Stealth 64 VRAM cards have a problem with VRAM timing,
 	  * increase -RAS low timing from 3.5 MCLKs to 4.5 MCLKs 
 	  */ 
+	 outb(vgaCRIndex, 0x39);
+	 outb(vgaCRReg, 0xa5);
 	 outb(vgaCRIndex, 0x68);
 	 tmp = inb(vgaCRReg);
-	 if (tmp & 0x30 == 0x30) 		/* 3.5 MCLKs */
+	 if ((tmp & 0x30) == 0x30) 		/* 3.5 MCLKs */
 	    outb(vgaCRReg, tmp & 0xef);		/* 4.5 MCLKs */
       }
       if (OFLG_ISSET(OPTION_S3_964_BT485_VCLK, &s3InfoRec.options)) {
