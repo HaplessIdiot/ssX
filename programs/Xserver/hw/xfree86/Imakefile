@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.77 2001/07/23 13:15:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.78 2001/10/28 03:33:16 tsi Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -92,7 +92,7 @@ SUBDIRS = os-support common $(XAADIR) $(XF1BPPDIR) $(XF4BPPDIR) \
 	  drivers $(LOADERDIR) $(VGAHWDIR) $(FBDEVHWDIR) $(RAMDACDIR) \
 	  $(RACDIR) $(I2CDIR) $(DDCDIR) $(INPUTDIR) $(INT10DIR) parser \
           scanpci doc dummylib $(XF86CFGDIRS) $(XF86SETUPDIR) etc \
-          $(SUPERPROBE) $(DRIVERSDK) $(XF8_32WIDDIR)
+          $(DRIVERSDK) $(XF8_32WIDDIR)
 
 #if !defined(OS2Architecture) && !defined(cygwinArchitecture)
 XF86CONFIG = XF86Config
