@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.21 1998/08/29 05:43:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.22 1998/08/30 04:49:42 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -223,7 +223,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     
     maxFastBlitMem = (pMga->Interleave ? 4096 : 2048) * 1024;
 
-    if(pMga->FbUsableSize > maxFastBlitMem) {
+    if(pMga->FbMapSize > maxFastBlitMem) {
 	pMga->MaxFastBlitY = maxFastBlitMem / (pScrn->displayWidth * PSZ / 8);
     }
 
