@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               22 August 1999
+                               31 August 1999
 
                                   Abstract
 
@@ -60,13 +60,14 @@ is you already have a set of fonts.  The second contains the fonts and the
 source for the general X11 documentation.  The third contains the general X11
 documentation in hardcopy format.
 
-A source patch relative to version 3.9.15 is also available.  The patch file
-is 3.9.15-3.9.16.diff.gz.  This patch should be applied to a clean 3.9.15
-source tree, working from the directory containing the xc/ directory.  The
-patch should be applied by running:
+A source patch relative to version 3.9.15 is also available.  Because of its
+size, it is split into two parts.  The patch files are 3.9.15-3.9.16.diff1.gz
+and 3.9.15-3.9.16.diff2.gz.  These patches should be applied to a clean
+3.9.15 source tree, working from the directory containing the xc/ directory.
+The patches should be applied by running:
 
-     gunzip < 3.9.15-3.9.16.diff.gz | patch -p0 -E
-
+     gunzip < 3.9.15-3.9.16.diff1.gz | patch -p0 -E
+     gunzip < 3.9.15-3.9.16.diff2.gz | patch -p0 -E
      rm -fr xc/fonts/scaled/Type1/latin2
 
 The contrib part of the distribution can be found in the following tarball:
@@ -85,7 +86,7 @@ out what you think might not be important.  The information contained in the
 log file is there to make it easier for the developers to determine what is
 going wrong when there are problems.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.97 1999/08/21 14:19:40 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.98 1999/08/31 09:09:56 dawes Exp $
 
 
 $XFree86$
