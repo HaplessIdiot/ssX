@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.163 2004/04/27 23:17:24 dickey Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.164tsi Exp $
 XCOMM ----------------------------------------------------------------------
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -1469,11 +1469,7 @@ TCLIBDIR = TclLibDir
 #endif
 #endif
 #ifndef DependDefines
-# if UseCCMakeDepend || UseGccMakeDepend
-#  define DependDefines /**/
-# else
-#  define DependDefines -DUSE_MAKEDEPEND
-# endif
+# define DependDefines /**/
 #endif
 #ifndef DependFlags
 #define DependFlags /**/

@@ -1,4 +1,6 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 130. Remove USE_MAKEDEPEND (no longer needed)  (Marc La France).
+ 129. Fix makedepend for freetype2's #include structure (Marc La France).
  128. Add Wraphelp.c and enable XdmAuth by default.
  127. Define HAS_SHM when creating linker definition files for OS/2, and
       disable IPv6 on OS/2 (Bugzilla #1398, Frank Giessler).
@@ -18974,7 +18976,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3272 2004/06/08 22:58:09 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3273 2004/06/09 18:30:56 dawes Exp $
 
 
 
