@@ -1,9 +1,13 @@
-
-
-3355. Fix nv driver rendering bugs (Mark Vojkovich).
+XFree86 3.9.16f (xx December 1999)
+3359. Fix nv driver rendering bugs (Mark Vojkovich).
+3358. Add MTRR support for LynxOS (#3419, Thomas Mueller).
+3357. Fix bad return in GLINTAdjustFrame (#3418, David Holland).
+3356. Fix some build problems with the rendition driver, including a general
+      problem building the static server, and problems that show up on
+      some OSs (David Dawes, #3418, David Holland).
 
 XFree86 3.9.16e (5 December 1999)
-
+3355. Fix a problem with the bitmap font module (#3421, Matthieu Herrb).
 3354. Misc. bug/typo fixes. (Egbert Eich)
 3353. Fixed scanpci to generate better output on Alphas (Harald Koenig, 
       Egbert Eich)
@@ -9122,4 +9126,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.855 1999/12/03 19:17:19 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.857 1999/12/07 19:39:35 mvojkovi Exp $
