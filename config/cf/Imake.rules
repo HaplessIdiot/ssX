@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.123 2003/10/09 22:43:18 herrb Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.124 2003/10/11 09:40:01 herrb Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2559,16 +2559,6 @@ clean::									@@\
 #endif
 #endif /* LinkBuildLibrary */
 
-#ifndef LinkBuildLibraryInline
-#ifdef UseInstalled
-#define LinkBuildLibraryInline(lib) true
-#else
-#define LinkBuildLibraryInline(lib) MakeDirInline($(BUILDLIBDIR)); \	@@\
-	RemoveFile($(BUILDLIBDIR)/lib); \				@@\
-	(cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .)
-#endif
-#endif /* LinkBuildLibraryInline */
-
 #ifndef LinkBuildLibraryMaybe
 #ifdef UseInstalled
 #define LinkBuildLibraryMaybe(lib,doit) $(_NULLCMD_)
@@ -2589,10 +2579,14 @@ clean::									@@\
 #define LinkBuildSonameLibrary(lib) true
 #else
 #define LinkBuildSonameLibrary(lib) MakeDirInline($(BUILDLIBDIR));\	@@\
-	RemoveFile($(BUILDLIBDIR)/lib);\	 			@@\
-	(cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .)
+	(set -x; RemoveFile($(BUILDLIBDIR)/lib);\			@@\
+	(cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .))
 #endif
 #endif /* LinkBuildSonameLibrary */
+
+#ifndef LinkBuildLibraryInline
+#define LinkBuildLibraryInline(lib) LinkBuildSonameLibrary(lib)
+#endif /* LinkBuildLibraryInline */
 
 /*
  * NormalLibraryTarget - generate rules to create a library.
