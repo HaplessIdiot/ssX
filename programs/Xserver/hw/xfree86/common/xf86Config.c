@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.51 1995/06/29 13:31:42 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.52 1995/07/02 07:52:07 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1378,6 +1378,7 @@ configDeviceSection()
   devp->s3Nadjust = 0;
   devp->s3MClk = 0;
   devp->s3RefClk = 0;
+  devp->s3BlankDelay = -1;
 
   while ((token = getToken(DeviceTab)) != ENDSECTION) {
     switch (token) {
@@ -1634,6 +1635,17 @@ configDeviceSection()
     case S3REFCLK:
       if (getToken(NULL) != NUMBER) configError("RefCLK value in MHz expected");
       devp->s3RefClk = (int)(val.realnum * 1000.0 + 0.5);
+      break;
+
+   case S3BLANKDELAY:
+      if (getToken(NULL) != NUMBER || val.num>7)
+	 configError("number(s) 0..7 expected");
+      devp->s3BlankDelay = val.num;
+      if ((token=getToken(NULL)) == NUMBER) {
+	 if (val.num>7) configError("number2 0..7 expected");
+	 devp->s3BlankDelay |= val.num<<4;
+      }
+      else pushToken = token;
       break;
 
     case EOF:
@@ -2165,6 +2177,7 @@ configScreenSection()
           screen->s3Nadjust = device_list[i].s3Nadjust;
 	  screen->s3MClk = device_list[i].s3MClk;
 	  screen->s3RefClk = device_list[i].s3RefClk;
+	  screen->s3BlankDelay = device_list[i].s3BlankDelay;
 	  if (OFLG_ISSET(XCONFIG_VGABASE, &screen->xconfigFlag))
 	    screen->VGAbase = device_list[i].VGAbase;
           break;

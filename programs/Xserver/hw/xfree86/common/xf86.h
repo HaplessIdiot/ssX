@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.5 95/01/16 13:16:56 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.19 1995/06/29 13:31:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.20 1995/07/02 07:52:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -171,6 +171,7 @@ typedef struct {
   int            s3RefClk;
   int            suspendTime;
   int            offTime;
+  int            s3BlankDelay;
 } ScrnInfoRec, *ScrnInfoPtr;
 
 typedef struct {

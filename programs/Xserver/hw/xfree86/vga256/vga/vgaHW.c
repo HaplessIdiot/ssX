@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.6 95/01/06 20:59:04 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.22 1995/06/17 12:20:09 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.23 1995/06/29 15:16:59 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -272,53 +272,154 @@ vgaProtect(on)
   return;
 }
 
+static OsTimerPtr suspendTimer = NULL, offTimer = NULL;
+extern CARD32 ScreenSaverTime;
+
 /*
- * vgaSaveScreen -- 
- *      Disable the video on the frame buffer to save the screen.
+ * vgaOffMode -- put the screen into power off mode.
  */
-Bool
-vgaSaveScreen (pScreen, on)
-     ScreenPtr     pScreen;
-     Bool          on;
+
+static CARD32
+vgaOffMode(timer, now, arg)
+     OsTimerPtr timer;
+     CARD32 now;
+     pointer arg;
 {
-  unsigned char   state, state2;
+   unsigned char sync;
+   Bool on = (Bool)arg;
 
-  if (on)
-    SetTimeSinceLastInputEvent();
-  if (xf86VTSema) {
-    outb(0x3C4,1);
-    state = inb(0x3C5);
-    outb(vgaIOBase + 4, 0x17);
-    state2 = inb(vgaIOBase + 5);
-  
-    if (on) {
-      state &= 0xDF;
-      state2 |= 0x80;
-    } else {
-      state |= 0x20;
-      state2 &= ~0x80;
-    }
-    
-    /*
-     * turn off screen if necessary
-     */
-    (*vgaSaveScreenFunc)(SS_START);
-    outw(0x3C4, (state << 8) | 0x01); /* change mode */
-    if (vgaPowerSaver) {
-      usleep(10000); /* 10ms */
+   if (!vgaPowerSaver) return(0);
+
+   if (xf86VTSema) {
+      /* the server is running on the current vt */
+      /* so just go for it */
+
       outb(vgaIOBase + 4, 0x17);
-      outb(vgaIOBase + 5, state2);
-    }
-    (*vgaSaveScreenFunc)(SS_FINISH);
+      sync = inb(vgaIOBase + 5);
 
-  } else {
-    if (on)
-      ((vgaHWPtr)vgaNewVideoState)->Sequencer[1] &= 0xDF;
-    else
-      ((vgaHWPtr)vgaNewVideoState)->Sequencer[1] |= 0x20;
-  }
+      if (on) {
+	 sync |= 0x80;			/* enable sync   */
+      } else {
+	 sync &= ~0x80;			/* disable sync */
+      }
 
-  return(TRUE);
+      usleep(10000);
+      outb(vgaIOBase + 5, sync);
+   }
+   if (offTimer) {
+      TimerFree(offTimer);
+      offTimer = NULL;
+   }
+   return(0);
+}
+
+/*
+ * vgaSuspendMode -- put the screen into suspend mode.
+ */
+
+static CARD32
+vgaSuspendMode(timer, now, arg)
+     OsTimerPtr timer;
+     CARD32 now;
+     pointer arg;
+{
+   unsigned char extsync;
+   Bool on = (Bool)arg;
+
+   if (!vgaPowerSaver) return(0);
+
+   if (xf86VTSema) {
+      /* the server is running on the current vt */
+      /* so just go for it */
+
+      /* not supported yet */
+      /* Code to enter suspend mode should go here */
+
+      if (!on && vga256InfoRec.offTime != 0) {
+	 if (vga256InfoRec.offTime > vga256InfoRec.suspendTime &&
+	     vga256InfoRec.offTime > ScreenSaverTime) {
+
+	    int timeout;
+
+	    /* Setup timeout for vgaOffMode() */
+	    if (vga256InfoRec.suspendTime < ScreenSaverTime)
+	       timeout = vga256InfoRec.offTime - ScreenSaverTime;
+	    else
+	       timeout = vga256InfoRec.offTime - vga256InfoRec.suspendTime;
+
+	    offTimer = TimerSet(offTimer, 0, timeout,
+			        vgaOffMode, (pointer)FALSE);
+	 } else {
+	    vgaOffMode(NULL, 0, (pointer)FALSE);
+	 }
+      }
+   }
+   if (suspendTimer) {
+      TimerFree(suspendTimer);
+      suspendTimer = NULL;
+   }
+   return(0);
+}
+
+/*
+ * vgaSaveScreen -- blank the screen.
+ */
+
+Bool
+vgaSaveScreen(pScreen, on)
+     ScreenPtr pScreen;
+     Bool  on;
+{
+   unsigned char scrn;
+
+   if (on)
+      SetTimeSinceLastInputEvent();
+
+   if (xf86VTSema) {
+      /* the server is running on the current vt */
+      /* so just go for it */
+
+      outb(0x3C4,1);
+      scrn = inb(0x3C5);
+
+      if (on) {
+	 scrn &= 0xDF;			/* enable screen */
+      } else {
+	 scrn |= 0x20;			/* blank screen */
+      }
+
+      /* Turn off Off and Suspend mode */
+      if (vgaPowerSaver && on) {
+	 vgaOffMode(NULL, 0, (pointer)TRUE);
+	 vgaSuspendMode(NULL, 0, (pointer)TRUE);
+      }
+
+      (*vgaSaveScreenFunc)(SS_START);
+      outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
+      (*vgaSaveScreenFunc)(SS_FINISH);
+
+      if (vgaPowerSaver && !on) {
+	 if (vga256InfoRec.suspendTime != 0) {
+	    if (vga256InfoRec.suspendTime > ScreenSaverTime) {
+	       suspendTimer = TimerSet(suspendTimer, 0,
+				       vga256InfoRec.suspendTime -
+				       ScreenSaverTime,
+				       vgaSuspendMode, (pointer)FALSE);
+	    } else {
+	      vgaSuspendMode(NULL, 0, (pointer)FALSE);
+	    }
+	 } else if (vga256InfoRec.offTime != 0) {
+	    if (vga256InfoRec.offTime > ScreenSaverTime) {
+	       offTimer = TimerSet(offTimer, 0,
+				   vga256InfoRec.offTime - ScreenSaverTime,
+				   vgaOffMode, (pointer)FALSE);
+	    } else {
+	       vgaOffMode(NULL, 0, (pointer)FALSE);
+	    }
+	 }
+      }
+   }
+   return (TRUE);
 }
 
 /*

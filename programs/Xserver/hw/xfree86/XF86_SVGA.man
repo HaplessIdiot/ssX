@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.6 95/01/23 15:33:29 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.18 1995/05/27 03:00:57 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.19 1995/06/17 12:14:39 dawes Exp $
 .TH XF86_SVGA 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
@@ -14,7 +14,8 @@ Super-VGA cards.  It is derived from
 the
 .I X386
 server provided with X11R5.
-Note: 16-bit and 24-bit TrueColor is currently only supported for some
+Note: 16-bit TrueColor is currently only supported for some
+Cirrus and ARK chips, and 24-bit TrueColor is only supported for some
 Cirrus chips.
 .SH CONFIGURATIONS
 .PP
@@ -26,6 +27,7 @@ Virtual resolutions up to (approximately) 1152x900 are supported, using
 the Cirrus chipsets support
 up to 2Mb of display memory and virtual resolutions of 1280x1024 and higher.
 Some of the Cirrus chipsets also support 16bpp and 32bpp (truecolor) modes
+on certain configurations.  Some of the ARK chipsets support 16bpp modes
 on certain configurations.  Generic VGA cards are also supported at 8bpp
 320x200 only.
 .RS .5i
@@ -51,9 +53,15 @@ NCR:
 .TP 4
 Cirrus Logic:
 CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
-CLGD5430, CLGD5434,
+CLGD5430, CLGD5434, CLGD5436,
 CLGD6205, CLGD6215, CLGD6225, CLGD6235,
 CL6410, CL6412, CL6420, CL6440
+.TP 4
+ARK:
+ARK1000PV, ARK1000VL, ARK2000PV
+.TP 4
+RealTek:
+REALTEK
 .TP 4
 Compaq:
 AVGA
@@ -131,9 +139,16 @@ ncr77c22, ncr77c22e
 .TP 4
 Cirrus Logic:
 clgd5420, clgd5422, clgd5424, clgd5426, clgd5428, clgd5429,
-clgd5430, clgd5434,
+clgd5430, clgd5434, clgd5436,
 clgd6205, clgd6215, clgd6225, clgd6235,
 cl6410, cl6412, cl6420, cl6440
+.TP 4
+RealTek:
+realtek
+.TP 4
+.TP 4
+ARK:
+ark1000pv, ark1000vl, ark2000pv
 .TP 4
 Compaq:
 cpq_avga
@@ -199,8 +214,11 @@ the driver to probe for clocks instead of reporting the built-in defaults.
 This option is for debugging purposes only.
 .sp
 \fBpower_saver\fP - This option enables the server
-to use the power saving feature of "green" monitors instead of blanking
-when the screen saver is activated.  This option is experimental.
+to use the power saving features of VESA DPMS compatible monitors.
+The suspend level is currently not supported.
+Refer to the \fIXF86Config(4/5)\fP
+manual page for details of how to set the timeouts for the different levels
+of operation.  This option is experimental.
 .sp
 \fBnoaccel\fP - for Cirrus and WD chipsets.  This option disables the
 accelerated features for the clgd5426, clgd5428, wd90c31 and wd90c33 chipsets.
@@ -258,6 +276,18 @@ won't work with a given configuration are automatically disabled.
 .TP 8
 .B nospeedup
 disables the SpeedUp code.  This is equivalent to \fBspeedup "none"\fP.
+.TP 8
+.B Ramdac \fI"ramdac-type"\fP
+This specifies the type of RAMDAC used on the board.  Only the ARK driver
+currently uses this.  RAMDAC types recognised include:
+.sp
+\fBatt20c490\fP - AT&T 20C490 or compatible 8-bit RAMDAC.
+.sp
+\fBatt20c498\fP - AT&T 20C498 or compatible 16-bit RAMDAC.
+.sp
+\fBzoomdac\fP - RAMDAC used by the Hercules Stingray Pro/V and 64/V.
+.sp
+\fBstg1700\fP - STG1700 or compatible RAMDAC.
 .PP
 Note that \fIXFree86\fP has some internal capabilities to determine
 what hardware
@@ -280,6 +310,9 @@ Server configuration file
 .TP 30
 <XRoot>/lib/X11/XF86Config
 Server configuration file
+.TP 30
+<XRoot>/lib/X11/doc/README.ark
+Extra documentation for the ARK driver
 .TP 30
 <XRoot>/lib/X11/doc/README.ati
 Extra documentation for the ATI vgawonder driver
@@ -304,10 +337,11 @@ Extra documentation for the WD/PVGA driver
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
-X(1), Xserver(1), XFree86(1), XF86Config(4/5), xf86config(1), xdm(1), xinit(1)
+X(1), Xserver(1), XFree86(1), XF86Config(4/5), xf86config(1), xvidtune(1),
+xdm(1), xinit(1)
 .SH BUGS
 .PP
-There are no known bugs at this time, although we welcome reports emailed
+Bug reports are welcome, and should be emailed
 to the address listed below.
 .SH CONTACT INFO
 \fIXFree86\fP source is available from the FTP servers 

@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.26 1995/06/29 15:15:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.27 1995/07/02 07:49:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -658,6 +658,7 @@ s3SaveScreen(pScreen, on)
 
       outw(0x3C4, 0x0100);              /* syncronous reset */
       outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
+      outw(0x3C4, 0x0300);              /* end reset */
 
       if (s3PowerSaver && !on) {
 	 if (s3InfoRec.suspendTime != 0) {

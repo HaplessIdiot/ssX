@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.28 1995/06/08 06:25:36 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.29 1995/06/17 12:14:36 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -77,7 +77,7 @@ The servers support the following chipsets:
 .TP 13
 XF86_S3:
 86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C928-P,
-86C732, 86C764, 86C864, 86C964
+86C732, 86C764, 86C864, 86C868, 86C964, 86C968
 .TP 13
 XF86_Mach8:
 ATI Mach8, ATI Mach32
@@ -278,25 +278,32 @@ a \fBClocks\fP line.  It will now work the same way as other servers with
 a programmable clock chip (i.e., use the clocks as specified in the
 Modes).  Note, clocks over 110\ Mhz are not recommended or supported
 by the P9000 server.  The Mach64 server also does not require a
-\fBClocks\fP line.  It is read directly from the video card's BIOS.
+\fBClocks\fP line since the clocks are normally read directly from the
+video card's BIOS.  For the Mach64 server, the clocks given in the
+XF86Config file are ignored unless the "no_bios_clocks" option is given
+(see below).
 .TP 8
 .B ClockChip \fI"clockchip-type"\fP
 For boards with programmable clock chips (except with the 
 P9000 and AGX servers), the name of the clock chip is given.  
 Possible values for the S3 server
 include \fB"icd2061a"\fP, \fB"ics9161a"\fP, \fB"dcs2834"\fP, \fB"sc11412"\fP,
-\fB"s3gendac"\fP, \fB"s3_sdac"\fP, \fB"ti3025"\fP, \fB"ics2595"\fP,
+\fB"s3gendac"\fP, \fB"s3_sdac"\fP, \fB"ti3025"\fP, \fB"ti3026"\fP,
+\fB"ics2595"\fP,
 \fB"ics5300"\fP, \fB"ics5342"\fP and \fB"ch8391"\fP.
 .TP 8
 .B Ramdac \fI"ramdac-type"\fP
-This specifies the type of RAMDAC used on the board.  Only the S3 and
-AGX servers use this.
+This specifies the type of RAMDAC used on the board.  Only the S3,
+AGX, and W32 servers use this.
 .sp
 \fBnormal\fP - (S3, AGX) Card does not have one of the other RAMDACs mentioned
 here.  This option is only required for the S3 server if the server 
 incorrectly detects one of those other RAMDACs. 
 The AGX server does not yet auto-detect RAMDACs, this 
 is the default if no RAMDAC is specified.
+.sp
+\fBgeneric\fP - (W32) This forces the W32 server to treat the RAMDAC
+as a generic VGA RAMDAC.
 .sp
 \fBatt20c490\fP - (S3, AGX) Card has an AT&T 20C490 or AT&T 20C491 RAMDAC.
 When the \fBdac_8_bit\fP option is specified, these
@@ -320,6 +327,15 @@ RAMDAC and there are problems using clocks higher than 67.5Mhz.
 This must be specified if the server fails to detect it.
 .sp
 \fBatt22c498\fP - (S3) Card has an AT&T 22C498 RAMDAC.
+This must be specified if the server fails to detect it.
+.sp
+\fBibm_rgb524\fP - (S3) Card has an IBM RGB524 RAMDAC.
+This must be specified if the server fails to detect it.
+.sp
+\fBibm_rgb525\fP - (S3) Card has an IBM RGB525 RAMDAC.
+This must be specified if the server fails to detect it.
+.sp
+\fBibm_rgb528\fP - (S3) Card has an IBM RGB528 RAMDAC.
 This must be specified if the server fails to detect it.
 .sp
 \fBstg1700\fP - (S3) Card has an STG1700 RAMDAC.  This must be specified
@@ -349,8 +365,9 @@ requires a dot clock higher than 70MHz.
 .sp
 \fBti3025\fP - (S3) Card has a TI ViewPoint Ti3025 RAMDAC.  This must
 be specified if the server fails to detect the Ti3025.
-Note that pixel multiplexing will be used for this RAMDAC if any mode
-requires a dot clock higher than 70MHz.
+.sp
+\fBti3026\fP - (S3) Card has a TI ViewPoint Ti3026 RAMDAC.  This must
+be specified if the server fails to detect the Ti3026.
 .sp
 \fBbt481\fP - (AGX) Card has a BrookTree Bt481 RAMDAC.
 .sp
@@ -421,6 +438,19 @@ only used for 864 and Trio64 cards, and the value should not normally be
 given here for cards with an S3 Gendac or Trio64).  This entry doesn't
 change the card's memory clock, but it is used to calculate the DRAM
 timing parameters.  For further details refer to \fIREADME.S3\fP.
+.TP 8
+.B S3MNAdjust \fIM N\fP
+This allows some memory timing parameters to be adjusted for DRAM
+cards.  For further details refer to \fIREADME.S3\fP.
+.TP 8
+.B S3RefClk \fIrefclk\fP
+This allows the PLL reference clock to be specified.  This may be required
+for some cards that use the IBM RGB52x RAMDACs.  The value is in MHz.
+.TP 8
+.B S3BlankAdjust \fIa b\fP
+This allows the blank timing parameters to be adjusted.  This affects
+screen wrapping on 964 and 968 cards.  For further details refer to
+\fIREADME.S3\fP.
 .PP
 \fBOption\fP flags may be specified in either the \fBDevice\fP section
 or the \fBDisplay\fP subsection of the XF86Config file.
@@ -432,9 +462,14 @@ the following strings are recognized:
 \fBnomemaccess\fP - (S3) disable direct access to video memory.  This option
 is ignored for the 864 and 964 chips.
 .sp
-\fBnoaccel\fP - (P9000) disable hardware acceleration.
+\fBnoaccel\fP - (AGX, P9000) disable hardware acceleration for the P9000,
+and disables the font cache with the AGX.
 .sp
-\fBvram_128\fP - (P9000) when memory probe fails, use if you have 128Kx8 VRAMs
+\fBvram_128\fP - (AGX, P9000) when memory probe fails, use if you have
+128Kx8 VRAMs.
+.sp
+\fBvram_256\fP - (AGX, P9000) when memory probe fails, use if you don't have
+128Kx8 VRAMs.
 .sp
 \fBnolinear\fP - (S3 and Mach32) disable use of a linear-mapped framebuffer.
 .sp
@@ -442,16 +477,20 @@ is ignored for the 864 and 964 chips.
 .sp
 \fBno_ti3020_curs\fP - (S3) Disables the Ti3020's internal HW cursor.
 .sp
-\fBsw_cursor\fP - (S3, Mach32, Mach64, P9000) Disable the hardware cursor.
+\fBsw_cursor\fP - (S3, Mach32, Mach64, P9000, AGX) Disable the hardware cursor.
 .sp
 \fBdac_8_bit\fP - (S3, Mach32, Mach64, AGX) Enables 8-bit per RGB.
 Currently only
 supported with the Ti3020/5, Bt485, AT&T 20C505, AT&T 20C490/1,
-Sierra SC15025/6, AT&T 20C498 and STG1700 (S3 server),
+Sierra SC15025/6, AT&T 20C498 and STG1700, IBM RGB52x (S3 server),
 Bt481 and Bt482 (AGX server),
 ATI68875/TLC34075/Bt885 (Mach32 server),
 ATI68875, TLC34075, ATI68860, ATI68880, STG1702, and STG1703 (Mach64
-server) RAMDACs.
+server) RAMDACs.  This is now set by default in the S3 server when
+one of the above RAMDACs other than the AT&T 20C490/1 is used.
+.sp
+\fBdac_6_bit\fP - (S3) Force 6-bit per RGB in cases where 8-bit mode
+would automatically be enabled.
 .sp
 \fBsync_on_green\fP - (S3, P9000) Enables generation of sync on the green
 signal on cards with Bt485, AT&T 20C505 or Ti3020/5 RAMDACs.  \fBNote:\fP
@@ -459,8 +498,11 @@ Although these RAMDACs support sync on green, it won't work on many cards
 because of the way they are designed.
 .sp
 \fBpower_saver\fP - (S3 and Mach64) This option enables the server
-to use the power saving feature of "green" monitors instead of blanking
-when the screen saver is activated.  This option is experimental.
+to use the power saving features of VESA DPMS compatible monitors.
+The suspend level is currently only supported for the Mach64 and for
+the 732, 764, 864, 868, 964, 968 S3 chips.  Refer to the \fIXF86Config(4/5)\fP
+manual page for details of how to set the timeouts for the different levels
+of operation.  This option is experimental.
 .sp
 \fBintel_gx\fP - (Mach32) Sets the hard-wired offset for the linear
 framebuffer correctly for the Intel GX Pro cards.  This option is equivalent
@@ -487,6 +529,9 @@ and modes with a physical width no smaller than 800.
 This option is also required for some other Number Nine cards (eg,
 GXE64 and GXE64pro).
 .sp
+\fBdiamond\fP - (S3) This option may be required for some Diamond cards
+(in particular, the 964/968 VRAM cards).
+.sp
 \fBelsa_w1000pro\fP - (S3) Enables support for the ELSA Winner 1000 PRO.
 This option is not usually required because the board can be auto-detected.
 .sp
@@ -496,6 +541,20 @@ This option is not usually required because the board can be auto-detected.
 \fBelsa_w2000pro\fP - (S3) Enables support for the ELSA Winner 2000 PRO.
 This option is not usually required because the board can be auto-detected.
 .sp
+\fBpci_hack\fP - (S3) Enables a workaround for problems seen with some
+PCI 928 cards on machines with a buggy SMC UART.
+.sp
+\fBs3_964_bt485_vclk\fP - (S3) Enables a workaround for possible problems
+on cards using the 964 and Bt485.
+.sp
+\fBs3_invert_vclk\fP - (S3) Inverts the VRAM clock.
+.sp
+\fBslow_vram\fP - (S3) Adjusts the VRAM timings for cards using slow
+VRAM.  This is required for some Diamond Stealth 64 VRAM cards.
+.sp
+\fBslow_dram_refresh\fP - (S3) Adjusts the DRAM refresh for cards with
+slow DRAM.
+.sp
 \fBno_block_write\fP - (Mach64) Disables the block write mode on
 certain types of VRAM Mach64 cards.  If noise or shadows appear on the
 screen, this option should remove them.
@@ -504,6 +563,10 @@ screen, this option should remove them.
 types of VRAM Mach64 cards.  Normally the Mach64 server will
 automatically determine if the card can handle block write mode, but
 this option will override the probe result.
+.sp
+\fBno_bios_clocks\fP - (Mach64) The Mach64 server normally reads the
+clocks from the bios.  This option overrides the bios clocks and
+forces the server to use the clocks given in the XF86Config file.
 .sp
 There are also numerous tuning options for the AGX server.  Refer to
 \fIREADME.agx\fP for details.
@@ -565,7 +628,8 @@ Extra documentation for the W32 server
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
-X(1), Xserver(1), XFree86(1), XF86Config(4/5), xdm(1), xf86config(1), xinit(1)
+X(1), Xserver(1), XFree86(1), XF86Config(4/5), xvidtune(1), xdm(1),
+xf86config(1), xinit(1)
 .SH AUTHORS
 .PP
 In addition to the authors of \fIXFree86\fP the following people

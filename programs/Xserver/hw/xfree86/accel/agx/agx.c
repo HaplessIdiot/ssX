@@ -1,5 +1,5 @@
 /* $XConsortium: agx.c,v 1.7 95/01/23 15:33:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.34 1995/07/01 10:47:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.35 1995/07/02 07:46:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1140,7 +1140,7 @@ for information on how to manually configure.\n",
            agxScratchSize = avail & 0x1C000;   /* No Font Cache */
         else if( AGX_10_XGA_ONLY(agxChipId) && avail < 0x20000 )
            agxScratchSize = 0x08000 + (avail & 0x04000);    
-        else if( avail <= 0x10000 )
+        else if( avail < 0x10000 )
            agxScratchSize = 0;
         else if( avail < 0x40000 )
            agxScratchSize = 0x10000 + (avail & 0x04000);

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.17 1995/06/29 13:30:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.18 1995/07/02 07:48:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -552,6 +552,7 @@ mach64Probe()
     OFLG_SET(OPTION_NO_BLOCK_WRITE, &validOptions);
     OFLG_SET(OPTION_BLOCK_WRITE, &validOptions);
     OFLG_SET(OPTION_POWER_SAVER, &validOptions);
+    OFLG_SET(OPTION_NO_BIOS_CLOCKS, &validOptions);
     xf86VerifyOptions(&validOptions, &mach64InfoRec);
 
     mach64InfoRec.chipset = "mach64";
@@ -601,8 +602,19 @@ mach64Probe()
 	mach64FreqTable2[i] = info->Freq_Table2[i];
 
     /* No need to use auto probing code since the BIOS contains all of
-     * the clocks. */
-    if (!mach64InfoRec.clocks) {
+     * the clocks unless the "no_bios_clocks" option is set. */
+    if (!mach64InfoRec.clocks ||
+	!OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) {
+	if (mach64InfoRec.clocks) {
+	    ErrorF("Warning: Clocks being read from the video card's BIOS,\n");
+	    ErrorF("  and the clocks lines in XF86Config file are ignored\n");
+	    ErrorF("  (see man page or README.Mach64 for more details).\n");
+	} else if (OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) {
+	    ErrorF("Warning: \"no_bios_clocks\" option set, but no Clocks\n");
+	    ErrorF("  given in XF86Config file.  Clocks being read from\n");
+	    ErrorF("  the video card's BIOS (see man page or README.Mach64\n");
+	    ErrorF("  for more details).\n");
+	}
 	for (i = 0; i < MACH64_NUM_CLOCKS; i++) {
 	    mach64InfoRec.clock[i] = mach64Clocks[i] * 10;
 #ifdef IMPLEMENTED_CLOCK_PROGRAMMING
@@ -615,13 +627,16 @@ mach64Probe()
 #else
 	mach64InfoRec.clocks = MACH64_NUM_CLOCKS;
 #endif
+    } else {
+	ErrorF("Warning: BIOS Clocks overidden.\n");
     }
 
     if (xf86Verbose) {
 	ErrorF("%s %s: Clock type: %s\n", XCONFIG_PROBED, mach64InfoRec.name,
 	       mach64ClockType < NUM_CLOCK_TYPES ?
 		mach64ClockTypeTable[mach64ClockType] : "Unknown");
-	ErrorF("%s ",OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) ?
+	ErrorF("%s ",(OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) &&
+		      OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) ?
 			XCONFIG_GIVEN : XCONFIG_PROBED);
 	ErrorF("%s: ", mach64InfoRec.name);
 	ErrorF("Number of Clocks: %d", mach64InfoRec.clocks);
@@ -629,7 +644,8 @@ mach64Probe()
 	for (i = 0; i < mach64InfoRec.clocks; i++) {
 	    if (i % 8 == 0) 
                ErrorF("\n%s %s: clocks:", 
-                 OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) ?
+                 (OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) &&
+		  OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) ?
                  XCONFIG_GIVEN : XCONFIG_PROBED,
                  mach64InfoRec.name);
 	    ErrorF(" %6.2f", mach64InfoRec.clock[i]/1000.0);
@@ -1183,6 +1199,95 @@ mach64CloseScreen(screen_idx, pScreen)
     return(TRUE);
 }
 
+static OsTimerPtr suspendTimer = NULL, offTimer = NULL;
+extern CARD32 ScreenSaverTime;
+
+/*
+ * mach64OffMode -- put the screen into power off mode.
+ */
+
+static CARD32
+mach64OffMode(timer, now, arg)
+     OsTimerPtr timer;
+     CARD32 now;
+     pointer arg;
+{
+    Bool on = (Bool)arg;
+
+    if (!mach64PowerSaver) return(0);
+
+    if (xf86VTSema) {
+	int crtcGenCntl = regr(CRTC_GEN_CNTL);
+	if (on) {
+	    crtcGenCntl &= ~CRTC_HSYNC_DIS;
+	    crtcGenCntl &= ~CRTC_VSYNC_DIS;
+	} else {
+	    crtcGenCntl |= CRTC_HSYNC_DIS;
+	    crtcGenCntl |= CRTC_VSYNC_DIS;
+	}
+
+	usleep(10000);
+	regw(CRTC_GEN_CNTL, crtcGenCntl);
+   }
+   if (offTimer) {
+      TimerFree(offTimer);
+      offTimer = NULL;
+   }
+   return(0);
+}
+
+/*
+ * mach64SuspendMode -- put the screen into suspend mode.
+ */
+
+static CARD32
+mach64SuspendMode(timer, now, arg)
+     OsTimerPtr timer;
+     CARD32 now;
+     pointer arg;
+{
+    Bool on = (Bool)arg;
+
+    if (!mach64PowerSaver) return(0);
+
+    if (xf86VTSema) {
+	int crtcGenCntl = regr(CRTC_GEN_CNTL);
+	if (on) {
+	    crtcGenCntl &= ~CRTC_HSYNC_DIS;
+	    crtcGenCntl &= ~CRTC_VSYNC_DIS;
+	} else {
+	    crtcGenCntl |= CRTC_HSYNC_DIS;
+	}
+
+	usleep(10000);
+	regw(CRTC_GEN_CNTL, crtcGenCntl);
+
+	if (!on && mach64InfoRec.offTime != 0) {
+	    if (mach64InfoRec.offTime > mach64InfoRec.suspendTime &&
+		mach64InfoRec.offTime > ScreenSaverTime) {
+
+		int timeout;
+
+		/* Setup timeout for mach64OffMode() */
+		if (mach64InfoRec.suspendTime < ScreenSaverTime)
+		   timeout = mach64InfoRec.offTime - ScreenSaverTime;
+		else
+		   timeout = mach64InfoRec.offTime - mach64InfoRec.suspendTime;
+
+		offTimer = TimerSet(offTimer, 0, timeout,
+			        mach64OffMode, (pointer)FALSE);
+	    } else {
+		mach64OffMode(NULL, 0, (pointer)FALSE);
+	    }
+	}
+    }
+    if (suspendTimer) {
+      TimerFree(suspendTimer);
+      suspendTimer = NULL;
+   }
+   return(0);
+}
+
 /*
  * mach64SaveScreen --
  *      blank the screen.
@@ -1196,45 +1301,59 @@ mach64SaveScreen (pScreen, on)
 	SetTimeSinceLastInputEvent();
 
     if (xf86VTSema) {
-	if (mach64PowerSaver) {
-	    int crtcGenCntl = regr(CRTC_GEN_CNTL);
-	    if (on) {
-		crtcGenCntl &= ~CRTC_HSYNC_DIS;
-		crtcGenCntl &= ~CRTC_VSYNC_DIS;
-	    } else {
-		crtcGenCntl |= CRTC_HSYNC_DIS;
-		crtcGenCntl |= CRTC_VSYNC_DIS;
-	    }
-	    regw(CRTC_GEN_CNTL, crtcGenCntl);
-	} else {
-	    if (on) {
-		if (mach64HWCursorSave != -1) {
-		    mach64SetRamdac(mach64CRTCRegs.color_depth, TRUE,
-				    mach64CRTCRegs.dot_clock);
-		    regwb(GEN_TEST_CNTL, mach64HWCursorSave);
-		    mach64HWCursorSave = -1;
-		}
-		mach64RestoreColor0(pScreen);
-		if (mach64RamdacSubType != DAC_ATI68875)
-		    outb(ioDAC_REGS+2, 0xff);
-	    } else {
-		outb(ioDAC_REGS, 0);
-		outb(ioDAC_REGS+1, 0);
-		outb(ioDAC_REGS+1, 0);
-		outb(ioDAC_REGS+1, 0);
-		outb(ioDAC_REGS+2, 0x00);
 
-		mach64SetRamdac(CRTC_PIX_WIDTH_8BPP, TRUE,
+	/* Turn off Off and Suspend mode */
+	if (mach64PowerSaver && on) {
+	    mach64OffMode(NULL, 0, (pointer)TRUE);
+	    mach64SuspendMode(NULL, 0, (pointer)TRUE);
+	}
+
+	if (on) {
+	    if (mach64HWCursorSave != -1) {
+		mach64SetRamdac(mach64CRTCRegs.color_depth, TRUE,
 				mach64CRTCRegs.dot_clock);
-		mach64HWCursorSave = regrb(GEN_TEST_CNTL);
-		regwb(GEN_TEST_CNTL, mach64HWCursorSave & ~HWCURSOR_ENABLE);
+		regwb(GEN_TEST_CNTL, mach64HWCursorSave);
+		mach64HWCursorSave = -1;
+	    }
+	    mach64RestoreColor0(pScreen);
+	    if (mach64RamdacSubType != DAC_ATI68875)
+		outb(ioDAC_REGS+2, 0xff);
+	} else {
+	    outb(ioDAC_REGS, 0);
+	    outb(ioDAC_REGS+1, 0);
+	    outb(ioDAC_REGS+1, 0);
+	    outb(ioDAC_REGS+1, 0);
+	    outb(ioDAC_REGS+2, 0x00);
 
-		if (mach64RamdacSubType != DAC_ATI68875)
-		    outb(ioDAC_REGS+2, 0x00);
+	    mach64SetRamdac(CRTC_PIX_WIDTH_8BPP, TRUE,
+			    mach64CRTCRegs.dot_clock);
+	    mach64HWCursorSave = regrb(GEN_TEST_CNTL);
+	    regwb(GEN_TEST_CNTL, mach64HWCursorSave & ~HWCURSOR_ENABLE);
+
+	    if (mach64RamdacSubType != DAC_ATI68875)
+		outb(ioDAC_REGS+2, 0x00);
+	}
+	if (mach64PowerSaver && !on) {
+	    if (mach64InfoRec.suspendTime != 0) {
+		if (mach64InfoRec.suspendTime > ScreenSaverTime) {
+		    suspendTimer = TimerSet(suspendTimer, 0,
+					    mach64InfoRec.suspendTime -
+					    ScreenSaverTime,
+					    mach64SuspendMode, (pointer)FALSE);
+		} else {
+		    mach64SuspendMode(NULL, 0, (pointer)FALSE);
+		}
+	    } else if (mach64InfoRec.offTime != 0) {
+		if (mach64InfoRec.offTime > ScreenSaverTime) {
+		    offTimer = TimerSet(offTimer, 0,
+					mach64InfoRec.offTime - ScreenSaverTime,
+					mach64OffMode, (pointer)FALSE);
+		} else {
+		    mach64OffMode(NULL, 0, (pointer)FALSE);
+		}
 	    }
 	}
     }
-
     return(TRUE);
 }
 

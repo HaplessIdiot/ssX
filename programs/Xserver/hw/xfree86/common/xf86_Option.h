@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.26 1995/06/29 13:31:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.27 1995/06/29 15:15:42 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -75,6 +75,8 @@ typedef struct {
 #define OPTION_MMIO		29 /* Use MMIO for Cirrus 543x */
 #define OPTION_LINEAR		30 /* Use linear fb for Cirrus */
 #define OPTION_FIFO_MODERATE  	31 /* (agx) */
+#define OPTION_SLOW_VRAM	32 /* (s3) */
+#define OPTION_SLOW_DRAM_REFRESH 33 /* (s3) */
 
 /* Accel/cursor features */
 #define OPTION_NOACCEL		40 /* Disable accel support in SVGA server */
@@ -112,6 +114,8 @@ typedef struct {
 #define OPTION_OVERRIDE_BIOS	94 /* Override BIOS for Mach64 */
 #define OPTION_NO_BLOCK_WRITE	95 /* No block write mode for Mach64 */
 #define OPTION_BLOCK_WRITE	96 /* Block write mode for Mach64 */
+#define OPTION_NO_BIOS_CLOCKS	97 /* Override BIOS clocks for Mach64 */
+#define OPTION_S3_INVERT_VCLK	98 /* invert VLCK (CR67:0) (S3) */
 
 /* Debugging options */
 #define OPTION_SHOWCACHE	100 /* Allow cache to be seen (S3) */
@@ -183,6 +187,10 @@ OptFlagRec xf86_OptionTab[] = {
   { "fifo_aggressive",	OPTION_FIFO_AGGRESSIVE },
   { "mmio",		OPTION_MMIO },
   { "linear",		OPTION_LINEAR },
+  { "slow_vram",	OPTION_SLOW_VRAM },
+  { "s3_slow_vram",	OPTION_SLOW_VRAM },
+  { "slow_dram_refresh",OPTION_SLOW_DRAM_REFRESH },
+  { "s3_slow_dram_refresh",OPTION_SLOW_DRAM_REFRESH },
 
   { "noaccel",		OPTION_NOACCEL },
   { "hw_cursor",	OPTION_HW_CURSOR },
@@ -218,6 +226,8 @@ OptFlagRec xf86_OptionTab[] = {
   { "override_bios",	OPTION_OVERRIDE_BIOS },
   { "no_block_write",	OPTION_NO_BLOCK_WRITE },
   { "block_write",	OPTION_BLOCK_WRITE },
+  { "no_bios_clocks",	OPTION_NO_BIOS_CLOCKS },
+  { "s3_invert_vclk",	OPTION_S3_INVERT_VCLK },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 95/01/23 15:34:43 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.5 1995/01/28 16:01:33 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.6 1995/03/06 13:54:29 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -58,6 +58,7 @@ LinuxDocReadmeTarget(ati)
 LinuxDocReadmeTarget(cirrus)
 LinuxDocReadmeTarget(trident)
 LinuxDocReadmeTarget(tseng)
+LinuxDocReadmeTarget(ark)
 
 /* Main docs */
 LinuxDocTargetLong(CPYRIGHT.sgml,COPYRIGHT,COPYRIGHT)

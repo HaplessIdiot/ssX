@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.84 1995/06/29 15:15:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.85 1995/07/02 07:49:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -124,6 +124,7 @@ ScrnInfoRec s3InfoRec =
    0,				/* int s3RefClk */
    0,				/* int suspendTime */
    0,				/* int offTime */
+   -1,				/* int s3BlankDelay */
 };
 
 short s3alu[16] =
@@ -628,9 +629,12 @@ s3Probe()
    OFLG_SET(OPTION_IBMRGB_CURS, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
    OFLG_SET(OPTION_DAC_6_BIT, &validOptions);
+#if 0
+   /* These aren't used anywhere */
    OFLG_SET(OPTION_FAST_DRAM, &validOptions);
    OFLG_SET(OPTION_MED_DRAM, &validOptions);
    OFLG_SET(OPTION_SLOW_DRAM, &validOptions);
+#endif
    OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
    OFLG_SET(OPTION_SPEA_MERCURY, &validOptions);
    OFLG_SET(OPTION_NUMBER_NINE, &validOptions);
@@ -643,6 +647,9 @@ s3Probe()
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
    OFLG_SET(OPTION_S3_964_BT485_VCLK, &validOptions);
+   OFLG_SET(OPTION_S3_INVERT_VCLK, &validOptions);
+   OFLG_SET(OPTION_SLOW_VRAM, &validOptions);
+   OFLG_SET(OPTION_SLOW_DRAM_REFRESH, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
 
    if (S3_x64_SERIES(s3ChipId))
@@ -1360,8 +1367,8 @@ s3Probe()
       case ATT22C498_DAC:
       case STG1700_DAC:
       case S3_SDAC_DAC:
-	 if (!S3_864_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId))
-	    chips = "864 and 805i chips";
+	 if (!S3_86x_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId))
+	    chips = "864, 868 and 805i chips";
 	 break;
       case S3_GENDAC_DAC:
 	 if (!S3_801_SERIES(s3ChipId))
@@ -1804,12 +1811,19 @@ s3Probe()
       outb(vgaCRIndex, 0x5c);
       outb(vgaCRReg, cr5c);
    } else if (OFLG_ISSET(CLOCK_OPTION_IBMRGB, &s3InfoRec.clockOptions)) {
+      char *refclock_probed;
       int mclk=0, m, n, df;
       int m0,m1,n0,n1;
       double f0,f1,f,fdiff;
       s3ClockSelectFunc = IBMRGBClockSelect;
       OFLG_SET(CLOCK_OPTION_IBMRGB, &s3InfoRec.clockOptions);
       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+
+      if (s3InfoRec.s3RefClk) 
+	 refclock_probed = XCONFIG_GIVEN;
+      else 
+	 refclock_probed = XCONFIG_PROBED;
+
       if (s3InIBMRGBIndReg(IBMRGB_pll_ctrl1) & 1) {
 	 m0 = s3InIBMRGBIndReg(IBMRGB_m0+0*2);
 	 n0 = s3InIBMRGBIndReg(IBMRGB_n0+0*2) & 0x1f;
@@ -1823,35 +1837,67 @@ s3Probe()
 	 n1 = n0;
       }
       f0 = 25.175 / ((m0&0x3f)+65.0) * n0 * (8 >> (m0>>6));
-      f1 = 28.322 / ((m1&0x3f)+65.0) * n1 * (8 >> (m1>>6));
+      f1 = 28.322 / ((m1&0x3f)+65.0) * n1 * (8 >> (m1>>6));      
+      if (f1>f0) fdiff = f1-f0;
+      else       fdiff = f0-f1;
 
-      if (!s3InfoRec.s3RefClk) {
-	 s3InfoRec.s3RefClk = 16000;  /* default */
-	 if (f1>f0) fdiff = f1-f0;
-	 else       fdiff = f0-f1;
-	 if (find_bios_string(s3InfoRec.BIOSbase,"VideoBlitz III AV",
-			      "Genoa Systems Corporation") != NULL) {
-	    if (xf86Verbose)
-	       ErrorF("%s %s: Genoa VideoBlitz III AV detected\n",
-		      XCONFIG_PROBED, s3InfoRec.name);
+      if (find_bios_string(s3InfoRec.BIOSbase,"VideoBlitz III AV",
+			   "Genoa Systems Corporation") != NULL) {
+	 if (xf86Verbose)
+	    ErrorF("%s %s: Genoa VideoBlitz III AV BIOS found\n",
+		   XCONFIG_PROBED, s3InfoRec.name);
+	 if (!s3InfoRec.s3RefClk) 
 	    s3InfoRec.s3RefClk = 50000;
-	 }
-	 else {
-	    if (fdiff < f0*0.02) {
-	       /* f = (f0+f1)/2; */ 
-	       f = f1; /* 28.322 MHz clock seems to be more acurate then 25.175 */
-	       /* try to match some known reclock values */
-	       if ((int)(f*1e3/200+0.5) == 16000/200)
-		  s3InfoRec.s3RefClk = 16000;
-	       else if ((int)(f*1e3/200+0.5) == 50000/200)
-		  s3InfoRec.s3RefClk = 50000;
-	       else if ((int)(f*1e3/200+0.5) == 14318/200)
-		  s3InfoRec.s3RefClk = 14318;
-	       else 
-		  s3InfoRec.s3RefClk = (int)(f*2+0.5)*500;
-	    }
+      }
+      else if (find_bios_string(s3InfoRec.BIOSbase,"STB Systems, Inc.", NULL) 
+	       != NULL) {
+	 if (xf86Verbose)
+	    ErrorF("%s %s: STB Velocity 64 BIOS found\n",
+		   XCONFIG_PROBED, s3InfoRec.name);
+	 if (!s3InfoRec.s3RefClk)
+	    s3InfoRec.s3RefClk = 24000;
+      }
+      else if (find_bios_string(s3InfoRec.BIOSbase,
+				"Number Nine Visual Technology","Motion 771")
+	       != NULL) {
+	 if (xf86Verbose)
+	    ErrorF("%s %s: #9 Motion 771 BIOS found\n",
+		   XCONFIG_PROBED, s3InfoRec.name);
+	 if (!s3InfoRec.s3RefClk)
+	    s3InfoRec.s3RefClk = 16000;
+      }
+      else if (find_bios_string(s3InfoRec.BIOSbase,
+				"Hercules Graphite Terminator",NULL) != NULL) {
+	 if (xf86Verbose)
+	    ErrorF("%s %s: Hercules Graphite Terminator BIOS found\n",
+		   XCONFIG_PROBED, s3InfoRec.name);
+	 if (!s3InfoRec.s3RefClk)
+	    if (S3_968_SERIES(s3ChipId))
+	       /* Hercules Graphite Terminator Pro(tm) BIOS. */
+	       s3InfoRec.s3RefClk = 16000;
+	    else		/* S3 964 */
+	       /* Hercules Graphite Terminator 64(tm) BIOS. */
+	       s3InfoRec.s3RefClk = 50000;
+      }
+      else if (!s3InfoRec.s3RefClk) {
+	 if (fdiff < f0*0.02) {
+	    /* f = (f0+f1)/2; */ 
+	    f = f1;		/* 28.322 MHz clock seems to be more acurate then 25.175 */
+	    /* try to match some known reclock values */
+	    if ((int)(f*1e3/200+0.5) == 16000/200)
+	       s3InfoRec.s3RefClk = 16000;
+	    else if ((int)(f*1e3/200+0.5) == 50000/200)
+	       s3InfoRec.s3RefClk = 50000;
+	    else if ((int)(f*1e3/200+0.5) == 14318/200)
+	       s3InfoRec.s3RefClk = 14318;
+	    else 
+	       s3InfoRec.s3RefClk = (int)(f*2+0.5)*500;
 	 }
       }
+      else {
+	 s3InfoRec.s3RefClk = 16000; /* default */
+      }
+      
       if (!DAC_IS_IBMRGB525) {
 	 m = s3InIBMRGBIndReg(IBMRGB_sysclk_vco_div);
 	 n = s3InIBMRGBIndReg(IBMRGB_sysclk_ref_div) & 0x1f;
@@ -1865,9 +1911,9 @@ s3Probe()
 		clockchip_probed, s3InfoRec.name);
 	 if (mclk)
 	    ErrorF(" (MCLK %1.3f MHz)", mclk / 1000.0);
-	 ErrorF("\n");
-	 ErrorF("\t with refclock %1.3f MHz (probed %1.3f & %1.3f)\n"
-		,s3InfoRec.s3RefClk/1e3,f0,f1);
+	 ErrorF("\n");	
+ ErrorF("%s %s: with refclock %1.3f MHz (probed %1.3f & %1.3f)\n",
+		refclock_probed,s3InfoRec.name,s3InfoRec.s3RefClk/1e3,f0,f1);
       }
       numClocks = 3;
       if (!s3InfoRec.s3MClk)

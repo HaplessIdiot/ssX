@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.66 1995/06/04 02:55:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.67 1995/06/29 13:30:53 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -55,7 +55,7 @@ typedef struct {
    unsigned char Bt485[4];	/* Bt485 Command Registers 0-3 */
    unsigned char Ti3020[0x40];	/* Ti3020 Indirect Registers 0x0-0x3F */
    unsigned char Ti3025[9];	/* Ti3025 N,M,P for PCLK, MCLK, LOOP PLL */
-   unsigned char IBMRGB[0x100];	/* IBM RGB52x registers */
+   unsigned char IBMRGB[0x101];	/* IBM RGB52x registers */
    unsigned char STG1700[5];    /* STG1700 index and command registers */
    unsigned char SDAC[6];       /* S3 SDAC command and PLL registers */
    unsigned char Trio[14];      /* Trio32/64 ext. sequenzer (PLL) registers */
@@ -399,6 +399,8 @@ s3CleanUp(void)
       }
       for (i=0; i<0x100; i++)
 	 s3OutIBMRGBIndReg(i, 0, oldS3->IBMRGB[i]);
+      outb(vgaCRIndex, 0x22);
+      outb(vgaCRReg, oldS3->IBMRGB[0x100]);      
    }
 
  /* restore s3 special bits */
@@ -702,6 +704,8 @@ s3Init(mode)
       if (DAC_IS_IBMRGB) {
 	 for (i=0; i<0x100; i++)
 	    oldS3->IBMRGB[i] = s3InIBMRGBIndReg(i);
+	 outb(vgaCRIndex, 0x22);
+	 oldS3->IBMRGB[0x100] = inb(vgaCRReg);
       }
 
       for (i = 0; i < 5; i++) {
@@ -773,7 +777,7 @@ s3Init(mode)
       pixMuxShift = s3InfoRec.clock[mode->Clock] > 120000 ? 2 : 
 		      s3InfoRec.clock[mode->Clock] > 60000 ? 1 : 0 ;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_IBMRGB)
-      pixMuxShift =  s3Bpp==1 ? 2 : 1;  /* KTS */
+      pixMuxShift = 1;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_TI3025)
       pixMuxShift =  mode->Flags & V_DBLCLK ? 1 : 0;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES)
@@ -2037,9 +2041,16 @@ s3Init(mode)
       s3OutIBMRGBIndReg(IBMRGB_pal_ctrl, 0, 0);
       s3OutIBMRGBIndReg(IBMRGB_misc1, ~0x40, 0);
       if (s3DAC8Bit)
-	 s3OutIBMRGBIndReg(IBMRGB_misc2, 0, 0x45);
+	 s3OutIBMRGBIndReg(IBMRGB_misc2, 0, 0x47);
       else
-	 s3OutIBMRGBIndReg(IBMRGB_misc2, 0, 0x41);
+	 s3OutIBMRGBIndReg(IBMRGB_misc2, 0, 0x43);
+
+      outb(vgaCRIndex, 0x22);
+      tmp = inb(vgaCRReg);
+      if (s3Bpp == 1)
+	 outb(vgaCRReg, tmp | 8);
+      else 
+	 outb(vgaCRReg, tmp & ~8);
 
       outb(vgaCRIndex, 0x65);
       outb(vgaCRReg, 0);
@@ -2078,16 +2089,18 @@ s3Init(mode)
 /* KTS vvvv */
 
 	 outb(vgaCRIndex, 0x67);
-         if (s3Bpp < 4)
+	 if (s3Bpp == 1)
 	    outb(vgaCRReg, 0x11);
-	 else
-	    outb(vgaCRReg, 0x01);
+	 else if (s3Bpp == 2)
+	    outb(vgaCRReg, 0x11);
+	 else /* if (s3Bpp == 4) */
+	    outb(vgaCRReg, 0x00);
 
 	 outb(vgaCRIndex, 0x6d);
 	 if (s3Bpp == 1)
-	    outb(vgaCRReg, 0x00);
+	    outb(vgaCRReg, 0x21);
 	 else if (s3Bpp == 2)
-	    outb(vgaCRReg, 0x00);
+	    outb(vgaCRReg, 0x10);
 	 else /* if (s3Bpp == 4) */
 	    outb(vgaCRReg, 0x00);
 
@@ -2185,7 +2198,10 @@ s3Init(mode)
       outb(vgaCRReg, 0xb5 & 0x7f);
    else
 #endif
-   outb(vgaCRReg, 0xb5);		/* was 95 */
+   if (OFLG_ISSET(OPTION_SLOW_DRAM_REFRESH, &s3InfoRec.options))
+      outb(vgaCRReg, 0xb7);		/* was 95 */
+   else
+      outb(vgaCRReg, 0xb5);		/* was 95 */
 
    outb(vgaCRIndex, 0x3b);
    outb(vgaCRReg, (new->CRTC[0] + new->CRTC[4] + 1) / 2);
@@ -2429,8 +2445,11 @@ s3Init(mode)
       outb(vgaCRIndex, 0x3b);
       itmp = (  new->CRTC[0] + ((i&0x01)<<8)
 	      + new->CRTC[4] + ((i&0x10)<<4) + 1) / 2;
-      if (itmp-new->CRTC[4] < 3 && itmp+1 <= new->CRTC[0])
-	 itmp++;
+      if (itmp-(new->CRTC[4] + ((i&0x10)<<4)) < 4)
+	 if (new->CRTC[4] + ((i&0x10)<<4) + 4 <= new->CRTC[0]+ ((i&0x01)<<8))
+	    itmp = new->CRTC[4] + ((i&0x10)<<4) + 4;
+	 else
+	    itmp = new->CRTC[0]+ ((i&0x01)<<8);      
       outb(vgaCRReg, itmp & 0xff);
       i |= (itmp&0x100) >> 2;
       outb(vgaCRIndex, 0x3c);
@@ -2462,19 +2481,35 @@ s3Init(mode)
       outb(vgaCRReg, ~0x20 & tmp);
    }
 
+   if (OFLG_ISSET(OPTION_S3_INVERT_VCLK, &s3InfoRec.options)) {
+      outb(vgaCRIndex, 0x67);
+      tmp = inb(vgaCRReg);
+      outb(vgaCRReg, tmp ^ 1);
+   }
+
+   if (OFLG_ISSET(OPTION_SLOW_VRAM, &s3InfoRec.options)) {
+      /* 
+       * some Diamond Stealth 64 VRAM cards have a problem with VRAM timing,
+       * increase -RAS low timing from 3.5 MCLKs to 4.5 MCLKs 
+       */ 
+      outb(vgaCRIndex, 0x39);
+      outb(vgaCRReg, 0xa5);
+      outb(vgaCRIndex, 0x68);
+      tmp = inb(vgaCRReg);
+      if ((tmp & 0x30) == 0x30) 		/* 3.5 MCLKs */
+	 outb(vgaCRReg, tmp & 0xef);		/* 4.5 MCLKs */
+   }
+
+#if 0
+   ErrorF("s3InfoRec.s3BlankDelay %x\n",s3InfoRec.s3BlankDelay);
+#endif
+
+   if (s3InfoRec.s3BlankDelay >= 0) {
+      outb(vgaCRIndex, 0x6d);
+      outb(vgaCRReg, s3InfoRec.s3BlankDelay);
+   }
+
    if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
-      if (OFLG_ISSET(OPTION_DIAMOND, &s3InfoRec.options)) {
-	 /* 
-	  * some Diamond Stealth 64 VRAM cards have a problem with VRAM timing,
-	  * increase -RAS low timing from 3.5 MCLKs to 4.5 MCLKs 
-	  */ 
-	 outb(vgaCRIndex, 0x39);
-	 outb(vgaCRReg, 0xa5);
-	 outb(vgaCRIndex, 0x68);
-	 tmp = inb(vgaCRReg);
-	 if ((tmp & 0x30) == 0x30) 		/* 3.5 MCLKs */
-	    outb(vgaCRReg, tmp & 0xef);		/* 4.5 MCLKs */
-      }
       if (OFLG_ISSET(OPTION_S3_964_BT485_VCLK, &s3InfoRec.options)) {
 	 /*
 	  * This is the design alert from S3 with Bt485A and Vision 964. 

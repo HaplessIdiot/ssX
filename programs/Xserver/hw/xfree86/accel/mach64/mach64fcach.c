@@ -1,5 +1,5 @@
 /* $XConsortium: mach64fcach.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fcach.c,v 3.0 1994/11/26 12:42:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fcach.c,v 3.1 1995/01/28 15:53:20 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -398,13 +398,20 @@ mach64DrawText(pDraw, pGC, x, y, count, chars, slot, texttype)
 					    (charHeight & 0x0000ffff)));
 	        }
             } 
+
+	    WaitQueue(6);
+	    regw(DP_FRGD_CLR, pGC->fgPixel);
+	    regw(DP_BKGD_CLR, 0xffffffff);
+	    regw(DP_MIX, (MIX_SRC << 16) | MIX_NOT_SRC_OR_DST);
+
         } /* end if !TERMINALFONT */
-
-	WaitQueue(6);
-	regw(DP_FRGD_CLR, pGC->fgPixel);
-        regw(DP_BKGD_CLR, pGC->bgPixel);
-	regw(DP_MIX, (MIX_SRC << 16) | MIX_SRC);
-
+	else
+	{
+	    WaitQueue(6);
+	    regw(DP_FRGD_CLR, pGC->fgPixel);
+	    regw(DP_BKGD_CLR, pGC->bgPixel);
+	    regw(DP_MIX, (MIX_SRC << 16) | MIX_SRC);
+	}
     }
     else  /* POLY_TEXT_TYPE */
     {

@@ -1,3 +1,18 @@
+XFree86 3.1.1C (3 July 1995)
+185. Manual page updates.
+184. Add extended power_saver support to the VGA and Mach64 servers.
+     Suspend mode isn't currently supported by the VGA servers.
+183. Add entries for the SunFA_ dead accents to the iso8859-1 Compose file
+     (Jon Tombs).
+182. Updates to IBM RGB52x in the S3 server, including fixing the
+     8bpp problem.
+181. Documentation updates (including a README.ark) (Harm Hanemaayer).
+180. Change the Mach64 server to ignore the Clocks line in the XF86Config
+     unless the "no_bios_clocks" option is used (Kevin Martin).
+179. Fix font corruption with Mach64 server (seen when running Mosaic
+     or Netscape) (Kevin Martin).
+178. Fixes for constant-metric fonts in AGX server (Henry Worth).
+
 XFree86 3.1.1Bi (2 July 1995)
 177. Improved "power_saver" for the S3 server, and modified XFree86-VidMode
      extension to allow its parameters to be set from a client.

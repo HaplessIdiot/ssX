@@ -1,5 +1,5 @@
 /* $XConsortium: agxFCach.c,v 1.4 95/01/23 15:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.14 1995/06/21 11:51:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.15 1995/06/24 10:27:25 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -354,7 +354,7 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
    unsigned int mapDim, mapCoOrd;
    char  toload[BLOCKS_PER_FONT];
    xRectangle backrect;
-#if 0
+#ifndef NOFONTCONSTMETRIC
    Bool terminalFont = fentry->font->info.terminalFont;
    Bool constantMetrics = fentry->font->info.constantMetrics;
    Bool noVertOverlap = FALSE;
@@ -415,7 +415,7 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
    if( opaque ) {
       backrect.y = y - FONTASCENT(pfont);
       backrect.height = FONTASCENT(pfont) + FONTDESCENT(pfont); 
-#if 0
+#ifndef NOFONTCONSTMETRIC
       noVertOverlap = backrect.y == minY
                       && backrect.height == (maxY - minY);
 #endif
@@ -465,7 +465,7 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
             GE_OUT_D( GE_BKGD_CLR, pGC->bgPixel );
             if (opaque) {
                /* opaque stipples are faster, so if terminalFont: opaque it */ 
-#if 0
+#ifndef NOFONTCONSTMETRIC
                if (terminalFont && noVertOverlap) 
                   mixes = MIX_SRC << 8 | MIX_SRC; 
                else
@@ -487,10 +487,11 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
             GE_OUT_D( GE_PIXEL_MAP_WIDTH, mapDim ); 
          }
          if (opaque) {
-#if 0
+#ifndef NOFONTCONSTMETRIC
            if (terminalFont && noVertOverlap) {
                /* we can do just an opaque stipple */
-               DoagxConstMetrics( x, y, count, chars, fentry, pGC, maxAscent );
+               DoagxConstMetrics( x, y, count, chars, 
+                                  fentry, pGC, maxAscent, TRUE, mixes );
            }
            else 
 #endif
@@ -507,13 +508,29 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
                             | GE_OP_FRGD_SRC_CLR
                             | GE_OP_DEST_MAP_A   );
 
-	      DoagxCPolyText8( x, y, count, chars, fentry,
-			       pGC, TRUE, mixes );
+#ifndef NOFONTCONSTMETRIC
+              if( constantMetrics ) {
+                 GE_WAIT_IDLE_SHORT(); 
+                 GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
+                 DoagxConstMetrics( x, y, count, chars, 
+                                    fentry, pGC, maxAscent, FALSE, mixes );
+              }
+              else
+#endif
+	         DoagxCPolyText8( x, y, count, chars, fentry,
+		                  pGC, TRUE, mixes );
            }
          }
          else {
-	   DoagxCPolyText8( x, y, count, chars, fentry,
-			    pGC, FALSE, mixes );
+#ifndef NOFONTCONSTMETRIC
+              if( constantMetrics ) {
+                 DoagxConstMetrics( x, y, count, chars,
+                                    fentry, pGC, maxAscent, FALSE, mixes );
+              }
+              else
+#endif
+	         DoagxCPolyText8( x, y, count, chars, fentry,
+		                  pGC, FALSE, mixes );
          }
       }
    }
@@ -568,6 +585,8 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC, opaque, mixes)
                      GE_WAIT_IDLE_SHORT();
                      MAP_SET_DST( GE_MS_MAP_A );
                      GE_OUT_W(GE_FRGD_MIX, mixes);
+                     GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
+                     GE_OUT_D( GE_BKGD_CLR, pGC->bgPixel );
                      GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
                      GE_OUT_W( GE_PIXEL_OP,
                                GE_OP_PAT_MAP_C
@@ -616,22 +635,27 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC, opaque, mixes)
    return;
 }
 
-#if 0
+#ifndef NOFONTCONSTMETRIC
 static __inline__ void
-DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent)
+DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent, opaque, mixes )
      int   x, y, count;
      unsigned char *chars;
      CacheFont8Ptr fentry;
      GCPtr pGC; 
-     int maxAscent;
+     int   maxAscent;
+     Bool  opaque;
+     unsigned int  mixes;
 {
    register unsigned int dstCoOrd, patCoOrd;
    register CharInfoPtr pci = fentry->pci[(int)*chars];
    register unsigned int idx;
    unsigned int h = fentry->hPix;
    unsigned int w = fentry->wBytes<<3;
-   unsigned int opDim = (GLYPHHEIGHTPIXELS(pci)-1) << 16 
-                        | (GLYPHWIDTHPIXELS(pci)-1);
+   unsigned int width = fentry->font->info.maxbounds.characterWidth;
+   int leftBear  = fentry->font->info.maxbounds.leftSideBearing;
+   int rightBear = fentry->font->info.maxbounds.rightSideBearing;
+   unsigned int opDim = (h-1) << 16 | ((rightBear-leftBear)-1);
+   CharInfoPtr pciLast = NULL;
    unsigned int blocki = 0xFFFFFFFF;
    bitMapBlockPtr block;
    unsigned int blockBase;
@@ -657,14 +681,20 @@ DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent)
 		  agxloadFontBlock(fentry, blocki);
 		  block = fentry->fblock[blocki];
                   if( geBlockMove ) {
+                     /* GE was used -- restore needed state */
                      GE_WAIT_IDLE_SHORT();
                      MAP_SET_DST( GE_MS_MAP_A );
-                     GE_OUT_W(GE_FRGD_MIX, MIX_SRC << 8 | MIX_SRC );
+                     GE_OUT_W(GE_FRGD_MIX, mixes );
                      GE_OUT_W( GE_PIXEL_OP,
                                GE_OP_PAT_MAP_C
                                | GE_OP_MASK_BOUNDARY 
                                | GE_OP_INC_X
                                | GE_OP_INC_Y         );
+                     GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
+                     GE_OUT_D( GE_BKGD_CLR, pGC->bgPixel );
+                     GE_OUT_D( GE_PIXEL_BIT_MASK, pGC->planemask );
+                     GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+
                   }
 	       }
                blockInUse = block;
@@ -677,21 +707,46 @@ DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent)
                   oldBlockBase = blockBase;
                }
    	    }
-
-            idx =  (*chars) & BLOCK_IDX_MASK;
-            patCoOrd = (block->line + ((idx / fentry->gper) * h)) << 16
-                       | (w * (idx % fentry->gper));
-            dstCoOrd = y | (x + pci->metrics.leftSideBearing);
+            if( pci != pciLast ) {
+               pciLast = pci;
+               idx =  (*chars) & BLOCK_IDX_MASK;
+               patCoOrd = (block->line + ((idx / fentry->gper) * h)) << 16
+                          | (w * (idx % fentry->gper));
+            }
+            dstCoOrd = y | (x + leftBear);
 
             GE_WAIT_IDLE_SHORT();
             GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
             GE_OUT_D( GE_PAT_MAP_X, patCoOrd ); 
             GE_START_CMDW( GE_OPW_BITBLT
-                            | GE_OPW_FRGD_SRC_CLR 
-                            | GE_OPW_BKGD_SRC_CLR 
-                            | GE_OPW_DEST_MAP_A   );
+                           | GE_OPW_FRGD_SRC_CLR 
+                           | GE_OPW_BKGD_SRC_CLR 
+                           | GE_OPW_DEST_MAP_A   );
+
 	 }
-         x += pci->metrics.characterWidth;
+         else if( opaque ) {
+            /* shouldn't happen - but just in case */
+            pciLast = NULL;
+            dstCoOrd = y | x;
+            GE_WAIT_IDLE_SHORT();
+            GE_OUT_W( GE_FRGD_CLR, pGC->bgPixel );
+            GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+            GE_START_CMD( GE_OP_BITBLT
+                          | GE_OP_PAT_FRGD
+                          | GE_OP_MASK_BOUNDARY 
+                          | GE_OP_INC_X
+                          | GE_OP_INC_Y
+                          | GE_OP_FRGD_SRC_CLR
+                          | GE_OP_DEST_MAP_A   );
+            GE_WAIT_IDLE();
+            GE_OUT_W( GE_FRGD_CLR, pGC->fgPixel );
+            GE_OUT_W( GE_PIXEL_OP,
+                      GE_OP_PAT_MAP_C
+                      | GE_OP_MASK_BOUNDARY
+                      | GE_OP_INC_X
+                      | GE_OP_INC_Y         );
+         }
+         x += width;
    }
 
    GE_WAIT_IDLE_EXIT();

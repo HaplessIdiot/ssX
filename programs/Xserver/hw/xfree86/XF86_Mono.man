@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Mono.man,v 1.6 95/01/23 15:33:29 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Mono.man,v 3.9 1995/05/27 03:00:55 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Mono.man,v 3.10 1995/06/17 12:14:37 dawes Exp $
 .TH XF86_Mono 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Mono - 1 bit non-accelerated X Window System servers for UNIX on
@@ -207,8 +207,11 @@ on them.  Specifying this option will allow the driver to detect and use
 the extra 8 clocks.
 .sp
 \fBpower_saver\fP - This option enables the server
-to use the power saving feature of "green" monitors instead of blanking
-when the screen saver is activated.  This option is experimental.
+to use the power saving features of VESA DPMS compatible monitors.
+The suspend level is currently not supported.
+Refer to the \fIXF86Config(4/5)\fP
+manual page for details of how to set the timeouts for the different levels
+of operation.  This option is experimental.
 .sp
 \fBsecondary\fP - for the hgc1280 and apollo9 chipsets. This option allows
 to use these cards jumpered to the secondary I/O / memory address.
@@ -259,7 +262,8 @@ Server configuration file
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
-X(1), Xserver(1), XFree86(1), XF86Config(4/5), xf86config(1), xdm(1), xinit(1)
+X(1), Xserver(1), XFree86(1), XF86Config(4/5), xf86config(1),
+xvidtune(1), xdm(1), xinit(1)
 .SH BUGS
 There are no known bugs at this time, although we welcome reports emailed
 to the address listed below.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.11 1995/06/17 12:21:59 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.12 1995/07/02 07:57:00 dawes Exp $ */
 
 /*
 
@@ -1076,8 +1076,8 @@ int main (argc, argv)
     /* Fail if the extension version in the server is too old */
     if (MajorVersion < MINMAJOR || MinorVersion < MINMINOR) {
 	fprintf(stderr,
-		"Xserver is running old XFree86-VidModeExtension (%d.%d)\n",
-		MajorVersion, MinorVersion);
+		"Xserver is running an old XFree86-VidModeExtension version"
+		" (%d.%d)\n", MajorVersion, MinorVersion);
 	fprintf(stderr, "Minimum required version is %d.%d\n",
 		MINMAJOR, MINMINOR);
 	exit(1);
@@ -1104,8 +1104,8 @@ int main (argc, argv)
 	} else if (!strcmp(argv[1], "-saver")) {
 	    if (MinorVersion < 3) {
 		fprintf(stderr,
-		    "Xserver is running old XFree86-VidModeExtension (%d.%d)\n",
-		    MajorVersion, MinorVersion);
+		    "Xserver is running an old XFree86-VidModeExtension"
+		    " version (%d.%d)\n", MajorVersion, MinorVersion);
 		fprintf(stderr,
 		    "Minimum required version for -saver is %d.%d\n",
 		    MINMAJOR, 3);

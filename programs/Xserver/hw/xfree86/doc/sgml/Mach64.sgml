@@ -100,8 +100,9 @@ need at least a video memory area of 1024x257.
 
 <sect>XF86Config options<p>
 Several options are supported in the "Device" section for the Mach64 X
-server.  The Mach64 X server reads the Clocks from the BIOS, so the
-"Clocks" lines are not required.
+server.  The Mach64 X server reads the Clocks from the BIOS.  The
+"Clocks" lines in the XF86Config file are normally ignored by the
+Mach64 X server unless the "no_bios_clocks" option is given.
 
 <descrip>
 <tag>Option &dquot;sw_cursor&dquot;</tag>
@@ -139,6 +140,12 @@ server.  The Mach64 X server reads the Clocks from the BIOS, so the
 		saving features of certain "green" monitors
 		instead of blanking when the screen saver is
 		activated.  This option is still experimental.
+<tag>Option &dquot;no_bios_clocks&dquot;</tag>
+		This option allows you to override the clocks read
+		from the video card's BIOS.  Normally the Mach64
+		server will ignore the Clocks line, but with this
+		option the clocks from the XF86Config file can
+		override the BIOS's clocks.
 <tag>MemBase baseaddress</tag>
 		This entry specifies the video memory aperture
 		address.  Normally the aperture address is
@@ -152,7 +159,7 @@ server.  The Mach64 X server reads the Clocks from the BIOS, so the
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.1 1995/06/08 06:27:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.2 1995/06/25 09:53:40 dawes Exp $
 </verb>
 
 </article>
