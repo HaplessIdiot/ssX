@@ -9,8 +9,8 @@
 This document describes mouse support in XFree86 3.9.15.
 
 Mouse configuration has often been mysterious task for novice users.  How-
-ever, once you learn several basics, it is straightforward to choose write
-the mouse "InputDevice" section in the XF86Config file by hand.
+ever, once you learn several basics, it is straightforward to write the mouse
+"InputDevice" section in the XF86Config file by hand.
 
 2.  Supported Hardware
 
@@ -605,7 +605,7 @@ detection:
 
           Option    "Protocol"     "Auto"
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.3 1999/07/04 07:58:04 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.5 1999/07/10 07:24:44 dawes Exp $
 
 
 $XFree86$

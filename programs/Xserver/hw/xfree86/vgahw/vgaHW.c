@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.25 1999/06/12 15:47:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.26 1999/07/10 12:17:39 dawes Exp $ */
 
 /*
  *
@@ -982,7 +982,7 @@ vgaHWSaveMode(ScrnInfoPtr scrninfp, vgaRegPtr save)
     else
 	hwp->IOBase = VGA_IOBASE_MONO;
 
-    for (i = 0; i < save->numCRTC; i++)
+    for (i = 0; i < save->numCRTC; i++) {
 	save->CRTC[i] = hwp->readCrtc(hwp, i);
 #ifdef DEBUG
 	ErrorF("CRTC[0x%02x] = 0x%02x\n", i, save->CRTC[i]);
@@ -990,7 +990,7 @@ vgaHWSaveMode(ScrnInfoPtr scrninfp, vgaRegPtr save)
     }
 
     hwp->enablePalette(hwp);
-    for (i = 0; i < save->numAttribute; i++)
+    for (i = 0; i < save->numAttribute; i++) {
 	save->Attribute[i] = hwp->readAttr(hwp, i);
 #ifdef DEBUG
 	ErrorF("Attribute[0x%02x] = 0x%02x\n", i, save->Attribute[i]);
@@ -998,14 +998,14 @@ vgaHWSaveMode(ScrnInfoPtr scrninfp, vgaRegPtr save)
     }
     hwp->disablePalette(hwp);
 
-    for (i = 0; i < save->numGraphics; i++)
+    for (i = 0; i < save->numGraphics; i++) {
 	save->Graphics[i] = hwp->readGr(hwp, i);
 #ifdef DEBUG
 	ErrorF("Graphics[0x%02x] = 0x%02x\n", i, save->Graphics[i]);
 #endif
     }
 
-    for (i = 1; i < save->numSequencer; i++)
+    for (i = 1; i < save->numSequencer; i++) {
 	save->Sequencer[i] = hwp->readSeq(hwp, i);
 #ifdef DEBUG
 	ErrorF("Sequencer[0x%02x] = 0x%02x\n", i, save->Sequencer[i]);
@@ -1434,8 +1434,6 @@ vgaHWAllocRegs(vgaRegPtr regp)
 static Bool
 vgaHWAllocDefaultRegs(vgaRegPtr regp)
 {
-    unsigned char *buf;
-
     regp->numCRTC = VGA_NUM_CRTC;
     regp->numSequencer = VGA_NUM_SEQ;
     regp->numGraphics = VGA_NUM_GFX;

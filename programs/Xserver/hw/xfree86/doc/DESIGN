@@ -4515,6 +4515,24 @@ WRec.  They are defined in vgaHW.h.
           This function frees a vgaHWRec structure.  It should be
           called from a driver's ChipFreeScreen() function.
 
+     Bool vgaHWSetRegCounts(ScrnInfoPtr pScrn, int numCRTC,
+
+               int numSequencer, int numGraphics, int numAttribute)
+
+          This function allows the number of CRTC, Sequencer,
+          Graphics and Attribute registers to be set to a value
+          higher than the defaults.  This makes it possible for
+          extended registers to be saved and restored with vgaH-
+          WSave() and vgaHWRestore().  This function should be
+          called after a vgaHWRec has been allocated with vgaH-
+          WGetHWRec().  The default values are defined in vgaHW.h
+          as follows:
+
+                    #define VGA_NUM_CRTC 25
+                    #define VGA_NUM_SEQ   5
+                    #define VGA_NUM_GFX   9
+                    #define VGA_NUM_ATTR 21
+
      void vgaHWSetStdFuncs(vgaHWPtr hwp)
 
           This function initialises the register access function
@@ -5887,7 +5905,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.4 1999/07/06 11:38:20 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.6 1999/07/10 12:17:24 dawes Exp $
 
 
 $XFree86$

@@ -492,8 +492,8 @@ Fourth, a scan through the comp.windows.x.i386unix and comp.os.linux.x news-
 groups using your favourite archiving service can also prove useful in
 resolving problems.
 
-If you are still experiencing problems, you can send me e-mail at tsi@ual-
-berta.ca.  Please be as specific as possible when describing the problem(s),
+If you are still experiencing problems, you can send me e-mail at <tsi@ual-
+berta.ca>.  Please be as specific as possible when describing the problem(s),
 and include an unedited copy of the server's stderr and the XF86Config file
 used.
 
@@ -546,9 +546,7 @@ tional colour depths, and so on.  This is the version found in XFree86 3.3.2,
 Version 5 is an almost complete restructuring of version 4 to fit in the new
 driver API of XFree86 4.0.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.20 1999/07/06 11:38:21 dawes Exp $
-
-     $XConsortium: ati.sgml /main/9 1996/10/19 18:03:54 kaleb $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.21 1999/07/07 12:05:51 dawes Exp $
 
 
 $XFree86$

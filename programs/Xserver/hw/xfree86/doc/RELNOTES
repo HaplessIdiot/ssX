@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                   6 July 1999 (this document needs work!)
+                  10 July 1999 (this document needs work!)
 
                                   Abstract
 
@@ -55,14 +55,14 @@ etc), and internal components used by some drivers (like XAA),
 
 Some multi-head configurations are supported in this release, primarily with
 multiple PCI/AGP cards.  However, this is an area that is still being worked
-on, and we expect that the range of configurations where it works well will
-increase in future snapshots.  A configuration that is known to work well in
-most cases is multiple (supported) Matrox cards.
+on, and we expect that the range of configurations for which it works well
+will increase in future snapshots.  A configuration that is known to work
+well in most cases is multiple (supported) Matrox cards.
 
 One of the main problems is with drivers not sufficiently initialising cards
 that were not initialised at boot time.  Normally only the primary video card
 gets initialised at boot time.  Some combinations can be made to work better
-by changing which card is the primary card (either by changing which PCI
+by changing which card is the primary card (either by using a different PCI
 slot, or by changing the system BIOS's preference for the primary card).  We
 are investigating options for ``soft-booting'' secondary video cards to deal
 with this problem, and we've had some very encouraging results.
@@ -101,6 +101,50 @@ Known problems:
 1.8  DGA version 2
 
 1.9  DDC
+
+The VESA(R) Display Data Channel (DDC[tm]) standard (related to, but separate
+from, the VESA(R) Plug and Display standard) allows the monitor to tell the
+video card (or on some cases the computer directly) about itself; particu-
+larly the supported screen resolutions and refresh rates.
+
+Partial or complete DDC support is available in the following hardware mod-
+ules (this list needs to be verified):
+
+   o APM
+
+   o Chips
+
+   o Cirrus
+
+   o Glint
+
+   o MGA
+
+   o Neomagic
+
+   o SIS
+
+   o Trident
+
+DDC is enabled by default, but can be disabled with a "Device" section entry:
+Option "NoDDC".  We have support for DDC versions 1 and 2; these can be dis-
+abled independently with Option "NoDDC1" and Option "NoDDC1".
+
+At startup the server prints out DDC information from the display, but it
+does not yet use it the determine modelines.
+
+Changed behavior caused by DDC. The MGA driver uses DDC information to set
+the monitor gamma (brightness) curve, and the screen size and pitch.
+
+   o The gamma is particularly noticeable; every monitor I have tried has a
+     gamma setting > 2, which means that the picture is much lighter than
+     under 3.3.x or without DDC. To revert to the previous behavior put Gamma
+     1.0 1.0 1.0 in the appropriate "Monitor" section of the Config file.
+
+   o Similarly, you can override the DDC probed "dpi" value by explicitly
+     resetting it to the 3.3.x and non-DDC default value 75 with the -dpi 75
+     command line option for the X server. There may be a way of doing this
+     with the config file too.
 
 1.10  Other extensions
 
@@ -150,7 +194,7 @@ Known problems:
    o ISO 10646 Level 2 combining characters not yet supported by xterm (will
      be needed for instance for the Thai script).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.2 1999/07/06 08:47:54 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.5 1999/07/10 12:17:25 dawes Exp $
 
 
 $XFree86$

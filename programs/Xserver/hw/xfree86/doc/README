@@ -6,8 +6,8 @@
 
                                   Abstract
 
-     XFree86 is a port of X11R6.4 that supports several Unix and Unix-
-     like operating systems on Intel and other platforms.
+     XFree86 is a port of X11R6.4 that supports several UNIX(R) and
+     UNIX-like operating systems on Intel and other platforms.
 
 1.  What is XFree86 3.9.15?
 
@@ -42,14 +42,15 @@ tact you for support and not XFree86.
 3.  Developers
 
 If you would like to work on the development on XFree86 4.0, then it is rec-
-ommended that you join the XFree86 development team.  That way you will have
-access to the latest source and to other developers.
+ommended that you join the XFree86 development team
+<URL:http://www.xfree86.org:/developer.html>.  That way you will have access
+to the latest source and to other developers.
 
 4.  How to get XFree86 3.9.15
 
 5.  Reporting Bugs
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.90 1999/07/04 12:49:10 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.92 1999/07/10 07:24:44 dawes Exp $
 
 
 $XFree86$

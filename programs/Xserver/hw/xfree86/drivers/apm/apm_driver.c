@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.15 1999/04/25 15:30:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.16 1999/07/10 12:17:28 dawes Exp $ */
 
 
 #include "apm.h"
@@ -223,7 +223,7 @@ apmSetup(pointer module, pointer opts, int *errmaj, int *errmain)
 	xf86AddDriver(&APM, module, 0);
 
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
-			  xf8_32bppSymbols, ramdacSymbols,
+			  /*xf8_32bppSymbols,*/ ramdacSymbols,
 			  ddcSymbols, i2cSymbols, shadowSymbols, NULL);
 
 	return (pointer)1;
