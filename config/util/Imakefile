@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/16 1996/11/13 14:43:28 lehors $
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.21 1999/08/14 10:49:02 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.22 1999/12/27 00:39:18 robin Exp $
 
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
@@ -34,6 +34,10 @@ XCOMM Some compilers generate fatal errors if an -L directory does
 XCOMM not exist.  Since BUILDLIBDIR may not exist yet suppress its use.
          LDPRELIB =
         LDPRELIBS =
+#if CrossCompiling
+       LDPOSTLIBS =
+        LDPOSTLIB = 
+#endif
 
 all:: $(PROGRAMS)
 

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/44 1996/12/02 10:22:16 lehors $
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.26 1999/09/27 06:30:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.27 1999/10/13 22:33:10 dawes Exp $
 #include <Server.tmpl>
 
 #if ! HasCbrt
@@ -62,6 +62,9 @@ NormalLibraryTarget(cbrt,cbrt.o)
 
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(miscrinit,$(ICONFIGFILES),$(EXT_DEFINES))
+#ifdef ItsyCompilerBug
+SpecialCObjectRule(mipolycon,$(_NOOP_),-O0)
+#endif
 
 AllTarget($(EXTRAMIINITEXTOBJ))
 
