@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/single2.c,v 1.4 2002/02/22 21:32:54 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/single2.c,v 1.5tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -983,7 +983,9 @@ const GLubyte *glGetString(GLenum name)
 	    gc->version = s;
 	    break;
 	  case GL_EXTENSIONS:
-	    gc->extensions = __glXCombineExtensionStrings( s, __glXGLClientExtensions );
+	    gc->extensions =
+	      (GLubyte *)__glXCombineExtensionStrings( (char *)s,
+			 __glXGLClientExtensions );
 	    XFree( s );
 	    s = gc->extensions;
 	    break;

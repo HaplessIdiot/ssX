@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/packrender.h,v 1.6 2001/03/21 16:04:39 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/packrender.h,v 1.7tsi Exp $ */
 #ifndef __GLX_packrender_h__
 #define __GLX_packrender_h__
 
@@ -68,9 +68,10 @@
 #define __GLX_LOAD_VARIABLES()	   \
     gc = __glXGetCurrentContext(); \
     pc = gc->pc;                   \
-    (void) cmdlen;                 \
-    (void) compsize;               \
-    (void) pixelHeaderPC
+    /* Muffle compilers */		    \
+    cmdlen = 0;         (void)cmdlen;	    \
+    compsize = 0;       (void)compsize;	    \
+    pixelHeaderPC = 0;  (void)pixelHeaderPC
 
 /*
 ** Variable sized command support macro.  This macro is used by calls
