@@ -1,4 +1,12 @@
 XFree86 4.4.99.16 (xx October 2004)
+ 204. Update locale info for Kinyarwanda, the language of Rwanda
+      (Bugzilla #1494, Steve Murphy).
+ 203. Fix for fstobdf generating corrupted BDF files (Bugzilla #93,
+      Laurent Deniel).
+ 202. The Faroese keyboard layout wasn't getting installed (Bugzilla #1497,
+      Dejan Lesjak).
+ 201. Remove reference to non-existent file in the xf86config utility
+      (Bugzilla #1498, Dejan Lesjak).
  200. Fix various statement not reached warnings, including some real bugs
       (David Dawes).
  199. Fix for server crash in the screen saver extension (David Dawes,
@@ -19130,7 +19138,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3329 2004/10/23 01:29:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3330 2004/10/23 15:29:27 dawes Exp $
 
 
 

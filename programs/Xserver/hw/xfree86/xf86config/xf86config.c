@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.70 2003/11/14 02:40:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.71 2004/04/28 23:31:11 paulo Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -838,8 +838,7 @@ static char *monitorintro_text =
 "which is the rate at which scanlines are displayed.\n"
 "\n"
 "The valid range for horizontal sync and vertical sync should be documented\n"
-"in the manual of your monitor. If in doubt, check the monitor database\n"
-TREEROOTLX "/doc/Monitors to see if your monitor is there.\n"
+"in the manual of your monitor.\n"
 "\n";
 
 static char *hsyncintro_text =
