@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/rendition/hwcursor.c,v 1.1.2.5 1999/07/30 13:19:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/hwcursor.c,v 1.4 1999/11/19 13:54:45 hohndel Exp $ */
 /*
  * includes
  */
@@ -128,7 +128,7 @@ RENDITIONShowCursor(ScrnInfoPtr pScreenInfo)
 #endif
 
     /* enable cursor - X11 mode */
-    v_enablecursor(pScreenInfo, V_XCURSOR, 
+    v_enablecursor(pScreenInfo, V_3COLORS, 
 #ifdef BIGCURSOR
         V_CURSOR64
 #else 
