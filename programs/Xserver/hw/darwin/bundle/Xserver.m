@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.32 2001/11/12 19:22:17 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.33 2001/11/14 07:18:56 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -108,7 +108,7 @@ static NSRect aquaMenuBarBox;
         sendServerEvents = NO;
 
         but = NSRunAlertPanel(NSLocalizedString(@"Quit X server?",@""),
-                              NSLocalizedString(@"Quitting the X server will terminate any running X Window programs.",@""),
+                              NSLocalizedString(@"Quitting the X server will terminate any running X Window System programs.",@""),
                               NSLocalizedString(@"Quit",@""),
                               NSLocalizedString(@"Cancel",@""),
                               nil);
