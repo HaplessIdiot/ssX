@@ -4,7 +4,8 @@ XFree86 4.1.99.2 (xx October 2001)
  446. Fix XDarwin crash if more than one keyboard interface is returned from
       NXEventSystemInfo (Gregory Parker).
  445. Big5 encoding fix (#4957, Juliusz Chroboczek).
- 444. Use DDC sync and DPMS info (#4955, Andrew C Aitchison).
+ 444. Use DDC sync (disabled by default) and DPMS info (#4955,
+      Andrew C Aitchison).
  443. Update the i810 XVideo support to double the maximum image width
       to 1440 (#4933, Philip Pokorny).
  442. Fix several memory leaks in x11perf (#4931, Ernie Coskrey, from X11R6.6).
@@ -14102,4 +14103,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2020 2001/11/03 21:59:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2021 2001/11/04 08:12:15 torrey Exp $
