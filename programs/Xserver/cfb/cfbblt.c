@@ -1,7 +1,7 @@
 /*
  * cfb copy area
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.4 1999/01/15 02:27:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.5 1999/01/23 09:55:38 dawes Exp $ */
 
 /*
 
@@ -497,7 +497,7 @@ psrc += UNROLL;
 		     * a single instruction instead of 6
 		     * but measurements show it to be ~15% slower
 		     */
-		    while ((nl -= 6) >= 0
+		    while ((nl -= 6) >= 0)
 		    {
 			asm ("moveml %1+,#0x0c0f;moveml#0x0c0f,%0"
 			     : "=m" (*(char *)pdst)
