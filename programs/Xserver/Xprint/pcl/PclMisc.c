@@ -44,7 +44,12 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.5 1998/12/20 11:57:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.6 1999/12/13 02:12:56 robin Exp $ */
+
+#ifdef __CYGWIN__
+#include <signal.h>
+#include <stdlib.h>
+#endif
 
 #include "Xos.h"	/* for SIGCLD on pre-POSIX systems */
 #include "Pcl.h"

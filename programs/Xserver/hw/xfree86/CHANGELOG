@@ -1,4 +1,6 @@
-XFree86 4.0.1c (17 August 2000)
+XFree86 4.0.1c (25 August 2000)
+ 524. Fix the few problems that showed up with the integration of the cygwin
+      support (Suhaib M. Siddiqi).
  523. ATI driver changes (Marc La France):
       - Make ATIProbe() and ATIPreInit() optionally more verbose.
       - Fix compile problem on Alpha's.
@@ -11017,4 +11019,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1274 2000/08/21 00:38:55 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1275 2000/08/22 21:54:27 tsi Exp $

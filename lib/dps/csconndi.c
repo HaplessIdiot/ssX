@@ -47,7 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
-/* $XFree86: xc/lib/dps/csconndi.c,v 1.3 2000/05/18 23:46:12 dawes Exp $ */
+/* $XFree86: xc/lib/dps/csconndi.c,v 1.4 2000/08/09 23:40:14 dawes Exp $ */
 
 #if defined(sun) && !defined(SVR4)
 #define memmove(t,f,c) bcopy(f,t,c)
@@ -481,7 +481,10 @@ static int MakeDECnetConnection (phostname, iagent, retries,
 
 
 #ifdef UNIXCONN
+
+#ifndef __CYGWIN__ /* causes conflicts with cygwin headers */
 #include <sys/un.h>
+#endif
 
 #ifndef CSDPS_UNIX_PATH
 #ifdef hpux
