@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.122 2001/01/21 21:19:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.123 2001/01/25 11:40:38 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -2576,9 +2576,6 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	TRIDENTInitVideo(pScreen);
 #endif
 
-    if(pTrident->BlockHandler)
-	pScreen->BlockHandler = pTrident->BlockHandler;
-
     pTrident->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = TRIDENTCloseScreen;
     pScreen->SaveScreen = TRIDENTSaveScreen;
@@ -2737,6 +2734,9 @@ TRIDENTCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (pTrident->DGAModes)
 	xfree(pTrident->DGAModes);
     pScrn->vtSema = FALSE;
+
+    if(pTrident->BlockHandler)
+	pScreen->BlockHandler = pTrident->BlockHandler;
     
     pScreen->CloseScreen = pTrident->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
