@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX February 2002)
+  49. Fix bug that sometimes caused makedepend to forget #define'd symbols
+      (Marc La France).
   48. MIT-SHM updates (Roberto Zunino, Matthieu Herrb).
   47. Import Mesa-4.0.1, and resync with the DRI trunk which is now based
       on this (Keith Whitwell, Brian Paul, Alan Hourihane, David Dawes).
@@ -14658,8 +14660,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-<<<<<<< CHANGELOG
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2179 2002/02/24 20:37:18 herrb Exp $
-=======
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2179 2002/02/24 20:37:18 herrb Exp $
->>>>>>> 3.2178
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2180 2002/02/25 18:13:21 herrb Exp $
