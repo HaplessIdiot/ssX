@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.17 1995/07/17 12:47:49 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.18 1995/07/19 12:46:15 dawes Exp $ */
 
 /*
 
@@ -1421,7 +1421,8 @@ int main (argc, argv)
     }
 
     /* Fail if the extension version in the server is too old */
-    if (MajorVersion < MINMAJOR || MinorVersion < MINMINOR) {
+    if (MajorVersion < MINMAJOR ||
+	(MajorVersion == MINMAJOR && MinorVersion < MINMINOR)) {
 	fprintf(stderr,
 		"Xserver is running an old XFree86-VidModeExtension version"
 		" (%d.%d)\n", MajorVersion, MinorVersion);
