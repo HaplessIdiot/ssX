@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/235 1997/05/25 15:12:21 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.114 1997/07/10 08:17:12 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.115 1997/07/29 12:07:17 hohndel Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -140,6 +140,9 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
      PEXXIEEXTS = $(PEXLIBS) $(XIEEXT)
       OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
                   $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
+#if (defined(SunArchitecture) && defined(SVR4Architecture))
+          LIBDL = $(DYNLIBSYSLIB)
+#endif
 #else
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS) $(GLXLIB)
       OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \

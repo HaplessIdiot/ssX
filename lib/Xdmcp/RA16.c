@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RA16.c,v 1.4 94/04/17 20:16:37 gildea Exp $
+ * $TOG: RA16.c /main/5 1997/08/12 23:25:09 kaleb $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -44,7 +44,7 @@ XdmcpReadARRAY16 (buffer, array)
 	return FALSE;
     if (!array->length)
     {
-	array->data = 0;
+	array->data = NULL;
 	return TRUE;
     }
     array->data = (CARD16 *) Xalloc (array->length * sizeof (CARD16));
@@ -55,6 +55,7 @@ XdmcpReadARRAY16 (buffer, array)
 	if (!XdmcpReadCARD16 (buffer, &array->data[i]))
 	{
 	    Xfree (array->data);
+	    array->data = NULL;
 	    return FALSE;
 	}
     }

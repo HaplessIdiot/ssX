@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RAofA8.c,v 1.4 94/04/17 20:16:38 gildea Exp $
+ * $TOG: RAofA8.c /main/5 1997/08/12 23:25:24 kaleb $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -44,7 +44,7 @@ XdmcpReadARRAYofARRAY8 (buffer, array)
 	return FALSE;
     if (!array->length)
     {
-	array->data = 0;
+	array->data = NULL;
 	return TRUE;
     }
     array->data = (ARRAY8 *) Xalloc (array->length * sizeof (ARRAY8));
@@ -55,6 +55,7 @@ XdmcpReadARRAYofARRAY8 (buffer, array)
 	if (!XdmcpReadARRAY8 (buffer, &array->data[i]))
 	{
 	    Xfree (array->data);
+	    array->data = NULL;
 	    return FALSE;
 	}
     }

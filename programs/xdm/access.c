@@ -1,6 +1,6 @@
 /*
- * $XConsortium: access.c,v 1.15 94/04/17 20:03:32 hersh Exp $
- * $XFree86: xc/programs/xdm/access.c,v 3.1 1996/09/14 13:14:53 dawes Exp $
+ * $TOG: access.c /main/16 1997/08/12 18:28:39 kaleb $
+ * $XFree86: xc/programs/xdm/access.c,v 3.2 1997/01/18 07:02:17 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -568,7 +568,7 @@ indirectAlias (alias, clientAddress, connectionType, function, closure, depth,
 
 ARRAY8Ptr IndirectChoice ();
 
-ForEachMatchingIndirectHost (clientAddress, connectionType, function, closure)
+int ForEachMatchingIndirectHost (clientAddress, connectionType, function, closure)
     ARRAY8Ptr	clientAddress;
     CARD16	connectionType;
     int		(*function)();
@@ -576,7 +576,7 @@ ForEachMatchingIndirectHost (clientAddress, connectionType, function, closure)
 {
     int		    haveLocalhost = 0;
     DisplayEntry    *d;
-    char	    *clientName = 0, *NetworkAddressToHostname ();
+    char	    *clientName = NULL, *NetworkAddressToHostname ();
 
     for (d = database; d; d = d->next)
     {
@@ -625,12 +625,12 @@ ForEachMatchingIndirectHost (clientAddress, connectionType, function, closure)
     return haveLocalhost;
 }
 
-UseChooser (clientAddress, connectionType)
+int UseChooser (clientAddress, connectionType)
     ARRAY8Ptr	clientAddress;
     CARD16	connectionType;
 {
     DisplayEntry    *d;
-    char	    *clientName = 0, *NetworkAddressToHostname ();
+    char	    *clientName = NULL, *NetworkAddressToHostname ();
 
     for (d = database; d; d = d->next)
     {
@@ -657,14 +657,19 @@ UseChooser (clientAddress, connectionType)
 	    continue;
 	if (d->notAllowed)
 	    break;
-	if (d->chooser && !IndirectChoice (clientAddress, connectionType))
+	if (d->chooser && !IndirectChoice (clientAddress, connectionType)) {
+	    if (clientName)
+		free (clientName);
 	    return 1;
+	}
 	break;
     }
+    if (clientName)
+	free (clientName);
     return 0;
 }
 
-ForEachChooserHost (clientAddress, connectionType, function, closure)
+void ForEachChooserHost (clientAddress, connectionType, function, closure)
     ARRAY8Ptr	clientAddress;
     CARD16	connectionType;
     int		(*function)();
@@ -672,7 +677,7 @@ ForEachChooserHost (clientAddress, connectionType, function, closure)
 {
     int		    haveLocalhost = 0;
     DisplayEntry    *d;
-    char	    *clientName = 0, *NetworkAddressToHostname ();
+    char	    *clientName = NULL, *NetworkAddressToHostname ();
 
     for (d = database; d; d = d->next)
     {
@@ -719,13 +724,13 @@ ForEachChooserHost (clientAddress, connectionType, function, closure)
  * given display client is acceptable if it occurs without a host list.
  */
 
-AcceptableDisplayAddress (clientAddress, connectionType, type)
+int AcceptableDisplayAddress (clientAddress, connectionType, type)
     ARRAY8Ptr	clientAddress;
     CARD16	connectionType;
     xdmOpCode	type;
 {
     DisplayEntry    *d;
-    char	    *clientName = 0, *NetworkAddressToHostname ();
+    char	    *clientName = NULL, *NetworkAddressToHostname ();
 
     if (!*accessFile)
 	return 1;

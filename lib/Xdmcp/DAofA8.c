@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DAofA8.c,v 1.4 94/04/17 20:16:34 gildea Exp $
+ * $TOG: DAofA8.c /main/5 1997/08/12 23:25:04 kaleb $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -41,7 +41,7 @@ XdmcpDisposeARRAYofARRAY8 (array)
 
     for (i = 0; i < (int)array->length; i++)
 	XdmcpDisposeARRAY8 (&array->data[i]);
-    Xfree (array->data);
+    if (array->data) Xfree (array->data);
     array->length = 0;
-    array->data = 0;
+    array->data = NULL;
 }

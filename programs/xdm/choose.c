@@ -1,6 +1,6 @@
 /*
- * $XConsortium: choose.c,v 1.16 94/06/03 16:34:38 mor Exp $
- * $XFree86: xc/programs/xdm/choose.c,v 3.3 1994/08/31 04:50:49 dawes Exp $
+ * $TOG: choose.c /main/17 1997/08/12 18:28:46 kaleb $
+ * $XFree86: xc/programs/xdm/choose.c,v 3.4 1997/01/18 07:02:19 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -62,11 +62,13 @@ in this Software without prior written authorization from the X Consortium.
 #include <net/gen/tcp_io.h>
 #endif /* !MINIX */
 #include <ctype.h>
+#include <errno.h>
 #if defined(STREAMSCONN)
 # include       <tiuser.h>
 #endif
 
 #ifdef X_NOT_STDC_ENV
+extern int errno;
 #define Time_t long
 extern Time_t time ();
 #else
@@ -297,12 +299,19 @@ RegisterIndirectChoice (clientAddress, connectionType, choice)
 {
     ChoicePtr	c;
     int		insert;
+    int		found = 0;
 
     Debug ("Got indirect choice back\n");
-    for (c = choices; c; c = c->next)
+    for (c = choices; c; c = c->next) {
 	if (XdmcpARRAY8Equal (clientAddress, &c->client) &&
-	    connectionType == c->connectionType)
+	    connectionType == c->connectionType) {
+	    found = 1;
 	    break;
+	}
+    }
+    if (!found)
+	return 0;
+
     insert = 0;
     if (!c)
     {
@@ -556,14 +565,15 @@ ProcessChooserSocket (fd)
 	    XdmcpReadARRAY8 (&buffer, &choice))
 	{
 	    Debug ("Read from chooser succesfully\n");
-	    RegisterIndirectChoice (&clientAddress, connectionType, &choice);
+	    if (!RegisterIndirectChoice (&clientAddress, connectionType, &choice))
+		Debug ("Invalid chooser reply\n");
 	}
 	XdmcpDisposeARRAY8 (&clientAddress);
 	XdmcpDisposeARRAY8 (&choice);
     }
     else
     {
-	LogError ("Invalid choice response length %d\n", len);
+	LogError ("Choice response read error: %s\n", strerror(errno));
     }
 
 #if defined(STREAMSCONN)
