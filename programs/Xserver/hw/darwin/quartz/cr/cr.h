@@ -1,9 +1,8 @@
 /*
- * Common internal definitions and code of the rootless implementation
- * for the Mac OS X Aqua environment
+ * Internal definitions of the Cocoa rootless implementation
  */
 /*
- * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2003 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,13 +27,10 @@
  * use or other dealings in this Software without prior written authorization.
  */
 
-#ifndef _AQUACOMMON_H
-#define _AQUACOMMON_H
-
-#include "quartzCommon.h"
+#ifndef _CR_H
+#define _CR_H
 
 #ifdef __OBJC__
-#undef BOOL
 #import <Cocoa/Cocoa.h>
 #import "XView.h"
 #else
@@ -42,15 +38,18 @@ typedef struct OpaqueNSWindow NSWindow;
 typedef struct OpaqueXView XView;
 #endif
 
+#undef BOOL
+#define BOOL xBOOL
+#include "screenint.h"
+#undef BOOL
 
 typedef struct {
     NSWindow *window;
     XView *view;
     GrafPtr port;
     CGContextRef context;
-    GWorldPtr rootGWorld;
-} AquaWindowRec;
+} CRWindowRec, *CRWindowPtr;
 
-#define AQUA_WINREC(rw) ((AquaWindowRec *)rw)
+Bool CRInit(ScreenPtr pScreen);
 
-#endif /* _AQUACOMMON_H */
+#endif /* _CR_H */

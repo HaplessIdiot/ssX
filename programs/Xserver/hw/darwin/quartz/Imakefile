@@ -1,14 +1,11 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.6 2003/04/30 23:15:39 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.7 2003/05/14 05:27:56 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
 
-#if HasXplugin
-
 SRCS =  Preferences.m \
         XApplication.m \
         XServer.m \
-        XView.m \
         fullscreen.c \
         quartz.c \
         quartzAudio.c \
@@ -22,7 +19,6 @@ SRCS =  Preferences.m \
 OBJS =  Preferences.o \
         XApplication.o \
         XServer.o \
-        XView.o \
         fullscreen.o \
         quartz.o \
         quartzAudio.o \
@@ -32,54 +28,6 @@ OBJS =  Preferences.o \
         pseudoramiX.o \
         aquaPicture.o \
         aquaWindow.o
-
-#else
-
-SRCS =  Preferences.m \
-        XApplication.m \
-        XServer.m \
-        XView.m \
-        aquaPicture.c \
-        aquaWindow.c \
-        fullscreen.c \
-        quartz.c \
-        quartzAudio.c \
-        quartzCocoa.m \
-        quartzCursor.c \
-        quartzPasteboard.c \
-        quartzStartup.c \
-        rootlessAquaGlue.c \
-        rootlessAquaImp.m \
-        rootlessCommon.c \
-        rootlessGC.c \
-        rootlessScreen.c \
-        rootlessValTree.c \
-        rootlessWindow.c \
-        pseudoramiX.c
-
-OBJS =  Preferences.o \
-        XApplication.o \
-        XServer.o \
-        XView.o \
-        aquaPicture.o \
-        aquaWindow.o \
-        fullscreen.o \
-        quartz.o \
-        quartzAudio.o \
-        quartzCocoa.o \
-        quartzCursor.o \
-        quartzPasteboard.o \
-        quartzStartup.o \
-        rootlessAquaGlue.o \
-        rootlessAquaImp.o \
-        rootlessCommon.o \
-        rootlessGC.o \
-        rootlessScreen.o \
-        rootlessValTree.o \
-        rootlessWindow.o \
-        pseudoramiX.o
-
-#endif  /* HasXplugin */
 
 INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
@@ -110,7 +58,9 @@ XDARWINROOT = /Applications
 #endif
 
 #if HasXplugin
-SUBDIRS = xpr
+SUBDIRS = cr xpr
+#else
+SUBDIRS = cr
 #endif
 
 NormalLibraryObjectRule()
