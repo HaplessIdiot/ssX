@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xmu/Lower.c,v 1.2 1998/06/28 08:59:57 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Lower.c,v 1.3 1998/06/28 12:32:30 dawes Exp $ */
 
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
@@ -46,119 +46,71 @@ in this Software without prior written authorization from the X Consortium.
 /*
  * ISO Latin-1 case conversion routine
  */
+#define XmuTolower(c)							 \
+((c) >= XK_a && (c) <= XK_z ?						 \
+ (c) : (c) >= XK_A && (c) <= XK_Z ?					 \
+ (c) + (XK_a - XK_A) : (c) >= XK_Agrave && (c) <= XK_Odiaeresis ?	 \
+ (c) + (XK_agrave - XK_Agrave) : (c) >= XK_Ooblique && (c) <= XK_Thorn ? \
+ (c) + (XK_oslash - XK_Ooblique) :					 \
+ (c))
 
-#if NeedFunctionPrototypes
-void XmuCopyISOLatin1Lowered(char *dst, _Xconst char *src)
-#else
-void XmuCopyISOLatin1Lowered(dst, src)
-    char *dst, *src;
-#endif
-{
-    register unsigned char *dest, *source;
-
-    for (dest = (unsigned char *)dst, source = (unsigned char *)src;
-	 *source;
-	 source++, dest++)
-    {
-	if ((*source >= XK_A) && (*source <= XK_Z))
-	    *dest = *source + (XK_a - XK_A);
-	else if ((*source >= XK_Agrave) && (*source <= XK_Odiaeresis))
-	    *dest = *source + (XK_agrave - XK_Agrave);
-	else if ((*source >= XK_Ooblique) && (*source <= XK_Thorn))
-	    *dest = *source + (XK_oslash - XK_Ooblique);
-	else
-	    *dest = *source;
-    }
-    *dest = '\0';
-}
-
-#if NeedFunctionPrototypes
-void XmuCopyISOLatin1Uppered(char *dst, _Xconst char *src)
-#else
-void XmuCopyISOLatin1Uppered(dst, src)
-    char *dst, *src;
-#endif
-{
-    register unsigned char *dest, *source;
-
-    for (dest = (unsigned char *)dst, source = (unsigned char *)src;
-	 *source;
-	 source++, dest++)
-    {
-	if ((*source >= XK_a) && (*source <= XK_z))
-	    *dest = *source - (XK_a - XK_A);
-	else if ((*source >= XK_agrave) && (*source <= XK_odiaeresis))
-	    *dest = *source - (XK_agrave - XK_Agrave);
-	else if ((*source >= XK_slash) && (*source <= XK_thorn))
-	    *dest = *source - (XK_oslash - XK_Ooblique);
-	else
-	    *dest = *source;
-    }
-    *dest = '\0';
-}
-
-#if NeedFunctionPrototypes
-int XmuCompareISOLatin1 (_Xconst char *first, _Xconst char *second)
-#else
-int XmuCompareISOLatin1 (first, second)
-    char *first, *second;
-#endif
-{
-    register unsigned char *ap, *bp;
-
-    for (ap = (unsigned char *) first, bp = (unsigned char *) second;
-	 *ap && *bp; ap++, bp++) {
-	register unsigned char a, b;
-
-	if ((a = *ap) != (b = *bp)) {
-	    /* try lowercasing and try again */
-
-	    if ((a >= XK_A) && (a <= XK_Z))
-	      a += (XK_a - XK_A);
-	    else if ((a >= XK_Agrave) && (a <= XK_Odiaeresis))
-	      a += (XK_agrave - XK_Agrave);
-	    else if ((a >= XK_Ooblique) && (a <= XK_Thorn))
-	      a += (XK_oslash - XK_Ooblique);
-
-	    if ((b >= XK_A) && (b <= XK_Z))
-	      b += (XK_a - XK_A);
-	    else if ((b >= XK_Agrave) && (b <= XK_Odiaeresis))
-	      b += (XK_agrave - XK_Agrave);
-	    else if ((b >= XK_Ooblique) && (b <= XK_Thorn))
-	      b += (XK_oslash - XK_Ooblique);
-
-	    if (a != b) return (((int) a) - ((int) b));
-	}
-    }
-    return (((int) *ap) - ((int) *bp));
-}
-
-#if NeedFunctionPrototypes
-void XmuNCopyISOLatin1Lowered(char *dst, _Xconst char *src, register int size)
-#else
-void XmuNCopyISOLatin1Lowered(dst, src, size)
-    char *dst, *src;
-    register int size;
-#endif
+void
+XmuCopyISOLatin1Lowered(char *dst, _Xconst char *src)
 {
   register unsigned char *dest, *source;
-  register int c;
+
+  for (dest = (unsigned char *)dst, source = (unsigned char *)src;
+       *source;
+       source++, dest++)
+    *dest = XmuTolower(*source);
+  *dest = '\0';
+}
+
+void
+XmuCopyISOLatin1Uppered(char *dst, _Xconst char *src)
+{
+  register unsigned char *dest, *source;
+
+  for (dest = (unsigned char *)dst, source = (unsigned char *)src;
+       *source;
+       source++, dest++)
+    {
+      if ((*source >= XK_a) && (*source <= XK_z))
+	*dest = *source - (XK_a - XK_A);
+      else if ((*source >= XK_agrave) && (*source <= XK_odiaeresis))
+	*dest = *source - (XK_agrave - XK_Agrave);
+      else if ((*source >= XK_slash) && (*source <= XK_thorn))
+	*dest = *source - (XK_oslash - XK_Ooblique);
+      else
+	*dest = *source;
+    }
+  *dest = '\0';
+}
+
+int
+XmuCompareISOLatin1(_Xconst char *first, _Xconst char *second)
+{
+  register unsigned char *ap, *bp;
+
+  for (ap = (unsigned char *)first, bp = (unsigned char *)second;
+       *ap && *bp && XmuTolower(*ap) == XmuTolower(*bp);
+       ap++, bp++)
+    ;
+
+  return ((int)XmuTolower(*ap) - (int)XmuTolower(*bp));
+}
+
+void
+XmuNCopyISOLatin1Lowered(char *dst, _Xconst char *src, register int size)
+{
+  register unsigned char *dest, *source;
 
   if (size > 0)
     {
       for (dest = (unsigned char *)dst, source = (unsigned char *)src;
-	   (c = *source) && size > 1;
+	   *source && size > 0;
 	   source++, dest++, size--)
-	{
-	  if (c >= XK_A && c <= XK_Z)
-	    *dest = c + (XK_a - XK_A);
-	  else if (c >= XK_Agrave && c <= XK_Odiaeresis)
-	    *dest = c + (XK_agrave - XK_Agrave);
-	  else if (c >= XK_Ooblique && c <= XK_Thorn)
-	    *dest = c + (XK_oslash - XK_Ooblique);
-	  else
-	    *dest = c;
-	}
+	*dest = XmuTolower(*source);
       *dest = '\0';
     }
 }

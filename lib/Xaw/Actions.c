@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.6 1998/06/28 12:32:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.7 1998/06/28 12:56:14 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -35,12 +35,9 @@
 #include <X11/StringDefs.h>
 #include <X11/CoreP.h>
 #include <X11/Constraint.h>
+#include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/SysUtil.h>
 #include "Private.h"
-
-#ifdef __EMX__
-#define strcasecmp stricmp
-#endif
 
 /*
  * Definitions
@@ -158,22 +155,22 @@ XawParseBoolean(Widget w, String param, XEvent *event, Boolean *succed)
   if (*tmp == '\0')
     return (value);
 
-  if (strcasecmp(param, "true") == 0
-      || strcasecmp(param, "yes") == 0
-      || strcasecmp(param, "on") == 0
-      || strcasecmp(param, "in") == 0
-      || strcasecmp(param, "up") == 0)
+  if (XmuCompareISOLatin1(param, "true") == 0
+      || XmuCompareISOLatin1(param, "yes") == 0
+      || XmuCompareISOLatin1(param, "on") == 0
+      || XmuCompareISOLatin1(param, "in") == 0
+      || XmuCompareISOLatin1(param, "up") == 0)
     return (True);
-  else if (strcasecmp(param, "false") == 0
-	  || strcasecmp(param, "no") == 0
-	  || strcasecmp(param, "off") == 0
-	  || strcasecmp(param, "out") == 0
-	  || strcasecmp(param, "down") == 0)
+  else if (XmuCompareISOLatin1(param, "false") == 0
+	  || XmuCompareISOLatin1(param, "no") == 0
+	  || XmuCompareISOLatin1(param, "off") == 0
+	  || XmuCompareISOLatin1(param, "out") == 0
+	  || XmuCompareISOLatin1(param, "down") == 0)
       ;
-  else if (strcasecmp(param, "my") == 0
-	   || strcasecmp(param, "mine") == 0)
+  else if (XmuCompareISOLatin1(param, "my") == 0
+	   || XmuCompareISOLatin1(param, "mine") == 0)
     return (event->xany.window == XtWindow(w));
-  else if (strcasecmp(param, "faked") == 0)
+  else if (XmuCompareISOLatin1(param, "faked") == 0)
     return (event->xany.send_event != 0);
   else
     *succed = False;

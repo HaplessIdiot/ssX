@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.3 1998/06/28 12:32:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.4 1998/06/28 12:56:17 dawes Exp $ */
 
 #if DO_SYSLOG
 #include <sys/types.h>
@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <X11/IntrinsicP.h>
+#include <X11/Xmu/CharSet.h>
 #include "Private.h"
 
 /*
@@ -790,9 +791,9 @@ GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
   XawArgVal *argval;
   int orientation, dimension, steps;
 
-  if (strcasecmp(params->name, "vertical") == 0)
+  if (XmuCompareISOLatin1(params->name, "vertical") == 0)
     orientation = VERTICAL;
-  else if (strcasecmp(params->name, "horizontal") == 0)
+  else if (XmuCompareISOLatin1(params->name, "horizontal") == 0)
     orientation = HORIZONTAL;
   else
     return (False);

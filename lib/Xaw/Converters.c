@@ -25,12 +25,13 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Converters.c,v 3.5 1998/06/28 11:30:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Converters.c,v 3.6 1998/06/28 12:32:18 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/Simple.h>
+#include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/SysUtil.h>
 #include "Private.h"
 
@@ -431,11 +432,11 @@ _XawCvtStringToPixmap(Display *dpy, XrmValue *args, Cardinal *num_args,
 
   name = (String)(fromVal[0].addr);
 
-  if (strcasecmp(name, "None") == 0)
+  if (XmuCompareISOLatin1(name, "None") == 0)
     pixmap = None;
-  else if (strcasecmp(name, "ParentRelative") == 0)
+  else if (XmuCompareISOLatin1(name, "ParentRelative") == 0)
     pixmap = ParentRelative;
-  else if (strcasecmp(name, "XtUnspecifiedPixmap") == 0)
+  else if (XmuCompareISOLatin1(name, "XtUnspecifiedPixmap") == 0)
     pixmap = XtUnspecifiedPixmap;
   else
     {

@@ -311,13 +311,13 @@ DisplayText(Widget w, int x, int y,
   if (!sink->ascii_sink.echo || !ctx->text.lt.lines)
     return;
 
-  if (sink->ascii_sink.xorgc)
-    tabgc = sink->ascii_sink.xorgc;
-  else
-    tabgc = highlight ? sink->ascii_sink.normgc : sink->ascii_sink.invgc;
-
   gc = highlight ? sink->ascii_sink.invgc : sink->ascii_sink.normgc;
   invgc = highlight ? sink->ascii_sink.normgc : sink->ascii_sink.invgc;
+
+  if (highlight && sink->ascii_sink.xorgc)
+    tabgc = sink->ascii_sink.xorgc;
+  else
+    tabgc = invgc;
 
   y += sink->ascii_sink.font->ascent;
   for (j = 0; pos1 < pos2;)
@@ -429,9 +429,9 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 	  (void)XawTextSourceRead(XawTextGetSource((Widget)ctx),
 				  sink->ascii_sink.cursor_position,
 				  &block, 1);
-	  if (!block.length)
+	  if (!block.length || block.ptr[0] == '\n')
 	    ochar = NULL;
-	  else if (block.ptr[0] == '\n' || block.ptr[0] == '\t')
+	  else if (block.ptr[0] == '\t')
 	    ochar = " ";
 	  else
 	    ochar = block.ptr;
@@ -449,6 +449,27 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 		      (sink->ascii_sink.cursor_y - 1
 		       - sink->ascii_sink.font->descent),
 		      (unsigned char *)ochar, 1);
+	  /* Se:
+	   *  f = sink->ascii_sink.font;
+	   *  c = caractere na posicao sink->ascii_sink.cursor_position;
+	   *    sink->ascii_sink.cursor_position == cursor_position - 1 e
+	   *    ambas as posicoes estiverem na mesma linha e
+	   *    c != '\t' e c != '\n' e
+	   *    f->per_char[c - f->min_char_or_byte2].rbearing
+	   *         > f->per_char[c - f->min_char_or_byte2].width;
+	   *  caractere na posicao antecedente a
+	   *  sink->ascii_sink.cursor_position sera' recortado.
+	   *
+	   *  XXX  ultimo caractere da linha sera' recortado na funcao
+	   *  Text.c:XawTextScroll() quando ocorrer apenas scroll horizontal.
+	   *
+	   *  XXX  Isso so' ocorre com fontes inclinadas.
+	   *
+	   *  TODO: 
+	   *  Basta redesenhar o caractere anterior a
+	   *  sink->ascii_sink.cursor_position.
+	   *  A correcao nao sera' completa sem tambem corrigir XawTextScroll
+	   */
 	}
 
       if (!has_selection && state != XawisOff)
@@ -626,8 +647,8 @@ GetGC(AsciiSinkObject sink)
 /***** Public routines *****/
 /*	Function Name: XawAsciiSinkInitialize
  *	Description: Initializes the TextSink Object.
- *	Arguments: request, new - the requested and new values for the object
- *				  instance.
+ *	Arguments: request, c_new - the requested and new values for the object
+ *				    instance.
  *	Returns: none.
  */
 /* ARGSUSED */
@@ -659,6 +680,15 @@ XawAsciiSinkDestroy(Widget w)
   XtReleaseGC(w, sink->ascii_sink.invgc);
   if (sink->ascii_sink.xorgc)
     XtReleaseGC(w, sink->ascii_sink.xorgc);
+
+  /*
+   * XXX editres estava por algum motivo chamando XawAsciiSinkResize
+   * no popdown do dialogo 'xt' (edicao de recursos) depois do metodo
+   * destroy ter sido chamado!
+   */
+  sink->ascii_sink.normgc =
+    sink->ascii_sink.invgc =
+    sink->ascii_sink.xorgc = NULL;
 }
 
 void

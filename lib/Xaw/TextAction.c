@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $Id: TextAction.c,v 3.5 1998/06/28 12:56:19 dawes Exp $ */
+/* $XFree86$ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -1476,19 +1476,16 @@ AutoFill(TextWidget ctx)
   XawTextPosition ret_pos;
   XawTextBlock text;
 
-  if (!(ctx->text.auto_fill && ctx->text.mult == 1))
-    return;
-
   for (line_num = 0; line_num < ctx->text.lt.lines ; line_num++)
     if (ctx->text.lt.info[line_num].position >= ctx->text.insertPos)
       break;
   line_num--;			/* backup a line. */
 
-  max_width = Max(0, (int)(ctx->core.width - HMargins(ctx)));
+  max_width = Max(0, (int)(XtWidth(ctx) - HMargins(ctx)));
 
   x = ctx->text.margin.left;
   XawTextSinkFindPosition(ctx->text.sink,ctx->text.lt.info[line_num].position,
-			  x, max_width, TRUE, &ret_pos, &width, &height);
+			  x, max_width, True, &ret_pos, &width, &height);
 
   if (ret_pos >= ctx->text.insertPos)
     return;
@@ -1565,7 +1562,8 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
       ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
 				    XawstPositions, XawsdRight,
 				    text.length, True);
-      AutoFill(ctx);
+      if (ctx->text.auto_fill)
+	AutoFill(ctx);
     }
   else
     XBell(XtDisplay(ctx), 50);
