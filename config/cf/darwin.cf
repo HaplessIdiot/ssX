@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.27 2002/06/01 21:41:53 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.28 2002/08/01 18:30:31 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -138,7 +138,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * Darwin's setlocale() doesn't work properly, so use X11's instead.
  */
 #define StandardDefines         DarwinMachineDefines -D__DARWIN__ \
-                                -DNO_ALLOCA -DX_LOCALE
+                                -DNO_ALLOCA -DX_LOCALE -DCSRG_BASED
 
 /*
  * Set this to NO to just build the client libs, which should work without
