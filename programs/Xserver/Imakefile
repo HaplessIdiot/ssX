@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.191 2000/08/31 22:47:20 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.195 2000/09/22 05:56:35 keithp Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -705,7 +705,9 @@ XCOMM
        
       KDDIRS = StdKdDirs
 
-   FBDEVDIRS = $(STDDIRS) $(KDDIRS) $(FBDEVDIR)
+     SHADOWDIR = miext/shadow
+     
+   FBDEVDIRS = $(STDDIRS) $(KDDIRS) $(FBDEVDIR) $(SHADOWDIR)
    
    FBDEVLIBS = PreFbLibs $(FBDEV) KdLibs FbPostFbLibs
 FBDEVSYSLIBS = StdKdSysLibs
