@@ -184,10 +184,9 @@ should be used and enable them where appropriate.
 
 5.1  Intel Pentium III Features
 
-The Pentium III SSE (Katmai) instructions are used in optimized vertex trans-
-formation functions in the Mesa-based DRI drivers.  On Linux, SSE requires a
-recent kernel (such as 2.4.0-test11 or later) both at compile time and run-
-time.
+The Pentium III SSE instructions are used in optimized vertex transformation
+functions in the Mesa-based DRI drivers.  On Linux, SSE requires a recent
+kernel (such as 2.4.0-test11 or later) both at compile time and runtime.
 
 5.2  AMD 3DNow! Features
 
@@ -373,7 +372,7 @@ you enable SSE optimizations with an earlier version of the Linux kernel in
 /usr/src/linux, Mesa will not compile.  You have been warned.  If you do have
 a 2.4.x kernel, you should add the following:
 
-                 #define MesaUseKatmai YES
+                 #define MesaUseSSE YES
 
 8.3  Compilation
 
