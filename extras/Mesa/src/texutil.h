@@ -1,3 +1,4 @@
+/* $Id: texutil.h,v 1.4 2000/11/13 21:55:35 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -22,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/texutil.h,v 1.3 2000/09/26 15:56:34 tsi Exp $ */
 
 #ifndef TEXUTIL_H
 #define TEXUTIL_H

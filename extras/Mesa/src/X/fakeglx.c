@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X/fakeglx.c,v 1.7 2000/09/26 15:56:38 tsi Exp $ */
 
 /*
  * This is an emulation of the GLX API which allows Mesa/GLX-based programs
@@ -857,7 +857,7 @@ Fake_glXChooseVisual( Display *dpy, int screen, int *list )
    int *parselist;
    XVisualInfo *vis;
    int min_ci = 0;
-   int min_red=0, min_green=0, min_blue=0;
+   int min_red=0, min_green=0, min_blue=0, min_alpha=0;
    GLboolean rgb_flag = GL_FALSE;
    GLboolean alpha_flag = GL_FALSE;
    GLboolean double_flag = GL_FALSE;
@@ -921,10 +921,8 @@ Fake_glXChooseVisual( Display *dpy, int screen, int *list )
 	    break;
 	 case GLX_ALPHA_SIZE:
 	    parselist++;
-            {
-               GLint size = *parselist++;
-               alpha_flag = size>0 ? 1 : 0;
-            }
+            min_alpha = *parselist++;
+            alpha_flag = (min_alpha > 0);
 	    break;
 	 case GLX_DEPTH_SIZE:
 	    parselist++;
@@ -1003,6 +1001,16 @@ Fake_glXChooseVisual( Display *dpy, int screen, int *list )
       }
    }
 
+   /* DEBUG
+   printf("glXChooseVisual:\n");
+   printf("  GLX_RED_SIZE = %d\n", min_red);
+   printf("  GLX_GREEN_SIZE = %d\n", min_green);
+   printf("  GLX_BLUE_SIZE = %d\n", min_blue);
+   printf("  GLX_ALPHA_SIZE = %d\n", min_alpha);
+   printf("  GLX_DEPTH_SIZE = %d\n", depth_size);
+   printf("  GLX_STENCIL_SIZE = %d\n", stencil_size);
+   */
+
    /*
     * Since we're only simulating the GLX extension this function will never
     * find any real GL visuals.  Instead, all we can do is try to find an RGB
@@ -1049,15 +1057,32 @@ Fake_glXChooseVisual( Display *dpy, int screen, int *list )
    if (vis) {
       /* Note: we're not exactly obeying the glXChooseVisual rules here.
        * When GLX_DEPTH_SIZE = 1 is specified we're supposed to choose the
-       * largest depth buffer size, which is 32bits/value.  However, we
+       * largest depth buffer size, which is 32bits/value.  Instead, we
        * return 16 to maintain performance with earlier versions of Mesa.
        */
-      if (depth_size == 1)
-         depth_size = DEFAULT_SOFTWARE_DEPTH_BITS;
-      else if (depth_size > 24)
-         depth_size = 31;
+      if (depth_size > 24)
+         depth_size = 31;   /* 32 causes int overflow problems */
       else if (depth_size > 16)
          depth_size = 24;
+      else if (depth_size > 0)
+         depth_size = DEFAULT_SOFTWARE_DEPTH_BITS; /*16*/
+
+      /* If using Glide, make sure we don't try to setup an impossible
+       * visual.  This fixes the Q3 bug in which 24-bit Z was being reported.
+       */
+      {
+         const char *fx = getenv("MESA_GLX_FX");
+         if (fx && fx[0] != 'd')
+            if (depth_size > 16 ||
+                stencil_size > 0 ||
+                (min_red > 1 && min_red > 5) ||
+                (min_green > 1 && min_green > 6) ||
+                (min_blue > 1 && min_blue > 5) ||
+                alpha_flag)
+               return NULL;
+      }
+
+
       /* we only support one size of stencil and accum buffers. */
       if (stencil_size > 0)
          stencil_size = STENCIL_BITS;

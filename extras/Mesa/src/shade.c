@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/shade.c,v 1.5 2000/09/26 15:56:33 tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -203,7 +203,7 @@ void gl_update_lighting_function( GLcontext *ctx )
 
    if (ctx->Visual->RGBAflag) {
       if (ctx->Light.NeedVertices) {
-	 if (ctx->Texture.Enabled && 
+	 if (ctx->Texture.ReallyEnabled && 
 	     ctx->Light.Model.ColorControl==GL_SEPARATE_SPECULAR_COLOR) 
 	    tab = gl_shade_spec_tab;
 	 else

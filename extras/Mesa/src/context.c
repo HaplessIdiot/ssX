@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  *
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/context.c,v 1.6 2000/09/26 15:56:30 tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -210,10 +210,11 @@ _mesa_initialize_visual( GLvisual *vis,
 
    if (depthBits == 0) {
       /* Special case.  Even if we don't have a depth buffer we need
-       * good values for DepthMax for Z vertex transformation purposes.
+       * good values for DepthMax for Z vertex transformation purposes
+       * and for per-fragment fog computation.
        */
-      vis->DepthMax = 1;
-      vis->DepthMaxF = 1.0F;
+      vis->DepthMax = 1 << 16;
+      vis->DepthMaxF = (GLfloat) vis->DepthMax;
    }
    else if (depthBits < 32) {
       vis->DepthMax = (1 << depthBits) - 1;
@@ -451,8 +452,9 @@ alloc_shared_state( void )
    if (!ss)
       return NULL;
 
-   ss->DisplayList = _mesa_NewHashTable();
+   _glthread_INIT_MUTEX(ss->Mutex);
 
+   ss->DisplayList = _mesa_NewHashTable();
    ss->TexObjects = _mesa_NewHashTable();
 
    /* Default Texture objects */
@@ -592,6 +594,8 @@ init_texture_unit( GLcontext *ctx, GLuint unit )
 {
    struct gl_texture_unit *texUnit = &ctx->Texture.Unit[unit];
 
+   texUnit->Enabled = 0;
+   texUnit->ReallyEnabled = 0;
    texUnit->EnvMode = GL_MODULATE;
    texUnit->CombineModeRGB = GL_MODULATE;
    texUnit->CombineModeA = GL_MODULATE;
@@ -1148,9 +1152,10 @@ init_attrib_groups( GLcontext *ctx )
    /* Texture group */
    ctx->Texture.CurrentUnit = 0;      /* multitexture */
    ctx->Texture.CurrentTransformUnit = 0; /* multitexture */
-   ctx->Texture.Enabled = 0;
+   ctx->Texture.ReallyEnabled = 0;
    for (i=0; i<MAX_TEXTURE_UNITS; i++)
       init_texture_unit( ctx, i );
+   ctx->Texture.SharedPalette = GL_FALSE;
    _mesa_init_colortable(&ctx->Texture.Palette);
 
    /* Transformation group */

@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/config.c,v 1.5 2000/08/09 23:40:10 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/config.c,v 1.6 2000/09/24 13:50:08 alanh Exp $ */
 
 
 /* Mesa config file parse and execute code.

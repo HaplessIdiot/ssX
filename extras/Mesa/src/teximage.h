@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/teximage.h,v 1.6 2000/09/26 15:56:33 tsi Exp $ */
 
 #ifndef TEXIMAGE_H
 #define TEXIMAGE_H
@@ -64,8 +64,14 @@ _mesa_select_tex_image(GLcontext *ctx, const struct gl_texture_unit *texUnit,
 
 
 extern void
-_mesa_get_teximage_from_driver( GLcontext *ctx, GLenum target, GLint level,
-                                const struct gl_texture_object *texObj );
+_mesa_get_teximage_from_driver(GLcontext *ctx, GLenum target, GLint level,
+                               const struct gl_texture_object *texObj);
+
+
+extern GLboolean
+_mesa_get_teximages_from_driver(GLcontext *ctx,
+                                struct gl_texture_object *texObj);
+
 
 
 /*** API entry point functions ***/

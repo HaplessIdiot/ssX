@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/texture.c,v 1.7 2000/09/26 15:56:34 tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -2035,26 +2035,15 @@ _mesa_texture_combine(CONST GLcontext *ctx,
          case GL_CONSTANT_EXT:
             {
                GLubyte (*c)[4] = ccolor[j];
-               GLubyte col = FLOAT_TO_UBYTE(textureUnit->EnvColor[3]);
+               GLubyte alpha = FLOAT_TO_UBYTE(textureUnit->EnvColor[3]);
                for (i = 0; i < n; i++)
-                  c[i][ACOMP] = col;
+                  c[i][ACOMP] = alpha;
                argA[j] = ccolor[j];
             }
             break;
          default:
             gl_problem(NULL, "invalid combine source");
       }
-
-      if (textureUnit->CombineOperandA[j] == GL_ONE_MINUS_SRC_ALPHA) {
-         GLubyte (*src)[4] = argA[j];
-         GLubyte (*dst)[4] = ccolor[j];
-         argA[j] = ccolor[j];
-         for (i = 0; i < n; i++)
-            dst[i][ACOMP] = 255 - src[i][ACOMP];
-      }
-
-      if (j == 2)        /* arg2 has no color component in specification. */
-         break;
 
       switch (textureUnit->CombineSourceRGB[j]) {
          case GL_TEXTURE:
@@ -2069,16 +2058,13 @@ _mesa_texture_combine(CONST GLcontext *ctx,
          case GL_CONSTANT_EXT:
             {
                GLubyte (*c)[4] = ccolor[j];
-               GLubyte col[4];
-
-               col[RCOMP] = FLOAT_TO_UBYTE(textureUnit->EnvColor[0]);
-               col[GCOMP] = FLOAT_TO_UBYTE(textureUnit->EnvColor[1]);
-               col[BCOMP] = FLOAT_TO_UBYTE(textureUnit->EnvColor[2]);
-
+               const GLubyte red   = FLOAT_TO_UBYTE(textureUnit->EnvColor[0]);
+               const GLubyte green = FLOAT_TO_UBYTE(textureUnit->EnvColor[1]);
+               const GLubyte blue  = FLOAT_TO_UBYTE(textureUnit->EnvColor[2]);
                for (i = 0; i < n; i++) {
-                  c[i][RCOMP] = col[RCOMP];
-                  c[i][GCOMP] = col[GCOMP];
-                  c[i][BCOMP] = col[BCOMP];
+                  c[i][RCOMP] = red;
+                  c[i][GCOMP] = green;
+                  c[i][BCOMP] = blue;
                }
                argRGB[j] = ccolor[j];
             }
@@ -2099,18 +2085,31 @@ _mesa_texture_combine(CONST GLcontext *ctx,
                dst[i][GCOMP] = 255 - src[i][GCOMP];
                dst[i][BCOMP] = 255 - src[i][BCOMP];
             }
-         } else if (textureUnit->CombineOperandRGB[j] == GL_SRC_ALPHA) {
+         }
+         else if (textureUnit->CombineOperandRGB[j] == GL_SRC_ALPHA) {
+            src = argA[j];
             for (i = 0; i < n; i++) {
                dst[i][RCOMP] = src[i][ACOMP];
                dst[i][GCOMP] = src[i][ACOMP];
                dst[i][BCOMP] = src[i][ACOMP];
             }
-         } else {                      /*  GL_ONE_MINUS_SRC_ALPHA  */
+         }
+         else {                      /*  GL_ONE_MINUS_SRC_ALPHA  */
+            src = argA[j];
             for (i = 0; i < n; i++) {
                dst[i][RCOMP] = 255 - src[i][ACOMP];
                dst[i][GCOMP] = 255 - src[i][ACOMP];
                dst[i][BCOMP] = 255 - src[i][ACOMP];
             }
+         }
+      }
+
+      if (textureUnit->CombineOperandA[j] == GL_ONE_MINUS_SRC_ALPHA) {
+         GLubyte (*src)[4] = argA[j];
+         GLubyte (*dst)[4] = ccolor[j];
+         argA[j] = ccolor[j];
+         for (i = 0; i < n; i++) {
+            dst[i][ACOMP] = 255 - src[i][ACOMP];
          }
       }
 
@@ -2130,10 +2129,22 @@ _mesa_texture_combine(CONST GLcontext *ctx,
       case GL_REPLACE:
          {
             const GLubyte (*arg0)[4] = (const GLubyte (*)[4]) argRGB[0];
-            for (i = 0; i < n; i++) {
-               rgba[i][RCOMP] = arg0[i][RCOMP] << RGBshift;
-               rgba[i][GCOMP] = arg0[i][GCOMP] << RGBshift;
-               rgba[i][BCOMP] = arg0[i][BCOMP] << RGBshift;
+            if (RGBshift) {
+               for (i = 0; i < n; i++) {
+                  GLuint r = (GLuint) arg0[i][RCOMP] << RGBshift;
+                  GLuint g = (GLuint) arg0[i][GCOMP] << RGBshift;
+                  GLuint b = (GLuint) arg0[i][BCOMP] << RGBshift;
+                  rgba[i][RCOMP] = MIN2(r, 255);
+                  rgba[i][GCOMP] = MIN2(g, 255);
+                  rgba[i][BCOMP] = MIN2(b, 255);
+               }
+            }
+            else {
+               for (i = 0; i < n; i++) {
+                  rgba[i][RCOMP] = arg0[i][RCOMP];
+                  rgba[i][GCOMP] = arg0[i][GCOMP];
+                  rgba[i][BCOMP] = arg0[i][BCOMP];
+               }
             }
          }
          break;
@@ -2143,9 +2154,12 @@ _mesa_texture_combine(CONST GLcontext *ctx,
             const GLubyte (*arg1)[4] = (const GLubyte (*)[4]) argRGB[1];
             RGBshift = 8 - RGBshift;
             for (i = 0; i < n; i++) {
-               rgba[i][RCOMP] = (GLubyte) (PROD(arg0[i][0], arg1[i][RCOMP]) >> RGBshift);
-               rgba[i][GCOMP] = (GLubyte) (PROD(arg0[i][1], arg1[i][GCOMP]) >> RGBshift);
-               rgba[i][BCOMP] = (GLubyte) (PROD(arg0[i][2], arg1[i][BCOMP]) >> RGBshift);
+               GLuint r = PROD(arg0[i][0], arg1[i][RCOMP]) >> RGBshift;
+               GLuint g = PROD(arg0[i][1], arg1[i][GCOMP]) >> RGBshift;
+               GLuint b = PROD(arg0[i][2], arg1[i][BCOMP]) >> RGBshift;
+               rgba[i][RCOMP] = (GLubyte) MIN2(r, 255);
+               rgba[i][GCOMP] = (GLubyte) MIN2(g, 255);
+               rgba[i][BCOMP] = (GLubyte) MIN2(b, 255);
             }
          }
          break;
@@ -2157,9 +2171,9 @@ _mesa_texture_combine(CONST GLcontext *ctx,
                GLint r = ((GLuint) arg0[i][RCOMP] + arg1[i][RCOMP]) << RGBshift;
                GLint g = ((GLuint) arg0[i][GCOMP] + arg1[i][GCOMP]) << RGBshift;
                GLint b = ((GLuint) arg0[i][BCOMP] + arg1[i][BCOMP]) << RGBshift;
-               rgba[i][RCOMP] = (r > 255) ? 255 : (GLubyte) r;
-               rgba[i][GCOMP] = (g > 255) ? 255 : (GLubyte) g;
-               rgba[i][BCOMP] = (b > 255) ? 255 : (GLubyte) b;
+               rgba[i][RCOMP] = (GLubyte) MIN2(r, 255);
+               rgba[i][GCOMP] = (GLubyte) MIN2(g, 255);
+               rgba[i][BCOMP] = (GLubyte) MIN2(b, 255);
             }
          }
          break;
@@ -2174,9 +2188,9 @@ _mesa_texture_combine(CONST GLcontext *ctx,
                r = (r < 0) ? 0 : r << RGBshift;
                b = (b < 0) ? 0 : b << RGBshift;
                g = (g < 0) ? 0 : g << RGBshift;
-               rgba[i][RCOMP] = (r > 255) ? 255 : (GLubyte) r;
-               rgba[i][GCOMP] = (g > 255) ? 255 : (GLubyte) g;
-               rgba[i][BCOMP] = (b > 255) ? 255 : (GLubyte) b;
+               rgba[i][RCOMP] = (GLubyte) MIN2(r, 255);
+               rgba[i][GCOMP] = (GLubyte) MIN2(g, 255);
+               rgba[i][BCOMP] = (GLubyte) MIN2(b, 255);
             }
          }
          break;
@@ -2187,9 +2201,18 @@ _mesa_texture_combine(CONST GLcontext *ctx,
             const GLubyte (*arg2)[4] = (const GLubyte (*)[4]) argRGB[2];
             RGBshift = 8 - RGBshift;
             for (i = 0; i < n; i++) {
-               rgba[i][RCOMP] = (GLubyte) ((PROD(arg0[i][RCOMP], arg2[i][ACOMP]) + PROD(arg1[i][RCOMP], 255 - arg2[i][ACOMP])) >> RGBshift);
-               rgba[i][GCOMP] = (GLubyte) ((PROD(arg0[i][GCOMP], arg2[i][ACOMP]) + PROD(arg1[i][GCOMP], 255 - arg2[i][ACOMP])) >> RGBshift);
-               rgba[i][BCOMP] = (GLubyte) ((PROD(arg0[i][BCOMP], arg2[i][ACOMP]) + PROD(arg1[i][BCOMP], 255 - arg2[i][ACOMP])) >> RGBshift);
+               GLuint r = (PROD(arg0[i][RCOMP], arg2[i][RCOMP])
+                           + PROD(arg1[i][RCOMP], 255 - arg2[i][RCOMP]))
+                              >> RGBshift;
+               GLuint g = (PROD(arg0[i][GCOMP], arg2[i][GCOMP])
+                           + PROD(arg1[i][GCOMP], 255 - arg2[i][GCOMP]))
+                              >> RGBshift;
+               GLuint b = (PROD(arg0[i][BCOMP], arg2[i][BCOMP])
+                           + PROD(arg1[i][BCOMP], 255 - arg2[i][BCOMP]))
+                              >> RGBshift;
+               rgba[i][RCOMP] = (GLubyte) MIN2(r, 255);
+               rgba[i][GCOMP] = (GLubyte) MIN2(g, 255);
+               rgba[i][BCOMP] = (GLubyte) MIN2(b, 255);
             }
          }
          break;
@@ -2201,8 +2224,17 @@ _mesa_texture_combine(CONST GLcontext *ctx,
       case GL_REPLACE:
          {
             const GLubyte (*arg0)[4] = (const GLubyte (*)[4]) argA[0];
-            for (i = 0; i < n; i++)
-               rgba[i][ACOMP] = arg0[i][ACOMP] << Ashift;
+            if (Ashift) {
+               for (i = 0; i < n; i++) {
+                  GLuint a = (GLuint) arg0[i][ACOMP] << Ashift;
+                  rgba[i][ACOMP] = (GLubyte) MIN2(a, 255);
+               }
+            }
+            else {
+               for (i = 0; i < n; i++) {
+                  rgba[i][ACOMP] = arg0[i][ACOMP];
+               }
+            }
          }
          break;
       case GL_MODULATE:
@@ -2210,8 +2242,10 @@ _mesa_texture_combine(CONST GLcontext *ctx,
             const GLubyte (*arg0)[4] = (const GLubyte (*)[4]) argA[0];
             const GLubyte (*arg1)[4] = (const GLubyte (*)[4]) argA[1];
             Ashift = 8 - Ashift;
-            for (i = 0; i < n; i++)
-               rgba[i][ACOMP] = (GLubyte) (PROD(arg0[i][ACOMP], arg1[i][ACOMP]) >> Ashift);
+            for (i = 0; i < n; i++) {
+               GLuint a = (PROD(arg0[i][ACOMP], arg1[i][ACOMP]) >> Ashift);
+               rgba[i][ACOMP] = (GLubyte) MIN2(a, 255);
+            }
          }
          break;
       case GL_ADD:
@@ -2220,7 +2254,7 @@ _mesa_texture_combine(CONST GLcontext *ctx,
             const GLubyte  (*arg1)[4] = (const GLubyte (*)[4]) argA[1];
             for (i = 0; i < n; i++) {
                GLint a = ((GLint) arg0[i][ACOMP] + arg1[i][ACOMP]) << Ashift;
-               rgba[i][ACOMP] = (a > 255) ? 255 : (GLubyte) a;
+               rgba[i][ACOMP] = (GLubyte) MIN2(a, 255);
             }
          }
          break;
@@ -2231,7 +2265,7 @@ _mesa_texture_combine(CONST GLcontext *ctx,
             for (i = 0; i < n; i++) {
                GLint a = (GLint) arg0[i][ACOMP] + (GLint) arg1[i][ACOMP] - 128;
                a = (a < 0) ? 0 : a << Ashift;
-               rgba[i][ACOMP] = (a > 255) ? 255 : (GLubyte) a;
+               rgba[i][ACOMP] = (GLubyte) MIN2(a, 255);
             }
          }
          break;
@@ -2241,8 +2275,12 @@ _mesa_texture_combine(CONST GLcontext *ctx,
             const GLubyte (*arg1)[4] = (const GLubyte (*)[4]) argA[1];
             const GLubyte (*arg2)[4] = (const GLubyte (*)[4]) argA[2];
             Ashift = 8 - Ashift;
-            for (i=0; i<n; i++)
-               rgba[i][ACOMP] = (GLubyte) ((PROD(arg0[i][ACOMP], arg2[i][ACOMP]) + PROD(arg1[i][ACOMP], 255 - arg2[i][ACOMP])) >> Ashift);
+            for (i=0; i<n; i++) {
+               GLuint a = (PROD(arg0[i][ACOMP], arg2[i][ACOMP])
+                           + PROD(arg1[i][ACOMP], 255 - arg2[i][ACOMP]))
+                              >> Ashift;
+               rgba[i][ACOMP] = (GLubyte) MIN2(a, 255);
+            }
          }
          break;
       default:
@@ -2645,7 +2683,7 @@ static void apply_texture( CONST GLcontext *ctx,
                gl_problem(ctx, "Bad format in apply_texture (GL_COMBINE_EXT)");
                return;
          }
-         _mesa_texture_combine (ctx, texUnit, n, primary_rgba, texel, rgba);
+         _mesa_texture_combine(ctx, texUnit, n, primary_rgba, texel, rgba);
          break;
 
       default:
@@ -2666,7 +2704,7 @@ void gl_texture_pixels( GLcontext *ctx, GLuint texUnit, GLuint n,
                         GLubyte primary_rgba[][4], GLubyte rgba[][4] )
 {
    GLuint mask = (TEXTURE0_1D | TEXTURE0_2D | TEXTURE0_3D | TEXTURE0_CUBE) << (texUnit * 4);
-   if (ctx->Texture.Enabled & mask) {
+   if (ctx->Texture.ReallyEnabled & mask) {
       const struct gl_texture_unit *textureUnit = &ctx->Texture.Unit[texUnit];
       if (textureUnit->Current && textureUnit->Current->SampleFunc) {
          GLubyte texel[PB_SIZE][4];
@@ -2691,41 +2729,9 @@ void gl_texture_pixels( GLcontext *ctx, GLuint texUnit, GLuint n,
          }
 
          /* fetch texture images from device driver, if needed */
-         {
-            static const GLenum targets[] = {
-               GL_TEXTURE_1D,
-               GL_TEXTURE_2D,
-               GL_TEXTURE_3D,
-               GL_TEXTURE_CUBE_MAP_ARB,
-               GL_TEXTURE_CUBE_MAP_ARB,
-               GL_TEXTURE_CUBE_MAP_ARB
-            };
-            struct gl_texture_object *texObj = textureUnit->Current;
-            GLboolean needLambda = (texObj->MinFilter != texObj->MagFilter);
-            GLenum target = targets[texObj->Dimensions - 1];
-            if (needLambda) {
-               GLint level;
-               /* Get images for all mipmap levels.  We might not need them
-                * all but this is easier.  We're on a (slow) software path
-                * anyway.
-                */
-               for (level = 0; level <= texObj->P; level++) {
-                  struct gl_texture_image *texImg = texObj->Image[level];
-                  if (texImg && !texImg->Data) {
-                     _mesa_get_teximage_from_driver(ctx, target, level, texObj);
-                     if (!texImg->Data)
-                        return;  /* out of memory */
-                  }
-               }
-            }
-            else {
-               GLint level = texObj->BaseLevel;
-               struct gl_texture_image *texImg = texObj->Image[level];
-               if (texImg && !texImg->Data) {
-                  _mesa_get_teximage_from_driver(ctx, target, level, texObj);
-                  if (!texImg->Data)
-                     return;  /* out of memory */
-               }
+         if (ctx->Driver.GetTexImage) {
+            if (!_mesa_get_teximages_from_driver(ctx, textureUnit->Current)) {
+               return;
             }
          }
 

@@ -465,8 +465,8 @@ void fxDDResizeVB( struct vertex_buffer *VB, GLuint size )
    while (fvb->size < size)
       fvb->size *= 2;
 
-   FREE( VB->ClipMask );
-   VB->ClipMask = (GLubyte *)MALLOC(sizeof(GLubyte) * fvb->size);
+   ALIGN_FREE( VB->ClipMask );
+   VB->ClipMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * fvb->size, 4);
 
    FREE( fvb->vert_store );
    fvb->vert_store = MALLOC( sizeof(fxVertex) * fvb->size + 31);
@@ -515,9 +515,9 @@ void fxDDRegisterVB( struct vertex_buffer *VB )
       gl_vector1ui_alloc( &fvb->clipped_elements, VEC_WRITABLE, fvb->size, 32 );
       if (!fvb->clipped_elements.start) goto memerror;
 
-      FREE( VB->ClipMask );
-      VB->ClipMask = (GLubyte *)MALLOC(sizeof(GLubyte) * fvb->size);
-	  if (!VB->ClipMask) goto memerror;
+      ALIGN_FREE( VB->ClipMask );
+      VB->ClipMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * fvb->size, 4);
+      if (!VB->ClipMask) goto memerror;
 
    } else {
       fvb->vert_store = MALLOC( sizeof(fxVertex) * (VB->Size + 12) + 31);

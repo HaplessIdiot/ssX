@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -139,10 +139,10 @@ struct immediate
    GLuint ArrayEltFlush;
    GLuint FlushElt;
 
-   GLuint TF1[2];		/* precalc'ed for glTexCoord */
-   GLuint TF2[2];
-   GLuint TF3[2];
-   GLuint TF4[2];
+   GLuint TF1[MAX_TEXTURE_UNITS];	/* precalc'ed for glTexCoord */
+   GLuint TF2[MAX_TEXTURE_UNITS];
+   GLuint TF3[MAX_TEXTURE_UNITS];
+   GLuint TF4[MAX_TEXTURE_UNITS];
 
    GLuint  Primitive[VB_SIZE];	/* GLubyte would do... */
    GLuint  NextPrimitive[VB_SIZE]; 

@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X/xmesa2.c,v 1.7 2000/09/26 15:56:38 tsi Exp $ */
 
 /*
  * Mesa/X11 interface, part 2.
@@ -5112,7 +5112,7 @@ static const GLubyte *get_string( GLcontext *ctx, GLenum name )
 #endif
       case GL_VENDOR:
 #ifdef XFree86Server
-         return (const GLubyte *) "Precision Insight, Inc.";
+         return (const GLubyte *) "VA Linux Systems, Inc.";
 #else
          return NULL;
 #endif

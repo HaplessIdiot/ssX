@@ -1,4 +1,3 @@
-
 /*
  * Mesa 3-D graphics library
  * Version:  3.4
@@ -22,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/dd.h,v 1.7 2000/09/26 15:56:30 tsi Exp $ */
 
 
 #ifndef DD_INCLUDED
@@ -640,6 +639,16 @@ struct dd_function_table {
     * Core Mesa will perform any image format/type conversions that are needed.
     */
 
+   GLboolean (*TestProxyTexImage)(GLcontext *ctx, GLenum target,
+                                  GLint level, GLint internalFormat,
+                                  GLenum format, GLenum type,
+                                  GLint width, GLint height,
+                                  GLint depth, GLint border);
+   /* Called by glTexImage[123]D when user specifies a proxy texture
+    * target.  Return GL_TRUE if the proxy test passes, return GL_FALSE
+    * if the test fails.
+    */
+
    GLboolean (*CompressedTexImage1D)( GLcontext *ctx, GLenum target,
                                       GLint level, GLsizei imageSize,
                                       const GLvoid *data,
@@ -712,8 +721,15 @@ struct dd_function_table {
     */
 
    GLint (*SpecificCompressedTexFormat)(GLcontext *ctx,
-                                        GLint internalFormat,
-                                        GLint numDimensions);
+                                        GLint      internalFormat,
+                                        GLint      numDimensions,
+                                        GLint     *levelp,
+                                        GLsizei   *widthp,
+                                        GLsizei   *heightp,
+                                        GLsizei   *depthp,
+                                        GLint     *borderp,
+                                        GLenum    *formatp,
+                                        GLenum    *typep);
    /* Called to turn a generic texture format into a specific
     * texture format.  For example, if a driver implements
     * GL_3DFX_texture_compression_FXT1, this would map

@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/teximage.c,v 1.9 2000/08/28 02:43:09 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/teximage.c,v 1.10 2000/09/24 13:50:18 alanh Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -1348,7 +1348,14 @@ copytexsubimage_error_check( GLcontext *ctx, GLuint dimensions,
  */
 static GLint
 get_specific_compressed_tex_format(GLcontext *ctx,
-                                   GLint ifmt, GLint numDimensions)
+                                   GLint ifmt, GLint numDimensions,
+                                   GLint     *levelp,
+                                   GLsizei   *widthp,
+                                   GLsizei   *heightp,
+                                   GLsizei   *depthp,
+                                   GLint     *borderp,
+                                   GLenum    *formatp,
+                                   GLenum    *typep)
 {
    char message[100];
    GLint internalFormat = ifmt;
@@ -1357,22 +1364,14 @@ get_specific_compressed_tex_format(GLcontext *ctx,
        && ctx->Driver.SpecificCompressedTexFormat) {
       /*
        * First, ask the driver for the specific format.
+       * We do this for all formats, since we may want to
+       * fake one compressed format for another.
        */
-      switch (internalFormat) {
-         case GL_COMPRESSED_ALPHA_ARB:
-         case GL_COMPRESSED_LUMINANCE_ARB:
-         case GL_COMPRESSED_LUMINANCE_ALPHA_ARB:
-         case GL_COMPRESSED_INTENSITY_ARB:
-         case GL_COMPRESSED_RGB_ARB:
-         case GL_COMPRESSED_RGBA_ARB:
-            internalFormat = (*ctx->Driver.SpecificCompressedTexFormat)
-                                         (ctx, internalFormat, numDimensions);
-            /* XXX shouldn't we return now? */
-            break;
-         default:
-            /* silence compiler warnings */
-            ;
-      }
+       internalFormat = (*ctx->Driver.SpecificCompressedTexFormat)
+                               (ctx, internalFormat, numDimensions,
+                                levelp,
+                                widthp, heightp, depthp,
+                                borderp, formatp, typep);
    }
 
    /*
@@ -1438,7 +1437,6 @@ get_specific_compressed_tex_format(GLcontext *ctx,
 }
 
 
-
 /*
  * Called from the API.  Note that width includes the border.
  */
@@ -1456,7 +1454,10 @@ _mesa_TexImage1D( GLenum target, GLint level, GLint internalFormat,
       struct gl_texture_image *texImage;
       GLint ifmt;
 
-      ifmt = get_specific_compressed_tex_format(ctx, internalFormat, 1);
+      ifmt = get_specific_compressed_tex_format(ctx, internalFormat, 1,
+                                                &level,
+                                                &width, 0, 0,
+                                                &border, &format, &type);
       if (ifmt < 0) {
          /*
           * The error here is that we were sent a generic compressed
@@ -1536,10 +1537,16 @@ _mesa_TexImage1D( GLenum target, GLint level, GLint internalFormat,
       gl_put_texobj_on_dirty_list( ctx, texObj );
       ctx->NewState |= NEW_TEXTURING;
    }
-   else if (target==GL_PROXY_TEXTURE_1D) {
+   else if (target == GL_PROXY_TEXTURE_1D) {
       /* Proxy texture: check for errors and update proxy state */
-      if (texture_error_check(ctx, target, level, internalFormat,
-                              format, type, 1, width, 1, 1, border)) {
+      GLenum error = texture_error_check(ctx, target, level, internalFormat,
+                                         format, type, 1, width, 1, 1, border);
+      if (!error && ctx->Driver.TestProxyTexImage) {
+         error = !(*ctx->Driver.TestProxyTexImage)(ctx, target, level,
+                                                  internalFormat, format, type,
+                                                  width, 1, 1, border);
+      }
+      if (error) {
          /* if error, clear all proxy texture image parameters */
          if (level>=0 && level<ctx->Const.MaxTextureLevels) {
             clear_proxy_teximage(ctx->Texture.Proxy1D->Image[level]);
@@ -1576,7 +1583,10 @@ _mesa_TexImage2D( GLenum target, GLint level, GLint internalFormat,
       struct gl_texture_image *texImage;
       GLint ifmt;
 
-      ifmt = get_specific_compressed_tex_format(ctx, internalFormat, 2);
+      ifmt = get_specific_compressed_tex_format(ctx, internalFormat, 2,
+                                                &level,
+                                                &width, &height, 0,
+                                                &border, &format, &type);
       if (ifmt < 0) {
          /*
           * The error here is that we were sent a generic compressed
@@ -1667,10 +1677,16 @@ _mesa_TexImage2D( GLenum target, GLint level, GLint internalFormat,
       gl_put_texobj_on_dirty_list( ctx, texObj );
       ctx->NewState |= NEW_TEXTURING;
    }
-   else if (target==GL_PROXY_TEXTURE_2D) {
+   else if (target == GL_PROXY_TEXTURE_2D) {
       /* Proxy texture: check for errors and update proxy state */
-      if (texture_error_check(ctx, target, level, internalFormat,
-                              format, type, 2, width, height, 1, border)) {
+      GLenum error = texture_error_check(ctx, target, level, internalFormat,
+                                    format, type, 2, width, height, 1, border);
+      if (!error && ctx->Driver.TestProxyTexImage) {
+         error = !(*ctx->Driver.TestProxyTexImage)(ctx, target, level,
+                                                  internalFormat, format, type,
+                                                  width, height, 1, border);
+      }
+      if (error) {
          /* if error, clear all proxy texture image parameters */
          if (level>=0 && level<ctx->Const.MaxTextureLevels) {
             clear_proxy_teximage(ctx->Texture.Proxy2D->Image[level]);
@@ -1688,7 +1704,6 @@ _mesa_TexImage2D( GLenum target, GLint level, GLint internalFormat,
       return;
    }
 }
-
 
 
 /*
@@ -1710,7 +1725,10 @@ _mesa_TexImage3D( GLenum target, GLint level, GLint internalFormat,
       struct gl_texture_image *texImage;
       GLint ifmt;
 
-      ifmt = get_specific_compressed_tex_format(ctx, internalFormat, 3);
+      ifmt = get_specific_compressed_tex_format(ctx, internalFormat, 3,
+                                                &level,
+                                                &width, &height, &depth,
+                                                &border, &format, &type);
       if (ifmt < 0) {
          /*
           * The error here is that we were sent a generic compressed
@@ -1791,10 +1809,16 @@ _mesa_TexImage3D( GLenum target, GLint level, GLint internalFormat,
       gl_put_texobj_on_dirty_list( ctx, texObj );
       ctx->NewState |= NEW_TEXTURING;
    }
-   else if (target==GL_PROXY_TEXTURE_3D) {
+   else if (target == GL_PROXY_TEXTURE_3D) {
       /* Proxy texture: check for errors and update proxy state */
-      if (texture_error_check(ctx, target, level, internalFormat,
-                              format, type, 3, width, height, depth, border)) {
+      GLenum error = texture_error_check(ctx, target, level, internalFormat,
+                                format, type, 3, width, height, depth, border);
+      if (!error && ctx->Driver.TestProxyTexImage) {
+         error = !(*ctx->Driver.TestProxyTexImage)(ctx, target, level,
+                                                 internalFormat, format, type,
+                                                 width, height, depth, border);
+      }
+      if (error) {
          /* if error, clear all proxy texture image parameters */
          if (level>=0 && level<ctx->Const.MaxTextureLevels) {
             clear_proxy_teximage(ctx->Texture.Proxy3D->Image[level]);
@@ -1913,6 +1937,56 @@ _mesa_get_teximage_from_driver( GLcontext *ctx, GLenum target, GLint level,
    if (freeImage)
       FREE(image);
 }
+
+
+/*
+ * Get all the mipmap images for a texture object from the device driver.
+ * Actually, only get mipmap images if we're using a mipmap filter.
+ */
+GLboolean
+_mesa_get_teximages_from_driver(GLcontext *ctx,
+                                struct gl_texture_object *texObj)
+{
+   if (ctx->Driver.GetTexImage) {
+      static const GLenum targets[] = {
+         GL_TEXTURE_1D,
+         GL_TEXTURE_2D,
+         GL_TEXTURE_3D,
+         GL_TEXTURE_CUBE_MAP_ARB,
+         GL_TEXTURE_CUBE_MAP_ARB,
+         GL_TEXTURE_CUBE_MAP_ARB
+      };
+      GLboolean needLambda = (texObj->MinFilter != texObj->MagFilter);
+      GLenum target = targets[texObj->Dimensions - 1];
+      if (needLambda) {
+         GLint level;
+         /* Get images for all mipmap levels.  We might not need them
+          * all but this is easier.  We're on a (slow) software path
+          * anyway.
+          */
+         for (level = 0; level <= texObj->P; level++) {
+            struct gl_texture_image *texImg = texObj->Image[level];
+            if (texImg && !texImg->Data) {
+               _mesa_get_teximage_from_driver(ctx, target, level, texObj);
+               if (!texImg->Data)
+                  return GL_FALSE;  /* out of memory */
+            }
+         }
+      }
+      else {
+         GLint level = texObj->BaseLevel;
+         struct gl_texture_image *texImg = texObj->Image[level];
+         if (texImg && !texImg->Data) {
+            _mesa_get_teximage_from_driver(ctx, target, level, texObj);
+            if (!texImg->Data)
+               return GL_FALSE;  /* out of memory */
+         }
+      }
+      return GL_TRUE;
+   }
+   return GL_FALSE;
+}
+
 
 
 void
@@ -2738,8 +2812,14 @@ _mesa_CompressedTexImage1DARB(GLenum target, GLint level,
    }
    else if (target == GL_PROXY_TEXTURE_1D) {
       /* Proxy texture: check for errors and update proxy state */
-      if (texture_error_check(ctx, target, level, internalFormat,
-                              GL_NONE, GL_NONE, 1, width, 1, 1, border)) {
+      GLenum error = texture_error_check(ctx, target, level, internalFormat,
+                                    GL_NONE, GL_NONE, 1, width, 1, 1, border);
+      if (!error && ctx->Driver.TestProxyTexImage) {
+         error = !(*ctx->Driver.TestProxyTexImage)(ctx, target, level,
+                                             internalFormat, GL_NONE, GL_NONE,
+                                             width, 1, 1, border);
+      }
+      if (error) {
          /* if error, clear all proxy texture image parameters */
          if (level>=0 && level<ctx->Const.MaxTextureLevels) {
             clear_proxy_teximage(ctx->Texture.Proxy1D->Image[level]);
@@ -2867,8 +2947,14 @@ _mesa_CompressedTexImage2DARB(GLenum target, GLint level,
    }
    else if (target == GL_PROXY_TEXTURE_2D) {
       /* Proxy texture: check for errors and update proxy state */
-      if (texture_error_check(ctx, target, level, internalFormat,
-                              GL_NONE, GL_NONE, 1, width, 1, 1, border)) {
+      GLenum error = texture_error_check(ctx, target, level, internalFormat,
+                                GL_NONE, GL_NONE, 2, width, height, 1, border);
+      if (!error && ctx->Driver.TestProxyTexImage) {
+         error = !(*ctx->Driver.TestProxyTexImage)(ctx, target, level,
+                                              internalFormat, GL_NONE, GL_NONE,
+                                              width, height, 1, border);
+      }
+      if (error) {
          /* if error, clear all proxy texture image parameters */
          if (level>=0 && level<ctx->Const.MaxTextureLevels) {
             clear_proxy_teximage(ctx->Texture.Proxy2D->Image[level]);
@@ -2990,8 +3076,14 @@ _mesa_CompressedTexImage3DARB(GLenum target, GLint level,
    }
    else if (target == GL_PROXY_TEXTURE_3D) {
       /* Proxy texture: check for errors and update proxy state */
-      if (texture_error_check(ctx, target, level, internalFormat,
-                          GL_NONE, GL_NONE, 1, width, height, depth, border)) {
+      GLenum error = texture_error_check(ctx, target, level, internalFormat,
+                            GL_NONE, GL_NONE, 1, width, height, depth, border);
+      if (!error && ctx->Driver.TestProxyTexImage) {
+         error = !(*ctx->Driver.TestProxyTexImage)(ctx, target, level,
+                                             internalFormat, GL_NONE, GL_NONE,
+                                             width, height, depth, border);
+      }
+      if (error) {
          /* if error, clear all proxy texture image parameters */
          if (level>=0 && level<ctx->Const.MaxTextureLevels) {
             clear_proxy_teximage(ctx->Texture.Proxy3D->Image[level]);

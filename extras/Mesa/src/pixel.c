@@ -104,6 +104,14 @@ _mesa_PixelStorei( GLenum pname, GLint param )
 	    ctx->Pack.SkipRows = param;
 	 }
 	 break;
+      case GL_PACK_SKIP_IMAGES:
+	 if (param<0) {
+	    gl_error( ctx, GL_INVALID_VALUE, "glPixelStore(param)" );
+	 }
+	 else {
+	    ctx->Pack.SkipImages = param;
+	 }
+	 break;
       case GL_PACK_ALIGNMENT:
          if (param==1 || param==2 || param==4 || param==8) {
 	    ctx->Pack.Alignment = param;
@@ -146,6 +154,14 @@ _mesa_PixelStorei( GLenum pname, GLint param )
 	 }
 	 else {
 	    ctx->Unpack.SkipRows = param;
+	 }
+	 break;
+      case GL_UNPACK_SKIP_IMAGES:
+	 if (param < 0) {
+	    gl_error( ctx, GL_INVALID_VALUE, "glPixelStore(param)" );
+	 }
+	 else {
+	    ctx->Unpack.SkipImages = param;
 	 }
 	 break;
       case GL_UNPACK_ALIGNMENT:

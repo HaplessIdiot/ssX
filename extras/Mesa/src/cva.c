@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -683,7 +683,7 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
       if (disable & VERT_NORM) cva->v.Normal = *VB->store.Normal;
       if (disable & VERT_OBJ_ANY) cva->v.Obj = *VB->store.Obj;
       if (disable & VERT_TEX0_ANY) cva->v.TexCoord[0]= *(VB->store.TexCoord[0]);
-      if (disable & VERT_TEX0_ANY) cva->v.TexCoord[1]= *(VB->store.TexCoord[1]);
+      if (disable & VERT_TEX1_ANY) cva->v.TexCoord[1]= *(VB->store.TexCoord[1]);
       if (disable & VERT_EDGE) cva->v.EdgeFlag = *VB->store.EdgeFlag;
    }
       

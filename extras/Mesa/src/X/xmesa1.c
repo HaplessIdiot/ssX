@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X/xmesa1.c,v 1.6 2000/08/09 23:40:10 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X/xmesa1.c,v 1.7 2000/09/24 13:50:53 alanh Exp $ */
 
 
 /*
@@ -322,7 +322,7 @@ static int bits_per_pixel( XMesaVisual xmv )
 
 /*
  * Determine if a given X window ID is valid (window exists).
- * Do this by calling XGetWindowAttributes() for the window and
+ * Do this by calling XGetIconName() for the window and
  * checking if we catch an X error.
  * Input:  dpy - the display
  *         win - the window to check for existance
@@ -343,12 +343,14 @@ static int window_exists_err_handler( XMesaDisplay* dpy, XErrorEvent* xerr )
 
 static GLboolean window_exists( XMesaDisplay *dpy, Window win )
 {
-   XWindowAttributes wa;
+   char *name;
    int (*old_handler)( XMesaDisplay*, XErrorEvent* );
    WindowExistsFlag = GL_TRUE;
    old_handler = XSetErrorHandler(window_exists_err_handler);
-   XGetWindowAttributes( dpy, win, &wa ); /* dummy request */
+   XGetIconName(dpy, win, &name); /* dummy request */
    XSetErrorHandler(old_handler);
+   if (name)
+      XFree(name);
    return WindowExistsFlag;
 }
 #endif
@@ -2509,7 +2511,7 @@ const char *XMesaGetString( XMesaContext c, int name )
 {
    (void) c;
    if (name==XMESA_VERSION) {
-      return "3.1";
+      return "3.4";
    }
    else if (name==XMESA_EXTENSIONS) {
       return "";

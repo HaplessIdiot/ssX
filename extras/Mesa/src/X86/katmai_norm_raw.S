@@ -3,9 +3,9 @@
   * - insert PREFETCH instructions to avoid cache-misses !
   * - some more optimizations are possible...
   * - for 40-50% more performance in the SSE-functions, the
-  *   data (trans-matrix, src_vert, dst_vert) needs to be 16byte aligned !	
+  *   data (trans-matrix, src_vert, dst_vert) needs to be 16byte aligned !
   */
-	
+
    SEG_TEXT
 
 
@@ -28,15 +28,15 @@
 #define V3F_COUNT       8
 #define V3F_STRIDE      12
 
-#define MAT_INV         64
+#define MAT_INV         4
 
 #define M(i)    REGOFF(i * 4, EDX)
 #define S(i)	REGOFF(i * 4, ESI)
 #define D(i)	REGOFF(i * 4, EDI)
 #define STRIDE  REGOFF(12, ESI)
-	
+
 #undef FRAME_OFFSET
-		
+
 /*
  *	Offsets for norm_func arguments
  *
@@ -107,7 +107,7 @@ LLBL(K_G3TRNNRR_finish):
 	RET
 #undef FRAME_OFFSET
 
-	
+
 
 ALIGNTEXT16
 GLOBL GLNAME(gl_katmai_transform_rescale_normals_raw)
@@ -136,7 +136,7 @@ GLNAME(gl_katmai_transform_rescale_normals_raw):
 
 	MOV_L( REGOFF(V3F_START, EDI), EDI )		/* ptr to first dest vertex */
 	ADD_L( EDI, ECX ) 				/* count += dest ptr */
-	
+
 ALIGNTEXT32
 	MOVSS	( M(0), XMM0 )				/* m0 */
 	MOVSS	( M(4), XMM1 )				/* m4 */
@@ -144,7 +144,7 @@ ALIGNTEXT32
 
 	MOVSS	( ARG_SCALE, XMM4 )			/* scale */
 	SHUFPS	( CONST(0x0), XMM4, XMM4 )		/* scale | scale */
-	
+
 	MULPS	( XMM4, XMM0 )				/* m4*scale | m0*scale */
 	MOVSS	( M(1), XMM1 )				/* m1 */
 	MOVSS	( M(5), XMM2 )				/* m5 */
@@ -159,7 +159,7 @@ ALIGNTEXT32
 	MULSS	( ARG_SCALE, XMM6 )			/* m8*scale */
 	MOVSS	( M(9), XMM7 )				/* m9 */
 	MULSS	( ARG_SCALE, XMM7 )			/* m9*scale */
-	
+
 ALIGNTEXT32
 LLBL(K_G3TRNR_top):
 	MOVSS	( S(0), XMM3 )				/* ux */
@@ -187,7 +187,7 @@ LLBL(K_G3TRNR_top):
 	ADDSS	( XMM4, XMM3 )
 	ADDSS	( XMM5, XMM3 )
 	MOVSS	( XMM3, D(2) )
-	
+
 LLBL(K_G3TRNR_skip):
 	ADD_L	( CONST(12), EDI )
 	ADD_L	( EAX, ESI )
@@ -234,7 +234,7 @@ ALIGNTEXT32
 	MOVSS( M(5), XMM1 )				/* m5 */
 	UNPCKLPS( XMM1, XMM0 )				/* m5 | m0 */
 	MOVSS( M(10), XMM1 )				/* m10 */
-	
+
 ALIGNTEXT32
 LLBL(K_G3TNNRR_top):
 	MOVLPS( S(0), XMM2 )				/* uy | ux */
@@ -244,7 +244,7 @@ LLBL(K_G3TNNRR_top):
 	MOVSS( S(2), XMM2 )				/* uz */
 	MULSS( XMM1, XMM2 )				/* uz*m10 */
 	MOVSS( XMM2, D(2) )
-	
+
 LLBL(K_G3TNNRR_skip):
 	ADD_L	( CONST(12), EDI )
 	ADD_L	( EAX, ESI )
@@ -256,4 +256,3 @@ LLBL(K_G3TNNRR_finish):
 	POP_L	( ESI )
 	RET
 #undef FRAME_OFFSET
-

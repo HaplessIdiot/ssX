@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/vb.c,v 1.6 2000/09/26 15:56:35 tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -207,7 +207,6 @@ void gl_vb_free( struct vertex_buffer *VB )
       ALIGN_FREE( VB->CullMask );
       ALIGN_FREE( VB->NormCullMask );
    } else {
-      if (VB->store.Elt) 
       gl_vector4f_free( VB->store.Obj );          FREE( VB->store.Obj );
       gl_vector3f_free( VB->store.Normal );       FREE( VB->store.Normal );
       gl_vector1ub_free( VB->store.EdgeFlag );    FREE( VB->store.EdgeFlag );

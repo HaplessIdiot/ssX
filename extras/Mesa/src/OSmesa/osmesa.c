@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/OSmesa/osmesa.c,v 1.3 2000/09/26 15:56:38 tsi Exp $ */
 
 /*
  * Off-Screen Mesa rendering / Rendering into client memory space
@@ -1356,7 +1356,7 @@ static line_func choose_line_function( GLcontext *ctx )
    OSMesaContext osmesa = (OSMesaContext) ctx;
 
    if (ctx->Line.SmoothFlag)              return NULL;
-   if (ctx->Texture.Enabled)              return NULL;
+   if (ctx->Texture.ReallyEnabled)        return NULL;
    if (ctx->Light.ShadeModel!=GL_FLAT)    return NULL;
 
    if (ctx->Line.Width==1.0F
@@ -1542,7 +1542,7 @@ static triangle_func choose_triangle_function( GLcontext *ctx )
 
    if (ctx->Polygon.SmoothFlag)     return NULL;
    if (ctx->Polygon.StippleFlag)    return NULL;
-   if (ctx->Texture.Enabled)        return NULL;
+   if (ctx->Texture.ReallyEnabled)  return NULL;
 
    if (ctx->RasterMask==DEPTH_BIT
        && ctx->Depth.Func==GL_LESS

@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/triangle.c,v 1.7 2000/09/26 15:56:34 tsi Exp $ */
 
 /*
  * Triangle rasterizers
@@ -42,6 +42,7 @@
 #include "mem.h"
 #include "mmath.h"
 #include "span.h"
+#include "teximage.h"
 #include "texstate.h"
 #include "triangle.h"
 #include "types.h"
@@ -221,6 +222,7 @@ static void smooth_rgba_triangle( GLcontext *ctx,
 }
 
 
+
 /*
  * Render an RGB, GL_DECAL, textured triangle.
  * Interpolate S,T only w/out mipmapping or perspective correction.
@@ -239,8 +241,14 @@ static void simple_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    GLint twidth_log2 = obj->Image[b]->WidthLog2;			\
    GLubyte *texture = obj->Image[b]->Data;				\
    GLint smask = obj->Image[b]->Width - 1;				\
-   GLint tmask = obj->Image[b]->Height - 1;
-   (void) pv;
+   GLint tmask = obj->Image[b]->Height - 1;				\
+   (void) pv;								\
+   if (!texture) {							\
+      if (!_mesa_get_teximages_from_driver(ctx, obj))			\
+         return;							\
+      texture = obj->Image[b]->Data;					\
+      ASSERT(texture);							\
+   }
 
 #define INNER_LOOP( LEFT, RIGHT, Y )				\
 	{							\
@@ -290,8 +298,14 @@ static void simple_z_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    GLint twidth_log2 = obj->Image[b]->WidthLog2;			\
    GLubyte *texture = obj->Image[b]->Data;				\
    GLint smask = obj->Image[b]->Width - 1;				\
-   GLint tmask = obj->Image[b]->Height - 1;
-   (void) pv;
+   GLint tmask = obj->Image[b]->Height - 1;				\
+   (void) pv;								\
+   if (!texture) {							\
+      if (!_mesa_get_teximages_from_driver(ctx, obj))			\
+         return;							\
+      texture = obj->Image[b]->Data;					\
+      ASSERT(texture);							\
+   }
 
 #define INNER_LOOP( LEFT, RIGHT, Y )				\
 	{							\
@@ -360,6 +374,12 @@ static void affine_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    GLint comp, tbytesline, tsize;                                       \
    GLfixed er, eg, eb, ea;                                              \
    GLint tr, tg, tb, ta;                                                \
+   if (!texture) {							\
+      if (!_mesa_get_teximages_from_driver(ctx, obj))			\
+         return;							\
+      texture = obj->Image[b]->Data;					\
+      ASSERT(texture);							\
+   }									\
    if (envmode == GL_BLEND) {                                           \
       /* potential off-by-one error here? (1.0f -> 2048 -> 0) */        \
       er = FloatToFixed(unit->EnvColor[0]);                             \
@@ -648,6 +668,12 @@ static void persp_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    GLint comp, tbytesline, tsize;                                       \
    GLfixed er, eg, eb, ea;                                              \
    GLint tr, tg, tb, ta;                                                \
+   if (!texture) {							\
+      if (!_mesa_get_teximages_from_driver(ctx, obj))			\
+         return;							\
+      texture = obj->Image[b]->Data;					\
+      ASSERT(texture);							\
+   }									\
    if (envmode == GL_BLEND) {                                           \
       er = FloatToFixed(unit->EnvColor[0]);                             \
       eg = FloatToFixed(unit->EnvColor[1]);                             \
@@ -1505,6 +1531,8 @@ void gl_set_triangle_function( GLcontext *ctx )
       }
 
       if (ctx->Depth.OcclusionTest &&
+          ctx->DrawBuffer->DepthBuffer &&
+          ctx->Depth.Test &&
           ctx->Depth.Mask == GL_FALSE &&
           ctx->Depth.Func == GL_LESS &&
           !ctx->Stencil.Enabled) {

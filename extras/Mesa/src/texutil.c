@@ -1,3 +1,4 @@
+/* $Id: texutil.c,v 1.4 2000/11/13 21:55:34 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -22,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/texutil.c,v 1.3 2000/09/26 15:56:34 tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -80,7 +81,10 @@
  *   GL_RGBA             GL_UNSIGNED_BYTE                 MESA_A4_R4_G4_B4
  *   GL_BGRA             GL_UNSIGNED_SHORT_4_4_4_4_REV    MESA_A4_R4_G4_B4
  *   GL_BGRA             GL_UNSIGHED_SHORT_1_5_5_5_REV    MESA_A1_R5_G5_B5
+ *   GL_RGBA             GL_UNSIGNED_BYTE                 MESA_A1_R5_G5_B5
  *   GL_BGRA             GL_UNSIGNED_INT_8_8_8_8_REV      MESA_A8_R8_G8_B8
+ *   GL_RGBA             GL_UNSIGNED_BYTE                 MESA_A8_R8_G8_B8
+ *   GL_RGB              GL_UNSIGNED_BYTE                 MESA_A8_R8_G8_B8
  *   more to be added for new drivers...
  *
  * Notes:
@@ -499,7 +503,7 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
 
       case MESA_A1_R5_G5_B5:
          /* store as 16-bit texels (GR_TEXFMT_ARGB_1555) */
-         if (srcFormat == GL_RGBA && srcType == GL_UNSIGNED_SHORT_1_5_5_5_REV){
+         if (srcFormat == GL_BGRA && srcType == GL_UNSIGNED_SHORT_1_5_5_5_REV){
             /* special, optimized case */
             if (wScale == 1 && hScale == 1) {
                const GLubyte *src = _mesa_image_address(packing, srcImage,
@@ -1100,7 +1104,7 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
 
       case MESA_A1_R5_G5_B5:
          /* store as 16-bit texels (GR_TEXFMT_ARGB_1555) */
-         if (srcFormat == GL_RGBA && srcType == GL_UNSIGNED_SHORT_1_5_5_5_REV){
+         if (srcFormat == GL_BGRA && srcType == GL_UNSIGNED_SHORT_1_5_5_5_REV){
             /* special, optimized case */
             if (wScale == 1 && hScale == 1) {
                const GLubyte *src = _mesa_image_address(packing, srcImage,

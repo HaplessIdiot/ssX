@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/copypix.c,v 1.6 2000/09/26 15:56:30 tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -126,7 +126,10 @@ static void copy_rgba_pixels( GLcontext *ctx,
    /* If read and draw buffer are different we must do buffer switching */
    saveReadAlpha = ctx->ReadBuffer->Alpha;
    changeBuffer = ctx->Pixel.ReadBuffer != ctx->Color.DrawBuffer
-               || ctx->DrawBuffer != ctx->ReadBuffer;
+                  || ctx->DrawBuffer != ctx->ReadBuffer;
+
+   (*ctx->Driver.SetReadBuffer)( ctx, ctx->ReadBuffer,
+                                 ctx->Pixel.DriverReadBuffer );
 
    if (overlapping) {
       GLint ssy = sy;
@@ -289,6 +292,10 @@ static void copy_rgba_pixels( GLcontext *ctx,
       }
    }
 
+   /* Restore pixel source to be the draw buffer (for blending, etc) */
+   (*ctx->Driver.SetReadBuffer)( ctx, ctx->DrawBuffer,
+                                 ctx->Color.DriverDrawBuffer );
+
    if (overlapping)
       FREE(prgba);
 }
@@ -335,6 +342,9 @@ static void copy_ci_pixels( GLcontext *ctx,
    /* If read and draw buffer are different we must do buffer switching */
    changeBuffer = ctx->Pixel.ReadBuffer != ctx->Color.DrawBuffer
                || ctx->DrawBuffer != ctx->ReadBuffer;
+
+   (*ctx->Driver.SetReadBuffer)( ctx, ctx->ReadBuffer,
+                                 ctx->Pixel.DriverReadBuffer );
 
    if (overlapping) {
       GLint ssy = sy;
@@ -393,6 +403,10 @@ static void copy_ci_pixels( GLcontext *ctx,
          gl_write_index_span(ctx, width, destx, dy, zspan, indexes, GL_BITMAP);
       }
    }
+
+   /* Restore pixel source to be the draw buffer (for blending, etc) */
+   (*ctx->Driver.SetReadBuffer)( ctx, ctx->DrawBuffer,
+                                 ctx->Color.DriverDrawBuffer );
 
    if (overlapping)
       FREE(pci);
@@ -626,9 +640,12 @@ _mesa_CopyPixels( GLint srcx, GLint srcy, GLsizei width, GLsizei height,
 
       ctx->OcclusionResult = GL_TRUE;
 
+      RENDER_START(ctx);
+
       if (ctx->Driver.CopyPixels &&
           (*ctx->Driver.CopyPixels)( ctx, srcx, srcy, width, height,
                                      destx, desty, type )) {
+         RENDER_FINISH(ctx);
          return;
       }
 
@@ -647,6 +664,8 @@ _mesa_CopyPixels( GLint srcx, GLint srcy, GLsizei width, GLsizei height,
       else {
 	 gl_error( ctx, GL_INVALID_ENUM, "glCopyPixels" );
       }
+
+      RENDER_FINISH(ctx);
    }
    else if (ctx->RenderMode == GL_FEEDBACK) {
       GLfloat color[4];

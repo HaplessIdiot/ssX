@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -414,7 +414,7 @@ void gl_build_immediate_pipeline( GLcontext *ctx )
       gl_print_pipeline( ctx, elt ); 
 }
    
-#define INTERESTED ~(NEW_DRIVER_STATE|NEW_CLIENT_STATE|NEW_TEXTURE_ENABLE)
+#define INTERESTED ~(NEW_DRIVER_STATE|NEW_CLIENT_STATE)
 
 void gl_update_pipelines( GLcontext *ctx )
 {
@@ -438,7 +438,7 @@ void gl_update_pipelines( GLcontext *ctx )
       else 
 	 flags |= VERT_INDEX;
 
-      if (ctx->Texture.Enabled & 0xf) {
+      if (ctx->Texture.ReallyEnabled & 0xf) {
 /* XXX this should also check that the texture is RGBA.  What about Unit[1]?
 	 if (ctx->Texture.Unit[0].EnvMode == GL_REPLACE)
 	    flags &= ~VERT_RGBA;
@@ -446,7 +446,7 @@ void gl_update_pipelines( GLcontext *ctx )
 	 flags |= VERT_TEX0_ANY;
       }
 
-      if (ctx->Texture.Enabled & 0xf0)
+      if (ctx->Texture.ReallyEnabled & 0xf0)
 	 flags |= VERT_TEX1_ANY;
    
       if (ctx->Polygon.Unfilled) 
@@ -489,7 +489,7 @@ void gl_run_pipeline( struct vertex_buffer *VB )
 
    START_FAST_MATH(x);
    
-   for ( VB->Culled = 0; *stages && !VB->Culled ; stages++ ) 
+   for ( VB->Culled = 0; *stages && !VB->Culled ; stages++ )
       (*stages)->run( VB );
       
    END_FAST_MATH(x);
@@ -524,7 +524,7 @@ void gl_print_vert_flags( const char *name, GLuint flags )
 void gl_print_tri_caps( const char *name, GLuint flags ) 
 {
    fprintf(stderr, 
-	   "%s: (0x%x) %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
+	   "%s: (0x%x) %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
 	   name,
 	   flags,
 	   (flags & DD_FEEDBACK)            ? "feedback, " : "",
@@ -548,7 +548,9 @@ void gl_print_tri_caps( const char *name, GLuint flags )
 	   (flags & DD_LINE_SW_RASTERIZE)   ? "sw-lines, " : "", 
 	   (flags & DD_TRI_SW_RASTERIZE)    ? "sw-tris, " : "", 
 	   (flags & DD_QUAD_SW_RASTERIZE)   ? "sw-quads, " : "",
-	   (flags & DD_TRI_CULL_FRONT_BACK) ? "cull-all, " : ""
+	   (flags & DD_TRI_CULL_FRONT_BACK) ? "cull-all, " : "",
+	   (flags & DD_STENCIL)             ? "stencil, " : "",
+	   (flags & DD_CLIP_FOG_COORD)      ? "clip-fog-coord, " : ""
       );
 }
 

@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/stages.c,v 1.6 2000/09/26 15:56:33 tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -457,7 +457,7 @@ static void do_lighting( struct vertex_buffer *VB )
    /* Make sure we can talk about elements 0..2 in the vector we are
     * lighting.
     */
-   if (VB->Unprojected->size == 2) {
+   if (VB->Unprojected && VB->Unprojected->size == 2) {
       if (VB->Unprojected->flags & VEC_WRITABLE)
 	 gl_vector4f_clean_elem(VB->Unprojected, VB->Count, 2);
       else 
@@ -774,8 +774,8 @@ CONST struct gl_pipeline_stage gl_default_pipeline[] = {
      PIPE_OP_TEX0,
      PIPE_PRECALC|PIPE_IMMEDIATE,
      0,
-     NEW_TEXTURING|NEW_TEXTURE_MATRIX,
-     NEW_TEXTURING|NEW_TEXTURE_MATRIX,
+     NEW_TEXTURING|NEW_TEXTURE_MATRIX|NEW_TEXTURE_ENABLE,
+     NEW_TEXTURING|NEW_TEXTURE_MATRIX|NEW_TEXTURE_ENABLE,
      0, 0,
      DYN_STATE,
      check_texture_0,
@@ -785,8 +785,8 @@ CONST struct gl_pipeline_stage gl_default_pipeline[] = {
      PIPE_OP_TEX1,
      PIPE_PRECALC|PIPE_IMMEDIATE,
      0,
-     NEW_TEXTURING|NEW_TEXTURE_MATRIX,
-     NEW_TEXTURING|NEW_TEXTURE_MATRIX,
+     NEW_TEXTURING|NEW_TEXTURE_MATRIX|NEW_TEXTURE_ENABLE,
+     NEW_TEXTURING|NEW_TEXTURE_MATRIX|NEW_TEXTURE_ENABLE,
      0, 0,
      DYN_STATE,
      check_texture_1,

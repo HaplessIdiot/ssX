@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  *
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
@@ -40,11 +40,9 @@
 #include <X11/Xutil.h>
 #include "GL/gl.h"
 #include "GL/glx.h"
-#include "GL/xmesa.h"
 #include "context.h"
 #include "mem.h"
 #include "xfonts.h"
-#include "xmesaP.h"
 
 
 /* Some debugging info.  */
@@ -222,7 +220,6 @@ static XCharStruct *isvalid(XFontStruct *fs, int which)
 
 void Fake_glXUseXFont( Font font, int first, int count, int listbase )
 {
-  XMesaContext CC;
   Display *dpy;
   Window win;
   Pixmap pixmap;
@@ -230,26 +227,23 @@ void Fake_glXUseXFont( Font font, int first, int count, int listbase )
   XGCValues values;
   unsigned long valuemask;
   XFontStruct *fs;
-
   GLint swapbytes, lsbfirst, rowlength;
   GLint skiprows, skippixels, alignment;
-
   unsigned int max_width, max_height, max_bm_width, max_bm_height;
   GLubyte *bm;
-
   int i;
 
-  CC = XMesaGetCurrentContext();
-  dpy = CC->display;
-  win = CC->xm_buffer->frontbuffer;
+  dpy = glXGetCurrentDisplay();
+  if (!dpy)
+     return;  /* I guess glXMakeCurrent wasn't called */
+  win = RootWindow(dpy, DefaultScreen(dpy));
 
   fs = XQueryFont (dpy, font);
-  if (!fs)
-    {
-      gl_error (CC->gl_ctx, GL_INVALID_VALUE,
-                "Couldn't get font structure information");
+  if (!fs) {
+      gl_error(NULL, GL_INVALID_VALUE,
+               "Couldn't get font structure information");
       return;
-    }
+  }
 
   /* Allocate a bitmap that can fit all characters.  */
   max_width = fs->max_bounds.rbearing - fs->min_bounds.lbearing;
@@ -261,10 +255,10 @@ void Fake_glXUseXFont( Font font, int first, int count, int listbase )
 (GLubyte));
   if (!bm) {
       XFreeFontInfo( NULL, fs, 0 );
-      gl_error (CC->gl_ctx, GL_OUT_OF_MEMORY,
+      gl_error(NULL, GL_OUT_OF_MEMORY,
                 "Couldn't allocate bitmap in glXUseXFont()");
       return;
-    }
+  }
 
 #if 0
   /* get the page info */
@@ -386,16 +380,3 @@ bm_height);
   glPixelStorei(GL_UNPACK_SKIP_PIXELS, skippixels);
   glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
 }
-
-
-extern void xmesa_xfonts_dummy( void );
-void xmesa_xfonts_dummy( void )
-{
-   /* silence unused var warnings */
-   (void) kernel8;
-   (void) DitherValues;
-   (void) HPCR_DRGB;
-   (void) kernel1;
-}
-
-/* The End. */

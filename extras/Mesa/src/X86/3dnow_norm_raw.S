@@ -1,6 +1,6 @@
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  *
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X86/3dnow_norm_raw.S,v 1.4 2000/09/26 15:56:39 tsi Exp $ */
 
 /*
  * 3Dnow assembly code by Holger Waechtler
@@ -254,7 +254,7 @@ ALIGNTEXT16
 GLOBL GLNAME(gl_3dnow_transform_normalize_normals_no_rot_raw)
 GLNAME(gl_3dnow_transform_normalize_normals_no_rot_raw):
 
- #undef FRAME_OFFSET 
+ #undef FRAME_OFFSET
  #define FRAME_OFFSET 12
 
     PUSH_L     ( EDI )
@@ -396,7 +396,7 @@ ALIGNTEXT16
 GLOBL GLNAME(gl_3dnow_transform_rescale_normals_no_rot_raw)
 GLNAME(gl_3dnow_transform_rescale_normals_no_rot_raw):
 
- #undef FRAME_OFFSET 
+ #undef FRAME_OFFSET
  #define FRAME_OFFSET 12
 
     PUSH_L     ( EDI )
@@ -887,6 +887,3 @@ LLBL (G3R_end):
     POP_L      ( ESI )
     POP_L      ( EDI )
     RET
-
-
-
