@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.481 2004/06/30 20:21:35 martin Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.482 2004/07/07 03:46:21 martin Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1359,6 +1359,10 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #    endif
 #  endif
 
+# else 
+
+# define GlxDriverUsesMesa NO
+# define GlxBuiltInXMesa NO
 #endif
 
 /*
