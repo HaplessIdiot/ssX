@@ -420,6 +420,9 @@
 #define PCI_CHIP_VTNT2		0x002C
 #define PCI_CHIP_UVTNT2		0x002D
 #define PCI_CHIP_ITNT2		0x00A0
+#define PCI_CHIP_GEFORCE256     0x0100
+#define PCI_CHIP_GEFORCEDDR     0x0101
+#define PCI_CHIP_QUADRO         0x0103
 
 /* NVIDIA & SGS */
 #define PCI_CHIP_RIVA128	0x0018
@@ -1064,6 +1067,9 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_VTNT2,	"Riva Vanta"},
 				{PCI_CHIP_UVTNT2,	"Riva Ultra 64"},
 				{PCI_CHIP_ITNT2,	"Riva Integrated"},
+				{PCI_CHIP_GEFORCE256,	"GeForce 256"},
+				{PCI_CHIP_GEFORCEDDR,	"GeForce DDR"},
+				{PCI_CHIP_QUADRO,	"Quadro"},
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_IMS, {
