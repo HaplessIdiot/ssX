@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/radeon_driver.c,v 1.1 2000/10/18 17:20:03 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000 ATI Technologies Inc. and VA Linux Systems, Inc.,
@@ -195,8 +195,8 @@ static OptionInfoRec RADEONOptions[] = {
 
 RADEONRAMRec RADEONRAM[] = {	/* Memory Specifications
 				   From Radeon Manual */
-    { 4, 4, 1, 2, 1, 2, 1, 16, 12, "64-bit SDR SGRAM" },
-    { 4, 4, 3, 3, 2, 3, 1, 16, 12, "64-bit DDR SGRAM" },
+    { 4, 4, 1, 2, 1, 2, 1, 16, 12, "64-bit SDR SDRAM" },
+    { 4, 4, 3, 3, 2, 3, 1, 16, 12, "64-bit DDR SDRAM" },
 };
 
 extern const char *vgahwSymbols[];
@@ -850,8 +850,8 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 
 				/* RAM */
     switch (info->MemCntl >> 30) {
-    case 0:            offset = 0; break; /*  64-bit SDR SGRAM */
-    case 1:            offset = 1; break; /*  64-bit DDR SGRAM */
+    case 0:            offset = 0; break; /*  64-bit SDR SDRAM */
+    case 1:            offset = 1; break; /*  64-bit DDR SDRAM */
     default:	       offset = 0;
     }
     info->ram = &RADEONRAM[offset];
