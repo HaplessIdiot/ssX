@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accelfuncs.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accelfuncs.c,v 1.3 2002/11/05 17:46:13 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -284,6 +284,12 @@ FUNC_NAME(RADEONSetupForSolidLine)(ScrnInfoPtr pScrn,
 				     | RADEON_GMC_BRUSH_SOLID_COLOR
 				     | RADEON_GMC_SRC_DATATYPE_COLOR
 				     | RADEON_ROP[rop].pattern);
+
+    if (info->ChipFamily >= CHIP_FAMILY_RV200) {
+	BEGIN_ACCEL(1);
+	OUT_ACCEL_REG(RADEON_DST_LINE_PATCOUNT,
+		      0x55 << RADEON_BRES_CNTL_SHIFT);
+    }
 
     BEGIN_ACCEL(3);
 
@@ -583,9 +589,12 @@ FUNC_NAME(RADEONSetupForMono8x8PatternFill)(ScrnInfoPtr pScrn,
 					    unsigned int planemask)
 {
     RADEONInfoPtr  info = RADEONPTR(pScrn);
+#if X_BYTE_ORDER == X_BIG_ENDIAN
     unsigned char  pattern[8];
+#endif
     ACCEL_PREAMBLE();
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
     /* Take care of endianness */
     pattern[0] = (patternx & 0x000000ff);
     pattern[1] = (patternx & 0x0000ff00) >> 8;
@@ -595,13 +604,18 @@ FUNC_NAME(RADEONSetupForMono8x8PatternFill)(ScrnInfoPtr pScrn,
     pattern[5] = (patterny & 0x0000ff00) >> 8;
     pattern[6] = (patterny & 0x00ff0000) >> 16;
     pattern[7] = (patterny & 0xff000000) >> 24;
+#endif
 
     /* Save for later clipping */
     info->dp_gui_master_cntl_clip = (info->dp_gui_master_cntl
 				     | (bg == -1
 					? RADEON_GMC_BRUSH_8X8_MONO_FG_LA
 					: RADEON_GMC_BRUSH_8X8_MONO_FG_BG)
-				     | RADEON_ROP[rop].pattern);
+				     | RADEON_ROP[rop].pattern
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+				     | RADEON_GMC_BYTE_MSB_TO_LSB
+#endif
+				    );
 
     BEGIN_ACCEL((bg == -1) ? 5 : 6);
 
@@ -610,8 +624,13 @@ FUNC_NAME(RADEONSetupForMono8x8PatternFill)(ScrnInfoPtr pScrn,
     OUT_ACCEL_REG(RADEON_DP_BRUSH_FRGD_CLR,  fg);
     if (bg != -1)
 	OUT_ACCEL_REG(RADEON_DP_BRUSH_BKGD_CLR, bg);
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+    OUT_ACCEL_REG(RADEON_BRUSH_DATA0,        patternx);
+    OUT_ACCEL_REG(RADEON_BRUSH_DATA1,        patterny);
+#else
     OUT_ACCEL_REG(RADEON_BRUSH_DATA0,        *(CARD32 *)(pointer)&pattern[0]);
     OUT_ACCEL_REG(RADEON_BRUSH_DATA1,        *(CARD32 *)(pointer)&pattern[4]);
+#endif
 
     FINISH_ACCEL();
 }
@@ -1202,8 +1221,16 @@ FUNC_NAME(RADEONAccelInit)(ScreenPtr pScreen, XAAInfoRecPtr a)
 	= FUNC_NAME(RADEONSubsequentMono8x8PatternFillRect);
     a->Mono8x8PatternFillFlags          = (HARDWARE_PATTERN_PROGRAMMED_BITS
 					   | HARDWARE_PATTERN_PROGRAMMED_ORIGIN
-					   | HARDWARE_PATTERN_SCREEN_ORIGIN
-					   | BIT_ORDER_IN_BYTE_LSBFIRST);
+					   | HARDWARE_PATTERN_SCREEN_ORIGIN);
+
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+    if (info->ChipFamily > CHIP_FAMILY_RV200)
+	a->Mono8x8PatternFillFlags |= BIT_ORDER_IN_BYTE_MSBFIRST;
+    else
+	a->Mono8x8PatternFillFlags |= BIT_ORDER_IN_BYTE_LSBFIRST;
+#else
+    a->Mono8x8PatternFillFlags |= BIT_ORDER_IN_BYTE_LSBFIRST;
+#endif
 
 				/* Indirect CPU-To-Screen Color Expand */
 
@@ -1256,21 +1283,23 @@ FUNC_NAME(RADEONAccelInit)(ScreenPtr pScreen, XAAInfoRecPtr a)
     a->SubsequentSolidTwoPointLine
 	= FUNC_NAME(RADEONSubsequentSolidTwoPointLine);
 
-    /* Disabled because it does not pass XTest */
-    a->SetupForDashedLine
-	= FUNC_NAME(RADEONSetupForDashedLine);
-    a->SubsequentDashedTwoPointLine
-	= FUNC_NAME(RADEONSubsequentDashedTwoPointLine);
-    a->DashPatternMaxLength             = 32;
-    /* ROP3 doesn't seem to work properly for dashedline with GXinvert */
-    a->DashedLineFlags                  = (LINE_PATTERN_LSBFIRST_LSBJUSTIFIED
+    /* Disabled on RV200 and newer because it does not pass XTest */
+    if (info->ChipFamily < CHIP_FAMILY_RV200) {
+	a->SetupForDashedLine
+	    = FUNC_NAME(RADEONSetupForDashedLine);
+	a->SubsequentDashedTwoPointLine
+	    = FUNC_NAME(RADEONSubsequentDashedTwoPointLine);
+	a->DashPatternMaxLength         = 32;
+	/* ROP3 doesn't seem to work properly for dashedline with GXinvert */
+	a->DashedLineFlags              = (LINE_PATTERN_LSBFIRST_LSBJUSTIFIED
 					   | LINE_PATTERN_POWER_OF_2_ONLY
 					   | LINE_LIMIT_COORDS
 					   | ROP_NEEDS_SOURCE);
-    a->DashedLineLimits.x1 = 0;
-    a->DashedLineLimits.y1 = 0;
-    a->DashedLineLimits.x2 = pScrn->virtualX-1;
-    a->DashedLineLimits.y2 = pScrn->virtualY-1;
+	a->DashedLineLimits.x1 = 0;
+	a->DashedLineLimits.y1 = 0;
+	a->DashedLineLimits.x2 = pScrn->virtualX-1;
+	a->DashedLineLimits.y2 = pScrn->virtualY-1;
+    }
 
 #ifdef XFree86LOADER
     } else {

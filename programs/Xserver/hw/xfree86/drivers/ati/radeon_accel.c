@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.30 2002/10/30 12:52:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.31 2002/12/16 16:19:12 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -172,8 +172,7 @@ void RADEONEngineReset(ScrnInfoPtr pScrn)
     RADEONEngineFlush(pScrn);
 
     clock_cntl_index = INREG(RADEON_CLOCK_CNTL_INDEX);
-    if (info->ChipFamily == CHIP_FAMILY_R300)
-	R300CGWorkaround(pScrn);
+    if (info->R300CGWorkaround) R300CGWorkaround(pScrn);
 
     /* Some ASICs have bugs with dynamic-on feature, which are
      * ASIC-version dependent, so we force all blocks on for now
@@ -249,8 +248,7 @@ void RADEONEngineReset(ScrnInfoPtr pScrn)
 
     OUTREG(RADEON_CLOCK_CNTL_INDEX, clock_cntl_index);
     OUTPLL(RADEON_MCLK_CNTL, mclk_cntl);
-    if (info->ChipFamily == CHIP_FAMILY_R300)
-	R300CGWorkaround(pScrn);
+    if (info->R300CGWorkaround) R300CGWorkaround(pScrn);
 }
 
 /* Restore the acceleration hardware to its previous state */

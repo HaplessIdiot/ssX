@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.33 2002/12/16 16:19:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.34 2002/12/17 03:16:50 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -194,10 +194,6 @@ typedef struct {
     CARD32            p2pll_div_0;
     CARD32            htotal_cntl2;
 
-				/* DDA register */
-    CARD32            dda_config;
-    CARD32            dda_on_off;
-
 				/* Pallet */
     Bool              palette_valid;
     CARD32            palette[256];
@@ -306,6 +302,7 @@ typedef struct {
     Bool              ddc_mode;         /* Validate mode by matching exactly  
 					 * the modes supported in DDC data
 					 */
+    Bool              R300CGWorkaround;
 
 				/* EDID or BIOS values for FPs */
     int               PanelXRes;
@@ -555,6 +552,7 @@ extern void        RADEONEngineRestore(ScrnInfoPtr pScrn);
 
 extern unsigned    RADEONINPLL(ScrnInfoPtr pScrn, int addr);
 extern void        RADEONWaitForVerticalSync(ScrnInfoPtr pScrn);
+extern void        RADEONWaitForVerticalSync2(ScrnInfoPtr pScrn);
 
 extern void        RADEONSelectBuffer(ScrnInfoPtr pScrn, int buffer);
 
