@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.11 1997/03/07 07:44:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.12 1997/04/08 10:13:48 hohndel Exp $ */
 
 
 
@@ -128,11 +128,11 @@ if( read(fd,buf,sizeof(buf)) < 0 ) {
 
 lseek(fd,offset,SEEK_SET);
 
-if( strncmp(buf,ARMAG,SARMAG) == 0 ) {
+if( strncmp((char *)buf,ARMAG,SARMAG) == 0 ) {
 	return LD_ARCHIVE;
 	}
 
-if( strncmp(buf,ELFMAG,SELFMAG) == 0 ) {
+if( strncmp((char *)buf,ELFMAG,SELFMAG) == 0 ) {
 	return LD_ELFOBJECT;
 	}
 

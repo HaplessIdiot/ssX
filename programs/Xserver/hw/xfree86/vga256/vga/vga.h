@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.26 1997/03/11 13:07:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.27 1997/05/03 09:19:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -325,9 +325,9 @@ typedef struct {
 
 typedef struct {
   Bool Initialized;
-  void (*Init)(
+  Bool (*Init)(
 #if NeedNestedPrototypes
-	int ,
+	char * ,
 	ScreenPtr
 #endif
 	);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.1 1997/03/06 23:16:34 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.2 1997/03/17 07:18:05 hohndel Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -193,7 +193,6 @@ s3RecolorCursor(pScr, pCurs, displayed)
 	(a & 0x02) << 5 | \
 	(a & 0x01) << 7;
 
-Bool
 S3CursorInit(pm, pScr)
      char *pm;
      ScreenPtr pScr;
