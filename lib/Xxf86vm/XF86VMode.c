@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/XExExt/VGAHelp.c,v 3.1 1995/03/19 10:08:33 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -75,19 +75,19 @@ static XEXT_GENERATE_CLOSE_DISPLAY (close_display, vgahelp_info)
 
 /*****************************************************************************
  *                                                                           *
- *		    public Shared Memory Extension routines                  *
+ *		    public VGAHelp Extension routines                  *
  *                                                                           *
  *****************************************************************************/
 
-Bool XVGAHelpQueryExtension (dpy /* event_basep, error_basep */)
+Bool XVGAHelpQueryExtension (dpy, event_basep, error_basep)
     Display *dpy;
-/*  int *event_basep, *error_basep; */
+    int *event_basep, *error_basep;
 {
     XExtDisplayInfo *info = find_display (dpy);
 
     if (XextHasExtension(info)) {
-/*	*event_basep = info->codes->first_event;
-	*error_basep = info->codes->error_event; */
+	*event_basep = info->codes->first_event;
+	*error_basep = info->codes->first_error;
 	return True;
     } else {
 	return False;

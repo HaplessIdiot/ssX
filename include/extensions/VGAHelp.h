@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/VGAHelp.h,v 3.1 1995/03/19 10:08:11 dawes Exp $ */
+/* $XFree86: xc/include/extensions/VGAHelp.h,v 3.2 1995/03/19 12:16:22 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -88,6 +88,14 @@ Bool XVGAHelpQueryVersion(
     Display*		/* dpy */,
     int*		/* majorVersion */,
     int*		/* minorVersion */
+#endif
+);
+
+Bool XVGAHelpQueryExtension(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int*		/* event_base */,
+    int*		/* error_base */
 #endif
 );
 
