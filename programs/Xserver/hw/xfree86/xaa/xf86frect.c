@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.5 1997/01/08 20:51:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.6 1997/01/12 10:48:06 dawes Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.5 1997/01/08 20:51:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.6 1997/01/12 10:48:06 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -290,6 +290,14 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
         }
         else
             if (xf86AccelInfoRec.FillRectStippled)
+                /*
+                 * There might be a problem here. The restriction
+                 * flags for entering this function come from
+                 * CopyAreaFlags. Now that we are not using the
+                 * cache, other restriction flags (such as those
+                 * defined for color expansion) should have been
+                 * checked, but have not.
+                 */
                 BoxFill = xf86AccelInfoRec.FillRectStippled;
             else
                 if (xf86AccelInfoRec.FillRectStippledFallBack) {

@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.18 1997/01/08 20:51:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.19 1997/01/12 10:42:49 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -67,6 +67,9 @@
 #include "mgabios.h"
 #include "mgareg.h"
 #include "mga.h"
+
+/* Uncomment the next line to force a 60 MHz MCLK - AT YOUR OWN RISK! */
+/* #define FORCE_FAST_MCLK *
 
 extern vgaPCIInformation *vgaPCIInfo;
 
@@ -307,6 +310,9 @@ MGAWaitForBlitter()
  *   MGABios			OUT	The video BIOS info block.
  *
  * HISTORY
+ *   January 11, 1997 - [aem] Andrew E. Mileski
+ *   Set default values for GCLK (= MCLK / pre-scale ).
+ *
  *   October 7, 1996 - [aem] Andrew E. Mileski
  *   Written and tested.
  */ 
@@ -341,10 +347,13 @@ MGAReadBios()
 		XCONFIG_PROBED, vga256InfoRec.name,
 		vga256InfoRec.BIOSbase + offset );	
 
-	/* Temporary */
-	ErrorF( "ClkBase=%d Clk4MB=%d Clk8MB=%d ClkMod=%d\n",
-		MGABios.ClkBase, MGABios.Clk4MB, MGABios.Clk8MB,
-		MGABios.ClkMod);
+	/* Set default MCLK values (scaled by 10 kHz) */
+	if ( MGABios.ClkBase == 0 )
+		MGABios.ClkBase = 4500;
+	if ( MGABios.Clk4MB == 0 )
+		MGABios.Clk4MB = MGABios.ClkBase;
+	if ( MGABios.Clk8MB == 0 )
+		MGABios.Clk8MB = MGABios.Clk4MB;
 }
 
 /*
@@ -392,15 +401,204 @@ unsigned char reg;
 }
 
 /*
- * MGATi3026SetClock - Set the pixel and loop clock PLLs.
+ * MGATi3026CalcClock - Calculate the PLL settings (m, n, p).
  *
  * DESCRIPTION
  *   For more information, refer to the Texas Instruments
  *   "TVP3026 Data Manual" (document SLAS098B).
- *     Section 2.4.1 "Pixel Clock PLL"
- *     Section 2.4.3 "Loop Clock PLL"
+ *     Section 2.4 "PLL Clock Generators"
  *     Appendix A "Frequency Synthesis PLL Register Settings"
  *     Appendix B "PLL Programming Examples"
+ *
+ * PARAMETERS
+ *   f_out		IN	Desired clock frequency.
+ *   f_max		IN	Maximum allowed clock frequency.
+ *   m			OUT	Value of PLL 'm' register.
+ *   n			OUT	Value of PLL 'n' register.
+ *   p			OUT	Value of PLL 'p' register.
+ *
+ * HISTORY
+ *   January 11, 1997 - [aem] Andrew E. Mileski
+ *   Split off from MGATi3026SetClock.
+ */
+
+/* The following values are in kHz */
+#define TI_MIN_VCO_FREQ  110000
+#define TI_MAX_VCO_FREQ  220000
+#define TI_MAX_MCLK_FREQ 100000
+#define TI_REF_FREQ      14318.18
+
+static double
+MGATi3026CalcClock ( f_out, f_max, m, n, p )
+	long f_out;
+	long f_max;
+	int *m;
+	int *n;
+	int *p;
+{
+	int best_m, best_n;
+	double f_pll, f_vco;
+	double m_err, inc_m, calc_m;
+
+	/* Make sure that f_min <= f_out <= f_max */
+	if ( f_out < ( TI_MIN_VCO_FREQ / 8 ))
+		f_out = TI_MIN_VCO_FREQ / 8;
+	if ( f_out > f_max )
+		f_out = f_max;
+
+	/*
+	 * f_pll = f_vco / 2 ^ p
+	 * Choose p so that TI_MIN_VCO_FREQ <= f_vco <= TI_MAX_VCO_FREQ
+	 * Note that since TI_MAX_VCO_FREQ = 2 * TI_MIN_VCO_FREQ
+	 * we don't have to bother checking for this maximum limit.
+	 */
+	f_vco = ( double ) f_out;
+	for ( *p = 0; *p < 3 && f_vco < TI_MIN_VCO_FREQ; ( *p )++ )
+		f_vco *= 2.0;
+
+	/*
+	 * We avoid doing multiplications by ( 65 - n ),
+	 * and add an increment instead - this keeps any error small.
+	 */
+	inc_m = f_vco / ( TI_REF_FREQ * 8.0 );
+
+	/* Initial value of calc_m for the loop */
+	calc_m = inc_m + inc_m + inc_m;
+
+	/* Initial amount of error for an integer - impossibly large */
+	m_err = 2.0;
+
+	/* Search for the closest INTEGER value of ( 65 - m ) */
+	for ( *n = 3; *n <= 25; ( *n )++, calc_m += inc_m ) {
+
+		/* Ignore values of ( 65 - m ) which we can't use */
+		if ( calc_m < 3.0 || calc_m > 64.0 )
+			continue;
+
+		/*
+		 * Pick the closest INTEGER (has smallest fractional part).
+		 * The optimizer should clean this up for us.
+		 */
+		if (( calc_m - ( int ) calc_m ) < m_err ) {
+			m_err = calc_m - ( int ) calc_m;
+			best_m = ( int ) calc_m;
+			best_n = *n;
+		}
+	}
+	
+	/* 65 - ( 65 - x ) = x */
+	*m = 65 - best_m;
+	*n = 65 - best_n;
+
+	/* Now all the calculations can be completed */
+	f_vco = 8.0 * TI_REF_FREQ * best_m / best_n;
+	f_pll = f_vco / ( 1 << *p );
+
+#ifdef DEBUG
+	ErrorF( "f_out=%ld f_pll=%.1f f_vco=%.1f n=%d m=%d p=%d\n",
+		f_out, f_pll, f_vco, *n, *m, *p );
+#endif
+
+	return f_pll;
+}
+
+/*
+ * MGATi3026SetMCLK - Set the memory clock (MCLK) PLL.
+ *
+ * HISTORY
+ *   January 11, 1997 - [aem] Andrew E. Mileski
+ *   Written and tested.
+ */
+static void
+MGATi3026SetMCLK( f_out )
+	long f_out;
+{
+	double f_pll;
+	int mclk_m, mclk_n, mclk_p;
+	int pclk_m, pclk_n, pclk_p;
+	int mclk_ctl, rfhcnt;
+
+	f_pll = MGATi3026CalcClock(
+		f_out, TI_MAX_MCLK_FREQ,
+		& mclk_m, & mclk_n, & mclk_p
+	);
+
+	/* Save PCLK settings */
+	outTi3026( TVP3026_PLL_ADDR, 0xfc );
+	pclk_n = inTi3026( TVP3026_PIX_CLK_DATA );
+	outTi3026( TVP3026_PLL_ADDR, 0xfd );
+	pclk_m = inTi3026( TVP3026_PIX_CLK_DATA );
+	outTi3026( TVP3026_PLL_ADDR, 0xfe );
+	pclk_p = inTi3026( TVP3026_PIX_CLK_DATA );
+	
+	/* Stop PCLK (PLLEN = 0, PCLKEN = 0) */
+	outTi3026( TVP3026_PLL_ADDR, 0xfe );
+	outTi3026( TVP3026_PIX_CLK_DATA, 0x00 );
+	
+	/* Set PCLK to the new MCLK frequency (PLLEN = 1, PCLKEN = 0 ) */
+	outTi3026( TVP3026_PLL_ADDR, 0xfc );
+	outTi3026( TVP3026_PIX_CLK_DATA, ( mclk_n & 0x3f ) | 0xc0 );
+	outTi3026( TVP3026_PIX_CLK_DATA, mclk_m & 0x3f );
+	outTi3026( TVP3026_PIX_CLK_DATA, ( mclk_p & 0x03 ) | 0xb0 );
+	
+	/* Wait for PCLK PLL to lock on frequency */
+	while (( inTi3026( TVP3026_PIX_CLK_DATA ) & 0x40 ) == 0 ) {
+		;
+	}
+	
+	/* Output PCLK on MCLK pin */
+	mclk_ctl = inTi3026( TVP3026_MCLK_CTL );
+	outTi3026( TVP3026_MCLK_CTL, mclk_ctl & 0xe7 ); 
+	outTi3026( TVP3026_MCLK_CTL, ( mclk_ctl & 0xe7 ) | 0x08 );
+	
+	/* Stop MCLK (PLLEN = 0 ) */
+	outTi3026( TVP3026_PLL_ADDR, 0xfb );
+	outTi3026( TVP3026_MEM_CLK_DATA, 0x00 );
+	
+	/* Set MCLK to the new frequency (PLLEN = 1) */
+	outTi3026( TVP3026_PLL_ADDR, 0xf3 );
+	outTi3026( TVP3026_MEM_CLK_DATA, ( mclk_n & 0x3f ) | 0xc0 );
+	outTi3026( TVP3026_MEM_CLK_DATA, mclk_m & 0x3f );
+	outTi3026( TVP3026_MEM_CLK_DATA, ( mclk_p & 0x03 ) | 0xb0 );
+	
+	/* Wait for MCLK PLL to lock on frequency */
+	while (( inTi3026( TVP3026_MEM_CLK_DATA ) & 0x40 ) == 0 ) {
+		;
+	}
+	
+	/* Set the WRAM refresh divider */
+	rfhcnt = ( 332.0 * f_pll / 1280000.0 );
+	if ( rfhcnt > 15 )
+		rfhcnt = 0;
+	pciWriteLong( MGAPciTag, PCI_OPTION_REG, ( rfhcnt << 16 ) |
+		( pciReadLong( MGAPciTag, PCI_OPTION_REG ) & ~0xf0000 ));
+
+#ifdef DEBUG
+	ErrorF( "rfhcnt=%d\n", rfhcnt );
+#endif
+
+	/* Output MCLK PLL on MCLK pin */
+	outTi3026( TVP3026_MCLK_CTL, ( mclk_ctl & 0xe7 ) | 0x10 );
+	outTi3026( TVP3026_MCLK_CTL, ( mclk_ctl & 0xe7 ) | 0x18 );
+	
+	/* Stop PCLK (PLLEN = 0, PCLKEN = 0 ) */
+	outTi3026( TVP3026_PLL_ADDR, 0xfe );
+	outTi3026( TVP3026_PIX_CLK_DATA, 0x00 );
+	
+	/* Restore PCLK (PLLEN = ?, PCLKEN = ?) */
+	outTi3026( TVP3026_PLL_ADDR, 0xfc );
+	outTi3026( TVP3026_PIX_CLK_DATA, pclk_n );
+	outTi3026( TVP3026_PIX_CLK_DATA, pclk_m );
+	outTi3026( TVP3026_PIX_CLK_DATA, pclk_p );
+	
+	/* Wait for PCLK PLL to lock on frequency */
+	while (( inTi3026( TVP3026_PIX_CLK_DATA ) & 0x40 ) == 0 ) {
+		;
+	}
+}
+
+/*
+ * MGATi3026SetPCLK - Set the pixel (PCLK) and loop (LCLK) clocks.
  *
  * PARAMETERS
  *   f_pll			IN	Pixel clock PLL frequencly in kHz.
@@ -411,6 +609,9 @@ unsigned char reg;
  *   vgaBitsPerPixel		IN	Bits per pixel.
  *
  * HISTORY
+ *   January 11, 1997 - [aem] Andrew E. Mileski
+ *   Split to simplify code for MCLK (=GCLK) setting.
+ *
  *   December 14, 1996 - [aem] Andrew E. Mileski
  *   Fixed loop clock to be based on the calculated, not requested,
  *   pixel clock. Added f_max = maximum f_vco frequency.
@@ -427,108 +628,33 @@ unsigned char reg;
  *   Based on the TVP3026 code in the S3 driver.
  */
 
-/* The following values are in kHz */
-#define TI_MIN_VCO_FREQ	110000
-#define TI_MAX_VCO_FREQ	220000
-#define TI_REF_FREQ	14318.18
-
 static void 
-MGATi3026SetClock( f_out, bpp, m24 )
+MGATi3026SetPCLK( f_out, bpp )
 	long	f_out;
 	int	bpp;
 {
 	/* Pixel clock values */
-	double f_vco, f_pll;
-	int n, p, m;
-	long f_max;
-
-	/* Pixel clock: These are used to pick a value for m */
-	double c, ic, m_err;
-	int best_n, best_m;
+	int m, n, p;
 
 	/* Loop clock values */
-	int ln, lp, lm, lq;
+	int lm, ln, lp, lq;
 	double z;
 
-	/*
-	 * First we deal with setting the pixel clock PLL.
-	 * We will deal with the loop clock PLL later.
-	 */
+	/* The actual frequency output by the clock */
+	double f_pll;
 
-	/* Make sure that 13.75 MHz <= f_pll <= chip max */
+	/* Get the maximum pixel clock frequency */
+	long f_max = TI_MAX_VCO_FREQ;
 	if ( vga256InfoRec.maxClock > TI_MAX_VCO_FREQ )
 		f_max = vga256InfoRec.maxClock;
-	else
-		f_max = TI_MAX_VCO_FREQ;
-	if ( f_out < ( TI_MIN_VCO_FREQ / 8 ))
-		f_out = TI_MIN_VCO_FREQ / 8;
-	if ( f_out > f_max )
-		f_out = f_max;
 
-	/* Assume a frequency multipler of 1.0 to start */
-	f_vco = ( double ) f_out;
-
-	/*
-	 * f_pll = f_vco / 2 ^ p
-	 * Choose p so that TI_MIN_VCO_FREQ <= f_vco <= f_max
-	 */
-	for (
-		p = 0;
-			p < 3
-			&& f_vco < TI_MIN_VCO_FREQ
-			&& ( f_vco * 2.0 ) <= ( double ) f_max;
-		p++
-	)
-		f_vco *= 2.0;
-
-	/*
-	 * We avoid doing multiplications by ( 65 - n ),
-	 * and add an increment instead - this keeps any error small.
-	 */
-	ic = f_vco / ( TI_REF_FREQ * 8.0 );
-
-	/* Initial value of c for the loop */
-	c = ic + ic + ic;
-
-	/* Initial amount of error for an integer - impossibly large */
-	m_err = 2.0;
-
-	/* Search for the closest INTEGER value of ( 65 - m ) */
-	for ( n = 3; n <= 25; n++, c += ic ) {
-
-		/* Ignore values of ( 65 - m ) which we can't use */
-		if ( c < 3.0 || c > 64.0 )
-			continue;
-
-		/*
-		 * Pick the closest INTEGER (has smallest fractional part).
-		 * The optimizer should clean this up for us.
-		 */
-		if (( c - ( int ) c ) < m_err ) {
-			m_err = c - ( int ) c;
-			best_m = ( int ) c;
-			best_n = n;
-		}
-	}
-	
-	/* 65 - ( 65 - x ) = x */
-	m = 65 - best_m;
-	n = 65 - best_n;
-
-	/* Now all the calculations can be completed */
-	f_vco = 8.0 * TI_REF_FREQ * best_m / best_n;
-	f_pll = f_vco / ( 1 << p );
+	/* Do the calculations for m, n, and p */
+	f_pll = MGATi3026CalcClock( f_out, f_max, & m, & n, & p );
 
 	/* Values for the pixel clock PLL registers */
 	newVS->DACclk[ 0 ] = ( n & 0x3f ) | 0xc0;
 	newVS->DACclk[ 1 ] = ( m & 0x3f );
 	newVS->DACclk[ 2 ] = ( p & 0x03 ) | 0xb0;
-
-
-#ifdef DEBUG
-	ErrorF( "f_out=%ld f_pll=%.1f f_vco=%.1f n=%d m=%d p=%d\n",
-		f_out, f_pll, f_vco, n, m, p );
-#endif
 
 	/*
 	 * Now that the pixel clock PLL is setup,
@@ -590,13 +716,11 @@ MGATi3026SetClock( f_out, bpp, m24 )
  
 	/* Values for the loop clock PLL registers */
 	if ( vgaBitsPerPixel == 24 ) {
-
 		/* Packed pixel mode values */
 		newVS->DACclk[ 3 ] = ( ln & 0x3f ) | 0x80;
 		newVS->DACclk[ 4 ] = ( lm & 0x3f ) | 0x80;
 		newVS->DACclk[ 5 ] = ( lp & 0x03 ) | 0xf8;
  	} else {
-
 		/* Non-packed pixel mode values */
 		newVS->DACclk[ 3 ] = ( ln & 0x3f ) | 0xc0;
 		newVS->DACclk[ 4 ] = ( lm & 0x3f );
@@ -763,6 +887,20 @@ MGAProbe()
 	if (!vga256InfoRec.videoRam)
 		vga256InfoRec.videoRam = MGACountRam();
 	
+	/*
+	 * Set MCLK based on amount of memory.
+	 */
+#ifndef FORCE_FAST_MCLK
+	if ( vga256InfoRec.videoRam < 4096 )
+		MGATi3026SetMCLK( MGABios.ClkBase * 10 );
+	else if ( vga256InfoRec.videoRam < 8192 )
+		MGATi3026SetMCLK( MGABios.Clk4MB * 10 );
+	else
+		MGATi3026SetMCLK( MGABios.Clk8MB * 10 );
+#else
+	MGATi3026SetMCLK( 60000 );
+#endif
+
 	/*
 	 * If the user has specified ramdac speed in the XF86Config
 	 * file, we respect that setting.
@@ -1059,7 +1197,7 @@ static void
 MGAFbInit()
 {
 	if (xf86Verbose)
-		ErrorF("%s %s: Using TI 3026 programmable clock\n",
+		ErrorF("%s %s: Using TI TVP3026 programmable clock\n",
 			XCONFIG_PROBED, vga256InfoRec.name);
  
 	if (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options))
@@ -1309,8 +1447,9 @@ DisplayModePtr mode;
 	newVS->DAClong = MGAinterleave << 12;
 
 	newVS->std.MiscOutReg |= 0x0C; 
-	MGATi3026SetClock(vga256InfoRec.clock[newVS->std.NoClock],
-				1 << MGABppShft);
+	MGATi3026SetPCLK(
+		vga256InfoRec.clock[newVS->std.NoClock], 1 << MGABppShft
+	);
 
 #ifdef DEBUG		
 	ErrorF("%6ld: %02X %02X %02X	%02X %02X %02X	%08lX\n", vga256InfoRec.clock[newVS->std.NoClock],
@@ -1495,7 +1634,7 @@ int x, y;
 		Base *= 3;
 
 	/* Wait for vertical retrace */
-	while (!(inb(0x3DA) & 0x08));
+	while (!(inb(vgaIOBase + 0xA) & 0x08));
 	
 	outb(0x3DE, 0x00);
 	tmp = inb(0x3DF);
@@ -1506,8 +1645,8 @@ int x, y;
 #ifdef XFreeXDGA
 	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
 	/* Wait for vertival retrace end */
-		while (inb(vgaIOBase + 0xA) & 0x08);
 		while (!(inb(vgaIOBase + 0xA) & 0x08));
+		while (inb(vgaIOBase + 0xA) & 0x08);
 	}
 #endif
 }

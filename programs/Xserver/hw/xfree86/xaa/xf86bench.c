@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.2 1997/01/02 04:38:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.3 1997/01/12 10:48:03 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -284,6 +284,47 @@ static void PatternColorExpand400()
             0, 400, 0, 0, 400, 400);
 }
 
+static void CPUToScreenColorExpand10()
+{
+    int i, dwords;
+    xf86AccelInfoRec.SetupForCPUToScreenColorExpand(0, 1, GXcopy, ~0);
+    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_NO_PAD) {
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            dwords = (10 * 3 * 10 + 31) / 32;	/* 10 */
+        else
+            dwords = (10 * 10 + 31) / 32;   /* 4 */
+    }
+    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_BYTE) {
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            dwords = (16 * 10 + 31) / 32;	/* 5 */
+        else
+            dwords = 10;
+    }
+    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD)
+        dwords = 10;
+    for (i = 0; i < 100; i++) {
+        xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(i, i, 10, 10, 0);
+        if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED) {
+            int j;
+            j = dwords;
+            while (j > 0) {
+                *(xf86AccelInfoRec.CPUToScreenColorExpandBase) = 0xFF00FF00;
+                j--;
+            }
+        }
+        else {
+            fastmemset(xf86AccelInfoRec.CPUToScreenColorExpandBase,
+                    0xFF00FF00, dwords * 4);
+        }
+        if ((xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
+        && (dwords & 1))
+            *(xf86AccelInfoRec.CPUToScreenColorExpandBase) = 0;
+            
+        if (!(xf86AccelInfoRec.ColorExpandFlags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
+            xf86AccelInfoRec.Sync();
+    }
+}
+
 static void CPUToScreenColorExpand400()
 {
     int i;
@@ -381,6 +422,8 @@ xf86Bench()
             PatternColorExpand400);
     }
     if (xf86AccelInfoRec.SubsequentCPUToScreenColorExpand) {
+        DoBench("10x10 CPU-to-screen color expand", 10 * 10 * 10,
+            CPUToScreenColorExpand10);
         DoBench("416x400 CPU-to-screen color expand", 416 * 400 * 2,
             CPUToScreenColorExpand400);
     }

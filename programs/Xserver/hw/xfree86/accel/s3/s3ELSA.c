@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.18 1996/12/27 06:56:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.19 1997/01/08 20:33:42 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -329,13 +329,15 @@ void main()
 
 #else
 int s3DetectELSA(int BIOSbase, char **pcard, char **pserno, 
-		 int *max_pix_clock, int *max_mem_clock, int *hwconfig)
+		 int *max_pix_clock, int *max_mem_clock, int *hwconfig,
+		 char **modes)
 {
    int i;
    int ndata;
    unsigned short *data;
    unsigned short crc16;
    elsa_eeprom_data_t *eedata;
+   elsa_eeprom_timing_t *eetim;
    unsigned long serno;
 
    if (check_ELSA_bios(BIOSbase>0 ? BIOSbase : BIOS_BASE) <= 0) {
@@ -369,6 +371,29 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
       else 
 	 sprintf(*pcard,"unknown ELSA Winner board code %04x detected, please report\n"
 		 , eedata->board_code);
+   }
+
+   if (modes) {
+      char *p;
+      p = *modes  = (char*) xalloc(80 * ((ndata-9-26)/9 +1));
+      *p = '\0';
+      for (i= 26; i<ndata-9; i+=9) {
+	 eetim  = (elsa_eeprom_timing_t *) (data + i);
+	 if (ELSA_ET_VM_VALID(eetim))
+	    sprintf(p,"\t\"%dx%dx%d\" \t %7.3f   %4d %4d %4d %4d   %4d %4d %4d %4d\n"
+		    ,ELSA_TIM_xres(*eetim),ELSA_TIM_yres(*eetim),ELSA_TIM_bpp(*eetim)
+		    ,(ELSA_TIM_pixfrq4(*eetim)*4)/1000.0
+		    ,ELSA_TIM_xres(*eetim)
+		    ,ELSA_TIM_xres(*eetim)+ELSA_TIM_hfp(*eetim)
+		    ,ELSA_TIM_xres(*eetim)+ELSA_TIM_hfp(*eetim)+ELSA_TIM_hsw(*eetim)
+		    ,ELSA_TIM_htot(*eetim)
+		    ,ELSA_TIM_yres(*eetim)
+		    ,ELSA_TIM_yres(*eetim)+ELSA_TIM_vfp(*eetim)
+		    ,ELSA_TIM_yres(*eetim)+ELSA_TIM_vfp(*eetim)+ELSA_TIM_vsw(*eetim)
+		    ,ELSA_TIM_vtot(*eetim)
+		    );
+	 p += strlen(p);
+      }   
    }
 
    if (pserno) {

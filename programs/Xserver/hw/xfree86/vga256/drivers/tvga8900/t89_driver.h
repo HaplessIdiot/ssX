@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.h,v 3.5 1996/12/23 06:58:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.h,v 3.6 1996/12/30 14:00:18 dawes Exp $ */
 
 /*
  * Trident Chipset Definitions
@@ -45,6 +45,7 @@
 #define TGUI9430DGi	14
 #define TGUI9440AGi	15
 #define TGUI96xx	16
+#define CYBER938x	17
 
 #ifdef INITIALIZE_LIMITS
 /* Clock Limits */
@@ -66,6 +67,7 @@ int tridentClockLimit[] = {
 	90000,
 	90000,
 	90000, /* 135000 when Multiplex set (not done yet!) */
+	90000, /* "" */
 };
 
 int tridentClockLimit16bpp[] = {
@@ -86,6 +88,7 @@ int tridentClockLimit16bpp[] = {
 	45000,
 	45000,
 	80000,
+	80000,
 }; 
 
 int tridentClockLimit32bpp[] = {
@@ -105,6 +108,7 @@ int tridentClockLimit32bpp[] = {
 	25180,
 	25180,
 	25180,
+	40000,
 	40000,
 };
 

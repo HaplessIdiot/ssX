@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.9 1996/12/09 11:51:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.10 1996/12/23 06:41:34 dawes Exp $ */
 
 
 
@@ -117,7 +117,8 @@ extern int s3DetectELSA(
 			char **pserno,
 			int *max_pix_clock, 
 			int *max_mem_clock,
-			int *hwconf
+			int *hwconf,
+			char **modes
 #endif
 			);
 

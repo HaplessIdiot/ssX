@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c /main/58 1996/12/04 10:22:50 lehors $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.22 1996/12/09 11:50:29 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.23 1996/12/23 06:04:17 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -104,7 +104,7 @@ from the X Consortium.
 #if !defined(_SEQUENT_) && !defined(ESIX) && !defined(sco)
 #include <net/errno.h>
 #endif /* _SEQUENT_  || ESIX  || SCO */
-#ifndef ISC
+#if !defined(ISC) || !defined(I_NREAD)
 #include <sys/stropts.h>
 #endif
 #endif /* i386 && SYSV || _SEQUENT_ */

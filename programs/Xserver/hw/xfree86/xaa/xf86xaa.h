@@ -32,10 +32,11 @@
 #define RGB_EQUAL		0x8
 #define NO_TRANSPARENCY		0x10
 #define NO_CAP_NOT_LAST		0x20
+#define TRANSPARENCY_GXCOPY     0x40
 
 /* Color expansion flags */
 
-#define SCANLINE_NO_PAD			0x0
+#define SCANLINE_NO_PAD			0x800
 #define SCANLINE_PAD_BYTE		0x1000
 #define SCANLINE_PAD_DWORD		0x2000
 #define CPU_TRANSFER_PAD_DWORD		0x0
@@ -49,6 +50,7 @@
 #define BIT_ORDER_IN_BYTE_LSBFIRST	0x0
 #define BIT_ORDER_IN_BYTE_MSBFIRST	0x200000
 #define LEFT_EDGE_CLIPPING		0x400000
+#define LEFT_EDGE_CLIPPING_NEGATIVE_X   0x800000
 
 /* Highest level, GC ops and some ScreenRec fall-backs. */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.107 1996/12/28 08:14:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.108 1997/01/08 20:33:57 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -398,6 +398,9 @@ s3Init(mode)
    if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
       pixMuxShift = s3InfoRec.clock[mode->Clock] > 120000 ? 2 : 
 		      s3InfoRec.clock[mode->Clock] > 60000 ? 1 : 0 ;
+   else if (DAC_IS_IBMRGB528)
+      pixMuxShift = (s3InfoRec.clock[mode->Clock] > 220000 && s3Bpp <= 2) ? 2 :
+	             s3InfoRec.clock[mode->Clock] > 110000 ? 1 : 0 ;
    else if ((mode->Flags & V_DBLCLK)
 	    && (DAC_IS_TI3026) 
 	    && (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)))
@@ -483,7 +486,7 @@ s3Init(mode)
 	 mode->CrtcHSyncStart = mode->CrtcHSyncEnd - 1;
          changed = TRUE;
       }
-      if (DAC_IS_TI3030 && s3Bpp==1) {
+      if ((DAC_IS_TI3030 || DAC_IS_IBMRGB528) && s3Bpp==1) {
 	 /* for 128bit bus we need multiple of 16 8bpp pixels... */
 	 if (mode->CrtcHTotal & 0x0f) {
 	    mode->CrtcHTotal = (mode->CrtcHTotal + 0x0f) & ~0x0f;
@@ -1037,13 +1040,21 @@ s3Init(mode)
 
 
       outb(vgaCRIndex, 0x3b);
-      itmp = (  new->CRTC[0] + ((i&0x01)<<8)
-	      + new->CRTC[4] + ((i&0x10)<<4) + 1) / 2;
-      if (itmp-(new->CRTC[4] + ((i&0x10)<<4)) < 4)
-	 if (new->CRTC[4] + ((i&0x10)<<4) + 4 <= new->CRTC[0]+ ((i&0x01)<<8))
-	    itmp = new->CRTC[4] + ((i&0x10)<<4) + 4;
+      if (DAC_IS_IBMRGB528) {
+	 if (s3Bpp==1)
+	    itmp = ((new->CRTC[4] + ((i&0x10)<<4) + 2) + 1) & ~1;
 	 else
-	    itmp = new->CRTC[0]+ ((i&0x01)<<8) + 1;
+	    itmp = ((new->CRTC[4] + ((i&0x10)<<4) + 4) + 1) & ~1;
+      }
+      else {
+	 itmp = (  new->CRTC[0] + ((i&0x01)<<8)
+		 + new->CRTC[4] + ((i&0x10)<<4) + 1) / 2;
+	 if (itmp-(new->CRTC[4] + ((i&0x10)<<4)) < 4)
+	    if (new->CRTC[4] + ((i&0x10)<<4) + 4 <= new->CRTC[0]+ ((i&0x01)<<8))
+	       itmp = new->CRTC[4] + ((i&0x10)<<4) + 4;
+	    else
+	       itmp = new->CRTC[0]+ ((i&0x01)<<8) + 1;
+      }
       outb(vgaCRReg, itmp & 0xff);
       i |= (itmp&0x100) >> 2;
       outb(vgaCRIndex, 0x3c);
@@ -1207,6 +1218,37 @@ s3Init(mode)
 	 ErrorF("VCLK has been inverted %d times from 0x%02x to 0x%02x now\n",i1,cr67,tmp1);
 #endif
       }
+   }
+
+   if (OFLG_ISSET(OPTION_ELSA_W2000PRO_X8,  &s3InfoRec.options)) {
+      /* check LCLK/SCLK phase */
+      unsigned char cr5c, cr42;
+
+      outb(vgaCRIndex, 0x42);
+      cr42 = inb(vgaCRReg);
+
+      if (inb(0x3cc) & 0x40)   /* hsync polarity */
+	 cr42 &= 0xfb;
+      else
+	 cr42 |= 0x04;
+      outb(vgaCRReg, cr42);
+
+      outb(vgaCRIndex, 0x5c);
+      cr5c = inb(vgaCRReg);
+      outb(vgaCRReg, cr5c | 0xa0);  /* set GD7 & GD5 */
+
+      usleep(100000);   /* wait at least 2 VSYNCs to latch clock phase */
+
+      if (inb(0x3c2) & 0x10)   /* query SENSE */
+	 cr42 &= 0xf7;
+      else
+	 cr42 |= 0x08;
+
+      outb(vgaCRIndex, 0x42);
+      outb(vgaCRReg, cr42);
+
+      outb(vgaCRIndex, 0x5c);
+      outb(vgaCRReg, cr5c & 0x7f | 0x20);
    }
 
    if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions))

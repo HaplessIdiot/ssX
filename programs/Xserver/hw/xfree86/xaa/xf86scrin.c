@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.4 1997/01/05 11:59:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.5 1997/01/12 10:48:15 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -103,6 +103,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* This is defined in cfbscrinit.c */
 extern Bool cfbCreateScreenResources();
 
+extern Bool xf86Resetting;
+
 /* We need to define this here instead of use the cfb one. */
 static miBSFuncRec xf86BSFuncRec = {
     cfbSaveAreas,
@@ -198,7 +200,9 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
     xf86InitializeAcceleration(pScreen);
 
-    xf86Bench();
+    if (!xf86Resetting && OFLG_ISSET(OPTION_XAA_BENCHMARK,
+    &(xf86AccelInfoRec.ServerInfoRec->options)))
+        xf86Bench();
 
     /* This is important. */
     pScreen->CreateGC = xf86CreateGC;

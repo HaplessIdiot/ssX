@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.9 1996/12/09 11:51:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.10 1996/12/27 07:02:42 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -134,125 +134,12 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
    register int x1, x2;
    RegionPtr cclip;
    cfbPrivGCPtr devPriv;
-   int s3_clr=0, s3_rop = -1;
+   int s3_clr, s3_rop;
 
    if (!pGC->planemask)  /* for xgc "benchmarks" ;-) */
       return;
 
-   if ((pGC->planemask & s3BppPMask) == s3BppPMask) {
-      s3_rop = s3alu_sp[pGC->alu];
-      s3_clr = pGC->fgPixel;
-   } else {
-      switch (pGC->alu) {
-      case GXclear:  /* ROP_0 */
-	 s3_rop = ROP_DPa;
-	 s3_clr = ~pGC->planemask;
-	 break;
-      case GXand:  /* ROP_DPa */
-	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask)
-	    return;		/* NOP */
-	 s3_rop = ROP_DPa;
-	 s3_clr = pGC->fgPixel | ~pGC->planemask;
-	 break;
-      case GXandReverse:  /* ROP_PDna */
-	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
-	    s3_rop = ROP_DPx;
-	    s3_clr = pGC->planemask;
-	 } else if (!(pGC->fgPixel & pGC->planemask)) {
-	    s3_rop = ROP_DPa;
-	    s3_clr = ~pGC->planemask;
-	 }
-	 break;
-      case GXcopy:  /* ROP_P */
-	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
-	    s3_rop = ROP_DPo;
-	    s3_clr = pGC->planemask;
-	 } else if (!(pGC->fgPixel & pGC->planemask)) {
-	    s3_rop = ROP_DPa;
-	    s3_clr = ~pGC->planemask;
-	 }
-	 break;
-      case GXandInverted:  /* ROP_DPna */
-	 if ((~pGC->fgPixel & pGC->planemask) == pGC->planemask)
-	    return;		/* NOP */
-	 s3_rop = ROP_DPa;
-	 s3_clr = ~pGC->fgPixel | ~pGC->planemask;
-	 break;
-      case GXnoop:  /* ROP_D */
-	 return;		/* NOP */
-	 s3_rop = ROP_D;
-	 s3_clr = pGC->fgPixel;
-	 break;
-      case GXxor:  /* ROP_DPx */
-	 s3_rop = ROP_DPx;
-	 s3_clr = pGC->fgPixel & pGC->planemask;
-	 if (!s3_clr)
-	    return;		/* NOP */
-	 break;
-      case GXor:  /* ROP_DPo */
-	 s3_rop = ROP_DPo;
-	 s3_clr = pGC->fgPixel & pGC->planemask;
-	 if (!s3_clr)
-	    return;		/* NOP */
-	 break;
-      case GXnor:  /* ROP_DPon */
-	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
-	    s3_rop = ROP_DPa;
-	    s3_clr = ~pGC->planemask;
-	 } else if (!(pGC->fgPixel & pGC->planemask)) {
-	    s3_rop = ROP_DPx;
-	    s3_clr = pGC->planemask;
-	 }
-	 break;
-      case GXequiv:  /* ROP_DPxn */
-	 s3_rop = ROP_DPx;
-	 s3_clr = ~pGC->fgPixel & pGC->planemask;
-	 if (!s3_clr)
-	    return;		/* NOP */
-	 break;
-      case GXinvert:  /* ROP_Dn */
-	 s3_rop = ROP_DPx;
-	 s3_clr = pGC->planemask;
-	 break;
-      case GXorReverse:  /* ROP_PDno */
-	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
-	    s3_rop = ROP_DPo;
-	    s3_clr = pGC->planemask;
-	 } else if (!(pGC->fgPixel & pGC->planemask)) {
-	    s3_rop = ROP_DPx;
-	    s3_clr = pGC->planemask;
-	 }
-	 break;
-      case GXcopyInverted:  /* ROP_Pn */
-	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
-	    s3_rop = ROP_DPa;
-	    s3_clr = ~pGC->planemask;
-	 } else if (!(pGC->fgPixel & pGC->planemask)) {
-	    s3_rop = ROP_DPo;
-	    s3_clr = pGC->planemask;
-	 }
-	 break;
-      case GXorInverted:  /* ROP_DPno */
-	 s3_rop = ROP_DPo;
-	 s3_clr = ~pGC->fgPixel & pGC->planemask;
-	 if (!s3_clr)
-	    return;		/* NOP */
-	 break;
-      case GXnand:  /* ROP_DPan */
-	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
-	    s3_rop = ROP_DPx;
-	    s3_clr = pGC->planemask;
-	 } else if (!(pGC->fgPixel & pGC->planemask)) {
-	    s3_rop = ROP_DPo;
-	    s3_clr = pGC->planemask;
-	 }
-	 break;
-      case GXset:  /* ROP_1 */
-	 s3_rop = ROP_DPo;
-	 s3_clr = pGC->planemask;
-	 break;
-      }
-   }
+   s3_rop = s3ConvertPlanemask(pGC, &s3_clr);
 
    if (!xf86VTSema || (s3_rop == -1)) {
       if (xf86VTSema) WaitIdleEmpty();

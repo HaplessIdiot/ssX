@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.1 1996/11/24 09:57:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.2 1997/01/12 10:48:12 dawes Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -516,6 +516,27 @@ xf86PolySegment2(
 );
 
 void
+xf86FillRectStippledCPUToScreenColorExpand(
+#if NeedFunctionPrototypes
+    DrawablePtr pDrawable,
+    register GCPtr pGC,
+    int nBoxInit,
+    BoxPtr pBoxInit
+#endif
+);
+
+void
+xf86FillRectStippledScreenToScreenColorExpand(
+#if NeedFunctionPrototypes
+    DrawablePtr pDrawable,
+    register GCPtr pGC,
+    int nBoxInit,
+    BoxPtr pBoxInit
+#endif
+);
+
+void
 xf86Bench();
 
 extern int xf86PixmapIndex;
+extern unsigned int byte_expand3[256], byte_reversed_expand3[256];

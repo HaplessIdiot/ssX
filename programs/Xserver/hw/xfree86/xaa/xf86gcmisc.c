@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.1 1996/12/09 11:55:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.2 1997/01/02 04:38:49 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -89,9 +89,18 @@
     (!(flag & NO_PLANEMASK) || (pGC->planemask & PMSK) == PMSK)
 #define CHECKROP(flag) \
     (!(flag & GXCOPY_ONLY) || devPriv->rop == GXcopy)
+#define CHECKTRANSPARENCYROP(flag) \
+    (!((flag & GXCOPY_ONLY) || (flag & TRANSPARENCY_GXCOPY)) \
+    || devPriv->rop == GXcopy)
 #define CHECKRGBEQUAL(flag) \
     (!(flag & RGB_EQUAL) || ((pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
     & 0xFF00) >> 8) && (pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
+    & 0xFF0000) >> 16)))
+#define CHECKRGBEQUALBOTH(flag) \
+    (!(flag & RGB_EQUAL) || ((pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
+    & 0xFF00) >> 8) && (pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
+    & 0xFF0000) >> 16)) && ((pGC->bgPixel & 0xFF) == ((pGC->bgPixel \
+    & 0xFF00) >> 8) && (pGC->bgPixel & 0xFF) == ((pGC->bgPixel \
     & 0xFF0000) >> 16)))
 
 
@@ -360,11 +369,13 @@ no_new_cfb_text:
 	if (xf86GCInfoRec.PolyGlyphBltTE
 	    && pGC->fillStyle == FillSolid
 	    && CHECKPLANEMASK(xf86GCInfoRec.PolyGlyphBltTEFlags)
-	    && CHECKROP(xf86GCInfoRec.PolyGlyphBltTEFlags))
+	    && CHECKROP(xf86GCInfoRec.PolyGlyphBltTEFlags)
+	    && CHECKRGBEQUALBOTH(xf86GCInfoRec.PolyGlyphBltTEFlags))
 	    PolyGlyphBltFunc = xf86GCInfoRec.PolyGlyphBltTE;
 	if (xf86GCInfoRec.ImageGlyphBltTE
 	    && CHECKPLANEMASK(xf86GCInfoRec.ImageGlyphBltTEFlags)
-	    && CHECKROP(xf86GCInfoRec.ImageGlyphBltTEFlags))
+	    && CHECKROP(xf86GCInfoRec.ImageGlyphBltTEFlags)
+	    && CHECKRGBEQUALBOTH(xf86GCInfoRec.ImageGlyphBltTEFlags))
 	    ImageGlyphBltFunc = xf86GCInfoRec.ImageGlyphBltTE;
     }
     pGC->ops->ImageGlyphBlt = ImageGlyphBltFunc;
@@ -537,18 +548,6 @@ xf86GCNewFillArea(pGC, new_cfb_fillarea)
 	if (!CHECKROP(xf86GCInfoRec.PolyFillRectStippledFlags))
 	    break;
 	PolyFillRectFunc = xf86GCInfoRec.PolyFillRectStippled;
-	/* We need to set fall backs also. */
-#if PSZ == 8
-	if (!devPriv->pRotatedPixmap)
-	    xf86AccelInfoRec.FillRectStippledFallBack =
-	        cfb8FillRectStippledUnnatural;
-	else
-	    xf86AccelInfoRec.FillRectStippledFallBack =
-	        cfb8FillRectTransparentStippled32;
-#else
-	xf86AccelInfoRec.FillRectStippledFallBack =
-	    xf86miFillRectStippledFallBack;
-#endif
 	break;
     case FillOpaqueStippled:
     	if (!xf86GCInfoRec.PolyFillRectOpaqueStippled)
@@ -558,18 +557,6 @@ xf86GCNewFillArea(pGC, new_cfb_fillarea)
 	if (!CHECKROP(xf86GCInfoRec.PolyFillRectOpaqueStippledFlags))
 	    break;
 	PolyFillRectFunc = xf86GCInfoRec.PolyFillRectOpaqueStippled;
-	/* We need to set fall backs also. */
-#if PSZ == 8
-	if (!devPriv->pRotatedPixmap)
-	    xf86AccelInfoRec.FillRectOpaqueStippledFallBack =
-	        cfb8FillRectStippledUnnatural;
-	else
-	    xf86AccelInfoRec.FillRectOpaqueStippledFallBack =
-	        cfb8FillRectOpaqueStippled32;
-#else
-	xf86AccelInfoRec.FillRectOpaqueStippledFallBack =
-	    xf86miFillRectStippledFallBack;
-#endif
 	break;
     }
     pGC->ops->PolyFillRect = PolyFillRectFunc;

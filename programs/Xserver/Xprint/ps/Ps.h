@@ -49,6 +49,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
+/* $XFree86$ */
 
 #ifndef _PS_H_
 #define _PS_H_
@@ -271,7 +272,9 @@ typedef struct
 
 #define SEND_PS(f,c) fwrite( c, sizeof( char ), strlen( c ), f )
 #define MIN(a,b) (((a)<(b))?(a):(b))
+#ifndef MAX
 #define MAX(a,b) (((a)>(b))?(a):(b))
+#endif
 
 /*
  *  Functions in PsInit.c

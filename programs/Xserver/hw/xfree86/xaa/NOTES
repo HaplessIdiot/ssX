@@ -23,25 +23,21 @@ H.Hanemaayer@inter.nl.net
 Here's a list of known problems (roughly in order of importance). If you
 can confirm a problem using the lastest version, please do so.
 
-- I've seen crashes when using Netscape related to stipple functions. These
-  might be caused by the "fall-back" logic still getting it wrong.
-
-- A crash occurs because of recursive calling of
-  xf86miFillRectStippledFallBack. Fixed by mod 135?
+- I've seen crashes when using Netscape related to stipple functions.
+  These might be caused by the "fall-back" logic still getting it
+  wrong.  It seems to be triggered by a call of
+  vga8256FillRectTransparentStippled32. Fixed by mod 186?
 
 - The "NonTE" text acceleration triggers core dumps (related to an invalid
   fall-back function scheme in ValidateGC). It might also trigger lock-ups
   (which would point towards a problem in NonTE text color expansion).
   These functions are currently disabled.
 
-- The "NO_PLANEMASK" restriction has been reported not to work correctly --
-  non-trivial planemasks may be passed to low-level solid rectangle fill
-  despite this flag. This might have been fixed now by mod 129.
-
 - At 24bpp, the cursor in an rxvt has a wrong color, and when selecting
   text the colors are wrong. This looks like a missing RGB_EQUAL check.
 
-- Color expanded (monochrome) 8x8 pattern is not working correctly yet.
+- Color expanded (monochrome) 8x8 pattern is may not be working correctly
+  yet in all cases (not fully tested).
 
 - The disabled non-terminal emulator font acceleration is suspect, I
   don't think it handles horizontally overlapping characters correctly
@@ -50,17 +46,63 @@ can confirm a problem using the lastest version, please do so.
   implement it.
 
 - The SCANLINE_PAD_BYTE and SCANLINE_NO_PAD text transfer code for CPU
-  to screen color expansion has not been tested, nor has the FIXED_BASE
-  support.
+  to screen color expansion has not been fully tested, nor has the
+  FIXED_BASE support.
 
 - The pattern fill primitives are taken to have the same graphics operation
   restrictions (planemask, rop etc) as ScreenToScreenCopy.
+
+- The support for TRIPLE_BITS_24BPP has improved, but it has not yet been
+  tested.
+
+- For color expansion implementation of stipples the graphics operation
+  restriction of color expansion are not honoured, but instead the
+  CopyArea ones are used.
 
 When the server crashes, run 'gdb -c core XF86_SVGA' and print a
 back-trace ('backtrace').
 
 Change Log:
 
+192. Honour RGB_EQUAL when deciding CopyPlane1To24 acceleration in
+     xf86plane.c.
+191. Fix bugs in handling of left edge in CPU-to-screen color expansion
+     of bitmaps.
+190. When the server resets, don't execute the start-up benchmarks.
+189. When the server resets, don't execute the main part of the
+     xf86GCInfoRec and xf86AccelInfoRec initialization code, which
+     depends on default values for some fields.
+188. When there is any kind of accelerated stippled rectangle fill, also
+     use it for stippled spans.
+187. Add 10x10 CPU-to-screen color expansion benchmark.
+186. Remove left-over broken fall-back stipple function setting code
+     in xf86gcmisc.c, probably fixing crashes.
+185. Implement "no_pixmap_cache", and new "xaa_benchmark" and
+     "xaa_no_color_exp" server flags.
+184. Only print detailed messages when xf86Verbose is TRUE.
+183. Implement color expansion acceleration of stipple-filled rectangles
+     in xf86stip.c. Requires SCANLINE_PAD_DWORD for CPU-to-screen color
+     expansion, and does not support TRIPLE_BITS_24BPP.
+182. Fix SCANLINE_NO_PAD CPU-to-screen color expansion by not defining
+     the flag definition as zero (Koen Gadeyne).
+181. Add LEFT_EDGE_CLIPPING_NEGATIVE_X color expansion flag.
+180. Fix potential bug in handling of LEFT_EDGE_CLIPPING.
+179. Add new file xf86tables.c with byte expansion tables for
+     TRIPLE_BITS_24BPP.
+178. Support TRIPLE_BITS_24BPP for bitmap color expansion, with the
+     exception of non-DWORD scanline padding of CPU-to-screen color
+     expansion.
+177. Fix a probable bug in CPU-to-screen bitmap color expansion in
+     MSB-first mode without left edge clipping.
+176. When checking for hardware pattern usage for tiles, prefer the
+     color expand (monochrome) pattern.
+175. Improve TRIPLE_BITS_24BPP support with color expansion enabled for
+     text using screen-to-screen color color expansion or CPU-to-screen
+     with SCANLINE_PAD_DWORD.
+174. Add TRANSPARENCY_GXCOPY graphics operation flag, and take it into
+     consideration for ScreenToScreenCopy with transparency.
+
+XFree86 3.2q
 173. Fix infinite loop in CPU_TRANSFER_BASE_FIXED color expansion
      (Xavier Ducoin).
 172. Fix color expansion benchmark when TRIPLE_BITS_24BPP is defined
@@ -369,6 +411,9 @@ Version 0.1 (25 October 1996)
      expansion stipple upload, bitmaps.
 
 
+Overview of XAA
+---------------
+
 1.1
 
 Some advantages of this new interface:
@@ -424,6 +469,12 @@ NO_CAP_NOT_LAST
 
     Indicates that the graphics operation (typically PolySegment) does
     not support not drawing of the last pixel.
+
+TRANSPARENCY_GXCOPY
+
+    Indicates that, unlike the case of no transparency, when
+    transparency is enabled only the GXcopy raster-op is allowed. This
+    is valid only for ScreenToScreenCopy.
 
 
 1.3	The AccelInfoRec
@@ -509,7 +560,9 @@ Flags
     aligned on a 64-pixel boundary, the programmed pattern start
     location can in fact include a multiple-of-8-pixels offset, which
     indicates the vertical offset into the pattern. This flag is
-    mutually exclusive to HARDWARE_PATTERN_ALIGN_64.
+    mutually exclusive to HARDWARE_PATTERN_ALIGN_64. If you can also
+    specify the horizontal offset, do not use this flag, but instead
+    use HARDWARE_PATTERN_PROGRAMMED_ORIGIN.
 
     HARDWARE_PATTERN_PROGRAMMED_BITS
 
@@ -765,7 +818,8 @@ ColorExpandFlags
 	are expected to require three times the amount of bits to be
 	transferred so that 24bpp grayscale colors can used with color
 	expansion in 8bpp coprocessor mode. Each bit is expanded to 3
-	bits when writing the monochrome data.
+	bits when writing the monochrome data. When definining this
+        flags, also define RGB_EQUAL.
 
     VIDEO_SOURCE_GRANULARITY_PIXEL
     VIDEO_SOURCE_GRANULARITY_BYTE
@@ -792,9 +846,17 @@ ColorExpandFlags
 	support the left-edge clipping parameter, which indicates
 	the number of pixels to skip at the left edge.
 
-     Note that the regular graphics operations flags for raster-op,
-     planemask and color restrictions are also valid. NO_TRANSPARENCY
-     indicates that color expansion does not support transparency.
+    LEFT_EDGE_CLIPPING_NEGATIVE_X
+
+	This indicates that when the left-edge clipping parameter is
+        specified, the x coordinate is allowed to be negative (while
+        being on-screen when the parameter is actually added to it).
+        At the moment, this flag is a requirement for color expansion
+        acceleration of (large) stipples.
+
+    Note that the regular graphics operations flags for raster-op,
+    planemask and color restrictions are also valid. NO_TRANSPARENCY
+    indicates that color expansion does not support transparency.
 
 SetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 
@@ -1006,7 +1068,7 @@ starting point.
 
 Next you might want to look at color expansion (CPUToScreen, or if
 that can't be done, ScanlineScreenToScreen), BresenhamLine or
-TwoPointLine, and Fill8x8Pattern.
+TwoPointLine, and Fill8x8Pattern/ColorExpand8x8Pattern.
 
 The relative win of seperately implementing functions that are already
 accelerated with solid filled rectangles varies, but it can make a
@@ -1448,7 +1510,7 @@ Cirrus Logic GD5426/28/29/30/34/40/46 and 7543/48
     provided for future use. It requires the source to be aligned on a
     DWORD boundary (VIDEO_SOURCE_GRANULARITY_DWORD).
 
-Matrox Millenium
+Matrox Millennium
 
     BACKGROUND_OPERATIONS
     24bpp: NO_PLANEMASK

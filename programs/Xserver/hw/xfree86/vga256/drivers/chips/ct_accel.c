@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_accel.c,v 3.1 1997/01/12 10:42:27 dawes Exp $ */
 
 
 #include "vga256.h"
@@ -47,7 +47,6 @@ void CTNAME(SetupForCPUToScreenColorExpand)();
 void CTNAME(SubsequentCPUToScreenColorExpand)();
 void CTNAME(SetupForFill8x8Pattern)();
 void CTNAME(SubsequentFill8x8Pattern)();
-void CTNAME(EmulateSubsequentFill8x8Pattern)();
 void CTNAME(SetupFor8x8PatternColorExpand)();
 void CTNAME(Subsequent8x8PatternColorExpand)();
 
@@ -68,7 +67,8 @@ void _ctAccelInit() {
      * Set up the main acceleration flags.
      */
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE |
-	HARDWARE_PATTERN_SCREEN_ORIGIN | HARDWARE_PATTERN_MOD_64_OFFSET;
+	HARDWARE_PATTERN_SCREEN_ORIGIN | HARDWARE_PATTERN_MONO_TRANSPARENCY |
+	HARDWARE_PATTERN_MOD_64_OFFSET | HARDWARE_PATTERN_BIT_ORDER_MSBFIRST;
 #ifdef CHIPS_HIQV
     /* I believe this is possible for the HiQV architecture */
     xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;
@@ -168,18 +168,22 @@ void _ctAccelInit() {
 	(unsigned int *)ctBltDataWindow;
     xf86AccelInfoRec.CPUToScreenColorExpandRange = 64 * 1024;
 
-#ifndef CHIPS_HIQV
+#if 0  /* Disable. Won't work with the current XAA */
+/* #ifndef CHIPS_HIQV */
     if (vga256InfoRec.bitsPerPixel != 24) {
 #endif
         xf86AccelInfoRec.SetupForFill8x8Pattern =
 	    CTNAME(SetupForFill8x8Pattern);
         xf86AccelInfoRec.SubsequentFill8x8Pattern =
             CTNAME(SubsequentFill8x8Pattern);
+#if 0 /* Currently broken in XAA */
         xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
 	    CTNAME(SetupFor8x8PatternColorExpand);
         xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
             CTNAME(Subsequent8x8PatternColorExpand);
-#ifndef CHIPS_HIQV
+#endif
+#if 0  /* Disable. Won't work with the current XAA */
+/* #ifndef CHIPS_HIQV */
     }
 #endif
 
@@ -294,7 +298,7 @@ void CTNAME(24SubsequentFillRectSolid)(x, y, w, h)
     ctSETDSTADDR(destaddr);
 
     if (!fastfill) ctSETFGCOLOR8(fgpixel);
-    ctSETROP(CommandFlags | ctAluConv[GXcopy & 0xf]);
+    ctSETROP(CommandFlags | ctAluConv[GXcopy & 0xF]);
     ctSETDSTADDR(destaddr);
     ctSETHEIGHTWIDTHGO(h, w * 3);
     line = 0;
@@ -308,7 +312,7 @@ void CTNAME(24SubsequentFillRectSolid)(x, y, w, h)
     if (!fastfill) {
 	ctBLTWAIT;
 	ctSETFGCOLOR8(xorpixel);
-	ctSETROP(CommandFlags | ctAluConv[GXxor & 0xf] | ctBGTRANSPARENT);
+	ctSETROP(CommandFlags | ctAluConv[GXxor & 0xF] | ctBGTRANSPARENT);
 	ctSETDSTADDR(destaddr);
 	ctSETHEIGHTWIDTHGO(h, w * 3);
 	line = 0;
@@ -670,14 +674,28 @@ void CTNAME(SubsequentCPUToScreenColorExpand)(x, y, w, h, skipleft)
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
 }
 
+static int patternyrot;
+
 void CTNAME(SetupForFill8x8Pattern)(patternx, patterny, rop, planemask,
 transparency_color)
     int patternx, patterny, rop;
     unsigned planemask;
     int transparency_color;
 {
+    unsigned int patternaddr;
+    
     CommandFlags = ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT;
+
+    /* We seem to have an atypical pattern fill. The X pattern address
+     * is with respect to the screen origin while the Y pattern address
+     * is with respect to the pattern origin. Use screen origin but keep
+     * track to the rotation in the y direction
+     */
+    patternaddr = (patterny * vga256InfoRec.displayWidth + 
+		   (patternx & ~0x3F)) * vgaBytesPerPixel;
+    patternyrot = (patternx & 0x3F) >> 3;
     ctBLTWAIT;
+    ctSETPATSRCADDR(patternaddr);
     ctSETPITCH(8 * vgaBytesPerPixel,
 	       vga256InfoRec.displayWidth * vgaBytesPerPixel);
 }
@@ -686,46 +704,16 @@ void CTNAME(SubsequentFill8x8Pattern)(patternx, patterny, x, y, w, h)
     int patternx, patterny;
     int x, y, w, h;
 {
-    int destaddr, patternaddr;
-#if 0
-    ErrorF("CHIPS: SubsequentFill8x8Pattern(%d, %d, %d, %d, %d, %d)\n",
-	   patternx, patterny, x, y, w, h);
-#endif
-    patternaddr = (patterny * vga256InfoRec.displayWidth + patternx) *
-	vgaBytesPerPixel;
+    unsigned int destaddr;
     destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
     ctBLTWAIT;
-    ctSETPATSRCADDR(patternaddr);
     ctSETDSTADDR(destaddr);
-#if 0
-    ctSETROP(CommandFlags | yrot);
+#ifdef CHIPS_HIQV
+    ctSETROP(CommandFlags | (((y + patternyrot) & 0x7) << 20));
 #else
-    ctSETROP(CommandFlags);
+    ctSETROP(CommandFlags | (((y + patternyrot) & 0x7) << 16));
 #endif
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
-}
-
-void CTNAME(EmulateSubsequentFill8x8Pattern)(patternx, patterny, x, y, w, h)
-    int patternx, patterny;
-    int x, y, w, h;
-{
-    int i,j;
-    for (i = 0; i < h / 8; i++) {
-        for (j = 0; j < w / 8; j++)
-            CTNAME(SubsequentScreenToScreenCopy)(patternx, patterny, x + j * 8,
-                y + i * 8, 8, 8);
-        if ((w & 7) > 0)
-            CTNAME(SubsequentScreenToScreenCopy)(patternx, patterny, x + j * 8,
-                y + i * 8, w & 7, 8);
-    }
-    if ((h & 7) > 0) {
-        for (j = 0; j < w / 8; j++)
-            CTNAME(SubsequentScreenToScreenCopy)(patternx, patterny, x + j * 8,
-                y + i * 8, 8, h & 7);
-        if ((w & 7) > 0)
-            CTNAME(SubsequentScreenToScreenCopy)(patternx, patterny, x + j * 8,
-                y + i * 8, w & 7, h & 7);
-    }
 }
 
 void CTNAME(SetupFor8x8PatternColorExpand)(patternx, patterny, bg, fg, rop,
@@ -733,12 +721,14 @@ planemask)
     int patternx, patterny, bg, fg, rop;
     unsigned int planemask;
 {
-    int patternaddr;
+    unsigned int patternaddr;
 
     CommandFlags = ctPATMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
 	ctAluConv2[rop & 0xF];
-    patternaddr = (patterny * vga256InfoRec.displayWidth + patternx) *
-	vgaBytesPerPixel;
+
+    patternaddr = (patterny * vga256InfoRec.displayWidth +
+		   ((patternx >> 3) & ~0x3F)) * vgaBytesPerPixel;
+    patternyrot = ((patternx >> 3) & 0x3F) >> 3;
     ctBLTWAIT;
     ctSETPATSRCADDR(patternaddr);
     if (bg == -1) {
@@ -774,7 +764,7 @@ planemask)
 #ifdef CHIPS_HIQV
     ctSETMONOCTL(ctDWORDALIGN);
 #endif
-    ctSETPITCH(0,vga256InfoRec.displayWidth * vgaBytesPerPixel);
+    ctSETPITCH(1,vga256InfoRec.displayWidth * vgaBytesPerPixel);
 }
 
 void CTNAME(Subsequent8x8PatternColorExpand)(patternx, patterny, x, y, w, h)
@@ -789,6 +779,10 @@ void CTNAME(Subsequent8x8PatternColorExpand)(patternx, patterny, x, y, w, h)
     destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
-    ctSETROP(CommandFlags);
+#ifdef CHIPS_HIQV
+    ctSETROP(CommandFlags | (((y + patternyrot) & 0x7) << 20));
+#else
+    ctSETROP(CommandFlags | (((y + patternyrot) & 0x7) << 16));
+#endif
     ctSETHEIGHTWIDTHGO(h, w);
 }

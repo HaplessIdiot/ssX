@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86plane.c,v 3.0 1996/11/18 13:22:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86plane.c,v 3.1 1996/12/18 03:13:32 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -75,11 +75,12 @@ static void xf86CopyPlaneNto1();
 static int bgPixel, fgPixel;
 
 static int CopyPlane1ToNIsAccelerated(pSrcDrawable, pDstDrawable, alu,
-planemask)
+planemask, bg, fg)
     DrawablePtr	pSrcDrawable;
     DrawablePtr	pDstDrawable;
     int alu;
     unsigned long planemask;
+    int bg, fg;
 {
     if ((pSrcDrawable->type != DRAWABLE_WINDOW) && 
 	(pDstDrawable->type == DRAWABLE_WINDOW) &&
@@ -89,7 +90,13 @@ planemask)
 	(planemask & ((1 << pDstDrawable->depth) - 1)) ==
 	((1 << pDstDrawable->depth) - 1)) &&
 	(!(xf86AccelInfoRec.ColorExpandFlags & GXCOPY_ONLY) ||
-	alu == GXcopy))
+	alu == GXcopy) &&
+        (!(xf86AccelInfoRec.ColorExpandFlags & RGB_EQUAL) ||
+        ((fg & 0xFF) == ((fg & 0xFF00) >> 8) &&
+        (fg & 0xFF) == ((fg & 0xFF0000) >> 16)) &&
+        ((bg & 0xFF) == ((bg & 0xFF00) >> 8) &&
+        (bg & 0xFF) == ((bg & 0xFF0000) >> 16)))
+	)
 	return TRUE;
     return FALSE;
 }
@@ -114,7 +121,8 @@ xf86CopyPlane(pSrcDrawable, pDstDrawable,
     if (pSrcDrawable->bitsPerPixel == 24 || pDstDrawable->bitsPerPixel == 24) {
     	/* Check to see if the 24bpp operation can be accelerated. */
         if (!(pSrcDrawable->bitsPerPixel == 1 && CopyPlane1ToNIsAccelerated(
-        pSrcDrawable, pDstDrawable, pGC->alu, pGC->planemask)))
+        pSrcDrawable, pDstDrawable, pGC->alu, pGC->planemask,
+        bgPixel, fgPixel)))
             return miCopyPlane(pSrcDrawable, pDstDrawable,
 	        pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
 	/*

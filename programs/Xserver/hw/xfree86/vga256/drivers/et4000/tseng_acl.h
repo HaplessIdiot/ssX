@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.h,v 3.2 1996/12/31 05:01:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.h,v 3.3 1997/01/08 20:50:58 dawes Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
@@ -123,22 +123,36 @@ extern LongP CPU2ACLBase;
 #define WAIT_QUEUE_VERBOSE \
 { int cnt=0; while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x1) cnt++; ErrorF("Q%d ",cnt);}
 
+#define MAX_WAIT_CNT 500000
 
-#define WAIT_ACL_VERBOSE \
-  { int cnt=0; while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x2) cnt++; ErrorF("W%d ",cnt);}
+#define WAIT_ACL_VERBOSE DO_WAIT_ACL(ErrorF("W%d ",MAX_WAIT_CNT - cnt))
 
-#define WAIT_ACL \
-  { int cnt = 1000000; \
+#define WAIT_ACL DO_WAIT_ACL( {} )
+  
+#define DO_WAIT_ACL(command) \
+  { int cnt = MAX_WAIT_CNT; \
     while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x2) \
       if (--cnt < 0) \
       { \
+        if (et4000_type < TYPE_ET6000) \
+        { \
+          *CPU2ACLBase = 0L; /* try unlocking the bus when CPU-to-accel gets stuck */ \
+          FLUSH_ACL \
+        } \
         ErrorF("WAIT_ACL: timeout.\n"); \
         break; \
       } \
+    command; \
   }
   
 #define WAIT_XY \
   {while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x4);}
+
+#define FLUSH_ACL \
+    *ACL_SUSPEND_TERMINATE = 0x00; \
+    *ACL_SUSPEND_TERMINATE = 0x02; \
+    *ACL_SUSPEND_TERMINATE = 0x00;
+
 
 /***********************************************************************/
 

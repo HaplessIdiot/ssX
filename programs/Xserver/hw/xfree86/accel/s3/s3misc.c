@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.63 1997/01/05 11:54:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.64 1997/01/08 20:34:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -232,11 +232,11 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	  && !OFLG_ISSET(OPTION_NO_MEM_ACCESS, &s3InfoRec.options)) {
 	 if (S3_x64_SERIES(s3ChipId)) 
 	    if (s3InfoRec.MemBase != 0) {
-	       if (s3InfoRec.MemBase & 0x3ffffff) {
+	       if ((s3InfoRec.MemBase & 0x3ffffff) && s3NewMmio) {
 		  ErrorF("%s %s: base address not correctly aligned to 64MB\n",
 			 XCONFIG_PROBED, s3InfoRec.name);
 		  ErrorF("\t\tbase address changed from 0x%08lx to 0x%08lx\n",
-			 s3InfoRec.MemBase, s3InfoRec.MemBase & 0x3ffffff);
+			 s3InfoRec.MemBase, s3InfoRec.MemBase & ~0x3ffffff);
 		  s3InfoRec.MemBase &= ~0x3ffffff;
 	       }
 	       base0 = s3InfoRec.MemBase;
@@ -1223,7 +1223,7 @@ s3AdjustFrame(int x, int y)
       int px, py, a;
       miPointerPosition(&px, &py);
       if (s3Bpp == 3) {
-	 if (DAC_IS_TI3030)
+	 if (DAC_IS_TI3030 || DAC_IS_IBMRGB528)
 	    a = 12;
 	 else 
 	    a = 6;
@@ -1232,7 +1232,7 @@ s3AdjustFrame(int x, int y)
 	 Base -= Base % a;
       }
       else {
-	 if (s3Bpp==1 && !DAC_IS_TI3030)
+	 if (s3Bpp==1 && !DAC_IS_TI3030 && !DAC_IS_IBMRGB528)
 	    a = 4-1;
 	 else 
 	    a = 8-1;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.45 1996/12/23 06:41:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.46 1996/12/28 08:14:50 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -126,12 +126,41 @@
 #endif
 
 typedef struct {
-   Bool (*ChipProbe)();
-   char *(*ChipIdent)();
-   void (*ChipEnterLeaveVT)();
-   Bool (*ChipInitialize)();
-   void (*ChipAdjustFrame)();
-   Bool (*ChipSwitchMode)();
+   Bool (*ChipProbe)(
+#if NeedNestedPrototypes
+	void
+#endif
+   );
+   char *(*ChipIdent)(
+#if NeedNestedPrototypes
+	int
+#endif
+   );
+   void (*ChipEnterLeaveVT)(
+#if NeedNestedPrototypes
+	int,
+	int
+#endif
+   );
+   Bool (*ChipInitialize)(
+#if NeedNestedPrototypes
+	int		/* scr_index */,
+	ScreenPtr	/* pScreen */,
+	int		/* argc */,
+	char **		/* argv */
+#endif
+   );
+   void (*ChipAdjustFrame)(
+#if NeedNestedPrototypes
+	int		/* x */,
+	int		/* y */
+   );
+#endif
+   Bool (*ChipSwitchMode)(
+#if NeedNestedPrototypes
+	DisplayModePtr	/* modes */
+   );
+#endif
 } s3VideoChipRec, *s3VideoChipPtr;
 
 extern ScrnInfoRec s3InfoRec;
@@ -216,11 +245,31 @@ extern int s3_968_DashBug;
 typedef struct {
     char *DacName;
     int DacSpeed;
-    Bool (*DacProbe)();
-    int (*PreInit)();
-    void (*DacRestore)();
-    void (*DacSave)();
-    int (*DacInit)(DisplayModePtr);
+    Bool (*DacProbe)(
+#if NeedNestedPrototypes
+	void
+#endif
+    );
+    int (*PreInit)(
+#if NeedNestedPrototypes
+	void
+#endif
+    );
+    void (*DacRestore)(
+#if NeedNestedPrototypes
+	void
+#endif
+    );
+    void (*DacSave)(
+#if NeedNestedPrototypes
+	void
+#endif
+    );
+    int (*DacInit)(
+#if NeedNestedPrototypes
+	DisplayModePtr
+#endif
+	);
 } s3RamdacInfo;
 
 extern s3RamdacInfo s3Ramdacs[];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.75 1997/01/08 20:35:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.76 1997/01/12 10:42:41 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1141,7 +1141,15 @@ cirrusProbe()
       */
      if (Is_62x5(cirrusChip) || Is_754x(cirrusChip)) 
 	  {
-	  /* Unlock the LCD registers... */
+	  /*
+	   * Unlock the LCD registers...
+           * For the 754x, this enables access to extension registers
+           * R2X to REX, which are mapped from CRTC index 0x2 to 0xE.
+           * I have my doubts about accessing regular CRTC registers
+           * beyond the RXX mapping range while RXX mapping is enabled,
+           * as the current code does, but I'm afraid to break the 62x5
+           * if I change this.
+	   */
 	  if( Is_754x(cirrusChip) )
 	      outb(vgaIOBase + 4, 0x2d);
 	  else
@@ -1204,29 +1212,45 @@ cirrusProbe()
 		       type = "Unknown-type";
                        break;
 		   }
-		   /* Read LCD vertical size. */
-	           outb(vgaIOBase + 4, 0x4a);
-	           cirrusLCDVerticalSize = inb(vgaIOBase + 5);
-	           outb(vgaIOBase + 4, 0x48);
-	           cirrusLCDVerticalSize |= (inb(vgaIOBase + 5) & 0x30) << 4;
-	           cirrusLCDVerticalSize += 2;
-	           /* Just try to pick the likely type. */
-	           if (cirrusLCDVerticalSize > 600 + 10) {
-	               cirrusLCDVerticalSize = 768;
-	               size = "1024x768";
+
+		   /* Read LCD size at R9X [3:2]. */
+	           outb(vgaIOBase + 4, 0x09);
+	           switch (temp = inb(vgaIOBase + 5)) {
+	           case 0x0 :
+	           	size = "640x480";
+	           	cirrusLCDVerticalSize = 480;
+	           	break;
+	           case 0x1 :
+	           	size = "800x600";
+	           	cirrusLCDVerticalSize = 600;
+	           	break;
+	           case 0x2 :
+	           	size = "1024x768";
+	           	cirrusLCDVerticalSize = 768;
+	           	break;
+	           case 0x3 :
+	                size = "Unknown-size (default to 640x480)";
+	                cirrusLCDVerticalSize = 480;
+	                break;
 	           }
-	           else
-	               if (cirrusLCDVerticalSize > 480 + 10) {
-	                   cirrusLCDVerticalSize = 600;
-	                   size = "800x600";
-	               }
-	               else {
-	                   cirrusLCDVerticalSize = 480;
-	                   size = "640x480";
-	               }
-                   ErrorF("%s %s: %s: %s %s LCD detected\n",
+                   ErrorF("%s %s: %s: %s %s ",
                        XCONFIG_PROBED, vga256InfoRec.name,
                        vga256InfoRec.chipset, size, type);
+                   if (type[0] == 'T') {
+                       /*
+                        * TFT-color. LCD color resolution is defined by
+                        * R9X [1:0].
+                        */
+                       int colorbits;
+                       switch (temp & 0x3) {
+                       case 0 : colorbits = 9; break;
+                       case 1 : colorbits = 12; break;
+                       case 2 : colorbits = 18; break;
+                       case 3 : colorbits = 24; break;
+                       }
+                       ErrorF("(%d-bit color) ", colorbits);
+                   }
+                   ErrorF("LCD detected\n");
 	       }
 	       else { 
 	           /* 62x5 only. */
@@ -3446,7 +3470,7 @@ cirrusInit(mode)
     {
       new->GRB |= 0x20;	/* Set 16k bank granularity */
       if (cirrusChip != CLGD5434 && cirrusChip != CLGD5436 &&
-	  cirrusChip != CLGD5446)
+	  cirrusChip != CLGD5446 && !HAVE754X())
 	if (
 #ifdef MONOVGA
 	    vga256InfoRec.displayWidth * vga256InfoRec.virtualY / 2 >
@@ -3690,7 +3714,10 @@ cirrusInit(mode)
 
 #ifdef ALLOW_8BPP_MULTIPLEXING
      if (multiplexing) {
-         new->HIDDENDAC = 0x4A;
+         if (cirrusChip >= CLGD5446)
+             new->HIDDENDAC = 0xCA;
+         else
+             new->HIDDENDAC = 0x4A;
      }
 #endif
 #endif

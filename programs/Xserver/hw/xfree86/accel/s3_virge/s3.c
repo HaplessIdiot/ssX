@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.10 1996/12/27 07:02:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.11 1996/12/29 13:49:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -149,68 +149,6 @@ typedef struct S3PCIInformation {
    int ChipRev;
    unsigned long MemBase;
 } S3PCIInformation;
-
-int s3alu[16] =
-{
-   ROP_0,
-   ROP_DSa,
-   ROP_SDna,
-   ROP_S,
-   ROP_DSna,
-   ROP_D,
-   ROP_DSx,
-   ROP_DSo,
-   ROP_DSon,
-   ROP_DSxn,
-   ROP_Dn,
-   ROP_SDno,
-   ROP_Sn,
-   ROP_DSno,
-   ROP_DSan,
-   ROP_1
-};
-
-/* S -> P */
-int s3alu_sp[16] =
-{
-   ROP_0,
-   ROP_DPa,
-   ROP_PDna,
-   ROP_P,
-   ROP_DPna,
-   ROP_D,
-   ROP_DPx,
-   ROP_DPo,
-   ROP_DPon,
-   ROP_DPxn,
-   ROP_Dn,
-   ROP_PDno,
-   ROP_Pn,
-   ROP_DPno,
-   ROP_DPan,
-   ROP_1
-};
-
-/* ROP  ->  (ROP & P) | (D & ~P) */
-int s3alu_pat[16] =
-{
-   ROP_0PaDPnao,
-   ROP_DSaPaDPnao,
-   ROP_SDnaPaDPnao,
-   ROP_SPaDPnao,
-   ROP_DSnaPaDPnao,
-   ROP_DPaDPnao,
-   ROP_DSxPaDPnao,
-   ROP_DSoPaDPnao,
-   ROP_DSonPaDPnao,
-   ROP_DSxnPaDPnao,
-   ROP_DnPaDPnao,
-   ROP_SDnoPaDPnao,
-   ROP_SnPaDPnao,
-   ROP_DSnoPaDPnao,
-   ROP_DSanPaDPnao,
-   ROP_1PaDPnao
-};
 
 #if 0
 static unsigned S3_IOPorts[] = { };

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.58 1997/01/04 12:18:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.59 1997/01/12 10:45:20 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -192,6 +192,7 @@ Bool tridentTGUIProgrammableClocks = FALSE;
 Bool tridentIsTGUI = FALSE;
 Bool tridentLinearOK = FALSE;
 Bool IsCyber = FALSE;
+static int CyberLCDHeight, CyberLCDWidth;
 static unsigned char DRAMspeed;
 static int TridentDisplayableMemory;
 unsigned char *tguiMMIOBase = NULL;
@@ -333,6 +334,7 @@ TVGA8900Ident(n)
 				   "tgui9400cxi", "tgui9420",
 				   "tgui9420dgi", "tgui9430dgi",
 				   "tgui9440agi", "tgui96xx",
+				   "cyber938x",
 				  };
 
 	if (n + 1 > sizeof(chipsets) / sizeof(char *))
@@ -451,7 +453,7 @@ static Bool
 TVGA8900Probe()
 {
   	unsigned char temp;
-	char *REV, *LCD;
+	char *REV, *LCD, *SIZE;
 	int i;
 
 #ifdef PC98_TGUI
@@ -510,6 +512,11 @@ TVGA8900Probe()
 			TVGAchipset = TGUI9440AGi;
 		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
 			TVGAchipset = TGUI96xx;
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(17)))
+		{
+			TVGAchipset = CYBER938x;
+			IsCyber = TRUE;
+		}
 		else
 			return(FALSE);
 		TVGA8900EnterLeave(ENTER);
@@ -759,16 +766,42 @@ TVGA8900Probe()
 		TVGA8900.ChipUse2Banks = TRUE;
 		if (IsCyber)
 		{
-			/* Enable stretch mode on LCD */
+			/* Allow stretch mode on LCD */
 			OFLG_SET(OPTION_LCD_STRETCH, &TVGA8900.ChipOptionFlags);
+			/* Allow LCD centering */
+			OFLG_SET(OPTION_LCD_CENTER, &TVGA8900.ChipOptionFlags);
 			outb(0x3CE, 0x42);
 			temp = inb(0x3CF);
 			if (temp & 0x80) 
 				LCD = "TFT";
 			else
 				LCD = "STN";
-			ErrorF("%s %s: Detected an %s Display\n", XCONFIG_PROBED,
-				vga256InfoRec.name, LCD);
+			outb(0x3CE, 0x31);
+			temp = inb(0x3CF);
+			switch ((temp & 0x60)>>5) {
+				case 0:
+					SIZE = " 640x480";
+					CyberLCDHeight = 640;
+					CyberLCDWidth = 480;
+					break;
+				case 1:
+					SIZE = " 800x600";
+					CyberLCDHeight = 800;
+					CyberLCDWidth = 600;
+					break;
+				case 2:
+					SIZE = " 1024x768";
+					CyberLCDHeight = 1024;
+					CyberLCDWidth = 768;
+					break;
+				case 3:
+					SIZE = " 1280x1024";
+					CyberLCDHeight = 1280;
+					CyberLCDWidth = 1024;
+					break;
+			}	
+			ErrorF("%s %s: Detected an %s %s Display\n",
+				XCONFIG_PROBED, vga256InfoRec.name, LCD, SIZE);
 		}
 		break;
       	}
@@ -1691,13 +1724,30 @@ TVGA8900Init(mode)
 			new->CyberHExp = inb(0x3CF);
 			if (OFLG_ISSET(OPTION_LCD_STRETCH, &vga256InfoRec.options))
 			{
+				/* Don't stretch */
 				new->CyberVExp &= 0xFE; 
 				new->CyberHExp &= 0xFE;
 			}
 			else
 			{
-				new->CyberVExp |= 0x01;
-				new->CyberHExp |= 0x01;
+				/* Stretch Width */
+				if (mode->CrtcHDisplay < CyberLCDWidth)
+					new->CyberVExp |= 0x01;
+				/* Stretch Height */
+				if (mode->CrtcVDisplay < CyberLCDHeight)
+					new->CyberHExp |= 0x01;
+			}
+			if (OFLG_ISSET(OPTION_LCD_STRETCH, &vga256InfoRec.options))
+			{
+				/* Center */
+				new->CyberVExp |= 0x80;
+				new->CyberHExp |= 0x80;
+			}
+			else
+			{
+				/* Don't Center */
+				new->CyberVExp &= 0xEF;
+				new->CyberHExp &= 0xEF;
 			}
 		}
 

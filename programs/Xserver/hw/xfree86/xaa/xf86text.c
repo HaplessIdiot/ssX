@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.3 1997/01/02 04:38:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.4 1997/01/12 10:48:16 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -1056,7 +1056,10 @@ static void DrawTextTECPUToScreenColorExpand(nglyph, h, glyphp, glyphwidth)
 
     if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD) {
         int words;
-        words = ((glyphwidth * nglyph + 31) & ~31) * h / 32;
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            words = ((glyphwidth * nglyph * 3 + 31) & ~31) * h / 32;
+        else
+            words = ((glyphwidth * nglyph + 31) & ~31) * h / 32;
         if (words & 1)
             *(unsigned int *)base = 0;
     }
@@ -1218,6 +1221,26 @@ static void DrawTextTEScreenToScreenColorExpand(nglyph, w, h, glyphp, glyphwidth
     int bitmapwidth;
     int line;
     int offset, endoffset;
+    unsigned int *(*DrawTextScanlineFunc)(
+#if NeedNestedPrototypes
+        unsigned int *base,
+        unsigned int **glyphp,
+        int line,
+        int nglyph,
+        int glyphwidth
+#endif
+    );
+
+    if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            DrawTextScanlineFunc = xf86DrawTextScanline3MSBFirst;
+        else
+            DrawTextScanlineFunc = xf86DrawTextScanlineMSBFirst;
+    else
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            DrawTextScanlineFunc = xf86DrawTextScanline3;
+        else
+            DrawTextScanlineFunc = xf86DrawTextScanline;
 
     /* Calculate the non-expanded bitmap width rounded up to 32-bit words, */
     /* in units of pixels. */
@@ -1229,14 +1252,9 @@ static void DrawTextTEScreenToScreenColorExpand(nglyph, w, h, glyphp, glyphwidth
     while (line < h) {
 	if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
 	    xf86AccelInfoRec.Sync();
-        if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
-	    xf86DrawTextScanlineMSBFirst((unsigned int *)
-	        (xf86AccelInfoRec.ScratchBufferBase + offset),
-	        glyphp, line, nglyph, glyphwidth);
-        else
-	    xf86DrawTextScanline((unsigned int *)
-	        (xf86AccelInfoRec.ScratchBufferBase + offset),
-	        glyphp, line, nglyph, glyphwidth);
+	(*DrawTextScanlineFunc)((unsigned int *)
+	    (xf86AccelInfoRec.ScratchBufferBase + offset),
+	    glyphp, line, nglyph, glyphwidth);
 	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
 	    (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8);
 	line++;
@@ -1327,7 +1345,6 @@ static void DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, glyphinfop)
     int bitmapwidth;
     int line;
     int offset, endoffset;
-
     /* Calculate the non-expanded bitmap width rounded up to 32-bit words, */
     /* in units of pixels. */
     bitmapwidth = (w + 31) & ~31;

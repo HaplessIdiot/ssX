@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.152 1996/12/29 13:49:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.153 1997/01/08 20:33:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -252,9 +252,11 @@ static SymTabRec s3ChipTable[] = {
    { S3_968,		"968" },
    { S3_TRIO32,		"Trio32" },
    { S3_TRIO64,		"Trio64" },
-   { S3_TRIO64VPLUS,	"Trio64V+" },
+   { S3_TRIO64VP,	"Trio64V+" },
    { S3_ViRGE,		"ViRGE" },
-   { S3_ViRGE_VX,	"ViRGE/VX"},
+   { S3_ViRGE_VX,	"ViRGE/VX" },
+   { S3_TRIO64UVP,	"Trio64UV+" },
+   { S3_AURORA64VP,	"Aurora64V+" },
    { -1,		"" },
 };
 
@@ -490,6 +492,15 @@ s3GetPCIInfo()
 	 case PCI_ViRGE_VX:
 	    info.ChipType = S3_ViRGE_VX;
 	    break;
+	 case PCI_AURORA64VP:
+	    info.ChipType = S3_AURORA64VP;
+	    break;
+	 case PCI_TRIO64UVP:
+	    info.ChipType = S3_TRIO64UVP;
+	    break;
+	 case PCI_TRIO64V2:
+	    info.ChipType = S3_TRIO64V2;
+	    break;
 	 default:
 	    info.ChipType = S3_UNKNOWN;
 	    info.DevID = pcrp->_device;
@@ -516,6 +527,9 @@ s3GetPCIInfo()
    if (   info.ChipType == S3_868 
        || info.ChipType == S3_968 
        || info.ChipType == S3_TRIO_32_64  /* only needed for Trio64V+ */
+       || info.ChipType == S3_TRIO64UVP
+       || info.ChipType == S3_TRIO64V2
+       || info.ChipType == S3_AURORA64VP
        /* || info.ChipType == S3_ViRGE */) {
       unsigned long base0;
       char *probed;
@@ -656,7 +670,7 @@ s3Probe()
    unsigned char config;
    int i, j;
    OFlagSet validOptions;
-   char *card, *serno;
+   char *card, *serno, *elsa_modes;
    int card_id, max_pix_clock, max_mem_clock, hwconf;
    int lookupFlags;
 
@@ -812,8 +826,14 @@ s3Probe()
 #endif
 	 } else if (S3_TRIO32_SERIES(s3ChipId)) {
 	    chipname = "Trio32";
+	 } else if (S3_TRIO64UVP_SERIES(s3ChipId)) {
+	    chipname = "Trio64UV+";
+	 } else if (S3_AURORA64VP_SERIES(s3ChipId)) {
+	    chipname = "Aurora64V+";
 	 } else if (S3_TRIO64V_SERIES(s3ChipId /* , s3ChipRev */)) {
 	    chipname = "Trio64V+";
+	 } else if (S3_TRIO64V2_SERIES(s3ChipId /* , s3ChipRev */)) {
+	    chipname = "Trio64V2";
 	 } else if (S3_TRIO64_SERIES(s3ChipId)) {
 	    chipname = "Trio64";
 	 }
@@ -1043,15 +1063,20 @@ s3Probe()
    }
 
    card_id = s3DetectELSA(s3InfoRec.BIOSbase, &card, &serno, &max_pix_clock,
-			  &max_mem_clock, &hwconf);
+			  &max_mem_clock, &hwconf, &elsa_modes);
    if (card_id > 0) {
       if (s3BiosVendor == UNKNOWN_BIOS) 
 	 s3BiosVendor = ELSA_BIOS;
-      if (xf86Verbose)
+      if (xf86Verbose) {
          ErrorF("%s %s: card: %s, Ser.No. %s\n",
 	        XCONFIG_PROBED, s3InfoRec.name, card, serno);
+	 if (elsa_modes && *elsa_modes)
+	    ErrorF("%s %s: video modes stores in ELSA EEPROM:\n%s",
+		   XCONFIG_PROBED, s3InfoRec.name, elsa_modes);
+      }
       xfree(card);
       xfree(serno);
+      xfree(elsa_modes);
 
       if (s3InfoRec.dacSpeed <= 0)
 	 s3InfoRec.dacSpeed = max_pix_clock;
@@ -1083,6 +1108,9 @@ s3Probe()
 	 case ELSA_WINNER_2000PRO:
 	    OFLG_SET(OPTION_ELSA_W2000PRO,  &s3InfoRec.options);
 	    break;
+	 case ELSA_WINNER_2000PRO_X8:
+	    OFLG_SET(OPTION_ELSA_W2000PRO_X8,  &s3InfoRec.options);
+	    continue; /* use IBM RGB528 clock, don't set ICD2061A flags */
 	 case ELSA_WINNER_2000:
 	 case ELSA_WINNER_2000VL:
 	 case ELSA_WINNER_2000PCI:
@@ -1969,6 +1997,10 @@ redo_mode_lookup:
 	 s3Port59 = inb(vgaCRReg);
 	 outb(vgaCRIndex, 0x5a);
 	 s3Port5A = inb(vgaCRReg);
+	 if (!s3Port59) { /* CR59/CR5A not yet initialized */
+	    s3Port59 =  0xf3000000 >> 24;
+	    s3Port5A = (0xf3000000 >> 16) & 0x08;
+	 }
       }
    }
 
@@ -2380,7 +2412,13 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose)
 	       else 
 		  pMode->Private[S3_INVERT_VCLK] = 0;
 	    else if (DAC_IS_IBMRGB)
-	       if (s3Bpp == 4) 
+	       if (OFLG_ISSET(OPTION_ELSA_W2000PRO_X8,  &s3InfoRec.options)) {
+		  if (s3Bpp == 1)
+		     pMode->Private[S3_INVERT_VCLK] = 1;
+		  else 
+		     pMode->Private[S3_INVERT_VCLK] = 0;
+	       } 
+	       else if (s3Bpp == 4) 
 		  pMode->Private[S3_INVERT_VCLK] = 0;
 	       else if (s3BiosVendor == STB_BIOS && s3Bpp == 2 
 			&& s3InfoRec.clock[pMode->Clock] > 125000 
@@ -2460,6 +2498,14 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose)
 		     pMode->Private[S3_BLANK_DELAY] >>= 1; 
 		 }
 	       }
+	       else if (OFLG_ISSET(OPTION_ELSA_W2000PRO_X8,  &s3InfoRec.options)) {
+		  if (s3Bpp == 2 && s3InfoRec.clock[pMode->Clock] >  220000)
+		     pMode->Private[S3_BLANK_DELAY] = 0x00;
+		  else if (s3Bpp == 4 && s3InfoRec.clock[pMode->Clock] >  110000)
+		     pMode->Private[S3_BLANK_DELAY] = 0x00;
+		  else 
+		     pMode->Private[S3_BLANK_DELAY] = 0x06;
+	       }
 	       else
 		  pMode->Private[S3_BLANK_DELAY] = 0x00;
 	    } else {
@@ -2506,6 +2552,9 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose)
 		   pMode->Private[S3_EARLY_SC] = 0;
 		 else
 		   pMode->Private[S3_EARLY_SC] = 0;
+	       }
+	       else if (OFLG_ISSET(OPTION_ELSA_W2000PRO_X8,  &s3InfoRec.options)) {
+		  pMode->Private[S3_EARLY_SC] = 0;
 	       }
 	       else
 	          pMode->Private[S3_EARLY_SC] = 0;

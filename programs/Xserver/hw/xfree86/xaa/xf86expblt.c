@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.5 1997/01/03 07:59:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.6 1997/01/05 11:59:55 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -32,6 +32,7 @@
 
 #include "xf86.h"
 #include "xf86xaa.h"
+#include "xf86local.h"
 
 #include "xf86expblt.h"
 
@@ -63,15 +64,6 @@
 
 
 extern unsigned char byte_reversed[256];
-/* This is isn't defined yet. Keep the compiler happy. */
-#if !defined(MSBFIRST) && !defined(FIXEDBASE)
-/* Define once. */
-unsigned int byte_reversed_expand3[1] = { 0x00000000 };
-unsigned int byte_expand3[1] = { 0x00000000 };
-#else
-extern unsigned int byte_expand3[1];
-extern unsigned int byte_reversed_expand3[1];
-#endif
 
 /* Macros to write a word, converting the per-byte bit order if required. */
 

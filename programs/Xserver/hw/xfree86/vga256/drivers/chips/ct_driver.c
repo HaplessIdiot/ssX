@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.31 1996/12/28 08:16:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.32 1997/01/12 10:42:31 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -3513,10 +3513,7 @@ CHIPSFbInit()
 	 * mess this makes of the allocation
 	 */
 	ctCacheEnd = ctAllocate(0, 0x0);
-	ErrorF("ctCacheEnd %d\n",ctCacheEnd); 
-	
-	ErrorF("%s %s: CHIPS: Initializing XAA Acceleraion.\n",
-		   XCONFIG_PROBED, vga256InfoRec.name);
+
 	if (!ctisHiQV32) {
 	    if (ctUseMMIO) {
 		ErrorF("%s %s: CHIPS: Memory mapped I/O selected\n",

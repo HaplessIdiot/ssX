@@ -46,6 +46,11 @@ SOFTWARE.
 
 */
 /* $XConsortium: colormap.h,v 1.28 94/04/17 20:25:32 dpw Exp $ */
+
+
+
+
+/* $XFree86$ */
 #ifndef CMAP_H
 #define CMAP_H 1
 
@@ -74,7 +79,7 @@ SOFTWARE.
 
 typedef CARD32 Pixel;
 typedef struct _CMEntry *EntryPtr;
-typedef struct _ColormapRec *ColormapPtr;
+/* moved to screenint.h: typedef struct _ColormapRec *ColormapPtr */
 typedef struct _colorResource *colorResourcePtr;
 
 extern int CreateColormap(

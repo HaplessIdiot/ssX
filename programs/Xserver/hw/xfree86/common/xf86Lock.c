@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.8 1996/03/29 22:16:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.9 1996/12/23 06:43:36 dawes Exp $ */
 
 /*
  * Explicit support for a server lock file like the ones used for UUCP.
@@ -103,7 +103,12 @@ xf86LockServer()
   (void) sprintf(pid_str, "%10d\n", getpid());
   (void) write(lfd, pid_str, 11);
 #ifndef __EMX__
+#ifndef USE_CHMOD
   (void) fchmod(lfd, 0444);
+#else
+/* ISC prior Version 4.1 doesn't have fchmod :-( */
+  (void) chmod(tmp, 0444);
+#endif
 #endif
   (void) close(lfd);
 

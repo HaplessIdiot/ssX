@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.4 1997/01/08 20:51:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.5 1997/01/12 10:48:14 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -201,7 +201,7 @@ void xf86InitPixmapCacheSlots()
     xf86CacheInfo = (CacheInfoPtr)xcalloc(MaxSlot + 1, sizeof(CacheInfo));
     FirstWideSlot = standard_slots;
 
-    ErrorF("%s %s: Using %d %dx%d ",
+    ErrorF("%s %s: XAA: Using %d %dx%d ",
         XCONFIG_PROBED, infoRec->name, standard_slots, MaxWidth, MaxHeight);
     if (wide_slots > 0)
         ErrorF("and %d %dx%d ", wide_slots, (infoRec->displayWidth / 2),
@@ -857,46 +857,14 @@ static void DoCacheTile(pix)
 
     reducible_status = TILE_UNKNOWN;
 
-    /* See if we can use any hardware pattern feature. */
-    if (xf86AccelInfoRec.SubsequentFill8x8Pattern &&
-    (!(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_ALIGN_64)
-    || (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) &&
-    /*
-     * As long as cache slots are positioned at multiple-of-128 x-coords,
-     * 64 pixel aligment requirement for 8x8 pattern can be guaranteed
-     * for certain values of FramebufferWidth (such as 1024, 1280).
-     * This only helps when the chip uses HARDWARE_PATTERN_MOD_64_OFFSET.
-     */
-    (!(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_MOD_64_OFFSET)
-    || (xf86AccelInfoRec.FramebufferWidth & 63) == 0)
-    )
-        if ((reducible_status = ReduceTileToSize8(pci, pix, FALSE))
-        & TILE_REDUCIBLE) {
-            /*
-             * The width of the tile is 1, 2, 4, or 8.
-             * The height is 1, 2, 4, or 8.
-             */
-	    /*
-	     * This CPU (non-coprocessor) version is probably faster,
-	     * since it mainly moves small bunches of bytes.
-	     */
-            Write8x8Pattern(pci,
-                pix->drawable.width, pix->drawable.height,
-                pix->devPrivate.ptr, pix->devKind);
-            pci->flags = 1;
-            return;
-        }
-
     /* See if we can use a mono (color-expanded) pattern. */
     if (xf86AccelInfoRec.Subsequent8x8PatternColorExpand)
         /*
-         * If the reduce function has been called before, then it must
-         * have returned FALSE. So only continue if it hasn't been
-         * called yet. Enable the check for a tile that uses only
+         * Check whether the tile can be reduced to 8x8 and uses only
          * two colors.
          */
-        if ((reducible_status & TILE_UNKNOWN) &&
-            (ReduceTileToSize8(pci, pix, TRUE) & TILE_MONOCHROME)) {
+        if ((reducible_status = ReduceTileToSize8(pci, pix, TRUE))
+            & TILE_MONOCHROME) {
             /*
              * The width of the tile is 1, 2, 4, or 8.
              * The height is 1, 2, 4, or 8.
@@ -929,14 +897,43 @@ static void DoCacheTile(pix)
                 }
 	    }
 	    else {
-	        ErrorF("Writing rotated mono patterns (%dx%d).\n",
-	            pci->pix_w, pci->pix_h);
                 WriteTileAs8x8MonoPattern(pci,
                     pix->drawable.width, pix->drawable.height,
                     pix->devPrivate.ptr, pix->devKind);
-                ErrorF("Finished writing mono patterns.\n");
             }
             pci->flags = 2;
+            return;
+        }
+
+    /* See if we can use any hardware pattern feature. */
+    if (xf86AccelInfoRec.SubsequentFill8x8Pattern &&
+    (!(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_ALIGN_64)
+    || (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) &&
+    /*
+     * As long as cache slots are positioned at multiple-of-128 x-coords,
+     * 64 pixel aligment requirement for 8x8 pattern can be guaranteed
+     * for certain values of FramebufferWidth (such as 1024, 1280).
+     * This only helps when the chip uses HARDWARE_PATTERN_MOD_64_OFFSET.
+     */
+    (!(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_MOD_64_OFFSET)
+    || (xf86AccelInfoRec.FramebufferWidth & 63) == 0)
+    )
+        /*
+         * If the reduce function has been called before, then it must
+         * have returned FALSE. So continue if it hasn't been
+         * called yet, or it was called and found to be reducible.
+         */
+        if ((reducible_status & TILE_REDUCIBLE) ||
+            ((reducible_status & TILE_UNKNOWN) &&
+            (ReduceTileToSize8(pci, pix, FALSE) & TILE_REDUCIBLE))) {
+            /*
+             * The width of the tile is 1, 2, 4, or 8.
+             * The height is 1, 2, 4, or 8.
+             */
+            Write8x8Pattern(pci,
+                pix->drawable.width, pix->drawable.height,
+                pix->devPrivate.ptr, pix->devKind);
+            pci->flags = 1;
             return;
         }
 
@@ -1166,11 +1163,14 @@ static int DoCacheStipple(slot, pDrawable, pGC)
         }
 
     if (pGC->fillStyle == FillStippled &&
-    (xf86GCInfoRec.CopyAreaFlags & NO_TRANSPARENCY)) {
+    ((xf86GCInfoRec.CopyAreaFlags & NO_TRANSPARENCY)
+    || ((xf86GCInfoRec.CopyAreaFlags & TRANSPARENCY_GXCOPY)
+    && pGC->alu != GXcopy))) {
         /*
          * We were hoping to use the hardware pattern, but that's
-         * not possible. ScreenToScreenCopy doesn't support transparency,
-         * so we can't cache the stipple at all.
+         * not possible. ScreenToScreenCopy doesn't support transparency
+         * with the current raster-operation, so we can't cache the
+         * stipple at all.
          */
         DEALLOCATE_LOCAL(pci);
         return 0;

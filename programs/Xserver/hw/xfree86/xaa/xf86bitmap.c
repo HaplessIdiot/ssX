@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.3 1997/01/02 04:38:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.4 1997/01/12 10:48:04 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -60,9 +60,10 @@ extern unsigned char *byte_reversed;
  * correctly.
  *
  * If necessary, the left edge of the bitmap is written first so that
- * the rest can be drawn with bit-aligned source access.
+ * the rest can be drawn with byte-aligned source access.
  *
- * Missing: detection of TRIPLE_BITS_AT_24BPP
+ * TRIPLE_BITS_AT_24BPP is supported for scanline screen-to-screen color
+ * expansion, and for CPU-to-screen with SCANLINE_PAD_DWORD.
  */
 
 static void xf86WriteBitmapLeftEdge(x, y, w, h, src, srcwidth,
@@ -89,9 +90,9 @@ srcx, srcy)
         bytecount = 0;
         for (i = 0; i < h; i++) {
             if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
-	        dworddata = (byte_reversed[*srcp] << shift);
+	        dworddata = (byte_reversed[(*srcp >> shift) & 0xFF]);
 	    else
-	        dworddata = *srcp << shift;
+	        dworddata = *srcp >> shift;
 	    srcp += srcwidth;
 	    bytecount++;
 	    if (bytecount == 4) {
@@ -119,10 +120,16 @@ srcx, srcy)
     else {
         /* DWORD padding of scanlines. */
         for (i = 0; i < h; i++) {
-            if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
-	        dworddata = (byte_reversed[*srcp] << shift);
+            if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+                if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+	            dworddata = (byte_reversed_expand3[(*srcp >> shift) & 0xFF]);
+	        else
+	            dworddata = byte_expand3[(*srcp >> shift) & 0xFF];
 	    else
-	        dworddata = *srcp << shift;
+                if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+	            dworddata = (byte_reversed[(*srcp >> shift) & 0xFF]);
+	        else
+	            dworddata = *srcp >> shift;
 	    srcp += srcwidth;
  	    *(unsigned int *)base = dworddata;
 	    if (!(xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)) {
@@ -153,6 +160,13 @@ srcy, bg, fg, rop, planemask)
     int bytewidth;	/* Area width in bytes. */
     unsigned char *srcp;
     unsigned char *base;
+    unsigned int *(*DrawBitmapScanlineFunc)(
+#if NeedNestedPrototypes
+        unsigned int *base,
+        unsigned int *bits,
+        int nbytes
+#endif
+    );
 
     if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
         /* First fill-in the background. */
@@ -167,8 +181,32 @@ srcy, bg, fg, rop, planemask)
         xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
             bg, fg, rop, planemask);
 
+    if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanline3MSBFirstFixedBase;
+            else
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanline3MSBFirst;
+        else
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanlineMSBFirstFixedBase;
+            else
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanlineMSBFirst;
+    else
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanline3FixedBase;
+            else
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanline3;
+        else
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanlineFixedBase;
+            else
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanline;
+
     if ((xf86AccelInfoRec.ColorExpandFlags & LEFT_EDGE_CLIPPING)
-    && (x - (srcx & 7) >= 0)) {
+    && ((xf86AccelInfoRec.ColorExpandFlags & LEFT_EDGE_CLIPPING_NEGATIVE_X)
+    || (x - (srcx & 7) >= 0))) {
         /* We can only allow this if the x-coordinate remains on-screen. */
 	skipleft = (srcx & 7);
 	srcx = srcx & (~7);	/* Aligned. */
@@ -200,6 +238,7 @@ srcy, bg, fg, rop, planemask)
         x += skipleft;
         srcx += skipleft;
         w -= skipleft;
+        skipleft = 0;
     }
 
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(x, y, w, h, skipleft);
@@ -215,31 +254,23 @@ srcy, bg, fg, rop, planemask)
     if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD) {
         int i;
         for (i = 0; i < h; i++) {
-            if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
-                if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
-                    xf86DrawBitmapScanlineMSBFirstFixedBase(
-                        (unsigned int *)base, (unsigned int *)srcp, bytewidth);
-                else
-                    base = (unsigned char *)xf86DrawBitmapScanlineMSBFirst(
-                        (unsigned int *)base, (unsigned int *)srcp, bytewidth);
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                (*DrawBitmapScanlineFunc)(
+                    (unsigned int *)base, (unsigned int *)srcp, bytewidth);
             else
-                if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
-                    xf86DrawBitmapScanlineFixedBase(
-                        (unsigned int *)base, (unsigned int *)srcp, bytewidth);
-                else
-                    base = (unsigned char *)xf86DrawBitmapScanline(
-                        (unsigned int *)base, (unsigned int *)srcp, bytewidth);
-	    if (!(xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)) {
-                if (base >= (unsigned char *)
-                             xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
-                    base = (unsigned char *)
-                             xf86AccelInfoRec.CPUToScreenColorExpandBase;
-            }
+                base = (unsigned char *)(*DrawBitmapScanlineFunc)(
+                    (unsigned int *)base, (unsigned int *)srcp, bytewidth);
             srcp += srcwidth;
         }
-        if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
-            if (((((w + 31) & ~31) >> 5) * h) & 0x1)
-	        *(unsigned int *)base = 0;
+        if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD) {
+            if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP) {
+                if (((((w * 3 + 31) & ~31) >> 5) * h) & 0x1)
+	            *(unsigned int *)base = 0;
+	    }
+	    else
+                if (((((w + 31) & ~31) >> 5) * h) & 0x1)
+	            *(unsigned int *)base = 0;
+	}
     }
     else {
     	/* BYTE padding of scanlines. Not nice. */
@@ -287,6 +318,36 @@ srcy, bg, fg, rop, planemask)
     int bitmapwidth, bytewidth;
     int offset, endoffset;
     int i;
+    unsigned int *(*DrawBitmapScanlineFunc)(
+#if NeedNestedPrototypes
+        unsigned int *base,
+        unsigned int *bits,
+        int nbytes
+#endif
+    );
+
+    if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanline3MSBFirstFixedBase;
+            else
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanline3MSBFirst;
+        else
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanlineMSBFirstFixedBase;
+            else
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanlineMSBFirst;
+    else
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanline3FixedBase;
+            else
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanline3;
+        else
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanlineFixedBase;
+            else
+                DrawBitmapScanlineFunc = xf86DrawBitmapScanline;
 
     if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
         /* First fill-in the background. */
@@ -322,11 +383,11 @@ srcy, bg, fg, rop, planemask)
 	if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
 	    xf86AccelInfoRec.Sync();
 	if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
-	    xf86DrawBitmapScanlineMSBFirst((unsigned int *)
+	    (*DrawBitmapScanlineFunc)((unsigned int *)
 	        (xf86AccelInfoRec.ScratchBufferBase + offset),
 	        (unsigned int *)srcp, bytewidth);
 	else
-	    xf86DrawBitmapScanline((unsigned int *)
+	    (*DrawBitmapScanlineFunc)((unsigned int *)
 	        (xf86AccelInfoRec.ScratchBufferBase + offset),
 	        (unsigned int *)srcp, bytewidth);
 	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf /main/160 1996/12/26 08:52:18 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.29 1996/12/28 08:03:15 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.30 1997/01/03 07:58:04 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -177,7 +177,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  endif
 # endif 		/* OSMinorVersion > 1 */
 # ifndef UseExportLists
-#  define UseExportLists YES
+#  if OSMinorVersion > 4
+#   define UseExportLists YES
+#  else
+#   define UseExportLists NO
+#  endif
 # endif
 # define HasVFork          NO
 # define InstKmemFlags	  -g sys -m 2711

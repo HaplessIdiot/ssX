@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.4 1996/10/18 15:01:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.5 1996/12/27 07:02:49 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -1028,7 +1028,13 @@ void s3IBMRGBLoadCursor(
     int
 #endif
 );
-
+/* s3rop.c */
+int s3ConvertPlanemask(
+#if NeedFunctionPrototypes
+    GCPtr,
+    int *
+#endif
+);
 _XFUNCPROTOEND
 
 

@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/127 1996/12/02 10:23:20 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.24 1996/12/24 02:27:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.25 1997/01/12 10:49:05 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -289,7 +289,11 @@ LockServer()
   (void) sprintf(pid_str, "%10d\n", getpid());
   (void) write(lfd, pid_str, 11);
 #ifndef __EMX__
+#ifndef USE_CHMOD
   (void) fchmod(lfd, 0444);
+#else
+  (void) chmod(tmp, 0444);
+#endif
 #endif
   (void) close(lfd);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.61 1996/12/09 11:52:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.62 1996/12/23 06:43:46 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -125,6 +125,7 @@ typedef struct {
 #define OPTION_STB		77 /* STB boards (S3) */
 #define OPTION_HERCULES		78 /* Hercules boards (S3) */
 #define OPTION_MIRO_MAGIC_S4	79 /* miroMagic S4 with (S3) 928 and BT485 */
+#define OPTION_ELSA_W2000PRO_X8	80 /* clock/phase_detect for ELSA Winner 2000PRO/X-8 (S3) */
 
 /* Misc options */
 #define OPTION_CSYNC		90 /* Composite sync */
@@ -205,6 +206,9 @@ typedef struct {
 #define OPTION_FPM_VRAM		190 /* (s3v) */
 #define OPTION_EDO_VRAM		191 /* (s3v) */
 
+/* XAA options */
+#define OPTION_XAA_BENCHMARK	200 /* Perform start-up benchmarks */
+#define OPTION_XAA_NO_COL_EXP	201 /* Disable color expansion. */
 
 #define CLOCK_OPTION_PROGRAMABLE 0 /* has a programable clock */
 #define CLOCK_OPTION_ICD2061A	 1 /* use ICD 2061A programable clocks      */
@@ -297,6 +301,9 @@ OptFlagRec xf86_OptionTab[] = {
   { "trio32_fc_bug",	OPTION_TRIO32_FC_BUG },
   { "s3_968_dash_bug",	OPTION_S3_968_DASH_BUG },
 
+  { "xaa_benchmark",	OPTION_XAA_BENCHMARK },
+  { "xaa_no_color_exp", OPTION_XAA_NO_COL_EXP },
+
   { "bt485_curs",	OPTION_BT485_CURS },
   { "ti3020_curs",	OPTION_TI3020_CURS },
   { "no_ti3020_curs",	OPTION_NO_TI3020_CURS },
@@ -314,6 +321,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "elsa_w1000pro",	OPTION_ELSA_W1000PRO },
   { "elsa_w1000isa",	OPTION_ELSA_W1000PRO }, /* These are treated the same */
   { "elsa_w2000pro",	OPTION_ELSA_W2000PRO },
+  { "elsa_w2000pro/x8",	OPTION_ELSA_W2000PRO_X8 },
   { "diamond",		OPTION_DIAMOND },
   { "genoa",		OPTION_GENOA },
   { "stb",		OPTION_STB },

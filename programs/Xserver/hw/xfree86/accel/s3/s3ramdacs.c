@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.5 1996/12/28 08:14:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.6 1997/01/08 20:34:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -2637,7 +2637,10 @@ static int S3_TRIO_Init(DisplayModePtr mode)
       cr33 = inb(vgaCRReg) & ~0x28;
 
       /* for Trio64+ we need corrected blank signal timing */
-      if (!(S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531)) ^ 
+      if (!(S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531)
+	    && !S3_TRIO64UVP_SERIES(s3ChipId)
+	    && !S3_AURORA64VP_SERIES(s3ChipId)
+	    && !S3_TRIO64V2_SERIES(s3ChipId)) ^ 
 	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG1, &s3InfoRec.options)) {
 	 cr33 |= 0x20;
       }
@@ -3350,6 +3353,10 @@ static int IBMRGB52x_PreInit()
 	 if (!s3InfoRec.s3RefClk)
 	    s3InfoRec.s3RefClk = 16000;
       }
+      else if (OFLG_ISSET(OPTION_ELSA_W2000PRO_X8,  &s3InfoRec.options)) {
+	 if (!s3InfoRec.s3RefClk)
+	    s3InfoRec.s3RefClk = 28332;
+      }
       else if (find_bios_string(s3InfoRec.BIOSbase,
 				"Hercules Graphite Terminator",NULL) != NULL) {
 	 if (s3BiosVendor == UNKNOWN_BIOS) 
@@ -3373,12 +3380,14 @@ static int IBMRGB52x_PreInit()
 	    /* try to match some known reclock values */
 	    if ((int)(f*1e3/200+0.5) == 16000/200)
 	       s3InfoRec.s3RefClk = 16000;
-	    else if ((int)(f*1e3/200+0.5) == 50000/200)
+	    else if ((int)(f*1e3/200+0.5) == (50000+100)/200)
 	       s3InfoRec.s3RefClk = 50000;
-	    else if ((int)(f*1e3/200+0.5) == 24000/200)
+	    else if ((int)(f*1e3/200+0.5) == (24000+100)/200)
 	       s3InfoRec.s3RefClk = 24000;
-	    else if ((int)(f*1e3/200+0.5) == 14318/200)
+	    else if ((int)(f*1e3/200+0.5) == (14318+100)/200)
 	       s3InfoRec.s3RefClk = 14318;
+	    else if ((int)(f*1e3/200+0.5) == (28322+100)/200)
+	       s3InfoRec.s3RefClk = 28322;
 	    else 
 	       s3InfoRec.s3RefClk = (int)(f*2+0.5)*500;
 	 }
@@ -3412,7 +3421,9 @@ static int IBMRGB52x_PreInit()
 
    clockDoublingPossible = FALSE;
       /* LCLK & SCLK limit is 100 MHz */
-   if ((s3InfoRec.dacSpeed * s3Bpp) / 8 > 100000)  
+   if (OFLG_ISSET(OPTION_ELSA_W2000PRO_X8,  &s3InfoRec.options) && s3Bpp > 2)
+         s3InfoRec.maxClock = 220000;
+   else if ((s3InfoRec.dacSpeed * s3Bpp) / 8 > 100000)
 	 s3InfoRec.maxClock = (100000 * 8) / s3Bpp; 
    else
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
@@ -3454,7 +3465,15 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
       tmp2 = inb(0x3C5);
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
 
-      if (mode->Flags & V_DBLCLK)
+      if (DAC_IS_IBMRGB528) {
+	 if (s3InfoRec.clock[mode->Clock] <=  110000)
+	    s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x01);
+	 else if (s3InfoRec.clock[mode->Clock] <=  220000)
+	    s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x03);
+	 else
+	    s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x05);
+      }
+      else if (mode->Flags & V_DBLCLK)
 	 s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x03);
       else
 	 s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x01);
@@ -3472,8 +3491,11 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
       s3OutIBMRGBIndReg(IBMRGB_dac_op, ~8, s3DACSyncOnGreen ? 8 : 0);
       s3OutIBMRGBIndReg(IBMRGB_dac_op, ~2, 1 /* fast slew */ ? 2 : 0);
       s3OutIBMRGBIndReg(IBMRGB_pal_ctrl, 0, 0);
-      /* set VRAM size to 64 bit and disable VRAM mask */
-      s3OutIBMRGBIndReg(IBMRGB_misc1, ~0x43, 1);
+      /* set VRAM size to 128/64 bit and disable VRAM mask */
+      if (DAC_IS_IBMRGB528)
+	 s3OutIBMRGBIndReg(IBMRGB_misc1, ~0x43, 3);
+      else
+	 s3OutIBMRGBIndReg(IBMRGB_misc1, ~0x43, 1);
       if (s3DAC8Bit)
 	 s3OutIBMRGBIndReg(IBMRGB_misc2, 0, 0x47);
       else
@@ -3485,14 +3507,17 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
 #else
       outb(vgaCRIndex, 0x22);
       tmp = inb(vgaCRReg);
-      if (s3Bpp == 1 && S3_968_SERIES(s3ChipId))
+      if (s3Bpp == 1 && S3_968_SERIES(s3ChipId) && !DAC_IS_IBMRGB528)
 	 outb(vgaCRReg, tmp | 8);
       else 
 	 outb(vgaCRReg, tmp & ~8);
 #endif
 
       outb(vgaCRIndex, 0x65);
-      outb(vgaCRReg, 0);
+      if (DAC_IS_IBMRGB528)
+	 outb(vgaCRReg, 0x80);
+      else
+	 outb(vgaCRReg, 0);
 
       if (s3PixelMultiplexing) {
 	 outb(vgaCRIndex, 0x40);
@@ -3513,11 +3538,24 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
 	    s3OutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 3);
 	    s3OutIBMRGBIndReg(IBMRGB_8bpp, 0, 0);
 	 }
-	 /* if (DAC_IS_RGB528) tmp++; */
+	 /* if (DAC_IS_IBMRGB528) tmp++; */
 
 	 outb(vgaCRIndex, 0x66);
 	 tmp = inb(vgaCRReg) & 0xf8;
-	 if (!S3_968_SERIES(s3ChipId)) {
+	 if (DAC_IS_IBMRGB528) {
+	    int tmp2;
+	    tmp = tmp & 0x80 | 0x60;   /* 128 bit SID mode */
+	    if (s3InfoRec.clock[mode->Clock] <= 110000) tmp2 = 3;
+	    else if (s3InfoRec.clock[mode->Clock] <= 220000) tmp2 = 2;
+	    else tmp2 = 1;
+	    if (s3Bpp == 2) tmp2--;
+	    else if (s3Bpp == 4) {
+	       if (tmp2 >= 2) tmp2 -= 2;
+	       else tmp2 = 0;
+	    }
+	    tmp |= tmp2;
+	 }
+	 else if (!S3_968_SERIES(s3ChipId)) {
 	   if (s3Bpp == 1) tmp |= 3;
 	   else if (s3Bpp == 2) tmp |= 2;
 	   else /* if (s3Bpp == 4) */ tmp |= 1;
@@ -3534,7 +3572,12 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
          outb(vgaCRReg, (tmp & 0xbf) | s3SAM256);
 
 	 outb(vgaCRIndex, 0x67);
-	 if (s3Bpp == 4)
+	 if (DAC_IS_IBMRGB528)
+	    if (s3Bpp == 1)
+	       outb(vgaCRReg, 0x01);
+	    else
+	       outb(vgaCRReg, 0x00);
+	 else if (s3Bpp == 4)
 	    outb(vgaCRReg, 0x00);
 	 else
 	    if (S3_968_SERIES(s3ChipId))

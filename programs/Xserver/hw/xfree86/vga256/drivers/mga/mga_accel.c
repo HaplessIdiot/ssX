@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.3 1997/01/04 12:18:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.4 1997/01/08 20:51:03 dawes Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -62,6 +62,7 @@ void MGANAME(AccelInit)()
                              HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
                              HARDWARE_PATTERN_SCREEN_ORIGIN |
                              HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |
+                             HARDWARE_PATTERN_MONO_TRANSPARENCY |
                              NO_SYNC_AFTER_CPU_COLOR_EXPAND;
 
     /*
@@ -119,8 +120,11 @@ void MGANAME(AccelInit)()
      * color expansion
      */
     xf86AccelInfoRec.ColorExpandFlags = SCANLINE_PAD_DWORD |
-        CPU_TRANSFER_PAD_DWORD | BIT_ORDER_IN_BYTE_LSBFIRST |
-        LEFT_EDGE_CLIPPING | VIDEO_SOURCE_GRANULARITY_PIXEL; 
+                                        CPU_TRANSFER_PAD_DWORD |
+                                        BIT_ORDER_IN_BYTE_LSBFIRST |
+                                        LEFT_EDGE_CLIPPING |
+                                        LEFT_EDGE_CLIPPING_NEGATIVE_X |
+                                        VIDEO_SOURCE_GRANULARITY_PIXEL; 
 #if PSZ == 24
     xf86AccelInfoRec.ColorExpandFlags |= NO_PLANEMASK;
 #endif

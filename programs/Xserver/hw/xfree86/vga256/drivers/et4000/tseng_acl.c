@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.2 1996/12/31 05:01:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.3 1997/01/08 20:50:57 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -188,8 +188,9 @@ void tseng_init_acl()
     {
       MMioBase = (long)vgaBase + 0x1FF00L;
       /*
-       * for the scratchpad we'll use the MMU aperture 0,
-       * which we'll make point at the last 1 KB of video memory.
+       * for the scratchpad (i.e. colors and scanline-colorexpand buffers)
+       * we'll use the MMU aperture 0, which we'll make point at the last 1
+       * KB of video memory.
        */
       scratchMemBase = (long)vgaBase + 0x18000L;
       *((LongP) (MMioBase + 0x00)) = scratchVidBase;

@@ -71,8 +71,12 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 	Turn off programmable clock. Use fixed VGA clocks only.
 	Useful for fixed frequency monitors - usually used for VGA
 	monitors - not SVGA.
-<tag>Option &dquot;noaccel;&dquot</tag>
+<tag>Option &dquot;noaccel&dquot;</tag>
 	Turn off XAA acceleration.
+<tag>Option &dquot;no_stretch&dquot;</tag>
+	Disable LCD stretching on Cyber 938x based chips.
+<tag>Option &dquot;lcd_center&dquot;</tag>
+	Enable LCD centering on Cyber 938x based chips.
 </descrip>
 </itemize>
 
@@ -138,7 +142,7 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.16 1996/12/30 13:59:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.17 1997/01/04 12:18:16 dawes Exp $
 
 
 

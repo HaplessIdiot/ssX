@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/sampledrv.c,v 3.1 1996/12/18 03:13:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/sampledrv.c,v 3.2 1997/01/02 04:38:41 dawes Exp $ */
 
 
 /*
@@ -91,7 +91,7 @@ void ChipAccelInit() {
      * copying a rectangular area from one location on the screen to
      * another. First we set up the restrictions. In this case, we
      * don't handle transparency color compare. Other allowed flags are
-     * GXCOPY_ONLY and NO_PLANEMASK.
+     * GXCOPY_ONLY, NO_PLANEMASK and TRANSPARENCY_GXCOPY.
      */
     xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY;
     

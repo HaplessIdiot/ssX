@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fs.c,v 3.3 1996/10/08 13:11:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fs.c,v 3.4 1996/12/27 07:02:32 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -104,7 +104,7 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
@@ -166,23 +166,25 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		   ppt, pwidth, fSorted);
 
    BLOCK_CURSOR;
-   WaitQueue16_32(3,5);
-   SET_FRGD_COLOR((pGC->fgPixel));
-   SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
-   SET_WRT_MASK(pGC->planemask);
+   WaitIdle();
+   WaitQueue(4);
+   SETB_PAT_FG_CLR(pGC->fgPixel);
+   ;SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
+   ;SET_WRT_MASK(pGC->planemask);
+   SETB_MONO_PAT0(~0);
+   SETB_MONO_PAT1(~0);
+   SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC |
+                MIX_MONO_PATT |
+                INC_Y | INC_X | s3alu_sp[pGC->alu] );
 
    while (n--) {
-      WaitQueue(5);
-      SET_CURPT(ppt->x, ppt->y);
-      SET_AXIS_PCNT(((short)*pwidth) - 1, 0);
-      SET_CMD(CMD_RECT | INC_Y | INC_X | DRAW | PLANAR | WRTDATA);
-
+      SETB_BLT(ppt->x, ppt->y, ppt->x, ppt->y, ((short)*pwidth) - 1, 1, INC_X);
       ppt++;
       pwidth++;
    }
 
-   WaitQueue(2);
-   SET_MIX(FSS_FRGDCOL | ROP_S, BSS_BKGDCOL | ROP_S);
+   WaitIdle();
+   SETB_CMD_SET(CMD_NOP);
    UNBLOCK_CURSOR;
 
    DEALLOCATE_LOCAL(initPpt);
@@ -206,7 +208,7 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
@@ -304,7 +306,7 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
@@ -406,7 +408,7 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {

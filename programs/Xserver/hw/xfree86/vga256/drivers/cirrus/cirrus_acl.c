@@ -88,6 +88,9 @@
     cirrusChip == CLGD7543 || cirrusChip == CLGD7548 || \
     cirrusChip == CLGD5446)
 
+#define CHIPONLYSUPPORTSGXCOPYTRANSPARENCYCOMPARE() \
+    (cirrusChip == CLGD5446)
+
 #define CHIPHASTRANSPARENCYCOMPAREMASK() \
     (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 || \
     cirrusChip == CLGD7543 || cirrusChip == CLGD7548)
@@ -211,6 +214,8 @@ void CirrusAccelInit() {
          * compare at bpp > 16.
          */
         xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
+    if (CHIPONLYSUPPORTSGXCOPYTRANSPARENCYCOMPARE())
+        xf86GCInfoRec.CopyAreaFlags |= TRANSPARENCY_GXCOPY;
     xf86AccelInfoRec.SetupForScreenToScreenCopy = CirrusSetupForScreenToScreenCopy;
     switch (vgaBitsPerPixel) {
     case 8 :
