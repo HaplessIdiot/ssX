@@ -1,4 +1,8 @@
 XFree86 4.4.99.14 (xx September 2004)
+ 184. Reinstate the original mkfontdir program, since mkfontscale does not
+      handle creating encodings.dir files as well as it should (David Dawes).
+ 183. Export AllocateFontPrivateIndex (David Dawes, suggested by Rick De Laet).
+ 182. Fix segv in cfb (David Dawes, reported by Dave Williss, Bugzilla #1453).
 
 XFree86 4.4.99.13 (12 September 2004)
  181. Add support for i2c and Maven for the mga driver, providing DDC and
@@ -19097,7 +19101,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3313 2004/09/11 01:33:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3314 2004/09/12 11:02:37 dawes Exp $
 
 
 
