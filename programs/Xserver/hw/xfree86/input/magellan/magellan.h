@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.h,v 1.1 1998/12/05 14:40:18 dawes Exp $ */
 
 #ifndef	_MAGELLAN_H_
 #define _MAGELLAN_H_
@@ -83,7 +83,6 @@ MagellanPrivateRec, *MagellanPrivatePtr;
 /******************************************************************************
  *		Declarations
  *****************************************************************************/
-extern MODULEINITPROTO( magellanModuleInit );
 static MODULESETUPPROTO( SetupProc );
 static void TearDownProc (void *);
 static Bool DeviceControl (DeviceIntPtr, int);

@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.h,v 1.1 1998/12/05 14:40:20 dawes Exp $ */
 
 #ifndef	_SPACEORB_H_
 #define _SPACEORB_H_
@@ -66,7 +66,6 @@ SPACEORBPrivateRec, *SPACEORBPrivatePtr;
 /******************************************************************************
  *		Declarations
  *****************************************************************************/
-extern MODULEINITPROTO( spaceorbModuleInit );
 static MODULESETUPPROTO( SetupProc );
 static void TearDownProc (pointer p);
 static Bool DeviceControl (DeviceIntPtr, int);
