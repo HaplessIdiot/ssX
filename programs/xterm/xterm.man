@@ -56,10 +56,10 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.68 2001/01/17 23:46:39 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.69 2001/01/24 00:06:50 dawes Exp $
 .\"
 .\" updated by Thomas E. Dickey for XFree86, July 1996.
-.TH XTERM 1 "Release 6.3" "X Version 11"
+.TH XTERM 1 __vendorversion__
 .SH NAME
 xterm \- terminal emulator for X
 .SH SYNOPSIS

@@ -1,4 +1,7 @@
-.TH SETXKBMAP 1 "" "Silicon Graphics"
+.\"
+.\" $XFree86$
+.\"
+.TH SETXKBMAP 1 __xorgversion__
 .SH NAME
 setxkbmap
 \- set the keyboard using the X Keyboard Extension

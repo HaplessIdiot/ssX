@@ -58,7 +58,10 @@
 .\" 
 .\"      Title to this software shall at all times remain with AGE
 .\"      Logic, Inc.
-.TH xieperf 1 "Release 6.4" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH xieperf 1 __xorgversion__
 .SH NAME
 xieperf - XIE server extension test and demo program
 .SH SYNTAX

@@ -24,6 +24,9 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
+.\"
+.\" $XFree86$
+.\"
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -37,7 +40,7 @@
 .if n .sp 1
 .if t .sp .5
 ..
-.TH XCALC 1 "Release 6" "X Version 11"
+.TH XCALC 1 __xorgversion__
 .SH NAME
 xcalc \- scientific calculator for X
 .SH SYNOPSIS

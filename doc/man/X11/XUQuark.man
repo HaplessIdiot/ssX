@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -40,6 +40,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -138,7 +140,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XrmUniqueQuark 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XrmUniqueQuark 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XrmUniqueQuark, XrmStringToQuark, XrmPermStringToQuark, XrmQuarkToString, XrmStringToQuarkList, XrmStringToBindingQuarkList \- manipulate resource quarks
 .SH SYNTAX
@@ -211,7 +213,7 @@ is known to the resource manager.
 .LP
 These functions can be used to convert from string to quark representation.
 If the string is not in the Host Portable Character Encoding,
-the conversion is implementation dependent.
+the conversion is implementation-dependent.
 The string argument to
 .ZN XrmStringToQuark
 need not be permanently allocated storage.
@@ -242,7 +244,7 @@ all future calls will return the same value (identical address).
 .LP
 These functions can be used to convert from string to quark representation.
 If the string is not in the Host Portable Character Encoding,
-the conversion is implementation dependent.
+the conversion is implementation-dependent.
 The string argument to
 .ZN XrmStringToQuark
 need not be permanently allocated storage.
@@ -263,10 +265,12 @@ The
 .ZN XrmStringToQuarkList
 function converts the null-terminated string (generally a fully qualified name)
 to a list of quarks.
+The caller must allocate sufficient space for the quarks list before calling 
+.ZN XrmStringToQuarkList .
 Note that the string must be in the valid ResourceName format 
 (see section 15.1).
 If the string is not in the Host Portable Character Encoding,
-the conversion is implementation dependent.
+the conversion is implementation-dependent.
 .LP
 A binding list is a list of type
 .ZN XrmBindingList
@@ -285,8 +289,11 @@ indicates that an asterisk separates the components.
 The
 .ZN XrmStringToBindingQuarkList
 function converts the specified string to a binding list and a quark list.
+The caller must allocate sufficient space for the quarks list and the
+binding list before calling 
+.ZN XrmStringToBindingQuarkList .
 If the string is not in the Host Portable Character Encoding
-the conversion is implementation dependent.
+the conversion is implementation-dependent.
 Component names in the list are separated by a period or
 an asterisk character.
 If the string does not start with period or asterisk,

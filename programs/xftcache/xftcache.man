@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/programs/xftcache/xftcache.man,v 1.1 2001/01/02 02:48:42 keithp Exp $
 .\"
 .\" Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
 .\"
@@ -21,7 +21,10 @@
 .\" TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\" PERFORMANCE OF THIS SOFTWARE.
 .\"
-.TH XFTCACHE 1 "Release 4.0" "XFree86"
+.\"
+.\" $XFree86$
+.\"
+.TH XFTCACHE 1 __vendorversion__
 .SH NAME
 xftcache, XftCache \- create an index of FreeType font files in a directory
 .SH SYNOPSIS

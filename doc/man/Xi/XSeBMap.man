@@ -1,5 +1,7 @@
 .\"
-$XMCOPY
+.\" $XFree86$
+.\"
+.\"
 .\" Copyright ([\d,\s]*) by Hewlett-Packard Company, Ardent Computer, 
 .\" 
 .\" Permission to use, copy, modify, distribute, and sell this documentation 
@@ -9,9 +11,9 @@ $XMCOPY
 .\" suitability for any purpose of the information in this document.  It is 
 .\" provided \`\`as is'' without express or implied warranty.
 .\" 
-.\" $XConsortium: XSeBMap.man,v 1.4 94/04/17 20:07:40 dpw Exp $
+.\" $Xorg: XSeBMap.man,v 1.3 2000/08/17 19:41:57 cpqbld Exp $
 .ds xL Programming With Xlib
-.TH XSetDeviceButtonMapping 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
+.TH XSetDeviceButtonMapping 3X11 __xorgversion__ "X FUNCTIONS"
 .SH NAME
 XSetDeviceButtonMapping, XGetDeviceButtonMapping \- query or change device button mappings
 .SH SYNTAX
@@ -70,10 +72,10 @@ or a \fIBadValue\fP error results.
 If any of the buttons to be altered are logically in the down state,
 \fIXSetDeviceButtonMapping\fP returns \fIMappingBusy\fP,
 and the mapping is not changed.
-.P
+.LP
 \fIXSetDeviceButtonMapping\fP
 can generate \fIBadDevice\fP, \fIBadMatch\fP, and  \fIBadValue\fP errors.
-.P
+.LP
 The \fIXGetDeviceButtonMapping\fP
 request returns the current mapping of the specified device.
 Buttons are numbered starting from one.
@@ -83,7 +85,7 @@ The nominal mapping for a device is map[i]=i+1.
 The nmap argument specifies the length of the array where the device
 mapping is returned, and only the first nmap elements are returned 
 in map_return.
-.P
+.LP
 \fIXGetDeviceButtonMapping\fP
 can generate \fIBadDevice\fP or \fIBadMatch\fP errors.
 .SH DIAGNOSTICS

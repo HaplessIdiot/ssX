@@ -1,5 +1,8 @@
 .\" $XConsortium: xmessage.man,v 1.8 95/03/08 22:28:48 gildea Exp $
-.TH XMESSAGE 1 "26 July 1994" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH XMESSAGE 1 __xorgversion__
 .SH NAME
 xmessage \- display a message or query in a window (X-based /bin/echo)
 .SH SYNOPSIS

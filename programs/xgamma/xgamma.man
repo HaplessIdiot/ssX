@@ -18,9 +18,9 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The XFree86 Project.
 .\"
-.\" $XFree86: xc/programs/xgamma/xgamma.man,v 1.5 1999/11/19 13:55:13 hohndel Exp $
+.\" $XFree86: xc/programs/xgamma/xgamma.man,v 1.6 2001/01/24 00:06:45 dawes Exp $
 .\"
-.TH xgamma 1 "Release 6.4" "X Version 11"
+.TH xgamma 1 __vendorversion__
 .SH NAME
 xgamma - Alter a monitor's gamma correction for XFree86
 .SH SYNOPSIS

@@ -18,7 +18,10 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.TH SESSREG 1 "Release 6.4" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH SESSREG 1 __xorgversion__
 .SH NAME
 sessreg \- manage utmp/wtmp entries for non-init clients
 .SH SYNOPSIS

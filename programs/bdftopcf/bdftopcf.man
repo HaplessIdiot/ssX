@@ -18,7 +18,10 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.TH BDFTOPCF 1 "Release 6.4" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH BDFTOPCF 1 __xorgversion__
 .SH NAME
 bdftopcf \- convert X font from Bitmap Distribution Format to Portable
 Compiled Format

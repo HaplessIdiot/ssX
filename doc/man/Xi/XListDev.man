@@ -1,5 +1,7 @@
 .\"
-$XMCOPY
+.\" $XFree86$
+.\"
+.\"
 .\" Copyright ([\d,\s]*) by Hewlett-Packard Company, Ardent Computer, 
 .\" 
 .\" Permission to use, copy, modify, distribute, and sell this documentation 
@@ -9,9 +11,9 @@ $XMCOPY
 .\" suitability for any purpose of the information in this document.  It is 
 .\" provided \`\`as is'' without express or implied warranty.
 .\" 
-.\" $XConsortium: XListDev.man,v 1.5 94/04/17 20:07:37 dpw Exp $
+.\" $Xorg: XListDev.man,v 1.3 2000/08/17 19:41:56 cpqbld Exp $
 .ds xL Programming with Xlib
-.TH XListInputDevices 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
+.TH XListInputDevices 3X11 __xorgversion__ "X FUNCTIONS"
 .SH NAME
 XListInputDevices, XFreeDeviceList \- list available input devices
 .SH SYNTAX
@@ -42,12 +44,12 @@ request lists the available extension input devices.  This list includes the
 X pointer and X keyboard, any other input devices that are currently accessible
 through the X server, and any input devices that are not currently accessible
 through the X server but could be accessed if requested.
-.P
+.LP
 Some server implementations may make all input devices available at the time
 the server is initialized.  Others may wait until requested by a client to
 access an input device.  In the latter case, it is possible that an input 
 device will be listed as available at one time but not at another.
-.P
+.LP
 For each input device available to the server, the XListInputDevices
 request returns an XDeviceInfo structure.  That structure contains a
 pointer to a list of structures, each of which contains information about 
@@ -68,18 +70,18 @@ typedef struct _XDeviceInfo
 } XDeviceInfo;
 .fi
 .DE
-.P
+.LP
 The id is a number in the range 0-128 that uniquely identifies 
 the device.  It is assigned to the device when it is initialized by the server.
-.P
+.LP
 The type field is of type Atom and indicates the nature
 of the device.
-.P
+.LP
 The name field contains a pointer to a null-terminated
 string that corresponds to one of the defined device
 types.  The name will correspond to one of the following
 strings (defined in the header file \fIXI.h\fP:
-.P
+.LP
 .DS
 XI_MOUSE
 XI_TABLET
@@ -100,43 +102,43 @@ XI_EYETRACKER
 XI_CURSORKEYS
 XI_FOOTMOUSE
 .DE
-.P
+.LP
 These names may be directly compared with the name field of the
 XDeviceInfo structure, or used in an XInternAtom request to return
 an atom that can be compared with the type field of the XDeviceInfo
 structure.
-.P
+.LP
 The num_classes field is a number in the
 range 0-255 that specifies the number of input classes
 supported by the device for which information is
 returned by ListInputDevices.  Some input classes, such
 as class Focus and class Proximity do not have any
 information to be returned by ListInputDevices.
-.P
+.LP
 The use field specifies how the device is currently
 being used.  If the value is \fIIsXKeyboard\fP, the device is
 currently being used as the X keyboard.  If the value
-is \fIIsXPointer\rP, the device is currently being used as
+is \fIIsXPointer\fP, the device is currently being used as
 the X pointer.  If the value is \fIIsXExtensionDevice\fP, the
 device is available for use as an extension device.
-.P
+.LP
 The inputclassinfo field contains a pointer to the first input-class
 specific data.  The first two fields are common to all
 classes.
-.P
+.LP
 The class field is a number in the range 0-255.
 It uniquely identifies the class of input for which
 information is returned.  Currently defined classes
 are KeyClass, ButtonClass, and ValuatorClass.
-.P
+.LP
 The length field is a number in the range 0- 255.  
 It specifies the number of bytes of data that are
 contained in this input class.  The length includes the
 class and length fields.
-.P
+.LP
 The XKeyInfo structure describes the characteristics of the keys on the
 device.  It is defined as follows:
-.P
+.LP
 .DS
 .nf
 typedef struct _XKeyInfo {
@@ -148,20 +150,20 @@ typedef struct _XKeyInfo {
 } XKeyInfo;
 .fi
 .DE
-.P
+.LP
 min_keycode is of type KEYCODE.  It specifies the
 minimum keycode that the device will report.  The
 minimum keycode will not be smaller than 8.
-.P
+.LP
 max_keycode is of type KEYCODE.  It specifies the
 maximum keycode that the device will report.  The
 maximum keycode will not be larger than 255.
-.P
+.LP
 num_keys specifies the number of keys that the device has.
-.P
+.LP
 The XButtonInfo structure defines the characteristics of the buttons
 on the device.  It is defined as follows:
-.P
+.LP
 .DS
 .nf
 typedef struct _XButtonInfo {
@@ -171,12 +173,12 @@ typedef struct _XButtonInfo {
 } XButtonInfo;
 .fi
 .DE
-.P
+.LP
 num_buttons specifies the number of buttons that the device has.
-.P
+.LP
 The XValuatorInfo structure defines the characteristics of the valuators
 on the device.  It is defined as follows:
-.P
+.LP
 .DE
 .nf
 typedef struct	_XValuatorInfo {
@@ -190,20 +192,20 @@ typedef struct	_XValuatorInfo {
 .fi
 .DS
 num_axes contains the number of axes the device supports.
-.P
+.LP
 mode is a constant that has one of the following
 values: Absolute or Relative.  Some devices allow the
 mode to be changed dynamically via the SetDeviceMode
 request.
-.P
+.LP
 motion_buffer_size is a cardinal number that specifies
 the number of elements that can be contained in the
 motion history buffer for the device.
-.P
+.LP
 The axes field contains a pointer to an XAxisInfo structure.
-.P
+.LP
 The XAxisInfo structure is defined as follows:
-.P
+.LP
 .DS
 .nf
 typedef struct _XAxisInfo {
@@ -213,19 +215,19 @@ typedef struct _XAxisInfo {
 } XAxisInfo;
 .fi
 .DE
-.P
+.LP
 The resolution contains a number in counts/meter.
-.P
+.LP
 The min_val field contains a number that specifies
 the minimum value the device reports for this axis.
 For devices whose mode is Relative, the min_val field
 will contain 0.
-.P
+.LP
 The max_val field contains a number that specifies
 the maximum value the device reports for this axis.
 For devices whose mode is Relative, the max_val field
 will contain 0.
-.P
+.LP
 To free the \fIXDeviceInfo\fP array created by \fIXListInputDevices\fP,
 use \fIXFreeDeviceList\fP.
 .SH DIAGNOSTICS

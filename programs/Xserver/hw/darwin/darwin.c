@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.4 2001/01/16 23:42:49 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.5 2001/01/23 21:14:26 herrb Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -84,11 +84,15 @@ DarwinPrintBanner()
     "please check the latest version in the XFree86 CVS repository\n"
     "(http://www.XFree86.Org/cvs)\n");
 #endif
-  ErrorF("\nXFree86 Version%s", XF86_VERSION);
-#ifdef XF86_CUSTOM_VERSION
-  ErrorF("(%s) ", XF86_CUSTOM_VERSION);
+  ErrorF("\nXFree86 Version %d.%d.%d", XF86_VERSION_MAJOR, XF86_VERSION_MINOR,
+					XF86_VERSION_SUBMINOR);
+#if XF86_VERSION_ALPHA > 0
+  ErrorF("%c", 'a' + XF86_VERSION_ALPHA - 1);
 #endif
-  ErrorF("/ X Window System\n");
+#ifdef XF86_CUSTOM_VERSION
+  ErrorF(" (%s)", XF86_CUSTOM_VERSION);
+#endif
+  ErrorF(" / X Window System\n");
   ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
          X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
   ErrorF("Release Date: %s\n", XF86_DATE);

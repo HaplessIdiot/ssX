@@ -3,9 +3,9 @@
 .\"
 .\"
 .\"
-.\" $XFree86: xc/programs/xkbcomp/xkbcomp.man,v 1.7 2001/01/17 23:45:45 dawes Exp $
+.\" $XFree86: xc/programs/xkbcomp/xkbcomp.man,v 1.8 2001/01/24 00:06:46 dawes Exp $
 .\"
-.TH XKBCOMP 1 "Release 6.4" "X Version 11"
+.TH XKBCOMP 1 __xorgversion__
 .SH NAME
 xkbcomp \- compile XKB keyboard description
 .SH SYNOPSIS

@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.13 2000/12/11 20:18:01 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.1 2001/01/24 00:06:14 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH XF86Config __filemansuffix__ "Version 4.0.2"  "XFree86"
+.TH XF86Config __filemansuffix__ __vendorversion__
 .SH NAME
 XF86Config - Configuration File for XFree86
 .SH DESCRIPTION

@@ -1,5 +1,8 @@
 .\" $XConsortium: xgc.man,v 1.6 94/04/17 20:45:31 gildea Exp $
-.TH XGC 1 "Release 6" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH XGC 1 __xorgversion__
 .SH NAME
 xgc - X graphics demo
 .SH SYNOPSIS

@@ -1,5 +1,8 @@
 .\" $XConsortium: xload.man,v 1.29 94/04/17 20:43:44 matt Exp $
-.TH XLOAD 1 "Release 6" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH XLOAD 1 __xorgversion__
 .SH NAME
 xload \- system load average display for X
 .SH SYNOPSIS

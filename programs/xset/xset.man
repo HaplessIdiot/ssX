@@ -19,9 +19,9 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.\" $XFree86: xc/programs/xset/xset.man,v 3.11 2001/01/17 23:46:27 dawes Exp $
+.\" $XFree86: xc/programs/xset/xset.man,v 3.12 2001/01/24 00:06:49 dawes Exp $
 .\" 
-.TH XSET 1 "Release 6.4" "X Version 11"
+.TH XSET 1 __xorgversion__
 .SH NAME
 xset - user preference utility for X
 .SH SYNOPSIS

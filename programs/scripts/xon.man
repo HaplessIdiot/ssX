@@ -18,7 +18,10 @@
 .\" be used in advertising or otherwise to promote the sale, use or other 
 .\" dealing in this Software without prior written authorization from the 
 .\" The Open Group.
-.TH XON 1 "Release 6.4" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH XON 1 __xorgversion__
 .SH NAME
 xon \- start an X program on a remote machine
 .SH SYNOPSIS

@@ -1,5 +1,7 @@
 .\"
-$XMCOPY
+.\" $XFree86$
+.\"
+.\"
 .\" Copyright ([\d,\s]*) by Hewlett-Packard Company, Ardent Computer, 
 .\" 
 .\" Permission to use, copy, modify, distribute, and sell this documentation 
@@ -9,9 +11,9 @@ $XMCOPY
 .\" suitability for any purpose of the information in this document.  It is 
 .\" provided \`\`as is'' without express or implied warranty.
 .\" 
-.\" $XConsortium: XChFCtl.man,v 1.4 94/04/17 20:07:27 dpw Exp $
+.\" $Xorg: XChFCtl.man,v 1.3 2000/08/17 19:41:56 cpqbld Exp $
 .ds xL Programming With Xlib
-.TH XGetFeedbackControl 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
+.TH XGetFeedbackControl 3X11 __xorgversion__ "X FUNCTIONS"
 .SH NAME
 XGetFeedbackControl, XChangeFeedbackControl \- query and change input device feedbacks
 .SH SYNTAX
@@ -62,13 +64,13 @@ returned by the \fIXOpenDevice\fP request.  For those devices that
 support feedbacks, \fIXOpenDevice\fP will return an
 \fIXInputClassInfo\fP structure with the input_class field
 equal to the constant \fIFeedbackClass\fP (defined in the file \fIXI.h\fP).
-.P
+.LP
 The \fIXGetFeedbackControl\fP request returns a pointer to a list of 
 \fIXFeedbackState\fP structures.  Each item in this list describes one
 of the feedbacks supported by the device.  The items are variable length,
 so each contains its length to allow traversal to the next item in the
 list.
-.P
+.LP
 The feedback classes that are currently defined are:  \fIKbdFeedbackClass\fP,
 \fIPtrFeedbackClass\fP, \fIStringFeedbackClass\fP, \fIIntegerFeedbackClass\fP,
 \fILedFeedbackClass\fP, and \fIBellFeedbackClass\fP.  These constants are
@@ -77,16 +79,16 @@ support zero or more classes of feedback, and may support multiple feedbacks
 of the same class.  Each feedback contains a class identifier and an id
 that is unique within that class for that input device.  The id is used
 to identify the feedback when making an \fIXChangeFeedbackControl\fP request.
-.P
+.LP
 \fIXGetFeedbackControl\fP can generate a \fIBadDevice\fP or
 \fIBadMatch\fP error.
-.P
+.LP
 The \fIXChangeFeedbackControl\fP request modifies the values of one 
 feedback on the specified device.  The feedback is identified by the id
 field of the \fIXFeedbackControl\fP structure that is passed with the
 request.  The fields of the feedback that are to be modified are identified
 by the bits of the mask that is passed with the request.
-.P
+.LP
 \fIXChangeFeedbackControl\fP can generate a \fIBadDevice\fP,
 \fIBadMatch\fP, or \fIBadValue\fP  error.
 .SH STRUCTURES
@@ -95,7 +97,7 @@ These structures are defined in the file \fIXInput.h\fP.
 \fIXFeedbackState\fP and \fIXFeedbackControl\fP are generic 
 structures that contain three fields that are at the beginning of each class
 of feedback:
-.P
+.LP
 .DS
 typedef struct {
 .br
@@ -107,10 +109,10 @@ typedef struct {
 .br
 } XFeedbackState, XFeedbackControl;
 .DE
-.P
+.LP
 The \fIXKbdFeedbackState\fP structure defines the attributes that are
 returned for feedbacks equivalent to those on the X keyboard.
-.P
+.LP
 .DS
 .nf
 typedef struct {
@@ -127,10 +129,10 @@ typedef struct {
 } XKbdFeedbackState;
 .fi
 .DE
-.P
+.LP
 The \fIXPtrFeedbackState\fP structure defines the attributes that are
 returned for feedbacks equivalent to those on the the X pointer.
-.P
+.LP
 .DS
 .nf
 typedef struct {
@@ -143,10 +145,10 @@ typedef struct {
 } XPtrFeedbackState;
 .fi
 .DE
-.P
+.LP
 The \fIXIntegerFeedbackState\fP structure defines attributes that are 
 returned for integer feedbacks.
-.P
+.LP
 .DS
 .nf
 typedef struct {
@@ -159,10 +161,10 @@ typedef struct {
 } XIntegerFeedbackState;
 .fi
 .DE
-.P
+.LP
 The \fIXStringFeedbackState\fP structure defines the attributes that are
 returned for string feedbacks.
-.P
+.LP
 .DS
 .nf
 typedef struct {
@@ -175,10 +177,10 @@ typedef struct {
 } XStringFeedbackState;
 .fi
 .DE
-.P
+.LP
 The \fIXBellFeedbackState\fP structure defines the attributes that are
 returned for bell feedbacks.
-.P
+.LP
 .DS
 .nf
 typedef struct {
@@ -191,10 +193,10 @@ typedef struct {
 } XBellFeedbackState;
 .fi
 .DE
-.P
+.LP
 The \fIXLedFeedbackState\fP structure defines the attributes that are
 returned for LED feedbacks.
-.P
+.LP
 .DS
 .nf
 typedef struct {
@@ -205,10 +207,10 @@ typedef struct {
 } XLedFeedbackState;
 .fi
 .DE
-.P
+.LP
 The \fIXPrtFeedbackControl\fP structure defines the attributes that can be
 controlled for pointer feedbacks.
-.P
+.LP
 .DS
 .nf
 typedef struct {
@@ -221,10 +223,10 @@ typedef struct {
 } XPtrFeedbackControl;
 .fi
 .DE
-.P
+.LP
 The \fIXKbdFeedbackControl\fP structure defines the attributes that can be
 controlled for keyboard feedbacks.
-.P
+.LP
 .DS
 .nf
 typedef struct {
@@ -242,10 +244,10 @@ typedef struct {
 } XKbdFeedbackControl;
 .fi
 .DE
-.P
+.LP
 The \fIXStringFeedbackControl\fP structure defines the attributes that can be
 controlled for string feedbacks.
-.P
+.LP
 .DS
 .nf
 typedef struct {
@@ -257,10 +259,10 @@ typedef struct {
 } XStringFeedbackControl;
 .fi
 .DE
-.P
+.LP
 The \fIXIntegerFeedbackControl\fP structure defines the attributes that can
 be controlled for integer feedbacks.
-.P
+.LP
 .DS
 .nf
 typedef struct {
@@ -271,10 +273,10 @@ typedef struct {
 } XIntegerFeedbackControl;
 .fi
 .DE
-.P
+.LP
 The \fIXBellFeedbackControl\fP structure defines the attributes that can be
 controlled for bell feedbacks.
-.P
+.LP
 .DS
 .nf
 typedef struct {
@@ -287,10 +289,10 @@ typedef struct {
 } XBellFeedbackControl;
 .fi
 .DE
-.P
+.LP
 The \fIXLedFeedbackControl\fP structure defines the attributes that can be
 controlled for LED feedbacks.
-.P
+.LP
 .DS
 .nf
 typedef struct {

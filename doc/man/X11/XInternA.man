@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -40,6 +40,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -138,7 +140,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XInternAtom 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XInternAtom 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XInternAtom, XInternAtoms, XGetAtomName, XGetAtomNames \- create or return atom names
 .SH SYNTAX
@@ -213,7 +215,7 @@ Therefore,
 can return
 .ZN None .
 If the atom name is not in the Host Portable Character Encoding, 
-the result is implementation dependent.
+the result is implementation-dependent.
 Uppercase and lowercase matter;
 the strings ``thing'', ``Thing'', and ``thinG'' 
 all designate different atoms.  
@@ -235,7 +237,7 @@ The atoms are stored in the atoms_return array supplied by the caller.
 Calling this function is equivalent to calling
 .ZN XInternAtom
 for each of the names in turn with the specified value of only_if_exists,
-but this function minimizes the number of round trip protocol exchanges
+but this function minimizes the number of round-trip protocol exchanges
 between the client and the X server.
 .LP
 This function returns a nonzero status if atoms are returned for
@@ -254,7 +256,7 @@ The
 function returns the name associated with the specified atom.
 If the data returned by the server is in the Latin Portable Character Encoding,
 then the returned string is in the Host Portable Character Encoding.
-Otherwise, the result is implementation dependent.
+Otherwise, the result is implementation-dependent.
 To free the resulting string,
 call
 .ZN XFree .
@@ -271,7 +273,7 @@ The names are stored in the names_return array supplied by the caller.
 Calling this function is equivalent to calling
 .ZN XGetAtomName
 for each of the atoms in turn,
-but this function minimizes the number of round trip protocol exchanges
+but this function minimizes the number of round-trip protocol exchanges
 between the client and the X server.
 .LP
 This function returns a nonzero status if names are returned for

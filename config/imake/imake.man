@@ -18,7 +18,10 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.TH IMAKE 1 "Release 6.1" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH IMAKE 1 __xorgversion__
 .SH NAME
 imake \- C preprocessor interface to the make utility
 .SH SYNOPSIS

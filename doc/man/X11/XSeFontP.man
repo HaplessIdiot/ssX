@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -40,6 +40,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -138,7 +140,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XSetFontPath 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XSetFontPath 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XSetFontPath, XGetFontPath, XFreeFontPath \- set, get, or free the font search path
 .SH SYNTAX
@@ -179,9 +181,9 @@ The
 .ZN XSetFontPath
 function defines the directory search path for font lookup.
 There is only one search path per X server, not one per client.
-The encoding and interpretation of the
-strings is implementation dependent, but typically they specify
-directories or font servers to be searched in the order listed.
+The encoding and interpretation of the strings are implementation-dependent,
+but typically they specify directories or font servers to be searched 
+in the order listed.
 An X server is permitted to cache font information internally;
 for example, it might cache an entire font from a file and not
 check on subsequent opens of that font to see if the underlying
@@ -190,7 +192,7 @@ However,
 when the font path is changed,
 the X server is guaranteed to flush all cached information about fonts 
 for which there currently are no explicit resource IDs allocated.
-The meaning of an error from this request is implementation dependent.
+The meaning of an error from this request is implementation-dependent.
 .LP
 .ZN XSetFontPath
 can generate a
@@ -200,7 +202,7 @@ error.
 The
 .ZN XGetFontPath
 function allocates and returns an array of strings containing the search path.
-The contents of these strings are implementation dependent
+The contents of these strings are implementation-dependent
 and are not intended to be interpreted by client applications.
 When it is no longer needed,
 the data in the font path should be freed by using

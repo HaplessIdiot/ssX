@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -40,6 +40,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -138,7 +140,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XrmGetFileDatabase 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XrmGetFileDatabase 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XrmGetFileDatabase, XrmPutFileDatabase, XrmGetStringDatabase, XrmLocaleOfDatabase, XrmGetDatabase, XrmSetDatabase, XrmDestroyDatabase \- retrieve and store resource databases
 .SH SYNTAX
@@ -194,7 +196,7 @@ creates a new resource database, and loads it with the specifications
 read in from the specified file.
 The specified file should contain a sequence of entries in valid ResourceLine
 format (see section 15.1); the database that results from reading a file
-with incorrect syntax is implementation dependent.
+with incorrect syntax is implementation-dependent.
 The file is parsed in the current locale, 
 and the database is created in the current locale.
 If it cannot open the specified file,
@@ -209,8 +211,8 @@ ResourceLine format (see section 15.1).
 The file is written in the locale of the database.
 Entries containing resource names that are not in the Host Portable Character
 Encoding or containing values that are not in the encoding of the database
-locale, are written in an implementation dependent manner.
-The order in which entries are written is implementation dependent.
+locale, are written in an implementation-dependent manner.
+The order in which entries are written is implementation-dependent.
 Entries with representation types other than ``String'' are ignored.
 .LP
 The
@@ -224,7 +226,7 @@ except that it reads the information out of a string instead of out of a file.
 The string should contain a sequence of entries in valid ResourceLine
 format (see section 15.1) terminated by a null character;
 the database that results from using a string
-with incorrect syntax is implementation dependent.
+with incorrect syntax is implementation-dependent.
 The string is parsed in the current locale, 
 and the database is created in the current locale.
 .LP

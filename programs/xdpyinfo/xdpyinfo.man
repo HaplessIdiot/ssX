@@ -19,9 +19,9 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xdpyinfo/xdpyinfo.man,v 3.5 2001/01/17 23:45:26 dawes Exp $
+.\" $XFree86: xc/programs/xdpyinfo/xdpyinfo.man,v 3.6 2001/01/24 00:06:44 dawes Exp $
 .\"
-.TH XDPYINFO 1 "Release 6.4" "X Version 11"
+.TH XDPYINFO 1 __xorgversion__
 .SH NAME
 xdpyinfo \- display information utility for X
 .SH SYNOPSIS

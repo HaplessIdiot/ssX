@@ -19,8 +19,11 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
+.\"
+.\" $XFree86$
+.\"
 .nh
-.TH XFWP 1 "Release 6.4" "X Version 11"
+.TH XFWP 1 __xorgversion__
 .SH NAME
 xfwp - X firewall proxy
 .SH SYNOPSIS

@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -40,6 +40,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -138,7 +140,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XFontsOfFontSet 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XFontsOfFontSet 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XFontsOfFontSet, XBaseFontNameListOfFontSet, XLocaleOfFontSet, XContextDependentDrawing, XContextualDrawing, XDirectionalDependentDrawing \- obtain fontset information
 .SH SYNTAX
@@ -181,7 +183,7 @@ The
 .ZN XFontsOfFontSet
 function returns a list of one or more 
 .ZN XFontStructs
-and font names for the fonts used by the Xmb and Xwc layers,
+and font names for the fonts used by the Xmb and Xwc layers
 for the given font set.
 A list of pointers to the
 .ZN XFontStruct

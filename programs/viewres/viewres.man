@@ -24,7 +24,10 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
-.TH VIEWRES 1 "Release 6" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH VIEWRES 1 __xorgversion__
 .SH NAME
 viewres - graphical class browser for Xt
 .SH SYNOPSIS

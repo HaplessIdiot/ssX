@@ -1,5 +1,5 @@
 '\" t
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -41,6 +41,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -140,7 +142,7 @@
 ..
 .ny0
 '\" t
-.TH XChangeKeyboardControl 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XChangeKeyboardControl 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XChangeKeyboardControl, XGetKeyboardControl, XAutoRepeatOn, XAutoRepeatOff, XBell, XQueryKeymap, XKeyboardControl \- manipulate keyboard settings and keyboard control structure
 .SH SYNTAX
@@ -257,7 +259,7 @@ where each bit set to 1 indicates that the corresponding key is currently
 pressed down.
 The vector is represented as 32 bytes.
 Byte N (from 0) contains the bits for keys 8N to 8N + 7 
-with the least-significant bit in the byte representing key 8N.
+with the least significant bit in the byte representing key 8N.
 .LP
 Note that the logical state of a device (as seen by client applications)
 may lag the physical state if device event processing is frozen.
@@ -394,7 +396,7 @@ or
 if possible.
 If only auto_repeat_mode is
 specified, the global auto_repeat_mode for the entire keyboard is
-changed, if possible, and does not affect the per key settings.
+changed, if possible, and does not affect the per-key settings.
 If a key is specified without an auto_repeat_mode, a
 .ZN BadMatch
 error results.
@@ -436,7 +438,7 @@ typedef struct {
 .De
 .LP
 For the LEDs, 
-the least-significant bit of led_mask corresponds to LED one,
+the least significant bit of led_mask corresponds to LED one,
 and each bit set to 1 in led_mask indicates an LED that is lit.
 The global_auto_repeat member can be set to
 .ZN AutoRepeatModeOn
@@ -447,7 +449,7 @@ Each bit set to 1 indicates that auto-repeat is enabled
 for the corresponding key.
 The vector is represented as 32 bytes.  
 Byte N (from 0) contains the bits for keys 8N to 8N + 7
-with the least-significant bit in the byte representing key 8N.
+with the least significant bit in the byte representing key 8N.
 .SH DIAGNOSTICS
 .TP 1i
 .ZN BadMatch

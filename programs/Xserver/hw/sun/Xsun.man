@@ -19,7 +19,10 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.TH XSUN 1 "Release 6.4" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH XSUN 1 __xorgversion__
 .SH NAME
 Xsun, XsunMono, Xsun24 \- Sun server for X Version 11
 .SH SYNOPSIS

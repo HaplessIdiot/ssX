@@ -1,5 +1,8 @@
 .\" $XConsortium: xditview.man,v 1.10 94/04/17 20:43:37 gildea Exp $
-.TH XDITVIEW 1 "Release 6" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH XDITVIEW 1 __xorgversion__
 .SH NAME
 xditview \- display ditroff output
 .SH SYNOPSIS

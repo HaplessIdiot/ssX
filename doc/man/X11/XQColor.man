@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -40,6 +40,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -138,7 +140,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XQueryColor 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XQueryColor 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XQueryColor, XQueryColors, XLookupColor, XParseColor \- obtain color values
 .SH SYNTAX
@@ -252,7 +254,7 @@ It returns both the exact color values and
 the closest values provided by the screen 
 with respect to the visual type of the specified colormap.
 If the color name is not in the Host Portable Character Encoding, 
-the result is implementation dependent.
+the result is implementation-dependent.
 Use of uppercase or lowercase does not matter.
 .ZN XLookupColor
 returns nonzero if the name is resolved;
@@ -264,7 +266,7 @@ function looks up the string name of a color with respect to the screen
 associated with the specified colormap.
 It returns the exact color value.
 If the color name is not in the Host Portable Character Encoding, 
-the result is implementation dependent.
+the result is implementation-dependent.
 Use of uppercase or lowercase does not matter.
 .ZN XParseColor
 returns nonzero if the name is resolved;
@@ -312,7 +314,7 @@ a numeric specification, in one of the following formats:
 .LP
 The R, G, and B represent single hexadecimal digits.
 When fewer than 16 bits each are specified, 
-they represent the most-significant bits of the value
+they represent the most significant bits of the value
 (unlike the ``rgb:'' syntax, in which values are scaled).
 For example, the string ``#3a7'' is the same as ``#3000a0007000''.
 .LP

@@ -1,5 +1,8 @@
 .\" $XConsortium: xev.man,v 1.10 94/04/17 20:45:20 gildea Exp $
-.TH XEV 1 "Release 6" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH XEV 1 __xorgversion__
 .SH NAME
 xev - print contents of X events
 .SH SYNOPSIS

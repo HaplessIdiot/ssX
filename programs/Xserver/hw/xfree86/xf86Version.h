@@ -1,8 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.459 2000/12/15 22:48:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.460 2000/12/18 05:55:35 dawes Exp $ */
 
-#define XF86_VERSION " 4.0.2 "
-
-/* The finer points in versions... */
 #define XF86_VERSION_MAJOR	4
 #define XF86_VERSION_MINOR	0
 #define XF86_VERSION_SUBMINOR	2

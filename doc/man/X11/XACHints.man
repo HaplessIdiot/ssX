@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -40,6 +40,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -138,7 +140,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XAllocClassHint 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XAllocClassHint 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XAllocClassHint, XSetClassHint, XGetClassHint, XClassHint \- allocate class hints structure and set or read a window's WM_CLASS property
 .SH SYNTAX
@@ -192,7 +194,7 @@ The
 .ZN XSetClassHint
 function sets the class hint for the specified window.
 If the strings are not in the Host Portable Character Encoding,
-the result is implementation dependent.
+the result is implementation-dependent.
 .LP
 .ZN XSetClassHint
 can generate
@@ -207,7 +209,7 @@ function returns the class hint of the specified window to the members
 of the supplied structure.
 If the data returned by the server is in the Latin Portable Character Encoding,
 then the returned strings are in the Host Portable Character Encoding.
-Otherwise, the result is implementation dependent.
+Otherwise, the result is implementation-dependent.
 It returns a nonzero status on success;
 otherwise, it returns a zero status.
 To free res_name and res_class when finished with the strings,
