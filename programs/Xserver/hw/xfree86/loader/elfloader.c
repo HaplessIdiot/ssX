@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.39 2002/01/12 19:25:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.41 2002/04/04 14:05:52 eich Exp $ */
 
 /*
  *
@@ -2915,9 +2915,11 @@ LOOKUP **ppLookup;
     ELFCollectSections(elffile, 0, &totalsize, &maxalign);
 
     if( elffile->straddr == NULL || elffile->strsize == 0 ) {
+#if 0
 	ErrorF("No symbols found in this module\n");
+#endif
 	ELFUnloadModule(elffile);
-	return NULL;
+	return (void *) -1L;
     }
 
 /*

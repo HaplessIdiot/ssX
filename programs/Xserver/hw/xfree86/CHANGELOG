@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx August 2002)
+ 224. Make loader ignore ELF objects that don't define any symbols (H. J. Lu)
  223. Add a HasGcc3 imake symbol (Marc La France).
  222. Enable threaded libraries on Darwin (Jeff Whitaker and Torrey T. Lyons).
  221. Xaw documentation fixes (A.1218, Paul Vojta).
@@ -14981,4 +14982,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2279 2002/08/15 00:14:53 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2280 2002/08/19 03:16:33 tsi Exp $
