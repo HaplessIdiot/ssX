@@ -169,20 +169,20 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
 
     nformats = 0;
     /* formats required by protocol */
+    formats[nformats].format = PICT_a1;
+    formats[nformats].depth = 1;
+    nformats++;
+    formats[nformats].format = PICT_a8;
+    formats[nformats].depth = 8;
+    nformats++;
+    formats[nformats].format = PICT_a4;
+    formats[nformats].depth = 4;
+    nformats++;
     formats[nformats].format = PICT_a8r8g8b8;
     formats[nformats].depth = 32;
     nformats++;
     formats[nformats].format = PICT_x8r8g8b8;
     formats[nformats].depth = 32;
-    nformats++;
-    formats[nformats].format = PICT_a1;
-    formats[nformats].depth = 1;
-    nformats++;
-    formats[nformats].format = PICT_a4;
-    formats[nformats].depth = 4;
-    nformats++;
-    formats[nformats].format = PICT_a8;
-    formats[nformats].depth = 8;
     nformats++;
 
     /* now look through the depths and visuals adding other formats */
