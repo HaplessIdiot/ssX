@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddtex.c,v 1.1 2000/09/24 13:51:14 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddtex.c,v 1.2 2000/12/08 19:36:23 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -64,7 +64,7 @@ fxPrintTextureData(tfxTexInfo * ti)
     else
         fprintf(stderr, "\tName: UNNAMED\n");
     fprintf(stderr, "\tLast used: %d\n", ti->lastTimeUsed);
-    fprintf(stderr, "\tTMU: %ld\n", (AnyPtr)ti->whichTMU);
+    fprintf(stderr, "\tTMU: %ld\n", (unsigned long)ti->whichTMU);
     fprintf(stderr, "\t%s\n", (ti->isInTM) ? "In TMU" : "Not in TMU");
     if (ti->tm[0])
         fprintf(stderr, "\tMem0: %x-%x\n", (unsigned) ti->tm[0]->startAddr,
@@ -153,7 +153,7 @@ fxDDTexBind(GLcontext * ctx, GLenum target, struct gl_texture_object *tObj)
 
     if (MESA_VERBOSE & VERBOSE_DRIVER) {
         fprintf(stderr, "fxmesa: fxDDTexBind(%d,%x)\n", tObj->Name,
-                (GLuint)(AnyPtr)tObj->DriverData);
+                tObj->DriverData);
     }
 
     if (target != GL_TEXTURE_2D)
@@ -220,7 +220,7 @@ fxDDTexParam(GLcontext * ctx, GLenum target, struct gl_texture_object *tObj,
 
     if (MESA_VERBOSE & VERBOSE_DRIVER) {
         fprintf(stderr, "fxmesa: fxDDTexParam(%d,%x,%x,%x)\n", tObj->Name,
-                (GLuint)(AnyPtr) tObj->DriverData, pname, param);
+                tObj->DriverData, pname, param);
     }
 
     if (target != GL_TEXTURE_2D)
@@ -455,7 +455,7 @@ fxDDTexPalette(GLcontext * ctx, struct gl_texture_object *tObj)
         tfxTexInfo *ti;
         if (MESA_VERBOSE & VERBOSE_DRIVER) {
             fprintf(stderr, "fxmesa: fxDDTexPalette(%d,%x)\n",
-                    tObj->Name, (GLuint)(AnyPtr) tObj->DriverData);
+                    tObj->Name, tObj->DriverData);
         }
         if (!tObj->DriverData)
             tObj->DriverData = fxAllocTexObjData(fxMesa);
