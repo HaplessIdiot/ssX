@@ -1,4 +1,5 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 814. Fix Radeon native FP mode initializion (Hui Yu@ATI).
  813. Resync with DRI mesa-4-0-4 branch:
        - Fix Q3A mode change prolbem in thr r200 driver (Keith Whitwell).
        - Add a missing break to prevent spurious GL_INVALID_ENUM
@@ -16183,7 +16184,7 @@ XFree86 3.0 (26 April 1994)
 
 
 <<<<<<< CHANGELOG
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2509 2003/01/29 22:44:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2510 2003/01/29 23:00:41 dawes Exp $
 =======
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2509 2003/01/29 22:44:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2510 2003/01/29 23:00:41 dawes Exp $
 >>>>>>> 3.2508
