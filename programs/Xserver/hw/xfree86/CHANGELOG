@@ -1,16 +1,19 @@
-XFree86 3.9Nj (11 October 1998)
-1911. Fix the 8+24 overlay's CopyWindow wrapper so that it works properly
-      with "NoAccel" or without hardware planemasks (#2041, Mark Vojkovich).
-1910. Reenable planemasks for SDRAM G200s and disable for all G100 (#2040,
-      Mark Vojkovich).
-1909. Add mga overlay support for the TVP3026 (#2040, Mark Vojkovich).
-1908. Ansifiy and remove most warnings from the Xdmcp library and xdm
-      (#2038, Thomas Dickey).
-1907. xterm patch 84 (see see xterm.log.html for details) (#2036,
-      Thomas Dickey, Bjorn Helgaas).
-1906. Some updates to the "dacG" mga reset code, and enable it by default
+XFree86 3.9Nk (18 October 1998)
+1912. Change "fcd8859-15" to "iso8859-15".
+1911. Some updates to the "dacG" mga reset code, and enable it by default
       since it helps initialising an inactive secondary G200 (#2032,
       Radoslaw Kapitan).
+
+XFree86 3.9Nj (11 October 1998)
+1910. Fix the 8+24 overlay's CopyWindow wrapper so that it works properly
+      with "NoAccel" or without hardware planemasks (#2041, Mark Vojkovich).
+1909. Reenable planemasks for SDRAM G200s and disable for all G100 (#2040,
+      Mark Vojkovich).
+1908. Add mga overlay support for the TVP3026 (#2040, Mark Vojkovich).
+1907. Ansifiy and remove most warnings from the Xdmcp library and xdm
+      (#2038, Thomas Dickey).
+1906. xterm patch 84 (see see xterm.log.html for details) (#2036,
+      Thomas Dickey, Bjorn Helgaas).
 1905. Enhancements for xedit (#2028, 2033, Paulo Cesar Pereira de Andrade).
 1904. Patch to make editres work properly (#2028,
       Paulo Cesar Pereira de Andrade).
@@ -6646,4 +6649,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.636 1998/10/10 15:25:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.637 1998/10/11 10:20:24 dawes Exp $

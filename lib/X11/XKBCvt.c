@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.15 1998/06/28 08:41:33 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.16 1998/10/03 08:41:26 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -318,7 +318,8 @@ __XkbDefaultToUpper(sym)
     return upper;
 }
 
-static int _XkbKSToKoi8 (priv, keysym, buffer, nbytes, status)
+static int
+_XkbKSToKoi8 (priv, keysym, buffer, nbytes, status)
     XPointer priv;
     KeySym keysym;
     char *buffer;

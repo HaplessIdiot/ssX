@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.8 1998/10/05 13:23:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.9 1998/10/06 04:39:37 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -38,7 +38,7 @@
  * This is useful during development.
  */
 
-/* #define USE_RESET */
+#define USE_RESET
 
 /*
  * Only change bits shown in this mask.  Ideally reserved bits should be
@@ -247,7 +247,7 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* 0x00: */	   0,    0,    0,    0,    0,    0, 0x00,    0,
 	/* 0x08: */	   0,    0,    0,    0,    0,    0,    0,    0,
 	/* 0x10: */	   0,    0,    0,    0,    0,    0,    0,    0,
-	/* 0x18: */	0x00,    0, 0x09, 0xFF, 0xBF, 0x20, 0x1F, 0x20,
+	/* 0x18: */	0x00,    0, 0xC9, 0xFF, 0xBF, 0x20, 0x1F, 0x20,
 	/* 0x20: */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	/* 0x28: */	0x00, 0x00, 0x00, 0x00,    0,    0,    0, 0x40,
 	/* 0x30: */	0x00, 0xB0, 0x00, 0xC2, 0x34, 0x14, 0x02, 0x83,
@@ -278,9 +278,15 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	switch(pMga->Chipset)
 	{
 	case PCI_CHIP_MGA1064:
+#if 0  /* fails in 1600x1200x32 */
 		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x0A;
 		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x72;
 		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
+#else
+		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x04;
+		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x44;
+		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
+#endif
 		pReg->Option  = 0x5F094E21;
 		pReg->Option2 = 0x00000000;
 		break;
@@ -523,10 +529,11 @@ MGAGSavePalette(ScrnInfoPtr pScrn, unsigned char* pntr)
 
 
 static void
-MGAGReset(MGAPtr pMga)
+MGAGReset(ScrnInfoPtr pScrn)
 {
 #ifdef USE_RESET
-	CARD32 tmp;
+	MGAPtr pMga = MGAPTR(pScrn);
+	int i;
 
 #ifdef DEBUG	
 	ErrorF("Resetting...\n");
@@ -538,15 +545,19 @@ MGAGReset(MGAPtr pMga)
 	OUTREG(MGAREG_Reset, 0);
 
 	/* reset memory */
-	tmp = INREG(MGAREG_MACCESS);
-	tmp |= 1<<15;
-	OUTREG(MGAREG_MACCESS, tmp);
+	OUTREG(MGAREG_MACCESS, 1<<15);
 	usleep(10);
 
 	/* wait until drawing engine is ready */
 	while ( MGAISBUSY() )
 		usleep(1000);
 		
+	/* flush FIFO */	
+	i = 32;
+	WAITFIFO(i);
+	while ( i-- )
+		OUTREG(MGAREG_Reset, 0);
+
 #ifdef DEBUG		
 	ErrorF("Reset done\n");
 #endif	
@@ -567,7 +578,7 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	int i;
 	MGAPtr pMga = MGAPTR(pScrn);
 
-	MGAGReset(pMga);
+	MGAGReset(pScrn);
 
 	/*
 	 * Code is needed to get things back to bank zero.
