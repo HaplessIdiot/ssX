@@ -1,4 +1,5 @@
 /* $XConsortium: ibm8514fs.c,v 1.2 94/04/17 20:30:33 dpw Exp $ */
+/* $XFree86$ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -115,6 +116,8 @@ ibm8514SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int n;                      /* number of spans to fill */
     register DDXPointPtr ppt;   /* pointer to list of start points */
     register int *pwidth;       /* pointer to list of n widths */
+    DDXPointPtr initPpt;
+    int *initPwidth;
 
 /* 4-5-93 TCG : is VT visible */
     if (!xf86VTSema)
@@ -143,8 +146,8 @@ ibm8514SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
     {
         if (ppt) DEALLOCATE_LOCAL(ppt);
@@ -176,8 +179,8 @@ ibm8514SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
     outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 
-    DEALLOCATE_LOCAL(ppt);
-    DEALLOCATE_LOCAL(pwidth);
+    DEALLOCATE_LOCAL(initPpt);
+    DEALLOCATE_LOCAL(initPwidth);
 }
 
 void
@@ -194,6 +197,8 @@ ibm8514TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     int xrot, yrot, width, height, pixWidth;
     PixmapPtr pPix = pGC->tile.pixmap;
+    DDXPointPtr initPpt;
+    int *initPwidth;
 
 /* 4-5-93 TCG : is VT visible */
     if (!xf86VTSema)
@@ -222,8 +227,8 @@ ibm8514TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
     {
         if (ppt) DEALLOCATE_LOCAL(ppt);
@@ -268,8 +273,8 @@ ibm8514TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     	}
     }
 
-    DEALLOCATE_LOCAL(ppt);
-    DEALLOCATE_LOCAL(pwidth);
+    DEALLOCATE_LOCAL(initPpt);
+    DEALLOCATE_LOCAL(initPwidth);
 }
 
 void
@@ -286,6 +291,8 @@ ibm8514StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     int xrot, yrot, width, height, pixWidth;
     PixmapPtr pPix = pGC->stipple;
+    DDXPointPtr initPpt;
+    int *initPwidth;
 
 /* 4-5-93 TCG : is VT visible */
     if (!xf86VTSema)
@@ -314,8 +321,8 @@ ibm8514StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
     {
         if (ppt) DEALLOCATE_LOCAL(ppt);
@@ -361,8 +368,8 @@ ibm8514StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     	}
     }
 
-    DEALLOCATE_LOCAL(ppt);
-    DEALLOCATE_LOCAL(pwidth);
+    DEALLOCATE_LOCAL(initPpt);
+    DEALLOCATE_LOCAL(initPwidth);
 }
 
 void
@@ -379,6 +386,8 @@ ibm8514OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     int xrot, yrot, width, height, pixWidth;
     PixmapPtr pPix = pGC->stipple;
+    DDXPointPtr initPpt;
+    int *initPwidth;
 
 /* 4-5-93 TCG : is VT visible */
     if (!xf86VTSema)
@@ -407,8 +416,8 @@ ibm8514OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
     {
         if (ppt) DEALLOCATE_LOCAL(ppt);
@@ -455,6 +464,6 @@ ibm8514OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     	}
     }
 
-    DEALLOCATE_LOCAL(ppt);
-    DEALLOCATE_LOCAL(pwidth);
+    DEALLOCATE_LOCAL(initPpt);
+    DEALLOCATE_LOCAL(initPwidth);
 }
