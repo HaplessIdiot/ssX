@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.86 2001/10/28 03:33:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.87 2002/01/04 21:22:35 tsi Exp $ */
 
 /*
  * Authors:
@@ -189,6 +189,7 @@ static const OptionInfoRec TDFXOptions[] = {
 };
 
 static const char *vgahwSymbols[] = {
+    "vgaHWEnable",
     "vgaHWFreeHWRec",
     "vgaHWGetHWRec",
     "vgaHWGetIOBase",

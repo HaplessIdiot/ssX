@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.37 2001/10/02 15:57:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.38 2001/10/28 03:33:29 tsi Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -140,9 +140,12 @@ static const char *fbSymbols[] = {
 };
 
 static const char *shadowSymbols[] = {
+	"shadowAdd",
 	"shadowAlloc",
 	"shadowInit",
+	"shadowSetup",
 	"shadowUpdatePacked",
+	"shadowUpdateRotatePacked",
 	NULL
 };
 
@@ -171,6 +174,8 @@ static const char *fbdevHWSymbols[] = {
 	"fbdevHWLeaveVT",
 	"fbdevHWModeInit",
 	"fbdevHWRestore",
+	"fbdevHWSave",
+	"fbdevHWSaveScreen",
 	"fbdevHWSwitchMode",
 	"fbdevHWValidMode",
 
@@ -207,8 +212,8 @@ FBDevSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&FBDEV, module, 0);
-		LoaderRefSymLists(afbSymbols, cfbSymbols,
-				  fbSymbols, shadowSymbols, NULL);
+		LoaderRefSymLists(afbSymbols, cfbSymbols, fbSymbols,
+				  shadowSymbols, fbdevHWSymbols, NULL);
 		return (pointer)1;
 	} else {
 		if (errmaj) *errmaj = LDR_ONCEONLY;

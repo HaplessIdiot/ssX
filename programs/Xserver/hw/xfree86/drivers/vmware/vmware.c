@@ -7,7 +7,7 @@ char rcsId_vmware[] =
 
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.7 2001/09/13 08:36:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.8 2001/10/28 03:33:53 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -102,7 +102,12 @@ static const char *vgahwSymbols[] = {
 };
 
 static const char *fbSymbols[] = {
+	"fbCopyPlane",
+	"fbCopyRegion",
+	"fbCreateDefColormap",
+	"fbDoCopy",
 	"fbPictureInit",
+	"fbQueryBestSize",
 	"fbScreenInit",
 	NULL
 };

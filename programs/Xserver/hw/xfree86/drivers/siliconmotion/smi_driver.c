@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.19 2001/12/20 21:35:38 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.20 2002/01/04 21:22:34 tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -256,6 +256,7 @@ static const char *i2cSymbols[] =
 	"xf86DestroyI2CDevRec",
 	"xf86I2CBusInit",
 	"xf86I2CDevInit",
+	"xf86I2CReadBytes",
 	"xf86I2CWriteByte",
 	NULL
 };
