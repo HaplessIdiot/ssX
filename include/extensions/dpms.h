@@ -26,7 +26,7 @@ dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/dpms.h,v 3.3 1999/03/07 11:40:23 dawes Exp $ */
 
 /*
  * HISTORY
@@ -42,6 +42,10 @@ Equipment Corporation.
 #define DPMSModeOff	3
 
 #ifndef DPMS_SERVER
+
+#include <X11/X.h>
+#include <X11/Xmd.h>
+
 extern Bool DPMSQueryExtension(Display *, int *, int *);
 extern Status DPMSGetVersion(Display *, int *, int *);
 extern Bool DPMSCapable(Display *);
