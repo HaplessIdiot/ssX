@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.63tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.65 2003/04/24 20:54:47 eich Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1320,7 +1320,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		scrp->monitor->vrefresh[0].hi = 72;
 	    }
 	    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-		       "%s: using default vrefresh range of %.2f-%.2fHz\n",
+		       "%s: Using default vrefresh range of %.2f-%.2fHz\n",
 		       scrp->monitor->id,
 		       scrp->monitor->vrefresh[0].lo,
 		       scrp->monitor->vrefresh[0].hi);
