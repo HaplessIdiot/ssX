@@ -1,3 +1,4 @@
+# $XFree86$
 
 #
 # Phase III - Commands run after switching back to text mode

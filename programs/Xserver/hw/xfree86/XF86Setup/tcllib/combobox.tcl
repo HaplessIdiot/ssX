@@ -1,3 +1,4 @@
+# $XFree86$
 
 proc combobox {w args} {
 	global tcl_library

@@ -1,3 +1,4 @@
+# $XFree86$
 
 # remove all whitespace from the string
 

@@ -1,3 +1,4 @@
+# $XFree86$
 
 #
 # Phase V - Final commands after return to text mode

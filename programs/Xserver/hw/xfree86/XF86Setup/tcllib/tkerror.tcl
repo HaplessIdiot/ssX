@@ -1,5 +1,7 @@
 # tkerror.tcl --
 #
+# $XFree86$
+#
 # This file contains a modified version of the tkError procedure.  It
 # posts a dialog box with the error message and gives the user a chance
 # to see a more detailed stack trace. It also saves a copy of the

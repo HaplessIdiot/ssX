@@ -1,3 +1,4 @@
+# $XFree86$
 
 #
 # Phase IV - Commands run after second server is started
