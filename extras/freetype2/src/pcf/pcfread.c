@@ -23,7 +23,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/extras/freetype2/src/pcf/pcfread.c,v 1.2 2003/05/27 22:26:21 tsi Exp $ */
+/* $XFree86: xc/extras/freetype2/src/pcf/pcfread.c,v 1.3tsi Exp $ */
 
 #include <ft2build.h>
 
@@ -261,7 +261,7 @@ THE SOFTWARE.
           return PCF_Err_Invalid_Stream_Skip;
 
         if ( FT_STREAM_SKIP( tables[i].offset - stream->pos ) )
-          return PCF_Err_Invalid_Stream_Skip;
+          return error;
 
         *asize   = tables[i].size;  /* unused - to be removed */
         *aformat = tables[i].format;
