@@ -1,16 +1,19 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.2 2001/04/05 06:08:46 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.3 2001/04/07 17:48:31 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
 @interface Preferences : NSObject
 {
     IBOutlet NSPanel *window;
-    IBOutlet id keyField;
-    IBOutlet id fakeButton;
     IBOutlet id displayNumber;
+    IBOutlet id fakeButton;
+    IBOutlet id keyField;
+    IBOutlet id keymapFileField;
+    IBOutlet id loadKeymapFileButton;
+    IBOutlet id pickKeymapFileButton;
+    IBOutlet id splashStartupHelpButton;
     IBOutlet id startupHelpButton;
     IBOutlet id systemBeepButton;
-    IBOutlet id splashStartupHelpButton;
 
     BOOL isGettingKeyCode;
     int keyCode;
@@ -18,6 +21,7 @@
     NSMutableString *switchString;
 }
 - (IBAction)close:(id)sender;
+- (IBAction)pickFile:(id)sender;
 - (IBAction)saveChanges:(id)sender;
 - (IBAction)setKey:(id)sender;
 
@@ -25,6 +29,8 @@
 
 - (void)awakeFromNib;
 
++ (void)setUseKeymapFile:(BOOL)newUseKeymapFile;
++ (void)setKeymapFile:(NSString*)newFile;
 + (void)setSwitchString:(NSString*)newString;
 + (void)setKeyCode:(int)newKeyCode;
 + (void)setModifiers:(int)newModifiers;
@@ -34,6 +40,8 @@
 + (void)setSystemBeep:(BOOL)newSystemBeep;
 + (void)saveToDisk;
 
++ (BOOL)useKeymapFile;
++ (NSString*)keymapFile;
 + (NSString*)switchString;
 + (unsigned int)keyCode;
 + (unsigned int)modifiers;

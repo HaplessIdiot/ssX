@@ -3,7 +3,7 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.2 2001/04/05 06:08:46 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.3 2001/04/07 17:48:31 torrey Exp $ */
 
 #import "Preferences.h"
 #import "quartzShared.h"
@@ -24,7 +24,7 @@
     switchString=[[NSMutableString alloc] init];
 
     // Provide user defaults if needed
-    if([[NSUserDefaults standardUserDefaults] stringForKey:@"SwitchKeyCode"]==nil) {
+    if ([[NSUserDefaults standardUserDefaults] stringForKey:@"SwitchKeyCode"] == nil) {
         [Preferences setKeyCode:0];
         [Preferences setModifiers:(NSCommandKeyMask | NSAlternateKeyMask)];
         [Preferences setSwitchString:@"Cmd-Opt-a"];
@@ -32,6 +32,10 @@
         [Preferences setFakeButtons:YES];
         [Preferences setStartupHelp:YES];
         [Preferences setSystemBeep:NO];
+    }
+    if ([[NSUserDefaults standardUserDefaults] stringForKey:@"UseKeymappingFile"] == nil) {
+        [Preferences setUseKeymapFile:NO];
+        [Preferences setKeymapFile:@"/System/Library/Keyboards/USA.keymapping"];
     }
 
     [self initSwitchKey];
@@ -41,7 +45,18 @@
 
 // Set the window controls to the state in user defaults
 - (void)resetWindow {
-    [keyField setTitle:[Preferences switchString]];
+    [loadKeymapFileButton setIntValue:[Preferences useKeymapFile]];
+
+    if ([Preferences keymapFile] == nil)
+        [keymapFileField setStringValue:@" "];
+    else
+        [keymapFileField setStringValue:[Preferences keymapFile]];
+
+    if ([Preferences switchString] == nil)
+        [keyField setTitle:@"--"];
+    else
+        [keyField setTitle:[Preferences switchString]];
+
     [displayNumber setIntValue:[Preferences display]];
     [fakeButton setIntValue:[Preferences fakeButtons]];
     [startupHelpButton setIntValue:[Preferences startupHelp]];
@@ -61,12 +76,28 @@
     [self initSwitchKey];	// reset switch key state
 }
 
+// Pick keymapping file
+- (IBAction)pickFile:(id)sender
+{
+    int result;
+    NSArray *fileTypes = [NSArray arrayWithObject:@"keymapping"];
+    NSOpenPanel *oPanel = [NSOpenPanel openPanel];
+
+    [oPanel setAllowsMultipleSelection:NO];
+    result = [oPanel runModalForDirectory:@"/System/Library/Keyboards" file:nil types:fileTypes];
+    if (result == NSOKButton) {
+        [keymapFileField setStringValue:[oPanel filename]];
+    }
+}
+
 // User saved changes
 - (IBAction)saveChanges:(id)sender
 {
     [Preferences setKeyCode:keyCode];
     [Preferences setModifiers:modifiers];
     [Preferences setSwitchString:switchString];
+    [Preferences setKeymapFile:[keymapFileField stringValue]];
+    [Preferences setUseKeymapFile:[loadKeymapFileButton intValue]];
     [Preferences setDisplay:[displayNumber intValue]];
     [Preferences setFakeButtons:[fakeButton intValue]];
     [Preferences setStartupHelp:[startupHelpButton intValue]];
@@ -115,6 +146,14 @@
     return NO;
 }
 
++ (void)setKeymapFile:(NSString*)newFile {
+    [[NSUserDefaults standardUserDefaults] setObject:newFile forKey:@"KeymappingFile"];
+}
+
++ (void)setUseKeymapFile:(BOOL)newUseKeymapFile {
+    [[NSUserDefaults standardUserDefaults] setBool:newUseKeymapFile forKey:@"UseKeymappingFile"];
+}
+
 + (void)setSwitchString:(NSString*)newString {
     [[NSUserDefaults standardUserDefaults] setObject:newString forKey:@"SwitchString"];
 }
@@ -149,6 +188,14 @@
 
 + (void)saveToDisk {
     [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
++ (BOOL)useKeymapFile {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"UseKeymappingFile"];
+}
+
++ (NSString*)keymapFile {
+    return [[NSUserDefaults standardUserDefaults] stringForKey:@"KeymappingFile"];
 }
 
 + (NSString*)switchString {

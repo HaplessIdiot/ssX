@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.3 2001/01/24 07:19:55 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.4 2001/04/01 07:12:13 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -61,9 +61,13 @@
 
 #include <drivers/event_status_driver.h>
 #include <IOKit/hidsystem/ev_keymap.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
 #include "darwin.h"
 #include "xfIOKit.h"
 #include "bundle/quartzAudio.h"
+#include "bundle/quartzShared.h"
 
 #define XK_TECHNICAL		// needed to get XK_Escape
 #include "keysym.h"
@@ -197,7 +201,9 @@ static void DarwinChangeKeyboardControl( DeviceIntPtr device, KeybdCtrl *ctrl ) 
 
 static	CARD8 modMap[MAP_LENGTH];
 static	KeySym map[256 * GLYPHS_PER_KEY];
-static unsigned char modifierKeycodes[NX_NUMMODIFIERS][2];
+static  unsigned char modifierKeycodes[NX_NUMMODIFIERS][2];
+static  FILE *fref = NULL;
+static  char *inBuffer = NULL;
 
 //-----------------------------------------------------------------------------
 // Data Stream Object
@@ -305,6 +311,102 @@ static void parse_next_char_code(
 }
 
 /*
+ * DarwinReadKeymapFile
+ *      Read the appropriate keymapping from a keymapping file.
+ */
+Bool DarwinReadKeymapFile(
+    NXKeyMapping        *keyMap )
+{
+    struct stat         st;
+    NXEventSystemDevice info[20];
+    int                 interface = 0, handler_id = 0;
+    int                 map_interface, map_handler_id, map_size = 0;
+    unsigned int        i, size;
+    Boolean             hasMatch = FALSE;
+    union km_tag {
+        int             *intP;
+        char            *charP;
+    } km;
+
+    fref = fopen( darwinKeymapFile, "rb" );
+    if (fref == 0) {
+        ErrorF("Unable to open keymapping file %s.\n", darwinKeymapFile);
+        return FALSE;
+    }
+    assert( !fstat(fileno(fref), &st) );
+
+    // check to make sure we don't crash later
+    if (st.st_size <= 16*sizeof(int)) {
+        ErrorF("Invalid keymapping file.\n");
+        return FALSE;
+    }
+
+    inBuffer = (char*) xalloc( st.st_size );
+    assert( fread(inBuffer, st.st_size, 1, fref) );
+
+    // find the keyboard interface and handler id
+    size = sizeof( info ) / sizeof( int );
+    if (!NXEventSystemInfo( dfb.hidParam, NX_EVS_DEVICE_INFO,
+                            (NXEventSystemInfoType) info, &size )) {
+        ErrorF("Error reading event status driver info.\n");
+        return FALSE;
+    }
+    size = size * sizeof( int ) / sizeof( info[0] );
+    for( i = 0; i < size; i++) {
+        if (info[i].dev_type == NX_EVS_DEVICE_TYPE_KEYBOARD) {
+            interface = info[i].interface;
+            handler_id = info[i].id;
+            break;
+        }
+    }
+
+    // Find the appropriate keymapping:
+    // The first time through we try to match both interface and handler_id.
+    // If we can't match both, we take the first match for interface.
+    if (strncmp( inBuffer, "KYM1", 4 ) == 0) {
+        Bool hasInterface = FALSE;
+        int *bufferEnd = (int *) (inBuffer + st.st_size);
+        do {
+            km.charP = inBuffer;
+            km.intP++;
+            while (km.intP+3 < bufferEnd) {
+                map_interface = *(km.intP++);
+                map_handler_id = *(km.intP++);
+                map_size = *(km.intP++);
+                if (map_interface == interface) {
+                    if (map_handler_id == handler_id || hasInterface) {
+                        hasMatch = TRUE;
+                        break;
+                    } else {
+                        hasInterface = TRUE;
+                    }
+                }
+                km.charP += map_size;
+            }
+            if (hasMatch) break;
+        } while (hasInterface);
+    } else if (strncmp( inBuffer, "KYMP", 4 ) == 0) {
+        ErrorF("This old style keymapping file is intended for use with the original NeXT keyboards.\n");
+        return FALSE;        
+    } else {
+        ErrorF("The keymapping file has a bad magic number.\n");
+        return FALSE;
+    }
+
+    if (hasMatch) {
+        // fill in NXKeyMapping structure
+        keyMap->size = map_size;
+        keyMap->mapping = (char*) xalloc(map_size);
+        memcpy(keyMap->mapping, km.charP, map_size);
+    } else {
+        ErrorF("Keymapping file did not contain appropriate keyboard interface.\n");
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
  * DarwinKeyboardInit
  *      Get the Darwin keyboard map and compute an equivalent
  *      X keyboard map and modifier map. Set the new keyboard
@@ -321,6 +423,7 @@ void DarwinKeyboardInit(
     DataStream          *keyMapStream;
     unsigned char const *numPadStart = 0;
     BellProcPtr         bellProc;
+    Bool                haveKeymap = FALSE;
 
     memset( modMap, NoSymbol, sizeof( modMap ) );
     memset( map, 0, sizeof( map ) );
@@ -333,10 +436,24 @@ void DarwinKeyboardInit(
     // for a kIOHIDParamConnectType connection.
     assert( dfb.hidParam = NXOpenEventStatus() );
 
-    // get the Darwin keyboard map
-    keyMap.size = NXKeyMappingLength( dfb.hidParam );
-    keyMap.mapping = (char*) xalloc( keyMap.size );
-    assert( NXGetKeyMapping( dfb.hidParam, &keyMap ));
+    if (darwinKeymapFile) {
+        haveKeymap = DarwinReadKeymapFile(&keyMap);
+        if (fref)
+            fclose(fref);
+        if (inBuffer)
+            xfree(inBuffer);
+        if (!haveKeymap) {
+            ErrorF("Reverting to kernel keymapping.\n");
+        }
+    }
+
+    if (!haveKeymap) {
+        // get the Darwin keyboard map
+        keyMap.size = NXKeyMappingLength( dfb.hidParam );
+        keyMap.mapping = (char*) xalloc( keyMap.size );
+        assert( NXGetKeyMapping( dfb.hidParam, &keyMap ));
+    }
+
     keyMapStream = new_data_stream( (unsigned char const*)keyMap.mapping,
                                     keyMap.size );
 
