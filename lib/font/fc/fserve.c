@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: fserve.c,v 3.23 2003/05/27 22:26:48 tsi Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.24 2003/08/29 18:01:13 herrb Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -87,6 +87,7 @@ in this Software without prior written authorization from The Open Group.
 			     (pci)->descent || \
 			     (pci)->characterWidth)
 
+extern void ErrorF(const char *f, ...);
 
 static int fs_read_glyphs ( FontPathElementPtr fpe, FSBlockDataPtr blockrec );
 static int fs_read_list ( FontPathElementPtr fpe, FSBlockDataPtr blockrec );
@@ -951,6 +952,7 @@ fs_read_extent_info(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
     CharInfoPtr		    ci, pCI;
     char		    *fsci;
     fsXCharInfo		    fscilocal;
+    FontInfoRec		    *fi = &bfont->pfont->info;
 
     rep = (fsQueryXExtents16Reply *) fs_get_reply (conn, &ret);
     if (!rep || rep->type == FS_Error)
@@ -996,6 +998,21 @@ fs_read_extent_info(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
     {
 	memcpy(&fscilocal, fsci, SIZEOF(fsXCharInfo)); /* align it */
 	_fs_convert_char_info(&fscilocal, &ci->metrics);
+	/* Bounds check. */
+	if (ci->metrics.ascent > fi->maxbounds.ascent)
+	{
+	    ErrorF("fserve: warning: %s %s ascent (%d) > maxascent (%d)\n",
+		   fpe->name, fsd->name,
+		   ci->metrics.ascent, fi->maxbounds.ascent);
+	    ci->metrics.ascent = fi->maxbounds.ascent;
+	}
+	if (ci->metrics.descent > fi->maxbounds.descent)
+	{
+	    ErrorF("fserve: warning: %s %s descent (%d) > maxdescent (%d)\n",
+		   fpe->name, fsd->name,
+		   ci->metrics.descent, fi->maxbounds.descent);
+	    ci->metrics.descent = fi->maxbounds.descent;
+	}
 	fsci = fsci + SIZEOF(fsXCharInfo);
 	/* Initialize the bits field for later glyph-caching use */
 	if (NONZEROMETRICS(&ci->metrics))
@@ -1021,7 +1038,6 @@ fs_read_extent_info(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
     /* build bitmap metrics, ImageRectMax style */
     if (haveInk)
     {
-	FontInfoRec *fi = &bfont->pfont->info;
 	CharInfoPtr ii;
 
 	ci = fsfont->encoding;
@@ -1036,10 +1052,44 @@ fs_read_extent_info(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
 		ci->metrics.descent = FONT_MAX_DESCENT(fi);
 		ci->metrics.characterWidth = FONT_MAX_WIDTH(fi);
 		ci->metrics.attributes = ii->metrics.attributes;
+		/* Bounds check. */
+		if (ci->metrics.ascent > fi->maxbounds.ascent)
+		{
+		    ErrorF("fserve: warning: %s %s ascent (%d) "
+			   "> maxascent (%d)\n",
+			   fpe->name, fsd->name,
+			   ci->metrics.ascent, fi->maxbounds.ascent);
+		    ci->metrics.ascent = fi->maxbounds.ascent;
+		}
+		if (ci->metrics.descent > fi->maxbounds.descent)
+		{
+		    ErrorF("fserve: warning: %s %s descent (%d) "
+			   "> maxdescent (%d)\n",
+			   fpe->name, fsd->name,
+			   ci->metrics.descent, fi->maxbounds.descent);
+		    ci->metrics.descent = fi->maxbounds.descent;
+		}
 	    }
 	    else
 	    {
 		ci->metrics = ii->metrics;
+		/* Bounds check. */
+		if (ci->metrics.ascent > fi->maxbounds.ascent)
+		{
+		    ErrorF("fserve: warning: %s %s ascent (%d) "
+			   "> maxascent (%d)\n",
+			   fpe->name, fsd->name,
+			   ci->metrics.ascent, fi->maxbounds.ascent);
+		    ci->metrics.ascent = fi->maxbounds.ascent;
+		}
+		if (ci->metrics.descent > fi->maxbounds.descent)
+		{
+		    ErrorF("fserve: warning: %s %s descent (%d) "
+			   "> maxdescent (%d)\n",
+			   fpe->name, fsd->name,
+			   ci->metrics.descent, fi->maxbounds.descent);
+		    ci->metrics.descent = fi->maxbounds.descent;
+		}
 	    }
 	}
     }
