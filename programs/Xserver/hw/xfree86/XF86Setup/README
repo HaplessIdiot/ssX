@@ -22,17 +22,21 @@ INTRODUCTION
    set the environment variable "XF86SETUPLIB" to point to the source
    directory.
 
+   The command line options are documented in the XF86Setup man page. For
+   instructions regarding the use of the program, see the Quick Start Guide
+   to XFree86 Configuration and the on-line help.
+
    The rest of this file contains information that is mainly of use to
-   someone interested in hacking on the code. User documentation is still
-   severely lacking.
+   someone interested in hacking on the code.
 
 MANIFEST
      CHANGELOG           List of changes in each version
      Imakefile           Imakefile to generate the program
-     Makefile            Makefile to get things going
+     LICENSE             Redistribution license and disclaimer
      README              ASCII version of the README
      README.html         HTML version of the README
      TODO                Things to be done or at least considered
+     XF86Setup.man       The man page
      main.c              Main prog that starts the Tcl interpreter
      tclcards.c          Routines to connect Tcl and the Cards database
                          reading functions
@@ -68,6 +72,8 @@ MANIFEST
      setuplib.tcl        Library of XF86Setup specific Tcl procs
      srvflags.tcl        Configuration routines for server flags
      pics                Directory containing bitmaps used by program
+     scripts             Directory of other scripts that use XF86Setup as
+                         an interpreter to implement other clients
      tcllib              Directory containing Tcl code to set the standard
                          widget bindings (from the Tcl & Tk 4.0p3
                          distributions) and with misc tcl routines and the

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.4 1996/08/20 12:26:20 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.5 1996/08/24 12:50:44 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -62,6 +62,7 @@ set CardChipSets(VGA16)	   [concat generic [lsort $CardChipSets(VGA16)]]
 set CardChipSets(SVGA)	   { \
 			     al2101 \
 			     ali2228 ali2301 ali2302 ali2308 ali2401 \
+			     ap6422 \
 			     ark1000vl ark1000pv ark2000pv \
 			     ati \
 			     cl6410 cl6412 cl6420 cl6440 \

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.9 1996/08/27 03:23:41 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.10 1996/09/03 06:48:30 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -87,6 +87,7 @@ proc initconfig {xwinhome} {
 	set Scrn_Accel(BlankTime)	""
 	set Scrn_Accel(SuspendTime)	""
 	set Scrn_Accel(OffTime)		""
+	set Scrn_Accel(DefaultColorDepth)	""
 
 	array set Scrn_Mono  [array get Scrn_Accel]
 	array set Scrn_VGA2  [array get Scrn_Accel]
@@ -320,7 +321,8 @@ proc writeXF86Config {filename args} {
 		puts $fd "   Driver          \"$drvr\""
 		puts $fd "   Device          \"[set Scrn_${drvr}(Device)]\""
 		puts $fd "   Monitor         \"[set Scrn_${drvr}(Monitor)]\""
-		foreach key {ScreenNo BlankTime SuspendTime OffTime} {
+		foreach key {ScreenNo BlankTime SuspendTime OffTime \
+				DefaultColorDepth} {
 			if { [string length [set Scrn_${drvr}($key)]] } {
 				puts $fd [format "   %-15s %s" \
 					$key [set Scrn_${drvr}($key)] ]

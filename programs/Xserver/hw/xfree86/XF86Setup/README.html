@@ -24,18 +24,23 @@
   you need to set the environment variable
   <KBD>XF86SETUPLIB</KBD> to point to the source directory.
 
+  <P>The command line options are documented in the XF86Setup man
+  page.  For instructions regarding the use of the program, see the
+  <A HREF="http://www.XFree86.org/3.1.2G/QuickStart.html">Quick Start Guide to XFree86 Configuration</A>
+  and the on-line help.
+
   <P>The rest of this file contains information that is mainly of
-  use to someone interested in hacking on the code.  User documentation
-  is still severely lacking.
+  use to someone interested in hacking on the code.
 
 <H2>Manifest</H2>
   <DL>
    <DT>CHANGELOG       <DD>List of changes in each version
    <DT>Imakefile       <DD>Imakefile to generate the program
-   <DT>Makefile        <DD>Makefile to get things going
+   <DT>LICENSE         <DD>Redistribution license and disclaimer
    <DT>README          <DD>ASCII version of the README
    <DT>README.html     <DD>HTML version of the README
    <DT>TODO            <DD>Things to be done or at least considered
+   <DT>XF86Setup.man   <DD>The man page
    <DT>main.c          <DD>Main prog that starts the Tcl interpreter
    <DT>tclcards.c      <DD>Routines to connect Tcl and the Cards
 			   database reading functions
@@ -72,6 +77,8 @@
    <DT>setuplib.tcl    <DD>Library of XF86Setup specific Tcl procs
    <DT>srvflags.tcl    <DD>Configuration routines for server flags
    <DT>pics            <DD>Directory containing bitmaps used by program
+   <DT>scripts         <DD>Directory of other scripts that use XF86Setup
+			   as an interpreter to implement other clients
    <DT>tcllib          <DD>Directory containing Tcl code to set the
 			   standard widget bindings (from the Tcl &amp;
 			   Tk 4.0p3 distributions) and with misc tcl

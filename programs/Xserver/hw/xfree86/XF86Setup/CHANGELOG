@@ -410,6 +410,15 @@
 			  line length in VGA16 server not found mesg
 			Set keyboard focus to "Okay" button when
 			  user selects "Done"
+			Add xf86OsMouseOption() stub function to
+			  tclxfconf.c (J. Kean Johnston)
 			Add gpmdata to list of mouse device patterns
 			Improved code that creates symlink to X server
 
+1.02	2 Sep 1996	Check for existence of chosen server
+			Remove some remaining probe code
+			Fix bug with writing device name to config
+			  file when using Xqueue or OsMouse drivers
+			Add support for Alliance ProMotion driver
+			Add some partial support for the new
+			  DefaultColorDepth option
