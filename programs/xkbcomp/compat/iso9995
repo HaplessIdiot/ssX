@@ -3,7 +3,7 @@
 // Fairly complete set of symbol interpretations 
 // to provide reasonable default behavior
 
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/compat/iso9995,v 1.2 2002/12/10 04:38:58 dawes Exp $
 
 default partial xkb_compatibility "default"  {
     virtual_modifiers LevelThree,AltGr;
@@ -23,7 +23,6 @@ default partial xkb_compatibility "default"  {
     };
 
     interpret ISO_Level3_Shift+Any {
-	useModMapMods= level1;
 	virtualModifier= LevelThree;
 	action= SetMods(modifiers=LevelThree);
     };
