@@ -50,9 +50,9 @@ struct i810_fast_tab {
 
 
 
-#define POINT(x) i810_draw_point(imesa, &ivert[x].v, psize)
-#define LINE(x,y) i810_draw_line(imesa, &ivert[x].v, &ivert[y].v, lwidth)
-#define TRI(x,y,z) i810_draw_triangle(imesa, &ivert[x].v, &ivert[y].v, &ivert[z].v)
+#define POINT(x) i810_draw_point(imesa, &ivert[x], psize)
+#define LINE(x,y) i810_draw_line(imesa, &ivert[x], &ivert[y] )
+#define TRI(x,y,z) i810_draw_triangle(imesa, &ivert[x], &ivert[y], &ivert[z])
 
 
 
@@ -94,9 +94,8 @@ do {								\
    const GLuint *elt = VB->EltPtr->data;		\
    GLcontext *ctx = VB->ctx;				\
    i810ContextPtr imesa = I810_CONTEXT(ctx);	\
-   const GLfloat lwidth = ctx->Line.Width;		\
    const GLfloat psize = ctx->Point.Size;		\
-   (void) lwidth; (void)psize; (void) ivert;
+   (void)psize; (void) ivert;
 
 
 #define TAG(x) x##_i810_smooth_indirect

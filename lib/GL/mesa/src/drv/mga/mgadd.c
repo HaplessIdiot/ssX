@@ -23,7 +23,8 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.3 2000/06/22 16:59:24 tsi Exp $ */
+
 
 
 #include "types.h"
@@ -37,7 +38,6 @@
 #include "mgalib.h"
 #include "mgaclear.h"
 #include "mgadd.h"
-#include "mgadepth.h"
 #include "mgalog.h"
 #include "mgastate.h"
 #include "mgaspan.h"
@@ -61,11 +61,11 @@ static const GLubyte *mgaDDGetString( GLcontext *ctx, GLenum name )
    mgaContextPtr mmesa = MGA_CONTEXT( ctx );
    switch (name) {
    case GL_VENDOR:
-      return (GLubyte *)"Precision Insight, Inc.";
+      return (GLubyte *) "Precision Insight, Inc.";
    case GL_RENDERER:
-      if (MGA_IS_G200(mmesa)) return (GLubyte *)"Mesa DRI G200 20000510";
-      if (MGA_IS_G400(mmesa)) return (GLubyte *)"Mesa DRI G400 20000510";
-      return (GLubyte *)"Mesa DRI MGA 20000510";
+      if (MGA_IS_G200(mmesa)) return (GLubyte *) "Mesa DRI G200 20000510";
+      if (MGA_IS_G400(mmesa)) return (GLubyte *) "Mesa DRI G400 20000510";
+      return (GLubyte *) "Mesa DRI MGA 20000510";
    default:
       return 0;
    }
@@ -102,7 +102,7 @@ void mgaDDExtensionsInit( GLcontext *ctx )
 
    /* Support multitexture only on the g400.
     */
-   if (1 /*!MGA_IS_G400(MGA_CONTEXT(ctx))*/) 
+   if (1 || !MGA_IS_G400(MGA_CONTEXT(ctx))) 
    {
       gl_extensions_disable( ctx, "GL_EXT_multitexture" );
       gl_extensions_disable( ctx, "GL_SGIS_multitexture" );
@@ -130,6 +130,13 @@ void mgaDDExtensionsInit( GLcontext *ctx )
    gl_extensions_disable( ctx, "GL_INGR_blend_func_separate" );   
    gl_extensions_disable( ctx, "GL_EXT_texture_lod_bias" );   
    gl_extensions_disable( ctx, "GL_MESA_resize_buffers" );   
+
+   gl_extensions_disable( ctx, "GL_SGI_color_matrix" );   
+   gl_extensions_disable( ctx, "GL_SGI_color_table" );   
+   gl_extensions_disable( ctx, "GL_SGIX_pixel_texture" );   
+   gl_extensions_disable( ctx, "GL_ARB_texture_cube_map" );   
+   gl_extensions_disable( ctx, "GL_ARB_texture_compression" );   
+   gl_extensions_disable( ctx, "GL_EXT_convolution" );   
 }
 
 

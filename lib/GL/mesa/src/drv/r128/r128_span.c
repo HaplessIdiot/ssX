@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_span.c,v 1.1 2000/06/17 00:03:07 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -35,7 +35,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "r128_init.h"
-#include "r128_mesa.h"
 #include "r128_xmesa.h"
 #include "r128_context.h"
 #include "r128_lock.h"
@@ -94,6 +93,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define HW_LOCK()                                                             \
     r128ContextPtr r128ctx = R128_CONTEXT(ctx);                               \
+    FLUSH_BATCH(r128ctx);                                                     \
     LOCK_HARDWARE(r128ctx);                                                   \
     r128WaitForIdleLocked(r128ctx);
 

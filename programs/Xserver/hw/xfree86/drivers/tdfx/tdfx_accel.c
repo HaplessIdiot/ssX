@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.11 2000/06/17 00:03:25 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.12 2000/06/17 17:44:25 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -72,8 +72,6 @@ static void TDFXSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
                                                      int w, int h,
                                                      int skipleft);
 static void TDFXSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
-
-void TDFXSelectBuffer(TDFXPtr pTDFX, int which);
 
 void
 TDFXNeedSync(ScrnInfoPtr pScrn) {

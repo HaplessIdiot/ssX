@@ -1,3 +1,4 @@
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.4 2000/06/22 16:59:24 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -24,7 +25,6 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
 
 /*
  * Authors:
@@ -49,7 +49,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "mgastate.h"
 #include "mgatex.h"
 #include "mgaspan.h"
-#include "mgadepth.h"
 #include "mgatris.h"
 #include "mgapipeline.h"
 #include "mgabuffers.h"
@@ -215,7 +214,6 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
 	   mgaScreen->backPitch);
    */
 
-   mgaScreen->Attrib = MGA_PF_565;
    mgaScreen->bufs = drmMapBufs(sPriv->fd);
    if (!mgaScreen->bufs) {
       /*drmUnmap(mgaScreen->agp_tex.map, mgaScreen->agp_tex.size);*/
@@ -312,6 +310,36 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
       make_empty_list(&mmesa->TexObjList[i]);
    }
 
+
+   /* Set the maximum texture size small enough that we can guarentee
+    * that both texture units can bind a maximal texture and have them
+    * on the card at once.
+    */
+   { 
+      int nr = 2;
+
+      if (mgaScreen->chipset == MGA_CARD_TYPE_G200) 
+	 nr = 1;
+
+      if (mgaScreen->textureSize[0] < nr*1024*1024) {
+	 ctx->Const.MaxTextureLevels = 9;
+	 ctx->Const.MaxTextureSize = 1<<8;
+      } else if (mgaScreen->textureSize[0] < nr*4*1024*1024) {
+	 ctx->Const.MaxTextureLevels = 10;
+	 ctx->Const.MaxTextureSize = 1<<9;
+      } else {
+	 ctx->Const.MaxTextureLevels = 11;
+	 ctx->Const.MaxTextureSize = 1<<10;
+      }      
+   }
+
+   if (mgaScreen->cpp == 2) 
+      mmesa->depth_scale = 1.0/(GLdouble)0xffff;
+   else
+      mmesa->depth_scale = 1.0/(GLdouble)0xffffffff;
+
+
+
    mmesa->renderindex = -1;		/* impossible value */
    mmesa->new_state = ~0;
    mmesa->dirty = ~0;
@@ -335,6 +363,7 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
 
 
    ctx->Driver.TriangleCaps = (DD_TRI_CULL|
+			       DD_LIGHTING_CULL|
 			       DD_TRI_LIGHT_TWOSIDE|
 			       DD_TRI_STIPPLE|
 			       DD_TRI_OFFSET);

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_fastpath.c,v 1.1 2000/06/17 00:03:05 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -33,12 +33,11 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "r128_init.h"
-#include "r128_mesa.h"
 #include "r128_state.h"
 #include "r128_vb.h"
 #include "r128_cce.h"
 #include "r128_tris.h"
-#include "r128_fastpath.h"
+#include "r128_pipeline.h"
 
 #include "mmath.h"
 #include "cva.h"
@@ -51,6 +50,9 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
    KW: The fastpath never does projective texturing, so RHW2 support
    isn't necesary here.
 */
+
+typedef void (*r128BuildVerticesFunc)( struct vertex_buffer *VB,
+				       GLuint do_cliptest );
 
 typedef struct r128_fast_table {
     r128BuildVerticesFunc build_vertices;
@@ -467,7 +469,7 @@ static void r128ProjectClippedVertices(struct vertex_buffer *VB)
 static r128FastPathTable r128FastTab[0x80];
 
 /* Initialize the table of fast path support functions */
-void r128FastPathInit(void)
+void r128DDFastPathInit(void)
 {
    r128_render_init_clip_elt();
    r128_render_init_smooth_indirect();
@@ -483,7 +485,7 @@ void r128FastPathInit(void)
 
 #define VALID_SETUP (R128_RGBA_BIT | R128_TEX0_BIT | R128_TEX1_BIT)
 
-void r128FastPath(struct vertex_buffer *VB)
+void r128DDFastPath(struct vertex_buffer *VB)
 {
     GLcontext         *ctx  = VB->ctx;
     GLenum             prim = ctx->CVA.elt_mode;
@@ -506,7 +508,7 @@ void r128FastPath(struct vertex_buffer *VB)
 
     /* Reserve enough space for the pathological case */
     if (VB->EltPtr->count * 12 > R128_DRIVER_DATA(VB)->size) {
-	r128ResizeVB(VB, VB->EltPtr->count * 12);
+	r128DDResizeVB(VB, VB->EltPtr->count * 12);
 	do_cliptest = 1;
     }
 

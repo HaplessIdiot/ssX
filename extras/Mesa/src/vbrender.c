@@ -292,7 +292,7 @@ static void render_triangle( GLcontext *ctx,
       return;
 
    facing = (c<0.0F) ^ (ctx->Polygon.FrontFace==GL_CW);
-   tricaps = ctx->IndirectTriangles;
+   tricaps = ctx->TriangleCaps;
    
    if (tricaps & DD_TRI_OFFSET) {
       /* finish computing plane equation of polygon, compute offset */
@@ -342,7 +342,7 @@ static void render_quad( GLcontext *ctx, GLuint v0, GLuint v1,
    GLfloat fy = win[v3][1] - win[v1][1];
    GLfloat c = ex*fy-ey*fx;
    GLuint facing;
-   GLuint tricaps = ctx->IndirectTriangles;
+   GLuint tricaps = ctx->TriangleCaps;
 
    if (c * ctx->backface_sign > 0)
       return;

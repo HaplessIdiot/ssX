@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_init.h,v 1.1 2000/06/17 00:03:05 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -47,8 +47,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r128_screen.h"
 #include "r128_context.h"
 
-#define DEBUG			1
-#define DEBUG_LOCKING		1
+#define DEBUG			0
+#define DEBUG_LOCKING		0
 #define ENABLE_PERF_BOXES	0
 
 

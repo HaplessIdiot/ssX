@@ -645,7 +645,7 @@ void fxTexGetFormat(GLenum glformat, GrTextureFormat_t *tfmt, GLint *ifmt)
     case GL_RGBA12:
     case GL_RGBA16:
       if(tfmt)
-        (*tfmt)=GR_TEXFMT_ARGB_8888;
+        (*tfmt)=GR_TEXFMT_ARGB_4444;
       if(ifmt)
         (*ifmt)=GL_RGBA;
       break;
@@ -800,8 +800,8 @@ GLboolean fxDDTexImage2D(GLcontext *ctx, GLenum target, GLint level,
       case GL_RGB10_A2:
       case GL_RGBA12:
       case GL_RGBA16:
-        texelSize = 4;
-        intFormat = MESA_A8_R8_G8_B8;
+        texelSize = 2;
+        intFormat = MESA_A4_R4_G4_B4;
         break;
       case GL_RGB5_A1:
         texelSize = 2;

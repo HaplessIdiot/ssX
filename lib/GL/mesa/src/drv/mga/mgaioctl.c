@@ -9,7 +9,6 @@
 #include "mgalib.h"
 #include "mgadd.h"
 #include "mgastate.h"
-#include "mgadepth.h"
 #include "mgatex.h"
 #include "mgalog.h"
 #include "mgavb.h"
@@ -20,7 +19,8 @@
 #include "drm.h"
 #include <sys/ioctl.h>
 
-#define DEPTH_SCALE 65535.0F
+#define DEPTH_SCALE_16 ((GLfloat)0xffff)
+#define DEPTH_SCALE_32 ((GLfloat)0xffffffff) 
 
 static void mga_iload_dma_ioctl(mgaContextPtr mmesa,
 				unsigned long dest, 
@@ -81,7 +81,7 @@ int mgaUpdateLock( mgaContextPtr mmesa, drmLockFlags flags )
    return 0;
 }
 
-static drmBufPtr mga_get_buffer_ioctl( mgaContextPtr mmesa )
+drmBufPtr mga_get_buffer_ioctl( mgaContextPtr mmesa )
 {
    int idx = 0;
    int size = 0;
@@ -164,7 +164,12 @@ GLbitfield mgaClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 
    clear.flags = 0;
    clear.clear_color = mmesa->ClearColor;
-   clear.clear_depth = (mgaUI32) (ctx->Depth.Clear * DEPTH_SCALE);
+
+   if (mmesa->mgaScreen->cpp == 2)
+      clear.clear_depth = ctx->Depth.Clear * (GLdouble)0xffff;
+   else {
+      clear.clear_depth = ctx->Depth.Clear * (GLdouble)0xffffffff;
+   }
 
    FLUSH_BATCH( mmesa );
 	
@@ -573,7 +578,7 @@ void mgaGetILoadBufferLocked( mgaContextPtr mmesa )
 }
 
 
- void mgaDDFlush( GLcontext *ctx )
+void mgaDDFlush( GLcontext *ctx )
 {
    mgaContextPtr mmesa = MGA_CONTEXT( ctx );
 
@@ -583,10 +588,7 @@ void mgaGetILoadBufferLocked( mgaContextPtr mmesa )
    /* This may be called redundantly - dispatch_age may trail what
     * has actually been sent and processed by the hardware.
     */
-#if 0
-   if (GET_DISPATCH_AGE( mmesa ) < mmesa->sarea->last_enqueue)
-#endif
-   {
+   if (1 || GET_DISPATCH_AGE( mmesa ) < mmesa->sarea->last_enqueue) {
       LOCK_HARDWARE( mmesa );
       if (0) fprintf(stderr, "mgaDDFlush %d %d\n", GET_DISPATCH_AGE( mmesa ),  mmesa->sarea->last_enqueue);
       mgaUpdateLock( mmesa, DRM_LOCK_FLUSH );

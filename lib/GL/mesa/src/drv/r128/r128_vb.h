@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.h,v 1.1 2000/06/17 00:03:09 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -146,21 +146,26 @@ typedef struct {
 
 #define R128_DRIVER_DATA(vb) ((r128VertexBufferPtr)((vb)->driver_data))
 
-#define R128_SPEC_BIT       0x01
-#define R128_TEX1_BIT       0x02
-#define R128_TEX0_BIT       0x04
-#define R128_RGBA_BIT       0x08
-#define R128_WIN_BIT        0x10
+#define R128_WIN_BIT		0x01
+#define R128_RGBA_BIT		0x02
+#define R128_FOG_BIT		0x04
+#define R128_SPEC_BIT		0x08
+#define R128_TEX0_BIT		0x10
+#define R128_TEX1_BIT		0x20
 
-extern void         r128SetupInit(void);
-extern void         r128ChooseRasterSetupFunc(GLcontext *ctx);
-extern void         r128CheckPartialRasterSetup(GLcontext *ctx,
-						struct gl_pipeline_stage *s);
-extern void         r128PartialRasterSetup(struct vertex_buffer *VB);
-extern void         r128DoRasterSetup(struct vertex_buffer *VB);
-extern void         r128ResizeVB(struct vertex_buffer *VB, GLuint size);
-extern void         r128DDRegisterVB(struct vertex_buffer *VB);
-extern void         r128DDUnregisterVB(struct vertex_buffer *VB);
+extern void r128DDSetupInit( void );
+
+extern void r128DDChooseRasterSetupFunc( GLcontext *ctx );
+extern void r128PrintSetupFlags( char *msg, GLuint flags );
+
+extern void r128DDCheckPartialRasterSetup( GLcontext *ctx,
+					 struct gl_pipeline_stage *s );
+extern void r128DDPartialRasterSetup(struct vertex_buffer *VB);
+extern void r128DDDoRasterSetup(struct vertex_buffer *VB);
+
+extern void r128DDResizeVB(struct vertex_buffer *VB, GLuint size);
+extern void r128DDRegisterVB(struct vertex_buffer *VB);
+extern void r128DDUnregisterVB(struct vertex_buffer *VB);
 
 #endif
 #endif /* _R128_VB_H_ */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.7tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.8 2000/08/24 22:20:07 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -45,6 +45,13 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		../../../../dri/drm/xf86drmRandom.o \
 		../../../../dri/drm/xf86drmSL.o
 
+#ifdef GlxSoProf
+       HIOBJS = ../../../../highpc.o
+       LOOBJS = ../../../../lowpc.o
+#else
+       HIOBJS = 
+       LOOBJS =
+#endif
 
      I810SRCS = i810_xmesa.c	\
 		i810dd.c  	\
@@ -256,8 +263,10 @@ XCOMM Disabling 3Dnow code for the time being.
       COMMONSRCS = ../common/mm.c ../common/hwlog.c
       COMMONOBJS = ../common/mm.o ../common/hwlog.o
 
-         SRCS = $(DRISRCS) $(DRMSRCS) $(MESASRCS) $(ASMSRCS) $(COMMONSRCS) $(I810SRCS) 
-         OBJS = $(DRIOBJS) $(DRMOBJS) $(MESAOBJS) $(ASMOBJS) $(COMMONOBJS) $(I810OBJS)
+         SRCS = $(LOSRCS) $(DRISRCS) $(DRMSRCS) $(MESASRCS) $(ASMSRCS)	\
+		$(COMMONSRCS) $(I810SRCS) $(HISRCS)
+         OBJS = $(LOOBJS) $(DRIOBJS) $(DRMOBJS) $(MESAOBJS) $(ASMOBJS)	\
+		$(COMMONOBJS) $(I810OBJS) $(HIOBJS)
 
 REQUIREDLIBS += -lm
 #if !GlxBuiltInI810
@@ -285,6 +294,14 @@ ALL_OBJS = $(OBJS)
 ALL_DEPS = DONE
 SharedDepModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
 InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
+
+#ifdef GlxSoProf
+SOPROF_LIBNAME = _i810_dri_p
+NormalDepLibraryTarget($(SOPROF_LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
+InstallLibrary($(SOPROF_LIBNAME),$(MODULEDIR)/dri)
 #endif
+#endif
+
+
 
 DependTarget()

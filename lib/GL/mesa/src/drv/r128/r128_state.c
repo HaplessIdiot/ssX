@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.2 2000/06/21 12:11:00 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.3 2000/06/26 05:41:29 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -33,7 +33,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "r128_init.h"
-#include "r128_mesa.h"
 #include "r128_xmesa.h"
 #include "r128_context.h"
 #include "r128_lock.h"
@@ -69,8 +68,8 @@ static void r128DDUpdateState(GLcontext *ctx)
 	r128UpdateHWState(r128ctx);
 
     if (ctx->NewState & INTERESTED) {
-	r128ChooseRenderState(ctx);
-	r128ChooseRasterSetupFunc(ctx);
+	r128DDChooseRenderState(ctx);
+	r128DDChooseRasterSetupFunc(ctx);
     }
 
     if (!r128ctx->Fallback) {
@@ -124,7 +123,7 @@ static void r128DDReducedPrimitiveChange(GLcontext *ctx, GLenum prim)
    }
 
     if (r128ctx->regs.pm4_vc_fpu_setup != f) {
-	r128FlushVertices(r128ctx);
+	FLUSH_BATCH(r128ctx);
 	r128ctx->regs.pm4_vc_fpu_setup = f;
 
 	/* FIXME: Load into hardware now??? */
@@ -163,11 +162,15 @@ static GLboolean r128DDSetDrawBuffer(GLcontext *ctx, GLenum mode)
     case GL_FRONT_LEFT:
 	r128ctx->drawX = r128ctx->r128Screen->fbX;
 	r128ctx->drawY = r128ctx->r128Screen->fbY;
+	r128ctx->readX = r128ctx->r128Screen->fbX;
+	r128ctx->readY = r128ctx->r128Screen->fbY;
 	found = GL_TRUE;
 	break;
     case GL_BACK_LEFT:
 	r128ctx->drawX = r128ctx->r128Screen->backX;
 	r128ctx->drawY = r128ctx->r128Screen->backY;
+	r128ctx->readX = r128ctx->r128Screen->fbX;
+	r128ctx->readY = r128ctx->r128Screen->fbY;
 	found = GL_TRUE;
 	break;
     default:
@@ -179,7 +182,7 @@ static GLboolean r128DDSetDrawBuffer(GLcontext *ctx, GLenum mode)
     x += r128ctx->drawX;
     y += r128ctx->drawY;
 
-    r128FlushVertices(r128ctx);
+    FLUSH_BATCH(r128ctx);
 
     r128ctx->regs.window_xy_offset = ((y << R128_WINDOW_Y_SHIFT) |
 				      (x << R128_WINDOW_X_SHIFT));
@@ -235,10 +238,9 @@ static GLboolean r128DDColorMask(GLcontext *ctx,
 				ctx->Color.ColorMask[ACOMP]);
 
     if (r128ctx->regs.plane_3d_mask_c != mask) {
-	r128FlushVertices(r128ctx);
+	FLUSH_BATCH(r128ctx);
 	r128ctx->regs.plane_3d_mask_c = mask;
 
-	/* FIXME: Load into hardware now??? */
 	r128ctx->dirty         |= R128_UPDATE_CONTEXT;
 	r128ctx->dirty_context |= R128_CTX_MISC;
     }
@@ -275,10 +277,9 @@ static void r128DDAlphaFunc(GLcontext *ctx, GLenum func, GLclampf ref)
     }
 
     if (r128ctx->regs.misc_3d_state_cntl_reg != a) {
-	r128FlushVertices(r128ctx);
+	FLUSH_BATCH(r128ctx);
 	r128ctx->regs.misc_3d_state_cntl_reg = a;
 
-	/* FIXME: Load into hardware now??? */
 	r128ctx->dirty         |= R128_UPDATE_CONTEXT;
 	r128ctx->dirty_context |= R128_CTX_ALPHASTATE;
     }
@@ -364,10 +365,9 @@ static void r128DDBlendFunc(GLcontext *ctx, GLenum sfactor, GLenum dfactor)
     }
 
     if (r128ctx->regs.misc_3d_state_cntl_reg != b) {
-	r128FlushVertices(r128ctx);
+	FLUSH_BATCH(r128ctx);
 	r128ctx->regs.misc_3d_state_cntl_reg = b;
 
-	/* FIXME: Load into hardware now??? */
 	r128ctx->dirty         |= R128_UPDATE_CONTEXT;
 	r128ctx->dirty_context |= R128_CTX_ALPHASTATE;
     }
@@ -414,10 +414,9 @@ static void r128DDCullFace(GLcontext *ctx, GLenum mode)
     }
 
     if (r128ctx->regs.pm4_vc_fpu_setup != f) {
-	r128FlushVertices(r128ctx);
+	FLUSH_BATCH(r128ctx);
 	r128ctx->regs.pm4_vc_fpu_setup = f;
 
-	/* FIXME: Load into hardware now??? */
 	r128ctx->dirty         |= R128_UPDATE_CONTEXT;
 	r128ctx->dirty_context |= R128_CTX_SETUPSTATE;
     }
@@ -437,10 +436,9 @@ static void r128DDFrontFace(GLcontext *ctx, GLenum mode)
     }
 
     if (r128ctx->regs.pm4_vc_fpu_setup != f) {
-	r128FlushVertices(r128ctx);
+	FLUSH_BATCH(r128ctx);
 	r128ctx->regs.pm4_vc_fpu_setup = f;
 
-	/* FIXME: Load into hardware now??? */
 	r128ctx->dirty         |= R128_UPDATE_CONTEXT;
 	r128ctx->dirty_context |= R128_CTX_SETUPSTATE;
     }
@@ -466,10 +464,9 @@ static void r128DDDepthFunc(GLcontext *ctx, GLenum func)
     }
 
     if (r128ctx->regs.z_sten_cntl_c != z) {
-	r128FlushVertices(r128ctx);
+	FLUSH_BATCH(r128ctx);
 	r128ctx->regs.z_sten_cntl_c = z;
 
-	/* FIXME: Load into hardware now??? */
 	r128ctx->dirty         |= R128_UPDATE_CONTEXT;
 	r128ctx->dirty_context |= R128_CTX_ZSTENSTATE;
     }
@@ -484,10 +481,9 @@ static void r128DDDepthMask(GLcontext *ctx, GLboolean flag)
     else      t &= ~R128_Z_WRITE_ENABLE;
 
     if (r128ctx->regs.tex_cntl_c != t) {
-	r128FlushVertices(r128ctx);
+	FLUSH_BATCH(r128ctx);
 	r128ctx->regs.tex_cntl_c = t;
 
-	/* FIXME: Load into hardware now??? */
 	r128ctx->dirty         |= R128_UPDATE_CONTEXT;
 	r128ctx->dirty_context |= R128_CTX_ENGINESTATE;
     }
@@ -507,13 +503,27 @@ static void r128DDLightModelfv(GLcontext *ctx, GLenum pname,
 	 t &= ~R128_SPEC_LIGHT_ENABLE;
 
       if (r128ctx->regs.tex_cntl_c != t) {
-	 r128FlushVertices(r128ctx);
+	 FLUSH_BATCH(r128ctx);
 	 r128ctx->regs.tex_cntl_c = t;
 
-	 /* FIXME: Load into hardware now??? */
 	 r128ctx->dirty         |= R128_UPDATE_CONTEXT;
 	 r128ctx->dirty_context |= R128_CTX_ENGINESTATE;
       }
+   }
+}
+
+static void r128DDLogicOpCode( GLcontext *ctx, GLenum opcode )
+{
+   if (ctx->Color.ColorLogicOpEnabled) 
+   {
+      r128ContextPtr r128ctx = R128_CONTEXT(ctx);
+
+      FLUSH_BATCH( r128ctx );
+   
+      if (opcode == GL_COPY)
+	 r128ctx->Fallback &= ~R128_FALLBACK_LOGICOP;
+      else
+	 r128ctx->Fallback |= R128_FALLBACK_LOGICOP;
    }
 }
 
@@ -581,6 +591,15 @@ static void r128DDEnable(GLcontext *ctx, GLenum cap, GLboolean state)
 	else       t &= ~R128_FOG_ENABLE;
 	break;
 
+    case GL_INDEX_LOGIC_OP:
+    case GL_COLOR_LOGIC_OP:
+      FLUSH_BATCH( r128ctx );
+      if (state && ctx->Color.LogicOp != GL_COPY)
+	 r128ctx->Fallback |= R128_FALLBACK_LOGICOP;
+      else
+	 r128ctx->Fallback &= ~R128_FALLBACK_LOGICOP;
+      break;
+
     case GL_LIGHT0:
     case GL_LIGHT1:
     case GL_LIGHT2:
@@ -592,8 +611,6 @@ static void r128DDEnable(GLcontext *ctx, GLenum cap, GLboolean state)
     case GL_LIGHTING:
     case GL_LINE_SMOOTH:
     case GL_LINE_STIPPLE:
-    case GL_INDEX_LOGIC_OP:
-    case GL_COLOR_LOGIC_OP:
     case GL_MAP1_COLOR_4:
     case GL_MAP1_INDEX:
     case GL_MAP1_NORMAL:
@@ -655,18 +672,16 @@ static void r128DDEnable(GLcontext *ctx, GLenum cap, GLboolean state)
     }
 
     if (r128ctx->regs.tex_cntl_c != t) {
-	r128FlushVertices(r128ctx);
+	FLUSH_BATCH(r128ctx);
 	r128ctx->regs.tex_cntl_c = t;
 
-	/* FIXME: Load into hardware now??? */
 	r128ctx->dirty         |= R128_UPDATE_CONTEXT;
 	r128ctx->dirty_context |= R128_CTX_ENGINESTATE;
     }
     if (r128ctx->regs.pm4_vc_fpu_setup != f) {
-	r128FlushVertices(r128ctx);
+	FLUSH_BATCH(r128ctx);
 	r128ctx->regs.pm4_vc_fpu_setup = f;
 
-	/* FIXME: Load into hardware now??? */
 	r128ctx->dirty         |= R128_UPDATE_CONTEXT;
 	r128ctx->dirty_context |= R128_CTX_SETUPSTATE;
     }
@@ -678,8 +693,6 @@ static void r128DDFogfv(GLcontext *ctx, GLenum pname, const GLfloat *param)
     r128ContextPtr r128ctx = R128_CONTEXT(ctx);
     GLubyte        c[4];
     CARD32         col;
-    floatTOint     fog;
-    GLenum         mode;
 
     if (R128_DEBUG_FLAGS & DEBUG_VERBOSE_API) {
 	fprintf(stderr, "r128DDFogfv(%p, 0x%x)\n", ctx, pname);
@@ -687,61 +700,18 @@ static void r128DDFogfv(GLcontext *ctx, GLenum pname, const GLfloat *param)
 
     switch (pname) {
     case GL_FOG_MODE:
-	mode = (GLenum)(GLint)*param;
-	if (r128ctx->FogMode != mode) {
-	    r128FlushVertices(r128ctx);
-	    r128ctx->FogMode = mode;
-
-	    /* FIXME: Load into hardware now??? */
-	    r128ctx->dirty         |= R128_UPDATE_CONTEXT;
-	    r128ctx->dirty_context |= R128_CTX_FOGTABLE;
-	}
-	break;
-
     case GL_FOG_DENSITY:
-	fog.f = *param;
-	if (r128ctx->regs.fog_3d_table_density != fog.i) {
-	    r128FlushVertices(r128ctx);
-	    r128ctx->regs.fog_3d_table_density = fog.i;
-
-	    /* FIXME: Load into hardware now??? */
-	    r128ctx->dirty         |= R128_UPDATE_CONTEXT;
-	    r128ctx->dirty_context |= R128_CTX_FOGSTATE;
-	}
-	break;
-
     case GL_FOG_START:
-	fog.f = *param;
-	if (r128ctx->regs.fog_3d_table_start != fog.i) {
-	    r128FlushVertices(r128ctx);
-	    r128ctx->regs.fog_3d_table_start = fog.i;
-
-	    /* FIXME: Load into hardware now??? */
-	    r128ctx->dirty         |= R128_UPDATE_CONTEXT;
-	    r128ctx->dirty_context |= R128_CTX_FOGSTATE;
-	}
-	break;
-
     case GL_FOG_END:
-	fog.f = *param;
-	if (r128ctx->regs.fog_3d_table_end != fog.i) {
-	    r128FlushVertices(r128ctx);
-	    r128ctx->regs.fog_3d_table_end = fog.i;
-
-	    /* FIXME: Load into hardware now??? */
-	    r128ctx->dirty         |= R128_UPDATE_CONTEXT;
-	    r128ctx->dirty_context |= R128_CTX_FOGSTATE;
-	}
 	break;
 
     case GL_FOG_COLOR:
 	FLOAT_RGBA_TO_UBYTE_RGBA(c, ctx->Fog.Color);
 	col = r128PackColor(32, c[0], c[1], c[2], c[3]);
 	if (r128ctx->regs.fog_color_c != col) {
-	    r128FlushVertices(r128ctx);
+	    FLUSH_BATCH(r128ctx);
 	    r128ctx->regs.fog_color_c = col;
 
-	    /* FIXME: Load into hardware now??? */
 	    r128ctx->dirty         |= R128_UPDATE_CONTEXT;
 	    r128ctx->dirty_context |= R128_CTX_FOGSTATE;
 	}
@@ -761,6 +731,33 @@ static void r128DDScissor(GLcontext *ctx,
     r128ctx->ScissorRect.y1 = r128ctx->driDrawable->h - (y + h);
     r128ctx->ScissorRect.x2 = x + w;
     r128ctx->ScissorRect.y2 = r128ctx->driDrawable->h - y;
+}
+
+static void r128DDShadeModel( GLcontext *ctx, GLenum mode )
+{
+   r128ContextPtr r128ctx = R128_CONTEXT( ctx );
+   CARD32 s = r128ctx->regs.pm4_vc_fpu_setup;
+
+   s &= ~R128_FPU_COLOR_MASK;
+
+   switch ( mode ) {
+   case GL_FLAT:
+      s |= R128_FPU_COLOR_FLAT;
+      break;
+   case GL_SMOOTH:
+      s |= R128_FPU_COLOR_GOURAUD;
+      break;
+   default:
+      return;
+   }
+
+   if ( r128ctx->regs.pm4_vc_fpu_setup != s ) {
+      FLUSH_BATCH( r128ctx );
+      r128ctx->regs.pm4_vc_fpu_setup = s;
+
+      r128ctx->dirty         |= R128_UPDATE_CONTEXT;
+      r128ctx->dirty_context |= R128_CTX_SETUPSTATE;
+   }
 }
 
 /* Initialize the driver's state functions */
@@ -807,10 +804,11 @@ void r128DDInitStateFuncs(GLcontext *ctx)
     ctx->Driver.Fogfv                  = r128DDFogfv;
     ctx->Driver.Hint                   = NULL;
     ctx->Driver.Lightfv                = NULL;
+    ctx->Driver.LogicOpcode            = r128DDLogicOpCode;
     ctx->Driver.LightModelfv           = r128DDLightModelfv;
     ctx->Driver.PolygonMode            = NULL;
     ctx->Driver.Scissor                = r128DDScissor;
-    ctx->Driver.ShadeModel             = NULL;
+    ctx->Driver.ShadeModel             = r128DDShadeModel;
     ctx->Driver.ClearStencil           = NULL;
     ctx->Driver.StencilFunc            = NULL;
     ctx->Driver.StencilMask            = NULL;
@@ -892,7 +890,7 @@ void r128DDInitState(r128ContextPtr r128ctx)
 	R128_SCALE_3D_TEXMAP_SHADE      |
 	R128_SCALE_PIX_REPLICATE        |
 	R128_ALPHA_COMB_ADD_CLAMP       |
-	R128_FOG_TABLE                  |
+	R128_FOG_VERTEX                 |
 	R128_ALPHA_BLEND_SRC_ONE        |
 	R128_ALPHA_BLEND_DST_ZERO       |
 	R128_ALPHA_TEST_ALWAYS          |
@@ -965,7 +963,7 @@ void r128DDInitState(r128ContextPtr r128ctx)
 	R128_MISC_SCALE_3D_TEXMAP_SHADE |
 	R128_MISC_SCALE_PIX_REPLICATE   |
 	R128_ALPHA_COMB_ADD_CLAMP       |
-	R128_FOG_TABLE                  |
+	R128_FOG_VERTEX                 |
 	R128_ALPHA_BLEND_SRC_ONE        |
 	R128_ALPHA_BLEND_DST_ZERO       |
 	R128_ALPHA_TEST_ALWAYS;
@@ -1024,13 +1022,7 @@ void r128DDInitState(r128ContextPtr r128ctx)
     r128ctx->regs.setup_cntl =
 	R128_COLOR_GOURAUD         |
 	R128_PRIM_TYPE_TRI         |
-#if 1
-	/* FIXME: Let r128 multiply? */
 	R128_TEXTURE_ST_MULT_W     |
-#else
-	/* FIXME: Or, pre multiply? */
-	R128_TEXTURE_ST_DIRECT     |
-#endif
 	R128_STARTING_VERTEX_1     |
 	R128_ENDING_VERTEX_3       |
 	R128_SU_POLY_LINE_NOT_LAST |
@@ -1050,11 +1042,7 @@ void r128DDInitState(r128ContextPtr r128ctx)
 	R128_FPU_ROUND_TRUNCATE    |
 	R128_WM_SEL_8DW;
 
-    r128ctx->FogMode                   = GL_EXP;
-    r128ctx->regs.fog_color_c          = 0x00808080;
-    r128ctx->regs.fog_3d_table_start   = 0x00000000;
-    r128ctx->regs.fog_3d_table_end     = 0xffffffff;
-    r128ctx->regs.fog_3d_table_density = 0x00000000;
+    r128ctx->regs.fog_color_c          = 0x00000000;
 
     r128ctx->regs.window_xy_offset     = 0x00000000;
 
@@ -1066,7 +1054,13 @@ void r128DDInitState(r128ContextPtr r128ctx)
     r128ctx->dirty_context |= R128_CTX_ALL_DIRTY;
 }
 
-/* Upload the fog table for the current fog mode */
+#if 0
+/* Upload the fog table for the current fog mode 
+ * 
+ * KW: I beleive that this can be made to work for all fog modes,
+ * given some constraints on the projection matrix.  Please leave
+ * this code here for now...
+ */
 static void r128UploadFogTable(r128ContextPtr r128ctx)
 {
     int i;
@@ -1096,7 +1090,7 @@ static void r128UploadFogTable(r128ContextPtr r128ctx)
     case GL_EXP:
 	for (i = 0; i < 256; i++) {
 	   float arg = (255 - i)/255.0;
-	   float exparg = (exp(arg) - 1) / (M_E - 1); /* range [0,1] */
+	   float exparg = exp(arg); 
 	   int result;
 	   FLOAT_COLOR_TO_UBYTE_COLOR(result, exparg);
 	   R128CCE(result);
@@ -1113,6 +1107,7 @@ static void r128UploadFogTable(r128ContextPtr r128ctx)
 	break;
     }
 }
+#endif
 
 /* Load the current context's state into the hardware */
 /* NOTE: This function is only called while holding the hardware lock */
@@ -1202,18 +1197,8 @@ static void r128LoadContext(r128ContextPtr r128ctx)
     }
 
     if (r128ctx->dirty_context & R128_CTX_FOGSTATE) {
-	R128CCE0(R128_CCE_PACKET0, R128_FOG_3D_TABLE_START, 1);
-	R128CCE(r128ctx->regs.fog_3d_table_start);
-	R128CCE(r128ctx->regs.fog_3d_table_end);
-
-	R128CCE1(R128_CCE_PACKET1,
-		 R128_FOG_COLOR_C, R128_FOG_3D_TABLE_DENSITY);
+	R128CCE1(R128_CCE_PACKET0, R128_FOG_COLOR_C, 0);
 	R128CCE(r128ctx->regs.fog_color_c);
-	R128CCE(r128ctx->regs.fog_3d_table_density);
-    }
-
-    if (r128ctx->dirty_context & R128_CTX_FOGTABLE) {
-	r128UploadFogTable(r128ctx);
     }
 
     if (r128ctx->dirty_context & R128_CTX_ZSTENSTATE) {

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tritmp.h,v 1.1 2000/06/17 00:03:09 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -52,10 +52,10 @@ static __inline void TAG(triangle)(GLcontext *ctx,
     int                   i, j;
 
 #if (IND & R128_OFFSET_BIT)
-    GLfloat offset = ctx->Polygon.OffsetUnits * r128ctx->depth_scale;
+    GLfloat offset;
 #endif
 
-#if (IND & (R128_FLAT_BIT | R128_TWOSIDE_BIT))
+#if (IND & R128_TWOSIDE_BIT)
     int c[3];
 
     c[0] = c[1] = c[2] = *(int *)&r128verts[pv].vert1.dif_argb;
@@ -90,8 +90,8 @@ static __inline void TAG(triangle)(GLcontext *ctx,
 
 #if (IND & R128_OFFSET_BIT)
 	{
+ 	    offset = ctx->Polygon.OffsetUnits * r128ctx->depth_scale;
 	    if (cc * cc > 1e-16) {
-		GLfloat factor = ctx->Polygon.OffsetFactor;
 		GLfloat ez     = v[0]->vert1.z - v[2]->vert1.z;
 		GLfloat fz     = v[1]->vert1.z - v[2]->vert1.z;
 		GLfloat a      = ey*fz - ez*fy;
@@ -101,7 +101,7 @@ static __inline void TAG(triangle)(GLcontext *ctx,
 		GLfloat bc     = b * ic;
 		if (ac < 0.0f) ac = -ac;
 		if (bc < 0.0f) bc = -bc;
-		offset += MAX2(ac, bc) * factor;
+		offset += MAX2(ac, bc) * ctx->Polygon.OffsetFactor;
 	    }
 	}
 #endif
@@ -113,7 +113,7 @@ static __inline void TAG(triangle)(GLcontext *ctx,
        for (i = 0 ; i < vertsize ; i++)
 	  vb[i] = v[j]->ui[i];
 
-#if (IND & (R128_FLAT_BIT|R128_TWOSIDE_BIT))
+#if (IND & R128_TWOSIDE_BIT)
        vb[4] = c[j];		/* color is the fifth element... */
 #endif
 #if (IND & R128_OFFSET_BIT)
@@ -132,17 +132,25 @@ static void TAG(quad)(GLcontext *ctx,
 }
 
 
-/* Draw a single line.  Note that the device-dependent vertex data might
-   need to be changed based on the render state. */
+/* Draw a single line.  Note that the device-dependent vertex data
+ *   might need to be changed based on the render state.
+ *
+ * Polygon offset for GL_LINE triangles is dependent on a harness in
+ * core mesa setting up LineZoffset on a per-triangle basis.
+ *
+ * Twosided lighting for GL_LINE triangles is dependent on the same
+ * harness.
+ */
 static void TAG(line)(GLcontext *ctx,
 		      GLuint v0, GLuint v1,
 		      GLuint pv)
 {
-    r128ContextPtr  r128ctx   = R128_CONTEXT(ctx);
-    r128VertexPtr   r128verts = R128_DRIVER_DATA(ctx->VB)->verts;
-    float           width     = ctx->Line.Width;
+   r128ContextPtr  r128ctx   = R128_CONTEXT(ctx);
+   r128VertexPtr   r128verts = R128_DRIVER_DATA(ctx->VB)->verts;
+   float           width     = ctx->Line.Width;
 
-   if (IND & (R128_TWOSIDE_BIT|R128_FLAT_BIT)) {
+
+   if (IND & (R128_TWOSIDE_BIT|R128_FLAT_BIT|R128_OFFSET_BIT)) {
       r128Vertex tmp0 = r128verts[v0];
       r128Vertex tmp1 = r128verts[v1];
 
@@ -156,9 +164,15 @@ static void TAG(line)(GLcontext *ctx,
 	    R128_COLOR((char *)&tmp0.vert1.dif_argb, vbcolor[v0]);
 	    R128_COLOR((char *)&tmp1.vert1.dif_argb, vbcolor[v1]);
 	 }
-      } else {
+      } else if (IND & R128_FLAT_BIT) {
 	 *(int *)&tmp0.vert1.dif_argb = *(int *)&r128verts[pv].vert1.dif_argb;
 	 *(int *)&tmp1.vert1.dif_argb = *(int *)&r128verts[pv].vert1.dif_argb;
+      }
+
+      if (IND & R128_OFFSET_BIT) {
+	 GLfloat offset = ctx->LineZoffset * r128ctx->depth_scale;
+	 tmp0.vert1.z += offset;
+	 tmp1.vert1.z += offset;
       }
 
       r128DrawLineVB( r128ctx, &tmp0, &tmp1, width );
@@ -178,12 +192,20 @@ static void TAG(points)(GLcontext *ctx,
     GLfloat               size      = ctx->Point.Size * 0.5;
     int                   i;
 
+
     for(i = first; i <= last; i++) {
 	if(VB->ClipMask[i] == 0) {
-	   if (IND & R128_TWOSIDE_BIT) {
-	      GLubyte (*vbcolor)[4] = VB->ColorPtr->data;
+	   if (IND & (R128_TWOSIDE_BIT|R128_OFFSET_BIT)) {
 	      r128Vertex tmp0 = r128verts[i];
-	      R128_COLOR((char *)&tmp0.vert1.dif_argb, vbcolor[i]);
+
+	      if (IND & R128_TWOSIDE_BIT) {
+		 GLubyte (*vbcolor)[4] = VB->ColorPtr->data;
+		 R128_COLOR((char *)&tmp0.vert1.dif_argb, vbcolor[i]);
+	      }
+	      if (IND & R128_OFFSET_BIT) {
+		 GLfloat offset = ctx->PointZoffset * r128ctx->depth_scale;
+		 tmp0.vert1.z += offset;
+	      }
 	      r128DrawPointVB( r128ctx, &tmp0, size );
 	   } else
 	      r128DrawPointVB( r128ctx, &r128verts[i], size );
@@ -194,10 +216,10 @@ static void TAG(points)(GLcontext *ctx,
 /* Initialize the table of primitives to render. */
 static void TAG(init)(void)
 {
-    tri_tab[IND]    = TAG(triangle);
-    quad_tab[IND]   = TAG(quad);
-    line_tab[IND]   = TAG(line);
-    points_tab[IND] = TAG(points);
+   rast_tab[IND].tri    = TAG(triangle);
+   rast_tab[IND].quad   = TAG(quad);
+   rast_tab[IND].line   = TAG(line);
+   rast_tab[IND].points = TAG(points);
 }
 
 #undef IND

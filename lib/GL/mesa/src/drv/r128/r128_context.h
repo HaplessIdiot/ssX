@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.1 2000/06/17 00:03:05 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -42,7 +42,6 @@ typedef struct r128_context r128ContextRec;
 typedef struct r128_context *r128ContextPtr;
 
 #include "r128_texobj.h"
-#include "r128_fastpath.h"
 
 /* Flags for what needs to be updated before a new primitive is rendered */
 #define R128_CLEAN                  0x0000
@@ -62,7 +61,6 @@ typedef struct r128_context *r128ContextPtr;
 #define R128_CTX_TEX1STATE          0x0008
 #define R128_CTX_TEXENVSTATE        0x0010
 #define R128_CTX_FOGSTATE           0x0020
-#define R128_CTX_FOGTABLE           0x0040
 #define R128_CTX_ZSTENSTATE         0x0080
 #define R128_CTX_SCISSORS           0x0100
 #define R128_CTX_ALPHASTATE         0x0200
@@ -80,6 +78,12 @@ typedef struct r128_context *r128ContextPtr;
 #define R128_FALLBACK_SWONLY        0x0020
 #define R128_FALLBACK_RENDER_MODE   0x0040
 #define R128_FALLBACK_MULTIDRAW     0x0080
+#define R128_FALLBACK_LOGICOP       0x0100
+
+typedef void (*r128InterpFunc)( GLfloat t,
+				GLfloat *result,
+				const GLfloat *in,
+				const GLfloat *out );
 
 /* NOTE: The groups below need to be kept together so that a single
    memcpy can be used to transfer data to the ring buffer */
@@ -130,10 +134,6 @@ typedef struct {
 
     CARD32  pm4_vc_fpu_setup;                     /* 0x071c */
 
-    CARD32  fog_3d_table_start;                   /* 0x1810 */
-    CARD32  fog_3d_table_end;
-    CARD32  fog_3d_table_density;                 /* 0x181c */
-
     CARD32  window_xy_offset;                     /* 0x1bcc */
 
     CARD32  dp_write_mask;                        /* 0x16cc */
@@ -164,8 +164,6 @@ struct r128_context {
     int                   lastTexAge[R128_NR_TEX_HEAPS];
 
     CARD32                lastSwapAge;  /* Last known swap age */
-
-    GLenum                FogMode;      /* Current fog equation */
 
     int                   Scissor;
     XF86DRIClipRectRec    ScissorRect;  /* Current software scissor */
@@ -232,9 +230,11 @@ struct r128_context {
     int			  c_vertexBuffers;
 };
 
-#define R128_MESACTX(r128ctx)     ((r128ctx)->glCtx)
-#define R128_DRIDRAWABLE(r128ctx) ((r128ctx)->driDrawable)
-#define R128_DRISCREEN(r128ctx)   ((r128ctx)->r128Screen->driScreen)
+#define R128_CONTEXT(ctx)		((r128ContextPtr)(ctx->DriverCtx))
+
+#define R128_MESACTX(r128ctx)		((r128ctx)->glCtx)
+#define R128_DRIDRAWABLE(r128ctx)	((r128ctx)->driDrawable)
+#define R128_DRISCREEN(r128ctx)		((r128ctx)->r128Screen->driScreen)
 
 extern GLboolean r128CreateContext(Display *dpy, GLvisual *glVisual,
 				   __DRIcontextPrivate *driContextPriv);

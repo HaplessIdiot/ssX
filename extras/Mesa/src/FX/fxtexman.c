@@ -181,11 +181,19 @@ static int fxTMFindStartAddr(fxMesaContext fxMesa, GLint tmu, int size)
   MemRange *prev, *tmp;
   int result;
   struct gl_texture_object *obj;
+  int blockCount, deleteCount;
+  int largestBlock = 0;
 
   while (1) {
     prev=0;
     tmp=fxMesa->tmFree[tmu];
+    blockCount = 0;
+    deleteCount = 0;
     while (tmp) {
+      blockCount++;
+      if (tmp->endAddr - tmp->startAddr > largestBlock)
+        largestBlock = tmp->endAddr - tmp->startAddr;
+
       if (tmp->endAddr-tmp->startAddr>=size) { /* Fits here */
 	result=tmp->startAddr;
 	tmp->startAddr+=size;
@@ -196,6 +204,7 @@ static int fxTMFindStartAddr(fxMesaContext fxMesa, GLint tmu, int size)
 	    fxMesa->tmFree[tmu]=tmp->next;
 	  }
 	  fxTMDeleteRangeNode(fxMesa, tmp);
+          deleteCount++;
 	}
 	fxMesa->freeTexMem[tmu]-=size;
 	return result;
@@ -207,6 +216,11 @@ static int fxTMFindStartAddr(fxMesaContext fxMesa, GLint tmu, int size)
     obj=fxTMFindOldestObject(fxMesa, tmu);
     if (!obj) {
       fprintf(stderr, "fx Driver: No space for texture\n");
+      fprintf(stderr, "  requested size = %d\n", size);
+      fprintf(stderr, "  largest block = %d\n", largestBlock);
+      fprintf(stderr, "  tmu = %d\n", tmu);
+      fprintf(stderr, "  block count = %d\n", blockCount);
+      fprintf(stderr, "  delete count = %d\n", deleteCount);
       return -1;
     }
     fxTMMoveOutTM(fxMesa, obj);
@@ -261,6 +275,7 @@ static struct gl_texture_object *fxTMFindOldestObject(fxMesaContext fxMesa,
   GLuint age, old, lasttime, bindnumber;
   tfxTexInfo *info;
   struct gl_texture_object *obj, *tmp;
+  int wrap = 0, anyFound = 0, inTmuCount = 0;
 
   tmp=fxMesa->glCtx->Shared->TexObjectList;
   if (!tmp) return 0;
@@ -271,13 +286,19 @@ static struct gl_texture_object *fxTMFindOldestObject(fxMesaContext fxMesa,
   while (tmp) {
     info=fxTMGetTexInfo(tmp);
 
+    if (info && info->isInTM)
+      inTmuCount++;
+
     if (info && info->isInTM &&
 	((info->whichTMU==tmu) || (info->whichTMU==FX_TMU_BOTH) || 
 	(info->whichTMU==FX_TMU_SPLIT))) {
       lasttime=info->lastTimeUsed;
+      anyFound = 1;
 
-      if (lasttime>bindnumber)
+      if (lasttime>bindnumber) {
 	age=bindnumber+(UINT_MAX-lasttime+1); /* TO DO: check wrap around */
+        wrap = 1;
+      }
       else
 	age=bindnumber-lasttime;
 
@@ -287,6 +308,10 @@ static struct gl_texture_object *fxTMFindOldestObject(fxMesaContext fxMesa,
       }
     }
     tmp=tmp->Next;
+  }
+  if (!obj) {
+    fprintf(stderr, "  wrap = %d  anyFound = %d  inTmuCount = %d\n",
+            wrap, anyFound, inTmuCount);
   }
   return obj;
 }
@@ -299,7 +324,16 @@ static MemRange *fxTMAddObj(fxMesaContext fxMesa,
   MemRange *range;
 
   startAddr=fxTMFindStartAddr(fxMesa, tmu, texmemsize);
-  if (startAddr<0) return 0;
+  if (startAddr<0 || startAddr > 0xffffff00) {
+    tfxTexInfo *ti=fxTMGetTexInfo(tObj);
+    GrTexInfo *info = &(ti->info);
+    fprintf(stderr, "  smallLodLog2 = %d\n", (int) info->smallLodLog2);
+    fprintf(stderr, "  largeLodLog2 = %d\n", (int) info->largeLodLog2);
+    fprintf(stderr, "  aspectRatioLog2 = %d\n", (int) info->aspectRatioLog2);
+    fprintf(stderr, "  format = 0x%x\n", (unsigned int) info->format);
+    fprintf(stderr, "  data = %p\n", info->data);
+    return 0;
+  }
   range=fxTMNewRangeNode(fxMesa, startAddr, startAddr+texmemsize);
   return range;
 }

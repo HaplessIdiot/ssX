@@ -44,13 +44,10 @@
   (to)[3] = (from)[3];				\
 }
 
-
-
-static triangle_func tri_tab[0x20];   
-static quad_func     quad_tab[0x20];  
-static line_func     line_tab[0x20];  
-static points_func   points_tab[0x20];
-
+static triangle_func tri_tab[0x10];   
+static quad_func     quad_tab[0x10];  
+static line_func     line_tab[0x10];  
+static points_func   points_tab[0x10];
 
 #define IND (0)
 #define TAG(x) x
@@ -60,29 +57,31 @@ static points_func   points_tab[0x20];
 #define TAG(x) x##_flat
 #include "i810tritmp.h"
 
-#define IND (I810_OFFSET_BIT)	/* wide */
+#define IND (I810_OFFSET_BIT)	
 #define TAG(x) x##_offset
 #include "i810tritmp.h"
 
-#define IND (I810_OFFSET_BIT|I810_FLAT_BIT) /* wide|flat */
+#define IND (I810_OFFSET_BIT|I810_FLAT_BIT) 
 #define TAG(x) x##_offset_flat
 #include "i810tritmp.h"
 
-#define IND (I810_TWOSIDE_BIT)	/* stipple */
+#define IND (I810_TWOSIDE_BIT)	
 #define TAG(x) x##_twoside
 #include "i810tritmp.h"
 
-#define IND (I810_TWOSIDE_BIT|I810_FLAT_BIT) /* stipple|flat */
+#define IND (I810_TWOSIDE_BIT|I810_FLAT_BIT) 
 #define TAG(x) x##_twoside_flat
 #include "i810tritmp.h"
 
-#define IND (I810_TWOSIDE_BIT|I810_OFFSET_BIT) /* stipple|wide */
+#define IND (I810_TWOSIDE_BIT|I810_OFFSET_BIT) 
 #define TAG(x) x##_twoside_offset
 #include "i810tritmp.h"
 
-#define IND (I810_TWOSIDE_BIT|I810_OFFSET_BIT|I810_FLAT_BIT) /* stip|wide|flat*/
+#define IND (I810_TWOSIDE_BIT|I810_OFFSET_BIT|I810_FLAT_BIT) 
 #define TAG(x) x##_twoside_offset_flat
 #include "i810tritmp.h"
+
+
 
 void i810DDTrifuncInit()
 {
@@ -98,62 +97,68 @@ void i810DDTrifuncInit()
 
 
 
+#define ALL_FALLBACK (DD_MULTIDRAW | DD_SELECT | DD_FEEDBACK)
+#define POINT_FALLBACK (ALL_FALLBACK)
+#define LINE_FALLBACK (ALL_FALLBACK | DD_LINE_STIPPLE)
+#define TRI_FALLBACK (ALL_FALLBACK | DD_TRI_UNFILLED)
+#define ANY_FALLBACK (POINT_FALLBACK|LINE_FALLBACK|TRI_FALLBACK|DD_TRI_STIPPLE)
+#define ANY_RASTER_FLAGS (DD_FLATSHADE|DD_TRI_LIGHT_TWOSIDE|DD_TRI_OFFSET)
 
-void i810DDChooseRenderState( GLcontext *ctx )
+void i810DDChooseRenderState(GLcontext *ctx)
 {
-   i810ContextPtr imesa = I810_CONTEXT( ctx );
-   GLuint flags = ctx->TriangleCaps;
+    i810ContextPtr imesa = I810_CONTEXT(ctx);
+    GLuint         flags   = ctx->TriangleCaps;
+    CARD32 index    = 0;
 
-   imesa->IndirectTriangles = 0;
+    if (imesa->Fallback) {
+	imesa->renderindex = I810_FALLBACK_BIT;
+	return;
+    }
+    
+    if (flags & ANY_RASTER_FLAGS) {
+	if (flags & DD_FLATSHADE)               index |= I810_FLAT_BIT;
+	if (flags & DD_TRI_LIGHT_TWOSIDE)       index |= I810_TWOSIDE_BIT;
+	if (flags & DD_TRI_OFFSET)              index |= I810_OFFSET_BIT; 
+    }
+	
+    imesa->PointsFunc = points_tab[index];
+    imesa->LineFunc = line_tab[index];
+    imesa->TriangleFunc = tri_tab[index];
+    imesa->QuadFunc = quad_tab[index];
+    imesa->renderindex = index;
+    imesa->IndirectTriangles = 0;
 
-   if (flags) {
-      GLuint ind = 0;
-      GLuint shared = 0;
+    if (flags & ANY_FALLBACK) {
+	if (flags & POINT_FALLBACK) {
+	    imesa->renderindex |= I810_FALLBACK_BIT;
+	    imesa->PointsFunc = 0;
+	    imesa->IndirectTriangles |= DD_POINT_SW_RASTERIZE;
+	}
+	    
+	if (flags & LINE_FALLBACK) {
+	    imesa->renderindex |= I810_FALLBACK_BIT;
+	    imesa->LineFunc = 0;
+	    imesa->IndirectTriangles |= DD_LINE_SW_RASTERIZE;
+	}
 
-      if (flags & DD_FLATSHADE)                    shared |= I810_FLAT_BIT;
-      if (flags & DD_MULTIDRAW)                    shared |= I810_FALLBACK_BIT;
-      if (flags & DD_SELECT)                       shared |= I810_FALLBACK_BIT;
-      if (flags & DD_FEEDBACK)                     shared |= I810_FALLBACK_BIT;
-      if (flags & DD_STENCIL)                      shared |= I810_FALLBACK_BIT;
-
-      imesa->renderindex = shared;
-      imesa->PointsFunc = points_tab[shared]; 
-
-      ind = shared;
-      if (flags & DD_LINE_WIDTH)                    ind |= I810_WIDE_LINE_BIT;
-      if (flags & DD_LINE_STIPPLE)                  ind |= I810_FALLBACK_BIT;
-
-      imesa->renderindex |= ind;
-      imesa->LineFunc = line_tab[ind];
-      if (ind & I810_FALLBACK_BIT) 
-	 imesa->IndirectTriangles |= DD_LINE_SW_RASTERIZE;
-
-      ind = shared;
-      if (flags & DD_TRI_OFFSET)                    ind |= I810_OFFSET_BIT;
-      if (flags & DD_TRI_LIGHT_TWOSIDE)             ind |= I810_TWOSIDE_BIT;
-      if (flags & DD_TRI_UNFILLED)                  ind |= I810_FALLBACK_BIT;
-      if ((flags & DD_TRI_STIPPLE) &&
-	  (ctx->IndirectTriangles & DD_TRI_STIPPLE)) ind |= I810_FALLBACK_BIT;	
-
-      imesa->renderindex |= ind;
-      imesa->TriangleFunc = tri_tab[ind];
-      imesa->QuadFunc = quad_tab[ind];
-      if (ind & I810_FALLBACK_BIT)
-	 imesa->IndirectTriangles |= (DD_TRI_SW_RASTERIZE|DD_QUAD_SW_RASTERIZE);
-   } 
-   else if (imesa->renderindex)
-   {
-      imesa->renderindex  = 0;
-      imesa->PointsFunc   = points_tab[0]; 
-      imesa->LineFunc     = line_tab[0];
-      imesa->TriangleFunc = tri_tab[0];
-      imesa->QuadFunc     = quad_tab[0];
-   }
-
-
-   if (I810_DEBUG&DEBUG_VERBOSE_API) {
-      gl_print_tri_caps("tricaps", ctx->TriangleCaps);
-   }
+	if (flags & TRI_FALLBACK) {
+	    imesa->renderindex |= I810_FALLBACK_BIT;
+	    imesa->TriangleFunc = 0;
+	    imesa->QuadFunc = 0;
+	    imesa->IndirectTriangles |= (DD_TRI_SW_RASTERIZE |
+					 DD_QUAD_SW_RASTERIZE);
+	}
+	/* Special cases:
+	 */
+	if ((flags & DD_TRI_STIPPLE) &&
+	    (ctx->IndirectTriangles & DD_TRI_STIPPLE)) {
+	    imesa->renderindex |= I810_FALLBACK_BIT;
+	    imesa->TriangleFunc = 0;
+	    imesa->QuadFunc = 0;
+	    imesa->IndirectTriangles |= (DD_TRI_SW_RASTERIZE |
+					 DD_QUAD_SW_RASTERIZE);
+	}
+    }
 }
 
 

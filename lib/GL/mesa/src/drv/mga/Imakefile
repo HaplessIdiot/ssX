@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.7tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.8 2000/08/24 22:20:07 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -38,13 +38,6 @@ MESA_INCLUDES = -I. -I.. -I../../include \
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFS)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES) 
 
-#if 0
-	LOSRC = ../../../../lowpc.c
-	LOOBJ = ../../../../lowpc.o
-
-	HISRC = ../../../../highpc.c
-	HIOBJ = ../../../../highpc.o
-#endif
 
       DRISRCS = ../../../dri/dri_mesa.c \
 		../../../../dri/dri_tmm.c
@@ -268,14 +261,23 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 #endif
 #endif
 
+#ifdef GlxSoProf
+       HIOBJS = ../../../../highpc.o
+       LOOBJS = ../../../../lowpc.o
+       HISRCS = ../../../../highpc.c
+       LOSRCS = ../../../../lowpc.c
+#endif
+
       ASMSRCS = $(X86_SRCS) $(MMX_SRCS) $(3DNOW_SRCS)
       ASMOBJS = $(X86_OBJS) $(MMX_OBJS) $(3DNOW_OBJS)
 
       COMMONSRCS = ../common/mm.c ../common/hwlog.c
       COMMONOBJS = ../common/mm.o ../common/hwlog.o
 
-         SRCS = $(LOWSRC) $(DRISRCS) $(DRMSRCS) $(MESASRCS) $(ASMSRCS) $(COMMONSRCS) $(MGASRCS) $(HISRC)
-         OBJS = $(LOWOBJ) $(DRIOBJS) $(DRMOBJS) $(MESAOBJS) $(ASMOBJS) $(COMMONOBJS) $(MGAOBJS) $(HIOBJ)
+         SRCS = $(LOSRCS) $(DRISRCS) $(DRMSRCS) $(MESASRCS) $(ASMSRCS)	\
+		$(COMMONSRCS) $(MGASRCS) $(HISRCS)
+         OBJS = $(LOOBJS) $(DRIOBJS) $(DRMOBJS) $(MESAOBJS) $(ASMOBJS)	\
+		$(COMMONOBJS) $(MGAOBJS) $(HIOBJS)
 
 REQUIREDLIBS += -lm
 #if !GlxBuiltInMga
@@ -303,6 +305,12 @@ ALL_OBJS = $(OBJS)
 ALL_DEPS = DONE
 SharedDepModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
 InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
+
+#ifdef GlxSoProf
+SOPROF_LIBNAME = _mga_dri_p
+NormalDepLibraryTarget($(SOPROF_LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
+InstallLibrary($(SOPROF_LIBNAME),$(MODULEDIR)/dri)
+#endif
 #endif
 
 DependTarget()

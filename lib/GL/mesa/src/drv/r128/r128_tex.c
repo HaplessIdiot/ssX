@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.1 2000/06/17 00:03:08 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.2 2000/06/26 05:41:29 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -34,7 +34,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "r128_init.h"
-#include "r128_mesa.h"
 #include "r128_xmesa.h"
 #include "r128_context.h"
 #include "r128_lock.h"
@@ -633,6 +632,14 @@ static void r128UploadSubImage(r128ContextPtr r128ctx,
     case 2: texelsPerDword = 2; break;
     case 4: texelsPerDword = 1; break;
     }
+
+    /* FIXME: The sub image offset calcs are broken - they weren't a
+     * while ago?
+     */
+    x = 0;
+    y = 0;
+    width = image->Width;
+    height = image->Height;
 
     imageWidth  = image->Width;
     imageHeight = image->Height;
@@ -1685,7 +1692,7 @@ static void r128DDTexEnv(GLcontext *ctx, GLenum target, GLenum pname,
     switch (pname) {
     case GL_TEXTURE_ENV_MODE:
 	/* TexEnv modes are handled in UpdateTextureState */
-	r128FlushVertices(r128ctx);
+	FLUSH_BATCH(r128ctx);
 	r128ctx->dirty |= R128_UPDATE_TEXSTATE;
 	break;
     case GL_TEXTURE_ENV_COLOR:
@@ -1693,10 +1700,9 @@ static void r128DDTexEnv(GLcontext *ctx, GLenum target, GLenum pname,
 	FLOAT_RGBA_TO_UBYTE_RGBA(texUnit->EnvColor, c);
 	col = r128PackColor(32, c[0], c[1], c[2], c[3]);
 	if (r128ctx->regs.constant_color_c != col) {
-	    r128FlushVertices(r128ctx);
+	    FLUSH_BATCH(r128ctx);
 	    r128ctx->regs.constant_color_c = col;
 
-	    /* FIXME: Load into hardware now??? */
 	    r128ctx->dirty         |= R128_UPDATE_CONTEXT;
 	    r128ctx->dirty_context |= R128_CTX_TEXENVSTATE;
 	}
@@ -1723,7 +1729,7 @@ static void r128DDTexImage(GLcontext *ctx, GLenum target,
 
     t = (r128TexObjPtr)tObj->DriverData;
     if (t) {
-	if (t->bound) r128FlushVertices(r128ctx);
+	if (t->bound) FLUSH_BATCH(r128ctx);
 
 	/* Destroy the old texture, and upload a new one.  The actual
            uploading of the texture image occurs in the UploadSubImage
@@ -1754,7 +1760,7 @@ static void r128DDTexSubImage(GLcontext *ctx, GLenum target,
 
     t = (r128TexObjPtr)tObj->DriverData;
     if (t) {
-	if (t->bound) r128FlushVertices(r128ctx);
+	if (t->bound) FLUSH_BATCH(r128ctx);
 
 	LOCK_HARDWARE(r128ctx);
 	r128UploadSubImage(r128ctx, t, level,
@@ -1786,18 +1792,18 @@ static void r128DDTexParameter(GLcontext *ctx, GLenum target,
     switch (pname) {
     case GL_TEXTURE_MIN_FILTER:
     case GL_TEXTURE_MAG_FILTER:
-	if (t->bound) r128FlushVertices(r128ctx);
+	if (t->bound) FLUSH_BATCH(r128ctx);
 	r128SetTexFilter(t, tObj->MinFilter, tObj->MagFilter);
 	break;
 
     case GL_TEXTURE_WRAP_S:
     case GL_TEXTURE_WRAP_T:
-	if (t->bound) r128FlushVertices(r128ctx);
+	if (t->bound) FLUSH_BATCH(r128ctx);
 	r128SetTexWrap(t, tObj->WrapS, tObj->WrapT);
 	break;
 
     case GL_TEXTURE_BORDER_COLOR:
-	if (t->bound) r128FlushVertices(r128ctx);
+	if (t->bound) FLUSH_BATCH(r128ctx);
 	r128SetTexBorderColor(t, tObj->BorderColor);
 	break;
 
@@ -1814,7 +1820,7 @@ static void r128DDBindTexture(GLcontext *ctx, GLenum target,
 {
     r128ContextPtr r128ctx = R128_CONTEXT(ctx);
 
-    r128FlushVertices(r128ctx);
+    FLUSH_BATCH(r128ctx);
 
     /* Unbind the old texture */
     if (r128ctx->CurrentTexObj[ctx->Texture.CurrentUnit]) {
@@ -1835,7 +1841,7 @@ static void r128DDDeleteTexture(GLcontext *ctx,
 
     if (t) {
 	if (t->bound) {
-	    r128FlushVertices(r128ctx);
+	    FLUSH_BATCH(r128ctx);
 
 	    r128ctx->CurrentTexObj[t->bound-1] = 0;
 	    r128ctx->dirty |= R128_UPDATE_TEXSTATE;

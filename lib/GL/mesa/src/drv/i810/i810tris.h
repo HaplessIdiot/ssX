@@ -28,152 +28,131 @@
 
 #include "types.h"
 #include "i810ioctl.h"
+#include "i810vb.h"
 
 extern void i810PrintRenderState( const char *msg, GLuint state );
 extern void i810DDChooseRenderState(GLcontext *ctx);
 extern void i810DDTrifuncInit( void );
 
 
-/* shared */
 #define I810_FLAT_BIT 	     0x1
-
-/* triangle */
 #define I810_OFFSET_BIT	     0x2	
 #define I810_TWOSIDE_BIT     0x4
+#define I810_FALLBACK_BIT    0x8
 
-/* line */
-#define I810_WIDE_LINE_BIT    0x2 
-#define I810_STIPPLE_LINE_BIT 0x4 
-
-/* shared */
-#define I810_FALLBACK_BIT    0x8 
-
-
-
-
-
-static i810_vertex __inline__ *i810AllocTriangles( i810ContextPtr imesa, int nr)
-{
-   GLuint *start = i810AllocDwords( imesa, 30*nr, PR_TRIANGLES );
-   return (i810_vertex *)start;
-}
-
-static i810_vertex __inline__ *i810AllocLine( i810ContextPtr imesa ) 
-{
-   GLuint *start = i810AllocDwords( imesa, 20, PR_LINES );
-   return (i810_vertex *)start;
-}
-
-static i810_vertex __inline__ *i810AllocRect( i810ContextPtr imesa ) 
-{
-   GLuint *start = i810AllocDwords( imesa, 30, PR_RECTS );
-   return (i810_vertex *)start;
-}
 
 
 
 static void __inline__ i810_draw_triangle( i810ContextPtr imesa,
-					   i810_vertex *v0, 
-					   i810_vertex *v1, 
-					   i810_vertex *v2 )
+					   i810VertexPtr v0, 
+					   i810VertexPtr v1, 
+					   i810VertexPtr v2 )
 {
-   i810_vertex *wv = i810AllocTriangles( imesa, 1 );
-   wv[0] = *v0;
-   wv[1] = *v1;
-   wv[2] = *v2;
+   GLuint vertsize = imesa->vertsize;
+   GLuint *vb = i810AllocDwordsInline( imesa, 3 * vertsize );
+    int j;
+
+#if 1
+    __asm__ __volatile__( "rep ; movsl"
+			  : "=%c" (j)
+			  : "0" (vertsize), "D" ((long)vb), "S" ((long)v0)
+			  : "memory" );
+    __asm__ __volatile__( "rep ; movsl"
+			  : "=%c" (j)
+			  : "0" (vertsize), "S" ((long)v1)
+			  : "memory" );
+    __asm__ __volatile__( "rep ; movsl"
+			  : "=%c" (j)
+			  : "0" (vertsize), "S" ((long)v2)
+			  : "memory" );
+#else
+
+    for (j = 0 ; j < vertsize ; j++)
+        vb[j] = v0->ui[j];
+
+    vb += vertsize;
+    for (j = 0 ; j < vertsize ; j++)
+        vb[j] = v1->ui[j];
+
+    vb += vertsize;
+    for (j = 0 ; j < vertsize ; j++)
+        vb[j] = v2->ui[j];
+#endif
 }
 
 
 static __inline__ void i810_draw_point( i810ContextPtr imesa,
-					i810_vertex *tmp, float sz )
+					i810VertexPtr tmp, 
+					float sz )
 {
-   i810_vertex *wv = i810AllocTriangles( imesa, 2 );
+   int vertsize = imesa->vertsize;
+   GLuint *vb = i810AllocDwordsInline( imesa, 6 * vertsize );
+   int j;
 
-   wv[0] = *tmp;
-   wv[0].x = tmp->x - sz;
-   wv[0].y = tmp->y - sz;
+   *(float *)&vb[0] = tmp->v.x - sz;
+   *(float *)&vb[1] = tmp->v.y - sz;
+   for (j = 2 ; j < vertsize ; j++)
+      vb[j] = tmp->ui[j];
+   vb += vertsize;
 
-   wv[1] = *tmp;
-   wv[1].x = tmp->x + sz;
-   wv[1].y = tmp->y - sz;
+   *(float *)&vb[0] = tmp->v.x + sz;
+   *(float *)&vb[1] = tmp->v.y - sz;
+   for (j = 2 ; j < vertsize ; j++)
+      vb[j] = tmp->ui[j];
+   vb += vertsize;
 
-   wv[2] = *tmp;
-   wv[2].x = tmp->x + sz;
-   wv[2].y = tmp->y + sz;
+   *(float *)&vb[0] = tmp->v.x + sz;
+   *(float *)&vb[1] = tmp->v.y + sz;
+   for (j = 2 ; j < vertsize ; j++)
+      vb[j] = tmp->ui[j];
+   vb += vertsize;
 
-   wv[3] = *tmp;
-   wv[3].x = tmp->x + sz;
-   wv[3].y = tmp->y + sz;
+   *(float *)&vb[0] = tmp->v.x + sz;
+   *(float *)&vb[1] = tmp->v.y + sz;
+   for (j = 2 ; j < vertsize ; j++)
+      vb[j] = tmp->ui[j];
+   vb += vertsize;
 
-   wv[4] = *tmp;
-   wv[4].x = tmp->x - sz;
-   wv[4].y = tmp->y + sz;
+   *(float *)&vb[0] = tmp->v.x - sz;
+   *(float *)&vb[1] = tmp->v.y + sz;
+   for (j = 2 ; j < vertsize ; j++)
+      vb[j] = tmp->ui[j];
+   vb += vertsize;
 
-   wv[5] = *tmp;
-   wv[5].x = tmp->x - sz;
-   wv[5].y = tmp->y - sz;
-
-}
-
-
-static __inline__ void i810_draw_line_line( i810ContextPtr imesa, 
-					    i810_vertex *tmp0, 
-					    i810_vertex *tmp1 )
-{
-   i810_vertex *wv = i810AllocLine( imesa );
-   wv[0] = *tmp0;
-   wv[1] = *tmp1;
-}
-
-static __inline__ void i810_draw_tri_line( i810ContextPtr imesa, 
-					   i810_vertex *tmp0, 
-					   i810_vertex *tmp1,
-					   float width )
-{
-   i810_vertex *wv = i810AllocTriangles( imesa, 2 );
-      
-   float dx, dy, ix, iy;
-
-   dx = tmp0->x - tmp1->x;
-   dy = tmp0->y - tmp1->y;
-
-   ix = width * .5; iy = 0;
-   if (dx * dx > dy * dy) {
-      iy = ix; ix = 0;
-   }
-
-   wv[0] = *tmp0;
-   wv[0].x = tmp0->x - ix;
-   wv[0].y = tmp0->y - iy;
-
-   wv[1] = *tmp1;
-   wv[1].x = tmp1->x + ix;
-   wv[1].y = tmp1->y + iy;
-
-   wv[2] = *tmp0;
-   wv[2].x = tmp0->x + ix;
-   wv[2].y = tmp0->y + iy;
-	 
-   wv[3] = *tmp0;
-   wv[3].x = tmp0->x - ix;
-   wv[3].y = tmp0->y - iy;
-
-   wv[4] = *tmp1;
-   wv[4].x = tmp1->x - ix;
-   wv[4].y = tmp1->y - iy;
-
-   wv[5] = *tmp1;
-   wv[5].x = tmp1->x + ix;
-   wv[5].y = tmp1->y + iy;
+   *(float *)&vb[0] = tmp->v.x - sz;
+   *(float *)&vb[1] = tmp->v.y - sz;
+   for (j = 2 ; j < vertsize ; j++)
+      vb[j] = tmp->ui[j];
 }
 
 
 static __inline__ void i810_draw_line( i810ContextPtr imesa, 
-				       i810_vertex *tmp0, 
-				       i810_vertex *tmp1,
-				       float width )
+				       i810VertexPtr v0, 
+				       i810VertexPtr v1 )
 {
-   i810_draw_line_line( imesa, tmp0, tmp1 );
+   GLuint vertsize = imesa->vertsize;
+   GLuint *vb = i810AllocDwordsInline( imesa, 2 * vertsize );
+
+#if defined(USE_X86_ASM)
+    __asm__ __volatile__( "rep ; movsl"
+			  : "=%c" (j)
+			  : "0" (vertsize), "D" ((long)vb), "S" ((long)v0)
+			  : "memory" );
+    __asm__ __volatile__( "rep ; movsl"
+			  : "=%c" (j)
+			  : "0" (vertsize), "S" ((long)v1)
+			  : "memory" );
+#else
+    int j;
+
+    for (j = 0 ; j < vertsize ; j++)
+        vb[j] = v0->ui[j];
+
+    vb += vertsize;
+    for (j = 0 ; j < vertsize ; j++)
+        vb[j] = v1->ui[j];
+#endif
 }
+
 
 #endif

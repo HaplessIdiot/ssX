@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.28 2000/06/30 19:30:16 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.29 2000/07/02 19:23:34 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -18,12 +18,15 @@ XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.28 2000/06/30 19:30:16 dawes Exp $
 REQUIREDLIBS = SharedGLReqs
 #endif
 
-#if 0
-      LOWSRC = lowpc.c
-      LOWOBJ = lowpc.o
+XCOMM
+XCOMM Not related to ProfileLibGlx - I dont know how that works.  KW.
+XCOMM
+#ifdef GlxSoProf
+      PROFSRC = lowpc.c highpc.c
+      PROFOBJ = lowpc.o highpc.o
 
-       HISRC = highpc.c
-       HIOBJ = highpc.o
+SubdirLibraryRule($(PROFOBJ))
+NormalLintTarget($(PROFSRC))
 #endif
 
 #if BuildXF86DRI && defined(i386Architecture)
@@ -122,7 +125,7 @@ XCOMM nothing
     DRVPOBJS = $(TDFXPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
     DRVDONES = $(TDFXDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
 
-REQUIREDLIBS += -lglide3x -ldl
+REQUIREDLIBS += -lglide3 -ldl
 
   GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/tdfx
 
@@ -241,15 +244,11 @@ MakeSubdirs($(GLXSUBDIRS))
 #ifdef OS2Architecture
         OBJS = $(LIBNAME).a
 #else
-        OBJS = $(LOWOBJ) $(GLXOBJS) $(DRIOBJS) $(DRVOBJS) $(HIOBJ)
+        OBJS = $(GLXOBJS) $(DRIOBJS) $(DRVOBJS) 
 #endif
 
 #if HasSharedLibraries
-#if 1
        UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRVUOBJS)
-#else
-       UOBJS = $(OBJS)
-#endif
 #else
        UOBJS = $(OBJS)
 #endif
@@ -257,11 +256,6 @@ MakeSubdirs($(GLXSUBDIRS))
        DOBJS = $(GLXDOBJS) $(DRIDOBJS) $(DRVDOBJS)
        POBJS = $(GLXPOBJS) $(DRIPOBJS) $(DRVPOBJS)
        DONES = $(GLXDONES) $(DRIDONES) $(DRVDONES)
-
-#if 0
-SubdirLibraryRule(highpc.o lowpc.o)
-NormalLintTarget(highpc.c lowpc.c)
-#endif
 
 #if LocalThreads
   THREADOBJS = $(THREADS_LIBS)

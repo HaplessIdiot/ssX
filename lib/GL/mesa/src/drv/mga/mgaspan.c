@@ -1,9 +1,9 @@
 #include "types.h"
 #include "mgadd.h"
 #include "mgalib.h"
-#include "mgadma.h"
 #include "mgalog.h"
 #include "mgaspan.h"
+#include "mgaioctl.h"
 
 #define DBG 0
 
@@ -16,11 +16,11 @@
    GLuint height = dPriv->h;				\
    char *read_buf = (char *)(sPriv->pFB +		\
 			mmesa->readOffset +		\
-			dPriv->x * 2 +			\
+			dPriv->x * mgaScreen->cpp +			\
 			dPriv->y * pitch);              \
    char *buf = (char *)(sPriv->pFB +			\
 			mmesa->drawOffset +		\
-			dPriv->x * 2 +			\
+			dPriv->x * mgaScreen->cpp +			\
 			dPriv->y * pitch);              \
    GLushort p = MGA_CONTEXT( ctx )->MonoColor;          \
    (void) read_buf; (void) buf; (void) p
@@ -107,26 +107,30 @@ do {								\
 
 
 
-/* 15 bit, 555 rgb color spanline and pixel functions
+
+/* 32 bit, 8888 argb color spanline and pixel functions
  */
-#define WRITE_RGBA( _x, _y, r, g, b, a )			\
-   *(GLushort *)(buf + _x*2 + _y*pitch)  = (((r & 0xf8) << 7) |	\
-		                            ((g & 0xf8) << 3) |	\
-                         		    ((b & 0xf8) >> 3))
-#define WRITE_PIXEL( _x, _y, p )  \
-   *(GLushort *)(buf + _x*2 + _y*pitch)  = p
+#define WRITE_RGBA(_x, _y, r, g, b, a)			\
+    *(GLuint *)(buf + _x*4 + _y*pitch) = ((r << 16) |	\
+					  (g << 8)  |	\
+					  (b << 0)  |	\
+					  (a << 24) )
 
-#define READ_RGBA( rgba, _x, _y )				\
-do {								\
-   GLushort p = *(GLushort *)(read_buf + _x*2 + _y*pitch);	\
-   rgba[0] = (p >> 7) & 0xf8;					\
-   rgba[1] = (p >> 3) & 0xf8;					\
-   rgba[2] = (p << 3) & 0xf8;					\
-   rgba[3] = 255;						\
-} while(0)
+#define WRITE_PIXEL(_x, _y, p)			\
+    *(GLuint *)(buf + _x*4 + _y*pitch) = p
 
-#define TAG(x) mga##x##_555
+#define READ_RGBA(rgba, _x, _y)					\
+    do {							\
+	GLuint p = *(GLuint *)(read_buf + _x*4 + _y*pitch);	\
+	rgba[0] = (p >> 16) & 0xff;				\
+	rgba[1] = (p >> 8)  & 0xff;				\
+	rgba[2] = (p >> 0)  & 0xff;				\
+	rgba[3] = (p >> 24) & 0xff;				\
+    } while (0)
+
+#define TAG(x) mga##x##_8888
 #include "spantmp.h"
+
 
 
 
@@ -144,9 +148,30 @@ do {								\
 
 
 
+
+
+
+
+/* 32 bit depthbuffer functions.
+ */
+#define WRITE_DEPTH( _x, _y, d )	\
+   *(GLushort *)(buf + _x*4 + _y*pitch) = d;
+
+#define READ_DEPTH( d, _x, _y )		\
+   d = *(GLushort *)(buf + _x*4 + _y*pitch);	
+
+#define TAG(x) mga##x##_32
+#include "depthtmp.h"
+
+
+
+
 void mgaDDInitSpanFuncs( GLcontext *ctx )
 {
-   if (1) {
+   mgaContextPtr mmesa = MGA_CONTEXT(ctx);
+
+   switch (mmesa->mgaScreen->cpp) {
+   case 2:
       ctx->Driver.WriteRGBASpan = mgaWriteRGBASpan_565;
       ctx->Driver.WriteRGBSpan = mgaWriteRGBSpan_565;
       ctx->Driver.WriteMonoRGBASpan = mgaWriteMonoRGBASpan_565;
@@ -154,20 +179,29 @@ void mgaDDInitSpanFuncs( GLcontext *ctx )
       ctx->Driver.WriteMonoRGBAPixels = mgaWriteMonoRGBAPixels_565;
       ctx->Driver.ReadRGBASpan = mgaReadRGBASpan_565;
       ctx->Driver.ReadRGBAPixels = mgaReadRGBAPixels_565;
-   } else {
-      ctx->Driver.WriteRGBASpan = mgaWriteRGBASpan_555;
-      ctx->Driver.WriteRGBSpan = mgaWriteRGBSpan_555;
-      ctx->Driver.WriteMonoRGBASpan = mgaWriteMonoRGBASpan_555;
-      ctx->Driver.WriteRGBAPixels = mgaWriteRGBAPixels_555;
-      ctx->Driver.WriteMonoRGBAPixels = mgaWriteMonoRGBAPixels_555;
-      ctx->Driver.ReadRGBASpan = mgaReadRGBASpan_555;
-      ctx->Driver.ReadRGBAPixels = mgaReadRGBAPixels_555;
+
+      ctx->Driver.ReadDepthSpan = mgaReadDepthSpan_16;
+      ctx->Driver.WriteDepthSpan = mgaWriteDepthSpan_16;
+      ctx->Driver.ReadDepthPixels = mgaReadDepthPixels_16;
+      ctx->Driver.WriteDepthPixels = mgaWriteDepthPixels_16;
+      break;
+
+   case 4:
+      ctx->Driver.WriteRGBASpan = mgaWriteRGBASpan_8888;
+      ctx->Driver.WriteRGBSpan = mgaWriteRGBSpan_8888;
+      ctx->Driver.WriteMonoRGBASpan = mgaWriteMonoRGBASpan_8888;
+      ctx->Driver.WriteRGBAPixels = mgaWriteRGBAPixels_8888;
+      ctx->Driver.WriteMonoRGBAPixels = mgaWriteMonoRGBAPixels_8888;
+      ctx->Driver.ReadRGBASpan = mgaReadRGBASpan_8888;
+      ctx->Driver.ReadRGBAPixels = mgaReadRGBAPixels_8888;
+
+      ctx->Driver.ReadDepthSpan = mgaReadDepthSpan_32;
+      ctx->Driver.WriteDepthSpan = mgaWriteDepthSpan_32;
+      ctx->Driver.ReadDepthPixels = mgaReadDepthPixels_32;
+      ctx->Driver.WriteDepthPixels = mgaWriteDepthPixels_32;
+      break;
    }
 
-   ctx->Driver.ReadDepthSpan = mgaReadDepthSpan_16;
-   ctx->Driver.WriteDepthSpan = mgaWriteDepthSpan_16;
-   ctx->Driver.ReadDepthPixels = mgaReadDepthPixels_16;
-   ctx->Driver.WriteDepthPixels = mgaWriteDepthPixels_16;
 
    ctx->Driver.WriteCI8Span        =NULL;
    ctx->Driver.WriteCI32Span       =NULL;

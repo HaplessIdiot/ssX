@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810_xmesa.c,v 1.4 2000/06/22 16:59:24 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810_xmesa.c,v 1.5 2000/08/03 02:30:19 dawes Exp $ */
 
 /*
  * Authors:
@@ -339,6 +339,12 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
       ctx->Const.MaxTextureSize = 1<<10;
    }      
 
+   ctx->Const.MinLineWidth = 1.0;
+   ctx->Const.MinLineWidthAA = 1.0;
+   ctx->Const.MaxLineWidth = 3.0;
+   ctx->Const.MaxLineWidthAA = 3.0;
+   ctx->Const.LineWidthGranularity = 1.0;
+
 
    /* Dri stuff
     */
@@ -381,6 +387,7 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
 
    ctx->Driver.TriangleCaps = (DD_TRI_CULL|
 			       DD_TRI_LIGHT_TWOSIDE|
+			       DD_LIGHTING_CULL|
 			       DD_TRI_STIPPLE|
 			       DD_TRI_OFFSET);
 
@@ -480,7 +487,6 @@ void i810XMesaSetFrontClipRects( i810ContextPtr imesa )
    imesa->drawX = dPriv->x;
    imesa->drawY = dPriv->y;
 
-   imesa->drawMap = (char *)imesa->driScreen->pFB;
    i810EmitDrawingRectangle( imesa );
 }
 
@@ -511,7 +517,6 @@ void i810XMesaSetBackClipRects( i810ContextPtr imesa )
       imesa->drawY = dPriv->backY;
    }
 
-   imesa->drawMap = imesa->i810Screen->back.map;
    i810EmitDrawingRectangle( imesa );
    imesa->dirty |= I810_UPLOAD_CLIPRECTS;
 

@@ -58,7 +58,6 @@ typedef struct {
 
    int cpp;			/* for front and back buffers */
 
-   int Attrib;
    unsigned int mAccess;
 
    unsigned int frontOffset;

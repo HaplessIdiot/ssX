@@ -39,7 +39,6 @@
 #include "mgacommon.h"
 #include "mm.h"
 #include "mgalog.h"
-#include "mgaioctl.h"
 #include "mgatex.h"
 #include "mgavb.h"
 
@@ -61,7 +60,7 @@
  */
 #define MGA_FALLBACK_TEXTURE   0x1
 #define MGA_FALLBACK_BUFFER    0x2
-#define MGA_FALLBACK_STIPPLE   0x3
+#define MGA_FALLBACK_LOGICOP   0x4
 
 
 /* For mgaCtx->new_state.
@@ -180,7 +179,7 @@ struct mga_context_t {
    GLushort      MonoColor;
    GLushort      ClearColor;
    GLuint        poly_stipple;
-
+   GLfloat       depth_scale;
    
    /* Dma buffers
     */
@@ -295,18 +294,14 @@ extern int MGA_DEBUG;
 #define DEBUG_VERBOSE_IOCTL  0x10
 #define DEBUG_VERBOSE_2D     0x20
 
-static __inline__ mgaUI32 mgaPackColor(mgaUI32 format,
+static __inline__ mgaUI32 mgaPackColor(mgaUI32 cpp,
 				       mgaUI8 r, mgaUI8 g, 
 				       mgaUI8 b, mgaUI8 a)
 {
-  switch (format & MGA_PF_MASK) {
-  case MGA_PF_555:
-    return MGAPACKCOLOR555(r,g,b,a);
-  case MGA_PF_565:
+  switch (cpp) {
+  case 2:
     return MGAPACKCOLOR565(r,g,b);
-  case MGA_PF_888:
-    return MGAPACKCOLOR888(r,g,b);
-  case MGA_PF_8888:
+  case 4:
     return MGAPACKCOLOR8888(r,g,b,a);
   default:
     return 0;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_cce.h,v 1.1 2000/06/17 00:03:04 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -197,6 +197,15 @@ do {						\
    LOCK_HARDWARE( r128ctx );			\
    r128FlushEltsLocked( r128ctx );		\
    UNLOCK_HARDWARE( r128ctx );			\
+} while (0)
+
+#define FLUSH_BATCH( r128ctx )						\
+do {									\
+   if ( R128_DEBUG_FLAGS & DEBUG_VERBOSE_IOCTL )			\
+      fprintf( stderr, "FLUSH_BATCH in %s\n", __FUNCTION__ );		\
+   if ( r128ctx->vert_buf ) {						\
+      r128FlushVertices( r128ctx );					\
+   }									\
 } while (0)
 
 #endif

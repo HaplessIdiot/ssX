@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_clear.c,v 1.1 2000/06/17 00:03:04 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_clear.c,v 1.2 2000/06/26 05:41:29 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -33,7 +33,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "r128_init.h"
-#include "r128_mesa.h"
 #include "r128_xmesa.h"
 #include "r128_context.h"
 #include "r128_lock.h"
@@ -54,6 +53,9 @@ void r128ClearDepthBuffer(r128ContextPtr r128ctx, GLboolean all,
     CARD32                write_mask;
 
     if (!(r128ctx->regs.tex_cntl_c & R128_Z_WRITE_ENABLE)) return;
+
+    /* Flush any outstanding vertex buffers */
+    FLUSH_BATCH(r128ctx);
 
     switch (r128ctx->regs.z_sten_cntl_c & R128_Z_PIX_WIDTH_MASK) {
     case R128_Z_PIX_WIDTH_16:
@@ -80,9 +82,6 @@ void r128ClearDepthBuffer(r128ContextPtr r128ctx, GLboolean all,
     cy  = dPriv->y + dPriv->h - cy - ch;
 
     LOCK_HARDWARE(r128ctx);
-
-    /* Flush any outstanding vertex buffers */
-    r128FlushVerticesLocked(r128ctx);
 
     /* Init the clip rects here in case they changed during the
        LOCK_HARDWARE macro */
@@ -145,6 +144,9 @@ void r128ClearColorBuffer(r128ContextPtr r128ctx, GLboolean all,
     XF86DRIClipRectPtr    c;
     int                   dst_bpp;
 
+    /* Flush any outstanding vertex buffers */
+    FLUSH_BATCH(r128ctx);
+
     switch (r128ctx->r128Screen->bpp) {
     case 8:
 	dst_bpp = R128_GMC_DST_8BPP_CI;
@@ -171,9 +173,6 @@ void r128ClearColorBuffer(r128ContextPtr r128ctx, GLboolean all,
     cy  = dPriv->y + dPriv->h - cy - ch;
 
     LOCK_HARDWARE(r128ctx);
-
-    /* Flush any outstanding vertex buffers */
-    r128FlushVerticesLocked(r128ctx);
 
     /* Init the clip rects here in case they changed during the
        LOCK_HARDWARE macro */

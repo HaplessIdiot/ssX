@@ -4,7 +4,7 @@
 #include "i810context.h"
 
 
-GLuint *i810AllocDwords( i810ContextPtr imesa, int dwords, GLuint prim );
+GLuint *i810AllocDwords( i810ContextPtr imesa, int dwords );
 
 void i810GetGeneralDmaBufferLocked( i810ContextPtr mmesa ); 
 
@@ -34,5 +34,34 @@ GLbitfield i810Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 	if (imesa->vertex_dma_buffer) i810FlushVertices(imesa);		\
 } while (0)
 
+extern drmBufPtr i810_get_buffer_ioctl( i810ContextPtr imesa );
+
+static __inline
+GLuint *i810AllocDwordsInline( i810ContextPtr imesa, int dwords )
+{
+   int bytes = dwords * 4;
+   GLuint *start;
+
+   if (!imesa->vertex_dma_buffer) 
+   {
+      LOCK_HARDWARE(imesa);
+      imesa->vertex_dma_buffer = i810_get_buffer_ioctl( imesa );
+      UNLOCK_HARDWARE(imesa);
+   } 
+   else if (imesa->vertex_dma_buffer->used + bytes > 
+	    imesa->vertex_dma_buffer->total) 
+   {
+      LOCK_HARDWARE(imesa);
+      i810FlushVerticesLocked( imesa );
+      imesa->vertex_dma_buffer = i810_get_buffer_ioctl( imesa );
+      UNLOCK_HARDWARE(imesa);
+   }
+
+   start = (GLuint *)((char *)imesa->vertex_dma_buffer->address + 
+		      imesa->vertex_dma_buffer->used);
+
+   imesa->vertex_dma_buffer->used += bytes;
+   return start;
+}
 
 #endif
