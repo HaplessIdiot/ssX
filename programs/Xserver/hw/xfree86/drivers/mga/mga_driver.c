@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.63 1999/01/03 03:58:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.64 1999/01/03 08:06:36 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1745,6 +1745,13 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Save the current state */
     MGASave(pScrn);
 
+    /* Initialize DDC and output Monitor info */
+    /* This gives us DDC1 - we should be able to get DDC2B using i2c */
+    /* Needs to be done before ModeInit as it changes some registers */
+    if (pMga->ddc1Read) {
+	xf86PrintEDID( xf86DoEDID_DDC1(pScrn->scrnIndex, vgaHWddc1SetSpeed, pMga->ddc1Read ) );
+    }
+
     /* Initialise the first mode */
     if (!MGAModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
@@ -1884,12 +1891,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	(pMga->Overlay8Plus24 ? 0 : CMAP_PALETTED_TRUECOLOR) |
 			CMAP_RELOAD_ON_MODE_SWITCH))	
 	return FALSE;
-
-    /* Initialize DDC and output Monitor info */
-    /* This gives us DDC1 - we should be able to get DDC2B using i2c */
-    if (pMga->ddc1Read) {
-	xf86PrintEDID( xf86DoEDID_DDC1(pScrn->scrnIndex, vgaHWddc1SetSpeed, pMga->ddc1Read ) );
-    }
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, MGADisplayPowerManagementSet, 0);

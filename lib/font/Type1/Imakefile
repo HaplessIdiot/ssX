@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.5 93/09/04 16:43:32 rws Exp $
-XCOMM $XFree86: xc/lib/font/Type1/Imakefile,v 1.1.1.1.14.2 1998/07/05 14:35:51 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Type1/Imakefile,v 1.4 1998/07/25 06:56:56 dawes Exp $
 
 #if DoLoadableServer
 #define IHaveSubdirs
@@ -52,8 +52,14 @@ OBJS =          \
        type1.o         \
        util.o
 
+#define DoNormalLib NormalLibFont
+#define DoSharedLib SharedLibFont
+#define DoDebugLib DebugLibFont
+#define DoProfileLib ProfileLibFont
+#include <Library.tmpl>
+LibraryObjectRule()
+
 SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))
 
 #if DoLoadableServer

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.31 1998/12/20 11:56:20 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.32 1999/01/03 03:58:10 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1672,8 +1672,32 @@ SharedLibReferences(FS,FS,$(FSLIBSRC),SOFSREV,SharedFSRev)
 ProjectUnsharedLibReferences(FS,FS,$(FSLIBSRC),XBuildLibDir)
 #endif
 
+#ifndef SharedLibFont
+#define SharedLibFont HasSharedLibraries
+#endif
+#ifndef NormalLibFont
+#define NormalLibFont (!SharedLibFont | ForceNormalLib)
+#endif
+#ifndef DebugLibFont
+#define DebugLibFont		NO	/* debugged Font library */
+#endif
+#ifndef ProfileLibFont
+#define ProfileLibFont		NO	/* profiled Font library */
+#endif
          FONTLIBSRC = $(LIBSRC)/font
-ProjectUnsharedLibReferences(FONT,font,$(FONTLIBSRC),XBuildLibDir)
+#if SharedLibFont
+#ifndef SharedFontRev
+#define SharedFontRev 1.0
+#endif
+SharedLibReferences(FONT,Xfont,$(FONTLIBSRC),SOFONTREV,SharedFontRev)
+#else
+ProjectUnsharedLibReferences(FONT,Xfont,$(FONTLIBSRC),XBuildLibDir)
+#endif
+
+     FONTSTUBLIBSRC = $(FONTLIBSRC)/stubs
+ProjectUnsharedLibReferences(FONTSTUB,fntstubs,$(FONTSUBLIBSRC),XBuildLibDir)
+    DEPXFONTLIB = $(DEPFONTLIB) $(DEPFONTSTUBLIB)
+       XFONTLIB = $(FONTLIB) $(FONTSTUBLIB)
 
           XPMLIBSRC = $(LIBSRC)/Xpm
 #if SharedLibXpm

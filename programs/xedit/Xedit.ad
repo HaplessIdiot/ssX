@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.2 1998/11/15 04:30:43 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.3 1998/12/06 06:08:52 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -16,7 +16,7 @@ Use Control-Q to escape control characters.\n\
 Use Control-U[,<number>] to multiply actions. Control-G to cancel.\n\
 Use Control-Z to scroll one line up. Meta-Z to scroll one line down.\n\
 Use Meta-Q to format a paragraph.\n\
-Use Button3 to extend selections.\n\
+Use Right-Button to extend selections.\n\
 Use Meta-I to insert a file.\n\
 Use Control-W to delete a selection, and/or jump to the selection mark.\n\
 Use Control-X,Control-F to find a file. Tab for filename completion.\n\
@@ -115,4 +115,4 @@ c<Key>R:	no-op(r)\n\
 m<Key>I:	no-op(r)\n\
 c<Key>G:	cancel-find-file()\n\
 <Key>Return:	load-file()\n\
-<Key>Tab:	file-completion()
+<Key>Tab:	file-completion(a)

@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.2 1998/11/15 04:30:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.3 1999/01/03 03:58:38 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -236,7 +236,7 @@ TridentAccelInit(ScreenPtr pScreen)
 				TridentSubsequentCPUToScreenColorExpand;
 #endif
 
-    if (pTrident->Chipset > TGUI9440AGi) {
+    if (pTrident->Chipset > CYBER9320) {
     	infoPtr->WritePixmap = TridentWritePixmap;
     	infoPtr->WritePixmapFlags = NO_PLANEMASK;
    

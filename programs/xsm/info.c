@@ -1,14 +1,9 @@
-/* $XConsortium: info.c,v 1.26 95/01/26 19:37:24 mor Exp $ */
+/* $TOG: info.c /main/27 1998/02/09 14:13:26 kaleb $ */
 /******************************************************************************
 
-Copyright (c) 1993  X Consortium
+Copyright 1993, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
 
 #include "xsm.h"
@@ -462,18 +457,21 @@ UpdateClientList ()
 	{
 	    Prop *pprop = (Prop *) pl->thing;
 	    List *vl = ListFirst (pprop->values);
-	    PropValue *pval = (PropValue *) vl->thing;
-
-	    if (strcmp (pprop->name, SmProgram) == 0)
+	    if (vl != NULL)
 	    {
-		progName = GetProgramName ((char *) pval->value);
+		PropValue *pval = (PropValue *) vl->thing;
 
-		if ((int) strlen (progName) > maxlen1)
-		    maxlen1 = strlen (progName);
-	    }
-	    else if (strcmp (pprop->name, "_XC_RestartService") == 0)
-	    {
-		restart_service_prop = (char *) pval->value;
+		if (strcmp (pprop->name, SmProgram) == 0)
+		{
+		    progName = GetProgramName ((char *) pval->value);
+
+		    if ((int) strlen (progName) > maxlen1)
+			maxlen1 = strlen (progName);
+		}
+		else if (strcmp (pprop->name, "_XC_RestartService") == 0)
+		{
+		    restart_service_prop = (char *) pval->value;
+		}
 	    }
 	}
 
@@ -545,15 +543,19 @@ UpdateClientList ()
 	{
 	    Prop *pprop = (Prop *) pl->thing;
 	    List *vl = ListFirst (pprop->values);
-	    PropValue *pval = (PropValue *) vl->thing;
+	    
+	    if (vl != NULL)
+	    {
+		PropValue *pval = (PropValue *) vl->thing;
 
-	    if (strcmp (pprop->name, SmProgram) == 0)
-	    {
-		progName = GetProgramName ((char *) pval->value);
-	    }
-	    else if (strcmp (pprop->name, "_XC_RestartService") == 0)
-	    {
-		restart_service_prop = (char *) pval->value;
+		if (strcmp (pprop->name, SmProgram) == 0)
+		{
+		    progName = GetProgramName ((char *) pval->value);
+		}
+		else if (strcmp (pprop->name, "_XC_RestartService") == 0)
+		{
+		    restart_service_prop = (char *) pval->value;
+		}
 	    }
 	}
 
@@ -661,6 +663,7 @@ XtPointer 	callData;
 	if (strcmp (SmRestartStyleHint, pprop->name) == 0)
 	{
 	    List *vl = ListFirst (pprop->values);
+	    
 	    PropValue *pval = (PropValue *) vl->thing;
 
 	    *((char *) (pval->value)) = hint;

@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.17 1998/11/15 04:30:03 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.18 1998/12/06 06:08:11 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -868,6 +868,8 @@ XawTextInitialize(Widget request, Widget cnew,
   ctx->text.column_number = -1;
   ctx->text.source_changed = SRC_CHANGE_NONE;
 
+  ctx->text.kill_ring_ptr = NULL;
+
   if (XtHeight(ctx) == DEFAULT_TEXT_HEIGHT)
     {
       XtHeight(ctx) = VMargins(ctx);
@@ -1256,16 +1258,9 @@ _BuildLineTable(TextWidget ctx, XawTextPosition position, int line)
 	      }
 	  }
       }
-      else if (ctx->text.wrap == XawtextWrapLine
-	  && IsPositionVisible(ctx, position)) {
-	  int i;
-
-	  for (i = 0; i < ctx->text.lt.lines; i++)
-	      if (ctx->text.lt.info[i].position >= position)
-		  break;
-
-	  base_line += i;
-      }
+      else if (ctx->text.wrap == XawtextWrapNever
+	  && IsPositionVisible(ctx, position))
+	  base_line += LineForPosition(ctx, position);
       else if (pos < position) {
 	  while (pos < position) {
 	      pos = SrcScan(src, pos, XawstEOL, XawsdRight, 1, True);
@@ -2328,7 +2323,7 @@ ResolveColumnNumber(TextWidget ctx)
 	    else
 		++column_number;
 	}
-	if (column_number >= 16384) {	/* short max */
+	if (column_number >= 16384) {
 	    column_number = 16383;
 	    break;
 	}
@@ -3303,16 +3298,9 @@ ResolveLineNumber(TextWidget ctx)
     int line_number = ctx->text.lt.base_line;
     XawTextPosition position = ctx->text.lt.top;
 
-    if (ctx->text.wrap == XawtextWrapLine
-	&& IsPositionVisible(ctx, ctx->text.insertPos)) {
-	int i;
-
-	for (i = 0; i < ctx->text.lt.lines; i++)
-	    if (ctx->text.lt.info[i].position >= ctx->text.insertPos)
-		break;
-
-	line_number += i;
-    }
+    if (ctx->text.wrap == XawtextWrapNever
+	&& IsPositionVisible(ctx, ctx->text.insertPos))
+	line_number += LineForPosition(ctx, ctx->text.insertPos);
     else if (position < ctx->text.insertPos) {
 	while (position < ctx->text.insertPos) {
 	    position = SrcScan(ctx->text.source, position,
@@ -3596,6 +3584,7 @@ _XawTextSetSource(Widget w, Widget source,
   TextWidget ctx = (TextWidget)w;
   Bool resolve = False;
 
+  _XawTextPrepareToUpdate(ctx);
   if (source != ctx->text.source)
       _XawSourceRemoveText(ctx->text.source, w,
 			   XtParent(ctx->text.source) == w);
@@ -3611,10 +3600,10 @@ _XawTextSetSource(Widget w, Widget source,
 
   ctx->text.source_changed = SRC_CHANGE_OVERLAP;
   _XawTextBuildLineTable(ctx, top, True);
-  XawTextDisplay(w);
 
   if (resolve)
       SetLineAndColumnNumber(ctx, True);
+  _XawTextExecuteUpdate(ctx);
 }
 
 void
@@ -3633,26 +3622,21 @@ int
 XawTextReplace(Widget w, XawTextPosition startPos, XawTextPosition endPos,
                XawTextBlock *text)
 {
-  TextWidget ctx = (TextWidget)w;
-  int result;
+    TextWidget ctx = (TextWidget)w;
+    TextSrcObject src = (TextSrcObject)ctx->text.source;
+    int i, result;
 
-  _XawTextPrepareToUpdate(ctx);
-  endPos = FindGoodPosition(ctx, endPos);
-  startPos = FindGoodPosition(ctx, startPos);
-  if ((result = _XawTextReplace(ctx, startPos, endPos, text)) == XawEditDone)
-    {
-      int delta = text->length - (endPos - startPos);
-      if (ctx->text.insertPos >= endPos + delta)
-	{
-	  XawTextScanDirection sd = (delta < 0) ? XawsdLeft : XawsdRight;
-	  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
-					XawstPositions, sd, abs(delta), True);
-	}
-    }
+    for (i = 0; i < src->textSrc.num_text; i++)
+	_XawTextPrepareToUpdate((TextWidget)src->textSrc.text[i]);
 
-  _XawTextExecuteUpdate(ctx);
+    endPos = FindGoodPosition(ctx, endPos);
+    startPos = FindGoodPosition(ctx, startPos);
+    result = _XawTextReplace(ctx, startPos, endPos, text);
 
-  return (result);
+    for (i = 0; i < src->textSrc.num_text; i++)
+	_XawTextExecuteUpdate((TextWidget)src->textSrc.text[i]);
+
+    return (result);
 }
 
 XawTextPosition 

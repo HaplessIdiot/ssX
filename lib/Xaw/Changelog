@@ -685,5 +685,48 @@ will not allways be displayed correctly.
 
 
 
+#2371 8 Jan 1999
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.11 1998/11/15 04:29:59 dawes Exp $
+--- Xaw ---
+ + More some changes to AsciiSrc.c:Scan(). This improves a bit the speed when
+   scanning text.
+ + Added sanity checking for AsciiSrc.c:Search(), to avoid the risk of
+   deferecing a null pointer (or reading memory out of the text piece) if the
+   searched text happens to be larger than a "piece size".
+ + Fixed bug when trying to optimize line number calculation, due to a typo,
+   while meaning XawTextWrapNever I wrote XawTextWrapLine.
+ + Fixed a problem shown by xclipboard, when setting the "string" resource
+   of the text source, the sink object was keeping the insertPosition in the
+   old text contents, and then, when showing the cursor, it was incorrectly
+   'erasing' the old cursor position.
+ + Fixed problem in XawTextReplace, that would not update correctly all the
+   TextWidget's sharing the same source.
+ + Added a kill ring list to the text code. This works like the emacs feature,
+   but, unlike emacs, it is not required to press C-Y before M-Y, to start
+   looping through the kill ring list. To use it, just press M-Y repeteadly,
+   and all the text that was killed will be inserted, one at a time, so that
+   you can choose one. Note that the text inserted from the kill ring list
+   will also enter in the undo list.
+ + Changed the Move{Backward,Forward}Paragraph actions to make the cursor always
+   stop in a blank line. This makes only one step moving from a paragragh to
+   another, instead of two.
+ + Added code to check for overflows in the C-U<number> sequence.
+ + Changed the FormParagraph action to keep the cursor at the correct position.
+ + Changed the default translations in TextTr.c to get a more emacs like
+   behaviour with the kill ring list.
+
+--- xedit ---
+ + Added a few more resource settings to the Xedit-sample file.
+ + Added some sanity checkings when trying to save a file. This avoids the
+   case of saving a file with the name of a directory (but moving the directoy
+   to other name before). A possible case is: have a directory named 'dir',
+   saves a file as 'dir', but before saving, renames the directory as 'dir~'.
+ + Allows saving a file that xedit thinks is not changed (the file may have
+   changed on the disk, but the user really wants to rewrite it).
+ + Corrected several bugs in the FileCompletion action, and added a new
+   feature, that is to complete the partial names, when there is a '/' or '.'
+   after the cursor position.
+
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.12 1998/12/06 06:08:10 dawes Exp $

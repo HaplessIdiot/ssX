@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.141 1998/11/28 10:42:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.142 1999/01/03 03:58:16 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -16,7 +16,7 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.141 1998/11/28 10:42:49 dawes 
 INSTPGMFLAGS = 
 #endif
 
-#define PreFbLibs $(DIX) $(OS) $(FONT) $(XPDDX)
+#define PreFbLibs $(DIX) $(OS) $(XPDDX)
 #define PreFbLibsNoFont $(DIX) $(OS)
 #define BarePostFbLibs $(MFB) $(XPFBLIBS) $(MI)
 #define PostFbLibs BarePostFbLibs $(EXTENSIONS)
@@ -213,7 +213,8 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #endif
        FONTBASE = $(FONTLIBSRC)/fontfile/module/fontbase.o \
 		  $(FONTLIBSRC)/LibraryTargetName(fontbase)
-           FONT = $(DEPFONTLIB)
+           FONT = $(FONTLIB) $(XPFBLIBS)
+       FONTLIBS = $(LDPRELIB) $(FONT)
 #ifdef ServerExtraSysLibs
    EXTRASYSLIBS = ServerExtraSysLibs
 #endif
@@ -285,7 +286,7 @@ DECLIBS = hw/dec/ws/LibraryTargetName(dec) LMFCFBLibs
 #else
 DECLIBS = hw/dec/ws/LibraryTargetName(dec) CFB8Libs
 #endif
-ServerTarget(Xdec,$(DECDIRS),$(DECOBJS),$(DECLIBS),$(SYSLIBS))
+ServerTarget(Xdec,$(DECDIRS),$(DECOBJS),$(DECLIBS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xdec
 #endif
@@ -306,7 +307,7 @@ DDXDIR1  = hw/dec/ws
 DECDIRS1 = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 DECOBJS1 = hw/dec/ws/init.o hw/dec/ws/mdepthinit.o
 DECLIBS1 = hw/dec/ws/LibraryTargetName(dec) CFBLibs
-ServerTarget(Xdec_md,$(DECDIRS1),$(DECOBJS1),$(DECLIBS1),$(SYSLIBS))
+ServerTarget(Xdec_md,$(DECDIRS1),$(DECOBJS1),$(DECLIBS1),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xdec_md
 #endif
@@ -332,7 +333,7 @@ SUNLIBS = hw/sun/LibraryTargetName(sun) LMFCFBLibs
 SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 SUNLIBS = hw/sun/LibraryTargetName(sun) CFB8Libs
 #endif
-SUNSYSLIBS = $(WIDECHARSYSLIB) $(SYSLIBS)
+SUNSYSLIBS = $(FONTLIBS) $(WIDECHARSYSLIB) $(SYSLIBS)
 SetUIDServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun
@@ -353,7 +354,7 @@ DDXDIR1 = hw/sun
 SUN24DIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 SUN24OBJS = hw/sun/sunInitMulti.o
 SUN24LIBS = hw/sun/LibraryTargetName(sun) CFBLibs
-SetUIDServerTarget(Xsun24,$(SUN24DIRS),$(SUN24OBJS),$(SUN24LIBS),$(SYSLIBS))
+SetUIDServerTarget(Xsun24,$(SUN24DIRS),$(SUN24OBJS),$(SUN24LIBS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun24
 #endif
@@ -369,7 +370,7 @@ DDXDIR1 = hw/sun
 SUNMDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
 SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInExMono.o
 SUNMLIBS = hw/sun/LibraryTargetName(sun) MFBBareLibs $(OTHEREXTS)
-SetUIDServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SYSLIBS))
+SetUIDServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XsunMono
 #endif
@@ -386,7 +387,7 @@ DDXDIR1 = hw/sunAmoeba
 SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 SUNOBJS = hw/sunAmoeba/sunInitColor.o
 SUNLIBS = hw/sunAmoeba/LibraryTargetName(sun) CFB8Libs
-ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SYSLIBS))
+ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun
 #endif
@@ -402,7 +403,7 @@ DDXDIR1 = hw/sunAmoeba
 SUNMDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
 SUNMOBJS = hw/sunAmoeba/sunInitMono.o hw/sunAmoeba/sunInExMono.o
 SUNMLIBS = hw/sunAmoeba/LibraryTargetName(sun) MFBBareLibs $(OTHEREXTS)
-ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SYSLIBS))
+ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XsunMono
 #endif
@@ -419,7 +420,7 @@ DDXDIR1 = hw/sunLynx
 SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 SUNOBJS = hw/sunLynx/sunLyInit.o
 SUNLIBS = hw/sunLynx/libsun.a CFB8Libs
-ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SYSLIBS))
+ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun
 #endif
@@ -435,7 +436,7 @@ DDXDIR1 = hw/sunLynx
 SUNMDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
 SUNMOBJS = hw/sunLynx/sunInitMono.o hw/sunLynx/sunInExMono.o
 SUNMLIBS = hw/sunLynx/libsun.a MFBBareLibs $(OTHEREXTS)
-ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SYSLIBS))
+ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XsunMono
 #endif
@@ -457,7 +458,7 @@ DDXDIR1 = hw/ibm
 IBMDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 IBMOBJS = hw/ibm/common/ibmcomm.o hw/ibm/common/ibmDate.o
 IBMLIBS = hw/ibm/AIX/hft.o hw/ibm/LibraryTargetName(ibm) $(IBMALLOCLIB) CFB8Libs
-ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(SYSLIBS))
+ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xibm
 #endif
@@ -480,7 +481,7 @@ HPLIBS = LMFCFBLibs
 HPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 HPLIBS = CFB32Libs
 #endif
-HPSYSLIBS = $(CBRT) $(SYSLIBS)
+HPSYSLIBS = $(FONTLIBS) $(CBRT) $(SYSLIBS)
 ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xhp
@@ -575,13 +576,14 @@ XF86LIBS  = $(XF86INIT) $(XF86COMLIB) $(XF86PARSLIB) $(XF86OSLIB)
 XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
 XF86MAINLIBS = PreFbLibsNoFont $(FONTBASE) $(OTHEREXTS) $(XF86COMLIB) \
 	       NoMfbPostFbLibs
+XF86SERVERSYSLIBS = $(SYSLIBS) $(LIBDL) $(LIBREGEX)
 #else
 XF86MAINLIBS = CFBLibs
+XF86SERVERSYSLIBS = $(FONTLIBS) $(SYSLIBS) $(LIBDL) $(LIBREGEX)
 #endif
 XF86SERVEROBJS = $(XF86DRVOBJS)
 XF86SERVERLIBS = $(XF86DRVLIBS) $(XF86LIBS) $(XF86LOADERLIB) $(XF86COMLIB) \
 		 $(XF86OSLIB) $(XF86MAINLIBS)
-XF86SERVERSYSLIBS = $(SYSLIBS) $(LIBDL) $(LIBREGEX)
 #if HasParallelMake
 MakeMutex($(XF86SERVERSUBDIRS) $(XF86SERVERLIBS) $(XF86SERVERSYSLIBS))
 #endif
@@ -684,9 +686,9 @@ XPOBJS = Xprint/ddxInit.o
 XPLIBS = PreFbLibs PostFbLibs
 #endif
 #if (defined(SunArchitecture) || defined(SparcArchitecture)) && defined(SVR4Architecture)
-XPSYSLIBS = $(CBRT) $(SYSLIBS) -lw
+XPSYSLIBS = $(FONTLIBS) $(CBRT) $(SYSLIBS) -lw
 #else
-XPSYSLIBS = $(CBRT) $(SYSLIBS)
+XPSYSLIBS = $(FONTLIBS) $(CBRT) $(SYSLIBS)
 #endif
 #if HasParallelMake
 MakeMutex($(XPSUBDIRS) $(XPOBJS) $(XPLIBS) $(XPSYSLIBS))
@@ -721,7 +723,7 @@ XNESTOBJS = dix/main.o
 #endif
 XNEST = hw/xnest/LibraryTargetName(xnest)
 XNESTLIBS = PreFbLibs $(XNEST) NoMfbPostFbLibs $(XNEST)
-XNESTSYSLIBS = $(LDPRELIBS) $(XLIB) $(SYSLIBS)
+XNESTSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XLIB) $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XNESTDIRS) $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS))
 #endif
@@ -785,7 +787,7 @@ XVFBOBJS = dix/main.o hw/vfb/stubs.o hw/vfb/miinitext.o
 #endif
 XVFB = hw/vfb/LibraryTargetName(vfb)
 XVFBLIBS = PreFbLibs $(XVFB) $(CFB) PostFbLibs
-XVFBSYSLIBS = $(SYSLIBS)
+XVFBSYSLIBS = $(FONTLIBS) $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XVFBDIRS) $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS))
 #endif

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.8 1998/11/15 04:30:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.9 1998/12/06 06:08:13 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -102,6 +102,16 @@ typedef struct _XawTextSelectionSalt {
     char		*contents;
     int			length;
 } XawTextSelectionSalt;
+
+typedef struct _XawTextKillRing {
+    struct _XawTextKillRing *next;
+    char *contents;
+    int length;
+    unsigned refcount;
+    unsigned long format;
+} XawTextKillRing;
+
+extern XawTextKillRing *xaw_text_kill_ring;
 
 /* Line Tables are n+1 long - last position displayed is in last lt entry */
 typedef struct {
@@ -210,6 +220,8 @@ typedef struct _TextPart {
     Boolean redisplay_needed;		     /* in SetValues */
     XawTextSelectionSalt *salt2;	     /* salted away selections */
     int from_left;			     /* Cursor position */
+
+    XawTextKillRing *kill_ring_ptr;
 
 #ifndef notyet
     /* more resources */
