@@ -78,6 +78,7 @@
 #ifndef XFree86LOADER
 #include <math.h>
 #include <string.h>
+#endif
 
 
 #ifdef DEBUG
@@ -85,7 +86,6 @@
 #  define ASSERT(X)   assert(X)
 #else
 #  define ASSERT(X)
-#endif
 #endif
 
 
