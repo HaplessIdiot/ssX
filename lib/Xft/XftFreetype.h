@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.11 2000/12/22 05:05:16 tsi Exp $
+ * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.12 2001/01/02 02:46:50 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -156,9 +156,6 @@ XftRenderExtentsUtf8 (Display	    *dpy,
 		      XftChar8	    *string, 
 		      int	    len,
 		      XGlyphInfo    *extents);
-
-XftFontStruct *
-XftFreeTypeGet (XftFont *font);
 
 _XFUNCPROTOEND
 

@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.213 2001/03/24 23:08:52 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.214 2001/03/29 02:06:50 torrey Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -819,6 +819,37 @@ $(TRIDENTOBJS) $(TRIDENTLIBS) $(TRIDENTSYSLIBS):: $(TRIDENTDIRS)
 ServerTarget(Xtrident,$(TRIDENTDIRS),$(TRIDENTOBJS),$(TRIDENTLIBS),$(TRIDENTSYSLIBS))
 #endif /* XTRIDENTServer */
 
+#if Xi810Server
+XCOMM
+XCOMM server with Intel i810 driver
+XCOMM
+
+      FBDEVDIR = $(KDRIVE)/fbdev
+         FBDEV = $(FBDEVDIR)/LibraryTargetName(fbdev)
+       VESADIR = $(KDRIVE)/vesa
+          VESA = $(VESADIR)/LibraryTargetName(vesa)
+     SHADOWDIR = miext/shadow
+       I810DIR = $(KDRIVE)/i810
+          I810 = $(I810DIR)/LibraryTargetName(i810)
+
+        KDDIRS = StdKdDirs
+  
+      I810DIRS = $(STDDIRS) $(KDDIRS) $(SHADOWDIR) $(I810DIR)
+   
+      I810LIBS = PreFbLibs $(I810) KdLibs FbPostFbLibs
+   I810SYSLIBS = StdKdSysLibs
+
+#if HasParallelMake
+MakeMutex($(I810DIRS) $(I810LIBS) $(I810SYSLIBS))
+#endif
+#if ForceServerRemake
+$(I810OBJS) $(I810LIBS) $(I810SYSLIBS):: $(I810DIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+ServerTarget(Xi810,$(I810DIRS),$(I810OBJS),$(I810LIBS),$(I810SYSLIBS))
+#endif /* Xi810Server */
+
+
 #if XSis530Server
 XCOMM
 XCOMM server with Keith's SiS 530 driver
@@ -951,7 +982,7 @@ $(VESAOBJS) $(XVESA) $(VESALIBS) $(VESASYSLIBS):: $(VESADIRS)
 ServerTarget(Xvesa,$(VESADIRS),$(VESAOBJS),$(VESALIBS),$(VESASYSLIBS))
 #endif /* XvesaServer */
 
-KDRIVEDIRS=$(KDDIRS) $(FBDEVDIR) $(SAVAGEDIR) $(TRIDENTDIR) $(SIS530DIR) \
+KDRIVEDIRS=$(KDDIRS) $(FBDEVDIR) $(SAVAGEDIR) $(TRIDENTDIR) $(I810DIR) $(SIS530DIR) \
 	$(TRIODIR) $(TS300DIR) $(ITSYDIR) $(IGSDIR) $(VESADIR)
 #endif	/* KDriveXServer */
 

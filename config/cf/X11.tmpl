@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.103 2001/03/21 17:36:43 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.104 2001/03/22 18:30:10 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -23,10 +23,12 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.103 2001/03/21 17:36:43 dawes Exp $
  * InstallAppDefaults		(class)
  * InstallAppDefaultsLong	(file,class)
  * MakeFontsDir			(deplist)
+ * MakeXftCache			(deplist)
  * MakeFonts			()
  * InstallFontObjs		(objs,dest)
  * InstallFonts			(dest)
  * InstallFontAliases		(dest)
+ * InstallXftCache		(dest)
  * FontSrc			(basename)
  * FontBaseObj			(basename)
  * InstallFontScale		(dest)
@@ -1260,6 +1262,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
               RGB = $(CLIENTENVSETUP) $(XBUILDBINDIR)/rgb
             FONTC = $(CLIENTENVSETUP) $(XBUILDBINDIR)/bdftopcf
         MKFONTDIR = $(CLIENTENVSETUP) $(XBUILDBINDIR)/mkfontdir
+         XFTCACHE = $(CLIENTENVSETUP) $(XBUILDBINDIR)/xftcache
 #if HasPerl
       MKHTMLINDEX = RunPerlScript($(CONFIGSRC)/util/mkhtmlindex.pl,)
 #else
@@ -1906,6 +1909,28 @@ SharedDSLibReferences(XMU,Xmu,$(XMUSRC),SOXMUREV,SharedXmuRev)
 ProjectUnsharedLibReferences(XMU,Xmu,$(XMUSRC),XBuildLibDir)
 #endif
 
+#ifndef SharedLibXmuu
+#define SharedLibXmuu HasSharedLibraries
+#endif
+#ifndef NormalLibXmuu
+#define NormalLibXmuu 		(!SharedLibXmuu | ForceNormalLib)
+#endif
+#ifndef DebugLibXmuu
+#define DebugLibXmuu		NO	/* debugged Xmuu library */
+#endif
+#ifndef ProfileLibXmuu
+#define ProfileLibXmuu		NO	/* profiled Xmuu library */
+#endif
+           XMUUSRC = $(LIBSRC)/Xmuu
+#if SharedLibXmuu
+#ifndef SharedXmuuRev
+#define SharedXmuuRev 1.0
+#endif
+SharedLibReferences(XMUU,Xmuu,$(XMUUSRC),SOXMUUREV,SharedXmuuRev)
+#else
+ProjectUnsharedLibReferences(XMUU,Xmuu,$(XMUUSRC),XBuildLibDir)
+#endif
+
 #ifndef SharedOldX
 #define SharedOldX HasSharedLibraries
 #endif
@@ -2384,6 +2409,13 @@ ProjectUnsharedLibReferences(XFT,Xft,$(XFTLIBSRC),XBuildLibDir)
 #endif
 #endif
 
+#ifndef XmuuClientDepLibs
+#define XmuuClientDepLibs $(DEPXMUULIB) $(DEPXLIB)
+#endif
+#ifndef XmuuClientLibs
+#define XmuuClientLibs $(XMUULIB) $(XLIB)
+#endif
+
 #ifndef LdLibraryPath
 #define LdLibraryPath LD_LIBRARY_PATH
 #endif
@@ -2503,6 +2535,41 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif /* InstallAppDefFiles */
 #endif /* UseConfDirForAppDefaults */
 #endif /* InstallAppDefaultsLong */
+
+/*
+ * MakeXftCache - generate rules to build XftCache database
+ */
+
+#ifdef UseFreetype2
+
+#ifndef MakeXftCache
+#define MakeXftCache(deplist)						@@\
+all:: XftCache								@@\
+									@@\
+XftCache: deplist							@@\
+	RunProgram(XFTCACHE, $(XFTCACHEOPTS) .)				@@\
+									@@\
+clean::									@@\
+	RemoveFile(XftCache)
+#endif /* MakeXftCache */
+
+#ifndef InstallXftCache
+#define InstallXftCache(dest)						@@\
+InstallTarget(install,XftCache,$(INSTDATFLAGS),dest)
+#endif /* InstallXftCache */
+
+#else
+
+#ifndef MakeXftCache
+#define MakeXftCache(deplist)
+#endif
+
+#ifndef InstallXftCache
+#define InstallXftCache(dest)
+#endif
+
+#endif
+
 
 /*
  * MakeFontsDir - generate rules to build fonts.dir database.

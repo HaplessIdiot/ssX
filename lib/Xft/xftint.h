@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.20 2001/01/02 02:46:51 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.21 2001/01/26 20:51:16 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -393,8 +393,6 @@ void
 XftEditDestroy (XftEdit *e);
 
 /* xftinit.c */
-Bool
-XftInit (char *config);
 
 /* xftlex.l */
 extern int	XftConfigLineno;

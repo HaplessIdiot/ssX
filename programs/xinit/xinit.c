@@ -21,11 +21,10 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.23 2000/11/02 02:51:25 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.24 2001/01/17 23:45:42 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
-#include <X11/Xmu/SysUtil.h>
 #include <stdio.h>
 #include <ctype.h>
 

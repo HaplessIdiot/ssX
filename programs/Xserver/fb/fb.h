@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.24 2001/01/21 21:19:09 tsi Exp $
+ * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.25 2001/03/28 14:37:03 alanh Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -1231,6 +1231,10 @@ fbClearVisualTypes(void);
 
 Bool
 fbSetVisualTypes (int depth, int visuals, int bitsPerRGB);
+
+Bool
+fbSetVisualTypesAndMasks (int depth, int visuals, int bitsPerRGB,
+			  Pixel redMask, Pixel greenMask, Pixel blueMask);
 
 Bool
 fbInitVisuals (VisualPtr    *visualp, 

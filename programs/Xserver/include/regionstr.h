@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/regionstr.h,v 1.3 1999/10/14 04:43:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/regionstr.h,v 1.4 2001/01/17 22:36:57 dawes Exp $ */
 
 #ifndef REGIONSTRUCT_H
 #define REGIONSTRUCT_H
@@ -391,6 +391,12 @@ extern void miRegionReset(
 #if NeedFunctionPrototypes
     RegionPtr /*pReg*/,
     BoxPtr /*pBox*/
+#endif
+);
+
+extern Bool miRegionBreak(
+#if NeedFunctionPrototypes
+    RegionPtr /*pReg*/
 #endif
 );
 
