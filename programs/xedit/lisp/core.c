@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.29 2002/03/08 04:33:17 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.30 2002/03/08 05:21:28 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -545,6 +545,28 @@ Lisp_Cons(LispMac *mac, LispBuiltin *builtin)
     car = ARGUMENT(0);
 
     return (CONS(car, cdr));
+}
+
+LispObj *
+Lisp_Defconstant(LispMac *mac, LispBuiltin *builtin)
+/*
+ defconstant name initial-value &optional documentation
+ */
+{
+    LispObj *name, *initial_value, *documentation;
+
+    documentation = ARGUMENT(2);
+    initial_value = ARGUMENT(1);
+    name = ARGUMENT(0);
+    MACRO_ARGUMENT3();
+
+    ERROR_CHECK_SYMBOL(name);
+    if (documentation != NIL) {
+	ERROR_CHECK_STRING(documentation);
+    }
+    LispDefconstant(mac, name, EVAL(initial_value), documentation);
+
+    return (name);
 }
 
 LispObj *
@@ -1273,6 +1295,7 @@ Lisp_Let(LispMac *mac, LispBuiltin *builtin)
     /* add variables */
     for (; CONS_P(list); list = CDR(list)) {
 	pair = CAR(list);
+	ERROR_CHECK_CONSTANT(CAR(pair));
 	LispAddVar(mac, CAR(pair), CDR(pair));
 	mac->env.head += 2;
     }
@@ -1333,6 +1356,7 @@ Lisp_LetP(LispMac *mac, LispBuiltin *builtin)
 		val = NIL;
 	}
 
+	ERROR_CHECK_CONSTANT(var);
 	LispAddVar(mac, var, val);
 	mac->env.head += 2;
     }
@@ -2243,6 +2267,7 @@ Lisp_Progv(LispMac *mac, LispBuiltin *builtin)
     /* add variables */
     for (; valist != NIL; valist = CDR(valist)) {
 	cons = CAR(valist);
+	ERROR_CHECK_CONSTANT(CAR(cons));
 	LispAddVar(mac, CAR(cons), CDR(cons));
 	mac->env.head += 2;
     }
@@ -2649,6 +2674,7 @@ Lisp_Set(LispMac *mac, LispBuiltin *builtin)
     symbol = ARGUMENT(0);
 
     ERROR_CHECK_SYMBOL(symbol);
+    ERROR_CHECK_CONSTANT(symbol);
     LispSetVar(mac, symbol, value);
 
     return (value);
@@ -2669,6 +2695,7 @@ Lisp_SetQ(LispMac *mac, LispBuiltin *builtin)
     for (; CONS_P(form); form = CDR(form)) {
 	variable = CAR(form);
 	ERROR_CHECK_SYMBOL(variable);
+	ERROR_CHECK_CONSTANT(variable);
 	form = CDR(form);
 	if (!CONS_P(form))
 	    LispDestroy(mac, "%s: odd number of arguments", STRFUN(builtin));
@@ -2701,8 +2728,10 @@ Lisp_Setf(LispMac *mac, LispBuiltin *builtin)
 	result = CAR(form);
 
 	/* if a variable, just work like setq */
-	if (SYMBOL_P(place))
+	if (SYMBOL_P(place)) {
+	    ERROR_CHECK_CONSTANT(place);
 	    (void)LispSetVar(mac, place, EVAL(result));
+	}
 
 	else if (CONS_P(place)) {
 	    int struc_access = 0;
@@ -3405,7 +3434,7 @@ Lisp_Unsetenv(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_XeditEltStore(LispMac *mac, LispBuiltin *builtin)
 /*
- xedit::elt-store sequence index value &aux (length (length sequence))
+ lisp::elt-store sequence index value &aux (length (length sequence))
  */
 {
     int length, offset;
@@ -3451,7 +3480,7 @@ Lisp_XeditEltStore(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_XeditPut(LispMac *mac, LispBuiltin *builtin)
 /*
- xedit::put symbol indicator value
+ lisp::put symbol indicator value
  */
 {
     LispObj *symbol, *indicator, *value;
@@ -3476,7 +3505,7 @@ Lisp_XeditPut(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_XeditVectorStore(LispMac *mac, LispBuiltin *builtin)
 /*
- xedit::vector-store array subscripts value
+ lisp::vector-store array subscripts value
  */
 {
     long count, sequence, offset, accum;

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.38 2002/03/03 05:44:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.39 2002/03/08 04:33:17 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -102,10 +102,10 @@ LispObj *LispRunSetf(LispMac*, LispArgList*, LispObj*, LispObj*, LispObj*);
 static void LispMoreEnvironment(LispMac*);
 
 /* increases storage size for global variables */
-static void LispMoreGlobals(LispMac*);
+static void LispMoreGlobals(LispMac*, LispPackage*);
 
 /* increases storage size for special variables */
-static void LispMoreSpecials(LispMac*);
+static void LispMoreSpecials(LispMac*, LispPackage*);
 
 /* increases storage size for dynamic variables */
 static void LispMoreDynamics(LispMac*);
@@ -253,6 +253,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Listp, "consp object"},
     {LispFunction, Lisp_Close, "close stream &key abort"},
     {LispMacro, Lisp_Decf, "decf place &optional delta"},
+    {LispMacro, Lisp_Defconstant, "defconstant name initial-value &optional documentation"},
     {LispMacro, Lisp_Defmacro, "defmacro name lambda-list &rest body"},
     {LispMacro, Lisp_Defstruct, "defstruct name &rest description"},
     {LispMacro, Lisp_Defun, "defun name lambda-list &rest body"},
@@ -438,8 +439,8 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_WriteChar, "write-char string &optional output-stream"},
     {LispFunction, Lisp_WriteLine, "write-line string &optional output-stream &key start end"},
     {LispFunction, Lisp_WriteString, "write-string string &optional output-stream &key start end"},
-    {LispFunction, Lisp_XeditCharStore, "lisp::char-store string index value &aux (length (length string))", 1},
-    {LispFunction, Lisp_XeditEltStore, "lisp::elt-store sequence index value &aux (length (length sequence))", 1},
+    {LispFunction, Lisp_XeditCharStore, "lisp::char-store string index value &aux (length (length string))", 0, 1},
+    {LispFunction, Lisp_XeditEltStore, "lisp::elt-store sequence index value &aux (length (length sequence))", 0, 1},
     {LispFunction, Lisp_XeditMakeStruct, "lisp::make-struct atom &rest init", 0, 1},
     {LispFunction, Lisp_XeditPut, " lisp::put symbol indicator value", 0, 1},
     {LispFunction, Lisp_XeditStructAccess, "lisp::struct-access atom struct", 0, 1},
@@ -456,10 +457,8 @@ static LispBuiltin extbuiltins[] = {
     {LispFunction, Lisp_PipeErrorStream, "pipe-error-stream pipe-stream"},
     {LispFunction, Lisp_PipeInputDescriptor, "pipe-input-descriptor pipe-stream"},
     {LispFunction, Lisp_PipeErrorDescriptor, "pipe-error-descriptor pipe-stream"},
-#ifdef HAVE_SETENV
     {LispFunction, Lisp_Setenv, "setenv name value &optional overwrite"},
     {LispFunction, Lisp_Unsetenv, "unsetenv name"},
-#endif
     {LispMacro, Lisp_Until, "until test &rest body"},
     {LispMacro, Lisp_While, "while test &rest body"},
 };
@@ -2400,6 +2399,12 @@ LispNewKeyword(LispMac *mac, char *string)
     /* Export keyword symbol */
     LispExportSymbol(mac, keyword);
 
+    /* All keywords are constants */
+    keyword->data.atom->constant = LispTrue_t;
+
+    /* XXX maybe should bound the keyword to itself, but that would
+     * require allocating a LispProperty structure for every keyword */
+
     return (keyword);
 }
 
@@ -2612,12 +2617,12 @@ LispImportSymbol(LispMac *mac, LispObj *symbol)
 	    /* If it is a bounded variable */
 	    if (symbol->data.atom->dyn) {
 		if (mac->pack->spc.length + 1 >= mac->pack->spc.space)
-		    LispMoreSpecials(mac);
+		    LispMoreSpecials(mac, mac->pack);
 		mac->pack->spc.pairs[mac->pack->spc.length++] = symbol;
 	    }
 	    else {
 		if (mac->pack->glb.length + 1 >= mac->pack->glb.space)
-		    LispMoreGlobals(mac);
+		    LispMoreGlobals(mac, mac->pack);
 		mac->pack->glb.pairs[mac->pack->glb.length++] = symbol;
 	    }
 	}
@@ -2658,6 +2663,9 @@ LispImportSymbol(LispMac *mac, LispObj *symbol)
 
     /* If importing an important system variable */
     atom->watch = symbol->data.atom->watch;
+
+    /* Update constant flag */
+    atom->constant = symbol->data.atom->constant;
 
     /* Set home-package and unique-atom associated with symbol */
     atom->package = symbol->data.atom->package;
@@ -2814,6 +2822,7 @@ LispDoAddVar(LispMac *mac, LispObj *atom, LispObj *obj)
 LispObj *
 LispSetVar(LispMac *mac, LispObj *atom, LispObj *obj)
 {
+    LispPackage *pack;
     LispAtom *name;
     int i, base;
 
@@ -2849,10 +2858,11 @@ LispSetVar(LispMac *mac, LispObj *atom, LispObj *obj)
 
     LispSetAtomObjectProperty(mac, name, obj);
 
-    if (mac->pack->glb.length + 1 >= mac->pack->glb.space)
-	LispMoreGlobals(mac);
+    pack = name->package->data.package.package;
+    if (pack->glb.length + 1 >= pack->glb.space)
+	LispMoreGlobals(mac, pack);
 
-    mac->pack->glb.pairs[mac->pack->glb.length++] = atom;
+    pack->glb.pairs[pack->glb.length++] = atom;
 
     return (obj);
 }
@@ -2862,13 +2872,14 @@ LispProclaimSpecial(LispMac *mac, LispObj *atom, LispObj *value, LispObj *doc)
 {
     int i, dyn, glb = 0;
     LispAtom *name = atom->data.atom;
+    LispPackage *pack = name->package->data.package.package;
 
     dyn = name->dyn;
 
     if (!dyn) {
 	/* Note: don't check if a local variable already is using the symbol */
-	for (i = mac->pack->glb.length - 1; i >= 0; i--)
-	    if (mac->pack->glb.pairs[i] == atom) {
+	for (i = pack->glb.length - 1; i >= 0; i--)
+	    if (pack->glb.pairs[i] == atom) {
 		glb = 1;
 		break;
 	    }
@@ -2881,16 +2892,16 @@ LispProclaimSpecial(LispMac *mac, LispObj *atom, LispObj *value, LispObj *doc)
     }
     else if (glb) {
 	/* move variable from GLB to SPC */
-	--mac->pack->glb.length;
-	if (i < mac->pack->glb.length)
-	    memmove(mac->pack->glb.pairs + i, mac->pack->glb.pairs + i + 1,
-		    sizeof(LispObj*) * (mac->pack->glb.length - i));
+	--pack->glb.length;
+	if (i < pack->glb.length)
+	    memmove(pack->glb.pairs + i, pack->glb.pairs + i + 1,
+		    sizeof(LispObj*) * (pack->glb.length - i));
 
-	if (mac->pack->spc.length + 1 >= mac->pack->spc.space)
-	    LispMoreSpecials(mac);
+	if (pack->spc.length + 1 >= pack->spc.space)
+	    LispMoreSpecials(mac, pack);
 
-	mac->pack->spc.pairs[mac->pack->spc.length] = atom;
-	++mac->pack->spc.length;
+	pack->spc.pairs[pack->spc.length] = atom;
+	++pack->spc.length;
 	/* set hint about dynamically binded variable */
 	name->dyn = 1;
     }
@@ -2898,14 +2909,72 @@ LispProclaimSpecial(LispMac *mac, LispObj *atom, LispObj *value, LispObj *doc)
 	/* create new special variable */
 	LispSetAtomObjectProperty(mac, name, value ? value : UNBOUND);
 
-	if (mac->pack->spc.length >= mac->pack->spc.space)
-	    LispMoreSpecials(mac);
+	if (pack->spc.length >= pack->spc.space)
+	    LispMoreSpecials(mac, pack);
 
-	mac->pack->spc.pairs[mac->pack->spc.length] = atom;
-	++mac->pack->spc.length;
+	pack->spc.pairs[pack->spc.length] = atom;
+	++pack->spc.length;
 	/* set hint about possibly dynamically binded variable */
 	name->dyn = 1;
     }
+
+    if (doc != NIL)
+	LispAddDocumentation(mac, atom, doc, LispDocVariable);
+}
+
+void
+LispDefconstant(LispMac *mac, LispObj *atom, LispObj *value, LispObj *doc)
+{
+    int i;
+    LispAtom *name = atom->data.atom;
+    LispPackage *pack = name->package->data.package.package;
+
+    if (name->dyn) {
+	/* If variable is dynamic, move to list of globals */
+	for (i = pack->spc.length - 1; i >= 0; i--)
+	    if (pack->spc.pairs[i] == atom)
+		break;
+
+	if (i >= 0) {
+	    /* Variable is in the dynamic list, move it */
+	    --pack->spc.length;
+	    if (i < pack->spc.length)
+		memmove(pack->spc.pairs + i, pack->spc.pairs + i + 1,
+			sizeof(LispObj*) * (pack->spc.length - i));
+
+	    if (pack->glb.length + 1 >= pack->glb.space)
+		LispMoreGlobals(mac, pack);
+
+	    pack->glb.pairs[pack->glb.length] = atom;
+	    ++pack->glb.length;
+	    /* unset hint about dynamically binded variable */
+	    name->dyn = 0;
+	}
+    }
+    else {
+	/* Check if variable is bounded as a global variable */
+	for (i = pack->glb.length - 1; i >= 0; i--)
+	    if (pack->glb.pairs[i] == atom)
+		break;
+
+	if (i < 0) {
+	    /* Not a global variable */
+	    if (pack->glb.length >= pack->glb.space)
+		LispMoreGlobals(mac, pack);
+
+	    pack->glb.pairs[pack->glb.length] = atom;
+	    ++pack->glb.length;
+	}
+    }
+
+    if (name->constant && name->a_object &&
+	LispEqual(mac, name->property->value, value) == NIL)
+	LispWarning(mac, "constant %s is being redefined", STROBJ(atom));
+    else
+	name->constant = LispTrue_t;
+
+    /* Set constant value */
+    LispSetAtomObjectProperty(mac, name, value);
 
     if (doc != NIL)
 	LispAddDocumentation(mac, atom, doc, LispDocVariable);
@@ -3360,29 +3429,29 @@ LispMoreEnvironment(LispMac *mac)
 }
 
 static void
-LispMoreGlobals(LispMac *mac)
+LispMoreGlobals(LispMac *mac, LispPackage *pack)
 {
-    LispObj **pairs = realloc(mac->pack->glb.pairs,
-			      (mac->pack->glb.space + 256) * sizeof(LispObj*));
+    LispObj **pairs = realloc(pack->glb.pairs,
+			      (pack->glb.space + 256) * sizeof(LispObj*));
 
     if (pairs == NULL)
 	LispDestroy(mac, "out of memory");
 
-    mac->pack->glb.pairs = pairs;
-    mac->pack->glb.space += 256;
+    pack->glb.pairs = pairs;
+    pack->glb.space += 256;
 }
 
 static void
-LispMoreSpecials(LispMac *mac)
+LispMoreSpecials(LispMac *mac, LispPackage *pack)
 {
-    LispObj **pairs = realloc(mac->pack->spc.pairs,
-			      (mac->pack->spc.space + 256) * sizeof(LispObj*));
+    LispObj **pairs = realloc(pack->spc.pairs,
+			      (pack->spc.space + 256) * sizeof(LispObj*));
 
     if (pairs == NULL)
 	LispDestroy(mac, "out of memory");
 
-    mac->pack->spc.pairs = pairs;
-    mac->pack->spc.space += 256;
+    pack->spc.pairs = pairs;
+    pack->spc.space += 256;
 }
 
 /* this is not commonly used, so allocates few data */
@@ -3449,7 +3518,7 @@ LispMakeEnvironment(LispMac *mac, LispArgList *alist, LispObj *values,
     if (mac->env.length + alist->num_arguments > mac->env.space) {
 	do
 	    LispMoreEnvironment(mac);
-	while (mac->env.length + alist->num_arguments >= mac->env.space);
+	while (mac->env.length + alist->num_arguments > mac->env.space);
     }
 
     desc = alist->description;
@@ -3546,7 +3615,7 @@ key_label:
 	sforms = alist->keys.sforms;
 	keys = alist->keys.keys;
 
-	/* Count arguments and check if seens correctly specified */
+	/* Check if arguments are correctly specified */
 	for (karg = values; CONS_P(karg); karg = CDR(karg)) {
 	    val = CAR(karg);
 	    if (KEYWORD_P(val)) {
@@ -4232,8 +4301,8 @@ LispBegin(int argc, char *argv[])
     mac->pack = mac->savepack = PACKAGE->data.package.package;
 
     /* Allocate space in LISP package */
-    LispMoreGlobals(mac);
-    LispMoreSpecials(mac);
+    LispMoreGlobals(mac, mac->pack);
+    LispMoreSpecials(mac, mac->pack);
 
     /* Allocate initial space for multiple returns */
     LispMoreReturns(mac);
