@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.293 2003/10/24 00:33:10 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.294tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -376,7 +376,7 @@ SUNLIBS = hw/sun/LibraryTargetName(sun) CFB8Libs
 #endif
 SUNSYSLIBS = $(FONTLIBS) $(WIDECHARSYSLIB) $(SYSLIBS)
 SetUIDServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS), \
-	$(SUNLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(SUNSYSLIBS))
+	$(LIBCWRAPPER) $(SUNLIBS) $(LOADABLEEXTS),$(SUNSYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun
 #endif
@@ -405,7 +405,7 @@ SUN24OBJS = hw/sun/sunInitMulti.o
 #endif
 SUN24LIBS = hw/sun/LibraryTargetName(sun) CFBLibs
 SetUIDServerTarget(Xsun24,$(SUN24DIRS),$(SUN24OBJS), \
-	$(SUN24LIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(FONTLIBS) $(SYSLIBS))
+	$(LIBCWRAPPER) $(SUN24LIBS) $(LOADABLEEXTS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun24
 #endif
@@ -426,7 +426,7 @@ SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInExMono.o
 #endif
 SUNMLIBS = hw/sun/LibraryTargetName(sun) MFBBareLibs $(EXTENSIONS)
 SetUIDServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS), \
-	$(SUNMLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(FONTLIBS) $(SYSLIBS))
+	$(LIBCWRAPPER) $(SUNMLIBS) $(LOADABLEEXTS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XsunMono
 #endif

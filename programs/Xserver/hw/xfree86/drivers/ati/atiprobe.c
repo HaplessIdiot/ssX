@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.59 2003/09/24 02:43:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.60tsi Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1370,7 +1370,7 @@ ATIProbe
                     "Unshared PCI sparse I/O Mach64 in slot %d:%d:%d",
                     pVideo->bus, pVideo->device, pVideo->func);
                 xf86MsgVerb(X_INFO, 3,
-                    ATI_NAME ":  %s detected through Block 0 at 0x%08X.\n",
+                    ATI_NAME ":  %s detected through Block 0 at 0x%08lX.\n",
                     Identifier, pATI->Block0Base);
                 AddAdapter(pATI);
                 pATI->PCIInfo = pVideo;
@@ -1689,7 +1689,7 @@ ATIProbe
                     sprintf(Identifier, "Shared PCI Mach64 in slot %d:%d:%d",
                         pVideo->bus, pVideo->device, pVideo->func);
                     xf86MsgVerb(X_INFO, 3,
-                        ATI_NAME ":  %s with Block 0 base 0x%08X detected.\n",
+                        ATI_NAME ":  %s with Block 0 base 0x%08lX detected.\n",
                         Identifier, pATI->Block0Base);
                     AddAdapter(pATI);
                     pATI->SharedAccelerator = TRUE;
