@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.50 2003/03/25 04:18:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.51 2003/04/07 16:23:37 eich Exp $ */
 
 /*
  *
@@ -61,6 +61,70 @@
 # define ELFDEBUG ErrorF
 #endif
 */
+
+#if defined(__ia64__)
+
+/*
+
+ * R_IA64_LTOFF22X and R_IA64_LDXMOV are relocation optimizations for
+ * IA64. Conforming implementations must recognize them and may either
+ * implement the optimization or may fallback to previous
+ * non-optimized behavior by treating R_IA64_LTOFF22X as a
+ * R_IA64_LTOFF22X and ignoring R_IA64_LDXMOV. The
+ * IA64_LDX_OPTIMIZATION conditional controls the fallback behavior,
+ * if defined the optimizations are performed.
+
+ * To implement the optimization we want to change is the sequence on
+ * the left to that on the right, without regard to any intervening
+ * instructions:
+ * 
+ * 1)  addl    t1=@ltoff(var),gp    ==>    addl    t1=@gprel(var),gp
+ * 2)  ld8     t2=[t1]              ==>    mov     t2=t1
+ * 3)  ld8     loc0=[t2]            ==>    ld8     loc0=[t2]
+ * 
+ * The relocations that match the above instructions are:
+ * 
+ * 1)  R_IA64_LTOFF22               ==>    R_IA64_LTOFF22X
+ * 2)  --                           ==>    R_IA64_LDXMOV
+ * 3)  --                           ==>    --
+ *
+ * First lets look at left hand column to understand the original
+ * mechanism. The virtual address of a symbol is stored in the GOT,
+ * when that symbol is referenced the following sequence occurs,
+ * instruction 1 loads the address of the GOT entry containing the
+ * virtural address of the symbol into t1. Instruction 2 loads the
+ * virtual address of the symbol into t2 by dereferencing t1. Finally
+ * the symbol is loaded in instruction 3 by dereferencing its virtual
+ * address in t2.
+ * 
+ * The optimization that LTOFF22X/LDXMOV introduces is based on the
+ * observation we are doing an extra load (instruction 2) if we can
+ * generate the virtual address for the symbol without doing a lookup in
+ * the GOT. This is possible if the virtual address of the symbol can be
+ * computed via GP relative addressing. In other words the virtual
+ * address of the symbol is a fixed offset from the GP. This fixed offset
+ * must be within the limits of the signed 22 bit immediate offset in the
+ * ld8 instruction, otherwise the original indirect GOT lookup must be
+ * performed (LTOFF22).
+ * 
+ * If we can use GP relative addressing for the symbol then the
+ * instruction that loaded the virtual address of the symbol into t2 must
+ * also be patched, hence the introduction of the LDXMOV relocation. The
+ * LDXMOV essentially turns the GOT lookup into a no-op by changing the
+ * ld8 into a register move that preserves the register location of the
+ * symbol's virtual address (e.g. t2).
+ * 
+ * The important point to recognize when implementing the LTOFF22X/LDXMOV
+ * optimization is that relocations are interdependent, the LDXMOV is
+ * only applied if the LTOFF22X is applied. It is also worth noting that
+ * there is no relationship between LDXMOV relocations and LTOFF22X in
+ * the ELF relocation section other than they share the same
+ * symbol+addend value.
+ */
+
+#define IA64_LDX_OPTIMIZATION 1
+#endif
+
 
 #ifndef UseMMAP
 # if defined (__ia64__) || defined (__sparc__)
@@ -298,7 +362,8 @@ static void ElfAddPLT(ELFModulePtr, Elf_Rel_t *);
 static void ELFCreatePLT(ELFModulePtr);
 enum ia64_operand {
     IA64_OPND_IMM22,
-    IA64_OPND_TGT25C
+    IA64_OPND_TGT25C,
+    IA64_OPND_LDXMOV
 };
 static void IA64InstallReloc(unsigned long *, int, enum ia64_operand, long);
 #endif /*__ia64__*/
@@ -1112,6 +1177,23 @@ long			value;
 	if (value << 39 >> 39 != value || (value & 0xf))
 	    ErrorF("Relocation %016lx truncated to fit into TGT25C\n", value);
 	break;
+#ifdef IA64_LDX_OPTIMIZATION
+    case IA64_OPND_LDXMOV:
+        /*
+         * Convert "ld8 t2=[t1]" to "mov t2=t1" which is really "add t2=0,t1"
+         * Mask all but the qp,r1, and r3 fields, then OR in the ALU opcode.
+	 * 
+	 * Mask for bit fields [26:20][12:6][5:0] = 0x7f01fff,
+	 * shift this mask left by 5 for the template, 0x7f01fff << 5 = 0xfe03ffe0
+	 *
+	 * mask 0xffffc0000000001f is bits [40:0] shifted left by 5 for the template
+	 * and bitwise negated to preserve bits not part of this instruction.
+	 */
+
+        data &= ((0xffffc0000000001fUL << slot) | (0xfe03ffe0 << slot));
+        data |=  (0x10000000000UL << (5 + slot));
+        break;
+#endif
     default:
 	FatalError("Unhandled operand in IA64InstallReloc()\n");
     }
@@ -2057,6 +2139,9 @@ int		force;
 # endif
 	    /* FALLTHROUGH */
 	case R_IA64_LTOFF22:
+#ifndef IA64_LDX_OPTIMIZATION
+	case R_IA64_LTOFF22X: /* If not implementing LDXMOV optimization treat LTOFF22X as LTOFF22 */
+#endif
 	    {
 	    ELFGotEntryPtr gotent;
 	    dest128=(unsigned long *)(secp+(rel->r_offset&~3));
@@ -2209,6 +2294,90 @@ int		force;
 		symval + rel->r_addend - (long)elffile->got);
 	    break;
 
+#ifdef IA64_LDX_OPTIMIZATION
+	case R_IA64_LTOFF22X:
+	  {
+	    ELFGotEntryPtr gotent;
+	    long gp_offset = symval+rel->r_addend-(long)elffile->got;
+	    dest128=(unsigned long *)(secp+(rel->r_offset&~3));
+
+# ifdef ELFDEBUG
+	    ELFDEBUG( "R_IA64_LTOFF22X %s\t", ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)) );
+	    ELFDEBUG( "secp=%lx\t", secp );
+	    ELFDEBUG( "symval=%lx\t", symval );
+	    ELFDEBUG( "dest128=%lx\t", dest128 );
+	    ELFDEBUG( "slot=%d\n", rel->r_offset & 3);
+# endif
+
+	    if (gp_offset << 42 >> 42 != gp_offset) {
+	      /* Offset is too large for LTOFF22X, 
+	       * fallback to using GOT lookup, e.g. LTOFF22X. 
+	       * Note: LDXMOV will fail the same test and will be ignored. */
+
+# ifdef ELFDEBUG
+	    ELFDEBUG( "gp_offset=%ld too large, using GOT instead (LTOFF22)\n", gp_offset);
+# endif
+
+	      for (gotent=elffile->got_entries;gotent;gotent=gotent->next) {
+		if ( ELF_R_SYM(gotent->rel->r_info) == ELF_R_SYM(rel->r_info) &&
+		     gotent->rel->r_addend == rel->r_addend )
+		  break;
+	      }
+	      
+	      /* Set the address in the GOT */
+	      if( gotent ) {
+		*(unsigned long *)(elffile->got+gotent->offset) = symval+rel->r_addend;
+# ifdef ELFDEBUG
+		ELFDEBUG("Setting gotent[%x]=%lx\n", gotent->offset, symval+rel->r_addend);
+# endif
+		if ((gotent->offset & 0xffe00000) != 0)
+		  FatalError("\nR_IA64_LTOFF22 offset %x too large\n", gotent->offset);
+	      } else {
+		FatalError("\nCould not find GOT entry\n");
+	      }
+	      gp_offset = gotent->offset; /* Use GOT lookup */
+	    } else {
+# ifdef ELFDEBUG
+	      ELFDEBUG( "using gp_offset=%ld (LTOFF22X)", gp_offset);
+# endif
+	    }
+	    IA64InstallReloc(dest128, rel->r_offset & 3, IA64_OPND_IMM22, gp_offset);
+	    }
+	    break;
+#endif
+
+	case R_IA64_LDXMOV:
+# ifdef ELFDEBUG
+	    ELFDEBUG( "R_IA64_LDXMOV %s\t", ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)) );
+# endif
+
+#ifdef IA64_LDX_OPTIMIZATION
+	  {
+	    long gp_offset = symval+rel->r_addend-(long)elffile->got;
+	    dest128=(unsigned long *)(secp+(rel->r_offset&~3));
+
+	    if (gp_offset << 42 >> 42 != gp_offset) {
+	      /* Offset is too large for LTOFF22X, ignore this relocation */ 
+# ifdef ELFDEBUG
+	      ELFDEBUG( "offset = %ld too large, ignoring\n", gp_offset);
+# endif
+	    } else {
+
+# ifdef ELFDEBUG
+	      ELFDEBUG( "secp=%lx\t", secp );
+	      ELFDEBUG( "symval=%lx\t", symval );
+	      ELFDEBUG( "dest128=%lx\t", dest128 );
+	      ELFDEBUG( "slot=%d\n", rel->r_offset & 3);
+	      ELFDEBUG( "offset=%ld\n", gp_offset);
+	      ELFDEBUG( "*dest128=[%016lx%016lx]\n", dest128[1], dest128[0]);
+# endif
+
+	      IA64InstallReloc(dest128, rel->r_offset & 3, IA64_OPND_LDXMOV, 0);
+	    }
+#endif
+	  }
+	    break;
+
 #endif /*__ia64__*/
 
 #if defined(__arm__)
@@ -2295,7 +2464,7 @@ int	index; /* The section to use as relocation data */
 	}   
 #endif
 #if defined(__ia64__)
-	if (ELF_R_TYPE(rel[i].r_info) == R_IA64_LTOFF22
+	if (ELF_R_TYPE(rel[i].r_info) == R_IA64_LTOFF22 || ELF_R_TYPE(rel[i].r_info) == R_IA64_LTOFF22X
 	    || ELF_R_TYPE(rel[i].r_info) == R_IA64_LTOFF_FPTR22) {
 	    ElfAddGOT(elffile,&rel[i]);
 	}
