@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/main.c,v 1.3 2000/05/18 23:46:08 dawes Exp $ */
+/* $XFree86: xc/config/pswrap/main.c,v 1.4 2000/06/07 19:50:47 tsi Exp $ */
 
 #include <stdio.h>
 
@@ -129,7 +129,7 @@ static void ScanArgs(int argc, char *argv[])
 		strcpy(headid, slash ? slash+1 : hfile);
 		for (c = headid; *c != '\0'; c++) {
 		    if (*c == '.') *c = '_';
-		    else isascii(*c) && islower(*c) && (*c = toupper(*c));
+		    else if (isascii(*c) && islower(*c)) *c = toupper(*c);
 		}
 		break;
 	    case 'o':
