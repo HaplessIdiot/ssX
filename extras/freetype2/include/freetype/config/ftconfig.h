@@ -7,8 +7,6 @@
 /*  Copyright 1996-2001, 2002 by                                           */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
-/*  Modified for XFree86.                                                  */
-/*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
 /*  modified, and distributed under the terms of the FreeType project      */
 /*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
@@ -61,25 +59,23 @@ FT_BEGIN_HEADER
 
 
   /* The number of bytes in an `int' type.  */
-
-#include "Xmd.h"
-
-#define FT_SIZEOF_INT 4
-#ifdef LONG64
-#define FT_SIZEOF_LONG 8
+#if   FT_UINT_MAX == 0xFFFFFFFFUL
+#define FT_SIZEOF_INT  4
+#elif FT_UINT_MAX == 0xFFFFU
+#define FT_SIZEOF_INT  2
+#elif FT_UINT_MAX > 0xFFFFFFFFU && FT_UINT_MAX == 0xFFFFFFFFFFFFFFFFU
+#define FT_SIZEOF_INT  8
 #else
-#define FT_SIZEOF_LONG 4
+#error "Unsupported number of bytes in `int' type!"
 #endif
 
-#if 0	/* ?!?!?!?! */
   /* The number of bytes in a `long' type.  */
-#if FT_ULONG_MAX == 0x0FFFFFFFFUL
+#if   FT_ULONG_MAX == 0xFFFFFFFFUL
 #define FT_SIZEOF_LONG  4
-#elif FT_ULONG_MAX > 0x0FFFFFFFFU && FT_ULONG_MAX == 0x0FFFFFFFFFFFFFFFFU
+#elif FT_ULONG_MAX > 0xFFFFFFFFU && FT_ULONG_MAX == 0xFFFFFFFFFFFFFFFFU
 #define FT_SIZEOF_LONG  8
 #else
 #error "Unsupported number of bytes in `long' type!"
-#endif
 #endif
 
 
