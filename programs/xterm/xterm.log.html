@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.4 1998/04/18 18:42:03 robin Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.5 1998/04/27 03:15:07 robin Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_74">Patch #74 - 1998/4/27 - XFree86 3.9Ag and 3.3.2</A>
 <LI><A HREF="#xterm_73">Patch #73 - 1998/4/25 - XFree86 3.9Ag and 3.3.2</A>
 <LI><A HREF="#xterm_72">Patch #72 - 1998/4/17 - XFree86 3.9Ag and 3.3.2</A>
 <LI><A HREF="#xterm_71">Patch #71 - 1998/4/12 - XFree86 3.9Ag and 3.3.2</A>
@@ -115,6 +116,23 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_74">Patch #74 - 1998/4/27 - XFree86 3.9Ag and 3.3.2</A></H1>
+
+This corrects a couple of recent bugs and adds a new resource:
+<ul>
+	<li>modify definition of TRACE_CHILD so that it does not conflict with
+	  ifdef's for USE_USG_PTYS in main.c (reported by Vikas Agnihotri
+	  &lt;VikasA@att.com&gt; and Stefan Dalibor).
+
+	<li>correct ownership of file (actually pipe) written by the print
+	  controls.  When undoing the setuid changes in patch #69, I overlooked
+	  this.  Now xterm forks a process which resets setuid and routes the
+	  printer data as the real user.
+
+	<li>add a new resource, "printAttributes", which controls whether
+	  color attributes (or any attributes) are sent to the printer.
+</ul>
 
 <H1><A NAME="xterm_73">Patch #73 - 1998/4/25 - XFree86 3.9Ag and 3.3.2</A></H1>
 

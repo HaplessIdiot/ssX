@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.69 1998/04/18 18:42:00 robin Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.70 1998/04/27 03:14:59 robin Exp $ */
 
 
 /* main.c */
@@ -2442,6 +2442,7 @@ spawn ()
 		/*
 		 * now in child process
 		 */
+		TRACE_CHILD
 #if defined(_POSIX_SOURCE) || defined(SVR4) || defined(__convex__) || defined(SCO325)
 		int pgrp = setsid();
 #else
@@ -2451,7 +2452,6 @@ spawn ()
 		char* ptyname;
 		char* ptynameptr = 0;
 #endif
-		TRACE_CHILD;
 
 #ifdef USE_USG_PTYS
 #if defined(SYSV) && defined(i386) && !defined(SVR4)
