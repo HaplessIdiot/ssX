@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.14 1999/06/12 17:30:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.15 1999/07/06 11:38:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -182,6 +182,9 @@ typedef struct {
     PciProbeType	pciFlags;
     Pix24Flags		pixmap24;
     MessageType		pix24From;
+#if defined(i386) || defined(__i386__)
+    Bool		pc98;
+#endif
 } xf86InfoRec, *xf86InfoPtr;
 
 #ifdef DPMSExtension

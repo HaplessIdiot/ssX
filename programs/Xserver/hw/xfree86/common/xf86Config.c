@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.185 1999/06/12 07:18:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.186 1999/06/27 14:07:54 dawes Exp $ */
 
 
 /*
@@ -500,7 +500,8 @@ typedef enum {
     FLAG_DPMS_STANDBYTIME,
     FLAG_DPMS_SUSPENDTIME,
     FLAG_DPMS_OFFTIME,
-    FLAG_PIXMAP
+    FLAG_PIXMAP,
+    FLAG_PC98,
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {
@@ -541,6 +542,8 @@ static OptionInfoRec FlagOptions[] = {
   { FLAG_DPMS_OFFTIME,		"OffTime",			OPTV_INTEGER,
 	{0}, FALSE },
   { FLAG_PIXMAP,		"Pixmap",			OPTV_INTEGER,
+	{0}, FALSE },
+  { FLAG_PC98,			"PC98",				OPTV_BOOLEAN,
 	{0}, FALSE },
   { -1,				NULL,				OPTV_NONE,
 	{0}, FALSE }
@@ -665,6 +668,15 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	xf86Info.pixmap24 = Pix24DontCare;
 	xf86Info.pix24From = X_DEFAULT;
     }
+#if defined(i386) || defined(__i386__)
+    if (xf86GetOptValBool(FlagOptions, FLAG_PC98, &value)) {
+	xf86Info.pc98 = value;
+	if (value) {
+	    xf86Msg(X_CONFIG, "Japanese PC98 architecture\n");
+	}
+    }
+#endif
+
     return TRUE;
 }
 
@@ -683,24 +695,23 @@ configKeyboard(XF86ConfKeyboardPtr keybconf)
   xf86Info.kbdProc       = NULL;
   xf86Info.vtinit        = NULL;
   xf86Info.vtSysreq      = VT_SYSREQ_DEFAULT;
-#if defined(SVR4) && defined(i386) && !defined(PC98)
+#if defined(SVR4) && defined(i386)
   xf86Info.panix106      = FALSE;
 #endif
 #ifdef XKB
-  /* XXX Should handle PC98-specifics at runtime */
-#ifndef PC98
-  xf86Info.xkbrules      = "xfree86";
-  xf86Info.xkbmodel      = "pc101";
-  xf86Info.xkblayout     = "us";
-  xf86Info.xkbvariant    = NULL;
-  xf86Info.xkboptions    = NULL;
-#else
-  xf86Info.xkbrules      = "xfree98";
-  xf86Info.xkbmodel      = "pc98";
-  xf86Info.xkblayout     = "nec/jp";
-  xf86Info.xkbvariant    = NULL;
-  xf86Info.xkboptions    = NULL;
-#endif
+  if (!xf86IsPc98()) {
+    xf86Info.xkbrules      = "xfree86";
+    xf86Info.xkbmodel      = "pc101";
+    xf86Info.xkblayout     = "us";
+    xf86Info.xkbvariant    = NULL;
+    xf86Info.xkboptions    = NULL;
+  } else {
+    xf86Info.xkbrules      = "xfree98";
+    xf86Info.xkbmodel      = "pc98";
+    xf86Info.xkblayout     = "nec/jp";
+    xf86Info.xkbvariant    = NULL;
+    xf86Info.xkboptions    = NULL;
+  }
   xf86Info.xkbcomponents_specified = FALSE;
   /* Should discourage the use of these. */
   xf86Info.xkbkeymap     = NULL;
@@ -823,7 +834,7 @@ configKeyboard(XF86ConfKeyboardPtr keybconf)
     }
   }
 #endif
-#if defined(SVR4) && defined(i386) && !defined(PC98)
+#if defined(SVR4) && defined(i386)
   if ( keybconf->keyb_panix106 ) {
     xf86Info.panix106 = TRUE;
     xf86Msg(X_CONFIG, "PANIX106: enabled\n");
@@ -1157,24 +1168,23 @@ configInputKbd(IDevPtr inputp)
   xf86Info.kbdProc       = NULL;
   xf86Info.vtinit        = NULL;
   xf86Info.vtSysreq      = VT_SYSREQ_DEFAULT;
-#if defined(SVR4) && defined(i386) && !defined(PC98)
+#if defined(SVR4) && defined(i386)
   xf86Info.panix106      = FALSE;
 #endif
 #ifdef XKB
-  /* XXX Should handle PC98-specifics at runtime */
-#ifndef PC98
-  xf86Info.xkbrules      = "xfree86";
-  xf86Info.xkbmodel      = "pc101";
-  xf86Info.xkblayout     = "us";
-  xf86Info.xkbvariant    = NULL;
-  xf86Info.xkboptions    = NULL;
-#else
-  xf86Info.xkbrules      = "xfree98";
-  xf86Info.xkbmodel      = "pc98";
-  xf86Info.xkblayout     = "nec/jp";
-  xf86Info.xkbvariant    = NULL;
-  xf86Info.xkboptions    = NULL;
-#endif
+  if (!xf86IsPc98()) {
+    xf86Info.xkbrules      = "xfree86";
+    xf86Info.xkbmodel      = "pc101";
+    xf86Info.xkblayout     = "us";
+    xf86Info.xkbvariant    = NULL;
+    xf86Info.xkboptions    = NULL;
+  } else {
+    xf86Info.xkbrules      = "xfree98";
+    xf86Info.xkbmodel      = "pc98";
+    xf86Info.xkblayout     = "nec/jp";
+    xf86Info.xkbvariant    = NULL;
+    xf86Info.xkboptions    = NULL;
+  }
   xf86Info.xkbcomponents_specified = FALSE;
   /* Should discourage the use of these. */
   xf86Info.xkbkeymap     = NULL;
@@ -1312,7 +1322,7 @@ configInputKbd(IDevPtr inputp)
   }
 #undef NULL_IF_EMPTY
 #endif
-#if defined(SVR4) && defined(i386) && !defined(PC98)
+#if defined(SVR4) && defined(i386)
   if ((xf86Info.panix106 =
 	xf86SetBoolOption(inputp->commonOptions, "Panix106", FALSE))) {
     xf86Msg(X_CONFIG, "PANIX106: enabled\n");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.53 1999/06/27 09:20:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.54 1999/07/10 12:17:22 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2068,6 +2068,17 @@ Bool
 xf86GetAllowMouseOpenFail()
 {
     return xf86Info.allowMouseOpenFail;
+}
+
+
+Bool
+xf86IsPc98()
+{
+#if defined(i386) || defined(__i386__)
+    return xf86Info.pc98;
+#else
+    return FALSE;
+#endif
 }
 
 
