@@ -1292,8 +1292,8 @@ ProgramTargetName($(RMAN)):						@@\
 
 #ifndef BuildInstallHtmlManPage
 #if BuildHtmlManPages
+XCOMM  Don't do: 'AllTarget(dest.suffix.html)'. It breaks external packages
 #define BuildInstallHtmlManPage(file,dest,suffix)			@@\
-AllTarget(dest.suffix.html)						@@\
 									@@\
 dest.suffix.html: file.man RmanCmdDependency				@@\
 	RemoveFiles(dest.suffix.html dest.suffix-html)			@@\

@@ -2309,7 +2309,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* Timing problem with PM3 & PM2V chips dont like being blasted */
 	/* This solves the dual head problem but trahses the console font. */
 
-	if (pGlint->Chipset = PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) {
+	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) {
 	    /* Graphics Index VGA register don't work in mmio mode
 	     * for the Permedia3 chip, it thrashes the console font. 
 	     * Let's keep the IO functions for this instead ... */
