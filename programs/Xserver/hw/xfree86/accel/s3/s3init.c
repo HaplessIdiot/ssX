@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.48 1995/01/21 07:15:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.49 1995/01/21 14:07:40 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1680,13 +1680,19 @@ s3Init(mode)
 	   if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
              outb(vgaCRIndex, 0x6D);             /* set blank delay */
              if (s3InfoRec.bitsPerPixel == 32)
-               outb(vgaCRReg, 0x10);
+               if (mode->Flags & V_DBLCLK)
+                 outb(vgaCRReg, 0x10);
+               else
+                 outb(vgaCRReg, 0x20);
              else if (s3InfoRec.bitsPerPixel == 16)
-               outb(vgaCRReg, 0x53);
-            else
-              outb(vgaCRReg, 0x51);
-	   }
-	   else {
+                 if (mode->Flags & V_DBLCLK) 
+                   outb(vgaCRReg, 0x20);
+                 else
+                   outb(vgaCRReg, 0x31);
+             else
+               outb(vgaCRReg, 0x20);
+           }
+           else {
              outb(vgaCRIndex, 0x6D);
 	     if (s3Bpp == 1) {
 	        if (mode->Flags & V_DBLCLK) 

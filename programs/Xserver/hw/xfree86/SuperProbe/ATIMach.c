@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.3tsi Exp $ */
 
 #include "Probe.h"
 
@@ -70,68 +70,68 @@ int *Chipset;
 
 	EnableIOPorts(NUMPORTS, Ports);
 
-	/* 
-	 * First check for a Mach64.
+	/*
+	 * Check for 8514/A registers.  Don't read BIOS, or an attached 8514
+	 * Ultra won't be detected (the slave SVGA's BIOS is in the normal SVGA
+	 * place).
 	 */
-	tmp = inpl(SCRATCH_REG0);
-	outpl(SCRATCH_REG0, 0x55555555);		/* Test odd bits */
-	if (inpl(SCRATCH_REG0) == 0x55555555)
+	tmp = inpw(ROM_ADDR_1);
+	outpw(ROM_ADDR_1, 0x5555);
+	WaitIdleEmpty();
+	if (inpw(ROM_ADDR_1) == 0x5555)
 	{
-		outpl(SCRATCH_REG0, 0xAAAAAAAA);	/* Test even bits */
-		if (inpl(SCRATCH_REG0) == 0xAAAAAAAA)
-			chip = CHIP_MACH64;
+		outpw(ROM_ADDR_1, 0x2A2A);
+		WaitIdleEmpty();
+		if (inpw(ROM_ADDR_1) == 0x2A2A)
+			chip = CHIP_8514;
 	}
-	outpl(SCRATCH_REG0, tmp);
+	outpw(ROM_ADDR_1, tmp);
+	if (chip != -1)
+	{
+		/*
+		 * An 8514 accelerator is really present;  now figure
+		 * out which one.
+		 */
+		outpw(DESTX_DIASTP, 0xAAAA);
+		WaitIdleEmpty();
+		if (inpw(READ_SRC_X) != 0x02AA)
+			chip = CHIP_MACH8;
+		else
+			chip = CHIP_MACH32;
+		outpw(DESTX_DIASTP, 0x5555);
+		WaitIdleEmpty();
+		if (inpw(READ_SRC_X) != 0x0555)
+		{
+			if (chip != CHIP_MACH8)
+				/*
+				 * Something bizarre is happening.
+				 */
+				chip = -1;
+		}
+		else
+		{
+			if (chip != CHIP_MACH32)
+				/*
+				 * Something bizarre is happening.
+				 */
+				chip = -1;
+		}
+	}
 
 	if (chip == -1)
 	{
-		/*
-		 * Check for 8514/A registers.  Don't read BIOS, or an attached
-		 * 8514 Ultra won't be detected (the slave SVGA's BIOS is in
-		 * the normal SVGA place).
+		/* 
+		 * Check for a Mach64.
 		 */
-		tmp = inpw(ROM_ADDR_1);
-		outpw(ROM_ADDR_1, 0x5555);
-		WaitIdleEmpty();
-		if (inpw(ROM_ADDR_1) == 0x5555)
+		tmp = inpl(SCRATCH_REG0);
+		outpl(SCRATCH_REG0, 0x55555555);	 /* Test odd bits */
+		if (inpl(SCRATCH_REG0) == 0x55555555)
 		{
-			outpw(ROM_ADDR_1, 0x2A2A);
-			WaitIdleEmpty();
-			if (inpw(ROM_ADDR_1) == 0x2A2A)
-				chip = CHIP_8514;
+			outpl(SCRATCH_REG0, 0xAAAAAAAA); /* Test even bits */
+			if (inpl(SCRATCH_REG0) == 0xAAAAAAAA)
+				chip = CHIP_MACH64;
 		}
-		outpw(ROM_ADDR_1, tmp);
-		if (chip != -1)
-		{
-			/*
-			 * An 8514 accelerator is really present;  now figure
-			 * out which one.
-			 */
-			outpw(DESTX_DIASTP, 0xAAAA);
-			WaitIdleEmpty();
-			if (inpw(READ_SRC_X) != 0x02AA)
-				chip = CHIP_MACH8;
-			else
-				chip = CHIP_MACH32;
-			outpw(DESTX_DIASTP, 0x5555);
-			WaitIdleEmpty();
-			if (inpw(READ_SRC_X) != 0x0555)
-			{
-				if (chip != CHIP_MACH8)
-					/*
-					 * Something bizarre is happening.
-					 */
-					chip = -1;
-			}
-			else
-			{
-				if (chip != CHIP_MACH32)
-					/*
-					 * Something bizarre is happening.
-					 */
-					chip = -1;
-			}
-		}
+		outpl(SCRATCH_REG0, tmp);
 	}
 
 	if (chip != -1)

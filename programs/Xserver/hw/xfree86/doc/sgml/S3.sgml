@@ -8,12 +8,16 @@
 
 <sect> Supported hardware
 <p>
-The current S3 Server supports all available S3 chipsets: 911, 924,
-801/805, 928, 764 (Trio64), 864, and 964. Nevertheless, this is not enough to
-support every board using one of these chipsets. The following list
-contains some data points on boards that are known to work. If your
-card is similar to one of the described ones, chances are good it
-might work for you, too.
+The current S3 Server supports the following S3 chipsets: 911, 924,
+801/805, 928, 732 (Trio32), 764 (Trio64), 864, and 964.  The S3 server
+will also recognise the 866, 868 and 968, but it has not been tested
+these chipsets.  If you have any problems or success with these, please
+report it to us.
+
+Nevertheless, this is not enough to support every board using one of these
+chipsets. The following list contains some data points on boards that are
+known to work.  If your card is similar to one of the described ones,
+chances are good it might work for you, too.
 
 <descrip>
 <tag>S3 801/805, AT&amp;T 20C490 (or similar) RAMDAC</tag>
@@ -427,7 +431,7 @@ exit
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.6 1995/01/21 07:16:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.7 1995/01/21 10:44:31 dawes Exp $
 </verb>
 
 </article>

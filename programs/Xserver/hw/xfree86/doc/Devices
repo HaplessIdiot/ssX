@@ -424,7 +424,7 @@ EndSection
 Section "Device"
     Identifier "Orchid Fahrenheit 1280"
     VendorName "Orchid"
-    BoardName "Farenheit 1280"
+    BoardName "Fahrenheit 1280"
     Clocks 25.20 28.32 32.50 0.00 40.00 44.90 50.40 65.00
     Clocks 78.00 56.70 63.10 75.10 80.00 89.90 100.90 31.50
 EndSection
@@ -460,9 +460,9 @@ EndSection
 #From: matthieu@laas.fr (Matthieu Herrb)
 #Date: Tue, 27 Sep 1994 10:05:24 +0100
 Section        "Device"
-    Identifier "Orchid Farenheit-1280+"
+    Identifier "Orchid Fahrenheit-1280+"
     VendorName "Orchid"
-    BoardName  "Farenheit 1280+ VLB"
+    BoardName  "Fahrenheit 1280+ VLB"
     Ramdac     "att20C490"
     Dacspeed   110
     Clocks     25.20 28.32 40.0 0.0 50.10 77.0 36.10 45.0 
@@ -607,4 +607,4 @@ Section "Device"
 EndSection
 
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.5 1995/01/10 10:26:05 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.6 1995/01/15 10:34:00 dawes Exp $

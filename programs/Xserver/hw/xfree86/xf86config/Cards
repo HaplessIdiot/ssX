@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.3 1995/01/15 10:35:52 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.4 1995/01/20 04:23:50 dawes Exp $
 
 # Cirrus Logic
 
@@ -223,10 +223,15 @@ RAMDAC s3_sdac
 CLOCKCHIP s3_sdac
 NOCLOCKPROBE
 
-NAME S3-864 with S3-Trio64 chip
+NAME S3-Trio64 (generic)
 CHIPSET S3-Trio64
-SERVER VGA16
-UNSUPPORTED
+SERVER S3
+NOCLOCKPROBE
+
+NAME S3-Trio32 (generic)
+CHIPSET S3-Trio32
+SERVER S3
+NOCLOCKPROBE
 
 NAME Genoa Phantom 64i with S3-SDAC
 DACSPEED 135
@@ -240,15 +245,15 @@ LINE     Chipset "mmio_928"
 LINE     Option "number_nine"
 LINE     Option "dac_8_bit"
 
-NAME Number Nine GXE64 with S3-Trio64 chip
-SEE S3-864 with S3-Trio64 chip
+NAME Number Nine GXE64 with S3-Trio64
+SEE S3-Trio64 (generic)
 
 NAME Diamond Stealth 64 DRAM with S3-SDAC
 DACSPEED 135
 SEE S3-864 with SDAC (86C716)
 
-NAME Diamond Stealth 64 DRAM with S3-Trio64 chip
-SEE S3-864 with S3-Trio64 chip
+NAME Diamond Stealth 64 DRAM with S3-Trio64
+SEE S3-Trio64 (generic)
 
 NAME Actix GE64
 SEE S3-864 (generic)
@@ -277,6 +282,9 @@ SEE S3-864 with SDAC (86C716)
 
 NAME SPEA/V7 Mirage P64
 SEE S3-864 (generic)
+
+NAME SPEA/V7 Mirage P64 with S3-Trio64
+SEE S3-Trio64 (generic)
 
 NAME VideoMagic PCI V864
 SEE S3-864 (generic)

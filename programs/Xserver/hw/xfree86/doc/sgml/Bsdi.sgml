@@ -4,11 +4,11 @@
  
 <title> README for XFree86 3.1.1 on BSD/386 1.1
 <author> Hans Nasten
-<date> 13 November 1994
+<date> 21 January 1995
 <toc>
 
 <sect> What and Where is XFree86? <p>
-XFree86 3.1 is a port of X11R6 that supports several versions of
+XFree86 3.1.1 is a port of X11R6 that supports several versions of
 Intel-based Unix.  It is derived from X386 1.2, which was the X server
 distributed with X11R5.  This release consists of many new features
 and performance improvements as well as many bug fixes.  The release
@@ -24,10 +24,10 @@ The sources for XFree86 are available by anonymous ftp from:
 Binaries for BSD/386 1.1 will be available from:
 <p>
 <url
-    name="ftp.bsdi.com:/contrib/X11/XFree86"
-    url="ftp://ftp.bsdi.com/contrib/X11/XFree86">
+    name="ftp.XFree86.org:/pub/XFree86/current/binaries/Bsdi"
+    url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/Bsdi">
 <p>
-If you're running BSD 1.0, you'll have to build it from the source.
+If you're running BSD 1.0, you'll have to build it from source.
 Building the distribution on BSD/386 1.0 is untested, but believed to
 work correctly. If you run into trouble building on BSD/386 1.0, please
 let us know so that we can correct any incompatibilities.
@@ -74,6 +74,7 @@ The contents of the archives are:
     <tag/XF86_AGX.gz/     the X server for AGX boards
     <tag/XF86_Mach8.gz/   the X server for ATI Mach8 boards
     <tag/XF86_Mach32.gz/  the X server for ATI Mach32 boards
+    <tag/XF86_Mach64.gz/  the X server for ATI Mach64 boards
     <tag/XF86_P9000.gz/   the X server for P9000 based boards
     <tag/XF86_S3.gz/      the X server for S3 based boards
     <tag/XF86_W32.gz/     the X server for ET4000/W32 based boards
@@ -111,7 +112,7 @@ To unpack and install the archives:
 	`<tt>umask</tt>' value of 022.  Typing `<tt>umask 022</tt>' sets it.
         Caution:
 	If you do not extract the files as user `<tt>root</tt>' with the
-	correct umask you may not be able to run XFree86 3.1.  The X
+	correct umask you may not be able to run XFree86 3.1.1. The X
 	server needs special permissions that are only granted to the
 	root user. You must also cd to <tt>/</tt> before extracting the
         archives.
@@ -159,7 +160,8 @@ The <tt>XF86Config</tt> file tells the X server what kind of monitor, video
 card and mouse you have.
 You <em>must</em> create it to tell the server what specific hardware you have.
 
-XFree86 3.1 uses a new configuration file format. Consult the
+XFree86 3.1 and later releases uses a new configuration file format.
+Consult the
 <tt>XF86Config</tt> man
 page and the general <tt>INSTALL</tt> file for instructions.
 
@@ -172,7 +174,7 @@ it into the new format:
 and complete the rest according to the <tt>XF86Config</tt> man page and the
 <tt>XF86Config.sample</tt> file as a template.
 
-In order to protect your hardware from damage, the server no longer will read
+In order to protect your hardware from damage, the server will no longer read
 <tt>XF86Config</tt> files from a user's home directory, but requires that it
 be in <tt>/etc/XF86Config</tt>, <tt>/usr/X11R6/lib/X11/XF86Config.hostname</tt>
 or <tt>/usr/X11R6/lib/X11/XF86Config</tt>.
@@ -307,7 +309,7 @@ instructions on how to build a new kernel.
 </verb>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.5 1995/01/19 05:22:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.6 1995/01/21 07:16:29 dawes Exp $
 </verb>
 
 </article>

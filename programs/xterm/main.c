@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.222 94/04/17 20:23:28 gildea Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.9 1994/12/17 10:11:41 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.10 1995/01/21 07:21:00 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -2631,25 +2631,6 @@ spawn ()
 				    status = close(i);
 				}
 #endif /* WTMP */
-#ifdef LASTLOG
-				if (term->misc.login_shell &&
-				(i = open(etc_lastlog, O_WRONLY)) >= 0) {
-				    bzero((char *)&lastlog,
-					sizeof (struct lastlog));
-				    (void) strncpy(lastlog.ll_line, ttydev +
-					sizeof("/dev"),
-					sizeof (lastlog.ll_line));
-				    (void) strncpy(lastlog.ll_host, 
-					  XDisplayString (screen->display),
-					  sizeof (lastlog.ll_host));
-				    time(&lastlog.ll_time);
-				    lseek(i, (long)(screen->uid *
-					sizeof (struct lastlog)), 0);
-				    write(i, (char *)&lastlog,
-					sizeof (struct lastlog));
-				    close(i);
-				}
-#endif /* LASTLOG */
 #ifdef MNX_LASTLOG
 				if (term->misc.login_shell &&
 				(i = open(_U_LASTLOG, O_WRONLY)) >= 0) {
@@ -2671,6 +2652,26 @@ spawn ()
 		handshake.tty_slot = tslot;
 #endif /* USE_HANDSHAKE */
 #endif /* USE_SYSV_UTMP */
+
+#ifdef LASTLOG
+				if (term->misc.login_shell &&
+				(i = open(etc_lastlog, O_WRONLY)) >= 0) {
+				    bzero((char *)&lastlog,
+					sizeof (struct lastlog));
+				    (void) strncpy(lastlog.ll_line, ttydev +
+					sizeof("/dev"),
+					sizeof (lastlog.ll_line));
+				    (void) strncpy(lastlog.ll_host, 
+					  XDisplayString (screen->display),
+					  sizeof (lastlog.ll_host));
+				    time(&lastlog.ll_time);
+				    lseek(i, (long)(screen->uid *
+					sizeof (struct lastlog)), 0);
+				    write(i, (char *)&lastlog,
+					sizeof (struct lastlog));
+				    close(i);
+				}
+#endif /* LASTLOG */
 
 #ifdef USE_HANDSHAKE
 		/* Let our parent know that we set up our utmp entry

@@ -1,3 +1,15 @@
+XFree86 3.1.0Ce (22 January 1995)
+242. Updates to vgawonder driver, including fix for 68800-6 memory probe,
+     and a reworking of the clock matching code.
+241. Remove most BIOS dependencies in vgawonder probe code
+     (Marc Aurele La France).
+240. Change ordering of Mach32 and Mach64 probing in SuperProbe, ati.test
+     and the vgawonder driver to avoid hanging Mach32 boards.  Also use
+     a timeout in all WaitIdle loops in the probes (Marc Aurele La France).
+239. Minor #9 GXE64Pro updates (Hans Nasten).
+238. Allow LASTLOG to be independent of SYSV_UTMP in xterm -- so it will
+     work for Linux (Helmut Geyer).
+
 XFree86 3.1.0Cd (21 January 1995)
 237. Improve positioning of pixmap expansion and font cache areas with
      the S3 server.

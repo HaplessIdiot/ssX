@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.8 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.9tsi Exp $ */
 /* ati.test.c -- Gather information about ATI video adapters.
  * Created: Sun Aug  9 10:15:01 1992
  * Author: Rickard E. Faith, faith@cs.unc.edu
@@ -8,7 +8,7 @@
  * This programme comes with ABSOLUTELY NO WARRANTY.
  *
  * Log
- * - Heavily modified in 1994 by Marc Aurele La France, tsi@ualberta.ca
+ * - Heavily modified in 1994 and 1995 by Marc Aurele La France, tsi@ualberta.ca
  *
  * Please see main driver (ati_driver.c) for acknowledgements.
  */
@@ -298,7 +298,7 @@ short X, Y;
 	Colour Pixel_Colour;
 
 	/* Wait for idle engine */
-	WaitIdleEmpty();
+	ProbeWaitIdleEmpty();
 
 	/* Set up engine for pixel read */
 	ATIWaitQueue(7);
@@ -316,7 +316,7 @@ short X, Y;
 
 	/* Read pixel colour */
 	Pixel_Colour = inw(PIX_TRANS);
-	WaitIdleEmpty();
+	ProbeWaitIdleEmpty();
 	return Pixel_Colour;
 }
 
@@ -332,7 +332,8 @@ short X, Y;
 Colour Pixel_Colour;
 {
 	/* Set up engine for pixel write */
-	ATIWaitQueue(8);
+	ATIWaitQueue(9);
+	outw(WRT_MASK, (unsigned short)(~0));
 	outw(DP_CONFIG, FG_COLOR_SRC_FG | DRAW | READ_WRITE);
 	outw(ALU_FG_FN, MIX_FN_PAINT);
 	outw(FRGD_COLOR, Pixel_Colour);
@@ -417,7 +418,7 @@ ATIMach32videoRam(void)
 		AllPixelsOK = TRUE;
 		ForEachTestPixel
 			if (ATIMach32ReadPixel(TestPixel.x, TestPixel.y) !=
-			    saved_Pixel[Pixel_Number])
+			    Test_Pixel[Pixel_Number])
 			{
 				AllPixelsOK = FALSE;
 				break;
@@ -448,19 +449,19 @@ ATIMach32videoRam(void)
 	outw(CLOCK_SEL, saved_CLOCK_SEL & ~DISABPASSTHRU);
 
 	/* Wait for activity to die down */
-	WaitIdleEmpty();
+	ProbeWaitIdleEmpty();
 
 	/* Tell caller the REAL story */
 	return Test_Case[Case_Number].videoRamSize;
 }
 
 static void
-PrintRegisters(int Port, int Number, char * Name, int GenS1)
+PrintRegisters(int Port, int Start_Index, int End_Index, char * Name, int GenS1)
 {
 	int Index;
 
 	printf("\n\n Current %s register values:", Name);
-	for (Index = 0;  Index < Number;  Index++)
+	for (Index = Start_Index;  Index < End_Index;  Index++)
 	{
 		if((Index % 4) == 0)
 		{
@@ -501,6 +502,7 @@ main(void)
 	unsigned char misc;
 	unsigned char ATIChip = ATI_CHIP_NONE;
 	unsigned char ATIBoard = ATI_BOARD_NONE;
+	unsigned char ATIVGABoard = ATI_BOARD_NONE;
 	unsigned char ATIDac = ATI_DAC_GENERIC;
 	unsigned char ChipType[2] = {0, 0};
 	unsigned short int ChipClass = 0, ChipRevision = 0;
@@ -529,206 +531,212 @@ main(void)
 	IOPL_ON;				/* Enable I/O ports */
 
 	/*
-	 * First determine if a Mach64 is present.
+	 * Determine if an 8514/A compatible accelerator is present.
 	 */
-	IO_Value = inl(SCRATCH_REG0);
-	outl(SCRATCH_REG0, 0x55555555);		/* Test odd bits */
-	if (inl(SCRATCH_REG0) == 0x55555555)
+	IO_Value = inw(ERR_TERM);
+	outw(ERR_TERM, 0x5A5A);
+	ProbeWaitIdleEmpty();
+	if (inw(ERR_TERM) == 0x5A5A)
 	{
-		outl(SCRATCH_REG0, 0xAAAAAAAA);	/* Test even bits */
-		if (inl(SCRATCH_REG0) == 0xAAAAAAAA)
+		outw(ERR_TERM, 0x2525);
+		ProbeWaitIdleEmpty();
+		if (inw(ERR_TERM) == 0x2525)
+			ATIBoard = ATI_BOARD_MACH8;
+	}
+	outw(ERR_TERM, IO_Value);
+
+	if (ATIBoard != ATI_BOARD_NONE)
+	{
+		/* Some kind of 8514/A detected */
+		ATIBoard = ATI_BOARD_NONE;
+
+		IO_Value = inw(ROM_ADDR_1);
+		outw(ROM_ADDR_1, 0x5555);
+		ProbeWaitIdleEmpty();
+		if (inw(ROM_ADDR_1) == 0x5555)
 		{
-			/* Mach64 detected */
-			IO_Value2 = inl(CONFIG_STATUS_0);
-			if ((IO_Value2 & (CFG_VGA_EN | CFG_CHIP_EN)) !=
-			    (CFG_VGA_EN | CFG_CHIP_EN))
-				printf("Mach64 detected but VGAWonder "
-                                       "capability cannot be enabled.\n");
-			ATIChip = ATI_CHIP_88800;
-			ATIBoard = ATI_BOARD_MACH64;
-			ATIDac = (IO_Value2 & CFG_INIT_DAC_TYPE) >> 9;
-			MachvideoRam =
-				videoRamSizes[(inl(MEM_INFO) & 0x0007) + 2];
-			IO_Value2 = inl(CONFIG_CHIP_ID);
-			ChipType[0]  = (IO_Value2 & CFG_CHIP_TYPE1) >>  8;
-			ChipType[1]  = (IO_Value2 & CFG_CHIP_TYPE0)      ;
-			ChipClass    = (IO_Value2 & CFG_CHIP_CLASS) >> 16;
-			ChipRevision = (IO_Value2 & CFG_CHIP_REV  ) >> 24;
+			outw(ROM_ADDR_1, 0x2A2A);
+			ProbeWaitIdleEmpty();
+			if (inw(ROM_ADDR_1) == 0x2A2A)
+				ATIBoard = ATI_BOARD_MACH8;
+		}
+		outw(ROM_ADDR_1, IO_Value);
+	}
+
+	if (ATIBoard != ATI_BOARD_NONE)
+	{
+		/* ATI Mach8 or Mach32 accelerator detected */
+		outw(DESTX_DIASTP, 0xAAAA);
+		ProbeWaitIdleEmpty();
+		if (inw(READ_SRC_X) == 0x02AA)
+			ATIBoard = ATI_BOARD_MACH32;
+
+		outw(DESTX_DIASTP, 0x5555);
+		ProbeWaitIdleEmpty();
+		if (inw(READ_SRC_X) == 0x0555)
+		{
+			if (ATIBoard != ATI_BOARD_MACH32)
+				ATIBoard = ATI_BOARD_NONE;
+		}
+		else
+		{
+			if (ATIBoard != ATI_BOARD_MACH8)
+				ATIBoard = ATI_BOARD_NONE;
 		}
 	}
-	outl(SCRATCH_REG0, IO_Value);
 
-	if ((ATIBoard == ATI_BOARD_NONE) &&
-	    (Signature_Found == BIOS_Signature))
+	if (ATIBoard == ATI_BOARD_NONE)
 	{
 		/*
-		 * Pick up extended register port number.
+		 * Determine if a Mach64 is present.
 		 */
-		ATIExtReg = *((short *)(BIOS_Data + 0x10));
-
-		if (!(BIOS_Data[0x44] & 0x40))
+		IO_Value = inl(SCRATCH_REG0);
+		outl(SCRATCH_REG0, 0x55555555);		/* Test odd bits */
+		if (inl(SCRATCH_REG0) == 0x55555555)
 		{
-			/* An accelerator is present */
-			IO_Value = inw(ERR_TERM);
-			outw(ERR_TERM, 0x5A5A);
-			ProbeWaitIdleEmpty();
-			if (inw(ERR_TERM) == 0x5A5A)
+			outl(SCRATCH_REG0, 0xAAAAAAAA);	/* Test even bits */
+			if (inl(SCRATCH_REG0) == 0xAAAAAAAA)
 			{
-				outw(ERR_TERM, 0x2525);
-				ProbeWaitIdleEmpty();
-				if (inw(ERR_TERM) == 0x2525)
-					ATIBoard = ATI_BOARD_MACH8;
-			}
-			outw(ERR_TERM, IO_Value);
-
-			if (ATIBoard != ATI_BOARD_NONE)
-			{
-				/* Some kind of 8514/A detected */
-				ATIBoard = ATI_BOARD_NONE;
-
-				IO_Value = inw(ROM_ADDR_1);
-				outw(ROM_ADDR_1, 0x5555);
-				ProbeWaitIdleEmpty();
-				if (inw(ROM_ADDR_1) == 0x5555)
-				{
-					outw(ROM_ADDR_1, 0x2A2A);
-					ProbeWaitIdleEmpty();
-					if (inw(ROM_ADDR_1) == 0x2A2A)
-						ATIBoard = ATI_BOARD_MACH8;
-				}
-				outw(ROM_ADDR_1, IO_Value);
-			}
-
-			if (ATIBoard != ATI_BOARD_NONE)
-			{
-				/* ATI accelerator detected */
-				outw(DESTX_DIASTP, 0xAAAA);
-				WaitIdleEmpty();
-				if (inw(READ_SRC_X) == 0x02AA)
-					ATIBoard = ATI_BOARD_MACH32;
-
-				outw(DESTX_DIASTP, 0x5555);
-				WaitIdleEmpty();
-				if (inw(READ_SRC_X) == 0x0555)
-				{
-					if (ATIBoard != ATI_BOARD_MACH32)
-						ATIBoard = ATI_BOARD_NONE;
-				}
-				else
-				{
-					if (ATIBoard != ATI_BOARD_MACH8)
-						ATIBoard = ATI_BOARD_NONE;
-				}
-			}
-
-			if (ATIBoard == ATI_BOARD_MACH8)
-			{
-				ATIChip = ATI_CHIP_38800;
-				if (BIOS_Data[0x44] & 0x80)
-					ATIDac = ATI_DAC_SC11483;
-				MachvideoRam =
-					videoRamSizes[((inw(CONFIG_STATUS_1) &
-						MEM_INSTALLED) >> 5) + 2];
-			}
-			else if (ATIBoard == ATI_BOARD_MACH32)
-			{
-				IO_Value = inw(CONFIG_STATUS_1);
-				if (IO_Value & (_8514_ONLY | CHIP_DIS))
-					printf("Mach32 detected but VGA Wonder"
-					       " capability cannot be"
+				/* Mach64 detected */
+				IO_Value2 = inl(CONFIG_STATUS_0);
+				if ((IO_Value2 & (CFG_VGA_EN | CFG_CHIP_EN)) !=
+				    (CFG_VGA_EN | CFG_CHIP_EN))
+					printf("Mach64 detected but VGAWonder "
+					       "capability cannot be"
 					       " enabled.\n");
-
-				IO_Value2 = inw(CHIP_ID);
-				switch (IO_Value2 &
-					(CHIP_CODE_0 | CHIP_CODE_1))
-				{
-				      case 0x0000:
-					      ATIChip = ATI_CHIP_68800_3;
-					      break;
-
-				      case 0x02F7:
-					      ATIChip = ATI_CHIP_68800_6;
-					      break;
-
-				      case 0x0177:
-					      ATIChip = ATI_CHIP_68800LX;
-					      break;
-
-				      case 0x0017:
-					      ATIChip = ATI_CHIP_68800AX;
-					      break;
-
-				      default:
-					      ATIChip = ATI_CHIP_68800;
-					      break;
-				}
-
-				ATIDac = (IO_Value & DACTYPE) >> 9;
-				ChipType[0] =
-					((IO_Value2 & CHIP_CODE_1) >> 5) + 0x41;
-				ChipType[1] =
-					((IO_Value2 & CHIP_CODE_0)     ) + 0x41;
-				ChipClass = ((IO_Value2 & CHIP_CLASS) >> 10);
-				ChipRevision = ((IO_Value2 & CHIP_REV) >> 12);
+				ATIChip = ATI_CHIP_88800;
+				ATIBoard = ATI_BOARD_MACH64;
+				ATIDac = (IO_Value2 & CFG_INIT_DAC_TYPE) >> 9;
 				MachvideoRam =
-					videoRamSizes[((inw(MISC_OPTIONS) &
-						MEM_SIZE_ALIAS) >> 2) + 2];
-
-				/*
-				 * The 68800-6 doesn't necessarily report the
-				 * correct video memory size.
-				 */
-				if ((ATIChip == ATI_CHIP_68800_6) &&
-				    (MachvideoRam == 1024))
-					MachvideoRam = ATIMach32videoRam();
-
+					videoRamSizes[(inl(MEM_INFO) & 0x0007) +
+						2];
+				IO_Value2 = inl(CONFIG_CHIP_ID);
+				ChipType[0]  =
+					(IO_Value2 & CFG_CHIP_TYPE1) >>  8;
+				ChipType[1]  =
+					(IO_Value2 & CFG_CHIP_TYPE0)      ;
+				ChipClass    =
+					(IO_Value2 & CFG_CHIP_CLASS) >> 16;
+				ChipRevision =
+					(IO_Value2 & CFG_CHIP_REV  ) >> 24;
 			}
 		}
-		else if (BIOS_Data[0x40] == '3')
+		outl(SCRATCH_REG0, IO_Value);
+	}
+
+	if (ATIBoard == ATI_BOARD_MACH32)
+	{
+		IO_Value = inw(CONFIG_STATUS_1);
+		if (IO_Value & (_8514_ONLY | CHIP_DIS))
+			printf("Mach32 detected but VGA Wonder capability"
+			       " cannot be enabled.\n");
+
+		IO_Value2 = inw(CHIP_ID);
+		switch (IO_Value2 & (CHIP_CODE_0 | CHIP_CODE_1))
+		{
+			case 0x0000:
+				ATIChip = ATI_CHIP_68800_3;
+				break;
+
+			case 0x02F7:
+				ATIChip = ATI_CHIP_68800_6;
+				break;
+
+			case 0x0177:
+				ATIChip = ATI_CHIP_68800LX;
+				break;
+
+			case 0x0017:
+				ATIChip = ATI_CHIP_68800AX;
+				break;
+
+			default:
+				ATIChip = ATI_CHIP_68800;
+				break;
+		}
+
+		ATIDac = (IO_Value & DACTYPE) >> 9;
+		ChipType[0] = ((IO_Value2 & CHIP_CODE_1) >> 5) + 0x41;
+		ChipType[1] = ((IO_Value2 & CHIP_CODE_0)     ) + 0x41;
+		ChipClass   = ((IO_Value2 & CHIP_CLASS) >> 10)       ;
+		ChipRevision = ((IO_Value2 & CHIP_REV) >> 12);
+		MachvideoRam =
+			videoRamSizes[((inw(MISC_OPTIONS) & MEM_SIZE_ALIAS) >>
+				2) + 2];
+
+		/*
+		 * The 68800-6 doesn't necessarily report the correct video
+		 * memory size.
+		 */
+		if ((ATIChip == ATI_CHIP_68800_6) && (MachvideoRam == 1024))
+			MachvideoRam = ATIMach32videoRam();
+
+	}
+	else if (ATIBoard == ATI_BOARD_MACH8)
+		MachvideoRam =
+			videoRamSizes[((inw(CONFIG_STATUS_1) & MEM_INSTALLED) >>
+				5) + 2];
+
+	if (ATIBoard <= ATI_BOARD_MACH8)
+	if (Signature_Found == BIOS_Signature)
+	if (BIOS_Data[0x40] == '3')
+	{
 		if (BIOS_Data[0x41] == '2')
-			ATIBoard = ATI_BOARD_EGA;
+			ATIVGABoard = ATI_BOARD_EGA;
 		else if (BIOS_Data[0x41] == '3')
-			ATIBoard = ATI_BOARD_BASIC;
+			ATIVGABoard = ATI_BOARD_BASIC;
 		else if (BIOS_Data[0x41] == '1')
 		{
-			/* This is a VGA Wonder board of some kind */
+			/* This is a VGA Wonder or Mach8 board of some kind */
 			if ((BIOS_Data[0x43] >= '1') &&
-				(BIOS_Data[0x43] <= '6'))
+			    (BIOS_Data[0x43] <= '6'))
 				ATIChip = BIOS_Data[0x43] - '0';
 
 			switch (ATIChip)
 			{
 				case ATI_CHIP_18800:
-					ATIBoard = ATI_BOARD_V3;
+					ATIVGABoard = ATI_BOARD_V3;
 					break;
 
 				case ATI_CHIP_18800_1:
 					if (BIOS_Data[0x42] & 0x10)
-						ATIBoard = ATI_BOARD_V5;
+						ATIVGABoard = ATI_BOARD_V5;
 					else
-						ATIBoard = ATI_BOARD_V4;
+						ATIVGABoard = ATI_BOARD_V4;
 					break;
 
 				case ATI_CHIP_28800_2:
 				case ATI_CHIP_28800_4:
 				case ATI_CHIP_28800_5:
 				case ATI_CHIP_28800_6:
-					ATIBoard = ATI_BOARD_PLUS;
+					ATIVGABoard = ATI_BOARD_PLUS;
 					if (BIOS_Data[0x44] & 0x80)
 					{
-						ATIBoard = ATI_BOARD_XL;
+						ATIVGABoard = ATI_BOARD_XL;
 						ATIDac = ATI_DAC_SC11483;
 					}
 					break;
 			}
 		}
+
+		if (ATIBoard == ATI_BOARD_NONE)
+			ATIBoard = ATIVGABoard;
+	}
+
+	if ((ATIChip < ATI_CHIP_88800) &&
+	    (Signature_Found == BIOS_Signature))
+	{
+		/*
+		 * Pick up extended register port number.
+		 */
+		ATIExtReg = *((short *)(BIOS_Data + 0x10));
 	}
 
 	/*
 	 * Sometimes, the BIOS lies about the chip.
 	 */
-	if ((ATIChip == ATI_CHIP_28800_5) ||
-		(ATIChip == ATI_CHIP_28800_6))
+	if ((ATIChip >= ATI_CHIP_28800_4) ||
+		(ATIChip <= ATI_CHIP_28800_6))
 	{
 		IO_Value = GetReg(ATIExtReg, 0xAA) & 0x0F;
 		if ((IO_Value < 7) && (IO_Value > ATIChip))
@@ -737,14 +745,16 @@ main(void)
 
 	printf("%s graphics controller detected.\n", ChipNames[ATIChip]);
 	if (ATIBoard >= ATI_BOARD_MACH32)
-		printf("Chip type %c%c, class %d, revision %d.\n",
-			ChipType[0], ChipType[1], ChipClass, ChipRevision);
+		printf("Chip type %02X%02X (%.1s%.1s), class %d,"
+		       " revision %d.\n",
+			ChipType[0], ChipType[1], ChipType + 1, ChipType,
+			ChipClass, ChipRevision);
 	printf("%s or similar RAMDAC detected.\n", DACNames[ATIDac]);
 	printf("This is a %s video adapter.\n\n", BoardNames[ATIBoard]);
 	if (ATIBoard < ATI_BOARD_MACH64)
 	{
 		printf("   Signature code:                \"%c%c\"\n",
-			BIOS_Data[0x40], BIOS_Data[0x41]);
+		       BIOS_Data[0x40], BIOS_Data[0x41]);
 		printf("\n   BIOS version:                  %d.%d\n",
 		       BIOS_Data[0x4C], BIOS_Data[0x4D]);
 
@@ -784,7 +794,7 @@ main(void)
 	/*
 	 * Find out how much video memory the VGA Wonder side thinks it has.
 	 */
-	if (ATIBoard < ATI_BOARD_PLUS)
+	if (ATIChip < ATI_CHIP_28800_2)
 	{
 		IO_Value = GetReg(ATIExtReg, 0xBB);
 		if (IO_Value & 0x20)
@@ -820,7 +830,7 @@ main(void)
 				printf("\n 0xC00%02X:", Index);
 			printf(" ");
 		}
-		printf("%02x", *ptr);
+		printf("%02X", *ptr);
 	}
 
 	misc = inb(R_GENMO);
@@ -829,23 +839,23 @@ main(void)
 
 	if (misc & 0x01)
 	{
-		PrintRegisters(CRTX(ColourIOBase), 64,
+		PrintRegisters(CRTX(ColourIOBase), 0, 64,
 			"colour CRT controller", 0);
-		PrintRegisters(ATTRX, 32, "attribute controller",
+		PrintRegisters(ATTRX, 0, 32, "attribute controller",
 			GENS1(ColourIOBase));
 	}
 	else
 	{
-		PrintRegisters(CRTX(MonochromeIOBase), 64,
+		PrintRegisters(CRTX(MonochromeIOBase), 0, 64,
 			"monochrome CRT controller", 0);
-		PrintRegisters(ATTRX, 32, "attribute controller",
+		PrintRegisters(ATTRX, 0, 32, "attribute controller",
 			GENS1(MonochromeIOBase));
 	}
 
-	PrintRegisters(GRAX, 16, "graphics controller", 0);
-	PrintRegisters(SEQX, 8, "sequencer", 0);
+	PrintRegisters(GRAX, 0, 16, "graphics controller", 0);
+	PrintRegisters(SEQX, 0, 8, "sequencer", 0);
 
-	PrintRegisters(ATIExtReg, 256, "extended", 0);
+	PrintRegisters(ATIExtReg, 128, 256, "extended", 0);
 
 	printf("\n\n");
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.66 1995/01/21 12:39:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.67 1995/01/21 14:07:29 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -674,6 +674,12 @@ s3Probe()
 	 } else if (S3_TRIO64_SERIES(s3ChipId)) {
 	    ErrorF("%s %s: chipset:   Trio64 rev. %x\n",
                    XCONFIG_PROBED, s3InfoRec.name, s3ChipRev);
+	 }
+	 if (S3_866_SERIES(s3ChipId) || S3_868_SERIES(s3ChipId) ||
+	     S3_968_SERIES(s3ChipId)) {
+	    ErrorF("%s %s: Support for this chipset is untested.\n%s\n",
+		   XCONFIG_PROBED, s3InfoRec.name,
+		   "\tPlease report success or failure to XFree86@XFree86.org");
 	 }
       } else if (S3_801_928_SERIES(s3ChipId)) {
 	 if (S3_801_SERIES(s3ChipId)) {

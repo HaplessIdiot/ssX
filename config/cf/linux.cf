@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.4 94/04/07 15:46:42 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.18 1994/12/11 10:48:16 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.19 1995/01/21 10:37:13 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -42,6 +42,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.18 1994/12/11 10:48:16 dawe
 #define AsCmd			/usr/i486-linuxelf/bin/as
 #define LdCmd			ld -m elf_i386
 #define AsmDefines		-D__ELF__
+#define CplusplusCmd		g++ -b i486-linuxelf
 #else
 #define CcCmd			gcc
 #define AsCmd			as
