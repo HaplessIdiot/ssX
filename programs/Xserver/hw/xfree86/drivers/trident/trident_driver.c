@@ -404,20 +404,21 @@ tridentLCD LCD[] = {   /* 0    3    4    5   6    7    10   11  16 */
 #else
 #if 0
 tridentLCD LCD[] = { 
-    { 1,"640x480",25200,0x5f,0x82,0x54,0x80,0xb,0x3e,0xea,0x8c,0xb,0x08},
-    { 3,"800x600",40000,0x7f,0x82,0x6b,0x1b,0x72,0xf8,0x58,0x8c,0x72,0x08},
-    { 2,"1024x768",65000,0xa3,/*0x6*/0x98,0x8f,0xa0,0x24,0xf5,0x0f,0x24,0x0a,0x08},
-    { 0,"1280x1024",108000,0xce,0x81,0xa6,0x9a,0x27,0x50,0x00,0x03,0x26,0xa8},
-    { 0xff,"", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    { 1,640,480,25200,0x5f,0x82,0x54,0x80,0xb,0x3e,0xea,0x8c,0xb,0x08},
+    { 3,800,600,40000,0x7f,0x82,0x6b,0x1b,0x72,0xf8,0x58,0x8c,0x72,0x08},
+    { 2,1024,768,65000,0xa3,/*0x6*/0x98,0x8f,0xa0,0x24,0xf5,0x0f,0x24,0x0a,0x08},
+    { 0,1280,1024,108000,0xce,0x81,0xa6,0x9a,0x27,0x50,0x00,0x03,0x26,0xa8},
+    { 0xff,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+};
+#else
+tridentLCD LCD[] = { 
+    { 1,640,480,25200,0x5f,0x80,0x52,0x1e,0xb,0x3e,0xea,0x0c,0xb,0x08},
+    { 3,800,600,40000,0x7f,0x00,0x69,0x7f,0x72,0xf0,0x59,0x0d,0x00,0x08},
+    { 2,1024,768,65000,0xa3,0x00,0x84,0x94,0x24,0xf5,0x03,0x09,0x24,0x08},
+    { 0,1280,1024,108000,0xce,0x91,0xa6,0x14,0x28,0x5a,0x01,0x04,0x28,0xa8},
+    { 0xff,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 #endif
-tridentLCD LCD[] = { 
-    { 1,"640x480",25200,0x5f,0x80,0x52,0x1e,0xb,0x3e,0xea,0x0c,0xb,0x08},
-    { 3,"800x600",40000,0x7f,0x00,0x69,0x7f,0x72,0xf0,0x59,0x0d,0x00,0x08},
-    { 2,"1024x768",65000,0xa3,0x86,0x83,0x94,0x24,0xf5,0x03,0x09,0x24,0x08},
-    { 0,"1280x1024",108000,0xce,0x91,0xa6,0x14,0x28,0x5a,0x01,0x04,0x28,0xa8},
-    { 0xff,"", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-};
 #endif
 
 static const char *xaaSymbols[] = {
@@ -977,6 +978,7 @@ TRIDENTProbeDDC(ScrnInfoPtr pScrn, int index)
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	pVbe = VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+	vbeFree(pVbe);
     }
 }
 
@@ -1336,8 +1338,10 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
      */
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	xf86MonPtr pMon;
-	pMon = vbeDoEDID(VBEInit(pTrident->Int10,
-				 pTrident->pEnt->index), NULL);
+	vbeInfoPtr pVbe;
+	pVbe = vbeInfoPtr pVbe;
+	pMon = vbeDoEDID(pVbe, NULL);
+	vbeFree(pVbe);
 	if (pMon) {
 	    if (!xf86LoadSubModule(pScrn, "ddc")) {
 		TRIDENTFreeRec(pScrn);
@@ -1751,8 +1755,10 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	case 0x04: /* 8MB, but - hw cursor can't store above 4MB */
 		   /* So, we force to 4MB for now */
 	    	   /* pScrn->videoRam = 8192; */
-
-	  if (pTrident->HWCursor) {
+	    /* Appearantly this isn't true for the CYBER9397DVD */
+	    /* maybe some other chipsets aren't affected either */
+	    /* XXX this needs to be investigated further */
+	  if (pTrident->HWCursor && (pTrident->Chipset != CYBER9397DVD)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
 		       "Found 8MB board, using 4MB\n");
 	    pScrn->videoRam = 4096;
@@ -1793,11 +1799,14 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	for (i = 0; LCD[i].mode != 0xff; i++) {
 	    if (LCD[i].mode == ((mod >> 4) & 3)) {
 		pTrident->lcdMode = i;
-		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,"%s Panel %s found\n",
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,"%s Panel %ix%i found\n",
 			   (dsp & 0x80) ? "TFT" :
-			   ((dsp1 & 0x20) ? "DSTN" : "STN"), LCD[i].display);
+			   ((dsp1 & 0x20) ? "DSTN" : "STN"), 
+			   LCD[i].display_x,LCD[i].display_y);
 	    }
 	}
+	OUTB(0x3CE, FPConfig);
+	pTrident->lcdActive = (INB(0x3CF) & 0x10);
     }
     
     pTrident->MCLK = 0;
@@ -2779,6 +2788,21 @@ TRIDENTFreeScreen(int scrnIndex, int flags)
 static int
 TRIDENTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+  
+    if (pTrident->lcdActive && (pTrident->lcdMode != 0xff)
+	&& ((mode->HDisplay > LCD[pTrident->lcdMode].display_x) 
+	|| (mode->VDisplay > LCD[pTrident->lcdMode].display_y))) {
+        xf86DrvMsg(scrnIndex,X_INFO, "Removing mode (%dx%d) "
+	       "larger than the LCD panel (%dx%d)\n",
+	       mode->HDisplay,
+	       mode->VDisplay,
+	       LCD[pTrident->lcdMode].display_x,
+	       LCD[pTrident->lcdMode].display_y);
+	return(MODE_BAD);
+  }
+
     return(MODE_OK);
 }
 

@@ -280,7 +280,9 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   case 32:
      if (pTDFX->ChipType<=PCI_CHIP_VOODOO3) {
        xf86DrvMsg(pScreen->myNum, X_ERROR,
-                  "DRI requires Voodoo3 or later, disabling DRI.\n");
+                  "DRI requires Voodoo4/5 in 32 bpp mode, disabling DRI.\n");
+       xf86DrvMsg(pScreen->myNum, X_INFO,
+                  "To use DRI, invoke the server using 16 bpp (depth 16).\n");
        return FALSE;
      }
   }

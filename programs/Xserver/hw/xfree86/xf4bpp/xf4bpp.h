@@ -10,7 +10,7 @@
 #include "colormapst.h"
 #include "fontstruct.h"
 #ifndef PixelType
-#define PixelType unsigned long
+#define PixelType CARD32
 #endif
 
 /* ppcArea.c */

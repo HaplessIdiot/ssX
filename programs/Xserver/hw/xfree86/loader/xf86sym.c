@@ -567,8 +567,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(GetTimeInMillis)
 
    /* xf86Xinput.c */
-   SYMFUNC(xf86ProcessCommonOptions)
 #ifdef XINPUT
+   SYMFUNC(xf86ProcessCommonOptions)
    SYMFUNC(xf86IsCorePointer)
    SYMFUNC(xf86PostMotionEvent)
    SYMFUNC(xf86PostProximityEvent)

@@ -525,7 +525,9 @@ xf86DisableInterrupts()
 #else
 #ifdef __GNUC__
 #if defined(__ia64__)
-      __asm__ __volatile__ (";; rsm psr.i;; srlz.d" ::: "memory");
+#if 0
+	__asm__ __volatile__ (";; rsm psr.i;; srlz.d" ::: "memory");
+#endif
 #else
       __asm__ __volatile__("cli");
 #endif
@@ -555,7 +557,9 @@ xf86EnableInterrupts()
 #else
 #ifdef __GNUC__
 #if defined(__ia64__)
-      __asm__ __volatile__ (";; ssm psr.i;; srlz.d" ::: "memory");
+#if 0
+	__asm__ __volatile__ (";; ssm psr.i;; srlz.d" ::: "memory");
+#endif
 #else
       __asm__ __volatile__("sti");
 #endif
