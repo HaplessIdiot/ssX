@@ -1,4 +1,28 @@
+XFree86 3.1.0Ab (17 December 1994)
+135. OS/2 updates, including config updates, SuperProbe support and
+     compile-time support for most of the Xserver (Holger Veit).
+134. Updated cl64xx driver, including support for the CL6440.  Note, the
+     driver name has changed from "cl6420" to "cl64xx" (Manfred Brands and
+     Randy Hendry).
+133. Fix VT switch problem with the SVGA MX driver (Frank Dikker).
+132. Add PCI config type 1 support to I128 probe in SuperProbe (Robin Cutshaw).
+131. Update support for STB Pegasus (928 + Bt485), including 16bpp and
+     32bpp (Leonard N. Zubkoff).
+130. Fix pixmux clock check in Mach32 server (Alan Hourihane).
+129. Mods to allow XFree86 servers to compile with 'gcc -ansi -pedantic'
+     on Solaris 2.x (David Holland).
+128. Fix stipple problem in S3 server.
+127. Fix for setuid-root xterm problem reading .Xauthority file on
+     nfs-mounted filesystem (so far only for systems with POSIX_SAVED_IDS)
+     (Christos Zoulas).
+126. Move server lock code into hw/xfree86 (Kaleb Keithley).
+125. Really fix Membase handling for S3 server and 805/928.
+124. Fix Mach32 probe problem.
+123. Fix SVR3 config problems (Michael Rohleder).
+
 XFree86 3.1.0Aa (11 December 1994)
+122. Fix default mapping for numpad keys.  ServerNumLock should now not
+     be required (for clients using R6 Xlib).
 121. DoubleScan modes are no longer specified with doubled vertical timings.
 120. Add extra timings fields to the ModeRec which are the CRTC values
      used by the hardware.
