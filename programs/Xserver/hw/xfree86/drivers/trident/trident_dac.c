@@ -60,6 +60,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case CYBERBLADEI7:
 	case CYBERBLADEI7D:
 	case CYBERBLADEI1:
+	case CYBERBLADEI1D:
 	case BLADE3D:
 	    OUTB(vgaIOBase + 4, RAMDACTiming);
 	    pReg->tridentRegs3x4[RAMDACTiming] |= 0x0F;

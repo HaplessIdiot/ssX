@@ -152,6 +152,7 @@ static SymTabRec TRIDENTChipsets[] = {
     { CYBERBLADEI7,		"cyberbladei7" },
     { CYBERBLADEI7D,		"cyberbladei7d" },
     { CYBERBLADEI1,		"cyberbladei1" },
+    { CYBERBLADEI1D,		"cyberbladei1d" },
     { -1,				NULL }
 };
 
@@ -182,6 +183,7 @@ static PciChipsets TRIDENTPciChipsets[] = {
     { CYBERBLADEI7,	PCI_CHIP_8400,	RES_SHARED_VGA },
     { CYBERBLADEI7D,	PCI_CHIP_8420,	RES_SHARED_VGA },
     { CYBERBLADEI1,	PCI_CHIP_8500,	RES_SHARED_VGA },
+    { CYBERBLADEI1D,	PCI_CHIP_8520,	RES_SHARED_VGA },
     { -1,		-1,		RES_UNDEFINED }
 };
     
@@ -276,6 +278,7 @@ static int ClockLimit[] = {
 	230000,
 	230000,
 	230000,
+	230000,
 };
 
 static int ClockLimit16bpp[] = {
@@ -303,6 +306,7 @@ static int ClockLimit16bpp[] = {
 	135000,
 	170000,
 	170000,
+	230000,
 	230000,
 	230000,
 	230000,
@@ -344,6 +348,7 @@ static int ClockLimit24bpp[] = {
 	115000,
 	115000,
 	115000,
+	115000,
 };
 
 static int ClockLimit32bpp[] = {
@@ -371,6 +376,7 @@ static int ClockLimit32bpp[] = {
 	70000,
 	85000,
 	85000,
+	115000,
 	115000,
 	115000,
 	115000,
@@ -1557,6 +1563,20 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->NewClockCode = TRUE;
 	    pTrident->frequency = NTSC;
 	    break;
+	case CYBERBLADEI1D:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x08)
+		ramtype = "SDRAM";
+    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x0C) {
+		pTrident->HasSGRAM = TRUE;
+		ramtype = "SGRAM";
+	    }
+	    pTrident->IsCyber = TRUE;
+	    Support24bpp = TRUE;
+	    chipset = "CyberBlade/DSTN/i1";
+	    pTrident->NewClockCode = TRUE;
+	    pTrident->frequency = NTSC;
+	    break;
     }
 
     if (!pScrn->progClock) {
@@ -2031,6 +2051,7 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case CYBERBLADEI7:
 	case CYBERBLADEI7D:
 	case CYBERBLADEI1:
+	case CYBERBLADEI1D:
 	case CYBER9520:
 	case CYBER9525DVD:
 	case CYBER9540:
@@ -2304,6 +2325,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    if ((pTrident->Chipset == CYBERBLADEI7) ||
 	        (pTrident->Chipset == CYBERBLADEI7D) ||
 	        (pTrident->Chipset == CYBERBLADEI1) ||
+	        (pTrident->Chipset == CYBERBLADEI1D) ||
 	        (pTrident->Chipset == BLADE3D))
 		BladeAccelInit(pScreen);
 	    else
