@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.58 1999/12/13 01:39:47 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.59 2000/01/21 01:12:13 dawes Exp $ */
 
 /*
- * Copyright (c) 1997 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
  */
 
 /*
@@ -15,6 +15,7 @@
 #include "misc.h"
 #include "input.h"
 #include "scrnintstr.h"
+#include "pixmapstr.h"
 #include "xf86Module.h"
 
 /*

@@ -1,5 +1,5 @@
 /*
- * $Id: fbtile.c,v 1.1 1999/11/19 13:53:47 hohndel Exp $
+ * $Id: fbtile.c,v 1.2 2000/01/21 15:06:20 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbtile.c,v 1.1 1999/11/19 13:53:47 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -29,6 +29,8 @@
  * Accelerated tile fill -- tile width is a power of two not greater
  * than FB_UNIT
  */
+
+#define FbSelectPart(x,o)	FbSelectPatternPart(x,o)
 
 void
 fbEvenTile (FbBits	*dst,
@@ -52,10 +54,12 @@ fbEvenTile (FbBits	*dst,
     int	    n, nmiddle;
     int	    tileX, tileY;
     int	    rot;
+    int	    startbyte, endbyte;
 
     dst += dstX >> FB_SHIFT;
     dstX &= FB_MASK;
-    FbMaskBits(dstX, width, startmask, nmiddle, endmask);
+    FbMaskBitsBytes(dstX, width, FbDestInvarientRop(alu, pm),
+		    startmask, startbyte, nmiddle, endmask, endbyte);
     if (startmask)
 	dstStride--;
     dstStride -= nmiddle;
@@ -83,7 +87,7 @@ fbEvenTile (FbBits	*dst,
 	
 	if (startmask)
 	{
-	    *dst = FbDoMaskRRop(*dst, and, xor, startmask);
+	    FbDoLeftMaskByteRRop(dst, startbyte, startmask, and, xor);
 	    dst++;
 	}
 	n = nmiddle;
@@ -97,7 +101,7 @@ fbEvenTile (FbBits	*dst,
 		dst++;
 	    }
 	if (endmask)
-	    *dst = FbDoMaskRRop (*dst, and, xor, endmask);
+	    FbDoRightMaskByteRRop(dst, endbyte, endmask, and, xor);
 	dst += dstStride;
     }
 }

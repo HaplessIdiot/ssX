@@ -1,5 +1,5 @@
 /*
- * $Id: fbscreen.c,v 1.5 2000/01/21 01:11:59 dawes Exp $
+ * $Id: fbscreen.c,v 1.6 2000/01/21 15:06:18 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.4 2000/01/09 17:54:34 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.5 2000/01/21 01:11:59 dawes Exp $ */
 
 #include "fb.h"
 
@@ -59,6 +59,12 @@ fbQueryBestSize (int class,
     unsigned short  w;
     
     switch (class) {
+    case CursorShape:
+	if (*width > pScreen->width)
+	    *width = pScreen->width;
+	if (*height > pScreen->height)
+	    *height = pScreen->height;
+	break;
     case TileShape:
     case StippleShape:
 	w = *width;

@@ -1,5 +1,5 @@
 /*
- * $Id: fbbits.h,v 1.3 2000/01/21 01:11:56 dawes Exp $
+ * $Id: fbbits.h,v 1.4 2000/01/21 15:06:15 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.2 1999/12/30 02:33:58 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.3 2000/01/21 01:11:56 dawes Exp $ */
 
 /*
  * This file defines functions for drawing some primitives using
@@ -405,65 +405,6 @@ ARC (FbBits	*dst,
 # define WRITE4(d,n,fg)	    WRITE2(d,n+2,WRITE2(d,n,fg))
 #endif
 
-#define WRITE_STIPPLE(bits,dst,fg) \
-    switch (bits) { \
-    case 0: \
-	break; \
-    case 1: \
-	WRITE1(dst,0,fg); \
-	break; \
-    case 2: \
-	WRITE1(dst,1,fg); \
-	break; \
-    case 3: \
-	WRITE2(dst,0,fg); \
-	break; \
-    case 4: \
-	WRITE1(dst,2,fg); \
-	break; \
-    case 5: \
-	WRITE1(dst,0,fg); \
-	WRITE1(dst,2,fg); \
-	break; \
-    case 6: \
-	WRITE1(dst,1,fg); \
-	WRITE1(dst,2,fg); \
-	break; \
-    case 7: \
-	WRITE2(dst,0,fg); \
-	WRITE1(dst,2,fg); \
-	break; \
-    case 8: \
-	WRITE1(dst,3,fg); \
-	break; \
-    case 9: \
-	WRITE1(dst,0,fg); \
-	WRITE1(dst,3,fg); \
-	break; \
-    case 10: \
-	WRITE1(dst,1,fg); \
-	WRITE1(dst,3,fg); \
-	break; \
-    case 11: \
-	WRITE2(dst,0,fg); \
-	WRITE1(dst,3,fg); \
-	break; \
-    case 12: \
-	WRITE2(dst,2,fg); \
-	break; \
-    case 13: \
-	WRITE1(dst,0,fg); \
-	WRITE2(dst,2,fg); \
-	break; \
-    case 14: \
-	WRITE1(dst,1,fg); \
-	WRITE2(dst,2,fg); \
-	break; \
-    case 15: \
-	WRITE4(dst,0,fg); \
-	break; \
-    }
-
 void
 GLYPH (FbBits	*dstBits,
    FbStride	dstStride,
@@ -492,8 +433,63 @@ GLYPH (FbBits	*dstBits,
 	n = lshift;
 	while (bits)
 	{
-	    WRITE_STIPPLE (FbStipMoveLsb (FbLeftStipBits (bits, n), 4, n),
-			   dst, fg);
+	    switch (FbStipMoveLsb (FbLeftStipBits (bits, n), 4, n)) {
+	    case 0:
+		break;
+	    case 1:
+		WRITE1(dst,0,fg);
+		break;
+	    case 2:
+		WRITE1(dst,1,fg);
+		break;
+	    case 3:
+		WRITE2(dst,0,fg);
+		break;
+	    case 4:
+		WRITE1(dst,2,fg);
+		break;
+	    case 5:
+		WRITE1(dst,0,fg);
+		WRITE1(dst,2,fg);
+		break;
+	    case 6:
+		WRITE1(dst,1,fg);
+		WRITE1(dst,2,fg);
+		break;
+	    case 7:
+		WRITE2(dst,0,fg);
+		WRITE1(dst,2,fg);
+		break;
+	    case 8:
+		WRITE1(dst,3,fg);
+		break;
+	    case 9:
+		WRITE1(dst,0,fg);
+		WRITE1(dst,3,fg);
+		break;
+	    case 10:
+		WRITE1(dst,1,fg);
+		WRITE1(dst,3,fg);
+		break;
+	    case 11:
+		WRITE2(dst,0,fg);
+		WRITE1(dst,3,fg);
+		break;
+	    case 12:
+		WRITE2(dst,2,fg);
+		break;
+	    case 13:
+		WRITE1(dst,0,fg);
+		WRITE2(dst,2,fg);
+		break;
+	    case 14:
+		WRITE1(dst,1,fg);
+		WRITE2(dst,2,fg);
+		break;
+	    case 15:
+		WRITE4(dst,0,fg);
+		break;
+	    }
 	    bits = FbStipLeft (bits, n);
 	    n = 4;
 	    dst += 4;
@@ -795,54 +791,9 @@ POLYSEGMENT (DrawablePtr    pDrawable,
     }
 }
 
-#if 0
-void
-STIPPLE ()
-{
-    FbStip  bits;
-    FbStip  startmask, endmask;
-    int	    nmiddle, n;
-    
-    /*
-     * convert from bit positions to 4-pixel positions
-     */
-    dstX /= (sizeof (BITS) * 8) / 4;
-    width /= (sizeof (BITS) * 8) / 4;
-    
-    while (height--)
-    {
-	bits = stipple[stippos++];
-	if (stippos == stipheight)
-	    stippos = 0;
-	n = nmiddle;
-	if (startmask)
-	{
-	    WRITE_STIPPLE (FbStipMoveLsb (FbLeftStipBits (bits, 4), 4, 4) & startmask,
-			   dst, fg);
-	    dst++;
-	    bits = FbRotStipLeft (bits, 4);
-	}
-	while (n--)
-	{
-	    WRITE_STIPPLE (FbStipMoveLsb (FbLeftStipBits (bits, 4), 4, 4),
-			   dst, fg);
-	    dst++;
-	    bits = FbRotStipLeft (bits, 4);
-	}
-	if (endmask)
-	{
-	    WRITE_STIPPLE (FbStipMoveLsb (FbLeftStipBits (bits, 4), 4, 4) & endmask,
-			   dst, fg);
-	}
-	dst += dstStride;
-    }
-}
-#endif
-
 #undef WRITE_ADDR1
 #undef WRITE_ADDR2
 #undef WRITE_ADDR4
 #undef WRITE1
 #undef WRITE2
 #undef WRITE4
-#undef WRITE_STIPPLE
