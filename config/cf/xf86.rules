@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xf86.rules /main/9 1996/10/31 14:54:26 kaleb $
-XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.25 1999/07/10 07:24:34 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.26 1999/08/14 10:48:59 dawes Exp $
 
 /*
  * These rules are needed to build the XFree86 X Servers
@@ -127,7 +127,7 @@ clean::									@@\
 
 #ifndef InstallDriverSDKNonExecFile
 #if !DoLoadableServer
-#define InstallDriverSDKNonExecFile					/**/
+#define InstallDriverSDKNonExecFile(file,dest)				/**/
 #else
 #define InstallDriverSDKNonExecFile(file,dest)				@@\
 install.sdk:: file							@@\
@@ -138,7 +138,7 @@ install.sdk:: file							@@\
 
 #ifndef InstallDriverSDKLibrary
 #if !DoLoadableServer
-#define InstallDriverSDKLibrary						/**/
+#define InstallDriverSDKLibrary(libname,dest)				/**/
 #else
 #define InstallDriverSDKLibrary(libname,dest)				@@\
 install.sdk:: Concat(lib,libname.a)					@@\
@@ -150,7 +150,7 @@ install.sdk:: Concat(lib,libname.a)					@@\
 
 #ifndef InstallDriverSDKNamedLibrary
 #if !DoLoadableServer
-#define InstallDriverSDKNamedLibrary					/**/
+#define InstallDriverSDKNamedLibrary(libname,dlibname,dest)		/**/
 #else
 #define InstallDriverSDKNamedLibrary(libname,dlibname,dest)		@@\
 install.sdk:: Concat(lib,libname.a)					@@\
@@ -163,7 +163,7 @@ install.sdk:: Concat(lib,libname.a)					@@\
 
 #ifndef InstallDriverSDKNamedNonExec
 #if !DoLoadableServer
-#define InstallDriverSDKNamedNonExec					/**/
+#define InstallDriverSDKNamedNonExec(srcname,dstname,dest)		/**/
 #else
 #define InstallDriverSDKNamedNonExec(srcname,dstname,dest)		@@\
 install.sdk:: srcname							@@\
@@ -174,7 +174,7 @@ install.sdk:: srcname							@@\
 
 #ifndef InstallDriverSDKNamedProg
 #if !DoLoadableServer
-#define InstallDriverSDKNamedProg					/**/
+#define InstallDriverSDKNamedProg(srcname,dstname,dest)			/**/
 #else
 #define InstallDriverSDKNamedProg(srcname,dstname,dest)			@@\
 install.sdk:: srcname							@@\
@@ -185,7 +185,7 @@ install.sdk:: srcname							@@\
 
 #ifndef InstallDriverSDKSubdirs
 #if !DoLoadableServer
-#define InstallDriverSDKSubdirs						/**/
+#define InstallDriverSDKSubdirs(dirs)					/**/
 #else
 #define InstallDriverSDKSubdirs(dirs) \
 NamedTargetSubdirs(install.sdk,dirs,"installing driver SDK",DESTDIR='$(DESTDIR)',install.sdk)
@@ -194,7 +194,7 @@ NamedTargetSubdirs(install.sdk,dirs,"installing driver SDK",DESTDIR='$(DESTDIR)'
 
 #ifndef InstallDriverSDKMultipleDestFlags
 #if !DoLoadableServer
-#define InstallDriverSDKMultipleDestFlags				/**/
+#define InstallDriverSDKMultipleDestFlags(list,dest,flags)		/**/
 #else
 #define InstallDriverSDKMultipleDestFlags(list,dest,flags) \
 InstallMultipleDestFlags(install.sdk,list,dest,flags)
@@ -203,7 +203,7 @@ InstallMultipleDestFlags(install.sdk,list,dest,flags)
 
 #ifndef InstallDriverSDKDynamicModule
 #if !DoLoadableServer
-#define InstallDriverSDKDynamicModule					/**/
+#define InstallDriverSDKDynamicModule(module,dest,subdir)		/**/
 #else
 #define InstallDriverSDKDynamicModule(module,dest,subdir)		@@\
 AllTarget(module)							@@\
@@ -231,7 +231,7 @@ InstallDriverSDKDynamicModule(Concat(module,_drv.o),dest,subdir)
 
 #ifndef InstallDriverSDKLibraryModule
 #if !DoLoadableServer
-#define InstallDriverSDKLibraryModule(module,dest,subdir)	/**/
+#define InstallDriverSDKLibraryModule(module,dest,subdir)		/**/
 #else
 #if MakeDllModules
 #define InstallDriverSDKLibraryModule(module,dest,subdir)		@@\
