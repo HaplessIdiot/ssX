@@ -28,9 +28,6 @@
  * SOFTWARE.
  */
 /* T1IO FILE structure and related stuff */
-#ifdef XFree86LOADER
-#undef FILE
-#endif
 #define FILE F_FILE
 typedef unsigned char F_char;
  
@@ -57,9 +54,6 @@ typedef struct F_FILE {
 #define EOF (-1)     /* end of file */
 #define F_BUFSIZ (512)
  
-#ifdef XFree86LOADER
-#undef getc
-#endif
 #define getc(f) \
   ( \
    ( ((f)->b_cnt > 0) && ((f)->flags == 0) ) ? \
@@ -70,15 +64,6 @@ typedef struct F_FILE {
 extern FILE *T1Open(), *T1eexec();
 extern int T1Close(), T1ungetc(), T1Read();
  
-#ifdef XFree86LOADER
-#undef fclose
-#undef fopen
-#undef ungetc
-#undef fgetc
-#undef fread
-#undef feof
-#undef ferror
-#endif
 #define  fclose(f)          T1Close(f)
 #define  fopen(name,mode)   T1Open(name,mode)
 #define  ungetc(c,f)        T1Ungetc(c,f)

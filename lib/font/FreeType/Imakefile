@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.2 1998/06/04 16:43:10 hohndel Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.3 1998/06/27 12:53:26 hohndel Exp $
 
 XCOMM Imakefile created for the Freetype TrueType renderer.
 XCOMM mleisher@crl.nmsu.edu (Mark Leisher)
@@ -6,20 +6,14 @@ XCOMM jec@dcs.ed.ac.uk (Juliusz Chroboczek)
 
 #include <Server.tmpl>
 
-#define IHaveSubdirs
+#define	IHaveSubdirs
 SUBDIRS = lib
 
-#if DoLoadableServer
-XFMODSRC = freetypemod.c
-XFMODOBJ = freetypemod.o
-INCLUDES = -I$(FONTINCSRC) -I../include  -Ilib -I$(XF86COMSRC) -I$(XTOP)/include -I$(SERVERSRC)/include
-#else
 INCLUDES = -I$(FONTINCSRC) -I../include  -Ilib
-#endif
 
-SRCS = ftfuncs.c ftenc.c ftutil.c ftxcmap.c $(XFMODSRC)
+SRCS = ftfuncs.c ftenc.c ftutil.c ftxcmap.c
 
-OBJS = ftfuncs.o ftenc.o ftutil.o ftxcmap.o $(XFMODOBJ)
+OBJS = ftfuncs.o ftenc.o ftutil.o ftxcmap.o
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
@@ -30,9 +24,3 @@ DependTarget()
 MakeSubdirs($(SUBDIRS))
 ForceSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
-
-#if DoLoadableServer
-NormalLibraryTarget(freetype,?*.o lib/?*.o)
-InstallDynamicModule(LibraryTargetName(freetype),$(MODULEDIR))
-#endif
-

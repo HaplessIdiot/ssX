@@ -47,7 +47,7 @@
 /* Include Files: */
 /******************/
 #include  <stdio.h>          /* a system-dependent include, usually */
-
+ 
 #include  "objects.h"
 #include  "spaces.h"
 #include  "paths.h"

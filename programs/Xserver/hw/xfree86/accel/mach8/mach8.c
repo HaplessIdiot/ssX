@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.43 1998/03/27 23:23:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.44 1998/06/27 12:54:13 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -116,7 +116,6 @@ ScrnInfoRec mach8InfoRec = {
     mach8Adjust,	/* void (* AdjustFrame)() */
     mach8SwitchMode,	/* Bool (* SwitchMode)() */
     (void (*)())NoopDDA,/* void (* DPMSSet)() */
-    (void (*)())NoopDDA,/* void (* APMNotify)() */
     mach8PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {0, 0, 0},          /* xrgb weight */

@@ -1,9 +1,9 @@
-XCOMM $XFree86: xc/lib/font/FreeType/lib/Imakefile,v 1.1 1998/04/19 11:10:54 dawes Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/lib/Imakefile,v 1.2 1998/06/27 12:53:27 hohndel Exp $
 
 
 #include <Server.tmpl>
 
-INCLUDES = -I$(SERVERSRC)/include
+INCLUDES = 
 
 SRCS = ttapi.c     ttcmap.c    ttextend.c  ttinterp.c  ttmemory.c  \
 ttraster.c ttcache.c   ttdebug.c   ttfile.c    ttlists.c   ttmutex.c \

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/12 1995/12/07 21:15:22 gildea $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.10 1998/06/04 16:43:09 hohndel Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.11 1998/06/27 12:53:25 hohndel Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -11,12 +11,8 @@ FREETYPEDONES = FreeType/DONE FreeType/lib/DONE
 #endif
 
 SUBDIRS = bitmap fontfile fc Speedo Type1 $(FREETYPEDIRS) util
-#if DoLoadableServer
-OBJS = fontfile/?*.o fc/?*.o util/?*.o
-#else
 OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o Speedo/?*.o Type1/?*.o \
        $(FREETYPEOBJS) util/?*.o
-#endif
 DONES = bitmap/DONE fontfile/DONE fc/DONE Speedo/DONE Type1/DONE \
        $(FREETYPEDONES) util/DONE
 

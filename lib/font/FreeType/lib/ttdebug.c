@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/FreeType/lib/ttdebug.c,v 1.2 1998/04/28 13:30:54 robin Exp $ */
+/* $XFree86: xc/lib/font/FreeType/lib/ttdebug.c,v 1.3 1998/06/27 12:53:27 hohndel Exp $ */
   
 /* Simple debugging component. Temporary */
 
@@ -7,10 +7,6 @@
 #include "ttobjs.h"
 #include "stdio.h"
 #include "string.h"
-
-#ifdef XFree86LOADER
-#include <xf86_libc.h>
-#endif
 
   typedef char ByteStr[2];
   typedef char WordStr[4];

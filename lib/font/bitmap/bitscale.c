@@ -29,7 +29,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.5 1997/06/11 12:24:28 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.6 1998/06/27 12:53:39 hohndel Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -708,8 +708,7 @@ ComputeScaledProperties(sourceFontInfo, name, vals, dx, dy, sdx, sdy,
 	if (*ptr2)
 	{
 	    ptr1 = ptr2 + 1;
-	    if (!(ptr2 = (char *)strchr(ptr1, '-'))) 
-			ptr2 = (char *)strchr(ptr1, '\0');
+	    if (!(ptr2 = strchr(ptr1, '-'))) ptr2 = strchr(ptr1, '\0');
 	}
 
 	*isStringProp = 0;

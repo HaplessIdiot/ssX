@@ -50,7 +50,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.15 1998/03/20 21:05:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.16 1998/06/27 12:53:48 hohndel Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -248,7 +248,7 @@ main(argc, argv)
     int		argc;
     char	*argv[];
 {
-    int		i, j, k, error;
+    int		i, j, k;
     HWEventQueueType	alwaysCheckForInput[2];
 
     /* Notice if we're restarted.  Probably this is because we jumped through
@@ -392,7 +392,8 @@ main(argc, argv)
 	    FatalError("failed to initialize core devices");
 
 	InitFonts();
-	SetFontPath(0, 0, (unsigned char *)defaultFontPath, &error);
+	if (SetDefaultFontPath(defaultFontPath) != Success)
+	    ErrorF("failed to set default font path '%s'", defaultFontPath);
 	if (!SetDefaultFont(defaultTextFont))
 	    FatalError("could not open default font '%s'", defaultTextFont);
 	if (!(rootCursor = CreateRootCursor(defaultCursorFont, 0)))

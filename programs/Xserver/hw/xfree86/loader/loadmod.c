@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.23 1998/04/26 18:31:59 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.24 1998/06/27 12:54:28 hohndel Exp $ */
 
 /* 
  *
@@ -67,14 +67,6 @@ static char *FindModule (const char *, const char *);
 static void CheckVersion (const char *, XF86ModuleVersionInfo *, int);
 static void UnloadModuleOrDriver (ModuleDescPtr mod);
 
-FontModule font[] = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-};
-
 void
 LoaderFixups (void)
 {
@@ -89,7 +81,6 @@ static char *subdirs[] =
 	"",
 	"drivers/",
 	"extensions/",
-	"fonts/",
 	"internal/",
 };
 static char *prefixes[] =
@@ -205,19 +196,6 @@ int cnt;
 		}
 #endif
 	}
-}
-
-void
-LoadFont (e)
-{
-	int i = 0;
-
-	while (font[i].initFunc != NULL)
-		i++;
-
-	if (i >= 5) FatalError("No Font Slots left\n");
-
-	font[i].initFunc = (pointer)e;
 }
 
 void
@@ -383,9 +361,6 @@ int *errmin;
 				break;
 			case MAGIC_LOAD_EXTENSION:
 				LoadExtension ((ExtensionModule *) data);
-				break;
-			case MAGIC_LOAD_FONT:
-				LoadFont (data);
 				break;
 			case MAGIC_VERSION:
 				version++;

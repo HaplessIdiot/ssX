@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.19 1998/04/26 18:31:59 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.20 1998/06/27 12:54:28 hohndel Exp $ */
 
 
 
@@ -50,7 +50,6 @@
 extern LOOKUP miLookupTab[];
 extern LOOKUP xfree86LookupTab[];
 extern LOOKUP dixLookupTab[];
-extern LOOKUP fontLookupTab[];
 
 /*
 #define DEBUG
@@ -147,7 +146,6 @@ LoaderInit(void)
     LoaderAddSymbols(-1, -1, miLookupTab ) ;
     LoaderAddSymbols(-1, -1, xfree86LookupTab ) ;
     LoaderAddSymbols(-1, -1, dixLookupTab ) ;
-    LoaderAddSymbols(-1, -1, fontLookupTab ) ;
 }
 
 /*

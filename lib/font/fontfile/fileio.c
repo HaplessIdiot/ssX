@@ -1,5 +1,5 @@
 /* $XConsortium: fileio.c /main/5 1996/11/03 19:32:03 kaleb $ */
-/* $XFree86: xc/lib/font/fontfile/fileio.c,v 3.1 1996/12/23 06:02:20 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fileio.c,v 3.2 1998/06/27 12:53:41 hohndel Exp $ */
 
 /*
 
@@ -81,7 +81,6 @@ FontFileOpen (name)
     return (FontFilePtr) raw;
 }
 
-int
 FontFileClose (f)
     FontFilePtr	f;
 {

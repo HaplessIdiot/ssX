@@ -30,14 +30,13 @@
 /* Author: Katherine A. Hitchcock    IBM Almaden Research Laboratory */
  
 #include <string.h>
-#ifdef XFree86LOADER
-#include <xf86_libc.h>
-#endif
 #include "t1stdio.h"
 #include "util.h"
 #include "token.h"
 #include "fontfcn.h"
 #include "blues.h"
+ 
+ 
  
 static int rc;
 static boolean InPrivateDict;

@@ -21,7 +21,7 @@
  *
  ******************************************************************/
 
-/* $XFree86: xc/lib/font/FreeType/lib/tterror.c,v 1.2 1998/04/28 13:30:55 robin Exp $ */
+/* $XFree86: xc/lib/font/FreeType/lib/tterror.c,v 1.3 1998/06/27 12:53:27 hohndel Exp $ */
   
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,10 +29,6 @@
 
 #include "ttconfig.h"
 #include "tterror.h"
-
-#ifdef XFree86LOADER
-#include <xf86_libc.h>
-#endif
 
   /* the Print() function is defined in ttconfig.h */
 
