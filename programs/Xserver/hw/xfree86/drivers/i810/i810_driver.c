@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.77 2003/01/28 22:47:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.78 2003/02/06 04:18:04 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -122,7 +122,7 @@ static SymTabRec I810Chipsets[] = {
 #endif
    {PCI_CHIP_I830_M,		"i830M"},
    {PCI_CHIP_845_G,		"845G"},
-   {PCI_CHIP_I855_GM,		"855GM"},
+   {PCI_CHIP_I855_GM,		"852GM/855GM"},
    {PCI_CHIP_I865_G,		"865G"},
    {-1,				NULL}
 };
