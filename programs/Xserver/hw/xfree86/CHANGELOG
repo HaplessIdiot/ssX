@@ -1,4 +1,8 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 572. Fix an old bug in the X server and xfs related to usage of
+      c->savedName (Bugzilla #818, Owen Taylor).
+ 571. Fix FontFileListOneFontWithInfo() so that it handles aliases in the
+      same was as FontFileOpenFont() (Bugzilla #818, Owen Taylor).
  570. Respect USE_SSE_ASM for the .S files in the r200 and radeon 3D drivers.
       This should fix the reported OpenBSD build problem (David Dawes).
  569. Some missing FreeBSD AMD64/Sparc64 patches (Bugzilla #786, Eric Anholt).
@@ -18141,7 +18145,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2946 2003/11/07 23:57:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2947 2003/11/08 00:18:40 dawes Exp $
 
 
 
