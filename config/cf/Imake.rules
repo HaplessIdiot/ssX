@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.139tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.140tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -3412,11 +3412,11 @@ depend:: dst
 dst::  src deplist							@@\
 	RemoveFile($@)							@@\
 	ClearmakeOSName \
-	sed -e 's/\\$$/\\ /' src | $(RAWCPP) CppNoLineInfoOption defs | CppSedMagic >$@	@@\
+	$(RAWCPP) CppNoLineInfoOption defs <src | CppSedMagic >$@	@@\
 									@@\
 clean::									@@\
 	RemoveFiles(dst)
-#endif /* CppFileTarget */
+#endif /* CppRawFileTarget */
 
 /*
  * CppManTarget - preprocess man pages.  OS-specific man sections are replaced.

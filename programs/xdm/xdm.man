@@ -23,7 +23,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xdm/xdm.man,v 3.30 2004/06/08 00:11:13 dawes Exp $
+.\" $XFree86: xc/programs/xdm/xdm.man,v 3.31tsi Exp $
 .\"
 .TH XDM 1 __xorgversion__
 .SH NAME
@@ -700,7 +700,7 @@ XCOMM
 XCOMM Indirect query entries
 XCOMM
 
-%HOSTS	expo.lcs.mit.edu xenon.lcs.mit.edu \\
+%HOSTS	expo.lcs.mit.edu xenon.lcs.mit.edu \\\&
 	excess.lcs.mit.edu kanga.lcs.mit.edu
 
 extract.lcs.mit.edu	xenon.lcs.mit.edu	#force extract to contact xenon
@@ -869,9 +869,9 @@ parameters for that widget:
 .nf
 .ta .5i 1i
 
-	xlogin*login.translations: #override\\
-		Ctrl<Key>R: abort-display()\\n\\
-		<Key>F1: set-session-argument(failsafe) finish-field()\\n\\
+	xlogin*login.translations: #override\\\&
+		Ctrl<Key>R: abort-display()\\n\\/&
+		<Key>F1: set-session-argument(failsafe) finish-field()\\n\\\&
 		<Key>Return: set-session-argument() finish-field()
 	xlogin*borderWidth: 3
 	xlogin*greeting: CLIENTHOST
@@ -993,21 +993,21 @@ translation table is:
 .nf
 .ta .5i 2i
 
-	Ctrl<Key>H:	delete-previous-character() \\n\\
-	Ctrl<Key>D:	delete-character() \\n\\
-	Ctrl<Key>B:	move-backward-character() \\n\\
-	Ctrl<Key>F:	move-forward-character() \\n\\
-	Ctrl<Key>A:	move-to-begining() \\n\\
-	Ctrl<Key>E:	move-to-end() \\n\\
-	Ctrl<Key>K:	erase-to-end-of-line() \\n\\
-	Ctrl<Key>U:	erase-line() \\n\\
-	Ctrl<Key>X:	erase-line() \\n\\
-	Ctrl<Key>C:	restart-session() \\n\\
-	Ctrl<Key>\\\\:	abort-session() \\n\\
-	<Key>BackSpace:	delete-previous-character() \\n\\
-	<Key>Delete:	delete-previous-character() \\n\\
-	<Key>Return:	finish-field() \\n\\
-	<Key>:	insert-char() \\
+	Ctrl<Key>H:	delete-previous-character() \\n\\\&
+	Ctrl<Key>D:	delete-character() \\n\\\&
+	Ctrl<Key>B:	move-backward-character() \\n\\\&
+	Ctrl<Key>F:	move-forward-character() \\n\\\&
+	Ctrl<Key>A:	move-to-begining() \\n\\\&
+	Ctrl<Key>E:	move-to-end() \\n\\\&
+	Ctrl<Key>K:	erase-to-end-of-line() \\n\\\&
+	Ctrl<Key>U:	erase-line() \\n\\\&
+	Ctrl<Key>X:	erase-line() \\n\\\&
+	Ctrl<Key>C:	restart-session() \\n\\\&
+	Ctrl<Key>\\\\:	abort-session() \\n\\\&
+	<Key>BackSpace:	delete-previous-character() \\n\\\&
+	<Key>Delete:	delete-previous-character() \\n\\\&
+	<Key>Return:	finish-field() \\n\\\&
+	<Key>:	insert-char() \\\&
 
 .fi
 .PP
