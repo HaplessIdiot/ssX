@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/Atoms.c,v 3.2 1998/08/20 13:59:31 dawes Exp $ */
 
 /*
  * This file contains routines to cache atoms, avoiding multiple
@@ -138,7 +138,7 @@ XmuInternAtom(Display *d, AtomPtr atom_ptr)
 char *
 XmuGetAtomName(Display *d, Atom atom)
 {
-    if (atom == 0) return "(BadAtom)";
+    if (atom == 0) return (NULL);
     return XGetAtomName(d, atom);
 }
 

@@ -26,9 +26,10 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/DrawLogo.c,v 1.4 1998/08/20 13:59:34 dawes Exp $ */
 
 #include <X11/Xlib.h>  
+#include <X11/Xmu/Drawing.h>
 
 /*
  *  Draw the "official" X Window System Logo, designed by Danny Chong

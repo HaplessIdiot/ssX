@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.7 1998/06/29 13:41:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.8 1998/08/16 10:24:08 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -419,7 +419,7 @@ ReplaceText(Widget w, XawTextPosition startPos, XawTextPosition endPos,
     end_piece->used -= endPos - end_first;
     if (end_piece->used != 0)
 	memmove(end_piece->text, end_piece->text + endPos - end_first,
-		end_piece->used);
+		(unsigned)end_piece->used);
     }
   else			/* We are fully in one piece */
     {
@@ -432,7 +432,7 @@ ReplaceText(Widget w, XawTextPosition startPos, XawTextPosition endPos,
 	{
 	  memmove(start_piece->text + (startPos - start_first),
 		    start_piece->text + (endPos - start_first),
-		  start_piece->used - (startPos - start_first));
+		  (unsigned)(start_piece->used - (startPos - start_first)));
 	  if (src->ascii_src.use_string_in_place
 	      && src->ascii_src.length - (endPos - startPos)
 	      < src->ascii_src.piece_size - 1)
@@ -484,8 +484,8 @@ ReplaceText(Widget w, XawTextPosition startPos, XawTextPosition endPos,
 
 	  ptr = start_piece->text + (startPos - start_first);
 	  memmove(ptr + fill, ptr,
-		  start_piece->used - (startPos - start_first));
-	  strncpy(ptr, text->ptr + firstPos, fill);
+		  (unsigned)(start_piece->used - (startPos - start_first)));
+	  strncpy(ptr, text->ptr + firstPos, (unsigned)fill);
 
 	  startPos += fill;
 	  firstPos += fill;
@@ -688,6 +688,7 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
   char *buf;
   XawTextPosition first;
   register char inc;
+  int cnt;
 
   if (dir == XawsdRight)
     inc = 1;
@@ -700,7 +701,7 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
     }
 
   buf = XtMalloc((unsigned)sizeof(unsigned char) * text->length);
-  strncpy(buf, (text->ptr + text->firstPos), text->length);
+  strncpy(buf, (text->ptr + text->firstPos), (unsigned)text->length);
   piece = FindPiece(src, position, &first);
   ptr = (position - first) + piece->text;
 
@@ -730,24 +731,28 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
 
       while (ptr < piece->text)
 	{
+	  cnt = piece->text - ptr;
+
 	  piece = piece->prev;
 	  if (piece == NULL)		/* Begining of text */
 	    {
 	      XtFree(buf);
 	      return (XawTextSearchError);
 	    }
-	  ptr = piece->text + piece->used - 1;
+	  ptr = piece->text + piece->used - cnt;
 	}
 
       while (ptr >= (piece->text + piece->used))
 	{
+	  cnt = ptr - (piece->text + piece->used);
+
 	  piece = piece->next;
 	  if (piece == NULL)		/* End of text */
 	    {
 	      XtFree(buf);
 	      return (XawTextSearchError);
 	    }
-	  ptr = piece->text;
+	  ptr = piece->text + cnt;
 	}
     }
 
@@ -1116,11 +1121,11 @@ StorePiecesInString(AsciiSrcObject src)
   XawTextPosition first;
   Piece *piece;
 
-  string = XtMalloc(src->ascii_src.length + 1);
+  string = XtMalloc((unsigned)(src->ascii_src.length + 1));
 
   for (first = 0, piece = src->ascii_src.first_piece ; piece != NULL; 
        first += piece->used, piece = piece->next) 
-    strncpy(string + first, piece->text, piece->used);
+    strncpy(string + first, piece->text, (unsigned)piece->used);
 
   string[src->ascii_src.length] = '\0';
 
@@ -1229,7 +1234,7 @@ InitStringOrFile(AsciiSrcObject src, Bool newString)
       {
 	if ((file = fopen(src->ascii_src.string, open_mode)) != 0)
 	  {
-	    (void)fseek(file, (Off_t)0, 2);
+	    (void)fseek(file, 0, 2);
 	    src->ascii_src.length = (XawTextPosition)ftell(file);
 	    return (file);
 	  }
@@ -1260,11 +1265,11 @@ LoadPieces(AsciiSrcObject src, FILE *file, char *string)
     {
       if (src->ascii_src.type == XawAsciiFile)
 	{
-	  local_str = XtMalloc(src->ascii_src.length + 1);
+	  local_str = XtMalloc((unsigned)(src->ascii_src.length + 1));
 
 	  if (src->ascii_src.length != 0)
 	    {
-	      fseek(file, (Off_t)0, 0);
+	      fseek(file, 0, 0);
 	      src->ascii_src.length = fread(local_str,
 					    (Size_t)sizeof(unsigned char),
 					    (Size_t)src->ascii_src.length,
@@ -1295,10 +1300,10 @@ LoadPieces(AsciiSrcObject src, FILE *file, char *string)
   do {
     piece = AllocNewPiece(src, piece);
 
-    piece->text = XtMalloc(src->ascii_src.piece_size);
+    piece->text = XtMalloc((unsigned)src->ascii_src.piece_size);
     piece->used = Min(left, src->ascii_src.piece_size);
     if (piece->used != 0)
-      strncpy(piece->text, ptr, piece->used);
+      strncpy(piece->text, ptr, (unsigned)piece->used);
 
     left -= piece->used;
     ptr += piece->used;
@@ -1449,9 +1454,9 @@ BreakPiece(AsciiSrcObject src, Piece *piece)
 {
   Piece *cnew = AllocNewPiece(src, piece);
 
-  cnew->text = XtMalloc(src->ascii_src.piece_size);
+  cnew->text = XtMalloc((unsigned)src->ascii_src.piece_size);
   strncpy(cnew->text, piece->text + HALF_PIECE,
-	  src->ascii_src.piece_size - HALF_PIECE);
+	  (unsigned)(src->ascii_src.piece_size - HALF_PIECE));
   piece->used = HALF_PIECE;
   cnew->used = src->ascii_src.piece_size - HALF_PIECE;
 }

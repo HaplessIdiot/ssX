@@ -4,7 +4,7 @@ XCOMM $XConsortium: bsdLib.rules /main/3 1996/09/28 16:09:18 rws $
 
 
 
-XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.6 1997/10/25 13:49:53 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.7 1997/11/01 15:04:19 hohndel Exp $
 /*
  * NetBSD/FreeBSD shared library rules
  */
@@ -155,7 +155,7 @@ LintLibReferences(varname,libname,libsource)
 #define ShLibIncludeFile <bsdLib.tmpl>
 #endif
 #ifndef SharedLibraryLoadFlags
-#define SharedLibraryLoadFlags -shared -Wl,-rpath,$(USRLIBDIR)
+#define SharedLibraryLoadFlags -shared -rpath $(USRLIBDIR)
 #endif
 #ifndef PositionIndependentCFlags
 #define PositionIndependentCFlags -fPIC
@@ -215,7 +215,7 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
 	SONAME=`echo $@ | sed 's/\.[^\.]*$$//'`; \			@@\
-		(cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs); \ @@\
+		(cd down; $(LD) -o up/$@~ $(SHLIBLDFLAGS) -soname $$SONAME solist $(REQUIREDLIBS) BaseShLibReqs); \ @@\
 		$(RM) $$SONAME; $(LN) $@ $$SONAME; \			@@\
 		LinkBuildSonameLibrary($$SONAME)			@@\
 	$(RM) $@							@@\
@@ -229,6 +229,21 @@ clean::									@@\
 	$(RM) Concat(lib,libname.so.rev)
 
 #endif /* SharedLibraryTarget */
+
+#ifndef SharedDepModuleTarget
+#define SharedDepModuleTarget(name,deps,solist)				@@\
+AllTarget(name)								@@\
+									@@\
+name: deps								@@\
+	$(RM) $@~							@@\
+	$(CC) -o $@~ $(SHLIBLDFLAGS) solist $(REQUIREDLIBS)		@@\
+	$(RM) $@							@@\
+	$(MV) $@~ $@							@@\
+									@@\
+clean::									@@\
+	$(RM) name
+
+#endif /* SharedDepModuleTarget */
 
 /*
  * SharedLibraryDataTarget - generate rules to create shlib data file;

@@ -1,0 +1,27 @@
+XCOMM $XFree86$
+
+#define IHaveModules
+#include <Server.tmpl>
+
+#if DoLoadableServer
+MODSRC = xf86i2cmodule.c
+MODOBJ = xf86i2cmodule.o
+#endif
+
+SRCS = xf86i2c.c $(MODSRC)
+OBJS = xf86i2c.o $(MODOBJ)
+
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
+           -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+
+ModuleObjectRule()
+
+LibraryModuleTarget(i2c, $(OBJS))
+
+InstallLibraryModule(i2c,$(MODULEDIR))
+
+DependTarget()
+
+InstallLinkKitLibrary(xf86i2c,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86i2c.h,$(LINKKITDIR)/include)
+

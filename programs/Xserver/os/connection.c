@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.31 1998/08/16 10:25:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.32 1998/08/29 05:44:10 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -109,6 +109,7 @@ extern __const__ int _nfiles;
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
 # include <netinet/in.h>
+# include <arpa/inet.h>
 # ifndef hpux
 #  ifdef apollo
 #   ifndef NO_TCP_H

@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.8 1998/06/29 13:41:14 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.9 1998/08/16 10:24:20 dawes Exp $ */
 
 /*
 
@@ -704,6 +704,7 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
   wchar_t *buf;
   XawTextPosition first;
   register char inc;
+  int cnt;
 
   /* STEP 1: First, a brief sanity check */
   if (dir == XawsdRight)
@@ -769,26 +770,30 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
     
       while (ptr < piece->text)
 	{
-      piece = piece->prev;
+	  cnt = piece->text - ptr;
+
+	  piece = piece->prev;
 	  if (piece == NULL)		/* Begining of text */
 	    {
-	XtFree((char *)buf);
+	      XtFree((char *)buf);
 	      return (XawTextSearchError);
-      }
-      ptr = piece->text + piece->used - 1;
-    }
+	    }
+	  ptr = piece->text + piece->used - cnt;
+	}
    
       while (ptr >= piece->text + piece->used)
 	{
-      piece = piece->next;
+	  cnt = ptr - (piece->text + piece->used);
+
+	  piece = piece->next;
 	  if (piece == NULL)		/* End of text */
 	    {
-	XtFree((char *)buf);
+	      XtFree((char *)buf);
 	      return (XawTextSearchError);
-      }
-      ptr = piece->text;
+	    }
+	  ptr = piece->text + cnt;
+	}
     }
-  }
 
   XtFree((char *)buf);
   if (dir == XawsdLeft)
@@ -1276,7 +1281,7 @@ InitStringOrFile(MultiSrcObject src, Bool newString)
       {
 	if ((file = fopen((char *)src->multi_src.string, open_mode)) != NULL)
 	  {
-	    (void)fseek(file, (Off_t)0, 2);
+	    (void)fseek(file, 0, 2);
             src->multi_src.length = ftell(file);
 	    return file;
 	  }
@@ -1348,7 +1353,7 @@ LoadPieces(MultiSrcObject src, FILE *file, char *string)
 	{
       temp_mb_holder = 
 	    XtMalloc((src->multi_src.length + 1) * sizeof(unsigned char));
-      fseek(file, (Off_t)0, 0);
+      fseek(file, 0, 0);
 	  src->multi_src.length = fread(temp_mb_holder,
 				     (Size_t)sizeof(unsigned char), 
 				     (Size_t)src->multi_src.length, file);
@@ -1403,7 +1408,8 @@ LoadPieces(MultiSrcObject src, FILE *file, char *string)
   do {
       piece = AllocNewPiece(src, piece);
 
-      piece->text = (wchar_t*)XtMalloc(src->multi_src.piece_size * bytes);
+      piece->text = (wchar_t*)XtMalloc((unsigned)(src->multi_src.piece_size
+						  * bytes));
       piece->used = Min(left, src->multi_src.piece_size);
       if (piece->used != 0)
       (void)wcsncpy(piece->text, ptr, piece->used);

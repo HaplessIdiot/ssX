@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.23 1998/08/29 05:43:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.24 1998/08/29 14:34:38 dawes Exp $ */
 
 
 
@@ -185,6 +185,7 @@ typedef struct {
     int planemask_mask;		       /* mask for active bits in planemask */
     int neg_x_pixel_offset;
     int powerPerPixel;		       /* power-of-2 version of bytesperpixel */
+    unsigned char *BresenhamTable;
     /* normal stuff starts here */
     pciVideoPtr PciInfo;
     PCITAG PciTag;

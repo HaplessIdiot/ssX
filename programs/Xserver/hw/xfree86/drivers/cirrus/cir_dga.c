@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_dga.c,v 1.2 1998/08/29 07:39:51 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -11,8 +11,6 @@
 #include "xf86PciInfo.h"
 
 #include "vgaHW.h"
-
-#include "xaa.h"
 
 #include "cir.h"
 

@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Converters.c,v 3.8 1998/06/29 13:41:14 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Converters.c,v 3.9 1998/08/16 10:24:12 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -33,6 +33,7 @@
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/SysUtil.h>
 #include <X11/Xaw/Simple.h>
+#include <X11/Xaw/XawInit.h>
 #include "Private.h"
 
 typedef struct _XawDL XawDisplayList;
@@ -315,7 +316,7 @@ _XawCvtCARD32ToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 		      XrmValue *fromVal, XrmValue *toVal,
 		      XtPointer *converter_data)
 {
-  static char buffer[9];
+  static char buffer[11];
   Cardinal size;
 
   if (*num_args != 0)

@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.21 1997/12/14 02:55:35 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.22 1998/08/16 10:25:32 dawes Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -102,6 +102,8 @@ extern int  errno;		/* Internal system error number. */
 #else
 #include <socket.h>
 #endif
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #endif
 #ifdef __EMX__
 #include <sys/ioctl.h>

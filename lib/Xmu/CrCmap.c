@@ -1,5 +1,5 @@
 /* $XConsortium: CrCmap.c,v 1.6 94/04/17 20:15:53 rws Exp $ */
-/* $XFree86: xc/lib/Xmu/CrCmap.c,v 3.1 1998/06/28 12:32:27 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CrCmap.c,v 3.2 1998/08/16 10:25:06 dawes Exp $ */
 
 /* 
 
@@ -40,6 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xmu/StdCmap.h>
 
 /*
  * Prototypes

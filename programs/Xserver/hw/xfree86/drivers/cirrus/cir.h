@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.2 1998/08/29 07:39:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.3 1998/08/29 14:34:33 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -6,6 +6,8 @@
 #define CIR_H
 
 #include "xf86Cursor.h"
+#include "xaa.h"
+#include "xf86i2c.h"
 
 #define CIR_DEBUG
 
@@ -22,6 +24,7 @@ enum {
     SR13,
     SR1E,
     /* GR regs */
+    GR17,
     GR18,
     /* HDR */
     HDR,
@@ -66,6 +69,8 @@ typedef struct {
     XAAInfoRecPtr       AccelInfoRec;
     xf86CursorInfoPtr   CursorInfoRec;
     DGAInfoPtr          DGAInfo;
+    I2CBusPtr		I2CPtr1;
+    I2CBusPtr		I2CPtr2;
 #if 0
     CARD32		BltScanDirection;
     CARD32		FilledRectCMD;

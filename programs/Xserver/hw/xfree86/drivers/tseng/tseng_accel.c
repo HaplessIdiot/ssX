@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.24 1998/08/19 07:49:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.25 1998/08/29 05:43:36 dawes Exp $ */
 
 
 
@@ -79,14 +79,14 @@ void TsengSubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
 void TsengSubsequentImageWriteScanline(ScrnInfoPtr pScrn,
     int bufno);
 
-#ifdef TODO
-
+#if 0
 void TsengSetupForSolidLine(ScrnInfoPtr pScrn,
     int color, int rop, unsigned int planemask);
-void TsengSubsequentBresenhamLine();
-void TsengSubsequentTwoPointLine();
-
 #endif
+
+void TsengSubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
+        int x, int y, int major, int minor, int err, int len, int octant);
+
 
 /*
  * The following function sets up the supported acceleration. Call it from
@@ -128,6 +128,7 @@ TsengXAAInit(ScreenPtr pScreen)
 
     pTseng->line_width = pScrn->displayWidth * pTseng->Bytesperpixel;
 
+#if 1
     /*
      * SolidFillRect.
      *
@@ -157,7 +158,9 @@ TsengXAAInit(ScreenPtr pScreen)
 	pXAAinfo->SubsequentFillTrapezoidSolid = TsengSubsequentFillTrapezoidSolid;
     }
 #endif
+#endif
 
+#if 1
     /*
      * SceenToScreenCopy (BitBLT).
      * 
@@ -178,7 +181,9 @@ TsengXAAInit(ScreenPtr pScreen)
 	TsengSetupForScreenToScreenCopy;
     pXAAinfo->SubsequentScreenToScreenCopy =
 	TsengSubsequentScreenToScreenCopy;
+#endif
 
+#if 0
     /*
      * ImageWrite.
      *
@@ -220,6 +225,7 @@ TsengXAAInit(ScreenPtr pScreen)
 	}
 	pXAAinfo->ScanlineImageWriteBuffers = pTseng->XAAScanlineImageWriteBuffers;
     }
+#endif
     /*
      * 8x8 pattern tiling not possible on W32/i/p chips in 24bpp mode.
      * Currently, 24bpp pattern tiling doesn't work at all on those.
@@ -237,6 +243,7 @@ TsengXAAInit(ScreenPtr pScreen)
     }
 #endif
 
+#if 0
     /* FIXME! This needs to be fixed for W32 and W32i (it "should work") */
     if ((pScrn->bitsPerPixel != 24) && (Is_W32p || Is_ET6K)) {
 	pXAAinfo->SetupForColor8x8PatternFill =
@@ -244,7 +251,9 @@ TsengXAAInit(ScreenPtr pScreen)
 	pXAAinfo->SubsequentColor8x8PatternFillRect =
 	    TsengSubsequentColor8x8PatternFillRect;
     }
-#ifdef TODO
+#endif
+
+#if 1
     /*
      * SolidLine.
      *
@@ -254,25 +263,79 @@ TsengXAAInit(ScreenPtr pScreen)
      * is lacking)...
      */
 
-    if (Is_W32p || Is_Et6K) {
-	SetupForSolidLine = TsengSetupForSolidLine;
+    if (Is_W32p || Is_ET6K) {
+	/*
+	 * Fill in the hardware linedraw ACL_XY_DIRECTION table
+	 *
+	 * W32BresTable[] converts XAA interface Bresenham octants to direct
+	 * ACL direction register contents. This includes the correct bias
+	 * setting etc.
+	 *
+	 * According to miline.h (but with base 0 instead of base 1 as in
+	 * miline.h), the octants are numbered as follows:
+	 *
+	 *   \    |    /
+	 *    \ 2 | 1 /
+	 *     \  |  /
+	 *    3 \ | / 0
+	 *       \|/
+	 *   -----------
+	 *       /|\
+	 *    4 / | \ 7
+	 *     /  |  \
+	 *    / 5 | 6 \
+	 *   /    |    \
+	 *
+	 * In ACL_XY_DIRECTION, bits 2:0 are defined as follows:
+	 *	0: '1' if XDECREASING
+	 *	1: '1' if YDECREASING
+	 *	2: '1' if XMAJOR (== not YMAJOR)
+	 *
+	 * Bit 4 defines the bias.  It should be set to '1' for all octants
+	 * NOT passed to miSetZeroLineBias(). i.e. the inverse of the X bias.
+	 *
+	 * (For MS compatible bias, the data book says to set to the same as
+	 * YDIR, i.e. bit 1 of the same register, = '1' if YDECREASING. MS
+	 * bias is towards octants 0..3 (i.e. Y decreasing), hence this
+	 * definition of bit 4)
+	 *
+	 */
+	pTseng->BresenhamTable = (unsigned char *) xnfalloc(8);
+	if (pTseng->BresenhamTable == NULL) {
+	    xf86Msg(X_ERROR, "Could not malloc Bresenham Table.\n");
+	    return FALSE;
+	}
+	for (i=0; i<8; i++) {
+	    unsigned char zerolinebias = miGetZeroLineBias(pScreen);
+	    pTseng->BresenhamTable[i] = 0xA0; /* command=linedraw, use error term */
+	    if (i & XDECREASING) pTseng->BresenhamTable[i] |= 0x01;
+	    if (i & YDECREASING) pTseng->BresenhamTable[i] |= 0x02;
+	    if (!(i & YMAJOR))   pTseng->BresenhamTable[i] |= 0x04;
+	    if ((1 << i) & zerolinebias) pTseng->BresenhamTable[i] |= 0x10;
+	    /* ErrorF("BresenhamTable[%d]=0x%x\n", i, pTseng->BresenhamTable[i]); */
+	} 
+
+	pXAAinfo->SolidLineFlags = 0;
+	pXAAinfo->SetupForSolidLine = TsengSetupForSolidFill;
 	pXAAinfo->SubsequentSolidBresenhamLine =
 	    TsengSubsequentSolidBresenhamLine;
-	/* ErrorTermBits = min(errorterm_size, delta_major_size, delta_minor_size) */
-	pXAAinfo->ErrorTermBits = 11;
-#if TSENG_TWOPOINTLINE
-	pXAAinfo->SubsequentTwoPointLine = TsengSubsequentTwoPointLine;
-#endif
-	xf86GCInfoRec.PolyLineSolidZeroWidthFlags =
-	    TWO_POINT_LINE_ERROR_TERM;
-	xf86GCInfoRec.PolySegmentSolidZeroWidthFlags =
-	    TWO_POINT_LINE_ERROR_TERM;
+	/*
+	 * ErrorTermBits is used to limit minor, major and error term, so it
+	 * must be min(errorterm_size, delta_major_size, delta_minor_size)
+	 * But the calculation for major and minor is done on the DOUBLED
+	 * values (as per the Bresenham algorithm), so they can also have 13
+	 * bits (inside XAA). They are divided by 2 in this driver, so they
+	 * are then again limited to 12 bits.
+	 */
+	pXAAinfo->SolidBresenhamLineErrorTermBits = 13;
     }
 #endif
 
+#if 1
     /* set up color expansion acceleration */
     if (!TsengXAAInit_Colexp(pScrn))
 	return FALSE;
+#endif
 
 
     /*
@@ -421,7 +484,7 @@ TsengW32pSubsequentSolidFillRect(ScrnInfoPtr pScrn,
      */
     *ACL_SOURCE_ADDRESS = tsengFg;
 
-    SET_XYDIR(0);
+    SET_XYDIR(0);   /* FIXME: not needed with separate setupforsolidline */
 
     SET_XY_4(pTseng, w, h);
     START_ACL(pTseng, destaddr);
@@ -695,66 +758,10 @@ TsengSubsequentImageWriteScanline(ScrnInfoPtr pScrn,
     iw_dest += pTseng->line_width;
 }
 
-#ifdef TODO
 /*
  * W32p/ET6000 hardware linedraw code. 
  *
  * TsengSetupForSolidFill() is used as a setup function.
- */
-
-void
-TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
-    int x1, y1;
-    int octant;
-    int err, e1, e2;
-    int length;
-{
-    int destaddr = FBADDR(pTseng, x1, y1);
-
-    /*
-     * We need to compensate for the automatic biasing in the Tseng Bresenham
-     * engine. It uses either "MicroSoft" or "XGA" bias. Both are
-     * incompatible with X.
-     */
-    unsigned int tseng_bias_compensate = 0xd8;
-    int algrthm;
-    int direction;
-    int DeltaMinor = e1 >> 1;
-    int DeltaMajor = (e1 - e2) >> 1;
-    int ErrorTerm = e1 - err;
-    int xydir;
-
-    direction = W32BresTable[octant];
-    algrthm = ((tseng_bias_compensate >> octant) & 1) ^ 1;
-    xydir = 0xA0 | (algrthm << 4) | direction;
-
-    if (octant & XDECREASING)
-	destaddr += tseng_bytesperpixel - 1;
-
-    wait_acl_queue(pTseng);
-
-    if (!(octant & YMAJOR)) {
-	SET_X_YRAW(length, 0xFFF);
-    } else {
-	SET_XY_RAW(0xFFF, length - 1);
-    }
-
-    SET_DELTA(DeltaMinor, DeltaMajor);
-    *ACL_ERROR_TERM = ErrorTerm;
-
-    /* make sure colors are rendered correctly if >8bpp */
-    if (octant & XDECREASING)
-	*ACL_SOURCE_ADDRESS = tsengFg + tseng_neg_x_pixel_offset;
-    else
-	*ACL_SOURCE_ADDRESS = tsengFg;
-
-    SET_XYDIR(xydir);
-
-    START_ACL(pTseng, destaddr);
-}
-
-/*
- * Two-point lines.
  *
  * Three major problems that needed to be solved here:
  *
@@ -776,80 +783,43 @@ TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
  *    causing a complete accelerator hang.
  */
 
-#if TSENG_TWOPOINTLINE
 void
-TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
-    int x1, y1;
-    int x2, y2;			       /* excl. */
-    int bias;
+TsengSubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
+    int x, int y, int major, int minor, int err, int len, int octant)
 {
-    int dx, dy, temp, destaddr, algrthm;
-    int dir_reg = 0x80;
-    int octant = 0;
+    TsengPtr pTseng = TsengPTR(pScrn);
+    int destaddr = FBADDR(pTseng, x, y);
+    int xydir = pTseng->BresenhamTable[octant];
+    
+    /* Tseng wants the real dx/dy in major/minor. Bresenham uses 2*dx and 2*dy */
+    minor >>= 1;
+    major >>= 1;
 
-/*   ErrorF("L"); */
-
-    /*
-     * Fix drawing "bug" when drawing right-to-left (dx<0). This could also be
-     * fixed by changing the offset in the color "pattern" instead if dx < 0
-     */
-    if (pTseng->Bytesperpixel > 1) {
-	if (x2 < x1) {
-	    temp = x1;
-	    x1 = x2;
-	    x2 = temp;
-	    temp = y1;
-	    y1 = y2;
-	    y2 = temp;
-	}
-    }
-    destaddr = FBADDR(pTseng, x1, y1);
-
-    /* modified from CalcLineDeltas() macro */
-
-    /* compute X direction, and take abs(delta-X) */
-    dx = x2 - x1;
-    if (dx < 0) {
-	dir_reg |= 1;
-	octant |= XDECREASING;
-	dx = -dx;
-	/* destaddr must point to highest addressed byte in the pixel when drawing
-	 * right-to-left
-	 */
-	destaddr += pTseng->Bytesperpixel - 1;
-    }
-    /* compute delta-Y */
-    dy = y2 - y1;
-
-    /* compute Y direction, and take abs(delta-Y) */
-    if (dy < 0) {
-	dir_reg |= 2;
-	octant |= YDECREASING;
-	dy = -dy;
-    }
     wait_acl_queue(pTseng);
 
-    /* compute axial direction and load registers */
-    if (dx >= dy) {		       /* X is major axis */
-	dir_reg |= 4;
-	SET_XY_RAW(MULBPP(pTseng, dx), 0xFFF);
-	SET_DELTA(dy, dx);
-    } else {			       /* Y is major axis */
-	SetYMajorOctant(octant);
-	SET_XY_RAW(0xFFF, dy);
-	SET_DELTA(dx, dy);
+    if (!(octant & YMAJOR)) {
+	SET_X_YRAW(pTseng, len, 0xFFF);
+    } else {
+	SET_XY_RAW(0xFFF, len - 1);
     }
 
-    /* select "linedraw algorithm" (=bias) and load direction register */
-    algrthm = ((bias >> octant) & 1) ^ 1;
+    SET_DELTA(minor, major);
+    *ACL_ERROR_TERM = -err;  /* error term from XAA is NEGATIVE */
 
-    dir_reg |= algrthm << 4;
-    SET_XYDIR(dir_reg);
+    /* make sure colors are rendered correctly if >8bpp */
+    if (octant & XDECREASING) {
+	destaddr += pTseng->Bytesperpixel - 1;
+	*ACL_SOURCE_ADDRESS = tsengFg + pTseng->neg_x_pixel_offset;
+    } else
+	*ACL_SOURCE_ADDRESS = tsengFg;
+
+    SET_XYDIR(xydir);
 
     START_ACL(pTseng, destaddr);
 }
-#endif
 
+
+#ifdef TODO
 /*
  * Trapezoid filling code.
  *

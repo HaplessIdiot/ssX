@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.17 1998/01/11 03:36:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.18 1998/03/20 21:06:55 hohndel Exp $ */
 
 /*
  *
@@ -947,7 +947,7 @@ void S3SubsequentDashedBresenhamLine16(x1, y1, octant, err, e1, e2, length,
 
 #if defined(__GNUC__) && defined(__i386__)
 static __inline__ CARD32 reverse_bitorder(CARD32 data) {
-#if defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || (defined(linux) || defined (__OS2ELF__)) && defined(__ELF__)
+#if defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || defined(__ELF__)
 	__asm__(
 		"movl $0,%%ecx\n"
 		"movb %%al,%%cl\n"

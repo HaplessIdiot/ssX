@@ -26,9 +26,10 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/FToCback.c,v 1.3 1998/08/20 13:59:36 dawes Exp $ */
 
 #include	<X11/Intrinsic.h>
+#include <X11/Xmu/Converters.h>
 
 /* ARGSUSED */
 void

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.27 1998/07/26 13:14:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.28 1998/08/13 14:46:06 dawes Exp $ */
 
 /*
  *
@@ -129,7 +129,7 @@ const char *dir;
 				strcpy (buf, (char *) __XOS2RedirRoot (buf));
 #endif
 				if ((stat (buf, &stat_buf) == 0) &&
-					((S_IFMT & stat_buf.st_mode) == S_IFREG))
+					S_ISREG(stat_buf.st_mode))
 				{
 					return (buf);
 				}

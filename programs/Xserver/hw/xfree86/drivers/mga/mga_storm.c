@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.22 1998/08/30 04:49:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.23 1998/08/30 04:56:03 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -76,7 +76,13 @@ static void MGANAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int srcx, int srcy, int skipleft);
 static void MGANAME(SetupForImageRead)(ScrnInfoPtr pScrn, int bpp, int depth);
 static void MGANAME(SubsequentImageReadRect)(ScrnInfoPtr pScrn,
-				int x, int y, int w, int h);  
+				int x, int y, int w, int h);
+static void MGANAME(SetupForDashedLine)(ScrnInfoPtr pScrn, int fg, int bg, 
+				int rop, unsigned int planemask, int length,
+    				unsigned char *pattern);
+static void MGANAME(SubsequentDashedTwoPointLine)(ScrnInfoPtr pScrn,
+				int x1, int y1, int x2, int y2, 
+				int flags, int phase);
 
 extern void MGAWriteBitmapColorExpand(ScrnInfoPtr pScrn, int x, int y,
 				int w, int h, unsigned char *src, int srcwidth,
@@ -87,6 +93,12 @@ extern void MGAFillColorExpandRects(ScrnInfoPtr pScrn, int fg, int bg, int rop,
 				int xorg, int yorg, PixmapPtr pPix);
 extern void MGASetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1,
 				int x2, int y2);
+extern void MGAFillSolidRectsDMA(ScrnInfoPtr pScrn, int fg, int rop, 
+				unsigned int planemask, int nBox, BoxPtr pBox);
+extern void MGAFillSolidSpansDMA(ScrnInfoPtr pScrn, int fg, int rop, 
+				unsigned int planemask, int n, DDXPointPtr ppt,
+ 				int *pwidth, int fSorted);
+
 
 Bool
 MGANAME(AccelInit)(ScreenPtr pScreen) 
@@ -111,6 +123,9 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     	pMga->AccelFlags = BLK_OPAQUE_EXPANSION |
 			   TRANSC_SOLID_FILL |
  			   USE_RECTS_FOR_LINES; 
+        break;
+    case PCI_CHIP_MGAG200:
+        pMga->AccelFlags = TRANSC_SOLID_FILL;
         break;
     case PCI_CHIP_MGA1064:
     default:
@@ -147,6 +162,15 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 		MGANAME(SubsequentSolidTwoPointLine);
     infoPtr->SetClippingRectangle = MGASetClippingRectangle;
 
+    /* dashed lines */
+    infoPtr->DashedLineFlags = HARDWARE_CLIP_LINE |
+				LINE_PATTERN_MSBFIRST_LSBJUSTIFIED;
+    infoPtr->SetupForDashedLine = MGANAME(SetupForDashedLine);
+    infoPtr->SubsequentDashedTwoPointLine =  
+		MGANAME(SubsequentDashedTwoPointLine);
+    infoPtr->DashPatternMaxLength = 128;
+
+
     /* 8x8 mono patterns */
     infoPtr->Mono8x8PatternFillFlags = HARDWARE_PATTERN_PROGRAMMED_BITS |
 					HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
@@ -167,8 +191,13 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 					LEFT_EDGE_CLIPPING |
 					LEFT_EDGE_CLIPPING_NEGATIVE_X |
 					SYNC_AFTER_COLOR_EXPAND;
-    infoPtr->ColorExpandRange = 0x1C00;
-    infoPtr->ColorExpandBase = pMga->IOBase;
+    if(pMga->ILOADBase) {
+	infoPtr->ColorExpandRange = 0x800000;
+	infoPtr->ColorExpandBase = pMga->ILOADBase;
+    } else {
+	infoPtr->ColorExpandRange = 0x1C00;
+	infoPtr->ColorExpandBase = pMga->IOBase;
+    }
     infoPtr->SetupForCPUToScreenColorExpandFill =
 		MGANAME(SetupForCPUToScreenColorExpandFill);
     infoPtr->SubsequentCPUToScreenColorExpandFill =
@@ -188,8 +217,13 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 				LEFT_EDGE_CLIPPING |
 				LEFT_EDGE_CLIPPING_NEGATIVE_X |
 				SYNC_AFTER_IMAGE_WRITE;
-    infoPtr->ImageWriteRange = 0x1C00;
-    infoPtr->ImageWriteBase = pMga->IOBase;
+    if(pMga->ILOADBase) {
+	infoPtr->ImageWriteRange = 0x800000;
+	infoPtr->ImageWriteBase = pMga->ILOADBase;
+    } else {
+	infoPtr->ImageWriteRange = 0x1C00;
+	infoPtr->ImageWriteBase = pMga->IOBase;
+    }
     infoPtr->SetupForImageWrite = MGANAME(SetupForImageWrite);
     infoPtr->SubsequentImageWriteRect = MGANAME(SubsequentImageWriteRect);
 
@@ -197,8 +231,13 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     /* image reads */
     infoPtr->ImageReadFlags = 	CPU_TRANSFER_PAD_DWORD |
 				SCANLINE_PAD_DWORD;
-    infoPtr->ImageReadRange = 0x1C00;
-    infoPtr->ImageReadBase = pMga->IOBase;
+    if(pMga->ILOADBase) {
+	infoPtr->ImageReadRange = 0x800000;
+	infoPtr->ImageReadBase = pMga->ILOADBase;
+    } else {
+	infoPtr->ImageReadRange = 0x1C00;
+	infoPtr->ImageReadBase = pMga->IOBase;
+    }
     infoPtr->SetupForImageRead = MGANAME(SetupForImageRead);
     infoPtr->SubsequentImageReadRect = MGANAME(SubsequentImageReadRect);
 #endif
@@ -207,6 +246,10 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 
     infoPtr->WriteBitmap = MGAWriteBitmapColorExpand;
     infoPtr->FillColorExpandRects = MGAFillColorExpandRects; 
+    if(pMga->ILOADBase && pMga->UsePCIRetry) {
+	infoPtr->FillSolidRects = MGAFillSolidRectsDMA;
+	infoPtr->FillSolidSpans = MGAFillSolidSpansDMA;
+    }
 
 #if PSZ == 24
     infoPtr->ImageWriteFlags |= NO_PLANEMASK;
@@ -215,9 +258,12 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->WriteBitmapFlags |= NO_PLANEMASK;
     infoPtr->SolidFillFlags |= NO_PLANEMASK;
     infoPtr->SolidLineFlags |= NO_PLANEMASK;
+    infoPtr->DashedLineFlags |= NO_PLANEMASK;
     infoPtr->Mono8x8PatternFillFlags |= NO_PLANEMASK; 
     infoPtr->FillColorExpandRectsFlags |= NO_PLANEMASK; 
     infoPtr->ScreenToScreenColorExpandFillFlags |= NO_PLANEMASK;
+    infoPtr->FillSolidRectsFlags |= NO_PLANEMASK;
+    infoPtr->FillSolidSpansFlags |= NO_PLANEMASK;
 #endif
 
     
@@ -884,6 +930,126 @@ static void MGANAME(SubsequentImageReadRect)(
     OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);
 } 
 
+	/***************************\
+	|      Dashed  Lines        |
+	\***************************/
+
+
+void
+MGANAME(SetupForDashedLine)(
+    ScrnInfoPtr pScrn, 
+    int fg, int bg, int rop,
+    unsigned int planemask,
+    int length,
+    unsigned char *pattern
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+    CARD32 *DashPattern = (CARD32*)pattern;
+    CARD32 NiceDashPattern = DashPattern[0];
+    int dwords = (length + 31) >> 5;
+
+    pMga->DashCMD = MGADWG_BFCOL | MGAAtypeNoBLK[rop];
+    pMga->StyleLen = length - 1;
+
+    if(bg == -1) {
+        pMga->DashCMD |= MGADWG_TRANSC;
+	WAITFIFO(dwords + 2);
+    } else {
+	WAITFIFO(dwords + 3);
+	SET_BACKGROUND(bg);
+    }
+    SET_PLANEMASK(planemask);
+    SET_FOREGROUND(fg);
+
+    /* We see if we can draw horizontal lines as 8x8 pattern fills.
+	This is worthwhile since the pattern fills can use block mode
+	and the default X pattern is 8 pixels long.  The forward pattern
+	is the top scanline, the backwards pattern is the next one. */
+    switch(length) {
+	case 2:	NiceDashPattern |= NiceDashPattern << 2;
+	case 4:	NiceDashPattern |= NiceDashPattern << 4;
+	case 8:	NiceDashPattern |= byte_reversed[NiceDashPattern] << 16;
+		NiceDashPattern |= NiceDashPattern << 8;
+		pMga->NiceDashCMD = MGADWG_TRAP | MGADWG_ARZERO | 
+				    MGADWG_SGNZERO | MGADWG_BMONOLEF;
+     		pMga->AccelFlags |= NICE_DASH_PATTERN;
+   		if(bg == -1) {
+#if PSZ == 24
+    		   if(!RGBEQUAL(fg))
+            		pMga->NiceDashCMD |= MGADWG_TRANSC | MGAAtypeNoBLK[rop];
+		   else
+#endif
+           		pMga->NiceDashCMD |= MGADWG_TRANSC | MGAAtype[rop];
+    		} else {
+#if PSZ == 24
+		   if((pMga->AccelFlags & BLK_OPAQUE_EXPANSION) && 
+					RGBEQUAL(fg) && RGBEQUAL(bg)) 
+#else
+		   if(pMga->AccelFlags & BLK_OPAQUE_EXPANSION) 
+#endif
+        		pMga->NiceDashCMD |= MGAAtype[rop];
+		   else
+        		pMga->NiceDashCMD |= MGAAtypeNoBLK[rop];
+    		}
+		OUTREG(MGAREG_SRC0, NiceDashPattern);
+		break;
+	default: pMga->AccelFlags &= ~NICE_DASH_PATTERN;
+		switch (dwords) {
+		case 4:  OUTREG(MGAREG_SRC3, DashPattern[3]);
+		case 3:  OUTREG(MGAREG_SRC2, DashPattern[2]);
+		case 2:	 OUTREG(MGAREG_SRC1, DashPattern[1]);
+		default: OUTREG(MGAREG_SRC0, DashPattern[0]);
+		}
+    }
+}
+
+
+void
+MGANAME(SubsequentDashedTwoPointLine)(
+    ScrnInfoPtr pScrn, 
+    int x1, int y1, int x2, int y2, 
+    int flags, int phase
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    if((pMga->AccelFlags & NICE_DASH_PATTERN) && (y1 == y2)) {
+    	WAITFIFO(4);
+    	OUTREG(MGAREG_DWGCTL, pMga->NiceDashCMD);
+	if(x2 < x1) {
+	   if(flags & OMIT_LAST) x2++;
+   	   OUTREG(MGAREG_SHIFT, ((-y1 & 0x07) << 4) | 
+				((x2 - phase + 2) & 0x07)); 
+   	   OUTREG(MGAREG_FXBNDRY, ((x1 + 1) << 16) | x2);
+    	} else {
+ 	   if(!flags) x2++;
+   	   OUTREG(MGAREG_SHIFT, (((1 - y1) & 0x07) << 4) | 
+				((phase - x1) & 0x07)); 
+     	   OUTREG(MGAREG_FXBNDRY, (x2 << 16) | x1);
+	}	
+    	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y1 << 16) | 1);
+	return;
+    }
+
+    WAITFIFO(4);
+    OUTREG(MGAREG_SHIFT, (pMga->StyleLen << 16 ) | (pMga->StyleLen - phase)); 
+    OUTREG(MGAREG_DWGCTL, pMga->DashCMD | 
+	((flags & OMIT_LAST) ? MGADWG_AUTOLINE_OPEN : MGADWG_AUTOLINE_CLOSE));
+    OUTREG(MGAREG_XYSTRT, (y1 << 16) | (x1 & 0xFFFF));
+    OUTREG(MGAREG_XYEND + MGAREG_EXEC, (y2 << 16) | (x2 & 0xFFFF));
+   
+    if(pMga->AccelFlags & CLIPPER_ON) {
+        WAITFIFO(3);
+        OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);     /* (maxX << 16) | minX */ 
+        OUTREG(MGAREG_YTOP, 0x00000000);        /* minPixelPointer */ 
+        OUTREG(MGAREG_YBOT, 0x007FFFFF);        /* maxPixelPointer */ 
+        pMga->AccelFlags &= ~CLIPPER_ON;
+    }
+}
+
+
+
+
+
 	/***********************************\
 	|  Screen to Screen Color Expansion |
 	\***********************************/
@@ -1122,6 +1288,86 @@ MGAFillColorExpandRects(
     }
     DISABLE_CLIP();
     SET_SYNC_FLAG(infoRec);
+}
+
+
+void
+MGAFillSolidRectsDMA(
+    ScrnInfoPtr pScrn,
+    int	fg, int rop,
+    unsigned int planemask,
+    int		nBox, 		/* number of rectangles to fill */
+    BoxPtr	pBox  		/* Pointer to first rectangle to fill */
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    MGAPtr pMga = MGAPTR(pScrn);
+    CARD32 *base = (CARD32*)pMga->ILOADBase;
+
+    SET_SYNC_FLAG(infoRec);
+    (*infoRec->SetupForSolidFill)(pScrn, fg, rop, planemask);
+
+    if(nBox & 1) {
+	OUTREG(MGAREG_FXBNDRY, ((pBox->x2) << 16) | pBox->x1);
+	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, 
+		(pBox->y1 << 16) | (pBox->y2 - pBox->y1));
+	nBox--; pBox++;
+    }
+
+    if(!nBox) return;
+
+    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_GENERAL);
+    while(nBox) {
+	base[0] = DMAINDICIES(MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC,
+                MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC);
+	base[1] = ((pBox->x2) << 16) | pBox->x1;
+	base[2] = (pBox->y1 << 16) | (pBox->y2 - pBox->y1);
+	pBox++;
+	base[3] = ((pBox->x2) << 16) | pBox->x1;
+	base[4] = (pBox->y1 << 16) | (pBox->y2 - pBox->y1);
+	pBox++;
+	base += 5; nBox -= 2;
+    }
+    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);  
+}
+
+void
+MGAFillSolidSpansDMA(
+   ScrnInfoPtr pScrn,
+   int fg, int rop,
+   unsigned int planemask,
+   int n,
+   DDXPointPtr ppt,
+   int *pwidth, int fSorted 
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    MGAPtr pMga = MGAPTR(pScrn);
+    CARD32 *base = (CARD32*)pMga->ILOADBase;
+
+    SET_SYNC_FLAG(infoRec);
+    (*infoRec->SetupForSolidFill)(pScrn, fg, rop, planemask);
+
+    if(n & 1) {
+	OUTREG(MGAREG_FXBNDRY, ((ppt->x + *pwidth) << 16) | ppt->x);
+	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (ppt->y << 16) | 1);
+	ppt++; pwidth++; n--;
+    }
+
+    if(!n) return;
+    if(n > 3355442) n = 3355442;  /* maximum number we have room for */
+
+    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_GENERAL);
+    while(n) {
+	base[0] = DMAINDICIES(MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC,
+                MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC);
+	base[1] = ((ppt->x + *(pwidth++)) << 16) | ppt->x;
+	base[2] = (ppt->y << 16) | 1;
+	ppt++;
+	base[3] = ((ppt->x + *(pwidth++)) << 16) | ppt->x;
+	base[4] = (ppt->y << 16) | 1;
+	ppt++;
+	base += 5; n -= 2;
+    }
+    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);  
 }
 
 #endif

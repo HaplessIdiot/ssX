@@ -2,10 +2,10 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.74 1998/07/25 05:57:13 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.75 1998/08/02 05:16:48 dawes Exp $
 
 #ifndef OSName
-#define OSName			DefaultOSName
+#define OSName			DefaultOSName OSBinaryFormat
 #endif
 #ifndef OSVendor
 #define OSVendor		/**/
@@ -121,9 +121,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * and they can remove it from the list of directories they add to ld.so.cache 
  * in their /etc/rc file.
  */
+#ifndef UseElfFormat
 #if OSMajorVersion > 2 || (OsMajorVersion == 2 && OSMinorVersion >= 2)
 #ifndef ExtraLoadFlags
 #define ExtraLoadFlags		-Wl,-R,$(USRLIBDIRPATH)
+#endif
 #endif
 #endif
 
@@ -229,10 +231,19 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define InstallCmd		/usr/bin/install
 
 #if GccUsesGas
-# define GccGasOption 		-DGCCUSESGAS
-# define AsmDefines		-DUSE_GAS
+# define GccGasOption		-DGCCUSESGAS
+# define AsmDefines		-DUSE_GAS AsmElfDefines
 #else
 # define GccGasOption /**/
+# define AsmDefines		AsmElfDefines
+#endif
+
+#if UseElfFormat
+# define AsmElfDefines		-D__ELF__
+# define OSBinaryFormat		[ELF]
+#else
+# define AsmElfDefines /**/
+# define OSBinaryFormat /**/
 #endif
 
 #define ServerExtraDefines GccGasOption XFree86ServerDefines

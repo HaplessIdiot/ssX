@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.3 1998/06/28 12:32:23 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.4 1998/08/16 10:24:40 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -67,13 +67,6 @@ static void CvtStringToEditMode(XrmValuePtr, Cardinal*,
 				 XrmValuePtr, XrmValuePtr);
 static Boolean CvtEditModeToString(Display*, XrmValuePtr, Cardinal*,
 				   XrmValuePtr, XrmValuePtr, XtPointer*);
-
-/*
- * External
- */
-XrmQuark _XawTextFormat(TextWidget);
-wchar_t *_XawTextMBToWC(Display*, char*, int*);
-char *_XawTextWCToMB(Display*, wchar_t*, int*);
 
 /*
  * Initialization

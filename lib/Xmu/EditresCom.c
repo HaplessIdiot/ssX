@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.5 1998/06/28 12:32:29 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.6 1998/08/16 10:25:11 dawes Exp $ */
 
 /*
  * Author:  Chris D. Peterson, Dave Sternlicht, MIT X Consortium
@@ -176,19 +176,6 @@ static char *VerifyWidget(Widget, WidgetInfo*);
  * External
  */
 void _XEditResCheckMessages(Widget, XtPointer, XEvent*, Boolean*);
-
-void _XEditResPut16(ProtocolStream*, unsigned int);
-void _XEditResPut32(ProtocolStream*, unsigned long);
-void _XEditResPut8(ProtocolStream*, unsigned int);
-void _XEditResPutString8(ProtocolStream*, char*);
-void _XEditResPutWidgetInfo(ProtocolStream *stream, WidgetInfo*);
-Bool _XEditResGet16(ProtocolStream*, unsigned short*);
-Bool _XEditResGet32(ProtocolStream *stream, unsigned long*);
-Bool _XEditResGet8(ProtocolStream*, unsigned char*);
-Bool _XEditResGetSigned16(ProtocolStream*, short*);
-Bool _XEditResGetString8(ProtocolStream *stream, char**);
-Bool _XEditResGetWidgetInfo(ProtocolStream*, WidgetInfo*);
-void _XEditResResetStream(ProtocolStream*);
 
 /*
  * Initialization

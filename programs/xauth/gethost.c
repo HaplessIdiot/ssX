@@ -1,6 +1,6 @@
 /*
  * $XConsortium: gethost.c /main/25 1996/11/13 14:45:48 lehors $
- * $XFree86: xc/programs/xauth/gethost.c,v 3.7 1996/12/23 07:10:51 dawes Exp $
+ * $XFree86: xc/programs/xauth/gethost.c,v 3.8 1997/01/18 07:02:10 dawes Exp $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -58,6 +58,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #include <netdb.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #ifdef SYSV
 #ifdef i386
 #ifndef sco

@@ -47,7 +47,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.3 1998/08/20 13:59:18 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -713,7 +713,7 @@ ComputeLayout(Widget widget, Bool query, Bool destroy_scrollbars)
 	  XtResizeWidget(bar, XtWidth(bar), clip_height, bw);
 	  XtMoveWidget(bar,
 		       w->viewport.useright
-		       ? XtWidth(w) - XtBorderWidth(bar) - bw : -bw,
+		       ? XtWidth(w) - XtWidth(bar) - bw : -bw,
 		       needshoriz && !w->viewport.usebottom
 		       ? XtHeight(w->viewport.horiz_bar) : -bw);
 	  XtSetMappedWhenManaged(bar, True);

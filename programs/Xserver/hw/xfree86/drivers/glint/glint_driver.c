@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.6 1998/08/29 05:43:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.7 1998/08/29 14:34:35 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -158,7 +158,8 @@ typedef enum {
     OPTION_RGB_BITS,
     OPTION_NOACCEL,
     OPTION_BLOCK_WRITE,
-    OPTION_FIREGL3000
+    OPTION_FIREGL3000,
+    OPTION_MEM_CLK
 } GLINTOpts;
 
 static OptionInfoRec GLINTOptions[] = {
@@ -169,6 +170,7 @@ static OptionInfoRec GLINTOptions[] = {
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_BLOCK_WRITE,	"BlockWrite",	OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_FIREGL3000,	"FireGL3000",   OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_MEM_CLK,		"MemClock",	OPTV_INTEGER,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -693,6 +695,7 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
 	linePitches = (int *)xnfrealloc(linePitches, (n + 1) * sizeof(int));
 	linePitches[n] = 0;
     }
+
     return linePitches;
 }
 
@@ -704,6 +707,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     GLINTPtr pGlint;
     MessageType from;
     int i;
+    int maxwidth, maxheight;
     ClockRangePtr clockRanges;
     char *mod = NULL;
 
@@ -830,6 +834,15 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
     from = X_DEFAULT;
+    if (xf86IsOptionSet(GLINTOptions, OPTION_MEM_CLK)) {
+	from = X_CONFIG;
+	if (xf86GetOptValInteger(GLINTOptions, OPTION_MEM_CLK, 
+				&pGlint->MemClock)) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Memory Clock override enabled, set to %dMHz\n",
+			pGlint->MemClock);
+	}
+    }
     pGlint->HWCursor = FALSE;
     if (xf86IsOptionSet(GLINTOptions, OPTION_HW_CURSOR)) {
 	from = X_CONFIG;
@@ -927,14 +940,17 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     	}
     }
 
-
-#if 0
     if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA) || 
         (pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA)) {
-	if (pScrn->bitsPerPixel == 24)
+	if (pScrn->bitsPerPixel == 24) {
+    	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Permedia does not support 24bpp, use -bpp 32.\n");
 	    return FALSE;
+	}
+	if (pScrn->depth == 16) {
+    	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Permedia does not support depth 16, use -depth 15.\n");
+	    return FALSE;
+	}
     }
-#endif
 	
     pGlint->PciTag = pciTag(pGlint->PciInfo->bus, pGlint->PciInfo->device,
 			  pGlint->PciInfo->func);
@@ -1007,8 +1023,9 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	pGlint->VGAcore = FALSE;
     }
 
-    if((pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_500TX) &&
-       (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_MX)) {
+    if((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) ||
+       (pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2) ||
+       (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V)) {
 	GLINTMapMem(pScrn);
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Chip %s AGP Capable\n",
 		((GLINT_READ_REG(ChipConfig) & 0x200) ? "is" : "is not"));
@@ -1022,6 +1039,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     {
 	case PCI_VENDOR_TI_CHIP_PERMEDIA2:
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
+	    maxheight = 2048;
+	    maxwidth = 2048;
 	    pGlint->RamDacRec = RamDacCreateInfoRec();
 	    pGlint->RamDacRec->ReadDAC = Permedia2InIndReg;
 	    pGlint->RamDacRec->WriteDAC = Permedia2OutIndReg;
@@ -1035,6 +1054,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    }
 	    break;
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+	    maxheight = 2048;
+	    maxwidth = 2048;
 	    pGlint->RamDacRec = RamDacCreateInfoRec();
 	    pGlint->RamDacRec->ReadDAC = Permedia2vInIndReg;
 	    pGlint->RamDacRec->WriteDAC = Permedia2vOutIndReg;
@@ -1049,6 +1070,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	case PCI_VENDOR_TI_CHIP_PERMEDIA:
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
+	    maxheight = 1024;
+	    maxwidth = 1536;
 	    pGlint->RamDacRec = RamDacCreateInfoRec();
 	    pGlint->RamDacRec->ReadDAC = glintInIBMRGBIndReg;
 	    pGlint->RamDacRec->WriteDAC = glintOutIBMRGBIndReg;
@@ -1068,6 +1091,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	case PCI_VENDOR_3DLABS_CHIP_500TX:
 	case PCI_VENDOR_3DLABS_CHIP_MX:
+	    maxheight = 4096;
+	    maxwidth = 4096;
 	    pGlint->RamDacRec = RamDacCreateInfoRec();
 	    pGlint->RamDacRec->ReadDAC = glintInIBMRGBIndReg;
 	    pGlint->RamDacRec->WriteDAC = glintOutIBMRGBIndReg;
@@ -1200,12 +1225,13 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 			      LOOKUP_BEST_REFRESH);
     } else {
 	/*
-	 * XXX Assuming min height 128, max 2048
+	 * Minimum width 32, Maximum width <maxwidth>
+	 * Minimum height 128, Maximum height <maxheight>
 	 */
 	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			      pScrn->display->modes, clockRanges,
-			      GetAccelPitchValues(pScrn), 0, 0,
-			      pScrn->bitsPerPixel, 128, 2048,
+			      GetAccelPitchValues(pScrn), 32, maxwidth,
+			      pScrn->bitsPerPixel, 128, maxheight,
 			      pScrn->display->virtualX,
 			      pScrn->display->virtualY,
 			      pGlint->FbMapSize,
@@ -1242,6 +1268,23 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	        i = partprod500TX[pScrn->displayWidth >> 5];
 	    } while (i == -1);
 	}
+    }
+
+    switch (pGlint->Chipset)
+    { /* Now we know displaywidth, so set linepitch data */
+    case PCI_VENDOR_TI_CHIP_PERMEDIA2:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+    case PCI_VENDOR_TI_CHIP_PERMEDIA:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
+	pGlint->pprod = partprodPermedia[pScrn->displayWidth >> 5];
+	pGlint->bppalign = bppand[(pScrn->bitsPerPixel>>3)-1];
+	break;
+    case PCI_VENDOR_3DLABS_CHIP_500TX:
+    case PCI_VENDOR_3DLABS_CHIP_MX:
+	pGlint->pprod = partprod500TX[pScrn->displayWidth >> 5];
+	pGlint->bppalign = 0;
+	break;
     }
 
     /* Set the current mode to the first in the list */
@@ -1284,23 +1327,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    GLINTFreeRec(pScrn);
 	    return FALSE;
 	}
-
-    switch (pGlint->Chipset)
-    { /* Now we know displaywidth, so set linepitch data */
-    case PCI_VENDOR_TI_CHIP_PERMEDIA2:
-    case PCI_VENDOR_TI_CHIP_PERMEDIA:
-    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
-    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
-    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
-	pGlint->pprod = partprodPermedia[pScrn->displayWidth >> 5];
-	pGlint->bppalign = bppand[(pScrn->bitsPerPixel>>3)-1];
-	break;
-    case PCI_VENDOR_3DLABS_CHIP_500TX:
-    case PCI_VENDOR_3DLABS_CHIP_MX:
-	pGlint->pprod = partprod500TX[pScrn->displayWidth >> 5];
-	pGlint->bppalign = 0;
-	break;
-    }
 
     return TRUE;
 }
@@ -1777,8 +1803,6 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!ret)
 	return FALSE;
 
-    miInitializeBackingStore(pScreen);
-
     xf86SetBlackWhitePixels(pScreen);
 
     if (pScrn->bitsPerPixel == 8) {
@@ -1818,11 +1842,12 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         }
     }
 
+    miInitializeBackingStore(pScreen);
+
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     /* Initialise cursor functions */
     if (pGlint->HWCursor) {
-#if 0	/* Permedia2`s cursor just dont wanna work - FIXME */
 	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V)
 	    Permedia2vHWCursorInit(pScreen);
 	else
@@ -1830,15 +1855,10 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    (pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2))
 	    Permedia2HWCursorInit(pScreen);
 	else
-#endif
 	if ((pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC)) ||
 	    (pGlint->RamDac->RamDacType == (IBM526_RAMDAC)) ||
 	    (pGlint->RamDac->RamDacType == (IBM640_RAMDAC)))
 	    glintIBMHWCursorInit(pScreen);
-	else
-	    xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Not Using Hardware cursor\n");
-	   
     }
 
     /* Initialise default colourmap */
@@ -1901,6 +1921,8 @@ GLINTAdjustFrame(int scrnIndex, int x, int y, int flags)
  
     switch (pGlint->Chipset)
     {
+    case PCI_VENDOR_TI_CHIP_PERMEDIA:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
@@ -1964,10 +1986,12 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-    GLINTRestore(pScrn);
-    vgaHWLock(hwp);
-    GLINTUnmapMem(pScrn);
-    vgaHWFreeHWRec(pScrn);
+    if (pScrn->vtSema) {
+        GLINTRestore(pScrn);
+        vgaHWLock(hwp);
+        GLINTUnmapMem(pScrn);
+        vgaHWFreeHWRec(pScrn);
+    }
     if(pGlint->AccelInfoRec)
 	XAADestroyInfoRec(pGlint->AccelInfoRec);
     if(pGlint->CursorInfoRec)
@@ -1998,10 +2022,11 @@ static int
 GLINTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    GLINTPtr pGlint = GLINTPTR(pScrn);
 
     if (mode->Flags & V_INTERLACE)
-	return(MODE_BAD);
-
+	return(MODE_NO_INTERLACE);
+    
 #if 0 /* This is a Permedia2 restriction that 24bpp imposes */
     if (mode->HDisplay % 8) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, 

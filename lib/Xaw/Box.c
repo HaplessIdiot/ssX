@@ -47,7 +47,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xaw/Box.c,v 1.6 1998/08/20 13:58:56 dawes Exp $ */
 
 #include	<X11/IntrinsicP.h>
 #include	<X11/StringDefs.h>
@@ -243,7 +243,7 @@ DoLayout(BoxWidget bbw, unsigned int width, unsigned int height,
 	      else if (!position)
 		{
 		    /* too narrow for this widget; we'll assume we can grow */
-		    DoLayout(bbw, lw + bw, height, reply_width,
+		    DoLayout(bbw, (unsigned)(lw + bw), height, reply_width,
 			     reply_height, position);
 		    return;
 		}
@@ -283,7 +283,7 @@ DoLayout(BoxWidget bbw, unsigned int width, unsigned int height,
 	while (sh < height && sw > width)
 	  {
 	    width_needed = sw;
-	    DoLayout(bbw, sw-1, height, &sw, &sh, False);
+	    DoLayout(bbw, (unsigned)(sw-1), height, &sw, &sh, False);
 	}
 	if (sh < height)
 	  width_needed = sw;
@@ -407,7 +407,7 @@ XawBoxQueryGeometry(Widget widget, XtWidgetGeometry *constraint,
 	    {
 		do { /* find minimum width */
 		    width = preferred_width;
-		DoLayout(w, preferred_width - 1, 0,
+		DoLayout(w, (unsigned)(preferred_width - 1), 0,
 			 &preferred_width, &preferred_height, False);
 		} while (preferred_height < constraint->height);
 		/* one last time */

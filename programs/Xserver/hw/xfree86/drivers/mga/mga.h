@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.16 1998/08/29 14:34:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.17 1998/08/30 04:49:41 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -45,6 +45,7 @@ typedef struct {
     int		CursorMaxWidth;
     int 	CursorMaxHeight;
     int		CursorFlags;
+    int		CursorOffscreenMemSize;
     Bool        (*UseHWCursor)(ScreenPtr, CursorPtr);
     void        (*LoadCursorImage)(ScrnInfoPtr, unsigned char*);
     void        (*ShowCursor)(ScrnInfoPtr);
@@ -85,15 +86,18 @@ typedef struct {
     int			YDstOrg;
     CARD32		IOAddress;
     CARD32		FbAddress;
+    CARD32		ILOADAddress;
     CARD32		BiosAddress;
     unsigned char *     IOBase;
 #ifdef __alpha__
     unsigned char *     IOBaseDense;
 #endif
     unsigned char *	FbBase;
+    unsigned char *	ILOADBase;
     unsigned char *	FbStart;
     long		FbMapSize;
     long		FbUsableSize;
+    long		FbCursorOffset;
     MGARamdacRec	Dac;
     Bool		NoAccel;
     Bool		SyncOnGreen;
@@ -111,10 +115,13 @@ typedef struct {
     CARD32		FilledRectCMD;
     CARD32		SolidLineCMD;
     CARD32		PatternRectCMD;
+    CARD32		DashCMD;
+    CARD32		NiceDashCMD;
     CARD32		AccelFlags;
     CARD32		PlaneMask;
     CARD32		FgColor;
     CARD32		BgColor;
+    int			StyleLen;
     XAAInfoRecPtr	AccelInfoRec;
     xf86CursorInfoPtr	CursorInfoRec;
     CloseScreenProcPtr	CloseScreen;
@@ -128,6 +135,7 @@ extern CARD32 MGAAtypeNoBLK[16];
 #define CLIPPER_ON		0x00000004
 #define BLK_OPAQUE_EXPANSION	0x00000008
 #define TRANSC_SOLID_FILL	0x00000010
+#define	NICE_DASH_PATTERN	0x00000020
 
 
 /* Prototypes */
@@ -141,12 +149,12 @@ void MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 		    Bool restoreFonts);
 Bool MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
-void MGA1064RamdacInit(ScrnInfoPtr pScrn);
-void MGA1064Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
+void MGAGRamdacInit(ScrnInfoPtr pScrn);
+void MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 		    Bool saveFonts);
-void MGA1064Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
+void MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 		    Bool restoreFonts);
-Bool MGA1064Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
+Bool MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 void MGAStormSync(ScrnInfoPtr pScrn);
 void MGAStormEngineInit(ScrnInfoPtr pScrn);

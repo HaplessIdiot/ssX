@@ -75,7 +75,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.11 1998/07/04 14:48:13 robin Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.12 1998/08/16 10:24:37 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -201,19 +201,15 @@ static void VJump(Widget, XtPointer, XtPointer);
 void _XawTextAlterSelection(TextWidget,
 			    XawTextSelectionMode, XawTextSelectionAction,
 			    String*, Cardinal*);
-void _XawTextBuildLineTable(TextWidget, XawTextPosition, _XtBoolean);
 #ifndef notdef
 void _XawTextCheckResize(TextWidget);
 #endif
 void _XawTextClearAndCenterDisplay(TextWidget);
 void _XawTextExecuteUpdate(TextWidget);
-char *_XawTextGetSTRING(TextWidget, XawTextPosition, XawTextPosition);
 char *_XawTextGetText(TextWidget, XawTextPosition, XawTextPosition);
 void _XawTextPrepareToUpdate(TextWidget);
-void _XawTextPosToXY(Widget, XawTextPosition, Position*, Position*);
 int _XawTextReplace(TextWidget, XawTextPosition, XawTextPosition,
 		    XawTextBlock*);
-void _XawTextSaltAwaySelection(TextWidget, Atom*, int);
 Atom *_XawTextSelectionList(TextWidget, String*, Cardinal);
 void _XawTextSetScrollBars(TextWidget);
 void _XawTextSetSelection(TextWidget, XawTextPosition, XawTextPosition,
@@ -1022,7 +1018,7 @@ _XawTextGetText(TextWidget ctx, XawTextPosition left, XawTextPosition right)
       left = SrcRead(ctx->text.source, left, &text, (int)(right - left));
       if (!text.length)
 	break;
-      memmove(tempResult, text.ptr, text.length * bytes);
+      memmove(tempResult, text.ptr, (unsigned)(text.length * bytes));
       tempResult += text.length * bytes;
     }
 
