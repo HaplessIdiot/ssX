@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.c,v 1.4 1999/01/17 10:54:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.c,v 1.5 1999/01/26 05:54:10 dawes Exp $ */
 
 #define _elo_C_
 /*****************************************************************************
@@ -57,6 +57,7 @@
 
 #include <misc.h>
 #include <xf86.h>
+#define NEED_XF86_TYPES
 #include <xf86_ansic.h>
 #include <xf86_OSproc.h>
 #include <xf86Xinput.h>

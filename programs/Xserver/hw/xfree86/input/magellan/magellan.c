@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.c,v 1.4 1999/01/17 10:54:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.c,v 1.5 1999/01/26 05:54:11 dawes Exp $ */
 
 #define _MAGELLAN_C_
 /*****************************************************************************
@@ -33,6 +33,7 @@
 
 #include <misc.h>
 #include <xf86.h>
+#define NEED_XF86_TYPES
 #include <xf86_ansic.h>
 #include <xf86_OSproc.h>
 #include <xf86Xinput.h>

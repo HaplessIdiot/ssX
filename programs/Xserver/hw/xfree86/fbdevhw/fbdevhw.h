@@ -1,0 +1,33 @@
+/* $XFree86$ */
+
+Bool  fbdevHWGetRec(ScrnInfoPtr pScrn);
+void  fbdevHWFreeRec(ScrnInfoPtr pScrn);
+
+Bool  fbdevHWProbe(pciVideoPtr pPci, char *device);
+Bool  fbdevHWInit(ScrnInfoPtr pScrn, pciVideoPtr pPci, char *device);
+
+char* fbdevHWGetName(ScrnInfoPtr pScrn);
+int   fbdevHWGetDepth(ScrnInfoPtr pScrn);
+int   fbdevHWGetType(ScrnInfoPtr pScrn);
+int   fbdevHWGetVidmem(ScrnInfoPtr pScrn);
+
+void* fbdevHWMapVidmem(ScrnInfoPtr pScrn);
+Bool  fbdevHWUnmapVidmem(ScrnInfoPtr pScrn);
+void* fbdevHWMapMMIO(ScrnInfoPtr pScrn);
+Bool  fbdevHWUnmapMMIO(ScrnInfoPtr pScrn);
+
+void  fbdevHWSetVideoModes(ScrnInfoPtr pScrn);
+DisplayModePtr fbdevHWGetBuildinMode(ScrnInfoPtr pScrn);
+void  fbdevHWUseBuildinMode(ScrnInfoPtr pScrn);
+Bool  fbdevHWModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+void  fbdevHWSave(ScrnInfoPtr pScrn);
+void  fbdevHWRestore(ScrnInfoPtr pScrn);
+
+void  fbdevHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
+		 LOCO *colors, short visualClass);
+
+int   fbdevHWValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags);
+Bool  fbdevHWSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+void  fbdevHWAdjustFrame(int scrnIndex, int x, int y, int flags);
+Bool  fbdevHWEnterVT(int scrnIndex, int flags);
+void  fbdevHWLeaveVT(int scrnIndex, int flags);

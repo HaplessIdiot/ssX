@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.16 1998/11/28 10:42:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.17 1998/11/29 13:09:16 dawes Exp $ */
 
 #if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 
@@ -1508,12 +1508,12 @@ extern int cfbScreenPrivateIndex;
 
 #if IMAGE_BYTE_ORDER == MSBFirst
 #define intToCoord(i,x,y)   (((x) = GetHighWord(i)), ((y) = (int) ((short) (i))))
-#define coordToInt(x,y)	(((x) << 16) | (y))
+#define coordToInt(x,y)	(((x) << 16) | ((y) & 0xffff))
 #define intToX(i)	(GetHighWord(i))
 #define intToY(i)	((int) ((short) i))
 #else
 #define intToCoord(i,x,y)   (((x) = (int) ((short) (i))), ((y) = GetHighWord(i)))
-#define coordToInt(x,y)	(((y) << 16) | (x))
+#define coordToInt(x,y)	(((y) << 16) | ((x) & 0xffff))
 #define intToX(i)	((int) ((short) (i)))
 #define intToY(i)	(GetHighWord(i))
 #endif

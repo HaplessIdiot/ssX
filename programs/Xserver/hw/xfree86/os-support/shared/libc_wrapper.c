@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.34 1999/01/14 13:05:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.35 1999/01/24 13:32:40 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -47,6 +47,9 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
+#ifndef NO_MMAP
+#include <sys/mman.h>
+#endif
 #if !defined(ISC)
 #include <stdlib.h>
 #endif
@@ -374,6 +377,50 @@ xf86write(int fd, const void *buf, INT32 nbytes)
     xf86errno = xf86GetErrno();
     return n;
 }
+
+void*
+xf86mmap(void *start, xf86size_t length, int prot,
+	 int flags, int fd, xf86size_t /* off_t */ offset)
+{
+#ifndef NO_MMAP
+    int p=0, f=0;
+    void *rc;
+
+    if (flags & XF86_MAP_FIXED)		f |= MAP_FIXED;
+    if (flags & XF86_MAP_SHARED)	f |= MAP_SHARED;
+    if (flags & XF86_MAP_PRIVATE)	f |= MAP_PRIVATE;
+    if (prot  & XF86_PROT_EXEC)		p |= PROT_EXEC;
+    if (prot  & XF86_PROT_READ)		p |= PROT_READ;
+    if (prot  & XF86_PROT_WRITE)	p |= PROT_WRITE;
+    if (prot  & XF86_PROT_NONE)		p |= PROT_NONE;
+
+    rc = mmap(start,length,p,f,fd,offset);
+
+    xf86errno = xf86GetErrno();
+    return rc;
+#else
+    ErrorF("Warning: mmap() is not supported on this platform\n");
+    xf86errno = xf86_ENOSYS;
+    return NULL;
+#endif
+}
+
+int
+xf86munmap(void *start, xf86size_t length)
+{
+#ifndef NO_MMAP
+    void *rc = munmap(start,length);
+
+    xf86errno = xf86GetErrno();
+    return rc;
+#else
+    ErrorF("Warning: munmap() is not supported on this platform\n");
+    xf86errno = xf86_ENOSYS;
+    return -1;
+#endif
+}
+
+
 
 /* limited stdio support */
 
@@ -924,7 +971,11 @@ xf86ffs(int mask)
 char *
 xf86getenv(const char * a)
 {
-	return(getenv(a));
+	/* Only allow this when the real and effective uids are the same */
+	if (getuid() != geteuid())
+		return NULL;
+	else
+		return(getenv(a));
 }
 
 /*VARARGS1*/

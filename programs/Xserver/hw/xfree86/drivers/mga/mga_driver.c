@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.78 1999/02/28 11:19:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.79 1999/03/02 10:41:57 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -103,6 +103,7 @@
 #include "xaa.h"
 #include "xf86cmap.h"
 #include "shadowfb.h"
+#include "fbdevhw.h"
 
 
 /*
@@ -199,7 +200,8 @@ typedef enum {
     OPTION_SHOWCACHE,
     OPTION_8_PLUS_24,
     OPTION_MGA_SDRAM,
-    OPTION_SHADOW_FB
+    OPTION_SHADOW_FB,
+    OPTION_FBDEV
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -213,6 +215,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_8_PLUS_24,		"8Plus24",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MGA_SDRAM,		"MGASDRAM",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_FBDEV,		"UseFBDev",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -296,6 +299,26 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
+static const char *fbdevHWSymbols[] = {
+	"fbdevHWInit",
+	"fbdevHWUseBuildinMode",
+
+	"fbdevHWGetDepth",
+	"fbdevHWGetVidmem",
+
+	/* colormap */
+	"fbdevHWLoadpalette",
+
+	/* ScrnInfo hooks */
+	"fbdevHWSwitchMode",
+	"fbdevHWAdjustFrame",
+	"fbdevHWEnterVT",
+	"fbdevHWLeaveVT",
+	"fbdevHWValidMode",
+	NULL
+};
+
+
 #ifdef XFree86LOADER
 
 static MODULESETUPPROTO(mgaSetup);
@@ -338,7 +361,8 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
 			  xf8_32bppSymbols, ramdacSymbols,
-			  ddcSymbols, i2cSymbols, shadowSymbols, NULL);
+			  ddcSymbols, i2cSymbols, shadowSymbols,
+			  fbdevHWSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -1064,6 +1088,11 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
     }
+    if (xf86IsOptionSet(MGAOptions, OPTION_FBDEV)) {
+	pMga->FBDev = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Using framebuffer device\n");
+    }
 
     /* Find the PCI slot for this screen */
     /*
@@ -1082,6 +1111,21 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     pMga->PciInfo = *pciList;
     xfree(pciList);
+
+    if (pMga->FBDev) {
+	/* check for linux framebuffer device */
+	if (!xf86LoadSubModule(pScrn, "fbdevhw"))
+	    return FALSE;
+	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+	if (!fbdevHWInit(pScrn, pMga->PciInfo, NULL))
+	    return FALSE;
+	pScrn->SwitchMode    = fbdevHWSwitchMode;
+	pScrn->AdjustFrame   = fbdevHWAdjustFrame;
+	pScrn->EnterVT       = fbdevHWEnterVT;
+	pScrn->LeaveVT       = fbdevHWLeaveVT;
+	pScrn->ValidMode     = fbdevHWValidMode;
+    }
+
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
@@ -1251,7 +1295,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     /*
      * Reset card if it isn't primary one
      */
-    if (!xf86IsPrimaryPci(pMga->PciInfo))
+    if (!xf86IsPrimaryPci(pMga->PciInfo) && !pMga->FBDev)
         MGASoftReset(pScrn);
          
     /*
@@ -1268,7 +1312,11 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
 	 "Skipping memory probe due to hardware bug.  Assuming 4096 kBytes\n");
     } else {
-	pScrn->videoRam = MGACountRam(pScrn);
+	if (pMga->FBDev) {
+	    pScrn->videoRam = fbdevHWGetVidmem(pScrn)/1024;
+	} else {
+	    pScrn->videoRam = MGACountRam(pScrn);
+	}
 	from = X_PROBED;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
@@ -1403,6 +1451,11 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 			      pScrn->display->virtualY,
 			      pMga->FbMapSize,
 			      LOOKUP_BEST_REFRESH);
+    }
+    if (i < 1 && pMga->FBDev) {
+	fbdevHWUseBuildinMode(pScrn);
+	pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
+	i = 1;
     }
     if (i == -1) {
 	MGAFreeRec(pScrn);
@@ -1692,6 +1745,36 @@ MGAMapMem(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
+static Bool
+MGAMapMemFBDev(ScrnInfoPtr pScrn)
+{
+    MGAPtr pMga;
+
+    pMga = MGAPTR(pScrn);
+
+    pMga->FbBase = fbdevHWMapVidmem(pScrn);
+    if (pMga->FbBase == NULL)
+	return FALSE;
+
+    pMga->IOBase = fbdevHWMapMMIO(pScrn);
+    if (pMga->IOBase == NULL)
+	return FALSE;
+
+    pMga->FbStart = pMga->FbBase + pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
+
+#if 0 /* TODO: look at matroxfb how to handle this... */
+
+    /* Map the ILOAD transfer window if there is one.  We only make
+	DWORD access on DWORD boundaries to this window */
+    if(pMga->ILOADAddress)
+	pMga->ILOADBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
+			pMga->PciTag, (pointer)pMga->ILOADAddress, 0x800000);
+    else  pMga->ILOADBase = NULL;
+#endif
+    return TRUE;
+}
+
+
 
 /*
  * Unmap the framebuffer and MMIO memory.
@@ -1728,6 +1811,23 @@ MGAUnmapMem(ScrnInfoPtr pScrn)
     pMga->ILOADBase = NULL;
     return TRUE;
 }
+
+static Bool
+MGAUnmapMemFBDev(ScrnInfoPtr pScrn)
+{
+    MGAPtr pMga;
+
+    pMga = MGAPTR(pScrn);
+    fbdevHWUnmapVidmem(pScrn);
+    pMga->FbBase = NULL;
+    pMga->FbStart = NULL;
+    fbdevHWUnmapMMIO(pScrn);
+    pMga->IOBase = NULL;
+    /* XXX ILOADBase */
+    return TRUE;
+}
+
+
 
 
 /*
@@ -1888,30 +1988,41 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     MGAdac = &pMga->Dac;
 
     /* Map the MGA memory and MMIO areas */
-    if (!MGAMapMem(pScrn))
-	return FALSE;
+    if (pMga->FBDev) {
+	if (!MGAMapMemFBDev(pScrn))
+	    return FALSE;
+    } else {
+	if (!MGAMapMem(pScrn))
+	    return FALSE;
+    }
 
     /* Initialise the MMIO vgahw functions */
     vgaHWSetMmioFuncs(hwp, pMga->IOBase, PORT_OFFSET);
     vgaHWGetIOBase(hwp);
 
     /* Map the VGA memory when the primary video */
-    if (xf86IsPrimaryPci(pMga->PciInfo)) {
+    if (xf86IsPrimaryPci(pMga->PciInfo) && !pMga->FBDev) {
 	hwp->MapSize = 0x10000;
 	if (!vgaHWMapMem(pScrn))
 	    return FALSE;
     }
 
-    /* Save the current state */
-    MGASave(pScrn);
+    if (pMga->FBDev) {
+	fbdevHWSave(pScrn);
+	if (!fbdevHWModeInit(pScrn, pScrn->currentMode))
+	    return FALSE;
+    } else {
+	/* Save the current state */
+	MGASave(pScrn);
+	/* Initialise the first mode */
+	if (!MGAModeInit(pScrn, pScrn->currentMode))
+	    return FALSE;
+    }
 
-    /* Initialise the first mode */
-    if (!MGAModeInit(pScrn, pScrn->currentMode))
-	return FALSE;
 
     /* Darken the screen for aesthetic reasons and set the viewport */
     MGASaveScreen(pScreen, FALSE);
-    MGAAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+    pScrn->AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
     /*
      * The next step is to setup the screen's visuals, and initialise the
@@ -2059,7 +2170,8 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Initialize colormap layer.  
 	Must follow initialization of the default colormap */
-    if(!xf86HandleColormaps(pScreen, 256, 8, MGAdac->LoadPalette, NULL,
+    if(!xf86HandleColormaps(pScreen, 256, 8, 
+	(pMga->FBDev ? fbdevHWLoadPalette : MGAdac->LoadPalette), NULL,
 	(pMga->Overlay8Plus24 ? 0 : CMAP_PALETTED_TRUECOLOR) |
 			CMAP_RELOAD_ON_MODE_SWITCH))	
 	return FALSE;
@@ -2196,9 +2308,14 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     MGAPtr pMga = MGAPTR(pScrn);
 
     if (pScrn->vtSema) {
-    	MGARestore(pScrn);
-    	vgaHWLock(hwp);
-    	MGAUnmapMem(pScrn);
+	if (pMga->FBDev) {
+	    fbdevHWRestore(pScrn);
+	    MGAUnmapMemFBDev(pScrn);
+        } else {
+	    MGARestore(pScrn);
+	    vgaHWLock(hwp);
+	    MGAUnmapMem(pScrn);
+	}
     }
     if (pMga->AccelInfoRec)
 	XAADestroyInfoRec(pMga->AccelInfoRec);

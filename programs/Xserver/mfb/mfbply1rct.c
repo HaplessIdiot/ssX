@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/mfb/mfbply1rct.c,v 1.2 1998/03/20 21:08:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbply1rct.c,v 1.3 1998/10/04 09:39:12 dawes Exp $ */
 
 #include "X.h"
 
@@ -44,12 +44,12 @@ in this Software without prior written authorization from The Open Group.
 
 #if IMAGE_BYTE_ORDER == MSBFirst
 #define intToCoord(i,x,y)   (((x) = GetHighWord(i)), ((y) = (int) ((short) (i))))
-#define coordToInt(x,y)	(((x) << 16) | (y))
+#define coordToInt(x,y)	(((x) << 16) | ((y) & 0xffff))
 #define intToX(i)	(GetHighWord(i))
 #define intToY(i)	((int) ((short) i))
 #else
 #define intToCoord(i,x,y)   (((x) = (int) ((short) (i))), ((y) = GetHighWord(i)))
-#define coordToInt(x,y)	(((y) << 16) | (x))
+#define coordToInt(x,y)	(((y) << 16) | ((x) & 0xffff))
 #define intToX(i)	((int) ((short) (i)))
 #define intToY(i)	(GetHighWord(i))
 #endif

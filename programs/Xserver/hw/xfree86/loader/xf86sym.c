@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.68 1999/02/28 11:19:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.69 1999/03/01 02:15:11 dawes Exp $ */
 
 /*
  *
@@ -41,15 +41,14 @@
 #ifdef XINPUT
 #include "xf86Xinput.h"
 #endif
-#include "xisb.h"
 #include "xf86xv.h"
 #include "xf86cmap.h"
 #include "xf86fbman.h"
 #include "dgaproc.h"
 #include "loader.h"
-
 #define DONT_DEFINE_WRAPPERS
 #include "xf86_ansic.h"
+#include "xisb.h"
 
 /* XXX Should get all of these from elsewhere */
 #if defined (PowerMAX_OS)
@@ -485,6 +484,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(LoaderSymbol)
    SYMFUNC(LoaderListDirs)
    SYMFUNC(LoaderFreeDirList)
+   SYMFUNC(LoaderGetOS)
 
    /*
     * these here are our own interfaces to libc functions
@@ -564,7 +564,9 @@ LOOKUP xfree86LookupTab[] = {
 #endif
    SYMFUNC(xf86memmove)
    SYMFUNC(xf86memset)
+   SYMFUNC(xf86mmap)
    SYMFUNC(xf86modf)
+   SYMFUNC(xf86munmap)
    SYMFUNC(xf86open)
    SYMFUNC(xf86perror)
    SYMFUNC(xf86pow)

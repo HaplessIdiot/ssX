@@ -15,110 +15,51 @@ XCOMM 1999. The developer of the Original Software is Silicon Graphics, Inc.
 XCOMM Those portions of the Subject Software created by Silicon Graphics, Inc.
 XCOMM are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 
-#ifdef	ManPageAlias
-#undef	ManPageAlias
-#endif
-#define	ManPageAlias(file,destdir,alias)				@@\
-alias.$(MANSUFFIX): file.$(MANSUFFIX)					@@\
-	echo .so `basename destdir`/file.$(MANSUFFIX) > alias.$(MANSUFFIX) @@\
-
-MANSUFFIX = 3gl
+MANDIR = $(LIBMANDIR)
+MANSUFFIX = $(LIBMANSUFFIX)
+MSUFF = man
 
 MAN_PAGES = \
-glXChooseVisual.$(MANSUFFIX)          glXCopyContext.$(MANSUFFIX)           \
-glXCreateContext.$(MANSUFFIX)         glXCreateGLXPixmap.$(MANSUFFIX)       \
-glXDestroyContext.$(MANSUFFIX)        glXDestroyGLXPixmap.$(MANSUFFIX)      \
-glXFreeContextEXT.$(MANSUFFIX)        glXGetClientString.$(MANSUFFIX)       \
-glXGetConfig.$(MANSUFFIX)             glXGetContextIDEXT.$(MANSUFFIX)       \
-glXGetCurrentContext.$(MANSUFFIX)     glXGetCurrentDisplay.$(MANSUFFIX)     \
-glXGetCurrentDrawable.$(MANSUFFIX)    glXImportContextEXT.$(MANSUFFIX)      \
-glXIntro.$(MANSUFFIX)                 glXIsDirect.$(MANSUFFIX)              \
-glXMakeCurrent.$(MANSUFFIX)           glXQueryContextInfoEXT.$(MANSUFFIX)   \
-glXQueryExtension.$(MANSUFFIX)        glXQueryExtensionsString.$(MANSUFFIX) \
-glXQueryServerString.$(MANSUFFIX)     glXQueryVersion.$(MANSUFFIX)          \
-glXSwapBuffers.$(MANSUFFIX)           glXUseXFont.$(MANSUFFIX)              \
-glXWaitGL.$(MANSUFFIX)                glXWaitX.$(MANSUFFIX)                 
-
-LINK_NAMES = \
-glXChooseVisual.$(MANSUFFIX)          glXCopyContext.$(MANSUFFIX)           \
-glXCreateContext.$(MANSUFFIX)         glXCreateGLXPixmap.$(MANSUFFIX)       \
-glXDestroyContext.$(MANSUFFIX)        glXDestroyGLXPixmap.$(MANSUFFIX)      \
-glXFreeContextEXT.$(MANSUFFIX)        glXGetClientString.$(MANSUFFIX)       \
-glXGetConfig.$(MANSUFFIX)             glXGetContextIDEXT.$(MANSUFFIX)       \
-glXGetCurrentContext.$(MANSUFFIX)     glXGetCurrentDisplay.$(MANSUFFIX)     \
-glXGetCurrentDrawable.$(MANSUFFIX)    glXImportContextEXT.$(MANSUFFIX)      \
-glXIntro.$(MANSUFFIX)                 glXIsDirect.$(MANSUFFIX)              \
-glXMakeCurrent.$(MANSUFFIX)           glXQueryContextInfoEXT.$(MANSUFFIX)   \
-glXQueryExtension.$(MANSUFFIX)        glXQueryExtensionsString.$(MANSUFFIX) \
-glXQueryServerString.$(MANSUFFIX)     glXQueryVersion.$(MANSUFFIX)          \
-glXSwapBuffers.$(MANSUFFIX)           glXUseXFont.$(MANSUFFIX)              \
-glXWaitGL.$(MANSUFFIX)                glXWaitX.$(MANSUFFIX)                 
-
-
-AllTarget($(MAN_PAGES))
-
-list:
-	@for i in $(MAN_PAGES); do echo $$i; done;
-
-install_list:
-	@for i in $(MAN_PAGES); do echo $(LIBMANDIR)/$$i; done;
-
-install:: install.man
-
-clean::
-	$(RM) $(LINK_NAMES) $(ALIAS_NAMES)
+glXChooseVisual.$(MSUFF)          glXCopyContext.$(MSUFF)           \
+glXCreateContext.$(MSUFF)         glXCreateGLXPixmap.$(MSUFF)       \
+glXDestroyContext.$(MSUFF)        glXDestroyGLXPixmap.$(MSUFF)      \
+glXFreeContextEXT.$(MSUFF)        glXGetClientString.$(MSUFF)       \
+glXGetConfig.$(MSUFF)             glXGetContextIDEXT.$(MSUFF)       \
+glXGetCurrentContext.$(MSUFF)     glXGetCurrentDisplay.$(MSUFF)     \
+glXGetCurrentDrawable.$(MSUFF)    glXImportContextEXT.$(MSUFF)      \
+glXIntro.$(MSUFF)                 glXIsDirect.$(MSUFF)              \
+glXMakeCurrent.$(MSUFF)           glXQueryContextInfoEXT.$(MSUFF)   \
+glXQueryExtension.$(MSUFF)        glXQueryExtensionsString.$(MSUFF) \
+glXQueryServerString.$(MSUFF)     glXQueryVersion.$(MSUFF)          \
+glXSwapBuffers.$(MSUFF)           glXUseXFont.$(MSUFF)              \
+glXWaitGL.$(MSUFF)                glXWaitX.$(MSUFF)                 
 
 InstallMultipleMan($(MAN_PAGES),$(LIBMANDIR))
 
-LinkFile(glXChooseVisual.$(MANSUFFIX), xchoosevisual.3gl)
-
-LinkFile(glXCopyContext.$(MANSUFFIX), xcopycontext.3gl)
-
-LinkFile(glXCreateContext.$(MANSUFFIX), xcreatecontext.3gl)
-
-LinkFile(glXCreateGLXPixmap.$(MANSUFFIX), xcreateglxpixmap.3gl)
-
-LinkFile(glXDestroyContext.$(MANSUFFIX), xdestroycontext.3gl)
-
-LinkFile(glXDestroyGLXPixmap.$(MANSUFFIX), xdestroyglxpixmap.3gl)
-
-LinkFile(glXFreeContextEXT.$(MANSUFFIX), xfreecontextext.3gl)
-
-LinkFile(glXGetClientString.$(MANSUFFIX), xgetclientstring.3gl)
-
-LinkFile(glXGetConfig.$(MANSUFFIX), xgetconfig.3gl)
-
-LinkFile(glXGetContextIDEXT.$(MANSUFFIX), xgetcontextidext.3gl)
-
-LinkFile(glXGetCurrentContext.$(MANSUFFIX), xgetcurrentcontext.3gl)
-
-LinkFile(glXGetCurrentDisplay.$(MANSUFFIX), xgetcurrentdisplay.3gl)
-
-LinkFile(glXGetCurrentDrawable.$(MANSUFFIX), xgetcurrentdrawable.3gl)
-
-LinkFile(glXImportContextEXT.$(MANSUFFIX), ximportcontextext.3gl)
-
-LinkFile(glXIntro.$(MANSUFFIX), xintro.3gl)
-
-LinkFile(glXIsDirect.$(MANSUFFIX), xisdirect.3gl)
-
-LinkFile(glXMakeCurrent.$(MANSUFFIX), xmakecurrent.3gl)
-
-LinkFile(glXQueryContextInfoEXT.$(MANSUFFIX), xquerycontextinfoext.3gl)
-
-LinkFile(glXQueryExtension.$(MANSUFFIX), xqueryextension.3gl)
-
-LinkFile(glXQueryExtensionsString.$(MANSUFFIX), xqueryextensionsstring.3gl)
-
-LinkFile(glXQueryServerString.$(MANSUFFIX), xqueryserverstring.3gl)
-
-LinkFile(glXQueryVersion.$(MANSUFFIX), xqueryversion.3gl)
-
-LinkFile(glXSwapBuffers.$(MANSUFFIX), xswapbuffers.3gl)
-
-LinkFile(glXUseXFont.$(MANSUFFIX), xusexfont.3gl)
-
-LinkFile(glXWaitGL.$(MANSUFFIX), xwaitgl.3gl)
-
-LinkFile(glXWaitX.$(MANSUFFIX), xwaitx.3gl)
+LinkFile(glXChooseVisual.$(MSUFF), xchoosevisual.3gl)
+LinkFile(glXCopyContext.$(MSUFF), xcopycontext.3gl)
+LinkFile(glXCreateContext.$(MSUFF), xcreatecontext.3gl)
+LinkFile(glXCreateGLXPixmap.$(MSUFF), xcreateglxpixmap.3gl)
+LinkFile(glXDestroyContext.$(MSUFF), xdestroycontext.3gl)
+LinkFile(glXDestroyGLXPixmap.$(MSUFF), xdestroyglxpixmap.3gl)
+LinkFile(glXFreeContextEXT.$(MSUFF), xfreecontextext.3gl)
+LinkFile(glXGetClientString.$(MSUFF), xgetclientstring.3gl)
+LinkFile(glXGetConfig.$(MSUFF), xgetconfig.3gl)
+LinkFile(glXGetContextIDEXT.$(MSUFF), xgetcontextidext.3gl)
+LinkFile(glXGetCurrentContext.$(MSUFF), xgetcurrentcontext.3gl)
+LinkFile(glXGetCurrentDisplay.$(MSUFF), xgetcurrentdisplay.3gl)
+LinkFile(glXGetCurrentDrawable.$(MSUFF), xgetcurrentdrawable.3gl)
+LinkFile(glXImportContextEXT.$(MSUFF), ximportcontextext.3gl)
+LinkFile(glXIntro.$(MSUFF), xintro.3gl)
+LinkFile(glXIsDirect.$(MSUFF), xisdirect.3gl)
+LinkFile(glXMakeCurrent.$(MSUFF), xmakecurrent.3gl)
+LinkFile(glXQueryContextInfoEXT.$(MSUFF), xquerycontextinfoext.3gl)
+LinkFile(glXQueryExtension.$(MSUFF), xqueryextension.3gl)
+LinkFile(glXQueryExtensionsString.$(MSUFF), xqueryextensionsstring.3gl)
+LinkFile(glXQueryServerString.$(MSUFF), xqueryserverstring.3gl)
+LinkFile(glXQueryVersion.$(MSUFF), xqueryversion.3gl)
+LinkFile(glXSwapBuffers.$(MSUFF), xswapbuffers.3gl)
+LinkFile(glXUseXFont.$(MSUFF), xusexfont.3gl)
+LinkFile(glXWaitGL.$(MSUFF), xwaitgl.3gl)
+LinkFile(glXWaitX.$(MSUFF), xwaitx.3gl)
 

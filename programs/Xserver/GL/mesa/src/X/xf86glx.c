@@ -38,15 +38,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <GL/gl.h>
 #include <GL/glxint.h>
 
-/*
- * This define is for the glcore.h header file.
- * If you comment it out, then make sure you also comment it out
- * in ../../../decode/Imakefile.
- */
-#define DEBUG
-#include <GL/internal/glcore.h>
-#undef DEBUG
-
 #include <scrnintstr.h>
 #include <config.h>
 #include <glxserver.h>
@@ -58,6 +49,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86glxint.h"
 #include "xmesaP.h"
 #include <GL/xf86glx.h>
+
+/*
+ * This define is for the glcore.h header file.
+ * If you comment it out, then make sure you also comment it out
+ * in ../../../decode/Imakefile.
+ */
+#define DEBUG
+#include <GL/internal/glcore.h>
+#undef DEBUG
+
 
 /*
  * This structure is statically allocated in the __glXScreens[]

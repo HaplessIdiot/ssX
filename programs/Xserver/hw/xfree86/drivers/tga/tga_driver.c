@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.15 1999/02/07 11:11:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.16 1999/02/12 22:52:08 hohndel Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -81,6 +81,12 @@ static Bool	TGAUnmapMem(ScrnInfoPtr pScrn);
 static void	TGASave(ScrnInfoPtr pScrn);
 static void	TGARestore(ScrnInfoPtr pScrn);
 static Bool	TGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+
+#ifdef DPMSExtension
+static void TGADisplayPowerManagementSet(ScrnInfoPtr pScrn,
+					 int PowerManagementMode,
+					 int flags);
+#endif
 
 #define VERSION 4000
 #define TGA_NAME "TGA"
@@ -1248,6 +1254,11 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScreen->CloseScreen = TGACloseScreen;
     pScreen->SaveScreen = TGASaveScreen;
 
+#ifdef DPMSExtension
+    if(xf86DPMSInit(pScreen, TGADisplayPowerManagementSet, 0) == FALSE)
+      ErrorF("DPMS initialization failed!\n");
+#endif /* DPMSExtension */
+
     /* Report any unused options (only for the first generation) */
     if (serverGeneration == 1) {
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
@@ -1378,3 +1389,46 @@ TGASaveScreen(ScreenPtr pScreen, Bool unblank)
 {
 	return TRUE;
 }
+
+
+/*
+ * TGADisplayPowerManagementSet --
+ *
+ * Sets VESA Display Power Management Signaling (DPMS) Mode.
+ */
+#ifdef DPMSExtension
+static void
+TGADisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
+			     int flags)
+{
+  TGAPtr pTga;
+  int valid_reg = 0;
+
+  pTga = TGAPTR(pScrn);
+  valid_reg = TGA_READ_REG(TGA_VALID_REG);
+  valid_reg &= 0xFFFFFFFC;
+  
+  switch(PowerManagementMode) {
+  case DPMSModeOn:
+    /* HSync: On, VSync: On */
+    valid_reg |= 0x1;
+    break;
+  case DPMSModeStandby: 
+  case DPMSModeSuspend:
+    /* TGA gives us a function to blank the screen while maintaining sync...
+       I guess we can just use that here... */
+    valid_reg |= 0x3;
+    break;
+  case DPMSModeOff:
+    valid_reg |= 0x2;
+    break;
+  default:
+    ErrorF("Invalid PowerManagementMode %d passed to TGADisplayPowerManagementSet\n", PowerManagementMode);
+    break;
+  }
+  
+  TGA_WRITE_REG(valid_reg, TGA_VALID_REG);
+  return;
+}
+
+#endif /* DPMSExtension */

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.52 1999/01/11 05:13:04 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.53 1999/03/02 02:49:11 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -92,6 +92,7 @@ XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.52 1999/01/11 05:13:04 dawe
  * InstallMultiple		(list,dest)
  * InstallMultipleFlags		(list,dest,flags)
  * InstallMultipleMan		(list,dest)
+ * InstallMultipleManSuffix	(list,dest,suffix)
  * DependDependency		()
  * DependTarget			()
  * DependTarget3		(srcs1,srcs2,srcs3)
@@ -1512,6 +1513,22 @@ InstallMultipleDestFlags(install,list,dest,flags)
 #define InstallMultipleMan(list,dest)					@@\
 InstallMultipleDestFlags(install.man,list,dest,$(INSTMANFLAGS))
 #endif /* InstallMultipleMan */
+
+/*
+ * InstallMultipleManSuffix - generate rules to install multiple manual
+ * pages dufing the install.man step of the build, where
+ * the target files have the suffix given.
+ */
+#ifndef InstallMultipleManSuffix
+#define InstallMultipleManSuffix(list,dest,suffix)			@@\
+install.man::								@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	@MakeFlagsToShellFlags(i,set +e); \				@@\
+	for i in list; do \						@@\
+	  (set -x; $(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) $$i.suffix $(DESTDIR)dest/$$i.$(MANSUFFIX)); \	@@\
+	done
+#endif /* InstallMultipleManSuffix */
+
 
 /*
  * IncludeMakefile - rule to include another Makefile.

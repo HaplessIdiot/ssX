@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.25 1999/02/07 06:18:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.26 1999/02/12 22:52:03 hohndel Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1607,7 +1607,7 @@ GLINTSave(ScrnInfoPtr pScrn)
     if (pGlint->VGAcore) {
     	vgaRegPtr vgaReg;
     	vgaReg = &VGAHWPTR(pScrn)->SavedReg;
-	vgaHWSave(pScrn, vgaReg, VGA_SR_ALL);
+	vgaHWSave(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_FONTS);
     }
 
     switch (pGlint->Chipset)
@@ -1685,7 +1685,7 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	vgaHWPtr hwp = VGAHWPTR(pScrn);
     	vgaRegPtr vgaReg = &hwp->ModeReg;
     	vgaHWProtect(pScrn, TRUE);
-	vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_CMAP);
+	vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
     }
 
     glintReg = &pGlint->ModeReg;
@@ -1763,7 +1763,7 @@ GLINTRestore(ScrnInfoPtr pScrn)
     if (pGlint->VGAcore) {
     	vgaHWPtr hwp = VGAHWPTR(pScrn);
     	vgaRegPtr vgaReg = &hwp->SavedReg;
-	vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
+	vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_FONTS);
     	vgaHWProtect(pScrn, FALSE);
     }
 }

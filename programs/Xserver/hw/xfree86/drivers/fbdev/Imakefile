@@ -1,0 +1,38 @@
+XCOMM
+XCOMM This is an Imakefile for the fbdev driver.  
+XCOMM
+XCOMM $XFree86$
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = fbdev.c
+OBJS = fbdev.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
+           -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+           -I$(SERVERSRC)/cfb -I$(XF86SRC)/xaa \
+           -I$(XF86SRC)/fbdevhw -I$(XF86SRC)/ramdac \
+           -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
+           -I$(SERVERSRC)/Xext -I$(XF86SRC)/xf8_32bpp\
+           -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+	   -I$(XF86SRC)/shadowfb
+#endif
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+
+ModuleObjectRule()
+
+ObjectModuleTarget(fbdev,$(OBJS))
+
+InstallLinkKitNonExecFile(fbdev.c,$(LINKKITDIR)/drivers/svga/fbdev)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/svga/fbdev)
+
+InstallObjectModule(fbdev,$(MODULEDIR),drivers)
+
+DependTarget()

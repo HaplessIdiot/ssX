@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbscrinit.c,v 1.1 1999/01/23 09:56:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbscrinit.c,v 1.2 1999/02/28 11:19:49 dawes Exp $ */
 
 
 #include "X.h"
@@ -131,7 +131,7 @@ cfb24_32CreateScreenResources(ScreenPtr pScreen)
 
     /* get the pitch before mi destroys it */
     pScrInitParms = (miScreenInitParmsPtr)pScreen->devPrivate;
-    pitch = PixmapBytePad(pScrInitParms->width, 24);
+    pitch = ((pScrInitParms->width * 3) + 3) & ~3L;
 
     if((retval = miCreateScreenResources(pScreen))) {
 	/* fix the screen pixmap */
