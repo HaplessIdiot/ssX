@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.54 2001/01/17 22:37:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.55 2001/03/05 04:52:30 mvojkovi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -441,7 +441,7 @@ static ExtensionModule staticExtensions[] = {
     { XIdleExtensionInit, "XIDLE", NULL, NULL, NULL },
 #endif
 #ifdef XTRAP
-    { DEC_XTRAPIbit, "XTRAP", &noTestExtensions, NULL, NULL },
+    { DEC_XTRAPInit, "XTRAP", &noTestExtensions, NULL, NULL },
 #endif
 #ifdef XKB
     { XkbExtensionInit, XkbName, &noXkbExtension, NULL, NULL },
