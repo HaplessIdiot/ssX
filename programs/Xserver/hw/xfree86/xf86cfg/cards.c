@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.1 2000/04/04 22:36:57 dawes Exp $
  */
 
 #include "cards.h"
@@ -107,8 +107,10 @@ ReadCardsDatabase(void)
 		if (entry == NULL || entry->chipset != NULL) {
 		    fprintf(stderr, CardsError, linenum, buffer);
 		}
+#if 0
 		else
 		    entry->chipset = strdup(buffer);
+#endif
 		break;
 	    case SERVER:
 		if (entry == NULL || entry->server != NULL) {
