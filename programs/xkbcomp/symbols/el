@@ -1,3 +1,6 @@
+// $XFree86$
+//
+
 default partial alphanumeric_keys alternate_group
 xkb_symbols "basic" {
 

@@ -26,6 +26,7 @@
  *
  *	Id: fontcache.h,v 1.12 1999/01/09 06:24:30 akiyama Exp $
  */
+/* $XFree86$ */
 
 #ifndef _FONTCACHE_H_
 #define _FONTCACHE_H_
