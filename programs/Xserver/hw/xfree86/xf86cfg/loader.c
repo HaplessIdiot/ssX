@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.15 2001/08/17 22:08:15 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.16 2001/10/28 03:34:08 tsi Exp $
  */
 
 #include "config.h"
@@ -55,7 +55,7 @@ static Bool EnumDatabase(XrmDatabase*, XrmBindingList, XrmQuarkList,
 			 XrmRepresentation*, XrmValue*, XPointer);
 extern void CheckChipsets(xf86cfgModuleOptions*, int*);
 
-static jmp_buf jmp;
+static sigjmp_buf jmp;
 int signal_caught;
 int error_level;
 char *loaderPath, **loaderList, **ploaderList;
@@ -108,8 +108,9 @@ sig_handler(int sig)
 	abort();
     ++signal_caught;
     ErrorF("  ERROR SIG%s caught!\n", str);
-    error_level += 50;
-    longjmp(jmp, 1);
+    if (!noverify)
+	error_level += 50;
+    siglongjmp(jmp, 1);
     /*NOTREACHED*/
 }
 
@@ -251,18 +252,18 @@ LoaderInitializeOptions(void)
 
 	if (loaderList) {
 	    for (ploaderList = loaderList; *ploaderList; ploaderList++) {
-		if (!noverify) {
-		    if (setjmp(jmp) == 0) {
+		signal_caught = 0;
+		signal(SIGTRAP, sig_handler);
+		signal(SIGBUS, sig_handler);
+		signal(SIGSEGV, sig_handler);
+		signal(SIGILL, sig_handler);
+		signal(SIGFPE, sig_handler);
+		if (sigsetjmp(jmp, 1) == 0) {
+		    if (!noverify) {
 			int ok, nfont_modules;
 
 			nfont_modules = numFontModules;
 			error_level = 0;
-			signal_caught = 0;
-			signal(SIGTRAP, sig_handler);
-			signal(SIGBUS, sig_handler);
-			signal(SIGSEGV, sig_handler);
-			signal(SIGILL, sig_handler);
-			signal(SIGFPE, sig_handler);
 			ErrorF("CHECK MODULE %s\n", *ploaderList);
 			if ((ok = xf86cfgCheckModule()) == 0) {
 			    CheckMsg(CHECKER_LOAD_FAILED,
@@ -275,11 +276,6 @@ LoaderInitializeOptions(void)
 				     module_strs[module_type]);
 			    ++error_level;
 			}
-			signal(SIGTRAP, SIG_DFL);
-			signal(SIGBUS, SIG_DFL);
-			signal(SIGSEGV, SIG_DFL);
-			signal(SIGILL, SIG_DFL);
-			signal(SIGFPE, SIG_DFL);
 			if (ok) {
 			    if (options_ok) {
 				if ((module_options == NULL || module_options->option == NULL) &&
@@ -358,11 +354,16 @@ LoaderInitializeOptions(void)
 				++error_level;
 			    }
 			}
+			ErrorF("  SUMMARY error_level set to %d.\n\n", error_level);
 		    }
-		    ErrorF("  SUMMARY error_level set to %d.\n\n", error_level);
+		    else
+			(void)xf86cfgCheckModule();
 		}
-		else
-		    (void)xf86cfgCheckModule();
+		signal(SIGTRAP, SIG_DFL);
+		signal(SIGBUS, SIG_DFL);
+		signal(SIGSEGV, SIG_DFL);
+		signal(SIGILL, SIG_DFL);
+		signal(SIGFPE, SIG_DFL);
 	    }
 	    xf86cfgLoaderFreeList();
 	}
