@@ -1,3 +1,4 @@
+.\" $Xorg: AsciiSource,v 1.3 2000/08/17 19:42:26 cpqbld Exp $
 .NH 2
 Ascii Source Object and Multi Source Object
 .LP
@@ -18,7 +19,7 @@ Class		asciiSrcObjectClass or multiSrcObjectClass
 Class Name	AsciiSrc or MultiSrc
 .IN "AsciiSrc object" "class name"
 Superclass	TextSource
-.sp 1
+.De
 .LP
 The AsciiSrc or MultiSrc object is used by a text widget to read the text from a
 file or string in memory.  Depending on its \fBinternational\fP resource, an
@@ -68,7 +69,7 @@ is not affected by subsequent updates to the text buffer, i.e.,
 it is not updated as the user types input into the text buffer.
 This copy is freed upon the next call to XtGetValues to 
 retrieve the string resource; however, to conserve memory,
-there is a convenience routine, \fBXawAsciiSrcFreeString\fP, allowing the
+there is a convenience routine, \fBXawAsciiSourceFreeString\fP, allowing the
 application programmer to direct the widget to free the copy.
 .LP
 When the resource \fBuseStringInPlace\fP is true and the AsciiSrc object
@@ -78,10 +79,9 @@ of the string resource as its own text buffer, and the \fBlength\fP
 resource indicates the buffer size.   In this case
 the buffer contents change as the user types at the widget;
 it is not necessary to call \fBXtGetValues\fP on the string 
-resource to determine the contents of the buffer -- it will
+resource to determine the contents of the buffer\*-it will
 simply return the address of the application's implementation
 of the text buffer.
-.De
 .NH 3
 Resources
 .LP
@@ -89,10 +89,6 @@ When creating an AsciiSrc object instance, the following resources are
 retrieved from the argument list or from the resource database:
 .LP
 .IN "AsciiSrc object" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
@@ -116,10 +112,6 @@ useStringInPlace	UseStringInPlace	Boolean		False
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Oc Bold
 .Dc
 .Od Bold
@@ -143,7 +135,7 @@ space must be allocated whenever the file is saved, or the string is
 requested with a call to \fBXtGetValues\fP.  This memory is allocated on the
 fly, and remains valid until the next time a string needs to be allocated.
 You may save memory by freeing this string as soon as you are done
-with it by calling \fBXawAsciiSrcFreeString\fP.
+with it by calling \fBXawAsciiSourceFreeString\fP.
 .FD 0
 void XawAsciiSourceFreeString(\fIw\fP)
 .IN "XawAsciiSourceFreeString" "" @DEF@

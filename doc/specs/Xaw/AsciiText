@@ -1,4 +1,4 @@
-.\" $XConsortium: AsciiText,v 1.21 94/04/14 18:16:43 kaleb Exp $
+.\" $Xorg: AsciiText,v 1.3 2000/08/17 19:42:26 cpqbld Exp $
 .NH 2
 Ascii Text Widget
 .LP
@@ -25,7 +25,7 @@ Source Name	textSource
 .sp 1
 .LP
 For the ease of internationalization, the AsciiText widget class name has not
-been changed, although it is actually able support non-ASCII locales.
+been changed, although it is actually able to support non-ASCII locales.
 The AsciiText widget is really a collection of smaller parts.  It
 includes the Text widget itself, a ``Source'' (which supports memory management),
 and a ``Sink'' (which handles the display).  There are currently two supported
@@ -51,10 +51,6 @@ When creating an AsciiText widget instance, the following resources are
 retrieved from the argument list or from the resource database:
 .LP
 .IN "AsciiText widget" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 expand;
 lw(1i) lw(1i) lw(1.1i) lw(.5i) lw(1.9i).
@@ -122,10 +118,6 @@ y	Position	Position		0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Ac
 .As
 .Af
@@ -143,7 +135,7 @@ _
 .Dp
 .Dc
 .Tc
-.Sd AsciiText	
+.Sd AsciiText
 .Td
 .Oe AsciiText
 .Sh AsciiText
