@@ -1,4 +1,5 @@
 /* $XConsortium: vgaBank.s,v 1.2 94/03/29 11:57:11 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -106,7 +107,11 @@ GLNAME(saveseg):
  * vgaSetReadWrite(p)
  *     register pointer p;
  * {
+ * #ifdef XF86VGA16
+ *   writeseg = ((unsigned long)p - vgaBase) >> vgaSegmentShift;
+ * #else
  *   writeseg = ((unsigned long)p - VGABASE) >> vgaSegmentShift;
+ * #endif
  *   (vgaSetReadWriteFunc)(writeseg);
  *   return (vgaWriteBottom + ((unsigned int)p & vgaSegmentMask));
  * }
@@ -118,7 +123,11 @@ GLNAME(vgaSetReadWrite):
 	MOV_L	(REGOFF(4,ESP),EAX)
 	PUSH_L	(ECX)
 	PUSH_L	(EDX)
+#ifdef XF86VGA16
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+#else
 	SUB_L	(VGABASE,EAX)
+#endif
 	MOV_L	(CONTENT(GLNAME(vgaSegmentShift)),ECX)
 	SHR_L	(CL,EAX)
 	MOV_L	(EAX,CONTENT(GLNAME(writeseg)))
@@ -212,7 +221,11 @@ GLNAME(vgaReadWritePrev):
  * vgaSetRead(p)
  *     register pointer p;
  * {
+ * #ifdef XF86VGA16
+ *   readseg = ((unsigned long)p - vgaBase) >> vgaSegmentShift;
+ * #else
  *   readseg = ((unsigned long)p - VGABASE) >> vgaSegmentShift;
+ * #endif
  *   (vgaSetReadFunc)(readseg);
  *   return (vgaReadBottom + ((unsigned int)p & vgaSegmentMask));
  * }
@@ -224,7 +237,11 @@ GLNAME(vgaSetRead):
 	MOV_L	(REGOFF(4,ESP),EAX)
 	PUSH_L  (ECX)
 	PUSH_L	(EDX)
+#ifdef XF86VGA16
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+#else
 	SUB_L	(VGABASE,EAX)
+#endif
 	MOV_L	(CONTENT(GLNAME(vgaSegmentShift)),ECX)
 	SHR_L	(CL,EAX)
 	MOV_L	(EAX,CONTENT(GLNAME(readseg)))
@@ -318,7 +335,11 @@ GLNAME(vgaReadPrev):
  * vgaSetWrite(p)
  *     register pointer p;
  * {
+ * #ifdef XF86VGA16
+ *   writeseg = ((unsigned long)p - vgaBase) >> vgaSegmentShift;
+ * #else
  *   writeseg = ((unsigned long)p - VGABASE) >> vgaSegmentShift;
+ * #endif
  *   (vgaSetWriteFunc)(writeseg);
  *   return (vgaWriteBottom + ((unsigned int)p & vgaSegmentMask));
  * }
@@ -330,7 +351,11 @@ GLNAME(vgaSetWrite):
 	MOV_L	(REGOFF(4,ESP),EAX)
 	PUSH_L  (ECX)
 	PUSH_L	(EDX)
+#ifdef XF86VGA16
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+#else
 	SUB_L	(VGABASE,EAX)
+#endif
 	MOV_L	(CONTENT(GLNAME(vgaSegmentShift)),ECX)
 	SHR_L	(CL,EAX)
 	MOV_L	(EAX,CONTENT(GLNAME(writeseg)))

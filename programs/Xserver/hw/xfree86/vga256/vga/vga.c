@@ -1,4 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -580,7 +581,11 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
       vgaVirtBase = vgaBase;
     }
 #else
+#ifdef XF86VGA16
+    vgaVirtBase = vgaBase;
+#else
     vgaVirtBase = (pointer)VGABASE;
+#endif
 #endif
 
     vgaReadBottom  = (void *)((unsigned int)vgaReadBottom
@@ -638,7 +643,12 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 #endif
     return(FALSE);
 #else /* XF86VGA16 */
-  Init16Output( pScreen, vga256InfoRec.virtualX, vga256InfoRec.virtualY );
+  Init16Output(pScreen,
+		     (pointer) vgaVirtBase,
+		     vga256InfoRec.virtualX,
+		     vga256InfoRec.virtualY,
+		     displayResolution, displayResolution,
+		     vga256InfoRec.virtualX);
 #endif /* XF86VGA16 */
 
   pScreen->CloseScreen = vgaCloseScreen;
