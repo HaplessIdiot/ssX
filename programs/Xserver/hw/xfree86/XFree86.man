@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.65 2003/11/12 19:06:46 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.66 2004/06/01 01:23:49 dawes Exp $
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -725,5 +725,5 @@ at
 .IR <http://www.xfree86.org/current/LICENSE.html> .
 Refer to the source code for specific copyright notices.
 .PP
-.B XFree86(TM)
-is a trademark of The XFree86 Project, Inc.
+.B XFree86(R)
+is a registered trademark of The XFree86 Project, Inc.

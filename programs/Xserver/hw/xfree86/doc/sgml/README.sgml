@@ -16,12 +16,12 @@
 <date>23 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.141 2004/02/26 17:11:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.142 2004/06/09 18:24:01 dawes Exp $
 </ident>
 
 <abstract>
 
-XFree86 is an Open Source version of the X Window System that supports
+XFree86(R) is an Open Source version of the X Window System that supports
 many UNIX(R) and UNIX-like operating systems (such as Linux, FreeBSD,
 NetBSD, OpenBSD and Solaris x86) on Intel and other platforms.  This
 version is compatible with X11R6.6.
@@ -92,6 +92,8 @@ a non-commercial organisation and XFree86 would not exist without the
 invaluable development contributions of volunteers from around the world.
 This release is dedicated to the greater XFree86 community, developers
 and users alike.
+
+XFree86 is a registered trademark of The XFree86 Project, Inc.
 
 <![ %snapshot [
 <sect>Redistribution of Snapshots

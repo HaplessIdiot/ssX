@@ -3,12 +3,12 @@
 ]>
 
 <article>
-<title>Building XFree86 from a Source Distribution
+<title>Building XFree86&reg; from a Source Distribution
 <author>David Dawes, Matthieu Herrb
 <Date>23 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.13 2003/12/05 15:51:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.14 2004/02/24 03:41:39 dawes Exp $
 </ident>
 
 <abstract>

@@ -25,7 +25,7 @@
 
 <article>
 
-<title>XFree86 server 4.x Design (DRAFT)
+<title>XFree86&reg; server 4.x Design (DRAFT)
 <author>The XFree86 Project, Inc
 <date>19 December 2003
 
@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.55tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.56 2004/12/07 15:59:18 tsi Exp $
 </ident>
 
 
