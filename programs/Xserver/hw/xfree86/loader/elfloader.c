@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.32 2001/01/06 20:19:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.33 2001/01/06 21:29:17 tsi Exp $ */
 
 /*
  *
@@ -2919,7 +2919,6 @@ void	*mod;
 	flag = _LoaderHandleUnresolved(
 	    name, _LoaderHandleToName(erel->file->handle));
 	if(flag) fatalsym = 1;
-	xf86loaderfree(name);
 	erel=erel->next;
     }
     return fatalsym;
