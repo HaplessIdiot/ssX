@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.4 1999/05/16 06:55:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.5 1999/05/16 14:24:21 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -78,7 +78,8 @@ static Bool MouseConvert(LocalDevicePtr local, int first, int num, int v0,
 		 	     int *y);
 static void MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy);
 
-InputDriverRec xf86MOUSE = {
+#undef MOUSE
+InputDriverRec MOUSE = {
 	1,
 	"mouse",
 	NULL,

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/input/confdrv.sh,v 1.2 1999/05/09 12:31:10 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/input/confdrv.sh,v 1.3 1999/05/09 12:49:49 dawes Exp $
 #
 # This script generates drvConf.c
 #
@@ -8,7 +8,7 @@
 #
 
 DRVCONF=./drvConf.c
-BUILTIN="xf86KEYBOARD xf86MOUSE"
+BUILTIN="xf86KEYBOARD"
 
 cat > $DRVCONF <<EOF
 /*
@@ -23,9 +23,11 @@ EOF
 Args="$BUILTIN `echo $* | tr '[a-z]' '[A-Z]'`"
 set - $Args
 while [ $# -gt 1 ]; do
+  echo "#undef $1" >> $DRVCONF
   echo "	$1," >> $DRVCONF
   shift
 done
+echo "#undef $1" >> $DRVCONF
 echo "	$1;" >> $DRVCONF
 cat >> $DRVCONF <<EOF
 
