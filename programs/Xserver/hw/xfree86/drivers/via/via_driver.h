@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.h,v 1.11 2004/01/29 03:13:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.h,v 1.12tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -330,7 +330,7 @@ typedef struct _VIA {
     unsigned long 	agpHandle;
     unsigned long 	registerHandle;
     unsigned long 	agpAddr;
-    unsigned long       agpMappedAddr;
+    drmAddress          agpMappedAddr;
     unsigned char 	*agpBase;
     unsigned int 	agpSize;
     Bool 		IsPCI;

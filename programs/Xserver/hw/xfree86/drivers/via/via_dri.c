@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_dri.c,v 1.7 2004/02/04 04:17:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_dri.c,v 1.8tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -82,7 +82,7 @@ static void VIADRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 static Bool VIADRIAgpInit(ScreenPtr pScreen, VIAPtr pVia)
 {
     unsigned long  agp_phys;
-    unsigned int agpaddr;
+    drmAddress agpaddr;
     VIADRIPtr pVIADRI;
     DRIInfoPtr pDRIInfo;
     pDRIInfo = pVia->pDRIInfo;
@@ -135,8 +135,7 @@ static Bool VIADRIAgpInit(ScreenPtr pScreen, VIAPtr pVia)
 	return FALSE;
     }  
     /* Map AGP from kernel to Xserver - Not really needed */
-    drmMap(pVia->drmFD, pVIADRI->agp.handle,pVIADRI->agp.size,
-	(drmAddressPtr)&agpaddr);
+    drmMap(pVia->drmFD, pVIADRI->agp.handle, pVIADRI->agp.size, &agpaddr);
     pVia->agpMappedAddr = agpaddr;
 
     xf86DrvMsg(pScreen->myNum, X_INFO, 
@@ -154,7 +153,7 @@ static Bool VIADRIAgpInit(ScreenPtr pScreen, VIAPtr pVia)
 	agp.size = AGP_SIZE;
 	if (drmCommandWrite(pVia->drmFD, DRM_VIA_AGP_INIT, &agp,
 			    sizeof(drmViaAgp)) < 0) {
-	    drmUnmap((drmAddressPtr)agpaddr,pVia->agpSize);
+	    drmUnmap(agpaddr,pVia->agpSize);
 	    drmRmMap(pVia->drmFD,pVIADRI->agp.handle);
 	    drmAgpUnbind(pVia->drmFD, pVia->agpHandle);
 	    drmAgpFree(pVia->drmFD, pVia->agpHandle);
@@ -473,7 +472,7 @@ VIADRICloseScreen(ScreenPtr pScreen)
     VIAPtr pVia = VIAPTR(pScrn);
 
     if (pVia->agpSize) {
-	drmUnmap((drmAddressPtr)pVia->agpMappedAddr,pVia->agpSize);
+	drmUnmap(pVia->agpMappedAddr,pVia->agpSize);
 	drmRmMap(pVia->drmFD,pVia->agpHandle);
 	drmAgpUnbind(pVia->drmFD, pVia->agpHandle);
 	xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Freeing agp memory\n");
