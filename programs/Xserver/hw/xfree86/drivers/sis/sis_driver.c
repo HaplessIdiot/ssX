@@ -94,7 +94,7 @@
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 
- || (defined(XvExtension))
+#if (XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,99,0,0)) || (defined(XvExtension))
 #include "xf86xv.h"
 #include "Xv.h"
 #endif
