@@ -1,5 +1,4 @@
 /* $XConsortium: miSearch.c,v 5.6 94/04/17 20:37:18 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miSearch.c,v 3.2.2.1 1998/05/20 15:51:15 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -49,8 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-
-#include <stdio.h>
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miSearch.c,v 3.3 1998/07/25 07:36:15 dawes Exp $ */
 
 #include "miWks.h"
 #include "misc.h"
@@ -62,10 +60,7 @@ SOFTWARE.
 #include "miFont.h"
 #include "miText.h"
 #include "miClip.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
+#include "pexos.h"
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))

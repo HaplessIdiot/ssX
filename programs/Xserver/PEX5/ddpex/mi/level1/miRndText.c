@@ -1,5 +1,4 @@
 /* $XConsortium: miRndText.c,v 5.2 94/04/17 20:36:57 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miRndText.c,v 3.2.2.1 1998/05/20 15:51:06 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -50,6 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86$ */
 
 #define NEED_EVENTS
 #include "miRender.h"
@@ -60,11 +60,6 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "ddpex2.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#else
-#include <stdio.h>
-#endif
 
 /*++
  |

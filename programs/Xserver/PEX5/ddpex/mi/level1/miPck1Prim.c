@@ -1,5 +1,4 @@
 /* $XConsortium: miPck1Prim.c,v 5.3 94/04/17 20:36:53 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miPck1Prim.c,v 3.2.2.1 1998/05/20 15:51:04 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -61,11 +60,6 @@ SOFTWARE.
 #include "miText.h"
 #include "miClip.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#else
-#include <stdio.h>
-#endif
 
 /*++
  |

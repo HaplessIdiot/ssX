@@ -1,5 +1,4 @@
 /* $XConsortium: miRndMarkr.c,v 5.6 94/04/17 20:36:55 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miRndMarkr.c,v 3.3.2.1 1998/05/20 15:51:05 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -50,6 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miRndMarkr.c,v 3.4 1998/07/25 07:36:04 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "miRender.h"
@@ -61,12 +61,7 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "ddpex2.h"
 #include "miMarkers.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#else
-#include <stdio.h>
-#endif
+#include "pexos.h"
 
 #define FULL_CIRCLE 360*64
 

@@ -1,5 +1,4 @@
 /* $XConsortium: osPexFont.c /main/10 1996/12/06 11:02:43 lehors $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.11 1998/07/25 07:36:51 dawes Exp $ */
 
 /*
 
@@ -48,94 +47,57 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.12 1998/07/26 09:56:04 dawes Exp $ */
 
-#ifndef XFree86LOADER /* { */
-#ifdef WIN32 /* { */
+#ifdef WIN32
 #define _WILLWINSOCK_
-#endif /* } */
-#include <X11/Xos.h>
-#ifndef X_NOT_STDC_ENV /* { */
-#include <stdlib.h>
-#else
-extern char *getenv();
-#endif /* } */
-
-#include <stdio.h>
-#endif /* } XFree86LOADER */
+#endif
 
 #include "mipex.h"
 #include "miFont.h"
 #include "PEXErr.h"
 #define XK_LATIN1
 #include "keysymdef.h"
+#define NEED_GETENV
+#define NEED_OS_LIMITS
+#include "pexos.h"
 
 #ifndef PEX_DEFAULT_FONTPATH
 #define PEX_DEFAULT_FONTPATH "/usr/lib/X11/fonts/PEX"
 #endif
 
-#ifndef XFree86LOADER /* { */
+#ifndef WIN32
 
-#ifndef X_NOT_POSIX /* { */
-#ifdef _POSIX_SOURCE /* { */
-#include <limits.h>
-#else /* } { */
-#define _POSIX_SOURCE
-#include <limits.h>
-#undef _POSIX_SOURCE
-#endif /* } */
-#endif /* } X_NOT_POSIX */
-#ifndef PATH_MAX /* { */
-#ifdef WIN32 /* { */
-#define PATH_MAX 512
-#else
-#include <sys/param.h>
-#endif /* } */
-#ifndef PATH_MAX /* { */
-#ifdef MAXPATHLEN /* { */
-#define PATH_MAX MAXPATHLEN
-#else
-#define PATH_MAX 1024
-#endif /* } */
-#endif /* } */
-#endif /* } PATH_MAX */
+#ifndef XFree86LOADER
 
-#endif /* } XFree86LOADER */
-
-#ifndef WIN32 /* { */
-
-#ifndef XFree86LOADER /* { */
-
-#ifndef X_NOT_POSIX /* { */
+#ifndef X_NOT_POSIX
 #include <dirent.h>
 #else
-#ifdef SYSV /* { */
+#ifdef SYSV
 #include <dirent.h>
 #else
-#ifdef USG /* { */
+#ifdef USG
 #include <dirent.h>
 #else
 #include <sys/dir.h>
-#ifndef dirent /* { */
+#ifndef dirent
 #define dirent direct
-#endif /* } */
-#endif /* } */
-#endif /* } */
-#endif /* } */
-
+#endif
+#endif
+#endif
+#endif
 typedef struct dirent	 ENTRY;
 
-#else /* } XFree86LOADER { */
+#else /* XFree86LOADER */
 
-#include "xf86_ansic.h"
 /* XXX This should be taken care of elsewhere */
 typedef struct _xf86dirent ENTRY;
 
-#endif /* } XFree86LOADER */
+#endif /* XFree86LOADER */
 
 #define FileName(file) file->d_name
 
-
-#else  /* } WIN32 { */
+#else  /* WIN32 */
 
 #define BOOL wBOOL
 #define ATOM wATOM
@@ -144,7 +106,7 @@ typedef struct _xf86dirent ENTRY;
 #undef ATOM
 #define FileName(file) file.cFileName
 
-#endif /* } */
+#endif /* WIN32 */
 
 extern void CopyISOLatin1Lowered();
 extern int get_lowered_truncated_entry();

@@ -1,5 +1,4 @@
 /* $XConsortium: check.c,v 5.6 94/04/17 20:36:28 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/swap/check.c,v 1.4.2.2 1998/07/03 13:43:23 dawes Exp $ */
 
 /***********************************************************
 
@@ -57,10 +56,6 @@ SOFTWARE.
 #include "pexSwap.h"
 #include "pex_site.h"
 #include "pexError.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 /*
 	Check floating point format for every request and set the

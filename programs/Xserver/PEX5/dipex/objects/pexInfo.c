@@ -1,5 +1,4 @@
 /* $XConsortium: pexInfo.c,v 5.6 94/09/09 20:32:50 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexInfo.c,v 1.4.2.1 1998/05/20 15:51:39 dawes Exp $ */
 
 /***********************************************************
 
@@ -47,6 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexInfo.c,v 1.5 1998/07/25 07:36:38 dawes Exp $ */
 
 
 /*++    pexInfo.c
@@ -68,10 +68,8 @@ SOFTWARE.
 #include "pexError.h"
 #include "pexLookup.h"
 #include "pexExtract.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 #ifdef min
 #undef min
 #endif

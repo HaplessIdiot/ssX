@@ -1,5 +1,4 @@
 /* $XConsortium: pexTM.c,v 1.2 94/09/09 20:32:50 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexTM.c,v 3.3.2.1 1998/05/20 15:51:42 dawes Exp $ */
 /*
 
 Copyright (c) 1994  X Consortium
@@ -38,10 +37,6 @@ from the X Consortium.
 #include "PEXproto.h"
 #include "dipex.h"
 #include "pexLookup.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 #ifdef min
 #undef min

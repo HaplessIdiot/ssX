@@ -1,5 +1,4 @@
 /* $XConsortium: cOCprim.c,v 5.10 94/04/17 20:36:25 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/swap/cOCprim.c,v 1.4.2.1 1998/05/20 15:51:45 dawes Exp $ */
 
 /***********************************************************
 
@@ -71,10 +70,6 @@ SOFTWARE.
 #include "pexSwap.h"
 #include "pex_site.h"
 #include "convertStr.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 #define LOCAL_FLAG extern
 #include "convUtil.h"

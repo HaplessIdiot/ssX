@@ -1,5 +1,4 @@
 /* $XConsortium: pexRndrPick.c,v 1.9 94/04/17 20:36:13 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexRndrPick.c,v 1.4.2.1 1998/05/20 15:51:41 dawes Exp $ */
 
 /************************************************************
 
@@ -50,10 +49,6 @@ in this Software without prior written authorization from the X Consortium.
 #include "ddpex3.h"
 #include "ddpex4.h"
 #include "pexLookup.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 #ifdef min
 #undef min

@@ -1,5 +1,4 @@
 /* $XConsortium: Convert.c,v 5.5 94/04/17 20:36:16 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/swap/Convert.c,v 1.4.2.1 1998/05/20 15:51:44 dawes Exp $ */
 
 /***********************************************************
 
@@ -53,10 +52,6 @@ SOFTWARE.
 #include "misc.h"
 #include "pex_site.h"
 #include "dipex.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 
 extern void SwapIEEEToVax();

@@ -1,5 +1,4 @@
 /* $XConsortium: miMisc.c,v 5.9 94/04/17 20:37:44 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/miMisc.c,v 1.4.2.1 1998/05/20 15:51:32 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -49,15 +48,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/miMisc.c,v 1.5 1998/07/25 07:36:31 dawes Exp $ */
 
 #include "mipex.h"
 #include "miInfo.h"
 #include "pexUtils.h"
 #include "PEXprotost.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 /* pex device dependent initialization */
 ddpex43rtn

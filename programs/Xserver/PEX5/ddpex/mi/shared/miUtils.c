@@ -1,5 +1,4 @@
 /* $XConsortium: miUtils.c,v 5.5 94/04/17 20:37:47 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/miUtils.c,v 1.4.2.1 1998/05/20 15:51:33 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -49,8 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-
-#include <math.h>
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/miUtils.c,v 1.5 1998/07/25 07:36:32 dawes Exp $ */
 
 #include "mipex.h"
 #include "PEX.h"
@@ -58,10 +56,8 @@ SOFTWARE.
 #include "ddpex3.h"
 #include "miRender.h"
 #include "miWks.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 /*++
  |

@@ -1,5 +1,4 @@
 /* $XConsortium: miRndrPick.c,v 1.11 94/04/17 20:37:26 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level3/miRndrPick.c,v 1.4.2.1 1998/05/20 15:51:23 dawes Exp $ */
 
 /************************************************************
 
@@ -27,6 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 ******************************************************************/
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level3/miRndrPick.c,v 1.5 1998/07/25 07:36:22 dawes Exp $ */
 
 #include "miLUT.h"
 #include "ddpex3.h"
@@ -44,10 +44,8 @@ in this Software without prior written authorization from the X Consortium.
 #include "miStrMacro.h"
 #include "miWks.h"
 #include "ddpex4.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 /* External variables used */
 

@@ -1,5 +1,4 @@
 /* $XConsortium: css_ex_str.c,v 5.2 94/04/17 20:37:28 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/css_ex_str.c,v 1.4.2.1 1998/05/20 15:51:24 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -60,9 +59,6 @@ SOFTWARE.
 #include "miStrMacro.h"
 #include "pexUtils.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 extern ocTableType ParseOCTable[];
 extern ocTableType CopyOCTable[];

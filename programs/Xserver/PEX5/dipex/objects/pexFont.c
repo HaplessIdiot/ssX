@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexFont.c,v 3.4 1998/07/25 03:10:20 dawes Exp $ */
+/* $XFree86$ */
 
 
 /*++    pexFont.c
@@ -63,34 +63,8 @@ SOFTWARE.
 #include "pexError.h"
 #include "dipex.h"
 #include "pexLookup.h"
-
-#ifndef X_NOT_POSIX
-#ifdef _POSIX_SOURCE
-#include <limits.h>
-#else
-#define _POSIX_SOURCE
-#include <limits.h>
-#undef _POSIX_SOURCE
-#endif
-#endif /* X_NOT_POSIX */
-#ifndef PATH_MAX
-#ifdef WIN32
-#define PATH_MAX 512
-#else
-#include <sys/param.h>
-#endif
-#ifndef PATH_MAX
-#ifdef MAXPATHLEN
-#define PATH_MAX MAXPATHLEN
-#else
-#define PATH_MAX 1024
-#endif
-#endif
-#endif /* PATH_MAX */
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
+#define NEED_OS_LIMITS
+#include "pexos.h"
 
 #ifdef min
 #undef min

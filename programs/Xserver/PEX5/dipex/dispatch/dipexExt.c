@@ -1,5 +1,4 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.13 1998/07/25 07:36:35 dawes Exp $ */
 
 /***********************************************************
 
@@ -47,6 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.14 1998/07/26 09:56:04 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -59,6 +59,7 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "resource.h"
 #include "pexUtils.h"
+#include "pexos.h"
 
 #define LOCAL_FLAG
 #define _DIPEXEXT_
@@ -67,9 +68,6 @@ SOFTWARE.
 #undef _DIPEXEXT_
 #undef LOCAL_FLAG
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 unsigned long add_pad_of[] = {0, 3, 2, 1};
 

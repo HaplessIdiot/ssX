@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.23 1998/07/25 16:56:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.24 1998/07/26 09:56:19 dawes Exp $ */
 
 
 
@@ -201,6 +201,8 @@ typedef struct _xf86dirent XF86DIRENT;
 #define ungetc(i,FP)		xf86ungetc(i,FP)
 #define vfprintf		xf86vfprintf
 #define vsprintf		xf86vsprintf
+/* XXX Disable assert as if NDEBUG was defined */
+#define assert(a)		((void)0)
 
 #define hypot(x,y)		xf86hypot(x,y)
 

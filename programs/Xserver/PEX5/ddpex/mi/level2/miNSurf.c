@@ -1,5 +1,4 @@
 /* $XConsortium: miNSurf.c,v 5.10 94/04/17 20:37:12 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNSurf.c,v 3.3.2.1 1998/05/20 15:51:12 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -49,6 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNSurf.c,v 3.4 1998/07/25 07:36:11 dawes Exp $ */
 
 #define TRIMING 1
 
@@ -62,12 +62,8 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "ddpex2.h"
 #include "miNurbs.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#else
-#include <stdio.h>
-#endif
 
 static ddpex3rtn       build_surf_reps();
 static int             add_grid();

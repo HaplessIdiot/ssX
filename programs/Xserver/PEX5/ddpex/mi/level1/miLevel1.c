@@ -1,5 +1,4 @@
 /* $XConsortium: miLevel1.c,v 5.2 94/04/17 20:36:52 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miLevel1.c,v 1.4.2.1 1998/05/20 15:51:03 dawes Exp $ */
 /*
 
 Copyright (c) 1990, 1991  X Consortium
@@ -52,10 +51,6 @@ SOFTWARE.
 */
 
 #include "ddpex.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 ddpex1rtn
 PexTriangle(pRend, pPt1, pPt2, pPt3, pColour1, pColour2, pColour3)

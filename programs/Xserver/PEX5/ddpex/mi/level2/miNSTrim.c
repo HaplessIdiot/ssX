@@ -1,5 +1,4 @@
 /* $XConsortium: miNSTrim.c,v 5.5 94/04/17 20:37:11 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNSTrim.c,v 3.2.2.2 1998/06/03 15:49:25 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -49,6 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNSTrim.c,v 3.3 1998/07/25 07:36:11 dawes Exp $ */
 
 #include "mipex.h"
 #include "misc.h"
@@ -58,12 +58,7 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "ddpex2.h"
 #include "miNurbs.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#else
-#include <stdio.h>
-#endif
+#include "pexos.h"
 
 #define INACTIVE	0
 
