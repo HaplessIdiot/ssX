@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.8 2000/12/05 03:13:34 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.9 2001/01/03 02:54:17 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -281,6 +281,8 @@ ProcRenderQueryPictFormats (ClientPtr client)
 	numScreens = screenInfo.numScreens;
     else 
         numScreens = ((xConnSetup *)ConnectionInfo)->numRoots;
+#else
+    numScreens = screenInfo.numScreens;
 #endif
     ndepth = nformat = nvisual = 0;
     for (s = 0; s < numScreens; s++)
