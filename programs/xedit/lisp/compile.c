@@ -1730,6 +1730,13 @@ aux_label:
 	}
 	com->lex = lex;
     }
+    else {
+	for (; i < count; i++) {
+	    ComPush(com, symbols[i], defaults[i], eval, builtin, compile);
+	    if (!builtin && !com->macro)
+		COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
+	}
+    }
 
 done_label:
     if (CONSP(values))

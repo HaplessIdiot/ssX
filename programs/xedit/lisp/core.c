@@ -4370,7 +4370,7 @@ Lisp_Replace(LispBuiltin *builtin)
 	    LispDestroy("%s: cannot store %s in %s",
 			STRFUN(builtin), STROBJ(sequence2), THESTR(sequence1));
 
-	memcpy(THESTR(sequence1) + start1, THESTR(sequence2) + start2, length);
+	memmove(THESTR(sequence1) + start1, THESTR(sequence2) + start2, length);
     }
     else {
 	int i;
