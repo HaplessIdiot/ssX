@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.74 2000/10/06 17:32:46 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.75 2000/10/11 14:52:37 mvojkovi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -368,6 +368,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     MGAPtr pMga = MGAPTR(pScrn);
     int maxFastBlitMem, maxlines;
+    Bool doRender = FALSE;
     BoxRec AvailFBArea;
 
     pMga->ScratchBuffer = xalloc(((pScrn->displayWidth * PSZ) + 127) >> 3);
@@ -394,8 +395,10 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	    pMga->HasFBitBlt = FALSE;
 	}
         pMga->MaxBlitDWORDS = 0x400000 >> 5;
+	/* fallthrough */
     case PCI_CHIP_MGAG200:
     case PCI_CHIP_MGAG200_PCI:
+        doRender = TRUE;
         pMga->AccelFlags = TRANSC_SOLID_FILL |
 			   TWO_PASS_COLOR_EXPAND;
 
@@ -644,7 +647,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     }
 
 #ifdef RENDER
-   if((pScrn->bitsPerPixel == 32) || (pScrn->bitsPerPixel == 16))
+   if(doRender && ((pScrn->bitsPerPixel == 32) || (pScrn->bitsPerPixel == 16)))
        infoPtr->Composite = MGAComposite;
 #endif
 
