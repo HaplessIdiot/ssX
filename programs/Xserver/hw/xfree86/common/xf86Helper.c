@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.74 2000/02/15 18:00:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.75 2000/02/15 23:31:09 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2214,6 +2214,16 @@ xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
     return ret;
 #else
     return (pointer)1;
+#endif
+}
+
+Bool
+xf86LoaderCheckSymbol(const char *name)
+{
+#ifdef XFree86LOADER
+    return LoaderSymbol(name) != NULL;
+#else
+    return TRUE;
 #endif
 }
 

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.38 2000/02/12 23:08:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.39 2000/02/15 18:01:14 dawes Exp $ */
 
 
 #define PSZ 8
@@ -1472,7 +1472,8 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 SISFreeScreen(int scrnIndex, int flags)
 {
-    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
     SISFreeRec(xf86Screens[scrnIndex]);
 }
 

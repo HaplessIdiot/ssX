@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.126 2000/02/12 23:59:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.127 2000/02/15 18:00:55 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -216,6 +216,7 @@ Bool xf86GetModInDevEnabled(void);
 Bool xf86GetAllowMouseOpenFail(void);
 Bool xf86IsPc98(void);
 pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name);
+Bool xf86LoaderCheckSymbol(const char *name);
 void xf86LoaderReqSymLists(const char **, ...);
 void xf86LoaderReqSymbols(const char *, ...);
 /* debugging */

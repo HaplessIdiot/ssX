@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.150 2000/02/12 17:02:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.151 2000/02/13 03:36:04 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1615,8 +1615,12 @@ xf86LoadOneModule(char *name, pointer opt)
     if (!name)
 	return NULL;
     
+#ifndef NORMALISE_MODULE_NAME
+    Name = xstrdup(name);
+#else
     /* Normalise the module name */
     Name = xf86NormalizeName(name);
+#endif
 
     /* Skip empty names */
     if (Name == NULL || *Name == '\0')

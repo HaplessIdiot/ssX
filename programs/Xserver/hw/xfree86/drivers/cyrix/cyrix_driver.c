@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.2 2000/02/13 22:36:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.3 2000/02/15 18:01:05 dawes Exp $ */
 
 #include "compiler.h"
 #include "fb.h"
@@ -1208,7 +1208,8 @@ CYRIXCloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 CYRIXFreeScreen(int scrnIndex, int flags)
 {
-    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
     CYRIXFreeRec(xf86Screens[scrnIndex]);
 }
 

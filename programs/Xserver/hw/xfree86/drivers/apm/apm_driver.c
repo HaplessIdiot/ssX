@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.31 2000/02/14 19:20:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.32 2000/02/15 18:00:59 dawes Exp $ */
 
 
 #include "apm.h"
@@ -2155,7 +2155,8 @@ ApmCloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 ApmFreeScreen(int scrnIndex, int flags)
 {
-    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
     ApmFreeRec(xf86Screens[scrnIndex]);
 }
 

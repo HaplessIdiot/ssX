@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.22 2000/02/08 17:19:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.23 2000/02/15 18:01:13 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -381,7 +381,8 @@ renditionFreeRec(ScrnInfoPtr pScreenInfo)
     sleep(1);
 #endif
 
-    vgaHWFreeHWRec(pScreenInfo);
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+	vgaHWFreeHWRec(pScreenInfo);
     xfree(pScreenInfo->driverPrivate);
     pScreenInfo->driverPrivate=NULL;
 

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.9 2000/01/30 01:15:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.10 2000/02/15 18:01:08 dawes Exp $ */
 
 /*
  * Authors:
@@ -1678,7 +1678,8 @@ I740CloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 I740FreeScreen(int scrnIndex, int flags) {
   I740FreeRec(xf86Screens[scrnIndex]);
-  vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+  if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
 }
 
 static int

@@ -1,4 +1,7 @@
 XFree86 3.9.17Za (21 February 2000)
+3832. Add a "xf86LoaderCheckSymbol" function and use this in drivers to
+      check if the vgahw module is loaded before calling vgaHWFreeHWRec()
+      (David Dawes).
 3831. Fix some build problems on Interactive Unix (#3739, Michael Rohleder).
 3830. Disable NetBSD aperture driver support by default (#3736,
       Matthieu Herrb).
@@ -9772,4 +9775,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1018 2000/02/18 16:23:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1019 2000/02/21 18:05:37 dawes Exp $

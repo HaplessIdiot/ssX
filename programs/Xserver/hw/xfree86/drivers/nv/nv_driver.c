@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.32 2000/02/08 17:19:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.33 2000/02/15 18:01:11 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -605,7 +605,8 @@ NVFreeScreen(int scrnIndex, int flags)
      * This only gets called when a screen is being deleted.  It does not
      * get called routinely at the end of a server generation.
      */
-    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
     NVFreeRec(xf86Screens[scrnIndex]);
 }
 

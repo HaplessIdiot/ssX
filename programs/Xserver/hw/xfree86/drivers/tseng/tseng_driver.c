@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.63 2000/02/08 13:13:21 eich Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.64 2000/02/15 18:01:18 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2320,7 +2320,8 @@ static void
 TsengFreeScreen(int scrnIndex, int flags)
 {
     PDEBUG("	TsengFreeScreen\n");
-    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
     TsengFreeRec(xf86Screens[scrnIndex]);
 }
 
