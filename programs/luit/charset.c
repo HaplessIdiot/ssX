@@ -372,22 +372,24 @@ reportCharsets()
 }
 
 int
-getLocaleState(char *locale, 
+getLocaleState(char *locale, char *charset,
                int *gl_return, int *gr_return,
                CharsetPtr *g0_return, CharsetPtr *g1_return,
                CharsetPtr *g2_return, CharsetPtr *g3_return)
 {
-    char *resolved, *charset;
+    char *resolved;
     LocaleCharsetPtr p;
-    resolved = resolveLocale(locale);
-    if(!resolved)
-        return -1;
 
-    charset = strrchr(resolved, '.');
-    if(charset)
-        charset++;
-    else
-        charset = resolved;
+    if(!charset) {
+        resolved = resolveLocale(locale);
+        if(!resolved)
+            return -1;
+        charset = strrchr(resolved, '.');
+        if(charset)
+            charset++;
+        else
+            charset = resolved;
+    }
 
     for(p = localeCharsets; p->name; p++) {
         if(!strcmp(p->name, charset))

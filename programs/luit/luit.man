@@ -34,7 +34,7 @@ to directly generate UTF-8 instead.
 Display some summary help and quit.
 .TP
 .B \-list
-List the supported charsets and quit.
+List the supported charsets and encodings, then quit.
 .TP
 .B \-v
 Be verbose.
@@ -44,6 +44,13 @@ Function as a simple converter from standard input to standard output.
 .TP
 .BI \-argv0 " name"
 Set the child's name (as passed in argv[0]).
+.TP
+.BI \-encoding " encoding"
+Set up
+.B luit
+to use
+.I encoding
+rather than the current locale's encoding.
 .TP
 .B +oss
 Disable interpretation of single shifts in application output.

@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/luit.c,v 1.4 2002/01/09 16:14:19 dawes Exp $ */
+/* $XFree86: xc/programs/luit/luit.c,v 1.5 2002/06/03 22:51:15 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -87,7 +87,8 @@ help(void)
             "  [ -gl gn ] [-gr gk] "
             "[ -g0 set ] [ -g1 set ] "
             "[ -g2 set ] [ -g3 set ]\n"
-            "  [ +oss ] [ +ols ] [ +osl ] [ +ot ]\n"
+            "  [ -encoding encoding ] "
+            "[ +oss ] [ +ols ] [ +osl ] [ +ot ]\n"
             "  [ -kgl gn ] [-kgr gk] "
             "[ -kg0 set ] [ -kg1 set ] "
             "[ -kg2 set ] [ -kg3 set ]\n"
@@ -273,6 +274,14 @@ parseOptions(int argc, char **argv)
                 exit(1);
             }
             i += 2;
+        } else if(!strcmp(argv[i], "-encoding")) {
+            int rc;
+            if(i + 1 >= argc)
+                FatalError("-encoding requires an argument\n");
+            rc = initIso2022(NULL, argv[i + 1], outputState);
+            if(rc < 0)
+                FatalError("Couldn't init output state\n");
+            i += 2;
         } else {
             FatalError("Unknown option %s\n", argv[i]);
         }
@@ -375,7 +384,7 @@ main(int argc, char **argv)
         locale_name = "C";
     }
 
-    rc = initIso2022(locale_name, outputState);
+    rc = initIso2022(locale_name, NULL, outputState);
     if(rc < 0)
         FatalError("Couldn't init output state\n");
 

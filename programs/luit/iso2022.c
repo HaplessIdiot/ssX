@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/iso2022.c,v 1.3 2001/12/19 21:29:02 dawes Exp $ */
+/* $XFree86: xc/programs/luit/iso2022.c,v 1.4 2002/06/03 22:51:14 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -237,16 +237,21 @@ reportIso2022(Iso2022Ptr i)
 }
 
 int
-initIso2022(char *locale, Iso2022Ptr i)
+initIso2022(char *locale, char *charset, Iso2022Ptr i)
 {
     int gl = 0, gr = 2;
     CharsetPtr g0 = NULL, g1 = NULL, g2 = NULL, g3 = NULL;
     int rc;
     
-    rc = getLocaleState(locale, &gl, &gr, &g0, &g1, &g2, &g3);
-    if(rc < 0)
-        ErrorF("Warning: couldn't find charset data for locale %s; "
-               "using ISO 8859-1.\n", locale);
+    rc = getLocaleState(locale, charset, &gl, &gr, &g0, &g1, &g2, &g3);
+    if(rc < 0) {
+        if(charset)
+            ErrorF("Warning: couldn't find charset %s; "
+                   "using ISO 8859-1.\n", charset);
+        else
+            ErrorF("Warning: couldn't find charset data for locale %s; "
+                   "using ISO 8859-1.\n", locale);
+    }
 
     if(g0)
         G0(i) = g0;
