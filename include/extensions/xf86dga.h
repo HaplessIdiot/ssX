@@ -1,7 +1,7 @@
 /*
    Copyright (c) 1999  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.10 1999/05/03 12:15:37 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.11 1999/05/16 13:24:48 dawes Exp $ */
 
 #ifndef _XF86DGA_H_
 #define _XF86DGA_H_
@@ -26,7 +26,7 @@
 #define X_XDGAGetViewportStatus		20
 #define X_XDGAFlush			21
 #define X_XDGAOpenFramebuffer		22
-#define	X_XDGACloseFramebuffer		23
+#define X_XDGACloseFramebuffer		23
 #define X_XDGASetClientVersion		24
 
 
