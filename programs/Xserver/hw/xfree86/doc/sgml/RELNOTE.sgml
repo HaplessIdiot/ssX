@@ -567,8 +567,6 @@ not as an upgrade.
 What follows is a list of the XFree86 3.2A components.  There may be
 some variations in this for some OSs.
 
-THIS NEEDS TO BE UPDATED!
-
 The following are required for all installations:
 <quote>
 <verb>
@@ -603,7 +601,8 @@ remove the old versions (after backing them up).  The Xservers and font
 server in previous releases cannot read gzipped fonts, so keep a copy
 of the old fonts if you wish to run older servers.
 
-The following X servers are for PC/AT hardware.  Choose at least one which
+The following X servers are for PC/AT based hardware (i.e., typical
+Intel ix86 based PCs).  Choose at least one which
 matches your hardware, as well as the VGA16 server.  The VGA16 server is
 required by the new configuration utility (XF86Setup).
 <quote>
@@ -623,10 +622,15 @@ X32AVG16.tgz    16 colour VGA server (XF86Setup needs this server)
 X32AW32.tgz     ET4000/W32, ET6000 server
 </verb>
 </quote>
-The following X server is for Alpha hardware.
+The following X servers are available for Alpha hardware:
 <quote>
 <verb>
+X32AMa64.tgz    Mach 64 server
+X32AMono.tgz    Mono server (generic driver only)
 X32ATGA.tgz     DEC 21030 (TGA) server
+X32AS3.tgz      S3 server
+X32AS3V.tgz     S3 ViRGE server
+X32ASVGA.tgz    SVGA server (Matrox Millennium driver only)
 </verb>
 </quote>
 The following X servers are for PC98 hardware.  If you have a PC98 machine,
@@ -657,13 +661,13 @@ X32Afnon.tgz   Other fonts (Chinese, Japanese, Korean, Hebrew)
 X32Afscl.tgz   Scalable fonts (Speedo and Type1)
 X32Afsrv.tgz   Font server and config files
 X32Aprog.tgz   X header files, config files and compile-time libs
-X32Alkit.tgz   X server LinkKit
-X32Alk98.tgz   PC98 X server LinkKit
 X32Anest.tgz   Nested X server
 X32Avfb.tgz    Virtual framebuffer X server
 X32Aprt.tgz    X Print server
 X32Aps.tgz     PostScript version of the documentation
 X32Ahtml.tgz   HTML version of the documentation
+X32Ajdoc.tgz   Documentation in Japanese (for version 3.2)
+X32Ajhtm.tgz   HTML version of the documentation in Japenese (3.2)
 </verb>
 </quote>
 
@@ -684,8 +688,8 @@ E.g., if you create a directory in <tt>/home</tt>:
 The next step is to run the pre-installation script.  This script makes
 some preliminary checks of your system.  For some OSs, it may tell you
 to install new versions of some system components before proceeding with
-the installation.  This script also removes outdated files and symbolic
-links from a previous installation that may cause problems.
+the installation.  This script may also remove some outdated files and
+symbolic links from a previous installation that could cause problems.
 
 Copy the <tt>preinst.sh</tt> script to
 <tt>/var/tmp</tt>, then go to <tt>/usr/X11R6</tt> and run it:
@@ -726,16 +730,21 @@ Once the required <tt>.tgz</tt> files have been extracted, copy the
 	sh /var/tmp/postinst.sh
 </verb></tscreen>
 
-For OSs which use ldconfig (like Linux, FreeBSD and NetBSD), you
+For OSs which use ldconfig (like Linux, FreeBSD, NetBSD and OpenBSD), you
 should either run ldconfig or reboot to complete the installation.
-On FreeBSD and NetBSD, ldconfig takes arguments.  In particular, you should
-at least include <tt>/usr/lib</tt> and <tt>/usr/X11R6/lib</tt> on the
-command line.  Check <tt>/etc/rc</tt> to see how ldconfig gets run at
-boot time.
+Some Linux releases don't run ldconfig automatically at reboot, so you
+may need to run it manually.
+If you are using FreeBSD, NetBSD or OpenBSD, and your version of ldconfig
+supports the <tt>-m</tt> option, you can run:
+<tscreen><verb>
+	ldconfig -m /usr/X11R6/lib
+</verb></tscreen>
+Otherwise for these OSs, check <tt>/etc/rc</tt> to see how ldconfig gets
+run at boot time.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.55 1997/01/25 04:19:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.56 1997/01/25 04:42:54 dawes Exp $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.43 1997/01/22 11:10:51 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.44 1997/01/23 11:03:28 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1128,6 +1128,8 @@ ET4000Probe()
       initialET6KMclkM = inb(ET6Kbase+0x69);
       initialET6KMclkN = inb(ET6Kbase+0x69);
       outb(ET6Kbase+0x67, tmp);
+      ErrorF("%s %s: ET6000: MClk: %3.2f MHz\n", XCONFIG_PROBED,
+             vga256InfoRec.name, gendacMNToClock(initialET6KMclkM, initialET6KMclkN)/1000.0);
     }
 #endif
 

@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.8 1997/01/23 11:03:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.9 1997/01/25 04:19:58 dawes Exp $ */
 
 
 /*
@@ -91,7 +91,7 @@ void TsengAccelInit() {
      * Set up the main acceleration flags.
      */
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE
-      | HARDWARE_PATTERN_SCREEN_ORIGIN;
+      | HARDWARE_PATTERN_ALIGN_64 | HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
 
     /* we'll disable COP_FRAMEBUFFER_CONCURRENCY for the public beta
      * release, because it causes font corruption. But THIS NEEDS TO BE
@@ -757,6 +757,7 @@ void TsengSubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
     START_ACL(destaddr);
 }
 
+static int pat_src_addr;
 
 void TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, transparency_color)
    int patternx, patterny;
@@ -764,7 +765,7 @@ void TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, transparenc
    unsigned int planemask;
    int transparency_color;
 {
-  int srcaddr = FBADDR(patternx, patterny);
+  pat_src_addr = FBADDR(patternx, patterny);
   
 /*  ErrorF("P");*/
 
@@ -793,8 +794,6 @@ void TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, transparenc
             *ACL_SOURCE_Y_OFFSET  = 32 - 1;
   }
   
-  *ACL_SOURCE_ADDRESS = srcaddr;
-
   SET_XYDIR(0);
 }
 
@@ -804,6 +803,9 @@ void TsengSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
    int w, h;
 {
   int destaddr = FBADDR(x,y);
+  int srcaddr = pat_src_addr + MULBPP(patterny * 8 + patternx);
+
+  *ACL_SOURCE_ADDRESS = srcaddr;
 
   SET_XY(w, h);
   START_ACL(destaddr);
