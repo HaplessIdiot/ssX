@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.61 2003/12/05 22:17:07 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.62 2003/12/06 01:10:24 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -520,11 +520,11 @@ FindDistName()
 			1.4* | 5.*)
 				DistName="Darwin-ppc-5.x"
 				;;
-			6.*)
-				DistName="Darwin-ppc-6.x"
+			6.* | 7.*)
+				DistName="Darwin-ppc-7.x"
 				;;
-			[7-9].*)
-				Message="No Darwin/ppc binaries available for this OS version. Try Darwin-ppc-6.x"
+			[8-9].*)
+				Message="No Darwin/ppc binaries available for this OS version. Try Darwin-ppc-7.x"
 				;;
 			*)
 				Message="No Darwin/ppc binaries available for this OS version"
@@ -536,11 +536,11 @@ FindDistName()
 			1.4* | 5.*)
 				DistName="Darwin-ix86-5.x"
 				;;
-			6.*)
-				DistName="Darwin-ix86-6.x"
+			6.* | 7.*)
+				DistName="Darwin-ix86-7.x"
 				;;
-			[7-9].*)
-				Message="No Darwin/ix86 binaries available for this OS version. Try Darwin-ix86-6.x"
+			[8-9].*)
+				Message="No Darwin/ix86 binaries available for this OS version. Try Darwin-ix86-7.x"
 				;;
 			*)
 				Message="No Darwin/ix86 binaries available for this OS version"
