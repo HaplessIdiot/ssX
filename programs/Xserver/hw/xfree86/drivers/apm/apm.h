@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.2 1997/07/06 13:12:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.3 1997/07/29 12:07:55 hohndel Exp $ */
 
 
 
@@ -25,31 +25,41 @@ typedef unsigned long u32;
 #define WRXW_IOP(addr,val) (wrinx(0x3c4, 0x1d, (addr) >> 2),outw(apm_xbase + ((addr) & 2), (val)))
 #define WRXL_IOP(addr,val) (wrinx(0x3c4, 0x1d, (addr) >> 2),outl(apm_xbase, (val)))
 
-#define RDXB_DYN(addr)     (apmMMIO_Init ? RDXB(addr) : RDXB_IOP(addr))
-#define RDXW_DYN(addr)     (apmMMIO_Init ? RDXW(addr) : RDXW_IOP(addr))
-#define RDXL_DYN(addr)     (apmMMIO_Init ? RDXL(addr) : RDXL_IOP(addr))
-#define WRXB_DYN(addr,val) (apmMMIO_Init ? WRXB(addr,val) : (void) WRXB_IOP(addr,val))
-#define WRXW_DYN(addr,val) (apmMMIO_Init ? WRXW(addr,val) : (void) WRXW_IOP(addr,val))
-#define WRXL_DYN(addr,val) (apmMMIO_Init ? WRXL(addr,val) : (void) WRXL_IOP(addr,val))
 
-#define STATUS() (RDXL(0x1fc))
+#define STATUS()           (RDXL(0x1fc))
 #define STATUS_HOSTBLTBUSY (1 << 8)
-#define STATUS_ENGINEBUSY (1 << 10)
-#define STATUS_FIFO (0x0f)
+#define STATUS_ENGINEBUSY  (1 << 10)
+#define STATUS_FIFO        (0x0f)
 
 #define SETFOREGROUNDCOLOR(c) WRXL(0x60,c)
 #define SETBACKGROUNDCOLOR(c) WRXL(0x64,c)
 
 #define SETSOURCEX(x)  WRXW(0x50, x)
 #define SETSOURCEY(y)  WRXW(0x52, y)
+#define SETSOURCEXY(x,y) WRXL(0x50, (y) << 16 | (x) & 0xffff)
 
 #define SETDESTX(x)    WRXW(0x54, x)
 #define SETDESTY(y)    WRXW(0x56, y)
+#define SETDESTXY(x,y) WRXL(0x54, (y) << 16 | (x) & 0xffff)
 
 #define SETWIDTH(w)    WRXW(0x58, w)
 #define SETHEIGHT(h)   WRXW(0x5A, h)
+#define SETWIDTHHEIGHT(w,h) WRXL(0x58, (h) << 16 | (w) & 0xffff)
 
-#define SETBYTEMASK(mask) WRXB(0x47,mask)
+#define SETBYTEMASK(mask) WRXB(0x47, mask)
+
+#define SETDDA_AXIALSTEP(step)    WRXW(0x70, step)
+#define SETDDA_DIAGONALSTEP(step) WRXW(0x72, step)
+#define SETDDA_ERRORTERM(eterm)   WRXW(0x74, eterm)
+#define SETDDA_ADSTEP(s1,s2) WRXL(0x70, (s2) << 16 | (s1) & 0xffff)
+
+#define SETCLIP_CTRL(ctrl) WRXB(0x30, ctrl)
+#define SETCLIP_LEFT(x)    WRXW(0x38, x)
+#define SETCLIP_TOP(y)     WRXW(0x3A, y)
+#define SETCLIP_LEFTTOP(x,y) WRXL(0x38, (y) << 16 | (x) & 0xffff)
+#define SETCLIP_RIGHT(x)   WRXW(0x3C, x)
+#define SETCLIP_BOT(y)     WRXW(0x3E, y)
+#define SETCLIP_RIGHTBOT(x,y) WRXL(0x3C, (y) << 16 | (x) & 0xffff)
 
 /* RASTER OPERATION REGISTER */
 /* P = pattern   S = source   D = destination */
@@ -76,8 +86,8 @@ typedef unsigned long u32;
 #define DEC_DIR_X_POS               (0 << 6)
 #define DEC_DIR_Y_NEG               (1 << 7)
 #define DEC_DIR_Y_POS               (0 << 7)
-#define DEC_MAJORAXIS_X             (1 << 8)
-#define DEC_MAJORAXIS_Y             (0 << 8)
+#define DEC_MAJORAXIS_X             (0 << 8) /* Looks like an error in the docs ...*/
+#define DEC_MAJORAXIS_Y             (1 << 8)
 #define DEC_SOURCE_LINEAR           (1 << 9) 
 #define DEC_SOURCE_XY               (0 << 9)
 #define DEC_SOURCE_CONTIG           (1 << 11)
@@ -128,19 +138,7 @@ extern u32 apm_xbase;
 
 void ApmAccelInit(void);
 void ApmCheckMMIO_Init(void);
+void ApmCursorInit(void);
 
-/* Variables defined in apm_cursor.c. */
-
-extern int apmCursorHotX;
-extern int apmCursorHotY;
-extern int apmCursorWidth;
-extern int apmCursorHeight;
-
-/* Functions defined in apm_cursor.c. */
-
-Bool  ApmCursorInit(char *pm, ScreenPtr pScr);
-void  ApmRestoreCursor(ScreenPtr pScr);
-void  ApmWarpCursor(ScreenPtr pScr, int x, int y);
-void  ApmQueryBestSize(int class, unsigned short *pwidth, unsigned short *pheight, ScreenPtr pScreen);
 
 #endif

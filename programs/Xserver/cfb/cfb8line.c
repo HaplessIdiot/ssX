@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  *
- * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.4 1997/07/05 15:16:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.5 1997/07/19 05:43:07 dawes Exp $
  * Jeff Anton'x fixes: cfb8line.c   97/02/07
  */
 
@@ -1089,6 +1089,13 @@ cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
     int	    drawn;
     cfbPrivGCPtr    devPriv;
 
+#if defined(__arm32__) && PSZ != 8
+    /* XXX -JJK */
+    /* There is a painting bug when PSZ != 8; I need to track it down! */
+    cfbSegmentSS(pDrawable, pGC, nseg, pSegInit);
+    return;
+#endif
+
     devPriv = cfbGetGCPrivate(pGC);
 #ifdef NO_ONE_RECT
     if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
@@ -1147,6 +1154,13 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
     cfbPrivGCPtr    devPriv;
     int x1, y1, x2, y2;
     DDXPointPtr pptInitOrig = pptInit;
+
+#if defined(__arm32__) && PSZ != 8
+    /* XXX -JJK */
+    /* There is a painting bug when PSZ != 8; I need to track it down! */
+    cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
+    return;
+#endif
 
     devPriv = cfbGetGCPrivate(pGC);
 #ifdef NO_ONE_RECT

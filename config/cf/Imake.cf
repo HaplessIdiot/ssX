@@ -1,5 +1,5 @@
 XCOMM $TOG: Imake.cf /main/28 1997/06/25 08:31:36 barstow $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.36 1997/07/06 05:30:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.37 1997/08/26 10:00:39 hohndel Exp $
 /*
  * To add support for another platform:
  * 
@@ -141,6 +141,10 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.36 1997/07/06 05:30:30 dawes Exp $
 # endif
 # ifdef mc68000
 #   define Mc68020Architecture
+# endif
+# ifdef __arm32__
+#   define Arm32Architecture
+#   undef __arm32__
 # endif
 #endif /* NetBSD */
 

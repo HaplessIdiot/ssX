@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.14 1997/08/26 10:01:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.15 1997/09/09 10:27:43 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -35,6 +35,35 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/*
+ * Copyright 1997
+ * Digital Equipment Corporation. All rights reserved.
+ * This software is furnished under license and may be used and copied only in 
+ * accordance with the following terms and conditions.  Subject to these 
+ * conditions, you may download, copy, install, use, modify and distribute 
+ * this software in source and/or binary form. No title or ownership is 
+ * transferred hereby.
+ * 1) Any source code used, modified or distributed must reproduce and retain 
+ *    this copyright notice and list of conditions as they appear in the 
+ *    source file.
+ *
+ * 2) No right is granted to use any trade name, trademark, or logo of Digital 
+ *    Equipment Corporation. Neither the "Digital Equipment Corporation" name 
+ *    nor any trademark or logo of Digital Equipment Corporation may be used 
+ *    to endorse or promote products derived from this software without the 
+ *    prior written permission of Digital Equipment Corporation.
+ *
+ * 3) This software is provided "AS-IS" and any express or implied warranties,
+ *    including but not limited to, any implied warranties of merchantability,
+ *    fitness for a particular purpose, or non-infringement are disclaimed. In
+ *    no event shall DIGITAL be liable for any damages whatsoever, and in 
+ *    particular, DIGITAL shall not be liable for special, indirect, 
+ *    consequential, or incidental damages or damages for lost profits, loss 
+ *    of revenue or loss of use, whether such damages arise in contract, 
+ *    negligence, tort, under statute, in equity, at law or otherwise, even if
+ *    advised of the possibility of such damage. 
+ */
+
 /* $XConsortium: ct_driver.c /main/18 1996/10/28 05:24:15 kaleb $ */
 
 /*
@@ -266,6 +295,79 @@ int ctAluConv3[] =
 };
 
 /* Driver data structures. */
+
+int ctTVMode = XMODE_RGB;
+/*
+ * Built in TV output modes: These modes have been tested on NetBSD with CT65550 
+ * and StrongARM. They give what seems to be the best output for a roughly 640x480 
+ * display. To enable one of the built in modes, add the identifier "NTSC" or "PAL"
+ * to the list of modes in the appropriate "Display" subsection of the "Screen" 
+ * section in the XF86Config file.
+ * Note that the call to xf86SetTVOut(), which tells the kernel to enable TV output
+ * results in hardware specific actions. There must be code to support this in the 
+ * kernel or TV output won't work.
+ */
+static DisplayModeRec ctPALMode = {
+    NULL, NULL,         /* prev, next */
+    "PAL",              /* identifier of this mode */
+  /* These are the values that the user sees/provides */
+    0,                  /* pixel clock select */
+    776,                /* horizontal timing: HDisplay */
+    800,                /* HSyncStart */
+    872,                /* HSyncEnd */
+    960,                /* HTotal */
+    0,                  /* HSkew */
+    585,                /* vertical timing: VDisplay */
+    589,                /* VSyncStart */
+    593,                /* VSyncEnd */
+    625,                /* VTotal */
+    V_INTERLACE,        /* Flags */
+ /* These are the values the hardware uses */
+    15000,             /* Actual clock freq to be programmed (kHz) */
+    776,               /* CrtcHDisplay */
+    800,               /* CrtcHSyncStart */
+    872,               /* CrtcHSyncEnd */
+    960,               /* CrtcHTotal */
+    0,                 /* CrtcHSkew */
+    585,               /* CrtcVDisplay */
+    590,               /* CrtcVSyncStart */
+    595,               /* CrtcVsyncEnd */
+    625,               /* CrtcVTotal */
+    FALSE,             /* CrtcHadjusted */
+    FALSE,             /* CrtcVAdjusted */
+
+};
+
+static DisplayModeRec ctNTSCMode = {
+	NULL, NULL,		/* prev, next */
+	"NTSC",			/* identifier of this mode */
+  /* These are the values that the user sees/provides */
+	0,				/* pixel clock select */
+	584,			/* horizontal timing:  HDisplay */
+	640,		              /* HSyncStart */	       	       
+	696,		      	  	/* HSyncEnd */
+	760,	       	       		/* HTotal */
+	0,									/* HSkew */
+	450,           /* vertical timing:	   VDisplay */
+	479,			       		/* VSyncStart */
+	485,	       	       			/* VSyncEnd */
+	525,		      	                  /* VTotal */
+	 V_INTERLACE | V_NVSYNC | V_NHSYNC ,	/* Flags */
+  /* These are the values the hardware uses */
+	11970,    /* Actual clock freq to be programmed (kHz)*/
+	584,			/* CrtcHDisplay */
+	640,			/* CrtcHSyncStart */
+	696,			/* CrtcHSyncEnd */
+	760,			/* CrtcHTotal */
+	0,				/* CrtcHSkew */
+	450,			/* CrtcVDisplay */
+	479,			/* CrtcVSyncStart */
+	485,			/* CrtcVSyncEnd */
+	525,			/* CrtcVTotal */
+	FALSE,			/* CrtcHAdjusted */
+	FALSE,			/* CrtcVAdjusted */
+};
+
 struct {
     int HDisplay;
     int HRetraceStart;
@@ -1334,6 +1436,11 @@ Bool ctProbeHiQV()
   ErrorF("ctProbeHiQV\n");
 #endif
 
+/* Allocate memory for the variable. */
+#ifdef __arm32__
+  ctMemClk = (ctMemClockPtr) malloc(sizeof(ctMemClockReg));
+#endif
+
   /* enter/leave */
   ctEnterLeaveHiQV32(ENTER);
 
@@ -1541,10 +1648,21 @@ Bool ctProbeHiQV()
 		ctAccelSupport = FALSE;
 	    }
 	  } else {
+#ifdef	__arm32__
+	      /* Unaligned word accesses don't do the same thing on ARM */
+	      /* as on x86!  Actually, I don't understand why 32-bit accesses */
+	      /* are being done in the x86 case; byte reads ought to work */
+	      /* just fine, shouldn't they? -JJK */
+		outb(0x3D6, 0x6);
+		CHIPS.ChipLinearBase = ((unsigned int)inb(0x3D7)) << 24;
+		outb(0x3D6, 0x5);
+		CHIPS.ChipLinearBase |= ((unsigned int)(0x80 & inb(0x3D7))) << 16;
+#else
 		outb(0x3D6, 0x6);
 		CHIPS.ChipLinearBase = ((0xFF00 & inl(0x3D6)) << 16);
 		outb(0x3D6, 0x5);
 		CHIPS.ChipLinearBase |= ((0x8000 & inl(0x3D6)) << 8);
+#endif
 	}
 	ErrorF("%s %s: CHIPS: base address is set at 0x%X.\n",
 	    XCONFIG_PROBED, vga256InfoRec.name, CHIPS.ChipLinearBase);
@@ -1748,6 +1866,49 @@ Bool ctProbeHiQV()
     else
         ctColorTransparency = FALSE;
 
+    /* 
+     ** If PAL. SECAM or NTSC is specified as the first mode in /etc/XF86Config, 
+     ** add it as the Built in mode.
+     */
+
+     if (strlen(vga256InfoRec.modes->name) == 3 
+       	&& strcmp(vga256InfoRec.modes->name, "PAL") == 0)
+     {
+	 CHIPS.ChipBuiltinModes = &ctPALMode;
+	 CHIPS.ChipBuiltinModes->prev = CHIPS.ChipBuiltinModes->next = &ctPALMode;
+	 ctTVMode = XMODE_PAL;
+     }
+     else if (strlen(vga256InfoRec.modes->name) == 4 
+	      && strcmp(vga256InfoRec.modes->name, "NTSC") == 0)
+     {
+	 CHIPS.ChipBuiltinModes = &ctNTSCMode;
+	 CHIPS.ChipBuiltinModes->prev = CHIPS.ChipBuiltinModes->next = &ctNTSCMode;
+	 ctTVMode = XMODE_NTSC;
+     }
+     else if (strlen(vga256InfoRec.modes->name) == 5 
+	      && strcmp(vga256InfoRec.modes->name, "SECAM") == 0)
+     {
+	 /*
+	  ** So far, it looks like SECAM uses the same values as PAL
+	  */
+	 CHIPS.ChipBuiltinModes = &ctPALMode;
+	 CHIPS.ChipBuiltinModes->prev = CHIPS.ChipBuiltinModes->next = &ctPALMode;
+	 ctTVMode = XMODE_SECAM;
+     }
+  
+     if (ctTVMode != XMODE_RGB)
+     {
+	 /*
+	  ** These are normally set in xf86LookupMode, but that's not called for
+	  ** a built in mode, so do it here.
+	  */
+	 vga256InfoRec.clocks = 3;
+	 vga256InfoRec.clock[0] = 25175;
+	 vga256InfoRec.clock[1] = 28322;
+	 vga256InfoRec.clock[2] = CHIPS.ChipBuiltinModes->SynthClock;
+	 CHIPS.ChipBuiltinModes->Clock = 2;
+     }
+  
     vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
     vga256InfoRec.bankedMono = TRUE;
     if (vgaBitsPerPixel < 8) {
@@ -1775,6 +1936,12 @@ Bool ctProbeHiQV()
     OFLG_SET(OPTION_18_BIT_BUS, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_NO_IMAGEBLT, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_FAST_DRAM, &CHIPS.ChipOptionFlags);
+    
+
+    /* Free the memory we allocated to this variable. */
+#ifdef __arm32__
+    free(ctMemClk);
+#endif
 
     return (TRUE);
 }
@@ -3963,10 +4130,53 @@ CHIPSInitHiQV32(mode)
     /*CRT only */
     if (!ctLCD) {
 	if (mode->Flags & V_INTERLACE)
+	{
 	    new->Port_3D4[0x70] = 0x80          /*   set interlace */
 	      | (((((mode->CrtcHDisplay >> 3) - 1) >> 1) - 6) & 0x7F);
-		else
+	    /* 
+	     ** Double VDisplay to get back the full screen value, otherwise
+	     ** you only see half the picture.
+	     */
+	    mode->CrtcVDisplay = mode->VDisplay;
+	    temp = new->std.CRTC[7] & ~0x42;
+	    new->std.CRTC[7] = (temp | 
+				((((mode->CrtcVDisplay -1) & 0x100) >> 7 ) |
+				 (((mode->CrtcVDisplay -1) & 0x200) >> 3 )));
+	    new->std.CRTC[0x12] = (mode->CrtcVDisplay -1) & 0xFF;
+	    new->Port_3D4[0x31] = ((mode->CrtcVDisplay - 1) & 0xF00) >> 8;
+	}
+	else
+	{
 	    new->Port_3D4[0x70] &= ~0x80;	/* unset interlace */
+	}
+    }
+    
+    if(ctTVMode != XMODE_RGB)
+    {
+	/*
+	 * Put the console into TV Out mode.
+	 */
+	xf86SetTVOut(ctTVMode);
+	
+	new->Port_3D4[0x72] = (mode->CrtcHTotal >> 1) >> 3; /* First horizontal serration pulse */
+	new->Port_3D4[0x73] = mode->CrtcHTotal >> 3; /* Second pulse */
+	new->Port_3D4[0x74] = (((mode->HSyncEnd - mode->HSyncStart) >> 3) - 1) & 0x1F; /* equalization pulse */
+	
+	if(ctTVMode == XMODE_PAL || ctTVMode == XMODE_SECAM)
+	{
+	    new->Port_3D4[0x71] = 0xA0; /* PAL support with blanking delay */
+	}
+	else
+	{
+	    new->Port_3D4[0x71] = 0x20; /* NTSC support with blanking delay */
+	}
+    }
+    else /* XMODE_RGB */
+    {
+	/*
+	 * Put the console into RGB Out mode.
+	 */
+	xf86SetRGBOut();
     }
 
     /* STN specific */
@@ -4596,8 +4806,8 @@ int ctSetMonitor()
 	     vga256InfoRec.name);
       break;
     default:
-      ErrorF("%s %s: CHIPS: no monitor detected.\n", XCONFIG_PROBED,
-	     vga256InfoRec.name);
+      ErrorF("%s %s: CHIPS: no monitor detected. Type = %d\n", XCONFIG_PROBED,
+	     vga256InfoRec.name, tmp);
     }
     return(tmp);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/OScompiler.h,v 3.7 1997/03/27 18:39:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/OScompiler.h,v 3.8 1997/07/10 08:17:38 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -82,7 +82,7 @@ b/**/
 /* GJA -- Actually, they are added because I have not yet tidied up
  * my include file structure (mfb/mfb.banked). Be careful or it will break.
  */
-#if defined(__alpha__) || defined(__powerpc__)
+#if defined(__alpha__) || defined(__powerpc__) || defined(__arm32__)
 #define VSETR(x)  { x = vgaSetRead((void *)x); }
 #define VSETW(x)  { x = vgaSetWrite((void *)x); }
 #define VSETRW(x) { x = vgaSetReadWrite((void *)x); }

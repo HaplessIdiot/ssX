@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.60 1997/07/06 05:30:32 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.61 1997/07/31 07:16:03 dawes Exp $
 
 
 #ifndef OSName
@@ -98,7 +98,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if defined(UseInstalled) && (!defined(XF86LinkKit) || !XF86LinkKit)
 #define DefaultCCOptions 	/**/
 #else
+#ifdef Arm32Architecture
+#define DefaultCCOptions 	-ansi -Dasm=__asm -fsigned-char -fomit-frame-pointer
+#else
 #define DefaultCCOptions 	-ansi -Dasm=__asm
+#endif
 #endif
 
 #define GccGasOption 		-DGCCUSESGAS
@@ -124,8 +128,10 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if ((OSMajorVersion > 0) && \
      !defined(AlphaArchitecture) && !defined(MipsArchitecture)) || \
     UseElfFormat
-#ifndef DoLoadableServer
-#define DoLoadableServer	YES
+#ifndef Arm32Architecture
+#  ifndef DoLoadableServer
+#  define DoLoadableServer	YES
+#  endif
 #endif
 #ifndef BuildDynamicLoading
 #if DoLoadableServer
@@ -161,7 +167,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # if defined(SparcArchitecture) || defined(AlphaArchitecture)
 #  define ServerOSDefines 	-DDDXOSINIT
 # else
+#  ifdef Arm32Architecture
+#   define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
+#  else
 #  define ServerOSDefines 	/**/
+# endif
 # endif
 # if BuildDynamicLoading 
 #  define ServerExtraSysLibs	DlLibrary
@@ -178,8 +188,15 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # if defined(AlphaArchitecture)
 #  define ServerExtraDefines GccGasOption -D_XSERVER64
 # else
+#  ifdef Arm32Architecture
+#   define ServerExtraDefines GccGasOption XFree86ServerDefines
+#   ifndef XFree86ConsoleDefines
+#    define XFree86ConsoleDefines -DPCCONS_SUPPORT
+#   endif
+#  else
 #  define ServerExtraDefines GccGasOption
 # endif
+#endif
 #endif
 
 #define StandardDefines	-DCSRG_BASED
@@ -339,7 +356,7 @@ install.man:: 								@@\
 #include <bsdLib.rules>
 #endif /* HasSharedLibraries */
 
-#ifdef i386Architecture
+#if defined(i386Architecture) || defined(Arm32Architecture)
 # include <xfree86.cf>
 #endif
 

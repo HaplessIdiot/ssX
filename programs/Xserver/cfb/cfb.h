@@ -1,5 +1,5 @@
 /* $XConsortium: cfb.h,v 5.37 94/04/17 20:28:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.6 1997/02/24 17:46:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.7 1997/05/31 13:51:21 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -28,6 +28,8 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+#ifndef __CFB_H__
+#define  __CFB_H__
 
 #include "X.h"
 #include "pixmap.h"
@@ -1513,3 +1515,5 @@ extern int cfbScreenPrivateIndex;
 #define memset(a,b,c)	xf86memset(a,b,c)
 #define ffs(a)		xf86ffs(a)
 #endif
+
+#endif /*  __CFB_H__ */

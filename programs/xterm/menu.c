@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/66 1996/12/01 23:46:59 swick $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.12 1997/09/19 08:30:17 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.13 1997/09/30 04:51:11 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -277,8 +277,6 @@ static Bool domenu (w, event, params, param_count)
 	    screen->vtMenu = create_menu (term, toplevel, "vtMenu",
 					  vtMenuEntries,
 					  XtNumber(vtMenuEntries));
-	    /* and turn off the alternate screen entry */
-	    set_altscreen_sensitivity (FALSE);
 	    update_scrollbar();
 	    update_jumpscroll();
 	    update_reversevideo();
@@ -790,7 +788,8 @@ static void do_altscreen (gw, closure, data)
     Widget gw GCC_UNUSED;
     XtPointer closure GCC_UNUSED, data GCC_UNUSED;
 {
-    /* do nothing for now; eventually, will want to flip screen */
+    TScreen *screen = &term->screen;
+    ToggleAlternate(screen);
 }
 
 #ifndef NO_ACTIVE_ICON

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_inline.h,v 3.1 1996/12/23 06:56:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_inline.h,v 1.1 1997/03/06 23:15:30 hohndel Exp $ */
 
 
 
@@ -8,7 +8,7 @@
 
 /* Some inline assembler functions. */
 
-#if __GNUC__ > 1 && defined(GCCUSESGAS)
+#if __GNUC__ > 1 && defined(GCCUSESGAS) && defined(__i386__)
 
 static __inline__ unsigned long rotateleft( int n, unsigned long bits ) {
 	__asm__ __volatile__("roll %%cl,%0\n\t"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.7 1997/05/21 15:17:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.8 1997/09/25 16:13:53 hohndel Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
@@ -71,7 +71,9 @@
 #define DO_FILL_RECT   1
 #define DO_COPY        1
 #define DO_PATTERNS    0
+#if !defined(__powerpc__)		/* !converted cir_textblt.s to C */
 #define DO_COLEXP      1
+#endif
 
 #define CHIPHAS(feature) (cirrusChipFeatures & feature)
 

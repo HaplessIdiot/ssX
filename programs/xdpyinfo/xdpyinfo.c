@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xdpyinfo.c /main/34 1995/12/08 12:09:32 dpw $
- * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.11 1996/10/20 13:35:49 dawes Exp $
+ * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.12 1997/01/18 07:02:33 dawes Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -679,7 +679,7 @@ print_XF86VidMode_info(dpy, extname)
 char *kbdtable[] = { "Unknown", "84-key", "101-key", "Other", "Xqueue" };
 char *msetable[] = { "None", "Microsoft", "MouseSystems", "MMSeries",
 		     "Logitech", "BusMouse", "Mouseman", "PS/2", "MMHitTab",
-		     "GlidePoint", "Unknown", "Xqueue", "OSMouse" };
+		     "GlidePoint", "MSIntellimouse", "Xqueue", "OSMouse" };
 char *flgtable[] = { "None", "ClearDTR", "ClearRTS",
 		     "ClearDTR and ClearRTS" };
 

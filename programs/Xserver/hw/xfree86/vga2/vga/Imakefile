@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/10/19 18:09:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/vga/Imakefile,v 3.9 1997/03/11 17:27:42 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/vga/Imakefile,v 3.10 1997/03/13 08:36:48 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -30,13 +30,9 @@ SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
-#if DirtyStartup
-STARTUPDEFINES = -DDIRTY_STARTUP
-#endif
-
 #if XF86Vga2Banked
 BANKEDDEFINES = -DBANKEDMONOVGA -DPSZ=1
 #endif
-DEFINES = $(STARTUPDEFINES) -DMONOVGA -DXF86MONOVGA $(BANKEDDEFINES)
+DEFINES = -DMONOVGA -DXF86MONOVGA $(BANKEDDEFINES)
 
 DependTarget()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.1 1997/07/29 13:25:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.2 1997/08/26 10:01:09 hohndel Exp $ */
 /*
  * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -61,32 +61,6 @@ static DisplayModeRec DefaultMode;
 #define IOByte(_Port)   (_Port)
 #define IOWord(_Port)   (_Port), (_Port)+1
 #define IOLong(_Port)   (_Port), (_Port)+1, (_Port)+2, (_Port)+3
-
-/*
- * This driver needs non-VGA I/O ports.  The first two are determined by
- * ATIProbe and are initialized to their most probable values here.
- */
-static unsigned int ATI_IOPorts[] =
-{
-    /* ATI VGA Wonder extended registers */
-    IOWord(0x01CEU),
-
-    /* 8514/A register base */
-    IOWord(0x02E8U),
-
-    /* Standard ATI accelerator (Mach8/32/64) register bases */
-    IOLong(0x02ECU),
-
-    /* Alternate Mach64 register bases (sparse I/O) */
-    IOLong(0x01C8U), IOLong(0x01CCU),
-
-    /* This is sufficient to allow access to all ports above 0x03FF */
-    IOByte(0x0400U),
-
-    /* System timer registers */
-    IOByte(0x40U), IOByte(0x43U)
-};
-#define Num_ATI_IOPorts NumberOf(ATI_IOPorts)
 
 typedef CARD16 Colour;          /* The correct spelling should be OK :-) */
 
@@ -1040,8 +1014,7 @@ ATIProbe(void)
                         ATI.ChipLinearSize = 8 * 1024 * 1024;
                 }
 
-                if (ATI.ChipLinearBase && ATI.ChipLinearSize &&
-                    (ATI.ChipLinearSize >= ((MachvideoRam + 2) * 1024)))
+                if (ATI.ChipLinearBase && ATI.ChipLinearSize)
                     ATI.ChipUseLinearAddressing = TRUE;
             }
 
@@ -1071,27 +1044,22 @@ ATIProbe(void)
         }
     }
 
-    if (ATIChipHasVGAWonder)
+    if ((ATIChipHasVGAWonder) && (ATIChip <= ATI_CHIP_88800GXD))
     {
         /*
          * Set up extended VGA register addressing.  Note that, for Mach64's,
          * only the GX-C & GX-D controllers allow the setting of this address.
          */
-        if (ATIChip <= ATI_CHIP_88800GXD)
+        if ((ATIChip < ATI_CHIP_88800GXC) &&
+            (Signature == BIOS_Signature) &&
+            (BIOSWord(0x10U)) &&
+            (!(BIOSWord(0x10U) & ~(SPARSE_IO_BASE | IO_BYTE_SELECT))))
         {
-            if ((ATIChip < ATI_CHIP_88800GXC) &&
-                (Signature == BIOS_Signature) &&
-                (BIOSWord(0x10U)) &&
-                (!(BIOSWord(0x10U) & ~(SPARSE_IO_BASE | IO_BYTE_SELECT))))
-            {
-                /* Pick up extended register index I/O port number */
-                ATIIOPortVGAWonder = BIOSWord(0x10U);
-            }
-            PutReg(GRAX, 0x50U, GetByte(ATIIOPortVGAWonder, 0));
-            PutReg(GRAX, 0x51U, GetByte(ATIIOPortVGAWonder, 1) | ATIVGAOffset);
+            /* Pick up extended register index I/O port number */
+            ATIIOPortVGAWonder = BIOSWord(0x10U);
         }
-        ATI_IOPorts[0] = ATIIOPortVGAWonder;
-        ATI_IOPorts[1] = ATIIOPortVGAWonder + 1;
+        PutReg(GRAX, 0x50U, GetByte(ATIIOPortVGAWonder, 0));
+        PutReg(GRAX, 0x51U, GetByte(ATIIOPortVGAWonder, 1) | ATIVGAOffset);
     }
 
     /* Rebuild I/O port list.  Some of its entries might have changed */
@@ -1226,16 +1194,31 @@ ATIProbe(void)
     else
     {
         /* Normalize any XF86Config videoRam value */
-        for (Index = 0;  videoRamSizes[++Index];  )
-            if (vga256InfoRec.videoRam < videoRamSizes[Index])
-                break;
-        vga256InfoRec.videoRam = videoRamSizes[Index - 1];
+        if (ATIChip < ATI_CHIP_264VTB)
+        {
+            for (Index = 0;  videoRamSizes[++Index];  )
+                if (vga256InfoRec.videoRam < videoRamSizes[Index])
+                    break;
+            vga256InfoRec.videoRam = videoRamSizes[Index - 1];
+        }
+        else
+        {
+            if (vga256InfoRec.videoRam <= 4096)
+                vga256InfoRec.videoRam &= ~(512 - 1);
+            else if (vga256InfoRec.videoRam <= 8192)
+                vga256InfoRec.videoRam &= ~(1024 - 1);
+            else if (vga256InfoRec.videoRam <= 16384)
+                vga256InfoRec.videoRam &= ~(2048 - 1);
+            else
+                vga256InfoRec.videoRam = 16 * 1024;
+        }
     }
 
     /*
      * The default videoRam value is what the accelerator (if any) thinks it
      * has.  Also, allow the user to override the accelerator's value.
      */
+    ATIvideoRam = MachvideoRam;
     if (!vga256InfoRec.videoRam)
     {
         /* Normalization might have zeroed XF86Config videoRam value */
@@ -1276,7 +1259,7 @@ ATIProbe(void)
      * If there's no supported accelerator, default videoRam to what the VGA
      * side believes.
      */
-    if (!(ATIvideoRam = vga256InfoRec.videoRam))
+    if (!vga256InfoRec.videoRam)
         ATIvideoRam = vga256InfoRec.videoRam = VGAvideoRam;
     else if ((ATIChip < ATI_CHIP_68800) || (ATIChip > ATI_CHIP_68800AX))
     /*
@@ -1348,6 +1331,26 @@ ATIProbe(void)
         ATI.ChipRounding = 32;
     }
 
+    if (ATI.ChipUseLinearAddressing)
+    {
+        ErrorF("Using %dMB linear aperture at 0x%08X.\n",
+            ATI.ChipLinearSize >> 20, ATI.ChipLinearBase);
+
+        MachvideoRam = (ATI.ChipLinearSize >> 10) - 2;  /* 4? */
+        if (vga256InfoRec.videoRam > MachvideoRam)
+        {
+            /*
+             * Don't allow virtual resolution to overlay register aperture(s).
+             */
+            vga256InfoRec.videoRam = MachvideoRam;
+            ErrorF("Virtual resolutions will be limited to %dkB to account"
+                   " for\n accelerator register aperture.\n", MachvideoRam);
+        }
+
+        /* Only mmap what is needed */
+        ATI.ChipLinearSize = vga256InfoRec.videoRam * 1024;
+    }
+
     if (ATIAdapter >= ATI_ADAPTER_MACH32)
     {
         if (ATIChip >= ATI_CHIP_264CT)
@@ -1371,15 +1374,6 @@ ATIProbe(void)
     else if (ATIAdapter >= ATI_ADAPTER_V3)
         if (xf86Verbose)
             ATIPrintMemoryType((ATIGetExtReg(0xB7U) & 0x04U) ? "DRAM" : "VRAM");
-
-    if (ATI.ChipUseLinearAddressing)
-    {
-        ErrorF("Using %dMB linear aperture at 0x%08X.\n",
-            ATI.ChipLinearSize >> 20, ATI.ChipLinearBase);
-
-        /* Only mmap what is needed */
-        ATI.ChipLinearSize = ATIvideoRam * 1024;
-    }
 
     /* Initialize for ATISwap */
     IO_Value = GetReg(SEQX, 0x04U) & 0x08U;

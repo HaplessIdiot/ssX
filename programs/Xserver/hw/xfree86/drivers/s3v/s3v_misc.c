@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_misc.c,v 1.7 1997/07/29 12:08:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_misc.c,v 1.8 1997/07/31 07:16:14 dawes Exp $ */
 
 /*
  *
@@ -78,6 +78,9 @@ s3vGetPCIInfo()
 	    break;
 	 case PCI_ViRGE_DXGX:
 	    info.ChipType = S3_ViRGE_DXGX;
+	    break;
+	 case PCI_ViRGE_GX2:
+	    info.ChipType = S3_ViRGE_GX2;
 	    break;
 	 default:
 	    info.ChipType = S3_UNKNOWN;

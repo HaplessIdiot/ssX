@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.1 1997/07/29 13:25:47 hohndel Exp $ */
 /*
  * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -67,14 +67,14 @@ extern const char *ATIChipNames[];
 /*
  * Foundry codes for 264xT's.
  */
-#define ATI_FOUNDRY_SGS 0       /* SGS-Thompson */
-#define ATI_FOUNDRY_NEC 1       /* NEC */
-#define ATI_FOUNDRY_KSC 2       /* KSC (?) */
-#define ATI_FOUNDRY_UMC 3       /* United Microelectronics Corporation */
-#define ATI_FOUNDRY_4   4
-#define ATI_FOUNDRY_5   5
-#define ATI_FOUNDRY_6   6
-#define ATI_FOUNDRY_7   7
+#define ATI_FOUNDRY_SGS  0      /* SGS-Thompson */
+#define ATI_FOUNDRY_NEC  1      /* NEC */
+#define ATI_FOUNDRY_KSC  2      /* KSC (?) */
+#define ATI_FOUNDRY_UMC  3      /* United Microelectronics Corporation */
+#define ATI_FOUNDRY_4    4
+#define ATI_FOUNDRY_5    5
+#define ATI_FOUNDRY_6    6
+#define ATI_FOUNDRY_UMCA 7      /* UMC alternate */
 extern CARD16 ATIChipType, ATIChipClass, ATIChipRevision;
 extern CARD16 ATIChipVersion, ATIChipFoundry;
 extern CARD8 ATIChipHasSUBSYS_CNTL;

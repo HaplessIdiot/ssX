@@ -1,5 +1,5 @@
 /* $XConsortium: access.c /main/68 1996/12/15 22:57:09 rws $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.18 1997/01/18 06:57:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.20 1997/02/25 16:05:15 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -158,6 +158,10 @@ SOFTWARE.
 #if (BSD >= 199103)
 #define VARIABLE_IFREQ
 #endif
+#endif
+
+#if defined(Lynx) && defined(__Lynx__)
+#define VARIABLE_IFREQ
 #endif
 
 #endif /* WIN32 */

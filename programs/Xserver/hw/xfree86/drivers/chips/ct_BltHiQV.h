@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_BltHiQV.h,v 3.6 1997/02/23 09:25:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.1 1997/03/06 23:14:51 hohndel Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -127,3 +127,25 @@
 #define ctSETFGCOLOR24(fgColor)\
   *(unsigned int *)(ctMMIOBase + BR(0x2)) = ((fgColor)&0xFFFFFF)
 
+/* Definitions for word/quadword alignment in blitter */
+#if defined(i386)
+# define INTSIZE 2
+#else
+# if defined(__arm32__)
+#  define INTSIZE 4
+# endif
+#endif
+
+#if INTSIZE == 8
+#define WRITEQUAD(dst, src)  *(dst) = *(src)++
+#define WRITEQUAD_NOINC(dst, src) *(dst) = *(src)
+#elif INTSIZE == 4
+#define WRITEQUAD(dst, src)  *(dst) = *(src)++; *(dst) = *(src)++
+#define WRITEQUAD_NOINC(dst, src) *(dst) = *(src); *(dst) = *((src) + 1)
+#elif INTSIZE == 2
+#define WRITEQUAD(dst, src)  *(dst) = *(src)++; *(dst) = *(src)++; \
+		    *(dst) = *(src)++; *(dst) = *(src)++
+#define WRITEQUAD_NOINC(dst, src) *(dst) = *(src); *(dst) = *((src) + 1); \
+                    *(dst) = *((src) + 2); *(dst) = *((src) + 3)
+#endif
+	

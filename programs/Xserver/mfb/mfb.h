@@ -51,10 +51,13 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.2 1997/01/14 22:22:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.3 1997/02/17 12:11:58 hohndel Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
+#ifndef __MFB_H__
+#define __MFB_H__
+
 #include "pixmap.h"
 #include "region.h"
 #include "gc.h"
@@ -1285,3 +1288,5 @@ than a switch on the rop per item (span or rectangle.)
 #define memcpy(a,b,c)	xf86memcpy(a,b,c)
 #define memset(a,b,c)	xf86memset(a,b,c)
 #endif
+
+#endif /* __MFB_H__ */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.1 1997/07/29 13:25:55 hohndel Exp $ */
 /*
  * Copyright 1994 through 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -561,23 +561,30 @@
 #define CRTC_VLINE_SYNC			0x00000020ul
 #define CRTC_FRAME			0x00000040ul
 /*	?				0x0000ff80ul */
-#define CRTC_CAPBUF0_INT_EN		0x00010000ul
-#define CRTC_CAPBUF0_INT		0x00020000ul
-#define CRTC_CAPBUF1_INT_EN		0x00040000ul
-#define CRTC_CAPBUF1_INT		0x00080000ul
-#define CRTC_OVERLAY_EOF_INT_EN		0x00100000ul
-#define CRTC_OVERLAY_EOF_INT		0x00200000ul
-#define CRTC_ONESHOT_CAP_INT_EN		0x00400000ul
-#define CRTC_ONESHOT_CAP_INT		0x00800000ul
-#define CRTC_BUSMASTER_EOL_INT_EN	0x01000000ul
-#define CRTC_BUSMASTER_EOL_INT		0x02000000ul
-#define CRTC_GP_INT_EN			0x04000000ul
-#define CRTC_GP_INT			0x08000000ul
+#define CRTC_SNAPSHOT_INT_EN		0x00000080ul	/* GT3 */
+#define CRTC_SNAPSHOT_INT		0x00000100ul	/* GT3 */
+#define CRTC_I2C_INT_EN			0x00000200ul	/* GT3 */
+#define CRTC_I2C_INT			0x00000400ul	/* GT3 */
+#define CRTC_CAPBUF0_INT_EN		0x00010000ul	/* VT/GT */
+#define CRTC_CAPBUF0_INT		0x00020000ul	/* VT/GT */
+#define CRTC_CAPBUF1_INT_EN		0x00040000ul	/* VT/GT */
+#define CRTC_CAPBUF1_INT		0x00080000ul	/* VT/GT */
+#define CRTC_OVERLAY_EOF_INT_EN		0x00100000ul	/* VT/GT */
+#define CRTC_OVERLAY_EOF_INT		0x00200000ul	/* VT/GT */
+#define CRTC_ONESHOT_CAP_INT_EN		0x00400000ul	/* VT/GT */
+#define CRTC_ONESHOT_CAP_INT		0x00800000ul	/* VT/GT */
+#define CRTC_BUSMASTER_EOL_INT_EN	0x01000000ul	/* VTB/GTB/LT */
+#define CRTC_BUSMASTER_EOL_INT		0x02000000ul	/* VTB/GTB/LT */
+#define CRTC_GP_INT_EN			0x04000000ul	/* VTB/GTB/LT */
+#define CRTC_GP_INT			0x08000000ul	/* VTB/GTB/LT */
 /*	?				0xf0000000ul */
+#define CRTC_VBLANK_BIT2		0x80000000ul	/* GT3 */
 #define CRTC_INT_ENS	/* *** UPDATE ME *** */		\
 		(					\
 			CRTC_VBLANK_INT_EN |		\
 			CRTC_VLINE_INT_EN |		\
+			CRTC_SNAPSHOT_INT_EN |		\
+			CRTC_I2C_INT_EN |		\
 			CRTC_CAPBUF0_INT_EN |		\
 			CRTC_CAPBUF1_INT_EN |		\
 			CRTC_OVERLAY_EOF_INT_EN |	\
@@ -590,6 +597,8 @@
 		(					\
 			CRTC_VBLANK_INT |		\
 			CRTC_VLINE_INT |		\
+			CRTC_SNAPSHOT_INT |		\
+			CRTC_I2C_INT |			\
 			CRTC_CAPBUF0_INT |		\
 			CRTC_CAPBUF1_INT |		\
 			CRTC_OVERLAY_EOF_INT |		\
@@ -649,12 +658,14 @@
 #define MEM_BUF_CNTL		BlockIOTag(0x0bu)	/* VTB/GTB/LT */
 #define SHARED_CNTL		BlockIOTag(0x0cu)	/* VTB/GTB/LT */
 #define SHARED_MEM_CONFIG	BlockIOTag(0x0du)	/* VTB/GTB/LT */
+#define MEM_ADDR_CONFIG		BlockIOTag(0x0du)	/* GT3 */
 #define SHARED_CNTL_CTD		BlockIOTag(0x0eu)	/* CTD */
 /*	?				0x00fffffful */
 #define CTD_FIFO5			0x01000000ul
 /*	?				0xfe000000ul */
 #define CRT_TRAP		BlockIOTag(0x0eu)	/* VTB/GTB/LT */
 #define DSTN_CONTROL		BlockIOTag(0x0fu)	/* LT */
+#define I2C_CNTL_0		BlockIOTag(0x0fu)	/* GT3 */
 #define OVR_CLR			IOPortTag(0x08u, 0x10u)
 #define OVR_CLR_8			0x000000fful
 #define OVR_CLR_B			0x0000ff00ul
@@ -715,8 +726,8 @@
 /*	?				0x00008000ul */
 #define PLL_DATA			0x00ff0000ul	/* For internal PLL */
 /*	?				0xff000000ul */
-/*	?			BlockIOTag(0x25u) */
-/*	?			BlockIOTag(0x26u) */
+#define CONFIG_STAT64_1		BlockIOTag(0x25u)	/* GT3 */
+#define CONFIG_STAT64_2		BlockIOTag(0x26u)	/* GT3 */
 /*	?			BlockIOTag(0x27u) */
 #define BUS_CNTL		IOPortTag(0x13u, 0x28u)
 #define BUS_WS				0x0000000ful
@@ -728,6 +739,7 @@
 #define BUS_APER_REG_DIS		0x00000010ul	/* VTB/GTB/LT */
 #define BUS_EXTRA_PIPE_DIS		0x00000020ul	/* VTB/GTB/LT */
 #define BUS_MASTER_DIS			0x00000040ul	/* VTB/GTB/LT */
+#define BUS_ROM_WRT_EN			0x00000080ul	/* GT3 */
 #define BUS_ROM_PAGE			0x00000f00ul
 #define BUS_ROM_DIS			0x00001000ul
 #define BUS_IO_16_EN			0x00002000ul	/* GX */
@@ -742,7 +754,9 @@
 #define BUS_FIFO_ERR_INT		0x00200000ul
 #define BUS_MSTR_RD_LINE		0x00200000ul	/* VTB/GTB/LT */
 #define BUS_HOST_ERR_INT_EN		0x00400000ul
+#define BUS_SUSPEND			0x00400000ul	/* GT3 */
 #define BUS_HOST_ERR_INT		0x00800000ul
+#define BUS_LAT16X			0x00800000ul	/* GT3 */
 #define BUS_PCI_DAC_WS			0x07000000ul
 #define BUS_RD_DISCARD_EN		0x01000000ul	/* VTB/GTB/LT */
 #define BUS_RD_ABORT_EN			0x02000000ul	/* VTB/GTB/LT */
@@ -760,7 +774,7 @@
 /*	?			BlockIOTag(0x29u) */
 #define HFB_PITCH_ADDR		BlockIOTag(0x2au)	/* LT */
 #define EXT_MEM_CNTL		BlockIOTag(0x2bu)	/* VTB/GTB/LT */
-#define MEM_INFO		IOPortTag(0x14u, 0x2cu)
+#define MEM_INFO		IOPortTag(0x14u, 0x2cu) /* Renamed MEM_CNTL */
 #define CTL_MEM_SIZE			0x00000007ul
 /*	?				0x00000008ul */
 #define CTL_MEM_REFRESH			0x00000078ul	/* VT/GT */
@@ -781,7 +795,10 @@
 #define CTL_MEM_EXT_RMW_CYC_EN		0x00001000ul	/* GX/CX */
 #define CTL_MEM_TCRD			0x00001000ul	/* VTB/GTB/LT */
 #define CTL_MEM_DLL_RESET		0x00002000ul	/* VT/GT */
+#define CTL_MEM_TR2W			0x00002000ul	/* GT3 */
 #define CTL_MEM_ACTV_PRE		0x0000c000ul	/* VT/GT */
+#define CTL_MEM_CAS_PHASE		0x00004000ul	/* GT3 */
+#define CTL_MEM_OE_PULLBACK		0x00008000ul	/* GT3 */
 #define CTL_MEM_BNDRY			0x00030000ul
 #define CTL_MEM_BNDRY_0K			0x00000000ul
 #define CTL_MEM_BNDRY_256K			0x00010000ul
@@ -806,6 +823,7 @@
 #define MEM_VGA_WP_SEL		IOPortTag(0x15u, 0x2du)
 #define MEM_VGA_RP_SEL		IOPortTag(0x16u, 0x2eu)
 #define LT_GIO			BlockIOTag(0x2fu)	/* LT */
+#define I2C_CNTL_1		BlockIOTag(0x2fu)	/* GT3 */
 #define DAC_REGS		IOPortTag(0x17u, 0x30u)	/* 4 separate bytes */
 #define DAC_CNTL		IOPortTag(0x18u, 0x31u)
 #define DAC_EXT_SEL			0x00000003ul
@@ -841,6 +859,7 @@
 #define DAC_MAN_CMP_STATE		0x40000000ul	/* GX-E+ */
 #define DAC_RW_WS			0x80000000ul	/* VT/GT */
 #define HORZ_STRETCHING		BlockIOTag(0x32u)	/* LT */
+#define EXT_DAC_REGS		BlockIOTag(0x32u)	/* GT3 */
 #define VERT_STRETCHING		BlockIOTag(0x33u)	/* LT */
 #define GEN_TEST_CNTL		IOPortTag(0x19u, 0x34u)
 #define GEN_EE_DATA_OUT			0x00000001ul	/* GX/CX */
@@ -889,6 +908,7 @@
 /*	?				0xc0000000ul */	/* 264xT */
 #define GEN_DEBUG_MODE			0xff000000ul	/* VTB/GTB/LT */
 #define LCD_GEN_CTRL		BlockIOTag(0x35u)	/* LT */
+#define CUSTOM_MACRO_CNTL	BlockIOTag(0x35u)	/* GT3 */
 #define POWER_MANAGEMENT	BlockIOTag(0x36u)	/* LT */
 #define CONFIG_CNTL		IOPortTag(0x1au, 0x37u)
 #define CFG_MEM_AP_SIZE			0x00000003ul
@@ -916,6 +936,7 @@
 #define CFG_MEM_TYPE			0x00000038ul	/* GX/CX */
 #define CFG_DUAL_CAS_EN_T		0x00000008ul	/* 264xT */
 #define CFG_ROM_128K_EN			0x00000008ul	/* VTB/GTB/LT */
+#define CFG_RAM_REMAP			0x00000008ul	/* GT3 */
 #define CFG_VGA_EN_T			0x00000010ul	/* VT/GT */
 #define CFG_CLOCK_EN			0x00000020ul	/* 264xT */
 #define CFG_DUAL_CAS_EN			0x00000040ul	/* GX/CX */
@@ -934,7 +955,9 @@
 #define CFG_EXT_RAM_ADDR		0x003f0000ul	/* GX/CX */
 #define CFG_PANEL_ID			0x001f0000ul	/* LT */
 #define CFG_ROM_DIS			0x00400000ul	/* GX/CX */
+#define CFG_PCI33EN			0x00400000ul	/* GT3 */
 #define CFG_VGA_EN			0x00800000ul	/* GX/CX */
+#define CFG_FULLAGP			0x00800000ul	/* GT3 */
 #define CFG_LOCAL_BUS_CFG		0x01000000ul	/* GX/CX */
 #define CFG_CHIP_EN			0x02000000ul	/* GX/CX */
 #define CFG_LOCAL_READ_DLY_DIS		0x04000000ul	/* GX/CX */
@@ -1043,6 +1066,20 @@
 #define PLL_LPLL_DUTY			0x00000ff0ul
 #define PLL_LPLL_VC_GAIN		0x000ff000ul
 #define PLL_LPLL_CP_GAIN		0xfff00000ul
+/* Back to 8-bit values */
+#define PLL_AGP1_CNTL		0x12u		/* GT3 */
+#define PLL_AGP2_CNTL		0x13u		/* GT3 */
+#define PLL_DLL2_CNTL		0x14u		/* GT3 */
+#define PLL_SCLK_FB_DIV		0x15u		/* GT3 */
+#define PLL_SPLL_CNTL1		0x16u		/* GT3 */
+#define PLL_SPLL_CNTL2		0x17u		/* GT3 */
+#define PLL_APLL_STRAPS		0x18u		/* GT3 */
+#define PLL_EXT_VPLL_CNTL	0x19u		/* GT3 */
+#define PLL_EXT_VPLL_REF_DIV	0x1au		/* GT3 */
+#define PLL_EXT_VPLL_FB_DIV	0x1bu		/* GT3 */
+#define PLL_EXT_VPLL_MSB	0x1cu		/* GT3 */
+#define PLL_HTOTAL_CNTL		0x1du		/* GT3 */
+#define PLL_BYTE_CLK_CNTL	0x1eu		/* GT3 */
 
 /* Miscellaneous */
 

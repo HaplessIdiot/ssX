@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_cursor.c,v 1.2 1997/04/13 13:57:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_cursor.c,v 1.3 1997/05/31 13:51:32 dawes Exp $ */
 /*
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -272,12 +272,14 @@ cirrusRealizeCursor(pScr, pCurs)
 		 m = *pServMsk++;
 		 s = *pServSrc++;
 
+#ifndef __powerpc__
 		 ((char *)&m)[0] = byte_reversed[((unsigned char *)&m)[0]];
 		 ((char *)&m)[1] = byte_reversed[((unsigned char *)&m)[1]];
 
 		 ((char *)&s)[0] = byte_reversed[((unsigned char *)&s)[0]];
 		 ((char *)&s)[1] = byte_reversed[((unsigned char *)&s)[1]];
-		  
+#endif		  
+
 		 *curp	   = s & m;        /* Plane 0 */
 		 *(curp+off) = m;            /* Plane 1 */
 	       }
