@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.56 2000/06/17 00:27:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.57 2000/06/23 22:42:02 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -177,8 +177,17 @@ Bool
 xf86CheckButton(int	button,
 		int	down)
 {
-    int	state = (inputInfo.pointer->button->state & 0x1f00) >> 8;
-    int	check = (state & (1 << (button - 1)));
+    int	state, check;
+
+    /* Synchronize dix */
+#ifdef XINPUT
+    xf86eqProcessInputEvents();
+#else
+    mieqProcessInputEvents();
+#endif
+
+    state = (inputInfo.pointer->button->state & 0x1f00) >> 8;
+    check = (state & (1 << (button - 1)));
     
     DBG(5, ErrorF("xf86CheckButton "
 		  "button=%d down=%d state=%d check=%d returns ",
