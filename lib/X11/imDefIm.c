@@ -31,7 +31,7 @@ OF THIS SOFTWARE.
                                makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefIm.c,v 1.8 2001/01/17 19:41:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefIm.c,v 1.9 2001/10/28 03:32:34 tsi Exp $ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
@@ -1136,6 +1136,13 @@ _XimProtoCloseIM(xim)
 #endif /* XIM_CONNECTABLE */
 	ic = next;
     }
+#ifdef XIM_CONNECTABLE
+    if (!(!IS_SERVER_CONNECTED(im) && IS_RECONNECTABLE(im)))
+	im->core.ic_chain = NULL;
+#else
+    im->core.ic_chain = NULL;
+#endif
+
     _XimUnregisterServerFilter(im);
     _XimResetIMInstantiateCallback(im);
     status = (Status)_XimClose(im);
