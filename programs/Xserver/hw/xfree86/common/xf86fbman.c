@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.18 2000/10/25 06:14:24 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.19 2000/11/24 23:18:29 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1036,6 +1036,9 @@ xf86InitFBManager(
       (FullBox->x2 <  ScreenBox.x2) || (FullBox->y2 <  ScreenBox.y2)) {
 	return FALSE;   
    }
+
+   if (FullBox->y2 < FullBox->y1) return FALSE;
+   if (FullBox->x2 < FullBox->x2) return FALSE;
 
    REGION_INIT(pScreen, &ScreenRegion, &ScreenBox, 1); 
    REGION_INIT(pScreen, &FullRegion, FullBox, 1); 
