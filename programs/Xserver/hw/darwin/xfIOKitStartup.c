@@ -3,7 +3,7 @@
  * Startup code for the IOKit Darwin X Server
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.4 2001/07/15 01:57:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.5 2001/08/01 05:34:05 torrey Exp $ */
 
 #include "bundle/quartz.h"
 
@@ -49,7 +49,7 @@ void QuartzInitOutput(void) {
 }
 
 void QuartzGiveUp(void) {
-    FatalError("QuartzGiveUp called without Quartz support.\n");
+    return;	// no message, we are quitting anyway
 }
 
 void QuartzHide(void) {
