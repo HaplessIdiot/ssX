@@ -1197,17 +1197,17 @@ Boolean *cont;
         (*info->callbacks[n])(widget, *info->req_closure, &ctx->selection, 
 			      &info->type, value, &length, &info->format);
       } else {
-          if ((BYTELENGTH(length,info->format)+info->offset) 
-			> info->bytelength) {
-	      unsigned int bytes;
-	      bytes = (info->bytelength *= 2);
-	      info->value = XtRealloc(info->value, bytes);
-          }
-          (void) memmove(&info->value[info->offset], value, 
-			 (int) BYTELENGTH(length, info->format));
-          info->offset += BYTELENGTH(length, info->format);
-         XFree(value);
-     }
+	  int size = BYTELENGTH(length, info->format);
+	  if (info->offset + size > info->bytelength) {
+	      /* allocate enough for this and the next increment */
+	      info->bytelength = info->offset + size * 2;
+	      info->value = XtRealloc(info->value,
+				      (Cardinal) info->bytelength);
+	  }
+	  (void) memmove(&info->value[info->offset], value, size);
+	  info->offset += size;
+	  XFree(value);
+      }
      /* reset timer */
 #ifndef DEBUG_WO_TIMERS
      {

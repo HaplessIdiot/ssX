@@ -42,7 +42,7 @@ typedef struct _rgbentry {
                 vgreen;		/* visual */
 }           RGBEntryRec, *RGBEntryPtr;
 
-typedef unsigned long Pixel;
+typedef CARD32 Pixel;
 
 extern RGBEntryPtr FindColorName();
 extern Bool AddColorName();

@@ -1,5 +1,5 @@
-/* $XConsortium: connection.c,v 1.195 95/04/25 20:33:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.13 1995/06/24 10:30:59 dawes Exp $ */
+/* $XConsortium: connection.c,v 1.190.1.1 95/06/12 17:17:15 mor Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.14 1995/07/07 15:46:04 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -76,7 +76,6 @@ extern int errno;
 #endif
 
 #include <signal.h>
-#include <setjmp.h>
 
 #ifdef hpux
 #include <sys/utsname.h>
@@ -938,7 +937,6 @@ CloseDownConnection(client)
 
     if (oc->output && oc->output->count)
 	FlushClient(client, oc, (char *)NULL, 0);
-    ConnectionTranslation[oc->fd] = 0;
 #ifdef XDMCP
     XdmcpCloseDisplay(oc->fd);
 #endif

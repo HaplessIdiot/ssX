@@ -1,17 +1,17 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.55 95/04/07 19:22:30 kaleb Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.55.1.1 95/06/30 14:22:43 kaleb Exp $
 
 #ifdef RsArchitecture
 #ifndef OSName
-#define OSName		AIX 4.1.1
+#define OSName		AIX 3.2.5
 #endif
 #ifndef OSMajorVersion
-#define OSMajorVersion	4
+#define OSMajorVersion	3
 #endif
 #ifndef OSMinorVersion
-#define OSMinorVersion	1
+#define OSMinorVersion	2
 #endif
 #ifndef OSTeenyVersion
-#define OSTeenyVersion	1
+#define OSTeenyVersion	5
 #endif
 #else
 #ifdef RtArchitecture

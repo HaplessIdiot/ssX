@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.88 1995/07/05 12:39:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.89 1995/07/07 15:39:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -374,7 +374,7 @@ s3ProbeSDAC(Bool quiet)
     */
    
    unsigned char saveCR55, saveCR45, saveCR43, savelut[6];
-   unsigned int i;	/* don't use signed int, UW2.0 compiler bug */
+   unsigned int i;		/* don't use signed int, UW2.0 compiler bug */
    long clock01, clock23;
    Bool found = FALSE;
 

@@ -1,5 +1,5 @@
-/* $XConsortium: NextEvent.c,v 1.149 95/06/26 20:39:12 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.8 1995/06/29 13:23:51 dawes Exp $ */
+/* $XConsortium: NextEvent.c,v 1.145.1.1 95/07/07 13:26:11 kaleb Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.9 1995/07/05 12:32:01 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.248 95/01/06 19:12:51 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.15 1995/06/24 10:21:16 dawes Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.249 95/05/23 21:36:40 matt Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.16 1995/07/07 15:30:38 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -91,11 +91,7 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.15 1995/06/24 10:21:16 dawes Exp $
 #define BuildLBXCompatible	NO
 #endif
 #ifndef BuildFresco
-#if HasCplusplus 
-#define BuildFresco		YES
-#else
-#define BuildFresco		NO
-#endif
+#define BuildFresco		NO	/* R6 snapshot is obsolete */
 #endif
 #ifndef BuildScreenSaverExt
 #define BuildScreenSaverExt	NO

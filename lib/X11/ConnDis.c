@@ -1,5 +1,5 @@
-/* $XConsortium: ConnDis.c,v 11.126 95/04/25 14:47:17 mor Exp $ */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.6 1994/10/20 06:03:02 dawes Exp $ */
+/* $XConsortium: ConnDis.c,v 11.123.1.1 95/06/12 18:00:41 mor Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.7 1995/06/20 14:20:30 dawes Exp $ */
 /*
  
 Copyright (c) 1989  X Consortium

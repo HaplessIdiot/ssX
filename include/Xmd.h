@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef XMD_H
 #define XMD_H 1
 /* $XConsortium: Xmd.h,v 1.49 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/include/Xmd.h,v 3.1 1995/03/11 14:48:01 dawes Exp $ */
+/* $XFree86: xc/include/Xmd.h,v 3.2 1995/06/14 07:01:21 dawes Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -61,6 +61,11 @@ SOFTWARE.
 #endif
 #ifdef __alpha
 #define LONG64				/* 32/64-bit architecture */
+#endif
+#ifdef __sgi
+#if (_MIPS_SZLONG == 64)
+#define LONG64
+#endif
 #endif
 
 /*

@@ -1,7 +1,7 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.230 95/06/08 21:08:14 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.17 1995/06/08 06:55:49 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.18 1995/06/14 07:55:29 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -122,18 +122,18 @@ SOFTWARE.
 #define ATT
 #endif
 
+#if defined(sgi) && (OSMAJORVERSION >= 5)
+#undef SYSV
+#define SVR4
+#endif
+
 #ifdef SVR4
 #define SYSV			/* SVR4 is (approx) superset of SVR3 */
 #define ATT
 #define USE_SYSV_UTMP
+#ifndef sgi
 #define USE_TERMIOS
-#define HAS_UTMP_UT_HOST
 #endif
-
-#if defined(sgi) && OSMAJORVERSION >= 5
-#define SVR4			/* close enough for xterm */
-#define USE_SYSV_UTMP
-#define USE_TERMIOS
 #define HAS_UTMP_UT_HOST
 #endif
 
@@ -144,7 +144,7 @@ SOFTWARE.
 static Bool IsPts = False;
 #endif
 
-#ifdef ATT
+#if defined(ATT) && !defined(sgi)
 #define USE_USG_PTYS
 #else
 #define USE_HANDSHAKE
@@ -265,6 +265,8 @@ static Bool IsPts = False;
 #include <sys/ptyio.h>
 #endif /* hpux */
 #ifdef sgi
+#define USE_SYSV_ENVVARS
+#define HAS_BSD_GROUPS
 #include <sys/sysmacros.h>
 #endif /* sgi */
 #ifdef sun
@@ -454,6 +456,10 @@ extern void exit();
 extern char *ttyname();
 #endif
 
+#ifdef sgi
+#include <locale.h>
+#endif
+
 #ifdef SYSV
 extern char *ptsname();
 #endif
@@ -478,6 +484,11 @@ static struct termio d_tio;
 #ifdef TIOCSLTC
 static struct ltchars d_ltc;
 #endif	/* TIOCSLTC */
+
+#ifdef sgi
+#undef TIOCLSET /* XXX why is this undef-ed again? */
+#endif
+
 #ifdef TIOCLSET
 static unsigned int d_lmode;
 #endif	/* TIOCLSET */
@@ -586,7 +597,7 @@ struct _xttymodes {
 };
 
 #ifdef USE_SYSV_UTMP
-#if defined(X_NOT_STDC_ENV) || defined(AIXV3)
+#if defined(X_NOT_STDC_ENV) || (defined(AIXV3) && OSMAJORVERSION < 4)
 extern struct utmp *getutent();
 extern struct utmp *getutid();
 extern struct utmp *getutline();
@@ -662,6 +673,9 @@ static struct _resource {
     Boolean sunFunctionKeys;	/* %%% should be widget resource? */
     Boolean wait_for_map;
     Boolean useInsertMode;
+#ifdef sgi
+    Boolean useLocale;
+#endif
 } resource;
 
 /* used by VT (charproc.c) */
@@ -689,6 +703,10 @@ static XtResource application_resources[] = {
         offset(wait_for_map), XtRString, "false"},
     {"useInsertMode", "UseInsertMode", XtRBoolean, sizeof (Boolean),
         offset(useInsertMode), XtRString, "false"},
+#ifdef sgi
+    {"useLocale", "UseLocale", XtRBoolean, sizeof(Boolean),
+	offset(useLocale), XtRString, "true"},
+#endif
 };
 #undef offset
 
@@ -756,6 +774,10 @@ static XrmOptionDescRec optionDescList[] = {
 {"+t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-tm",		"*ttyModes",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-tn",		"*termName",	XrmoptionSepArg,	(caddr_t) NULL},
+#ifdef sgi
+{"-ul",		"*useLocale",	XrmoptionNoArg,		(caddr_t) "on"},
+{"+ul",		"*useLocale",	XrmoptionNoArg,		(caddr_t) "off"},
+#endif
 {"-ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-im",		"*useInsertMode", XrmoptionNoArg,	(caddr_t) "on"},
@@ -828,6 +850,9 @@ static struct _options {
 { "-/+t",                  "turn on/off Tek emulation window" },
 { "-tm string",            "terminal mode keywords and characters" },
 { "-tn name",              "TERM environment variable name" },
+#ifdef sgi
+{ "-/+ul",                 "use/don't use locale for character input" },
+#endif
 #ifdef UTMP
 { "-/+ut",                 "turn on/off utmp inhibit" },
 #else
@@ -1031,7 +1056,7 @@ char **argv;
 	d_tio.c_cc[VLNEXT]= TLNEXT_DEF;
 	d_tio.c_cc[VDISCARD]= TDISCARD_DEF;
 #else /* !MINIX */
-#ifdef USE_SYSV_TERMIO
+#ifdef USE_SYSV_TERMIO /* { */
 	/* Initialization is done here rather than above in order
 	** to prevent any assumptions about the order of the contents
 	** of the various terminal structures (which may change from
@@ -1049,9 +1074,9 @@ char **argv;
 	d_tio.c_lflag |= ECHOCTL|IEXTEN;
 #endif
 
-#ifndef USE_TERMIOS
+#ifndef USE_TERMIOS /* { */
 	d_tio.c_line = 0;
-#endif
+#endif /* } */
 
 	d_tio.c_cc[VINTR] = CINTR;
 	d_tio.c_cc[VQUIT] = CQUIT;
@@ -1082,7 +1107,7 @@ char **argv;
 	d_lmode = 0;
 #endif /* } TIOCLSET */
 #else  /* }{ else !macII, ATT, CRAY */
-#ifdef BAUD_0
+#ifdef BAUD_0 /* { */
     	d_tio.c_cflag = CS8|CREAD|PARENB|HUPCL;
 #else	/* }{ !BAUD_0 */
     	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
@@ -1095,13 +1120,13 @@ char **argv;
 	d_tio.c_lflag |= ECHOCTL|IEXTEN;
 #endif
 #ifdef NTTYDISC
-	d_tio.c_line = NTTYDISC;
+        d_tio.c_line = NTTYDISC;
 #else
 	d_tio.c_line = 0;
-#endif
+#endif	
 #ifdef sgi
-	d_tio.c_cflag &= ~(HUPCL|PARENB);
-	d_tio.c_iflag |= BRKINT|ISTRIP|IGNPAR;
+        d_tio.c_cflag &= ~(HUPCL|PARENB);
+        d_tio.c_iflag |= BRKINT|ISTRIP|IGNPAR;
 #endif
 	d_tio.c_cc[VINTR] = 'C' & 0x3f;		/* '^C'	*/
 	d_tio.c_cc[VERASE] = 0x7f;		/* DEL	*/
@@ -1110,7 +1135,7 @@ char **argv;
     	d_tio.c_cc[VEOF] = CEOF;		/* '^D'	*/
 	d_tio.c_cc[VEOL] = CEOL;		/* '^@'	*/
 #ifdef VSWTCH
-	d_tio.c_cc[VSWTCH] = CSWTCH;		/* usually '^Z'	*/
+	d_tio.c_cc[VSWTCH] = CSWTCH;            /* usually '^Z' */
 #endif
 #ifdef VLNEXT
 	d_tio.c_cc[VLNEXT] = CLNEXT;
@@ -1195,27 +1220,27 @@ char **argv;
 		}
 	    }
 	}
-#ifdef TIOCSLTC
+#ifdef TIOCSLTC /* { */
         d_ltc.t_suspc = '\000';		/* t_suspc */
         d_ltc.t_dsuspc = '\000';	/* t_dsuspc */
         d_ltc.t_rprntc = '\377';	/* reserved...*/
         d_ltc.t_flushc = '\377';
         d_ltc.t_werasc = '\377';
         d_ltc.t_lnextc = '\377';
-#endif	/* TIOCSLTC */
-#ifdef USE_TERMIOS
+#endif	/* } TIOCSLTC */
+#ifdef USE_TERMIOS /* { */
 	d_tio.c_cc[VSUSP] = CSUSP;
 	d_tio.c_cc[VDSUSP] = '\000';
 	d_tio.c_cc[VREPRINT] = '\377';
 	d_tio.c_cc[VDISCARD] = '\377';
 	d_tio.c_cc[VWERASE] = '\377';
 	d_tio.c_cc[VLNEXT] = '\377';
-#endif
-#ifdef TIOCLSET
+#endif /* } USE_TERMIOS */
+#ifdef TIOCLSET /* { */
 	d_lmode = 0;
-#endif	/* TIOCLSET */
-#endif  /* macII */
-#endif	/* USE_SYSV_TERMIO */
+#endif	/* } TIOCLSET */
+#endif  /* } macII, ATT, CRAY */
+#endif	/* } USE_SYSV_TERMIO */
 #endif /* MINIX */
 #endif  /* AMOEBA */
 
@@ -1246,6 +1271,11 @@ char **argv;
 	    XtGetApplicationResources(toplevel, (XtPointer) &resource,
 				      application_resources,
 				      XtNumber(application_resources), NULL, 0);
+
+#ifdef sgi
+	    if (resource.useLocale)
+		setlocale(LC_ALL,"");
+#endif
 
 #ifdef HAS_POSIX_SAVED_IDS
 	    if (seteuid(euid) == -1)
@@ -1314,6 +1344,7 @@ char **argv;
 		/* NOTREACHED */
 	     case 'C':
 #if defined(TIOCCONS) || defined(SRIOCSREDIR)
+#ifndef sgi
 		{
 		    struct stat sbuf;
 
@@ -1327,6 +1358,9 @@ char **argv;
 		    } else
 			Console = FALSE;
 		}
+#else /* sgi */
+		Console = TRUE;
+#endif /* sgi */
 #endif	/* TIOCCONS */
 		continue;
 	     case 'S':
@@ -1499,6 +1533,7 @@ char **argv;
 	screen->inhibit = inhibit;
 
 #ifdef AIXV3
+#if OSMAJORVERSION < 4
 	/* In AIXV3, xterms started from /dev/console have CLOCAL set.
 	 * This means we need to clear CLOCAL so that SIGHUP gets sent
 	 * to the slave-pty process when xterm exits. 
@@ -1607,7 +1642,7 @@ get_pty (pty)
         if (pty_search(pty) == 0)
 	    return 0;
 #endif /* SYSV && i386 && !SVR4 */
-#ifdef ATT
+#if defined(ATT) && !defined(sgi)
 	if ((*pty = open ("/dev/ptmx", O_RDWR)) < 0) {
 	    return 1;
 	}
@@ -2455,9 +2490,9 @@ spawn ()
 		    tio.c_lflag |= ECHOCTL|IEXTEN;
 #endif
 		    /* reset EOL to default value */
-		    tio.c_cc[VEOL] = CEOL;			/* '^@'	*/
+		    tio.c_cc[VEOL] = CEOL;			/* '^@' */
 		    /* certain shells (ksh & csh) change EOF as well */
-		    tio.c_cc[VEOF] = CEOF;			/* '^D'	*/
+		    tio.c_cc[VEOF] = CEOF;			/* '^D' */
 #ifdef VLNEXT
 		    tio.c_cc[VLNEXT] = CLNEXT;
 #endif
@@ -2542,8 +2577,6 @@ spawn ()
 		    }
 #undef TMODE
 
-		    if (ioctl (tty, TCSETA, &tio) == -1)
-			    HsSysError(cp_pipe[1], ERROR_TIOCSETP);
 #ifdef TIOCSLTC
 		    if (ioctl (tty, TIOCSLTC, &ltc) == -1)
 			    HsSysError(cp_pipe[1], ERROR_TIOCSETC);
@@ -2755,8 +2788,14 @@ spawn ()
 		(void) setutent ();
 		/* set up entry to search for */
 		ptyname = ttydev;
+#ifndef sgi
 		(void) strncpy(utmp.ut_id,ptyname + strlen(ptyname)-PTYCHARLEN,
 			       sizeof (utmp.ut_id));
+#else
+		(void) strncpy(utmp.ut_id,ptyname + sizeof("/dev/tty")-1,
+			       sizeof (utmp.ut_id));
+
+#endif
 		utmp.ut_type = DEAD_PROCESS;
 
 		/* position to entry in utmp file */

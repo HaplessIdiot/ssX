@@ -1,5 +1,5 @@
-/* $XConsortium: Xlibint.h,v 11.146 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.0 1994/10/20 06:03:24 dawes Exp $ */
+/* $XConsortium: Xlibint.h,v 11.143.1.1 95/06/19 19:33:25 gildea Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.1 1995/06/14 07:07:12 dawes Exp $ */
 
 /*
 

@@ -1,5 +1,5 @@
-/* $XConsortium: am_io.c,v 1.1 94/03/28 21:27:35 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: am_io.c,v 1.3 95/06/14 15:19:17 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_io.c,v 3.1 1995/06/17 12:31:56 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>

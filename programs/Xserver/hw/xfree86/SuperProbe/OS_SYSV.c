@@ -25,8 +25,8 @@
  *
  */
 
-/* $XConsortium: OS_SYSV.c,v 1.5 95/01/16 13:16:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.7 1995/03/08 04:55:30 dawes Exp $ */
+/* $XConsortium: OS_SYSV.c,v 1.7 95/03/20 15:48:29 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.8 1995/03/08 11:24:31 dawes Exp $ */
 
 #include "Probe.h"
 
