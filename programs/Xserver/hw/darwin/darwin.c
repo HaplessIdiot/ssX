@@ -27,7 +27,6 @@
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hidsystem/IOHIDLib.h>
 #include <IOKit/hidsystem/ev_keymap.h>
-#include <CoreFoundation/CFBundle.h>
 
 #include "darwin.h"
 #include "bundle/quartz.h"

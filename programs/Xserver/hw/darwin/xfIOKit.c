@@ -8,7 +8,7 @@
  * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.2 2001/01/23 21:14:26 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.3 2001/03/04 17:40:04 herrb Exp $ */
 
 #define NDEBUG 1
 
@@ -84,6 +84,18 @@ static void XFIOKitStoreColors(
     kern_assert( kr );
 
     xfree( newColors );
+}
+
+/*
+ * XFIOKitBell
+ * FIXME
+ */
+void XFIOKitBell(
+    int             loud,
+    DeviceIntPtr    pDevice,
+    pointer         ctrl,
+    int             fbclass)
+{
 }
 
 /*

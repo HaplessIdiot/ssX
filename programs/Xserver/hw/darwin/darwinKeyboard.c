@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.2 2001/01/14 16:44:55 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.3 2001/01/24 07:19:55 herrb Exp $ */
 
 /*
 ===========================================================================
@@ -62,6 +62,8 @@
 #include <drivers/event_status_driver.h>
 #include <IOKit/hidsystem/ev_keymap.h>
 #include "darwin.h"
+#include "xfIOKit.h"
+#include "bundle/quartzAudio.h"
 
 #define XK_TECHNICAL		// needed to get XK_Escape
 #include "keysym.h"
@@ -188,10 +190,6 @@ static darwinKeyPad_t const normal_to_keypad[] = {
     { XK_slash,     XK_KP_Divide }
 };
 int const NUM_KEYPAD = sizeof(normal_to_keypad) / sizeof(normal_to_keypad[0]);
-
-static void DarwinBell( int loud, DeviceIntPtr pDevice, pointer ctrl, int fbclass) {
-    // FIXME
-}
 
 static void DarwinChangeKeyboardControl( DeviceIntPtr device, KeybdCtrl *ctrl ) {
     // keyclick, bell volume / pitch, autorepead, LED's
@@ -322,6 +320,7 @@ void DarwinKeyboardInit(
     NXKeyMapping        keyMap;
     DataStream          *keyMapStream;
     unsigned char const *numPadStart = 0;
+    BellProcPtr         bellProc;
 
     memset( modMap, NoSymbol, sizeof( modMap ) );
     memset( map, 0, sizeof( map ) );
@@ -489,8 +488,13 @@ void DarwinKeyboardInit(
     keySyms.minKeyCode = MIN_KEYCODE;
     keySyms.maxKeyCode = MAX_KEYCODE;
 
+    if (quartz)
+        bellProc = QuartzBell;
+    else
+        bellProc = XFIOKitBell;
+
     assert( InitKeyboardDeviceStruct( (DevicePtr)pDev, &keySyms, modMap,
-                                      DarwinBell,
+                                      bellProc,
                                       DarwinChangeKeyboardControl ));
 }
 

@@ -3,7 +3,7 @@
  * Startup code for the IOKit Darwin X Server
  *
  **************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.1 2001/03/24 23:08:53 torrey Exp $ */
 
 #include "mi.h"
 #include "mipointer.h"
@@ -49,4 +49,8 @@ void QuartzReadPasteboard(void) {
 
 void QuartzWritePasteboard(void) {
     FatalError("QuartzWritePasteboard called without Quartz support.\n");
+}
+
+void QuartzBell(void) {
+    FatalError("QuartzBell called without Quartz support.\n");
 }
