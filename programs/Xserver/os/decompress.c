@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/decompress.c,v 1.4 2001/01/17 22:37:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/decompress.c,v 1.5 2001/08/01 00:44:59 tsi Exp $ */
 
 /* 
  * decompress - cat a compressed file
@@ -366,7 +366,7 @@ CompressedFontFileSkip (bytes, fid)
     unsigned	bytes;
     FID		fid;
 {
-    int	    c;
+    int	    c = 0;
 
     while (bytes-- && ((c = getdcchar((CompressedFile *)fid)) != EOF))
 	    ;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.31 2001/07/23 13:15:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.32 2001/07/25 15:05:11 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -133,9 +133,9 @@ WaitForSomething(pClientsReady)
 {
     int i;
     struct timeval waittime, *wt;
-    INT32 timeout;
+    INT32 timeout = 0;
 #ifdef DPMSExtension
-    INT32 standbyTimeout, suspendTimeout, offTimeout;
+    INT32 standbyTimeout = 0, suspendTimeout = 0, offTimeout = 0;
 #endif
     fd_set clientsReadable;
     fd_set clientsWritable;
@@ -143,10 +143,9 @@ WaitForSomething(pClientsReady)
     int selecterr;
     int nready;
     fd_set devicesReadable;
-    CARD32 now;
+    CARD32 now = 0;
 #ifdef SMART_SCHEDULE
     Bool    someReady = FALSE;
-    extern Bool	SmartScheduleIdle;
 #endif
 
     FD_ZERO(&clientsReadable);
@@ -354,10 +353,6 @@ WaitForSomething(pClientsReady)
 #ifdef SMART_SCHEDULE
 	if (i >= 0)
 	{
-	    extern unsigned long    SmartScheduleIdleCount;
-	    extern Bool		    SmartScheduleTimerStopped;
-	    extern Bool		    SmartScheduleStartTimer(void);
-
 	    SmartScheduleIdle = FALSE;
 	    SmartScheduleIdleCount = 0;
 	    if (SmartScheduleTimerStopped)
@@ -444,7 +439,7 @@ WaitForSomething(pClientsReady)
 #ifndef WIN32
 	for (i=0; i<howmany(XFD_SETSIZE, NFDBITS); i++)
 	{
-	    int highest_priority;
+	    int highest_priority = 0;
 
 	    while (clientsReadable.fds_bits[i])
 	    {
@@ -454,7 +449,7 @@ WaitForSomething(pClientsReady)
 		client_index = /* raphael: modified */
 			ConnectionTranslation[curclient + (i * (sizeof(fd_mask) * 8))];
 #else
-	int highest_priority;
+	int highest_priority = 0;
 	fd_set savedClientsReadable;
 	XFD_COPYSET(&clientsReadable, &savedClientsReadable);
 	for (i = 0; i < XFD_SETCOUNT(&savedClientsReadable); i++)
@@ -596,7 +591,6 @@ TimerForce(timer)
     register OsTimerPtr timer;
 {
     register OsTimerPtr *prev;
-    register CARD32 newTime;
 
     for (prev = &timers; *prev; prev = &(*prev)->next)
     {
@@ -652,7 +646,7 @@ TimerInit()
 {
     OsTimerPtr timer;
 
-    while (timer = timers)
+    while ((timer = timers))
     {
 	timers = timer->next;
 	xfree(timer);
