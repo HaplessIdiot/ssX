@@ -32,7 +32,7 @@ THIS SOFTWARE.
 	                          frankyling@hgrd01.enet.dec.com
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imLcIm.c,v 1.11 2003/04/13 19:22:21 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imLcIm.c,v 1.12 2003/09/06 14:06:32 pascal Exp $ */
 
 #include <stdio.h>
 /*
@@ -91,6 +91,8 @@ _XimLocalIMFree(
     Xim		im)
 {
     XimFreeDefaultTree(im->private.local.top);
+    im->private.local.top = NULL;
+
     if(im->core.im_resources) {
 	Xfree(im->core.im_resources);
 	im->core.im_resources = NULL;
