@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.73 2000/03/21 21:29:45 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.74 2000/03/21 23:17:10 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -180,7 +180,17 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef RmanCmd
 #if BuildRman
-#define RmanCmd $(RMAN) -f HTML
+#ifdef UseIntalled		/* assume BINDIR in path */
+#define RmanCmd rman
+#else
+#define RmanCmd $(TOP)/config/util/rman
+#endif
+#endif
+#endif
+
+#ifndef RmanOptions
+#if BuildRman
+#define RmanOptions -f HTML
 #endif
 #endif
 
@@ -190,6 +200,11 @@ XCOMM the platform-specific parameters - edit site.def to change
 #else
 #define BuildHtmlManPages NO
 #endif
+#endif
+/* Can't do this while bootstrapping imake */
+#ifdef BootStrap
+#undef BuildHtmlManPages
+#define BuildHtmlManPages NO
 #endif
 
 #include <Imake.rules>
@@ -1277,6 +1292,8 @@ TCLIBDIR = TclLibDir
         MKDIRHIER = MkdirHierCmd
           REVPATH = RevPathCmd
     EXPORTLISTGEN = ExportListCmd
+             RMAN = RmanCmd
+      RMANOPTIONS = RmanOptions
         CONFIGSRC = ConfigSrc
          IMAKESRC = $(CONFIGSRC)/imake
         DEPENDSRC = DependDir
@@ -1641,6 +1658,10 @@ CleanTarget()
 
 #ifndef IHaveSpecialMakefileTarget
 MakefileTarget()
+#endif
+
+#if BuildHtmlManPages
+RmanDependency()
 #endif
 
 TagsTarget()
