@@ -35,7 +35,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 				makoto@sm.sony.co.jp
 
 *****************************************************************/
-/* $XFree86: xc/lib/X11/lcSjis.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/lib/X11/lcSjis.c,v 3.9 2002/04/10 16:20:06 tsi Exp $ */
 
 /*
  * A Japanese SJIS locale.
@@ -1556,6 +1556,7 @@ _XlcSjisLoader(
     _XlcSetConverter(lcd, XlcNWideChar, lcd, XlcNMultiByte, open_wcstombs);
 #endif
 
+    _XlcAddUtf8Converters(lcd);
 
     return lcd;
 }

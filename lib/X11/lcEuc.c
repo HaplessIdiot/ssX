@@ -30,7 +30,7 @@ OF THIS SOFTWARE.
              Yoshiyuki Segawa		(segawa@ossi.com)
 
 *****************************************************************/
-/* $XFree86: xc/lib/X11/lcEuc.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/lib/X11/lcEuc.c,v 3.11 2002/04/10 16:20:05 tsi Exp $ */
 
 /*
  * An EUC locale.
@@ -1489,6 +1489,8 @@ _XlcEucLoader(
     _XlcSetConverter(lcd, XlcNWideChar, lcd, XlcNCompoundText, open_wcstocts);
     _XlcSetConverter(lcd, XlcNWideChar, lcd, XlcNMultiByte, open_wcstombs);
 #endif
+
+    _XlcAddUtf8Converters(lcd);
 
     return lcd;
 }
