@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.195 2001/06/18 16:07:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.196 2001/08/15 16:25:22 paulo Exp $ */
 
 /*
  *
@@ -1026,7 +1026,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(res8514Shared)
    SYMVAR(PciAvoid)
 
-#if defined(__powerpc__) && (!defined(NO_INLINE) || defined(Lynx)) && !defined(__OpenBSD__)
+#if defined(__powerpc__) && (!defined(NO_INLINE) || defined(Lynx))
    SYMVAR(ioBase)
 #endif
 
