@@ -91,9 +91,7 @@ run_bios_int(int num, xf86Int10InfoPtr pInt)
 #ifndef _PC
     /* check if bios vector is initialized */
     if (MEM_RW(pInt, (num << 2) + 2) == (SYS_BIOS >> 4)) { /* SYS_BIOS_SEG ?*/
-#ifdef PRINT_INT
-	ErrorF("card BIOS not loaded\n");
-#endif
+	ErrorF("Card BIOS on non-PC like platform not loaded\n");
 	return 0;
     }
 #endif
