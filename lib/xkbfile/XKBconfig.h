@@ -27,6 +27,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
 
 
 typedef struct _XkbConfigRtrn	*XkbConfigRtrnPtr;

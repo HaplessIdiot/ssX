@@ -30,7 +30,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: */
+/* $XFree86$ */
 
 #include "Xarch.h"
 #include "xf86.h"

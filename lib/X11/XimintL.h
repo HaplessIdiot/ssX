@@ -32,6 +32,7 @@ THIS SOFTWARE.
 	                          frankyling@hgrd01.enet.dec.com
 
 ******************************************************************/
+/* $XFree86$ */
 
 #ifndef _XIMINTL_H
 #define _XIMINTL_H
