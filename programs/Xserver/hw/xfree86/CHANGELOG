@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 353. Use the -no-cpp-precomp compiler option on Darwin, rather than the
+      deprecated -traditional-cpp (Christoph Pfisterer).
  352. Reverting patch #340, fixing type (Egbert Eich).
  351. Fix rotation in fbdev driver (#4958, #4959, Michel Dänzer).
  350. Resync with DRI CVS trunk (DRI Project).
@@ -13966,4 +13968,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1971 2001/10/02 19:56:57 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1972 2001/10/03 07:44:20 alanh Exp $
