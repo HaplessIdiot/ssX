@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.10 2001/02/09 00:35:03 keithp Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.11 2001/03/18 14:50:32 dawes Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -46,13 +46,13 @@ HEADERS = Xft.h $(FT_HEADERS)
 
    SRCS = xftcfg.c xftcolor.c xftcore.c xftdbg.c xftdpy.c \
           xftdraw.c xftextent.c xftfont.c xftfs.c xftgram.c \
-          xftinit.c xftlex.c xftlist.c xftmatch.c xftname.c \
-          xftpat.c xftstr.c xftxlfd.c $(FT_SRCS)
+          xftinit.c xftlex.c xftlist.c xftmatch.c xftmatrix.c \
+          xftname.c xftpat.c xftstr.c xftxlfd.c $(FT_SRCS)
   
    OBJS = xftcfg.o xftcolor.o xftcore.o xftdbg.o xftdpy.o \
           xftdraw.o  xftextent.o xftfont.o xftfs.o xftgram.o \
-          xftinit.o xftlex.o xftlist.o xftmatch.o xftname.o \
-          xftpat.o xftstr.o xftxlfd.o $(FT_OBJS)
+          xftinit.o xftlex.o xftlist.o xftmatch.o xftmatrix.o \
+          xftname.o xftpat.o xftstr.o xftxlfd.o $(FT_OBJS)
 
 #include <Library.tmpl>
 

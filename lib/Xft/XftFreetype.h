@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.12 2001/01/02 02:46:50 keithp Exp $
+ * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.13 2001/03/30 02:15:18 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -47,6 +47,8 @@ struct _XftFontStruct {
     int			rgba;
     Bool		antialias;
     int			charmap;    /* -1 for unencoded */
+    Bool		transform;
+    FT_Matrix		matrix;
     XRenderPictFormat	*format;
     XGlyphInfo		**realized;
     int			nrealized;
@@ -66,7 +68,7 @@ XftPattern *
 XftFreeTypeQuery (const char *file, int id, int *count);
 
 Bool
-XftFreeTypeSetFace (FT_Face face, FT_F26Dot6 size, int charmap);
+XftFreeTypeSetFace (FT_Face face, FT_F26Dot6 size, int charmap, FT_Matrix *matrix);
 
 XftFontStruct *
 XftFreeTypeOpen (Display *dpy, XftPattern *pattern);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.8 2000/12/22 02:25:41 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.9 2001/01/26 20:51:16 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -74,29 +74,33 @@ XftGlyphLoad (Display		*dpy,
     int		    vmul = 1;
     FT_Bitmap	    ftbit;
     FT_Matrix	    matrix;
+    FT_Vector	    vector;
+    Bool	    subpixel = False;
 
-    if (!XftFreeTypeSetFace (font->face, font->size, font->charmap))
+    if (!XftFreeTypeSetFace (font->face, font->size, font->charmap, &font->matrix))
 	return ;
+
+    matrix.xx = matrix.yy = 0x10000L;
+    matrix.xy = matrix.yx = 0;
 
     if (font->antialias)
     {
 	switch (font->rgba) {
 	case XFT_RGBA_RGB:
 	case XFT_RGBA_BGR:
-	    matrix.xx = 0x30000L;
-	    matrix.yy = 0x10000L;
-	    matrix.xy = matrix.yx = 0;
+	    matrix.xx *= 3;
+	    subpixel = True;
 	    hmul = 3;
 	    break;
 	case XFT_RGBA_VRGB:
 	case XFT_RGBA_VBGR:
-	    matrix.xx = 0x10000L;
-	    matrix.yy = 0x30000L;
-	    matrix.xy = matrix.yx = 0;
+	    matrix.yy *= 3;
 	    vmul = 3;
+	    subpixel = True;
 	    break;
 	}
     }
+
     while (nglyph--)
     {
 	charcode = (FT_ULong) *glyphs++;
@@ -127,12 +131,54 @@ XftGlyphLoad (Display		*dpy,
 #define ROUND(x)    (((x)+32) & -64)
 		
 	glyph = font->face->glyph;
-	
-	left  = FLOOR( glyph->metrics.horiBearingX );
-	right = CEIL( glyph->metrics.horiBearingX + glyph->metrics.width );
+
+	if(font->transform) 
+	{
+	    /*
+	     * calculate the true width by transforming all four corners.
+	     */
+	    int xc, yc;
+	    left = right = top = bottom = 0;
+	    for(xc = 0; xc <= 1; xc ++) {
+		for(yc = 0; yc <= 1; yc++) {
+		    vector.x = glyph->metrics.horiBearingX + xc * glyph->metrics.width;
+		    vector.y = glyph->metrics.horiBearingY - yc * glyph->metrics.height;
+		    FT_Vector_Transform(&vector, &font->matrix);   
+		    if (_XftFontDebug() & XFT_DBG_GLYPH)
+			printf("Trans %d %d: %d %d\n", (int) xc, (int) yc, 
+			       (int) vector.x, (int) vector.y);
+		    if(xc == 0 && yc == 0) {
+			left = right = vector.x;
+			top = bottom = vector.y;
+		    } else {
+			if(left > vector.x) left = vector.x;
+			if(right < vector.x) right = vector.x;
+			if(bottom > vector.y) bottom = vector.y;
+			if(top < vector.y) top = vector.y;
+		    }
+
+		}
+	    }
+	    left = FLOOR(left);
+	    right = CEIL(right);
+	    bottom = FLOOR(bottom);
+	    top = CEIL(top);
+
+	} else {
+	    left  = FLOOR( glyph->metrics.horiBearingX );
+	    right = CEIL( glyph->metrics.horiBearingX + glyph->metrics.width );
+
+	    top    = CEIL( glyph->metrics.horiBearingY );
+	    bottom = FLOOR( glyph->metrics.horiBearingY - glyph->metrics.height );
+	}
+
 	width = TRUNC(right - left);
+	height = TRUNC( top - bottom );
+
+
 	/*
 	 * Try to keep monospace fonts ink-inside
+	 * XXX transformed?
 	 */
 	if (font->spacing != XFT_PROPORTIONAL)
 	{
@@ -148,10 +194,6 @@ XftGlyphLoad (Display		*dpy,
 		width = font->max_advance_width;
 	    }
 	}
-
-	top    = CEIL( glyph->metrics.horiBearingY );
-	bottom = FLOOR( glyph->metrics.horiBearingY - glyph->metrics.height );
-	height = TRUNC( top - bottom );
 
 	if ( glyph->format == ft_glyph_format_outline )
 	{
@@ -183,7 +225,7 @@ XftGlyphLoad (Display		*dpy,
 	    
 	    ftbit.buffer     = bufBitmap;
 	    
-	    if (font->antialias && font->rgba != XFT_RGBA_NONE)
+	    if (subpixel)
 		FT_Outline_Transform (&glyph->outline, &matrix);
 
 	    FT_Outline_Translate ( &glyph->outline, -left*hmul, -bottom*vmul );
@@ -217,6 +259,13 @@ XftGlyphLoad (Display		*dpy,
 	    if (_XftFontDebug() & XFT_DBG_GLYPH)
 	    {
 		printf ("char 0x%x (%c):\n", (int) charcode, (char) charcode);
+		printf (" xywh (%d %d %d %d), trans (%d %d %d %d) wh (%d %d)\n",
+			    (int) glyph->metrics.horiBearingX,
+			    (int) glyph->metrics.horiBearingY,
+			    (int) glyph->metrics.width,
+			    (int) glyph->metrics.height,
+			    left, right, top, bottom,
+			    width, height);
 		if (_XftFontDebug() & XFT_DBG_GLYPHV)
 		{
 		    int		x, y;
@@ -238,7 +287,7 @@ XftGlyphLoad (Display		*dpy,
 				printf ("%c", line[x>>3] & (1 << (x & 7)) ? '#' : ' ');
 			    }
 			}
-			printf ("\n");
+			printf ("|\n");
 			line += pitch;
 		    }
 		    printf ("\n");
@@ -259,17 +308,28 @@ XftGlyphLoad (Display		*dpy,
 	gi->y = TRUNC(top);
 	if (font->spacing != XFT_PROPORTIONAL)
 	{
-	    gi->xOff = font->max_advance_width;
-	    gi->yOff = 0;
+	    if (font->transform)
+	    {
+		vector.x = font->max_advance_width;
+		vector.y = 0;
+		FT_Vector_Transform (&vector, &font->matrix);
+		gi->xOff = vector.x;
+		gi->yOff = -vector.y;
+	    }
+	    else
+	    {
+		gi->xOff = font->max_advance_width;
+		gi->yOff = 0;
+	    }
 	}
 	else
 	{
 	    gi->xOff = TRUNC(ROUND(glyph->advance.x));
-	    gi->yOff = TRUNC(ROUND(glyph->advance.y));
+	    gi->yOff = -TRUNC(ROUND(glyph->advance.y));
 	}
 	g = charcode;
 
-	if (font->antialias && font->rgba != XFT_RGBA_NONE)
+	if (subpixel)
 	{
 	    int		    x, y;
 	    unsigned char   *in_line, *out_line, *in;

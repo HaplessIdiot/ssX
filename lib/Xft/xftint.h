@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.21 2001/01/26 20:51:16 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.22 2001/03/30 02:15:18 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -42,6 +42,11 @@ typedef struct _XftSymbolic {
     int		value;
 } XftSymbolic;
 
+#define XFT_DRAW_N_SRC	    2
+
+#define XFT_DRAW_SRC_TEXT   0
+#define XFT_DRAW_SRC_RECT   1
+
 struct _XftDraw {
     Display	    *dpy;
     Drawable	    drawable;
@@ -53,9 +58,10 @@ struct _XftDraw {
     Bool	    render_able;
     struct {
 	Picture		pict;
-	Pixmap		fg_pix;
-	Picture		fg_pict;
-	XRenderColor	fg_color;
+	struct {
+	    Picture	    pict;
+	    XRenderColor    color;
+	} src[XFT_DRAW_N_SRC];
     } render;
     struct {
 	GC		draw_gc;
@@ -184,6 +190,9 @@ typedef struct _XftSubst {
 	    break;						    \
 	case XftTypeBool:					    \
 	    __v__.u.b = va_arg (va, Bool);			    \
+	    break;						    \
+	case XftTypeMatrix:					    \
+	    __v__.u.m = va_arg (va, XftMatrix *);		    \
 	    break;						    \
 	}							    \
 	if (!XftPatternAdd (__p__, __o__, __v__, True))		    \
@@ -333,7 +342,8 @@ XftDisplayGetFontSet (Display *dpy);
 Bool
 XftDrawRenderPrepare (XftDraw	*draw,
 		      XftColor	*color,
-		      XftFont	*font);
+		      XftFont	*font,
+		      int	src);
 
 Bool
 XftDrawCorePrepare (XftDraw	*draw,
@@ -437,6 +447,10 @@ XftNameConstant (char *string, int *result);
 /* xftpat.c */
 
 /* xftrender.c */
+
+/* xftmatrix.c */
+XftMatrix *
+_XftSaveMatrix (const XftMatrix *mat);
 
 /* xftstr.c */
 char *
