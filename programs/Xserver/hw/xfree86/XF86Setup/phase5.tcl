@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase5.tcl,v 3.5 1996/10/26 09:35:25 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase5.tcl,v 3.6 1996/12/27 06:54:12 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -39,10 +39,12 @@ if { ![getuid] } {
         global Device_$devid
         set server [set Device_${devid}(Server)]
 	set linkname $Xwinhome/bin/X
+	set lastlink $linkname
 	for {set nlinks 0} \
 		{[file exists $linkname] && [file type $linkname]=="link" \
 		 && $nlinks<20} \
 		{incr nlinks} {
+	    set lastlink $linkname
 	    set linkname [readlink $linkname]
 	}
 	if { $nlinks < 20 } {
@@ -55,7 +57,7 @@ if { ![getuid] } {
 	}
     }
     if [info exists linkname] {
-	set linkdir [file dirname $linkname]
+	set linkdir [file dirname $lastlink]
 	set mklink [mesg "Do you want to create an 'X' link\
 		to the $server server?\n\n(the link will be\
 		created in the directory: $linkdir)" yesno]
@@ -63,7 +65,7 @@ if { ![getuid] } {
 	    set CWD [pwd]
 	    cd $linkdir
 	    catch "unlink X" ret
-	    if [catch "link XF86_$server X" ret] {
+	    if [catch "link $Xwinhome/bin/XF86_$server X" ret] {
 		mesg "Link creation failed!\n\
 			You'll have to do it yourself" okay
 	    } else {
