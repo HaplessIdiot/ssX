@@ -5,6 +5,11 @@
       <title>Distributed Multihead X design
       <author>Kevin E. Martin, David H. Dawes, and Rickard E. Faith
       <date>29 June 2004 (created 25 July 2001)
+
+      <ident>
+	$XFree86: $
+      </ident>
+
       <abstract>
         This document covers the motivation, background, design, and
         implementation of the distributed multihead X (DMX) system.  It
@@ -171,14 +176,14 @@ input devices:
         pursued.
 
 
-        <item>The <tt/kdrive/ X server in XFree86 has built-in drivers that
+        <item>The <tt/TinyX/ X server in XFree86 has built-in drivers that
         support PS/2 mice and keyboard under Linux.  The mouse driver
         can indirectly handle other mouse types if the Linux utility
         <tt/gpm/ is used as to translate the native mouse protocol into
         PS/2 mouse format.  These drivers could be adapted and built in
         to the front-end X server if this range of hardware and OS
         support is sufficient.  While much simpler than the XFree86
-        drivers, the <tt/kdrive/ drivers were not used for the DMX
+        drivers, the <tt/TinyX/ drivers were not used for the DMX
         implementation.
 
         <item>Reimplementation of keyboard and mouse drivers from
@@ -239,7 +244,7 @@ devices can be simultaneously available):
         Xdmx binary is running.  This is the only area where using the
         XFree86 driver infrastructure would have been helpful, and then
         only partially, since good support for generic USB devices does
-        not yet exist in XFree86 (in any case, XFree86 and kdrive driver
+        not yet exist in XFree86 (in any case, XFree86 and TinyX driver
         code was used where possible).  Currently, the following local
         devices are supported under Linux (porting to other operating
         systems should be fairly straightforward):
@@ -2497,7 +2502,7 @@ support" section -->
 
 <sect3>XFree86 without XTEST
 
-<p>After the release of XFree86 4.3.0, we retested the XFree86 X server
+<p>After the release of XFree86 4.3.0, we re-tested the XFree86 X server
 with and without using the XTEST extension.  When the XTEST extension
 was <em/not/ used for testing, the XFree86 4.3.0 server running on our
 usual test system with a Radeon VE card reported unexpected failures in
@@ -2766,7 +2771,7 @@ Unrepaired warnings are as follows:
         glxProxy/glxscreens.c uses getenv and strcat.  The use of these
         functions is safe and will remain safe as long as
         ExtensionsString is longer then GLXServerExtensions (ensuring
-        this may not be ovious to the casual programmer, but this is in
+        this may not be obvious to the casual programmer, but this is in
         automatically generated code, so we hope that the generator
         enforces this constraint).
 </enum>
