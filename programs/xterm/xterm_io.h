@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/xterm_io.h,v 1.14 2004/03/04 02:21:57 dickey Exp $
+ * $XFree86: xc/programs/xterm/xterm_io.h,v 1.15 2004/04/03 22:26:26 dawes Exp $
  */
 
 /*
@@ -58,7 +58,7 @@
 #define USE_SYSV_TERMIO
 #endif
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__INTERIX)
 #ifndef USE_POSIX_TERMIOS
 #define USE_POSIX_TERMIOS
 #endif

@@ -1,4 +1,5 @@
 XFree86 4.4.99.19 (xx November 2004)
+ 229. Xterm patch #197 (Thomas Dickey).
  228. Build dummylib before drivers/chips/util, since the latter depends upon
       the former (Thomas Dickey).
  227. Add mga/util to the build (Marc La France).
@@ -19184,7 +19185,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3353 2004/11/28 03:37:40 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3354 2004/11/30 22:31:44 dickey Exp $
 
 
 
