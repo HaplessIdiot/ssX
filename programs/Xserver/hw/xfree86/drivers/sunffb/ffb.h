@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.6 2001/03/03 22:41:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.7tsi Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -43,6 +43,11 @@
 #include "xf86drm.h"
 #include "ffb_drishare.h"
 #endif
+#ifndef  DPMS_SERVER
+#define  DPMS_SERVER
+#endif   /* DPMS_SERVER */
+#include "extensions/dpms.h"
+
 
 /* Various offsets in virtual (ie. mmap()) spaces Linux and Solaris support. */
 /* Note: do not mmap FFB_DFB8R_VOFF and following mappings using one mmap together
@@ -233,6 +238,8 @@ extern Bool FFBDacInit(FFBPtr);
 extern void FFBDacFini(FFBPtr);
 extern void FFBDacEnterVT(FFBPtr);
 extern void FFBDacLeaveVT(FFBPtr);
+extern Bool FFBDacSaveScreen(FFBPtr, int);
+extern void FFBDacDPMSMode(FFBPtr, int, int);
 
 /* Exported WID layer routines. */
 extern void FFBWidPoolInit(FFBPtr);
