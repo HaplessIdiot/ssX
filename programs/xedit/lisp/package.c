@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.10 2002/07/28 21:34:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.11 2002/08/05 03:56:24 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -368,8 +368,8 @@ Lisp_FindAllSymbols(LispMac *mac, LispBuiltin *builtin)
 			else {
 			    /* Put symbols defined first in the
 			     * beginning of the result list */
-			    CDR(result) = CONS(CAR(result), CDR(result));
-			    CAR(result) = atom->object;
+			    RPLACD(result, CONS(CAR(result), CDR(result)));
+			    RPLACA(result, atom->object);
 			}
 		    }
 		}
@@ -649,7 +649,7 @@ Lisp_MakePackage(LispMac *mac, LispBuiltin *builtin)
 	    GC_PROTECT(nicks);
 	}
 	else {
-	    CDR(cons) = CONS(package, NIL);
+	    RPLACD(cons, CONS(package, NIL));
 	    cons = CDR(cons);
 	}
     }
@@ -740,7 +740,7 @@ Lisp_PackageUseList(LispMac *mac, LispBuiltin *builtin)
 	use = cons = CONS(pack->use.pairs[i], NIL);
 	GC_PROTECT(use);
 	for (--i; i >= 0; i--) {
-	    CDR(cons) = CONS(pack->use.pairs[i], NIL);
+	    RPLACD(cons, CONS(pack->use.pairs[i], NIL));
 	    cons = CDR(cons);
 	}
 	GC_LEAVE();
@@ -781,7 +781,7 @@ Lisp_PackageUsedByList(LispMac *mac, LispBuiltin *builtin)
 		    GC_PROTECT(used);
 		}
 		else {
-		    CDR(cons) = CONS(other, NIL);
+		    RPLACD(cons, CONS(other, NIL));
 		    cons = CDR(cons);
 		}
 	    }

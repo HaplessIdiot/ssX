@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.5 2002/04/16 17:12:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.6 2002/05/16 15:43:30 tsi Exp $ */
 
 #ifdef __GNUC__
 #define CONST __attribute__ ((__const__))
@@ -101,7 +101,14 @@
 #define XWARN(msg)					\
     LispWarning(mac, "%s: " msg, STRFUN(builtin))
 
-#define CHECK_OPERAND(ope) ERROR_CHECK_NUMBER(ope)
+#define NOT_A_NUMBER(object)				\
+    LispDestroy(mac, "%s: %s is not a number",		\
+		STRFUN(builtin), STROBJ(object))
+
+#define NOT_AN_INTEGER(object)				\
+    LispDestroy(mac, "%s: %s is not an integer",	\
+		STRFUN(builtin), STROBJ(object))
+
 
 
 /*
@@ -324,7 +331,7 @@ add_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	add_fi_ff(mac, builtin, accum, ope);	break;
 		    case BI:	add_fi_bi(mac, builtin, accum, ope);	break;
 		    case BR:	add_fi_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto add_bad_ope;
 		}
 		break;
 	    case FR:
@@ -334,7 +341,7 @@ add_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	add_fr_ff(mac, builtin, accum, ope);	break;
 		    case BI:	add_fr_bi(mac, builtin, accum, ope);	break;
 		    case BR:	add_fr_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto add_bad_ope;
 		}
 		break;
 	    case FF:
@@ -344,7 +351,7 @@ add_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	add_ff_ff(mac, builtin, accum, ope);	break;
 		    case BI:	add_ff_bi(mac, builtin, accum, ope);	break;
 		    case BR:	add_ff_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto add_bad_ope;
 		}
 		break;
 	    case BI:
@@ -354,7 +361,7 @@ add_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	add_bi_ff(mac, builtin, accum, ope);	break;
 		    case BI:	add_bi_bi(mac, builtin, accum, ope);	break;
 		    case BR:	add_bi_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto add_bad_ope;
 		}
 		break;
 	    case BR:
@@ -364,12 +371,16 @@ add_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	add_br_ff(mac, builtin, accum, ope);	break;
 		    case BI:	add_br_bi(mac, builtin, accum, ope);	break;
 		    case BR:	add_br_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto add_bad_ope;
 		}
 		break;
 	    default:
+		NOT_A_NUMBER(accum);
 		break;
 	}
+    return;
+add_bad_ope:
+    NOT_A_NUMBER(ope);
 }
 
 static void
@@ -389,7 +400,7 @@ sub_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	sub_fi_ff(mac, builtin, accum, ope);	break;
 		    case BI:	sub_fi_bi(mac, builtin, accum, ope);	break;
 		    case BR:	sub_fi_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto sub_bad_ope;
 		}
 		break;
 	    case FR:
@@ -399,7 +410,7 @@ sub_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	sub_fr_ff(mac, builtin, accum, ope);	break;
 		    case BI:	sub_fr_bi(mac, builtin, accum, ope);	break;
 		    case BR:	sub_fr_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto sub_bad_ope;
 		}
 		break;
 	    case FF:
@@ -409,7 +420,7 @@ sub_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	sub_ff_ff(mac, builtin, accum, ope);	break;
 		    case BI:	sub_ff_bi(mac, builtin, accum, ope);	break;
 		    case BR:	sub_ff_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto sub_bad_ope;
 		}
 		break;
 	    case BI:
@@ -419,7 +430,7 @@ sub_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	sub_bi_ff(mac, builtin, accum, ope);	break;
 		    case BI:	sub_bi_bi(mac, builtin, accum, ope);	break;
 		    case BR:	sub_bi_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto sub_bad_ope;
 		}
 		break;
 	    case BR:
@@ -429,12 +440,16 @@ sub_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	sub_br_ff(mac, builtin, accum, ope);	break;
 		    case BI:	sub_br_bi(mac, builtin, accum, ope);	break;
 		    case BR:	sub_br_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto sub_bad_ope;
 		}
 		break;
 	    default:
+		NOT_A_NUMBER(accum);
 		break;
 	}
+    return;
+sub_bad_ope:
+    NOT_A_NUMBER(ope);
 }
 
 static void
@@ -454,7 +469,7 @@ mul_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	mul_fi_ff(mac, builtin, accum, ope);	break;
 		    case BI:	mul_fi_bi(mac, builtin, accum, ope);	break;
 		    case BR:	mul_fi_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto mul_bad_ope;
 		}
 		break;
 	    case FR:
@@ -464,7 +479,7 @@ mul_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	mul_fr_ff(mac, builtin, accum, ope);	break;
 		    case BI:	mul_fr_bi(mac, builtin, accum, ope);	break;
 		    case BR:	mul_fr_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto mul_bad_ope;
 		}
 		break;
 	    case FF:
@@ -474,7 +489,7 @@ mul_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	mul_ff_ff(mac, builtin, accum, ope);	break;
 		    case BI:	mul_ff_bi(mac, builtin, accum, ope);	break;
 		    case BR:	mul_ff_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto mul_bad_ope;
 		}
 		break;
 	    case BI:
@@ -484,7 +499,7 @@ mul_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	mul_bi_ff(mac, builtin, accum, ope);	break;
 		    case BI:	mul_bi_bi(mac, builtin, accum, ope);	break;
 		    case BR:	mul_bi_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto mul_bad_ope;
 		}
 		break;
 	    case BR:
@@ -494,12 +509,16 @@ mul_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	mul_br_ff(mac, builtin, accum, ope);	break;
 		    case BI:	mul_br_bi(mac, builtin, accum, ope);	break;
 		    case BR:	mul_br_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto mul_bad_ope;
 		}
 		break;
 	    default:
+		NOT_A_NUMBER(accum);
 		break;
 	}
+    return;
+mul_bad_ope:
+    NOT_A_NUMBER(ope);
 }
 
 static void
@@ -519,7 +538,7 @@ div_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	div_fi_ff(mac, builtin, accum, ope);	break;
 		    case BI:	div_fi_bi(mac, builtin, accum, ope);	break;
 		    case BR:	div_fi_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto div_bad_ope;
 		}
 		break;
 	    case FR:
@@ -529,7 +548,7 @@ div_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	div_fr_ff(mac, builtin, accum, ope);	break;
 		    case BI:	div_fr_bi(mac, builtin, accum, ope);	break;
 		    case BR:	div_fr_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto div_bad_ope;
 		}
 		break;
 	    case FF:
@@ -549,7 +568,7 @@ div_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	div_bi_ff(mac, builtin, accum, ope);	break;
 		    case BI:	div_bi_bi(mac, builtin, accum, ope);	break;
 		    case BR:	div_bi_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto div_bad_ope;
 		}
 		break;
 	    case BR:
@@ -559,12 +578,16 @@ div_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	div_br_ff(mac, builtin, accum, ope);	break;
 		    case BI:	div_br_bi(mac, builtin, accum, ope);	break;
 		    case BR:	div_br_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto div_bad_ope;
 		}
 		break;
 	    default:
+		NOT_A_NUMBER(accum);
 		break;
 	}
+    return;
+div_bad_ope:
+    NOT_A_NUMBER(ope);
 }
 
 static INLINE void
@@ -577,7 +600,7 @@ abs_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 	case FF:	abs_ff(mac, builtin, accum);	break;
 	case BI:	abs_bi(mac, builtin, accum);	break;
 	case BR:	abs_br(mac, builtin, accum);	break;
-	default:	break;
+	default:	NOT_A_NUMBER(accum);		break;
     }
 }
 
@@ -591,7 +614,7 @@ neg_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 	case FF:	neg_ff(mac, builtin, accum);	break;
 	case BI:	neg_bi(mac, builtin, accum);	break;
 	case BR:	neg_br(mac, builtin, accum);	break;
-	default:	break;
+	default:	NOT_A_NUMBER(accum);		break;
     }
 }
 
@@ -607,7 +630,7 @@ mod_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		case BI:
 		    mod_fi_bi(mac, builtin, accum, ope);
 		    break;
-		default:	break;
+		default:	goto mod_bad_ope;
 	    }
 	    break;
 	case BI:
@@ -618,12 +641,16 @@ mod_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		case BI:
 		    mod_bi_bi(mac, builtin, accum, ope);
 		    break;
-		default:	break;
+		default:	goto mod_bad_ope;
 	    }
 	    break;
 	default:
+	    NOT_AN_INTEGER(accum);
 	    break;
     }
+    return;
+mod_bad_ope:
+    NOT_AN_INTEGER(ope);
 }
 
 static void
@@ -656,8 +683,10 @@ gcd_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    XTYPE(accum) = BI;
 		XBI(accum) = XBI(integer);
 	    }
-	    else
+	    else if (XTYPE(integer) == FI)
 		XFI(accum) = XFI(integer);
+	    else
+		NOT_AN_INTEGER(accum);
 	}
 	else {
 	    XCLEAR_ACCUM(rest);	/* won't be freed by gc as is local variable */
@@ -735,10 +764,11 @@ math_compare(LispMac *mac, LispBuiltin *builtin, LispObj *op1, LispObj *op2)
 		}
 		break;
 	    default:
+		NOT_A_NUMBER(op1);
 		break;
 	}
     }
-    /* never should reach here */
+    NOT_A_NUMBER(op2);
     return (-1);
 }
 
@@ -752,7 +782,7 @@ sqrt_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 	case BI:	sqrt_bi(mac, builtin, accum);	break;
 	case BR:	sqrt_br(mac, builtin, accum);	break;
 	case CX:	sqrt_cx(mac, builtin, accum);	break;
-	default:	break;
+	default:	NOT_A_NUMBER(accum);		break;
     }
 }
 
@@ -794,8 +824,7 @@ copy_real(LispMac *mac, LispBuiltin *builtin, LispObj *obj)
 	    XMEM(XBR(accum));
 	    break;
 	default:
-	    LispDestroy(mac, "%s: %s is not a number",
-			STRFUN(builtin), STROBJ(obj));
+	    NOT_A_NUMBER(accum);
 	    break;
     }
 
@@ -835,6 +864,7 @@ set_real(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *obj)
 	    XMEM(XBR(accum));
 	    break;
 	default:
+	    NOT_A_NUMBER(accum);
 	    break;
     }
 }

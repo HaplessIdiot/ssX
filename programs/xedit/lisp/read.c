@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.19 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.20 2002/08/25 02:48:31 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -604,10 +604,10 @@ LispReadList(LispMac *mac)
 
 		    return (NIL);
 		}
-		CDR(cons) = object;
+		RPLACD(cons, object);
 	    }
 	    else {
-		CDR(cons) = CONS(object, NIL);
+		RPLACD(cons, CONS(object, NIL));
 		cons = CDR(cons);
 	    }
 	}
@@ -1407,7 +1407,7 @@ LispReadStruct(LispMac *mac)
     else
 	str = stk;
     sprintf(str, "MAKE-%s", STRPTR(CAR(arguments)));
-    CAR(arguments) = ATOM(str);
+    RPLACA(arguments, ATOM(str));
     if (str != stk)
 	LispFree(mac, str);
     struc = APPLY(Omake_struct, arguments);
@@ -1454,7 +1454,7 @@ LispReadArray(LispMac *mac, long dimensions)
 		GC_PROTECT(dim);
 	    }
 	    else {
-		CDR(cons) = CONS(SMALLINT(length), NIL);
+		RPLACD(cons, CONS(SMALLINT(length), NIL));
 		cons = CDR(cons);
 	    }
 	}

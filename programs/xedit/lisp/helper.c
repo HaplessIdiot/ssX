@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.33 2002/08/25 02:48:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.34 2002/09/08 02:29:49 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -178,8 +178,8 @@ LispObjectCompare(LispMac *mac, LispObj *left, LispObj *right, int function)
 					   right->data.pathname, function);
 		break;
 	    case LispLambda_t:
-		result = LispObjectCompare(mac, CAR(left->data.lambda.name),
-					   CAR(right->data.lambda.name),
+		result = LispObjectCompare(mac, left->data.lambda.name,
+					   right->data.lambda.name,
 					   function);
 		break;
 	    case LispOpaque_t:
@@ -561,8 +561,8 @@ LispReallyDo(LispMac *mac, LispBuiltin *builtin, int refs)
 	    mac->protect.objects[mac->protect.length++] = env;
 	}
 	else {
-	    CDR(env) = CONS(CAR(env), CDR(env));
-	    CAR(env) = list;
+	    RPLACD(env, CONS(CAR(env), CDR(env)));
+	    RPLACA(env, list);
 	}
 	GCUProtect();
 	if (refs) {
@@ -704,7 +704,7 @@ LispReallyDoListTimes(LispMac *mac, LispBuiltin *builtin, int times)
 	    value = EVAL(value);
 
 	if (times) {
-	    ERROR_CHECK_FIXNUM(value);
+	    ERROR_CHECK_INDEX(value);
 	    end = value->data.integer;
 	}
 	else {
@@ -797,7 +797,7 @@ LispLoadFile(LispMac *mac, LispObj *filename,
 	     int verbose, int print, int ifdoesnotexist)
 {
     GC_ENTER();
-    LispObj *stream, *ext, *obj, *result;
+    LispObj *stream, *ext, *cod, *obj, *result;
     int ch;
 
     LispObj *savepackage;
@@ -836,6 +836,8 @@ LispLoadFile(LispMac *mac, LispObj *filename,
     savepackage = PACKAGE;
     savepack = mac->pack;
 
+    cod = COD;
+
     /*CONSTCOND*/
     while (1) {
 	if ((obj = LispRead(mac)) != NULL) {
@@ -844,6 +846,7 @@ LispLoadFile(LispMac *mac, LispObj *filename,
 	    else if (obj == DOT)
 		LispDestroy(mac, "dot allowed only on lists");
 	    result = EVAL(obj);
+	    COD = cod;
 	    if (print) {
 		int i;
 

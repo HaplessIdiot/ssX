@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.58 2002/08/25 02:48:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.59 2002/09/08 02:29:49 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -94,6 +94,7 @@ typedef struct {
  * Prototypes
  */
 static void Lisp__GC(LispMac*, LispObj*, LispObj*);
+LispObj *Lisp__New(LispMac*, LispObj*, LispObj*);
 
 /* run a user function, to be called only by LispEval */
 static LispObj *LispRunFunMac(LispMac*, LispObj*, LispObj*, int, int);
@@ -156,6 +157,8 @@ static INLINE void LispMark(LispObj*);
 static INLINE void LispImmutable(LispObj*);
 /* if redefined or unbounded */
 static INLINE void LispMutable(LispObj*);
+
+static LispObj *LispCheckNeedProtect(LispObj*);
 
 #ifdef SIGNALRETURNSINT
 int LispAbortSignal(int);
@@ -720,7 +723,7 @@ LispTopLevel(LispMac *mac)
 {
     int count;
 
-    COD = FRM = NIL;
+    COD = NIL;
 #ifdef DEBUGGER
     if (mac->debugging) {
 	DBG = NIL;
@@ -777,31 +780,31 @@ LispTopLevel(LispMac *mac)
 void
 LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 {
-    if (gcpro)
-	return;
-
-    objseg.nfree = 0;
-    objseg.freeobj = NIL;
-
     Lisp__GC(mac, car, cdr);
 }
 
-void
+static void
 Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 {
-    LispObj *entry, *last, **pentry, **eentry;
+    register LispObj *entry, *last, *freeobj, **pentry, **eentry;
+    register int nfree;
     unsigned i, j;
     LispAtom *atom;
     struct timeval start, end;
 #ifdef DEBUG
     long sec, msec;
-    int count = nfree;
+    int count = objseg.nfree;
 #else
     long msec;
 #endif
 
     if (gcpro)
 	return;
+
+    nfree = 0;
+    freeobj = NIL;
+
+    ++mac->gc.count;
 
 #ifdef DEBUG
     gettimeofday(&start, NULL);
@@ -843,8 +846,8 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 		    if (mac->gc.immutablebits) {
 			if (atom->a_function)
 			    LispImmutable(atom->property->fun.function);
-			else if (atom->a_builtin)
-			    LispImmutable(atom->property->fun.builtin->description);
+			if (atom->a_builtin)
+			    LispImmutable(atom->property->fun.builtin->data);
 			if (atom->a_defsetf)
 			    LispImmutable(atom->property->setf);
 			if (atom->a_defstruct)
@@ -856,10 +859,9 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 	}
     }
 
-    /* protect environment i.e. stack of function arguments */
+    /* protect environment */
     for (pentry = mac->env.values, eentry = pentry + mac->env.length;
 	 pentry < eentry; pentry++)
-	/* don't need to protect atom, as it is protected in function definition */
 	LispMark(*pentry);
 
     /* protect multiple return values */
@@ -881,7 +883,6 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 	x_cons[i].mark = LispNil_t;
 
     LispMark(COD);
-    LispMark(FRM);
 #ifdef DEBUGGER
     LispMark(DBG);
     LispMark(BRK);
@@ -949,7 +950,7 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 			entry->type = LispCons_t;
 			break;
 		    case LispLambda_t:
-			if (entry->data.lambda.name->type == LispOpaque_t)
+			if (!SYMBOL_P(entry->data.lambda.name))
 			    LispFreeArgList(mac, (LispArgList*)
 				entry->data.lambda.name->data.opaque.data);
 			entry->type = LispCons_t;
@@ -973,12 +974,15 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 			entry->type = LispCons_t;
 			break;
 		}
-		CDR(entry) = objseg.freeobj;
-		objseg.freeobj = entry;
-		++objseg.nfree;
+		CDR(entry) = freeobj;
+		freeobj = entry;
+		++nfree;
 	    }
 	}
     }
+
+    objseg.nfree = nfree;
+    objseg.freeobj = freeobj;
 
     mac->gc.immutablebits = 0;
 
@@ -1337,7 +1341,7 @@ LispSetAtomObjectProperty(LispMac *mac, LispAtom *atom, LispObj *object)
     }
 
     atom->a_object = 1;
-    atom->property->value = object;
+    SETVALUE(atom, object);
 }
 
 static void
@@ -1390,7 +1394,7 @@ LispSetAtomFunctionProperty(LispMac *mac, LispAtom *atom, LispObj *function,
     else {
 	mac->gc.immutablebits = 1;
 	if (atom->a_builtin) {
-	    LispMutable(atom->property->fun.builtin->description);
+	    LispMutable(atom->property->fun.builtin->data);
 	    atom->a_builtin = 0;
 	    LispFreeArgList(mac, atom->property->alist);
 	}
@@ -1437,10 +1441,10 @@ LispSetAtomBuiltinProperty(LispMac *mac, LispAtom *atom, LispBuiltin *builtin,
 	    LispFreeArgList(mac, atom->property->alist);
 	}
 	else
-	    LispMutable(atom->property->fun.builtin->description);
+	    LispMutable(atom->property->fun.builtin->data);
     }
 
-    LispImmutable(builtin->description);
+    LispImmutable(builtin->data);
 
     atom->property->fun.builtin = builtin;
     atom->property->alist = alist;
@@ -1451,7 +1455,7 @@ LispRemAtomBuiltinProperty(LispMac *mac, LispAtom *atom)
 {
     if (atom->a_builtin) {
 	mac->gc.immutablebits = 1;
-	LispMutable(atom->property->fun.builtin->description);
+	LispImmutable(atom->property->fun.builtin->data);
 	atom->property->fun.function = NULL;
 	atom->a_builtin = 0;
 	LispFreeArgList(mac, atom->property->alist);
@@ -1577,7 +1581,7 @@ LispPutAtomProperty(LispMac *mac, LispAtom *atom, LispObj *key, LispObj *val)
 {
     LispObj *res = LispDoGetAtomProperty(mac, atom, key, 1);
 
-    CAR(res) = val;
+    RPLACA(res, val);
 
     return (res);
 }
@@ -1639,6 +1643,83 @@ LispFreeArgList(LispMac *mac, LispArgList *alist)
 	LispFree(mac, alist->auxs.initials);
     }
     LispFree(mac, alist);
+}
+
+static LispObj *
+LispCheckNeedProtect(LispObj *object)
+{
+    if (object) {
+	switch (object->type) {
+	    case LispNil_t:
+	    case LispTrue_t:
+	    case LispAtom_t:
+	    case LispCharacter_t:
+		return (NULL);
+	    default:
+		return (object);
+	}
+    }
+    return (NULL);
+}
+
+LispObj *
+LispListProtectedArguments(LispMac *mac, LispArgList *alist)
+{
+    int i;
+    GC_ENTER();
+    LispObj *arguments, *cons, *obj, *prev;
+
+    arguments = cons = prev = NIL;
+    for (i = 0; i < alist->optionals.num_symbols; i++) {
+	if ((obj = LispCheckNeedProtect(alist->optionals.defaults[i])) != NULL) {
+	    if (arguments == NIL) {
+		arguments = cons = prev = CONS(obj, NIL);
+		GC_PROTECT(arguments);
+	    }
+	    else {
+		RPLACD(cons, CONS(obj, NIL));
+		prev = cons;
+		cons = CDR(cons);
+	    }
+	}
+    }
+    for (i = 0; i < alist->keys.num_symbols; i++) {
+	if ((obj = LispCheckNeedProtect(alist->keys.defaults[i])) != NULL) {
+	    if (arguments == NIL) {
+		arguments = cons = prev = CONS(obj, NIL);
+		GC_PROTECT(arguments);
+	    }
+	    else {
+		RPLACD(cons, CONS(obj, NIL));
+		prev = cons;
+		cons = CDR(cons);
+	    }
+	}
+    }
+    for (i = 0; i < alist->auxs.num_symbols; i++) {
+	if ((obj = LispCheckNeedProtect(alist->auxs.initials[i])) != NULL) {
+	    if (arguments == NIL) {
+		arguments = cons = prev = CONS(obj, NIL);
+		GC_PROTECT(arguments);
+	    }
+	    else {
+		RPLACD(cons, CONS(obj, NIL));
+		prev = cons;
+		cons = CDR(cons);
+	    }
+	}
+    }
+    GC_LEAVE();
+
+    /* Don't add a NIL cell at the end, to save some space */
+    if (arguments != NIL) {
+	if (arguments == cons)
+	    arguments = CAR(cons);
+	else
+	    CDR(prev) = CAR(cons);
+    }
+
+    return (arguments);
 }
 
 LispArgList *
@@ -1966,14 +2047,15 @@ LispAddBuiltinFunction(LispMac *mac, LispBuiltin *builtin)
 	LispMoreProtects(mac);
     mac->protect.objects[mac->protect.length++] = list;
     while ((obj = LispRead(mac)) != NULL) {
-	CDR(cons) = CONS(obj, NIL);
+	RPLACD(cons, CONS(obj, NIL));
 	cons = CDR(cons);
     }
     LispPopInput(mac, &stream);
 
     atom = name->data.atom;
     alist = LispCheckArguments(mac, builtin->type, CDR(list), atom->string);
-    builtin->description = list;
+    builtin->symbol = CAR(list);
+    builtin->data = LispListProtectedArguments(mac, alist);
     LispSetAtomBuiltinProperty(mac, atom, builtin, alist);
     LispUseArgList(mac, alist);
 
@@ -2024,9 +2106,6 @@ LispAllocSeg(LispMac *mac, LispObjSeg *seg, int cellcount)
 static INLINE void
 LispMark(register LispObj *obj)
 {
-    if (obj->mark)
-	return;
-
 mark_again:
     switch (obj->type) {
 	case LispNil_t:		/* only NIL and UNBOUND (should) have this type */
@@ -2037,19 +2116,14 @@ mark_again:
 	case LispLambda_t:
 	    obj->data.lambda.name->mark = LispTrue_t;
 	    obj->mark = LispTrue_t;
+	    LispMark(obj->data.lambda.data);
 	    obj = obj->data.lambda.code;
-	    goto mark_again;
+	    goto mark_cons;
 	case LispQuote_t:
 	case LispBackquote_t:
-	    if (obj->data.quote->type <= LispAtom_t) {
-		obj->data.quote->mark = LispTrue_t;
-		break;
-	    }
-	    else {
-		obj->mark = LispTrue_t;
-		obj = obj->data.quote;
-		goto mark_again;
-	    }
+	    obj->mark = LispTrue_t;
+	    obj = obj->data.quote;
+	    goto mark_again;
 	case LispPathname_t:
 	    obj->mark = LispTrue_t;
 	    obj = obj->data.pathname;
@@ -2063,7 +2137,8 @@ mark_again:
 	    obj->data.complex.imag->mark = LispTrue_t;
 	    break;
 	case LispCons_t:
-	    for (; CONS_P(obj) && !obj->mark; obj = CDR(obj)) {
+mark_cons:
+	    for (; !obj->mark && CONS_P(obj); obj = CDR(obj)) {
 		switch (CAR(obj)->type) {
 		    case LispNil_t:
 		    case LispTrue_t:
@@ -2086,24 +2161,25 @@ mark_again:
 		}
 		obj->mark = LispTrue_t;
 	    }
-	    if (obj != NIL && !obj->mark)
+	    if (!obj->mark)
 		goto mark_again;
 	    return;
 	case LispArray_t:
 	    LispMark(obj->data.array.list);
 	    obj->mark = LispTrue_t;
 	    obj = obj->data.array.dim;
-	    goto mark_again;
+	    goto mark_cons;
 	case LispStruct_t:
 	    obj->mark = LispTrue_t;
 	    obj = obj->data.struc.fields;
-	    goto mark_again;
+	    goto mark_cons;
 	case LispStream_t:
+mark_stream:
 	    LispMark(obj->data.stream.pathname);
 	    if (obj->data.stream.type == LispStreamPipe) {
 		obj->mark = LispTrue_t;
 		obj = obj->data.stream.source.program->errorp;
-		goto mark_again;
+		goto mark_stream;
 	    }
 	    break;
 	case LispRegex_t:
@@ -2112,7 +2188,7 @@ mark_again:
 	case LispBytecode_t:
 	    obj->mark = LispTrue_t;
 	    obj = obj->data.bytecode.code;
-	    goto mark_again;
+	    goto mark_cons;
 	default:
 	    break;
     }
@@ -2132,19 +2208,14 @@ immutable_again:
 	case LispLambda_t:
 	    obj->data.lambda.name->prot = LispTrue_t;
 	    obj->prot = LispTrue_t;
+	    LispImmutable(obj->data.lambda.data);
 	    obj = obj->data.lambda.code;
 	    goto immutable_again;
 	case LispQuote_t:
 	case LispBackquote_t:
-	    if (obj->data.quote->type <= LispAtom_t) {
-		obj->data.quote->prot = LispTrue_t;
-		break;
-	    }
-	    else {
-		obj->prot = LispTrue_t;
-		obj = obj->data.quote;
-		goto immutable_again;
-	    }
+	    obj->prot = LispTrue_t;
+	    obj = obj->data.quote;
+	    goto immutable_again;
 	case LispPathname_t:
 	    obj->prot = LispTrue_t;
 	    obj = obj->data.pathname;
@@ -2211,19 +2282,14 @@ mutable_again:
 	case LispLambda_t:
 	    obj->data.lambda.name->prot = LispNil_t;
 	    obj->prot = LispNil_t;
+	    LispMutable(obj->data.lambda.data);
 	    obj = obj->data.lambda.code;
 	    goto mutable_again;
 	case LispQuote_t:
 	case LispBackquote_t:
-	    if (obj->data.quote->type <= LispAtom_t) {
-		obj->data.quote->prot = LispNil_t;
-		break;
-	    }
-	    else {
-		obj->prot = LispNil_t;
-		obj = obj->data.quote;
-		goto mutable_again;
-	    }
+	    obj->prot = LispNil_t;
+	    obj = obj->data.quote;
+	    goto mutable_again;
 	case LispPathname_t:
 	    obj->prot = LispNil_t;
 	    obj = obj->data.pathname;
@@ -2301,42 +2367,57 @@ LispUProtect(LispMac *mac, LispObj *key, LispObj *list)
 }
 
 LispObj *
+Lisp__New(LispMac *mac, LispObj *car, LispObj *cdr)
+{
+    int cellcount;
+    LispObj *obj;
+
+    Lisp__GC(mac, car, cdr);
+#if 0
+    mac->gc.average = (objseg.nfree + mac->gc.average) >> 1;
+    if (mac->gc.average < minfree) {
+	if (mac->gc.expandbits < 6)
+	    ++mac->gc.expandbits;
+    }
+    else if (mac->gc.expandbits)
+	--mac->gc.expandbits;
+    /* For 32 bit computers, where sizeof(LispObj) == 16,
+     * minfree is set to 1024, and expandbits limited to 6,
+     * the maximum extra memory requested here should be 1Mb
+     */
+    cellcount = minfree << mac->gc.expandbits;
+#else
+    /* Try to keep at least 3 times more free cells than the de number
+     * of used cells in the freelist, to amenize the cost of the gc time,
+     * in the, currently, very simple gc strategy code. */
+    cellcount = (objseg.nobjs - objseg.nfree) * 3;
+    cellcount = cellcount + (minfree - (cellcount % minfree));
+#endif
+    if (objseg.freeobj == NIL || objseg.nfree < cellcount)
+	LispAllocSeg(mac, &objseg, cellcount);
+
+    obj = objseg.freeobj;
+    objseg.freeobj = CDR(obj);
+#if 0
+    --objseg.nfree;
+#endif
+
+    return (obj);
+}
+
+LispObj *
 LispNew(LispMac *mac, LispObj *car, LispObj *cdr)
 {
     LispObj *obj = objseg.freeobj;
 
-    if (obj == NIL) {
-	int cellcount;
-
-	Lisp__GC(mac, car, cdr);
+    if (obj == NIL)
+	obj = Lisp__New(mac, car, cdr);
+    else {
+	objseg.freeobj = CDR(obj);
 #if 0
-	mac->gc.average = (objseg.nfree + mac->gc.average) >> 1;
-	if (mac->gc.average < minfree) {
-	    if (mac->gc.expandbits < 6)
-		++mac->gc.expandbits;
-	}
-	else if (mac->gc.expandbits)
-	    --mac->gc.expandbits;
-	/* For 32 bit computers, where sizeof(LispObj) == 16,
-	 * minfree is set to 1024, and expandbits limited to 6,
-	 * the maximum extra memory requested here should be 1Mb
-	 */
-	cellcount = minfree << mac->gc.expandbits;
-#else
-	/* Try to keep at least 3 times more free cells than the de number
-	 * of used cells in the freelist, to amenize the cost of the gc time,
-	 * in the, currently, very simple gc strategy code. */
-	cellcount = (objseg.nobjs - objseg.nfree) * 3;
-	cellcount = cellcount + (minfree - (cellcount % minfree));
+	--objseg.nfree;
 #endif
-	if (objseg.freeobj == NIL || objseg.nfree < cellcount)
-	    LispAllocSeg(mac, &objseg, cellcount);
-
-	obj = objseg.freeobj;
     }
-
-    objseg.freeobj = CDR(obj);
-    --objseg.nfree;
 
     return (obj);
 }
@@ -2401,7 +2482,16 @@ LispNewSymbol(LispMac *mac, LispAtom *atom)
 LispObj *
 LispNewReal(LispMac *mac, double value)
 {
-    LispObj *real = LispNew(mac, NIL, NIL);
+    LispObj *real = objseg.freeobj;
+
+    if (real == NIL)
+	real = Lisp__New(mac, NIL, NIL);
+    else {
+	objseg.freeobj = CDR(real);
+#if 0
+	--objseg.nfree;
+#endif
+    }
 
     real->type = LispReal_t;
     real->data.real = value;
@@ -2413,7 +2503,16 @@ LispObj *
 LispNewString(LispMac *mac, char *str, long length, int alloced)
 {
     char *cstring;
-    LispObj *string = LispNew(mac, NIL, NIL);
+    LispObj *string = objseg.freeobj;
+
+    if (string == NIL)
+	string = Lisp__New(mac, NIL, NIL);
+    else {
+	objseg.freeobj = CDR(string);
+#if 0
+	--objseg.nfree;
+#endif
+    }
 
     if (alloced)
 	cstring = str;
@@ -2433,7 +2532,16 @@ LispNewString(LispMac *mac, char *str, long length, int alloced)
 LispObj *
 LispNewComplex(LispMac *mac, LispObj *realpart, LispObj *imagpart)
 {
-    LispObj *complexp = LispNew(mac, realpart, imagpart);
+    LispObj *complexp = objseg.freeobj;
+
+    if (complexp == NIL)
+	complexp = Lisp__New(mac, realpart, imagpart);
+    else {
+	objseg.freeobj = CDR(complexp);
+#if 0
+	--objseg.nfree;
+#endif
+    }
 
     complexp->type = LispComplex_t;
     complexp->data.complex.real = realpart;
@@ -2456,7 +2564,16 @@ LispNewCharacter(LispMac *mac, long c)
 LispObj *
 LispNewInteger(LispMac *mac, long i)
 {
-    LispObj *integer = LispNew(mac, NIL, NIL);
+    LispObj *integer = objseg.freeobj;
+
+    if (integer == NIL)
+	integer = Lisp__New(mac, NIL, NIL);
+    else {
+	objseg.freeobj = CDR(integer);
+#if 0
+	--objseg.nfree;
+#endif
+    }
 
     integer->type = LispInteger_t;
     integer->data.integer = i;
@@ -2470,7 +2587,16 @@ LispNewSmallInt(LispMac *mac, long i)
     if (i < 112 && i >= -16)
 	return (&(LispSmallInts[i + 16]));
     else {
-	LispObj *integer = LispNew(mac, NIL, NIL);
+	LispObj *integer = objseg.freeobj;
+
+	if (integer == NIL)
+	    integer = Lisp__New(mac, NIL, NIL);
+	else {
+	    objseg.freeobj = CDR(integer);
+#if 0
+	    --objseg.nfree;
+#endif
+	}
 
 	integer->type = LispInteger_t;
 	integer->data.integer = i;
@@ -2511,7 +2637,15 @@ LispNewRatio(LispMac *mac, long num, long den)
     if (denominator == 1)
 	return (SMALLINT(numerator));
 
-    ratio = LispNew(mac, NIL, NIL);
+    ratio = objseg.freeobj;
+    if (ratio == NIL)
+	ratio = Lisp__New(mac, NIL, NIL);
+    else {
+	objseg.freeobj = CDR(ratio);
+#if 0
+	--objseg.nfree;
+#endif
+    }
 
     ratio->type = LispRatio_t;
     ratio->data.ratio.numerator = numerator;
@@ -2580,7 +2714,16 @@ LispNewComma(LispMac *mac, LispObj *obj, int atlist)
 LispObj *
 LispNewCons(LispMac *mac, LispObj *car, LispObj *cdr)
 {
-    LispObj *cons = LispNew(mac, car, cdr);
+    LispObj *cons = objseg.freeobj;
+
+    if (cons == NIL)
+	cons = Lisp__New(mac, car, cdr);
+    else {
+	objseg.freeobj = CDR(cons);
+#if 0
+	--objseg.nfree;
+#endif
+    }
 
     /* Fresh objects are already of type LispCons_t */
     CAR(cons) = car;
@@ -2590,15 +2733,16 @@ LispNewCons(LispMac *mac, LispObj *car, LispObj *cdr)
 }
 
 LispObj *
-LispNewLambda(LispMac *mac, LispObj *name, LispObj *args, LispObj *code,
-	      LispFunType type)
+LispNewLambda(LispMac *mac, LispObj *name, LispObj *code,
+	      LispObj *data, LispFunType type)
 {
-    LispObj *fun = LispNew(mac, args, code);
+    LispObj *fun = LispNew(mac, data, code);
 
     fun->type = LispLambda_t;
+    fun->funtype = type;
     fun->data.lambda.name = name;
-    fun->data.lambda.code = CONS(args, code);
-    fun->data.lambda.type = type;
+    fun->data.lambda.code = code;
+    fun->data.lambda.data = data;
 
     return (fun);
 }
@@ -3150,7 +3294,7 @@ LispSetVar(LispMac *mac, LispObj *atom, LispObj *obj)
 	    return (obj);
 	}
 
-	return (name->property->value = obj);
+	return (SETVALUE(name, obj));
     }
 
     if (name->a_object) {
@@ -3160,7 +3304,7 @@ LispSetVar(LispMac *mac, LispObj *atom, LispObj *obj)
 	    return (obj);
 	}
 
-	return (name->property->value = obj);
+	return (SETVALUE(name, obj));
     }
 
     LispSetAtomObjectProperty(mac, name, obj);
@@ -3305,7 +3449,7 @@ LispAddDocumentation(LispMac *mac, LispObj *symbol, LispObj *documentation,
     env = CONS(NIL, CONS(NIL, (CONS(NIL, (CONS(NIL, CONS(NIL, NIL)))))));
     DOC = CONS(env, DOC);
 
-    CAR(env) = symbol;
+    RPLACA(env, symbol);
 
     switch (type) {
 	case LispDocVariable:
@@ -3373,7 +3517,7 @@ LispRemDocumentation(LispMac *mac, LispObj *symbol, LispDocType_t type)
 		if (prev == DOC)
 		    doc = CDR(doc);
 		else
-		    CDR(prev) = CDR(env);
+		    RPLACD(prev, CDR(env));
 	    }
 	    break;
 	}
@@ -3638,12 +3782,12 @@ LispEvalBackquote(LispMac *mac, LispObj *argument, int quote)
 
 		    /* add remaining elements to result */
 		    for (object = CDR(object); CONS_P(object); object = CDR(object)) {
-			CDR(cdr) = CONS(CAR(object), NIL);
+			RPLACD(cdr, CONS(CAR(object), NIL));
 			cdr = CDR(cdr);
 		    }
 		    if (object != NIL) {
 			/* object was a dotted list */
-			CDR(cdr) = object;
+			RPLACD(cdr, object);
 			cdr = CDR(cdr);
 		    }
 		}
@@ -3655,17 +3799,17 @@ LispEvalBackquote(LispMac *mac, LispObj *argument, int quote)
 
 	    if (!insert) {
 		if (list) {
-		    CDR(cdr) = CONS(object, NIL);
+		    RPLACD(cdr, CONS(object, NIL));
 		    cdr = CDR(cdr);
 		}
 		else {
-		    CDR(cdr) = object;
+		    RPLACD(cdr, object);
 		    cdr = object;
 		}
 	    }
 	    else {
 		if (!CONS_P(object)) {
-		    CDR(cdr) = object;
+		    RPLACD(cdr, object);
 		    /* if object is NIL, it is a empty list appended, not
 		     * creating a dotted list. */
 		    if (object != NIL)
@@ -3673,12 +3817,12 @@ LispEvalBackquote(LispMac *mac, LispObj *argument, int quote)
 		}
 		else {
 		    for (; CONS_P(object); object = CDR(object)) {
-			CDR(cdr) = CONS(CAR(object), NIL);
+			RPLACD(cdr, CONS(CAR(object), NIL));
 			cdr = CDR(cdr);
 		    }
 		    if (object != NIL) {
 			/* object was a dotted list */
-			CDR(cdr) = object;
+			RPLACD(cdr, object);
 			cdr = CDR(cdr);
 		    }
 		}
@@ -4230,7 +4374,7 @@ rest_label:
 		}
 		values = CDR(values);
 		for (; CONS_P(values); values = CDR(values)) {
-		    CDR(cons) = CONS(EVAL(CAR(values)), NIL);
+		    RPLACD(cons, CONS(EVAL(CAR(values)), NIL));
 		    cons = CDR(cons);
 		}
 		goto rest_done;
@@ -4344,10 +4488,10 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 	    }
 	    else if (atom->a_function) {
 		lambda = atom->property->fun.function;
-		macro = lambda->data.lambda.type == LispMacro;
+		macro = lambda->funtype == LispMacro;
 		alist = atom->property->alist;
 
-		lambda = CDR(lambda->data.lambda.code);
+		lambda = lambda->data.lambda.code;
 		if (eval)
 		    eval = !macro;
 		base = LispMakeEnvironment(mac, alist, arguments,
@@ -4396,7 +4540,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 	    }
 	    break;
 	case LispLambda_t:
-	    lambda = CDR(function->data.lambda.code);
+	    lambda = function->data.lambda.code;
 	    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
 	    base = LispMakeEnvironment(mac, alist, arguments, function, eval, 0);
 	    multiple_values = 0;
@@ -4409,7 +4553,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 		    GC_ENTER();
 
 		    GC_PROTECT(function);
-		    lambda = CDR(function->data.lambda.code);
+		    lambda = function->data.lambda.code;
 		    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
 		    base = LispMakeEnvironment(mac, alist, arguments, NIL, eval, 0);
 		    multiple_values = 0;
@@ -4546,8 +4690,7 @@ LispRunSetf(LispMac *mac, LispArgList *alist,
     int base;
 
     code = setf->data.lambda.code;
-    store = CDAR(code);
-    code = CDR(code);
+    store = setf->data.lambda.data;
 
     if (NCONSTANT_P(value))
 	value = EVAL(value);
@@ -4730,7 +4873,7 @@ LispExecute(LispMac *mac, char *str)
     static int first = 1;
 
     int running = mac->running;
-    LispObj *result, *obj, **presult = &result;
+    LispObj *result, *cod, *obj, **presult = &result;
 
     if (str == NULL || *str == '\0')
 	return (NIL);
@@ -4758,6 +4901,7 @@ LispExecute(LispMac *mac, char *str)
 	    return (NULL);
     }
 
+    cod = COD;
     /*CONSTCOND*/
     while (1) {
 	if ((obj = LispRead(mac)) != NULL) {
@@ -4766,6 +4910,7 @@ LispExecute(LispMac *mac, char *str)
 	    else if (obj == DOT)
 		LispDestroy(mac, "dot allowed only on lists");
 	    result = EVAL(obj);
+	    COD = cod;
 	}
 	if (mac->eof)
 	    break;
@@ -4800,6 +4945,8 @@ LispBegin(void)
 	LispSmallInts[i].data.integer = i - 16;
     }
 
+    NIL->mark = LispTrue_t;
+
     /* Initialize memory management */
     mac->mem.mem = (void**)calloc(mac->mem.space = 16, sizeof(void*));
     mac->mem.index = mac->mem.level = 0;
@@ -4823,7 +4970,7 @@ LispBegin(void)
     minfree = 1024;
 
     bzero((char*)mac, sizeof(LispMac));
-    MOD = COD = FRM = PRO = DOC = NIL;
+    MOD = COD = PRO = DOC = NIL;
 #ifdef DEBUGGER
     DBG = BRK = NIL;
 #endif
@@ -5011,7 +5158,6 @@ LispBegin(void)
     for (i = 0; i < sizeof(lispbuiltins) / sizeof(lispbuiltins[0]); i++)
 	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
 
-    /* Add LISP functions. File should be renamed to lisp.lsp */
     EXECUTE("(require \"lisp\")");
 
     /* Create and make EXT the current package */

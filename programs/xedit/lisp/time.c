@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/time.c,v 1.4 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/time.c,v 1.5 2002/08/25 02:48:31 paulo Exp $ */
 
 #include "time.h"
 #include "bytecode.h"
@@ -42,6 +42,7 @@ Lisp_Time(LispMac *mac, LispBuiltin *builtin)
  */
 {
     struct itimerval real, virt, prof;
+    unsigned long count;
     long sec, usec;
     LispObj *result;
 #define MONTH	60 * 60 * 31
@@ -73,6 +74,8 @@ Lisp_Time(LispMac *mac, LispBuiltin *builtin)
 
     mac->gc.gctime = 0;
     mac->gc.timebits = 1;
+
+    count = mac->gc.count;
 
 #if 0
     form = CONS(form, NIL);
@@ -127,7 +130,8 @@ Lisp_Time(LispMac *mac, LispBuiltin *builtin)
     setitimer(ITIMER_VIRTUAL, &virt, NULL);
     setitimer(ITIMER_PROF, &prof, NULL);
 
-    LispMessage(mac, "GC time     : %g sec", mac->gc.gctime / 1000000.0);
+    LispMessage(mac, "GC: %ld times, %g sec",
+		mac->gc.count - count, mac->gc.gctime / 1000000.0);
     mac->gc.timebits = 0;
 
     return (result);

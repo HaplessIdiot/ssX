@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.11 2002/03/08 04:33:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.12 2002/03/10 06:53:46 paulo Exp $ */
 
 #include "require.h"
 
@@ -136,8 +136,8 @@ Lisp_Require(LispMac *mac, LispBuiltin *builtin)
 	if (MOD == NIL)
 	    MOD = CONS(module, NIL);
 	else {
-	    CDR(MOD) = CONS(CAR(MOD), CDR(MOD));
-	    CAR(MOD) = module;
+	    RPLACD(MOD, CONS(CAR(MOD), CDR(MOD)));
+	    RPLACA(MOD, module);
 	}
 	LispSetVar(mac, mac->modules, MOD);
 

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.1 2002/08/25 02:48:30 paulo Exp $ */
 
 #define VARIABLE_USED		0x0001
 
@@ -1368,6 +1368,7 @@ ComPush(LispCom *com, LispObj *symbol, LispObj *value,
 		    com_Let(com, symbol->data.atom);
 		break;
 	}
+
 	/*  Remember <symbol> will be bound, <value> only matters for
 	 * the Com_XXX  functions */
 	if (builtin)
@@ -1805,7 +1806,7 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 		int macro;
 
 		lambda = atom->property->fun.function;
-		macro = lambda->data.lambda.type == LispMacro;
+		macro = lambda->funtype == LispMacro;
 
 		/* If <macro> is set, expand macro */
 		if (macro)
@@ -1817,7 +1818,7 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 			ComRecursiveCall(com, alist, function, arguments);
 		    else
 			ComInlineCall(com, alist, function, arguments,
-				      CDR(lambda->data.lambda.code));
+				      lambda->data.lambda.code);
 		}
 	    }
 	    else if (atom->a_defstruct &&
@@ -2138,7 +2139,7 @@ ComMacroCall(LispCom *com, LispArgList *alist,
 
     ++com->macro;
     base = ComCall(com, alist, name, arguments, 0, 0, 0);
-    body = CDR(lambda->data.lambda.code);
+    body = lambda->data.lambda.code;
     body = ComMacroExpand(com, body);
     --com->macro;
     mac->env.head = mac->env.length = base;

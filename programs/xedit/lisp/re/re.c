@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.1 2002/09/08 02:29:50 paulo Exp $ */
 
 #include <stdio.h>
 #include "rep.h"
@@ -127,9 +127,9 @@ static void redump(re_cod*);
 /*
  * Initialization
  */
-static unsigned char re__alnum[32];
-static unsigned char re__xdigit[32];
-static unsigned char re__control[32];
+static unsigned char re__alnum[256];
+static unsigned char re__xdigit[256];
+static unsigned char re__control[256];
 
 /*
  * Implementation
@@ -289,7 +289,7 @@ reset:
 	    case Re_Xdigit:
 		if (eng.str >= eng.end)
 		    goto fail;
-		if (re__xdigit[eng.str[0] >> 3] & (1 << (eng.str[0] & 7)))
+		if (re__xdigit[eng.str[0]])
 		    goto match;
 		goto fail;
 	    case Re_Space:
@@ -331,19 +331,19 @@ reset:
 	    case Re_Alnum:
 		if (eng.str >= eng.end)
 		    goto fail;
-		if (re__alnum[eng.str[0] >> 3] & (1 << (eng.str[0] & 7)))
+		if (re__alnum[eng.str[0]])
 		    goto match;
 		goto fail;
 	    case Re_AlnumNot:
 		if (eng.str >= eng.end)
 		    goto fail;
-		if (re__alnum[eng.str[0] >> 3] & (1 << (eng.str[0] & 7)))
+		if (re__alnum[eng.str[0]])
 		    goto fail;
 		goto match;
 	    case Re_Control:
 		if (eng.str >= eng.end)
 		    goto fail;
-		if (re__control[eng.str[0] >> 3] & (1 << (eng.str[0] & 7)))
+		if (re__control[eng.str[0]])
 		    goto match;
 		goto fail;
 
@@ -379,18 +379,18 @@ reset:
 	    case Re_Bow:
 		if (eng.str >= eng.end ||
 		    (eng.str > eng.bas &&
-		     (re__alnum[eng.str[-1] >> 3] & (1 << (eng.str[-1] & 7)))))
+		     (re__alnum[eng.str[-1]])))
 		    goto fail;
-		if (re__alnum[eng.str[0] >> 3] & (1 << (eng.str[0] & 7))) {
+		if (re__alnum[eng.str[0]]) {
 		    si = 0;
 		    goto match;
 		}
 		goto fail;
 	    case Re_Eow:
 		if (eng.str == eng.bas ||
-		    (re__alnum[eng.str[0] >> 3] & (1 << (eng.str[0] & 7))))
+		    re__alnum[eng.str[0]])
 		    goto fail;
-		if (re__alnum[eng.str[-1] >> 3] & (1 << (eng.str[-1] & 7))) {
+		if (re__alnum[eng.str[-1]]) {
 		    si = 0;
 		    goto match;
 		}
@@ -1851,23 +1851,23 @@ reinit(void)
     first = 0;
 
     for (i = 'a'; i <= 'z'; i++)
-	re__alnum[i >> 3] |= 1 << (i & 7);
+	re__alnum[i] = 1;
     for (i = 'A'; i <= 'Z'; i++)
-	re__alnum[i >> 3] |= 1 << (i & 7);
+	re__alnum[i] = 1;
     for (i = '0'; i <= '9'; i++)
-	re__alnum[i >> 3] |= 1 << (i & 7);
-    re__alnum['_' >> 3] |= 1 << ('_' & 7);
+	re__alnum[i] = 1;
+    re__alnum['_'] = 1;
 
     for (i = 'a'; i <= 'f'; i++)
-	re__xdigit[i >> 3] |= 1 << (i & 7);
+	re__xdigit[i] = 1;
     for (i = 'A'; i <= 'F'; i++)
-	re__xdigit[i >> 3] |= 1 << (i & 7);
+	re__xdigit[i] = 1;
     for (i = '0'; i <= '9'; i++)
-	re__xdigit[i >> 3] |= 1 << (i & 7);
+	re__xdigit[i] = 1;
 
     for (i = 1; i <= 32; i++)
-	re__control[i >> 3] |= 1 << (i & 7);
-    re__control[127 >> 3] |= 1 << (127 & 7);
+	re__control[i] = 1;
+    re__control[127] = 1;
 }
 
 static int

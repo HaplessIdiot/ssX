@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.14 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.15 2002/09/11 19:54:51 tsi Exp $ */
 
 #include "struct.h"
 
@@ -249,7 +249,7 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
 	    mac->protect.objects[mac->protect.length++] = fields;
 	}
 	else {
-	    CDR(cons) = CONS(value, NIL);
+	    RPLACD(cons, CONS(value, NIL));
 	    cons = CDR(cons);
 	}
     }
@@ -319,7 +319,7 @@ LispStructAccessOrStore(LispMac *mac, LispBuiltin *builtin, int store)
     for (list = struc->data.struc.fields; offset; list = CDR(list), offset--)
 	;
 
-    return (store ? CAR(list) = value : CAR(list));
+    return (store ? RPLACA(list, value) : CAR(list));
 }
 
 LispObj *

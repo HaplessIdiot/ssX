@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.6 2002/03/20 05:12:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.7 2002/04/16 17:12:06 paulo Exp $ */
 
 #include <stdlib.h>
 #include <libpq-fe.h>
@@ -575,7 +575,7 @@ polygon_type:
 	if (i == 0)
 	    p = cdr = CONS(obj, NIL);
 	else {
-	    CDR(cdr) = CONS(obj, NIL);
+	    RPLACD(cdr, CONS(obj, NIL));
 	    cdr = CDR(cdr);
 	}
     }

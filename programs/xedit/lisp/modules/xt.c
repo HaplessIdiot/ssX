@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.12 2002/03/10 06:53:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.14 2002/05/17 20:24:12 paulo Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -360,7 +360,7 @@ Lisp_XtCoerceToWidgetList(LispMac *mac, LispBuiltin *builtin)
 	if (widget_list == NIL)
 	    widget_list = cons = result;
 	else {
-	    CDR(cons) = result;
+	    RPLACD(cons, result);
 	    cons = CDR(cons);
 	}
     }
@@ -468,7 +468,7 @@ Lisp_XtAppAddInput(LispMac *mac, LispBuiltin *builtin)
     GCProtect();
     input = OPAQUE(id, xtInputId_t);
     GCUProtect();
-    CAR(data) = input;
+    RPLACA(data, input);
     PROTECT(input, data);
 
     if (num_input_list + 1 >= size_input_list) {
@@ -972,7 +972,7 @@ Lisp_XtGetValues(LispMac *mac, LispBuiltin *builtin)
 	if (result == NIL)
 	    result = cons = CONS(object, NIL);
 	else {
-	    CDR(cons) = CONS(object, NIL);
+	    RPLACD(cons, CONS(object, NIL));
 	    cons = CDR(cons);
 	}
     }

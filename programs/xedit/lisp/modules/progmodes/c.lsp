@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.4 2002/08/25 02:48:32 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.5 2002/09/08 02:29:50 paulo Exp $
 ;;
 
 ;;  Uncomment this to run the module in the stand alone command line
@@ -86,8 +86,6 @@
 
     ;;  All recognized C keywords.
     (syntoken
-	;;  For this sample put all keywords in a single regex, but to
-	;; be safe, a regex should not have more than 256 bytes.
 	(string-concat
 	    "\\<("
 	    "asm|auto|break|case|catch|char|class|const|continue|default|"
@@ -105,9 +103,10 @@
 	:PROPERTY *PROP-NUMBER*)
 
     ;;  Floating point numbers.
-    (syntoken "\\<(\\d+\\.?\\d*|\\d*\\.?\\d+)(e[+-]?\\d+)?[lLfF]?\\>"
+    (syntoken "\\<(\\d+\\.?\\d*|\\d*\\.\\d+)(e[+-]?\\d+)?[lf]?\\>"
 	:ICASE T
 	:PROPERTY *PROP-NUMBER*)
+
 
     ;;  Parentheses start rule.
     (syntoken "("
@@ -138,7 +137,7 @@
 	:BEGIN :BRACKETS)
 
     ;;  Preprocessor start rule.
-    (syntoken "^\\s*#\\s*[a-z]+"
+    (syntoken "^\\s*#\\s*\\w+"
 	:BEGIN :PREPROCESSOR
 	:CONTAINED T)
 
@@ -148,9 +147,8 @@
 	:BEGIN :COMMENT
 	:CONTAINED T)
 
-
     ;;  C++ style comments.
-    (syntoken "//.*$"
+    (syntoken "//.*"
 	:PROPERTY *PROP-COMMENT*)
 
     ;;  Punctuation, match two at the same time if possible, but no more to

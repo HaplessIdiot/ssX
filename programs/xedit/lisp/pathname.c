@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.9 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.10 2002/08/25 02:48:31 paulo Exp $ */
 
 #include <stdio.h>		/* including dirent.h first may cause problems */
 #include <dirent.h>
@@ -236,7 +236,7 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 	    path[length++] = PATH_SEP;
 	    path[length] = '\0';
 	}
-	CAR(arguments) = LSTRING(path, length);
+	RPLACA(arguments, LSTRING(path, length));
 	result = APPLY(function, arguments);
 	mac->protect.length = protect;
 
@@ -437,7 +437,7 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
     }
 
     for (i = 0; i < ndirs; i++) {
-	CAR(arguments) = STRING(dirs[i]);
+	RPLACA(arguments, STRING(dirs[i]));
 	LispFree(mac, dirs[i]);
 	object = APPLY(function, arguments);
 	if (result == NIL) {
@@ -445,7 +445,7 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 	    mac->protect.objects[mac->protect.length++] = result;
 	}
 	else {
-	    CDR(cons) = CONS(object, NIL);
+	    RPLACD(cons, CONS(object, NIL));
 	    cons = CDR(cons);
 	}
     }
@@ -516,14 +516,14 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	if (defaults != NIL)
 	    defaults = CDR(defaults);
 	cdr = defaults == NIL ? NIL : CAR(defaults);
-	CDR(cons) = CONS(cdr, NIL);
+	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 
 	/* device */
 	if (defaults != NIL)
 	    defaults = CDR(defaults);
 	cdr = defaults == NIL ? NIL : CAR(defaults);
-	CDR(cons) = CONS(cdr, NIL);
+	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 
 	/* directory */
@@ -533,7 +533,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	    cdr = CONS(Kabsolute, NIL);
 	else
 	    cdr = CONS(Krelative, NIL);
-	CDR(cons) = CONS(cdr, NIL);
+	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 	/* directory components */
 	ptr = data;
@@ -546,7 +546,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	    if (strlen(ptr) > NAME_MAX)
 		LispDestroy(mac, "%s: directory name too long %s",
 			    STRFUN(builtin), ptr);
-	    CDR(cdr) = CONS(STRING(ptr), NIL);
+	    RPLACD(cdr, CONS(STRING(ptr), NIL));
 	    cdr = CDR(cdr);
 	    ptr = str;
 	    str = strchr(ptr, PATH_SEP);
@@ -568,7 +568,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	if (ptr && *ptr)
 	    cdr = STRING(ptr);
 	namestr = STRING_P(cdr) ? THESTR(cdr) : "";
-	CDR(cons) = CONS(cdr, NIL);
+	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 
 	/* type */
@@ -579,14 +579,14 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	if (ptr && *ptr)
 	    cdr = STRING(ptr);
 	typestr = STRING_P(cdr) ? THESTR(cdr) : "";
-	CDR(cons) = CONS(cdr, NIL);
+	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 
 	/* version */
 	if (defaults != NIL)
 	    defaults = CDR(defaults);
 	cdr = defaults == NIL ? NIL : CAR(defaults);
-	CDR(cons) = CONS(cdr, NIL);
+	RPLACD(cons, CONS(cdr, NIL));
 	GCUProtect();
 
 	/* string representation, must be done here to use defaults */
@@ -619,7 +619,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	string[length] = '\0';
 
 	GCProtect();		/* XXX result is not gc protected */
-	CAR(result) = STRING(string);
+	RPLACA(result,  STRING(string));
 	GCUProtect();
 
 	return (PATHNAME(result));
@@ -766,12 +766,12 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
     result = cons = CONS(STRING(pathname), NIL);
 
     /* host */
-    CDR(cons) = CONS(host, NIL);
+    RPLACD(cons, CONS(host, NIL));
     cons = CDR(cons);
     GCUProtect();
 
     /* device */
-    CDR(cons) = CONS(device, NIL);
+    RPLACD(cons, CONS(device, NIL));
     cons = CDR(cons);
 
     /* directory */
@@ -779,19 +779,19 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 	cdr = CONS(Krelative, NIL);
     else
 	cdr = directory;
-    CDR(cons) = CONS(cdr, NIL);
+    RPLACD(cons, CONS(cdr, NIL));
     cons = CDR(cons);
 
     /* name */
-    CDR(cons) = CONS(name, NIL);
+    RPLACD(cons, CONS(name, NIL));
     cons = CDR(cons);
 
     /* type */
-    CDR(cons) = CONS(type, NIL);
+    RPLACD(cons, CONS(type, NIL));
     cons = CDR(cons);
 
     /* version */
-    CDR(cons) = CONS(version, NIL);
+    RPLACD(cons, CONS(version, NIL));
 
     GCUProtect();
 
