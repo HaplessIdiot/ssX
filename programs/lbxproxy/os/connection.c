@@ -56,7 +56,7 @@ SOFTWARE.
  *      socket ids aren't small nums (0 - 2^8)
  *
  *****************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.7 1998/10/04 09:40:28 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.8 1998/12/20 11:58:08 dawes Exp $ */
 
 #include "misc.h"
 #include <X11/Xtrans.h>
@@ -215,7 +215,7 @@ InitConnectionLimits()
 #endif
 
 #else /* __EMX__ */
-    lastfdesc = _nfiles - 1;
+    lastfdesc = 255;
 #endif
 
     /* This is the fallback */

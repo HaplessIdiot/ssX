@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/10/24 10:16:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.27 1999/04/05 08:28:22 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.28 1999/04/28 15:04:56 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -93,8 +93,16 @@ SITE_RGB_DB = -DRGB_DB=\"$(DEFAULTRGBDATABASE)\"
  * is called ncurses.h instead of curses.h
  */
 #if HasNCurses
-CURSESLIB = -lncurses
+# ifdef NCursesLibDir
+CURSESLIB = -L$(NCURSESLIBDIR) NCursesLibName
+# else
+CURSESLIB = NCursesLibName
+# endif
+# ifdef NCursesIncDir
+CURSES_DEFINES = -DCURSES -DNCURSES -I$(NCURSESINCDIR)
+# else
 CURSES_DEFINES = -DCURSES -DNCURSES
+# endif
 #else
 CURSESLIB = -lcurses
 CURSES_DEFINES = -DCURSES

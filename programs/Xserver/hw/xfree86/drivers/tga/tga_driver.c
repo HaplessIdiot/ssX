@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.23 1999/04/25 10:02:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.24 1999/04/25 15:30:24 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -894,7 +894,7 @@ TGAUnmapMem(ScrnInfoPtr pScrn)
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->IOBase, 0x100000);
     pTga->IOBase = NULL;
 
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->FbBase, pScrn->videoRam);
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->FbBase, pTga->FbMapSize);
     pTga->FbBase = NULL;
 
     return TRUE;

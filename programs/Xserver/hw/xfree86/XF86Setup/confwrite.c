@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.5 1999/04/28 15:04:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.6 1999/04/29 05:12:54 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -259,10 +259,6 @@ putsection_keyboard(interp, varpfx)
 			continue;
 		kptr->keyb_xleds |= 1L << (val - 1);
 	}
-	SETSTR(kptr->keyb_vtinit,	"VTInit");
-#ifdef USE_VT_SYSREQ
-	SETBOOL(kptr->keyb_vtSysreq,	"VTSysReq");
-#endif
 #ifdef XKB
 	SETBOOL(kptr->keyb_xkbDisable,	"XkbDisable");
 	SETSTR(kptr->keyb_xkbkeycodes,	"XkbKeycodes");

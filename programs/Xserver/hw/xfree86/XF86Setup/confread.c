@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.5 1999/04/28 15:04:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.6 1999/04/29 05:12:53 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -231,13 +231,6 @@ getsection_keyboard(interp, varpfx)
 		}
 	}
 	Tcl_SetVar2(interp, section, "XLeds", tmpbuf, 0);
-
-	Tcl_SetVar2(interp, section, "VTInit",
-		StrOrNull(keyboard->keyb_vtinit), 0);
-#ifdef USE_VT_SYSREQ
-	Tcl_SetVar2(interp, section, "VTSysReq", 
-		keyboard->keyb_vtSysreq ? "VTSysReq" : "", 0);
-#endif
 
 #ifdef XKB
 	Tcl_SetVar2(interp, section, "XkbDisable",

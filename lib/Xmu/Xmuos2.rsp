@@ -1,4 +1,4 @@
-AllCmap.obj Atoms.obj ClientWin.obj Clip.c CloseHook.obj CmapAlloc.obj +
+AllCmap.obj Atoms.obj ClientWin.obj Clip.obj CloseHook.obj CmapAlloc.obj +
 CrCmap.obj CrPixFBit.obj CursorName.obj CvtCache.obj CvtStdSel.obj +
 DefErrMsg.obj DelCmap.obj DisplayQue.obj Distinct.obj DrRndRect.obj +
 DrawLogo.obj EditresCom.obj ExtAgent.obj FToCback.obj GetHost.obj +

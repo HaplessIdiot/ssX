@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2.rules /main/1 1996/10/31 14:47:27 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.17 1998/06/04 16:43:02 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.18 1998/12/20 11:56:25 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -189,6 +189,7 @@ ProgramTargetName($(DEPEND)):						@@\
 	@ImakeIndir $(DEPENDSRC) $(MAKE) SHELL= MAKE=x11make 
 #endif
 
+#if 0
 #define	DependTarget()							@@\
 DependDependency()							@@\
 									@@\
@@ -204,6 +205,13 @@ depend::								@@\
 	$(subst /,\,$(DEPEND)) $(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs2 @@\
 	$(subst /,\,$(DEPEND)) $(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs3
 */
+#endif
+
+#define DependTarget()							@@\
+depend::
+
+#define DependTarget3(src1,src2,src3)					@@\
+depend::
 
 #define ForceSubdirs(dirs)						@@\
 dirs: DONE								@@\
@@ -443,7 +451,7 @@ install.man:: file.man                                                  @@\
 #define InstallMultipleMan(list,dest)                                   @@\
 install.man:: list                                                      @@\
 	MakeDir($(DESTDIR)dest)						@@\
-	for %i in (list) do ImakeHelper 12 %i $(DESTDIR)dest %i
+	ImakeHelper 14 $(DESTDIR)dest list
 #endif
 
 #else /* CompressManPages */
@@ -473,7 +481,7 @@ install.man:: file.man                                                  @@\
 #define InstallMultipleMan(list,dest)                                   @@\
 install.man:: list                                                      @@\
 	MakeDir($(DESTDIR)dest)						@@\
-	for %i in (list) do ImakeHelper 10 %i $(DESTDIR)dest %i $(MANSUFFIX)
+	ImakeHelper 15 $(DESTDIR)dest $(MANSUFFIX) list
 #endif
 
 #endif
@@ -538,9 +546,14 @@ $(BUILDBINDIR)/binary: binary						@@\
 /* And this replaces a similarlry ugly hack in InstallDynamicModule */
 
 #ifndef LinkBuildModule
-#define LinkBuildModule(module) MakeDir($(BUILDMODULEDIR))              @@\
-	RemoveFile($(BUILDMODULEDIR)/module)                            @@\
-	ImakeHelper 13 $(BUILDMODULEDIR) $(BUILDMODULETOP)/$(CURRENT_DIR)/module module
+#ifdef UseInstalled
+#define LinkBuildModule(module,subdir) $(_NULLCMD_)
+#else
+#define LinkBuildModule(module,subdir) 					@@\
+	MakeDir($(BUILDMODULEDIR)/subdir) 			 	@@\
+	RemoveFile($(BUILDMODULEDIR)/subdir/module)                            @@\
+	ImakeHelper 13 $(BUILDMODULEDIR)/subdir $(BUILDMODULETOP)/$(CURRENT_DIR)/module module
+#endif
 #endif /* LinkBuildModule */
 
 #ifndef LinkBuildNamedModule

@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2Lib.rules /main/1 1996/10/31 14:47:29 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.8 1998/12/20 11:56:25 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.9 1999/01/11 05:13:07 dawes Exp $
 
 /*
  * OS2/EMX shared library rules (DLL version)
@@ -148,14 +148,49 @@ LibraryTargetName(libname): objlist					@@\
 
 #ifndef NormalDepLibraryTarget
 #define	NormalDepLibraryTarget(libname,deplist,objlist)			@@\
-AllTarget(LibraryTargetName(libname))					@@\
+AllTarget(Concat(libname,_baselibtarget) LibraryTargetName(libname))	@@\
 									@@\
-LibraryTargetName(libname): deplist					@@\
+Concat(libname,_baselibtarget):: deplist				@@\
+	rm -rf baseobjs/?*						@@\
+	ImakeHelper 11 baseobjs						@@\
+	$(CP) objlist baseobjs						@@\
+									@@\
+LibraryTargetName(libname): 						@@\
 	RemoveFile($@)							@@\
-	MakeLibrary($@,objlist)						@@\
+	MakeLibrary($@,baseobjs/?*.o)					@@\
 	RanLibrary($@)							@@\
 	BuildLibSupportLibs($*)
 #endif /* NormalDepLibraryTarget */
+
+/*
+ * SharedDepLibraryTarget - generate rules to create a shared library.
+ */
+#ifndef SharedDepLibraryTarget
+#ifdef UseInstalled
+#ifndef LinkBuildSonameLibrary
+#define LinkBuildSonameLibrary(lib)
+#endif
+#else
+#ifndef LinkBuildSonameLibrary
+#define LinkBuildSonameLibrary(lib) (RemoveFile($(BUILDLIBDIR)/lib); \
+	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib .)
+#endif
+#endif
+
+#define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
+SharedLibraryTarget(libname,rev,solist,down,up)
+#endif /* SharedDepLibraryTarget */
+
+#ifndef SharedDepModuleTarget
+#define SharedDepModuleTarget(name,deps,solist)				@@\
+AllTarget(name)								@@\
+									@@\
+name: deps								@@\
+	$(CC) -o $@ $(SHLIBLDFLAGS) solist $(REQUIREDLIBS) BaseShLibReqs @@\
+									@@\
+clean::									@@\
+	RemoveFile(name)
+#endif /* SharedDepModuleTarget */
 
 #ifndef SharedLibraryDataTarget
 #define SharedLibraryDataTarget(libname,rev,salist)
@@ -232,10 +267,16 @@ LibraryTargetNameSuffix(libname,_d): objlist $(EXTRALIBRARYDEPS)	@@\
  * DebuggedDepLibraryTarget - generate rules to create a debuggable library.
  */
 #ifndef DebuggedDepLibraryTarget
-#define	DebuggedDepLibraryTarget(libname,deplist,objlist)		@@\
-AllTarget(LibraryTargetNameSuffix(libname,_d))				@@\
+
+#define	DebuggedDepLibraryTarget2(libname,deplist,objlist)		@@\
+AllTarget(Concat(libname,_dbglibtarget) LibraryTargetNameSuffix(libname,_d))		@@\
 									@@\
-LibraryTargetNameSuffix(libname,_d): deplist $(EXTRALIBRARYDEPS)	@@\
+Concat(libname,_dbglibtarget):: deplist							@@\
+	rm -rf debugged/?*						@@\
+	ImakeHelper 11 debugged						@@\
+	$(CP) objlist debugged						@@\
+									@@\
+LibraryTargetNameSuffix(libname,_d): $(EXTRALIBRARYDEPS)		@@\
 	RemoveFile($@)							@@\
 	ImakeIndir debugger MakeStaticLibrary(../$@)			@@\
 	RanLibrary($@)							@@\
@@ -263,12 +304,25 @@ LibraryTargetNameSuffix(libname,_p): objlist $(EXTRALIBRARYDEPS)	@@\
  */
 #ifndef ProfiledDepLibraryTarget
 #define	ProfiledDepLibraryTarget(libname,deplist,objlist)		@@\
-AllTarget(LibraryTargetNameSuffix(libname,_p))				@@\
+AllTarget(Concat(libname,_prflibtarget) LibraryTargetNameSuffix(libname,_p))		@@\
 									@@\
-LibraryTargetNameSuffix(libname,_p): deplist $(EXTRALIBRARYDEPS)	@@\
+Concat(libname,_prflibtarget):: deplist							@@\
+	rm -rf profiled/?*						@@\
+	ImakeHelper 11 profiled						@@\
+	$(CP) objlist profiled						@@\
+									@@\
+LibraryTargetNameSuffix(libname,_p): $(EXTRALIBRARYDEPS)		@@\
 	RemoveFile($@)							@@\
 	ImakeIndir profiled MakeStaticLibrary(../$@)			@@\
 	RanLibrary($@)							@@\
 	_LinkBuildLibrary($@)
 
 #endif /* ProfiledDepLibraryTarget */
+
+/*
+ * DepLibraryModuleTarget
+ */
+#ifndef DepLibraryModuleTarget
+#define DepLibraryModuleTarget(module,deplist,objects)			@@\
+NormalDepLibraryTarget(module, deplist, objects)
+#endif

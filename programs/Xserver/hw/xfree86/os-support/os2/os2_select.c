@@ -3,11 +3,12 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.5.4.1 1998/06/04 17:36:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.6 1998/07/25 16:56:53 dawes Exp $ */
 
 /*
  * (c) Copyright 1996 by Sebastien Marineau
  *			<marineau@genie.uottawa.ca>
+ *     Modified 1999 by Holger.Veit@gmd.de 
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -142,9 +143,10 @@ if(FirstTime){
 
    DosCreateEventSem(NULL, &hHRTSem,DC_SEM_SHARED,FALSE);
    DosResetEventSem(hHRTSem,&postCount);
-   if(os2HRTimerFlag){ 
-        HRT_Tid = _beginthread(os2HighResTimerThread, NULL, 0x2000,(void *) NULL);
-        ErrorF("XFree86-OS/2: Started high-resolution timer thread, TID=%d\n",HRT_Tid);
+   if (os2HRTimerFlag) {
+	HRT_Tid = _beginthread(os2HighResTimerThread, NULL, 0x2000,(void *) NULL);
+	xf86Msg(X_INFO,
+		"Started high-resolution timer thread, TID=%d\n",HRT_Tid);
         }
   
    SelectMuxRecord[0].hsemCur = (HSEM)hMouseSem;
@@ -158,7 +160,7 @@ if(FirstTime){
    rc = DosCreateMuxWaitSem(NULL, &hSelectWait, 4, SelectMuxRecord,
                 DC_SEM_SHARED | DCMW_WAIT_ANY);
    if(rc){
-        fprintf(stderr,"XFree86-OS/2: Could not create MuxWait semaphore, rc=%d\n",rc);
+        xf86Msg(X_ERROR,"Could not create MuxWait semaphore, rc=%d\n",rc);
         }
    FirstTime = FALSE;
 }
@@ -356,7 +358,7 @@ fd_set *readfds,*writefds;
               }
         if(e<0){
            /*Error -- TODO */
-           fprintf(stderr,"Error in server select! e=%d\n",e);
+           xf86Msg(X_ERROR,"Error in server select! e=%d\n",e);
            errno = EBADF;
            return (-1);
            }
@@ -376,10 +378,10 @@ APIRET rc;
         rc = DosResetEventSem(hPipeSem,&ulPostCount);
         rc = DosQueryNPipeSemState((HSEM) hPipeSem, (PPIPESEMSTATE)&pipeSemState, 
                 sizeof(pipeSemState));
-        if(rc) fprintf(stderr,"SELECT: rc from QueryNPipeSem: %d\n",rc);
+        if(rc) xf86Msg(X_ERROR,"SELECT: rc from QueryNPipeSem: %d\n",rc);
         i=0;
         while (pipeSemState[i].fStatus != 0) {
-/*           fprintf(stderr,"SELECT: sem entry, stat=%d, flag=%d, key=%d,avail=%d\n",
+/*           xf86Msg(X_INFO,"SELECT: sem entry, stat=%d, flag=%d, key=%d,avail=%d\n",
                 pipeSemState[i].fStatus,pipeSemState[i].fFlag,pipeSemState[i].usKey,
                 pipeSemState[i].usAvail);  */
            if((pipeSemState[i].fStatus == 1) &&
@@ -396,7 +398,7 @@ APIRET rc;
                 ( (FD_ISSET(pipeSemState[i].usKey,&sd->read_copy)) ||
                   (FD_ISSET(pipeSemState[i].usKey,&sd->write_copy)) )){
                 errno = EBADF;
-                /* fprintf(stderr,"Pipe has closed down, fd=%d\n",pipeSemState[i].usKey); */
+                /* xf86Msg(X_ERROR,"Pipe has closed down, fd=%d\n",pipeSemState[i].usKey); */
                 return (-1);
                 }
             i++;
@@ -414,76 +416,88 @@ return(e);
 
 #define HRT_DELAY 12
 
-void os2HighResTimerThread(arg)
-void *arg;
+void os2HighResTimerThread(void* arg)
 {
-    HFILE hTimer;
-    ULONG ulDelay,ulAction,ulSize,ulPostCount;
-    APIRET rc;
+	HFILE hTimer;
+	ULONG ulDelay,ulAction,ulSize,ulPostCount;
+	APIRET rc;
+	char *fmt;
 
-    ulDelay = HRT_DELAY;
-    ulSize=sizeof(ulDelay);
+	ulDelay = HRT_DELAY;
+	ulSize=sizeof(ulDelay);
 
-    	rc = DosOpen("TIMER0$",&hTimer,&ulAction,
-		0,0,OPEN_ACTION_OPEN_IF_EXISTS, OPEN_FLAGS_FAIL_ON_ERROR |
-		OPEN_SHARE_DENYNONE | OPEN_ACCESS_READWRITE, NULL);
-        if(rc!=0){
-           ErrorF("XFree86-OS/2: Could not open device TIMER0.SYS, rc=%d. High-resolution timer is disabled\n",
-                rc);
-           DosExit(0L,0L);
-           }
-        hTimer = _imphandle(hTimer);
-        if(hTimer<0) {
-           ErrorF("XFree86-OS/2: Could not import handle from TIMER0.SYS, rc=%d.\n",
-                rc);
-           DosExit(0L,0L);
-           }
+	rc = DosOpen("TIMER0$",&hTimer,&ulAction,
+		0,0,OPEN_ACTION_OPEN_IF_EXISTS,
+		OPEN_FLAGS_FAIL_ON_ERROR | OPEN_SHARE_DENYNONE | OPEN_ACCESS_READWRITE, 
+		NULL);
+	if (rc) {
+		fmt = "Open TIMER0.SYS failed, rc=%d. No High-resolution available\n";
+		goto errexit2;
+	}
+	hTimer = _imphandle(hTimer);
+	if (hTimer<0) {
+		fmt = "Could not import handle from TIMER0.SYS, rc=%d.\n";
+		goto errexit2;
+	}
 
-/* Make the thread TC */
-        DosSetPriority(2L,3L,0L,0L);
-        while(1){
-            rc = DosDevIOCtl(hTimer,0x80,5,&ulDelay,ulSize,&ulSize,
-			NULL,0,NULL);
-            if (rc != 0){
-               ErrorF("Xfree86-OS/2: bad return code from timer0.sys, rc=%d\n",rc);
-               DosClose(hTimer);
-               DosExit(0L,0L);
-               }
-            rc = DosQueryEventSem(hHRTSem,&ulPostCount);
-            if (rc != 0){
-               ErrorF("Xfree86-OS/2: bad return code from QueryEventSem, rc=%d\n",rc);
-               DosClose(hTimer);
-               DosExit(0L,0L);
-               }
+	/* Make the thread time critical */
+	DosSetPriority(2L,3L,0L,0L);
+	while (1) {
+		rc = DosDevIOCtl(hTimer,0x80,5,
+				 &ulDelay,ulSize,&ulSize,
+				 NULL,0,NULL);
+		if (rc != 0) {
+			fmt = "Bad return code from timer0.sys, rc=%d\n";
+			goto errexit1;
+		}
 
-            if(ulPostCount == 0) rc = DosPostEventSem(hHRTSem);
-            if ((rc != 0) && (rc != 299)) {
-               ErrorF("Xfree86-OS/2: bad return code from PostEventSem, rc=%d\n",rc);
-               DosClose(hTimer);
-               DosExit(0L,0L);
-               }
-            rc = DosQueryEventSem(hevServerHasFocus,&ulPostCount);
-            if (rc != 0){
-               ErrorF("Xfree86-OS/2: bad return code from QueryEventSem for server focus, rc=%d\n",rc);
-               DosClose(hTimer);
-               DosExit(0L,0L);
-               }
-        /* Disable the HRT timer thread while switched away. */
-             if(ulPostCount == 0) rc = DosWaitEventSem(hevServerHasFocus, SEM_INDEFINITE_WAIT);
+		rc = DosQueryEventSem(hHRTSem,&ulPostCount);
+		if (rc != 0) {
+			fmt = "Bad return code from QueryEventSem, rc=%d\n";
+			goto errexit1;
+		}
 
-        }
-DosClose(hTimer);
+		if (ulPostCount == 0) rc = DosPostEventSem(hHRTSem);
+		if (rc != 0 && rc != 299) {
+			fmt = "Bad return code from PostEventSem, rc=%d\n";
+			goto errexit1;
+		}
+
+		rc = DosQueryEventSem(hevServerHasFocus,&ulPostCount);
+		if (rc != 0) {
+			fmt = "Bad return code from QueryEventSem for server focus, rc=%d\n";
+			goto errexit1;
+		}
+
+		/* Disable the HRT timer thread while switched away. */
+		if (ulPostCount == 0) 
+			DosWaitEventSem(hevServerHasFocus, SEM_INDEFINITE_WAIT);
+
+	}
+
+	/* XXX reached? */
+	DosClose(hTimer);
+	return;
+
+	/* error catch blocks */
+errexit1:
+	DosClose(hTimer);
+errexit2:
+	xf86Msg(X_ERROR,fmt,rc);
+	DosExitList(0l,0l);
 }
 
-ULONG os2_get_sys_millis()
+ULONG os2_get_sys_millis() 
 {
-   APIRET rc;
-   ULONG milli;
+	APIRET rc;
+	ULONG milli;
 
-   rc = DosQuerySysInfo(14, 14, &milli, sizeof(milli));
-   if(rc) {
-        ErrorF("Bad return code querying the millisecond counter! rc=%d\n",rc);
-        return(0);
-        }
-   return(milli);
+	rc = DosQuerySysInfo(14, 14, &milli, sizeof(milli));
+	if (rc) {
+	        xf86Msg(X_ERROR,
+			"Bad return code querying the millisecond counter! rc=%d\n",
+			rc);
+		return 0;
+	}
+	return milli;
 }

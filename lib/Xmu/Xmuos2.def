@@ -1,5 +1,5 @@
 LIBRARY Xmu
-DESCRIPTION "X11R6 XFree86 3.2 libXmu.dll for OS/2 EMX09C VERSION=6.1"
+DESCRIPTION "@#XFREE86:4.0#@ $XFree86$"
 CODE
 	PRELOAD
 DATA
@@ -109,4 +109,20 @@ EXPORTS
 	_XA_USER  @ 102
 	XmuDistinguishableColors @ 103
 	XmuDistinguishablePixels @ 104
-	
+	XmuCvtWidgetToString @ 105
+	XmuCvtGravityToString @ 106
+	XmuDestroySegmentList @ 107
+	XmuCvtJustifyToString @ 108
+	XmuSnprintf @ 109
+	XmuAreaOrXor @ 110
+	XmuDestroyScanlineList @ 111
+	XmuScanlineXor @ 112
+	XmuNewScanline @ 113
+	XmuNCopyISOLatin1Lowered @ 114
+	XmuNCopyISOLatin1Uppered @ 115
+	XmuCvtShapeStyleToString @ 116
+	XmuCvtOrientationToString @ 117
+	XmuCvtBackingStoreToString @ 118
+	XmuNewArea @ 119
+	XmuScanlineOrSegment @ 120
+	XmuOptimizeScanline @ 121

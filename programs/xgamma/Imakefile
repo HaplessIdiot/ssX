@@ -1,11 +1,7 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xgamma/Imakefile,v 1.1 1999/03/14 11:18:11 dawes Exp $
 
-        DEPLIBS = $(DEPXXF86VMLIB)
-#ifdef OS2Architecture
-LOCAL_LIBRARIES = $(XXF86VMLIB)
-#else
-LOCAL_LIBRARIES = $(XXF86VMLIB) $(XLIB)
-#endif
+        DEPLIBS = $(DEPXXF86VMLIB) XawClientDepLibs
+LOCAL_LIBRARIES = $(XXF86VMLIB) XawClientLibs
            SRCS = xgamma.c
            OBJS = xgamma.o
 

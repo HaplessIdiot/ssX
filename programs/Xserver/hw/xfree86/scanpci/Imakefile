@@ -1,6 +1,7 @@
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/Imakefile,v 1.3 1999/02/14 07:52:29 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/Imakefile,v 1.4 1999/02/14 09:28:41 hohndel Exp $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 MODPATHDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"

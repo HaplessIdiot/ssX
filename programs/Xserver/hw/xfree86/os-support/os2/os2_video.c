@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.10 1997/01/27 06:58:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.11 1999/04/18 04:08:54 dawes Exp $ */
 /*
- * (c) Copyright 1994 by Holger Veit
+ * (c) Copyright 1994,1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
  *
@@ -38,6 +38,9 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+#include "xf86OSpriv.h"
+
+#include "compiler.h"
 
 /***************************************************************************/
 /* Video Memory Mapping helper functions                                   */
@@ -84,22 +87,22 @@ static void close_mmap()
 typedef struct{
 	ULONG addr;
 	ULONG size;
-	} DIOParPkt;
+} DIOParPkt;
 
 /* This is the data packet for the mapping function */
 
 typedef struct {
 	ULONG addr;
 	USHORT sel;
-	} DIODtaPkt;
+} DIODtaPkt;
 
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
 
 /* ARGSUSED */
-pointer
-xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
+static pointer
+mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 {
 	DIOParPkt	par;
 	ULONG		plen;
@@ -138,7 +141,7 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 	if ((rc=DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x44,
 	      (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 	      (PVOID)&dta, (ULONG)dlen, (PULONG)&dlen)) == 0) {
-		ErrorF("xf86-OS/2: xf86MapVidMem succeeded: (ScreenNum= %d, Base= 0x%x, Size= 0x%x\n",
+		xf86Msg(X_INFO, xf86MapVidMem succeeded: (ScreenNum= %d, Base= 0x%x, Size= 0x%x\n",
 		ScreenNum, Base, Size);
 		if (dlen==sizeof(dta)) {
 			return (pointer)dta.addr;
@@ -147,14 +150,14 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 	}
 
 	/* fail */
-	FatalError("xf86-OS/2: xf86MapVidMem FAILED!!: rc = %d (ScreenNum= %d, Base= 0x%x, Size= 0x%x return len %d\n",
+	FatalError("xf86MapVidMem FAILED!!: rc = %d (ScreenNum= %d, Base= 0x%x, Size= 0x%x return len %d\n",
 		rc, ScreenNum, Base, Size,dlen);
 	return (pointer)0;
 }
 
 /* ARGSUSED */
-void
-xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
+static void
+unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 	DIOParPkt	par;
 	ULONG		plen,vmaddr;
@@ -169,27 +172,21 @@ xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 /* the virtual adress and use it here.... 				  */
 	
 	par.addr	= (ULONG)Base;
-	par.size	= 0xffffffff; /* This is the virtual addres parameter. Set this to ignore */
+	par.size	= 0xffffffff; /* This is the virtual address parameter. Set this to ignore */
 	plen 		= sizeof(par);
 
 	if (mapdev != -1)
 	    DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x46,
 	      (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 	      &vmaddr, sizeof(ULONG), &plen);
-        ErrorF("xf86-OS/2: Unmapping physical memory at base %x, virtual address %x\n",Base,vmaddr);
+        xf86Msg(X_INFO,"Unmapping physical memory at base %x, virtual address %x\n",Base,vmaddr);
 
-/* Now if more than one region has been allocated and we close the driver, *
- * the other pointers will immediately become invalid. We avoid closing    *
- * driver for now, but this should be fixed for server exit                               */
+/* Now if more than one region has been allocated and we close the driver,
+ * the other pointers will immediately become invalid. We avoid closing
+ * driver for now, but this should be fixed for server exit
+ */
  
 	/* close_mmap(); */
-}
-
-Bool xf86LinearVidMem()
-{
-	/* setting it to true needs further testing */
-	/* But what the heck, that's what we are here for! */
-	return(TRUE);
 }
 
 /***************************************************************************/
@@ -198,14 +195,32 @@ Bool xf86LinearVidMem()
 
 Bool xf86DisableInterrupts()
 {
-	/* allow interrupt disabling but check for side-effects. Not a good policy on OS/2...*/
+	/* allow interrupt disabling but check for side-effects. 
+	 * Not a good policy on OS/2...
+	 */
         asm ("cli");
-	return(TRUE);
+	return TRUE;
 }
 
 void xf86EnableInterrupts()
 {
 	/*Reenable*/
         asm ("sti");
-	return;
+}
+
+/***************************************************************************/
+/* Initialize video memory                                                 */
+/***************************************************************************/
+
+void
+xf86OSInitVidMem(VidMemInfoPtr pVidMem)
+{
+        pVidMem->linearSupported = TRUE;
+        pVidMem->mapMem = mapVidMem;
+        pVidMem->unmapMem = unmapVidMem;
+        pVidMem->mapMemSparse = 0;
+        pVidMem->unmapMemSparse = 0;
+        pVidMem->setWC = 0;
+        pVidMem->undoWC = 0;
+        pVidMem->initialised = TRUE;
 }

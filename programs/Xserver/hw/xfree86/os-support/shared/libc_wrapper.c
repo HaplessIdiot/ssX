@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.41 1999/03/29 07:06:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.42 1999/04/11 13:11:07 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -47,6 +47,9 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
+#ifdef __EMX__
+#define NO_MMAP
+#endif
 #ifdef HAS_SVR3_MMAPDRV
 #define NO_MMAP
 #ifdef SELF_CONTAINED_WRAPPER
@@ -1567,7 +1570,7 @@ xf86GetErrno ()
 		mapnum (EINTR);
 		mapnum (EINVAL);
 		mapnum (EISDIR);
-		mapnum (ELOOP);
+		mapnum (ELOOP);		/* not POSIX 1 */
 		mapnum (EMFILE);
 		mapnum (ENAMETOOLONG);
 		mapnum (ENFILE);
@@ -1577,7 +1580,9 @@ xf86GetErrno ()
 		mapnum (ENOTDIR);
 		mapnum (EPIPE);
 		mapnum (EROFS);
-		mapnum (ETXTBSY);
+#ifndef __EMX__
+		mapnum (ETXTBSY);	/* not POSIX 1 */
+#endif
 		mapnum (ENOTTY);
 		mapnum (EBUSY);
 		mapnum (ENODEV);
@@ -1590,7 +1595,3 @@ xf86GetErrno ()
 
 #undef mapnum
 
-/* This is a temporary hack */
-#ifdef SELF_CONTAINED_WRAPPER
-Bool (*GlxInitVisualsPtr)(void) = NULL;
-#endif

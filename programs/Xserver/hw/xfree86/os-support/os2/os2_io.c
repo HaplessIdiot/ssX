@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.11.4.1 1998/06/04 17:36:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.12 1998/07/25 16:56:53 dawes Exp $ */
 /*
- * (c) Copyright 1994 by Holger Veit
+ * (c) Copyright 1994,1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
  *
@@ -144,22 +144,15 @@ int xf86KbdOff()
 void xf86MouseInit(mouse)
 MouseDevPtr mouse;
 {
-	return;
-}
-
-int xf86MouseOn(mouse)
-MouseDevPtr mouse;
-{
 	HMOU fd;
 	APIRET rc;
 	USHORT nbut;
 
-ErrorF ("\nxf86-OS/2: Calling MouseOn, a bad thing.... Must be some bug in the code!\n");
 	if (serverGeneration == 1) {
 		rc = MouOpen((PSZ)NULL,(PHMOU)&fd);
 		if (rc != 0)
 			FatalError("Cannot open mouse, rc=%d\n", rc);
-		mouse->mseFd = fd;
+			mouse->mseFd = fd;
 	}
 	
 	/* flush mouse queue */
@@ -168,9 +161,38 @@ ErrorF ("\nxf86-OS/2: Calling MouseOn, a bad thing.... Must be some bug in the c
 	/* check buttons */
 	rc = MouGetNumButtons(&nbut,fd);
 	if (rc == 0)
-		ErrorF("OsMouse has %d button(s).\n",nbut);
+		xf86Msg(X_INFO,"OsMouse has %d button(s).\n",nbut);
+}
+
+int xf86MouseOn(mouse)
+MouseDevPtr mouse;
+{
+#if 0
+	HMOU fd;
+	APIRET rc;
+	USHORT nbut;
+#endif
+	xf86Msg (X_ERROR,
+		"Calling MouseOn, a bad thing.... Must be some bug in the code!\n");
+
+#if 0
+	if (serverGeneration == 1) {
+		rc = MouOpen((PSZ)NULL,(PHMOU)&fd);
+		if (rc != 0)
+			FatalError("Cannot open mouse, rc=%d\n", rc);
+			mouse->mseFd = fd;
+	}
+	
+	/* flush mouse queue */
+	MouFlushQue(fd);
+
+	/* check buttons */
+	rc = MouGetNumButtons(&nbut,fd);
+	if (rc == 0)
+		xf86Msg(X_INFO,"OsMouse has %d button(s).\n",nbut);
 
 	return (mouse->mseFd);
+#endif
 }
 
 /* This table is a bit irritating, because these mouse types are infact
@@ -192,7 +214,3 @@ Bool xf86SupportedMouseTypes[] =
 
 int xf86NumMouseTypes = sizeof(xf86SupportedMouseTypes) /
 			sizeof(xf86SupportedMouseTypes[0]);
-
-
-
-

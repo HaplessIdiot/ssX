@@ -2,11 +2,11 @@ XCOMM $TOG: os2.cf /main/2 1997/08/05 08:51:25 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.26 1998/12/20 11:56:24 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.27 1999/03/21 01:45:00 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
-#define OSMajorVersion    3
+#define OSMajorVersion    4
 #define OSMinorVersion    0
 
 /*
@@ -68,9 +68,13 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.26 1998/12/20 11:56:24 dawes 
 #define OSDefines		-D__EMX__ -D__i386__ -Demxos2 -D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_GNU_SOURCE
 
+#ifndef BuildXKB
 #define BuildXKB		YES
+#endif
 #define BuildImplibs		YES
+#ifndef BuildLBX
 #define BuildLBX		YES
+#endif
 
 /* some more properties of the OS/2 implementation */
 #define HasNdbm         	YES
@@ -159,6 +163,9 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.26 1998/12/20 11:56:24 dawes 
 #define LdCmd	ld
 #define ExtraLoadFlags	-Zbin-files
 #define ExtraLibraries	-lsocket -lbsd
+#if HasShm
+# define ServerExtraSysLibs     -lregex -lshm
+#endif
 
 /* quite a number of programs you need, most of them the same as
  * with Unix, but listed here for completeness

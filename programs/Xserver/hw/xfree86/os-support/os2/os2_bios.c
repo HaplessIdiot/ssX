@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_bios.c,v 3.6 1997/01/05 11:59:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_bios.c,v 3.7 1999/01/14 13:05:06 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -91,7 +91,7 @@ int Len;
 	if (rc=DosDevIOCtl(fd, (ULONG)0x76, (ULONG)0x64,
 	   (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 	   (PVOID)dta, (ULONG)dlen, (PULONG)&dlen)) {
-		ErrorF("xf86ReadBIOS: BIOS map failed, addr=%lx, rc=%d\n", 
+		FatalError("xf86ReadBIOS: BIOS map failed, addr=%lx, rc=%d\n", 
 			Bios_Base+Phys_address,rc);
 		free(dta);
 		DosClose(fd);
@@ -104,7 +104,7 @@ int Len;
          */
 	if ((Phys_address & 0x7fff) != 0 && 
 		(dta[0] != 0x55 || dta[1] != 0xaa)) {
-		ErrorF("BIOS sanity check failed, addr=%x\nPlease report if you encounter problems\n",
+		FatalError("BIOS sanity check failed, addr=%x\nPlease report if you encounter problems\n",
 			Bios_Base+Phys_address);
 	}
 

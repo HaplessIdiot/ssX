@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.6 1999/04/17 07:06:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.7 1999/04/25 10:02:18 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -85,8 +85,6 @@ SiSAccelInit(ScreenPtr pScreen)
 
     if (pScrn->bitsPerPixel != 24) {
 	    infoPtr->Mono8x8PatternFillFlags =  GXCOPY_ONLY |
-											CPU_TRANSFER_PAD_DWORD |
-											SCANLINE_PAD_DWORD |
 											NO_PLANEMASK | 
 					HARDWARE_PATTERN_PROGRAMMED_BITS |
 					HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
@@ -99,9 +97,11 @@ SiSAccelInit(ScreenPtr pScreen)
 	};
 #endif
 
-#if 1
+#if 0 /* Don´t work until we implement skipleft */
     if (pScrn->bitsPerPixel != 24) {
     infoPtr->ScreenToScreenColorExpandFillFlags =  GXCOPY_ONLY | 
+					CPU_TRANSFER_PAD_DWORD |
+					SCANLINE_PAD_DWORD |
 					NO_PLANEMASK | 
 					HARDWARE_PATTERN_PROGRAMMED_BITS |
 					HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
@@ -137,22 +137,22 @@ SiSSync(ScrnInfoPtr pScrn) {
 
 static int sisALUConv[] =
 {
-    0x00,		       /* dest = 0; GXclear, 0 */
-    0x88,		       /* dest &= src; GXand, 0x1 */
-    0x44,		       /* dest = src & ~dest; GXandReverse, 0x2 */
-    0xCC,		       /* dest = src; GXcopy, 0x3 */
-    0x22,		       /* dest &= ~src; GXandInverted, 0x4 */
-    0xAA,		       /* dest = dest; GXnoop, 0x5 */
-    0x66,		       /* dest = ^src; GXxor, 0x6 */
-    0xEE,		       /* dest |= src; GXor, 0x7 */
-    0x11,		       /* dest = ~src & ~dest;GXnor, 0x8 */
-    0x99,		       /*?? dest ^= ~src ;GXequiv, 0x9 */
-    0x55,		       /* dest = ~dest; GXInvert, 0xA */
-    0xDD,		       /* dest = src|~dest ;GXorReverse, 0xB */
-    0x33,		       /* dest = ~src; GXcopyInverted, 0xC */
-    0xBB,		       /* dest |= ~src; GXorInverted, 0xD */
-    0x77,		       /*?? dest = ~src|~dest ;GXnand, 0xE */
-    0xFF,		       /* dest = 0xFF; GXset, 0xF */
+    0x00,	/* dest = 0; 		0,	GXclear, 	0 */
+    0x88,	/* dest &= src; 	DSa,	GXand,		0x1 */
+    0x44,	/* dest = src & ~dest; 	SDna,	GXandReverse, 	0x2 */
+    0xCC,	/* dest = src; 		S,	GXcopy, 	0x3 */
+    0x22,	/* dest &= ~src; 	DSna,	GXandInverted, 	0x4 */
+    0xAA,	/* dest = dest; 	D,	GXnoop, 	0x5 */
+    0x66,	/* dest = ^src; 	DSx,	GXxor, 		0x6 */
+    0xEE,	/* dest |= src; 	DSo,	GXor, 		0x7 */
+    0x11,	/* dest = ~src & ~dest;	DSon,	GXnor, 		0x8 */
+    0x99,	/* dest ^= ~src ;	DSxn,	GXequiv, 	0x9 */
+    0x55,	/* dest = ~dest; 	Dn,	GXInvert, 	0xA */
+    0xDD,	/* dest = src|~dest ;	SDno,	GXorReverse, 	0xB */
+    0x33,	/* dest = ~src; 	Sn,	GXcopyInverted, 0xC */
+    0xBB,	/* dest |= ~src; 	DSno,	GXorInverted, 	0xD */
+    0x77,	/* dest = ~src|~dest;	DSan,	GXnand, 	0xE */
+    0xFF,	/* dest = 0xFF; 	1,	GXset, 		0xF */
 };
 
 static void 
@@ -315,7 +315,7 @@ SiSSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patternx,
     sisSETDSTADDR(dstaddr);
     sisSETHEIGHTWIDTH(h-1, w*(pScrn->bitsPerPixel/8)-1);
     sisSETCMD(op);
-/*    SiSSync(pScrn);*/
+    SiSSync(pScrn);
 }
 /*
  * setup for screen-to-screen color expansion
@@ -336,6 +336,7 @@ SiSSetupForScreenToScreenColorExpandFill (ScrnInfoPtr pScrn,
     /* becareful with rop */
 /*    sisBLTWAIT; */
     if (isTransparent) {
+	sisSETBGCOLOR(bg);
 	sisSETFGCOLOR(fg);
 	sisSETROPFG(0xf0); 	/* pat copy */
 	sisSETROPBG(0xAA); 	/* dst */
@@ -354,6 +355,7 @@ static void
 SiSSubsequentScreenToScreenColorExpandFill( ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
 				int srcx, int srcy, int offset )
+/* Offset needs to be taken into account. By now, is not used */
 {
     SISPtr pSiS = SISPTR(pScrn);
     int destpitch = pScrn->displayWidth * pScrn->bitsPerPixel / 8 ;
@@ -365,6 +367,7 @@ SiSSubsequentScreenToScreenColorExpandFill( ScrnInfoPtr pScrn,
     int	op ;
 
     op  = sisCMDCOLEXP | sisTOP2BOTTOM | sisLEFT2RIGHT | sisPATFG | sisSRCBG | sisCMDENHCOLEXP ;
+
 
 /*    ErrorF("SISSubsequentScreenToScreenColorExpand()\n"); */
 #define maxWidth 144

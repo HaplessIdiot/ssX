@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.13.2.2 1998/06/05 16:23:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.14 1998/07/25 16:56:52 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -78,17 +78,20 @@ void xf86OpenConsole()
 	char *x11r = getenv("X11ROOT");
         /* Make sure X11ROOT is set before we go further sm280297 */
         if (x11r == NULL){ 
-           ErrorF("The environment variable X11ROOT is not set! The xserver is aborting.\n");	
+           xf86Msg(X_ERROR,
+		   "Environment variable X11ROOT is not set! Aborting...\n");
            exit(1);  
            }
         if (_chdir2(x11r) < 0) {
-  		ErrorF("xf86-OS/2: Cannot change to X11ROOT directory!\n");
+  		xf86Msg(X_ERROR,"Cannot change to X11ROOT directory!\n");
 	}
 
-	ErrorF("xf86-OS/2: Console opened\n");
+	xf86Msg(X_INFO,"Console opened\n");
 	OriginalVideoMode.cb=sizeof(VIOMODEINFO);
 	rc=VioGetMode(&OriginalVideoMode,(HVIO)0);
-	if(rc!=0) ErrorF("xf86-OS/2: Could not get original video mode. RC=%d\n",rc);
+	if(rc!=0) 
+		xf86Msg(X_ERROR,
+			"Could not get original video mode. RC=%d\n",rc);
 	xf86Info.consoleFd = -1;
         
         /* Set the number of handles to higher than the default 20. Set to 80 which should be plenty */
@@ -97,7 +100,8 @@ void xf86OpenConsole()
         if (actual_handles < 80) {
 		new_handles = 80 - actual_handles;
 		rc = DosSetRelMaxFH(&new_handles,&actual_handles);
-		ErrorF("xf86-OS/2: Increased number of available handles to %d\n",actual_handles);
+		xf86Msg(X_INFO,"Increased number of available handles to %d\n",
+			actual_handles);
 	}
 
 	/* grab the keyboard */
@@ -111,7 +115,7 @@ void xf86OpenConsole()
 		FatalError("xf86OpenConsole: cannot open keyboard, rc=%d\n",rc);
 	xf86Info.consoleFd = fd;
 
-	ErrorF("xf86-OS/2: Keyboard opened\n");
+	xf86Msg(X_INFO,"Keyboard opened\n");
 
 	/* assign logical keyboard */
 	KbdFreeFocus(0);
@@ -127,26 +131,32 @@ void xf86OpenConsole()
  
 /* Create popup semaphore */
 
-	rc=DosCreateEventSem("\\SEM32\\XF86PUP",&hevPopupPending,DC_SEM_SHARED,1);
-	if(rc) ErrorF("xf86-OS/2: Could not create popup semaphore! RC=%d\n",rc);
-	/* rc=VioRegister("xf86vio","XF86POPUP_SUBCLASS",0x20002004L,0L);
-	if(rc) {
-		FatalError("xf86-OS2: Could not register XF86VIO.DLL module. Please install in LIBPATH! RC=%d\n",rc);
-	}  */
+	rc = DosCreateEventSem("\\SEM32\\XF86PUP",&hevPopupPending,DC_SEM_SHARED,1);
+	if (rc) 
+		xf86Msg(X_ERROR,
+			"Could not create popup semaphore! RC=%d\n",rc);
+#if 0
+	rc=VioRegister("xf86vio","XF86POPUP_SUBCLASS",0x20002004L,0L);
+	if (rc) {
+		FatalError("Could not register XF86VIO.DLL module. Please install in LIBPATH! RC=%d\n",
+				rc);
+	}
+#endif
 
 /* Start up the VIO monitor thread */
 	VioTid=_beginthread(os2VideoNotify,NULL,0x4000,(void *)NULL);
-	ErrorF("xf86-OS/2: Started Vio thread, Tid=%d\n",VioTid);
+	xf86Msg(X_INFO,"Started Vio thread, Tid=%d\n",VioTid);
 	rc=DosSetPriority(2,3,0,VioTid);
 
 /* Start up the hard-error VIO monitor thread */
 	VioTid=_beginthread(os2HardErrorNotify,NULL,0x4000,(void *)NULL);
-	ErrorF("xf86-OS/2: Started hard error Vio mode monitor thread, Tid=%d\n",VioTid);
+	xf86Msg(X_INFO,"Started hard error Vio mode monitor thread, Tid=%d\n",
+		VioTid);
 	rc=DosSetPriority(2,3,0,VioTid);
 
 /* Start up the kbd monitor thread */
 	VioTid=_beginthread(os2KbdMonitorThread,NULL,0x4000,(void *)NULL);
-	ErrorF("xf86-OS/2: Started Kbd monitor thread, Tid=%d\n",VioTid);
+	xf86Msg(X_INFO,"Started Kbd monitor thread, Tid=%d\n",VioTid);
 	rc=DosSetPriority(2,3,0,VioTid);
 
 /* Disable hard-errors through DosError */
@@ -155,7 +165,7 @@ void xf86OpenConsole()
 	
 	rc = KbdSetCp(0,0,fd);
 	if(rc != 0)
-		FatalError("xf86-OS/2: xf86OpenConsole: cannot set keyboard codepage, rc=%d\n",rc);
+		FatalError("xf86OpenConsole: cannot set keyboard codepage, rc=%d\n",rc);
 
 	hwid.cb = sizeof(hwid);	/* fix crash on P9000 */
 	rc = KbdGetHWID(&hwid, fd);
@@ -167,7 +177,7 @@ void xf86OpenConsole()
 		case 1: /*real AT 84 key*/
 			xf86Info.kbdType = KB_84; break;
 		case 0xab85: /* 122 key */
-			FatalError("xf86-OS/2: OS/2 has detected an extended 122key keyboard: unsupported!\n");
+			FatalError("Unsupported extended 122key keyboard found!\n",0);
 		case 0xab41: /* 101/102 key */
 			xf86Info.kbdType = KB_101; break;
 		}				
@@ -176,7 +186,7 @@ void xf86OpenConsole()
 
 /* Start up the Kbd bit-bucket thread. We don't want to leave the kbd events in the driver queue */
 	VioTid=_beginthread(os2KbdBitBucketThread,NULL,0x2000,(void *)NULL);
-	ErrorF("xf86-OS/2: Started Kbd bit-bucket thread, Tid=%d\n",VioTid);
+	xf86Msg(X_INFO,"Started Kbd bit-bucket thread, Tid=%d\n",VioTid);
     }
     return;
 }
@@ -212,6 +222,6 @@ int i;
 
 void xf86UseMsg()
 {
-        ErrorF("-os2HRTimer    -use the OS/2 high-resolution timer driver (TIMER0.SYS)\n");
+        xf86Msg(X_INFO,"-os2HRTimer    -use the OS/2 high-resolution timer driver (TIMER0.SYS)\n");
 	return;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_ioperm.c,v 3.4 1996/12/23 06:50:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_ioperm.c,v 3.5 1997/08/26 10:01:38 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -26,10 +26,13 @@
 
 
 
+#define I_NEED_OS2_H
 #define INCL_32
 #define INCL_DOS
-#include <os2.h>
-#include <stdio.h>
+#define INCL_DOSFILEMGR
+#include "xf86.h"
+#include "xf86Priv.h"
+#include "xf86_OSlib.h"
 
 /*
  * To access I/O ports under OS/2, we use the xf86sup.sys driver.
@@ -45,8 +48,7 @@ char *ioDrvPath = "/dev/fastio$";
 USHORT callgate[3]={0,0,0};
 
 
-void xf86EnableIOPorts(ScreenNum)
-int ScreenNum;
+void xf86EnableIO()
 {
 
 HFILE hfd;
@@ -60,8 +62,8 @@ HFILE hfd;
 	   (ULONG)0, FILE_SYSTEM, FILE_OPEN,
 	   OPEN_SHARE_DENYNONE|OPEN_FLAGS_NOINHERIT|OPEN_ACCESS_READONLY,
 	   (ULONG)0) != 0) {
-		ErrorF("Error opening fastio$ driver...\n");
-		ErrorF("Please install xf86sup.sys in config.sys!\n");
+		xf86Msg(X_ERROR,"Error opening fastio$ driver...\n");
+		xf86Msg(X_ERROR,"Please install xf86sup.sys in config.sys!\n");
 		exit(42);
 	}
 	callgate[0] = callgate[1] = 0;
@@ -72,7 +74,8 @@ HFILE hfd;
 		NULL, 0, NULL,
 		(ULONG*)&callgate[2], sizeof(USHORT), &dlen);
 	if (rc) {
-		ErrorF("xf86-OS/2: EnableIOPorts failed, rc=%d, dlen=%d; emergency exit\n",
+		xf86Msg(X_ERROR,
+			"EnableIOPorts failed, rc=%d, dlen=%d; emergency exit\n",
 			rc,dlen);
 		DosClose(hfd);
 		exit(42);
@@ -90,8 +93,7 @@ HFILE hfd;
 	return;
 }
 
-void xf86DisableIOPorts(ScreenNum)
-int ScreenNum;
+void xf86DisableIO()
 {
 HFILE hfd;
 	ULONG dlen;
@@ -104,8 +106,8 @@ HFILE hfd;
 	   (ULONG)0, FILE_SYSTEM, FILE_OPEN,
 	   OPEN_SHARE_DENYNONE|OPEN_FLAGS_NOINHERIT|OPEN_ACCESS_READONLY,
 	   (ULONG)0) != 0) {
-		ErrorF("Error opening fastio$ driver...\n");
-		ErrorF("Please install xf86sup.sys in config.sys!\n");
+		xf86Msg(X_ERROR,"Error opening fastio$ driver...\n");
+		xf86Msg(X_ERROR,"Please install xf86sup.sys in config.sys!\n");
 		return;
 	}
 	callgate[0] = callgate[1] = 0;
@@ -114,7 +116,7 @@ HFILE hfd;
 		NULL, 0, NULL,
 		(ULONG*)&callgate[2], sizeof(USHORT), &dlen);
 	if (rc) {
-		ErrorF("xf86-OS/2: DisableIOPorts failed, rc=%d, dlen=%d\n",
+		xf86Msg(X_ERROR,"DisableIOPorts failed, rc=%d, dlen=%d\n",
 			rc,dlen);
 		DosClose(hfd);
 		return;

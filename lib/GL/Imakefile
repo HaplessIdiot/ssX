@@ -9,6 +9,10 @@ DRIDIRS = dri
 #endif
 SUBDIRS = glx $(DRIDIRS)
 
+#ifdef SharedGLReqs
+REQUIREDLIBS = SharedGLReqs
+#endif
+
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 
@@ -35,7 +39,11 @@ DependSubdirs($(SUBDIRS))
     DRMDONES = dri/drm/DONE
 #endif
 
+#ifdef OS2Architecture
+        OBJS = $(LIBNAME).a
+#else
         OBJS = $(GLXOBJS)  $(DRIOBJS)  $(DRMOBJS)
+#endif
 #if HasSharedLibraries
        UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRMUOBJS)
 #else

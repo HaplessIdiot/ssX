@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.h /main/13 1996/11/24 17:35:40 rws $
- *	$XFree86: xc/programs/xterm/data.h,v 3.15 1999/03/14 03:22:35 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.h,v 3.16 1999/04/11 13:11:31 dawes Exp $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -42,23 +42,23 @@
 #include <sys/select.h>
 #endif
 
+#include <setjmp.h>
+
 extern XtAppContext app_con;
 
 #if OPT_TEK4014
-extern Char *Tbptr;
-extern Char *Tbuffer;
 extern Char *Tpushb;
 extern Char *Tpushback;
+extern PtyData *Tbuffer;
 extern TekLink *TekRefresh;
 extern TekWidget tekWidget;
 extern int TEKgcFontMask;
 extern int T_lastx;
 extern int T_lasty;
-extern int Tbcnt;
 extern int Ttoggled;
+extern jmp_buf Tekend;
 #endif
 
-extern Char *bptr;
 #ifdef ALLOWLOGGING
 extern char log_def_name[];
 #endif
@@ -84,10 +84,10 @@ extern Boolean sameName;
 extern Boolean sunKeyboard;
 #endif
 
-extern Char VTbuffer[];
+extern PtyData VTbuffer;
 extern int am_slave;
-extern int bcnt;
 extern int max_plus1;
+extern jmp_buf VTend;
 
 #ifdef DEBUG
 extern int debug;

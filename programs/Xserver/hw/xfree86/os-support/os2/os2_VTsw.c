@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.7 1996/05/13 06:40:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.8 1996/12/23 06:50:32 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -124,7 +124,8 @@ void * arg;
 /* Sanity check */
 	  if(NotifyType==1){
 		if (!SwitchedToWPS) {
-			ErrorF("xf86-OS/2: abnormal switching back to server detected\n");
+			xf86Msg(X_ERROR,
+				"Abnormal switching back to server detected\n");
 		}
 	  }
 
@@ -141,7 +142,8 @@ void * arg;
                             if(rc==ERROR_TIMEOUT){
                                timeout_count++;
                                if(timeout_count>25){
-                                  ErrorF("xf86-OS/2: Server timeout on VT switch request. Server was killed\n");
+                                  xf86Msg(X_ERROR,
+					  "Server timeout on VT switch request. Server was killed\n");
                                   DosExit(1L,0);
                                   }
                                if(WaitingForAccess) {  /* The server is resetting */
@@ -154,7 +156,8 @@ void * arg;
           }
          if(NotifyType==1) rc=DosPostEventSem(hevServerHasFocus);
          if((NotifyType==0)&&(!SwitchedToWPS))
-               ErrorF("xf86-OS/2: abnormal switching away from server!\n");
+		xf86Msg(X_ERROR,
+			"Abnormal switching away from server!\n");
 	} /* endwhile */
 
 /* End of thread */
@@ -219,17 +222,19 @@ void os2ServerVideoAccess()
 
 void os2RecoverFromPopup()
 {
-   int j;
-       if(os2PopupErrorPending){
-          for (j = 0; j < screenInfo.numScreens; j++)
-          (XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(LEAVE, j);
-          for (j = 0; j < screenInfo.numScreens; j++)
-          (XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(ENTER, j);
-          /* Turn screen saver off when switching back */
-          SaveScreens(SCREEN_SAVER_FORCER,ScreenSaverReset);
-          os2PopupErrorPending=FALSE;
-          DosPostEventSem(hevErrorPopupDetected);
-      }
+	int j;
+	if (os2PopupErrorPending) {
+#if 0
+		for (j = 0; j < screenInfo.numScreens; j++)
+			(XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(LEAVE, j);
+		for (j = 0; j < screenInfo.numScreens; j++)
+			(XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(ENTER, j);
+#endif
+		/* Turn screen saver off when switching back */
+		SaveScreens(SCREEN_SAVER_FORCER,ScreenSaverReset);
+		os2PopupErrorPending=FALSE;
+		DosPostEventSem(hevErrorPopupDetected);
+	}
 }
 
 /* This checks wether a popup event is waiting. The semaphore would be reset
@@ -238,15 +243,20 @@ void os2RecoverFromPopup()
 
 void os2CheckPopupPending()
 {
-   int j;
-   ULONG postCount;
-   return;  /* For now this is a no-op */
-   DosQueryEventSem(hevPopupPending,&postCount);
-   if(postCount==0) {               /* We have a popup pending */
-          for (j = 0; j < screenInfo.numScreens; j++)
-          (XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(LEAVE, j);
-          DosPostEventSem(hevPopupPending);
-        }
+	int j;
+	ULONG postCount;
 
+	return;  /* For now this is a no-op */
+
+#if 0
+	DosQueryEventSem(hevPopupPending,&postCount);
+	if (postCount==0) {               /* We have a popup pending */
+#if 0
+		for (j = 0; j < screenInfo.numScreens; j++)
+			(XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(LEAVE, j);
+#endif
+		DosPostEventSem(hevPopupPending);
+	}
+#endif
 }
 

@@ -54,7 +54,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.35 1999/03/28 15:33:22 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.36 1999/04/11 13:11:35 dawes Exp $ */
 
 /* screen.c */
 
@@ -281,7 +281,7 @@ Reallocate(
 void
 ScreenWrite (
 	TScreen *screen,
-	Char *str,
+	PAIRED_CHARS(Char *str, Char *str2),
 	register unsigned flags,
 	register unsigned cur_fg_bg,
 	register int length)		/* length of string */
@@ -320,6 +320,16 @@ ScreenWrite (
 	} else {
 		memcpy(col, str, length);
 	}
+	if_OPT_WIDE_CHARS(screen,{
+		Char *wc;
+		if (str2 != 0
+		 && (wc = SCRN_BUF_WIDEC(screen, screen->cur_row) + screen->cur_col) != 0) {
+			if (flags & INVISIBLE)
+				memset(wc, ' ', length);
+			else
+				memcpy(wc, str2, length);
+		}
+	})
 
 	flags &= ATTRIBUTES;
 	flags |= CHARDRAWN;
@@ -366,8 +376,10 @@ ScrnClearLines (TScreen *screen, ScrnBuf sb, int where, int n, int size)
 					screen->save_ptr[i+j] = 0;
 				else if (j == OFF_ATTRS)
 					memset(screen->save_ptr[i+j], flags, size);
+#if OPT_ISO_COLORS
 				else if (j == OFF_COLOR)
 					memset(screen->save_ptr[i+j], xtermColorPair(), size);
+#endif
 				else
 					bzero( screen->save_ptr[i+j], size);
 			}
@@ -602,6 +614,7 @@ ScrnRefresh (
 #endif
 #if OPT_WIDE_CHARS
 	   Char *widec = 0;
+#define WIDEC_PTR(cell) widec ? &widec[cell] : 0
 #endif
 	   Char cs = 0;
 	   register Char *chars;
@@ -745,13 +758,15 @@ ScrnRefresh (
 		 || (cb[col] != cs)
 #endif
 		 ) {
-		   TRACE(("%s @%d, calling drawXtermText %d..%d:%.*s\n",
+		   TRACE(("%s @%d, calling drawXtermText %d..%d:%s\n",
 		   	__FILE__, __LINE__,
 		   	lastind, col,
-			col - lastind, &chars[lastind]))
+			visibleChars(
+				PAIRED_CHARS(&chars[lastind], WIDEC_PTR(lastind)),
+				col - lastind)))
 		   x = drawXtermText(screen, flags, gc, x, y,
 		   	cs,
-			PAIRED_CHARS(&chars[lastind], &widec[lastind]),
+			PAIRED_CHARS(&chars[lastind], WIDEC_PTR(lastind)),
 			col - lastind);
 		   resetXtermGC(screen, flags, hilite);
 
@@ -777,13 +792,13 @@ ScrnRefresh (
 			chars[col] = ' ';
 	   }
 
-	   TRACE(("%s @%d, calling drawXtermText %d..%d:%.*s\n",
+	   TRACE(("%s @%d, calling drawXtermText %d..%d:%s\n",
 	   	__FILE__, __LINE__,
 		lastind, col,
-		col - lastind, &chars[lastind]))
+		visibleChars(PAIRED_CHARS(&chars[lastind], WIDEC_PTR(lastind)), col - lastind)))
 	   drawXtermText(screen, flags, gc, x, y,
 	   	cs,
-		PAIRED_CHARS(&chars[lastind], &widec[lastind]),
+		PAIRED_CHARS(&chars[lastind], WIDEC_PTR(lastind)),
 		col - lastind);
 	   resetXtermGC(screen, flags, hilite);
 	}

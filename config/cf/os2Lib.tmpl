@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2Lib.tmpl /main/1 1996/10/31 14:47:31 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.4 1996/12/27 06:50:26 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.5 1997/01/05 11:49:40 dawes Exp $
 
 /*
  * OS2/EMX shared library template
@@ -24,6 +24,10 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.4 1996/12/27 06:50:26 dawes Exp $
 #define SharedOldXReqs $(LDPRELIB) $(XLIBONLY)
 #define SharedPexReqs $(LDPRELIB) $(XLIBONLY) MathLibrary
 #define SharedXpReqs $(LDPRELIBS) $(XLIB)
+#define SharedXvReqs $(LDPRELIBS) $(XLIB)
+#define SharedGLReqs $(LDPRELIBS) $(XLIB)
+#define SharedXfontReqs $(LDPRELIBS) $(XLIB)
+#define SharedXpmReqs $(LDPRELIBS) $(XLIB)
 #else
 #define SharedXtReqs ..\\..\\exports\\lib\\ ICE SM X11
 #define SharedXawReqs ..\\..\\exports\\lib\\ Xmu Xt X11 Xext
@@ -36,6 +40,10 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.4 1996/12/27 06:50:26 dawes Exp $
 #define SharedOldXReqs ..\\..\\exports\\lib\\ X11 Xext
 #define SharedPexReqs ..\\..\\exports\\lib\\ X11 m
 #define SharedXpReqs ..\\..\\exports\\lib\\ X11 Xext
+#define SharedXvReqs ..\\..\\exports\\lib\\ X11 Xext
+#define SharedGLReqs ..\\..\\exports\\lib\\ X11 Xext
+#define SharedXfontReqs ..\\..\\exports\\lib\\ X11
+#define SharedXpmReqs ..\\..\\exports\\lib\\ X11
 #endif
 
 /*
@@ -57,6 +65,8 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.4 1996/12/27 06:50:26 dawes Exp $
 #define SDlibXtst -lXtst_s
 #define SDlibPEX5 -lPEX5_s
 #define SDlibXp -lXp_s
+#define SDlibXv -lXv_s
+#define SDlibXv -lGL_s
 #else
 #define SDlibX11 -lX11
 #define SDlibXExt -lXExt
@@ -68,6 +78,8 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.4 1996/12/27 06:50:26 dawes Exp $
 #define SDlibXtst -lXtst
 #define SDlibPEX5 -lPEX5
 #define SDlibXp -lXp
+#define SDlibXv -lXv
+#define SDlibGL -lGL
 #endif
 
 /*
@@ -116,4 +128,12 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.4 1996/12/27 06:50:26 dawes Exp $
 #if SharedLibXp
  DEPEXTENSIONLIB = 
     EXTENSIONLIB = _Use(SDlibXp,-L$(EXTENSIONSRC)/lib SDlibXp)
+#endif
+#if SharedLibXv
+ DEPEXTENSIONLIB = 
+    EXTENSIONLIB = _Use(SDlibXv,-L$(EXTENSIONSRC)/lib SDlibXv)
+#endif
+#if SharedLibGL
+ DEPEXTENSIONLIB = 
+    EXTENSIONLIB = _Use(SDlibGL,-L$(EXTENSIONSRC)/lib SDlibGL)
 #endif

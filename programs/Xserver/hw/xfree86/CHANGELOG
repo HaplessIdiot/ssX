@@ -1,4 +1,16 @@
 XFree86 3.9Pl (29 April 1999)
+2797. Update xfontsel to display appropriate glyphs for ISO10646 fonts
+      (Mark Leisher).
+2796. Add support for building XF86Setup with ncurses on NetBSD and OpenBSD
+      (#2734, Matthieu Herrb).
+2795. Fix vidmem map/unmap mismatch in the TGA driver (#2733, Matt Grossman).
+2794. A minor interlace improvement for the PM2 Xv driver (#2731,
+      Michael Schimek).
+2793. Fix color expansion bug in the SiS driver (#2729, Juanjo Santamarta).
+2792. Major resync for OS/2 (#2727, 2732, 2735, Holger Veit).
+2791. Xterm patch #98 (#2726, 2730, Thomas Dickey).
+2790. Fix a build V4L driver build problem (#2725, David Woodhouse).
+2789. Xterm patch #97 (#2724, Thomas Dickey).
 2788. Move the VTInit and VTSysReq keywords from the Keyboard section to
       the ServerFlags section (as options) (David Dawes).
 2787. Remove the legacy ServerNumLock and "RightAlt", etc special key mapping
@@ -7900,4 +7912,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.737 1999/04/28 15:04:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.738 1999/04/29 05:12:48 dawes Exp $

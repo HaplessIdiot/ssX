@@ -1,5 +1,5 @@
 LIBRARY Xaw INITINSTANCE TERMINSTANCE
-DESCRIPTION "$XFree86$"
+DESCRIPTION "@#XFREE86:4.0#@ $XFree86: xc/lib/Xaw/Xawos2.def,v 3.6 1997/07/19 05:43:02 dawes Exp $"
 CODE
 	PRELOAD
 DATA
@@ -182,10 +182,12 @@ EXPORTS
         smeObjectClass @ 181
         stripChartClassRec @ 182
         stripChartWidgetClass @ 183
-        _XawDefaultTextTranslations1 @ 184
-        _XawDefaultTextTranslations2 @ 185
-        _XawDefaultTextTranslations3 @ 186
+;        _XawDefaultTextTranslations1 @ 184
+;        _XawDefaultTextTranslations2 @ 185
+;        _XawDefaultTextTranslations3 @ 186
 ;        vendorShellClassRec @ 187
 	_XawVendorShellClassRec @ 187
 ;        vendorShellWidgetClass @ 188
-        _XawDefaultTextTranslations4 @ 189
+;        _XawDefaultTextTranslations4 @ 189
+        _XawDefaultTextTranslations @ 190
+	_XawTextSrcUndo @ 191

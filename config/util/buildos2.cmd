@@ -1,5 +1,5 @@
 /* REXX */
-/* $XFree86: xc/config/util/buildos2.cmd,v 3.7 1997/01/05 11:50:00 dawes Exp $
+/* $XFree86: xc/config/util/buildos2.cmd,v 3.8 1997/06/03 14:11:05 hohndel Exp $
  * this file is supposed to run from the xc/ dir.
  * you must copy it manually to there before using. It is just here
  * in order not to be in the root dir.
@@ -36,7 +36,7 @@ exists:
 
 create_makefile:
 IF exists(Makefile) THEN del Makefile
-CALL LINEOUT 'Makefile','RELEASE = "Release 6.3"',1
+CALL LINEOUT 'Makefile','RELEASE = "Release 6.4"',1
 CALL LINEOUT 'Makefile','SHELL = /bin/sh'
 CALL LINEOUT 'Makefile','RM = rm -f'
 CALL LINEOUT 'Makefile','MV = mv'

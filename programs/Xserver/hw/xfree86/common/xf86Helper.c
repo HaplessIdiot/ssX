@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.37 1999/04/25 10:02:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.38 1999/04/28 05:36:13 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1098,6 +1098,7 @@ xf86ErrorF(const char *format, ...)
 void
 xf86LogInit()
 {
+#ifndef __EMX__
     char *lf;
 
 #define LOGSUFFIX ".log"
@@ -1120,6 +1121,7 @@ xf86LogInit()
 #endif
 
 #undef LOGSUFFIX
+#endif /* __EMX__ */
 }
 
 void

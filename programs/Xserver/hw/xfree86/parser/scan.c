@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.4 1999/01/14 13:05:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.5 1999/04/29 05:13:02 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -73,6 +73,10 @@ static char *configPath;		/* path to config file */
 static char *configSection;		/* name of current section being parsed */
 static int pushToken = LOCK_TOKEN;
 LexRec val;
+
+#ifdef __EMX__
+extern char *__XOS2RedirRoot(char *path);
+#endif
 
 /* 
  * StrToUL --
@@ -451,8 +455,10 @@ xf86OpenConfigFile (char *filename)
 		 * and another one with the -xf86config option
 		 */
 		xwinhome = getenv ("X11ROOT");	/* get drive letter */
-		if (!xwinhome)
-			FatalError ("X11ROOT environment variable not set\n");
+		if (!xwinhome) {
+			fprintf (stderr,"X11ROOT environment variable not set\n");
+			exit(2);
+		}
 		strcpy (configPaths[pcount], __XOS2RedirRoot ("/XFree86/lib/X11/XConfig"));
 #endif
 
