@@ -32,12 +32,14 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.19 2003/09/13 21:32:59 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.20tsi Exp $ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 /*
   X-TrueType Server -- invented by Go Watanabe.
@@ -158,7 +160,7 @@ static int faceTableCount = 0;
 static int
 FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
 {
-    int i, error, num;
+    int i, num;
     TT_Face face;
     TT_Face_Properties prop;
     TT_Glyph glyph;
@@ -169,12 +171,12 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
              "FreeType_OpenFace: %s %s %s\n",
              refHints->fontName, refHints->familyName, refHints->ttFontName));
 
-    if ((error = TT_Open_Face(engine, refHints->ttFontName, &face))) {
+    if (TT_Open_Face(engine, refHints->ttFontName, &face)) {
         fprintf(stderr, "freetype: can't open face: %s\n", refHints->ttFontName);
         return -1;
     }
 
-    if ((error = TT_Get_Face_Properties(face, &prop))) {
+    if (TT_Get_Face_Properties(face, &prop)) {
         TT_Close_Face(face);
         fprintf(stderr, "freetype: can't get face property.\n");
         return -1;
@@ -186,8 +188,8 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
             fprintf(stderr, "Bad face collection:%d\n", refHints->ttcno);
             return -1;
         }
-        if ((error = TT_Open_Collection(engine, refHints->ttFontName,
-                                        refHints->ttcno, &face))) {
+        if (TT_Open_Collection(engine, refHints->ttFontName,
+                                        refHints->ttcno, &face)) {
             fprintf(stderr, "Can't Open face collection:%d\n",
                     refHints->ttcno);
             return -1;
@@ -202,7 +204,7 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
             faceTable[i].ttcno == refHints->ttcno) {
             /* reopen */
             if (faceTable[i].flag) {
-                if ((error = TT_Get_Face_Properties(face, &prop))) {
+                if (TT_Get_Face_Properties(face, &prop)) {
                     TT_Close_Face(face);
                     fprintf(stderr, "freetype: can't get face property.\n");
                     return -1;
@@ -212,7 +214,7 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
                     fprintf(stderr, "freetype: can't get charmap count.\n");
                     return -1;
                 }
-                if ((error = TT_New_Glyph(face, &glyph))) {
+                if (TT_New_Glyph(face, &glyph)) {
                     TT_Close_Face(face);
                     fprintf(stderr, "freetype: can't get new glyph.\n");
                     return -1;
@@ -222,7 +224,7 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
                     TT_EBLC eblc; /* fake */
 
                     if (!TT_Get_Face_Bitmaps(face, &eblc)) {
-                        if ((error = TT_New_SBit_Image(&sbit))) {
+                        if (TT_New_SBit_Image(&sbit)) {
                             TT_Close_Face(face);
                             fprintf(stderr,
                                     "freetype: can't get new sbit image.\n");
@@ -253,7 +255,7 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
         return -1;
     }
 
-    if ((error = TT_Get_Face_Properties(face, &prop))) {
+    if (TT_Get_Face_Properties(face, &prop)) {
         TT_Close_Face(face);
         fprintf(stderr, "freetype: can't get face property.\n");
         return -1;
@@ -263,7 +265,7 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
         fprintf(stderr, "freetype: can't get charmap count.\n");
         return -1;
     }
-    if ((error = TT_New_Glyph(face, &glyph))) {
+    if (TT_New_Glyph(face, &glyph)) {
         TT_Close_Face(face);
         fprintf(stderr, "freetype: can't get new glyph.\n");
         return -1;
@@ -273,7 +275,7 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
         TT_EBLC eblc; /* use only for checking the stuff */
 
         if (!TT_Get_Face_Bitmaps(face, &eblc)) {
-            if ((error = TT_New_SBit_Image(&sbit))) {
+            if (TT_New_SBit_Image(&sbit)) {
                 TT_Close_Face(face);
                 fprintf(stderr, "freetype: can't get new sbit image.\n");
                 return -1;
@@ -358,7 +360,7 @@ FreeType_OpenFont(FreeTypeFont *ft,
                   FontScalablePtr vals, int glyph,
                   FreeTypeOpenFaceHints const *refHints)
 {
-    int mapID, fid, error, result;
+    int mapID, fid, result;
     FreeTypeFaceInfo *fi;
     TT_Instance instance;
     double base_size;
@@ -395,14 +397,13 @@ FreeType_OpenFont(FreeTypeFont *ft,
     TT_Get_CharMap(fi->face, mapID, &ft->charmap);
 
     /* create instance */
-    if ((error = TT_New_Instance(fi->face, &instance))) {
+    if (TT_New_Instance(fi->face, &instance)) {
         result = BadFontName;
         goto deinitQuit;
     }
 
     /* set resolution of instance */
-    if ((error = TT_Set_Instance_Resolutions(instance,
-                                             (int)vals->x, (int)vals->y))) {
+    if (TT_Set_Instance_Resolutions(instance, (int)vals->x, (int)vals->y)) {
         result = BadFontName;
         goto doneInstQuit;
     }
@@ -423,8 +424,7 @@ FreeType_OpenFont(FreeTypeFont *ft,
          * The size depend on the height, not the width.
          * So use point_matrix[3].
          */
-        if ((error = TT_Set_Instance_CharSize(instance,
-                                              base_size *64))) {
+        if (TT_Set_Instance_CharSize(instance, base_size *64)) {
             result = BadFontName;
             goto doneInstQuit;
         }
@@ -1776,17 +1776,17 @@ is_matrix_unit(FreeTypeFont *ft, FontScalablePtr vals)
 }
 
 int
-FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
-                      format, fmask, non_cachable_font)
-     FontPathElementPtr fpe;
-     FontPtr            *ppFont;
-     int                flags;
-     FontEntryPtr       entry;
-     char               *fileName;
-     FontScalablePtr    vals;
-     fsBitmapFormat     format;
-     fsBitmapFormatMask fmask;
-     FontPtr            non_cachable_font;  /* We don't do licensing */
+FreeTypeOpenScalable (
+     FontPathElementPtr fpe,
+     FontPtr            *ppFont,
+     int                flags,
+     FontEntryPtr       entry,
+     char               *fileName,
+     FontScalablePtr    vals,
+     fsBitmapFormat     format,
+     fsBitmapFormatMask fmask,
+     FontPtr            non_cachable_font   /* We don't do licensing */
+)
 {
     int result = Successful;
     int i;

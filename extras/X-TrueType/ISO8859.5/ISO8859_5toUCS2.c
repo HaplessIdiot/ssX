@@ -35,12 +35,15 @@ Notice===
 
    Added CP1251 encoding (Bulgarian and Belarussian uses it)
    
- */
+*/
+/* $XFree86$ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"

@@ -31,12 +31,14 @@
 
 Notice===
  */
-/* $XFree86: xc/extras/X-TrueType/xttcconv.c,v 1.11 2003/02/25 22:10:15 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttcconv.c,v 1.12tsi Exp $ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 /* ***This file depend on XFree86 Loader architecture*** */
 

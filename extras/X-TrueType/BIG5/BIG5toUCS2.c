@@ -33,12 +33,14 @@ Notice===
    This table data derived from Unicode, Inc.
    (ftp://ftp.unicode.org/Public/MAPPINGS/EASTASIA/OTHER/BIG5.TXT)
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/X-TrueType/BIG5/BIG5toUCS2.c,v 1.4tsi Exp $ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"

@@ -34,11 +34,14 @@ Notice===
    (ftp://ftp.unicode.org/Public/MAPPINGS/ISO8859/8859-8.TXT)
 
  */
+/* $XFree86$ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"

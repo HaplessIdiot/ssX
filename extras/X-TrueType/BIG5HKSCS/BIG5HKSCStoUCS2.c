@@ -39,12 +39,14 @@ Notice===
    (http://www.info.gov.hk/digital21/chi/hkscs/download/isov2cmp.txt)
  */
 
-/* $XFree86: xc/extras/X-TrueType/BIG5HKSCS/BIG5HKSCStoUCS2.c,v 1.1 2001/03/06 18:54:40 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/BIG5HKSCS/BIG5HKSCStoUCS2.c,v 1.2tsi Exp $ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"

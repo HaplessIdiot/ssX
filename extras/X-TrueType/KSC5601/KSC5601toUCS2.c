@@ -35,11 +35,14 @@ Notice===
    convert UHC to genuine KSC5601 by Jungshik Shin <jshin@mailaps.org>
    (http://jshin.net/faq/KSC5601.TXT.gz)
  */
+/* $XFree86$ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"

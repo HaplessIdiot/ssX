@@ -30,12 +30,14 @@
 Notice===
  */
 
-/* $XFree86: xc/extras/X-TrueType/BIG5HKSCS/main.c,v 1.1 2001/03/06 18:54:42 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/BIG5HKSCS/main.c,v 1.2tsi Exp $ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"

@@ -41,11 +41,14 @@ Notice===
 	NOTE: iso-8859-6-8 X11 name is *-iso8859-6.8x
 
  */
+/* $XFree86$ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"
