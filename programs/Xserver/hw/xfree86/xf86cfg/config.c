@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.c,v 1.2 2000/05/18 16:29:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.c,v 1.3 2000/10/20 14:59:05 alanh Exp $
  */
 
 #include "config.h"
@@ -42,9 +42,22 @@
 #include <X11/Xaw/Command.h>
 #include <X11/Shell.h>
 
-#define CONFPATH "%A,%R,/etc/X11/%R,%P/etc/X11/%R,%E,%F,/etc/X11/%F," \
-		 "%P/etc/X11/%F,%D/%X,/etc/X11/%X,/etc/%X,%P/etc/X11/%X.%H," \
-		 "%P/etc/X11/%X,%P/lib/X11/%X.%H,%P/lib/X11/%X"
+#define CONFPATH	"%A," "%R," \
+			"/etc/X11/%R," "%P/etc/X11/%R," \
+			"%E," "%F," \
+			"/etc/X11/%F," "%P/etc/X11/%F," \
+			"%D/%X," \
+			"/etc/X11/%X-%M," "/etc/X11/%X," "/etc/%X," \
+			"%P/etc/X11/%X.%H," "%P/etc/X11/%X-%M," \
+			"%P/etc/X11/%X," \
+			"%P/lib/X11/%X.%H," "%P/lib/X11/%X-%M," \
+			"%P/lib/X11/%X"
+#define USER_CONFPATH	"/etc/X11/%S," "%P/etc/X11/%S," \
+                        "/etc/X11/%G," "%P/etc/X11/%G," \
+			"%P/etc/X11/%X.%H," "%P/etc/X11/%X-%M," \
+			"%P/etc/X11/%X," \
+			"%P/lib/X11/%X.%H," "%P/lib/X11/%X-%M," \
+			"%P/lib/X11/%X"
 
 /*
  * Prototypes
@@ -118,10 +131,12 @@ StartConfig(void)
     first = 0;
 
     /* Read initial configuration */
-    if ((filename = xf86openConfigFile(CONFPATH, XF86Config_path, NULL)) == NULL) {
+    if ((filename = xf86openConfigFile(getuid() == 0 ? CONFPATH : USER_CONFPATH,
+				       XF86Config_path, NULL)) == NULL) {
 	fprintf(stderr, "Cannot to open config file.\n");
 	exit(1);
     }
+    XF86Config_path = filename;
     if ((XF86Config = xf86readConfigFile()) == NULL) {
 	fprintf(stderr, "Problem when parsing config file\n");
 	exit(1);

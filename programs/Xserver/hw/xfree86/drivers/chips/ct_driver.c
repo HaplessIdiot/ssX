@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.95 2000/09/29 08:59:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.96 2000/10/23 12:10:10 alanh Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -564,6 +564,7 @@ typedef enum {
     OPTION_FP_CLOCK_32,
     OPTION_SET_MCLK,
     OPTION_ROTATE,
+    OPTION_NO_TMED,
     OPTION_USE_FB
 } CHIPSOpts;
 
@@ -636,6 +637,7 @@ static OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_32,	"FPClock32",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_SET_MCLK,		"SetMclk",	OPTV_FREQ,      {0}, FALSE },
+    { OPTION_NO_TMED,		"NoTMED",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_USE_FB,		"UseFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
@@ -5263,7 +5265,8 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ChipsNew->FR[0x11] &= ~0x8C;	/* Dither clear                 */
 	ChipsNew->FR[0x11] |= 0x01;	/* 16 frame FRC                 */
 	ChipsNew->FR[0x11] |= 0x84;	/* Dither                       */
-	if (cPtr->Flags & ChipsTMEDSupport) {
+	if ((cPtr->Flags & ChipsTMEDSupport) &&
+		!xf86ReturnOptValBool(cPtr->Options, OPTION_NO_TMED, FALSE)) {
 	    ChipsNew->FR[0x73] &= 0x4F; /* Clear TMED                   */
 	    ChipsNew->FR[0x73] |= 0x80; /* Enable TMED                  */
 	    ChipsNew->FR[0x73] |= 0x30; /* TMED 256 Shades of RGB       */

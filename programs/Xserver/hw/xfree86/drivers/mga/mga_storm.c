@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.76 2000/10/11 16:50:36 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.77 2000/10/21 22:27:19 mvojkovi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -904,7 +904,7 @@ MGAStormEngineInit(ScrnInfoPtr pScrn)
     pMga->MAccess = maccess;
     pMga->PlaneMask = ~0;
     if((pMga->Chipset != PCI_CHIP_MGAG100) 
-       && (pMga->Chipset != PCI_CHIP_MGAG100))
+       && (pMga->Chipset != PCI_CHIP_MGAG100_PCI))
 	OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
     pMga->FgColor = 0;
     OUTREG(MGAREG_FCOL, pMga->FgColor);

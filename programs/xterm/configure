@@ -5870,7 +5870,7 @@ echo "$ac_t""$with_warnings" 1>&6
 if test "$with_warnings" = yes
 then
 	
-if test -n "$GCC"
+if test "$GCC" = yes
 then
 cat > conftest.i <<EOF
 #ifndef GCC_PRINTF
@@ -5886,7 +5886,7 @@ cat > conftest.i <<EOF
 #define GCC_UNUSED /* nothing */
 #endif
 EOF
-if test -n "$GCC"
+if test "$GCC" = yes
 then
 	echo "checking for $CC __attribute__ directives" 1>&6
 echo "configure:5893: checking for $CC __attribute__ directives" >&5
@@ -5943,7 +5943,7 @@ rm -rf conftest*
 fi
 
 	
-if test -n "$GCC"
+if test "$GCC" = yes
 then
 		cat > conftest.$ac_ext <<EOF
 #line 5950 "configure"

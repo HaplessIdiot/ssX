@@ -1,4 +1,33 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.2 2000/10/23 21:16:51 tsi Exp $ */
+/*
+ * Copyright (c) 2000 by Conectiva S.A. (http://www.conectiva.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * CONECTIVA LINUX BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Except as contained in this notice, the name of Conectiva Linux shall
+ * not be used in advertising or otherwise to promote the sale, use or other
+ * dealings in this Software without prior written authorization from
+ * Conectiva Linux.
+ *
+ * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
+ *
+ * $XFree86$
+ */
 
 #ifndef _VESA_H_
 #define _VESA_H_
@@ -34,12 +63,20 @@
 /* bank switching */
 #include "mibank.h"
 
+/* Dga definitions */
+#include "dgaproc.h"
+
 #ifdef RENDER
 #include "picturestr.h"
 #endif
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
+
+#include "xf1bpp.h"
+#include "xf4bpp.h"
+#include "fb.h"
+#include "afb.h"
 
 #define VESA_VERSION		4000
 #define VESA_NAME		"VESA"
@@ -58,6 +95,9 @@ typedef struct _VESARec
     EntityInfoPtr pEnt;
     CARD16 major, minor;
     VBEInfoBlock *vbeInfo;
+    GDevPtr device;
+    pciVideoPtr pciInfo;
+    PCITAG pciTag;
     miBankInfoRec bank;
     int curBank, bankSwitchWindowB;
     CARD16 maxBytesPerScanline;
@@ -71,9 +111,12 @@ typedef struct _VESARec
     CARD32 *pal, *savedPal;
     CARD8 *fonts;
     xf86MonPtr monitor;
-    Bool shadowFB;
+    Bool shadowFB, primary;
     CARD8 *shadowPtr;
     CARD32 windowAoffset;
+    /* DGA info */
+    DGAModePtr pDGAMode;
+    int nDGAMode;
 } VESARec, *VESAPtr;
 
 #define FARP(p)		(((unsigned)(p & 0xffff0000) >> 12) | (p & 0xffff))

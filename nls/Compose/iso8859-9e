@@ -1,17 +1,16 @@
-# $TOG: fcd8859-15 /main/2 1998/06/17 15:53:45 kaleb $
 #
-# ISO 8859-15 (Latin1) Compose Sequence
-#
-# $XFree86: xc/nls/Compose/iso8859-15,v 1.2 1999/08/28 09:00:35 dawes Exp $
+# ISO 8859-9e (Latin??) Compose Sequence
 #
 # Sequence Definition
+#
+# $XFree86: xc/nls/Compose/iso8859-9e,v 1.1 1999/06/06 14:05:57 dawes Exp $
 #
 # <Multi_key> Means <Compose>
 # Special Character
 <Multi_key> <plus> <plus>		: "#"	numbersign
 <Multi_key> <apostrophe> <space>	: "'"	apostrophe
 <Multi_key> <space> <apostrophe>	: "'"	apostrophe
-<Multi_key> <A> <T>			: "@"	at
+<Multi_key> <A> <A>			: "@"	at
 <Multi_key> <parenleft> <parenleft>	: "["	bracketleft
 <Multi_key> <slash> <slash>		: "\\"	backslash
 <Multi_key> <slash> <less>		: "\\"	backslash
@@ -56,8 +55,8 @@
 <Multi_key> <equal> <L>			: "\243"	sterling
 <Multi_key> <C> <equal>			: "\244"	EuroSign
 <Multi_key> <equal> <C>			: "\244"	EuroSign
-<Multi_key> <E> <equal>			: "\244"	EuroSign
-<Multi_key> <e> <equal>			: "\244"	EuroSign
+<Multi_key> <e> <equal>                 : "\244"        EuroSign
+<Multi_key> <equal> <e>                 : "\244"        EuroSign
 <Multi_key> <y> <minus>			: "\245"	yen
 <Multi_key> <minus> <y>			: "\245"	yen
 <Multi_key> <Y> <minus>			: "\245"	yen
@@ -90,8 +89,7 @@
 <Multi_key> <0> <c>			: "\251"	copyright
 <Multi_key> <C> <0>			: "\251"	copyright
 <Multi_key> <0> <C>			: "\251"	copyright
-<Multi_key> <parenleft> <c>		: "\251"	copyright
-<Multi_key> <parenleft> <C>		: "\251"	copyright
+<Multi_key> <parenleft> <c>             : "\251"        copyright
 <Multi_key> <a> <underscore>		: "\252"	ordfeminine
 <Multi_key> <underscore> <a>		: "\252"	ordfeminine
 <Multi_key> <A> <underscore>		: "\252"	ordfeminine
@@ -144,7 +142,7 @@
 <Multi_key> <minus> <minus>		: "\255"	hyphen
 <Multi_key> <R> <O>			: "\256"	registered
 <Multi_key> <O> <R>			: "\256"	registered
-<Multi_key> <parenleft> <r>		: "\256"	registered
+<Multi_key> <parenleft> <r>             : "\256"        registered
 <Multi_key> <minus> <asciicircum>	: "\257"	macron
 <Multi_key> <asciicircum> <minus>	: "\257"	macron
 <Multi_key> <underscore> <asciicircum>	: "\257"	macron
@@ -177,9 +175,8 @@
 <Multi_key> <diaeresis> <A>		: "\304"	Adiaeresis
 <Multi_key> <A> <asterisk>		: "\305"	Aring
 <Multi_key> <asterisk> <A>		: "\305"	Aring
-<Multi_key> <A> <A>			: "\305"	Aring
-<Multi_key> <A> <O>			: "\305"	Aring
-<Multi_key> <A> <E>			: "\306"	AE
+<Multi_key> <A> <A>			: "\305"        Aring
+<Multi_key> <E> <E>			: "\306"	SCHWA
 <Multi_key> <a> <grave>			: "\340"	agrave
 <Multi_key> <grave> <a>			: "\340"	agrave
 <Multi_key> <a> <acute>			: "\341"	aacute
@@ -200,11 +197,8 @@
 <Multi_key> <diaeresis> <a>		: "\344"	adiaeresis
 <Multi_key> <a> <asterisk>		: "\345"	aring
 <Multi_key> <asterisk> <a>		: "\345"	aring
-<Multi_key> <a> <a>			: "\345"	aring
-<Multi_key> <a> <o>			: "\345"	aring
-<Multi_key> <a> <e>			: "\346"	ae
-<Multi_key> <acute> <C>			: "\307"	Ccedilla
-<Multi_key> <acute> <c>			: "\347"	ccedilla
+<Multi_key> <a> <a>			: "\345"        aring
+<Multi_key> <e> <e>			: "\346"	schwa
 <Multi_key> <C> <comma>			: "\307"	Ccedilla
 <Multi_key> <comma> <C>			: "\307"	Ccedilla
 <Multi_key> <c> <comma>			: "\347"	ccedilla
@@ -241,6 +235,16 @@
 <Multi_key> <quotedbl> <e>		: "\353"	ediaeresis
 <Multi_key> <e> <diaeresis>		: "\353"	ediaeresis
 <Multi_key> <diaeresis> <e>		: "\353"	ediaeresis
+<Multi_key> <G> <U>                     : "\320"        Gbreve
+<Multi_key> <G> <parenleft>             : "\320"        Gbreve
+<Multi_key> <parenleft> <G>             : "\320"        Gbreve
+<Multi_key> <G> <breve>                 : "\320"        Gbreve
+<Multi_key> <breve> <G>                 : "\320"        Gbreve
+<Multi_key> <g> <U>                     : "\360"        gbreve
+<Multi_key> <g> <parenleft>             : "\360"        gbreve
+<Multi_key> <parenleft> <g>             : "\360"        gbreve
+<Multi_key> <g> <breve>                 : "\360"        gbreve
+<Multi_key> <breve> <g>                 : "\360"        gbreve
 <Multi_key> <I> <grave>			: "\314"	Igrave
 <Multi_key> <grave> <I>			: "\314"	Igrave
 <Multi_key> <I> <acute>			: "\315"	Iacute
@@ -255,6 +259,8 @@
 <Multi_key> <quotedbl> <I>		: "\317"	Idiaeresis
 <Multi_key> <I> <diaeresis>		: "\317"	Idiaeresis
 <Multi_key> <diaeresis> <I>		: "\317"	Idiaeresis
+<Multi_key> <I> <period>                : "\335"        Iabovedot
+<Multi_key> <period> <I>                : "\335"        Iabovedot
 <Multi_key> <i> <grave>			: "\354"	igrave
 <Multi_key> <grave> <i>			: "\354"	igrave
 <Multi_key> <i> <acute>			: "\355"	iacute
@@ -269,6 +275,8 @@
 <Multi_key> <quotedbl> <i>		: "\357"	idiaeresis
 <Multi_key> <i> <diaeresis>		: "\357"	idiaeresis
 <Multi_key> <diaeresis> <i>		: "\357"	idiaeresis
+<Multi_key> <i> <period>                : "\375"        idotless
+<Multi_key> <period> <i>                : "\375"        idotless
 <Multi_key> <N> <asciitilde>		: "\321"	Ntilde
 <Multi_key> <asciitilde> <N>		: "\321"	Ntilde
 <Multi_key> <N> <minus>			: "\321"	Ntilde
@@ -318,11 +326,14 @@
 <Multi_key> <diaeresis> <o>		: "\366"	odiaeresis
 <Multi_key> <o> <slash>			: "\370"	oslash
 <Multi_key> <slash> <o>			: "\370"	oslash
-<Multi_key> <o> <e>			: "\275"	oe
-<Multi_key> <S> <less>			: "\246"	Scaron
-<Multi_key> <less> <S>			: "\246"	Scaron
-<Multi_key> <s> <less>			: "\250"	scaron
-<Multi_key> <less> <s>			: "\250"	scaron
+<Multi_key> <S> <cedilla>               : "\336"        Scedilla
+<Multi_key> <S> <comma>                 : "\336"        Scedilla
+<Multi_key> <cedilla> <S>               : "\336"        Scedilla
+<Multi_key> <cedilla> <s>               : "\376"        scedilla
+<Multi_key> <comma> <S>                 : "\336"        Scedilla
+<Multi_key> <comma> <s>                 : "\376"        scedilla
+<Multi_key> <s> <cedilla>               : "\376"        scedilla
+<Multi_key> <s> <comma>                 : "\376"        scedilla
 <Multi_key> <U> <grave>			: "\331"	Ugrave
 <Multi_key> <grave> <U>			: "\331"	Ugrave
 <Multi_key> <U> <acute>			: "\332"	Uacute
@@ -354,26 +365,40 @@
 <Multi_key> <s> <s>			: "\337"	ssharp
 <Multi_key> <T> <H>			: "\336"	THORN
 <Multi_key> <t> <h>			: "\376"	thorn
-<Multi_key> <Y> <acute>			: "\335"	Yacute
-<Multi_key> <acute> <Y>			: "\335"	Yacute
-<Multi_key> <Y> <apostrophe>		: "\335"	Yacute
-<Multi_key> <apostrophe> <Y>		: "\335"	Yacute
+<Multi_key> <Y> <acute>			: "\327"	Yacute
+<Multi_key> <acute> <Y>			: "\327"	Yacute
+<Multi_key> <Y> <apostrophe>		: "\327"	Yacute
+<Multi_key> <apostrophe> <Y>		: "\327"	Yacute
 <Multi_key> <Y> <quotedbl>		: "\276"	Ydiaeresis
 <Multi_key> <quotedbl> <Y>		: "\276"	Ydiaeresis
 <Multi_key> <Y> <diaeresis>		: "\276"	Ydiaeresis
 <Multi_key> <diaeresis> <Y>		: "\276"	Ydiaeresis
-<Multi_key> <y> <acute>			: "\375"	yacute
-<Multi_key> <acute> <y>			: "\375"	yacute
-<Multi_key> <y> <apostrophe>		: "\375"	yacute
-<Multi_key> <apostrophe> <y>		: "\375"	yacute
+<Multi_key> <y> <acute>			: "\367"	yacute
+<Multi_key> <acute> <y>			: "\367"	yacute
+<Multi_key> <y> <apostrophe>		: "\367"	yacute
+<Multi_key> <apostrophe> <y>		: "\367"	yacute
 <Multi_key> <y> <quotedbl>		: "\377"	ydiaeresis
 <Multi_key> <quotedbl> <y>		: "\377"	ydiaeresis
 <Multi_key> <y> <diaeresis>		: "\377"	ydiaeresis
 <Multi_key> <diaeresis> <y>		: "\377"	ydiaeresis
-<Multi_key> <Z> <less>			: "\264"	Zcaron
-<Multi_key> <less> <Z>			: "\264"	Zcaron
-<Multi_key> <z> <less>			: "\270"	zcaron
-<Multi_key> <less> <z>			: "\270"	zcaron
+<Multi_key> <Z> <less>			: "\241"	Zcaron
+<Multi_key> <less> <Z>			: "\241"	Zcaron
+<Multi_key> <z> <less>			: "\261"	zcaron
+<Multi_key> <less> <z>			: "\261"	zcaron
+<Multi_key> <v> <Z>                     : "\241"        Zcaron
+<Multi_key> <v> <z>                     : "\261"        zcaron
+<Multi_key> <G> <less>			: "\252"	Gcaron
+<Multi_key> <less> <G>			: "\252"	Gcaron
+<Multi_key> <g> <less>			: "\272"	gcaron
+<Multi_key> <less> <g>			: "\272"	gcaron
+<Multi_key> <v> <G>                     : "\252"        Gcaron
+<Multi_key> <v> <g>                     : "\272"        gcaron
+<Multi_key> <O> <less>			: "\264"	Ocaron
+<Multi_key> <less> <O>			: "\264"	Ocaron
+<Multi_key> <o> <less>			: "\275"	ocaron
+<Multi_key> <less> <o>			: "\275"	ocaron
+<Multi_key> <v> <O>                     : "\264"        Ocaron
+<Multi_key> <v> <o>                     : "\275"        ocaron
 #
 # dead key accent keysyms
 # Special Character
@@ -397,13 +422,13 @@
 <dead_cedilla> <comma>			: "\270"	cedilla
 <dead_diaeresis> <quotedbl>		: "\250"	diaeresis
 # Accented Alphabet
-<dead_abovering> <A>			: "\305"	Aring
+<dead_abovering> <A>                    : "\305"        Aring
+<dead_abovering> <a>                    : "\345"        aring
 <dead_grave> <A>			: "\300"	Agrave
 <dead_acute> <A>			: "\301"	Aacute
 <dead_circumflex> <A>			: "\302"	Acircumflex
 <dead_tilde> <A>			: "\303"	Atilde
 <dead_diaeresis> <A>			: "\304"	Adiaeresis
-<dead_abovering> <a>			: "\345"	aring
 <dead_grave> <a>			: "\340"	agrave
 <dead_acute> <a>			: "\341"	aacute
 <dead_circumflex> <a>			: "\342"	acircumflex
@@ -419,10 +444,14 @@
 <dead_acute> <e>			: "\351"	eacute
 <dead_circumflex> <e>			: "\352"	ecircumflex
 <dead_diaeresis> <e>			: "\353"	ediaeresis
+<dead_breve> <G>                        : "\320"        Gbreve
+<dead_breve> <g>                        : "\360"        gbreve
+<dead_abovedot> <I>                     : "\335"        Iabovedot
 <dead_grave> <I>			: "\314"	Igrave
 <dead_acute> <I>			: "\315"	Iacute
 <dead_circumflex> <I>			: "\316"	Icircumflex
 <dead_diaeresis> <I>			: "\317"	Idiaeresis
+<dead_abovedot> <i>                     : "\375"        idotless
 <dead_grave> <i>			: "\354"	igrave
 <dead_acute> <i>			: "\355"	iacute
 <dead_circumflex> <i>			: "\356"	icircumflex
@@ -439,10 +468,8 @@
 <dead_circumflex> <o>			: "\364"	ocircumflex
 <dead_tilde> <o>			: "\365"	otilde
 <dead_diaeresis> <o>			: "\366"	odiaeresis
-<dead_caron> <S>			: "\246"	Scaron
-<dead_caron> <s>			: "\250"	scaron
-<dead_circumflex> <S>			: "\246"	Scaron
-<dead_circumflex> <s>			: "\250"	scaron
+<dead_cedilla> <S>                      : "\336"        Scedilla
+<dead_cedilla> <s>                      : "\376"        scedilla
 <dead_grave> <U>			: "\331"	Ugrave
 <dead_acute> <U>			: "\332"	Uacute
 <dead_circumflex> <U>			: "\333"	Ucircumflex
@@ -451,17 +478,12 @@
 <dead_acute> <u>			: "\372"	uacute
 <dead_circumflex> <u>			: "\373"	ucircumflex
 <dead_diaeresis> <u>			: "\374"	udiaeresis
-<dead_acute> <Y>			: "\335"	Yacute
+<dead_acute> <Y>			: "\327"	Yacute
 <dead_diaeresis> <Y>			: "\276"	Ydiaeresis
-<dead_acute> <y>			: "\375"	yacute
+<dead_acute> <y>			: "\367"	yacute
 <dead_diaeresis> <y>			: "\377"	ydiaeresis
-<dead_caron> <Z>			: "\264"	Zcaron
-<dead_caron> <z>			: "\270"	zcaron
-<dead_circumflex> <Z>			: "\264"	Zcaron
-<dead_circumflex> <z>			: "\270"	zcaron
-# Useful for portuguese language
-<dead_acute> <C>			: "\307"	Ccedilla
-<dead_acute> <c>			: "\347"	ccedilla
-<dead_acute> <dead_acute>		: "'"		apostrophe
-<dead_grave> <dead_grave>		: "`"		grave
+<dead_caron> <Z>			: "\241"	Zcaron
+<dead_caron> <z>			: "\261"	zcaron
+<dead_caron> <G>			: "\252"	Gcaron
+<dead_caron> <g>			: "\272"	gcaron
 # End of Sequence Definition

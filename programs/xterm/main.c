@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.119 2000/10/05 18:06:35 keithp Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.120 2000/10/09 16:43:17 keithp Exp $ */
 
 
 /* main.c */
@@ -2650,11 +2650,7 @@ spawn (void)
 				initial_erase = sg.sg_erase;
 #endif	/* USE_SYSV_TERMIO */
 			}
-			if (resource.backarrow_is_erase)
-			if (initial_erase == 127) {	/* see input.c */
-				term->keyboard.flags &= ~MODE_DECBKM;
-			}
-			TRACE(("%s @%d, ptyInitialErase:%d, backspace_is_erase:%d, initial_erase:%d\n",
+			TRACE(("%s @%d, ptyInitialErase:%d, backarrow_is_erase:%d, initial_erase:%d (from /dev/tty)\n",
 				__FILE__, __LINE__,
 				resource.ptyInitialErase,
 				resource.backarrow_is_erase,
@@ -2672,6 +2668,7 @@ spawn (void)
 			tty = -1;
 		}
 
+		TRACE(("%s @%d, calling get_pty...\n", __FILE__, __LINE__));
 		if (get_pty (&screen->respond, XDisplayString(screen->display)))
 		{
 			/*  no ptys! */
@@ -2679,6 +2676,33 @@ spawn (void)
 				       xterm_name, strerror(errno));
 			exit (ERROR_PTYS);
 		}
+
+#if OPT_INITIAL_ERASE
+		if (resource.ptyInitialErase) {
+#ifdef USE_SYSV_TERMIO
+			struct termio my_tio;
+			if(ioctl(screen->respond, TCGETA, &my_tio) == 0)
+				initial_erase = my_tio.c_cc[VERASE];
+#elif defined(USE_POSIX_TERMIOS)
+			struct termios my_tio;
+			if (tcgetattr(screen->respond, &my_tio) == 0)
+				initial_erase = my_tio.c_cc[VERASE];
+#else   /* !USE_SYSV_TERMIO && !USE_POSIX_TERMIOS */
+			struct sgttyb my_sg;
+			if(ioctl(screen->respond, TIOCGETP, (char *)&my_sg) == 0)
+				initial_erase = my_sg.sg_erase;
+#endif	/* USE_SYSV_TERMIO */
+		}
+		if (resource.backarrow_is_erase)
+		if (initial_erase == 127) {	/* see input.c */
+			term->keyboard.flags &= ~MODE_DECBKM;
+		}
+		TRACE(("%s @%d, ptyInitialErase:%d, backarrow_is_erase:%d, initial_erase:%d (from pty)\n",
+			__FILE__, __LINE__,
+			resource.ptyInitialErase,
+			resource.backarrow_is_erase,
+			initial_erase));
+#endif
 	}
 
 	/* avoid double MapWindow requests */
@@ -2739,7 +2763,7 @@ spawn (void)
 	}
 
 #if OPT_INITIAL_ERASE
-	TRACE(("%s @%d, resource ptyInitialErase:%d, backspace_is_erase:%d\n",
+	TRACE(("%s @%d, resource ptyInitialErase:%d, backarrow_is_erase:%d\n",
 		__FILE__, __LINE__,
 		resource.ptyInitialErase,
 		resource.backarrow_is_erase));

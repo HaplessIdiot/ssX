@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.57 2000/08/25 21:51:16 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.58 2000/09/22 10:42:09 alanh Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_147">Patch #147 - 2000/10/26 - XFree86 4.0.1c</A>
 <LI><A HREF="#xterm_146">Patch #146 - 2000/9/12 - XFree86 4.0.1c</A>
 <LI><A HREF="#xterm_145">Patch #145 - 2000/9/11 - XFree86 4.0.1c</A>
 <LI><A HREF="#xterm_144">Patch #144 - 2000/8/23 - XFree86 4.0.1b</A>
@@ -190,6 +191,27 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_147">Patch #147 - 2000/10/26 - XFree86 4.0.1c</A></H1>
+<ul>
+	<li>correct implementation of <code>ptyInitialErase</code>:  the
+	  value assigned to <code>initial_erase</code> was for the control
+	  terminal, which is correct as far as it goes.  But there was no
+	  following test for the pseudo-terminal's erase value, which would
+	  overwrite the default obtained from the control terminal
+	  (reported by Christian Weisgerber &lt;naddy@mips.inka.de&gt;).
+
+	<li>modify check for printable-characters in OSC string to use xterm's
+	  ansi_table rather than isprint() macro, to isolate this check from
+	  locale settings.  This fixes a problem using 8-bit characters to
+	  set the title (reported by Ricardas Cepas &lt;rch@richard.eu.org&gt;).
+
+	<li>modify sample scripts to check for printf before print, since the
+	  latter is not as well standardized (e.g., on Linux).
+
+	<li>updated config.sub, config.guess to reflect changes on
+	  subversions.gnu.org
+</ul>
 
 <H1><A NAME="xterm_146">Patch #146 - 2000/9/12 - XFree86 4.0.1c</A></H1>
 <ul>

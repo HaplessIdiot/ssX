@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.6 2000/09/26 15:57:22 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.7 2000/10/20 14:59:05 alanh Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -221,8 +221,8 @@ main(int argc, char *argv[])
 	}
     
     startedx = startx();
-    if (XF86Config_path == NULL)
-	XF86Config_path = "/etc/X11/XF86Config";
+/*    if (XF86Config_path == NULL)
+	XF86Config_path = "/etc/X11/XF86Config-4";*/
     if (XkbConfig_path == NULL)
 	XkbConfig_path = XkbConfigDir XkbConfigFile;
     toplevel = XtAppInitialize(&appcon, "XF86Cfg",

@@ -4,7 +4,7 @@ XCOMM	This file contains compose table file name.
 XCOMM	The first word is the compose table file name and
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM $XFree86: xc/nls/compose.dir,v 1.8 2000/02/08 17:18:46 dawes Exp $
+XCOMM $XFree86: xc/nls/compose.dir,v 1.9 2000/10/24 18:07:37 dawes Exp $
 XCOMM
 #ifdef R63_COMPAT
 XCOMM These entries are in the old format (no ':')
@@ -25,7 +25,11 @@ iso8859-6/Compose	ar_QA.ISO8859-6
 iso8859-6/Compose	ar_SA.ISO8859-6
 iso8859-6/Compose	ar_TN.ISO8859-6
 iso8859-6/Compose	ar_YE.ISO8859-6
+iso8859-9e/Compose	az_AZ.ISO8859-9E
+koi8-c/Compose		a3_AZ.KOI8-C
+microsoft-cp1251/Compose	be_BY.CP1251
 iso8859-5/Compose	bg_BG.ISO8859-5
+microsoft-cp1251/Compose	bg_BG.CP1251
 iso8859-1/Compose	br_FR.ISO8859-1
 iso8859-14/Compose	br_FR.ISO8859-14
 iso8859-15/Compose	br_FR.ISO8859-15
@@ -83,9 +87,11 @@ iso8859-1/Compose	es_SV.ISO8859-1
 iso8859-1/Compose	es_UY.ISO8859-1
 iso8859-1/Compose	es_VE.ISO8859-1
 iso8859-4/Compose	et_EE.ISO8859-4
+iso8859-13/Compose	et_EE.ISO8859-13
 iso8859-15/Compose	et_EE.ISO8859-15
 iso8859-1/Compose	eu_ES.ISO8859-1
 iso8859-15/Compose	eu_ES.ISO8859-15
+isiri-3342/Compose	fa_IR.ISIRI-3342
 iso8859-1/Compose	fi_FI.ISO8859-1
 iso8859-15/Compose	fi_FI.ISO8859-15
 iso8859-1/Compose	fo_FO.ISO8859-1
@@ -112,6 +118,8 @@ iso8859-1/Compose	gv_GB.ISO8859-1
 iso8859-14/Compose	gv_GB.ISO8859-14
 iso8859-15/Compose	gv_GB.ISO8859-15
 iso8859-8/Compose	he_IL.ISO8859-8
+microsoft-cp1255/Compose	he_IL.CP1255
+iscii-dev/Compose	hi_IN.ISCII-DEV
 iso8859-2/Compose	hr_HR.ISO8859-2
 iso8859-2/Compose	hu_HU.ISO8859-2
 armscii-8/Compose	hy_AM.ARMSCII-8
@@ -139,18 +147,30 @@ mulelao-1/Compose	lo_LA.MULELAO-1
 iso8859-1/Compose	lt_LN.ISO8859-1
 iso8859-1/Compose	lt_LT.ISO8859-1
 iso8859-4/Compose	lt_LT.ISO8859-4
-iso8859-15/Compose	lt_LT.ISO8859-15
+iso8859-13/Compose	lt_LT.ISO8859-13
 iso8859-4/Compose	lv_LV.ISO8859-4
+iso8859-13/Compose	lv_LV.ISO8859-13
+iso8859-13/Compose	mi_NZ.ISO8859-13
 iso8859-5/Compose	mk_MK.ISO8859-5
+microsoft-cp1251/Compose	mk_MK.CP1251
+iso8859-1/Compose	ms_MY.ISO8859-1
 iso8859-1/Compose	nl_BE.ISO8859-1
 iso8859-15/Compose	nl_BE.ISO8859-15
 iso8859-1/Compose	nl_NL.ISO8859-1
 iso8859-15/Compose	nl_NL.ISO8859-15
 iso8859-1/Compose	no_NO.ISO8859-1
 iso8859-15/Compose	no_NO.ISO8859-15
+iso8859-1/Compose	nb_NO.ISO8859-1
+iso8859-15/Compose	nb_NO.ISO8859-15
+iso8859-1/Compose	ny_NO.ISO8859-1
+iso8859-15/Compose	ny_NO.ISO8859-15
 iso8859-1/Compose	oc_FR.ISO8859-1
 iso8859-15/Compose	oc_FR.ISO8859-15
+iso8859-1/Compose	pd_DE.ISO8859-1
+iso8859-1/Compose	pd_US.ISO8859-1
+iso8859-1/Compose	ph_PH.ISO8859-1
 iso8859-2/Compose	pl_PL.ISO8859-2
+iso8859-1/Compose	pp_AN.ISO8859-1
 iso8859-1/Compose	pt_BR.ISO8859-1
 iso8859-15/Compose	pt_BR.ISO8859-15
 iso8859-1/Compose	pt_PT.ISO8859-1
@@ -158,6 +178,7 @@ iso8859-15/Compose	pt_PT.ISO8859-15
 iso8859-2/Compose	ro_RO.ISO8859-2
 koi8-r/Compose		ru_RU.KOI8-R
 iso8859-5/Compose	ru_RU.ISO8859-5
+microsoft-cp1251/Compose	ru_RU.CP1251
 koi8-u/Compose		ru_UA.KOI8-U
 iso8859-2/Compose 	sh_YU.ISO8859-2
 iso8859-2/Compose 	sk_SK.ISO8859-2
@@ -172,14 +193,23 @@ iso8859-1/Compose	sv_FI.ISO8859-1
 iso8859-15/Compose	sv_FI.ISO8859-15
 iso8859-1/Compose	sv_SE.ISO8859-1
 iso8859-15/Compose	sv_SE.ISO8859-15
+tscii-0/Compose		ta_IN.TSCII-0
+koi8-c/Compose		tg_TJ.KOI8-C
+iso8859-1/Compose	tl_PH.ISO8859-1
 th_TH.TACTIS/Compose	th_TH.TACTIS
 iso8859-9/Compose	tr_TR.ISO8859-9
+tatar-cyr/Compose	tt_RU.TATAR-CYR
+koi8-c/Compose		tt_RU.KOI8-C
 koi8-u/Compose		uk_UA.KOI8-U
+microsoft-cp1256/Compose	ur_PK.CP1256
 vi_VN.viscii/Compose	vi_VN.VISCII
 vi_VN.tcvn/Compose	vi_VN.TCVN
 iso8859-1/Compose	wa_BE.ISO8859-1
+microsoft-cp1255/Compose	yi_US.CP1255
 zh/Compose		zh_CN.eucCN
+zh/Compose		zh_CN.GB2312
 zh_TW.big5/Compose	zh_TW.big5
+zh_TW.big5/Compose	zh_TW.Big5
 zh_TW/Compose		zh_TW.eucTW
 #endif /* R63_COMPAT */
 
@@ -200,7 +230,11 @@ iso8859-6/Compose:	ar_QA.ISO8859-6
 iso8859-6/Compose:	ar_SA.ISO8859-6
 iso8859-6/Compose:	ar_TN.ISO8859-6
 iso8859-6/Compose:	ar_YE.ISO8859-6
+iso8859-9e/Compose:	az_AZ.ISO8859-9E
+koi8-c/Compose:		a3_AZ.KOI8-C
+microsoft-cp1251/Compose:	be_BY.CP1251
 iso8859-5/Compose:	bg_BG.ISO8859-5
+microsoft-cp1251/Compose:	bg_BG.CP1251
 iso8859-1/Compose:	br_FR.ISO8859-1
 iso8859-14/Compose:	br_FR.ISO8859-14
 iso8859-15/Compose:	br_FR.ISO8859-15
@@ -258,9 +292,11 @@ iso8859-1/Compose:	es_SV.ISO8859-1
 iso8859-1/Compose:	es_UY.ISO8859-1
 iso8859-1/Compose:	es_VE.ISO8859-1
 iso8859-4/Compose:	et_EE.ISO8859-4
+iso8859-13/Compose:	et_EE.ISO8859-13
 iso8859-15/Compose:	et_EE.ISO8859-15
 iso8859-1/Compose:	eu_ES.ISO8859-1
 iso8859-15/Compose:	eu_ES.ISO8859-15
+isiri-3342/Compose:	fa_IR.ISIRI-3342
 iso8859-1/Compose:	fi_FI.ISO8859-1
 iso8859-15/Compose:	fi_FI.ISO8859-15
 iso8859-1/Compose:	fo_FO.ISO8859-1
@@ -287,6 +323,8 @@ iso8859-1/Compose:	gv_GB.ISO8859-1
 iso8859-14/Compose:	gv_GB.ISO8859-14
 iso8859-15/Compose:	gv_GB.ISO8859-15
 iso8859-8/Compose:	he_IL.ISO8859-8
+microsoft-cp1255/Compose:	he_IL.CP1255
+iscii-dev/Compose:	hi_IN.ISCII-DEV
 iso8859-2/Compose:	hr_HR.ISO8859-2
 iso8859-2/Compose:	hu_HU.ISO8859-2
 armscii-8/Compose:	hy_AM.ARMSCII-8
@@ -314,18 +352,30 @@ mulelao-1/Compose:	lo_LA.MULELAO-1
 iso8859-1/Compose:	lt_LN.ISO8859-1
 iso8859-1/Compose:	lt_LT.ISO8859-1
 iso8859-4/Compose:	lt_LT.ISO8859-4
-iso8859-15/Compose:	lt_LT.ISO8859-15
+iso8859-13/Compose:	lt_LT.ISO8859-13
 iso8859-4/Compose:	lv_LV.ISO8859-4
+iso8859-13/Compose:	lv_LV.ISO8859-13
+iso8859-13/Compose:	mi_NZ.ISO8859-13
 iso8859-5/Compose:	mk_MK.ISO8859-5
+microsoft-cp1251/Compose:	mk_MK.CP1251
+iso8859-1/Compose:	ms_MY.ISO8859-1
 iso8859-1/Compose:	nl_BE.ISO8859-1
 iso8859-15/Compose:	nl_BE.ISO8859-15
 iso8859-1/Compose:	nl_NL.ISO8859-1
 iso8859-15/Compose:	nl_NL.ISO8859-15
 iso8859-1/Compose:	no_NO.ISO8859-1
 iso8859-15/Compose:	no_NO.ISO8859-15
+iso8859-1/Compose:	nb_NO.ISO8859-1
+iso8859-15/Compose:	nb_NO.ISO8859-15
+iso8859-1/Compose:	ny_NO.ISO8859-1
+iso8859-15/Compose:	ny_NO.ISO8859-15
 iso8859-1/Compose:	oc_FR.ISO8859-1
 iso8859-15/Compose:	oc_FR.ISO8859-15
+iso8859-1/Compose:	pd_DE.ISO8859-1
+iso8859-1/Compose:	pd_US.ISO8859-1
+iso8859-1/Compose:	ph_PH.ISO8859-1
 iso8859-2/Compose:	pl_PL.ISO8859-2
+iso8859-1/Compose:	pp_AN.ISO8859-1
 iso8859-1/Compose:	pt_BR.ISO8859-1
 iso8859-15/Compose:	pt_BR.ISO8859-15
 iso8859-1/Compose:	pt_PT.ISO8859-1
@@ -333,6 +383,7 @@ iso8859-15/Compose:	pt_PT.ISO8859-15
 iso8859-2/Compose:	ro_RO.ISO8859-2
 koi8-r/Compose:		ru_RU.KOI8-R
 iso8859-5/Compose:	ru_RU.ISO8859-5
+microsoft-cp1251/Compose:	ru_RU.CP1251
 koi8-u/Compose:		ru_UA.KOI8-U
 iso8859-2/Compose: 	sh_YU.ISO8859-2
 iso8859-2/Compose: 	sk_SK.ISO8859-2
@@ -347,12 +398,21 @@ iso8859-1/Compose:	sv_FI.ISO8859-1
 iso8859-15/Compose:	sv_FI.ISO8859-15
 iso8859-1/Compose:	sv_SE.ISO8859-1
 iso8859-15/Compose:	sv_SE.ISO8859-15
+tscii-0/Compose:	ta_IN.TSCII-0
+koi8-c/Compose:		tg_TJ.KOI8-C
+iso8859-1/Compose:	tl_PH.ISO8859-1
 th_TH.TACTIS/Compose:	th_TH.TACTIS
 iso8859-9/Compose:	tr_TR.ISO8859-9
+tatar-cyr/Compose:	tt_RU.TATAR-CYR
+koi8-c/Compose:		tt_RU.KOI8-C
 koi8-u/Compose:		uk_UA.KOI8-U
+microsoft-cp1256/Compose:	ur_PK.CP1256
 vi_VN.viscii/Compose:	vi_VN.VISCII
 vi_VN.tcvn/Compose:	vi_VN.TCVN
 iso8859-1/Compose:	wa_BE.ISO8859-1
 zh/Compose:		zh_CN.eucCN
+zh/Compose:		zh_CN.GB2312
+microsoft-cp1255/Compose:	yi_US.CP1256
 zh_TW.big5/Compose:	zh_TW.big5
+zh_TW.big5/Compose:	zh_TW.Big5
 zh_TW/Compose:		zh_TW.eucTW
