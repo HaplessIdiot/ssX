@@ -3,7 +3,7 @@
  *
  * Warning, there be crufty dragons here.
  */
-/* $XFree86: xc/programs/xterm/Tekproc.c,v 3.36 2002/03/26 01:46:39 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/Tekproc.c,v 3.37 2002/04/28 19:04:19 dickey Exp $ */
 
 /*
 
@@ -390,7 +390,7 @@ TekInit(void)
 				    XtNright, XawChainRight,
 				    XtNbottom, XawChainBottom,
 #endif
-				    0);
+				    (XtPointer) 0);
     }
     return (!Tfailed);
 }
