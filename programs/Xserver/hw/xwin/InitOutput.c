@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.10 2001/06/05 10:10:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.11 2001/06/12 09:45:53 alanh Exp $ */
 
 #include "win.h"
 
@@ -147,7 +147,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
     }
   
   /*
-   * Look for the '-screen n WxHxD' arugment
+   * Look for the '-screen scr_num width height' arugment
    */
   if (strcmp (argv[i], "-screen") == 0)
     {
@@ -160,7 +160,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	  return 0;
 	}
 
-      nScreenNum = atoi (argv[i+1]);
+      nScreenNum = atoi (argv[i + 1]);
 
       /* Validate the specified screen number */
       if (nScreenNum < 0 || nScreenNum >= MAXSCREENS)
@@ -170,20 +170,24 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	  return 0;
         }
       
-      /* Grab the height and width parameters */
-      if (2 != sscanf (argv[i+2], "%d %d",
-		       (int*)&g_ScreenInfo[nScreenNum].dwWidth,
-		       (int*)&g_ScreenInfo[nScreenNum].dwHeight))
-        {
-	  /* I see no height and width here */
-          ErrorF ("Invalid screen configuration %s\n", argv[i+2]);
-          UseMsg ();
-	  return 0;
-        }
+      /* Grab the width and height args */
+      g_ScreenInfo[nScreenNum].dwWidth = atoi (argv[i + 2]);
+      g_ScreenInfo[nScreenNum].dwHeight = atoi (argv[i + 3]);
 
+      /*
+       * FIXME: This logic is surely broken.  I have no idea what it
+       * is supposed to accomplish.  It may not even be used.
+       */
       if (nScreenNum >= g_iNumScreens)
         g_iNumScreens = nScreenNum + 1;
+
+      /*
+       * Keep track of the last screen number seen, as parameters seen
+       * before a screen number apply to all screens, whereas parameters
+       * seen after a screen number apply to that screen number only.
+       */
       g_iLastScreen = nScreenNum;
+
       return 4;
     }
 
