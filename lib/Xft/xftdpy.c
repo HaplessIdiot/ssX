@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdpy.c,v 1.2 2000/12/05 18:26:23 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdpy.c,v 1.3 2000/12/14 23:03:54 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -77,6 +77,7 @@ _XftDisplayInfoGet (Display *dpy)
 	goto bail1;
     (void) XESetCloseDisplay (dpy, info->codes->extension, _XftCloseDisplay);
 
+    info->display = dpy;
     info->defaults = 0;
     info->coreFonts = 0;
     info->hasRender = XRenderFindVisualFormat (dpy, DefaultVisual (dpy, DefaultScreen (dpy))) != 0;
