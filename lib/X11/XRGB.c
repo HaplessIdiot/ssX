@@ -33,6 +33,7 @@
  *
  *
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"

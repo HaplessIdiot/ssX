@@ -9,6 +9,7 @@ UNIFORUM conference in Dallas.  I obtained it by electronic mail
 directly from AT&T.  The people there assure me that it is indeed
 in the public domain.
 */
+/* $XFree86$ */
 
 /*LINTLIBRARY*/
 

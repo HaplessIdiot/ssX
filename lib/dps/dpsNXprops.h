@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef DPSNXPROPS_H
 #define DPSNXPROPS_H

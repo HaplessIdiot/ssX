@@ -22,6 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 #ifndef _XLOCALE_H_
 #define _XLOCALE_H_
