@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.27 2001/07/25 15:05:24 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.28 2001/09/21 16:24:15 herrb Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
@@ -157,7 +157,7 @@ char *displayNum;
 char *program;
 Display *xd;			/* server connection */
 #ifndef SYSV
-#if defined(SVR4) || defined(_POSIX_SOURCE) || defined(CSRG_BASED) || defined(__EMX__) || defined(Lynx)
+#if defined(__CYGWIN__) || defined(SVR4) || defined(_POSIX_SOURCE) || defined(CSRG_BASED) || defined(__EMX__) || defined(Lynx)
 int status;
 #else
 union wait	status;
