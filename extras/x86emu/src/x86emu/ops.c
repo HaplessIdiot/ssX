@@ -70,7 +70,7 @@
 *
 ****************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/extras/x86emu/src/x86emu/ops.c,v 1.2 2000/01/23 04:32:42 dawes Exp $ */
 
 #include "x86emu/x86emui.h"
 
@@ -8818,7 +8818,7 @@ void x86emuOp_int3(u8 X86EMU_UNUSED(op1))
     tmp = (u16) mem_access_word(3 * 4 + 2);
     /* access the segment register */
     TRACE_AND_STEP();
-	if (*_X86EMU_intrTab[3]) {
+	if (_X86EMU_intrTab[3]) {
 		(*_X86EMU_intrTab[3])(3);
     } else {
         push_word((u16)M.x86.R_FLG);
@@ -8848,7 +8848,7 @@ void x86emuOp_int_IMM(u8 X86EMU_UNUSED(op1))
     DECODE_PRINTF2("%x\n", intnum);
     tmp = mem_access_word(intnum * 4 + 2);
     TRACE_AND_STEP();
-	if (*_X86EMU_intrTab[intnum]) {
+	if (_X86EMU_intrTab[intnum]) {
 		(*_X86EMU_intrTab[intnum])(intnum);
     } else {
         push_word((u16)M.x86.R_FLG);
@@ -8876,7 +8876,7 @@ void x86emuOp_into(u8 X86EMU_UNUSED(op1))
     TRACE_AND_STEP();
     if (ACCESS_FLAG(F_OF)) {
         tmp = mem_access_word(4 * 4 + 2);
-		if (*_X86EMU_intrTab[4]) {
+		if (_X86EMU_intrTab[4]) {
 			(*_X86EMU_intrTab[4])(4);
         } else {
             push_word((u16)M.x86.R_FLG);
