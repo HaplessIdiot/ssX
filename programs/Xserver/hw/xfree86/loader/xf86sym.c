@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.28 1997/09/25 16:14:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.29 1998/01/24 16:58:31 hohndel Exp $ */
 
 
 
@@ -140,7 +140,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86PostButtonEvent)
    SYMFUNC(xf86GetMotionEvents)
    SYMFUNC(xf86MotionHistoryAllocate)
+#if 0
    SYMFUNC(xf86AddLocalDevice)
+#endif
    SYMFUNC(AddEnabledDevice)
    SYMFUNC(RemoveEnabledDevice)
 #endif
