@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/curve.cc,v 1.3tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -36,8 +36,8 @@
 /*
  * curve.c++
  *
- * $Date: 2001/04/27 12:58:28 $ $Revision: 1.3 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/curve.cc,v 1.3 2001/04/27 12:58:28 dawes Exp $
+ * $Date: 2003/10/22 19:20:57 $ $Revision: 1.4 $
+ * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/curve.cc,v 1.4 2003/10/22 19:20:57 tsi Exp $
  */
 
 #include "glimports.h"
@@ -69,7 +69,6 @@ Curve::Curve( Quilt_ptr geo, REAL pta, REAL ptb, Curve *c )
     Quiltspec_ptr qs = geo->qspec;
     ps += qs->offset;
     ps += qs->index * qs->order * qs->stride;
-    REAL *pend = ps + qs->order * qs->stride;
 
     if( needsSampling )
 	mapdesc->xformSampling( ps, qs->order, qs->stride, spts, stride );
