@@ -1,7 +1,7 @@
 /*
  * Id: newport_regs.c,v 1.3 2000/11/29 20:58:10 agx Exp $
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_regs.c,v 1.2 2001/11/23 19:50:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_regs.c,v 1.3 2001/12/17 20:52:32 dawes Exp $ */
 
 #include "newport.h"
 
@@ -100,7 +100,7 @@ NewportRestoreRex3( ScrnInfoPtr pScrn)
 	pNewportRegs->cset.clipmode = pNewport->txt_clipmode;
 }
 
-void NewportBackupXMap9s( ScrnInfoPtr pScrn)
+void NewportBackupXmap9s( ScrnInfoPtr pScrn)
 {
 	NewportPtr pNewport = NEWPORTPTR(pScrn);
 	NewportRegsPtr pNewportRegs = NEWPORTREGSPTR(pScrn);
