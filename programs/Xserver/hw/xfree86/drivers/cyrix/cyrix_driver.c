@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.18 2001/02/16 01:45:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.19 2001/05/04 19:05:36 dawes Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -141,25 +141,31 @@ static const OptionInfoRec CYRIXOptions[] = {
 };
 
 static const char *vgahwSymbols[] = {
-    "vgaHWGetHWRec",
-    "vgaHWUnlock",
-    "vgaHWInit",
-    "vgaHWProtect",
-    "vgaHWGetIOBase",
-    "vgaHWMapMem",
-    "vgaHWLock",
     "vgaHWFreeHWRec",
+    "vgaHWGetHWRec",
+    "vgaHWGetIOBase",
+    "vgaHWGetIndex",
+    "vgaHWHandleColormaps",
+    "vgaHWInit",
+    "vgaHWLock",
+    "vgaHWMapMem",
+    "vgaHWProtect",
+    "vgaHWRestore",
+    "vgaHWSave",
     "vgaHWSaveScreen",
+    "vgaHWUnlock",
     NULL
 };
 
 static const char *fbSymbols[] = {
     "fbScreenInit",
+    "fbPictureInit",
     NULL
 };
 
-static const char *racSymbols[] = {
-    "xf86RACInit",
+static const char *xaaSymbols[] = {
+    "XAACreateInfoRec",
+    "XAADestroyInfoRec",
     NULL
 };
 
@@ -198,7 +204,7 @@ cyrixSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     if (!setupDone) {
 	setupDone = TRUE;
 	xf86AddDriver(&CYRIX, module, 0);
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols, NULL);
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, NULL);
 	return (pointer)TRUE;
     } 
 
@@ -433,8 +439,6 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     int videoram;
     int i;
     ClockRangePtr clockRanges;
-    char *mod = NULL;
-    const char *Sym = NULL;
     CARD32 physbase, padsize;
     int CYRIXisOldChipRevision;
     int device_step, device_revision;
@@ -777,35 +781,24 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     /* Set display resolution */
     xf86SetDpi(pScrn, 0, 0);
 
-    /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
     case 1:
     case 4:
     case 8:
 	pCyrix->EngineOperation |= 0x00;
-	mod = "fb";
-	Sym = "fbScreenInit";
 	break;
     case 16:
 	pCyrix->EngineOperation |= 0x01;
-	mod = "fb";
-	Sym = "fbScreenInit";
 	break;
     }
 
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+    /* Load fb module */
+    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
 	CYRIXFreeRec(pScrn);
 	return FALSE;
     }
 
-    xf86LoaderReqSymbols(Sym, NULL);
-
-    if (!xf86LoadSubModule(pScrn, "rac")) {
-	CYRIXFreeRec(pScrn);
-	return FALSE;
-    }
-
-    xf86LoaderReqSymLists(racSymbols, NULL);
+    xf86LoaderReqSymLists(fbSymbols, NULL);
 
     /* Load XAA if needed */
     if (!pCyrix->NoAccel) {
@@ -813,6 +806,7 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
 	    CYRIXFreeRec(pScrn);
 	    return FALSE;
 	}
+	xf86LoaderReqSymLists(xaaSymbols, NULL);
 
         switch (pScrn->displayWidth * pScrn->bitsPerPixel / 8) {
 	    case 512:
@@ -1225,8 +1219,7 @@ CYRIXCloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 CYRIXFreeScreen(int scrnIndex, int flags)
 {
-    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
-	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
     CYRIXFreeRec(xf86Screens[scrnIndex]);
 }
 

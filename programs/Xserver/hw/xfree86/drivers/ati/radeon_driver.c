@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.27 2001/05/25 02:44:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.28 2001/05/31 08:37:15 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -180,12 +180,13 @@ RADEONRAMRec RADEONRAM[] = {    /* Memory Specifications
 };
 
 static const char *vgahwSymbols[] = {
-    "vgaHWGetHWRec",
     "vgaHWFreeHWRec",
+    "vgaHWGetHWRec",
+    "vgaHWGetIndex",
     "vgaHWLock",
-    "vgaHWUnlock",
-    "vgaHWSave",
     "vgaHWRestore",
+    "vgaHWSave",
+    "vgaHWUnlock",
     NULL
 };
 
@@ -193,41 +194,38 @@ static const char *fbdevHWSymbols[] = {
     "fbdevHWInit",
     "fbdevHWUseBuildinMode",
 
-    "fbdevHWGetDepth",
     "fbdevHWGetVidmem",
 
     /* colormap */
     "fbdevHWLoadPalette",
 
     /* ScrnInfo hooks */
-    "fbdevHWSwitchMode",
     "fbdevHWAdjustFrame",
     "fbdevHWEnterVT",
     "fbdevHWLeaveVT",
-    "fbdevHWValidMode",
-    "fbdevHWRestore",
     "fbdevHWModeInit",
+    "fbdevHWRestore",
     "fbdevHWSave",
+    "fbdevHWSwitchMode",
+    "fbdevHWValidMode",
 
-    "fbdevHWUnmapMMIO",
-    "fbdevHWUnmapVidmem",
     "fbdevHWMapMMIO",
     "fbdevHWMapVidmem",
+    "fbdevHWUnmapMMIO",
+    "fbdevHWUnmapVidmem",
 
     NULL
 };
 
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
-    "xf86DoEDID_DDC1",
-    "xf86DoEDID_DDC2",
     NULL
 };
 
-#ifdef XFree86LOADER
 #ifdef USE_FB
 static const char *fbSymbols[] = {
     "fbScreenInit",
+    "fbPictureInit",
     NULL
 };
 #else
@@ -242,25 +240,23 @@ static const char *cfbSymbols[] = {
 #endif
 
 static const char *xaaSymbols[] = {
-    "XAADestroyInfoRec",
     "XAACreateInfoRec",
+    "XAADestroyInfoRec",
     "XAAInit",
-    "XAAStippleScanlineFuncLSBFirst",
-    "XAAOverlayFBfuncs",
-    "XAACachePlanarMonoStipple",
-    "XAAScreenIndex",
     NULL
 };
 
+#if 0
 static const char *xf8_32bppSymbols[] = {
     "xf86Overlay8Plus32Init",
     NULL
 };
+#endif
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
     NULL
 };
 
@@ -268,32 +264,46 @@ static const char *ramdacSymbols[] = {
 static const char *drmSymbols[] = {
     "drmAddBufs",
     "drmAddMap",
-    "drmAvailable",
-    "drmCtlAddCommand",
-    "drmCtlInstHandler",
-    "drmGetInterruptFromBusID",
-    "drmMapBufs",
-    "drmMarkBufs",
-    "drmUnmapBufs",
+    "drmAgpAcquire",
+    "drmAgpAlloc",
+    "drmAgpBind",
+    "drmAgpDeviceId",
+    "drmAgpEnable",
+    "drmAgpFree",
+    "drmAgpGetMode",
+    "drmAgpRelease",
+    "drmAgpUnbind",
+    "drmAgpVendorId",
+    "drmDMA",
     "drmFreeVersion",
     "drmGetVersion",
+    "drmMap",
+    "drmMapBufs",
+    "drmRadeonCleanupCP",
+    "drmRadeonClear",
+    "drmRadeonFlushIndirectBuffer",
+    "drmRadeonInitCP",
+    "drmRadeonResetCP",
+    "drmRadeonStartCP",
+    "drmRadeonStopCP",
+    "drmRadeonWaitForIdleCP",
+    "drmScatterGatherFree"
+    "drmUnmap",
+    "drmUnmapBufs",
     NULL
 };
 
 static const char *driSymbols[] = {
-    "DRIGetDrawableIndex",
-    "DRIFinishScreenInit",
-    "DRIDestroyInfoRec",
     "DRICloseScreen",
-    "DRIDestroyInfoRec",
-    "DRIScreenInit",
-    "DRIDestroyInfoRec",
     "DRICreateInfoRec",
-    "DRILock",
-    "DRIUnlock",
-    "DRIGetSAREAPrivate",
+    "DRIDestroyInfoRec",
+    "DRIFinishScreenInit",
     "DRIGetContext",
+    "DRIGetSAREAPrivate",
+    "DRILock",
     "DRIQueryVersion",
+    "DRIScreenInit",
+    "DRIUnlock",
     "GlxSetVisualConfigs",
     NULL
 };
@@ -304,7 +314,13 @@ static const char *vbeSymbols[] = {
     "vbeDoEDID",
     NULL
 };
-#endif
+
+static const char *int10Symbols[] = {
+    "xf86InitInt10",
+    "xf86FreeInt10",
+    "xf86int10Addr",
+    NULL
+};
 
 #if !defined(__alpha__)
 # define RADEONPreInt10Save(s, r1, r2)
@@ -1059,6 +1075,7 @@ static Bool RADEONPreInitDDC(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
     if (!xf86LoadSubModule(pScrn, "ddc")) return FALSE;
     xf86LoaderReqSymLists(ddcSymbols, NULL);
     if (xf86LoadSubModule(pScrn, "vbe")) {
+	xf86LoaderReqSymLists(vbeSymbols, NULL);
 	pVbe = VBEInit(pInt10, info->pEnt->index);
 	if (!pVbe) return FALSE;
 
@@ -1085,7 +1102,9 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn)
     ClockRangePtr clockRanges;
     int           modesFound;
     char          *mod = NULL;
+#ifndef USE_FB
     const char    *Sym = NULL;
+#endif
 
 				/* Get mode information */
     pScrn->progClock                   = TRUE;
@@ -1145,7 +1164,6 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn)
 				/* Get ScreenInit function */
 #ifdef USE_FB
     mod = "fb";
-    Sym = "fbScreenInit";
 #else
     switch (pScrn->bitsPerPixel) {
     case  8: mod = "cfb";   Sym = "cfbScreenInit";   break;
@@ -1154,10 +1172,11 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn)
     }
 #endif
     if (mod && !xf86LoadSubModule(pScrn, mod)) return FALSE;
-    xf86LoaderReqSymbols(Sym, NULL);
 
 #ifdef USE_FB
-    xf86LoaderReqSymbols("fbPictureInit", NULL);
+    xf86LoaderReqSymLists(fbSymbols, NULL);
+#else
+    xf86LoaderReqSymbols(Sym, NULL);
 #endif
 
     info->CurrentLayout.displayWidth = pScrn->displayWidth;
@@ -1173,6 +1192,7 @@ static Bool RADEONPreInitCursor(ScrnInfoPtr pScrn)
 
     if (!xf86ReturnOptValBool(info->Options, OPTION_SW_CURSOR, FALSE)) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) return FALSE;
+	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
     return TRUE;
 }
@@ -1184,6 +1204,7 @@ static Bool RADEONPreInitAccel(ScrnInfoPtr pScrn)
 
     if (!xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) return FALSE;
+	xf86LoaderReqSymLists(xaaSymbols, NULL);
     }
     return TRUE;
 }
@@ -1193,6 +1214,7 @@ static Bool RADEONPreInitInt10(ScrnInfoPtr pScrn, xf86Int10InfoPtr *ppInt10)
     RADEONInfoPtr   info = RADEONPTR(pScrn);
 
     if (xf86LoadSubModule(pScrn, "int10")) {
+	xf86LoaderReqSymLists(int10Symbols, NULL);
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	*ppInt10 = xf86InitInt10(info->pEnt->index);
     }
@@ -1320,21 +1342,24 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 {
     RADEONInfoPtr    info;
     xf86Int10InfoPtr pInt10 = NULL;
+#ifdef __alpha__
     CARD32 save1, save2;
+#endif
 
-#ifdef XFree86LOADER
     /*
      * Tell the loader about symbols from other modules that this module might
      * refer to.
      */
-    LoaderRefSymLists(vgahwSymbols,
+    xf86LoaderRefSymLists(vgahwSymbols,
 #ifdef USE_FB
 		      fbSymbols,
 #else
 		      cfbSymbols,
 #endif
 		      xaaSymbols,
+#if 0
 		      xf8_32bppSymbols,
+#endif
 		      ramdacSymbols,
 #ifdef XF86DRI
 		      drmSymbols,
@@ -1342,11 +1367,11 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 		      fbdevHWSymbols,
 		      vbeSymbols,
-		      /* ddcsymbols, */
+		      int10Symbols,
+		      ddcSymbols,
 		      /* i2csymbols, */
 		      /* shadowSymbols, */
 		      NULL);
-#endif
 
     RADEONTRACE(("RADEONPreInit\n"));
     if (pScrn->numEntities != 1) return FALSE;

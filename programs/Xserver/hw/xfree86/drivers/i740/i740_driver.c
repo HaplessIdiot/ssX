@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.28 2001/01/21 21:19:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.30 2001/05/15 10:19:38 eich Exp $ */
 
 /*
  * Authors:
@@ -197,39 +197,36 @@ static const OptionInfoRec I740Options[] = {
 };
 
 static const char *vgahwSymbols[] = {
-    "vgaHWGetHWRec",
-    "vgaHWSave", /* Added */
-    "vgaHWRestore", /* Added */
-    "vgaHWProtect",
-    "vgaHWInit",
-    "vgaHWMapMem",
-    "vgaHWSetMmioFuncs",
-    "vgaHWGetIOBase",
-    "vgaHWLock",
-    "vgaHWUnlock",
     "vgaHWFreeHWRec",
+    "vgaHWGetHWRec",
+    "vgaHWGetIOBase",
+    "vgaHWGetIndex",
+    "vgaHWHBlankKGA",
+    "vgaHWInit",
+    "vgaHWLock",
+    "vgaHWMapMem",
+    "vgaHWProtect",
+    "vgaHWRestore",
+    "vgaHWSave",
     "vgaHWSaveScreen",
-    "vgaHWHandleColormaps",
+    "vgaHWSetMmioFuncs",
+    "vgaHWUnlock",
+    "vgaHWUnmapMem",
+    "vgaHWVBlankKGA",
     0
 };
 
-static const char *fbSymbols[] = {
-#ifdef USE_FB
-    "fbScreenInit",
-    "fbPictureInit",
-#else
+static const char *cfbSymbols[] = {
     "cfbScreenInit",
     "cfb16ScreenInit",
     "cfb24ScreenInit",
     "cfb32ScreenInit",
-#endif
-    "cfb8_32ScreenInit",
-    "cfb24_32ScreenInit",
     NULL
 };
 
-static const char *xf8_32bppSymbols[] = {
-    "xf86Overlay8Plus32Init",
+static const char *fbSymbols[] = {
+    "fbScreenInit",
+    "fbPictureInit",
     NULL
 };
 
@@ -237,17 +234,13 @@ static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
     "XAAInit",
-    "XAAStippleScanlineFuncLSBFirst",
-    "XAAOverlayFBfuncs",
-    "XAACachePlanarMonoStipple",
-    "XAAScreenIndex",
     NULL
 };
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
     NULL
 };
 
@@ -298,9 +291,8 @@ i740Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * might refer to.
 	 */
 	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, 
-			  xf8_32bppSymbols, ramdacSymbols, vbeSymbols,
-			  NULL /* ddcsymbols */, NULL /* i2csymbols */, NULL /* shadowSymbols */,
-			  NULL /* fbdevsymbols */, NULL);
+			  cfbSymbols, ramdacSymbols, vbeSymbols,
+			  NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -773,7 +765,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
     I740FreeRec(pScrn);
     return FALSE;
   }
-  xf86LoaderReqSymbols("fbScreenInit","fbPictureInit", NULL);
+  xf86LoaderReqSymLists(fbSymbols, NULL);
 #else
   switch (pScrn->bitsPerPixel) {
   case 8:
@@ -805,6 +797,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
       I740FreeRec(pScrn);
       return FALSE;
     }
+    xf86LoaderReqSymLists(xaaSymbols, NULL);
   }
 
   if (!xf86ReturnOptValBool(pI740->Options, OPTION_SW_CURSOR, FALSE)) {
