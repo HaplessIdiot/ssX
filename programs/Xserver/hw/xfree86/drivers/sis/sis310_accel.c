@@ -220,11 +220,14 @@ SiS315AccelInit(ScreenPtr pScreen)
 	int             UsableFbSize;
 	unsigned char   *AvailBufBase;
 	BoxRec          Avail;
+#ifdef SISDUALHEAD
+        SISEntPtr       pSiSEnt = NULL;
+#endif
 #ifdef CTSCE
 #ifndef CTSCE_DIRECT
 	int             i;
 #endif
-#endif	
+#endif
 
 	pSiS->AccelInfoPtr = infoPtr = XAACreateInfoRec();
 	if(!infoPtr) return FALSE;
@@ -241,6 +244,10 @@ SiS315AccelInit(ScreenPtr pScreen)
 	if((pScrn->bitsPerPixel != 8) && (pScrn->bitsPerPixel != 16) &&
 		(pScrn->bitsPerPixel != 32))
 			return FALSE;
+
+#ifdef SISDUALHEAD
+	pSiSEnt = pSiS->entityPrivate;
+#endif
 
 	/* BitBlt */
 	infoPtr->SetupForScreenToScreenCopy = SiSSetupForScreenToScreenCopy;
@@ -375,18 +382,29 @@ SiS315AccelInit(ScreenPtr pScreen)
 	pSiS->PerColorExpandBufferSize = 0;
 #endif
 
+	pSiS->RenderAccelArray = NULL;
+
 #ifdef INCL_RENDER
 #ifdef RENDER
         /* Render */
         if(((pScrn->bitsPerPixel == 16) || (pScrn->bitsPerPixel == 32)) && pSiS->doRender) {
 	   int i, j;
-	   if((pSiS->RenderAccelArray = xnfcalloc(65536, 1))) {
-	      for(i = 0; i < 256; i++) {
-	         for(j = 0; j < 256; j++) {
-	            pSiS->RenderAccelArray[(i << 8) + j] = (i * j) / 255;
-		 }
+#ifdef SISDUALHEAD
+	   if(pSiSEnt) pSiS->RenderAccelArray = pSiSEnt->RenderAccelArray;
+#endif
+	   if(!pSiS->RenderAccelArray) {
+	      if((pSiS->RenderAccelArray = xnfcalloc(65536, 1))) {
+#ifdef SISDUALHEAD
+  	         if(pSiSEnt) pSiSEnt->RenderAccelArray = pSiS->RenderAccelArray;
+#endif
+	         for(i = 0; i < 256; i++) {
+	            for(j = 0; j < 256; j++) {
+	               pSiS->RenderAccelArray[(i << 8) + j] = (i * j) / 255;
+		    }
+	         }
 	      }
-
+	   }
+	   if(pSiS->RenderAccelArray) {
 	      pSiS->AccelLinearScratch = NULL;
 
 	      infoPtr->SetupForCPUToScreenAlphaTexture = SiSSetupForCPUToScreenAlphaTexture;
@@ -1734,7 +1752,9 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
 	red &= 0xff00;
 	green &= 0xff00;
 	blue &= 0xff00;
-	renderaccelarray = pSiS->RenderAccelArray;
+
+	if(!((renderaccelarray = pSiS->RenderAccelArray)))
+	   return FALSE;
 
 	if(!SiSAllocateLinear(pScrn, sizeNeeded))
 	   return FALSE;

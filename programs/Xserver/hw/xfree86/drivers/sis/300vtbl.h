@@ -794,6 +794,7 @@ static const SiS300_PanelDelayTblStruct  SiS300_PanelDelayTbl[] =
 	{{0x05,0x60}}
 };
 
+#if 0
 static const SiS300_PanelDelayTblStruct  SiS300_PanelDelayTblLVDS[] =
 {
 	{{0x05,0xaa}},
@@ -813,6 +814,7 @@ static const SiS300_PanelDelayTblStruct  SiS300_PanelDelayTblLVDS[] =
 	{{0x05,0x14}},  /* Some BIOSes: 05, 40 */
 	{{0x05,0x60}}
 };
+#endif
 
 /**************************************************************/
 /* SIS VIDEO BRIDGE ----------------------------------------- */
