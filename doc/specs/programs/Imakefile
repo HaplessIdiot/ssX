@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:50 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.10 2001/04/03 22:54:35 dawes Exp $
+XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.11 2001/04/05 19:29:37 dawes Exp $
 
 /* does not include manual pages under util (not X programs)
    or any of the library function manual pages under doc/man */
@@ -159,7 +159,7 @@ man.$(MANSRCSUFFIX): $(MANUALS)
 	RemoveFile($@)
 	cat $(MANUALS) > $@
 
-EXTRAMANDEFS = -D__logdir__=$(LOGDIRECTORY)
+EXTRAMANDEFS = -D__logdir__=$(LOGDIRECTORY) -D__xinitdir__=$(XINITDIR)
 
 CppManTarget(man,$(EXTRAMANDEFS))
 

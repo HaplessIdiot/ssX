@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:29 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.9 2001/01/17 23:45:42 dawes Exp $
+XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.10 2001/03/30 02:15:25 keithp Exp $
 
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
@@ -37,6 +37,8 @@ MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR) -DBINDIR=$(BINDIR))
 #else
 MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR) $(COOKIEDEFS))
 #endif
+
+EXTRAMANDEFS=-D__xinitdir__=$(XINITDIR)
 
 #ifdef OS2Architecture
 InstallNamedProg(startx.cmd,startx.cmd,$(BINDIR))

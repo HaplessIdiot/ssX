@@ -1,4 +1,12 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 400. Startx fixes/enhancements, including:
+       - Fix argument processing.
+       - Set XAUTHORITY.
+       - Don't overwrite existing cookies, and remove ones added for this
+         session when exiting.
+       - Deallocate the VT that X was using.
+       - Update the man page.
+      (based on #4567, Branden Robinson, Henry T. So, Jr).
  399. Implement two new driver-provided options in the common cursor code and
       use them to work around hardware bug that causes flickering Mach64
       hardware cursors (Marc La France).
@@ -13000,4 +13008,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1698 2001/04/19 12:40:31 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1699 2001/04/19 14:13:59 tsi Exp $
