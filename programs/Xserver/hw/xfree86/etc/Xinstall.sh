@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.70 2004/02/18 04:19:28 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.71 2004/02/24 03:41:41 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -356,7 +356,7 @@ GetOsInfo()
 	# Find the object type, where needed
 
 	case "$OsName" in
-	FreeBSD|NetBSD)
+	FreeBSD|NetBSD|OpenBSD)
 		CheckUtil file
 		if file -L /bin/sh | grep ELF > /dev/null 2>&1; then
 			OsObjFormat=ELF
@@ -730,6 +730,9 @@ FindDistName()
 		case "$OsArch" in
 		i386)
 			case "$OsVersion" in
+			2.*)
+				DistName="OpenBSD-2.8"
+				;;
 			3.4*)	# Check this
 				DistName="OpenBSD-3.4"
 				;;
