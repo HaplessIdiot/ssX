@@ -1,4 +1,4 @@
-/* $XConsortium: Args.c,v 1.1 93/07/12 15:27:49 rws Exp $ */
+/* $Xorg: Args.c,v 1.3 2000/08/17 19:53:26 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,6 +12,8 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
+
 #include "X.h"
 #include "Xproto.h"
 #include "screenint.h"
@@ -20,10 +22,7 @@ is" without express or implied warranty.
 #include "scrnintstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Args.h"
@@ -46,11 +45,10 @@ Bool xnestUserBorderWidth = False;
 char *xnestWindowName = NULL;        
 int xnestNumScreens = 0;
 Bool xnestDoDirectColormaps = False;
+Window xnestParentWindow = 0;
 
-int ddxProcessArgument (argc, argv, i)
-    int	argc;
-    char *argv[] ;
-    int	i;
+int
+ddxProcessArgument (int argc, char *argv[], int i)
 {
   if (!strcmp(argv[i], "-display")) {
     if (++i < argc) {
@@ -164,6 +162,12 @@ int ddxProcessArgument (argc, argv, i)
   if (!strcmp(argv[i], "-install")) {
     xnestDoDirectColormaps = True;
     return 1;
+  }
+  if (!strcmp(argv[i], "-parent")) {
+    if (++i < argc) {
+      xnestParentWindow = (XID) strtol (argv[i], (char**)NULL, 0);
+      return 2;
+    }
   }
   return 0;
 }

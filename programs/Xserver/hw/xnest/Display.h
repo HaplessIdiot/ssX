@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Display.h,v 1.5 2000/08/01 20:05:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Display.h,v 1.6 2001/01/17 22:36:55 dawes Exp $ */
 
 #ifndef XNESTCOMMON_H
 #define XNESTCOMMON_H
@@ -41,7 +41,7 @@ extern XlibGC xnestBitmapGC;
 extern Window xnestConfineWindow;
 extern unsigned long xnestEventMask;
 
-void xnestOpenDisplay();
-void xnestCloseDisplay();
+void xnestOpenDisplay(int argc, char *argv[]);
+void xnestCloseDisplay(void);
 
 #endif /* XNESTCOMMON_H */

@@ -1,4 +1,4 @@
-/* $XConsortium: Visual.h,v 1.1 93/07/12 15:28:54 rws Exp $ */
+/* $Xorg: Visual.h,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,13 +12,14 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
 
 #ifndef XNESTVISUAL_H
 #define XNESTVISUAL_H
 
-Visual *xnestVisual();
-Visual *xnestVisualFromID();
-Colormap xnestDefaultVisualColormap();
+Visual *xnestVisual(VisualPtr pVisual);
+Visual *xnestVisualFromID(ScreenPtr pScreen, VisualID visual);
+Colormap xnestDefaultVisualColormap(Visual *visual);
 
 #define xnestDefaultVisual(pScreen) \
   xnestVisualFromID((pScreen), (pScreen)->rootVisual)

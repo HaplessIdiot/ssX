@@ -1,4 +1,4 @@
-/* $XConsortium: Visual.c,v 1.1 93/07/12 15:28:52 rws Exp $ */
+/* $Xorg: Visual.c,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,22 +12,21 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
+
 #include "X.h"
 #include "Xproto.h"
 #include "scrnintstr.h"
 #include "dix.h"
 #include "mi.h"
 #include "mibstore.h"
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Visual.h"
 
-Visual *xnestVisual(pVisual)
-     VisualPtr pVisual;
+Visual *
+xnestVisual(VisualPtr pVisual)
 {
   int i;
 
@@ -44,9 +43,8 @@ Visual *xnestVisual(pVisual)
   return NULL;
 }
 
-Visual *xnestVisualFromID(pScreen, visual)
-     ScreenPtr pScreen;
-     VisualID visual;
+Visual *
+xnestVisualFromID(ScreenPtr pScreen, VisualID visual)
 {
   int i;
   
@@ -57,8 +55,8 @@ Visual *xnestVisualFromID(pScreen, visual)
   return NULL;
 }
 
-Colormap xnestDefaultVisualColormap(visual)
-     Visual *visual;
+Colormap
+xnestDefaultVisualColormap(Visual *visual)
 {
   int i;
   
