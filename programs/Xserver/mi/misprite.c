@@ -30,7 +30,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/mi/misprite.c,v 3.9 2001/09/30 19:44:06 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/misprite.c,v 3.10tsi Exp $ */
 
 # include   "X.h"
 # include   "Xproto.h"
@@ -432,6 +432,7 @@ miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
 
 static Bool
 miSpriteCloseScreen (i, pScreen)
+    int i;
     ScreenPtr	pScreen;
 {
     miSpriteScreenPtr   pScreenPriv;
@@ -1137,6 +1138,7 @@ miSpritePutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pBits)
     int	    	  y;
     int	    	  w;
     int	    	  h;
+    int		  leftPad;
     int	    	  format;
     char    	  *pBits;
 {
@@ -2135,6 +2137,8 @@ static void
 miSpriteSetCursor (pScreen, pCursor, x, y)
     ScreenPtr	pScreen;
     CursorPtr	pCursor;
+    int		x;
+    int		y;
 {
     miSpriteScreenPtr	pScreenPriv;
 

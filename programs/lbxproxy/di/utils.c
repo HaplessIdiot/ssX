@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.13 2001/12/14 20:00:53 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.14tsi Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -273,7 +273,7 @@ void UseMsg()
 
 void
 ShowHelpAndExit (status)
-
+    int status;
 {
     UseMsg ();
     exit (status);

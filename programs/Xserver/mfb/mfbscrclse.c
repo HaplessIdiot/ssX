@@ -45,12 +45,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include "scrnintstr.h"
 
 /*ARGSUSED*/
 Bool
 mfbCloseScreen(index, pScreen)
+    int	index;
     register ScreenPtr pScreen;
 {
     xfree(pScreen->devPrivate);

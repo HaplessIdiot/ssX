@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/mfb/mfbply1rct.c,v 1.6 2001/10/28 03:34:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbply1rct.c,v 1.7tsi Exp $ */
 
 #include "X.h"
 
@@ -62,6 +62,8 @@ void
 MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
+    int		shape;
+    int		mode;
     int		count;
     DDXPointPtr	ptsIn;
 {
