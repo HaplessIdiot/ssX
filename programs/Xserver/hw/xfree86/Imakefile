@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.65 2000/04/04 22:36:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.67 2000/05/21 01:03:11 mvojkovi Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -69,7 +69,7 @@ INT10DIR = int10
 
 #if !defined(OsfArchitecture) && !defined(AmoebaArchitecture) && \
     !defined(ArcArchitecture) && !defined(Arm32Architecture) && \
-    !defined(PpcArchitecture)
+    !defined(PpcArchitecture) && !defined(MipsArchitecture)
 SUPERPROBE = SuperProbe
 #endif
 

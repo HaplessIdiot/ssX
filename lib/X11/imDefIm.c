@@ -31,13 +31,14 @@ OF THIS SOFTWARE.
                                makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefIm.c,v 1.2 1999/05/09 10:50:32 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefIm.c,v 1.3 1999/08/01 07:56:52 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
 #include "Xlibint.h"
 #include "Xlcint.h"
 #include "XlcPublic.h"
+#include "XlcPubI.h"
 #include "XimTrInt.h"
 #include "Ximint.h"
 
@@ -1036,6 +1037,14 @@ _XimProtoIMFree(im)
 	_XlcCloseConverter(im->private.proto.ctow_conv);
 	im->private.proto.ctow_conv = NULL;
     }
+    if (im->private.proto.cstomb_conv) {
+	_XlcCloseConverter(im->private.proto.cstomb_conv);
+	im->private.proto.cstomb_conv = NULL;
+    }
+    if (im->private.proto.cstowc_conv) {
+	_XlcCloseConverter(im->private.proto.cstowc_conv);
+	im->private.proto.cstowc_conv = NULL;
+    }
 
 #ifdef XIM_CONNECTABLE
     if (!IS_SERVER_CONNECTED(im) && IS_RECONNECTABLE(im)) {
@@ -1602,6 +1611,8 @@ _XimGetEncoding(im, buf, name, name_len, detail, detail_len)
     int		 len;
     XlcConv	 ctom_conv;
     XlcConv	 ctow_conv;
+    XlcConv	 conv;
+    XimProtoPrivateRec *private = &im->private.proto;
 
     if (idx == (CARD16)XIM_Default_Encoding_IDX) { /* XXX */
 	if (!(ctom_conv = _XlcOpenConverter(lcd,
@@ -1639,8 +1650,19 @@ _XimGetEncoding(im, buf, name, name_len, detail, detail_len)
     } else {
 	return False;
     }
-    im->private.proto.ctom_conv = ctom_conv;
-    im->private.proto.ctow_conv = ctow_conv;
+
+    private->ctom_conv = ctom_conv;
+    private->ctow_conv = ctow_conv;
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNCharSet, lcd, XlcNMultiByte)))
+	return False;
+    private->cstomb_conv = conv;
+
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNCharSet, lcd, XlcNWideChar)))
+	return False;
+    private->cstowc_conv = conv;
+
+    private->locale_code = * _XimGetLocaleCode(XLC_PUBLIC(lcd,encoding_name),
+                            (XlcCharSet*) &(private->keyboard_charset));
     return True;
 }
 

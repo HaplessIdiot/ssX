@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <!--
  *****************************************************************************
- * Copyright 1996,1997,1998,1999,2000 by Thomas E. Dickey (dickey@clark.net) *
+ * Copyright 1996,1997,1998,1999,2000 by Thomas E. Dickey                    *
  * All Rights Reserved.                                                      *
  *                                                                           *
  * Permission to use, copy, modify, and distribute this software and its     *
@@ -20,16 +20,17 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.51 2000/05/18 00:33:21 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.52 2000/05/18 16:30:05 dawes Exp $
   -->
 <HTML>
 <HEAD>
 <TITLE>XTERM - Change Log</TITLE>
-<LINK REV=MADE HREF="mailto:dickey@clark.net">
+<LINK REV=MADE HREF="mailto:dickey@herndon4.his.com">
 </HEAD>
 <BODY>
 <HR>
-Copyright 1997,1998,1999,2000 by Thomas E. Dickey
+Copyright 1997,1998,1999,2000 by <A
+HREF="mailto:dickey@herndon4.his.com">Thomas E. Dickey</A>
 <HR>
 <H1>Contents</H1>
 This file contains a list of the changes that I have made for XFree86 xterm,
@@ -41,6 +42,9 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_136">Patch #136 - 2000/6/3 - XFree86 4.0b</A>
+<LI><A HREF="#xterm_135">Patch #135 - 2000/5/29 - XFree86 4.0b</A>
+<LI><A HREF="#xterm_134">Patch #134 - 2000/5/28 - XFree86 4.0b</A>
 <LI><A HREF="#xterm_133">Patch #133 - 2000/5/2 - XFree86 4.0a</A>
 <LI><A HREF="#xterm_132">Patch #132 - 2000/4/11 - XFree86 4.0a</A>
 <LI><A HREF="#xterm_131">Patch #131 - 2000/3/3 - XFree86 3.9.18b</A>
@@ -176,6 +180,92 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_136">Patch #136 - 2000/6/3 - XFree86 4.0b</A></H1>
+<ul>
+	<li>Add a resource (<code>limitResize</code>)
+	  limiting resizing via the CSI 4 t and CSI 8 t sequences.
+
+	<li>Ignore out-of-bounds resize requests, i.e., where sign-extension
+	  or truncation of the parameters would occur.
+</ul>
+
+<H1><A NAME="xterm_135">Patch #135 - 2000/5/29 - XFree86 4.0b</A></H1>
+<ul>
+	<li>remove code introduced in #134 which made some backgrounds bold.
+
+	<li>minor correction to format of updated $TERMCAP when adding
+	  <code>kb</code> capability for <code>ptyInitialErase</code> logic.
+
+	<li>improved test for SVR4 definition.
+</ul>
+
+<H1><A NAME="xterm_134">Patch #134 - 2000/5/28 - XFree86 4.0b</A></H1>
+<ul>
+	<li>update URL's and mailing addresses, moved to http://dickey.his.com
+	  and dickey@herndon4.his.com
+
+	<li>correct missing quotes in CF_TTY_GROUP configure script macro in
+	  case the script is run in batch mode.
+
+	<li>modify ownership-check of log file to ignore the group ownership.
+	  Otherwise xterm cannot create logfiles in directories with set-gid
+	  permissions.
+
+	<li>simplify the logic that reads termcap data.
+
+	<li>add fallback definition for B9600 in case line speed definition
+	  for 38400 is missing (report by Jack J Woehr &lt;jwoehr@ibm.net&gt;,
+	  for OpenBSD 2.6).
+
+	<li>fix:  Set highlightColor, and select a region containing the text
+	  cursor.  If the window loses focus, the cursor becomes hollow, with
+	  the region inside the cursor being background/foreground, unlike the
+	  rest of the selection, which is foreground/highlight
+	  (patch by Ross Paterson &lt;ross@soi.city.ac.uk&gt;).
+
+	<li>add configure script tests to define SVR4, SYSV and USE_POSIX_WAIT,
+	  which enables xterm to compile on Solaris 7 and SCO Openserver
+	  without imake, though there are still a few features for the latter
+	  which require <code>sco</code> to be predefined.
+
+	<li>patches from Steve Wall:
+	<ul>
+	<li>add support for two Sun-specific function keys.  These keys are
+	  labeled F11 and F12 on Sun Type 5 keyboards, but return SunXK_F36 and
+	  SunXK_F37.  Support will only be compiled in if the header file
+	  &lt;X11/Sunkeysym.h&gt; exists and contains the appropriate symbol
+	  definitions.  The keycodes for the DEC keycodes were arbitrary unused
+	  codes, but the ones for the Sun keycodes are what cmdtool and
+	  shelltool actually send.
+
+	<li>add <code>colorRV</code> and <code>colorRVMode</code> resources to allow specifying a
+	  color to use for reverse video, similar to the existing UL, BD, and BL
+	  modes.
+
+	<li>add <code>alwaysUseMods</code> resource, to override check if
+	  <code>alt</code> or <code>meta</code> modifiers are used in
+	  <code>translations</code> resource.  Revamped the code to calculate
+	  the modifier value, and included Meta if alwaysUseMods is TRUE, using
+	  values 9-16.
+	</ul>
+
+	<li>patches from Paul Gilmartin for os390:
+	<ul>
+	<li>regularize the definition of CONTROL() and remove an
+	  acknowledged "trial and error" table.
+
+	<li>translate "^?" into A2E(0177) which is the EBCDIC "DEL"
+	  rather than plain 0177 which is the EBCDIC quotation mark.
+
+	<li>modify <code>xtermMissingChar()</code> so that EBCDIC codes 128-159
+	  are not rendered as blanks by X server running on Solaris, which sees
+	  those as control characters.
+
+	<li>make debugging traces (configure --enable-trace)
+	 work properly with EBCDIC.
+	</ul>
+</ul>
 
 <H1><A NAME="xterm_133">Patch #133 - 2000/5/2 - XFree86 4.0a</A></H1>
 <ul>

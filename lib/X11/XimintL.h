@@ -1,4 +1,4 @@
-/* $XConsortium: XimintL.h,v 1.5 94/03/29 22:51:11 rws Exp $ */
+/* $XConsortium: XimintL.h,v 1.6 94/07/06 14:46:45 kaleb Exp $ */
 /******************************************************************
 
           Copyright 1991, 1992, 1993, 1994 by FUJITSU LIMITED
@@ -54,6 +54,12 @@ typedef struct _DefTree {
 } DefTree;
 
 typedef struct _XimLocalPrivateRec {
+	XlcConv			 ctom_conv;
+	XlcConv			 ctow_conv;
+	XlcConv			 cstomb_conv;
+	XlcConv			 cstowc_conv;
+	XlcCharSet		 keyboard_charset;
+        unsigned long		 locale_code;
 	XIC			 current_ic;
 	DefTree			*top;
 } XimLocalPrivateRec;

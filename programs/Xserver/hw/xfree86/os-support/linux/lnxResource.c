@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.7 2000/03/06 22:59:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.8 2000/04/04 19:25:20 dawes Exp $ */
 
 /* Resource information code */
 
@@ -150,7 +150,7 @@ xf86AccResFromOS(resPtr ret)
     return ret;
 }
 
-#elif defined(__powerpc__) || defined(__sparc__)
+#elif defined(__powerpc__) || defined(__sparc__) || defined(__mips__)
 
  /* XXX this isn't exactly correct but it will get the server working 
   * for now until we get something better.

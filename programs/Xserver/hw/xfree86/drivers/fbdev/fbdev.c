@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.19 2000/02/27 02:45:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.21 2000/04/17 16:30:03 eich Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -277,14 +277,15 @@ FBDevProbe(DriverPtr drv, int flags)
 		    /* XXX what about when there's no busID set? */
 		    int entity;
 		    
-		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-			       "claimed PCI slot %d:%d:%d\n",bus,device,func);
 		    entity = xf86ClaimPciSlot(bus,device,func,drv,
 					      0,devSections[i],
 					      TRUE);
 		    pScrn = xf86ConfigPciEntity(pScrn,0,entity,
 						      NULL,RES_SHARED_VGA,
 						      NULL,NULL,NULL,NULL);
+		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+			       "claimed PCI slot %d:%d:%d\n",bus,device,func);
+
 		} else {
 		    /* XXX This is a quick hack */
 		    int entity;

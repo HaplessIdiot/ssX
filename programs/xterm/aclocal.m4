@@ -1,9 +1,9 @@
 dnl
-dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.31 2000/05/18 00:33:19 dawes Exp $
+dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.32 2000/05/18 16:30:03 dawes Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl
-dnl Copyright 1997-2000 by Thomas E. Dickey <dickey@clark.net>
+dnl Copyright 1997-2000 by Thomas E. Dickey
 dnl
 dnl                         All Rights Reserved
 dnl
@@ -654,6 +654,29 @@ test $cf_cv_path_lastlog != no && AC_DEFINE(USE_LASTLOG)
 ]
 )dnl
 dnl ---------------------------------------------------------------------------
+dnl Check for POSIX wait support
+AC_DEFUN([CF_POSIX_WAIT],
+[
+AC_REQUIRE([AC_HEADER_SYS_WAIT])
+AC_CACHE_CHECK(for POSIX wait functions,cf_cv_posix_wait,[
+AC_TRY_LINK([
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
+],[
+	int stat_loc;
+	pid_t pid = waitpid(-1, &stat_loc, WNOHANG|WUNTRACED);
+	pid_t pid2 = wait(&stat_loc);
+],
+[cf_cv_posix_wait=yes],
+[cf_cv_posix_wait=no])
+])
+test "$cf_cv_posix_wait" = yes && AC_DEFINE(USE_POSIX_WAIT)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl	On both Ultrix and CLIX, I find size_t defined in <stdio.h>
 AC_DEFUN([CF_SIZE_T],
 [
@@ -673,6 +696,62 @@ AC_CACHE_VAL(cf_cv_type_size_t,[
 AC_MSG_RESULT($cf_cv_type_size_t)
 test $cf_cv_type_size_t = no && AC_DEFINE(size_t, unsigned)
 ])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check if this is an SVR4 system.  We need the definition for xterm
+AC_DEFUN([CF_SVR4],
+[
+AC_CHECK_LIB(elf, elf_begin,[
+AC_CACHE_CHECK(if this is an SVR4 system, cf_cv_svr4,[
+AC_TRY_COMPILE([
+#include <elf.h>
+#include <sys/termio.h>
+],[
+static struct termio d_tio;
+	d_tio.c_cc[VINTR] = 0;
+	d_tio.c_cc[VQUIT] = 0;
+	d_tio.c_cc[VERASE] = 0;
+	d_tio.c_cc[VKILL] = 0;
+	d_tio.c_cc[VEOF] = 0;
+	d_tio.c_cc[VEOL] = 0;
+	d_tio.c_cc[VMIN] = 0;
+	d_tio.c_cc[VTIME] = 0;
+	d_tio.c_cc[VLNEXT] = 0;
+],
+[cf_cv_svr4=yes],
+[cf_cv_svr4=no])
+])
+])
+test "$cf_cv_svr4" = yes && AC_DEFINE(SVR4)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check if this is a SYSV platform
+AC_DEFUN([CF_SYSV],
+[
+AC_CACHE_CHECK(if this platform has SYSV flavor,cf_cv_sysv,[
+AC_TRY_COMPILE([
+#include <curses.h>
+#include <term.h>
+#include <sys/termio.h>
+],[
+/* FIXME: need a test that excludes linux */
+#ifdef linux
+make an error
+#endif
+static struct termio d_tio;
+	d_tio.c_cc[VINTR] = 0;
+	d_tio.c_cc[VQUIT] = 0;
+	d_tio.c_cc[VERASE] = 0;
+	d_tio.c_cc[VKILL] = 0;
+	d_tio.c_cc[VEOF] = 0;
+	d_tio.c_cc[VEOL] = 0;
+	d_tio.c_cc[VMIN] = 0;
+	d_tio.c_cc[VTIME] = 0;
+],
+[cf_cv_sysv=yes],
+[cf_cv_sysv=no])
+])
+test "$cf_cv_sysv" = yes && AC_DEFINE(SYSV)
+])dn
 dnl ---------------------------------------------------------------------------
 dnl Check if this is a SYSV flavor of UTMP
 AC_DEFUN([CF_SYSV_UTMP],
@@ -694,6 +773,23 @@ struct $cf_cv_have_utmp x;
 test $cf_cv_sysv_utmp = yes && AC_DEFINE(USE_SYSV_UTMP)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Check for SGI's broken redefinition of baud rates introduced in IRIX 6.5
+dnl (there doesn't appear to be a useful predefined symbol).
+AC_DEFUN([CF_TERMIO_C_ISPEED],
+[
+AC_CACHE_CHECK(for IRIX 6.5 baud-rate redefinitions,cf_cv_termio_c_ispeed,[
+AC_TRY_COMPILE([
+#include <sys/types.h>
+#include <sys/termio.h>],[
+struct termio foo;
+foo.c_ispeed = B38400;
+foo.c_ospeed = B9600;
+],[cf_cv_termio_c_ispeed=yes
+],[cf_cv_termio_c_ispeed=no])
+])
+test "$cf_cv_termio_c_ispeed" = yes && AC_DEFINE(HAVE_TERMIO_C_ISPEED)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Check if the system has a tty-group defined.  This is used in xterm when
 dnl setting pty ownership.
 AC_DEFUN([CF_TTY_GROUP],
@@ -708,8 +804,9 @@ cf_uid=`id | sed -e 's/^[^=]*=//' -e 's/(.*$//'`
 if test "$cf_uid" != 0 ; then
 cf_cv_tty_group_name=
 cf_tty_name=`tty`
+test "$cf_tty_name" = "not a tty" && cf_tty_name=/dev/tty
 test -z "$cf_tty_name" && cf_tty_name=/dev/tty
-if test -c $cf_tty_name
+if test -c "$cf_tty_name"
 then
 	cf_option="-l -L"
 
@@ -772,23 +869,6 @@ int main()
 	[cf_cv_tty_group=unknown])
 ])
 test $cf_cv_tty_group = yes && AC_DEFINE(USE_TTY_GROUP)
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl Check for SGI's broken redefinition of baud rates introduced in IRIX 6.5
-dnl (there doesn't appear to be a useful predefined symbol).
-AC_DEFUN([CF_TERMIO_C_ISPEED],
-[
-AC_CACHE_CHECK(for IRIX 6.5 baud-rate redefinitions,cf_cv_termio_c_ispeed,[
-AC_TRY_COMPILE([
-#include <sys/types.h>
-#include <sys/termio.h>],[
-struct termio foo;
-foo.c_ispeed = B38400;
-foo.c_ospeed = B9600;
-],[cf_cv_termio_c_ispeed=yes
-],[cf_cv_termio_c_ispeed=no])
-])
-test "$cf_cv_termio_c_ispeed" = yes && AC_DEFINE(HAVE_TERMIO_C_ISPEED)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for the declaration of fd_set.  Some platforms declare it in

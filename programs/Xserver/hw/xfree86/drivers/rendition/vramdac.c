@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.9 2000/02/25 21:03:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.10 2000/03/31 20:13:28 dawes Exp $ */
 /*
  * includes
  */
@@ -122,6 +122,7 @@ verite_initdac(ScrnInfoPtr pScreenInfo, vu8 bpp, vu8 doubleclock)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
+    vu8 cmd0,cmd1,cmd2;
     vu8 cmd3_data=0;
 
 #ifdef DEBUG
@@ -139,46 +140,60 @@ verite_initdac(ScrnInfoPtr pScreenInfo, vu8 bpp, vu8 doubleclock)
 			return -1;
 
         case 8:
-            verite_out8(iob+BT485_COMMAND_REG_0, BT485_CR0_EXTENDED_REG_ACCESS |
-             	                            BT485_CR0_8_BIT_DAC);
-            verite_out8(iob+BT485_COMMAND_REG_1, BT485_CR1_8BPP |
-                                            BT485_CR1_PIXEL_PORT_AB);
-            verite_out8(iob+BT485_COMMAND_REG_2, BT485_PIXEL_INPUT_GATE |
-                                            BT485_DISABLE_CURSOR);
-            break;
+	    cmd0 = BT485_CR0_EXTENDED_REG_ACCESS |
+	           BT485_CR0_8_BIT_DAC;
 
-        case 15:
-            verite_out8(iob+BT485_COMMAND_REG_0, BT485_CR0_EXTENDED_REG_ACCESS |
-                                            BT485_CR0_8_BIT_DAC);
-            verite_out8(iob+BT485_COMMAND_REG_1, BT485_CR1_16BPP |
-                                            BT485_CR1_BYPASS_CLUT |
-                                            BT485_CR1_555_16BPP |
-                                            BT485_CR1_2_TO_1_16BPP |
-                                            BT485_CR1_PIXEL_PORT_AB);
-            verite_out8(iob+BT485_COMMAND_REG_2, BT485_PIXEL_INPUT_GATE |
-                                            BT485_DISABLE_CURSOR);
+	    cmd1 = BT485_CR1_8BPP |
+	           BT485_CR1_PIXEL_PORT_AB;
+
+	    cmd2 = BT485_PIXEL_INPUT_GATE |
+	           BT485_DISABLE_CURSOR;
+
+            verite_out8(iob+BT485_COMMAND_REG_0, cmd0);
+            verite_out8(iob+BT485_COMMAND_REG_1, cmd1);
+            verite_out8(iob+BT485_COMMAND_REG_2, cmd2);
             break;
 
         case 16:
-            verite_out8(iob+BT485_COMMAND_REG_0, BT485_CR0_EXTENDED_REG_ACCESS |
-                                            BT485_CR0_8_BIT_DAC);
-            verite_out8(iob+BT485_COMMAND_REG_1, BT485_CR1_16BPP |
-                                            BT485_CR1_BYPASS_CLUT |
-                                            BT485_CR1_565_16BPP |
-                                            BT485_CR1_2_TO_1_16BPP |
-                                            BT485_CR1_PIXEL_PORT_AB);
-            verite_out8(iob+BT485_COMMAND_REG_2, BT485_PIXEL_INPUT_GATE |
-                                            BT485_DISABLE_CURSOR);
+	    cmd0 = BT485_CR0_EXTENDED_REG_ACCESS |
+	           BT485_CR0_8_BIT_DAC;
+
+	    cmd1 = BT485_CR1_16BPP |
+	           BT485_CR1_2_TO_1_16BPP |
+	           BT485_CR1_PIXEL_PORT_AB;
+
+	    cmd2 = BT485_PIXEL_INPUT_GATE |
+	           BT485_DISABLE_CURSOR;
+
+	    if (pScreenInfo->defaultVisual == TrueColor)
+	      cmd1 |= BT485_CR1_BYPASS_CLUT;
+
+            if (pScreenInfo->weight.green == 5)
+	      cmd1 |= BT485_CR1_555_16BPP;
+	    else
+	      cmd1 |= BT485_CR1_565_16BPP;
+
+            verite_out8(iob+BT485_COMMAND_REG_0,cmd0);
+            verite_out8(iob+BT485_COMMAND_REG_1,cmd1);
+            verite_out8(iob+BT485_COMMAND_REG_2,cmd2);
             break;
 
         case 32:
-            verite_out8(iob+BT485_COMMAND_REG_0, BT485_CR0_EXTENDED_REG_ACCESS |
-                                            BT485_CR0_8_BIT_DAC);
-            verite_out8(iob+BT485_COMMAND_REG_1, BT485_CR1_24BPP |
-                                            BT485_CR1_BYPASS_CLUT |
-                                            BT485_CR1_PIXEL_PORT_AB);
-            verite_out8(iob+BT485_COMMAND_REG_2, BT485_PIXEL_INPUT_GATE |
-                                            BT485_DISABLE_CURSOR);
+	    cmd0 = BT485_CR0_EXTENDED_REG_ACCESS |
+	           BT485_CR0_8_BIT_DAC;
+
+	    cmd1 = BT485_CR1_24BPP |
+	           BT485_CR1_PIXEL_PORT_AB;
+
+	    cmd2 = BT485_PIXEL_INPUT_GATE |
+	           BT485_DISABLE_CURSOR;
+
+	    if (pScreenInfo->defaultVisual == TrueColor)
+	      cmd1 |= BT485_CR1_BYPASS_CLUT;
+
+            verite_out8(iob+BT485_COMMAND_REG_0,cmd0);
+            verite_out8(iob+BT485_COMMAND_REG_1,cmd1);
+            verite_out8(iob+BT485_COMMAND_REG_2,cmd2);
             break;
 
         default:

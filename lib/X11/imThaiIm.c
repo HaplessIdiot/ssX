@@ -1,4 +1,4 @@
-/* $XConsortium: imThaiIm.c,v 1.3 94/03/26 17:00:57 rws Exp $ */
+/* $XConsortium: imThaiIm.c /main/5 1996/01/21 15:12:18 kaleb $ */
 /******************************************************************
 
           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -41,6 +41,7 @@ THIS SOFTWARE.
 #include "Xlibint.h"
 #include "Xlcint.h"
 #include "XlcPublic.h"
+#include "XlcPubI.h"
 #include "Ximint.h"
 
 Private XIMMethodsRec      Xim_im_thai_methods = {
@@ -48,7 +49,8 @@ Private XIMMethodsRec      Xim_im_thai_methods = {
     _XimLocalSetIMValues,      /* set_values */
     _XimLocalGetIMValues,      /* get_values */
     _XimThaiCreateIC,          /* create_ic */
-    XLookupString		/* lookup_string */
+    _XimLcctstombs,            /* ctstombs */
+    _XimLcctstowcs             /* ctstowcs */
 };
 
 #define THAI_LANGUAGE_NAME 	"th"
@@ -70,7 +72,10 @@ Public Bool
 _XimThaiOpenIM(im)
     Xim		 im;
 {
+    XLCd		 lcd = im->core.lcd;
+    XlcConv		 conv;
     XimDefIMValues	 im_values;
+    XimLocalPrivateRec*  private = &im->private.local;
 
     _XimInitialResourceInfo();
     if(_XimSetIMResourceList(&im->core.im_resources,
@@ -91,26 +96,32 @@ _XimThaiOpenIM(im)
     }
     _XimSetCurrentIMValues(im, &im_values);
 
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNCompoundText, lcd, XlcNMultiByte)))
+	goto Open_Error;
+    private->ctom_conv = conv;
+
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNCompoundText, lcd, XlcNWideChar)))
+	goto Open_Error;
+    private->ctow_conv = conv;
+    
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNCharSet, lcd, XlcNMultiByte)))
+	goto Open_Error;
+    private->cstomb_conv = conv;
+
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNCharSet, lcd, XlcNWideChar)))
+	goto Open_Error;
+    private->cstowc_conv = conv;
+
+    private->locale_code = * _XimGetLocaleCode(XLC_PUBLIC(lcd,encoding_name),
+                            (XlcCharSet*) &(private->keyboard_charset));
+
     im->methods = &Xim_im_thai_methods;
-    im->private.local.current_ic = (XIC)NULL;
+    private->current_ic = (XIC)NULL;
+
     return(True);
 
 Open_Error :
-    if (im->core.im_resources) {
-	Xfree(im->core.im_resources);
-    }
-    if (im->core.ic_resources) {
-	Xfree(im->core.ic_resources);
-    }
-    if (im->core.im_values_list) {
-	Xfree(im->core.im_values_list);
-    }
-    if (im->core.ic_values_list) {
-	Xfree(im->core.ic_values_list);
-    }
-    if (im->core.styles) {
-	Xfree(im->core.styles);
-    }
+    _XimThaiIMFree(im);
     return(False);
 }
 
@@ -118,22 +129,54 @@ Public void
 _XimThaiIMFree(im)
     Xim		im;
 {
-    if(im->core.im_resources)
+    if(im->core.im_resources) {
 	Xfree(im->core.im_resources);
-    if(im->core.ic_resources)
+	im->core.im_resources = NULL;
+    }
+    if(im->core.ic_resources) {
 	Xfree(im->core.ic_resources);
-    if(im->core.im_values_list)
+	im->core.ic_resources = NULL;
+    }
+    if(im->core.im_values_list) {
 	Xfree(im->core.im_values_list);
-    if(im->core.ic_values_list)
+	im->core.im_values_list = NULL;
+    }
+    if(im->core.ic_values_list) {
 	Xfree(im->core.ic_values_list);
-    if(im->core.styles)
+	im->core.ic_values_list = NULL;
+    }
+    if(im->core.styles) {
 	Xfree(im->core.styles);
-    if(im->core.res_name)
+	im->core.styles = NULL;
+    }
+    if(im->core.res_name) {
 	Xfree(im->core.res_name);
-    if(im->core.res_class)
+	im->core.res_name = NULL;
+    }
+    if(im->core.res_class) {
 	Xfree(im->core.res_class);
-    if(im->core.im_name)
+	im->core.res_class = NULL;
+    }
+    if(im->core.im_name) {
 	Xfree(im->core.im_name);
+	im->core.im_name = NULL;
+    }
+    if (im->private.local.ctom_conv) {
+	_XlcCloseConverter(im->private.local.ctom_conv);
+	im->private.local.ctom_conv = NULL;
+    }
+    if (im->private.local.ctow_conv) {
+	_XlcCloseConverter(im->private.local.ctow_conv);
+	im->private.local.ctow_conv = NULL;
+    }
+    if (im->private.local.cstomb_conv) {
+	_XlcCloseConverter(im->private.local.cstomb_conv);
+	im->private.local.cstomb_conv = NULL;
+    }
+    if (im->private.local.cstowc_conv) {
+	_XlcCloseConverter(im->private.local.cstowc_conv);
+	im->private.local.cstowc_conv = NULL;
+    }
     return;
 }
 

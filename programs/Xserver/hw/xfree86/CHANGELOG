@@ -1,4 +1,53 @@
-XFre86 4.0c (?? June 2000)
+XFree86 4.0c (13 June 2000)
+ 255. Rendition driver updates, including:
+       - add DirectColor support
+       - add SilkenMouse support
+       - documentation updates
+       - some code cleanups
+      (#3972, Dejan Ilic).
+ 254. For v4l: don't advertise the XV_VOLUME attr if we're only going to
+      return BadMatch on use (#3968, David Woodhouse).
+ 253. Modify the I2C delay routine to use xf86getsecs (gettimeofday) instead
+      of an uncalibrated loop (#3967, Andrew Aitchison).
+ 252. Add some PCI ids to xf86PciInfo.h, and include some instructions
+      about how to add new PCI data (#3966, Kevin Brosius).
+ 251. Update documentation for Japanese PC98 (#3965, Satoshi Kimura,
+      Akio Morita, Takaaki Nomura).
+ 250. XIM patch (imInt.c) (#3962, Fuminori Hirayama).
+ 249. Xterm patch #136 (#3960, Thomas Dickey).
+ 248. Fix Imake.rules for building on Solaris 7 with gcc-2.95.2 (#3958,
+      Nicholas Brealey).
+ 247. Add basic support for the Linux/mips and mipsel architecture (#3957,
+      3970, Guido Guenther).
+ 246. Disable reading the BIOS in the int10 code for Japanese PC98 (#3959,
+      Isao Ohishi).
+ 245. Add a "NoPciBurst" option to the Trident drive for Japanese PC98
+      cards with the TGUi968x chip (#3955, Akio Morita).
+ 244. Xterm patch #135 (#3951, Thomas Dickey).
+ 243. Fbdev driver fix (#3953, Ani Joshi).
+ 242. Xterm patch #134 (#3949, Thomas Dickey).
+ 241. Import the mktemp() usage fixes for imake from the 3.3.x branch
+      (#3947, Matthieu Herrb).
+ 240. Rman updates, including:
+       - minor reformating (make { and } match)
+       - fix logic for parsing comments in man pages, which allows the
+         copyrights to appear in the output html
+       - a few changes based on weblint and tidy
+      (#3946, Thomas Dickey).
+ 239. Fix incorrect type for vgaIOBase in the neomagic driver (#3944,
+      Ani Joshi).
+ 238. Fix an Xlib build problem when the big-font extension is disabled
+      (#3945, Mutsumi Ishikawa).
+ 237. Xv v4l attribute handling bug fix (#3928, Gerd Knorr).
+ 236. Fix some problems with the locale-dependent input processing in Xlib
+      by:
+       - removing unneeded to/from CTEXT conversion for characters coming
+         from keyboard input
+       - move "locale_code" and "keyboard charset" searching to the
+         initialization step (XIM creation)
+       - Fix some inconsistencies between memory allocation and freeing
+         in XIM objects (imLcIm.c imThaiIm.c)
+      (#3927, Ivan Pascal).
  235. Update support for Appian J2000 board with dual PM3 chips, and
       add partial acceleration (#3977, Sven Luther).
  234. Only claim other devices on the same card when gamma chip is used
@@ -10450,4 +10499,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1176 2000/06/10 16:13:18 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1177 2000/06/12 10:11:34 alanh Exp $

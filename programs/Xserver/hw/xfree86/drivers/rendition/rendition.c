@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.32 2000/04/17 16:30:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.33 2000/04/20 21:28:43 tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -595,7 +595,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     /* determine default visual */
     if (!xf86SetDefaultVisual(pScreenInfo, -1))
-        return FALSE;
+      return FALSE;
 
     /* the gamma fields must be initialised when using the new cmap code */
     if (pScreenInfo->depth > 1) {
@@ -751,7 +751,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     }
 #endif
 
-#if 1
+#if 0
     /* Load DDC module if needed */
     if (!xf86ReturnOptValBool(renditionOptions, OPTION_NO_DDC,0)){
       if (!xf86LoadSubModule(pScreenInfo, "ddc")) {
@@ -993,12 +993,10 @@ renditionSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
             break;
         case 16:
             modeinfo->bitsperpixel=16;
-#if 0
-            if (vga256InfoRec.weight.green == 5)
+            if (pScreenInfo->weight.green == 5)
                 /* on a V1000, this looks too 'red/magenta' <ml> */
                 modeinfo->pixelformat=V_PIXFMT_1555;
             else
-#endif
                 modeinfo->pixelformat=V_PIXFMT_565;
             break;
         case 32:
@@ -1218,42 +1216,63 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!Inited)
         return FALSE;
 
-    miInitializeBackingStore(pScreen);
 
     if (pScreenInfo->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
         visual=pScreen->visuals+pScreen->numVisuals;
         while (--visual >= pScreen->visuals) {
-	        if (0 && (visual->class | DynamicClass) == DirectColor) {
-		        visual->offsetRed = pScreenInfo->offset.red;
-		        visual->offsetGreen = pScreenInfo->offset.green;
-		        visual->offsetBlue = pScreenInfo->offset.blue;
-		        visual->redMask = pScreenInfo->mask.red;
-		        visual->greenMask = pScreenInfo->mask.green;
-		        visual->blueMask = pScreenInfo->mask.blue;
-	        }
-            else {
-	      /* ErrorF("Changing masks!!!\n"); */
-                if (pScreenInfo->bitsPerPixel == 32) {
-		        visual->offsetRed=16;
-		        visual->offsetGreen=8;
-		        visual->offsetBlue=0;
-		        visual->redMask=0xff0000;
-		        visual->greenMask=0xff00;
-		        visual->blueMask=0xff;
-		} else {
-		        visual->offsetRed=11;
-		        visual->offsetGreen=5;
-		        visual->offsetBlue=0;
-		        visual->redMask=0xf800;
-		        visual->greenMask=0x7e0;
-		        visual->blueMask=0x1f;
+	  if ((visual->class | DynamicClass) == DirectColor){
+	    visual->offsetRed = pScreenInfo->offset.red;
+	    visual->offsetGreen = pScreenInfo->offset.green;
+	    visual->offsetBlue = pScreenInfo->offset.blue;
+	    visual->redMask = pScreenInfo->mask.red;
+	    visual->greenMask = pScreenInfo->mask.green;
+	    visual->blueMask = pScreenInfo->mask.blue;
+	  }
+
+#if 0   /* This code is never called ? <DI> */
+	  else {
+	    switch (pScreenInfo->bitsPerPixel)
+	      {
+	      case 16:
+		if (pScreenInfo->weight.green == 5){
+		  /* weight 555 mode */
+		  ErrorF("RENDITION: 15bit mode\n");
+		  visual->offsetRed=10;
+		  visual->offsetGreen=5;
+		  visual->offsetBlue=0;
+		  visual->redMask=0x7c00;
+		  visual->greenMask=0x3e0;
+		  visual->blueMask=0x1f;
 		}
+		else{
+		  ErrorF("RENDITION: 16bit mode\n");
+		  visual->offsetRed=11;
+		  visual->offsetGreen=5;
+		  visual->offsetBlue=0;
+		  visual->redMask=0xf800;
+		  visual->greenMask=0x7e0;
+		  visual->blueMask=0x1f;
+		}
+		break;
+		
+	      case 32:
+		ErrorF("RENDITION: 32bit mode\n");
+		visual->offsetRed=16;
+		visual->offsetGreen=8;
+		visual->offsetBlue=0;
+		visual->redMask=0xff0000;
+		visual->greenMask=0xff00;
+		visual->blueMask=0xff;
+		break;
+	      }
             }
+#endif  /* Never used fixup code */
 	}
     }
 
     xf86SetBlackWhitePixels(pScreen);
+    miInitializeBackingStore(pScreen);
    
     /*********************************************************/
     /* The actual setup of the driver-specific code          */
@@ -1265,6 +1284,7 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
 
     /* Initialise cursor functions */
+    xf86SetSilkenMouse(pScreen);
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     if(!xf86ReturnOptValBool(renditionOptions, OPTION_SW_CURSOR,0)&&

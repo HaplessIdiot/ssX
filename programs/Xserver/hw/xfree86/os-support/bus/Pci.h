@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.8 2000/02/08 13:13:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.10 2000/05/31 07:15:08 eich Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -136,7 +136,7 @@
 /*
  * Select architecture specific PCI init function
  */
-#if defined(__powerpc__) && defined(linux)
+#if (defined(__powerpc__) || defined(__mips__)) && defined(linux)
 # define ARCH_PCI_INIT linuxPciInit
 # define INCLUDE_XF86_MAP_PCI_MEM
 #elif defined(__powerpc__)

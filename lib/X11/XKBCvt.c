@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.24 2000/02/12 02:54:06 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.25 2000/02/18 12:18:50 tsi Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -114,7 +114,7 @@ extern unsigned long Const*
 _XimGetLocaleCode (
 #if NeedFunctionPrototypes
     _Xconst char* /* encoding_name */,
-    XPointer* /* pass NULL here */
+    XlcCharSet* /* pass NULL here */
 #endif
 );
 

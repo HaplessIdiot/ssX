@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright 1999-2000 by Thomas E. Dickey <dickey@clark.net>
+ * Copyright 1999-2000 by Thomas E. Dickey
  *
  *                         All Rights Reserved
  *
@@ -54,7 +54,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.47 2000/02/08 17:19:41 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.48 2000/03/03 20:02:34 dawes Exp $ */
 
 /* screen.c */
 
@@ -784,13 +784,13 @@ ScrnRefresh (
 		/* this combines them, then splits them again.	but
 		   extract_fg does more, so seems reasonable */
 		fg = extract_fg(fg_bg, flags);
-		bg = extract_bg(fg_bg);
+		bg = extract_bg(fg_bg, flags);
 	   })
 	   if_OPT_ISO_TRADITIONAL_COLORS(screen,{
 		fb = SCRN_BUF_COLOR(screen, lastind + topline);
 		fg_bg = fb[col];
 		fg = extract_fg(fg_bg, flags);
-		bg = extract_bg(fg_bg);
+		bg = extract_bg(fg_bg, flags);
 	   })
 	   gc = updatedXtermGC(screen, flags, fg_bg, hilite);
 	   gc_changes |= (flags & (FG_COLOR|BG_COLOR));
@@ -804,10 +804,10 @@ ScrnRefresh (
 #if OPT_ISO_COLORS
 #if OPT_EXT_COLORS
 		 || ((flags & FG_COLOR) && (extract_fg((fbf[col]<<8)|fbb[col],attrs[col]) != fg))
-		 || ((flags & BG_COLOR) && (extract_bg((fbf[col]<<8)|fbb[col]) != bg))
+		 || ((flags & BG_COLOR) && (extract_bg((fbf[col]<<8)|fbb[col],attrs[col]) != bg))
 #else
 		 || ((flags & FG_COLOR) && (extract_fg(fb[col],attrs[col]) != fg))
-		 || ((flags & BG_COLOR) && (extract_bg(fb[col]) != bg))
+		 || ((flags & BG_COLOR) && (extract_bg(fb[col],attrs[col]) != bg))
 #endif
 #endif
 #if OPT_DEC_CHRSET
@@ -835,12 +835,12 @@ ScrnRefresh (
 		   if_OPT_EXT_COLORS(screen,{
 			fg_bg = (fbf[col]<<8) | fbb[col];
 		        fg = extract_fg(fg_bg, flags);
-		        bg = extract_bg(fg_bg);
+		        bg = extract_bg(fg_bg, flags);
 		   })
 		   if_OPT_ISO_TRADITIONAL_COLORS(screen,{
 			fg_bg = fb[col];
 		        fg = extract_fg(fg_bg, flags);
-		        bg = extract_bg(fg_bg);
+		        bg = extract_bg(fg_bg, flags);
 		   })
 		   if_OPT_DEC_CHRSET({
 		        cs = cb[col];

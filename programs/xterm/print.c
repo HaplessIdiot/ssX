@@ -1,10 +1,10 @@
 /*
- * $XFree86: xc/programs/xterm/print.c,v 1.14 2000/01/18 16:36:00 tsi Exp $
+ * $XFree86: xc/programs/xterm/print.c,v 1.15 2000/02/08 17:19:39 dawes Exp $
  */
 
 /************************************************************
 
-Copyright 1997-2000 by Thomas E. Dickey <dickey@clark.net>
+Copyright 1997-2000 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -166,7 +166,7 @@ static void printLine(int row, int chr)
 						? extract_fg((fbf[col]<<8)|(fbb[col]), a[col])
 						: -1;
 					bg = (a[col] & BG_COLOR)
-						? extract_bg((fbf[col]<<8)|(fbb[col]))
+						? extract_bg((fbf[col]<<8)|(fbb[col]), a[col])
 						: -1;
 				}
 			})
@@ -176,7 +176,7 @@ static void printLine(int row, int chr)
 						? extract_fg(fb[col], a[col])
 						: -1;
 					bg = (a[col] & BG_COLOR)
-						? extract_bg(fb[col])
+						? extract_bg(fb[col], a[col])
 						: -1;
 				}
 			})

@@ -1,11 +1,11 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.104 2000/05/18 00:33:19 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.105 2000/05/18 16:30:03 dawes Exp $
  */
 
 /*
 
-Copyright 1999-2000 by Thomas E. Dickey <dickey@clark.net>
+Copyright 1999-2000 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -426,6 +426,7 @@ Bres(XtNreverseWrap,	XtCReverseWrap, misc.reverseWrap,	FALSE),
 Bres(XtNautoWrap,	XtCAutoWrap,	misc.autoWrap,		TRUE),
 Ires(XtNsaveLines,	XtCSaveLines,	screen.savelines,	SAVELINES),
 Bres(XtNscrollBar,	XtCScrollBar,	misc.scrollbar,		FALSE),
+Ires(XtNlimitResize,	XtCLimitResize, misc.limit_resize,	1),
 #ifdef SCROLLBAR_RIGHT
 Bres(XtNrightScrollBar, XtCRightScrollBar, misc.useRight, FALSE),
 #endif
@@ -435,6 +436,7 @@ Ires(XtNscrollLines,	XtCScrollLines,	screen.scrolllines,	SCROLLLINES),
 Bres(XtNsignalInhibit,	XtCSignalInhibit, misc.signalInhibit,	FALSE),
 #if OPT_NUM_LOCK
 Bres(XtNnumLock,	XtCNumLock,	misc.real_NumLock,	TRUE),
+Bres(XtNalwaysUseMods,	XtCAlwaysUseMods, misc.alwaysUseMods,	FALSE),
 #endif
 #if OPT_SHIFT_KEYS
 Bres(XtNshiftKeys,	XtCShiftKeys,	misc.shift_keys,	TRUE),
@@ -491,10 +493,12 @@ COLOR_RES(XtNcolor15,	screen.Acolors[COLOR_15],	DFT_COLOR("white")),
 COLOR_RES(XtNcolorBD,	screen.Acolors[COLOR_BD],	DFT_COLOR(XtDefaultForeground)),
 COLOR_RES(XtNcolorBL,	screen.Acolors[COLOR_BL],	DFT_COLOR(XtDefaultForeground)),
 COLOR_RES(XtNcolorUL,	screen.Acolors[COLOR_UL],	DFT_COLOR(XtDefaultForeground)),
+COLOR_RES(XtNcolorRV,	screen.Acolors[COLOR_RV],	DFT_COLOR(XtDefaultForeground)),
 Bres(XtNcolorMode,	XtCColorMode, screen.colorMode,	DFT_COLORMODE),
 Bres(XtNcolorULMode,	XtCColorMode, screen.colorULMode,	FALSE),
 Bres(XtNcolorBDMode,	XtCColorMode, screen.colorBDMode,	FALSE),
 Bres(XtNcolorBLMode,	XtCColorMode, screen.colorBLMode,	FALSE),
+Bres(XtNcolorRVMode,	XtCColorMode, screen.colorRVMode,	FALSE),
 Bres(XtNcolorAttrMode,	XtCColorMode, screen.colorAttrMode,	FALSE),
 Bres(XtNboldColors,	XtCColorMode, screen.boldColors,	TRUE),
 #endif /* OPT_ISO_COLORS */
@@ -685,6 +689,23 @@ setExtendedFG(void)
 	SGR_Foreground(fg);
 }
 
+/* Invoked after updating inverse flag, computes the extended color
+ * index to use for background.  (See also 'extract_bg()').
+ */
+static void
+setExtendedBG(void)
+{
+	int bg = term->sgr_background;
+
+	if (term->screen.colorAttrMode
+	 || (bg < 0)) {
+		if (term->screen.colorRVMode && (term->flags & INVERSE))
+			bg = COLOR_RV;
+	}
+
+	SGR_Background(bg);
+}
+
 static void
 reset_SGR_Foreground(void)
 {
@@ -694,10 +715,17 @@ reset_SGR_Foreground(void)
 }
 
 static void
+reset_SGR_Background(void)
+{
+	term->sgr_background = -1;
+	setExtendedBG();
+}
+
+static void
 reset_SGR_Colors(void)
 {
 	reset_SGR_Foreground();
-	SGR_Background(-1);
+	reset_SGR_Background();
 }
 #endif /* OPT_ISO_COLORS */
 
@@ -1403,6 +1431,7 @@ static void VTparse(void)
 					break;
 				 case 7:
 					term->flags |= INVERSE;
+					if_OPT_ISO_COLORS(screen,{setExtendedBG();})
 					break;
 				 case 8:
 					term->flags |= INVISIBLE;
@@ -1421,6 +1450,7 @@ static void VTparse(void)
 					break;
 				 case 27:
 					term->flags &= ~INVERSE;
+					if_OPT_ISO_COLORS(screen,{setExtendedBG();})
 					break;
 				 case 28:
 					term->flags &= ~INVISIBLE;
@@ -1478,7 +1508,8 @@ static void VTparse(void)
 				 case 46:
 				 case 47:
 					if_OPT_ISO_COLORS(screen,{
-					  SGR_Background(param[row] - 40);
+					    term->sgr_background = (param[row] - 40);
+					    setExtendedBG();
 					})
 					break;
 				 case 48:
@@ -1490,7 +1521,8 @@ static void VTparse(void)
 								row++;
 								if (row < nparam &&
 								    param[row] < NUM_ANSI_COLORS) {
-									SGR_Background(param[row]);
+									term->sgr_background = param[row];
+									setExtendedBG();
 								}
 								break;
 							default:
@@ -1502,7 +1534,7 @@ static void VTparse(void)
 					break;
 				 case 49:
 					if_OPT_ISO_COLORS(screen,{
-					  SGR_Background(-1);
+					  reset_SGR_Background();
 					})
 					break;
 				 case 90:
@@ -1523,7 +1555,7 @@ static void VTparse(void)
 #if !OPT_AIX_COLORS
 					if_OPT_ISO_COLORS(screen,{
 					  reset_SGR_Foreground();
-					  SGR_Background(-1);
+					  reset_SGR_Background();
 					})
 					break;
 #endif
@@ -1535,7 +1567,8 @@ static void VTparse(void)
 				 case 106:
 				 case 107:
 					if_OPT_AIX_COLORS(screen,{
-					  SGR_Background(param[row] - 100 + 8);
+					  term->sgr_background = (param[row] - 100 + 8);
+					  setExtendedBG();
 					})
 					break;
 				}
@@ -3797,13 +3830,16 @@ static void VTResize(Widget w)
 }
 
 
+#define okDimension(src,dst) ((src <= 32767) && ((dst = src) == src))
+
 static void RequestResize(
 	XtermWidget termw,
 	int rows,
 	int cols,
 	int text)
 {
-	register TScreen	*screen	= &termw->screen;
+	TScreen	*screen	= &termw->screen;
+	unsigned long value;
 	Dimension replyWidth, replyHeight;
 	Dimension askedWidth, askedHeight;
 	XtGeometryResult status;
@@ -3811,28 +3847,34 @@ static void RequestResize(
 
 	TRACE(("RequestResize(rows=%d, cols=%d, text=%d)\n", rows, cols, text));
 
-	askedWidth  = cols;
-	askedHeight = rows;
+	if ((askedWidth  = cols) < cols
+	 || (askedHeight = rows) < rows)
+		return;
 
 	if (askedHeight == 0
-	 || askedWidth  == 0) {
+	 || askedWidth  == 0
+	 || term->misc.limit_resize > 0) {
 		XGetWindowAttributes(XtDisplay(termw),
 			RootWindowOfScreen(XtScreen(termw)), &attrs);
 	}
 
 	if (text) {
-		if (rows != 0) {
+		if ((value = rows) != 0) {
 			if (rows < 0)
-				askedHeight = screen->max_row + 1;
-			askedHeight *= FontHeight(screen);
-			askedHeight += (2 * screen->border);
+				value = screen->max_row + 1;
+			value *= FontHeight(screen);
+			value += (2 * screen->border);
+			if (!okDimension(value, askedHeight))
+				return;
 		}
 
-		if (cols != 0) {
+		if ((value = cols) != 0) {
 			if (cols < 0)
-				askedWidth = screen->max_col + 1;
-			askedWidth  *= FontWidth(screen);
-			askedWidth  += (2 * screen->border) + Scrollbar(screen);
+				value = screen->max_col + 1;
+			value *= FontWidth(screen);
+			value += (2 * screen->border) + Scrollbar(screen);
+			if (!okDimension(value, askedWidth))
+				return;
 		}
 
 	} else {
@@ -3847,10 +3889,27 @@ static void RequestResize(
 	if (cols == 0)
 		askedWidth  = attrs.width;
 
+	if (term->misc.limit_resize > 0) {
+		Dimension high = term->misc.limit_resize * attrs.height;
+		Dimension wide = term->misc.limit_resize * attrs.width;
+		if (high < attrs.height)
+			high = attrs.height;
+		if (askedHeight > high)
+			askedHeight = high;
+		if (wide < attrs.width)
+			wide = attrs.width;
+		if (askedWidth > wide)
+			askedWidth = wide;
+	}
+
 	status = XtMakeResizeRequest (
 	    (Widget) termw,
 	     askedWidth,  askedHeight,
 	    &replyWidth, &replyHeight);
+	TRACE(("charproc.c XtMakeResizeRequest %dx%d -> %dx%d (status %d)\n",
+		askedHeight, askedWidth,
+		replyHeight, replyWidth,
+		status));
 
 	if (status == XtGeometryYes ||
 	    status == XtGeometryDone) {
@@ -4020,8 +4079,10 @@ static void VTInitialize (
 
    wnew->screen.ansi_level = (wnew->screen.terminal_id / 100);
    wnew->screen.visualbell = request->screen.visualbell;
+   wnew->misc.limit_resize = request->misc.limit_resize;
 #if OPT_NUM_LOCK
    wnew->misc.real_NumLock = request->misc.real_NumLock;
+   wnew->misc.alwaysUseMods = request->misc.alwaysUseMods;
    wnew->misc.num_lock = 0;
    wnew->misc.alt_left = 0;
    wnew->misc.alt_right = 0;
@@ -4106,6 +4167,7 @@ static void VTInitialize (
    wnew->screen.colorBLMode   = request->screen.colorBLMode;
    wnew->screen.colorMode     = request->screen.colorMode;
    wnew->screen.colorULMode   = request->screen.colorULMode;
+   wnew->screen.colorRVMode   = request->screen.colorRVMode;
 
    for (i = 0, color_ok = False; i < MAXCOLORS; i++) {
        wnew->screen.Acolors[i] = request->screen.Acolors[i];
@@ -4139,6 +4201,7 @@ static void VTInitialize (
    wnew->num_ptrs = (OFF_COLOR+1);
 #endif
    wnew->sgr_foreground = -1;
+   wnew->sgr_background = -1;
    wnew->sgr_extended = 0;
 #endif /* OPT_ISO_COLORS */
 
@@ -4683,6 +4746,7 @@ ShowCursor(void)
 	int	fg_bg = 0;
 	GC	currentGC;
 	Boolean	in_selection;
+	Boolean	reversed;
 	Pixel fg_pix;
 	Pixel bg_pix;
 	Pixel tmp;
@@ -4738,7 +4802,7 @@ ShowCursor(void)
 	    fg_bg = SCRN_BUF_COLOR(screen, screen->cursor_row)[screen->cursor_col];
 	})
 	fg_pix = getXtermForeground(flags,extract_fg(fg_bg,flags));
-	bg_pix = getXtermBackground(flags,extract_bg(fg_bg));
+	bg_pix = getXtermBackground(flags,extract_bg(fg_bg,flags));
 
 	if (screen->cur_row > screen->endHRow ||
 	    (screen->cur_row == screen->endHRow &&
@@ -4750,14 +4814,14 @@ ShowCursor(void)
 	else
 	    in_selection = True;
 
+	reversed = ReverseOrHilite(screen, flags, in_selection);
+
 	/* This is like updatedXtermGC(), except that we have to worry about
 	 * whether the window has focus, since in that case we want just an
 	 * outline for the cursor.
 	 */
 	if(screen->select || screen->always_highlight) {
-		if (( (flags & INVERSE) && !in_selection) ||
-		    (!(flags & INVERSE) &&  in_selection)){
-		    /* text is reverse video */
+		if (reversed) { /* text is reverse video */
 		    if (screen->cursorGC) {
 			currentGC = screen->cursorGC;
 		    } else {
@@ -4793,9 +4857,16 @@ ShowCursor(void)
 		}
 		XSetForeground(screen->display, currentGC, bg_pix);
 	} else { /* not selected */
-		if (( (flags & INVERSE) && !in_selection) ||
-		    (!(flags & INVERSE) &&  in_selection)) {
-		    /* text is reverse video */
+		if (reversed) { /* text is reverse video */
+#if OPT_HIGHLIGHT_COLOR
+			if (hi_pix != screen->foreground
+			 && hi_pix != fg_pix
+			 && hi_pix != bg_pix
+			 && hi_pix != term->dft_foreground) {
+			    bg_pix = fg_pix;
+			    fg_pix = hi_pix;
+			}
+#endif
 			currentGC = ReverseGC(screen);
 			XSetForeground(screen->display, currentGC, bg_pix);
 			XSetBackground(screen->display, currentGC, fg_pix);

@@ -101,6 +101,13 @@ typedef Bool (*XimTransCallDispatcher)(
  * private part of IM
  */
 typedef struct _XimProtoPrivateRec {
+    XlcConv			 ctom_conv;
+    XlcConv			 ctow_conv;
+    XlcConv			 cstomb_conv;
+    XlcConv			 cstowc_conv;
+    XlcCharSet			 keyboard_charset;
+    unsigned long		 locale_code;
+
     Window			 im_window;
     XIMID			 imid;
     CARD16			 unused;
@@ -125,9 +132,6 @@ typedef struct _XimProtoPrivateRec {
     CARD16			 protocol_minor_version;
     XrmQuark			*saved_imvalues;
     int				 num_saved_imvalues;
-
-    XlcConv			 ctom_conv;
-    XlcConv			 ctow_conv;
 
     /*
      * transport specific
