@@ -1,8 +1,8 @@
 
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
-           SRCS = vgahelp.c
-           OBJS = vgahelp.o
+           SRCS = xvidtune.c
+           OBJS = xvidtune.o
 
-ComplexProgramTarget(vgahelp)
-InstallAppDefaults(Vgahelp)
+ComplexProgramTarget(xvidtune)
+InstallAppDefaults(Xvidtune)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/vgahelp/vgahelp.c,v 3.5 1995/06/05 14:17:19 dawes Exp $ */
+/* $XFree86: xc/programs/vgahelp/vgahelp.c,v 3.6 1995/06/06 13:01:16 dawes Exp $ */
 
 /*
 
@@ -39,7 +39,7 @@ from Kaleb S. KEITHLEY.
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Box.h>
-#include <X11/extensions/VGAHelp.h>
+#include <X11/extensions/xf86vmode.h>
 #include <stdio.h>
 
 int MajorVersion, MinorVersion;
@@ -59,7 +59,8 @@ int dot_clock, mode_flags;
 #define V_NCSYNC	0x100
 
 typedef enum { HDisplay, HSyncStart, HSyncEnd, HTotal,
-	VDisplay, VSyncStart, VSyncEnd, VTotal, Flags, fields_num } fields;
+	VDisplay, VSyncStart, VSyncEnd, VTotal, Flags, 
+	PixelClock, HSyncRate, VSyncRate, fields_num } fields;
 
 typedef struct {
     fields	me;
@@ -86,7 +87,10 @@ static struct _AppResources {
 	{ VSyncStart, VDisplay, },
 	{ VSyncEnd, VDisplay, },
 	{ VTotal, VDisplay, },
-	{ Flags, }
+	{ Flags, },
+	{ PixelClock, },
+	{ HSyncRate, },
+	{ VSyncRate, },
     },
 };
 
@@ -118,14 +122,16 @@ static Atom wm_delete_window;
 static Widget invalid_mode_popup;
 static Widget testing_popup;
 
+static void UpdateSyncRates();
+
 static Bool GetModeLine (dpy, scrn)
     Display* dpy;
     int scrn;
 {
-    XVGAHelpModeLine mode_line;
+    XF86VidModeModeLine mode_line;
     fields i;
 
-    if (!XVGAHelpGetModeLine (dpy, scrn, &dot_clock, &mode_line))
+    if (!XF86VidModeGetModeLine (dpy, scrn, &dot_clock, &mode_line))
 	return FALSE;
 
     AppRes.field[HDisplay].val = mode_line.hdisplay;
@@ -138,6 +144,9 @@ static Bool GetModeLine (dpy, scrn)
     AppRes.field[VTotal].val = mode_line.vtotal;
     mode_flags = mode_line.flags;
     AppRes.field[Flags].val = mode_flags & V_FLAG_MASK;
+    AppRes.field[PixelClock].val = dot_clock;
+    UpdateSyncRates(FALSE);
+
     for (i = HDisplay; i < fields_num; i++) 
 	AppRes.orig[i] = AppRes.field[i].val;
     return TRUE;
@@ -147,10 +156,10 @@ static Bool GetMonitor (dpy, scrn)
     Display* dpy;
     int scrn;
 {
-    XVGAHelpMonitor monitor;
+    XF86VidModeMonitor monitor;
     int i;
 
-    if (!XVGAHelpGetMonitor (dpy, scrn, &monitor))
+    if (!XF86VidModeGetMonitor (dpy, scrn, &monitor))
 	return FALSE;
 
     printf("Vendor: %s, Model: %s\n", monitor.vendor, monitor.model);
@@ -169,12 +178,12 @@ static Bool GetMonitor (dpy, scrn)
 static int hitError = 0;
 static int (*xtErrorfunc)();
 
-static int vgahelpError(dis, err)
+static int vidmodeError(dis, err)
 Display *dis;
 XErrorEvent *err;
 {
   if (err->error_code >= ErrorBase &&
-      err->error_code < ErrorBase + VGAHelpNumberErrors) {
+      err->error_code < ErrorBase + XF86VidModeNumberErrors) {
      hitError=1;
   } else {
      if (xtErrorfunc) 
@@ -224,7 +233,7 @@ static void ApplyCB (w, client, call)
     Widget w;
     XtPointer client, call;
 {
-    XVGAHelpModeLine mode_line;
+    XF86VidModeModeLine mode_line;
     char* string;
     int i;
 
@@ -246,7 +255,7 @@ static void ApplyCB (w, client, call)
     
    hitError = 0;
 
-   XVGAHelpModModeLine (XtDisplay (w), DefaultScreen (XtDisplay (w)), 
+   XF86VidModeModModeLine (XtDisplay (w), DefaultScreen (XtDisplay (w)), 
 		&mode_line);
    XSync(XtDisplay (w), False); /* process errors  */
    if (hitError) {
@@ -262,9 +271,15 @@ fields i;
    ScrollData* sdp = &AppRes.field[i];
 
    if (sdp->textwidget != (Widget) NULL) {
-      char buf[6];
+      char buf[10];
 
-      (void) sprintf (buf, i == Flags ? "%04x" : "%5d", sdp->val);
+      if (i == Flags)
+	 (void) sprintf (buf, "%04x", sdp->val);
+      else if (i >= PixelClock && i <= VSyncRate)
+	 (void) sprintf (buf, "%6.2f", (float)sdp->val / 1000.0);
+      else
+	 (void) sprintf (buf, "%5d", sdp->val);
+	 
       sdp->lastpercent = -1;
       if (i == Flags) {
 	 XawTextBlock text;
@@ -278,6 +293,23 @@ fields i;
 	XtVaSetValues (sdp->textwidget, XtNlabel, buf, NULL);
    }
 
+}
+
+static void UpdateSyncRates(dolabels)
+    Bool dolabels;
+{
+    AppRes.field[HSyncRate].val = AppRes.field[PixelClock].val * 1000 /
+				  AppRes.field[HTotal].val;
+    AppRes.field[VSyncRate].val = AppRes.field[HSyncRate].val * 1000 /
+				  AppRes.field[VTotal].val;
+    if (mode_flags & V_INTERLACE)
+	AppRes.field[VSyncRate].val *= 2;
+    else if (mode_flags & V_DBLSCAN)
+	AppRes.field[VSyncRate].val /= 2;
+    if (dolabels) {
+	SetLabel(HSyncRate);
+	SetLabel(VSyncRate);
+    }
 }
 
 static void RestoreCB (w, client, call)
@@ -405,11 +437,13 @@ static void AdjustCB(w, client, call)
     case HTotal:
       AppRes.field[HTotal].val += 4;
       SetLabel(HTotal);	       
+      UpdateSyncRates(TRUE);
       break;      
     case -HTotal:
       if (AppRes.field[HTotal].val - 4 >  AppRes.field[HSyncEnd].val) {	 
 	AppRes.field[HTotal].val -= 4;
 	SetLabel(HTotal);	 
+	UpdateSyncRates(TRUE);
       } else
 	XBell(XtDisplay(w), 80);
       break;
@@ -434,11 +468,13 @@ static void AdjustCB(w, client, call)
     case VTotal:
       AppRes.field[VTotal].val += 4;
       SetLabel(VTotal);      
+      UpdateSyncRates(TRUE);
       break;      
     case -VTotal:
       if (AppRes.field[VTotal].val - 4 >  AppRes.field[VSyncEnd].val) {	 
 	AppRes.field[VTotal].val -= 4;
 	SetLabel(VTotal);
+	UpdateSyncRates(TRUE);
       } else
 	XBell(XtDisplay(w), 80);
       break;
@@ -618,6 +654,8 @@ static void ScrollCB (w, client, call)
             /* This doesn't always work, why? */
             XawScrollbarSetThumb (sdp->scrollwidget, percent, 0.0);
 	}
+	if (fieldindex == HTotal || fieldindex == VTotal)
+	    UpdateSyncRates(TRUE);
     }
 }
 
@@ -643,10 +681,13 @@ static void CreateTyp (form, findex, w1name, w2name, w3name)
     String w3name;
 {
     Widget wids[3];
-    char buf[6];
+    char buf[10];
 
     wids[0] = XtCreateWidget (w1name, labelWidgetClass, form, NULL, 0);
-    (void) sprintf (buf, "%5d", AppRes.field[findex].val);
+    if (findex >= PixelClock && findex <= VSyncRate)
+	(void) sprintf(buf, "%6.2f", (float)AppRes.field[findex].val / 1000.0);
+    else
+	(void) sprintf (buf, "%5d", AppRes.field[findex].val);
     wids[1] = XtVaCreateWidget (w2name, labelWidgetClass,
 		form, XtNlabel, buf, NULL);
     if (w3name != NULL) {
@@ -700,7 +741,6 @@ static void displayWarning(top)
     w = XtVaCreateManagedWidget( "WarnOK",
                                      commandWidgetClass,
 				     popupBox,
-                                     XtNlabel, "OK",
                                      NULL);
 
     XtAddCallback (w, XtNcallback, AckWarn, (XtPointer)popup);
@@ -708,7 +748,6 @@ static void displayWarning(top)
     w = XtVaCreateManagedWidget( "WarnCancel",
                                      commandWidgetClass,
 				     popupBox,
-                                     XtNlabel, "Cancel",
                                      NULL);
     XtAddCallback (w, XtNcallback, QuitCB, (XtPointer)NULL);
 
@@ -722,7 +761,7 @@ static void CreateHierarchy(top)
     Widget top;
 {
     char buf[5];
-    Widget form, forms[10];
+    Widget form, forms[13];
     Widget wids[6];
     Widget boxW,messageW, popdownW, w;   
     XawTextBlock text;
@@ -739,11 +778,15 @@ static void CreateHierarchy(top)
 	"VSyncEnd-form",
 	"VTotal-form",
 	"Flags-form",
-	"Buttons-form" } ;
+	"Buttons-form",
+	"PixelClock-form",
+	"HSyncRate-form",
+	"VSyncRate-form",
+	};
 
     form = XtCreateWidget ("form", formWidgetClass, top, NULL, 0);
 
-    for (i = 0; i < 10; i++)
+    for (i = 0; i < 13; i++)
 	forms[i] = XtCreateWidget (form_names[i], formWidgetClass, 
 		form, NULL, 0);
 
@@ -860,7 +903,14 @@ static void CreateHierarchy(top)
 
     XtManageChildren (wids, 6);
 
-    XtManageChildren (forms, 10);
+    CreateTyp (forms[10], PixelClock, "PixelClock-label", "PixelClock-text",
+	       NULL);
+    CreateTyp (forms[11], HSyncRate, "HSyncRate-label", "HSyncRate-text",
+	       NULL);
+    CreateTyp (forms[12], VSyncRate, "VSyncRate-label", "VSyncRate-text",
+	       NULL);
+
+    XtManageChildren (forms, 13);
     XtManageChild (form);
 
     SetScrollbars ();
@@ -908,18 +958,15 @@ static void CreateHierarchy(top)
                                    NULL);
         
     messageW = XtVaCreateManagedWidget(
-		   "errorMess",
+		   "ErrorMessage",
                    labelWidgetClass,
                    boxW,
-                   XtNlabel, 
-	           "Sorry: Requested the mode\nline is not valid",
                    NULL);
 
    popdownW = XtVaCreateManagedWidget(
-                                     "ackError",
+                                     "AckError",
                                      commandWidgetClass,
                                      boxW,
-                                     XtNlabel, "Acknowledged",
                                      NULL);
 
    XtAddCallback (popdownW, XtNcallback, (XtCallbackProc)popdownInvalid, 
@@ -943,9 +990,9 @@ int main (argc, argv)
     Widget top;
     XtAppContext app;
     Display* dpy;
-    static XtActionsRec actions[] = { { "vgahelp-quit", QuitAction } };
+    static XtActionsRec actions[] = { { "xvidtune-quit", QuitAction } };
 
-    top = XtVaOpenApplication (&app, "Vgahelp", NULL, 0, &argc, argv,
+    top = XtVaOpenApplication (&app, "Xvidtune", NULL, 0, &argc, argv,
 		NULL, applicationShellWidgetClass, 
 		XtNmappedWhenManaged, False, NULL);
 
@@ -958,10 +1005,10 @@ int main (argc, argv)
 	return 0;
     }
 
-    if (!XVGAHelpQueryVersion(XtDisplay (top), &MajorVersion, &MinorVersion))
+    if (!XF86VidModeQueryVersion(XtDisplay (top), &MajorVersion, &MinorVersion))
 	return 0;
 
-    if (!XVGAHelpQueryExtension(XtDisplay (top), &EventBase, &ErrorBase))
+    if (!XF86VidModeQueryExtension(XtDisplay (top), &EventBase, &ErrorBase))
 	return 0;
 
     if (MinorVersion > 0 || MajorVersion > 0) {
@@ -972,7 +1019,7 @@ int main (argc, argv)
 	    else if (!strcmp(argv[1], "-prev"))
 		i = -1;
 	    if (i != 0) {
-		XVGAHelpSwitchMode(XtDisplay (top),
+		XF86VidModeSwitchMode(XtDisplay (top),
 				   DefaultScreen (XtDisplay (top)), i);
 		XSync(XtDisplay (top), True);
 		return 0;
@@ -988,14 +1035,14 @@ int main (argc, argv)
     if (!GetModeLine(XtDisplay (top), DefaultScreen (XtDisplay (top))))
 	return 0;
 
-    xtErrorfunc = XSetErrorHandler(vgahelpError); 
+    xtErrorfunc = XSetErrorHandler(vidmodeError); 
 
     CreateHierarchy (top);
 
     XtAppAddActions (app, actions, XtNumber(actions));
 
     XtOverrideTranslations (top,
-		XtParseTranslationTable ("<Message>WM_PROTOCOLS: vgahelp-quit()"));
+		XtParseTranslationTable ("<Message>WM_PROTOCOLS: xvidtune-quit()"));
 
     XtRealizeWidget (top);
 

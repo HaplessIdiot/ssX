@@ -1,4 +1,4 @@
-! $XFree86$
+! $XFree86: xc/programs/vgahelp/Vgahelp.ad,v 3.4 1995/06/06 13:35:59 dawes Exp $
 !
 *adInstalled: true
 *borderWidth: 0
@@ -49,6 +49,18 @@
 *VTotal-text.fromHoriz: VTotal-label
 *VTotal-scrollbar.fromVert: VTotal-label
 *VTotal-scrollbar.orientation: horizontal
+*PixelClock-form.fromHoriz: Buttons-form
+*PixelClock-form.fromVert: VTotal-form
+*HSyncRate-form.fromHoriz: Buttons-form
+*HSyncRate-form.fromVert: PixelClock-form
+*VSyncRate-form.fromHoriz: Buttons-form
+*VSyncRate-form.fromVert: HSyncRate-form
+*PixelClock-text.fromHoriz: PixelClock-label
+*HSyncRate-text.fromHoriz: HSyncRate-label
+*VSyncRate-text.fromHoriz: VSyncRate-label
+*PixelClock-label.label: Pixel Clock (MHz):
+*HSyncRate-label.label: Horizontal Sync (kHz):
+*VSyncRate-label.label: Vertical Sync (Hz):
 *Flags-text.fromHoriz: Flags-label
 *HDisplay-label.label: HDisplay:
 *HSyncStart-label.label: HSyncStart:
@@ -86,6 +98,20 @@
 *Shorter-button.label: Shorter
 *Taller-button.label: Taller
 *Abort.label: Abort Test Now
+*WarnOK.label: OK
+*WarnCancel.label: Cancel
+*Left.label: Left
+*Right.label: Right
+*Wider.label Wider
+*Narrower.label: Narrower
+*Up.label: Up
+*Down.label: Down
+*Shorter.label: Shorter
+*Higher.label: Higher
+*AckError.label: Acknowledged
+*ErrorMessage.label: Sorry: You have Requested a mode-line\n\
+ That is not possible, or not supported by your\n\
+ hardware configuration\n
 *testingMessage.label: Mode test current in progress\n\n     Please wait
 *WarnLabel.label: WARNING     WARNING    WARNING    WARNING    WARNING\
     WARNING\n\n\
