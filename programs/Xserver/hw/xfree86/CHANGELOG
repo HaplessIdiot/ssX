@@ -1,4 +1,6 @@
 XFree86 4.X.Ya (?? January 2001)
+ 103. Prevent glint driver from Seg faulting if mode pool is empty
+      (Alan Hourihane).
  102. Add FIFOSize to glint driver for overriding of the FIFO depending on
       the target chip being used (Alan Hourihane).
  101. Major updates to the GLINT driver.
@@ -12359,4 +12361,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1550 2001/01/31 16:14:45 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1551 2001/02/01 12:25:59 alanh Exp $
