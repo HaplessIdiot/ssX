@@ -22,7 +22,7 @@
 
 /* Massively rewritten by Mark Vojkovich <markv@valinux.com> */
 
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.16 1999/09/27 06:29:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.19 2000/01/02 18:39:00 mvojkovi Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -1656,7 +1656,7 @@ int PanoramiXPolyFillRectangle(ClientPtr client)
 	    result = (* SavedProcVector[X_PolyFillRectangle])(client);
 	    if(result != Success) break;
 	}
-	DEALLOCATE_LOCAL(origThings);
+	DEALLOCATE_LOCAL(origRects);
 	return (result);
     } else
        return (client->noClientException);
