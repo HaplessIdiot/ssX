@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.42tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.43 2003/11/06 18:38:00 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -72,8 +72,8 @@
 #define RADEON_MMIOSIZE   0x80000
 
 #define RADEON_VBIOS_SIZE 0x00010000
-#define RADEON_USE_RMX 0x80000000 /* mode flag for using RMX 
-				   * Need to comfirm this is not used 
+#define RADEON_USE_RMX 0x80000000 /* mode flag for using RMX
+				   * Need to comfirm this is not used
 				   * for something else.
 				   */
 
@@ -284,8 +284,8 @@ typedef struct {
     RADEONDDCType     DDCType;
     RADEONConnectorType ConnectorType;
     Bool              HasCRTC2;         /* All cards except original Radeon  */
-    Bool              IsMobility;       /* Mobile chips for laptops */      
-    Bool              IsIGP;            /* IGP chips */      
+    Bool              IsMobility;       /* Mobile chips for laptops */
+    Bool              IsIGP;            /* IGP chips */
     Bool              IsSecondary;      /* Second Screen                     */
     Bool              IsSwitching;      /* Flag for switching mode           */
     Bool              Clone;            /* Force second head to clone primary*/
@@ -298,7 +298,7 @@ typedef struct {
     Bool              OverlayOnCRTC2;
     Bool              PanelOff;         /* Force panel (LCD/DFP) off         */
     int               FPBIOSstart;      /* Start of the flat panel info      */
-    Bool              ddc_mode;         /* Validate mode by matching exactly  
+    Bool              ddc_mode;         /* Validate mode by matching exactly
 					 * the modes supported in DDC data
 					 */
     Bool              R300CGWorkaround;

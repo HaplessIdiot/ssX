@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.29 2003/09/28 20:15:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.30 2003/10/07 22:47:12 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -297,8 +297,8 @@
 #       define RADEON_CRTC2_HSYNC_DIS       (1 << 28)
 #       define RADEON_CRTC2_VSYNC_DIS       (1 << 29)
 #define RADEON_CRTC_MORE_CNTL               0x27c
-#       define RADEON_CRTC_H_CUTOFF_ACTIVE_EN (1<<4)   
-#       define RADEON_CRTC_V_CUTOFF_ACTIVE_EN (1<<5)   
+#       define RADEON_CRTC_H_CUTOFF_ACTIVE_EN (1<<4)
+#       define RADEON_CRTC_V_CUTOFF_ACTIVE_EN (1<<5)
 #define RADEON_CRTC_GUI_TRIG_VLINE          0x0218
 #define RADEON_CRTC_H_SYNC_STRT_WID         0x0204
 #       define RADEON_CRTC_H_SYNC_STRT_PIX        (0x07  <<  0)
@@ -430,7 +430,7 @@
 #define RADEON_DEVICE_ID                    0x0f02 /* PCI */
 #define RADEON_DISP_MISC_CNTL               0x0d00
 #       define RADEON_SOFT_RESET_GRPH_PP    (1 << 0)
-#define RADEON_DISP_MERGE_CNTL	          0x0d60
+#define RADEON_DISP_MERGE_CNTL		  0x0d60
 #       define RADEON_DISP_ALPHA_MODE_MASK  0x03
 #       define RADEON_DISP_ALPHA_MODE_KEY   0
 #       define RADEON_DISP_ALPHA_MODE_PER_PIXEL 1
@@ -439,7 +439,7 @@
 #       define RADEON_DISP_GRPH_ALPHA_MASK  (0xff << 16)
 #       define RADEON_DISP_OV0_ALPHA_MASK   (0xff << 24)
 #	define RADEON_DISP_LIN_TRANS_BYPASS (0x01 << 9)
-#define RADEON_DISP2_MERGE_CNTL	            0x0d68
+#define RADEON_DISP2_MERGE_CNTL		    0x0d68
 #       define RADEON_DISP2_RGB_OFFSET_EN   (1<<8)
 #define RADEON_DISP_LIN_TRANS_GRPH_A        0x0d80
 #define RADEON_DISP_LIN_TRANS_GRPH_B        0x0d84

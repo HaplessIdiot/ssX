@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.25tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.26 2003/11/06 18:37:58 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -491,7 +491,7 @@ do {									\
 		  !info->CCEInUse , __FUNCTION__ );			\
    }									\
    if ( !info->CCEInUse ) {						\
-      R128CCEWaitForIdle(pScrn);       					\
+      R128CCEWaitForIdle(pScrn);					\
       BEGIN_RING( 6 );							\
       OUT_RING_REG( R128_RE_TOP_LEFT,     info->re_top_left );		\
       OUT_RING_REG( R128_RE_WIDTH_HEIGHT, info->re_width_height );	\

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.30 2003/09/24 02:43:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.31 2003/09/28 20:15:53 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -152,7 +152,7 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 		    pConfigs[i].accumBlueSize  = 0;
 		    pConfigs[i].accumAlphaSize = 0;
 		}
-		if (db) 
+		if (db)
 		    pConfigs[i].doubleBuffer       = TRUE;
 		else
 		    pConfigs[i].doubleBuffer       = FALSE;
@@ -363,9 +363,9 @@ static void R128DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
     int         nbox, nboxSave;
     int         depth;
 
-    /* FIXME: Use accel when CCE 2D code is written 
+    /* FIXME: Use accel when CCE 2D code is written
      * EA: What is this code kept for? Radeon doesn't have it and
-     * has a comment: "There's no need for the 2d driver to be clearing 
+     * has a comment: "There's no need for the 2d driver to be clearing
      * buffers for the 3d client.  It knows how to do that on its own."
      */
     if (info->directRenderingEnabled)
@@ -618,7 +618,7 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
 	return FALSE;
     }
     agpBase = drmAgpBase(info->drmFD);
-    OUTREG(R128_AGP_BASE, agpBase); 
+    OUTREG(R128_AGP_BASE, agpBase);
     OUTREG(R128_AGP_CNTL, cntl);
 
 				/* Disable Rage 128's PCIGART registers */
@@ -1178,9 +1178,9 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     {
 	void *scratch_ptr;
         int scratch_int;
-	
+
 	DRIGetDeviceInfo(pScreen, &info->fbHandle,
-                         &scratch_int, &scratch_int, 
+                         &scratch_int, &scratch_int,
                          &scratch_int, &scratch_int,
                          &scratch_ptr);
     }
@@ -1479,7 +1479,7 @@ static void R128DRITransitionTo2d(ScreenPtr pScreen)
     } else {
 	xf86DrvMsg(pScreen->myNum, X_WARNING,
 		   "[dri] R128DRITransitionTo2d: "
-		   "kernel failed to unflip buffers.\n"); 
+		   "kernel failed to unflip buffers.\n");
     }
 
     info->have3DWindows = 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.29 2003/09/28 20:15:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.30 2003/10/07 22:47:12 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -337,10 +337,10 @@ RADEONProbe(DriverPtr drv, int flags)
 
 	    pEnt = xf86GetEntityInfo(usedChips[i]);
 
-            /* create a RADEONEntity for all chips, even with 
-               old single head Radeon, need to use pRADEONEnt 
+            /* create a RADEONEntity for all chips, even with
+               old single head Radeon, need to use pRADEONEnt
                for new monitor detection routines
-            */   
+            */
             {
 		DevUnion   *pPriv;
 		RADEONEntPtr pRADEONEnt;

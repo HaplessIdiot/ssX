@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atii2c.c,v 1.1 2003/07/24 22:08:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atii2c.c,v 1.2 2003/08/29 21:07:57 tsi Exp $ */
 /*
  * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -113,7 +113,7 @@
 
 
 /*
- * ATII2CAddress -- 
+ * ATII2CAddress --
  *
  * This function puts a Start bit and an 8-bit address on the I2C bus.
  */
