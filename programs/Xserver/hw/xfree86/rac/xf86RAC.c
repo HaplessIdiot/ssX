@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/rac/xf86RAC.c,v 1.5 1999/06/12 17:30:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/rac/xf86RAC.c,v 1.7tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -274,11 +274,19 @@ xf86RACInit(ScreenPtr pScreen, unsigned int flag)
     RACScreenPtr pScreenPriv;
     miPointerScreenPtr PointPriv;
 #ifdef RENDER
-    PictureScreenPtr	ps = GetPictureScreenIfSet(pScreen);
+    PictureScreenPtr ps;
 #endif
+
+    if (!flag) {
+	ENABLE;
+	return TRUE;
+    }
 
     pScrn = xf86Screens[pScreen->myNum];
     PointPriv = (miPointerScreenPtr)pScreen->devPrivates[miPointerScreenIndex].ptr;
+#ifdef RENDER
+    ps = GetPictureScreenIfSet(pScreen);
+#endif
 
     DPRINT_S("RACInit",pScreen->myNum);
     if (RACGeneration != serverGeneration) {

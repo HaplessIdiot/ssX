@@ -1,4 +1,5 @@
 XFree86 4.4.99.5 (xx April 2004)
+ 100. Avoid wrapping a screen with RAC if it doesn't need it (Marc La France).
   99. Decouple a screen's need for RAC from the server's running state
       (Marc La France).
   98. Fix indirect rendering problem after Mesa 6.0.1 merge (Bugzilla #439,
@@ -18901,7 +18902,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3248 2004/05/06 00:45:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3249 2004/05/06 00:49:04 tsi Exp $
 
 
 
