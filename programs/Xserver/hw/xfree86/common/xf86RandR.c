@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.2 2002/10/14 18:01:39 keithp Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.5 2003/08/04 10:32:24 eich Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -60,7 +60,6 @@ xf86RandRGetInfo (ScreenPtr pScreen, Rotation *rotations)
     ScrnInfoPtr		    scrp = XF86SCRNINFO(pScreen);
     XF86RandRInfoPtr	    randrp = XF86RANDRINFO(pScreen);
     DisplayModePtr	    mode;
-    Bool		    reportVirtual = TRUE;
     int			    refresh0 = 60;
     
     *rotations = RR_Rotate_0;
@@ -75,9 +74,6 @@ xf86RandRGetInfo (ScreenPtr pScreen, Rotation *rotations)
 				pScreen->mmWidth, pScreen->mmHeight);
 	if (!pSize)
 	    return FALSE;
-	if (mode->HDisplay == randrp->virtualX && 
-	    mode->VDisplay == randrp->virtualY)
-	    reportVirtual = FALSE;
 	RRRegisterRate (pScreen, pSize, refresh);
 	if (mode == scrp->currentMode &&
 	    mode->HDisplay == pScreen->width && mode->VDisplay == pScreen->height)
@@ -85,13 +81,14 @@ xf86RandRGetInfo (ScreenPtr pScreen, Rotation *rotations)
 	if (mode->next == scrp->modes)
 	    break;
     }
-    if (reportVirtual)
+    if (scrp->currentMode->HDisplay != randrp->virtualX ||
+	scrp->currentMode->VDisplay != randrp->virtualY)
     {
 	mode = scrp->modes;
 	pSize = RRRegisterSize (pScreen,
 				randrp->virtualX, randrp->virtualY,
-				pScreen->mmWidth * randrp->virtualX / mode->HDisplay,
-				pScreen->mmHeight * randrp->virtualY / mode->VDisplay);
+				pScreen->mmWidth * randrp->virtualX / scrp->currentMode->HDisplay,
+				pScreen->mmHeight * randrp->virtualY / scrp->currentMode->VDisplay);
 	if (!pSize)
 	    return FALSE;
 	RRRegisterRate (pScreen, pSize, refresh0);
