@@ -27,7 +27,7 @@ in this Software without prior written authorization from the copyright holder.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/access.c,v 3.12 2003/07/18 15:53:28 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/access.c,v 3.13 2003/11/22 04:51:02 dawes Exp $ */
 
 /*
  * Access control for XDMCP - keep a database of allowable display addresses
@@ -334,7 +334,7 @@ tryagain:
 	}
 #else
 	if (hostent) {
-	    addr = &(hostent->h_addr);
+	    addr = hostent->h_addr;
 	    addr_length = hostent->h_length;
 	}
 #endif
@@ -444,9 +444,10 @@ ReadDisplayEntry (FILE *file)
 #else
 	    struct hostent  *hostent;
 
-	    if ((hostent = gethostbyname (displayOrAlias)) == NULL)
+	    if ((hostent = gethostbyname (displayOrAlias)) != NULL)
 	    {
-		addr = &(hostent->h_addr);
+		Debug("ReadDisplayEntry: %s\n", displayOrAlias);
+		addr = hostent->h_addr;
 		addrtype = hostent->h_addrtype;
 		addr_length = hostent->h_length;
 	    }
