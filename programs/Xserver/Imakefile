@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.184 2000/06/17 00:03:10 martin Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.185 2000/08/10 17:40:28 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -984,20 +984,20 @@ CFB16DIR = cfb16
 CFB24DIR = cfb24
 CFB32DIR = cfb32
 #if defined(Win32Architecture)
-VFBDDXDIR = hw
+XVFBDDXDIR = hw
 #else
 XVFBDDXDIR = hw/vfb
 #endif
 XVFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(XVFBDDXDIR) $(DEPDIRS)
 #ifndef Win32Architecture
 #if BuildDPMS
-XVFBDPMSSTUBOBJS = $(VFBDDXDIR)/dpmsstubs.o
+XVFBDPMSSTUBOBJS = $(XVFBDDXDIR)/dpmsstubs.o
 #endif
-XVFBOBJS = $(VFBDDXDIR)/stubs.o $(VFBDDXDIR)/miinitext.o $(XVFBDPMSSTUBOBJS)
+XVFBOBJS = $(XVFBDDXDIR)/stubs.o $(XVFBDDXDIR)/miinitext.o $(XVFBDPMSSTUBOBJS)
 #else
 XVFBOBJS = dix/main.o hw/vfb/stubs.o hw/vfb/miinitext.o
 #endif
-XVFB = $(VFBDDXDIR)/LibraryTargetName(vfb)
+XVFB = $(XVFBDDXDIR)/LibraryTargetName(vfb)
 #if DoLoadableServer
 XVFBLIBS = PreFbLibs $(XVFB) $(CFB) PostFbLibs $(MI)
 #else
