@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.9 2000/03/22 03:08:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.10 2000/03/30 15:41:20 tsi Exp $ */
 /*
  * Copyright 1994 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -124,10 +124,10 @@
 #define VBLANK				0x0002u
 #define HORTOG				0x0004u
 #define H_TOTAL			0x02e8u		/* Write */
-#define DAC_MASK		0x02eau
-#define DAC_R_INDEX		0x02ebu
-#define DAC_W_INDEX		0x02ecu
-#define DAC_DATA		0x02edu
+#define IBM_DAC_MASK		0x02eau
+#define IBM_DAC_READ		0x02ebu
+#define IBM_DAC_WRITE		0x02ecu
+#define IBM_DAC_DATA		0x02edu
 #define H_DISP			0x06e8u		/* Write */
 #define H_SYNC_STRT		0x0ae8u		/* Write */
 #define H_SYNC_WID		0x0ee8u		/* Write */
@@ -273,7 +273,7 @@
 #define SCISSORS_L			0x2000u
 #define SCISSORS_B			0x3000u
 #define SCISSORS_R			0x4000u
-#define MEM_CNTL			0x5000u
+#define M32_MEM_CNTL			0x5000u
 #define HORCFG_4				0x0000u
 #define HORCFG_5				0x0001u
 #define HORCFG_8				0x0002u
@@ -949,7 +949,7 @@
 #define HFB_PITCH_ADDR		BlockIOTag(0x2au)	/* LT */
 #define LCD_DATA		BlockIOTag(0x2au)	/* LTPro */
 #define EXT_MEM_CNTL		BlockIOTag(0x2bu)	/* VTB/GTB/LT */
-#define MEM_INFO		IOPortTag(0x14u, 0x2cu)	/* Renamed MEM_CNTL */
+#define MEM_CNTL		IOPortTag(0x14u, 0x2cu)
 #define CTL_MEM_SIZE			0x00000007ul
 /*	?				0x00000008ul */
 #define CTL_MEM_REFRESH			0x00000078ul	/* VT/GT */
@@ -993,7 +993,7 @@
 #define CTL_MEM_PIX_WIDTH		0x07000000ul
 #define CTL_MEM_LOWER_APER_ENDIAN	0x03000000ul	/* VTB/GTB/LT */
 #define CTL_MEM_OE_SELECT		0x18000000ul	/* VT/GT */
-#define CTL_MEM_UPPER_APER_ENDIAN	0c0c000000ul	/* VTB/GTB/LT */
+#define CTL_MEM_UPPER_APER_ENDIAN	0x0c000000ul	/* VTB/GTB/LT */
 /*	?				0xe0000000ul */
 #define CTL_MEM_PAGE_SIZE		0x30000000ul	/* VTB/GTB/LT */
 #define MEM_VGA_WP_SEL		IOPortTag(0x15u, 0x2du)
@@ -1005,6 +1005,10 @@
 #define LT_GIO			BlockIOTag(0x2fu)	/* LT */
 #define I2C_CNTL_1		BlockIOTag(0x2fu)	/* GTPro */
 #define DAC_REGS		IOPortTag(0x17u, 0x30u)	/* 4 separate bytes */
+#define M64_DAC_WRITE			(DAC_REGS + 0)
+#define M64_DAC_DATA			(DAC_REGS + 1)
+#define M64_DAC_MASK			(DAC_REGS + 2)
+#define M64_DAC_READ			(DAC_REGS + 3)
 #define DAC_CNTL		IOPortTag(0x18u, 0x31u)
 #define DAC_EXT_SEL			0x00000003ul
 #define DAC_EXT_SEL_RS2				0x000000001ul
@@ -1860,6 +1864,12 @@
 /*	?			BlockIOTag(0x1fdu) */
 /*	?			BlockIOTag(0x1feu) */
 /*	?			BlockIOTag(0x1ffu) */
+
+/* Definitions for MEM_CNTL's CTL_MEM_?????_APER_ENDIAN fields */
+#define CTL_MEM_APER_BYTE_ENDIAN	0x00u
+#define CTL_MEM_APER_WORD_ENDIAN	0x01u
+#define CTL_MEM_APER_LONG_ENDIAN	0x02u
+/*	?				0x03u */
 
 /* Definitions for an ICS2595's programme word */
 #define ICS2595_CLOCK		0x000001f0ul

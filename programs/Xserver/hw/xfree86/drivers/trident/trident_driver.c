@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.101 2000/07/05 13:41:37 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.103 2000/08/04 16:13:35 eich Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -286,12 +286,9 @@ static int ClockLimit[] = {
 	135000,
 	170000,
 	170000,
-<<<<<<< trident_driver.c
-=======
 	170000,
 	230000,
 	230000,
->>>>>>> 1.102
 	230000,
 	230000,
 	230000,
@@ -403,12 +400,9 @@ static int ClockLimit32bpp[] = {
 	70000,
 	85000,
 	85000,
-<<<<<<< trident_driver.c
 	115000,
-=======
 	85000,
 	115000,
->>>>>>> 1.102
 	115000,
 	115000,
 	115000,
@@ -416,11 +410,8 @@ static int ClockLimit32bpp[] = {
 	115000,
 	115000,
 	115000,
-<<<<<<< trident_driver.c
-=======
 	115000,
 	115000,
->>>>>>> 1.102
 };
 
 /*
@@ -437,7 +428,6 @@ tridentLCD LCD[] = {
     { 5,"1024x600",50500 ,0xa3,0x6,0x8f,0xa0,0xb,0x3e,0xea,0x8c,0xb,0x08},
     { 0xff,"", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
-<<<<<<< trident_driver.c
 #else
 tridentLCD LCD[] = { 
     { 1,"640x480",25200,0x5f,0x82,0x54,0x80,0xb,0x3e,0xea,0x8c,0xb,0x08},
@@ -447,11 +437,8 @@ tridentLCD LCD[] = {
     { 0xff,"", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 #endif
-    static const char *xaaSymbols[] = {
-=======
 
 static const char *xaaSymbols[] = {
->>>>>>> 1.102
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
     "XAAHelpPatternROP",

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.h,v 1.4 1999/10/13 20:33:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.h,v 1.5 2000/02/18 12:19:12 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,6 +26,7 @@
 
 #include "atipriv.h"
 #include "atiproto.h"
+
 #include "xf86str.h"
 
 /*
@@ -34,6 +35,9 @@
 typedef enum
 {
     ATI_ADAPTER_NONE = 0,
+
+#ifndef AVOID_CPIO
+
     ATI_ADAPTER_EGA,
     ATI_ADAPTER_EGA_PLUS,
     ATI_ADAPTER_VGA,
@@ -47,8 +51,12 @@ typedef enum
     ATI_ADAPTER_8514A,
     ATI_ADAPTER_MACH8,
     ATI_ADAPTER_MACH32,
+
+#endif /* AVOID_CPIO */
+
     ATI_ADAPTER_MACH64,
     ATI_ADAPTER_RAGE128,
+    ATI_ADAPTER_RADEON,
     ATI_ADAPTER_MAX     /* Must be last */
 } ATIAdapterType;
 
@@ -58,8 +66,8 @@ extern void ATIAdapterPreInit   FunctionPrototype((ScrnInfoPtr, ATIPtr,
                                                    ATIHWPtr));
 extern void ATIAdapterSave      FunctionPrototype((ScrnInfoPtr, ATIPtr,
                                                    ATIHWPtr));
-extern Bool ATIAdapterCalculate FunctionPrototype((ScrnInfoPtr, ATIPtr,
-                                                   ATIHWPtr, DisplayModePtr));
+extern Bool ATIAdapterCalculate FunctionPrototype((int, ATIPtr, ATIHWPtr,
+                                                   DisplayModePtr));
 extern void ATIAdapterSet       FunctionPrototype((ScrnInfoPtr, ATIPtr,
                                                    ATIHWPtr));
 

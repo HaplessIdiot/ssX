@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.6 2000/06/19 15:00:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.7 2000/07/07 20:07:01 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -25,8 +25,8 @@
 #include "atiadjust.h"
 #include "atichip.h"
 #include "aticrtc.h"
-#include "atiio.h"
 #include "atilock.h"
+#include "atimach64io.h"
 
 /*
  * The display start address is expressed in units of 32-bit (VGA) or 64-bit
@@ -50,6 +50,8 @@ ATIAdjustPreInit
 {
     unsigned long MaxBase;
 
+#ifndef AVOID_CPIO
+
     if ((pATI->CPIO_VGAWonder) &&
         (pATI->Chip <= ATI_CHIP_18800_1) &&
         (pATI->VideoRAM == 256) &&
@@ -60,6 +62,9 @@ ATIAdjustPreInit
         pATI->AdjustMask = (unsigned long)(-32);
     }
     else
+
+#endif /* AVOID_CPIO */
+
     {
         pATI->AdjustDepth = (pATI->bitsPerPixel + 7) >> 3;
 
@@ -73,6 +78,9 @@ ATIAdjustPreInit
 
     switch (pATI->NewHW.crtc)
     {
+
+#ifndef AVOID_CPIO
+
         case ATI_CRTC_VGA:
             if (pATI->Chip >= ATI_CHIP_264CT)
             {
@@ -87,6 +95,8 @@ ATIAdjustPreInit
             else /* Mach32 & Mach64 */
                 pATI->AdjustMaxBase = 0x0FFFFFU << 3;
             break;
+
+#endif /* AVOID_CPIO */
 
         case ATI_CRTC_MACH64:
             pATI->AdjustMaxBase = MaxBits(CRTC_OFFSET) << 3;
@@ -141,6 +151,8 @@ ATIAdjustFrame
     /* Unlock registers */
     ATIUnlock(pATI);
 
+#ifndef AVOID_CPIO
+
     if ((pATI->NewHW.crtc == ATI_CRTC_VGA) && (pATI->Chip < ATI_CHIP_264CT))
     {
         PutReg(CRTX(pATI->CPIO_VGABase), 0x0CU, GetByte(Base, 1));
@@ -165,6 +177,9 @@ ATIAdjustFrame
         }
     }
     else
+
+#endif /* AVOID_CPIO */
+
     {
         /*
          * On integrated controllers, there is only one set of CRTC control
@@ -173,19 +188,29 @@ ATIAdjustFrame
          * setting the CRTC's offset register to more than 256k needs to be
          * done through the accelerator port.
          */
+
+#ifndef AVOID_CPIO
+
         if (pATI->depth <= 4)
         {
-            outl(pATI->CPIO_CRTC_OFF_PITCH,
-                SetBits(pATI->displayWidth >> 4, CRTC_PITCH) |
-                    SetBits(Base, CRTC_OFFSET));
+            outr(CRTC_OFF_PITCH, SetBits(pATI->displayWidth >> 4, CRTC_PITCH) |
+                SetBits(Base, CRTC_OFFSET));
         }
         else
+
+#endif /* AVOID_CPIO */
+
         {
+
+#ifndef AVOID_CPIO
+
             if (pATI->NewHW.crtc == ATI_CRTC_VGA)
                 Base <<= 1;                     /* LSBit must be zero */
-            outl(pATI->CPIO_CRTC_OFF_PITCH,
-                SetBits(pATI->displayWidth >> 3, CRTC_PITCH) |
-                    SetBits(Base, CRTC_OFFSET));
+
+#endif /* AVOID_CPIO */
+
+            outr(CRTC_OFF_PITCH, SetBits(pATI->displayWidth >> 3, CRTC_PITCH) |
+                SetBits(Base, CRTC_OFFSET));
         }
     }
 }

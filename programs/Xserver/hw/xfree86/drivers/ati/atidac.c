@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.7 2000/03/22 03:08:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.8 2000/06/19 15:00:56 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -21,7 +21,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ati.h"
 #include "atidac.h"
+#include "atimach64io.h"
 #include "atimono.h"
 
 /*
@@ -55,6 +57,8 @@ const DACRec ATIDACDescriptors[] =
     {ATI_DAC_UNKNOWN,       "Unknown"}          /* Must be last */
 };
 
+#ifndef AVOID_CPIO
+
 /*
  * ATISetDACIOPorts --
  *
@@ -77,23 +81,25 @@ ATISetDACIOPorts
             break;
 
         case ATI_CRTC_8514:
-            pATI->CPIO_DAC_DATA = DAC_DATA;
-            pATI->CPIO_DAC_MASK = DAC_MASK;
-            pATI->CPIO_DAC_READ = DAC_R_INDEX;
-            pATI->CPIO_DAC_WRITE = DAC_W_INDEX;
+            pATI->CPIO_DAC_DATA = IBM_DAC_DATA;
+            pATI->CPIO_DAC_MASK = IBM_DAC_MASK;
+            pATI->CPIO_DAC_READ = IBM_DAC_READ;
+            pATI->CPIO_DAC_WRITE = IBM_DAC_WRITE;
             break;
 
         case ATI_CRTC_MACH64:
-            pATI->CPIO_DAC_DATA = pATI->CPIO_DAC_REGS + 1;
-            pATI->CPIO_DAC_MASK = pATI->CPIO_DAC_REGS + 2;
-            pATI->CPIO_DAC_READ = pATI->CPIO_DAC_REGS + 3;
-            pATI->CPIO_DAC_WRITE = pATI->CPIO_DAC_REGS + 0;
+            pATI->CPIO_DAC_DATA = ATIIOPort(DAC_REGS) + 1;
+            pATI->CPIO_DAC_MASK = ATIIOPort(DAC_REGS) + 2;
+            pATI->CPIO_DAC_READ = ATIIOPort(DAC_REGS) + 3;
+            pATI->CPIO_DAC_WRITE = ATIIOPort(DAC_REGS) + 0;
             break;
 
         default:
             break;
     }
 }
+
+#endif /* AVOID_CPIO */
 
 /*
  * ATIGetDACCmdReg --
@@ -106,11 +112,25 @@ ATIGetDACCmdReg
     ATIPtr pATI
 )
 {
+
+#ifdef AVOID_CPIO
+
+    (void)in8(M64_DAC_WRITE);           /* Reset to PEL mode */
+    (void)in8(M64_DAC_MASK);
+    (void)in8(M64_DAC_MASK);
+    (void)in8(M64_DAC_MASK);
+    return in8(M64_DAC_MASK);
+
+#else /* AVOID_CPIO */
+
     (void)inb(pATI->CPIO_DAC_WRITE);    /* Reset to PEL mode */
     (void)inb(pATI->CPIO_DAC_MASK);
     (void)inb(pATI->CPIO_DAC_MASK);
     (void)inb(pATI->CPIO_DAC_MASK);
     return inb(pATI->CPIO_DAC_MASK);
+
+#endif /* AVOID_CPIO */
+
 }
 
 /*
@@ -159,6 +179,8 @@ ATIDACPreInit
             pATIHW->lut[Index2 + 2] = maxColour;
         }
 
+#ifndef AVOID_CPIO
+
         if (pATI->depth == 1)
         {
             rgb blackColour = pScreenInfo->display->whiteColour,
@@ -186,6 +208,9 @@ ATIDACPreInit
                 pATIHW->lut[Index + 1] =
                 pATIHW->lut[Index + 2] = 0x00U;
         }
+
+#endif /* AVOID_CPIO */
+
     }
 }
 
@@ -203,6 +228,33 @@ ATIDACSave
 )
 {
     int Index;
+
+#ifdef AVOID_CPIO
+
+    pATIHW->dac_read = in8(M64_DAC_READ);
+    DACDelay;
+    pATIHW->dac_write = in8(M64_DAC_WRITE);
+    DACDelay;
+    pATIHW->dac_mask = in8(M64_DAC_MASK);
+    DACDelay;
+
+    /* Save DAC's colour lookup table */
+    out8(M64_DAC_MASK, 0xFFU);
+    DACDelay;
+    out8(M64_DAC_READ, 0x00U);
+    DACDelay;
+    for (Index = 0;  Index < NumberOf(pATIHW->lut);  Index++)
+    {
+        pATIHW->lut[Index] = in8(M64_DAC_DATA);
+        DACDelay;
+    }
+
+    out8(M64_DAC_MASK, pATIHW->dac_mask);
+    DACDelay;
+    out8(M64_DAC_READ, pATIHW->dac_read);
+    DACDelay;
+
+#else /* AVOID_CPIO */
 
     ATISetDACIOPorts(pATI, pATIHW->crtc);
 
@@ -228,6 +280,9 @@ ATIDACSave
     DACDelay;
     outb(pATI->CPIO_DAC_READ, pATIHW->dac_read);
     DACDelay;
+
+#endif /* AVOID_CPIO */
+
 }
 
 /*
@@ -243,6 +298,28 @@ ATIDACSet
 )
 {
     int Index;
+
+#ifdef AVOID_CPIO
+
+    /* Load DAC's colour lookup table */
+    out8(M64_DAC_MASK, 0xFFU);
+    DACDelay;
+    out8(M64_DAC_WRITE, 0x00U);
+    DACDelay;
+    for (Index = 0;  Index < NumberOf(pATIHW->lut);  Index++)
+    {
+        out8(M64_DAC_DATA, pATIHW->lut[Index]);
+        DACDelay;
+    }
+
+    out8(M64_DAC_MASK, pATIHW->dac_mask);
+    DACDelay;
+    out8(M64_DAC_READ, pATIHW->dac_read);
+    DACDelay;
+    out8(M64_DAC_WRITE, pATIHW->dac_write);
+    DACDelay;
+
+#else /* AVOID_CPIO */
 
     ATISetDACIOPorts(pATI, pATIHW->crtc);
 
@@ -263,6 +340,9 @@ ATIDACSet
     DACDelay;
     outb(pATI->CPIO_DAC_WRITE, pATIHW->dac_write);
     DACDelay;
+
+#endif /* AVOID_CPIO */
+
 }
 
 /*
@@ -334,6 +414,20 @@ ATILoadPalette
                  Index < (SizeOf(pATI->NewHW.lut) / 3);
                  Index += i, LUTEntry += i * 3)
             {
+
+#ifdef AVOID_CPIO
+
+                out8(M64_DAC_WRITE, Index);
+                DACDelay;
+                out8(M64_DAC_DATA, LUTEntry[0]);
+                DACDelay;
+                out8(M64_DAC_DATA, LUTEntry[1]);
+                DACDelay;
+                out8(M64_DAC_DATA, LUTEntry[2]);
+                DACDelay;
+
+#else /* AVOID_CPIO */
+
                 outb(pATI->CPIO_DAC_WRITE, Index);
                 DACDelay;
                 outb(pATI->CPIO_DAC_DATA, LUTEntry[0]);
@@ -342,6 +436,9 @@ ATILoadPalette
                 DACDelay;
                 outb(pATI->CPIO_DAC_DATA, LUTEntry[2]);
                 DACDelay;
+
+#endif /* AVOID_CPIO */
+
             }
         }
     }
@@ -360,6 +457,20 @@ ATILoadPalette
 
             if (pScreenInfo->vtSema || pATI->currentMode)
             {
+
+#ifdef AVOID_CPIO
+
+                out8(M64_DAC_WRITE, Index);
+                DACDelay;
+                out8(M64_DAC_DATA, LUTEntry[0]);
+                DACDelay;
+                out8(M64_DAC_DATA, LUTEntry[1]);
+                DACDelay;
+                out8(M64_DAC_DATA, LUTEntry[2]);
+                DACDelay;
+
+#else /* AVOID_CPIO */
+
                 outb(pATI->CPIO_DAC_WRITE, Index);
                 DACDelay;
                 outb(pATI->CPIO_DAC_DATA, LUTEntry[0]);
@@ -368,6 +479,9 @@ ATILoadPalette
                 DACDelay;
                 outb(pATI->CPIO_DAC_DATA, LUTEntry[2]);
                 DACDelay;
+
+#endif /* AVOID_CPIO */
+
             }
         }
     }

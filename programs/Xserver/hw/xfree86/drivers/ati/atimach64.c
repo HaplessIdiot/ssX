@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.21 2000/06/19 15:00:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.22 2000/07/07 20:07:01 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -47,13 +47,14 @@
 #include "ati.h"
 #include "atibus.h"
 #include "atichip.h"
-#include "atiio.h"
 #include "atimach64.h"
 #include "atimach64io.h"
 
 #include "miline.h"
 
-#define DPMS_SERVER
+#ifndef DPMS_SERVER
+# define DPMS_SERVER
+#endif
 #include "extensions/dpms.h"
 
 /*
@@ -96,12 +97,19 @@ ATIMach64PreInit
     CARD32 bus_cntl, config_cntl;
     int    tmp;
 
+#ifndef AVOID_CPIO
+
     if (pATI->depth <= 4)
         pATIHW->crtc_off_pitch = SetBits(pATI->displayWidth >> 4, CRTC_PITCH);
     else
-        pATIHW->crtc_off_pitch = SetBits(pATI->displayWidth >> 3, CRTC_PITCH);
 
-    bus_cntl = inl(pATI->CPIO_BUS_CNTL);
+#endif /* AVOID_CPIO */
+
+    {
+        pATIHW->crtc_off_pitch = SetBits(pATI->displayWidth >> 3, CRTC_PITCH);
+    }
+
+    bus_cntl = inr(BUS_CNTL);
     pATIHW->bus_cntl = (bus_cntl & ~BUS_HOST_ERR_INT_EN) | BUS_HOST_ERR_INT;
     if (pATI->Chip < ATI_CHIP_264VTB)
     {
@@ -113,26 +121,42 @@ ATIMach64PreInit
     if (pATI->Chip >= ATI_CHIP_264VT)
         pATIHW->bus_cntl |= BUS_EXT_REG_EN;     /* Enable Block 1 */
 
-    pATIHW->mem_vga_wp_sel =
-        /* SetBits(0, MEM_VGA_WPS0) | */
+#ifdef AVOID_CPIO
+
+    pATIHW->mem_vga_wp_sel = SetBits(0, MEM_VGA_WPS0) |
+        SetBits(1, MEM_VGA_WPS1);
+    pATIHW->mem_vga_rp_sel = SetBits(0, MEM_VGA_RPS0) |
+        SetBits(1, MEM_VGA_RPS1);
+
+#else /* AVOID_CPIO */
+
+    pATIHW->mem_vga_wp_sel = SetBits(0, MEM_VGA_WPS0) | 
         SetBits(pATIHW->nPlane, MEM_VGA_WPS1);
-    pATIHW->mem_vga_rp_sel =
-        /* SetBits(0, MEM_VGA_RPS0) | */
+    pATIHW->mem_vga_rp_sel = SetBits(0, MEM_VGA_RPS0) |
         SetBits(pATIHW->nPlane, MEM_VGA_RPS1);
 
-    pATIHW->dac_cntl = inl(pATI->CPIO_DAC_CNTL) &
+#endif /* AVOID_CPIO */
+
+    pATIHW->dac_cntl = inr(DAC_CNTL) &
         ~(DAC1_CLK_SEL | DAC_PALETTE_ACCESS_CNTL | DAC_8BIT_EN);
     if ((pATI->depth > 8) || (pScreenInfo->rgbBits == 8))
         pATIHW->dac_cntl |= DAC_8BIT_EN;
 
-    pATIHW->config_cntl = config_cntl = inl(pATI->CPIO_CONFIG_CNTL);
+    pATIHW->config_cntl = config_cntl = inr(CONFIG_CNTL);
+
+#ifndef AVOID_CPIO
+
     if (pATI->UseSmallApertures)
         pATIHW->config_cntl |= CFG_MEM_VGA_AP_EN;
     else
+
+#endif /* AVOID_CPIO */
+
+    {
         pATIHW->config_cntl &= ~CFG_MEM_VGA_AP_EN;
-    if (pATI->LinearBase &&
-        ((pATI->Chip < ATI_CHIP_264CT) ||
-         ((pATI->BusType != ATI_BUS_PCI) && (pATI->BusType != ATI_BUS_AGP))))
+    }
+
+    if (pATI->LinearBase && (pATI->Chip < ATI_CHIP_264CT))
     {
         /* Replace linear aperture size and address */
         pATIHW->config_cntl &= ~(CFG_MEM_AP_LOC | CFG_MEM_AP_SIZE);
@@ -147,8 +171,8 @@ ATIMach64PreInit
     if (pATI->OptionAccel)
     {
         /* Ensure apertures are enabled */
-        outl(pATI->CPIO_BUS_CNTL, pATIHW->bus_cntl);
-        outl(pATI->CPIO_CONFIG_CNTL, pATIHW->config_cntl);
+        outr(BUS_CNTL, pATIHW->bus_cntl);
+        outr(CONFIG_CNTL, pATIHW->config_cntl);
 
         /*
          * When possible, max out command FIFO size.
@@ -237,8 +261,8 @@ ATIMach64PreInit
         pATIHW->clr_cmp_msk = (CARD32)(-1);
 
         /* Restore aperture enablement */
-        outl(pATI->CPIO_BUS_CNTL, bus_cntl);
-        outl(pATI->CPIO_CONFIG_CNTL, config_cntl);
+        outr(BUS_CNTL, bus_cntl);
+        outr(CONFIG_CNTL, config_cntl);
     }
 }
 
@@ -255,36 +279,36 @@ ATIMach64Save
     ATIHWPtr    pATIHW
 )
 {
-    pATIHW->crtc_h_total_disp = inl(pATI->CPIO_CRTC_H_TOTAL_DISP);
-    pATIHW->crtc_h_sync_strt_wid = inl(pATI->CPIO_CRTC_H_SYNC_STRT_WID);
-    pATIHW->crtc_v_total_disp = inl(pATI->CPIO_CRTC_V_TOTAL_DISP);
-    pATIHW->crtc_v_sync_strt_wid = inl(pATI->CPIO_CRTC_V_SYNC_STRT_WID);
+    pATIHW->crtc_h_total_disp = inr(CRTC_H_TOTAL_DISP);
+    pATIHW->crtc_h_sync_strt_wid = inr(CRTC_H_SYNC_STRT_WID);
+    pATIHW->crtc_v_total_disp = inr(CRTC_V_TOTAL_DISP);
+    pATIHW->crtc_v_sync_strt_wid = inr(CRTC_V_SYNC_STRT_WID);
 
-    pATIHW->crtc_off_pitch = inl(pATI->CPIO_CRTC_OFF_PITCH);
+    pATIHW->crtc_off_pitch = inr(CRTC_OFF_PITCH);
 
-    pATIHW->crtc_gen_cntl = inl(pATI->CPIO_CRTC_GEN_CNTL);
+    pATIHW->crtc_gen_cntl = inr(CRTC_GEN_CNTL);
 
-    pATIHW->ovr_clr = inl(pATI->CPIO_OVR_CLR);
-    pATIHW->ovr_wid_left_right = inl(pATI->CPIO_OVR_WID_LEFT_RIGHT);
-    pATIHW->ovr_wid_top_bottom = inl(pATI->CPIO_OVR_WID_TOP_BOTTOM);
+    pATIHW->ovr_clr = inr(OVR_CLR);
+    pATIHW->ovr_wid_left_right = inr(OVR_WID_LEFT_RIGHT);
+    pATIHW->ovr_wid_top_bottom = inr(OVR_WID_TOP_BOTTOM);
 
-    pATIHW->clock_cntl = inl(pATI->CPIO_CLOCK_CNTL);
+    pATIHW->clock_cntl = inr(CLOCK_CNTL);
 
-    pATIHW->bus_cntl = inl(pATI->CPIO_BUS_CNTL);
+    pATIHW->bus_cntl = inr(BUS_CNTL);
 
-    pATIHW->mem_vga_wp_sel = inl(pATI->CPIO_MEM_VGA_WP_SEL);
-    pATIHW->mem_vga_rp_sel = inl(pATI->CPIO_MEM_VGA_RP_SEL);
+    pATIHW->mem_vga_wp_sel = inr(MEM_VGA_WP_SEL);
+    pATIHW->mem_vga_rp_sel = inr(MEM_VGA_RP_SEL);
 
-    pATIHW->dac_cntl = inl(pATI->CPIO_DAC_CNTL);
+    pATIHW->dac_cntl = inr(DAC_CNTL);
 
-    pATIHW->config_cntl = inl(pATI->CPIO_CONFIG_CNTL);
+    pATIHW->config_cntl = inr(CONFIG_CNTL);
 
     /* Save draw engine state */
     if (pATI->OptionAccel && (pATIHW == &pATI->OldHW))
     {
         /* Ensure apertures are enabled */
-        outl(pATI->CPIO_BUS_CNTL, pATI->NewHW.bus_cntl);
-        outl(pATI->CPIO_CONFIG_CNTL, pATI->NewHW.config_cntl);
+        outr(BUS_CNTL, pATI->NewHW.bus_cntl);
+        outr(CONFIG_CNTL, pATI->NewHW.config_cntl);
 
         ATIMach64WaitForIdle(pATI);
 
@@ -346,8 +370,8 @@ ATIMach64Save
         pATIHW->context_mask = inm(CONTEXT_MASK);
 
         /* Restore aperture enablement */
-        outl(pATI->CPIO_BUS_CNTL, pATIHW->bus_cntl);
-        outl(pATI->CPIO_CONFIG_CNTL, pATIHW->config_cntl);
+        outr(BUS_CNTL, pATIHW->bus_cntl);
+        outr(CONFIG_CNTL, pATIHW->config_cntl);
     }
 }
 
@@ -465,7 +489,7 @@ ATIMach64Calculate
     if (pMode->Flags & V_NVSYNC)
         pATIHW->crtc_v_sync_strt_wid |= CRTC_V_SYNC_POL;
 
-    pATIHW->crtc_gen_cntl = inl(pATI->CPIO_CRTC_GEN_CNTL) &
+    pATIHW->crtc_gen_cntl = inr(CRTC_GEN_CNTL) &
         ~(CRTC_DBL_SCAN_EN | CRTC_INTERLACE_EN |
           CRTC_HSYNC_DIS | CRTC_VSYNC_DIS | CRTC_CSYNC_EN |
           CRTC_PIX_BY_2_EN | CRTC_DISPLAY_DIS | CRTC_VGA_XOVERSCAN |
@@ -478,21 +502,31 @@ ATIMach64Calculate
         CRTC_EXT_DISP_EN | CRTC_EN | CRTC_VGA_LINEAR | CRTC_CNT_EN;
     switch (pATI->depth)
     {
+
+#ifndef AVOID_CPIO
+
         case 1:
             pATIHW->crtc_gen_cntl |= SetBits(PIX_WIDTH_1BPP, CRTC_PIX_WIDTH);
             break;
+
         case 4:
             pATIHW->crtc_gen_cntl |= SetBits(PIX_WIDTH_4BPP, CRTC_PIX_WIDTH);
             break;
+
+#endif /* AVOID_CPIO */
+
         case 8:
             pATIHW->crtc_gen_cntl |= SetBits(PIX_WIDTH_8BPP, CRTC_PIX_WIDTH);
             break;
+
         case 15:
             pATIHW->crtc_gen_cntl |= SetBits(PIX_WIDTH_15BPP, CRTC_PIX_WIDTH);
             break;
+
         case 16:
             pATIHW->crtc_gen_cntl |= SetBits(PIX_WIDTH_16BPP, CRTC_PIX_WIDTH);
             break;
+
         case 24:
             if (pATI->bitsPerPixel == 24)
             {
@@ -503,9 +537,11 @@ ATIMach64Calculate
             if (pATI->bitsPerPixel != 32)
                 break;
             /* Fall through */
+
         case 32:
             pATIHW->crtc_gen_cntl |= SetBits(PIX_WIDTH_32BPP, CRTC_PIX_WIDTH);
             break;
+
         default:
             break;
     }
@@ -533,30 +569,30 @@ ATIMach64Set
 )
 {
     /* First, turn off the display */
-    outl(pATI->CPIO_CRTC_GEN_CNTL, pATIHW->crtc_gen_cntl & ~CRTC_EN);
+    outr(CRTC_GEN_CNTL, pATIHW->crtc_gen_cntl & ~CRTC_EN);
 
     if ((pATIHW->FeedbackDivider > 0) &&
         (pATI->ProgrammableClock != ATI_CLOCK_NONE))
         ATIClockSet(pATI, pATIHW);              /* Programme clock */
 
     /* Load Mach64 CRTC registers */
-    outl(pATI->CPIO_CRTC_H_TOTAL_DISP, pATIHW->crtc_h_total_disp);
-    outl(pATI->CPIO_CRTC_H_SYNC_STRT_WID, pATIHW->crtc_h_sync_strt_wid);
-    outl(pATI->CPIO_CRTC_V_TOTAL_DISP, pATIHW->crtc_v_total_disp);
-    outl(pATI->CPIO_CRTC_V_SYNC_STRT_WID, pATIHW->crtc_v_sync_strt_wid);
+    outr(CRTC_H_TOTAL_DISP, pATIHW->crtc_h_total_disp);
+    outr(CRTC_H_SYNC_STRT_WID, pATIHW->crtc_h_sync_strt_wid);
+    outr(CRTC_V_TOTAL_DISP, pATIHW->crtc_v_total_disp);
+    outr(CRTC_V_SYNC_STRT_WID, pATIHW->crtc_v_sync_strt_wid);
 
-    outl(pATI->CPIO_CRTC_OFF_PITCH, pATIHW->crtc_off_pitch);
+    outr(CRTC_OFF_PITCH, pATIHW->crtc_off_pitch);
 
     /* Set pixel clock */
-    outl(pATI->CPIO_CLOCK_CNTL, pATIHW->clock_cntl | CLOCK_STROBE);
+    outr(CLOCK_CNTL, pATIHW->clock_cntl | CLOCK_STROBE);
 
     /* Load overscan registers */
-    outl(pATI->CPIO_OVR_CLR, pATIHW->ovr_clr);
-    outl(pATI->CPIO_OVR_WID_LEFT_RIGHT, pATIHW->ovr_wid_left_right);
-    outl(pATI->CPIO_OVR_WID_TOP_BOTTOM, pATIHW->ovr_wid_top_bottom);
+    outr(OVR_CLR, pATIHW->ovr_clr);
+    outr(OVR_WID_LEFT_RIGHT, pATIHW->ovr_wid_left_right);
+    outr(OVR_WID_TOP_BOTTOM, pATIHW->ovr_wid_top_bottom);
 
     /* Finalise CRTC setup and turn on the screen */
-    outl(pATI->CPIO_CRTC_GEN_CNTL, pATIHW->crtc_gen_cntl);
+    outr(CRTC_GEN_CNTL, pATIHW->crtc_gen_cntl);
 
     /* Load draw engine */
     if (pATI->OptionAccel)
@@ -565,8 +601,8 @@ ATIMach64Set
         (void)memset(pATI->MMIOCached, 0, SizeOf(pATI->MMIOCached));
 
         /* Ensure apertures are enabled */
-        outl(pATI->CPIO_BUS_CNTL, pATI->NewHW.bus_cntl);
-        outl(pATI->CPIO_CONFIG_CNTL, pATI->NewHW.config_cntl);
+        outr(BUS_CNTL, pATI->NewHW.bus_cntl);
+        outr(CONFIG_CNTL, pATI->NewHW.config_cntl);
 
         pATI->EngineIsBusy = TRUE;      /* Force engine poll */
         ATIMach64WaitForIdle(pATI);
@@ -584,29 +620,29 @@ ATIMach64Set
 
         /* Load destination registers */
         ATIMach64WaitForFIFO(pATI, 7);
-        outm(DST_OFF_PITCH, pATIHW->dst_off_pitch);
-        outm(DST_Y_X, SetWord(pATIHW->dst_x, 1) | SetWord(pATIHW->dst_y, 0));
-        outm(DST_HEIGHT, pATIHW->dst_height);
-        outm(DST_BRES_ERR, pATIHW->dst_bres_err);
-        outm(DST_BRES_INC, pATIHW->dst_bres_inc);
-        outm(DST_BRES_DEC, pATIHW->dst_bres_dec);
-        outm(DST_CNTL, pATIHW->dst_cntl);
+        outf(DST_OFF_PITCH, pATIHW->dst_off_pitch);
+        outf(DST_Y_X, SetWord(pATIHW->dst_x, 1) | SetWord(pATIHW->dst_y, 0));
+        outf(DST_HEIGHT, pATIHW->dst_height);
+        outf(DST_BRES_ERR, pATIHW->dst_bres_err);
+        outf(DST_BRES_INC, pATIHW->dst_bres_inc);
+        outf(DST_BRES_DEC, pATIHW->dst_bres_dec);
+        outf(DST_CNTL, pATIHW->dst_cntl);
 
         /* Load source registers */
         ATIMach64WaitForFIFO(pATI, 6);
-        outm(SRC_OFF_PITCH, pATIHW->src_off_pitch);
-        outm(SRC_Y_X, SetWord(pATIHW->src_x, 1) | SetWord(pATIHW->src_y, 0));
-        outm(SRC_HEIGHT1_WIDTH1,
+        outf(SRC_OFF_PITCH, pATIHW->src_off_pitch);
+        outf(SRC_Y_X, SetWord(pATIHW->src_x, 1) | SetWord(pATIHW->src_y, 0));
+        outf(SRC_HEIGHT1_WIDTH1,
             SetWord(pATIHW->src_width1, 1) | SetWord(pATIHW->src_height1, 0));
-        outm(SRC_Y_X_START,
+        outf(SRC_Y_X_START,
             SetWord(pATIHW->src_x_start, 1) | SetWord(pATIHW->src_y_start, 0));
-        outm(SRC_HEIGHT2_WIDTH2,
+        outf(SRC_HEIGHT2_WIDTH2,
             SetWord(pATIHW->src_width2, 1) | SetWord(pATIHW->src_height2, 0));
-        outm(SRC_CNTL, pATIHW->src_cntl);
+        outf(SRC_CNTL, pATIHW->src_cntl);
 
         /* Load host data register */
         ATIMach64WaitForFIFO(pATI, 1);
-        outm(HOST_CNTL, pATIHW->host_cntl);
+        outf(HOST_CNTL, pATIHW->host_cntl);
 
         /* Set host transfer window address and size clamp */
         pATI->pHOST_DATA =
@@ -618,15 +654,15 @@ ATIMach64Set
 
         /* Load pattern registers */
         ATIMach64WaitForFIFO(pATI, 3);
-        outm(PAT_REG0, pATIHW->pat_reg0);
-        outm(PAT_REG1, pATIHW->pat_reg1);
-        outm(PAT_CNTL, pATIHW->pat_cntl);
+        outf(PAT_REG0, pATIHW->pat_reg0);
+        outf(PAT_REG1, pATIHW->pat_reg1);
+        outf(PAT_CNTL, pATIHW->pat_cntl);
 
         /* Load scissor registers */
         ATIMach64WaitForFIFO(pATI, 2);
-        outm(SC_LEFT_RIGHT,
+        outf(SC_LEFT_RIGHT,
             SetWord(pATIHW->sc_right, 1) | SetWord(pATIHW->sc_left, 0));
-        outm(SC_TOP_BOTTOM,
+        outf(SC_TOP_BOTTOM,
             SetWord(pATIHW->sc_bottom, 1) | SetWord(pATIHW->sc_top, 0));
         pATI->sc_left = pATIHW->sc_left;
         pATI->sc_right = pATIHW->sc_right;
@@ -635,23 +671,23 @@ ATIMach64Set
 
         /* Load data path registers */
         ATIMach64WaitForFIFO(pATI, 7);
-        outm(DP_BKGD_CLR, pATIHW->dp_bkgd_clr);
-        outm(DP_FRGD_CLR, pATIHW->dp_frgd_clr);
-        outm(DP_WRITE_MASK, pATIHW->dp_write_mask);
-        outm(DP_CHAIN_MASK, pATIHW->dp_chain_mask);
-        outm(DP_PIX_WIDTH, pATIHW->dp_pix_width);
-        outm(DP_MIX, pATIHW->dp_mix);
-        outm(DP_SRC, pATIHW->dp_src);
+        outf(DP_BKGD_CLR, pATIHW->dp_bkgd_clr);
+        outf(DP_FRGD_CLR, pATIHW->dp_frgd_clr);
+        outf(DP_WRITE_MASK, pATIHW->dp_write_mask);
+        outf(DP_CHAIN_MASK, pATIHW->dp_chain_mask);
+        outf(DP_PIX_WIDTH, pATIHW->dp_pix_width);
+        outf(DP_MIX, pATIHW->dp_mix);
+        outf(DP_SRC, pATIHW->dp_src);
 
         /* Load colour compare registers */
         ATIMach64WaitForFIFO(pATI, 3);
-        outm(CLR_CMP_CLR, pATIHW->clr_cmp_clr);
-        outm(CLR_CMP_MSK, pATIHW->clr_cmp_msk);
-        outm(CLR_CMP_CNTL, pATIHW->clr_cmp_cntl);
+        outf(CLR_CMP_CLR, pATIHW->clr_cmp_clr);
+        outf(CLR_CMP_MSK, pATIHW->clr_cmp_msk);
+        outf(CLR_CMP_CNTL, pATIHW->clr_cmp_cntl);
 
         /* Load context mask */
         ATIMach64WaitForFIFO(pATI, 1);
-        outm(CONTEXT_MASK, pATIHW->context_mask);
+        outf(CONTEXT_MASK, pATIHW->context_mask);
 
         ATIMach64WaitForIdle(pATI);
 
@@ -686,14 +722,13 @@ ATIMach64Set
     }
 
     /* Aperture setup */
-    outl(pATI->CPIO_BUS_CNTL, pATIHW->bus_cntl);
+    outr(MEM_VGA_WP_SEL, pATIHW->mem_vga_wp_sel);
+    outr(MEM_VGA_RP_SEL, pATIHW->mem_vga_rp_sel);
 
-    outl(pATI->CPIO_MEM_VGA_WP_SEL, pATIHW->mem_vga_wp_sel);
-    outl(pATI->CPIO_MEM_VGA_RP_SEL, pATIHW->mem_vga_rp_sel);
+    outr(DAC_CNTL, pATIHW->dac_cntl);
 
-    outl(pATI->CPIO_DAC_CNTL, pATIHW->dac_cntl);
-
-    outl(pATI->CPIO_CONFIG_CNTL, pATIHW->config_cntl);
+    outr(CONFIG_CNTL, pATIHW->config_cntl);
+    outr(BUS_CNTL, pATIHW->bus_cntl);
 }
 
 /*
@@ -708,18 +743,18 @@ ATIMach64SaveScreen
     int    Mode
 )
 {
-    CARD32 crtc_gen_cntl = inl(pATI->CPIO_CRTC_GEN_CNTL);
+    CARD32 crtc_gen_cntl = inr(CRTC_GEN_CNTL);
 
     switch (Mode)
     {
         case SCREEN_SAVER_OFF:
         case SCREEN_SAVER_FORCER:
-            outl(pATI->CPIO_CRTC_GEN_CNTL, crtc_gen_cntl & ~CRTC_DISPLAY_DIS);
+            outr(CRTC_GEN_CNTL, crtc_gen_cntl & ~CRTC_DISPLAY_DIS);
             break;
 
         case SCREEN_SAVER_ON:
         case SCREEN_SAVER_CYCLE:
-            outl(pATI->CPIO_CRTC_GEN_CNTL, crtc_gen_cntl | CRTC_DISPLAY_DIS);
+            outr(CRTC_GEN_CNTL, crtc_gen_cntl | CRTC_DISPLAY_DIS);
             break;
 
         default:
@@ -740,7 +775,7 @@ ATIMach64SetDPMSMode
 )
 {
     CARD32 crtc_gen_cntl =
-        inl(pATI->CPIO_CRTC_GEN_CNTL) & ~(CRTC_HSYNC_DIS | CRTC_VSYNC_DIS);
+        inr(CRTC_GEN_CNTL) & ~(CRTC_HSYNC_DIS | CRTC_VSYNC_DIS);
 
     switch (DPMSMode)
     {
@@ -763,20 +798,20 @@ ATIMach64SetDPMSMode
             return;
     }
 
-    outl(pATI->CPIO_CRTC_GEN_CNTL, crtc_gen_cntl);
+    outr(CRTC_GEN_CNTL, crtc_gen_cntl);
 
     if ((pATI->LCDPanelID >= 0) && !pATI->OptionCRT)
     {
         CARD32 lcd_index = 0, power_management;
 
         if (pATI->Chip == ATI_CHIP_264LT)
-            power_management = inl(pATI->CPIO_POWER_MANAGEMENT);
+            power_management = inr(POWER_MANAGEMENT);
         else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
                     (pATI->Chip == ATI_CHIP_264XL) ||
                     (pATI->Chip == ATI_CHIP_MOBILITY)) */
         {
-            lcd_index = inl(pATI->CPIO_LCD_INDEX);
-            power_management = ATIGetLTProLCDReg(LCD_POWER_MANAGEMENT);
+            lcd_index = inr(LCD_INDEX);
+            power_management = ATIGetMach64LCDReg(LCD_POWER_MANAGEMENT);
         }
 
         power_management &= ~(STANDBY_NOW | SUSPEND_NOW);
@@ -803,13 +838,13 @@ ATIMach64SetDPMSMode
         }
 
         if (pATI->Chip == ATI_CHIP_264LT)
-            outl(POWER_MANAGEMENT, power_management);
+            outr(POWER_MANAGEMENT, power_management);
         else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
                     (pATI->Chip == ATI_CHIP_264XL) ||
                     (pATI->Chip == ATI_CHIP_MOBILITY)) */
         {
-            ATIPutLTProLCDReg(LCD_POWER_MANAGEMENT, power_management);
-            outl(pATI->CPIO_LCD_INDEX, lcd_index);
+            ATIPutMach64LCDReg(LCD_POWER_MANAGEMENT, power_management);
+            outr(LCD_INDEX, lcd_index);
         }
     }
 }
@@ -832,7 +867,7 @@ ATIMach64ValidateClip
 {
     if ((sc_left < pATI->sc_left) || (sc_right > pATI->sc_right))
     {
-        outm(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
+        outf(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
             SetWord(pATI->NewHW.sc_left, 0));
         pATI->sc_left = pATI->NewHW.sc_left;
         pATI->sc_right = pATI->NewHW.sc_right;
@@ -840,7 +875,7 @@ ATIMach64ValidateClip
 
     if ((sc_top < pATI->sc_top) || (sc_bottom > pATI->sc_bottom))
     {
-        outm(SC_TOP_BOTTOM, SetWord(pATI->NewHW.sc_bottom, 1) |
+        outf(SC_TOP_BOTTOM, SetWord(pATI->NewHW.sc_bottom, 1) |
             SetWord(pATI->NewHW.sc_top, 0));
         pATI->sc_top = pATI->NewHW.sc_top;
         pATI->sc_bottom = pATI->NewHW.sc_bottom;
@@ -1020,14 +1055,14 @@ ATIMach64SetupForScreenToScreenCopy
         pATI->dst_cntl |= DST_X_DIR;
 
     if (pATI->XModifier == 1)
-        outm(DST_CNTL, pATI->dst_cntl);
+        outf(DST_CNTL, pATI->dst_cntl);
     else
         pATI->dst_cntl |= DST_24_ROT_EN;
 
     ATIMach64WaitForFIFO(pATI, 3);
-    outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
-    outm(DP_WRITE_MASK, planemask);
-    outm(DP_SRC, DP_MONO_SRC_ALLONES |
+    outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
+    outf(DP_WRITE_MASK, planemask);
+    outf(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_BLIT, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
 }
 
@@ -1070,13 +1105,13 @@ ATIMach64SubsequentScreenToScreenCopy
     }
 
     if (pATI->XModifier != 1)
-        outm(DST_CNTL, pATI->dst_cntl | SetBits((xDst / 4) % 6, DST_24_ROT));
+        outf(DST_CNTL, pATI->dst_cntl | SetBits((xDst / 4) % 6, DST_24_ROT));
 
     ATIMach64WaitForFIFO(pATI, 4);
-    outm(SRC_Y_X, SetWord(xSrc, 1) | SetWord(ySrc, 0));
-    outm(SRC_WIDTH1, w);
-    outm(DST_Y_X, SetWord(xDst, 1) | SetWord(yDst, 0));
-    outm(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
+    outf(SRC_Y_X, SetWord(xSrc, 1) | SetWord(ySrc, 0));
+    outf(SRC_WIDTH1, w);
+    outf(DST_Y_X, SetWord(xDst, 1) | SetWord(yDst, 0));
+    outf(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
 }
 
 /*
@@ -1096,14 +1131,14 @@ ATIMach64SetupForSolidFill
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
     if (pATI->XModifier == 1)
-        outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
+        outf(DST_CNTL, DST_X_DIR | DST_Y_DIR);
 
     ATIMach64WaitForFIFO(pATI, 4);
-    outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
-    outm(DP_WRITE_MASK, planemask);
-    outm(DP_SRC, DP_MONO_SRC_ALLONES |
+    outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
+    outf(DP_WRITE_MASK, planemask);
+    outf(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
-    outm(DP_FRGD_CLR, colour);
+    outf(DP_FRGD_CLR, colour);
 }
 
 /*
@@ -1128,7 +1163,7 @@ ATIMach64SubsequentSolidFillRect
         x *= pATI->XModifier;
         w *= pATI->XModifier;
 
-        outm(DST_CNTL, SetBits((x / 4) % 6, DST_24_ROT) |
+        outf(DST_CNTL, SetBits((x / 4) % 6, DST_24_ROT) |
             (DST_X_DIR | DST_Y_DIR | DST_24_ROT_EN));
     }
 
@@ -1136,8 +1171,8 @@ ATIMach64SubsequentSolidFillRect
     ATIMach64ValidateClip(pATI, x, x + w - 1, y, y + h - 1);
 
     ATIMach64WaitForFIFO(pATI, 2);
-    outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
-    outm(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
+    outf(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
+    outf(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
 }
 
 /*
@@ -1157,12 +1192,12 @@ ATIMach64SetupForSolidLine
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    ATIMach64WaitForFIFO(pATI, 6);
-    outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
-    outm(DP_WRITE_MASK, planemask);
-    outm(DP_SRC, DP_MONO_SRC_ALLONES |
+    ATIMach64WaitForFIFO(pATI, 4);
+    outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
+    outf(DP_WRITE_MASK, planemask);
+    outf(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
-    outm(DP_FRGD_CLR, colour);
+    outf(DP_FRGD_CLR, colour);
 
     ATIMach64ValidateClip(pATI, pATI->NewHW.sc_left, pATI->NewHW.sc_right,
         pATI->NewHW.sc_top, pATI->NewHW.sc_bottom);
@@ -1187,13 +1222,13 @@ ATIMach64SubsequentSolidHorVertLine
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
     ATIMach64WaitForFIFO(pATI, 3);
-    outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
-    outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
+    outf(DST_CNTL, DST_X_DIR | DST_Y_DIR);
+    outf(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
 
     if (dir == DEGREES_0)
-        outm(DST_HEIGHT_WIDTH, SetWord(len, 1) | SetWord(1, 0));
+        outf(DST_HEIGHT_WIDTH, SetWord(len, 1) | SetWord(1, 0));
     else /* if (dir == DEGREES_270) */
-        outm(DST_HEIGHT_WIDTH, SetWord(1, 1) | SetWord(len, 0));
+        outf(DST_HEIGHT_WIDTH, SetWord(1, 1) | SetWord(len, 0));
 }
 
 /*
@@ -1227,12 +1262,12 @@ ATIMach64SubsequentSolidBresenhamLine
         dst_cntl |= DST_Y_DIR;
 
     ATIMach64WaitForFIFO(pATI, 6);
-    outm(DST_CNTL, dst_cntl);
-    outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
-    outm(DST_BRES_ERR, minor + err);
-    outm(DST_BRES_INC, minor);
-    outm(DST_BRES_DEC, minor - major);
-    outm(DST_BRES_LNTH, len);
+    outf(DST_CNTL, dst_cntl);
+    outf(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
+    outf(DST_BRES_ERR, minor + err);
+    outf(DST_BRES_INC, minor);
+    outf(DST_BRES_DEC, minor - major);
+    outf(DST_BRES_LNTH, len);
 }
 
 /*
@@ -1256,28 +1291,28 @@ ATIMach64SetupForMono8x8PatternFill
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
     if (pATI->XModifier == 1)
-        outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
+        outf(DST_CNTL, DST_X_DIR | DST_Y_DIR);
 
     if (bg == -1)
-        outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
+        outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
             SetBits(MIX_DST, DP_BKGD_MIX));
     else
     {
         ATIMach64WaitForFIFO(pATI, 2);
-        outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
+        outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
             SetBits(ATIMach64ALU[rop], DP_BKGD_MIX));
-        outm(DP_BKGD_CLR, bg);
+        outf(DP_BKGD_CLR, bg);
     }
 
     ATIMach64WaitForFIFO(pATI, 6);
-    outm(DP_WRITE_MASK, planemask);
-    outm(DP_SRC, DP_MONO_SRC_PATTERN |
+    outf(DP_WRITE_MASK, planemask);
+    outf(DP_SRC, DP_MONO_SRC_PATTERN |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
-    outm(DP_FRGD_CLR, fg);
+    outf(DP_FRGD_CLR, fg);
 
-    outm(PAT_REG0, patx);
-    outm(PAT_REG1, paty);
-    outm(PAT_CNTL, PAT_MONO_EN);
+    outf(PAT_REG0, patx);
+    outf(PAT_REG1, paty);
+    outf(PAT_CNTL, PAT_MONO_EN);
 }
 
 /*
@@ -1304,7 +1339,7 @@ ATIMach64SubsequentMono8x8PatternFillRect
         x *= pATI->XModifier;
         w *= pATI->XModifier;
 
-        outm(DST_CNTL, SetBits((x / 4) % 6, DST_24_ROT) |
+        outf(DST_CNTL, SetBits((x / 4) % 6, DST_24_ROT) |
             (DST_X_DIR | DST_Y_DIR | DST_24_ROT_EN));
     }
 
@@ -1312,8 +1347,8 @@ ATIMach64SubsequentMono8x8PatternFillRect
     ATIMach64ValidateClip(pATI, x, x + w - 1, y, y + h - 1);
 
     ATIMach64WaitForFIFO(pATI, 2);
-    outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
-    outm(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
+    outf(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
+    outf(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
 }
 
 /*
@@ -1334,24 +1369,24 @@ ATIMach64SetupForScanlineCPUToScreenColorExpandFill
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
     if (pATI->XModifier == 1)
-        outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
+        outf(DST_CNTL, DST_X_DIR | DST_Y_DIR);
 
     if (bg == -1)
-        outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
+        outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
             SetBits(MIX_DST, DP_BKGD_MIX));
     else
     {
         ATIMach64WaitForFIFO(pATI, 2);
-        outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
+        outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
             SetBits(ATIMach64ALU[rop], DP_BKGD_MIX));
-        outm(DP_BKGD_CLR, bg);
+        outf(DP_BKGD_CLR, bg);
     }
 
     ATIMach64WaitForFIFO(pATI, 3);
-    outm(DP_WRITE_MASK, planemask);
-    outm(DP_SRC, DP_MONO_SRC_HOST |
+    outf(DP_WRITE_MASK, planemask);
+    outf(DP_SRC, DP_MONO_SRC_HOST |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
-    outm(DP_FRGD_CLR, fg);
+    outf(DP_FRGD_CLR, fg);
 }
 
 /*
@@ -1378,7 +1413,7 @@ ATIMach64SubsequentScanlineCPUToScreenColorExpandFill
         w *= pATI->XModifier;
         skipleft *= pATI->XModifier;
 
-        outm(DST_CNTL, SetBits((x / 4) % 6, DST_24_ROT) |
+        outf(DST_CNTL, SetBits((x / 4) % 6, DST_24_ROT) |
             (DST_X_DIR | DST_Y_DIR | DST_24_ROT_EN));
     }
 
@@ -1387,9 +1422,10 @@ ATIMach64SubsequentScanlineCPUToScreenColorExpandFill
     ATIMach64WaitForFIFO(pATI, 3);
     pATI->sc_left = x + skipleft;
     pATI->sc_right = x + w - 1;
-    outm(SC_LEFT_RIGHT, SetWord(pATI->sc_right, 1) | SetWord(pATI->sc_left, 0));
-    outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
-    outm(DST_HEIGHT_WIDTH,
+    outf(SC_LEFT_RIGHT,
+        SetWord(pATI->sc_right, 1) | SetWord(pATI->sc_left, 0));
+    outf(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
+    outf(DST_HEIGHT_WIDTH,
         SetWord(pATI->ExpansionBitmapWidth * 32, 1) | SetWord(h, 0));
 }
 
@@ -1489,8 +1525,16 @@ ATIMach64AccelInit
     if (pATI->XModifier == 1)
     {
         pXAAInfo->Flags = PIXMAP_CACHE | OFFSCREEN_PIXMAPS;
+
+#ifndef AVOID_CPIO
+
         if (!pATI->BankInfo.BankSize)
+
+#endif /* AVOID_CPIO */
+
+        {
             pXAAInfo->Flags |= LINEAR_FRAMEBUFFER;
+        }
     }
 
     /* Sync */

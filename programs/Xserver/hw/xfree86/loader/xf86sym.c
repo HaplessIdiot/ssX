@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.155 2000/06/30 19:06:58 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.157 2000/08/04 16:13:38 eich Exp $ */
 
 /*
  *
@@ -249,7 +249,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86SerialModemClearBits)
    SYMFUNC(xf86LoadKernelModule)
    SYMFUNC(xf86OSMouseInit)
-   SYMFUNC(xf86uDelay)
+   SYMFUNC(xf86UDelay)
    
 #ifdef XINPUT
 /* XISB routines  (Merged from Metrolink tree) */
@@ -423,6 +423,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetAllowMouseOpenFail)
    SYMFUNC(xf86IsPc98)
    SYMFUNC(xf86GetClocks)
+   SYMFUNC(xf86SetPriority)
    SYMFUNC(xf86LoadDrvSubModule)
    SYMFUNC(xf86LoadSubModule)
    SYMFUNC(xf86UnloadSubModule)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.h,v 1.3 1999/07/06 11:38:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.h,v 1.4 2000/02/18 12:19:20 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -29,8 +29,14 @@
  */
 typedef enum
 {
+
+#ifndef AVOID_CPIO
+
     ATI_CRTC_VGA,       /* Use VGA CRTC */
     ATI_CRTC_8514,      /* Use 8514/Mach8/Mach32 accelerator CRTC */
+
+#endif /* AVOID_CPIO */
+
     ATI_CRTC_MACH64     /* Use Mach64 accelerator CRTC */
 } ATICRTCType;
 

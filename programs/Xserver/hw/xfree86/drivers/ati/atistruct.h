@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.18 2000/06/19 15:00:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.19 2000/07/07 20:07:02 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -27,6 +27,7 @@
 #include "atibank.h"
 #include "aticlock.h"
 #include "atiregs.h"
+
 #include "xf86Resources.h"
 #include "xaa.h"
 
@@ -51,15 +52,25 @@ typedef struct _ATIHWRec
     /* The CRTC used to drive the screen (VGA, 8514, Mach64) */
     CARD8 crtc;
 
-    /* VGA registers */
-    CARD8 genmo, crt[25], seq[5], gra[9], attr[21], lut[256 * 3];
+    /* Colour lookup table */
+    CARD8 lut[256 * 3];
 
-    /* Generic DAC registers */
-    CARD8 dac_read, dac_write, dac_mask;
+#ifndef AVOID_CPIO
+
+    /* VGA registers */
+    CARD8 genmo, crt[25], seq[5], gra[9], attr[21];
 
     /* VGA Wonder registers */
     CARD8             a3,         a6, a7,             ab, ac, ad, ae,
           b0, b1, b2, b3,     b5, b6,     b8, b9, ba,         bd, be, bf;
+
+    /* Shadow VGA CRTC registers */
+    CARD8 shadow_vga[25];
+
+#endif /* AVOID_CPIO */
+
+    /* Generic DAC registers */
+    CARD8 dac_read, dac_write, dac_mask;
 
     /* Mach64 PLL registers */
     CARD8 pll_vclk_cntl, pll_vclk_post_div,
@@ -78,9 +89,6 @@ typedef struct _ATIHWRec
     /* LCD registers */
     CARD32 lcd_index, config_panel, lcd_gen_ctrl,
            horz_stretching, vert_stretching, ext_vert_stretch;
-
-    /* Shadow VGA CRTC registers */
-    CARD8 shadow_vga[25];
 
     /* Shadow Mach64 CRTC registers */
     CARD32 shadow_h_total_disp, shadow_h_sync_strt_wid,
@@ -111,10 +119,15 @@ typedef struct _ATIHWRec
     /* Clock programming data */
     int FeedbackDivider, ReferenceDivider, PostDivider;
 
+#ifndef AVOID_CPIO
+
     /* This is used by ATISwap() */
     pointer frame_buffer;
     ATIBankProcPtr SetBank;
     unsigned int nBank, nPlane;
+
+#endif /* AVOID_CPIO */
+
 } ATIHWRec;
 
 /*
@@ -130,21 +143,35 @@ typedef struct _ATIRec
     /*
      * Adapter-related definitions.
      */
-    CARD8 Adapter, VGAAdapter;
+    CARD8 Adapter;
+
+#ifndef AVOID_CPIO
+
+    CARD8 VGAAdapter;
+
+#endif /* AVOID_CPIO */
 
     /*
      * Chip-related definitions.
      */
-    CARD8 Chip, Coprocessor;
+    CARD32 config_chip_id;
     CARD16 ChipType;
+    CARD8 Chip;
     CARD8 ChipClass, ChipRevision, ChipRev, ChipVersion, ChipFoundry;
-    CARD8 ChipHasSUBSYS_CNTL;
+
+#ifndef AVOID_CPIO
+
+    CARD8 Coprocessor, ChipHasSUBSYS_CNTL;
+
+#endif /* AVOID_CPIO */
 
     /*
      * Processor I/O decoding definitions.
      */
     CARD8 CPIODecoding;
     CARD16 CPIOBase;
+
+#ifndef AVOID_CPIO
 
     /*
      * Processor I/O port definition for VGA.
@@ -158,36 +185,34 @@ typedef struct _ATIRec
     CARD8 B2Reg;        /* The B2 mirror */
     CARD8 VGAOffset;    /* Low index for CPIO_VGAWonder */
 
-    /*
-     * Processor I/O port definitions for Mach64.
-     */
-    CARD16 CPIO_CRTC_H_TOTAL_DISP, CPIO_CRTC_H_SYNC_STRT_WID,
-           CPIO_CRTC_V_TOTAL_DISP, CPIO_CRTC_V_SYNC_STRT_WID,
-           CPIO_CRTC_OFF_PITCH, CPIO_CRTC_INT_CNTL, CPIO_CRTC_GEN_CNTL,
-           CPIO_DSP_CONFIG, CPIO_DSP_ON_OFF, CPIO_OVR_CLR,
-           CPIO_OVR_WID_LEFT_RIGHT, CPIO_OVR_WID_TOP_BOTTOM,
-           CPIO_TV_OUT_INDEX, CPIO_CLOCK_CNTL, CPIO_TV_OUT_DATA,
-           CPIO_BUS_CNTL, CPIO_LCD_INDEX, CPIO_LCD_DATA, CPIO_MEM_INFO,
-           CPIO_MEM_VGA_WP_SEL, CPIO_MEM_VGA_RP_SEL,
-           CPIO_DAC_REGS, CPIO_DAC_CNTL,
-           CPIO_HORZ_STRETCHING, CPIO_VERT_STRETCHING,
-           CPIO_GEN_TEST_CNTL, CPIO_LCD_GEN_CTRL,
-           CPIO_POWER_MANAGEMENT, CPIO_CONFIG_CNTL;
+#endif /* AVOID_CPIO */
 
     /*
      * DAC-related definitions.
      */
-    CARD16 DAC;
+
+#ifndef AVOID_CPIO
+
     CARD16 CPIO_DAC_MASK, CPIO_DAC_DATA, CPIO_DAC_READ, CPIO_DAC_WRITE;
+
+#endif /* AVOID_CPIO */
+
+    CARD16 DAC;
     CARD8 rgbBits;
 
     /*
      * Definitions related to system bus interface.
      */
     pciVideoPtr PCIInfo;
-    resRange VGAWonderResources[2];
     CARD8 BusType;
-    CARD8 SharedVGA, SharedAccelerator;
+    CARD8 SharedAccelerator;
+
+#ifndef AVOID_CPIO
+
+    CARD8 SharedVGA;
+    resRange VGAWonderResources[2];
+
+#endif /* AVOID_CPIO */
 
     /*
      * Definitions related to video memory.
@@ -203,22 +228,31 @@ typedef struct _ATIRec
     /*
      * Definitions related to video memory apertures.
      */
-    pointer pBank, pMemory, pShadow;
-    unsigned long LinearBase, ApertureBase;
-    int LinearSize, ApertureSize, FBPitch, FBBytesPerPixel;
+    pointer pMemory, pShadow;
+    unsigned long LinearBase;
+    int LinearSize, FBPitch, FBBytesPerPixel;
+
+#ifndef AVOID_CPIO
+
+    pointer pBank;
     CARD8 UseSmallApertures;
+
+#endif /* AVOID_CPIO */
 
     /*
      * Definitions related to MMIO register apertures.
      */
     pointer pMMIO, pBlock[2];
-    unsigned long PageSize, MMIOBase;
     unsigned long Block0Base, Block1Base;
+
+#ifndef AVOID_CPIO
 
     /*
      * Banking interface.
      */
     miBankInfoRec BankInfo;
+
+#endif /* AVOID_CPIO */
 
     /*
      * XAA interface.
@@ -242,9 +276,10 @@ typedef struct _ATIRec
      * Clock-related definitions.
      */
     int ClockNumberToProgramme, ReferenceNumerator, ReferenceDenominator;
+    int ProgrammableClock;
     ClockRec ClockDescriptor;
     CARD16 BIOSClocks[16];
-    CARD8 Clock, ProgrammableClock;
+    CARD8 Clock;
 
     /*
      * DSP register data.
@@ -287,21 +322,28 @@ typedef struct _ATIRec
      */
     struct
     {
+        /* Mach64 registers */
+        CARD32 bus_cntl, crtc_gen_cntl, mem_cntl, gen_test_cntl, crtc_int_cntl,
+               lcd_index;
+
+#ifndef AVOID_CPIO
+
+        CARD32 config_cntl, dac_cntl;
+
+        /* Mach8/Mach32 registers */
+        CARD16 clock_sel, misc_options, mem_bndry, mem_cfg;
+
+        /* VGA Wonder registers */
+        CARD8 a6, ab, b1, b4, b5, b6, b8, b9, be;
+
         /* VGA registers */
         CARD8 crt03, crt11;
 
         /* VGA shadow registers */
         CARD8 shadow_crt03, shadow_crt11;
 
-        /* VGA Wonder registers */
-        CARD8 a6, ab, b1, b4, b5, b6, b8, b9, be;
+#endif /* AVOID_CPIO */
 
-        /* Mach8/Mach32 registers */
-        CARD16 clock_sel, misc_options, mem_bndry, mem_cfg;
-
-        /* Mach64 registers */
-        CARD32 bus_cntl, config_cntl, crtc_gen_cntl, mem_info, gen_test_cntl,
-               dac_cntl, crtc_int_cntl, lcd_index;
     } LockData;
 
     /* Mode data */

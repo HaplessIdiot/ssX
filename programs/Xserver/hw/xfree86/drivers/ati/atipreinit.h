@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.h,v 1.1 1999/07/06 11:38:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.h,v 1.2 2000/02/18 12:19:30 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -25,6 +25,7 @@
 #define ___ATIPREINIT_H___ 1
 
 #include "atiproto.h"
+
 #include "xf86str.h"
 
 extern Bool ATIPreInit FunctionPrototype((ScrnInfoPtr, int));

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.12 2000/04/20 21:28:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.13 2000/06/19 15:00:58 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -25,6 +25,7 @@
 #include "atiadapter.h"
 #include "atichip.h"
 #include "atidac.h"
+#include "atimach64io.h"
 #include "atiprint.h"
 
 /*
@@ -82,6 +83,8 @@ ATIPrintBIOS
     xf86ErrorFVerb(5, "  |%s|\n", Printable);
 }
 
+#ifndef AVOID_CPIO
+
 /*
  * ATIPrintIndexedRegisters --
  *
@@ -100,7 +103,7 @@ ATIPrintIndexedRegisters
 {
     int Index;
 
-    xf86ErrorFVerb(4, "\n\n %s register values:", Name);
+    xf86ErrorFVerb(4, "\n %s register values:", Name);
     for (Index = StartIndex;  Index < EndIndex;  Index++)
     {
         if (!(Index & (4U - 1U)))
@@ -119,7 +122,11 @@ ATIPrintIndexedRegisters
         (void)inb(GenS1);               /* Reset flip-flop */
         outb(ATTRX, 0x20U);             /* Turn on PAS bit */
     }
+
+    xf86ErrorFVerb(4, "\n");
 }
+
+#endif /* AVOID_CPIO */
 
 /*
  * ATIPrintMach64Registers --
@@ -135,47 +142,102 @@ ATIPrintMach64Registers
     const char *Description
 )
 {
-    int Index, Step, Limit;
     CARD32 IOValue;
     CARD8 dac_read, dac_mask, dac_data, dac_write;
+    int Index, Limit;
 
-    xf86ErrorFVerb(4, "\n\n Mach64 %s register values:", Description);
-    Limit = ATIIOPort(IOPortTag(0x1FU, 0x3FU));
-    Step = ATIIOPort(IOPortTag(0x01U, 0x01U)) - pATI->CPIOBase;
-    for (Index = pATI->CPIOBase;  Index <= Limit;  Index += Step)
+#ifndef AVOID_CPIO
+
+    int Step;
+
+#endif /* AVOID_CPIO */
+
+    xf86ErrorFVerb(4, "\n Mach64 %s register values:", Description);
+
+#ifdef AVOID_CPIO
+
+    if (pATI->Chip < ATI_CHIP_264VT)
+        Limit = MM_IO_SELECT;
+    else
+        Limit = DWORD_SELECT;
+
+    for (Index = 0;  Index <= Limit;  Index += UnitOf(MM_IO_SELECT))
     {
-        if (!(((Index - pATI->CPIOBase) / Step) & 0x03U))
+        if (!(Index & SetBits(3, MM_IO_SELECT)))
             xf86ErrorFVerb(4, "\n 0x%04X: ", Index);
-        if (Index == pATI->CPIO_DAC_REGS)
+        if (Index == (DAC_REGS & DWORD_SELECT))
         {
-            dac_read = inb(pATI->CPIO_DAC_REGS + 3);
+            dac_read = in8(DAC_REGS + 3);
             DACDelay;
-            dac_mask = inb(pATI->CPIO_DAC_REGS + 2);
+            dac_mask = in8(DAC_REGS + 2);
             DACDelay;
-            dac_data = inb(pATI->CPIO_DAC_REGS + 1);
+            dac_data = in8(DAC_REGS + 1);
             DACDelay;
-            dac_write = inb(pATI->CPIO_DAC_REGS);
+            dac_write = in8(DAC_REGS + 0);
             DACDelay;
 
             xf86ErrorFVerb(4, " %02X%02X%02X%02X",
                 dac_read, dac_mask, dac_data, dac_write);
 
-            outb(pATI->CPIO_DAC_REGS + 2, dac_mask);
+            out8(DAC_REGS + 2, dac_mask);
             DACDelay;
-            outb(pATI->CPIO_DAC_REGS + 3, dac_read);
+            out8(DAC_REGS + 3, dac_read);
             DACDelay;
         }
         else
         {
-            IOValue = inl(Index);
+            IOValue = inm(Index);
 
-            if ((Index == pATI->CPIO_CRTC_GEN_CNTL) &&
+            if ((Index == (CRTC_GEN_CNTL & DWORD_SELECT)) &&
                 (IOValue & CRTC_EXT_DISP_EN))
                 *crtc = ATI_CRTC_MACH64;
 
             xf86ErrorFVerb(4, " %08X", IOValue);
         }
     }
+
+#else /* AVOID_CPIO */
+
+    Limit = ATIIOPort(IOPortTag(0x1FU, 0x3FU));
+    Step = ATIIOPort(IOPortTag(0x01U, 0x01U)) - pATI->CPIOBase;
+    for (Index = pATI->CPIOBase;  Index <= Limit;  Index += Step)
+    {
+        if (!(((Index - pATI->CPIOBase) / Step) & 0x03U))
+            xf86ErrorFVerb(4, "\n 0x%04X: ", Index);
+        if (Index == (int)ATIIOPort(DAC_REGS))
+        {
+            dac_read = in8(DAC_REGS + 3);
+            DACDelay;
+            dac_mask = in8(DAC_REGS + 2);
+            DACDelay;
+            dac_data = in8(DAC_REGS + 1);
+            DACDelay;
+            dac_write = in8(DAC_REGS + 0);
+            DACDelay;
+
+            xf86ErrorFVerb(4, " %02X%02X%02X%02X",
+                dac_read, dac_mask, dac_data, dac_write);
+
+            out8(DAC_REGS + 2, dac_mask);
+            DACDelay;
+            out8(DAC_REGS + 3, dac_read);
+            DACDelay;
+        }
+        else
+        {
+            IOValue = inl(Index);
+
+            if ((Index == (int)ATIIOPort(CRTC_GEN_CNTL)) &&
+                (IOValue & CRTC_EXT_DISP_EN))
+                *crtc = ATI_CRTC_MACH64;
+
+            xf86ErrorFVerb(4, " %08X", IOValue);
+        }
+    }
+
+#endif /* AVOID_CPIO */
+
+    xf86ErrorFVerb(4, "\n");
 }
 
 /*
@@ -190,10 +252,22 @@ ATIPrintMach64PLLRegisters
     ATIPtr pATI
 )
 {
-    int Index;
+    int Index, Limit;
+    CARD8 PLLReg[MaxBits(PLL_ADDR) + 1];
 
-    xf86ErrorFVerb(4, "\n\n Mach64 PLL register values:");
-    for (Index = 0;  Index < 64;  Index++)
+    for (Limit = 0;  Limit < SizeOf(PLLReg);  Limit++)
+        PLLReg[Limit] = ATIGetMach64PLLReg(Limit);
+
+    /* Determine how many PLL registers there really are */
+    while ((Limit = Limit >> 1))
+        for (Index = 0;  Index < Limit;  Index++)
+            if (PLLReg[Index] != PLLReg[Index + Limit])
+                goto FoundLimit;
+FoundLimit:
+    Limit <<= 1;
+
+    xf86ErrorFVerb(4, "\n Mach64 PLL register values:");
+    for (Index = 0;  Index < Limit;  Index++)
     {
         if (!(Index & 3))
         {
@@ -201,8 +275,10 @@ ATIPrintMach64PLLRegisters
                 xf86ErrorFVerb(4, "\n 0x%02X: ", Index);
             xf86ErrorFVerb(4, " ");
         }
-        xf86ErrorFVerb(4, "%02X", ATIGetMach64PLLReg(Index));
+        xf86ErrorFVerb(4, "%02X", PLLReg[Index]);
     }
+
+    xf86ErrorFVerb(4, "\n");
 }
 
 /*
@@ -220,9 +296,14 @@ ATIPrintRegisters
     pciConfigPtr pPCI;
     int          Index;
     CARD32       lcd_index, tv_out_index, lcd_gen_ctrl;
-    CARD8        genmo, seq1 = 0;
     CARD8        dac_read, dac_mask, dac_write;
-    CARD8        crtc = ATI_CRTC_VGA;
+    CARD8        crtc;
+
+#ifndef AVOID_CPIO
+
+    CARD8 genmo, seq1 = 0;
+
+    crtc = ATI_CRTC_VGA;
 
     if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
     {
@@ -233,39 +314,37 @@ ATIPrintRegisters
         {
             if (pATI->Chip == ATI_CHIP_264LT)
             {
-                lcd_gen_ctrl = inl(pATI->CPIO_LCD_GEN_CTRL);
+                lcd_gen_ctrl = inr(LCD_GEN_CTRL);
 
-                outl(pATI->CPIO_LCD_GEN_CTRL,
-                    lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
+                outr(LCD_GEN_CTRL, lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
                 ATIPrintIndexedRegisters(CRTX(ColourIOBase), 0, 64,
                     "Non-shadow colour CRT controller", 0);
 
-                outl(pATI->CPIO_LCD_GEN_CTRL,
-                    lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
+                outr(LCD_GEN_CTRL, lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
                 ATIPrintIndexedRegisters(CRTX(ColourIOBase), 0, 64,
                     "Shadow colour CRT controller", 0);
 
-                outl(pATI->CPIO_LCD_GEN_CTRL, lcd_gen_ctrl);
+                outr(LCD_GEN_CTRL, lcd_gen_ctrl);
             }
             else if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
                      (pATI->Chip == ATI_CHIP_264XL) ||
                      (pATI->Chip == ATI_CHIP_MOBILITY))
             {
-                lcd_index = inl(pATI->CPIO_LCD_INDEX);
-                lcd_gen_ctrl = ATIGetLTProLCDReg(LCD_GEN_CNTL);
+                lcd_index = inr(LCD_INDEX);
+                lcd_gen_ctrl = ATIGetMach64LCDReg(LCD_GEN_CNTL);
 
-                ATIPutLTProLCDReg(LCD_GEN_CNTL,
+                ATIPutMach64LCDReg(LCD_GEN_CNTL,
                     lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
                 ATIPrintIndexedRegisters(CRTX(ColourIOBase), 0, 64,
                     "Non-shadow colour CRT controller", 0);
 
-                ATIPutLTProLCDReg(LCD_GEN_CNTL,
+                ATIPutMach64LCDReg(LCD_GEN_CNTL,
                     lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
                 ATIPrintIndexedRegisters(CRTX(ColourIOBase), 0, 64,
                     "Shadow colour CRT controller", 0);
 
-                ATIPutLTProLCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
-                outl(pATI->CPIO_LCD_INDEX, lcd_index);
+                ATIPutMach64LCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
+                outr(LCD_INDEX, lcd_index);
             }
             else
                 ATIPrintIndexedRegisters(CRTX(ColourIOBase), 0, 64,
@@ -277,39 +356,37 @@ ATIPrintRegisters
         {
             if (pATI->Chip == ATI_CHIP_264LT)
             {
-                lcd_gen_ctrl = inl(pATI->CPIO_LCD_GEN_CTRL);
+                lcd_gen_ctrl = inr(LCD_GEN_CTRL);
 
-                outl(pATI->CPIO_LCD_GEN_CTRL,
-                    lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
+                outr(LCD_GEN_CTRL, lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
                 ATIPrintIndexedRegisters(CRTX(MonochromeIOBase), 0, 64,
                     "Non-shadow monochrome CRT controller", 0);
 
-                outl(pATI->CPIO_LCD_GEN_CTRL,
-                    lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
+                outr(LCD_GEN_CTRL, lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
                 ATIPrintIndexedRegisters(CRTX(MonochromeIOBase), 0, 64,
                     "Shadow monochrome CRT controller", 0);
 
-                outl(pATI->CPIO_LCD_GEN_CTRL, lcd_gen_ctrl);
+                outr(LCD_GEN_CTRL, lcd_gen_ctrl);
             }
             else if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
                      (pATI->Chip == ATI_CHIP_264XL) ||
                      (pATI->Chip == ATI_CHIP_MOBILITY))
             {
-                lcd_index = inl(pATI->CPIO_LCD_INDEX);
-                lcd_gen_ctrl = ATIGetLTProLCDReg(LCD_GEN_CNTL);
+                lcd_index = inr(LCD_INDEX);
+                lcd_gen_ctrl = ATIGetMach64LCDReg(LCD_GEN_CNTL);
 
-                ATIPutLTProLCDReg(LCD_GEN_CNTL,
+                ATIPutMach64LCDReg(LCD_GEN_CNTL,
                     lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
                 ATIPrintIndexedRegisters(CRTX(MonochromeIOBase), 0, 64,
                     "Non-shadow monochrome CRT controller", 0);
 
-                ATIPutLTProLCDReg(LCD_GEN_CNTL,
+                ATIPutMach64LCDReg(LCD_GEN_CNTL,
                     lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
                 ATIPrintIndexedRegisters(CRTX(MonochromeIOBase), 0, 64,
                     "Shadow monochrome CRT controller", 0);
 
-                ATIPutLTProLCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
-                outl(pATI->CPIO_LCD_INDEX, lcd_index);
+                ATIPutMach64LCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
+                outr(LCD_INDEX, lcd_index);
             }
             else
                 ATIPrintIndexedRegisters(CRTX(MonochromeIOBase), 0, 64,
@@ -329,7 +406,7 @@ ATIPrintRegisters
 
     if (pATI->ChipHasSUBSYS_CNTL)
     {
-        xf86ErrorFVerb(4, "\n\n 8514/A register values:");
+        xf86ErrorFVerb(4, "\n 8514/A register values:");
         for (Index = 0x02E8U;  Index <= 0x0FEE8;  Index += 0x0400U)
         {
             if (!((Index - 0x02E8U) & 0x0C00U))
@@ -347,20 +424,26 @@ ATIPrintRegisters
                 xf86ErrorFVerb(4, " %04X", inw(Index));
             }
         }
-    }
-    else if (pATI->Chip == ATI_CHIP_264LT)
-    {
-        lcd_gen_ctrl = inl(pATI->CPIO_LCD_GEN_CTRL);
 
-        outl(pATI->CPIO_LCD_GEN_CTRL,
-            lcd_gen_ctrl & ~(CRTC_RW_SELECT | SHADOW_EN | SHADOW_RW_EN));
+        xf86ErrorFVerb(4, "\n");
+    }
+    else
+
+#endif /* AVOID_CPIO */
+
+    if (pATI->Chip == ATI_CHIP_264LT)
+    {
+        lcd_gen_ctrl = inr(LCD_GEN_CTRL);
+
+        outr(LCD_GEN_CTRL, lcd_gen_ctrl &
+            ~(CRTC_RW_SELECT | SHADOW_EN | SHADOW_RW_EN));
         ATIPrintMach64Registers(pATI, &crtc, "non-shadow");
 
-        outl(pATI->CPIO_LCD_GEN_CTRL,
-            (lcd_gen_ctrl & ~CRTC_RW_SELECT) | (SHADOW_EN | SHADOW_RW_EN));
+        outr(LCD_GEN_CTRL, (lcd_gen_ctrl & ~CRTC_RW_SELECT) |
+            (SHADOW_EN | SHADOW_RW_EN));
         ATIPrintMach64Registers(pATI, &crtc, "shadow");
 
-        outl(pATI->CPIO_LCD_GEN_CTRL, lcd_gen_ctrl);
+        outr(LCD_GEN_CTRL, lcd_gen_ctrl);
 
         ATIPrintMach64PLLRegisters(pATI);
     }
@@ -368,54 +451,112 @@ ATIPrintRegisters
              (pATI->Chip == ATI_CHIP_264XL) ||
              (pATI->Chip == ATI_CHIP_MOBILITY))
     {
-        lcd_index = inl(pATI->CPIO_LCD_INDEX);
-        lcd_gen_ctrl = ATIGetLTProLCDReg(LCD_GEN_CNTL);
+        lcd_index = inr(LCD_INDEX);
+        lcd_gen_ctrl = ATIGetMach64LCDReg(LCD_GEN_CNTL);
 
-        ATIPutLTProLCDReg(LCD_GEN_CNTL,
+        ATIPutMach64LCDReg(LCD_GEN_CNTL,
             lcd_gen_ctrl & ~(CRTC_RW_SELECT | SHADOW_EN | SHADOW_RW_EN));
         ATIPrintMach64Registers(pATI, &crtc, "non-shadow");
 
-        ATIPutLTProLCDReg(LCD_GEN_CNTL,
+        ATIPutMach64LCDReg(LCD_GEN_CNTL,
             (lcd_gen_ctrl & ~CRTC_RW_SELECT) | (SHADOW_EN | SHADOW_RW_EN));
         ATIPrintMach64Registers(pATI, &crtc, "shadow");
 
-        ATIPutLTProLCDReg(LCD_GEN_CNTL, lcd_gen_ctrl | CRTC_RW_SELECT);
+        ATIPutMach64LCDReg(LCD_GEN_CNTL, lcd_gen_ctrl | CRTC_RW_SELECT);
         ATIPrintMach64Registers(pATI, &crtc, "secondary");
 
-        ATIPutLTProLCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
+        ATIPutMach64LCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
 
         ATIPrintMach64PLLRegisters(pATI);
 
-        xf86ErrorFVerb(4, "\n\n LCD register values:");
+        xf86ErrorFVerb(4, "\n LCD register values:");
         for (Index = 0;  Index < 64;  Index++)
         {
             if (!(Index & 3))
                 xf86ErrorFVerb(4, "\n 0x%02X: ", Index);
-            xf86ErrorFVerb(4, " %08X", ATIGetLTProLCDReg(Index));
+            xf86ErrorFVerb(4, " %08X", ATIGetMach64LCDReg(Index));
         }
 
-        outl(pATI->CPIO_LCD_INDEX, lcd_index);
+        outr(LCD_INDEX, lcd_index);
 
-        tv_out_index = inl(pATI->CPIO_TV_OUT_INDEX);
+        tv_out_index = inr(TV_OUT_INDEX);
 
         xf86ErrorFVerb(4, "\n\n TV_OUT register values:");
         for (Index = 0;  Index < 256;  Index++)
         {
             if (!(Index & 3))
                 xf86ErrorFVerb(4, "\n 0x%02X: ", Index);
-            xf86ErrorFVerb(4, " %08X", ATIGetLTProTVReg(Index));
+            xf86ErrorFVerb(4, " %08X", ATIGetMach64TVReg(Index));
         }
 
-        outl(pATI->CPIO_TV_OUT_INDEX, tv_out_index);
+        outr(TV_OUT_INDEX, tv_out_index);
+
+        xf86ErrorFVerb(4, "\n");
     }
-    else if (pATI->Chip >= ATI_CHIP_88800GXC)
+    else
+
+#ifndef AVOID_CPIO
+
+    if (pATI->Chip >= ATI_CHIP_88800GXC)
+
+#endif /* AVOID_CPIO */
+
     {
+
+#ifdef AVOID_CPIO
+
+        ATIPrintMach64Registers(pATI, &crtc, "MMIO");
+
+#else /* AVOID_CPIO */
+
         ATIPrintMach64Registers(pATI, &crtc,
             (pATI->CPIODecoding == SPARSE_IO) ? "sparse" : "block");
+
+#endif /* AVOID_CPIO */
 
         if (pATI->Chip >= ATI_CHIP_264CT)
             ATIPrintMach64PLLRegisters(pATI);
     }
+
+#ifdef AVOID_CPIO
+
+    dac_read = in8(M64_DAC_READ);
+    DACDelay;
+    dac_write = in8(M64_DAC_WRITE);
+    DACDelay;
+    dac_mask = in8(M64_DAC_MASK);
+    DACDelay;
+
+    xf86ErrorFVerb(4, "\n"
+               " DAC read index:   0x%02X\n"
+               " DAC write index:  0x%02X\n"
+               " DAC mask:         0x%02X\n\n"
+               " DAC colour lookup table:",
+        dac_read, dac_write, dac_mask);
+
+    out8(M64_DAC_MASK, 0xFFU);
+    DACDelay;
+    out8(M64_DAC_READ, 0x00U);
+    DACDelay;
+
+    for (Index = 0;  Index < 256;  Index++)
+    {
+        if (!(Index & 3))
+            xf86ErrorFVerb(4, "\n 0x%02X:", Index);
+        xf86ErrorFVerb(4, "  %02X", in8(M64_DAC_DATA));
+        DACDelay;
+        xf86ErrorFVerb(4, " %02X", in8(M64_DAC_DATA));
+        DACDelay;
+        xf86ErrorFVerb(4, " %02X", in8(M64_DAC_DATA));
+        DACDelay;
+    }
+
+    out8(M64_DAC_MASK, dac_mask);
+    DACDelay;
+    out8(M64_DAC_READ, dac_read);
+    DACDelay;
+
+#else /* AVOID_CPIO */
 
     ATISetDACIOPorts(pATI, crtc);
 
@@ -434,7 +575,7 @@ ATIPrintRegisters
     dac_mask = inb(pATI->CPIO_DAC_MASK);
     DACDelay;
 
-    xf86ErrorFVerb(4, "\n\n"
+    xf86ErrorFVerb(4, "\n"
                " DAC read index:   0x%02X\n"
                " DAC write index:  0x%02X\n"
                " DAC mask:         0x%02X\n\n"
@@ -466,9 +607,11 @@ ATIPrintRegisters
     if ((pATI->Adapter == ATI_ADAPTER_NONISA) && (seq1 & 0x08U))
         PutReg(SEQX, 0x01U, seq1);
 
+#endif /* AVOID_CPIO */
+
     if ((pVideo = pATI->PCIInfo))
     {
-        pPCI = (pciConfigPtr)(pVideo->thisCard);
+        pPCI = pVideo->thisCard;
         xf86ErrorFVerb(4, "\n\n PCI configuration register values:");
         for (Index = 0;  Index < 256;  Index+= 4)
         {
@@ -478,21 +621,30 @@ ATIPrintRegisters
         }
     }
 
+    xf86ErrorFVerb(4, "\n");
+
+#ifndef AVOID_CPIO
+
     if (pATI->pBank)
-        xf86ErrorFVerb(4, "\n\n Banked aperture at 0x%08X.\n",
+        xf86ErrorFVerb(4, "\n Banked aperture at 0x%08X.",
             pATI->pBank);
     else
-        xf86ErrorFVerb(4, "\n\n No banked aperture.\n");
+        xf86ErrorFVerb(4, "\n No banked aperture.");
 
-    if (pATI->pMemory != pATI->pBank)
-        xf86ErrorFVerb(4, " Linear aperture at 0x%08X.\n", pATI->pMemory);
+    if (pATI->pMemory == pATI->pBank)
+        xf86ErrorFVerb(4, "\n No linear aperture.\n");
     else
-        xf86ErrorFVerb(4, " No linear aperture.\n");
+
+#endif /* AVOID_CPIO */
+
+    {
+        xf86ErrorFVerb(4, "\n Linear aperture at 0x%08X.\n", pATI->pMemory);
+    }
 
     if (pATI->pBlock[0])
     {
         xf86ErrorFVerb(4, " Block 0 aperture at 0x%08X.\n", pATI->pBlock[0]);
-        if (inl(pATI->CPIOBase) == MMIO_IN32(pATI->pBlock[0], 0))
+        if (inr(CONFIG_CHIP_ID) == pATI->config_chip_id)
             xf86ErrorFVerb(4, " MMIO registers are correctly mapped.\n");
         else
             xf86ErrorFVerb(4, " MMIO mapping is in error!\n");

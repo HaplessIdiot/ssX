@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.7 1999/11/18 16:52:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.8 2000/02/18 12:19:44 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -65,6 +65,8 @@ const char *ATIMemoryTypeNames_264xT[] =
     "Unknown video memory type"
 };
 
+#ifndef AVOID_CPIO
+
 /*
  * ATIUnmapVGA --
  *
@@ -73,17 +75,19 @@ const char *ATIMemoryTypeNames_264xT[] =
 static void
 ATIUnmapVGA
 (
-    ScrnInfoPtr pScreenInfo,
-    ATIPtr      pATI
+    int    iScreen,
+    ATIPtr pATI
 )
 {
     if (!pATI->pBank)
         return;
 
-    xf86UnMapVidMem(pScreenInfo->scrnIndex, pATI->pBank, 0x00010000U);
+    xf86UnMapVidMem(iScreen, pATI->pBank, 0x00010000U);
 
     pATI->pBank = pATI->BankInfo.pBankA = pATI->BankInfo.pBankB = NULL;
 }
+
+#endif /* AVOID_CPIO */
 
 /*
  * ATIUnmapLinear --
@@ -93,13 +97,33 @@ ATIUnmapVGA
 static void
 ATIUnmapLinear
 (
-    ScrnInfoPtr pScreenInfo,
-    ATIPtr      pATI
+    int    iScreen,
+    ATIPtr pATI
 )
 {
+    unsigned long PageSize;
+    int           LinearSize;
+
+#ifdef AVOID_CPIO
+
+    if (!pATI->pMemory)
+        return;
+
+#else /* AVOID_CPIO */
+
     if (pATI->pMemory != pATI->pBank)
-        xf86UnMapVidMem(pScreenInfo->scrnIndex, pATI->pMemory,
-            pATI->LinearSize);
+
+#endif /* AVOID_CPIO */
+
+    {
+        PageSize = getpagesize();
+        LinearSize = pATI->LinearSize;
+        if (((pATI->Block0Base | (PageSize - 1)) + 1) ==
+            (pATI->LinearBase + LinearSize))
+            LinearSize -= PageSize;
+
+        xf86UnMapVidMem(iScreen, pATI->pMemory, LinearSize);
+    }
 
     pATI->pMemory = NULL;
 }
@@ -112,12 +136,12 @@ ATIUnmapLinear
 static void
 ATIUnmapMMIO
 (
-    ScrnInfoPtr pScreenInfo,
-    ATIPtr      pATI
+    int    iScreen,
+    ATIPtr pATI
 )
 {
     if (pATI->pMMIO)
-        xf86UnMapVidMem(pScreenInfo->scrnIndex, pATI->pMMIO, pATI->PageSize);
+        xf86UnMapVidMem(iScreen, pATI->pMMIO, getpagesize());
 
     pATI->pMMIO = pATI->pBlock[0] = pATI->pBlock[1] = NULL;
 }
@@ -130,14 +154,41 @@ ATIUnmapMMIO
 Bool
 ATIMapApertures
 (
-    ScrnInfoPtr pScreenInfo,
-    ATIPtr      pATI
+    int    iScreen,
+    ATIPtr pATI
 )
 {
-    pciVideoPtr pVideo;
+    pciVideoPtr   pVideo;
+    PCITAG        Tag;
+    unsigned long PageSize, MMIOBase;
+    int           LinearSize;
 
     if (pATI->Mapped)
         return TRUE;
+
+#ifndef AVOID_CPIO
+
+    if (pATI->VGAAdapter == ATI_ADAPTER_NONE) 
+
+#endif /* AVOID_CPIO */
+
+    {
+        if (!pATI->LinearBase && !pATI->Block0Base)
+            return FALSE;
+    }
+
+    PageSize = getpagesize();
+    MMIOBase = pATI->Block0Base & ~(PageSize - 1);
+    LinearSize = pATI->LinearSize;
+    if ((MMIOBase + PageSize) == (pATI->LinearBase + LinearSize))
+        LinearSize -= PageSize;
+
+    if ((pVideo = pATI->PCIInfo))
+        Tag = ((pciConfigPtr)(pVideo->thisCard))->tag;
+    else
+        Tag = 0;
+
+#ifndef AVOID_CPIO
 
     /* Map VGA aperture */
     if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
@@ -146,8 +197,12 @@ ATIMapApertures
          * No relocation, resizing, caching or write-combining of this
          * aperture is supported.  Hence, the hard-coded values here...
          */
-        pATI->pBank = xf86MapVidMem(pScreenInfo->scrnIndex, VIDMEM_MMIO,
-            0x000A0000U, 0x00010000U);
+        if (pVideo)
+            pATI->pBank = xf86MapPciMem(iScreen, VIDMEM_MMIO,
+                Tag, 0x000A0000U, 0x00010000U);
+        else
+            pATI->pBank = xf86MapVidMem(iScreen, VIDMEM_MMIO,
+                0x000A0000U, 0x00010000U);
 
         if (!pATI->pBank)
             return FALSE;
@@ -155,66 +210,71 @@ ATIMapApertures
         pATI->pMemory =
             pATI->BankInfo.pBankA =
             pATI->BankInfo.pBankB = pATI->pBank;
+
+        pATI->Mapped = TRUE;
     }
 
-    pVideo = pATI->PCIInfo;
+#endif /* AVOID_CPIO */
 
     /* Map linear aperture */
     if (pATI->LinearBase)
     {
         if (pVideo)
-            pATI->pMemory = xf86MapPciMem(pScreenInfo->scrnIndex,
-                VIDMEM_FRAMEBUFFER, ((pciConfigPtr)(pVideo->thisCard))->tag,
-                pATI->LinearBase, pATI->LinearSize);
+            pATI->pMemory = xf86MapPciMem(iScreen, VIDMEM_FRAMEBUFFER,
+                Tag, pATI->LinearBase, LinearSize);
         else
-            pATI->pMemory = xf86MapVidMem(pScreenInfo->scrnIndex,
-                VIDMEM_FRAMEBUFFER, pATI->LinearBase, pATI->LinearSize);
+            pATI->pMemory = xf86MapVidMem(iScreen, VIDMEM_FRAMEBUFFER,
+                pATI->LinearBase, LinearSize);
 
         if (!pATI->pMemory)
         {
-            ATIUnmapVGA(pScreenInfo, pATI);
+
+#ifndef AVOID_CPIO
+
+            ATIUnmapVGA(iScreen, pATI);
+
+#endif /* AVOID_CPIO */
+
+            pATI->Mapped = FALSE;
             return FALSE;
         }
+
+        pATI->Mapped = TRUE;
     }
 
     /* Map MMIO aperture */
     if (pATI->Block0Base)
     {
-        if ((pATI->Block0Base >= pATI->LinearBase) &&
-            ((pATI->Block0Base + 0x00000400U) <=
-             (pATI->LinearBase + pATI->LinearSize)))
-        {
-            pATI->pBlock[0] = (char *)pATI->pMemory +
-                (pATI->Block0Base - pATI->LinearBase);
-        }
+        if (pVideo)
+            pATI->pMMIO = xf86MapPciMem(iScreen, VIDMEM_MMIO,
+                Tag, MMIOBase, PageSize);
         else
+            pATI->pMMIO = xf86MapVidMem(iScreen, VIDMEM_MMIO,
+                MMIOBase, PageSize);
+
+        if (!pATI->pMMIO)
         {
-            if (pVideo &&
-                ((pATI->Block0Base < 0x000A0000U) ||
-                 (pATI->Block0Base > (0x000B0000U - 0x00000400U))))
-                pATI->pMMIO = xf86MapPciMem(pScreenInfo->scrnIndex,
-                    VIDMEM_MMIO, ((pciConfigPtr)(pVideo->thisCard))->tag,
-                    pATI->MMIOBase, pATI->PageSize);
-            else
-                pATI->pMMIO = xf86MapVidMem(pScreenInfo->scrnIndex,
-                    VIDMEM_MMIO, pATI->MMIOBase, pATI->PageSize);
+            ATIUnmapLinear(iScreen, pATI);
 
-            if (!pATI->pMMIO)
-            {
-                ATIUnmapLinear(pScreenInfo, pATI);
-                ATIUnmapVGA(pScreenInfo, pATI);
-                return FALSE;
-            }
+#ifndef AVOID_CPIO
 
-            pATI->pBlock[0] = (char *)pATI->pMMIO +
-                (pATI->Block0Base - pATI->MMIOBase);
+            ATIUnmapVGA(iScreen, pATI);
+
+#endif /* AVOID_CPIO */
+
+            pATI->Mapped = FALSE;
+            return FALSE;
         }
+
+        pATI->Mapped = TRUE;
+
+        pATI->pBlock[0] = (char *)pATI->pMMIO +
+            (pATI->Block0Base - MMIOBase);
 
         if (pATI->Block1Base)
             pATI->pBlock[1] = (char *)pATI->pBlock[0] - 0x00000400U;
     }
 
-    pATI->Mapped = TRUE;
     return TRUE;
 }
 
@@ -226,8 +286,8 @@ ATIMapApertures
 void
 ATIUnmapApertures
 (
-    ScrnInfoPtr pScreenInfo,
-    ATIPtr      pATI
+    int    iScreen,
+    ATIPtr pATI
 )
 {
     if (!pATI->Mapped)
@@ -235,11 +295,16 @@ ATIUnmapApertures
     pATI->Mapped = FALSE;
 
     /* Unmap MMIO area */
-    ATIUnmapMMIO(pScreenInfo, pATI);
+    ATIUnmapMMIO(iScreen, pATI);
 
     /* Unmap linear aperture */
-    ATIUnmapLinear(pScreenInfo, pATI);
+    ATIUnmapLinear(iScreen, pATI);
+
+#ifndef AVOID_CPIO
 
     /* Unmap VGA aperture */
-    ATIUnmapVGA(pScreenInfo, pATI);
+    ATIUnmapVGA(iScreen, pATI);
+
+#endif /* AVOID_CPIO */
+
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.7 2000/04/23 19:26:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.8 2000/05/03 00:44:03 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -46,6 +46,28 @@ const char *ATIBusNames[] =
 };
 
 /*
+ * ATIRefreshPCIBases --
+ *
+ * This function ensures the common layer's view of an adapter's PCI resources
+ * is up-to-date.  This should eventually be moved into the common layer.
+ */
+void
+ATIRefreshPCIBases
+(
+    pciVideoPtr  pVideo,
+    pciConfigPtr pPCI
+)
+{
+    pPCI->pci_base0 = pciReadLong(pPCI->tag, PCI_CMD_BASE_REG + 0);
+    pPCI->pci_base1 = pciReadLong(pPCI->tag, PCI_CMD_BASE_REG + 4);
+    pPCI->pci_base2 = pciReadLong(pPCI->tag, PCI_CMD_BASE_REG + 8);
+
+    pVideo->memBase[0] = PCIGETMEMORY(pPCI->pci_base0);
+    pVideo->ioBase[1]  = PCIGETIO(pPCI->pci_base1);
+    pVideo->memBase[2] = PCIGETMEMORY(pPCI->pci_base2);
+}
+
+/*
  * ATIClaimResources --
  *
  * This function registers most of the bus resources used by an adapter.  The
@@ -62,6 +84,9 @@ ATIClaimResources
 )
 {
     resPtr   pResources;
+
+#ifndef AVOID_CPIO
+
     resRange Resources[2] = {{0, 0, 0}, _END};
 
     /* Claim VGA and VGAWonder resources */
@@ -98,8 +123,13 @@ ATIClaimResources
         }
     }
 
+#endif /* AVOID_CPIO */
+
     if (Active || !pATI->SharedAccelerator)
     {
+
+#ifndef AVOID_CPIO
+
         /* Claim 8514/A resources */
         if (pATI->ChipHasSUBSYS_CNTL)
             xf86ClaimFixedResources(
@@ -119,6 +149,8 @@ ATIClaimResources
 
             xf86ClaimFixedResources(Resources, pATI->iEntity);
         }
+
+#endif /* AVOID_CPIO */
 
         /* Register relocatable resources for inactive adapters */
         if (!Active)

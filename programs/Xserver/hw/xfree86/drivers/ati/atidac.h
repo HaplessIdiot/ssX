@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.6 2000/06/19 15:00:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.7 2000/07/07 20:07:01 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -22,11 +22,18 @@
  */
 
 #ifndef ___ATIDAC_H___
+
+#if !defined(___ATI_H___) && defined(XFree86Module)
+# error missing #include "ati.h" before #include "atidac.h"
+# undef XFree86Module
+#endif
+
 #define ___ATIDAC_H___ 1
 
 #include "ati.h"
 #include "aticrtc.h"
 #include "atiio.h"
+
 #include "colormapst.h"
 
 /*
@@ -69,21 +76,30 @@ typedef struct
 } DACRec;
 extern const DACRec ATIDACDescriptors[];
 
-#define DACDelay                              \
-    do                                        \
-    {                                         \
-        (void)inb(GENS1(pATI->CPIO_VGABase)); \
-        (void)inb(GENS1(pATI->CPIO_VGABase)); \
-    } while (0)
+#ifdef AVOID_CPIO
 
-extern void  ATISetDACIOPorts FunctionPrototype((ATIPtr, ATICRTCType));
-extern CARD8 ATIGetDACCmdReg  FunctionPrototype((ATIPtr));
+#   define DACDelay     /* Nothing */
 
-extern void  ATIDACPreInit FunctionPrototype((ScrnInfoPtr, ATIPtr, ATIHWPtr));
-extern void  ATIDACSave    FunctionPrototype((ATIPtr, ATIHWPtr));
-extern void  ATIDACSet     FunctionPrototype((ATIPtr, ATIHWPtr));
+#else /* AVOID_CPIO */
 
-extern void  ATILoadPalette FunctionPrototype((ScrnInfoPtr, int, int *, LOCO *,
-                                               VisualPtr));
+#   define DACDelay                               \
+        do                                        \
+        {                                         \
+            (void)inb(GENS1(pATI->CPIO_VGABase)); \
+            (void)inb(GENS1(pATI->CPIO_VGABase)); \
+        } while (0)
+
+    extern void ATISetDACIOPorts FunctionPrototype((ATIPtr, ATICRTCType));
+
+#endif /* AVOID_CPIO */
+
+extern CARD8 ATIGetDACCmdReg FunctionPrototype((ATIPtr));
+
+extern void ATIDACPreInit FunctionPrototype((ScrnInfoPtr, ATIPtr, ATIHWPtr));
+extern void ATIDACSave    FunctionPrototype((ATIPtr, ATIHWPtr));
+extern void ATIDACSet     FunctionPrototype((ATIPtr, ATIHWPtr));
+
+extern void ATILoadPalette FunctionPrototype((ScrnInfoPtr, int, int *, LOCO *,
+                                              VisualPtr));
 
 #endif /* ___ATIDAC_H___ */

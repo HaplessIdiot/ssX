@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.9 2000/06/19 15:00:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.10 2000/07/07 20:07:02 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -136,6 +136,9 @@ ATIScreenInit
     /* Initialise framebuffer layer */
     switch (pATI->bitsPerPixel)
     {
+
+#ifndef AVOID_CPIO
+
         case 1:
             pATI->Closeable = xf1bppScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
@@ -147,6 +150,8 @@ ATIScreenInit
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
                 pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
             break;
+
+#endif /* AVOID_CPIO */
 
         case 8:
             pATI->Closeable = cfbScreenInit(pScreen, pFB,
@@ -201,11 +206,15 @@ ATIScreenInit
 
     xf86SetBlackWhitePixels(pScreen);
 
+#ifndef AVOID_CPIO
+
     /* Initialise banking if needed */
     if (!miInitializeBanking(pScreen,
                              pScreenInfo->virtualX, pScreenInfo->virtualY,
                              pATI->displayWidth, &pATI->BankInfo))
         return FALSE;
+
+#endif /* AVOID_CPIO */
 
     /* Initialise DGA support */
     (void)ATIDGAInit(pScreenInfo, pScreen, pATI);
@@ -225,12 +234,24 @@ ATIScreenInit
     if (!miCreateDefColormap(pScreen))
         return FALSE;
 
+#ifdef AVOID_CPIO
+
+    if (!xf86HandleColormaps(pScreen, 256, pScreenInfo->rgbBits,
+                             ATILoadPalette, NULL,
+                             CMAP_PALETTED_TRUECOLOR |
+                             CMAP_LOAD_EVEN_IF_OFFSCREEN))
+            return FALSE;
+
+#else /* AVOID_CPIO */
+
     if (pATI->depth > 1)
         if (!xf86HandleColormaps(pScreen, (pATI->depth == 4) ? 16 : 256,
                                  pScreenInfo->rgbBits, ATILoadPalette, NULL,
                                  CMAP_PALETTED_TRUECOLOR |
                                  CMAP_LOAD_EVEN_IF_OFFSCREEN))
             return FALSE;
+
+#endif /* AVOID_CPIO */
 
     /* Initialise shadow framebuffer */
     if (pATI->OptionShadowFB &&

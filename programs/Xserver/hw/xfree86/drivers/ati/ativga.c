@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.10 2000/03/22 03:08:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.11 2000/06/19 15:00:59 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -27,10 +27,15 @@
 #include "atiio.h"
 #include "atimono.h"
 #include "ativga.h"
+
 #include "xf86.h"
 
-#define DPMS_SERVER
+#ifndef DPMS_SERVER
+# define DPMS_SERVER
+#endif
 #include "extensions/dpms.h"
+
+#ifndef AVOID_CPIO
 
 /*
  * ATIVGAPreInit --
@@ -496,3 +501,5 @@ ATIVGASetDPMSMode
     PutReg(CRTX(pATI->CPIO_VGABase), 0x17U, crt17);
     PutReg(SEQX, 0x01U, 0x03U); /* End synchonous reset */
 }
+
+#endif /* AVOID_CPIO */

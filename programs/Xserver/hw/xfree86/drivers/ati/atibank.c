@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.c,v 1.6 2000/03/22 03:08:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.c,v 1.7 2000/07/07 20:07:01 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -23,7 +23,9 @@
 
 #include "ati.h"
 #include "atibank.h"
-#include "atiio.h"
+#include "atimach64io.h"
+
+#ifndef AVOID_CPIO
 
 /*
  * ATI VGA Wonder V3 adapters use an ATI 18800 chip and are single-banked.
@@ -266,8 +268,9 @@ ATIMach64SetBankPacked
 )
 {
     CARD32 tmp = ATIMach64MassagePackedBankNumber(iBank);
-    outl(pATI->CPIO_MEM_VGA_RP_SEL, tmp);
-    outl(pATI->CPIO_MEM_VGA_WP_SEL, tmp);
+
+    outr(MEM_VGA_RP_SEL, tmp);
+    outr(MEM_VGA_WP_SEL, tmp);
 }
 
 /*
@@ -282,8 +285,9 @@ ATIMach64SetReadPacked
     unsigned int iBank
 )
 {
-    outl(ATIPTR(XF86SCRNINFO(pScreen))->CPIO_MEM_VGA_RP_SEL,
-         ATIMach64MassagePackedBankNumber(iBank));
+    ATIPtr pATI = ATIPTR(XF86SCRNINFO(pScreen));
+
+    outr(MEM_VGA_RP_SEL, ATIMach64MassagePackedBankNumber(iBank));
     return 0;
 }
 
@@ -299,8 +303,9 @@ ATIMach64SetWritePacked
     unsigned int iBank
 )
 {
-    outl(ATIPTR(XF86SCRNINFO(pScreen))->CPIO_MEM_VGA_WP_SEL,
-         ATIMach64MassagePackedBankNumber(iBank));
+    ATIPtr pATI = ATIPTR(XF86SCRNINFO(pScreen));
+
+    outr(MEM_VGA_WP_SEL, ATIMach64MassagePackedBankNumber(iBank));
     return 0;
 }
 
@@ -343,8 +348,9 @@ ATIMach64SetBankPlanar
 )
 {
     CARD32 tmp = ATIMach64MassagePlanarBankNumber(iBank);
-    outl(pATI->CPIO_MEM_VGA_RP_SEL, tmp);
-    outl(pATI->CPIO_MEM_VGA_WP_SEL, tmp);
+
+    outr(MEM_VGA_RP_SEL, tmp);
+    outr(MEM_VGA_WP_SEL, tmp);
 }
 
 /*
@@ -359,8 +365,9 @@ ATIMach64SetReadPlanar
     unsigned int iBank
 )
 {
-    outl(ATIPTR(XF86SCRNINFO(pScreen))->CPIO_MEM_VGA_RP_SEL,
-        ATIMach64MassagePlanarBankNumber(iBank));
+    ATIPtr pATI = ATIPTR(XF86SCRNINFO(pScreen));
+
+    outr(MEM_VGA_RP_SEL, ATIMach64MassagePlanarBankNumber(iBank));
     return 0;
 }
 
@@ -376,8 +383,9 @@ ATIMach64SetWritePlanar
     unsigned int iBank
 )
 {
-    outl(ATIPTR(XF86SCRNINFO(pScreen))->CPIO_MEM_VGA_WP_SEL,
-        ATIMach64MassagePlanarBankNumber(iBank));
+    ATIPtr pATI = ATIPTR(XF86SCRNINFO(pScreen));
+
+    outr(MEM_VGA_WP_SEL, ATIMach64MassagePlanarBankNumber(iBank));
     return 0;
 }
 
@@ -396,3 +404,5 @@ ATIMach64SetReadWritePlanar
     ATIMach64SetBankPlanar(ATIPTR(XF86SCRNINFO(pScreen)), iBank);
     return 0;
 }
+
+#endif /* AVOID_CPIO */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidga.h,v 1.1 2000/06/19 15:02:24 tsi Exp $ */
 /*
  * Copyright 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,6 +26,7 @@
 
 #include "atipriv.h"
 #include "atiproto.h"
+
 #include "xf86str.h"
 
 extern Bool ATIDGAInit FunctionPrototype((ScrnInfoPtr, ScreenPtr, ATIPtr));
