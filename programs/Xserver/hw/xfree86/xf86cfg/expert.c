@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.2 2000/11/30 21:45:20 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.3 2000/12/01 18:31:07 paulo Exp $
  */
 
 #include "config.h"
@@ -344,7 +344,8 @@ ExpertConfigureEnd(void)
 	AdjustScreenUI();
 	SetTip((xf86cfgDevice*)computer.screens[i]);
     }
-    SetTip(&cpu_device);
+    if (XF86Config->conf_flags && XF86Config->conf_flags->flg_option_lst)
+	SetTip(&cpu_device);
     for (i = 0; i < computer.num_devices; i++)
 	SetTip(computer.devices[i]);
 
@@ -3136,7 +3137,7 @@ ScreenDisplayUpdate(TreeNode *node)
     XtVaGetValues(node->data->display.weight, XtNstring, &str, NULL, 0);
     node->data->display.display->disp_weight.red = strtoul(str, &tmp, 0);
     if (str == tmp)
-	node->data->display.display->disp_weight.red = -1;
+	node->data->display.display->disp_weight.red = 0;
     else {
 	str = tmp;
 	while (isspace(*str))
