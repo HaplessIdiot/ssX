@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.16 2000/12/20 00:20:49 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.17 2000/12/20 00:28:45 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -320,9 +320,6 @@ _XftFontDebug (void);
 XftPattern *
 XftFreeTypeQuery (const char *file, int id, int *count);
 
-Bool
-_XftFreeTypeSetFace (FT_Face face, FT_F26Dot6 size, int charmap);
-    
 /* xftfs.c */
 /* xftglyphs.c */
 /* xftgram.y */

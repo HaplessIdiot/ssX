@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.6 2000/12/15 17:12:53 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.7 2000/12/20 00:20:49 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -74,7 +74,7 @@ XftGlyphLoad (Display		*dpy,
     FT_Bitmap	    ftbit;
     FT_Matrix	    matrix;
 
-    if (!_XftFreeTypeSetFace (font->face, font->size, font->charmap))
+    if (!XftFreeTypeSetFace (font->face, font->size, font->charmap))
 	return ;
 
     if (font->antialias && font->rgba)
@@ -95,7 +95,12 @@ XftGlyphLoad (Display		*dpy,
 	{
 	    glyphindex = FT_Get_Char_Index (font->face, charcode);
 	    if (!glyphindex)
+	    {
+		if (_XftFontDebug() & XFT_DBG_GLYPH)
+		    printf ("glyph (%c) %d missing\n",
+			    (int) charcode, (int) charcode);
 		continue;
+	    }
 	}
 	else
 	    glyphindex = (FT_UInt) charcode;
@@ -229,9 +234,9 @@ XftGlyphLoad (Display		*dpy,
 	}
 	else
 	{
-#if 0
-	    printf ("glyph (%c) %d missing\n", (int) charcode, (int) charcode);
-#endif
+	    if (_XftFontDebug() & XFT_DBG_GLYPH)
+		printf ("glyph (%c) %d no outline\n",
+			(int) charcode, (int) charcode);
 	    continue;
 	}
 	
