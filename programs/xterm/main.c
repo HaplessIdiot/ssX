@@ -1,3 +1,5 @@
+/* $XTermId: main.c,v 1.372 2004/04/17 00:35:02 tom Exp $ */
+
 #if !defined(lint) && 0
 static char *rid = "$Xorg: main.c,v 1.7 2001/02/09 02:06:02 xorgcvs Exp $";
 #endif /* lint */
@@ -89,7 +91,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.176 2004/04/03 22:26:26 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.177 2004/04/05 00:39:18 dickey Exp $ */
 
 /* main.c */
 
@@ -1385,17 +1387,14 @@ ParseSccn(char *option)
 
     if (leaf != option) {
 	if (leaf - option > 1
-	    && leaf - option <= PTYCHARLEN
+	    && isdigit(*leaf)
 	    && sscanf(leaf, "%d", &am_slave) == 1) {
 	    size_t len = leaf - option - 1;
 	    /*
-	     * If the given length is less than PTYCHARLEN, that is
-	     * all right because the calling application may be
-	     * giving us a path for /dev/pts, which would be
-	     * followed by one or more decimal digits.
-	     *
-	     * For fixed-width fields, it is up to the calling
-	     * application to provide leading 0's, if needed.
+	     * If we have a slash, we only care about the part after the slash,
+	     * which is a file-descriptor.  The part before the slash can be
+	     * the /dev/pts/XXX value, but since we do not need to reopen it,
+	     * it is useful mainly for display in a "ps -ef".
 	     */
 	    strncpy(passedPty, option, len);
 	    passedPty[len] = 0;
@@ -2470,17 +2469,17 @@ pty_search(int *pty)
 }
 #endif /* USE_PTY_SEARCH */
 
-static void
-get_terminal(void)
 /*
  * sets up X and initializes the terminal structure except for term.buf.fildes.
  */
+static void
+get_terminal(void)
 {
     register TScreen *screen = &term->screen;
 
     screen->arrow = make_colored_cursor(XC_left_ptr,
-					screen->mousecolor,
-					screen->mousecolorback);
+					T_COLOR(screen, MOUSE_FG),
+					T_COLOR(screen, MOUSE_BG));
 }
 
 /*

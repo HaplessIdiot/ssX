@@ -1,3 +1,5 @@
+/* $XTermId: os2main.c,v 1.158 2004/04/17 00:35:02 tom Exp $ */
+
 /* removed all foreign stuff to get the code more clear (hv)
  * and did some rewrite for the obscure OS/2 environment
  */
@@ -5,7 +7,7 @@
 #ifndef lint
 static char *rid = "$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.63 2004/03/04 02:21:56 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.64 2004/04/05 00:39:19 dickey Exp $ */
 
 /***********************************************************
 
@@ -1352,8 +1354,8 @@ get_terminal(void)
     register TScreen *screen = &term->screen;
 
     screen->arrow = make_colored_cursor(XC_left_ptr,
-					screen->mousecolor,
-					screen->mousecolorback);
+					T_COLOR(screen, MOUSE_FG),
+					T_COLOR(screen, MOUSE_BG));
 }
 
 /*

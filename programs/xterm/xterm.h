@@ -1,4 +1,6 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.96 2004/04/03 22:26:26 dawes Exp $ */
+/* $XTermId: xterm.h,v 1.276 2004/04/18 14:35:14 tom Exp $ */
+
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.97 2004/04/05 00:39:19 dickey Exp $ */
 
 /************************************************************
 
@@ -99,6 +101,10 @@ authorization.
 
 #if defined(hpux) && !defined(__hpux)
 #define __hpux 1		/* HPUX 11.0 does not define this */
+#endif
+
+#if !defined(__SCO__) && (defined(SCO) || defined(sco) || defined(SCO325))
+#define __SCO__ 1
 #endif
 
 #ifdef USE_POSIX_TERMIOS
@@ -690,6 +696,7 @@ extern void do_hangup          PROTO_XT_CALLBACK_ARGS;
 extern void show_8bit_control  (Bool value);
 
 /* misc.c */
+extern Boolean AllocateTermColor(XtermWidget, ScrnColors *, int, const char *);
 extern Cursor make_colored_cursor (unsigned cursorindex, unsigned long fg, unsigned long bg);
 extern OptionHelp * sortedOpts(OptionHelp *, XrmOptionDescRec *, Cardinal);
 extern Window WMFrameWindow(XtermWidget termw);
@@ -877,20 +884,22 @@ extern void ClearCurBackground (TScreen *screen, int top, int left, unsigned hei
 #define getXtermForeground(flags, color) \
 	(((flags) & FG_COLOR) && ((color) >= 0 && (color) < MAXCOLORS) \
 			? GET_COLOR_RES(term->screen.Acolors[color]) \
-			: term->screen.foreground)
+			: T_COLOR(&(term->screen), TEXT_FG))
 
 #define getXtermBackground(flags, color) \
 	(((flags) & BG_COLOR) && ((color) >= 0 && (color) < MAXCOLORS) \
 			? GET_COLOR_RES(term->screen.Acolors[color]) \
-			: term->core.background_pixel)
+			: T_COLOR(&(term->screen), TEXT_BG))
 
 #if OPT_COLOR_RES
-#define GET_COLOR_RES(res) xtermGetColorRes(&res)
-#define SET_COLOR_RES(res,color) res->value = color
+#define GET_COLOR_RES(res) xtermGetColorRes(&(res))
+#define SET_COLOR_RES(res,color) (res)->value = color
+#define T_COLOR(v,n) (v)->Tcolors[n].value
 extern Pixel xtermGetColorRes(ColorRes *res);
 #else
 #define GET_COLOR_RES(res) res
 #define SET_COLOR_RES(res,color) *res = color
+#define T_COLOR(v,n) (v)->Tcolors[n]
 #endif
 
 #if OPT_EXT_COLORS
@@ -924,8 +933,9 @@ extern Pixel xtermGetColorRes(ColorRes *res);
 #define extract_bg(color, flags) term->cur_background
 
 		/* FIXME: Reverse-Video? */
-#define getXtermBackground(flags, color) term->core.background_pixel
-#define getXtermForeground(flags, color) term->screen.foreground
+#define T_COLOR(v,n) (v)->Tcolors[n]
+#define getXtermBackground(flags, color) T_COLOR(&(term->screen), TEXT_BG)
+#define getXtermForeground(flags, color) T_COLOR(&(term->screen), TEXT_FG)
 #define makeColorPair(fg, bg) 0
 #define xtermColorPair() 0
 
@@ -964,6 +974,8 @@ int visual_width(PAIRED_CHARS(Char *str, Char *str2), Cardinal len);
 #else
 #define visual_width(a, b) (b)
 #endif
+
+#define BtoS(b) ((b) ? "on" : "off")
 
 #ifdef __cplusplus
 	}
