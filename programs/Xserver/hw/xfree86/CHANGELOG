@@ -1,3 +1,8 @@
+XFree86 3.2b (20 November 1996)
+  33. Fix some compilation problems with 3.2a.
+  32. Fix DGA fb mapping for SVR4 (Richard Coley).
+  31. Fix Hercules mono driver text bug (H.J. Lu).
+
 XFree86 3.2a (18 November 1996)
   30. Bump default FreeBSD version to 2.1.6.
   29. TGUI driver updates for PC98 (Akio Morita).

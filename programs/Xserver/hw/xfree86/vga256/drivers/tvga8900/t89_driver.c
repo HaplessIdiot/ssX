@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.48 1996/10/24 14:25:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.49 1996/11/18 13:18:24 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1128,6 +1128,7 @@ TVGA8900FbInit()
 	  }
 	}
 
+#ifndef PC98
 	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
 	{
 		TGUIAccelInit();
@@ -1142,6 +1143,7 @@ TVGA8900FbInit()
 		ErrorF("%s %s: Disabled Graphics Engine.\n",
 			XCONFIG_GIVEN, vga256InfoRec.name);
 	}
+#endif
 #endif /* MONOVGA */
 }
 

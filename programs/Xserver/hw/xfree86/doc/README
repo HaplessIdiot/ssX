@@ -1,7 +1,7 @@
   README for XFree86[TM] 3.2
   The XFree86 Project, Inc
 
-  26 October 1996
+  29 October 1996
 
   XFree86 is a port of X11R6.1 that supports several Unix and Unix-like
   operating systems on Intel and other platforms.  This release consists
@@ -1034,25 +1034,13 @@
 
      o  North America:
 
-        +  ftp://XFree86.cdrom.com/pub/XFree86 (source and binaries)
-
-        +  ftp://ftp.redhat.com/pub/mirrors/ftp.xfree86.org (source and
-           Linux binaries)
-
         +  ftp://ftp.rge.com/pub/X/XFree86 (source and binaries)
 
-        +  ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.2 (source patches
-           and NetBSD binaries)
+        +  ftp://ftp.gw.com/pub/unix/XFree86 (source and NetBSD
+           binaries)
 
-           (Also via AFS:
-           /afs/iastate.edu/public/ftp/pub/XFree86/XFree86-3.2)
-
-        +  ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.2
-           (Linux binaries and source)
-
-        +  ftp://ftp.eecs.umich.edu/BSD/XFree86 (source and binaries)
-
-
+        +  ftp://ftp.varesearch.com/pub/mirrors/xfree86 (source and
+           binaries)
 
         +  ftp://ftp.cs.umn.edu/pub/XFree86 (source and binaries)
 
@@ -1062,29 +1050,18 @@
 
      o  Europe:
 
-        +  ftp://fvkma.tu-graz.ac.at/pub/XFree86 (source and binaries)
-
-        +  ftp://sunsite.mff.cuni.cz/X11/XFree86 (source and binaries)
-
         +  ftp://ftp.fee.vutbr.cz/pub/XFree86 (source patches and
            binaries)
 
+
         +  ftp://ftp.gwdg.de/pub/xfree86/XFree86 (source and binaries)
-
-        +  ftp://ftp.uni-erlangen.de/pub/Linux/MIRROR.xfree86 (source
-           patches and Linux binaries)
-
-        +  ftp://ftp.uni-stuttgart.de/pub/X11/Xfree86 (source and
-           binaries)
 
         +  ftp://ftp.funet.fi/pub/X11/XFree86 (source and binaries)
 
-        +  ftp://ftp.calvacom.fr/pub/unix/X/XFree86 (source and
+        +  ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86 (source and
            binaries)
 
-        +  ftp://ftp.ibp.fr/pub/X11/XFree86 (source and binaries)
-
-        +  ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.2 (NetBSD binaries
+        +  ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86 (NetBSD binaries
            only)
 
         +  ftp://ftp.pvv.unit.no/pub/XFree86 (source and binaries)
@@ -1102,12 +1079,10 @@
         +  ftp://ftp.iij.ad.jp/pub/X/XFree86/XFree86 (source and
            binaries)
 
-        +  ftp://ftp.sf.co.kr/pub/XFree86 (source and binaries)
+        +  ftp://ftp.hk.super.net/mirror/XFree86 (source and binaries)
 
         +  ftp://ftp.nectec.or.th/pub/mirrors/XFree86 (source patches
            and binaries)
-
-        +  ftp://ftp.edu.tw/X/XFree86 (source and binaries)
 
 
   Refer to the README file under the specified directory for information
@@ -1118,54 +1093,13 @@
   files you need to take from the archive.
 
 
-
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.64 1996/10/26 09:38:53 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.65 1996/11/18 13:11:42 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

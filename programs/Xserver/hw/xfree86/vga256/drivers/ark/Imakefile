@@ -3,14 +3,14 @@ XCOMM $XConsortium: Imakefile /main/4 1996/01/26 13:58:43 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/Imakefile,v 3.6 1996/09/24 13:55:03 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/Imakefile,v 3.7 1996/11/18 13:15:37 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = ark_driver.c ark_bank.s ark_cursor.c ark_bitblt.c ark_blt16.c \
-	/*ark_cpplane.c*/ ark_accel.c
+	ark_accel.c
 
 OBJS = ark_driver.o ark_bank.o ark_cursor.o ark_bitblt.o ark_blt16.o \
-	/*ark_cpplane.o*/ ark_accel.o
+	ark_accel.o
 
 DEFINES = -DPSZ=8
 

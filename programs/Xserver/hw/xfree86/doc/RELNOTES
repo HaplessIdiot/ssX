@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.2
   The XFree86 Project, Inc
 
-  26 October 1996
+  29 October 1996
 
   This document describes the new features in XFree86 3.2 compared with
   the previous full release, 3.1.2.  It also includes installation
@@ -655,9 +655,11 @@
         ScreenSaver extension has been moved into separate libraries.
         The old libXExExt has been removed.
 
-     o  Colour support is now included by default in xterm.  I18N
-        support in xterm has been improved (as part of X11R6.1).  If
+     o  Colour support is now included by default in xterm.  It isn't
+        enabled by default, but can be enabled with the +cm command line
 
+        flag, or by setting the `colorMode' resource to `true'.  I18N
+        support in xterm has been improved (as part of X11R6.1).  If
         you've previously been using one of the many "color_xterm"
         variants, try this and let us know if you have any problems.
 
@@ -721,18 +723,19 @@
   What follows is a list of the XFree86 3.2 components.  There may be
   some variations in this for some OSs.
 
+
   The following are required for all installations:
 
 
-  preinst.sh      Pre-installation script
-  postinst.sh     Post-installation script
-  X32bin.tgz      Clients, run-time libs, and app-defaults files
-  X32doc.tgz      Documentation
-  X32fnts.tgz     75dpi, misc and PEX fonts
-  X32lib.tgz      Data files required at run-time
-  X32man.tgz      Manual pages
-  X32set.tgz      XF86Setup utility
-  X32VG16.tgz     16 colour VGA server (XF86Setup needs this server)
+       preinst.sh      Pre-installation script
+       postinst.sh     Post-installation script
+       X32bin.tgz      Clients, run-time libs, and app-defaults files
+       X32doc.tgz      Documentation
+       X32fnts.tgz     75dpi, misc and PEX fonts
+       X32lib.tgz      Data files required at run-time
+       X32man.tgz      Manual pages
+       X32set.tgz      XF86Setup utility
+       X32VG16.tgz     16 colour VGA server (XF86Setup needs this server)
 
 
 
@@ -784,9 +787,6 @@
   The following X servers are for PC98 hardware.  If you have a PC98
   machine, choose one which suits your hardware.  If you don't know what
   a PC98 machine is, you don't need any of these.
-
-
-
 
 
 
@@ -907,7 +907,7 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.47 1996/10/26 09:38:54 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.48 1996/11/18 13:11:44 dawes Exp $
 
 
 
