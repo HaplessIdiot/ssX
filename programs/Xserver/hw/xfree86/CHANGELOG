@@ -1,4 +1,9 @@
 XFre86 4.0c (?? June 2000)
+ 232. Add Option "TexturedVideo" to have the Matrox driver optionally use
+      YUV textures instead of the video overlay for XvImage support 
+      (Mark Vojkovich).
+ 232. Add Xv functions for allocating/freeing XvVideoAdaptorRecs to shield
+      drivers from structure size changes (Mark Vojkovich).
  231. Have XDGAQueryModes return no modes as being available instead of an
       error when DGA is not supported on the particular screen (Mark Vojkovich).
  230. Fix xdm when PAM is not available (Marc La France).
@@ -10439,4 +10444,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1173 2000/06/07 22:03:03 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1174 2000/06/08 17:05:31 mvojkovi Exp $
