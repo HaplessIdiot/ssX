@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.7 1997/06/22 10:17:04 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.8 1997/10/26 13:25:31 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -36,11 +36,7 @@
 #define	DEBUG_VAR	scanDebug
 #include "utils.h"
 
-#ifndef Lynx
-FILE	*yyin = stdin;
-#else
 FILE	*yyin = NULL;
-#endif
 
 static char scanFileBuf[1024];
 char *	 scanFile= scanFileBuf;

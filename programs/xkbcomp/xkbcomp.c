@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.8 1997/01/27 07:00:20 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.9 1997/10/26 13:25:30 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -693,15 +693,12 @@ int		ok;
 XkbFileInfo 	result;
 Status		status;
 
-#ifdef Lynx
-{
     extern FILE *yyin;
     yyin = stdin;
     uSetEntryFile(NullString);
     uSetDebugFile(NullString);
     uSetErrorFile(NullString);
-}
-#endif
+
     if (!parseArgs(argc,argv))
 	exit(1);
 #ifdef DEBUG
