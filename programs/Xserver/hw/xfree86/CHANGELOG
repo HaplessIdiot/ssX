@@ -1,4 +1,14 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 384. Fix bugs in Xlib's EUC string converters that cause incorrect work of
+      _Xmblen.  Fix _Xmblen usage in imCallbk.c when Xlib is built with
+      X_LOCALE (Etsushi Kato).
+ 383. Update xev program for print the result of XmbLookupString call
+      (Bugzilla #582, Noah Levitt, Ivan Pascal)
+ 382. Fixes and updates for XKB keyboard maps:
+      - Fix for Uzbek keyboard map (Bugzilla #595, Mashrab Kuvatov).
+      - Fix for the problem with Alt+Tab combinations in some window mangers
+        (Bugzilla #580,616): window chooser menu doesn't disappear after
+        Alt key release (Egbert Eich, Ivan Pascal).
  381. Allow a Display subsection with no depth or fbbpp specified to match
       any depth/fbbpp, and make Display subsections optional, creating one
       with default parameters when no suitable one can be found (David Dawes).
@@ -17560,7 +17570,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2813 2003/08/17 20:39:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2814 2003/08/22 03:24:55 dawes Exp $
 
 
 
