@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_accel.c,v 3.8 1997/02/23 09:25:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.1 1997/03/06 23:17:02 hohndel Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -88,7 +88,6 @@ void TGUIAccelInit() {
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS |
 				HARDWARE_PATTERN_TRANSPARENCY |
 				HARDWARE_PATTERN_ALIGN_64 |
-				HARDWARE_PATTERN_MONO_TRANSPARENCY |
 				HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |
 				HARDWARE_PATTERN_SCREEN_ORIGIN |
 				PIXMAP_CACHE;
@@ -131,6 +130,7 @@ void TGUIAccelInit() {
 					SCANLINE_PAD_DWORD |
 					CPU_TRANSFER_PAD_DWORD |
 					LEFT_EDGE_CLIPPING |
+					NO_TRANSPARENCY |
 					NO_PLANEMASK;
 
     xf86AccelInfoRec.SetupForCPUToScreenColorExpand = 

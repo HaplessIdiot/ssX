@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.2 1997/03/10 10:09:33 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.3tsi Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName OSBinaryType
@@ -60,10 +60,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define PreProcessCmd   	CppCmd
 #define PreIncDir /usr/lib/gcc-lib/i386-unknown-openbsd1.2/2.7.2.1/include
 
-
 #undef CcCmd
 #define CcCmd 			gcc
-#if UseInstalled
+#if defined(UseInstalled) && (!defined(XF86LinkKit) || !XF86LinkKit)
 #define DefaultCCOptions 	/**/
 #else
 #define DefaultCCOptions 	-ansi -Dasm=__asm
