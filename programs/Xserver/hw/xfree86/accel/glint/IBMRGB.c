@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.4 1997/09/25 07:31:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.5 1997/11/01 15:04:29 hohndel Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -335,9 +335,10 @@ glintIBMRGB_Probe ()
   /* known IDs:  
      1 = RGB525
      2 = RGB524, RGB528 
+    12 = RGB640
    */
 
-  if (id >= 1 && id <= 2)
+  if (id == 1 || id == 2 || id == 0x12)
     {
 
       if (id == 1)
@@ -481,21 +482,74 @@ IBMRGB52x_Init_Stdmode (int clock)
   unsigned long   P, M, N, C, RefClkSpeed, PixelClock, SystemClock, MaxVco = 2200000;
 
   /*
-   * the GLINT uses SCLK so there's no need to set the
-   * DDOTCLK to a special value
-   * we disable the DDOTCLK
+   * for the RGB640 we need to initialize a few things to save values
    */
-  /* hefa, System Clock Control, 0x05 0=1 -> SYSCLK PLL enabled,
-     2 = 1 -> Standard Mode - program with N, M, P, and C registers */
-  /* glintOutIBMRGBIndReg(IBMRGB_sysclk, 0, 0x05); */
+  if (ActualDacId == RGB640_RAMDAC) {
+    /*
+     * turn off pixel interleave, set to DAC8Bit Mode and VRAM access
+     */
+    glintOutIBMRGBIndReg (RGB640_PIXEL_INTERLEAVE, 0, 0);
+    glintOutIBMRGBIndReg (RGB640_VGA_CONTROL, 0, 
+			  IBM640_RDBK | IBM640_PSIZE8 | IBM640_VRAM);
+    /* enable all three DACs and groud the complementary output */
+    glintOutIBMRGBIndReg (RGB640_VGA_CONTROL, 0, 
+			  IBM640_DACENBL | IBM640_SHUNT);
+    /* don't autoincrement for read, do autoincrement for write, update window
+       attribute table during retrace only */
+    glintOutIBMRGBIndReg (RGB640_OUTPUT_CONTROL, 0, 
+			  IBM640_RDAI | IBM640_WATCTL);
+    glintOutIBMRGBIndReg (RGB640_SYNC_CONTROL, 0, 0);
+    /* disable VRAM masking */
+    glintOutIBMRGBIndReg (RGB640_VRAM_MASK0, 0, 0xff);
+    glintOutIBMRGBIndReg (RGB640_VRAM_MASK1, 0, 0xff);
+    glintOutIBMRGBIndReg (RGB640_VRAM_MASK2, 0, 0x0f);
+    /* next we set up the serializer; this depends on the color depth */
+    switch (glintInfoRec.depth) {
+    case 8:  
+      glintOutIBMRGBIndReg (RGB640_SER_07_00, 0, 0x00);
+      glintOutIBMRGBIndReg (RGB640_SER_15_08, 0, 0x00);
+      glintOutIBMRGBIndReg (RGB640_SER_23_16, 0, 0x00);
+      glintOutIBMRGBIndReg (RGB640_SER_31_24, 0, 0x00);
+      glintOutIBMRGBIndReg (RGB640_SER_MODE,  0, IBM640_SER_16_1);
+      break;
+    case 15: 
+    case 16:
+      glintOutIBMRGBIndReg (RGB640_SER_07_00, 0, 0x10);
+      glintOutIBMRGBIndReg (RGB640_SER_15_08, 0, 0x11);
+      glintOutIBMRGBIndReg (RGB640_SER_23_16, 0, 0x00);
+      glintOutIBMRGBIndReg (RGB640_SER_31_24, 0, 0x00);
+      glintOutIBMRGBIndReg (RGB640_SER_MODE,  0, IBM640_SER_8_1);
+    case 24:
+    case 32:
+      glintOutIBMRGBIndReg (RGB640_SER_07_00, 0, 0x30);
+      glintOutIBMRGBIndReg (RGB640_SER_15_08, 0, 0x31);
+      glintOutIBMRGBIndReg (RGB640_SER_23_16, 0, 0x32);
+      glintOutIBMRGBIndReg (RGB640_SER_31_24, 0, 0x33);
+      glintOutIBMRGBIndReg (RGB640_SER_MODE,  0, IBM640_SER_4_1);
+    }
+    glintOutIBMRGBIndReg (RGB640_MISC_CONF, 0, IBM640_PCLK_8);
+    glintOutIBMRGBIndReg (RGB640_PLL_M,   0, 0x18);
+    glintOutIBMRGBIndReg (RGB640_PLL_N,   0, 0x08);
+    glintOutIBMRGBIndReg (RGB640_PLL_P,   0, 0x00);
+    glintOutIBMRGBIndReg (RGB640_PLL_CTL, 0, IBM640_PLL_EN | IBM640_PLL_LOW);
+  } 
+  else {
+    /*
+     * the GLINT uses SCLK so there's no need to set the
+     * DDOTCLK to a special value
+     * we disable the DDOTCLK
+     */
+    /* hefa, System Clock Control, 0x05 0=1 -> SYSCLK PLL enabled,
+       2 = 1 -> Standard Mode - program with N, M, P, and C registers */
+    /* glintOutIBMRGBIndReg(IBMRGB_sysclk, 0, 0x05); */
 
-  if (IS_3DLABS_TX_MX_CLASS (coprotype))
+    if (IS_3DLABS_TX_MX_CLASS (coprotype))
     {
       glintOutIBMRGBIndReg (IBMRGB_misc1, 0, SENS_DSAB_DISABLE | VRAM_SIZE_64);
       glintOutIBMRGBIndReg (IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_PLL);
 
     }
-  else if (IS_3DLABS_PERMEDIA_CLASS (coprotype))
+    else if (IS_3DLABS_PERMEDIA_CLASS (coprotype))
     {
       glintOutIBMRGBIndReg (IBMRGB_misc1, 0, SENS_DSAB_DISABLE | VRAM_SIZE_32);
       if (glintInfoRec.depth == 32)
@@ -504,48 +558,48 @@ IBMRGB52x_Init_Stdmode (int clock)
 	glintOutIBMRGBIndReg (IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_PLL);
     }
 
-  /* this is a hack for accelerated 16 bpp mode for 3.9o, which swaps
-     red and blue pixel components */
+    /* this is a hack for accelerated 16 bpp mode for 3.9o, which swaps
+       red and blue pixel components */
 
-  /* Swap RB for no_accel */
-  if (glintDoubleBufferMode)
-    glintOutIBMRGBIndReg (IBMRGB_misc3, 0,
-	  OFLG_ISSET (OPTION_NOACCEL, &glintInfoRec.options) ? 0x81 : 0x01);
-  else
-    glintOutIBMRGBIndReg (IBMRGB_misc3, 0,
-	  OFLG_ISSET (OPTION_NOACCEL, &glintInfoRec.options) ? 0x80 : 0x00);
+    /* Swap RB for no_accel */
+    if (glintDoubleBufferMode)
+      glintOutIBMRGBIndReg (IBMRGB_misc3, 0,
+			    OFLG_ISSET (OPTION_NOACCEL, &glintInfoRec.options) ? 0x81 : 0x01);
+    else
+      glintOutIBMRGBIndReg (IBMRGB_misc3, 0,
+			    OFLG_ISSET (OPTION_NOACCEL, &glintInfoRec.options) ? 0x80 : 0x00);
 
-  if (IS_3DLABS_TX_MX_CLASS (coprotype))
+    if (IS_3DLABS_TX_MX_CLASS (coprotype))
     {
       glintOutIBMRGBIndReg (IBMRGB_misc_clock, 0xf0, 0x87);
     }
-  else if (IS_3DLABS_PERMEDIA_CLASS (coprotype))
+    else if (IS_3DLABS_PERMEDIA_CLASS (coprotype))
     {
       glintOutIBMRGBIndReg (IBMRGB_misc_clock, 0x0, 0x1);
     }
 
-  glintOutIBMRGBIndReg (IBMRGB_sync, 0, 0);
-  glintOutIBMRGBIndReg (IBMRGB_hsync_pos, 0, 0);
+    glintOutIBMRGBIndReg (IBMRGB_sync, 0, 0);
+    glintOutIBMRGBIndReg (IBMRGB_hsync_pos, 0, 0);
 
-  /* glintOutIBMRGBIndReg(IBMRGB_pwr_mgmt, 0, 0x08); *//* disable DDOTCLK */
-  glintOutIBMRGBIndReg (IBMRGB_pwr_mgmt, 0, 0x0);
-  /* glintOutIBMRGBIndReg(IBMRGB_dac_op, 0, DPE_ENABLE | DSR_DAC_SLOW); *//* Fast DAC mode */
-  glintOutIBMRGBIndReg (IBMRGB_dac_op, 0, 0);
+    /* glintOutIBMRGBIndReg(IBMRGB_pwr_mgmt, 0, 0x08); *//* disable DDOTCLK */
+    glintOutIBMRGBIndReg (IBMRGB_pwr_mgmt, 0, 0x0);
+    /* glintOutIBMRGBIndReg(IBMRGB_dac_op, 0, DPE_ENABLE | DSR_DAC_SLOW); *//* Fast DAC mode */
+    glintOutIBMRGBIndReg (IBMRGB_dac_op, 0, 0);
 
-  glintOutIBMRGBIndReg (IBMRGB_pal_ctrl, 0, 0);
-  glintOutIBMRGBIndReg (IBMRGB_curs, 0, 0x20);
+    glintOutIBMRGBIndReg (IBMRGB_pal_ctrl, 0, 0);
+    glintOutIBMRGBIndReg (IBMRGB_curs, 0, 0x20);
 
-  switch (glintInfoRec.depth)
+    switch (glintInfoRec.depth)
     {
     case 32:
       glintOutIBMRGBIndReg (IBMRGB_pix_fmt, 0xf8, 6);
       glintOutIBMRGBIndReg (IBMRGB_32bpp, 0, 0x03);
       break;
       /* not supported by glint 
-         case 24:
-         glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 5);
-         glintOutIBMRGBIndReg(IBMRGB_24bpp, 0, 0x01);
-         break; */
+	 case 24:
+	 glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 5);
+	 glintOutIBMRGBIndReg(IBMRGB_24bpp, 0, 0x01);
+	 break; */
     case 16:
       glintOutIBMRGBIndReg (IBMRGB_pix_fmt, 0xf8, 4);
       glintOutIBMRGBIndReg (IBMRGB_16bpp, 0, 0xC7);
@@ -559,12 +613,12 @@ IBMRGB52x_Init_Stdmode (int clock)
       glintOutIBMRGBIndReg (IBMRGB_8bpp, 0, 0x00);
       break;
     }
-
-  /* if 526 oder 624 ramdac */
-  if ((ActualDacId == RGB526DB_RAMDAC) ||
-      (ActualDacId == RGB526_RAMDAC) ||
-      (ActualDacId == RGB624DB_RAMDAC) ||
-      (ActualDacId == RGB624_RAMDAC))
+    /* if 526 oder 624 ramdac */
+    if ((ActualDacId == RGB526DB_RAMDAC) ||
+	(ActualDacId == RGB526_RAMDAC) ||
+	(ActualDacId == RGB640_RAMDAC) ||
+	(ActualDacId == RGB624DB_RAMDAC) ||
+	(ActualDacId == RGB624_RAMDAC))
     {
 
       RefClkSpeed = IS_3DLABS_TX_MX_CLASS (coprotype) ?
@@ -619,5 +673,6 @@ IBMRGB52x_Init_Stdmode (int clock)
       glintOutIBMRGBIndReg (IBMRGB_sysclk_p, 0x00, P);
       glintOutIBMRGBIndReg (IBMRGB_sysclk_c, 0x00, C);
     }
+  }
   return 1;
 }

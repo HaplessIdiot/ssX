@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.h,v 1.2 1997/09/09 10:27:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.h,v 1.3 1997/11/01 15:04:29 hohndel Exp $ */
 /*
  * IBM RGB526 registers
  */
@@ -285,6 +285,60 @@
 /* MISR status */
 #define RGB525_MISR_DONE                0x01
 
+/* the IBMRGB640 is rather different from the rest of the RAMDACs,
+   so we define a completely new set of register names for it */
+#define RGB640_SER_07_00		0x02
+#define RGB640_SER_15_08		0x03
+#define RGB640_SER_23_16		0x04
+#define RGB640_SER_31_24		0x05
+#define RGB640_SER_WID_03_00		0x06
+#define RGB640_SER_WID_07_04		0x07
+#define RGB640_SER_MODE			0x08
+#define		IBM640_SER_2_1	0x00
+#define		IBM640_SER_4_1	0x01
+#define		IBM640_SER_8_1	0x02
+#define		IBM640_SER_16_1	0x03
+#define		IBM640_SER_16_3	0x05
+#define		IBM640_SER_5_1	0x06
+#define RGB640_PIXEL_INTERLEAVE		0x09
+#define RGB640_MISC_CONF		0x0a
+#define		IBM640_PCLK		0x00
+#define		IBM640_PCLK_2		0x40
+#define		IBM640_PCLK_4		0x80
+#define		IBM640_PCLK_8		0xc0
+#define		IBM640_PSIZE10		0x10
+#define		IBM640_LCI		0x08
+#define		IBM640_WIDCTL_MASK	0x07
+#define RGB640_VGA_CONTROL		0x0b
+#define 	IBM640_RDBK	0x04
+#define 	IBM640_PSIZE8	0x02
+#define		IBM640_VRAM	0x01
+#define RGB640_DAC_CONTROL		0x0d
+#define		IBM640_MONO	0x08
+#define		IBM640_DACENBL	0x04
+#define		IBM640_SHUNT	0x02
+#define		IBM640_SLOWSLEW	0x01
+#define RGB640_OUTPUT_CONTROL		0x0e
+#define		IBM640_RDAI	0x04
+#define		IBM640_WDAI	0x02
+#define		IBM640_WATCTL	0x01
+#define RGB640_SYNC_CONTROL		0x0f
+#define		IBM640_PWR	0x20
+#define		IBM640_VSP	0x10
+#define		IBM640_HSP	0x08
+#define		IBM640_CSE	0x04
+#define		IBM640_CSG	0x02
+#define		IBM640_BPE	0x01
+#define RGB640_PLL_N			0x10
+#define RGB640_PLL_M			0x11
+#define RGB640_PLL_P			0x12
+#define RGB640_PLL_CTL			0x13
+#define 	IBM640_PLL_EN	0x04
+#define		IBM640_PLL_HIGH	0x10
+#define		IBM640_PLL_LOW	0x01
+#define RGB640_VRAM_MASK0		0xf0
+#define RGB640_VRAM_MASK1		0xf1
+#define RGB640_VRAM_MASK2		0xf2
 /*
  default clock speed in Hz for the reference board. The actual speed
  is looked up in the registry. Use this if no registry entry is found

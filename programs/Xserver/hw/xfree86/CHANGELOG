@@ -1,3 +1,7 @@
+XFree86 3.9y (21 November 1997)
+1466. Some more code for supporting the IBM RGB640 in the glint server 
+      (Dirk Hohndel).
+
 XFree86 3.9x (23 November 1997)
 1466. Updates for SCO (#1211, 1212, J. Kean Johnston).
 1465. Fix netscape plugin core dump when transfer is interrupted (#1209,

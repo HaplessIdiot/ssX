@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.15 1997/11/09 09:30:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.16 1997/11/22 00:00:08 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -851,6 +851,11 @@ glintProbe()
 		case 0x30C0:
 			ErrorF("Detected IBM 624 Ramdac\n");
 			break;
+		case 0x121C:
+			ErrorF("Detected IBM 640 Ramdac\n");
+			break;
+		default:
+			ErrorF("Detected unknown Ramdac with id 0x%x\n");
 	    }
 #if 0
 	    glintIBMRGB52x_PreInit();
@@ -859,7 +864,7 @@ glintProbe()
 	else {
 	    ErrorF("%s %s: GLINT TX/MX and Permedia are only supported with\n",
 	           XCONFIG_PROBED,glintInfoRec.name);
-	    ErrorF("%s %s: IBM RGB 526,526DB,524 or 624 RAMDAC\n",
+	    ErrorF("%s %s: IBM RGB 526,526DB,524,624 or 640 RAMDAC\n",
 	           XCONFIG_PROBED,glintInfoRec.name);
 	    return (FALSE);
 	}
