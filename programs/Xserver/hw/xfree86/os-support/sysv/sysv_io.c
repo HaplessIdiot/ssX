@@ -1,4 +1,4 @@
-/* $XConsortium: sysv_io.c,v 1.1 94/03/28 21:33:09 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_io.c,v 1.1.1.2 1996/01/03 07:21:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -23,7 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: sysv_io.c /main/2 1995/11/13 06:21:49 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -79,6 +79,11 @@ int xf86MouseOn()
 {
 	if ((xf86Info.mseFd = open(xf86Info.mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
+		if (xf86AllowMouseOpenFail) {
+			ErrorF("Cannot open mouse (%s) - Continuing...\n",
+				strerror(errno));
+			return(-1);
+		}
 		FatalError("Cannot open mouse (%s)\n", strerror(errno));
 	}
 

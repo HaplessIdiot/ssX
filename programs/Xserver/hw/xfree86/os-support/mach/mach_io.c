@@ -1,4 +1,4 @@
-/* $XConsortium: mach_io.c,v 1.1 94/03/28 21:29:27 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/mach_io.c,v 1.1.1.3 1996/01/03 07:20:30 dawes Exp $ */
 /*
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -23,7 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: mach_io.c /main/3 1995/11/13 06:01:08 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -111,8 +111,12 @@ int xf86GetKbdLeds()
 #endif
 }
 
+#if NeedFunctionPrototypes
+void xf86SetKbdRepeat(char rad)
+#else
 void xf86SetKbdRepeat(rad)
 char rad;
+#endif
 {
 	return;
 }
@@ -178,6 +182,11 @@ int xf86MouseOn()
 {
 	if ((xf86Info.mseFd = open(xf86Info.mseDevice, O_RDONLY, 0)) < 0)
 	{
+		if (xf86AllowMouseOpenFail) {
+			ErrorF("Cannot open mouse (%s) - Continuing...\n",
+				strerror(errno));
+			return(-1);
+		}
 		FatalError("Cannot open mouse (%s)\n", strerror(errno));
 	}
 	if (fcntl(xf86Info.mseFd, F_SETFL, FNDELAY | FASYNC) < 0)

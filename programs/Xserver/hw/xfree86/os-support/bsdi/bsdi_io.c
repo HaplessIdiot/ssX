@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_io.c,v 3.2 1995/07/08 10:29:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_io.c,v 3.3 1996/02/04 09:09:58 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -111,6 +111,11 @@ int xf86MouseOn()
 {
 	if ((xf86Info.mseFd = open(xf86Info.mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
+		if (xf86AllowMouseOpenFail) {
+			ErrorF("Cannot open mouse (%s) - Continuing...\n",
+				strerror(errno));
+			return(-1);
+		}
 		FatalError("Cannot open mouse (%s)\n", strerror(errno));
 	}
 

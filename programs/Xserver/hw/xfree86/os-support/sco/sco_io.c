@@ -1,4 +1,4 @@
-/* $XConsortium: sco_io.c,v 1.1 94/03/28 21:30:38 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_io.c,v 1.1.1.2 1996/01/03 07:20:45 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -23,7 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: sco_io.c /main/2 1995/11/13 06:08:41 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -74,6 +74,11 @@ void xf86MouseInit()
 {
 	if ((xf86Info.mseFd = open(xf86Info.mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
+		if (xf86AllowMouseOpenFail) {
+			ErrorF("Cannot open mouse (%s) - Continuing...\n",
+				strerror(errno));
+			return;
+		}
 		FatalError("Cannot open mouse (%s)\n", strerror(errno));
 	}
 }
