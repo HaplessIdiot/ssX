@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i915/intel_ioctl.c,v 1.5 2004/12/13 22:40:51 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i915/intel_ioctl.c,v 1.6tsi Exp $ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -109,7 +109,7 @@ void intel_dump_batchbuffer( long offset,
    fprintf(stderr, "\n\n\nSTART BATCH (%d dwords):\n", count);
    for (i = 0; i < count/4; i += 4) 
       fprintf(stderr, "\t0x%lx: 0x%08x 0x%08x 0x%08x 0x%08x\n", 
-	      (unsigned int)offset + i*4, ptr[i], ptr[i+1], ptr[i+2], ptr[i+3]);
+	      offset + i*4, ptr[i], ptr[i+1], ptr[i+2], ptr[i+3]);
    fprintf(stderr, "END BATCH\n\n\n");
 }
 
