@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.20 1999/10/13 22:32:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.21 1999/11/25 22:20:59 dawes Exp $ */
 /* $XConsortium: xf86Cursor.c /main/10 1996/10/19 17:58:23 kaleb $ */
 
 #define NEED_EVENTS
@@ -536,6 +536,7 @@ xf86InitOrigins(void)
 		   relative locations if we wanted to */
 #endif
 		screen->x = screen->y = 0;
+		/* FALLTHROUGH */
 	    case PosAbsolute:
 		dixScreenOrigins[i].x = screen->x;
 		dixScreenOrigins[i].y = screen->y;
