@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.303 2000/08/01 20:52:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.304 2000/08/09 02:15:22 mvojkovi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -163,7 +163,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 				neomagic i740 tdfx \
 				cirrus tseng trident chips apm \
 				GlideDriver fbdev \
-				ati r128 AgpGartDrivers DevelDrivers cyrix \
+				r128 ati AgpGartDrivers DevelDrivers cyrix \
 				vga XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 #endif
@@ -225,6 +225,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* RAC (Resource Access Control) module */
 # ifndef XF86RAC
 #  define XF86RAC		YES
+# endif
+/* int10 module */
+# ifndef XF86Int10
+#  define XF86Int10		YES
 # endif
 
 /* Pure SBUS and PCI drivers should go first */
@@ -334,10 +338,18 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #  define XF86Int10		YES
 # endif
 
+# ifndef DevelDrivers
+#  if XFree86Devel
+#   define DevelDrivers		ati
+#  else
+#   define DevelDrivers		/* */
+#  endif
+# endif
+
 /* Pure PCI drivers should go first */
 # ifndef XF86CardDrivers
 #  define XF86CardDrivers	mga tdfx glint s3virge rendition tga \
-				r128 ati vga \
+				r128 DevelDrivers vga \
 				XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 #endif
@@ -423,7 +435,8 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 # ifndef XF86CardDrivers
 #  define XF86CardDrivers	r128 mga glint s3virge sis cirrus tseng \
 				trident chips fbdev \
-				DevelDrivers vga XF86OSCardDrivers XF86ExtraCardDrivers
+				DevelDrivers vga \
+				XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 #endif
 

@@ -1,5 +1,10 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.129 2000/06/24 17:43:44 dawes Exp $
+
+
+
+
+
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.130 2000/07/07 20:06:56 tsi Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -161,10 +166,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #ifndef XF86INT10_BUILD
 # ifdef i386Architecture
 #  define XF86INT10_BUILD X86VM
-# elif defined(ia64Architecture)
-#  define UseX86Emu NO
-#  define XF86INT10_BUILD XF86INT10_STUB
-# elif defined(X86EMU_LIBPATH)
+# else
 #  define XF86INT10_BUILD X86EMU_GENERIC
 # endif
 #endif
