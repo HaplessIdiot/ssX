@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.23 1999/11/02 16:16:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.24 1999/11/18 16:52:07 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -881,7 +881,130 @@ xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
 ModeStatus
 xf86CheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode, int flags)
 {
-/* To be implemented */
+    ClockRangesPtr cp;
+    int i, k, gap, minimumGap = CLOCK_TOLERANCE + 1;
+    int extraFlags = 0;
+    int clockIndex = -1;
+    int MulFactor = 1;
+    int DivFactor = 1;
+    int ModePrivFlags = 0;
+    Bool allowDiv2;
+    ModeStatus status = MODE_NOMODE;
+
+    /* Some sanity checking */
+    if (scrp == NULL ||	(!scrp->progClock && scrp->numClocks == 0)) {
+	ErrorF("xf86CheckModeForDriver: called with invalid scrnInfoRec\n");
+	return MODE_ERROR;
+    }
+    if (mode == NULL) {
+	ErrorF("xf86CheckModeForDriver: called with invalid modep\n");
+	return MODE_ERROR;
+    }
+    if (scrp->clockRanges == NULL) {
+	ErrorF("xf86CheckModeForDriver: called with invalid clockRanges\n");
+	return MODE_ERROR;
+    }
+
+    /* Check the mode size */
+    if (mode->HDisplay > scrp->virtualX)
+	return MODE_VIRTUAL_X;
+
+    if (mode->VDisplay > scrp->virtualY)
+	return MODE_VIRTUAL_Y;
+
+    if (scrp->maxHValue > 0 && mode->HTotal > scrp->maxHValue)
+	return MODE_BAD_HVALUE;
+
+    if (scrp->maxVValue > 0 && mode->VTotal > scrp->maxVValue)
+	return MODE_BAD_VVALUE;
+
+    for (cp = scrp->clockRanges; cp != NULL; cp = cp->next) {
+	/* DivFactor and MulFactor must be > 0 */
+	cp->ClockDivFactor = max(1, cp->ClockDivFactor);
+	cp->ClockMulFactor = max(1, cp->ClockMulFactor);
+    }
+
+    if (scrp->progClock) {
+	/* Check clock is in range */
+	for (cp = scrp->clockRanges; cp != NULL; cp = cp->next) {
+	    if ((cp->minClock <= mode->Clock) &&
+		(cp->maxClock >= mode->Clock) &&
+		(cp->interlaceAllowed || !(mode->Flags & V_INTERLACE)) &&
+		(cp->doubleScanAllowed ||
+		 ((!(mode->Flags & V_DBLSCAN)) && (mode->VScan <= 1))))
+	        break;
+	}
+	if (cp == NULL) {
+	    return MODE_CLOCK_RANGE;
+	}
+	/*
+	 * If programmable clock the required mode has been found
+	 */
+    	DivFactor = cp->ClockDivFactor;
+	MulFactor = cp->ClockMulFactor;
+	ModePrivFlags = cp->PrivFlags;
+    } else {
+	 status = MODE_CLOCK_RANGE;
+	/* Check clock is in range */
+	for (cp = scrp->clockRanges; cp != NULL; cp = cp->next) {
+	    if ((cp->minClock <= mode->Clock) &&
+		(cp->maxClock >= mode->Clock) &&
+		(cp->interlaceAllowed || !(mode->Flags & V_INTERLACE)) &&
+		(cp->doubleScanAllowed ||
+		 ((!(mode->Flags & V_DBLSCAN)) && (mode->VScan <= 1)))) {
+
+		/*
+	 	 * Clock is in range, so if it is not a programmable clock,
+		 * find a matching clock.
+		 */
+    
+		allowDiv2 = (cp->strategy & LOOKUP_CLKDIV2) != 0;
+		i = xf86GetNearestClock(scrp, mode->Clock, allowDiv2,
+			   cp->ClockDivFactor, cp->ClockMulFactor, &k);
+		/*
+		 * If the clock is too far from the requested clock, this
+		 * mode is no good.
+		 */
+		if (k & V_CLKDIV2)
+		    gap = abs((mode->Clock * 2) -
+			      ((scrp->clock[i] * cp->ClockDivFactor) /
+			       cp->ClockMulFactor));
+		else
+		    gap = abs(mode->Clock -
+			      ((scrp->clock[i] * cp->ClockDivFactor) /
+			       cp->ClockMulFactor));
+		if (gap > minimumGap) {
+		    status = MODE_NOCLOCK;
+		    continue;
+		}
+		
+		DivFactor = cp->ClockDivFactor;
+		MulFactor = cp->ClockMulFactor;
+		ModePrivFlags = cp->PrivFlags;
+		extraFlags = k;
+		clockIndex = i;
+		break;
+	    }
+	}
+	if (cp == NULL)
+	    return status;
+    }
+
+    /* Fill in the mode parameters */
+    if (scrp->progClock) {
+	mode->ClockIndex	= -1;
+	mode->SynthClock	= (mode->Clock * MulFactor) / DivFactor;
+    } else {
+	mode->Clock		= (scrp->clock[clockIndex] * DivFactor) / MulFactor;
+	mode->ClockIndex	= clockIndex;
+	mode->SynthClock	= scrp->clock[clockIndex];
+	if (extraFlags & V_CLKDIV2) {
+	    mode->Clock /= 2;
+	    mode->SynthClock /= 2;
+	}
+    }
+    mode->PrivFlags		= ModePrivFlags;
+
     return MODE_OK;
 }
 
@@ -949,6 +1072,8 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     int modeSize;					/* in pixels */
     int bitsPerPixel, pixmapPad;
     PixmapFormatRec *BankFormat;
+    ClockRangePtr cp;
+    ClockRangesPtr storeClockRanges;
 
     /* Some sanity checking */
     if (scrp == NULL || scrp->name == NULL || !scrp->monitor ||
@@ -990,6 +1115,23 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		   " refresh rates\n");
 	    return -1;
 	}
+    }
+
+    /*
+     * Store the clockRanges for later use by the VidMode extension. Must
+     * also store the strategy, since ClockDiv2 flag is stored there.
+     */
+    storeClockRanges = scrp->clockRanges;
+    while (storeClockRanges != NULL) {
+	storeClockRanges = storeClockRanges->next;
+    }
+    for (cp = clockRanges; cp != NULL; cp = cp->next,
+	   	storeClockRanges = storeClockRanges->next) {
+	storeClockRanges = xnfalloc(sizeof(ClockRanges));
+	if (scrp->clockRanges == NULL)
+	    scrp->clockRanges = storeClockRanges;
+	memcpy(storeClockRanges, cp, sizeof(ClockRange));
+	storeClockRanges->strategy = strategy;
     }
 
     /* Determine which pixmap format to pass to miScanLineWidth() */
@@ -1407,6 +1549,12 @@ void
 xf86SetCrtcForModes(ScrnInfoPtr scrp, int adjustFlags)
 {
     DisplayModePtr p;
+
+    /*
+     * Store adjustFlags for use with the VidMode extension. There is an
+     * implicit assumption here that SetCrtcForModes is called once.
+     */
+    scrp->adjustFlags = adjustFlags;
 
     p = scrp->modes;
     if (p == NULL)

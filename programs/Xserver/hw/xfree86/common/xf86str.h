@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.55 1999/11/18 16:52:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.57 1999/12/03 19:17:24 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -188,6 +188,20 @@ typedef struct x_ClockRange {
     int			ClockDivFactor;
     int			PrivFlags;
 } ClockRange, *ClockRangePtr;
+
+/* Need to store the strategy with clockRange for VidMode extension */
+typedef struct x_ClockRanges {
+    struct x_ClockRanges *next;
+    int			minClock;
+    int			maxClock;
+    int			clockIndex;	/* -1 for programmable clocks */
+    Bool		interlaceAllowed;
+    Bool		doubleScanAllowed;
+    int			ClockMulFactor;
+    int			ClockDivFactor;
+    int			PrivFlags;
+    int			strategy;
+} ClockRanges, *ClockRangesPtr;
 
 /*
  * The driver list struct.  This contains the information required for each
@@ -738,6 +752,10 @@ typedef struct _ScrnInfoRec {
     /* hw cursor moves at SIGIO time */
     Bool		silkenMouse;
 
+    /* Storage for clockRanges and adjustFlags for use with the VidMode ext */
+    ClockRangesPtr	clockRanges;
+    int			adjustFlags;
+  
     /*
      * These can be used when the minor ABI version is incremented.
      * The NUM_* parameters must be reduced appropriately to keep the

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/vidmodeproc.h,v 1.1 1999/03/07 08:29:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/vidmodeproc.h,v 1.3 1999/12/03 19:17:18 eich Exp $ */
 
 /* Prototypes for DGA functions that the DDX must provide */
 
@@ -50,7 +50,6 @@ Bool VidModeSetViewPort(int scrnIndex, int x, int y);
 Bool VidModeSwitchMode(int scrnIndex, pointer mode);
 Bool VidModeLockZoom(int scrnIndex, Bool lock);
 Bool VidModeGetMonitor(int scrnIndex, pointer *monitor);
-Bool VidModeCheckModeClock(int scrnIndex, pointer mode, int dotClock);
 int VidModeGetNumOfClocks(int scrnIndex, Bool *progClock);
 Bool VidModeGetClocks(int scrnIndex, int *Clocks);
 ModeStatus VidModeCheckModeForMonitor(int scrnIndex, pointer mode);

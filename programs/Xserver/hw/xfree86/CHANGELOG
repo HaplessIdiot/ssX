@@ -1,4 +1,6 @@
 XFree86 3.9.16f (xx December 1999)
+3363. Add proper clock checking for VidMode extension, add SDK fixes for
+      missing files, add SilkenMouse for C&T driver (#3424, David Bateman).
 3362. Sync v4l and glint drivers with the new Xv changes (Mark Vojkovich). 
 3361. Add XvImage support to the MGA driver - G200/400 only (Mark Vojkovich).
 3360. Xv changes/additions (Mark Vojkovich)
@@ -9133,4 +9135,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.857 1999/12/07 19:39:35 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.859 1999/12/12 00:49:46 mvojkovi Exp $

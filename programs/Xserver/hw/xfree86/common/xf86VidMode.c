@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.5 1999/07/19 13:36:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.7 1999/12/03 19:17:23 eich Exp $ */
 
 /*
  * This file contains the VidMode functions required by the extension.
@@ -405,54 +405,6 @@ VidModeGetMonitor(int scrnIndex, pointer *monitor)
     return TRUE;
 }
 
-Bool
-VidModeCheckModeClock(int scrnIndex, pointer mode, int dotClock)
-{
-    ScrnInfoPtr pScrn;
-    int extraFlags = 0;
-    int minimumGap = CLOCK_TOLERANCE + 1;
-    int i, gap;
-
-    DEBUG_P("VidModeCheckModeClock");
-
-    if ((mode == NULL) || (!VidModeAvailable(scrnIndex)))
-	return FALSE;
-
-    pScrn = xf86Screens[scrnIndex];
-
-    /* Clock checking code, mostly copied from the xf86LookupMode function */
-    if ((dotClock < pScrn->numClocks) || (pScrn->progClock)) {
-	((DisplayModePtr)mode)->Clock = dotClock;
-    } else {
-	Bool allowDiv2 = FALSE; /* The driver passes these, so where do I */
-	int ClockDivFactor = 1; /* them from? For now just set them to    */
-	int ClockMulFactor = 1; /* sensible values. maxClock set to a no. */
-        int maxClock = 1000000; /* large enough so it is ignored          */
-	
-	i = xf86GetNearestClock(pScrn, dotClock, allowDiv2,
-		     ClockDivFactor, ClockMulFactor, &extraFlags);
-
-	if (extraFlags & V_CLKDIV2) {
-	    if ( ((pScrn->clock[i]/2) / 1000) > (maxClock / 1000) )
-		return FALSE;
-	    gap = abs((dotClock * 2) -
-		((pScrn->clock[i] * ClockDivFactor) / ClockMulFactor));
-	} else {
-	    if ( ((pScrn->clock[i]) / 1000) > (maxClock / 1000) )
-		return FALSE;
-	    gap = abs(dotClock -
-		((pScrn->clock[i] * ClockDivFactor) / ClockMulFactor));
-	}
-    
-	if (gap > minimumGap) {
-	    return FALSE;
-	} else {
-	    ((DisplayModePtr)mode)->Clock = i;
-	}
-    }
-    return TRUE;
- }
-
 ModeStatus
 VidModeCheckModeForMonitor(int scrnIndex, pointer mode)
 {
@@ -480,7 +432,7 @@ VidModeCheckModeForDriver(int scrnIndex, pointer mode)
 
     pScrn = xf86Screens[scrnIndex];
 
-    return xf86CheckModeForMonitor((DisplayModePtr)mode, pScrn->monitor);
+    return xf86CheckModeForDriver(pScrn, (DisplayModePtr)mode, 0);
 }
 
 void
@@ -499,13 +451,7 @@ VidModeSetCrtcForMode(int scrnIndex, pointer mode)
     ScreenModes = pScrn->modes;
     pScrn->modes = (DisplayModePtr)mode;
     
-    /* 
-     * XXXX What can we do here!!! Generally this call is from the driver
-     * and so there is no way to find the value of the flags in the VidMode 
-     * extension. Pick INTERLACE_HALVE_V as the flags as this seems to be
-     * universally used!!
-     */  
-    xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V);
+    xf86SetCrtcForModes(pScrn, pScrn->adjustFlags);
     pScrn->modes = ScreenModes;
     return;
 }

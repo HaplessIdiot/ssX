@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.47 1999/07/19 13:36:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.49 1999/12/03 19:17:18 eich Exp $ */
 
 /*
 
@@ -740,11 +740,6 @@ ProcXF86VidModeAddModeLine(ClientPtr client)
     if (stuff->privsize)
 	ErrorF("AddModeLine - Privates in request have been ignored\n");
 
-    if (!VidModeCheckModeClock(stuff->screen, mode, stuff->dotclock)) {
-	xfree(mode);
-	return VidModeErrorBase + XF86VidModeBadClock;
-    }
-    
     /* Check that the mode is consistent with the monitor specs */
     switch (VidModeCheckModeForMonitor(stuff->screen, mode)) {
     	case MODE_OK:
@@ -1091,11 +1086,6 @@ ProcXF86VidModeValidateModeLine(ClientPtr client)
     if (stuff->privsize)
 	ErrorF("ValidateModeLine - Privates in request have been ignored\n");
 
-    if (!VidModeCheckModeClock(stuff->screen, modetmp, stuff->dotclock)) {
-	status = MODE_BAD;
-	goto status_reply;
-    }
-    
     /* Check that the mode is consistent with the monitor specs */
     if ((status = VidModeCheckModeForMonitor(stuff->screen, modetmp)) != MODE_OK)
 	goto status_reply;
