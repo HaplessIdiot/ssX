@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.122 2002/05/31 18:45:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.123 2002/07/30 18:36:17 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1715,7 +1715,10 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	GDevPtr pGDev;
 	int actualcards = 0;
 	for (i = 0; i < allocatedInstances; i++) {
+	    pPci = instances[i].pci;
 	    if (instances[i].foundHW) {
+		if (!xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func))
+		    continue;
 		actualcards++;
 	    	pGDev = xf86AddDeviceToConfigure(drvp->driverName,
 						 instances[i].pci, -1);
@@ -1805,9 +1808,11 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	}
 	if (devBus) dev = devBus;  /* busID preferred */ 
 	if (!dev) {
-	    xf86MsgVerb(X_WARNING, 0, "%s: No matching Device section "
-			"for instance (BusID PCI:%i:%i:%i) found\n",
-			driverName, pPci->bus, pPci->device, pPci->func);
+	    if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func)) {
+		xf86MsgVerb(X_WARNING, 0, "%s: No matching Device section "
+			    "for instance (BusID PCI:%i:%i:%i) found\n",
+			    driverName, pPci->bus, pPci->device, pPci->func);
+	    }
 	} else {
 	    numClaimedInstances++;
 	    instances[i].claimed = TRUE;
@@ -2027,7 +2032,7 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
 	    }
 	}
 	
-/* Check if the chip type is listed in the chipset table - for sanity*/
+	/* Check if the chip type is listed in the chipset table - for sanity*/
 
 	if (foundChip >= 0){
 	    for (Chips = ISAchipsets; Chips->numChipset >= 0; Chips++) {
