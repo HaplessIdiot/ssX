@@ -1232,6 +1232,9 @@ typedef struct _XAAInfoRec {
    BackingStoreSaveAreasProcPtr SaveAreas;
    BackingStoreRestoreAreasProcPtr RestoreAreas;
 
+   unsigned int offscreenDepths;
+   Bool offscreenDepthsInitialized;
+    
 } XAAInfoRec, *XAAInfoRecPtr;
 
 

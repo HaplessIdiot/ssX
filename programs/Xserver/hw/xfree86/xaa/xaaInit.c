@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.26 2000/04/01 22:42:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.28 2000/04/22 21:47:08 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -106,7 +106,10 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     XAAScreenPtr pScreenPriv;
-
+#ifdef RENDER
+    PictureScreenPtr    ps = GetPictureScreen(pScreen);
+#endif
+    
     if (XAAGeneration != serverGeneration) {
 	if (	((XAAScreenIndex = AllocateScreenPrivateIndex()) < 0) ||
 		((XAAGCIndex = AllocateGCPrivateIndex()) < 0) ||
@@ -193,6 +196,15 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     pScrn->EnableDisableFBAccess = XAAEnableDisableFBAccess;
 
     pScreenPriv->WindowExposures = pScreen->WindowExposures;
+#ifdef RENDER
+    if (ps)
+    {
+	pScreenPriv->Composite = ps->Composite;
+	ps->Composite = XAAComposite;
+	pScreenPriv->Glyphs = ps->Glyphs;
+	ps->Glyphs = XAAGlyphs;
+    }
+#endif    
     if(pScrn->overlayFlags & OVERLAY_8_32_PLANAR)
         XAASetupOverlay8_32Planar(pScreen);
 
@@ -433,6 +445,41 @@ XAARestoreAreas (
 				 XAARestoreAreas);
 }
 
+static int
+XAAPixmapBPP (ScreenPtr pScreen, int depth)
+{
+    PixmapPtr	pPix;
+    int		bpp;
+    
+    XAA_SCREEN_PROLOGUE (pScreen, CreatePixmap);
+    pPix = (*pScreen->CreatePixmap) (pScreen, 1, 1, depth);
+    XAA_SCREEN_EPILOGUE (pScreen, CreatePixmap, XAACreatePixmap);
+    if (!pPix)
+	return 0;
+    bpp = pPix->drawable.bitsPerPixel;
+    XAA_SCREEN_PROLOGUE (pScreen, DestroyPixmap);
+    (*pScreen->DestroyPixmap) (pPix);
+    XAA_SCREEN_EPILOGUE (pScreen, DestroyPixmap, XAADestroyPixmap);
+    return bpp;
+}
+
+static void
+XAAInitializeOffscreenDepths (ScreenPtr pScreen)
+{
+    XAAInfoRecPtr   infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
+    ScrnInfoPtr	    pScrn = xf86Screens[pScreen->myNum];
+    int		    d, dep;
+    
+    infoRec->offscreenDepthsInitialized = TRUE;
+    infoRec->offscreenDepths = 0;
+    if (infoRec->Flags & OFFSCREEN_PIXMAPS) {
+	for (d = 0; d < pScreen->numDepths; d++) {
+	    dep = pScreen->allowedDepths[d].depth;
+	    if (XAAPixmapBPP (pScreen, dep) == pScrn->bitsPerPixel)
+		infoRec->offscreenDepths |= (1 << (dep - 1));
+	}
+    }
+}
 
 static PixmapPtr 
 XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
@@ -443,9 +490,10 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
     PixmapPtr pPix = NULL;
     int size = w * h;
     
-    if((infoRec->Flags & OFFSCREEN_PIXMAPS) && pScrn->vtSema && (depth != 1) &&
-	((BitsPerPixel(depth) == pScrn->bitsPerPixel) || 
-		!(pScrn->overlayFlags & OVERLAY_8_32_PLANAR)) && 
+    if (!infoRec->offscreenDepthsInitialized)
+	XAAInitializeOffscreenDepths (pScreen);
+
+    if(pScrn->vtSema && (infoRec->offscreenDepths & (1 << (depth - 1))) &&
 	(size >= MIN_OFFPIX_SIZE) && !SwitchedOut &&
 	(!infoRec->maxOffPixWidth || (w <= infoRec->maxOffPixWidth)) &&
 	(!infoRec->maxOffPixHeight || (h <= infoRec->maxOffPixHeight)) )
@@ -455,7 +503,7 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
         FBAreaPtr area;
         int gran = 0;
 
-        switch(pScrn->bitsPerPixel) {
+	switch(pScrn->bitsPerPixel) {
         case 24: 
         case 8:  gran = 4;  break;
         case 16: gran = 2;  break;
@@ -466,12 +514,13 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
         if(BITMAP_SCANLINE_PAD == 64)
            gran *= 2;
 
-        if(!(pLink = xalloc(sizeof(PixmapLink))))
-	    goto BAILOUT;
-
         if(!(area = xf86AllocateOffscreenArea(pScreen, w, h, gran, 0,
                                 XAARemoveAreaCallback, NULL))) {
-	    xfree(pLink);
+	    goto BAILOUT;
+	}
+
+        if(!(pLink = xalloc(sizeof(PixmapLink)))) {
+            xf86FreeOffscreenArea(area);
 	    goto BAILOUT;
 	}
 
@@ -479,44 +528,43 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
 	pPix = (*pScreen->CreatePixmap) (pScreen, 0, 0, depth);
 	XAA_SCREEN_EPILOGUE (pScreen, CreatePixmap, XAACreatePixmap);
 
-	if(pPix) {
-	    pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
-
- 	    pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
-	    pPix->drawable.x = area->box.x1;
-	    pPix->drawable.y = area->box.y1;
-	    pPix->drawable.width = w;
-	    pPix->drawable.height = h;
-	    pPix->drawable.bitsPerPixel = pScrn->bitsPerPixel;
-	    pPix->devKind = pScreenPix->devKind;
-	    pPix->devPrivate.ptr = pScreenPix->devPrivate.ptr;
-	    area->devPrivate.ptr = pPix;
-
-  	    pPriv->flags = OFFSCREEN;
-	    pPriv->offscreenArea = area;
-		
-	    pLink->next = infoRec->OffscreenPixmaps;
-	    pLink->pPix = pPix;
-	    infoRec->OffscreenPixmaps = pLink;
-        } else {
-	    xfree(pLink);
+	if (!pPix) {
+	    xfree (pLink);
             xf86FreeOffscreenArea(area);
-        }
+	    goto BAILOUT;
+	}
+	
+	pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
+
+	pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
+	pPix->drawable.x = area->box.x1;
+	pPix->drawable.y = area->box.y1;
+	pPix->drawable.width = w;
+	pPix->drawable.height = h;
+	pPix->drawable.bitsPerPixel = pScrn->bitsPerPixel;
+	pPix->devKind = pScreenPix->devKind;
+	pPix->devPrivate.ptr = pScreenPix->devPrivate.ptr;
+	area->devPrivate.ptr = pPix;
+
+	pPriv->flags = OFFSCREEN;
+	pPriv->offscreenArea = area;
+	    
+	pLink->next = infoRec->OffscreenPixmaps;
+	pLink->pPix = pPix;
+	infoRec->OffscreenPixmaps = pLink;
+	return pPix;
     }
 BAILOUT:
+    XAA_SCREEN_PROLOGUE (pScreen, CreatePixmap);
+    pPix = (*pScreen->CreatePixmap) (pScreen, w, h, depth);
+    XAA_SCREEN_EPILOGUE (pScreen, CreatePixmap, XAACreatePixmap);
 
-    if(!pPix) {
-	XAA_SCREEN_PROLOGUE (pScreen, CreatePixmap);
-	pPix = (*pScreen->CreatePixmap) (pScreen, w, h, depth);
-	XAA_SCREEN_EPILOGUE (pScreen, CreatePixmap, XAACreatePixmap);
-
-	if(pPix) {
-	   pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
-	   pPriv->flags = 0;
-	   pPriv->offscreenArea = NULL;
-	   if(!w || !h) /* either scratch or shared memory */
-		pPriv->flags |= SHARED_PIXMAP;
-	}
+    if(pPix) {
+       pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
+       pPriv->flags = 0;
+       pPriv->offscreenArea = NULL;
+       if(!w || !h) /* either scratch or shared memory */
+	    pPriv->flags |= SHARED_PIXMAP;
     }
 
     return pPix;

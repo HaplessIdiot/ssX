@@ -58,7 +58,14 @@
     pGC->ops   = &XAAPixmapOps;\
     pixPriv->flags |= DIRTY
 
+#ifdef RENDER
+#define XAA_RENDER_PROLOGUE(pScreen,field)\
+    (GetPictureScreen(pScreen)->field = \
+     ((XAAScreenPtr) (pScreen)->devPrivates[XAAScreenIndex].ptr)->field)
 
+#define XAA_RENDER_EPILOGUE(pScreen, field, wrapper)\
+    (GetPictureScreen(pScreen)->field = wrapper)
+#endif
 
 /* This also works fine for drawables */
 

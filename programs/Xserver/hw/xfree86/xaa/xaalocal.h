@@ -11,6 +11,9 @@
 #include "xf86fbman.h"
 #include "xaa.h"
 #include "mi.h"
+#ifdef RENDER
+#include "picturestr.h"
+#endif
 
 #define GCWhenForced		(GCArcMode << 1)
 
@@ -56,6 +59,10 @@ typedef struct _XAAScreen {
    void                		(*LeaveVT)(int, int);
    int				(*SetDGAMode)(int, int, DGADevicePtr);
    void				(*EnableDisableFBAccess)(int, Bool);
+#ifdef RENDER
+    CompositeProcPtr            Composite;
+    GlyphsProcPtr               Glyphs;
+#endif
 } XAAScreenRec, *XAAScreenPtr;
 
 #define	OPS_ARE_PIXMAP		0x00000001
@@ -1519,6 +1526,32 @@ void XAAMoveOutOffscreenPixmaps(ScreenPtr pScreen);
 void XAARemoveAreaCallback(FBAreaPtr area);
 void XAAMoveOutOffscreenPixmap(PixmapPtr pPix); 
 Bool XAAInitStateWrap(ScreenPtr pScreen, XAAInfoRecPtr infoRec);
+
+void
+XAAComposite (CARD8      op,
+	      PicturePtr pSrc,
+	      PicturePtr pMask,
+	      PicturePtr pDst,
+	      INT16      xSrc,
+	      INT16      ySrc,
+	      INT16      xMask,
+	      INT16      yMask,
+	      INT16      xDst,
+	      INT16      yDst,
+	      CARD16     width,
+	      CARD16     height);
+
+void
+XAAGlyphs (CARD8         op,
+	   PicturePtr    pSrc,
+	   PicturePtr    pDst,
+	   PictFormatPtr maskFormat,
+	   INT16         xSrc,
+	   INT16         ySrc,
+	   int           nlist,
+	   GlyphListPtr  list,
+	   GlyphPtr      *glyphs);
+    
 
 extern GCOps XAAFallbackOps;
 extern GCFuncs XAAGCFuncs;

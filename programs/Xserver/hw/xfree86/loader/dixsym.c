@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.29 2000/02/02 21:24:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.32 2000/04/24 00:19:16 mvojkovi Exp $ */
 
 
 /*
@@ -51,6 +51,10 @@
 #endif
 #ifdef XFreeXDGA
 #include "dgaproc.h"
+#endif
+#ifdef RENDER
+#include "picturestr.h"
+#include "mipict.h"
 #endif
 
 /* XXX This should be in a header somewhere */
@@ -308,6 +312,14 @@ LOOKUP dixLookupTab[] = {
   /* libXext.a */
   SYMFUNC(ClientSleepUntil)
 
+  /* librender.a */
+#ifdef RENDER
+  SYMFUNC(PictureInit)
+  SYMFUNC(miPictureInit)
+  SYMFUNC(miComputeCompositeRegion)
+  SYMFUNC(miGlyphs)
+  SYMVAR(PictureScreenPrivateIndex)
+#endif
 
   { 0, 0 },
 
