@@ -1,4 +1,5 @@
 /* $XConsortium: dispatch.c,v 5.65 94/04/17 20:26:25 dpw Exp $ */
+/* $XFree86$ */
 /************************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -3349,7 +3350,8 @@ CloseDownClient(client)
 	}
 	client->clientGone = TRUE;  /* so events aren't sent to client */
 	CloseDownConnection(client);
-	--nClients;
+	if (client->clientState != ClientStateInitial)
+	    --nClients;
     }
 
     if (really_close_down)
