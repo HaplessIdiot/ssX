@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.15 1999/01/31 12:22:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.16 1999/01/31 13:45:21 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -53,6 +53,58 @@
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
+#endif
+
+/* <limits.h> stuff */
+#define x_BITSPERBYTE 8
+#define x_BITS(type)  (x_BITSPERBYTE * (int)sizeof(type))
+#define x_SHORTBITS x_BITS(short)
+#define x_INTBITS x_BITS(int)
+#define x_LONGBITS x_BITS(long)
+#ifndef SHRT_MIN
+#define SHRT_MIN ((short)(1 << (x_SHORTBITS - 1)))
+#endif
+#ifndef SHRT_MAX
+#define SHRT_MAX ((short)~SHRT_MIN)
+#endif
+#ifndef USHRT_MAX
+#define USHRT_MAX ((unsigned short)~0)
+#endif
+#ifndef MINSHORT
+#define MINSHORT SHRT_MIN
+#endif
+#ifndef MAXSHORT
+#define MAXSHORT SHRT_MAX
+#endif
+#ifndef INT_MIN
+#define INT_MIN (1 << (x_INTBITS - 1))
+#endif
+#ifndef INT_MAX
+#define INT_MAX (~INT_MIN)
+#endif
+#ifndef UINT_MAX
+#define UINT_MAX (~0)
+#endif
+#ifndef MININT
+#define MININT INT_MIN
+#endif
+#ifndef MAXINT
+#define MAXINT INT_MAX
+#endif
+#ifndef LONG_MIN
+#define LONG_MIN ((long)(1 << (x_LONGBITS - 1)))
+#endif
+#ifndef LONG_MAX
+#define LONG_MAX ((long)~LONG_MIN)
+#endif
+#ifndef ULONG_MAX
+#define ULONG_MAX ((unsigned long)~0UL)
+#endif
+#ifndef MINLONG
+#define MINLONG LONG_MIN
+#endif
+#ifndef MAXLONG
+#define MAXLONG LONG_MAX
 #endif
 
 /*
