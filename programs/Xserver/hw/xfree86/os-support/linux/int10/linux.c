@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.12 2000/07/11 01:46:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.13 2000/07/13 21:31:39 tsi Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -119,8 +119,12 @@ xf86InitInt10(int entityIndex)
     ErrorF("Mapping high memory area\n");
 #endif
     if ((high_mem = shmget(counter++, HIGH_MEM_SIZE,
-			       IPC_CREAT | SHM_R | SHM_W)) == -1)
+			       IPC_CREAT | SHM_R | SHM_W)) == -1) {
+	if (errno == ENOSYS)
+	    xf86DrvMsg(screen, X_ERROR, "shmget error\n Please reconfigure"
+		       " your kernel to include System V IPC support\n");
 	goto error1;
+    }
     ((linuxInt10Priv*)pInt->private)->highMem = high_mem;
 #ifdef DEBUG
     ErrorF("Mapping 640kB area\n");
