@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2D (beta version)
  <author>The XFree86 Project, Inc
- <date>2 March 1996
+ <date>3 March 1996
 
 
 <abstract>
@@ -104,8 +104,9 @@ It is expected that it will reappear in some form in a future release.
 	HW cursors has been fixed.
   <item>The XKEYBOARD extension is included in the servers as part of X11R6.1.
 	It is enabled by default, but can be disabled either from the command
-	line or from the XF86Config file.  With this extension enabled, you
-	may see some differences in the keyboard mappings.
+	line (see the Xserver man page) or from the XF86Config file
+	(see XkbDisable in the XF86Config man page).  With this extension
+	enabled, you may see some differences in the keyboard mappings.
 </itemize>
 <sect1> PC98 Support
 <p>
@@ -700,7 +701,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.20 1996/02/25 01:25:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.21 1996/03/03 03:56:30 dawes Exp $
 </verb>
 
 </article>

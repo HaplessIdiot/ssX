@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.1.2D (beta version)
   The XFree86 Project, Inc
 
-  24 February 1996
+  3 March 1996
 
   This document describes the rationale and conditions of this beta
   release, what is new in the XFree86 beta versions 3.1.2D, 3.1.2B and
@@ -106,9 +106,10 @@
 
      o  The XKEYBOARD extension is included in the servers as part of
         X11R6.1.  It is enabled by default, but can be disabled either
-        from the command line or from the XF86Config file.  With this
-        extension enabled, you may see some differences in the keyboard
-        mappings.
+        from the command line (see the Xserver man page) or from the
+        XF86Config file (see XkbDisable in the XF86Config man page).
+        With this extension enabled, you may see some differences in the
+        keyboard mappings.
 
   3.3.  PC98 Support
 
@@ -127,7 +128,6 @@
 
      o  Initial release of the PC98 WSN-A2F server. This server is based
         on the PC-AT SVGA(cirrus) server.
-
 
 
      o  Initial release of the PC98 EGC server. This server is based on
@@ -469,7 +469,7 @@
            AT&T20C409 RAMDACs.
 
         +  The background colour of the cursor in xterms for the CH8398
-           and T&T20C409 RAMDACs is blue instead of black in 16bpp and
+           and AT&T20C409 RAMDACs is blue instead of black in 16bpp and
            32bpp modes.
 
         +  When using the software cursor, after switching to the
@@ -780,18 +780,21 @@
   procedure will overwrite your existing version of XFree86.
 
   If you have a previous version of XFree86 installed, you can upgrade
-  to the new version by extracting the required .tgz files over the
-  previous version in /usr/X11R6.
+  to the new version by first running the script preinst.sh, and then
+  extracting the required .tgz files over the previous version in
+  /usr/X11R6.  The preinst.sh script removes symbolic links that are
+  going to be replaced by either files or new links in this version (tar
+  won't overwrite existing symbolic links).
 
   If you are installing from scratch, create a directory called
   /usr/X11R6, then extract the required .tgz files.  If you don't have
   enough space in /usr for this, create a directory elsewhere and create
+
   a symbolic link to it.  E.g., if you create a directory in /home:
 
 
-
-          mkdir /home/X11R6
-          ln -s /home/X11R6 /usr
+               mkdir /home/X11R6
+               ln -s /home/X11R6 /usr
 
 
 
@@ -806,17 +809,14 @@
 
 
   Note that there is no postinst.sh script to be run for this release.
+  However, for OSs which use ldconfig (like Linux, FreeBSD and NetBSD),
+  you should either run ldconfig or reboot to complete the installation.
+  On FreeBSD and NetBSD, ldconfig takes arguments.  In particular, you
+  should at least include /usr/lib and /usr/X11R6/lib on the command
+  line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.20 1996/02/25 01:25:48 dawes Exp $
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.22 1996/03/03 04:30:40 dawes Exp $
 
 
 
