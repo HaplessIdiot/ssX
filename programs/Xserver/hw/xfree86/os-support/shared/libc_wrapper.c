@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.29 1998/07/25 16:57:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.30 1998/09/06 07:32:05 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -108,6 +108,8 @@ typedef struct dirent DIRENTRY;
 #if 0
 #define SETBUF_RETURNS_INT
 #endif
+
+double xf86HUGE_VAL = HUGE_VAL;
 
 /*
  * This file contains the XFree86 wrappers for libc functions that can be
