@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.87 2004/03/18 07:06:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.88 2004/06/01 00:16:59 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -130,9 +130,9 @@ XF86CFGDIRS = xf86cfg xf86config
 
 SUBDIRS = os-support common $(I2CDIR) $(XAADIR) $(XF1BPPDIR) $(XF4BPPDIR) \
           $(XF8_32BPPDIR) $(XF8_16BPPDIR) $(XF24_32BPPDIR) $(SHADOWFBDIR) \
-	  drivers $(LOADERDIR) $(VGAHWDIR) $(FBDEVHWDIR) $(RAMDACDIR) \
-	  $(RACDIR) $(DDCDIR) $(INPUTDIR) $(INT10DIR) $(VBEDIR) parser \
-          scanpci doc dummylib $(XF86CFGDIRS) etc $(DRIVERSDK) \
+	  dummylib drivers $(LOADERDIR) $(VGAHWDIR) $(FBDEVHWDIR) \
+	  $(RAMDACDIR) $(RACDIR) $(DDCDIR) $(INPUTDIR) $(INT10DIR) $(VBEDIR) \
+	  parser scanpci doc $(XF86CFGDIRS) etc $(DRIVERSDK) \
 	  $(XF8_32WIDDIR) getconfig
 
 #if !defined(OS2Architecture) && !defined(cygwinArchitecture)
