@@ -2,13 +2,13 @@
 
                           The XFree86 Project, Inc
 
-                               14 January 2005
+                                9 March 2005
 
                                   Abstract
 
       XFree86(R) is an Open Source version of the X Window System that
      supports many UNIX(R) and UNIX-like operating systems (such as
-     Linux, FreeBSD, NetBSD, OpenBSD and Solaris x86) on Intel and other
+     Linux, FreeBSD, NetBSD, OpenBSD and Solaris) on Intel and other
      platforms.  This version is compatible with X11R6.6.
 
 1.  What is XFree86 4.4.99.903?
@@ -120,9 +120,9 @@ technologies, their future, and for inter-project communication.
 
 If you have any new work or enhancements/bug fixes for existing work, please
 submit them to <patch@XFree86.org> or to our bug tracking system
-<URL:http://bugs.xfree86.org/>.  This will ensure that they are included in
-future releases.  New works should be discussed on our <devel@XFree86.org>
-list prior to submission.
+<URL:http://bugs.xfree86.org/>.  This will ensure that they are reviewed for
+inclusion in future releases.  New works should be discussed on our
+<devel@XFree86.org> list prior to submission.
 
 Current information about the XFree86 development process can be found at our
 web site <URL:http://www.xfree86.org/developer/>.
