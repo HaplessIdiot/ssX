@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadfont.c,v 1.1 1998/12/13 05:32:55 dawes Exp $ */
 
 /* Maybe this file belongs in lib/font/fontfile/module/ ? */
 
@@ -17,7 +17,6 @@ NewFontModule(void)
 	FontModule *save = FontModuleList;
 	int n;
 
-ErrorF("NewFontModule: before: numFontModules is %d\n", numFontModules);
 	/* Sanity check */
 	if (!FontModuleList)
 		numFontModules = 0;
@@ -26,11 +25,9 @@ ErrorF("NewFontModule: before: numFontModules is %d\n", numFontModules);
 	FontModuleList = xrealloc(FontModuleList, (n + 1) * sizeof(FontModule));
 	if (FontModuleList == NULL) {
 		FontModuleList = save;
-ErrorF("NewFontModule: failed: numFontModules is %d\n", numFontModules);
 		return NULL;
 	} else {
 		numFontModules++;
-ErrorF("NewFontModule: after: numFontModules is %d\n", numFontModules);
 		FontModuleList[numFontModules].name = NULL;
 		return FontModuleList + (numFontModules - 1);
 	}
