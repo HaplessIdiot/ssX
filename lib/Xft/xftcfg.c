@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcfg.c,v 1.2 2000/11/30 06:59:45 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftcfg.c,v 1.3 2000/12/03 19:03:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -36,7 +36,7 @@ char		**XftConfigDirs = XftConfigDefaultDirs;
 static int	XftConfigNdirs;
 
 static XftSubst	*XftSubsts;
-#define XFT_DEBUG_EDIT
+/* #define XFT_DEBUG_EDIT */
 
 Bool
 XftConfigAddDir (char *d)
