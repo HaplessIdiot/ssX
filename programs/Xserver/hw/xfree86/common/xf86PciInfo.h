@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.28 1999/04/11 13:10:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.30 1999/04/12 14:00:03 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -262,6 +262,7 @@
 #define PCI_CHIP_9660		0x9660
 #define PCI_CHIP_9750		0x9750
 #define PCI_CHIP_9850		0x9850
+#define PCI_CHIP_9880		0x9880
 
 /* ALI */
 #define PCI_CHIP_M1435		0x1435
@@ -738,6 +739,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_9525,		"Cyber 9525/DVD"},
 				{PCI_CHIP_9750,		"3DImage975"},
 				{PCI_CHIP_9850,		"3DImage985"},
+				{PCI_CHIP_9880,		"Blade3D"},
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
      {PCI_VENDOR_ALI, {

@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.48 1999/03/20 08:59:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.49 1999/04/11 13:10:58 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -140,6 +140,7 @@ static SymTabRec TRIDENTChipsets[] = {
     { PCI_CHIP_9660,		"providia9685" },
     { PCI_CHIP_9750,		"3dimage975" },
     { PCI_CHIP_9850,		"3dimage985" },
+    { PCI_CHIP_9880,		"blade3d" },
     { -1,				NULL }
 };
 
@@ -155,6 +156,7 @@ static PciChipsets TRIDENTPciChipsets[] = {
     { PCI_CHIP_9660,	PCI_CHIP_9660,	RES_SHARED_VGA },
     { PCI_CHIP_9750,	PCI_CHIP_9750,	RES_SHARED_VGA },
     { PCI_CHIP_9850,	PCI_CHIP_9850,	RES_SHARED_VGA },
+    { PCI_CHIP_9880,	PCI_CHIP_9880,	RES_SHARED_VGA },
     { -1,		-1,		RES_UNDEFINED }
 };
     
@@ -279,6 +281,9 @@ static int ClockLimit[] = {
 	230000,
 	230000,
 	230000,
+	230000,
+	230000,
+	230000,
 };
 
 static int ClockLimit16bpp[] = {
@@ -306,6 +311,9 @@ static int ClockLimit16bpp[] = {
 	135000,
 	170000,
 	170000,
+	230000,
+	230000,
+	230000,
 	230000,
 	230000,
 	230000,
@@ -339,6 +347,9 @@ static int ClockLimit24bpp[] = {
 	115000,
 	115000,
 	115000,
+	115000,
+	115000,
+	115000,
 };
 
 static int ClockLimit32bpp[] = {
@@ -366,6 +377,9 @@ static int ClockLimit32bpp[] = {
 	70000,
 	85000,
 	85000,
+	115000,
+	115000,
+	115000,
 	115000,
 	115000,
 	115000,
@@ -1107,6 +1121,38 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 		    break;
 	    }
 	    break;
+	case PCI_CHIP_9520:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x04)
+		ramtype = "EDO Ram";
+    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x08)
+		ramtype = "SDRAM";
+    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x0C) {
+		pTrident->HasSGRAM = TRUE;
+		ramtype = "SGRAM";
+	    }
+	    Support24bpp = TRUE;
+	    chipset = "Cyber 9520";
+	    pTrident->NoMMIO = FALSE; /* Can't disable MMIO for this chipset */
+	    pTrident->NewClockCode = TRUE;
+	    pTrident->Chipset = CYBER9520;
+	    break;
+	case PCI_CHIP_9525:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x04)
+		ramtype = "EDO Ram";
+    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x08)
+		ramtype = "SDRAM";
+    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x0C) {
+		pTrident->HasSGRAM = TRUE;
+		ramtype = "SGRAM";
+	    }
+	    Support24bpp = TRUE;
+	    chipset = "Cyber 9525/DVD";
+	    pTrident->NoMMIO = FALSE; /* Can't disable MMIO for this chipset */
+	    pTrident->NewClockCode = TRUE;
+	    pTrident->Chipset = CYBER9525;
+	    break;
 	case PCI_CHIP_9750:
     	    pTrident->ddc1Read = Tridentddc1Read;
     	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x04)
@@ -1138,6 +1184,21 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->NoMMIO = FALSE; /* Can't disable MMIO for this chipset */
 	    pTrident->NewClockCode = TRUE;
 	    pTrident->Chipset = IMAGE985;
+	    break;
+	case PCI_CHIP_9880:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x08)
+		ramtype = "SDRAM";
+    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x0C) {
+		pTrident->HasSGRAM = TRUE;
+		ramtype = "SGRAM";
+	    }
+	    Support24bpp = TRUE;
+	    chipset = "Blade3D";
+	    pTrident->NoMMIO = FALSE; /* Can't disable MMIO for this chipset */
+	    pTrident->NewClockCode = TRUE;
+	    pTrident->frequency = NTSC;
+	    pTrident->Chipset = BLADE3D;
 	    break;
     }
     if (!chipset) {
@@ -1191,6 +1252,9 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	switch (videoram & 0x0F) {
 	case 0x03:
 	    pScrn->videoRam = 1024;
+	    break;
+	case 0x04: /* Blade3D */
+	    pScrn->videoRam = 8192;
 	    break;
 	case 0x07:
 	    pScrn->videoRam = 2048;
@@ -1305,8 +1369,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 		pTrident->NoAccel = TRUE;
 
     /* Select valid modes from those available */
-    if (pTrident->NoAccel || pTrident->Chipset == IMAGE975 ||
-			     pTrident->Chipset == IMAGE985) {
+    if (pTrident->NoAccel) {
 	/*
 	 * XXX Assuming min pitch 256, max 4096
 	 * XXX Assuming min height 128, max 4096
@@ -1632,6 +1695,13 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case TGUI9680:
 	case PROVIDIA9682:
 	case PROVIDIA9685:
+	case IMAGE975:
+	case IMAGE985:
+	case BLADE3D:
+	case CYBER9520:
+	case CYBER9525:
+	case CYBER9397:
+	case CYBER939A:
 	    /* Get ready for MUX mode */
 	    if (pTrident->MUX && 
 		pScrn->bitsPerPixel == 8 && 
@@ -1896,7 +1966,10 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if (!pTrident->NoAccel) {
 	if (Is3Dchip) {
-	    ImageAccelInit(pScreen);
+	    if (pTrident->Chipset == BLADE3D)
+		BladeAccelInit(pScreen);
+	    else
+	    	ImageAccelInit(pScreen);
 	} else {
 	    if (pTrident->NoMMIO)
 	    	TridentAccelInit(pScreen);
@@ -2003,10 +2076,10 @@ TRIDENTAdjustFrame(int scrnIndex, int x, int y, int flags)
     outw(vgaIOBase + 4, ((base & 0x00FF) << 8) | 0x0D);
     /* CRT bit 16 */
     outb(vgaIOBase + 4, CRTCModuleTest); temp = inb(vgaIOBase + 5) & 0xDF;
-    outb(vgaIOBase + 5, temp | (base & 0x10000) >> 11);
+    outb(vgaIOBase + 5, temp | ((base & 0x10000) >> 11));
     /* CRT bit 17-19 */
     outb(vgaIOBase + 4, CRTHiOrd); temp = inb(vgaIOBase + 5) & 0xF8;
-    outb(vgaIOBase + 5, temp | (base & 0xE0000) >> 17);
+    outb(vgaIOBase + 5, temp | ((base & 0xE0000) >> 17));
 
 #if 0
     xf86DelControlledResource(&pScrn->Access,FALSE);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.4 1998/11/15 04:30:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.5 1999/01/23 09:55:59 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -11,9 +11,6 @@
 
 #include "trident.h"
 #include "trident_regs.h"
-
-#define NTSC 14.31818
-#define PAL  17.73448
 
 static void IsClearTV(ScrnInfoPtr pScrn);
 
@@ -104,6 +101,8 @@ IsClearTV(ScrnInfoPtr pScrn)
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     unsigned char temp;
+
+    if (pTrident->frequency != 0) return;
 
     outb(vgaIOBase + 4, 0xC0);
     temp = inb(vgaIOBase + 5);
