@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.7 1997/09/12 09:23:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.8 1997/09/19 08:29:59 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -370,7 +370,7 @@ glintProbe()
 
   i = -1;
   while ((pcrp = pcrpp[++i]) != (pciConfigPtr)NULL) {
-    if (pcrp->_vendor == PCI_VENDOR_3DLABS)
+    if (pcrp->_vendor == PCI_VENDOR_3DLABS) 
     {
         switch (pcrp->_device)
 	{
@@ -424,6 +424,31 @@ glintProbe()
 			       pcrp->_cardnum,pcrp->_func,basecopro);
 		}
 		break;
+	case PCI_CHIP_3DLABS_MX:
+		glintcopro = PCI_EN |
+			(pcrp->_bus << 16) |
+			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+		basecopro = pcrp->_base0;
+		pcrpglint = pcrp;
+		coprotype = PCI_CHIP_3DLABS_MX;
+		if( cardnum == -1 )
+			cardnum = pcrp->_cardnum;
+		else if( cardnum != pcrp->_cardnum )
+		{
+			ErrorF("%s %s: found second board based on GLINT "
+			       "will use information from there\n",
+			       XCONFIG_PROBED, glintInfoRec.name);
+			glintdelta = 0;
+			pcrpdelta = NULL;
+			cardnum = pcrp->_cardnum;
+		}
+		if( xf86Verbose ) 
+		{
+			ErrorF("%s %s: found GLINT MX at card #%d func #%d with "
+			       "base 0x%x\n",XCONFIG_PROBED, glintInfoRec.name,
+			       pcrp->_cardnum,pcrp->_func,basecopro);
+		}
+		break;
 	case PCI_CHIP_3DLABS_PERMEDIA:
 		glintcopro = PCI_EN |
 			(pcrp->_bus << 16) |
@@ -444,7 +469,32 @@ glintProbe()
 		}
 		if( xf86Verbose ) 
 		{
-			ErrorF("%s %s: found GLINT PerMedia at card #%d func #%d with "
+			ErrorF("%s %s: found GLINT Permedia at card #%d func #%d with "
+			       "base 0x%x\n",XCONFIG_PROBED, glintInfoRec.name,
+			       pcrp->_cardnum,pcrp->_func,basecopro);
+		}
+		break;
+	case PCI_CHIP_3DLABS_PERMEDIA2:
+		glintcopro = PCI_EN |
+			(pcrp->_bus << 16) |
+			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+		basecopro = pcrp->_base0;
+		pcrpglint = pcrp;
+		coprotype = PCI_CHIP_3DLABS_PERMEDIA2;
+		if( cardnum == -1 )
+			cardnum = pcrp->_cardnum;
+		else if( cardnum != pcrp->_cardnum )
+		{
+			ErrorF("%s %s: found second board based on GLINT "
+			       "will use information from there\n",
+			       XCONFIG_PROBED, glintInfoRec.name);
+			glintdelta = 0;
+			pcrpdelta = NULL;
+			cardnum = pcrp->_cardnum;
+		}
+		if( xf86Verbose ) 
+		{
+			ErrorF("%s %s: found GLINT Permedia 2 at card #%d func #%d with "
 			       "base 0x%x\n",XCONFIG_PROBED, glintInfoRec.name,
 			       pcrp->_cardnum,pcrp->_func,basecopro);
 		}
@@ -477,13 +527,37 @@ glintProbe()
 		break;
 	}
     }
-  }
-  if (!pcrpdelta)
-  {
-      /*
-       * we only deal with cards that have a Delta installed as well
-       */
-      return FALSE;
+    else if (pcrp->_vendor == PCI_VENDOR_TI) /* TI is producing the PM2 */
+    {
+        switch (pcrp->_device)
+	{
+	case PCI_CHIP_TI_3DLABS_PERMEDIA2:
+		glintcopro = PCI_EN |
+			(pcrp->_bus << 16) |
+			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+		basecopro = pcrp->_base0;
+		pcrpglint = pcrp;
+		coprotype = PCI_CHIP_3DLABS_PERMEDIA2;
+		if( cardnum == -1 )
+			cardnum = pcrp->_cardnum;
+		else if( cardnum != pcrp->_cardnum )
+		{
+			ErrorF("%s %s: found second board based on GLINT "
+			       "will use information from there\n",
+			       XCONFIG_PROBED, glintInfoRec.name);
+			glintdelta = 0;
+			pcrpdelta = NULL;
+			cardnum = pcrp->_cardnum;
+		}
+		if( xf86Verbose ) 
+		{
+			ErrorF("%s %s: found GLINT Permedia 2 at card #%d func #%d with "
+			       "base 0x%x\n",XCONFIG_PROBED, glintInfoRec.name,
+			       pcrp->_cardnum,pcrp->_func,basecopro);
+		}
+		break;
+    	}
+    }
   }
   /*
    * next, we should enable memory and I/O on the card, just to be sure that 
@@ -494,10 +568,13 @@ glintProbe()
   	       pcrpglint->_func, PCI_CMD_STAT_REG, 
 	       PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE, 
 	       PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE);
-  xf86writepci(glintInfoRec.scrnIndex, pcrpdelta->_bus, pcrpdelta->_cardnum,
+  if (glintdelta) {
+      xf86writepci(glintInfoRec.scrnIndex, pcrpdelta->_bus, 
+  	       pcrpdelta->_cardnum,
   	       pcrpdelta->_func, PCI_CMD_STAT_REG, 
 	       PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE, 
 	       PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE);
+  }
 
   /*
    * due to a few bugs in the GLINT Delta we might have to relocate
@@ -592,18 +669,20 @@ glintProbe()
      * print size
      * write old value
      */
-    outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
-    temp = inl(PCI_MODE1_DATA_REG);
-    outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
-    outl(PCI_MODE1_DATA_REG,0xffffffff);
-    outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
+    if (glintdelta) {
+	outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
+	temp = inl(PCI_MODE1_DATA_REG);
+	outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
+	outl(PCI_MODE1_DATA_REG,0xffffffff);
+	outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
 #ifdef DEBUG
-    ErrorF("Delta - Control Register size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
+	ErrorF("Delta - Control Register size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
 #else
-    inl(PCI_MODE1_DATA_REG);
+	inl(PCI_MODE1_DATA_REG);
 #endif
-    outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
-    outl(PCI_MODE1_DATA_REG,temp);
+	outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
+	outl(PCI_MODE1_DATA_REG,temp);
+    }
     
     outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x10);
     temp = inl(PCI_MODE1_DATA_REG);
@@ -672,29 +751,33 @@ glintProbe()
     
     xf86DisableIOPorts(glintInfoRec.scrnIndex);
   }
-  if (coprotype == PCI_CHIP_3DLABS_500TX) {
+  if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	  GLINTMMIOBase = xf86MapVidMem(0,MMIO_REGION,
   				(pointer)pcrpdelta->_base0,0x20000);
 	  glintLBBase = pcrpglint->_base1;
 	  ErrorF("%s %s: Localbuffer address at 0x%x\n",XCONFIG_PROBED,
 			glintInfoRec.name, glintLBBase);
 	  glintInfoRec.MemBase = pcrpglint->_base2;
-  } else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
-    {
-      GLINTMMIOBase = xf86MapVidMem(0, MMIO_REGION, (pointer)pcrpdelta->_base0, 0x40000);
+  } else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+      GLINTMMIOBase = xf86MapVidMem(0, MMIO_REGION, (pointer)pcrpdelta->_base0,
+				    0x40000);
       glintLBBase = 0; /* no local buffer on PerMedia cards */
       glintInfoRec.MemBase = pcrpglint->_base2;
-    }
+  } else if (IS_3DLABS_PM2_CLASS(coprotype)) {
+      GLINTMMIOBase = xf86MapVidMem(0, MMIO_REGION, (pointer)pcrpglint->_base0,
+                                    0x40000);
+      glintLBBase = 0; /* no local buffer on PerMedia cards */
+      glintInfoRec.MemBase = pcrpglint->_base2;
+  }
   ErrorF("%s %s: Framebuffer address at 0x%x\n",XCONFIG_PROBED,
 		glintInfoRec.name, glintInfoRec.MemBase);
 
-  if (!glintInfoRec.videoRam)
-  {
-  	if (coprotype == PCI_CHIP_3DLABS_500TX) {
+  if (!glintInfoRec.videoRam) {
+  	if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 		GLINTFrameBufferSize = GLINT_READ_REG(FBMemoryCtl);
 		glintInfoRec.videoRam = 1024 * (1 << ((GLINTFrameBufferSize &
 						0xE0000000) >> 29));
-	} else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
+	} else if (IS_3DLABS_PM_FAMILY(coprotype)) {
 	  GLINTFrameBufferSize = GLINT_READ_REG(PMMemConfig);
 	  /* ErrorF("Memconfig register 0x%x\n", GLINTFrameBufferSize); */
 	  glintInfoRec.videoRam = 2048 * (((GLINTFrameBufferSize >> 29) & 0x03) + 1);
@@ -704,22 +787,27 @@ glintProbe()
   }
   else
   {
-  	ErrorF("%s %s: videoram : %dk\n", XCONFIG_GIVEN, glintInfoRec.name,
-		glintInfoRec.videoRam);
+    ErrorF("%s %s: videoram : %dk\n", XCONFIG_GIVEN, glintInfoRec.name,
+	   glintInfoRec.videoRam);
   }
 
-  if (coprotype == PCI_CHIP_3DLABS_500TX) {
+  if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	  GLINTLocalBufferSize = GLINT_READ_REG(LBMemoryCtl);
 	  glintLBvideoRam = 1024 * 
 	  		    (1 << ((GLINTLocalBufferSize & 0x07000000) >> 24));
 	  ErrorF("%s %s: localbuffer ram : %dk\n", XCONFIG_PROBED, 
 	  				glintInfoRec.name, glintLBvideoRam);
   }
-  ErrorF("%s %s: ", XCONFIG_PROBED, glintInfoRec.name);
 
-  ibm_id = glintIBMRGB_Probe();
-  if (ibm_id) {
-	switch (ibm_id) {
+  if (IS_3DLABS_TX_MX_CLASS(coprotype) ||
+      IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+        /*
+	 * TX/MX and Permedia are equipped with the IBM RAMDAC
+	 */
+	ibm_id = glintIBMRGB_Probe();
+	if (ibm_id) {
+	    ErrorF("%s %s: ", XCONFIG_PROBED, glintInfoRec.name);
+	    switch (ibm_id) {
 		case 0x280:
 			ErrorF("Detected IBM 526DB Ramdac\n");
 			break;
@@ -733,35 +821,72 @@ glintProbe()
 		case 0x30C0:
 			ErrorF("Detected IBM 624 Ramdac\n");
 			break;
+	    }
+#if 0
+	    glintIBMRGB52x_PreInit();
+#endif
 	}
+	else {
+	    ErrorF("%s %s: GLINT TX/MX and Permedia are only supported with\n",
+	           XCONFIG_PROBED,glintInfoRec.name);
+	    ErrorF("%s %s: IBM RGB 526,526DB,524 or 624 RAMDAC\n",
+	           XCONFIG_PROBED,glintInfoRec.name);
+	    return (FALSE);
+	}
+      }
+  if (IS_3DLABS_PM2_CLASS(coprotype)) {
+  	/*
+	 * PM2 has a builtin RAMDAC
+	 */
+	ErrorF("%s %s: Using builtin RAMDAC of Permedia 2 chip\n",
+	           XCONFIG_PROBED,glintInfoRec.name);
+  }
 #if DEBUG
 	glintDumpRegs();
 #endif
 
-	glintIBMRGB52x_PreInit();
-  } 
-
-
   OFLG_ZERO(&validOptions);
 
-  OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &validOptions);
-  OFLG_SET(CLOCK_OPTION_IBMRGB, &validOptions);
-  OFLG_SET(OPTION_IBMRGB_CURS, &validOptions);
+  if (IS_3DLABS_TX_MX_CLASS(coprotype) ||
+      IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+	OFLG_SET(CLOCK_OPTION_IBMRGB, &validOptions);
+	OFLG_SET(CLOCK_OPTION_IBMRGB, &glintInfoRec.clockOptions);
+	OFLG_SET(OPTION_IBMRGB_CURS, &glintInfoRec.options);
+  }
   OFLG_SET(OPTION_XAA_BENCHMARK, &validOptions);
   OFLG_SET(OPTION_NOACCEL, &validOptions);
   OFLG_SET(OPTION_PCI_RETRY, &validOptions);
+  OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &validOptions);
+  OFLG_SET(OPTION_SW_CURSOR, &validOptions);
 
   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &glintInfoRec.clockOptions);
-  OFLG_SET(CLOCK_OPTION_IBMRGB, &glintInfoRec.clockOptions);
-  OFLG_SET(OPTION_IBMRGB_CURS, &glintInfoRec.options);
   OFLG_SET(OPTION_PCI_RETRY, &glintInfoRec.options);
 
   xf86VerifyOptions(&validOptions, &glintInfoRec);
   glintInfoRec.chipset = "glint";
   xf86ProbeFailed = FALSE;
 
-  glintInfoRec.dacSpeeds[0] = 220000; 
-  glintInfoRec.maxClock = 220000;
+  /*
+   * these defaults aren't all that great, yet
+   */
+  if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
+	glintInfoRec.dacSpeeds[0] = 220000; 
+	glintInfoRec.dacSpeeds[1] = 220000; 
+	glintInfoRec.dacSpeeds[3] = 220000; 
+	glintInfoRec.maxClock = 220000;
+  }
+  else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)){
+	glintInfoRec.dacSpeeds[0] = 200000; 
+	glintInfoRec.dacSpeeds[1] = 100000; 
+	glintInfoRec.dacSpeeds[3] = 50000; 
+	glintInfoRec.maxClock = 220000;
+  }
+  else if (IS_3DLABS_PM2_CLASS(coprotype)){
+	glintInfoRec.dacSpeeds[0] = 230000; 
+	glintInfoRec.dacSpeeds[1] = 230000; 
+	glintInfoRec.dacSpeeds[3] = 230000; 
+	glintInfoRec.maxClock = 220000;
+  }
 
   /* Let's grab the basic mode lines */
 #if 0
@@ -846,9 +971,19 @@ glintProbe()
 		/* XAA uses this */
 		xf86weight.green = 8;
 		break;
-	case 16:
+	case 15:
 		glintInfoRec.depth = 15;
 		xf86weight.green = xf86weight.red = xf86weight.blue = 5;
+		glintInfoRec.bitsPerPixel = 16;
+		if (glintInfoRec.defaultVisual < 0)
+			glintInfoRec.defaultVisual = TrueColor;
+		if (defaultColorVisualClass < 0)
+			defaultColorVisualClass = glintInfoRec.defaultVisual;
+		break;
+	case 16:
+		glintInfoRec.depth = 16;
+		xf86weight.green = 6;
+		xf86weight.red = xf86weight.blue = 5;
 		glintInfoRec.bitsPerPixel = 16;
 		if (glintInfoRec.defaultVisual < 0)
 			glintInfoRec.defaultVisual = TrueColor;
@@ -869,6 +1004,46 @@ glintProbe()
 		return (FALSE);
 		break;
   }
+
+  if (IS_3DLABS_PERMEDIA_CLASS(coprotype))
+    {
+    if (OFLG_ISSET(OPTION_NOACCEL, &glintInfoRec.options))
+      switch (glintInfoRec.depth) 
+	{
+	case 8: case 15: break;
+	default:
+	    FatalError("Permedia does not support %dbpp for option \"no_accel\".\n", glintInfoRec.depth);
+	  break;
+	}
+    else
+      switch (glintInfoRec.depth) 
+	{
+	case 8: case 15: case 16: case 32: break;
+	default:
+	    FatalError("Permedia does not support %dbpp.\n", glintInfoRec.depth);
+	  break;
+	}
+    }
+  else
+    if (IS_3DLABS_TX_MX_CLASS(coprotype))
+      if (OFLG_ISSET(OPTION_NOACCEL, &glintInfoRec.options))
+	{
+	switch (glintInfoRec.depth) 
+	  {
+	  case 8: case 15: break;
+	  default:
+	      FatalError("500TX does not support %dbpp for option \"no_accel\".\n", glintInfoRec.depth);
+	    break;
+	  }
+	}
+      else
+	switch (glintInfoRec.depth) 
+	  {
+	  case 8: case 15: case 16: case 32:  break;
+	  default:
+	      FatalError("500TX does not support %dbpp.\n", glintInfoRec.depth);
+	    break;
+	  }
 
 #ifdef XFreeXDGA
 #ifdef NOTYET
@@ -916,11 +1091,12 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 	
 	if (OFLG_ISSET(OPTION_NOACCEL, &glintInfoRec.options))
 	{
-		switch (glintInfoRec.bitsPerPixel) {
+		OFLG_SET(OPTION_SW_CURSOR, &glintInfoRec.options);
+		switch (glintInfoRec.depth) {
 			case 8:
 				ScreenInitFunc = &cfbScreenInit;
 				break;
-			case 16:
+			case 15: case 16:
 				ScreenInitFunc = &cfb16ScreenInit;
 				break;
 			case 32:
@@ -929,11 +1105,11 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 		}
 	} else {
 		GLINTAccelInit();
-		switch (glintInfoRec.bitsPerPixel) {
+		switch (glintInfoRec.depth) {
 			case 8:
 				ScreenInitFunc = &xf86XAAScreenInit8bpp;
 				break;
-			case 16:
+			case 15: case 16:
 				ScreenInitFunc = &xf86XAAScreenInit16bpp;
 				break;
 			case 32:
@@ -972,12 +1148,7 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 			break;
 	}
 
-	if (OFLG_ISSET(OPTION_IBMRGB_CURS, &glintInfoRec.options)) {
-#if 0
-		pScreen->QueryBestSize = glintQueryBestSize;
-		xf86PointerScreenFuncs.WarpCursor = glintWarpCursor;
-		(void)glintCursorInit(0, pScreen);
-#endif
+	if (!OFLG_ISSET(OPTION_SW_CURSOR, &glintInfoRec.options)) {
 		XAACursorInfoRec.MaxHeight = 64;
 		XAACursorInfoRec.MaxWidth = 64;
 		XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |

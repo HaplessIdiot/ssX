@@ -1,3 +1,11 @@
+XFree86 3.9r (25 September 1997)
+1279. Build fixes for XAA hw cursor and updates to glint XAA hw cursor (#983,
+      984, Alan Hourihane).
+1278. Better color depth support and cleanups for glint server (Helmut Fahrion).
+1277. Add initial support for Permedia 2 chip to glint server (Dirk Hohndel).
+1276. Add support for GLINT MX chip to glint server (Dirk Hohndel).
+1275. Add RIVA 128 to scanpci (Dirk Hohndel).
+
 XFree86 3.9q (19 September 1997)
 1274. Add XF98_SVGA server, update XF98Conf.cpp, VideoBoard98, fix mga driver
       for PC98 (#980,981, Michio "Karl" Jinbo, Shuichirou Urata).
@@ -368,7 +376,7 @@ XFree86 3.9h (30 June 1997)
       8,16,32bpp (for AT3D and AT24, filled rectangles, screen-screen bitblts,
       host-screen color expansion bitblts for text). DPMS support, hardware
       cursor code (also in 8bpp), use programmable clock, set MCLK to 57.3
-      MHz on AT3D, various bugfixes and cleanups (#702, Hendrik Harmsen).
+      MHz on AT3D, various bugfixes and cleanups (#702, Henrik Harmsen).
 1045. Fix problems with displaying card READMEs in XF86Setup (#701, Dirk
       Hohndel).
 1044. Add left-edge clipping to s3_newmmio. There's bug in both the scanline 
@@ -5371,4 +5379,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.529 1997/09/19 09:01:11 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.530 1997/09/19 11:24:34 hohndel Exp $

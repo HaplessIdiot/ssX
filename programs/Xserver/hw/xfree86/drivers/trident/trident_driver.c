@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.14 1997/09/12 09:23:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.15 1997/09/19 08:30:05 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1359,6 +1359,7 @@ TVGA8900FbInit()
 			XAACursorInfoRec.SetCursorColors = TridentSetCursorColors;
 			XAACursorInfoRec.SetCursorPosition = TridentSetCursorPosition;
 			XAACursorInfoRec.LoadCursorImage = TridentLoadCursorImage;
+			XAACursorInfoRec.GetInstalledColormaps = vgaGetInstalledColormaps;
 			ErrorF("%s %s: Using hardware cursor\n",
 				XCONFIG_GIVEN, vga256InfoRec.name);
 		}
