@@ -20,6 +20,7 @@
     mModifiers = 0;
     mEventWriteFD = -1;
     mOutputReadFile = NULL;
+    mouseState = 0;
     
     return self;
 }
@@ -77,9 +78,11 @@
     case NSSystemDefined:
         if(([anEvent subtype]==7)&&([anEvent data1] & 1 == 1))
             return YES; // skip mouse button 1 events
+        if(mouseState==[anEvent data2])
+            return YES; // ignore double events
         ev.data.compound.subType=[anEvent subtype];
         ev.data.compound.misc.L[0]=[anEvent data1];
-        ev.data.compound.misc.L[1]=[anEvent data2];
+        ev.data.compound.misc.L[1]=mouseState=[anEvent data2];
         break;
     case NSScrollWheel:
         ev.data.scrollWheel.deltaAxis1=[anEvent deltaY];

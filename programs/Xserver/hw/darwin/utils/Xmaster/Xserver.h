@@ -27,6 +27,7 @@ extern BOOL killed;
     BOOL mRunning;
     BOOL mVisible;
     UInt32 mModifiers;
+    UInt32 mouseState;
 
     // communication
     int mEventWriteFD;
