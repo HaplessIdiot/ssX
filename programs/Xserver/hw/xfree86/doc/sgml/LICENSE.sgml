@@ -8,7 +8,7 @@
 <date>22 February 2004</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.36 2004/04/12 20:14:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.37 2004/06/09 18:24:01 dawes Exp $
 </ident>
 
 <sect>Introduction
@@ -88,8 +88,8 @@ which is not GPL-compatible.
 Other portions of XFree86, including the X servers, may include code
 with licenses that are not GPL-compatible.  Example of such licenses
 include some of the <ref name="BSD-style licenses" id="bsd">, the
-<ref name="FreeType License" id="ftl">, the <ref name="SGI licenses"
-id="sgi"> and the <ref name="XFree86 License version 1.1" id="xf11">.
+<ref name="FreeType License" id="ftl"> and the <ref name="SGI licenses"
+id="sgi">.
 
 
 <sect>XFree86 License (version 1.1)<label id="xf11">
@@ -190,7 +190,7 @@ Copyright (C) 2001 by J. Kean Johnston<newline>
 Copyright (C) 2000, 2001 Ani Joshi<newline>
 Copyright (C) 2000 by Rainer Keller<newline>
 Copyright (C) 1999-2003 by Peter Kunzmann, Citron GmbH, Germany.<newline>
-Copyright (C) 1994 through 2004 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org<newline>
+Copyright (C) 1994 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org<newline>
 Copyright (C) 1996 by Steven Lang<newline>
 Copyright (C) 1995, 1999 by Patrick Lecoanet, France.<newline>
 Copyright (C) 2001 by Patrick LERDA<newline>
