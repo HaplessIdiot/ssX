@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.64tsi Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.65 2002/11/24 22:41:56 tsi Exp $ */
 
 
 /* 
@@ -241,6 +241,7 @@ in this Software without prior written authorization from The Open Group.
 
 #if defined(__APPLE__)
 #define DEFAULT_CPP "/usr/bin/cpp"
+#define DEFAULT_CC "cc"
 #endif
 #if defined(Lynx) || defined(__Lynx__)
 #define DEFAULT_CC "gcc"
