@@ -1,4 +1,4 @@
-/* $XConsortium: Cursor.c,v 1.3 94/03/31 17:49:09 dpw Exp $ */
+/* $Xorg: Cursor.c,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -22,22 +22,25 @@ is" without express or implied warranty.
 #include "scrnintstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"
-#include "Cursor.h"
+#include "XNCursor.h"
 #include "Visual.h"
 #include "Keyboard.h"
+#include "Args.h"
 
 void xnestConstrainCursor(pScreen, pBox)
      ScreenPtr pScreen;
      BoxPtr pBox;
 {
+#ifdef _XSERVER64
+  Window64 wroot;
+#else
   Window wroot;
+#endif
+
   int wx, wy;
   unsigned int wwidth, wheight;
   unsigned int wborderwidth;
@@ -202,7 +205,7 @@ Bool xnestSetCursorPosition(pScreen, x, y, generateEvent)
 {
   int i;
 
-  for (i = 0; i < screenInfo.numScreens; i++)
+  for (i = 0; i < xnestNumScreens; i++)
     XWarpPointer(xnestDisplay, xnestDefaultWindows[i],
 		 xnestDefaultWindows[pScreen->myNum],
 		 0, 0, 0, 0, x, y);

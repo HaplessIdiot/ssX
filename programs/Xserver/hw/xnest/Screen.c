@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.8 2001/01/17 22:36:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.9 2001/03/23 01:27:09 paulo Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -33,7 +33,7 @@ is" without express or implied warranty.
 #include "Drawable.h"
 #include "XNFont.h"
 #include "Color.h"
-#include "Cursor.h"
+#include "XNCursor.h"
 #include "Visual.h"
 #include "Events.h"
 #include "Init.h"
