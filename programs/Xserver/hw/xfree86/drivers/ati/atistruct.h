@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.42tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.43tsi Exp $ */
 /*
  * Copyright 1999 through 2004 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -337,8 +337,6 @@ typedef struct _ATIRec
     int pitchInc;
     rgb weight;
 
-#ifndef AVOID_DGA
-
     /*
      * DGA-related data.
      */
@@ -351,8 +349,6 @@ typedef struct _ATIRec
      * such that ~0 is interpreted as a legitimate transparency key.
      */
     CARD8 XAAForceTransBlit;
-
-#endif /* AVOID_DGA */
 
     /*
      * XVideo-related data.

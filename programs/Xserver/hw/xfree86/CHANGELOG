@@ -1,4 +1,16 @@
 XFree86 4.4.99.21 (xx December 2004)
+ 251. Fix minor bug in Linux/Alpha's xf86GetPciSizeFromOS() (Marc La France).
+ 250. Cause the Linux port to warn when MAX_PCI_BUSES and/or MAX_PCI_DEVICES
+      need to be increased (Marc La France).
+ 249. Deal with Linux 2.6's PCI bus naming (Marc La France).
+ 248. Resync with Martin Mares's 2004.11.29 pci.ids snapshot and add to it an
+      entry for Sun's Schizo+ (Marc La France).
+ 247. Re-instate DGA support in atimisc driver on UltraSPARC's (Marc La France).
+ 246. Add support for the more recent UltraSPARC implementations to the Linux
+      port (Marc La France).
+ 245. Fix DGA for multi-domain architectures (except perhaps for Linux/Alpha,
+      see comment inserted into axpPci.c).  PCI only for now
+      (Marc La France)
  244. Fix a typo in the xsetpointer(1) man page (Bugzilla #1524, NMarci).
  243. Fix build warning for lib/X11/Wraphelp.c (Bugzilla #1522, Nicolas Joly).
 
@@ -19219,7 +19231,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3369 2004/12/27 12:02:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3370 2004/12/28 23:50:47 dawes Exp $
 
 
 

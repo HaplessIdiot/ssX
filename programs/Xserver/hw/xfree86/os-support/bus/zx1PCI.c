@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.8 2004/01/16 15:39:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.9tsi Exp $ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.
  * All rights reserved.
@@ -1028,7 +1028,9 @@ xf86PostScanZX1(void)
 	    zx1_fakebus = zx1_subno[i] + 1;
 
 	while (!zx1_busnmpt[zx1_busno[i]]) {
+#ifndef linux
 	    if (zx1_busno[i])	/* Info for bus zero is in static storage */
+#endif
 		xfree(pciBusInfo[zx1_busno[i]]);
 	    pciBusInfo[zx1_busno[i]++] = NULL;
 	    if (zx1_busno[i] > zx1_subno[i])

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.159 2004/03/22 17:01:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.160tsi Exp $ */
 
 /*
  * Copyright (c) 1995-2003 by The XFree86 Project, Inc.
@@ -463,8 +463,10 @@
 #define PCI_CHIP_SIMBA			0x5000
 #define PCI_CHIP_PSYCHO			0x8000
 #define PCI_CHIP_SCHIZO			0x8001
+#define PCI_CHIP_SCHIZO_PLUS		0x8002
 #define PCI_CHIP_SABRE			0xA000
 #define PCI_CHIP_HUMMINGBIRD		0xA001
+#define PCI_CHIP_TOMATILLO		0xA801
 
 /* BrookTree */
 #define PCI_CHIP_BT848			0x0350

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.47tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.48tsi Exp $ */
 /*
  * Copyright (c) 1998-2002 by The XFree86 Project, Inc.
  *
@@ -1155,11 +1155,19 @@ DGAOpenFramebuffer(
    unsigned int *flags
 ){
    DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[indx]);
+   ScrnInfoPtr pScrn = xf86Screens[indx];
 
    /* We rely on the extension to check that DGA is available */
 
-   return (*pScreenPriv->funcs->OpenFramebuffer)(pScreenPriv->pScrn, 
-				name, mem, size, offset, flags);
+   if (!(*pScreenPriv->funcs->OpenFramebuffer)(pScrn, 
+				name, mem, size, offset, flags))
+	return FALSE;
+
+   if (pScrn->numEntities <= 0)
+	return TRUE;		/* Shouldn't happen ... */
+
+   return xf86LocateMemoryArea(pScrn->entityList[0],
+			       name, mem, size, offset, flags);
 }
 
 void

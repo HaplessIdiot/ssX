@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.26tsi Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.27tsi Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -23,6 +23,9 @@ Copyright (c) 1995,1996  The XFree86 Project, Inc
 #include <X11/extensions/Xext.h>
 #include <X11/extensions/extutil.h>
 #include <stdio.h>
+#ifdef linux
+#include <sys/ioctl.h>
+#endif
 
 
 /* If you change this, change the Bases[] array below as well */
@@ -963,6 +966,19 @@ DGAMapPhysical(
 #endif
     if ((pMap->fd = open(name, O_RDWR)) < 0)
 	return False;
+#ifdef linux
+    /*
+     * If we are to mmap() something in /proc/bus/pci, ensure we mmap() PCI
+     * memory.  Oddly enough the default seems to be PCI I/O for some kernels.
+     * Also, avoid having to #include <linux/pci.h> here.
+     */
+# ifndef PCIIOC_MMAP_IS_MEM
+#  define PCIIOC_MMAP_IS_MEM \
+	  (('P' << 24) | ('C' << 16) | ('I' << 8) | 0x02)
+# endif
+    if (!memcmp(name, "/proc/bus/pci/", 14))
+	ioctl(pMap->fd, PCIIOC_MMAP_IS_MEM, 0);	/* Ignore errors */
+#endif
     pMap->virtual = mmap(NULL, size, PROT_READ | PROT_WRITE, 
 			MAP_FILE | MAP_SHARED, pMap->fd, (off_t)base);
     if (pMap->virtual == (void *)-1)

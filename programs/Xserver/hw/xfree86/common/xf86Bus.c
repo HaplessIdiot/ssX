@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.84 2004/10/23 15:29:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.85tsi Exp $ */
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -3237,3 +3237,31 @@ xf86GetEntityPrivate(int entityIndex, int privIndex)
     return &(xf86Entities[entityIndex]->entityPrivates[privIndex]);
 }
 
+
+/* Relocate, as needed, a device offset into its domain */
+Bool
+xf86LocateMemoryArea(int entityIndex, char **devName,
+		     unsigned int *devOffset, unsigned int *fbSize,
+		     unsigned int *fbOffset, unsigned int *flags)
+{
+    EntityPtr pEntity = xf86Entities[entityIndex];
+
+    switch (pEntity->busType) {
+    case BUS_PCI:
+	return xf86LocatePciMemoryArea(
+	    pciTag(pEntity->pciBusId.bus,
+		   pEntity->pciBusId.device,
+		   pEntity->pciBusId.func),
+	    devName, devOffset, fbSize, fbOffset, flags);
+
+#if defined(__sparc__) && !defined(__OpenBSD__) && defined(___NOT_YET___)
+    case BUS_SBUS:
+	return xf86LocateSbusMemoryArea(xf86GetSbusInfoForEntity(entityIndex),
+					devName, devOffset,
+					fbSize, fbOffset, flags);
+#endif
+
+    default:
+	return TRUE;
+    }
+}

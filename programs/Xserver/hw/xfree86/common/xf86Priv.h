@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.85 2004/11/07 04:20:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.86tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
@@ -176,6 +176,13 @@ extern void xf86PostPreInit(void);
 extern void xf86PostScreenInit(void);
 extern memType getValidBIOSBase(PCITAG tag, int num);
 extern int pciTestMultiDeviceCard(int bus, int dev, int func, PCITAG** pTag);
+
+extern Bool xf86LocateMemoryArea(int entityIndex,
+				 char **devName,
+				 unsigned int *devOffset,
+				 unsigned int *fbSize,
+				 unsigned int *fbOffset,
+				 unsigned int *flags);
 
 /* xf86Config.c */
 
