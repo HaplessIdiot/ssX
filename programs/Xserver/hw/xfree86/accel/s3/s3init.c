@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.92 1996/06/29 09:07:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.93 1996/08/10 13:06:04 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1086,6 +1086,7 @@ s3Init(mode)
      outb(vgaCRIndex, 0x5C);
        switch(s3InfoRec.depth) {
        case 24:
+       case 32:
 	 outb(vgaCRReg, CR5C | 0xf0);
 	 break;
        case 16:
@@ -1163,6 +1164,7 @@ s3Init(mode)
 		xf86setdaccomm(0xc0);
                 break;
           case 24:
+          case 32:
 		xf86setdaccomm(0xe0);  /* XXXX just a guess, check !!! */
                 break;
           default:
@@ -1716,7 +1718,8 @@ s3Init(mode)
 	    /* Setting this for the SPEA Mercury affects clocks > 120MHz */
 	  } else if (OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options)) {
 	     /* do nothing */ ;
-	  } else if ((s3DisplayWidth >= 1024) || (s3InfoRec.depth == 24)) {
+	  } else if ((s3DisplayWidth >= 1024) || (s3InfoRec.depth == 24)
+		     || (s3InfoRec.depth == 32)) {
 #ifndef PC98_PW
 	    outb(vgaCRReg, tmp | 0x40);
 #else
@@ -1730,7 +1733,7 @@ s3Init(mode)
          /*
           * set output clocking to 4:1 multiplexing
           */
-	 if (s3InfoRec.depth == 24)                    /* 24bpp */
+	 if (s3InfoRec.depth == 24 || s3InfoRec.depth == 32)  /* 24bpp */
 	    tmp = 0x10;
 	 else if (s3InfoRec.depth == 16)               /* 5-6-5 */
 	    tmp = 0x38;
@@ -1798,7 +1801,7 @@ s3Init(mode)
 	   outb(vgaCRReg, tmp & 0xF7);
 	 }
 	 
-	 if (s3InfoRec.depth == 24)			/* 24bpp */
+	 if (s3InfoRec.depth == 24 || s3InfoRec.depth == 32)	/* 24bpp */
 	    tmp = 0x10;
 	 else if (s3InfoRec.depth == 16)		/* 5-6-5 */
 	    tmp = 0x3c;					/* 1:1 MUX */
@@ -2000,7 +2003,7 @@ s3Init(mode)
          tmp = inb(vgaCRReg);
          outb(vgaCRReg, (tmp & 0xbf) | s3SAM256);
 
-	 if (s3InfoRec.depth == 24) {                          /* 24bpp */
+	 if (s3InfoRec.depth == 24 || s3InfoRec.depth == 32) {  /* 24bpp */
             if (DAC_IS_TI3025) {
                s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3025T_888);
                s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_TC_D24P64);
@@ -2363,7 +2366,7 @@ s3Init(mode)
 	 outb(vgaCRIndex, 0x55);
 	 outb(vgaCRReg, 0x00);
 
-	 if (s3InfoRec.depth == 24) {                    /* 24 bpp */
+	 if (s3InfoRec.depth == 24 || s3InfoRec.depth == 32) { /* 24 bpp */
 	    s3OutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 6);
 	    s3OutIBMRGBIndReg(IBMRGB_32bpp, 0, 0);
 	 } else if (s3InfoRec.depth == 16) {             /* 16 bpp */

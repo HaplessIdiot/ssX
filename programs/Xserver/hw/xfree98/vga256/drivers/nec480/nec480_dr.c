@@ -6,7 +6,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/nec480_dr.c,v 3.2 1996/03/29 22:19:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/nec480_dr.c,v 3.3 1996/07/08 10:36:01 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -182,13 +182,7 @@ NEC480Probe()
 		 */
 		if (StrCaseCmp(vga256InfoRec.chipset, NEC480Ident(0)))
 			return (FALSE);
-      		else
-			NEC480EnterLeave(ENTER);
-    	}
-  	else
-	{
-		NEC480EnterLeave(ENTER);
-    	}
+	}
 
 	/*
 	 * If the user has specified the amount of memory in the XF86Config
@@ -210,12 +204,15 @@ NEC480Probe()
 	 */
   	if (!vga256InfoRec.clocks)
     	{
-    		/* I don't know. ??? */
+		vga256InfoRec.clocks = 1;
+		vga256InfoRec.clock[0] = NEC480_MAX_CLOCK_IN_KHZ;
     	}
 
 	vga256InfoRec.maxClock = NEC480_MAX_CLOCK_IN_KHZ;
   	vga256InfoRec.chipset = NEC480Ident(0);
   	vga256InfoRec.bankedMono = TRUE;
+
+	NEC480EnterLeave(ENTER);
 
 	/*
 	 * Map the VRAM window's address
@@ -257,7 +254,9 @@ NEC480EnterLeave(Bool enter)
 		outb(0x9a0, 0x0d);
 		cont_page = inb(0x9a0) & 0x01;
 		/* Save current horizontal sync, 1: 31.5KHz */
-		hsync31 = inb(0x9a8) & 0x01;
+		if( vga256InfoRec.clock[0] == NEC480_MAX_CLOCK_IN_KHZ ){
+			hsync31 = inb(0x9a8) & 0x01;
+		}
 		flag = 1;
 	}
 
@@ -271,11 +270,15 @@ NEC480EnterLeave(Bool enter)
 		/* GDC : 5MHz mode */
 		outb(0x6a, 0x83);
 		outb(0x6a, 0x85);
-		gdc_init();
+		if( vga256InfoRec.clock[0] == NEC480_MAX_CLOCK_IN_KHZ ){
+			gdc_init();
+		}
 		outb(0x6a, 0x07);
 		outb(0x6a, 0x21);		/* Extended mode */
 		outb(0x6a, 0x69);		/* Continuous G-VRAM page */
-		outb(0x9a8, 0x01);		/* 24.8KHz -> 31.5KHz */
+		if( vga256InfoRec.clock[0] == NEC480_MAX_CLOCK_IN_KHZ ){
+			outb(0x9a8, 0x01);	/* 24.8KHz -> 31.5KHz */
+		}
 		while (!(inb(0x60) & 0x20)) ;	/* V-SYNC wait */
 		outb(0x62, 0xc);		/* text off */
 		outb(0xA2, 0xd);		/* graphics on */
@@ -292,8 +295,8 @@ NEC480EnterLeave(Bool enter)
 			outb(0x6a, 0x07);
 			outb(0x6a, 0x68);	/* separate VRAM page */
 		}
-		if(hsync31 == 0)
-		{
+		if( vga256InfoRec.clock[0] == NEC480_MAX_CLOCK_IN_KHZ
+		   && hsync31==0 ){
 			outb(0x9a8, 0x00);	/* 31.5KHz-> 24.8KHz */
 		}
 		outb(0xA2, 0xc);		/* graphics off */

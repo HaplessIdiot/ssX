@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.53 1996/08/10 13:08:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.54 1996/08/11 13:03:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -69,6 +69,10 @@
 #define EGC_MODE	0x4a4
 #define EGC_FGC		0x4a6
 #define EGC_COPY_MODE	0x2cac
+#endif
+
+#if defined(PC98_TGUI)
+extern pointer pc98PvramBase;
 #endif
 
 
@@ -957,8 +961,9 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 			    vgaMapSize);
 #else
 #if defined(PC98_TGUI)
-    vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xFFE10000,
-			    vgaMapSize);
+    if(!vgaUseLinearAddressing && pc98PvramBase != NULL)
+      vgaBase = xf86MapVidMem(scr_index, VGA_REGION,
+			      pc98PvramBase, vgaMapSize);
 #else
 #if defined(PC98_EGC) || defined(PC98_NEC480)
     vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA8000,

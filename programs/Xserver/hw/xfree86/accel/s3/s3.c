@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.133 1996/08/11 12:54:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.134 1996/08/13 11:29:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -639,6 +639,10 @@ s3GetPCIInfo()
 	 }
 	 info.ChipRev = pcrp->_class_revision & 0xFF;
 	 info.MemBase = pcrp->_base0 & 0xFF800000;
+#ifdef PC98_GA968
+	 xf86writepci(s3InfoRec.scrnIndex, pcrp->_cardnum, 0x04,
+			0x0000FFFF, 0x00000003);
+#endif
 	 break;
       }
       i++;
@@ -714,7 +718,7 @@ s3Probe()
    S3PCIInformation *pciInfo = NULL;
    struct pci_config_reg *pcrp;
 
-#ifndef PC98
+#if !defined(PC98) || defined(PC98_GA968)
    /* Do general PCI probe first */
    pciInfo = s3GetPCIInfo();
    if (pciInfo && pciInfo->MemBase)
@@ -729,7 +733,18 @@ s3Probe()
    xf86EnableIOPorts(s3InfoRec.scrnIndex);
 
 #ifdef PC98
+#ifdef PC98_PW
    pc98BoardType = PW;
+#endif
+#ifdef PC98_NEC
+   pc98BoardType = NECWAB;
+#endif
+#ifdef PC98_PWLB
+   pc98BoardType = PWLB;
+#endif
+#ifdef PC98_GA968
+   pc98BoardType = GA968;
+#endif
 
    if (OFLG_ISSET(OPTION_PCSKB, &s3InfoRec.options))
 	pc98BoardType = PCSKB;

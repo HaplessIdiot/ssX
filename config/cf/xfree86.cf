@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.95 1996/06/29 12:19:05 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.96 1996/08/13 11:24:08 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -175,6 +175,10 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 #define XF98PWLBServer		NO
 #endif
 
+#ifndef XF98GA968Server
+#define XF98GA968Server		NO
+#endif
+
 #if XF98NECS3Server
 # define XF98NECS3Dir		s3nec
 #else
@@ -193,6 +197,12 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 # define XF98PWLBDir		/**/
 #endif
 
+#if XF98GA968Server
+# define XF98GA968Dir		s3ga968
+#else
+# define XF98GA968Dir		/**/
+#endif
+
 #undef XF86AccelServerDirs
 #define XF86AccelServerDirs   XF86S3Dir XF86I8514Dir XF86Mach8Dir XF86Mach32Dir XF86Mach64Dir XF86P9000Dir XF86AGXDir XF86W32Dir XF86I128Dir
 
@@ -204,10 +214,10 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 #endif
 
 #undef XF98AccelServerDirs
-#define XF98AccelServerDirs   XF98NECS3Dir XF98PWSKBDir XF98PWLBDir
+#define XF98AccelServerDirs   XF98NECS3Dir XF98PWSKBDir XF98PWLBDir XF98GA968Dir
 
 #undef XF98AccelServer
-#if XF98NECS3Server || XF98PWSKBServer || XF98PWLBServer
+#if XF98NECS3Server || XF98PWSKBServer || XF98PWLBServer || XF98GA968Server
 # define XF98AccelServer	YES
 #else
 # define XF98AccelServer	NO
@@ -255,10 +265,6 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 
 #ifndef XF86W32Drivers
 # define XF86W32Drivers		et4000w32
-#endif
-
-#ifndef XF98S3Drivers
-# define XF98S3Drivers		mmio_928 s3_generic
 #endif
 
 #if XF86FBDevServer
@@ -610,6 +616,7 @@ VGA16DRIVERSRC = $(XF86SRC)/vga16/drivers
       XF98HWNECSRC = $(XF98SRC)/common_hw/nec
     XF98HWPWSKBSRC = $(XF98SRC)/common_hw/pwskb
      XF98HWPWLBSRC = $(XF98SRC)/common_hw/pwlb
+    XF98HWGA968SRC = $(XF98SRC)/common_hw/ga968
          XF98OSSRC = $(XF98SRC)/os-support
   XF98VGADRIVERSRC = $(XF98SRC)/vga256/drivers
 XF98VGA16DRIVERSRC = $(XF98SRC)/vga16/drivers
@@ -618,6 +625,7 @@ XF98VGA16DRIVERSRC = $(XF98SRC)/vga16/drivers
   XF98NECDRIVERSRC = $(XF98SRC)/accel/s3nec/drivers
 XF98PWSKBDRIVERSRC = $(XF98SRC)/accel/s3pwskb/drivers
  XF98PWLBDRIVERSRC = $(XF98SRC)/accel/s3pwlb/drivers
+XF98GA968DRIVERSRC = $(XF98SRC)/accel/s3ga968/drivers
 #endif
 
 /*

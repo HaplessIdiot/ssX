@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/common/pc98_vers.h,v 3.5 1996/02/18 03:44:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/common/pc98_vers.h,v 3.6 1996/03/29 22:18:43 dawes Exp $ */
 
 #ifndef _PC98_VERSION_H
 #define _PC98_VERSION_H
@@ -15,9 +15,9 @@
 
 #define PC98_CIRRUS_BOARDS "WAB-S/1000/2000/EP WSR-G/E WSN-A2F WAP-2000/4000 GA-98NB2/4\n\tPCNKV/NKV2 NEC(542x,543x,544x)"
 
-#define PC98_TGUI_BOARDS "(Under testing: NEC(9320/9660))"
+#define PC98_TGUI_BOARDS "(Under testing: NEC(9320/9660) IO-DATA(9680))"
 
-#define PC98_S3_BOARDS	 "PW928/928G/928II/801/801+/801G PCSKB/SKB2 \n\tWAB-A/B NEC(928)\n\t(Under testing: NEC(864) PCSKB4 PW805i/964/928LB/964LB)"
+#define PC98_S3_BOARDS	 "PW928/928G/928II/801/801+/801G PCSKB/SKB2 \n\tWAB-A/B NEC(928)\n\t(Under testing: NEC(864) PCSKB4 PW805i/964/928LB/964LB GA-968V4/PCI)"
 
 #endif
 
@@ -40,6 +40,7 @@ PL.14	Trident 9320/9660 make rule was added.
 	PW805i initialize code was modified.	
 	PW964 initialize code was added.
 	XF98_NEC480 for PANIX(98) was available.
+PL.15	XF98_GA968(GA-968V4/PCI) was added.
 
 =======================================================================
 

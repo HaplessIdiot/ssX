@@ -4,7 +4,10 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 10:50:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.18 1996/06/29 14:12:24 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.19 1996/07/08 10:33:27 dawes Exp $
+
+
+
 #include <Server.tmpl>
 
 #ifdef i386MachArchitecture
@@ -77,17 +80,13 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.18 1996/06/2
 MODULEDEFINES = -DDYNAMIC_MODULE -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 #endif
 
-#ifndef NeedXF86Beta
 #if XFree86Version % 10
-#define NeedXF86Beta YES
-#else
-#define NeedXF86Beta NO
-#endif
-#endif
-#if NeedXF86Beta
       BETASRC = xf86Beta.c
       BETAOBJ = xf86Beta.o
      BETADEFS = -DDO_CHECK_BETA
+#ifndef NeedXF86Beta
+#define NeedXF86Beta YES
+#endif
 #endif
 
 SERVERSRCS = \
@@ -151,9 +150,9 @@ OFILES = \
 	xf86MIniExt.o \
 	xf86_Option.o
 
-   INCLUDES = -I$(XF86COMSRC) -I$(XF86SRC) -I$(XF86OSSRC) -I$(SERVERSRC)/mfb \
-	      -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(SERVERSRC)/os \
-              -I$(INCLUDESRC) -I$(EXTINCSRC)
+   INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC) -I$(XF86OSSRC) \
+	      -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+	      -I$(SERVERSRC)/os -I$(INCLUDESRC) -I$(EXTINCSRC)
 
      OSNAME = OSName
    OSVENDOR = OSVendor
@@ -204,8 +203,8 @@ InstallDynamicModule(xf86Summa.so,$(MODULEDIR))
 #  endif
 # endif
 #endif
-SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES))
-SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES))
+SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))
+SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
 #if XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer ||\
     XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer
@@ -216,7 +215,7 @@ all:: XF86_SVGA.o
 SpecialObjectRule(XF86_VGA16.o,XF86_VGA16.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_VGA16.o
 #endif
-#if XF98NECS3Server || XF98PWSKBServer || XF98PWLBServer
+#if XF98NECS3Server || XF98PWSKBServer || XF98PWLBServer || XF98GA968Server
 SpecialObjectRule(XF86_S3.o,XF86_S3.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_S3.o
 #endif
@@ -225,7 +224,7 @@ all:: XF86_S3.o
 SpecialObjectRule($(BETAOBJ),$(BETASRC),$(EXP_DEFINES))
 #endif
 
-ObjectFromSpecialSource(xf86Init_m,../../xfree86/common/xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) -DXF86MONOVGA)
+ObjectFromSpecialSource(xf86Init_m,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS) -DXF86MONOVGA)
 ObjectFromSpecialSource(xf86IniExt,$(SERVERSRC)/mi/miinitext,$(EXT_DEFINES))
 ObjectFromSpecialSource(xf86MIniExt,$(SERVERSRC)/mi/miinitext,$(EXT_DEFINES) -UPEXEXT -UXIE)
 

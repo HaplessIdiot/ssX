@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc24.c,v 3.0 1996/06/29 09:07:06 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -260,7 +260,7 @@ s3CreateGC24(pGC)
    if (PixmapWidthPaddingInfo[pGC->depth].padPixelsLog2 == LOG2_BITMAP_PAD)
        return (mfbCreateGC(pGC));
    if (pGC->depth != s3InfoRec.depth) {
-        ErrorF("s3CreateGC: unsupported depth: %d\n", pGC->depth);
+        ErrorF("s3CreateGC24: unsupported depth: %d\n", pGC->depth);
         return FALSE;
    }
 

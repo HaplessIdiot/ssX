@@ -2,7 +2,7 @@
 #define CT_LINE_ACCL		       /* Enable line acceleration */
 
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.13 1996/06/29 09:08:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.14 1996/08/11 13:02:46 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -543,7 +543,8 @@ ctClockLoad(Type, Clock)
 	/* 
 	 * select fixed clock 0  before tampering with VCLK select
 	 */
-	outb(0x3C2, (inb(0x3CC) & ~0x0C) | 0x01);
+	temp = inb(0x3CC);
+	outb(0x3C2, (temp & ~0x0C) | 0x01);
 	if (ctisHiQV32) {
 	    write_fr(0x03, (tempf03 & ~0x0C) | 0x04);
 	    if (!Clock->Clock) {       /* Hack to load saved console clock */
@@ -622,7 +623,8 @@ ctClockFind(Type, no, Clock)
 	Clock->xr33 = 0;	       /* 65520-548        */
 	Clock->xr54 = Clock->msr;      /* 65520-548        */
 	Clock->Clock = vga256InfoRec.clock[no];
-	Clock->Clock *= ctisHiQV32 ? 1 : vgaBytesPerPixel;
+	if (!ctisHiQV32)
+		Clock->Clock *= vgaBytesPerPixel;
 	break;
 
     case TYPE_HW:
@@ -1692,6 +1694,7 @@ CHIPSRestore(restore)
     vgaCHIPSPtr restore;
 {
     int i;
+    unsigned char tmp;
 
 #ifdef DEBUG
     ErrorF("CHIPSRestore\n");
@@ -1706,7 +1709,8 @@ CHIPSRestore(restore)
     }
     outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) | ctVgaIOBaseFlag));
     outb(ctCRindex, 0x11);
-    outb(ctCRvalue, (inb(ctCRvalue) & 0x7F));
+    tmp = inb(ctCRvalue);
+    outb(ctCRvalue, (tmp & 0x7F));
 
     /* set the clock */
     if (restore->std.NoClock >= 0)
@@ -1751,7 +1755,8 @@ CHIPSRestore(restore)
 	/* Flag valid start address, if using CRT extensions */
 	if (ctisHiQV32 && (restore->Port_3D6[0x09] & 0x1) == 0x1) {
 	    outb(0x3D4, 0x40);
-	    outb(0x3D5, inb(0x3D5) | 0x80);
+	    tmp = inb(0x3D5);
+	    outb(0x3D5, tmp | 0x80);
 	}
     } else {
 	ctRestore(restore);
@@ -1784,7 +1789,8 @@ CHIPSRestore(restore)
 	/* Flag valid start address, if using CRT extensions */
 	if (ctisHiQV32 && (restore->Port_3D6[0x09] & 0x1) == 0x1) {
 	    outb(0x3D4, 0x40);
-	    outb(0x3D5, inb(0x3D5) | 0x80);
+	    tmp = inb(0x3D5);
+	    outb(0x3D5, tmp | 0x80);
 	}
     }
 
@@ -2608,6 +2614,7 @@ CHIPSAdjust(x, y)
 
     /* MH - looks like we are in byte mode.... */
     int Base = (y * vga256InfoRec.virtualX + x);
+    unsigned char tmp;
 
     switch (vgaBitsPerPixel) {
     case 16:
@@ -2638,7 +2645,8 @@ CHIPSAdjust(x, y)
 	    outw(vgaIOBase + 4, ((Base & 0x0F0000) >> 8) | 0x8000 | 0x40);
     } else {
 	outb(0x3D6, 0x0C);
-	outb(0x3D7, ((Base & 0x030000) >> 16) | (inb(0x3D7) & 0xF8));
+	tmp = inb(0x3D7);
+	outb(0x3D7, ((Base & 0x030000) >> 16) | (tmp & 0xF8));
     }
 }
 
@@ -3022,7 +3030,8 @@ ctRestore(restore)
 	}
 	/* Don't touch VCLK regs, but fix up MClk */
 	outb(0x3D6, 0xCE);	       /* Select Fixed MClk before */
-	outb(0x3D7, inb(0x3D7) & 0x7F);
+	tmp = inb(0x3D7);
+	outb(0x3D7, tmp & 0x7F);
 	outb(0x3D6, 0xCC);
 	if (inb(0x3D7) != restore->Port_3D6[0xCC])
 	    outb(0x3D7, restore->Port_3D6[0xCC]);

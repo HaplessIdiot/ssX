@@ -4,7 +4,8 @@ XCOMM $XConsortium: Imakefile /main/4 1996/01/26 10:56:39 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/nec480/Imakefile,v 3.2 1996/01/24 22:04:04 dawes Exp $
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/nec480/Imakefile,v 3.3 1996/02/04 09:17:15 dawes Exp $
 #include <Server.tmpl>
 
 FSRCS =  fBitBlt.s fFillCopy.s fFillOr.s fFillAnd.s \
@@ -56,7 +57,7 @@ OBJS =   vgagc.o vgawindow.o vgascrinit.o \
 	 VHLine.o vgaBanks.o $(FOBJS) vgaHW.o vga.o vgaCmap.o vgaBank.o \
 	 vgaPCI.o
 
-   INCLUDES = -I. -I$(XF98COMSRC) -I$(XF98OSSRC) -I$(XF98HWSRC) \
+   INCLUDES = -I. -I$(XF98COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	      -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
               -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(FONTINCSRC) \
 	      -I$(XF86SRC)/vga256/vgainit

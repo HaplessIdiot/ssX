@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/ibm/Imakefile,v 3.3 1996/02/12 11:14:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/ibm/Imakefile,v 3.4 1996/05/13 06:43:42 dawes Exp $
 
 
 
@@ -110,4 +110,8 @@ LinkSourceFile(wm3.h,$(XF86SRC)/vga16/ibm)
 
 ObjectFromSpecialSource(mfbseg,mfbline,-DPOLYSEGMENT)
 
+#ifndef OS2Architecture
 DependTarget()
+#else
+depend::
+#endif

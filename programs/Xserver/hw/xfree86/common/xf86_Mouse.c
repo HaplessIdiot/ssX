@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.15 1996/05/11 11:04:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.16 1996/08/13 11:30:14 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -44,8 +44,6 @@
 
 #ifdef XINPUT
 #include "xf86Xinput.h"
-#endif
-
 #include "extnsionst.h"
 #include "extinit.h"
 
@@ -76,6 +74,7 @@ static Bool xf86MouseConfig(
     LexPtr		/* val */
 #endif
 );
+#endif /* XINPUT */
 
 #ifndef MOUSE_PROTOCOL_IN_KERNEL
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.11 1996/05/06 05:57:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.12 1996/05/13 07:29:57 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -454,7 +454,7 @@ unsigned short int port;
 }
 
 
-#if defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC) || defined(PC98_PWLB)
+#if defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC) || defined(PC98_PWLB) || defined(PC98_GA968)
 #define PW_PORT 0x600
 extern short chipID;
 #if NeedFunctionPrototypes
@@ -884,7 +884,7 @@ unsigned short int port;
 # ifndef PC98
 #  include <sys/inline.h>
 # else
-#if defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC) || defined(PC98_PWLB)
+#if defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC) || defined(PC98_PWLB) || defined(PC98_GA968)
 #define PW_PORT 0x600
 extern short chipID;
 #if NeedFunctionPrototypes

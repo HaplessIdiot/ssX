@@ -1246,7 +1246,7 @@ XkbRF_GetNamesProp(dpy,rf_rtrn,vd_rtrn)
 Atom		rules_atom,actual_type;
 int		fmt,len;
 unsigned long	nitems,bytes_after;
-unsigned char *	data,*out;
+char		*data, *out;
 Status		rtrn;
 
     rules_atom= XInternAtom(dpy,_XKB_RF_NAMES_PROP_ATOM,True);
@@ -1254,8 +1254,9 @@ Status		rtrn;
 	return False; 
     rtrn= XGetWindowProperty(dpy,DefaultRootWindow(dpy),rules_atom,
 				0L,_XKB_RF_NAMES_PROP_MAXLEN,False,
-				XA_STRING,&actual_type,
-				&fmt,&nitems,&bytes_after,&data);
+				XA_STRING, &actual_type,
+				&fmt, &nitems, &bytes_after,
+				(unsigned char **)&data);
     if (rtrn!=Success)
 	return False;
     if (rf_rtrn)
@@ -1366,7 +1367,7 @@ char *	pval;
     }
 
     XChangeProperty(dpy,DefaultRootWindow(dpy),name,XA_STRING,8,PropModeReplace,
-                                                		pval,len);
+                   (unsigned char *)pval,len);
     free(pval);
     return True;
 }

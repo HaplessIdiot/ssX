@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.37 1996/06/29 09:09:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.38 1996/08/10 13:08:28 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -195,7 +195,7 @@ static TGUI_Bpp_Clocks[] = {
 #ifdef PC98_TGUI
 extern pointer mmioBase;
 extern Bool BoardInit(void);
-extern void crtswitch(short);
+extern void (*crtswitch)(short);
 #endif
 
 /*

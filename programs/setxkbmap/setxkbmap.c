@@ -29,6 +29,7 @@
 #include <locale.h>
 #include <limits.h>
 #include <X11/Xlib.h>
+#include <X11/Xos.h>
 #include <X11/XKBlib.h>
 #include <X11/extensions/XKBfile.h>
 #include <X11/extensions/XKBconfig.h>

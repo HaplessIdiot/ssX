@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/01/21 14:32:46 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Imakefile,v 3.10 1996/02/24 06:02:21 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Imakefile,v 3.11 1996/05/12 13:01:45 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -78,7 +78,7 @@ REPORTFORM = BetaReport
 all::
 
 #if !BuildLinuxDocText
-HWREADME =  README.ati README.trident README.tseng README.WstDig \ 
+HWREADME =  README.ati README.trident README.tseng README.WstDig \
             README.cirrus README.Video7 README.P9000 README.agx \
             README.S3 README.W32 README.Oak README.Mach64 README.ark
 
@@ -87,7 +87,7 @@ MAINDOCS = COPYRIGHT README README.Config INSTALL RELNOTES
 OTHERDOCS = /*VideoModes.doc*/ QuickStart.doc README.clkprog xinput
 #endif
 
-MISCDOCS = ServersOnly LbxproxyOnly $(REPORTFORM) README.DGA
+MISCDOCS = ServersOnly LbxproxyOnly $(REPORTFORM) README.DGA README.chips
 
 DATABASE = /*modeDB.txt*/ AccelCards Monitors Devices
 
@@ -109,7 +109,8 @@ LinkSourceFile(LbxproxyOnly,$(XF86SRC)/doc)
 LinkSourceFile(Monitors,$(XF86SRC)/doc)
 LinkSourceFile(OS2.Notes,$(XF86SRC)/doc)
 LinkSourceFile(QuickStart.doc,$(XF86SRC)/doc)
-LinkFile(README.FreeBSD,$(XF86SRC)/doc/READ.FreeBSD)
+LinkSourceFile(READ.FreeBSD,$(XF86SRC)/doc)
+LinkSourceFile(READ.Mach64,$(XF86SRC)/doc)
 LinkSourceFile(README,$(XF86SRC)/doc)
 LinkSourceFile(README.Bsdi,$(XF86SRC)/doc)
 LinkSourceFile(README.Config,$(XF86SRC)/doc)
@@ -117,7 +118,6 @@ LinkSourceFile(README.DGA,$(XF86SRC)/doc)
 LinkSourceFile(README.Linux,$(XF86SRC)/doc)
 LinkSourceFile(README.LynxOS,$(XF86SRC)/doc)
 LinkSourceFile(README.Mach,$(XF86SRC)/doc)
-LinkFile(README.Mach64,$(XF86SRC)/doc/READ.Mach64)
 LinkSourceFile(README.NetBSD,$(XF86SRC)/doc)
 LinkSourceFile(README.OS2,$(XF86SRC)/doc)
 LinkSourceFile(README.Oak,$(XF86SRC)/doc)

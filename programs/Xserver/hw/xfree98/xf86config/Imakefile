@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/xf86config/Imakefile,v 3.2 1996/02/04 09:17:23 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/xf86config/Imakefile,v 3.3 1996/02/18 03:44:59 dawes Exp $
 
 
 
@@ -27,6 +27,5 @@ DependTarget()
 
 #ifndef DontInstallPC98Version
 InstallNonExecFile(Cards,$(LIBDIR))
-#endif
 InstallManPageLong(xf86conf,$(MANDIR),xf98config)
-
+#endif

@@ -1,3 +1,15 @@
+XFree86 3.1.2Eg (14 August 1996)
+654  Update Japanese docs (Michio "Karl" Jinbo).
+653  Add XF98_GA968 server for GA-968V4/PCI(S3 968) (Michio "Karl" Jinbo).
+652. Bring the PC98 tree into sync with the main tree, and add XF86Setup
+     (Michio "Karl" Jinbo).
+651. Fix problems with 32bpp sparse mode that were introduced in 3.1.2Eb.
+     Need to check that this fix works OK with 24bpp packed mode.
+650. Fix some compiler warnings (Thomas E. Dickey).
+649. Mods to ct_driver.c so that it will compile on SVR4.0 (no nested
+     asm calls, and work around a code generation problem).
+648. Fix some problems with mouse changes in 3.1.2Ef (Joe Moss).
+
 XFree86 3.1.2Ef (13 August 1996)
 647. ET6000 support for the SVGA and W32 servers.  The support in the
      W32 server is accelerated (Koen Gadeyne).

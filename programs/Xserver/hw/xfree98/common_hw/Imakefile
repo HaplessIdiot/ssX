@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common_hw/Imakefile,v 3.3 1996/02/18 03:44:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common_hw/Imakefile,v 3.4 1996/03/29 22:18:46 dawes Exp $
 
 
 
@@ -17,13 +17,16 @@ PWSKBDIR = pwskb
 #if XF98PWLBServer
 PWLBDIR = pwlb
 #endif
+#if XF98GA968Server
+GA968DIR = ga968
+#endif
 #if XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || \
     XF98WABSServer    || XF98WABEPServer  || XF98WSNAServer   || \
     XF98TGUIServer    || XF98EGCServer
 GENERICDIR = generic
 #endif
 
-SUBDIRS = $(NECS3DIR) $(PWSKBDIR) $(PWLBDIR) $(GENERICDIR)
+SUBDIRS = $(NECS3DIR) $(PWSKBDIR) $(PWLBDIR) $(GA968DIR) $(GENERICDIR)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

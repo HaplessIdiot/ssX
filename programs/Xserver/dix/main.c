@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: main.c,v 5.33 95/04/07 18:59:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.5 1996/04/15 11:19:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.6 1996/05/06 05:56:22 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -187,6 +187,22 @@ static int indexForBitsPerPixel[ 33 ] = {
 	4, ~0, ~0, ~0,	/* 24 bits per pixel */
 	~0,~0, ~0, ~0,
 	5		/* 32 bits per pixel */
+};
+
+/*
+ * This array gives the bytesperPixel value for cases where the number
+ * of bits per pixel is a multiple of 8 but not a power of 2.
+ */
+static int answerBytesPerPixel[ 33 ] = {
+	~0, 0, ~0, ~0,	/* 1 bit per pixel */
+	0, ~0, ~0, ~0,	/* 4 bits per pixel */
+	0, ~0, ~0, ~0,	/* 8 bits per pixel */
+	~0,~0, ~0, ~0,
+	0, ~0, ~0, ~0,	/* 16 bits per pixel */
+	~0,~0, ~0, ~0,
+	3, ~0, ~0, ~0,	/* 24 bits per pixel */
+	~0,~0, ~0, ~0,
+	0		/* 32 bits per pixel */
 };
 
 /*
@@ -637,6 +653,16 @@ AddScreen(pfnInit, argc, argv)
  	    (scanlinepad/bitsPerPixel) - 1;
  	j = indexForBitsPerPixel[ 8 ]; /* bits per byte */
  	PixmapWidthPaddingInfo[ depth ].padBytesLog2 = answer[j][k];
+	if (answerBytesPerPixel[bitsPerPixel])
+	{
+	    PixmapWidthPaddingInfo[ depth ].notPower2 = 1;
+	    PixmapWidthPaddingInfo[ depth ].bytesPerPixel =
+		answerBytesPerPixel[bitsPerPixel];
+	}
+	else
+	{
+	    PixmapWidthPaddingInfo[ depth ].notPower2 = 0;
+	}
 
 #ifdef INTERNAL_VS_EXTERNAL_PADDING
 	/* Fake out protocol interface to make them believe we support
@@ -649,6 +675,16 @@ AddScreen(pfnInit, argc, argv)
  	    (BITMAP_SCANLINE_PAD_PROTO/bitsPerPixel) - 1;
  	j = indexForBitsPerPixel[ 8 ]; /* bits per byte */
  	PixmapWidthPaddingInfoProto[ depth ].padBytesLog2 = answer[j][k];
+	if (answerBytesPerPixel[bitsPerPixel])
+	{
+	    PixmapWidthPaddingInfoProto[ depth ].notPower2 = 1;
+	    PixmapWidthPaddingInfoProto[ depth ].bytesPerPixel =
+		answerBytesPerPixel[bitsPerPixel];
+	}
+	else
+	{
+	    PixmapWidthPaddingInfoProto[ depth ].notPower2 = 0;
+	}
 #endif /* INTERNAL_VS_EXTERNAL_PADDING */
     }
   

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.8 1996/05/11 11:05:35 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.9 1996/05/11 11:49:17 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -117,12 +117,12 @@ XCOMM	AllowNonLocalXvidtune
 XCOMM Uncomment this to disable dynamically modifying the input device
 XCOMM (mouse and keyboard) settings.
 
-XCOMM DisableModInDev
+XCOMM	DisableModInDev
 
 XCOMM Uncomment this to enable the use of a non-local client to
 XCOMM change the keyboard or mouse settings (currently only xset).
 
-XCOMM AllowNonLocalModInDev 
+XCOMM	AllowNonLocalModInDev
 
 EndSection
 
@@ -179,7 +179,6 @@ XCOMM override the other Xkb parameters described above.
 XCOMM An example is:
 XCOMM    XkbKeymap   "xfree98"
 
-
 EndSection
 
 
@@ -232,8 +231,10 @@ XCOMM        Port "/dev/ttyS1"
 XCOMM        DeviceName "Wacom"
 XCOMM    EndSubSection
 XCOMM    SubSection "WacomCursor"
+XCOMM        Port "/dev/ttyS1"
 XCOMM    EndSubSection
 XCOMM    SubSection "WacomEraser"
+XCOMM        Port "/dev/ttyS1"
 XCOMM    EndSubSection
 XCOMM
 XCOMM    SubSection "Elographics"
@@ -446,6 +447,8 @@ Section "Device"
     Chipset	"pegc"
     VideoRam	512
     Clocks	31.5
+XCOMM Virtual resolution for 640x400
+XCOMM    Clocks	28.322
 EndSection
 
 Section "Device"
@@ -463,6 +466,14 @@ Section "Device"
     VendorName	"MELCO"
     BoardName	"WAB-EP"
     Chipset	"clgd5428"
+    Option	"med_dram"
+EndSection
+
+Section "Device"
+    Identifier	"WSNA2F"
+    VendorName	"MELCO"
+    BoardName	"WSN-A2F"
+    Chipset	"clgd5434"
     Option	"med_dram"
 EndSection
 
@@ -509,15 +520,24 @@ XCOMM    Option	"epsonmemwin"
 EndSection
 
 Section "Device"
-    Identifier  "NKV_NECCIR"
-    VendorName  "EPSON_NEC"
-    BoardName   "PCNKV/PCNKV2/NEC_CIRRUS"
-    Chipset     "clgd5428"
-XCOMM    Chipset    "clgd5429"
-XCOMM    Option     "nec_cirrus"
-XCOMM    Option     "fast_dram"
+    Identifier	"NKVNEC"
+    VendorName	"EPSON_NEC"
+    BoardName	"PCNKV/PCNKV2/NEC_CIRRUS"
+    Chipset	"clgd5428"
+XCOMM    Chipset	"clgd5429"
+XCOMM    Option	"nec_cirrus"
+XCOMM    Option	"fast_dram"
     VideoRam    1024
 EndSection
+
+Section "Device"
+    Identifier	"TRIDENT"
+    VendorName	"NEC"
+    BoardName	"Trident Cyber9320/TGUI96x0"
+XCOMM    Option	"Linear"
+    Option	"med_dram"
+XCOMM    Option	"hw_cursor"
+Endsection
 
 Section "Device"
     Identifier	"PW"
@@ -572,9 +592,9 @@ XCOMM    Chipset    "mmio_928"
     Ramdac      "sc15025"
     Dacspeed    110
     Option      "dac_8_bit"
-    Option      "pw_localbus"
-XCOMM    Option     "nomemaccess"
-XCOMM    Option     "nolinear"
+XCOMM    Option    "pw_localbus"
+XCOMM    Option    "nomemaccess"
+XCOMM    Option    "nolinear"
     ClockChip   "icd2061a"
 EndSection
 
@@ -644,7 +664,7 @@ Section "Device"
     Dacspeed	110
     Ramdac	"sc15025"
     Option	"dac_8_bit"
-    Option	"necwab"
+XCOMM    Option	"necwab"
 XCOMM    Option	"nomemaccess"
     Clocks	 25.0  28.0  40.0   0.0  50.0  77.0  36.0  45.0
     Clocks	130.0 120.0  80.0  31.0 110.0  65.0  75.0  94.0
@@ -660,6 +680,15 @@ Section "Device"
     ClockChip	"s3_sdac"
 EndSection
 
+Section "Device"
+    Identifier	"GA-968"
+    VendorName	"IO DATA"
+    BoardName	"GA-968V4/PCI"
+    Chipset	"s3_generic"
+XCOMM Chipset	"mmio_928"
+XCOMM Option	"ga968"
+Endsection
+
 XCOMM **********************************************************************
 XCOMM Screen sections
 XCOMM **********************************************************************
@@ -672,19 +701,22 @@ Section "Screen"
 XCOMM    Device	"WABEP"
 XCOMM    Device	"NEC480"
 XCOMM    Device	"WAP"
-XCOMM    Device	"NKV_NECCIR"
+XCOMM    Device	"WSNA2F"
+XCOMM    Device	"NKVNEC"
 XCOMM    Device	"GA98NB1"
 XCOMM    Device	"GA98NB2"
 XCOMM    Device	"GA98NB4"
+XCOMM    Device	"TRIDENT"
     Monitor	"Multi sync"
     Subsection "Display"
         Depth	    8
         Modes	    "800x600" "640x480" "1024x768"
-XCOMM        Modes	    "NEC480"
+XCOMM        Modes	    "NEC480" "640x400"
         ViewPort    0 0
 XCOMM        Virtual     1024 1024
 XCOMM        Virtual     1024 1022
 XCOMM        Virtual      640 480
+XCOMM        Virtual      640 400
         Virtual     1280 816
     EndSubsection
 EndSection
@@ -712,10 +744,11 @@ XCOMM     Device	"PW805i"
 XCOMM     Device	"PW928GLB"
 XCOMM     Device	"PW928IILB"
 XCOMM     Device	"PW964LB"
+XCOMM     Device	"GA-968"
 XCOMM     Device	"PCSKB"
 XCOMM     Device	"PCSKB4"
 XCOMM     Device	"NECWAB"
-     Device	"NEC864"    
+XCOMM     Device	"NEC864"    
      Monitor	"Multi sync"
      Subsection  "Display"
          Depth	    8
@@ -737,5 +770,3 @@ XCOMM         Modes	    "640x480" "800x600" "1024x768"
          Virtual	    1024 768
      EndSubsection
 EndSection
-
-

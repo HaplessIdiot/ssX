@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.37 1996/08/11 12:56:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.38 1996/08/13 11:29:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -321,7 +321,7 @@ typedef struct _MouseDevRec {
 #ifdef XINPUT
 #define MOUSE_DEV(dev) (MouseDevPtr) PRIVATE(dev)
 #else
-#define MOUSE_DEV(dev) (MouseDevPtr) (dev)->devicePrivate
+#define MOUSE_DEV(dev) (MouseDevPtr) (dev)->public.devicePrivate
 #endif
 
 /* Global data */
