@@ -609,7 +609,8 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	/* fallthrough */
     case PCI_CHIP_MGAG200:
     case PCI_CHIP_MGAG200_PCI:
-        doRender = TRUE;
+	if (pMga->SecondCrtc == FALSE)
+	    doRender = TRUE;
         pMga->AccelFlags = TRANSC_SOLID_FILL |
 			   TWO_PASS_COLOR_EXPAND;
 
