@@ -1,3 +1,5 @@
+struct _LispBuiltin 
+%{
 /*
  * Copyright (c) 2001 by The XFree86 Project, Inc.
  *
@@ -27,48 +29,33 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.h,v 1.3 2001/10/06 01:02:01 paulo Exp $ */
-
-#ifndef Lisp_debugger_h
-#define Lisp_debugger_h
-
-/*
- * Definitions
- */
-#define	DBGPROMPT	"DEBUG> "
-
-/*
- * Types
- */
-typedef enum _LispDebugState {
-    LispDebugUnspec,	/* initial state */
-    LispDebugRun,	/* just run, until breakpoint or error */
-    LispDebugFinish,	/* evaluates until selected form is finished */
-    LispDebugNext,	/* evaluate form */
-    LispDebugStep,	/* evaluate form, and step on subforms */
-    LispDebugNexti,	/* Like next, but includes variables evaluation */
-    LispDebugStepi	/* Like step, but includes variables evaluation */
-} LispDebugState;
-
-typedef enum _LispDebugCall {
-    LispDebugCallBegin,
-    LispDebugCallEnd,
-    LispDebugCallBegini,
-    LispDebugCallEndi,
-    LispDebugCallFatal,
-    LispDebugCallWatch	/* just remove watched variables that lost context */
-} LispDebugCall;
-
-typedef enum _LispDebugBreak {
-    LispDebugBreakFunction,
-    LispDebugBreakVariable
-} LispDebugBreak;
-
-#include "private.h"
-
-/*
- * Prototypes
- */
-void LispDebugger(LispMac*, LispDebugCall, LispObj*, LispObj*);
-
-#endif /* Lisp_debugger_h */
+/* $XFree86: xc/programs/xedit/lisp/modules/xttable.gperf,v 1.3 2001/09/29 04:46:05 paulo Exp $ */
+%}
+%%
+PQ-BACKEND-PID,Lisp_PQbackendPID,1,1,1
+PQ-CLEAR,Lisp_PQclear,1,1,1
+PQ-CONSUME-INPUT,Lisp_PQconsumeInput,1,1,1
+PQ-DB,Lisp_PQdb,1,1,1
+PQ-ERROR-MESSAGE,Lisp_PQerrorMessage,1,1,1
+PQ-EXEC,Lisp_PQexec,1,2,2
+PQ-FINISH,Lisp_PQfinish,1,1,1
+PQ-FNAME,Lisp_PQfname,1,2,2
+PQ-FNUMBER,Lisp_PQfnumber,1,2,2
+PQ-FSIZE,Lisp_PQfsize,1,2,2
+PQ-FTYPE,Lisp_PQftype,1,2,2
+PQ-GETLENGTH,Lisp_PQgetlength,1,3,3
+PQ-GETVALUE,Lisp_PQgetvalue,1,3,4
+PQ-HOST,Lisp_PQhost,1,1,1
+PQ-NFIELDS,Lisp_PQnfields,1,1,1
+PQ-NOTIFIES,Lisp_PQnotifies,1,1,1
+PQ-NTUPLES,Lisp_PQntuples,1,1,1
+PQ-OPTIONS,Lisp_PQoptions,1,1,1
+PQ-PASS,Lisp_PQpass,1,1,1
+PQ-PORT,Lisp_PQport,1,1,1
+PQ-RESULT-STATUS,Lisp_PQresultStatus,1,1,1
+PQ-SETDB,Lisp_PQsetdb,1,5,5
+PQ-SETDB-LOGIN,Lisp_PQsetdb,1,7,7
+PQ-SOCKET,Lisp_PQsocket,1,1,1
+PQ-STATUS,Lisp_PQstatus,1,1,1
+PQ-TTY,Lisp_PQtty,1,1,1
+PQ-USER,Lisp_PQuser,1,1,1

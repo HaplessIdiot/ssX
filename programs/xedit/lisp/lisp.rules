@@ -1,5 +1,5 @@
 #define GperfLispFile(dep,file,flags)					@@\
-dep.o::	file.c								@@\
+dep.c:	file.c								@@\
 									@@\
 file.c: file.gperf							@@\
 	RemoveFile($@)							@@\
@@ -11,13 +11,18 @@ clean::									@@\
 	RemoveFile(file.c)
 
 #ifndef LispModuleTarget
-#define LispModuleTarget(module,modlist,liblist)			@@\
-AllTarget(module)							@@\
+#define LispModuleTarget(module,liblist,options)			@@\
+AllTarget(module.so)							@@\
 									@@\
-module: modlist 							@@\
+module.o: module.c							@@\
 	RemoveFile($@)							@@\
-	$(CC) -o $@ $(SHLIBLDFLAGS) modlist $(LDOPTIONS) liblist $(EXTRA_LOAD_FLAGS) @@\
+	$(CC) -c $(CFLAGS) options -o $@ $?				@@\
+									@@\
+module.so: module.o							@@\
+	RemoveFile($@)							@@\
+	$(CC) -o $@ $(SHLIBLDFLAGS) $? $(LDOPTIONS) liblist $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 clean:: 								@@\
-	RemoveFile(module)
+	RemoveFile(module.o)						@@\
+	RemoveFile(module.so)
 #endif

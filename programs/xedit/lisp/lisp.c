@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.14 2001/10/06 01:02:01 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.15 2001/10/06 02:40:31 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -46,12 +46,12 @@
  */
 LispObj *LispRunFunMac(LispMac*, LispObj*, LispObj*);
 
-static int LispGet(LispMac*);
-static int LispUnget(LispMac*);
+int LispGet(LispMac*);
+int LispUnget(LispMac*);
 static int LispSkipComment(LispMac*);
 static int LispSkipWhiteSpace(LispMac*);
 static char *LispIntToOpaqueType(LispMac*, int);
-static LispString *LispDoGetString(LispMac*, char *str, int prot);
+static LispString *LispDoGetString(LispMac*, char *str, int, int);
 
 void LispSnprint(LispMac*, LispObj*, char*, int);
 void LispSnprintObj(LispMac*, LispObj*, char**, int*, int);
@@ -129,7 +129,7 @@ LispDestroy(LispMac *mac, char *fmt, ...)
     if (mac->errexit)
 	exit(1);
 
-    longjmp(mac->jmp, 0);
+    siglongjmp(mac->jmp, 1);
 }
 
 void
@@ -218,6 +218,7 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
     LispMark(RES[2]);
     LispMark(DBG);
     LispMark(BRK);
+    LispMark(PRO);
     LispMark(car);
     LispMark(cdr);
 
@@ -258,11 +259,11 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 		switch (entry->type) {
 		    case LispAtom_t:
 		    case LispString_t:
-			LispDoGetString(mac, entry->data.atom, 0)
+			LispDoGetString(mac, entry->data.atom, 0, 0)
 			    ->mark = LispTrue_t;
 			break;
 		    case LispSymbol_t:
-			LispDoGetString(mac, entry->data.symbol.name, 0)
+			LispDoGetString(mac, entry->data.symbol.name, 0, 0)
 			    ->mark = LispTrue_t;
 			break;
 		    default:
@@ -439,7 +440,7 @@ LispRegisterOpaqueType(LispMac *mac, char *desc)
 	if (strcmp(opaque->desc, desc) == 0)
 	    return (opaque->type);
     opaque = (LispOpaque*)LispMalloc(mac, sizeof(LispOpaque));
-    opaque->desc = LispDoGetString(mac, desc, 1)->string;
+    opaque->desc = LispDoGetString(mac, desc, 1, 0)->string;
     opaque->next = mac->opqs[ii];
     mac->opqs[ii] = opaque;
     LispMused(mac, opaque);
@@ -469,7 +470,7 @@ LispIntToOpaqueType(LispMac *mac, int type)
 }
 
 static LispString *
-LispDoGetString(LispMac *mac, char *str, int prot)
+LispDoGetString(LispMac *mac, char *str, int prot, int perm)
 {
     LispString *string;
     int ii = 0;
@@ -487,14 +488,18 @@ LispDoGetString(LispMac *mac, char *str, int prot)
 	    return (string);
 	}
     string = (LispString*)LispMalloc(mac, sizeof(LispString));
-    string->string = LispStrdup(mac, str);
+    if (perm)
+	string->string = str;
+    else
+	string->string = LispStrdup(mac, str);
     LispMused(mac, string);
-    LispMused(mac, string->string);
+    if (!perm)
+	LispMused(mac, string->string);
     string->next = mac->strs[ii];
     mac->strs[ii] = string;
     string->dirty = 1;
     string->mark = 0;
-    string->prot = !!prot;
+    string->prot = perm || !!prot;
 
     return (string);
 }
@@ -502,7 +507,13 @@ LispDoGetString(LispMac *mac, char *str, int prot)
 char *
 LispGetString(LispMac *mac, char *str)
 {
-    return (LispDoGetString(mac, str, 0)->string);
+    return (LispDoGetString(mac, str, 0, 0)->string);
+}
+
+char *
+LispGetPermString(LispMac *mac, char *str)
+{
+    return (LispDoGetString(mac, str, 1, 1)->string);
 }
 
 void
@@ -591,6 +602,7 @@ LispMark(LispObj *obj)
     obj->mark = LispTrue_t;
 }
 
+#if 0
 void
 LispProtect(LispObj *obj, int state)
 {
@@ -647,8 +659,42 @@ LispProtect(LispObj *obj, int state)
     }
     obj->prot = state;
 }
+#endif
 
-static int
+/* It is better to keep the protect field unused for now. It should be
+ * be set only once, and thus, only used for constants.
+ * It was being used to protect arguments to Xt callbacks, but since
+ * Xt widgets can be destroyed, and arguments may be shared, it is
+ * required to have a "key" associated with every protected object/list.
+ */
+void
+LispProtect(LispMac *mac, LispObj *key, LispObj *list)
+{
+    GCProtect();
+    PRO = CONS(CONS(key, list), PRO);
+    GCUProtect();
+}
+
+void
+LispUProtect(LispMac *mac, LispObj *key, LispObj *list)
+{
+    LispObj *prev, *obj;
+
+    for (prev = obj = PRO; obj != NIL; prev = obj, obj = CDR(obj))
+	if (CAR(CAR(obj)) == key && CDR(CAR(obj)) == list) {
+	    if (prev == PRO)
+		PRO = CDR(PRO);
+	    else
+		CDR(prev) = CDR(obj);
+	    return;
+	}
+
+    LispDestroy(mac, "no match for (%s %s), at INTERNAL:UPROTECT",
+		LispStrObj(mac, key), LispStrObj(mac, list));
+}
+
+
+int
 LispGet(LispMac *mac)
 {
     int ch;
@@ -710,7 +756,7 @@ LispGet(LispMac *mac)
     return (mac->tok = ch);
 }
 
-static int
+int
 LispUnget(LispMac *mac)
 {
     if (mac->cp > mac->st) {
@@ -1270,7 +1316,8 @@ LispRun(LispMac *mac)
 		    }
 		    else
 			escape = 0;
-		    str[len++] = ch;
+		    if (!escape)
+			str[len++] = ch;
 		}
 		else
 		    str[len++] = toupper(ch);
@@ -2007,6 +2054,39 @@ LispSnprint(LispMac *mac, LispObj *obj, char *str, int len)
     }
 }
 
+/* assumes string is writable, escapes " as \" and \ as \\ */
+int
+LispPrintString(LispMac *mac, LispObj *stream, char *str)
+{
+    int len, ch;
+    char *prt, *ptr, *pquote, *pslash;
+
+    if (!mac->princ) {
+	len = LispPrintf(mac, stream, "%c", '"');
+	for (prt = str, pquote = strchr(prt, '"'), pslash = strchr(prt, '\\');
+	     pquote || pslash;
+	     prt = ptr, pquote = pquote ? strchr(prt, '"') : NULL,
+			pslash = pslash ? strchr(prt, '\\') : NULL) {
+	    if (pquote && pslash)
+		ptr = pquote < pslash ? pquote : pslash;
+	    else
+		ptr = pquote ? pquote : pslash;
+	    ch = ptr == pquote ? '"' : '\\';
+	    *ptr = '\0';
+	    len += LispPrintf(mac, stream, "%s", prt);
+	    len += LispPrintf(mac, stream, "%c%c", '\\', ch);
+	    *ptr = ch;
+	    ++ptr;
+	}
+	len += LispPrintf(mac, stream, "%s", prt);
+	len += LispPrintf(mac, stream, "%c", '"');
+    }
+    else
+	len = LispPrintf(mac, stream, "%s", str);
+
+    return (len);
+}
+
 int
 LispPrintf(LispMac *mac, LispObj *stream, char *fmt, ...)
 {
@@ -2095,10 +2175,7 @@ LispPrintObj(LispMac *mac, LispObj *stream, LispObj *obj, int paren)
 	    len += LispPrintf(mac, stream, "%s", obj->data.atom);
 	    break;
 	case LispString_t:
-	    if (mac->princ)
-		len += LispPrintf(mac, stream, "%s", obj->data.atom);
-	    else
-		len += LispPrintf(mac, stream, "\"%s\"", obj->data.atom);
+	    len += LispPrintString(mac, stream, obj->data.atom);
 	    break;
 	case LispReal_t:
 	    len += LispPrintf(mac, stream, "%g", obj->data.real);
@@ -2248,15 +2325,11 @@ LispPrintObj(LispMac *mac, LispObj *stream, LispObj *obj, int paren)
 	    if (obj->data.stream.size < 0)
 		len += LispPrintf(mac, stream, "<#STREAM# 0x%8x>",
 				  (int)obj->data.stream.source.fp);
-	    else {
-		if (mac->princ)
-		    len += LispPrintf(mac, stream, "%s",
-				      obj->data.stream.source.str);
-		else
-		    len += LispPrintf(mac, stream, "\"%s\"",
-				      obj->data.stream.source.str ?
-					(char*)obj->data.stream.source.str : "");
-	    }
+	    else
+		len += LispPrintString(mac, stream,
+				       obj->data.stream.source.str ?
+				       obj->data.stream.source.str :
+				       (unsigned char*)"");
 	    break;
     }
 
@@ -2335,12 +2408,13 @@ LispMachine(LispMac *mac)
 {
     LispObj *cod, *obj;
 
+    LispTopLevel(mac);
     /*CONSTCOND*/
     while (1) {
-	if (setjmp(mac->jmp) == 0) {
-	    mac->sigint = signal(SIGINT, LispAbortSignal);
-	    mac->sigfpe = signal(SIGFPE, LispFPESignal);
-	    global_mac = mac;
+	mac->sigint = signal(SIGINT, LispAbortSignal);
+	mac->sigfpe = signal(SIGFPE, LispFPESignal);
+	global_mac = mac;
+	if (sigsetjmp(mac->jmp, 1) == 0) {
 	    if (mac->interactive && mac->prompt) {
 		fprintf(lisp_stdout, "%s", mac->prompt);
 		fflush(lisp_stdout);
@@ -2408,7 +2482,7 @@ LispExecute(LispMac *mac, char *str)
     level = mac->level;
     mac->level = 0;
 
-    if (setjmp(mac->jmp) == 0) {
+    if (sigsetjmp(mac->jmp, 1) == 0) {
 	/*CONSTCOND*/
 	while (1) {
 	    if ((obj = LispRun(mac)) != NULL) {
@@ -2452,7 +2526,7 @@ LispBegin(int argc, char *argv[])
     pagesize = getpagesize();
     segsize = pagesize / sizeof(LispObj);
     bzero(mac, sizeof(LispMac));
-    MOD = ENV = GLB = SYM = LEX = COD = FUN = FRM = STR = DBG = BRK = NIL;
+    MOD = ENV = GLB = SYM = LEX = COD = FUN = FRM = STR = DBG = BRK = PRO = NIL;
     LispAllocSeg(mac);
 
     /* initialize stream management */
@@ -2474,6 +2548,23 @@ LispBegin(int argc, char *argv[])
     if (mac->fp == NULL) {
 	mac->stream.stream[0].fp = mac->fp = lisp_stdin;
 	mac->interactive = 1;
+    }
+    else {
+	int ch = LispGet(mac);
+
+	if (ch != '#')
+	    LispUnget(mac);
+	else if (LispGet(mac) == '!') {
+	    for (;;) {
+		ch = LispGet(mac);
+		if (ch == '\n' || ch == EOF)
+		    break;
+	    }
+	}
+	else {
+	    LispUnget(mac);
+	    LispUnget(mac);
+	}
     }
     mac->stream.stream_size = 1;
 

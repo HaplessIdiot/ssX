@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.7 2001/09/30 20:31:59 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.9 2001/10/04 04:38:41 paulo Exp $ */
 
 #include "core.h"
 #include "helper.h"
@@ -1436,7 +1436,7 @@ Lisp_Return(LispMac *mac, LispObj *list, char *fname)
 
 	if (block->tag.type == LispNil_t) {
 	    mac->block.block_ret = list == NIL ? NIL : EVAL(CAR(list));
-	    longjmp(block->jmp, 0);
+	    longjmp(block->jmp, 1);
 	}
     }
     LispDestroy(mac, "no NIL block, at %s", fname);
@@ -1475,7 +1475,7 @@ Lisp_ReturnFrom(LispMac *mac, LispObj *list, char *fname)
 	}
 	if (jmp) {
 	    mac->block.block_ret = list == NIL ? NIL : EVAL(CAR(list));
-	    longjmp(block->jmp, 0);
+	    longjmp(block->jmp, 1);
 	}
     }
     LispDestroy(mac, "no block named %s, at %s", LispStrObj(mac, tag), fname);
@@ -1706,7 +1706,7 @@ Lisp_Throw(LispMac *mac, LispObj *list, char *fname)
 	    }
 	    if (jmp) {
 		mac->block.block_ret = EVAL(CAR(CDR(list)));
-		longjmp(block->jmp, 0);
+		longjmp(block->jmp, 1);
 	    }
 	}
     }

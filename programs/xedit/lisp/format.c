@@ -277,8 +277,19 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		case 'p':	/* Plural */
 		case 'P':
 		    mac->newline = 0;
-		    if (collon && plural != NIL)
-			arg = plural;
+		    if (collon) {
+			if (plural != NIL)
+			    arg = plural;
+			else
+			    plural = arg;
+			if (plural->type != LispCons_t)
+			    goto not_enough_args;
+		    }
+		    else {
+			if (arg->type != LispCons_t)
+			    goto not_enough_args;
+			plural = arg;
+		    }
 		    if (CAR(plural)->type != LispReal_t ||
 			CAR(plural)->data.real != 1.0) {
 			if (atsign)

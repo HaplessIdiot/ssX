@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.8 2001/10/02 06:38:37 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.9 2001/10/03 07:46:02 paulo Exp $ */
 
 #include "helper.h"
 #include <ctype.h>
@@ -37,6 +37,8 @@
  */
 static LispObj *_LispReallyDo(LispMac*, LispObj*, char*, int);
 static LispObj *_LispReallyDoListTimes(LispMac*, LispObj*, char*, int);
+extern int LispGet(LispMac*);
+extern int LispUnget(LispMac*);
 
 /*
  * Implementation
@@ -490,7 +492,6 @@ _LispReallyDoListTimes(LispMac *mac, LispObj *list, char *fname, int times)
 	else if (!times && (val != NIL && val->type != LispCons_t))
 	    LispDestroy(mac, "%s is not a list, at %s",
 			LispStrObj(mac, val), fname);
-
     }
 
     /* Protect iteration control from gc */
@@ -611,7 +612,7 @@ _LispLoadFile(LispMac *mac, char *filename, char *fname,
 {
     LispObj *obj, *res = NIL;
     FILE *fp;
-    int level;
+    int ch, level;
 
     if ((fp = fopen(filename, "r")) == NULL) {
 	if (ifdoesnotexist)
@@ -648,6 +649,22 @@ _LispLoadFile(LispMac *mac, char *filename, char *fname,
 
     level = mac->level;
     mac->level = 0;
+
+    ch = LispGet(mac);
+    if (ch != '#')
+	LispUnget(mac);
+    else if (LispGet(mac) == '!') {
+	for (;;) {
+	    ch = LispGet(mac);
+	    if (ch == '\n' || ch == EOF)
+		break;
+	}
+    }
+    else {
+	LispUnget(mac);
+	LispUnget(mac);
+    }
+
     /*CONSTCOND*/
     while (1) {
 	if ((obj = LispRun(mac)) != NULL) {

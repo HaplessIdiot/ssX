@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.4 2001/10/06 02:40:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.5 2001/10/06 03:48:12 paulo Exp $ */
 
 #include <ctype.h>
 #include "debugger.h"
@@ -234,9 +234,9 @@ watch_again:
 					  CAR(CAR(obj))->data.atom), 1);
 		LispObj *frm = CAR(CDR(CDR(CDR(CDR(CDR(CDR(CAR(obj))))))));
 
-		if (sym == NULL || (sym != wat &&
-				    frm->data.real > mac->debug_level)) {
-		    fprintf(lisp_stdout, "WATCH #%g> %s delete. Variable does "
+		if ((sym == NULL && mac->debug_level <= 0) ||
+		    (sym != wat && frm->data.real > mac->debug_level)) {
+		    fprintf(lisp_stdout, "WATCH #%g> %s deleted. Variable does "
 			    "not exist anymore.\n",
 			    CAR(CDR(CAR(obj)))->data.real,
 			    CAR(CAR(obj))->data.atom);
@@ -549,7 +549,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		}
 		mac->column = 0;
 		mac->newline = 1;
-		longjmp(mac->jmp, 0);	/* don't need to restore environment */
+		siglongjmp(mac->jmp, 1);/* don't need to restore environment */
 		/*NOTREACHED*/
 		break;
 	    case DebuggerBreak:
@@ -729,6 +729,8 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			break;
 		    }
 		}
+		else
+		    goto debugger_print_frame;
 		if (i >= 0 && i <= mac->debug_level)
 		    goto debugger_new_frame;
 		break;
@@ -838,6 +840,7 @@ debugger_new_frame:
 	    SYM = CAR(CDR(CDR(CDR(curframe))));
 	    LEX = CDR(CDR(CDR(CDR(curframe))));
 	}
+debugger_print_frame:
 	fprintf(lisp_stdout, "#%d> (", frame);
 	LispPrintObj(mac, NIL, CAR(curframe), 1);
 	fputc(' ', lisp_stdout);

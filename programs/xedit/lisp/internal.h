@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.5 2001/09/28 04:38:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.6 2001/10/02 06:38:38 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -53,8 +53,8 @@
 	(obj->data.opaque.type == typ || obj->data.opaque.type == 0)
 #define GCPRO()			LispGC(mac, NIL, NIL); GCProtect()
 #define GCUPRO()		GCUProtect()
-#define PROTECT(list)		LispProtect(list, LispTrue_t)
-#define UPROTECT(list)		LispProtect(list, LispNil_t)
+#define PROTECT(key, list)	LispProtect(mac, key, list)
+#define UPROTECT(key, list)	LispUProtect(mac, key, list)
 
 #define	GCProtect()		++gcpro
 #define	GCUProtect()		--gcpro
@@ -184,6 +184,10 @@ LispObj *LispNewOpaque(LispMac*, void*, int);
 
 char *LispGetString(LispMac*, char*);
 
+/* This function does not allocate a copy of it's argument, but the argument
+ * itself. The argument string should never change. */
+char *LispGetPermString(LispMac*, char*);
+
 void *LispMalloc(LispMac*, unsigned);
 void *LispCalloc(LispMac*, unsigned, unsigned);
 void *LispRealloc(LispMac*, void*, unsigned);
@@ -204,9 +208,11 @@ LispObj *LispSetVariable(LispMac*, LispObj*, LispObj*, char*, int);
 int LispRegisterOpaqueType(LispMac*, char*);
 
 int LispPrintf(LispMac*, LispObj*, char*, ...);
+int LispPrintString(LispMac*, LispObj*, char*);
 int LispPrintObj(LispMac*, LispObj*, LispObj*, int);
 
-void LispProtect(LispObj*, int);
+void LispProtect(LispMac*, LispObj*, LispObj*);
+void LispUProtect(LispMac*, LispObj*, LispObj*);
 
 /*
  * Initialization
