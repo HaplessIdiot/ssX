@@ -6,7 +6,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.25 2000/05/31 00:42:26 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.27 2000/08/04 16:13:26 eich Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1090,10 +1090,12 @@ xf86XVClipNotify(WindowPtr pWin, int dx, int dy)
      /* Stop everything except images, but stop them too if the 
 	window isn't visible.  But we only remove the images. */
 
-     if((pPriv->type || !visible) && (pPriv->isOn == XV_ON)) {
-	(*pPriv->AdaptorRec->StopVideo)(
+     if(pPriv->type || !visible) {
+	if(pPriv->isOn == XV_ON) {
+	    (*pPriv->AdaptorRec->StopVideo)(
 			pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
-	pPriv->isOn = XV_PENDING;
+	    pPriv->isOn = XV_PENDING;
+	}
 
 	if(!pPriv->type) {  /* overlaid still/image */
 	    pPriv->pDraw = NULL;
