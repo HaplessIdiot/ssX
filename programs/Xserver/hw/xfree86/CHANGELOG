@@ -1,4 +1,21 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 186. Improve "true Big5" and "Emacs Big5" support (#4792, Yong Li, #4798,
+      Tomohiro KUBOTA).
+ 185. Fix a non-standard character set bug in Xlib (#4792, Ivan Pascal).
+ 184. Fix for the savage driver on 64-bit platforms (#4788, Jay Estabrook).
+ 183. Xv fix for the r128 driver on big-endian architectures (#4781,
+      Michel Dänzer).
+ 187. Big endian fix for Xv 
+ 186. Fix an Xlib bug that affects conversion from CTEXT to multibyte /
+      wide character (#4780, Tomohiro KUBOTA, #4783, Bruno Haible).
+ 185. Release notes (4.1.0) and Status doc fixes (#4778, 4779,
+      Branden Robinson).
+ 184. 64-bit fix for lib/X11/ImUtil.c (#4773, Mike Harris).
+ 183. Fix dashed lines for the r128 driver on big-endian architectures
+      (#4769, Michel Dänzer).
+ 182. Fix Xlib's parsing of CTEXT with multi-byte characters in GR (#4761,
+      Juliusz Chroboczek).
+ 181. Fixes for the Romanian (ro) XKB map (#4746, Marius Andreiana).
  180. XDarwin bug fixes:
        - Stop FatalError re-entry in "no Quartz support" messages.
        - Synchronize XDarwin serverVisible state with application on rootless
@@ -13628,4 +13645,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1900 2001/08/07 01:52:21 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1901 2001/08/07 02:40:34 torrey Exp $

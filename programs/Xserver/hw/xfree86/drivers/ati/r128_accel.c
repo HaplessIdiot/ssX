@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.9 2001/04/10 16:07:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.10 2001/05/25 02:44:36 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -408,11 +408,17 @@ static void R128SetupForDashedLine(ScrnInfoPtr pScrn,
     R128CCE_TO_MMIO(pScrn, info);
 #endif
 
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+# define PAT_SHIFT(pat,n) pat << n
+#else
+# define PAT_SHIFT(pat,n) pat >> n
+#endif
+
     switch (length) {
-    case  2: pat |= pat <<  2; /* fall through */
-    case  4: pat |= pat <<  4; /* fall through */
-    case  8: pat |= pat <<  8; /* fall through */
-    case 16: pat |= pat << 16;
+    case  2: pat |= PAT_SHIFT(pat,2); /* fall through */
+    case  4: pat |= PAT_SHIFT(pat,4); /* fall through */
+    case  8: pat |= PAT_SHIFT(pat,8); /* fall through */
+    case 16: pat |= PAT_SHIFT(pat,16);
     }
 
     R128WaitForFifo(pScrn, 5);
