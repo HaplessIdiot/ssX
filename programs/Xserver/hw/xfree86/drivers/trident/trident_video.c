@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.10 2001/09/22 08:57:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.11 2001/09/24 11:19:10 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -63,10 +63,14 @@ static int TRIDENTPutImage( ScrnInfoPtr,
 static int TRIDENTQueryImageAttributes(ScrnInfoPtr, 
 	int, unsigned short *, unsigned short *,  int *, int *);
 static void TRIDENTVideoTimerCallback(ScrnInfoPtr pScrn, Time time);
+static void tridentSetVideoGamma(TRIDENTPtr pTrident,int value,int brightness);
+static void tridentSetVideoContrast(TRIDENTPtr pTrident,int value);
+static void tridentSetVideoParameters(TRIDENTPtr pTrident, int brightness, 
+				      int saturation, int hue);
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
-static Atom xvColorKey, xvSaturation, xvBrightness, xvHUE, xvGamma;
+static Atom xvColorKey, xvSaturation, xvBrightness, xvHUE, xvGamma, xvContrast;
 
 void TRIDENTInitVideo(ScreenPtr pScreen)
 {
@@ -140,7 +144,7 @@ static XF86VideoFormatRec Formats[NUM_FORMATS] =
   {8, PseudoColor},  {15, TrueColor}, {16, TrueColor}, {24, TrueColor}
 };
 
-#define NUM_ATTRIBUTES 5
+#define NUM_ATTRIBUTES 6
 
 static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
 {
@@ -148,7 +152,8 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
     {XvSettable | XvGettable, 0, 187,           "XV_SATURATION"},
     {XvSettable | XvGettable, 0, 0x3F,          "XV_BRIGHTNESS"},
     {XvSettable | XvGettable, 0, 360 ,          "XV_HUE"},
-    {XvSettable | XvGettable, -128, 127,        "XV_GAMMA"}
+    {XvSettable | XvGettable, -128, 127,        "XV_GAMMA"},
+    {XvSettable | XvGettable, 0, 127,           "XV_CONTRAST"}
 };
 
 #define NUM_IMAGES 4
@@ -201,6 +206,7 @@ typedef struct {
    CARD8        Brightness;
    CARD16       HUE;
    INT8         Gamma;
+   INT8         Contrast;
    CARD32	videoStatus;
    Time		offTime;
    Time		freeTime;
@@ -224,11 +230,17 @@ void TRIDENTResetVideo(ScrnInfoPtr pScrn)
     if (pTrident->Chipset >= CYBER9397) {
     	OUTW(vgaIOBase + 4, 0x80B9); 
     	OUTW(0x3C4, 0xC057);
-    	OUTW(0x3C4, 0x3420);
+    	OUTW(0x3C4, 0x3421);
     	OUTW(0x3C4, 0x3037);
     } else {
-    	OUTB(0x83C8, 0x37);
-    	OUTB(0x83C6, 0x01);
+	if (pTrident->Chipset >= PROVIDIA9685) {
+    	    OUTB(0x83C8, 0x57);
+    	    OUTB(0x83C6, 0xC0);
+    	    OUTW(vgaIOBase + 4, 0x24BE); 
+	} else {
+    	    OUTB(0x83C8, 0x37);
+    	    OUTB(0x83C6, 0x01);
+	}
     }
 
     switch (pScrn->depth) {
@@ -333,7 +345,7 @@ TRIDENTSetupImageVideo(ScreenPtr pScreen)
     xvHUE        = MAKE_ATOM("XV_HUE");
     xvGamma      = MAKE_ATOM("XV_GAMMA");
 
-    if (pTrident->Chipset >= CYBER9397) 
+    if (pTrident->Chipset >= PROVIDIA9685) 
 	pTrident->keyOffset = 0x50;
     else
 	pTrident->keyOffset = 0x30;
@@ -373,96 +385,7 @@ RegionsEqual(RegionPtr A, RegionPtr B)
     return TRUE;
 }
 
-/* TRIDENTClipVideo -  
-
-   Takes the dst box in standard X BoxRec form (top and left
-   edges inclusive, bottom and right exclusive).  The new dst
-   box is returned.  The source boundaries are given (x1, y1 
-   inclusive, x2, y2 exclusive) and returned are the new source 
-   boundaries in 16.16 fixed point. 
-*/
-
 #define DummyScreen screenInfo.screens[0]
-
-static Bool
-TRIDENTClipVideo(
-  BoxPtr dst, 
-  INT32 *x1, 
-  INT32 *x2, 
-  INT32 *y1, 
-  INT32 *y2,
-  RegionPtr reg,
-  INT32 width, 
-  INT32 height
-){
-    INT32 vscale, hscale, delta;
-    BoxPtr extents = REGION_EXTENTS(DummyScreen, reg);
-    int diff;
-
-    hscale = ((*x2 - *x1) << 16) / (dst->x2 - dst->x1);
-    vscale = ((*y2 - *y1) << 16) / (dst->y2 - dst->y1);
-
-    *x1 <<= 16; *x2 <<= 16;
-    *y1 <<= 16; *y2 <<= 16;
-
-    diff = extents->x1 - dst->x1;
-    if(diff > 0) {
-	dst->x1 = extents->x1;
-	*x1 += diff * hscale;     
-    }
-    diff = dst->x2 - extents->x2;
-    if(diff > 0) {
-	dst->x2 = extents->x2;
-	*x2 -= diff * hscale;     
-    }
-    diff = extents->y1 - dst->y1;
-    if(diff > 0) {
-	dst->y1 = extents->y1;
-	*y1 += diff * vscale;     
-    }
-    diff = dst->y2 - extents->y2;
-    if(diff > 0) {
-	dst->y2 = extents->y2;
-	*y2 -= diff * vscale;     
-    }
-
-    if(*x1 < 0) {
-	diff =  (- *x1 + hscale - 1)/ hscale;
-	dst->x1 += diff;
-	*x1 += diff * hscale;
-    }
-    delta = *x2 - (width << 16);
-    if(delta > 0) {
-	diff = (delta + hscale - 1)/ hscale;
-	dst->x2 -= diff;
-	*x2 -= diff * hscale;
-    }
-    if(*x1 >= *x2) return FALSE;
-
-    if(*y1 < 0) {
-	diff =  (- *y1 + vscale - 1)/ vscale;
-	dst->y1 += diff;
-	*y1 += diff * vscale;
-    }
-    delta = *y2 - (height << 16);
-    if(delta > 0) {
-	diff = (delta + vscale - 1)/ vscale;
-	dst->y2 -= diff;
-	*y2 -= diff * vscale;
-    }
-    if(*y1 >= *y2) return FALSE;
-
-    if((dst->x1 != extents->x1) || (dst->x2 != extents->x2) ||
-       (dst->y1 != extents->y1) || (dst->y2 != extents->y2))
-    {
-	RegionRec clipReg;
-	REGION_INIT(DummyScreen, &clipReg, dst, 1);
-	REGION_INTERSECT(DummyScreen, reg, reg, &clipReg);
-	REGION_UNINIT(DummyScreen, &clipReg);
-    }
-    return TRUE;
-} 
-
 
 static void 
 TRIDENTStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
@@ -494,8 +417,14 @@ TRIDENTStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 
 #define PI 3.14159265
 
+static void
+tridentSetVideoContrast(TRIDENTPtr pTrident,int value)
+{
+  OUTW(0x3C4, (((value & 0x7)|((value & 0x7) << 4)) << 8) | 0xBC);
+}
+
 static void 
-tridentSetVideoGamma(int value)
+tridentSetVideoGamma(TRIDENTPtr pTrident,int value,int brightness)
 {
   int pivots[] = {0,3,15,63,255};
 
@@ -507,8 +436,13 @@ tridentSetVideoGamma(int value)
   CARD8 i_slopes[4];
   CARD8 intercepts[4];
   
+  brightness = (brightness - 0x20);
   if (value == 0) {
-      outw(0x3C4, 0x80 << 8 | 0xB4);
+      OUTW(0x3C4, 0x80 << 8 | 0xB4);
+      OUTW(0x3C4, (brightness) << 8 | 0xB8);
+      OUTW(0x3C4, (brightness) << 8 | 0xB9);
+      OUTW(0x3C4, (brightness) << 8 | 0xBA);
+      OUTW(0x3C4, (brightness) << 8 | 0xBB);
       return;
   }
   exp = log(value);
@@ -532,14 +466,14 @@ tridentSetVideoGamma(int value)
     x_prev = x;
     y_prev = y;
   }
-      outw(0x3C4, i_slopes[0] << 8 | 0xB4);
-      outw(0x3C4, i_slopes[1] << 8 | 0xB5);
-      outw(0x3C4, i_slopes[2] << 8 | 0xB6);
-      outw(0x3C4, i_slopes[3] << 8 | 0xB7);
-      outw(0x3C4, intercepts[0] << 8 | 0xB8);
-      outw(0x3C4, intercepts[1] << 8 | 0xB9);
-      outw(0x3C4, intercepts[2] << 8 | 0xBA);
-      outw(0x3C4, intercepts[3] << 8 | 0xBB);
+      OUTW(0x3C4, i_slopes[0] << 8 | 0xB4);
+      OUTW(0x3C4, i_slopes[1] << 8 | 0xB5);
+      OUTW(0x3C4, i_slopes[2] << 8 | 0xB6);
+      OUTW(0x3C4, i_slopes[3] << 8 | 0xB7);
+      OUTW(0x3C4, (intercepts[0] + brightness) << 8 | 0xB8);
+      OUTW(0x3C4, (intercepts[1] + brightness) << 8 | 0xB9);
+      OUTW(0x3C4, (intercepts[2] + brightness) << 8 | 0xBA);
+      OUTW(0x3C4, (intercepts[3] + brightness) << 8 | 0xBB);
 } 
 
 static void
@@ -548,15 +482,14 @@ tridentSetVideoParameters(TRIDENTPtr pTrident, int brightness,
 {
     double dtmp;
     CARD8 sign, tmp, tmp1;
-
-    dtmp = sin((double)hue / 180 * PI) * saturation / 12.5;
-    sign = (dtmp < 0) ? 1 << 2 : 0;
-    tmp1 = ((int)fabs(dtmp) >> 8 ) | 0x3;
+    dtmp = sin((double)hue / 180.0 * PI) * saturation / 12.5;
+    sign = (dtmp < 0) ? 1 << 1 : 0;
+    tmp1 = ((int)fabs(dtmp) >> 4) & 0x1;
     tmp = brightness << 2 | sign | tmp1;
     OUTW(0x3C4, tmp << 8 | 0xB1);
 
-    tmp1 = ((int)fabs(dtmp) | 0x7 ) << 5;
-    dtmp = cos((double)hue / 180 * PI) * saturation / 12.5;
+    tmp1 = ((int)fabs(dtmp) & 0x7 ) << 5;
+    dtmp = cos((double)hue / 180.0 * PI) * saturation / 12.5;
     sign = (dtmp < 0) ? 1 << 4 : 0;
     tmp1 |= (int)fabs(dtmp)  & 0xf;
     tmp = sign | tmp1;
@@ -626,11 +559,17 @@ TRIDENTSetPortAttribute(
     pPriv->HUE = value;
     tridentSetVideoParameters(pTrident, pPriv->Brightness, pPriv->Saturation,
 			      pPriv->HUE);
+    tridentSetVideoGamma(pTrident,pPriv->Gamma,pPriv->Brightness);
   } else if (attribute == xvGamma) {
     if ((value < -128) || (value > 127))
       return BadValue;
     pPriv->Gamma = value;
-    tridentSetVideoGamma(value);
+    tridentSetVideoGamma(pTrident,value,pPriv->Brightness);
+  } else if (attribute == xvContrast) {
+    if ((value < 0) || (value > 127))
+      return BadValue;
+    pPriv->Contrast = value;
+    tridentSetVideoContrast(pTrident,value);
   } else 
     return BadMatch;
 
@@ -656,6 +595,8 @@ TRIDENTGetPortAttribute(
 	*value = pPriv->HUE;
   } else if (attribute == xvGamma) {
 	*value = pPriv->Gamma;
+  } else if (attribute == xvContrast) {
+	*value = pPriv->Contrast;
   } else
     return BadMatch;
 
@@ -826,6 +767,12 @@ TRIDENTDisplayVideo(
     else
         offset = offset >> 3;
 
+    if (pTrident->Chipset >= CYBERBLADEXPm8) {
+	int bpp = pScrn->bitsPerPixel >> 3;		
+	int dstPitch = ((width << 1) + 15) & ~15;
+	offset += (((dstPitch * (height - 1)) + bpp - 1) / bpp) >> 4;
+    }
+
     OUTW(vgaIOBase + 4, (((width<<1) & 0xff)<<8)   | 0x90);
     OUTW(vgaIOBase + 4, ((width<<1) & 0xff00)      | 0x91);
     OUTW(vgaIOBase + 4, ((offset) & 0xff) << 8     | 0x92);
@@ -962,7 +909,8 @@ TRIDENTPutImage(
    dstBox.y1 = drw_y;
    dstBox.y2 = drw_y + drw_h;
 
-   if(!TRIDENTClipVideo(&dstBox, &x1, &x2, &y1, &y2, clipBoxes, width, height))
+   if(!xf86XVClipVideoHelper(&dstBox, &x1, &x2, &y1, &y2, clipBoxes, 
+								width, height))
 	return Success;
 
    dstBox.x1 -= pScrn->frameX0;
@@ -1225,7 +1173,7 @@ TRIDENTDisplaySurface(
     dstBox.y1 = drw_y;
     dstBox.y2 = drw_y + drw_h;
 
-    if(!TRIDENTClipVideo(&dstBox, &x1, &x2, &y1, &y2, clipBoxes, 
+    if(!xf86XVClipVideoHelper(&dstBox, &x1, &x2, &y1, &y2, clipBoxes, 
 			surface->width, surface->height))
     {
 	return Success;
