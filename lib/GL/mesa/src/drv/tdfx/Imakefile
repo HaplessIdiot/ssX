@@ -51,7 +51,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES) \
-		-I/usr/include/glide3
+		-I$(GLIDE3INCDIR)
 
       DRISRCS = ../../../dri/dri_mesa.c \
 		../../../../dri/dri_tmm.c
