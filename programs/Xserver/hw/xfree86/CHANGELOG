@@ -1,5 +1,7 @@
 XFree86 3.2g (19 December 1996)
- 111. Back out change 97 -- it is causing problems at server startup.
+ 112. Separate the function prototypes out of xf86_OSlib.h (Stuart Anderson).
+ 111. Fix for change 97 (which was causing a server startup problem)
+      (Harald Koenig).
  110. Enable accelerated copy plane for 24bpp in XAA.
  109. Fix some compile problems related to the recent Cirrus changes.
 
