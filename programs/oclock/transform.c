@@ -1,4 +1,5 @@
 /* $XConsortium: transform.c,v 1.4 94/04/17 20:37:59 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -36,6 +37,12 @@ from the X Consortium.
 
 # include	<X11/Xlib.h>
 # include	"transform.h"
+
+#ifndef X_NOT_STDC_ENV
+#include	<stdlib.h>
+#else
+char *malloc();
+#endif
 
 static XPoint *
 TranslatePoints (points, n_points, t, mode)

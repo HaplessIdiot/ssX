@@ -1,4 +1,5 @@
 /* $XConsortium: handle.c,v 1.28 94/04/17 20:24:20 converse Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -35,6 +36,13 @@ from the X Consortium.
 #include <ctype.h>
 #include "xmodmap.h"
 #include "wq.h"
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc();
+char *realloc();
+#endif
 
 static XModifierKeymap *map = NULL;
 

@@ -1,4 +1,5 @@
 /* $XConsortium: xieperf.c,v 1.38 94/04/17 20:39:40 gildea Exp $ */
+/* $XFree86$ */
 
 /**** module xieperf.c ****/
 /****************************************************************************
@@ -92,6 +93,8 @@ extern Time_t time ();
 #define O_BINARY 0
 #endif
 #define lowbit(x) ((x) & (~(x) + 1))
+
+extern XIEimage *GetImageStruct();
 
 /* Only for working on ``fake'' servers, for hardware that doesn't exist */
 static Bool     drawToFakeServer = False;
@@ -4812,7 +4815,7 @@ int	which;
 	XiePhotomap ControlPlane;
 
 	ControlPlane = ( XiePhotomap ) NULL;
-	p.finfo.image1 = ( XIEimage * ) GetImageStruct( which ); 
+	p.finfo.image1 = GetImageStruct( which ); 
 	p.buffer_size = 2048;
 	if ( p.finfo.image1 != ( XIEimage * ) NULL )
 	{ 

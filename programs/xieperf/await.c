@@ -1,4 +1,5 @@
 /* $XConsortium: await.c,v 1.12 94/04/17 20:39:06 rws Exp $ */
+/* $XFree86$ */
 
 /**** module await.c ****/
 /******************************************************************************
@@ -86,6 +87,12 @@ static unsigned char *lut;
 static int lutSize;
 static int AwaitHandlerSeen;
 static XParms xplocal;		/* we can't pass args to signal handler */
+
+extern Display *Open_Display (
+#if NeedFunctionPrototypes
+	char *
+#endif
+	);
 
 int InitAwait(xp, p, reps)
     XParms  xp;
@@ -186,7 +193,7 @@ AbortFlo(xp)
 {
 	XieExtensionInfo *xieInfo;
 
-	xp->d = ( Display * ) Open_Display( xp->displayName );
+	xp->d = Open_Display( xp->displayName );
 	if ( XieInitialize( xp->d, &xieInfo ) ) 
 	{
 		/* abort the flo */
@@ -268,7 +275,7 @@ void ChildProc(data)
 	XParms  xp = &_xp;
 	Parms   p = data->p;
 	*xp = *data->xp;
-	xp->d = ( Display * ) Open_Display( xp->displayName );
+	xp->d = Open_Display( xp->displayName );
 	if ( XieInitialize( xp->d, &xieInfo ) )
 	{
 		PumpTheClientData( xp, p, flo, 0, 1,
@@ -334,7 +341,7 @@ void DoAwait(xp, p, reps)
 		{
 			/* connect to the server */
 
-			xp->d = ( Display * ) Open_Display( xp->displayName );
+			xp->d = Open_Display( xp->displayName );
 			if ( XieInitialize( xp->d, &xieInfo ) )
 			{
 				PumpTheClientData( xp, p, flo, 0, 1, 

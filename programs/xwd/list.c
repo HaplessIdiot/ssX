@@ -1,4 +1,5 @@
 /* $XConsortium: list.c /main/3 1995/12/15 15:10:48 converse $ */
+/* $XFree86$ */
 /** ------------------------------------------------------------------------
 	This file contains routines for manipulating generic lists.
 	Lists are implemented with a "harness".  In other words, each
@@ -22,6 +23,13 @@
   ----------------------------------------------------------------------- **/
 
 #include <stdio.h>
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc();
+#endif
+
 #include "list.h"
 
 
