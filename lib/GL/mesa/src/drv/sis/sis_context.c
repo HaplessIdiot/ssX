@@ -18,13 +18,13 @@ Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
-ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ERIC ANHOLT OR SILICON INTEGRATED SYSTEMS CORP BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_context.c,v 1.1 2003/09/28 20:15:33 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_context.c,v 1.2 2003/09/29 11:25:18 alanh Exp $ */
 
 /*
  * Authors:
@@ -69,41 +69,32 @@ static const char * const card_extensions[] =
 void
 WaitEngIdle (sisContextPtr smesa)
 {
-   GLubyte *IOBase = GET_IOBase (smesa);
-   GLbyte cEngineState;
+   GLuint engineState;
 
-   cEngineState = *((GLbyte volatile *) (IOBase + 0x8243));
-   while (((cEngineState & 0x80) == 0) ||
-	  ((cEngineState & 0x40) == 0) || ((cEngineState & 0x20) == 0))
-   {
-      cEngineState = *((GLbyte volatile *) (IOBase + 0x8243));
-   }
+   do {
+      engineState = MMIO_READ(REG_CommandQueue);
+   } while ((engineState & SiS_EngIdle) != SiS_EngIdle);
 }
 
 void
 Wait2DEngIdle (sisContextPtr smesa)
 {
-   GLubyte *IOBase = GET_IOBase (smesa);
-   GLbyte cEngineState;
+   GLuint engineState;
 
-   cEngineState = *((GLbyte volatile *) (IOBase + 0x8243));
-   while (!(cEngineState & 0x80))
-   {
-      cEngineState = *((GLbyte volatile *) (IOBase + 0x8243));
-   }
+   do {
+      engineState = MMIO_READ(REG_CommandQueue);
+   } while ((engineState & SiS_EngIdle2d) != SiS_EngIdle2d);
 }
 
 /* To be called from mWait3DCmdQueue.  Separate function for profiling
  * purposes, and speed doesn't matter because we're spinning anyway.
- * This function should use usleeps to release cpu probably, but I have yet
- * to see it get called.
  */
 void
 WaitingFor3dIdle(sisContextPtr smesa, int wLen)
 {
-   while ( *(smesa->CurrentQueueLenPtr) < wLen) {
+   while (*(smesa->CurrentQueueLenPtr) < wLen) {
       *(smesa->CurrentQueueLenPtr) =
-         (*(GLint *)(GET_IOBase(smesa) + REG_QueueLen) & MASK_QueueLen) - 20;
+         (MMIO_READ(REG_CommandQueue) & MASK_QueueLen) - 20;
    }
 }
 
@@ -217,6 +208,9 @@ sisCreateContext( const __GLcontextModes *glVisual,
    _ac_CreateContext( ctx );
    _tnl_CreateContext( ctx );
    _swsetup_CreateContext( ctx );
+
+   _swrast_allow_pixel_fog( ctx, GL_TRUE );
+   _swrast_allow_vertex_fog( ctx, GL_FALSE );
 
    sisDDInitStateFuncs( ctx );
    sisDDInitState( smesa );	/* Initializes smesa->zFormat, important */
@@ -382,7 +376,7 @@ sis_update_texture_state (sisContextPtr smesa)
    __GLSiSHardware *prev = &smesa->prev;
 
    mWait3DCmdQueue (55);
-   if (smesa->clearTexCache) {
+   if (smesa->clearTexCache || (smesa->GlobalFlag & GFLAG_TEXTUREADDRESS)) {
       MMIO(REG_3D_TEnable, prev->hwCapEnable | MASK_TextureCacheClear);
       MMIO(REG_3D_TEnable, prev->hwCapEnable);
       smesa->clearTexCache = GL_FALSE;
@@ -404,9 +398,6 @@ sis_update_texture_state (sisContextPtr smesa)
       MMIO(REG_3D_TextureBorderColor, prev->texture[0].hwTextureBorderColor);
 
    if (smesa->GlobalFlag & GFLAG_TEXTUREADDRESS) {
-      MMIO(REG_3D_TEnable, prev->hwCapEnable | MASK_TextureCacheClear);
-      MMIO(REG_3D_TEnable, prev->hwCapEnable);
-
       switch ((prev->texture[0].hwTextureSet & MASK_TextureLevel) >> 8)
       {
       case 11:
@@ -489,181 +480,16 @@ sis_update_texture_state (sisContextPtr smesa)
    /* texture environment */
    if (smesa->GlobalFlag & GFLAG_TEXTUREENV) {
       MMIO(REG_3D_TextureBlendFactor, prev->hwTexEnvColor);
-      MMIO(REG_3D_TextureColorBlendSet0, prev->hwTexBlendClr0);
+      MMIO(REG_3D_TextureColorBlendSet0, prev->hwTexBlendColor0);
       MMIO(REG_3D_TextureAlphaBlendSet0, prev->hwTexBlendAlpha0);
    }
    if (smesa->GlobalFlag & GFLAG_TEXTUREENV_1) {
       MMIO(REG_3D_TextureBlendFactor, prev->hwTexEnvColor);
-      MMIO(REG_3D_TextureColorBlendSet1, prev->hwTexBlendClr1);
+      MMIO(REG_3D_TextureColorBlendSet1, prev->hwTexBlendColor1);
       MMIO(REG_3D_TextureAlphaBlendSet1, prev->hwTexBlendAlpha1);
    }
 
    smesa->GlobalFlag &= ~GFLAG_TEXTURE_STATES;
-}
-
-/* Updates all state.
- * Called when the lock is taken and another context had the lock previously.
- */
-void
-sis_validate_all_state (sisContextPtr smesa)
-{
-   __GLSiSHardware *prev = &smesa->prev;
-
-   mEndPrimitive ();
-   mWait3DCmdQueue (40);
-
-   /* Enable Setting */
-   MMIO(REG_3D_TEnable, prev->hwCapEnable);
-   MMIO(REG_3D_TEnable2, prev->hwCapEnable2);
-
-   /* Z Setting */
-   /* if (prev->hwCapEnable & MASK_ZTestEnable) { */
-   MMIO(REG_3D_ZSet, prev->hwZ);
-   MMIO(REG_3D_ZStWriteMask, prev->hwZMask);
-   MMIO(REG_3D_ZAddress, prev->hwOffsetZ);
-   /* } */
-
-   /* Alpha Setting */
-   if (prev->hwCapEnable & MASK_AlphaTestEnable)
-      MMIO(REG_3D_AlphaSet, prev->hwAlpha);
-
-   /* Destination Setting */
-   MMIO(REG_3D_DstSet, prev->hwDstSet);
-   MMIO(REG_3D_DstAlphaWriteMask, prev->hwDstMask);
-   MMIO(REG_3D_DstAddress, prev->hwOffsetDest);
-
-   /* Line Setting */
-#if 0
-   if (prev->hwCapEnable2 & MASK_LinePatternEnable)
-      MMIO(REG_3D_LinePattern, prev->hwLinePattern);
-#endif
-
-   /* Fog Setting */
-   if (prev->hwCapEnable & MASK_FogEnable) {
-      MMIO(REG_3D_FogSet, prev->hwFog);
-      MMIO(REG_3D_FogInverseDistance, prev->hwFogInverse);
-      MMIO(REG_3D_FogFarDistance, prev->hwFogFar);
-      MMIO(REG_3D_FogFactorDensity, prev->hwFogDensity);
-   }
-
-   /* Stencil Setting */
-   if (prev->hwCapEnable & MASK_StencilTestEnable) {
-      MMIO(REG_3D_StencilSet, prev->hwStSetting);
-      MMIO(REG_3D_StencilSet2, prev->hwStSetting2);
-   }
-
-   /* Miscellaneous Setting */
-   if (prev->hwCapEnable & MASK_BlendEnable)
-      MMIO(REG_3D_DstBlendMode, prev->hwDstSrcBlend);
-
-   MMIO(REG_3D_ClipTopBottom, prev->clipTopBottom);
-   MMIO(REG_3D_ClipLeftRight, prev->clipLeftRight);
-
-   /* TODO */
-   /* Texture Setting */
-   /* if (prev->hwCapEnable & MASK_TextureEnable) */
-   {
-      MMIO(REG_3D_TEnable, prev->hwCapEnable | MASK_TextureCacheClear);
-
-      MMIO(REG_3D_TEnable, prev->hwCapEnable);
-
-      MMIO(REG_3D_TextureSet, prev->texture[0].hwTextureSet);
-      MMIO(REG_3D_TextureMip, prev->texture[0].hwTextureMip);
-      /*
-      MMIO(REG_3D_TextureTransparencyColorHigh, prev->texture[0].hwTextureClrHigh);
-      MMIO(REG_3D_TextureTransparencyColorLow, prev->texture[0].hwTextureClrLow);
-      */
-      MMIO(REG_3D_TextureBorderColor, prev->texture[0].hwTextureBorderColor);
-
-      switch ((prev->texture[0].hwTextureSet & MASK_TextureLevel) >> 8)
-      {
-      case 11:
-         MMIO(REG_3D_TextureAddress11, prev->texture[0].texOffset11);
-      case 10:
-         MMIO(REG_3D_TextureAddress10, prev->texture[0].texOffset10);
-         MMIO(REG_3D_TexturePitch10, prev->texture[0].texPitch10);
-      case 9:
-         MMIO(REG_3D_TextureAddress9, prev->texture[0].texOffset9);
-      case 8:
-         MMIO(REG_3D_TextureAddress8, prev->texture[0].texOffset8);
-         MMIO(REG_3D_TexturePitch8, prev->texture[0].texPitch89);
-      case 7:
-         MMIO(REG_3D_TextureAddress7, prev->texture[0].texOffset7);
-      case 6:
-         MMIO(REG_3D_TextureAddress6, prev->texture[0].texOffset6);
-         MMIO(REG_3D_TexturePitch6, prev->texture[0].texPitch67);
-      case 5:
-         MMIO(REG_3D_TextureAddress5, prev->texture[0].texOffset5);
-      case 4:
-         MMIO(REG_3D_TextureAddress4, prev->texture[0].texOffset4);
-         MMIO(REG_3D_TexturePitch4, prev->texture[0].texPitch45);
-      case 3:
-         MMIO(REG_3D_TextureAddress3, prev->texture[0].texOffset3);
-      case 2:
-         MMIO(REG_3D_TextureAddress2, prev->texture[0].texOffset2);
-         MMIO(REG_3D_TexturePitch2, prev->texture[0].texPitch23);
-      case 1:
-         MMIO(REG_3D_TextureAddress1, prev->texture[0].texOffset1);
-      case 0:
-         MMIO(REG_3D_TextureAddress0, prev->texture[0].texOffset0);
-         MMIO(REG_3D_TexturePitch0, prev->texture[0].texPitch01);
-      }
-
-      /* TODO */
-      /* if (smesa->ctx->Texture.Unit[1].ReallyEnabled) */
-      {
-         MMIO(REG_3D_Texture1Set, prev->texture[1].hwTextureSet);
-         MMIO(REG_3D_Texture1Mip, prev->texture[1].hwTextureMip);
-         /*
-         MMIO(REG_3D_Texture1TransparencyColorHigh, prev->texture[1].hwTextureClrHigh);
-         MMIO(REG_3D_Texture1TransparencyColorLow, prev->texture[1].hwTextureClrLow);
-         */
-         MMIO(REG_3D_Texture1BorderColor, prev->texture[1].hwTextureBorderColor);
-
-         switch ((prev->texture[1].hwTextureSet & MASK_TextureLevel) >> 8)
-         {
-         case 11:			
-            MMIO(REG_3D_Texture1Address11, prev->texture[1].texOffset11);
-         case 10:			
-            MMIO(REG_3D_Texture1Address10, prev->texture[1].texOffset10);
-            MMIO(REG_3D_Texture1Pitch10, prev->texture[1].texPitch10);
-         case 9:			
-            MMIO(REG_3D_Texture1Address9, prev->texture[1].texOffset9);
-         case 8:			
-            MMIO(REG_3D_Texture1Address8, prev->texture[1].texOffset8);
-            MMIO(REG_3D_Texture1Pitch8, prev->texture[1].texPitch89);
-         case 7:			
-            MMIO(REG_3D_Texture1Address7, prev->texture[1].texOffset7);
-         case 6:			
-            MMIO(REG_3D_Texture1Address6, prev->texture[1].texOffset6);
-            MMIO(REG_3D_Texture1Pitch6, prev->texture[1].texPitch67);
-         case 5:			
-            MMIO(REG_3D_Texture1Address5, prev->texture[1].texOffset5);
-         case 4:			
-            MMIO(REG_3D_Texture1Address4, prev->texture[1].texOffset4);
-            MMIO(REG_3D_Texture1Pitch4, prev->texture[1].texPitch45);
-         case 3:			
-            MMIO(REG_3D_Texture1Address3, prev->texture[1].texOffset3);
-         case 2:			
-            MMIO(REG_3D_Texture1Address2, prev->texture[1].texOffset2);
-            MMIO(REG_3D_Texture1Pitch2, prev->texture[1].texPitch23);
-         case 1:			
-            MMIO(REG_3D_Texture1Address1, prev->texture[1].texOffset1);
-         case 0:			
-            MMIO(REG_3D_Texture1Address0, prev->texture[1].texOffset0);
-            MMIO(REG_3D_Texture1Pitch0, prev->texture[1].texPitch01);
-         }
-      }
-
-      /* texture environment */
-      MMIO(REG_3D_TextureBlendFactor, prev->hwTexEnvColor);
-      MMIO(REG_3D_TextureColorBlendSet0, prev->hwTexBlendClr0);
-      MMIO(REG_3D_TextureColorBlendSet1, prev->hwTexBlendClr1);
-      MMIO(REG_3D_TextureAlphaBlendSet0, prev->hwTexBlendAlpha0);
-      MMIO(REG_3D_TextureAlphaBlendSet1, prev->hwTexBlendAlpha1);
-   }
-
-   smesa->GlobalFlag = 0;
 }
 
 void

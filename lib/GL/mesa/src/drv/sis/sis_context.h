@@ -18,13 +18,13 @@ Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
-ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ERIC ANHOLT OR SILICON INTEGRATED SYSTEMS CORP BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_context.h,v 1.1 2003/09/28 20:15:33 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_context.h,v 1.2 2003/09/29 11:25:18 alanh Exp $ */
 
 /*
  * Authors:
@@ -55,8 +55,12 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* Flags for software fallback cases:
  */
 #define SIS_FALLBACK_TEXTURE		0x0001
-#define SIS_FALLBACK_DRAW_BUFFER	0x0002
-#define SIS_FALLBACK_STENCIL		0x0004
+#define SIS_FALLBACK_TEXTURE0		0x0002
+#define SIS_FALLBACK_TEXTURE1		0x0004
+#define SIS_FALLBACK_TEXENV0		0x0008
+#define SIS_FALLBACK_TEXENV1		0x0010
+#define SIS_FALLBACK_DRAW_BUFFER	0x0020
+#define SIS_FALLBACK_STENCIL		0x0040
 #define SIS_FALLBACK_FORCE		0x8000
 
 /* Flags for hardware state that needs to be updated */
@@ -194,8 +198,8 @@ typedef struct __GLSiSHardwareRec
 
   GLint hwTexEnvColor;		/* Texture Blending Setting */
 
-  GLint hwTexBlendClr0;
-  GLint hwTexBlendClr1;
+  GLint hwTexBlendColor0;
+  GLint hwTexBlendColor1;
   GLint hwTexBlendAlpha0;
   GLint hwTexBlendAlpha1;
 
@@ -335,6 +339,7 @@ struct sis_context
   unsigned int backOffset;
   unsigned int backPitch;
   GLvoid *depthbuffer;
+  unsigned int depthOffset;
   unsigned int depthPitch;
   void *zbFree, *bbFree;		/* Cookies for freeing buffers */
   ENGPACKET zClearPacket, cbClearPacket;
@@ -357,25 +362,14 @@ struct sis_context
 
   sisScreenPtr sisScreen;		/* Screen private DRI data */
   SISSAREAPrivPtr sarea;		/* Private SAREA data */
+
 };
 
 #define SIS_CONTEXT(ctx)		((sisContextPtr)(ctx->DriverCtx))
 
 /* Macros */
 #define GET_IOBase(x) ((x)->IOBase)
-#define GET_FbBase(x) ((x)->FbBase)
-#define GET_AGPBase(x) ((x)->AGPBase)
-#define GET_DEPTH(x) ((x)->bytesPerPixel)
-#define GET_WIDTH(x) ((x)->displayWidth)
-#define GET_FbPos(smesa,x,y) (GET_FbBase(smesa)+(x)*GET_DEPTH(smesa)\
-                             +(y)*smesa->frontPitch)
 
-#define GET_ColorFormat(x) ((x)->colorFormat)
-
-#define GET_RMASK(x) ((x)->redMask)
-#define GET_GMASK(x) ((x)->greenMask)
-#define GET_BMASK(x) ((x)->blueMask)
-#define GET_AMASK(x) ((x)->alphaMask)
 #define Y_FLIP(Y)  (smesa->bottom - (Y))
 
 #define SISPACKCOLOR565( r, g, b )					\
@@ -406,7 +400,7 @@ struct sis_context
 /* Update the mirrored queue pointer if it doesn't indicate enough space */ \
 if (*(smesa->CurrentQueueLenPtr) < (wLen)) {				\
    *(smesa->CurrentQueueLenPtr) =					\
-      (*(GLint *)(GET_IOBase(smesa) + REG_QueueLen) & MASK_QueueLen) - 20; \
+      (*(GLint *)(GET_IOBase(smesa) + REG_CommandQueue) & MASK_QueueLen) - 20; \
    /* Spin and wait if the queue is actually too full */		\
    if (*(smesa->CurrentQueueLenPtr) < (wLen))				\
       WaitingFor3dIdle(smesa, wLen);					\
@@ -436,7 +430,6 @@ void WaitingFor3dIdle(sisContextPtr smesa, int wLen);
 /* update to hw */
 extern void sis_update_texture_state( sisContextPtr smesa );
 extern void sis_update_render_state( sisContextPtr smesa );
-extern void sis_validate_all_state( sisContextPtr smesa );
 
 void sis_fatal_error (void);
 

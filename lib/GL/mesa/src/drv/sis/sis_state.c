@@ -18,13 +18,13 @@ Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
-ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ERIC ANHOLT OR SILICON INTEGRATED SYSTEMS CORP BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_ctx.c,v 1.3 2000/09/26 15:56:48 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_state.c,v 1.1 2003/09/28 20:15:34 alanh Exp $ */
 
 /*
  * Authors:
@@ -366,10 +366,10 @@ static void sisDDColorMask( GLcontext *ctx,
       current->hwCapEnable2 |= (MASK_AlphaMaskWriteEnable |
                              MASK_ColorMaskWriteEnable);
 
-      current->hwDstMask = (r) ? GET_RMASK(smesa) : 0 |
-			   (g) ? GET_GMASK(smesa) : 0 |
-			   (b) ? GET_BMASK(smesa) : 0 |
-			   (a) ? GET_AMASK(smesa) : 0;
+      current->hwDstMask = (r) ? smesa->redMask : 0 |
+			   (g) ? smesa->greenMask : 0 |
+			   (b) ? smesa->blueMask : 0 |
+			   (a) ? smesa->alphaMask : 0;
    }
    
    if (current->hwDstMask != prev->hwDstMask) {
@@ -542,19 +542,6 @@ void sisDDDrawBuffer( GLcontext *ctx, GLenum mode )
    }
 }
 
-static void
-sisDDHint( GLcontext *ctx, GLenum target, GLenum mode )
-{
-   
-   switch (target) {
-   case GL_FOG_HINT:
-      /* Update fog mode setting */
-      sisDDFogfv(ctx, GL_FOG_MODE, NULL);
-      break;
-   }
-   
-}
-
 /* =============================================================
  * Polygon stipple
  */
@@ -582,10 +569,6 @@ sisDDEnable( GLcontext * ctx, GLenum cap, GLboolean state )
       else
          current->hwCapEnable &= ~MASK_AlphaTestEnable;
       break;
-/*
-      case GL_AUTO_NORMAL:
-         break;
-*/
    case GL_BLEND:
       /* TODO: */
       if (state)
@@ -594,17 +577,6 @@ sisDDEnable( GLcontext * ctx, GLenum cap, GLboolean state )
       else
          current->hwCapEnable &= ~MASK_BlendEnable;
       break;
-/*
-    case GL_CLIP_PLANE0:
-    case GL_CLIP_PLANE1:
-    case GL_CLIP_PLANE2:
-    case GL_CLIP_PLANE3:
-    case GL_CLIP_PLANE4:
-    case GL_CLIP_PLANE5:
-      break;
-    case GL_COLOR_MATERIAL:
-      break;
-*/
    case GL_CULL_FACE:
       if (state)
          current->hwCapEnable |= MASK_CullEnable;
@@ -630,93 +602,15 @@ sisDDEnable( GLcontext * ctx, GLenum cap, GLboolean state )
       else
          current->hwCapEnable &= ~MASK_FogEnable;
       break;
-/*
-    case GL_LIGHT0:
-    case GL_LIGHT1:
-    case GL_LIGHT2:
-    case GL_LIGHT3:
-    case GL_LIGHT4:
-    case GL_LIGHT5:
-    case GL_LIGHT6:
-    case GL_LIGHT7:
-      break;
-    case GL_LIGHTING:
-      break;
-    case GL_LINE_SMOOTH:
-      break;
-    case GL_LINE_STIPPLE:
-      break;
-    case GL_INDEX_LOGIC_OP:
-      break;
-*/
    case GL_COLOR_LOGIC_OP:
       if (state)
          sisDDLogicOpCode( ctx, ctx->Color.LogicOp );
       else
          sisDDLogicOpCode( ctx, GL_COPY );
       break;
-/*
-    case GL_MAP1_COLOR_4:
-      break;
-    case GL_MAP1_INDEX:
-      break;
-    case GL_MAP1_NORMAL:
-      break;
-    case GL_MAP1_TEXTURE_COORD_1:
-      break;
-    case GL_MAP1_TEXTURE_COORD_2:
-      break;
-    case GL_MAP1_TEXTURE_COORD_3:
-      break;
-    case GL_MAP1_TEXTURE_COORD_4:
-      break;
-    case GL_MAP1_VERTEX_3:
-      break;
-    case GL_MAP1_VERTEX_4:
-      break;
-    case GL_MAP2_COLOR_4:
-      break;
-    case GL_MAP2_INDEX:
-      break;
-    case GL_MAP2_NORMAL:
-      break;
-    case GL_MAP2_TEXTURE_COORD_1:
-      break;
-    case GL_MAP2_TEXTURE_COORD_2:
-      break;
-    case GL_MAP2_TEXTURE_COORD_3:
-      break;
-    case GL_MAP2_TEXTURE_COORD_4:
-      break;
-    case GL_MAP2_VERTEX_3:
-      break;
-    case GL_MAP2_VERTEX_4:
-      break;
-    case GL_NORMALIZE:
-      break;
-    case GL_POINT_SMOOTH:
-      break;
-    case GL_POLYGON_SMOOTH:
-      break;
-    case GL_POLYGON_STIPPLE:
-      break;
-    case GL_POLYGON_OFFSET_POINT:
-      break;
-    case GL_POLYGON_OFFSET_LINE:
-      break;
-    case GL_POLYGON_OFFSET_FILL:
-    case GL_POLYGON_OFFSET_EXT:
-     break;
-    case GL_RESCALE_NORMAL_EXT:
-      break;
-*/
    case GL_SCISSOR_TEST:
       sisUpdateClipping( ctx );
       break;
-/*
-    case GL_SHARED_TEXTURE_PALETTE_EXT:
-      break;
-*/
    case GL_STENCIL_TEST:
       if (state) {
          if (smesa->zFormat != SiS_ZFORMAT_S8Z24)
@@ -730,33 +624,6 @@ sisDDEnable( GLcontext * ctx, GLenum cap, GLboolean state )
 				   MASK_StencilWriteEnable);
       }
       break;
-/*
-    case GL_TEXTURE_1D:
-    case GL_TEXTURE_2D:
-    case GL_TEXTURE_3D:
-      break;
-    case GL_TEXTURE_GEN_Q:
-      break;
-    case GL_TEXTURE_GEN_R:
-      break;
-    case GL_TEXTURE_GEN_S:
-      break;
-    case GL_TEXTURE_GEN_T:
-      break;
-
-    case GL_VERTEX_ARRAY:
-      break;
-    case GL_NORMAL_ARRAY:
-      break;
-    case GL_COLOR_ARRAY:
-      break;
-    case GL_INDEX_ARRAY:
-      break;
-    case GL_TEXTURE_COORD_ARRAY:
-      break;
-    case GL_EDGE_FLAG_ARRAY:
-      break;
-*/
     }
 }
 
@@ -833,27 +700,6 @@ sisUpdateHWState( GLcontext *ctx )
       smesa->GlobalFlag |= GFLAG_ENABLESETTING2;
    }
 
-  /* TODO: if fog disable, don't check */
-  if (current->hwCapEnable & MASK_FogEnable) {
-      /* fog setting */
-      if (current->hwFog != prev->hwFog) {
-	  prev->hwFog = current->hwFog;
-	  smesa->GlobalFlag |= GFLAG_FOGSETTING;
-	}
-      if (current->hwFogFar != prev->hwFogFar) {
-	  prev->hwFogFar = current->hwFogFar;
-	  smesa->GlobalFlag |= GFLAG_FOGSETTING;
-	}
-      if (current->hwFogInverse != prev->hwFogInverse) {
-	  prev->hwFogInverse = current->hwFogInverse;
-	  smesa->GlobalFlag |= GFLAG_FOGSETTING;
-	}
-      if (current->hwFogDensity != prev->hwFogDensity) {
-	  prev->hwFogDensity = current->hwFogDensity;
-	  smesa->GlobalFlag |= GFLAG_FOGSETTING;
-	}
-    }
-
    if (smesa->GlobalFlag & GFLAG_RENDER_STATES)
       sis_update_render_state( smesa );
 
@@ -928,11 +774,11 @@ void sisDDInitState( sisContextPtr smesa )
    prev->texture[0].hwTextureMip = 0;
 #endif
 
-   /* Texture Blending seeting */
-   prev->hwTexBlendClr0 = L_REPLACE__RGB_STAGE0;
-   prev->hwTexBlendClr1 = 0x294B4000;
-   prev->hwTexBlendAlpha0 = 0x333A0000;
-   prev->hwTexBlendAlpha1 = 0x333A0000;
+   /* Texture Blending setting -- use fragment color/alpha*/
+   prev->hwTexBlendColor0 = STAGE0_C_CF;
+   prev->hwTexBlendColor1 = STAGE1_C_CF;
+   prev->hwTexBlendAlpha0 = STAGE0_A_AF;
+   prev->hwTexBlendAlpha1 = STAGE1_A_AF;
    
    switch (smesa->bytesPerPixel)
    {
@@ -1012,7 +858,7 @@ void sisDDInitStateFuncs( GLcontext *ctx )
    ctx->Driver.Enable		 = sisDDEnable;
    ctx->Driver.FrontFace	 = sisDDFrontFace;
    ctx->Driver.Fogfv		 = sisDDFogfv;
-   ctx->Driver.Hint		 = sisDDHint;
+   ctx->Driver.Hint		 = NULL;
    ctx->Driver.Lightfv		 = NULL;
    ctx->Driver.LogicOpcode	 = sisDDLogicOpCode;
    ctx->Driver.PolygonMode	 = NULL;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_tritmp.h,v 1.2 2003/09/28 21:44:45 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2003 Eric Anholt
@@ -18,10 +18,9 @@ Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
-ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
-DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-USE OR OTHER DEALINGS IN THE SOFTWARE.
+ERIC ANHOLT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
@@ -140,10 +139,6 @@ static __inline void TAG(sis_vert_init)( void )
    sis_tri_func_agp[SIS_STATES] = TAG(sis_draw_tri_agp);
    sis_line_func_agp[SIS_STATES] = TAG(sis_draw_line_agp);
    sis_point_func_agp[SIS_STATES] = TAG(sis_draw_point_agp);
-   /*sis_quad_func_agp[SIS_STATES] = TAG(sis_draw_quad_mmio);
-   sis_tri_func_agp[SIS_STATES] = TAG(sis_draw_tri_mmio);
-   sis_line_func_agp[SIS_STATES] = TAG(sis_draw_line_mmio);
-   sis_point_func_agp[SIS_STATES] = TAG(sis_draw_point_mmio);*/
    sis_quad_func_mmio[SIS_STATES] = TAG(sis_draw_quad_mmio);
    sis_tri_func_mmio[SIS_STATES] = TAG(sis_draw_tri_mmio);
    sis_line_func_mmio[SIS_STATES] = TAG(sis_draw_line_mmio);

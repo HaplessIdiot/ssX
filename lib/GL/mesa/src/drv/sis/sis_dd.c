@@ -18,13 +18,13 @@ Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
-ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ERIC ANHOLT OR SILICON INTEGRATED SYSTEMS CORP BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_dd.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_dd.c,v 1.2 2003/11/18 02:58:44 tsi Exp $ */
 
 /*
  * Authors:
@@ -151,8 +151,7 @@ sisUpdateBufferSize( sisContextPtr smesa )
 
    current->hwZ &= ~MASK_ZBufferPitch;
    current->hwZ |= smesa->width * z_depth >> 2;
-   current->hwOffsetZ = ( (unsigned long)smesa->depthbuffer -
-			  (unsigned long)GET_FbBase(smesa) ) >> 2;
+   current->hwOffsetZ = smesa->depthOffset >> 2;
 
    if ((current->hwOffsetZ != prev->hwOffsetZ) || (current->hwZ != prev->hwZ)) {
       prev->hwOffsetZ = current->hwOffsetZ;

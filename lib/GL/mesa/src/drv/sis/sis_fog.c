@@ -18,13 +18,13 @@ Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
-ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ERIC ANHOLT OR SILICON INTEGRATED SYSTEMS CORP BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_fog.c,v 1.3 2000/09/26 15:56:48 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_fog.c,v 1.4 2003/09/28 20:15:33 alanh Exp $ */
 
 /*
  * Authors:
@@ -44,6 +44,7 @@ void
 sisDDFogfv( GLcontext *ctx, GLenum pname, const GLfloat *params )
 {
    sisContextPtr smesa = SIS_CONTEXT(ctx);
+   __GLSiSHardware *prev = &smesa->prev;
    __GLSiSHardware *current = &smesa->current;
 
    float fArg;
@@ -57,29 +58,25 @@ sisDDFogfv( GLcontext *ctx, GLenum pname, const GLfloat *params )
       {
       case GL_LINEAR:
          current->hwFog |= FOGMODE_LINEAR;
-         _swrast_allow_pixel_fog( ctx, GL_TRUE );
-         _swrast_allow_vertex_fog( ctx, GL_FALSE );
          break;
       case GL_EXP:
-         if (ctx->Hint.Fog == GL_NICEST || smesa->AGPCmdModeEnabled) {
-            current->hwFog |= FOGMODE_EXP;
-            _swrast_allow_pixel_fog( ctx, GL_TRUE );
-            _swrast_allow_vertex_fog( ctx, GL_FALSE );
-         } else { /* GL_DONTCARE or GL_FASTEST */
-            current->hwFog |= FOGMODE_CHEAP;
-            _swrast_allow_pixel_fog( ctx, GL_FALSE );
-            _swrast_allow_vertex_fog( ctx, GL_TRUE );
-         }
+         current->hwFog |= FOGMODE_EXP;
          break;
       case GL_EXP2:
          current->hwFog |= FOGMODE_EXP2;
-         _swrast_allow_pixel_fog( ctx, GL_TRUE );
-         _swrast_allow_vertex_fog( ctx, GL_FALSE );
          break;
+      }
+      if (current->hwFog != prev->hwFog) {
+         prev->hwFog = current->hwFog;
+         smesa->GlobalFlag |= GFLAG_FOGSETTING;
       }
       break;
    case GL_FOG_DENSITY:
       current->hwFogDensity = convertFtToFogFt( ctx->Fog.Density );
+      if (current->hwFogDensity != prev->hwFogDensity) {
+         prev->hwFogDensity = current->hwFogDensity;
+         smesa->GlobalFlag |= GFLAG_FOGSETTING;
+      }
       break;
    case GL_FOG_START:
    case GL_FOG_END:
@@ -92,6 +89,13 @@ sisDDFogfv( GLcontext *ctx, GLenum pname, const GLfloat *params )
          else
             current->hwFogFar = doFPtoFixedNoRound( ctx->Fog.End, 6 );
       }
+      if (current->hwFogFar != prev->hwFogFar ||
+          current->hwFogInverse != prev->hwFogInverse)
+      {
+         prev->hwFogFar = current->hwFogFar;
+         prev->hwFogInverse = current->hwFogInverse;
+         smesa->GlobalFlag |= GFLAG_FOGSETTING;
+      }
       break;
    case GL_FOG_INDEX:
       /* TODO */
@@ -102,6 +106,10 @@ sisDDFogfv( GLcontext *ctx, GLenum pname, const GLfloat *params )
       fogColor |= FLOAT_TO_UBYTE( ctx->Fog.Color[2] );
       current->hwFog &= 0xff000000;
       current->hwFog |= fogColor;
+      if (current->hwFog != prev->hwFog) {
+          prev->hwFog = current->hwFog;
+         smesa->GlobalFlag |= GFLAG_FOGSETTING;
+      }
       break;
    }
 }
