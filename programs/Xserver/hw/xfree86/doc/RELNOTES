@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                              21 November 2003
+                              23 November 2003
 
                                   Abstract
 
@@ -69,151 +69,241 @@ don't have enough space to cover them all here.
 
 2.  Summary of new features in 4.4.0.
 
-2.1  NEEDS TO BE UPDATED
+2.1  Video Driver Enhancements
 
-2.2  Video Driver Enhancements
+   o [OLD] ATI Radeon 9x00 2D support added, and 3D support added for the
+     Radeon 8500, 9000, 9100, and M9.  The 3D support for the Radeon now
+     includes hardware TCL.
 
-   o  ATI Radeon 9x00 2D support added, and 3D support added for the Radeon
-     8500, 9000, 9100, and M9.  The 3D support for the Radeon now includes
-     hardware TCL.
+   o [OLD] Support added to the i810 driver for Intel 845G, 852GM, 855GM and
+     865G integrated graphics chipsets, including 2D, 3D (DRI) and XVideo.
+     Support for the 830M has been improved, and XVideo support added.
 
-   o  Support added to the i810 driver for Intel 845G, 852GM, 855GM and 865G
-     integrated graphics chipsets, including 2D, 3D (DRI) and XVideo.  Sup-
-     port for the 830M has been improved, and XVideo support added.
+   o [OLD] National Semiconductor SC1x00, GX1, and GX2 chipset support added
+     with the "nsc" driver.
 
-   o  National Semiconductor SC1x00, GX1, and GX2 chipset support added with
-     the "nsc" driver.
+   o The nv driver for NVIDIA cards has been updated as follows:
 
-   o  Support added for the NVIDIA nForce2 integrated graphics, GeForce 4,
-     and GeForce FX.
+        o Support added to the nv driver for the GeForce FX 5700, which was
+          the only GeForce FX card that didn't work with XFree86 4.3.
 
-   o  Major SiS driver updates for some of the latest chipsets.  Unfortu-
-     nately the SiS 3D driver has had to be disabled because no one has yet
-     taken up the challenge to port it to Mesa 4.x.
+        o The driver now does a much better job of autodetecting which con-
+          nector of dual output cards the monitor is attached to, which
+          should reduce or eliminate the need for manual XF86Config over-
+          rides.
 
-   o  The s3virge driver now has support for double scan modes on the DX
+        o The 2D acceleration for TNT and GeForce was completely rewritten.
+          Performance should be substantiallly improved.
+
+        o TNT and GeForce cards have a new Xv PutImage adaptor which does
+          scaled YUV bit blits.
+
+   o The SiS driver has seen major updates, including:
+
+        o Support for 661/741/760 and support for 330 (Xabre).
+
+        o Merged Framebuffer mode.
+
+        o Support for DVI, and much more.
+
+        o DRI for 300 series (300/305, 540, 630, 730) is supported again.
+
+   o [OLD] The s3virge driver now has support for double scan modes on the DX
      (with XVideo disabled).
 
-   o  Updates to the savage driver, including fixing problems with the
+   o [OLD] Updates to the savage driver, including fixing problems with the
      TwisterK, and problems with incorrect memory size detection.
 
-   o  2D acceleration added for the Trident CyberBladeXP/Ai1 chipsets.
+   o [OLD] 2D acceleration added for the Trident CyberBladeXP/Ai1 chipsets.
 
-   o  Support for big endian architectures has been added to the C&T driver.
+   o [OLD] Support for big endian architectures has been added to the C&T
+     driver.
 
-   o  Various updates and bug fixes have been made to most other drivers.
+   o Various updates and bug fixes have been made to most other drivers.
 
-2.3  Input Driver Enhancements
+2.2  Input Driver Enhancements
 
-   o  The mouse driver now has automatic protocol detection for PS/2 mice.
+   o The mouse driver has some support on Linux and FreeBSD for auto-detect-
+     ing the device node to use, making it unnecessary to supply this infor-
+     mation in the XF86Config file in most cases.
 
-   o  Several new input drivers have been added, including tek4957, jamstudio
-     (js_x), fpit, palmax, and ur98 (Linux only).
+   o [OLD] Several new input drivers have been added, including tek4957, jam-
+     studio (js_x), fpit, palmax, and ur98 (Linux only).
 
-2.4  X Server and Extension Updates
+2.3  X Server and Extension Updates
 
-   o  Support for the RandR extension has been partially integrated into the
-     XFree86 server, providing support for resizing the root window at run-
-     time.
+   o The Mesa version used for OpenGL® 1.3 and DRI driver support has been
+     updated to 5.0.2.
 
-   o  The Mesa version used for OpenGL® 1.3 and DRI driver support has been
-     updated to 4.0.4.
+2.4  Client and Library Updates
 
-   o  The XFree86 server's hot keys (including those for switching modes and
-     virtual terminals) can now be configured via XKB.  Previously they were
-     hard coded.  An X server configuration option has been added to allow
-     the VT switching hot keys to be disabled.
+2.4.1  Xterm
 
-2.5  Client and Library Updates
+The user-visible changes to xterm since XFree86 4.3 are:
 
-   o  An Xcursor library providing support for alpha blended (ARGB) and ani-
-     mated cursors.  Two Xcursor themes are provided (redglass and white-
-     glass), as well as the default "core" theme (the traditional cursors).
+Bug Fixes:
 
-   o  Xterm updated to patch level 173, including the following bugfixes:
+   o Make signalInhibit resource work, i.e., disable the menu entries that
+     would send signals to, or exit xterm.
 
-        o  Fix two infinite loops (special cases of mouse hilite tracking,
-          DECUDK parsing).
+   o Make cursor definition in tek4014 emulation work as originally imple-
+     mented.
 
-        o  Make repainting of the 256-color example work properly.
+   o Modify translations for scrollbar so that one can use shifted pageup,
+     wheel mouse, etc., while the mouse pointer is over the scrollbar.
 
-        o  Modify parser tables to improve detection of malformed control
-          sequences, making xterm behave more like a real DEC terminal.
+   o Correct initialization of G1 character set mapping.
 
-        o  Fix a problem with the blinking cursor which occasionally caused
-          xterm to pause until a key was pressed.
+New Features:
 
-        o  Fix improper parsing of multiple items in the ttyModes resource.
+   o Modify the predictable version of the generated logfile name to append
+     the process-id rather than a random value.
 
-     and the following improvements:
+   o Modify scroll-back and scroll-forw actions to accept an adjustment
+     value, e.g.,
 
-        o  Modify xterm to invoke luit.
+          scroll-back(1, page-2)
 
-        o  Add simple session management client capabilities.
+     to scroll back by 2 lines less than a page.
 
-        o  Add a modifyCursorKeys resource to control how the shift- and sim-
-          ilar modifiers are used to make a cursor escape sequence.
+   o Add visualBellDelay resource to modify the length of time used for
+     visual bell, for very slow displays or very fast computers.
 
-        o  Check if the printerCommand resource string is empty, and use this
-          to allow the user to disable printer function.
+Improved Locale Support:
 
-        o  Sort the options list which is displayed in help- and syntax-mes-
-          sages at runtime to simplify maintenance.
+   o modify uxterm script to strip modifiers such as "@euro" from the locale
+     setting before adding ".UTF-8".
 
-2.6  I18N and Font Updates
+   o Add logic to wide-character support which attempts to load fonts speci-
+     fied by utf8Fonts subresources at startup.  The subresources have the
+     same names as the fonts which they replace, e.g., font, font1, etc., so
+     that the ISO-10646-1 fonts can be specified in the XTerm app-defaults
+     file.
 
-   o  FreeType2 updated to version 2.1.1.
+   o Improved performance with chinput application.
 
-   o  The "freetype" X server font backend has undergone a partial rewrite.
-     The new version is based on FreeType 2, and handles TrueType (including
-     OpenType/TTF), OpenType/CFF and Type 1 fonts.  The old "type1" backend
-     is now deprecated, and is only used for CIDFonts by default.
+Improved Font Handling:
 
-   o  A new utility called "mkfontscale", which builds fonts.scale files, has
-     been added.
+   o Document in xterm's manpage how to use XFree86 ":unscaled" keyword to
+     suppress scaling of bold fonts.
 
-   o  The Xft library has undergone a major restructuring, and is now split
-     into fontconfig (which deals with font discovery and configuration and
-     is independent from X), and Xft itself (which uses fontconfig and deals
-     with font rasterisation and rendering.  The format of the Xft font con-
-     figuration files has changed in an incompatible manner.
+   o Improved logic for deriving bold fontname from normal fontname.
 
-   o  Support has been added to the Xft library to do rendering with the core
-     X11 protocol.  This allows clients using this library to render to X
-     servers that don't have support for the RENDER extension.
+   o Make double-width characters work with -u8 option.
 
-   o  There has been a significant reworking of the XKB support to allow
+   o Updated table of Unicode line-drawing characters.
+
+   o Several fixes for rendering using Xft (option -fa):
+
+        o Make height of TrueType fonts match ascent+descent.
+
+        o Translate Unicode values (from UTF-8 output to xterm) for line-
+          drawing to xterm's internal code, etc., since TrueType fonts gener-
+          ally do not have either set of line-drawing glyphs.  xterm can draw
+          these directly.
+
+        o Pass 16-bit values rather than 8-bit values to xtermXftDrawString()
+          to allow for wide-characters.
+
+        o Use built-in line-drawing characters for Xft fonts.
+
+        o Implement underlining.
+
+   o Implement boldMode for wide-characters.
+
+   o Modified to work with CJK double-width (bi-width/monospace) fonts.
+
+Workarounds for Special Applications:
+
+   o Add option -k8 and resource allowC1Printable to allow users of non-VTxxx
+     character sets such as KOI-8 to treat the C1 control area (character
+     codes 128-159) as printable rather than control characters.
+
+   o Add configure option --enable-broken-st and resource brokenStringTerm to
+     allow user to revert one part of the parsing table corrections.
+
+   o Add configure option --enable-broken-osc and resource brokenLinuxOSC to
+     accommodate scripts which do not distinguish between running in the
+     Linux console and running in X.  Linux console recognizes malformed con-
+     trol strings which start with an OSC, but are fixed-length, with no ter-
+     minator.
+
+   o Add configure option --enable-pty-handshake to allow one to compile-in
+     support for the pty handshaking logic, and resource ptyHandshake to
+     enable or disable it.  This feature is normally enabled.
+
+Modified Resources:
+
+   o Change color4 to "dodger blue", since this provides better contrast.
+
+   o Remove color resources from XTerm.ad, leaving them only in XTerm-col.ad
+
+   o Modify UXTerm.ad resource file to include "XTerm-color" rather than
+     "XTerm", in case the latter file contains no color resource definitions.
+
+   o Changed class of veryBoldColors to VeryBoldColors, since ColorMode is
+     associated with boolean resources.
+
+   o Changed classes of colorBDMode and similar resources that override col-
+     ors when a video attribute is set to ColorAttrMode, to make them dis-
+     tinct from ColorMode.  This avoids an unexpected rendering of reverse
+     video, for example.
+
+Modified terminfo/termcap entries:
+
+   o Add indp and rin to terminfo entry.
+
+   o Add le to termcap xterm-basic entry.  Though missing from older termcaps
+     for xterm, some applications check for it.
+
+   o Correct AF/AB strings in termcap for xterm-256color and xterm-88color
+     entries.
+
+2.5  I18N and Font Updates
+
+   o FreeType2 updated to version 2.1.4.
+
+   o [OLD] The "freetype" X server font backend has undergone a partial
+     rewrite.  The new version is based on FreeType 2, and handles TrueType
+     (including OpenType/TTF), OpenType/CFF and Type 1 fonts.  The old
+     "type1" backend is now deprecated, and is only used for CIDFonts by
+     default.
+
+   o [OLD] A new utility called "mkfontscale", which builds fonts.scale
+     files, has been added.
+
+   o [OLD] There has been a significant reworking of the XKB support to allow
      multi-layout configurations.  Multi-layout configurations provide a
      flexible way of supporting multiple language layouts and switching
      between them.
 
-2.7  OS Support Updates
+2.6  OS Support Updates
 
-   o  Updates for Darwin/Mac OS X, including:
+   o [OLD] Updates for Darwin/Mac OS X, including:
 
-        o  Indirect GLX acceleration added.
+        o Indirect GLX acceleration added.
 
-        o  Smaller memory footprint and faster 2-D drawing in rootless mode.
+        o Smaller memory footprint and faster 2-D drawing in rootless mode.
 
-        o  Full screen mode now uses shadowfb for much faster 2-D drawing.
+        o Full screen mode now uses shadowfb for much faster 2-D drawing.
 
-        o  Native fonts can be used on MacOS X.
+        o Native fonts can be used on MacOS X.
 
-   o  Various Cygwin support updates, including an experimental rootless X
-     server for Cygwin/XFree86.
+   o [OLD] Various Cygwin support updates, including an experimental rootless
+     X server for Cygwin/XFree86.
 
-   o  AMD AMD64 support (primarily for Linux so far) has been added.
+   o [OLD] AMD AMD64 support (primarily for Linux so far) has been added.
 
-   o  Support added for OpenBSD/sparc64.
+   o [OLD] Support added for OpenBSD/sparc64.
 
-   o  Major OS/2 support updates.
+   o [OLD] Major OS/2 support updates.
 
-   o  Major SCO OpenServer updates.
+   o [OLD] Major SCO OpenServer updates.
 
-   o  Multi-head support has been added for 460GX-based Itanium systems, and
-     for ZX1-based Itanium2 systems.
+   o [OLD] Multi-head support has been added for 460GX-based Itanium systems,
+     and for ZX1-based Itanium2 systems.
 
-   o  Experimental support for SunOS/Solaris on UltraSPARC systems.
+   o [OLD] Experimental support for SunOS/Solaris on UltraSPARC systems.
 
 A more complete list of changes can be found in the CHANGELOG that is part of
 the XFree86 source tree.  It can also be viewed online at our CVSweb server
@@ -262,11 +352,12 @@ XFree86 4.3.99.16 includes the following video drivers:
 |suntcx (+)    | Sun TCX                  |                                             |
 |tdfx          | 3Dfx                     | tdfx(4)                                     |
 |tga           | DEC TGA                  | README.DECtga                               |
-|trident       | Trident                  | trident(4)                                  |
-|tseng         | Tseng Labs               |                                             |
-|vesa          | VESA                     | vesa(4)                                     |
-|vga           | Generic VGA              | vga(4)                                      |
-|vmware        | VMWare guest OS          | vmware(4)                                   |
+|TRIDEnt       | Trident                  | trident(4)
+| |tseng         | Tseng Labs               |
+| |vesa          | VESA                     | vesa(4)
+| |vga           | Generic VGA              | vga(4)
+| |vmware        | VMWare guest OS          | vmware(4)
+|
 +--------------+--------------------------+---------------------------------------------+
 
 Drivers marked with (*) are present in a preliminary form in this release,
@@ -321,8 +412,8 @@ binary called XFree86.  This binary can either have one or more video drivers
 linked in statically, or, more usually, dynamically load the video drivers
 and other modules that are needed.
 
-XFree86 4.3.99.16 has X server support for most UNIX(R) and UNIX-like operat-
-ing systems on Intel/x86 platforms, plus support for Linux on Alpha, PowerPC,
+XFree86 4.3.99.16 has X server support for most UNIX® and UNIX-like operating
+systems on Intel/x86 platforms, plus support for Linux on Alpha, PowerPC,
 IA-64, Sparc, and Mips platforms, and for Darwin on PowerPC.  Work on support
 for additional architectures and operating systems is in progress, and is
 planned for future releases.
@@ -691,16 +782,15 @@ Known problems:
 
 4.7  DGA version 2
 
-DGA 2.0 is included in 4.3.99.16, but is not implemented by all drivers.
-Preliminary documentation for the client libraries can be found in the
-README.DGA document.  A good degree of backwards compatibility with version
-1.0 is provided.
+DGA 2.0 is included in 4.3.99.16.  Documentation for the client libraries can
+be found in the XDGA(3) man page.  A good degree of backwards compatibility
+with version 1.0 is provided.
 
 4.8  DDC
 
-The VESA(R) Display Data Channel (DDC[tm]) standard allows the monitor to
-tell the video card (or on some cases the computer directly) about itself;
-particularly the supported screen resolutions and refresh rates.
+The VESA® Display Data Channel (DDC[tm]) standard allows the monitor to tell
+the video card (or on some cases the computer directly) about itself; partic-
+ularly the supported screen resolutions and refresh rates.
 
 Partial or complete DDC support is available in most of the video drivers.
 DDC is enabled by default, but can be disabled with a "Device" section entry:
@@ -946,7 +1036,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.83 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.84 dawes Exp $
 
 
 $XFree86: $
