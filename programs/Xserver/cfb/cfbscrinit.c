@@ -74,8 +74,8 @@ libcfb24ModuleInit(data,magic)
 #if PSZ == 32
 libcfb32ModuleInit(data,magic)
 #endif
-    int * data;
-    int * magic;
+    pointer *	data;
+    INT32 *	magic;
 {
     static int  cnt = 0;
 
@@ -83,12 +83,12 @@ libcfb32ModuleInit(data,magic)
     {
     case 0:
     	* magic = MAGIC_CCD_DO_BITBLT;
-	* data  = (int *) &cfbDoBitblt;
+	* data  = (pointer) &cfbDoBitblt;
 	break;
 #ifdef CFB_NEED_SCREEN_PRIVATE
     case 1:
     	* magic = MAGIC_CCD_SCREEN_PRIV_IDX;
-	* data  = (int *) &cfbScreenPrivateIndex;
+	* data  = (pointer &cfbScreenPrivateIndex;
 	break;
 #endif
     default:

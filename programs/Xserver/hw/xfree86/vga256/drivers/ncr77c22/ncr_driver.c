@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.20 1997/02/14 12:19:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.21 1997/02/15 11:12:44 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -154,19 +154,19 @@ static unsigned char NCRchipset;
  */
 void
 ncr_drvModuleInit(data,magic)
-    int  * data;
-    int  * magic;
+    pointer *	data;
+    INT32 *	magic;
 {
     static int cnt = 0;
 
     switch(cnt++)
     {
     case 0:
-	* data = (int) &NCR77C22;
+	* data = (pointer) &NCR77C22;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
     case 1:
-        * data = (int) "libvga256.a";
+        * data = (pointer) "libvga256.a";
 	* magic= MAGIC_LOAD;
 	break;
     default:
