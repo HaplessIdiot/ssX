@@ -25,7 +25,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/fullscreen.c,v 1.4 2003/08/13 19:37:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/fullscreen/fullscreen.c,v 1.1 2003/09/16 00:36:14 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "darwin.h"
@@ -547,6 +547,7 @@ static QuartzModeProcsRec fsModeProcs = {
     FSCapture,
     FSRelease,
     NULL,		// No rootless code in fullscreen
+    NULL,
     NULL,
     NULL,		// No support for DRI surfaces
     NULL

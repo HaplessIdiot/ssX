@@ -26,7 +26,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xpr.h,v 1.2 2003/06/30 01:45:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xpr.h,v 1.3 2003/09/16 00:36:15 torrey Exp $ */
 
 #ifndef XPR_H
 #define XPR_H
@@ -38,6 +38,7 @@ extern Bool QuartzModeBundleInit(void);
 void AppleDRIExtensionInit(void);
 void xprAppleWMInit(void);
 Bool xprInit(ScreenPtr pScreen);
+Bool xprIsX11Window(void *nsWindow, int windowNumber);
 
 Bool QuartzInitCursor(ScreenPtr pScreen);
 void QuartzSuspendXCursor(ScreenPtr pScreen);
