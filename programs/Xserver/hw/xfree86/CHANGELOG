@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 445. Fix a server crash that can happen when a DGA client frees its colormap
+      before setting the mode back to the original mode (David Dawes).
  444. Modify Type1 font RAM allocation heuristics to allow for larger fonts.
       (#A.1121, Melchior Franz).
  443. Add new relocation entries for Alpha architecture to the loader which
@@ -15434,4 +15436,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2359 2002/10/30 17:50:17 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2360 2002/10/30 21:57:31 alanh Exp $
