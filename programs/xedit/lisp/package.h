@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/package.h,v 1.1 2002/02/12 16:07:55 paulo Exp $ */
 
 #ifndef Lisp_package_h
 #define Lisp_package_h
@@ -44,6 +44,7 @@ LispObj *Lisp_FindAllSymbols(LispMac*, LispBuiltin*);	/* find-all-symbols */
 LispObj *Lisp_FindPackage(LispMac*, LispBuiltin*);	/* find-package */
 LispObj *Lisp_InPackage(LispMac*, LispBuiltin*);	/* in-package */
 LispObj *Lisp_ListAllPackages(LispMac*, LispBuiltin*);	/* list-all-packages */
+LispObj *Lisp_MakePackage(LispMac*, LispBuiltin*);	/* make-package */
 LispObj *Lisp_PackageName(LispMac*, LispBuiltin*);	/* package-name */
 LispObj *Lisp_PackageNicknames(LispMac*, LispBuiltin*);	/* package-nicknames */
 LispObj *Lisp_PackageUseList(LispMac*, LispBuiltin*);	/* package-use-list */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.2 2002/02/14 04:48:10 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.3 2002/02/15 07:20:25 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -35,7 +35,7 @@
 /*
  * Prototypes
  */
-static int LispDoSymbol(LispMac*, LispObj*, LispAtom*, int);
+static int LispDoSymbol(LispMac*, LispObj*, LispAtom*, int, int);
 static LispObj *LispReallyDoSymbols(LispMac*, LispBuiltin*, int, int);
 static LispObj *LispDoSymbols(LispMac*, LispBuiltin*, int, int);
 static LispObj *LispFindPackageOrDie(LispMac*, LispBuiltin*, LispObj*);
@@ -89,12 +89,13 @@ LispFindPackage(LispMac *mac, LispObj *name)
  * way builtin functions are created, all function name arguments enter
  * the current package, but most of them do not have a property */
 static int
-LispDoSymbol(LispMac *mac, LispObj *package, LispAtom *atom, int if_extern)
+LispDoSymbol(LispMac *mac, LispObj *package, LispAtom *atom,
+	     int if_extern, int all_packages)
 {
     int dosymbol;
 
     /* condition 1: atom package is current package */
-    dosymbol = atom->package == package;
+    dosymbol = !all_packages || atom->package == package;
     if (dosymbol) {
 	/* condition 2: intern and extern symbols or symbol is extern */
 	dosymbol = !if_extern || atom->ext;
@@ -188,7 +189,7 @@ LispReallyDoSymbols(LispMac *mac, LispBuiltin *builtin,
 		 * variable is removed. */
 		next_atom = atom->next;
 
-		if (LispDoSymbol(mac, package, atom, only_externs)) {
+		if (LispDoSymbol(mac, package, atom, only_externs, all_symbols)) {
 		    LispSetVar(mac, variable, atom->object);
 		    for (code = body; CONS_P(code); code = CDR(code))
 			EVAL(CAR(code));
@@ -298,7 +299,7 @@ Lisp_FindAllSymbols(LispMac *mac, LispBuiltin *builtin)
 	    atom = pack->atoms[i];
 	    while (atom) {
 
-		if (LispDoSymbol(mac, package, atom, 0)) {
+		if (LispDoSymbol(mac, package, atom, 0, 1)) {
 		    /* Return only one pointer to a matching symbol */
 
 		    if (strcmp(atom->string, string) == 0) {
@@ -372,6 +373,84 @@ Lisp_ListAllPackages(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_MakePackage(LispMac *mac, LispBuiltin *builtin)
+/*
+ make-package package-name &key nicknames (use '(lisp ext))
+ */
+{
+    int protect;
+    LispObj *list, *package, *nicks, *cons, *savepackage;
+
+    LispObj *package_name, *nicknames, *use;
+
+    use = ARGUMENT(2);
+    nicknames = ARGUMENT(1);
+    package_name = ARGUMENT(0);
+
+    protect = mac->protect.length;
+    if (protect + 2 >= mac->protect.space)	
+	LispMoreProtects(mac);
+
+    /* Check if package already exists */
+    package = LispFindPackage(mac, package_name);
+    if (package != NIL)
+	LispDestroy(mac, "%s: package %s already defined",
+		    STRFUN(builtin), STROBJ(package_name));
+
+    /* Error checks done, package_name is either a symbol or string */
+    if (!STRING_P(package_name))
+	package_name = STRING(STRPTR(package_name));
+
+    mac->protect.objects[mac->protect.length++] = package_name;
+
+    /* Check nicknames */
+    nicks = cons = NIL;
+    for (list = nicknames; CONS_P(list); list = CDR(list)) {
+	package = LispFindPackage(mac, CAR(list));
+	if (package != NIL)
+	    LispDestroy(mac, "%s: nickname %s matches package %s",
+			STRFUN(builtin), STROBJ(CAR(list)),
+			THESTR(package->data.package.name));
+	/* Store all nicknames as strings */
+	package = CAR(list);
+	if (!STRING_P(package))
+	    package = STRING(STRPTR(package));
+	if (nicks == NIL) {
+	    nicks = cons = CONS(package, NIL);
+	    mac->protect.objects[mac->protect.length++] = nicks;
+	}
+	else {
+	    CDR(cons) = CONS(package, NIL);
+	    cons = CDR(cons);
+	}
+    }
+
+    /* Check use list */
+    for (list = use; CONS_P(list); list = CDR(list))
+	(void)LispFindPackageOrDie(mac, builtin, CAR(list));
+
+    /* No errors, create new package */
+    package = LispNewPackage(mac, package_name, nicks);
+
+    /* Update list of packages */
+    PACK = CONS(package, PACK);
+
+    /* No need for gc protection anymore */
+    mac->protect.length = protect;
+
+    /* Import symbols from use list */
+    savepackage = PACKAGE;
+    PACKAGE = package;
+    LispSetVar(mac, PACKNAM, PACKAGE);
+    for (list = use; CONS_P(list); list = CDR(list))
+	LispUsePackage(mac, LispFindPackage(mac, CAR(list)));
+    PACKAGE = savepackage;
+    LispSetVar(mac, PACKNAM, PACKAGE);
+
+    return (package);
+}
+
+LispObj *
 Lisp_PackageName(LispMac *mac, LispBuiltin *builtin)
 /*
  package-name package
@@ -428,7 +507,7 @@ Lisp_PackageUseList(LispMac *mac, LispBuiltin *builtin)
 	    LispMoreProtects(mac);
 	mac->protect.objects[mac->protect.length++] = use;
 	for (--i; i >= 0; i--) {
-	    CDR(cons) = CONS(pack->use.pairs[i], cons);
+	    CDR(cons) = CONS(pack->use.pairs[i], NIL);
 	    cons = CDR(cons);
 	}
 	mac->protect.length = protect;

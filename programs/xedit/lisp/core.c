@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.23 2002/02/14 04:48:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.24 2002/02/15 07:20:25 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -1104,9 +1104,8 @@ Lisp_Go(LispMac *mac, LispBuiltin *builtin)
 	}
      }
 
-    LispDestroy(mac, "%s: no tag named %s",
+    LispDestroy(mac, "%s: no visible tagbody for %s",
 		STRFUN(builtin), STROBJ(tag));
-
     /*NOTREACHED*/
     return (NIL);
 }
@@ -1124,16 +1123,11 @@ Lisp_If(LispMac *mac, LispBuiltin *builtin)
     test = ARGUMENT(0);
     MACRO_ARGUMENT3();
 
-    if (NCONSTANT_P(test))
-	test = EVAL(test);
-    if (test != NIL) {
-	if (NCONSTANT_P(result = then))
-	    result = EVAL(result);
-    }
-    else {
-	if (NCONSTANT_P(result = oelse))
-	    result = EVAL(result);
-    }
+    test = EVAL(test);
+    if (test != NIL)
+	result = EVAL(then);
+    else
+	result = EVAL(oelse);
 
     return (result);
 }
@@ -2722,9 +2716,7 @@ Lisp_SetQ(LispMac *mac, LispBuiltin *builtin)
 	form = CDR(form);
 	if (!CONS_P(form))
 	    LispDestroy(mac, "%s: odd number of arguments", STRFUN(builtin));
-	result = CAR(form);
-	if (NCONSTANT_P(result))
-	    result = EVAL(result);
+	result = EVAL(CAR(form));
 	LispSetVar(mac, variable, result);
     }
 
@@ -2753,11 +2745,9 @@ Lisp_Setf(LispMac *mac, LispBuiltin *builtin)
 	result = CAR(form);
 
 	/* if a variable, just work like setq */
-	if (SYMBOL_P(place)) {
-	    if (NCONSTANT_P(result))
-		result = EVAL(result);
-	    (void)LispSetVar(mac, place, result);
-	}
+	if (SYMBOL_P(place))
+	    (void)LispSetVar(mac, place, EVAL(result));
+
 	else if (CONS_P(place)) {
 	    int struc_access = 0;
 
@@ -2765,7 +2755,7 @@ Lisp_Setf(LispMac *mac, LispBuiltin *builtin)
 	     * (cannot be done in EVAL as SETF is a macro), and the
 	     * code executed is as if this definition were supplied:
 	     *	(defsetf THE-STRUCT-FIELD (struct) (value)
-	     *		`(xedit::struct-store 'THE-STRUCT-FIELD ,struct ,value))
+	     *		`(lisp::struct-store 'THE-STRUCT-FIELD ,struct ,value))
 	     */
 
 	    setf = CAR(place);
@@ -3017,7 +3007,7 @@ Lisp_Tagbody(LispMac *mac, LispBuiltin *builtin)
  */
 {
     int head, lex, length, dyn, found;
-    LispObj *list, *body, *ptr, *tag, **p_list;
+    LispObj *list, *body, *ptr, *tag, **p_list, **p_body;
     LispBlock *block;
 
     body = ARGUMENT(0);
@@ -3026,6 +3016,7 @@ Lisp_Tagbody(LispMac *mac, LispBuiltin *builtin)
     /* Initialize */
     list = body;
     p_list = &list;
+    p_body = &body;
     block = LispBeginBlock(mac, NIL, LispBlockBody);
 
     /* Save environment information */
@@ -3033,12 +3024,6 @@ Lisp_Tagbody(LispMac *mac, LispBuiltin *builtin)
     lex = mac->env.lex;
     length = mac->env.length;
     dyn = mac->dyn.length;
-
-    /* Skip leading tag(s) */
-    for (; CONS_P(body); body = CDR(body)) {
-	if (CONS_P(CAR(body)))
-	    break;
-    }
 
     /* Loop */
     if (setjmp(block->jmp) != 0) {
@@ -3072,7 +3057,7 @@ Lisp_Tagbody(LispMac *mac, LispBuiltin *builtin)
 	if (!found)
 	    LispDestroy(mac, "%s: no such tag %s", STRFUN(builtin), STROBJ(tag));
 
-	body = CDR(ptr);
+	*p_body = CDR(ptr);
     }
 
     /* Skip tags */
@@ -3470,7 +3455,7 @@ Lisp_XeditEltStore(LispMac *mac, LispBuiltin *builtin)
 
     LispObj *sequence, *oindex, *value, *olength;
 
-    olength = ARGUMENT(2);
+    olength = ARGUMENT(3);
     value = ARGUMENT(2);
     oindex = ARGUMENT(1);
     sequence = ARGUMENT(0);
