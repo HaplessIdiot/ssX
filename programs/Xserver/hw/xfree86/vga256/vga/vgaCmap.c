@@ -1,4 +1,5 @@
 /* $XConsortium: vgaCmap.c,v 1.1 94/03/28 21:55:54 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *

@@ -1,4 +1,5 @@
 /* $XConsortium: s3font.c,v 1.1 94/03/28 21:15:02 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 

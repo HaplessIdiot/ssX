@@ -1,4 +1,5 @@
 /* $XConsortium: s3fs.c,v 1.3 94/04/17 20:31:10 dpw Exp $ */
+/* $XFree86$ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
