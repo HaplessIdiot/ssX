@@ -1334,21 +1334,27 @@ static void
 SetBit (unsigned char *line, int x, int bit)
 {
     unsigned char   mask;
-    int byteoffset, bitoffset;
     
-    byteoffset = x / 8;
-    bitoffset = x % 8;
-
     if (screenInfo.bitmapBitOrder == LSBFirst)
-	mask = (1 << (bitoffset & 7));
+	mask = (1 << (x & 7));
     else
-	mask = (0x80 >> (bitoffset & 7));
+	mask = (0x80 >> (x & 7));
     /* XXX assumes byte order is host byte order */
+    line += (x >> 3);
     if (bit)
-	line[byteoffset] |= mask;
+	*line |= mask;
     else
-	line[byteoffset] &= ~mask;
+	*line &= ~mask;
 }
+
+#define DITHER_DIM 2
+
+static CARD32 orderedDither[DITHER_DIM][DITHER_DIM] = {
+    {  1,  3,  },
+    {  4,  2,  },
+};
+
+#define DITHER_SIZE  ((sizeof orderedDither / sizeof orderedDither[0][0]) + 1)
 
 static int
 ProcRenderCreateCursor (ClientPtr client)
@@ -1457,22 +1463,31 @@ ProcRenderCreateCursor (ClientPtr client)
 	for (x = 0; x < width; x++)
 	{
 	    CARD32  p = *argb++;
-	    
-	    /* >= 50% opaque gets a 1 mask bit */
-	    SetBit (mskline, x, p >= 0x80000000);
-	    /* >= 50% Y gets a 1 source bit */
-	    SetBit (srcline, x, CvtR8G8B8toY15(p) >= 0x4000);
+	    CARD32  a, i, d;
+
+	    a = ((p >> 24) * DITHER_SIZE + 127) / 255;
+	    i = ((CvtR8G8B8toY15(p) >> 7) * DITHER_SIZE + 127) / 255;
+	    d = orderedDither[y&(DITHER_DIM-1)][x&(DITHER_DIM-1)];
+	    /* Set mask from dithered alpha value */
+	    SetBit(mskline, x, a > d);
+	    /* Set src from dithered intensity value */
+	    SetBit(srcline, x, a > d && i <= d);
 	}
 	srcline += stride;
 	mskline += stride;
     }
+#ifdef TEST_CORE_COMPAT
+    /* use this code to test core cursor appearance */
+    xfree (argbbits);
+    argbbits = 0;
+#endif
     cm.width = width;
     cm.height = height;
     cm.xhot = stuff->x;
     cm.yhot = stuff->y;
     pCursor = AllocCursorARGB (srcbits, mskbits, argbbits, &cm,
-			       0xffff, 0xffff, 0xffff,
-			       0x0000, 0x0000, 0x0000);
+			       0x0000, 0x0000, 0x0000,
+			       0xffff, 0xffff, 0xffff);
     if (pCursor && AddResource(stuff->cid, RT_CURSOR, (pointer)pCursor))
 	return (client->noClientException);
     return BadAlloc;
