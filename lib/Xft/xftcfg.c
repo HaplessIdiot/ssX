@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcfg.c,v 1.5 2000/12/14 23:03:54 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftcfg.c,v 1.6 2000/12/15 17:12:52 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -210,7 +210,7 @@ _XftConfigMatchValueList (XftTest	*t,
     
     for (; v; v = v->next)
     {
-	if (_XftConfigCompareValue (t->value, t->op, v->value))
+	if (_XftConfigCompareValue (v->value, t->op, t->value))
 	{
 	    if (!ret)
 		ret = v;
