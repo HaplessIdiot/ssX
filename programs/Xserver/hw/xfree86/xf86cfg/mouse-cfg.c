@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.8 2002/06/03 21:22:11 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.9 2002/06/06 21:03:32 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -62,26 +62,28 @@ static struct MouseProtocol {
     {"wsmouse",			MTYPE_AUTOMOUSE},
 #endif
     {"Auto",			MTYPE_AUTOMOUSE},
-    {"AceCad",			MTYPE_ACECAD},
+    {"SysMouse",		MTYPE_SYSMOUSE},
+    {"MouseSystems",		MTYPE_MOUSESYS},
     {"BusMouse",		MTYPE_BUSMOUSE},
-    {"ExplorerPS/2",		MTYPE_EXPPS2},
-    {"GlidePoint",		MTYPE_GLIDEPOINT},
-    {"GlidePointPS/2",		MTYPE_GLIDEPOINTPS2},
+    {"PS/2",			MTYPE_PS_2},
+    {"Microsoft",		MTYPE_MICROSOFT},
+#ifndef __FreeBSD__
     {"ImPS/2",			MTYPE_IMPS2},
+    {"ExplorerPS/2",		MTYPE_EXPPS2},
+    {"GlidePointPS/2",		MTYPE_GLIDEPOINTPS2},
+    {"MouseManPlusPS/2",	MTYPE_MMANPLUSPS2},
+    {"NetMousePS/2",		MTYPE_NETPS2},
+    {"NetScrollPS/2",		MTYPE_NETSCROLLPS2},
+    {"ThinkingMousePS/2",	MTYPE_THINKINGPS2},
+#endif
+    {"AceCad",			MTYPE_ACECAD},
+    {"GlidePoint",		MTYPE_GLIDEPOINT},
     {"IntelliMouse",		MTYPE_IMSERIAL},
     {"Logitech",		MTYPE_LOGITECH},
-    {"Microsoft",		MTYPE_MICROSOFT},
     {"MMHitTab",		MTYPE_MMHIT},
     {"MMSeries",		MTYPE_MMSERIES},
     {"MouseMan",		MTYPE_LOGIMAN},
-    {"MouseManPlusPS/2",	MTYPE_MMANPLUSPS2},
-    {"MouseSystems",		MTYPE_MOUSESYS},
-    {"NetMousePS/2",		MTYPE_NETPS2},
-    {"NetScrollPS/2",		MTYPE_NETSCROLLPS2},
-    {"PS/2",			MTYPE_PS_2},
-    {"SysMouse",		MTYPE_SYSMOUSE},
     {"ThinkingMouse",		MTYPE_THINKING},
-    {"ThinkingMousePS/2",	MTYPE_THINKINGPS2},
 };
 
 static Widget text;
@@ -309,7 +311,7 @@ MouseDeviceAndProtocol(XF86SetupInfo *info)
 #ifdef WSCONS_SUPPORT
 	"wsmouse",
 #endif
-	"cua",
+	"cuaa",
 	"mice",
 	"mouse",
 	"ps",
