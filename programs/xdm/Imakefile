@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:14 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.48 2002/10/06 18:12:28 herrb Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.49 2002/10/06 20:33:42 herrb Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -255,7 +255,9 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),NullParameter)
 LinkConfDirectory(xdm,.,xdm,.)
-InstallDirectory($(XDMVARDIR))
+#ifdef VarDbDirectory
+LinkConfDirectoryLong(xdm,xdm,authdir,authdir,$(CONFDIR),$(VARDBDIR))
+#endif
 NormalProgramTarget(xdmshell,$(OBJS2),NullParameter,NullParameter,NullParameter)
 NormalProgramTarget(sessreg,$(OBJS4),NullParameter,NullParameter,NullParameter)
 InstallProgram(sessreg,$(BINDIR))
