@@ -537,6 +537,10 @@ Ires(XtNmenuHeight, XtCMenuHeight, screen.fullVwin.menu_height, 25),
 Bres(XtNwideChars,	XtCWideChars,	screen.wide_chars,	FALSE),
 Sres(XtNwideFont,	XtCWideFont,	misc.f_w,		DEFWIDEFONT),
 #endif
+#ifdef XRENDERFONT
+Sres(XtNfaceName,	XtCFaceName,	misc.face_name,		DEFFACENAME),
+Ires(XtNfaceSize,	XtCFaceSize,	misc.face_size,		DEFFACESIZE),
+#endif
 };
 
 static Boolean VTSetValues (Widget cur, Widget request, Widget new_arg, ArgList args, Cardinal *num_args);
@@ -4386,6 +4390,12 @@ static void VTInitialize (
 
    wnew->screen.bold_mode = request->screen.bold_mode;
    wnew->screen.underline = request->screen.underline;
+#ifdef XRENDERFONT
+   wnew->screen.renderFont = 0;
+   wnew->screen.renderFontBold = 0;
+   wnew->screen.renderColor = 0;
+   wnew->screen.renderPicture = 0;
+#endif
 
    wnew->cur_foreground = 0;
    wnew->cur_background = 0;
