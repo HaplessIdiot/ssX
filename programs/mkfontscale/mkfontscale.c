@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.1 2002/06/05 19:46:04 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.2 2002/09/27 01:55:06 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -349,6 +349,10 @@ doDirectory(char *dirname_given)
         ftrc = FT_New_Face(ft_library, filename, 0, &face);
         if(ftrc)
             continue;
+
+        if((face->face_flags & FT_FACE_FLAG_SCALABLE) == 0)
+            continue;
+
         found = 0;
 
         foundry = NULL;
@@ -435,6 +439,16 @@ doDirectory(char *dirname_given)
                 slant = head->Mac_Style & 2 ? "i" : "r";
             if(!weight)
                 weight = head->Mac_Style & 1 ? "bold" : "medium";
+        }
+
+        if(!slant) {
+            fprintf(stderr, "Couldn't determine slant for %s\n", filename);
+            slant = "r";
+        }
+
+        if(!weight) {
+            fprintf(stderr, "Couldn't determine weight for %s\n", filename);
+            weight = "medium";
         }
 
         if(!foundry) {
