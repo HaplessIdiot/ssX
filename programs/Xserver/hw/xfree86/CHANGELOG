@@ -1,4 +1,6 @@
 XFree86 4.3.99.2 (xx March 2003)
+  66. Fix SiliconMotion driver for mode switching and SEGV problem when
+      initializing Xv functionality (Alan Hourihane).
   65. Add Radeon DRI suspend/resume support (Charl Botha, #A.1431).
   64. Rage 128 Xv fix for high resolution displays (Rik Faith).
   63. PPC updates for Radeon (Michel Dänzer, Hui Yu@ATI).
@@ -16670,4 +16672,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2618 2003/04/06 20:36:32 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2619 2003/04/07 01:22:05 martin Exp $
