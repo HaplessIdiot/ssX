@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/66 1996/12/01 23:46:59 swick $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.6 1996/08/20 12:33:52 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.7 1996/12/23 07:14:34 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -51,20 +51,6 @@ Arg menuArgs[2] = {{ XtNleftBitmap, (XtArgVal) 0 },
 #ifdef ALLOWLOGGING
 static void do_logging PROTO_XT_CALLBACK_ARGS;
 #endif
-    do_redraw(), do_suspend(), do_continue(), do_interrupt(), 
-    do_terminate(), do_kill(), do_quit(), do_scrollbar(), do_jumpscroll(),
-    do_reversevideo(), do_autowrap(), do_reversewrap(), do_autolinefeed(),
-    do_appcursor(), do_appkeypad(), do_scrollkey(), do_scrollttyoutput(),
-    do_allow132(), do_cursesemul(), do_marginbell(), do_tekshow(), 
-#ifndef NO_ACTIVE_ICON
-    do_activeicon(),
-#endif /* NO_ACTIVE_ICON */
-    do_altscreen(), do_softreset(), do_hardreset(), do_clearsavedlines(),
-    do_tekmode(), do_vthide(), 
-    do_tektextlarge(), do_tektext2(), do_tektext3(), do_tektextsmall(), 
-    do_tekpage(), do_tekreset(), do_tekcopy(), do_vtshow(), do_vtmode(), 
-    do_tekhide(), do_vtfont();
-
 static void do_8bit_control    PROTO_XT_CALLBACK_ARGS;
 static void do_allow132        PROTO_XT_CALLBACK_ARGS;
 static void do_allowsends      PROTO_XT_CALLBACK_ARGS;
@@ -108,6 +94,9 @@ static void do_vtfont          PROTO_XT_CALLBACK_ARGS;
 static void do_vthide          PROTO_XT_CALLBACK_ARGS;
 static void do_vtmode          PROTO_XT_CALLBACK_ARGS;
 static void do_vtshow          PROTO_XT_CALLBACK_ARGS;
+#ifndef NO_ACTIVE_ICON
+static void do_activeicon      PROTO_XT_CALLBACK_ARGS;
+#endif /* NO_ACTIVE_ICON */
 
 /*
  * The order of entries MUST match the values given in menu.h
@@ -766,7 +755,7 @@ static void do_altscreen (gw, closure, data)
 /* ARGSUSED */
 static void do_activeicon (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     TScreen *screen = &term->screen;
 

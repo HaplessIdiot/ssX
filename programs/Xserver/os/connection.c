@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c /main/155 1996/12/15 21:27:07 rws $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.22 1996/11/24 09:58:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.23 1996/12/23 07:09:56 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -79,7 +79,9 @@ extern int errno;
 #include <stdio.h>
 
 #ifndef WIN32
+#ifndef MINIX
 #include <sys/socket.h>
+#endif
 
 #ifdef hpux
 #include <sys/utsname.h>
@@ -987,6 +989,7 @@ CheckConnections()
 	if (r < 0)
 	    CloseDownClient(clients[ConnectionTranslation[curclient]]);
     }	
+#endif
 #endif
 }
 

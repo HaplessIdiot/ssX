@@ -1,5 +1,5 @@
 /* $XConsortium: window.c /main/210 1996/10/28 07:24:59 kaleb $ */
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.3 1996/06/10 11:08:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.4 1996/12/23 06:29:52 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -1011,7 +1011,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		}
 		else
 		{ /* didn't change the background to None, so don't tell ddx */
-		    index = 0; 
+		    index2 = 0; 
 		}
 #endif
 	    }

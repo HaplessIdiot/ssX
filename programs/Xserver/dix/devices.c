@@ -47,7 +47,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.9 1996/10/03 08:31:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.10 1996/12/23 06:29:37 dawes Exp $ */
 /* $XConsortium: devices.c /main/54 1996/09/25 00:45:00 dpw $ */
 
 #include "X.h"
@@ -66,18 +66,14 @@ SOFTWARE.
 #ifdef XKB
 #include "XKBsrv.h"
 #endif
-
-#include "dispatch.h"
-#include "swaprep.h"
-#include "dixevents.h"
-
-extern InputInfo inputInfo;
-#ifdef XKB
-extern Bool noXkbExtension;
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
 #include "extensions/security.h"
 #endif
+
+#include "dispatch.h"
+#include "swaprep.h"
+#include "dixevents.h"
 
 DeviceIntPtr
 _AddInputDevice(deviceProc, autoStart)

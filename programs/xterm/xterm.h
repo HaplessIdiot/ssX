@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.6 1996/08/11 13:04:54 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.7 1996/08/13 11:37:12 dawes Exp $ */
 /*
  * Common/useful definitions for XTERM application
  */
@@ -224,7 +224,7 @@ extern void useCurBackground PROTO((Bool flag));
 #define FillCurBackground(screen, left, top, width, height) \
 	useCurBackground(TRUE); \
 	XFillRectangle (screen->display, TextWindow(screen), \
-		screen->reverseGC, left, top, width, height); \
+		ReverseGC(screen), left, top, width, height); \
 	useCurBackground(FALSE)
 
 #endif	/* included_xterm_h */

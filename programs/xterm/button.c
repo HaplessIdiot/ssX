@@ -1,5 +1,5 @@
 /* $XConsortium: button.c /main/75 1996/11/29 10:33:33 swick $ */
-/* $XFree86: xc/programs/xterm/button.c,v 3.9 1996/08/13 11:36:51 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.10 1996/12/23 07:14:23 dawes Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -204,7 +204,7 @@ Cardinal *num_params;
     strcpy( Line, "\030\033G  " );
 
 	line = ( event->xbutton.y - screen->border ) / FontHeight( screen );
-	col = (event->xbutton.x - screen->border - screen->scrollbar)
+	col = (event->xbutton.x - screen->border - Scrollbar(screen))
 	 / FontWidth(screen);
 	Line[3] = ' ' + col;
 	Line[4] = ' ' + line;

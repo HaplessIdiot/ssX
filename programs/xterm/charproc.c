@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.38 1996/11/24 09:59:10 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.39 1996/12/23 07:14:25 dawes Exp $
  */
 
 /*
@@ -786,10 +786,10 @@ void SGR_Foreground(color)
 	fg = getXtermForeground(term->flags, color);
 	term->cur_foreground = color;
 
-	XSetForeground(screen->display, screen->normalGC, fg);
-	XSetBackground(screen->display, screen->reverseGC, fg);
-	XSetForeground(screen->display, screen->normalboldGC, fg);
-	XSetBackground(screen->display, screen->reverseboldGC, fg);
+	XSetForeground(screen->display, NormalGC(screen), fg);
+	XSetBackground(screen->display, ReverseGC(screen), fg);
+	XSetForeground(screen->display, NormalBoldGC(screen), fg);
+	XSetBackground(screen->display, ReverseBoldGC(screen), fg);
 }
 
 void SGR_Background(color)
@@ -806,10 +806,10 @@ void SGR_Background(color)
 	bg = getXtermBackground(term->flags, color);
 	term->cur_background = color;
 
-	XSetBackground(screen->display, screen->normalGC, bg);
-	XSetForeground(screen->display, screen->reverseGC, bg);
-	XSetBackground(screen->display, screen->normalboldGC, bg);
-	XSetForeground(screen->display, screen->reverseboldGC, bg);
+	XSetBackground(screen->display, NormalGC(screen), bg);
+	XSetForeground(screen->display, ReverseGC(screen), bg);
+	XSetBackground(screen->display, NormalBoldGC(screen), bg);
+	XSetForeground(screen->display, ReverseBoldGC(screen), bg);
 }
 
 static void
@@ -3252,7 +3252,7 @@ static void RequestResize(termw, rows, cols, text)
 			if (cols < 0)
 				askedWidth = screen->max_col + 1;
 			askedWidth  *= FontWidth(screen);
-			askedWidth  += (2 * screen->border) + screen->scrollbar;
+			askedWidth  += (2 * screen->border) + Scrollbar(screen);
 		}
 
 	} else {
@@ -4565,16 +4565,16 @@ LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
 	if (!new_reverseboldGC) goto bad;
     }
 
-    if (screen->normalGC != screen->normalboldGC)
-	XtReleaseGC ((Widget) term, screen->normalboldGC);
-    XtReleaseGC ((Widget) term, screen->normalGC);
-    if (screen->reverseGC != screen->reverseboldGC)
-	XtReleaseGC ((Widget) term, screen->reverseboldGC);
-    XtReleaseGC ((Widget) term, screen->reverseGC);
-    screen->normalGC = new_normalGC;
-    screen->normalboldGC = new_normalboldGC;
-    screen->reverseGC = new_reverseGC;
-    screen->reverseboldGC = new_reverseboldGC;
+    if (NormalGC(screen) != NormalBoldGC(screen))
+	XtReleaseGC ((Widget) term, NormalBoldGC(screen));
+    XtReleaseGC ((Widget) term, NormalGC(screen));
+    if (ReverseGC(screen) != ReverseBoldGC(screen))
+	XtReleaseGC ((Widget) term, ReverseBoldGC(screen));
+    XtReleaseGC ((Widget) term, ReverseGC(screen));
+    NormalGC(screen) = new_normalGC;
+    NormalBoldGC(screen) = new_normalboldGC;
+    ReverseGC(screen) = new_reverseGC;
+    ReverseBoldGC(screen) = new_reverseboldGC;
 
     /* If we're switching fonts, free the old ones.  Otherwise we'll leak the
      * memory that is associated with the old fonts. The XLoadQueryFont call
