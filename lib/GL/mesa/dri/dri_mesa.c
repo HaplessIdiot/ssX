@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.8 2000/06/26 05:41:29 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.9 2000/09/24 13:51:01 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -130,6 +130,19 @@ static void __driMesaRemoveDrawable(__DRIdrawable *pdraw)
     if (!retcode) { /* Found */
 	drmHashDelete(drawHash, pdp->draw);
     }
+}
+
+static __DRIdrawable *__driMesaFindUnboundDrawable(void)
+{
+    GLXDrawable draw;
+    __DRIdrawable *pdraw;
+
+    while (drmHashFirst(drawHash, &draw, (void **)&pdraw)) {
+	__DRIdrawablePrivate *pdp = (__DRIdrawablePrivate *)pdraw->private;
+	if (!pdp->refcount)
+	    return pdraw;
+    }
+    return NULL;
 }
 
 /*****************************************************************/
@@ -544,6 +557,9 @@ static void driMesaDestroyContext(Display *dpy, int scrn, void *private)
 		Xfree(pdraw);
 	    }
 	}
+	while ((pdraw = __driMesaFindUnboundDrawable()) != NULL)
+	    __driMesaRemoveDrawable(pdraw);
+
 	(void)XF86DRIDestroyContext(dpy, scrn, pcp->contextID);
 	(*pcp->driScreenPriv->MesaAPI.DestroyContext)(pcp);
         gl_destroy_context(pcp->mesaContext);
