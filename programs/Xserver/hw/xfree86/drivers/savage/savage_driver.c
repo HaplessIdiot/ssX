@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.50 2004/03/30 10:34:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.51 2004/07/25 20:17:04 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -193,6 +193,7 @@ typedef enum {
     ,OPTION_TV_ON
     ,OPTION_TV_PAL
     ,OPTION_FORCE_INIT
+    ,OPTION_BIOS_DPMS
 } SavageOpts;
 
 
@@ -210,6 +211,7 @@ static const OptionInfoRec SavageOptions[] =
     { OPTION_TV_ON,     "TvOn",         OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_TV_PAL,    "PAL",          OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_FORCE_INIT,"ForceInit",    OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_BIOS_DPMS, "UseBIOSForDPMS", OPTV_BOOLEAN,{0}, FALSE },
     { -1,		NULL,		OPTV_NONE,    {0}, FALSE }
 };
 
@@ -924,6 +926,11 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     if( xf86GetOptValBool( psav->Options, OPTION_FORCE_INIT, &psav->ForceInit))
 	xf86DrvMsg( pScrn->scrnIndex, X_CONFIG,
 		    "Option: ForceInit enabled\n" );
+
+    psav->UseBIOSForDPMS = 0;
+    if( xf86GetOptValBool( psav->Options, OPTION_BIOS_DPMS, &psav->UseBIOSForDPMS))
+	xf86DrvMsg( pScrn->scrnIndex, X_CONFIG,
+		    "Option: UseBIOSForDPMS enabled\n" );
 
     /* Add more options here. */
 
@@ -3205,6 +3212,13 @@ static void SavageDPMS(ScrnInfoPtr pScrn, int mode, int flags)
 
     VGAOUT8(0x3c4, 0x0d);
     VGAOUT8(0x3c5, srd);
+
+    if (psav->UseBIOSForDPMS) {
+        if (mode != DPMSModeOff)
+            SavageLCDOn( psav );
+        else
+	    SavageLCDOff( psav );
+    }
 
     return;
 }
