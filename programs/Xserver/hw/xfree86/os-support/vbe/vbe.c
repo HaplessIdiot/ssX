@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.7 2000/05/03 00:44:21 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.9 2000/05/31 09:39:45 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -156,19 +156,19 @@ vbeProbeDDC(vbeInfoPtr pVbe)
 	xf86DrvMsg(screen,X_INFO,"VESA VBE DDC supported\n");
 	switch (pVbe->pInt10->bx & 0x3) {
 	case 0:
-  	    ddc_level = "none"; 
+  	    ddc_level = " none"; 
 	    pVbe->ddc = DDC_NONE;
 	    break;
 	case 1:
-  	    ddc_level = " 1 ";
+  	    ddc_level = " 1";
 	    pVbe->ddc = DDC_1;
 	    break;
 	case 2:
-  	    ddc_level = " 2 "; 
+  	    ddc_level = " 2"; 
 	    pVbe->ddc = DDC_2;
 	    break;
 	case 3:
-  	    ddc_level = " 1 + 2 "; 
+  	    ddc_level = " 1 + 2"; 
 	    pVbe->ddc = DDC_1_2;
 	    break;
 	default:
@@ -176,7 +176,7 @@ vbeProbeDDC(vbeInfoPtr pVbe)
 	    pVbe->ddc = DDC_NONE;
 	    break;
 	}
-  	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE DDC Level %s\n",ddc_level); 
+  	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE DDC Level%s\n",ddc_level); 
   	if (pVbe->pInt10->bx & 0x4) {
     	    xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE DDC Screen blanked" 
     			"for data transfer\n"); 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.3 2000/02/18 16:23:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/int10/os2.c,v 1.1 2000/04/05 18:13:55 dawes Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -138,10 +138,6 @@ xf86DrvMsg(screen,X_INFO,"%s\n",buf);
 	size = *((CARD8*)vbiosMem + 2) * 512;
 	if (xf86ReadBIOS(cs << 4,0,vbiosMem, size) < 0) {
 	    xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (2)\n");
-	    goto error1;
-	}
-	if (bios_checksum(vbiosMem,size)) {
-	    xf86DrvMsg(screen,X_ERROR,"Bad checksum of V_BIOS \n");
 	    goto error1;
 	}
 

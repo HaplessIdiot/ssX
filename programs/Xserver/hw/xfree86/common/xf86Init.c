@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.161 2000/06/20 05:08:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.162 2000/06/25 20:17:32 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1517,7 +1517,7 @@ ddxUseMsg()
 
 
 #ifndef OSNAME
-#define OSNAME "unknown"
+#define OSNAME " unknown"
 #endif
 #ifndef OSVENDOR
 #define OSVENDOR ""
@@ -1535,7 +1535,7 @@ xf86PrintBanner()
 	 "\tthan the above date, look for a newer version before "
 	 "reporting\n"
 	 "\tproblems.  (see http://www.XFree86.Org/FAQ)\n");
-  ErrorF("Operating System: %s %s\n", OSNAME, OSVENDOR);
+  ErrorF("Operating System:%s%s\n", OSNAME, OSVENDOR);
 #ifdef XFree86LOADER
   ErrorF("Module Loader present\n");
 #endif

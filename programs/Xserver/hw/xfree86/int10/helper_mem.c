@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.6 2000/06/13 02:28:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.7 2000/07/11 01:46:36 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -169,31 +169,37 @@ int10_read_bios(int scrnIndex, int codeSeg, unsigned char* vbiosMem)
 {
     int size;
 
+    if (((codeSeg << 4) < V_BIOS) || ((codeSeg << 4) >= SYS_SIZE))
+        return FALSE;
+
+    if ((codeSeg << 4) >= SYS_BIOS)
+	return TRUE;
+
     if (xf86IsPc98())
         return FALSE;
 
-    if (xf86ReadBIOS(codeSeg << 4,0,(unsigned char *)vbiosMem, 0x10) < 0) {
+    if (xf86ReadBIOS(codeSeg << 4, 0, vbiosMem, 0x10) < 0) {
 	xf86DrvMsg(scrnIndex,X_WARNING,"Cannot read V_BIOS (1)\n");
 	return FALSE;
     }
     
-    if (!((*(CARD8*)vbiosMem == 0x55) && (*((CARD8*)vbiosMem+1) == 0xAA)))
+    if ((*vbiosMem != 0x55) || (*(vbiosMem+1) != 0xAA) ||
+	  (*(vbiosMem+2) > 0x80U))
 	return FALSE;
 
-    size = *((CARD8*)vbiosMem + 2) * 512;
+    size = *(vbiosMem + 2) * 512;
 
     if ((size + (codeSeg << 4)) > SYS_SIZE)
 	return FALSE;
-    
+
+    /* We might already have the tail end */
+    if ((size + (codeSeg << 4)) > SYS_BIOS)
+	size = SYS_BIOS - (codeSeg << 4);
+
     if (xf86ReadBIOS(codeSeg << 4,0,vbiosMem, size) < 0) {
 	xf86DrvMsg(scrnIndex,X_ERROR,"Cannot read V_BIOS (2)\n");
 	return FALSE;
     }
-    if (bios_checksum(vbiosMem,size)) {
-	xf86DrvMsg(scrnIndex,X_ERROR,"Bad checksum of V_BIOS \n");
-	return FALSE;
-    }
+
     return TRUE;
 }
-	
-

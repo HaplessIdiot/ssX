@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.8 2000/05/23 04:47:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.9 2000/06/07 22:03:10 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -74,7 +74,7 @@ xf86InitInt10(int entityIndex)
     pInt->mem = &genericMem;
     pInt->private = (pointer)xnfcalloc(1,sizeof(genericInt10Priv));
     INTPriv(pInt)->alloc = 
-	(pointer)xnfcalloc(1,sizeof(ALLOC_ENTRIES(getpagesize())));
+	(pointer)xnfcalloc(1,ALLOC_ENTRIES(getpagesize()));
     pInt->scrnIndex = screen;
     base = INTPriv(pInt)->base = xnfalloc(0xf0000);
 

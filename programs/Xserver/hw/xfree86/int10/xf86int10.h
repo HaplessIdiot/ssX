@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.3 2000/02/13 02:17:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.5 2000/04/17 16:30:11 eich Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -125,7 +125,6 @@ int port_rep_outw(xf86Int10InfoPtr pInt,
 		  CARD16 port, CARD32 base, int d_f, CARD32 count);
 int port_rep_outl(xf86Int10InfoPtr pInt,
 		  CARD16 port, CARD32 base, int d_f, CARD32 count);
-CARD8 bios_checksum(CARD8 *start, int size);
 
 CARD8 x_inb(CARD16 port);
 CARD16 x_inw(CARD16 port);
