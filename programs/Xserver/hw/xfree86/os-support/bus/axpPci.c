@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.9 2000/08/28 16:04:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.10 2002/01/25 21:56:18 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -57,12 +57,12 @@
 /*
  * Alpha platform specific PCI access functions
  */
-CARD32 axpPciCfgRead(PCITAG tag, int off);
-void axpPciCfgWrite(PCITAG, int off, CARD32 val);
-void axpPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits);
+static CARD32 axpPciCfgRead(PCITAG tag, int off);
+static void axpPciCfgWrite(PCITAG, int off, CARD32 val);
+static void axpPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits);
 
 #if 0
-pciBusInfo_t axpPci0 = {
+static pciBusInfo_t axpPci0 = {
 /* configMech  */	  PCI_CFG_MECH_OTHER,
 /* numDevices  */	  32,
 /* secondary   */	  FALSE,
@@ -81,7 +81,7 @@ pciBusInfo_t axpPci0 = {
 /* pciBusPriv  */	  NULL
 };
 #else
-pciBusInfo_t axpPci[MAX_PCI_BUSES];
+static pciBusInfo_t axpPci[MAX_PCI_BUSES];
 #endif
 
 void  
@@ -117,7 +117,7 @@ axpPciInit()
  * are likely have a different mechanism for getting at
  * PCI configuration space
  */
-CARD32
+static CARD32
 axpPciCfgRead(PCITAG tag, int off)
 {
 	int bus, dfn;
@@ -136,7 +136,7 @@ axpPciCfgRead(PCITAG tag, int off)
 	return(val);
 }
 
-void
+static void
 axpPciCfgWrite(PCITAG tag, int off, CARD32 val)
 {
 	int bus, dfn;
@@ -147,7 +147,7 @@ axpPciCfgWrite(PCITAG tag, int off, CARD32 val)
 	syscall(__NR_pciconfig_write, bus, dfn, off, 4, &val);
 }
 
-void
+static void
 axpPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits)
 {
     int bus, dfn;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ppcPci.c,v 1.6 2001/05/11 08:16:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ppcPci.c,v 1.7 2002/01/25 21:56:18 tsi Exp $ */
 /*
  * ppcPci.c - PowerPC PCI access functions
  *
@@ -99,10 +99,10 @@ ppcPciInit()
  * The moto machines do have different address maps on either side
  * of the PCI-host bridge though.
  */
-ADDRESS motoppcBusAddrToHostAddr(PCITAG, PciAddrType, ADDRESS);
-ADDRESS motoppcHostAddrToBusAddr(PCITAG, PciAddrType, ADDRESS);
+static ADDRESS motoppcBusAddrToHostAddr(PCITAG, PciAddrType, ADDRESS);
+static ADDRESS motoppcHostAddrToBusAddr(PCITAG, PciAddrType, ADDRESS);
 
-pciBusInfo_t motoppcPci0 = {
+static pciBusInfo_t motoppcPci0 = {
 /* configMech  */	  PCI_CFG_MECH_1,
 /* numDevices  */	  32,
 /* secondary   */	  FALSE,
@@ -151,7 +151,7 @@ extern unsigned long motoPciMemLen     = 0x3f000000;
 
 extern unsigned long motoPciMemBaseCPU = 0xc0000000;
 
-ADDRESS
+static ADDRESS
 motoppcBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 {
   unsigned long addr_l = (unsigned long)addr;
@@ -179,7 +179,7 @@ motoppcBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
   /*NOTREACHED*/
 }
 			
-ADDRESS
+static ADDRESS
 motoppcHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 {
   unsigned long addr_l = (unsigned long)addr;
