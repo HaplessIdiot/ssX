@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/dri/dri_glx.c,v 1.12 2003/02/06 12:42:10 alanh Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_glx.c,v 1.13 2003/05/08 09:25:34 herrb Exp $ */
 
 /*
  * Authors:
@@ -285,11 +285,11 @@ static Bool GetDriverName(Display *dpy, int scrNum, char **driverName)
    *driverName = NULL;
 
    if (!XF86DRIQueryDirectRenderingCapable(dpy, scrNum, &directCapable)) {
-      ErrorMessageF("XF86DRIQueryDirectRenderingCapable failed");
+      ErrorMessageF("XF86DRIQueryDirectRenderingCapable failed\n");
       return False;
    }
    if (!directCapable) {
-      ErrorMessageF("XF86DRIQueryDirectRenderingCapable returned false");
+      ErrorMessageF("XF86DRIQueryDirectRenderingCapable returned false\n");
       return False;
    }
 
