@@ -1,5 +1,5 @@
 /* $XConsortium: ramdac.c,v 1.4 95/01/06 20:56:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.4 1994/12/29 09:44:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.5 1995/01/28 15:51:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -31,6 +31,7 @@
 #include "xf86.h"
 #include "vga.h"
 #include "w32.h"
+#include "xf86_Config.h"
 
 #define NOMAPYET        (ColormapPtr) 0
 
@@ -308,7 +309,7 @@ vgaUninstallColormap(pmap)
 
 
 /*
- *    The power saver is for w32p_rev_c and later only--GGL. 
+ *    The power saver is for w32p_rev_c and later only--GGL
  */
 Bool
 W32SaveScreen (pScreen, on)
@@ -327,7 +328,8 @@ W32SaveScreen (pScreen, on)
 	outb(vgaIOBase + 4, 0x34);
 	state = inb(vgaIOBase + 5);
   
-	if (on) {
+	if (on)
+	{
 	    state &= ~0x21;
 	    W32Blanked = FALSE; 
 
@@ -348,7 +350,9 @@ W32SaveScreen (pScreen, on)
 		outb(vgaIOBase + 5, state);
 		GlennsIODelay();
 	    }
-	} else {
+	}
+	else
+	{
 	    state |= 0x21;
 	    W32Blanked = TRUE; 
     
@@ -390,7 +394,7 @@ static void write_cr(cr)
 }
 
 
-static read_cr()
+static int read_cr()
 {
     unsigned int cr;
 
@@ -407,10 +411,10 @@ static read_cr()
 
 int RamdacShift;
 extern int vgaRamdacMask;
-static saved_cr;
-static cr_saved;
-static rmr;
-static check_ramdac()
+static int saved_cr;
+static BOOL cr_saved;
+static int rmr;
+static void check_ramdac()
 {
     unsigned char cmap[3], save_cmap[3];
 
@@ -478,8 +482,12 @@ static check_ramdac()
 }
 
 
+static BOOL generic_ramdac;
+
 void VGARamdac()
 {
+    if (generic_ramdac)
+	return;
     if (cr_saved)
 	write_cr(saved_cr);
     outb(RMR, rmr);
@@ -488,6 +496,8 @@ void VGARamdac()
 
 void XRamdac()
 {
+    if (generic_ramdac)
+	return;
     if (RamdacShift == 8)
 	write_cr(0x2);
     outb(RMR, 0xff);
@@ -496,6 +506,27 @@ void XRamdac()
 
 void SetupRamdac()
 {
+    if (OFLG_ISSET(XCONFIG_RAMDAC, &vga256InfoRec.xconfigFlag))
+    {
+	cr_saved = FALSE; 
+
+	if (strcmp(vga256InfoRec.ramdac, "generic") == 0) 
+	{
+	    generic_ramdac = TRUE;
+
+	    RamdacShift = 10;
+	    vgaRamdacMask = 0x3f;
+	    ErrorF("%s %s: Ramdac:  generic\n", XCONFIG_GIVEN,
+		   vga256InfoRec.name);
+	}
+	else
+	{
+	    FatalError("%s: SetupRamdac:  Unrecognized RAMDAC: \"%s\"",
+		       vga256InfoRec.name, vga256InfoRec.ramdac);
+	}
+	return;
+    }
+
     check_ramdac();
     if (cr_saved && RamdacShift == 10)
 	write_cr(saved_cr);

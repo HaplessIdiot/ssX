@@ -1,6 +1,6 @@
 /* $XConsortium: et4000w32.c,v 1.4 95/01/16 13:16:26 kaleb Exp $ */
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.8 1995/05/27 03:03:53 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.9 1995/06/04 02:54:25 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -447,6 +447,21 @@ ET4000W32SaveScreen(start_finish)
 	/* set KEY */
 	outb(0x3BF, 0x03);
 	outb(vgaIOBase + 8, 0xA0);
+
+	/*
+	 *  Temporary
+	 *  This somewhat contradicts Tseng's Tehnical Note #24--GGL
+	 */
+	if (W32p)
+	{
+	    int tmp;
+	    outb(vgaIOBase + 4, 0x34);
+	    GlennsIODelay();
+	    tmp = inb(vgaIOBase + 5) | 0x10;
+	    GlennsIODelay();
+	    outb(vgaIOBase + 5, tmp);
+	    GlennsIODelay();
+	}
 
 	/* enable w32 */
 	outb(vgaIOBase + 0x4, 0x36);

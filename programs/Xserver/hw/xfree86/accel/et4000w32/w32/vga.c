@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/23 15:33:48 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.12 1995/03/19 10:11:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.13 1995/05/27 03:03:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -177,20 +177,6 @@ vgaRestore(mode)
     vgaProtect(FALSE);
     if (w32_mode)
     {
-	/*
-	 *  Temporary
-	 *  This somewhat contradicts Tseng's Tehnical Note #24--GGL
-	 */
-	if (W32p)
-	{
-	    int tmp;
-	    outb(vgaIOBase + 4, 0x34);
-	    GlennsIODelay();
-	    tmp = inb(vgaIOBase + 5) | 0x10;
-	    GlennsIODelay();
-	    outb(vgaIOBase + 5, tmp);
-	    GlennsIODelay();
-	}
 	(*vgaSaveScreenFunc)(SS_FINISH);
     }
 }

@@ -1,5 +1,5 @@
-/* $XConsortium: s3name.h,v 1.2 94/10/12 20:07:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.4 1994/09/22 15:50:07 dawes Exp $ */
+/* $XConsortium: s3name.h,v 1.3 95/06/09 20:57:00 gildea Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.6 1995/01/28 17:02:20 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -28,7 +28,7 @@
 #ifndef S3_NAME_H
 #define S3_NAME_H
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP) || (defined (sun) && defined (i386) && defined (SVR4) && defined (__STDC__) && !defined (__GNUC__))
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP) || (defined (sun) && defined (i386) && defined (SVR4) && defined (__STDC__) && !defined (__GNUC__))
 #define CATNAME(prefix,subname) prefix##subname
 #else
 #define CATNAME(prefix,subname) prefix/**/subname

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbrrop.h,v 1.9 94/04/17 20:29:00 dpw Exp $
+ * $XConsortium: cfbrrop.h,v 1.10 95/06/08 23:20:39 gildea Exp $
  *
 Copyright (c) 1989  X Consortium
 
@@ -144,7 +144,7 @@ in this Software without prior written authorization from the X Consortium.
     }
 #endif
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define RROP_NAME_CAT(prefix,suffix)	prefix##suffix
 #else
 #define RROP_NAME_CAT(prefix,suffix)	prefix/**/suffix

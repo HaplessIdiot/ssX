@@ -1,5 +1,5 @@
-/* $XConsortium: s3.c,v 1.8 95/01/25 00:44:45 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.79 1995/06/01 08:25:04 dawes Exp $ */
+/* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.80 1995/06/02 10:09:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -353,7 +353,7 @@ s3ProbeSDAC(Bool quiet)
     */
    
    unsigned char saveCR55, saveCR45, saveCR43, savelut[6];
-   int i;
+   unsigned int i;	/* don't use signed int, UW2.0 compiler bug */
    long clock01, clock23;
    Bool found = FALSE;
 
@@ -1583,7 +1583,7 @@ s3Probe()
 	 nonMuxMaxClock = 67500;
 	 pixMuxMinClock = 67500;
       }
-      allowPixMuxInterlace = FALSE;
+      allowPixMuxInterlace = TRUE;
       allowPixMuxSwitching = TRUE;
       pixMuxLimitedWidths = FALSE;
       pixMuxMinWidth = 0;

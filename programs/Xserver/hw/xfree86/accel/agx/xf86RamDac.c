@@ -1,5 +1,5 @@
-/* $XConsortium: xf86RamDac.c,v 1.3 95/01/26 15:34:05 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.4 1995/01/28 15:49:24 dawes Exp $ */
+/* $XConsortium: xf86RamDac.c,v 1.4 95/06/09 20:57:00 gildea Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.5 1995/05/27 03:03:24 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  * 
@@ -366,7 +366,7 @@ registers, assuming normal RAMDAC.\n",
 }
 
 void 
-#if __STDC__ 
+#ifdef __STDC__ 
 xf86RamDacHWNoop( union xf86RamDacSave * save )
 #else
 xf86RamDacHWNoop( save )
@@ -377,7 +377,7 @@ xf86RamDacHWNoop( save )
 
 void 
 xf86RamDacNoopInit(
-#if __STDC__
+#ifdef __STDC__
         void
 #endif
 )

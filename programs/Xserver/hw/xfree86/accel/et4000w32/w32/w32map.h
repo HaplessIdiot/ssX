@@ -1,5 +1,5 @@
-/* $XConsortium: w32map.h,v 1.2 94/11/21 22:31:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32map.h,v 3.0 1994/09/11 00:42:25 dawes Exp $ */
+/* $XConsortium: w32map.h,v 1.3 95/06/09 20:57:00 gildea Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32map.h,v 3.1 1995/01/28 15:51:13 dawes Exp $ */
 /*
  *
 Copyright (c) 1991  X Consortium
@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #if PSZ != 8
 #if PSZ == 32
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define NAME(subname) W3232##subname
 #else
 #define NAME(subname) W3232/**/subname
@@ -44,7 +44,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 #if PSZ == 16
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define NAME(subname) W3216##subname
 #else
 #define NAME(subname) W3216/**/subname
@@ -52,7 +52,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 #if PSZ == 4
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define NAME(subname) W324##subname
 #else
 #define NAME(subname) W324/**/subname
@@ -63,7 +63,7 @@ in this Software without prior written authorization from the X Consortium.
 W32 can not hack PSZ yet
 #endif
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CATNAME(prefix,subname) prefix##subname
 #else
 #define CATNAME(prefix,subname) prefix/**/subname
