@@ -2769,10 +2769,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 				     pSiS->sisfbpdc = mysisfbinfo.sisfb_lcdpdc;
 				     if(sisfbversion >= 0x010618) {
 				        pSiS->sisfb_haveemi = mysisfbinfo.sisfb_haveemi ? TRUE : FALSE;
+					pSiS->sisfb_haveemilcd = FALSE;
 					pSiS->sisfb_emi30 = mysisfbinfo.sisfb_emi30;
 					pSiS->sisfb_emi31 = mysisfbinfo.sisfb_emi31;
 					pSiS->sisfb_emi32 = mysisfbinfo.sisfb_emi32;
 					pSiS->sisfb_emi33 = mysisfbinfo.sisfb_emi33;
+					if(sisfbversion >= 0x010619) {
+					   pSiS->sisfb_haveemilcd = mysisfbinfo.sisfb_haveemilcd ? TRUE : FALSE;
+					}
 				     }
 				  }
 			       }
@@ -4470,7 +4474,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	        pSiS->SiS_Pr->EMI_31 = pSiS->sisfb_emi31;
 	        pSiS->SiS_Pr->EMI_32 = pSiS->sisfb_emi32;
 	        pSiS->SiS_Pr->EMI_33 = pSiS->sisfb_emi33;
-		pSiS->SiS_Pr->HaveEMI = pSiS->SiS_Pr->HaveEMILCD = TRUE;
+		pSiS->SiS_Pr->HaveEMI = TRUE;
+		if(pSiS->sisfb_haveemilcd) pSiS->SiS_Pr->HaveEMILCD = TRUE;
 		pSiS->SiS_Pr->OverruleEMI = FALSE;
 	     } else {
 	        inSISIDXREG(SISPART4, 0x30, pSiS->SiS_Pr->EMI_30);

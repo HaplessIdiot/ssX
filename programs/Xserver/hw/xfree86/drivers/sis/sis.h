@@ -797,7 +797,7 @@ typedef struct {
     unsigned char       sisfblcda;
     int			sisfbscalelcd;
     unsigned long	sisfbspecialtiming;
-    BOOL		sisfb_haveemi;
+    BOOL		sisfb_haveemi, sisfb_haveemilcd;
     unsigned char	sisfb_emi30,sisfb_emi31,sisfb_emi32,sisfb_emi33;
     int			EMI;
     int			NoYV12;			/* Disable Xv YV12 support (old series) */
