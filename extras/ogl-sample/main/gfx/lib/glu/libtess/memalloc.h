@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -35,14 +36,14 @@
 /*
 ** Author: Eric Veach, July 1994.
 **
-** $Date: 2001/01/15 21:49:13 $ $Revision: 1.1 $
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libtess/memalloc.h,v 1.1 2001/01/15 21:49:13 dawes Exp $
+** $Date: 2001/03/02 03:42:45 $ $Revision: 1.2 $
+** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libtess/memalloc.h,v 1.2 2001/03/02 03:42:45 dawes Exp $
 */
 
 #ifndef __memalloc_simple_h_
 #define __memalloc_simple_h_
 
-#include <malloc.h>
+#include <stdlib.h>
 
 #define memRealloc	realloc
 #define memFree		free
