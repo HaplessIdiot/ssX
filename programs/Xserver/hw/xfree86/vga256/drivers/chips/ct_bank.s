@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_bank.s,v 3.6 1996/12/09 11:53:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_bank.s,v 3.7 1996/12/23 06:56:19 dawes Exp $ */
 /*
  * Copyright 1994 by Régis Cridlig <cridlig@dmi.ens.fr>
  *
@@ -41,7 +41,12 @@
 	GLOBL	GLNAME(CHIPSHiQVSetReadWrite)
 	GLOBL	GLNAME(CHIPSHiQVSetWrite)
 	GLOBL	GLNAME(CHIPSHiQVSetRead)
-
+#if 0
+	GLOBL	GLNAME(ctPrintReadWrite)
+	GLOBL	GLNAME(ctPrintWrite)		
+	GLOBL	GLNAME(ctPrintRead)
+#endif
+	
 GLNAME(CHIPSSetReadWrite):
 	MOV_B	(AL, AH)		/* Move bank to high half */
 	SHL_B	(CONST(3), AH)
@@ -70,7 +75,25 @@ GLNAME(CHIPSSetRead):
 	RET
 
 GLNAME(CHIPSWINSetReadWrite):
-	PUSH_W  (AX)
+	PUSH_W  (BX)
+	MOV_B   (AL,BL)
+	SHL_B	(CONST(1), AL)		/* shift left 1 bits (high map ovflw)*/
+	AND_B	(CONST(0x40), AL)	/* mask out bit 6 */
+	MOV_B	(AL, AH)		/* move to high byte */
+	MOV_B	(CONST(0x0C), AL)	/* address overflow register */	
+	MOV_L	(CONST(0x3D6), EDX)	/* Store 0x3D6 register */
+	OUT_B				/* write index */	
+	MOV_L	(CONST(0x3D7), EDX)	/* Store 0x3D7 register */
+	IN_B				/* read data */
+	AND_B	(CONST(0xAF), AL)	/* mask out overflow bits */
+	OR_B	(AH, AL)		/* set overflow bits */
+	SHR_B	(CONST(2), AH)          /* shift right 2 bits (low map ovflw)*/
+	OR_B	(AH, AL)		/* include bit 4 */
+	MOV_B	(AL, AH)		/* move to high byte */
+	MOV_B	(CONST(0x0C), AL)	/* address overflow register */	
+	MOV_L	(CONST(0x3D6), EDX)	/* Store 0x3D6 register */
+	OUT_W				/* write them *//*!!*/
+	MOV_B	(BL, AL)
 	MOV_B	(AL, AH)		/* Move bank to high half */
 	SHL_B	(CONST(3), AH)
 	MOV_B	(CONST(0x10),AL)	/* Put read index in low byte */
@@ -79,62 +102,62 @@ GLNAME(CHIPSWINSetReadWrite):
 	MOV_B	(CONST(0x11),AL)	/* Put write index in low byte */
 	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
 	OUT_W				/* Output read bank */
-	POP_W	(AX)                    /* retrieve from stack */
-	SHL_B	(CONST(1), AL)          /* shift left 1 bits (high map overflow)*/
-	AND_B	(CONST(0x40),AL)        /* mask out bit 6 */
-	MOV_B	(AL,AH)                 /* move to high byte */
-	SHR_B	(CONST(2), AH)          /* shift right 2 bits (low map overflow)*/
-	OR_B	(AH,AL)                 /* include bit 4 */
-	MOV_B	(AL,AH)			/* move to high byte */
-	MOV_B	(CONST(0x0C),AL)	/* address overflow register */	
-	OUT_B				/* write index */	
-	MOV_L	(CONST(0x3D7),EDX)	/* Store 0x3D7 register */
-	IN_B				/* read data */
-	AND_B	(CONST(0xAF),AL)	/* mask out overflow bits */
-	OR_B	(AH,AL)			/* set overflow bits */
-	OUT_B				/* write them */
+	POP_W	(BX)
 	RET
 
 GLNAME(CHIPSWINSetWrite):
-	PUSH_W	(AX)
+	PUSH_W	(BX)
+	MOV_B   (AL,BL)
+	SHL_B	(CONST(1),AL)           /* Shift left 1 bit (high map) */
+	AND_B	(CONST(0x40),AL)	/* Mask out bit 6 (high map) */
+	MOV_B	(AL, AH)		/* Move to high half */
+	MOV_B	(CONST(0x0C),AL)	/* Address overflow register */	
+	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
+	OUT_B				/* Write index */	
+	MOV_L	(CONST(0x3D7),EDX)	/* Store 0x3D7 register */
+	IN_B				/* Read data */
+	AND_B	(CONST(0xBF),AL)	/* Zero bit 6 */
+	OR_B	(AH, AL)		/* set bit 6 */
+	MOV_B	(AL, AH)		/* move to high byte */
+	MOV_B	(CONST(0x0C), AL)	/* address overflow register */	
+	MOV_L	(CONST(0x3D6), EDX)	/* Store 0x3D6 register */
+	OUT_W				/* write them *//*!!*/
+	MOV_B	(BL,AL)
 	MOV_B	(AL, AH)		/* Move bank to high half */
 	SHL_B	(CONST(3), AH)
 	MOV_B	(CONST(0x11),AL)	/* Put write index in low byte */
 	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
 	OUT_W				/* Output read bank */
-	POP_W	(AX)			/* Get from stack */
+	POP_W	(BX)			/* Get from stack */
+	RET
+
+GLNAME(CHIPSWINSetRead):
+	PUSH_W  (BX)
+	MOV_B	(AL,BL)
 	SHR_B	(CONST(1),AL)           /* Shift right 1 bit (low map) */
-	AND_B	(CONST(0x10),AL);	/* Mask out bit 4 (low map) */
-	MOV_B	(AH, AL)		/* Move to high half */
+	AND_B	(CONST(0x10),AL)	/* Mask out bit 4 (low map) */
+	MOV_B	(AL, AH)		/* Move to high half */
 	MOV_B	(CONST(0x0C),AL)	/* Address overflow register */	
+	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
 	OUT_B				/* Write index */	
 	MOV_L	(CONST(0x3D7),EDX)	/* Store 0x3D7 register */
 	IN_B				/* Read data */
 	AND_B	(CONST(0xEF),AL)	/* Zero bit 4 */
 	OR_B	(AH, AL)		/* set bit 4 */
 	OUT_B
-	RET
-
-GLNAME(CHIPSWINSetRead):
-	PUSH_W  (AX)
+	MOV_B	(AL, AH)		/* move to high byte */
+	MOV_B	(CONST(0x0C), AL)	/* address overflow register */	
+	MOV_L	(CONST(0x3D6), EDX)	/* Store 0x3D6 register */
+	OUT_W				/* write them *//*!!*/
+	MOV_B	(BL,AL)
 	MOV_B	(AL, AH)		/* Move bank to high half */
 	SHL_B	(CONST(3), AH)
 	MOV_B	(CONST(0x10),AL)	/* Put read index in low byte */
 	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
 	OUT_W				/* Output read bank */
-	POP_W	(AX)			/* Get from stack */
-	SHL_B	(CONST(1),AL)           /* Shift left 1 bit (high map) */
-	AND_B	(CONST(0x40),AL);	/* Mask out bit 6 (low map) */
-	MOV_B	(AH, AL)		/* Move to high half */
-	MOV_B	(CONST(0x0C),AL)	/* Address overflow register */	
-	OUT_B				/* Write index */	
-	MOV_L	(CONST(0x3D7),EDX)	/* Store 0x3D7 register */
-	IN_B				/* Read data */
-	AND_B	(CONST(0xBF),AL)	/* Zero bit 6 */
-	OR_B	(AH, AL)		/* set bit 6 */
-	OUT_B
+	POP_W	(BX)			/* Get from stack */
 	RET
-
+	
 GLNAME(CHIPSHiQVSetReadWrite):
 GLNAME(CHIPSHiQVSetWrite):
 GLNAME(CHIPSHiQVSetRead):

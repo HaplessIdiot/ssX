@@ -60,6 +60,11 @@ In addition to the features in the ET4000 driver, the SVGA ET6000 server
 supports all possible color depths in the SVGA server: 8bpp, 16bpp (both at
 5-5-5 and 5-6-5 color resolutions), 24bpp and 32 bpp.
 
+In order to be able to run at a depth of 16bpp, 24bpp, or 32bpp, and to
+improve performance at 8bpp, linear addressing must be enabled. On some
+systems, you may have to specify MemBase in addition to telling the server
+is has to run in "linear" mode.
+
 Linear memory mode (as opposed to the default, banked memory layout) is
 supported. It is required for the 16/24/32 bpp modes. The server will exit
 with an appropriate error message when attempting to run 16/24/32 bpp modes
@@ -140,8 +145,289 @@ We have now made the behavior of this option the default, hence the flag
 has been removed.  Hopefully the past text-restoration problems are alleviated 
 in XFree86 2.0.
 
+
+<sect> Basic configuration <p>
+
+It is recommended that you generate an XF86Config file using
+the <tt>XF86Setup</tt>' or <tt>xf86config</tt>' program, which should
+produce a working
+high-resolution 8bpp configuration. You may want to include mode
+timings in the <tt>Monitor</tt> section that better fit your monitor
+(e.g 1152x900 modes). The driver options are described in detail in
+the next section; here the basic options are hinted at.
+
+If graphics redrawing goes wrong on accelerated chips (ET4000W32p and
+ET6000), first try the <tt>&dquot;noaccel&dquot</tt>; option, which disables
+all accelerated functions.
+
+
+<sect> general options in the <tt>XF86Config</tt> file <p>
+
+The following options are of particular interest to the Tseng driver. Each
+of them must be specified in the <tt>svga</tt>' driver section of the
+<tt>XF86Config</tt>
+file, within the <tt>Screen</tt> subsections of the depths to which they are
+applicable (you can enable options for all depths by specifying them in the
+Device section).
+<descrip>
+<tag>Option &dquot;noaccel&dquot;</tag>   (ET4000W32p, et6000)
+        This option will disable the use of any accelerated functions. This
+        is likely to help with some problems related to DRAM timing, high
+        dot clocks, and bugs in accelerated functions, at the cost of
+        performance (which will still be reasonable on a local or PCI bus).
+        This option aplies only to those chips where acceleration is
+        supported (currently ET4000W32p and ET6000).
+<tag>Option &dquot;fast_dram&dquot; &dquot;slow_dram&dquot; </tag>
+        These options set the DRAM speed of certain cards where it applies. 
+
+        The <tt>"slow_dram"</tt> option is always enabled on ET4000, and
+        ET4000W32. If enabled, it slows down DRAM timing, which may avoid
+        some memory-related problems. If your card starts up with a black
+        screen (and possibly a system hang), this option might be needed.
+        Not supported on ET6000.
+
+        The <tt>"fast_dram"</tt> option will cause the driver to speed up
+        DRAM timings, which may also avoid screen-related problems
+        (streaking, stripes, garbage, ...). It may also increas those very
+        same effects. Not supported on ET6000.
+<tag>
+videoram 1024 (or another value)   (all chips)
+</tag>
+        This option will override the detected amount of video memory, and
+        pretend the given amount of memory is present on the card. This is
+        useful on cards with 2Mbyte of memory whose DRAM configuration is
+        not compatible with the way the driver enables the upper megabyte of
+        memory, or if the memory detection goes wrong. It must be specified
+        in the Device section.
+<tag>
+Clockchip &dquot;et6000&dquot;  (et6000)
+</tag>
+        This enables programmable clocks, but obviously only on the et6000.
+        It must be specified in the Device section. Normally the server will
+        automatically use this feature when it detects an ET6000. Use it
+        only when you suspect autodetection is not working. Note that some
+        frequencies may be unstable (resulting in a `Wavy' screen). Only
+        tried and tested frequencies (like the default clocks) are
+        guaranteed to be stable. If this happens, try a slightly different
+        frequency in the modeline (like 0.5 MHz more or less). The monitor
+        should still be capable of syncing to this frequency, but the
+        clockchip may already be outside an unstable region.
+<tag>
+Option &dquot;linear&dquot;  (ET4000W32p, ET6000)
+</tag>
+        This enables linear addressing, which is the mapping of the entire
+        framebuffer to a high address beyond system memory, so that (slow)
+        SVGA bank switching is not necessary. It enhances performance at 256
+        colors, and is currently required for 16bpp, 24bpp, and 32bpp.
+<tag>
+Membase 0xE0000000. (or a different address) (ET4000W32p, ET6000)
+</tag>
+        This sets the physical memory base address of the linear
+        framebuffer. It must be specified in the Device section. It is
+        required for non-PCI linear addressing configurations, and might be
+        useful for PCI-based systems where autodetection fails.
+</descrip>
+
+<sect> Mode issues <p>
+
+The accelerated driver on ET4000W32p and ET6000 uses 1K bytes of scratch
+space in video memory. Consequently, a 1024x1024 virtual resolution should
+not be used with a 1Mbyte card.
+
+The use of a higher dot clock frequencies has a negative effect on the
+performance of graphics operations on non-et6000 cards (the effect is much
+less, or even non-existing, on ET6000 cards), especially BitBlt, when little
+video memory bandwidth is left for drawing. Memory bandwidth is the speed at
+which data can be pumped into the memory while the RAMDAC is pulling it out
+to display it on the screen.
+
+Higher dot-clocks (mostly related to higher resolutions) consume more
+bandwidth, so that less of it is left for drawing into the framebuffer. With
+a working accelerator, things become increasingly crammed, because modern
+accelerators can consume huge amounts of bandwidth (but they also give you
+high speeds in return). High color depths also need extra bandwidth.
+
+If you are short on memory bandwidth and experience blitting slowness or
+screen "glitches", try using the lowest dot clock that is acceptable; for
+example, on a 14" or 15" screen 800x600 with high refresh (50 MHz dot clock)
+is not so bad, with a large virtual screen.
+
+Tseng chips are mostly known for their (very) good memory bandwidth, so you
+should only start to see problems in the higher regions.
+
+It does not make much sense performance-wise to use the highest clock (85
+MHz) for 1024x768 at 76 Hz on a 1 MB ET4000W32; the card will very slow,
+because there is almost no bandwidth left for drawing. A 75 MHz dot clock
+results in 70 Hz which should be acceptable. If you have a monitor that
+supports 1024x768 at 76 Hz with a 85 MHz dot clock, an 1MB card is a poor
+match anyway.
+
+The ET4000W32i and ET4000W32p have a special feature that almost doubles
+memory bandwith (+80%) using "interleaving" between the two banks. Upgrading
+to 2MB is a real bonus on these cards.
+
+The same goes for an ET6000: when using DRAM, it can do 4-way interleaving
+(with 4MB), which increases performance even more compared to single-banked
+setups. Most ET6000-based cards however use MDRAM (multi-bank DRAM -- the
+server detects the type of DRAM and reports it), which is much faster than
+DRAM. Some 4 MB systems, with 4 MDRAM chips will also do interleaving, which
+should give virtually unlimited memory bandwidth: theoretically >1GB/sec,
+comparing to the already neat 90MB/sec on a 1MB ET4000W32i/p card). Most 4MB
+models have only 2 MDRAM chips (as do the 2MB models).
+
+<sect> Linear addressing and 16bpp/24bpp/32bpp modes <p>
+
+Currently the 16-bit (32768 or 65536 colors), 24-bit (16M colors, packed
+pixel), and 32-bit (16M colors, sparse) pixel support in the SVGA server
+requires linear addressing. (This restriction may be removed in a future
+version, but with nearly all new cards using the PCI bus (where linear
+addressing poses no problem), removing the linear addressing requirement
+presently has a lower priority than other features.) Option "linear" can be
+specified in a depth-specific screen section to enable linear addressing; a
+MemBase setting (in the device section) is probably also required on non-PCI
+based systems, and optionally on PCI systems that have trouble finding out
+for themselves where the MemBase is.
+
+Non-PCI cards are not supported in linear memory mode at this moment. Some
+of them don't support it at all, and some of the ones that do have so many
+address decoding bugs that it isn't feasible to provide a working solution.
+
+For the most part, many of the accelerated features in the 8bpp server have
+been implemented to support 16, 24, and 32 bpp modes. So although there are
+now up to 4 times as many bits to display, the X server shouldn't feel
+overly sluggish. Note also that the 24bpp and 32bpp modes are only supported
+on a limited set of cards, and with at least 2Mb of memory.
+
+The ET6000, using MDRAM, may have a non-power-of-two amount of MDRAM: 2.25
+or even 4.50 MB. Especially 2.25 MB MDRAM is cheap-and-sound, since it can
+_just_ support 1024x768 at 24bpp (using all available video memory) With
+only 2MB of MDRAM, 960x720 is the best you can hope for.
+
+In the <tt>XF86Config</tt> <tt>"Screen"</tt> section, a
+<tt>"Display"</tt> subsection must be
+defined for each depth that you want to run, with separate Modes
+and virtual screen size. Example (2Mb of video memory):
+<tscreen><verb>
+Section "screen"
+    SubSection "Display"
+        Depth 8
+        Virtual 1280 1024
+        ViewPort 0 0
+        Modes "640x480" "800x600" "1024x768"
+        Option "linear"
+    EndSubSection
+    SubSection "Display"
+        Depth 16
+        Virtual 1024 992
+        ViewPort 0 0
+        Modes "640x480" "800x600" "1024x768"
+        Option "linear"
+    EndSubSection
+    SubSection "Display"
+        Depth 24
+        Virtual 960 720
+        ViewPort 0 0
+        Modes "640x480" "800x600"
+        Option "linear"
+    EndSubSection
+    SubSection "Display"
+        Depth 32
+        Virtual 832 600
+        ViewPort 0 0
+        Modes "640x480" "800x600"
+        Option "linear"
+    EndSubSection
+EndSection
+</verb></tscreen>
+
+<sect> Trouble shooting with the SVGA Tseng driver<p>
+First of all, make sure that the default modes selected from your
+<tt>XF86Config</tt>
+is supported by your monitor, i.e. make sure the horizontal sync limit is
+correct. It is best to start with standard 640x480x256 with a 25.175 MHz
+clock (by specifying a single horizontal sync of 31.5) to make sure the
+driver works on your configuration. The default mode used will always be
+the first mode listed in the modes line, with the highest dot clock listed
+for that resolution in the timing section.
+
+Note that some VESA standard mode timings may give problems on some monitors
+(try increasing the horizontal sync pulse, i.e. the difference between
+the middle two horizontal timing values, or try multiples of 16 or 32 for
+all of the horizontal timing parameters).
+<descrip>
+<tag>There is a video signal, but the screen doesn't sync.</tag>
+        You are using a mode that your monitor cannot handle. If it is
+        a non-standard mode, maybe you need to tweak the timings a bit. If
+        it is a standard mode and frequency that your monitor should be able
+        to handle, try to find different timings for a similar mode and
+        frequency combination.
+<tag>Horizontal jitter at high dot clocks.</tag>
+        This problem shows especially when drawing operations such as
+        scrolling are in progress. There is currently no easy fix for this,
+        You can try the <tt>"fast_dram"</tt> option, or use a lower dot
+        clock. If that is not sufficient, the <tt>"noaccel"</tt> option will
+        almost always help.
+<tag>`Wavy' screen.</tag>
+        Horizontal waving or jittering of the whole screen, continuously
+        (independent from drawing operations). You are probably using a dot
+        clock that is too high; it is also possible that there is
+        interference with a close MCLK. Try a lower dot clock (sometimes
+        even dropping it by 0.5 MHz may work). You can also try to tweak the
+        mode timings; try increasing the second horizontal value somewhat.
+        Here's a 65 MHz dot clock 1024x768 mode (about 60 Hz) that might
+        help:
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.9 1996/12/31 05:01:00 dawes Exp $ 
+ "1024x768"     65      1024 1116 1228 1328     768  783  789  818
+</verb>
+<tag>Crash or hang after start-up (probably with a black screen).</tag>
+        Try the <tt>"noaccel"</tt> option. Check that the BIOS settings are
+        OK; in particular, disable caching of 0xa0000-0xaffff. Disabling
+        hidden DRAM refresh may also help.
+<tag>
+Crash, hang, or trash on the screen after a graphics operation.
+</tag>
+        This may be related to a bug in one of the accelerated functions, or
+        a problem with the BitBLT engine. Try the <tt>"noaccel"</tt> option.
+        Also check the BIOS settings.
+<tag>
+`ACL: TIMEOUT' messages from the server.
+</tag>
+        Same as for the above entry. However, on some systems, the problem
+        will not go away no matter what you do. It may be related to the
+        operating system you use (it has only been seen on Linux systems,
+        and even then it depends on the kernel versions).
+<tag>
+Occasional erroneous pixels in text, pixel dust when moving window-frame
+</tag>
+        Probably related to MCLK setting that is too high (can happen with
+        linear addressing even though banked mode runs OK). Most (if not
+        all) ET6000 cards are sold with the MCLK slightly overclocked for
+        performance, which may cause these problems. There is currently no
+        fix for this.
+<tag>
+Textmode is not properly restored
+</tag>
+        This has been reported on some configurations. Sometimes Chipset
+        line will fix this. Normally you should be able to restore the
+        textmode font using a utility that sets it (<tt>setfont</tt>,
+        <tt>runx</tt>, <tt>restorefont</tt> on Linux).
+</descrip>
+For other screen drawing related problems, try the <tt>"noaccel"</tt>
+option (if <tt>"no_bitblt"</tt> doesn't help).
+
+If are having driver-related problems that are not addressed by this document,
+or if you have found bugs in accelerated functions, you can try contacting
+the XFree86 team.
+
+In fact, reports (success or failure) are very welcome, especially
+on configurations that have not been tested. You can do this
+via the BetaReport form (mail it to report@XFree86.org). You may want to
+keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
+
+
+
+<verb>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.10 1997/01/20 12:36:41 dawes Exp $ 
 
 
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.41 1997/01/19 12:51:03 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.42 1997/01/20 12:37:50 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -487,7 +487,7 @@ ICD2061AClockSelect(freq)
  */
 
 static Bool
-ET4000LinMem()
+ET4000LinMem(Bool autodetect)
 {
  /* W32p cards can give us their Lin. memory address through the PCI
   * configuration. For W32i, this is not possible (VL-bus, MCA or ISA). W32i
@@ -520,7 +520,7 @@ ET4000LinMem()
         break;
       case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space */
         temp |= vgaPCIInfo->MemBase & 0xC0000000;  /* get A31,30 from PCI config */
-      case TYPE_ET4000W32P:  /* A31,A30 are not decoded */
+      case TYPE_ET4000W32P: /* A31,A30 are decoded as 00 (=always mapped below 512 MB) */
         temp |= 0x3FC00000; /* A29..A22 */
         if (vga256InfoRec.MemBase & ~temp )
           ErrorF("%s %s: MemBase out of range. Must be <= 0x%x on 16MB boundary.\n",
@@ -534,6 +534,8 @@ ET4000LinMem()
         vga256InfoRec.MemBase &= 0xFF000000;
         break;
       default:
+        ErrorF("%s %s: This chipset does not support linear memory.\n",
+               XCONFIG_PROBED, vga256InfoRec.name);
         return (FALSE); /* no can do */
     }
   }
@@ -546,14 +548,18 @@ ET4000LinMem()
         vga256InfoRec.MemBase = (inb(vgaIOBase+0x05) & 0x1F) << 22;
         break;
       case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space */
-      case TYPE_ET4000W32P:  /* A31,A30 are not decoded... I wonder what they do */
+      case TYPE_ET4000W32P:  /* A31,A30 are decoded as 00 (=always mapped below 512 MB) */
         vga256InfoRec.MemBase = vgaPCIInfo->MemBase;
         break;
       case TYPE_ET6000:
-        if (vgaPCIInfo->MemBase !=0)
+        if ( (vgaPCIInfo->MemBase !=0) && (autodetect) ) /* don't trust PCI when not autodetecting */
           vga256InfoRec.MemBase = vgaPCIInfo->MemBase;
         else if (inb(ET6Kbase+0x13) != 0)
+        {
           vga256InfoRec.MemBase = inb(ET6Kbase+0x13) << 24;
+          ErrorF("%s %s: ET6000: port-probed linear memory base = 0x%x\n",
+                  XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.MemBase);
+        }
         else /* Argghh... nobody set up the linear address base yet. Guess */
         {
           ErrorF("%s %s: ET6000: Could not determine linear memory base address."
@@ -563,6 +569,8 @@ ET4000LinMem()
         }
         break;
       default:
+        ErrorF("%s %s: This chipset does not support linear memory.\n",
+               XCONFIG_PROBED, vga256InfoRec.name);
         return (FALSE); /* no can do */
     }
   }
@@ -638,6 +646,8 @@ ET6000InitVars(Bool autodetect)
      outb(vgaIOBase + 4, 0x21); ET6Kbase  = (inb(vgaIOBase + 5) << 8);
      outb(vgaIOBase + 4, 0x22); ET6Kbase += (inb(vgaIOBase + 5) << 16);
      outb(vgaIOBase + 4, 0x23); ET6Kbase += (inb(vgaIOBase + 5) << 24); /* keep this split up */
+     ErrorF("%s %s: ET6000: port-probed I/O base = 0x%x\n",
+             XCONFIG_PROBED, vga256InfoRec.name, ET6Kbase);
    }
 
   /*
@@ -922,7 +932,7 @@ ET4000Probe()
   /* Use banked addressing by default. */
   if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
   {
-    if (!ET4000LinMem())
+    if (!ET4000LinMem(autodetect))
       ErrorF("%s %s: Linear memory mode not supported on this device.\n",
              XCONFIG_PROBED, vga256InfoRec.name);
   }
@@ -984,6 +994,20 @@ ET4000Probe()
     /* this makes life easier in the rest of the server code */
     OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
   }
+
+  OFLG_SET(OPTION_NOACCEL, &ET4000.ChipOptionFlags);
+
+ /* currently, the power-saving method used by the XFree86 SVGA servers
+  * causes the DRAM refresh on both ET4000 and ET6000 boards to be disabled,
+  * resulting in video memory corruption. Until a better DPMS implementation
+  * is added, disable this option.
+  */
+  if (OFLG_ISSET(OPTION_POWER_SAVER, &vga256InfoRec.options)) {
+    ErrorF("%s %s: option \"power_saver\" not working in this release (disabled).\n",
+           XCONFIG_GIVEN, vga256InfoRec.name);
+    OFLG_CLR(OPTION_POWER_SAVER, &vga256InfoRec.options);
+  }
+
 #endif
 
   if (et4000_type < TYPE_ET6000)
@@ -999,19 +1023,7 @@ ET4000Probe()
     OFLG_SET(OPTION_W32_INTERLEAVE_OFF, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_SLOW_DRAM, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_FAST_DRAM, &ET4000.ChipOptionFlags);
-    OFLG_SET(OPTION_NOACCEL, &ET4000.ChipOptionFlags);
 #endif
-
- /* currently, the power-saving method used by the XFree86 SVGA servers
-  * causes the DRAM refresh on both ET4000 and ET6000 boards to be disabled,
-  * resulting in video memory corruption. Until a better DPMS implementation
-  * is added, disable this option.
-  */
-  if (OFLG_ISSET(OPTION_POWER_SAVER, &vga256InfoRec.options)) {
-    ErrorF("%s %s: option \"power_saver\" not working in this release (disabled).\n",
-           XCONFIG_GIVEN, vga256InfoRec.name);
-    OFLG_CLR(OPTION_POWER_SAVER, &vga256InfoRec.options);
-  }
 
 /*
  * because of some problems with W32 cards, SLOW_DRAM is _always_ enabled

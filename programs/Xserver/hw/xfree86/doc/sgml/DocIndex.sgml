@@ -5,14 +5,14 @@
 <!-- Title information -->
 <title> List of XFree86 documentation
 <author> The XFree86 Project, Inc
-<date> 4 July 1995
+<date> 22 January 1997
 
 <sect> Available Documentation <p>
 
 <itemize>
-<item> <htmlurl name="Release Notes for XFree86&tm; 3.2"
+<item> <htmlurl name="Release Notes for XFree86&tm; 3.2A"
 	url="RELNOTES.html">
-<item> <htmlurl name="README for XFree86&tm; 3.2"
+<item> <htmlurl name="README for XFree86&tm; 3.2A"
 	url="README.html">
 <item> <htmlurl name="Copyright"
 	url="COPYRIGHT.html">
@@ -90,6 +90,8 @@
 	url="S3.html">
 <item> <htmlurl name="Information for S3 ViRGE and ViRGE/VX Users"
 	url="S3V.html">
+<item> <htmlurl name="Information for SiS Users"
+	url="SiS.html">
 <item> <htmlurl name="Information for Trident Chipset Users"
 	url="trident.html">
 <item> <htmlurl name="Information for Tseng Chipset Users"
@@ -103,7 +105,7 @@
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.18 1996/10/23 13:09:53 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.19 1996/12/23 06:45:53 dawes Exp $ 
 
 
 

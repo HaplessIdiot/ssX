@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.6 1996/10/26 09:41:17 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.7 1996/12/27 07:04:23 dawes Exp $
 #
-# preinst.sh  (for XFree86 3.2)
+# preinst.sh  (for XFree86 3.2A)
 #
 # This script should be run before installing a new version.
 #
@@ -13,8 +13,6 @@
 # $XConsortium: preinst.sh /main/5 1996/10/28 05:43:40 kaleb $
 #
 
-OLDBETADIR_1=/usr/XFree86-3.1.2A
-OLDBETADIR_2=/usr/XFree86-3.1.2B
 RUNDIR=/usr/X11R6
 LIBLIST=" \
 	libICE.so \
@@ -43,11 +41,7 @@ LIBLIST=" \
 	liboldX.so.6 \
 	"
 
-OLDFILES=" \
-	lib/X11/doc/LbxproxyOnly \
-	lib/X11/xkb/keycodes/sgi \
-	lib/X11/xkb/symbols/de_nodead \
-	"
+OLDFILES=""
 
 # First, do some checks for Linux/ELF
 
@@ -82,7 +76,8 @@ if [ "`uname`" = Linux ]; then
 		i*86)
 			echo ""
 			echo "You appear to have an a.out system."
-			echo "Make sure you are installing the aout binary dist"
+			echo "a.out binaries are not available for this release"
+			exit 1
 			;;
 		esac
 	fi
@@ -120,24 +115,6 @@ case "$response" in
 		;;
 esac
 
-if [ -d $OLDBETADIR_2 ]; then
-	cd $OLDBETADIR_2
-	for i in `find * -type f -print`; do
-		if [ -h $RUNDIR/$i ]; then
-			echo Removing link to $OLDBETADIR_2/$i
-			rm -f $RUNDIR/$i
-		fi
-	done
-fi
-if [ -d $OLDBETADIR_1 ]; then
-	cd $OLDBETADIR_1
-	for i in `find * -type f -print`; do
-		if [ -h $RUNDIR/$i ]; then
-			echo Removing link to $OLDBETADIR_1/$i
-			rm -f $RUNDIR/$i
-		fi
-	done
-fi
 for i in $LIBLIST; do
 	if [ -h $RUNDIR/lib/$i ]; then
 		echo Removing old library link $RUNDIR/lib/$i

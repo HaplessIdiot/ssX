@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.6 1996/12/27 07:05:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.7 1997/01/12 10:42:32 dawes Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
@@ -61,12 +61,23 @@ extern unsigned char byte_reversed[];
 extern unsigned int byte_reversed3[];
 
 /* 
+ * Definitions for IO access to ports
+ */
+#define write_xr(num,val) {outb(0x3D6, num);outb(0x3D7, val);}
+#define read_xr(num,var) {outb(0x3D6, num);var=inb(0x3D7);}
+#define write_fr(num,val) {outb(0x3D0, num);outb(0x3D1, val);}
+#define read_fr(num,var) {outb(0x3D0, num);var=inb(0x3D1);}
+
+/* 
  * Definitions for IO access to 32 bit ports
  */
 extern int ctReg32MMIO[];
 extern int ctReg32HiQV[];
-#define DR(x) ctReg32MMIO[x]
+#define MR(x) ctReg32MMIO[x]
 #define BR(x) ctReg32HiQV[x]
+
+extern unsigned int CHIPS_ExtPorts32[];
+#define DR(x) CHIPS_ExtPorts32[x] 
 
 /*
  * Forward definitions for the functions that make up the driver.    See

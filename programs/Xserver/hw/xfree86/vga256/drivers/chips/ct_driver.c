@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.33 1997/01/14 22:18:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.34 1997/01/18 06:56:26 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -112,6 +112,7 @@ Bool ctLCD = TRUE;
 Bool ctCRT = FALSE;
 Bool ctPCI = FALSE;
 Bool ctISA = FALSE;
+Bool ctVLB = FALSE;
 
 /* Panel Types */
 unsigned char ctPanelType = 0;
@@ -242,6 +243,8 @@ struct {
     int HRetraceEnd;
     int HTotal;
     int VDisplay;
+    int VRetraceStart;
+    int VTotal;
 } ctSize;
 
 typedef struct {
@@ -301,6 +304,10 @@ Bool ctProbe();
 Bool ctProbeHiQV();
 Bool ctProbeWINGINE();
 
+/* Enter/Leave */
+Bool ctEnterLeave(Bool);
+Bool ctEnterLeaveHiQV32(Bool);
+
 vgaVideoChipRec CHIPS =
 {
     CHIPSProbe,
@@ -314,10 +321,9 @@ vgaVideoChipRec CHIPS =
     CHIPSSaveScreen,
     (void (*)())NoopDDA,
     CHIPSFbInit,
-    CHIPSSetRead,	
-    CHIPSSetWrite,	
-    CHIPSSetReadWrite,	
-
+    CHIPSSetRead,
+    CHIPSSetWrite,
+    CHIPSSetReadWrite,
     0x10000,		
     0x08000,		
     15,
@@ -327,7 +333,7 @@ vgaVideoChipRec CHIPS =
     TRUE,
     VGA_DIVIDE_VERT,
     {0,},
-    4,				       /* ChipRounding */
+    8,				       /* ChipRounding */
     FALSE,			       /* ChipUseLinearAddressing */
     0,				       /* ChipLinearBase */
     0,				       /* ChipLinearSize */
@@ -867,11 +873,9 @@ CHIPSProbe()
 #ifdef DEBUG
     ErrorF("CHIPSProbe\n");
 #endif
-
     xf86ClearIOPortList(vga256InfoRec.scrnIndex);
     xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
     xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_CHIPS_ExtPorts, CHIPS_ExtPorts);
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_CHIPS_ExtPorts32, CHIPS_ExtPorts32);
 
     if (vga256InfoRec.chipset) {
 	if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_520))) {
@@ -958,7 +962,6 @@ CHIPSProbe()
 	}
 	ErrorF("%s %s: Chipset: %s \n", XCONFIG_GIVEN,
 	       vga256InfoRec.name, CHIPSIdent(CHIPSchipset));
-	CHIPSEnterLeave(ENTER);
     } else if ((tmp=ctPCIChipset()) > -1) {
 	if (tmp == 0)
 	    return(0);  /* wrong chipset */
@@ -977,7 +980,7 @@ CHIPSProbe()
 	} else {
 	    ErrorF("%s %s: CHIPS: wrong chipID: %x\n",
 		   XCONFIG_PROBED, vga256InfoRec.name, tmp);
-	    return (0);
+	    return (FALSE);
 	}
 	ctLinearSupport = TRUE;
 	ctAccelSupport = TRUE;
@@ -985,9 +988,8 @@ CHIPSProbe()
 	ctHDepth = TRUE;
 	ErrorF("%s %s: Chipset: %s \n", XCONFIG_PROBED,
 	       vga256InfoRec.name, CHIPSIdent(CHIPSchipset));
-	CHIPSEnterLeave(ENTER);
     } else {
-	CHIPSEnterLeave(ENTER);
+      xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 	temp = rdinx(0x3D6, 0x00);
 	/*
 	 *  Reading 0x103 causes segmentation violation, like 46E8 ???
@@ -1088,7 +1090,7 @@ CHIPSProbe()
 	     * Returning FALSE implies failure, and the server
 	     * will go on to the next driver.
 	     */
-	    CHIPSEnterLeave(LEAVE);
+	  xf86DisableIOPorts(vga256InfoRec.scrnIndex);
 #ifdef DEBUG
 	    ErrorF("Bombing out!\n");
 #endif
@@ -1122,21 +1124,7 @@ CHIPSProbe()
 	ctAccelSupport = FALSE;
     }
 
-    /* monitor info */
-    ctMonitor = ctProbeMonitor();
-    switch(ctMonitor){
-    case 0:
-      ErrorF("%s %s: CHIPS: color monitor detected.\n", XCONFIG_PROBED,
-	     vga256InfoRec.name);
-      break;
-    case 1:
-      ErrorF("%s %s: CHIPS: monochrome monitor detected.\n", XCONFIG_PROBED,
-	     vga256InfoRec.name);
-      break;
-    default:
-      ErrorF("%s %s: CHIPS: no monitor detected.\n", XCONFIG_PROBED,
-	     vga256InfoRec.name);
-    }
+
     if(ctisHiQV32)
       return ctProbeHiQV();
     else if (ctisWINGINE)
@@ -1153,6 +1141,13 @@ Bool ctProbeHiQV()
 #ifdef DEBUG
   ErrorF("ctProbeHiQV\n");
 #endif
+
+  /* enter/leave */
+  ctEnterLeaveHiQV32(ENTER);
+
+  /* monitor info */
+  ctMonitor = ctSetMonitor();
+ 
   /* By default the page mapping variables are setup for
    * chips earlier than the 65550. Hence correct these
    */
@@ -1168,7 +1163,6 @@ Bool ctProbeHiQV()
   CHIPS.ChipWriteBottom = 0x00000;
   CHIPS.ChipWriteTop = 0x10000;
   CHIPS.ChipUse2Banks = FALSE;
-  CHIPS.ChipRounding = 8;
 
   /*ctConfig();*/
   /* memory size */
@@ -1328,9 +1322,11 @@ Bool ctProbeHiQV()
 	if (temp == 1) {	       /*PCI */
 	    ErrorF("PCI Bus\n");
 	    ctPCI = TRUE;
-	} else    /* XR08: Linear addressing base, not for PCI */
-		ErrorF("VL Bus\n");
-
+	} else {   /* XR08: Linear addressing base, not for PCI */
+	  ErrorF("VL Bus\n");
+	  ctVLB = TRUE;
+	}
+		
     /* linear base */
     if (ctLinearSupport) {
     if (vga256InfoRec.MemBase) {
@@ -1399,20 +1395,9 @@ Bool ctProbeHiQV()
     /* MMIO address offset */
     if(ctUseMMIO)
         ctMMIO=ctReg32HiQV;
-
-    /* probe syncronous reset */
-    outw(0x3C4,0x0100);  /* this test has to be done until I know */
-    {                    /* what is going on for sure. (EE)       */
-      time_t  Time;
-      Time = time(NULL) + 2;
-      temp = inb(ctST01reg) & 0x08;
-      while ((((inb(ctST01reg)) & 0x08) == temp) || Time > time(NULL));
-      if(Time > time(NULL))
-	ctSyncResetIgn = TRUE;
-    } 
-    outw(0x3C4,0x0300);
-    ErrorF("%s %s: CHIPS: syncronous reset %signored.\n",
-	   XCONFIG_PROBED, vga256InfoRec.name,(ctSyncResetIgn ? "" : "not ")); 
+  
+  /* sync reset ignored on this chipset */
+  ctSyncResetIgn = TRUE;   /* !! */
 
     /* Clock type */
     /*
@@ -1477,15 +1462,36 @@ Bool ctProbeWINGINE()
 #ifdef DEBUG
   ErrorF("ctProbeWINGINE\n");
 #endif
-  
+
+  /* 32 bit register addresses */
+  if(ctLinearSupport){
+    outb(0x3D6,0x07);
+    temp =  inb(0x3D7);
+    for(i=0;i<Num_CHIPS_ExtPorts32;i++)
+      {
+	CHIPS_ExtPorts32[i] = ((CHIPS_ExtPorts32[i] & 0x7E03))
+	  | ((temp & 0x80) << 8)
+	    | ((temp & 0x7F) << 2);
+#ifdef DEBUG
+	ErrorF("DR[%X] = %X\n",i,CHIPS_ExtPorts32[i]);
+#endif
+      }
+    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_CHIPS_ExtPorts32, CHIPS_ExtPorts32);
+  }
+
+  /* enter/leave */
+  ctEnterLeave(ENTER);
+
+  /* monitor info */
+  ctMonitor = ctSetMonitor();
+
   /* By default the page mapping variables are setup for
    * chips from the 6554x series. Hence correct these for 64xxx
    */
 
   CHIPS.ChipSetRead = CHIPSWINSetRead;
   CHIPS.ChipSetWrite = CHIPSWINSetWrite;
-  CHIPS.ChipSetReadWrite = CHIPSWINSetReadWrite;
-  CHIPS.ChipRounding = 8;
+  CHIPS.ChipSetReadWrite = CHIPSWINSetReadWrite; 
 
   /*ctConfig();*/
   
@@ -1533,9 +1539,11 @@ Bool ctProbeWINGINE()
   switch (temp){
   case 0:
     ErrorF("ISA Bus\n");
+    ctISA = TRUE;
     break;
   case 3:
     ErrorF("VL Bus\n");
+    ctVLB = TRUE;
     break;
   default:
     ErrorF("Unknown Bus\n");
@@ -1698,6 +1706,31 @@ Bool ctProbe()
   ErrorF("ctProbe\n");
 #endif
 
+  /* 32 bit register addresses */
+  if(ctLinearSupport){
+    outb(0x3D6,0x07);
+    temp =  inb(0x3D7);
+    for(i=0;i<Num_CHIPS_ExtPorts32;i++)
+      {
+	CHIPS_ExtPorts32[i] = ((CHIPS_ExtPorts32[i] & 0x7E03))
+	  | ((temp & 0x80) << 8)
+	    | ((temp & 0x7F) << 2);
+#ifdef DEBUG
+	ErrorF("DR[%X] = %X\n",i,CHIPS_ExtPorts32[i]);
+#endif
+      }
+    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_CHIPS_ExtPorts32, CHIPS_ExtPorts32);
+  }
+
+  /* enter/leave */
+  ctEnterLeave(ENTER);
+
+  /* monitor info */
+  ctMonitor = ctSetMonitor();
+
+  /* chip specific */
+  CHIPS.ChipRounding = 4;
+
     /*ctConfig();*/
 
     /* memory size */
@@ -1801,6 +1834,12 @@ Bool ctProbe()
 	    read_xr(0x68, temp);
 	    ctSize.VDisplay = ((tmp1 & 0x02) << 7) 
 	      + ((tmp1 & 0x40) << 3) + temp + 1;
+	    read_xr(0x66, temp);
+	    ctSize.VRetraceStart = ((tmp1 & 0x04) << 6) 
+	      + ((tmp1 & 0x80) << 2) + temp + 1;
+	    read_xr(0x64, temp);
+	    ctSize.VTotal = ((tmp1 & 0x01) << 8)
+	      + ((tmp1 & 0x20) << 4) + temp + 2;
 #ifdef DEBUG
 	    ErrorF("x=%i, y=%i; xSync=%i, xSyncEnd=%i, xTotal=%i\n",
 		ctSize.HDisplay, ctSize.VDisplay, ctSize.HRetraceStart,
@@ -1875,6 +1914,7 @@ Bool ctProbe()
 		break;
 	    case 7:
 		ErrorF("VL Bus\n");
+		ctVLB = TRUE;
 		break;
 	    default:
 		ErrorF("Unknown Bus\n");
@@ -1890,7 +1930,8 @@ Bool ctProbe()
 		ErrorF("MC Bus\n");           
 		break;
            case 2:
-		ErrorF("VL Bus\n");           
+		ErrorF("VL Bus\n");
+		ctVLB = TRUE;
 		break;
 	   case 3:
 		ErrorF("ISA Bus\n");           
@@ -1898,6 +1939,13 @@ Bool ctProbe()
 		break;
 	      }
     }
+
+  /* Test wether linear addressing is possible on 65530 */
+  /* on the 65530 only the A19 select sceme can be used */
+  /* for linear addressing since MEMR/MEMW are both used*/
+  /* A19 however is used if video memory is > 512 Mb    */   
+  if (ctISA && vga256InfoRec.videoRam > 512)
+    ctLinearSupport = FALSE;
 
     /* linear base */
     if (ctLinearSupport) {
@@ -2096,10 +2144,6 @@ static void
 CHIPSEnterLeave(enter)
     Bool enter;
 {
-    static unsigned char xr15 = 0xFF;
-    static unsigned char xr02 = 0xFF;  /* bit 3-4: attribute contr. access */
-    static unsigned char xr14 = 0xFF;  /* bit 7: vsync                     */
-    unsigned char temp;
 
 #ifdef DEBUG
     ErrorF("CHIPSEnterLeave(");
@@ -2108,6 +2152,21 @@ CHIPSEnterLeave(enter)
     else
 	ErrorF("Leave)\n");
 #endif
+    if(ctisHiQV32)
+      ctEnterLeaveHiQV32(enter);
+    else
+      ctEnterLeave(enter);
+}
+
+ctEnterLeave(enter)
+    Bool enter;
+{
+    static Bool initialize = TRUE;
+    static unsigned char xr15;
+    static unsigned char xr02;  /* bit 3-4: attribute contr. access */
+    static unsigned char xr03;
+    static unsigned char xr14;  /* bit 7: vsync                     */
+    unsigned char temp;
 
 #ifndef MONOVGA
 #ifdef XFreeXDGA
@@ -2119,11 +2178,6 @@ CHIPSEnterLeave(enter)
 	 * effect will be to hide the cursor, perhaps permanently!!
 	 */
 	if (ctHWcursorShown) {
-	    if (ctisHiQV32) {
-		outb(0x3D6, 0xA0);
-		ctHWcursorContents = inb(0x3D7);
-		outb(0x3D7, ctHWcursorContents & 0xF8);
-	    } else {
 		if(!ctUseMMIO){
 		    HW_DEBUG(0x8);
 		    ctHWcursorContents = inl(DR(0x8));
@@ -2133,7 +2187,6 @@ CHIPSEnterLeave(enter)
 		    ctHWcursorContents = MMIOmeml(ctMMIO[0x8]);
 		    MMIOmemw(ctMMIO[0x8]) = ctHWcursorContents & 0xFFFE;
 		}
-	    }
 	}
 	return;
     }
@@ -2144,7 +2197,7 @@ CHIPSEnterLeave(enter)
 	xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 
       /* handle base for certain IO regs. */
-	if (ctVgaIOBaseFlag == 0xFF){ /*save: suspend/resume might mess it up*/
+	if (initialize){ /*save: suspend/resume might mess it up*/
 	  ctVgaIOBaseFlag = (inb(0x3CC) & 0x01);
 	  vgaIOBase = ctVgaIOBaseFlag ? 0x3D0 : 0x3B0;
 	  ctCRindex = vgaIOBase + 4;
@@ -2168,29 +2221,32 @@ CHIPSEnterLeave(enter)
 	outb(ctCRvalue, temp & 0x7F);
 
  	/* group protection and attribute controller access */
-	if (!ctisHiQV32) {
 	    outb(0x3D6, 0x15);
-	    if (xr15 == 0xFF)
+	    if (initialize)
 	        xr15 = inb(0x3D7);
 	    outb(0x3D7, 00);
  	    outb(0x3D6, 0x02);
- 	    if (xr02 == 0xFF)
+ 	    if (initialize)
  	        xr02 = inb(0x3D7) & 0x18;
 	    temp = inb(0x3D7);
 	    outb(0x3D7,(temp & 0xE7));
 	    outb(0x3D6, 0x14);
-	    if (xr14 == 0xFF)
+	    if (initialize)
 		xr14 = inb(0x3D7) & 0x20;
 	    temp = inb(0x3D7);
 	    outb(0x3D7,(temp & ~0x20));
-	}
+
+	/* enable 32 bit registers */
+	if(CHIPSchipset > CT_540)
+	  {
+	    outb(0x3D6,0x03);
+	    if(initialize)
+	      xr03 = inb(0x3D7) & 0x02;
+	    outb(0x3D7,xr03 | 0x02);
+	  }
 
 	/* enable HW cursor */
 	if (ctHWcursorShown) {
-	    if (ctisHiQV32) {
-		outb(0x3D6, 0xA0);
-		outb(0x3D7, ctHWcursorContents & 0xFF);
-	    } else {
 	      if(!ctUseMMIO){
 		HW_DEBUG(0x8);
 		outl(DR(0x8), ctHWcursorContents);
@@ -2198,7 +2254,118 @@ CHIPSEnterLeave(enter)
 		HW_DEBUG(ctMMIO[0x8]);
 		MMIOmeml(ctMMIO[0x8]) = ctHWcursorContents;
 	      }
-	    }
+	}
+	initialize = FALSE;
+    } else {
+	/*
+	 * Here undo what was done above.
+	 */
+
+      /* fix things that could be messed up by suspend/resume */
+      temp = inb(0x3CC);
+      outb(0x3C2, (temp & 0xFE) | ctVgaIOBaseFlag); 
+
+      /* disable HW cursor */
+	if (ctHWcursorShown) {
+	      if(!ctUseMMIO){
+		HW_DEBUG(0x8);
+		ctHWcursorContents = inl(DR(0x8));
+		outw(DR(0x8), ctHWcursorContents & 0xFFFE);
+	      } else {
+		HW_DEBUG(ctMMIO[0x8]);
+		ctHWcursorContents = MMIOmeml(ctMMIO[0x8]);
+		MMIOmemw(ctMMIO[0x8]) = ctHWcursorContents & 0xFFFE;
+	      }
+	}
+
+	/* Protect CRTC[0-7] */
+	outb(ctCRindex, 0x11);
+	temp = inb(ctCRvalue);
+	outb(ctCRvalue, (temp & 0x7F) | 0x80);
+
+ 	/* group protection attribute controller access */
+	    outb(0x3D6, 0x15);
+	    outb(0x3D7, xr15);
+            outb(0x3D6, 0x03);
+	    temp = inb(0x3D7);
+ 	    outb(0x3D7, (temp & 0xFD) | xr03);
+	    outb(0x3D6, 0x14);
+	    temp = inb(0x3D7);
+	    outb(0x3D7, (temp & 0xDF) | xr14);
+
+	/* reset 32 bit register access */
+	if(CHIPSchipset > CT_540)
+	  {
+ 	    outb(0x3D6, 0x02);
+	    temp = inb(0x3D7);
+ 	    outb(0x3D7, (temp & 0xE7) | xr02);
+	  }
+
+      /* disable IO ports */
+#ifdef IO_DEBUG
+      ErrorF("E/L: 0x3CC: %X\n", (unsigned char)inb(0x3CC));
+#endif
+      xf86DisableIOPorts(vga256InfoRec.scrnIndex);
+    }
+}
+
+ctEnterLeaveHiQV32(enter)
+    Bool enter;
+{
+    unsigned char temp;
+
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+    if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter) {
+	/* 
+	 * Disable HW cursor. I hope DGA can't call EnterLeave(leave) twice
+	 * in a row, and that another EnterLeave(leave) can't be called
+	 * before DGA finishes with an EnterLeave(enter). Otherwise the
+	 * effect will be to hide the cursor, perhaps permanently!!
+	 */
+	if (ctHWcursorShown) {
+		outb(0x3D6, 0xA0);
+		ctHWcursorContents = inb(0x3D7);
+		outb(0x3D7, ctHWcursorContents & 0xF8);
+	}
+	return;
+    }
+#endif
+#endif
+    if (enter) {
+      /* enable IO ports */
+	xf86EnableIOPorts(vga256InfoRec.scrnIndex);
+
+      /* handle base for certain IO regs. */
+	if (ctVgaIOBaseFlag == 0xFF){ /*save: suspend/resume might mess it up*/
+	  ctVgaIOBaseFlag = (inb(0x3CC) & 0x01);
+	  vgaIOBase = ctVgaIOBaseFlag ? 0x3D0 : 0x3B0;
+	  ctCRindex = vgaIOBase + 4;
+	  ctCRvalue = vgaIOBase + 5;
+	  ctST01reg = vgaIOBase + 0x0A;
+#ifdef DEBUG
+	  if (ctVgaIOBaseFlag)
+	    ErrorF("color\n");
+	  else
+	    ErrorF("monochrome\n");
+#endif
+	} else {
+
+	  /* hack: if not 1st time fix it up as it might be messed up by s/r */
+	  temp = inb(0x3CC);
+	  outb(0x3C2, (temp & 0xFE) | ctVgaIOBaseFlag); 
+	}
+
+	/* Unprotect CRTC[0-7] */
+	outb(ctCRindex, 0x11);
+	temp = inb(ctCRvalue);
+	outb(ctCRvalue, temp & 0x7F);
+
+	/* enable HW cursor */
+	if (ctHWcursorShown) {
+		outb(0x3D6, 0xA0);
+		outb(0x3D7, ctHWcursorContents & 0xFF);
 	}
     } else {
 	/*
@@ -2211,39 +2378,15 @@ CHIPSEnterLeave(enter)
 
       /* disable HW cursor */
 	if (ctHWcursorShown) {
-	    if (ctisHiQV32) {
 		outb(0x3D6, 0xA0);
 		ctHWcursorContents = inb(0x3D7);
 		outb(0x3D7, ctHWcursorContents & 0xF8);
-	    } else {
-	      if(!ctUseMMIO){
-		HW_DEBUG(0x8);
-		ctHWcursorContents = inl(DR(0x8));
-		outw(DR(0x8), ctHWcursorContents & 0xFFFE);
-	      } else {
-		HW_DEBUG(ctMMIO[0x8]);
-		ctHWcursorContents = MMIOmeml(ctMMIO[0x8]);
-		MMIOmemw(ctMMIO[0x8]) = ctHWcursorContents & 0xFFFE;
-	      }
-	    }
 	}
 
 	/* Protect CRTC[0-7] */
 	outb(ctCRindex, 0x11);
 	temp = inb(ctCRvalue);
 	outb(ctCRvalue, (temp & 0x7F) | 0x80);
-
- 	/* group protection attribute controller access */
-	if (!ctisHiQV32) {
-	    outb(0x3D6, 0x15);
-	    outb(0x3D7, xr15);
- 	    outb(0x3D6, 0x02);
-	    temp = inb(0x3D7);
- 	    outb(0x3D7, (temp & 0xE7) | xr02);
-	    outb(0x3D6, 0x14);
-	    temp = inb(0x3D7);
-	    outb(0x3D7, (temp & 0xDF) | xr14);
-	}
 
       /* disable IO ports */
 #ifdef IO_DEBUG
@@ -2252,6 +2395,8 @@ CHIPSEnterLeave(enter)
       xf86DisableIOPorts(vga256InfoRec.scrnIndex);
     }
 }
+
+
 
 static void
 CHIPSRestore(restore)
@@ -2280,6 +2425,7 @@ CHIPSRestore(restore)
 	tmp = inb(0x3D7);
 	outb(0x3D7, (tmp & ~0x20)); /* enable vsync on ST01 */
     }
+
     /* fix things that could be messed up by suspend/resume */
     outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) 
 		 | ctVgaIOBaseFlag));
@@ -2287,12 +2433,14 @@ CHIPSRestore(restore)
     tmp = inb(ctCRvalue);
     outb(ctCRvalue, (tmp & 0x7F)); /*group 0 protection off */
 
+
     /* wait for vsync if sequencer is running - stop sequencer */
     if(ctSyncResetIgn){    /* only do if sync reset is ignored */
 	while (((inb(ctST01reg)) & 0x08) == 0x08 );/* wait VSync off */
         while (((inb(ctST01reg)) & 0x08) == 0 );   /* wait VSync on  */
     outw(0x3C4,0x07);              /* reset hsync - just in case...  */
       }
+
     /* set the clock */
 #ifdef IO_DEBUG
     ErrorF("1: 0x3CC: %X ", (unsigned char)inb(0x3CC));
@@ -2310,6 +2458,17 @@ CHIPSRestore(restore)
     for (i=0; i<25; i++) 
       outw(ctCRindex,(restore->std.CRTC[i] << 8) | i);
 
+#if 0  /* !! */
+    /* turn display back on */
+    if(ctisHiQV32){     /* on some revisions of the 65550 this is   */
+      outb(0x3C4,0x01); /* necessary to reset textmode stretching   */
+      tmp = inb(0x3C5); /* according to errata sheets due to hw bug */
+      outb(0x3C5,tmp & 0xDF);   
+      while (((inb(ctST01reg)) & 0x08) == 0x08 );/* wait VSync off */
+      while (((inb(ctST01reg)) & 0x08) == 0 );   /* wait VSync on  */
+    outw(0x3C4,0x07);              /* reset hsync - just in case...  */ 
+    }
+#endif
     /* set stretching registers */
     if (ctisHiQV32) {
       ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);
@@ -2329,23 +2488,28 @@ CHIPSRestore(restore)
     if (!ctisHiQV32&&(vga256InfoRec.textclock>=0)&&(vga256InfoRec.textclock<=MAXCLOCKS)) 
       ctScaleClock(LEAVE, &vga256InfoRec.textclock);
 
-    /* perform a syncronous reset */
-    if (!ctisHiQV32){
-      outb(0x3D6,0x0E);
-      tmp = inb(0x3D7);
-      outb(0x3D7,tmp & 0x7F);    /* enable syncronous reset on 655xx */
+      /* perform a syncronous reset */
+#if 1   /* !! */
+    if(!ctSyncResetIgn){
+      if (!ctisHiQV32){
+	outb(0x3D6,0x0E);
+	tmp = inb(0x3D7);
+	outb(0x3D7,tmp & 0x7F);    /* enable syncronous reset on 655xx */
+      }
+      outw(0x3C4,0x0100);
+      usleep(10000);
+      outw(0x3C4,0x0300);
+      if (!ctisHiQV32)
+	write_xr(0x0E,tmp);
     }
-    outw(0x3C4,0x0100);
-    usleep(10000);
-    outw(0x3C4,0x0300);
-    if (!ctisHiQV32)
-      write_xr(0x0E,tmp);
+#endif  /* !! */
 
     /* Flag valid start address, if using CRT extensions */
     if (ctisHiQV32 && (restore->Port_3D6[0x09] & 0x1) == 0x1) {
       outb(ctCRindex, 0x40);
       tmp = inb(ctCRvalue);
       outb(ctCRvalue, tmp | 0x80);
+
     }
 
 #ifdef IO_DEBUG
@@ -2603,7 +2767,7 @@ CHIPSInit655xx(mode)
 	outb(0x3D6, i);
 	new->Port_3D6[i] = inb(0x3D7);
     }
-
+    
     /* set C&T Specific Registers */
     /* set virtual screen width */
     new->Port_3D6[0x1E] = new->std.CRTC[0x13];	/* alternate offset */
@@ -2748,9 +2912,23 @@ CHIPSInit655xx(mode)
 	     */
 	    tmp = ((ctPanelType == DD) && !(new->Port_3D6[0x6F] & 0x02))
 	      ? 1 : 0; /* double LP delay, FLM: 2 lines iff DD+no acc*/
+	    /* Currently we support 2 FLM scemes: #1: FLM coincides with
+	     * VTotal ie. the delay is programmed to the difference bet-
+	     * ween lctVTotal and lcdVRetraceStart.    #2: FLM coincides
+	     * lcdVRetraceStart - in this case FLM delay will be turned
+	     * off. To decide which sceme to use we compare the value of
+	     * XR2C set by the bios to the two scemes. The one that fits
+	     * better will be used.
+	     */
+
+	    if (new->Port_3D6[0x2C] 
+		< abs((ctSize.VTotal - ctSize.VRetraceStart 
+		       - tmp - 1) - new->Port_3D6[0x2C]))
+	      	    new->Port_3D6[0x2F] |= 0x80;   /* turn FLM delay off */
 	    new->Port_3D6[0x2C] = lcdVTotal - lcdVRetraceStart - tmp;
-	    new->Port_3D6[0x2D] = (HSyncStart >> (3 - tmp)) & 0xFF;
-	    new->Port_3D6[0x2F] = (new->Port_3D6[0x2F] & 0x1F)
+	    /*new->Port_3D6[0x2D] = (HSyncStart >> (3 - tmp)) & 0xFF;*/
+	    new->Port_3D6[0x2D] = (HDisplay >> (3 - tmp)) & 0xFF;
+	    new->Port_3D6[0x2F] = (new->Port_3D6[0x2F] & 0xDF)
 		| (((HSyncStart >> (3 - tmp)) & 0x100) >> 3);
 	}
 
@@ -2799,16 +2977,17 @@ CHIPSInit655xx(mode)
 	new->Port_3D6[0x0B] |= 0x10;   /* linear mode on                 */
  	if(CHIPSchipset > CT_530)
  	  new->Port_3D6[0x08] = (unsigned char)(CHIPS.ChipLinearBase >> 20);
-#if 0  /* Its probably set correctly by BIOS anyway. Leave it alone      */
-	/* 65525 - 65535 require XR04[6] set for greater than 512k of    */
-        /* ram. Use this address scheme by default                       */
-	if (CHIPSchipset == CT_525 || CHIPSchipset == CT_530 ||
-	    CHIPSchipset == CT_535)
-	    new->Port_3D6[0x04] |= 0x40;
-#endif
+	else {
+        /* Its probably set correctly by BIOS anyway. Leave it alone      */
+	/* 65525 - 65535 require XR04[6] set for greater than 512k of     */
+        /* ram. We only correct obvious bugs; VL probably uses MEMR/MEMW  */
+	  if(ctISA)
+	    new->Port_3D6[0x04] &= ~0x40;  /* A19 sceme       */
+	  if(vga256InfoRec.videoRam > 512)
+	    new->Port_3D6[0x04] |= 0x40;   /* MEMR/MEMW sceme */
+	}
+
 	/* general setup */
-	new->Port_3D6[0x03] |= 0x02;   /* 32 bit I/O enable etc.          */
-	new->Port_3D6[0x07] = 0xF4;    /* 32 bit I/O port selection       */
 	new->Port_3D6[0x03] |= 0x08;   /* High bandwidth on 65548         */
 	new->Port_3D6[0x40] = 0x01;    /*BitBLT Draw Mode for 8 and 24 bpp */
 
@@ -3068,7 +3247,7 @@ CHIPSInitWINGINE(mode)
     /* set video mode */
     new->Port_3D6[0x2B] = ctVideoMode(vgaBitsPerPixel, xf86weight.green,
 	ctLCD ? min(HDisplay, ctSize.HDisplay) : HDisplay);
-
+ 
 #ifdef DEBUG
     ErrorF("VESA Mode: %Xh\n", new->Port_3D6[0x2B]);
 #endif
@@ -3080,13 +3259,12 @@ CHIPSInitWINGINE(mode)
 	new->Port_3D6[0x0B] |= 0x10;   /* linear mode on                 */
 
 	/* general setup */
-	new->Port_3D6[0x03] |= 0x02;   /* 32 bit I/O enable               */
-	new->Port_3D6[0x07] = 0xF4;    /* 32 bit I/O port selection       */
+	new->Port_3D6[0x40] = 0x01;    /*BitBLT Draw Mode for 8 and 24 bpp */
+
 	new->Port_3D6[0x08] = 
 	  (unsigned char)((CHIPS.ChipLinearBase >> 16) & 0xFF);    
 	new->Port_3D6[0x09] = 
 	  (unsigned char)((CHIPS.ChipLinearBase >> 24) & 0xFF);    
-	new->Port_3D6[0x40] = 0x01;    /*BitBLT Draw Mode for 8 and 24 bpp */
 
 	/*
 	 * Setup the address to write monochrome source data to, for
@@ -3299,8 +3477,8 @@ CHIPSInitHiQV32(mode)
     }
   }
     if (!OFLG_ISSET(OPTION_LCD_CENTER, &vga256InfoRec.options)) {
-	new->Port_3D0[0x40] |= 0xFD;    /* Disable Horizontal centering */
-	new->Port_3D0[0x48] |= 0xFD;    /* Disable Vertical centering */
+	new->Port_3D0[0x40] &= 0xFD;    /* Disable Horizontal centering */
+	new->Port_3D0[0x48] &= 0xFD;    /* Disable Vertical centering */
     } else {
 	new->Port_3D0[0x40] |= 0x3;    /* Enable Horizontal centering */
 	new->Port_3D0[0x48] |= 0x3;    /* Enable Vertical centering */
@@ -3418,9 +3596,12 @@ CHIPSAdjust(x, y)
 	Base >>= 1;
 	break;
     case 24:
-	Base = (Base * 3) >> 2;
+	if(!ctisHiQV32)
+	  Base = (Base >> 2) * 3;
+	else
+	  Base = (Base >> 3) * 6;    /* 65550 seems to need 64bit alignment */
 	break;
-    default:			       /* 8bpp */
+    default:			     /* 8bpp */
 	Base >>= 2;
 	break;
     }
@@ -4056,9 +4237,12 @@ ctRestore(restore)
 	i++;
 	/* Don't touch alternate clock select reg. */
 	for (; i < 0x80; i++) {
-	    if ( (i == 0x40) || (i==0x48)) 
-	        continue ;  /* some registers must be set before FR40/FR48 */
-	    outb(0x3D0, i);
+	    if ( (i == 0x40) || (i==0x48)) {
+	      outb(0x3D0, i);  /* !! */      /* set stretching but disable  */
+	      outb(0x3D1, restore->Port_3D0[i] & 0xFE);   /* compensation   */
+	      continue ;     /* some registers must be set before FR40/FR48 */
+	    }
+	      outb(0x3D0, i);
 	    if (inb(0x3D1) != restore->Port_3D0[i])/* only modify if changed */
 		outb(0x3D1, restore->Port_3D0[i]);
 	}
@@ -4235,18 +4419,22 @@ CHIPSSaveScreen(start)
   if (start == SS_START) {
     
     /* synchronous reset - stop counters */
+    if (!ctSyncResetIgn){
     outw(0x3C4, 0x0100);        
 #ifdef DEBUG
     ErrorF("Seq. reset on\n");
 #endif
+  }
   } else {
     
     /* end reset - start counters */
-    outw(0x3C4, 0x0300); 
+    if (!ctSyncResetIgn){
+      outw(0x3C4, 0x0300); 
 #ifdef DEBUG
-    counter++;
-    ErrorF("Count: %i Seq. reset off\n",counter);
+      counter++;
+      ErrorF("Count: %i Seq. reset off\n",counter);
 #endif
+    }
   }
 }
 
@@ -4331,5 +4519,24 @@ char ctTestDACComp(unsigned char a, unsigned char b, unsigned char c)
   type = inb(0x3C2);          /* read comparator        */
 
   return (type & 0x10);
+}
+
+int ctSetMonitor()
+{
+    int tmp = ctProbeMonitor();
+    switch(tmp){
+    case 0:
+      ErrorF("%s %s: CHIPS: color monitor detected.\n", XCONFIG_PROBED,
+	     vga256InfoRec.name);
+      break;
+    case 1:
+      ErrorF("%s %s: CHIPS: monochrome monitor detected.\n", XCONFIG_PROBED,
+	     vga256InfoRec.name);
+      break;
+    default:
+      ErrorF("%s %s: CHIPS: no monitor detected.\n", XCONFIG_PROBED,
+	     vga256InfoRec.name);
+    }
+    return(tmp);
 }
 

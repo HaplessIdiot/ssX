@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.5 1997/01/19 12:51:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.6 1997/01/20 12:37:49 dawes Exp $ */
 
 
 /*
@@ -596,8 +596,10 @@ void TsengSetupForFillRectSolid(color, rop, planemask)
      
 /*    ErrorF("S");*/
 
+#ifdef DEBUG_PLANEMASK
     if (planemask != -1)
       ErrorF("SetupForFillRectSolid: BUG: planemask = 0x%x\n", planemask);
+#endif
 
     PINGPONG();
 

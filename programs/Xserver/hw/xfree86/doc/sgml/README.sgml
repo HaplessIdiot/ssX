@@ -3,56 +3,42 @@
 
  <article>
 
- <title>README for XFree86&tm; 3.2
+ <title>README for XFree86&tm; 3.2A
  <author> The XFree86 Project, Inc
- <date>29 October 1996
+ <date>22 January 1997
 
 
 <abstract>
 
-XFree86 is a port of X11R6.1 that supports several Unix and Unix-like
-operating systems on Intel and other platforms.  This release consists
+XFree86 is a port of X11R6.3 that supports several Unix and Unix-like
+operating systems on Intel and other platforms.
+<!--
+This release consists
 of new features and performance improvements as well as many bug fixes.
 The release is available as source patches against the X Consortium
 X11R6.1 code, as well as binary distributions for many architectures.
+-->
 
 </abstract>
 
 <toc>
 
-<sect> What's new in XFree86 3.2
+<sect> What's new in XFree86 3.2A
 <p>
 
 The following items are some of the features that have been added
-since XFree86 3.1.2 was released in August 1995:
+since XFree86 3.2 was released in October 1996:
 <enum>
-    <item> XFree86 3.2 includes the X Consortium's X11R6.1.
-    <item> Support for OS/2.
-    <item> Support for Linux/AXP on DEC Alpha/AXP (both ECOFF and ELF).
-    <item> Support for Linux/m68k.
-    <item> Support for the Japanese PC98 platforms.
-    <item> A new graphical configuration utility <em>XF86Setup</em>.
-    <item> Support for the S3 Trio64V+.
-    <item> A new server (XF86_S3V) for the S3 ViRGE and ViRGE/VX.
-    <item> Support in the S3 server for chipset driver "newmmio"
-	for S3 868, 968 and Trio64V+ chips.
-    <item> Support for more Mach64 cards (GX rev 3, CT, VT, GT).
-    <item> Support for the ET6000.
-    <item> Support for some new Cirrus chips.
-    <item> Support for Trident TGUI chips.
-    <item> Support for the Number Nine Imagine 128.
-    <item> Support for the Matrox Millennium.
-    <item> Support for the NVidia NV1 / SGS Thomson STG2000.
-    <item> Support for some SiS chips.
-    <item> Support for more Chips &amp; Technologies chips.
-    <item> Support for DEC 21030 (aka DEC TGA;  Linux/AXP only).
-    <item> DGA server extension.
-    <item> XInput extension is implemented.
+    <item> XFree86 3.2 includes the X Consortium's X11R6.3.
 </enum>
 
 Further information can be found in the <htmlurl name="RELNOTES"
-url="RELNOTES.html"> file.  For a detailed list of changes, refer to
+url="RELNOTES.html"> file.
+
+<!--
+For a detailed list of changes, refer to
 the CHANGELOG file in the source distribution.
+-->
 
 
 <sect> Systems XFree86 has been tested on
@@ -84,7 +70,9 @@ Note: Not all systems listed here have been tested with the current release.
 
     <tag/SVR3:/
 	<itemize>
+<!--
 	<ITEM>SCO: 3.2.2, 3.2.4
+-->
 	<ITEM>ISC: 3.0, 4.0, 4.1
 	</itemize>	
 
@@ -93,11 +81,15 @@ Note: Not all systems listed here have been tested with the current release.
 	<ITEM>NetBSD 1.0, 1.1, 1.2
 	<ITEM>OpenBSD 2.0
 	<ITEM>FreeBSD 1.1.5.1, 2.0.5, 2.1, 2.1.5, 2.2-current
+<!--
 	<ITEM>BSD/386 1.1, BSD/OS 2.0
 	<ITEM>Mach 386
+-->
 	<ITEM>Linux (Intel x86, DEC Alpha/AXP and m68k)
+<!--
 	<ITEM>Amoeba
 	<ITEM>Minix-386
+-->
 	<ITEM>LynxOS AT 2.2.1, 2.3.0, 2.4.0
 	<ITEM>LynxOS microSPARC 2.4.0
 	</itemize>	
@@ -114,7 +106,7 @@ Note: Not all systems listed here have been tested with the current release.
 <sect> Supported video-card chip-sets
 <p>
 
-At this time, XFree86 3.2 supports the following accelerated chipsets:
+At this time, XFree86 3.2A supports the following accelerated chipsets:
 
   <DESCRIP>
     <tag>8514/A </tag>
@@ -218,9 +210,7 @@ for more information about using those chipsets.
 
 The monochrome server also supports generic VGA cards, using 64k of video
 memory in a single bank,
-<!--
 the Hercules monochrome card,
--->
 the Hyundai HGC1280,
 Sigma LaserView, Visa and Apollo monochrome cards.
 
@@ -660,6 +650,7 @@ Core Team.  At this time the Core Team consists of (in alphabetical order):
        <item>Robin Cutshaw <it>&lt;robin@XFree86.org&gt;</it>
        <item>David Dawes <it>&lt;dawes@XFree86.org&gt;</it>
        <item>Marc Evans <it>&lt;marc@XFree86.org&gt;</it>
+       <item>Harm Hanemaayer <it>&lt;H.Hanemaayer@inter.nl.net&gt;</it>
        <item>Dirk Hohndel <it>&lt;hohndel@XFree86.org&gt;</it>
        <item>Harald Koenig <it>&lt;koenig@XFree86.org&gt;</it>
        <item>Rich Murphey <it>&lt;rich@XFree86.org&gt;</it>
@@ -673,7 +664,7 @@ Please note that support questions should be sent to
 <sect>The XFree86 Project, Inc.
 <p>
 
-The XFree86 Project, Inc, has been founded to accomplish two major goals:
+The XFree86 Project, Inc, was founded to accomplish two major goals:
 <enum>
 	<item> To provide a vehicle by which XFree86 can be represented in
 	   X Consortium, Inc, the organization responsible for the
@@ -694,7 +685,7 @@ By doing this, we were able to be involved in the beta-test interval for
 X11R6, and have contributed the majority of XFree86 to the X11R6 and X11R6.1
 core
 release.  The version of XFree86 in the initial X11R6 core is 3.0.  The
-version of XFree86 in the current X11R6.1 release is 3.1.2C.
+version of XFree86 in the current X11R6.3 release is 3.2.
 
 An additional benefit of this incorporation is that The XFree86 Project,
 Inc has obtained outside financial support for our work.  This will
@@ -822,11 +813,17 @@ know for certain when the lawyers get finished with the papers.  For more
 information, contact The XFree86 Project, Inc, at
 <it>&lt;BOD@XFree86.org&gt;</it> 
 
+<!--
 <sect>Source and binary archive sites
+-->
+<sect>Archive sites
 <p>
 
+<!--
 Source patches are available to upgrade X11R6.1 PL1 from the X Consortium
-to XFree86 3.2.  They and binaries for many OSs are available via anonymous
+to XFree86 3.2.
+-->
+Binaries for many OSs are available via anonymous
 FTP from:
 
 <itemize>
@@ -998,16 +995,18 @@ and the following mirror sites:
 
 
 
+<!--
 Refer to the <tt>README</tt> file under the specified directory for information on
 which files you need to get to build your distribution.
+-->
 
-Ensure that you are getting XFree86 3.2 - some of these sites may archive
+Ensure that you are getting XFree86 3.2A - some of these sites may archive
 older releases as well.  Check the <htmlurl name="RELNOTES"
 url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.68 1997/01/19 12:50:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.69 1997/01/20 12:36:33 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_accel.c,v 3.2 1997/01/14 22:18:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_accel.c,v 3.3 1997/01/18 06:56:20 dawes Exp $ */
 
 
 #include "vga256.h"
@@ -67,12 +67,13 @@ void _ctAccelInit() {
      * Set up the main acceleration flags.
      */
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE |
-	HARDWARE_PATTERN_SCREEN_ORIGIN | HARDWARE_PATTERN_MONO_TRANSPARENCY |
-	HARDWARE_PATTERN_MOD_64_OFFSET | HARDWARE_PATTERN_BIT_ORDER_MSBFIRST;
+	HARDWARE_PATTERN_MONO_TRANSPARENCY | HARDWARE_PATTERN_MOD_64_OFFSET |
+	HARDWARE_PATTERN_SCREEN_ORIGIN | HARDWARE_PATTERN_BIT_ORDER_MSBFIRST;
 #ifdef CHIPS_HIQV
     /* I believe this is possible for the HiQV architecture */
-    xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY |
-	HARDWARE_PATTERN_TRANSPARENCY;
+    xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;
+    if (vga256InfoRec.bitsPerPixel == 8)
+	xf86AccelInfoRec.Flags |= HARDWARE_PATTERN_TRANSPARENCY;
 #endif
 
     /*
@@ -142,6 +143,7 @@ void _ctAccelInit() {
 
 
 #ifndef CHIPS_HIQV /* Disable colour expansion and pattern for 65550 !! */
+
     /*
      * Setup the functions that perform monochrome colour expansion
      */
@@ -157,6 +159,13 @@ void _ctAccelInit() {
     if (vga256InfoRec.bitsPerPixel == 24)
 	xf86AccelInfoRec.ColorExpandFlags |= TRIPLE_BITS_24BPP |
 	    RGB_EQUAL;
+#if 1
+    /* Colour expansion seems to crash with GXor ROP and large fonts.
+     * This might apply to other ROP's as well, and might be a 65545
+     * specific bug!! I'd love someone to check. Trace this down after
+     * XFree 3.2A */
+    xf86AccelInfoRec.ColorExpandFlags |= GXCOPY_ONLY;
+#endif
 #endif
 
     xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
@@ -188,12 +197,10 @@ void _ctAccelInit() {
 	    CTNAME(SetupForFill8x8Pattern);
         xf86AccelInfoRec.SubsequentFill8x8Pattern =
             CTNAME(SubsequentFill8x8Pattern);
-#if 0 /* Currently broken in XAA */
         xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
 	    CTNAME(SetupFor8x8PatternColorExpand);
         xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
             CTNAME(Subsequent8x8PatternColorExpand);
-#endif
     }
 #endif /* Disable for CHIPS_HIQV */
 
@@ -381,7 +388,8 @@ transparency_color)
 	CommandFlags |= ctLEFT2RIGHT;
 #ifdef CHIPS_HIQV
     if (transparency_color != -1) {
-	CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSDST;
+	CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
+	    ctCOLORTRANSNEQUAL;
         switch (vga256InfoRec.bitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(transparency_color);
@@ -732,7 +740,8 @@ transparency_color)
     patternyrot = (patternx & 0x3F) >> 3;
 #ifdef CHIPS_HIQV
     if (transparency_color != -1) {
-	CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSDST;
+	CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
+	    ctCOLORTRANSNEQUAL;
         switch (vga256InfoRec.bitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(transparency_color);
@@ -757,8 +766,6 @@ void CTNAME(SubsequentFill8x8Pattern)(patternx, patterny, x, y, w, h)
     int x, y, w, h;
 {
     unsigned int destaddr;
-    ErrorF("CHIPS: SubsequentFill8x8Pattern(%d, %d, %d, %d, %d, %d)\n",
-	   patternx, patterny, x, y, w, h);
     destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
@@ -780,9 +787,8 @@ planemask)
     CommandFlags = ctPATMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
 	ctAluConv2[rop & 0xF];
 
-    patternaddr = (patterny * vga256InfoRec.displayWidth +
-		   ((patternx >> 3) & ~0x3F)) * vgaBytesPerPixel;
-    patternyrot = ((patternx >> 3) & 0x3F) >> 3;
+    patternaddr = patterny * vga256InfoRec.displayWidth +
+		   (patternx >> 3);
     ctBLTWAIT;
     ctSETPATSRCADDR(patternaddr);
     if (bg == -1) {
@@ -826,15 +832,13 @@ void CTNAME(Subsequent8x8PatternColorExpand)(patternx, patterny, x, y, w, h)
     int x, y, w, h;
 {
     int destaddr;
-    ErrorF("CHIPS: Subsequent8x8PatternColorExpand(%d, %d, %d, %d, %d, %d)\n",
-	   patternx, patterny, x, y, w, h);
     destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
 #ifdef CHIPS_HIQV
-    ctSETROP(CommandFlags | (((y + patternyrot) & 0x7) << 20));
+    ctSETROP(CommandFlags | ((y & 0x7) << 20));
 #else
-    ctSETROP(CommandFlags | (((y + patternyrot) & 0x7) << 16));
+    ctSETROP(CommandFlags | ((y & 0x7) << 16));
 #endif
-    ctSETHEIGHTWIDTHGO(h, w);
+    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
 }

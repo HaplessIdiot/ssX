@@ -165,7 +165,7 @@ url="ftp://tsx-11.mit.edu/pub/linux/packages/GCC">.
 <sect1> XInput Extension
 <p>
 <itemize>
-  <item>stuff...
+  <item>Multiple input devices can share the core pointer.
 </itemize>
 <sect1> S3 server
 <p>
@@ -601,7 +601,7 @@ boot time.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.48 1996/11/18 13:11:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.49 1997/01/20 12:36:35 dawes Exp $
 </verb>
 
 </article>

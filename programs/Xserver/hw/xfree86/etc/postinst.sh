@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.11 1996/10/26 09:41:16 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.12 1996/12/17 21:00:17 dawes Exp $
 #
-# postinst.sh (for XFree86 3.2)
+# postinst.sh (for XFree86 3.2A)
 #
 # This script should be run after installing a new version of XFree86.
 #
@@ -116,6 +116,8 @@ case `uname` in
 		echo ""
 		echo "You may need to reboot (or run ldconfig) before the"
 		echo "newly installed shared libraries can be used."
+		echo "Some releases of Linux don't run ldconfig automatically"
+		echo "at boot time, so you may need to run it manually."
 		;;
 esac
 
