@@ -5,11 +5,11 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.52 2002/12/20 02:07:10 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.53 2002/12/31 02:18:48 dawes Exp $
 //
 
 // Layouts that still need be composed by old rules
-! $oldlayouts = az bs ca fr_CH de_CH hu lt_std vn
+! $oldlayouts = az bs ca fr_CH de_CH hu lt_std vn mn
 
 // If you want non-latin layouts implicitly include the en_US layout
 // uncomment lines below
