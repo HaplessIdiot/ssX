@@ -7116,24 +7116,22 @@ SISSwitchCRT2Type(ScrnInfoPtr pScrn, unsigned long newvbflags)
     return TRUE;
 }
 
-Bool
+int
 SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned short index, Bool quiet)
 {
     SISPtr pSiS = SISPTR(pScrn);
     BOOLEAN hcm = pSiS->HaveCustomModes;
     DisplayModePtr mode = pScrn->modes, mastermode;
-    int i;
+    int i, result = 0;
     unsigned long vbflags = pSiS->VBFlags;
 
-    /* This has been extended to handle LCDA as well */
+    /* Not only CRT2, but also LCDA */
 
-    /* Only on 300 and 315/330 series */
-    if(pSiS->VGAEngine != SIS_300_VGA &&
-       pSiS->VGAEngine != SIS_315_VGA) return FALSE;
-
-    /* Mode is OK if there is no video bridge */
-    /* (Requires screen size check in app) */
-    if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) return TRUE;
+    /* returns 0 if mode ok,
+     *         0x01 if mode not ok for CRT2 device,
+     *         0x02 if mode too large for current root window
+     *         or combinations thereof
+     */
 
     /* No special treatment for NTSC-J here */
     if(cond) {
@@ -7153,14 +7151,10 @@ SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned sh
        }
     }
 
-    /* Mode is obviously OK if video bridge is disabled */
-    /* (Requires extra check for eventual screen size problems in app) */
-    if(!(vbflags & (CRT2_ENABLE | CRT1_LCDA))) return TRUE;
-
     /* Find mode of given index */
     if(index) {
        for(i = 0; i < index; i++) {
-          if(!mode) return FALSE;
+          if(!mode) return 0x03;
           mode = mode->next;
        }
     }
@@ -7188,7 +7182,7 @@ SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned sh
                 xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		    "Desired mode too large for current screen size\n");
              }
-             return FALSE;
+             result |= 0x02;
           }
 
           /* Check if the desired mode is suitable for current CRT2 output device */
@@ -7197,7 +7191,7 @@ SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned sh
                 xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		    "Desired mode not suitable for current CRT2 output device\n");
              }
-             return FALSE;
+             result |= 0x01;
           }
 
        }
@@ -7229,7 +7223,7 @@ SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned sh
                 xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			"Desired mode too large for current screen size\n");
              }
-             return FALSE;
+             result |= 0x02;
           }
 
           /* Check if the desired mode is suitable for current CRT1 output device */
@@ -7238,7 +7232,7 @@ SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned sh
                  xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	  	      "Desired mode not suitable for current CRT1 output device\n");
              }
-             return FALSE;
+             result |= 0x01;
           }
 
        }
@@ -7247,7 +7241,7 @@ SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned sh
     }
 #endif
 
-    return TRUE;
+    return result;
 }
 
 Bool

@@ -1676,12 +1676,12 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
      }
   } else if(attribute == pSiS->xv_CMD) {
      if(pSiS->xv_sisdirectunlocked) {
+        int result = 0;
         pSiS->xv_sd_result = (value & 0xffffff00);
-        if(SISCheckModeIndexForCRT2Type(pScrn, (unsigned short)(value & 0xff),
-	                                       (unsigned short)((value >> 8) & 0xff),
-					       FALSE)) {
-	   pSiS->xv_sd_result |= 0x01;
-	}
+        result = SISCheckModeIndexForCRT2Type(pScrn, (unsigned short)(value & 0xff),
+	                                      (unsigned short)((value >> 8) & 0xff),
+					      FALSE);
+	pSiS->xv_sd_result |= (result & 0xff);
      }
   } else if(attribute == pSiS->xv_SGA) {
      if(pSiS->xv_sisdirectunlocked) {
@@ -2081,12 +2081,10 @@ SiSHandleSiSDirectCommand(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv, sisdirectcomm
       break;
    case SDC_CMD_CHECKMODEFORCRT2:
       j = sdcbuf->sdc_parm[0];
-      sdcbuf->sdc_parm[0] = 0;
-      if(SISCheckModeIndexForCRT2Type(pScrn, (unsigned short)(j & 0xff),
-	                                     (unsigned short)((j >> 8) & 0xff),
-					     FALSE)) {
-	 sdcbuf->sdc_parm[0] = 1;
-      }
+      sdcbuf->sdc_parm[0] = SISCheckModeIndexForCRT2Type(pScrn,
+      			(unsigned short)(j & 0xff),
+	                (unsigned short)((j >> 8) & 0xff),
+			FALSE) & 0xff;
       break;
    default:
       sdcbuf->sdc_header = SDC_RESULT_UNDEFCMD;
