@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.20 2002/05/31 18:46:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.21 2002/09/17 18:54:16 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -186,13 +186,8 @@ again:
 			do
 			{
 				configRBuf[i++] = (c = configBuf[configPos++]);
-#ifndef __UNIXOS2__
-			}
-			while ((c != '\n') && (c != '\0'));
-#else
 			}
 			while ((c != '\n') && (c != '\r') && (c != '\0'));
-#endif
 			configRBuf[i] = '\0';
 			/* XXX no private copy.
 			 * Use xf86addComment when setting a comment.
@@ -253,13 +248,8 @@ again:
 			do
 			{
 				configRBuf[++i] = (c = configBuf[configPos++]);
-#ifndef __UNIXOS2__
-			}
-			while ((c != '\"') && (c != '\n') && (c != '\0'));
-#else
 			}
 			while ((c != '\"') && (c != '\n') && (c != '\r') && (c != '\0'));
-#endif
 			configRBuf[i] = '\0';
 			val.str = xf86confmalloc (strlen (configRBuf) + 1);
 			strcpy (val.str, configRBuf);	/* private copy ! */
@@ -277,13 +267,8 @@ again:
 			do
 			{
 				configRBuf[++i] = (c = configBuf[configPos++]);;
-#ifndef __UNIXOS2__
-			}
-			while ((c != ' ') && (c != '\t') && (c != '\n') && (c != '\0'));
-#else
 			}
 			while ((c != ' ') && (c != '\t') && (c != '\n') && (c != '\r') && (c != '\0'));
-#endif
 			configRBuf[i] = '\0';
 			i = 0;
 		}
