@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.9 2000/12/01 21:45:48 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.10 2000/12/02 15:30:33 tsi Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -8,7 +8,6 @@
 
 #include "Xv.h"
 #include "fourcc.h"
-
 
 #define OFF_DELAY       250  /* milliseconds */
 #define FREE_DELAY      15000
@@ -48,8 +47,8 @@ static Atom xvBrightness, xvColorKey, xvSaturation, xvDoubleBuffer;
 
 
 typedef struct {
-   unsigned char brightness;
-   unsigned char saturation;
+   int           brightness;
+   int           saturation;
    Bool          doubleBuffer;
    unsigned char currentBuffer;
    FBLinearPtr   linear;
@@ -69,7 +68,7 @@ void R128InitVideo(ScreenPtr pScreen)
     XF86VideoAdaptorPtr newAdaptor = NULL;
     int num_adaptors;
 
-    if((pScrn->bitsPerPixel != 8) && info->accelOn)
+    if(info->accel && info->accel->FillSolidRects)
 	newAdaptor = R128SetupImageVideo(pScreen);
 
     num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
@@ -107,24 +106,25 @@ static XF86VideoEncodingRec DummyEncoding =
    {1, 1}
 };
 
-#define NUM_FORMATS 6
+#define NUM_FORMATS 12
 
 static XF86VideoFormatRec Formats[NUM_FORMATS] =
 {
+   {8, TrueColor}, {8, DirectColor}, {8, PseudoColor},
+   {8, GrayScale}, {8, StaticGray}, {8, StaticColor},
    {15, TrueColor}, {16, TrueColor}, {24, TrueColor},
    {15, DirectColor}, {16, DirectColor}, {24, DirectColor}
 };
 
 
-/* Turn off DoubleBuffer for now */
-#define NUM_ATTRIBUTES 3
+#define NUM_ATTRIBUTES 4
 
-static XF86AttributeRec Attributes[NUM_ATTRIBUTES + 1] =
+static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
 {
    {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"},
    {XvSettable | XvGettable, -64, 63, "XV_BRIGHTNESS"},
    {XvSettable | XvGettable, 0, 31, "XV_SATURATION"},
-   {XvSettable | XvGettable, 0, 31, "XV_DOUBLE_BUFFER"}
+   {XvSettable | XvGettable, 0, 1, "XV_DOUBLE_BUFFER"}
 };
 
 #define NUM_IMAGES 4
@@ -149,7 +149,7 @@ R128ResetVideo(ScrnInfoPtr pScrn)
     OUTREG(R128_OV0_EXCLUSIVE_HORZ, 0);
     OUTREG(R128_OV0_AUTO_FLIP_CNTL, 0);   /* maybe */
     OUTREG(R128_OV0_FILTER_CNTL, 0x0000000f);
-    OUTREG(R128_OV0_COLOUR_CNTL,  pPriv->brightness |
+    OUTREG(R128_OV0_COLOUR_CNTL, (pPriv->brightness & 0x7f) |
 				 (pPriv->saturation << 8) |
 				 (pPriv->saturation << 16));
     OUTREG(R128_OV0_GRAPHICS_KEY_MSK, (1 << pScrn->depth) - 1);
@@ -184,7 +184,7 @@ R128AllocAdaptor(ScrnInfoPtr pScrn)
     xvDoubleBuffer = MAKE_ATOM("XV_DOUBLE_BUFFER");
 
     pPriv->colorKey = info->videoKey;
-    pPriv->doubleBuffer = FALSE;
+    pPriv->doubleBuffer = TRUE;
     pPriv->videoStatus = 0;
     pPriv->brightness = 0;
     pPriv->saturation = 16;
@@ -272,8 +272,8 @@ RegionsEqual(RegionPtr A, RegionPtr B)
 
    Takes the dst box in standard X BoxRec form (top and left
    edges inclusive, bottom and right exclusive).  The new dst
-   box is returned.  The source boundaries are given (xa, ya
-   inclusive, xb, yb exclusive) and returned are the new source
+   box is returned.  The source boundaries are given (x1, y1
+   inclusive, x2, y2 exclusive) and returned are the new source
    boundaries in 16.16 fixed point.
 */
 
@@ -282,10 +282,10 @@ RegionsEqual(RegionPtr A, RegionPtr B)
 static Bool
 R128ClipVideo(
   BoxPtr dst,
-  INT32 *xa,
-  INT32 *xb,
-  INT32 *ya,
-  INT32 *yb,
+  INT32 *x1,
+  INT32 *x2,
+  INT32 *y1,
+  INT32 *y2,
   RegionPtr reg,
   INT32 width,
   INT32 height
@@ -294,58 +294,58 @@ R128ClipVideo(
     BoxPtr extents = REGION_EXTENTS(DummyScreen, reg);
     int diff;
 
-    hscale = ((*xb - *xa) << 16) / (dst->x2 - dst->x1);
-    vscale = ((*yb - *ya) << 16) / (dst->y2 - dst->y1);
+    hscale = ((*x2 - *x1) << 16) / (dst->x2 - dst->x1);
+    vscale = ((*y2 - *y1) << 16) / (dst->y2 - dst->y1);
 
-    *xa <<= 16; *xb <<= 16;
-    *ya <<= 16; *yb <<= 16;
+    *x1 <<= 16; *x2 <<= 16;
+    *y1 <<= 16; *y2 <<= 16;
 
     diff = extents->x1 - dst->x1;
     if(diff > 0) {
 	dst->x1 = extents->x1;
-	*xa += diff * hscale;
+	*x1 += diff * hscale;
     }
     diff = dst->x2 - extents->x2;
     if(diff > 0) {
 	dst->x2 = extents->x2;
-	*xb -= diff * hscale;
+	*x2 -= diff * hscale;
     }
     diff = extents->y1 - dst->y1;
     if(diff > 0) {
 	dst->y1 = extents->y1;
-	*ya += diff * vscale;
+	*y1 += diff * vscale;
     }
     diff = dst->y2 - extents->y2;
     if(diff > 0) {
 	dst->y2 = extents->y2;
-	*yb -= diff * vscale;
+	*y2 -= diff * vscale;
     }
 
-    if(*xa < 0) {
-	diff =  (- *xa + hscale - 1)/ hscale;
+    if(*x1 < 0) {
+	diff =  (- *x1 + hscale - 1)/ hscale;
 	dst->x1 += diff;
-	*xa += diff * hscale;
+	*x1 += diff * hscale;
     }
-    delta = *xb - (width << 16);
+    delta = *x2 - (width << 16);
     if(delta > 0) {
 	diff = (delta + hscale - 1)/ hscale;
 	dst->x2 -= diff;
-	*xb -= diff * hscale;
+	*x2 -= diff * hscale;
     }
-    if(*xa >= *xb) return FALSE;
+    if(*x1 >= *x2) return FALSE;
 
-    if(*ya < 0) {
-	diff =  (- *ya + vscale - 1)/ vscale;
+    if(*y1 < 0) {
+	diff =  (- *y1 + vscale - 1)/ vscale;
 	dst->y1 += diff;
-	*ya += diff * vscale;
+	*y1 += diff * vscale;
     }
-    delta = *yb - (height << 16);
+    delta = *y2 - (height << 16);
     if(delta > 0) {
 	diff = (delta + vscale - 1)/ vscale;
 	dst->y2 -= diff;
-	*yb -= diff * vscale;
+	*y2 -= diff * vscale;
     }
-    if(*ya >= *yb) return FALSE;
+    if(*y1 >= *y2) return FALSE;
 
     if((dst->x1 != extents->x1) || (dst->x2 != extents->x2) ||
        (dst->y1 != extents->y1) || (dst->y2 != extents->y2))
@@ -359,7 +359,7 @@ R128ClipVideo(
 }
 
 static void
-R128StopVideo(ScrnInfoPtr pScrn, pointer data, Bool Exit)
+R128StopVideo(ScrnInfoPtr pScrn, pointer data, Bool cleanup)
 {
   R128InfoPtr info = R128PTR(pScrn);
   unsigned char *R128MMIO = info->MMIO;
@@ -367,7 +367,7 @@ R128StopVideo(ScrnInfoPtr pScrn, pointer data, Bool Exit)
 
   REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
 
-  if (Exit) {
+  if(cleanup) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
 	OUTREG(R128_OV0_SCALE_CNTL, 0);
      }
@@ -399,15 +399,15 @@ R128SetPortAttribute(
 	if((value < -64) || (value > 63))
 	   return BadValue;
 	pPriv->brightness = value;
-	OUTREG(R128_OV0_COLOUR_CNTL,  pPriv->brightness |
+	OUTREG(R128_OV0_COLOUR_CNTL, (pPriv->brightness & 0x7f) |
 				     (pPriv->saturation << 8) |
 				     (pPriv->saturation << 16));
   } else
   if(attribute == xvSaturation) {
 	if((value < 0) || (value > 31))
 	   return BadValue;
-	pPriv->brightness = value;
-	OUTREG(R128_OV0_COLOUR_CNTL,  pPriv->brightness |
+	pPriv->saturation = value;
+	OUTREG(R128_OV0_COLOUR_CNTL, (pPriv->brightness & 0x7f) |
 				     (pPriv->saturation << 8) |
 				     (pPriv->saturation << 16));
   } else
@@ -644,7 +644,7 @@ R128PutImage(
 ){
    R128InfoPtr info = R128PTR(pScrn);
    R128PortPrivPtr pPriv = (R128PortPrivPtr)data;
-   INT32 xa, xb, ya, yb;
+   INT32 x1, x2, y1, y2;
    unsigned char *dst_start;
    int pitch, new_size, offset, offset2 = 0, offset3 = 0;
    int srcPitch, srcPitch2 = 0, dstPitch;
@@ -658,17 +658,17 @@ R128PutImage(
 	drw_h = src_h >> 4;
 
    /* Clip */
-   xa = src_x;
-   xb = src_x + src_w;
-   ya = src_y;
-   yb = src_y + src_h;
+   x1 = src_x;
+   x2 = src_x + src_w;
+   y1 = src_y;
+   y2 = src_y + src_h;
 
    dstBox.x1 = drw_x;
    dstBox.x2 = drw_x + drw_w;
    dstBox.y1 = drw_y;
    dstBox.y2 = drw_y + drw_h;
 
-   if(!R128ClipVideo(&dstBox, &xa, &xb, &ya, &yb, clipBoxes, width, height))
+   if(!R128ClipVideo(&dstBox, &x1, &x2, &y1, &y2, clipBoxes, width, height))
 	return Success;
 
    dstBox.x1 -= pScrn->frameX0;
@@ -706,14 +706,14 @@ R128PutImage(
    pPriv->currentBuffer ^= 1;
 
     /* copy data */
-   top = ya >> 16;
-   left = (xa >> 16) & ~1;
-   npixels = ((((xb + 0xffff) >> 16) + 1) & ~1) - left;
+   top = y1 >> 16;
+   left = (x1 >> 16) & ~1;
+   npixels = ((((x2 + 0xffff) >> 16) + 1) & ~1) - left;
    left <<= 1;
 
    offset = pPriv->linear->offset * bpp;
    if(pPriv->doubleBuffer)
-	offset += pPriv->currentBuffer * new_size;
+	offset += pPriv->currentBuffer * new_size * bpp;
    dst_start = info->FB + offset + left + (top * dstPitch);
 
    switch(id) {
@@ -728,7 +728,7 @@ R128PutImage(
 	   offset2 = offset3;
 	   offset3 = tmp;
 	}
-	nlines = ((((yb + 0xffff) >> 16) + 1) & ~1) - top;
+	nlines = ((((y2 + 0xffff) >> 16) + 1) & ~1) - top;
 	R128CopyMungedData(buf + (top * srcPitch) + (left >> 1),
 			  buf + offset2, buf + offset3, dst_start,
 			  srcPitch, srcPitch2, dstPitch, nlines, npixels);
@@ -737,7 +737,7 @@ R128PutImage(
     case FOURCC_YUY2:
     default:
 	buf += (top * srcPitch) + left;
-	nlines = ((yb + 0xffff) >> 16) - top;
+	nlines = ((y2 + 0xffff) >> 16) - top;
 	R128CopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
 	break;
     }
@@ -754,7 +754,7 @@ R128PutImage(
 
     offset += top * dstPitch;
     R128DisplayVideo(pScrn, id, offset, width, height, dstPitch,
-		     xa, xb, ya, &dstBox, src_w, src_h, drw_w, drw_h);
+		     x1, x2, y1, &dstBox, src_w, src_h, drw_w, drw_h);
 
     pPriv->videoStatus = CLIENT_VIDEO_ON;
 
