@@ -147,6 +147,12 @@ XftDirScan
 XftDirSave
 XftDrawPicture
 XftDrawSrcPicture
+XftGlyphLoad
+XftGlyphCheck
+XftFreeTypeGlyphExists
+XftFreeTypeOpen
+XftFreeTypeClose
+XftRenderString16
 
 
-/* $XFree86: xc/lib/Xft/Xft-def.cpp,v 1.2 2001/04/05 19:29:38 dawes Exp $ */
+/* $XFree86: xc/lib/Xft/Xft-def.cpp,v 1.3 2002/05/25 12:03:14 alanh Exp $ */
