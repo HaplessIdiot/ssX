@@ -30,7 +30,9 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.10 2001/07/31 09:46:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.11 2001/08/06 11:02:30 alanh Exp $ */
+
+#include "Xatom.h"
 
 #include "win.h"
 
@@ -54,6 +56,8 @@ winWindowProc (HWND hWnd, UINT message,
   RECT				rcClient, rcSrc;
   int				iScanCode;
   int				i;
+  HGLOBAL			hGlobal;
+  char				*pGlobal;
 
   /* Watch for server regeneration */
   if (g_ulServerGeneration != ulServerGeneration)
@@ -102,6 +106,62 @@ winWindowProc (HWND hWnd, UINT message,
 
       /* Store the mode key states so restore doesn't try to restore them */
       winStoreModeKeyStates (pScreen);
+
+      /* Add ourselves to the clipboard viewer chain */
+      pScreenPriv->hwndNextViewer = SetClipboardViewer (hWnd);
+      return 0;
+
+    case WM_CHANGECBCHAIN:
+      /* We can't do anything without privates */
+      if (pScreenPriv == NULL)
+	break;
+
+      if ((HWND) wParam == pScreenPriv->hwndNextViewer)
+	pScreenPriv->hwndNextViewer = (HWND) lParam;
+      else if (pScreenPriv->hwndNextViewer)
+	SendMessage (pScreenPriv->hwndNextViewer, message, wParam, lParam);
+      return 0;
+
+    case WM_DRAWCLIPBOARD:
+      /* We can't do anything without privates */
+      if (pScreenPriv == NULL || !pScreenPriv->fEnabled)
+	break;
+
+      /* Pass the message on the next window in the clipboard viewer chain */
+      if (pScreenPriv->hwndNextViewer)
+	SendMessage (pScreenPriv->hwndNextViewer, message, 0, 0);
+
+      /* Get a pointer to the clipboard text */
+      OpenClipboard (hWnd);
+      hGlobal = GetClipboardData (CF_TEXT);
+      if (!hGlobal)
+	{
+	  ErrorF ("winWindowProc () - Non-text clipboard data.\n");
+	  CloseClipboard ();
+	  return 0;
+	}
+      pGlobal = (PTSTR) GlobalLock (hGlobal);
+      
+#if 0
+      ErrorF ("Clipboard string:\n%s\n\n", pGlobal);
+#endif
+
+      /* Copy the clipboard data to the X clipboard. */
+      /*
+       * FIXME: This is just a temporary hack that works.
+       */
+      ChangeWindowProperty(WindowTable[pScreen->myNum],
+			   XA_CUT_BUFFER0,
+			   XA_STRING,
+			   8,
+			   PropModeReplace,
+			   strlen(pGlobal),
+			   (pointer)pGlobal,
+			   TRUE);
+
+      /* Release the clipboard data */
+      GlobalUnlock (hGlobal);
+      CloseClipboard ();
       return 0;
 
     case WM_PAINT:

@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.13 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.14 2001/07/31 09:46:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -369,6 +369,9 @@ winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen)
   /* Redisplay the Windows cursor */
   if (!pScreenPriv->fCursor)
       ShowCursor (TRUE);
+
+  /* Remove our window from the clipboard viewer chain */
+  ChangeClipboardChain (pScreenPriv->hwndScreen, pScreenPriv->hwndNextViewer);
 
   /* Kill our window */
   if (pScreenPriv->hwndScreen)
