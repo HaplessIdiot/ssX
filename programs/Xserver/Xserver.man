@@ -22,7 +22,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.29 2003/09/08 14:25:26 eich Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.30 2004/01/09 00:35:02 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XSERVER 1 __xorgversion__
@@ -139,15 +139,23 @@ different from the user's real uid.
 .B \-core
 causes the server to generate a core dump on fatal errors.
 .TP 8
+.B \-deferglyphs \fIwhichfonts\fP
+specifies the types of fonts for which the server should attempt to use
+deferred glyph loading.  \fIwhichfonts\fP can be all (all fonts),
+none (no fonts), or 16 (16 bit fonts only).
+.TP 8
 .B \-dpi \fIresolution\fP
 sets the resolution for all screens, in dots per inch.
 To be used when the server cannot determine the screen size(s) from the
 hardware.
 .TP 8
-.B \-deferglyphs \fIwhichfonts\fP
-specifies the types of fonts for which the server should attempt to use
-deferred glyph loading.  \fIwhichfonts\fP can be all (all fonts),
-none (no fonts), or 16 (16 bit fonts only).
+.B dpms
+enables DPMS (display power management services), where supported.  The
+default state is platform and configuration specific.
+.TP 8
+.B \-dpms
+disables DPMS (display power management services).  The default state
+is platform and configuration specific.
 .TP 8
 .B \-f \fIvolume\fP
 sets feep (bell) volume (allowable range: 0-100).
@@ -167,6 +175,11 @@ prints a usage message.
 .TP 8
 .B \-I
 causes all remaining command line arguments to be ignored.
+.TP 8
+.B \-maxbigreqsize \fIsize\fP
+sets the maxmium big request to
+.I size
+MB.
 .TP 8
 .B \-nolisten \fItrans-type\fP
 disables a transport type.  For example, TCP/IP connections can be disabled
@@ -247,7 +260,7 @@ This is a no-op for most implementations.
 .TP 8
 .B [+-]xinerama
 enables(+) or disables(-) the XINERAMA extension.  The default state is
-disabled.
+platform and configuration specific.
 .SH SERVER DEPENDENT OPTIONS
 Some X servers accept the following options:
 .TP 8
@@ -292,6 +305,14 @@ use a gray map of 13 color cells for the X render extension.
 .I color
 use a color cube of at most 4*4*4 colors (that is 64 color cells).
 .RE
+.TP 8
+.B \-dumbSched
+disables smart scheduling on platforms that support the smart scheduler.
+.TP
+.B \-schedInterval \fIinterval\fP
+sets the smart scheduler's scheduling interval to
+.I interval
+milliseconds.
 .SH XDMCP OPTIONS
 X servers that support XDMCP have the following options.
 See the \fIX Display Manager Control Protocol\fP specification for more
