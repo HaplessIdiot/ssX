@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.15 2000/09/25 23:57:08 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.17 2000/11/03 18:46:11 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -51,6 +51,9 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "shadowfb.h"
 
 #include "vbe.h"
+
+/* Needed by the Shadow Framebuffer */
+#include "shadow.h"
 
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
@@ -107,7 +110,7 @@ int NEOSetRead(ScreenPtr pScreen, int bank);
 extern Bool neo_I2CInit(ScrnInfoPtr pScrn);
 
 /* in neo_shadow.c */
-void neoShadowUpdate (ScreenPtr pScreen, PixmapPtr pShadow, RegionPtr damage);
+void neoShadowUpdate (ScreenPtr pScreen, shadowBufPtr pBuf);
 void neoPointerMoved(int index, int x, int y);
 void neoRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void neoRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);

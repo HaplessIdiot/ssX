@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.45 2001/05/15 11:08:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.46 2001/05/23 20:32:59 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1000,7 +1000,6 @@ void TridentLoadPalette(
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int i, index;
-    int sig;
     for(i = 0; i < numColors; i++) {
 	index = indicies[i];
     	OUTB(0x3C6, 0xFF);

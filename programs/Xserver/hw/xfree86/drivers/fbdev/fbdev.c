@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.30 2001/05/04 19:05:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.31 2001/06/13 23:34:10 dawes Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -709,16 +709,9 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
 	case FBDEVHW_PACKED_PIXELS:
 		switch (pScrn->bitsPerPixel) {
-		case 24:
-			if (pix24bpp == 32)
-			{
-				ret = cfb24_32ScreenInit
-					(pScreen, fPtr->fbstart, width, height,
-				 	pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
-				break;
-			}
 		case 8:
 		case 16:
+		case 24:
 		case 32:
 			ret = fbScreenInit(pScreen, fPtr->fbstart, width, height,
 					   pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth, pScrn->bitsPerPixel);
