@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.8 1997/09/25 07:31:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.9 1997/09/25 16:13:52 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -395,46 +395,13 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(crtcRegs->v_blank_end,	VTGVGateEnd);
     } 
     else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
-      /* Max dotclock is 80 kHz for Permedia 8Mb */
-	if (glintInfoRec.dacSpeeds[0] || glintInfoRec.dacSpeeds[1] || 
-	    glintInfoRec.dacSpeeds[2] || glintInfoRec.dacSpeeds[3])
-	  {
-	    /* the 4MB Gloria-S have Errors wich clockspeed > 80MHz !? */
-	    if (glintInfoRec.videoRam > 4096)
-	      {
-#if 0
-		if (crtcRegs->clock_sel > 80000)  
-		  FatalError("Pixelclock ist too high for permedia and ,,no_accel'' Mode = %d MHz.\nMax mode clock <= 80 MHz. \n", crtcRegs->clock_sel/1000);
-#endif
-	      }
-	    else
-	      switch (glintInfoRec.depth) 
-		{
-		case 8: 
-		  if (crtcRegs->clock_sel > 200000) 
-		    FatalError("Pixelclock ist too high for permedia Mode = %d MHz.\nMax mode clock <= 200 MHz. \n",
-			       crtcRegs->clock_sel/1000);
-		  break;
-		case 15: 
-		case 16:
-		case 32: /* 32 bpp have tested with 8Mb Gloria-S */
-		  ErrorF("Test Clock_sel = %d \n", crtcRegs->clock_sel);
-		  if (crtcRegs->clock_sel > 100000) 
-		    FatalError("Pixelclock ist too high for permedia Mode = %d MHz.\nMax mode clock <= 100 MHz. \n",
-			       crtcRegs->clock_sel/1000);
-		  break;
-		default:
-		  if (crtcRegs->clock_sel > 50000) 
-		    FatalError("Pixelclock ist too high for permedia Mode = %d MHz.\nMax mode clock <= 50 MHz. \n",
-			       crtcRegs->clock_sel/1000);
-		  break;
-		}
-	  }
 
       GLINT_WRITE_REG(0x0,			TextureAddressMode);
       GLINT_WRITE_REG(0x0,			TextureReadMode);
       GLINT_WRITE_REG(1,			DFIFODis);
       GLINT_WRITE_REG(3,			FIFODis);
+/* 	GLINT_WRITE_REG(0x0,		RouterMode); */
+/* 	GLINT_WRITE_REG(0x0,		PatternRamMode); */
 
       /*
        * this is the Permedia version of crtc registers

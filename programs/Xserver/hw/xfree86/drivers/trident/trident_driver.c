@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.15 1997/09/19 08:30:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.16 1997/09/25 07:31:13 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -122,6 +122,7 @@ typedef struct {
 	unsigned char FIFOControl;	/* For 9400/9420/9430 FIFO 	*/
 	unsigned char Performance;	/* For 968x FIFO		*/
 	unsigned char ClockControl;	/* For 16bit/10bit Clocks	*/
+	unsigned char TVMode;		/* For 9685 ClearTV		*/
 } vgaTVGA8900Rec, *vgaTVGA8900Ptr;
 
 static Bool TVGA8900ClockSelect();
@@ -214,6 +215,8 @@ Bool tridentIsTGUI = FALSE;
 Bool tridentLinearOK = FALSE;
 Bool IsCyber = FALSE;
 Bool NewClockCode = FALSE;
+Bool ClearTV = FALSE;
+Bool TVconnected = FALSE;
 static int CyberLCDHeight, CyberLCDWidth;
 static unsigned char DRAMspeed;
 static int TridentDisplayableMemory;
@@ -338,11 +341,11 @@ TGUISetClock(no)
 
 	p = q = r = s = 0;
 
-	if ((TVGAchipset == TGUI96xx) && (revision == TGUI9685))
+	if (ClearTV)
 	{
-		outb(vgaIOBase + 4, 0xCF);
+		outb(vgaIOBase + 4, 0xC0);
 		temp = inb(vgaIOBase + 5);
-		if (temp & 0x08)
+		if (temp & 0x80)
 			FREQUENCY = PAL;
 		else
 			FREQUENCY = NTSC;
@@ -836,6 +839,7 @@ TVGA8900Probe()
 		tridentHasAcceleration = TRUE;
 		TRIDENT.ChipHas16bpp = TRUE;
 		TRIDENT.ChipHas32bpp = TRUE;
+		TRIDENT.ChipHas24bpp = TRUE;
 		/* We've found a 96xx graphics engine */
 		/* Let's probe furthur */
 		switch (revision) {
@@ -851,8 +855,10 @@ TVGA8900Probe()
 			case 0x21:
 				REV = "ProVidia 9685";
 				NewClockCode = TRUE;
+				ClearTV = TRUE;
 				/* Disable for now, bugs ! */
-				if (vgaBitsPerPixel == 32)
+				/* Have to recode accel for linear mode */
+				if ( (vgaBitsPerPixel == 24) || (vgaBitsPerPixel == 32) )
 					tridentHasAcceleration = FALSE;
 				break;
 			case 0x30:
@@ -881,10 +887,6 @@ TVGA8900Probe()
 		if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
 			OFLG_SET(OPTION_HW_CURSOR, &vga256InfoRec.options);
 		}
-		outb(vgaIOBase + 4, 0xCF);
-		temp = inb(vgaIOBase + 5);
-		ErrorF("%s %s: BIOS reports Clock Control Bits 0x%x\n",
-			XCONFIG_PROBED, vga256InfoRec.name, temp);
 		ErrorF("%s %s: Detected a Trident %s.\n",
 			XCONFIG_PROBED, vga256InfoRec.name, REV);
 		tridentIsTGUI = TRUE;
@@ -945,6 +947,25 @@ TVGA8900Probe()
 
 	ErrorF("%s %s: Revision %d.\n", XCONFIG_PROBED, vga256InfoRec.name,
 					revision);
+
+	if (ClearTV) {
+		unsigned char TVinterface;
+
+		outb(vgaIOBase + 4, 0xC0);
+		TVinterface = inb(vgaIOBase + 5);
+
+		ErrorF("%s %s: TV interface is %s\n", XCONFIG_PROBED,
+			vga256InfoRec.name, (TVinterface & 0x80) ? "PAL" : "NTSC");
+
+		ErrorF("%s %s: DAC %s enabled for TV\n", XCONFIG_PROBED,
+			vga256InfoRec.name, (TVinterface & 0x08) ? "is" : "is not");
+
+		ErrorF("%s %s: %s display is connected.\n", XCONFIG_PROBED,
+			vga256InfoRec.name, (TVinterface & 0x02) ? "TV" : "VGA");
+
+		if (TVinterface & 0x02) 
+			TVconnected = TRUE;
+	}
 
 	/* 
 	 * Set up 2 bank registers 
@@ -1615,6 +1636,10 @@ TVGA8900Restore(restore)
 
 	outw(0x3C4, ((restore->NewMode1 ^ 0x02) << 8) | 0x0E);
 
+	if ((ClearTV) && (TVconnected)) {
+		outw(vgaIOBase + 4, ((restore->TVMode) << 8) | 0xC1);
+	}
+
 	if (TVGAchipset >= TGUI96xx) 
 		vgaHWRestore((vgaHWPtr)restore);
 
@@ -1786,6 +1811,11 @@ TVGA8900Save(save)
 			save->TRDReg = inb(0x3C7); 
 	}
 
+	if ((ClearTV) && (TVconnected)) {
+		outb(vgaIOBase + 4, 0xC1);
+		save->TVMode = inb(vgaIOBase + 5);
+	}
+
   	return ((void *) save);
 }
 
@@ -1891,6 +1921,33 @@ TVGA8900Init(mode)
 	}
 
 	new->CRTCModuleTest = (mode->Flags & V_INTERLACE ? 0x84 : 0x80); 
+
+	if ((TVconnected) && (ClearTV)) {
+		outb(vgaIOBase + 4, 0xC1);
+		new->TVMode = inb(vgaIOBase + 5);
+		if (mode->Flags & V_INTERLACE) 
+			new->TVMode &= 0xEF;
+		else
+			new->TVMode |= 0x10;
+
+		new->TVMode &= 0xFC;
+		if (mode->HDisplay <= 320)
+			new->TVMode |= 0x00;
+		else
+		if (mode->HDisplay <= 640)
+			new->TVMode |= 0x01;
+		else
+		if (mode->HDisplay <= 720)
+			new->TVMode |= 0x02;
+		else
+		if (mode->HDisplay <= 800)
+			new->TVMode |= 0x03;
+
+		if (vgaBitsPerPixel <= 16)
+			new->TVMode |= 0x08; /* Enable double display queue */
+		else
+			new->TVMode |= 0x04; /* Enable Underscan */
+	}
 
 	if (tridentUseLinear) 
 	{
@@ -2194,7 +2251,8 @@ TVGA8900Adjust(x, y)
 	int shift = 0;
 
 	if (vgaBitsPerPixel >= 8) {
-	   if ((TVGAchipset >= TGUI96xx) && (vgaBitsPerPixel == 8))
+	   if ((TVGAchipset >= TGUI96xx) && ((vgaBitsPerPixel == 8) ||
+	       (vgaBitsPerPixel == 24)) )
 		base &= 0xFFFFFFF8;
 	   if (vgaBitsPerPixel == 16)
 		shift = 1;
@@ -2274,13 +2332,24 @@ int flag;
 	}
 	}
 
+	if ((ClearTV) && (TVconnected)) {
+		if (mode->HDisplay > 800)
+		{
+		    if (verbose)
+			ErrorF("%s %s: ClearTV only supports max. width"
+			       "of 800, Adjust Modes in XF86Config.\n",
+			       XCONFIG_PROBED, vga256InfoRec.name);
+		    return(MODE_BAD);
+		}
+	}
+
 	if (IsCyber)
 	{
 		if (mode->VDisplay > 1024)
 		{
 		   if (verbose)
 			ErrorF("%s %s: Chipset supports a max. height"
-			       "of 1024, Adjust Modes in XF86Conig.\n",
+			       "of 1024, Adjust Modes in XF86Config.\n",
 			       XCONFIG_PROBED, vga256InfoRec.name);
 		   return(MODE_BAD);
 		}

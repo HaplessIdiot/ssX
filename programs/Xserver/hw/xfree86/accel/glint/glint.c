@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.8 1997/09/19 08:29:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.9 1997/09/25 07:31:11 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -1462,29 +1462,102 @@ glintSwitchMode(mode)
 static int
 glintValidMode(DisplayModePtr mode, Bool verbose, int flag)
 {
-    if (mode->Flags & V_INTERLACE)
+  if (mode->Flags & V_INTERLACE)
     {
-	ErrorF("%s %s: Cannot support interlaced modes, deleting.\n",
-			XCONFIG_GIVEN, glintInfoRec.name);
-	return MODE_BAD;
+      ErrorF("%s %s: Cannot support interlaced modes, deleting.\n",
+	     XCONFIG_GIVEN, glintInfoRec.name);
+      return MODE_BAD;
     }
 
-    if (mode->Flags & V_INTERLACE)
+  if (mode->Flags & V_INTERLACE)
     {
-	ErrorF("%s %s: Cannot support interlaced modes, deleting.\n",
-			XCONFIG_GIVEN, glintInfoRec.name);
-	return MODE_BAD;
+      ErrorF("%s %s: Cannot support interlaced modes, deleting.\n",
+	     XCONFIG_GIVEN, glintInfoRec.name);
+      return MODE_BAD;
     }
 
-    if ((coprotype == PCI_CHIP_3DLABS_PERMEDIA) && (mode->CrtcHDisplay > 1536))
+  if ((coprotype == PCI_CHIP_3DLABS_PERMEDIA) && (mode->CrtcHDisplay > 1536))
     {
-	ErrorF("HDisplay is %d, cannot support HDisplay > 1536, deleting.\n",
-			mode->CrtcHDisplay);
-	return MODE_BAD;
+      ErrorF("HDisplay is %d, cannot support HDisplay > 1536, deleting.\n",
+	     mode->CrtcHDisplay);
+      return MODE_BAD;
     }
-
-
-    return MODE_OK;
+  
+  if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) 
+    {
+      /* Max dotclock is 80 MHz for Permedia 8Mb */
+      if (!glintInfoRec.dacSpeeds[0] || !glintInfoRec.dacSpeeds[1] || 
+	  !glintInfoRec.dacSpeeds[2] || !glintInfoRec.dacSpeeds[3])
+	{
+	  /* the 4MB Gloria-S have Errors wich clockspeed > 80MHz !? */
+	  if (glintInfoRec.videoRam > 4096)
+	    {
+	      switch (glintInfoRec.depth) 
+		{
+		case 8: 
+		case 15: 
+		case 16:
+#ifdef DEBUG 
+		  ErrorF("Mode Clock = %d MHz.\n", mode->Clock);
+#endif
+		  if (mode->Clock > 83000) 
+		    ErrorF("Warning: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 83 MHz. \n",
+			   mode->Clock/1000);
+		  break;
+		case 32:
+#ifdef DEBUG 
+		  ErrorF("Mode Clock = %d MHz.\n", mode->Clock);
+#endif
+		  if (mode->Clock > 88000) 
+		    ErrorF("Warning: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 88 MHz. \n",
+			   mode->Clock/1000);
+		  break;
+		}
+	    }
+	  else
+	    switch (glintInfoRec.depth) 
+	      {
+	      case 8: 
+#ifdef DEBUG 
+		ErrorF("Mode Clock = %d MHz.\n", mode->Clock);
+#endif
+		if (mode->Clock > 200000) 
+		  {
+		    ErrorF("Warning: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 200 MHz. \n",
+			   mode->Clock/1000);
+		    return MODE_BAD;
+		  }
+		break;
+	      case 15:
+	      case 16:
+#ifdef DEBUG 
+		ErrorF("Mode Clock = %d MHz.\n", mode->Clock);
+#endif
+		if (mode->Clock > 100000) 
+		  {
+		    ErrorF("Error: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 100 MHz. \n",
+			   mode->Clock/1000);
+		    return MODE_BAD;
+		  }
+		break;
+	      case 32: /* 32 bpp have tested with 8Mb Gloria-S */
+#ifdef DEBUG 
+		ErrorF("Mode Clock = %d MHz.\n", mode->Clock);
+#endif
+		if (mode->Clock > 50000) 
+		  ErrorF("Warning: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 50 MHz. \n",
+			 mode->Clock/1000);
+		if (mode->Clock > 100000) 
+		  {
+		    ErrorF("Error: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 100 MHz. \n",
+			   mode->Clock/1000);
+		    return MODE_BAD;
+		  }
+		break;
+	      }
+	}
+    }
+  return MODE_OK;
 }
 
 

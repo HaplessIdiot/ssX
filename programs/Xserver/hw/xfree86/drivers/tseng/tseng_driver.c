@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.18 1997/08/26 10:01:28 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.19 1997/09/09 10:27:49 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1033,7 +1033,7 @@ ET4000Probe()
       } \
     }
 
-  if(tseng_linmem_1meg)
+  if(TSENG.ChipUseLinearAddressing && tseng_linmem_1meg)
   {
       TSENG_MEMLIMIT(1024, "in linear mode on this VGA board/bus configuration");
   }
