@@ -87,7 +87,7 @@ XFree86 4.0.99.900 (18 May 2001)
  511. Rewrote readPciBIOS() and getValidBIOSBase() (Egbert Eich).
  510. Fixed xf86Info structure in xf86Globals.c to match prototype 
       (Egbert Eich).
- 509. Allow ':' as delimiter in locale.alias and similar files (Egbert Eich).
+ 509. -
  508. Fix XDarwin install problems with DESTDIR handling and with soft links
       to the XtAppAddTimeOut manpage (Christoph Pfisterer).
  507. Add Error message output in Cygwin/XFree86 (#4632, Harold Hunt).
@@ -13304,4 +13304,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1783 2001/05/19 00:26:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1784 2001/05/19 00:35:40 dawes Exp $
