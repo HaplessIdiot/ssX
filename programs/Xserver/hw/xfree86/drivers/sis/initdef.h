@@ -38,9 +38,9 @@
 #define ModeInfoFlag            0x07
 #define IsTextMode              0x07
 
-#define DACInfoFlag             0x18
-#define MemoryInfoFlag          0x1E0
-#define MemorySizeShift         0x05
+#define DACInfoFlag             0x0018
+#define MemoryInfoFlag          0x01E0
+#define MemorySizeShift         5
 
 /* modeflag */
 #define Charx8Dot               0x0200
@@ -75,13 +75,13 @@
 /* VBInfo */
 #define SetSimuScanMode         0x0001   /* CR 30 */
 #define SwitchToCRT2            0x0002
-#define SetCRT2ToTV             0x009C
 #define SetCRT2ToAVIDEO         0x0004
 #define SetCRT2ToSVIDEO         0x0008
 #define SetCRT2ToSCART          0x0010
 #define SetCRT2ToLCD            0x0020
 #define SetCRT2ToRAMDAC         0x0040
 #define SetCRT2ToHiVisionTV     0x0080
+#define SetCRT2ToTV             0x009C   /* alias */
 #define SetNTSCTV               0x0000   /* CR 31 */
 #define SetPALTV                0x0100
 #define SetInSlaveMode          0x0200
@@ -143,18 +143,25 @@
 	  1: Low active
 */
 
-#define EnableDualEdge 		0x01   /* CR38 (310/325 series) */
-#define SetToLCDA		0x02   /* TW: LCD channel A (302B and 650+LVDS only) */
-#define EnableSiSHiVision       0x04   /* TW: HiVision on SiS bridge */
-#define EnableLVDSHiVision      0x08   /* TW: Only on 650/LVDS systems */
-#define SetYPbPr                0x10   /* TW: YPbPr color format (Chrontel only) */
-#define SiSHiVision1            0x10   /* TW: See SetHiVision() */
+/* CR38 (310/325 series) */
+#define EnableDualEdge 		0x01   
+#define SetToLCDA		0x02   /* LCD channel A (302B/LV and 650+LVDS only) */
+#define EnableSiSHiVision       0x04   /* HiVision (HDTV) on SiS bridge */
+#define EnableLVDSScart         0x04   /* Scart on Ch7019 (unofficial definition - TW) */
+#define EnableLVDSHiVision      0x08   /* YPbPr color format (480i HDTV); only on 650/Ch7019 systems */
+#define SiSHiVision1            0x10   /* See SetHiVision() */
 #define SiSHiVision2            0x20
-#define EnablePALMN             0x40
-#define EnablePALN              0x80
+#define EnablePALM              0x40   /* 1 = Set PALM */
+#define EnablePALN              0x80   /* 1 = Set PALN */
 
 #define SetSCARTOutput          0x01
 #define BoardTVType             0x02
+
+#define EnablePALMN             0x40   /* Romflag: 1 = Allow PALM/PALN */
+
+/* CR39 (650) */
+#define LCDPass1_1		0x01   /* LVDS only; set by driver to pass 1:1 data to LVDS output  */
+#define SomeThingTV_LVNEW	0x04   /* 30xNEW only; set by mode switching function */
 
 
 /* CR79 (310/325 series only)
@@ -168,7 +175,7 @@
 	 0111 Set Volume Up/Down event
    [4]   Enable Backlight Control by BIOS/driver (set by driver)
    [5]   PAL/NTSC (set by BIOS)
-   [6]   Expansion On/Off (set by BIOS)
+   [6]   Expansion On/Off (set by BIOS; copied to CR32[4])
    [7]   TV UnderScan/OverScan (set by BIOS)
 */
 
@@ -200,9 +207,9 @@
 #define Panel310_1024x600       0x05
 #define Panel310_1152x864       0x06
 #define Panel310_1280x960       0x07
-#define Panel310_1152x768       0x08	/* TW: LVDS only */
+#define Panel310_1152x768       0x08	/* LVDS only */
 #define Panel310_1400x1050      0x09
-#define Panel310_1280x768       0x0a    /* TW: LVDS only */
+#define Panel310_1280x768       0x0a    /* LVDS only */
 #define Panel310_1600x1200      0x0b
 #define Panel310_320x480        0x0c    /* fstn - TW: This is fake, can be any */
 
@@ -213,9 +220,9 @@
 #define Panel_1024x600          0x05
 #define Panel_1152x864          0x06
 #define Panel_1280x960          0x07
-#define Panel_1152x768          0x08	/* TW: LVDS only */
+#define Panel_1152x768          0x08	/* LVDS only */
 #define Panel_1400x1050         0x09
-#define Panel_1280x768          0x0a    /* TW: LVDS only */
+#define Panel_1280x768          0x0a    /* LVDS only */
 #define Panel_1600x1200         0x0b
 #define Panel_320x480           0x0c    /* fstn - TW: This is fake, can be any */
 
