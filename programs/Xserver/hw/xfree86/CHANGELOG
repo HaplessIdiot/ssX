@@ -1,4 +1,21 @@
-XFree86 4.0.1Za (11 December 2000)
+XFree86 4.0.1Za (12 December 2000)
+1173. Fix some R128 DRI bugs:
+       - Fix depth span functions (was causing rendering errors for windows
+         not at (0,0)).
+       - Don't use 32-bit depth buffers since they're not supported by Mesa.
+       - Use subpixel offsets to fix coordinate rounding errors.
+      (#4373, Gareth Hughes).
+1172. Reinstate the AllTarget for the rule to make html man pages
+      (David Dawes).
+1171. Build all modules on Linux/mips, fixing Xnest build (#4372,
+      Guido Guenther).
+1170. Update Permedia 3 README, Cards file, and glint section in the Status
+      doc (#4371, Sven Luther).
+1169. Fix depth passed to the BIOS in the savage driver (affects depth 15)
+      (#4369, Ani Joshi).
+1168. Update fbdev man page (#4368, Michel Daenzer).
+1167. Fix a problem with 32-bit depth buffers when using indirect rendering,
+      by not advertising them in the mga driver (#4367, Brian Paul).
 1166. Update man page version strings, and convert some server/XFree86 man
       pages to cpp-processed files to make the references to pages in
       system-dependent sections correct (David Dawes).
@@ -11,7 +28,7 @@ XFree86 4.0.1Za (11 December 2000)
 1162. Update the CTEXT spec document to reflect part of the current
       practice in XFree86 (#4363, Bruno Haible).
 1161. Augment SpecsDocDirs to reflect additional docs that have XFree86 changes
-      (#4363, Bruno Haible).
+      (#4362, Bruno Haible).
 1160. Fix Xv library references in the xvinfo Imakefile (#4361,
       Thomas Mueller).
 1159. Fix a signed/unsigned error in the calculation of 16-bit displacements
@@ -12025,4 +12042,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1466 2000/12/11 19:51:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1467 2000/12/11 20:48:45 dawes Exp $
