@@ -1,17 +1,22 @@
 XFree86 3.1.1Bd (24 June 1995)
-161. vtname was to short in Linux OS-dep code (similar change for LynxOS
+163. Add a BuildLBXProxyOnly Imake config option to allow building lbxproxy
+     from a self-contained cut-down source tree.
+162. vtname was to short in Linux OS-dep code (similar change for LynxOS
      and SCO too) (Pascal Haible).
-160. Change uses of malloc/free in Xserver to xalloc/xfree (Pascal Haible).
-159. AGX documentation updates (Henry Worth).
-158. Fixes for AGX font rendering, and copyplane (Henry Worth).
-157. AGX font cache flushed by screensaver (Henry Worth).
-156. AGX screensaver for >8bpp (Henry Worth).
-155. pre-fix-12 fix-tracker: improvement to the Xt translation manager
+161. Change uses of malloc/free in Xserver to xalloc/xfree (Pascal Haible).
+160. AGX documentation updates (Henry Worth).
+159. Fixes for AGX font rendering, and copyplane (Henry Worth).
+158. AGX font cache flushed by screensaver (Henry Worth).
+157. AGX screensaver for >8bpp (Henry Worth).
+156. pre-fix-12 fix-tracker: improvement to the Xt translation manager
      performance when high order modifiers are assigned.   Also, change
      the servers to use Mod3 for Mode_switch instead of Mod5 to further
      improve this.
-154. Fix some UseGnuMalloc config stuff, and set this to YES by default
+155. Fix some UseGnuMalloc config stuff, and set this to YES by default
      for FreeBSD.
+154. Fix some problems with the VGA2 server, including crashes in banked
+     mode, and incorrectly switching banks when bitblting in non-banked
+     mode.
 
 XFree86 3.1.1Bc (21 June 1995)
 153. Fix for ET4000/W32p cards -- don't change the PCI burst setting.
