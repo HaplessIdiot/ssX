@@ -1,6 +1,6 @@
 /* (c) Itai Nahshon */
-#define DEBUG
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_xaam.c,v 1.6 2001/02/15 17:39:27 eich Exp $ */
+/* #define DEBUG */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_xaam.c,v 1.7 2001/10/01 13:44:05 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
