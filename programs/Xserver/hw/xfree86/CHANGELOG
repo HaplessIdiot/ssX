@@ -1,4 +1,6 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 656. Fix sparc asm glapi initialisation in libGL when using indirect rendering
+      (GLX) (Bugzilla #923, Ferris McCormick).
  655. Disable the OPTGX1SubsequentHorVertLine() function in the NSC Geode
       GX1 driver to due problems falling back to the FillRectSolid function.
       (Alan Hourihane, See Bugzilla #841 for reasons).
@@ -18345,7 +18347,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3023 2003/12/07 18:20:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3024 2003/12/07 22:40:30 alanh Exp $
 
 
 
