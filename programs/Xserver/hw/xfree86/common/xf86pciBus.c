@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.44 2001/10/01 13:44:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.45 2001/10/28 03:33:19 tsi Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -1934,7 +1934,7 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 	if (PciBus->subclass == PCI_SUBCLASS_BRIDGE_PCI &&
 	    PciBus->interface == PCI_IF_BRIDGE_PCI_SUBTRACTIVE) {
 	    PciBusPtr PciBus1;
-	    for (PciBus1 = PciBusBase; PciBus1; PciBus1 = PciBus->next) {
+	    for (PciBus1 = PciBusBase; PciBus1; PciBus1 = PciBus1->next) {
 		if (PciBus1->secondary == PciBus->primary) {
 		    PciBus->io = PciBus1->io ? PciBus1->io
 			: PciBus1->preferred_io;

@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 452. Fix typo in PCI bus scanning that caused a hang when there was more than
+      one PCI bus (#A.652, Uwe Dannowski).
  451. Update Japanese localization of XDarwin help file (Toshimitsu Tanaka).
  450. Update XDarwin help file (Torrey T. Lyons).
  449. Fix XDarwin SHAPE support in rootless mode (Gregory Parker).
@@ -14107,4 +14109,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2024 2001/11/05 05:12:14 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2025 2001/11/05 05:28:26 torrey Exp $
