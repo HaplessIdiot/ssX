@@ -1,8 +1,10 @@
-/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.18 1999/08/22 05:57:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.19 1999/10/13 22:32:47 dawes Exp $ */
 
 #ifndef __DGAPROC_H
 #define __DGAPROC_H
 
+#include "Xproto.h"
+#include "pixmap.h"
 
 #define DGA_CONCURRENT_ACCESS	0x00000001
 #define DGA_FILL_RECT		0x00000002
@@ -58,7 +60,7 @@ void XFree86DGAExtensionInit(void);
 
 int
 DGASetMode(
-   int index,
+   int Index,
    int num,
    XDGAModePtr mode,
    PixmapPtr *pPix
@@ -66,28 +68,28 @@ DGASetMode(
 
 void 
 DGASelectInput(
-   int index,
+   int Index,
    ClientPtr client,
    long mask
 );
 
-Bool DGAAvailable(int index);
-Bool DGAActive(int index);
+Bool DGAAvailable(int Index);
+Bool DGAActive(int Index);
 void DGAShutdown(void);
 void DGAInstallCmap(ColormapPtr cmap);
-int DGAGetViewportStatus(int index); 
-int DGASync(int index);
+int DGAGetViewportStatus(int Index); 
+int DGASync(int Index);
 
 int
 DGAFillRect(
-   int index,
+   int Index,
    int x, int y, int w, int h,
    unsigned long color
 );
 
 int
 DGABlitRect(
-   int index,
+   int Index,
    int srcx, int srcy, 
    int w, int h, 
    int dstx, int dsty
@@ -95,7 +97,7 @@ DGABlitRect(
 
 int
 DGABlitTransRect(
-   int index,
+   int Index,
    int srcx, int srcy, 
    int w, int h, 
    int dstx, int dsty,
@@ -104,28 +106,28 @@ DGABlitTransRect(
 
 int
 DGASetViewport(
-   int index,
+   int Index,
    int x, int y,
    int mode
 ); 
 
-int DGAGetModes(int index);
-int DGAGetOldDGAMode(int index);
+int DGAGetModes(int Index);
+int DGAGetOldDGAMode(int Index);
 
-int DGAGetModeInfo(int index, XDGAModePtr mode, int num);
+int DGAGetModeInfo(int Index, XDGAModePtr mode, int num);
 
 Bool DGAVTSwitch(void);
-Bool DGAStealMouseEvent(int index, xEvent *e, int dx, int dy);
-Bool DGAStealKeyEvent(int index, xEvent *e);
+Bool DGAStealMouseEvent(int Index, xEvent *e, int dx, int dy);
+Bool DGAStealKeyEvent(int Index, xEvent *e);
 Bool DGAIsDgaEvent (xEvent *e);
 
 Bool DGADeliverEvent (ScreenPtr pScreen, xEvent *e);
 	    
-Bool DGAOpenFramebuffer(int index, char **name, unsigned char **mem, 
+Bool DGAOpenFramebuffer(int Index, char **name, unsigned char **mem, 
 			int *size, int *offset, int *flags);
-void DGACloseFramebuffer(int index);
-Bool DGAChangePixmapMode(int index, int *x, int *y, int mode);
-int DGACreateColormap(int index, ClientPtr client, int id, int mode, 
+void DGACloseFramebuffer(int Index);
+Bool DGAChangePixmapMode(int Index, int *x, int *y, int mode);
+int DGACreateColormap(int Index, ClientPtr client, int id, int mode, 
 			int alloc);
 
 extern unsigned char DGAReqCode;

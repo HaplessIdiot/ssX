@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.28 2000/04/19 15:48:31 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.29 2000/05/03 00:43:57 tsi Exp $
 </ident>
 
 
@@ -3295,6 +3295,13 @@ typedef struct {
 
 	</quote>
 
+      &s.code;address&e.code;
+        <quote><p>
+                The virtual address of the framebuffer as mapped by the driver.
+                This is needed when DGA_PIXMAP_AVAILABLE is set.
+
+        </quote>
+
       <verb>
 /** The DGAFunctionRec **/
 
@@ -3311,7 +3318,7 @@ typedef struct {
   Bool (*SetMode)(ScrnInfoPtr pScrn, DGAModePtr pMode);
   void (*SetViewport)(ScrnInfoPtr pScrn, int x, int y, int flags);
   int  (*GetViewport)(ScrnInfoPtr pScrn);
-  void (*Flush)(ScrnInfoPtr);
+  void (*Sync)(ScrnInfoPtr);
   void (*FillRect)(
        ScrnInfoPtr pScrn, 
        int x, int y, int w, int h, 
@@ -3427,7 +3434,7 @@ typedef struct {
 
     </quote>
 
-    &s.code;void Flush (pScrn)&e.code;
+    &s.code;void Sync (pScrn)&e.code;
     <quote><p>
       This function should ensure that any graphics accelerator operations
       have finished.  This function should not return until the graphics

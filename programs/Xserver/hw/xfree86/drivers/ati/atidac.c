@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.6 2000/02/18 12:19:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.7 2000/03/22 03:08:12 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -122,6 +122,7 @@ void
 ATIDACPreInit
 (
     ScrnInfoPtr pScreenInfo,
+    ATIPtr      pATI,
     ATIHWPtr    pATIHW
 )
 {
@@ -134,7 +135,7 @@ ATIDACPreInit
     /*
      * Set colour lookup table.  The first entry has already been zeroed out.
      */
-    if (pScreenInfo->depth > 8)
+    if (pATI->depth > 8)
         for (Index = 1;  Index < (NumberOf(pATIHW->lut) / 3);  Index++)
         {
             Index2 = Index * 3;
@@ -158,7 +159,7 @@ ATIDACPreInit
             pATIHW->lut[Index2 + 2] = maxColour;
         }
 
-        if (pScreenInfo->depth == 1)
+        if (pATI->depth == 1)
         {
             rgb blackColour = pScreenInfo->display->whiteColour,
                 whiteColour = pScreenInfo->display->whiteColour;
@@ -291,9 +292,9 @@ ATILoadPalette
         int greens = pVisual->greenMask >> pVisual->offsetGreen;
         int blues = pVisual->blueMask >> pVisual->offsetBlue;
 
-        int redShift = 8 - pScreenInfo->weight.red;
-        int greenShift = 8 - pScreenInfo->weight.green;
-        int blueShift = 8 - pScreenInfo->weight.blue;
+        int redShift = 8 - pATI->weight.red;
+        int greenShift = 8 - pATI->weight.green;
+        int blueShift = 8 - pATI->weight.blue;
 
         int redMult = 3 << redShift;
         int greenMult = 3 << greenShift;
@@ -323,7 +324,7 @@ ATILoadPalette
                     Colours[Index].blue << minShift;
         }
 
-        if (pScreenInfo->vtSema)
+        if (pScreenInfo->vtSema || pATI->currentMode)
         {
             /* Rewrite LUT entries that could have been changed */
             i = 1 << minShift;
@@ -357,7 +358,7 @@ ATILoadPalette
             LUTEntry[1] = Colours[Index].green;
             LUTEntry[2] = Colours[Index].blue;
 
-            if (pScreenInfo->vtSema)
+            if (pScreenInfo->vtSema || pATI->currentMode)
             {
                 outb(pATI->CPIO_DAC_WRITE, Index);
                 DACDelay;

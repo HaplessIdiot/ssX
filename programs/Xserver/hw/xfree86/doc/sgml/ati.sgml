@@ -8,10 +8,10 @@
 
 <title>ATI Adapters README file
 <author>Marc Aurele La France
-<date>2000 May 3
+<date>2000 June 15
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.29 2000/02/18 12:19:08 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.30tsi Exp $
 </ident>
 
 <abstract>
@@ -511,7 +511,6 @@ Mach8's, 8514/A's and other clones.
 permitted by the hardware.
 <item>Mach32, Mach8 and 8514/A Draw Engines.
 <item>Hardware cursors.
-<item>DGA X server extension.
 <item>TVOut, i.e. the ability to use a television screen as a monitor.
 <item>Motion Video, i.e. displaying an asynchronous data stream (TV signal,
 DVD, etc.) in a window or full-screen.

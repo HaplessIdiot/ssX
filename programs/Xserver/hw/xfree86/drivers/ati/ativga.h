@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.h,v 1.4 2000/02/18 12:19:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.h,v 1.5 2000/03/22 03:08:26 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -28,8 +28,7 @@
 #include "atiproto.h"
 #include "xf86str.h"
 
-extern void ATIVGAPreInit     FunctionPrototype((ScrnInfoPtr, ATIPtr,
-                                                 ATIHWPtr));
+extern void ATIVGAPreInit     FunctionPrototype((ATIPtr, ATIHWPtr));
 extern void ATIVGASave        FunctionPrototype((ATIPtr, ATIHWPtr));
 extern void ATIVGACalculate   FunctionPrototype((ATIPtr, ATIHWPtr,
                                                  DisplayModePtr));

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.2 2000/06/14 02:17:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.3 2000/06/14 02:36:07 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -135,7 +135,7 @@ typedef enum {
 	OPTION_NOACCEL,
 	OPTION_SWCURSOR,
 	OPTION_INITDAC,
-	OPTION_FBDEV,
+	OPTION_FBDEV
 } IMSTTOpts;
 
 static OptionInfoRec IMSTTOptions[] =
@@ -190,7 +190,7 @@ static const char *fbdevHWSymbols[] = {
 
 #ifdef XFree86LOADER
 static pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
-			  int errmin);
+			  int *errmin);
 
 static XF86ModuleVersionInfo IMSTTVersRec = {
 	"imstt",
@@ -208,7 +208,7 @@ static XF86ModuleVersionInfo IMSTTVersRec = {
 XF86ModuleData IMSTTModuleData = { &IMSTTVersRec, IMSTTSetup, NULL };
 
 static pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
-			  int errmin)
+			  int *errmin)
 {
 	static Bool setupDone = FALSE;
 
@@ -294,7 +294,7 @@ static Bool IMSTTProbe(DriverPtr drv, int flags)
 	else for (i=0; i<numUsed; i++) {
 		ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
 
-		pScrn->driverVersion = DRIVER_VERSION;
+		pScrn->driverVersion = VERSION_MAJOR;
 		pScrn->driverName = DRIVER_NAME;
 		pScrn->name = "imstt";
 		pScrn->Probe = IMSTTProbe;
@@ -811,7 +811,7 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 		return FALSE;
 	}
 
-	xf86SetBlackWhitePixel(pScreen);
+	xf86SetBlackWhitePixels(pScreen);
 
 	if (pScrn->bitsPerPixel > 8) {
 		visual = pScreen->visuals + pScreen->numVisuals;
@@ -841,7 +841,7 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 		xf86DrvMsg(scrnIndex, X_INFO, "Acceleration disabled\n");
 	}
 
-	mDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+	miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
 	if (!miCreateDefColormap(pScreen))
 		return FALSE;
@@ -1058,7 +1058,7 @@ static Bool IMSTTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	/* do it! */
 	IMSTTWriteMode(pScrn);
-	IMSTTAdustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+	IMSTTAdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
 	return TRUE;
 }

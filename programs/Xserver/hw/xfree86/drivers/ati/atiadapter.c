@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.10 2000/05/03 00:44:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.11 2000/05/11 18:14:30 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -265,11 +265,11 @@ ATIAdapterPreInit
     if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
     {
         /* Fill in VGA data */
-        ATIVGAPreInit(pScreenInfo, pATI, pATIHW);
+        ATIVGAPreInit(pATI, pATIHW);
 
         /* Fill in VGA Wonder data */
         if (pATI->CPIO_VGAWonder)
-            ATIVGAWonderPreInit(pScreenInfo, pATI, pATIHW);
+            ATIVGAWonderPreInit(pATI, pATIHW);
     }
 
     /* Fill in Mach64 data */
@@ -322,9 +322,9 @@ ATIAdapterPreInit
         }
 
         pATIHW->lcd_gen_ctrl &=
-            ~(CRT_ON | LCD_ON | HORZ_DIVBY2_EN | DISABLE_PCLK_RESET |
-              DIS_HOR_CRT_DIVBY2 | VCLK_DAC_PM_EN | XTALIN_PM_EN |
-              CRTC_RW_SELECT | USE_SHADOWED_VEND | USE_SHADOWED_ROWCUR |
+            ~(HORZ_DIVBY2_EN | DISABLE_PCLK_RESET | DIS_HOR_CRT_DIVBY2 |
+              VCLK_DAC_PM_EN | XTALIN_PM_EN | CRTC_RW_SELECT |
+              USE_SHADOWED_VEND | USE_SHADOWED_ROWCUR |
               SHADOW_EN | SHADOW_RW_EN);
         pATIHW->lcd_gen_ctrl |= DONT_SHADOW_VPAR | LOCK_8DOT;
 
@@ -333,13 +333,12 @@ ATIAdapterPreInit
             /*
              * Use primary CRTC to drive the CRT.  Turn off panel interface.
              */
+            pATIHW->lcd_gen_ctrl &= ~LCD_ON;
             pATIHW->lcd_gen_ctrl |= CRT_ON;
         }
         else
         {
-            /*
-             * Use primary CRTC to drive the panel.  Turn off CRT interface.
-             */
+            /* Use primary CRTC to drive the panel */
             pATIHW->lcd_gen_ctrl |= LCD_ON;
 
             /*
@@ -441,7 +440,7 @@ ATIAdapterPreInit
     }
 
     /* Set RAMDAC data */
-    ATIDACPreInit(pScreenInfo, pATIHW);
+    ATIDACPreInit(pScreenInfo, pATI, pATIHW);
 }
 
 /*
@@ -671,7 +670,7 @@ ATIAdapterCalculate
 
             /* Fill in VGA Wonder data */
             if (pATI->CPIO_VGAWonder)
-                ATIVGAWonderCalculate(pScreenInfo, pATI, pATIHW, pMode);
+                ATIVGAWonderCalculate(pATI, pATIHW, pMode);
 
             if (pATI->Chip >= ATI_CHIP_88800GXC)
             {
@@ -721,7 +720,7 @@ ATIAdapterCalculate
                     pATIHW->crtc_gen_cntl |= CRTC_INTERLACE_EN;
                 if ((pMode->Flags & (V_CSYNC | V_PCSYNC)) || pATI->OptionCSync)
                     pATIHW->crtc_gen_cntl |= CRTC_CSYNC_EN;
-                if (pScreenInfo->depth <= 4)
+                if (pATI->depth <= 4)
                     pATIHW->crtc_gen_cntl |= CRTC_EN | CRTC_CNT_EN;
                 else
                     pATIHW->crtc_gen_cntl |=
@@ -731,7 +730,7 @@ ATIAdapterCalculate
 
         case ATI_CRTC_MACH64:
             /* Fill in Mach64 data */
-            ATIMach64Calculate(pScreenInfo, pATI, pATIHW, pMode);
+            ATIMach64Calculate(pATI, pATIHW, pMode);
             break;
 
         default:
@@ -1089,9 +1088,9 @@ ATIAdapterAccelInit
     }
 
     ScreenArea.x1 = ScreenArea.y1 = 0;
-    ScreenArea.x2 = pScreenInfo->displayWidth;
-    ScreenArea.y2 = pScreenInfo->videoRam * 1024 * 8 /
-        pScreenInfo->displayWidth / pScreenInfo->bitsPerPixel;
+    ScreenArea.x2 = pATI->displayWidth;
+    ScreenArea.y2 = pScreenInfo->videoRam * 1024 * 8 / pATI->displayWidth /
+        pATI->bitsPerPixel;
     if ((unsigned)ScreenArea.y2 > ATIMach64MaxY)
         ScreenArea.y2 = ATIMach64MaxY;
     xf86InitFBManager(pScreen, &ScreenArea);

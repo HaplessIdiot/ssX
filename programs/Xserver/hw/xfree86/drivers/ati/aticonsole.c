@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.10 2000/02/18 12:19:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.11 2000/03/22 03:08:10 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -187,7 +187,8 @@ ATILeaveGraphics
     ATILock(pATI);
 
     /* Unmap apertures */
-    ATIUnmapApertures(pScreenInfo, pATI);
+    if (!pATI->Closeable || !pATI->nDGAMode)
+        ATIUnmapApertures(pScreenInfo, pATI);
 
     SetTimeSinceLastInputEvent();
 }
@@ -214,7 +215,10 @@ ATISwitchMode
 
     /* Set new hardware state */
     if (pScreenInfo->vtSema)
+    {
+        pScreenInfo->currentMode = pMode;
         ATIAdapterSet(pScreenInfo, pATI, &pATI->NewHW);
+    }
 
     SetTimeSinceLastInputEvent();
 
@@ -312,6 +316,8 @@ ATIFreeScreen
     xfree(pATI->NewHW.frame_buffer);
 
     xfree(pATI->pShadow);
+
+    xfree(pATI->pDGAMode);
 
     xfree(pATI);
     pScreenInfo->driverPrivate = NULL;

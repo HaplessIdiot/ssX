@@ -27,7 +27,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/xkbfile/XKBconfig.h,v 3.3 2000/06/14 18:20:33 dawes Exp $ */
 
 
 typedef struct _XkbConfigRtrn	*XkbConfigRtrnPtr;
@@ -121,13 +121,14 @@ typedef struct _XkbConfigRtrn {
 	char *			symbols;
 	char *			types;
 	char *			compat;
+
 	Bool			replace_initial_ctrls;
 	unsigned long		initial_ctrls;
 	unsigned long		initial_ctrls_clear;
 
 	Bool			replace_initial_opts;
-	unsigned long		initial_opts;
-	unsigned long		initial_opts_clear;
+	unsigned short		initial_opts;
+	unsigned short		initial_opts_clear;
 
 	XkbConfigModInfoRec	initial_mods;
 	XkbConfigModInfoRec	internal_mods;

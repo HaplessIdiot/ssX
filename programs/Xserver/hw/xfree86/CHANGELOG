@@ -1,3 +1,18 @@
+XFree86 4.0e (?? June 2000)
+ 327. xdm warning fix (Marc La France).
+ 326. Make x11perf dies gracefully when display cannot be opened
+      (Marc La France).
+ 325. Fix rendition driver compile glitch (Marc La France).
+ 324. #ifdef out glitch in glint driver (Marc La France).
+ 323. Preliminary DGA support in ATI driver (Marc La France).
+ 322. Minor update to DESIGN and Status documents (Marc La France).
+ 321. Fix DGA's reporting of vertical refresh rates to clients
+      (Marc La France).
+ 320. Make driver-provided Sync(), SetViewport() and GetViewport() DGA
+      callbacks optional (Marc La France).
+ 319. Fix XKB compile glitch (Marc La France).
+ 318. Make imstt driver compile (Marc La France).
+
 XFree86 4.0d (16 June 2000)
  317. Fix a typo in the xfree86 xkb keycodes file (#3999, Matthieu Herrb).
  316. Fix some build problems when the DRI is not enabled (#3998,
@@ -10628,4 +10643,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1189 2000/06/17 01:40:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1190 2000/06/17 17:44:18 dawes Exp $

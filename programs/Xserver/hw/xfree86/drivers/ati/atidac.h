@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.4 1999/07/18 03:26:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.5 2000/02/18 12:19:21 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -78,7 +78,7 @@ extern const DACRec ATIDACDescriptors[];
 extern void  ATISetDACIOPorts FunctionPrototype((ATIPtr, ATICRTCType));
 extern CARD8 ATIGetDACCmdReg  FunctionPrototype((ATIPtr));
 
-extern void  ATIDACPreInit FunctionPrototype((ScrnInfoPtr, ATIHWPtr));
+extern void  ATIDACPreInit FunctionPrototype((ScrnInfoPtr, ATIPtr, ATIHWPtr));
 extern void  ATIDACSave    FunctionPrototype((ATIPtr, ATIHWPtr));
 extern void  ATIDACSet     FunctionPrototype((ATIPtr, ATIHWPtr));
 

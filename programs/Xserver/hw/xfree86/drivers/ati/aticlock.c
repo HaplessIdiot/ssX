@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.8 1999/11/18 16:52:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.9 2000/02/18 12:19:16 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -197,7 +197,6 @@
 #include "atichip.h"
 #include "atidac.h"
 #include "atidsp.h"
-#include "atividmem.h"
 
 /*
  * Definitions related to non-programmable clock generators.
@@ -816,7 +815,6 @@ ProbeClocks:
              * cannot reliably be prevented from enabling frequencies that are
              * greater than what the adapter can handle.
              */
-            ATIMapApertures(pScreenInfo, pATI);
             ATIAdapterSave(pScreenInfo, pATI, &pATI->OldHW);
         }
 
@@ -844,7 +842,6 @@ ProbeClocks:
         {
             /* Restore video state */
             ATIAdapterSet(pScreenInfo, pATI, &pATI->OldHW);
-            ATIUnmapApertures(pScreenInfo, pATI);
             xfree(pATI->OldHW.frame_buffer);
             pATI->OldHW.frame_buffer = NULL;
         }
@@ -1182,7 +1179,7 @@ ATIClockCalculate
 
         if ((pATI->Chip >= ATI_CHIP_264VTB) &&
             (pATI->CPIODecoding == BLOCK_IO))
-            ATIDSPCalculate(pScreenInfo, pATI, pATIHW, pMode);
+            ATIDSPCalculate(pATI, pATIHW, pMode);
     }
 
     /* Set clock select bits, after remapping them */

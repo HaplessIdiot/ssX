@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.33 2000/03/31 22:55:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.34 2000/05/05 21:03:01 keithp Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -88,11 +88,10 @@ DGAInit(
     DGAScreenPtr pScreenPriv;
     int i;
 
-    if(!funcs->Sync || !funcs->SetMode || !funcs->SetViewport ||
-	!funcs->GetViewport || !funcs->OpenFramebuffer)
+    if(!funcs->SetMode || !funcs->OpenFramebuffer)
 	return FALSE;
 
-    if(!modes || !num)
+    if(!modes || num <= 0)
 	return FALSE;
 
     if(DGAGeneration != serverGeneration) {
@@ -508,7 +507,10 @@ DGAGetViewportStatus(int index)
 
    /* We rely on the extension to check that DGA is active */ 
 
-   return((*pScreenPriv->funcs->GetViewport)(pScreenPriv->pScrn));
+   if (!pScreenPriv->funcs->GetViewport)
+      return 0;
+
+   return (*pScreenPriv->funcs->GetViewport)(pScreenPriv->pScrn);
 }
 
 int
@@ -519,7 +521,8 @@ DGASetViewport(
 ){
    DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
 
-   (*pScreenPriv->funcs->SetViewport)(pScreenPriv->pScrn, x, y, mode);
+   if (pScreenPriv->funcs->SetViewport)
+      (*pScreenPriv->funcs->SetViewport)(pScreenPriv->pScrn, x, y, mode);
    return Success;
 }
 
@@ -629,7 +632,8 @@ DGASync(int index)
    
    /* We rely on the extension to check that DGA is active */
 
-   (*pScreenPriv->funcs->Sync)(pScreenPriv->pScrn);
+   if (pScreenPriv->funcs->Sync)
+      (*pScreenPriv->funcs->Sync)(pScreenPriv->pScrn);
 
    return Success;
 }
@@ -734,8 +738,8 @@ DGACopyModeInfo(
 
    xmode->num = mode->num;
    xmode->name = dmode->name;
-   xmode->VSync_num = dmode->Clock * 1000.0; 
-   xmode->VSync_den = dmode->HTotal * dmode->VTotal;
+   xmode->VSync_num = (int)(dmode->VRefresh * 1000.0); 
+   xmode->VSync_den = 1000;
    xmode->flags = mode->flags;
    xmode->imageWidth = mode->imageWidth;
    xmode->imageHeight = mode->imageHeight;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.4 1999/09/25 14:37:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.5 2000/02/18 12:19:26 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -147,7 +147,7 @@ ATILoadModules
     }
 
     /* Load depth-specific entry points */
-    switch (pScreenInfo->bitsPerPixel)
+    switch (pATI->bitsPerPixel)
     {
         case 1:
             return ATILoadModule(pScreenInfo, "xf1bpp", "xf1bppScreenInit");

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_reg.h,v 1.1 2000/06/14 00:16:11 dawes Exp $ */
 
 #ifndef _IMSTT_REG_H
 #define _IMSTT_REG_H
@@ -30,10 +30,6 @@ static inline unsigned long regr(unsigned long base_addr, unsigned long regindex
 
 #define INREG(addr)		regr(((unsigned long)IMSTTMMIO), (addr))
 #define OUTREG(addr, val)	regw(((unsigned long)IMSTTMMIO), (addr), (val))
-#define OUTREGPI(addr, val)	iptr->CMAPBase[IBM624_PIDXLO] = addr;	eieio(); \
-				iptr->CMAPBase[IBM624_PIDXDATA] = val;	eieio()
-#define OUTREGPT(addr, val)	iptr->CMAPBase[TVP_ADDRW] = addr;	eieio(); \
-				iptr->CMAPBase[TVP_IDATA] = val;	eieio()
 
 #else
 
@@ -42,6 +38,10 @@ static inline unsigned long regr(unsigned long base_addr, unsigned long regindex
 
 #endif
 
+#define OUTREGPI(addr, val)	iptr->CMAPBase[IBM624_PIDXLO] = addr;	eieio(); \
+				iptr->CMAPBase[IBM624_PIDXDATA] = val;	eieio()
+#define OUTREGPT(addr, val)	iptr->CMAPBase[TVP_ADDRW] = addr;	eieio(); \
+				iptr->CMAPBase[TVP_IDATA] = val;	eieio()
 
 #define IMSTTMMIO_VARS()	\
 	unsigned long *IMSTTMMIO = IMSTTPTR(pScrn)->MMIOBase

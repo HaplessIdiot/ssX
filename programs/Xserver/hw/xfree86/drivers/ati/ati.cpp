@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.cpp,v 1.3 2000/03/21 19:57:12 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.cpp,v 1.4 2000/06/14 02:13:07 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH ATI __drivermansuffix__ "Version 4.0.1"  "XFree86"
@@ -13,7 +13,7 @@ ati \- ATI video driver
 .B EndSection
 .fi
 .SH DESCRIPTION
-.B ati 
+.B ati
 is an XFree86 driver for ATI video cards.
 THIS MAN PAGE NEEDS TO BE FILLED IN.
 .SH SUPPORTED HARDWARE

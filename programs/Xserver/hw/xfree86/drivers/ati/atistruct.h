@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.16 2000/04/23 19:27:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.17 2000/05/11 18:14:30 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -179,6 +179,7 @@ typedef struct _ATIRec
      */
     CARD16 DAC;
     CARD16 CPIO_DAC_MASK, CPIO_DAC_DATA, CPIO_DAC_READ, CPIO_DAC_WRITE;
+    CARD8 rgbBits;
 
     /*
      * Definitions related to system bus interface.
@@ -263,7 +264,22 @@ typedef struct _ATIRec
      * Data used by ATIAdjustFrame().
      */
     int AdjustDepth, AdjustMaxX, AdjustMaxY;
-    unsigned long AdjustMask;
+    unsigned long AdjustMask, AdjustMaxBase;
+
+    /*
+     * DGA and non-DGA common data.
+     */
+    DisplayModePtr currentMode;
+    CARD8 depth, bitsPerPixel;
+    short int displayWidth;
+    int pitchInc;
+    rgb weight;
+
+    /*
+     * Video mode data for DGA.
+     */
+    DGAModePtr pDGAMode;
+    int nDGAMode;
 
     /*
      * Data saved by ATIUnlock() and restored by ATILock().
