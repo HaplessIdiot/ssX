@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.7 2001/04/01 14:00:15 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.8 2001/05/15 18:22:23 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -486,32 +486,34 @@ ScreenDialog(XF86SetupInfo *info)
     }
 
 #ifdef USE_MODULES
-    while (drv_opts) {
-	if (drv_opts->type == VideoModule &&
-	    strcmp(drv_opts->name, screen->scrn_device->dev_driver) == 0) {
-	    OptionInfoPtr opts = drv_opts->option;
+    if (!nomodules) {
+	while (drv_opts) {
+	    if (drv_opts->type == VideoModule &&
+		strcmp(drv_opts->name, screen->scrn_device->dev_driver) == 0) {
+		OptionInfoPtr opts = drv_opts->option;
 
-	    while (opts->name) {
-		if (xf86nameCompare(opts->name, "Rotate") == 0) {
-		    foundRotate = True;
-		    break;
+		while (opts->name) {
+		    if (xf86nameCompare(opts->name, "Rotate") == 0) {
+			foundRotate = True;
+			break;
+		    }
+		    opts++;
 		}
-		opts++;
+		break;
 	    }
-	    break;
+	    drv_opts = drv_opts->next;
 	}
-	drv_opts = drv_opts->next;
-    }
 
-    if (!foundRotate) {
-	XtUnmapWidget(labelRotate);
-	XtUnmapWidget(cw);
-	XtUnmapWidget(ccw);
-    }
-    else {
-	XtMapWidget(labelRotate);
-	XtMapWidget(cw);
-	XtMapWidget(ccw);
+	if (!foundRotate) {
+	    XtUnmapWidget(labelRotate);
+	    XtUnmapWidget(cw);
+	    XtUnmapWidget(ccw);
+	}
+	else {
+	    XtMapWidget(labelRotate);
+	    XtMapWidget(cw);
+	    XtMapWidget(ccw);
+	}
     }
 #endif
     if (rotate == CW) {

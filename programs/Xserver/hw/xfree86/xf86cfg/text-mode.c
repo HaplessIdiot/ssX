@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.9 2001/03/01 20:37:25 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.10 2001/04/22 08:36:31 herrb Exp $
  */
 
 #include <stdio.h>
@@ -1055,31 +1055,16 @@ CardConfig(void)
     char **list = NULL, *identifier = NULL, *driver, *busid, *tmp;
     int nlist, def;
     CardsEntry *entry = NULL;
-#ifdef USE_MODULES
     static char **drivers;
     static int ndrivers;
+#ifdef USE_MODULES
     static char *path = NULL, *modules = "lib/modules";
     const char *subdirs[] = {
 	"drivers",
 	NULL
     };
-
-    if (XF86Module_path == NULL) {
-	XF86Module_path = XtMalloc(strlen(XFree86Dir) + strlen(modules) + 2);
-	sprintf(XF86Module_path, "%s/%s", XFree86Dir, modules);
-    }
-
-    if (drivers == NULL) {
-	xf86Verbose = 0;
-	LoaderInit();
-	path = XtNewString(XF86Module_path);
-	LoaderSetPath(path);
-	drivers = LoaderListDirs((char**)subdirs, NULL);
-	for (; drivers[ndrivers]; ndrivers++)
-	    ;
-    }
-#else
-    static char *drivers[] = {
+#endif
+    static char *xdrivers[] = {
 	"apm",
 	"ark",
 	"ati",
@@ -1107,8 +1092,30 @@ CardConfig(void)
 	"vga",
 	"vesa",
     };
-    static int ndrivers = sizeof(drivers) / sizeof(drivers[0]);
+
+#ifdef USE_MODULES
+    if (!nomodules) {
+	if (XF86Module_path == NULL) {
+	    XF86Module_path = XtMalloc(strlen(XFree86Dir) + strlen(modules) + 2);
+	    sprintf(XF86Module_path, "%s/%s", XFree86Dir, modules);
+	}
+
+	if (drivers == NULL) {
+	    xf86Verbose = 0;
+	    LoaderInit();
+	    path = XtNewString(XF86Module_path);
+	    LoaderSetPath(path);
+	    drivers = LoaderListDirs((char**)subdirs, NULL);
+	    for (; drivers[ndrivers]; ndrivers++)
+		;
+	}
+    }
+    else
 #endif
+    {
+	ndrivers = sizeof(xdrivers) / sizeof(xdrivers[0]);
+	drivers = xdrivers;
+    }
 
     nlist = 0;
     while (device) {

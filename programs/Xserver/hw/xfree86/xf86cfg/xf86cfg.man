@@ -26,7 +26,7 @@
 .\"
 .\" Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
 .\"
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86cfg.man,v 1.5 2001/01/23 23:52:47 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86cfg.man,v 1.6 2001/01/27 18:20:59 dawes Exp $
 .\"
 .TH xf86cfg 1 __vendorversion__
 .SH NAME
@@ -91,6 +91,10 @@ started by xf86cfg, if any.
 .I -textmode
 If xf86cfg was compiled with support to ncurses, this option makes xf86cfg
 enters a text mode interface.
+.TP 8
+.I -nomodules
+When built with support for loading modules, this options changes xf86cfg
+behaviour, so that it will not load any modules, and thus start quickier.
 
 .SH ENVIRONMENT
 .TP 8

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.7 2001/03/27 20:25:30 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.8 2001/04/01 14:00:15 tsi Exp $
  */
 
 #include "config.h"
@@ -2407,6 +2407,10 @@ NewDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
     DeleteNode(node);
     dev = (XF86ConfDevicePtr)XtCalloc(1, sizeof(XF86ConfDeviceRec));
     dev->dev_identifier = XtNewString(label);
+    dev->dev_chipid = -1;
+    dev->dev_chiprev = -1;
+    dev->dev_irq = -1;
+
     XF86Config->conf_device_lst =
 	xf86addDevice(XF86Config->conf_device_lst, dev);
 

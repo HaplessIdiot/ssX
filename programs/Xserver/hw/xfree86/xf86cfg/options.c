@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.5 2001/05/15 18:22:23 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.6 2001/05/18 16:03:14 tsi Exp $
  */
 
 #include "options.h"
@@ -250,10 +250,12 @@ OptionsPopup(XF86OptionPtr *opts)
 	update = XtCreateManagedWidget("update", commandWidgetClass,
 				       form, NULL, 0);
 	XtAddCallback(update, XtNcallback, UpdateOption, NULL);
-	command = XtCreateManagedWidget("help", commandWidgetClass,
-					form, NULL, 0);
 #ifdef USE_MODULES
-	XtAddCallback(command, XtNcallback, ModuleOptionsPopup, NULL);
+	if (!nomodules) {
+	    command = XtCreateManagedWidget("help", commandWidgetClass,
+					    form, NULL, 0);
+	    XtAddCallback(command, XtNcallback, ModuleOptionsPopup, NULL);
+	}
 #endif
 	form = XtCreateManagedWidget("form", formWidgetClass,
 				     pane, NULL, 0);
@@ -281,13 +283,15 @@ OptionsPopup(XF86OptionPtr *opts)
 	bottom = XtCreateManagedWidget("bottom", formWidgetClass,
 				       pane, NULL, 0);
 #ifdef USE_MODULES
-	button = XtCreateManagedWidget("driverOpts", menuButtonWidgetClass,
-					bottom, NULL, 0);
+	if (!nomodules)
+	    button = XtCreateManagedWidget("driverOpts", menuButtonWidgetClass,
+					    bottom, NULL, 0);
 #endif
 	popdown = XtVaCreateManagedWidget("popdown", commandWidgetClass,
 					bottom, NULL, 0);
 #ifdef USE_MODULES
-	XtVaSetValues(popdown, XtNfromHoriz, button, NULL, 0);
+	if (!nomodules)
+	    XtVaSetValues(popdown, XtNfromHoriz, button, NULL, 0);
 #endif
 
 	XtAddCallback(popdown, XtNcallback, PopdownCallback, NULL);
@@ -295,7 +299,7 @@ OptionsPopup(XF86OptionPtr *opts)
 	XSetWMProtocols(DPY, XtWindow(optionsShell), &wm_delete_window, 1);
 
 #ifdef USE_MODULES
-	{
+	if (!nomodules) {
 	    char *str;
 
 	    XtSetArg(args[0], XtNlabel, &str);
@@ -306,55 +310,57 @@ OptionsPopup(XF86OptionPtr *opts)
     }
 
 #ifdef USE_MODULES
-    if (menu)
-	XtDestroyWidget(menu);
-    XmuSnprintf(menuName, sizeof(buf), "optionM%d", menuN);
-    menuN = !menuN;
-    menu = XtCreatePopupShell(menuName, simpleMenuWidgetClass, button,
-			      NULL, 0);
-    XtVaSetValues(button, XtNmenuName, menuName, NULL, 0);
-    if (drv_opts) {
-	int len, longest = 0;
-	char fmt[32];
+    if (!nomodules) {
+	if (menu)
+	    XtDestroyWidget(menu);
+	XmuSnprintf(menuName, sizeof(buf), "optionM%d", menuN);
+	menuN = !menuN;
+	menu = XtCreatePopupShell(menuName, simpleMenuWidgetClass, button,
+				  NULL, 0);
+	XtVaSetValues(button, XtNmenuName, menuName, NULL, 0);
+	if (drv_opts) {
+	    int len, longest = 0;
+	    char fmt[32];
 
-	for (i = 0; drv_opts[i].name != NULL; i++) {
-	    len = strlen(drv_opts[i].name);
-	    if (len > longest)
-		longest = len;
-	}
-	XmuSnprintf(fmt, sizeof(fmt), "%c-%ds  %%s", '%', longest);
-	for (; drv_opts->name != NULL; drv_opts++) {
-	    char *type;
-
-	    if (drv_opts->type >= OPTV_NONE && drv_opts->type <= OPTV_FREQ)
-		type = types[drv_opts->type];
-	    else
-		type = "UNKNOWN";
-
-	    XmuSnprintf(buf, sizeof(buf), fmt, drv_opts->name, type);
-	    sme = XtVaCreateManagedWidget(drv_opts->name, smeBSBObjectClass,
-					  menu, XtNlabel, buf, NULL, 0);
-	    XtAddCallback(sme, XtNcallback, AddDriverOption, (XtPointer)drv_opts);
-	}
-    }
-    if (i) {
-	xf86cfgModuleOptions *mod = module_options;
-
-	while (mod) {
-	    if (strcmp(mod->name, driver) == 0) {
-		/* don't assign to driver, as it may be a temp string */
-		module_sel = mod->name;
-		break;
+	    for (i = 0; drv_opts[i].name != NULL; i++) {
+		len = strlen(drv_opts[i].name);
+		if (len > longest)
+		    longest = len;
 	    }
-	    mod = mod->next;
+	    XmuSnprintf(fmt, sizeof(fmt), "%c-%ds  %%s", '%', longest);
+	    for (; drv_opts->name != NULL; drv_opts++) {
+		char *type;
+
+		if (drv_opts->type >= OPTV_NONE && drv_opts->type <= OPTV_FREQ)
+		    type = types[drv_opts->type];
+		else
+		    type = "UNKNOWN";
+
+		XmuSnprintf(buf, sizeof(buf), fmt, drv_opts->name, type);
+		sme = XtVaCreateManagedWidget(drv_opts->name, smeBSBObjectClass,
+					      menu, XtNlabel, buf, NULL, 0);
+		XtAddCallback(sme, XtNcallback, AddDriverOption, (XtPointer)drv_opts);
+	    }
 	}
-	XmuSnprintf(buf, sizeof(buf), "%s%s", label, driver);
-	XtSetArg(args[0], XtNlabel, buf);
-	XtSetValues(button, args, 1);
-	XtMapWidget(button);
+	if (i) {
+	    xf86cfgModuleOptions *mod = module_options;
+
+	    while (mod) {
+		if (strcmp(mod->name, driver) == 0) {
+		    /* don't assign to driver, as it may be a temp string */
+		    module_sel = mod->name;
+		    break;
+		}
+		mod = mod->next;
+	    }
+	    XmuSnprintf(buf, sizeof(buf), "%s%s", label, driver);
+	    XtSetArg(args[0], XtNlabel, buf);
+	    XtSetValues(button, args, 1);
+	    XtMapWidget(button);
+	}
+	else
+	    XtUnmapWidget(button);
     }
-    else
-	XtUnmapWidget(button);
 #endif
 
     UpdateOptionList();
