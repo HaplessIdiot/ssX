@@ -112,7 +112,7 @@ SHARED_DEFINES	= -DSHARED_MODULES
         DEFINES = -DLISP $(SHARED_DEFINES) -DLISPDIR='"$(LISPDIR)"' \
 		  $(SNPRINTF_DEFS) $(SYS_DEFINES) $(SIGNAL_DEFINES)
         DEPLIBS = mp re
-       INCLUDES = -Imp -Ire -I- $(MISC_INCLUDES)
+       INCLUDES = -I. -Imp -Ire -I- $(MISC_INCLUDES)
 LOCAL_LIBRARIES = -L. -llisp -Lmp -lmp -Lre -lre -lm $(DLLIB)
 
 #ifdef IHaveSubdirs
