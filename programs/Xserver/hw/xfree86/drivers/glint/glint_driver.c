@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.87 2000/06/17 16:32:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.88 2000/06/21 17:28:07 dawes Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -330,6 +330,8 @@ static const char *drmSymbols[] = {
     "drmMapBufs",
     "drmMarkBufs",
     "drmUnmapBufs",
+    "drmFreeVersion",
+    "drmGetVersion",
     NULL
 };
 
@@ -342,6 +344,7 @@ static const char *driSymbols[] = {
     "DRIScreenInit",
     "DRIDestroyInfoRec",
     "DRICreateInfoRec",
+    "DRIQueryVersion",
     "GlxSetVisualConfigs",
     NULL
 };

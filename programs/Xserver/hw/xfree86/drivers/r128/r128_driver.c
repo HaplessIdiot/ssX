@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.35 2000/06/17 00:03:22 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.36 2000/06/21 17:28:13 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -353,6 +353,8 @@ static const char *drmSymbols[] = {
     "drmMapBufs",
     "drmMarkBufs",
     "drmUnmapBufs",
+    "drmFreeVersion",
+    "drmGetVersion",
     NULL
 };
 
@@ -369,6 +371,7 @@ static const char *driSymbols[] = {
     "DRIUnlock",
     "DRIGetSAREAPrivate",
     "DRIGetContext",
+    "DRIQueryVersion",
     "GlxSetVisualConfigs",
     NULL
 };

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.12 2000/06/20 05:08:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.13 2000/06/21 17:28:08 dawes Exp $ */
 
 /*
  * Authors:
@@ -213,6 +213,8 @@ static const char *drmSymbols[] = {
    "drmAgpBind",
    "drmI810CleanupDma",
    "drmI810InitDma",
+   "drmFreeVersion",
+   "drmGetVersion",
    NULL
 };
 
@@ -229,6 +231,7 @@ static const char *driSymbols[] = {
     "DRIUnlock",
     "DRIGetSAREAPrivate",
     "DRIGetContext",
+    "DRIQueryVersion",
     "GlxSetVisualConfigs",
     NULL
 };
