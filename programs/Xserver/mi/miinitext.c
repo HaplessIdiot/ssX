@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c,v 1.32 94/04/17 20:27:38 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.3 1995/03/08 10:16:50 dawes Exp $ */
 
 #include "misc.h"
 
@@ -120,8 +120,8 @@ extern void XRecordExtensionInit();
 extern void     LbxExtensionInit();
 #endif
 #ifdef XFREE86
-#ifdef VGAHELP
-extern void	VGAHelpExtensionInit();
+#ifdef XF86VIDMODE
+extern void	XF86VidModeExtensionInit();
 #endif
 #endif
 
