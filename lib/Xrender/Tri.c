@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xrender/Tri.c,v 1.1 2002/05/13 05:21:46 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -50,7 +50,7 @@ XRenderCompositeTriangles (Display		*dpy,
 	req->op = (CARD8) op;
 	req->src = src;
 	req->dst = dst;
-	req->maskFormat = maskFormat->id;
+	req->maskFormat = maskFormat ? maskFormat->id : 0;
 	req->xSrc = xSrc;
 	req->ySrc = ySrc;
 	n = ntriangle;
@@ -95,7 +95,7 @@ XRenderCompositeTriStrip (Display		*dpy,
 	req->op = (CARD8) op;
 	req->src = src;
 	req->dst = dst;
-	req->maskFormat = maskFormat->id;
+	req->maskFormat = maskFormat ? maskFormat->id : 0;
 	req->xSrc = xSrc;
 	req->ySrc = ySrc;
 	n = npoint;
@@ -128,7 +128,7 @@ XRenderCompositeTriFan (Display			*dpy,
     XExtDisplayInfo         *info = XRenderFindDisplay (dpy);
     _Xconst XPointFixed	    *first = points;
     xPointFixed		    *p;
-    xRenderTriStripReq	    *req;
+    xRenderTriFanReq	    *req;
     int			    n;
     long    		    len;
 
@@ -138,13 +138,13 @@ XRenderCompositeTriFan (Display			*dpy,
     npoint--;
     while (npoint > 1)
     {
-	GetReqExtra(RenderTriStrip, SIZEOF (xPointFixed), req);
+	GetReqExtra(RenderTriFan, SIZEOF (xPointFixed), req);
 	req->reqType = info->codes->major_opcode;
-	req->renderReqType = X_RenderTriStrip;
+	req->renderReqType = X_RenderTriFan;
 	req->op = (CARD8) op;
 	req->src = src;
 	req->dst = dst;
-	req->maskFormat = maskFormat->id;
+	req->maskFormat = maskFormat ? maskFormat->id : 0;
 	req->xSrc = xSrc;
 	req->ySrc = ySrc;
 	p = (xPointFixed *) (req + 1);
