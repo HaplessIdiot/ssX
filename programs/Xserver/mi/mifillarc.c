@@ -28,6 +28,7 @@ Author:  Bob Scheifler, MIT X Consortium
 ********************************************************/
 
 /* $XConsortium: mifillarc.c,v 5.17 94/04/17 20:27:33 keith Exp $ */
+/* $XFree86$ */
 
 #include <math.h>
 #include "X.h"
@@ -114,7 +115,7 @@ miFillArcSetup(arc, info)
     }
 }
 
-static void
+void
 miFillArcDSetup(arc, info)
     register xArc *arc;
     register miFillArcDRec *info;

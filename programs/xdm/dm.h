@@ -1,5 +1,5 @@
 /* $XConsortium: dm.h,v 1.63 94/04/17 20:03:37 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.4 1994/10/20 06:15:10 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.5 1994/10/23 13:02:27 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -361,7 +361,7 @@ char *malloc(), *realloc();
 #define SIGVAL void
 #endif
 
-#if defined(X_NOT_POSIX) || defined(__EMX__)
+#if defined(X_NOT_POSIX) || defined(__EMX__) || defined(__NetBSD__) && defined(__sparc__)
 #if defined(SYSV) || defined(__EMX__)
 #define SIGNALS_RESET_WHEN_CAUGHT
 #define UNRELIABLE_SIGNALS
