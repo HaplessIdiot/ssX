@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.18 1994/12/10 02:12:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.19 1994/12/17 10:05:45 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -139,22 +139,10 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			      0, 0, (short) s3alu[GXcopy], ~0);	 
 
 	    if (S3_801_928_SERIES (s3ChipId)) {
-	       int j;
-
-	       if (s3Mmio928) { /* Due to S3 bugs we must disable mmio */
-		  outb(vgaCRIndex, 0x53);
-		  reg53tmp = inb(vgaCRReg);
-		  outb(vgaCRReg, reg53tmp & ~0x10); /* save parallel bit */
-	       }
-	       /* begin 801 sequence for going in to linear mode */
-	       outb (vgaCRIndex, 0x40);
-	       /* enable fast write buffer and disable 8514/a mode */
-	       j = (s3Port40 & 0xf6) | 0x0a;
-	       outb (vgaCRReg, (unsigned char) j);
 	       outb(vgaCRIndex, 0x59);
 	       if (S3_x64_SERIES(s3ChipId)) 
 		  if (s3InfoRec.MemBase != 0) 
-		     outb(vgaCRReg, 0x03 | (s3InfoRec.MemBase>>24));
+		     outb(vgaCRReg, s3InfoRec.MemBase>>24);
 		  else
 		     outb(vgaCRReg, 0x03 | 0xf0);
 	       else
@@ -170,9 +158,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		  s3LinApOpt=0x17;
 	       }
        	       s3BankSize = s3InfoRec.videoRam * 1024;
-	       /* go on to linear mode */
-	       outb (vgaCRReg, s3LinApOpt | s3SAM256);
-	       /* end  801 sequence to go into linear mode */
+	       s3EnableLinear();
 	    }
 	 
 	    /*
@@ -203,8 +189,17 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       addr = (s3InfoRec.MemBase & 0xffc00000);
 	       s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 					  (pointer)addr, s3BankSize);
+	       s3DisableLinear();
 	       outb(vgaCRIndex, 0x5a);
-	       outb(vgaCRReg, 0xc0);
+	       if (S3_x64_SERIES(s3ChipId)) {
+		  outb(vgaCRReg, (addr >> 16) & 0xff);
+		  outb(vgaCRIndex, 0x59);
+		  outb(vgaCRReg, (addr >> 24) & 0xff);
+	       }
+	       else 
+		  outb(vgaCRReg, 0xc0);
+	       s3EnableLinear();
+
 	       s3LinearAperture = TRUE;
 	       ErrorF("%s %s: Local bus LAW is 0x%03lXxxxxx\n", 
 		      XCONFIG_GIVEN, s3InfoRec.name, (addr >> 20));
@@ -213,11 +208,14 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		  /* So far, only tested for the PCI ELSA W2000Pro */
 		  unsigned long addr;
 
+		  s3DisableLinear();
 	          outb(vgaCRIndex, 0x59);
 	          addr = inb(vgaCRReg) << 8;
 	          outb(vgaCRIndex, 0x5a);
 	          addr |= inb(vgaCRReg);
 	          addr <<= 16;
+		  s3EnableLinear();
+
                   if (OFLG_ISSET(OPTION_FB_DEBUG, &s3InfoRec.options)) {
 		     ErrorF("Read LAW as 0x%08X \n", addr);
 	          }
@@ -252,9 +250,12 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     if (s3TryAddress(poker, pVal, addr, 1)) {
 			/* We found some ram, but is it ours? */
 	       
+			s3DisableLinear();
 			/* move it up by 12MB */
 			outb(vgaCRIndex, 0x5a);
 			outb(vgaCRReg, 0xC0);
+			s3EnableLinear();
+
 			if (!s3TryAddress(poker, pVal, addr, 2)) {
 			   addr += (0x0C<<20);
 			   xf86UnMapVidMem(scr_index, LINEAR_REGION,
@@ -298,8 +299,10 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			   ErrorF("\t address range.\n");
 			   CachedFrameBuffer = TRUE;
 			}
+			s3DisableLinear();
 			outb(vgaCRIndex, 0x5a);
 			outb(vgaCRReg, 0x00);	/* reset for next probe */
+			s3EnableLinear();
 		     }
 		     xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
 				     s3BankSize);
@@ -319,18 +322,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       s3BankSize = 0x10000;
 	       s3VideoMem = NULL;
 	    }
-	    if (S3_801_928_SERIES (s3ChipId)) {
-	       /* begin 801  sequence to go into enhanced mode */
-	       outb (vgaCRIndex, 0x58);
-	       outb (vgaCRReg, s3SAM256);
-	       outb (vgaCRIndex, 0x40);
-	       outb (vgaCRReg, s3Port40);
-	       /* end 801 sequence to go into enhanced mode */
-	    }
-	    if (s3Mmio928) { /* Now re-enable mmio if required */
-	       outb(vgaCRIndex, 0x53);
-	       outb(vgaCRReg, reg53tmp | 0x10);
-	    }
+            s3DisableLinear();
          }
       }
 

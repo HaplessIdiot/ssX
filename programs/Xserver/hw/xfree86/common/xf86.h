@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.1 94/03/28 21:22:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.10 1994/10/29 22:37:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.11 1994/12/11 10:54:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -146,6 +146,7 @@ typedef struct {
   unsigned int   instance;        /* AGX - video card instance number */
   int s3Madjust;
   int s3Nadjust;
+  int s3MClk;
 } ScrnInfoRec, *ScrnInfoPtr;
 
 typedef struct {

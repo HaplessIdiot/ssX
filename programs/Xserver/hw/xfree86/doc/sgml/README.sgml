@@ -6,7 +6,7 @@
 
  <title>README for XFree86(TM) 3.1
  <author> The XFree86 Project, Inc
- <date>28 September 1994
+ <date>2 October 1994
 
 
 <abstract>
@@ -174,7 +174,7 @@ In addition, the following SVGA chipsets are supported:
 	AVGA 
     <tag/OAK /
 	OTI067, OTI077 
-    <tag/Advance Logic /
+    <tag/Avance Logic /
 	AL2101 
     <tag/MX /
 	MX68000, MX680010 
@@ -406,7 +406,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
        Per Lindqvist <it>&lt;pgd@compuram.bbt.se&gt;</it> and Doug Evans
        <it>&lt;dje@cygnus.com&gt;</it>. 
        Ported to X11R5 by Rik Faith <it>&lt;faith@cs.unc.edu&gt;</it>.
-       Rewritten by Marc La France <it>&lt;tsi@gpu.srv.ualberta.ca&gt;</it>
+       Rewritten by Marc La France <it>&lt;tsi@ualberta.ca&gt;</it>
 <tag/Trident SVGA driver by:  /
        Alan Hourihane <it>&lt;alanh@fairlite.demon.co.uk&gt;</it>
 <tag/NCR SVGA driver by:  /
@@ -581,13 +581,15 @@ and the following mirror sites:
 <item>   <url url="ftp://xfree86.cdrom.com/pub/XFree86" 
 	name="Xfree86.cdrom.com">:/pub/XFree86           (source and binaries)
 <item>   <url url="ftp://ftp.bsdi.com/contrib/X11/XFree86" 
-	name="ftp.bsdi.com">:/contrib/X11/XFree86        (BSD/386 binaries only)
-<item>   <url url="ftp://ftp.iastate.edu/pub/netbsd/XFree86-3.1" 
-	name="ftp.iastate.edu">:/pub/netbsd/XFree86-3.1  (NetBSD binaries only)
+	name="ftp.bsdi.com">:/contrib/X11/XFree86        (source and BSD/386 binaries)
+<item>   <url url="ftp://ref.tfs.com/pub/mirrors/XFree86" 
+	name="ref.tfs.com">:/pub/mirrors/XFree86         (source and FreeBSD binaries)
+<item>   <url url="ftp://ftp.iastate.edu/pub/netbsd/XFree86/XFree86-3.1" 
+	name="ftp.iastate.edu">:/pub/netbsd/XFree86/XFree86-3.1  (source and NetBSD binaries)
 <item>   <url url="ftp://tsx-11.mit.edu/pub/linux/packages/X11" 
-	name="tsx-11.mit.edu">:/pub/linux/packages/X11   (Linux binaries only)
-<item>   <url url="ftp://ftp.eecs.umich.edu/bsd/Xfree86" 
-	name="ftp.eecs.umich.edu">:/bsd/Xfree86          (source and binaries)
+	name="tsx-11.mit.edu">:/pub/linux/packages/X11   (Linux binaries and source diffs)
+<item>   <url url="ftp://ftp.eecs.umich.edu/BSD/XFree86" 
+	name="ftp.eecs.umich.edu">:/BSD/XFree86          (source and binaries)
 <item>   <url url="ftp://sunsite.unc.edu/pub/X11/XFree86" 
 	name="sunsite.unc.edu">:/pub/X11/XFree86         (source and binaries)
 <item>   <url url="ftp://abode.ccd.bnl.gov/pub/XFree86" 
@@ -603,14 +605,13 @@ and the following mirror sites:
 <item>   <url url="ftp://ftp.uni-stuttgart.de/pub/X11/Xfree86" 
 	name="ftp.uni-stuttgart.de">:/Pub/X11/Xfree86    (source and binaries)
 <item>   <url url="ftp://ftp.funet.fi/pub/X11/XFree86" 
-	name="ftp.funet.fi">:/pub/X11/XFree86            (source diffs only)
+	name="ftp.funet.fi">:/pub/X11/XFree86            (source and binaries)
 <item>   <url url="ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1" 
 	name="ftp.laas.fr">:/pub/netbsd/XFree86-3.1      (NetBSD binaries only)
-<item>   <url url="ftp://ftp.unipi.it/pub/mirrors/XFree86" 
-	name="ftp.unipi.it">:/pub/mirrors/XFree86        (source and binaries)
+<item>   <url url="ftp://ftp.unipi.it/pub/mirrors/XFree86-3.1" 
+	name="ftp.unipi.it">:/pub/mirrors/XFree86-3.1    (source and binaries)
 <item>   <url url="ftp://nova.pvv.unit.no/pub/XFree86/current" 
 	name="nova.pvv.unit.no">:/pub/XFree86/current    (source and binaries)
-<item>   <url url="ftp://sprocket.ict.pwr.wroc.pl/" name="sprocket.ict.pwr.wroc.pl">:                (under consideration)
 <item>   <url url="ftp://ftp.demon.co.uk/pub/Xwindows/XFree86" 
 	name="ftp.demon.co.uk">:/pub/Xwindows/XFree86    (source and binaries)
 </itemize>
@@ -630,8 +631,8 @@ and the following mirror sites:
 	name="ftp.iij.ad.jp">:/Pub/X/XFree86             (source and binaries)
 <item>   <url url="ftp://ftp.nectec.or.th/pub/mirrors/XFree86" 
 	name="ftp.nectec.or.th">:/pub/mirrors/XFree86    (source and binaries)
-<item>   <url url="ftp://nctuccca.edu.tw/X/XFree86" 
-	name="nctuccca.edu.tw">:/X/XFree86               (source and Linux binaries)
+<item>   <url url="ftp://ftp.edu.tw/X/XFree86/3.1" 
+	name="ftp.edu.tw">:/X/XFree86/3.1                (source and Linux binaries)
 </itemize>
 
 </itemize>
@@ -646,10 +647,10 @@ older releases as well.  Each binary distribution will contain a <tt>README</tt>
 file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
-28 September 1994
+2 October 1994
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.0 1994/12/20 11:33:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.1 1994/12/26 11:03:33 dawes Exp $
 </verb>
 
 </article>

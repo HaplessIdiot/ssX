@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.54 1994/12/18 10:58:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.55 1994/12/25 12:23:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -112,6 +112,7 @@ ScrnInfoRec s3InfoRec =
    0,				/* int instance */
    0,				/* int s3Madjust */
    0,				/* int s3Nadjust */
+   0,				/* int s3MClk */
 };
 
 short s3alu[16] =
@@ -260,6 +261,40 @@ s3PrintIdent()
       c += strlen(id);
     }
   ErrorF("\n");
+}
+
+
+static int s3DetectMIRO_20SV_Rev(int BIOSbase)
+{
+#define BIOS_BSIZE 1024
+#define BIOS_BASE  0xc0000
+
+   long addr = BIOSbase>0 ? BIOSbase : BIOS_BASE;
+
+   unsigned char bios[BIOS_BSIZE];
+   char *match1 = "miroCRYSTAL\37720SV", *match2 = "Rev.";
+   int i,j,l1,l2;
+   
+   if (xf86ReadBIOS(BIOSbase, 0, bios, BIOS_BSIZE) != BIOS_BSIZE)
+      return -1;
+
+   if ((bios[0] != 0x55) || (bios[1] != 0xaa))
+      return -2;
+
+   l1 = strlen(match1);
+   l2 = strlen(match2);
+   for (i=0; i<BIOS_BSIZE-l1; i++) 
+      if (bios[i] == match1[0] && !memcmp(&bios[i],match1,l1)) {
+	 for(j=i+l1; (j<BIOS_BSIZE-l2-2) && bios[j]; j++) 
+	    if (bios[j] == match2[0] && !memcmp(&bios[j],match2,l2)) {
+	       if (bios[j+l2] >= '0' && bios[j+l2] <= '9')
+		  return bios[j+l2] - '0';
+	       else {
+		  return -3;
+	       }
+	    }
+      }
+   return -4;
 }
 
 
@@ -491,7 +526,6 @@ s3Probe()
 #if 0
    /* These aren't needed any more */
    OFLG_SET(OPTION_STEALTH64, &validOptions);
-   OFLG_SET(OPTION_MIRO_CRYSTAL20SV, &validOptions);
 #endif
    if (S3_928_P(s3ChipId))
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
@@ -527,6 +561,14 @@ s3Probe()
 	    ErrorF("%s %s: card type: PCI\n", XCONFIG_PROBED, s3InfoRec.name);
 	 }
       }
+   }
+
+   card_id = s3DetectMIRO_20SV_Rev(s3InfoRec.BIOSbase);
+   if (card_id > 1) {
+      ErrorF("%s %s: MIRO 20SV Rev.2 or newer detected.\n",
+             XCONFIG_PROBED, s3InfoRec.name);
+      if (!OFLG_ISSET(OPTION_S3_964_BT485_VCLK, &s3InfoRec.options))
+	 ErrorF("\tplease use Option \"s3_964_bt485_vclk\"\n");
    }
 
    card_id = s3DetectELSA(s3InfoRec.BIOSbase, &card, &serno, &max_pix_clock,
@@ -1270,7 +1312,7 @@ s3Probe()
       s3ClockSelectFunc = s3GendacClockSelect;
       if (xf86Verbose) {
 	 unsigned char saveCR55;
-	 int i,m,n,n1,n2;
+	 int i,m,n,n1,n2, mclk;
 
 	 outb(vgaCRIndex, 0x55);
 	 saveCR55 = inb(vgaCRReg);
@@ -1286,10 +1328,17 @@ s3Probe()
 	 m &= 0x7f;
 	 n1 = n & 0x1f;
 	 n2 = (n>>5) & 0x03;
-
+	 mclk = ((1431818 * (m+2.0)) / (n1+2.0) / (1 << n2) + 50) / 100;
 	 ErrorF("%s %s: Using S3 Gendac/SDAC programmable clock (MCLK %1.3f MHz)\n",
 		clockchip_probed, s3InfoRec.name
-		,((m+2.0) / (n1+2.0) / (1 << n2)) * 14.31818);
+		,mclk / 1000.0);
+	 if (s3InfoRec.s3MClk > 0) {
+	    ErrorF("%s %s: using specified MCLK value of %1.3f MHz for DRAM timings\n",
+		   XCONFIG_GIVEN, s3InfoRec.s3MClk / 1000.0);
+	 }
+	 else {
+	    s3InfoRec.s3MClk = mclk;
+	 }
       }
       numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.1 94/03/28 21:23:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.16 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.17 1994/11/30 20:41:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -92,6 +92,7 @@ typedef struct {
    int instance;
    int s3Madjust;
    int s3Nadjust;
+   int s3MClk;
 } GDevRec, *GDevPtr;
 
 typedef struct {
@@ -355,6 +356,7 @@ static SymTabRec KeyMapTab[] = {
 #define MEMBASE		26
 #define CLOCKCHIP	27
 #define S3MNADJUST	28
+#define S3MCLK		29
 
 #ifdef INIT_CONFIG
 static SymTabRec DeviceTab[] = {
@@ -380,6 +382,7 @@ static SymTabRec DeviceTab[] = {
   { INSTANCE,	"instance" },
   { CLOCKCHIP,	"clockchip" },
   { S3MNADJUST,	"s3mnadjust" },
+  { S3MCLK,	"s3mclk" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.40 1994/12/18 10:58:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.41 1994/12/25 12:23:47 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1232,9 +1232,11 @@ s3Init(mode)
 
 	    /* blank_delay = 0 (at least for Miro Crystal 20SV) */
 	    outb(vgaCRIndex, 0x6d);
-	    outb(vgaCRReg, 0);
+	    if ((mode->Flags & V_DBLCLK) || s3Bpp > 1) 
+	       outb(vgaCRReg, 0);
+	    else
+	       outb(vgaCRReg, 1);  /* or 2; needed for 20SV with ATT 20C505 */
          }
-
 	 outb(vgaCRIndex, 0x65);
 	 tmp = inb(vgaCRReg);
 
@@ -1945,6 +1947,43 @@ s3Init(mode)
       outb(vgaCRIndex, 0x42);
       tmp = inb(vgaCRReg);
       outb(vgaCRReg, 0x20 | tmp);
+   }
+
+   if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
+      if (OFLG_ISSET(OPTION_S3_964_BT485_VCLK, &s3InfoRec.options)) {
+	 /*
+	  * This is the design alert from S3 with Bt485A and Vision 964. 
+	  */
+	 int i,last,tmp,cr55,cr67;
+
+	 outb(vgaCRIndex, 0x55);
+	 cr55 = inb(vgaCRReg);
+	 outb(vgaCRReg, cr55 | 0x04); /* enable rad of general input */
+	 outb(vgaCRIndex, 0x67);
+	 cr67 = inb(vgaCRReg);
+
+	 for(last=i=0; i<20; i++) {
+	    usleep(20*1000);
+	    if ((inb(0x3c8) & 0x04) == 0) { /* if GD2 is low then */
+	       last = i;
+	       outb(vgaCRIndex, 0x67);
+	       tmp = inb(vgaCRReg);
+	       outb(vgaCRReg, tmp ^ 0x01); /* clock should be inverted */
+#if 0
+	       ErrorF("inverted VCLK %d  to 0x%02x\n",i,tmp ^ 0x01);
+#endif
+	    }
+	    if (i-last > 4) break;
+	 }
+	 outb(vgaCRIndex, 0x55);
+	 outb(vgaCRReg, cr55); 
+	 outb(vgaCRIndex, 0x67);
+	 tmp = inb(vgaCRReg);
+#if 0
+	 /* if ((cr67 ^ tmp) & 0x01)  */ 
+	 ErrorF("VCLK has been inverted %d times from 0x%02x to 0x%02x now\n",i,cr67,tmp);
+#endif
+      }
    }
 
 #ifdef REG_DEBUG

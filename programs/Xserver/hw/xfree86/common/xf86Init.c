@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.2 94/03/28 21:23:10 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.11 1994/12/17 10:06:10 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.12 1994/12/25 12:25:38 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,7 +61,9 @@ static void xf86PrintConfig();
 extern ScrnInfoPtr xf86Screens[];
 extern int xf86MaxScreens;
 extern double pow();
+#ifdef USE_XF86_SERVERLOCK
 extern void xf86UnlockServer();
+#endif
 
 xf86InfoRec xf86Info;
 int         xf86ScreenIndex;
@@ -180,6 +182,7 @@ InitOutput(pScreenInfo, argc, argv)
     {
       extern void AbortDDX();
       xf86VTSema = FALSE;
+      OsCleanup();
       AbortDDX();
       fflush(stderr);
       exit(0);
@@ -331,6 +334,7 @@ InitInput(argc, argv)
 void
 OsVendorInit()
 {
+#ifdef USE_XF86_SERVERLOCK
   extern void xf86LockServer();
   static Bool been_here = FALSE;
 
@@ -338,6 +342,7 @@ OsVendorInit()
     xf86LockServer();
     been_here = TRUE;
   }
+#endif
 }
 
 /*
@@ -350,7 +355,9 @@ OsVendorInit()
 void
 ddxGiveUp()
 {
+#ifdef USE_XF86_SERVERLOCK
   xf86UnlockServer();
+#endif
 
   xf86CloseConsole();
 

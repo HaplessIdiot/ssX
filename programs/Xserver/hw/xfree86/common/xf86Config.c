@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.30 1994/12/11 10:54:33 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.31 1994/12/25 12:25:34 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1590,6 +1590,11 @@ configDeviceSection()
 	    devp->s3Nadjust = val.num;
       }
       else pushToken = token;
+      break;
+
+    case S3MCLK:
+      if (getToken(NULL) != NUMBER) configError("MCLK value in MHz expected");
+      devp->s3MClk = (int)(val.realnum * 1000.0 + 0.5);
       break;
 
     case EOF:

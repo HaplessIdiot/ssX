@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.14 1994/10/20 06:09:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.15 1994/12/18 10:58:35 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -90,6 +90,7 @@ typedef struct {
 #define OPTION_DAC_8_BIT	53 /* 8-bit DAC operation */
 #define OPTION_SYNC_ON_GREEN	54 /* Set Sync-On-Green in RAMDAC */
 #define OPTION_BT482_CURS       55 /* Use Bt482 RAMDAC cursor */
+#define OPTION_S3_964_BT485_VCLK	56 /* probe/invert VCLK for 964 + Bt485 */
 
 /* Vendor specific pixmux enabling options */
 #define OPTION_SPEA_MERCURY	70 /* pixmux for SPEA Mercury (S3) */
@@ -98,7 +99,6 @@ typedef struct {
 #define OPTION_ELSA_W1000PRO	73 /* pixmux for ELSA Winner 1000PRO (S3) */
 #define OPTION_ELSA_W2000PRO	74 /* pixmux for ELSA Winner 2000PRO (S3) */
 #define OPTION_STEALTH64	75 /* pixmux for Diamond Stealth 64 (S3) */
-#define OPTION_MIRO_CRYSTAL20SV	76 /* pixmux for miroCRYSTAL 20SV (S3) */
 
 /* Misc options */
 #define OPTION_CSYNC		90 /* Composite sync */
@@ -185,6 +185,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "dac_8_bit",	OPTION_DAC_8_BIT },
   { "sync_on_green",    OPTION_SYNC_ON_GREEN },
   { "bt482_curs",	OPTION_BT482_CURS },
+  { "s3_964_bt485_vclk",OPTION_S3_964_BT485_VCLK },
 
   { "spea_mercury",	OPTION_SPEA_MERCURY },
   { "number_nine",	OPTION_NUMBER_NINE },
@@ -193,7 +194,6 @@ OptFlagRec xf86_OptionTab[] = {
   { "elsa_w1000isa",	OPTION_ELSA_W1000PRO }, /* These are treated the same */
   { "elsa_w2000pro",	OPTION_ELSA_W2000PRO },
   { "stealth64",	OPTION_STEALTH64 },
-  { "miro_crystal20sv",	OPTION_MIRO_CRYSTAL20SV },
 
   { "composite",	OPTION_CSYNC },
   { "secondary",	OPTION_SECONDARY },
