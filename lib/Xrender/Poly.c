@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Poly.c,v 1.4 2002/05/16 15:28:22 tsi Exp $
+ * $XFree86: xc/lib/Xrender/Poly.c,v 1.5 2002/05/17 06:54:33 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -77,7 +77,7 @@ XRenderComputeIntersect (XLineFixed *l1, XLineFixed *l2)
     double  m1 = XRenderComputeInverseSlope (l1);
     double  b1 = XRenderComputeXIntercept (l1, m1);
     double  m2 = XRenderComputeInverseSlope (l2);
-    double  b2 = XRenderComputeXIntercept (l2, m1);
+    double  b2 = XRenderComputeXIntercept (l2, m2);
 
     return XDoubleToFixed ((b2 - b1) / (m1 - m2));
 }
