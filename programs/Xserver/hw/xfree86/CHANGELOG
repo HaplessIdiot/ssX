@@ -1,4 +1,5 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 629. Fix libfontenc link failure on OS/2 (Bugzilla #921, Frank Giessler).
  628. OS/2 fixes:
        - Unable to connect to a font server.
        - SIGFPE in GLX.
@@ -18275,7 +18276,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2997 2003/11/29 01:44:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2998 2003/11/29 01:48:29 dawes Exp $
 
 
 
