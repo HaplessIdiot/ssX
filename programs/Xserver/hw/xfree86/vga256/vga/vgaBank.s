@@ -1,5 +1,5 @@
 /* $XConsortium: vgaBank.s,v 1.2 94/03/29 11:57:11 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.0 1994/05/04 15:05:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -109,11 +109,13 @@ GLNAME(saveseg):
  * {
  * #ifdef XF86VGA16
  *   writeseg = ((unsigned long)p - vgaBase) >> vgaSegmentShift;
+ *   (vgaSetReadWriteFunc)(writeseg);
+ *   return (vgaWriteBottom + (((unsigned int)p - vgaBase) & vgaSegmentMask));
  * #else
  *   writeseg = ((unsigned long)p - VGABASE) >> vgaSegmentShift;
- * #endif
  *   (vgaSetReadWriteFunc)(writeseg);
  *   return (vgaWriteBottom + ((unsigned int)p & vgaSegmentMask));
+ * #endif
  * }
  *
  */
@@ -136,6 +138,9 @@ GLNAME(vgaSetReadWrite):
 	POP_L	(EDX)
 	POP_L	(ECX)
 	MOV_L	(REGOFF(4,ESP),EAX)
+#ifdef XF86VGA16
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+#endif
 	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)),EAX)
  	RET
@@ -223,11 +228,13 @@ GLNAME(vgaReadWritePrev):
  * {
  * #ifdef XF86VGA16
  *   readseg = ((unsigned long)p - vgaBase) >> vgaSegmentShift;
+ *   (vgaSetReadFunc)(readseg);
+ *   return (vgaReadBottom + (((unsigned int)p - vgaBase) & vgaSegmentMask));
  * #else
  *   readseg = ((unsigned long)p - VGABASE) >> vgaSegmentShift;
- * #endif
  *   (vgaSetReadFunc)(readseg);
  *   return (vgaReadBottom + ((unsigned int)p & vgaSegmentMask));
+ * #endif
  * }
  *
  */
@@ -250,6 +257,9 @@ GLNAME(vgaSetRead):
 	POP_L	(EDX)
 	POP_L	(ECX)
 	MOV_L	(REGOFF(4,ESP),EAX)
+#ifdef XF86VGA16
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+#endif
 	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
 	ADD_L	(CONTENT(GLNAME(vgaReadBottom)),EAX)
  	RET
@@ -337,11 +347,13 @@ GLNAME(vgaReadPrev):
  * {
  * #ifdef XF86VGA16
  *   writeseg = ((unsigned long)p - vgaBase) >> vgaSegmentShift;
+ *   (vgaSetWriteFunc)(writeseg);
+ *   return (vgaWriteBottom + (((unsigned int)p - vgaBase) & vgaSegmentMask));
  * #else
  *   writeseg = ((unsigned long)p - VGABASE) >> vgaSegmentShift;
- * #endif
  *   (vgaSetWriteFunc)(writeseg);
  *   return (vgaWriteBottom + ((unsigned int)p & vgaSegmentMask));
+ * #endif
  * }
  *
  */
@@ -364,6 +376,9 @@ GLNAME(vgaSetWrite):
 	POP_L	(EDX)
 	POP_L	(ECX)
 	MOV_L	(REGOFF(4,ESP),EAX)
+#ifdef XF86VGA16
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+#endif
 	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)),EAX)
  	RET
