@@ -3,7 +3,7 @@
 
 INCLUDES	= -I..  -I$(XINCLUDESRC)
 
-GPERFFLAGS	= -T -n -a -c -p -j1 -g -o -t -D -N
+GPERFFLAGS	= -T -n -a -c -p -j1 -o -t -D -N
 
 #if BuildSharedLispModules
 GperfLispFile(x11,x11table,$(GPERFFLAGS) x11FindFun)
