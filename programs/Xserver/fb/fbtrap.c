@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.1 2002/05/13 05:25:59 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.2 2002/05/13 05:26:37 keithp Exp $
  *
  * Copyright © 2000 University of Southern California
  *
@@ -538,10 +538,12 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
     int depth = pMask->pDrawable->depth;
     int max_alpha = (1 << depth) - 1;
     int buf_height = pMask->pDrawable->height;
+    int buf_width = pMask->pDrawable->width;
 
     Fixed x_off_fixed = IntToFixed(x_off);
     Fixed y_off_fixed = IntToFixed(y_off);
     Fixed buf_height_fixed = IntToFixed(buf_height);
+    Fixed buf_width_fixed = IntToFixed(buf_width);
 
     PixelWalk left, right;
     int	pixel_x;
@@ -609,7 +611,8 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 		alpha -= RectAlpha(y, trap.top, depth);
 	    }
 	    alpha -= PixelAlpha(x, y, trap.top, trap.bottom, &left, depth);
-	    addAlpha (&mask, depth, alpha);
+	    if (0 <= x && x < buf_width_fixed)
+		addAlpha (&mask, depth, alpha);
 	    PIXEL_WALK_NEXT_PIXEL(left);
 	    INCREMENT_X_AND_PIXEL;
 	}
@@ -620,7 +623,8 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	if (left.row.p1.y == y && x == first_right_x) {
 	    alpha = PixelAlpha(x, y, trap.top, trap.bottom, &right, depth)
 		- PixelAlpha(x, y, trap.top, trap.bottom, &left, depth);
-	    addAlpha (&mask, depth, alpha);
+	    if (0 <= x && x < buf_width_fixed)
+		addAlpha (&mask, depth, alpha);
 	    PIXEL_WALK_NEXT_PIXEL(left);
 	    PIXEL_WALK_NEXT_PIXEL(right);
 	    INCREMENT_X_AND_PIXEL;
@@ -630,14 +634,16 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	    /* Fully covered pixels simply saturate */
 	    if (trap.top < y && trap.bottom > y + Fixed1) {
 		while (x < first_right_x) {
-		    (*mask.store) (&mask, 0xff000000);
+		    if (0 <= x && x < buf_width_fixed)
+			(*mask.store) (&mask, 0xff000000);
 		    INCREMENT_X_AND_PIXEL;
 		}
 	    } else {
 		/* Otherwise, we have only a couple of rectangles to compute */
 		alpha = RectAlpha(y, trap.bottom, depth) - RectAlpha(y, trap.top, depth);
 		while (x < first_right_x) {
-		    addAlpha (&mask, depth, alpha);
+		    if (0 <= x && x < buf_width_fixed)
+			addAlpha (&mask, depth, alpha);
 		    INCREMENT_X_AND_PIXEL;
 		}
 	    }
@@ -646,7 +652,8 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	/* Finally, pixels intersected only by trap.right */
 	while (right.row.p1.y == y) {
 	    alpha = PixelAlpha(x, y, trap.top, trap.bottom, &right, depth);
-	    addAlpha (&mask, depth, alpha);
+	    if (0 <= x && x < buf_width_fixed)
+		addAlpha (&mask, depth, alpha);
 	    PIXEL_WALK_NEXT_PIXEL(right);
 	    INCREMENT_X_AND_PIXEL;
 	}
