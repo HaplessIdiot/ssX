@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 321. Add XKB descriptions for the extra keys on a "Logitech Internet Keyboard"
+      (#4505, Matthew Hand).
  320. Build shared libGL and DRI client modules on Linux without PIC for
       performance reasons.
  319. Updates to glxinfo (Brian Paul).
@@ -12785,4 +12787,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1654 2001/04/02 21:22:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1655 2001/04/03 02:29:37 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/XF86keysym.h,v 1.7 2001/03/01 01:23:55 dawes Exp $ */
+/* $XFree86: xc/include/XF86keysym.h,v 1.8 2001/03/02 14:21:43 dawes Exp $ */
 
 /*
  * XFree86 vendor specific keysyms.
@@ -63,8 +63,6 @@
 #define XF86XK_ScreenSaver      0x1008FF2D
 #define XF86XK_WWW              0x1008FF2E
 #define XF86XK_Sleep            0x1008FF2F
-
-/* Some more ... */
 #define XF86XK_Favorites	0x1008FF30
 #define XF86XK_AudioPause	0x1008FF31
 #define XF86XK_AudioMedia	0x1008FF32
@@ -72,5 +70,9 @@
 #define XF86XK_VendorHome	0x1008FF34
 #define XF86XK_LightBulb	0x1008FF35
 #define XF86XK_Shop		0x1008FF36
+#define XF86XK_History		0x1008FF37
+#define XF86XK_OpenURL		0x1008FF38
+#define XF86XK_AddFavorite	0x1008FF39
+#define XF86XK_HotLinks		0x1008FF3A
 
 
