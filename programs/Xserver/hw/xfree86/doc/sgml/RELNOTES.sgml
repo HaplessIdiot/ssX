@@ -9,7 +9,7 @@
 <date>28 January 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.104 2004/01/29 02:19:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.105 2004/02/05 18:12:29 dawes Exp $
 </ident>
 
 <abstract>
@@ -1239,6 +1239,7 @@ Lubos Lunak,
 Sven Luther,
 Torrey T. Lyons,
 Calum Mackay,
+Paul Mackerras,
 Roland Mainz,
 Kevin Martin,
 Michal Maruska,
@@ -1278,6 +1279,7 @@ Jim Radford,
 Dale Rahn,
 Lucas Correia Villa Real,
 Ren&eacute; Rebe,
+Tyler Retzlaff,
 Sebastian Rittau,
 Tim Roberts,
 Alastair M. Robinson,
