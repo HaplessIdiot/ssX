@@ -18,13 +18,13 @@ MOUSEOBJ = sol8_mouse.o
 
 SRCS = sol8_init.c sol8_vid.c sol8_bios.c sol8_kbd.c sol8_io.c \
 	VTsw_noop.c sol8_kbd.c sol8_kbdEv.c posix_tty.c $(MOUSESRC) \
-	libc_wrapper.c $(PROWORKS_INOUT_SRC) stdResource.c sol8_kbdgetmapping.c \
-	sol8_postkbdevents.c sigiostubs.c
+	libc_wrapper.c $(PROWORKS_INOUT_SRC) stdResource.c stdPci.c \
+        sol8_kbdgetmapping.c sol8_postkbdevents.c sigiostubs.c
 
 OBJS = sol8_init.o sol8_vid.o sol8_bios.o sol8_kbd.o sol8_io.o \
 	VTsw_noop.o sol8_kbd.o sol8_kbdEv.o posix_tty.o $(MOUSEOBJ) \
-	libc_wrapper.o $(PROWORKS_INOUT_OBJ) stdResource.o sol8_kbdgetmapping.o \
-	sol8_postkbdevents.o sigiostubs.o
+	libc_wrapper.o $(PROWORKS_INOUT_OBJ) stdResource.o stdPci.o \
+        sol8_kbdgetmapping.o sol8_postkbdevents.o sigiostubs.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC)
@@ -41,6 +41,7 @@ LinkSourceFile(VTsw_noop.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
+LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(sigiostubs.c,../shared)
 
 DependTarget()

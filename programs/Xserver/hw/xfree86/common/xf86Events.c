@@ -34,7 +34,6 @@
 #include "Xpoll.h"
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSproc.h"
 #define XF86_OS_PRIVS
 #include "xf86_OSlib.h"
 #include "atKeynames.h"
@@ -301,7 +300,7 @@ void
 xf86PostKbdEvent(unsigned key)
 {
   int         scanCode = (key & 0x7f);
-  int         specialkey;
+  int         specialkey = 0;
   Bool        down = (key & 0x80 ? FALSE : TRUE);
   KeyClassRec *keyc = ((DeviceIntPtr)xf86Info.pKeyboard)->key;
   Bool        updateLeds = FALSE;

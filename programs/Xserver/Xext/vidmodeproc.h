@@ -31,6 +31,11 @@ typedef enum {
     VIDMODE_MON_VREFRESH_HI
 } VidModeSelectMonitor;
 
+typedef union {
+  pointer ptr;
+  int i;
+  float f;
+} vidMonitorValue;
 
 void XFree86VidModeExtensionInit(void);
 
@@ -60,6 +65,8 @@ pointer VidModeCreateMode(void);
 void VidModeCopyMode(pointer modefrom, pointer modeto);
 int VidModeGetModeValue(pointer mode, int valtyp);
 void VidModeSetModeValue(pointer mode, int valtyp, int val);
-int VidModeGetMonitorValue(pointer monitor, int valtyp, int indx);
+vidMonitorValue VidModeGetMonitorValue(pointer monitor, int valtyp, int indx);
 
 #endif
+
+

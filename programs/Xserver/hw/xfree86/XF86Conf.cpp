@@ -151,6 +151,14 @@ XCOMM the driver supports it.
     Option	"suspend time"	"30"
     Option	"off time"	"60"
 
+XCOMM On some platform the server needs to estimate the sizes of PCI
+XCOMM memory and pio ranges. This is done by assuming that PCI ranges
+XCOMM don't overlap. Some broken BIOSes tend to set ranges of inactive
+XCOMM devices wrong. Here one can adjust how aggressive the assumptions
+XCOMM should be. Default is 0.
+
+XCOMM Option   "EstimateSizesAggresively" "0"
+
 EndSection
 
 XCOMM **********************************************************************

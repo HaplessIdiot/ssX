@@ -648,3 +648,10 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.151 1999/11/19 13:53:23 hohndel Ex
  *
 #define GlideIncDir /usr/include/glide
  */
+
+/*
+ * If your system doesn't support vm86() mode and you have
+ * libx86emu set library path here
+ *
+#define X86EMU_LIBPATH /usr/local/lib
+ */ 

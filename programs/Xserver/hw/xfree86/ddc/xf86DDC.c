@@ -72,14 +72,6 @@ extern int checksum(
     int
 );
 
-extern xf86MonPtr InterpretEDID(
-    unsigned char *
-);
-
-extern xf86vdifPtr InterpretVdif(
-    unsigned char *
-);
-
 static unsigned char *EDIDRead_DDC1(
     ScrnInfoPtr pScrn,
     void (*)(ScrnInfoPtr,xf86ddcSpeed), 
@@ -151,7 +143,7 @@ xf86DoEDID_DDC1(
     EDID_block = EDIDRead_DDC1(pScrn,DDC1SetSpeed,DDC1Read);
 
     if (EDID_block){
-	tmp = InterpretEDID(EDID_block);
+	tmp = xf86InterpretEDID(EDID_block);
     }
 #ifdef DEBUG
 	else ErrorF("No EDID block returned\n");
@@ -182,7 +174,7 @@ xf86DoEDID_DDC2(int scrnIndex, I2CBusPtr pBus)
     EDID_block = EDID1Read_DDC2(scrnIndex,pBus);
 
     if (EDID_block){
-	tmp = InterpretEDID(EDID_block);
+	tmp = xf86InterpretEDID(EDID_block);
     } else {
 #ifdef DEBUG
 	ErrorF("No EDID block returned\n");
@@ -196,7 +188,7 @@ xf86DoEDID_DDC2(int scrnIndex, I2CBusPtr pBus)
     ErrorF("Sections to follow: %i\n",tmp->no_sections);
     VDIF_Block = 
 	VDIFRead(scrnIndex, pBus, EDID1_LEN * (tmp->no_sections + 1));    
-    tmp->vdif = InterpretVdif(VDIF_Block);
+    tmp->vdif = xf86InterpretVdif(VDIF_Block);
 
     return tmp;
 }

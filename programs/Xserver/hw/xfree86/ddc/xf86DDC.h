@@ -38,6 +38,14 @@ extern xf86MonPtr xf86PrintEDID(
     xf86MonPtr 
 );
 
+extern xf86MonPtr xf86InterpretEDID(
+    Uchar *block
+);
+
+extern xf86vdifPtr xf86InterpretVdif(
+    CARD8 *c
+);
+
 extern Bool xf86SetDDCproperties(
      ScrnInfoPtr pScreen,
      xf86MonPtr DDC

@@ -77,12 +77,15 @@ in this Software without prior written authorization from the XFree86 Project.
 #ifndef _S3V_VGAHWMMIO_H
 #define _S3V_VGAHWMMIO_H
 
-#define VGAIN8(addr) MMIO_IN8(ps3v->IOBase, addr)
-#define VGAIN16(addr) MMIO_IN16(ps3v->IOBase, addr)
-#define VGAIN(addr) MMIO_IN32(ps3v->IOBase, addr)
-#define VGAOUT8(addr,val) MMIO_OUT8(ps3v->IOBase, addr, val)
-#define VGAOUT16(addr,val) MMIO_OUT16(ps3v->IOBase, addr, val)
-#define VGAOUT(addr, val) MMIO_OUT32(ps3v->IOBase, addr, val)
+#define VGAIN8(addr) MMIO_IN8(ps3v->MapBase,(S3V_MMIO_REGSIZE + (addr)))
+#define VGAIN16(addr) MMIO_IN16(ps3v->MapBase,(S3V_MMIO_REGSIZE + (addr)))
+#define VGAIN(addr) MMIO_IN32(ps3v->MapBase,(S3V_MMIO_REGSIZE + (addr)))
+#define VGAOUT8(addr,val) MMIO_OUT8(ps3v->MapBase,(S3V_MMIO_REGSIZE + (addr)),\
+                                                                          val)
+#define VGAOUT16(addr,val) MMIO_OUT16(ps3v->MapBase,\
+				      (S3V_MMIO_REGSIZE + (addr)), val)
+#define VGAOUT(addr, val) MMIO_OUT32(ps3v->MapBase,\
+				     (S3V_MMIO_REGSIZE + (addr)), val)
 
 #define INREG(addr) MMIO_IN32(ps3v->MapBase, addr)
 #define OUTREG(addr, val) MMIO_OUT32(ps3v->MapBase, addr, val)
@@ -179,8 +182,6 @@ typedef struct {
   unsigned char *	MapBase;
   unsigned char *       MapBaseDense;
   
-  /* MapBase + 0x8000 */
-  unsigned char *	IOBase;
   /* Same as MapBase, except framebuffer*/
   unsigned char *	FBBase;
   /* Current visual FB starting location */

@@ -1,5 +1,8 @@
 /* $XFree86$ */
 
+#ifndef _VDIF_H
+#define _VDIF_H
+
 #define VDIF_MONITOR_MONOCHROME 0
 #define VDIF_MONITOR_COLOR 1
 #define VDIF_VIDEO_TTL 0
@@ -19,6 +22,8 @@
 #define VDIF_POLARITY_NEGATIVE 0
 #define VDIF_POLARITY_POSITIVE 1
 #include "xf86.h"
+
+#pragma pack(1)
 
 typedef struct _VDIF { /* Monitor Description: */
     CARD8 VDIFId[4]; /* alway "VDIF" */
@@ -142,16 +147,16 @@ typedef struct _VDIFGamma { /* Gamma Table: */
 /* access macros */
 #define VDIF_OPERATIONAL_LIMITS(vdif) \
 ((xf86VdifLimitsPtr)((char*)(vdif) + (vdif)->OffsetOperationalLimits))
-#define VDIF_NEXT_OPERATIONAL_LIMITS(limits) \
+#define VDIF_NEXT_OPERATIONAL_LIMITS(limits) limits = \
      ((xf86VdifLimitsPtr)((char*)(limits) + (limits)->OffsetNextLimits))
 #define VDIF_PREADJUSTED_TIMING(limits) \
-     ((xf86VdifTimingPtr)((char*)(limits) + (limits)->Header.ScnLength))
-#define VDIF_NEXT_PREADJUSTED_TIMING(timing) \
+((xf86VdifTimingPtr)((char*)(limits) + (limits)->Header.ScnLength))
+#define VDIF_NEXT_PREADJUSTED_TIMING(timing) timing = \
      ((xf86VdifTimingPtr)((char*)(timing) + (timing)->Header.ScnLength))
 #define VDIF_OPTIONS(vdif) \
      ((VDIFScnHdrPtr)((char*)(vdif) + (vdif)->OffsetOptions))
-#define VDIF_NEXT_OPTIONS(options) \
-     ((VDIFScnHdrPtr)((char*)(options) + (options)->Header.ScnLength))
+#define VDIF_NEXT_OPTIONS(options) options = \
+     ((xf86VdifGammaPtr)((char*)(options) + (options)->Header.ScnLength))
 #define VDIF_STRING(vdif, string) \
      ((char*)((char*)vdif + vdif->OffsetStringTable + (string)))
 
@@ -162,3 +167,7 @@ typedef struct  _vdif {
     xf86VdifGammaPtr *gamma;
     char * strings;
 } xf86vdif, *xf86vdifPtr;
+
+#pragma pack()
+
+#endif

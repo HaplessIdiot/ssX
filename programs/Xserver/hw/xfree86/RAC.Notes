@@ -5,11 +5,11 @@ Graphics devices are accessed thru ranges in I/O or memory space. While
 most modern graphics  devices allow relocation of such  ranges many of
 them still require the use  of well established interfaces such as VGA
 memory  and IO  ranges or  8514/A  IO ranges.   Up to  version 3.3  of
-XFree86 only a single graphics  device could be driven. Threfore there
+XFree86 only a single graphics  device could be driven. Therfore there
 was no need  to address the issue of sharing such  memory or I/O ranges
 among several devices. Starting with version 4.0 XFree86 is capable of
-driving more  than one graphics interface in  a multihead environment.
-Therefore  a mechanism  needed to  be  desinged which  was capbale  of
+driving more  than one graphics interface in  a multi-head environment.
+Therefore  a mechanism  needed to  be  designed which  was capable  of
 controlling the sharing  the access to memory and  I/O ranges.  In this
 document  we describe  to use  of  the RAC  (Resource Access  Control)
 system in the XFree86 server which provides the service of controlling
@@ -28,7 +28,7 @@ physical incompatible  extension connectors in a  computer system. The
 RAC system  knows two such systems: The  ISA bus and the  PCI bus. (On
 the software  level EISA, MC and  VL buses are  currently treated like
 ISA buses). 'Bus' may always  refer to logically different entities on
-a single bus  system which are connected via briges.  A PCI system may
+a single bus  system which are connected via bridges.  A PCI system may
 have several  distinct PCI  buses connecting  each other  by PCI-PCI
 bridges or to the host CPU by HOST-PCI bridges.
 
@@ -38,7 +38,7 @@ specific  resources.  PCI-PCI  bridges  may  be set  up  to  pass  VGA
 resources to the  secondary bus. PCI-ISA buses pass  any resources not
 decoded on the primary PCI bus  to the ISA bus. This way VGA resources
 (although  exclusive on  the ISA  bus) can  be shared  by ISA  and PCI
-cards.  Currently HOST-PCI bridges are not yet handeled by RAC as they
+cards.  Currently HOST-PCI bridges are not yet handled by RACY as they
 require specific drivers.
 
 II.2. Entity 
@@ -52,13 +52,13 @@ the bus, card and function number.
 II.3. Resource
 --------------
 
- 'Resource' referres to  a range of memory or  I/O addresses an entity
+ 'Resource' refers to  a range of memory or  I/O addresses an entity
 can decode.
 
 If  a device is  capable of  disabling this  decoding the  resource is
 called  sharable. For  PCI devices  a  generic method  is provided  to
 control resource decoding. Other devices will have to provide a device
-specific funtion to control decoding.
+specific function to control decoding.
 
 If  the  entity is  capable  of decoding  this  range  at a  different
 location this resource is considered relocatable. Resource which start
@@ -74,7 +74,7 @@ with  base &  mask ==  base.  Resources  addressed in  such a  way are
 considered sparse resources.
 
 
-II.4. ServerStates
+II.4. Server States
 ------------------
 
 The resource access control system  knows two server states: the SETUP
@@ -103,7 +103,7 @@ itself. Furthermore it can  access information on resources decoded by
 these devices and if necessary modify it.
 
 When first  starting the Xserver collects all  this information, saves
-it for restauration checks it for consistency and if necessary correts
+it for restoration checks it for consistency and if necessary corrects
 it.  Finally it disables  all resources  on a  generic level  prior to
 calling any driver function.
 
@@ -251,7 +251,7 @@ There are two known access properties:
 - ResShared 
   for resources which can be disabled and therefore can be shared.  
 
-If  it is  desirable to  test a  resource aganist  any type  a generic
+If  it is  desirable to  test a  resource against  any type  a generic
 access type  'ResAny' is  provided. If this  is set the  resource will
 conflict  with any  resource of  a different  entity  intersecting its
 range.  Further it can be specified that a resource is decoded however
@@ -259,7 +259,7 @@ never  used during  any stage  (ResUnused) or  during  OPERATING state
 (ResUnusedOpr). A resource only visible during the init functions (ie.
 EntityInit(),  EntityEnter() and  EntityLeave()  should be  registered
 with  the  flag  'ResInit'.   A  resource  that  might  conflict  with
-backgronud resource  ranges may be flagged with  'ResBios'. This might
+background resource  ranges may be flagged with  'ResBios'. This might
 be useful when registering resources  ranges that were assigned by the
 system Bios.
 
@@ -295,7 +295,7 @@ XF86Config file to the devices:
 Both functions return the number of matched entities and their indices
 in foundEntities list.
 
-They make use of several  subfunctions which are also available on the
+They make use of several  sub functions which are also available on the
 driver level:
 
    Bool xf86ComparePciBusString(const char *busID, int bus, 
@@ -313,8 +313,8 @@ are called to interpret the busID in the device section. The functions:
    int xf86ClaimIsaSlot(DriverPtr drvp, int chipset, GDevPtr dev, Bool
 	 	        active);
 
-are  used  to  allocate   the  entities  and  inititlaize  their  data
-structures.  Both funtions  return the  index of  the  newly allocated
+are  used  to  allocate   the  entities  and  initialize  their  data
+structures.  Both functions  return the  index of  the  newly allocated
 entity record or (-1) should  the function fail. Before probing an ISA
 card
 
@@ -323,7 +323,7 @@ card
 gets called to determine if the primary card was not detected on the
 PCI bus.
 
-Two helper fucntions are provided to aid configuring entities:
+Two helper functions are provided to aid configuring entities:
 
    Bool xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, int entityIndex,
 			          PciChipsets *p_chip, resList res,
@@ -351,7 +351,7 @@ These helper functions use:
 
     void xf86ClaimFixedResources(resList list, int entityIndex);
 
-  To register  the nonrelocatable  resources which cannot  be disabled
+  To register  the non relocatable  resources which cannot  be disabled
   and which  therefore would cause  the server to fail  immediately if
   they  were found to  conflict. It  also records  non-relocatable but
   sharable resources for processing after the Probe() phase.
@@ -366,7 +366,7 @@ These helper functions use:
  
   adds the entity to the screen.
 
-These functions are  also avlailable on the driver  level.  A detailed
+These functions are  also available on the driver  level.  A detailed
 Probe() function  is listed below. For  most drivers this  can be used
 with little change.
 
@@ -455,7 +455,7 @@ have to satisfy:
 
 Here three values  have to be specified: the  address mask which marks
 all bits of the mask part  of the address, the decode_mask which masks
-out the bits  which are hadrcoded and are  therefore not available for
+out the bits  which are hard coded and are  therefore not available for
 relocation and  the values  of the fixed  bits. The function  tries to
 find a base that satisfies  the given condition. If the function fails
 it will return  a zero range of type 'ResEnd'.  Optionally it might be
@@ -471,7 +471,7 @@ decoded by the card. The function:
 	 		  long type);
 
 is used  for that. The  parameter prt contains  the number of  the PCI
-base register that needs to be  modified. A value of 6 referres to the
+base register that needs to be  modified. A value of 6 refers to the
 BIOS  base   register.  The  size   is  specified  in   the  alignment
 register. Since  PCI resources need to  span an integral  range of the
 size 2^n  the alignment  also specifies the  number of  addresses that
@@ -483,7 +483,7 @@ function should be called before calling xf86RegisterResources().
   Bool xf86CheckPciMemBase(pciVideoPtr pPci, unsigned long base);
 
 checks that the memory base value specified in base matches one of the
-PCI base address register valuse for the given PCI device.
+PCI base address register values for the given PCI device.
 
 The driver  may replace  the generic access  control functions  for an
 entity by it's own ones.
@@ -515,14 +515,14 @@ resource
 
   memType xf86ChkConflict(resRange *rgp, int entityIndex);
 
-may be called. If a non-zero value is retruned a conflict is found.
+may be called. If a non-zero value is returned a conflict is found.
 
   resPtr xf86SetOperatingState(resList list, int entityIndex, int mask);
 
 is used to set the state of a resource during OPERATING state.  'list'
 holds a list  to which 'mask' is to be  applied.  The parameter 'mask'
 may have the value  'ResUnusedOpr' and 'ResDisableOpr'.  The first one
-should be used if a  reource isn't used during OPERATING state however
+should be used if a  resource isn't used during OPERATING state however
 decoded by the device while the latter one indicates that the resource
 is not decoded  during OPERATING state. Note that  the resource ranges
 have to match those specified during registration. If a range has been
@@ -557,12 +557,12 @@ registered the  VGA PIO  resources and lets  the common  level disable
 these by disabling PIO access  in PCI config space (the standard way),
 exclusive PCI PIO ranges will  also be disabled.  Therefore the driver
 has to flag any operations  requiring PCI PIO resources in racIoFlags.
-The avaliable flags are defined in rac/xf86RAC.h.  Alvailable are:
+The avaliable flags are defined in rac/xf86RAC.h.  Available are:
 
  RAC_FB       for framebuffer operations (including hw acceleration)
  RAC_CURSOR   for Cursor operations
               (??? I'm not sure if we need this for SW cursor it depends
-              on wich level the sw cursor is drawn)
+              on which level the sw cursor is drawn)
  RAC_COLORMAP for colormap operations
  RAC_VIEWPORT for the call to RACAdjustFrame()
 
@@ -686,3 +686,4 @@ Here are some hints on porting code developed for RAC 1 to RAC 2.
 7. Set up the racIoFlags and racMemFlags.
 
 
+ LocalWords:  ISA

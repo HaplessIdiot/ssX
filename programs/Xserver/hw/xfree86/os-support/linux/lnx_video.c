@@ -443,7 +443,8 @@ mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size)
       	int fd;
 
 	if (!_bus_base()) xf86SparseShift = 7; /* Uh, oh, JENSEN... */
-
+	if (!_bus_base_sparse()) xf86SparseShift = 0; /* no sparse  */
+	
 	Size <<= xf86SparseShift;
 	Base = Base << xf86SparseShift;
 
@@ -486,14 +487,13 @@ xf86ReadSparse8(pointer Base, unsigned long Offset)
 
     shift = (Offset & 0x3) * 8;
     if (xf86SparseShift != 7) { /* if not JENSEN, we may need HAE */
-      if (Offset >= (1UL << 24)) {
         msb = Offset & 0xf8000000UL;
-        Offset -= msb;
         if (msb) {
-	  sethae(msb);
+	    Offset -= msb;
+	    sethae(msb);
         }
-      }
     }
+
     result = *(vuip) ((unsigned long)Base + (Offset << xf86SparseShift));
     if (msb)
       sethae(0);
@@ -509,14 +509,13 @@ xf86ReadSparse16(pointer Base, unsigned long Offset)
 
     shift = (Offset & 0x2) * 8;
     if (xf86SparseShift != 7) { /* if not JENSEN, we may need HAE */
-      if (Offset >= (1UL << 24)) {
         msb = Offset & 0xf8000000UL;
-        Offset -= msb;
         if (msb) {
-	  sethae(msb);
+	    Offset -= msb;
+	    sethae(msb);
         }
-      }
     }
+
     result = *(vuip)((unsigned long)Base+(Offset<<xf86SparseShift)+(1<<(xf86SparseShift-2)));
     if (msb)
       sethae(0);
@@ -531,14 +530,13 @@ xf86ReadSparse32(pointer Base, unsigned long Offset)
     unsigned long msb = 0;
 
     if (xf86SparseShift != 7) { /* if not JENSEN, we may need HAE */
-      if (Offset >= (1UL << 24)) {
         msb = Offset & 0xf8000000UL;
-        Offset -= msb;
         if (msb) {
-	  sethae(msb);
+	    Offset -= msb;
+	    sethae(msb);
         }
-      }
     }
+
     result = *(vuip)((unsigned long)Base+(Offset<<xf86SparseShift)+(3<<(xf86SparseShift-2)));
     if (msb)
       sethae(0);
@@ -552,14 +550,13 @@ xf86WriteSparse8(int Value, pointer Base, unsigned long Offset)
     unsigned int b = Value & 0xffU;
 
     if (xf86SparseShift != 7) { /* not JENSEN */
-      if (Offset >= (1UL << 24)) {
         msb = Offset & 0xf8000000;
-        Offset -= msb;
         if (msb) {
-	  sethae(msb);
+	    Offset -= msb;
+	    sethae(msb);
         }
-      }
     }
+
     *(vuip) ((unsigned long)Base + (Offset << xf86SparseShift)) = b * 0x01010101;
     if (msb)
       sethae(0);
@@ -579,14 +576,13 @@ xf86WriteSparse16(int Value, pointer Base, unsigned long Offset)
     unsigned int w = Value & 0xffffU;
 
     if (xf86SparseShift != 7) { /* not JENSEN */
-      if (Offset >= (1UL << 24)) {
         msb = Offset & 0xf8000000;
-        Offset -= msb;
         if (msb) {
-	  sethae(msb);
+	    Offset -= msb;
+	    sethae(msb);
         }
-      }
     }
+
     *(vuip)((unsigned long)Base+(Offset<<xf86SparseShift)+(1<<(xf86SparseShift-2))) =
       w * 0x00010001;
     if (msb)
@@ -606,14 +602,13 @@ xf86WriteSparse32(int Value, pointer Base, unsigned long Offset)
     unsigned long msb = 0;
 
     if (xf86SparseShift != 7) { /* not JENSEN */
-      if (Offset >= (1UL << 24)) {
         msb = Offset & 0xf8000000;
-        Offset -= msb;
         if (msb) {
-	  sethae(msb);
+	    Offset -= msb;
+	    sethae(msb);
         }
-      }
     }
+    
     *(vuip)((unsigned long)Base+(Offset<<xf86SparseShift)+(3<<(xf86SparseShift-2))) = Value;
     if (msb)
       sethae(0);

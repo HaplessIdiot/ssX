@@ -409,7 +409,11 @@ DGAAvailable(int index)
 {
    if(DGAScreenIndex < 0)
 	return FALSE;
-
+   
+   if (!xf86NoSharedMem(((ScrnInfoPtr)screenInfo.screens[index]->
+			 devPrivates[xf86ScreenIndex].ptr)->scrnIndex))
+       return FALSE;
+   
    if(DGA_GET_SCREEN_PRIV(screenInfo.screens[index]))
 	return TRUE;
 

@@ -4,9 +4,6 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/Imakefile,
 
 #include <Server.tmpl>
 
-#define X86EMU_LIBPATH /usr/local/lib
-/*************************************************************************/
-
 SRCS1 = pci.c xf86int10module.c helper_exec.c helper_mem.c xf86int10.c 
 OBJS1 = pci.o xf86int10module.o helper_exec.o helper_mem.o xf86int10.o 
 
@@ -23,9 +20,17 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC)/int10 \
            -I$(XF86OSSRC) \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) 
 #if 0
+/* debugging stuff */
+#DEFINES =-D_PC
 #undef XF86INT10_BUILD 
-#define XF86INT10_BUILD X86EMU_OS
+#define XF86INT10_BUILD X86EMU_GENERIC
+#define X86EMU_LIBPATH /usr/local/lib
 #endif
+
+#if defined(i386Architecture)
+DEFINES =-D_PC
+#endif
+
 #if defined(X86EMU_LIBPATH) && (XF86INT10_BUILD == X86EMU_GENERIC) 
 
 SRCS = $(SRCS1) xf86x86emu.c generic.c
@@ -33,11 +38,11 @@ OBJS = $(OBJS1) xf86x86emu.o generic.o x86emu.o
 SpecialObjectRule(pci.o, pci.c, -D_X86EMU)
 SpecialObjectRule(helper_exec.o, helper_exec.c, -D_X86EMU)
 SpecialObjectRule(xf86int10.o, xf86int10.c, -D_X86EMU)
-SpecialObjectRule(generic.o, generic.c, -D_X86EMU -D_PC)
+SpecialObjectRule(generic.o, generic.c, -D_X86EMU)
 SpecialObjectRule(xf86x86emu.o, xf86x86emu.c, -D_X86EMU)
 BuildObjectFromLibraryWithPath(X86EMU_LIBPATH,x86emu,x86emu)
 
-#elif (XF86INT10_BUILD == X86VM)
+#elif defined(XF86INT10_BUILD) && (XF86INT10_BUILD == X86VM)
 
 SRCS = $(SRCS1) linux.c
 OBJS = $(OBJS1) linux.o

@@ -692,35 +692,35 @@ VidModeSetModeValue(pointer mode, int valtyp, int val)
   return;
 }
 
-int
+vidMonitorValue
 VidModeGetMonitorValue(pointer monitor, int valtyp, int indx)
 {
-  int ret = 0;
+  vidMonitorValue ret;
   
   switch (valtyp) {
     case VIDMODE_MON_VENDOR:
-	ret = (int)(((MonPtr)monitor)->vendor);
+	ret.ptr = (((MonPtr)monitor)->vendor);
 	break;
     case VIDMODE_MON_MODEL:
-	ret = (int)(((MonPtr)monitor)->model);
+	ret.ptr = (((MonPtr)monitor)->model);
 	break;
     case VIDMODE_MON_NHSYNC:
-	ret = ((MonPtr)monitor)->nHsync;
+	ret.i = ((MonPtr)monitor)->nHsync;
 	break;
     case VIDMODE_MON_NVREFRESH:
-	ret = ((MonPtr)monitor)->nVrefresh;
+	ret.i = ((MonPtr)monitor)->nVrefresh;
 	break;
     case VIDMODE_MON_HSYNC_LO:
-	ret = (int)(100.0 * ((MonPtr)monitor)->hsync[indx].lo);
+	ret.f = (100.0 * ((MonPtr)monitor)->hsync[indx].lo);
 	break;
     case VIDMODE_MON_HSYNC_HI:
-	ret = (int)(100.0 * ((MonPtr)monitor)->hsync[indx].hi);
+	ret.f = (100.0 * ((MonPtr)monitor)->hsync[indx].hi);
 	break;
     case VIDMODE_MON_VREFRESH_LO:
-	ret = (int)(100.0 * ((MonPtr)monitor)->vrefresh[indx].lo);
+	ret.f = (100.0 * ((MonPtr)monitor)->vrefresh[indx].lo);
 	break;
     case VIDMODE_MON_VREFRESH_HI:
-	ret = (int)(100.0 * ((MonPtr)monitor)->vrefresh[indx].hi);
+	ret.f = (100.0 * ((MonPtr)monitor)->vrefresh[indx].hi);
 	break;
   }
   return ret;

@@ -41,7 +41,7 @@
 void
 xf86VTRequest(int sig)
 {
-	signal(sig, (void(*)())xf86VTRequest);
+	signal(sig, (void(*)(int))xf86VTRequest);
 	xf86Info.vtRequestsPending = TRUE;
 	return;
 }

@@ -1,5 +1,5 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.8 1999/07/10 07:24:43 dawes Exp $ */
-
+#define DEBUG
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
  */
@@ -13,6 +13,8 @@
 #ifndef _XF86_BUS_H
 #define _XF86_BUS_H
 
+#include "xf86pciBus.h"
+
 typedef struct racInfo {
     xf86AccessPtr mem_new;
     xf86AccessPtr io_new;
@@ -20,7 +22,6 @@ typedef struct racInfo {
     xf86AccessPtr *old;
 } AccessFuncRec, *AccessFuncPtr;
 
-#define PCITAG_SPECIAL pciTag(0xFF,0xFF,0xFF)
 
 typedef struct {
     DriverPtr                   driver;
@@ -55,39 +56,6 @@ typedef struct {
 #define pciBusId bus.id.pci
 #define isaBusId bus.id.isa
 
-typedef struct {
-    CARD32       command;
-    CARD32       base[6];
-    CARD32       biosBase;
-} pciSave, *pciSavePtr;
-
-typedef void (*SetBitsProcPtr)(PCITAG, int, CARD32, CARD32);
-
-typedef struct {
-    PCITAG tag;
-    SetBitsProcPtr func;
-} pciArg;
-
-typedef struct pci_io {
-    int    busnum;
-    int    devnum;
-    int    funcnum;
-    pciArg arg;
-    xf86AccessRec ioAccess;
-    xf86AccessRec io_memAccess;
-    xf86AccessRec memAccess;
-    pciSave save;
-    pciSave restore;
-    Bool ctrl;
-} pciAccRec, *pciAccPtr;
-
-typedef struct {
-    CARD16      io;
-    CARD32      mem;
-    CARD32      pmem;
-    CARD8       control;
-} pciBridgeSave, *pciBridgeSavePtr;
-
 struct x_BusAccRec;
 typedef void (*BusAccProcPtr)(struct x_BusAccRec *ptr);
 
@@ -101,10 +69,12 @@ typedef struct x_BusAccRec {
     struct x_BusAccRec *primary; /* pointer to the bus connecting to this */
     struct x_BusAccRec *next;    /* this links the different buses together */
     BusType type;
+    BusType busdep_type;
     /* Bus-specific fields */
     union {
 	struct {
 	    int bus;
+	    int primary_bus;
 	    PCITAG acc;
 	    pciBridgeSave save;
 	    void (*func)(PCITAG,int,CARD32,CARD32);
@@ -112,10 +82,20 @@ typedef struct x_BusAccRec {
     } busdep;
 } BusAccRec, *BusAccPtr;
 
-static resPtr addRangesToList(resPtr list, resRange *pRange,int entityIndex);
-static Bool isSubsetOf(resRange range, resPtr list);
-static Bool isListSubsetOf(resPtr list, resPtr BaseList);
-static resPtr findIntersect(resRange Range, resPtr list);
-static resPtr findIntersectOfLists(resPtr l1, resPtr l2);
+extern EntityPtr *xf86Entities;
+extern int xf86NumEntities;
+extern xf86AccessRec AccessNULL;
+extern BusRec primaryBus;
+extern resPtr Acc;
+extern resPtr ResRange;
+extern BusAccPtr xf86BusAccInfo;
+
+int xf86AllocateEntity(void);
+BusType StringToBusType(const char* busID, const char **retID);
+memType ChkConflict(resRange *rgp, resPtr res, xf86State state);
+Bool isSubsetOf(resRange range, resPtr list);
+Bool isListSubsetOf(resPtr list, resPtr BaseList);
+resPtr findIntersect(resRange Range, resPtr list);
+void RemoveOverlaps(resPtr target, resPtr list, Bool pow2Alignment);
 
 #endif /* _XF86_BUS_H */

@@ -1,5 +1,4 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/defines.h,v 1.2 1999/09/27 14:59:26 dawes Exp $ */
-
 #ifdef _VM86_LINUX
 
 #include <asm/vm86.h>

@@ -149,8 +149,8 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define XF86INT10	        YES
 #ifdef i386Architecture
 #define XF86INT10_BUILD X86VM
-#else
-#define XF86INT10_BUILD X86EMU_OS
+#elif defined(X86EMU_LIBPATH)
+# define XF86INT10_BUILD X86EMU_OS
 #endif
 
 /* The DRM module requires kernel services that appeared in late 2.1.x

@@ -1262,18 +1262,18 @@ ProcXF86VidModeGetMonitor(ClientPtr client)
 
     REQUEST_SIZE_MATCH(xXF86VidModeGetMonitorReq);
 
-    nHsync = VidModeGetMonitorValue(monitor, VIDMODE_MON_NHSYNC, 0);
-    nVrefresh = VidModeGetMonitorValue(monitor, VIDMODE_MON_NVREFRESH, 0);
+    nHsync = VidModeGetMonitorValue(monitor, VIDMODE_MON_NHSYNC, 0).i;
+    nVrefresh = VidModeGetMonitorValue(monitor, VIDMODE_MON_NVREFRESH, 0).i;
     
     rep.type = X_Reply;
-    if ((char *)(VidModeGetMonitorValue(monitor, VIDMODE_MON_VENDOR, 0)))
+    if ((char *)(VidModeGetMonitorValue(monitor, VIDMODE_MON_VENDOR, 0)).ptr)
 	rep.vendorLength = strlen((char *)(VidModeGetMonitorValue(monitor,
-				  VIDMODE_MON_VENDOR, 0)));
+				  VIDMODE_MON_VENDOR, 0)).ptr);
     else
 	rep.vendorLength = 0;
-    if ((char *)(VidModeGetMonitorValue(monitor, VIDMODE_MON_MODEL, 0)))
+    if ((char *)(VidModeGetMonitorValue(monitor, VIDMODE_MON_MODEL, 0)).ptr)
 	rep.modelLength = strlen((char *)(VidModeGetMonitorValue(monitor,
-				  VIDMODE_MON_MODEL, 0)));
+				  VIDMODE_MON_MODEL, 0)).ptr);
     else
 	rep.modelLength = 0;
     rep.length = (SIZEOF(xXF86VidModeGetMonitorReply) - SIZEOF(xGenericReply) +
@@ -1296,15 +1296,15 @@ ProcXF86VidModeGetMonitor(ClientPtr client)
 
     for (i = 0; i < nHsync; i++) {
 	hsyncdata[i] = (unsigned short)(VidModeGetMonitorValue(monitor,
-			     VIDMODE_MON_HSYNC_LO, i)) |
+			     VIDMODE_MON_HSYNC_LO, i)).f |
 		       (unsigned short)(VidModeGetMonitorValue(monitor,
-			     VIDMODE_MON_HSYNC_HI, i)) << 16;
+			     VIDMODE_MON_HSYNC_HI, i)).f << 16;
     }
     for (i = 0; i < nVrefresh; i++) {
 	vsyncdata[i] = (unsigned short)(VidModeGetMonitorValue(monitor,
-			     VIDMODE_MON_VREFRESH_LO, i)) |
+			     VIDMODE_MON_VREFRESH_LO, i)).f |
 		       (unsigned short)(VidModeGetMonitorValue(monitor,
-			     VIDMODE_MON_VREFRESH_HI, i)) << 16;
+			     VIDMODE_MON_VREFRESH_HI, i)).f << 16;
     }
     
 
@@ -1319,9 +1319,9 @@ ProcXF86VidModeGetMonitor(ClientPtr client)
     WriteSwappedDataToClient(client, nVrefresh * sizeof(CARD32),
 			     vsyncdata);
     if (rep.vendorLength)
-	WriteToClient(client, rep.vendorLength, (char *)(VidModeGetMonitorValue(monitor, VIDMODE_MON_VENDOR, 0)));
+	WriteToClient(client, rep.vendorLength, (char *)(VidModeGetMonitorValue(monitor, VIDMODE_MON_VENDOR, 0)).ptr);
     if (rep.modelLength)
-	WriteToClient(client, rep.modelLength, (char *)(VidModeGetMonitorValue(monitor, VIDMODE_MON_MODEL, 0)));
+	WriteToClient(client, rep.modelLength, (char *)(VidModeGetMonitorValue(monitor, VIDMODE_MON_MODEL, 0)).ptr);
 
     DEALLOCATE_LOCAL(hsyncdata);
     DEALLOCATE_LOCAL(vsyncdata);

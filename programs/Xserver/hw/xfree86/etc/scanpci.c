@@ -151,6 +151,16 @@
 #endif
 #endif
 
+#ifdef __alpha__             
+/* 64bit platform */
+typedef unsigned long CARD64;
+typedef unsigned int CARD32;
+#else
+typedef unsigned long CARD32;
+#endif
+typedef unsigned short CARD16;
+typedef unsigned char  CARD8;
+
 
 #if defined(__WATCOMC__)
 
@@ -181,13 +191,13 @@ unsigned inb(unsigned port);
 #define INL_GCC "in%L0 (%1)"
 #endif /* GCCUSESGAS */
 
-static void outb(unsigned short port, unsigned char val) {
+static void outb(CARD16 port, CARD8 val) {
      __asm__ __volatile__(OUTB_GCC : :"a" (val), "d" (port)); }
-static void outl(unsigned short port, unsigned long val) {
+static void outl(CARD16 port, CARD32 val) {
      __asm__ __volatile__(OUTL_GCC : :"a" (val), "d" (port)); }
-static unsigned char inb(unsigned short port) { unsigned char ret;
+static CARD8 inb(CARD16 port) { CARD8 ret;
      __asm__ __volatile__(INB_GCC : "=a" (ret) : "d" (port)); return ret; }
-static unsigned long inl(unsigned short port) { unsigned long ret;
+static CARD32 inl(CARD16 port) { CARD32 ret;
      __asm__ __volatile__(INL_GCC : "=a" (ret) : "d" (port)); return ret; }
 
 #endif /* !defined(__alpha__) && !defined(__powerpc__) && !defined(__sparc__) */
@@ -205,7 +215,7 @@ static unsigned long inl(unsigned short port) { unsigned long ret;
  * I'll deny it.  :-)
  * The leave/ret instructions are the big hack to leave %eax alone on return.
  */
-	unsigned char inb(int port) {
+	CARD8 inb(int port) {
 		asm("	movl 8(%esp),%edx");
 		asm("	subl %eax,%eax");
 		asm("	inb  (%dx)");
@@ -213,7 +223,7 @@ static unsigned long inl(unsigned short port) { unsigned long ret;
 		asm("	ret");
 	}
 
-	unsigned short inw(int port) {
+	CARD16 inw(int port) {
 		asm("	movl 8(%esp),%edx");
 		asm("	subl %eax,%eax");
 		asm("	inw  (%dx)");
@@ -221,26 +231,26 @@ static unsigned long inl(unsigned short port) { unsigned long ret;
 		asm("	ret");
 	}
 
-	unsigned long inl(int port) {
+	CARD32 inl(int port) {
 		asm("	movl 8(%esp),%edx");
 		asm("	inl  (%dx)");
 		asm("	leave");
 		asm("	ret");
 	}
 
-	void outb(int port, unsigned char value) {
+	void outb(int port, CARD8 value) {
 		asm("	movl 8(%esp),%edx");
 		asm("	movl 12(%esp),%eax");
 		asm("	outb (%dx)");
 	}
 
-	void outw(int port, unsigned short value) {
+	void outw(int port, CARD16 value) {
 		asm("	movl 8(%esp),%edx");
 		asm("	movl 12(%esp),%eax");
 		asm("	outw (%dx)");
 	}
 
-	void outl(int port, unsigned long value) {
+	void outl(int port, CARD32 value) {
 		asm("	movl 8(%esp),%edx");
 		asm("	movl 12(%esp),%eax");
 		asm("	outl (%dx)");
@@ -283,19 +293,19 @@ static unsigned long inl(unsigned short port) { unsigned long ret;
 #define BUS(tag) (((tag)>>16)&0xff)
 #define DFN(tag) (((tag)>>8)&0xff)
 int pciconfig_read(
-          unsigned char bus,
-          unsigned char dfn,
-          unsigned char off,
-          unsigned char len,
+          CARD8 bus,
+          CARD8 dfn,
+          CARD8 off,
+          CARD8 len,
           void * buf)
 {
   return syscall(__NR_pciconfig_read, bus, dfn, off, len, buf);
 }
 int pciconfig_write(
-          unsigned char bus,
-          unsigned char dfn,
-          unsigned char off,
-          unsigned char len,
+          CARD8 bus,
+          CARD8 dfn,
+          CARD8 off,
+          CARD8 len,
           void * buf)
 {
   return syscall(__NR_pciconfig_write, bus, dfn, off, len, buf);
@@ -310,12 +320,12 @@ Generate compiler error - scanpci unsupported on non-linux alpha and sparc platf
  */
 #include <smem.h>
 
-unsigned char *pciConfBase;
+CARD8 *pciConfBase;
 
-static __inline__ unsigned long
-swapl(unsigned long val)
+static __inline__ CARD32
+swapl(CARD32 val)
 {
-	unsigned char *p = (unsigned char *)&val;
+	CARD8 *p = (CARD8 *)&val;
 	return ((p[3] << 24) | (p[2] << 16) | (p[1] << 8) | (p[0] << 0));
 }
 
@@ -327,21 +337,21 @@ swapl(unsigned long val)
 #define PCIBIOS_SUCCESSFUL		0x00
 
 int pciconfig_read(
-          unsigned char bus,
-          unsigned char dev,
-          unsigned char offset,
+          CARD8 bus,
+          CARD8 dev,
+          CARD8 offset,
           int len,		/* unused, alway 4 */
-          unsigned long *val)
+          CARD32 *val)
 {
-	unsigned long _val;
-	unsigned long *ptr;
+	CARD32 _val;
+	CARD32 *ptr;
 
 	dev >>= 3;
 	if (bus || dev >= 16) {
 		*val = 0xFFFFFFFF;
 		return PCIBIOS_DEVICE_NOT_FOUND;
 	} else {
-		ptr = (unsigned long *)(pciConfBase + ((1<<dev) | offset));
+		ptr = (CARD32 *)(pciConfBase + ((1<<dev) | offset));
 		_val = swapl(*ptr);
 	}
 	*val = _val;
@@ -349,21 +359,21 @@ int pciconfig_read(
 }
 
 int pciconfig_write(
-          unsigned char bus,
-          unsigned char dev,
-          unsigned char offset,
+          CARD8 bus,
+          CARD8 dev,
+          CARD8 offset,
           int len,		/* unused, alway 4 */
-          unsigned long val)
+          CARD32 val)
 {
-	unsigned long _val;
-	unsigned long *ptr;
+	CARD32 _val;
+	CARD32 *ptr;
 
 	dev >>= 3;
 	_val = swapl(val);
 	if (bus || dev >= 16) {
 		return PCIBIOS_DEVICE_NOT_FOUND;
 	} else {
-		ptr = (unsigned long *)(pciConfBase + ((1<<dev) | offset));
+		ptr = (CARD32 *)(pciConfBase + ((1<<dev) | offset));
 		*ptr = _val;
 	}
 	return PCIBIOS_SUCCESSFUL;
@@ -374,32 +384,32 @@ int pciconfig_write(
 struct pci_config_reg {
     /* start of official PCI config space header */
     union {
-        unsigned long device_vendor;
+        CARD32 device_vendor;
 	struct {
-	    unsigned short vendor;
-	    unsigned short device;
+	    CARD16 vendor;
+	    CARD16 device;
 	} dv;
     } dv_id;
 #define _device_vendor dv_id.device_vendor
 #define _vendor dv_id.dv.vendor
 #define _device dv_id.dv.device
     union {
-        unsigned long status_command;
+        CARD32 status_command;
 	struct {
-	    unsigned short command;
-	    unsigned short status;
+	    CARD16 command;
+	    CARD16 status;
 	} sc;
     } stat_cmd;
 #define _status_command stat_cmd.status_command
 #define _command stat_cmd.sc.command
 #define _status  stat_cmd.sc.status
     union {
-        unsigned long class_revision;
+        CARD32 class_revision;
 	struct {
-	    unsigned char rev_id;
-	    unsigned char prog_if;
-	    unsigned char sub_class;
-	    unsigned char base_class;
+	    CARD8 rev_id;
+	    CARD8 prog_if;
+	    CARD8 sub_class;
+	    CARD8 base_class;
 	} cr;
     } class_rev;
 #define _class_revision class_rev.class_revision
@@ -408,12 +418,12 @@ struct pci_config_reg {
 #define _sub_class  class_rev.cr.sub_class
 #define _base_class class_rev.cr.base_class
     union {
-        unsigned long bist_header_latency_cache;
+        CARD32 bist_header_latency_cache;
 	struct {
-	    unsigned char cache_line_size;
-	    unsigned char latency_timer;
-	    unsigned char header_type;
-	    unsigned char bist;
+	    CARD8 cache_line_size;
+	    CARD8 latency_timer;
+	    CARD8 header_type;
+	    CARD8 bist;
 	} bhlc;
     } bhlc;
 #define _bist_header_latency_cache bhlc.bist_header_latency_cache
@@ -423,26 +433,26 @@ struct pci_config_reg {
 #define _bist            bhlc.bhlc.bist
     union {
 	struct {
-	    unsigned long dv_base0;
-	    unsigned long dv_base1;
-	    unsigned long dv_base2;
-	    unsigned long dv_base3;
-	    unsigned long dv_base4;
-	    unsigned long dv_base5;
+	    CARD32 dv_base0;
+	    CARD32 dv_base1;
+	    CARD32 dv_base2;
+	    CARD32 dv_base3;
+	    CARD32 dv_base4;
+	    CARD32 dv_base5;
 	} dv;
 	struct {
-	    unsigned long bg_rsrvd[2];
-	    unsigned char primary_bus_number;
-	    unsigned char secondary_bus_number;
-	    unsigned char subordinate_bus_number;
-	    unsigned char secondary_latency_timer;
-	    unsigned char io_base;
-	    unsigned char io_limit;
-	    unsigned short secondary_status;
-	    unsigned short mem_base;
-	    unsigned short mem_limit;
-	    unsigned short prefetch_mem_base;
-	    unsigned short prefetch_mem_limit;
+	    CARD32 bg_rsrvd[2];
+	    CARD8 primary_bus_number;
+	    CARD8 secondary_bus_number;
+	    CARD8 subordinate_bus_number;
+	    CARD8 secondary_latency_timer;
+	    CARD8 io_base;
+	    CARD8 io_limit;
+	    CARD16 secondary_status;
+	    CARD16 mem_base;
+	    CARD16 mem_limit;
+	    CARD16 prefetch_mem_base;
+	    CARD16 prefetch_mem_limit;
 	} bg;
     } bc;
 #define	_base0				bc.dv.dv_base0
@@ -462,36 +472,36 @@ struct pci_config_reg {
 #define _mem_limit			bc.bg.mem_limit
 #define _prefetch_mem_base		bc.bg.prefetch_mem_base
 #define _prefetch_mem_limit		bc.bg.prefetch_mem_limit
-    unsigned long rsvd1;
+    CARD32 rsvd1;
     union {     /* Offset 0x2c - 0x2f */
-        unsigned long subsys_card_vendor;
-        unsigned long rsvd2;
+        CARD32 subsys_card_vendor;
+        CARD32 rsvd2;
         struct {
-            unsigned short subsys_vendor;
-            unsigned short subsys_card;
+            CARD16 subsys_vendor;
+            CARD16 subsys_card;
         } ssys;
     } ssys_id;
 #define _subsys_card_vendor		ssys_id.subsys_card_vendor
 #define _subsys_vendor			ssys_id.ssys.subsys_vendor
 #define _subsys_card			ssys_id.ssys.subsys_card
-    unsigned long _baserom;
-    unsigned long rsvd3;
-    unsigned long rsvd4;
+    CARD32 _baserom;
+    CARD32 rsvd3;
+    CARD32 rsvd4;
     union {
 	union {
-	    unsigned long max_min_ipin_iline;
+	    CARD32 max_min_ipin_iline;
 	    struct {
-		unsigned char int_line;
-		unsigned char int_pin;
-		unsigned char min_gnt;
-		unsigned char max_lat;
+		CARD8 int_line;
+		CARD8 int_pin;
+		CARD8 min_gnt;
+		CARD8 max_lat;
 	    } mmii;
 	} mmii;
 	struct {
-	    unsigned char res1;
-	    unsigned char res2;
-	    unsigned char bridge_control;
-	    unsigned char res3;
+	    CARD8 res1;
+	    CARD8 res2;
+	    CARD8 bridge_control;
+	    CARD8 res3;
 	} bctrl;
     } bm;
 #define _max_min_ipin_iline bm.mmii.max_min_ipin_iline
@@ -502,12 +512,12 @@ struct pci_config_reg {
 #define _b_ctrl   bm.bctrl.bridge_control
     /* I don't know how accurate or standard this is (DHD) */
     union {
-	unsigned long user_config;
+	CARD32 user_config;
 	struct {
-	    unsigned char user_config_0;
-	    unsigned char user_config_1;
-	    unsigned char user_config_2;
-	    unsigned char user_config_3;
+	    CARD8 user_config_0;
+	    CARD8 user_config_1;
+	    CARD8 user_config_2;
+	    CARD8 user_config_3;
 	} uc;
     } uc;
 #define _user_config uc.user_config
@@ -516,12 +526,12 @@ struct pci_config_reg {
 #define _user_config_2 uc.uc.user_config_2
 #define _user_config_3 uc.uc.user_config_3
     /* end of official PCI config space header */
-    unsigned long _pcibusidx;
-    unsigned long _pcinumbus;
-    unsigned long _pcibuses[16];
-    unsigned short _configtype;   /* config type found                   */
-    unsigned short _ioaddr;       /* config type 1 - private I/O addr    */
-    unsigned long _cardnum;       /* config type 2 - private card number */
+    CARD32 _pcibusidx;
+    CARD32 _pcinumbus;
+    CARD32 _pcibuses[16];
+    CARD16 _configtype;   /* config type found                   */
+    CARD16 _ioaddr;       /* config type 1 - private I/O addr    */
+    CARD32 _cardnum;       /* config type 2 - private card number */
 };
 #else
 /* ppc and sparc are big endian, swapping bytes is not quite enough
@@ -530,32 +540,32 @@ struct pci_config_reg {
 struct pci_config_reg {
     /* start of official PCI config space header */
     union {
-        unsigned long device_vendor;
+        CARD32 device_vendor;
 	struct {
-	    unsigned short device;
-	    unsigned short vendor;
+	    CARD16 device;
+	    CARD16 vendor;
 	} dv;
     } dv_id;
 #define _device_vendor dv_id.device_vendor
 #define _vendor dv_id.dv.vendor
 #define _device dv_id.dv.device
     union {
-        unsigned long status_command;
+        CARD32 status_command;
 	struct {
-	    unsigned short status;
-	    unsigned short command;
+	    CARD16 status;
+	    CARD16 command;
 	} sc;
     } stat_cmd;
 #define _status_command stat_cmd.status_command
 #define _command stat_cmd.sc.command
 #define _status  stat_cmd.sc.status
     union {
-        unsigned long class_revision;
+        CARD32 class_revision;
 	struct {
-	    unsigned char base_class;
-	    unsigned char sub_class;
-	    unsigned char prog_if;
-	    unsigned char rev_id;
+	    CARD8 base_class;
+	    CARD8 sub_class;
+	    CARD8 prog_if;
+	    CARD8 rev_id;
 	} cr;
     } class_rev;
 #define _class_revision class_rev.class_revision
@@ -564,12 +574,12 @@ struct pci_config_reg {
 #define _sub_class  class_rev.cr.sub_class
 #define _base_class class_rev.cr.base_class
     union {
-        unsigned long bist_header_latency_cache;
+        CARD32 bist_header_latency_cache;
 	struct {
-	    unsigned char bist;
-	    unsigned char header_type;
-	    unsigned char latency_timer;
-	    unsigned char cache_line_size;
+	    CARD8 bist;
+	    CARD8 header_type;
+	    CARD8 latency_timer;
+	    CARD8 cache_line_size;
 	} bhlc;
     } bhlc;
 #define _bist_header_latency_cache bhlc.bist_header_latency_cache
@@ -579,31 +589,31 @@ struct pci_config_reg {
 #define _bist            bhlc.bhlc.bist
     union {
 	struct {
-	    unsigned long dv_base0;
-	    unsigned long dv_base1;
-	    unsigned long dv_base2;
-	    unsigned long dv_base3;
-	    unsigned long dv_base4;
-	    unsigned long dv_base5;
+	    CARD32 dv_base0;
+	    CARD32 dv_base1;
+	    CARD32 dv_base2;
+	    CARD32 dv_base3;
+	    CARD32 dv_base4;
+	    CARD32 dv_base5;
 	} dv;
 /* ?? */
 	struct {
-	    unsigned long bg_rsrvd[2];
+	    CARD32 bg_rsrvd[2];
 
-	    unsigned char secondary_latency_timer;
-	    unsigned char subordinate_bus_number;
-	    unsigned char secondary_bus_number;
-	    unsigned char primary_bus_number;
+	    CARD8 secondary_latency_timer;
+	    CARD8 subordinate_bus_number;
+	    CARD8 secondary_bus_number;
+	    CARD8 primary_bus_number;
 
-	    unsigned short secondary_status;
-	    unsigned char io_limit;
-	    unsigned char io_base;
+	    CARD16 secondary_status;
+	    CARD8 io_limit;
+	    CARD8 io_base;
 
-	    unsigned short mem_limit;
-	    unsigned short mem_base;
+	    CARD16 mem_limit;
+	    CARD16 mem_base;
 
-	    unsigned short prefetch_mem_limit;
-	    unsigned short prefetch_mem_base;
+	    CARD16 prefetch_mem_limit;
+	    CARD16 prefetch_mem_base;
 	} bg;
     } bc;
 #define	_base0				bc.dv.dv_base0
@@ -623,36 +633,36 @@ struct pci_config_reg {
 #define _mem_limit			bc.bg.mem_limit
 #define _prefetch_mem_base		bc.bg.prefetch_mem_base
 #define _prefetch_mem_limit		bc.bg.prefetch_mem_limit
-    unsigned long rsvd1;
+    CARD32 rsvd1;
     union {     /* Offset 0x2c - 0x2f */
-        unsigned long subsys_card_vendor;
-        unsigned long rsvd2;
+        CARD32 subsys_card_vendor;
+        CARD32 rsvd2;
         struct {
-            unsigned short subsys_card;
-            unsigned short subsys_vendor;
+            CARD16 subsys_card;
+            CARD16 subsys_vendor;
         } ssys;
     } ssys_id;
 #define _subsys_card_vendor		ssys_id.subsys_card_vendor
 #define _subsys_vendor			ssys_id.ssys.subsys_vendor
 #define _subsys_card			ssys_id.ssys.subsys_card
-    unsigned long _baserom;
-    unsigned long rsvd3;
-    unsigned long rsvd4;
+    CARD32 _baserom;
+    CARD32 rsvd3;
+    CARD32 rsvd4;
     union {
 	union {
-	    unsigned long max_min_ipin_iline;
+	    CARD32 max_min_ipin_iline;
 	    struct {
-		unsigned char max_lat;
-		unsigned char min_gnt;
-		unsigned char int_pin;
-		unsigned char int_line;
+		CARD8 max_lat;
+		CARD8 min_gnt;
+		CARD8 int_pin;
+		CARD8 int_line;
 	    } mmii;
 	} mmii;
 	struct {
-	    unsigned char res1;
-	    unsigned char bridge_control;
-	    unsigned char res2;
-	    unsigned char res3;
+	    CARD8 res1;
+	    CARD8 bridge_control;
+	    CARD8 res2;
+	    CARD8 res3;
 	} bctrl;
     } bm;
 #define _max_min_ipin_iline bm.mmii.max_min_ipin_iline
@@ -663,12 +673,12 @@ struct pci_config_reg {
 #define _b_ctrl   bm.bctrl.bridge_control
     /* I don't know how accurate or standard this is (DHD) */
     union {
-	unsigned long user_config;
+	CARD32 user_config;
 	struct {
-	    unsigned char user_config_3;
-	    unsigned char user_config_2;
-	    unsigned char user_config_1;
-	    unsigned char user_config_0;
+	    CARD8 user_config_3;
+	    CARD8 user_config_2;
+	    CARD8 user_config_1;
+	    CARD8 user_config_0;
 	} uc;
     } uc;
 #define _user_config uc.user_config
@@ -677,12 +687,12 @@ struct pci_config_reg {
 #define _user_config_2 uc.uc.user_config_2
 #define _user_config_3 uc.uc.user_config_3
     /* end of official PCI config space header */
-    unsigned long _pcibusidx;
-    unsigned long _pcinumbus;
-    unsigned long _pcibuses[16];
-    unsigned short _ioaddr;       /* config type 1 - private I/O addr    */
-    unsigned short _configtype;   /* config type found                   */
-    unsigned long _cardnum;       /* config type 2 - private card number */
+    CARD32 _pcibusidx;
+    CARD32 _pcinumbus;
+    CARD32 _pcibuses[16];
+    CARD16 _ioaddr;       /* config type 1 - private I/O addr    */
+    CARD16 _configtype;   /* config type found                   */
+    CARD32 _cardnum;       /* config type 2 - private card number */
 };
 #endif
 
@@ -693,13 +703,13 @@ extern void print_bridge_class(struct pci_config_reg *pcr);
 extern void print_i128(struct pci_config_reg *);
 extern void print_mach64(struct pci_config_reg *);
 extern void print_pcibridge(struct pci_config_reg *);
-extern void enable_os_io();
-extern void disable_os_io();
+extern void enable_os_io(void);
+extern void disable_os_io(void);
 
 #define MAX_DEV_PER_VENDOR_CFG1 48
 #define MAX_DEV_PER_VENDOR_CFG2 16
 #define MAX_PCI_DEVICES         64
-#define NF ((void (*)())NULL)
+#define NF ((void (*)(struct pci_config_reg *))NULL)
 #define PCI_MULTIFUNC_DEV	0x80
 #if defined(__alpha__) || defined(__powerpc__) || defined(__sparc__)
 #define PCI_ID_REG              0x00
@@ -713,10 +723,10 @@ extern void disable_os_io();
 #endif
 
 struct pci_vendor_device {
-    unsigned short vendor_id;
+    CARD16 vendor_id;
     char *vendorname;
     struct pci_device {
-        unsigned short device_id;
+        CARD16 device_id;
         char *devicename;
 	void (*print_func)(struct pci_config_reg *);
     } device[MAX_DEV_PER_VENDOR_CFG1];
@@ -1340,11 +1350,13 @@ struct pci_vendor_device {
 #define	PCI_MODE2_FORWARD_REG		0xCFA
 #endif
 
-
+int
 main(int argc, char *argv[])
 {
-    unsigned long tmplong1, tmplong2, config_cmd;
-    unsigned char tmp1, tmp2;
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__sparc__)
+    CARD32 tmplong1, tmplong2, config_cmd;
+    CARD8 tmp1, tmp2;
+#endif
     unsigned int idx;
     struct pci_config_reg pcr;
     int ch, verbose = 0, do_mode1_scan = 0, do_mode2_scan = 0;
@@ -1472,26 +1484,26 @@ main(int argc, char *argv[])
             outl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x40);
 	    pcr._user_config = inl(PCI_MODE1_DATA_REG);
 #else
+#define get_pci_reg(reg1,preg1,preg2) \
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], \
+                           (pcr._cardnum<<3)|func, reg1, 4, &preg1); \
+            if (( preg1 & 7 ) == 4)  \
+ 	       pciconfig_read(pcr._pcibuses[pcr._pcibusidx], \
+                              (pcr._cardnum<<3)|func, reg1 + 4, 4, \
+			       (int *)(&preg1)+1); \
+            else \
+	       pciconfig_read(pcr._pcibuses[pcr._pcibusidx], \
+			      (pcr._cardnum<<3)|func, reg1 + 4, 4, &preg2); \
+
 	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_CMD_STAT_REG, 4, &pcr._status_command);
 	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_CLASS_REG, 4, &pcr._class_revision);
 	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_HEADER_MISC, 4, &pcr._bist_header_latency_cache);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
-			PCI_MAP_REG_START, 4, &pcr._base0);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
-			PCI_MAP_REG_START + 0x04, 4, &pcr._base1);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
-			PCI_MAP_REG_START + 0x08, 4, &pcr._base2);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
-			PCI_MAP_REG_START + 0x0C, 4, &pcr._base3);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
-			PCI_MAP_REG_START + 0x10, 4, &pcr._base4);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
-			PCI_MAP_REG_START + 0x14, 4, &pcr._base5);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
-			PCI_MAP_REG_START + 0x1c, 4, &pcr._subsys_card_vendor);
+	    get_pci_reg(PCI_MAP_REG_START,     pcr._base0,pcr._base1);
+	    get_pci_reg(PCI_MAP_REG_START + 8, pcr._base2,pcr._base3);
+	    get_pci_reg(PCI_MAP_REG_START + 16,pcr._base4,pcr._base5);
 	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_MAP_ROM_REG, 4, &pcr._baserom);
 	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
@@ -1599,6 +1611,7 @@ main(int argc, char *argv[])
 #endif /* __alpha__ */
 
     disable_os_io();
+    return 0;
 }
 
 
@@ -1606,7 +1619,7 @@ void
 identify_card(struct pci_config_reg *pcr, int verbose)
 {
 
-	int i = 0, j, foundit = 0;
+	int i = 0, j = 0, foundit = 0;
 
 	while (pvd[i].vendorname != (char *)NULL) {
 	    if (pvd[i].vendor_id == pcr->_vendor) {
@@ -1631,7 +1644,8 @@ identify_card(struct pci_config_reg *pcr, int verbose)
 	else {
 	    printf("\n");
 	    if (verbose) {
-	        if (pvd[i].device[j].print_func != (void (*)())NULL) {
+	        if (pvd[i].device[j].print_func 
+		    != (void (*)(struct pci_config_reg *))NULL) {
                     pvd[i].device[j].print_func(pcr);
 		    return;
 	        }
@@ -1762,7 +1776,7 @@ print_bridge_class(struct pci_config_reg *pcr)
 void
 print_mach64(struct pci_config_reg *pcr)
 {
-    unsigned long sparse_io = 0;
+    CARD32 sparse_io = 0;
 
     if (pcr->_status_command)
         printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
@@ -1875,8 +1889,9 @@ print_pcibridge(struct pci_config_reg *pcr)
         printf("  MAX_LAT   0x%02x  MIN_GNT 0x%02x  INT_PIN 0x%02x  INT_LINE 0x%02x\n",
             pcr->_max_lat, pcr->_min_gnt, pcr->_int_pin, pcr->_int_line);
 }
-
+#if defined(__FreeBSD__)  || defined(__386BSD__) || defined(__bsdi__) || defined(__NetBSD__) || defined(MACH386)
 static int io_fd;
+#endif
 #ifdef __EMX__
 USHORT callgate[3] = {0,0,0};
 #endif
@@ -1977,7 +1992,7 @@ enable_os_io()
    }
 #endif
 #if defined(Lynx) && defined(__powerpc__)
-    pciConfBase = (unsigned char *) smem_create("PCI-CONF",
+    pciConfBase = (CARD8 *) smem_create("PCI-CONF",
     	    (char *)0x80800000, 64*1024, SM_READ|SM_WRITE);
     if (pciConfBase == (void *) -1)
         exit(1);

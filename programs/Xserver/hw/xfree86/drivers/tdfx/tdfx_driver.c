@@ -854,11 +854,7 @@ TDFXMapMem(ScrnInfoPtr pScrn)
   TDFXTRACE("TDFXMapMem start\n");
   pTDFX = TDFXPTR(pScrn);
 
-#if !defined(__alpha__)
   mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
-#else
-  mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_SPARSE;
-#endif
 
   pTDFX->MMIOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, 
 				      pTDFX->PciTag, 

@@ -40,17 +40,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "i740.h"
 
-static void I740WriteControlPIO(I740Ptr pI740, int addr, char index, char val) {
+static void I740WriteControlPIO(I740Ptr pI740, int addr, unsigned char index, char val) {
   outb(addr, index);
   outb(addr+1, val);
 }
 
-static char I740ReadControlPIO(I740Ptr pI740, int addr, char index) {
+static char I740ReadControlPIO(I740Ptr pI740, int addr, unsigned char index) {
   outb(addr, index);
   return inb(addr+1);
 }
 
-static void I740WriteStandardPIO(I740Ptr pI740, int addr, char val) {
+static void I740WriteStandardPIO(I740Ptr pI740, int addr, unsigned char val) {
   outb(addr, val);
 }
 
@@ -65,17 +65,17 @@ void I740SetPIOAccess(I740Ptr pI740) {
   pI740->readStandard=I740ReadStandardPIO;
 }
 
-static void I740WriteControlMMIO(I740Ptr pI740, int addr, char index, char val) {
+static void I740WriteControlMMIO(I740Ptr pI740, int addr, unsigned char index, char val) {
   moutb(addr, index);
   moutb(addr+1, val);
 }
 
-static char I740ReadControlMMIO(I740Ptr pI740, int addr, char index) {
+static char I740ReadControlMMIO(I740Ptr pI740, int addr, unsigned char index) {
   moutb(addr, index);
   return minb(addr+1);
 }
 
-static void I740WriteStandardMMIO(I740Ptr pI740, int addr, char val) {
+static void I740WriteStandardMMIO(I740Ptr pI740, int addr, unsigned char val) {
   moutb(addr, val);
 }
 

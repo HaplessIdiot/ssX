@@ -25,7 +25,7 @@ static void get_whitepoint_section(Uchar *, struct whitePoints *);
 static void get_detailed_timing_section(Uchar*, struct 	detailed_timings *);
 
 xf86MonPtr
-InterpretEDID(Uchar *block)
+xf86InterpretEDID(Uchar *block)
 {
     xf86MonPtr m;
 

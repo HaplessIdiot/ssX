@@ -68,6 +68,7 @@ extern confDRIRec xf86ConfigDRI;
 extern unsigned short xf86MouseCflags[];
 extern Bool xf86SupportedMouseTypes[];
 extern int xf86NumMouseTypes;
+extern int xf86EstimateSizesAggressively;
 
 #ifdef XFree86LOADER
 extern DriverPtr *xf86DriverList;

@@ -46,6 +46,7 @@
 #endif
 
 #define GLINT_MAX_MX_DEVICES 2
+#define GLINT_VGA_MMIO_OFF 0x6000
 
 typedef struct {
 	CARD32 glintRegs[0x2000];
@@ -94,6 +95,7 @@ typedef struct {
     CARD32		FbAddress;
     int                 irq;
     unsigned char *     IOBase;
+    unsigned char *     IOBaseVGA;
     unsigned char *	FbBase;
     long		FbMapSize;
     Bool		DoubleBuffer;

@@ -507,7 +507,8 @@ typedef enum {
     FLAG_DPMS_SUSPENDTIME,
     FLAG_DPMS_OFFTIME,
     FLAG_PIXMAP,
-    FLAG_PC98
+    FLAG_PC98,
+    FLAG_ESTIMATE_SIZES_AGGRESSIVELY
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {
@@ -548,6 +549,8 @@ static OptionInfoRec FlagOptions[] = {
   { FLAG_DPMS_OFFTIME,		"OffTime",			OPTV_INTEGER,
 	{0}, FALSE },
   { FLAG_PIXMAP,		"Pixmap",			OPTV_INTEGER,
+	{0}, FALSE },
+  { FLAG_ESTIMATE_SIZES_AGGRESSIVELY,"EstimateSizesAggressively",OPTV_INTEGER,
 	{0}, FALSE },
   { FLAG_PC98,			"PC98",				OPTV_BOOLEAN,
 	{0}, FALSE },
@@ -646,6 +649,11 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIFORCECONFIG2))
 	xf86Info.pciFlags = PCIForceConfig2;
 
+    i = -1;
+    xf86GetOptValInteger(FlagOptions, FLAG_ESTIMATE_SIZES_AGGRESSIVELY, &i);
+    if (i >= 0)
+	xf86EstimateSizesAggressively = i;
+    
     i = -1;
     xf86GetOptValInteger(FlagOptions, FLAG_SAVER_BLANKTIME, &i);
     if (i >= 0)
@@ -1013,7 +1021,7 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
     screenLayoutPtr slp;
     GDevPtr gdp;
     IDevPtr indp;
-    int i, j;
+    int i = 0, j;
 
     if (!servlayoutp)
 	return FALSE;

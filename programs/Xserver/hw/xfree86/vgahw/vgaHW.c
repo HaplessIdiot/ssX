@@ -158,20 +158,6 @@ static CARD8 defaultDAC[768] =
 #endif /* NEED_SAVED_CMAP */
 
 /*
- * With Intel, the version in os-support/misc/SlowBcopy.s is used.
- * This avoids port I/O during the copy (which causes problems with
- * some hardware).
- */
-#ifdef __alpha__
-#define slowbcopy_tobus(src,dst,count) xf86SlowBCopyToBus(src,dst,count)
-#define slowbcopy_frombus(src,dst,count) xf86SlowBCopyFromBus(src,dst,count)
-#else /* __alpha__ */
-#define slowbcopy_tobus(src,dst,count) xf86SlowBcopy(src,dst,count)
-#define slowbcopy_frombus(src,dst,count) xf86SlowBcopy(src,dst,count)
-#endif /* __alpha__ */
-
-
-/*
  * Standard VGA versions of the register access functions.
  */
 static void
@@ -217,9 +203,27 @@ stdReadSeq(vgaHWPtr hwp, CARD8 index)
 }
 
 static CARD8
+stdReadST00(vgaHWPtr hwp)
+{
+    return inb(VGA_IN_STAT_0);
+}
+
+static CARD8
 stdReadST01(vgaHWPtr hwp)
 {
     return inb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
+}
+
+static CARD8
+stdReadFCR(vgaHWPtr hwp)
+{
+    return inb(VGA_FEATURE_R);
+}
+
+static void
+stdWriteFCR(vgaHWPtr hwp, CARD8 value)
+{
+    outb(hwp->IOBase + VGA_FEATURE_W_OFFSET,value);
 }
 
 static void
@@ -327,7 +331,10 @@ vgaHWSetStdFuncs(vgaHWPtr hwp)
     hwp->readCrtc		= stdReadCrtc;
     hwp->writeGr		= stdWriteGr;
     hwp->readGr			= stdReadGr;
+    hwp->readST00               = stdReadST00;
     hwp->readST01               = stdReadST01;
+    hwp->readFCR                = stdReadFCR;
+    hwp->writeFCR               = stdWriteFCR;
     hwp->writeAttr		= stdWriteAttr;
     hwp->readAttr		= stdReadAttr;
     hwp->writeSeq		= stdWriteSeq;
@@ -350,15 +357,8 @@ vgaHWSetStdFuncs(vgaHWPtr hwp)
  * adderss is added the correct memory address results.
  */
 
-#ifndef __alpha__
-#define minb(p) *(volatile CARD8 *)(hwp->MMIOBase + hwp->MMIOOffset + (p))
-#define moutb(p,v) \
-	*(volatile CARD8 *)(hwp->MMIOBase + hwp->MMIOOffset + (p)) = (v)
-#else
-#define minb(p) xf86ReadSparse8(hwp->MMIOBase, hwp->MMIOOffset + (p))
-#define moutb(p,v) \
-	xf86WriteSparse8((v), hwp->MMIOBase, hwp->MMIOOffset + (p))
-#endif
+#define minb(p) MMIO_IN8(hwp->MMIOBase, (hwp->MMIOOffset + (p)))
+#define moutb(p,v) MMIO_OUT8(hwp->MMIOBase, (hwp->MMIOOffset + (p)),(v))
 
 static void
 mmioWriteCrtc(vgaHWPtr hwp, CARD8 index, CARD8 value)
@@ -403,9 +403,27 @@ mmioReadSeq(vgaHWPtr hwp, CARD8 index)
 }
 
 static CARD8
+mmioReadST00(vgaHWPtr hwp)
+{
+    return minb(VGA_IN_STAT_0);
+}
+
+static CARD8
 mmioReadST01(vgaHWPtr hwp)
 {
     return minb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
+}
+
+static CARD8
+mmioReadFCR(vgaHWPtr hwp)
+{
+    return minb(VGA_FEATURE_R);
+}
+
+static void
+mmioWriteFCR(vgaHWPtr hwp, CARD8 value)
+{
+    moutb(hwp->IOBase + VGA_FEATURE_W_OFFSET,value);
 }
 
 static void
@@ -513,7 +531,10 @@ vgaHWSetMmioFuncs(vgaHWPtr hwp, CARD8 *base, int offset)
     hwp->readCrtc		= mmioReadCrtc;
     hwp->writeGr		= mmioWriteGr;
     hwp->readGr			= mmioReadGr;
+    hwp->readST00               = mmioReadST00;
     hwp->readST01               = mmioReadST01;
+    hwp->readFCR                = mmioReadFCR;
+    hwp->writeFCR               = mmioWriteFCR;
     hwp->writeAttr		= mmioWriteAttr;
     hwp->readAttr		= mmioReadAttr;
     hwp->writeSeq		= mmioWriteSeq;
@@ -1662,8 +1683,13 @@ vgaHWMapMem(ScrnInfoPtr scrp)
     if (hwp->MapPhys == 0)
 	hwp->MapPhys = VGA_DEFAULT_PHYS_ADDR;
 
-    /* Map as VIDMEM_MMIO because WC is bad when there is page flipping */
-    hwp->Base = xf86MapVidMem(scr_index, VIDMEM_MMIO,
+    /*
+     * Map as VIDMEM_MMIO_32BIT because WC
+     * is bad when there is page flipping.
+     * XXX This is not correct but we do it
+     * for now.
+     */
+    hwp->Base = xf86MapVidMem(scr_index, VIDMEM_MMIO_32BIT,
 			      hwp->MapPhys, hwp->MapSize);
     return hwp->Base != NULL;
 }

@@ -1,5 +1,12 @@
 /* $XFree86$ */
-
+/*
+ *                   XFree86 int10 module
+ *   execute BIOS int 10h calls in x86 real mode environment
+ *                 Copyright 1999 Egbert Eich
+ *
+ *   Part of this is based on code taken form DOSEMU
+ *   (C) Copyright 1992, ..., 1999 the "DOSEMU-Development-Team"
+ */   
 #include "xf86.h"
 #include "xf86str.h"
 #include "compiler.h"
@@ -9,6 +16,11 @@
 #include "defines.h"
 #include "xf86_ansic.h"
 #include "xf86_libc.h"
+
+#ifndef _PC
+static int pciCfg1in(CARD16 addr, CARD32 *val);
+static int pciCfg1out(CARD16 addr, CARD32 val);
+#endif
 
 #define REG pInt
 
@@ -26,12 +38,12 @@ setup_int(xf86Int10InfoPtr pInt)
     X86_EDX = (CARD32) pInt->dx;
     X86_EDX = (CARD32) pInt->si;
     X86_EDI = (CARD32) pInt->di;
+    X86_ES  = (CARD32) pInt->es;
     X86_EBP = 0;
     X86_EIP = 0;
     X86_CS = 0x60;               /* address of 'hlt' */               
     X86_ESP = 0x100;
     X86_SS = 0x30;               /* This is the standard pc bios stack */
-    X86_ES = 0;                  /* standard pc es */
     X86_DS = 0x40;               /* standard pc ds */  
     X86_FS = 0;
     X86_GS = 0;
@@ -50,12 +62,13 @@ finish_int(xf86Int10InfoPtr pInt)
     pInt->flags = (CARD16) X86_FLAGS;
 }
 
+#define SEG_ADR(type, seg, reg)  type((seg << 4) \
+				      + (X86_E##reg))
+#ifndef _X86EMU
 /* get the linear address */
 #define LIN_PREF_SI  ((pref_seg << 4) + X86_SI)
 #define LWECX	    (prefix66 ^ prefix67 ? X86_ECX : X86_CX)
 #define LWECX_ZERO  {if (prefix66 ^ prefix67) X86_ECX = 0; else X86_CX = 0;}
-#define SEG_ADR(type, seg, reg)  type((seg << 4) \
-				      + (X86_E##reg))
 #define DF (1 << 10)
 
 
@@ -210,7 +223,7 @@ vm86_GP_fault(xf86Int10InfoPtr pInt)
     }				/* end of switch() */
     return TRUE;
 }
-
+#endif
 /* general software interrupt handler */
 CARD32
 getIntVect(xf86Int10InfoPtr pInt,int num)
@@ -229,15 +242,16 @@ int
 run_bios_int(int num, xf86Int10InfoPtr pInt)
 {
     CARD32 eflags;
-
+#ifndef _PC
     /* check if bios vector is initialized */
     if (MEM_RW(pInt,(num<<2)+2) == 0xF000) { /* SYS_BIOS_SEG ?*/
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
 	ErrorF("card BIOS not loaded\n");
 #endif
 	return 0;
     }
-#ifdef PRINT_IRQ
+#endif
+#ifdef PRINT_INT
     ErrorF("calling card BIOS at: ");
 #endif
     eflags = X86_EFLAGS;
@@ -250,7 +264,7 @@ run_bios_int(int num, xf86Int10InfoPtr pInt)
     pushw(pInt, (CARD16)X86_EIP);
     X86_CS = MEM_RW(pInt,((num << 2) + 2));
     X86_EIP = (X86_EIP & 0xFFFF0000) | MEM_RW(pInt,(num << 2));
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
     ErrorF("0x%x:%lx\n",X86_CS,X86_EIP);
 #endif
     return 1;
@@ -307,6 +321,42 @@ stack_trace(xf86Int10InfoPtr pInt)
     for (i=0; i < 0x10; i++) 
 	ErrorF("%2.2x ",MEM_RB(pInt,stack + i));
     ErrorF("\n");
+}
+/*
+ * Lock/Unlock legacy VGA. Some Bioses try to be very clever and make
+ * an attempt to detect a legacy ISA card. If they find one they might
+ * act very strange for example they might configure the card as a
+ * monochrome card. This might cause some drivers to choke.
+ * To avoid this we attempt legacy VGA by writing to all know VGA
+ * disable registers before we call the BIOS initialization and
+ * restore the original values afterwards. In beween we hold our
+ * breath. To get to a (possibly exising) ISA card need to disable
+ * our current PCI card. 
+ */
+void
+LockLegacyVGA(int screenIndex,legacyVGAPtr vga)
+{
+    xf86SetCurrentAccess(FALSE,xf86Screens[screenIndex]);
+    vga->save_msr = inb(0x3CC);
+    vga->save_vse = inb(0x3C3);
+    vga->save_46e8 = inb(0x46e8);
+    vga->save_pos102 = inb(0x102);
+    outb(0x3C2,~(CARD8)0x03 & vga->save_msr);
+    outb(0x3C3,~(CARD8)0x01 & vga->save_vse);
+    outb(0x46e8, ~(CARD8)0x08 & vga->save_46e8);
+    outb(0x102, ~(CARD8)0x01 & vga->save_pos102);
+    xf86SetCurrentAccess(TRUE,xf86Screens[screenIndex]);
+}
+
+void
+UnlockLegacyVGA(int screenIndex, legacyVGAPtr vga)
+{
+    xf86SetCurrentAccess(FALSE,xf86Screens[screenIndex]);
+    outb(0x102, vga->save_pos102);
+    outb(0x46e8, vga->save_46e8);
+    outb(0x3C3, vga->save_vse);
+    outb(0x3C2, vga->save_msr);
+    xf86SetCurrentAccess(TRUE,xf86Screens[screenIndex]);
 }
 
 int
@@ -411,37 +461,59 @@ port_rep_outl(xf86Int10InfoPtr pInt,
     return (dst-base);
 }
 
-#ifdef PRINT_PORT
+#if defined(PRINT_PORT) || !defined(_PC)
 CARD8
-p_inb(CARD16 port)
+x_inb(CARD16 port)
 {
     CARD8 val;
 
     val = inb(port);
-#ifdef PRINT_PORT
+#ifdef PRINT_PORT    
     ErrorF(" inb(%#x) = %2.2x\n",port,val);
 #endif
     return val;
 }
 
 CARD16
-p_inw(CARD16 port)
+x_inw(CARD16 port)
 {
     CARD16 val;
 
     val = inw(port);
-#ifdef PRINT_PORT
+#ifdef PRINT_PORT    
     ErrorF(" inw(%#x) = %4.4x\n",port,val);
 #endif
     return val;
 }
 
+void
+x_outb(CARD16 port, CARD8 val)
+{
+#ifdef PRINT_PORT    
+    ErrorF(" outb(%#x, %2.2x)\n",port,val);
+#endif
+    outb(port,val);
+}
+
+void
+x_outw(CARD16 port, CARD16 val)
+{
+#ifdef PRINT_PORT    
+    ErrorF(" outw(%#x, %4.4x)\n",port,val);
+#endif
+    outw(port,val);
+}
+
 CARD32
-p_inl(CARD16 port)
+x_inl(CARD16 port)
 {
     CARD32 val;
 
+#ifndef _PC
+    if (!pciCfg1in(port,&val))
+#endif
     val = inl(port);
+
 #ifdef PRINT_PORT
     ErrorF(" inl(%#x) = %8.8x\n",port,val);
 #endif
@@ -449,30 +521,15 @@ p_inl(CARD16 port)
 }
 
 void
-p_outb(CARD16 port, CARD8 val)
-{
-#ifdef PRINT_PORT
-    ErrorF(" outb(%#x, %2.2x)\n",port,val);
-#endif
-    outb(port,val);
-}
-
-void
-p_outw(CARD16 port, CARD16 val)
-{
-#ifdef PRINT_PORT
-    ErrorF(" outw(%#x, %4.4x)\n",port,val);
-#endif
-    outw(port,val);
-}
-
-void
-p_outl(CARD16 port, CARD32 val)
+x_outl(CARD16 port, CARD32 val)
 {
 #ifdef PRINT_PORT
     ErrorF(" outl(%#x, %8.8x)\n",port,val);
 #endif
-    outl(port,val);
+#ifndef _PC
+            if (!pciCfg1out(port,val))
+#endif
+	    outl(port,val);
 }
 #endif
 
@@ -510,5 +567,51 @@ void
 Mem_wl(int addr,CARD32 val)
 {
     Int10Current->mem->wl(Int10Current,addr,val);
+}
+
+#ifndef _PC
+static CARD32 PciCfg1Addr = 0;
+
+#define TAG(Cfg1Addr) (Cfg1Addr & 0xffff00)
+#define OFFSET(Cfg1Addr) (Cfg1Addr & 0xff)
+
+static int
+pciCfg1in(CARD16 addr, CARD32 *val)
+{
+    if (addr == 0xCF8) {
+	*val = PciCfg1Addr;
+	return 1;
+    }
+    else if (addr == 0xCFC) {
+	*val = pciReadLong(TAG(PciCfg1Addr), OFFSET(PciCfg1Addr));
+	return 1;
+    }
+    return 0;
+}
+
+static int
+pciCfg1out(CARD16 addr, CARD32 val)
+{
+    if (addr == 0xCF8) {
+	PciCfg1Addr = val;
+	return 1;
+    }
+    else if (addr == 0xCFC) {
+	pciWriteLong(TAG(PciCfg1Addr), OFFSET(PciCfg1Addr),val);
+	return 1;
+    }
+    return 0;
+}
+#endif
+
+CARD8
+bios_checksum(CARD8 *start, int size)
+{
+    int i;
+    CARD8 val = 0;
+    
+    for (i = 0; i < size; i++)
+	val += *start++;
+    return val;
 }
 

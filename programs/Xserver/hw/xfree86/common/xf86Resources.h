@@ -22,6 +22,15 @@
 		{ResShrIoBlock  | ResBios,     0x03B0,     0x03BB},\
 		{ResShrIoBlock  | ResBios,     0x03C0,     0x03DF}
 
+#define _VGA_SHARED_MEM \
+                {ResShrMemBlock | ResBios,     0xA0000,    0xAFFFF},\
+		{ResShrMemBlock | ResBios,     0xB0000,    0xB7FFF},\
+ 		{ResShrMemBlock | ResBios,     0xB8000,    0xBFFFF}
+
+#define _VGA_SHARED_IO \
+		{ResShrIoBlock  | ResBios,     0x03B0,     0x03BB},\
+		{ResShrIoBlock  | ResBios,     0x03C0,     0x03DF}
+
 /*
  * Exclusive unused VGA:  resources unneeded but cannot be disabled.
  * Like old Millennium.
@@ -73,6 +82,8 @@
 /* predefined resources */
 extern resRange resVgaExclusive[];
 extern resRange resVgaShared[];
+extern resRange resVgaIoShared[];
+extern resRange resVgaMemShared[];
 extern resRange resVgaUnusedExclusive[];
 extern resRange resVgaUnusedShared[];
 extern resRange resVgaSparseExclusive[];
@@ -88,7 +99,8 @@ extern resRange res8514Shared[];
 
 #define _PCI_AVOID \
 		{ResExcIoSparse, 0x0100, 0x0300},\
-		{ResExcIoSparse, 0x0200, 0x0200}
+		{ResExcIoSparse, 0x0200, 0x0200},\
+                {ResExcMemBlock, 0xA0000,0xFFFFF}
 
 extern resRange PciAvoid[];
 

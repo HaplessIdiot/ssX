@@ -488,13 +488,13 @@ static __inline__ unsigned long ldw_u(unsigned short * r11)
 }
 
 #define stq_u(v,p)	stl_u(v,p)
-#define stl_u(v,p)	((unsigned char *)(p)) = (v); \
-			((unsigned char *)(p)+1) = ((v) >> 8);  \
-			((unsigned char *)(p)+2) = ((v) >> 16); \
-			((unsigned char *)(p)+3) = ((v) >> 24)
+#define stl_u(v,p)	(*(unsigned char *)(p)) = (v); \
+			(*(unsigned char *)(p)+1) = ((v) >> 8);  \
+			(*(unsigned char *)(p)+2) = ((v) >> 16); \
+			(*(unsigned char *)(p)+3) = ((v) >> 24)
 
-#define stw_u(v,p)	((unsigned char *)(p)) = (v); \
-			((unsigned char *)(p)+1) = ((v) >> 8)
+#define stw_u(v,p)	(*(unsigned char *)(p)) = (v); \
+			(*(unsigned char *)(p)+1) = ((v) >> 8)
 
 #define mem_barrier()   /* NOP */
 #endif /* __mips__ */
@@ -503,9 +503,9 @@ static __inline__ unsigned long ldw_u(unsigned short * r11)
 #define ldq_u(p)	(*((unsigned long  *)(p)))
 #define ldl_u(p)	(*((unsigned int   *)(p)))
 #define ldw_u(p)	(*((unsigned short *)(p)))
-#define stq_u(v,p)	((unsigned long  *)(p)) = (v)
-#define stl_u(v,p)	((unsigned int   *)(p)) = (v)
-#define stw_u(v,p)	((unsigned short *)(p)) = (v)
+#define stq_u(v,p)	(*(unsigned long  *)(p)) = (v)
+#define stl_u(v,p)	(*(unsigned int   *)(p)) = (v)
+#define stw_u(v,p)	(*(unsigned short *)(p)) = (v)
 #define mem_barrier()	/* NOP */
 #define write_mem_barrier()	/* NOP */
 #endif /* __arm32__ */
@@ -606,9 +606,9 @@ inl(unsigned short port)
 #define ldq_u(p)	(*((unsigned long  *)(p)))
 #define ldl_u(p)	(*((unsigned int   *)(p)))
 #define ldw_u(p)	(*((unsigned short *)(p)))
-#define stq_u(v,p)	((unsigned long  *)(p)) = (v)
-#define stl_u(v,p)	((unsigned int   *)(p)) = (v)
-#define stw_u(v,p)	((unsigned short *)(p)) = (v)
+#define stq_u(v,p)	(*(unsigned long  *)(p)) = (v)
+#define stl_u(v,p)	(*(unsigned int   *)(p)) = (v)
+#define stw_u(v,p)	(*(unsigned short *)(p)) = (v)
 #define mem_barrier()   /* NOP */
 #define write_mem_barrier()   /* NOP */
 
@@ -1023,9 +1023,9 @@ inl(unsigned short port)
 #define ldq_u(p)	(*((unsigned long long  *)(p)))
 #define ldl_u(p)	(*((unsigned long   *)(p)))
 #define ldw_u(p)	(*((unsigned short *)(p)))
-#define stq_u(v,p)	((unsigned long long *)(p)) = (v)
-#define stl_u(v,p)	((unsigned long  *)(p)) = (v)
-#define stw_u(v,p)	((unsigned short *)(p)) = (v)
+#define stq_u(v,p)	(*(unsigned long long *)(p)) = (v)
+#define stl_u(v,p)	(*(unsigned long  *)(p)) = (v)
+#define stw_u(v,p)	(*(unsigned short *)(p)) = (v)
 #define mem_barrier()         eieio()
 #define write_mem_barrier()   eieio()
 
@@ -1387,9 +1387,9 @@ static int inb(port)
 #define ldq_u(p)	(*((unsigned long  *)(p)))
 #define ldl_u(p)	(*((unsigned int   *)(p)))
 #define ldw_u(p)	(*((unsigned short *)(p)))
-#define stq_u(v,p)	((unsigned long  *)(p)) = (v)
-#define stl_u(v,p)	((unsigned int   *)(p)) = (v)
-#define stw_u(v,p)	((unsigned short *)(p)) = (v)
+#define stq_u(v,p)	(*(unsigned long  *)(p)) = (v)
+#define stl_u(v,p)	(*(unsigned int   *)(p)) = (v)
+#define stw_u(v,p)	(*(unsigned short *)(p)) = (v)
 #define mem_barrier()   /* NOP */
 #define write_mem_barrier()   /* NOP */
 #endif /* __GNUC__ */
@@ -1527,12 +1527,25 @@ testinx(unsigned short port, unsigned char ind)
 #define MMIO_OUT16(base, offset, val) xf86WriteSparse16(val, base, offset)
 #define MMIO_OUT32(base, offset, val) xf86WriteSparse32(val, base, offset)
 #else /* !__alpha__ */
-#define MMIO_IN8(base, offset) *(volatile CARD8 *)((base) + (offset))
-#define MMIO_IN16(base, offset) *(volatile CARD16 *)((base) + (offset))
-#define MMIO_IN32(base, offset) *(volatile CARD32 *)((base) + (offset))
-#define MMIO_OUT8(base, offset, val) *(volatile CARD8 *)((base) + (offset)) = (val)
-#define MMIO_OUT16(base, offset, val) *(volatile CARD16 *)((base) + (offset)) = (val)
-#define MMIO_OUT32(base, offset, val) *(volatile CARD32 *)((base) + (offset)) = (val)
+#define MMIO_IN8(base, offset) *(volatile CARD8 *)(((CARD8*)(base)) + (offset))
+#define MMIO_IN16(base, offset) *(volatile CARD16 *)(((CARD8*)(base)) + (offset))
+#define MMIO_IN32(base, offset) *(volatile CARD32 *)(((CARD8*)(base)) + (offset))
+#define MMIO_OUT8(base, offset, val) *(volatile CARD8 *)(((CARD8*)(base)) + (offset)) = (val)
+#define MMIO_OUT16(base, offset, val) *(volatile CARD16 *)(((CARD8*)(base)) + (offset)) = (val)
+#define MMIO_OUT32(base, offset, val) *(volatile CARD32 *)(((CARD8*)(base)) + (offset)) = (val)
+#endif /* __alpha__ */
+
+/*
+ * With Intel, the version in os-support/misc/SlowBcopy.s is used.
+ * This avoids port I/O during the copy (which causes problems with
+ * some hardware).
+ */
+#ifdef __alpha__
+#define slowbcopy_tobus(src,dst,count) xf86SlowBCopyToBus(src,dst,count)
+#define slowbcopy_frombus(src,dst,count) xf86SlowBCopyFromBus(src,dst,count)
+#else /* __alpha__ */
+#define slowbcopy_tobus(src,dst,count) xf86SlowBcopy(src,dst,count)
+#define slowbcopy_frombus(src,dst,count) xf86SlowBcopy(src,dst,count)
 #endif /* __alpha__ */
 
 #endif /* _COMPILER_H */

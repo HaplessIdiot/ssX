@@ -1,4 +1,9 @@
 /* $XFree86$ */
+/*
+ *                   XFree86 int10 module
+ *   execute BIOS int 10h calls in x86 real mode environment
+ *                 Copyright 1999 Egbert Eich
+ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -42,13 +47,23 @@ int_handler(xf86Int10InfoPtr pInt)
     return run_bios_int(num,pInt);
 }
 
+/*
+ * The system-BIOS provides int10 ax=1200 and ax=1201 functions
+ * before the video bios is installed. The int10_handler below
+ * provides these functions, too. However there have been cases
+ * in which disabling generic video has caused problems. Therefore
+ * it has been disabled by default. To reenable it do:
+ * #define DO_GENERIC_INT10
+ */
 static int
 int42_handler(xf86Int10InfoPtr pInt)
 {
 #define REG pInt
+#ifdef DO_GENERIC_INT10
     unsigned char c;
+#endif
     int num = pInt->num;
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
     ErrorF("int 0x%x: ax:0x%x bx:0x%x cx:0x%x dx:0x%x\n",num,
 	   X86_EAX,X86_EBX,X86_ECX,X86_EDX);
 #endif
@@ -64,20 +79,24 @@ int42_handler(xf86Int10InfoPtr pInt)
     if ((X86_EBX & 0xff) == 0x32) {
 	switch (X86_EAX & 0xFFFF) {
 	case 0x1200:
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
 	    ErrorF("enabling video\n");
 #endif
+#ifdef DO_GENERIC_INT10
 	    c = inb(0x3cc);
 	    c |= 0x02;
 	    outb(0x3c2,c);
+#endif
 	    return 1;
 	case 0x1201:
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
 	    ErrorF("disabling video\n");
 #endif
+#ifdef DO_GENERIC_INT10
 	    c = inb(0x3cc);
 	    c &= ~0x02;
 	    outb(0x3c2,c);
+#endif
 	    return 1;
 	default:
 	    break;
@@ -102,7 +121,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
     if (! (pvp = xf86GetPciInfoForEntity(pInt->entityIndex)))
 	return 0; /* oops */
 
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
     ErrorF("int 0x1a: ax=0x%x bx=0x%x cx=0x%x dx=0x%x di=0x%x\n",
 	    X86_EAX,X86_EBX,X86_ECX,X86_EDX,X86_EDI);
 #endif
@@ -114,7 +133,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	X86_ECX  &= 0xFF00;
 	X86_ECX |= (pciNumBuses & 0xFF);   /* Max bus number in system */
 	X86_EFLAGS &= ~((unsigned long)0x01); /* clear carry flag */
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
 	ErrorF("ax=0x%x dx=0x%x bx=0x%x cx=0x%x flags=0x%x\n",
 		 X86_EAX,X86_EDX,X86_EBX,X86_ECX,X86_EFLAGS);
 #endif
@@ -130,7 +149,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	    X86_EAX = (X86_EAX & 0x00FF) | (DEVICE_NOT_FOUND << 8);
 	    X86_EFLAGS |= ((unsigned long)0x01); /* set carry flag */
 	}
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
 	ErrorF("ax=0x%x bx=0x%x flags=0x%x\n",
 		 X86_EAX,X86_EBX,X86_EFLAGS);
 #endif
@@ -146,7 +165,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	    X86_EAX = (X86_EAX & 0x00FF) | (DEVICE_NOT_FOUND << 8);
 	    X86_EFLAGS |= ((unsigned long)0x01); /* set carry flag */
 	}
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
 	ErrorF("ax=0x%x flags=0x%x\n",X86_EAX,X86_EFLAGS);
 #endif
 	return 1;
@@ -160,7 +179,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	    X86_EAX = (X86_EAX & 0x00FF) | (BAD_REGISTER_NUMBER << 8);
 	    X86_EFLAGS |= ((unsigned long)0x01); /* set carry flag */
 	}
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
 	ErrorF("ax=0x%x cx=0x%x flags=0x%x\n",
 		 X86_EAX,X86_ECX,X86_EFLAGS);
 #endif
@@ -175,7 +194,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	    X86_EAX = (X86_EAX & 0x00FF) | (BAD_REGISTER_NUMBER << 8);
 	    X86_EFLAGS |= ((unsigned long)0x01); /* set carry flag */
 	}
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
 	ErrorF("ax=0x%x cx=0x%x flags=0x%x\n",
 		 X86_EAX,X86_ECX,X86_EFLAGS);
 #endif
@@ -190,7 +209,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	    X86_EAX = (X86_EAX & 0x00FF) | (BAD_REGISTER_NUMBER << 8);
 	    X86_EFLAGS |= ((unsigned long)0x01); /* set carry flag */
 	}
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
 	ErrorF("ax=0x%x cx=0x%x flags=0x%x\n",
 		 X86_EAX,X86_ECX,X86_EFLAGS);
 #endif
@@ -204,7 +223,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	    X86_EAX = (X86_EAX & 0x00FF) | (BAD_REGISTER_NUMBER << 8);
 	    X86_EFLAGS |= ((unsigned long)0x01); /* set carry flag */
 	}
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
 	ErrorF("ax=0x%x flags=0x%x\n", X86_EAX,X86_EFLAGS);
 #endif
 	return 1;
@@ -217,7 +236,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	    X86_EAX = (X86_EAX & 0x00FF) | (BAD_REGISTER_NUMBER << 8);
 	    X86_EFLAGS |= ((unsigned long)0x01); /* set carry flag */
 	}
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
 	ErrorF("ax=0x%x flags=0x%x\n", X86_EAX,X86_EFLAGS);
 #endif
 	return 1;
@@ -230,7 +249,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	    X86_EAX = (X86_EAX & 0x00FF) | (BAD_REGISTER_NUMBER << 8);
 	    X86_EFLAGS |= ((unsigned long)0x01); /* set carry flag */
 	}
-#ifdef PRINT_IRQ
+#ifdef PRINT_INT
 	ErrorF("ax=0x%x flags=0x%x\n", X86_EAX,X86_EFLAGS);
 #endif
 	return 1;
@@ -263,7 +282,7 @@ static int
 intE6_handler(xf86Int10InfoPtr pInt)
 {
     pciVideoPtr pvp;
-    
+
     if ((pvp = xf86GetPciInfoForEntity(pInt->entityIndex))) {
 	X86_AX = (CARD16)(((pvp->bus) << 8)
 		      | (pvp->device << 3) | (pvp->func & 0x7));
@@ -272,5 +291,6 @@ intE6_handler(xf86Int10InfoPtr pInt)
     pushw(pInt,(CARD16)X86_EIP);
     X86_CS = pInt->BIOSseg;
     X86_EIP = 0x0003;
+    X86_ES = 0;                  /* standard pc es */
     return 1;
 }

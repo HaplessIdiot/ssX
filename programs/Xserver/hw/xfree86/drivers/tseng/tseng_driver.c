@@ -56,6 +56,7 @@
 #include "cfb24_32.h"
 #include "xf86RAC.h"
 #include "xf86Resources.h"
+#include "xf86int10.h"
 
 /*** Chip-specific includes ***/
 
@@ -442,7 +443,7 @@ ET4000MinimalProbe(void)
 }
 
 static int
-TsengFindIsaDevice()
+TsengFindIsaDevice(GDevPtr dev)
 {
     /* XXX Need to implement this */
     return -1;
@@ -1184,6 +1185,7 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
     TsengPtr pTseng = TsengPTR(pScrn);
 
     PDEBUG("	TsengProcessOptions\n");
+
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
 
@@ -1460,6 +1462,30 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* The vgahw module should be loaded here when needed */
     
+    /* This driver doesn't expect more than one entity per screen */
+    if (pScrn->numEntities > 1) 
+	    return FALSE;
+
+    /* Allocate the TsengRec driverPrivate */
+    if (!TsengGetRec(pScrn)) {
+	return FALSE;
+    }
+    pTseng = TsengPTR(pScrn);
+
+    /* This is the general case */
+    pTseng->pEnt = xf86GetEntityInfo(*pScrn->entityList);
+
+#if 1
+    if (xf86LoadSubModule(pScrn, "int10")) {
+ 	xf86Int10InfoPtr pInt;
+#if 1
+	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
+	pInt = xf86InitInt10(pTseng->pEnt->index);
+	xf86FreeInt10(pInt);
+#endif
+    }
+#endif
+    
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
 
@@ -1475,25 +1501,12 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
      * thing to do is to figure out the chipset and its capabilities.
      */
 
-    /* Allocate the TsengRec driverPrivate */
-    if (!TsengGetRec(pScrn)) {
-	return FALSE;
-    }
-    pTseng = TsengPTR(pScrn);
-
     TsengUnlock();
 
     /*
      * Find the bus slot for this screen (PCI or other). This also finds the
      * exact chipset type.
      */
-    /* This driver doesn't expect more than one entity per screen */
-    if (pScrn->numEntities > 1) {
-	    TsengFreeRec(pScrn);
-	    return FALSE;
-	}
-    /* This is the general case */
-    pTseng->pEnt = xf86GetEntityInfo(*pScrn->entityList);
     /* This driver can handle ISA and PCI buses */
     if (pTseng->pEnt->location.type == BUS_PCI) {
 	pTseng->PciInfo = xf86GetPciInfoForEntity(pTseng->pEnt->index);
@@ -1666,15 +1679,12 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	VGAHWPTR(pScrn)->MapSize = 0x10000;
 
     if (pTseng->UseLinMem) {
-	resRange vgamem[] =	{ {ResShrMemBlock,0xA0000,0xAFFFF},
-				  {ResShrMemBlock,0xB0000,0xB7FFF},
-				  {ResShrMemBlock,0xB8000,0xBFFFF},
-				  _END };
 	/*
 	 * XXX At least part of this range does appear to be disabled,
 	 * but to play safe, it is marked as "unused" for now.
+	 * Changed this to "disable". Otherwise it might interfere with DGA.
 	 */
-	xf86SetOperatingState(vgamem, pTseng->pEnt->index, ResUnusedOpr);
+	xf86SetOperatingState(resVgaMemShared, pTseng->pEnt->index, ResDisableOpr);
     }
     
     /* hibit processing (TsengProcessOptions() must have been called first) */
@@ -2309,7 +2319,6 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     TsengRegPtr new = &(pTseng->ModeReg);
     TsengRegPtr initial = &(pTseng->SavedReg);
     int row_offset;
-    int temp1, temp2, temp3;
     int min_n2;
     int hdiv = 1, hmul = 1;
 
@@ -2688,8 +2697,6 @@ TsengValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
 #define Tseng_HMAX (4096-8)
 #define Tseng_VMAX (2048-1)
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    TsengPtr pTseng = TsengPTR(pScrn);
 
     PDEBUG("	TsengValidMode\n");
 

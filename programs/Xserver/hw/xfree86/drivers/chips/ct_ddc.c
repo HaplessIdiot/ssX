@@ -27,10 +27,12 @@ chips_ddc1Read(ScrnInfoPtr pScrn)
 {
     unsigned char ddc_mask = ((CHIPSPtr)pScrn->driverPrivate)->ddc_mask;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    
     register unsigned int tmp;
 
-    while ((cPtr->readST01(cPtr)) & 0x08){};
-    while (!(cPtr->readST01(cPtr)) & 0x08){};
+    while ((hwp->readST01(hwp)) & 0x08){};
+    while (!(hwp->readST01(hwp)) & 0x08){};
     tmp = cPtr->readXR(cPtr, 0x63);
     return (tmp & ddc_mask);
 }

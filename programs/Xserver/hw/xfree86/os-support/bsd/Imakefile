@@ -48,11 +48,11 @@ MTRRDEFINES = -DHAS_MTRR_SUPPORT
 
 SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c \
        libc_wrapper.c $(IOPERM_SRC) std_kbdEv.c posix_tty.c $(MOUSESRC) \
-       stdResource.c vidmem.c $(JOYSTICK_SRC) sigio.c
+       stdResource.c stdPci.c vidmem.c $(JOYSTICK_SRC) sigio.c
 
 OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o \
        libc_wrapper.o $(IOPERM_OBJ) std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
-       stdResource.o vidmem.o $(JOYSTICK_OBJ) sigio.o
+       stdResource.o stdPci.o vidmem.o $(JOYSTICK_OBJ) sigio.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi
@@ -86,6 +86,7 @@ LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
+LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
 LinkSourceFile(sigio.c,../shared)
 

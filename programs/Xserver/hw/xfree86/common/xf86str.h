@@ -296,6 +296,7 @@ typedef struct {
     memType   	        biosBase;
     int			biosSize;
     pointer		thisCard;
+    Bool                validSize;
     Bool                validate;
 } pciVideoRec, *pciVideoPtr;
 
@@ -522,9 +523,11 @@ typedef struct {
     memType b;
 } resRange, *resList;
 
-#define RANGE(r,u,v,t) (r).a = (u);\
+#define RANGE(r,u,v,t) {\
+                       (r).a = (u);\
                        (r).b = (v);\
-                       (r).type = t;
+                       (r).type = t;\
+                       }
 
 #define rBase a
 #define rMask b

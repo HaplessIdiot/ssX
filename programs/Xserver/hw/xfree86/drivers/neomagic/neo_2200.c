@@ -256,7 +256,8 @@ Neo2200SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
 
     /* set blt control */
     WAIT_ENGINE_IDLE();
-    OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);
+    /*OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);*/
+    OUTREG(NEOREG_BLTSTAT, nAcl->BltModeFlags << 16);
     OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags);
     OUTREG(NEOREG_PITCH, (nAcl->Pitch<<16) 
 	   | (nAcl->Pitch & 0xffff));
@@ -309,7 +310,8 @@ Neo2200SetupForSolidFillRect(ScrnInfoPtr pScrn, int color, int rop,
     WAIT_ENGINE_IDLE();
 
     /* set blt control */
-    OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);
+    /*OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);*/
+    OUTREG(NEOREG_BLTSTAT, nAcl->BltModeFlags << 16);
     OUTREG(NEOREG_BLTCNTL, NEO_BC0_SRC_IS_FG    |
                            NEO_BC3_SKIP_MAPPING |
                            NEO_BC3_DST_XY_ADDR  |
@@ -350,7 +352,8 @@ Neo2200SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
 					 neo2200Rop[rop]);
 
 	WAIT_ENGINE_IDLE();
-	OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);
+	/*OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);*/
+	OUTREG(NEOREG_BLTSTAT, nAcl->BltModeFlags << 16);
 	OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags);
 	OUTREG(NEOREG_FGCOLOR, fg);
     }
@@ -363,7 +366,8 @@ Neo2200SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
 					 neo2200Rop[rop]);
 
 	WAIT_ENGINE_IDLE();
-	OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);
+	/*OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);*/
+	OUTREG(NEOREG_BLTSTAT, nAcl->BltModeFlags << 16);
 	OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags);
 	OUTREG(NEOREG_FGCOLOR, fg);
 	OUTREG(NEOREG_BGCOLOR, bg);
@@ -408,7 +412,8 @@ Neo2200SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 					 neo2200Rop[rop]);
 
 	WAIT_ENGINE_IDLE();
-	OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);
+	/*OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);*/
+	OUTREG(NEOREG_BLTSTAT, nAcl->BltModeFlags << 16);
 	OUTREG(NEOREG_FGCOLOR, fg);
 	OUTREG(NEOREG_SRCSTARTOFF, 
 	    (patterny * pScrn->displayWidth * pScrn->bitsPerPixel 
@@ -423,7 +428,8 @@ Neo2200SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 					 neo2200Rop[rop]);
 
 	WAIT_ENGINE_IDLE();
-	OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);
+	/*OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);*/
+	OUTREG(NEOREG_BLTSTAT, nAcl->BltModeFlags << 16);
 	OUTREG(NEOREG_FGCOLOR, fg);
 	OUTREG(NEOREG_BGCOLOR, bg);
 	OUTREG(NEOREG_SRCSTARTOFF, 

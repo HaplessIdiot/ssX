@@ -40,21 +40,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "tdfx.h"
 
-#ifndef __alpha__
-#define minb(p) *(volatile CARD8 *)(pTDFX->MMIOBase + (p))
-#define moutb(p,v) \
-	*(volatile CARD8 *)(pTDFX->MMIOBase + (p)) = (v)
-#define minl(p) *(volatile CARD32 *)(pTDFX->MMIOBase + (p))
-#define moutl(p,v) \
-	*(volatile CARD32 *)(pTDFX->MMIOBase + (p)) = (v)
-#else
-#define minb(p) xf86ReadSparse8(pTDFX->MMIOBase, (p))
-#define moutb(p,v) \
-	xf86WriteSparse8((v), pTDFX->MMIOBase, (p))
-#define minl(p) xf86ReadSparse32(pTDFX->MMIOBase, (p))
-#define moutl(p,v) \
-	xf86WriteSparse32((v), pTDFX->MMIOBase, (p))
-#endif
+#define minb(p) MMIO_IN8(pTDFX->MMIOBase, (p))
+#define moutb(p,v) MMIO_OUT8(pTDFX->MMIOBase, (p),(v))
+#define minl(p) MMIO_IN32(pTDFX->MMIOBase, (p))
+#define moutl(p,v) MMIO_OUT32(pTDFX->MMIOBase, (p),(v))
 
 static void TDFXWriteControlPIO(TDFXPtr pTDFX, int addr, char index, char val) {
   outb(pTDFX->PIOBase+addr, index);

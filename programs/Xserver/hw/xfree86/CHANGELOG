@@ -1,4 +1,33 @@
-XFree86 3.9.16d (xx November 1999)
+XFree86 3.9.16d (xx December 1999)
+
+3352. Misc. bug/typo fixes. (Egbert Eich)
+3351. Fixed scanpci to generate better output on Alphas (Harald Koenig, 
+      Egbert Eich)
+3350. Added initial VESA VBE support. This includes initialization
+      and DDC. (Egbert Eich)
+3349. Added support for 64bit PCI devices (untested) (Egbert Eich.
+3348. Added support to read PCI memory and io ranges from kernel on
+      Linux 2.3 (untested). (Egbert Eich)
+3349. introduced "#undef" before definitions in xf86_libc.h to keep
+      gcc on Alpha quite. (Egbert Eich)
+3348. Added a function to check if any resource needs to share memory.
+      Required for DGA. (Egbert Eich)
+3347. Added copyright messages to int10 code. Fixed int10 code to
+      run on Alphas. 
+3346. Changed some byte and word access to MMIO registers in drivers
+      to use MMIO_READ/WRITE8/16(). Made attempt to make some drivers
+      64 bit (and Alpha!) clean: s3virge, chips, gling, neomagic.
+      Fixed bugs in compiler.h.  (Egbert Eich)
+3345. Made part of the code 64 bit clean. (Egbert Eich)
+3344. Cleanups in the C&T driver. (Egbert Eich)
+3343. Clearified meaning of VIDMEM_MMIO and VIDMEM_MMIO_32BIT. (Egbert Eich)
+3342. Added support for host-PCI bridges. (Egbert Eich)
+3341. Changed policy for removing resource overlaps. 
+      Removed a bug in findIntersect() (xf86Bus.c). 
+      Added function that enables/disables all resources of a given
+      screen. Added a config file option to set overlap removal
+      aggressiveness.(Egbert Eich)
+3340. Split xf86Bus.c into generic/pci/isa specific parts. (Egbert Eich)
 3339. Faster clocks for the G400 (Mark Vojkovich).
 3338. Fix bug in FB manager's ResizeArea function (Mark Vojkovich).
 3337. Pass positioning information for the obsolete ServerLayout format

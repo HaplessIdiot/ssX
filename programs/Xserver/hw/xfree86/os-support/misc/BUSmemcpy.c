@@ -42,162 +42,167 @@ Thanks to Linus Torvalds for contributing this code.
 void
 xf86JensenMemToBus(char *Base, long dst, long src, int count)
 {
-  if( ((long)src^((long)dst)) & 3) {  /* src & dst are NOT aligned to each other */
-
-    unsigned long addr;
-    unsigned long low_word, high_word,last_read;
-    long  rm,loop;
-    unsigned long tmp,org,org2,mask,src_org,count_org;
-
-    src_org=src;
-    count_org=count;
+    if( ((long)src^((long)dst)) & 3) {  
+                               /* src & dst are NOT aligned to each other */
+	unsigned long addr;
+	unsigned long low_word, high_word,last_read;
+	long  rm,loop;
+	unsigned long tmp,org,org2,mask,src_org,count_org;
+	
+	src_org=src;
+	count_org=count;
     
-    addr = (long)(Base+(dst<<SPARSE) + LWORD_CODING) & ~(3<<SPARSE);    /* add EISA longword coding and round off*/
-    rm = (long)dst & 3;
-    count += rm;
-
-    count = count_org + rm;
-    org = *(volatile unsigned int *)addr;
-    __asm__("ldq_u %0,%1":"=r" (low_word):"m" (*(unsigned long *)(src_org)));
-    src = src_org - rm;
-    if( count > 4  ) {
-      last_read = src_org+count_org -1;
-      __asm__("ldq_u %0,%1":"=r" (high_word):"m" (*(unsigned long *)(src+4)));
-      __asm__("extll %1,%2,%0"
-	      :"=r" (low_word)
-	      :"r" (low_word), "r" ((unsigned long)(src)));
-      __asm__("extlh %1,%2,%0"
-	      :"=r" (tmp)
-	      :"r" (high_word), "r" ((unsigned long)(src)));
-      tmp |= low_word;
-      src += 4;
-      __asm__("mskqh %1,%2,%0"
-	      :"=r" (tmp)
-	      :"r" (tmp), "r" (rm));
-      __asm__("mskql %1,%2,%0"
-	      :"=r" (org2)
-	      :"r" (org), "r" (rm));
-      tmp |= org2;
+	/* add EISA longword coding and round off*/
+	addr = (long)(Base+(dst<<SPARSE) + LWORD_CODING) & ~(3<<SPARSE);
+	rm = (long)dst & 3;
+	count += rm;
+	
+	count = count_org + rm;
+	org = *(volatile unsigned int *)addr;
+	__asm__("ldq_u %0,%1"
+		:"=r" (low_word):"m" (*(unsigned long *)(src_org)));
+	src = src_org - rm;
+	if( count > 4  ) {
+	    last_read = src_org+count_org - 1;
+	    __asm__("ldq_u %0,%1"
+		    :"=r" (high_word):"m" (*(unsigned long *)(src+4)));
+	    __asm__("extll %1,%2,%0"
+		    :"=r" (low_word)
+		    :"r" (low_word), "r" ((unsigned long)(src)));
+	    __asm__("extlh %1,%2,%0"
+		    :"=r" (tmp)
+		    :"r" (high_word), "r" ((unsigned long)(src)));
+	    tmp |= low_word;
+	    src += 4;
+	    __asm__("mskqh %1,%2,%0"
+		    :"=r" (tmp)
+		    :"r" (tmp), "r" (rm));
+	    __asm__("mskql %1,%2,%0"
+		    :"=r" (org2)
+		    :"r" (org), "r" (rm));
+	    tmp |= org2;
       
-     loop = (count-4) >> 2; /* loop eqv. count>=4 ; count -= 4 */
-     while (loop) { /* tmp to be stored completly -- need to read next word*/
-	 low_word = high_word;
-	*(volatile unsigned int *) (addr) = tmp;
-	__asm__("ldq_u %0,%1":"=r" (high_word):"m" (*(unsigned long*)(src+4)));
-	loop --;
-	__asm__("extll %1,%2,%0"
-		:"=r" (low_word)
-		:"r" (low_word), "r" ((unsigned long)src));
-	__asm__("extlh %1,%2,%0"
-		:"=r" (tmp)
-		:"r" (high_word), "r" ((unsigned long)src));
-	src += 4;
-	tmp |= low_word;
-	addr += 4<<SPARSE;
-     }
-      if ( count & 3 ) { /* Store tmp completly, and possibly read one more word.*/
-	*(volatile unsigned int *) (addr) = tmp;
-	__asm__("ldq_u %0,%1":"=r" (tmp):"m" (*((unsigned long *)(last_read)) ));
-	addr += 4<<SPARSE;
-	__asm__("extll %1,%2,%0"
-		:"=r" (low_word)
-		:"r" (high_word), "r" ((unsigned long)src));
-	__asm__("extlh %1,%2,%0"
-		:"=r" (tmp)
-		:"r" (tmp), "r" ((unsigned long)src));
-	tmp |= low_word;
+	    loop = (count-4) >> 2; /* loop eqv. count>=4 ; count -= 4 */
+	    while (loop) {
+                     /* tmp to be stored completly -- need to read next word*/
+		low_word = high_word;
+		*(volatile unsigned int *) (addr) = tmp;
+		__asm__("ldq_u %0,%1"
+			:"=r" (high_word):"m" (*(unsigned long*)(src+4)));
+		loop --;
+		__asm__("extll %1,%2,%0"
+			:"=r" (low_word)
+			:"r" (low_word), "r" ((unsigned long)src));
+		__asm__("extlh %1,%2,%0"
+			:"=r" (tmp)
+			:"r" (high_word), "r" ((unsigned long)src));
+		src += 4;
+		tmp |= low_word;
+		addr += 4<<SPARSE;
+	    }
+	    if ( count & 3 ) {
+                     /* Store tmp completly, and possibly read one more word.*/
+		*(volatile unsigned int *) (addr) = tmp;
+		__asm__("ldq_u %0,%1"
+			:"=r" (tmp):"m" (*((unsigned long *)(last_read)) ));
+		addr += 4<<SPARSE;
+		__asm__("extll %1,%2,%0"
+			:"=r" (low_word)
+			:"r" (high_word), "r" ((unsigned long)src));
+		__asm__("extlh %1,%2,%0"
+			:"=r" (tmp)
+			:"r" (tmp), "r" ((unsigned long)src));
+		tmp |= low_word;
+		org = *(volatile unsigned int *)addr;
+		
+		__asm__("mskql %1,%2,%0"
+			:"=r" (tmp)
+			:"r" (tmp), "r" (count&3));
+		__asm__("mskqh %1,%2,%0"
+			:"=r" (org)
+			:"r" (org), "r" (count&3));
+		
+		tmp |= org;
+	    } 
+	    *(volatile unsigned int *) (addr) = tmp;
+	    return;
+	} else {         /* count > 4  */
+	    __asm__("ldq_u %0,%1"
+		    :"=r" (high_word):"m" (*(unsigned long *)(src+4)));
+	    __asm__("extll %1,%2,%0"
+		    :"=r" (low_word)
+		    :"r" (low_word), "r" ((unsigned long)(src)));
+	    __asm__("extlh %1,%2,%0"
+		    :"=r" (tmp)
+		    :"r" (high_word), "r" ((unsigned long)(src)));
+	    tmp |= low_word;
+	    if( count < 4 ) {
+		
+		mask = -1;
+		__asm__("mskqh %1,%2,%0"
+			:"=r" (mask)
+			:"r" (mask), "r" (rm));
+		__asm__("mskql %1,%2,%0"
+			:"=r" (mask)
+			:"r" (mask), "r" (count));
+		tmp = (tmp & mask) | (org & ~mask);
+		*(volatile unsigned int *) (addr) = tmp;
+		return;
+	    }  else {
+		__asm__("mskqh %1,%2,%0"
+			:"=r" (tmp)
+			:"r" (tmp), "r" (rm));
+		__asm__("mskql %1,%2,%0"
+			:"=r" (org2)
+			:"r" (org), "r" (rm));
+		
+		tmp |= org2;
+		*(volatile unsigned int *) (addr) = tmp;
+		return;
+	    }
+	}
+    } else {          /* src & dst are aligned to each other */
+	unsigned long addr;
+	unsigned int tmp,org,rm;
+	unsigned int *src_r;
+	
+	/* add EISA longword coding and round off*/
+	addr = (long)(Base+(dst<<SPARSE) + LWORD_CODING) & ~(3<<SPARSE);
+	
+	src_r = (unsigned int*)((long)src & ~3L);
+	rm=(long)src & 3;
+	count += rm;
+	
+	tmp = *src_r;
 	org = *(volatile unsigned int *)addr;
 	
-	__asm__("mskql %1,%2,%0"
-		:"=r" (tmp)
-		:"r" (tmp), "r" (count&3));
-	__asm__("mskqh %1,%2,%0"
-		:"=r" (org)
-		:"r" (org), "r" (count&3));
-	
-	tmp |= org;
-      } 
-      *(volatile unsigned int *) (addr) = tmp;
-      return;
-    }
-    
-    else { /* count > 4  */
-      __asm__("ldq_u %0,%1":"=r" (high_word):"m" (*(unsigned long *)(src+4)));
-      __asm__("extll %1,%2,%0"
-	      :"=r" (low_word)
-	      :"r" (low_word), "r" ((unsigned long)(src)));
-      __asm__("extlh %1,%2,%0"
-	      :"=r" (tmp)
-	      :"r" (high_word), "r" ((unsigned long)(src)));
-      tmp |= low_word;
-      if( count < 4 ) {
-
-	mask = -1;
-	__asm__("mskqh %1,%2,%0"
-		:"=r" (mask)
-		:"r" (mask), "r" (rm));
-	__asm__("mskql %1,%2,%0"
-		:"=r" (mask)
-		:"r" (mask), "r" (count));
-	tmp = (tmp & mask) | (org & ~mask);
-	*(volatile unsigned int *) (addr) = tmp;
-	return;
-      }
-      else {
 	__asm__("mskqh %1,%2,%0"
 		:"=r" (tmp)
 		:"r" (tmp), "r" (rm));
 	__asm__("mskql %1,%2,%0"
-		:"=r" (org2)
+		:"=r" (org)
 		:"r" (org), "r" (rm));
 	
-	tmp |= org2;
+	tmp |= org;
+	
+	while (count > 4) {
+	    *(volatile unsigned int *) addr = tmp;
+	    addr += 4<<SPARSE;
+	    src_r += 1;
+	    tmp = *src_r;
+	    count -= 4;
+	}
+	
+	org = *(volatile unsigned int *)addr;
+	__asm__("mskql %1,%2,%0"
+		:"=r" (tmp)
+		:"r" (tmp), "r" (count));
+	__asm__("mskqh %1,%2,%0"
+		:"=r" (org)
+		:"r" (org), "r" (count));
+	tmp |= org;
 	*(volatile unsigned int *) (addr) = tmp;
-	return;
-      }
     }
-  }
-  
-  else { /* src & dst are aligned to each other */
-    unsigned long addr;
-    unsigned int tmp,org,rm,mask;
-    unsigned int *src_r;
-    
-    addr = (long)(Base+(dst<<SPARSE) + LWORD_CODING) & ~(3<<SPARSE);    /* add EISA longword coding and round off*/
-    src_r = (unsigned int*)((long)src & ~3L);
-    rm=(long)src & 3;
-    count += rm;
-
-    tmp = *src_r;
-    org = *(volatile unsigned int *)addr;
-
-    __asm__("mskqh %1,%2,%0"
-	    :"=r" (tmp)
-	    :"r" (tmp), "r" (rm));
-    __asm__("mskql %1,%2,%0"
-	    :"=r" (org)
-	    :"r" (org), "r" (rm));
-    
-    tmp |= org;
-
-    while (count > 4){
-      *(volatile unsigned int *) addr = tmp;
-      addr += 4<<SPARSE;
-      src_r += 1;
-      tmp = *src_r;
-      count -= 4;
-    }
-    
-    org = *(volatile unsigned int *)addr;
-    __asm__("mskql %1,%2,%0"
-	    :"=r" (tmp)
-	    :"r" (tmp), "r" (count));
-    __asm__("mskqh %1,%2,%0"
-	    :"=r" (org)
-	    :"r" (org), "r" (count));
-    tmp |= org;
-    *(volatile unsigned int *) (addr) = tmp;
-  }
 }
 
 void
@@ -257,7 +262,6 @@ void
 xf86MemToBus(unsigned char *dst, unsigned char *src, int len)
 {
   if (len == sizeof(int))
-#ifdef __alpha__
     if (!(((long)src | (long)dst) & 3))
       *((unsigned int*)dst) = *((unsigned int*)(src));
     else {
@@ -271,9 +275,6 @@ xf86MemToBus(unsigned char *dst, unsigned char *src, int len)
       else
 	*(unsigned int*)dst = i;
     }
-#else
-    *((unsigned int*)dst) = *((unsigned int*)(src));
-#endif
   else
     __memcpy((unsigned long)dst, (unsigned long)src, len);
 }

@@ -83,11 +83,12 @@
 
 #define VIDMEM_FRAMEBUFFER	0x01	/* memory for framebuffer use */
 #define VIDMEM_MMIO		0x02	/* memory for I/O use */
-#define VIDMEM_SPARSE		0x04	/* sparse mapping required (obsolete
-					 * now that it is implied by
-					 * VIDMEM_MMIO) */
+#define VIDMEM_MMIO_32BIT	0x04	/* memory accesses >= 32bit */
 #define VIDMEM_READSIDEEFFECT	0x08	/* reads can have side-effects */
-#define VIDMEM_MMIO_32BIT	0x10	/* memory accesses >= 32bit */
+#define VIDMEM_SPARSE		0x10	/* sparse mapping required
+					 * assumed when VIDMEM_MMIO is
+					 * set. May be used with
+					 * VIDMEM_FRAMEBUFFER) */
 
 /*
  * OS-independent modem state flags for xf86SetSerialModemState() and
@@ -163,10 +164,6 @@ extern int xf86SerialModemClearBits(int fd, int bits);
 
 #if defined(__alpha__)
 /* entry points for SPARSE memory access routines */
-#if 0
-extern pointer xf86MapVidMemSparse(int, int, pointer, unsigned long);
-extern void xf86UnMapVidMemSparse(int, pointer, unsigned long);
-#endif
 extern int xf86ReadSparse8(pointer, unsigned long);
 extern int xf86ReadSparse16(pointer, unsigned long);
 extern int xf86ReadSparse32(pointer, unsigned long);
@@ -217,15 +214,12 @@ extern void xf86XqueEvents(void);
 /* internal to os-support layer */
 resPtr xf86StdAccWindowsFromOS(void);
 resPtr xf86StdAccResFromOS(resPtr ret);
-PciBusPtr xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo,
-				resPtr *sysRes, const resPtr pciRes);
 
 /* available to the common layer */
 resPtr xf86AccWindowsFromOS(void);
 resPtr xf86AccResFromOS(resPtr ret);
-PciBusPtr xf86InitOSPciAllocator(const pciConfigPtr *pciInfo,
-				resPtr *sysRes,	const resPtr pciRes);
 #endif /* NEED_OS_RAC_PROTOS */
+Bool xf86GetPciSizeFromOS(PCITAG tag, int index, int* bits);
 
 #endif /* XF86_OS_PRIVS */
 

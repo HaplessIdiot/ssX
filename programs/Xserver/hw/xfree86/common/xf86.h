@@ -45,6 +45,11 @@ extern PropertyPtr *xf86RegisteredPropertiesTable;
 #define PIX24TOBPP(p) (((p) == Pix24Use24) ? 24 : \
 			(((p) == Pix24Use32) ? 32 : 0))
 
+/* variables for debugging */
+extern CARD32 xf86DummyVar1;
+extern CARD32 xf86DummyVar2;
+extern CARD32 xf86DummyVar3;
+
 /* Function Prototypes */
 #ifndef _NO_XF86_PROTOTYPES
 
@@ -62,10 +67,12 @@ pciConfigPtr *xf86GetPciConfigInfo(void);
 #endif
 void xf86SetPciVideo(pciVideoPtr, resType);
 void xf86PrintResList(int verb, resPtr list);
+resPtr xf86AddRangesToList(resPtr list, resRange *pRange, int entityIndex);
 int xf86ClaimIsaSlot(DriverPtr drvp, int chipset, GDevPtr dev, Bool active);
 int xf86GetIsaInfoForScreen(int scrnIndex);
 Bool xf86ParseIsaBusString(const char *busID);
 void xf86EnableAccess(ScrnInfoPtr pScrn);
+void xf86SetCurrentAccess(Bool Enable, ScrnInfoPtr pScrn);
 Bool xf86IsPrimaryPci(pciVideoPtr pPci);
 Bool xf86IsPrimaryIsa(void);
 int xf86CheckPciGAType(pciVideoPtr pPci);
@@ -98,7 +105,8 @@ resRange xf86GetSparse(long type,  memType fixed_bits,
 memType xf86ChkConflict(resRange *rgp, int entityIndex);
 Bool xf86IsPciDevPresent(int bus, int dev, int func);
 ScrnInfoPtr xf86FindScreenForEntity(int entityIndex);
-
+Bool xf86NoSharedMem(int screenIndex);
+resPtr xf86FindIntersectOfLists(resPtr l1, resPtr l2);
  
 /* xf86Cursor.c */
 

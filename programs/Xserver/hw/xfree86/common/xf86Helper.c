@@ -136,6 +136,7 @@ xf86AllocateScreen(DriverPtr drv, int flags)
     xf86Screens[i]->CurrentAccess = &xf86CurrentAccess;
     xf86Screens[i]->resourceType = MEM_IO;
 
+    /* OOps -- What's this ? */
     ErrorF("xf86AllocateScreen - xf86Screens[%d]->pScreen = %p\n",
 	   i, xf86Screens[i]->pScreen );
     if ( NULL != xf86Screens[i]->pScreen ) {
@@ -1615,7 +1616,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     }
     if (xf86DoProbe) return 1;
 #ifdef DEBUG
-    ErrorF("%s instances found: %d\n", driverName, numClaimedInstances);
+    ErrorF("%s instances found: %d\n", driverName, allocatedInstances);
 #endif
 
     for (i = 0; i < allocatedInstances; i++) {
@@ -1664,6 +1665,9 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	    instances[i].dev = dev;
 	}
     }
+#ifdef DEBUG
+    ErrorF("%s instances found: %d\n", driverName, numClaimedInstances);
+#endif
     /*
      * Now check that a chipset or chipID override in the device section
      * is valid.  Chipset has precedence over chipID.
@@ -2176,6 +2180,9 @@ void xf86Break3(void)
 {
 }
 
+CARD32 xf86DummyVar1;
+CARD32 xf86DummyVar2;
+CARD32 xf86DummyVar3;
 
 typedef enum {
    OPTION_BACKING_STORE

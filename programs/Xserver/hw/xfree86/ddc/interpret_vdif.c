@@ -1,19 +1,22 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_vdif.c,v 1.3 1999/03/14 03:21:55 dawes Exp $ */
 
 #include "Xarch.h"
+#include "xf86DDC.h"
 #include "vdif.h"
+
 static xf86VdifLimitsPtr* get_limits(CARD8 *c);
 static xf86VdifGammaPtr* get_gamma(CARD8 *c);
 static xf86VdifTimingPtr* get_timings(CARD8 *c);
+#if X_BYTE_ORDER == X_BIG_ENDIAN
 static CARD32 swap_byte_order(CARD32 c);
+#endif
 
 xf86vdifPtr
-InterpretVdif(CARD8 *c)
+xf86InterpretVdif(CARD8 *c)
 {
     xf86VdifPtr p = (xf86VdifPtr)c;
     xf86vdifPtr vdif;
     int i;
-    int length;
     unsigned long l = 0;
 
     if (c == NULL) return NULL;
@@ -49,7 +52,7 @@ get_limits(CARD8 *c)
     p = VDIF_OPERATIONAL_LIMITS(((xf86VdifPtr)c));
     j = 0;
     for ( i = 0; i<num; i++) {
-	if (p->Header.ScnTag = VDIF_OPERATIONAL_LIMITS_TAG)
+	if (p->Header.ScnTag == VDIF_OPERATIONAL_LIMITS_TAG)
 	    pp[j++] = p;
 	VDIF_NEXT_OPERATIONAL_LIMITS(p);
     }
@@ -70,7 +73,7 @@ get_gamma(CARD8 *c)
     j = 0;
     for ( i = 0; i<num; i++)
     {
-	if (p->Header.ScnTag = VDIF_GAMMA_TABLE_TAG)
+	if (p->Header.ScnTag == VDIF_GAMMA_TABLE_TAG)
 	    pp[j++] = p;
 	VDIF_NEXT_OPTIONS(p);
     }
@@ -91,7 +94,7 @@ get_timings(CARD8 *c)
     lp = VDIF_OPERATIONAL_LIMITS(((xf86VdifPtr)c));
     num_limits = 0;
     for (i = 0; i < num; i++) {
-	if (p->Header.ScnTag = VDIF_OPERATIONAL_LIMITS_TAG)
+	if (lp->Header.ScnTag == VDIF_OPERATIONAL_LIMITS_TAG)
 	    num_limits += lp->NumberPreadjustedTimings;
 	VDIF_NEXT_OPERATIONAL_LIMITS(lp);
     }
@@ -112,9 +115,12 @@ get_timings(CARD8 *c)
     return pp;
 }
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
 static CARD32
 swap_byte_order(CARD32 c)
 {
     return ((c & 0xFF000000) >> 24) | ((c & 0xFF0000) >> 8)
 	| ((c & 0xFF00) << 8) | ((c & 0xFF) << 24);
 }
+
+#endif

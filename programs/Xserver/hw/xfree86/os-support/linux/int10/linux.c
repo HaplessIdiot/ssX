@@ -1,10 +1,14 @@
 /* $XFree86$ */
-
+/*
+ * linux specific part of the int10 module
+ * Copyright 1999 Egbert Eich
+ */
 #include "xf86.h"
 #include "xf86str.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 #include "xf86Pci.h"
+#include "compiler.h"
 #define _INT10_PRIVATE
 #include "xf86int10.h"
 #include "defines.h"
@@ -51,9 +55,10 @@ xf86InitInt10(int entityIndex)
     void* vidMem;
     int pagesize;
     int alloc_entries;
+    legacyVGARec vga;
     
     screen = (xf86FindScreenForEntity(entityIndex))->scrnIndex;
-    if (int10skip(xf86Screens[screen]))
+    if (int10skip(xf86Screens[screen],entityIndex))
 	return NULL;
     vidMem = xf86MapVidMem(screen,VIDMEM_FRAMEBUFFER,V_RAM,VRAM_SIZE);
     pInt = (xf86Int10InfoPtr)xnfcalloc(1,sizeof(xf86Int10InfoRec));
@@ -122,13 +127,30 @@ xf86InitInt10(int entityIndex)
     
     if (xf86IsEntityPrimary(entityIndex)) {
 	int cs = ((CARD16*)base_addr)[(0x10<<1)+1];
-	xf86Msg(X_INFO,"Primary V_BIOS segmant is: 0x%x\n",cs);
-	if (xf86ReadBIOS(cs << 8,0,(unsigned char *)base_addr,
-			 V_BIOS_SIZE) < 0) {
+	CARD8 *bios_base = (unsigned char *)base_addr + (cs << 4);
+	int size;
+	
+	xf86Msg(X_INFO,"Primary V_BIOS segment is: 0x%x\n",cs);
+	if (xf86ReadBIOS(cs << 4,0,bios_base, 0x10) < 0) {
 	    xf86Msg(X_ERROR,"Cannot read V_BIOS\n");
 	    goto error4;
 	}
+	if (!(*bios_base == 0x55 && *(bios_base + 1) == 0xAA)) {
+	    xf86Msg(X_ERROR,"No V_BIOS found\n");
+	    goto error4;
+	}
+	size = *(bios_base + 2) * 512;
+	if (xf86ReadBIOS(cs << 4,0,bios_base, size) < 0) {
+	    xf86Msg(X_ERROR,"Cannot read V_BIOS\n");
+	    goto error4;
+	}
+	if (bios_checksum(bios_base,size)) {
+	    xf86Msg(X_ERROR,"Bad checksum of V_BIOS \n");
+	    goto error4;
+	}
 	pInt->BIOSseg = cs;
+	MapCurrentInt10(pInt);  /* required for set_return_trap() */
+	set_return_trap(pInt);
     } else {
 	if (!mapPciRom(pInt,(unsigned char *)(base_addr + V_BIOS))) {
 	    xf86Msg(X_ERROR,"Cannot read V_BIOS\n");
@@ -139,7 +161,10 @@ xf86InitInt10(int entityIndex)
 	pInt->num = 0xe6;
 	MapCurrentInt10(pInt);  /* required for reset_int_vect() */
 	reset_int_vect(pInt);
+	set_return_trap(pInt);
+	LockLegacyVGA(screen, &vga);
 	xf86ExecX86int10(pInt);
+	UnlockLegacyVGA(screen, &vga);
     }
 #ifdef DEBUG
     dprint(base_addr + 0xc0000,0x20);
@@ -184,6 +209,8 @@ MapCurrentInt10(xf86Int10InfoPtr pInt)
 void
 xf86FreeInt10(xf86Int10InfoPtr pInt)
 {
+    if (!pInt)
+        return;
     if (Int10Current == pInt) {
 	munmap((void*)(((linuxInt10Priv *)Int10Current->private)->base),
 	       SYS_SIZE);
@@ -235,11 +262,11 @@ void
 xf86Int10FreePages(xf86Int10InfoPtr pInt, void *pbase, int num)
 {
     int pagesize = getpagesize();
-    int base = ((linuxInt10Priv*)pInt->private)->base;
-    int first = ((CARD32)pbase - base) / pagesize - 1;
+    int first = ((CARD32)pbase - ((linuxInt10Priv*)pInt->private)->base)
+	/ pagesize - 1;
     int i;
-    
-    for (i = first; i < first + num; first++)
+
+    for (i = first; i < first + num; i++)
 	((linuxInt10Priv*)pInt->private)->alloc[i] = 0;
 }
 
@@ -277,6 +304,12 @@ static
 void write_l(xf86Int10InfoPtr pInt,int addr, CARD32 val)
 {
     *((CARD32 *)(addr)) = (CARD32)val;
+}
+
+pointer
+xf86int10Addr(xf86Int10InfoPtr pInt, CARD32 addr)
+{
+    return  (pointer)(((linuxInt10Priv*)pInt->private)->base + addr);
 }
 
 #ifdef _VM86_LINUX
@@ -323,6 +356,11 @@ do_vm86(xf86Int10InfoPtr pInt)
 	/* I'm not sure yet what to do if we can handle ints */
 	break;
     case VM86_SIGNAL:
+	return 1;
+	/*
+	 * we used to warn here and bail out - but now the sigio stuff
+	 * always fires signals at us. So we just ignore them for now.
+	 */
 	xf86Msg(X_WARNING,"received signal\n");
 	return 0;
     default:
