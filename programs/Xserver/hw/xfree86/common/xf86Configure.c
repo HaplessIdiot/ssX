@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.64 2001/08/25 00:09:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.65 2001/11/03 21:59:15 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -756,18 +756,8 @@ configureDDCMonitorSection (int screennum)
 	      break;
 	    case DS_ASCII_STR:
 	    case DS_SERIAL:
-		break;
 	    case DS_RANGES:
-    		ptr->mon_n_hsync = 1;
-    		ptr->mon_hsync[0].lo = 
-			ConfiguredMonitor->det_mon[i].section.ranges.min_h;
-    		ptr->mon_hsync[0].hi = 
-			ConfiguredMonitor->det_mon[i].section.ranges.max_h;
-    		ptr->mon_n_vrefresh = 1;
-    		ptr->mon_vrefresh[0].lo = 
-			ConfiguredMonitor->det_mon[i].section.ranges.min_v;
-    		ptr->mon_vrefresh[0].hi = 
-			ConfiguredMonitor->det_mon[i].section.ranges.max_v;
+	    default:
 		break;
 	}
     }
