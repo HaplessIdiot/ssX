@@ -1185,7 +1185,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->FbAddress = pTrident->pEnt->device->MemBase;
 	    from = X_CONFIG;
     	} else {
-    	    if (IsPciCard && UseMMIO)
+    	    if (IsPciCard)
 	    	pTrident->FbAddress = pTrident->PciInfo->memBase[0]& 0xFFFFFFF0;
 	    else
 	    	pTrident->FbAddress = 0xA0000;
