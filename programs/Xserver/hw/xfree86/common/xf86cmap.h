@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.h,v 1.1 1998/11/15 04:30:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.h,v 1.2 1998/11/22 10:37:16 dawes Exp $ */
 
 #ifndef _XF86CMAP_H
 #define _XF86CMAP_H
@@ -16,11 +16,17 @@ typedef void (*LoadPaletteFuncPtr)(
     short visualClass
 );
 
+typedef void (*SetOverscanFuncPtr)(
+    ScrnInfoPtr pScrn,
+    int index
+);
+
 Bool xf86HandleColormaps(
     ScreenPtr pScreen,
     int maxCol,
     int sigRGBbits,
     LoadPaletteFuncPtr loadPalette,
+    SetOverscanFuncPtr setOverscan,
     unsigned int flags
 );
 

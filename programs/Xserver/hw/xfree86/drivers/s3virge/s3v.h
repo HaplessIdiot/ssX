@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.2 1998/11/22 10:37:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.3 1998/11/28 10:43:15 dawes Exp $ */
 
 #ifndef _S3V_H
 #define _S3V_H
@@ -13,9 +13,6 @@
 /* All drivers need this */
 #include "xf86_ansic.h"
 
-/* This is used for module versioning */
-/*#include "xf86Version.h"*/
-
 /* Drivers for PCI hardware need this */
 #include "xf86PciInfo.h"
 
@@ -27,11 +24,6 @@
 
 /* All drivers initialising the SW cursor need this */
 #include "mipointer.h"
-
-#if 0
-/* Drivers using the mi banking wrapper need this */
-#include "mibank.h"
-#endif
 
 /* All drivers using the mi colormap manipulation need this */
 #include "micmap.h"
@@ -75,6 +67,11 @@
 #endif /*_S3V_VGAHWMMIO_H*/
 
 
+/******************* s3v_accel ****************************/
+
+void S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file);
+
+
 /*********************************************/
 /* locals */
 
@@ -87,33 +84,18 @@
 /*********************************************/
 
 
-/* PCI data */
-#define PCI_S3_VENDOR_ID	0x5333
-#define PCI_ViRGE		0x5631
-#define PCI_ViRGE_VX		0x883D
-#define PCI_ViRGE_DXGX 		0x8A01
-#define PCI_ViRGE_GX2 		0x8A10
-#define PCI_ViRGE_MX		0x8C01
-
-/* Chip tags */
-#define S3_UNKNOWN		 0
-#define S3_ViRGE		 1
-#define S3_ViRGE_VX		 2
-#define S3_ViRGE_DXGX		 3
-#define S3_ViRGE_GX2		 4
-#define S3_ViRGE_MX		 5
-
 	      
 /* Driver data structure; this should contain all needed info for a mode */
 /* used to be in s3v_driver.h for pre 4.0 */
 typedef struct {      
-	/* Want to use MMIO only, need to replace vgaHWRec */
-   /* vgaHWRec std; */
+   unsigned char SR8;
    unsigned char SR10, SR11, SR12, SR13, SR15, SR18; /* SR9-SR1C, ext seq. */
+   unsigned char SR29;
+   unsigned char SR54, SR55, SR56, SR57;
    unsigned char Clock;
    unsigned char s3DacRegs[0x101];
    unsigned char CR31, CR33, CR34, CR36, CR3A, CR3B, CR3C;
-   unsigned char CR42, CR43;
+   unsigned char CR40, CR42, CR43, CR45;
    unsigned char CR51, CR53, CR54, CR58, CR5D, CR5E;
    unsigned char CR63, CR65, CR66, CR67, CR68, CR69, CR6D; /* Video attrib. */
    unsigned char CR86;
@@ -124,26 +106,34 @@ typedef struct {
 } S3VRegRec, *S3VRegPtr;
 
 
-/* S3VRec  original from tseng */
+    					/*************************/
+					/* S3VRec  		 */
+    					/*************************/
 typedef struct {
     /* ViRGE specifics -start- */   
+  					/* S3V console saved mode registers */
+    S3VRegRec 		SavedReg;
+    					/* XServer video state mode registers */
+    S3VRegRec 		ModeReg;
+    					/* Flag indicating ModeReg has been */
+					/* duped from console state. */
+    Bool		ModeStructInit;
     					/* Is STREAMS processor needed for */
 					/* this mode? */
     Bool 		NeedSTREAMS;
     					/* Is STREAMS running now ? */
     Bool 		STREAMSRunning;
     					/* Compatibility variables */
-    int vgaCRIndex, vgaCRReg;
-    int Width, Bpp,Bpl, ScissB;   
+    int 		vgaCRIndex, vgaCRReg;
+    int 		Width, Bpp,Bpl, ScissB;   
     					/* XAA */
-    unsigned PlaneMask;
-    int bltbug_width1, bltbug_width2;
+    unsigned 		PlaneMask;
+    int 		bltbug_width1, bltbug_width2;
     					/* In units as noted, set in PreInit */
     int			videoRambytes;
     int			videoRamKbytes;
     					/* In Kbytes, set in PreInit */
     int			MemOffScreen;
-    /*unsigned char *	PciMapBase;*/
     					/* Holds the virtual memory address */
 					/* returned when the MMIO registers */
 					/* are mapped with xf86MapPciMem    */
@@ -170,6 +160,12 @@ typedef struct {
     Bool		bankedMono;
     					/* Memory Clock */
     int 		MCLK;
+    					/* MX LCD clock			*/
+    int			LCDClk;
+    					/* Limit the number of errors	*/
+					/* printed using a counter 	*/
+    int			GEResetCnt;
+    					/*************************/
     					/* ViRGE options -start- */
 					
     					/* Enable PCI burst mode for reads? */
@@ -190,95 +186,32 @@ typedef struct {
 					/* timing */
     Bool 		early_ras_precharge;
     Bool 		late_ras_precharge;
+    					/* MX LCD centering		*/
+    Bool		lcd_center;
     					/* ViRGE options -end- */
+    					/***********************/
     /* ViRGE specifics -end- */
     
     /* Used by ViRGE driver, but generic */
     
+    					/* Pointer used to save wrapped */
+					/* CloseScreen function.	*/
     CloseScreenProcPtr	CloseScreen;
-    					/* XAA info Rec */
+    					/* XAA info Rec 	*/
     XAAInfoRecPtr 	AccelInfoRec;
+    					/* PCI info vars.	*/
+    pciVideoPtr 	PciInfo;
+    PCITAG 		PciTag;
+    					/* Chip info, set using PCI	*/
+					/* above.			*/
+    int			Chipset;
+    int			ChipRev;
     
     /* Used by ViRGE driver, but generic -end- */
     
     
-    
-    
-    /* we'll put variables that we want to access _fast_ at the beginning (just a hunch) */
-    unsigned char cache_SegSelL, cache_SegSelH;  /* for tseng_bank.c */
-    int Bytesperpixel;		       /* a shorthand for the XAA code */
-    Bool need_wait_acl;		       /* always need a full "WAIT" for ACL finish */
-    int line_width;		       /* framebuffer width in bytes per scanline */
-    int planemask_mask;		       /* mask for active bits in planemask */
-    int neg_x_pixel_offset;
-    int powerPerPixel;		       /* power-of-2 version of bytesperpixel */
-    /* normal stuff starts here */
-    pciVideoPtr PciInfo;
-    PCITAG PciTag;
-    int			Chipset;
-    int			ChipRev;
-  #if 0  
-    int Save_Divide;
-    Bool UsePCIRetry;		       /* Do we use PCI-retry or busy-waiting */
-    Bool UseAccel;		       /* Do we use the XAA acceleration architecture */
-    Bool HWCursor;		       /* Do we use the hardware cursor (if supported) */
-    Bool Linmem_1meg;		       /* Is this a card limited to 1Mb of linear memory */
-    Bool UseLinMem;
-    Bool SlowDram;
-    Bool FastDram;
-    Bool MedDram;
-    Bool SetPCIBurst;
-    Bool PCIBurst;
-    Bool SetW32Interleave;
-    Bool W32Interleave;
-    Bool ShowCache;
-    Bool Legend;		       /* Sigma Legend clock select method */
-    Bool NoClockchip;		       /* disable clockchip programming clockchip (=use set-of-clocks) */
-  #endif  
-  #if 0
-    TsengRegRec SavedReg;	       /* saved Tseng registers at server start */
-    TsengRegRec ModeReg;
-  #endif
-  					/* S3V console saved mode registers */
-    S3VRegRec 		SavedReg;
-    					/* XServer video state mode registers */
-    S3VRegRec 		ModeReg;
-    					/* Flag indicating ModeReg has been */
-					/* duped from console state. */
-    Bool		ModeStructInit;
-  #if 0
-    unsigned long icd2061_dwv;	       /* To hold the clock data between Init and Restore */
-    t_tseng_bus Bustype;	       /* W32 bus type (currently used for lin mem on W32i) */
-    t_tseng_type ChipType;	       /* "Chipset" causes confusion with pScrn->chipset */
-    int ChipRev;
-    CARD32 LinFbAddress;
-    unsigned char *FbBase;
-    CARD32 LinFbAddressMask;
-    long FbMapSize;
-    miBankInfoRec BankInfo;
-    CARD32 IOAddress;		       /* PCI config space base address for ET6000 */
-    CARD32 MMIOBase;
-    int MinClock;
-    int MaxClock;
-    ClockRangePtr clockRange[2];
-    TsengDacInfoRec DacInfo;
-    TsengMClkInfoRec MClkInfo;
-    t_clockchip_type ClockChip;
-    CloseScreenProcPtr CloseScreen;
-    int save_divide;
-    XAAInfoRecPtr AccelInfoRec;
-    XAACursorInfoPtr CursorInfoRec;
-    CARD32 AccelColorBufferOffset;     /* offset in video memory where FG and BG colors will be stored */
-    CARD32 AccelColorExpandBufferOffsets[3];   /* offset in video memory for ColorExpand buffers */
-    unsigned char * XAAColorExpandBuffers[3];  /* pointers to colorexpand buffers */
-    CARD32 AccelImageWriteBufferOffsets[2];    /* offset in video memory for ImageWrite Buffers */
-    unsigned char * XAAScanlineImageWriteBuffers[2];   /* pointers to ImageWrite Buffers */
-    CARD32 HWCursorBufferOffset;
-    unsigned char *XAAHWCursorBuffer;
-    unsigned char save_ExtCRTC36;      /* save CRTC 0x36 during sequencer resets */
-  #endif
-    
 } S3VRec, *S3VPtr;
+
 
 #define S3VPTR(p) ((S3VPtr)((p)->driverPrivate))
       
@@ -292,15 +225,6 @@ typedef struct {
 #define PVERB5(arg) xf86ErrorFVerb(2, arg)
 #define VERBLEV	2
 #endif
-
-
-/******************* s3v_accel ****************************/
-
-/*static*/ void S3VGEReset(ScrnInfoPtr pScrn);
-
-
-
-
 
 
 
@@ -323,16 +247,6 @@ typedef struct {
        while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
        }\
 } while (0)
-/*
-#define VerticalRetraceWait() do { \
-   outb(vgaCRIndex, 0x17); \
-   if ( inb(vgaCRReg) & 0x80 ) { \
-       while ((inb( 0x3CA) & 0x08) == 0x00) ; \
-       while ((inb( 0x3CA) & 0x08) == 0x08) ; \
-       while ((inb( 0x3CA) & 0x08) == 0x00) ; \
-       }\
-} while (0)
-*/
 
 #else
 #define SPIN_LIMIT 1000000
@@ -359,18 +273,6 @@ typedef struct {
 } while (0)
 #endif
 
-#if 0
-
-/* Wait until GP is idle and queue is empty */
-#define	WaitIdleEmpty()  do { mem_barrier(); while ((IN_SUBSYS_STAT() & 0x3f00) != 0x3000); } while (0)
-
-/* Wait until GP is idle */
-#define WaitIdle()       do { mem_barrier(); while (!(IN_SUBSYS_STAT() & 0x2000)); } while (0)
-
-/* Wait until Command FIFO is empty */
-#define WaitCommandEmpty()       do { mem_barrier(); while (!(((((mmtr)s3vMmioMem)->subsys_regs.regs.adv_func_cntl)) & 0x200)); } while (0)
-
-#endif
 
 /*********************************************************/
 
@@ -388,3 +290,5 @@ typedef struct {
 
 
 /*EOF*/
+
+

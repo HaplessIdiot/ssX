@@ -5,7 +5,7 @@ XCOMM $XConsortium: Imakefile /main/10 1996/10/25 10:34:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/Imakefile,v 1.4 1998/09/20 06:01:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/Imakefile,v 1.5 1998/11/28 10:43:19 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -15,9 +15,9 @@ MODSRC = vgaHWmodule.c
 MODOBJ = vgaHWmodule.o
 #endif
 
-SRCS =   vgaHW.c vgaCmap.c $(MODSRC)
+SRCS =   vgaHW.c /*vgaCmap.c*/ $(MODSRC)
 
-OBJS =   vgaHW.o vgaCmap.o $(MODOBJ)
+OBJS =   vgaHW.o /*vgaCmap.o*/ $(MODOBJ)
 
    INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
 	      -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \

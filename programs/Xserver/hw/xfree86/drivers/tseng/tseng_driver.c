@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.41 1998/10/11 10:20:36 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.42 1998/11/01 12:36:01 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1618,10 +1618,14 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    /*
-     * If the driver can do gamma correction, it should call xf86SetGamma()
-     * here. But None of the Tseng devices does.
-     */
+    /* The gamma fields must be initialised when using the new cmap code */
+    if (pScrn->depth > 1) {
+	Gamma zeros = {0.0, 0.0, 0.0};
+
+	if (!xf86SetGamma(pScrn, zeros)) {
+	    return FALSE;
+	}
+    }
 
     /* Set the bits per RGB for 8bpp mode */
     if (pScrn->depth == 8) {
@@ -1991,9 +1995,7 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-    if (pScrn->pixmapBPP == 8) {        /* Both xf4bpp & cfb */
-	vgaHandleColormaps(pScreen, pScrn);
-    } else {
+    if (pScrn->bitsPerPixel > 8) {
 	/* Fixup RGB ordering */
 	visual = pScreen->visuals + pScreen->numVisuals;
 	while (--visual >= pScreen->visuals) {
@@ -2059,6 +2061,10 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
+
+    if (pScrn->pixmapBPP == 8) { /* cfb and xf4bpp */
+	vgaHWHandleColormaps(pScreen);
+    }
 
     /* Wrap the current CloseScreen and SaveScreen functions */
     pScreen->SaveScreen = TsengSaveScreen;

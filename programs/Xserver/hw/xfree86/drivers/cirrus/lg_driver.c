@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.2 1998/11/15 04:30:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.3 1998/11/22 10:37:20 dawes Exp $ */
  
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -299,6 +299,14 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
 	    return FALSE;
 	}
+    }
+
+    /* The gamma fields must be initialised when using the new cmap code */
+    if (pScrn->depth > 1) {
+	Gamma zeros = {0.0, 0.0, 0.0};
+
+	if (!xf86SetGamma(pScrn, zeros))
+	    return FALSE;
     }
 
     /* We use a programamble clock */
@@ -1245,10 +1253,6 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
     xf86SetBlackWhitePixels(pScreen);
 
-    if (pScrn->bitsPerPixel > 1 &&
-            pScrn->bitsPerPixel <= 8)
-        vgaHandleColormaps(pScreen, pScrn);
-
     /* Initialise cursor functions */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
@@ -1267,6 +1271,10 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
         return FALSE;
+
+    if (pScrn->bitsPerPixel > 1 &&
+            pScrn->bitsPerPixel <= 8)
+        vgaHWHandleColormaps(pScreen);
 
     /*
      * Wrap the CloseScreen vector and set SaveScreen.

@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.41 1998/11/01 07:57:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.42 1998/11/22 10:37:43 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -539,6 +539,7 @@ void UseMsg()
     ErrorF("-audit int             set audit trail level\n");	
     ErrorF("-auth file             select authorization file\n");	
     ErrorF("bc                     enable bug compatibility\n");
+    ErrorF("+bs                    enable any backing store support\n");
     ErrorF("-bs                    disable any backing store support\n");
     ErrorF("-c                     turns off key-click\n");
     ErrorF("c #                    key-click volume (0-100)\n");
@@ -701,6 +702,8 @@ char	*argv[];
 	}
 	else if ( strcmp( argv[i], "bc") == 0)
 	    permitOldBugs = TRUE;
+	else if ( strcmp( argv[i], "+bs") == 0)
+	    disableBackingStore = FALSE;
 	else if ( strcmp( argv[i], "-bs") == 0)
 	    disableBackingStore = TRUE;
 	else if ( strcmp( argv[i], "c") == 0)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.32 1998/10/25 07:12:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.33 1998/11/15 04:30:28 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -1036,7 +1036,7 @@ MGA3026StoreColors(ScrnInfoPtr pScrn, xColorItem* pdef, int ndef)
 void MGA3026LoadPalette(
     ScrnInfoPtr pScrn, 
     int numColors, 
-    int *indicies,
+    int *indices,
     LOCO *colors,
     short visualClass
 ){
@@ -1046,7 +1046,7 @@ void MGA3026LoadPalette(
     shift = (pScrn->depth == 15) ? 3 : 0;
 
     for(i = 0; i < numColors; i++) {
-	index = indicies[i];
+	index = indices[i];
         outTi3026dreg(MGA1064_WADR_PAL, index << shift);
         outTi3026dreg(MGA1064_COL_PAL, colors[index].red);
         outTi3026dreg(MGA1064_COL_PAL, colors[index].green);
@@ -1058,7 +1058,7 @@ void MGA3026LoadPalette(
 void MGA3026LoadPalette16(
     ScrnInfoPtr pScrn, 
     int numColors, 
-    int *indicies,
+    int *indices,
     LOCO *colors,
     short visualClass
 ){
@@ -1066,13 +1066,13 @@ void MGA3026LoadPalette16(
     int i, index;
 
     for(i = 0; i < numColors; i++) {
-	index = indicies[i];
+	index = indices[i];
         outTi3026dreg(MGA1064_WADR_PAL, index << 2);
         outTi3026dreg(MGA1064_COL_PAL, colors[index >> 1].red);
         outTi3026dreg(MGA1064_COL_PAL, colors[index].green);
         outTi3026dreg(MGA1064_COL_PAL, colors[index >> 1].blue);
 
-	/* we have to write 2 indicies since the pixel X on the
+	/* we have to write 2 indices since the pixel X on the
 	   TVP3026 has green colors at different locations from
 	   the red and blue colors */
 	if(index <= 31) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.2 1998/11/22 10:37:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.3 1998/11/28 10:43:02 dawes Exp $ */
 
 #ifndef XFree86LOADER
 #ifdef _XOPEN_SOURCE
@@ -60,13 +60,14 @@ typedef struct {
   InstallColormapProcPtr	InstallColormap;
   StoreColorsProcPtr		StoreColors;
   LoadPaletteFuncPtr		LoadPalette;
+  SetOverscanFuncPtr		SetOverscan;
   Bool				(*EnterVT)(int, int);
   Bool				(*SwitchMode)(int, DisplayModePtr, int);
   int				maxColors;
   int				sigRGBbits;
   int				gammaElements;
   LOCO				*gamma;
-  int				*PreAllocIndicies;
+  int				*PreAllocIndices;
   CMapLinkPtr			maps;
   unsigned int			flags;
 } CMapScreenRec, *CMapScreenPtr;
@@ -75,6 +76,7 @@ typedef struct {
   int		numColors;
   LOCO		*colors;
   Bool		recalculate;
+  int		overscan;
 } CMapColormapRec, *CMapColormapPtr;
 
 static unsigned long CMapGeneration = 0;
@@ -94,6 +96,7 @@ static void ComputeGamma(CMapScreenPtr);
 static Bool CMapAllocateColormapPrivate(ColormapPtr);
 static Bool CMapInitDefMap(ColormapPtr);
 static void CMapRefreshColors(ColormapPtr, int, int*);
+static void CMapSetOverscan(ColormapPtr, int, int *);
 static void CMapReinstallMap(ColormapPtr);
 static void UnwrapScreen(ScreenPtr pScreen);
 
@@ -104,13 +107,14 @@ Bool xf86HandleColormaps(
     int maxColors,
     int sigRGBbits,
     LoadPaletteFuncPtr loadPalette,
+    SetOverscanFuncPtr setOverscan,
     unsigned int flags
 ){
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     ColormapPtr pDefMap = NULL;
     CMapScreenPtr pScreenPriv;  
     LOCO *gamma; 
-    int *indicies; 
+    int *indices; 
     int elements;
 
     if(!maxColors || !sigRGBbits || !loadPalette)
@@ -129,14 +133,14 @@ Bool xf86HandleColormaps(
     if(!(gamma = (LOCO*)xalloc(elements * sizeof(LOCO))))
     	return FALSE;
 
-    if(!(indicies = (int*)xalloc(maxColors * sizeof(int)))) {
+    if(!(indices = (int*)xalloc(maxColors * sizeof(int)))) {
 	xfree(gamma);
 	return FALSE;
     }
       
     if(!(pScreenPriv = (CMapScreenPtr)xalloc(sizeof(CMapScreenRec)))) {
 	xfree(gamma);
-	xfree(indicies);
+	xfree(indices);
 	return FALSE;     
     }
 
@@ -155,11 +159,12 @@ Bool xf86HandleColormaps(
 
     pScreenPriv->pScrn = pScrn;
     pScreenPriv->LoadPalette = loadPalette;
+    pScreenPriv->SetOverscan = setOverscan;
     pScreenPriv->maxColors = maxColors;
     pScreenPriv->sigRGBbits = sigRGBbits;
     pScreenPriv->gammaElements = elements;
     pScreenPriv->gamma = gamma;
-    pScreenPriv->PreAllocIndicies = indicies;
+    pScreenPriv->PreAllocIndices = indices;
     pScreenPriv->maps = NULL;
     pScreenPriv->flags = flags;
 
@@ -233,6 +238,7 @@ CMapAllocateColormapPrivate(ColormapPtr pmap)
     pColPriv->numColors = numColors;
     pColPriv->colors = colors;
     pColPriv->recalculate = TRUE;
+    pColPriv->overscan = -1;
 
     /* add map to list */
     pLink = (CMapLinkPtr)xalloc(sizeof(CMapLink));
@@ -311,7 +317,7 @@ CMapStoreColors(
     VisualPtr	pVisual = pmap->pVisual;
     CMapScreenPtr pScreenPriv = 
         	(CMapScreenPtr) pScreen->devPrivates[CMapScreenIndex].ptr;
-    int 	*indicies = pScreenPriv->PreAllocIndicies;
+    int 	*indices = pScreenPriv->PreAllocIndices;
     int		num = ndef;
 
     /* At the moment this isn't necessary since there's nobody below us */
@@ -340,27 +346,27 @@ CMapStoreColors(
 					pVisual->offsetRed;
 		    i = num;
 		    while(i--)
-			if(indicies[i] == index) break;
+			if(indices[i] == index) break;
 		    if(i == -1)
-			indicies[num++] = index;
+			indices[num++] = index;
 		}
 		if(pdefs[ndef].flags & DoGreen) {
 		    index = (pdefs[ndef].pixel & pVisual->greenMask) >>
 					pVisual->offsetGreen;
 		    i = num;
 		    while(i--)
-			if(indicies[i] == index) break;
+			if(indices[i] == index) break;
 		    if(i == -1)
-			indicies[num++] = index;
+			indices[num++] = index;
 		}
 		if(pdefs[ndef].flags & DoBlue) {
 		    index = (pdefs[ndef].pixel & pVisual->blueMask) >>
 					pVisual->offsetBlue;
 		    i = num;
 		    while(i--)
-			if(indicies[i] == index) break;
+			if(indices[i] == index) break;
 		    if(i == -1)
-			indicies[num++] = index;
+			indices[num++] = index;
 		}
 	    }
 
@@ -368,14 +374,14 @@ CMapStoreColors(
 	    /* not really as overkill as it seems */
 	    num = pColPriv->numColors;
 	    for(i = 0; i < pColPriv->numColors; i++)
-		indicies[i] = i;
+		indices[i] = i;
 	}
     } else {
 	while(ndef--)
-	   indicies[ndef] = pdefs[ndef].pixel;
+	   indices[ndef] = pdefs[ndef].pixel;
     } 
 
-    CMapRefreshColors(pmap, num, indicies);
+    CMapRefreshColors(pmap, num, indices);
 }
 
 
@@ -448,23 +454,30 @@ CMapReinstallMap(ColormapPtr pmap)
     CMapColormapPtr cmapPriv = 
 	(CMapColormapPtr) pmap->devPrivates[CMapColormapIndex].ptr;
     int i = cmapPriv->numColors;
-    int *indicies = pScreenPriv->PreAllocIndicies;
+    int *indices = pScreenPriv->PreAllocIndices;
 
     while(i--)
-	indicies[i] = i;
+	indices[i] = i;
    
     if(cmapPriv->recalculate)
-	CMapRefreshColors(pmap, cmapPriv->numColors, indicies);
-    else
+	CMapRefreshColors(pmap, cmapPriv->numColors, indices);
+    else {
 	(*pScreenPriv->LoadPalette)(pScreenPriv->pScrn, cmapPriv->numColors,
- 			indicies, cmapPriv->colors, pmap->pVisual->class);
+ 			indices, cmapPriv->colors, pmap->pVisual->class);
+	if (pScreenPriv->SetOverscan) {
+#ifdef DEBUGOVERSCAN
+	    ErrorF("SetOverscan() called from CMapReinstallMap\n");
+#endif
+	    pScreenPriv->SetOverscan(pScreenPriv->pScrn, cmapPriv->overscan);
+	}
+    }
 
     cmapPriv->recalculate = FALSE;
 }
 
 
 static void 
-CMapRefreshColors(ColormapPtr pmap, int defs, int* indicies)
+CMapRefreshColors(ColormapPtr pmap, int defs, int* indices)
 {
     CMapScreenPtr pScreenPriv = 
         (CMapScreenPtr) pmap->pScreen->devPrivates[CMapScreenIndex].ptr;
@@ -518,7 +531,7 @@ CMapRefreshColors(ColormapPtr pmap, int defs, int* indicies)
     case PseudoColor:
     case GrayScale:
 	for(i = 0; i < defs; i++) { 
-	    index = indicies[i];
+	    index = indices[i];
 	    entry = (EntryPtr)&pmap->red[index];
 
 	    if(entry->fShared) {
@@ -541,7 +554,7 @@ CMapRefreshColors(ColormapPtr pmap, int defs, int* indicies)
     case DirectColor:
 	if((1 << pVisual->nplanes) > pScreenPriv->maxColors) {
 	    for(i = 0; i < defs; i++) { 
-		index = indicies[i];
+		index = indices[i];
 		if(index <= reds)
 		    colors[index].red   = 
 			gamma[pmap->red[index].co.local.red >> shift].red;
@@ -556,8 +569,8 @@ CMapRefreshColors(ColormapPtr pmap, int defs, int* indicies)
 	    break;
 	}
 	for(i = 0; i < defs; i++) { 
-	    index = indicies[i];
-		
+	    index = indices[i];
+
 	    colors[index].red   = gamma[pmap->red[
 				(index >> pVisual->offsetRed) & reds
 				].co.local.red >> shift].red;
@@ -573,9 +586,164 @@ CMapRefreshColors(ColormapPtr pmap, int defs, int* indicies)
 
 
     if(LOAD_PALETTE(pmap, pmap->pScreen->myNum))
-	(*pScreenPriv->LoadPalette)(pScreenPriv->pScrn, defs, indicies,
+	(*pScreenPriv->LoadPalette)(pScreenPriv->pScrn, defs, indices,
  					colors, pmap->pVisual->class);
 
+    if (pScreenPriv->SetOverscan)
+	CMapSetOverscan(pmap, defs, indices);
+
+}
+
+static Bool
+CMapCompareColors(LOCO *color1, LOCO *color2)
+{
+    /* return TRUE if the color1 is closer to black than color1 */
+#ifdef DEBUGOVERSCAN
+    ErrorF("#%02x%02x%02x vs #%02x%02x%02x (%d vs %d)\n",
+	color1->red, color1->green, color1->blue,
+	color2->red, color2->green, color2->blue,
+	color1->red + color1->green + color1->blue,
+	color2->red + color2->green + color2->blue);
+#endif
+    return (color1->red + color1->green + color1->blue <
+	    color2->red + color2->green + color2->blue);
+}
+
+static void
+CMapSetOverscan(ColormapPtr pmap, int defs, int *indices)
+{
+    CMapScreenPtr pScreenPriv = 
+        (CMapScreenPtr) pmap->pScreen->devPrivates[CMapScreenIndex].ptr;
+    CMapColormapPtr pColPriv = 
+	(CMapColormapPtr) pmap->devPrivates[CMapColormapIndex].ptr;
+    VisualPtr pVisual = pmap->pVisual;
+    int i;
+    LOCO *colors;
+    int index;
+    Bool newOverscan = FALSE;
+    int overscan, tmpOverscan;
+
+    colors = pColPriv->colors;
+    overscan = pColPriv->overscan;
+
+    /*
+     * Search for a new overscan index in the following cases:
+     *
+     *   - The index hasn't yet been initialised.  In this case search
+     *     for an index that is black or a close match to black.
+     *
+     *   - The colour of the old index is changed.  In this case search
+     *     all indices for a black or close match to black.
+     *
+     *   - The colour of the old index wasn't black.  In this case only
+     *     search the indices that were changed for a better match to black.
+     */
+
+    switch (pVisual->class) {
+    case StaticGray:
+    case TrueColor:
+	/* Should only come here once.  Initialise the overscan index to 0 */
+	overscan = 0;
+	newOverscan = TRUE;
+	break;
+    case StaticColor:
+	/*
+         * Only come here once, but search for the overscan in the same way
+         * as for the other cases.
+	 */
+    case DirectColor:
+    case PseudoColor:
+    case GrayScale:
+	if (overscan < 0 || overscan > pScreenPriv->maxColors - 1) {
+	    /* Uninitialised */
+	    newOverscan = TRUE;
+	} else {
+	    /* Check if the overscan was changed */
+	    for (i = 0; i < defs; i++) {
+		index = indices[i];
+		if (index == overscan) {
+		    newOverscan = TRUE;
+		    break;
+		}
+	    }
+	}
+	if (newOverscan) {
+	    /* The overscan is either uninitialised or it has been changed */
+
+	    if (overscan < 0 || overscan > pScreenPriv->maxColors - 1)
+		tmpOverscan = pScreenPriv->maxColors - 1;
+	    else
+		tmpOverscan = overscan;
+
+	    /* search all entries for a close match to black */
+	    for (i = pScreenPriv->maxColors - 1; i >= 0; i--) {
+		if (colors[i].red == 0 && colors[i].green == 0 &&
+		    colors[i].blue == 0) {
+		    overscan = i;
+#ifdef DEBUGOVERSCAN
+		    ErrorF("Black found at index 0x%02x\n", i);
+#endif
+		    break;
+		} else {
+#ifdef DEBUGOVERSCAN
+		    ErrorF("0x%02x: ", i);
+#endif
+		    if (CMapCompareColors(&colors[i], &colors[tmpOverscan])) {
+			tmpOverscan = i;
+#ifdef DEBUGOVERSCAN
+			ErrorF("possible \"Black\" at index 0x%02x\n", i);
+#endif
+		    }
+		}
+	    }
+	    if (i < 0)
+		overscan = tmpOverscan;
+	} else {
+	    /* Check of the old overscan wasn't black */
+	    if (colors[overscan].red != 0 || colors[overscan].green != 0 ||
+		colors[overscan].blue != 0) {
+		int oldOverscan = tmpOverscan = overscan;
+		/* See of there is now a better match */
+		for (i = 0; i < defs; i++) {
+		    index = indices[i];
+		    if (colors[index].red == 0 && colors[index].green == 0 &&
+			colors[index].blue == 0) {
+			overscan = index;
+#ifdef DEBUGOVERSCAN
+			ErrorF("Black found at index 0x%02x\n", index);
+#endif
+			break;
+		    } else {
+#ifdef DEBUGOVERSCAN
+			ErrorF("0x%02x: ", index);
+#endif
+			if (CMapCompareColors(&colors[index],
+					      &colors[tmpOverscan])) {
+			    tmpOverscan = index;
+#ifdef DEBUGOVERSCAN
+			    ErrorF("possible \"Black\" at index 0x%02x\n",
+				   index);
+#endif
+			}
+		    }
+		}
+		if (i == defs)
+		    overscan = tmpOverscan;
+		if (overscan != oldOverscan)
+		    newOverscan = TRUE;
+	    }
+	}
+	break;
+    }
+    if (newOverscan) {
+	pColPriv->overscan = overscan;
+	if (LOAD_PALETTE(pmap, pmap->pScreen->myNum)) {
+#ifdef DEBUGOVERSCAN
+	    ErrorF("SetOverscan() called from CmapSetOverscan\n");
+#endif
+	    pScreenPriv->SetOverscan(pScreenPriv->pScrn, overscan);
+	}
+    }
 }
 
 static void
@@ -595,7 +763,7 @@ UnwrapScreen(ScreenPtr pScreen)
     pScrn->SwitchMode = pScreenPriv->SwitchMode; 
 
     xfree(pScreenPriv->gamma);
-    xfree(pScreenPriv->PreAllocIndicies);
+    xfree(pScreenPriv->PreAllocIndices);
     xfree(pScreenPriv);
 }
 
@@ -673,6 +841,6 @@ xf86ChangeGamma(
 	CMapReinstallMap(miInstalledMaps[pScreen->myNum]);
 
     return Success;
-} 
+}
 
 

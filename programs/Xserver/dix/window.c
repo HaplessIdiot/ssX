@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.7 1997/11/16 06:17:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.8 1998/10/04 09:38:16 dawes Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -220,7 +220,7 @@ WalkTree(pScreen, func, data)
 /* hack for forcing backing store on all windows */
 int	defaultBackingStore = NotUseful;
 /* hack to force no backing store */
-Bool	disableBackingStore = FALSE;
+Bool	disableBackingStore = TRUE;
 /* hack to force no save unders */
 Bool	disableSaveUnders = FALSE;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.34 1998/11/15 04:30:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.35 1998/11/22 10:37:27 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1447,7 +1447,7 @@ MGAFillSolidRectsDMA(
 
     OUTREG(MGAREG_OPMODE, MGAOPM_DMA_GENERAL);
     while(nBox) {
-	base[0] = DMAINDICIES(MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC,
+	base[0] = DMAINDICES(MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC,
                 MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC);
 	base[1] = ((pBox->x2) << 16) | pBox->x1;
 	base[2] = (pBox->y1 << 16) | (pBox->y2 - pBox->y1);
@@ -1487,7 +1487,7 @@ MGAFillSolidSpansDMA(
 
     OUTREG(MGAREG_OPMODE, MGAOPM_DMA_GENERAL);
     while(n) {
-	base[0] = DMAINDICIES(MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC,
+	base[0] = DMAINDICES(MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC,
                 MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC);
 	base[1] = ((ppt->x + *(pwidth++)) << 16) | ppt->x;
 	base[2] = (ppt->y << 16) | 1;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.2 1998/11/22 10:37:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.3 1998/11/28 10:43:15 dawes Exp $ */
 
 /*
  *
@@ -301,7 +301,7 @@ S3VAccelInit(ScreenPtr pScreen)
      xf86InitFBManager(pScreen, &AvailFBArea);		       
      
 		      		/* Reset the GE prior to use */
-     S3VGEReset(pScrn);
+     S3VGEReset(pScrn,0,__LINE__,__FILE__);
     
      return (XAAInit(pScreen, infoPtr));
 } 
@@ -381,7 +381,7 @@ S3VAccelInit32(ScreenPtr pScreen)
     xf86InitFBManager(pScreen, &AvailFBArea);
 
 		      		/* Reset the GE prior to use */
-    S3VGEReset(pScrn);
+    S3VGEReset(pScrn,0,__LINE__,__FILE__);
     
     return (XAAInit(pScreen, infoPtr));
 }
@@ -417,11 +417,30 @@ S3VAccelSync(ScrnInfoPtr pScrn)
  * fills in some GE registers with default values.                  
  */
 
-/*static*/ void
-S3VGEReset(ScrnInfoPtr pScrn)
+void
+S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
 {
     unsigned char tmp;
+    int r;
+    int32  fifo_control, miu_control, streams_timeout, misc_timeout;
     COMPVARS;  	  
+
+    if (from_timeout) {
+      if (ps3v->GEResetCnt++ < 10 || xf86GetVerbosity() > 1)
+	ErrorF("\tS3VGEReset called from %s line %d\n",file,line);
+    }
+    else
+      WaitIdleEmpty();
+
+
+    if (from_timeout && (ps3v->Chipset == S3_ViRGE || ps3v->Chipset == S3_ViRGE_VX
+			 || ps3v->Chipset == S3_ViRGE_DXGX)) {
+      /* reset will trash these registers, so save them */
+      fifo_control    = ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control;
+      miu_control     = ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control;
+      streams_timeout = ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout;
+      misc_timeout    = ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout;
+    }
 
     if(ps3v->Chipset == S3_ViRGE_VX){
         OUTREG8(vgaCRIndex, 0x63);
@@ -430,17 +449,39 @@ S3VGEReset(ScrnInfoPtr pScrn)
         OUTREG8(vgaCRIndex, 0x66);
         }
     tmp = INREG8(vgaCRReg);
-    OUTREG8(vgaCRReg, tmp | 0x02);
-    OUTREG8(vgaCRReg, tmp & ~0x02);
+    
     usleep(10000);
+    for (r=1; r<10; r++) {  /* try multiple times to avoid lockup of ViRGE/MX */
+      OUTREG8(vgaCRReg, tmp | 0x02);
+      usleep(10000);
+      OUTREG8(vgaCRReg, tmp & ~0x02);
+      usleep(10000);
 
-    xf86ErrorFVerb(VERBLEV, "	S3VGEReset sub_stat=%x \n", 
+      xf86ErrorFVerb(VERBLEV, "	S3VGEReset sub_stat=%x \n", 
    	IN_SUBSYS_STAT()
 	);
 
-    WaitIdleEmpty();
+      if (!from_timeout) 
+        WaitIdleEmpty();
 
-    SETB_DEST_SRC_STR(ps3v->Bpl, ps3v->Bpl); 
+      SETB_DEST_SRC_STR(ps3v->Bpl, ps3v->Bpl); 
+      
+      usleep(10000);
+      if (((IN_SUBSYS_STAT() & 0x3f00) != 0x3000)) 
+	xf86ErrorFVerb(VERBLEV, "restarting S3 graphics engine reset %2d ...\n",r);
+      else
+	break;
+    } 
+    
+    if (from_timeout && (ps3v->Chipset == S3_ViRGE || ps3v->Chipset == S3_ViRGE_VX
+			 || ps3v->Chipset == S3_ViRGE_DXGX)) {
+      /* restore trashed registers */
+      ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control    = fifo_control;
+      ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control     = miu_control;
+      ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout = streams_timeout;
+      ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout    = misc_timeout;
+    }
+    
     SETB_SRC_BASE(0);
     SETB_DEST_BASE(0);   
 
@@ -1276,3 +1317,4 @@ S3VSubsequentImageWriteRect(ScrnInfoPtr pScrn,
 
 
 /*EOF*/
+

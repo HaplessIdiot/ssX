@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.15 1998/11/15 10:22:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.16 1998/11/22 10:37:34 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -488,6 +488,14 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (!xf86SetDefaultVisual(pScreenInfo, -1))
         return FALSE;
 
+    /* The gamma fields must be initialised when using the new cmap code */
+    if (pScreenInfo->depth > 1) {
+	Gamma zeros = {0.0, 0.0, 0.0};
+
+	if (!xf86SetGamma(pScreenInfo, zeros))
+	    return FALSE;
+    }
+
     /*
      * Determine videoRam.  For mode validation purposes, this needs to be
      * limited to VGA specifications.
@@ -555,14 +563,12 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     pvgaHW->MapSize = 0x00010000;       /* Standard 64kB VGA window */
     vgaHWGetIOBase(pvgaHW);             /* Get VGA I/O base */
 
-#ifndef __NOT_YET__
     if (pScreenInfo->depth == 8)
     {
         pScreenInfo->numClocks = 1;
         pScreenInfo->clock[0] = 25175;
         goto SetDefaultMode;
     }
-#endif
 
     /*
      * Determine clocks.  Limit them to the first four because that's all that
@@ -613,9 +619,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     if (!nModes || !pScreenInfo->modes)
     {
-#ifndef __NOT_YET__
   SetDefaultMode:
-#endif
         /* Set a default mode, overridding any virtual settings */
         pScreenInfo->virtualX = pScreenInfo->displayWidth = 320;
         pScreenInfo->virtualY = 200;
@@ -682,16 +686,22 @@ GenericSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
         return FALSE;
     pScreenInfo->vtSema = TRUE;
 
-#ifndef __NOT_YET__
     if (pScreenInfo->depth == 8)
     {
         int i;
 
         static const CARD8 CRTC[24] =
         {
+#ifndef DEBUGOVERSCAN
             0x5F, 0x4F, 0x4F, 0x80, 0x54, 0x00, 0xBF, 0x1F,
             0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x9C, 0x0E, 0x8F, 0x28, 0x40, 0x8F, 0xC0, 0xA3
+#else
+	    /* These values make some of the overscan area visible */
+            0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F, 
+            0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x9C, 0x8E, 0x8F, 0x28, 0x40, 0x96, 0xB9, 0xA3
+#endif
         };
 
         /* Override vgaHW's CRTC timings */
@@ -701,7 +711,6 @@ GenericSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
         /* Clobber any CLKDIV2 */
         pvgaHW->ModeReg.Sequencer[1] = 0x01;
     }
-#endif
 
     /* Programme the registers */
     vgaHWProtect(pScreenInfo, TRUE);
@@ -839,14 +848,6 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     miInitializeBackingStore(pScreen);
 
     xf86SetBlackWhitePixels(pScreen);
-
-    /* The gamma fields must be initialised when using the new cmap code */
-    if (pScreenInfo->depth > 1) {
-	Gamma zeros = {0.0, 0.0, 0.0};
-
-	if (!xf86SetGamma(pScreenInfo, zeros))
-	    return FALSE;
-    }
 
     /* Initialise cursor */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());

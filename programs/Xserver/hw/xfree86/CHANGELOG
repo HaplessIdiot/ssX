@@ -1,4 +1,13 @@
 XFree86 3.9No (29 November 1998)
+2022. Resync the s3virge driver with most of the updates contained in 3.3.3.
+      This includes GX2 and MX+ support and the set_mclk and set_lcdclk
+      options (#2267, Kevin Brosius).
+2021. Update the cirrus, chips and tseng drivers to use the new colourmap
+      layer (via vgaHWHandleColormaps).
+2020. Add support for automatically adjusting the overscan colour index to
+      the new colourmap layer.
+2019. Disable backing store by default, and provide a "+bs" option to enable
+      it from the command line.  This may be done in a better way later.
 2018. Remove the per-depth cfb private indices added in 3.9Nn (#2265,
       Mark Vojkovich).
 2017. Build cfb with -DSINLGEDEPTH because we don't need the per-depth
@@ -6845,4 +6854,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.644 1998/11/22 10:37:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.645 1998/11/28 10:42:53 dawes Exp $

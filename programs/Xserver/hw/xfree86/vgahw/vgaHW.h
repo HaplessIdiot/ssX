@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.10 1998/11/15 10:22:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.11 1998/11/28 10:43:19 dawes Exp $ */
 
 
 /*
@@ -196,6 +196,7 @@ void vgaHWDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
 Bool vgaHWHandleColormaps(ScreenPtr pScreen);
 void vgaHWddc1SetSpeed(ScrnInfoPtr pScrn, int speed);
     
+#if 0
 /* vgaCmap.c */
 
 int vgaListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps);
@@ -207,6 +208,7 @@ void vgaUninstallColormap(ColormapPtr pmap);
 /* Checks if color map already installed ? */
 int vgaCheckColorMap(ColormapPtr);
 void vgaHandleColormaps(ScreenPtr pScreen, ScrnInfoPtr scrnp);
+#endif
 
 #endif /* _VGAHW_H */
 

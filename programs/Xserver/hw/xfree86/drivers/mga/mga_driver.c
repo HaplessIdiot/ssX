@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.57 1998/11/15 04:30:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.58 1998/11/15 06:20:58 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1841,7 +1841,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Initialize colormap layer.  
 	Must follow initialization of the default colormap */
-    if(!xf86HandleColormaps(pScreen, 256, 8, MGAdac->LoadPalette, 
+    if(!xf86HandleColormaps(pScreen, 256, 8, MGAdac->LoadPalette, NULL,
 	(pMga->Overlay8Plus24 ? 0 : CMAP_PALETTED_TRUECOLOR) |
 			CMAP_RELOAD_ON_MODE_SWITCH))	
 	return FALSE;
