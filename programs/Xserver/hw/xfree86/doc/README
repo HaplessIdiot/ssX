@@ -505,8 +505,9 @@ and the following mirror sites:
 
     North America:
     xfree86.cdrom.com:/pub/XFree86           (source and binaries)
-    ftp.bsdi.com:/contrib/X11/XFree86        (BSD/386 binaries only)
-    ftp.iastate.edu:/pub/netbsd/XFree86-3.1  (NetBSD binaries only)
+    ftp.bsdi.com:/contrib/X11/XFree86        (source and BSD/386 binaries)
+    ref.tfs.com:/pub/mirrors/XFree86         (source and FreeBSD binaries)
+    ftp.iastate.edu:/pub/netbsd/XFree86/XFree86-3.1 (source and NetBSD binaries)
     tsx-11.mit.edu:/pub/linux/packages/X11   (Linux binaries only)
     ftp.eecs.umich.edu:/BSD/Xfree86          (source and binaries)
     sunsite.unc.edu:/pub/X11/XFree86         (source and binaries)
@@ -544,4 +545,4 @@ compile-time option selections were made when building the distribution.
 
 28 September 1994
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.3 1994/09/28 16:25:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.4 1994/09/29 14:28:11 dawes Exp $

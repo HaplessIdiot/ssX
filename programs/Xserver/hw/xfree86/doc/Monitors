@@ -472,6 +472,23 @@ Section "Monitor"
     ModeLine "800x600" 50 800 856 976 1040 600 637 643 666
 EndSection
  
+#From: ciotti@nas.nasa.gov (Robert B. Ciotti)
+#Date: Fri, 30 Sep 1994 10:34:37 -0700
+Section "Monitor"
+    Identifier "AUM1371A"
+    VendorName "Mitsubishi"
+    ModelName "DiamondScan"
+    BandWidth 30
+    HorizSync 15-38
+    VertRefresh 40-90 # monitor Spec
+    #VertRefresh 40-92 # pushed from spec to support 1000x750
+    ModeLine "1000x750" 45 1000 1040 1208 1248 750 750 756 788 interlace
+    ModeLine "800x600"  36 800 851 987  1056  600 608 610 633 
+    ModeLine "vesa640x480a" 25.175 640 664 760 800 480 491 493 525
+    ModeLine "vesa640x480b" 25.175 640 672 768 800 480 490 492 525
+    ModeLine "vesa640x480c" 31.5 640 664 704 832 480 489 492 520
+EndSection
+
 #Date: Mon, 26 Sep 1994 23:30:00 -1000 (EST)
 #From: dawes@XFree86.org (David Dawes)
 Section "Monitor"
@@ -866,15 +883,14 @@ Section "Monitor"
     VertRefresh 55-65
     ModeLine "640x480" 25.175 640 664 760 800 480 491 493 525
     ModeLine "1024x768i" 44.9 1024 1048 1208 1264 768 776 784 817 interlace
-    ModeLine "1176x1024" 95 1176 1400 1504 1616 1024 1032 1040 1070 -hsync
-+vsyn
-c
-    ModeLine "1176x950" 95 1176 1400 1504 1616 950 958 964 994 -hsync +vsync
-    ModeLine "1280x1024" 110 1280 1584 1704 1872 1024 1032 1040 1070 -hsync
-+vsy
-nc
-    ModeLine "640x1024" 110 640 1584 1704 1872 1024 1032 1040 1070 -hsync
-+vsync
+    ModeLine "1176x1024" 95 1176 1400 1504 1616 1024 1032 1040 1070 
+	-hsync +vsync
+    ModeLine "1176x950" 95 1176 1400 1504 1616 950 958 964 994 
+	-hsync +vsync
+    ModeLine "1280x1024" 110 1280 1584 1704 1872 1024 1032 1040 1070 
+	-hsync +vsync
+    ModeLine "640x1024" 110 640 1584 1704 1872 1024 1032 1040 1070 
+	-hsync +vsync
 EndSection
  
 #Date: Mon, 19 Sep 94 17:50:04 +0200
@@ -961,6 +977,4 @@ Section "Monitor"
     ModeLine "640x480"  28  640  664  728  792 480 484 490 505
 EndSection
 
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.1 1994/09/27 10:30:28 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.2 1994/09/28 16:25:02 dawes Exp $

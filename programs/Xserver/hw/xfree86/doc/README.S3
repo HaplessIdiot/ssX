@@ -152,6 +152,15 @@ might work for you, too.
                         and back seems to solve this problem
 
 
+        S3 864, ATT21C498-13 RAMDAC, ICD2061A Clockchip
+                #9 GXE64 - PCI
+                        
+                        8, 15/16, 24(32) bpp
+
+                        Option "number_nine"
+                        Option "dac_8_bit" (recommended)
+ 
+
         S3 964, AT&T 20C505 RAMDAC, ICD2061A Clockchip
                 Miro Crystal 20SV PCI
 
@@ -181,6 +190,20 @@ might work for you, too.
                         There are some known problems with the GXE64 Pro
                         support, including some image shifting/wrapping
                         at 15/16/24 bpp.
+
+                        **STOP PRESS**  We have found that some newer
+                        versions of the GXE64 Pro do not work with
+                        XFree86 3.1.  We have a patch for this which can
+                        be found in the README.late file in this directory.
+
+			We have also found that #9 no longer support the
+			GXE64 Pro at 1600x1200.  They do however have a
+			new (and more expensive) board called the
+			GXE64Pro-1600 which uses a 220MHz RAMDAC instead
+			of 135MHz part used on the other boards.  It is
+			not known at this stage whether the GXE64Pro-1600
+			will work with XFree86 3.1.
+
 
 2 - 16bpp and 32bpp
 -------------------
@@ -250,4 +273,4 @@ this not being correct is the HW cursor being chopped off when positioned
 close to the right edge of the screen.
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.4 1994/09/28 16:25:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.5 1994/09/29 14:28:14 dawes Exp $

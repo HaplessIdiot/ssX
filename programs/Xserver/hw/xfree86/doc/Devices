@@ -494,6 +494,7 @@ Section "Device"
     Videoram 2048
 EndSection
 
+#From: haw30@eng.amdahl.com (Henry A Worth )
 #Date: Tue, 27 Sep 94 22:10:01 PDT
 Section "Device"
     Identifier "Spider Black Widow Plus"
@@ -554,4 +555,4 @@ Section "Device"
 EndSection
 
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.2 1994/09/28 16:24:56 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.3 1994/10/01 01:48:12 dawes Exp $
