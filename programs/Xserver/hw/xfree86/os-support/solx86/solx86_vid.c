@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.11 1999/04/18 04:08:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.12 1999/04/29 12:24:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -223,5 +223,54 @@ void
 xf86MapReadSideEffects(int ScreenNum, int Flags, pointer Base,
 	unsigned long Size)
 {
+}
+
+
+/*
+ * Read BIOS via mmap()ing physical memory.
+ */
+int
+xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
+	     int Len)
+{
+	int fd;
+	unsigned char *ptr;
+	char	solx86_vtname[20];
+
+	/*
+     	 * Solaris 2.1 x86 SVR4 (10/27/93)
+     	 *      The server must treat the virtual terminal device file
+     	 *      as the standard SVR4 /dev/pmem. By default, then used VT
+     	 *      is considered the "default" file to open.
+     	 */
+	if (Base < 0xFFFFF)
+        	sprintf(solx86_vtname,"/dev/vt%02d",xf86Info.vtno);
+	else
+	{
+		if (!apertureDevName)
+			if (!xf86LinearVidMem())
+				FatalError("xf86ReadBIOS: Could not mmap "
+					   "BIOS [a=%x]\n", Base);
+		sprintf(solx86_vtname, apertureDevName);
+	}
+
+	if ((fd = open(solx86_vtname, O_RDONLY)) < 0)
+    	{
+        	xf86Msg(X_WARNING, "xf86ReadBIOS: Failed to open %s (%s)\n",
+			solx86_vtname, strerror(errno));
+        	return(-1);
+	}	
+	ptr = mmap((caddr_t)0, 0x8000, PROT_READ, MAP_SHARED, fd, (off_t)Base);
+	if ((int)ptr == MAP_FAILED)
+	{
+		xf86Msg(X_WARNING, "xf86ReadBIOS: %s mmap failed\n",
+			solx86_vtname);
+		close(fd);
+		return(-1);
+	}
+	(void)memcpy(Buf, (void *)(ptr + Offset), Len);
+	(void)munmap((caddr_t)ptr, 0x8000);
+	(void)close(fd);
+	return(Len);
 }
 
