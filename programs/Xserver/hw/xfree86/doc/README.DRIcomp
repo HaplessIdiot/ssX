@@ -35,8 +35,8 @@ The DRI provides 3D graphics hardware acceleration for the XFree86 project.
 This information is intended for experienced Linux developers.  Beginners are
 probably better off installing precompiled packages.
 
-Edits, corrections and updates to this document may be mailed to brianp@val-
-inux.com.
+Edits, corrections and updates to this document may be mailed to <brian@tung-
+stengrahpics.com>.
 
 3.  Prerequisites
 
@@ -598,7 +598,7 @@ At this point your X server should be up and running with hardware-acceler-
 ated direct rendering.  Please read the DRI User Guide for information about
 trouble shooting and how to use the DRI-enabled X server for 3D applications.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.15 2001/10/02 11:44:16 alanh Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.16 2002/01/07 22:05:57 dawes Exp $
 
 
-$XFree86:$
+$XFree86: $
