@@ -1,0 +1,11 @@
+XCOMM $XConsortium: Imakefile /main/7 1996/12/11 10:50:20 swick $
+
+         DEPLIBS = $(DEPICELIB)
+ LOCAL_LIBRARIES = $(ICELIB)
+
+           SRCS = xfwp.c
+           OBJS = xfwp.o
+
+ComplexProgramTarget(xfwp)
+
+InstallManPage(xfwp,$(MANDIR))
