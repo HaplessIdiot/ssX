@@ -1,4 +1,4 @@
-/* $XConsortium: imTrX.c,v 1.7 94/03/29 22:51:48 rws Exp $ */
+/* $Xorg: imTrX.c,v 1.4 2000/08/17 19:45:15 cpqbld Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -28,6 +28,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include <string.h>
 #include <X11/Xatom.h>
@@ -105,9 +106,23 @@ _XimXFilterWaitEvent(d, w, ev, arg)
 {
     Xim		 im = (Xim)arg;
     XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
+    Bool ret;
 
     spec->ev = (XPointer)ev;
-    return _XimFilterWaitEvent(im);
+    ret = _XimFilterWaitEvent(im);
+
+    /* 
+     * If ev is a pointer to a stack variable, there could be
+     * a coredump later on if the pointer is dereferenced.
+     * Therefore, reset to NULL to force reinitialization in
+     * _XimXRead().
+     * 
+     * Keep in mind _XimXRead may be called again when the stack
+     * is very different.
+     */
+     spec->ev = (XPointer)NULL;
+
+     return ret;
 }
 
 Private Bool
@@ -326,8 +341,15 @@ _XimXGetReadData(im, buf, buf_len, ret_len, event)
     unsigned long	  bytes_after_ret;
     unsigned char	 *prop_ret;
 
-    if ((event->type == ClientMessage) && (event->xclient.format == 8)) {
-	data = event->xclient.data.b;
+    if ((event->type == ClientMessage) &&
+        !((event->xclient.message_type == spec->improtocolid) ||
+          (event->xclient.message_type == spec->immoredataid))) {
+         /* This event has nothing to do with us,
+          * FIXME should not have gotten here then...
+          */
+         return False;
+    } else if ((event->type == ClientMessage) && (event->xclient.format == 8)) {
+        data = event->xclient.data.b;
 	if (buf_len >= XIM_CM_DATA_SIZE) {
 	    (void)memcpy(buf, data, XIM_CM_DATA_SIZE);
 	    *ret_len = XIM_CM_DATA_SIZE;
@@ -420,7 +442,6 @@ _CheckCMEvent(display, event, xim)
     Xim		 im = (Xim)xim;
     XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
     CARD32	 major_code = spec->major_code;
-    CARD32	 minor_code = spec->minor_code;
 
     if ((event->type == ClientMessage)
      &&((event->xclient.message_type == spec->improtocolid) ||
@@ -446,7 +467,6 @@ _XimXRead(im, recv_buf, buf_len, ret_len)
 {
     XEvent	*ev;
     XEvent	 event;
-    Atom	 prop;
     int		 len;
     XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
     XPointer	  arg = spec->ev;
@@ -483,12 +503,6 @@ _XimXConf(im, address)
     char	*address;
 {
     XSpecRec	*spec;
-    char	 xim_res_name[256];
-    char	 xim_res_class[256];
-    char	 res_name[256];
-    char	 res_class[256];
-    char	*str_type;
-    XrmValue	 value;
 
     if (!(spec = (XSpecRec *)Xmalloc(sizeof(XSpecRec))))
 	return False;
