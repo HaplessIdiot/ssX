@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/188 1995/12/08 17:18:02 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.11 1995/11/12 09:55:49 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.12 1996/01/05 13:23:06 dawes Exp $
  */
 
 /*
@@ -83,6 +83,14 @@ in this Software without prior written authorization from the X Consortium.
 #include "menu.h"
 #include "main.h"
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *malloc();
+extern char *realloc();
+extern void exit(); 
+#endif
+
 /*
  * Check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN.
@@ -98,27 +106,43 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #endif
 
-extern jmp_buf VTend;
+#include "xterm.h"
 
+extern jmp_buf VTend;
+extern XtermWidget term;
 extern XtAppContext app_con;
 extern Widget toplevel;
-extern void exit();
-extern char *malloc();
-extern char *realloc();
+extern char *ProgramName;
 extern fd_set Select_mask;
 extern fd_set X_mask;
 extern fd_set pty_mask;
 
-static void VTallocbuf();
-static int finput();
-static void dotext();
-static void WriteText();
-static void ToAlternate();
-static void FromAlternate();
-static void update_font_info();
+static int LoadNewFont PROTO((TScreen *screen, char *nfontname, char *bfontname, Bool doresize, int fontnum));
+static int finput PROTO((void));
+static int in_put PROTO((void));
+static int set_character_class PROTO((char *s));
+static void DoSetSelectedFont PROTO_XT_SEL_CB_ARGS;
+static void FromAlternate PROTO((TScreen *screen));
+static void SGR_Background PROTO((int color));
+static void SGR_Foreground PROTO((int color));
+static void SwitchBufs PROTO((TScreen *screen));
+static void ToAlternate PROTO((TScreen *screen));
+static void VTGraphicsOrNoExpose PROTO((XEvent *event));
+static void VTNonMaskableEvent PROTO_XT_EV_HANDLER_ARGS;
+static void VTallocbuf PROTO((void));
+static void VTparse PROTO((void));
+static void WriteText PROTO(( TScreen *screen, char *str, int len, unsigned flags, unsigned fg, unsigned bg));
+static void ansi_modes PROTO((XtermWidget termw, void (*func)(unsigned *p, int mask)));
+static void bitclr PROTO((unsigned *p, int mask));
+static void bitset PROTO((unsigned *p, int mask));
+static void dotext PROTO((TScreen *screen, unsigned flags, int charset, Char *buf, Char *ptr, unsigned fg, unsigned bg));
+static void dpmodes PROTO((XtermWidget termw, void (*func)(unsigned *p, int mask)));
+static void restoremodes PROTO((XtermWidget termw));
+static void savemodes PROTO((XtermWidget termw));
+static void set_vt_box PROTO((TScreen *screen));
+static void unparseputn PROTO((unsigned int n, int fd));
+static void update_font_info PROTO((TScreen *screen, Bool doresize));
 
-static void bitset(), bitclr();
-    
 #define	DEFAULT		-1
 #define	TEXT_BUF_SIZE	256
 #define TRACKTIMESEC	4L
@@ -242,6 +266,9 @@ static void bitset(), bitclr();
 
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
+#define GET_FG(flags,color) ((flags&FG_COLOR) ? screen->colors[color] : screen->foreground)
+#define GET_BG(flags,color) ((flags&BG_COLOR) ? screen->colors[color] : term->core.background_pixel)
+
 static int nparam;
 static ANSI reply;
 static int param[NPARAM];
@@ -260,33 +287,12 @@ extern int igntable[];
 extern int scrtable[];
 extern int scstable[];
 
-
 /* event handlers */
-extern void HandleKeyPressed(), HandleEightBitKeyPressed();
-extern void HandleStringEvent();
-extern void HandleEnterWindow();
-extern void HandleLeaveWindow();
-extern void HandleBellPropertyChange();
-extern void HandleFocusChange();
-static void HandleKeymapChange();
-extern void HandleInsertSelection();
-extern void HandleSelectStart(), HandleKeyboardSelectStart();
-extern void HandleSelectExtend(), HandleSelectSet();
-extern void HandleSelectEnd(), HandleKeyboardSelectEnd();
-extern void HandleStartExtend(), HandleKeyboardStartExtend();
-static void HandleBell();
-static void HandleVisualBell();
-static void HandleIgnore();
-extern void HandleSecure();
-extern void HandleScrollForward();
-extern void HandleScrollBack();
-extern void HandleCreateMenu(), HandlePopupMenu();
-extern void HandleSetFont();
-extern void SetVTFont();
-extern void ViButton(), DiredButton();
-
-extern Boolean SendMousePosition();
-extern void ScrnSetAttributes();
+static void HandleBell PROTO((Widget w, XEvent *event, String *params, Cardinal *param_count));
+static void HandleIgnore PROTO((Widget w, XEvent *event, String *params, Cardinal *param_count));
+static void HandleKeymapChange PROTO((Widget w, XEvent *event, String *params, Cardinal *param_count));
+static void HandleSetFont PROTO((Widget w, XEvent *event, String *params, Cardinal *param_count));
+static void HandleVisualBell PROTO((Widget w, XEvent *event, String *params, Cardinal *param_count));
 
 /*
  * NOTE: VTInitialize zeros out the entire ".screen" component of the 
@@ -297,7 +303,6 @@ extern void ScrnSetAttributes();
 /* Defaults */
 static  Boolean	defaultFALSE	   = FALSE;
 static  Boolean	defaultTRUE	   = TRUE;
-static  int	defaultBorderWidth = DEFBORDERWIDTH;
 static  int	defaultIntBorder   = DEFBORDER;
 static  int	defaultSaveLines   = SAVELINES;
 static	int	defaultScrollLines = SCROLLLINES;
@@ -647,14 +652,14 @@ static XtResource resources[] = {
 	XtRBoolean, (XtPointer) &defaultTRUE},
 };
 
-static void VTClassInit();
-static void VTInitialize();
-static void VTRealize();
-static void VTExpose();
-static void VTResize();
-static void VTDestroy();
-static Boolean VTSetValues();
-static void VTInitI18N();
+static void VTClassInit PROTO((void));
+static void VTInitialize PROTO((Widget wrequest, Widget wnew, ArgList args, Cardinal *num_args)); 
+static void VTRealize PROTO((Widget w, XtValueMask *valuemask, XSetWindowAttributes *values));
+static void VTExpose PROTO((Widget w, XEvent *event, Region region));
+static void VTResize PROTO((Widget w));
+static void VTDestroy PROTO((Widget w));
+static Boolean VTSetValues PROTO((Widget cur, Widget request, Widget new, ArgList args, Cardinal *num_args));
+static void VTInitI18N PROTO((void));
 
 static WidgetClassRec xtermClassRec = {
   {
@@ -696,17 +701,88 @@ static WidgetClassRec xtermClassRec = {
 
 WidgetClass xtermWidgetClass = (WidgetClass)&xtermClassRec;
 
+static	Pixel	original_fg;
+static	Pixel	original_bg;
+
+/*
+ * The terminal's foreground and background colors are set via two mechanisms:
+ *	text (cur_foreground, cur_background values that are passed down to
+ *		XDrawImageString and XDrawString)
+ *	area (X11 graphics context used in XClearArea and XFillRectangle)
+ */
+static void SGR_Foreground(color)
+	int color;
+{
+	register TScreen *screen = &term->screen;
+	Pixel	fg;
+	static	int	initialized;
+
+	if (!initialized) {
+   		original_fg = screen->foreground;
+   		original_bg = term->core.background_pixel;
+		initialized = TRUE;
+	}
+	
+	if (color >= 0) {
+		fg = COLOR_VALUE(screen,color);
+		term->flags |= FG_COLOR;
+		term->cur_foreground = color;
+	} else {
+		fg = original_fg;
+		term->flags &= ~FG_COLOR;
+	}
+
+	XSetForeground(screen->display, screen->normalGC, fg);
+	XSetBackground(screen->display, screen->reverseGC, fg);
+	XSetForeground(screen->display, screen->normalboldGC, fg);
+	XSetBackground(screen->display, screen->reverseboldGC, fg);
+}
+
+static void SGR_Background(color)
+	int color;
+{
+	register TScreen *screen = &term->screen;
+	Pixel	bg;
+	static	int	initialized;
+
+	if (!initialized) {
+   		original_fg = screen->foreground;
+   		original_bg = term->core.background_pixel;
+		initialized = TRUE;
+	}
+	
+	if (color >= 0) {
+		bg = COLOR_VALUE(screen,color);
+		term->flags |= BG_COLOR;
+		term->cur_background = color;
+	} else {
+		bg = original_bg;
+		term->flags &= ~BG_COLOR;
+	}
+
+	XSetBackground(screen->display, screen->normalGC, bg);
+	XSetForeground(screen->display, screen->reverseGC, bg);
+	XSetBackground(screen->display, screen->normalboldGC, bg);
+	XSetForeground(screen->display, screen->reverseboldGC, bg);
+
+	/* update the screen's background (for XClearArea) */
+	XSetWindowBackground(screen->display, TextWindow(screen), bg);
+}
+
 static void VTparse()
 {
 	register TScreen *screen = &term->screen;
-	register int *parsestate = groundtable;
+	register int *parsestate;
 	register unsigned int c;
 	register unsigned char *cp;
 	register int row, col, top, bot, scstype;
-	extern int TrackMouse();
 
-	if(setjmp(vtjmpbuf))
-		parsestate = groundtable;
+	/* We longjmp back to this point in VTReset() */
+	(void)setjmp(vtjmpbuf);
+
+	parsestate = groundtable;
+	scstype = 0;
+
 	for( ; ; ) {
 	        switch (parsestate[c = doinput()]) {
 		 case CASE_PRINT:
@@ -721,7 +797,8 @@ static void VTparse()
 			}
 			if(screen->curss) {
 				dotext(screen, term->flags,
-				 screen->gsets[screen->curss], bptr, bptr + 1,
+				 screen->gsets[(int)(screen->curss)],
+				 	bptr, bptr + 1,
 					term->cur_foreground,
 					term->cur_background );
 				screen->curss = 0;
@@ -729,7 +806,8 @@ static void VTparse()
 			}
 			if(bptr < cp)
 				dotext(screen, term->flags,
-				 screen->gsets[screen->curgl], bptr, cp,
+				 screen->gsets[(int)(screen->curgl)],
+				 	bptr, cp,
 					term->cur_foreground,
 					term->cur_background );
 			bptr = cp;
@@ -1026,8 +1104,12 @@ static void VTparse()
 				switch (param[row]) {
 				 case DEFAULT:
 				 case 0:
+					if (term->flags & FG_COLOR)
+						SGR_Foreground(-1);
+					if (term->flags & BG_COLOR)
+						SGR_Background(-1);
 					term->flags &=
-						~(INVERSE|BOLD|UNDERLINE|FG_COLOR|BG_COLOR);
+						~(INVERSE|BOLD|UNDERLINE);
 					break;
 				 case 1:
 				 case 5:	/* Blink, really.	*/
@@ -1036,8 +1118,7 @@ static void VTparse()
 					    screen->colorBDMode) {
 					  if (!(term->flags & FG_COLOR) ||
 				              (term->cur_foreground==COLOR_UL)){
-					    term->flags |= FG_COLOR;
-					    term->cur_foreground = COLOR_BD;
+					    SGR_Foreground(COLOR_BD);
 					  }
 					  else   /* Set highlight bit */
                                             if (term->cur_foreground < 8)
@@ -1049,8 +1130,7 @@ static void VTparse()
 					if( screen->colorMode && 
 					    screen->colorULMode) {
                                           if (!(term->flags & FG_COLOR)) {
-                                            term->flags |= FG_COLOR;
-                                            term->cur_foreground = COLOR_UL;
+                                            SGR_Foreground(COLOR_UL);
 					  }
                                         }
 					break;
@@ -1066,11 +1146,11 @@ static void VTparse()
 				 case 36:
 				 case 37:
 					if( screen->colorMode ) {
-					  term->flags |= FG_COLOR;
-					  term->cur_foreground = param[row]-30;
-			                  /* Set highlight bit if bold on */
-					  if (term->flags & BOLD)
-       					    term->cur_foreground |= 8;
+					  SGR_Foreground(
+						(param[row] - 30)
+			                  	/* Set highlight bit if bold */
+					  	| ((term->flags & BOLD)
+						  ? 8 : 0));
 					}
 					break;
 				 case 40:
@@ -1082,13 +1162,15 @@ static void VTparse()
 				 case 46:
 				 case 47:
 					if( screen->colorMode ) {
-					  term->flags |= BG_COLOR;
-					  term->cur_background = param[row]-40;
+					  SGR_Background(param[row] - 40);
 					}
 					break;
 				 case 100:
 					if( screen->colorMode ) {
-					  term->flags &= ~(FG_COLOR|BG_COLOR);
+					  if (term->flags & FG_COLOR)
+					    SGR_Foreground(-1);
+					  if (term->flags & BG_COLOR)
+					    SGR_Background(-1);
 					}
 					break;
 				}
@@ -1189,9 +1271,9 @@ static void VTparse()
 			if(screen->cursor_state)
 				HideCursor();
 			for(row = screen->max_row ; row >= 0 ; row--) {
-				bzero(screen->buf[4 * row + 1],
+				bzero(SCRN_BUF_ATTRS(screen, row),
 				 col = screen->max_col + 1);
-				for(cp = (unsigned char *)screen->buf[4 * row] ; col > 0 ; col--)
+				for(cp = SCRN_BUF_CHARS(screen, row) ; col > 0 ; col--)
 					*cp++ = (unsigned char) 'E';
 			}
 			ScrnRefresh(screen, 0, 0, screen->max_row + 1,
@@ -1336,7 +1418,7 @@ static void VTparse()
 	}
 }
 
-static finput()
+static int finput()
 {
 	return(doinput());
 }
@@ -1351,6 +1433,7 @@ static char *v_bufend;		/* end of physical buffer */
 /* Write data to the pty as typed by the user, pasted with the mouse,
    or generated by us in response to a query ESC sequence. */
 
+int
 v_write(f, d, len)
     int f;
     char *d;
@@ -1456,12 +1539,13 @@ v_write(f, d, len)
 #ifndef AMOEBA
 	    riten = write(f, v_bufstr, v_bufptr - v_bufstr <= MAX_PTY_WRITE ?
 			  	       v_bufptr - v_bufstr : MAX_PTY_WRITE);
-	    if (riten < 0) {
+	    if (riten < 0)
 #else
 	    riten = v_bufptr - v_bufstr <= MAX_PTY_WRITE ?
 		    v_bufptr - v_bufstr : MAX_PTY_WRITE;
-	    if (cb_puts(term->screen.tty_inq, v_bufstr, riten) != 0) {
+	    if (cb_puts(term->screen.tty_inq, v_bufstr, riten) != 0)
 #endif /* AMOEBA */
+	    {
 #ifdef DEBUG
 		if (debug) perror("write");
 #endif
@@ -1509,6 +1593,7 @@ static fd_set select_mask;
 static fd_set write_mask;
 static int pty_read_bytes;
 
+static int
 in_put()
 {
     register TScreen *screen = &term->screen;
@@ -1517,10 +1602,11 @@ in_put()
 
     for( ; ; ) {
 #ifndef AMOEBA
-	if (FD_ISSET (screen->respond, &select_mask) && eventMode == NORMAL) {
+	if (FD_ISSET (screen->respond, &select_mask) && eventMode == NORMAL)
 #else
-	if ((bcnt = cb_full(screen->tty_outq)) > 0 && eventMode == NORMAL) {
+	if ((bcnt = cb_full(screen->tty_outq)) > 0 && eventMode == NORMAL)
 #endif
+	{
 #ifdef ALLOWLOGGING
 	    if (screen->logging)
 		FlushLog(screen);
@@ -1654,10 +1740,10 @@ dotext(screen, flags, charset, buf, ptr, fg, bg )
     register TScreen	*screen;
     unsigned	flags, fg, bg;
     char	charset;
-    char	*buf;		/* start of characters to process */
-    char	*ptr;		/* end */
+    Char	*buf;		/* start of characters to process */
+    Char	*ptr;		/* end */
 {
-	register char	*s;
+	register Char	*s;
 	register int	len;
 	register int	n;
 	register int	next_col;
@@ -1701,7 +1787,7 @@ dotext(screen, flags, charset, buf, ptr, fg, bg )
 		if (len < n)
 			n = len;
 		next_col = screen->cur_col + n;
-		WriteText(screen, ptr, n, flags, fg, bg );
+		WriteText(screen, (char *)ptr, n, flags, fg, bg );
 		/*
 		 * the call to WriteText updates screen->cur_col.
 		 * If screen->cur_col != next_col, we must have
@@ -1729,9 +1815,8 @@ WriteText(screen, str, len, flags, fg, bg )
 	register Pixel fg_pix, bg_pix;
 	GC	currentGC;
  
-	fg_pix = (fgs&FG_COLOR) ? screen->colors[fg] : screen->foreground;
-	bg_pix = (fgs&BG_COLOR) ? screen->colors[bg] :
-		term->core.background_pixel;
+	fg_pix = GET_FG(fgs,fg);
+	bg_pix = GET_BG(fgs,bg);
 
    if(screen->cur_row - screen->topline <= screen->max_row) {
 	/*
@@ -1799,9 +1884,10 @@ WriteText(screen, str, len, flags, fg, bg )
 /*
  * process ANSI modes set, reset
  */
+static void
 ansi_modes(termw, func)
     XtermWidget	termw;
-    void (*func)();
+    void (*func) PROTO((unsigned *p, int mask));
 {
 	register int	i;
 
@@ -1822,9 +1908,10 @@ ansi_modes(termw, func)
 /*
  * process DEC private modes set, reset
  */
+static void
 dpmodes(termw, func)
     XtermWidget	termw;
-    void (*func)();
+    void (*func) PROTO((unsigned *p, int mask));
 {
 	register TScreen	*screen	= &termw->screen;
 	register int	i, j;
@@ -1985,6 +2072,7 @@ dpmodes(termw, func)
 /*
  * process xterm private modes save
  */
+static void
 savemodes(termw)
     XtermWidget termw;
 {
@@ -2051,6 +2139,7 @@ savemodes(termw)
 /*
  * process xterm private modes restore
  */
+static void
 restoremodes(termw)
     XtermWidget termw;
 {
@@ -2199,6 +2288,7 @@ static void bitclr(p, mask)
 	*p &= ~mask;
 }
 
+void
 unparseseq(ap, fd)
     register ANSI *ap;
     int fd;
@@ -2232,6 +2322,7 @@ unparseseq(ap, fd)
 	}
 }
 
+static void
 unparseputn(n, fd)
 unsigned int	n;
 int fd;
@@ -2244,13 +2335,13 @@ int fd;
 	unparseputc((char) ('0' + (n%10)), fd);
 }
 
+void
 unparseputc(c, fd)
 char c;
 int fd;
 {
 	char	buf[2];
 	register i = 1;
-	extern XtermWidget term;
 
 #ifdef AMOEBA
 	if (ttypreprocess(c)) return;
@@ -2262,23 +2353,10 @@ int fd;
 	v_write(fd, buf, i);
 }
 
-unparsefputs (s, fd)
-    register char *s;
-    int fd;
-{
-    if (s) {
-	while (*s) unparseputc (*s++, fd);
-    }
-}
-
-static void SwitchBufs();
-
 static void
 ToAlternate(screen)
     register TScreen *screen;
 {
-	extern ScrnBuf Allocate();
-
 	if(screen->alternate)
 		return;
 	if(!screen->altbuf)
@@ -2331,19 +2409,22 @@ SwitchBufs(screen)
 }
 
 /* swap buffer line pointers between alt and regular screens */
-
+void
 SwitchBufPtrs(screen)
     register TScreen *screen;
 {
     register int rows = screen->max_row + 1;
-    char *save [4 * MAX_ROWS];
+    char *save [MAX_PTRS * MAX_ROWS];
 
-    memmove( (char *)save, (char *)screen->buf, 4 * sizeof(char *) * rows);
+    memmove( (char *)save, (char *)screen->buf,
+    	  MAX_PTRS * sizeof(char *) * rows);
     memmove( (char *)screen->buf, (char *)screen->altbuf, 
-	  4 * sizeof(char *) * rows);
-    memmove( (char *)screen->altbuf, (char *)save, 4 * sizeof(char *) * rows);
+	  MAX_PTRS * sizeof(char *) * rows);
+    memmove( (char *)screen->altbuf, (char *)save,
+    	  MAX_PTRS * sizeof(char *) * rows);
 }
 
+void
 VTRun()
 {
 	register TScreen *screen = &term->screen;
@@ -2467,7 +2548,6 @@ static void VTallocbuf ()
 {
     register TScreen *screen = &term->screen;
     int nrows = screen->max_row + 1;
-    extern ScrnBuf Allocate();
 
     /* allocate screen buffer now, if necessary. */
     if (screen->scrollWidget)
@@ -2475,7 +2555,7 @@ static void VTallocbuf ()
     screen->allbuf = Allocate (nrows, screen->max_col + 1,
      &screen->sbuf_address);
     if (screen->scrollWidget)
-      screen->buf = &screen->allbuf[4 * screen->savelines];
+      screen->buf = &screen->allbuf[MAX_PTRS * screen->savelines];
     else
       screen->buf = screen->allbuf;
     return;
@@ -2785,17 +2865,16 @@ static void VTRealize (w, valuemask, values)
 
 static void VTInitI18N()
 {
-    int		i,
-		ic_cnt = 0;
+    int		i;
     char       *p,
 	       *s,
 	       *ns,
 	       *end,
 		tmp[1024],
 	  	buf[32];
-    XIM		xim;
+    XIM		xim = 0;
     XIMStyles  *xim_styles;
-    XIMStyle	input_style;
+    XIMStyle	input_style = 0;
     Boolean	found;
 
     term->screen.xic = NULL;
@@ -2845,7 +2924,7 @@ static void VTInitI18N()
     for(s = tmp; s && !found;) {
 	while (*s && isspace(*s)) s++;
 	if (!*s) break;
-	if (ns = end = index(s, ','))
+	if ((ns = end = index(s, ',')) != 0)
 	    ns++;
 	else
 	    end = s + strlen(s);
@@ -2963,6 +3042,7 @@ static Boolean VTSetValues (cur, request, new, args, num_args)
 /*
  * Shows cursor at new cursor position in screen.
  */
+void
 ShowCursor()
 {
 	register TScreen *screen = &term->screen;
@@ -2975,9 +3055,12 @@ ShowCursor()
 
 	if (screen->cur_row - screen->topline > screen->max_row)
 		return;
-	c = screen->buf[y = 4 * (screen->cursor_row = screen->cur_row)]
-	 [x = screen->cursor_col = screen->cur_col];
-	flags = screen->buf[y + 1][x];
+
+	screen->cursor_row = screen->cur_row;
+	screen->cursor_col = screen->cur_col;
+
+	c     = SCRN_BUF_CHARS(screen, screen->cursor_row)[screen->cursor_col];
+	flags = SCRN_BUF_ATTRS(screen, screen->cursor_row)[screen->cursor_col];
 	if (c == 0)
 		c = ' ';
 
@@ -3081,6 +3164,7 @@ ShowCursor()
 /*
  * hide cursor at previous cursor position in screen.
  */
+void
 HideCursor()
 {
 	register TScreen *screen = &term->screen;
@@ -3092,15 +3176,14 @@ HideCursor()
 
 	if(screen->cursor_row - screen->topline > screen->max_row)
 		return;
-	c = screen->buf[y = 4 * screen->cursor_row][x = screen->cursor_col];
-	flags = screen->buf[y + 1][x];
-	fg = screen->buf[y + 2][x];
-	bg = screen->buf[y + 3][x];
 
-        fg_pix = (flags&FG_COLOR) ?
-                  screen->colors[fg] : screen->foreground;
-        bg_pix = (flags&BG_COLOR) ?
-                  screen->colors[bg] : term->core.background_pixel;
+	c     = SCRN_BUF_CHARS(screen, screen->cursor_row)[screen->cursor_col];
+	flags = SCRN_BUF_ATTRS(screen, screen->cursor_row)[screen->cursor_col];
+	fg    = SCRN_BUF_FORES(screen, screen->cursor_row)[screen->cursor_col];
+	bg    = SCRN_BUF_BACKS(screen, screen->cursor_row)[screen->cursor_col];
+
+        fg_pix = GET_FG(flags,fg);
+        bg_pix = GET_BG(flags,bg);
 
 	if (screen->cursor_row > screen->endHRow ||
 	    (screen->cursor_row == screen->endHRow &&
@@ -3152,6 +3235,7 @@ HideCursor()
 	screen->cursor_state = OFF;
 }
 
+void
 VTReset(full)
     Boolean full;
 {
@@ -3213,8 +3297,8 @@ VTReset(full)
  * 
  * and sets the indicated ranges to the indicated values.
  */
-
-int set_character_class (s)
+static int
+set_character_class (s)
     register char *s;
 {
     register int i;			/* iterator, index into s */
@@ -3225,7 +3309,6 @@ int set_character_class (s)
     int numbers;			/* count of numbers per range */
     int digits;				/* count of digits in a number */
     static char *errfmt = "%s:  %s in range string \"%s\" (position %d)\n";
-    extern char *ProgramName;
 
     if (!s || !s[0]) return -1;
 
@@ -3444,7 +3527,8 @@ void FindFontSelection (atom_name, justprobe)
 
 
 /* ARGSUSED */
-void HandleSetFont(w, event, params, param_count)
+static void
+HandleSetFont(w, event, params, param_count)
     Widget w;
     XEvent *event;		/* unused */
     String *params;		/* unused */
@@ -3521,8 +3605,8 @@ void SetVTFont (i, doresize, name1, name2)
     return;
 }
 
-
-int LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
+static int
+LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     TScreen *screen;
     char *nfontname, *bfontname;
     Bool doresize;
@@ -3533,6 +3617,7 @@ int LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     unsigned long mask;
     GC new_normalGC = NULL, new_normalboldGC = NULL;
     GC new_reverseGC = NULL, new_reverseboldGC = NULL;
+    Pixel new_normal, new_revers;
     char *tmpname = NULL;
 
     if (!nfontname) return 0;
@@ -3558,9 +3643,12 @@ int LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     mask = (GCFont | GCForeground | GCBackground | GCGraphicsExposures |
 	    GCFunction);
 
+    new_normal = GET_FG(term->flags, term->cur_foreground);
+    new_revers = GET_BG(term->flags, term->cur_background);
+
     xgcv.font = nfs->fid;
-    xgcv.foreground = screen->foreground;
-    xgcv.background = term->core.background_pixel;
+    xgcv.foreground = new_normal;
+    xgcv.background = new_revers;
     xgcv.graphics_exposures = TRUE;	/* default */
     xgcv.function = GXcopy;
 
@@ -3576,8 +3664,8 @@ int LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     }
 
     xgcv.font = nfs->fid;
-    xgcv.foreground = term->core.background_pixel;
-    xgcv.background = screen->foreground;
+    xgcv.foreground = new_revers;
+    xgcv.background = new_normal;
     new_reverseGC = XtGetGC((Widget)term, mask, &xgcv);
     if (!new_reverseGC) goto bad;
 
@@ -3670,6 +3758,7 @@ update_font_info (screen, doresize)
     set_vt_box (screen);
 }
 
+static void
 set_vt_box (screen)
 	TScreen *screen;
 {
@@ -3683,7 +3772,7 @@ set_vt_box (screen)
 	screen->box = VTbox;
 }
 
-
+void
 set_cursor_gcs (screen)
     TScreen *screen;
 {

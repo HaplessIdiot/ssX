@@ -1,5 +1,5 @@
 /* $XConsortium: vgaBitBlt.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.0 1994/05/04 15:03:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.1 1995/01/28 16:09:01 dawes Exp $ */
 /* GJA -- span move routines */
 
 #include "X.h"
@@ -12,6 +12,7 @@
 #include "pixmapstr.h" /* GJA -- for pWin */
 #include "ppc.h" /* GJA -- for pWin */
 
+#ifndef	PC98_EGC	/* not PC98_EGC */
 /* NOTE: It seems that there is no way to program the VGA to copy just
  * a part of a byte in the smarter modes. Therefore we copy the boundaries
  * plane by plane.
@@ -599,3 +600,168 @@ int alu;
       } 
   }
 }
+#else	/* PC98_EGC */
+void
+egc_fast_blt (pWin, alu, writeplanes, x0, y0, x1, y1, w, h)
+WindowPtr pWin;	
+const	int alu, writeplanes ;
+register int x0, x1 ;
+int	     y0, y1 ;
+register int w, h ;
+{
+register volatile unsigned char *src ;
+register volatile unsigned char *dst ;
+unsigned short *src_x ;
+unsigned short *dst_x ;
+int x_direction, y_interval ;
+int	src_off, dst_off ;
+register int k, i ;
+unsigned short ROP_value;
+
+src = (unsigned char *)SCREENADDRESS( pWin, 0, y0);
+dst = (unsigned char *)SCREENADDRESS( pWin, 0, y1);
+
+/* Set Map Mask */
+outw(EGC_PLANE, ~(writeplanes & VGA_ALLPLANES));
+switch(alu) {
+case GXnor:		/* ~(S|D) */
+    ROP_value = 0x2903;
+    break;
+case GXandInverted:	/* ~S&D */
+    ROP_value = 0x290c;
+    break;
+case GXand:		/* S&D */
+    ROP_value = 0x29c0;
+    break;
+case GXequiv:		/* ~S ^ D */
+    ROP_value = 0x29c3;
+    break;
+case GXxor:		/* S^D */
+    ROP_value = 0x293c;
+    break;
+case GXandReverse:	/* S&~D */
+    ROP_value = 0x2930;
+    break;
+case GXorReverse:	/* S|~D */
+    ROP_value = 0x29f3;
+    break;
+case GXnand:		/* ~(S&D) */
+    ROP_value = 0x293f;
+    break;
+case GXorInverted:	/* ~S|D */
+    ROP_value = 0x29cf;
+    break;
+case GXor:		/* S|D */
+    ROP_value = 0x29fa;
+    break;
+case GXcopyInverted:	/* ~S */
+    ROP_value = 0x290f;
+    break;
+case GXcopy:		/* S */
+default:
+    ROP_value = 0x29f0;
+}
+outw(EGC_MODE, ROP_value);
+if ( y1 > y0 ) {
+	y_interval = - BYTES_PER_LINE(pWin) * 8 ;
+	src += BYTES_PER_LINE(pWin) * ( h - 1 ) ;
+	dst += BYTES_PER_LINE(pWin) * ( h - 1 ) ;
+}
+else {
+	y_interval = BYTES_PER_LINE(pWin) * 8 ;
+}
+
+(int)src <<= 3 ;
+(int)dst <<= 3 ;
+
+if ( y1 > y0) {
+	x_direction = 0x1000 ;
+	src += x0 + w - 1 ;
+	dst += x1 + w - 1 ;
+} else if ( y1 < y0 ) {
+	x_direction = 0 ;
+	src += x0 ;
+	dst += x1 ;
+} else {
+	if ( x1 < x0 ) {
+		x_direction = 0 ;
+		src += x0 ;
+		dst += x1 ;
+	} else {
+		x_direction = 0x1000 ;
+		src += x0 + w - 1 ;
+		dst += x1 + w - 1 ;
+	}
+}
+	outw ( EGC_LENGTH , w - 1 ) ;
+
+for ( ; h-- ; ) {
+	if ( x_direction ) {
+		src_off = 15 - (int)src & 0xf ;
+		dst_off = 15 - (int)dst & 0xf ;
+	} else {
+		src_off = (int)src & 0xf ;
+		dst_off = (int)dst & 0xf ;
+	}
+#if defined(__NetBSD__)
+	(int)src_x   = ((unsigned int)src >> 4 ) << 1 ;
+	(int)dst_x   = ((unsigned int)dst >> 4 ) << 1 ;
+#else
+	(int)src_x   = ((int)src >> 4 ) << 1 ;
+	(int)dst_x   = ((int)dst >> 4 ) << 1 ;
+#endif
+	k = ( src_off + w + 15 ) >> 4 ;
+	if ( src_off < dst_off ) {
+		if ( ((src_off + w - 1 ) >> 4) < ((dst_off + w - 1) >> 4)) k++ ;
+	}
+	if ( src_off > dst_off ) {
+		if ( ((src_off + w - 1) >> 4 ) == ((dst_off + w - 1) >> 4) ) k++ ;
+		if ( x_direction ) dst_x ++ ;
+			else	   dst_x -- ;
+	}
+	outw ( EGC_ADD , x_direction | src_off | dst_off << 4 );
+	if ( x_direction ) {
+		wcopyl ( src_x, dst_x, k ) ;
+	} else {
+		wcopyr ( src_x, dst_x, k ) ;
+	}
+src += y_interval ;
+dst += y_interval ;
+}
+outw ( EGC_ADD, 0 ) ;
+outw ( EGC_LENGTH , 0xf );
+return;
+}
+
+void
+vgaBitBlt( pWin,alu, readplanes, writeplanes, x0, y0, x1, y1, w, h )
+WindowPtr pWin; /* GJA */
+int alu;
+int readplanes; /* unused */
+int writeplanes; /* planes */
+int x0, y0, x1, y1, w, h;
+{
+	extern int xf86VTSema;
+
+	if ( !xf86VTSema ) {
+		offBitBlt( pWin, alu, readplanes, writeplanes,
+			   x0, y0, x1, y1, w, h );
+		return;
+	}
+
+switch ( alu ) {
+	case GXclear:		/* 0x0 Zero 0 */
+	case GXinvert:		/* 0xa NOT dst */
+	case GXset:		/* 0xf 1 */
+		vgaFillSolid( pWin, VGA_ALLPLANES, alu, writeplanes, x1, y1, w, h ) ;
+			/* x1, y1, GJA */
+	case GXnoop:		/* 0x5 dst */
+		return ;
+	default:
+		break ;
+}
+
+egc_fast_blt ( pWin, alu, writeplanes, x0, y0, x1, y1, w, h);
+return;
+}
+#endif

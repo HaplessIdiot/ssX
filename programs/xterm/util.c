@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c,v 1.31 91/06/20 18:34:47 gildea Exp $
- *	$XFree86$
+ *	$XFree86: xc/programs/xterm/util.c,v 3.1 1995/09/23 07:09:30 dawes Exp $
  */
 
 /*
@@ -35,12 +35,20 @@
 
 #include <stdio.h>
 
-static void horizontal_copy_area();
-static void vertical_copy_area();
+#include "xterm.h"
+
+extern Bool waiting_for_initial_map;
+
+static int handle_translated_exposure PROTO((TScreen *screen, int rect_x, int rect_y, unsigned int rect_width, unsigned int rect_height));
+static void CopyWait PROTO((TScreen *screen));
+static void copy_area PROTO((TScreen *screen, int src_x, int src_y, unsigned int width, unsigned int height, int dest_x, int dest_y));
+static void horizontal_copy_area PROTO((TScreen *screen, int firstchar, int nchars, int amount));
+static void vertical_copy_area PROTO((TScreen *screen, int firstline, int nlines, int amount));
 
 /*
  * These routines are used for the jump scroll feature
  */
+void
 FlushScroll(screen)
 register TScreen *screen;
 {
@@ -122,6 +130,7 @@ register TScreen *screen;
 	}
 }
 
+int
 AddToRefresh(screen)
 register TScreen *screen;
 {
@@ -156,6 +165,7 @@ register TScreen *screen;
  * All done within the scrolling region, of course. 
  * requires: amount > 0
  */
+void
 Scroll(screen, amount)
 register TScreen *screen;
 register int amount;
@@ -259,6 +269,7 @@ register int amount;
  * All done within the scrolling region, of course.
  * Requires: amount > 0
  */
+void
 RevScroll(screen, amount)
 register TScreen *screen;
 register int amount;
@@ -327,6 +338,7 @@ register int amount;
  * inserts n blank lines at the cursor's position.  Lines above the
  * bottom margin are lost.
  */
+void
 InsertLine (screen, n)
 register TScreen *screen;
 register int n;
@@ -388,6 +400,7 @@ register int n;
  * If cursor not in scrolling region, returns.  Else, deletes n lines
  * at the cursor's position, lines added at bottom margin are blank.
  */
+void
 DeleteLine(screen, n)
 register TScreen *screen;
 register int n;
@@ -468,6 +481,7 @@ register int n;
 /*
  * Insert n blanks at the cursor's position, no wraparound
  */
+void
 InsertChar (screen, n)
     register TScreen *screen;
     register int n;
@@ -511,6 +525,7 @@ InsertChar (screen, n)
 /*
  * Deletes n chars at the cursor's position, no wraparound.
  */
+void
 DeleteChar (screen, n)
     register TScreen *screen;
     register int	n;
@@ -550,6 +565,7 @@ DeleteChar (screen, n)
 /*
  * Clear from cursor position to beginning of display, inclusive.
  */
+void
 ClearAbove (screen)
 register TScreen *screen;
 {
@@ -577,6 +593,7 @@ register TScreen *screen;
 /*
  * Clear from cursor position to end of display, inclusive.
  */
+void
 ClearBelow (screen)
 register TScreen *screen;
 {
@@ -599,9 +616,14 @@ register TScreen *screen;
 /* 
  * Clear last part of cursor's line, inclusive.
  */
+void
 ClearRight (screen)
 register TScreen *screen;
 {
+	int	len = (screen->max_col - screen->cur_col + 1);
+	ScrnBuf	buf = screen->buf;
+	Char *attrs = BUF_ATTRS(buf, screen->cur_row) + screen->cur_col;
+
 	if(screen->cursor_state)
 		HideCursor();
 	screen->do_wrap = 0;
@@ -617,26 +639,28 @@ register TScreen *screen;
 		 FontHeight(screen));
 	    }
 	}
-	bzero(screen->buf [4 * screen->cur_row] + screen->cur_col,
-	       (screen->max_col - screen->cur_col + 1));
-	bzero(screen->buf [4 * screen->cur_row + 1] + screen->cur_col,
-	       (screen->max_col - screen->cur_col + 1));
-	bzero(screen->buf [4 * screen->cur_row + 2] + screen->cur_col,
-	       (screen->max_col - screen->cur_col + 1));
-	bzero(screen->buf [4 * screen->cur_row + 3] + screen->cur_col,
-	       (screen->max_col - screen->cur_col + 1));
+	bzero(BUF_CHARS(buf, screen->cur_row) + screen->cur_col, len);
+	memset(attrs, term->flags & (FG_COLOR|BG_COLOR), len);
+	memset(BUF_FORES(buf, screen->cur_row) + screen->cur_col,
+		(term->flags & FG_COLOR)
+		? term->cur_foreground : 0, len);
+	memset(BUF_BACKS(buf, screen->cur_row) + screen->cur_col,
+		(term->flags & BG_COLOR)
+		? term->cur_background : 0, len);
+
 	/* with the right part cleared, we can't be wrapping */
-	screen->buf [4 * screen->cur_row + 1] [0] &= ~LINEWRAPPED;
+	attrs[0] &= ~LINEWRAPPED;
 }
 
 /*
  * Clear first part of cursor's line, inclusive.
  */
+void
 ClearLeft (screen)
     register TScreen *screen;
 {
-        int i;
-	Char *cp;
+	int len = screen->cur_col + 1;
+	int flags = CHARDRAWN | (term->flags & (FG_COLOR|BG_COLOR));
 
 	if(screen->cursor_state)
 		HideCursor();
@@ -649,27 +673,24 @@ ClearLeft (screen)
 		     screen->reverseGC,
 		     screen->border + screen->scrollbar,
 		      CursorY (screen, screen->cur_row),
-		     (screen->cur_col + 1) * FontWidth(screen),
+		     len * FontWidth(screen),
 		     FontHeight(screen));
 	    }
 	}
 	
-	for ( i=0, cp=screen->buf[4 * screen->cur_row];
-	      i < screen->cur_col + 1;
-	      i++, cp++)
-	    *cp = ' ';
-	for ( i=0, cp=screen->buf[4 * screen->cur_row + 1];
-	      i < screen->cur_col + 1;
-	      i++, cp++)
-	    *cp = CHARDRAWN;
-	bzero (screen->buf [4 * screen->cur_row + 2], (screen->cur_col + 1));
-	bzero (screen->buf [4 * screen->cur_row + 3], (screen->cur_col + 1));
+	memset(SCRN_BUF_CHARS(screen, screen->cur_row), ' ',   len);
+	memset(SCRN_BUF_ATTRS(screen, screen->cur_row), flags, len);
+	memset(SCRN_BUF_FORES(screen, screen->cur_row),
+		flags & FG_COLOR ? term->cur_foreground : 0, len);
+	memset(SCRN_BUF_BACKS(screen, screen->cur_row),
+		flags & BG_COLOR ? term->cur_background : 0, len);
 
 }
 
 /* 
  * Erase the cursor's line.
  */
+void
 ClearLine(screen)
 register TScreen *screen;
 {
@@ -687,12 +708,13 @@ register TScreen *screen;
 		     Width(screen), FontHeight(screen));
 	    }
 	}
-	bzero (screen->buf [4 * screen->cur_row], (screen->max_col + 1));
-	bzero (screen->buf [4 * screen->cur_row + 1], (screen->max_col + 1));
-	bzero (screen->buf [4 * screen->cur_row + 2], (screen->max_col + 1));
-	bzero (screen->buf [4 * screen->cur_row + 3], (screen->max_col + 1));
+	bzero (SCRN_BUF_CHARS(screen, screen->cur_row), (screen->max_col + 1));
+	bzero (SCRN_BUF_ATTRS(screen, screen->cur_row), (screen->max_col + 1));
+	bzero (SCRN_BUF_FORES(screen, screen->cur_row), (screen->max_col + 1));
+	bzero (SCRN_BUF_BACKS(screen, screen->cur_row), (screen->max_col + 1));
 }
 
+void
 ClearScreen(screen)
 register TScreen *screen;
 {
@@ -716,6 +738,7 @@ register TScreen *screen;
 	ClearBufRows (screen, 0, screen->max_row);
 }
 
+static void
 CopyWait(screen)
 register TScreen *screen;
 {
@@ -825,6 +848,7 @@ vertical_copy_area(screen, firstline, nlines, amount)
 /*
  * use when scrolling the entire screen
  */
+void
 scrolling_copy_area(screen, firstline, nlines, amount)
     TScreen *screen;
     int firstline;		/* line on screen to start copying at */
@@ -841,6 +865,7 @@ scrolling_copy_area(screen, firstline, nlines, amount)
  * Handler for Expose events on the VT widget.
  * Returns 1 iff the area where the cursor was got refreshed.
  */
+int
 HandleExposure (screen, event)
     register TScreen *screen;
     register XEvent *event;
@@ -886,13 +911,13 @@ HandleExposure (screen, event)
  * have been translated to allow for any CopyArea in progress.
  * The rectangle passed in is pixel coordinates.
  */
+static int
 handle_translated_exposure (screen, rect_x, rect_y, rect_width, rect_height)
     register TScreen *screen;
     register int rect_x, rect_y;
     register unsigned int rect_width, rect_height;
 {
 	register int toprow, leftcol, nrows, ncols;
-	extern Bool waiting_for_initial_map;
 
 	toprow = (rect_y - screen->border) / FontHeight(screen);
 	if(toprow < 0)
@@ -934,42 +959,34 @@ handle_translated_exposure (screen, rect_x, rect_y, rect_width, rect_height)
 /***====================================================================***/
 
 void
-GetColors(term,pColors)
-	XtermWidget term;
+GetColors(tw,pColors)
+	XtermWidget tw;
 	ScrnColors *pColors;
 {
-	register TScreen *screen = &term->screen;
-	GC tmpGC;
-	Window tek = TWindow(screen);
-	unsigned long tmp;
-
+	register TScreen *screen = &tw->screen;
 
 	pColors->which=	0;
 	SET_COLOR_VALUE(pColors,TEXT_FG,	screen->foreground);
-	SET_COLOR_VALUE(pColors,TEXT_BG,	term->core.background_pixel);
+	SET_COLOR_VALUE(pColors,TEXT_BG,	tw->core.background_pixel);
 	SET_COLOR_VALUE(pColors,TEXT_CURSOR,	screen->cursorcolor);
 	SET_COLOR_VALUE(pColors,MOUSE_FG,	screen->mousecolor);
 	SET_COLOR_VALUE(pColors,MOUSE_BG,	screen->mousecolorback);
-
 
 	SET_COLOR_VALUE(pColors,TEK_FG,		screen->Tforeground);
 	SET_COLOR_VALUE(pColors,TEK_BG,		screen->Tbackground);
 }
 
-
-ChangeColors(term,pNew)
-	XtermWidget term;
+void
+ChangeColors(tw,pNew)
+	XtermWidget tw;
 	ScrnColors *pNew;
 {
-	register TScreen *screen = &term->screen;
-	GC tmpGC;
+	register TScreen *screen = &tw->screen;
 	Window tek = TWindow(screen);
-	unsigned long tmp;
 	Bool	newCursor=	TRUE;
 
-
 	if (COLOR_DEFINED(pNew,TEXT_BG)) {
-	    term->core.background_pixel=	COLOR_VALUE(pNew,TEXT_BG);
+	    tw->core.background_pixel=	COLOR_VALUE(pNew,TEXT_BG);
 	}
 
 	if (COLOR_DEFINED(pNew,TEXT_CURSOR)) {
@@ -992,13 +1009,13 @@ ChangeColors(term,pNew)
 
 	if (COLOR_DEFINED(pNew,TEXT_BG)) {
 	    Pixel	bg=	COLOR_VALUE(pNew,TEXT_BG);
-	    term->core.background_pixel=	bg;
+	    tw->core.background_pixel=	bg;
 	    XSetBackground(screen->display,screen->normalGC,bg);
 	    XSetForeground(screen->display,screen->reverseGC,bg);
 	    XSetBackground(screen->display,screen->normalboldGC,bg);
 	    XSetForeground(screen->display,screen->reverseboldGC,bg);
 	    XSetWindowBackground(screen->display, TextWindow(screen),
-						  term->core.background_pixel);
+						  tw->core.background_pixel);
 	}
 
 	if (COLOR_DEFINED(pNew,MOUSE_FG)||(COLOR_DEFINED(pNew,MOUSE_BG))) {
@@ -1026,13 +1043,13 @@ ChangeColors(term,pNew)
 	 screen->max_col + 1, False);
 	if(screen->Tshow) {
 	    XClearWindow(screen->display, tek);
-	    TekExpose((XExposeEvent *) NULL);
+	    TekExpose((Widget)NULL, (XEvent *)NULL, (Region)NULL);
 	}
 }
 
 /***====================================================================***/
 
-
+void
 ReverseVideo (termw)
 	XtermWidget termw;
 {
@@ -1085,11 +1102,11 @@ ReverseVideo (termw)
 	    XClearWindow(screen->display, tek);
 	    TekExpose((Widget)NULL, (XEvent *)NULL, (Region)NULL);
 	}
-ReverseOldColors();
+	ReverseOldColors();
 	update_reversevideo();
 }
 
-
+void
 recolor_cursor (cursor, fg, bg)
     Cursor cursor;			/* X cursor ID to set */
     unsigned long fg, bg;		/* pixel indexes to look up */
@@ -1105,4 +1122,3 @@ recolor_cursor (cursor, fg, bg)
     XRecolorCursor (dpy, cursor, colordefs, colordefs+1);
     return;
 }
-

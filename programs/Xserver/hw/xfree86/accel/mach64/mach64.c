@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.33 1996/01/06 05:23:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.34 1996/01/08 08:55:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -581,7 +581,14 @@ GetATIPCIInformation()
 		info.IOBase = pcrp->_base1 & (pcrp->_base1 & 0x1 ?
 					      0xfffffffc : 0xfffffff0);
 		/* If the Block I/O bit isn't set in userconfig, set it */
-		if (pcrp->_user_config_0 & 0x04 != 0x04) {
+#ifdef DEBUG
+		ErrorF("PCI userconfig0 = 0x%02x\n", pcrp->_user_config_0);
+#endif
+		if ((pcrp->_user_config_0 & 0x04) != 0x04) {
+#ifdef DEBUG
+		    ErrorF("Setting bit 0x04 in PCI userconfig for card %d\n",
+			   pcrp->_cardnum);
+#endif
 		    xf86writepci(pcrp->_cardnum, PCI_REG_USERCONFIG,
 				 0x04, 0x04);
 		}

@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.24 1996/01/05 13:23:09 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.25 1996/01/06 05:25:55 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -424,16 +424,6 @@ int	Ptyfd;
 #endif
 #endif
 
-#ifdef SIGNALRETURNSINT
-#define SIGNAL_T int
-#define SIGNAL_RETURN return 0
-#else
-#define SIGNAL_T void
-#define SIGNAL_RETURN return
-#endif
-
-SIGNAL_T Exit();
-
 #ifndef X_NOT_POSIX
 #include <unistd.h>
 #else
@@ -466,12 +456,25 @@ extern char *ttyname();
 extern char *ptsname();
 #endif
 
-extern char *strindex ();
-extern void HandlePopupMenu();
+#include "xterm.h"
 
 int switchfb[] = {0, 2, 1, 3};
 
-static SIGNAL_T reapchild ();
+extern int tgetent PROTO((char *ptr, char *name));
+
+static char *base_name PROTO((char *name));
+static int pty_search PROTO((int *pty));
+static int remove_termcap_entry PROTO((char *buf, char *str));
+static int spawn PROTO((void));
+static void DeleteWindow PROTO_XT_ACTIONS_ARGS;
+static void Help PROTO((void));
+static void HsSysError PROTO((int pf, int error));
+static void KeyboardMapping PROTO_XT_ACTIONS_ARGS;
+static void Syntax PROTO((char *badOption));
+static void get_terminal PROTO((void));
+static void resize PROTO((TScreen *s, char *n, char *oldtc, char *newtc));
+
+static SIGNAL_T reapchild PROTO((int n));
 
 static Bool added_utmp_entry = False;
 
@@ -560,7 +563,6 @@ static struct jtchars d_jtc = {
 #define CSTART ('Q'&037)
 #endif
 
-static int parse_tty_modes ();
 /*
  * SYSV has the termio.c_cc[V] and ltchars; BSD has tchars and ltchars;
  * SVR4 has only termio.c_cc, but it includes everything from ltchars.
@@ -568,7 +570,7 @@ static int parse_tty_modes ();
 static int override_tty_modes = 0;
 struct _xttymodes {
     char *name;
-    int len;
+    Size_t len;
     int set;
     char value;
 } ttymodelist[] = {
@@ -607,6 +609,8 @@ struct _xttymodes {
 { NULL, 0, 0, '\0' },			/* end of data */
 };
 
+static int parse_tty_modes PROTO((char *s, struct _xttymodes *modelist));
+
 #ifdef USE_SYSV_UTMP
 #if defined(X_NOT_STDC_ENV) || (defined(AIXV3) && OSMAJORVERSION < 4)
 extern struct utmp *getutent();
@@ -628,7 +632,6 @@ extern void setpwent();
 extern void endpwent();
 #endif
 
-extern struct passwd *fgetpwent();
 #else	/* not USE_SYSV_UTMP */
 static char etc_utmp[] = UTMP_FILENAME;
 #endif	/* USE_SYSV_UTMP */
@@ -656,6 +659,11 @@ static char bin_login[] = LOGIN_FILENAME;
 static int inhibit;
 static char passedPty[2];	/* name if pty if slave */
 
+#ifndef AMOEBA
+static int get_pty PROTO((int *pty));
+static SIGNAL_T hungtty PROTO((int i));
+#endif
+
 #if defined(TIOCCONS) || defined(SRIOCSREDIR)
 static int Console;
 #include <X11/Xmu/SysUtil.h>	/* XmuGetHostname */
@@ -663,6 +671,7 @@ static int Console;
 #define MIT_CONSOLE "MIT_CONSOLE_"
 static char mit_console_name[255 + MIT_CONSOLE_LEN + 1] = MIT_CONSOLE;
 static Atom mit_console;
+static Boolean ConvertConsoleSelection PROTO_XT_CVT_SELECT_ARGS;
 #endif	/* TIOCCONS */
 
 #ifndef USE_SYSV_UTMP
@@ -984,14 +993,11 @@ XtAppContext app_con;
 Widget toplevel;
 Bool waiting_for_initial_map;
 
-extern void do_hangup();
-extern void xt_error();
-
 /*
  * DeleteWindow(): Action proc to implement ICCCM delete_window.
  */
 /* ARGSUSED */
-void
+static void
 DeleteWindow(w, event, params, num_params)
     Widget w;
     XEvent *event;
@@ -1002,16 +1008,16 @@ DeleteWindow(w, event, params, num_params)
     if (term->screen.Tshow)
       hide_vt_window();
     else
-      do_hangup(w);
+      do_hangup(w, (XtPointer)0, (XtPointer)0);
   else
     if (term->screen.Vshow)
       hide_tek_window();
     else
-      do_hangup(w);
+      do_hangup(w, (XtPointer)0, (XtPointer)0);
 }
 
 /* ARGSUSED */
-void
+static void
 KeyboardMapping(w, event, params, num_params)
     Widget w;
     XEvent *event;
@@ -1026,8 +1032,8 @@ KeyboardMapping(w, event, params, num_params)
 }
 
 XtActionsRec actionProcs[] = {
-    "DeleteWindow", DeleteWindow,
-    "KeyboardMapping", KeyboardMapping,
+    { "DeleteWindow", DeleteWindow },
+    { "KeyboardMapping", KeyboardMapping },
 };
 
 Atom wm_delete_window;
@@ -1035,14 +1041,13 @@ extern fd_set Select_mask;
 extern fd_set X_mask;
 extern fd_set pty_mask;
 
+int
 main (argc, argv)
 int argc;
 char **argv;
 {
 	register TScreen *screen;
 	int mode;
-	char *base_name();
-	int xerror(), xioerror();
 
 	XtSetLanguageProc (NULL, NULL, NULL);
 
@@ -1583,22 +1588,22 @@ char **argv;
 #ifndef AMOEBA
 #ifdef MINIX
 	if ((mode = fcntl(pty, F_GETFD, 0)) == -1)
-		Error();
+		Error(1);
 	mode |= FD_ASYNCHIO;
 	if (fcntl(pty, F_SETFD, mode) == -1)
-		Error();
+		Error(1);
 	nbio_register(pty);
 #else /* !MINIX */
 #ifdef USE_SYSV_TERMIO
 	if (0 > (mode = fcntl(screen->respond, F_GETFL, 0)))
-		Error();
+		Error(1);
 #ifdef O_NDELAY
 	mode |= O_NDELAY;
 #else
 	mode |= O_NONBLOCK;
 #endif /* O_NDELAY */
 	if (fcntl(screen->respond, F_SETFL, mode))
-		Error();
+		Error(1);
 #else	/* USE_SYSV_TERMIO */
 	mode = 1;
 	if (ioctl (screen->respond, FIONBIO, (char *)&mode) == -1) SysError (ERROR_FIONBIO);
@@ -1630,7 +1635,8 @@ char **argv;
 	}
 }
 
-char *base_name(name)
+static char *
+base_name(name)
 char *name;
 {
 	register char *cp;
@@ -1647,6 +1653,7 @@ char *name;
  * has problems, we can re-enter this function and get another one.
  */
 
+static int
 get_pty (pty)
     int *pty;
 {
@@ -1761,7 +1768,8 @@ get_pty (pty)
  * a functional interface for allocating a pty.
  * Returns 0 if found a pty, 1 if fails.
  */
-int pty_search(pty)
+static int
+pty_search(pty)
     int *pty;
 {
     static int devindex, letter = 0;
@@ -1816,6 +1824,7 @@ int pty_search(pty)
 }
 #endif /* AMOEBA */
 
+static void
 get_terminal ()
 /* 
  * sets up X and initializes the terminal structure except for term.buf.fildes.
@@ -1871,7 +1880,7 @@ static char *vtterm[] = {
 };
 
 /* ARGSUSED */
-SIGNAL_T hungtty(i)
+static SIGNAL_T hungtty(i)
 	int i;
 {
 	longjmp(env, 1);
@@ -1914,7 +1923,7 @@ typedef struct {
  * user can see it.
  */
 
-void
+static void
 HsSysError(pf, error)
 int pf;
 int error;
@@ -1963,6 +1972,9 @@ void first_map_occurred ()
 
 
 #ifndef AMOEBA
+extern char **environ;
+
+static int
 spawn ()
 /* 
  *  Inits pty and tty and forks a login process.
@@ -1970,7 +1982,6 @@ spawn ()
  *  If slave, the pty named in passedPty is already open for use
  */
 {
-	extern char *SysErrorMsg();
 	register TScreen *screen = &term->screen;
 #ifdef USE_HANDSHAKE
 	handshake_t handshake;
@@ -1978,21 +1989,18 @@ spawn ()
 	int fds[2];
 #endif
 	int tty = -1;
-	int discipline;
 	int done;
 #ifdef USE_SYSV_TERMIO
 	struct termio tio;
-	struct termio dummy_tio;
 #ifdef TIOCLSET
 	unsigned lmode;
 #endif	/* TIOCLSET */
 #ifdef TIOCSLTC
 	struct ltchars ltc;
 #endif	/* TIOCSLTC */
-	int one = 1;
-	int zero = 0;
-	int status;
 #else	/* else not USE_SYSV_TERMIO */
+	int ldisc = 0;
+	int discipline;
 	unsigned lmode;
 	struct tchars tc;
 	struct ltchars ltc;
@@ -2007,15 +2015,10 @@ spawn ()
 	char newtc [1024];
 	char *ptr, *shname, *shname_minus;
 	int i, no_dev_tty = FALSE;
-#ifdef USE_SYSV_TERMIO
-	char *dev_tty_name = (char *) 0;
-	int fd;			/* for /etc/wtmp */
-#endif	/* USE_SYSV_TERMIO */
 	char **envnew;		/* new environment */
 	int envsize;		/* elements in new environment */
 	char buf[64];
 	char *TermName = NULL;
-	int ldisc = 0;
 #if defined(sun) && !defined(SVR4)
 #ifdef TIOCSSIZE
 	struct ttysize ts;
@@ -2061,7 +2064,7 @@ spawn ()
 		setgid (screen->gid);
 		setuid (screen->uid);
 	} else {
-		Bool tty_got_hung = False;
+		Bool tty_got_hung;
 
  		/*
  		 * Sometimes /dev/tty hangs on open (as in the case of a pty
@@ -2073,6 +2076,7 @@ spawn ()
  		if (! setjmp(env)) {
  			tty = open ("/dev/tty", O_RDWR, 0);
  			alarm(0);
+			tty_got_hung = False;
  		} else {
 			tty_got_hung = True;
  			tty = -1;
@@ -2086,6 +2090,7 @@ spawn ()
 		 * no controlling terminal, but some systems (e.g. SunOS 4.0)
 		 * seem to return EIO.  Solaris 2.3 is said to return EINVAL.
 		 */
+		no_dev_tty = FALSE;
  		if (tty < 0) {
 			if (tty_got_hung || errno == ENXIO || errno == EIO ||
 			    errno == EINVAL || errno == ENOTTY) {
@@ -2278,7 +2283,6 @@ spawn ()
 		/*
 		 * now in child process
 		 */
-		extern char **environ;
 #if defined(_POSIX_SOURCE) || defined(SVR4) || defined(__convex__)
 		int pgrp = setsid();
 #else
@@ -2438,7 +2442,7 @@ spawn ()
 		/* use the same tty name that everyone else will use
 		** (from ttyname)
 		*/
-		if (ptr = ttyname(tty))
+		if ((ptr = ttyname(tty)) != 0)
 		{
 			/* it may be bigger */
 			ttydev = realloc (ttydev, (unsigned) (strlen(ptr) + 1));
@@ -3124,7 +3128,7 @@ spawn ()
 		 *(ptr = pw->pw_shell) == 0))
 #endif	/* UTMP */
 			ptr = "/bin/sh";
-		if(shname = strrchr(ptr, '/'))
+		if ((shname = strrchr(ptr, '/')) != 0)
 			shname++;
 		else
 			shname = ptr;
@@ -3373,7 +3377,7 @@ WakeupMainThread()
 /*
  * Spawn off tty threads and fork the login process.
  */
-spawn()
+static int spawn()
 {
     register TScreen *screen = &term->screen;
     char *TermName = NULL;
@@ -3603,9 +3607,8 @@ spawn()
     signal(SIGQUIT, SIG_IGN);
     signal(SIGTERM, SIG_IGN);
     signal(SIGPIPE, Exit);
+    return 0;
 }
-
-extern char *SysErrorMsg();
 
 /*
  * X watch-dog thread. This thread unblocks the main
@@ -3770,6 +3773,7 @@ Exit(n)
 }
 
 /* ARGSUSED */
+static void
 resize(screen, TermName, oldtc, newtc)
 TScreen *screen;
 char *TermName;
@@ -3777,7 +3781,7 @@ register char *oldtc, *newtc;
 {
 #ifndef USE_SYSV_ENVVARS
 	register char *ptr1, *ptr2;
-	register int i;
+	register Size_t i;
 	register int li_first = 0;
 	register char *temp;
 
@@ -3865,11 +3869,12 @@ static SIGNAL_T reapchild (n)
     SIGNAL_RETURN;
 }
 
+#if 0	/* this isn't used, but could be useful in debugging */
 /* VARARGS1 */
+void
 consolepr(fmt,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 char *fmt;
 {
-	extern char *SysErrorMsg();
 	int oerrno;
 	int f;
  	char buf[ BUFSIZ ];
@@ -3894,8 +3899,9 @@ char *fmt;
 	}
 #endif	/* TIOCNOTTY */
 }
+#endif
 
-
+static int
 remove_termcap_entry (buf, str)
     char *buf;
     char *str;

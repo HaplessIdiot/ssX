@@ -2,7 +2,7 @@
  * O/S-dependent (mis)feature macro definitions
  *
  * $XConsortium: Xosdefs.h /main/15 1995/12/05 16:45:01 mor $
- * $XFree86: xc/include/Xosdefs.h,v 3.8 1995/03/11 14:04:30 dawes Exp $
+ * $XFree86: xc/include/Xosdefs.h,v 3.9 1996/01/05 13:09:49 dawes Exp $
  *
 Copyright (c) 1991  X Consortium
 
@@ -82,12 +82,14 @@ in this Software without prior written authorization from the X Consortium.
 
 #ifdef i386
 #ifdef SYSV
+#if !(defined(ISC) && defined(_POSIX_SOURCE))
 #ifndef SCO
 #ifndef _SCO_DS /* SCO 5.0 has SVR4 header files */
 #define X_NOT_POSIX
 #endif
 #define X_NOT_STDC_ENV
 #endif
+#endif /* !(defined(ISC) && defined(_POSIX_SOURCE)) */
 #endif
 #endif
 

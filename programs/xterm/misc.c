@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/104 1995/12/08 17:18:13 kaleb $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.3 1995/09/17 06:33:18 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.4 1996/01/05 13:23:11 dawes Exp $
  */
 
 /*
@@ -48,10 +48,14 @@
 #include "error.h"
 #include "menu.h"
 
+#include "xterm.h"
+
 #ifdef AMOEBA
 #include "amoeba.h"
 #include "module/proc.h"
 #endif
+
+extern char **environ;		/* used in 'Setenv()' */
 
 extern jmp_buf Tekend;
 extern jmp_buf VTend;
@@ -63,14 +67,24 @@ extern char *malloc();
 extern char *getenv();
 #endif
 
-static void DoSpecialEnterNotify();
-static void DoSpecialLeaveNotify();
+extern XtermWidget term;
+extern Widget toplevel;		/* used in 'ChangeGroup()' */
 
+static Boolean AllocateColor PROTO((XtermWidget pTerm, ScrnColors *pNew, int ndx, char *name));
+static Boolean ChangeColorsRequest PROTO((XtermWidget pTerm, int start, char *names));
+static Boolean GetOldColors PROTO(( XtermWidget pTerm));
+static Boolean UpdateOldColors PROTO((XtermWidget pTerm, ScrnColors *pNew));
+static void ChangeGroup PROTO((String attribute, XtArgVal value));
+static void DoSpecialEnterNotify PROTO((XEnterWindowEvent *ev));
+static void DoSpecialLeaveNotify PROTO((XEnterWindowEvent *ev));
+static void selectwindow PROTO((TScreen *screen, int flag));
+static void unselectwindow PROTO((TScreen *screen, int flag));
+static void withdraw_window PROTO((Display *dpy, Window w, int scr));
 
+void
 xevents()
 {
 	XEvent event;
-	XtInputMask input_mask;
 	register TScreen *screen = &term->screen;
 
 	if(screen->scroll_amt)
@@ -112,7 +126,7 @@ xevents()
 
 
 Cursor make_colored_cursor (cursorindex, fg, bg)
-	int cursorindex;			/* index into font */
+	unsigned cursorindex;			/* index into font */
 	unsigned long fg, bg;			/* pixel value */
 {
 	register TScreen *screen = &term->screen;
@@ -206,10 +220,11 @@ static void DoSpecialEnterNotify (ev)
 }
 
 /*ARGSUSED*/
-void HandleEnterWindow(w, eventdata, event)
+void HandleEnterWindow(w, eventdata, event, cont)
 Widget w;
-register XEnterWindowEvent *event;
-caddr_t eventdata;
+XtPointer eventdata;
+XEvent *event;
+Boolean *cont;
 {
     /* NOP since we handled it above */
 }
@@ -232,21 +247,24 @@ static void DoSpecialLeaveNotify (ev)
 
 
 /*ARGSUSED*/
-void HandleLeaveWindow(w, eventdata, event)
+void HandleLeaveWindow(w, eventdata, event, cont)
 Widget w;
-register XEnterWindowEvent *event;
-caddr_t eventdata;
+XtPointer eventdata;
+XEvent *event;
+Boolean *cont;
 {
     /* NOP since we handled it above */
 }
 
 
 /*ARGSUSED*/
-void HandleFocusChange(w, eventdata, event)
+void HandleFocusChange(w, eventdata, ev, cont)
 Widget w;
-register XFocusChangeEvent *event;
-caddr_t eventdata;
+XEvent *ev;
+XtPointer eventdata;
+Boolean *cont;
 {
+	register XFocusChangeEvent *event = (XFocusChangeEvent  *)ev;
         register TScreen *screen = &term->screen;
 
         if(event->type == FocusIn)
@@ -267,7 +285,7 @@ caddr_t eventdata;
 }
 
 
-
+static void
 selectwindow(screen, flag)
 register TScreen *screen;
 register int flag;
@@ -294,6 +312,7 @@ register int flag;
 	}
 }
 
+static void
 unselectwindow(screen, flag)
 register TScreen *screen;
 register int flag;
@@ -319,9 +338,9 @@ register int flag;
 
 static long lastBellTime;	/* in milliseconds */
 
+void
 Bell()
 {
-    extern XtermWidget term;
     register TScreen *screen = &term->screen;
     struct timeval curtime;
     long now_msecs;
@@ -363,10 +382,9 @@ Bell()
     }
 }
 
-
+void
 VisualBell()
 {
-    extern XtermWidget term;
     register TScreen *screen = &term->screen;
     register Pixel xorPixel = screen->foreground ^ term->core.background_pixel;
     XGCValues gcval;
@@ -424,9 +442,9 @@ void HandleBellPropertyChange(w, data, ev, more)
     }
 }
 
+void
 Redraw()
 {
-	extern XtermWidget term;
 	register TScreen *screen = &term->screen;
 	XExposeEvent event;
 
@@ -449,7 +467,7 @@ Redraw()
 	        event.window = TWindow(screen);
 		event.width = tekWidget->core.width;
 		event.height = tekWidget->core.height;
-		TekExpose (tekWidget, &event, NULL);
+		TekExpose ((Widget)tekWidget, (XEvent *)&event, NULL);
 	}
 }
 
@@ -665,9 +683,9 @@ void logpipe()
 #endif /* ALLOWLOGFILEEXEC */
 #endif /* ALLOWLOGGING */
 
-
+void
 do_osc(func)
-int (*func)();
+int (*func) PROTO((void));
 {
 	register int mode, c;
 	register char *cp;
@@ -706,7 +724,6 @@ int (*func)();
         case 13:       case 14:        case 15:
         case 16:
                {
-                   extern Boolean ChangeColorsRequest();
                    if (term->misc.dynamicColors)
                        ChangeColorsRequest(term,mode-10,buf);
                }
@@ -743,23 +760,25 @@ int (*func)();
 	}
 }
 
-static ChangeGroup(attribute, value)
+static void
+ChangeGroup(attribute, value)
      String attribute;
      XtArgVal value;
 {
-	extern Widget toplevel;
 	Arg args[1];
 
 	XtSetArg( args[0], attribute, value );
 	XtSetValues( toplevel, args, 1 );
 }
 
+void
 Changename(name)
 register char *name;
 {
     ChangeGroup( XtNiconName, (XtArgVal)name );
 }
 
+void
 Changetitle(name)
 register char *name;
 {
@@ -770,7 +789,7 @@ register char *name;
 
 ScrnColors	*pOldColors= NULL;
 
-Boolean
+static Boolean
 GetOldColors(pTerm)
 XtermWidget	pTerm;
 {
@@ -791,7 +810,7 @@ int	i;
     return(TRUE);
 }
 
-Boolean
+static Boolean
 UpdateOldColors(pTerm,pNew)
 XtermWidget	pTerm;
 ScrnColors	*pNew;
@@ -871,7 +890,7 @@ char	*tmpName;
     return;
 }
 
-Boolean
+static Boolean
 AllocateColor(pTerm,pNew,ndx,name)
 XtermWidget	 pTerm;
 ScrnColors	*pNew;
@@ -896,7 +915,7 @@ char			*newName;
     return(FALSE);
 }
 
-Boolean
+static Boolean
 ChangeColorsRequest(pTerm,start,names)
 XtermWidget	pTerm;
 int		start;
@@ -948,6 +967,7 @@ int		i,ndx;
 #ifndef DEBUG
 /* ARGSUSED */
 #endif
+void
 Panic(s, a)
 char	*s;
 int a;
@@ -969,7 +989,7 @@ char *SysErrorMsg (n)
     return s ? s : "unknown error";
 }
 
-
+void
 SysError (i)
 int i;
 {
@@ -982,6 +1002,7 @@ int i;
 	Cleanup(i);
 }
 
+void
 Error (i)
 int i;
 {
@@ -993,10 +1014,10 @@ int i;
 /*
  * cleanup by sending SIGHUP to client processes
  */
+void
 Cleanup (code)
 int code;
 {
-	extern XtermWidget term;
 	register TScreen *screen;
 
 	screen = &term->screen;
@@ -1019,12 +1040,12 @@ int code;
  * was allocated using calloc, with enough extra room at the end so not
  * to have to do a realloc().
  */
+void
 Setenv (var, value)
 register char *var, *value;
 {
-	extern char **environ;
 	register int envindex = 0;
-	register int len = strlen(var);
+	register Size_t len = strlen(var);
 
 	while (environ [envindex] != NULL) {
 	    if (strncmp (environ [envindex], var, len) == 0) {
@@ -1055,7 +1076,7 @@ char *strindex (s1, s2)
 register char	*s1, *s2;
 {
 	register char	*s3;
-	int s2len = strlen (s2);
+	Size_t s2len = strlen (s2);
 
 	while ((s3=strchr(s1, *s2)) != NULL) {
 		if (strncmp(s3, s2, s2len) == 0)
@@ -1066,6 +1087,7 @@ register char	*s1, *s2;
 }
 
 /*ARGSUSED*/
+int
 xerror(d, ev)
 Display *d;
 register XErrorEvent *ev;
@@ -1073,9 +1095,11 @@ register XErrorEvent *ev;
     fprintf (stderr, "%s:  warning, error event receieved:\n", xterm_name);
     (void) XmuPrintDefaultErrorMessage (d, ev, stderr);
     Exit (ERROR_XERROR);
+    return 0;	/* appease the compiler */
 }
 
 /*ARGSUSED*/
+int
 xioerror(dpy)
 Display *dpy;
 {
@@ -1085,17 +1109,19 @@ Display *dpy;
 		    DisplayString (dpy));
 
     Exit(ERROR_XIOERROR);
+    return 0;	/* appease the compiler */
 }
+
+extern char *ProgramName;
 
 void xt_error(message)
     String message;
 {
-    extern char *ProgramName;
-
     (void) fprintf (stderr, "%s Xt error: %s\n", ProgramName, message);
     exit(1);
 }
 
+int
 XStrCmp(s1, s2)
 char *s1, *s2;
 {

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: scrollbar.c,v 1.44 94/04/02 12:42:01 gildea Exp $
- *	$XFree86$
+ *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.1 1995/09/23 07:09:28 dawes Exp $
  */
 
 /*
@@ -28,6 +28,13 @@
 
 #include "ptyx.h"		/* gets Xt headers, too */
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern Char *realloc();
+extern Char *calloc();
+#endif
+
 #include <stdio.h>
 #include <ctype.h>
 #include <X11/Xatom.h>
@@ -41,10 +48,18 @@
 #include "error.h"
 #include "menu.h"
 
+#include "xterm.h"
+
+static Widget CreateScrollBar PROTO((XtermWidget xw, int x, int y, int height));
+static int params_to_pixels PROTO((TScreen *screen, String *params, int n));
+static int specialcmplowerwiths PROTO((char *a, char *b));
+static void RealizeScrollBar PROTO((Widget sbw, TScreen *screen));
+static void ResizeScreen PROTO((XtermWidget xw, int min_width, int min_height));
+
 /* Event handlers */
 
-static void ScrollTextTo();
-static void ScrollTextUpDownBy();
+static void ScrollTextTo PROTO_XT_CALLBACK_ARGS;
+static void ScrollTextUpDownBy PROTO_XT_CALLBACK_ARGS;
 
 
 /* resize the text window for a terminal screen, modifying the
@@ -201,7 +216,7 @@ static void RealizeScrollBar (sbw, screen)
     XtRealizeWidget (sbw);
 }
 
-
+void
 ScrollBarReverseVideo(scrollWidget)
 	register Widget scrollWidget;
 {
@@ -227,7 +242,7 @@ ScrollBarReverseVideo(scrollWidget)
 }
 
 
-
+void
 ScrollBarDrawThumb(scrollWidget)
 	register Widget scrollWidget;
 {
@@ -241,9 +256,9 @@ ScrollBarDrawThumb(scrollWidget)
 	XawScrollbarSetThumb(scrollWidget,
 	 ((float)thumbTop) / totalHeight,
 	 ((float)thumbHeight) / totalHeight);
-	
 }
 
+void
 ResizeScrollBar(scrollWidget, x, y, height)
 	register Widget scrollWidget;
 	int x, y;
@@ -254,6 +269,7 @@ ResizeScrollBar(scrollWidget, x, y, height)
 	ScrollBarDrawThumb(scrollWidget);
 }
 
+void
 WindowScroll(screen, top)
 	register TScreen *screen;
 	int top;
@@ -302,7 +318,7 @@ WindowScroll(screen, top)
 	ScrollBarDrawThumb(screen->scrollWidget);
 }
 
-
+void
 ScrollBarOn (xw, init, doalloc)
     XtermWidget xw;
     int init, doalloc;
@@ -310,7 +326,6 @@ ScrollBarOn (xw, init, doalloc)
 	register TScreen *screen = &xw->screen;
 	register int border = 2 * screen->border;
 	register int i;
-	Char *realloc(), *calloc();
 
 	if(screen->scrollbar)
 		return;
@@ -338,17 +353,17 @@ ScrollBarOn (xw, init, doalloc)
 	if (doalloc && screen->allbuf) {
 	    if((screen->allbuf =
 		(ScrnBuf) realloc((char *) screen->buf,
-				  (unsigned) 4*(screen->max_row + 2 +
+				  (unsigned) MAX_PTRS*(screen->max_row + 2 +
 						screen->savelines) *
 				  sizeof(char *)))
 	       == NULL)
 	      Error (ERROR_SBRALLOC);
-	    screen->buf = &screen->allbuf[4 * screen->savelines];
+	    screen->buf = &screen->allbuf[MAX_PTRS * screen->savelines];
 	    memmove( (char *)screen->buf, (char *)screen->allbuf, 
-		   4 * (screen->max_row + 2) * sizeof (char *));
-	    for(i = 4 * screen->savelines - 1 ; i >= 0 ; i--)
+		   MAX_PTRS * (screen->max_row + 2) * sizeof (char *));
+	    for(i = MAX_PTRS * screen->savelines - 1 ; i >= 0 ; i--)
 	      if((screen->allbuf[i] =
-		  calloc((unsigned) screen->max_col + 1, sizeof(char))) ==
+		  (Char *)calloc((unsigned) screen->max_col + 1, sizeof(Char))) ==
 		 NULL)
 		Error (ERROR_SBRALLOC2);
 	}
@@ -369,6 +384,7 @@ ScrollBarOn (xw, init, doalloc)
 	}
 }
 
+void
 ScrollBarOff(screen)
 	register TScreen *screen;
 {

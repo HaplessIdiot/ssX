@@ -1,5 +1,5 @@
 /* $XConsortium: vgaStipple.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaStipple.c,v 3.0 1994/05/04 15:03:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaStipple.c,v 3.2 1995/01/28 17:06:24 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -35,6 +35,7 @@
 #include "pixmapstr.h" /* GJA -- for pWin */
 #include "ppc.h" /* GJA -- for pWin */
 
+#ifndef	PC98_EGC
 static unsigned char
 getbits( x, patternWidth, lineptr )
 register const int x ;
@@ -85,6 +86,7 @@ default:
 }
 return bits ;
 }
+#endif
 
 extern void vgaFillSolid() ;
 
@@ -117,6 +119,9 @@ register int counter ;
 register int tmp1 ;
 unsigned int rowCounter ;
 int byte_cnt ;
+#ifdef	PC98_EGC
+unsigned char bitmask;
+#endif
 
 /* Do Left Edge */
 if ( tmp1 = x & 07 ) {
@@ -126,7 +131,11 @@ if ( tmp1 = x & 07 ) {
 		tmp2 &= SCRLEFT8( (unsigned) 0xFF, -w ) ;
 		w = 0 ;
 	}
+#ifndef	PC98_EGC
 	SetVideoGraphics( Bit_MaskIndex, tmp2 ) ; /* Set The Bit Mask */
+#else
+	bitmask = tmp2; /* Set The Bit Mask */
+#endif
 	/*
 	 * For Each Line In The Source Pixmap
 	 */
@@ -137,13 +146,29 @@ if ( tmp1 = x & 07 ) {
 
 		if ( tmp1 >= height )
 			tmp1 -= height ;
+#ifndef	PC98_EGC
 		/* Read To Save */
 		tmp2 = *( (VgaMemoryPtr) xDst) ;
+#endif
 		/* Write Pattern */
 		*( (VgaMemoryPtr) xDst ) =
+#ifndef	PC98_EGC
 			getbits( xshift /* GJA */, width,
 				 mastersrc
 				 + ( tmp1 * paddedByteWidth ) ) >> (x & 07) ;
+#else
+#if 0
+			(getbits( xshift /* GJA */, width,
+				  mastersrc
+				 + ( tmp1 * paddedByteWidth ) ) >> (x & 07)
+			 & bitmask);
+#else
+			(getbits_x( xshift /* GJA */, width,
+				  mastersrc
+				 + ( tmp1 * paddedByteWidth ), (x & 07))
+			 & bitmask);
+#endif
+#endif
  		xDst += BYTES_PER_LINE(pWin); VCHECKRWO(xDst);
 	}
 	NeedValX = (xshift + 8 - (x & 07)) % width;
@@ -156,7 +181,9 @@ else {
 if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
 	int SavNeedX = NeedValX ;
 
+#ifndef	PC98_EGC
 	SetVideoGraphics( Bit_MaskIndex, 0xFF ) ; /* Set The Bit Mask */
+#endif
 	/*
 	 * For Each Line In The Source Pixmap
 	 */
@@ -173,11 +200,21 @@ if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
 		 */
 		for ( counter = byte_cnt, NeedValX = SavNeedX ;
 		      counter-- ; ) {
+#ifndef	PC98_EGC
 			/* Read To Save */
 			tmp2 = *( (VgaMemoryPtr) xDst) ;
+#endif
 			/* Write Pattern */
 			*( (VgaMemoryPtr) xDst ) =
+#ifndef	PC98_EGC
 				getbits( NeedValX, width, l_ptr ) ;
+#else
+#if 0
+				getbits( NeedValX, width, l_ptr ) ;
+#else
+				getbits_x ( NeedValX, width, l_ptr, 0 ) ;
+#endif
+#endif
 			/* GJA -- The '%' is there since width could be < 8 */
 			NeedValX = (NeedValX + 8) % width;
 			xDst++; VCHECKRWO(xDst);
@@ -189,7 +226,11 @@ if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
 /* Do Right Edge */
 if ( tmp1 = BIT_OFFSET( w ) ) { /* x Now Is Byte Aligned */
 	/* Set The Bit Mask */
+#ifndef	PC98_EGC
 	SetVideoGraphics( Bit_MaskIndex, SCRLEFT8( 0xFF, ( 8 - tmp1 ) ) ) ;
+#else
+	bitmask = SCRLEFT8( 0xFF, ( 8 - tmp1 ));
+#endif
 	/*
 	 * For Each Line In The Source Pixmap
 	 */
@@ -199,13 +240,27 @@ if ( tmp1 = BIT_OFFSET( w ) ) { /* x Now Is Byte Aligned */
 	      rowCounter-- , tmp1++ ) {
 		if ( tmp1 >= height )
 			tmp1 -= height ;
+#ifndef	PC98_EGC
 		/* Read To Save */
 		tmp2 = *( (VgaMemoryPtr) xDst) ;
+#endif
 		/* Write Pattern */
 		*( (VgaMemoryPtr) xDst ) =
+#ifndef	PC98_EGC
 			getbits( NeedValX, width,
 				 mastersrc
 				 + ( tmp1 * paddedByteWidth ) ) ;
+#else
+#if 0
+			(getbits( NeedValX, width,
+				 mastersrc
+				 + ( tmp1 * paddedByteWidth ) ) & bitmask);
+#else
+			(getbits_x( NeedValX, width,
+				 mastersrc
+				 + ( tmp1 * paddedByteWidth ), 0 ) & bitmask);
+#endif
+#endif
 		xDst += BYTES_PER_LINE(pWin) ; VCHECKRWO(xDst);
 	}
 }
@@ -235,6 +290,9 @@ unsigned DestinationRow ;
 unsigned int SourceRow ;
 volatile unsigned char *dst ;
 int scr_incr = ( height * BYTES_PER_LINE(pWin) ) ;
+#ifdef	PC98_EGC
+unsigned char bitmask;
+#endif
 
 /* Do Left Edge */
 if ( tmp1 = x & 07 ) {
@@ -244,7 +302,11 @@ if ( tmp1 = x & 07 ) {
 		tmp2 &= SCRLEFT8( (unsigned) 0xFF, -w ) ;
 		w = 0 ;
 	}
+#ifndef	PC98_EGC
 	SetVideoGraphics( Bit_MaskIndex, tmp2 ) ; /* Set The Bit Mask */
+#else
+	bitmask = tmp2; /* Set The Bit Mask */
+#endif
 	/*
 	 * For Each Line In The Source Pixmap
 	 */
@@ -260,15 +322,33 @@ if ( tmp1 = x & 07 ) {
 		 */
 		xDst = dst; VSETRW(xDst);
 		for ( DestinationRow = SourceRow,
+#ifndef	PC98_EGC
 		      bitPattern = getbits( xshift, width,
 					    mastersrc
 					+ ( tmp1 * paddedByteWidth ) ) ;
+#else
+#if 0
+		      bitPattern = getbits( xshift, width,
+					    mastersrc
+					+ ( tmp1 * paddedByteWidth ) ) ;
+#else
+		      bitPattern = getbits_x( xshift, width,
+					    mastersrc
+					+ ( tmp1 * paddedByteWidth ), 0 ) ;
+#endif
+#endif
 		      DestinationRow < h ;
 		      DestinationRow += height ) {
+#ifndef	PC98_EGC
 			/* Read To Save */
 			tmp2 = *( (VgaMemoryPtr) xDst ) ;
+#endif
 			/* Write Pattern */
+#ifndef	PC98_EGC
 			*( (VgaMemoryPtr) xDst ) = bitPattern >> (x & 07);
+#else
+			*( (VgaMemoryPtr) xDst ) = (bitPattern >> (x & 07)) & bitmask;
+#endif
 		        xDst += scr_incr; VCHECKRWO(xDst);
 		}
 	}
@@ -282,7 +362,9 @@ else {
 if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
 	int SavNeedX = NeedValX ;
 
+#ifndef	PC98_EGC
 	SetVideoGraphics( Bit_MaskIndex, 0xFF ) ; /* Set The Bit Mask */
+#endif
 	/*
 	 * For Each Line In The Source Pixmap
 	 */
@@ -306,11 +388,21 @@ if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
 			 */
 			xDst = dst; VSETRW(xDst);
 			for ( DestinationRow = SourceRow,
+#ifndef	PC98_EGC
 			      bitPattern = getbits( NeedValX, width, l_ptr ) ;
+#else
+#if 0
+			      bitPattern = getbits( NeedValX, width, l_ptr ) ;
+#else
+			      bitPattern = getbits_x( NeedValX, width, l_ptr, 0 ) ;
+#endif
+#endif
 			      DestinationRow < h ;
 			      DestinationRow += height ) {
+#ifndef	PC98_EGC
 				/* Read To Save */
 				tmp3 = *( (VgaMemoryPtr) xDst) ;
+#endif
 				/* Write Pattern */
 				*( (VgaMemoryPtr) xDst ) = bitPattern ;
 			        xDst += scr_incr; VCHECKRWO(xDst);
@@ -323,7 +415,11 @@ if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
 /* Do Right Edge */
 if ( tmp1 = BIT_OFFSET( w ) ) { /* x Now Is Byte Aligned */
 	/* Set The Bit Mask */
+#ifndef	PC98_EGC
 	SetVideoGraphics( Bit_MaskIndex, SCRLEFT8( 0xFF, ( 8 - tmp1 ) ) ) ;
+#else
+	bitmask = SCRLEFT8( 0xFF, ( 8 - tmp1 ) );
+#endif
 	/*
 	 * For Each Line In The Source Pixmap
 	 */
@@ -339,15 +435,33 @@ if ( tmp1 = BIT_OFFSET( w ) ) { /* x Now Is Byte Aligned */
 		 */
 		xDst = dst; VSETRW(xDst);
 		for ( DestinationRow = SourceRow,
+#ifndef	PC98_EGC
 		      bitPattern = getbits( NeedValX, width,
 					    mastersrc
 					+ ( tmp1 * paddedByteWidth ) ) ;
+#else
+#if 0
+		      bitPattern = getbits( NeedValX, width,
+					    mastersrc
+					+ ( tmp1 * paddedByteWidth ) ) ;
+#else
+		      bitPattern = getbits_x( NeedValX, width,
+					    mastersrc
+					+ ( tmp1 * paddedByteWidth ), 0 ) ;
+#endif
+#endif
 		      DestinationRow < h ;
 		      DestinationRow += height ) {
+#ifndef	PC98_EGC
 			/* Read To Save */
 			tmp2 = *( (VgaMemoryPtr) xDst) ;
+#endif
 			/* Write Pattern */
+#ifndef	PC98_EGC
 			*( (VgaMemoryPtr) xDst ) = bitPattern ;
+#else
+			*( (VgaMemoryPtr) xDst ) = bitPattern & bitmask;
+#endif
 		        xDst += scr_incr; VCHECKRWO(xDst);
 		}
 	}
@@ -356,11 +470,14 @@ if ( tmp1 = BIT_OFFSET( w ) ) { /* x Now Is Byte Aligned */
 return ;
 }
 
+#define DO_RECURSE 0x10000
+
 static void
 vgaSetMonoRegisters( plane_mask, desiredState )
 register unsigned long int plane_mask ;
 register unsigned long int desiredState ;
 {
+#ifndef	PC98_EGC
 /* Setup VGA Registers */
 /*
  * Set The Plane-Enable
@@ -379,6 +496,41 @@ SetVideoGraphics( Set_ResetIndex, desiredState & VGA_ALLPLANES ) ;
  * Set The Vga's Alu Function
  */
 SetVideoGraphics( Data_RotateIndex, desiredState >> 8 ) ;
+#else	/* PC98_EGC */
+unsigned short ROP_value;
+/* Setup VGA Registers */
+/*
+ * Set The Plane-Enable
+ */
+outw(EGC_PLANE, ~plane_mask);
+switch((desiredState >> 8)&0x18) {
+/* EGC MODE.. Cmp Read: Flase, WriteSource=ROP, ReadSource=CPU */
+ case VGA_AND_MODE:
+    if (desiredState & DO_RECURSE)
+	ROP_value = EGC_AND_INV_MODE;
+    else
+	ROP_value = EGC_AND_MODE;
+    break;
+ case VGA_OR_MODE:
+    if (desiredState & DO_RECURSE)
+	ROP_value = EGC_OR_INV_MODE;
+    else
+	ROP_value = EGC_OR_MODE;
+    break;
+ case VGA_XOR_MODE:
+    if (desiredState & DO_RECURSE)
+	ROP_value = EGC_XOR_INV_MODE;
+    else
+	ROP_value = EGC_XOR_MODE;
+    break;
+ case VGA_COPY_MODE:
+ default:
+    ROP_value = EGC_COPY_MODE;
+    break;
+}
+outw(EGC_MODE, ROP_value);
+outw(EGC_FGC, desiredState & VGA_ALLPLANES);
+#endif
 
 return ;
 }
@@ -388,7 +540,6 @@ vgaCalcMonoMode( rasterOp, color )
 int rasterOp ;
 register unsigned long int color ;
 {
-#define DO_RECURSE 0x10000
 register unsigned int data_rotate_value = VGA_COPY_MODE << 8 ;
 register unsigned int invert_existing_data = 0 ;
 
@@ -459,11 +610,15 @@ if ( !xf86VTSema ) {
 if ( ( alu == GXnoop ) || !( planes &= VGA_ALLPLANES ) )
 	return ;
 
+#ifndef	PC98_EGC
 if ( ( regState = vgaCalcMonoMode( alu, fg ) ) & DO_RECURSE ) {
 	vgaDrawMonoImage( pWin, data, x, y, w, h,
 			  VGA_ALLPLANES, GXinvert, planes ) ;
 	regState &= ~DO_RECURSE ;
 }
+#else
+regState = vgaCalcMonoMode(alu, (char)fg);
+#endif
 
 
 vgaSetMonoRegisters( planes, regState ) ;
@@ -500,11 +655,15 @@ if ( !xf86VTSema ) {
 if ( ( alu == GXnoop ) || !( planes &= VGA_ALLPLANES ) )
 	return ;
 
+#if 1
 if ( ( regState = vgaCalcMonoMode( alu, fg ) ) & DO_RECURSE ) {
 	vgaFillStipple( pWin, pStipple, VGA_ALLPLANES, GXinvert, planes,
 			x, y, w, h, xSrc, ySrc ) ;
 	regState &= ~DO_RECURSE ;
 }
+#else
+regState = vgaCalcMonoMode(alu, (char)fg);
+#endif
 
 
 vgaSetMonoRegisters( planes, regState ) ;

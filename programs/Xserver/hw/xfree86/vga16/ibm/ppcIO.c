@@ -1,5 +1,5 @@
 /* $XConsortium: ppcIO.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcIO.c,v 3.3 1995/05/07 11:53:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcIO.c,v 3.4 1995/12/23 09:39:44 dawes Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -79,10 +79,17 @@ extern ScreenRec vgaScreenRec ; /* Forward Declaration Here */
 VisualRec vgaVisuals[] = {
 /* StaticColor needs to be first so is can be used as the default */
 /* vid class     bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
+#ifdef	PC98
+{   0, StaticColor, 4, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
+{   0, StaticGray,  4, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
+{   0, GrayScale,   4, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
+{   0, PseudoColor, 4, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
+#else
 {   0, StaticColor, 6, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
 {   0, StaticGray,  6, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
 {   0, GrayScale,   6, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
 {   0, PseudoColor, 6, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
+#endif
 } ;
 
 #define NUM_VISUALS  (sizeof vgaVisuals/sizeof (VisualRec))

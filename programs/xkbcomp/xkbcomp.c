@@ -1,4 +1,5 @@
-/* $XConsortium: xkbcomp.c,v 1.3 94/04/08 15:29:47 erik Exp $ */
+/* $XConsortium: xkbcomp.c /main/5 1995/12/07 21:26:13 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -39,7 +40,7 @@
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #endif
-#include "xkbfile.h"
+#include "xkbpath.h"
 #include "tokens.h"
 
 #define	lowbit(x)	((x) & (-(x)))
@@ -50,44 +51,164 @@
 #define	WANT_XKM_FILE	1
 #define	WANT_C_HDR	2
 #define	WANT_XKB_FILE	3
+#define	WANT_X_SERVER	4
+#define	WANT_LISTING	5
+
+#define	INPUT_UNKNOWN	0
+#define	INPUT_XKB	1
+#define	INPUT_XKM	2
 
 static char *fileTypeExt[] = {
 	"XXX",
 	"xkm",
 	"h",
-	"xkb"
+	"xkb",
+	"dir"
 };
 
-static	unsigned	type;
+static	unsigned	inputFormat,outputFormat;
+static	char *		rootDir;
 static	char *		inputFile;
+static	char *		inputMap;
 static	char *		outputFile;
-static	char *		mapName;
-
+static	char *		inDpyName;
+static	char *		outDpyName;
+static	Display *	inDpy;
+static	Display *	outDpy;
+static	Bool		showImplicit= False;
+static	Bool		synch= False;
+static	Bool		merge= False;
+static	Bool		computeDflts= False;
+static	Bool		xkblist= False;
 	unsigned	warningLevel= 5;
+	unsigned	verboseLevel= 0;
+	unsigned	optionalParts= 0;
+static	char *		preErrorMsg= NULL;
+static	char *		postErrorMsg= NULL;
+static	char *		errorPrefix= NULL;
+
+#define	WantLongListing	(1<<0)
+#define	WantPartialMaps	(1<<1)
+#define	WantHiddenMaps	(1<<2)
+#define	WantFullNames	(1<<3)
 
 /***====================================================================***/
+
+static	int		szListing= 0;
+static	int		nListed= 0;
+static	int		nFilesListed= 0;
+static	char **		filesToList= NULL;
+static	char **		mapsToList= NULL;
+
+static Bool
+#if NeedFunctionPrototypes
+AddListing(char *file,char *map)
+#else
+AddListing(file,map)
+    char *file;
+    char *map;
+#endif
+{
+register int i;
+
+    if (map==NULL) {
+	char *tmp;
+	tmp= strchr(file,'(');
+	if (tmp!=NULL) {
+	    map= &tmp[1];
+	    tmp= strchr(file,')');
+	    if ((tmp==NULL)||(tmp[1]!='\0')) {
+		uError("Files/maps to list must have the form file(map)\n");
+		uAction("Illegal specifier %s ignored\n",file);
+		return False;
+	    }
+	    *(map-1)='\0';
+	    *tmp= '\0';
+	}
+#ifdef DEBUG
+	if (warningLevel>9)
+	    uInformation("Adding %s(%s) to listings\n",file,(map?map:"*"));
+#endif
+    }
+    if (nListed>=szListing) {
+	if (szListing<1)	szListing= 10;
+	else		szListing*= 2;
+	filesToList= uTypedRealloc(filesToList,szListing,char *);
+	mapsToList= uTypedRealloc(mapsToList,szListing,char *);
+	if ((!filesToList) || (!mapsToList)) {
+	    uInternalError("Couldn't allocate list of files and maps\n");
+	    uAction("Exiting\n");
+	    exit(1);
+	}
+    }
+    filesToList[nListed]= file;
+    mapsToList[nListed]= map;
+    nListed++;
+    if (file!=NULL)
+	nFilesListed++;
+    return True;
+}
+
+/***====================================================================***/
+
+#define	M(m)	fprintf(stderr,(m))
+#define	M1(m,a)	fprintf(stderr,(m),(a))
 
 void
 Usage(argc,argv)
     int 	argc;
     char *	argv[];
 {
-    fprintf(stderr,"Usage: %s [options] file\n",argv[0]);
-    fprintf(stderr,"Legal options:\n");
-    fprintf(stderr,"-I[<dir>]   Specifies a top level directory\n");
-    fprintf(stderr,"            for include directives.  You can\n");
-    fprintf(stderr,"            specify multiple directories.\n");
-    fprintf(stderr,"-o <file>   Specifies output file name\n");
-    fprintf(stderr,"-m <name>   Specifies map to compile from a multi-map\n");
-    fprintf(stderr,"            directory file\n");
-    fprintf(stderr,"-C          Produce a C header file\n");
-    fprintf(stderr,"-xkm        Produce an xkm (compiled X Key Map) file\n");
-    fprintf(stderr,"-xkb        Produce an xkb (X KeyBoard map Source) file\n");
-    fprintf(stderr,"-w <lvl>    Set warning level (0=none, 10=all)\n");
+    if (!xkblist)
+	 M1("Usage: %s [options] input-file [ output-file ]\n",argv[0]);
+    else M1("Usage: %s [options] file[(map)] ...\n",argv[0]);
+    M("Legal options:\n");
+    M("-?,-help             Print this message\n");
+    if (!xkblist) {
+	M("-a                   Show all actions\n");
+	M("-C                   Create a C header file\n");
+    }
 #ifdef DEBUG
-    fprintf(stderr,"-d [flags]  Report debugging information\n");
+    M("-d [flags]           Report debugging information\n");
 #endif
-    exit(1);
+    M("-em1 <msg>           Print <msg> before printing first error message\n");
+    M("-emp <msg>           Print <msg> at the start of each message line\n");
+    M("-eml <msg>           If there were any errors, print <msg> before exiting\n");
+    if (!xkblist) {
+	M("-dflts               Compute defaults for missing parts\n");
+	M("-I[<dir>]            Specifies a top level directory for include\n");
+	M("                     directives. Multiple directories are legal.\n");
+	M("-l[ist]              List matching maps in the specified files\n");
+    }
+    M("-m[ap] <map>         Specifies map to compile\n");
+    if (!xkblist)
+	M("-merge               Merge file with map on server\n");
+    M("-o <file>            Specifies output file name\n");
+    if (!xkblist) {
+	M("-opt[ional] <parts>  Specifies optional components of keymap\n");
+	M("                     Errors in optional parts are not fatal\n");
+	M("                     <parts> can be any combination of:\n");
+	M("                     c: compat map         g: geometry\n");
+	M("                     k: keycodes           s: symbols\n");
+	M("                     t: types\n");
+    }
+    M("-R[<DIR>]            Specifies the root directory for\n");
+    M("                     relative path names\n");
+    M("-synch               Force synchronization\n");
+    if (xkblist) {
+	M("-v [<flags>]         Set level of detail for listing:\n");
+	M("                     f: list fully specified names\n");
+	M("                     h: also list hidden maps\n");
+	M("                     l: long listing (show flags)\n");
+	M("                     p: also list partial maps\n");
+	M("                     default is all options off\n");
+    }
+    M("-w [<lvl>]           Set warning level (0=none, 10=all)\n");
+    if (!xkblist) {
+	M("-xkb                 Create an XKB source (.xkb) file\n");
+	M("-xkm                 Create a compiled key map (.xkm) file\n");
+    }
+    return;
 }
 
 /***====================================================================***/
@@ -97,72 +218,44 @@ parseArgs(argc,argv)
     int		argc;
     char *	argv[];
 {
-register int i;
+register int i,tmp;
 
+    i= strlen(argv[0]);
+    tmp= strlen("xkblist");
+    if ((i>=tmp)&&(strcmp(&argv[0][i-tmp],"xkblist")==0)) {
+	xkblist= True;
+    }
     for (i=1;i<argc;i++) {
-	if (argv[i][0]!='-') {
-	    if (inputFile!=NULL) {
-		uWarning("Multiple source files specified\n");
-		uAction("Compiling %s, ignoring %s\n",inputFile,argv[i]);
+	if ((argv[i][0]!='-')||(uStringEqual(argv[i],"-"))) {
+	    if (!xkblist) {
+		if (inputFile==NULL)
+		    inputFile= argv[i];
+		else if (outputFile==NULL)
+		    outputFile= argv[i];
+		else if (warningLevel>0) {
+		    uWarning("Too many file names on command line\n");
+		    uAction("Compiling %s, writing to %s, ignoring %s\n",
+					inputFile,outputFile,argv[i]);
+		}
 	    }
-	    else inputFile= argv[i];
+	    else if (!AddListing(argv[i],NULL))
+		return False;
 	}
-	else if (strncmp(argv[i],"-I",2)==0) {
-	    if (!AddDirectoryToPath(&argv[i][2])) {
-		uAction("Exiting\n");
-	    }
-	    exit(1);
+	else if ((strcmp(argv[i],"-?")==0)||(strcmp(argv[i],"-help")==0)) {
+	    Usage(argc,argv);
+	    exit(0);
 	}
-	else if (strcmp(argv[i],"-o")==0) {
-	    if (++i>=argc) {
-		uWarning("No output file specified\n");
-		uAction("Trailing \"-o\" option ignored\n");
-	    }
-	    else if (outputFile!=NULL) {
-		uWarning("Multiple output files specified\n");
-		uAction("Compiling %s, ignoring %s\n",outputFile,argv[i]);
-	    }
-	    else outputFile= argv[i];
+	else if ((strcmp(argv[i],"-a")==0)&&(!xkblist)) {
+	    showImplicit= True;
 	}
-	else if (strcmp(argv[i],"-m")==0) {
-	    if (++i>=argc) {
-		uWarning("No map name specified\n");
-		uAction("Trailing \"-m\" option ignored\n");
+	else if ((strcmp(argv[i],"-C")==0)&&(!xkblist)) {
+	    if ((outputFormat!=WANT_DEFAULT)&&(outputFormat!=WANT_C_HDR)) {
+		if (warningLevel>0) {
+		    uWarning("Multiple output file formats specified\n");
+		    uAction("\"%s\" flag ignored\n",argv[i]);
+		}
 	    }
-	    else if (mapName!=NULL) {
-		uWarning("Multiple map names specified\n");
-		uAction("Compiling %s, ignoring %s\n",mapName,argv[i]);
-	    }
-	    else mapName= argv[i];
-	}
-	else if (strcmp(argv[i],"-C")==0) {
-	    if ((type!=WANT_DEFAULT)&&(type!=WANT_C_HDR)) {
-		uWarning("Multiple output file types specified\n");
-		uAction("\"%s\" flag ignored\n",argv[i]);
-	    }
-	    else type= WANT_C_HDR;
-	}
-	else if (strcmp(argv[i],"-xkm")==0) {
-	    if ((type!=WANT_DEFAULT)&&(type!=WANT_XKM_FILE)) {
-		uWarning("Multiple output file types specified\n");
-		uAction("\"%s\" flag ignored\n",argv[i]);
-	    }
-	    else type= WANT_XKM_FILE;
-	}
-	else if (strcmp(argv[i],"-xkb")==0) {
-	    if ((type!=WANT_DEFAULT)&&(type!=WANT_XKB_FILE)) {
-		uWarning("Multiple output file types specified\n");
-		uAction("\"%s\" flag ignored\n",argv[i]);
-	    }
-	    else type= WANT_XKB_FILE;
-	}
-	else if (strcmp(argv[i],"-w")==0) {
-	    if ((i>=(argc-1))||(!isdigit(argv[i+1][0]))) {
-		warningLevel= 0;
-	    }
-	    else {
-		sscanf(argv[++i],"%i",&warningLevel);
-	    }
+	    else outputFormat= WANT_C_HDR;
 	}
 #ifdef DEBUG
 	else if (strcmp(argv[i],"-d")==0) {
@@ -175,43 +268,478 @@ register int i;
 	    uInformation("Setting debug flags to %d\n",debugFlags);
 	}
 #endif
-	else {
-	    if (strcmp(argv[i],"help")!=0) {
-		uError("Unknown flag \"%s\" on command line\n",argv[i]);
+	else if ((strcmp(argv[i],"-dflts")==0)&&(!xkblist)) {
+	    computeDflts= True;
+	}
+	else if (strcmp(argv[i],"-em1")==0) {
+	    if (++i>=argc) {
+		if (warningLevel>0) {
+		    uWarning("No pre-error message specified\n");
+		    uAction("Trailing \"-em1\" option ignored\n");
+		}
 	    }
+	    else if (preErrorMsg!=NULL) {
+		if (warningLevel>0) {
+		    uWarning("Multiple pre-error messsages specified\n");
+		    uAction("Compiling %s, ignoring %s\n",preErrorMsg,argv[i]);
+	 	}
+	    }
+	    else preErrorMsg= argv[i];
+	}
+	else if (strcmp(argv[i],"-emp")==0) {
+	    if (++i>=argc) {
+		if (warningLevel>0) {
+		    uWarning("No error prefix specified\n");
+		    uAction("Trailing \"-emp\" option ignored\n");
+		}
+	    }
+	    else if (errorPrefix!=NULL) {
+		if (warningLevel>0) {
+		    uWarning("Multiple error prefixes specified\n");
+		    uAction("Compiling %s, ignoring %s\n",errorPrefix,argv[i]);
+	 	}
+	    }
+	    else errorPrefix= argv[i];
+	}
+	else if (strcmp(argv[i],"-eml")==0) {
+	    if (++i>=argc) {
+		if (warningLevel>0) {
+		    uWarning("No post-error message specified\n");
+		    uAction("Trailing \"-emp\" option ignored\n");
+		}
+	    }
+	    else if (postErrorMsg!=NULL) {
+		if (warningLevel>0) {
+		    uWarning("Multiple post-error messages specified\n");
+		    uAction("Compiling %s, ignoring %s\n",postErrorMsg,argv[i]);
+	 	}
+	    }
+	    else postErrorMsg= argv[i];
+	}
+	else if ((strncmp(argv[i],"-I",2)==0)&&(!xkblist)) {
+	    if (!XkbAddDirectoryToPath(&argv[i][2])) {
+		uAction("Exiting\n");
+	    }
+	    exit(1);
+	}
+	else if (((strcmp(argv[i],"-l")==0)||(strcmp(argv[i],"-list")==0))&&
+							(!xkblist)) {
+	    if (outputFormat!=WANT_DEFAULT) {
+		if (warningLevel>0) {
+		    uWarning("Multiple output file formats specified\n");
+		    uAction("\"%s\" flag ignored\n",argv[i]);
+		}
+	    }
+	    else {
+		xkblist= True;
+		if ((inputFile)&&(!AddListing(inputFile,NULL)))
+		     return False;
+		else inputFile= NULL;
+		if ((outputFile)&&(!AddListing(outputFile,NULL)))
+		     return False;
+		else outputFile= NULL;
+	    }
+	}
+	else if ((strcmp(argv[i],"-m")==0)||(strcmp(argv[i],"-map")==0)) {
+	    if (++i>=argc) {
+		if (warningLevel>0) {
+		    uWarning("No map name specified\n");
+		    uAction("Trailing \"-m\" option ignored\n");
+		}
+	    }
+	    else if (xkblist) {
+		 if (!AddListing(NULL,argv[i]))
+		    return False;
+	    }
+	    else if (inputMap!=NULL) {
+		if (warningLevel>0) {
+		    uWarning("Multiple map names specified\n");
+		    uAction("Compiling %s, ignoring %s\n",inputMap,argv[i]);
+	 	}
+	    }
+	    else inputMap= argv[i];
+	}
+	else if ((strcmp(argv[i],"-merge")==0)&&(!xkblist)) {
+	    merge= True;
+	}
+	else if (strcmp(argv[i],"-o")==0) {
+	    if (++i>=argc) {
+		if (warningLevel>0) {
+		    uWarning("No output file specified\n");
+		    uAction("Trailing \"-o\" option ignored\n");
+		}
+	    }
+	    else if (outputFile!=NULL) {
+		if (warningLevel>0) {
+		    uWarning("Multiple output files specified\n");
+		    uAction("Compiling %s, ignoring %s\n",outputFile,argv[i]);
+		}
+	    }
+	    else outputFile= argv[i];
+	}
+	else if (((strcmp(argv[i],"-opt")==0)||(strcmp(argv[i],"optional")==0))
+		 						&&(!xkblist)) {
+	    if (++i>=argc) {
+		if (warningLevel>0) {
+		    uWarning("No optional components specified\n");
+		    uAction("Trailing \"%s\" option ignored\n",argv[i-1]);
+		}
+	    }
+	    else {
+		char *tmp;
+		for (tmp=argv[i];(*tmp!='\0');tmp++) {
+		    switch (*tmp) {
+			case 'c': case 'C':
+			    optionalParts|= XkmCompatMapMask;
+			    break;
+			case 'g': case 'G':
+			    optionalParts|= XkmGeometryMask;
+			    break;
+			case 'k': case 'K':
+			    optionalParts|= XkmKeyNamesMask;
+			    break;
+			case 's': case 'S':
+			    optionalParts|= XkmSymbolsMask;
+			    break;
+			case 't': case 'T':
+			    optionalParts|= XkmTypesMask;
+			    break;
+			default:
+			    if (warningLevel>0) {
+				uWarning("Illegal component for %s option\n",
+								argv[i-1]);
+				uAction("Ignoring unknown specifier \"%c\"\n",
+								*tmp);
+			    }
+			    break;
+		    }
+		}
+	    }
+	}
+	else if (strncmp(argv[i],"-R",2)==0) {
+	    if (argv[i][2]=='\0') {
+		if (warningLevel>0) {
+		    uWarning("No root directory specified\n");
+		    uAction("Ignoring -R option\n");
+		}
+	    }
+	    else if (rootDir!=NULL) {
+		if (warningLevel>0) {
+		    uWarning("Multiple root directories specified\n");
+		    uAction("Using %s, ignoring %s\n",rootDir,argv[i]);
+		}
+	    }
+	    else rootDir= &argv[i][2];
+	}
+	else if ((strcmp(argv[i],"-synch")==0)||(strcmp(argv[i],"-s")==0)) {
+	    synch= True;
+	}
+	else if (strncmp(argv[i],"-v",2)==0) {
+	    char *str;
+	    if (argv[i][2]!='\0') 
+		 str= &argv[i][2];
+	    else if ((i<(argc-1))&&(argv[i+1][0]!='-'))
+		 str= argv[++i];
+	    else str= NULL;
+	    if (str) {
+		for (;*str;str++) {
+		    switch (*str) {
+			case 'f': verboseLevel|= WantFullNames; break;
+			case 'h': verboseLevel|= WantHiddenMaps; break;
+			case 'l': verboseLevel|= WantLongListing; break;
+			case 'p': verboseLevel|= WantPartialMaps; break;
+			default:
+			    if (warningLevel>4) {
+				uWarning("Unknown verbose option \"%c\"\n",
+									*str);
+				uAction("Ignored\n");
+			    }
+			    break;
+		    }
+		}
+	    }
+	}
+	else if (strncmp(argv[i],"-w",2)==0) {
+	    if ((i>=(argc-1))||(!isdigit(argv[i+1][0]))) {
+		if (isdigit(argv[i][1]))
+		     sscanf(&argv[i][1],"%i",&warningLevel);
+		else warningLevel= 0;
+	    }
+	    else {
+		sscanf(argv[++i],"%i",&warningLevel);
+	    }
+	}
+	else if ((strcmp(argv[i],"-xkb")==0)&&(!xkblist)) {
+	    if ((outputFormat!=WANT_DEFAULT)&&(outputFormat!=WANT_XKB_FILE)) {
+		if (warningLevel>0) {
+		    uWarning("Multiple output file formats specified\n");
+		    uAction("\"%s\" flag ignored\n",argv[i]);
+		}
+	    }
+	    else outputFormat= WANT_XKB_FILE;
+	}
+	else if ((strcmp(argv[i],"-xkm")==0)&&(!xkblist)) {
+	    if ((outputFormat!=WANT_DEFAULT)&&(outputFormat!=WANT_XKM_FILE)) {
+		if (warningLevel>0) {
+		    uWarning("Multiple output file formats specified\n");
+		    uAction("\"%s\" flag ignored\n",argv[i]);
+		}
+	    }
+	    else outputFormat= WANT_XKM_FILE;
+	}
+	else {
+	    uError("Unknown flag \"%s\" on command line\n",argv[i]);
+	    Usage(argc,argv);
 	    return False;
 	}
     }
-    if (inputFile==NULL) {
+    if (rootDir) {
+	if (warningLevel>8) {
+	    uWarning("Changing root directory to \"%s\"\n",rootDir);
+	}
+	if ((chdir(rootDir)<0) && (warningLevel>0)) {
+	    uWarning("Couldn't change root directory to \"%s\"\n",rootDir);
+	    uAction("Root directory (-R) option ignored\n");
+	}
+    }
+    if (xkblist)
+	inputFormat= INPUT_XKB;
+    else if (inputFile==NULL) {
 	uError("No input file specified\n");
 	return False;
     }
-    if (type==WANT_DEFAULT)
-	type= WANT_XKM_FILE;
-    if (outputFile==NULL) {
-	int len;
-	char *base;
-	base= strrchr(inputFile,'/');
-	if (base==NULL)	base= inputFile;
-	else		base++;
+    else if (uStringEqual(inputFile,"-")) {
+	inputFormat= INPUT_XKB;
+    }
+    else if (strchr(inputFile,':')==0) {
+	int	len= strlen(inputFile);
+	if ((len>4)&&(strcmp(&inputFile[len-4],".xkm")==0)) {
+	    inputFormat= INPUT_XKM;
+	}
+	else {
+	    FILE *file;
+	    file= fopen(inputFile,"r");
+	    if (file) {
+		if (XkmProbe(file))	inputFormat= INPUT_XKM;
+		else			inputFormat= INPUT_XKB;
+		fclose(file);
+	    }
+	    else {
+		fprintf(stderr,"Cannot open \"%s\" for reading\n",inputFile);
+		return False;
+	    }
+	}
+    }
+    else {
+	inDpyName= inputFile;
+	inputFile= NULL;
+	inputFormat= INPUT_XKM;
+    }
 
-	len= strlen(base)+strlen(fileTypeExt[type])+2;
+    if (outputFormat==WANT_DEFAULT) {
+	if (xkblist)				outputFormat= WANT_LISTING;
+	else if (inputFormat==INPUT_XKB)	outputFormat= WANT_XKM_FILE;
+	else					outputFormat= WANT_XKB_FILE;
+    }
+    if ((outputFormat==WANT_LISTING)&&(inputFormat!=INPUT_XKB)) {
+	if (inputFile)
+	     uError("Cannot generate a listing from a .xkm file (yet)\n");
+	else uError("Cannot generate a listing from an X connection (yet)\n");
+	return False;
+    }
+    if (xkblist) {
+	if (outputFile==NULL)	outputFile= uStringDup("-");
+	else if (strchr(outputFile,':')!=NULL) {
+	    uError("Cannot write a listing to an X connection\n");
+	    return False;
+	}
+    }
+    else if ((!outputFile) && (inputFile) && uStringEqual(inputFile,"-")) {
+	int len= strlen("stdin")+strlen(fileTypeExt[outputFormat])+2;
 	outputFile= uTypedCalloc(len,char);
 	if (outputFile==NULL) {
-	    uInternalError("Couldn't allocate space for output file name\n");
+	    uInternalError("Cannot allocate space for output file name\n");
 	    uAction("Exiting\n");
 	    exit(1);
 	}
-	sprintf(outputFile,"%s.%s",base,fileTypeExt[type]);
+	sprintf(outputFile,"stdin.%s",fileTypeExt[outputFormat]);
+    }
+    else if ((outputFile==NULL)&&(inputFile!=NULL)) {
+	int len;
+	char *base,*ext;
+
+	if (inputMap==NULL)  {
+	    base= strrchr(inputFile,'/');
+	    if (base==NULL)	base= inputFile;
+	    else		base++;
+	}
+	else base= inputMap;
+
+	len= strlen(base)+strlen(fileTypeExt[outputFormat])+2;
+	outputFile= uTypedCalloc(len,char);
+	if (outputFile==NULL) {
+	    uInternalError("Cannot allocate space for output file name\n");
+	    uAction("Exiting\n");
+	    exit(1);
+	}
+	ext= strrchr(base,'.');
+	if (ext==NULL)
+	    sprintf(outputFile,"%s.%s",base,fileTypeExt[outputFormat]);
+	else {
+	    strcpy(outputFile,base);
+	    strcpy(&outputFile[ext-base+1],fileTypeExt[outputFormat]);
+	}
+    }
+    else if (outputFile==NULL) {
+	int len;
+	char *ch,*name,buf[128];
+	if (inDpyName[0]==':')	
+	     sprintf(name=buf,"server%s",inDpyName);
+	else name= inDpyName;
+
+	len= strlen(name)+strlen(fileTypeExt[outputFormat])+2;
+	outputFile= uTypedCalloc(len,char);
+	if (outputFile==NULL) {
+	    uInternalError("Cannot allocate space for output file name\n");
+	    uAction("Exiting\n");
+	    exit(1);
+	}
+	strcpy(outputFile,name);
+	for (ch=outputFile;(*ch)!='\0';ch++) {
+	    if 	(*ch==':')	*ch= '-';
+	    else if (*ch=='.')	*ch= '_';
+	}
+	*ch++= '.';
+	strcpy(ch,fileTypeExt[outputFormat]);
+    }
+    else if (strchr(outputFile,':')!=NULL) {
+	outDpyName= outputFile;
+	outputFile= NULL;
+	outputFormat=  WANT_X_SERVER;
     }
     return True;
 }
 
+Display *
+GetDisplay(program,dpyName)
+    char *	program;
+    char *	dpyName;
+{
+int	xkb_major,xkb_minor,error;
+Display	*dpy;
+
+    xkb_major= XkbMajorVersion;
+    xkb_minor= XkbMinorVersion;
+    dpy= XkbOpenDisplay(dpyName,NULL,NULL,&xkb_major,&xkb_minor,&error);
+    if (dpy==NULL) {
+	switch (error) {
+	    case XkbOD_BadLibraryVersion:
+		uInformation("%s was compiled with XKB version %d.%02d\n",
+				program,XkbMajorVersion,XkbMinorVersion);
+		uError("X library supports incompatible version %d.%02d\n",
+				xkb_major,xkb_minor);
+		break;
+	    case XkbOD_ConnectionRefused:
+		uError("Cannot open display \"%s\"\n",dpyName);
+		break;
+	    case XkbOD_NonXkbServer:
+		uError("XKB extension not present on %s\n",dpyName);
+		break;
+	    case XkbOD_BadServerVersion:
+		uInformation("%s was compiled with XKB version %d.%02d\n",
+				program,XkbMajorVersion,XkbMinorVersion);
+		uError("Server %s uses incompatible version %d.%02d\n",
+				dpyName,xkb_major,xkb_minor);
+		break;
+	    default:
+		uInternalError("Unknown error %d from XkbOpenDisplay\n",error);
+	}
+    }
+    else if (synch)
+	XSynchronize(dpy,True);
+    return dpy;
+}
+
 /***====================================================================***/
 
-#define MAX_INCLUDE_OPTS	10
-static char	*includeOpt[MAX_INCLUDE_OPTS];
-static int	numIncludeOpts = 0;
+static void
+ListFile(fileName,map)
+char *		fileName;
+XkbFile *	map;
+{
+register unsigned	flags;
+char *			mapName;
+
+    flags= map->flags;
+    if ((flags&XkbLC_Hidden)&&(!(verboseLevel&WantHiddenMaps)))
+	return;
+    if ((flags&XkbLC_Partial)&&(!(verboseLevel&WantPartialMaps)))
+	return;
+    if (verboseLevel&WantLongListing) {
+	printf((flags&XkbLC_Default)?"d":"-");
+	printf((flags&XkbLC_Partial)?"p":"-");
+	printf((flags&XkbLC_Hidden)?"h":"-");
+	printf(" ");
+    }
+    mapName= map->name;
+    if ((!(verboseLevel&WantFullNames))&&((flags&XkbLC_Default)!=0))
+	mapName= NULL;
+    if (mapName)
+	 printf("%s(%s)\n",fileName,mapName);
+    else printf("%s\n",fileName);
+    return;
+}
+
+static int
+GenerateListing()
+{
+int		i,m;
+FILE *		inputFile;
+XkbFile *	rtrn,*mapToUse;
+unsigned	oldWarningLevel;
+
+    if (nFilesListed<1) {
+	uError("Must specify at least one file or pattern to list\n");
+	return 1;
+    }
+#ifdef DEBUG
+    if (warningLevel>9)
+	fprintf(stderr,"should list:\n");
+#endif
+    for (i=0;i<nListed;i++) {
+#ifdef DEBUG
+	if (warningLevel>9) {
+	    fprintf(stderr,"%s(%s)\n",(filesToList[i]?filesToList[i]:"*"),
+					(mapsToList[i]?mapsToList[i]:"*"));
+	}
+#endif
+	oldWarningLevel= warningLevel;
+	warningLevel= 0;
+	if (filesToList[i]) {
+	    inputFile= fopen(filesToList[i],"r");
+	    if (!inputFile) {
+		if (oldWarningLevel>5)
+		    uWarning("Couldn't open \"%s\"\n",filesToList[i]);
+		continue;
+	    }
+	    if (XKBParseFile(inputFile,&rtrn)&&(rtrn!=NULL)) {
+		mapToUse= rtrn;
+		for (;mapToUse;mapToUse= (XkbFile *)mapToUse->common.next) {
+		    if (mapsToList[i]!=NULL) {
+			fprintf(stderr,"Don't know how to pattern match yet\n");
+			continue;
+		    }
+		    ListFile(filesToList[i],mapToUse);
+		}
+	    }
+	    fclose(inputFile);
+	}
+	warningLevel= oldWarningLevel;
+    }
+    return 1;
+}
+
+/***====================================================================***/
 
 int
 main(argc,argv)
@@ -220,13 +748,22 @@ main(argc,argv)
 {
 FILE 	*	file;
 XkbFile	*	rtrn;
+XkbFile	*	mapToUse;
 int		ok;
 XkbFileInfo 	result;
+Status		status;
 
-    if (!parseArgs(argc,argv)) {
-	Usage(argc,argv);
-	/* NOTREACHED */
-    }
+#ifdef Lynx
+{
+    extern FILE *yyin;
+    yyin = stdin;
+    uSetEntryFile(NullString);
+    uSetDebugFile(NullString);
+    uSetErrorFile(NullString);
+}
+#endif
+    if (!parseArgs(argc,argv))
+	exit(1);
 #ifdef DEBUG
     if (debugFlags&0x2) {
 	extern int yydebug;
@@ -234,32 +771,106 @@ XkbFileInfo 	result;
     }
 #ifdef sgi
     if (debugFlags&0x4)
-	mallopt(M_DEBUG,0xff);
+	mallopt(M_DEBUG,1);
 #endif
 #endif
-    stInit(200,10,False,NULL);
-    InitIncludePath();
-
-    file= fopen(inputFile,"r");
+    if (preErrorMsg)
+	uSetPreErrorMessage(preErrorMsg);
+    if (errorPrefix)
+	uSetErrorPrefix(errorPrefix);
+    if (postErrorMsg)
+	uSetPostErrorMessage(postErrorMsg);
+    file= NULL;
+    XkbInitAtoms(NULL);
+    XkbInitIncludePath();
+    if (xkblist)
+	return GenerateListing();
+    if (inputFile!=NULL) {
+	if (uStringEqual(inputFile,"-")) {
+	    static char *in= "stdin";
+	    file= stdin;
+	    inputFile= in;
+	}
+	else {
+	    file= fopen(inputFile,"r");
+	}
+    }
+    else if (inDpyName!=NULL) {
+	inDpy= GetDisplay(argv[0],inDpyName);
+	if (!inDpy) {
+	    uAction("Exiting\n");
+	    exit(1);
+	}
+    }
+    if (outDpyName!=NULL) {
+	outDpy= GetDisplay(argv[0],outDpyName);
+	if (!outDpy) {
+	    uAction("Exiting\n");
+	    exit(1);
+	}
+    }
+    if ((inDpy==NULL) && (outDpy==NULL)) {
+	int	xkb_major,xkb_minor,error;
+	xkb_major= XkbMajorVersion;
+	xkb_minor= XkbMinorVersion;
+	if (!XkbLibraryVersion(&xkb_major,&xkb_minor)) {
+	    uInformation("%s was compiled with XKB version %d.%02d\n",
+				argv[0],XkbMajorVersion,XkbMinorVersion);
+	    uError("X library supports incompatible version %d.%02d\n",
+				xkb_major,xkb_minor);
+	    uAction("Exiting\n");
+	    exit(1);
+	}
+    }
     if (file) {
 	ok= True;
 	setScanState(inputFile,1);
-	if (XKBParseFile(file,&rtrn)&&(rtrn!=NULL)) {
+	if ((inputFormat==INPUT_XKB)&&(XKBParseFile(file,&rtrn)&&(rtrn!=NULL))){
 	    fclose(file);
+	    mapToUse= rtrn;
+	    if (inputMap!=NULL) {
+		while ((mapToUse)&&(!uStringEqual(mapToUse->name,inputMap))) {
+		    mapToUse= (XkbFile *)mapToUse->common.next;
+		}
+		if (!mapToUse) {
+		    uFatalError("No map named \"%s\" in \"%s\"\n",inputMap,
+		    						inputFile);
+		    /* NOTREACHED */
+		}
+	    }
+	    else if (rtrn->common.next!=NULL) {
+		mapToUse= rtrn;
+		for (;mapToUse;mapToUse= (XkbFile*)mapToUse->common.next) {
+		    if (mapToUse->flags&XkbLC_Default)
+			break;
+		}
+		if (!mapToUse) {
+		    mapToUse= rtrn;
+		    if (warningLevel>4) {
+			uWarning("No map specified, but \"%s\" has several\n",
+								inputFile);
+			uAction("Using the first defined map, \"%s\"\n",
+								mapToUse->name);
+		    }
+		}
+	    }
 	    bzero((char *)&result,sizeof(result));
-	    result.dpy= NULL;	/* for now */
-	    result.type= rtrn->type;
-	    switch (rtrn->type) {
+	    result.type= mapToUse->type;
+	    if ((result.xkb= XkbAllocKeyboard())==NULL) {
+		uFatalError("Cannot allocate keyboard description\n");
+		/* NOTREACHED */
+	    }
+	    switch (mapToUse->type) {
 		case XkmSemanticsFile:
 		case XkmLayoutFile:
 		case XkmKeymapFile:
-		    ok= CompileKeymap(rtrn,&result,MergeReplace);
+		    ok= CompileKeymap(mapToUse,&result,MergeReplace);
 		    break;
 		case XkmKeyNamesIndex:
-		    ok= CompileKeycodes(rtrn,&result,MergeReplace);
+		    ok= CompileKeycodes(mapToUse,&result,MergeReplace);
 		    break;
 		case XkmTypesIndex:
-		    ok= CompileKeyTypes(rtrn,&result,MergeReplace);
+		    ok= CompileKeyTypes(mapToUse,&result,MergeReplace,NULL);
 		    break;
 		case XkmSymbolsIndex:
 		    uError("Symbols files cannot be compiled on their own\n");
@@ -267,45 +878,131 @@ XkbFileInfo 	result;
 		    ok= False;
 		    break;
 		case XkmCompatMapIndex:
-		    ok= CompileCompatMap(rtrn,&result,MergeReplace);
+		    ok= CompileCompatMap(mapToUse,&result,MergeReplace,NULL);
 		    break;
 		case XkmGeometryFile:
 		case XkmGeometryIndex:
-		    uInternalError("Geometry file not supported yet\n");
-		    ok= False;
-		    break;
-		case XkmAlternateSymsFile:
-		    uInternalError("Alternate Syms file not supported yet\n");
-		    ok= False;
+		    ok= CompileGeometry(mapToUse,&result,MergeReplace);
 		    break;
 		default:
-		    uInternalError("Unknown file type %d\n",rtrn->type);
+		    uInternalError("Unknown file type %d\n",mapToUse->type);
 		    ok= False;
 		    break;
 	    }
-	    if (ok) {
-		switch (type) {
-		    case WANT_XKM_FILE:
-			ok= XkbWriteXKMFile(outputFile,&result);
-			break;
-		    case WANT_XKB_FILE:
-			ok= XkbWriteXKBFile(outputFile,&result);
-			break;
-		    case WANT_C_HDR:
-			ok= XkbWriteCFile(outputFile,&result);
-			break;
-		    default:
-			uInternalError("Unknown output file type %d\n",type);
-			uAction("No output file created\n");
-			ok= False;
-			break;
+	}
+	else if (inputFormat==INPUT_XKM) {
+	    unsigned tmp;
+	    bzero((char *)&result,sizeof(result));
+	    if ((result.xkb= XkbAllocKeyboard())==NULL) {
+		uFatalError("Cannot allocate keyboard description\n");
+		/* NOTREACHED */
+	    }
+	    tmp= XkmReadFile(file,0,XkmKeymapLegal,&result);
+	    if (tmp==XkmKeymapLegal) {
+		uError("Cannot read XKM file \"%s\"\n",inputFile);
+		ok= False;
+	    }
+	}
+	else {
+	    uInformation("Errors encountered in %s; not compiled.\n",inputFile);
+	    ok= False;
+	}
+    }
+    else if (inDpy!=NULL) {
+	bzero((char *)&result,sizeof(result));
+	result.type= XkmKeymapFile;
+	result.xkb= XkbGetMap(inDpy,XkbAllMapComponentsMask,XkbUseCoreKbd);
+	if (result.xkb==NULL)
+	    uFatalError("Cannot load keyboard description\n");
+	if (XkbGetIndicatorMap(inDpy,~0,result.xkb)!=Success)
+	    uFatalError("Could not load indicator map\n");
+	if (XkbGetControls(inDpy,XkbAllControlsMask,result.xkb)!=Success)
+	    uFatalError("Could not load keyboard controls\n");
+	if (XkbGetCompatMap(inDpy,XkbAllCompatMask,result.xkb)!=Success)
+	    uFatalError("Could not load compatibility map\n");
+	if (XkbGetNames(inDpy,XkbAllNamesMask,result.xkb)!=Success)
+	    uFatalError("Could not load names\n");
+	if ((status=XkbGetGeometry(inDpy,result.xkb))!=Success) {
+	    if (warningLevel>3) {
+		char buf[100];
+		buf[0]= '\0';
+		XGetErrorText(inDpy,status,buf,100);
+		uWarning("Could not load keyboard geometry for %s\n",inDpyName);
+		uAction("%s\n",buf);
+		uAction("Resulting keymap file will not describe geometry\n");
+	    }
+	}
+	if (computeDflts)
+	     ok= (ComputeKbdDefaults(result.xkb)==Success);
+	else ok= True;
+    }
+    else {
+	fprintf(stderr,"Cannot open \"%s\" to compile\n",inputFile);
+	ok= 0;
+    }
+    if (ok) {
+	FILE *out;
+	if ((inDpy!=outDpy)&&
+	    (XkbChangeKbdDisplay(outDpy,&result)!=Success)) {
+	    uInternalError("Error converting keyboard display from %s to %s\n",
+	    						inDpyName,outDpyName);
+	    exit(1);
+	}
+	if (outputFile!=NULL) {
+	    if (uStringEqual(outputFile,"-")) {
+		static char *of= "stdout";
+		out= stdout;
+		outputFile= of;
+	    }
+	    else {
+		out= fopen(outputFile,"w");
+		if (out==NULL) {
+		    uError("Cannot open \"%s\" to write keyboard description\n",
+								outputFile);
+		     uAction("Exiting\n");
+		     exit(1);
 		}
 	    }
 	}
+	switch (outputFormat) {
+	    case WANT_XKM_FILE:
+		ok= XkbWriteXKMFile(out,&result);
+		break;
+	    case WANT_XKB_FILE:
+		ok= XkbWriteXKBFile(out,&result,showImplicit,NULL,NULL);
+		break;
+	    case WANT_C_HDR:
+		ok= XkbWriteCFile(out,outputFile,&result);
+		break;
+	    case WANT_X_SERVER:
+	    	if (!(ok= XkbWriteToServer(&result))) {
+		    uError("%s in %s\n",_XkbErrMessages[_XkbErrCode],
+				_XkbErrLocation?_XkbErrLocation:"unknown");
+		    uAction("Couldn't write keyboard description to %s\n",
+								outDpyName);
+		}
+		break;
+	    default:
+		uInternalError("Unknown output format %d\n",outputFormat);
+		uAction("No output file created\n");
+		ok= False;
+		break;
+	}
+	if (outputFormat!=WANT_X_SERVER) {
+	    fclose(out);
+	    if (!ok) {
+		uError("%s in %s\n",_XkbErrMessages[_XkbErrCode],
+				_XkbErrLocation?_XkbErrLocation:"unknown");
+		uAction("Output file \"%s\" removed\n",outputFile);
+		unlink(outputFile);
+	    }
+	}
     }
-    else {
-	fprintf(stderr,"Couldn't open \"%s\" to compile\n",inputFile);
-	ok= 0;
-    }
+    if (inDpy) 
+	XCloseDisplay(inDpy);
+    inDpy= NULL;
+    if (outDpy)
+	XCloseDisplay(outDpy);
+    uFinishUp();
     return (ok==0);
 }

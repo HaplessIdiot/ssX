@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h,v 1.11 94/04/08 15:07:52 erik Exp $ */
+/* $XConsortium: XKBsrv.h /main/15 1996/01/01 10:48:05 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,24 +28,59 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef _XKBSRV_H_
 #define	_XKBSRV_H_
 
-#include <X11/extensions/XKBproto.h>
-#include <X11/extensions/XKBstr.h>
+#ifdef XKB_IN_SERVER
+#define XkbAllocClientMap		SrvXkbAllocClientMap
+#define XkbAllocServerMap		SrvXkbAllocServerMap
+#define XkbChangeTypesOfKey		SrvXkbChangeTypesOfKey
+#define XkbCopyKeyType			SrvXkbCopyKeyType
+#define XkbCopyKeyTypes			SrvXkbCopyKeyTypes
+#define XkbFreeClientMap		SrvXkbFreeClientMap
+#define XkbFreeServerMap		SrvXkbFreeServerMap
+#define XkbInitCanonicalKeyTypes	SrvXkbInitCanonicalKeyTypes
+#define XkbResizeKeyActions		SrvXkbResizeKeyActions
+#define XkbResizeKeySyms		SrvXkbResizeKeySyms
+#define XkbResizeKeyType		SrvXkbResizeKeyType
+#define XkbAllocCompatMap		SrvXkbAllocCompatMap
+#define XkbAllocControls		SrvXkbAllocControls
+#define XkbAllocIndicatorMaps		SrvXkbAllocIndicatorMaps
+#define XkbAllocKeyboard		SrvXkbAllocKeyboard
+#define XkbAllocNames			SrvXkbAllocNames
+#define XkbFreeCompatMap		SrvXkbFreeCompatMap
+#define XkbFreeControls			SrvXkbFreeControls
+#define XkbFreeIndicatorMaps		SrvXkbFreeIndicatorMaps
+#define XkbFreeKeyboard			SrvXkbFreeKeyboard
+#define XkbFreeNames			SrvXkbFreeNames
+#define	XkbAddDeviceLedInfo		SrvXkbAddDeviceLedInfo
+#define	XkbAllocDeviceInfo		SrvXkbAllocDeviceInfo
+#define	XkbFreeDeviceInfo		SrvXkbFreeDeviceInfo
+#define XkbResizeDeviceButtonActions	SrvXkbResizeDeviceButtonActions
+#define XkbLatchModifiers		SrvXkbLatchModifiers
+#define XkbLatchGroup			SrvXkbLatchGroup
+#define XkbVirtualModsToReal		SrvXkbVirtualModsToReal
+#endif
 
-typedef struct _XkbInterestRec {
-	struct _XkbSrvInfo	*kbd;
-	ClientRec		*client;
-	CARD16			 stateNotifyMask;
-	CARD16			 namesNotifyMask;
-	CARD32 			 ctrlsNotifyMask;
-	CARD8			 compatNotifyMask;
-	BOOL			 bellNotifyWanted;
-	BOOL			 actionMessageWanted;
-	CARD8			 slowKeyNotifyMask;
-	CARD32			 iStateNotifyMask;
-	CARD32			 iMapNotifyMask;
-	CARD16			 altSymsNotifyMask;
-	XID			 resource;
-	struct _XkbInterestRec	*next;
+#include <X11/extensions/XKBstr.h>
+#include <X11/extensions/XKBproto.h>
+
+typedef struct _XkbInterest {
+	DeviceIntPtr		dev;
+	ClientPtr		client;
+	XID			resource;
+	struct _XkbInterest *	next;
+	CARD16			extDevNotifyMask;
+	CARD16			stateNotifyMask;
+	CARD16			namesNotifyMask;
+	CARD32 			ctrlsNotifyMask;
+	CARD8			compatNotifyMask;
+	BOOL			bellNotifyWanted;
+	BOOL			actionMessageWanted;
+	CARD16			accessXNotifyMask;
+	CARD32			iStateNotifyMask;
+	CARD32			iMapNotifyMask;
+	CARD16			altSymsNotifyMask;
+	CARD16			newKeyboardNotifyMask;
+	CARD32			autoCtrls;
+	CARD32			autoCtrlValues;
 } XkbInterestRec,*XkbInterestPtr;
 
 typedef struct _XkbRadioGroup {
@@ -56,23 +91,53 @@ typedef struct _XkbRadioGroup {
 	CARD8		members[XkbRGMaxMembers];
 } XkbRadioGroupRec, *XkbRadioGroupPtr;
 
-#define	_OFF_TIMER	0
-#define	_KRG_TIMER	1
-#define	_TIMEOUT_TIMER	2
+typedef struct	_XkbEventCause {
+	CARD8		kc;
+	CARD8		event;
+	CARD8		mjr;
+	CARD8		mnr;
+} XkbEventCauseRec,*XkbEventCausePtr;
+#define	XkbSetCauseKey(c,k,e)	{ (c)->kc= (k),(c)->event= (e),\
+				  (c)->mjr= (c)->mnr= 0; }
+#define	XkbSetCauseReq(c,j,n)	{ (c)->kc= (c)->event= 0,\
+				  (c)->mjr= (j),(c)->mnr= (n); }
+#define	XkbSetCauseCoreReq(c,e) { (c)->kc= (c)->event= 0,\
+				    (c)->mjr= (e),(c)->mnr= 0; }
+#define	XkbSetCauseXkbReq(c,e) { (c)->kc= (c)->event= 0,\
+				   (c)->mjr= XkbReqCode,(c)->mnr= (e); }
+
+#define	_OFF_TIMER		0
+#define	_KRG_WARN_TIMER		1
+#define	_KRG_TIMER		2
+#define	_SK_TIMEOUT_TIMER	3
+#define	_ALL_TIMEOUT_TIMER	4
+
+#define	_BEEP_NONE		0
+#define	_BEEP_FEATURE_ON	1
+#define	_BEEP_FEATURE_OFF	2
+#define	_BEEP_FEATURE_CHANGE	3
+#define	_BEEP_SLOW_WARN		4
+#define	_BEEP_SLOW_PRESS	5
+#define	_BEEP_SLOW_ACCEPT	6
+#define	_BEEP_SLOW_REJECT	7
+#define	_BEEP_SLOW_RELEASE	8
+#define	_BEEP_STICKY_LATCH	9
+#define	_BEEP_STICKY_LOCK	10
+#define	_BEEP_STICKY_UNLOCK	11
+#define	_BEEP_LED_ON		12
+#define	_BEEP_LED_OFF		13
+#define	_BEEP_LED_CHANGE	14
+#define	_BEEP_BOUNCE_REJECT	15
 
 typedef struct _XkbSrvInfo {
+	XkbStateRec	 prev_state;
 	XkbStateRec	 state;
-	XkbControlsRec	 Controls;
-	XkbServerMapRec	 Server;
-	XkbClientMapRec	 Map;
-	XkbIndicatorRec	 Indicators;
-	XkbNamesRec	 Names;
-	XkbCompatRec	 Compat;
-	XkbDescRec	 desc;
+	XkbDescPtr	 desc;
 
-	DeviceIntRec	*device;
+	DeviceIntPtr	 device;
+	KbdCtrlProcPtr	 kbdProc;
 
-	XkbRadioGroupRec *radioGroups;
+	XkbRadioGroupPtr radioGroups;
 	CARD8		 nRadioGroups;
 	CARD8		 clearMods;
 	CARD8		 setMods;
@@ -84,7 +149,8 @@ typedef struct _XkbSrvInfo {
 	double		 mouseKeysCurveFactor;
 	INT16		 mouseKeysDX;
 	INT16		 mouseKeysDY;
-	CARD8		 mouseKeysAccel;
+	CARD8		 mouseKeysFlags;
+	Bool		 mouseKeysAccel;
 	CARD8		 mouseKeysCounter;
 
 	CARD8		 lockedPtrButtons;
@@ -94,19 +160,18 @@ typedef struct _XkbSrvInfo {
 	KeyCode		 slowKey;
 	KeyCode		 repeatKey;
 	CARD8		 krgTimerActive;
+	CARD8		 beepType;
+	CARD8		 beepCount;
 
-	CARD32		 accessXFlags;
+	CARD32		 flags;
 	CARD32		 lastPtrEventTime;
+	CARD32		 lastShiftEventTime;
+	OsTimerPtr	 beepTimer;
 	OsTimerPtr	 mouseKeyTimer;
 	OsTimerPtr	 slowKeysTimer;
 	OsTimerPtr	 bounceKeysTimer;
 	OsTimerPtr	 repeatKeyTimer;
 	OsTimerPtr	 krgTimer;
-
-	CARD8		 compatLookupState;
-	CARD8		 compatGrabState;
-	CARD16		 lookupState;
-	CARD16		 grabState;
 
  	struct {
 	    CARD32		 usesBase;
@@ -121,92 +186,248 @@ typedef struct _XkbSrvInfo {
 	CARD32		 iStateAuto;
 	CARD32		 iStateExplicit;
 	CARD32		 iStateEffective;
-
-	CARD8		 repeat[32];
-
-	XkbInterestRec	*interest;
 } XkbSrvInfoRec, *XkbSrvInfoPtr;
 
-/************************************************************************
- *
- * Masks for setting/determining the accessx ctrl state.
+/*
+ * Settings for xkbClientFlags field (used by DIX)
+ * These flags _must_ not overlap with XkbPCF_*
  */
-#define ALLOW_ACCESSX_MASK              (1 << 0)
-#define MOUSE_KEYS_MASK                 (1 << 2)
-#define TOGGLE_KEYS_MASK                (1 << 3)
-#define TWO_KEYS_MASK                   (1 << 6)
-#define TIME_OUT_MASK                   (1 << 7)
-#define NO_LOCK_ON_TWO_MASK             (1 << 8)
-#define STICKY_ONOFF_SOUND_MASK         (1 << 9)
-#define STICKY_MOD_SOUND_MASK           (1 << 10)
-#define MOUSE_ONOFF_SOUND_MASK          (1 << 11)
-#define TOGGLE_ONOFF_SOUND_MASK         (1 << 12)
-#define KRG_ONOFF_SOUND_MASK            (1 << 13)
-#define KRG_PRESS_SOUND_MASK            (1 << 14)
-#define KRG_ACCEPT_SOUND_MASK           (1 << 15)
+#define	_XkbClientInitialized		(1<<15)
 
-#define KRG_MASK                (XkbSlowKeysMask|XkbBounceKeysMask)
+#define	_XkbWantsDetectableAutoRepeat(c)\
+	((c)->xkbClientFlags&XkbPCF_DetectableAutoRepeatMask)
 
-#define	ALL_FILTERED_MASK	(XkbRepeatKeysMask|KRG_MASK)
-#define ANY_OPTIONS_MASK        (XkbStickyKeysMask|XkbMouseKeysMask|KRG_MASK)
-
-/************************************************************************
- *
- * Masks for setting/determining the accessx status.
+/*
+ * Settings for flags field
  */
-#define BLOCK_AND_WAKEUP_MASK   (1 << 0)
-#define HOLDING_MOUSE_KEY_MASK  (1 << 1)
-#define MOVING_MOUSE_MASK       (1 << 2)
-#define MOVING_STEADY_MASK      (1 << 3)
-#define HOLDING_KRG_KEY_MASK    (1 << 4)
-#define HOLDING_SLOW_KEY_MASK   (1 << 5)
-#define ISSUED_WARNING_MASK     (1 << 6)
-#define REPEATING_MASK          (1 << 7)
-#define CALLED_TWO_KEYS_MASK    (1 << 8)
-#define WAITING_TO_TIMEOUT_MASK (1 << 9)
+#define	_XkbStateNotifyInProgress	(1<<0)
 
-#define X_AccessXStickyKeysOn           0
-#define X_AccessXStickyKeysOff          1
-#define X_AccessXMouseKeysOn            2
-#define X_AccessXMouseKeysOff           3
-#define X_AccessXKRGWarning             4
-#define X_AccessXKRGOn                  5
-#define X_AccessXKRGOff                 6
-#define X_AccessXToggleKeysOn           7
-#define X_AccessXToggleKeysOff          8
-#define X_AccessXToggleKeyDown          9
-#define X_AccessXToggleKeyUp            10
-#define X_AccessXModifierLatch          11
-#define X_AccessXModifierUnlatch        12
-#define X_AccessXModifierLock           13
-#define X_AccessXModifierUnlock         14
-#define X_AccessXPressSlowKey           15
-#define X_AccessXAcceptSlowKey          16
-#define X_AccessXChangeCurrentButton    17
-#define X_AccessXPressButton            18
-#define X_AccessXReleaseButton          19
+/***====================================================================***/
 
+#define XkbAX_KRGMask	 (XkbSlowKeysMask|XkbBounceKeysMask)
+#define	XkbAllFilteredEventsMask \
+			(XkbAccessXKeysMask|XkbRepeatKeysMask|XkbAX_KRGMask)
+
+/***====================================================================***/
+
+extern int	XkbReqCode;
 extern int	XkbEventBase;
-extern int	XkbComputeAutoRepeat;
 extern int	XkbDisableLockActions;
+extern char *	XkbBaseDirectory;
+extern char *	XkbInitialMap;
 
-#ifdef DEBUG
+extern pointer	XkbLastRepeatEvent;
+
 extern CARD16	xkbDebugFlags;
+
+#define	_XkbAlloc(s)		xalloc((s))
+#define	_XkbCalloc(n,s)		Xcalloc((n)*(s))
+#define	_XkbRealloc(o,s)	Xrealloc((o),(s))
+#define	_XkbTypedAlloc(t)	((t *)xalloc(sizeof(t)))
+#define	_XkbTypedCalloc(n,t)	((t *)Xcalloc((n)*sizeof(t)))
+#define	_XkbTypedRealloc(o,n,t) \
+	((o)?(t *)Xrealloc((o),(n)*sizeof(t)):_XkbTypedCalloc(n,t))
+#define	_XkbClearElems(a,f,l,t)	bzero(&(a)[f],((l)-(f)+1)*sizeof(t))
+#define	_XkbFree(p)		Xfree(p)
+
+#define	_XkbLibError(c,l,d) \
+	{ _XkbErrCode= (c); _XkbErrLocation= (l); _XkbErrData= (d); }
+#define	_XkbErrCode2(a,b)	((XID)((((unsigned)(a))<<24)|((b)&0xffffff)))
+#define	_XkbErrCode3(a,b,c)	_XkbErrCode2(a,(((unsigned)(b))<<16)|(c))
+#define	_XkbErrCode4(a,b,c,d)	_XkbErrCode3(a,b,((((unsigned)(c))<<8)|(d)))
+
+#ifdef XINPUT
+extern	int	DeviceKeyPress;
+extern	int	DeviceKeyRelease;
+#define	_XkbIsPressEvent(t)	(((t)==KeyPress)||((t)==DeviceKeyPress))
+#define	_XkbIsReleaseEvent(t)	(((t)==KeyRelease)||((t)==DeviceKeyRelease))
+#else
+#define	_XkbIsPressEvent(t)	((t)==KeyPress)
+#define	_XkbIsReleaseEvent(t)	((t)==KeyRelease)
+#endif
+
+#define	_XkbCoreKeycodeInRange(c,k)	(((k)>=(c)->curKeySyms.minKeyCode)&&\
+					 ((k)<=(c)->curKeySyms.maxKeyCode))
+#define	_XkbCoreNumKeys(c)	((c)->curKeySyms.maxKeyCode-\
+				 (c)->curKeySyms.minKeyCode+1)
+
+#define	Status		int
+#define	XPointer	pointer
+#define	Display		struct _XDisplay
+
+#ifndef True
+#define	True	1
+#define	False	0
+#endif
+
+#ifndef PATH_MAX
+#ifdef MAXPATHLEN
+#define	PATH_MAX MAXPATHLEN
+#else
+#define	PATH_MAX 1024
+#endif
 #endif
 
 _XFUNCPROTOBEGIN
 
-extern DeviceIntPtr XkbLookupDevice(
+extern	void	XkbFreeCompatMap(
 #if NeedFunctionPrototypes
-    int			/* id */
+    XkbDescPtr			/* xkb */,
+    unsigned			/* which */,
+    Bool			/* freeMap */
+#endif
+);
+
+extern	void XkbFreeNames(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	unsigned		/* which */,
+	Bool			/* freeMap */
+#endif
+);
+
+extern DeviceIntPtr _XkbLookupAnyDevice(
+#if NeedFunctionPrototypes
+    int			/* id */,
+    int *		/* why_rtrn */
+#endif
+);
+
+extern DeviceIntPtr _XkbLookupKeyboard(
+#if NeedFunctionPrototypes
+    int			/* id */,
+    int *		/* why_rtrn */
+#endif
+);
+
+extern DeviceIntPtr _XkbLookupBellDevice(
+#if NeedFunctionPrototypes
+    int			/* id */,
+    int *		/* why_rtrn */
+#endif
+);
+
+extern DeviceIntPtr _XkbLookupLedDevice(
+#if NeedFunctionPrototypes
+    int			/* id */,
+    int *		/* why_rtrn */
+#endif
+);
+
+extern DeviceIntPtr _XkbLookupButtonDevice(
+#if NeedFunctionPrototypes
+    int			/* id */,
+    int *		/* why_rtrn */
+#endif
+);
+
+extern	XkbDescPtr XkbAllocKeyboard(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
+
+extern	Status XkbAllocClientMap(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	unsigned		/* which */,
+	unsigned		/* nTypes */
+#endif
+);
+
+extern	Status XkbAllocServerMap(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	unsigned		/* which */,
+	unsigned		/* nNewActions */
+#endif
+);
+
+extern	void	XkbFreeClientMap(
+#if NeedFunctionPrototypes
+    XkbDescPtr			/* xkb */,
+    unsigned			/* what */,
+    Bool			/* freeMap */
+#endif
+);
+
+extern	void	XkbFreeServerMap(
+#if NeedFunctionPrototypes
+    XkbDescPtr			/* xkb */,
+    unsigned			/* what */,
+    Bool			/* freeMap */
+#endif
+);
+
+extern	Status XkbAllocIndicatorMaps(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */
+#endif
+);
+
+extern	Status	XkbAllocCompatMap(
+#if NeedFunctionPrototypes
+    XkbDescPtr			/* xkb */,
+    unsigned			/* which */,
+    unsigned			/* nInterpret */
+#endif
+);
+
+extern	Status XkbAllocNames(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	unsigned		/* which */,
+	int			/* nTotalRG */,
+	int			/* nTotalAliases */
+#endif
+);
+
+extern	Status	XkbAllocControls(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	unsigned		/* which*/
+#endif
+);
+
+extern	Status	XkbCopyKeyType(
+#if NeedFunctionPrototypes
+    XkbKeyTypePtr		/* from */,
+    XkbKeyTypePtr		/* into */
+#endif
+);
+
+extern	Status	XkbCopyKeyTypes(
+#if NeedFunctionPrototypes
+    XkbKeyTypePtr		/* from */,
+    XkbKeyTypePtr		/* into */,
+    int				/* num_types */
+#endif
+);
+
+extern	Status	XkbResizeKeyType(
+#if NeedFunctionPrototypes
+    XkbDescPtr		/* xkb */,
+    int			/* type_ndx */,
+    int			/* map_count */,
+    Bool		/* want_preserve */,
+    int			/* new_num_lvls */
+#endif
+);
+
+extern	void	XkbFreeKeyboard(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	unsigned		/* which */,
+	Bool			/* freeDesc */
 #endif
 );
 
 extern Bool XkbApplyVirtualModChanges(
 #if NeedFunctionPrototypes
-    XkbSrvInfoPtr	/* xkb */,
+    XkbSrvInfoPtr	/* xkbi */,
     unsigned		/* changed */,
-    XkbChangesPtr	/* pChanges */
+    XkbChangesPtr	/* pChanges */,
+    unsigned *		/* needChecksRtrn */
 #endif
 );
 
@@ -217,19 +438,34 @@ extern	unsigned XkbMaskForVMask(
 #endif
 );
 
-extern KeySym *_XkbNewSymsForKey(
+extern Bool XkbVirtualModsToReal(
 #if NeedFunctionPrototypes
-    XkbDescRec *	/* xkb */,
-    unsigned 		/* key */,
-    unsigned 		/* needed */
+	XkbDescPtr	/* xkb */,
+	unsigned	/* virtua_mask */,
+	unsigned *	/* mask_rtrn */
 #endif
 );
 
-extern XkbAction *_XkbNewActionsForKey(
+extern	unsigned	XkbAdjustGroup(
 #if NeedFunctionPrototypes
-    XkbDescRec *	/* xkb */,
-    unsigned 		/* key */,
-    unsigned 		/* needed */
+    int			/* group */,
+    XkbControlsPtr	/* ctrls */
+#endif
+);
+
+extern KeySym *XkbResizeKeySyms(
+#if NeedFunctionPrototypes
+    XkbDescPtr		/* xkb */,
+    int 		/* key */,
+    int 		/* needed */
+#endif
+);
+
+extern XkbAction *XkbResizeKeyActions(
+#if NeedFunctionPrototypes
+    XkbDescPtr		/* xkb */,
+    int 		/* key */,
+    int 		/* needed */
 #endif
 );
 
@@ -242,13 +478,19 @@ extern void XkbUpdateKeyTypesFromCore(
 #endif
 );
 
-void
-XkbUpdateActions(
+extern void XkbUpdateActions(
 #if NeedFunctionPrototypes
     DeviceIntPtr	/* pXDev */,
     KeyCode 		/* first */,
     CARD8 		/* num */,
-    XkbChangesPtr  	/* pChanges */
+    XkbChangesPtr  	/* pChanges */,
+    unsigned *		/* needChecksRtrn */
+#endif
+);
+
+extern void XkbUpdateCoreDescription(
+#if NeedFunctionPrototypes
+    DeviceIntPtr	/* keybd */
 #endif
 );
 
@@ -266,7 +508,8 @@ extern void XkbSetIndicators(
     DeviceIntPtr		/* pXDev */,
     CARD32			/* affect */,
     CARD32			/* values */,
-    XkbIndicatorChangesPtr	/* pChanges */
+    XkbChangesPtr		/* pChanges */,
+    XkbEventCausePtr		/* cause */
 #endif
 );
 
@@ -274,20 +517,42 @@ extern void XkbUpdateIndicators(
 #if NeedFunctionPrototypes
     DeviceIntPtr		/* keybd */,
     CARD32		 	/* changed */,
-    XkbIndicatorChangesRec *	/* pChanges */
+    XkbIndicatorChangesPtr	/* pChanges */
+#endif
+);
+
+extern unsigned XkbIndicatorsToUpdate(
+#if NeedFunctionPrototypes
+    DeviceIntPtr		/* keybd */,
+    unsigned long		/* modsChanged */
 #endif
 );
 
 extern void XkbComputeDerivedState(
 #if NeedFunctionPrototypes
-    XkbSrvInfoRec *		/* xkb */
+    XkbSrvInfoPtr		/* xkbi */
+#endif
+);
+
+extern void XkbCheckSecondaryEffects(
+#if NeedFunctionPrototypes
+    XkbSrvInfoPtr		/* xkbi */,
+    unsigned			/* which */,
+    XkbChangesPtr		/* changes */
+#endif
+);
+
+extern void XkbCheckIndicatorMaps(
+#if NeedFunctionPrototypes
+    XkbSrvInfoPtr		/* xkbi */,
+    unsigned			/* which */
 #endif
 );
 
 extern unsigned XkbStateChangedFlags(
 #if NeedFunctionPrototypes
-    XkbStateRec *	/* old */,
-    XkbStateRec *	/* new */
+    XkbStatePtr			/* old */,
+    XkbStatePtr			/* new */
 #endif
 );
 
@@ -308,9 +573,10 @@ extern	void XkbSendMapNotify(
 extern	int  XkbComputeControlsNotify(
 #if NeedFunctionPrototypes
 	DeviceIntPtr		/* kbd */,
-	XkbControlsRec *	/* old */,
-	XkbControlsRec *	/* new */,
-	xkbControlsNotify *	/* pCN */
+	XkbControlsPtr		/* old */,
+	XkbControlsPtr		/* new */,
+	xkbControlsNotify *	/* pCN */,
+        Bool			/* forceCtrlProc */
 #endif
 );
 
@@ -321,9 +587,17 @@ extern	void XkbSendControlsNotify(
 #endif
 );
 
+extern	void XkbSendCompatMapNotify(
+#if NeedFunctionPrototypes
+	DeviceIntPtr		/* kbd */,
+	xkbCompatMapNotify *	/* ev */
+#endif
+);
+
 extern	void XkbSendIndicatorNotify(
 #if NeedFunctionPrototypes
        DeviceIntPtr		/* kbd */,
+       int			/* xkbType */,
        xkbIndicatorNotify *	/* ev */
 #endif
 );
@@ -331,6 +605,7 @@ extern	void XkbSendIndicatorNotify(
 extern	void XkbHandleBell(
 #if NeedFunctionPrototypes
        BOOL		/* force */,
+       BOOL		/* eventOnly */,
        DeviceIntPtr	/* kbd */,
        CARD8		/* percent */,
        pointer 		/* ctrl */,
@@ -341,10 +616,10 @@ extern	void XkbHandleBell(
 #endif
 );
 
-extern	void XkbSendSlowKeyNotify(
+extern	void XkbSendAccessXNotify(
 #if NeedFunctionPrototypes
        DeviceIntPtr		/* kbd */,
-       xkbSlowKeyNotify *	/* pEv */
+       xkbAccessXNotify *	/* pEv */
 #endif
 );
 
@@ -369,14 +644,19 @@ extern	void XkbSendActionMessage(
 #endif
 );
 
+extern	void XkbSendExtensionDeviceNotify(
+#if NeedFunctionPrototypes
+       DeviceIntPtr			/* kbd */,
+       ClientPtr			/* client */,
+       xkbExtensionDeviceNotify *	/* ev */
+#endif
+);
+
 extern void XkbSendNotification(
 #if NeedFunctionPrototypes
     DeviceIntPtr		/* kbd */,
-    XkbChangesRec *		/* pChanges */,
-    unsigned			/* keycode */,
-    unsigned			/* eventType */,
-    unsigned			/* reqMajor */,
-    unsigned			/* reqMinor */
+    XkbChangesPtr		/* pChanges */,
+    XkbEventCausePtr		/* cause */
 #endif
 );
 
@@ -388,14 +668,84 @@ extern void XkbProcessKeyboardEvent(
 #endif
 );
 
-extern	XkbInterestRec *XkbFindClientResource(
+extern Bool XkbChangeEnabledControls(
+#if NeedFunctionPrototypes
+    XkbSrvInfoPtr	/* xkbi */,
+    unsigned long	/* change */,
+    unsigned long	/* newValues */,
+    XkbEventCausePtr	/* cause */,
+    XkbChangesPtr	/* changes */
+#endif
+);
+
+extern void AccessXInit(
+#if NeedFunctionPrototypes
+    DeviceIntPtr        /* dev */
+#endif
+);
+
+extern Bool AccessXFilterPressEvent(
+#if NeedFunctionPrototypes
+    register xEvent *		/* xE */,
+    register DeviceIntPtr	/* keybd */,
+    int				/* count */
+#endif
+);
+
+extern Bool AccessXFilterReleaseEvent(
+#if NeedFunctionPrototypes
+    register xEvent *		/* xE */,
+    register DeviceIntPtr	/* keybd */,
+    int				/* count */
+#endif
+);
+
+extern void AccessXCancelRepeatKey(
+#if NeedFunctionPrototypes
+    XkbSrvInfoPtr	/* xkbi */,
+    KeyCode		/* key */
+#endif
+);
+
+extern void AccessXComputeCurveFactor(
+#if NeedFunctionPrototypes
+    XkbSrvInfoPtr	/* xkbi */,
+    XkbControlsPtr	/* ctrls */
+#endif
+);
+
+extern	XkbDeviceLedInfoPtr	XkbAddDeviceLedInfo(
+#if NeedFunctionPrototypes
+	XkbDeviceInfoPtr	/* devi */,
+	unsigned		/* ledClass */,
+	unsigned		/* ledId */
+#endif
+);
+
+extern	XkbDeviceInfoPtr	XkbAllocDeviceInfo(
+#if NeedFunctionPrototypes
+	unsigned		/* deviceSpec */,
+	unsigned		/* nButtons */,
+	unsigned		/* szLeds */
+#endif
+);
+
+extern	void XkbFreeDeviceInfo(
+#if NeedFunctionPrototypes
+	XkbDeviceInfoPtr	/* devi */,
+	unsigned		/* which */,
+	Bool			/* freeDevI */
+#endif
+);
+
+extern	XkbInterestPtr XkbFindClientResource(
 #if NeedFunctionPrototypes
        DevicePtr	/* inDev */,
        ClientPtr	/* client */
 #endif
 );
 
-extern	XkbInterestRec *XkbAddClientResource(
+extern	XkbInterestPtr XkbAddClientResource(
 #if NeedFunctionPrototypes
        DevicePtr	/* inDev */,
        ClientPtr	/* client */,
@@ -417,7 +767,50 @@ extern	int XkbRemoveResourceClient(
 #endif
 );
 
-extern	void DDXUpdateIndicators(
+extern int XkbDDXInitDevice(
+#if NeedFunctionPrototypes
+    DeviceIntPtr        /* dev */
+#endif
+);
+
+extern	int XkbDDXAccessXBeep(
+#if NeedFunctionPrototypes
+    DeviceIntPtr        /* dev */,
+    unsigned            /* what */,
+    unsigned            /* which */
+#endif
+);
+
+extern	void XkbDDXKeyClick(
+#if NeedFunctionPrototypes
+    DeviceIntPtr	/* dev */,
+    int			/* keycode */,
+    int			/* synthetic */
+#endif
+);
+
+extern 	int XkbDDXUsesSoftRepeat(
+#if NeedFunctionPrototypes
+    DeviceIntPtr	/* dev */
+#endif
+);
+
+extern	void XkbDDXKeybdCtrlProc(
+#if NeedFunctionPrototypes
+	DeviceIntPtr	/* dev */,
+	KeybdCtrl *	/* ctrl */
+#endif
+);
+
+extern void XkbDDXChangeControls(
+#if NeedFunctionPrototypes
+	DeviceIntPtr	/* dev */,
+	XkbControlsPtr 	/* old */,
+	XkbControlsPtr 	/* new */
+#endif
+);
+
+extern void XkbDDXUpdateIndicators(
 #if NeedFunctionPrototypes
 	DeviceIntPtr	/* keybd */,
 	CARD32		/* oldState */,
@@ -425,71 +818,197 @@ extern	void DDXUpdateIndicators(
 #endif
 );
 
-extern	void XkbSetRepeatKeys(
+extern void XkbDDXFakePointerButton(
 #if NeedFunctionPrototypes
-    DeviceIntPtr 	/* pXDev */,
-    int		 	/* onoff */
+	int 		/* event */,
+	int		/* button */
 #endif
 );
 
-extern	int XkbUsesSoftRepeat(
+extern void XkbDDXFakePointerMotion(
 #if NeedFunctionPrototypes
-    DeviceIntPtr 	/* pXDev */
+ 	unsigned	/* flags */,
+	int		/* x */,
+	int		/* y */
+#endif
+);
+
+extern int XkbDDXTerminateServer(
+#if NeedFunctionPrototypes
+	DeviceIntPtr	/* dev */,
+	KeyCode		/* key */,
+	XkbAction *	/* act */
+#endif
+);
+
+extern int XkbDDXSwitchScreen(
+#if NeedFunctionPrototypes
+	DeviceIntPtr	/* dev */,
+	KeyCode		/* key */,
+	XkbAction *	/* act */
+#endif
+);
+
+extern void XkbDisableComputedAutoRepeats(
+#if NeedFunctionPrototypes
+	DeviceIntPtr 	/* pXDev */,
+	unsigned	/* key */
+#endif
+);
+
+extern void XkbSetRepeatKeys(
+#if NeedFunctionPrototypes
+	DeviceIntPtr 	/* pXDev */,
+	int		/* key */,
+	int	 	/* onoff */
+#endif
+);
+
+extern	int XkbLatchModifiers(
+#if NeedFunctionPrototypes
+	DeviceIntPtr 	/* pXDev */,
+	CARD8 		/* mask */,
+	CARD8 		/* latches */
+#endif
+);
+
+extern	int XkbLatchGroup(
+#if NeedFunctionPrototypes
+	DeviceIntPtr  	/* pXDev */,
+	int	  	/* group */
+#endif
+);
+
+extern	void XkbClearAllLatchesAndLocks(
+#if NeedFunctionPrototypes
+	DeviceIntPtr	/* dev */,
+	XkbSrvInfoPtr	/* xkbi */,
+	Bool		/* genEv */,
+	unsigned	/* keycode */,
+	unsigned	/* evType */,
+	unsigned	/* rMajor */,
+	unsigned	/* rMinor */
+#endif
+);
+
+extern	void	XkbInitDevice(
+#if NeedFunctionPrototypes
+	DeviceIntPtr 	/* pXDev */
+#endif
+);
+
+extern	Bool	XkbInitKeyboardDeviceStruct(
+#if NeedFunctionPrototypes
+	DeviceIntPtr 		/* pXDev */,
+	XkbComponentNamesPtr	/* pNames */,
+	KeySymsPtr		/* pSyms */,
+	CARD8 			/* pMods */[],
+	BellProcPtr		/* bellProc */,
+	KbdCtrlProcPtr		/* ctrlProc */
+#endif
+);
+
+extern	void	XkbInitDevice(
+#if NeedFunctionPrototypes
+	DeviceIntPtr 		/* pXDev */
 #endif
 );
 
 extern	int SProcXkbDispatch(
 #if NeedFunctionPrototypes
-	ClientPtr	/* client */
+	ClientPtr		/* client */
 #endif
 );
 
-#ifdef XKMFORMAT_H
-
-extern Bool	XkmReadTOC(
+extern XkbGeometryPtr XkbLookupNamedGeometry(
 #if NeedFunctionPrototypes
-    FILE *              /* file */,
-    XkbDescPtr          /* xkb */,
-    xkmFileInfo *       /* file_info */,
-    int                 /* max_toc */,
-    xkmSectionInfo *    /* toc */
+	DeviceIntPtr		/* dev */,
+	Atom			/* name */,
+	Bool *			/* shouldFree */
 #endif
 );
 
-extern xkmSectionInfo *XkmFindTOCEntry(
+extern char *	_XkbDupString(
 #if NeedFunctionPrototypes
-    xkmFileInfo *       /* finfo */,
-    xkmSectionInfo *    /* toc */,
-    unsigned            /* type */
+	char *			/* str */
 #endif
 );
 
-extern Bool	XkmReadFileSection(
+extern void	XkbConvertCase(
 #if NeedFunctionPrototypes
-    FILE *              /* file */,
-    xkmSectionInfo *    /* toc */,
-    DeviceIntRec *      /* dev */,
-    unsigned *          /* loaded_rtrn */
+	KeySym 			/* sym */,
+	KeySym *		/* lower */,
+	KeySym *		/* upper */
 #endif
 );
 
-extern	Bool XkmReadFile(
+#ifdef XKBSRV_NEED_FILE_FUNCS
+
+#include "extensions/XKMformat.h"
+#include "extensions/XKBfile.h"
+
+extern	unsigned XkbDDXLoadKeymapByNames(
 #if NeedFunctionPrototypes
-    FILE *              /* file */,
-    unsigned            /* type */,
-    DeviceIntRec *      /* dev */,
-    unsigned *          /* loaded_rtrn */
+	DeviceIntPtr		/* keybd */,
+	XkbComponentNamesPtr	/* names */,
+	unsigned		/* want */,
+	unsigned		/* need */,
+	XkbFileInfoPtr		/* finfoRtrn */,
+	char *			/* keymapNameRtrn */,
+	int 			/* keymapNameRtrnLen */
 #endif
 );
-#endif /* XKMFORMAT_H */
+
+extern	FILE *XkbDDXOpenConfigFile(
+#if NeedFunctionPrototypes
+	char *	/* mapName */,
+	char *	/* fileNameRtrn */,
+	int	/* fileNameRtrnLen */
+#endif
+);
+
+extern	Bool XkbDDXApplyConfig(
+#if NeedFunctionPrototypes
+	XPointer	/* cfg_in */,
+	XkbSrvInfoPtr	/* xkbi */
+#endif
+);
+
+extern XPointer XkbDDXPreloadConfig(
+#if NeedFunctionPrototypes
+	XkbComponentNamesPtr	/* names */,
+	DeviceIntPtr		/* dev */
+#endif
+);
+
+extern	int XkbDDXUsesSoftRepeat(
+#if NeedFunctionPrototypes
+	DeviceIntPtr 	/* pXDev */
+#endif
+);
+
+extern	void XkbDDXFakePointerMotion(
+#if NeedFunctionPrototypes
+	unsigned		/* flags */,
+	int			/* x */,
+	int			/* y */
+#endif
+);
+
+extern	int _XkbStrCaseCmp(
+#if NeedFunctionPrototypes
+	char *			/* str1 */,
+	char *			/* str2 */
+#endif
+);
+
+#endif /* XKBSRV_NEED_FILE_FUNCS */
+
 
 _XFUNCPROTOEND
 
-	/*
-	 * bits in xkbClientFlags field of 
-	 * ClientRec structure
-	 */
-#define	XKB_INITIALIZED	(1<<0)
-#define	XkbIMMEDIATE	(1<<1)
+#define	XkbAtomGetString(d,s)	NameForAtom(s)
 
 #endif /* _XKBSRV_H_ */
+
+

@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/16 13:18:27 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.40 1995/12/23 09:40:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.41 1996/01/08 08:56:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -44,6 +44,10 @@
 #include "xf86_Config.h"
 #include "vga.h"
 
+#ifdef PC98
+#include "pc98_vers.h"
+#endif
+
 #ifdef XFreeXDGA
 #include "extnsionst.h"
 #include "scrnintstr.h"
@@ -57,6 +61,13 @@
 #include "cfb16.h"
 #include "cfb32.h"
 #include "vgabpp.h"
+#endif
+
+#ifdef PC98_EGC
+#define EGC_PLANE	0x4a0
+#define EGC_MODE	0x4a4
+#define EGC_FGC		0x4a6
+#define EGC_COPY_MODE	0x2cac
 #endif
 
 
@@ -124,7 +135,11 @@ ScrnInfoRec vga256InfoRec = {
   {0, },		/* int clock[MAXCLOCKS] */
   DEFAULT_MAX_CLOCK,	/* int maxClock */
   0,			/* int videoRam */
+#ifndef	PC98_EGC
   0xC0000,		/* int BIOSbase */
+#else
+  0xE8000,		/* int BIOSbase */
+#endif
   0,			/* unsigned long MemBase, unused for this driver */
   240, 180,		/* int width, height */
   0,			/* unsigned long speedup */
@@ -304,9 +319,31 @@ vgaPrintIdent()
 #ifdef XF86VGA16
   ErrorF("  %s: server for 4-bit colour VGA (Patchlevel %s):\n      ",
          vga256InfoRec.name, vga256InfoRec.patchLevel);
+#ifdef	PC98_EGC
+  ErrorF("\tmodified for PC98 EGC (Patchlevel %s):\n      ",PC98_VGA16_PL);
+#endif
 #else
   ErrorF("  %s: server for 8-bit colour SVGA (Patchlevel %s):\n      ",
          vga256InfoRec.name, vga256InfoRec.patchLevel);
+#if defined(PC98_WAB)||defined(PC98_GANB_WAP)||defined(PC98_NKV) \
+	||defined(PC98_NEC_CIRRUS)||defined(PC98_NEC480)
+  ErrorF("\tmodified for PC98 WAB/WAP GA-98NB EPSON-NKV \n\tNEC-CIRRUS PEGC(Patchlevel %s):\n      ",PC98_SVGA_PL);
+#endif
+#ifdef PC98_WAB
+  ErrorF("\tThis server was compiled for PC98 WAB.\n      ");
+#endif
+#ifdef PC98_GANB_WAP
+  ErrorF("\tThis server was compiled for PC98 GA-98NB and WAP.\n      ");
+#endif
+#ifdef PC98_NKV
+  ErrorF("\tThis server was compiled for PC98 EPSON-NKV and NKV2.\n      ");
+#endif
+#ifdef PC98_NEC_CIRRUS
+  ErrorF("\tThis server was compiled for PC98 NEC-CIRRUS.\n      ");
+#endif
+#ifdef PC98_NEC480
+  ErrorF("\tThis server was compiled for PC98 PEGC(640x480,256colors).\n      ");
+#endif
 #endif
 #endif
   n = 0;
@@ -333,6 +370,14 @@ vgaPrintIdent()
       c += strlen(id);
     }
   ErrorF("\n");
+
+#if defined(PC98_WAB)||defined(PC98_GANB_WAP)||defined(PC98_NKV) \
+	||defined(PC98_NEC_CIRRUS)||defined(PC98_NEC480)
+  ErrorF("Supported video boards:\n \t%s \n    ",PC98_SVGA_BOARDS);
+#endif
+#ifdef	PC98_EGC
+  ErrorF("Supported video boards:\n \t%s \n    ",PC98_VGA16_BOARDS);
+#endif
 }
 
 
@@ -442,7 +487,11 @@ vgaProbe()
 	rounding = 32;
 #else /* MONOVGA */
 #ifdef XF86VGA16
+#ifdef PC98_EGC
+	needmem = Drivers[i]->ChipMapSize * 8;
+#else
 	needmem = vga256InfoRec.videoRam / 4 * 1024 * 8;
+#endif
 	rounding = 32;
 #else
 	needmem = vga256InfoRec.videoRam * 1024;
@@ -539,9 +588,11 @@ vgaProbe()
 	vgaRestoreFunc = Drivers[i]->ChipRestore;
 	vgaAdjustFunc = Drivers[i]->ChipAdjust;
 	vgaFbInitFunc = Drivers[i]->ChipFbInit;
+#ifndef PC98_EGC
 	vgaSetReadFunc = Drivers[i]->ChipSetRead;
 	vgaSetWriteFunc = Drivers[i]->ChipSetWrite;
 	vgaSetReadWriteFunc = Drivers[i]->ChipSetReadWrite;
+#endif		 
 	vgaMapSize = Drivers[i]->ChipMapSize;
 	vgaSegmentSize = Drivers[i]->ChipSegmentSize;
 	vgaSegmentShift = Drivers[i]->ChipSegmentShift;
@@ -887,8 +938,33 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   extern int monitorResolution;
 
   if (serverGeneration == 1) {
+#ifdef PC98_WAB
+    vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xE0000,
+			    vgaMapSize);
+#else
+#ifdef PC98_GANB_WAP
+    vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xF00000,
+			    vgaMapSize);
+#else
+#ifdef PC98_NKV
+    vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xF00000,
+			    vgaMapSize);
+#else
+#ifdef	PC98_NEC_CIRRUS
+    vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xF00000,
+			    vgaMapSize);
+#else
+#if	defined(PC98_EGC) || defined(PC98_NEC480)
+    vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA8000,
+			    vgaMapSize);
+#else    
     vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA0000,
 			    vgaMapSize);
+#endif /* PC98_EGC  PC98_NE480 */
+#endif /* PC98_NEC_CIRRUS */
+#endif /* PC98_NKV */
+#endif /* PC98_GANB_WAP */
+#endif /* PC98_WAB  */
     if (vgaUseLinearAddressing)
         vgaLinearBase = xf86MapVidMem(scr_index, LINEAR_REGION,
         			      (pointer)vgaPhysLinearBase,
@@ -1054,8 +1130,36 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   /* Fill the screen with black */
   if (serverGeneration == 1)
   {
+#ifdef PC98_NEC480
+	{ int i;
+		extern short *vramwindow;
+
+		outb(0xa8, 0xff);
+		outb(0xaa, 0x00);
+		outb(0xac, 0x00);
+		outb(0xae, 0x00);
+		for(i=0;i<10;i++) {
+			*(vramwindow+2) = i;
+			memset(vgaBase, 0xff, 0x8000);
+		}
+		*(vramwindow+2) = 0;
+	}
+#else /* PC98_NEC480 */
 #if (defined(MONOVGA) && !defined (BANKEDMONOVGA)) /* || defined(XF86VGA16) */
     memset(vgaBase,pScreen->blackPixel,vgaSegmentSize);
+#else
+#ifdef PC98_EGC
+#if 1
+    {
+      outw(EGC_PLANE, 0);
+      outw(EGC_MODE, EGC_COPY_MODE);
+      outw(EGC_FGC, pScreen->blackPixel);
+      memset(vgaBase, 0xff, 0x8000);
+    }
+#else
+    vgaFillSolid( pScreen->blackPixel, GXcopy, 0x0F /* planes */, 0, 0,
+		 pScreen->width, pScreen->height );
+#endif
 #else
     pointer    vgaVirtPtr;
     pointer    vgaPhysPtr;
@@ -1089,7 +1193,9 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
             }
             memset(vgaPhysPtr,pScreen->blackPixel,vgaSegmentSize);
         }
+#endif /* !PC98_EGC */
 #endif /* MONOVGA */
+#endif /* !PC98_NEC480 */
   }
   vgaSaveScreen(NULL, TRUE); /* unblank the screen */
 #endif /* ! DIRTY_STARTUP */
@@ -1332,6 +1438,39 @@ vgaCloseScreen(screen_idx, pScreen)
     (savepScreen->DestroyPixmap)(ppix);
     ppix = NULL;
   }
+#ifdef	PC98_EGC
+  /* clear screen */
+  {
+    outw(EGC_PLANE, 0);
+    outw(EGC_MODE, EGC_COPY_MODE);
+    outw(EGC_FGC, 0);
+    memset(vgaBase, 0xff, 0x8000);
+  }
+  outb(0x6a, 0x07);
+  outb(0x6a, 0x04);
+  outb(0x6a, 0x06);
+/* outb((hiresoflg)?0xa4:0x7c, 0x00); */
+  outb(0x7c, 0x00);
+#endif
+#ifdef PC98_NEC480
+	{ int i;
+		extern short *vramwindow;
+
+		outb(0xa8, 0xff);
+		outb(0xaa, 0x00);
+		outb(0xac, 0x00);
+		outb(0xae, 0x00);
+		for(i=0;i<10;i++) {
+			*(vramwindow+2) = i;
+			memset(vgaBase, 0xff, 0x8000);
+		}
+		*(vramwindow+2) = 0;
+	}
+	outb(0x6a, 0x07);
+	outb(0x6a, 0x04);
+	outb(0x6a, 0x06);
+	outb(0x7c, 0x00);
+#endif /* PC98_NEC480 */
   return(TRUE);
 }
 

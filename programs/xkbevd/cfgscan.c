@@ -1,4 +1,5 @@
 /* $XConsortium: cfgscan.c /main/2 1995/12/07 21:27:36 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,7 +34,11 @@
 
 #include "tokens.h"
 
+#ifndef Lynx
 FILE	*yyin = stdin;
+#else
+FILE	*yyin = NULL;
+#endif
 
 static char scanFileBuf[1024];
 char *	 scanFile= scanFileBuf;

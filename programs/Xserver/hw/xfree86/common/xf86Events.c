@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.21 1995/12/23 09:38:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.22 1996/01/05 06:28:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -45,7 +45,6 @@
 #include "scrnintstr.h"
 #include "servermd.h"
 
-extern Bool noXkbExtension;
 
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
@@ -55,6 +54,10 @@ extern Bool noXkbExtension;
 #include "XI.h"
 #include "XIproto.h"
 #include "xf86Xinput.h"
+#endif
+
+#ifdef XKB
+extern Bool noXkbExtension;
 #endif
 
 #define XE_POINTER  1

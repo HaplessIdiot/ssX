@@ -1,5 +1,5 @@
 /* $XConsortium: vgaCmap.c,v 1.2 94/10/13 13:04:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.4 1995/12/02 05:07:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.5 1995/12/09 11:08:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -92,9 +92,21 @@ vgaStoreColors(pmap, ndef, pdefs)
 	    new_overscan = TRUE;
 	}
         cmap = &((vgaHWPtr)vgaNewVideoState)->DAC[pdefs[i].pixel*3];
+#ifndef PC98_EGC
+#ifndef PC98_NEC480
         cmap[0] = pdefs[i].red   >> 10;
         cmap[1] = pdefs[i].green >> 10;
         cmap[2] = pdefs[i].blue  >> 10;
+#else /* PC98_NEC480 */
+        cmap[0] = pdefs[i].red   >> 8;
+        cmap[1] = pdefs[i].green >> 8;
+        cmap[2] = pdefs[i].blue  >> 8;
+#endif /* PC98_NEC480 */
+#else
+        cmap[0] = pdefs[i].red   >> 12;
+        cmap[1] = pdefs[i].green >> 12;
+        cmap[2] = pdefs[i].blue  >> 12;
+#endif /* PC98_EGC */
 	if (clgd6225Lcd)
 	{
 		/* The LCD doesn't like white */
@@ -109,6 +121,7 @@ vgaStoreColors(pmap, ndef, pdefs)
 #endif
 	   )
 	{
+#if !defined(PC98_EGC) && !defined(PC98_NEC480)
 	    outb(0x3C8, pdefs[i].pixel);
 	    DACDelay;
 	    outb(0x3C9, cmap[0]);
@@ -117,6 +130,13 @@ vgaStoreColors(pmap, ndef, pdefs)
 	    DACDelay;
 	    outb(0x3C9, cmap[2]);
 	    DACDelay;
+#else
+	    /* also, PC9821Ne */
+	    outb(0xa8, pdefs[i].pixel);
+	    outb(0xac, cmap[0]);
+	    outb(0xaa, cmap[1]);
+	    outb(0xae, cmap[2]);
+#endif /* PC98_EGC */
 	}
     }	
     if (new_overscan)
@@ -171,11 +191,13 @@ vgaStoreColors(pmap, ndef, pdefs)
 #endif
 	       )
 	    {
+#ifndef PC98_EGC
 	        (void)inb(vgaIOBase + 0x0A);
 	        outb(0x3C0, OVERSCAN);
 	        outb(0x3C0, overscan);
 	        (void)inb(vgaIOBase + 0x0A);
 	        outb(0x3C0, 0x20);
+#endif
 	    }
         }
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: vgaReg.h,v 1.1 94/03/28 21:39:50 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaReg.h,v 1.1.1.2 1996/01/03 07:22:35 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -43,9 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-/* Header: /andrew/X11/R3src/earlyRelease/server/ddx/ibm/vga/RCS/vgaReg.h,v 6.1 88/10/30 20:23:42 paul Exp */
-/* Source: /andrew/X11/R3src/earlyRelease/server/ddx/ibm/vga/RCS/vgaReg.h,v */
+/* $XConsortium: vgaReg.h /main/2 1995/11/13 07:06:11 kaleb $ */
 
 #define SET_BYTE_REGISTER( ioport, value )	outb( ioport, value )
 #define SET_INDEX_REGISTER( ioport, value ) SET_BYTE_REGISTER( ioport, value )
@@ -68,11 +66,13 @@ SOFTWARE.
 #define ColorPlaneEnableIndex		0x32
 #define HorizPelPanIndex		0x33
 #define ColorSelectIndex		0x34
+#ifndef	PC98_EGC
 #define SetVideoAttributeIndex( index ) \
 	SET_INDEX_REGISTER( AttributeIndexRegister, index )
 #define SetVideoAttribute( index, value ) \
 	SetVideoAttributeIndex( index ) ; \
 	SET_BYTE_REGISTER( AttributeDataWriteRegister, value )
+#endif
 
 	/* Graphics Registers  03CE & 03CF */
 #define GraphicsIndexRegister		REGBASE + 0xCE
@@ -87,12 +87,14 @@ SOFTWARE.
 #define MiscellaneousIndex		0x06
 #define Color_Dont_CareIndex		0x07
 #define Bit_MaskIndex			0x08
+#ifndef	PC98_EGC
 #define SetVideoGraphicsIndex( index ) \
 	SET_INDEX_REGISTER( GraphicsIndexRegister, index )
 #define SetVideoGraphicsData( value ) \
 	SET_INDEX_REGISTER( GraphicsDataRegister, value )
 #define SetVideoGraphics( index, value ) \
 	SET_INDEXED_REGISTER( GraphicsRegister, index, value )
+#endif
 
 /* Sequencer Registers  03C4 & 03C5 */
 #define SequencerIndexRegister		REGBASE + 0xC4
@@ -103,10 +105,12 @@ SOFTWARE.
 #define Mask_MapIndex			02
 #define Char_Map_SelectIndex		03
 #define Memory_ModeIndex		04
+#ifndef	PC98_EGC
 #define SetVideoSequencerIndex( index ) \
 	SET_INDEX_REGISTER( SequencerIndexRegister, index )
 #define SetVideoSequencer( index, value ) \
 	SET_INDEXED_REGISTER( SequencerRegister, index, value )
+#endif
 
 /* BIT CONSTANTS FOR THE VGA/EGA HARDWARE */
 /* for the Graphics' Data_Rotate Register */
@@ -123,3 +127,28 @@ SOFTWARE.
 #define VGA_WRITE_MODE_3	3
 #define VGA_READ_MODE_0		( 0 << VGA_READ_MODE_SHIFT )
 #define VGA_READ_MODE_1		( 1 << VGA_READ_MODE_SHIFT )
+
+#ifdef	PC98_EGC
+/* I/O port address define for extended EGC */
+#define		EGC_PLANE	0x4a0	/* EGC active plane select */
+#define		EGC_READ	0x4a2	/* EGC FGC,EGC,Read Plane  */
+#define		EGC_MODE	0x4a4	/* EGC Mode register & ROP */
+#define		EGC_FGC		0x4a6	/* EGC Forground color     */
+#define		EGC_MASK	0x4a8	/* EGC Mask register       */
+#define		EGC_BGC		0x4aa	/* EGC Background color    */
+#define		EGC_ADD		0x4ac	/* EGC Dest/Source address */
+#define		EGC_LENGTH	0x4ae	/* EGC Bit length          */
+
+#define		PALETTE_ADD	0xa8	/* Palette address         */
+#define		PALETTE_GRE	0xaa	/* Palette Green           */
+#define		PALETTE_RED	0xac	/* Palette Red             */
+#define		PALETTE_BLU	0xae	/* Palette Blue            */
+					
+#define EGC_AND_MODE		0x2c8c	/* (S&P&D)|(~S&D) */
+#define EGC_AND_INV_MODE	0x2c2c	/* (S&P&~D)|(~S&D) */
+#define EGC_OR_MODE		0x2cec	/* S&(P|D)|(~S&D) */
+#define EGC_OR_INV_MODE		0x2cbc	/* S&(P|~D)|(~S&D) */
+#define EGC_XOR_MODE		0x2c6c	/* (S&(P&~D|~P&D))|(~S&D) */
+#define EGC_XOR_INV_MODE	0x2c9c	/* (S&(P&D)|(~P&~D))|(~S&D) */
+#define EGC_COPY_MODE		0x2cac /* (S&P)|(~S&D) */
+#endif

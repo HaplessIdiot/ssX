@@ -1,5 +1,6 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.4 1995/12/23 09:41:11 dawes Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.5 1995/12/28 01:40:20 dawes Exp $ */
 
+#include <X11/Xos.h>
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
@@ -23,6 +24,18 @@
 
 #define MINMAJOR 0
 #define MINMINOR 0
+
+/* copied from xf86Io.c */
+#if !defined(AMOEBA) && !defined(MINIX)
+int
+GetTimeInMillis()
+{
+    struct timeval  tp;
+
+    gettimeofday(&tp, 0);
+    return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
+}
+#endif /* !AMOEBA && !MINIX */
 
 
 main(int argc, char *argv[])
@@ -160,17 +173,18 @@ main(int argc, char *argv[])
 	    int cycle;
 	    int numcycles = 500;
 
-	    start_clock = clock();
+	    start_clock = GetTimeInMillis();
 
 	    XF86DGASetVidPage(dis, DefaultScreen(dis), i);
 	    for (cycle = 0; cycle < numcycles; cycle++)
 	       memset(addr, (char) (cycle % 255), 65536);
 
-	    finish_clock = clock();
+	    finish_clock = GetTimeInMillis();
 	    diff_clock = finish_clock - start_clock;
-	    fprintf(stderr, "Timing: %3d.%1ds, %dK/s\n",
-		    diff_clock / 100,(diff_clock % 100) / 10,
-		    3200000 / diff_clock);
+
+	    fprintf(stderr, "Timing: %3d.%03ds, %dK/s\n",
+		    diff_clock / 1000, (diff_clock % 1000),
+		    (64000*numcycles) / diff_clock);
 	 }
 
          for (i = 0; i < banks; i++) {

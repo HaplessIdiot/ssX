@@ -1,5 +1,5 @@
 /* $XConsortium: wm3.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/wm3.c,v 3.0 1994/05/04 15:03:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/wm3.c,v 3.2 1995/01/28 17:06:27 dawes Exp $ */
 #include <sys/types.h>
 #include "compiler.h"
 #include "vgaReg.h"
@@ -17,6 +17,7 @@
 wm3_set_regs(pGC)
 GC *pGC;
 {
+#ifndef	PC98_EGC
     int post_invert = 0;
     int ALU;
 
@@ -101,6 +102,83 @@ GC *pGC;
     SetVideoGraphics(Data_RotateIndex, ALU);
 
     return post_invert;
+#else
+    int ALU;
+
+    switch(pGC->alu) {
+    case GXclear:        /* rop0 = RROP_BLACK;  rop1 = RROP_BLACK; */
+        pGC->fgPixel = 0;
+        pGC->bgPixel = 0;
+        ALU = EGC_COPY_MODE;
+        break;
+    case GXand:          /* rop0 = RROP_BLACK;  rop1 = RROP_NOP; */
+        ALU = EGC_AND_MODE;
+        break;
+    case GXandReverse:   /* rop0 = RROP_BLACK;  rop1 = RROP_INVERT; -- TRICKY */
+        pGC->fgPixel = ~pGC->fgPixel;
+        pGC->bgPixel = ~pGC->bgPixel;
+        ALU = EGC_OR_INV_MODE;
+        break;
+    case GXcopy:         /* rop0 = RROP_BLACK;  rop1 = RROP_WHITE; */
+        ALU = EGC_COPY_MODE;
+        break;
+    case GXandInverted:  /* rop0 = RROP_NOP;    rop1 = RROP_BLACK; */
+        pGC->fgPixel = ~pGC->fgPixel;
+        pGC->bgPixel = ~pGC->bgPixel;
+        ALU = EGC_AND_MODE;
+        break;
+    case GXnoop:         /* rop0 = RROP_NOP;    rop1 = RROP_NOP; */
+        return 0;
+    case GXxor:          /* rop0 = RROP_NOP;    rop1 = RROP_INVERT; */
+        ALU = EGC_XOR_MODE;
+        break;
+    case GXor:           /* rop0 = RROP_NOP;    rop1 = RROP_WHITE; */
+        ALU = EGC_OR_MODE;
+        break;
+    case GXnor:          /* rop0 = RROP_INVERT; rop1 = RROP_BLACK; -- TRICKY*/
+        ALU = EGC_OR_INV_MODE;
+        break;
+    case GXequiv:        /* rop0 = RROP_INVERT; rop1 = RROP_NOP; */
+        pGC->fgPixel = ~pGC->fgPixel;
+        pGC->bgPixel = ~pGC->bgPixel;
+        ALU = EGC_XOR_MODE;
+        break;
+    case GXinvert:       /* rop0 = RROP_INVERT; rop1 = RROP_INVERT; */
+        pGC->fgPixel = 0x0F;
+        pGC->bgPixel = 0x0F;
+        ALU = EGC_XOR_MODE;
+        break;
+    case GXorReverse:    /* rop0 = RROP_INVERT; rop1 = RROP_WHITE; -- TRICKY */
+        pGC->fgPixel = ~pGC->fgPixel;
+        pGC->bgPixel = ~pGC->bgPixel;
+        ALU = EGC_AND_INV_MODE;
+        break;
+    case GXcopyInverted: /* rop0 = RROP_WHITE;  rop1 = RROP_BLACK; */
+        pGC->fgPixel = ~pGC->fgPixel;
+        pGC->bgPixel = ~pGC->bgPixel;
+        ALU = EGC_COPY_MODE;
+        break;
+    case GXorInverted:   /* rop0 = RROP_WHITE;  rop1 = RROP_NOP; */
+        pGC->fgPixel = ~pGC->fgPixel;
+        pGC->bgPixel = ~pGC->bgPixel;
+        ALU = EGC_OR_MODE;
+        break;
+    case GXnand:         /* rop0 = RROP_WHITE;  rop1 = RROP_INVERT; -- TRICKY */
+        ALU = EGC_OR_INV_MODE;
+        break;
+    case GXset:          /* rop0 = RROP_WHITE;  rop1 = RROP_WHITE; */
+        pGC->fgPixel = 0x0F;
+        pGC->bgPixel = 0x0F;
+        ALU = EGC_COPY_MODE;
+        break;
+    }
+
+    outw(EGC_PLANE, ~(pGC->planemask & VGA_ALLPLANES));
+    outw(EGC_MODE, ALU);
+    outw(EGC_FGC, pGC->fgPixel & VGA_ALLPLANES); /* set FGC */
+
+    return 0;
+#endif
 }
 
 /*

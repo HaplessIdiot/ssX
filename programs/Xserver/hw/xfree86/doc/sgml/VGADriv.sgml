@@ -880,7 +880,7 @@ Sunnyvale, CA 94086 <newline>
 (408) 737-0888 <newline>
 (408) 737-3838 (fax)
 
-<tag/S3 (911, 924, 801/805, 928)/
+<tag>S3 (911, 924, 801/805, 928, 864, 868, 964, 968, 764, 765)</tag>
 (408) 980-5400
 
 <tag/Trident Microsystems Inc (8800, 8900, 9000)/
@@ -904,7 +904,7 @@ Sunnyvale, CA  94086 <newline>
 
 <verb>
 $XConsortium: VGADriv.sgml,v 1.3 95/01/23 15:34:51 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.5 1995/01/28 16:02:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.6 1995/11/12 09:52:36 dawes Exp $
 </verb>
 
 </article>

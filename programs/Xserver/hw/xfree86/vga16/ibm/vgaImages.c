@@ -1,5 +1,5 @@
 /* $XConsortium: vgaImages.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaImages.c,v 3.0 1994/05/04 15:03:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaImages.c,v 3.2 1995/01/28 17:06:21 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -64,6 +64,9 @@ register unsigned int currMask ;
 register unsigned int InitialMask ;
 register volatile unsigned char *StartByte ;
 unsigned int invert_source_data = FALSE ;
+#ifdef	PC98_EGC	/* new EGC test */
+register unsigned char tmp1;
+#endif
 
 {	/* Start GJA */
 	extern int xf86VTSema;
@@ -77,6 +80,9 @@ unsigned int invert_source_data = FALSE ;
 {
 	unsigned int invert_existing_data = FALSE ;
 	unsigned int data_rotate_value = VGA_COPY_MODE ;
+#ifdef	PC98_EGC
+	unsigned short ROP_value;
+#endif
 
 	switch ( alu ) {
 		case GXclear:		/* 0x0 Zero 0 */
@@ -119,18 +125,82 @@ unsigned int invert_source_data = FALSE ;
 		default:
 			break ;
 	}
+#ifndef PC98_EGC
 	if ( invert_existing_data )
 		vgaFillSolid( pWin, VGA_ALLPLANES, GXinvert, planes, x, y, w, h ) ;
+#endif
+#ifdef	PC98_EGC
+	/* Setup EGC Registers */
+	switch(data_rotate_value) {
+/* EGC MODE.. Cmp Read: Flase, WriteSource=ROP, ReadSource=CPU */
+	case VGA_AND_MODE:
+	    if (invert_existing_data)
+		ROP_value = EGC_AND_INV_MODE;
+	    else
+		ROP_value = EGC_AND_MODE;
+	    break;
+	case VGA_OR_MODE:
+	    if (invert_existing_data)
+		ROP_value = EGC_OR_INV_MODE;
+	    else
+		ROP_value = EGC_OR_MODE;
+	    break;
+	case VGA_XOR_MODE:
+	    if (invert_existing_data)
+		ROP_value = EGC_XOR_INV_MODE;
+	    else
+		ROP_value = EGC_XOR_MODE;
+	    break;
+	case VGA_COPY_MODE:
+	default:
+	    ROP_value = EGC_COPY_MODE;
+	    break;
+	}
+	outw(EGC_PLANE, ~(planes & VGA_ALLPLANES));
+	outw(EGC_MODE, ROP_value);
+	outw(EGC_FGC, 0x0000);
+	tmp1 = 0;
+#else
 	/* Setup VGA Registers */
 	SetVideoSequencer( Mask_MapIndex, planes & VGA_ALLPLANES ) ;
 	/* Set Raster Op */
 	SetVideoGraphics( Data_RotateIndex, data_rotate_value ) ;
 	SetVideoGraphics( Graphics_ModeIndex, VGA_WRITE_MODE_2 ) ;
+#endif
 }
 
 StartByte = SCREENADDRESS(pWin, x, y);
 InitialMask = SCRRIGHT8( LeftmostBit, BIT_OFFSET( x ) ) ;
 if ( invert_source_data )
+#ifdef	PC98_EGC
+#if 0 /* New EGC version */
+	egc_image_invert ( StartByte, data, InitialMask, w, h,
+					 RowIncrement ) ;
+#else	/* new EGC c version */
+	for ( ;
+	      h-- ;
+	      data += RowIncrement, StartByte += BYTES_PER_LINE(pWin) ) {
+		dst = StartByte; VSETRW(dst);
+		for ( src = data,
+		      Pixel_Count = w, currMask = InitialMask ;
+		      Pixel_Count-- ;
+		      src++ ) {
+			if (tmp1 != (~*src & VGA_ALLPLANES)) {
+				tmp1 = ~*src & VGA_ALLPLANES;
+				/* set FGC */
+				outw(EGC_FGC, ~*src & VGA_ALLPLANES);
+			}
+			*((VgaMemoryPtr) dst) = currMask;
+			if ( currMask & RightmostBit ) {
+				currMask = LeftmostBit ;
+				VINCRW(dst) ;
+			}
+ 			else
+				currMask = SCRRIGHT8( currMask, 1 ) ;
+		}
+	}
+#endif	/* new EGC  */
+#else	/* original */
 	for ( ;
 	      h-- ;
 	      data += RowIncrement, StartByte += BYTES_PER_LINE(pWin) ) {
@@ -152,7 +222,36 @@ if ( invert_source_data )
 				currMask = SCRRIGHT8( currMask, 1 ) ;
 		}
 	}
+#endif
 else /* invert_source_data == FALSE */
+#ifdef	PC98_EGC
+#if 0	/* new EGC version */
+		egc_image ( StartByte, data, InitialMask, w, h,
+				RowIncrement );
+#else	/* new EGC c version */
+	for ( ;
+	      h-- ;
+	      data += RowIncrement, StartByte += BYTES_PER_LINE(pWin) ) {
+		dst = StartByte; VSETRW(dst);
+		for ( src = data,
+		      Pixel_Count = w, currMask = InitialMask ;
+		      Pixel_Count-- ;
+		      src++ ) {
+			if (tmp1 != *src & VGA_ALLPLANES) {
+				tmp1 = *src & VGA_ALLPLANES;
+				outw(EGC_FGC, tmp1);	/* set FGC */
+			}
+			*((VgaMemoryPtr) dst) = currMask;	/* write with mask */
+			if ( currMask & RightmostBit ) {
+				currMask = LeftmostBit ;
+				VINCRW(dst) ;
+			}
+			else
+				currMask = SCRRIGHT8( currMask, 1 ) ;
+		}
+	}
+#endif	/* new EGC version */
+#else	/* original */
 	for ( ;
 	      h-- ;
 	      data += RowIncrement, StartByte += BYTES_PER_LINE(pWin) ) {
@@ -174,11 +273,12 @@ else /* invert_source_data == FALSE */
 				currMask = SCRRIGHT8( currMask, 1 ) ;
 		}
 	}
- 
+#endif	/* original */
 
 return ;
 }
 
+#ifndef	PC98_EGC
 static unsigned long int
 read8Z( screen_ptr )
 register volatile unsigned char *screen_ptr ;
@@ -250,6 +350,7 @@ j |= ( i >>= 1 ) & 0x8 ;
 
 return j ;
 }
+#endif		/* not PC98_EGC */
 
 void
 vgaReadColorImage( pWin, x, y, lx, ly, data, RowIncrement )
@@ -283,10 +384,14 @@ if ( ( lx <= 0 ) || ( ly <= 0 ) )
 	return ;
 
 /* Setup VGA Registers */
+#ifndef	PC98_EGC
 SetVideoGraphicsIndex( Graphics_ModeIndex ) ;
 tmpc = inb( 0x3CF );
 SetVideoGraphicsData( tmpc & ~0x8 ) ; /* Clear the bit */
 SetVideoGraphicsIndex( Read_Map_SelectIndex ) ;
+#else
+outw(EGC_MODE, 0x0800);
+#endif
 
 skip = BIT_OFFSET( x ) ;
 pad = RowIncrement - lx ;

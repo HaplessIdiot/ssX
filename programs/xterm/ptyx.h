@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/66 1995/12/09 08:58:41 kaleb $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.5 1996/01/05 13:23:12 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.6 1996/01/06 05:25:57 dawes Exp $
  */
 
 /*
@@ -291,7 +291,19 @@ typedef struct {
 #define COLOR_BD	16
 #define COLOR_UL	17
 
+#define MAX_PTRS 4	/* the number of pointers per row in 'ScrnBuf' */
 
+	/* ScrnBuf-level macros */
+#define BUF_CHARS(buf, row) (buf[MAX_PTRS * (row) + 0])
+#define BUF_ATTRS(buf, row) (buf[MAX_PTRS * (row) + 1])
+#define BUF_FORES(buf, row) (buf[MAX_PTRS * (row) + 2])
+#define BUF_BACKS(buf, row) (buf[MAX_PTRS * (row) + 3])
+
+	/* TScreen-level macros */
+#define SCRN_BUF_CHARS(screen, row) BUF_CHARS(screen->buf, row)
+#define SCRN_BUF_ATTRS(screen, row) BUF_ATTRS(screen->buf, row)
+#define SCRN_BUF_FORES(screen, row) BUF_FORES(screen->buf, row)
+#define SCRN_BUF_BACKS(screen, row) BUF_BACKS(screen->buf, row)
 
 typedef struct {
 /* These parameters apply to both windows */
@@ -378,9 +390,9 @@ typedef struct {
 	ScrnBuf		buf;		/* ptr to visible screen buf (main) */
 	ScrnBuf		allbuf;		/* screen buffer (may include
 					   lines scrolled off top)	*/
-	char		*sbuf_address;	/* main screen memory address   */
+	Char		*sbuf_address;	/* main screen memory address   */
 	ScrnBuf		altbuf;		/* alternate screen buffer	*/
-	char		*abuf_address;	/* alternate screen memory address */
+	Char		*abuf_address;	/* alternate screen memory address */
 	Boolean		alternate;	/* true if using alternate buf	*/
 	unsigned short	do_wrap;	/* true if cursor in last column
 					    and character just output    */
@@ -655,8 +667,3 @@ typedef struct Tek_Link
 #endif
 #define	I_SIGNAL	0x02
 #define	I_TEK		0x04
-
-extern Cursor make_colored_cursor();
-extern int GetBytesAvailable();
-extern void first_map_occurred();
-extern int kill_process_group();

@@ -1,6 +1,7 @@
 
   /*\
-   * $XConsortium: utils.c /main/1 1995/11/30 19:08:10 kaleb $
+   * $XConsortium: utils.c /main/2 1996/01/01 10:57:59 kaleb $
+   * $XFree86$
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -102,7 +103,11 @@ uFree(ptr)
 /***                  FUNCTION ENTRY TRACKING                           ***/
 /***====================================================================***/
 
+#ifndef Lynx
 static	FILE	*entryFile=	stderr;
+#else
+static	FILE	*entryFile=	NULL;
+#endif
 	int	 uEntryLevel;
 
 Boolean
@@ -158,7 +163,11 @@ int	i;
 /***			PRINT FUNCTIONS					***/
 /***====================================================================***/
 
+#ifndef Lynx
 	FILE	*uDebugFile=		stderr;
+#else
+	FILE	*uDebugFile=		NULL;
+#endif
 	int	 uDebugIndentLevel=	0;
 	int	 uDebugIndentSize=	4;
 
@@ -208,7 +217,11 @@ int	i;
 
 /***====================================================================***/
 
+#ifndef Lynx
 static	FILE	*errorFile=	stderr;
+#else
+static	FILE	*errorFile=	NULL;
+#endif
 static	int	 outCount=	0;
 static	char	*preMsg=	NULL;
 static	char	*postMsg=	NULL;
@@ -412,8 +425,8 @@ int
 uStrCasePrefix(prefix, str)
     char *prefix, *str;
 {
-    char c1, *s1;
-    char c2, *s2;
+    char c1;
+    char c2;
     while (((c1=*prefix)!='\0')&&((c2=*str)!='\0')) {
 	if (isupper(c1))	c1= tolower(c1);
 	if (isupper(c2))	c2= tolower(c2);

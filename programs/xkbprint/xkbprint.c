@@ -1,4 +1,5 @@
-/* $XConsortium: xkbprint.c /main/1 1995/11/30 19:19:31 kaleb $ */
+/* $XConsortium: xkbprint.c /main/2 1996/01/01 10:58:20 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -107,6 +108,7 @@ Usage(argc,argv)
     fprintf(stderr,"              for include directives.  You can\n");
     fprintf(stderr,"              specify multiple directories.\n");
 #endif
+    fprintf(stderr,"-kc           Also print keycodes, if possible\n");
     fprintf(stderr,"-label <what> Specifies the label to be drawn on keys\n");
     fprintf(stderr,"              Legal values for <what> are:\n");
     fprintf(stderr,"                  none,name,code,symbols\n");
@@ -118,6 +120,7 @@ Usage(argc,argv)
     fprintf(stderr,"-mono         Ignore colors from geometry (default)\n");
     fprintf(stderr,"-n <num>      Print <num> copies (default 1)\n");
     fprintf(stderr,"-nkg <num>    Number of groups to print on each key\n");
+    fprintf(stderr,"-nokc         Don't print keycodes, even if possible\n");
     fprintf(stderr,"-npk <num>    Number of keyboards to print on each page\n");
     fprintf(stderr,"-ntg <num>    Total number of groups to print\n");
     fprintf(stderr,"-o <file>     Specifies output file name\n");
@@ -145,6 +148,7 @@ register int i;
     args.scaleToFit=	True;
     args.wantColor=	False;
     args.wantSymbols=	COMMON_SYMBOLS;
+    args.wantKeycodes=	True;
     args.wantDiffs=	False;
     args.wantEPS=	False;
     args.label=		LABEL_AUTO;
@@ -230,6 +234,9 @@ register int i;
 	    }
 	    else outputFont= argv[i];
 	}
+	else if (strcmp(argv[i],"-kc")==0) {
+	    args.wantKeycodes= True;
+	}
 	else if (strcmp(argv[i],"-label")==0) {
 	    int tmp;
 	    if (++i>=argc) {
@@ -299,6 +306,9 @@ register int i;
 		uAction("Illegal count %d ignored\n",tmp);
 	    }	 
 	    else args.copies= tmp;
+	}
+	else if (strcmp(argv[i],"-nokc")==0) {
+	    args.wantKeycodes= False;
 	}
 	else if (strcmp(argv[i],"-nkg")==0) {
 	    int tmp;
@@ -594,6 +604,11 @@ FILE 	*	file;
 int		ok;
 XkbFileInfo 	result;
 
+#ifdef Lynx
+    uSetEntryFile(NullString);
+    uSetDebugFile(NullString);
+    uSetErrorFile(NullString);
+#endif
     if (!parseArgs(argc,argv))
 	exit(1);
 #ifdef DEBUG
@@ -623,7 +638,7 @@ XkbFileInfo 	result;
 	}
     }
     if (outDpyName!=NULL) {
-uInternalError("Output to an X server not implemented yet\n");
+	uInternalError("Output to an X server not implemented yet\n");
 	outDpy= GetDisplay(argv[0],outDpyName);
 	if (!outDpy) {
 	    uAction("Exiting\n");
@@ -657,6 +672,8 @@ uInternalError("Output to an X server not implemented yet\n");
 	    uAction("Exiting\n");
 	    ok= False;
 	}
+	if ((tmp&XkmKeyNamesMask)!=0)
+	    args.wantKeycodes= False;
 	if (args.label==LABEL_AUTO) {
 	    if (result.defined&XkmSymbolsMask)
 		 args.label= LABEL_SYMBOLS;

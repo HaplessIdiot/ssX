@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.3 1995/11/02 00:26:40 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.4 1995/11/16 11:02:22 dawes Exp $
 
 #define OSName			LynxOS AT
 #define OSVendor		(LYNX Real-Time Systems, Inc)
@@ -32,6 +32,7 @@ XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.3 1995/11/02 00:26:40 dawes 
 
 #define HasPosixThreads		YES
 #define ThreadedX		YES
+#define HasThreadSafeAPI	NO
 #if HasGcc2
 # define ThreadsCompileFlags	-mposix -mthreads
 # define ThreadsCplusplusCompileFlags	-mposix -mthreads
@@ -41,6 +42,9 @@ XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.3 1995/11/02 00:26:40 dawes 
 #endif
 #if OSMajorVersion == 2 && OSMinorVersion < 3
 # define ThreadsLibraries /lib/thread/libc.a /lib/thread/libc_p.a
+#endif
+#if OSMinorVersion <= 3
+# define ThreadPreStdAPIDefines	-DXPRE_STANDARD_API
 #endif
 #define AvoidNullMakeCommand	YES
 #if OSMajorVersion == 2 && OSMinorVersion > 2

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c /main/22 1995/12/07 13:52:50 kaleb $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.7 1995/09/23 01:18:18 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.8 1996/01/05 13:20:51 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -825,13 +825,6 @@ get_pty (pty, tty, ttydev, ptydev)
 #endif
 #endif
 
-#ifdef USL
-#define OSM_DEVICE      "/dev/osm2"
-#define NO_READAHEAD
-#else
-#define OSM_DEVICE      "/dev/osm"
-#endif
-
 FILE *
 osm_pipe()
 {
@@ -850,7 +843,6 @@ osm_pipe()
     char cbuf[128];
 
     skip = 0;
-    osm = open("/dev/osm1", O_RDONLY);
 #ifndef NO_READAHEAD
     osm = open(OSM_DEVICE, O_RDONLY);
     if (osm >= 0) {

@@ -151,7 +151,15 @@ extern Bool Must_have_memory;
  *
  */
  
+/* use otherwise unused long in the header to store a magic */
+/* shouldn't this be removed for production release ? */
 #define XALLOC_DEBUG
+
+#ifdef XALLOC_DEBUG
+/* Xfree fills the memory with a certain pattern (currently 0xF0) */
+/* this should really be removed for production release! */
+#define XFREE_ERASES
+#endif
 
 /* this must be a multiple of SIZE_STEPS below */
 #define MAX_SMALL 264		/* quite many blocks of 264 */
@@ -170,23 +178,46 @@ extern Bool Must_have_memory;
 #define MAGIC			0x14071968
 #define MAGIC2			0x25182079
 
-#ifdef XALLOC_DEBUG
-#define XFREE_ERASES
-#endif
 
-#ifndef XALLOC_LOG
+/* To get some statistics about memory allocation */
+
+#ifdef XALLOC_LOG
+#define XALLOC_LOG_FILE "/tmp/Xalloc.log"	/* unsecure... */
+#define LOG_BODY(_body)					\
+		{ FILE *f;				\
+		  f = fopen(XALLOC_LOG_FILE, "a");	\
+		  if (NULL!=f) {			\
+			_body;				\
+			fclose(f);			\
+		  }					\
+		}
+#ifdef linux
+#define LOG_ALLOC(_fun, _size, _ret)						\
+	{	unsigned long *from;						\
+		__asm__("movl %%ebp,%0" : /*OUT*/ "=r" (from) : /*IN*/ );	\
+		LOG_BODY(fprintf(f, "%s\t%i\t%p\t[%lu]\n", _fun, _size, _ret, *(from+1))) \
+	}
+#else
+#define LOG_ALLOC(_fun, _size, _ret)				\
+	LOG_BODY(fprintf(f, "%s\t%i\t%p\n", _fun, _size, _ret))
+#endif
+#define LOG_REALLOC(_fun, _ptr, _size, _ret)			\
+	LOG_BODY(fprintf(f, "%s\t%p\t%i\t%p\n", _fun, _ptr, _size, _ret))
+#define LOG_FREE(_fun, _ptr)					\
+	LOG_BODY(fprintf(f, "%s\t%p\n", _fun, _ptr))
+#else
 #define LOG_ALLOC(_fun, _size, _ret)
 #define LOG_REALLOC(_fun, _ptr, _size, _ret)
 #define LOG_FREE(_fun, _ptr)
-#endif
+#endif /* XALLOC_LOG */
 
 static unsigned long *free_lists[MAX_SMALL/SIZE_STEPS];
 
 /*
- * systems that support it should define HAS_MMAP_ANON
+ * systems that support it should define HAS_MMAP_ANON or MMAP_DEV_ZERO
  * and include the appropriate header files for
- * mmap(), munmap(), PROT_READ, PROT_WRITE, MAP_ANON, MAP_PRIVATE and
- * PAGE_SIZE or _SC_PAGESIZE.
+ * mmap(), munmap(), PROT_READ, PROT_WRITE, MAP_PRIVATE,
+ * PAGE_SIZE or _SC_PAGESIZE (and MAP_ANON for HAS_MMAP_ANON).
  *
  * systems that don't support MAP_ANON fall through to the 2 fold behaviour
  */
@@ -213,7 +244,7 @@ static unsigned long *free_lists[MAX_SMALL/SIZE_STEPS];
 #endif /* SVR4 */
 
 #if defined(sun) && !defined(SVR4) /* SunOS */
-#define MMAP_DEV_ZERO
+#define MMAP_DEV_ZERO	/* doesn't SunOS have MAP_ANON ?? */
 #define HAS_GETPAGESIZE
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -243,6 +274,8 @@ Xalloc (amount)
     register unsigned long *ptr;
     int indx;
 
+    /* sanity checks */
+
     /* zero size requested */
     if (amount == 0) {
 	LOG_ALLOC("Xalloc=0", amount, 0);
@@ -257,6 +290,9 @@ Xalloc (amount)
     }
 
     if (amount <= MAX_SMALL) {
+	/*
+	 * small block
+	 */
 	/* pick a ready to use small chunk */
 	indx = (amount-1) / SIZE_STEPS;
 	ptr = free_lists[indx];
@@ -309,8 +345,12 @@ Xalloc (amount)
 		LOG_ALLOC("Xalloc-S", amount, ptr);
 		return ptr;
 	}
+
 #if defined(HAS_MMAP_ANON) || defined(MMAP_DEV_ZERO)
     } else if (amount >= MIN_LARGE) {
+	/*
+	 * large block
+	 */
 	/* mmapped malloc */
 	/* round up amount */
 	amount += SIZE_HEADER;
@@ -351,6 +391,9 @@ Xalloc (amount)
 	} /* else fall through to 'Out of memory' */
 #endif /* HAS_MMAP_ANON || MMAP_DEV_ZERO */
     } else {
+	/*
+	 * medium sized block
+	 */
 	/* 'normal' malloc() */
 #ifdef SIZE_TAIL
 	ptr=(unsigned long *)calloc(1,amount+SIZE_HEADER+SIZE_TAIL);
@@ -389,12 +432,14 @@ XNFalloc (amount)
 
     /* zero size requested */
     if (amount == 0) {
+	LOG_ALLOC("XNFalloc=0", amount, 0);
 	return (unsigned long *)NULL;
     }
     /* negative size (or size > 2GB) - what do we do? */
     if ((long)amount < 0) {
 	/* Diagnostic */
 	ErrorF("Xalloc warning: XNFalloc(<0) ignored..\n");
+ 	LOG_ALLOC("XNFalloc<0", amount, 0);
 	return (unsigned long *)NULL;
     }
     ptr = Xalloc(amount);
@@ -418,7 +463,7 @@ Xcalloc (amount)
     ret = Xalloc (amount);
     if (ret
 #if defined(HAS_MMAP_ANON) || defined(MMAP_DEV_ZERO)
-        && (amount < MIN_LARGE)
+	    && (amount < MIN_LARGE)	/* mmaped anonymous mem is already cleared */
 #endif
        )
 	bzero ((char *) ret, (int) amount);
@@ -440,6 +485,7 @@ Xrealloc (ptr, amount)
     if (amount == 0) {
 	if (ptr)
 		Xfree(ptr);
+	LOG_REALLOC("Xrealloc=0", ptr, amount, 0);
 	return (unsigned long *)NULL;
     }
     /* negative size (or size > 2GB) - what do we do? */
@@ -448,6 +494,7 @@ Xrealloc (ptr, amount)
 	ErrorF("Xalloc warning: Xrealloc(<0) ignored..\n");
 	if (ptr)
 		Xfree(ptr);	/* ?? */
+	LOG_REALLOC("Xrealloc<0", ptr, amount, 0);
 	return (unsigned long *)NULL;
     }
 
@@ -466,10 +513,13 @@ Xrealloc (ptr, amount)
     }
     if (ptr)
 	Xfree(ptr);
-    if (new_ptr)
-        return new_ptr;
+    if (new_ptr) {
+	LOG_REALLOC("Xrealloc", ptr, amount, new_ptr);
+	return new_ptr;
+    }
     if (Must_have_memory)
 	FatalError("Out of memory");
+    LOG_REALLOC("Xrealloc", ptr, amount, 0);
     return (unsigned long *)NULL;
 }
                     
@@ -502,6 +552,8 @@ Xfree(ptr)
     unsigned long size;
     unsigned long *pheader;
 
+    LOG_FREE("Xfree", ptr);
+
     /* free(NULL) IS valid :-(  - and widely used throughout the server.. */
     if (!ptr)
 	return;
@@ -514,10 +566,13 @@ Xfree(ptr)
 	return;
     }
 #endif /* XALLOC_DEBUG */
+
     size = pheader[0];
     if (size <= MAX_SMALL) {
-	/* put this small block at the head of the list */
 	int indx;
+	/*
+	 * small block
+	 */
 #ifdef SIZE_TAIL
 	if (MAGIC2 != *(unsigned long *)((char *)ptr + size)) {
 		/* Diagnostic */
@@ -525,15 +580,22 @@ Xfree(ptr)
 		return;
 	}
 #endif /* SIZE_TAIL */
+
 #ifdef XFREE_ERASES
-	memset(ptr,0xFF,size);
+	memset(ptr,0xF0,size);
 #endif /* XFREE_ERASES */
+
+	/* put this small block at the head of the list */
 	indx = (size-1) / SIZE_STEPS;
 	*(unsigned long **)(ptr) = free_lists[indx];
 	free_lists[indx] = (unsigned long *)ptr;
 	return;
+
 #if defined(HAS_MMAP_ANON) || defined(MMAP_DEV_ZERO)
     } else if (size >= MIN_LARGE) {
+	/*
+	 * large block
+	 */
 #ifdef SIZE_TAIL
 	if (MAGIC2 != ((unsigned long *)((char *)ptr + size))[0]) {
 		/* Diagnostic */
@@ -542,10 +604,16 @@ Xfree(ptr)
 	}
 	size += SIZE_TAIL;
 #endif /* SIZE_TAIL */
+
 	size += SIZE_HEADER;
 	munmap((caddr_t)pheader, (size_t)size);
+	/* no need to clear - mem is inaccessible after munmap.. */
 #endif /* HAS_MMAP_ANON */
+
     } else {
+	/*
+	 * medium sized block
+	 */
 #ifdef SIZE_TAIL
 	if (MAGIC2 != *(unsigned long *)((char *)ptr + size)) {
 		/* Diagnostic */
@@ -553,9 +621,11 @@ Xfree(ptr)
 		return;
 	}
 #endif /* SIZE_TAIL */
+
 #ifdef XFREE_ERASES
-	memset(pheader,0xFF,size+SIZE_HEADER);
+	memset(pheader,0xF0,size+SIZE_HEADER);
 #endif /* XFREE_ERASES */
+
 	free((char *)pheader);
     }
 }
@@ -583,16 +653,25 @@ OsInitAllocator ()
 
     /* set up linked lists of free blocks */
     bzero ((char *) free_lists, MAX_SMALL/SIZE_STEPS*sizeof(unsigned long *));
+
 #ifdef MMAP_DEV_ZERO
+    /* open /dev/zero on systems that have mmap, but not MAP_ANON */
     if (devzerofd < 0) {
 	if ((devzerofd = open("/dev/zero", O_RDWR, 0)) < 0)
 	    FatalError("OsInitAllocator: Cannot open /dev/zero (errno=%d)\n",
 			errno);
     }
 #endif
+
+#ifdef XALLOC_LOG
+    /* reset the log file to zero length */
+    {
+	FILE *f;
+	f = fopen(XALLOC_LOG_FILE, "w");
+	if (NULL!=f)
+		fclose(f);
+    }
+#endif
 }
 
-#else /* !INTERNAL_MALLOC */
-/* This is to avoid an empty .o */
-static int no_internal_xalloc;
 #endif /* INTERNAL_MALLOC */

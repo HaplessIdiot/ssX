@@ -1,10 +1,20 @@
-/* $XConsortium: wm0.h,v 1.1 94/03/28 21:40:20 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/wm0.h,v 1.1.1.2 1996/01/03 07:22:40 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: wm0.h /main/2 1995/11/13 07:06:22 kaleb $ */
+
 #include "vgaReg.h"
 
 
 /* The following awesome macro steps through all four planes calling
  * 'call.' 
  */
+#ifdef	PC98_EGC
+	/* not yet */
+#else
 #define DO_WM0(pgc,call) \
 { int _fg, _bg, _rop, _pm; \
   mfbPrivGC *_pPriv = (mfbPrivGC *)((pgc)->devPrivates[mfbGCPrivateIndex].ptr); \
@@ -51,4 +61,5 @@
   (pgc)->fgPixel = _fg; (pgc)->bgPixel = _bg; _pPriv->rop = _rop; \
   (pgc)->planemask = _pm; \
 }
+#endif
 

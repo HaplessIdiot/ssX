@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 95/01/16 12:30:46 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Japanese/Imakefile,v 3.0 1995/12/17 10:05:45 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Japanese/Imakefile,v 3.1 1995/12/26 07:19:38 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -8,7 +8,7 @@ OSREADME = README.Linux
 #endif
 
 MAINDOCS = COPYRIGHT README README.Config INSTALL AccelCards VideoModes.doc \
-	   README.S3
+          README.S3 README.Mach64 README.ati README.cirrus LinkKit
 
 FILES = $(MAINDOCS) $(OSREADME)
 
@@ -21,9 +21,13 @@ InstallMultipleDest(install,$(FILES),$(XFREE86JAPANESEDOCDIR))
 LinkSourceFile(AccelCards,$(XF86SRC)/doc/Japanese)
 LinkSourceFile(COPYRIGHT,$(XF86SRC)/doc/Japanese)
 LinkSourceFile(INSTALL,$(XF86SRC)/doc/Japanese)
+LinkSourceFile(LinkKit,$(XF86SRC)/doc/Japanese)
 LinkSourceFile(README,$(XF86SRC)/doc/Japanese)
 LinkSourceFile(README.Config,$(XF86SRC)/doc/Japanese)
 LinkSourceFile(README.Linux,$(XF86SRC)/doc/Japanese)
+LinkFile(README.Mach64,$(XF86SRC)/doc/Japanese/READ.Mach64)
 LinkSourceFile(README.S3,$(XF86SRC)/doc/Japanese)
+LinkSourceFile(README.ati,$(XF86SRC)/doc/Japanese)
+LinkSourceFile(README.cirrus,$(XF86SRC)/doc/Japanese)
 LinkSourceFile(VideoModes.doc,$(XF86SRC)/doc/Japanese)
 
