@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.57 2001/09/13 19:53:24 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.58 2001/09/19 19:51:31 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -157,6 +157,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define	AdmDir			/var/log
 
 #define HasFlex			YES
+
+/* OpenBSD doesn't have gperf in the base install */
+#define DontRebuildGperfOutput	YES
 
 /*
  * Make & install Features
