@@ -272,7 +272,7 @@ the mailing lists.
   3.  Check out the CVS sources:
 
                        cd ~/DRI-CVS
-                       cvs -z3 -dYOURID@cvs.dri.sourceforge.net:/cvsroot/dri co xc
+                       cvs -z3 -d:ext:YOURID@cvs.dri.sourceforge.net:/cvsroot/dri co xc
 
       Replace YOURID with your CVS login name.  You'll be prompted to enter
       your sourceforge password.
@@ -598,7 +598,7 @@ At this point your X server should be up and running with hardware-acceler-
 ated direct rendering.  Please read the DRI User Guide for information about
 trouble shooting and how to use the DRI-enabled X server for 3D applications.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.14 2001/05/02 15:06:08 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.15 2001/10/02 11:44:16 alanh Exp $
 
 
-$XFree86$
+$XFree86:$

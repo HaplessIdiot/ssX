@@ -17,34 +17,34 @@
 We highly recommend using gcc to build XFree86, but it generally also builds
 with the native compiler for each platform;
 
-1.  How to get the XFree86 4.1.0 source
+1.  How to get the XFree86 4.2.0 source
 
 There are a few starting points for getting the XFree86 source.  One option
-is to start directly with the XFree86 4.1.0 source distribution.  In this
+is to start directly with the XFree86 4.2.0 source distribution.  In this
 case, the procedure is as follows:
 
-   o The XFree86 source is contained in files X410src-1.tgz, X410src-2.tgz
-     and X410src-3.tgz.  These can be found at
-     ftp://ftp.xfree86.org/pub/XFree86/4.1.0/source/ and similar locations on
-     XFree86 mirror sites.  X410src-2.tgz contains the fonts and documenta-
-     tion source.  X410src-3.tgz contains the hardcopy documentation.
-     X410src-1.tgz contains everything else.  If you don't need the docs or
-     fonts you can get by with only X410src-1.tgz.
+   o The XFree86 source is contained in files X420src-1.tgz, X420src-2.tgz
+     and X420src-3.tgz.  These can be found at
+     ftp://ftp.xfree86.org/pub/XFree86/4.2.0/source/ and similar locations on
+     XFree86 mirror sites.  X420src-2.tgz contains the fonts and documenta-
+     tion source.  X420src-3.tgz contains the hardcopy documentation.
+     X420src-1.tgz contains everything else.  If you don't need the docs or
+     fonts you can get by with only X420src-1.tgz.
 
    o Extract each of these files by running the following from a directory on
      a filesystem containing enough space (the full source requires around
      270MB, and a similar amount is required in addition to this for the com-
      piled binaries):
 
-          gzip -d < X410src-1.tgz | tar vxf -
+          gzip -d < X420src-1.tgz | tar vxf -
 
-          gzip -d < X410src-2.tgz | tar vxf -
+          gzip -d < X420src-2.tgz | tar vxf -
 
-          gzip -d < X410src-3.tgz | tar vxf -
+          gzip -d < X420src-3.tgz | tar vxf -
 
-   o If the realease is not a full release, it is available as a patch
-     against the previous full release in the
-     ftp://ftp.xfree86.org/pub/XFree86/4.1.0/patches/ directory. Get the
+   o If the release is not a full release, it is available as a patch against
+     the previous full release in the
+     ftp://ftp.xfree86.org/pub/XFree86/4.2.0/patches/ directory. Get the
      patch file from there and apply it by running the following command:
 
           cd the directory containing the xc directory
@@ -53,7 +53,7 @@ case, the procedure is as follows:
 
      Look for special patching instructions in the Release Notes.
 
-Another option is to get the source by anonymous CVS or CVsup.  See
+Another option is to get the source by anonymous CVS or CVSup.  See
 http://www.xfree86.org/cvs/ for details on the different procedure available.
 
 All method will produce one main source directory called xc.
@@ -71,7 +71,7 @@ Unlike previous versions, imake can now automatically detect and set the var-
 ious OS*Version parameters, so you shouldn't need to enter those settings
 explicitly.
 
-If you are using just the X410src-1.tgz part of the source dist, you will
+If you are using just the X420src-1.tgz part of the source dist, you will
 need to define BuildFonts to NO.
 
 3.  Using a shadow directory of symbolic links for the build
@@ -88,8 +88,8 @@ during the build, which has the following benefits:
      or architectures from the same sources, shared by NFS.
 
    o It is possible to build XFree86 with different configuration options,
-     just by putting a real copyhost.def in each build tree and by cutomizing
-     it separatly in each build tree.
+     just by putting a real copyhost.def in each build tree and by customiz-
+     ing it separately in each build tree.
 
 To make a shadow directory of symbolic links, use the following steps:
 
@@ -177,7 +177,7 @@ There are some other useful targets defined in the top level Makefileof
 XFree86:
 
    o Everything after a make World, make Everythingdoes everything a make
-     World does, execpt the cleaning of the tree. It is a way to quickly
+     World does, except the cleaning of the tree. It is a way to quickly
      rebuild the tree after a source patch, but it is not 100% bullet proof.
      There are cases were it is better to force a full build by using make
      World.
@@ -208,7 +208,7 @@ XFree86:
      shown do not match your system, you probably need to set them manually
      in host.def and report the problem to XFree86@XFree86.org.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.4 2001/05/27 17:08:18 herrb Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.6 2001/11/15 17:32:16 dawes Exp $
 
 
-$XFree86$
+$XFree86:$

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.76 2001/05/18 23:35:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.77 2001/05/27 17:11:49 herrb Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -39,6 +39,7 @@ OSREADMES = \
 	/*ReadmeFile(OS2)*/	\
 	/*OS2.Notes*/		\
 	/*ReadmeFile(SCO)*/	\
+	ReadmeFile(Solaris)	\
 	/*ReadmeFile(SOLX86)*/	\
 	/*ReadmeFile(SVR4)*/	\
 	$(_NULLENTRY_)

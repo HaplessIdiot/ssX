@@ -2,7 +2,7 @@
 
           VA Linux Systems, Inc. Professional Services - Graphics.
 
-                                 3 May 2001
+                                15 June 2001
 
 1.  Preamble
 
@@ -112,7 +112,7 @@ graphics hardware:
 
         o i810e
 
-   o ATI Rage 128, supported on Intel x86 and AMD:
+   o ATI Rage 128, supported on Intel x86, AMD and Alpha:
 
         o Rage Fury
 
@@ -126,14 +126,18 @@ graphics hardware:
 
         o All-in-Wonder 128
 
+        o Rage 128 PCI (Alpha-based systems)
+
      Note that both PCI and AGP versions of Rage 128 based cards are sup-
      ported at this time.
 
-   o ATI Radeon, supported on Intel x86 and AMD:
+   o ATI Radeon, supported on Intel x86, AMD and Alpha:
 
         o Radeon SDR AGP
 
         o Radeon DDR AGP
+
+        o Radeon 32MB SDR PCI (Alpha-based systems)
 
    o 3Dlabs, supported on Intel x86 and AMD:
 
@@ -1014,7 +1018,9 @@ Note that even at 32bpp there is no alpha channel.
 
 The following OpenGL features are implemented in software and will be slow:
 
-   o Stencil buffer and accumulation buffer operations
+   o accumulation buffer operations
+
+   o stencil, when using a 16bpp screen
 
    o Blend subtract, min/max and logic op blend modes
 
@@ -1231,7 +1237,7 @@ demo programs is available from http://dri.sourceforge.net/res.phtml
    o In the future there may be IHV and Linux vendor support resources for
      the DRI.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.24 2001/05/19 00:42:22 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.26 2001/10/02 11:44:15 alanh Exp $
 
 
-$XFree86$
+$XFree86:$
