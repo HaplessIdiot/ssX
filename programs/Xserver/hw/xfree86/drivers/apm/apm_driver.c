@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.60 2002/07/24 01:47:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.61tsi Exp $ */
 
 #include "apm.h"
 #include "xf86cmap.h"
@@ -2233,9 +2233,6 @@ ApmCloseScreen(int scrnIndex, ScreenPtr pScreen)
     pApm->CursorInfoRec = NULL;
     if (pApm->DGAModes)
 	xfree(pApm->DGAModes);
-    if (pApm->I2CPtr)
-	xf86DestroyI2CBusRec(pApm->I2CPtr, TRUE, TRUE);
-    pApm->I2CPtr = NULL;
     if (pApm->adaptor)
 	xfree(pApm->adaptor);
 

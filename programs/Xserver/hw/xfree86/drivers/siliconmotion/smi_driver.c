@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.30tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -2785,12 +2785,6 @@ SMI_CloseScreen(int scrnIndex, ScreenPtr pScreen)
 	if (pSmi->BlockHandler != NULL)
 	{
 		pScreen->BlockHandler = pSmi->BlockHandler;
-	}
-	if (pSmi->I2C != NULL)
-	{
-		xf86DestroyI2CBusRec(pSmi->I2C, FALSE, TRUE);
-		xfree(pSmi->I2C);
-		pSmi->I2C = NULL;
 	}
 	/* #670 */
 	if (pSmi->pSaveBuffer)
