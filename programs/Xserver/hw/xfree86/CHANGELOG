@@ -1,4 +1,6 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 532. Fix acecad input driver build and re-enable it 
+      (Bugzilla #816, Alan Hourihane).
  531. Fix DRM_CAS on ia64 as used by the DRI (Bugzilla #778, John Dennis).
  530. Call OsCleanup() at the end of each server generation, and add an
       argument to indicate when the server is terminating.  This allows
@@ -18054,7 +18056,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2908 2003/10/29 04:33:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2909 2003/10/29 10:57:44 alanh Exp $
 
 
 
