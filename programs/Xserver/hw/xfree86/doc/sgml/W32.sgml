@@ -18,6 +18,7 @@ those not applicable to the ET4000/W32 series are silently ignored;
 e.g., the keyword "SpeedUp" is a no-op.
 The server currently supports the w32, w32i, and w32p chips.  For
 a complete list, see the sign-on message printed by <tt>XF86_W32</tt>.
+The server supports only 8bpp operation at present.
 
 Just as with <tt>XF86_SVGA</tt>, you can specify a virtual world that has
 a width that is a multiple of four.
@@ -85,7 +86,7 @@ listed below:
 <!-- moved author name to title page. -->
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.0 1994/12/20 11:33:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.1 1994/12/26 11:03:41 dawes Exp $
 </verb>
 
 </article>

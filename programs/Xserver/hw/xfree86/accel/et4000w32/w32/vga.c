@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.8 1994/12/29 09:44:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.9 1995/01/10 10:20:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -245,6 +245,14 @@ vgaProbe()
   int            maxX, maxY;
   int            needmem, rounding;
   int            tx,ty;
+
+  /* Only supports 8bpp.  Check if someone is trying a different depth */
+  if (vga256InfoRec.depth != 8)
+    {
+      ErrorF("\n%s %s: Unsupported depth (%d)\n",
+	     XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.depth);
+      return(FALSE);
+    }
 
   for (i=0; Drivers[i]; i++)
 
