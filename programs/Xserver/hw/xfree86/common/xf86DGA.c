@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.34 2000/05/05 21:03:01 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.35 2000/06/19 15:00:52 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -1053,7 +1053,7 @@ DGADeliverEvent (ScreenPtr pScreen, xEvent *e)
     int		    coreEquiv;
 
     /* no DGA */
-    if (DGAScreenIndex < 0)
+    if (DGAScreenIndex < 0 || XDGAEventBase == 0)
 	return FALSE;
     pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
     
