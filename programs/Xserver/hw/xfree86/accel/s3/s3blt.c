@@ -1,5 +1,5 @@
 /* $XConsortium: s3blt.c,v 1.2 94/04/17 20:31:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.4 1994/08/03 13:27:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.5 1994/08/11 06:55:18 dawes Exp $ */
 /*
 
 Copyright (c) 1998  X Consortium
@@ -109,7 +109,6 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
  	case 8:
 	    return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
 			       srcx, srcy, width, height, dstx, dsty);
-	case 15:
 	case 16:
 	    return cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
 				 srcx, srcy, width, height, dstx, dsty);
@@ -525,7 +524,6 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
  	case 8:
 	    return cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			    srcx, srcy, width, height, dstx, dsty, bitPlane);
-	case 15:
 	case 16:
 	    return cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);

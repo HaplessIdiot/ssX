@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.8 1994/07/24 11:58:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.9 1994/08/01 12:18:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -228,7 +228,7 @@ extern vgaVideoChipPtr Drivers[];
 
 /*
  * vgaRestore -- 
- *	Wrap the chip-leve restore function in a protect/unprotect.
+ *	Wrap the chip-level restore function in a protect/unprotect.
  */
 void
 vgaRestore(mode)
@@ -411,25 +411,32 @@ vgaProbe()
 
 	/* if Virtual given: is the virtual size too big? */
 #ifdef BANKEDMONOVGA
-	if (vga256InfoRec.virtualX > (2048-32)) {
+	if (vga256InfoRec.virtualX > (2048)) {
 		ErrorF("%s: Virtual width %i exceeds max. virtual width %i\n",
-		       vga256InfoRec.name, vga256InfoRec.virtualX, (2048-32));
+		       vga256InfoRec.name, vga256InfoRec.virtualX, (2048));
 		vgaEnterLeaveFunc(LEAVE);
 		return(FALSE);
 	}
-	if (vga256InfoRec.virtualX*vga256InfoRec.virtualY </*=*/ 8*vgaMapSize)
-		/* may be unbanked */                    /* ^^^ mfb bug */
+	if (vga256InfoRec.virtualX*vga256InfoRec.virtualY <= 8*vgaMapSize)
+		/* may be unbanked */
 		vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
-	else if (vga256InfoRec.virtualX > (1024-32))
+	else if (vga256InfoRec.virtualX > (1024))
 		vga256InfoRec.displayWidth=2048;
 	     else vga256InfoRec.displayWidth=1024;
 
 	if (vga256InfoRec.virtualX > 0 &&
 	    vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem)
+	  {
+	    ErrorF("%s: Too little memory for virtual resolution\n"
+                   "      %d (display width %d) x %d\n",
+                   vga256InfoRec.name, vga256InfoRec.virtualX,
+                   vga256InfoRec.displayWidth, vga256InfoRec.virtualY);
+            vgaEnterLeaveFunc(LEAVE);
+	    return(FALSE);
+	  }
 #else
 	if (vga256InfoRec.virtualX > 0 &&
 	    vga256InfoRec.virtualX * vga256InfoRec.virtualY > needmem)
-#endif
 	  {
 	    ErrorF("%s: Too little memory for virtual resolution %d %d\n",
                    vga256InfoRec.name, vga256InfoRec.virtualX,
@@ -437,6 +444,7 @@ vgaProbe()
             vgaEnterLeaveFunc(LEAVE);
 	    return(FALSE);
 	  }
+#endif
 
         maxX = maxY = -1;
 	pMode = pEnd = vga256InfoRec.modes;
@@ -473,20 +481,27 @@ vgaProbe()
         vga256InfoRec.virtualX = max(maxX, vga256InfoRec.virtualX);
         vga256InfoRec.virtualY = max(maxY, vga256InfoRec.virtualY);
 #ifdef BANKEDMONOVGA
-	if (vga256InfoRec.virtualX > (2048-32)) {
+	if (vga256InfoRec.virtualX > (2048)) {
 		ErrorF("%s: Max. width %i exceeds max. virtual width %i\n",
-			vga256InfoRec.name, vga256InfoRec.virtualX, (2048-32));
+			vga256InfoRec.name, vga256InfoRec.virtualX, (2048));
 		vgaEnterLeaveFunc(LEAVE);
 		return(FALSE);
 	}
 	/* Now that modes are resolved and max. extents are found,
 	 * test size again */
-	if (vga256InfoRec.virtualX*vga256InfoRec.virtualY </*=*/ 8*vgaMapSize)
-		/* may be unbanked */                    /* ^^^ mfb bug */
+	if (vga256InfoRec.virtualX*vga256InfoRec.virtualY <= 8*vgaMapSize)
+		/* may be unbanked */
 		vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
-	else if (vga256InfoRec.virtualX > (1024-32))
+	else 
+	  {
+             if (vga256InfoRec.virtualX > (1024))
 		vga256InfoRec.displayWidth=2048;
 	     else vga256InfoRec.displayWidth=1024;
+	     if (xf86Verbose)
+		ErrorF("%s %s: Display width set to %i\n",
+			XCONFIG_PROBED, vga256InfoRec.name,
+		        vga256InfoRec.displayWidth);
+          }
 #endif
 
 #ifndef BANKEDMONOVGA
@@ -534,12 +549,7 @@ vgaProbe()
 	if ((tx != vga256InfoRec.virtualX) || (ty != vga256InfoRec.virtualY))
             OFLG_CLR(XCONFIG_VIRTUAL,&vga256InfoRec.xconfigFlag);
 
-#ifdef BANKEDMONOVGA
-	if (xf86Verbose)
-		ErrorF("%s %s: Display width set to %i\n",
-			XCONFIG_PROBED, vga256InfoRec.name,
-		        vga256InfoRec.displayWidth);
-#else
+#ifndef BANKEDMONOVGA
         vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
 #endif
         if (xf86Verbose)

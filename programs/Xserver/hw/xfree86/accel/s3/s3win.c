@@ -1,5 +1,5 @@
 /* $XConsortium: s3win.c,v 1.2 94/04/17 20:31:16 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3win.c,v 3.1 1994/08/03 13:30:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3win.c,v 3.2 1994/08/11 06:55:43 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -93,7 +93,6 @@ s3CopyWindow(pWin, ptOldOrg, prgnSrc)
 	case 8:
 	  cfbCopyWindow(pWin, ptOldOrg, prgnSrc);
           break;
-        case 15:
         case 16:
 	  cfb16CopyWindow(pWin, ptOldOrg, prgnSrc);
           break;

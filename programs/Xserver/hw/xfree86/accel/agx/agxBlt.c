@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.3 1994/07/24 11:42:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.4 1994/08/01 12:08:45 dawes Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1013,6 +1013,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
       } 
       else if ( pSrcDrawable->type != DRAWABLE_WINDOW  
                 && pDstDrawable->type == DRAWABLE_WINDOW ) {
+#if 0
          /* Pixmap --> Window */
          PixmapPtr pix = (PixmapPtr) pSrcDrawable;
          int   pixWidth;
@@ -1022,14 +1023,22 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
          psrc = pix->devPrivate.ptr;
 
          for (i = numRects; --i >= 0; pbox++) {
-            agxImageOpStipple(pbox->x1, pbox->y1,
-                                pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
-                                psrc, pixWidth,
-                                pix->drawable.width, pix->drawable.height,
-                                -dx, -dy,
-                                pGC->fgPixel, pGC->bgPixel,
-                                pGC->alu, pGC->planemask);
+            agxImageStipple( pbox->x1, pbox->y1,
+                             pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
+                             psrc, pixWidth,
+                             pix->drawable.width, pix->drawable.height,
+                             -dx, -dy,
+                             pGC->fgPixel, pGC->bgPixel,
+                             pGC->alu, pGC->alu,
+                             pGC->planemask );
          }
+#endif
+         agxFillBoxStipple( pDstDrawable, numRects, pbox,
+                            (PixmapPtr) pSrcDrawable,
+                            -dx, -dy,
+                             pGC->fgPixel, pGC->bgPixel,
+                             pGC->alu, pGC->alu,
+                             pGC->planemask );
       } else {
          /* Pixmap --> Pixmap */
          ErrorF("agxCopyPlane:  Tried to do a Pixmap to Pixmap copy\n");

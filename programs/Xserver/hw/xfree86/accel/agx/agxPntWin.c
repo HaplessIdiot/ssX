@@ -1,5 +1,5 @@
 /* $XConsortium: mach32pntwn.c,v 1.2 94/04/17 20:30:49 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxPntWin.c,v 3.0 1994/08/01 12:08:59 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -80,21 +80,6 @@ agxPaintWindow(pWin, pRegion, what)
     void (*pcfbFillBoxTile32)(), (*pcfbFillBoxTileOdd)();
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
-#if 0
-    switch (pWin->drawable.bitsPerPixel) {
-    case 8:
-	pcfbFillBoxTile32 = cfbFillBoxTile32;
-	pcfbFillBoxTileOdd = cfbFillBoxTileOdd;
-	break;
-    case 16:
-	pcfbFillBoxTile32 = cfb16FillBoxTile32;
-	pcfbFillBoxTileOdd = cfb16FillBoxTileOdd;
-	break;
-    }
-#else
-    pcfbFillBoxTile32 = vga256FillBoxTile32;
-    pcfbFillBoxTileOdd = vga256FillBoxTileOdd;
-#endif
 
     switch (what) {
     case PW_BACKGROUND:
@@ -105,67 +90,70 @@ agxPaintWindow(pWin, pRegion, what)
 	    do {
 		pWin = pWin->parent;
 	    } while (pWin->backgroundState == ParentRelative);
-	    (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, pRegion,
-							     what);
+	    (*pWin->drawable.pScreen->
+                   PaintWindowBackground)(pWin, pRegion, what);
 	    return;
 	case BackgroundPixmap:
-	    if (pPrivWin->fastBackground)
-	    {
-		(*pcfbFillBoxTile32) ((DrawablePtr)pWin,
-				  (int)REGION_NUM_RECTS(pRegion),
-				  REGION_RECTS(pRegion),
-				  pPrivWin->pRotatedBackground);
+	    if (pPrivWin->fastBackground) {
+		agxFillBoxTile( (DrawablePtr)pWin,
+				(int)REGION_NUM_RECTS(pRegion),
+				REGION_RECTS(pRegion),
+				pPrivWin->pRotatedBackground,
+                                0, 0,
+                                MIX_SRC, ~0 );
 		return;
 	    }
-	    else
-	    {
-		(*pcfbFillBoxTileOdd) ((DrawablePtr)pWin,
-				   (int)REGION_NUM_RECTS(pRegion),
-				   REGION_RECTS(pRegion),
-				   pWin->background.pixmap,
-				   (int) pWin->drawable.x, 
-                                   (int) pWin->drawable.y);
+	    else {
+		agxFillBoxTile( (DrawablePtr)pWin,
+				(int)REGION_NUM_RECTS(pRegion),
+				REGION_RECTS(pRegion),
+				pWin->background.pixmap,
+				(int) pWin->drawable.x, 
+                                (int) pWin->drawable.y,
+                                MIX_SRC, ~0 );
 		return;
 	    }
 	    break;
 	case BackgroundPixel:
-	    agxFillBoxSolid ((DrawablePtr)pWin,
-				(int)REGION_NUM_RECTS(pRegion),
-				REGION_RECTS(pRegion),
-				pWin->background.pixel);
+	    agxFillBoxSolid( (DrawablePtr)pWin,
+			     (int)REGION_NUM_RECTS(pRegion),
+			     REGION_RECTS(pRegion),
+			     pWin->background.pixel );
 	    return;
     	}
     	break;
     case PW_BORDER:
 	if (pWin->borderIsPixel)
 	{
-	    agxFillBoxSolid ( (DrawablePtr)pWin,
-			      (int)REGION_NUM_RECTS(pRegion),
-			      REGION_RECTS(pRegion),
-			      pWin->border.pixel );
+	    agxFillBoxSolid( (DrawablePtr)pWin,
+			     (int)REGION_NUM_RECTS(pRegion),
+			     REGION_RECTS(pRegion),
+			     pWin->border.pixel );
 	    return;
 	}
 	else if (pPrivWin->fastBorder)
 	{
-	    (*pcfbFillBoxTile32) ((DrawablePtr)pWin,
-			      (int)REGION_NUM_RECTS(pRegion),
-			      REGION_RECTS(pRegion),
-			      pPrivWin->pRotatedBorder);
+	    agxFillBoxTile( (DrawablePtr)pWin,
+			    (int)REGION_NUM_RECTS(pRegion),
+			    REGION_RECTS(pRegion),
+			    pPrivWin->pRotatedBorder,
+                            0, 0,
+                            MIX_SRC, ~0 );
 	    return;
 	}
-	else if (pWin->border.pixmap->drawable.width >=
-	    /* PPW/2 */ 16 / pWin->drawable.bitsPerPixel)
-	{
-	    (*pcfbFillBoxTileOdd) ((DrawablePtr)pWin,
-			       (int)REGION_NUM_RECTS(pRegion),
-			       REGION_RECTS(pRegion),
-			       pWin->border.pixmap,
-			       (int) pWin->drawable.x, (int) pWin->drawable.y);
+	else {
+	    agxFillBoxTile( (DrawablePtr)pWin,
+			    (int)REGION_NUM_RECTS(pRegion),
+			    REGION_RECTS(pRegion),
+			    pWin->border.pixmap,
+			    (int) pWin->drawable.x, 
+                            (int) pWin->drawable.y,
+                            MIX_SRC, ~0 );
 	    return;
 	}
 	break;
     }
-    miPaintWindow (pWin, pRegion, what);
+    vga256PaintWindow (pWin, pRegion, what);
 }
 
 void

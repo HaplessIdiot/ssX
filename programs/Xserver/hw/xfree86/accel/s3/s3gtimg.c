@@ -1,5 +1,5 @@
 /* $XConsortium: s3gtimg.c,v 1.1 94/03/28 21:15:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.1 1994/08/03 13:30:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.2 1994/08/11 06:55:29 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -58,7 +58,6 @@ s3GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
       case 8:
          cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
 	 break;
-      case 15:
       case 16:
          cfb16GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
       }

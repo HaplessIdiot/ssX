@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.12 1994/08/06 06:08:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.13 1994/08/11 06:55:34 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -51,6 +51,7 @@ typedef struct {
    unsigned char ATT498;	/* AT&T 20C498 command register */
    unsigned char Bt485[4];	/* Bt485 Command Registers 0-3 */
    unsigned char Ti3020[0x40];	/* Ti3020 Indirect Registers 0x0-0x3F */
+   unsigned char STG1700[5];    /* STG1700 index and command registers */
    unsigned char s3reg[10];     /* Video Atribute (CR30-34, CR38-3C) */
    unsigned char s3sysreg[46];  /* Video Atribute (CR40-6D)*/
 }
@@ -117,8 +118,8 @@ s3CleanUp(void)
 
    WaitQueue(8);
    outb(vgaCRIndex, 0x35);
-   i = inb(vgaCRReg);
-   outb(vgaCRReg, (i & 0xf0));
+   tmp = inb(vgaCRReg);
+   outb(vgaCRReg, (tmp & 0xf0));
    cebank();
 
    outw(ADVFUNC_CNTL, 0);
@@ -141,6 +142,27 @@ s3CleanUp(void)
     */
    if (DAC_IS_ATT498) {
       xf86setdaccomm(oldS3->ATT498);
+   }
+
+   /*
+    * Restore STG 1700 command and extended registers.
+    */
+   if (DAC_IS_STG1700)
+   {
+      xf86dactopel();
+      xf86setdaccommbit(0x10);   /* enable extended registers */
+      xf86dactocomm();
+      inb(0x3c6);                /* command reg */
+
+      outb(0x3c6, 0x03);         /* index low */
+      outb(0x3c6, 0x00);         /* index high */
+      
+      outb(0x3c6, oldS3->STG1700[1]);  /* primary pixel mode */
+      outb(0x3c6, oldS3->STG1700[2]);  /* secondary pixel mode */
+      outb(0x3c6, oldS3->STG1700[3]);  /* PLL control */
+
+      xf86dactopel();
+      xf86setdaccomm(oldS3->STG1700[0]);
    }
    
    /*
@@ -264,7 +286,7 @@ s3Init(mode)
    int   pixel_multiplexing;
    unsigned char tmp, tmp1, tmp2;
    extern Bool s3DAC8Bit, s3DACSyncOnGreen;
-   unsigned char pixMuxShift;
+   int pixMuxShift = 0;
 
    UNLOCK_SYS_REGS;
 
@@ -313,6 +335,27 @@ s3Init(mode)
        */
       if (DAC_IS_ATT498) {
          oldS3->ATT498 = xf86getdaccomm();
+      }
+
+      /*
+       * Save STG 1700 command and extended registers.
+       */
+      if (DAC_IS_STG1700) {
+         xf86dactopel();
+         oldS3->STG1700[0] = xf86getdaccomm();
+
+         xf86setdaccommbit(0x10);   /* enable extended registers */
+         xf86dactocomm();
+         inb(0x3c6);                /* command reg */
+
+         outb(0x3c6, 0x03);         /* index low */
+         outb(0x3c6, 0x00);         /* index high */
+
+         oldS3->STG1700[1] = inb(0x3c6);  /* primary pixel mode */
+         oldS3->STG1700[2] = inb(0x3c6);  /* secondary pixel mode */
+         oldS3->STG1700[3] = inb(0x3c6);  /* PLL control */
+
+         xf86dactopel();
       }
 
       /*
@@ -421,40 +464,45 @@ s3Init(mode)
       pixMuxShift = 1;
    else if (S3_x64_SERIES(s3ChipId)) /* XXXX Better to test the DAC type? */
       pixMuxShift = 0;
-   else
-      pixMuxShift = 2;
+   else if ((S3_928_SERIES(s3ChipId) && DAC_IS_SC15025) ||
+	    (S3_864_SERIES(s3ChipId) /* && DAC_IS_ATT498 */ && s3Bpp>2))
+      pixMuxShift = -(s3Bpp>>2);  /* for 32 bpp */
+   else if (pixel_multiplexing)  
+      pixMuxShift = 2; /* old default for   if (pixel_multiplexing) shifting */
+   else 
+      pixMuxShift = 0;
 
-   if (pixel_multiplexing) {
+   if (pixMuxShift > 0) {
       /* now divide the horizontal timing parameters as required */
-      mode->HTotal >>= pixMuxShift;
-      mode->HDisplay >>= pixMuxShift;
+      mode->HTotal     >>= pixMuxShift;
+      mode->HDisplay   >>= pixMuxShift;
       mode->HSyncStart >>= pixMuxShift;
-      mode->HSyncEnd >>= pixMuxShift;
+      mode->HSyncEnd   >>= pixMuxShift;
    }
-
-   if (S3_864_SERIES(s3ChipId) /* && DAC_IS_ATT498 */ && s3Bpp>2) {
-      mode->HTotal <<= 1;
-      mode->HDisplay <<= 1;
-      mode->HSyncStart <<= 1;
-      mode->HSyncEnd <<= 1;
+   else if (pixMuxShift < 0) {
+      /* now multiply the horizontal timing parameters as required */
+      mode->HTotal     <<= -pixMuxShift;
+      mode->HDisplay   <<= -pixMuxShift;
+      mode->HSyncStart <<= -pixMuxShift;
+      mode->HSyncEnd   <<= -pixMuxShift;
    }
 
    if (!vgaHWInit(mode, sizeof(vgaS3Rec)))
       return(FALSE);
 
-   if (S3_864_SERIES(s3ChipId) /* && DAC_IS_ATT498 */ && s3Bpp>2) {
-      mode->HTotal >>= 1;
-      mode->HDisplay >>= 1;
-      mode->HSyncStart >>= 1;
-      mode->HSyncEnd >>= 1;
-   }
-
-   if (pixel_multiplexing) {
+   if (pixMuxShift > 0) {
       /* put back the horizontal timing parameters */
-      mode->HTotal <<= pixMuxShift;
-      mode->HDisplay <<= pixMuxShift;
+      mode->HTotal     <<= pixMuxShift;
+      mode->HDisplay   <<= pixMuxShift;
       mode->HSyncStart <<= pixMuxShift;
-      mode->HSyncEnd <<= pixMuxShift;
+      mode->HSyncEnd   <<= pixMuxShift;
+   }
+   else if (pixMuxShift < 0) {
+      /* put back the horizontal timing parameters */
+      mode->HTotal     >>= -pixMuxShift;
+      mode->HDisplay   >>= -pixMuxShift;
+      mode->HSyncStart >>= -pixMuxShift;
+      mode->HSyncEnd   >>= -pixMuxShift;
    }
 
    new->MiscOutReg |= 0x0C;		/* enable CR42 clock selection */
@@ -548,6 +596,17 @@ s3Init(mode)
    }
 
    /*
+    * Set STG1700 command register to 8-bit mode if desired.
+    */
+   if (DAC_IS_STG1700) {
+      if (s3DAC8Bit) {
+         xf86setdaccommbit(0x02);
+      } else {
+	 xf86clrdaccommbit(0x02);
+      }
+   }
+
+   /*
     * Set Sierra SC 15025/6 command registers to 8-bit mode if desired.
     */
    if (DAC_IS_SC15025) {
@@ -565,22 +624,12 @@ s3Init(mode)
       case 8: 
 	 comm = 0;  /* repack mode 0, color mode 0 */
 	 break;
-      case 15:
       case 16:
-	 aux=1; /*KTS*/
 	 if (s3Weight == RGB16_555) {
-#if 1
 	    comm = 0x80;  /* repack mode 1a using both clock edges */
-#else
-	    comm = 0xa0;  /* repack mode 1b using only rising clock edge */
-#endif
 	 }
 	 else {  /* RGB16_565 */
-#if 1
 	    comm = 0xc0;  /* repack mode 1a using both clock edges */
-#else
-	    comm = 0xe0;  /* repack mode 1b using only rising clock edge */
-#endif
 #ifndef BYPASS_SC15025_LUT
 	    ng = 6;
 #endif
@@ -591,20 +640,15 @@ s3Init(mode)
 #if 0  /* 3 bytes/pixel */
 	 comm = 0x60;  /* repack mode 2 (3 byte RGB) using only rising clock edges */
 #else  /* 4 bytes/pixel */
-#if 1
 	 comm = 0x40;  /* repack mode 3a using both clock edges */
 	 prr = 1;
-#else
-	 comm = 0x60;  /* repack mode 3b using only rising clock edge */
-	 prr = 1;
-#endif
 #endif
 #ifndef BYPASS_SC15025_LUT
 	 nr = ng = nb = 8;
 #endif
 	 break;
-	 default:
-	    ;
+      default:
+	 ;
       }
       
       tmp2=xf86getdaccomm();
@@ -760,8 +804,8 @@ s3Init(mode)
 	       xf86setdaccomm(tmp | 0x50);  /* set mode 5 */
 	       delay_blank = 2;
 	       break;
-	       default:
-		  ;
+	    default:
+	       ;
 	    }
 	    outb(vgaCRIndex, 0x6d);
 	    outb(vgaCRReg, delay_blank);
@@ -774,6 +818,122 @@ s3Init(mode)
       outb(0x3C4, 1);
       outb(0x3C5, tmp2);        /* unblank the screen */
    }
+
+
+   if (DAC_IS_STG1700) {
+      int daccomm = (xf86getdaccomm() & 0x06) | 0x10;
+
+      outb(0x3C4, 1);
+      tmp2 = inb(0x3C5);
+      outb(0x3C5, tmp2 | 0x20); /* blank the screen */
+
+      if (pixel_multiplexing) {
+	 /* x64:pixmux */
+	 /* pixmux with 16/32 bpp not possible for 864 ==> only 8bit mode  */
+         daccomm |= 0x08;           /* enable extended pixel modes */
+	 xf86setdaccomm(daccomm);   /* pixel multiplexing on */
+
+         xf86dactocomm();
+         inb(0x3c6);                /* command reg */
+
+         outb(0x3c6, 0x03);         /* index low */
+         outb(0x3c6, 0x00);         /* index high */
+      
+         outb(0x3c6, 0x05);         /* primary pixel mode */
+         outb(0x3c6, 0x05);         /* secondary pixel mode */
+         outb(0x3c6, 0x02);         /* PLL control TBD */
+
+         xf86dactopel();
+
+	 outb(vgaCRIndex, 0x33);
+	 tmp = inb(vgaCRReg);
+	 outb(vgaCRReg, tmp | 0x08 );
+	 
+	 if (S3_x64_SERIES(s3ChipId)) {
+	    outb(vgaCRIndex, 0x67);
+	    outb(vgaCRReg, 0x11 );     /* set Mode 8: Two 8-bit color,
+					  1 VCLK/2 pixels */
+	    outb(vgaCRIndex, 0x6d);
+	    outb(vgaCRReg, 2 );     /* delay -BLANK pulse by 2 DCLKs */
+	 }
+	 else {
+	    /* don't know */
+	 }
+      }
+      else 
+      { /* !pixel_multiplexing */
+	 outb(vgaCRIndex, 0x33);
+	 tmp = inb(vgaCRReg);
+	 outb(vgaCRReg, tmp &  ~0x08 );
+
+	 if (S3_x64_SERIES(s3ChipId)) {
+	    int invert_vclk = 0;
+	    int delay_blank = 0;
+            int pixmode     = 0;
+            int s3mux       = 0;
+
+	    outb(vgaCRIndex, 0x67);
+
+	    switch (s3InfoRec.bitsPerPixel) 
+            {
+	       case 8: /* set Mode  0:  8-bit color, 1 VCLK/pixel */
+	          daccomm |= 0x00;
+                  s3mux    = 0x00 | invert_vclk; 
+	          break;
+
+       	       case 16: 
+	          if (s3Weight == RGB16_555) 
+                  {
+	             daccomm |= 0x08;
+                     pixmode  = 0x02;
+                     s3mux    = 0x30 | invert_vclk; 
+	          }
+	          else 
+                  {
+	             daccomm |= 0x08;
+                     pixmode  = 0x03;
+                     s3mux    = 0x30 | invert_vclk; 
+	          }
+	          delay_blank = 2;
+	          break;
+
+	       case 32: /* set Mode 11: 24/32-bit color, 2 VCLK/pixel */
+	          daccomm |= 0x08;
+                  pixmode  = 0x04;
+                  s3mux    = 0x50 | invert_vclk; 
+	          delay_blank = 2;
+	          break;
+
+	       default:
+	          ErrorF("default switch 2\n");
+	    }
+
+	    outb(vgaCRReg, s3mux);  
+	    xf86setdaccomm(daccomm);
+
+            xf86dactocomm();
+            inb(0x3c6);                /* command reg */
+
+            outb(0x3c6, 0x03);         /* index low */
+            outb(0x3c6, 0x00);         /* index high */
+      
+            outb(0x3c6, pixmode);      /* primary pixel mode */
+            outb(0x3c6, pixmode);      /* secondary pixel mode */
+
+            xf86dactopel();
+
+	    outb(vgaCRIndex, 0x6d);
+	    outb(vgaCRReg, delay_blank);
+	 }
+	 else {
+	    /* don't know */
+	 }
+      }  /* end of pixel_multiplexing */
+
+      outb(0x3C4, 1);
+      outb(0x3C5, tmp2);        /* unblank the screen */
+   }
+
 
    if (DAC_IS_BT485_SERIES) {
       outb(0x3C4, 1);
@@ -1094,12 +1254,10 @@ s3Init(mode)
       outb(0x3C0, new->Attribute[i]);
    }
 
-   if (s3DisplayWidth == 2048 || 1)
+   if (s3DisplayWidth == 2048 || S3_801_SERIES(s3ChipId))
       s3Port31 = 0x8f;
    else
       s3Port31 = 0x8d;
-   if (S3_x64_SERIES(s3ChipId)) 
-      s3Port31 &= 0x7f; /* x64: bit 7 is reserved */
 
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, s3Port31);
@@ -1147,11 +1305,25 @@ s3Init(mode)
 
    outb(vgaCRIndex, 0x43);
    switch (s3InfoRec.depth) {
-        case 15:
-	   outb(vgaCRReg, 0x80);
+        case 32:
+           if (S3_864_SERIES(s3ChipId) /* && DAC_IS_ATT498 */)
+	      outb(vgaCRReg, 0x88);
 	   break;
+	case 15:
+	   if (DAC_IS_ATT490) { /* JON */
+	      outb(vgaCRReg, 0x80);
+	      break;
+	   }
 	case 16:
-	   outb(vgaCRReg, 0x88);
+           if (S3_864_SERIES(s3ChipId) /* && DAC_IS_ATT498 */)
+	      outb(vgaCRReg, 0x88);
+           else if (S3_928_SERIES(s3ChipId) && DAC_IS_SC15025)
+	      outb(vgaCRReg, 0x81);  /* ELSA Winner 1000 */
+	   else if (DAC_IS_ATT490) { /* JON */
+	      outb(vgaCRReg, 0x80);
+	   }
+	   else 
+	      outb(vgaCRReg, 0x09);
            break;
         case 8:
         default:
@@ -1165,19 +1337,19 @@ s3Init(mode)
    outb(vgaCRReg, 0x00);
 
    outb(vgaCRIndex, 0x45);
-   i = inb(vgaCRReg);
-   /* hi/true cursor color enable */
-   switch (s3InfoRec.bitsPerPixel) {
-	case 15:
+   i = inb(vgaCRReg) & 0xf2;
+   if (!S3_x64_SERIES(s3ChipId)) {
+      /* hi/true cursor color enable */
+      switch (s3InfoRec.bitsPerPixel) {
 	case 16:
 	  i = i | 0x04;
 	  break;
 	case 32:
 	  i = i | 0x08;
 	  break;
+       }
    }
-
-   outb(vgaCRReg, i & 0xfe); /* Don't change the cursor state */
+   outb(vgaCRReg, i);
 
    if (S3_801_928_SERIES(s3ChipId)) {	/* S3 801 specific initialization */
 
@@ -1187,7 +1359,6 @@ s3Init(mode)
       switch (s3InfoRec.bitsPerPixel) {
 	case 8:
            break;
-        case 15:
 	case 16:
 	   i = i | 0x10;
         default:
@@ -1245,7 +1416,7 @@ s3Init(mode)
 	    CR54   208  200  192  184  160  144  112   88
 	    CR54/8  26   25   24   23   20   18   14   11
 	    */
-	 s3Port54 = (232-s3InfoRec.clock[mode->Clock]/900 / s3Bpp) & 0xf8;
+	 s3Port54 = ((232-s3InfoRec.clock[mode->Clock]/900) / s3Bpp) & 0xf8;
       }
       else if (s3InfoRec.videoRam == 512 || mode->HDisplay > 1200) /* XXXX */
 	 s3Port54 = 0x00;
@@ -1273,39 +1444,39 @@ s3Init(mode)
       outb(vgaCRIndex, 0x5e);
       outb(vgaCRReg, i);
 
-      if (pixel_multiplexing) {
-         /* now divide the horizontal timing parameters as required */
-         mode->HTotal >>= pixMuxShift;
-         mode->HDisplay >>= pixMuxShift;
-         mode->HSyncStart >>= pixMuxShift;
-         mode->HSyncEnd >>= pixMuxShift;
+      if (pixMuxShift > 0) {
+	 /* now divide the horizontal timing parameters as required */
+	 mode->HTotal     >>= pixMuxShift;
+	 mode->HDisplay   >>= pixMuxShift;
+	 mode->HSyncStart >>= pixMuxShift;
+	 mode->HSyncEnd   >>= pixMuxShift;
+      }
+      else if (pixMuxShift < 0) {
+	 /* now multiply the horizontal timing parameters as required */
+	 mode->HTotal     <<= -pixMuxShift;
+	 mode->HDisplay   <<= -pixMuxShift;
+	 mode->HSyncStart <<= -pixMuxShift;
+	 mode->HSyncEnd   <<= -pixMuxShift;
       }
 
-      if (S3_864_SERIES(s3ChipId) /* && DAC_IS_ATT498 */ && s3Bpp>2) {
-	 mode->HTotal <<= 1;
-	 mode->HDisplay <<= 1;
-	 mode->HSyncStart <<= 1;
-	 mode->HSyncEnd <<= 1;
-      }
-      
       i = ((mode->HTotal & 0x800) >> 11) |
 	  ((mode->HDisplay & 0x800) >> 10) |
 	  ((mode->HSyncStart & 0x800) >> 9) |
 	  ((mode->HSyncStart & 0x800) >> 7);
 
-      if (S3_864_SERIES(s3ChipId) /* && DAC_IS_ATT498 */ && s3Bpp>2) {
-	 mode->HTotal >>= 1;
-	 mode->HDisplay >>= 1;
-	 mode->HSyncStart >>= 1;
-	 mode->HSyncEnd >>= 1;
+      if (pixMuxShift > 0) {
+	 /* put back the horizontal timing parameters */
+	 mode->HTotal     <<= pixMuxShift;
+	 mode->HDisplay   <<= pixMuxShift;
+	 mode->HSyncStart <<= pixMuxShift;
+	 mode->HSyncEnd   <<= pixMuxShift;
       }
-
-      if (pixel_multiplexing) {
-         /* put back the horizontal timing parameters */
-         mode->HTotal <<= pixMuxShift;
-         mode->HDisplay <<= pixMuxShift;
-         mode->HSyncStart <<= pixMuxShift;
-         mode->HSyncEnd <<= pixMuxShift;
+      else if (pixMuxShift < 0) {
+	 /* put back the horizontal timing parameters */
+	 mode->HTotal     >>= -pixMuxShift;
+	 mode->HDisplay   >>= -pixMuxShift;
+	 mode->HSyncStart >>= -pixMuxShift;
+	 mode->HSyncEnd   >>= -pixMuxShift;
       }
 
       outb(vgaCRIndex, 0x3b);
@@ -1320,87 +1491,24 @@ s3Init(mode)
       tmp = inb(vgaCRReg);
       outb(vgaCRReg, (tmp & ~0x57) | i);
 
-
-      /*
-       * Set up CR60 according the the DRAM speed specified in the Xconfig
-       * and the selected dot clock.  This is all empirical and/or guesswork
-       * at this point.
-       */
-
-      /* Not sure about the 512k case, so deal with it separately */
-      if (s3InfoRec.videoRam == 512) {
-	 tmp = 0xff;
-      } else {
-	 /*
-	  * Default to 0xff except for clocks > 100Mhz unless one of the
-	  * "dram_..." options is specified (0xff seems to be fine for
-	  * most (all?) cards).  The "dram_..." options are probably not
-	  * necessary at all, and may be removed in a future release.
-	  */
-	 if (OFLG_ISSET(OPTION_SLOW_DRAM, &s3InfoRec.options)) {
-	    if (s3InfoRec.clock[mode->Clock] > 69000) { /* guess */
-	       tmp = 0xff;
-	    } else if (s3InfoRec.clock[mode->Clock] > 49000) { /* guess */
-	       tmp = 0x7f;
-	    } else {
-	       tmp = 0x3f;
-	    }
-	 } else if (OFLG_ISSET(OPTION_MED_DRAM, &s3InfoRec.options)) {
-	    if (s3InfoRec.clock[mode->Clock] > 69000) { /* guess */
-	       tmp = 0x7f;
-	    } else {
-	       tmp = 0x3f;
-	    }
-	 } else if (OFLG_ISSET(OPTION_FAST_DRAM, &s3InfoRec.options)) {
-	    /* This is from experimentation with an Actix GE32+ 2MB @ 110MHz */
-	    if (s3InfoRec.clock[mode->Clock] > 100000) {
-	       tmp = 0xff;
-	    } else if (s3InfoRec.clock[mode->Clock] > 79000) { /* guess */
-	       tmp = 0x7f;
-	    } else {
-	       tmp = 0x3f;
-	    }
-	 } else {
-	    /* Default to 0xff for all modes/clocks -- it seems to be OK */
-	    tmp = 0xff;
-	 }
-      }
       outb(vgaCRIndex, 0x60);
-      outb(vgaCRReg, tmp);
+      outb(vgaCRReg, 0xff);
 
+      if (s3InfoRec.videoRam > 1024 && S3_x64_SERIES(s3ChipId)) 
+	 i = mode->HDisplay * s3Bpp / 8;
+      else
+	 i = mode->HDisplay * s3Bpp / 4; /* XXX should be checked for 801/805 */
+      
       outb(vgaCRIndex, 0x61);
-      outb(vgaCRReg, 0x81);
-
-      /* Not really sure about CR62, but this is what we've always had */
-      if (s3DisplayWidth >= 1152) {
-	 tmp = 0xa1;
-      } else {
-	 tmp = 0x00;
-      }
+      outb(vgaCRReg, (i >> 8) | 0x80);
       outb(vgaCRIndex, 0x62);
-      outb(vgaCRReg, tmp);
-
-      if (S3_x64_SERIES(s3ChipId)) {
-	 int tmp;
-	 outb(vgaCRIndex, 0x60);
-	 outb(vgaCRReg, 255);
-	 
-	 if (s3InfoRec.videoRam < 2048) 
-	    tmp = mode->HDisplay * s3Bpp / 4;
-	 else
-	    tmp = mode->HDisplay * s3Bpp / 8;
-	 
- 	 outb(vgaCRIndex, 0x61);
-	 outb(vgaCRReg, (tmp >> 8) | 0x80);
-	 outb(vgaCRIndex, 0x62);
-	 outb(vgaCRReg, tmp & 0xff);
-      }
+      outb(vgaCRReg, i & 0xff);
    }
 
    if ((mode->Flags & V_INTERLACE) != 0) {
       outb(vgaCRIndex, 0x42);
-      i = inb(vgaCRReg);
-      outb(vgaCRReg, 0x20 | i);
+      tmp = inb(vgaCRReg);
+      outb(vgaCRReg, 0x20 | tmp);
    }
 
 #ifdef REG_DEBUG
@@ -1548,7 +1656,7 @@ s3InitEnvironment()
 void
 s3Unlock()
 {
-   unsigned char i;
+   unsigned char tmp;
 
    xf86EnableIOPorts(s3InfoRec.scrnIndex);
 
@@ -1559,8 +1667,8 @@ s3Unlock()
    outb(vgaCRReg, 0xa5);
 
    outb(vgaCRIndex, 0x35);		/* select segment 0 */
-   i = inb(vgaCRReg);
-   outb(vgaCRReg, i & 0xf0);
+   tmp = inb(vgaCRReg);
+   outb(vgaCRReg, tmp & 0xf0);
    cebank();
 
    outb(vgaCRIndex, 0x11);		/* allow writting? */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.1 1994/06/18 16:22:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.2 1994/08/01 12:08:42 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -322,22 +322,6 @@ void agxImageStipple(
     int ,
     unsigned int ,
     unsigned int ,
-    unsigned int 
-#endif
-);
-void agxImageOpStipple(
-#if NeedFunctionPrototypes
-    int ,
-    int ,
-    int ,
-    int ,
-    unsigned char *,
-    int ,
-    int ,
-    int ,
-    int ,
-    int ,
-    unsigned int ,
     unsigned int ,
     unsigned int ,
     unsigned int 
@@ -549,9 +533,39 @@ void agxOStipFSpans(
     DrawablePtr ,
     GCPtr ,
     int ,
-    DDXPointPtr ,
+    DDXPointPtr,
     int *,
     int 
+#endif
+);
+/* agxIm.c */
+void agxFSpansTile(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    int ,
+    DDXPointPtr,
+    int *,
+    PixmapPtr,
+    int,
+    int,
+    unsigned int,
+    unsigned int
+#endif
+);
+void agxFSpansStipple(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    int ,
+    DDXPointPtr,
+    int *,
+    PixmapPtr,
+    int,
+    int,
+    unsigned int,
+    unsigned int,
+    unsigned int,
+    unsigned int,
+    unsigned int
 #endif
 );
 /* agxGS.c */
@@ -593,28 +607,34 @@ void agxFillBoxSolid(
     unsigned long 
 # endif
 );
-#if 0
-/* ??? */
-void agxFillBoxTile32(
+/* agxIm.c */
+void agxFillBoxTile(
 #if NeedFunctionPrototypes
     DrawablePtr ,
     int ,
     BoxPtr ,
-    PixmapPtr
+    PixmapPtr,
+    int,
+    int,
+    unsigned int,
+    unsigned int
 #endif
 );
-/* ??? */
-void agxFillBoxTileOdd(
+void agxFillBoxStipple(
 #if NeedFunctionPrototypes
     DrawablePtr ,
     int ,
     BoxPtr ,
-    PixmapPtr ,
-    int ,
-    int
+    PixmapPtr,
+    int,
+    int,
+    unsigned int,
+    unsigned int,
+    unsigned int,
+    unsigned int,
+    unsigned int
 #endif
 );
-#endif
 /* agxWin.c */
 void agxCopyWindow(
 #if NeedFunctionPrototypes

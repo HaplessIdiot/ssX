@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.6 1994/07/24 11:42:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.7 1994/08/01 12:08:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -364,13 +364,9 @@ static AGXInformationBlock *GetAGXInformationBlock(instance)
 Bool
 agxProbe()
 {
-   int                   i, j;
+   int                   i;
    DisplayModePtr        pMode, pEnd;
-   AGXInformationBlock   *info;
-   char			 *chipId;
-   int                   extra_ram;
-   int                   extra_caches;
-   Bool                  sw_cursor_supplied;
+   /* AGXInformationBlock   *info; */
    OFlagSet              validOptions;
    int                   tx, ty;
    agxCRTCRegRec         agxProbeCRTC;
@@ -490,9 +486,11 @@ agxProbe()
              agxInfoRec.COPbase = 0xD1F00;
       }
       else {
+/*
          if(info->xgaBiosAddress != 0)
             agxInfoRec.COPbase = info->xgaBiosAddress + 0x1C00;
          else
+*/
             agxInfoRec.COPbase = GE_DEF_MEM_BASE;
          agxInfoRec.COPbase += agxInfoRec.instance << 7;
       }
@@ -583,7 +581,7 @@ agxProbe()
     * Handle RAMDAC Option flags first.
     */
    if(AGX_SERIES(agxChipId)) { 
-      xf86RamDacType == UNKNOWN_DAC;
+      xf86RamDacType = UNKNOWN_DAC;
       xf86DacSyncOnGreen = FALSE;
       if (OFLG_ISSET(OPTION_NORMAL_DAC, &agxInfoRec.options)) {
          xf86RamDacType = NORMAL_DAC;
@@ -982,7 +980,7 @@ agxEnterLeaveVT(enter, screen_idx)
    BoxRec  pixBox;
    RegionRec pixReg;
    DDXPointRec pixPt;
-   PixmapPtr pspix;
+   PixmapPtr pspix = NULL;
    ScreenPtr pScreen = savepScreen;
 
    if (!xf86Resetting && !xf86Exiting) {
@@ -1150,7 +1148,6 @@ agxSaveScreen (pScreen, on)
    ScreenPtr     pScreen;
    Bool          on;
 {
-   int	   ext_ge_config;
    unsigned char oldIndex;
    unsigned int  palDataReg;
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3bstor.c,v 1.1 94/03/28 21:14:37 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bstor.c,v 3.1 1994/08/03 13:30:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bstor.c,v 3.2 1994/08/11 06:55:20 dawes Exp $ */
 /*-
  * s3bstore.c --
  *	Functions required by the backing-store implementation in MI.
@@ -60,7 +60,6 @@ s3SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
 	case 8:
 	    cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
 	    return;
-	case 15:
 	case 16:
 	    cfb16SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
 	    return;
@@ -99,7 +98,6 @@ s3RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
 	case 8:
 	    cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
 	    return;
-	case 15:
 	case 16:
 	    cfb16RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
 	    return;

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.2 94/03/28 21:14:00 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.3 1994/08/03 13:27:45 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.4 1994/08/11 06:55:14 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -308,7 +308,7 @@ s3LoadCursor(pScr, pCurs, x, y)
          n = bytes_remaining;
 
 #ifndef DONT_USE_IMAGE_WRITE
-      (*s3ImageWriteFunc)(xpos, ypos, n, 1, (char *)(ram + ram_loc), n, 0, 0,
+      (*s3ImageWriteFunc)(xpos/s3Bpp, ypos, n/s3Bpp, 1, (char *)(ram + ram_loc), n, 0, 0,
 			  MIX_SRC, ~0);
 #else
       WaitQueue(5);
@@ -425,12 +425,14 @@ s3MoveCursor(pScr, x, y)
    if (s3BlockCursor)
       return;
 
-   x *= s3Bpp; /* XXX why? */
-   x -= s3hotX;
-   y -= s3hotY;
-
    x -= s3InfoRec.frameX0;
    y -= s3InfoRec.frameY0;
+
+   if (!S3_x64_SERIES(s3ChipId)) 
+      x *= s3Bpp;
+
+   x -= s3hotX;
+   y -= s3hotY;
 
    UNLOCK_SYS_REGS;
 

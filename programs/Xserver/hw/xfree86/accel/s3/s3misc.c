@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.6 1994/08/03 13:28:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.7 1994/08/11 06:55:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -91,7 +91,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
    s3Unlock();	  /* for restarts */
    
    /* for clips */
-   s3ScissB = ((s3InfoRec.videoRam * 1024) / s3DisplayWidth) - 1;
+   s3ScissB = ((s3InfoRec.videoRam * 1024) / s3BppDisplayWidth) - 1;
 
  /*
   * Initialize the screen, saving the original state for Save/Restore
@@ -345,7 +345,6 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    pScreen->ListInstalledColormaps = s3ListInstalledColormaps;
 	    pScreen->StoreColors = s3StoreColors;
 	    break;       
-	case 15:
 	case 16:
         case 32:
 	    pScreen->InstallColormap = cfbInstallColormap;
@@ -381,7 +380,6 @@ s3EnterLeaveVT(enter, screen_idx)
         case 8:
             pspix = (PixmapPtr)pScreen->devPrivate;
             break;
-        case 15:
         case 16:
             pspix =
                   (PixmapPtr)pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr;
@@ -560,7 +558,7 @@ s3AdjustFrame(int x, int y)
          y += 512;
    }
       
-   Base = (y * s3BppDisplayWidth + x) >> 2;
+   Base = ((y * s3DisplayWidth + x) * s3Bpp) >> 2;
 
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, ((Base & 0x030000) >> 12) | s3Port31);

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fs.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.1 1994/07/15 06:57:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.2 1994/08/01 12:08:51 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -124,6 +124,13 @@ agxSolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int *initPwidth;
     unsigned short width;
 
+    if (!xf86VTSema)
+    {
+       cfbSolidSpansGeneral(pDrawable, pGC,
+                             nInit, pptInit, pwidthInit, fSorted);
+       return;
+    }
+
     if (pDrawable->type != DRAWABLE_WINDOW) {
 	switch (pDrawable->bitsPerPixel) {
 	    case 1:
@@ -143,7 +150,9 @@ agxSolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
         return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    n = nInit * miFindMaxBand( ((cfbPrivGC *)
+                                   (pGC->devPrivates[cfbGCPrivateIndex].ptr))
+                                      ->pCompositeClip );
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -152,7 +161,8 @@ agxSolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+    n = miClipSpans( ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))
+                        ->pCompositeClip,
                      pptInit, pwidthInit, nInit,
                      ppt, pwidth, fSorted);
 
@@ -171,15 +181,14 @@ agxSolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
               | GE_OP_INC_Y         );
 
     while (n--) {
-       width = (*pwidth)-1; 
        GE_WAIT_IDLE();
 #ifndef NO_MULTI_IO
        GE_OUT_D( GE_DEST_MAP_X, (ppt->y) << 16 | (ppt->x) );
-       GE_OUT_D( GE_OP_DIM_WIDTH, width );
+       GE_OUT_D( GE_OP_DIM_WIDTH, *pwidth-1 );
 #else
        GE_OUT_W( GE_DEST_MAP_X, (short)(ppt->x) );
        GE_OUT_W( GE_DEST_MAP_Y, (short)(ppt->y) );
-       GE_OUT_W( GE_OP_DIM_WIDTH, (short)width );
+       GE_OUT_W( GE_OP_DIM_WIDTH, (short)*pwidth-1 );
        GE_OUT_W( GE_OP_DIM_HEIGHT, 0 );
 #endif
        GE_START_CMDW( GE_OPW_BITBLT
@@ -213,6 +222,12 @@ agxTiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DDXPointPtr initPpt;
     int *initPwidth;
 
+    if (!xf86VTSema)
+    {
+       cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+       return;
+    }
+
     if (pDrawable->type != DRAWABLE_WINDOW) {
 	switch (pDrawable->bitsPerPixel) {
 	    case 1:
@@ -232,7 +247,9 @@ agxTiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
         return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    n = nInit * miFindMaxBand( ((cfbPrivGC *)
+                                   (pGC->devPrivates[cfbGCPrivateIndex].ptr))
+                                      ->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -241,9 +258,10 @@ agxTiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+    n = miClipSpans( ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))
+                        ->pCompositeClip,
                      pptInit, pwidthInit, nInit,
-                     ppt, pwidth, fSorted);
+                     ppt, pwidth, fSorted );
 
     xrot = pDrawable->x + pGC->patOrg.x;
     yrot = pDrawable->y + pGC->patOrg.y;
@@ -253,22 +271,12 @@ agxTiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
     }
 
-    width = pPix->drawable.width;
-    height = pPix->drawable.height;
-    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
-
-    while (n--) {
-	(agxImageFillFunc)(ppt->x, ppt->y, *pwidth, 1,
-			   pPix->devPrivate.ptr, pixWidth,
-			   width, height, xrot, yrot,
-			   pGC->alu, pGC->planemask);
-	ppt++;
-	pwidth++;
-    }
+    agxFSpansTile( pDrawable, n, ppt, pwidth,
+                   pPix, xrot, yrot,
+		   pGC->alu, pGC->planemask );
 
     DEALLOCATE_LOCAL(initPpt);
     DEALLOCATE_LOCAL(initPwidth);
-
 }
 
 void
@@ -287,6 +295,13 @@ agxStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     PixmapPtr pPix = pGC->stipple;
     DDXPointPtr initPpt;
     int *initPwidth;
+
+    if (!xf86VTSema)
+    {
+        cfbUnnaturalStippleFS( pDrawable, pGC,
+                               nInit, pptInit, pwidthInit, fSorted);
+        return;
+    }
 
     if (pDrawable->type != DRAWABLE_WINDOW) {
 	switch (pDrawable->bitsPerPixel) {
@@ -307,7 +322,9 @@ agxStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
         return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    n = nInit * miFindMaxBand( ((cfbPrivGC *)
+                                   (pGC->devPrivates[cfbGCPrivateIndex].ptr))
+                                       ->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -316,9 +333,10 @@ agxStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+    n = miClipSpans( ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))
+                        ->pCompositeClip,
                      pptInit, pwidthInit, nInit,
-                     ppt, pwidth, fSorted);
+                     ppt, pwidth, fSorted );
 
     xrot = pDrawable->x + pGC->patOrg.x;
     yrot = pDrawable->y + pGC->patOrg.y;
@@ -328,18 +346,11 @@ agxStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
     }
 
-    width = pPix->drawable.width;
-    height = pPix->drawable.height;
-    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
-
-    while (n--) {
-	agxImageStipple(ppt->x, ppt->y, *pwidth, 1,
-			pPix->devPrivate.ptr, pixWidth, width, height,
-			xrot, yrot, pGC->fgPixel,
-			pGC->alu, pGC->planemask);
-	ppt++;
-	pwidth++;
-    }
+    agxFSpansStipple( pDrawable, n, ppt, pwidth,
+                      pPix, xrot, yrot, 
+                      pGC->fgPixel, 0,
+                      pGC->alu, MIX_DST,
+                      pGC->planemask );
 
     DEALLOCATE_LOCAL(initPpt);
     DEALLOCATE_LOCAL(initPwidth);
@@ -381,7 +392,9 @@ agxOStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
         return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    n = nInit * miFindMaxBand( ((cfbPrivGC *)(pGC
+                                    ->devPrivates[cfbGCPrivateIndex].ptr))
+                                        ->pCompositeClip );
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -390,9 +403,11 @@ agxOStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         if (pwidth) DEALLOCATE_LOCAL(pwidth);
         return;
     }
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+    n = miClipSpans( ((cfbPrivGC *)
+                        (pGC->devPrivates[cfbGCPrivateIndex].ptr))
+                           ->pCompositeClip,
                      pptInit, pwidthInit, nInit,
-                     ppt, pwidth, fSorted);
+                     ppt, pwidth, fSorted );
 
     xrot = pDrawable->x + pGC->patOrg.x;
     yrot = pDrawable->y + pGC->patOrg.y;
@@ -402,19 +417,11 @@ agxOStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	return;
     }
 
-    width = pPix->drawable.width;
-    height = pPix->drawable.height;
-    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
-
-    while (n--) {
-	agxImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
-			  pPix->devPrivate.ptr, pixWidth,
-			  width, height,
-			  xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-			  pGC->alu, pGC->planemask);
-	ppt++;
-	pwidth++;
-    }
+    agxFSpansStipple( pDrawable, n, ppt, pwidth,
+                        pPix, xrot, yrot, 
+                        pGC->fgPixel, pGC->bgPixel,
+                        pGC->alu, pGC->alu,
+                        pGC->planemask );
 
     DEALLOCATE_LOCAL(initPpt);
     DEALLOCATE_LOCAL(initPwidth);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.3 1994/07/15 06:57:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.4 1994/08/01 12:08:48 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -552,7 +552,7 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
                      GE_OUT_W(GE_FRGD_MIX, MIX_DST << 8 | pGC->alu );
 #else
                      GE_OUT_B(GE_FRGD_MIX, pGC->alu );
-                     GE_OUT_B(GE_BKGD_MIX, MIX_SRC );
+                     GE_OUT_B(GE_BKGD_MIX, MIX_DST );
 #endif
                      GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
                      GE_OUT_D(GE_FRGD_CLR, pGC->fgPixel);

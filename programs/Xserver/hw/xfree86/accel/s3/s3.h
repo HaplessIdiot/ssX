@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.1 94/03/28 21:13:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.7 1994/08/03 13:27:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.8 1994/08/06 06:08:01 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -139,6 +139,7 @@ extern Bool s3ATT498PixMux;
 #define TI3025_DAC         5
 #define ATT20C490_DAC      6
 #define SC15025_DAC        7
+#define STG1700_DAC        8
 
 #define DAC_IS_BT485_SERIES	(s3RamdacType == BT485_DAC || \
 				 s3RamdacType == ATT20C505_DAC)
@@ -149,6 +150,7 @@ extern Bool s3ATT498PixMux;
 #define DAC_IS_ATT498		(s3RamdacType == ATT20C498_DAC)
 #define DAC_IS_ATT490		(s3RamdacType == ATT20C490_DAC)
 #define DAC_IS_SC15025		(s3RamdacType == SC15025_DAC)
+#define DAC_IS_STG1700          (s3RamdacType == STG1700_DAC)
 
 /* Function Prototypes */
 
