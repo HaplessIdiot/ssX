@@ -1,4 +1,6 @@
 XFree86 4.4.99.20 (xx December 2004)
+ 239. Add support for the newer UltraSPARC variants into the SunOS/Solaris port
+      (Marc La France).
  238. Ensure __i386__ or __sparc__ is defined when using Sun's compiler on
       Solaris.  Also fix Non-XFree86 builds on Solaris (Marc La France).
  237. Fix MISC extension's PassMessage(). Bump minor version to 9 to
@@ -19207,7 +19209,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3363 2004/12/15 00:52:21 twini Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3364 2004/12/15 01:30:55 tsi Exp $
 
 
 
