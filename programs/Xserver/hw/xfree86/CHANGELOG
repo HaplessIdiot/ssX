@@ -1,4 +1,8 @@
 XFree86 3.9Px (11 July 1999)
+2875. Fix a relocation problem in the ELF loader that shows up on 64-bit
+      platforms when mapping unresolved symbols to LoaderDefaultFunc()
+      (#3005, Doug Rabson).
+2874. Remove the original text version of the DESIGN doc from hw/xfree86.
 2873. Fix a glyph padding problem in XAA's nonTE text code that shows up on
       64-bit platforms (Doug Rabson).
 2872. Rework the wacom driver's init phase (#3004, Frederic Lepied).
@@ -8411,4 +8415,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.794 1999/07/10 12:17:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.795 1999/07/11 08:49:19 dawes Exp $
