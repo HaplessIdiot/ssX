@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.59 2002/09/16 18:05:16 eich Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.60 2002/10/15 02:35:43 dawes Exp $ */
 
 /*
  * 
@@ -379,7 +379,8 @@ int     catch(int sig);
 void    catch(int sig);
 #endif
 void    showargs(char **argv);
-boolean optional_include(FILE *inFile, char *defsym, char *fname);void    doit(FILE *outfd, char *cmd, char **argv);
+boolean optional_include(FILE *inFile, char *defsym, char *fname);
+void    doit(FILE *outfd, char *cmd, char **argv);
 boolean define_os_defaults(FILE *inFile);
 #ifdef CROSSCOMPILE
 static void get_cross_compile_dir(FILE *inFile);
