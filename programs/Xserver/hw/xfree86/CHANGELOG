@@ -1,3 +1,14 @@
+XFree86 3.1.0B (4 January 1995)
+165. Support for C&T 65540/45 added to the SVGA server (Régis Cridlig).
+164. Change cirrus programmable clock code to use a tested set of clock
+     parameters when there is one close to the requested clock freqency
+     (Harm Hanemaayer).
+163. Fix cirrus BitBLTs with height > 1024 for 543x (Harm Hanemaayer).
+162. Clock-related updates to the vgawonder driver (reject invalid clocks
+     where possible) (Marc Aurele La France).
+161. Config updates (including installatiion of host.def and fix references
+     to cl64xx driver in xf86site.def) (Marc Aurele La France).
+
 XFree86 3.1.0Ae (2 January 1995)
 160. Replace docs with the ascii versions generated from the sgml source.
 159. Major updates to xf86config(1), including the addition of a Cards
@@ -174,7 +185,7 @@ XFree86 3.1.0c (6 November 1994)
      clock when one of these is detected (Harald Koenig).
  59. Fixes for S3 RAMDAC detection (STG1700 and SDAC) (Harald Koenig).
  58. Fix ICD2061A code for clocks between 110MHz and 120MHz (Harald Koenig).
- 57. Chips & Technology SVGA driver (Jon Block and others?).
+ 57. Chips & Technology SVGA driver (Jon Block, Mike Hollick, Régis Cridlig).
  56. 16/32bpp support for #9 boards with Ti3020 ramdac (Robin Cutshaw).
  55. Fix bsdi.cf problems with gcc options (Hans Nasten).
 
