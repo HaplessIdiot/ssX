@@ -1,4 +1,10 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 502. Implement a hack for the DEC TGA2 cards which maps an extra page
+      before framebuffer start as the acceleration code is slightly
+      broken (Jay Estabrook).
+ 501. Allow secondary MGA boards to be used on Alpha that have the VGA
+      disable switch set (Jay Estabrook).
+ 500. Fix Radeon jerky cursor movement bug (Jay Estabrook).
  499. Add new Luxi fonts from Bigelow & Holmes (#5010, Charles Bigelow and
       Kris Holmes, integrated by Juliusz Chroboczek).
  498. Update the ClearlyU fonts to version 1.8 (#5009, Mark Leisher).
@@ -14189,4 +14195,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2053 2001/11/21 08:51:21 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2054 2001/11/21 21:31:27 dawes Exp $
