@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.56 2002/07/25 05:06:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.57 2002/08/27 22:07:07 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -238,7 +238,7 @@ pciInit()
 #endif
 
 	ARCH_PCI_INIT();
-	if (!pciNumBuses)
+	if (pciNumBuses <= 0)
 #if defined(ARCH_PCI_OS_INIT)
 	    ARCH_PCI_OS_INIT();
 #else
@@ -281,7 +281,7 @@ pciReadLong(PCITAG tag, int offset)
 #endif
   pciInit();
 
-  if ((bus < pciNumBuses || inProbe) &&  pciBusInfo[bus] &&
+  if ((bus >= 0) && ((bus < pciNumBuses) || inProbe) && pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs->pciReadLong) {
     CARD32 rv = (*pciBusInfo[bus]->funcs->pciReadLong)(tag, offset);
 
@@ -328,7 +328,7 @@ pciWriteLong(PCITAG tag, int offset, CARD32 val)
 
   pciInit();
 
-  if (bus < pciNumBuses && pciBusInfo[bus] &&
+  if ((bus >= 0) && (bus < pciNumBuses) && pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs->pciWriteLong)
 	  (*pciBusInfo[bus]->funcs->pciWriteLong)(tag, offset, val);
 }
@@ -377,7 +377,7 @@ pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val)
 #endif
     pciInit();
 
-    if (bus < pciNumBuses && pciBusInfo[bus] &&
+    if ((bus >= 0) && (bus < pciNumBuses) && pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs->pciReadLong) {
 	(*pciBusInfo[bus]->funcs->pciSetBitsLong)(tag, offset, mask, val);
     }
@@ -402,7 +402,7 @@ pciLongFunc(PCITAG tag, pciFunc func)
 
     pciInit();
 
-    if (bus > pciNumBuses || !pciBusInfo[bus] ||
+    if ((bus < 0) || (bus > pciNumBuses) || !pciBusInfo[bus] ||
 	!pciBusInfo[bus]->funcs->pciReadLong) return NULL;
 
     switch (func) {
@@ -423,7 +423,7 @@ pciBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 
   pciInit();
 
-  if (bus < pciNumBuses && pciBusInfo[bus] &&
+  if ((bus >= 0) && (bus < pciNumBuses) && pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs->pciAddrBusToHost)
 	  return (*pciBusInfo[bus]->funcs->pciAddrBusToHost)(tag, type, addr);
   else
@@ -437,7 +437,7 @@ pciHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 
   pciInit();
 
-  if (bus < pciNumBuses && pciBusInfo[bus] &&
+  if ((bus >= 0) && (bus < pciNumBuses) && pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs->pciAddrHostToBus)
 	  return (*pciBusInfo[bus]->funcs->pciAddrHostToBus)(tag, type, addr);
   else
@@ -631,7 +631,7 @@ pciGenFindNext(void)
 	    /*
 	     * Start at top of the order
 	     */
-	    if (pciNumBuses == 0)
+	    if (pciNumBuses <= 0)
 		return(PCI_NOT_FOUND);
 
 	    /* Skip ahead to the first bus defined by pciInit() */
@@ -748,13 +748,17 @@ pciGenFindNext(void)
 	    ErrorF("pciGenFindNext: pri_bus %d sec_bus %d\n",
 		   pri_bus, sec_bus);
 #endif
-	    if (pciBusNum != pri_bus)
-		xf86Msg(X_WARNING,
-			"pciGenFindNext:  primary bus mismatch on PCI bridge"
-			" 0x%08x (0x%02x, 0x%02x)\n",
-			pciDeviceTag, pciBusNum, pri_bus);
-	    if ((PCI_BUS_NO_DOMAIN(sec_bus) != 0) &&
-		(sec_bus < pciMaxBusNum) &&
+	    if (pciBusNum != pri_bus) {
+		/* Some bridges do not implement the primary bus register */
+		if ((PCI_BUS_NO_DOMAIN(pri_bus) != 0) ||
+		    (sub_class != PCI_SUBCLASS_BRIDGE_CARDBUS))
+		    xf86Msg(X_WARNING,
+			    "pciGenFindNext:  primary bus mismatch on PCI"
+			    " bridge 0x%08x (0x%02x, 0x%02x)\n",
+			    pciDeviceTag, pciBusNum, pri_bus);
+		pri_bus = pciBusNum;
+	    }
+	    if ((pri_bus < sec_bus) && (sec_bus < pciMaxBusNum) &&
 		pciBusInfo[pri_bus]) {
 		/*
 		 * Found a secondary PCI bus
@@ -906,7 +910,8 @@ pciConfigPtr *
 xf86scanpci(int flags)
 {
     pciConfigPtr devp;
-    int          idx = 0;
+    pciBusInfo_t *busp;
+    int          idx = 0, i;
     PCITAG       tag;
 
     if (pci_devp[0])
@@ -914,10 +919,18 @@ xf86scanpci(int flags)
 
     pciInit();
 
+#ifdef XF86SCANPCI_WRAPPER
+    XF86SCANPCI_WRAPPER(SCANPCI_INIT);
+#endif
+
     tag = pciFindFirst(0,0);  /* 0 mask means match any valid device */
     /* Check if no devices, return now */
-    if (tag == PCI_NOT_FOUND)
+    if (tag == PCI_NOT_FOUND) {
+#ifdef XF86SCANPCI_WRAPPER
+	XF86SCANPCI_WRAPPER(SCANPCI_TERM);
+#endif
 	return NULL;
+    }
 
 #ifdef DEBUGPCI
     ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
@@ -927,8 +940,6 @@ xf86scanpci(int flags)
 #endif
 
     while (idx < MAX_PCI_DEVICES && tag != PCI_NOT_FOUND) {
-	int i;
-
 	devp = xalloc(sizeof(pciDevice));
 	if (!devp) {
 	    xf86Msg(X_ERROR,
@@ -1003,23 +1014,44 @@ xf86scanpci(int flags)
 		(devp->pci_sub_class != PCI_SUBCLASS_BRIDGE_HOST))
 		break;
 	    pciBusInfo[devp->busnum]->bridge = devp;
+	    pciBusInfo[devp->busnum]->primary_bus = devp->busnum;
 #ifdef ARCH_PCI_HOST_BRIDGE
-	    ARCH_PCI_HOST_BRIDGE(devp->pci_device_vendor);
+	    ARCH_PCI_HOST_BRIDGE(devp);
 #endif
 	    break;
 
 	case 1:
 	case 2:
+	    i = PCI_SECONDARY_BUS_EXTRACT(devp->pci_pp_bus_register, devp->tag);
+	    pciBusInfo[i]->bridge = devp;
+	    /* The back link needs to be set here, and is unlikely to change */
+	    devp->businfo = pciBusInfo[i];
+#ifdef ARCH_PCI_PCI_BRIDGE
+	    ARCH_PCI_PCI_BRIDGE(devp);
+#endif
 	    if (!(devp->pci_bridge_control & PCI_PCI_BRIDGE_MASTER_ABORT_EN))
 		break;
 	    pciWriteByte(devp->tag, PCI_PCI_BRIDGE_CONTROL_REG,
 		devp->pci_bridge_control);
-	    pciBusInfo[devp->pci_secondary_bus_number]->bridge = devp;
 	    break;
 
 	default:
 	    break;
 	}
+    }
+
+#ifdef XF86SCANPCI_WRAPPER
+    XF86SCANPCI_WRAPPER(SCANPCI_TERM);
+#endif
+
+    /*
+     * Lastly, link bridges to their secondary bus, after the architecture has
+     * had a chance to modify these assignments.
+     */
+    for (idx = 0;  idx < pciNumBuses;  idx++) {
+	if (!(busp = pciBusInfo[idx]) || !(devp = busp->bridge))
+	    continue;
+	devp->businfo = busp;
     }
 
 #ifndef OLD_FORMAT

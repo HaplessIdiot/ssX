@@ -1,4 +1,12 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 254. Treat PCI-to-MCA and PCI-to_EISA bridges as PCI-to-ISA (Marc La France).
+ 253. Correct the server's understanding of CardBus resource ranges
+      (Marc La France).
+ 252. Ignore unconfigured (and mis-configured) PCI-to-PCI and PCI-to-CardBus
+      bridges (Marc La France).
+ 251. Prevent infinite loops during VGA re-routing (Marc La France).
+ 250. Add a framework for bus bridge drivers and use it to rework the handling
+      of Sun's Simba P2P bridges (Marc La France).
  249. Fix bdftopcf memory leak (Marc La France).
  248. XVideo support for the i830 and i845G (David Dawes, Alan Hourihane).
  247. Fix various bugs in the DRI support for the i830 and i845G
@@ -15031,4 +15039,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2295 2002/09/12 04:08:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2296 2002/09/16 14:38:02 tsi Exp $

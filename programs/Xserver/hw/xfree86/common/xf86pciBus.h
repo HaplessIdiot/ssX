@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.h,v 3.6 2002/04/04 14:05:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.h,v 3.7 2002/06/28 20:47:02 herrb Exp $ */
 
 #ifndef _XF86_PCI_BUS_H
 #define _XF86_PCI_BUS_H
@@ -6,9 +6,9 @@
 #define PCITAG_SPECIAL pciTag(0xFF,0xFF,0xFF)
 
 typedef struct {
-    CARD32       command;
-    CARD32       base[6];
-    CARD32       biosBase;
+    CARD32 command;
+    CARD32 base[6];
+    CARD32 biosBase;
 } pciSave, *pciSavePtr;
 
 typedef void (*SetBitsProcPtr)(PCITAG, int, CARD32, CARD32);
@@ -16,17 +16,14 @@ typedef void (*WriteProcPtr)(PCITAG, int, CARD32);
 
 typedef struct {
     PCITAG tag;
-#ifdef notanymore
-    SetBitsProcPtr func;
-#endif
     WriteProcPtr func;
     CARD32 ctrl;
 } pciArg;
 
 typedef struct {
-    int    busnum;
-    int    devnum;
-    int    funcnum;
+    int busnum;
+    int devnum;
+    int funcnum;
     pciArg arg;
     xf86AccessRec ioAccess;
     xf86AccessRec io_memAccess;
@@ -37,42 +34,25 @@ typedef struct {
 } pciAccRec, *pciAccPtr;
 
 typedef union {
-    struct {
-	CARD16      io;
-	CARD32      mem;
-	CARD32      pmem;
-	CARD8       control;
-    } pci;
-    struct {
-	CARD32      io0;
-	CARD32      ioLimit0;
-	CARD32      io1;
-	CARD32      ioLimit1;
-	CARD32      mem0;
-	CARD32      memLimit0;
-	CARD32      mem1;
-	CARD32      memLimit1;
-	CARD16      control;
-    } cardbus;
+    CARD16 control;
 } pciBridgesSave, *pciBridgesSavePtr;
 
 typedef struct pciBusRec {
     int brbus, brdev, brfunc;	/* ID of the bridge to this bus */
     int primary, secondary, subordinate;
-    int subclass;          /* bridge type */
+    int subclass;		/* bridge type */
     int interface;
-    resPtr preferred_io;   /* I/O range */
-    resPtr preferred_mem;  /* non-prefetchable memory range */
-    resPtr preferred_pmem; /* prefetchable memory range */
-    resPtr io;		   /* for subtractive PCI-PCI bridges */
-    resPtr mem;		
-    resPtr pmem;	
-    int brcontrol;	   /* bridge_control byte */
+    resPtr preferred_io;	/* I/O range */
+    resPtr preferred_mem;	/* non-prefetchable memory range */
+    resPtr preferred_pmem;	/* prefetchable memory range */
+    resPtr io;			/* for subtractive PCI-PCI bridges */
+    resPtr mem;
+    resPtr pmem;
+    int brcontrol;		/* bridge_control byte */
     struct pciBusRec *next;
 } PciBusRec, *PciBusPtr;
 
 void xf86PciProbe(void);
-PciBusPtr xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo);
 void ValidatePci(void);
 resList GetImplicitPciResources(int entityIndex);
 void initPciState(void);

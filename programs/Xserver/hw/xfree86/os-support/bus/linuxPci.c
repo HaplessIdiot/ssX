@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.6 2002/07/24 19:06:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.7 2002/08/27 22:07:07 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -111,7 +111,12 @@ linuxPciOpenFile(PCITAG tag)
 	if (fd == -1 || bus != lbus || dev != ldev || func != lfunc) {
 		if (fd != -1)
 			close(fd);
-		sprintf(file,"/proc/bus/pci/%02x/%02x.%1x",bus,dev,func);
+		if (bus < 256)
+			sprintf(file, "/proc/bus/pci/%02x/%02x.%1x",
+				bus, dev, func);
+		else
+			sprintf(file, "/proc/bus/pci/%04x/%02x.%1x",
+				bus, dev, func);
 		fd = open(file,O_RDWR);
 		lbus  = bus;
 		ldev  = dev;
@@ -316,6 +321,9 @@ xf86GetPciDomain(PCITAG Tag)
 
     pPCI = xf86GetPciHostConfigFromTag(Tag);
 
+    if (pPCI && (result = PCI_DOM_FROM_BUS(pPCI->busnum)))
+	return result;
+
     if ((fd = linuxPciOpenFile(pPCI ? pPCI->tag : 0) < 0)
 	return 0;
 
@@ -343,7 +351,7 @@ linuxMapPci(int ScreenNum, int Flags, PCITAG Tag,
 	    (ioctl(fd, mmap_ioctl, 0) < 0))
 	    break;
 
-/* Note:  IA-64 doesn't compile this yet */
+/* Note:  IA-64 doesn't compile this and doesn't need to */
 #ifdef __ia64__
 
 # ifndef  MAP_WRITECOMBINED
