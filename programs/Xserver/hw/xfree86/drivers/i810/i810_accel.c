@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.6 2000/09/01 21:25:23 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.7 2000/09/02 02:42:44 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -114,9 +114,6 @@ I810AccelInit( ScreenPtr pScreen )
 
    if (I810_DEBUG & DEBUG_VERBOSE_ACCEL)
       ErrorF( "I810AccelInit\n");
-
-   if (pScrn->depth == 32)  
-      return FALSE;
 
    pI810->AccelInfoRec = infoPtr = XAACreateInfoRec();
    if (!infoPtr) return FALSE;

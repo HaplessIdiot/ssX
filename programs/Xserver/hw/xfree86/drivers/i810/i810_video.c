@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.7 2000/09/02 18:02:31 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.8 2000/09/07 01:32:39 mvojkovi Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -150,7 +150,7 @@ void I810InitVideo(ScreenPtr pScreen)
     XF86VideoAdaptorPtr newAdaptor = NULL;
     int num_adaptors;
 	
-    if (pScrn->bitsPerPixel != 8) 
+    if ((pScrn->depth == 16) || (pScrn->depth == 24)) 
     {
 	newAdaptor = I810SetupImageVideo(pScreen);
     }
