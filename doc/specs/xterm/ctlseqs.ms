@@ -1,13 +1,13 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
-.\" $XTermId: ctlseqs.ms,v 1.138 2004/04/17 18:36:12 tom Exp $
+.\" $XTermId: ctlseqs.ms,v 1.142 2004/07/17 15:27:29 tom Exp $
 .\"
 .\"
 .\" $Xorg: ctlseqs.ms,v 1.3 2000/08/17 19:42:51 cpqbld Exp $
 .\"
 .\"
 .\"
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.50 2003/10/27 01:10:31 dickey Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.52 2004/04/18 15:18:48 dickey Exp $
 .\"
 .\"
 .\" Copyright 1996-2003,2004 by Thomas E. Dickey
@@ -294,7 +294,7 @@ X Consortium (1994)
 .AU
 Thomas Dickey
 .AI
-XFree86 Project (1996-2003)
+XFree86 Project (1996-2004)
 .AU
 .
 .am BT                  \" add page numbers after first page
@@ -367,8 +367,8 @@ VT100 Mode
 Most of these control sequences are standard VT102 control sequences,
 but there is support for later DEC VT terminals (i.e., VT220 and VT320),
 as well as ISO 6429 and \fIaixterm\fP color controls.
-VT102 features not supported are
-auto-repeat and blinking characters.
+The only VT102 features not supported is auto-repeat,
+since the only way X provides for this will affect all windows.
 There are additional control sequences to provide
 \fIxterm-\fPdependent functions, such as the scrollbar or window size.
 Where the function is specified by DEC or ISO 6429, the code assigned
@@ -789,6 +789,7 @@ This combines the effects of the \*1\*0\*4\*7 and \*1\*0\*4\*8 modes.
 Use this with terminfo-based applications rather than the \*4\*7 mode.
   \*(Ps = \*1\*0\*5\*1 \(-> Set Sun function-key mode.
   \*(Ps = \*1\*0\*5\*2 \(-> Set HP function-key mode.
+  \*(Ps = \*1\*0\*5\*3 \(-> Set SCO function-key mode.
   \*(Ps = \*1\*0\*6\*0 \(-> Set legacy keyboard emulation (X11R6).
   \*(Ps = \*1\*0\*6\*1 \(-> Set Sun/PC keyboard emulation of VT220 keyboard.
 .
@@ -864,6 +865,7 @@ This combines the effects of the \*1\*0\*4\*7 and \*1\*0\*4\*8 modes.
 Use this with terminfo-based applications rather than the \*4\*7 mode.
   \*(Ps = \*1\*0\*5\*1 \(-> Reset Sun function-key mode.
   \*(Ps = \*1\*0\*5\*2 \(-> Reset HP function-key mode.
+  \*(Ps = \*1\*0\*5\*3 \(-> Reset SCO function-key mode.
   \*(Ps = \*1\*0\*6\*0 \(-> Reset legacy keyboard emulation (X11R6).
   \*(Ps = \*1\*0\*6\*1 \(-> Reset Sun/PC keyboard emulation of VT220 keyboard.
 .
