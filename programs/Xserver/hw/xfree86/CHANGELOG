@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+  84. Fix memory count function for I128 (Mark Thompson).
   83. Use TermcapLibrary as -lncurses instead of -ltermcap, fixes problem
       building xterm/resize on Cygwin/XFree86 (#4749, Harold Hunt).
   82. Fix X server segfault in the GLX code (Brian Paul).
@@ -13457,4 +13458,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1833 2001/06/06 19:00:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1834 2001/06/07 11:19:53 alanh Exp $
