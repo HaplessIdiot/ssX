@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.32 2001/04/16 15:02:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.33 2001/04/16 15:47:56 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2049,8 +2049,18 @@ ATIMach64CursorInit
     xf86CursorInfoPtr pCursorInfo
 )
 {
+    /*
+     * For Mach64 variants, toggling hardware cursors on and off causes
+     * display artifacts.  Ask the cursor support layers to always paint the
+     * cursor (whether or not it is entirely transparent) and to not hide the
+     * cursor when reloading its image.  The three reasons behind turning off
+     * the hardware cursor that remain are when it moves to a different screen,
+     * on a switch to a software cursor or to a different virtual console.
+     */
     pCursorInfo->Flags = HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
         HARDWARE_CURSOR_INVERT_MASK |
+        HARDWARE_CURSOR_SHOW_TRANSPARENT |
+        HARDWARE_CURSOR_UPDATE_UNHIDDEN |
 
 #if X_BYTE_ORDER != X_LITTLE_ENDIAN
 

@@ -25,7 +25,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mi/mipointrst.h,v 1.2 2001/03/25 05:32:16 tsi Exp $ */
 
 #include "mipointer.h"
 #include "scrnintstr.h"
@@ -56,4 +56,5 @@ typedef struct {
     miPointerScreenFuncPtr  screenFuncs;	/* screen-specific methods */
     CloseScreenProcPtr	    CloseScreen;
     Bool		    waitForUpdate;	/* don't move cursor in SIGIO */
+    Bool		    showTransparent;	/* show empty cursors */
 } miPointerScreenRec, *miPointerScreenPtr;
