@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmI810.c,v 1.3 2000/08/24 22:20:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.1 2000/10/10 16:07:40 alanh Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -48,13 +48,13 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #include "xf86drm.h"
 #include "drm.h"
 
-Bool drmSiSInitAgp(int driSubFD)
+Bool drmSiSInitAgp(int driSubFD, int offset, int size)
 {
    drm_sis_agp_t agp;
       
-   agp.offset = AGP_CMDBUF_SIZE;
-   agp.size = AGP_SIZE - AGP_CMDBUF_SIZE;
-   xf86ioctl(pSIS->drmSubFD, SIS_IOCTL_AGP_INIT, &agp);
+   agp.offset = offset;
+   agp.size = size;
+   xf86ioctl(driSubFD, SIS_IOCTL_AGP_INIT, &agp);
 
    return TRUE;
 }
