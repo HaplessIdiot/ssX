@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.14 2001/10/21 20:40:22 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.15 2001/12/11 19:42:01 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -70,6 +70,15 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     if(mode->Flags & V_INTERLACE) 
         vertTotal |= 1;
+
+    if(pNv->FlatPanel) {
+       vertStart = vertTotal - 3;  
+       vertEnd = vertTotal - 2;
+       vertBlankStart = vertStart;
+       horizStart = horizTotal -3;
+       horizEnd = horizTotal - 2;   
+       horizBlankEnd = horizTotal + 4;    
+    }
 
     pVga->CRTC[0x0]  = Set8Bits(horizTotal);
     pVga->CRTC[0x1]  = Set8Bits(horizDisplay);
@@ -147,6 +156,8 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if(pNv->riva.Architecture >= NV_ARCH_10)
 	pNv->riva.CURSOR = (U032 *)(pNv->FbStart + pNv->riva.CursorStart);
 
+    pNv->riva.LockUnlock(&pNv->riva, 0);
+
     pNv->riva.CalcStateExt(&pNv->riva, 
                            nvReg,
                            i,
@@ -155,6 +166,24 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
                            pScrn->virtualY,
                            mode->Clock,
 			   mode->Flags);
+
+    nvReg->scale = pNv->riva.PRAMDAC[0x00000848/4] & 0xff000ff;
+    if(pNv->FlatPanel) {
+       nvReg->pixel |= (1 << 7);
+       nvReg->scale |= (2 << 8);
+    }
+    if(pNv->SecondCRTC) {
+       nvReg->head  = 0;
+       nvReg->head2 = 0x00001111;
+       nvReg->crtcOwner = 3;
+       nvReg->pllsel |= 0x20000800;
+       nvReg->vpll2 = nvReg->vpll;
+    } else {
+       nvReg->head  = 0x00001111;
+       nvReg->head2 = 0;
+       nvReg->crtcOwner = 0;
+       nvReg->vpll2 = pNv->riva.PRAMDAC0[0x00000520/4];
+    }
 
     return (TRUE);
 }
@@ -186,6 +215,9 @@ NVDACSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, NVRegPtr nvReg,
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVDACSave\n"));
     vgaHWSave(pScrn, vgaReg, VGA_SR_MODE | (saveFonts? VGA_SR_FONTS : 0));
     pNv->riva.UnloadStateExt(&pNv->riva, nvReg);
+
+    if((pNv->Chipset & 0x0ff0) == 0x0110) 
+       nvReg->crtcOwner = pNv->Mobile ? 3 : 0;
 }
 
 #define DEPTH_SHIFT(val, w) ((val << (8 - w)) | (val >> ((w << 1) - 8)))

@@ -24,7 +24,7 @@
 /* Rewritten with reference from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_cursor.c,v 1.4 2001/12/11 19:42:01 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_cursor.c,v 1.5 2001/12/17 22:17:55 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -109,7 +109,7 @@ NVSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     NVPtr pNv = NVPTR(pScrn);
 
     pNv->riva.ShowHideCursor(&pNv->riva, 0);
-    *(pNv->riva.CURSORPOS) = (x & 0xFFFF) | (y << 16);
+    pNv->riva.PRAMDAC[0x0000300/4] = (x & 0xFFFF) | (y << 16);
     pNv->riva.ShowHideCursor(&pNv->riva, 1);
 }
 

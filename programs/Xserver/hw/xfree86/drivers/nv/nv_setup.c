@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.10 2001/07/11 22:15:08 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.11 2001/10/30 19:38:29 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -155,6 +155,72 @@ static CARD8 NVReadDacData(vgaHWPtr pVga)
     return (VGA_RD08(pNv->riva.PDIO, VGA_DAC_DATA));
 }
 
+static Bool 
+NVIsConnected (ScrnInfoPtr pScrn, Bool second)
+{
+    NVPtr pNv = NVPTR(pScrn);
+    volatile U032 *PRAMDAC = pNv->riva.PRAMDAC0;
+    CARD32 reg52C, reg608;
+    Bool present;
+
+    if(second) PRAMDAC += 0x800;
+
+    reg52C = PRAMDAC[0x052C/4];
+    reg608 = PRAMDAC[0x0608/4];
+
+    PRAMDAC[0x0608/4] = reg608 & ~0x00010000;
+
+    PRAMDAC[0x052C/4] = reg52C & 0x0000FEEE;
+    usleep(1000);
+    PRAMDAC[0x052C/4] |= 1;
+
+    pNv->riva.PRAMDAC0[0x0610/4] = 0x94050140;
+    pNv->riva.PRAMDAC0[0x0608/4] |= 0x00001000;
+
+    usleep(1000);
+
+    present = (PRAMDAC[0x0608/4] & (1 << 28)) ? TRUE : FALSE;
+
+    pNv->riva.PRAMDAC0[0x0608/4] &= 0x0000EFFF;
+
+    PRAMDAC[0x052C/4] = reg52C;
+    PRAMDAC[0x0608/4] = reg608;
+
+    return present;
+}
+
+static void
+NVIsSecond (ScrnInfoPtr pScrn)
+{
+    NVPtr pNv = NVPTR(pScrn);
+
+    if(NVIsConnected(pScrn, 0)) {
+       if(pNv->riva.PRAMDAC0[0x0000052C/4] & 0x100)
+          pNv->SecondCRTC = TRUE;
+       else
+          pNv->SecondCRTC = FALSE;
+    } else 
+    if (NVIsConnected(pScrn, 1)) {
+       if(pNv->riva.PRAMDAC0[0x0000252C/4] & 0x100)
+          pNv->SecondCRTC = TRUE;
+       else
+          pNv->SecondCRTC = FALSE;
+    } else /* default */
+       pNv->SecondCRTC = FALSE;
+
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+               "Detected %s CRTC controller being used\n",
+               pNv->SecondCRTC ? "second" : "first");
+
+    if(pNv->forceCRTC != -1) {
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+                   "Forcing usage of CRTC %i\n", pNv->forceCRTC);
+        pNv->SecondCRTC = pNv->forceCRTC;
+    }
+
+ErrorF("0x0000052C = 0x%x\n", pNv->riva.PRAMDAC0[0x0000052C/4]);
+ErrorF("0x0000252C = 0x%x\n", pNv->riva.PRAMDAC0[0x0000252C/4]);
+}
 
 static void
 NVCommonSetup(ScrnInfoPtr pScrn)
@@ -216,9 +282,9 @@ NVCommonSetup(ScrnInfoPtr pScrn)
 
     mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
 
-    pNv->riva.PRAMDAC = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
+    pNv->riva.PRAMDAC0 = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
                                       regBase+0x00680000, 0x00003000);
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- PRAMDAC %x\n", pNv->riva.PRAMDAC));
+    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- PRAMDAC %x\n", pNv->riva.PRAMDAC0));
     pNv->riva.PFB     = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
                                       regBase+0x00100000, 0x00001000);
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- PFB %x\n", pNv->riva.PFB));
@@ -245,21 +311,45 @@ NVCommonSetup(ScrnInfoPtr pScrn)
      * These registers are read/write as 8 bit values.  Probably have to map
      * sparse on alpha.
      */
-    pNv->riva.PCIO = (U008 *)xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
+    pNv->riva.PCIO0 = (U008 *)xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
                                            pNv->PciTag, regBase+0x00601000,
-                                           0x00001000);
-    pNv->riva.PDIO = (U008 *)xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
+                                           0x00003000);
+    pNv->riva.PDIO0 = (U008 *)xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
                                            pNv->PciTag, regBase+0x00681000,
-                                           0x00001000);
+                                           0x00003000);
     pNv->riva.PVIO = (U008 *)xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
                                            pNv->PciTag, regBase+0x000C0000,
                                            0x00001000);
-    
+
+    switch(pNv->Chipset & 0x0ff0) {
+    case 0x0110:
+        if(pNv->Mobile)
+            pNv->SecondCRTC = TRUE;
+        break;
+    case 0x0170:
+    case 0x0250:
+        NVIsSecond(pScrn);
+        break;
+    default:
+        break;
+    }
+
+    if(pNv->SecondCRTC) {
+       pNv->riva.PCIO = pNv->riva.PCIO0 + 0x2000;
+       pNv->riva.PCRTC = pNv->riva.PCRTC0 + 0x800;
+       pNv->riva.PRAMDAC = pNv->riva.PRAMDAC0 + 0x800;
+       pNv->riva.PDIO = pNv->riva.PDIO0 + 0x2000;
+    } else {
+       pNv->riva.PCIO = pNv->riva.PCIO0;
+       pNv->riva.PCRTC = pNv->riva.PCRTC0;
+       pNv->riva.PRAMDAC = pNv->riva.PRAMDAC0;
+       pNv->riva.PDIO = pNv->riva.PDIO0;
+    }
+
     RivaGetConfig(pNv);
 
     pNv->Dac.maxPixelClock = pNv->riva.MaxVClockFreqKHz;
 
-    vgaHWUnlock(VGAHWPTR(pScrn));
     pNv->riva.LockUnlock(&pNv->riva, 0);
 }
 
@@ -289,6 +379,7 @@ NV3Setup(ScrnInfoPtr pScrn)
                                      frameBase+0x00C00000, 0x00008000);
             
     NVCommonSetup(pScrn);
+    pNv->riva.PCRTC = pNv->riva.PCRTC0 = pNv->riva.PGRAPH;
 }
 
 void
@@ -307,11 +398,12 @@ NV4Setup(ScrnInfoPtr pScrn)
     mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
     pNv->riva.PRAMIN = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
                                      regBase+0x00710000, 0x00010000);
-    pNv->riva.PCRTC  = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
+    pNv->riva.PCRTC0 = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
                                      regBase+0x00600000, 0x00001000);
 
     NVCommonSetup(pScrn);
 }
+
 void
 NV10Setup(ScrnInfoPtr pScrn)
 {
@@ -322,14 +414,11 @@ NV10Setup(ScrnInfoPtr pScrn)
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NV10Setup\n"));
 
     pNv->riva.Architecture = 0x10;
-    /*
-     * Map chip-specific memory-mapped registers. This MUST be done in the OS specific driver code.
-     */
     mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
     pNv->riva.PRAMIN = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
                                      regBase+0x00710000, 0x00010000);
-    pNv->riva.PCRTC  = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                     regBase+0x00600000, 0x00001000);
+    pNv->riva.PCRTC0 = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
+                                     regBase+0x00600000, 0x00003000);
 
     NVCommonSetup(pScrn);
 }
@@ -341,18 +430,14 @@ NV20Setup(ScrnInfoPtr pScrn)
     CARD32 regBase = pNv->IOAddress;
     int mmioFlags;
 
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NV10Setup\n"));
+    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NV20Setup\n"));
 
     pNv->riva.Architecture = 0x20;
-    /*
-     * Map chip-specific memory-mapped registers. This MUST be done in the OS sp
-ecific driver code.
-     */
     mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
     pNv->riva.PRAMIN = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
                                      regBase+0x00710000, 0x00010000);
-    pNv->riva.PCRTC  = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                     regBase+0x00600000, 0x00001000);
+    pNv->riva.PCRTC0 = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
+                                     regBase+0x00600000, 0x00003000);
 
     NVCommonSetup(pScrn);
 }
