@@ -75,7 +75,7 @@
 #define SetCRT2ToSCART          0x0010
 #define SetCRT2ToLCD            0x0020
 #define SetCRT2ToRAMDAC         0x0040
-#define SetCRT2ToYPbPr	        0x0080
+#define SetCRT2ToYPbPr	        0x0080	/* Needs change in sis_vga.c if changed (GPIO) */
 #define SetCRT2ToTV             (SetCRT2ToYPbPr | SetCRT2ToSCART | SetCRT2ToSVIDEO | SetCRT2ToAVIDEO)
 #define SetCRT2ToTVNoYPbPr  	(SetCRT2ToSCART | SetCRT2ToSVIDEO | SetCRT2ToAVIDEO)
 #define SetNTSCTV               0x0000   /* CR 31 */

@@ -6065,6 +6065,7 @@ SISSpecialRestore(ScrnInfoPtr pScrn)
 
     if(!(pSiS->ChipFlags & SiSCF_Is65x)) return;
     inSISIDXREG(SISCR, 0x34, temp);
+    temp &= 0x7f;
     if(temp > 0x13) return;
 
 #ifdef UNLOCK_ALWAYS
@@ -6560,6 +6561,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	   * bridge...
 	   */
           inSISIDXREG(SISCR, 0x34, pSiS->OldMode);
+	  pSiS->OldMode &= 0x7f;
 	  inSISIDXREG(SISCR, 0x30, cr30);
 	  inSISIDXREG(SISCR, 0x31, cr31);
 
@@ -7692,6 +7694,10 @@ SISEnterVT(int scrnIndex, int flags)
     SISPtr pSiS = SISPTR(pScrn);
 
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+
+    if(pSiS->VGAEngine == SIS_300_VGA || pSiS->VGAEngine == SIS_315_VGA) {
+       andSISIDXREG(SISCR,0x34,0x7f);
+    }
 
     if(!SISModeInit(pScrn, pScrn->currentMode)) {
        SISErrorLog(pScrn, "SiSEnterVT: SISModeInit() failed\n");
