@@ -1,4 +1,5 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 292. Installer improvements and bindist updates (David Dawes).
  291. Add basic automatic mouse device node detection for Solaris
       (David Dawes).
  290. Improve autoconfig's handling of a failed driver PreInit() (David Dawes).
@@ -19316,7 +19317,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3402 2005/01/27 22:24:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3403 2005/01/28 02:11:16 dawes Exp $
 
 
 

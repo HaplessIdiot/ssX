@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.74 2004/06/02 22:43:04 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.75 2004/06/14 19:42:46 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -31,7 +31,7 @@
 #
 
 #
-# Copyright © 1996-2004 by The XFree86 Project, Inc.
+# Copyright © 1996-2005 by The XFree86 Project, Inc.
 # All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -78,7 +78,7 @@
 #
 
 #
-# This script should be used to install XFree86 4.4.0.
+# This script should be used to install XFree86 4.5.0.
 #
 # Parts of this script are based on the old preinst.sh and postinst.sh
 # scripts.
@@ -91,15 +91,15 @@
 # Fallbacks for when the bindist version can't be auto-detected.
 # These should be updated for each release.
 
-SNAPSHOT=n
+SNAPSHOT=y
 
 if [ $SNAPSHOT = y ]; then
 	FULLPREFIX=XXX
-	VERSION=4.3.99.903
+	VERSION=4.4.99.22
 	PATCHLEVEL=0
 	FULLVERSION=$VERSION
 else
-	FULLPREFIX=4.4
+	FULLPREFIX=4.5
 	PATCHLEVEL=0
 	VERSION=$FULLPREFIX.$PATCHLEVEL
 	FULLVERSION=$FULLPREFIX.0
@@ -112,6 +112,8 @@ BINDISTVERSION=
 BINDISTFULLVERSION=
 
 ROOTDIR=
+
+DEBUG=
 
 TESTROOT=/home1/test
 
@@ -143,7 +145,7 @@ if [ X"$1" = "X-test" -o X"$XINST_TEST" != X ]; then
 	for i in usr etc var; do
 		if [ ! -d $TESTROOT/$i ]; then
 			echo "$TESTROOT/$i doesn't exist, creating it"
-			mkdir $TESTROOT/$i
+			Mkdir $TESTROOT/$i
 		fi
 	done
 fi
@@ -218,6 +220,7 @@ ETCDLINKS=" \
 	twm \
 	xdm \
 	xinit \
+	xkb \
 	xsm \
 	xserver \
 	"
@@ -230,7 +233,6 @@ ETCFONTFILES=" \
 	fonts.conf \
 	fonts.dtd \
 	"
-
 
 XKBDIR="$ETCDIR/X11/xkb"
 XKBDBDIR=
@@ -264,11 +266,43 @@ else
 	n=''
 	c='\c'
 fi
-rm -f .echotmp
+Rm -f .echotmp
 
 Echo()
 {
 	echo $n "$@""$c"
+}
+
+Mkdir()
+{
+	if [ X"$DEBUG" != X ]; then
+		echo "=> " mkdir "$@"
+	fi
+	mkdir "$@"
+}
+
+Ln()
+{
+	if [ X"$DEBUG" != X ]; then
+		echo "=> " ln "$@"
+	fi
+	ln "$@"
+}
+
+Rm()
+{
+	if [ X"$DEBUG" != X ]; then
+		echo "=> " rm "$@"
+	fi
+	rm "$@"
+}
+
+Cp()
+{
+	if [ X"$DEBUG" != X ]; then
+		echo "=> " cp "$@"
+	fi
+	cp "$@"
 }
 
 ContinueNo()
@@ -886,7 +920,7 @@ GetBindistVersion()
 			fi
 		fi
 	fi
-	rm -f $VERSIONFILE
+	Rm -f $VERSIONFILE
 	if [ X$VERSTARBALL != X ]; then
 		"$TAR" xzf $VERSTARBALL $VERSIONFILE
 	fi
@@ -1061,6 +1095,10 @@ echo "and $ROOTDIR/etc/fonts directories.  The installation process will"
 echo "overwrite existing files in those directories, and this may include"
 echo "some configuration files that may have been customised."
 echo ""
+echo "Make a copy when backing up those directories.  Do not simply rename"
+echo "them, or you will find many of your existing applications will no"
+echo "longer be visible."
+echo ""
 echo "If you are installing a version different from $SCRIPTVERSION, you"
 echo "may need an updated version of this installer script."
 echo ""
@@ -1137,15 +1175,15 @@ if [ -f extract ]; then
 		ExtractOK=YES
 	else
 		echo "extract doesn't work properly, renaming it to 'extract.bad'"
-		rm -f extract.bad
+		Rm -f extract.bad
 		mv extract extract.bad
 	fi
 fi
 if [ X"$ExtractOK" != XYES ]; then
 	if [ -f extract.exe ]; then
 		ExtractExeExists=YES
-		rm -f extract
-		ln extract.exe extract
+		Rm -f extract
+		Cp extract.exe extract
 		chmod +x extract
 		if ./extract --version | sed 1q | \
 		  fgrep "extract (XFree86 version" > /dev/null 2>&1; then
@@ -1153,9 +1191,9 @@ if [ X"$ExtractOK" != XYES ]; then
 		else
 			echo "extract.exe doesn't work properly, renaming it to"
 			echo "'extract.exe.bad'"
-			rm -f extract.exe.bad
+			Rm -f extract.exe.bad
 			mv extract.exe extract.exe.bad
-			rm -f extract
+			Rm -f extract
 		fi
 	fi
 fi
@@ -1192,12 +1230,12 @@ fi
 # Link extract to gnu-tar so it can also be used as a regular tar
 case "$OsName" in
 CYGWIN*)
-	rm -f gnu-tar
-	ln -s extract.exe gnu-tar
+	Rm -f gnu-tar
+	Ln -s extract.exe gnu-tar
 	;;
 *)
-	rm -f gnu-tar
-	ln extract gnu-tar
+	Rm -f gnu-tar
+	Cp extract gnu-tar
 	;;
 esac
 
@@ -1278,37 +1316,44 @@ if [ X"$DOUPDATE" = XYES ]; then
 	exit 0
 fi
 
-# Create $RUNDIR, $ETCDIR/X11 and $ETCDIR/fonts if they don't already exist
-
-if [ ! -d $RUNDIR ]; then
-	NewRunDir=YES
-	echo "Creating $RUNDIR"
-	mkdir $RUNDIR
-fi
-if [ ! -d $RUNDIR/lib ]; then
-	echo "Creating $RUNDIR/lib"
-	mkdir $RUNDIR/lib
-fi
-if [ ! -d $RUNDIR/lib/X11 ]; then
-	echo "Creating $RUNDIR/lib/X11"
-	mkdir $RUNDIR/lib/X11
-fi
-if [ ! -d $ETCDIR/X11 ]; then
-	NewEtcDir=YES
-	echo "Creating $ETCDIR/X11"
-	mkdir $ETCDIR/X11
-fi
-if [ ! -d $ETCDIR/fonts ]; then
-	echo "Creating $ETCDIR/fonts"
-	mkdir $ETCDIR/fonts
-fi
-
 if [ -d $RUNDIR -a -d $RUNDIR/bin -a -d $RUNDIR/lib ]; then
 	echo ""
 	echo "You appear to have an existing installation of X.  Continuing will"
 	echo "overwrite it.  You will, however, have the option of being prompted"
 	echo "before most configuration files are overwritten."
+	echo ""
 	ContinueYes
+else
+	echo ""
+	echo "No existing installation of X was found.  I hope you didn't just"
+	echo "move it, or you'll likely run into problems later."
+	echo ""
+	ContinueYes
+fi
+
+# Create $RUNDIR, $ETCDIR/X11 and $ETCDIR/fonts if they don't already exist
+
+if [ ! -d $RUNDIR ]; then
+	NewRunDir=YES
+	echo "Creating $RUNDIR"
+	Mkdir $RUNDIR
+fi
+if [ ! -d $RUNDIR/lib ]; then
+	echo "Creating $RUNDIR/lib"
+	Mkdir $RUNDIR/lib
+fi
+if [ ! -d $RUNDIR/lib/X11 ]; then
+	echo "Creating $RUNDIR/lib/X11"
+	Mkdir $RUNDIR/lib/X11
+fi
+if [ ! -d $ETCDIR/X11 ]; then
+	NewEtcDir=YES
+	echo "Creating $ETCDIR/X11"
+	Mkdir $ETCDIR/X11
+fi
+if [ ! -d $ETCDIR/fonts ]; then
+	echo "Creating $ETCDIR/fonts"
+	Mkdir $ETCDIR/fonts
 fi
 
 if [ X"$OLDFILES" != X ]; then
@@ -1317,7 +1362,7 @@ if [ X"$OLDFILES" != X ]; then
 	for i in $OLDFILES; do
 		if [ -f $i ]; then
 			echo "	removing old file $i"
-			rm -f $i
+			Rm -f $i
 		fi
 	done
 	echo ""
@@ -1329,16 +1374,12 @@ if [ X"$OLDDIRS" != X ]; then
 	for i in $OLDDIRS; do
 		if [ -d $i ]; then
 			echo "	removing old directory $i"
-			rm -fr $i
+			Rm -fr $i
 		fi
 	done
 	echo ""
 fi
 
-if [ ! -d $RUNDIR/lib/X11/xkb ]; then
-	echo "Creating $RUNDIR/lib/X11/xkb"
-	mkdir $RUNDIR/lib/X11/xkb
-fi
 # Check for config file directories that may need to be moved.
 
 EtcDirToMove=
@@ -1352,6 +1393,20 @@ if [ X"$NoSymLinks" != XYES ]; then
 	for i in $ETCFLINKS; do
 		if [ -f $RUNDIR/lib/X11/$i -a ! $L $RUNDIR/lib/X11/$i ]; then
 			EtcFileToMove="$EtcFileToMove $i"
+		fi
+	done
+fi
+
+EtcX11IsUsedBy=
+if [ X"$NoSymLinks" != XYES ]; then
+	for i in $ETCDLINKS; do
+		if [ -d $ETCDIR/X11/$i -a ! $L $ETCDIR/X11/$i ]; then
+			EtcX11IsUsedBy="$EtcX11IsUsedBy $i"
+		fi
+	done
+	for i in $ETCFLINKS; do
+		if [ -f $ETCDIR/X11/$i -a ! $L $ETCDIR/X11/$i ]; then
+			EtcX11IsUsedBy="$EtcX11IsUsedBy $i"
 		fi
 	done
 fi
@@ -1370,28 +1425,36 @@ if [ X"$EtcDirToMove" != X -o X"$EtcFileToMove" != X ]; then
 	case "$response" in
 	[nN]*)
 		echo ""
-		echo "Note: this means that your run-time config files will remain"
+		echo "Note: this means that these run-time config files will remain"
 		echo "in the old $RUNDIR/lib/X11 location."
-		NoSymLinks=YES;
+		DoNotMove=YES;
+		;;
+	*)
+		DoNotMove=
 		;;
 	esac
 	echo ""
-	if [ X"$NoSymLinks" != XYES ]; then
+	if [ X"$NoSymLinks" != XYES -a X"$DoNotMove" != XYES ]; then
 		for i in $EtcDirToMove; do
 			echo "Moving $RUNDIR/lib/X11/$i to $ETCDIR/X11/$i ..."
+			if [ $L $ETCDIR/X11/$i ]; then
+				Rm -f $ETCDIR/X11/$i
+			fi
 			if [ ! -d $ETCDIR/X11/$i ]; then
-				mkdir $ETCDIR/X11/$i
+				Mkdir $ETCDIR/X11/$i
 			fi
 			"$TAR" -C $RUNDIR/lib/X11/$i -c -f - . | \
 				"$TAR" -C $ETCDIR/X11/$i -v -x -p -U -f - && \
-				rm -fr $RUNDIR/lib/X11/$i && \
-				ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
+				Rm -fr $RUNDIR/lib/X11/$i && \
+				Ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
+		ContinueYes
 		done
 		for i in $EtcFileToMove; do
 			echo "Moving $RUNDIR/lib/X11/$i to $ETCDIR/X11/$i ..."
-			cp -p $RUNDIR/lib/X11/$i $ETCDIR/X11/$i && \
-				rm -fr $RUNDIR/lib/X11/$i && \
-				ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
+			Cp -p $RUNDIR/lib/X11/$i $ETCDIR/X11/$i && \
+				Rm -fr $RUNDIR/lib/X11/$i && \
+				Ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
+		ContinueYes
 		done
 	fi
 fi
@@ -1402,8 +1465,8 @@ fi
 # files.
 
 echo "Extracting $ETCDIST into a temporary location ..."
-rm -fr .etctmp
-mkdir .etctmp
+Rm -fr .etctmp
+Mkdir .etctmp
 (cd .etctmp; "$EXTRACT" "$WDIR"/$ETCDIST)
 for i in $ETCDLINKS; do
 	if [ -d .etctmp/X11/$i ]; then
@@ -1412,6 +1475,14 @@ for i in $ETCDLINKS; do
 		DoCopy=NO
 	fi
 	if [ $DoCopy = YES -a -d $RUNDIR/lib/X11/$i ]; then
+		case $i in
+		xkb)
+			echo ""
+			echo "If the XKB configuration files are not updated you may"
+			echo "experience problems running the latest XFree86 server."
+			echo ""
+			;;
+		esac
 		Echo "Do you want to overwrite the $i config files? (y/n) [n] "
 		read response
 		case "$response" in
@@ -1425,16 +1496,23 @@ for i in $ETCDLINKS; do
 	fi
 	if [ $DoCopy = YES ]; then
 		echo "Installing the $i config files ..."
+		# If no directory, create it.
+		if [ ! -d $RUNDIR/lib/X11/$i -a ! -d $ETCDIR/X11/$i ]; then
+			if [ X"$EtcX11IsUsedBy" = X ]; then
+				Mkdir $RUNDIR/lib/X11/$i
+			else
+				Mkdir $ETCDIR/X11/$i
+			fi
+		fi
+
+		# Create link to other location if necessary
 		if [ X"$NoSymLinks" != XYES ]; then
-			if [ ! -d $ETCDIR/X11/$i ]; then
-				mkdir $ETCDIR/X11/$i
-			fi
-			if [ ! -d $RUNDIR/lib/X11/$i ]; then
-				ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
-			fi
-		else
-			if [ ! -d $RUNDIR/lib/X11/$i ]; then
-				mkdir $RUNDIR/lib/X11/$i
+			if [ -d $ETCDIR/X11/$i -a ! -d $RUNDIR/lib/X11/$i ]; then
+				Ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
+			else
+				if [ -d $RUNDIR/lib/X11/$i -a ! -d $ETCDIR/X11/$i ]; then
+					Ln -s $RUNDIR/lib/X11/$i $ETCDIR/X11/$i
+				fi
 			fi
 		fi
 		"$TAR" -C .etctmp/X11/$i -c -f - . | \
@@ -1461,26 +1539,27 @@ for i in $ETCFLINKS; do
 	fi
 	if [ $DoCopy = YES ]; then
 		echo "Installing the $i config file ..."
-		if [ X"$NoSymLinks" != XYES ]; then
-			if [ ! -f $RUNDIR/lib/X11/$i ]; then
-				ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
+		targetdir=$ETCDIR/X11
+		if [ ! -f $RUNDIR/lib/X11/$i -a ! -f $ETCDIR/X11/$i ]; then
+			if [ X"$EtcX11IsUsedBy" = X ]; then
+				targetdir=$RUNDIR/lib/X11
+			else
+				targetdir=$ETCDIR/X11
 			fi
 		fi
-		(set -x; cp -p .etctmp/X11/$i $RUNDIR/lib/X11/$i)
+		(set -x; cp -p .etctmp/X11/$i $targetdir/$i)
+		if [ X"$NoSymLinks" != XYES ]; then
+			if [ ! -f $RUNDIR/lib/X11/$i ]; then
+				Ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
+			else
+				if [ ! -f $ETCDIR/X11/$i ]; then
+					Ln -s $RUNDIR/lib/X11/$i $ETCDIR/X11/$i
+				fi
+			fi
+		fi
 	fi
 done
-if [ X"$XKBDIR" != X ]; then
-	if [ X"$NoSymLinks" = XYES ]; then
-		XKBDIR=$RUNDIR/lib/X11/xkb/compiled
-	fi
-	if [ -d .etctmp/X11/xkb ]; then
-		if [ ! -d $XKBDIR ]; then
-			mkdir $XKBDIR
-		fi
-		"$TAR" -C .etctmp/X11/xkb -c -f - . | \
-			"$TAR" -C $XKBDIR -v -x -p -U -f -
-	fi
-fi
+
 for i in $ETCFONTFILES; do
 	if [ -f .etctmp/fonts/$i ]; then
 		DoCopy=YES
@@ -1504,7 +1583,7 @@ for i in $ETCFONTFILES; do
 		(set -x; cp -p .etctmp/fonts/$i $ETCDIR/fonts/$i)
 	fi
 done
-rm -fr .etctmp
+Rm -fr .etctmp
 
 echo ""
 echo "Installing the mandatory parts of the binary distribution"
@@ -1516,16 +1595,15 @@ if [ X"$VARDIST" != X ]; then
 	(cd $VARDIR; "$EXTRACT" "$WDIR"/$VARDIST)
 fi
 
-if [ X"$XKBDIR" != X -a X"$XKBDIR" != X"$RUNDIR/lib/X11/xkb/compiled" -a \
-	 X"$XKBDBDIR" != X ]; then
-	rm -fr $RUNDIR/lib/X11/xkb/compiled
-	ln -s $XKBDBDIR $RUNDIR/lib/X11/xkb/compiled
+if [ X"$XKBDIR" != X -a X"$XKBDBDIR" != X ]; then
+	Rm -fr $RUNDIR/lib/X11/xkb/compiled
+	Ln -s $XKBDBDIR $RUNDIR/lib/X11/xkb/compiled
 fi
 
 echo "Checking for post-release updates ..."
 for i in $UPDDIST; do
 	if [ -f $i ]; then
-		Echo "Do you want to install update $i (`Description $i`)? (y/n) [y] "
+		Echo "Do you want to install update $i `(Description $i)`? (y/n) [y] "
 		read response
 		case "$response" in
 		[nN]*)
@@ -1587,6 +1665,8 @@ if [ X"$TERMCAPFILE" != X ]; then
 	echo "of new features, but they may cause problems when used with"
 	echo "older versions of xterm.  A terminal type 'xterm-r6' is included"
 	echo "for compatibility with the standard X11R6 version of xterm."
+	echo ""
+	ContinueYes
 fi
 
 # Check for terminfo, and update the xterm entry
@@ -1626,7 +1706,7 @@ if [ -d $TINFODIR ]; then
 		for t in $OLDTINFO; do
 			if [ -f $TINFODIR/$t ]; then
 				echo "Moving old terminfo file $TINFODIR/$t to $TINFODIR/$t.bak"
-				rm -f $TINFODIR/$t.bak
+				Rm -f $TINFODIR/$t.bak
 				mv -f $TINFODIR/$t $TINFODIR/$t.bak
 			fi
 		done
@@ -1681,33 +1761,33 @@ if [ -f $RUNDIR/lib/libGL.so ]; then
 	[yY]*)
 		if [ ! -d $ROOTDIR/usr/lib ]; then
 			echo "Creating $ROOTDIR/usr/lib"
-			mkdir $ROOTDIR/usr/lib
+			Mkdir $ROOTDIR/usr/lib
 		fi
 		if [ ! -d $ROOTDIR/usr/include ]; then
 			echo "Creating $ROOTDIR/usr/include"
-			mkdir $ROOTDIR/usr/include
+			Mkdir $ROOTDIR/usr/include
 		fi
-		rm -f $ROOTDIR/usr/lib/libGL.so
+		Rm -f $ROOTDIR/usr/lib/libGL.so
 		if [ ! -f $ROOTDIR/usr/lib/libGL.so ]; then
 			echo "Creating link from $RUNDIR/lib/libGL.so to $ROOTDIR/usr/lib/libGL.so"
-			ln -s $RUNDIR/lib/libGL.so $ROOTDIR/usr/lib/libGL.so
+			Ln -s $RUNDIR/lib/libGL.so $ROOTDIR/usr/lib/libGL.so
 		else
 			echo "Could not remove existing $ROOTDIR/usr/lib/libGL.so, so the new"
 			echo "link has not been created."
 		fi
-		rm -f $ROOTDIR/usr/lib/libGL.so.1
+		Rm -f $ROOTDIR/usr/lib/libGL.so.1
 		if [ ! -f $ROOTDIR/usr/lib/libGL.so.1 ]; then
 			echo "Creating link from $RUNDIR/lib/libGL.so.1 to $ROOTDIR/usr/lib/libGL.so.1"
-			ln -s $RUNDIR/lib/libGL.so.1 $ROOTDIR/usr/lib/libGL.so.1
+			Ln -s $RUNDIR/lib/libGL.so.1 $ROOTDIR/usr/lib/libGL.so.1
 		else
 			echo "Could not remove existing $ROOTDIR/usr/lib/libGL.so.1, so the new"
 			echo "link has not been created."
 		fi
 		if [ -d $RUNDIR/include/GL ]; then
-			rm -f $ROOTDIR/usr/include/GL
+			Rm -f $ROOTDIR/usr/include/GL
 			if [ ! -d $ROOTDIR/usr/include/GL ]; then
 				echo "Creating link from $RUNDIR/include/GL to $ROOTDIR/usr/include/GL"
-				ln -s $RUNDIR/include/GL $ROOTDIR/usr/include/GL
+				Ln -s $RUNDIR/include/GL $ROOTDIR/usr/include/GL
 			else
 				echo "Could not remove existing $ROOTDIR/usr/include/GL, so the new"
 				echo "link has not been created."
@@ -1723,7 +1803,7 @@ for i in $RUNDIR/lib/X11/doc/*.txt; do
 	old="RUNDIR/lib/X11/doc/$base.TXT"
 	if [ -f "$old" ]; then
 		echo "Removing old file $old (replaced by $base.txt)"
-		rm -f "$old"
+		Rm -f "$old"
 	fi
 done
 
@@ -1732,7 +1812,7 @@ for i in $RUNDIR/lib/X11/doc/PostScript/*.PS; do
 	old="RUNDIR/lib/X11/doc/$base.PS"
 	if [ -f "$old" ]; then
 		echo "Removing old file $old (replaced by $base.ps)"
-		rm -f "$old"
+		Rm -f "$old"
 	fi
 done
 
@@ -1777,11 +1857,11 @@ if [ -f $RUNDIR/bin/rstartd ]; then
 	[yY]*)
 		if [ ! -d $ROOTDIR/usr/bin ]; then
 			echo "Creating $ROOTDIR/usr/bin"
-			mkdir $ROOTDIR/usr/bin
+			Mkdir $ROOTDIR/usr/bin
 		fi
 		echo "Creating link from $RUNDIR/bin/rstartd to $ROOTDIR/usr/bin/rstartd"
-		rm -f $ROOTDIR/usr/bin/rstartd
-		ln -s $RUNDIR/bin/rstartd $ROOTDIR/usr/bin/rstartd
+		Rm -f $ROOTDIR/usr/bin/rstartd
+		Ln -s $RUNDIR/bin/rstartd $ROOTDIR/usr/bin/rstartd
 		;;
 	esac
 fi
@@ -1811,7 +1891,7 @@ if [ -d $RUNDIR/lib/modules ]; then
 			if [ ! -d $RUNDIR/lib/modules/old ]; then
 				echo ""
 				echo "Creating $RUNDIR/lib/modules/old"
-				mkdir $RUNDIR/lib/modules/old
+				Mkdir $RUNDIR/lib/modules/old
 			else
 				echo ""
 			fi
@@ -1843,10 +1923,10 @@ fi
 
 case "$OsName" in
 FreeBSD|NetBSD)
-	DRMBUILDDIR="$RUNDIR/src/bsd/drm/kernel"
+	DRMBUILDDIR="$RUNDIR/src/drm/bsd/kernel"
 	;;
 Linux)
-	DRMBUILDDIR="$RUNDIR/src/linux/drm/kernel"
+	DRMBUILDDIR="$RUNDIR/src/drm/linux/kernel"
 	;;
 esac
 
@@ -1859,6 +1939,14 @@ if [ -f $DRMBUILDDIR/Makefile ]; then
 	echo "overwrite any existing DRM kernel modules you may have installed."
 	echo "If you'd prefer to save them before installing new ones, answer 'n'"
 	echo "here and follow the build/install instructions manually later."
+	case "$OsName" in
+	Linux)
+		echo ""
+		echo "The Linux DRM module build process assumes not only that you"
+		echo "have the source for your current kernel installed, but that"
+		echo "have run a build in that source tree."
+		;;
+	esac
 	echo ""
 	Echo "Do you want to build and install new DRM kernel modules? (y/n) [n] "
 	read response
