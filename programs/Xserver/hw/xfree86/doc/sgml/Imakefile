@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.73 2001/06/01 18:26:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.74 2001/06/04 13:50:15 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -47,8 +47,8 @@ LinuxDocReadmeTarget(OpenBSD)
 LinuxDocReadmeTarget(OS2)
 #endif
 LinuxDocTargetLong(OS2Notes.sgml,OS2.Notes,OS2Notes)
-#ifdef OUTOFDATE
 LinuxDocReadmeTarget(SCO)
+#ifdef OUTOFDATE
 LinuxDocReadmeTarget(SOLX86)
 LinuxDocReadmeTarget(SVR4)
 #endif
