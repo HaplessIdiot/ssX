@@ -1,4 +1,5 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 661. Update Brazilian keyboard map (Ricardo Y. Igarashi).
  660. Fix a bug in the fbgc.c code that caused the even stipple code path to
       be used instead of the odd stipple path. Basically causing glitches in
       rendering or no rendering at all. (Alan Hourihane).
@@ -18354,7 +18355,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3028 2003/12/09 04:42:29 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3029 2003/12/09 12:12:44 alanh Exp $
 
 
 
