@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.22 2002/11/08 08:00:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.23 2002/11/10 16:29:03 paulo Exp $ */
 
 #include <ctype.h>
 #include "io.h"
@@ -194,11 +194,11 @@ LispDebugger(LispDebugCall call, LispObj *name, LispObj *arg)
 		if (LispGetColumn(NIL))
 		    LispFputc(Stdout, '\n');
 		LispFputs(Stdout, "BREAK #");
-		LispDoWriteObject(NIL, CAR(CDR(CAR(obj))), 1);
+		LispWriteObject(NIL, CAR(CDR(CAR(obj))));
 		LispFputs(Stdout, "> (");
-		LispDoWriteObject(NIL, CAR(CAR(DBG)), 1);
+		LispWriteObject(NIL, CAR(CAR(DBG)));
 		LispFputc(Stdout, ' ');
-		LispDoWriteObject(NIL, CAR(CDR(CAR(DBG))), 0);
+		LispWriteObject(NIL, CAR(CDR(CAR(DBG))));
 		LispFputs(Stdout, ")\n");
 		force = 1;
 		/* update hits counter */
@@ -263,10 +263,10 @@ watch_again:
 			LispFputc(Stdout, '\n');
 
 			LispFputs(Stdout, "OLD: ");
-			LispDoWriteObject(NIL, val, 1);
+			LispWriteObject(NIL, val);
 
 			LispFputs(Stdout, "\nNEW: ");
-			LispDoWriteObject(NIL, cur, 1);
+			LispWriteObject(NIL, cur);
 			LispFputc(Stdout, '\n');
 
 			/* update current value */
@@ -319,9 +319,9 @@ watch_again:
 	LispFputc(Stdout, '#');
 	LispFputs(Stdout, format_integer(lisp__data.debug_level));
 	LispFputs(Stdout, "> (");
-	LispDoWriteObject(NIL, CAR(CAR(DBG)), 1);
+	LispWriteObject(NIL, CAR(CAR(DBG)));
 	LispFputc(Stdout, ' ');
-	LispDoWriteObject(NIL, CAR(CDR(CAR(DBG))), 0);
+	LispWriteObject(NIL, CAR(CDR(CAR(DBG))));
 	LispFputs(Stdout, ")\n");
 	LispDebuggerCommand(NIL);
     }
@@ -329,7 +329,7 @@ watch_again:
 	LispFputc(Stdout, '#');
 	LispFputs(Stdout, format_integer(lisp__data.debug_level + 1));
 	LispFputs(Stdout, "= ");
-	LispDoWriteObject(NIL, arg, 1);
+	LispWriteObject(NIL, arg);
 	LispFputc(Stdout, '\n');
 	LispDebuggerCommand(NIL);
     }
@@ -485,12 +485,11 @@ LispDebuggerCommand(LispObj *args)
 			for (obj = BRK; obj != NIL; obj = CDR(obj)) {
 			    /* breakpoint number */
 			    LispFputc(Stdout, '#');
-			    LispDoWriteObject(NIL, CAR(CDR(CAR(obj))), 1);
+			    LispWriteObject(NIL, CAR(CDR(CAR(obj))));
 
 			    /* number of hits */
 			    LispFputc(Stdout, '\t');
-			    LispDoWriteObject(NIL,
-					      CAR(CDR(CDR(CDR(CAR(obj))))), 1);
+			    LispWriteObject(NIL, CAR(CDR(CDR(CDR(CAR(obj))))));
 
 			    /* breakpoint type */
 			    LispFputc(Stdout, '\t');
@@ -505,7 +504,7 @@ LispDebuggerCommand(LispObj *args)
 
 			    /* breakpoint object */
 			    LispFputc(Stdout, '\t');
-			    LispDoWriteObject(NIL, CAR(CAR(obj)), 1);
+			    LispWriteObject(NIL, CAR(CAR(obj)));
 			    LispFputc(Stdout, '\n');
 			}
 			break;
@@ -737,7 +736,7 @@ LispDebuggerCommand(LispObj *args)
 		}
 		obj = LispGetVar(ATOM(arg));
 		if (obj != NULL) {
-		    LispDoWriteObject(NIL, obj, 1);
+		    LispWriteObject(NIL, obj);
 		    LispFputc(Stdout, '\n');
 		}
 		else {
@@ -758,9 +757,9 @@ debugger_print_backtrace:
 		    LispFputc(Stdout, '#');
 		    LispFputs(Stdout, format_integer(i));
 		    LispFputs(Stdout, "> (");
-		    LispDoWriteObject(NIL, CAR(frm), 1);
+		    LispWriteObject(NIL, CAR(frm));
 		    LispFputc(Stdout, ' ');
-		    LispDoWriteObject(NIL, CAR(CDR(frm)), 0);
+		    LispWriteObject(NIL, CAR(CDR(frm)));
 		    LispFputs(Stdout, ")\n");
 		}
 		DBG = LispReverse(DBG);
@@ -804,9 +803,9 @@ debugger_print_frame:
 	LispFputc(Stdout, '#');
 	LispFputs(Stdout, format_integer(frame));
 	LispFputs(Stdout, "> (");
-	LispDoWriteObject(NIL, CAR(curframe), 1);
+	LispWriteObject(NIL, CAR(curframe));
 	LispFputc(Stdout, ' ');
-	LispDoWriteObject(NIL, CAR(CDR(curframe)), 0);
+	LispWriteObject(NIL, CAR(CDR(curframe)));
 	LispFputs(Stdout, ")\n");
     }
 

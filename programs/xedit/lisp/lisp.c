@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.66 2002/11/08 08:00:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.67 2002/11/10 16:29:05 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -4886,7 +4886,7 @@ LispStrObj(LispObj *object)
 
     string.length = string.output = 0;
 
-    LispDoWriteObject(&stream, object, 1);
+    LispWriteObject(&stream, object);
 
     /* make sure string is nul terminated */
     string.string[string.length] = '\0';
@@ -5283,6 +5283,7 @@ LispBegin(void)
     LispPathnameInit();
     LispStreamInit();
     LispRegexInit();
+    LispWriteInit();
 
     lisp__data.prompt = "> ";
 

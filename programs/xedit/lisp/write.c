@@ -27,13 +27,23 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.16 2002/11/10 16:29:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.17 2002/11/10 23:22:00 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
 #include <math.h>
 
 #define	FLOAT_PREC	17
+
+/*
+ * Types
+ */
+typedef struct _write_info {
+    long level;			/* current level */
+    long length;		/* current length */
+    long print_level;		/* *print-level* when started printing */
+    long print_length;		/* *print-length* when started printing */
+} write_info;
 
 /*
  * Prototypes
@@ -43,15 +53,60 @@ static void parse_double(char*, int*, double, int);
 static void format_integer(char*, long, int);
 static int LispWriteCPointer(LispObj*, void*);
 static int LispWriteCString(LispObj*, char*, long);
-static int LispDoWriteList(LispObj*, LispObj*, int);
 static int LispDoFormatExponentialFloat(LispObj*, LispObj*,
 					int, int, int*, int, int,
 					int, int, int, int);
 
+static int LispWriteList(LispObj*, LispObj*, write_info*, int);
+static int LispWriteArray(LispObj*, LispObj*, write_info*);
+static int LispWriteStruct(LispObj*, LispObj*, write_info*);
+static int LispDoWriteObject(LispObj*, LispObj*, write_info*, int);
+
+/*
+ * Initialization
+ */
+LispObj *Oprint_level, *Oprint_length;
 
 /*
  * Implementation
  */
+void
+LispWriteInit(void)
+{
+    Oprint_level	= STATIC_ATOM("*PRINT-LEVEL*");
+    LispProclaimSpecial(Oprint_level, NIL, NIL);
+    LispExportSymbol(Oprint_level);
+    Oprint_length	= STATIC_ATOM("*PRINT-LENGTH*");
+    LispProclaimSpecial(Oprint_length, NIL, NIL);
+    LispExportSymbol(Oprint_length);
+}
+
+int
+LispWriteObject(LispObj *stream, LispObj *object)
+{
+    write_info info;
+    LispObj *level, *length;
+
+    /* current state */
+    info.level = info.length = 0;
+
+    /* maximum level to descend */
+    level = LispGetVar(Oprint_level);
+    if (level && INDEXP(level))
+	info.print_level = FIXNUM_VALUE(level);
+    else
+	info.print_level = -1;
+
+    /* maximum list length */
+    length = LispGetVar(Oprint_length);
+    if (length && INDEXP(length))
+	info.print_length = FIXNUM_VALUE(length);
+    else
+	info.print_length = -1;
+
+    return (LispDoWriteObject(stream, object, &info, 1));
+}
+
 static void
 check_stream(LispObj *stream,
 	     LispFile **file, LispString **string, int check_writable)
@@ -199,42 +254,67 @@ LispWriteCString(LispObj *stream, char *string, long length)
 }
 
 static int
-LispDoWriteList(LispObj *stream, LispObj *object, int paren)
+LispWriteList(LispObj *stream, LispObj *object, write_info *info, int paren)
 {
     int length = 0;
-    LispObj *car, *cdr;
 
-    car = CAR(object);
-    cdr = CDR(object);
-    if (cdr == NIL) {
-	if (paren)
-	    length += LispWriteChar(stream, '(');
-	length += LispDoWriteObject(stream, car, CONSP(car));
-	if (paren)
-	    length += LispWriteChar(stream, ')');
-    }
-    else {
-	if (paren)
-	    length += LispWriteChar(stream, '(');
-	length += LispDoWriteObject(stream, car, CONSP(car));
-	if (!CONSP(cdr)) {
-	    length += LispWriteStr(stream, " . ", 3);
-	    length += LispDoWriteObject(stream, cdr, 0);
+    if (info->print_level < 0 || info->level <= info->print_level) {
+	LispObj *car, *cdr;
+	long print_length = info->length;
+
+	car = CAR(object);
+	cdr = CDR(object);
+	if (cdr == NIL) {
+	    if (paren)
+		length += LispWriteChar(stream, '(');
+	    if (info->print_length < 0 || info->length < info->print_length) {
+		info->length = 0;
+		length += LispDoWriteObject(stream, car, info, 1);
+		info->length = print_length + 1;
+	    }
+	    else
+		length += LispWriteStr(stream, "...", 3);
+	    if (paren)
+		length += LispWriteChar(stream, ')');
 	}
 	else {
-	    length += LispWriteChar(stream, ' ');
-	    length += LispDoWriteList(stream, cdr, 0);
+	    if (paren)
+		length += LispWriteChar(stream, '(');
+	    if (info->print_length < 0 || info->length < info->print_length) {
+		info->length = 0;
+		length += LispDoWriteObject(stream, car, info, 1);
+		info->length = print_length + 1;
+		if (!CONSP(cdr)) {
+		    length += LispWriteStr(stream, " . ", 3);
+		    info->length = 0;
+		    length += LispDoWriteObject(stream, cdr, info, 0);
+		}
+		else {
+		    length += LispWriteChar(stream, ' ');
+		    if (info->print_length < 0 ||
+			info->length < info->print_length)
+			length += LispWriteList(stream, cdr, info, 0);
+		    else
+			length += LispWriteStr(stream, "...", 3);
+		}
+	    }
+	    else
+		length += LispWriteStr(stream, "...", 3);
+	    if (paren)
+		length += LispWriteChar(stream, ')');
 	}
-	if (paren)
-	    length += LispWriteChar(stream, ')');
+	info->length = print_length;
     }
+    else
+	length += LispWriteChar(stream, '#');
 
     return (length);
 }
 
-int
-LispDoWriteObject(LispObj *stream, LispObj *object, int paren)
+static int
+LispDoWriteObject(LispObj *stream, LispObj *object, write_info *info, int paren)
 {
+    long print_level;
     int length = 0;
     char stk[64];
 
@@ -302,14 +382,17 @@ write_again:
 	case LispComplex_t:
 	    length += LispWriteStr(stream, "#C(", 3);
 	    length += LispDoWriteObject(stream,
-					object->data.complex.real, 0);
+					object->data.complex.real, info, 0);
 	    length += LispWriteChar(stream, ' ');
 	    length += LispDoWriteObject(stream,
-					object->data.complex.imag, 0);
+					object->data.complex.imag, info, 0);
 	    length += LispWriteChar(stream, ')');
 	    break;
 	case LispCons_t:
-	    length += LispDoWriteList(stream, object, paren);
+	    print_level = info->level;
+	    ++info->level;
+	    length += LispWriteList(stream, object, info, paren);
+	    info->level = print_level;
 	    break;
 	case LispQuote_t:
 	    length += LispWriteChar(stream, '\'');
@@ -331,10 +414,10 @@ write_again:
 	    goto write_again;
 	    break;
 	case LispArray_t:
-	    length += LispWriteArray(stream, object);
+	    length += LispWriteArray(stream, object, info);
 	    break;
 	case LispStruct_t:
-	    length += LispWriteStruct(stream, object);
+	    length += LispWriteStruct(stream, object, info);
 	    break;
 	case LispLambda_t:
 	    switch (object->funtype) {
@@ -357,7 +440,8 @@ write_again:
 		length += LispWriteStr(stream, desc, strlen(desc));
 		length += LispWriteChar(stream, ' ');
 	    }
-	    length += LispDoWriteObject(stream, object->data.lambda.code, 0);
+	    length += LispDoWriteObject(stream,
+					object->data.lambda.code, info, 0);
 	    length += LispWriteChar(stream, '>');
 	    break;
 	case LispStream_t:
@@ -391,7 +475,8 @@ write_again:
 	    }
 	    else {
 		length += LispDoWriteObject(stream,
-					    object->data.stream.pathname, 1);
+					    object->data.stream.pathname,
+					    info, 1);
 		/* same address/size for pipes */
 		length += LispWriteChar(stream, ' ');
 		length += LispWriteCPointer(stream,
@@ -414,7 +499,7 @@ write_again:
 	case LispRegex_t:
 	    length += LispWriteStr(stream, "#<REGEX ", 8);
 	    length += LispDoWriteObject(stream,
-					object->data.regex.pattern, 1);
+					object->data.regex.pattern, info, 1);
 	    if (object->data.regex.options & RE_NOSPEC)
 		length += LispWriteStr(stream, " :NOSPEC", 8);
 	    if (object->data.regex.options & RE_ICASE)
@@ -624,98 +709,136 @@ LispWriteFloat(LispObj *stream, LispObj *object)
 					 0, 1, 0, ' ', 'E', 0));
 }
 
-int
-LispWriteList(LispObj *stream, LispObj *object)
-{
-    return (LispDoWriteList(stream, object, 1));
-}
-
-int
-LispWriteArray(LispObj *stream, LispObj *object)
+static int
+LispWriteArray(LispObj *stream, LispObj *object, write_info *info)
 {
     int length;
+    long print_level = info->level;
 
     if (object->data.array.rank == 0) {
 	length = LispWriteStr(stream, "#0A", 3);
-	length += LispDoWriteObject(stream, object->data.array.list, 1);
+	length += LispDoWriteObject(stream, object->data.array.list, info, 1);
 	return (length);
     }
 
-    if (object->data.array.rank == 1)
-	length = LispWriteStr(stream, "#(", 2);
-    else {
-	char stk[32];
-
-	format_integer(stk, object->data.array.rank, 10);
-	length = LispWriteChar(stream, '#');
-	length += LispWriteStr(stream, stk, strlen(stk));
-	length += LispWriteStr(stream, "A(", 2);
-    }
-
-    if (!object->data.array.zero) {
-	if (object->data.array.rank == 1) {
-	    LispObj *ary;
-	    long count;
-
-	    for (ary = object->data.array.dim, count = 1;
-		 ary != NIL; ary = CDR(ary))
-		count *= FIXNUM_VALUE(CAR(ary));
-	    for (ary = object->data.array.list; count > 0;
-		 ary = CDR(ary), count--) {
-		length += LispDoWriteObject(stream, CAR(ary), 1);
-		if (count - 1 > 0)
-		    length += LispWriteChar(stream, ' ');
-	    }
-	}
+    ++info->level;
+    if (info->print_level < 0 || info->level <= info->print_level) {
+	if (object->data.array.rank == 1)
+	    length = LispWriteStr(stream, "#(", 2);
 	else {
-	    LispObj *ary;
-	    int i, k, rank, *dims, *loop;
+	    char stk[32];
 
-	    rank = object->data.array.rank;
-	    dims = LispMalloc(sizeof(int) * rank);
-	    loop = LispCalloc(1, sizeof(int) * (rank - 1));
-
-	    /* fill dim */
-	    for (i = 0, ary = object->data.array.dim; ary != NIL;
-		 i++, ary = CDR(ary))
-		dims[i] = FIXNUM_VALUE(CAR(ary));
-
-	    i = 0;
-	    ary = object->data.array.list;
-	    while (loop[0] < dims[0]) {
-		for (; i < rank - 1; i++)
-		    length += LispWriteChar(stream, '(');
-		--i;
-		for (;;) {
-		    ++loop[i];
-		    if (i && loop[i] >= dims[i])
-			loop[i] = 0;
-		    else
-			break;
-		    --i;
-		}
-		for (k = 0; k < dims[rank - 1] - 1; k++, ary = CDR(ary)) {
-		    length += LispDoWriteObject(stream, CAR(ary), 1);
-		    length += LispWriteChar(stream, ' ');
-		}
-		length += LispDoWriteObject(stream, CAR(ary), 0);
-		ary = CDR(ary);
-		for (k = rank - 1; k > i; k--)
-		    length += LispWriteChar(stream, ')');
-		if (loop[0] < dims[0])
-		    length += LispWriteChar(stream,  ' ');
-	    }
-	    LispFree(dims);
-	    LispFree(loop);
+	    format_integer(stk, object->data.array.rank, 10);
+	    length = LispWriteChar(stream, '#');
+	    length += LispWriteStr(stream, stk, strlen(stk));
+	    length += LispWriteStr(stream, "A(", 2);
 	}
+
+	if (!object->data.array.zero) {
+	    long print_length = info->length, local_length = 0;
+
+	    if (object->data.array.rank == 1) {
+		LispObj *ary;
+		long count;
+
+		for (ary = object->data.array.dim, count = 1;
+		     ary != NIL; ary = CDR(ary))
+		    count *= FIXNUM_VALUE(CAR(ary));
+		for (ary = object->data.array.list; count > 0;
+		     ary = CDR(ary), count--) {
+		    if (info->print_length < 0 ||
+			++local_length <= info->print_length) {
+			info->length = 0;
+			length += LispDoWriteObject(stream, CAR(ary), info, 1);
+		    }
+		    else {
+			length += LispWriteStr(stream, "...", 3);
+			break;
+		    }
+		    if (count - 1 > 0)
+			length += LispWriteChar(stream, ' ');
+		}
+	    }
+	    else {
+		LispObj *ary;
+		int i, k, rank, *dims, *loop;
+
+		rank = object->data.array.rank;
+		dims = LispMalloc(sizeof(int) * rank);
+		loop = LispCalloc(1, sizeof(int) * (rank - 1));
+
+		/* fill dim */
+		for (i = 0, ary = object->data.array.dim; ary != NIL;
+		     i++, ary = CDR(ary))
+		    dims[i] = FIXNUM_VALUE(CAR(ary));
+
+		i = 0;
+		ary = object->data.array.list;
+		while (loop[0] < dims[0]) {
+		    if (info->print_length < 0 ||
+			local_length < info->print_length) {
+			for (; i < rank - 1; i++)
+			    length += LispWriteChar(stream, '(');
+			--i;
+			for (;;) {
+			    ++loop[i];
+			    if (i && loop[i] >= dims[i])
+				loop[i] = 0;
+			    else
+				break;
+			    --i;
+			}
+			for (k = 0; k < dims[rank - 1] - 1;
+			     k++, ary = CDR(ary)) {
+			    if (info->print_length < 0 ||
+				k < info->print_length) {
+				++local_length;
+				info->length = 0;
+				length += LispDoWriteObject(stream,
+							    CAR(ary), info, 1);
+				length += LispWriteChar(stream, ' ');
+			    }
+			}
+			if (info->print_length < 0 || k < info->print_length) {
+			    ++local_length;
+			    info->length = 0;
+			    length += LispDoWriteObject(stream,
+							CAR(ary), info, 0);
+			}
+			else
+			    length += LispWriteStr(stream,  "...", 3);
+			for (k = rank - 1; k > i; k--)
+			    length += LispWriteChar(stream, ')');
+			if (loop[0] < dims[0])
+			    length += LispWriteChar(stream,  ' ');
+			ary = CDR(ary);
+		    }
+		    else {
+			++local_length;
+			length += LispWriteStr(stream,	"...)", 4);
+			for (; local_length < dims[0] - 1; local_length++)
+			    length += LispWriteStr(stream,  " ...)", 5);
+			if (local_length <= dims[0])
+			    length += LispWriteStr(stream,  " ...", 4);
+			break;
+		    }
+		}
+		LispFree(dims);
+		LispFree(loop);
+	    }
+	    info->length = print_length;
+	}
+	length += LispWriteChar(stream, ')');
     }
-    length += LispWriteChar(stream, ')');
+    else
+	length += LispWriteChar(stream, '#');
+    info->level = print_level;
 
     return (length);
 }
 
-int
-LispWriteStruct(LispObj *stream, LispObj *object)
+static int
+LispWriteStruct(LispObj *stream, LispObj *object, write_info *info)
 {
     Atom_id id;
     int length;
@@ -731,17 +854,11 @@ LispWriteStruct(LispObj *stream, LispObj *object)
 	id = SYMBOLP(CAR(def)) ? ATOMID(CAR(def)) : ATOMID(CAAR(def));
 	length += LispWriteStr(stream, id, strlen(id));
 	length += LispWriteChar(stream, ' ');
-	length += LispDoWriteObject(stream, CAR(field), 1);
+	length += LispDoWriteObject(stream, CAR(field), info, 1);
     }
     length += LispWriteChar(stream, ')');
 
     return (length);
-}
-
-int
-LispWriteObject(LispObj *stream, LispObj *object)
-{
-    return (LispDoWriteObject(stream, object, 1));
 }
 
 int
