@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.37 2000/06/16 13:11:18 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.38 2000/06/17 00:27:31 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -75,6 +75,10 @@ static void
 GetPciCard(int vendor, int chipType, int *vendor1, int *vendor2, int *card)
 {
     int k, j;
+   
+    *vendor1 = 0;
+    *vendor2 = 0;
+    *card = 0;
 
     k = 0;
     while (xf86PCIVendorNameInfo[k].token) {
@@ -173,6 +177,10 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
 	NewDevice.pVideo = pVideo;
 	GetPciCard(pVideo->vendor, pVideo->chipType,
 	    &vendor1, &vendor2, &card);
+
+	if (vendor1 == 0 || (vendor2 == 0 && card == 0)) {
+   	    FatalError("\nXFree86 has found a valid card configuration.\nUnfortunately the appropriate data has not been added to xf86PciInfo.h.\nPlease forward 'scanpci -v' output to XFree86 support team.");
+	}
 
 #	define VendorName xf86PCIVendorNameInfo[vendor1].name
 #	define CardName   xf86PCIVendorInfo[vendor2].Device[card].DeviceName

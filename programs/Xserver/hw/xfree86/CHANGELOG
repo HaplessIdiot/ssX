@@ -1,4 +1,6 @@
 XFree86 4.0f (?? June 2000)
+ 359. Fix -configure option to print out fatal message and abort gracefully
+      when pci data isn't entered into xf86PciInfo.h (Alan Hourihane).
  358. Add generic DGA support to NeoMagic (not tested) (Alan Hourihane).
  357. Add generic DGA support to i810 (not tested) (Alan Hourihane).
  356. Fix GCC 2.96 complaints in big font extension and imstt driver
@@ -10692,4 +10694,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1202 2000/06/22 17:44:02 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1203 2000/06/22 18:09:36 alanh Exp $
