@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.32 2000/11/16 19:45:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.33 2001/05/15 18:22:23 paulo Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -87,6 +87,10 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 #ifdef RENDER
     PictureScreenPtr    ps = GetPictureScreenIfSet(pScreen);
 #endif
+
+    /* Return successfully if no acceleration wanted */
+    if (!infoRec)
+	return TRUE;
     
     if (XAAGeneration != serverGeneration) {
 	if (	((XAAScreenIndex = AllocateScreenPrivateIndex()) < 0) ||

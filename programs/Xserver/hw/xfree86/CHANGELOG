@@ -1,4 +1,7 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 147. Add a DriverPrivate field to I2C devices (Marc La France).
+ 146. In the ATI driver, initialise the fb manager whether or not XAA is also
+      used (Marc La France).
  145. Fix typos in radeon and wacom drivers.
  144. Don't disable the secondary CRTC on ATI Rage XL adapters (it doesn't
       exist) (Marc La France).
@@ -13569,4 +13572,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1876 2001/07/15 07:36:22 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1877 2001/07/19 02:22:46 tsi Exp $
