@@ -113,6 +113,7 @@ typedef enum { NORMAL_MEMORY_FB, SHARED_MEMORY_FB, MMAPPED_FILE_FB } fbMemType;
 static fbMemType fbmemtype = NORMAL_MEMORY_FB;
 static char needswap = 0;
 static int lastScreen = -1;
+static Bool Render = TRUE;
 
 #define swapcopy16(_dst, _src) \
     if (needswap) { CARD16 _s = _src; cpswaps(_s, _dst); } \
@@ -240,6 +241,10 @@ ddxUseMsg()
 {
     ErrorF("-screen scrn WxHxD     set screen's width, height, depth\n");
     ErrorF("-pixdepths list-of-int support given pixmap depths\n");
+#ifdef RENDER
+    ErrorF("+/-render		   turn on/of RENDER extension support"
+	   "(default on)\n");
+#endif
     ErrorF("-linebias n            adjust thin line pixelization\n");
     ErrorF("-blackpixel n          pixel value for black\n");
     ErrorF("-whitepixel n          pixel value for white\n");
@@ -309,6 +314,18 @@ ddxProcessArgument (argc, argv, i)
 	    ret++;
 	}
 	return ret;
+    }
+
+    if (strcmp (argv[i], "+render") == 0)	/* +render */
+    {
+	Render = TRUE;
+	return 1;
+    }
+
+    if (strcmp (argv[i], "-render") == 0)	/* -render */
+    {
+	Render = FALSE;
+	return 1;
     }
 
     if (strcmp (argv[i], "-blackpixel") == 0)	/* -blackpixel n */
@@ -910,7 +927,7 @@ vfbScreenInit(index, pScreen, argc, argv)
 	ret = fbScreenInit(pScreen, pbits, pvfb->width, pvfb->height,
 			      dpix, dpiy, pvfb->paddedWidth,pvfb->bitsPerPixel);
 #ifdef RENDER
-	if (ret) 
+	if (ret && Render) 
 	    fbPictureInit (pScreen, 0, 0);
 #endif
 	break;
@@ -976,6 +993,10 @@ InitOutput(screenInfo, argc, argv)
     {
 	vfbPixmapDepths[vfbScreens[i].depth] = TRUE;
     }
+
+    /* for RENDER we need 32bpp */
+    if (Render)
+	vfbPixmapDepths[32] = TRUE;
 
     for (i = 1; i <= 32; i++)
     {

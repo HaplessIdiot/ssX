@@ -874,7 +874,7 @@ xtermComputeFontInfo(TScreen * screen,
 			XFT_FAMILY, XftTypeString, "mono",
 			XFT_SIZE, XftTypeInteger, term->misc.face_size,
 			XFT_SPACING, XftTypeInteger, XFT_MONO,
-			0);
+			(void*)0);
 	match = XftFontMatch(dpy, DefaultScreen(dpy), pat, &result);
 	screen->renderFont = XftFontOpenPattern(dpy, match);
 	if (!screen->renderFont && match)
@@ -883,7 +883,7 @@ xtermComputeFontInfo(TScreen * screen,
 	    XftPatternBuild(pat,
 			    XFT_WEIGHT, XftTypeInteger, XFT_WEIGHT_BOLD,
 			    XFT_CHAR_WIDTH, XftTypeInteger, screen->renderFont->max_advance_width,
-			    0);
+			    (void*)0);
 	    match = XftFontMatch(dpy, DefaultScreen(dpy), pat, &result);
 	    screen->renderFontBold = XftFontOpenPattern(dpy, match);
 	    if (!screen->renderFontBold && match)

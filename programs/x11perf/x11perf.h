@@ -89,6 +89,7 @@ typedef struct _XParms {
     Bool	    save_under;
     int		    backing_store;
     unsigned long   planemask;
+    Colormap	    cmap;
 } XParmRec, *XParms;
 
 typedef int (*InitProc)(XParms xp, Parms p, int reps);
