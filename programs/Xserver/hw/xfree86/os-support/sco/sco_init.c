@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.9 1996/12/09 11:53:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.10.4.2 1998/06/05 16:23:18 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -27,26 +27,19 @@
 
 #include "X.h"
 #include "Xmd.h"
-#include "input.h"
-#include "scrnintstr.h"
 
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 static Bool KeepTty = FALSE;
 static int VTnum = -1;
 static int sco_console_mode = -1;
 
-extern void xf86VTRequest(
-#if NeedFunctionPrototypes
-	int
-#endif
-);
-
-void xf86OpenConsole()
+void
+xf86OpenConsole()
 {
     int fd,wc;
     struct vt_mode VT;
@@ -124,8 +117,6 @@ void xf86OpenConsole()
 	    ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
 	}
     
-	xf86Config(FALSE); /* Read XF86Config */
-
 	if (!KeepTty)
 	{
 	    setpgrp();
@@ -189,7 +180,8 @@ void xf86OpenConsole()
     return;
 }
 
-void xf86CloseConsole()
+void
+xf86CloseConsole()
 {
     struct vt_mode   VT;
 
@@ -207,10 +199,8 @@ void xf86CloseConsole()
     return;
 }
 
-int xf86ProcessArgument(argc, argv, i)
-int argc;
-char *argv[];
-int i;
+int
+xf86ProcessArgument(int argc, char *argv[], int i)
 {
 	/*
 	 * Keep server from detaching from controlling tty.  This is useful
@@ -248,7 +238,8 @@ int i;
 	return(0);
 }
 
-void xf86UseMsg()
+void
+xf86UseMsg()
 {
 	ErrorF("vtXX                   use the specified VT number\n");
 	ErrorF("-crt /dev/ttyXX        use the specified VT number\n");

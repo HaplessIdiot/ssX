@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.20 1998/01/01 14:51:37 robin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.18.2.2 1998/06/09 14:40:57 dawes Exp $
 
 
 
@@ -9,6 +9,12 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:38:46 kaleb $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
+
+#if defined(i386Architecture) || \
+	(defined(LinuxArchitecture) && defined(AlphaArchitecture)) || \
+	defined(PpcArchitecture)
+BUS_SUBDIR = bus
+#endif
 
 #if defined(ArcArchitecture)
 OS_SUBDIR = bsd
@@ -72,15 +78,20 @@ OS_SUBDIR = os2
 OS_SUBDIR = sco
 #endif
 
-SUBDIRS = $(OS_SUBDIR) misc
+SUBDIRS = $(OS_SUBDIR) $(BUS_SUBDIR) misc
 
-SRCS = $(OS_SUBDIR)/?*.c misc/?*.c
-OBJS = $(OS_SUBDIR)/?*.o misc/?*.o
+SRCS = $(OS_SUBDIR)/?*.c $(BUS_SUBDIR)/?*.c misc/?*.c
+OBJS = $(OS_SUBDIR)/?*.o $(BUS_SUBDIR)/?*.o misc/?*.o
 
-DONES = $(OS_SUBDIR)/DONE misc/DONE
+DONES = $(OS_SUBDIR)/DONE $(BUS_SUBDIR)/DONE misc/DONE
 
-$(OS_SUBDIR)/DONE:	$(OS_SUBDIR)
-misc/DONE:	misc
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
+#endif
+
+#if HasGnuMake || HasBsdMake 
+$(DONES): $(SUBDIRS)
+#endif
 
 NormalDepLibraryTarget(xf86_os,$(SUBDIRS) $(DONES),$(OBJS))
 

@@ -1,7 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.6 1998/03/21 11:08:48 dawes Exp $ */
-
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.3.2.6 1998/07/04 13:32:44 dawes Exp $ */
 
 /*
  *
@@ -37,6 +34,7 @@
 #include "os.h"
 #include "Xos.h"
 #ifndef X_NOT_STDC_ENV
+#undef abs
 #include <stdlib.h>
 #else
 extern void free();
@@ -49,7 +47,7 @@ extern void free();
 static unsigned int hashFunc(const char *);
 static itemPtr LoaderHashFindNearest(
 #if NeedFunctionPrototypes
-int
+unsigned long
 #endif
 );
 
@@ -139,9 +137,8 @@ LOOKUP	*list ;
 {
     LOOKUP	*l = list;
     itemPtr	i;
-    char		*p;
+    char		*p = NULL;
     char		*modname;
-    char		*newmodname;
 
     if (!list)
 	return;
@@ -162,25 +159,19 @@ LOOKUP	*list ;
 		 * special handling for symbol name "ModuleInit"
 		 */
 		modname = _LoaderHandleToName(handle);
-		if( modname )
+		if (modname)
+			p = LoaderGetCanonicalName(modname);
+		if (p) 
 		    {
-			newmodname = strdup(modname);
-			p = strrchr(newmodname,'.');
-			if( p )
-			    *p = '\0';
-			p = strrchr(newmodname,'/');
-			if( p )
-			    p++;
-			else
-			    p = newmodname;
-
-			i->name = (char*)xf86loadermalloc(strlen(p)+11);
+			i->name = (char*)xf86loadermalloc(strlen(p) +
+						strlen(origname) + 1);
 			if( i->name )
 			    {
+				/* XXX Is this right for PPC? */
 				strcpy(i->name,p);
 				strcat(i->name,origname);
 			    }
-			free(newmodname);
+			xfree(p);
 		    }
 #ifdef DEBUG
 		ErrorF("Add module init function %s at %lx\n",i->name, l->offset);
@@ -235,7 +226,7 @@ const char *string;
 
 static itemPtr
 LoaderHashFindNearest(address)
-int address;
+unsigned long address;
 {
   int i ;
   itemPtr entry, best_entry = 0 ;
@@ -270,6 +261,7 @@ unsigned long address;
     itemPtr	entry;
     entry=LoaderHashFindNearest(address);
     if (entry) {
+	const char *module, *section;
 #if __alpha__
 	ErrorF("0x%016lx %s+%lx\n", entry->address, entry->name,
 		   address - (unsigned long) entry->address);
@@ -277,6 +269,9 @@ unsigned long address;
 	ErrorF("0x%x %s+%x\n", entry->address, entry->name,
 		   address - (unsigned long) entry->address);
 #endif
+
+	if ( _LoaderAddressToSection(address, &module, &section) )
+		ErrorF("\tModule \"%s\"\n\tSection \"%s\"\n",module, section );
     } else {
 	ErrorF("(null)\n");
     }
@@ -285,13 +280,17 @@ unsigned long address;
 void
 LoaderPrintItem(itemPtr pItem)
 {
-    if (pItem)
+    if (pItem) {
+	const char *module, *section;
 #if __alpha__
 	ErrorF("0x%016lx %s\n", pItem->address, pItem->name);
 #else
 	ErrorF("0x%lx %s\n", pItem->address, pItem->name);
 #endif
-    else
+	if ( _LoaderAddressToSection((unsigned long)pItem->address,
+				     &module, &section) )
+		ErrorF("\tModule \"%s\"\n\tSection \"%s\"\n",module, section );
+    } else
 	ErrorF("(null)\n");
 }
 	
@@ -342,7 +341,7 @@ void
 LoaderDumpSymbols()
 {
 	itemPtr       entry;
-	int           i,j;
+	int           j;
 		
 	for (j=0; j<HASHSIZE; j++) {
 		entry = LoaderhashTable[j];

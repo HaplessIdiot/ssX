@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_video.c,v 3.4 1996/12/23 06:49:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_video.c,v 3.4.4.1 1998/06/05 16:23:09 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -37,11 +37,8 @@
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
 
-pointer xf86MapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+pointer
+xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 {
         pointer base;
 
@@ -63,16 +60,14 @@ unsigned long Size;
 	}
 }
 
-void xf86UnMapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+void
+xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 	munmap((caddr_t)Base, Size);
 }
 
-Bool xf86LinearVidMem()
+Bool
+xf86LinearVidMem()
 {
 	return(TRUE);
 }
@@ -86,58 +81,33 @@ Bool xf86LinearVidMem()
  * 0xFFFF.  By default, the TSS has ports 0x3B0-0x3DF enabled.
  *
  * It also allows the IOPL to be enabled or disabled on a per-process
- * basis.  Here, we use the IOPL when ports outside the 0x3B0-0x3DF
- * range are needed to avoid interferring with what other processes
- * expect of the TSS I/O bitmap.
+ * basis.  Here, we use the IOPL only.
  */
 
-static unsigned *EnabledPorts[MAXSCREENS];
-static int NumEnabledPorts[MAXSCREENS];
-static Bool ScreenEnabled[MAXSCREENS];
 static Bool ExtendedEnabled = FALSE;
-static Bool InitDone = FALSE;
 
-
-void xf86EnableIOPorts(ScreenNum)
-int ScreenNum;
+void
+xf86EnableIO()
 {
-	int i;
-
-	if (ScreenEnabled[ScreenNum])
+	if (ExtendedEnabled)
 		return;
 
-	ScreenEnabled[ScreenNum] = TRUE;
-	for (i = 0; i < MAXSCREENS; i++)
+	if (ioctl(xf86Info.consoleFd, PCCONENABIOPL, 0) < 0)
 	{
-		if (ScreenEnabled[i] || i == ScreenNum)
-		{
-		    if (ioctl(xf86Info.consoleFd, PCCONENABIOPL, 0) < 0)
-		    {
-			FatalError("%s: Failed to set IOPL for extended I/O\n",
-				   "xf86EnableIOPorts");
-		    }
-		    ExtendedEnabled = TRUE;
-		    return;
-		}
+		FatalError("%s: Failed to set IOPL for extended I/O\n",
+			   "xf86EnableIOPorts");
 	}
-	return;
+	ExtendedEnabled = TRUE;
 }
 
-void xf86DisableIOPorts(ScreenNum)
-int ScreenNum;
+void
+xf86DisableIO()
 {
-
-	if (!ScreenEnabled[ScreenNum])
+	if (!ExtendedEnabled)
 		return;
 
-	ScreenEnabled[ScreenNum] = FALSE;
-	if (ExtendedEnabled)
-	{
-		ioctl(xf86Info.consoleFd, PCCONDISABIOPL, 0);
-		ExtendedEnabled = FALSE;
-	}
-	/* Don't need to do anything for VGA ports because they are always on */
-	return;
+	ioctl(xf86Info.consoleFd, PCCONDISABIOPL, 0);
+	ExtendedEnabled = FALSE;
 }
 
 
@@ -145,7 +115,8 @@ int ScreenNum;
 /* Interrupt Handling section                                              */
 /***************************************************************************/
 
-Bool xf86DisableInterrupts()
+Bool
+xf86DisableInterrupts()
 {
 	if (!ExtendedEnabled)
 	{
@@ -169,7 +140,8 @@ Bool xf86DisableInterrupts()
 	return(TRUE);
 }
 
-void xf86EnableInterrupts()
+void
+xf86EnableInterrupts()
 {
 	if (!ExtendedEnabled)
 	{

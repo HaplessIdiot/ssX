@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.1 1997/03/06 23:14:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.1.2.1 1998/07/03 13:43:38 dawes Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -58,7 +58,7 @@
  * properly. This could cause some drawing anolomies, use XR20[0] instead
  */
 #define ctBLTWAIT \
-  while(*(volatile unsigned int *)(ctMMIOBase + BR(0x4)) & \
+  while(*(volatile unsigned int *)(cPtr->MMIOBase + BR(0x4)) & \
 	(0x80000000)){}
 #else
 #if 0
@@ -87,65 +87,43 @@
 #endif
 
 #define ctSETROP(op) \
-  *(unsigned int *)(ctMMIOBase + BR(0x4)) = (op)
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x4)) = (op)
 
 #define ctSETMONOCTL(op) \
-  *(unsigned int *)(ctMMIOBase + BR(0x3)) = (op)
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x3)) = (op)
 
 #define ctSETSRCADDR(srcAddr) \
-  *(unsigned int *)(ctMMIOBase + BR(0x6)) = (srcAddr)&0x7FFFFFL
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x6)) = (srcAddr)&0x7FFFFFL
 
 #define ctSETDSTADDR(dstAddr) \
-  *(unsigned int *)(ctMMIOBase + BR(0x7)) = (dstAddr)&0x7FFFFFL
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x7)) = (dstAddr)&0x7FFFFFL
 
 #define ctSETPITCH(srcPitch,dstPitch) \
-  *(unsigned int *)(ctMMIOBase + BR(0x0)) = (((dstPitch)&0xFFFF)<<16)| \
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x0)) = (((dstPitch)&0xFFFF)<<16)| \
       ((srcPitch)&0xFFFF)
 
 #define ctSETHEIGHTWIDTHGO(Height,Width)\
-  *(unsigned int *)(ctMMIOBase + BR(0x8)) = (((Height)&0xFFFF)<<16)| \
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x8)) = (((Height)&0xFFFF)<<16)| \
       ((Width)&0xFFFF)
 
 #define ctSETPATSRCADDR(srcAddr)\
-  *(unsigned int *)(ctMMIOBase + BR(0x5)) = (srcAddr)&0x1FFFFFL
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x5)) = (srcAddr)&0x1FFFFFL
 
 #define ctSETBGCOLOR8(bgColor)\
-  *(unsigned int *)(ctMMIOBase + BR(0x1)) = ((bgColor)&0xFF)
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((bgColor)&0xFF)
 
 #define ctSETBGCOLOR16(bgColor)\
-  *(unsigned int *)(ctMMIOBase + BR(0x1)) = ((bgColor)&0xFFFF)
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((bgColor)&0xFFFF)
 
 #define ctSETBGCOLOR24(bgColor)\
-  *(unsigned int *)(ctMMIOBase + BR(0x1)) = ((bgColor)&0xFFFFFF)
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((bgColor)&0xFFFFFF)
 
 #define ctSETFGCOLOR8(fgColor)\
-  *(unsigned int *)(ctMMIOBase + BR(0x2)) = ((fgColor)&0xFF)
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((fgColor)&0xFF)
 
 #define ctSETFGCOLOR16(fgColor)\
-  *(unsigned int *)(ctMMIOBase + BR(0x2)) = ((fgColor)&0xFFFF)
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((fgColor)&0xFFFF)
 
 #define ctSETFGCOLOR24(fgColor)\
-  *(unsigned int *)(ctMMIOBase + BR(0x2)) = ((fgColor)&0xFFFFFF)
+  *(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((fgColor)&0xFFFFFF)
 
-/* Definitions for word/quadword alignment in blitter */
-#if defined(i386)
-# define INTSIZE 2
-#else
-# if defined(__arm32__)
-#  define INTSIZE 4
-# endif
-#endif
-
-#if INTSIZE == 8
-#define WRITEQUAD(dst, src)  *(dst) = *(src)++
-#define WRITEQUAD_NOINC(dst, src) *(dst) = *(src)
-#elif INTSIZE == 4
-#define WRITEQUAD(dst, src)  *(dst) = *(src)++; *(dst) = *(src)++
-#define WRITEQUAD_NOINC(dst, src) *(dst) = *(src); *(dst) = *((src) + 1)
-#elif INTSIZE == 2
-#define WRITEQUAD(dst, src)  *(dst) = *(src)++; *(dst) = *(src)++; \
-		    *(dst) = *(src)++; *(dst) = *(src)++
-#define WRITEQUAD_NOINC(dst, src) *(dst) = *(src); *(dst) = *((src) + 1); \
-                    *(dst) = *((src) + 2); *(dst) = *((src) + 3)
-#endif
-	

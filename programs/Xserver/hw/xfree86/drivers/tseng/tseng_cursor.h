@@ -1,4 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.h,v 1.2 1997/05/04 05:26:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.h,v 1.3.2.1 1998/07/24 11:36:34 dawes Exp $ */
+
+
+
 
 
 /* Variables defined in tseng_cursor.c. */

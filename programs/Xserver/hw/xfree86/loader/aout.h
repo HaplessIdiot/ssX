@@ -1,7 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.2 1997/02/20 10:01:20 hohndel Exp $ */
-
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.2.2.1 1998/05/22 13:47:19 dawes Exp $ */
 
 /*
  * Borrowed from NetBSD's exec_aout.h
@@ -42,17 +39,6 @@
 
 /* Get prototype for ntohl. */
 #include <ctype.h>
-#if 0
-#if defined(SVR4) || defined(Mips)
-#include <sys/endian.h>
-#elif defined(CSRG_BASED)
-#include <machine/endian.h>
-#elif defined(linux)
-#include <asm/byteorder.h>
-#elif defined(Lynx)
-#include <bsd/in.h>
-#endif
-#endif
 
 #define __LDPGSZ        4096U
 #ifndef AOUT_PAGSIZ

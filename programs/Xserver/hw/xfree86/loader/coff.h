@@ -1,7 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coff.h,v 1.3 1997/03/04 10:39:38 hohndel Exp $ */
-
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coff.h,v 1.3.2.1 1998/05/22 13:47:22 dawes Exp $ */
 
 
 /* This file was implemented from the information in the book

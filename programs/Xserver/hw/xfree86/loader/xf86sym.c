@@ -1,7 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.34 1998/06/27 12:54:28 hohndel Exp $ */
-
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.24.2.30 1998/07/19 13:22:06 dawes Exp $ */
 
 /*
  *
@@ -31,58 +28,23 @@
 #include "mi.h"
 #include "cursor.h"
 #include "mipointer.h"
-#include "resource.h"
-#include "extnsionst.h"
-#include "scrnintstr.h"
+#include "loaderProcs.h"
 #include "xf86.h"
-#include "xf86Procs.h"
-#include "accel/cache/xf86bcache.h"
-#include "accel/cache/xf86fcache.h"
-#include "accel/cache/xf86text.h"
-#include "xf86_HWlib.h"
-#include "xf86_OSlib.h"
-#include "xf86_PCI.h"
-#include "xf86_Config.h"
+#include "xf86Priv.h"
+#define XF86_OS_PRIVS
+#include "xf86_OSproc.h"
+#include "xf86Pci.h"
+#include "xf86Parser.h"
+#include "xf86Config.h"
 #include "xf86Xinput.h"
-#include "CirrusClk.h"
-#include "vga.h"
-
-extern void xf86Bzero(void *, unsigned int);
-extern int xf86GetBitsPerPixel(int);
-extern void *xf86Memset(void *, int, unsigned int);
-extern void *xf86Memmove(void *, const void *, unsigned int);
-extern Bool xf86SetExternClock(char *, int, int);
-extern int xf86Sprintf(char *, const char *, ...);
-extern char *xf86Strerror(int);
-extern int xf86Strncmp(const char *, const char *, unsigned int);
-extern char *xf86Strncpy(char *, const char *, unsigned int);
-extern void xf86Usleep(unsigned long);
-extern int xf86Execl(char *, char *, char *, char *, char *);
+#include "opaque.h"
+#include "dgaproc.h"
+#include "loader.h"
 
 #define DONT_DEFINE_WRAPPERS
-#include "xf86_libc.h"
 #include "xf86_ansic.h"
 
-extern Bool xf86Resetting;
-extern miPointerScreenFuncRec xf86PointerScreenFuncs;
-extern char **xf86VisualNames;
-extern vgaVideoChipPtr videoDrivers[];
-extern unsigned char (* dacInTi3026IndReg)(unsigned char);
-extern void (* dacOutTi3026IndReg)(unsigned char,unsigned char,unsigned char);
-extern int LoaderDefaultFunc(void);
-extern void STG1703magic(int);
-extern unsigned char STG1703getIndex(unsigned int);
-extern void STG1703setIndex(unsigned int, unsigned char);
-
-extern int vgaIOBase,vgaCRReg,vgaCRIndex;
-extern char *xf86ModulePath;
-extern LoadModule();
-extern int LoaderCheckUnresolved();
-#ifdef DPMSExtension
-extern void DPMSSet(CARD16);
-#endif
-extern Bool (*GlxInitVisualsPtr)();
-
+/* XXX Should get all of these from elsewhere */
 #if defined (PowerMAX_OS)
 #undef inb
 #undef inw
@@ -91,13 +53,12 @@ extern Bool (*GlxInitVisualsPtr)();
 #undef outw
 #undef outl
 
-void outb(unsigned int a, unsigned char b);
-void outw(unsigned int a, unsigned short w); 
-void outl(unsigned int a, unsigned long l); 
+extern void outb(unsigned int a, unsigned char b);
+extern void outw(unsigned int a, unsigned short w);
+extern void outl(unsigned int a, unsigned long l);
 extern unsigned char  inb(unsigned int a);
 extern unsigned short inw(unsigned int a);
 extern unsigned long  inl(unsigned int a);
-
 #endif
 
 #if defined(__alpha__)
@@ -109,10 +70,7 @@ extern unsigned int _inw(unsigned short port);
 extern unsigned int _inl(unsigned short port);
 
 extern void xf86WriteSparse16(int, pointer, unsigned long);
-
-extern void SlowBCopyToBus(char *src, char *dst, int count);
-extern void SlowBCopyFromBus(char *src, char *dst, int count);
-
+   
 extern void* __divl(long, long);
 extern void* __reml(long, long);
 extern void* __divlu(long, long);
@@ -139,41 +97,168 @@ void _savef28();
 void _savef29();
 #endif
 
+/* XXX This needs to be cleaned up for the new design */
+
+#ifdef DPMSExtension
+extern void DPMSSet(CARD16);
+#endif
+
 /* XFree86 things */
 
 LOOKUP xfree86LookupTab[] = {
+
+   /* Public OSlib functions */
    SYMFUNC(xf86ReadBIOS)
-   SYMFUNC(xf86EnableIOPorts)
-   SYMFUNC(xf86DisableIOPorts)
-   SYMFUNC(xf86StringToToken)
+   SYMFUNC(xf86EnableIO)
+   SYMFUNC(xf86DisableIO)
+   SYMFUNC(xf86DisableInterrupts)
+   SYMFUNC(xf86EnableInterrupts)
    SYMFUNC(xf86LinearVidMem)
-   SYMFUNC(xf86DeleteMode)
-   SYMFUNC(xf86GetClocks)
-   SYMFUNC(xf86LookupMode)
-   SYMFUNC(xf86FlipPixels)
-   SYMFUNC(xf86UnMapDisplay)
-   SYMFUNC(xf86MapDisplay)
    SYMFUNC(xf86MapVidMem)
-   SYMFUNC(xf86MapPciMem)
-   SYMFUNC(xf86InitViewport)
-   SYMFUNC(xf86VerifyOptions)
-#if 0
-   SYMFUNC(xf86ccdDoBitblt)
-   SYMFUNC(xf86ccdXAAScreenInit)
-#endif
-   SYMFUNC(SlowBcopy)
-   SYMFUNC(BusToMem)
-   SYMFUNC(MemToBus)
-   SYMFUNC(StrCaseCmp)
-   SYMFUNC(SetTimeSinceLastInputEvent)
-   SYMFUNC(GetTimeInMillis)
-   SYMFUNC(xf86CheckMode)
-   SYMFUNC(xf86ZoomViewport)
+   SYMFUNC(xf86UnMapVidMem)
+   SYMFUNC(xf86IODelay)
+   SYMFUNC(xf86SlowBcopy)
+   SYMFUNC(xf86BusToMem)
+   SYMFUNC(xf86MemToBus)
+   SYMFUNC(xf86OpenSerial)
+   SYMFUNC(xf86SetSerial)
+   SYMFUNC(xf86ReadSerial)
+   SYMFUNC(xf86WriteSerial)
+   SYMFUNC(xf86CloseSerial)
+
+
+   /* xf86Bus.c */
+   SYMFUNC(xf86CheckPciSlot)
+   SYMFUNC(xf86ClaimPciSlot)
+   SYMFUNC(xf86ReleasePciSlot)
+   SYMFUNC(xf86GetPciVideoInfo)
+   SYMFUNC(xf86GetPciInfoForScreen)
+   SYMFUNC(xf86CheckIsaSlot)
+   SYMFUNC(xf86ClaimIsaSlot)
+   SYMFUNC(xf86ReleaseIsaSlot)
+   SYMFUNC(xf86FreeBusSlots)
+   SYMFUNC(xf86ParsePciBusString)
+   SYMFUNC(xf86ComparePciBusString)
+
+   /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)
+   SYMFUNC(xf86SetScreenLayout)
+   SYMFUNC(xf86SetViewport)
+   SYMFUNC(xf86ZoomLocked)
+   SYMFUNC(xf86ZoomViewport)
+   SYMFUNC(xf86GetPointerScreenFuncs)
+
+   /* xf86DGA.c */
+   /* For drivers */
+   SYMFUNC(DGACreateInfoRec)
+   SYMFUNC(DGADestroyInfoRec)
+   SYMFUNC(DGAInit)
+   /* For extmod */
+   SYMFUNC(DGAAvailable)
+   SYMFUNC(DGAGetParameters)
+   SYMFUNC(DGAScreenActive)
+   SYMFUNC(DGASetViewPort)
+   SYMFUNC(DGAEnableDirectMode)
+   SYMFUNC(DGADisableDirectMode)
+   SYMFUNC(DGAGetViewPortSize)
+   SYMFUNC(DGAGetDirectMode)
+   SYMFUNC(DGAGetVidPage)
+   SYMFUNC(DGASetVidPage)
+   SYMFUNC(DGAGetFlags)
+   SYMFUNC(DGASetFlags)
+   SYMFUNC(DGAViewPortChanged)
+
+   /* xf86DPMS.c */
+   SYMFUNC(xf86DPMSInit)
+
+   /* xf86Events.c */
+   SYMFUNC(SetTimeSinceLastInputEvent)
+
+   /* xf86Helper.c */
+   SYMFUNC(xf86AddDriver)
+   SYMFUNC(xf86DeleteDriver)
+   SYMFUNC(xf86AllocateScreen)
+   SYMFUNC(xf86DeleteScreen)
+   SYMFUNC(xf86AllocateScrnInfoPrivateIndex)
+   SYMFUNC(xf86SetDepthBpp)
+   SYMFUNC(xf86PrintDepthBpp)
+   SYMFUNC(xf86SetWeight)
+   SYMFUNC(xf86SetDefaultVisual)
+   SYMFUNC(xf86SetGamma)
+   SYMFUNC(xf86SetDpi)
+   SYMFUNC(xf86SetBlackWhitePixels)
+   SYMFUNC(xf86SaveRestoreImage)
+   SYMFUNC(xf86VDrvMsgVerb)
+   SYMFUNC(xf86DrvMsgVerb)
+   SYMFUNC(xf86DrvMsg)
+   SYMFUNC(xf86MsgVerb)
+   SYMFUNC(xf86Msg)
+   SYMFUNC(xf86ErrorFVerb)
+   SYMFUNC(xf86ErrorF)
+   SYMFUNC(xf86TokenToString)
+   SYMFUNC(xf86StringToToken)
+   SYMFUNC(xf86ShowClocks)
+   SYMFUNC(xf86PrintChipsets)
+   SYMFUNC(xf86MatchDevice)
+   SYMFUNC(xf86MatchPciInstances)
+   SYMFUNC(xf86GetVerbosity)
+   SYMFUNC(xf86GetVisualName)
+   SYMFUNC(xf86GetBpp)
+   SYMFUNC(xf86GetDepth)
+   SYMFUNC(xf86GetWeight)
+   SYMFUNC(xf86GetGamma)
+   SYMFUNC(xf86GetFlipPixels)
+   SYMFUNC(xf86GetServerName)
+   SYMFUNC(xf86SetDefaultColorVisualClass)
+   SYMFUNC(xf86GetDefaultColorVisualClass)
+   SYMFUNC(xf86ServerIsExiting)
+   SYMFUNC(xf86ServerIsResetting)
+   SYMFUNC(xf86CaughtSignal)
+   SYMFUNC(xf86GetClocks)
+   SYMFUNC(xf86LoadSubModule)
+
+   /* xf86Mode.c */
+   SYMFUNC(xf86GetNearestClock)
+   SYMFUNC(xf86ModeStatusToString)
+   SYMFUNC(xf86LookupMode)
+   SYMFUNC(xf86CheckModeForMonitor)
+   SYMFUNC(xf86InitialCheckModeForDriver)
+   SYMFUNC(xf86CheckModeForDriver)
+   SYMFUNC(xf86ValidateModes)
+   SYMFUNC(xf86DeleteMode)
+   SYMFUNC(xf86PruneDriverModes)
+   SYMFUNC(xf86PruneMonitorModes)
+   SYMFUNC(xf86SetCrtcForModes)
+   SYMFUNC(xf86PrintModes)
+
+   /* xf86Option.c */
+   SYMFUNC(xf86CollectOptions)
+   SYMFUNC(xf86FindOption)
+   SYMFUNC(xf86FindOptionValue)
+   SYMFUNC(xf86MarkOptionUsed)
+   SYMFUNC(xf86MarkOptionUsedByName)
+   SYMFUNC(xf86ShowUnusedOptions)
+   SYMFUNC(xf86ProcessOptions)
+   SYMFUNC(xf86TokenToOptinfo)
+   SYMFUNC(xf86IsOptionSet)
+   SYMFUNC(xf86GetOptValString)
+   SYMFUNC(xf86GetOptValInteger)
+   SYMFUNC(xf86GetOptValULong)
+   SYMFUNC(xf86GetOptValReal)
+   SYMFUNC(xf86GetOptValBool)
+   SYMFUNC(xf86NameCmp)
+
+   /* xf86fbman.c */
+   SYMFUNC(xf86InitFBManager)
+   SYMFUNC(xf86RegisterFreeBoxCallback)
+
+   /* Misc */
+   SYMFUNC(GetTimeInMillis)
+
+   /* XXX Check these */
    SYMFUNC(xf86MouseInit)
    SYMFUNC(xf86SetKbdRepeat)
-   SYMFUNC(xf86GetToken)
-   SYMFUNC(xf86ConfigError)
+
 #ifdef XINPUT
    SYMFUNC(xf86AlwaysCore)
    SYMFUNC(xf86PostMotionEvent)
@@ -184,36 +269,24 @@ LOOKUP xfree86LookupTab[] = {
 #ifdef DPMSExtension
    SYMFUNC(DPMSSet)
 #endif
-#ifdef XQUEUE
-   SYMFUNC(xf86XqueKbdProc)
-   SYMFUNC(xf86XqueMseProc)
-   SYMFUNC(xf86XqueEvents)
-#endif
-   SYMFUNC(xf86SetCurrentScreen)
-   SYMFUNC(xf86GetCurrentScreen)
-   SYMFUNC(xf86GetConsoleFD)
 
+#if 0 /* we want to move the hw stuff in a module */
    SYMFUNC(xf86dactopel)
    SYMFUNC(xf86dactocomm)
    SYMFUNC(xf86getdaccomm)
    SYMFUNC(xf86setdaccomm)
    SYMFUNC(xf86setdaccommbit)
    SYMFUNC(xf86clrdaccommbit)
-   SYMFUNC(xf86TokenToString)
    SYMFUNC(s3IBMRGB_Probe)
    SYMFUNC(s3IBMRGB_Init)
    SYMFUNC(s3InIBMRGBIndReg)
    SYMFUNC(Ti3025SetClock)
-   SYMFUNC(Ti3025CalcNMP)
    SYMFUNC(Ti3026SetClock)
    SYMFUNC(Ti3030SetClock)
-   SYMFUNC(AltICD2061CalcClock)
    SYMFUNC(AltICD2061SetClock)
-   SYMFUNC(et4000_init_clock)
    SYMFUNC(SC11412SetClock)
    SYMFUNC(ICS2595SetClock)
    SYMFUNC(Att409SetClock)
-   SYMFUNC(Chrontel8391CalcClock)
    SYMFUNC(Chrontel8391SetClock)
    SYMFUNC(IBMRGBSetClock)
    SYMFUNC(ICS5342SetClock)
@@ -224,13 +297,14 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(ET6000SetClock)
    SYMFUNC(S3AuroraSetClock)
    SYMFUNC(commonCalcClock)
-   SYMFUNC(xf86UnMapVidMem)
+   SYMFUNC(xf86scanpci)
+   SYMFUNC(xf86writepci)
+   SYMFUNC(xf86cleanpci)
    SYMFUNC(dacOutTi3026IndReg)
    SYMFUNC(dacInTi3026IndReg)
    SYMFUNC(s3OutIBMRGBIndReg)
    SYMFUNC(CirrusFindClock)
    SYMFUNC(CirrusSetClock)
-   SYMFUNC(GlennsIODelay)
    SYMFUNC(STG1703getIndex)
    SYMFUNC(STG1703setIndex)
    SYMFUNC(STG1703magic)
@@ -238,150 +312,148 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(Et4000AltICD2061SetClock)
    SYMFUNC(ET4000stg1703SetClock)
    SYMFUNC(ET4000gendacSetClock)
-   SYMFUNC(xf86DisableInterrupts)
-   SYMFUNC(xf86EnableInterrupts)
-   SYMFUNC(xf86GetNearestClock)
-	   
-   /* Public PCI access functions */
-   SYMFUNC(pciInit)
+
+#endif
+   
    SYMFUNC(pciFindFirst)
    SYMFUNC(pciFindNext)
-   SYMFUNC(pciEnableIO)
-   SYMFUNC(pciDisableIO)
-   SYMFUNC(pciReadLong)
-   SYMFUNC(pciReadWord)
-   SYMFUNC(pciReadByte)
-   SYMFUNC(pciWriteLong)
-   SYMFUNC(pciWriteWord)
    SYMFUNC(pciWriteByte)
+   SYMFUNC(pciWriteWord)
+   SYMFUNC(pciWriteLong)
+   SYMFUNC(pciReadByte)
+   SYMFUNC(pciReadWord)
+   SYMFUNC(pciReadLong)
+   SYMFUNC(pciTag)
    SYMFUNC(pciBusAddrToHostAddr)
    SYMFUNC(pciHostAddrToBusAddr)
-   SYMFUNC(pciTag)
-	   
-   SYMFUNC(xf86scanpci)
-   SYMFUNC(xf86writepci)
-   SYMFUNC(xf86cleanpci)
-   SYMFUNC(xf86lockpci)
-
+   SYMFUNC(xf86MapPciMem)
+#ifdef __alpha__
+   SYMFUNC(xf86MapPciMemSparse)
+#endif
    SYMFUNC(AllocatePixmapPrivateIndex)
    SYMFUNC(AllocatePixmapPrivate)
    SYMFUNC(LoaderDefaultFunc)
    SYMFUNC(LoadModule)
+   SYMFUNC(LoadSubModule)
+   SYMFUNC(DuplicateModule)
+   SYMFUNC(LoaderErrorMsg)
    SYMFUNC(xf86ModulePath)
    SYMFUNC(LoaderCheckUnresolved)
+   SYMFUNC(LoadExtension)
+   SYMFUNC(LoadFont)
 
-#undef abs
-   SYMFUNC(abs)
-	   
-/*
- * these here are our own interfaces to libc functions
- */
-  SYMFUNC(xf86abort)
-  SYMFUNC(xf86abs)
-  SYMFUNC(xf86acos)
-  SYMFUNC(xf86asin)
-  SYMFUNC(xf86atan)
-  SYMFUNC(xf86atan2)
-  SYMFUNC(xf86atof)
-  SYMFUNC(xf86atoi)
-  SYMFUNC(xf86atol)
-  SYMFUNC(xf86ceil)
-  SYMFUNC(xf86calloc)
-  SYMFUNC(xf86clearerr)
-  SYMFUNC(xf86close)
-  SYMFUNC(xf86cos)
-  SYMFUNC(xf86exit)
-  SYMFUNC(xf86exp)
-  SYMFUNC(xf86fabs)
-  SYMFUNC(xf86fclose)
-  SYMFUNC(xf86feof)
-  SYMFUNC(xf86ferror)
-  SYMFUNC(xf86fflush)
-  SYMFUNC(xf86fgetc)
-  SYMFUNC(xf86fgetpos)
-  SYMFUNC(xf86fgets)
-  SYMFUNC(xf86floor)
-  SYMFUNC(xf86fmod)
-  SYMFUNC(xf86fopen)
-  SYMFUNC(xf86fprintf)
-  SYMFUNC(xf86fputc)
-  SYMFUNC(xf86fputs)
-  SYMFUNC(xf86fread)
-  SYMFUNC(xf86free)
-  SYMFUNC(xf86freopen)
-  SYMFUNC(xf86fscanf)
-  SYMFUNC(xf86fseek)
-  SYMFUNC(xf86fsetpos)
-  SYMFUNC(xf86ftell)
-  SYMFUNC(xf86fwrite)
-  SYMFUNC(xf86getenv)
-  SYMFUNC(xf86ioctl)
-  SYMFUNC(xf86isalnum)
-  SYMFUNC(xf86isalpha)
-  SYMFUNC(xf86iscntrl)
-  SYMFUNC(xf86isdigit)
-  SYMFUNC(xf86isgraph)
-  SYMFUNC(xf86islower)
-  SYMFUNC(xf86isprint)
-  SYMFUNC(xf86ispunct)
-  SYMFUNC(xf86isspace)
-  SYMFUNC(xf86isupper)
-  SYMFUNC(xf86isxdigit)
-  SYMFUNC(xf86labs)
-  SYMFUNC(xf86log)
-  SYMFUNC(xf86log10)
-  SYMFUNC(xf86malloc)
-  SYMFUNC(xf86memchr)
-  SYMFUNC(xf86memcmp)
-  SYMFUNC(xf86memcpy)
+   /*
+    * these here are our own interfaces to libc functions
+    */
+   SYMFUNC(xf86abort)
+   SYMFUNC(xf86abs)
+   SYMFUNC(xf86acos)
+   SYMFUNC(xf86asin)
+   SYMFUNC(xf86atan)
+   SYMFUNC(xf86atan2)
+   SYMFUNC(xf86atof)
+   SYMFUNC(xf86atoi)
+   SYMFUNC(xf86atol)
+   SYMFUNC(xf86ceil)
+   SYMFUNC(xf86calloc)
+   SYMFUNC(xf86clearerr)
+   SYMFUNC(xf86close)
+   SYMFUNC(xf86cos)
+   SYMFUNC(xf86exit)
+   SYMFUNC(xf86exp)
+   SYMFUNC(xf86fabs)
+   SYMFUNC(xf86fclose)
+   SYMFUNC(xf86feof)
+   SYMFUNC(xf86ferror)
+   SYMFUNC(xf86fflush)
+   SYMFUNC(xf86fgetc)
+   SYMFUNC(xf86fgetpos)
+   SYMFUNC(xf86fgets)
+   SYMFUNC(xf86floor)
+   SYMFUNC(xf86fmod)
+   SYMFUNC(xf86fopen)
+   SYMFUNC(xf86fprintf)
+   SYMFUNC(xf86printf)
+   SYMFUNC(xf86fputc)
+   SYMFUNC(xf86fputs)
+   SYMFUNC(xf86fread)
+   SYMFUNC(xf86free)
+   SYMFUNC(xf86freopen)
+   SYMFUNC(xf86fscanf)
+   SYMFUNC(xf86fseek)
+   SYMFUNC(xf86fsetpos)
+   SYMFUNC(xf86ftell)
+   SYMFUNC(xf86fwrite)
+   SYMFUNC(xf86getenv)
+   SYMFUNC(xf86ioctl)
+   SYMFUNC(xf86isalnum)
+   SYMFUNC(xf86isalpha)
+   SYMFUNC(xf86iscntrl)
+   SYMFUNC(xf86isdigit)
+   SYMFUNC(xf86isgraph)
+   SYMFUNC(xf86islower)
+   SYMFUNC(xf86isprint)
+   SYMFUNC(xf86ispunct)
+   SYMFUNC(xf86isspace)
+   SYMFUNC(xf86isupper)
+   SYMFUNC(xf86isxdigit)
+   SYMFUNC(xf86labs)
+   SYMFUNC(xf86log)
+   SYMFUNC(xf86log10)
+   SYMFUNC(xf86hypot)
+   SYMFUNC(xf86malloc)
+   SYMFUNC(xf86memchr)
+   SYMFUNC(xf86memcmp)
+   SYMFUNC(xf86memcpy)
 #if defined(__powerpc__) && defined(Lynx)
-  /*
-   * The LynxOS compilers generate calls to memcpy to handle structure copies.
-   * This causes a problem both here and in shared libraries as there is no
-   * way to map the name of the call to the correct function.
-   */
-  SYMFUNC(memcpy)
+   /*
+    * The LynxOS compilers generate calls to memcpy to handle structure copies.
+    * This causes a problem both here and in shared libraries as there is no
+    * way to map the name of the call to the correct function.
+    */
+   SYMFUNC(memcpy) 
 #endif
-  SYMFUNC(xf86memmove)
-  SYMFUNC(xf86memset)
-  SYMFUNC(xf86modf)
-  SYMFUNC(xf86open)
-  SYMFUNC(xf86perror)
-  SYMFUNC(xf86pow)
-  SYMFUNC(xf86read)
-  SYMFUNC(xf86realloc)
-  SYMFUNC(xf86remove)
-  SYMFUNC(xf86rename)
-  SYMFUNC(xf86rewind)
-  SYMFUNC(xf86setbuf)
-  SYMFUNC(xf86setvbuf)
-  SYMFUNC(xf86sin)
-  SYMFUNC(xf86sprintf)
-  SYMFUNC(xf86sqrt)
-  SYMFUNC(xf86sscanf)
-  SYMFUNC(xf86strcat)
-  SYMFUNC(xf86strcmp)
-  SYMFUNC(xf86strcpy)
-  SYMFUNC(xf86strcspn)
-  SYMFUNC(xf86strerror)
-  SYMFUNC(xf86strlen)
-  SYMFUNC(xf86strncmp)
-  SYMFUNC(xf86strncpy)
-  SYMFUNC(xf86strpbrk)
-  SYMFUNC(xf86strrchr)
-  SYMFUNC(xf86strspn)
-  SYMFUNC(xf86strstr)
-  SYMFUNC(xf86strtod)
-  SYMFUNC(xf86strtok)
-  SYMFUNC(xf86strtol)
-  SYMFUNC(xf86strtoul)
-  SYMFUNC(xf86tan)
-  SYMFUNC(xf86tmpfile)
-  SYMFUNC(xf86tolower)
-  SYMFUNC(xf86toupper)
-  SYMFUNC(xf86ungetc)
-  SYMFUNC(xf86vfprintf)
-  SYMFUNC(xf86vsprintf)
+   SYMFUNC(xf86memmove)
+   SYMFUNC(xf86memset)
+   SYMFUNC(xf86modf)
+   SYMFUNC(xf86open)
+   SYMFUNC(xf86perror)
+   SYMFUNC(xf86pow)
+   SYMFUNC(xf86read)
+   SYMFUNC(xf86realloc)
+   SYMFUNC(xf86remove)
+   SYMFUNC(xf86rename)
+   SYMFUNC(xf86rewind)
+   SYMFUNC(xf86setbuf)
+   SYMFUNC(xf86setvbuf)
+   SYMFUNC(xf86sin)
+   SYMFUNC(xf86sprintf)
+   SYMFUNC(xf86sqrt)
+   SYMFUNC(xf86sscanf)
+   SYMFUNC(xf86strcat)
+   SYMFUNC(xf86strcmp)
+   SYMFUNC(xf86strcpy)
+   SYMFUNC(xf86strcspn)
+   SYMFUNC(xf86strerror)
+   SYMFUNC(xf86strlen)
+   SYMFUNC(xf86strncmp)
+   SYMFUNC(xf86strncpy)
+   SYMFUNC(xf86strpbrk)
+   SYMFUNC(xf86strchr)
+   SYMFUNC(xf86strrchr)
+   SYMFUNC(xf86strspn)
+   SYMFUNC(xf86strstr)
+   SYMFUNC(xf86strtod)
+   SYMFUNC(xf86strtok)
+   SYMFUNC(xf86strtol)
+   SYMFUNC(xf86strtoul)
+   SYMFUNC(xf86tan)
+   SYMFUNC(xf86tmpfile)
+   SYMFUNC(xf86tolower)
+   SYMFUNC(xf86toupper)
+   SYMFUNC(xf86ungetc)
+   SYMFUNC(xf86vfprintf)
+   SYMFUNC(xf86vsprintf)
   
 /* non-ANSI C functions */
    SYMFUNC(xf86opendir)
@@ -394,20 +466,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86usleep)
    SYMFUNC(xf86execl)
 
-/* helpful routines from the parser */
-   SYMFUNC(xf86FindDevice)
-   SYMFUNC(xf86FindLayout)
-   SYMFUNC(xf86FindMonitor)
-   SYMFUNC(xf86FindModeLine)
-   SYMFUNC(xf86FindScreen)
-   SYMFUNC(xf86FindDisplay)
-   SYMFUNC(xf86FindVendor)
-   SYMFUNC(xf86FindOption)
-   SYMFUNC(xf86FindOptionValue)
-   SYMFUNC(xf86OptionListCreate)
-   SYMFUNC(xf86OptionListMerge)
-   SYMFUNC(xf86OptionListFree)
-
 #if 0
 /* Serial access routines */
    SYMFUNC(xf86OpenSerial)
@@ -417,11 +475,12 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86CloseSerial)
 #endif
 
-   SYMFUNC(xf86getbitsperpixel)
+#if 0
    SYMFUNC(xf86setexternclock)
+#endif
    SYMFUNC(xf86getsecs)
    SYMFUNC(xf86fpossize)      /* for returning sizeof(fpos_t) */
-
+  
 #if defined(__alpha__)
    SYMFUNC(__divl)
    SYMFUNC(__reml)
@@ -436,7 +495,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(_inb)
    SYMFUNC(_inw)
    SYMFUNC(_inl)
-   SYMFUNC(SlowBCopyToBus)
    SYMFUNC(xf86MapVidMemSparse)
    SYMFUNC(xf86ReadSparse32)
    SYMFUNC(xf86ReadSparse16)
@@ -444,10 +502,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86WriteSparse32)
    SYMFUNC(xf86WriteSparse16)
    SYMFUNC(xf86WriteSparse8)
-   SYMFUNC(SlowBCopyFromBus)
    SYMFUNC(memcpy)
 #endif
-#if defined(__powerpc__)	   
+#if defined(__powerpc__)
    SYMFUNC(inb)
    SYMFUNC(inw)
    SYMFUNC(inl)
@@ -490,16 +547,16 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(_savef27)
    SYMFUNC(_savef28)
    SYMFUNC(_savef29)
-#endif	   
-#if PPCIO_DEBUG   
+#endif
+#if PPCIO_DEBUG
    SYMFUNC(debug_inb)
    SYMFUNC(debug_inw)
    SYMFUNC(debug_inl)
    SYMFUNC(debug_outb)
    SYMFUNC(debug_outw)
    SYMFUNC(debug_outl)
-#endif	   
-#endif	   
+#endif
+#endif
 
 /*
  * and now some variables
@@ -510,8 +567,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86stderr)
    SYMVAR(xf86errno)
 
-   SYMVAR(byte_reversed)
-   SYMVAR(InstalledMaps)
 #ifdef XF86MISC
    SYMVAR(xf86AllowMouseOpenFail)
    SYMVAR(xf86MiscModInDevAllowNonLocal)
@@ -521,43 +576,23 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86VidModeEnabled)
    SYMVAR(xf86VidModeAllowNonLocal)
 #endif
-   SYMVAR(xf86BestRefresh)
-   SYMVAR(xf86bpp)
-   SYMVAR(xf86weight)
-   SYMVAR(xf86Verbose)
-   SYMVAR(xf86PointerScreenFuncs)
-   SYMVAR(xf86VTSema)
-   SYMVAR(xf86Exiting)
-   SYMVAR(xf86Resetting)
-   SYMVAR(xf86VisualNames)
-   SYMVAR(xf86Info)
-   SYMVAR(xf86ProbeFailed)
-   SYMVAR(xf86Screens)
+   /* General variables (from xf86.h) */
    SYMVAR(xf86ScreenIndex)
    SYMVAR(xf86PixmapIndex)
-   SYMVAR(vgaCRIndex)
-   SYMVAR(vgaCRReg)
-   SYMVAR(vgaIOBase)
-   SYMVAR(xf86rGammaMap)
-   SYMVAR(xf86gGammaMap)
-   SYMVAR(xf86bGammaMap)
-   SYMVAR(xf86ccdScreenPrivateIndex)
-   SYMVAR(xf86xaaloaded)
-   SYMVAR(xf86issvgatype)
-   SYMVAR(xf86ismonotype)
-   SYMVAR(xf86ProbeOnly)
-   SYMVAR(videoDrivers)
-#ifdef OLD_PARSER
-   SYMVAR(TimingTab)
-#endif
+   SYMVAR(xf86Screens)
+   SYMVAR(InstalledMaps)
+   SYMVAR(byte_reversed)
+
 #ifdef DPMSExtension
    SYMVAR(DPMSEnabledSwitch)
    SYMVAR(DPMSDisabledSwitch)
    SYMVAR(defaultDPMSEnabled)
 #endif
-#if defined(__powerpc__) && !defined(NO_INLINE)	   
+
+#if defined(__powerpc__) && !defined(NO_INLINE)
    SYMVAR(ioBase)
-#endif	   
+#endif
+
   { 0, 0 },
 
 };

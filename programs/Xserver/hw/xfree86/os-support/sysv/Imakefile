@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.9 1997/08/26 10:01:43 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.8.2.3 1998/06/11 16:01:29 dawes Exp $
 
 
 
@@ -19,7 +19,7 @@ SRCS = sysv_init.c sysv_video.c sysv_io.c $(BIOS_MOD).c VTsw_usl.c \
        libc_wrapper.c
 
 OBJS = sysv_init.o sysv_video.o sysv_io.o $(BIOS_MOD).o VTsw_usl.o \
-       sysv_kbd.o std_kbdEv.o std_mouse.o posix_tty.o std_mseEv.o xqueue.o \
+       sysv_kbd.o std_kbdEv.o posix_tty.o std_mouse.o std_mseEv.o xqueue.o \
        libc_wrapper.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
@@ -29,15 +29,14 @@ SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
 #if !defined(SVR4Architecture)
-ObjectFromSpecialSource(bios_devmem,../shared/bios_devmem,/**/)
+LinkSourceFile(bios_devmem.c,../shared)
 #endif
-ObjectFromSpecialSource(VTsw_usl,../shared/VTsw_usl,/**/)
-ObjectFromSpecialSource(sysv_kbd,../shared/sysv_kbd,/**/)
-ObjectFromSpecialSource(std_kbdEv,../shared/std_kbdEv,/**/)
-ObjectFromSpecialSource(sysv_tty,../shared/sysv_tty,/**/)
-ObjectFromSpecialSource(posix_tty,../shared/posix_tty,/**/)
-ObjectFromSpecialSource(std_mouse,../shared/std_mouse,/**/)
-ObjectFromSpecialSource(std_mseEv,../shared/std_mseEv,/**/)
-ObjectFromSpecialSource(libc_wrapper,../shared/libc_wrapper,/**/)
+LinkSourceFile(VTsw_usl.c,../shared)
+LinkSourceFile(sysv_kbd.c,../shared)
+LinkSourceFile(std_kbdEv.c,../shared)
+LinkSourceFile(posix_tty.c,../shared)
+LinkSourceFile(std_mouse.c,../shared)
+LinkSourceFile(std_mseEv.c,../shared)
+LinkSourceFile(libc_wrapper.c,../shared)
 
 DependTarget()

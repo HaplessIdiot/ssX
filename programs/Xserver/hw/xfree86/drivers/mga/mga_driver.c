@@ -17,7 +17,7 @@
  * Contributors:
  *		Andrew Vanderstock, Melbourne, Australia
  *			vanderaj@mail2.svhm.org.au
- *		additions, corrections, cleanups, Mill II and BIOS stuff
+ *		additions, corrections, cleanups
  *
  *		Dirk Hohndel
  *			hohndel@XFree86.Org
@@ -35,268 +35,426 @@
  *		Leonard N. Zubkoff
  *			lnz@dandelion.com
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
- *
- *		Doug Merritt
- *			doug@netcom.com
- *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
+ *		Guy DESBIEF
+ *			g.desbief@aix.pacwan.net
+ *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.31 1998/06/27 12:54:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.10.2.43 1998/07/24 11:36:25 dawes Exp $ */
 
-#include "X.h"
-#include "input.h"
-#include "screenint.h"
+/*
+ * This is a first cut at a non-accelerated version to work with the
+ * new server design (DHD).
+ */
 
+
+/* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
-#include "xf86.h"
-#include "xf86Version.h"
-#include "xf86Priv.h"
-#include "xf86_OSlib.h"
-#include "xf86_HWlib.h"
-#include "xf86_PCI.h"
-#include "vga.h"
-#include "vgaPCI.h"
 
+/* All drivers should typically include these */
+#include "xf86.h"
+#include "xf86_OSproc.h"
+
+/* All drivers need this */
+#include "xf86_ansic.h"
+
+/* Drivers for PCI hardware need this */
+#include "xf86PciInfo.h"
+
+/* Drivers that need to access the PCI config space directly need this */
+#include "xf86Pci.h"
+
+/* All drivers using the vgahw module need this */
+/* This driver needs to be modified to not use vgaHW for multihead operation */
+#include "vgaHW.h"
+
+/* All drivers initialising the SW cursor need this */
+#include "mipointer.h"
+
+/* All drivers implementing backing store need this */
+#include "mibstore.h"
+
+#include "micmap.h"
+
+/*
+ * If using cfb, cfb.h is required.  Select the others for the bpp values
+ * the driver supports.
+ */
+#define PSZ 8	/* needed for cfb.h */
+#include "cfb.h"
+#undef PSZ
+#include "cfb16.h"
+#include "cfb24.h"
+#include "cfb32.h"
+
+/* These need to be checked */
+#if 0
 #ifdef XFreeXDGA
-#include "X.h"
-#include "Xproto.h"
-#include "scrnintstr.h"
-#include "servermd.h"
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
 #endif
-
-#define XCONFIG_FLAGS_ONLY
-#include "xf86_Config.h"
+#endif
 
 #include "mga_bios.h"
 #include "mga_reg.h"
 #include "mga.h"
+#include "xaa.h"
 
-extern vgaPCIInformation *vgaPCIInfo;
 
-#define DEFAULT_HW_CURSOR
-
-/*
- * Driver data structures.
- */
-#ifdef PC98_MGA
-pointer mmioBase = NULL;
-#endif
-
-MGABiosInfo MGABios;
-MGABios2Info MGABios2;
-
-PCITAG MGAPciTag;
-int MGAchipset;
-int MGArev;
-int MGAinterleave;
-int MGABppShft;
-int MGAusefbitblt;
-int MGAydstorg;
-unsigned char* MGAMMIOBase = NULL;
-#ifdef __alpha__
-unsigned char* MGAMMIOBaseDENSE = NULL;
-#endif
+/* Leave out Mystique for testing */
+#define NO_MYSTIQUE 1
 
 /*
  * Forward definitions for the functions that make up the driver.
  */
 
-static Bool		MGAProbe();
-static char *		MGAIdent();
-static void		MGAEnterLeave();
-static Bool		MGAInit();
-static Bool		MGAValidMode();
-static void *		MGASave();
-static void		MGARestore();
-static void		MGAAdjust();
-static void		MGAFbInit();
-static int		MGAPitchAdjust();
-static int		MGALinearOffset();
-static void		MGADisplayPowerManagementSet();
-static Bool		MGAScreenInit();
-static void		MGAInstallColormap();
+/* Mandatory functions */
+static void	MGAIdentify(int flags);
+static Bool	MGAProbe(DriverPtr drv, int flags);
+static Bool	MGAPreInit(ScrnInfoPtr pScrn, int flags);
+static Bool	MGAScreenInit(int Index, ScreenPtr pScreen, int argc,
+			      char **argv);
+static Bool	MGAEnterVT(int scrnIndex, int flags);
+static void	MGALeaveVT(int scrnIndex, int flags);
+static Bool	MGACloseScreen(int scrnIndex, ScreenPtr pScreen);
+static Bool	MGASaveScreen(ScreenPtr pScreen, Bool unblank);
 
-#ifdef PC98_MGA
-extern void		MGATi3026StoreColors();
+/* Required if the driver supports mode switching */
+static Bool	MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+/* Required if the driver supports moving the viewport */
+static void	MGAAdjustFrame(int scrnIndex, int x, int y, int flags);
+
+/* Optional functions */
+static void	MGAFreeScreen(int scrnIndex, int flags);
+static int	MGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
+			     int flags);
+#ifdef DPMSExtension
+static void	MGADisplayPowerManagementSet(ScrnInfoPtr pScrn,
+					     int PowerManagementMode,
+					     int flags);
 #endif
 
+/* Internally used functions */
+static Bool	MGAMapMem(ScrnInfoPtr pScrn);
+static Bool	MGAUnmapMem(ScrnInfoPtr pScrn);
+static void	MGASave(ScrnInfoPtr pScrn);
+static void	MGARestore(ScrnInfoPtr pScrn);
+static Bool	MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+
+#define VERSION 4000
+#define MGA_NAME "MGA"
+#define MGA_DRIVER_NAME "mga"
 /*
- * This data structure defines the driver itself.
+ * The major version is the 0xffff0000 part and the minor version is the
+ * 0x0000ffff part.
  */
-vgaVideoChipRec MGA = {
-	/* 
-	 * Function pointers
-	 */
-	MGAProbe,
-	MGAIdent,
-	MGAEnterLeave,
-	MGAInit,
-	MGAValidMode,
-	MGASave,
-	MGARestore,
-	MGAAdjust,
-	vgaHWSaveScreen,
-	(void (*)())NoopDDA,	/* GetMode, */
-	MGAFbInit,
-	(void (*)())NoopDDA,	/* SetRead, */
-	(void (*)())NoopDDA,	/* SetWrite, */
-	(void (*)())NoopDDA,	/* SetReadWrite, */
-	/*
-	 * This is the size of the mapped memory window, usually 64k.
-	 */
-	0x10000,		
-	/*
-	 * This is the size of a video memory bank for this chipset.
-	 */
-	0x10000,
-	/*
-	 * This is the number of bits by which an address is shifted
-	 * right to determine the bank number for that address.
-	 */
-	16,
-	/*
-	 * This is the bitmask used to determine the address within a
-	 * specific bank.
-	 */
-	0xFFFF,
-	/*
-	 * These are the bottom and top addresses for reads inside a
-	 * given bank.
-	 */
-	0x00000, 0x10000,
-	/*
-	 * And corresponding limits for writes.
-	 */
-	0x00000, 0x10000,
-	/*
-	 * Whether this chipset supports a single bank register or
-	 * seperate read and write bank registers.	Almost all chipsets
-	 * support two banks, and two banks are almost always faster
-	 */
-	FALSE,
-	/*
-	 * The chipset requires vertical timing numbers to be divided
-	 * by two for interlaced modes
-	 */
-	VGA_DIVIDE_VERT,
-	/*
-	 * This is a dummy initialization for the set of option flags
-	 * that this driver supports.	It gets filled in properly in the
-	 * probe function, if the probe succeeds (assuming the driver
-	 * supports any such flags).
-	 */
-	{0,},
-	/*
-	 * This determines the multiple to which the virtual width of
-	 * the display must be rounded for the 256-color server. 
-	 */
-	0,
-	/*
-	 * If the driver includes support for a linear-mapped frame buffer
-	 * for the detected configuratio this should be set to TRUE in the
-	 * Probe or FbInit function. 
-	 */
-	TRUE,
-	/*
-	 * This is the physical base address of the linear-mapped frame
-	 * buffer (when used).	Set it to 0 when not in use.
-	 */
-	0,
-	/*
-	 * This is the size of the linear-mapped frame buffer (when used).
-	 * Set it to 0 when not in use.
-	 */
-	0,
-	/*
-	 * This is TRUE if the driver has support for the given depth for 
-	 * the detected configuration. It must be set in the Probe function.
-	 * It most cases it should be FALSE.
-	 */
-	FALSE,	/* 1bpp */
-	FALSE,	/* 4bpp */
-	TRUE,	/* 8bpp */
-	FALSE,	/* 15bpp */
-	TRUE,	/* 16bpp */
-	TRUE,	/* 24bpp */
-	TRUE,	/* 32bpp */
-	/*
-	 * This is a pointer to a list of builtin driver modes.
-	 * This is rarely used, and in must cases, set it to NULL
-	 */
-	NULL,
-	/*
-	 * This is a factor that can be used to scale the raw clocks
-	 * to pixel clocks.	 This is rarely used, and in most cases, set
-	 * it to 1.
-	 */
-	1,     /* ClockMulFactor */
-	1     /* ClockDivFactor */
+#define MGA_DRIVER_VERSION 0x00010001
+
+/* 
+ * This contains the functions needed by the server after loading the
+ * driver module.  It must be supplied, and gets added the driver list by
+ * the Module Setup funtion in the dynamic case.  In the static case a
+ * reference to this is compiled in, and this requires that the name of
+ * this DriverRec be an upper-case version of the driver name.
+ */
+
+DriverRec MGA = {
+    VERSION,
+    "accelerated driver for Matrox Millennium and Mystique cards",
+    MGAIdentify,
+    MGAProbe,
+    NULL,
+    0
 };
 
+/* Supported chipsets */
+static SymTabRec MGAChipsets[] = {
+    { PCI_CHIP_MGA2064,		"mga2064w" },
+    { PCI_CHIP_MGA1064,		"mga1064sg" },
+    { PCI_CHIP_MGA2164,		"mga2164w" },
+    { PCI_CHIP_MGA2164_AGP,	"mga2164w AGP" },
+    {-1,			NULL }
+};
+
+/* List of PCI chipset names */
+static char *MGAPciNames[] = {
+    "mga2064w",
+    "mga1064sg",
+    "mga2164w",
+    "mga2164w AGP",
+    NULL
+};
+
+/* List of PCI IDs */
+static unsigned int MGAPciIds[] = {
+    PCI_CHIP_MGA2064,
+    PCI_CHIP_MGA1064,
+    PCI_CHIP_MGA2164,
+    PCI_CHIP_MGA2164_AGP,
+    ~0
+};
+
+typedef enum {
+    OPTION_SW_CURSOR,
+    OPTION_HW_CURSOR,
+    OPTION_PCI_RETRY,
+    OPTION_RGB_BITS,
+    OPTION_SYNC_ON_GREEN,
+    OPTION_NOACCEL,
+    OPTION_SHOWCACHE
+} MGAOpts;
+
+static OptionInfoRec MGAOptions[] = {
+#if 0
+    { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
+#endif
+    { OPTION_HW_CURSOR,		"HWcursor",	OPTV_TRI,	{0}, FALSE },
+    { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_RGB_BITS,		"RGBbits",	OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_SYNC_ON_GREEN,	"SyncOnGreen",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
+    { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
+};
+
+
 #ifdef XFree86LOADER
-XF86ModuleVersionInfo mgaVersRec =
+
+MODULEINITPROTO(mgaModuleInit);
+static MODULESETUPPROTO(mgaSetup);
+
+static XF86ModuleVersionInfo mgaVersRec =
 {
-	"mga_drv.o",
+	"mga",
 	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	0x00010001,
+	MGA_DRIVER_VERSION,
+	ABI_CLASS_VIDEODRV,			/* This is a video driver */
+	ABI_VIDEODRV_VERSION,
 	{0,0,0,0}
 };
 
 /*
- * this function returns the vgaVideoChipPtr for this driver
- *
- * its name has to be ModuleInit()
+ * This function is the module init function.
+ * Its name has to be the driver name followed by ModuleInit()
  */
 void
-ModuleInit(data,magic)
-    pointer  * data;
-    INT32    * magic;
+mgaModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
+	      ModuleTearDownProc *teardown)
 {
-    extern vgaVideoChipRec MGA;
-    static int cnt = 0;
-
-    switch(cnt++)
-    {
-    /* MAGIC_VERSION must be first in ModuleInit */
-    case 0:
-    	* data = (pointer) &mgaVersRec;
-	* magic= MAGIC_VERSION;
-	break;
-    case 1:
-	* data = (pointer) &MGA;
-	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
-	break;
-#ifdef PC98_MGA
-    case 2:
-	* data = (pointer)"libmga.a";
-	* magic= MAGIC_LOAD;
-	break;
-#endif
-    default:
-#ifndef PC98_MGA
-        xf86issvgatype = TRUE; /* later load the correct libvgaxx.a */
-#endif
-        * magic= MAGIC_DONE;
-	break;
-    }
-    return;
+    *vers = &mgaVersRec;
+    *setup = mgaSetup;
+    *teardown = NULL;
 }
+
+static pointer
+mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+{
+    static Bool setupDone = FALSE;
+
+    /* This module should be loaded only once, but check to be sure. */
+
+    if (!setupDone) {
+	setupDone = TRUE;
+	xf86AddDriver(&MGA, module, 0);
+
+	/*
+	 * Modules that this driver always requires may be loaded here
+	 * by calling LoadSubModule().
+	 *
+	 * Although this driver currently always requires the vgahw module
+	 * that dependency will be removed later, so we don't load it here.
+	 */
+
+	/*
+	 * The return value must be non-NULL on success even though there
+	 * is no TearDownProc.
+	 */
+	return (pointer)1;
+    } else {
+	if (errmaj) *errmaj = LDR_ONCEONLY;
+	return NULL;
+    }
+}
+
 #endif /* XFree86LOADER */
 
 /* 
  * ramdac info structure initialization
  */
-MGARamdacRec MGAdac = {
+static MGARamdacRec DacInit = {
 	FALSE, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL,
 	90000, /* maxPixelClock */
-	0
+	0, X_DEFAULT, X_DEFAULT, FALSE
 }; 
 
+static Bool
+MGAGetRec(ScrnInfoPtr pScrn)
+{
+    /*
+     * Allocate an MGARec, and hook it into pScrn->driverPrivate.
+     * pScrn->driverPrivate is initialised to NULL, so we can check if
+     * the allocation has already been done.
+     */
+    if (pScrn->driverPrivate != NULL)
+	return TRUE;
+
+    pScrn->driverPrivate = xnfcalloc(sizeof(MGARec), 1);
+    /* Initialise it */
+
+    MGAPTR(pScrn)->Dac = DacInit;
+    return TRUE;
+}
+
+static void
+MGAFreeRec(ScrnInfoPtr pScrn)
+{
+    if (pScrn->driverPrivate == NULL)
+	return;
+    xfree(pScrn->driverPrivate);
+    pScrn->driverPrivate = NULL;
+}
+
+
+/* Mandatory */
+static void
+MGAIdentify(int flags)
+{
+    xf86PrintChipsets(MGA_NAME, "driver for Matrox chipsets", MGAChipsets);
+}
+
+
+/* Mandatory */
+static Bool
+MGAProbe(DriverPtr drv, int flags)
+{
+    int i;
+    pciVideoPtr pPci, *usedPci;
+    GDevPtr *devSections;
+    GDevPtr *usedDevs;
+    int numDevSections;
+    int numUsed;
+    Bool foundScreen = FALSE;
+
+    /*
+     * The aim here is to find all cards that this driver can handle,
+     * and for the ones not already claimed by another driver, claim the
+     * slot, and allocate a ScrnInfoRec.
+     *
+     * This should be a minimal probe, and it should under no circumstances
+     * change the state of the hardware.  Because a device is found, don't
+     * assume that it will be used.  Don't do any initialisations other than
+     * the required ScrnInfoRec initialisations.  Don't allocate any new
+     * data structures.
+     *
+     * Since this test version still uses vgaHW, we'll only actually claim
+     * one for now, and just print a message about the others.
+     */
+
+    /*
+     * This bit is only here because we're still using vgaHW.  When we're
+     * not it will disappear.
+     */
+    if (xf86CheckIsaSlot(ISA_COLOR) == FALSE) {
+	return FALSE;
+    }
+
+    /*
+     * Next we check, if there has been a chipset override in the config file.
+     * For this we must find out if there is an active device section which
+     * is relevant, i.e., which has no driver specified or has THIS driver
+     * specified.
+     */
+
+    if ((numDevSections = xf86MatchDevice(MGA_DRIVER_NAME,
+					  &devSections)) <= 0) {
+	/*
+	 * There's no matching device section in the config file, so quit
+	 * now.
+	 */
+	return FALSE;
+    }
+
+    /*
+     * While we're VGA-dependent, can really only have one such instance, but
+     * we'll ignore that.
+     */
+
+    /*
+     * We need to probe the hardware first.  We then need to see how this
+     * fits in with what is given in the config file, and allow the config
+     * file info to override any contradictions.
+     */
+
+    /*
+     * All of the cards this driver supports are PCI, so the "probing" just
+     * amounts to checking the PCI data that the server has already collected.
+     */
+    if (xf86GetPciVideoInfo() == NULL) {
+	/*
+	 * We won't let anything in the config file override finding no
+	 * PCI video cards at all.  This seems reasonable now, but we'll see.
+	 */
+	return FALSE;
+    }
+
+    numUsed = xf86MatchPciInstances(MGA_NAME, PCI_VENDOR_MATROX,
+			MGAPciIds, MGAPciNames, devSections, numDevSections,
+			&usedDevs, &usedPci);
+    /* Free it since we don't need that list after this */
+    xfree(devSections);
+    devSections = NULL;
+    if (numUsed <= 0)
+	return FALSE;
+
+    for (i = 0; i < numUsed; i++) {
+	pPci = usedPci[i];
+
+	/*
+	 * Check that nothing else has claimed the slots.
+	 * For now we're checking for PCI_VGA, but that will change
+	 * to PCI_ONLY when we remove the vgaHW dependence.
+	 */
+	
+	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
+			      PCI_VGA)) {
+	    ScrnInfoPtr pScrn;
+
+	    /* Allocate a ScrnInfoRec and claim the slot */
+	    pScrn = xf86AllocateScreen(drv, 0);
+	    if (!xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
+				  PCI_VGA, pScrn->scrnIndex)) {
+		/* This can't happen */
+		FatalError("someone claimed the free slot!\n");
+	    }
+	    /* Fill in what we can of the ScrnInfoRec */
+	    pScrn->driverVersion = VERSION;
+	    pScrn->driverName	 = MGA_DRIVER_NAME;
+	    pScrn->name		 = MGA_NAME;
+	    pScrn->Probe	 = MGAProbe;
+	    pScrn->PreInit	 = MGAPreInit;
+	    pScrn->ScreenInit	 = MGAScreenInit;
+	    pScrn->SwitchMode	 = MGASwitchMode;
+	    pScrn->AdjustFrame	 = MGAAdjustFrame;
+	    pScrn->EnterVT	 = MGAEnterVT;
+	    pScrn->LeaveVT	 = MGALeaveVT;
+	    pScrn->FreeScreen	 = MGAFreeScreen;
+	    pScrn->ValidMode	 = MGAValidMode;
+	    pScrn->device	 = usedDevs[i];
+	    foundScreen = TRUE;
+	}
+    }
+    xfree(usedDevs);
+    xfree(usedPci);
+    return foundScreen;
+}
+	
+
+/*
+ * Should aim towards not relying on this.
+ */
 
 /*
  * MGAReadBios - Read the video BIOS info block.
@@ -305,7 +463,7 @@ MGARamdacRec MGAdac = {
  *   Warning! This code currently does not detect a video BIOS.
  *   In the future, support for motherboards with the mga2064w
  *   will be added (no video BIOS) - this is not a huge concern
- *   for me today though.
+ *   for me today though.  (XXX)
  *
  * EXTERNAL REFERENCES
  *   vga256InfoRec.BIOSbase	IN	Physical address of video BIOS.
@@ -323,111 +481,109 @@ MGARamdacRec MGAdac = {
  */ 
 
 static void
-MGAReadBios()
+MGAReadBios(ScrnInfoPtr pScrn)
 {
-	CARD8 	tmp[ 64 ];
-	CARD16 	offset;
+	CARD8 tmp[ 64 ];
+	CARD16 offset;
 	CARD8	chksum;
 	CARD8	*pPINSInfo; 
-	int i;
+	MGAPtr pMga;
+	MGABiosInfo *pBios;
+	MGABios2Info *pBios2;
+	
+	pMga = MGAPTR(pScrn);
+	pBios = &pMga->Bios;
+	pBios2 = &pMga->Bios2;
 
 	/* Make sure the BIOS is present */
-	xf86ReadBIOS( vga256InfoRec.BIOSbase, 0, tmp, sizeof( tmp ));
-
-	if ( tmp[ 0 ] != 0x55 || tmp[ 1 ] != 0xaa
-	     || xf86strncmp(( char * )( tmp + 45 ), "MATROX", 6 ) )
-        {
-		ErrorF( "%s %s: Video BIOS info block not detected!\n",
-			XCONFIG_PROBED, vga256InfoRec.name);
+	xf86ReadBIOS(pMga->BiosAddress, 0, tmp, sizeof( tmp ));
+	if (
+		tmp[ 0 ] != 0x55
+		|| tmp[ 1 ] != 0xaa
+		|| strncmp(( char * )( tmp + 45 ), "MATROX", 6 )
+	) {
+		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+			       "Video BIOS info block not detected!\n");
 		return;
 	}
 
 	/* Get the info block offset */
-	xf86ReadBIOS( vga256InfoRec.BIOSbase, 0x7ffc,
+	xf86ReadBIOS( pMga->BiosAddress, 0x7ffc,
 		( CARD8 * ) & offset, sizeof( offset ));
 
+
 	/* Let the world know what we are up to */
-	ErrorF( "%s %s: Video BIOS info block at 0x%08lx\n",
-		XCONFIG_PROBED, vga256InfoRec.name,
-		vga256InfoRec.BIOSbase + offset );	
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		   "Video BIOS info block at 0x%08lX\n",
+		   (long)(pMga->BiosAddress + offset));
 
 	/* Copy the info block */
-	switch (MGAchipset)
-	{
-		case PCI_CHIP_MGA2064:
-			xf86ReadBIOS( vga256InfoRec.BIOSbase, offset,
-				( CARD8 * ) & MGABios.StructLen, sizeof( MGABios ));
+	switch (pMga->Chipset){
+	   case PCI_CHIP_MGA2064:
+		xf86ReadBIOS( pMga->BiosAddress, offset,
+			( CARD8 * ) & pBios->StructLen, sizeof( MGABiosInfo ));
 		break;
-
-		default:
-			xf86ReadBIOS( vga256InfoRec.BIOSbase, offset,
-				( CARD8 * ) & MGABios2.PinID, sizeof( MGABios2 ));
+	   default:
+		xf86ReadBIOS( pMga->BiosAddress, offset,
+			( CARD8 * ) & pBios2->PinID, sizeof( MGABios2Info ));
 	}
+
 	
 	/* matrox millennium-2 and mystique pins info */
-	if ( MGABios2.PinID == 0x412e )
-	{
-		/* check that the pins info is correct */
-		if ( MGABios2.StructLen != 0x40 )
-		{
-			ErrorF( "%s %s: Video BIOS info block not detected!\n",
-		                XCONFIG_PROBED, vga256InfoRec.name);
-			return;
-		}
-		/* check that the chksum is correct */
-		chksum = 0;
-		pPINSInfo = (CARD8 *) &MGABios2.PinID;
-
-		for (i=0; i < MGABios2.StructLen; i++)
-		{
-			chksum += *pPINSInfo;
-			pPINSInfo++;
-		}
-
-		if ( chksum )
-		{
-			ErrorF("%s %s: Video BIOS info block did not checksum!\n",
-		                XCONFIG_PROBED, vga256InfoRec.name);
-			MGABios2.PinID = 0;
-			return;
-		}
-
-		/* last check */
-		if ( MGABios2.StructRev == 0 ) 
-		{
-			ErrorF( "%s %s: Video BIOS info block does not have a valid revision!\n",
-		                XCONFIG_PROBED, vga256InfoRec.name);
-			MGABios2.PinID = 0;
-			return;
-		}
-		ErrorF( "%s %s: Found and verified enhanced Video BIOS info block\n",
-			XCONFIG_PROBED, vga256InfoRec.name);
-
-#if DEBUG
-		ErrorF( "%s %s: MClk %d Clk4MB %d Clk8MB %d\n",
-			XCONFIG_PROBED, vga256InfoRec.name,
-			MGABios2.ClkMem,MGABios2.Clk4MB,MGABios2.Clk8MB);
-#endif
-	  	/* Set default MCLK values (scaled by 100 kHz) */
-		if ( MGABios2.ClkMem == 0 )
-		    MGABios2.ClkMem = 50;
-	  	if ( MGABios2.Clk4MB == 0 )
-		    MGABios2.Clk4MB = MGABios.ClkBase;
-		if ( MGABios2.Clk8MB == 0 )
-		    MGABios2.Clk8MB = MGABios.Clk4MB;
-		MGABios.StructLen = 0; /* not in use */
+	if ( pBios2->PinID == 0x412e ) {	
+	    int i;
+	    /* check that the pins info is correct */
+	    if ( pBios2->StructLen != 0x40 ) {
+		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+			"Video BIOS info block not detected!\n");
 		return;
-	}
-	else
-	{
+	    }
+	    /* check that the chksum is correct */
+	    chksum = 0;
+	    pPINSInfo = (CARD8 *) &pBios2->PinID;
+
+	    for (i=0; i < pBios2->StructLen; i++) {
+		chksum += *pPINSInfo;
+		pPINSInfo++;
+	    }
+
+	    if ( chksum ) {
+		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+			"Video BIOS info block did not checksum!\n");
+		pBios2->PinID = 0;
+		return;
+	    }
+
+	    /* last check */
+	    if ( pBios2->StructRev == 0 ) {
+		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		  "Video BIOS info block does not have a valid revision!\n");
+		pBios2->PinID = 0;
+		return;
+	    }
+
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		"Found and verified enhanced Video BIOS info block\n");
+
+
+	   /* Set default MCLK values (scaled by 100 kHz) */
+	   if ( pBios2->ClkMem == 0 )
+		pBios2->ClkMem = 50;
+	   if ( pBios2->Clk4MB == 0 )
+		pBios2->Clk4MB = pBios->ClkBase;
+	   if ( pBios2->Clk8MB == 0 )
+		pBios2->Clk8MB = pBios->Clk4MB;
+	   pBios->StructLen = 0; /* not in use */
+	   return;
+	} else {
 	  /* Set default MCLK values (scaled by 10 kHz) */
-	  if ( MGABios.ClkBase == 0 )
-		MGABios.ClkBase = 4500;
-  	  if ( MGABios.Clk4MB == 0 )
-		MGABios.Clk4MB = MGABios.ClkBase;
-	  if ( MGABios.Clk8MB == 0 )
-		MGABios.Clk8MB = MGABios.Clk4MB;
-	  MGABios2.PinID = 0; /* not in use */
+	  if ( pBios->ClkBase == 0 )
+		pBios->ClkBase = 4500;
+  	  if ( pBios->Clk4MB == 0 )
+		pBios->Clk4MB = pBios->ClkBase;
+	  if ( pBios->Clk8MB == 0 )
+		pBios->Clk8MB = pBios->Clk4MB;
+	  pBios2->PinID = 0; /* not in use */
 	  return;
 	}
 }
@@ -436,29 +592,23 @@ MGAReadBios()
  * MGACountRAM --
  *
  * Counts amount of installed RAM 
- * 
- * now counts in 2 MB increments, all the way to 16 MB.
- * also preserves fb contents, - ajv 970830
- * 
- * blocks = # of 2 MB blocks to check. = 4 on 8 MB addr, =8 on 16 MB addr 
  */
 
+/* XXX We need to get rid of this PIO (MArk) */
 static int
-MGACountRam(int blocks)
+MGACountRam(ScrnInfoPtr pScrn)
 {
-	int 	videoMem;
+	MGAPtr pMga = MGAPTR(pScrn);
 
-	videoMem = 2048;
-
-	if(MGA.ChipLinearBase)
+	if (pMga->FbAddress)
 	{
 		volatile unsigned char* base;
-		int			i, basePtr;
-		unsigned char 		tmp, seed, oldMem, cacheMem, newMem[8];
+		unsigned char tmp, tmp3, tmp5;
 	
-		base = xf86MapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION,
-			      (pointer)((unsigned long)MGA.ChipLinearBase),
-			      blocks * 2097152 );
+		base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
+				pMga->PciTag,
+				(pointer)((unsigned long)pMga->FbAddress),
+				8192 * 1024);
 	
 		/* turn MGA mode on - enable linear frame buffer (CRTCEXT3) */
 		outb(0x3DE, 3);
@@ -466,1069 +616,1303 @@ MGACountRam(int blocks)
 		outb(0x3DF, tmp | 0x80);
 	
 		/* write, read and compare method */
-
-		seed = 0x11;
-
-		/* clear out newMem */		
-		newMem[0] = newMem[1] = newMem[2] = newMem[3] = 0;
-		newMem[4] = newMem[5] = newMem[6] = newMem[7] = 0;
-
-		basePtr = 0x100000;		/* 1 MB */
-		cacheMem = base[0x5000];	/* cache flush spot */
-		for (i = 0; i < blocks; i++)
-		{	
-			oldMem = base[basePtr];		/* remember previous contents */
-			base[basePtr] = 0;		/* clear it */
-			base[basePtr] = seed;
-			if ( MGAchipset != PCI_CHIP_MGA2064 )
-				OUTREG8(MGAREG_CACHEFLUSH, 0);	/* flush the cache on the mystique */
-			else
-				base[0x5000] = 0x11; /* flush the cache */
-
-			newMem[i] = base[basePtr];
-			base[basePtr] = oldMem;		/* restore it to old val */
-			seed += 0x11;	
-			basePtr += 0x200000;		/* go forward another 2 MB */
-		}
-		base[0x5000] = cacheMem;	/* restore the state */
+		base[0x500000] = 0x55;
+		base[0x300000] = 0x33;
+		base[0x100000] = 0x11;
+		tmp5 = base[0x500000];
+		tmp3 = base[0x300000];
 
 		/* restore CRTCEXT3 state */
 		outb(0x3DE, 3);
 		outb(0x3DF, tmp);
 	
-		xf86UnMapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION, 
-				(pointer)base, blocks * 2097152 );
-		seed = 0x11;
-		videoMem = 0;
-		
-		for ( i=0; i < blocks; i++ )
-		{
-			if ( newMem[i] == seed )
-			{
-				seed += 0x11;
-				videoMem += 2048;
-			}
-		}
+		xf86UnMapVidMem(pScrn->scrnIndex, (pointer)base, 8192 * 1024);
+	
+		if(tmp5 == 0x55)
+			return 8192;
+		if(tmp3 == 0x33)
+			return 4096;
 	}
-	return videoMem;
+	return 2048;
 }
 
+
 /*
- * MGAIdent --
+ * GetAccelPitchValues -
  *
- * Returns the string name for supported chipset 'n'. 
+ * This function returns a list of display width (pitch) values that can
+ * be used in accelerated mode.
  */
-static char *
-MGAIdent(n)
-int n;
+static int *
+GetAccelPitchValues(ScrnInfoPtr pScrn)
 {
-	static char *chipsets[] = {"mga2064w", "mga1064sg", "mga2164w", "mga2164w AGP" };
+    int *linePitches = NULL;
+    int i, n = 0;
+    MGAPtr pMga = MGAPTR(pScrn);
+	
+    /* XXX ajv - 512, 576, and 1536 may not be supported
+       line pitches. see sdk pp 4-59 for more
+       details. Why anyone would want less than 640 is 
+       bizarre. (maybe lots of pixels tall?) */
 
-	if (n + 1 > sizeof(chipsets) / sizeof(char *))
-		return(NULL);
-	else
-		return(chipsets[n]);
+    /* The only line pitches the accelerator supports */
+#if 0		
+    int accelWidths[] = { 512, 576, 640, 768, 800, 960, 
+		    1024, 1152, 1280, 1536, 1600, 1920, 2048, 0 };
+#else
+    int accelWidths[] = { 640, 768, 800, 960, 1024, 1152, 1280,
+		    1600, 1920, 2048, 0 };
+#endif
+
+    for (i = 0; accelWidths[i] != 0; i++) {
+	if (accelWidths[i] % pMga->Rounding == 0) {
+	    n++;
+	    linePitches = (int *)xnfrealloc(linePitches, n * sizeof(int));
+	    linePitches[n - 1] = accelWidths[i];
+	}
+    }
+    /* Mark the end of the list */
+    if (n > 0) {
+	linePitches = (int *)xnfrealloc(linePitches, (n + 1) * sizeof(int));
+	linePitches[n] = 0;
+    }
+    return linePitches;
 }
 
-/*
- * MGAProbe --
- *
- * This is the function that makes a yes/no decision about whether or not
- * a chipset supported by this driver is present or not. 
- */
+
+/* Mandatory */
 static Bool
-MGAProbe()
+MGAPreInit(ScrnInfoPtr pScrn, int flags)
 {
-	unsigned long MGAMMIOAddr = 0;
-	pciConfigPtr pcr = NULL;
-	pciConfigPtr mgapcr = NULL;
-	int i;
-	CARD32 save;
+    pciVideoPtr *pciList = NULL;
+    MGAPtr pMga;
+    MessageType from;
+    int i;
+    int bytesPerPixel;
+    ClockRangePtr clockRanges;
+    char *mod = NULL;
 
-	/*
-	 * First we attempt to figure out if one of the supported chipsets
-	 * is present.
-	 */
-	if (vga256InfoRec.chipset) {
-		char *chipset;
-		for (i = 0; (chipset = MGAIdent(i)); i++) {
-			if (!StrCaseCmp(vga256InfoRec.chipset, chipset))
-				break;
-		}
-		if (!chipset)
-			return FALSE;
-	}
+    /*
+     * Note: This function is only called once at server startup, and
+     * not at the start of each server generation.  This means that
+     * only things that are persistent across server generations can
+     * be initialised here.  xf86Screens[] is (pScrn is a pointer to one
+     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()  
+     * are too, and should be used for data that must persist across
+     * server generations.
+     *
+     * Per-generation data should be allocated with
+     * AllocateScreenPrivateIndex() from the ScreenInit() function.
+     */
 
-	MGAchipset = 0;
-	i = 0;
-	if (vgaPCIInfo && vgaPCIInfo->AllCards) {
-	  while (pcr = vgaPCIInfo->AllCards[i++]) {
-		if (pcr->_vendor == PCI_VENDOR_MATROX) {
-			int id = pcr->_device;
+    /* The vgahw module should be loaded here when needed */
+    if (!xf86LoadSubModule(pScrn, "vgahw"))
+	return FALSE;
 
-			if (vga256InfoRec.chipID) {
-			    ErrorF("%s %s: MGA chipset override, using ChipID "
-				   "0x%04x instead of 0x%04x\n", XCONFIG_GIVEN,
-				   vga256InfoRec.name, vga256InfoRec.chipID,
-				   pcr->_device);
-			    id = vga256InfoRec.chipID;
-			}
-			switch(id) {
-				case PCI_CHIP_MGA2064:
-					MGAchipset = id;
-					vga256InfoRec.chipset = MGAIdent(0);
-				break;
-				case PCI_CHIP_MGA1064:
-					MGAchipset = id;
-					vga256InfoRec.chipset = MGAIdent(1);
-				break;
-				case PCI_CHIP_MGA2164:
-					MGAchipset = id;
-					vga256InfoRec.chipset = MGAIdent(2);
-				break;
-				case PCI_CHIP_MGA2164_AGP:
-					MGAchipset = id;
-					vga256InfoRec.chipset = MGAIdent(3);
-			}
-			if (MGAchipset)
-				mgapcr = pcr;
-		}
-	  }
-	} else return(FALSE);
+    /*
+     * Allocate a vgaHWRec
+     */
+    if (!vgaHWGetHWRec(pScrn))
+	return FALSE;
 
-	if (!MGAchipset) {
-		if (vga256InfoRec.chipset)
-			ErrorF("%s %s: MGA: unknown chipset\n",
-				XCONFIG_PROBED, vga256InfoRec.name);
-		return(FALSE);
-	}
+    /* Set pScrn->monitor */
+    pScrn->monitor = pScrn->confScreen->monitor;
 
-	pcr = mgapcr;
-	if (vga256InfoRec.chipRev) {
-		ErrorF("%s %s: MGA chipset override, using ChipRev "
-		       "0x%02x instead of 0x%02x\n", XCONFIG_GIVEN,
-		       vga256InfoRec.name, vga256InfoRec.chipRev, pcr->_rev_id);
-		MGArev = vga256InfoRec.chipRev;
-	} else {
-		MGArev = pcr->_rev_id;
-	}
-	/*
-	 *	OK. It's MGA
-	 */
-	 
-	MGAPciTag = pciTag(pcr->_bus, pcr->_cardnum, pcr->_func);
-
-	/* ajv changes to reflect actual values. see sdk pp 3-2. */
-	/* these masks just get rid of the crap in the lower bits */
-	/* XXX - ajv I'm assuming that pcr->_base0 is pci config space + 0x10 */
-	/*				and _base1 is another four bytes on */
-	/* XXX - these values are Intel byte order I believe. */
-	/* rev 3 (at least Mystique 220) has these swapped */
-	/* so does the Mill II */
-	
-	if ( pcr->_base0 ) {	/* details: mgabase1 sdk pp 4-11 */
-		if ( (MGAchipset == PCI_CHIP_MGA1064 && MGArev >= 3) ||
-			MGAchipset == PCI_CHIP_MGA2164 ||
-			MGAchipset == PCI_CHIP_MGA2164_AGP)
-			MGA.ChipLinearBase = pcr->_base0 & 0xff800000;
-		else
-			MGAMMIOAddr = pcr->_base0 & 0xffffc000;
-	} else {
-		if ( (MGAchipset == PCI_CHIP_MGA1064 && MGArev >= 3) ||
-			MGAchipset == PCI_CHIP_MGA2164 ||
-			MGAchipset == PCI_CHIP_MGA2164_AGP)
-			MGA.ChipLinearBase = 0;
-		else
-			MGAMMIOAddr = 0;
-	}
-	
-	if ( pcr->_base1 ) {	/* details: mgabase2 sdk pp 4-12 */
-		if ( (MGAchipset == PCI_CHIP_MGA1064 && MGArev >= 3) ||
-			MGAchipset == PCI_CHIP_MGA2164 ||
-			MGAchipset == PCI_CHIP_MGA2164_AGP)
-	
-			MGAMMIOAddr = pcr->_base1 & 0xffffc000;
-		else
-			MGA.ChipLinearBase = pcr->_base1 & 0xff800000;
-	} else {
-		if ( (MGAchipset == PCI_CHIP_MGA1064 && MGArev >= 3) ||
-			MGAchipset == PCI_CHIP_MGA2164 ||
-			MGAchipset == PCI_CHIP_MGA2164_AGP)
-			MGAMMIOAddr = 0;
-		else
-			MGA.ChipLinearBase = 0;
-	}
-
-	/* Allow this to be overriden in the XF86Config file */
-	if (vga256InfoRec.BIOSbase == 0) {
-		if ( pcr->_baserom )	/* details: rombase sdk pp 4-15 */
-			vga256InfoRec.BIOSbase = pcr->_baserom & 0xffff0000;
-		else
-			vga256InfoRec.BIOSbase = 0xc0000;
-	}
-	if (vga256InfoRec.MemBase)
-		MGA.ChipLinearBase = vga256InfoRec.MemBase;
-	if (vga256InfoRec.IObase)
-		MGAMMIOAddr = vga256InfoRec.IObase;
-		
-	if (!MGA.ChipLinearBase)
-		FatalError("MGA: Can't detect linear framebuffer address\n");
-	if (!MGAMMIOAddr)
-		FatalError("MGA: Can't detect IO registers address\n");
-	
-	if (xf86Verbose)
-	{
-		ErrorF("%s %s: Linear framebuffer at 0x%lX\n", 
-			vga256InfoRec.MemBase? XCONFIG_GIVEN : XCONFIG_PROBED,
-			vga256InfoRec.name, MGA.ChipLinearBase);
-		ErrorF("%s %s: MMIO registers at 0x%lX\n", 
-			vga256InfoRec.IObase? XCONFIG_GIVEN : XCONFIG_PROBED,
-			vga256InfoRec.name, MGAMMIOAddr);
-	}
-	
-
-#ifndef PC98_MGA
-	/* enable IO ports, etc. */
-	MGAEnterLeave(ENTER);
-#else
-	xf86EnableIOPorts(vga256InfoRec.scrnIndex);
-#endif
-
-	/*
-	 * Disable memory and I/O before mapping the MMIO area.
-	 * This avoids the MMIO area being read during the mapping
-	 * (which happens on some SVR4 versions), which will cause
-	 * a lockup.
-	 */
-
-	save = pciReadLong(MGAPciTag, PCI_CMD_STAT_REG);
-	pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
-		     save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-
-	/*
-	 * Map IO registers to virtual address space
-	 */ 
-	MGAMMIOBase =
-#if defined(__alpha__)
-			/* for Alpha, we need to map SPARSE memory,
-	     		since we need byte/short access */
-			  xf86MapVidMemSparse(
-#else /* __alpha__ */
-			  xf86MapVidMem(
-#endif /* __alpha__ */
-			    vga256InfoRec.scrnIndex, MMIO_REGION,
-			    (pointer)(MGAMMIOAddr), 0x4000);
-#if defined(SVR4)
-	/*
-	 * For some SVR4 versions, a 32-bit read is done for the first
-	 * location in each page when the page is first mapped.  If this
-	 * is done while memory and I/O are enabled, the result will be
-	 * a lockup, so make sure each page is mapped here while it is safe
-	 * to do so.
-	 */
-	{
-		CARD32 val;
-
-		val = *(volatile CARD32 *)(MGAMMIOBase+0);
-		val = *(volatile CARD32 *)(MGAMMIOBase+0x1000);
-		val = *(volatile CARD32 *)(MGAMMIOBase+0x2000);
-		val = *(volatile CARD32 *)(MGAMMIOBase+0x3000);
-	}
-#endif
-
-#ifdef __alpha__
-	MGAMMIOBaseDENSE =
-	  /* for Alpha, we need to map DENSE memory
-	     as well, for setting CPUToScreenColorExpandBase
-	   */
-		  xf86MapVidMem(
-			    vga256InfoRec.scrnIndex,
-			    MMIO_REGION,
-			    (pointer)(MGAMMIOAddr), 0x4000);
-#endif /* __alpha__ */
-
-#ifdef PC98_MGA
-	/* Re-enable memory (don't enable I/O) */
-	pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
-		     save | PCI_CMD_MEM_ENABLE);
-#else
-	/* Re-enable I/O and memory */
-	pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
-		     save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-#endif
-
-	if (!MGAMMIOBase)
-		FatalError("MGA: Can't map IO registers\n");
-	
-#ifdef PC98_MGA
-	/* overlap BIOS ROM onto frame buffer aperture */
-	save = pciReadLong(MGAPciTag, PCI_OPTION_REG);
-	pciWriteLong(MGAPciTag, PCI_OPTION_REG, save | 0x40000000);
-	pciWriteLong(MGAPciTag, 0x30, MGA.ChipLinearBase | 0x00000001);
-	vga256InfoRec.BIOSbase = MGA.ChipLinearBase;
-#endif
-
-	/*
-	 * Read the BIOS data struct
-	 */
-	MGAReadBios();
-#ifdef DEBUG
-	ErrorF("MGABios.RamdacType = 0x%x\n",MGABios.RamdacType);
-#endif
-
-#ifdef PC98_MGA
-	/* disable BIOS ROM */
-	pciWriteLong(MGAPciTag, 0x30, 0);
-	pciWriteLong(MGAPciTag, PCI_OPTION_REG, save);
-
-	/* set VGA I/O to MMIO redirection base */
-	mmioBase = MGAMMIOBase + 0x1c00;
-
-	/* enable IO ports, etc. */
-	MGAEnterLeave(ENTER);
-
-	switch (MGAchipset) {
-	case PCI_CHIP_MGA2064:
-		MGA3026Reset();
-		break;
-	case PCI_CHIP_MGA2164:
-		break;
-	case PCI_CHIP_MGA1064:
-		break;
-	}
-#endif /* PC98_MGA */
-	
-	/*
-	 * If the user has specified the amount of memory in the XF86Config
-	 * file, we respect that setting.
-	 */
-
-	if (!vga256InfoRec.videoRam)
-	   if ( MGAchipset == PCI_CHIP_MGA2164 || MGAchipset == PCI_CHIP_MGA2164_AGP )
-		vga256InfoRec.videoRam = MGACountRam(8); /* count to 16 mb */
-	   else
-		vga256InfoRec.videoRam = MGACountRam(4); /* count to 8 mb */
-	
-	MGA.ChipLinearSize = vga256InfoRec.videoRam;
-
-	/* sanity check ChipLinearSize */
-
-	if ( MGAchipset == PCI_CHIP_MGA2164 || MGAchipset == PCI_CHIP_MGA2164_AGP )
-	{
-		if ( MGA.ChipLinearSize < 2048 || MGA.ChipLinearSize > 16384 )
-		{
-			MGA.ChipLinearSize = 2048; /* nice safe size */
-			ErrorF("(!!) %s: reset VideoRAM to 2 MB for safety!",
-				vga256InfoRec.name);
-		}
-	}
-	else
-	{
-		if ( MGA.ChipLinearSize < 2048 || MGA.ChipLinearSize > 8192 )
-		{
-			MGA.ChipLinearSize = 2048; /* nice safe size */
-			ErrorF("(!!) %s: reset VideoRAM to 2 MB for safety!",
-				vga256InfoRec.name);
-		}
-	}
-	
-	MGA.ChipLinearSize *= 1024;
-
-	/*
-	 * fill MGAdac struct
-	 * Warning: currently, it should be after RAM counting
-	 */
-	switch (MGAchipset)
-	{
-	case PCI_CHIP_MGA2064:
-	case PCI_CHIP_MGA2164:
-	case PCI_CHIP_MGA2164_AGP:
-		MGA3026RamdacInit();
-		break;
-	case PCI_CHIP_MGA1064:
-		MGA1064RamdacInit();
-		break;
-	}
-	
-	/*
-	 * If the user has specified ramdac speed in the XF86Config
-	 * file, we respect that setting.
-	 */
-	if( vga256InfoRec.dacSpeeds[0] )
-		vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
-	else
-		vga256InfoRec.maxClock = MGAdac.maxPixelClock;
-
-	/*
-	 * Last we fill in the remaining data structures. 
-	 */
-	vga256InfoRec.bankedMono = FALSE;
-	
-#ifdef XFreeXDGA
-    	vga256InfoRec.directMode = XF86DGADirectPresent;
-#endif
- 
-	OFLG_SET(OPTION_NOACCEL, &MGA.ChipOptionFlags);
-	OFLG_SET(OPTION_SYNC_ON_GREEN, &MGA.ChipOptionFlags);
-	OFLG_SET(OPTION_DAC_8_BIT, &MGA.ChipOptionFlags);
-	OFLG_SET(OPTION_SW_CURSOR, &MGA.ChipOptionFlags);
-	OFLG_SET(OPTION_HW_CURSOR, &MGA.ChipOptionFlags);
-	OFLG_SET(OPTION_PCI_RETRY, &MGA.ChipOptionFlags);
-
-	OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
-	OFLG_SET(OPTION_DAC_8_BIT, &vga256InfoRec.options);
-
-	/* Moved width checking because virtualX isn't set until after
-	   the probing.  Instead, make use of the newly added
-	   PitchAdjust hook. */
-
-	vgaSetPitchAdjustHook(MGAPitchAdjust);
-
-	vgaSetLinearOffsetHook(MGALinearOffset);
-
-#ifdef DPMSExtension
-	vga256InfoRec.DPMSSet = MGADisplayPowerManagementSet;
-#endif
-
-	return(TRUE);
-}
-
-/*
- * TestAndSetRounding
- *
- * used in MGAPitchAdjust (see there) - ansi
- */
-
-static int
-TestAndSetRounding(pitch)
-	int pitch;
-{
-	MGAinterleave = (vga256InfoRec.videoRam > 2048);
-		
-	/* we can't use interleave on Mystique */
-	if (MGAchipset == PCI_CHIP_MGA1064) {
-		MGAinterleave = 0;
-	}
-		
-	switch (vgaBitsPerPixel)
-	{
+    /*
+     * The first thing we should figure out is the depth, bpp, etc.
+     * Our default depth is 8, so pass it to the helper function.
+     * We support both 24bpp and 32bpp layouts, so indicate that.
+     */
+    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb)) {
+	return FALSE;
+    } else {
+	/* Check that the returned depth is one we support */
+	switch (pScrn->depth) {
 	case 8:
-		if (MGAinterleave) {
-			MGA.ChipRounding = 128;
-			MGABppShft = 0;
-		} else {
-			MGA.ChipRounding = 64;
-			MGABppShft = 1;
-		}
-		break;
 	case 16:
-		if (MGAinterleave) {
-			MGA.ChipRounding = 64;
-			MGABppShft = 1;
-		} else {
-			MGA.ChipRounding = 32;
-			MGABppShft = 2;
-		}
-		break;
-	case 32:
-		if (MGAinterleave) {
-			MGA.ChipRounding = 32;
-			MGABppShft = 2;
-		} else {
-			MGA.ChipRounding = 16;
-			MGABppShft = 3;
-		}
-		break;
 	case 24:
-		if (MGAinterleave) {
-			MGA.ChipRounding = 128;
-			MGABppShft = 0;
-		} else {
-			MGA.ChipRounding = 64;
-			MGABppShft = 1;
-		}
-		break;
+	    /* OK */
+	    break;
+	default:
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Given depth (%d) is not supported by this driver\n",
+		       pScrn->depth);
+	    return FALSE;
 	}
+    }
+    xf86PrintDepthBpp(pScrn);
 
-	if (MGAchipset == PCI_CHIP_MGA1064) {
-		MGABppShft--;
+    /*
+     * This must happen after pScrn->display has been set because
+     * xf86SetWeight references it.
+     */
+    if (pScrn->depth > 8) {
+	/* The defaults are OK for us */
+	rgb zeros = {0, 0, 0};
+
+	if (!xf86SetWeight(pScrn, zeros, zeros)) {
+	    return FALSE;
+	} else {
+	    /* XXX check that weight returned is supported */
+            ;
+        }
+    }
+
+    if (!xf86SetDefaultVisual(pScrn, -1)) {
+	return FALSE;
+    } else {
+	/* We don't currently support DirectColor at > 8bpp */
+	if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
+		       " (%s) is not supported at depth %d\n",
+		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
+	    return FALSE;
 	}
-	
-	if (pitch % MGA.ChipRounding)
-		pitch = pitch + MGA.ChipRounding - (pitch % MGA.ChipRounding);
+    }
 
-#ifdef DEBUG
-	ErrorF("pitch= %x MGA.ChipRounding= %x MGAinterleave= %x MGABppShft= %x\n",pitch ,MGA.ChipRounding,MGAinterleave,MGABppShft);
-#endif
-	return pitch;
-}
+#if SAMPLE
+    /*
+     * If the driver can do gamma correction, it should call xf86SetGamma()
+     * here.
+     */
 
-/*
- * MGAPitchAdjust --
- *
- * This function adjusts the display width (pitch) once the virtual
- * width is known.  It returns the display width.
- */
-static int
-MGAPitchAdjust()
-{
-	int *pWidth, pitch = 0;
-	int accel;
-	
-	/* ajv - See MGA2064 p4-59 for millennium supported pitches
-         * See MGA1064 p4-68 for mystique pitch 
-	 * XXX see if MGA2164 has same width types as MGA1064
-         */
+    {
+	Gamma zeros = {0.0, 0.0, 0.0};
 
-	int width[] = { 640, 768, 800, 960, 1024, 1152, 1280,
-			1600, 1920, 2048, 0 };
-	int width2[] = { 512, 640, 768, 800, 832, 960, 1024, 1152, 1280,
-			1600, 1664, 1920, 2048, 0 };
-
-	switch (MGAchipset)
-	{
-		case PCI_CHIP_MGA1064:
-			pWidth = &width2[0];
-			break;
-
-		case PCI_CHIP_MGA2064:
-		case PCI_CHIP_MGA2164:	/* XXX - may need to be with 1064 */
-	        case PCI_CHIP_MGA2164_AGP:
-		default:
-			pWidth = &width[0];
-			break;
+	if (!xf86SetGamma(pScrn, zeros)) {
+	    return FALSE;
 	}
-
-	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
-	{
-		accel = TRUE;
-		
-		while ( *pWidth )
-		{
-			if (*pWidth >= vga256InfoRec.virtualX && 
-			    TestAndSetRounding(*pWidth) == *pWidth)
-			{
-				pitch = *pWidth;
-				break;
-			}
-			pWidth++;
-		}
-	}
-	else
-	{
-		accel = FALSE;
-		pitch = TestAndSetRounding(vga256InfoRec.virtualX);
-	}
-
-
-	if (!pitch)
-	{
-		if(accel) 
-		{
-			FatalError("MGA: Can't find pitch, try using option"
-				   "\"no_accel\"\n");
-		}
-		else
-		{
-			FatalError("MGA: Can't find pitch (Oups, should not"
-				   "happen!)\n");
-		}
-	}
-
-	if (pitch != vga256InfoRec.virtualX)
-	{
-		if (accel)
-		{
-			ErrorF("%s %s: Display pitch set to %d (a multiple "
-			       "of %d & possible for acceleration)\n",
-			       XCONFIG_PROBED, vga256InfoRec.name,
-			       pitch, MGA.ChipRounding);
-		}
-		else
-		{
-			ErrorF("%s %s: Display pitch set to %d (a multiple "
-			       "of %d)\n",
-			       XCONFIG_PROBED, vga256InfoRec.name,
-			       pitch, MGA.ChipRounding);
-		}
-	}
-#ifdef DEBUG
-	else
-	{
-		ErrorF("%s %s: pitch is %d, virtual x is %d, display width is %d\n", XCONFIG_PROBED, vga256InfoRec.name,
-		       pitch, vga256InfoRec.virtualX, vga256InfoRec.displayWidth);
-	}
+    }
 #endif
 
-	return pitch;
-}
+    bytesPerPixel = pScrn->bitsPerPixel / 8;
 
-/*
- * MGALinearOffset --
- *
- * This function computes the byte offset into the linear frame buffer where
- * the frame buffer data should actually begin.  According to DDK misc.c line
- * 1023, if more than 4MB is to be displayed, YDSTORG must be set appropriately
- * to align memory bank switching, and this requires a corresponding offset
- * on linear frame buffer access.
- */
-static int
-MGALinearOffset()
-{
-	int BytesPerPixel = vgaBitsPerPixel / 8;
+    /* We use a programamble clock */
+    pScrn->progClock = TRUE;
+
+    /* Allocate the MGARec driverPrivate */
+    if (!MGAGetRec(pScrn)) {
+	return FALSE;
+    }
+    pMga = MGAPTR(pScrn);
+
+    /* Collect all of the relevant option flags (fill in pScrn->options) */
+    xf86CollectOptions(pScrn, NULL);
+
+    /* Process the options */
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, MGAOptions);
+
+    /* Set the bits per RGB for 8bpp mode */
+    if (pScrn->depth == 8) {
+	/* XXX This is here just to test options. */
+	/* Default to 8 */
+	pScrn->rgbBits = 8;
+	if (xf86GetOptValInteger(MGAOptions, OPTION_RGB_BITS,
+				 &pScrn->rgbBits)) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
+		       pScrn->rgbBits);
+	}
+    }
+    from = X_DEFAULT;
+    pMga->HWCursor = FALSE;
+    if (xf86GetOptValBool(MGAOptions, OPTION_HW_CURSOR, &pMga->HWCursor)) {
+	from = X_CONFIG;
+    }
+#if 0
+    if (xf86IsOptionSet(MGAOptions, OPTION_SW_CURSOR)) {
+	from = X_CONFIG;
+	pMga->HWCursor = FALSE;
+    }
+#endif
+    xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
+		pMga->HWCursor ? "HW" : "SW");
+    if (xf86IsOptionSet(MGAOptions, OPTION_NOACCEL)) {
+	pMga->NoAccel = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
+    }
+    if (xf86IsOptionSet(MGAOptions, OPTION_PCI_RETRY)) {
+	pMga->UsePCIRetry = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
+    }
+    if (xf86IsOptionSet(MGAOptions, OPTION_SYNC_ON_GREEN)) {
+	pMga->SyncOnGreen = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Sync-on-Green enabled\n");
+    }
+    if (xf86IsOptionSet(MGAOptions, OPTION_SHOWCACHE)) {
+	pMga->ShowCache = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShowCache enabled\n");
+    }
+
+    /* Find the PCI slot for this screen */
+    /*
+     * XXX Ignoring the Type list for now.  It might be needed when
+     * multiple cards are supported.
+     */
+    if ((i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL)) != 1) {
+	/* This shouldn't happen */
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Expected one PCI card, but found %d\n", i);
+	MGAFreeRec(pScrn);
+	if (i > 0)
+	    xfree(pciList);
+	return FALSE;
+    }
+
+    pMga->PciInfo = *pciList;
+    xfree(pciList);
+    /*
+     * Set the Chipset and ChipRev, allowing config file entries to
+     * override.
+     */
+    if (pScrn->device->chipset && *pScrn->device->chipset) {
+	pScrn->chipset = pScrn->device->chipset;
+        pMga->Chipset = xf86StringToToken(MGAChipsets, pScrn->chipset);
+        from = X_CONFIG;
+    } else if (pScrn->device->chipID >= 0) {
+	pMga->Chipset = pScrn->device->chipID;
+	pScrn->chipset = (char *)xf86TokenToString(MGAChipsets, pMga->Chipset);
+	from = X_CONFIG;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
+		   pMga->Chipset);
+    } else {
+	from = X_PROBED;
+	pMga->Chipset = pMga->PciInfo->chipType;
+	pScrn->chipset = (char *)xf86TokenToString(MGAChipsets, pMga->Chipset);
+    }
+    if (pScrn->device->chipRev >= 0) {
+	pMga->ChipRev = pScrn->device->chipRev;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
+		   pMga->ChipRev);
+    } else {
+	pMga->ChipRev = pMga->PciInfo->chipRev;
+    }
+
+    /*
+     * This shouldn't happen because such problems should be caught in
+     * MGAProbe(), but check it just in case.
+     */
+    if (pScrn->chipset == NULL) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "ChipID 0x%04X is not recognised\n", pMga->Chipset);
+	return FALSE;
+    }
+    if (pMga->Chipset < 0) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
+	return FALSE;
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
+	
+    pMga->PciTag = pciTag(pMga->PciInfo->bus, pMga->PciInfo->device,
+			  pMga->PciInfo->func);
+    
+    /* ajv changes to reflect actual values. see sdk pp 3-2. */
+    /* these masks just get rid of the crap in the lower bits */
+
+    /*
+     * For the 2064 and older rev 1064, base0 is the MMIO and base0 is
+     * the framebuffer is base1.  Let the config file override these.
+     */
+    if (pScrn->device->MemBase != 0) {
+	pMga->FbAddress = pScrn->device->MemBase;
+	from = X_CONFIG;
+    } else {
+	/* details: mgabase2 sdk pp 4-12 */
+	if ( (pMga->Chipset == PCI_CHIP_MGA1064 && pMga->ChipRev >= 3) ||
+		pMga->Chipset == PCI_CHIP_MGA2164 ||
+		pMga->Chipset == PCI_CHIP_MGA2164_AGP) {
+	    if (pMga->PciInfo->memBase[0] != 0) {
+	    	pMga->FbAddress = pMga->PciInfo->memBase[0] & 0xff800000;
+	    	from = X_PROBED;
+	     } else {
+	    	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "No valid FB address in PCI config space\n");
+	    	MGAFreeRec(pScrn);
+	    	return FALSE;
+	     }
+	} else {
+	    if (pMga->PciInfo->memBase[1] != 0) {
+	    	pMga->FbAddress = pMga->PciInfo->memBase[1] & 0xff800000;
+	    	from = X_PROBED;
+	     } else {
+	    	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "No valid FB address in PCI config space\n");
+	    	MGAFreeRec(pScrn);
+	    	return FALSE;
+	     }
+        }
+
+    }
+    xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
+	       (unsigned long)pMga->FbAddress);
+
+    if (pScrn->device->IOBase != 0) {
+	pMga->IOAddress = pScrn->device->IOBase;
+	from = X_CONFIG;
+    } else {
+	/* details: mgabase1 sdk pp 4-11 */
+	if ( (pMga->Chipset == PCI_CHIP_MGA1064 && pMga->ChipRev >= 3) ||
+		pMga->Chipset == PCI_CHIP_MGA2164 ||
+		pMga->Chipset == PCI_CHIP_MGA2164_AGP) {
+	    if (pMga->PciInfo->memBase[1] != 0) {
+	    	pMga->IOAddress = pMga->PciInfo->memBase[1] & 0xffffc000;
+	    	from = X_PROBED;
+	    } else {
+	    	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			"No valid MMIO address in PCI config space\n");
+	    	MGAFreeRec(pScrn);
+	    	return FALSE;
+	    }
+	} else {
+	    if (pMga->PciInfo->memBase[0] != 0) {
+	    	pMga->IOAddress = pMga->PciInfo->memBase[0] & 0xffffc000;
+	    	from = X_PROBED;
+	    } else {
+	    	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			"No valid MMIO address in PCI config space\n");
+	    	MGAFreeRec(pScrn);
+	    	return FALSE;
+	    }
+        }
+    }
+    xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
+	       (unsigned long)pMga->IOAddress);
+
+    /*
+     * Find the BIOS base.  Get it from the PCI config if possible.  Otherwise
+     * use the VGA default.  Allow the config file to override this.
+     */
+
+    if (pScrn->device->BiosBase != 0) {
+	pMga->BiosAddress = pScrn->device->BiosBase;
+	from = X_CONFIG;
+    } else {
+	/* details: rombase sdk pp 4-15 */
+	if (pMga->PciInfo->biosBase != 0) {
+	    pMga->BiosAddress = pMga->PciInfo->biosBase & 0xffff0000;
+	    from = X_PROBED;
+	} else {
+	    /* Need to watch this when removing VGA depencencies */
+	    pMga->BiosAddress = 0xc0000;
+	    from = X_DEFAULT;
+	}
+    }
+    xf86DrvMsg(pScrn->scrnIndex, from, "BIOS at 0x%lX\n",
+	       (unsigned long)pMga->BiosAddress);
+
+    /*
+     * Read the BIOS data struct
+     */
+    MGAReadBios(pScrn);
+
+#ifdef DEBUG
+    ErrorF("MGABios.RamdacType = 0x%x\n", pMga->Bios.RamdacType);
+#endif
+	
+    /* HW bpp matches reported bpp */
+    pMga->HwBpp = pScrn->bitsPerPixel;
+
+    /*
+     * If the user has specified the amount of memory in the XF86Config
+     * file, we respect that setting.
+     */
+    if (pScrn->device->videoRam != 0) {
+	pScrn->videoRam = pScrn->device->videoRam;
+	from = X_CONFIG;
+    } else {
+	pScrn->videoRam = MGACountRam(pScrn);
+	from = X_PROBED;
+    }
+    xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
+               pScrn->videoRam);
+	
+    pMga->FbMapSize = pScrn->videoRam * 1024;
+	
+#if 0
+/* XXX HACK */
+MGAMapMem(pScrn);
+#endif
+
+    /*
+     * fill MGAdac struct
+     * Warning: currently, it should be after RAM counting
+     */
+    switch (pMga->Chipset) {
+    case PCI_CHIP_MGA2064:
+    case PCI_CHIP_MGA2164:
+    case PCI_CHIP_MGA2164_AGP:
+	MGA3026RamdacInit(pScrn);
+	break;
+#if !NO_MYSTIQUE
+    case PCI_CHIP_MGA1064:
+	MGA1064RamdacInit(pScrn);
+	break;
+#endif
+    }
+#if 0
+/* XXX HACK */
+MGAUnmapMem(pScrn);
+#endif
+
+    /* XXX Set HW cursor use */
+
+    /* Set the min pixel clock */
+    pMga->MinClock = 12000;	/* XXX Guess, need to check this */
+    xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %d MHz\n",
+	       pMga->MinClock / 1000);
+    /*
+     * If the user has specified ramdac speed in the XF86Config
+     * file, we respect that setting.
+     */
+    if (pScrn->device->dacSpeeds[0]) {
+	int speed;
+
+	switch (pScrn->bitsPerPixel) {
+	case 8:
+	   speed = pScrn->device->dacSpeeds[DAC_BPP8];
+	   break;
+	case 16:
+	   speed = pScrn->device->dacSpeeds[DAC_BPP16];
+	   break;
+	case 24:
+	   speed = pScrn->device->dacSpeeds[DAC_BPP24];
+	   break;
+	case 32:
+	   speed = pScrn->device->dacSpeeds[DAC_BPP32];
+	   break;
+	}
+	if (speed == 0)
+	    pMga->MaxClock = pScrn->device->dacSpeeds[0];
+	else
+	    pMga->MaxClock = speed;
+	from = X_CONFIG;
+    } else {
+	pMga->MaxClock = pMga->Dac.maxPixelClock;
+	from = pMga->Dac.ClockFrom;
+    }
+    xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
+	       pMga->MaxClock / 1000);
+
+    /*
+     * Setup the ClockRanges, which describe what clock ranges are available,
+     * and what sort of modes they can be used for.
+     */
+    clockRanges = (ClockRangePtr)xnfalloc(sizeof(ClockRange));
+    clockRanges->next = NULL;
+    clockRanges->minClock = pMga->MinClock;
+    clockRanges->maxClock = pMga->MaxClock;
+    clockRanges->clockIndex = -1;		/* programmable */
+    clockRanges->interlaceAllowed = FALSE;	/* XXX check this */
+    clockRanges->doubleScanAllowed = FALSE;	/* XXX check this */
+
+    /* Only set MemClk if appropriate for the ramdac */
+    if (pMga->Dac.SetMemClk) {
+	if (pScrn->device->MemClk != 0) {
+	    pMga->MemClk = pScrn->device->MemClk;
+	    from = X_CONFIG;
+	} else {
+	    pMga->MemClk = pMga->Dac.MemoryClock;
+	    from = pMga->Dac.MemClkFrom;
+	}
+	xf86DrvMsg(pScrn->scrnIndex, from, "MCLK used is %.1f MHz\n",
+		   pMga->MemClk / 1000.0);
+    }
+
+    /* Check if interleaving can be used */
+    switch (pMga->Chipset) {
+    case PCI_CHIP_MGA1064:
+	/* we can't use interleave on Mystique */
+	pMga->Interleave = FALSE;
+	break;
+    case PCI_CHIP_MGA2064:
+    case PCI_CHIP_MGA2164:
+    case PCI_CHIP_MGA2164_AGP:
+	if (pScrn->videoRam > 2048)
+	    pMga->Interleave = TRUE;
+	else
+	    pMga->Interleave = FALSE;
+	break;
+    default:
+	/* Shouldn't get here, but choose a safe default */
+	pMga->Interleave = FALSE;
+	break;
+    }
+
+    /* Set the rounding and bpp shift values */
+    switch (pScrn->bitsPerPixel) {
+    case 8:
+	if (pMga->Interleave)
+	    pMga->BppShift = 0;
+	else
+	    pMga->BppShift = 1;
+	break;
+    case 16:
+	if (pMga->Interleave)
+	    pMga->BppShift = 1;
+	else
+	    pMga->BppShift = 2;
+	break;
+    case 24:
+	if (pMga->Interleave)
+	    pMga->BppShift = 0;
+	else
+	    pMga->BppShift = 1;
+	break;
+    case 32:
+	if (pMga->Interleave)
+	    pMga->BppShift = 2;
+	else
+	    pMga->BppShift = 3;
+	break;
+    }
+    pMga->Rounding = 128 >> pMga->BppShift;
+    if (pMga->Chipset == PCI_CHIP_MGA1064) {
+	pMga->BppShift--;
+    }
+
+    /*
+     * xf86ValidateModes will check that the mode HTotal and VTotal values
+     * don't exceed the chipset's limit if pScrn->maxHValue and
+     * pScrn->maxVValue are set.  Since our MGAValidMode() already takes
+     * care of this, we don't worry about setting them here.
+     */
+
+    /* Select valid modes from those available */
+    if (pMga->NoAccel) {
+	/*
+	 * XXX Assuming min pitch 256, max 2048
+	 * XXX Assuming min height 128, max 2048
+	 */
+	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
+			      pScrn->display->modes, clockRanges,
+			      NULL, 256, 2048,
+			      pMga->Rounding * pScrn->bitsPerPixel, 128, 2048,
+			      pScrn->display->virtualX,
+			      pScrn->display->virtualY,
+			      pMga->FbMapSize,
+			      LOOKUP_BEST_REFRESH);
+    
+    } else {
+	/*
+	 * XXX Assuming min height 128, max 2048
+	 */
+	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
+			      pScrn->display->modes, clockRanges,
+			      GetAccelPitchValues(pScrn), 0, 0,
+			      pMga->Rounding * pScrn->bitsPerPixel, 128, 2048,
+			      pScrn->display->virtualX,
+			      pScrn->display->virtualY,
+			      pMga->FbMapSize,
+			      LOOKUP_BEST_REFRESH);
+    }
+    if (i == -1) {
+	MGAFreeRec(pScrn);
+	return FALSE;
+    }
+
+    /* Prune the modes marked as invalid */
+    xf86PruneDriverModes(pScrn);
+
+    if (i == 0 || pScrn->modes == NULL) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
+	MGAFreeRec(pScrn);
+	return FALSE;
+    }
+
+    /*
+     * Set the CRTC parameters for all of the modes based on the type
+     * of mode, and the chipset's interlace requirements.
+     *
+     * Calling this is required if the mode->Crtc* values are used by the
+     * driver and if the driver doesn't provide code to set them.  They
+     * are not pre-initialised at all.
+     */
+    xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V);
+
+    /* Set the current mode to the first in the list */
+    pScrn->currentMode = pScrn->modes;
+
+    /* Print the list of modes being used */
+    xf86PrintModes(pScrn);
+
+    /* Set display resolution */
+    xf86SetDpi(pScrn, 0, 0);
+
+    /*
+     * Compute the byte offset into the linear frame buffer where the
+     * frame buffer data should actually begin.  According to DDK misc.c
+     * line 1023, if more than 4MB is to be displayed, YDSTORG must be set
+     * appropriately to align memory bank switching, and this requires a
+     * corresponding offset on linear frame buffer access.
+     */
+
+    pMga->YDstOrg = 0;
+    if (pScrn->virtualX * pScrn->virtualY * bytesPerPixel > 4*1024*1024) {
 	int offset, offset_modulo, ydstorg_modulo;
 
-	MGAydstorg = 0;
-	if (vga256InfoRec.virtualX * vga256InfoRec.virtualY * BytesPerPixel
-		<= 4*1024*1024)
-	    return 0;
-
-	offset = (4*1024*1024) % (vga256InfoRec.displayWidth * BytesPerPixel);
+	offset = (4*1024*1024) % (pScrn->displayWidth * bytesPerPixel);
 	offset_modulo = 4;
 	ydstorg_modulo = 64;
-	if (vgaBitsPerPixel == 24)
+	if (pScrn->bitsPerPixel == 24)
 	    offset_modulo *= 3;
-	if (MGAinterleave)
+	if (pMga->Interleave)
 	{
 	    offset_modulo <<= 1;
 	    ydstorg_modulo <<= 1;
 	}
-	MGAydstorg = offset / BytesPerPixel;
-	/*
-	 * When this was unconditional, it caused a line of horizontal garbage
-	 * at the middle right of the screen at the 4Meg boundary in 32bpp
-	 * (and presumably any other modes that use more than 4M). But it's
-	 * essential for 24bpp (it may not matter either way for 8bpp & 16bpp,
-	 * I'm not sure; I didn't notice problems when I checked with and
-	 * without.)
-	 * DRM Doug Merritt 12/97, submitted to XFree86 6/98 (oops)
-	 */
-	if (BytesPerPixel < 4) {
-		while ((offset % offset_modulo) != 0 ||
-		       (MGAydstorg % ydstorg_modulo) != 0)
-		{
-		    offset++;
-		    MGAydstorg = offset / BytesPerPixel;
-		}
+	pMga->YDstOrg = offset / bytesPerPixel;
+	while ((offset % offset_modulo) != 0 ||
+	       (pMga->YDstOrg % ydstorg_modulo) != 0)
+	{
+	    offset++;
+	    pMga->YDstOrg = offset / bytesPerPixel;
+	}
+    }
+
+    /* Set Fast bitblt flag */
+    if (pMga->Chipset == PCI_CHIP_MGA1064) {
+	pMga->HasFBitBlt = FALSE;
+    } else {
+	pMga->HasFBitBlt = !(pMga->Bios.FeatFlag & 0x00000001);
+    }
+
+    /* Load bpp-specific modules */
+    switch (pScrn->bitsPerPixel) {
+    case 8:
+	mod = "cfb";
+	break;
+    case 16:
+	mod = "cfb16";
+	break;
+    case 24:
+	mod = "cfb24";
+	break;
+    case 32:
+	mod = "cfb32";
+	break;
+    }
+    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+	MGAFreeRec(pScrn);
+	return FALSE;
+    }
+
+    /* Load XAA if needed */
+    if (!pMga->NoAccel || pMga->HWCursor)
+	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	    MGAFreeRec(pScrn);
+	    return FALSE;
 	}
 
-	return MGAydstorg * BytesPerPixel;
+    return TRUE;
 }
 
 
-static void MGAInstallColormap(ColormapPtr pmap)
+/*
+ * Map the framebuffer and MMIO memory.
+ */
+
+static Bool
+MGAMapMem(ScrnInfoPtr pScrn)
 {
-    int         entries, maxEnt;
-    Pixel *     ppix;
-    xrgb *      prgb;
-    int         i;
-    int         shift;
+    CARD32 save;
+    MGAPtr pMga;
 
-    /* Use cfb code to do the server side of things */
-    cfbInstallColormap(pmap);
+    pMga = MGAPTR(pScrn);
 
-#ifdef DEBUG
-    ErrorF("MGAInstallColormap(%p) visual class %d\n", pmap, pmap->pVisual->class);
-    ErrorF("\tColormapEntries %d\n",  pmap->pVisual->ColormapEntries);
-    ErrorF("\tredMask 0x%x\toffsetRed %d\n",
-	   pmap->pVisual->redMask, pmap->pVisual->offsetRed);
-    ErrorF("\tgreenMask 0x%x\toffsetGreen %d\n",
-	   pmap->pVisual->greenMask, pmap->pVisual->offsetGreen);
-    ErrorF("\tblueMask 0x%x\toffsetBlue %d\n",
-	   pmap->pVisual->blueMask, pmap->pVisual->offsetBlue);
-    for (i = 0; i < pmap->pVisual->ColormapEntries; i++ ) {
-      ErrorF("\tcfbCLUT[%x] = (%x %x %x)\n",
-	     i, pmap->red[i], pmap->green[i], pmap->blue[i]);
-      if ( i > 7 && i < pmap->pVisual->ColormapEntries-8 ) i+=7;
+    /*
+     * Disable memory and I/O before mapping the MMIO area.  This avoids
+     * the MMIO area being read during the mapping (which happens on
+     * some SVR4 versions), which will cause a lockup.
+     */
+
+    save = pciReadLong(pMga->PciTag, PCI_CMD_STAT_REG);
+    pciWriteLong(pMga->PciTag, PCI_CMD_STAT_REG,
+		 save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
+
+    /*
+     * Map IO registers to virtual address space
+     */ 
+#if !defined(__alpha__)
+    pMga->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, pMga->PciTag,
+				 (pointer)pMga->IOAddress, 0x4000);
+#else
+    /*
+     * For Alpha, we need to map SPARSE memory, since we need
+     * byte/short access.
+     */
+    pMga->IOBase = xf86MapPciMemSparse(pScrn->scrnIndex, VIDMEM_MMIO,
+				       (pointer)pMga->IOAddress, 0x4000);
+#endif
+    if (pMga->IOBase == NULL)
+	return FALSE;
+
+#if defined(SVR4)
+    /*
+     * For some SVR4 versions, a 32-bit read is done for the first
+     * location in each page when the page is first mapped.  If this
+     * is done while memory and I/O are enabled, the result will be
+     * a lockup, so make sure each page is mapped here while it is safe
+     * to do so.
+     */
+    {
+	CARD32 val;
+
+	val = *(volatile CARD32 *)(pMga->IOBase+0);
+	val = *(volatile CARD32 *)(pMga->IOBase+0x1000);
+	val = *(volatile CARD32 *)(pMga->IOBase+0x2000);
+	val = *(volatile CARD32 *)(pMga->IOBase+0x3000);
     }
 #endif
 
-    entries = pmap->pVisual->ColormapEntries;
-    maxEnt = entries-1;
-      
-    ppix = (Pixel*)ALLOCATE_LOCAL(entries * sizeof(Pixel));
-    prgb = (xrgb*)ALLOCATE_LOCAL(entries * sizeof(xrgb));
+#ifdef __alpha__
+    /*
+     * for Alpha, we need to map DENSE memory as well, for
+     * setting CPUToScreenColorExpandBase.
+     */
+    pMga->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
+					pMga->PciTag, (pointer)pMga->IOAddr,
+					0x4000);
+    if (pMga->IOBaseDense == NULL)
+	return FALSE;
+#endif /* __alpha__ */
 
-    for (i = 0; i < entries; i++ ) {
-      /*
-	int r = (i << pmap->pVisual->offsetRed) & pmap->pVisual->redMask;
-	int g = (i << pmap->pVisual->offsetGreen) & pmap->pVisual->greenMask;
-	int b = (i << pmap->pVisual->offsetBlue) & pmap->pVisual->blueMask;
-	*/
-      int r = ( (i *  pmap->pVisual->redMask)  / maxEnt) & pmap->pVisual->redMask;
-      int g = ( (i *  pmap->pVisual->greenMask)/ maxEnt) & pmap->pVisual->greenMask;
-      int b = ( (i *  pmap->pVisual->blueMask) / maxEnt) & pmap->pVisual->blueMask;
-      ppix[i] = r | g | b ;
-#ifdef DEBUG
-      if ( i<8 || i>entries-8 || (i%8)==0 ) { /* keep the logfile manageable */
-	ErrorF("\tppix[%x] = %x = %x %x %x\n", i, ppix[i], r, g, b );
-      }
+    pMga->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
+				 pMga->PciTag,
+				 (pointer)((unsigned long)pMga->FbAddress),
+				 pMga->FbMapSize);
+    if (pMga->FbBase == NULL)
+	return FALSE;
+
+    /* Re-enable I/O and memory */
+    pciWriteLong(pMga->PciTag, PCI_CMD_STAT_REG,
+		 save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
+    return TRUE;
+}
+
+
+/*
+ * Unmap the framebuffer and MMIO memory.
+ */
+
+static Bool
+MGAUnmapMem(ScrnInfoPtr pScrn)
+{
+    MGAPtr pMga;
+
+    pMga = MGAPTR(pScrn);
+
+    /*
+     * Unmap IO registers to virtual address space
+     */ 
+#ifndef __alpha__
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pMga->IOBase, 0x4000);
+#else
+    xf86UnMapVidMemSparse(pScrn->scrnIndex, (pointer)pMga->IOBase, 0x4000);
 #endif
-    }
+    pMga->IOBase = NULL;
 
-    QueryColors( pmap, entries, ppix, prgb);
+#ifdef __alpha__
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pMga->IOBaseDense, 0x4000);
+    pMga->IOBaseDense = NULL;
+#endif /* __alpha__ */
 
-#ifdef DEBUG
-    ErrorF("After QueryColors, before shift\n");
-    for (i = 0; i < entries; i++) {
-      ErrorF("\tprgb[%x] = (%x %x %x)\n", i,
-	     prgb[i].red, prgb[i].green, prgb[i].blue );
-      if ( i > 7 && i < pmap->pVisual->ColormapEntries-8 ) i+=7;
-    }
-#endif
-      
-    switch (MGAchipset) {
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pMga->FbBase, pScrn->videoRam);
+    pMga->FbBase = NULL;
+    return TRUE;
+}
+
+
+/*
+ * This function saves the video state.
+ */
+static void
+MGASave(ScrnInfoPtr pScrn)
+{
+    MGAPtr pMga;
+    vgaRegPtr vgaReg;
+    MGARegPtr mgaReg;
+
+    pMga = MGAPTR(pScrn);
+    vgaReg = &VGAHWPTR(pScrn)->SavedReg;
+    mgaReg = &pMga->SavedReg;
+
+    switch (pMga->Chipset)
+    {
     case PCI_CHIP_MGA2064:
     case PCI_CHIP_MGA2164:
     case PCI_CHIP_MGA2164_AGP:
-      MGATi3026InstallColormap(pmap, entries, ppix, prgb);
-      break;
+	MGA3026Save(pScrn, vgaReg, mgaReg, TRUE);
+	break;
+#if !NO_MYSTIQUE
+    case PCI_CHIP_MGA1064:
+	MGA1064Save(pScrn, vgaReg, mgaReg, TRUE);
+	break;
+#endif
+    }
+}
+
+
+/*
+ * Initialise a new mode.  This is currently still using the old
+ * "initialise struct, restore/write struct to HW" model.  That could
+ * be changed.
+ */
+
+static Bool
+MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
+{
+    int ret;
+    vgaHWPtr hwp;
+    vgaRegPtr vgaReg;
+    MGAPtr pMga;
+    MGARegPtr mgaReg;
+
+    hwp = VGAHWPTR(pScrn);
+    vgaHWUnlock(hwp);
+
+    /* Initialise the ModeReg values */
+    if (!vgaHWInit(pScrn, mode))
+	return FALSE;
+    pScrn->vtSema = TRUE;
+
+    pMga = MGAPTR(pScrn);
+    switch (pMga->Chipset) {
+    case PCI_CHIP_MGA2064:
+    case PCI_CHIP_MGA2164:
+    case PCI_CHIP_MGA2164_AGP:
+	ret = MGA3026Init(pScrn, mode);
+	break;
+#if !NO_MYSTIQUE
+    case PCI_CHIP_MGA1064:                               
+	ret = MGA1064Init(pScrn, mode);
+	break;
+#endif
+    }
+    if (!ret)
+	return FALSE;
+
+    /* Program the registers */
+    vgaHWProtect(pScrn, TRUE);
+    vgaReg = &hwp->ModeReg;
+    mgaReg = &pMga->ModeReg;
+    switch (pMga->Chipset) {
+    case PCI_CHIP_MGA2064:
+    case PCI_CHIP_MGA2164:
+    case PCI_CHIP_MGA2164_AGP:
+	MGA3026Restore(pScrn, vgaReg, mgaReg, FALSE);
+	break;
+#if !NO_MYSTIQUE
+    case PCI_CHIP_MGA1064:                               
+	MGA1064Restore(pScrn, vgaReg, mgaReg, FALSE);
+	break;
+#endif
+    }
+    MGAStormSync(pScrn);
+    /* XXX Does this belong here? */
+    MGAStormEngineInit(pScrn);
+    vgaHWProtect(pScrn, FALSE);
+
+    return TRUE;
+}
+
+/*
+ * Restore the initial (text) mode.
+ */
+static void 
+MGARestore(ScrnInfoPtr pScrn)
+{
+    vgaHWPtr hwp;
+    vgaRegPtr vgaReg;
+    MGAPtr pMga;
+    MGARegPtr mgaReg;
+
+    hwp = VGAHWPTR(pScrn);
+    pMga = MGAPTR(pScrn);
+    vgaReg = &hwp->SavedReg;
+    mgaReg = &pMga->SavedReg;
+
+    vgaHWProtect(pScrn, TRUE);
+    switch (pMga->Chipset) {
+    case PCI_CHIP_MGA2064:
+    case PCI_CHIP_MGA2164:
+    case PCI_CHIP_MGA2164_AGP:
+	MGA3026Restore(pScrn, vgaReg, mgaReg, TRUE);
+	break;
+#if !NO_MYSTIQUE
+    case PCI_CHIP_MGA1064:                               
+	MGA1064Restore(pScrn, vgaReg, mgaReg, TRUE);
+	break;
+#endif
+    }
+    MGAStormSync(pScrn);
+    MGAStormEngineInit(pScrn);
+    vgaHWProtect(pScrn, FALSE);
+}
+
+
+/* Mandatory */
+
+/* This gets called at the start of each server generation */
+
+static Bool
+MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+{
+    /* The vgaHW references will disappear one day */
+    ScrnInfoPtr pScrn;
+    vgaHWPtr hwp;
+    MGAPtr pMga;
+    int ret;
+    VisualPtr visual;
+
+    /* 
+     * First get the ScrnInfoRec
+     */
+    pScrn = xf86Screens[pScreen->myNum];
+
+    hwp = VGAHWPTR(pScrn);
+
+    hwp->MapSize = 0x10000;		/* Standard 64k VGA window */
+
+    pMga = MGAPTR(pScrn);
+
+    /* Map the VGA memory and get the VGA IO base */
+    if (!vgaHWMapMem(pScrn))
+	return FALSE;
+    vgaHWGetIOBase(hwp);
+
+    /* Map the MGA memory and MMIO areas */
+    if (!MGAMapMem(pScrn))
+	return FALSE;
+
+    /* Save the current state */
+    MGASave(pScrn);
+
+    /* Initialise the first mode */
+    if (!MGAModeInit(pScrn, pScrn->currentMode))
+	return FALSE;
+
+    /* Darken the screen for aesthetic reasons and set the viewport */
+    MGASaveScreen(pScreen, FALSE);
+    MGAAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+    /* XXX Fill the screen with black */
+#if 0
+    MGASaveScreen(pScreen, TRUE);
+#endif
+
+    /*
+     * The next step is to setup the screen's visuals, and initialise the
+     * framebuffer code.  In cases where the framebuffer's default
+     * choices for things like visual layouts and bits per RGB are OK,
+     * this may be as simple as calling the framebuffer's ScreenInit()
+     * function.  If not, the visuals will need to be setup before calling
+     * a fb ScreenInit() function and fixed up after.
+     *
+     * XXX NOTE: cfbScreenInit() will not result in the default visual
+     * being set correctly when there is a screen-specific value given
+     * in the config file as opposed to a global value given on the
+     * command line.  Saving and restoring 'defaultColorVisualClass'
+     * around the fb's ScreenInit() solves this problem.
+     *
+     * For most PC hardware at depths >= 8, the defaults that cfb uses
+     * are not appropriate.  In this driver, we fixup the visuals after.
+     */
+
+    /*
+     * Reset cfb's visual list.
+     */
+    miClearVisualTypes();
+
+    /* Setup the visuals we support. */
+
+    /*
+     * For bpp > 8, the default visuals are not acceptable because we only
+     * support TrueColor and not DirectColor.  To deal with this, call
+     * miSetVisualTypes with the appropriate visual mask.
+     */
+
+    if (pScrn->bitsPerPixel > 8) {
+	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
+				pScrn->defaultVisual))
+	    return FALSE;
+    } else {
+	if (!miSetVisualTypes(pScrn->depth,
+			      miGetDefaultVisualMask(pScrn->depth),
+			      pScrn->rgbBits, pScrn->defaultVisual))
+	    return FALSE;
+    }
+
+    /*
+     * Call the framebuffer layer's ScreenInit function, and fill in other
+     * pScreen fields.
+     */
+
+    switch (pScrn->bitsPerPixel) {
+    case 8:
+	ret = cfbScreenInit(pScreen, pMga->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
+    case 16:
+	ret = cfb16ScreenInit(pScreen, pMga->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
+    case 24:
+	ret = cfb24ScreenInit(pScreen, pMga->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
+    case 32:
+	ret = cfb32ScreenInit(pScreen, pMga->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
     default:
-      /* No Directcolor hardware; we used the default InstallColormap
-       * therefore we shouldn't be here !
-       */
-      break;
-    }      
-
-    DEALLOCATE_LOCAL(ppix);
-    DEALLOCATE_LOCAL(prgb);
-}
-
-
-/*
- * 
- */
-static Bool
-MGAScreenInit(ScreenPtr pScreen, pointer pbits,
-	      int xsize, int ysize, int dpix, int dpiy, int width)
-{
-  if (vga256InfoRec.hasDirectColor) {
-    void (* privateInstallColormap)() = NULL;
-
-    if (vgaBitsPerPixel > 8) {
-      switch (MGAchipset) {
-      case PCI_CHIP_MGA2064:
-      case PCI_CHIP_MGA2164:
-      case PCI_CHIP_MGA2164_AGP:
-	privateInstallColormap = MGAInstallColormap;
+	xf86DrvMsg(scrnIndex, X_ERROR,
+		   "Internal error: invalid bpp (%d) in MGAScrnInit\n",
+		   pScrn->bitsPerPixel);
+	ret = FALSE;
 	break;
-      default:
-	/* No Directcolor hardware */
-	break;
-      }
+    }
+    if (!ret)
+	return FALSE;
+
+    xf86SetBlackWhitePixels(pScreen);
+
+    if (pScrn->bitsPerPixel == 8) {
+	/* Another VGA dependency to remove */
+	vgaHandleColormaps(pScreen, pScrn);
+    } else {
+        /* Fixup RGB ordering */
+        visual = pScreen->visuals + pScreen->numVisuals;
+        while (--visual >= pScreen->visuals) {
+	    if ((visual->class | DynamicClass) == DirectColor) {
+		visual->offsetRed = pScrn->offset.red;
+		visual->offsetGreen = pScrn->offset.green;
+		visual->offsetBlue = pScrn->offset.blue;
+		visual->redMask = pScrn->mask.red;
+		visual->greenMask = pScrn->mask.green;
+		visual->blueMask = pScrn->mask.blue;
+	    }
+	}
     }
 
-    if (privateInstallColormap) {
-      if (xf86Verbose) {
-	/* We don't actually config or probe for this -
-	 * is XCONFIG_PROBED correct ?
-	 */
-	ErrorF("%s %s: MGA: DirectColor colormaps enabled\n",
-	       XCONFIG_PROBED, vga256InfoRec.name);
-      }
-      pScreen->InstallColormap = privateInstallColormap;
+    if (!pMga->NoAccel)
+	MGAStormAccelInit(pScreen);
+
+    miInitializeBackingStore(pScreen);
+
+    /* Initialise cursor functions */
+    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+
+    if (pMga->HWCursor) { /* Initialize HW cursor layer */
+	if(!MGAHWCursorInit(pScreen))
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+		"Hardware cursor initialization failed\n");
     }
-  }
 
-#ifdef PC98_MGA
-  switch (MGAchipset) {
-  case PCI_CHIP_MGA2064:
-    pScreen->StoreColors = MGATi3026StoreColors;
-    break;
-  default:
-    break;
-  }
+
+    /* Initialise default colourmap */
+    if (!miCreateDefColormap(pScreen))
+	return FALSE;
+
+#ifdef DPMSExtension
+    xf86DPMSInit(pScreen, MGADisplayPowerManagementSet, 0);
 #endif
 
-  return TRUE; /* Should I test something before saying I'm OK ? */
+    pScreen->SaveScreen = MGASaveScreen;
+
+    /* Wrap the current CloseScreen function */
+    pMga->CloseScreen = pScreen->CloseScreen;
+    pScreen->CloseScreen = MGACloseScreen;
+
+    /* Report any unused options (only for the first generation) */
+    if (serverGeneration == 1) {
+	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
+    }
+
+    /* Done */
+    return TRUE;
 }
 
 
-/*
- * MGAFbInit --
- *
- * This function is used to initialise chip-specific graphics functions.
- * It can be used to make use of the accelerated features of some chipsets.
- */
-static void
-MGAFbInit()
-{
-	/* DirectColor InstallColormap gets set in ScreenInit ... */
-	switch (MGAchipset) {
-	case PCI_CHIP_MGA2064:
-	case PCI_CHIP_MGA2164:
-	case PCI_CHIP_MGA2164_AGP:
-	  vga256InfoRec.hasDirectColor = TRUE;
-	  /* DirectColor InstallColormap gets set in ScreenInit ... */
-	  vgaSetScreenInitHook(MGAScreenInit);
-	  break;
-	default:
-	  /* No Directcolor hardware */
-	  break;
-	}
-
-	if (MGAdac.MemoryClock && xf86Verbose)
-	{
-	    ErrorF("%s %s: MCLK set to %1.3f MHz\n",
-	        /*vga256InfoRec.MemClk? XCONFIG_GIVEN :*/ XCONFIG_PROBED,
-	        vga256InfoRec.name, MGAdac.MemoryClock / 1000.0);
-	}
-	
-	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
-	{
-	        /*
-		 * Hardware cursor
-		 */
-#ifdef DEFAULT_SW_CURSOR
-	        if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options)) {
-		    if (MGAHwCursorInit())
-		        ErrorF("%s %s: Using hardware cursor\n",
-			   XCONFIG_GIVEN, vga256InfoRec.name);
-		}	
-		else
-		    ErrorF("%s %s: Using software cursor\n",
-			   XCONFIG_PROBED, vga256InfoRec.name);
-#else
-	        if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
-		    if (MGAHwCursorInit())
-		        ErrorF("%s %s: Using hardware cursor\n",
-			   XCONFIG_PROBED, vga256InfoRec.name);
-		}	
-		else
-		    ErrorF("%s %s: Disabling hardware cursor\n",
-			   XCONFIG_GIVEN, vga256InfoRec.name);
-#endif
-
-		/*
-		 * now call the new acc interface
-		 */
-		if (MGAchipset == PCI_CHIP_MGA1064 )  {
-			MGAusefbitblt = 0;
-			} else {
-			MGAusefbitblt = !(MGABios.FeatFlag & 0x00000001);
-		}
-		MGAStormAccelInit();
-	}
-}
-
-/*
- * MGAInit --
- *
- * The 'mode' parameter describes the video mode.	The 'mode' structure 
- * as well as the 'vga256InfoRec' structure can be dereferenced for
- * information that is needed to initialize the mode.	The 'new' macro
- * (see definition above) is used to simply fill in the structure.
- */
+/* Usually mandatory */
 static Bool
-MGAInit(mode)
-DisplayModePtr mode;
+MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
-	switch (MGAchipset)
-	{
-	case PCI_CHIP_MGA2064:
-	case PCI_CHIP_MGA2164:
-	case PCI_CHIP_MGA2164_AGP:
-		return MGA3026Init(mode);
-	case PCI_CHIP_MGA1064:                               
-		return MGA1064Init(mode);
-	}
+    return MGAModeInit(xf86Screens[scrnIndex], mode);
 }
 
-/*
- * MGARestore --
- *
- * This function restores a video mode.	 It basically writes out all of
- * the registers that have previously been saved in the vgaMGARec data 
- * structure.
- */
-static void 
-MGARestore(restore)
-vgaHWPtr restore;
-{
-	int i;
-
-	vgaProtect(TRUE);
-	
-	switch (MGAchipset)
-	{
-	case PCI_CHIP_MGA2064:
-	case PCI_CHIP_MGA2164:
-	case PCI_CHIP_MGA2164_AGP:
-		MGA3026Restore(restore);
-		break;
-	case PCI_CHIP_MGA1064:
-		MGA1064Restore(restore);
-		break;
-	}
-
-	MGAStormSync();
-	MGAStormEngineInit();
-
-	vgaProtect(FALSE);
-}
 
 /*
- * MGASave --
- *
- * This function saves the video state.	 It reads all of the SVGA registers
- * into the vgaMGARec data structure.
- */
-static void *
-MGASave(save)
-vgaHWPtr save;
-{
-	switch (MGAchipset)
-	{
-	case PCI_CHIP_MGA2064:
-	case PCI_CHIP_MGA2164:
-	case PCI_CHIP_MGA2164_AGP:
-		return (void *)MGA3026Save(save);
-	case PCI_CHIP_MGA1064:
-		return (void *)MGA1064Save(save);
-	}
-}
-
-/*
- * MGAEnterLeave --
- *
- * This function is called when the virtual terminal on which the server
- * is running is entered or left, as well as when the server starts up
- * and is shut down.	Its function is to obtain and relinquish I/O 
- * permissions for the SVGA device.	 This includes unlocking access to
- * any registers that may be protected on the chipset, and locking those
- * registers again on exit.
- */
-static void 
-MGAEnterLeave(enter)
-Bool enter;
-{
-	unsigned char misc_ctrl;
-	unsigned char temp;
-
-#ifdef XFreeXDGA
-      	if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter) {
-       		if (MGAdac.isHwCursor) {
-       			MGAdac.HideCursor();
-       		}
-       		return;
-   	}
-#endif 
-
-	if (enter)
-	{
-		xf86EnableIOPorts(vga256InfoRec.scrnIndex);
-		if (MGAMMIOBase)
-		{
-			xf86MapDisplay(vga256InfoRec.scrnIndex,
-					MMIO_REGION);
-			MGAStormSync();
-		}
-		
-		vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
-
-		/* Unprotect CRTC[0-7] */
-		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
-		outb(vgaIOBase + 5, temp & 0x7F);
-#ifdef PC98_MGA
-		if (MGAchipset == PCI_CHIP_MGA1064)
-			_outb(0xfac, 0x02);
-		else
-			_outb(0xfac, 0x01);
-#endif
-	}
-	else
-	{
-#ifdef PC98_MGA
-		_outb(0xfac, 0x00);
-#endif
-		/* Protect CRTC[0-7] */
-		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
-		outb(vgaIOBase + 5, (temp & 0x7F) | 0x80);
-		
-		if (MGAMMIOBase)
-		{
- 			MGAStormSync();
-			xf86UnMapDisplay(vga256InfoRec.scrnIndex,
-					MMIO_REGION);
-			if (xf86Exiting && xf86Info.caughtSignal)
-			{
-				/*
-				 * Without this a core dump can cause a
-				 * lockup on some platforms.
-				 */
-				xf86UnMapVidMem(vga256InfoRec.scrnIndex,
-						MMIO_REGION, MGAMMIOBase,
-						0x4000);
-				MGAMMIOBase = 0;
-			}
-		}
-		
-		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
-	}
-}
-
-/*
- * MGAAdjust --
- *
- * This function is used to initialize the SVGA Start Address - the first
+ * This function is used to initialize the Start Address - the first
  * displayed location in the video memory.
  */
+/* Usually mandatory */
 static void 
-MGAAdjust(x, y)
-int x, y;
+MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
-	int Base = (y * vga256InfoRec.displayWidth + x + MGAydstorg) >>
-			(3 - MGABppShft);
-	int tmp;
-	CARD32 count;
+    ScrnInfoPtr pScrn;
+    int Base, tmp, count;
+    MGAPtr pMga;
+    vgaHWPtr hwp;
 
-	if (vgaBitsPerPixel == 24)
-		Base *= 3;
+    pScrn = xf86Screens[scrnIndex];
+    hwp = VGAHWPTR(pScrn);
+    pMga = MGAPTR(pScrn);
 
-	/* find start of retrace */
-        while (inb(vgaIOBase + 0x0A) & 0x08);
-	while (!(inb(vgaIOBase + 0xA) & 0x08)); 
-	/* wait until we're past the start (fixseg.c in the DDK) */
-	count = INREG(MGAREG_VCOUNT) + 2;
-	while(INREG(MGAREG_VCOUNT) < count);
+    if(pMga->ShowCache && y) {
+	int lastline = pMga->FbMapSize / 
+		(pScrn->displayWidth * pScrn->bitsPerPixel/8);
 
+	if(lastline > 4095) lastline = 4095; /* is that right ? */
+	lastline -= pScrn->currentMode->VDisplay;
+	y += pScrn->virtualY - 1;
+        if(y > lastline) y = lastline;
+    }
 
-	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
-	outw(vgaIOBase + 4, ((Base & 0x0000FF) << 8) | 0x0D);
-	outb(0x3DE, 0x00);
-	tmp = inb(0x3DF);
-	outb(0x3DF, (tmp & 0xF0) | ((Base & 0x0F0000) >> 16));
+    Base = (y * pScrn->displayWidth + x + pMga->YDstOrg) >>
+			(3 - pMga->BppShift);
+
+    if (pScrn->bitsPerPixel == 24)
+	Base *= 3;
+
+    /* find start of retrace */
+    while (inb(hwp->IOBase + 0x0A) & 0x08);
+    while (!(inb(hwp->IOBase + 0xA) & 0x08)); 
+    /* wait until we're past the start (fixseg.c in the DDK) */
+    count = INREG(MGAREG_VCOUNT) + 2;
+    while(INREG(MGAREG_VCOUNT) < count);
+    
+    outw(hwp->IOBase + 4, (Base & 0x00FF00) | 0x0C);
+    outw(hwp->IOBase + 4, ((Base & 0x0000FF) << 8) | 0x0D);
+    outb(0x3DE, 0x00);
+    tmp = inb(0x3DF);
+    outb(0x3DF, (tmp & 0xF0) | ((Base & 0x0F0000) >> 16));
+
 }
+
 
 /*
- * MGAValidMode -- 
+ * This is called when VT switching back to the X server.  Its job is
+ * to reinitialise the video mode.
  *
- * Checks if a mode is suitable for the selected chipset.
+ * We may wish to unmap video/MMIO memory too.
  */
+
+/* Mandatory */
 static Bool
-MGAValidMode(mode,verbose,flag)
-DisplayModePtr mode;
-Bool verbose;
-int flag;
+MGAEnterVT(int scrnIndex, int flags)
 {
-	int lace = 1 + ((mode->Flags & V_INTERLACE) != 0);
-	
-	if ((mode->CrtcHDisplay <= 2048) &&
-	    (mode->CrtcHSyncStart <= 4096) && 
-	    (mode->CrtcHSyncEnd <= 4096) && 
-	    (mode->CrtcHTotal <= 4096) &&
-	    (mode->CrtcVDisplay <= 2048 * lace) &&
-	    (mode->CrtcVSyncStart <= 4096 * lace) &&
-	    (mode->CrtcVSyncEnd <= 4096 * lace) &&
-	    (mode->CrtcVTotal <= 4096 * lace))
-	{
-		return(MODE_OK);
-	}
-	else
-	{
-		return(MODE_BAD);
-	}
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+
+    /* Should we re-save the text mode on each VT enter? */
+    return MGAModeInit(pScrn, pScrn->currentMode);
 }
+
+
+/*
+ * This is called when VT switching away from the X server.  Its job is
+ * to restore the previous (text) mode.
+ *
+ * We may wish to remap video/MMIO memory too.
+ */
+
+/* Mandatory */
+static void
+MGALeaveVT(int scrnIndex, int flags)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+
+    MGARestore(pScrn);
+    vgaHWLock(hwp);
+}
+
+
+/*
+ * This is called at the end of each server generation.  It restores the
+ * original (text) mode.  It should also unmap the video memory, and free
+ * any per-generation data allocated by the driver.  It should finish
+ * by unwrapping and calling the saved CloseScreen function.
+ */
+
+/* Mandatory */
+static Bool
+MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    MGARestore(pScrn);
+    vgaHWLock(hwp);
+    MGAUnmapMem(pScrn);
+    if (pMga->AccelInfoRec)
+	XAADestroyInfoRec(pMga->AccelInfoRec);
+    if (pMga->CursorInfoRec)
+    	XAADestroyCursorInfoRec(pMga->CursorInfoRec);
+    pScrn->vtSema = FALSE;
+
+    pScreen->CloseScreen = pMga->CloseScreen;
+    return (*pScreen->CloseScreen)(scrnIndex, pScreen);
+}
+
+
+/* Free up any persistent data structures */
+
+/* Optional */
+static void
+MGAFreeScreen(int scrnIndex, int flags)
+{
+    /*
+     * This only gets called when a screen is being deleted.  It does not
+     * get called routinely at the end of a server generation.
+     */
+    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    MGAFreeRec(xf86Screens[scrnIndex]);
+}
+
+
+/* Checks if a mode is suitable for the selected chipset. */
+
+/* Optional */
+static int
+MGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
+{
+    int lace;
+
+    lace = 1 + ((mode->Flags & V_INTERLACE) != 0);
+
+    if ((mode->CrtcHDisplay <= 2048) &&
+	(mode->CrtcHSyncStart <= 4096) && 
+	(mode->CrtcHSyncEnd <= 4096) && 
+	(mode->CrtcHTotal <= 4096) &&
+	(mode->CrtcVDisplay <= 2048 * lace) &&
+	(mode->CrtcVSyncStart <= 4096 * lace) &&
+	(mode->CrtcVSyncEnd <= 4096 * lace) &&
+	(mode->CrtcVTotal <= 4096 * lace)) {
+	return(MODE_OK);
+    } else {
+	return(MODE_BAD);
+    }
+}
+
+
+/* Do screen blanking */
+
+/* Mandatory */
+static Bool
+MGASaveScreen(ScreenPtr pScreen, Bool unblank)
+{
+    return vgaHWSaveScreen(pScreen, unblank);
+}
+
 
 /*
  * MGADisplayPowerManagementSet --
@@ -1536,11 +1920,14 @@ int flag;
  * Sets VESA Display Power Management Signaling (DPMS) Mode.
  */
 #ifdef DPMSExtension
-static void MGADisplayPowerManagementSet(PowerManagementMode)
-int PowerManagementMode;
+static void
+MGADisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
+			     int flags)
 {
 	unsigned char seq1, crtcext1;
-	if (!xf86VTSema) return;
+
+ErrorF("MGADisplayPowerManagementSet: %d\n", PowerManagementMode);
+
 	switch (PowerManagementMode)
 	{
 	case DPMSModeOn:
@@ -1564,6 +1951,7 @@ int PowerManagementMode;
 	    crtcext1 = 0x30;
 	    break;
 	}
+	/* XXX Prefer an implementation that doesn't depend on VGA specifics */
 	outb(0x3C4, 0x01);	/* Select SEQ1 */
 	seq1 |= inb(0x3C5) & ~0x20;
 	outb(0x3C5, seq1);
@@ -1572,3 +1960,4 @@ int PowerManagementMode;
 	outb(0x3DF, crtcext1);
 }
 #endif
+

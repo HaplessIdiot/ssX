@@ -1,46 +1,54 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.19 1998/06/27 12:54:24 hohndel Exp $ */
-
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.7.2.6 1998/07/24 11:36:20 dawes Exp $ */
 /*
- * Copyright 1997
- * Digital Equipment Corporation. All rights reserved.
- * This software is furnished under license and may be used and copied only in 
- * accordance with the following terms and conditions.  Subject to these conditions, 
- * you may download, copy, install, use, modify and distribute this software in 
- * source and/or binary form. No title or ownership is transferred hereby.
+ * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
+ *   Modified 1997, 1998 by Nozomi Ytow
  *
- * 1) Any source code used, modified or distributed must reproduce and retain this 
- *    copyright notice and list of conditions as they appear in the source file.
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of the authors not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  The authors makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
  *
- * 2) No right is granted to use any trade name, trademark, or logo of Digital 
- *    Equipment Corporation. Neither the "Digital Equipment Corporation" name nor 
- *    any trademark or logo of Digital Equipment Corporation may be used to endorse or 
- *    promote products derived from this software without the prior written permission 
- *    of Digital Equipment Corporation.
- *
- * 3) This software is provided "AS-IS" and any express or implied warranties, including 
- *    but not limited to, any implied warranties of merchantability, fitness for a 
- *    particular purpose, or non-infringement are disclaimed. In no event shall DIGITAL 
- *    be liable for any damages whatsoever, and in particular, DIGITAL shall not be 
- *    liable for special, indirect, consequential, or incidental damages or damages for 
- *    lost profits, loss of revenue or loss of use, whether such damages arise in contract, 
- *    negligence, tort, under statute, in equity, at law or otherwise, even if advised of 
- *    the possibility of such damage. 
- *
+ * THE AUTHORS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL THE AUTHORS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "vga256.h"
-#include "compiler.h"
-#include "xf86.h"
-#include "vga.h"
-#include "xf86xaa.h"
-#include "ct_driver.h"
-#include "xf86_ansic.h"
+#define CHIPS_SCREEN2SCREEN
+#define CHIPS_SOLIDFILLRECT
+#define CHIPS_COLOREXPANDFILL
+#define CHIPS_PATTERNFILL
+#define CHIPS_WRITEPIXMAP
 
-#ifdef	CHIPS_HIQV
-#include "xf86local.h"
-#endif
+
+/* All drivers should typically include these */
+#include "xf86.h"
+#include "xf86_OSproc.h"
+#include "xf86_ansic.h"
+#include "compiler.h"
+
+/* Drivers that need to access the PCI config space directly need this */
+#include "xf86Pci.h"
+
+/* Drivers for PCI hardware need this */
+#include "xf86PciInfo.h"
+
+/* Drivers that use XAA need this */
+#include "xf86fbman.h"
+
+/* The vga HW register stuff. Do we need this? */
+#include "vgaHW.h"
+
+/* Our driver specific include file */
+#include "ct_driver.h"
 
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CATNAME(prefix,subname) prefix##subname
@@ -51,66 +59,87 @@
 #ifdef CHIPS_MMIO
 #ifdef CHIPS_HIQV
 #include "ct_BltHiQV.h"
-#define CTNAME(subname) CATNAME(ctHiQV,subname)
+#define CTNAME(subname) CATNAME(CHIPSHiQV,subname)
 #else
 #include "ct_BlitMM.h"
-#define CTNAME(subname) CATNAME(ctMMIO,subname)
+#define CTNAME(subname) CATNAME(CHIPSMMIO,subname)
 #endif
 #else
 #include "ct_Blitter.h"
-#define CTNAME(subname) CATNAME(ct,subname)
+#define CTNAME(subname) CATNAME(CHIPS,subname)
 #endif
 
-void CTNAME(Sync)(void);
-void CTNAME(8SetupForFillRectSolid)(int, int, unsigned);
-void CTNAME(16SetupForFillRectSolid)(int, int, unsigned);
-void CTNAME(24SetupForFillRectSolid)(int, int, unsigned);
-void CTNAME(SubsequentFillRectSolid)(int, int, int, int);
+
+static void CTNAME(8SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
+				int rop, unsigned int planemask);
+static void CTNAME(16SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
+				int rop, unsigned int planemask);
+static void CTNAME(24SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
+				int rop, unsigned int planemask);
+static void CTNAME(SubsequentSolidFillRect)(ScrnInfoPtr pScrn,
+					int x, int y, int w, int h);
 #ifndef CHIPS_HIQV
-void CTNAME(24SubsequentFillRectSolid)(int, int, int, int);
+static void CTNAME(24SubsequentSolidFillRect)(ScrnInfoPtr pScrn,
+					int x, int y, int w, int h);
 #else
-void CTNAME(32SetupForFillRectSolid)(int, int, unsigned);
-void CTNAME(32SubsequentFillRectSolid)(int, int, int, int);
+static void CTNAME(32SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
+				int rop, unsigned int planemask);
+static void CTNAME(32SubsequentSolidFillRect)(ScrnInfoPtr pScrn,
+					int x, int y, int w, int h);
 #endif
-void CTNAME(SetupForScreenToScreenCopy)(int, int, int, unsigned, int);
-void CTNAME(SubsequentScreenToScreenCopy)(int, int, int, int, int, int);
-void CTNAME(SetupForScanlineScreenToScreenColorExpand)(int, int, int, int, int, int, int, unsigned int);
-void CTNAME(SubsequentScanlineScreenToScreenColorExpand)(int);
-void CTNAME(SetupForScanlineCPUToScreenColorExpand)(int, int, int, int, int, int, unsigned int);
-void CTNAME(SubsequentScanlineCPUToScreenColorExpand)(void);
-void CTNAME(SetupForScreenToScreenColorExpand)(int, int, int, unsigned int);
-void CTNAME(SubsequentScreenToScreenColorExpand)(int, int, int, int, int, int);
-void CTNAME(SetupForCPUToScreenColorExpand)(int, int, int, unsigned int);
-void CTNAME(SubsequentCPUToScreenColorExpand)(int, int, int, int, int);
-void CTNAME(SetupForFill8x8Pattern)(int, int, int, unsigned int, int);
-void CTNAME(SubsequentFill8x8Pattern)(int, int, int, int, int, int);
-void CTNAME(SetupFor8x8PatternColorExpand)(int, int, int, int, int, unsigned int);
-void CTNAME(Subsequent8x8PatternColorExpand)(int, int, int, int, int, int);
-void CTNAME(SetupForImageWrite)(int, unsigned int, int);
-void CTNAME(SubsequentImageWrite)(int, int, int, int, int);
+static void CTNAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir,
+				int ydir, int rop, unsigned int planemask,
+				int trans);
+static void CTNAME(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn,
+				int srcX, int srcY, int dstX, int dstY,
+				int w, int h);
+static void CTNAME(SetupForColorExpandFill)(ScrnInfoPtr pScrn, int fg,
+				int bg, int rop, unsigned int planemask);
+static void CTNAME(SubsequentColorExpandFillRect)(ScrnInfoPtr pScrn,
+				int x, int y, int w, int h, int skipleft);
+static void CTNAME(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn,
+				int patx, int paty, int fg, int bg,
+				int rop, unsigned int planemask);
+static void CTNAME(SubsequentMono8x8PatternFillRect)(ScrnInfoPtr pScrn,
+				int patx, int paty,
+				int x, int y, int w, int h );
+static void CTNAME(SetupForColor8x8PatternFill)(ScrnInfoPtr pScrn,
+				int patx, int paty, int rop,
+				unsigned int planemask, int trans);
+static void CTNAME(SubsequentColor8x8PatternFillRect)(ScrnInfoPtr pScrn,
+				int patx, int paty,
+				int x, int y, int w, int h );
+#ifndef CHIPS_HIQV
+static void CTNAME(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop,
+   				unsigned int planemask,
+				int transparency_color, int bpp, int depth);
+static void CTNAME(SubsequentImageWriteRect)(ScrnInfoPtr pScrn,
+				int x, int y, int w, int h, int skipleft);
+#else
+static void  CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
+		unsigned char *src, int srcwidth, int rop,
+		unsigned int planemask, int trans, int bpp, int depth);
 
-#ifdef CHIPS_HIQV
-void CTNAME(DoPixWinBitBltCopy)();
 #endif
 
-static unsigned int old_planemask;
+
 /* Define a Macro to replicate a planemask 64 times and write to address
  * allocated for planemask pattern */
 #define ctWRITEPLANEMASK(mask,addr) { \
-    switch  (vga256InfoRec.bitsPerPixel) { \
+    switch  (pScrn->bitsPerPixel) { \
     case 8: \
-        if (old_planemask != mask&0xFF) { \
-            old_planemask = mask&0xFF; \
-	    memset((unsigned char *)vgaLinearBase + addr, mask&0xFF, 64); \
+        if (cAcl->planemask != (mask&0xFF)) { \
+            cAcl->planemask = (mask&0xFF); \
+	    memset((unsigned char *)cPtr->FbBase + addr, (mask&0xFF), 64); \
 	} \
 	break; \
     case 16: \
-        if (old_planemask != mask&0xFFFF) { \
-            old_planemask = mask&0xFFFF; \
+        if (cAcl->planemask != (mask&0xFFFF)) { \
+            cAcl->planemask = (mask&0xFFFF); \
 	    {   int i; \
 	        for (i = 0; i < 64; i++) { \
-		    memcpy((unsigned char *)vgaLinearBase + addr + i * 2, \
-			   &mask, 2); \
+		    memcpy((unsigned char *)cPtr->FbBase + addr \
+			   + i * 2, &mask, 2); \
 	        } \
 	    } \
 	} \
@@ -118,123 +147,80 @@ static unsigned int old_planemask;
     } \
 }				   
 
-static unsigned int CommandFlags;
+Bool 
+CTNAME(AccelInit)(ScreenPtr pScreen)
+{
+    XAAInfoRecPtr infoPtr;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+    BoxRec AvailFBArea;
 
-/* Define CHIPS_SCREEN2SCREEN to include screen to screen color expansion */
-/* Its not working properly for me at the moment, so disable it           */
-/* #define CHIPS_SCREEN2SCREEN */
+    cPtr->AccelInfoRec = infoPtr = XAACreateInfoRec();
+    if(!infoPtr) return FALSE;
 
-/* The XAA ImageWrite function appears to be broken on the HiQV chips. 
- * This is believed to be due to data alignment problems. Defining
- * CHIPS_IMAGEWRITE below will force the server to use the HiQV specific
- * ImageWrite code that should work around this */
-#ifdef CHIPS_HIQV
-#define CHIPS_IMAGEWRITE
-#endif
-
-#ifdef CHIPS_MMIO
-#ifdef CHIPS_HIQV
-#define _ctAccelInit ctHiQVAccelInit
-#else
-#define _ctAccelInit ctMMIOAccelInit
-#endif
-#else
-#define _ctAccelInit ctAccelInit
-#endif
-void _ctAccelInit() {
-    unsigned int ctCacheStart;
-    unsigned int ctColorExpandScratchAddr = 0;
-    unsigned int ctColorExpandScratchSize = 0;
-
-    /* Set up the addresses for the start and end of the pixmap cache
-     * and for the ping-pong buffers
+    /*
+     * Setup some global variables
      */
-    ctCacheStart =  vga256InfoRec.virtualY * vga256InfoRec.displayWidth * 
-	vga256InfoRec.bitsPerPixel / 8;
-    
-#ifdef CHIPS_SCREEN2SCREEN
-    /* I have trouble with these, on both a 65545 and 65550. So Disable */
-    if ((((ctCacheEnd - ctCacheStart) / (vga256InfoRec.displayWidth * 
-	  vga256InfoRec.bitsPerPixel / 8)) > 16) && 
-	  (!(vga256InfoRec.bitsPerPixel == 32))) {
-	/* Only create ping-pong buffers if there is enough space */
-	ctColorExpandScratchAddr = ctCacheEnd - 1024;
-	ctColorExpandScratchSize = 1024 ;
-    } else {
-	ctColorExpandScratchAddr = 0;
-	ctColorExpandScratchSize = 0 ;
-    }
-#else
-    ctColorExpandScratchAddr = 0;
-    ctColorExpandScratchSize = 0 ;
-#endif
+    cAcl->BytesPerPixel = pScrn->bitsPerPixel >> 3;
+    cAcl->PitchInBytes = pScrn->displayWidth * cAcl->BytesPerPixel;
+
     /*
      * Set up the main acceleration flags.
      */
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE |
-                             DELAYED_SYNC;
-    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_NO_PLANEMASK |
-	HARDWARE_PATTERN_MONO_TRANSPARENCY | HARDWARE_PATTERN_MOD_64_OFFSET |
-	HARDWARE_PATTERN_SCREEN_ORIGIN | HARDWARE_PATTERN_BIT_ORDER_MSBFIRST;
-#ifdef CHIPS_HIQV
-    if (ctColorTransparency)
-	xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;
-#endif
+    infoPtr->Flags = PIXMAP_CACHE;
 
     /*
      * The following line installs a "Sync" function, that waits for
      * all coprocessor operations to complete.
      */
-    xf86AccelInfoRec.Sync = CTNAME(Sync);
+    infoPtr->Sync = CTNAME(Sync);
 
     /* 
      * Setup a Screen to Screen copy (BitBLT) primitive
      */  
 #ifndef CHIPS_HIQV
-    xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY;
-    if (vga256InfoRec.bitsPerPixel == 24)
-	xf86GCInfoRec.CopyAreaFlags |= NO_PLANEMASK;
+    infoPtr->ScreenToScreenCopyFlags = NO_TRANSPARENCY;
+    if (pScrn->bitsPerPixel == 24)
+	infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
 #else
-    xf86GCInfoRec.CopyAreaFlags = 0;
-    if ((vga256InfoRec.bitsPerPixel == 24) || (vga256InfoRec.bitsPerPixel == 32))
-	xf86GCInfoRec.CopyAreaFlags |= NO_PLANEMASK;
+    infoPtr->ScreenToScreenCopyFlags = 0;
+    if ((pScrn->bitsPerPixel == 24) || (pScrn->bitsPerPixel == 32))
+	infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
 
     /* A Chips and Technologies application notes says that some
      * 65550 have a bug that prevents 16bpp transparency. It probably
      * applies to 24 bpp as well (Someone with a 65550 care to check?).
      * Selection of this controlled in Probe.
      */
-    if (!ctColorTransparency)
-	xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
+    if (!(cPtr->Flags & ChipsColorTransparency))
+	infoPtr->ScreenToScreenCopyFlags |= NO_TRANSPARENCY;
 #endif
-    xf86AccelInfoRec.SetupForScreenToScreenCopy =
-	CTNAME(SetupForScreenToScreenCopy);
-    xf86AccelInfoRec.SubsequentScreenToScreenCopy =
-	CTNAME(SubsequentScreenToScreenCopy);
+
+#ifdef CHIPS_SCREEN2SCREEN
+    infoPtr->SetupForScreenToScreenCopy = CTNAME(SetupForScreenToScreenCopy);
+    infoPtr->SubsequentScreenToScreenCopy =
+		CTNAME(SubsequentScreenToScreenCopy);
+#endif
 
     /*
      * Install the low-level functions for drawing solid filled rectangles.
      */
-    xf86GCInfoRec.PolyFillRectSolidFlags = NO_PLANEMASK;
-    switch (vga256InfoRec.bitsPerPixel) {
+    infoPtr->SolidFillFlags |= NO_PLANEMASK;
+#ifdef CHIPS_SOLIDFILLRECT
+    switch (pScrn->bitsPerPixel) {
     case 8 :
-        xf86AccelInfoRec.SetupForFillRectSolid =
-	    CTNAME(8SetupForFillRectSolid);
-        xf86AccelInfoRec.SubsequentFillRectSolid =
-	    CTNAME(SubsequentFillRectSolid);
+	infoPtr->SetupForSolidFill = CTNAME(8SetupForSolidFill);
+	infoPtr->SubsequentSolidFillRect = CTNAME(SubsequentSolidFillRect);
         break;
     case 16 :
-        xf86AccelInfoRec.SetupForFillRectSolid =
-	    CTNAME(16SetupForFillRectSolid);
-        xf86AccelInfoRec.SubsequentFillRectSolid = 
-	    CTNAME(SubsequentFillRectSolid);
+	infoPtr->SetupForSolidFill = CTNAME(16SetupForSolidFill);
+	infoPtr->SubsequentSolidFillRect = CTNAME(SubsequentSolidFillRect);
         break;
     case 24 :
-        xf86AccelInfoRec.SetupForFillRectSolid = 
-	    CTNAME(24SetupForFillRectSolid);
+	infoPtr->SetupForSolidFill = CTNAME(24SetupForSolidFill);
 #ifdef CHIPS_HIQV
-        xf86AccelInfoRec.SubsequentFillRectSolid =
-	    CTNAME(SubsequentFillRectSolid);
+	infoPtr->SubsequentSolidFillRect = CTNAME(SubsequentSolidFillRect);
 #else
 	/*
 	 * The version of this function here uses three different
@@ -246,332 +232,357 @@ void _ctAccelInit() {
 	 * one scanline of the fill in off screen memory which is
 	 * then used by a CopyArea function with a complex ROP.
 	 */
-        xf86AccelInfoRec.SubsequentFillRectSolid =
-	    CTNAME(24SubsequentFillRectSolid);
-        if (ctBLTPatternAddress < 0)
-	    xf86GCInfoRec.PolyFillRectSolidFlags |= GXCOPY_ONLY;
-	  
+	infoPtr->SubsequentSolidFillRect = CTNAME(24SubsequentSolidFillRect);
+        if (cAcl->ScratchAddress < 0)
+	    infoPtr->ScreenToScreenCopyFlags |= GXCOPY_ONLY;
 #endif
         break;
 #ifdef CHIPS_HIQV
     case 32:
-        if (ctBLTPatternAddress > 0) {
-	    xf86AccelInfoRec.SetupForFillRectSolid = 
-		CTNAME(32SetupForFillRectSolid);
-	    xf86AccelInfoRec.SubsequentFillRectSolid =
-		CTNAME(32SubsequentFillRectSolid);      
+        if (cAcl->ScratchAddress > 0) {
+	    infoPtr->SetupForSolidFill = CTNAME(32SetupForSolidFill);
+	    infoPtr->SubsequentSolidFillRect =
+		CTNAME(32SubsequentSolidFillRect);
 	}
         break;
 #endif
     }
+#endif  /* CHIPS_SOLIDFILLRECT*/
 
 #ifdef CHIPS_HIQV
     /* At 32bpp we can't use the other acceleration */
-    if (vga256InfoRec.bitsPerPixel == 32) goto chips_pixmap;
+    if (pScrn->bitsPerPixel == 32) goto chips_imagewrite;
 #endif
 
     /*
      * Setup the functions that perform monochrome colour expansion
      */
 
-#ifdef CHIPS_HIQV
-    xf86AccelInfoRec.ColorExpandFlags =
-	VIDEO_SOURCE_GRANULARITY_BYTE | BIT_ORDER_IN_BYTE_MSBFIRST |
-	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
-        | LEFT_EDGE_CLIPPING_NEGATIVE_X;
-    if (vga256InfoRec.bitsPerPixel == 24)
-        xf86AccelInfoRec.ColorExpandFlags |= NO_PLANEMASK;
+#ifdef CHIPS_HIQV 
+    infoPtr->ColorExpandFillFlags =
+	BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_QWORD |
+	LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X;
+        
+    if (pScrn->bitsPerPixel == 24) 
+	infoPtr->ColorExpandFillFlags |= NO_PLANEMASK;
 #else
-    xf86AccelInfoRec.ColorExpandFlags =
-	VIDEO_SOURCE_GRANULARITY_BYTE | BIT_ORDER_IN_BYTE_MSBFIRST |
-	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_DWORD;
-    if (vga256InfoRec.bitsPerPixel == 24)
-	xf86AccelInfoRec.ColorExpandFlags |= TRIPLE_BITS_24BPP |
+    infoPtr->ColorExpandFillFlags =
+	BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_DWORD;
+
+    if (pScrn->bitsPerPixel == 24) 
+	infoPtr->ColorExpandFillFlags |= TRIPLE_BITS_24BPP |
 	    RGB_EQUAL | NO_PLANEMASK;
 #endif
 
-    if (ctColorExpandScratchAddr) {
-	xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
-	    CTNAME(SetupForScanlineScreenToScreenColorExpand);
-	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
-	    CTNAME(SubsequentScanlineScreenToScreenColorExpand);
-	xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
-	    CTNAME(SetupForScreenToScreenColorExpand);
-	xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
-	    CTNAME(SubsequentScreenToScreenColorExpand);
-	xf86AccelInfoRec.ScratchBufferAddr = ctColorExpandScratchAddr;
-	xf86AccelInfoRec.ScratchBufferSize = ctColorExpandScratchSize;
-    }
-    
-    xf86AccelInfoRec.SetupForScanlineCPUToScreenColorExpand =
-	CTNAME(SetupForScanlineCPUToScreenColorExpand);
-    xf86AccelInfoRec.SubsequentScanlineCPUToScreenColorExpand =
-	CTNAME(SubsequentScanlineCPUToScreenColorExpand);
+#ifdef CHIPS_COLOREXPANDFILL
+    infoPtr->SetupForColorExpandFill = CTNAME(SetupForColorExpandFill);
+    infoPtr->SubsequentColorExpandFillRect =
+		CTNAME(SubsequentColorExpandFillRect);
+#endif  /* CHIPS_COLOREXPANDFILL */
 
-    xf86AccelInfoRec.SetupForCPUToScreenColorExpand =
-	CTNAME(SetupForCPUToScreenColorExpand);
-    xf86AccelInfoRec.SubsequentCPUToScreenColorExpand =
-	CTNAME(SubsequentCPUToScreenColorExpand);
+    infoPtr->ColorExpandBase = (unsigned char *)cAcl->BltDataWindow;
+    infoPtr->ColorExpandRange = 64 * 1024;
 
-    xf86AccelInfoRec.CPUToScreenColorExpandBase =
-	(unsigned int *)ctBltDataWindow;
-    xf86AccelInfoRec.CPUToScreenColorExpandRange = 64 * 1024;
+    /* Mono 8x8 pattern fills */
+    infoPtr->Mono8x8PatternFillFlags = NO_PLANEMASK | 
+	BIT_ORDER_IN_BYTE_MSBFIRST | HARDWARE_PATTERN_SCREEN_ORIGIN;
 
-    /* HiQV chips support 24bpp pattern tile. But XAA has problems with it */
-    if (vga256InfoRec.bitsPerPixel != 24) {
-        xf86AccelInfoRec.SetupForFill8x8Pattern =
-	    CTNAME(SetupForFill8x8Pattern);
-        xf86AccelInfoRec.SubsequentFill8x8Pattern =
-            CTNAME(SubsequentFill8x8Pattern);
-        xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
-	    CTNAME(SetupFor8x8PatternColorExpand);
-        xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
-            CTNAME(Subsequent8x8PatternColorExpand);
-    }
-
-    /* Setup for the Image Write functions */
-#ifdef CHIPS_IMAGEWRITE
-    xf86AccelInfoRec.ImageWriteFlags =
-	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
-        | LEFT_EDGE_CLIPPING_NEGATIVE_X | NO_TRANSPARENCY;
-
-    if (vga256InfoRec.bitsPerPixel == 24)
-        xf86AccelInfoRec.ImageWriteFlags |= NO_PLANEMASK;
-    if (vga256InfoRec.bitsPerPixel != 24)
-    xf86AccelInfoRec.DoImageWrite = CTNAME(DoPixWinBitBltCopy);
-#else
-    xf86AccelInfoRec.SetupForImageWrite = CTNAME(SetupForImageWrite);
-    xf86AccelInfoRec.SubsequentImageWrite = CTNAME(SubsequentImageWrite);
-    xf86AccelInfoRec.ImageWriteBase = (unsigned int *)ctBltDataWindow;
-    xf86AccelInfoRec.ImageWriteRange = 64 * 1024;
 #ifdef CHIPS_HIQV
-    xf86AccelInfoRec.ImageWriteFlags =
-	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
+    infoPtr->SetupForMono8x8PatternFill =
+	CTNAME(SetupForMono8x8PatternFill);
+    infoPtr->SubsequentMono8x8PatternFillRect =
+	CTNAME(SubsequentMono8x8PatternFillRect);
+#else
+    if (pScrn->bitsPerPixel != 24) {
+	infoPtr->SetupForMono8x8PatternFill =
+	    CTNAME(SetupForMono8x8PatternFill);
+	infoPtr->SubsequentMono8x8PatternFillRect =
+	    CTNAME(SubsequentMono8x8PatternFillRect);
+    }
+#endif
+
+    /* Color 8x8 pattern fills, must have a displayWidth divisible by 64 */
+    if (!(pScrn->displayWidth % 64)) {
+#ifdef CHIPS_HIQV
+	infoPtr->Color8x8PatternFillFlags = NO_PLANEMASK | 
+	    HARDWARE_PATTERN_SCREEN_ORIGIN;
+	if (!(cPtr->Flags & ChipsColorTransparency))
+	    infoPtr->Color8x8PatternFillFlags |= NO_TRANSPARENCY;
+#else
+	infoPtr->Color8x8PatternFillFlags = NO_PLANEMASK | 
+	    HARDWARE_PATTERN_SCREEN_ORIGIN | NO_TRANSPARENCY;
+#endif
+
+	if (pScrn->bitsPerPixel != 24) {
+	    infoPtr->SetupForColor8x8PatternFill =
+		CTNAME(SetupForColor8x8PatternFill);
+	    infoPtr->SubsequentColor8x8PatternFillRect =
+		CTNAME(SubsequentColor8x8PatternFillRect);
+	}
+    }
+
+#ifdef CHIPS_HIQV
+chips_imagewrite:
+#endif
+
+#ifdef CHIPS_WRITEPIXMAP
+    /* Setup for the Image Write functions */
+#ifdef CHIPS_HIQV
+    infoPtr->WritePixmapFlags = CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
         | LEFT_EDGE_CLIPPING_NEGATIVE_X;
 
-    if (!ctColorTransparency)
-	xf86AccelInfoRec.ImageWriteFlags |= NO_TRANSPARENCY;
+    if (!(cPtr->Flags & ChipsColorTransparency))
+        infoPtr->WritePixmapFlags |= NO_TRANSPARENCY;
+    if ((pScrn->bitsPerPixel == 24) || (pScrn->bitsPerPixel == 32))
+	infoPtr->WritePixmapFlags |= NO_PLANEMASK;
+
+    infoPtr->WritePixmap = CTNAME(WritePixmap);
 #else
-    xf86AccelInfoRec.ImageWriteFlags = SCANLINE_PAD_DWORD | NO_TRANSPARENCY |
-      CPU_TRANSFER_PAD_DWORD;
+    infoPtr->SetupForImageWrite = CTNAME(SetupForImageWrite);
+    infoPtr->SubsequentImageWriteRect = CTNAME(SubsequentImageWriteRect);
+    infoPtr->ImageWriteBase = (unsigned char *)cAcl->BltDataWindow;
+    infoPtr->ImageWriteRange = 64 * 1024;
+    infoPtr->ImageWriteFlags = NO_TRANSPARENCY | CPU_TRANSFER_PAD_DWORD;
+    if ((pScrn->bitsPerPixel == 24) || (pScrn->bitsPerPixel == 32))
+        infoPtr->ImageWriteFlags |= NO_PLANEMASK;
 #endif
-    if (vga256InfoRec.bitsPerPixel == 24)
-        xf86AccelInfoRec.ImageWriteFlags |= NO_PLANEMASK;
-#endif
+#endif  /* CHIPS_WRITEPIXMAP */
 
-chips_pixmap:
-    xf86InitPixmapCache(&vga256InfoRec, ctCacheStart, ctCacheEnd);
+    AvailFBArea.x1 = 0;
+    AvailFBArea.y1 = 0;
+    AvailFBArea.x2 = pScrn->displayWidth;
+    AvailFBArea.y2 = cAcl->CacheEnd /
+      (pScrn->displayWidth * cAcl->BytesPerPixel);
 
+    xf86InitFBManager(pScreen, &AvailFBArea); 
+
+    return(XAAInit(pScreen, infoPtr));
 }
 
-void CTNAME(Sync)() {
+void
+CTNAME(Sync)(ScrnInfoPtr pScrn)
+{
+#ifndef CHIPS_HIQV
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+#endif
     ctBLTWAIT;
 }
 
-/*
- * Solid rectangle fill.
- */
-
-void CTNAME(8SetupForFillRectSolid)(color, rop, planemask)
-    int color, rop;
-    unsigned planemask;
+static void
+CTNAME(8SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
+				int rop, unsigned int planemask)
 {
-    CommandFlags = ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT 
-	     | ctPATSOLID | ctPATMONO;
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+
+    cAcl->CommandFlags = ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM 
+	     | ctLEFT2RIGHT | ctPATSOLID | ctPATMONO;
     ctBLTWAIT;
     ctSETBGCOLOR8(color);
     ctSETFGCOLOR8(color);
-    ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
+    ctSETPITCH(0, cAcl->PitchInBytes);
 }
 
-void CTNAME(16SetupForFillRectSolid)(color, rop, planemask)
-    int color, rop;
-    unsigned planemask;
+static void
+CTNAME(16SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
+				int rop, unsigned int planemask)
 {
-    CommandFlags = ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT 
-	     | ctPATSOLID | ctPATMONO;
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+
+    cAcl->CommandFlags = ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM 
+	     | ctLEFT2RIGHT | ctPATSOLID | ctPATMONO;
     ctBLTWAIT;
-    ctSETFGCOLOR16(color);
     ctSETBGCOLOR16(color);
-    ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
+    ctSETFGCOLOR16(color);
+    ctSETPITCH(0, cAcl->PitchInBytes);
 }
 
 #ifdef CHIPS_HIQV
-void CTNAME(24SetupForFillRectSolid)(color, rop, planemask)
-    int color, rop;
-    unsigned planemask;
+static void
+CTNAME(24SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
+				int rop, unsigned int planemask)
 {
-    CommandFlags = ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT 
-	     | ctPATSOLID | ctPATMONO;
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+
+    cAcl->CommandFlags = ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM 
+	     | ctLEFT2RIGHT | ctPATSOLID | ctPATMONO;
     ctBLTWAIT;
-    ctSETFGCOLOR24(color);
     ctSETBGCOLOR24(color);
-    ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
+    ctSETFGCOLOR24(color);
+    ctSETPITCH(0, cAcl->PitchInBytes);
 }
 
-void CTNAME(32SetupForFillRectSolid)(color, rop, planemask)
-    int color, rop;
-    unsigned planemask;
+static void
+CTNAME(32SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
+				int rop, unsigned int planemask)
 {
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+
     ctBLTWAIT;
-    xf86memset((unsigned char *)vgaLinearBase + ctBLTPatternAddress, 0xAA, 8);
+    xf86memset((unsigned char *)cPtr->FbBase + cAcl->ScratchAddress, 0xAA, 8);
     ctSETFGCOLOR16((color & 0xFFFF));
     ctSETBGCOLOR16(((color >> 16) & 0xFFFF));
-    ctSETROP(ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT |
+    ctSETROP(ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT |
       ctPATMONO);
-    ctSETPATSRCADDR(ctBLTPatternAddress);
-    ctSETPITCH(1,(vga256InfoRec.displayWidth << 2));
+    ctSETPATSRCADDR(cAcl->ScratchAddress);
+    ctSETPITCH(1, cAcl->PitchInBytes);
 }
 
-void CTNAME(32SubsequentFillRectSolid)(x, y, w, h)
-    int x, y, w, h;
+static void
+CTNAME(32SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w,
+				  int h)
 {
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+
     unsigned int destaddr;
-    destaddr = (y * vga256InfoRec.displayWidth + x) << 2;
+    destaddr = (y * pScrn->displayWidth + x) << 2;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
     ctSETHEIGHTWIDTHGO(h, (w << 2));
 }
 #else
 
-static unsigned char fgpixel, bgpixel, xorpixel;
-static int fillindex;
-static Bool fastfill, rgb24equal;
-static unsigned int width24bpp, color24bpp, rop24bpp;
-
-void CTNAME(24SetupForFillRectSolid)(color, rop, planemask)
-    int color, rop;
-    unsigned planemask;
+static void
+CTNAME(24SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
+				int rop, unsigned int planemask)
 {
     unsigned char pixel1, pixel2, pixel3;
-
-    if (rgb24equal = (((color & 0xFF) == ((color& 0xFF00) >> 8) && 
-		       (color & 0xFF) == ((color& 0xFF0000) >> 16)))) {
-        CommandFlags = ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT 
-	         | ctPATSOLID | ctPATMONO;
-        ctBLTWAIT;
-        ctSETFGCOLOR8(color&0xFF);
-        ctSETBGCOLOR8(color&0xFF);
-        ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
-
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+ 
+    cAcl->rgb24equal = ((((color & 0xFF) == ((color & 0xFF00) >> 8)) && 
+		       ((color & 0xFF) == ((color & 0xFF0000) >> 16))));
+    if (cAcl->rgb24equal) {
+	cAcl->CommandFlags = ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM |
+	         ctLEFT2RIGHT | ctPATSOLID | ctPATMONO;
+	ctBLTWAIT;
+	ctSETFGCOLOR8(color&0xFF);
+	ctSETBGCOLOR8(color&0xFF);
+	ctSETPITCH(0, cAcl->PitchInBytes);
     } else {
-        rop24bpp = rop;
-        if (rop == GXcopy) {
+	cAcl->rop24bpp = rop;
+	if (rop == GXcopy) {
 	    pixel3 = color & 0xFF;
 	    pixel2 = (color >> 8) & 0xFF;
 	    pixel1 = (color >> 16) & 0xFF;
-	    fgpixel = pixel1;
-	    bgpixel = pixel2;
-	    fillindex = 0;
-	    fastfill = FALSE;
+	    cAcl->fgpixel = pixel1;
+	    cAcl->bgpixel = pixel2;
+	    cAcl->fillindex = 0;
+	    cAcl->fastfill = FALSE;
 
 	    /* Test for the special case where two of the byte of the 
 	     * 24bpp colour are the same. This can double the speed
 	     */
 	    if (pixel1 == pixel2) {
-	        fgpixel = pixel3;
-		bgpixel = pixel1;
-		fastfill = TRUE;
-		fillindex = 1;
+		cAcl->fgpixel = pixel3;
+		cAcl->bgpixel = pixel1;
+		cAcl->fastfill = TRUE;
+		cAcl->fillindex = 1;
 	    } else if (pixel1 == pixel3) { 
-	        fgpixel = pixel2;
-		bgpixel = pixel1;
-		fastfill = TRUE;
-		fillindex = 2;
+		cAcl->fgpixel = pixel2;
+		cAcl->bgpixel = pixel1;
+		cAcl->fastfill = TRUE;
+		cAcl->fillindex = 2;
 	    } else if (pixel2 == pixel3) { 
-	        fastfill = TRUE;
+		cAcl->fastfill = TRUE;
 	    } else {
-	      xorpixel = pixel2 ^ pixel3;
+		cAcl->xorpixel = pixel2 ^ pixel3;
 	    }
 
-	    CommandFlags = ctSRCMONO | ctSRCSYSTEM | ctTOP2BOTTOM | 
+	    cAcl->CommandFlags = ctSRCMONO | ctSRCSYSTEM | ctTOP2BOTTOM | 
 	             ctLEFT2RIGHT;
 	    ctBLTWAIT;
-	    if (fastfill) { 
-	        ctSETFGCOLOR8(fgpixel);
+	    if (cAcl->fastfill) { 
+		ctSETFGCOLOR8(cAcl->fgpixel);
 	    }
-	    ctSETBGCOLOR8(bgpixel);
+	    ctSETBGCOLOR8(cAcl->bgpixel);
 	    ctSETSRCADDR(0);
-	    ctSETPITCH(0, vga256InfoRec.displayWidth * 3);
+	    ctSETPITCH(0, cAcl->PitchInBytes);
 	} else {
-	    if (color24bpp != color) {
-	        color24bpp = color;
-		width24bpp = 0;
+	    if (cAcl->color24bpp != color) {
+		cAcl->color24bpp = color;
+		cAcl->width24bpp = 0;
 	    }
-	    rop24bpp = rop;
+	    cAcl->rop24bpp = rop;
 	    ctBLTWAIT;
-	    ctSETROP(ctTOP2BOTTOM | ctLEFT2RIGHT | ctAluConv[rop & 0xF]);
-	    ctSETPITCH(3* vga256InfoRec.displayWidth,
-		       3* vga256InfoRec.displayWidth);
+	    ctSETROP(ctTOP2BOTTOM | ctLEFT2RIGHT | ChipsAluConv[rop & 0xF]);
+	    ctSETPITCH(cAcl->PitchInBytes, cAcl->PitchInBytes);
 	}
     }
 }
 
-void CTNAME(24SubsequentFillRectSolid)(x, y, w, h)
-    int x, y, w, h;
+static void
+CTNAME(24SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w,
+				  int h)
 {
     static unsigned int dwords[3] = { 0x24499224, 0x92244992, 0x49922449};
-    int srcaddr, destaddr, line, i, dispw;
-    register unsigned char *base;
+    int srcaddr, destaddr, line, i;
     register int width;
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
-    if (rgb24equal) {
-	destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
+    if (cAcl->rgb24equal) {
+	destaddr = y * pScrn->displayWidth + x;
+	destaddr += destaddr << 1;
 	ctBLTWAIT;
-	ctSETROP(CommandFlags);
+	ctSETROP(cAcl->CommandFlags);
 	ctSETDSTADDR(destaddr);
-	ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
+	ctSETHEIGHTWIDTHGO(h, (w + (w << 1)));
     } else {
-	if (rop24bpp == GXcopy ) {
-	    dispw = vga256InfoRec.displayWidth  * 3;
-	    destaddr = y * dispw + x * 3;
+	if (cAcl->rop24bpp == GXcopy ) {
+	    unsigned int *base = (unsigned int *)cAcl->BltDataWindow;
+	    destaddr = y * cAcl->PitchInBytes + x * 3;
 	    w *= 3;
 	    width = ((w  + 31) & ~31) >> 5;
-
+	    
 	    ctBLTWAIT;
 	    ctSETDSTADDR(destaddr);
 
-	    if (!fastfill) ctSETFGCOLOR8(fgpixel);
-	    ctSETROP(CommandFlags | ctAluConv[GXcopy & 0xF]);
+	    if (!cAcl->fastfill) ctSETFGCOLOR8(cAcl->fgpixel);
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[GXcopy & 0xF]);
 	    ctSETDSTADDR(destaddr);
-	    if (fastfill) {
-	        ctSETHEIGHTWIDTHGO(h, w);
+	    if (cAcl->fastfill) {
+		ctSETHEIGHTWIDTHGO(h, w);
 		line = 0;
 		while (line < h) {
+		    base = (unsigned int *)cAcl->BltDataWindow;
 		    for (i = 0; i < width; i++) {
-		      *(unsigned int *)ctBltDataWindow = 
-			  dwords[((fillindex + i) % 3)];
+			*base++ = dwords[((cAcl->fillindex + i) % 3)];
 		    }
 		    line++;
 		}
 	    } else {
-	        ctSETHEIGHTWIDTHGO(1, w);
+		ctSETHEIGHTWIDTHGO(1, w);
 		i = 0;
 		while(i < width){
-		    *(unsigned int *)ctBltDataWindow = dwords[(i++ % 3)];
+		    *base++ = dwords[(i++ % 3)];
 		}
 		for(line = 0; (h >> line ) > 1; line++){;}
 		i = 0;
 		ctBLTWAIT;
-		ctSETFGCOLOR8(xorpixel);
-		ctSETROP(CommandFlags | ctAluConv[GXxor & 0xF] |
+		ctSETFGCOLOR8(cAcl->xorpixel);
+		ctSETROP(cAcl->CommandFlags | ChipsAluConv[GXxor & 0xF] |
 			 ctBGTRANSPARENT);
 		ctSETDSTADDR(destaddr);
 		ctSETHEIGHTWIDTHGO(1, w);
+		base = (unsigned int *)cAcl->BltDataWindow;
 		while(i < width) {
-		    *(unsigned int *)ctBltDataWindow = dwords[((++i) % 3)];
+		    *base++ = dwords[((++i) % 3)];
 		}
 		srcaddr = destaddr;
 		if(line){
 		    i = 0;
 		    ctBLTWAIT;
 		    ctSETROP(ctTOP2BOTTOM | ctLEFT2RIGHT |
-			     ctAluConv[GXcopy & 0xF]);
-		    ctSETPITCH(dispw, dispw);
+			     ChipsAluConv[GXcopy & 0xF]);
+		    ctSETPITCH(cAcl->PitchInBytes, cAcl->PitchInBytes);
 		    ctSETSRCADDR(srcaddr);
 	    
 		    while(i < line){
-		        destaddr = srcaddr + (dispw << i);
+		        destaddr = srcaddr + (cAcl->PitchInBytes << i);
 			ctBLTWAIT;
 			ctSETDSTADDR(destaddr);
 			ctSETHEIGHTWIDTHGO((1 << i), w);
@@ -579,7 +590,7 @@ void CTNAME(24SubsequentFillRectSolid)(x, y, w, h)
 		    }
 
 		    if((1 <<  line)  < h){
-		        destaddr = srcaddr + (dispw << line);
+			destaddr = srcaddr + (cAcl->PitchInBytes << line);
 			ctBLTWAIT;
 			ctSETDSTADDR(destaddr);
 			ctSETHEIGHTWIDTHGO(h-(1 << line), w);
@@ -587,54 +598,59 @@ void CTNAME(24SubsequentFillRectSolid)(x, y, w, h)
 
 		    ctBLTWAIT;
 		    ctSETROP(ctSRCMONO | ctSRCSYSTEM | ctTOP2BOTTOM |
-			     ctLEFT2RIGHT | ctAluConv[GXcopy & 0xF]);
+			     ctLEFT2RIGHT | ChipsAluConv[GXcopy & 0xF]);
 		    ctSETSRCADDR(0);
-		    ctSETPITCH(0, dispw);
+		    ctSETPITCH(0, cAcl->PitchInBytes);
 		}
 	    }
 	} else {
-	  if (width24bpp < w) {
-	      base = (unsigned char *)vgaLinearBase + ctBLTPatternAddress +
-		   ((3 * width24bpp + 3) & ~0x3);
-	      width = w - width24bpp;
-	      ctBLTWAIT;
-	      /* Load of a single scanline into framebuffer */
-	      while (width > 0) {
-		  *(unsigned int *)base = color24bpp | (color24bpp << 24);
-		  *(unsigned int *)(base + 4) = (color24bpp >> 8) |
-		       (color24bpp << 16);
-		  *(unsigned int *)(base + 8) = (color24bpp >> 16) |
-		       (color24bpp << 8);
-		  base += 12;
-		  width -= 4;
-	      }
-	      width24bpp = w - width;
-	  }
-	  line = 0;
-	  destaddr = 3 * (y * vga256InfoRec.displayWidth + x);
-	  while (line < h) {
-	      ctBLTWAIT;
-	      ctSETSRCADDR(ctBLTPatternAddress);
-	      ctSETDSTADDR(destaddr);
-	      ctSETHEIGHTWIDTHGO(1, vgaBytesPerPixel * w);
-	      destaddr += (3 * vga256InfoRec.displayWidth);
-	      line++;
-	  }
+	    register unsigned char *base;
+	    if (cAcl->width24bpp < w) {
+		base = (unsigned char *)cPtr->FbBase + cAcl->ScratchAddress + 
+		    ((3 * cAcl->width24bpp + 3) & ~0x3);
+		width = w - cAcl->width24bpp;
+		ctBLTWAIT;
+		/* Load of a single scanline into framebuffer */
+		while (width > 0) {
+		    *(unsigned int *)base = cAcl->color24bpp |
+		      (cAcl->color24bpp << 24);
+		    *(unsigned int *)(base + 4) = (cAcl->color24bpp >> 8) |
+		      (cAcl->color24bpp << 16);
+		    *(unsigned int *)(base + 8) = (cAcl->color24bpp >> 16) |
+		      (cAcl->color24bpp << 8);
+		    base += 12;
+		    width -= 4;
+		}
+		cAcl->width24bpp = w - width;
+	    }
+	    line = 0;
+	    destaddr = 3 * (y * pScrn->displayWidth + x);
+	    while (line < h) {
+		ctBLTWAIT;
+		ctSETSRCADDR(cAcl->ScratchAddress);
+		ctSETDSTADDR(destaddr);
+		ctSETHEIGHTWIDTHGO(1, cAcl->BytesPerPixel * w);
+		destaddr += (3 * pScrn->displayWidth);
+		line++;
+	    }
 	}
     }
 }
 #endif
 
-void CTNAME(SubsequentFillRectSolid)(x, y, w, h)
-    int x, y, w, h;
+static void
+CTNAME(SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w,
+				  int h)
 {
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     int destaddr;
 
-    destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
+    destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
     ctBLTWAIT;
-    ctSETROP(CommandFlags);
+    ctSETROP(cAcl->CommandFlags);
     ctSETDSTADDR(destaddr);
-    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, w * cAcl->BytesPerPixel);
 }
 
 /*
@@ -642,114 +658,115 @@ void CTNAME(SubsequentFillRectSolid)(x, y, w, h)
  *
  */
  
-void CTNAME(SetupForScreenToScreenCopy)(xdir, ydir, rop, planemask,
-transparency_color)
-    int xdir, ydir;
-    int rop;
-    unsigned planemask;
-    int transparency_color;
+static void
+CTNAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir,
+				int rop, unsigned int planemask, int trans)
 {
-    CommandFlags = 0;
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+
+    cAcl->CommandFlags = 0;
+    
     /* Set up the blit direction. */
     if (ydir < 0)
-	CommandFlags |= ctBOTTOM2TOP;
+	cAcl->CommandFlags |= ctBOTTOM2TOP;
     else
-	CommandFlags |= ctTOP2BOTTOM;
+	cAcl->CommandFlags |= ctTOP2BOTTOM;
     if (xdir < 0)
-	CommandFlags |= ctRIGHT2LEFT;
+	cAcl->CommandFlags |= ctRIGHT2LEFT;
     else
-	CommandFlags |= ctLEFT2RIGHT;
+	cAcl->CommandFlags |= ctLEFT2RIGHT;
 #ifdef CHIPS_HIQV
-    if (transparency_color != -1) {
-	CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
+    if (trans != -1) {
+	cAcl->CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
 	    ctCOLORTRANSNEQUAL;
 	ctBLTWAIT;
-        switch (vga256InfoRec.bitsPerPixel) {
+        switch (pScrn->bitsPerPixel) {
         case 8:
-	    ctSETBGCOLOR8(transparency_color);
+	    ctSETBGCOLOR8(trans);
 	    break;
         case 16:
-	    ctSETBGCOLOR16(transparency_color);
+	    ctSETBGCOLOR16(trans);
 	    break;
         case 24:
-	    ctSETBGCOLOR24(transparency_color);
+	    ctSETBGCOLOR24(trans);
 	    break;
         }
     } else
 #endif
     ctBLTWAIT;
-    if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
-    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
-    (vga256InfoRec.bitsPerPixel == 32))
+    if ((pScrn->bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
+    (pScrn->bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
+    (pScrn->bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
+    (pScrn->bitsPerPixel == 32))
     {
-	ctSETROP(CommandFlags | ctAluConv[rop & 0xF]);
+	ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
     } else {
-	ctSETROP(CommandFlags | ctAluConv3[rop & 0xF]);
-	ctSETPATSRCADDR(ctBLTPatternAddress);
-	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
+	ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
+	ctSETPATSRCADDR(cAcl->ScratchAddress);
+	ctWRITEPLANEMASK(planemask, cAcl->ScratchAddress);
     }
-    ctSETPITCH(vga256InfoRec.displayWidth * vgaBytesPerPixel,
-	       vga256InfoRec.displayWidth * vgaBytesPerPixel);
+    ctSETPITCH(cAcl->PitchInBytes, cAcl->PitchInBytes);
 }
 
-void CTNAME(SubsequentScreenToScreenCopy)(x1, y1, x2, y2, w, h)
-    int x1, y1, x2, y2, w, h;
-{
+static void
+CTNAME(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int srcX, int srcY,
+				int dstX, int dstY, int w, int h)
+{ 
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+
     unsigned int srcaddr, destaddr;
 #ifdef CHIPS_HIQV
-    if (CommandFlags & ctBOTTOM2TOP) {
-        srcaddr = (y1 + h - 1) * vga256InfoRec.displayWidth;
-	destaddr = (y2 + h - 1) * vga256InfoRec.displayWidth;
+    if (cAcl->CommandFlags & ctBOTTOM2TOP) {
+        srcaddr = (srcY + h - 1) * pScrn->displayWidth;
+	destaddr = (dstY + h - 1) * pScrn->displayWidth;
     } else {
-        srcaddr = y1 * vga256InfoRec.displayWidth;
-        destaddr = y2 * vga256InfoRec.displayWidth;
+        srcaddr = srcY * pScrn->displayWidth;
+        destaddr = dstY * pScrn->displayWidth;
     }
-    if (CommandFlags & ctRIGHT2LEFT) {
-	srcaddr = ( srcaddr + x1 + w ) * vgaBytesPerPixel - 1 ;
-	destaddr = ( destaddr + x2 + w ) * vgaBytesPerPixel - 1;
+    if (cAcl->CommandFlags & ctRIGHT2LEFT) {
+	srcaddr = ( srcaddr + srcX + w ) * cAcl->BytesPerPixel - 1 ;
+	destaddr = ( destaddr + dstX + w ) * cAcl->BytesPerPixel - 1;
     } else {
-	srcaddr = (srcaddr + x1) * vgaBytesPerPixel;
-	destaddr = (destaddr + x2) * vgaBytesPerPixel;
+	srcaddr = (srcaddr + srcX) * cAcl->BytesPerPixel;
+	destaddr = (destaddr + dstX) * cAcl->BytesPerPixel;
     }
 #else
-    if (CommandFlags & ctTOP2BOTTOM) {
-        srcaddr = y1 * vga256InfoRec.displayWidth;
-        destaddr = y2 * vga256InfoRec.displayWidth;
+    if (cAcl->CommandFlags & ctTOP2BOTTOM) {
+        srcaddr = srcY * pScrn->displayWidth;
+        destaddr = dstY * pScrn->displayWidth;
     } else {
-        srcaddr = (y1 + h - 1) * vga256InfoRec.displayWidth;
-	destaddr = (y2 + h - 1) * vga256InfoRec.displayWidth;
+        srcaddr = (srcY + h - 1) * pScrn->displayWidth;
+	destaddr = (dstY + h - 1) * pScrn->displayWidth;
     }
-    if (CommandFlags & ctLEFT2RIGHT) {
-	srcaddr = (srcaddr + x1) * vgaBytesPerPixel;
-	destaddr = (destaddr + x2) * vgaBytesPerPixel;
+    if (cAcl->CommandFlags & ctLEFT2RIGHT) {
+	srcaddr = (srcaddr + srcX) * cAcl->BytesPerPixel;
+	destaddr = (destaddr + dstX) * cAcl->BytesPerPixel;
     } else {
-	srcaddr = ( srcaddr + x1 + w ) * vgaBytesPerPixel - 1 ;
-	destaddr = ( destaddr + x2 + w ) * vgaBytesPerPixel - 1;
+	srcaddr = ( srcaddr + srcX + w ) * cAcl->BytesPerPixel - 1 ;
+	destaddr = ( destaddr + dstX + w ) * cAcl->BytesPerPixel - 1;
     }
 #endif
     ctBLTWAIT;
     ctSETSRCADDR(srcaddr);
     ctSETDSTADDR(destaddr);
-    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel );
+    ctSETHEIGHTWIDTHGO(h, w * cAcl->BytesPerPixel);
 }
 
-static unsigned int scanlinewidth;
-static unsigned int scanlinedestaddr;
 
-void CTNAME(SetupForScanlineScreenToScreenColorExpand)(x, y, w, h, bg, fg, rop,
-planemask)
-    int x, y, w, h, bg, fg, rop;
-    unsigned int planemask;
+static void 
+CTNAME(SetupForColorExpandFill)(ScrnInfoPtr pScrn, int fg,
+				int bg, int rop, unsigned int planemask)
 {
-    scanlinedestaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
-    scanlinewidth = w * vgaBytesPerPixel;
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
     ctBLTWAIT;
-    CommandFlags = 0;
+    cAcl->CommandFlags = 0;
     if (bg == -1) {
-	CommandFlags |= ctBGTRANSPARENT;	/* Background = Destination */
-        switch (vga256InfoRec.bitsPerPixel) {
+	cAcl->CommandFlags |= ctBGTRANSPARENT;	/* Background = Destination */
+        switch (pScrn->bitsPerPixel) {
         case 8:
 	    ctSETFGCOLOR8(fg);
 	    break;
@@ -766,233 +783,7 @@ planemask)
         }
     }
     else {
-        switch (vga256InfoRec.bitsPerPixel) {
-        case 8:
-	    ctSETBGCOLOR8(bg);
-	    ctSETFGCOLOR8(fg);
-	    break;
-        case 16:
-	    ctSETBGCOLOR16(bg);
-	    ctSETFGCOLOR16(fg);
-	    break;
-        case 24:
-#ifdef CHIPS_HIQV
-	    ctSETBGCOLOR24(bg);
-	    ctSETFGCOLOR24(fg);
-#else
-	    ctSETBGCOLOR8(bg);
-	    ctSETFGCOLOR8(fg);
-#endif
-	    break;
-        }
-    }
-#ifdef CHIPS_HIQV
-    ctSETMONOCTL(ctDWORDALIGN);
-#endif
-   if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
-    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
-    {
-	ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-		 ctAluConv[rop & 0xF] | CommandFlags);
-    } else {
-	ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-		 ctAluConv3[rop & 0xF] | CommandFlags);
-	ctSETPATSRCADDR(ctBLTPatternAddress);
-	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
-    }
-    ctSETPITCH(vga256InfoRec.displayWidth * vgaBytesPerPixel,
-	       vga256InfoRec.displayWidth * vgaBytesPerPixel);
-}
-
-void CTNAME(SubsequentScanlineScreenToScreenColorExpand)(srcaddr)
-    int srcaddr;
-{
-    ctBLTWAIT;
-    ctSETSRCADDR(srcaddr / 8);
-    ctSETDSTADDR(scanlinedestaddr);
-    ctSETHEIGHTWIDTHGO(1, scanlinewidth);
-    scanlinedestaddr += vga256InfoRec.displayWidth * vgaBytesPerPixel;
-}
-
-void CTNAME(SetupForScanlineCPUToScreenColorExpand)(x, y, w, bg, fg, rop,
-planemask)
-    int x, y, w, bg, fg, rop;
-    unsigned int planemask;
-{
-    scanlinedestaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
-    scanlinewidth = w * vgaBytesPerPixel;
-    CommandFlags = 0;
-    ctBLTWAIT;
-    if (bg == -1) {
-	CommandFlags |= ctBGTRANSPARENT;	/* Background = Destination */
-        switch (vga256InfoRec.bitsPerPixel) {
-        case 8:
-	    ctSETFGCOLOR8(fg);
-	    break;
-        case 16:
-	    ctSETFGCOLOR16(fg);
-	    break;
-        case 24:
-#ifdef CHIPS_HIQV
-	    ctSETFGCOLOR24(fg);
-#else
-	    ctSETFGCOLOR8(fg);
-#endif
-	    break;
-        }
-    }
-    else {
-        switch (vga256InfoRec.bitsPerPixel) {
-        case 8:
-	    ctSETBGCOLOR8(bg);
-	    ctSETFGCOLOR8(fg);
-	    break;
-        case 16:
-	    ctSETBGCOLOR16(bg);
-	    ctSETFGCOLOR16(fg);
-	    break;
-        case 24:
-#ifdef CHIPS_HIQV
-	    ctSETBGCOLOR24(bg);
-	    ctSETFGCOLOR24(fg);
-#else
-	    ctSETBGCOLOR8(bg);
-	    ctSETFGCOLOR8(fg);
-#endif
-	    break;
-        }
-    }
-#ifdef CHIPS_HIQV
-    ctSETMONOCTL(ctDWORDALIGN);
-#endif
-    ctSETSRCADDR(0);
-   if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
-    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
-    {
-	ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-		 ctAluConv[rop & 0xF] | CommandFlags);
-    } else {
-	ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-		 ctAluConv3[rop & 0xF] | CommandFlags);
-	ctSETPATSRCADDR(ctBLTPatternAddress);
-	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
-    }
-    ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
-}
-
-void CTNAME(SubsequentScanlineCPUToScreenColorExpand)()
-{
-    ctBLTWAIT;
-    ctSETDSTADDR(scanlinedestaddr);
-    ctSETHEIGHTWIDTHGO(1, scanlinewidth);
-    scanlinedestaddr += vga256InfoRec.displayWidth;
-}
-
-void CTNAME(SetupForScreenToScreenColorExpand)(bg, fg, rop, planemask)
-    int bg, fg, rop;
-    unsigned int planemask;
-{
-    CommandFlags = 0;
-    ctBLTWAIT;
-    if (bg == -1) {
-	CommandFlags |= ctBGTRANSPARENT;	/* Background = Destination */
-        switch (vga256InfoRec.bitsPerPixel) {
-        case 8:
-	    ctSETFGCOLOR8(fg);
-	    break;
-        case 16:
-	    ctSETFGCOLOR16(fg);
-	    break;
-        case 24:
-#ifdef CHIPS_HIQV
-	    ctSETFGCOLOR24(fg);
-#else
-	    ctSETFGCOLOR8(fg);
-#endif
-	    break;
-        }
-    }
-    else {
-        switch (vga256InfoRec.bitsPerPixel) {
-        case 8:
-	    ctSETBGCOLOR8(bg);
-	    ctSETFGCOLOR8(fg);
-	    break;
-        case 16:
-	    ctSETBGCOLOR16(bg);
-	    ctSETFGCOLOR16(fg);
-	    break;
-        case 24:
-#ifdef CHIPS_HIQV
-	    ctSETBGCOLOR24(bg);
-	    ctSETFGCOLOR24(fg);
-#else
-	    ctSETBGCOLOR8(bg);
-	    ctSETFGCOLOR8(fg);
-#endif
-	    break;
-        }
-    }
-#ifdef CHIPS_HIQV
-    ctSETMONOCTL(ctDWORDALIGN);
-#endif
-   if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
-    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
-    {
-	ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-		 ctAluConv[rop & 0xF] | CommandFlags);
-    } else {
-	ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-		 ctAluConv3[rop & 0xF] | CommandFlags);
-	ctSETPATSRCADDR(ctBLTPatternAddress);
-	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
-    }
-    ctSETPITCH(vga256InfoRec.displayWidth * vgaBytesPerPixel,
-	       vga256InfoRec.displayWidth * vgaBytesPerPixel);
-}
-
-void CTNAME(SubsequentScreenToScreenColorExpand)(srcx, srcy, x, y, w, h)
-    int srcx, srcy, x, y, w, h;
-{
-    int srcaddr, destaddr;
-    srcaddr = (srcy * vga256InfoRec.displayWidth + srcx / 8) * 
-	vgaBytesPerPixel;
-    destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
-    ctBLTWAIT;
-    ctSETSRCADDR(srcaddr);
-    ctSETDSTADDR(destaddr);
-    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
-}
-
-void CTNAME(SetupForCPUToScreenColorExpand)(bg, fg, rop, planemask)
-    int bg, fg, rop;
-    unsigned int planemask;
-{
-    ctBLTWAIT;
-    CommandFlags = 0;
-    if (bg == -1) {
-	CommandFlags |= ctBGTRANSPARENT;	/* Background = Destination */
-        switch (vga256InfoRec.bitsPerPixel) {
-        case 8:
-	    ctSETFGCOLOR8(fg);
-	    break;
-        case 16:
-	    ctSETFGCOLOR16(fg);
-	    break;
-        case 24:
-#ifdef CHIPS_HIQV
-	    ctSETFGCOLOR24(fg);
-#else
-	    ctSETFGCOLOR8(fg);
-#endif
-	    break;
-        }
-    }
-    else {
-        switch (vga256InfoRec.bitsPerPixel) {
+        switch (pScrn->bitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(bg);
 	    ctSETFGCOLOR8(fg);
@@ -1019,112 +810,113 @@ void CTNAME(SetupForCPUToScreenColorExpand)(bg, fg, rop, planemask)
 
     ctSETSRCADDR(0);
 
-   if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
-    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
+   if ((pScrn->bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
+    (pScrn->bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
+    (pScrn->bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
     {
 	ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT |
-		 ctAluConv[rop & 0xF] | CommandFlags);
+		 ChipsAluConv[rop & 0xF] | cAcl->CommandFlags);
     } else {
 	ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-		 ctAluConv3[rop & 0xF] | CommandFlags);
-	ctSETPATSRCADDR(ctBLTPatternAddress);
-	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
+		 ChipsAluConv3[rop & 0xF] | cAcl->CommandFlags);
+	ctSETPATSRCADDR(cAcl->ScratchAddress);
+	ctWRITEPLANEMASK(planemask, cAcl->ScratchAddress);
     }
-    ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
+    ctSETPITCH(0, cAcl->PitchInBytes);
 }
 
-void CTNAME(SubsequentCPUToScreenColorExpand)(x, y, w, h, skipleft)
-    int x, y, w, h, skipleft;
+static void
+CTNAME(SubsequentColorExpandFillRect)(ScrnInfoPtr pScrn,
+				int x, int y, int w, int h, int skipleft)
 {
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     int destaddr;
-    destaddr = (y * vga256InfoRec.displayWidth + x + skipleft) * 
-               vgaBytesPerPixel;
+
+    destaddr = (y * pScrn->displayWidth + x + skipleft) * 
+               cAcl->BytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
 #ifdef CHIPS_HIQV
     ctSETMONOCTL(ctDWORDALIGN | ctCLIPLEFT(skipleft));
 #endif
-    ctSETHEIGHTWIDTHGO(h, (w - skipleft) * vgaBytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, (w - skipleft) * cAcl->BytesPerPixel);
 }
 
-static int patternyrot;
-
-void CTNAME(SetupForFill8x8Pattern)(patternx, patterny, rop, planemask,
-transparency_color)
-    int patternx, patterny, rop;
-    unsigned planemask;
-    int transparency_color;
+static void
+CTNAME(SetupForColor8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty, 
+				    int rop, unsigned int planemask,
+				    int trans)
 {
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     unsigned int patternaddr;
     
-    CommandFlags = ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT;
+    cAcl->CommandFlags = ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM |
+		ctLEFT2RIGHT;
+    patternaddr = (paty * pScrn->displayWidth + 
+		   (patx & ~0x3F)) * cAcl->BytesPerPixel;
+    cAcl->patternyrot = (patx & 0x3F) >> 3;
 
-    /* We seem to have an atypical pattern fill. The X pattern address
-     * is with respect to the screen origin while the Y pattern address
-     * is with respect to the pattern origin. Use screen origin but keep
-     * track to the rotation in the y direction
-     */
-    patternaddr = (patterny * vga256InfoRec.displayWidth + 
-		   (patternx & ~0x3F)) * vgaBytesPerPixel;
-    patternyrot = (patternx & 0x3F) >> 3;
+    ctBLTWAIT;
+    ctSETPATSRCADDR(patternaddr);
 #ifdef CHIPS_HIQV
-    if (transparency_color != -1) {
-	CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
+    if (trans != -1) {
+	cAcl->CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
 	    ctCOLORTRANSNEQUAL;
-	ctBLTWAIT;
-        switch (vga256InfoRec.bitsPerPixel) {
+        switch (pScrn->bitsPerPixel) {
         case 8:
-	    ctSETBGCOLOR8(transparency_color);
+	    ctSETBGCOLOR8(trans);
 	    break;
         case 16:
-	    ctSETBGCOLOR16(transparency_color);
+	    ctSETBGCOLOR16(trans);
 	    break;
         case 24:
-	    ctSETBGCOLOR24(transparency_color);
+	    ctSETBGCOLOR24(trans);
 	    break;
         }
     } else
 #endif
-    ctBLTWAIT;
-    ctSETPATSRCADDR(patternaddr);
-    ctSETPITCH(8 * vgaBytesPerPixel,
-	       vga256InfoRec.displayWidth * vgaBytesPerPixel);
+    ctSETPITCH(8 * cAcl->BytesPerPixel, cAcl->PitchInBytes);
 }
 
-void CTNAME(SubsequentFill8x8Pattern)(patternx, patterny, x, y, w, h)
-    int patternx, patterny;
-    int x, y, w, h;
+static void 
+CTNAME(SubsequentColor8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx, int paty,
+				 int x, int y, int w, int h)
 {
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     unsigned int destaddr;
-    destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
+
+    destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
 #ifdef CHIPS_HIQV
-    ctSETROP(CommandFlags | (((y + patternyrot) & 0x7) << 20));
+    ctSETROP(cAcl->CommandFlags | (((y + cAcl->patternyrot) & 0x7) << 20));
 #else
-    ctSETROP(CommandFlags | (((y + patternyrot) & 0x7) << 16));
+    ctSETROP(cAcl->CommandFlags | (((y + cAcl->patternyrot) & 0x7) << 16));
 #endif
-    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, w * cAcl->BytesPerPixel);
 }
 
-void CTNAME(SetupFor8x8PatternColorExpand)(patternx, patterny, bg, fg, rop,
-planemask)
-    int patternx, patterny, bg, fg, rop;
-    unsigned int planemask;
+static void
+CTNAME(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty, 
+				int fg, int bg, int rop,
+				unsigned int planemask)
 {
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     unsigned int patternaddr;
 
-    CommandFlags = ctPATMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-	ctAluConv2[rop & 0xF];
+    cAcl->CommandFlags = ctPATMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+	ChipsAluConv2[rop & 0xF];
 
-    patternaddr = patterny * vga256InfoRec.displayWidth * vgaBytesPerPixel +
-		   (patternx >> 3);
+    patternaddr = (paty * pScrn->displayWidth + patx) * cAcl->BytesPerPixel;
     ctBLTWAIT;
     ctSETPATSRCADDR(patternaddr);
     if (bg == -1) {
-	CommandFlags |= ctBGTRANSPARENT;	/* Background = Destination */
-        switch (vga256InfoRec.bitsPerPixel) {
+	cAcl->CommandFlags |= ctBGTRANSPARENT;	/* Background = Destination */
+        switch (pScrn->bitsPerPixel) {
         case 8:
 	    ctSETFGCOLOR8(fg);
 	    break;
@@ -1137,7 +929,7 @@ planemask)
         }
     }
     else {
-        switch (vga256InfoRec.bitsPerPixel) {
+        switch (pScrn->bitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(bg);
 	    ctSETFGCOLOR8(fg);
@@ -1155,203 +947,255 @@ planemask)
 #ifdef CHIPS_HIQV
     ctSETMONOCTL(ctDWORDALIGN);
 #endif
-    ctSETPITCH(1,vga256InfoRec.displayWidth * vgaBytesPerPixel);
+    ctSETPITCH(1,cAcl->PitchInBytes);
 }
 
-void CTNAME(Subsequent8x8PatternColorExpand)(patternx, patterny, x, y, w, h)
-    int patternx, patterny;
-    int x, y, w, h;
+static void
+CTNAME(SubsequentMono8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx, 
+				int paty, int x, int y, int w, int h )
 {
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     int destaddr;
-    destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
+    destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
+
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
 #ifdef CHIPS_HIQV
-    ctSETROP(CommandFlags | ((y & 0x7) << 20));
+    ctSETROP(cAcl->CommandFlags | ((y & 0x7) << 20));
 #else
-    ctSETROP(CommandFlags | ((y & 0x7) << 16));
+    ctSETROP(cAcl->CommandFlags | ((y & 0x7) << 16));
 #endif
-    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, w * cAcl->BytesPerPixel);
 }
 
-void CTNAME(SetupForImageWrite)(rop, planemask, transparency_color)
-   int rop;
-   unsigned int planemask;
-   int transparency_color;
+#ifndef	CHIPS_HIQV
+static void
+CTNAME(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
+				int transparency_color, int bpp, int depth)
 {
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
-    CommandFlags = ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT;
-#ifdef CHIPS_HIQV
-    if (transparency_color != -1) {
-	CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
-	    ctCOLORTRANSNEQUAL;
-	ctBLTWAIT;
-        switch (vga256InfoRec.bitsPerPixel) {
-        case 8:
-	    ctSETBGCOLOR8(transparency_color);
-	    break;
-        case 16:
-	    ctSETBGCOLOR16(transparency_color);
-	    break;
-        case 24:
-	    ctSETBGCOLOR24(transparency_color);
-	    break;
-        }
-    } else
-#endif
+    cAcl->CommandFlags = ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT;
     ctBLTWAIT;
-    if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
-    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
-    (vga256InfoRec.bitsPerPixel == 32))
+    if ((pScrn->bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
+    (pScrn->bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
+    (pScrn->bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
+    (pScrn->bitsPerPixel == 32))
     {
-	ctSETROP(CommandFlags | ctAluConv[rop & 0xF]);
+	ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
     } else {
-	ctSETROP(CommandFlags | ctAluConv3[rop & 0xF]);
-	ctSETPATSRCADDR(ctBLTPatternAddress);
-	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
+	ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
+	ctSETPATSRCADDR(cAcl->ScratchAddress);
+	ctWRITEPLANEMASK(planemask, cAcl->ScratchAddress);
     }
 }
 
-void CTNAME(SubsequentImageWrite)(x,y,w,h,skipleft) 
-   int x,y,w,h,skipleft;
+static void
+CTNAME(SubsequentImageWriteRect)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
+				int skipleft)
 {
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+
     ctBLTWAIT;
-    ctSETPITCH(((w * vgaBytesPerPixel + 3) & ~0x3),
-	       vga256InfoRec.displayWidth * vgaBytesPerPixel);
-#ifdef CHIPS_HIQV
-    ctSETSRCADDR(skipleft);
-    ctSETDSTADDR((y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel 
-		 + skipleft);
-    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel - skipleft);
-#else
+    ctSETPITCH(((w * cAcl->BytesPerPixel + 3) & ~0x3), cAcl->PitchInBytes);
     ctSETSRCADDR(0);
-    ctSETDSTADDR((y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel);
-    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
-#endif
+    ctSETDSTADDR((y * pScrn->displayWidth + x) * cAcl->BytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, w * cAcl->BytesPerPixel);
 }
 
-#ifdef	CHIPS_HIQV
-void CTNAME(DoPixWinBitBltCopy)(pSrc, pDst, alu, prgnDst,
-			     pptSrc, planemask, bitPlane)
-    DrawablePtr	    pSrc, pDst;
-    int		    alu;
-    RegionPtr	    prgnDst;
-    DDXPointPtr	    pptSrc;
-    unsigned int    planemask;
-    int		    bitPlane;
+#else 
+/*
+ * Copyright 1997
+ * Digital Equipment Corporation. All rights reserved.
+ * This software is furnished under license and may be used and copied only in 
+ * accordance with the following terms and conditions.  Subject to these 
+ * conditions, you may download, copy, install, use, modify and distribute 
+ * this software in source and/or binary form. No title or ownership is 
+ * transferred hereby.
+ * 1) Any source code used, modified or distributed must reproduce and retain 
+ *    this copyright notice and list of conditions as they appear in the 
+ *    source file.
+ *
+ * 2) No right is granted to use any trade name, trademark, or logo of Digital 
+ *    Equipment Corporation. Neither the "Digital Equipment Corporation" name 
+ *    nor any trademark or logo of Digital Equipment Corporation may be used 
+ *    to endorse or promote products derived from this software without the 
+ *    prior written permission of Digital Equipment Corporation.
+ *
+ * 3) This software is provided "AS-IS" and any express or implied warranties,
+ *    including but not limited to, any implied warranties of merchantability,
+ *    fitness for a particular purpose, or non-infringement are disclaimed. In
+ *    no event shall DIGITAL be liable for any damages whatsoever, and in 
+ *    particular, DIGITAL shall not be liable for special, indirect, 
+ *    consequential, or incidental damages or damages for lost profits, loss 
+ *    of revenue or loss of use, whether such damages arise in contract, 
+ *    negligence, tort, under statute, in equity, at law or otherwise, even if
+ *    advised of the possibility of such damage. 
+ */
+
+/* The code below comes from the idea supplied by the people at DEC, like
+ * the copyright above says. But its had to go through a large evolution
+ * to fit it into the new design for XFree 4.0
+ */
+
+static void
+MoveDWORDS(register CARD32* dest, register CARD32* src, register int dwords )
 {
-    unsigned long *psrcBase;
-    int widthSrc, widthDst;
-    int byteWidthSrc, byteWidthDst;
-    BoxPtr pbox;
-    int nbox;
+     while(dwords & ~0x03) {
+	*dest = *src;
+	*(dest + 1) = *(src + 1);
+	*(dest + 2) = *(src + 2);
+	*(dest + 3) = *(src + 3);
+	src += 4;
+	dest += 4;
+	dwords -= 4;
+     }	
+     switch(dwords){
+     case 1:
+       *dest = *src;
+       break;
+     case 2:
+       *dest = *src;
+       *(dest + 1) = *(src + 1);
+       break;
+     case 3:
+       *dest = *src;
+       *(dest + 1) = *(src + 1);
+       *(dest + 2) = *(src + 2);
+       break;
+     }
+}
 
-    cfbGetLongWidthAndPointer(pSrc, widthSrc, psrcBase);
-    widthSrc = cfbGetByteWidth(pSrc)/vgaBytesPerPixel;
-    widthDst = vga256InfoRec.displayWidth;
-    byteWidthSrc = widthSrc * vgaBytesPerPixel;
-    byteWidthDst = widthDst * vgaBytesPerPixel;
-
-    pbox = REGION_RECTS(prgnDst);
-    nbox = REGION_NUM_RECTS(prgnDst);
-
-    CommandFlags = ctSRCSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM;
-    ctBLTWAIT;
-    if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
-    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
-    (vga256InfoRec.bitsPerPixel == 32))
-    {
-	ctSETROP(CommandFlags | ctAluConv[alu & 0xF]);
+#ifndef __GNUC__
+#define __inline__ /**/
+#endif
+ 
+static __inline__ void 
+MoveData(unsigned char *src, unsigned char *dest, int srcwidth, int window,
+	 int h, int dwords)
+{
+    if(srcwidth == (dwords << 2)) {
+	int decrement = window / dwords;
+	while(h > decrement) {
+	    MoveDWORDS((CARD32*)dest, (CARD32*)src, dwords * decrement);
+	    src += (srcwidth * decrement);
+	    h -= decrement;
+	}
+	if(h) {
+	    MoveDWORDS((CARD32*)dest, (CARD32*)src, dwords * h);
+	}
     } else {
-	ctSETROP(CommandFlags | ctAluConv3[alu & 0xF]);
-	ctSETPATSRCADDR(ctBLTPatternAddress);
-	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
-    }
-    ctSETPITCH(byteWidthSrc, byteWidthDst);
-
-    for (; nbox; pbox++, pptSrc++, nbox--) {
-	unsigned int psrc, pdst;
-	int w, h;
-
-	w = pbox->x2 - pbox->x1;
-	h = pbox->y2 - pbox->y1;
-	psrc = (pptSrc->x + pptSrc->y * widthSrc) * vgaBytesPerPixel;
-	pdst = (pbox->x1 + pbox->y1 * widthDst) * vgaBytesPerPixel;
-
-	/*
-	 *  There is an annoying bug in the CT65550, or at least when used
-	 *  on SHARK.  The bug manifests itself as scarring or, more
-	 *  commonly, system freeze (because the CT65550 has hung the bus).
-	 *
-	 *  This bad behavior occurs when the number of bytes per scanline
-	 *  to be sent to the CT65550 is not constant.  This can happen
-	 *  because the chip insists that each line begin on a quad-word
-	 *  (i.e., 8-byte) boundary and that it be padded out to an integral
-	 *  number of quad-words.  The chip masks the beginning and ending
-	 *  quad-words appropriately so that only the right bits are painted.
-	 *
-	 *  Given X's padding of pixmaps to 4-byte boundaries, it almost
-	 *  always turns out that each scanline sent to the CT65550 consists
-	 *  of the same number of quad-words.  But not always.  You sometimes
-	 *  get a pattern where n and n+1 quad-words need to be sent in
-	 *  alternating fashion.
-	 *
-	 *  Whether a constant or non-constant number of quad-words needs to
-	 *  be sent is a function of the alignment of the source pixmap,
-	 *  the starting offset into that pixmap, the width of the pixmap,
-	 *  and the number of bytes to be painted on each line.  Computing
-	 *  the predicate is fairly involved, but fortunately the failure
-	 *  case has an easily-determined necessary condition:  the width
-	 *  of the source pixmap is not a quad-word multiple.  This is not
-	 *  a sufficient condition, but it's good enough that I'm using it
-	 *  to switch out to a "safe" alternative.
-	 *
-	 *  The safe alternative is to do the blt as n 1-line blts, rather
-	 *  than 1 big blt.  This is obviously going to be slower, but it's
-	 *  not so much worse that I feel a need to spend time optimizing
-	 *  further.
-	 */
-	{
-	    Bool buggyCase = (byteWidthSrc & 0x7) != 0;
-	    unsigned char *src = (unsigned char *)psrcBase + psrc;
-	    unsigned char *dst = (unsigned char *)pdst;
-	    int bytesperline = w * vgaBytesPerPixel;
-
-	    if (!buggyCase) {
-		/* One-time set-up. */
-		ctSETSRCADDR((unsigned int)src);
-		ctSETDSTADDR((unsigned int)dst);
-		ctSETHEIGHTWIDTHGO(h, bytesperline);
-	    }
-
-	    while (h--) {
-		unsigned int *qwa_src = (unsigned int *)((unsigned int)src & (~0x7));
-		int qwords = (((unsigned int)src & 0x7) + bytesperline + 0x7) >> 3;
-
-		if (buggyCase) {
-		    /* N-time set-up. */
-		    ctSETSRCADDR((unsigned int)src);
-		    ctSETDSTADDR((unsigned int)dst);
-		    ctSETHEIGHTWIDTHGO(1, bytesperline);
-		}
-
-		while (qwords--) {
-		    *(unsigned int *)ctBltDataWindow = *qwa_src++;
-		    *(unsigned int *)ctBltDataWindow = *qwa_src++;
-		}
-
-		src += byteWidthSrc;
-		if (buggyCase) {
-		    dst += byteWidthDst;
-		    ctBLTWAIT;
-		}
-	    }
-
-	    if (!buggyCase)
-		ctBLTWAIT;
+	while(h--) {
+	    MoveDWORDS((CARD32*)dest, (CARD32*)src, dwords);
+	    src += srcwidth;
 	}
     }
+}
+
+static void 
+CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
+		unsigned char *src, int srcwidth, int rop,
+		unsigned int planemask, int trans, int bpp, int depth)
+{
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+    unsigned int bytesPerLine;
+    unsigned int byteWidthSrc;
+    int dwords; 
+    int skipleft;
+
+    bytesPerLine = w * cAcl->BytesPerPixel;
+
+    byteWidthSrc = ((srcwidth * cAcl->BytesPerPixel + 3L) & ~0x3L);
+
+    cAcl->CommandFlags = ctSRCSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM;
+
+    ctBLTWAIT;
+
+    if (trans != -1) {
+	cAcl->CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
+	    ctCOLORTRANSNEQUAL;
+        switch (pScrn->bitsPerPixel) {
+        case 8:
+	    ctSETBGCOLOR8(trans);
+	    break;
+        case 16:
+	    ctSETBGCOLOR16(trans);
+	    break;
+        case 24:
+	    ctSETBGCOLOR24(trans);
+	    break;
+        }
+    }
+    
+    if ((pScrn->bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
+    (pScrn->bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
+    (pScrn->bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
+    (pScrn->bitsPerPixel == 32))
+    {
+	ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
+    } else {
+	ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
+	ctSETPATSRCADDR(cAcl->ScratchAddress);
+	ctWRITEPLANEMASK(planemask, cAcl->ScratchAddress);
+    }
+
+    /*
+     *
+     *  CT6555X requires quad-word padding, but XAA provides double-word
+     *  padding. If the width of a region to be transferred happens to be 
+     *  quad-word aligned, the transfer is straightforward.  If the 
+     *  region is double-word aligned, a pair of contiguous scanlines 
+     *  is quad-word aligned.  In latter case, we can use interleaved 
+     *  transfer twice.  It is faster than transfer line by line.
+     *
+     */
+
+    skipleft = (unsigned int)src & 0x7;
+    src = (unsigned char *)((unsigned int)src & ~0x7L);
+    dwords = (((skipleft  + bytesPerLine + 0x7) & ~0x7)) >> 2;
+    ctSETSRCADDR(skipleft);
+    ctSETDSTADDR(y * cAcl->PitchInBytes + x * cAcl->BytesPerPixel);
+	
+
+    if ((byteWidthSrc & 0x7) == 0) {  /* quad-word aligned */
+
+	ctSETPITCH(byteWidthSrc, cAcl->PitchInBytes);
+	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
+
+	MoveData((unsigned char *)src, (unsigned char *)cAcl->BltDataWindow,
+		 srcwidth, 16384, h, dwords);
+
+    } else {
+	unsigned int vert = h;
+
+	h = (vert + 1) >> 1;
+
+	ctSETPITCH(byteWidthSrc << 1, cAcl->PitchInBytes << 1);
+	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
+
+	MoveData((unsigned char *)src, (unsigned char *)cAcl->BltDataWindow,
+		 srcwidth<<1, 16384, h, dwords);
+
+	h = vert  >> 1;
+	src += srcwidth;
+	y++;
+	ctBLTWAIT;
+
+	ctSETDSTADDR((y * pScrn->displayWidth + x) * cAcl->BytesPerPixel);
+	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
+
+	MoveData((unsigned char *)src, (unsigned char *)cAcl->BltDataWindow,
+		 srcwidth<<1, 16384, h, dwords);
+    }
+#if 0
+    /* Not sure how safe it is to do this */
+    cPtr->AccelInfoRec->NeedToSync = TRUE;
+#else
+    ctBLTWAIT;
+#endif
 }
 #endif

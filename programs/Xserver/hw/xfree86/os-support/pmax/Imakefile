@@ -1,5 +1,5 @@
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/Imakefile,v 3.8 1997/02/17 09:47:06 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/Imakefile,v 1.1.2.1 1998/06/09 14:41:02 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -13,22 +13,22 @@ OBJS =  pmax_devs.o pmax_init.o pmax_map.o pmax_pci.o pmax_ppc.o \
 	posix_tty.o std_mouse.o std_mseEv.o xqueue.o ioperm_noop.o \
 	libc_wrapper.o
 
-INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC) -I$(EXTINCSRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86OSSRC)/bus -I. \
+           -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
-ObjectFromSpecialSource(VTsw_usl,../shared/VTsw_usl,/**/)
-ObjectFromSpecialSource(ioperm_noop,../shared/ioperm_noop,/**/)
-ObjectFromSpecialSource(sysv_kbd,../shared/sysv_kbd,/**/)
-ObjectFromSpecialSource(std_kbdEv,../shared/std_kbdEv,/**/)
-ObjectFromSpecialSource(posix_tty,../shared/posix_tty,/**/)
-ObjectFromSpecialSource(std_mouse,../shared/std_mouse,/**/)
-ObjectFromSpecialSource(std_mseEv,../shared/std_mseEv,/**/)
-ObjectFromSpecialSource(libc_wrapper,../shared/libc_wrapper,/**/)
+LinkSourceFile(VTsw_usl.c,../shared)
+LinkSourceFile(ioperm_noop.c,../shared)
+LinkSourceFile(sysv_kbd.c,../shared)
+LinkSourceFile(std_kbdEv.c,../shared)
+LinkSourceFile(posix_tty.c,../shared)
+LinkSourceFile(std_mouse.c,../shared)
+LinkSourceFile(std_mseEv.c,../shared)
+LinkSourceFile(libc_wrapper.c,../shared)
 
-ObjectFromSpecialSource(bios_V4mmap,../sysv/bios_V4mmap,/**/)
-ObjectFromSpecialSource(xqueue,../sysv/xqueue,/**/)
+LinkSourceFile(bios_V4mmap.c,../sysv)
+LinkSourceFile(xqueue.c,../sysv)
 
 DependTarget()

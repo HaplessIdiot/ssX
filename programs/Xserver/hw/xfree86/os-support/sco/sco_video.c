@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_video.c,v 3.3 1997/07/19 05:43:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_video.c,v 3.2 1996/12/23 06:50:51 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -197,8 +197,7 @@ static Bool ScreenEnabled[MAXSCREENS];
 static Bool IOEnabled = FALSE;
 static Bool InitDone = FALSE;
 
-
-void xf86EnableIOPorts(ScreenNum)
+void xf86ClearIOPortList(ScreenNum)
 int ScreenNum;
 {
 	int i;
@@ -209,6 +208,19 @@ int ScreenNum;
 			ScreenEnabled[i] = FALSE;
 		InitDone = TRUE;
 	}
+}
+
+/* ARGSUSED */
+void xf86AddIOPorts(ScreenNum, NumPorts, Ports)
+int ScreenNum;
+int NumPorts;
+unsigned *Ports;
+{
+}
+
+void xf86EnableIOPorts(ScreenNum)
+int ScreenNum;
+{
 	ScreenEnabled[ScreenNum] = TRUE;
 
 	if (IOEnabled)
@@ -238,6 +250,12 @@ int ScreenNum;
 	return;
 }
 
+void xf86DisableIOPrivs()
+{
+	if (IOEnabled)
+		sysi86(SI86V86, V86SC_IOPL, 0);
+	return;
+}
 
 /***************************************************************************/
 /* Interrupt Handling section                                              */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_VTsw.c,v 3.4 1996/02/04 09:09:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_VTsw.c,v 3.5.4.3 1998/06/05 16:23:03 dawes Exp $ */
 /*
  * Derived from VTsw_usl.c which is
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -26,9 +26,6 @@
 /* $XConsortium: bsd_VTsw.c /main/4 1996/02/21 17:50:57 kaleb $ */
 
 #include "X.h"
-#include "input.h"
-#include "scrnintstr.h"
-
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
@@ -42,8 +39,8 @@
  * This function is the signal handler for the VT-switching signal.  It
  * is only referenced inside the OS-support layer.
  */
-void xf86VTRequest(sig)
-int sig;
+void
+xf86VTRequest(int sig)
 {
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	if (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT) {
@@ -53,7 +50,8 @@ int sig;
 	return;
 }
 
-Bool xf86VTSwitchPending()
+Bool
+xf86VTSwitchPending()
 {
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	if (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT) {
@@ -63,7 +61,8 @@ Bool xf86VTSwitchPending()
 	return FALSE;
 }
 
-Bool xf86VTSwitchAway()
+Bool
+xf86VTSwitchAway()
 {
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	if (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT) {
@@ -77,7 +76,8 @@ Bool xf86VTSwitchAway()
 	return FALSE;
 }
 
-Bool xf86VTSwitchTo()
+Bool
+xf86VTSwitchTo()
 {
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	if (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT) {

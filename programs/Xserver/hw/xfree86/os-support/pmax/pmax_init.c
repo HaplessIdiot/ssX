@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_init.c,v 1.2.2.2 1998/07/18 17:53:54 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -81,13 +81,11 @@
 
 #include "X.h"
 #include "Xmd.h"
-#include "input.h"
-#include "scrnintstr.h"
 
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 static Bool KeepTty = FALSE;
@@ -99,17 +97,7 @@ static Bool pmaxInitialized = FALSE;
 
 static int VTnum = VT_DEFAULT;
 
-extern void xf86VTRequest(
-#if NeedFunctionPrototypes
-	int
-#endif
-);
-
-extern void pmax_init_splmap(
-#if NeedFunctionPrototypes
-	void
-#endif
-);
+extern void pmax_init_splmap(void);
 
 int  pmax_sys_type;  /* Also used by pmax_pci.c */
 
@@ -195,7 +183,7 @@ pmaxInit(void)
 	  /*NOTREACHED*/
      }
 	 
-	 ErrorF("pmaxInit: Machine type: %s\n", mach);
+     xf86Msg(X_INFO, "pmaxInit: Machine type: %s\n", mach);
 
      /*
       * Map IPL hardware so that interrupts can be (temporarily) disabled
@@ -215,6 +203,7 @@ xf86OpenConsole()
 {
     struct vt_mode VT;
     char vtname[10];
+    MessageType from = X_DEFAULT;
 
     if (serverGeneration == 1) 
     {
@@ -233,16 +222,18 @@ xf86OpenConsole()
 
 	    if ((fd = open("/dev/zero", O_RDONLY, 0)) < 0)
 	    {
-		ErrorF("xf86OpenConsole: cannot open /dev/zero (%s)\n",
-		       strerror(errno));
+		xf86Msg(X_WARNING,
+			"xf86OpenConsole: cannot open /dev/zero (%s)\n",
+			strerror(errno));
 	    }
 	    else
 	    {
 		if ((int)mmap(0, 0x1000, PROT_NONE,
 			      MAP_FIXED | MAP_SHARED, fd, 0) == -1)
 		{
-		    ErrorF("xf86OpenConsole: failed to protect page 0 (%s)\n",
-		       strerror(errno));
+		    xf86Msg(X_WARNING,
+			"xf86OpenConsole: failed to protect page 0 (%s)\n",
+			strerror(errno));
 		}
 		close(fd);
 	    }
@@ -261,18 +252,22 @@ xf86OpenConsole()
 	     * for the next available VT
 	     */
 	    if ((fd = open("/dev/vt00",O_WRONLY,0)) < 0) {
-        	ErrorF("xf86OpenConsole: Could not open /dev/vt00 (%s)\n",
-		       strerror(errno));
+        	xf86Msg(X_WARNING,
+			"xf86OpenConsole: Could not open /dev/vt00 (%s)\n",
+			strerror(errno));
 		VTnum = VT_NONE;
 	    }
 	    else {
 		if (ioctl(fd, VT_OPENQRY, &VTnum) < 0)
 		{
-		    ErrorF("xf86OpenConsole: Cannot find a free VT\n");
+		    xf86Msg(X_WARNING,
+			    "xf86OpenConsole: Cannot find a free VT\n");
 		    VTnum = VT_NONE;
 		}
 		close(fd);
 	    }
+	} else {
+	    from = X_CMDLINE;
 	}
 
 	xf86Info.vtno = VTnum;
@@ -282,10 +277,8 @@ xf86OpenConsole()
 	else
 	    sprintf(vtname,"/dev/vt%02d",xf86Info.vtno);
 	    
-        ErrorF("(using VT = \"%s\")\n\n", vtname);
+        xf86Msg(from, "using VT \"%s\"\n\n", vtname);
 	
-	xf86Config(FALSE); /* Process Xconfig file */
-
 	if (!KeepTty)
     	{
     	    setpgrp();
@@ -307,11 +300,11 @@ xf86OpenConsole()
 	      */
 	     if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
 	     {
-		  ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
+		  xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
 	     }
 	     if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
 	     {
-		  ErrorF("xf86OpenConsole: VT_WAITACTIVE failed\n");
+		  xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed\n");
 	     }
 	     if (ioctl(xf86Info.consoleFd, VT_GETMODE, &VT) < 0) 
 	     {
@@ -343,18 +336,18 @@ xf86OpenConsole()
 	{
 	     if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
 	     {
-		  ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
+		  xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
 	     }
 	     if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
 	     {
-		  ErrorF("xf86OpenConsole: VT_WAITACTIVE failed\n");
+		  xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed\n");
 	     }
 	     /*
 	      * If the server doesn't have the VT when the reset occurs,
 	      * this is to make sure we don't continue until the activate
 	      * signal is received.
 	      */
-	     if (!xf86VTSema)
+	     if (!xf86Screens[0]->vtSema)
 		  sleep(5);
 	}
     }

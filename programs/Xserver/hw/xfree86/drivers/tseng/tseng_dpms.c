@@ -1,4 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.4 1998/01/24 16:58:26 hohndel Exp $ */
+
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.2.2.1 1998/07/24 11:36:35 dawes Exp $ */
+
+
+
+
 
 #ifdef DPMSExtension
 
@@ -17,42 +22,42 @@
  */
 void
 TsengCrtcDPMSSet(Mode)
-     int Mode;
+    int Mode;
 {
-  unsigned char seq1, crtc34;
-  if (!xf86VTSema) return;
-  switch (Mode)
-    {
+    unsigned char seq1, crtc34;
+
+    if (!xf86VTSema)
+	return;
+    switch (Mode) {
     case DPMSModeOn:
     default:
-      /* Screen: On; HSync: On, VSync: On */
-      seq1 = 0x00;
-      crtc34 = 0x00;
-      break;
+	/* Screen: On; HSync: On, VSync: On */
+	seq1 = 0x00;
+	crtc34 = 0x00;
+	break;
     case DPMSModeStandby:
-      /* Screen: Off; HSync: Off, VSync: On */
-      seq1 = 0x20;
-      crtc34 = 0x01;
-      break;
+	/* Screen: Off; HSync: Off, VSync: On */
+	seq1 = 0x20;
+	crtc34 = 0x01;
+	break;
     case DPMSModeSuspend:
-      /* Screen: Off; HSync: On, VSync: Off */
-      seq1 = 0x20;
-      crtc34 = 0x20;
-      break;
+	/* Screen: Off; HSync: On, VSync: Off */
+	seq1 = 0x20;
+	crtc34 = 0x20;
+	break;
     case DPMSModeOff:
-      /* Screen: Off; HSync: Off, VSync: Off */
-      seq1 = 0x20;
-      crtc34 = 0x21;
-      break;
+	/* Screen: Off; HSync: Off, VSync: Off */
+	seq1 = 0x20;
+	crtc34 = 0x21;
+	break;
     }
-  outb(0x3C4, 0x01);	/* Select SEQ1 */
-  seq1 |= inb(0x3C5) & ~0x20;
-  outb(0x3C5, seq1);
-  outb(vgaIOBase+4, 0x34);	/* Select CRTC34 */
-  crtc34 |= inb(vgaIOBase+5) & ~0x21;
-  outb(vgaIOBase+5, crtc34);
+    outb(0x3C4, 0x01);		       /* Select SEQ1 */
+    seq1 |= inb(0x3C5) & ~0x20;
+    outb(0x3C5, seq1);
+    outb(vgaIOBase + 4, 0x34);	       /* Select CRTC34 */
+    crtc34 |= inb(vgaIOBase + 5) & ~0x21;
+    outb(vgaIOBase + 5, crtc34);
 }
-
 
 /*
  * TsengHVSyncDPMSSet --
@@ -96,159 +101,158 @@ TsengCrtcDPMSSet(Mode)
  */
 void
 TsengHVSyncDPMSSet(Mode)
-     int Mode;
+    int Mode;
 {
-  unsigned char seq1, tmpb;
-  unsigned int HSync, VSync, HTot, VTot, tmp;
-  Bool chgHSync, chgVSync;
+    unsigned char seq1, tmpb;
+    unsigned int HSync, VSync, HTot, VTot, tmp;
+    Bool chgHSync, chgVSync;
 
-  if (!xf86VTSema) return;
+    if (!xf86VTSema)
+	return;
 
-  /* Code here to read the current values of HSync through VTot:
-   *  HSYNC:
-   *    bits 0..7 : CRTC index 0x04
-   *    bit 8     : CRTC index 0x3F, bit 4
-   */
-  outb(vgaIOBase+4, 0x04);
-  HSync = inb(vgaIOBase+5);
-  outb(vgaIOBase+4, 0x3F);
-  HSync += (inb(vgaIOBase+5) & 0x10) << 4;
-  /*  VSYNC:
-   *    bits 0..7 : CRTC index 0x10
-   *    bits 8..9 : CRTC index 0x07 bits 2 (VSYNC bit 8) and 7 (VSYNC bit 9)
-   *    bit 10    : CRTC index 0x35 bit 3
-   */
-  outb(vgaIOBase+4, 0x10);
-  VSync = inb(vgaIOBase+5);
-  outb(vgaIOBase+4, 0x07);
-  tmp = inb(vgaIOBase+5);
-  VSync += ((tmp & 0x04) << 6) + ((tmp & 0x80) << 2);
-  outb(vgaIOBase+4, 0x35);
-  VSync += (inb(vgaIOBase+5) & 0x08) << 7;
-  /*  HTOT:
-   *    bits 0..7 : CRTC index 0x00.
-   *    bit 8     : CRTC index 0x3F, bit 0
-   */
-  outb(vgaIOBase+4, 0x00);
-  HTot = inb(vgaIOBase+5);
-  outb(vgaIOBase+4, 0x3F);
-  HTot += (inb(vgaIOBase+5) & 0x01) << 8;
-  /*  VTOT:
-   *    bits 0..7 : CRTC index 0x06
-   *    bits 8..9 : CRTC index 0x07 bits 0 (VTOT bit 8) and 5 (VTOT bit 9)
-   *    bit 10    : CRTC index 0x35 bit 1
-   */
-  outb(vgaIOBase+4, 0x06);
-  VTot = inb(vgaIOBase+5);
-  outb(vgaIOBase+4, 0x07);
-  tmp = inb(vgaIOBase+5);
-  VTot += ((tmp & 0x01) << 8) + ((tmp & 0x20) << 4);
-  outb(vgaIOBase+4, 0x35);
-  VTot += (inb(vgaIOBase+5) & 0x02) << 9;
+    /* Code here to read the current values of HSync through VTot:
+     *  HSYNC:
+     *    bits 0..7 : CRTC index 0x04
+     *    bit 8     : CRTC index 0x3F, bit 4
+     */
+    outb(vgaIOBase + 4, 0x04);
+    HSync = inb(vgaIOBase + 5);
+    outb(vgaIOBase + 4, 0x3F);
+    HSync += (inb(vgaIOBase + 5) & 0x10) << 4;
+    /*  VSYNC:
+     *    bits 0..7 : CRTC index 0x10
+     *    bits 8..9 : CRTC index 0x07 bits 2 (VSYNC bit 8) and 7 (VSYNC bit 9)
+     *    bit 10    : CRTC index 0x35 bit 3
+     */
+    outb(vgaIOBase + 4, 0x10);
+    VSync = inb(vgaIOBase + 5);
+    outb(vgaIOBase + 4, 0x07);
+    tmp = inb(vgaIOBase + 5);
+    VSync += ((tmp & 0x04) << 6) + ((tmp & 0x80) << 2);
+    outb(vgaIOBase + 4, 0x35);
+    VSync += (inb(vgaIOBase + 5) & 0x08) << 7;
+    /*  HTOT:
+     *    bits 0..7 : CRTC index 0x00.
+     *    bit 8     : CRTC index 0x3F, bit 0
+     */
+    outb(vgaIOBase + 4, 0x00);
+    HTot = inb(vgaIOBase + 5);
+    outb(vgaIOBase + 4, 0x3F);
+    HTot += (inb(vgaIOBase + 5) & 0x01) << 8;
+    /*  VTOT:
+     *    bits 0..7 : CRTC index 0x06
+     *    bits 8..9 : CRTC index 0x07 bits 0 (VTOT bit 8) and 5 (VTOT bit 9)
+     *    bit 10    : CRTC index 0x35 bit 1
+     */
+    outb(vgaIOBase + 4, 0x06);
+    VTot = inb(vgaIOBase + 5);
+    outb(vgaIOBase + 4, 0x07);
+    tmp = inb(vgaIOBase + 5);
+    VTot += ((tmp & 0x01) << 8) + ((tmp & 0x20) << 4);
+    outb(vgaIOBase + 4, 0x35);
+    VTot += (inb(vgaIOBase + 5) & 0x02) << 9;
 
-  /* Don't write these unless we have to. */
-  chgHSync = chgVSync = FALSE;
+    /* Don't write these unless we have to. */
+    chgHSync = chgVSync = FALSE;
 
-  switch (Mode)
-    {
+    switch (Mode) {
     case DPMSModeOn:
     default:
-      /* Screen: On; HSync: On, VSync: On */
-      seq1 = 0x00;
-      if(HSync > HTot +3) { /* Sync is off now, turn it on. */
-	HSync = (HTot - HSync) + HTot + 7;
-	chgHSync = TRUE;
-      }
-      if(VSync > VTot +1) { /* Sync is off now, turn it on. */
-	VSync = (VTot - VSync) + VTot + 4;
-	chgVSync = TRUE;
-      }
-      break;
+	/* Screen: On; HSync: On, VSync: On */
+	seq1 = 0x00;
+	if (HSync > HTot + 3) {	       /* Sync is off now, turn it on. */
+	    HSync = (HTot - HSync) + HTot + 7;
+	    chgHSync = TRUE;
+	}
+	if (VSync > VTot + 1) {	       /* Sync is off now, turn it on. */
+	    VSync = (VTot - VSync) + VTot + 4;
+	    chgVSync = TRUE;
+	}
+	break;
     case DPMSModeStandby:
-      /* Screen: Off; HSync: Off, VSync: On */
-      seq1 = 0x20;
-      if(HSync <= HTot +3) { /* Sync is on now, turn it off. */
-	HSync = (HTot - HSync) + HTot + 7;
-	chgHSync = TRUE;
-      }
-      if(VSync > VTot +1) { /* Sync is off now, turn it on. */
-	VSync = (VTot - VSync) + VTot + 4;
-	chgVSync = TRUE;
-      }
-      break;
+	/* Screen: Off; HSync: Off, VSync: On */
+	seq1 = 0x20;
+	if (HSync <= HTot + 3) {       /* Sync is on now, turn it off. */
+	    HSync = (HTot - HSync) + HTot + 7;
+	    chgHSync = TRUE;
+	}
+	if (VSync > VTot + 1) {	       /* Sync is off now, turn it on. */
+	    VSync = (VTot - VSync) + VTot + 4;
+	    chgVSync = TRUE;
+	}
+	break;
     case DPMSModeSuspend:
-      /* Screen: Off; HSync: On, VSync: Off */
-      seq1 = 0x20;
-      if(HSync > HTot +3) { /* Sync is off now, turn it on. */
-	HSync = (HTot - HSync) + HTot + 7;
-	chgHSync = TRUE;
-      }
-      if(VSync <= VTot +1) { /* Sync is on now, turn it off. */
-	VSync = (VTot - VSync) + VTot + 4;
-	chgVSync = TRUE;
-      }
-      break;
+	/* Screen: Off; HSync: On, VSync: Off */
+	seq1 = 0x20;
+	if (HSync > HTot + 3) {	       /* Sync is off now, turn it on. */
+	    HSync = (HTot - HSync) + HTot + 7;
+	    chgHSync = TRUE;
+	}
+	if (VSync <= VTot + 1) {       /* Sync is on now, turn it off. */
+	    VSync = (VTot - VSync) + VTot + 4;
+	    chgVSync = TRUE;
+	}
+	break;
     case DPMSModeOff:
-      /* Screen: Off; HSync: Off, VSync: Off */
-      seq1 = 0x20;
-      if(HSync <= HTot +3) { /* Sync is on now, turn it off. */
-	HSync = (HTot - HSync) + HTot + 7;
-	chgHSync = TRUE;
-      }
-      if(VSync <= VTot +1) { /* Sync is on now, turn it off. */
-	VSync = (VTot - VSync) + VTot + 4;
-	chgVSync = TRUE;
-      }
-      break;
+	/* Screen: Off; HSync: Off, VSync: Off */
+	seq1 = 0x20;
+	if (HSync <= HTot + 3) {       /* Sync is on now, turn it off. */
+	    HSync = (HTot - HSync) + HTot + 7;
+	    chgHSync = TRUE;
+	}
+	if (VSync <= VTot + 1) {       /* Sync is on now, turn it off. */
+	    VSync = (VTot - VSync) + VTot + 4;
+	    chgVSync = TRUE;
+	}
+	break;
     }
 
-  /* If the new hsync or vsync overflows, don't change anything. */
-  if (HSync >= 1 << 9 || VSync >= 1 << 11) {
-      ErrorF("tseng: warning: Cannot go into DPMS from this resolution.\n");
-      chgVSync = chgHSync = FALSE;
-  }
-
-  /* The code to turn on and off video output is equal for all. */
-  if (chgHSync || chgVSync) {
-      outb(0x3C4, 0x01);	/* Select SEQ1 */
-      seq1 |= inb(0x3C5) & ~0x20;
-      outb(0x3C5, seq1);
-  }
-
-  /* Then the code to write VSync and HSync to the card.
-   *  HSYNC:
-   *    bits 0..7 : CRTC index 0x04
-   *    bit 8     : CRTC index 0x3F, bit 4
-   */
-  if(chgHSync) {
-    outb(vgaIOBase+4, 0x04);
-    tmpb = HSync & 0xFF;
-    outb(vgaIOBase+5, tmpb);
-    outb(vgaIOBase+4, 0x3F);
-    tmpb = (HSync & 0x100) >>4;
-    tmpb |= inb(vgaIOBase+5) & ~0x10;
-    outb(vgaIOBase+5, tmpb);
-  }
-  /*  VSYNC:
-   *    bits 0..7 : CRTC index 0x10
-   *    bits 8..9 : CRTC index 0x07 bits 2 (VSYNC bit 8) and 7 (VSYNC bit 9)
-   *    bit 10    : CRTC index 0x35 bit 3
-   */
-  if(chgVSync) {
-    outb(vgaIOBase+4, 0x10);
-    tmpb = VSync & 0xFF;
-    outb(vgaIOBase+5, tmpb);
-    outb(vgaIOBase+4, 0x07);
-    tmpb = (VSync & 0x100) >> 6;
-    tmpb |= (VSync & 0x200) >> 2;
-    tmpb |= inb(vgaIOBase+5) & ~0x84;
-    outb(vgaIOBase+5, tmpb);
-    outb(vgaIOBase+4, 0x35);
-    tmpb = (VSync & 0x400) >> 7;
-    tmpb |= inb(vgaIOBase+5) & ~0x08;
-    outb(vgaIOBase+5, tmpb);
-  }
+    /* If the new hsync or vsync overflows, don't change anything. */
+    if (HSync >= 1 << 9 || VSync >= 1 << 11) {
+	ErrorF("tseng: warning: Cannot go into DPMS from this resolution.\n");
+	chgVSync = chgHSync = FALSE;
+    }
+    /* The code to turn on and off video output is equal for all. */
+    if (chgHSync || chgVSync) {
+	outb(0x3C4, 0x01);	       /* Select SEQ1 */
+	seq1 |= inb(0x3C5) & ~0x20;
+	outb(0x3C5, seq1);
+    }
+    /* Then the code to write VSync and HSync to the card.
+     *  HSYNC:
+     *    bits 0..7 : CRTC index 0x04
+     *    bit 8     : CRTC index 0x3F, bit 4
+     */
+    if (chgHSync) {
+	outb(vgaIOBase + 4, 0x04);
+	tmpb = HSync & 0xFF;
+	outb(vgaIOBase + 5, tmpb);
+	outb(vgaIOBase + 4, 0x3F);
+	tmpb = (HSync & 0x100) >> 4;
+	tmpb |= inb(vgaIOBase + 5) & ~0x10;
+	outb(vgaIOBase + 5, tmpb);
+    }
+    /*  VSYNC:
+     *    bits 0..7 : CRTC index 0x10
+     *    bits 8..9 : CRTC index 0x07 bits 2 (VSYNC bit 8) and 7 (VSYNC bit 9)
+     *    bit 10    : CRTC index 0x35 bit 3
+     */
+    if (chgVSync) {
+	outb(vgaIOBase + 4, 0x10);
+	tmpb = VSync & 0xFF;
+	outb(vgaIOBase + 5, tmpb);
+	outb(vgaIOBase + 4, 0x07);
+	tmpb = (VSync & 0x100) >> 6;
+	tmpb |= (VSync & 0x200) >> 2;
+	tmpb |= inb(vgaIOBase + 5) & ~0x84;
+	outb(vgaIOBase + 5, tmpb);
+	outb(vgaIOBase + 4, 0x35);
+	tmpb = (VSync & 0x400) >> 7;
+	tmpb |= inb(vgaIOBase + 5) & ~0x08;
+	outb(vgaIOBase + 5, tmpb);
+    }
 }
 #else
 static int nodpms;
+
 #endif

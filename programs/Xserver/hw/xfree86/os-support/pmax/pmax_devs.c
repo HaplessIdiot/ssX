@@ -69,23 +69,18 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_io.c,v 3.4 1996/12/23 06:51:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_devs.c,v 1.1.2.1 1998/06/09 14:41:02 dawes Exp $ */
 
-#define NEED_EVENTS
 #include "X.h"
-#include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
-void xf86SoundKbdBell(loudness, pitch, duration)
-int loudness;
-int pitch;
-int duration;
+void
+xf86SoundKbdBell(int loudness, int pitch, int duration)
 {
 	if (loudness && pitch)
 	{
@@ -106,8 +101,8 @@ int duration;
 	}
 }
 
-void xf86SetKbdLeds(leds)
-int leds;
+void
+xf86SetKbdLeds(int leds)
 {
 #if 0 /* used to be KBIO_SETMODE */
 	ioctl(xf86Info.consoleFd, KBIO_SETMODE, KBM_AT);
@@ -118,19 +113,20 @@ int leds;
 	ioctl(xf86Info.consoleFd, KDSETLED, leds);
 }
 
-void xf86MouseInit(mouse)
-MouseDevPtr mouse;
+void
+xf86MouseInit(MouseDevPtr mouse)
 {
 	return;
 }
 
-int xf86MouseOn(mouse)
-MouseDevPtr mouse;
+int
+xf86MouseOn(MouseDevPtr mouse)
 {
 	if ((mouse->mseFd = open(mouse->mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
 		if (xf86AllowMouseOpenFail) {
-			ErrorF("Cannot open mouse (%s) - Continuing...\n",
+			xf86Msg(X_WARNING,
+				"Cannot open mouse (%s) - Continuing...\n",
 				strerror(errno));
 			return(-2);
 		}

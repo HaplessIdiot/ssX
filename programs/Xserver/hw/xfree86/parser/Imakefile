@@ -1,0 +1,42 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Imakefile,v 1.1.2.3 1998/01/30 07:31:43 dawes Exp $ */
+
+
+
+#define DoNormalLib     YES
+#define DoSharedLib     NO
+#define DoDebugLib      NO
+#define DoProfileLib    NO
+#define HasSharedData   NO
+#define LibName         xf86config
+
+#define UseDBMalloc	NO
+
+#if UseDBMalloc
+SYS_LIBRARIES=-ldbmalloc
+DBMALLOCDEFINE=-DDBMALLOC
+#endif
+
+XCONFIGFILE = XConfigFile
+XCONFIGDIR = XConfigDir
+
+INCLUDES = -I. -I$(XF86OSSRC)
+
+HEADERS = xf86Parser.h xf86Optrec.h
+
+SRCS = Device.c Files.c Flags.c Keyboard.c Layout.c Module.c \
+	Monitor.c Pointer.c Screen.c Vendor.c read.c scan.c write.c
+OBJS = Device.o Files.o Flags.o Keyboard.o Layout.o Module.o \
+	Monitor.o Pointer.o Screen.o Vendor.o read.o scan.o write.o
+
+CONFIG_DEFINES = -DXCONFIGDIR=\"$(XCONFIGDIR)\" -DXCONFIGFILE=\"$(XCONFIGFILE)\"
+
+#include <Library.tmpl>
+
+SpecialObjectRule(scan.o,scan.c,$(CONFIG_DEFINES) $(MODULEDEFINES) $(EXT_DEFINES))
+
+NormalProgramTarget(cpconfig,cpconfig.o $(OBJS),NullParameter,NullParameter,NullParameter)
+
+InstallLinkKitLibrary(xf86config,$(LINKKITDIR)/drivers)
+
+AllTarget(cpconfig)
+DependTarget()

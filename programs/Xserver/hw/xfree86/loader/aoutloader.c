@@ -1,8 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.10 1998/04/26 18:31:57 robin Exp $ */
-
-
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.7.2.3 1998/07/04 13:32:42 dawes Exp $ */
 
 /*
  *
@@ -38,9 +34,6 @@
 #else
 #include <sys/fcntl.h>
 #endif
-#ifdef __EMX__
-#include <sys/param.h>
-#endif
 #include <sys/stat.h>
 
 #ifdef DBMALLOC
@@ -57,9 +50,6 @@
 #include "sym.h"
 #include "loader.h"
 #include "aoutloader.h"
-
-#include "xf86.h"
-#include "xf86Priv.h"
 
 /*
 #define AOUTDEBUG ErrorF
@@ -82,8 +72,11 @@ typedef struct {
     loader_funcs	*funcs;
     AOUTHDR      *header;/* file header */
     unsigned char *text;       /* Start address of the text section */
+    unsigned int  textsize;    /* Size of the text section */
     unsigned char *data;       /* Start address of the data section */
+    unsigned int  datasize;    /* Size of the data section */
     unsigned char *bss;        /* Start address of the bss data */
+    unsigned int  bsssize;     /* Size of the bss section */
     struct relocation_info *txtrel;    /* Start address of the text relocation table */
     struct relocation_info *datarel;    /* Start address of the data relocation table */
     AOUT_nlist *symtab;        /* Start address of the symbol table */
@@ -664,6 +657,7 @@ AOUTLoadModule(loaderPtr modrec,
 	aoutfile->text = _LoaderFileToMem(aoutfile->fd, 
 					  AOUT_TXTOFF(header),
 					  header->a_text, "text");
+	aoutfile->textsize = header->a_text;
     } else {
 	aoutfile->text = NULL;
     }
@@ -672,12 +666,14 @@ AOUTLoadModule(loaderPtr modrec,
 	aoutfile->data = _LoaderFileToMem(aoutfile->fd,
 					  AOUT_DATOFF(header),
 					  header->a_data, "data");
+	aoutfile->datasize = header->a_data;
     } else {
 	aoutfile->data = NULL;
     }
     /* bss */
     if (header->a_bss != 0) {
 	aoutfile->bss = (unsigned char *) xf86loadercalloc(1, header->a_bss);
+	aoutfile->bsssize = header->a_bss;
     } else {
 	aoutfile->bss = NULL;
     }
@@ -788,7 +784,6 @@ void
 AOUTUnloadModule(void *modptr)
 {
     AOUTModulePtr aoutfile = (AOUTModulePtr)modptr;
-    AOUTHDR *header = aoutfile->header;
     AOUTRelocPtr relptr, *prevptr;
 #ifdef AOUTDEBUG
     AOUTDEBUG("AOUTUnLoadModule(0x%p)\n", modptr);
@@ -839,3 +834,25 @@ AOUTUnloadModule(void *modptr)
 
     return;
 }
+
+char *
+AOUTAddressToSection(void *modptr, unsigned long address)
+{
+    AOUTModulePtr aoutfile = (AOUTModulePtr)modptr;
+
+    if( address >= (unsigned long)aoutfile->text &&
+            address <= (unsigned long)aoutfile->text+aoutfile->textsize ) {
+                return "text";
+                }
+    if( address >= (unsigned long)aoutfile->data &&
+            address <= (unsigned long)aoutfile->data+aoutfile->datasize ) {
+                return "data";
+                }
+    if( address >= (unsigned long)aoutfile->bss &&
+            address <= (unsigned long)aoutfile->bss+aoutfile->bsssize ) {
+                return "bss";
+                }
+
+    return NULL;
+}
+

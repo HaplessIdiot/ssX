@@ -1,101 +1,147 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.1 1997/03/07 00:29:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.1.2.5 1998/07/18 17:53:35 dawes Exp $ */
 /*
- * glint register file 
+ * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
- */ 
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Alan Hourihane not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Alan Hourihane makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
+ *
+ * ALAN HOURIHANE DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL ALAN HOURIHANE BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
+ *           Dirk Hohndel, <hohndel@suse.de>
+ *	     Stefan Dirsch, <sndirsch@suse.de>
+ *
+ * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
+ * Siemens Nixdorf Informationssysteme
+ */
+#ifndef _GLINT_H_
+#define _GLINT_H_
 
-#ifndef _GLINTREG_H_
-#define _GLINTREG_H_
+#include "xaacursor.h"
+#include "xaa.h"
+#include "xf86RamDac.h"
 
-/* GLINT 500TX Configuration Region Registers */
+typedef struct {
+	unsigned long glintRegs[0x100];
+	unsigned long DacRegs[0x300];
+} GLINTRegRec, *GLINTRegPtr;
 
-/* Device Identification */
-#define CFGVendorId	0x00
-#define CFGDeviceId	0x02
-#define CFGRevisionId	0x08
-#define CFGClassCode	0x09
-#define CFGHeaderType	0x0E
+#define GLINTPTR(p)	((GLINTPtr)((p)->driverPrivate))
 
-/* Device Control/Status */
-#define CFGCommand	0x04
-#define CFGStatus	0x06
-
-/* Miscellaneous Functions */
-#define CFGBist		0x0f
-#define CFGLatTimer     0x0d
-#define CFGCacheLine    0x0c
-#define CFGMaxLat       0x3f
-#define CFGMinGrant     0x3e
-#define CFGIntPin       0x3d
-#define CFGIntLine      0x3c
-
-/* Base Adresses */
-#define CFGBaseAddr0	0x10 
-#define CFGBaseAddr1	0x14
-#define CFGBaseAddr2	0x18
-#define CFGBaseAddr3	0x1C
-#define CFGBaseAddr4	0x20
-#define CFGRomAddr	0x30
-
-
-/* GLINT 500TX Region 0 Registers */
-
-/* Control Status Registers */
-#define ResetStatus	0x0000
-#define IntEnable	0x0008
-#define IntFlags	0x0010
-#define InFIFOSpace	0x0018
-#define OutFIFOWords	0x0020
-#define DMAAddress	0x0028
-#define DMACount	0x0030
-#define ErrorFlags	0x0038
-#define VClkCtl		0x0040
-#define TestRegister	0x0048
-#define Aperture0	0x0050
-#define Aperture1	0x0058
-#define DMAControl	0x0060
-#define FIFODis		0x0068
-
-/* LocalBuffer Registers */
-#define LBMemoryCtl	0x1000
-#define LBMemoryEDO	0x1008
-
-/* Framebuffer Registers */
-#define FBMemoryCtl	0x1800
-#define FBModeSel	0x1808
-#define FBGCWrMask	0x1810
-#define FBGCColorLower	0x1818
-#define FBTXMemCtl	0x1820
-#define FBWrMaskk	0x1830
-#define FBGCColorUpper	0x1838
-
-/* Internal Video Registers */
-#define VTGHLimit	0x3000
-#define VTGHSyncStart	0x3008
-#define VTGHSyncEnd	0x3010
-#define VTGHBlankEnd	0x3018
-#define VTGVLimit	0x3020
-#define VTGVSyncStart	0x3028
-#define	VTGVSyncEnd	0x3030
-#define VTGVBlankEnd    0x3038
-#define VTGHGateStart   0x3040
-#define VTGHGateEnd	0x3048
-#define VTGVGateStart	0x3050
-#define VTGVGateEnd	0x3058
-#define VTGPolarity	0x3060
-#define VTGFrameRowAddr 0x3068
-#define VTGVLineNumber	0x3070
-#define VTGSerialClk	0x3078
-#define VTGModeCtl	0x3080
-
-/* GLINT Delta Region 0 Registers */
-
-/* Control Status Registers */
-#define DResetStatus	0x0800
-#define DIntEnable	0x0808
-#define DIntFlags	0x0810
-#define DErrorFlags	0x0838
-#define DTestRegister	0x0848
-#define DFIFODis	0x0868
-
+typedef struct {
+    pciVideoPtr		PciInfo;
+    pciVideoPtr		PciInfoDelta;
+    PCITAG		PciTag;
+    PCITAG		PciTagDelta;
+    int			Chipset;
+    int			RamDac;
+    int                 ChipRev;
+    int			HwBpp;
+    int			BppShift;
+    int			pprod;
+    CARD32		IOAddress;
+    CARD32		FbAddress;
+    unsigned char *     IOBase;
+#ifdef __alpha__
+    unsigned char *     IOBaseDense;
 #endif
+    unsigned char *	FbBase;
+    long		FbMapSize;
+    Bool		DoubleBuffer;
+    Bool		NoAccel;
+    Bool		Dac6Bit;
+    Bool		HWCursor;
+    Bool		UsePCIRetry;
+    Bool		UseBlockWrite;
+    Bool		UseFireGL3000;
+    Bool		VGAcore;
+    int			MinClock;
+    int			MaxClock;
+    GLINTRegRec		SavedReg;
+    GLINTRegRec		ModeReg;
+    CARD32		AccelFlags;
+    CARD32		ROP;
+    CARD32		BlitMode;
+    CARD32		FrameBufferReadMode;
+    CARD32		BltScanDirection;
+    RamDacRecPtr	RamDacRec;
+    XAACursorInfoPtr	CursorInfoRec;
+    XAAInfoRecPtr	AccelInfoRec;
+    CloseScreenProcPtr	CloseScreen;
+} GLINTRec, *GLINTPtr;
+
+/* Defines for PCI data */
+
+#define PCI_VENDOR_TI_CHIP_PERMEDIA2	\
+			((PCI_VENDOR_TI << 16) | PCI_CHIP_TI_PERMEDIA2)
+#define PCI_VENDOR_TI_CHIP_PERMEDIA	\
+			((PCI_VENDOR_TI << 16) | PCI_CHIP_TI_PERMEDIA)
+#define PCI_VENDOR_3DLABS_CHIP_PERMEDIA	\
+			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA)
+#define PCI_VENDOR_3DLABS_CHIP_PERMEDIA2	\
+			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA2)
+#define PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V	\
+			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA2V)
+#define PCI_VENDOR_3DLABS_CHIP_500TX	\
+			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_500TX)
+
+/* Prototypes */
+
+void Permedia2StoreColors(ColormapPtr pmap, int ndef, xColorItem *pdefs);
+void Permedia2InstallColormap(ColormapPtr pmap);
+void Permedia2UninstallColormap(ColormapPtr pmap);
+int  Permedia2ListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps);
+void Permedia2HandleColormaps(ScreenPtr pScreen, ScrnInfoPtr scrnp);
+void Permedia2RestoreDACValues(ScrnInfoPtr pScrn);
+void Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
+void Permedia2Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
+Bool Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
+Bool Permedia2AccelInit(ScreenPtr pScreen);
+
+void PermediaRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
+void PermediaSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
+Bool PermediaInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+Bool PermediaAccelInit(ScreenPtr pScreen);
+void Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
+void Permedia2VSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
+Bool Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+
+void TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
+void TXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
+Bool TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+Bool TXAccelInit(ScreenPtr pScreen);
+
+void glintOutIBMRGBIndReg(ScrnInfoPtr pScrn,
+		     unsigned char reg, unsigned char mask, unsigned char data);
+unsigned char glintInIBMRGBIndReg(ScrnInfoPtr pScrn, unsigned char reg);
+void glintIBMWriteAddress(ScrnInfoPtr pScrn, unsigned char index);
+void glintIBMReadAddress(ScrnInfoPtr pScrn, unsigned char index);
+void glintIBMWriteData(ScrnInfoPtr pScrn, unsigned char data);
+unsigned char glintIBMReadData(ScrnInfoPtr pScrn);
+
+void Permedia2OutIndReg(ScrnInfoPtr pScrn,
+		     unsigned char reg, unsigned char mask, unsigned char data);
+unsigned char Permedia2InIndReg(ScrnInfoPtr pScrn, unsigned char reg);
+void Permedia2WriteAddress(ScrnInfoPtr pScrn, unsigned char index);
+void Permedia2ReadAddress(ScrnInfoPtr pScrn, unsigned char index);
+void Permedia2WriteData(ScrnInfoPtr pScrn, unsigned char data);
+unsigned char Permedia2ReadData(ScrnInfoPtr pScrn);
+
+void Permedia2vOutIndReg(ScrnInfoPtr pScrn,
+		   unsigned char reg, unsigned char mask, unsigned char data);
+unsigned char Permedia2vInIndReg(ScrnInfoPtr pScrn, unsigned char reg);
+#endif /* _GLINT_H_ */
+

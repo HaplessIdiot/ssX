@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.11 1998/01/24 01:53:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.12 1998/03/20 21:06:52 hohndel Exp $ */
 
 
 /*
@@ -40,9 +40,7 @@
  
 #include "compiler.h"
 #include "xf86.h"
-#include "xf86Priv.h"
-#include "xf86_OSlib.h"
-#include "xf86_HWlib.h"
+#include "xf86_OSprocs.h"
 #include "vga.h"
 #include "vgaPCI.h"
 
@@ -998,20 +996,22 @@ vgaMGAPtr save;
 }
 
 void
-MGA1064RamdacInit()
+MGA1064RamdacInit(ScrnInfoPtr pScrn)
 {
-    MGAdac.isHwCursor = FALSE;
+    MGARamdacPtr MGAdac = &MGAPTR(pScrn)->Dac;
+
+    MGAdac->isHwCursor = FALSE;
 
     if ( MGABios2.PinID )
     {
-	MGAdac.maxPixelClock = (MGABios2.RamdacSpeed+100) * 1000;
+	MGAdac->maxPixelClock = (MGABios2.RamdacSpeed+100) * 1000;
 	ErrorF("Using BIOS value for maxPixelClock: %d kHz\n", MGAdac.maxPixelClock);
     }
     else
     {
 	if ( MGArev < 3 )
-	   MGAdac.maxPixelClock = 170000;
+	   MGAdac->maxPixelClock = 170000;
 	else
-	   MGAdac.maxPixelClock = 220000;
+	   MGAdac->maxPixelClock = 220000;
     }
 }

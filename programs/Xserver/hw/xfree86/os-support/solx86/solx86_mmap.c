@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_mmap.c,v 3.0 1996/11/18 13:13:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_mmap.c,v 3.1.4.1 1998/06/05 16:23:27 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -24,8 +24,6 @@
 /* $XConsortium: solx86_mmap.c /main/3 1996/02/21 17:54:17 kaleb $ */
 
 #include "X.h"
-#include "input.h"
-#include "scrnintstr.h"
 
 #include "xf86.h"
 #include "xf86Priv.h"
@@ -34,11 +32,9 @@
 /*
  * Read BIOS via mmap()ing /dev/pmem.
  */
-int xf86ReadBIOS(Base, Offset, Buf, Len)
-unsigned long Base;
-unsigned long Offset;
-unsigned char *Buf;
-int Len;
+int
+xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
+	     int Len)
 {
 	int fd;
 	unsigned char *ptr;
@@ -53,14 +49,15 @@ int Len;
         sprintf(solx86_vtname,"/dev/vt%02d",xf86Info.vtno);
 	if ((fd = open(solx86_vtname, O_RDONLY)) < 0)
     	{
-        	ErrorF("xf86ReadBios: Failed to open %s (%s)\n", solx86_vtname,
-               		strerror(errno));
+        	xf86Msg(X_WARNING, "xf86ReadBios: Failed to open %s (%s)\n",
+			solx86_vtname, strerror(errno));
         	return(-1);
 	}	
 	ptr = mmap((caddr_t)0, 0x8000, PROT_READ, MAP_SHARED, fd, (off_t)Base);
 	if ((int)ptr == -1)
 	{
-		ErrorF("xf86ReadBios: %s mmap failed\n", solx86_vtname);
+		xf86Msg(X_WARNING, "xf86ReadBios: %s mmap failed\n",
+			solx86_vtname);
 		close(fd);
 		return(-1);
 	}

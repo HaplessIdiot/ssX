@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_misc.c,v 1.1.2.1 1998/06/05 16:23:27 dawes Exp $ */
 
 /*
  * Copyright 1995-1997 by The XFree86 Project, Inc
@@ -11,16 +11,8 @@
 #define MAX_SECONDS	60	
 #define USEC_IN_SEC     (unsigned long)1000000
 
-int xf86_solx86usleep(
-#if NeedFunctionPrototypes
-unsigned long
-#endif
-);
-static void xf86_solx86sleep(
-#if NeedFunctionPrototypes
-int
-#endif
-);
+int xf86_solx86usleep(unsigned long);
+static void xf86_solx86sleep(int);
 
 /*
  * xf86_solx86usleep() - Solaris 2.1 x86 does not have a suitable
@@ -31,7 +23,8 @@ int
  *			 Doug Anson
  *			 danson@lgc.com
  */
-int xf86_solx86usleep(unsigned long usec)
+int
+xf86_solx86usleep(unsigned long usec)
 {
     int		      retval = 0;
     struct itimerval  naptime;
@@ -98,7 +91,8 @@ int xf86_solx86usleep(unsigned long usec)
  *			Doug Anson
  *			danson@lgc.com
  */
-static void xf86_solx86sleep(int signo)
+static void
+xf86_solx86sleep(int signo)
 {
     /* do nothing */
     return;

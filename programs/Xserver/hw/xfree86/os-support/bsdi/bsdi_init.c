@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_init.c,v 3.4 1996/02/04 09:09:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_init.c,v 3.5.4.2 1998/06/05 16:23:08 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -34,7 +34,7 @@
 
 #include <sys/param.h>
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 extern Bool RunFromSmartParent;
@@ -42,7 +42,8 @@ extern Bool RunFromSmartParent;
 static Bool KeepTty = FALSE;
 
 #if BSD >= 199306
-static void NonBlockConsoleOff()
+static void
+NonBlockConsoleOff()
 {
     register int i;
 
@@ -52,7 +53,8 @@ static void NonBlockConsoleOff()
 }
 #endif
 
-void xf86OpenConsole()
+void
+xf86OpenConsole()
 {
     int i, fd;
 
@@ -69,12 +71,14 @@ void xf86OpenConsole()
 #if BSD >= 199306
 	    if (RunFromSmartParent) {
               if (atexit(NonBlockConsoleOff))
-                ErrorF("InitOutput: can't register NBIO exit handler\n");
+                xf86Msg(X_WARNING,
+			"InitOutput: can't register NBIO exit handler\n");
 	      i = fcntl(2, F_GETFL, 0);
 	      if (i >= 0)
 	        i = fcntl(2, F_SETFL, i | FNDELAY);
 	      if (i < 0)
-	        ErrorF("InitOutput: can't put stderr in non-block mode\n");
+	        xf86Msg(X_WARNING,
+			"InitOutput: can't put stderr in non-block mode\n");
 	    }
 #else
 	    /*
@@ -102,8 +106,6 @@ void xf86OpenConsole()
 		       strerror(errno));
 	}
 
-	xf86Config(FALSE); /* Read XF86Config */
-
 	if (ioctl(xf86Info.consoleFd, PCCONIOCRAW, 0) < 0)
 	{
 	    FatalError("%s: PCCONIOCRAW failed (%s)\n", 
@@ -113,7 +115,8 @@ void xf86OpenConsole()
     return;
 }
 
-void xf86CloseConsole()
+void
+xf86CloseConsole()
 {
     ioctl (xf86Info.consoleFd, PCCONIOCCOOK, 0);
 
@@ -125,10 +128,8 @@ void xf86CloseConsole()
     return;
 }
 
-int xf86ProcessArgument (argc, argv, i)
-int argc;
-char *argv[];
-int i;
+int
+xf86ProcessArgument (int argc, char *argv[], int i)
 {
 	/*
 	 * Keep server from detaching from controlling tty.  This is useful 
@@ -142,7 +143,8 @@ int i;
 	return(0);
 }
 
-void xf86UseMsg()
+void
+xf86UseMsg()
 {
 	ErrorF("-keeptty               ");
 	ErrorF("don't detach controlling tty (for debugging only)\n");

@@ -1,7 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.5 1998/03/21 11:08:48 dawes Exp $ */
-
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.2.2.4 1998/05/22 13:47:24 dawes Exp $ */
 
 
 /*
@@ -32,21 +29,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
+
 #include "Xos.h"
 #include "os.h"
 
+#include "sym.h"
 #include "loader.h"
+#include "dlloader.h"
 
 #ifdef DL_LAZY
-#define DLOPEN_FLAGS DL_LAZY
+#define DLOPEN_LAZY DL_LAZY
 #else
 #ifdef RTLD_LAZY
-#define DLOPEN_FLAGS RTLD_LAZY
+#define DLOPEN_LAZY RTLD_LAZY
 #else
 #ifdef __FreeBSD__
-#define DLOPEN_FLAGS 1
+#define DLOPEN_LAZY 1
+#else
+#define DLOPEN_LAZY 0
 #endif
 #endif
+#endif
+#ifdef LD_GLOBAL
+#define DLOPEN_GLOBAL LD_GLOBAL
+#else
+#ifdef RTLD_GLOBAL
+#define DLOPEN_GLOBAL RTLD_GLOBAL
+#else
+#define DLOPEN_GLOBAL 0
+#endif
+#endif
+
+#define DLOPEN_FLAGS ( DLOPEN_LAZY | DLOPEN_GLOBAL )
+
+#ifdef CSRG_BASED
+#define NEED_UNDERSCORE_FOR_DLLSYM
 #endif
 
 /*
@@ -72,23 +89,35 @@ DLModuleList *dlModuleList = NULL;
  * Search a symbol in the module list
  */
 void *
-DLFindSymbol(char *name)
+DLFindSymbol(const char *name)
 {
     DLModuleList *l;
     void *p;
+
+#ifdef NEED_UNDERSCORE_FOR_DLLSYM
     char *n;
 
-    n = malloc(strlen(name) + 2);
+    n = (char *)xf86loadermalloc(strlen(name) + 2);
     sprintf(n, "_%s", name);
-
+#endif
+    
     for (l = dlModuleList; l != NULL; l = l->next) {
-	p = dlsym(l->module->dlhandle, n);
+#ifdef NEED_UNDERSCORE_FOR_DLLSYM
+        p = dlsym(l->module->dlhandle, n);
+#else
+        p = dlsym(l->module->dlhandle, name);
+#endif
 	if (p != NULL) {
-	    free(n);
+#ifdef NEED_UNDERSCORE_FOR_DLLSYM
+	    xf86loaderfree(n);
+#endif
 	    return p;
 	}
     }
-    free(n);
+#ifdef NEED_UNDERSCORE_FOR_DLLSYM    
+    xf86loaderfree(n);
+#endif
+    
     return NULL;
 }
 
@@ -96,29 +125,30 @@ DLFindSymbol(char *name)
  * public interface
  */
 void *
-DLLoadModule(loaderPtr modrec, int dllfd, LOOKUP **ppLookup)
+DLLoadModule(loaderPtr modrec, int fd, LOOKUP **ppLookup)
 {
     DLModulePtr dlfile;
     DLModuleList *l;
 
-    if ((dlfile=(DLModulePtr)xcalloc(1,sizeof(DLModuleRec)))==NULL) {
+    if ((dlfile=(DLModulePtr)xf86loadercalloc(1,sizeof(DLModuleRec)))==NULL) {
 	ErrorF("Unable  to allocate DLModuleRec\n");
 	return NULL;
     }
     dlfile->handle = modrec->handle;
     dlfile->dlhandle = dlopen(modrec->name, DLOPEN_FLAGS);
-    if (dlfile->dlhandle == 0) {
+    if (dlfile->dlhandle == NULL) {
 	ErrorF("dlopen: %s\n", dlerror());
-	xfree(dlfile);
+	xf86loaderfree(dlfile);
 	return NULL;
     }
     /* Add it to the module list */
-    l = (DLModuleList *)xalloc(sizeof(DLModuleList));
+    l = (DLModuleList *)xf86loadermalloc(sizeof(DLModuleList));
     l->module = dlfile;
     l->next = dlModuleList;
     dlModuleList = l;
+    *ppLookup = NULL;
 
-    return dlfile;
+    return (void *)dlfile;
 }
 
 void
@@ -143,18 +173,18 @@ DLUnloadModule(void *modptr)
     if (dlModuleList->module == modptr) {
 	l = dlModuleList;
 	dlModuleList = l->next;
-	free(l);
+	xf86loaderfree(l);
     } else {
 	p = dlModuleList;
 	for (l = dlModuleList->next; l != NULL; l = l->next) {
 	    if (l->module == modptr) {
 		p->next = l->next;
-		free(l);
+		xf86loaderfree(l);
 		break;
 	    }
 	    p = l;
 	}
     }
     dlclose(dlfile->dlhandle);
-    free(modptr);
+    xf86loaderfree(modptr);
 }

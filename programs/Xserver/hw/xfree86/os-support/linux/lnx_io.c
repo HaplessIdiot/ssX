@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.2 1996/08/10 13:07:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.3.4.2 1998/06/05 16:23:11 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -27,19 +27,15 @@
 
 #define NEED_EVENTS
 #include "X.h"
-#include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
-void xf86SoundKbdBell(loudness, pitch, duration)
-int loudness;
-int pitch;
-int duration;
+void
+xf86SoundKbdBell(int loudness, int pitch, int duration)
 {
 	if (loudness && pitch)
 	{
@@ -50,13 +46,14 @@ int duration;
 	}
 }
 
-void xf86SetKbdLeds(leds)
-int leds;
+void
+xf86SetKbdLeds(int leds)
 {
 	ioctl(xf86Info.consoleFd, KDSETLED, leds);
 }
 
-int xf86GetKbdLeds()
+int
+xf86GetKbdLeds()
 {
 	int leds;
 
@@ -64,12 +61,8 @@ int xf86GetKbdLeds()
 	return(leds);
 }
 
-#if NeedFunctionPrototypes
-void xf86SetKbdRepeat(char rad)
-#else
-void xf86SetKbdRepeat(rad)
-char rad;
-#endif
+void
+xf86SetKbdRepeat(char rad)
 {
 	return;
 }
@@ -77,13 +70,15 @@ char rad;
 static int kbdtrans;
 static struct termios kbdtty;
 
-void xf86KbdInit()
+void
+xf86KbdInit()
 {
 	ioctl (xf86Info.consoleFd, KDGKBMODE, &kbdtrans);
 	tcgetattr (xf86Info.consoleFd, &kbdtty);
 }
 
-int xf86KbdOn()
+int
+xf86KbdOn()
 {
 	struct termios nTty;
 
@@ -101,26 +96,28 @@ int xf86KbdOn()
 	return(xf86Info.consoleFd);
 }
 
-int xf86KbdOff()
+int
+xf86KbdOff()
 {
 	ioctl(xf86Info.consoleFd, KDSKBMODE, kbdtrans);
 	tcsetattr(xf86Info.consoleFd, TCSANOW, &kbdtty);
 	return(xf86Info.consoleFd);
 }
 
-void xf86MouseInit(mouse)
-MouseDevPtr mouse;
+void
+xf86MouseInit(MouseDevPtr mouse)
 {
 	return;
 }
 
-int xf86MouseOn(mouse)
-MouseDevPtr mouse;
+int
+xf86MouseOn(MouseDevPtr mouse)
 {
 	if ((mouse->mseFd = open(mouse->mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
 		if (xf86AllowMouseOpenFail) {
-			ErrorF("Cannot open mouse (%s) - Continuing...\n",
+			xf86Msg(X_WARNING,
+				"Cannot open mouse (%s) - Continuing...\n",
 				strerror(errno));
 			return(-2);
 		}

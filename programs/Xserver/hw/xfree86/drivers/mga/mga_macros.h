@@ -1,3 +1,5 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.1.2.1 1998/05/23 09:31:31 dawes Exp $ */
+
 #ifndef _MGA_MACROS_H_
 #define _MGA_MACROS_H_
 
@@ -17,10 +19,10 @@
 
 #define RGBEQUAL(c) (!(((c >> 8) ^ c) & 0xffff)) 
 
-#define WAITFIFO(n) if(!MGAUsePCIRetry) \
+#define WAITFIFO(n) if(!pMga->UsePCIRetry) \
 	{while(INREG8(MGAREG_FIFOSTATUS) < (n));}
 
-#define XYADDRESS(x,y) ((y) * xf86AccelInfoRec.FramebufferWidth + (x) + MGAydstorg)
+#define XYADDRESS(x,y) ((y) * pScrn->displayWidth + (x) + pMga->YDstOrg)
 
 #define MAKEDMAINDEX(index)  ((((index) >> 2) & 0x7f) | (((index) >> 6) & 0x80))
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.19 1998/04/26 16:04:54 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.6.2.12 1998/07/18 17:53:40 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -25,46 +25,40 @@
  * 
  * Modified for MGA Millennium by Xavier Ducoin <xavier@rd.lectra.fr>
  *
- * Doug Merritt <doug@netcom.com>
- * 24bpp: fixed high res stripe glitches, clock glitches on all res
  */
 
 
-#include "compiler.h"
-#include "xf86.h"
-#include "xf86Priv.h"
-#include "xf86_ansic.h"
-#include "xf86_HWlib.h"
-#include "xf86cursor.h"
-#include "vga.h"
-#include "vgaPCI.h"
+/*
+ * This is a first cut at a non-accelerated version to work with the
+ * new server design (DHD).
+ */                     
 
-#ifdef PC98_MGA
-#ifdef XFreeXDGA
-#include "scrnintstr.h"
-#include "servermd.h"
-#define _XF86DGA_SERVER_
-#include "extensions/xf86dgastr.h"
-#endif
-#endif
+/* Everything using inb/outb, etc needs "compiler.h" */
+#include "compiler.h"   
+
+/* All drivers should typically include these */
+#include "xf86.h"
+#include "xf86_OSproc.h"
+#include "xf86_ansic.h" 
+
+/* Drivers for PCI hardware need this */
+#include "xf86PciInfo.h"
+
+/* Drivers that need to access the PCI config space directly need this */
+#include "xf86Pci.h"
+
+/* All drivers using the vgahw module need this */
+/* This driver needs to be modified to not use vgaHW for multihead operation */
+#include "vgaHW.h"
+
+#include "xaacursor.h"
 
 #include "mga_bios.h"
 #include "mga_reg.h"
 #include "mga.h"
 
 /* Set to 1 if you want to set MCLK from XF86Config - AT YOUR OWN RISK! */
-#define MCLK_FROM_XCONFIG 1
-
-/*
- * exported functions
- */
-void	MGA3026RamdacInit();
-Bool	MGA3026Init();
-void	MGA3026Restore();
-void*	MGA3026Save();
-#ifdef PC98_MGA
-void	MGA3026Reset();
-#endif
+#define MCLK_FROM_XCONFIG 0
 
 /*
  * implementation
@@ -79,42 +73,32 @@ static unsigned char MGADACregs[] = {
 	0x06
 };
 
+#define DACREGSIZE sizeof(MGADACregs)
 /*
  * initial values of ti3026 registers
  */
-static unsigned char MGADACbpp8[] = {
+static unsigned char MGADACbpp8[DACREGSIZE] = {
 	0x06, 0x80,    0, 0x25, 0x00,   0x00, 0x0C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
 	   0
 };
-static unsigned char MGADACbpp16[] = {
+static unsigned char MGADACbpp16[DACREGSIZE] = {
 	0x07, 0x05,    0, 0x15, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
 	   0
 };
-static unsigned char MGADACbpp24[] = {
-#if 1 /* DRM */
-	/*
-	 * I did this fix without documentation, by trial and error.
-	 * Someone may want to confirm it against docs, and then remove
-	 * the #if stuff.
-	 *
-	 * 24bpp: fixed high res stripe glitches, clock glitches on all res
-	 * (i.e. 24bpp was badly broken, now seems just fine.)
-	 */
-	0x06, 0x16,    0, 0x25, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
-#else
+static unsigned char MGADACbpp24[DACREGSIZE] = {
 	0x07, 0x16,    0, 0x25, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
-#endif
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
 	   0
 };
-static unsigned char MGADACbpp32[] = {
+static unsigned char MGADACbpp32[DACREGSIZE] = {
 	0x07, 0x06,    0, 0x05, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
 	   0
 };
 
+#if 0
 /*
  * This is a convenience macro, so that entries in the driver structure
  * can simply be dereferenced with 'newVS->xxx'.
@@ -129,242 +113,31 @@ typedef struct {
 	unsigned char DACreg[sizeof(MGADACregs)];
 	unsigned char ExtVga[6];
 } vgaMGARec, *vgaMGAPtr;
+#endif
     
 /*
  * Read/write to the DAC via MMIO 
  */
 
 /*
- * direct registers
+ * These were functions.  Use macros instead to avoid the need to
+ * pass pMga to them.
  */
-static unsigned char inTi3026dreg(reg)
-unsigned char reg;
-{
-	if (!MGAMMIOBase)
-		FatalError("MGA: IO registers not mapped\n");
 
-	return INREG8(RAMDAC_OFFSET + reg);
-}
+#define inTi3026dreg(reg) INREG8(RAMDAC_OFFSET + (reg))
 
-static void outTi3026dreg(reg, val)
-unsigned char reg, val;
-{
-	if (!MGAMMIOBase)
-		FatalError("MGA: IO registers not mapped\n");
+#define outTi3026dreg(reg, val) OUTREG8(RAMDAC_OFFSET + (reg), val)
 
-	OUTREG8(RAMDAC_OFFSET + reg, val);
-}
+#define inTi3026(reg) \
+	(outTi3026dreg(TVP3026_INDEX, reg), inTi3026dreg(TVP3026_DATA))
 
-/*
- * indirect registers
- */
-static unsigned char inTi3026(reg)
-unsigned char reg;
-{
-	outTi3026dreg(TVP3026_INDEX, reg);
-	return inTi3026dreg(TVP3026_DATA);
-}
+#define outTi3026(reg, mask, val) \
+	do { /* note: mask and reg may get evaluated twice */ \
+	    unsigned char tmp = (mask) ? (inTi3026(reg) & (mask)) : 0; \
+	    outTi3026dreg(TVP3026_INDEX, reg); \
+	    outTi3026dreg(TVP3026_DATA, tmp | (val)); \
+	} while (0)
 
-static void outTi3026(reg, mask, val)
-unsigned char reg, mask, val;
-{
-	unsigned char tmp = mask? (inTi3026(reg) & mask) : 0;
-
-	outTi3026dreg(TVP3026_INDEX, reg);
-	outTi3026dreg(TVP3026_DATA, tmp | val);
-}
-
-
-/*
- */
-void
-MGATi3026InstallColormap(ColormapPtr pmap, int entries, Pixel *ppix, xrgb *prgb)
-{
-  int i;
-  unsigned long pixel;
-
-  switch (pmap->pVisual->class) {
-  case StaticGray:
-  case GrayScale:
-  case StaticColor:
-  case PseudoColor:
-  case TrueColor: /* or DirectColor in TVP docs! */ 
-#ifdef DEBUG
-    ErrorF("MGATi3026InstallColormap selected TVP DirectColor\n");
-#endif
-    outTi3026(TVP3026_KEY_CTL,        ~0x10, 0x00);
-    outTi3026(TVP3026_TRUE_COLOR_CTL, ~0x40, 0x00);
-    break;
-  case DirectColor: /* or TrueColor in TVP docs! */ 
-#ifdef DEBUG
-    ErrorF("MGATi3026InstallColormap selected TVP TrueColor\n");
-#endif
-    outTi3026(TVP3026_KEY_CTL,        ~0x10, 0x10);
-    outTi3026(TVP3026_TRUE_COLOR_CTL, ~0x40, 0x40);
-    break;
-  }
-
-  for (i = 0; i < entries; i++ ) {
-    /* green because it is deepest color in 565 mode */
-    /* First shift to bits range 0...entries */
-    pixel = (ppix[i] & pmap->pVisual->greenMask) >> pmap->pVisual->offsetGreen;
-    /* But TVP3026 shifts data to be MS bits in each color channel,
-     *  so we must do the same with the pixel values */
-    pixel = pixel << (8 - xf86weight.green);
-    outTi3026dreg(TVP3026_WADR_PAL, (unsigned char)(pixel) );
-
-    /* X colors are 16bits, TVP3026 palette is 8bits, 16 - 8 = 8 */
-    prgb[i].red   = prgb[i].red   >> 8;
-    outTi3026dreg(TVP3026_COL_PAL, (unsigned char)(prgb[i].red) );
-    prgb[i].green = prgb[i].green >> 8;
-    outTi3026dreg(TVP3026_COL_PAL, (unsigned char)(prgb[i].green) );
-    prgb[i].blue  = prgb[i].blue  >> 8;
-    outTi3026dreg(TVP3026_COL_PAL, (unsigned char)(prgb[i].blue) );
-
-#ifdef DEBUG
-    if ( i<8 || i>entries-8 )  /* keep the logfile manageable */
-    {
-      volatile xrgb old;
-      outTi3026dreg(TVP3026_RADR_PAL, (unsigned char)(pixel) );
-      old.red   = inTi3026dreg(TVP3026_COL_PAL);
-      old.green = inTi3026dreg(TVP3026_COL_PAL);
-      old.blue  = inTi3026dreg(TVP3026_COL_PAL);
-      ErrorF("\tTVP3026CLUT[%x=%x]=\t(%x %x %x)\tshould be (%x %x %x)",
-	     ppix[i], pixel,
-	     old.red, old.green, old.blue,
-	     prgb[i].red, prgb[i].green, prgb[i].blue );
-      if ( (old.red   != prgb[i].red)   || 
-	   (old.green != prgb[i].green) ||
-	   (old.blue  != prgb[i].blue)     )
-	{
-	  ErrorF(" but isn't");
-	}
-      ErrorF("\n");
-    }
-#endif
-  }
-}
-
-#ifdef PC98_MGA
-/* taken from vgaCmap.c */
-void
-MGATi3026StoreColors(pmap, ndef, pdefs)
-     ColormapPtr	pmap;
-     int		ndef;
-     xColorItem	        *pdefs;
-{
-    int		i;
-    unsigned char *cmap, *tmp;
-    xColorItem	directDefs[256];
-    Bool          new_overscan = FALSE;
-    unsigned char overscan = ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN];
-    unsigned char tmp_overscan;
-
-    if (vgaCheckColorMap(pmap))
-        return;
-
-    if ((pmap->pVisual->class | DynamicClass) == DirectColor)
-    {
-        ndef = cfbExpandDirectColors (pmap, ndef, pdefs, directDefs);
-        pdefs = directDefs;
-    }
-
-    for(i = 0; i < ndef; i++)
-    {
-        if (pdefs[i].pixel == overscan)
-	{
-	    new_overscan = TRUE;
-	}
-        cmap = &((vgaHWPtr)vgaNewVideoState)->DAC[pdefs[i].pixel*3];
-	if (vgaDAC8BitComponents) {
-            cmap[0] = pdefs[i].red   >> 8;
-            cmap[1] = pdefs[i].green >> 8;
-            cmap[2] = pdefs[i].blue  >> 8;
-        }
-        else {
-            cmap[0] = pdefs[i].red   >> 10;
-            cmap[1] = pdefs[i].green >> 10;
-            cmap[2] = pdefs[i].blue  >> 10;
-        }
-
-        if (xf86VTSema
-#ifdef XFreeXDGA
-	    || ((vga256InfoRec.directMode & XF86DGADirectGraphics)
-	        && !(vga256InfoRec.directMode & XF86DGADirectColormap))
-	    || (vga256InfoRec.directMode & XF86DGAHasColormap)
-#endif
-	   )
-	{
-	    outTi3026dreg(TVP3026_WADR_PAL, pdefs[i].pixel);
-	    outTi3026dreg(TVP3026_COL_PAL, cmap[0]);
-	    outTi3026dreg(TVP3026_COL_PAL, cmap[1]);
-	    outTi3026dreg(TVP3026_COL_PAL, cmap[2]);
-	}
-    }	
-    if (new_overscan)
-    {
-	new_overscan = FALSE;
-        for(i = 0; i < ndef; i++)
-        {
-            if (pdefs[i].pixel == overscan)
-	    {
-	        if ((pdefs[i].red != 0) || 
-	            (pdefs[i].green != 0) || 
-	            (pdefs[i].blue != 0))
-	        {
-	            new_overscan = TRUE;
-		    tmp_overscan = overscan;
-        	    tmp = &((vgaHWPtr)vgaNewVideoState)->DAC[pdefs[i].pixel*3];
-	        }
-	        break;
-	    }
-        }
-        if (new_overscan)
-        {
-            /*
-             * Find a black pixel, or the nearest match.
-             */
-            for (i=255; i >= 0; i--)
-	    {
-                cmap = &((vgaHWPtr)vgaNewVideoState)->DAC[i*3];
-	        if ((cmap[0] == 0) && (cmap[1] == 0) && (cmap[2] == 0))
-	        {
-	            overscan = i;
-	            break;
-	        }
-	        else
-	        {
-	            if ((cmap[0] < tmp[0]) && 
-		        (cmap[1] < tmp[1]) && (cmap[2] < tmp[2]))
-	            {
-		        tmp = cmap;
-		        tmp_overscan = i;
-	            }
-	        }
-	    }
-	    if (i < 0)
-	    {
-	        overscan = tmp_overscan;
-	    }
-	    ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN] = overscan;
-            if (xf86VTSema
-#ifdef XFreeXDGA
-	        || ((vga256InfoRec.directMode & XF86DGADirectGraphics)
-	            && !(vga256InfoRec.directMode & XF86DGADirectColormap))
-	        || (vga256InfoRec.directMode&XF86DGAHasColormap)
-#endif
-	       )
-	    {
-	      (void)inb(vgaIOBase + 0x0A);
-	      outb(0x3C0, OVERSCAN);
-	      outb(0x3C0, overscan);
-	      (void)inb(vgaIOBase + 0x0A);
-	      outb(0x3C0, 0x20);
-	    }
-        }
-    }
-}
-#endif
 
 /*
  * MGATi3026CalcClock - Calculate the PLL settings (m, n, p).
@@ -476,13 +249,13 @@ MGATi3026CalcClock ( f_out, f_max, m, n, p )
  *   Written and tested.
  */
 static void
-MGATi3026SetMCLK( f_out )
-	long f_out;
+MGATi3026SetMCLK( ScrnInfoPtr pScrn, long f_out )
 {
 	double f_pll;
 	int mclk_m, mclk_n, mclk_p;
 	int pclk_m, pclk_n, pclk_p;
 	int mclk_ctl, rfhcnt;
+	MGAPtr pMga = MGAPTR(pScrn);
 
 	f_pll = MGATi3026CalcClock(
 		f_out, TI_MAX_MCLK_FREQ,
@@ -531,77 +304,17 @@ MGATi3026SetMCLK( f_out )
 	while (( inTi3026( TVP3026_MEM_CLK_DATA ) & 0x40 ) == 0 ) {
 		;
 	}
-
+	
 	/* Set the WRAM refresh divider */
-	/* these formulas assume nogscale=1; RTFM if gscale=0, esp. if
-	 *   you are slowing the clocks for power-saving
-	 * Also note that the 1064SG seems to treat rfhcnt differently,
-	 *   but it doesn't use this dac.
-	 */
-	if (MGAchipset == PCI_CHIP_MGA2064 )
-	  {
-	    /* this one is from the 2064W manual. */
-	    /* rfhcnt = (( (33.2 * f_pll) / 1000.0 ) / 128) - 1; */
-	    /* changing to -.5 to get round-to-nearest approximation */
-	    rfhcnt = (((33.2 * f_pll) / 1000.0 ) / 128.0) - .5;
-	    if ( rfhcnt > 15 )
-	      {
-#ifdef DEBUG
-		ErrorF( "error: rfhcnt=%d, setting to 0\n", rfhcnt );
-#endif
-		/* the 2064W manual implies that zero is OK (?)
-		 * "minimum frequency" is supposedly set to 4MHz
-		 * when rfhcnt=0 and nogscale=1
-		 */
-		
+	rfhcnt = ( 332.0 * f_pll / 1280000.0 );
+	if ( rfhcnt > 15 )
 		rfhcnt = 0;
-	      }
-	  }
-	else /* 2164W PCI or AGP and default */
-	  {
-	    /* this is calculated from the 2164W manual. It seems OK with
-	     * both the 2164W-AGP and a PCI 2064W. Barring algebra errors,
-	     * with expected rounding, this should be guaranteed to conform
-	     * to the formula from p.3-18 of the 2164W manual.
-	     */
-	    rfhcnt = (( (33.2 * f_pll) / 1000.0 ) - 1) / 256;
-	    if ( rfhcnt > 15 )
-	      {
-#ifdef DEBUG
-		ErrorF( "error: rfhcnt=%d, setting to 15\n", rfhcnt );
-#endif
-		rfhcnt = 15;
-	      }
-#ifdef DEBUG  /* paranoia check, neither should ever happen */
-	    /* check formula from p. 3-18 of MGA-2164W manual
-	     * 33.2 >= (rfhcnt<3:1>*512 + rfhcnt<0>*64 + 1) *
-	     *     gclk_period * gscaling_factor
-	     */
-	    {
-	      double refresh_period = ((rfhcnt & 0xE)*256 +
-			       (rfhcnt & 1)*64 + 1) * ( 1000.0 / f_pll);      
-	      if (! ( 33.2 >= refresh_period ))
-		{
-		  ErrorF( "warning: rfhcnt=%d -> %lf usec > 33.2 usec\n",
-			  rfhcnt, refresh_period );
-		}
-	    }
-	    if ( rfhcnt == 0 )
-	      ErrorF( "warning: 2164W memory refresh disabled!\n");
-#endif
-	  } /* MGAchipset choice */
+	pciWriteLong( pMga->PciTag, PCI_OPTION_REG, ( rfhcnt << 16 ) |
+		( pciReadLong( pMga->PciTag, PCI_OPTION_REG ) & ~0xf0000 ));
 
 #ifdef DEBUG
 	ErrorF( "rfhcnt=%d\n", rfhcnt );
-#endif	
-
-	rfhcnt <<= 16;
-
-    	if(!OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options))
-	   rfhcnt |= (1 << 29);
-
- 	pciWriteLong( MGAPciTag, PCI_OPTION_REG, rfhcnt |
-		( pciReadLong( MGAPciTag, PCI_OPTION_REG ) & ~0x200f0000 ));
+#endif
 
 	/* Output MCLK PLL on MCLK pin */
 	outTi3026( TVP3026_MCLK_CTL, 0, ( mclk_ctl & 0xe7 ) | 0x10 );
@@ -630,10 +343,6 @@ MGATi3026SetMCLK( f_out )
  *   f_pll			IN	Pixel clock PLL frequencly in kHz.
  *   bpp			IN	Bytes per pixel.
  *
- * EXTERNAL REFERENCES
- *   vga256InfoRec.maxClock	IN	Max allowed pixel clock in kHz.
- *   vgaBitsPerPixel		IN	Bits per pixel.
- *
  * HISTORY
  *   January 11, 1997 - [aem] Andrew E. Mileski
  *   Split to simplify code for MCLK (=GCLK) setting.
@@ -655,9 +364,7 @@ MGATi3026SetMCLK( f_out )
  */
 
 static void 
-MGATi3026SetPCLK( f_out, bpp )
-	long	f_out;
-	int	bpp;
+MGATi3026SetPCLK( ScrnInfoPtr pScrn, long f_out, int bpp )
 {
 	/* Pixel clock values */
 	int m, n, p;
@@ -669,18 +376,22 @@ MGATi3026SetPCLK( f_out, bpp )
 	/* The actual frequency output by the clock */
 	double f_pll;
 
-	/* Get the maximum pixel clock frequency */
 	long f_max = TI_MAX_VCO_FREQ;
-	if ( vga256InfoRec.maxClock > TI_MAX_VCO_FREQ )
-		f_max = vga256InfoRec.maxClock;
+
+	MGAPtr pMga = MGAPTR(pScrn);
+	MGARegPtr pReg = &pMga->ModeReg;
+
+	/* Get the maximum pixel clock frequency */
+	if ( pMga->MaxClock > TI_MAX_VCO_FREQ )
+		f_max = pMga->MaxClock;
 
 	/* Do the calculations for m, n, and p */
 	f_pll = MGATi3026CalcClock( f_out, f_max, & m, & n, & p );
 
 	/* Values for the pixel clock PLL registers */
-	newVS->DACclk[ 0 ] = ( n & 0x3f ) | 0xc0;
-	newVS->DACclk[ 1 ] = ( m & 0x3f );
-	newVS->DACclk[ 2 ] = ( p & 0x03 ) | 0xb0;
+	pReg->DacClk[ 0 ] = ( n & 0x3f ) | 0xc0;
+	pReg->DacClk[ 1 ] = ( m & 0x3f );
+	pReg->DacClk[ 2 ] = ( p & 0x03 ) | 0xb0;
 
 	/*
 	 * Now that the pixel clock PLL is setup,
@@ -691,7 +402,7 @@ MGATi3026SetPCLK( f_out, bpp )
 	 * First we figure out lm, ln, and z.
 	 * Things are different in packed pixel mode (24bpp) though.
 	 */
-	 if ( vgaBitsPerPixel == 24 ) {
+	 if ( pScrn->bitsPerPixel == 24 ) {
 
 		/* ln:lm = ln:3 */
 		lm = 65 - 3;
@@ -741,18 +452,18 @@ MGATi3026SetPCLK( f_out, bpp )
 	}
  
 	/* Values for the loop clock PLL registers */
-	if ( vgaBitsPerPixel == 24 ) {
+	if ( pScrn->bitsPerPixel == 24 ) {
 		/* Packed pixel mode values */
-		newVS->DACclk[ 3 ] = ( ln & 0x3f ) | 0x80;
-		newVS->DACclk[ 4 ] = ( lm & 0x3f ) | 0x80;
-		newVS->DACclk[ 5 ] = ( lp & 0x03 ) | 0xf8;
+		pReg->DacClk[ 3 ] = ( ln & 0x3f ) | 0x80;
+		pReg->DacClk[ 4 ] = ( lm & 0x3f ) | 0x80;
+		pReg->DacClk[ 5 ] = ( lp & 0x03 ) | 0xf8;
  	} else {
 		/* Non-packed pixel mode values */
-		newVS->DACclk[ 3 ] = ( ln & 0x3f ) | 0xc0;
-		newVS->DACclk[ 4 ] = ( lm & 0x3f );
-		newVS->DACclk[ 5 ] = ( lp & 0x03 ) | 0xf0;
+		pReg->DacClk[ 3 ] = ( ln & 0x3f ) | 0xc0;
+		pReg->DacClk[ 4 ] = ( lm & 0x3f );
+		pReg->DacClk[ 5 ] = ( lp & 0x03 ) | 0xf0;
 	}
-	newVS->DACreg[ 18 ] = lq | 0x38;
+	pReg->DacRegs[ 18 ] = lq | 0x38;
 
 #ifdef DEBUG
 	ErrorF( "bpp=%d z=%.1f ln=%d lm=%d lp=%d lq=%d\n",
@@ -769,76 +480,83 @@ MGATi3026SetPCLK( f_out, bpp )
  * (see definition above) is used to simply fill in the structure.
  */
 Bool
-MGA3026Init(mode)
-DisplayModePtr mode;
+MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
-	int hd, hs, he, ht, vd, vs, ve, vt, wd;
+	int hd, hs, he, hbs, hbe, ht, vd, vs, ve, vbs, vbe, vt, wd;
 	int i, index_1d;
 	unsigned char* initDAC;
+	MGAPtr pMga;
+	MGARegPtr pReg;
+	vgaRegPtr pVga;
 
-	switch(vgaBitsPerPixel)
+	pMga = MGAPTR(pScrn);
+	pReg = &pMga->ModeReg;
+	pVga = &VGAHWPTR(pScrn)->ModeReg;
+
+	/* Allocate the DacRegs space if not done already */
+	if (pReg->DacRegs == NULL) {
+		pReg->DacRegs = (unsigned char *)xnfcalloc(DACREGSIZE, 1);
+	}
+
+	switch(pScrn->bitsPerPixel)
 	{
 	case 8:
 		initDAC = MGADACbpp8;
-		initDAC[2] = MGAinterleave? 0x4C : 0x4B;
+		initDAC[2] = pMga->Interleave? 0x4C : 0x4B;
 		break;
 	case 16:
 		initDAC = MGADACbpp16;
-		initDAC[2] = MGAinterleave? 0x54 : 0x53;
-		if ( (xf86weight.red == 5) && (xf86weight.green == 5)
-					&& (xf86weight.blue == 5) )
+		initDAC[2] = pMga->Interleave? 0x54 : 0x53;
+		if ( (pScrn->weight.red == 5) && (pScrn->weight.green == 5)
+					&& (pScrn->weight.blue == 5) )
 			initDAC[1] = 0x04 ;
 		break;
 	case 24:
 		initDAC = MGADACbpp24;
-		initDAC[2] = MGAinterleave? 0x5C : 0x5B;
+		initDAC[2] = pMga->Interleave? 0x5C : 0x5B;
 		break;
 	case 32:
 		initDAC = MGADACbpp32;
-		initDAC[2] = MGAinterleave? 0x5C : 0x5B;
+		initDAC[2] = pMga->Interleave? 0x5C : 0x5B;
 		break;
 	default:
 		FatalError("MGA: unsupported depth\n");
 	}
 		
 	/*
-	 * This will allocate the datastructure and initialize all of the
-	 * generic VGA registers.
+	 * This will initialize all of the generic VGA registers.
 	 */
-	if (!vgaHWInit(mode,sizeof(vgaMGARec)))
+	if (!vgaHWInit(pScrn, mode))
 		return(FALSE);
 
 	/*
-	 * Here all of the other fields of 'newVS' get filled in.
+	 * Here all of the MGA registers get filled in.
 	 */
 	hd = (mode->CrtcHDisplay	>> 3)	- 1;
 	hs = (mode->CrtcHSyncStart	>> 3)	- 1;
 	he = (mode->CrtcHSyncEnd	>> 3)	- 1;
+	hbs = (mode->CrtcHBlankStart	>> 3)	- 1;
+	hbe = (mode->CrtcHBlankEnd	>> 3)	- 1;
 	ht = (mode->CrtcHTotal		>> 3)	- 1;
 	vd = mode->CrtcVDisplay			- 1;
 	vs = mode->CrtcVSyncStart		- 1;
 	ve = mode->CrtcVSyncEnd			- 1;
+	vbs = mode->CrtcVBlankStart		- 1;
+	vbe = mode->CrtcVBlankEnd		- 1;
 	vt = mode->CrtcVTotal			- 2;
-	
-	/* HTOTAL & 0xF equal to 0xE in 8bpp or 0x4 in 24bpp causes strange
-	 * vertical stripes
-	 */
-	if((ht & 0x0F) == 0x0E || (ht & 0x0F) == 0x04)
-		ht++;
-		
-	if (vgaBitsPerPixel == 24)
-		wd = (vga256InfoRec.displayWidth * 3) >> (4 - MGABppShft);
+	if (pScrn->bitsPerPixel == 24)
+		wd = (pScrn->displayWidth * 3) >> (4 - pMga->BppShift);
 	else
-		wd = vga256InfoRec.displayWidth >> (4 - MGABppShft);
+		wd = pScrn->displayWidth >> (4 - pMga->BppShift);
 
-	newVS->ExtVga[0] = 0;
-	newVS->ExtVga[5] = 0;
+	pReg->ExtVga[0] = 0;
+	pReg->ExtVga[5] = 0;
 	initDAC[20] = 0;
 	
 	if (mode->Flags & V_INTERLACE)
 	{
-		newVS->ExtVga[0] = 0x80;
-		newVS->ExtVga[5] = (hs + he - ht) >> 1;
+		pReg->ExtVga[0] = 0x80;
+		pReg->ExtVga[5] = (hs + he - ht) >> 1;
 		wd <<= 1;
 		vt &= 0xFFFE;
 		
@@ -846,58 +564,55 @@ DisplayModePtr mode;
 		initDAC[20] |= 0x20;
 	}
 
-	newVS->ExtVga[0]	|= (wd & 0x300) >> 4;
-	newVS->ExtVga[1]	= (((ht - 4) & 0x100) >> 8) |
-				((hd & 0x100) >> 7) |
+	pReg->ExtVga[0]	|= (wd & 0x300) >> 4;
+	pReg->ExtVga[1]	= (((ht - 4) & 0x100) >> 8) |
+				((hbs & 0x100) >> 7) |
 				((hs & 0x100) >> 6) |
 				(ht & 0x40);
-	newVS->ExtVga[2]	= ((vt & 0x400) >> 10) |
-				((vt & 0x800) >> 10) |
+	pReg->ExtVga[2]	= ((vt & 0xc00) >> 10) |
 				((vd & 0x400) >> 8) |
-				((vd & 0x400) >> 7) |
-				((vd & 0x800) >> 7) |
-				((vs & 0x400) >> 5) |
-				((vs & 0x800) >> 5);
-	if (vgaBitsPerPixel == 24)
-		newVS->ExtVga[3]	= (((1 << MGABppShft) * 3) - 1) | 0x80;
+				((vbs & 0xc00) >> 7) |
+				((vs & 0xc00) >> 5);
+	if (pScrn->bitsPerPixel == 24)
+		pReg->ExtVga[3]	= (((1 << pMga->BppShift) * 3) - 1) | 0x80;
 	else
-		newVS->ExtVga[3]	= ((1 << MGABppShft) - 1) | 0x80;
+		pReg->ExtVga[3]	= ((1 << pMga->BppShift) - 1) | 0x80;
 
 	/* Set viddelay (CRTCEXT3 Bits 3-4). */
-	newVS->ExtVga[3] |= (vga256InfoRec.videoRam == 8192 ? 0x10
-			     : vga256InfoRec.videoRam == 2048 ? 0x08 : 0x00);
+	pReg->ExtVga[3] |= (pScrn->videoRam == 8192 ? 0x10
+			     : pScrn->videoRam == 2048 ? 0x08 : 0x00);
 
-	newVS->ExtVga[4]	= 0;
+	pReg->ExtVga[4]	= 0;
 		
-	newVS->std.CRTC[0]	= ht - 4;
-	newVS->std.CRTC[1]	= hd;
-	newVS->std.CRTC[2]	= hd;
-	newVS->std.CRTC[3]	= (ht & 0x1F) | 0x80;
-	newVS->std.CRTC[4]	= hs;
-	newVS->std.CRTC[5]	= ((ht & 0x20) << 2) | (he & 0x1F);
-	newVS->std.CRTC[6]	= vt & 0xFF;
-	newVS->std.CRTC[7]	= ((vt & 0x100) >> 8 ) |
+	pVga->CRTC[0]	= ht - 4;
+	pVga->CRTC[1]	= hd;
+	pVga->CRTC[2]	= hbs;
+	pVga->CRTC[3]	= (hbe & 0x1F) | 0x80;
+	pVga->CRTC[4]	= hs;
+	pVga->CRTC[5]	= ((hbe & 0x20) << 2) | (he & 0x1F);
+	pVga->CRTC[6]	= vt & 0xFF;
+	pVga->CRTC[7]	= ((vt & 0x100) >> 8 ) |
 				((vd & 0x100) >> 7 ) |
 				((vs & 0x100) >> 6 ) |
-				((vd & 0x100) >> 5 ) |
+				((vbs & 0x100) >> 5 ) |
 				0x10 |
 				((vt & 0x200) >> 4 ) |
 				((vd & 0x200) >> 3 ) |
 				((vs & 0x200) >> 2 );
-	newVS->std.CRTC[9]	= ((vd & 0x200) >> 4) | 0x40; 
-	newVS->std.CRTC[16] = vs & 0xFF;
-	newVS->std.CRTC[17] = (ve & 0x0F) | 0x20;
-	newVS->std.CRTC[18] = vd & 0xFF;
-	newVS->std.CRTC[19] = wd & 0xFF;
-	newVS->std.CRTC[21] = vd & 0xFF;
-	newVS->std.CRTC[22] = (vt + 1) & 0xFF;
+	pVga->CRTC[9]	= ((vbs & 0x200) >> 4) | 0x40; 
+	pVga->CRTC[16] = vs & 0xFF;
+	pVga->CRTC[17] = (ve & 0x0F) | 0x20;
+	pVga->CRTC[18] = vd & 0xFF;
+	pVga->CRTC[19] = wd & 0xFF;
+	pVga->CRTC[21] = vbs & 0xFF;
+	pVga->CRTC[22] = vbe & 0xFF;
 
 	if (mode->Flags & V_DBLSCAN)
-		newVS->std.CRTC[9] |= 0x80;
+		pVga->CRTC[9] |= 0x80;
     
-	for (i = 0; i < sizeof(MGADACregs); i++)
+	for (i = 0; i < DACREGSIZE; i++)
 	{
-	    newVS->DACreg[i] = initDAC[i]; 
+	    pReg->DacRegs[i] = initDAC[i]; 
 	    if (MGADACregs[i] == 0x1D)
 		index_1d = i;
 	}
@@ -906,14 +621,14 @@ DisplayModePtr mode;
 	 * via the TVP3026 RAMDAC register 1D and so MISC Output Register
 	 * should always have bits 6 and 7 set. */
 
-	newVS->std.MiscOutReg |= 0xC0;
+	pVga->MiscOutReg |= 0xC0;
 	if ((mode->Flags & (V_PHSYNC | V_NHSYNC)) &&
 	    (mode->Flags & (V_PVSYNC | V_NVSYNC)))
 	{
 	    if (mode->Flags & V_PHSYNC)
-		newVS->DACreg[index_1d] |= 0x01;
+		pReg->DacRegs[index_1d] |= 0x01;
 	    if (mode->Flags & V_PVSYNC)
-		newVS->DACreg[index_1d] |= 0x02;
+		pReg->DacRegs[index_1d] |= 0x02;
 	}
 	else
 	{
@@ -921,30 +636,30 @@ DisplayModePtr mode;
 	  if (mode->Flags & V_DBLSCAN)
 	    VDisplay *= 2;
 	  if      (VDisplay < 400)
-		  newVS->DACreg[index_1d] |= 0x01; /* +hsync -vsync */
+		  pReg->DacRegs[index_1d] |= 0x01; /* +hsync -vsync */
 	  else if (VDisplay < 480)
-		  newVS->DACreg[index_1d] |= 0x02; /* -hsync +vsync */
+		  pReg->DacRegs[index_1d] |= 0x02; /* -hsync +vsync */
 	  else if (VDisplay < 768)
-		  newVS->DACreg[index_1d] |= 0x00; /* -hsync -vsync */
+		  pReg->DacRegs[index_1d] |= 0x00; /* -hsync -vsync */
 	  else
-		  newVS->DACreg[index_1d] |= 0x03; /* +hsync +vsync */
+		  pReg->DacRegs[index_1d] |= 0x03; /* +hsync +vsync */
 	}
 	
-	if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &vga256InfoRec.options))
-	    newVS->DACreg[index_1d] |= 0x20;
+	if (pMga->SyncOnGreen)
+	    pReg->DacRegs[index_1d] |= 0x20;
 
-	newVS->DAClong = MGAinterleave << 12;
+	pReg->DacLong = pMga->Interleave << 12;
 
-	newVS->std.MiscOutReg |= 0x0C; 
-	MGATi3026SetPCLK(
-		vga256InfoRec.clock[newVS->std.NoClock], 1 << MGABppShft
-	);
+	pVga->MiscOutReg |= 0x0C; 
+	/* XXX Need to check the first argument */
+	MGATi3026SetPCLK( pScrn, mode->Clock, 1 << pMga->BppShift );
+
 
 #ifdef DEBUG		
-	ErrorF("%6ld: %02X %02X %02X	%02X %02X %02X	%08lX\n", vga256InfoRec.clock[newVS->std.NoClock],
-		newVS->DACclk[0], newVS->DACclk[1], newVS->DACclk[2], newVS->DACclk[3], newVS->DACclk[4], newVS->DACclk[5], newVS->DAClong);
-	for (i=0; i<sizeof(MGADACregs); i++) ErrorF("%02X ", newVS->DACreg[i]);
-	for (i=0; i<6; i++) ErrorF(" %02X", newVS->ExtVga[i]);
+	ErrorF("%6ld: %02X %02X %02X	%02X %02X %02X	%08lX\n", mode->Clock,
+		pReg->DacClk[0], pReg->DacClk[1], pReg->DacClk[2], pReg->DacClk[3], pReg->DacClk[4], pReg->DacClk[5], pReg->DacLong);
+	for (i=0; i<sizeof(MGADACregs); i++) ErrorF("%02X ", pReg->DacRegs[i]);
+	for (i=0; i<6; i++) ErrorF(" %02X", pReg->ExtVga[i]);
 	ErrorF("\n");
 #endif
 	return(TRUE);
@@ -958,22 +673,23 @@ DisplayModePtr mode;
  * structure.
  */
 void 
-MGA3026Restore(restore)
-vgaMGAPtr restore;
+MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
+	       Bool restoreFonts)
 {
 	int i;
+	MGAPtr pMga = MGAPTR(pScrn);
 
 	/*
 	 * Code is needed to get things back to bank zero.
 	 */
 	for (i = 0; i < 6; i++)
-		outw(0x3DE, (restore->ExtVga[i] << 8) | i);
+		outw(0x3DE, (mgaReg->ExtVga[i] << 8) | i);
 
-	pciWriteLong(MGAPciTag, PCI_OPTION_REG, restore->DAClong |
-		(pciReadLong(MGAPciTag, PCI_OPTION_REG) & ~0x1000));
+	pciWriteLong(pMga->PciTag, PCI_OPTION_REG, mgaReg->DacLong |
+		(pciReadLong(pMga->PciTag, PCI_OPTION_REG) & ~0x1000));
 
 	/* select pixel clock PLL as clock source */
-	outTi3026(TVP3026_CLK_SEL, 0, restore->DACreg[3]);
+	outTi3026(TVP3026_CLK_SEL, 0, mgaReg->DacRegs[3]);
 	
 	/* set loop and pixel clock PLL PLLEN bits to 0 */
 	outTi3026(TVP3026_PLL_ADDR, 0, 0x2A);
@@ -983,37 +699,32 @@ vgaMGAPtr restore;
 	/*
 	 * This function handles restoring the generic VGA registers.
 	 */
-	vgaHWRestore((vgaHWPtr)restore);
+	vgaHWRestore(pScrn, vgaReg, restoreFonts);
 
 	/*
 	 * Code to restore SVGA registers that have been saved/modified
 	 * goes here. 
 	 */
 
-	/*
-	 * this is needed to properly restore start address for 2164W-AGP
-	 */
-	outw(0x3DE, (restore->ExtVga[0] << 8) | 0);
-
 	/* program pixel clock PLL */
 	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
 	for (i = 0; i < 3; i++)
-		outTi3026(TVP3026_PIX_CLK_DATA, 0, restore->DACclk[i]);
+		outTi3026(TVP3026_PIX_CLK_DATA, 0, mgaReg->DacClk[i]);
 	 
-	if (restore->std.MiscOutReg & 0x08) {
+	if (vgaReg->MiscOutReg & 0x08) {
 		/* poll until pixel clock PLL LOCK bit is set */
 		outTi3026(TVP3026_PLL_ADDR, 0, 0x3F);
 		while ( ! (inTi3026(TVP3026_PIX_CLK_DATA) & 0x40) );
 	}
 	/* set Q divider for loop clock PLL */
-	outTi3026(TVP3026_MCLK_CTL, 0, restore->DACreg[18]);
+	outTi3026(TVP3026_MCLK_CTL, 0, mgaReg->DacRegs[18]);
 	
 	/* program loop PLL */
 	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
 	for (i = 3; i < 6; i++)
-		outTi3026(TVP3026_LOAD_CLK_DATA, 0, restore->DACclk[i]);
+		outTi3026(TVP3026_LOAD_CLK_DATA, 0, mgaReg->DacClk[i]);
 	
-	if ((restore->std.MiscOutReg & 0x08) && ((restore->DACclk[3] & 0xC0) == 0xC0) ) {
+	if ((vgaReg->MiscOutReg & 0x08) && ((mgaReg->DacClk[3] & 0xC0) == 0xC0) ) {
 		/* poll until loop PLL LOCK bit is set */
 		outTi3026(TVP3026_PLL_ADDR, 0, 0x3F);
 		while ( ! (inTi3026(TVP3026_LOAD_CLK_DATA) & 0x40) );
@@ -1022,27 +733,32 @@ vgaMGAPtr restore;
 	/*
 	 * restore other DAC registers
 	 */
-	for (i = 0; i < sizeof(MGADACregs); i++)
-		outTi3026(MGADACregs[i], 0, restore->DACreg[i]);
+	for (i = 0; i < DACREGSIZE; i++)
+		outTi3026(MGADACregs[i], 0, mgaReg->DacRegs[i]);
 
 #ifdef DEBUG
 	ErrorF("PCI retry (0-enabled / 1-disabled): %d\n",
-		!!(restore->DAClong & 0x20000000));
+		!!(mgaReg->DacLong & 0x20000000));
 #endif		 
 }
 
 /*
  * MGA3026Save -- for mga2064 with ti3026
  *
- * This function saves the video state.	 It reads all of the SVGA registers
- * into the vgaMGARec data structure.
+ * This function saves the video state.
  */
-void *
-MGA3026Save(save)
-vgaMGAPtr save;
+void
+MGA3026Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
+	    Bool saveFonts)
 {
 	int i;
+	MGAPtr pMga = MGAPTR(pScrn);
 	
+	/* Allocate the DacRegs space if not done already */
+	if (mgaReg->DacRegs == NULL) {
+		mgaReg->DacRegs = (unsigned char *)xnfcalloc(DACREGSIZE, 1);
+	}
+
 	/*
 	 * Code is needed to get back to bank zero.
 	 */
@@ -1052,7 +768,7 @@ vgaMGAPtr save;
 	 * This function will handle creating the data structure and filling
 	 * in the generic VGA portion.
 	 */
-	save = (vgaMGAPtr)vgaHWSave((vgaHWPtr)save, sizeof(vgaMGARec));
+	vgaHWSave(pScrn, vgaReg, saveFonts);
 
 	/*
 	 * The port I/O code necessary to read in the extended registers 
@@ -1061,106 +777,70 @@ vgaMGAPtr save;
 	for (i = 0; i < 6; i++)
 	{
 		outb(0x3DE, i);
-		save->ExtVga[i] = inb(0x3DF);
+		mgaReg->ExtVga[i] = inb(0x3DF);
 	}
 	
 	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
 	for (i = 0; i < 3; i++)
-		outTi3026(TVP3026_PIX_CLK_DATA, 0, save->DACclk[i] =
+		outTi3026(TVP3026_PIX_CLK_DATA, 0, mgaReg->DacClk[i] =
 					inTi3026(TVP3026_PIX_CLK_DATA));
 
 	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
 	for (i = 3; i < 6; i++)
-		outTi3026(TVP3026_LOAD_CLK_DATA, 0, save->DACclk[i] =
+		outTi3026(TVP3026_LOAD_CLK_DATA, 0, mgaReg->DacClk[i] =
 					inTi3026(TVP3026_LOAD_CLK_DATA));
 	
-	for (i = 0; i < sizeof(MGADACregs); i++)
-		save->DACreg[i]	 = inTi3026(MGADACregs[i]);
+	for (i = 0; i < DACREGSIZE; i++)
+		mgaReg->DacRegs[i]	 = inTi3026(MGADACregs[i]);
 	
-	save->DAClong = pciReadLong(MGAPciTag, PCI_OPTION_REG);
+	mgaReg->DacLong = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
 	
-	return (void *)save;
 }
-
-/*
- * Convert the cursor from server-format to hardware-format.  The Ti3020
- * has two planes, plane 0 selects cursor color 0 or 1 and plane 1
- * selects transparent or display cursor.  The bits of these planes
- * loaded sequentially so that one byte has 8 pixels. The organization
- * looks like:
- *             Byte 0x000 - 0x007    top scan line, left to right plane 0
- *                  0x008 - 0x00F
- *                    .       .
- *                  0x1F8 - 0x1FF    bottom scan line plane 0
- *
- *                  0x200 - 0x207    top scan line, left to right plane 1
- *                  0x208 - 0x20F
- *                    .       .
- *                  0x3F8 - 0x3FF    bottom scan line plane 1
- *
- *             Byte/bit map - D7,D6,D5,D4,D3,D2,D1,D0  eight pixels each
- *             Pixel/bit map - P1P0  (plane 1) == 1 maps to cursor color
- *                                   (plane 1) == 0 maps to transparent
- *                                   (plane 0) maps to cursor colors 0 and 1
- */
 
 
 static void
-MGA3026LoadCursorImage(src, xorigin, yorigin)
-    register unsigned char *src;
-    int xorigin, yorigin;
+MGA3026LoadCursorImage(
+    ScrnInfoPtr pScrn, 
+    unsigned char *src
+)
 {
-    register int i;
-    register unsigned char *mask = src + 1;
-
-    /*********************************************************
-	In an attempt to fix the problem with sync-loss during
-	cursor change, we  wait until the vertical retrace to
-	do it. 
-     *********************************************************/ 
-    CARD32 count;
-
-    /* find start of retrace */
-    while (inb(vgaIOBase + 0x0A) & 0x08);
-    while (!(inb(vgaIOBase + 0xA) & 0x08)); 
-    /* wait until we're past the start (fixseg.c in the DDK) */
-    count = INREG(MGAREG_VCOUNT) + 2;
-    while(INREG(MGAREG_VCOUNT) < count);
-    /********** end changes **********************************/ 
+    MGAPtr pMga = MGAPTR(pScrn);
+    int i = 1024;
        
     outTi3026(TVP3026_CURSOR_CTL, 0xf3, 0x00); /* reset A9,A8 */
     /* reset cursor RAM load address A7..A0 */
     outTi3026dreg(TVP3026_WADR_PAL, 0x00); 
 
-    for (i = 0; i < 512; i++, mask+=2) 
-        outTi3026dreg(TVP3026_CUR_RAM, *mask);    
-    for (i = 0; i < 512; i++, src+=2) 
-        outTi3026dreg(TVP3026_CUR_RAM, *src);   
+    while(i--)
+        outTi3026dreg(TVP3026_CUR_RAM, *(src++));    
 }
 
+
 static void 
-MGA3026ShowCursor()
+MGA3026ShowCursor(ScrnInfoPtr pScrn)
 {
+    MGAPtr pMga = MGAPTR(pScrn);
     /* Enable cursor - X11 mode */
     outTi3026(TVP3026_CURSOR_CTL, 0x6c, 0x13);
 }
 
 static void
-MGA3026HideCursor()
+MGA3026HideCursor(ScrnInfoPtr pScrn)
 {
+    MGAPtr pMga = MGAPTR(pScrn);
     /* Disable cursor */
     outTi3026(TVP3026_CURSOR_CTL, 0xfc, 0x00);
 }
 
 static void
-MGA3026SetCursorPosition(x, y, xorigin, yorigin)
-    int x, y;
+MGA3026SetCursorPosition(
+   ScrnInfoPtr pScrn, 
+   int x, int y
+)
 {
-    if(vga256InfoRec.modes->Flags & V_DBLSCAN)
-	y *= 2;
-
-    x += 64 - xorigin;
-    y += 64 - yorigin;
+    MGAPtr pMga = MGAPTR(pScrn);
+    x += 64;
+    y += 64;
 
     /* Output position - "only" 12 bits of location documented */
    
@@ -1171,9 +851,12 @@ MGA3026SetCursorPosition(x, y, xorigin, yorigin)
 }
 
 static void
-MGA3026SetCursorColors(bg, fg)
-   int bg, fg;
+MGA3026SetCursorColors(
+   ScrnInfoPtr pScrn, 
+   int bg, int fg
+)
 {
+    MGAPtr pMga = MGAPTR(pScrn);
     /* The TI 3026 cursor is always 8 bits so shift 8, not 10 */
 
     /* Background color */
@@ -1190,236 +873,133 @@ MGA3026SetCursorColors(bg, fg)
 }
 
 static Bool 
-MGA3026UseHWCursor(ScreenPtr pScr)
+MGA3026UseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
 {
-    int flags = XF86SCRNINFO(pScr)->modes->Flags;
-
-    if(/* flags & (V_DBLSCAN | V_INTERLACE) */  0)
-	return FALSE; 
-    else
-	return TRUE;
+  /* have this return false for DoubleScan and Interlaced */
+    return TRUE;
 }
 
 
 void
-MGA3026RamdacInit()
+MGA3026RamdacInit(ScrnInfoPtr pScrn)
 {
-    MGAdac.isHwCursor		= TRUE;
-    MGAdac.CursorMaxWidth	= 64;
-    MGAdac.CursorMaxHeight	= 64;
-    MGAdac.SetCursorColors	= MGA3026SetCursorColors;
-    MGAdac.SetCursorPosition	= MGA3026SetCursorPosition;
-    MGAdac.LoadCursorImage	= MGA3026LoadCursorImage;
-    MGAdac.HideCursor		= MGA3026HideCursor;
-    MGAdac.ShowCursor		= MGA3026ShowCursor;
-    MGAdac.UseHWCursor		= MGA3026UseHWCursor;
-    MGAdac.CursorFlags		= USE_HARDWARE_CURSOR |
-				HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+    MGAPtr pMga;
+    MGARamdacPtr MGAdac;
+
+    pMga = MGAPTR(pScrn);
+    MGAdac = &pMga->Dac;
+
+    MGAdac->isHwCursor		= TRUE;
+    MGAdac->CursorMaxWidth	= 64;
+    MGAdac->CursorMaxHeight	= 64;
+    MGAdac->SetCursorColors	= MGA3026SetCursorColors;
+    MGAdac->SetCursorPosition	= MGA3026SetCursorPosition;
+    MGAdac->LoadCursorImage	= MGA3026LoadCursorImage;
+    MGAdac->HideCursor		= MGA3026HideCursor;
+    MGAdac->ShowCursor		= MGA3026ShowCursor;
+    MGAdac->UseHWCursor		= MGA3026UseHWCursor;
+    MGAdac->CursorFlags		= HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
 				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
-				HARDWARE_CURSOR_PROGRAMMED_ORIGIN |
-				HARDWARE_CURSOR_AND_SOURCE_WITH_MASK | 	 
-				HARDWARE_CURSOR_CHAR_BIT_FORMAT |
-				HARDWARE_CURSOR_PROGRAMMED_BITS;
+				HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED;
 
-
-    if ( MGAchipset == PCI_CHIP_MGA2064 && MGABios2.PinID == 0 )
+    MGAdac->ClockFrom = X_PROBED;
+    if ( pMga->Chipset == PCI_CHIP_MGA2064 && pMga->Bios2.PinID == 0 )
     {
-	switch( MGABios.RamdacType & 0xff )
+	switch( pMga->Bios.RamdacType & 0xff )
 	{
-	case 1: MGAdac.maxPixelClock = 220000;
+	case 1: MGAdac->maxPixelClock = 220000;
 	    break;
-	case 2: MGAdac.maxPixelClock = 250000;
+	case 2: MGAdac->maxPixelClock = 250000;
 	    break;
 	default:
-	    MGAdac.maxPixelClock = 175000;
+	    MGAdac->maxPixelClock = 175000;
+	    MGAdac->ClockFrom = X_DEFAULT;
 	    break;
 	}
 	/* Set MCLK based on amount of memory */
-	if ( vga256InfoRec.videoRam < 4096 )
-	    MGAdac.MemoryClock = MGABios.ClkBase * 10;
-	else if ( vga256InfoRec.videoRam < 8192 )
-	    MGAdac.MemoryClock = MGABios.Clk4MB * 10;
-	else
-	    MGAdac.MemoryClock = MGABios.Clk8MB * 10;
+    	if ( pScrn->videoRam < 4096 )
+            MGAdac->MemoryClock = pMga->Bios.ClkBase * 10;
+   	else if ( pScrn->videoRam < 8192 )
+            MGAdac->MemoryClock = pMga->Bios.Clk4MB * 10;
+    	else
+            MGAdac->MemoryClock = pMga->Bios.Clk8MB * 10;
+    	MGAdac->MemClkFrom = X_PROBED;
+    	MGAdac->SetMemClk = TRUE;
     }
     else
     {
-	if ( MGABios2.PinID ) 	/* make sure BIOS is available */
+	if ( pMga->Bios2.PinID ) 	/* make sure BIOS is available */
 	{
-	    if ( MGABios2.PclkMax != 0xff )
+	    if ( pMga->Bios2.PclkMax != 0xff )
 	    {
-		MGAdac.maxPixelClock = (MGABios2.PclkMax + 100) * 1000;
+		MGAdac->maxPixelClock = (pMga->Bios2.PclkMax + 100) * 1000;
 	    }
 	    else
-		MGAdac.maxPixelClock = 220000;
+		MGAdac->maxPixelClock = 220000;
 
 	    /* make sure we are not overdriving the GE for the amount of WRAM */
-	    switch ( vga256InfoRec.videoRam )
+	    switch (  pScrn->videoRam )
 	    {
 		case 4096:
-		    if (MGABios2.Clk4MB != 0xff)
-			MGABios2.ClkGE = MGABios2.Clk4MB;
+		    if (pMga->Bios2.Clk4MB != 0xff)
+			pMga->Bios2.ClkGE = pMga->Bios2.Clk4MB;
 		    break;
 		case 8192:
-		    if (MGABios2.Clk8MB != 0xff)
-			MGABios2.ClkGE = MGABios2.Clk8MB;
+		    if (pMga->Bios2.Clk8MB != 0xff)
+			pMga->Bios2.ClkGE = pMga->Bios2.Clk8MB;
 		    break;
 		case 12288:
-		    if (MGABios2.Clk12MB != 0xff)
-			MGABios2.ClkGE = MGABios2.Clk12MB;
+		    if (pMga->Bios2.Clk12MB != 0xff)
+			pMga->Bios2.ClkGE = pMga->Bios2.Clk12MB;
 		    break;
 		case 16384:
-		    if (MGABios2.Clk16MB != 0xff)
-			MGABios2.ClkGE = MGABios2.Clk16MB;
+		    if (pMga->Bios2.Clk16MB != 0xff)
+			pMga->Bios2.ClkGE = pMga->Bios2.Clk16MB;
 		    break;
 		default:
 		    break;
 	    }
 
-#if DEBUG
-		ErrorF("ClkGE %d ClkMem %d\n",MGABios2.ClkGE,MGABios2.ClkMem);
-#endif
-		if ( MGABios2.ClkGE != 0xff && MGABios2.ClkMem == 0xff )
-		    MGABios2.ClkMem = MGABios2.ClkGE;
-		else if ( MGABios2.ClkGE == 0xff && MGABios2.ClkMem != 0xff )
+	    if ( pMga->Bios2.ClkGE != 0xff && pMga->Bios2.ClkMem == 0xff )
+		pMga->Bios2.ClkMem = pMga->Bios2.ClkGE;
+	    else if ( pMga->Bios2.ClkGE == 0xff && pMga->Bios2.ClkMem != 0xff )
 		    ; /* don't need to do anything */
-		else if ( MGABios2.ClkGE == MGABios2.ClkMem && MGABios2.ClkGE != 0xff )
-		    MGABios2.ClkMem = MGABios2.ClkGE;
-		else
-		    MGABios2.ClkMem = 60;
-
-		MGAdac.MemoryClock = MGABios2.ClkMem * 1000;
-
-	    } /* BIOS enabled initialization */
+	    else if ( pMga->Bios2.ClkGE == pMga->Bios2.ClkMem && pMga->Bios2.ClkGE != 0xff )
+		pMga->Bios2.ClkMem = pMga->Bios2.ClkGE;
 	    else
-	    {
+		pMga->Bios2.ClkMem = 60;
+
+	    MGAdac->MemoryClock = pMga->Bios2.ClkMem * 1000;
+    	    MGAdac->MemClkFrom = X_PROBED;
+    	    MGAdac->SetMemClk = TRUE;
+	} /* BIOS enabled initialization */
+	else
+	{
 		/* bios is not available, initialize to rational figures */
-		MGAdac.MemoryClock = 60000;	/* 60 MHz WRAM */
-		MGAdac.maxPixelClock = 220000;  /* 220 MHz */
-            }
-	} /* 2164 specific initialization */
+		MGAdac->MemoryClock = 60000;	/* 60 MHz WRAM */
+		MGAdac->maxPixelClock = 220000;  /* 220 MHz */
+	        MGAdac->ClockFrom = X_DEFAULT;
+        }
+     } /* 2164 specific initialization */
 
-#if MCLK_FROM_XCONFIG
-    /* or get it from XF86Config */
-    if (vga256InfoRec.MemClk) {
-        MGAdac.MemoryClock = vga256InfoRec.MemClk;
-#if DEBUG
-	ErrorF("From XF86Config MemoryClock %d\n",MGAdac.MemoryClock);
+    /* saftey check */
+    if ( (MGAdac->MemoryClock < 40000) ||
+         (MGAdac->MemoryClock > 70000) )
+	MGAdac->MemoryClock = 50000; 
+
+    /*
+     * Should initialise a sane default when the probed value is
+     * obviously garbage.
+     */
+
+#if 0
+/* XXX This is a huge hack -- and must be fixed */
+    /*
+     * This goes elsewhere since this function is called from PreInit */
+     * MGATi3026SetMCLK should be set in the ModeInit,and should probably
+     * be done in the same way as the PCLK is set.
+     */
+ErrorF("Setting MCLK to %d\n", MGAdac->MemoryClock);
+    MGATi3026SetMCLK( pScrn, MGAdac->MemoryClock );
 #endif
-    }
-#endif
-
-    /* safety check. Too slow = corruption, too fast = smoking chips */
-    /* 40 MHz (=40000) is a little slower, 50 MHz is safe (and the default */
-    /* 60 MHz is pushing it (YMMV), and > 65 is in Danger Will Robinson territory */
-
-    if ( (MGAdac.MemoryClock < 40000) ||
-         (MGAdac.MemoryClock > 70000) )
-	MGAdac.MemoryClock = 50000; 
-
-#if DEBUG
-	ErrorF("Setting MemoryClock %d\n",MGAdac.MemoryClock);
-#endif
-    MGATi3026SetMCLK( MGAdac.MemoryClock );
 }
-
-#ifdef PC98_MGA
-void
-MGA3026Reset()
-{
-	static unsigned char initcrtc[] = {
-			0x60, 0x4f, 0x50, 0x83, 0x55, 0x81, 0xbf, 0x1f,
-			0x00, 0x4f, 0x0e, 0x2f, 0x00, 0x00, 0xff, 0xff,
-			0x9c, 0x0e, 0x8f, 0x28, 0x1f, 0x96, 0xb9, 0xa3,
-			0xff
-	};
-	static unsigned char initcrtcext[] = {
-			0x00, 0x00, 0x00, 0x80, 0x00, 0x00
-	};
-
-	unsigned char tmp;
-	int i;
-
-	/* select CLK0 as clock source */
-	outTi3026(TVP3026_CLK_SEL, 0, 0x77);
-
-	/* select VGA mode */
-	outTi3026(TVP3026_TRUE_COLOR_CTL, 0, 0x80);
-	outTi3026(TVP3026_MUX_CTL, 0, 0x98);
-
-	/* set loop and pixel clock PLL PLLEN bits to 0 */
-	outTi3026(TVP3026_PLL_ADDR, 0, 0x2A);
-	outTi3026(TVP3026_LOAD_CLK_DATA, 0, 0);
-	outTi3026(TVP3026_PIX_CLK_DATA, 0, 0);
-
-	/* select 28MHz fixed clock */
-	outb(0x3C2, 0x6D);	/* once select PLL */
-	outb(0x3C2, 0x65);	/* then select 28MHz */
-
-	/* Pixel clock PLL routed to RCLK */
-	outTi3026(TVP3026_MCLK_CTL, 0, 0x18);
-
-	/* set MCLK */
-	MGA3026RamdacInit();
-
-	/* nogscale=1 */
-	pciWriteLong(MGAPciTag, PCI_OPTION_REG, 0x002C0000);
-
-	/* mgamode=1 */
-	outb(0x3DE, 0x03);	/* Select CRTCEXT3 */
-	tmp = inb(0x3DF);
-	outb(0x3DF, tmp | 0x80);
-
-	/* screen off */
-	outb(0x3C4, 0x01);	/* Select SEQ1 */
-	tmp = inb(0x3C5);
-	outb(0x3C5, tmp | 0x20);
-
-	/* unprotect CRTC registers 0-7 */
-	outb(0x3D4, 0x11);
-	outb(0x3D5, 0x2f);
-
-	/* set initial CRTC regs value */
-	for (i = 0; i <= 24; i++) {
-		outb(0x3D4, i);
-		outb(0x3D5, initcrtc[i]);
-	}
-
-	/* set initial CRTCEXT regs value */
-	for (i=0; i<=5; i++) {
-		outb(0x3DE, i);
-		outb(0x3DF, initcrtcext[i]);
-	}
-
-	/* assert soft reset */
-	OUTREG(MGAREG_Reset, 1);
-	usleep(250);
-	OUTREG(MGAREG_Reset, 0);
-	usleep(250);
-
-	/* wait vertical retrace */
-	while ((inb(0x3DA) & 0x08) != 0x08);
-
-	/* screen on */
-	outb(0x3C4, 0x01);	/* Select SEQ1 */
-	tmp = inb(0x3C5);
-	outb(0x3C5, tmp & ~0x20);
-
-	/* wait vertical retrace */
-	while ((inb(0x3DA) & 0x08) != 0x08);
-  
-	/* set memreset */
-	OUTREG(MGAREG_MACCESS, 0x00008000);
-	usleep(100);
-
-	/* screen off */
-	outb(0x3C4, 0x01);	/* Select SEQ1 */
-	tmp = inb(0x3C5);
-	outb(0x3C5, tmp | 0x20);
-
-	/*  disable HSYNC,VSYNC */
-	outb(0x3DE, 0x01);	/* Select CRTCEXT1 */
-	tmp = inb(0x3DF);
-	outb(0x3DF, tmp | 0x30);
-}
-#endif

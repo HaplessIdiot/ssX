@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.27 1998/06/27 12:54:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.23.2.11 1998/07/18 17:53:55 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -40,34 +40,29 @@
 #include <fcntl.h>
 #include "Xfuncproto.h"
 #include "os.h"
-#if NeedVarargsPrototypes
 #include <stdarg.h>
-#endif
 #include <ctype.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
-#if (!defined (i386) || !defined (SVR4)) && !defined(ISC)
+#if !defined(ISC)
 #include <stdlib.h>
 #endif
 
 #define NEED_XF86_TYPES
 #define DONT_DEFINE_WRAPPERS
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 
+#include "xf86.h"
+#include "xf86Priv.h"
 #define NO_OSLIB_PROTOTYPES
-#include "xf86Procs.h"
-#if NeedVarargsPrototypes
-int xf86execl(char *, ...);
-#else
-int xf86execl();
-#endif
+#define XF86_OS_PRIVS
+#define HAVE_WRAPPER_DECLS
+#include "xf86_OSlib.h"
 
-#define NEED_XF86_TYPES
-#define DONT_DEFINE_WRAPPERS
-#include "xf86_libc.h"
+extern void xf86DisableIO(void);
 
 #ifndef X_NOT_POSIX
 #include <dirent.h>
@@ -110,10 +105,6 @@ typedef struct dirent DIRENTRY;
 #endif
 #endif
 
-#if !defined(SYSV) && !defined(SVR4) && !defined(Lynx) || defined(SCO)
-#define HAVE_VFSCANF
-#endif
-
 #if 0
 #define SETBUF_RETURNS_INT
 #endif
@@ -122,6 +113,12 @@ typedef struct dirent DIRENTRY;
  * This file contains the XFree86 wrappers for libc functions that can be
  * called by loadable modules
  */
+
+double
+xf86hypot(double x, double y)
+{
+	return(hypot(x,y));
+}
 
 /* string functions */
 
@@ -212,9 +209,7 @@ xf86strtok(char* s1, const char* s2)
 char*
 xf86strdup(const char* s)
 {
-	char *sd = (char*)xalloc(strlen(s)+1);
-	strcpy(sd,s);
-	return sd;
+	return xstrdup(s);
 }
 
 int
@@ -246,15 +241,14 @@ xf86bzero(void* s, unsigned int n)
   bzero(s, n);
 }
   
-int
-xf86sscanf(
 #ifdef HAVE_VSSCANF
-char *s, const char *format, ...)
+int
+xf86sscanf(char *s, const char *format, ...)
 #else
-s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
-    char *s;
-    const char *format;
-    char *a0, *a1, *a2, *a3, *a4, *a5, *a6, *a7, *a8, *a9;
+int
+xf86sscanf(char *s, const char *format, char *a0, char *a1, char *a2,
+	   char *a3, char *a4, char *a5, char *a6, char *a7, char *a8,
+	   char *a9) /* limit of ten args */
 #endif
 {
 #ifdef HAVE_VSSCANF
@@ -274,6 +268,24 @@ s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
 
 int xf86errno;
 
+/* XXX This is not complete */
+
+static int
+xfToOsOpenFlags(int xfflags)
+{
+    int flags = 0;
+
+    /* XXX This assumes O_RDONLY is 0 */
+    if (xfflags & XF86_O_WRONLY)
+	flags |= O_WRONLY;
+    if (xfflags & XF86_O_RDWR)
+	flags |= O_RDWR;
+    if (xfflags & XF86_O_CREAT)
+	flags |= O_CREAT;
+
+    return flags;
+}
+
 int 
 xf86open(const char *path, int flags, ...)
 {
@@ -281,7 +293,8 @@ xf86open(const char *path, int flags, ...)
     va_list ap;
 
     va_start(ap, flags);
-    if (flags & O_CREAT) {
+    flags = xfToOsOpenFlags(flags);
+    if (flags & XF86_O_CREAT) {
 	mode_t mode = va_arg(ap, mode_t);
 	fd = open(path, flags, mode);
     } else {
@@ -311,7 +324,7 @@ xf86ioctl(int fd, unsigned long request, char *argp)
 }
 
 unsigned int
-xf86read(int fd, void *buf, size_t nbytes)
+xf86read(int fd, void *buf, INT32 nbytes)
 {
     unsigned int n = read(fd, buf, nbytes);
 
@@ -320,7 +333,7 @@ xf86read(int fd, void *buf, size_t nbytes)
 }
 
 unsigned int
-xf86write(int fd, void *buf, size_t nbytes)
+xf86write(int fd, const void *buf, INT32 nbytes)
 {
     unsigned int n = write(fd, buf, nbytes);
 
@@ -365,6 +378,7 @@ xf86fopen(const char* fn, const char* mode)
 {
 	XF86FILE_priv* fp;
 	FILE *f = fopen(fn,mode);
+	xf86errno = errno;
 	if (!f) return 0;
 
 	fp = (XF86FILE_priv*)xalloc(sizeof(XF86FILE_priv));
@@ -408,6 +422,18 @@ xf86fclose(XF86FILE* f)
 		xfree(fp);
 	}
 	return ret ? -1 : 0;
+}
+
+int
+xf86printf(const char *format, ...)
+{
+	int ret;
+	va_list args;
+	va_start(args, format);
+
+	ret = printf(format,args);
+	va_end(args);
+	return ret;
 }
 
 int
@@ -475,15 +501,14 @@ xf86vsprintf(char *s, const char *format, ...)
 	return ret;
 }
 
-int
-xf86fscanf(
 #ifdef HAVE_VFSCANF
-XF86FILE* f, const char *format, ...)
+int
+xf86fscanf(XF86FILE* f, const char *format, ...)
 #else
-f, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
-    XF86FILE* f;
-    const char *format;
-    char *a0, *a1, *a2, *a3, *a4, *a5, *a6, *a7, *a8, *a9;
+int
+xf86fscanf(XF86FILE* f, const char *format, char *a0, char *a1, char *a2,
+	   char *a3, char *a4, char *a5, char *a6, char *a7, char *a8,
+	   char *a9) /* limit of ten args */
 #endif
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
@@ -513,12 +538,21 @@ char *xf86fgets(char *buf, INT32 n, XF86FILE* f)
 }
 
 int
-xf86fputs(char *buf, XF86FILE* f)
+xf86fputs(const char *buf, XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
 	_xf86checkhndl(fp,"xf86fputs");
 	return fputs(buf,fp->filehnd);
+}
+
+int
+xf86getc(XF86FILE* f)
+{
+	XF86FILE_priv* fp = (XF86FILE_priv*)f;
+
+	_xf86checkhndl(fp,"xf86getc");
+	return getc(fp->filehnd);
 }
 
 int
@@ -548,8 +582,8 @@ xf86fflush(XF86FILE* f)
 	return fflush(fp->filehnd);
 }
 
-size_t
-xf86fread(void* buf, size_t sz, size_t cnt, XF86FILE* f)
+INT32
+xf86fread(void* buf, INT32 sz, INT32 cnt, XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -560,8 +594,8 @@ xf86fread(void* buf, size_t sz, size_t cnt, XF86FILE* f)
 	return fread(buf,sz,cnt,fp->filehnd);
 }
 
-size_t
-xf86fwrite(void* buf, size_t sz, size_t cnt, XF86FILE* f)
+INT32
+xf86fwrite(const void* buf, INT32 sz, INT32 cnt, XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -715,6 +749,7 @@ xf86freopen(const char* fname,const char* mode,XF86FILE* fold)
 
 	_xf86checkhndl(fp,"xf86freopen");
 	fnew = freopen(fname,mode,fp->filehnd);
+	xf86errno = errno;
 	if (!fnew) {
 		xf86fclose(fold);	/* discard old XF86FILE structure */
 		return 0;
@@ -779,6 +814,7 @@ xf86tmpfile(void)
 #else
 	XF86FILE_priv* fp;
 	FILE *f = tmpfile();
+	xf86errno = errno;
 	if (!f) return 0;
 
 	fp = (XF86FILE_priv*)xalloc(sizeof(XF86FILE_priv));
@@ -844,55 +880,9 @@ xf86getenv(const char * a)
 	return(getenv(a));
 }
 
-Bool
-xf86setexternclock(pathname, clock_arg, clock_index)
-    char *pathname;
-    int clock_arg;
-    int clock_index;
-{
-#ifndef __EMX__
-    char *progname, *clockarg, *clockindex;
-    int ret;
-
-    if ((progname = strrchr(pathname, '/')))
-	progname++;
-    else
-	progname = pathname;
-
-    /*
-     * Not everything has snprintf, but this should be safe given the
-     * range checks.
-     */
-    if (clock_arg > 1000000.0 || clock_arg < 0.0)
-	return FALSE;
-    if (clock_index > MAXCLOCKS || clock_index < 0)
-	return FALSE;
-
-    /* Largest value is 1000.000 (1GHz) */
-    clockarg = (char *)xalloc(10);
-    /* Largest value is MAXCLOCKS (currently 128) */
-    clockindex = (char *)xalloc(5);
-    sprintf(clockarg, "%.3f", clock_arg / 1000.0);
-    sprintf(clockindex, "%d", clock_index);
-    ret = xf86execl(pathname, progname, clockarg, clockindex);
-    xfree(clockarg);
-    xfree(clockindex);
-    return ret ? FALSE : TRUE;
-#else
-    return FALSE;
-#endif /* __EMX__ Disable this for now*/
-}
-
 /*VARARGS1*/
 int
-xf86execl(
-#if NeedVarargsPrototypes
-char *pathname, ...)
-#else
-pathname, a0, a1, a2, a3) /* limit of four args */
-    char *pathname;
-    char *a0, *a1, *a2, *a3;
-#endif
+xf86execl(const char *pathname, const char *arg, ...)
 {
 #ifndef __EMX__
     int i;
@@ -902,15 +892,14 @@ pathname, a0, a1, a2, a3) /* limit of four args */
 #else
     int exit_status;
 #endif
-#if NeedVarargsPrototypes
-    char *arglist[4];
+    char *arglist[5];
     va_list args;
-    va_start(args, pathname);
-    i = 0;
-    while ((arglist[i++] = va_arg(args, char *)) != NULL)
+    va_start(args, arg);
+    arglist[0] = (char*)&args;
+    i = 1;
+    while (i < 5 && (arglist[i++] = va_arg(args, char *)) != NULL)
 	;
     va_end(args);
-#endif
 
     if ((pid = fork()) < 0) {
         ErrorF("Fork failed (%s)\n", strerror(errno));
@@ -922,8 +911,7 @@ pathname, a0, a1, a2, a3) /* limit of four args */
 	 * of a clock program than to give I/O permissions to a bogus program
 	 * in someone's XF86Config file
 	 */
-	for (i = 0; i < MAXSCREENS; i++)
-	  xf86DisableIOPorts(i);
+	xf86DisableIO();
         setuid(getuid());
 #if !defined(AMOEBA) && !defined(MINIX)
         /* set stdin, stdout to the consoleFD, and leave stderr alone */
@@ -937,11 +925,7 @@ pathname, a0, a1, a2, a3) /* limit of four args */
         }
 #endif
 
-#if NeedVarargsPrototypes
 	execv(pathname, arglist);
-#else
-	execl(pathname, a0, a1, a2, a3, NULL);
-#endif
 	ErrorF("Exec failed for command \"%s\" (%s)\n",
 	       pathname, strerror(errno));
 	exit(255);
@@ -986,6 +970,45 @@ pathname, a0, a1, a2, a3) /* limit of four args */
 #else
     return(1);
 #endif /* __EMX__ Disable this crazy business for now */
+}
+
+Bool
+xf86setexternclock(pathname, clock_arg, clock_index)
+    char *pathname;
+    int clock_arg;
+    int clock_index;
+{
+#ifndef __EMX__
+    char *progname, *clockarg, *clockindex;
+    int ret;
+
+    if ((progname = strrchr(pathname, '/')))
+	progname++;
+    else
+	progname = pathname;
+
+    /*
+     * Not everything has snprintf, but this should be safe given the
+     * range checks.
+     */
+    if (clock_arg > 1000000.0 || clock_arg < 0.0)
+	return FALSE;
+    if (clock_index > MAXCLOCKS || clock_index < 0)
+	return FALSE;
+
+    /* Largest value is 1000.000 (1GHz) */
+    clockarg = (char *)xalloc(10);
+    /* Largest value is MAXCLOCKS (currently 128) */
+    clockindex = (char *)xalloc(5);
+    sprintf(clockarg, "%.3f", clock_arg / 1000.0);
+    sprintf(clockindex, "%d", clock_index);
+    ret = xf86execl(pathname, progname, clockarg, clockindex);
+    xfree(clockarg);
+    xfree(clockindex);
+    return ret ? FALSE : TRUE;
+#else
+    return FALSE;
+#endif /* __EMX__ Disable this for now*/
 }
 
 void
@@ -1071,7 +1094,6 @@ xf86closedir(XF86DIR* dir)
 {
 	XF86DIR_priv* dp = (XF86DIR_priv*)dir;
 	int n;
-	DIR *dirp;
 
 	_xf86checkdirhndl(dp,"xf86readdir");
 

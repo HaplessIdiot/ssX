@@ -1,0 +1,10 @@
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/lsb_first/Imakefile,v 1.1.2.3 1998/07/18 17:54:15 dawes Exp $
+
+#define LinkDirectory ..
+#define EXPDEFINES -DLSBFIRST
+#define EXPOBJECTNAME lsb_first
+#if defined(i386Architecture) && !MakeDllModules 
+#define UseAssembler
+#endif
+
+#include "../Imakefile.EXP"

@@ -1,89 +1,76 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.17 1998/01/24 16:58:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.11.2.3 1998/07/24 11:36:29 dawes Exp $ */
+
+
+
+
 
 #ifndef _TSENG_H
 #define _TSENG_H
 
-#include "compiler.h"   /* for inb(), outb(), ... */
+/* Everything using inb/outb, etc needs "compiler.h" */
+#include "compiler.h"
 
+/* All drivers should typically include these */
 #include "xf86.h"
+#include "xf86_OSproc.h"
 
-#include "vga.h"
+/* All drivers need this */
+#include "xf86_ansic.h"
 
-#define MAX_TSENG_CLOCK 86000
+/* This is used for module versioning */
+#include "xf86Version.h"
 
-typedef struct {
-  unsigned char cmd_reg;
-  unsigned char PLL_f2_M;
-  unsigned char PLL_f2_N;
-  unsigned char PLL_ctrl;
-  unsigned char PLL_w_idx;
-  unsigned char PLL_r_idx;
-  unsigned char timingctrl; /* for STG170x */
-  } GenDACstate;
+/* Drivers for PCI hardware need this */
+#include "xf86PciInfo.h"
 
+/* Drivers that need to access the PCI config space directly need this */
+#include "xf86Pci.h"
 
-typedef struct {
-  vgaHWRec std;                  /* good old IBM VGA */
-  unsigned char SegMapComp;      /* CRTC 0x30 */
-  unsigned char GenPurp;         /* CRTC 0x31 */
-  unsigned char RCConf;          /* CRTC 0x32 */
-  unsigned char ExtStart;        /* CRTC 0x33 */
-  unsigned char Compatibility;   /* CRTC 0x34 */
-  unsigned char OverflowHigh;    /* CRTC 0x35 */
-  unsigned char VSConf1;         /* CRTC 0x36 */
-  unsigned char VSConf2;         /* CRTC 0x37 */
-  unsigned char HorOverflow;     /* CRTC 0x3F */
-  unsigned char StateControl;    /* TS  0x06 */
-  unsigned char AuxillaryMode;   /* TS  0x07 */
-  unsigned char Misc;            /* ATC 0x16 */
-  unsigned char SegSel1, SegSel2;  /* 0x3CD, 0x3CB */
-  unsigned char ET6KMemBase;     /* ET6000 0x13 -- linear memory mapped address */
-  unsigned char ET6KMMAPCtrl;    /* ET6000 0x40 -- used for linear memory mapping */
-  unsigned char ET6KPerfContr;   /* ET6000 0x41 -- system performance control */
-  unsigned char ET6KRasCas;      /* ET6000 0x44 -- ram delays configuration */
-  unsigned char ET6KDispFeat;    /* ET6000 0x46 -- display feature register */
-  unsigned char ET6KVidCtrl1;    /* ET6000 0x58 -- used for 15/16 bpp modes */
-  unsigned char MClkM, MClkN;    /* memory clock values */
-  unsigned char IMAPortCtrl;     /* IMA port control register (0x217B index 0xF7) */
-  GenDACstate gendac;
-  unsigned char ATTdac_cmd;      /* command register for ATT 49x DACs */
-  } vgaET4000Rec, *vgaET4000Ptr;
+/* All drivers using the vgahw module need this */
+/* All Tseng chips _need_ VGA register access, so multihead operation is out of the question */
+#include "vgaHW.h"
 
-extern vgaVideoChipRec TSENG;
+/* Drivers using the mi banking wrapper need this */
+#include "mibank.h"
+
+/* Drivers using the XAA interface ... */
+#include "xaa.h"
+#include "xf86fbman.h"
+
+#define MAX_TSENG_CLOCK 86000	       /* default max clock for standard boards */
+
+/*
+ * Contrary to the old driver, we use the "Chip Revision" here intead of
+ * multiple chipsets like "TYPE_ET4000W32Pa", "TYPE_ET4000W32Pb", etc.
+ */
 
 typedef enum {
-    TYPE_UNKNOWN = -1,
     TYPE_ET4000,
     TYPE_ET4000W32,
     TYPE_ET4000W32I,
-    TYPE_ET4000W32Ib,
-    TYPE_ET4000W32Ic,
     TYPE_ET4000W32P,
-    TYPE_ET4000W32Pa,
-    TYPE_ET4000W32Pb,
-    TYPE_ET4000W32Pc,
-    TYPE_ET4000W32Pd,
     TYPE_ET6000,
     TYPE_ET6100
 } t_tseng_type;
 
-#define Is_W32_any  ( (et4000_type >= TYPE_ET4000W32) && (et4000_type < TYPE_ET6000) )
-#define Is_ET6K     ( et4000_type >= TYPE_ET6000 )
-#define Is_W32      ( (et4000_type >= TYPE_ET4000W32) && (et4000_type < TYPE_ET4000W32I) )
-#define Is_W32i     ( (et4000_type >= TYPE_ET4000W32I) && (et4000_type < TYPE_ET4000W32P) )
-#define Is_W32_W32i ( (et4000_type >= TYPE_ET4000W32) && (et4000_type < TYPE_ET4000W32P) )
-#define Is_W32p     ( (et4000_type >= TYPE_ET4000W32P) && (et4000_type < TYPE_ET6000) )
-#define Is_W32p_ab  ( (et4000_type >= TYPE_ET4000W32P) && (et4000_type <= TYPE_ET4000W32Pb) )
-#define Is_W32p_cd  ( (et4000_type >= TYPE_ET4000W32Pc) && (et4000_type <= TYPE_ET4000W32Pd) )
-#define Is_W32p_up  ( et4000_type >= TYPE_ET4000W32P )
+/* revision ID for W32 chips: currently used for W32i and W32p */
+typedef enum {
+    TSENGNOREV = 0,
+    W32REVID_A,
+    W32REVID_B,
+    W32REVID_C,
+    W32REVID_D
+} t_w32_revid;
 
+#define ET6100REVID (0x70)
 
-extern t_tseng_type et4000_type;
-extern unsigned char tseng_save_divide; /* saves state of hibit */
-extern unsigned long ET6Kbase;
-
-extern int tseng_bytesperpixel;
+typedef enum {
+    BUS_ISA,
+    BUS_MCA,
+    BUS_VLB,
+    BUS_PCI
+} t_tseng_bus;
 
 extern SymTabRec TsengDacTable[];
 
@@ -107,81 +94,187 @@ typedef enum {
     MUSIC4910_DAC
 } t_ramdactype;
 
-extern t_ramdactype TsengRamdacType;
-void Check_Tseng_Ramdac(void);
-void tseng_init_clockscale(void);
+typedef enum {
+    CLOCKCHIP_ICD2061A,
+    CLOCKCHIP_ET6000,
+    CLOCKCHIP_ICS5341,
+    CLOCKCHIP_ICS5301,
+    CLOCKCHIP_CH8398,
+    CLOCKCHIP_STG1703
+} t_clockchip_type;
+
+typedef struct {
+    unsigned char cmd_reg;
+    unsigned char f2_M;
+    unsigned char f2_N;
+    unsigned char ctrl;
+    unsigned char w_idx;
+    unsigned char r_idx;
+    unsigned char timingctrl;	       /* for STG170x */
+    unsigned char MClkM, MClkN;
+} PllState;
+
+typedef struct {
+    unsigned char ExtCRTC[16];	       /* CRTC 0x30 .. 0x3F */
+    unsigned char ExtTS[2];	       /* TS 0x06 .. 0x07 */
+    unsigned char ExtATC;	       /* ATC 0x16 */
+    unsigned char ExtSegSel[2];	       /* 0x3CD , 0x3CB */
+    unsigned char ExtET6K[0x4F];       /* ET6000 PCI config space registers 0x40 .. 0x8F */
+    unsigned char ExtIMACtrl;	       /* IMA port control register (0x217B index 0xF7) */
+    PllState pll;		       /* registers in GenDAC-like RAMDAC/clockchips */
+    unsigned char ATTdac_cmd;	       /* command register for ATT 49x DACs */
+} TsengRegRec, *TsengRegPtr;
+
+typedef struct {
+    t_ramdactype DacType;
+    Bool NotAttCompat;		       /* avoid treating the RAMDAC as AT&T compatible */
+    int RamdacShift;		       /* typically 10 or 8 for 6- or 8-bit dac */
+    int RamdacMask;		       /* typically 0x3f for 6 bit, 0xff for 8-bit ramdac */
+    Bool Dac8Bit;		       /* dac is 8 bit instead of the default 6 bit */
+    Bool DacPort16;		       /* Ramdac port is 16 bits wide instead of default 8 */
+    Bool pixMuxPossible;
+    int nonMuxMaxClock;
+    int ClockMulFactor;
+    int ClockDivFactor;
+} TsengDacInfoRec, *TsengDacInfoPtr;
+
+typedef struct {
+    pciVideoPtr PciInfo;
+    PCITAG PciTag;
+    int Save_Divide;
+    Bool UsePCIRetry;		       /* Do we use PCI-retry or busy-waiting */
+    Bool NoAccel;		       /* Do we use the XAA acceleration architecture */
+    Bool HWCursor;		       /* Do we use the hardware cursor (if supported) */
+    Bool Linmem_1meg;		       /* Is this a card limited to 1Mb of linear memory */
+    Bool UseLinMem;
+    Bool SlowDram;
+    Bool FastDram;
+    Bool MedDram;
+    Bool PCIBurstOn;
+    Bool PCIBurstOff;
+    Bool W32InterleaveOn;
+    Bool W32InterleaveOff;
+    Bool ShowCache;
+    Bool Legend;
+    TsengRegRec SavedReg;	       /* saved Tseng registers at server start */
+    TsengRegRec ModeReg;
+    unsigned long icd2061_dwv;	       /* To hold the clock data between Init and Restore */
+    t_tseng_bus Bustype;	       /* W32 bus type (currently used for lin mem on W32i) */
+    t_tseng_type ChipType;	       /* "Chipset" causes confusion with pScrn->chipset */
+    int ChipRev;
+    CARD32 LinFbAddress;
+    unsigned char *FbBase;
+    CARD32 LinFbAddressMask;
+    long FbMapSize;
+    miBankInfoRec BankInfo;
+    CARD32 IOAddress;		       /* PCI config space base address for ET6000 */
+    CARD32 MMIOBase;
+    int Bytesperpixel;		       /* a shorthand for the XAA code */
+    Bool SetMClk;		       /* reprogram MClk if TRUE */
+    int MemClk;
+    int MinClock;
+    int MaxClock;
+    TsengDacInfoRec DacInfo;
+    t_clockchip_type ClockChip;
+    CloseScreenProcPtr CloseScreen;
+    int save_divide;
+    XAAInfoRecPtr AccelInfoRec;
+    Bool need_wait_acl;		       /* always need a full "WAIT" for ACL finish */
+    int line_width;		       /* framebuffer width in bytes per scanline */
+    int planemask_mask;		       /* mask for active bits in planemask */
+    int neg_x_pixel_offset;
+    int powerPerPixel;		       /* power-of-2 version of bytesperpixel */
+} TsengRec, *TsengPtr;
+
+#define TsengPTR(p) ((TsengPtr)((p)->driverPrivate))
+
+#define Is_stdET4K  ( pTseng->ChipType == TYPE_ET4000 )
+#define Is_W32      ( pTseng->ChipType == TYPE_ET4000W32 )
+#define Is_W32i     ( pTseng->ChipType == TYPE_ET4000W32I )
+#define Is_W32p     ( pTseng->ChipType == TYPE_ET4000W32P)
+#define Is_ET6000   ( pTseng->ChipType == TYPE_ET6000 )
+#define Is_ET6100   ( pTseng->ChipType == TYPE_ET6100 )
+
+#define Is_W32_W32i ( Is_W32 || Is_W32i )
+#define Is_W32_any  ( Is_W32 || Is_W32i || Is_W32p )
+#define Is_W32p_ab  ( Is_W32p && ( (pTseng->ChipRev == W32REVID_A) || (pTseng->ChipRev == W32REVID_B) ) )
+#define Is_W32p_cd  ( Is_W32p && ( (pTseng->ChipRev == W32REVID_C) || (pTseng->ChipRev == W32REVID_D) ) )
+#define Is_ET6K     ( Is_ET6000 || Is_ET6100 )
+
+#define CHIP_SUPPORTS_LINEAR ( Is_W32i || Is_W32p || Is_ET6K )
+
 void TsengHideCursor(void);
 
-#define DAC_IS_ATT49x ( (TsengRamdacType == ATT20C490_DAC) \
-                     || (TsengRamdacType == ATT20C491_DAC) \
-                     || (TsengRamdacType == ATT20C492_DAC) \
-                     || (TsengRamdacType == ATT20C493_DAC) \
-                     || (TsengRamdacType == MUSIC4910_DAC) )
+#define DAC_IS_ATT49x ( (pTseng->DacInfo.DacType == ATT20C490_DAC) \
+                     || (pTseng->DacInfo.DacType == ATT20C491_DAC) \
+                     || (pTseng->DacInfo.DacType == ATT20C492_DAC) \
+                     || (pTseng->DacInfo.DacType == ATT20C493_DAC) \
+                     || (pTseng->DacInfo.DacType == MUSIC4910_DAC) )
 
-#define DAC_is_GenDAC ( (TsengRamdacType == ICS5341_DAC) \
-                     || (TsengRamdacType == ICS5301_DAC) )
+#define DAC_is_GenDAC ( (pTseng->DacInfo.DacType == ICS5341_DAC) \
+                     || (pTseng->DacInfo.DacType == ICS5301_DAC) )
 
-#define DAC_is_STG170x ( (TsengRamdacType == STG1700_DAC) \
-                      || (TsengRamdacType == STG1702_DAC) \
-                      || (TsengRamdacType == STG1703_DAC) )
-
-#define CHIP_SUPPORTS_LINEAR (et4000_type >= TYPE_ET4000W32I)
+#define DAC_is_STG170x ( (pTseng->DacInfo.DacType == STG1700_DAC) \
+                      || (pTseng->DacInfo.DacType == STG1702_DAC) \
+                      || (pTseng->DacInfo.DacType == STG1703_DAC) )
 
 #define Gendac_programmable_clock \
-        ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) && \
-          (   (OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions)) \
-           || (OFLG_ISSET(CLOCK_OPTION_ICS5301, &vga256InfoRec.clockOptions)) \
+        ( pScrn->progClock && \
+          (   (pTseng->ClockChip == CLOCKCHIP_ICS5341) \
+           || (pTseng->ClockChip == CLOCKCHIP_ICS5301) \
           ) \
         )
 
 #define STG170x_programmable_clock \
-        ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) && \
-          (OFLG_ISSET(CLOCK_OPTION_STG1703, &vga256InfoRec.clockOptions)) \
-        )
+        ( pScrn->progClock && (pTseng->ClockChip == CLOCKCHIP_STG1703) )
 
 #define ICD2061a_programmable_clock \
-        ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) && \
-          (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions)) \
-        )
+        ( pScrn->progClock && (pTseng->ClockChip == CLOCKCHIP_ICD2061A) )
 
 #define CH8398_programmable_clock \
-        ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) && \
-          (OFLG_ISSET(CLOCK_OPTION_CH8398, &vga256InfoRec.clockOptions)) \
-        )
+        ( pScrn->progClock && (pTseng->ClockChip == CLOCKCHIP_CH8398) )
 
 #define ET6000_programmable_clock \
-        ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) && \
-          (OFLG_ISSET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions)) \
-        )
+        ( pScrn->progClock && (pTseng->ClockChip == CLOCKCHIP_ET6000) )
 
+/*
+ * From tseng_bank.c
+ */
 
-extern int Tseng_bus;
-#define BUS_ISA 0
-#define BUS_MCA 1
-#define BUS_VLB 2
-#define BUS_PCI 3
-
+int ET4000SetRead(ScreenPtr pScrn, unsigned int iBank);
+int ET4000SetWrite(ScreenPtr pScrn, unsigned int iBank);
+int ET4000SetReadWrite(ScreenPtr pScrn, unsigned int iBank);
+int ET4000W32SetRead(ScreenPtr pScrn, unsigned int iBank);
+int ET4000W32SetWrite(ScreenPtr pScrn, unsigned int iBank);
+int ET4000W32SetReadWrite(ScreenPtr pScrn, unsigned int iBank);
 
 /*
  * From tseng_clocks.c
  */
 
-/* pixel multiplexing variables */
-extern Bool Tseng_pixMuxPossible;
-extern int Tseng_nonMuxMaxClock;
-extern int Tseng_pixMuxMinWidth;
-
+Bool Tseng_check_clockchip(ScrnInfoPtr pScrn, TsengPtr pTseng);
 Bool Tseng_ET4000ClockSelect(int no);
 Bool Tseng_LegendClockSelect(int no);
 Bool Tseng_ET6000ClockSelect(int freq);
 Bool Tseng_GenDACClockSelect(int freq);
 Bool Tseng_STG1703ClockSelect(int freq);
 Bool Tseng_ICD2061AClockSelect(int freq);
-void tseng_set_dacspeed(void);
-void tseng_validate_mode(DisplayModePtr mode, Bool verbose);
-void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs);
+
+void tseng_dactopel(void);
+unsigned char tseng_dactocomm(void);
+unsigned char tseng_getdaccomm(void);
+void tseng_setdaccomm(unsigned char comm);
+
+void Check_Tseng_Ramdac(ScrnInfoPtr pScrn, TsengPtr pTseng);
+void tseng_init_clockscale(TsengPtr pTseng);
+void tseng_set_dacspeed(ScrnInfoPtr pScrn, TsengPtr pTseng);
+void tseng_validate_mode(ScrnInfoPtr pScrn, TsengPtr pTseng, DisplayModePtr mode, Bool verbose);
+void tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, TsengPtr pTseng, DisplayModePtr mode);
+
 #ifdef DPMSExtension
 void TsengCrtcDPMSSet(int);
 void TsengHVSyncDPMSSet(int);
+
 #endif
+
 #endif

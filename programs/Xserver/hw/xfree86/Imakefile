@@ -3,55 +3,43 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.40 1998/01/24 16:56:20 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.37.2.13 1998/07/03 13:43:30 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
 
-#if XF86MonoServer || XF86MonoModule || \
-    XF86VGA16Server || XF86VGA16Module || \
-    XF86SVGAServer
-VGA2SCREEN = vga2
+#if XF86VgaHw
+VGAHWDIR = vgahw
 #endif
 
-#if XF86MonoDualServer || XF86VGA16DualServer || XF86MonoModule || XF86SVGAServer
-MONOSCREEN = mono
+#if XF86XAA
+XAADIR = xaa
 #endif
 
-#if XF86SVGAServer || XF86SVGAModule
-VGA256SCREEN = vga256
+#if XF1Bpp || XF4Bpp
+XF1BPPDIR = xf1bpp
+# if XF4Bpp
+XF4BPPDIR = xf4bpp
+# endif
 #endif
 
-#if XF86VGA16Server || XF86VGA16Module || XF86SVGAServer
-VGA16SCREEN = vga16
-#endif
-
-#if XF86AccelServer
-ACCELDIRS = accel
-#endif
-
-#if !defined(OsfArchitecture) && !defined(AmoebaArchitecture) && !defined(ArcArchitecture) && !defined(Arm32Architecture) && !defined(PpcArchitecture)
+#if !defined(OsfArchitecture) && !defined(AmoebaArchitecture) && \
+    !defined(ArcArchitecture) && !defined(Arm32Architecture) && \
+    !defined(PpcArchitecture)
 SUPERPROBE = SuperProbe
-#endif
-
-#if !defined(PpcArchitecture) && !defined(LynxOsArchitecture)
-RECONFIG = reconfig
 #endif
 
 #if BuildXF86Setup
 XF86SETUPDIR = XF86Setup
 #endif
 
-#if XF86LoaderServer
+#if DoLoadableServer
 LOADERDIR = loader
 #endif
-DRIVERS = drivers
 
-SCREENS = $(VGA2SCREEN) $(MONOSCREEN) $(VGA16SCREEN) $(VGA256SCREEN) $(ACCELDIRS) $(DRIVERS)
-
-SUBDIRS = os-support common common_hw xaa $(SCREENS) \
-          config $(LOADERDIR) doc \
-          $(RECONFIG) xf86config $(XF86SETUPDIR) etc LinkKit \
+SUBDIRS = os-support common $(XAADIR) $(XF1BPPDIR) $(XF4BPPDIR) \
+          drivers $(LOADERDIR) doc $(VGAHWDIR) ramdac parser \
+          xf86config $(XF86SETUPDIR) etc /* LinkKit */ \
           VGADriverDoc $(SUPERPROBE)
 
 #ifndef OS2Architecture
@@ -141,9 +129,11 @@ CppFileTarget($(XF86CONFIG), XF86Conf.cpp, \
 
 InstallManPage(XFree86,$(MANDIR))
 InstallGenManPageLong(XF86Conf,$(FILEMANDIR),XF86Config,$(FILEMANSUFFIX))
+#if 0
 InstallManPage(XF86_SVGA,$(MANDIR))
 InstallManPageLong(XF86_Acc,$(MANDIR),XF86_Accel)
-InstallManPageAliases(XF86_Accel,$(MANDIR),XF86_S3 XF86_Mach32 XF86_Mach64 XF86_P9000 XF86_Mach8 XF86_8514 XF86_AGX XF86_I128)
+InstallManPageAliases(XF86_Accel,$(MANDIR),XF86_S3 XF86_Mach32 XF86_Mach64 XF86_P9000 XF86_Mach8 XF86_8514 XF86_AGX XF86_W32 XF86_I128)
+#endif
 InstallNamedNonExec($(XF86CONFIG),XF86Config.eg,$(LIBDIR))
 
 InstallLinkKitNonExecFile(xf86Version.h,$(LINKKITDIR)/include)

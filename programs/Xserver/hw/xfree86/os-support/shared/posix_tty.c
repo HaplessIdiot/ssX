@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.10 1998/01/24 16:58:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.8.4.6 1998/06/21 15:38:23 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -52,25 +52,16 @@
 
 /* $XConsortium: posix_tty.c /main/7 1996/10/19 18:07:47 kaleb $ */
 
-#define NEED_EVENTS
 #include "X.h"
-#include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
-
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#include "xf86_Config.h"
 
 #define SYSCALL(call) while(((call) == -1) && (errno == EINTR))
 static Bool not_a_tty = FALSE;
 
-void 
-xf86SetMouseSpeed (mouse, old, new, cflag)
-MouseDevPtr mouse;
-int old;
-int new;
-unsigned cflag;
+void
+xf86SetMouseSpeed(MouseDevPtr mouse, int old, int new, unsigned int cflag)
 {
 	struct termios tty;
 	char *c;
@@ -81,8 +72,9 @@ unsigned cflag;
 	if (tcgetattr(mouse->mseFd, &tty) < 0)
 	{
 		not_a_tty = TRUE;
-		ErrorF("Warning: %s unable to get status of mouse fd (%s)\n",
-		       mouse->mseDevice, strerror(errno));
+		xf86Msg(X_WARNING,
+			"%s unable to get status of mouse fd (%s)\n",
+			mouse->mseDevice, strerror(errno));
 		return;
 	}
 
@@ -133,15 +125,16 @@ unsigned cflag;
 		cfsetospeed(&tty, B1200);
 	}
 
-	if (tcsetattr(mouse->mseFd, TCSANOW, &tty) < 0)
+	if (tcsetattr(mouse->mseFd, TCSADRAIN, &tty) < 0)
 	{
-		if (xf86AllowMouseOpenFail) {
-			ErrorF("Unable to set status of mouse fd (%s) - Continuing...\n",
-			       strerror(errno));
-			return;
-		}
-		xf86FatalError("Unable to set status of mouse fd (%s)\n",
-			       strerror(errno));
+	    if (xf86AllowMouseOpenFail) {
+		xf86Msg(X_WARNING,
+		    "Unable to set status of mouse fd (%s) - Continuing...\n",
+		    strerror(errno));
+		return;
+	    }
+	    xf86FatalError("Unable to set status of mouse fd (%s)\n",
+			   strerror(errno));
 	}
 
 	switch (new)
@@ -168,30 +161,32 @@ unsigned cflag;
 		cfsetospeed(&tty, B1200);
 	}
 
-	if (mouse->mseType == P_LOGIMAN || mouse->mseType == P_LOGI)
+	if (mouse->mseType == PROT_LOGIMAN || mouse->mseType == PROT_LOGI)
 	{
-		if (write(mouse->mseFd, c, 2) != 2)
-		{
-			if (xf86AllowMouseOpenFail) {
-				ErrorF("Unable to write to mouse fd (%s) - Continuing...\n",
-				       strerror(errno));
-				return;
-			}
-			xf86FatalError("Unable to write to mouse fd (%s)\n",
-				       strerror(errno));
+	    if (write(mouse->mseFd, c, 2) != 2)
+	    {
+		if (xf86AllowMouseOpenFail) {
+		    xf86Msg(X_WARNING,
+			"Unable to write to mouse fd (%s) - Continuing...\n",
+			strerror(errno));
+		    return;
 		}
+		xf86FatalError("Unable to write to mouse fd (%s)\n",
+			       strerror(errno));
+	    }
 	}
 	usleep(100000);
 
-	if (tcsetattr(mouse->mseFd, TCSANOW, &tty) < 0)
+	if (tcsetattr(mouse->mseFd, TCSADRAIN, &tty) < 0)
 	{
-		if (xf86AllowMouseOpenFail) {
-			ErrorF("Unable to set status of mouse fd (%s) - Continuing...\n",
+	    if (xf86AllowMouseOpenFail) {
+		xf86Msg(X_WARNING,
+		    "Unable to set status of mouse fd (%s) - Continuing...\n",
+		    strerror(errno));
+		return;
+	    }
+	    xf86FatalError("Unable to set status of mouse fd (%s)\n",
 			       strerror(errno));
-			return;
-		}
-		xf86FatalError ("Unable to set status of mouse fd (%s)\n",
-						strerror (errno));
 	}
 }
 
@@ -246,9 +241,9 @@ GetBaud (int baudrate)
 }
 
 int
-xf86OpenSerial (XF86OptionPtr options)
+xf86OpenSerial (pointer options)
 {
-#ifdef LYNX
+#ifdef Lynx
 	struct sgttyb ms_sgtty;
 #endif
 	struct termios t;
@@ -256,29 +251,33 @@ xf86OpenSerial (XF86OptionPtr options)
 	char *dev;
 
 	dev = xf86FindOptionValue (options, "Device");
+	xf86MarkOptionUsedByName (options, "Device");
 	if (!dev)
 	{
-		ErrorF ("xf86OpenSerial: No Device specified.\n");
+		xf86Msg (X_ERROR, "xf86OpenSerial: No Device specified.\n");
 		return (-1);
 	}
 
 	SYSCALL (fd = open (dev, O_RDWR | O_NONBLOCK | O_EXCL));
 	if (fd == -1)
 	{
-		ErrorF ("xf86OpenSerial: Cannot open device %s\n\t%s.\n", dev,
-			strerror (errno));
+		xf86Msg (X_ERROR,
+			 "xf86OpenSerial: Cannot open device %s\n\t%s.\n",
+			 dev, strerror (errno));
 		return (-1);
 	}
 
 	if (!isatty (fd))
 	{
-		ErrorF ("xf86OpenSerial: Specified device %s is not a tty\n", dev);
+		xf86Msg (X_WARNING,
+			 "xf86OpenSerial: Specified device %s is not a tty\n",
+			 dev);
 		SYSCALL (close (fd));
 		errno = EINVAL;
 		return (-1);
 	}
 
-#ifdef LYNX
+#ifdef Lynx
 	/* LynxOS does not assert DTR without this */
 	ioctl (control, TIOCGETP, (char *) &ms_sgtty);
 	ioctl (control, TIOCSDTR, (char *) &ms_sgtty);
@@ -323,31 +322,33 @@ xf86OpenSerial (XF86OptionPtr options)
 }
 
 int
-xf86SetSerial (int fd, XF86OptionPtr options)
+xf86SetSerial (int fd, pointer options)
 {
 	struct termios t;
 	char *s;
 	int baud, r;
-    XF86OptionPtr tmp = options;
 
 	SYSCALL (tcgetattr (fd, &t));
 
-	if (s = xf86FindOptionValue (options, "BaudRate"))
+	if ((s = xf86FindOptionValue (options, "BaudRate")))
 	{
-		if (baud = GetBaud (atoi (s)))
+		xf86MarkOptionUsedByName (options, "BaudRate");
+		if ((baud = GetBaud (atoi (s))))
 		{
 			cfsetispeed (&t, baud);
 			cfsetospeed (&t, baud);
 		}
 		else
 		{
-			ErrorF ("Invalid Option BaudRate value: %s\n", s);
+			xf86Msg (X_ERROR,
+				 "Invalid Option BaudRate value: %s\n", s);
 			return (-1);
 		}
 	}
 
-	if (s = xf86FindOptionValue (options, "StopBits"))
+	if ((s = xf86FindOptionValue (options, "StopBits")))
 	{
+		xf86MarkOptionUsedByName (options, "StopBits");
 		switch (atoi (s))
 		{
 		case 1:
@@ -357,14 +358,16 @@ xf86SetSerial (int fd, XF86OptionPtr options)
 			t.c_cflag |= CSTOPB;
 			break;
 		default:
-			ErrorF ("Invalid Option StopBits value: %s\n", s);
+			xf86Msg (X_ERROR,
+				 "Invalid Option StopBits value: %s\n", s);
 			return (-1);
 			break;
 		}
 	}
 
-	if (s = xf86FindOptionValue (options, "DataBits"))
+	if ((s = xf86FindOptionValue (options, "DataBits")))
 	{
+		xf86MarkOptionUsedByName (options, "DataBits");
 		switch (atoi (s))
 		{
 		case 5:
@@ -384,88 +387,99 @@ xf86SetSerial (int fd, XF86OptionPtr options)
 			t.c_cflag |= CS8;
 			break;
 		default:
-			ErrorF ("Invalid Option DataBits value: %s\n", s);
+			xf86Msg (X_ERROR,
+				 "Invalid Option DataBits value: %s\n", s);
 			return (-1);
 			break;
 		}
 	}
 
-	if (s = xf86FindOptionValue (options, "Parity"))
+	if ((s = xf86FindOptionValue (options, "Parity")))
 	{
-		if (StrCaseCmp (s, "Odd") == 0)
+		xf86MarkOptionUsedByName (options, "Parity");
+		if (xf86NameCmp (s, "Odd") == 0)
 		{
 			t.c_cflag |= PARENB | PARODD;
 		}
-		else if (StrCaseCmp (s, "Even") == 0)
+		else if (xf86NameCmp (s, "Even") == 0)
 		{
 			t.c_cflag |= PARENB;
 			t.c_cflag &= ~(PARODD);
 		}
-		else if (StrCaseCmp (s, "None") == 0)
+		else if (xf86NameCmp (s, "None") == 0)
 		{
 			t.c_cflag &= ~(PARENB);
 		}
 		else
 		{
-			ErrorF ("Invalid Option Party value: %s\n", s);
+			xf86Msg (X_ERROR, "Invalid Option Parity value: %s\n",
+				 s);
 			return (-1);
 		}
 	}
 
-	if (s = xf86FindOptionValue (options, "Vmin"))
+	if ((s = xf86FindOptionValue (options, "Vmin")))
 	{
+		xf86MarkOptionUsedByName (options, "Vmin");
 		t.c_cc[VMIN] = atoi (s);
 	}
-	if (s = xf86FindOptionValue (options, "Vtime"))
+	if ((s = xf86FindOptionValue (options, "Vtime")))
 	{
+		xf86MarkOptionUsedByName (options, "Vtime");
 		t.c_cc[VTIME] = atoi (s);
 	}
 
-	if (s = xf86FindOptionValue (options, "FlowControl"))
+	if ((s = xf86FindOptionValue (options, "FlowControl")))
 	{
-		if (StrCaseCmp (s, "Xon") == 0)
+		xf86MarkOptionUsedByName (options, "FlowControl");
+		if (xf86NameCmp (s, "Xon") == 0)
 		{
 			t.c_iflag |= IXON | IXOFF;
 		}
-		else if (StrCaseCmp (s, "None") == 0)
+		else if (xf86NameCmp (s, "None") == 0)
 		{
 			t.c_iflag &= ~(IXON | IXOFF);
 		}
 		else
 		{
-			ErrorF ("Invalid Option FlowControl value: %s\n", s);
+			xf86Msg (X_ERROR,
+				 "Invalid Option FlowControl value: %s\n", s);
 			return (-1);
 		}
 	}
 
-	if (s = xf86FindOptionValue (options, "ClearDTR"))
+	if ((s = xf86FindOptionValue (options, "ClearDTR")))
 	{
 #ifdef CLEARDTR_SUPPORT
-          int val = TIOCM_DTR;
-          SYSCALL (ioctl(fd, TIOCMBIC, &val));
+		int val = TIOCM_DTR;
+		SYSCALL (ioctl(fd, TIOCMBIC, &val));
 #else
-		ErrorF ("Option ClearDTR not supported on this OS\n");
+		xf86Msg (X_WARNING,
+			 "Option ClearDTR not supported on this OS\n");
 			return (-1);
 #endif
+		xf86MarkOptionUsedByName (options, "ClearDTR");
 	}
 
-	if (s = xf86FindOptionValue (options, "ClearRTS"))
+	if ((s = xf86FindOptionValue (options, "ClearRTS")))
 	{
 #ifdef CLEARRTS_SUPPORT
-          int val = TIOCM_RTS;
-          SYSCALL (ioctl(fd, TIOCMBIC, &val));
+		int val = TIOCM_RTS;
+		SYSCALL (ioctl(fd, TIOCMBIC, &val));
 #else
-		ErrorF ("Option ClearRTS not supported on this OS\n");
+		xf86Msg (X_WARNING,
+			 "Option ClearRTS not supported on this OS\n");
 			return (-1);
 #endif
+		xf86MarkOptionUsedByName (options, "ClearRTS");
 	}
 
 	SYSCALL (r = tcsetattr (fd, TCSANOW, &t));
 	return (r);
 }
 
-xf86ssize_t
-xf86ReadSerial (int fd, void *buf, xf86size_t count)
+int
+xf86ReadSerial (int fd, void *buf, int count)
 {
 	int r;
 
@@ -473,8 +487,8 @@ xf86ReadSerial (int fd, void *buf, xf86size_t count)
 	return (r);
 }
 
-xf86ssize_t
-xf86WriteSerial (int fd, void *buf, xf86size_t count)
+int
+xf86WriteSerial (int fd, void *buf, int count)
 {
 	int r;
 

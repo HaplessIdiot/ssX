@@ -1,3 +1,5 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/fontsym.c,v 1.1.2.1 1998/07/03 13:44:00 dawes Exp $ */
+
 #include "sym.h"
 #include "fntfilst.h"
 

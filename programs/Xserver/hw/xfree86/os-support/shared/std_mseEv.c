@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/std_mseEv.c,v 3.2 1997/10/25 13:50:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/std_mseEv.c,v 3.1.4.2 1998/06/05 16:23:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -25,19 +25,15 @@
  */
 /* $XConsortium: std_mseEv.c /main/4 1996/03/11 10:47:48 kaleb $ */
 
-#define NEED_EVENTS
 #include "X.h"
-#include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
-
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
-void xf86MouseEvents(mouse)
-    MouseDevPtr	mouse;
+void
+xf86MouseEvents(MouseDevPtr mouse)
 {
-	static unsigned char rBuf[64];
+	unsigned char rBuf[64];
 	int nBytes;
 
 	if ((nBytes = read(mouse->mseFd, (char *)rBuf, sizeof(rBuf))) > 0)

@@ -1,0 +1,205 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.1.2.10 1998/07/18 17:53:58 dawes Exp $ */
+/* 
+ * 
+ * Copyright (c) 1997  Metro Link Incorporated
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of the Metro Link shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from Metro Link.
+ * 
+ */
+
+#ifndef _xf86_tokens_h
+#define _xf86_tokens_h
+
+/* 
+ * Each token should have a unique value regardless of the section
+ * it is used in.
+ */
+
+typedef enum {
+    /* errno-style tokens */
+    EOF_TOKEN		= -4,
+    LOCK_TOKEN		= -3,
+    ERROR_TOKEN		= -2,
+
+    /* value type tokens */
+    NUMBER		= 1,
+    STRING,
+
+    /* Tokens that can appear in many sections */
+    SECTION,
+    SUBSECTION,
+    ENDSECTION,
+    ENDSUBSECTION,
+    IDENTIFIER,
+    VENDOR,
+    DASH,
+    COMMA,
+    OPTION,
+
+    /* Frequency units */
+    HRZ,
+    KHZ,
+    MHZ,
+
+    /* File tokens */
+    FONTPATH,
+    RGBPATH,
+    MODULEPATH,
+    LOGFILEPATH,
+
+    /* Server Flag tokens */
+    NOTRAPSIGNALS,
+    DONTZAP,
+    DONTZOOM,
+    DISABLEVIDMODE,
+    ALLOWNONLOCAL,
+    DISABLEMODINDEV,
+    MODINDEVALLOWNONLOCAL,
+    ALLOWMOUSEOPENFAIL,
+    BLANKTIME,
+    STANDBYTIME,
+    SUSPENDTIME,
+    OFFTIME,
+
+    /* Monitor tokens */
+    MODEL,
+    MODELINE,
+    DISPLAYSIZE,
+    HORIZSYNC,
+    VERTREFRESH,
+    MODE,
+    GAMMA,
+
+    /* Mode tokens */
+    DOTCLOCK,
+    HTIMINGS,
+    VTIMINGS,
+    FLAGS,
+    HSKEW,
+    VSCAN,
+    ENDMODE,
+
+    /* Screen tokens */
+    OBSDRIVER,
+    MDEVICE,
+    MONITOR,
+    SCREENNO,
+    DEFAULTDEPTH,
+    DEFAULTBPP,
+    DEFAULTFBBPP,
+    
+    /* Mode timing tokens */
+    TT_INTERLACE,
+    TT_PHSYNC,
+    TT_NHSYNC,
+    TT_PVSYNC,
+    TT_NVSYNC,
+    TT_CSYNC,
+    TT_PCSYNC,
+    TT_NCSYNC,
+    TT_DBLSCAN,
+    TT_HSKEW,
+    TT_VSCAN,
+    TT_CUSTOM,
+
+    /* Module tokens */
+    LOAD,
+    LOAD_DRIVER,
+    
+    /* Device tokens */
+    DRIVER,
+    CHIPSET,
+    CLOCKS,
+    VIDEORAM,
+    BOARD,
+    IOBASE,
+    RAMDAC,
+    DACSPEED,
+    BIOSBASE,
+    MEMBASE,
+    CLOCKCHIP,
+    CHIPID,
+    CHIPREV,
+    MEMCLOCK,
+    CARD,
+    BUSID,
+    TEXTCLOCKFRQ,
+
+    /* Keyboard tokens */
+    AUTOREPEAT,
+    SERVERNUM,
+    XLEDS,
+    VTINIT,
+    LEFTALT,
+    RIGHTALT,
+    SCROLLLOCK_TOK,
+    RIGHTCTL,
+    VTSYSREQ,
+    KPROTOCOL,
+    XKBKEYMAP,
+    XKBCOMPAT,
+    XKBTYPES,
+    XKBKEYCODES,
+    XKBGEOMETRY,
+    XKBSYMBOLS,
+    XKBDISABLE,
+    PANIX106,
+    XKBRULES,
+    XKBMODEL,
+    XKBLAYOUT,
+    XKBVARIANT,
+    XKBOPTIONS,
+
+    /* Pointer tokens */
+    EMULATE3,
+    BAUDRATE,
+    SAMPLERATE,
+    CLEARDTR,
+    CLEARRTS,
+    CHORDMIDDLE,
+    PROTOCOL,
+    PDEVICE,
+    EM3TIMEOUT,
+    DEVICE_NAME,
+    ALWAYSCORE,
+    BUTTONS,
+
+    /* Display tokens */
+    MODES,
+    VIEWPORT,
+    VIRTUAL,
+    VISUAL,
+    BLACK_TOK,
+    WHITE_TOK,
+    DEPTH,
+    BPP,
+    WEIGHT,
+    
+    /* Layout Tokens */
+    SCREEN,
+
+    /* Vendor Tokens */
+    VENDORNAME
+} ParserTokens;
+
+#endif /* _xf86_tokens_h */

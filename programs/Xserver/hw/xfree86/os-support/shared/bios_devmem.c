@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_devmem.c,v 3.2 1996/11/24 09:56:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_devmem.c,v 3.3.4.3 1998/07/18 17:53:55 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -24,9 +24,6 @@
 /* $XConsortium: bios_devmem.c /main/5 1996/10/19 18:07:41 kaleb $ */
 
 #include "X.h"
-#include "input.h"
-#include "scrnintstr.h"
-
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
@@ -40,11 +37,9 @@
 # define DEV_MEM "/dev/mem"
 #endif
 
-int xf86ReadBIOS(Base, Offset, Buf, Len)
-unsigned long Base;
-unsigned long Offset;
-unsigned char *Buf;
-int Len;
+int
+xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
+		int Len)
 {
 #ifdef __alpha__
   /*
@@ -87,8 +82,8 @@ extern unsigned long _bus_base_sparse(void);
 
 	if ((fd = open(DEV_MEM, O_RDONLY)) < 0)
 	{
-		ErrorF("xf86ReadBios: Failed to open %s (%s)\n", DEV_MEM,
-		       strerror(errno));
+		xf86Msg(X_WARNING, "xf86ReadBios: Failed to open %s (%s)\n",
+			DEV_MEM, strerror(errno));
 		return(-1);
 	}
 
@@ -97,12 +92,12 @@ extern unsigned long _bus_base_sparse(void);
 
 	if (base == (caddr_t)-1UL)
 	{
-		ErrorF("xf86ReadBios: Failed to mmap %s (%s)\n", DEV_MEM,
-		       strerror(errno));
+		xf86Msg(X_WARNING, "xf86ReadBios: Failed to mmap %s (%s)\n",
+			DEV_MEM, strerror(errno));
 		return(-1);
 	}
 
-	SlowBCopyFromBus(base+JENSEN_SHIFT(Offset), Buf, Len);
+	xf86SlowBCopyFromBus(base+JENSEN_SHIFT(Offset), Buf, Len);
 
 	munmap((caddr_t)JENSEN_SHIFT(base), JENSEN_SHIFT(SIZE));
 	close(fd);
@@ -114,22 +109,22 @@ extern unsigned long _bus_base_sparse(void);
 
 	if ((fd = open(DEV_MEM, O_RDONLY)) < 0)
 	{
-		ErrorF("xf86ReadBios: Failed to open %s (%s)\n", DEV_MEM,
-		       strerror(errno));
+		xf86Msg(X_WARNING, "xf86ReadBios: Failed to open %s (%s)\n",
+			DEV_MEM, strerror(errno));
 		return(-1);
 	}
 
 	if (lseek(fd, (Base+Offset), SEEK_SET) < 0)
 	{
-		ErrorF("xf86ReadBios: %s seek failed (%s)\n", DEV_MEM,
-		       strerror(errno));
+		xf86Msg(X_WARNING, "xf86ReadBios: %s seek failed (%s)\n",
+			DEV_MEM, strerror(errno));
 		close(fd);
 		return(-1);
 	}
 	if (read(fd, Buf, Len) != Len)
 	{
-		ErrorF("xf86ReadBios: %s read failed (%s)\n", DEV_MEM,
-		       strerror(errno));
+		xf86Msg(X_WARNING, "xf86ReadBios: %s read failed (%s)\n",
+			DEV_MEM, strerror(errno));
 		close(fd);
 		return(-1);
 	}

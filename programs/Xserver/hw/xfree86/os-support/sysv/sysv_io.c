@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_io.c,v 3.3 1996/08/10 13:07:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_io.c,v 3.4.4.2 1998/06/05 16:23:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -25,21 +25,16 @@
  */
 /* $XConsortium: sysv_io.c /main/8 1996/10/19 18:08:06 kaleb $ */
 
-#define NEED_EVENTS
 #include "X.h"
-#include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
-void xf86SoundKbdBell(loudness, pitch, duration)
-int loudness;
-int pitch;
-int duration;
+void
+xf86SoundKbdBell(int loudness, int pitch, int duration)
 {
 	if (loudness && pitch)
 	{
@@ -60,8 +55,8 @@ int duration;
 	}
 }
 
-void xf86SetKbdLeds(leds)
-int leds;
+void
+xf86SetKbdLeds(int leds)
 {
 #ifdef KBIO_SETMODE
 	ioctl(xf86Info.consoleFd, KBIO_SETMODE, KBM_AT);
@@ -70,23 +65,23 @@ int leds;
 #endif
 }
 
-void xf86MouseInit(mouse)
-MouseDevPtr mouse;
+void
+xf86MouseInit(MouseDevPtr mouse)
 {
 	return;
 }
 
-int xf86MouseOn(mouse)
-MouseDevPtr mouse;
+int
+xf86MouseOn(MouseDevPtr mouse)
 {
 	if ((mouse->mseFd = open(mouse->mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
-		if (xf86AllowMouseOpenFail) {
-			ErrorF("Cannot open mouse (%s) - Continuing...\n",
-				strerror(errno));
-			return(-2);
-		}
-		FatalError("Cannot open mouse (%s)\n", strerror(errno));
+	    if (xf86AllowMouseOpenFail) {
+		xf86Msg(X_WARNING, "Cannot open mouse (%s) - Continuing...\n",
+			strerror(errno));
+		return(-2);
+	    }
+	    FatalError("Cannot open mouse (%s)\n", strerror(errno));
 	}
 
 	xf86SetupMouse(mouse);

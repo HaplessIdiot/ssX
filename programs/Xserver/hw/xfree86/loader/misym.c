@@ -1,7 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.9 1998/04/26 18:31:59 robin Exp $ */
-
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.4.2.5 1998/07/19 13:22:06 dawes Exp $ */
 
 /*
  *
@@ -28,6 +25,7 @@
 #include "sym.h"
 #include "misc.h"
 #include "mi.h"
+#include "mibank.h"
 #include "miwideline.h"
 #include "mibstore.h"
 #include "cursor.h"
@@ -36,6 +34,7 @@
 #include "miline.h"
 #include "mizerarc.h"
 #include "mifillarc.h"
+#include "micmap.h"
 
 /* mi things */
 
@@ -93,6 +92,7 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miSetScreenPixmap)
    SYMFUNC(miRectAlloc)
    SYMFUNC(miInitializeBackingStore)
+   SYMFUNC(miInitializeBanking)
    SYMFUNC(miCopyPlane)
    SYMFUNC(miCopyArea)
    SYMFUNC(miCreateScreenResources)
@@ -112,8 +112,17 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miRoundJoinClip)
    SYMFUNC(miRoundCapClip)
    SYMFUNC(miSetZeroLineBias)
+   SYMFUNC(miResolveColor)
+   SYMFUNC(miInitializeColormap)
+   SYMFUNC(miExpandDirectColors)
+   SYMFUNC(miCreateDefColormap)
+   SYMFUNC(miClearVisualTypes)
+   SYMFUNC(miSetVisualTypes)
+   SYMFUNC(miGetDefaultVisualMask)
+   SYMFUNC(miInitVisuals)
    SYMVAR(miZeroLineScreenIndex)
    SYMVAR(miSpritePointerFuncs)
+   SYMVAR(miPointerScreenIndex)
 
   { 0, 0 },
 

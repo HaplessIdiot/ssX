@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.5 1997/02/17 09:47:02 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.5.2.2 1998/06/06 16:22:30 dawes Exp $
 
 
 
@@ -17,11 +17,11 @@ PROWORKS_INOUT_OBJ = solx86_iout.o
 
 
 SRCS = solx86_init.c solx86_vid.c sysv_io.c $(BIOS_MOD).c \
-	VTsw_usl.c sysv_kbd.c std_kbdEv.c sysv_tty.c std_mouse.c \
+	VTsw_usl.c sysv_kbd.c std_kbdEv.c posix_tty.c std_mouse.c \
 	libc_wrapper.c std_mseEv.c $(PROWORKS_INOUT_SRC)
 
 OBJS = solx86_init.o solx86_vid.o sysv_io.o $(BIOS_MOD).o \
-	VTsw_usl.o sysv_kbd.o std_kbdEv.o sysv_tty.o std_mouse.o \
+	VTsw_usl.o sysv_kbd.o std_kbdEv.o posix_tty.o std_mouse.o \
 	libc_wrapper.o std_mseEv.o $(PROWORKS_INOUT_OBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
@@ -35,13 +35,13 @@ SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
-ObjectFromSpecialSource(VTsw_usl,../shared/VTsw_usl,/**/)
-ObjectFromSpecialSource(sysv_kbd,../shared/sysv_kbd,/**/)
-ObjectFromSpecialSource(sysv_tty,../shared/sysv_tty,/**/)
-ObjectFromSpecialSource(std_mouse,../shared/std_mouse,/**/)
-ObjectFromSpecialSource(std_mseEv,../shared/std_mseEv,/**/)
-ObjectFromSpecialSource(std_kbdEv,../shared/std_kbdEv,/**/)
-ObjectFromSpecialSource(sysv_io,../sysv/sysv_io,/**/)
-ObjectFromSpecialSource(libc_wrapper,../shared/libc_wrapper,/**/)
+LinkSourceFile(VTsw_usl.c,../shared)
+LinkSourceFile(sysv_kbd.c,../shared)
+LinkSourceFile(posix_tty.c,../shared)
+LinkSourceFile(std_mouse.c,../shared)
+LinkSourceFile(std_mseEv.c,../shared)
+LinkSourceFile(std_kbdEv.c,../shared)
+LinkSourceFile(sysv_io.c,../sysv)
+LinkSourceFile(libc_wrapper.c,../shared)
 
 DependTarget()

@@ -1,6 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.6 1998/04/05 00:46:01 robin Exp $ */
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.3.2.2 1998/07/04 13:32:42 dawes Exp $ */
 
 /*
  *
@@ -1348,4 +1346,19 @@ void *modptr;
     xf86loaderfree(cofffile);
 
     return;
+}
+
+char *
+COFFAddressToSection(void *modptr, unsigned long address)
+{
+    COFFModulePtr cofffile = (COFFModulePtr)modptr;
+    int i;
+
+    for( i=1; i<cofffile->numsh; i++) {
+        if( address >= (unsigned long)cofffile->saddr[i] &&
+            address <= (unsigned long)cofffile->saddr[i]+SecSize(i) ) {
+                return cofffile->sections[i].s_name;
+                }
+        }
+return NULL;
 }

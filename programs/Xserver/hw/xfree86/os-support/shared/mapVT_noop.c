@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/mapVT_noop.c,v 3.0 1996/11/18 13:12:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/mapVT_noop.c,v 3.1.4.2 1998/06/05 16:23:22 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -28,18 +28,16 @@
  * All other OSs get no-ops.
  */
 
+#if 0
 /* ARGSUSED */
-void xf86MapDisplay(ScreenNum, Region)
-int ScreenNum;
-int Region;
+void xf86MapDisplay(int ScreenNum, int Region)
 {
         return;
 }
 
 /* ARGSUSED */
-void xf86UnMapDisplay(ScreenNum, Region)
-int ScreenNum;
-int Region;
+void xf86UnMapDisplay(int ScreenNum, int Region)
 {
         return;
 }
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/xf86_IlHack.c,v 3.3 1996/02/04 09:10:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/xf86_IlHack.c,v 3.4.4.1 1998/06/04 17:36:01 dawes Exp $ */
 /*
  * This file is an incredible crock to get the normally-inline functions
  * built into the server so that things can be debugged properly.
@@ -11,4 +11,5 @@
 #define static /**/
 #define __inline__ /**/
 #undef NO_INLINE
+#define DO_PROTOTYPES
 #include "compiler.h"

@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 1997 by Metro Link, Inc.
+ * Copyright 1997,1998 by Metro Link, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.h,v 1.1.2.2 1998/07/04 13:32:43 dawes Exp $ */
 
 #ifndef _COFFLOADER_H
 #define _COFFLOADER_H
@@ -29,5 +29,6 @@
 extern void *COFFLoadModule(loaderPtr, int, LOOKUP **);
 extern void COFFResolveSymbols(void *);
 extern int COFFCheckForUnresolved(int, void *);
+extern char *COFFAddressToSection(void *,unsigned long);
 extern void COFFUnloadModule(void *);
 #endif /* _COFFLOADER_H */

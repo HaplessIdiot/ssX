@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/Imakefile,v 1.8 1998/01/11 03:36:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/Imakefile,v 1.7.2.2 1998/06/03 15:50:01 dawes Exp $
 
 
 
@@ -9,6 +9,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/Imakefile,v 1.8 1998/01/1
 
 
 SUBDIRS = XF86CardDrivers
+DRIVERS = XF86CardDrivers
 
 #ifndef OS2Architecture
 OBJS = */?*_drv.o
@@ -18,11 +19,11 @@ OBJS = al2101/?*.o mx/?*.o oak/?*.o realtek/?*.o sis/?*.o trident/?*.o \
 	cirrus/?*.o cl64xx/?*.o compaq/?*.o et3000/?*.o glint/?*.o \
 	gvga/?*.o hercules/?*.o hgc1280/?*.o mga/?*.o ncr/?*.o \
 	nv/?*.o s3_pio/?*.o s3_newmmio/?*.o sigma/?*.o tseng/?*.o \
-	vga/?*.o video7/?*.o wd/?*.o p9x00/?*.o tritech/?*.o
+	vga/?*.o video7/?*.o wd/?*.o 
 
 #endif
 
-#if 0
+#if DoLoadableServer
 MakeSubdirs($(SUBDIRS))
 #endif
 
@@ -31,9 +32,19 @@ DONES = $(SUBDIRS:%=%/DONE)
 #if HasGnuMake || HasBsdMake
 $(DONES): $(SUBDIRS)
 #endif
+#if !DoLoadableServer
 NormalDepLibraryTarget(driver,$(SUBDIRS) $(DONES),$(OBJS))
+#endif
 #else
+#if !DoLoadableServer
 NormalDepLibraryTarget(driver,$(SUBDIRS),$(OBJS))
+#endif
+#endif
+
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
+		-I$(XINCLUDESRC)
+#if !DoLoadableServer
+ConfigTargetNoDepend(drvConf,$(ICONFIGFILES),confdrv.SHsuf,$(DRIVERS))
 #endif
 
 NormalLibraryObjectRule()

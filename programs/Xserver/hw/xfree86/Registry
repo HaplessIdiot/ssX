@@ -1,0 +1,171 @@
+This is the XFree86 driver/module registry.  To avoid name space clashes and
+to maintain some consistency between drivers the important name spaces are
+maintained here.
+
+1. Module Names.
+
+Each module is required to have a unique name.  Registered names are:
+
+bitmap
+cfb
+cfb16
+cfb24
+cfb32
+chips
+dbe
+extmod
+glint
+mfb
+mga
+pex5
+ramdac
+speedo
+tseng
+type1
+vga
+vgahw
+xf1bpp
+xf4bpp
+xaa
+xie
+
+
+2. External Module Object Symbols.
+
+Each module is required to use a unique prefix or prefixes for all of
+its externally visible symbols. They should be unique without regard to
+case.  Registered prefixes are:
+
+cfb
+chips
+glint
+mfb
+mga
+permedia
+tseng
+vga
+vgahw
+xf1bpp
+xf4bpp
+XAA
+
+
+3. Chipset Names.
+
+Each video driver is required to use a unique set of chipset names.  Case,
+white space and underscore characters are ignored when comparing chipset
+names.  All names listed here are in lower case with all white space and
+underscores removed.  Registered chipset names are:
+
+ct64200
+ct64300
+ct65520
+ct65525
+ct65530
+ct65535
+ct65540
+ct65545
+ct65546
+ct65548
+ct65550
+ct65554
+ct65555
+ct68554
+ct69000
+et4000
+et4000w32
+et4000w32i
+et4000w32p
+et6000
+et6100
+generic
+mga2064w
+mga1064sg
+mga2164w
+mga2164wagp
+tipm2
+
+
+4. Option Names.
+
+Option names and their usage should be consistent between drivers.  Case,
+white space and underscore characters are ignored when comparing option
+ames.  All names listed here are in their preferred user-visible form.
+Some registered option names are:
+
+16Clocks
+8Clocks
+BlockWrite
+ClkDiv2
+EarlyRASprecharge
+EDO VRAM
+ExternDisp
+ExtFramBuf
+FastDRAM
+FastVRAM
+FavorBitBlt
+FIFOaggressive
+FIFOconservative
+FixPanelSize
+FPM VRAM
+HiBitHigh
+HiBitLow
+HWclocks
+HWcursor
+InternDisp
+LateRASprecharge
+LCDCenter
+Linear
+MedDRAM
+MMIO
+NoAccel
+NoBitBlt
+NoBlockWrite
+NoFontCache
+NoImageBlt
+NoLinear
+NoMemAccess
+NoMMIO
+NoPciDisconnect
+NoPixmapCache
+NoProgramClocks
+NoSplitXfer
+NoStretch
+OverrideBIOS
+PciBurstOn
+PciBurstOff
+PciRetry
+ProbeClocks
+ShowCache
+SlowDRAM
+SlowDRAMrefresh
+SlowEDODRAM
+SlowVRAM
+STN
+SwapHiBit
+SWcursor
+SyncOnGreen
+UseModeline
+UseVclk1
+
+
+5. Ramdac Names.
+
+Ramdac names should be consistent between drivers.  Case, white space
+and underscore characters are ignored when comparing ramdac names.  All
+names listed here are in lower case with all white space and underscores
+removed.
+
+
+6. Clock Chip Names.
+
+Clock chip names should be consistent between drivers.  Case, white
+space and underscore characters are ignored when comparing clock chip
+names.  All names listed here are in lower case with all white space
+and underscores removed.
+
+
+
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.1.2.4 1998/07/18 17:53:16 dawes Exp $

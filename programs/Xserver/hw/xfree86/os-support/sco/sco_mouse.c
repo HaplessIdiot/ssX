@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.8 1996/12/23 06:50:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.9.2.3 1998/06/05 16:23:19 dawes Exp $ */
 
 
 
@@ -8,15 +8,11 @@
 
 /******************************************************************************/
 
-#define NEED_EVENTS
 #include "X.h"
-#include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 /******************************************************************************/
@@ -25,7 +21,7 @@
 
 #include	<sys/event.h>
 #include	<mouse.h>
-#include	"xf86_Config.h"
+#include	"xf86Config.h"
 
 static dmask_t		real_mask = (dmask_t) (D_REL | D_BUTTON);
 static int		config_buttons = 0;
@@ -41,9 +37,7 @@ extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
  */
 
 void
-xf86OsMouseOption(lt, lp)
-	int		lt;	/* type returned by gettoken */
-	pointer	lp;	/* The lexical return symbol */
+xf86OsMouseOption(int lt, pointer lp)
 {
 	if (lt != NUMBER) {
 		ErrorF("%s: Invalid Argument to OsMouse, %s\n",
@@ -60,9 +54,7 @@ xf86OsMouseOption(lt, lp)
  */
 
 int
-xf86OsMouseProc(pPointer, what)
-     DeviceIntPtr	 pPointer;
-     int		 what;
+xf86OsMouseProc(DeviceIntPtr pPointer, int what)
 {
   unchar		*map;
   int			 i, err, buttons;
@@ -99,9 +91,11 @@ xf86OsMouseProc(pPointer, what)
       buttons = config_buttons > 0 ? config_buttons : ((int) dip->buttons);
       buttons = buttons > 0 ? buttons : 3; /* just in case */
 	
+#ifdef XCONFIG_GIVEN
       ErrorF("%s OsMouse has %d buttons\n",
 	     buttons == config_buttons ? XCONFIG_GIVEN : XCONFIG_PROBED,
 	     buttons);
+#endif
 
       map = (unchar *) xalloc(buttons + 1);
       if (map == (unchar *) NULL)

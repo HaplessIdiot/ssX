@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.10 1997/07/12 11:32:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.10.2.4 1998/06/05 16:23:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *
@@ -23,15 +23,11 @@
  */
 /* $XConsortium: xqueue.c /main/8 1996/10/19 18:08:11 kaleb $ */
 
-#define NEED_EVENTS
 #include "X.h"
-#include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 #ifdef XQUEUE
@@ -50,7 +46,7 @@ extern Bool noXkbExtension;
 #endif
 
 #ifdef XINPUT
-#include "xf86_Config.h"
+#include "xf86Config.h"
 #include "xf86Xinput.h"
 #endif
 extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
@@ -97,7 +93,7 @@ xf86XqueRequest()
   char      buf[100];
 
   if (xqueFd < 0)
-	return;
+    return;
 
   XqueEvents = XqueQaddr->xq_events;
   XqueHead = XqueQaddr->xq_head;
@@ -113,22 +109,23 @@ xf86XqueRequest()
 	break;
 
       case XQ_MOTION: {
-	signed char dx,dy;
-	
+	signed char dx, dy;
+
 	dx = (signed char)XqueEvents[XqueHead].xq_x;
 	dy = (signed char)XqueEvents[XqueHead].xq_y;
 	xf86PostMseEvent(xf86Info.pMouse,
 			~(XqueEvents[XqueHead].xq_code) & 0x07,
-		       (int)dx, (int) dy);
+			(int)dx, (int)dy);
 	break;
       }
-	
+
       case XQ_KEY:
 	xf86PostKbdEvent(XqueEvents[XqueHead].xq_code);
 	break;
 	
       default:
-	ErrorF("Unknown Xque Event: 0x%02x\n", XqueEvents[XqueHead].xq_type);
+	xf86Msg(X_WARNING, "Unknown Xque Event: 0x%02x\n",
+		XqueEvents[XqueHead].xq_type);
       }
       
       if ((++XqueHead) == XqueQaddr->xq_size) XqueHead = 0;
@@ -179,8 +176,8 @@ xf86XqueEnable()
     if ((xqueFd = open("/dev/mouse", O_RDONLY|O_NDELAY)) < 0)
       {
 	if (xf86AllowMouseOpenFail) {
-	  ErrorF("Cannot open /dev/mouse (%s) - Continuing...\n",
-		strerror(errno));
+	  xf86Msg(X_WARNING, "Cannot open /dev/mouse (%s) - Continuing...\n",
+		  strerror(errno));
 	  return (Success);
 	} else {
 	  Error ("Cannot open /dev/mouse");
@@ -252,9 +249,7 @@ xf86XqueDisable()
  */
 
 int
-xf86XqueMseProc(pPointer, what)
-     DeviceIntPtr	pPointer;
-     int        what;
+xf86XqueMseProc(DeviceIntPtr pPointer, int what)
 {
   MouseDevPtr	mouse = MOUSE_DEV(pPointer);
   unchar        map[4];
@@ -335,9 +330,7 @@ xf86XqueMseProc(pPointer, what)
  */
 
 int
-xf86XqueKbdProc (pKeyboard, what)
-     DeviceIntPtr pKeyboard;	/* Keyboard to manipulate */
-     int       what;	    	/* What to do to it */
+xf86XqueKbdProc(DeviceIntPtr pKeyboard, int what)
 {
   KeySymsRec  keySyms;
   CARD8       modMap[MAP_LENGTH];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_init.c,v 3.4 1996/02/04 09:09:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_init.c,v 3.5.4.2 1998/06/05 16:23:02 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -34,7 +34,7 @@
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 static capability vgaMemCap;
@@ -69,8 +69,6 @@ void xf86OpenConsole()
 	    FatalError("xf86OpenConsole: Map segment failed: %s\n", 
 		       err_why(ERR_CONVERT(seg)));
 	}
- 
-	xf86Config(FALSE); /* Read XF86Config */
     }
     return;
 }
