@@ -1,4 +1,4 @@
-XFree86 3.2Ad (XX February 1997)
+XFree86 3.2Ad (14 February 1997)
  434. Merge Metro Link loader code and make all SVGA drivers and S3, S3V 
       server loadable (Metro Link, Dirk Hohndel).
  433. Avoid installing CVS admin files when doing 'make install' for rstart
