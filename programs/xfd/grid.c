@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/programs/xfd/grid.c,v 1.4 2001/01/17 23:45:26 dawes Exp $ */
+/* $XFree86: xc/programs/xfd/grid.c,v 1.6 2002/07/03 06:50:59 keithp Exp $ */
 
 
 #include <X11/IntrinsicP.h>
@@ -454,6 +454,7 @@ XmuCvtStringToXftFont(Display *dpy,
     screen = *((Screen **) args[0].addr);
     name = (char *) fromVal->addr;
     
+    font = 0;
     if (name)
     {
 	font = XftFontOpenName (dpy,
@@ -665,24 +666,6 @@ paint_grid(FontGridWidget fgw, 		/* widget in which to draw */
     }
 
     /*
-     * paint the grid lines for the indicated rows 
-     */
-    if (p->grid_width > 0) {
-	int half_grid_width = p->grid_width >> 1;
-	x1 = col * cw + half_grid_width;
-	y1 = row * ch + half_grid_width;
-	x2 = x1 + ncols * cw;
-	y2 = y1 + nrows * ch;
-	for (i = 0, x = x1; i <= ncols; i++, x += cw) {
-	    XDrawLine (dpy, wind, p->box_gc, x, y1, x, y2);
-	}
-	for (i = 0, y = y1; i <= nrows; i++, y += ch) {
-	    XDrawLine (dpy, wind, p->box_gc, x1, y, x2, y);
-	}
-    }
-
-	
-    /*
      * Draw a character in every box; treat all fonts as if they were 16bit
      * fonts.  Store the high eight bits in byte1 and the low eight bits in 
      * byte2.
@@ -709,13 +692,17 @@ paint_grid(FontGridWidget fgw, 		/* widget in which to draw */
 		    xoff = (p->cell_width - extents.width) / 2 - extents.x;
 		    yoff = (p->cell_height - extents.height) / 2 - extents.y;
 		}
-		if (p->box_chars)
+		XClearArea (dpy, wind, x + xoff - extents.x, 
+			    y + yoff - extents.y,
+			    extents.width, extents.height, False);
+		if (p->box_chars && extents.width && extents.height)
 		    XDrawRectangle (dpy, wind, p->box_gc,
-				    x + xoff, y + yoff - xft->ascent,
+				    x + xoff - extents.x, 
+				    y + yoff - extents.y,
 				    extents.width - 1,
 				    extents.height - 1);
-		XftDrawString32 (p->draw, &p->fg_color, xft, x + xoff, y + yoff,
-				 &c, 1);
+		XftDrawString32 (p->draw, &p->fg_color, xft,
+				 x + xoff, y + yoff, &c, 1);
 	    }
 	    else
 #endif
@@ -762,6 +749,24 @@ paint_grid(FontGridWidget fgw, 		/* widget in which to draw */
     }
 
   done:
+    /*
+     * paint the grid lines for the indicated rows 
+     */
+    if (p->grid_width > 0) {
+	int half_grid_width = p->grid_width >> 1;
+	x1 = col * cw + half_grid_width;
+	y1 = row * ch + half_grid_width;
+	x2 = x1 + ncols * cw;
+	y2 = y1 + nrows * ch;
+	for (i = 0, x = x1; i <= ncols; i++, x += cw) {
+	    XDrawLine (dpy, wind, p->box_gc, x, y1, x, y2);
+	}
+	for (i = 0, y = y1; i <= nrows; i++, y += ch) {
+	    XDrawLine (dpy, wind, p->box_gc, x1, y, x2, y);
+	}
+    }
+
+	
     return;
 }
 
