@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 /*
  * Copyright 2002, SuSE Linux AG, Author: Egbert Eich
@@ -29,10 +30,8 @@
 
 #include "picturestr.h"
 
-#ifdef XvExtension
 #include "xf86xv.h"
 #include "Xv.h"
-#endif
 
 /*
  * Driver data structures.

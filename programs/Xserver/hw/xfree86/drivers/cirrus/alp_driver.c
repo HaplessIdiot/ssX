@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.27 2002/01/25 21:56:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.28tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -65,10 +65,8 @@
 #define _ALP_PRIVATE_
 #include "alp.h"
 
-#ifdef XvExtension
 #include "xf86xv.h"
 #include "Xv.h"
-#endif
 
 #ifdef ALPPROBEI2C
 /* For debugging... should go away. */
@@ -1712,7 +1710,6 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pScrn->memPhysBase = pCir->FbAddress;
 	pScrn->fbOffset = 0;
 
-#ifdef XvExtension
 	{
 		XF86VideoAdaptorPtr *ptr;
 		int n;
@@ -1721,7 +1718,6 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		if (n)
 			xf86XVScreenInit(pScreen, ptr, n);
 	}
-#endif
 
 	/*
 	 * Wrap the CloseScreen vector and set SaveScreen.

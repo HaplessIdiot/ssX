@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.26 2003/02/19 01:19:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.27tsi Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -22,10 +22,6 @@
 #define CLIENT_VIDEO_ON 0x04
 
 #define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
-
-#ifndef XvExtension
-void R128InitVideo(ScreenPtr pScreen) {}
-#else
 
 static XF86VideoAdaptorPtr R128SetupImageVideo(ScreenPtr);
 static int  R128SetPortAttribute(ScrnInfoPtr, Atom, INT32, pointer);
@@ -80,13 +76,11 @@ static void R128ECP(ScrnInfoPtr pScrn, R128PortPrivPtr pPriv)
 void R128InitVideo(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    R128InfoPtr info  = R128PTR(pScrn);
     XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
     XF86VideoAdaptorPtr newAdaptor = NULL;
     int num_adaptors;
 
-    if(info->accel && info->accel->FillSolidRects)
-	newAdaptor = R128SetupImageVideo(pScreen);
+    newAdaptor = R128SetupImageVideo(pScreen);
 
     num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
 
@@ -258,127 +252,6 @@ R128SetupImageVideo(ScreenPtr pScreen)
     return adapt;
 }
 
-/* I really should stick this in miregion */
-static Bool
-RegionsEqual(RegionPtr A, RegionPtr B)
-{
-    int *dataA, *dataB;
-    int num;
-
-    num = REGION_NUM_RECTS(A);
-    if(num != REGION_NUM_RECTS(B))
-	return FALSE;
-
-    if((A->extents.x1 != B->extents.x1) ||
-       (A->extents.x2 != B->extents.x2) ||
-       (A->extents.y1 != B->extents.y1) ||
-       (A->extents.y2 != B->extents.y2))
-	return FALSE;
-
-    dataA = (pointer)REGION_RECTS(A);
-    dataB = (pointer)REGION_RECTS(B);
-
-    while(num--) {
-	if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-	   return FALSE;
-	dataA += 2;
-	dataB += 2;
-    }
-
-    return TRUE;
-}
-
-
-/* R128ClipVideo -
-
-   Takes the dst box in standard X BoxRec form (top and left
-   edges inclusive, bottom and right exclusive).  The new dst
-   box is returned.  The source boundaries are given (xa, ya
-   inclusive, xb, yb exclusive) and returned are the new source
-   boundaries in 16.16 fixed point.
-*/
-
-#define DummyScreen screenInfo.screens[0]
-
-static Bool
-R128ClipVideo(
-  BoxPtr dst,
-  INT32 *xa,
-  INT32 *xb,
-  INT32 *ya,
-  INT32 *yb,
-  RegionPtr reg,
-  INT32 width,
-  INT32 height
-){
-    INT32 vscale, hscale, delta;
-    BoxPtr extents = REGION_EXTENTS(DummyScreen, reg);
-    int diff;
-
-    hscale = ((*xb - *xa) << 16) / (dst->x2 - dst->x1);
-    vscale = ((*yb - *ya) << 16) / (dst->y2 - dst->y1);
-
-    *xa <<= 16; *xb <<= 16;
-    *ya <<= 16; *yb <<= 16;
-
-    diff = extents->x1 - dst->x1;
-    if(diff > 0) {
-	dst->x1 = extents->x1;
-	*xa += diff * hscale;
-    }
-    diff = dst->x2 - extents->x2;
-    if(diff > 0) {
-	dst->x2 = extents->x2;
-	*xb -= diff * hscale;
-    }
-    diff = extents->y1 - dst->y1;
-    if(diff > 0) {
-	dst->y1 = extents->y1;
-	*ya += diff * vscale;
-    }
-    diff = dst->y2 - extents->y2;
-    if(diff > 0) {
-	dst->y2 = extents->y2;
-	*yb -= diff * vscale;
-    }
-
-    if(*xa < 0) {
-	diff =  (- *xa + hscale - 1)/ hscale;
-	dst->x1 += diff;
-	*xa += diff * hscale;
-    }
-    delta = *xb - (width << 16);
-    if(delta > 0) {
-	diff = (delta + hscale - 1)/ hscale;
-	dst->x2 -= diff;
-	*xb -= diff * hscale;
-    }
-    if(*xa >= *xb) return FALSE;
-
-    if(*ya < 0) {
-	diff =  (- *ya + vscale - 1)/ vscale;
-	dst->y1 += diff;
-	*ya += diff * vscale;
-    }
-    delta = *yb - (height << 16);
-    if(delta > 0) {
-	diff = (delta + vscale - 1)/ vscale;
-	dst->y2 -= diff;
-	*yb -= diff * vscale;
-    }
-    if(*ya >= *yb) return FALSE;
-
-    if((dst->x1 != extents->x1) || (dst->x2 != extents->x2) ||
-       (dst->y1 != extents->y1) || (dst->y2 != extents->y2))
-    {
-	RegionRec clipReg;
-	REGION_INIT(DummyScreen, &clipReg, dst, 1);
-	REGION_INTERSECT(DummyScreen, reg, reg, &clipReg);
-	REGION_UNINIT(DummyScreen, &clipReg);
-    }
-    return TRUE;
-}
-
 static void
 R128StopVideo(ScrnInfoPtr pScrn, pointer data, Bool cleanup)
 {
@@ -391,8 +264,6 @@ R128StopVideo(ScrnInfoPtr pScrn, pointer data, Bool cleanup)
   if(cleanup) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
 	OUTREG(R128_OV0_SCALE_CNTL, 0);
-	if (info->cursor_start)
-	   xf86ForceHWCursor (pScrn->pScreen, FALSE);
      }
      if(pPriv->linear) {
 	xf86FreeOffscreenLinear(pPriv->linear);
@@ -945,7 +816,8 @@ R128PutImage(
    dstBox.y1 = drw_y;
    dstBox.y2 = drw_y + drw_h;
 
-   if(!R128ClipVideo(&dstBox, &xa, &xb, &ya, &yb, clipBoxes, width, height))
+   if(!xf86XVClipVideoHelper(&dstBox, &xa, &xb, &ya, &yb,
+			     clipBoxes, width, height))
 	return Success;
 
    dstBox.x1 -= pScrn->frameX0;
@@ -1048,13 +920,10 @@ R128PutImage(
 #endif
 
     /* update cliplist */
-    if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
-	REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
+    if(!REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) {
+	REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
 	/* draw these */
-	(*info->accel->FillSolidRects)(pScrn, pPriv->colorKey, GXcopy,
-					(CARD32)~0,
-					REGION_NUM_RECTS(clipBoxes),
-					REGION_RECTS(clipBoxes));
+	xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
     }
 
 
@@ -1073,8 +942,6 @@ R128PutImage(
 	break;
     }
 
-    if (info->cursor_start && !(pPriv->videoStatus & CLIENT_VIDEO_ON))
-	xf86ForceHWCursor (pScrn->pScreen, TRUE);
     pPriv->videoStatus = CLIENT_VIDEO_ON;
 
     info->VideoTimerCallback = R128VideoTimerCallback;
@@ -1136,8 +1003,6 @@ R128VideoTimerCallback(ScrnInfoPtr pScrn, Time now)
 	    if(pPriv->offTime < now) {
 		unsigned char *R128MMIO = info->MMIO;
 		OUTREG(R128_OV0_SCALE_CNTL, 0);
-		if (info->cursor_start && pPriv->videoStatus & CLIENT_VIDEO_ON)
-		    xf86ForceHWCursor (pScrn->pScreen, FALSE);
 		pPriv->videoStatus = FREE_TIMER;
 		pPriv->freeTime = now + FREE_DELAY;
 	    }
@@ -1147,8 +1012,6 @@ R128VideoTimerCallback(ScrnInfoPtr pScrn, Time now)
 		   xf86FreeOffscreenLinear(pPriv->linear);
 		   pPriv->linear = NULL;
 		}
-		if (info->cursor_start && pPriv->videoStatus & CLIENT_VIDEO_ON)
-		    xf86ForceHWCursor (pScrn->pScreen, FALSE);
 		pPriv->videoStatus = 0;
 		info->VideoTimerCallback = NULL;
 	    }
@@ -1156,6 +1019,3 @@ R128VideoTimerCallback(ScrnInfoPtr pScrn, Time now)
     } else  /* shouldn't get here */
 	info->VideoTimerCallback = NULL;
 }
-
-
-#endif  /* !XvExtension */

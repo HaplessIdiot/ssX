@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.31 2003/04/12 02:45:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.32tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -3108,9 +3108,7 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       return FALSE;
    }
 
-#ifdef DPMSExtension
    xf86DPMSInit(pScreen, I830DisplayPowerManagementSet, 0);
-#endif
 
 #ifdef I830_XV
    /* Init video */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xvmc.c,v 1.3tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -14,6 +14,7 @@
 #include "xvmodproc.h"
 #endif
 
+#include "xf86xvpriv.h"
 #include "xf86xvmc.h"
 
 #ifdef XFree86LOADER

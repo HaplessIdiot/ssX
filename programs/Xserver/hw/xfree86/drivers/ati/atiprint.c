@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.24 2002/04/06 19:06:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.25tsi Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -121,13 +121,13 @@ ATIPrintIndexedRegisters
 #endif /* AVOID_CPIO */
 
 /*
- * ATIPrintMach64Registers --
+ * ATIMach64PrintRegisters --
  *
  * Display a Mach64's main register bank when the server is invoked with
  * -verbose.
  */
 static void
-ATIPrintMach64Registers
+ATIMach64PrintRegisters
 (
     ATIPtr     pATI,
     CARD8      *crtc,
@@ -233,13 +233,13 @@ ATIPrintMach64Registers
 }
 
 /*
- * ATIPrintMach64PLLRegisters --
+ * ATIMach64PrintPLLRegisters --
  *
  * Display an integrated Mach64's PLL registers when the server is invoked with
  * -verbose.
  */
 static void
-ATIPrintMach64PLLRegisters
+ATIMach64PrintPLLRegisters
 (
     ATIPtr pATI
 )
@@ -248,7 +248,7 @@ ATIPrintMach64PLLRegisters
     CARD8 PLLReg[MaxBits(PLL_ADDR) + 1];
 
     for (Limit = 0;  Limit < SizeOf(PLLReg);  Limit++)
-        PLLReg[Limit] = ATIGetMach64PLLReg(Limit);
+        PLLReg[Limit] = ATIMach64GetPLLReg(Limit);
 
     /* Determine how many PLL registers there really are */
     while ((Limit = Limit >> 1))
@@ -274,12 +274,12 @@ FoundLimit:
 }
 
 /*
- * ATIPrintRGB514Registers --
+ * ATIRGB514PrintRegisters --
  *
  * Display IBM RGB 514 registers when the server is invoked with -verbose.
  */
 static void
-ATIPrintRGB514Registers
+ATIRGB514PrintRegisters
 (
     ATIPtr pATI
 )
@@ -374,11 +374,11 @@ ATIPrintRegisters
             {
                 lcd_gen_ctrl = inr(LCD_GEN_CTRL);
 
-                outr(LCD_GEN_CTRL, lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
+                outr(LCD_GEN_CTRL, lcd_gen_ctrl & ~SHADOW_RW_EN);
                 ATIPrintIndexedRegisters(CRTX(ColourIOBase), 0, 64,
                     "Non-shadow colour CRT controller", 0);
 
-                outr(LCD_GEN_CTRL, lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
+                outr(LCD_GEN_CTRL, lcd_gen_ctrl | SHADOW_RW_EN);
                 ATIPrintIndexedRegisters(CRTX(ColourIOBase), 0, 64,
                     "Shadow colour CRT controller", 0);
 
@@ -389,19 +389,19 @@ ATIPrintRegisters
                      (pATI->Chip == ATI_CHIP_MOBILITY))
             {
                 lcd_index = inr(LCD_INDEX);
-                lcd_gen_ctrl = ATIGetMach64LCDReg(LCD_GEN_CNTL);
+                lcd_gen_ctrl = ATIMach64GetLCDReg(LCD_GEN_CNTL);
 
-                ATIPutMach64LCDReg(LCD_GEN_CNTL,
-                    lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
+                ATIMach64PutLCDReg(LCD_GEN_CNTL,
+                    lcd_gen_ctrl & ~(CRTC_RW_SELECT | SHADOW_RW_EN));
                 ATIPrintIndexedRegisters(CRTX(ColourIOBase), 0, 64,
                     "Non-shadow colour CRT controller", 0);
 
-                ATIPutMach64LCDReg(LCD_GEN_CNTL,
-                    lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
+                ATIMach64PutLCDReg(LCD_GEN_CNTL,
+                    (lcd_gen_ctrl & ~CRTC_RW_SELECT) | SHADOW_RW_EN);
                 ATIPrintIndexedRegisters(CRTX(ColourIOBase), 0, 64,
                     "Shadow colour CRT controller", 0);
 
-                ATIPutMach64LCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
+                ATIMach64PutLCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
                 outr(LCD_INDEX, lcd_index);
             }
             else
@@ -419,11 +419,11 @@ ATIPrintRegisters
             {
                 lcd_gen_ctrl = inr(LCD_GEN_CTRL);
 
-                outr(LCD_GEN_CTRL, lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
+                outr(LCD_GEN_CTRL, lcd_gen_ctrl & ~SHADOW_RW_EN);
                 ATIPrintIndexedRegisters(CRTX(MonochromeIOBase), 0, 64,
                     "Non-shadow monochrome CRT controller", 0);
 
-                outr(LCD_GEN_CTRL, lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
+                outr(LCD_GEN_CTRL, lcd_gen_ctrl | SHADOW_RW_EN);
                 ATIPrintIndexedRegisters(CRTX(MonochromeIOBase), 0, 64,
                     "Shadow monochrome CRT controller", 0);
 
@@ -434,19 +434,19 @@ ATIPrintRegisters
                      (pATI->Chip == ATI_CHIP_MOBILITY))
             {
                 lcd_index = inr(LCD_INDEX);
-                lcd_gen_ctrl = ATIGetMach64LCDReg(LCD_GEN_CNTL);
+                lcd_gen_ctrl = ATIMach64GetLCDReg(LCD_GEN_CNTL);
 
-                ATIPutMach64LCDReg(LCD_GEN_CNTL,
-                    lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
+                ATIMach64PutLCDReg(LCD_GEN_CNTL,
+                    lcd_gen_ctrl & ~(CRTC_RW_SELECT | SHADOW_RW_EN));
                 ATIPrintIndexedRegisters(CRTX(MonochromeIOBase), 0, 64,
                     "Non-shadow monochrome CRT controller", 0);
 
-                ATIPutMach64LCDReg(LCD_GEN_CNTL,
-                    lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
+                ATIMach64PutLCDReg(LCD_GEN_CNTL,
+                    (lcd_gen_ctrl & ~CRTC_RW_SELECT) | SHADOW_RW_EN);
                 ATIPrintIndexedRegisters(CRTX(MonochromeIOBase), 0, 64,
                     "Shadow monochrome CRT controller", 0);
 
-                ATIPutMach64LCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
+                ATIMach64PutLCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
                 outr(LCD_INDEX, lcd_index);
             }
             else
@@ -499,47 +499,47 @@ ATIPrintRegisters
     {
         lcd_gen_ctrl = inr(LCD_GEN_CTRL);
 
-        outr(LCD_GEN_CTRL, lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
-        ATIPrintMach64Registers(pATI, &crtc, "non-shadow");
+        outr(LCD_GEN_CTRL, lcd_gen_ctrl & ~SHADOW_RW_EN);
+        ATIMach64PrintRegisters(pATI, &crtc, "non-shadow");
 
-        outr(LCD_GEN_CTRL, lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
-        ATIPrintMach64Registers(pATI, &crtc, "shadow");
+        outr(LCD_GEN_CTRL, lcd_gen_ctrl | SHADOW_RW_EN);
+        ATIMach64PrintRegisters(pATI, &crtc, "shadow");
 
         outr(LCD_GEN_CTRL, lcd_gen_ctrl);
 
-        ATIPrintMach64PLLRegisters(pATI);
+        ATIMach64PrintPLLRegisters(pATI);
     }
     else if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
              (pATI->Chip == ATI_CHIP_264XL) ||
              (pATI->Chip == ATI_CHIP_MOBILITY))
     {
         lcd_index = inr(LCD_INDEX);
-        lcd_gen_ctrl = ATIGetMach64LCDReg(LCD_GEN_CNTL);
+        lcd_gen_ctrl = ATIMach64GetLCDReg(LCD_GEN_CNTL);
 
-        ATIPutMach64LCDReg(LCD_GEN_CNTL,
-            lcd_gen_ctrl & ~(CRTC_RW_SELECT | SHADOW_EN | SHADOW_RW_EN));
-        ATIPrintMach64Registers(pATI, &crtc, "non-shadow");
+        ATIMach64PutLCDReg(LCD_GEN_CNTL,
+            lcd_gen_ctrl & ~(CRTC_RW_SELECT | SHADOW_RW_EN));
+        ATIMach64PrintRegisters(pATI, &crtc, "non-shadow");
 
-        ATIPutMach64LCDReg(LCD_GEN_CNTL,
-            (lcd_gen_ctrl & ~CRTC_RW_SELECT) | (SHADOW_EN | SHADOW_RW_EN));
-        ATIPrintMach64Registers(pATI, &crtc, "shadow");
+        ATIMach64PutLCDReg(LCD_GEN_CNTL,
+            (lcd_gen_ctrl & ~CRTC_RW_SELECT) | SHADOW_RW_EN);
+        ATIMach64PrintRegisters(pATI, &crtc, "shadow");
 
         if (pATI->Chip != ATI_CHIP_264XL)
         {
-            ATIPutMach64LCDReg(LCD_GEN_CNTL, lcd_gen_ctrl | CRTC_RW_SELECT);
-            ATIPrintMach64Registers(pATI, &crtc, "secondary");
+            ATIMach64PutLCDReg(LCD_GEN_CNTL, lcd_gen_ctrl | CRTC_RW_SELECT);
+            ATIMach64PrintRegisters(pATI, &crtc, "secondary");
         }
 
-        ATIPutMach64LCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
+        ATIMach64PutLCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
 
-        ATIPrintMach64PLLRegisters(pATI);
+        ATIMach64PrintPLLRegisters(pATI);
 
         xf86ErrorFVerb(4, "\n LCD register values:");
         for (Index = 0;  Index < 64;  Index++)
         {
             if (!(Index & 3))
                 xf86ErrorFVerb(4, "\n 0x%02X: ", Index);
-            xf86ErrorFVerb(4, " %08X", ATIGetMach64LCDReg(Index));
+            xf86ErrorFVerb(4, " %08X", ATIMach64GetLCDReg(Index));
         }
 
         outr(LCD_INDEX, lcd_index);
@@ -551,7 +551,7 @@ ATIPrintRegisters
         {
             if (!(Index & 3))
                 xf86ErrorFVerb(4, "\n 0x%02X: ", Index);
-            xf86ErrorFVerb(4, " %08X", ATIGetMach64TVReg(Index));
+            xf86ErrorFVerb(4, " %08X", ATIMach64GetTVReg(Index));
         }
 
         outr(TV_OUT_INDEX, tv_out_index);
@@ -570,20 +570,20 @@ ATIPrintRegisters
 
 #ifdef AVOID_CPIO
 
-        ATIPrintMach64Registers(pATI, &crtc, "MMIO");
+        ATIMach64PrintRegisters(pATI, &crtc, "MMIO");
 
 #else /* AVOID_CPIO */
 
-        ATIPrintMach64Registers(pATI, &crtc,
+        ATIMach64PrintRegisters(pATI, &crtc,
             (pATI->CPIODecoding == SPARSE_IO) ? "sparse" : "block");
 
 #endif /* AVOID_CPIO */
 
         if (pATI->Chip >= ATI_CHIP_264CT)
-            ATIPrintMach64PLLRegisters(pATI);
+            ATIMach64PrintPLLRegisters(pATI);
 
         if (pATI->DAC == ATI_DAC_IBMRGB514)
-            ATIPrintRGB514Registers(pATI);
+            ATIRGB514PrintRegisters(pATI);
     }
 
 #ifdef AVOID_CPIO
@@ -700,7 +700,9 @@ ATIPrintRegisters
         xf86ErrorFVerb(4, "\n No banked aperture.");
 
     if (pATI->pMemory == pATI->pBank)
+    {
         xf86ErrorFVerb(4, "\n No linear aperture.\n");
+    }
     else
 
 #else /* AVOID_CPIO */
@@ -725,7 +727,9 @@ ATIPrintRegisters
                 pATI->pBlock[1]);
     }
     else
+    {
         xf86ErrorFVerb(4, " No MMIO aperture.\n");
+    }
 
     if (pATI->pCursorImage)
         xf86ErrorFVerb(4, " Hardware cursor image aperture at 0x%0lX.\n",
@@ -776,7 +780,9 @@ ATIPrintMode
     else
         hSync = mClock / pMode->HTotal;
     if (pMode->VRefresh > 0.0)
+    {
         vRefresh = pMode->VRefresh;
+    }
     else
     {
         vRefresh = (hSync * 1000.0) / pMode->VTotal;
@@ -814,7 +820,8 @@ ATIPrintMode
         if (flags & pSymbol->token)
         {
             xf86ErrorFVerb(4, " %s", pSymbol->name);
-            if (!(flags &= ~pSymbol->token))
+            flags &= ~pSymbol->token;
+            if (!flags)
                 break;
         }
     }

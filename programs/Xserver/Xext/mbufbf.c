@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbufbf.c,v 3.3 2001/07/23 13:15:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbufbf.c,v 3.4tsi Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -793,33 +793,6 @@ bufPostValidateTree(pParent, pChild, kind)
     }
 }
 
-/* XXX - Knows region internals. */
-
-static Bool
-RegionsEqual(reg1, reg2)
-    RegionPtr reg1;
-    RegionPtr reg2;
-{
-    int i;
-    BoxPtr rects1, rects2;
-
-    if (reg1->extents.x1 != reg2->extents.x1) return FALSE;
-    if (reg1->extents.x2 != reg2->extents.x2) return FALSE;
-    if (reg1->extents.y1 != reg2->extents.y1) return FALSE;
-    if (reg1->extents.y2 != reg2->extents.y2) return FALSE;
-    if (REGION_NUM_RECTS(reg1) != REGION_NUM_RECTS(reg2)) return FALSE;
-    
-    rects1 = REGION_RECTS(reg1);
-    rects2 = REGION_RECTS(reg2);
-    for (i = 0; i != REGION_NUM_RECTS(reg1); i++) {
-	if (rects1[i].x1 != rects2[i].x1) return FALSE;
-	if (rects1[i].x2 != rects2[i].x2) return FALSE;
-	if (rects1[i].y1 != rects2[i].y1) return FALSE;
-	if (rects1[i].y2 != rects2[i].y2) return FALSE;
-    }
-    return TRUE;
-}
-
 /*
  * If the window is multibuffered and displaying the backbuffer,
  * add the old clipList to the subtractRgn and add the new clipList
@@ -849,7 +822,7 @@ bufClipNotify(pWin, dx,dy)
     {
 	RegionPtr pOldClipList = (RegionPtr) pMBWindow->devPrivate.ptr;
 
-	if (! RegionsEqual(pOldClipList, &pWin->clipList))
+	if (! REGION_EQUAL(pScreen, pOldClipList, &pWin->clipList))
 	{
 	    if (pMBWindow->displayedMultibuffer == BACK_BUFFER)
 	    {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.41 2002/06/03 22:43:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.42tsi Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -29,9 +29,7 @@
 
 #include "fbdevhw.h"
 
-#ifdef XvExtension
 #include "xf86xv.h"
-#endif
 
 #define DEBUG 0
 
@@ -850,7 +848,6 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	fPtr->CloseScreen = pScreen->CloseScreen;
 	pScreen->CloseScreen = FBDevCloseScreen;
 
-#ifdef XvExtension
 	{
 	    XF86VideoAdaptorPtr *ptr;
 
@@ -859,7 +856,6 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		xf86XVScreenInit(pScreen,ptr,n);
 	    }
 	}
-#endif
 
 	TRACE_EXIT("FBDevScreenInit");
 

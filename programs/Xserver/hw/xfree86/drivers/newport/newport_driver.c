@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.23 2003/02/17 23:06:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.24tsi Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -570,8 +570,6 @@ NewportScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
 		return FALSE;
 	}
 
-
-#ifdef XvExtension
 	{
 		XF86VideoAdaptorPtr *ptr;
 		int n;
@@ -581,8 +579,6 @@ NewportScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
 			xf86XVScreenInit(pScreen, ptr, n);
 	        }
         }
-#endif
-
 
 	pScreen->SaveScreen = NewportSaveScreen;
 	/* Wrap the current CloseScreen function */

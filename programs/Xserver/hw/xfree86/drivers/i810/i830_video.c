@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.5 2003/01/28 22:47:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.6tsi Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -648,34 +648,6 @@ I830SetupImageVideo(ScreenPtr pScreen)
    I830ResetVideo(pScrn);
 
    return adapt;
-}
-
-static Bool
-RegionsEqual(RegionPtr A, RegionPtr B)
-{
-   int *dataA, *dataB;
-   int num;
-
-   num = REGION_NUM_RECTS(A);
-   if (num != REGION_NUM_RECTS(B))
-      return FALSE;
-
-   if ((A->extents.x1 != B->extents.x1) ||
-       (A->extents.x2 != B->extents.x2) ||
-       (A->extents.y1 != B->extents.y1) || (A->extents.y2 != B->extents.y2))
-      return FALSE;
-
-   dataA = (int *)REGION_RECTS(A);
-   dataB = (int *)REGION_RECTS(B);
-
-   while (num--) {
-      if ((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-	 return FALSE;
-      dataA += 2;
-      dataB += 2;
-   }
-
-   return TRUE;
 }
 
 static void
@@ -1436,7 +1408,7 @@ I830PutImage(ScrnInfoPtr pScrn,
     * XXX Always draw the key.  LinDVD seems to fill the window background
     * with a colour different from the key.  This works around that.
     */
-   if (1 || !RegionsEqual(&pPriv->clip, clipBoxes)) {
+   if (1 || !REGION_EQUAL(pScreen, &pPriv->clip, clipBoxes)) {
       REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
       xf86XVFillKeyHelper(pScreen, pPriv->colorKey, clipBoxes);
    }

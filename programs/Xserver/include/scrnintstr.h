@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/scrnintstr.h,v 1.9 2001/01/17 22:36:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/scrnintstr.h,v 1.10tsi Exp $ */
 
 #ifndef SCREENINTSTRUCT_H
 #define SCREENINTSTRUCT_H
@@ -564,6 +564,13 @@ typedef    Bool (* RegionNotEmptyProcPtr)(
 #endif
 );
 
+typedef    Bool (* RegionEqualProcPtr)(
+#if NeedNestedPrototype
+	RegionPtr /*pReg1*/,
+	RegionPtr /*pReg2*/
+#endif
+);
+
 typedef    Bool (* RegionBrokenProcPtr)(
 #if NeedNestedPrototypes
 	RegionPtr /*pReg*/
@@ -910,6 +917,7 @@ typedef struct _Screen {
     RectInProcPtr		RectIn;
     PointInRegionProcPtr	PointInRegion;
     RegionNotEmptyProcPtr	RegionNotEmpty;
+    RegionEqualProcPtr		RegionEqual;
     RegionBrokenProcPtr		RegionBroken;
     RegionBreakProcPtr		RegionBreak;
     RegionEmptyProcPtr		RegionEmpty;

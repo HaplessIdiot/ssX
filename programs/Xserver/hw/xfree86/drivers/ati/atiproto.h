@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiproto.h,v 1.6 2002/01/16 16:22:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiproto.h,v 1.7tsi Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -35,6 +35,14 @@
 #       define FunctionPrototype(FunctionArgumentTypes) FunctionArgumentTypes
 #   else
 #       define FunctionPrototype(FunctionArgumentTypes) ()
+#   endif
+#endif
+
+#ifndef NestedPrototype
+#   if NeedNestedPrototypes
+#       define NestedPrototype(NestedArgumentTypes) NestedArgumentTypes
+#   else
+#       define NestedPrototype(NestedArgumentTypes) ()
 #   endif
 #endif
 

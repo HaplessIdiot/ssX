@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.230 2003/03/25 04:18:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.231tsi Exp $ */
 
 /*
  *
@@ -577,6 +577,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86XVFreeVideoAdaptorRec)
    SYMFUNC(xf86XVFillKeyHelper)
    SYMFUNC(xf86XVClipVideoHelper)
+   SYMFUNC(xf86XVCopyYUV12ToPacked)
+   SYMFUNC(xf86XVCopyPacked)
 
    /* xf86xvmc.c */
    SYMFUNC(xf86XvMCScreenInit)

@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.90 2002/07/24 01:47:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.92tsi Exp $ */
 
 /*
  * Authors:
@@ -2235,11 +2235,8 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   }
 #endif
 
-
-#ifdef XvExtension
   /* Initialize Xv support */
   TDFXInitVideo (pScreen);
-#endif
 
   pScreen->SaveScreen = TDFXSaveScreen;
   pTDFX->CloseScreen = pScreen->CloseScreen;

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.14 2001/08/01 00:44:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.15tsi Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -277,6 +277,7 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     pScreen->RectIn = miRectIn;
     pScreen->PointInRegion = miPointInRegion;
     pScreen->RegionNotEmpty = miRegionNotEmpty;
+    pScreen->RegionEqual = miRegionEqual;
     pScreen->RegionBroken = miRegionBroken;
     pScreen->RegionBreak = miRegionBreak;
     pScreen->RegionEmpty = miRegionEmpty;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_video.c,v 1.8 2001/04/25 17:46:42 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_video.c,v 1.9tsi Exp $ */
 
 #if PSZ != 24
 #include "dixstruct.h"
@@ -6,11 +6,6 @@
 /*
  * Ported from mga_video.c by Loïc Grenié
  */
-
-#ifndef XvExtension
-void A(InitVideo)(ScreenPtr pScreen) {}
-void A(ResetVideo)(ScrnInfoPtr pScrn) {}
-#else
 
 #ifndef OFF_DELAY
 #define OFF_DELAY	200
@@ -483,43 +478,6 @@ ApmQueryBestSize(ScrnInfoPtr pScrn, Bool motion, short vid_w, short vid_h,
     *p_w = drw_w & round;
     *p_h = drw_h & round;
 }
-
-static void
-ApmCopyData(unsigned char *src, unsigned char *dst, int srcPitch, int dstPitch,
-	      int h, int w)
-{
-    w <<= 1;
-    while(h--) {
-	memcpy(dst, src, w);
-	src += srcPitch;
-	dst += dstPitch;
-    }
-}
-
-static void
-ApmCopyMungedData(unsigned char *src1, unsigned char *src2,
-		   unsigned char *src3, unsigned char *dst1,
-		   int srcPitch, int srcPitch2, int dstPitch, int h, int w)
-{
-   CARD32 *dst = (CARD32*)dst1;
-   int i, j;
-
-   dstPitch >>= 2;
-   w >>= 1;
-
-   for(j = 0; j < h; j++) {
-	for(i = 0; i < w; i++) {
-	    dst[i] = src1[i << 1] | (src1[(i << 1) + 1] << 16) |
-		     (src2[i] << 8) | (src3[i] << 24);
-	}
-	dst += dstPitch;
-	src1 += srcPitch;
-	if(j & 1) {
-	    src2 += srcPitch2;
-	    src3 += srcPitch2;
-	}
-   }
-}
 #endif
 
 static void A(XvMoveCB)(FBAreaPtr area1, FBAreaPtr area2)
@@ -868,9 +826,10 @@ A(PutImage)(ScrnInfoPtr pScrn, short src_x, short src_y,
 	    offset2 += tmp;
 	    offset3 += tmp;
 	    nlines = ((((y2 + 0xffff) >> 16) + 1) & ~1) - top;
-	    ApmCopyMungedData(buf + (top * srcPitch) + (left >> 1),
-			      buf + offset2, buf + offset3, dst_start,
-			      srcPitch, srcPitch2, dstPitch, nlines, npixels);
+	    xf86XVCopyYUV12ToPacked(buf + (top * srcPitch) + (left >> 1),
+				    buf + offset2, buf + offset3, dst_start,
+				    srcPitch, srcPitch2, dstPitch,
+				    nlines, npixels);
 	    break;
 	default:
 	    if (id == 0x32335652)
@@ -880,7 +839,8 @@ A(PutImage)(ScrnInfoPtr pScrn, short src_x, short src_y,
 	    buf += (top * srcPitch) + left;
 	    nlines = ((y2 + 0xffff) >> 16) - top;
 	    if (offscreen)
-		ApmCopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
+		xf86XVCopyPacked(buf, dst_start, srcPitch, dstPitch,
+				 nlines, npixels);
 	    break;
 	}
     }
@@ -982,5 +942,3 @@ common:
 }
 #endif
 #endif
-#endif
-

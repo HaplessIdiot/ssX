@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.15 2001/08/01 00:44:54 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.16tsi Exp $ */
 
 #include "xf86.h"
 #include "tdfx.h"
@@ -34,9 +34,6 @@ static Atom xvColorKey, xvFilterQuality;
 
 #define GET_PORT_PRIVATE(pScrn) \
    (TDFXPortPrivPtr)((TDFXPTR(pScrn))->overlayAdaptor->pPortPrivates[0].ptr)
-
-/* Doesn't matter what screen we use */
-#define DummyScreen             screenInfo.screens[0]
 
 /* Needed for attribute atoms */
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
@@ -132,9 +129,6 @@ void TDFXInitVideo(ScreenPtr pScreen)
     if(pTDFX->cpp == 1)
       return;
     
-    if(!pTDFX->AccelInfoRec || !pTDFX->AccelInfoRec->FillSolidRects)
-	return;
-
     if (!pTDFX->TextureXvideo) {
 	/* Offscreen support for Overlay only */
     	TDFXInitOffscreenImages(pScreen);
@@ -298,85 +292,6 @@ TDFXSetupImageVideoTexture(ScreenPtr pScreen)
 /*
  * MISCELLANEOUS ROUTINES
  */
-
-static Bool
-TDFXClipVideo(
-  BoxPtr dst,
-  INT32 *xa,
-  INT32 *xb,
-  INT32 *ya,
-  INT32 *yb,
-  RegionPtr reg,
-  INT32 width,
-  INT32 height
-){
-    INT32 vscale, hscale, delta;
-    BoxPtr extents = REGION_EXTENTS(DummyScreen, reg);
-    int diff;
-
-    hscale = ((*xb - *xa) << 16) / (dst->x2 - dst->x1);
-    vscale = ((*yb - *ya) << 16) / (dst->y2 - dst->y1);
-
-    *xa <<= 16; *xb <<= 16;
-    *ya <<= 16; *yb <<= 16;
-
-    diff = extents->x1 - dst->x1;
-    if(diff > 0) {
-        dst->x1 = extents->x1;
-        *xa += diff * hscale;
-    }
-    diff = dst->x2 - extents->x2;
-    if(diff > 0) {
-        dst->x2 = extents->x2;
-        *xb -= diff * hscale;
-    }
-    diff = extents->y1 - dst->y1;
-    if(diff > 0) {
-        dst->y1 = extents->y1;
-        *ya += diff * vscale;
-    }
-    diff = dst->y2 - extents->y2;
-    if(diff > 0) {
-        dst->y2 = extents->y2;
-        *yb -= diff * vscale;
-    }
-
-    if(*xa < 0) {
-        diff =  (- *xa + hscale - 1)/ hscale;
-        dst->x1 += diff;
-        *xa += diff * hscale;
-    }
-    delta = *xb - (width << 16);
-    if(delta > 0) {
-        diff = (delta + hscale - 1)/ hscale;
-        dst->x2 -= diff;
-        *xb -= diff * hscale;
-    }
-    if(*xa >= *xb) return FALSE;
-
-    if(*ya < 0) {
-        diff =  (- *ya + vscale - 1)/ vscale;
-        dst->y1 += diff;
-        *ya += diff * vscale;
-    }
-    delta = *yb - (height << 16);
-    if(delta > 0) {
-        diff = (delta + vscale - 1)/ vscale;
-        dst->y2 -= diff;
-        *yb -= diff * vscale;
-    }
-    if(*ya >= *yb) return FALSE;
-
-    if((dst->x1 != extents->x1) || (dst->x2 != extents->x2) ||
-       (dst->y1 != extents->y1) || (dst->y2 != extents->y2))
-    {
-        RegionRec clipReg;
-        REGION_INIT(DummyScreen, &clipReg, dst, 1);
-        REGION_INTERSECT(DummyScreen, reg, reg, &clipReg);
-        REGION_UNINIT(DummyScreen, &clipReg);
-    }
-    return TRUE;
-}
 
 static int
 TDFXQueryImageAttributes(
@@ -766,39 +681,6 @@ TDFXPutImageTexture(
 
 
 /*
- * COMMON DRAWING FUNCTIONS
- */
-
-static Bool
-RegionsEqual(RegionPtr A, RegionPtr B)
-{
-    int *dataA, *dataB;
-    int num;
-
-    num = REGION_NUM_RECTS(A);
-    if(num != REGION_NUM_RECTS(B))
-        return FALSE;
-
-    if((A->extents.x1 != B->extents.x1) ||
-       (A->extents.x2 != B->extents.x2) ||
-       (A->extents.y1 != B->extents.y1) ||
-       (A->extents.y2 != B->extents.y2))
-        return FALSE;
-
-    dataA = (int*)REGION_RECTS(A);
-    dataB = (int*)REGION_RECTS(B);
-
-    while(num--) {
-        if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-           return FALSE;
-        dataA += 2;
-        dataB += 2;
-    }
-
-    return TRUE;
-}
-
-/*
  * OVERLAY DRAWING FUNCTIONS
  */
 
@@ -1044,7 +926,8 @@ TDFXPutImageOverlay(
    dstBox.y1 = drw_y;
    dstBox.y2 = drw_y + drw_h;
 
-   if(!TDFXClipVideo(&dstBox, &xa, &xb, &ya, &yb, clipBoxes, width, height))
+   if(!xf86XVClipVideoHelper(&dstBox, &xa, &xb, &ya, &yb,
+			     clipBoxes, width, height))
         return Success;
 
    dstBox.x1 -= pScrn->frameX0;
@@ -1129,12 +1012,9 @@ TDFXPutImageOverlay(
         break;
     }
 
-    if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
-        REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
-        (*pTDFX->AccelInfoRec->FillSolidRects)(pScrn, pPriv->colorKey, 
-                                               GXcopy, ~0,
-                                               REGION_NUM_RECTS(clipBoxes),
-                                               REGION_RECTS(clipBoxes));
+    if(!REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) {
+        REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
+	xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
     }
 
     TDFXDisplayVideoOverlay(pScrn, id, offset, width, height, dstPitch, xa, xb, ya, &dstBox, src_w, src_h, drw_w, drw_h);
@@ -1410,8 +1290,8 @@ TDFXDisplaySurface(
     dstBox.y1 = drw_y;
     dstBox.y2 = drw_y + drw_h;
 
-    if(!TDFXClipVideo(&dstBox, &x1, &x2, &y1, &y2, clipBoxes, 
-			surface->width, surface->height))
+    if(!xf86XVClipVideoHelper(&dstBox, &x1, &x2, &y1, &y2, clipBoxes, 
+			      surface->width, surface->height))
     {
 	return Success;
     }
@@ -1429,10 +1309,7 @@ TDFXDisplaySurface(
 	     surface->width, surface->height, surface->pitches[0],
 	     x1, y1, x2, &dstBox, src_w, src_h, drw_w, drw_h);
 
-    (*pTDFX->AccelInfoRec->FillSolidRects)(pScrn, portPriv->colorKey,
-					   GXcopy, ~0, 
-					   REGION_NUM_RECTS(clipBoxes),
-					   REGION_RECTS(clipBoxes));
+    xf86XVFillKeyHelper(pScrn->pScreen, portPriv->colorKey, clipBoxes);
 
     pPriv->isOn = TRUE;
     /* we've prempted the XvImage stream so set its free timer */

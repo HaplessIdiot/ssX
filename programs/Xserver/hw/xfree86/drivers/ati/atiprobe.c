@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.55 2003/04/07 16:23:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.56tsi Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -279,7 +279,9 @@ ATIVGAProbe
             pVGA->Adapter = ATI_ADAPTER_VGA;
     }
     else
+    {
         pVGA->VGAAdapter = ATI_ADAPTER_NONE;
+    }
 
     return pVGA;
 }
@@ -525,13 +527,13 @@ ATI8514Probe
 #endif /* AVOID_CPIO */
 
 /*
- * ATIDetectMach64 --
+ * ATIMach64Detect --
  *
  * This function determines if a Mach64 is detectable at a particular base
  * address.
  */
 static Bool
-ATIDetectMach64
+ATIMach64Detect
 (
     ATIPtr            pATI,
     const CARD16      ChipType,
@@ -662,11 +664,11 @@ ATIMach64Probe
         {
             pATI->Block0Base += 0x007FFC00U;
             if ((pVideo->size[0] >= 23) &&
-                ATIDetectMach64(pATI, ChipType, Chip))
+                ATIMach64Detect(pATI, ChipType, Chip))
                 return pATI;
 
             pATI->Block0Base -= 0x00400000U;
-            if (ATIDetectMach64(pATI, ChipType, Chip))
+            if (ATIMach64Detect(pATI, ChipType, Chip))
                 return pATI;
         }
     }
@@ -679,7 +681,7 @@ ATIMach64Probe
     pATI->Block0Base = 0x000BFC00U;
 
 LastProbe:
-    if (ATIDetectMach64(pATI, ChipType, Chip))
+    if (ATIMach64Detect(pATI, ChipType, Chip))
         return pATI;
 
     xfree(pATI);
@@ -725,7 +727,7 @@ ATIMach64Probe
     pATI->CPIODecoding = IODecoding;
     pATI->PCIInfo = pVideo;
 
-    if (!ATIDetectMach64(pATI, ChipType, Chip))
+    if (!ATIMach64Detect(pATI, ChipType, Chip))
     {
         xfree(pATI);
         return NULL;
@@ -736,7 +738,9 @@ ATIMach64Probe
      * controllers.  For the GX/CX, it's a board strap.
      */
     if (pATI->Chip >= ATI_CHIP_264CT)
+    {
         pATI->VGAAdapter = ATI_ADAPTER_MACH64;
+    }
     else
     {
         IOValue = inr(CONFIG_STATUS64_0);
@@ -1519,10 +1523,12 @@ ATIProbe
                         xf86SetPciVideo(pVideo, MEM_IO);
 
                         if (!(pATI = ATI8514Probe(pVideo)))
+                        {
                             xf86Msg(X_WARNING,
                                 ATI_NAME ":  PCI Mach32 in slot %d:%d:%d could"
                                 " not be detected!\n",
                                 pVideo->bus, pVideo->device, pVideo->func);
+                        }
                         else
                         {
                             sprintf(Identifier,
@@ -1563,11 +1569,13 @@ ATIProbe
                 PciReg = pciReadLong(pPCI->tag, PCI_REG_USERCONFIG);
                 j = PciReg & 0x03U;
                 if (j == 0x03U)
+                {
                     xf86Msg(X_WARNING,
                         ATI_NAME ":  PCI Mach64 in slot %d:%d:%d cannot be"
                         " enabled\n because it has neither a block, nor a"
                         " sparse, I/O base.\n",
                         pVideo->bus, pVideo->device, pVideo->func);
+                }
                 else switch(ATICheckSparseIOBases(pVideo, ProbeFlags,
                     Mach64SparseIOBases[j], 4, TRUE))
                 {
@@ -1619,10 +1627,12 @@ ATIProbe
                         pATI = ATIMach64Probe(pVideo, Mach64SparseIOBases[j],
                             SPARSE_IO, Chip);
                         if (!pATI)
+                        {
                             xf86Msg(X_WARNING,
                                 ATI_NAME ":  PCI Mach64 in slot %d:%d:%d could"
                                 " not be detected!\n",
                                 pVideo->bus, pVideo->device, pVideo->func);
+                        }
                         else
                         {
                             sprintf(Identifier,

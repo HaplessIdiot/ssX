@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.20 2002/02/14 22:08:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.21tsi Exp $ */
 /*
  * Copyright 1999 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -76,6 +76,13 @@ const OptionInfoRec ATIPublicOptions[] =
     {
         ATI_OPTION_MMIO_CACHE,
         "mmio_cache",
+        OPTV_BOOLEAN,
+        {0, },
+        FALSE
+    },
+    {
+        ATI_OPTION_TEST_MMIO_CACHE,
+        "test_mmio_cache",
         OPTV_BOOLEAN,
         {0, },
         FALSE

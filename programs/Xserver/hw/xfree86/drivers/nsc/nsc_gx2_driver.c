@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.5 2003/02/11 13:36:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.6tsi Exp $ */
 /*
  * $Workfile: nsc_gx2_driver.c $
- * $Revision: 1.6 $
- * $Author: alanh $
+ * $Revision: 1.7 $
+ * $Author: tsi $
  *
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -200,12 +200,10 @@
 #include "extensions/xf86dgastr.h"
 #endif /* XFreeXDGA */
 
-#ifdef DPMSExtension
 #include "globals.h"
 #include "opaque.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif /* DPMSExtension */
 
 /* Our private include file (this also includes the durango headers) */
 #include "nsc.h"
@@ -1657,7 +1655,6 @@ GX2CloseScreen(int scrnIndex, ScreenPtr pScreen)
    return TRUE;
 }
 
-#ifdef DPMSExtension
 /*----------------------------------------------------------------------------
  * GX2DPMSSet.
  *
@@ -1736,7 +1733,6 @@ GX2DPMSSet(ScrnInfoPtr pScreenInfo, int mode, int flags)
       break;
    }
 }
-#endif
 
 /*----------------------------------------------------------------------------
  * GX2ScreenInit.
@@ -2062,9 +2058,7 @@ GX2ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       }
       ShadowFBInit(pScreen, refreshArea);
    }
-#ifdef DPMSExtension
    xf86DPMSInit(pScreen, GX2DPMSSet, 0);
-#endif
    GeodeDebug(("GX2ScreenInit(12)!\n"));
 
    pScreenInfo->memPhysBase = (unsigned long)pGeode->FBBase;

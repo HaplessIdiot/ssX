@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/regionstr.h,v 1.6 2001/07/17 15:51:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/regionstr.h,v 1.7tsi Exp $ */
 
 #ifndef REGIONSTRUCT_H
 #define REGIONSTRUCT_H
@@ -136,6 +136,9 @@ extern RegDataRec miBrokenData;
 #define REGION_NOTEMPTY(_pScreen, _pReg) \
     (*(_pScreen)->RegionNotEmpty)(_pReg)
 
+#define REGION_EQUAL(_pScreen, _pReg1, _pReg2) \
+    (*(_pScreen)->RegionEqual)(_pReg1, _pReg2)
+
 #define REGION_BROKEN(_pScreen, _pReg) \
     (*(_pScreen)->RegionBroken)(_pReg)
 
@@ -203,6 +206,9 @@ extern RegDataRec miBrokenData;
 
 #define RECTS_TO_REGION(_pScreen, nrects, prect, ctype) \
     miRectsToRegion(nrects, prect, ctype)
+
+#define REGION_EQUAL(_pScreen, _pReg1, _pReg2) \
+    miRegionEqual(_pReg1, _pReg2)
 
 #define REGION_BREAK(_pScreen, _pReg) \
     miRegionBreak(_pReg)
@@ -413,6 +419,13 @@ extern Bool miPointInRegion(
     int /*x*/,
     int /*y*/,
     BoxPtr /*box*/
+#endif
+);
+
+extern Bool miRegionEqual(
+#if NeedFunctionPrototypes
+    RegionPtr /*pReg1*/,
+    RegionPtr /*pReg2*/
 #endif
 );
 

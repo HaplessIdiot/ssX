@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.82 2003/04/11 15:17:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.83tsi Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -241,7 +241,6 @@ const char *I810int10Symbols[] = {
 const char *I810xaaSymbols[] = {
    "XAACreateInfoRec",
    "XAADestroyInfoRec",
-   "XAAFillSolidRects",
    "XAAInit",
    NULL
 };

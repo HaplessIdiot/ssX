@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/fourcc.h,v 1.2 2000/06/14 18:20:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/fourcc.h,v 1.3tsi Exp $ */
 
 /*
    This header file contains listings of STANDARD guids for video formats.
@@ -6,6 +6,9 @@
    A list of some popular fourcc's are at: http://www.webartz.com/fourcc/
    For an explanation of fourcc <-> guid mappings see RFC2361.
 */
+
+#ifndef _XF86_FOURCC_H_
+#define _XF86_FOURCC_H_ 1
 
 #define FOURCC_YUY2 0x32595559
 #define XVIMAGE_YUY2 \
@@ -128,3 +131,4 @@
         XvTopToBottom \
    }
 
+#endif /* _XF86_FOURCC_H_ */

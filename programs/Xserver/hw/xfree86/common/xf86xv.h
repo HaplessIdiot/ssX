@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.22 2001/06/16 21:57:42 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.23tsi Exp $ */
 
 #ifndef _XF86XV_H_
 #define _XF86XV_H_
@@ -218,55 +218,27 @@ xf86XVClipVideoHelper(
     INT32 height
 );
 
-/*** These are DDX layer privates ***/
+void
+xf86XVCopyYUV12ToPacked(
+    const void *srcy,
+    const void *srcv,
+    const void *srcu,
+    void *dst,
+    int srcPitchy,
+    int srcPitchuv,
+    int dstPitch,
+    int h,
+    int w
+);
 
-extern int XF86XvScreenIndex;
-
-typedef struct {
-   DestroyWindowProcPtr		DestroyWindow;
-   ClipNotifyProcPtr		ClipNotify;
-   WindowExposuresProcPtr	WindowExposures;
-   void                         (*AdjustFrame)(int, int, int, int);
-   Bool                         (*EnterVT)(int, int);
-   void                         (*LeaveVT)(int, int);
-   GCPtr			videoGC;
-} XF86XVScreenRec, *XF86XVScreenPtr;
-
-typedef struct {
-  int flags;  
-  PutVideoFuncPtr PutVideo;
-  PutStillFuncPtr PutStill;
-  GetVideoFuncPtr GetVideo;
-  GetStillFuncPtr GetStill;
-  StopVideoFuncPtr StopVideo;
-  SetPortAttributeFuncPtr SetPortAttribute;
-  GetPortAttributeFuncPtr GetPortAttribute;
-  QueryBestSizeFuncPtr QueryBestSize;
-  PutImageFuncPtr PutImage;
-  ReputImageFuncPtr ReputImage;
-  QueryImageAttributesFuncPtr QueryImageAttributes;
-} XvAdaptorRecPrivate, *XvAdaptorRecPrivatePtr;
-
-typedef struct {
-   ScrnInfoPtr pScrn;
-   DrawablePtr pDraw;
-   unsigned char type;
-   unsigned int subWindowMode;
-   DDXPointRec clipOrg;
-   RegionPtr clientClip;
-   RegionPtr pCompositeClip;
-   Bool FreeCompositeClip;
-   XvAdaptorRecPrivatePtr AdaptorRec;
-   XvStatus isOn;
-   Bool moved;
-   int vid_x, vid_y, vid_w, vid_h;
-   int drw_x, drw_y, drw_w, drw_h;
-   DevUnion DevPriv;
-} XvPortRecPrivate, *XvPortRecPrivatePtr;
-
-typedef struct _XF86XVWindowRec{
-   XvPortRecPrivatePtr PortRec;
-   struct _XF86XVWindowRec *next;
-} XF86XVWindowRec, *XF86XVWindowPtr;
+void
+xf86XVCopyPacked(
+    const void *src,
+    void *dst,
+    int srcPitch,
+    int dstPitch,
+    int h,
+    int w
+);
 
 #endif  /* _XF86XV_H_ */

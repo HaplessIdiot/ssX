@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.33 2001/08/06 22:45:52 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.35tsi Exp $ */
 
 /*
  *
@@ -72,6 +72,7 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miRegionExtents)
    SYMFUNC(miRegionInit)
    SYMFUNC(miRegionNotEmpty)
+   SYMFUNC(miRegionEqual)
    SYMFUNC(miRegionReset)
    SYMFUNC(miRegionUninit)
    SYMFUNC(miRegionValidate)

@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.6 2003/02/12 13:08:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.7tsi Exp $ */
 /*
  * $Workfile: nsc_gx1_driver.c $
- * $Revision: 1.7 $
- * $Author: alanh $
+ * $Revision: 1.8 $
+ * $Author: tsi $
  *
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -204,12 +204,10 @@
 #include "extensions/xf86dgastr.h"
 #endif /* XFreeXDGA */
 
-#ifdef DPMSExtension
 #include "globals.h"
 #include "opaque.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif /* DPMSExtension */
 
 /* Our private include file (this also includes the durango headers) */
 #include "nsc.h"
@@ -1704,7 +1702,6 @@ GX1CloseScreen(int scrnIndex, ScreenPtr pScreen)
 
 }
 
-#ifdef DPMSExtension
 /*----------------------------------------------------------------------------
  * GX1DPMSet.
  *
@@ -1791,7 +1788,6 @@ GX1DPMSSet(ScrnInfoPtr pScreenInfo, int mode, int flags)
       break;
    }
 }
-#endif
 
 /*----------------------------------------------------------------------------
  * GX1ScreenInit.
@@ -2135,9 +2131,7 @@ GX1ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       }
       ShadowFBInit(pScreen, refreshArea);
    }
-#ifdef DPMSExtension
    xf86DPMSInit(pScreen, GX1DPMSSet, 0);
-#endif
    GeodeDebug(("GX1ScreenInit(12)!\n"));
 
    if (pGeode->TV_Overscan_On) {

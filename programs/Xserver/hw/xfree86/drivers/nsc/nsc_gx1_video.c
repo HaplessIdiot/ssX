@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.5 2003/02/14 13:28:29 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.6tsi Exp $ */
 /*
  * $Workfile: nsc_gx1_video.c $
- * $Revision: 1.6 $
- * $Author: alanh $
+ * $Revision: 1.7 $
+ * $Author: tsi $
  *
  * File Contents: This file consists of main Xfree video supported routines.
  *
@@ -175,18 +175,6 @@
 
 void GX1InitVideo(ScreenPtr pScreen);
 void GX1ResetVideo(ScrnInfoPtr pScrn);
-
-#ifndef XvExtension
-void
-GX1InitVideo(ScreenPtr pScreen)
-{
-}
-
-void
-GX1ResetVideo(ScrnInfoPtr pScrn)
-{
-}
-#else
 
 #define DBUF 0
 
@@ -522,36 +510,6 @@ GX1SetupImageVideo(ScreenPtr pScreen)
 
    return adapt;
 }
-
-#if REINIT
-static Bool
-RegionsEqual(RegionPtr A, RegionPtr B)
-{
-   int *dataA, *dataB;
-   int num;
-
-   num = REGION_NUM_RECTS(A);
-   if (num != REGION_NUM_RECTS(B))
-      return FALSE;
-
-   if ((A->extents.x1 != B->extents.x1) ||
-       (A->extents.x2 != B->extents.x2) ||
-       (A->extents.y1 != B->extents.y1) || (A->extents.y2 != B->extents.y2))
-      return FALSE;
-
-   dataA = (int *)REGION_RECTS(A);
-   dataB = (int *)REGION_RECTS(B);
-
-   while (num--) {
-      if ((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-	 return FALSE;
-      dataA += 2;
-      dataB += 2;
-   }
-
-   return TRUE;
-}
-#endif
 
 /*----------------------------------------------------------------------------
  * GX1StopVideo
@@ -1144,7 +1102,7 @@ GX1PutImage(ScrnInfoPtr pScrn,
 
 #if REINIT
 /* update cliplist */
-   if (!RegionsEqual(&pPriv->clip, clipBoxes)) {
+   if (!REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) {
       ReInitVideo = TRUE;
    }
    if (ReInitVideo) {
@@ -1257,12 +1215,10 @@ GX1PutImage(ScrnInfoPtr pScrn,
 
 #if REINIT
       /* update cliplist */
-      REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
+      REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
       if (pPriv->colorKeyMode == 0) {
 	 /* draw these */
-	 XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
-			   REGION_NUM_RECTS(clipBoxes),
-			   REGION_RECTS(clipBoxes));
+	 xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
       }
       GX1DisplayVideo(pScrn, id, offset, width, height, dstPitch,
 		      Bx1, By1, Bx2, By2, &dstBox, src_w, src_h, drw_w,
@@ -1625,5 +1581,3 @@ GX1InitOffscreenImages(ScreenPtr pScreen)
 
    xf86XVRegisterOffscreenImages(pScreen, offscreenImages, 1);
 }
-
-#endif /* !XvExtension */

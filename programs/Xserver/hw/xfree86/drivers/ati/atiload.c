@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.11 2002/11/01 06:08:36 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.12tsi Exp $ */
 /*
  * Copyright 2000 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -98,7 +98,6 @@ const char *ATIramdacSymbols[] =
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
     "xf86InitCursor",
-    "xf86ForceHWCursor",
     NULL
 };
 

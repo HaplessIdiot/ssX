@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.56 2002/09/16 18:06:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.57tsi Exp $ */
 /*#define VBE_INFO*/
 
 #ifndef _TRIDENT_H_
@@ -141,7 +141,6 @@ typedef struct {
     CARD8*		XAAScanlineColorExpandBuffers[2];
     CARD8*		XAAImageScanlineBuffer[1];
     void                (*InitializeAccelerator)(ScrnInfoPtr);
-#ifdef XvExtension
     void		(*VideoTimerCallback)(ScrnInfoPtr, Time);
     XF86VideoAdaptorPtr adaptor;
     int                 videoKey;
@@ -151,7 +150,6 @@ typedef struct {
     int			vsync_bskew;
     CARD32              videoFlags;
     int			keyOffset;
-#endif
     int                 OverrideHsync;
     int                 OverrideVsync;
     int                 OverrideBskew;

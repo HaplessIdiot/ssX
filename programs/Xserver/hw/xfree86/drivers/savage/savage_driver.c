@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.36 2003/04/17 08:38:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.37tsi Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -19,14 +19,10 @@
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 
-#ifdef XvExtension
 #include "xf86xv.h"
-#endif
 
 #include "savage_driver.h"
 #include "savage_bci.h"
-
-
 
 
 /*
@@ -287,7 +283,6 @@ static const char *xaaSymbols[] = {
     "XAACopyROP_PM",
     "XAACreateInfoRec",
     "XAADestroyInfoRec",
-    "XAAFillSolidRects",
     "XAAHelpPatternROP",
     "XAAHelpSolidROP",
     "XAAInit",
@@ -2363,10 +2358,8 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
     if (xf86DPMSInit(pScreen, SavageDPMS, 0) == FALSE)
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DPMS initialization failed\n");
 
-#ifdef XvExtension
     if( !psav->NoAccel && !SavagePanningCheck(pScrn) )
 	SavageInitVideo( pScreen );
-#endif
 
     if (serverGeneration == 1)
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);

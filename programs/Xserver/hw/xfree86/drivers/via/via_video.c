@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.3tsi Exp $ */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86Resources.h"
@@ -535,36 +535,6 @@ viaSetupImageVideoG(ScreenPtr pScreen)
 }
 
 
-static Bool
-RegionsEqual(RegionPtr A, RegionPtr B)
-{
-    int *dataA, *dataB;
-    int num;
-
-    num = REGION_NUM_RECTS(A);
-    if(num != REGION_NUM_RECTS(B))
-	return FALSE;
-
-    if((A->extents.x1 != B->extents.x1) ||
-       (A->extents.x2 != B->extents.x2) ||
-       (A->extents.y1 != B->extents.y1) ||
-       (A->extents.y2 != B->extents.y2))
-	return FALSE;
-
-    dataA = (int*)REGION_RECTS(A);
-    dataB = (int*)REGION_RECTS(B);
-
-    while(num--) {
-	if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-	   return FALSE;
-	dataA += 2;
-	dataB += 2;
-    }
-
-    return TRUE;
-}
-
-
 unsigned long CreateSWOVSurface(VIAPtr pVia, LPUPDATEOVERLAYREC lpUpdateOverlay)
 {
     SURFACEPARAM SurfaceDesc;
@@ -829,43 +799,6 @@ static void Flip(CARD32 dwStartAddr)
     VIDOutD(HQV_CONTROL,( VIDInD(HQV_CONTROL)&~HQV_FLIP_ODD) |HQV_SW_FLIP|HQV_FLIP_STATUS);
 }
 
-/*
- *  CopyYUV420To422 : for S/W mpeg2 decode & H/W overlay use
- *		      copy image data to frame buffer & transfer
- *		      format from YUV420 to YUV422.
- */
-static void CopyYUV420To422(
-    CARD8 * src1,
-    CARD8 * src2,
-    CARD8 * src3,
-    CARD8 * dst1,
-    int srcPitch,
-    int srcPitch2,
-    int dstPitch,
-    int h,
-    int w )
-{
-    CARD32 *dst = (CARD32*)dst1;
-    int i, j;
-
-    dstPitch >>= 2;
-    w >>= 1;
-
-    for(j = 0; j < h; j++) {
-	 for(i = 0; i < w; i++) {
-	     dst[i] = src1[i << 1] | (src1[(i << 1) + 1] << 16) |
-		      (src3[i] << 8) | (src2[i] << 24);
-	 }
-	 dst += dstPitch;
-	 src1 += srcPitch;
-	 if(j & 1) {
-	     src2 += srcPitch2;
-	     src3 += srcPitch2;
-	 }
-    }
-}
-
-
 static int
 viaPutImageG(
     ScrnInfoPtr pScrn,
@@ -881,8 +814,6 @@ viaPutImageG(
     viaPortPrivPtr pPriv = (viaPortPrivPtr)data;
     VIAPtr  pVia = VIAPTR(pScrn);
     vmmtr viaVidEng = (vmmtr) pVia->VidMapBase;
-    int i;
-    BoxPtr pbox;
 
 #   ifdef XV_DEBUG
     ErrorF(" via_video.c : viaPutImageG : called\n");
@@ -906,16 +837,11 @@ viaPutImageG(
 
 		DBG_DD(ErrorF(" via_video.c :		   : S/W Overlay! \n"));
 
-		if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
-			REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
-			/* draw these */
+		if(!REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) {
+		    REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
 
-		    pVia->AccelInfoRec->SetupForSolidFill(pScrn,pPriv->colorKey,GXcopy,~0);
-		    pbox=REGION_RECTS(clipBoxes);
-		    for(i=REGION_NUM_RECTS(clipBoxes);i;i--,pbox++){
-			pVia->AccelInfoRec->SubsequentSolidFillRect(pScrn,pbox->x1,pbox->y1,
-								    pbox->x2-pbox->x1,pbox->y2-pbox->y1);
-		    } /* no idea why XAAFillSolidRects fails */
+		    /* draw these */
+		    xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
 		}
 
 		/* If there is bandwidth issue, block the H/W overlay */
@@ -972,15 +898,9 @@ viaPutImageG(
 
 				if(id==0x32315659) /* (DA) 20030219 YV12 planar */
 				{
-			CopyYUV420To422( buf,		/* unsigned char *src1, */
-				 buf + ySize,		/* unsigned char *src2, */
-				 buf + ySize + uvSize,	/* unsigned char *src3, */
-				 SWDevice.lpCAPOverlaySurface[dwFrameNum&1], /* unsigned char *dst1, */
-				 width,					    /* int srcPitch,	    */
-				 width>>1,				    /* int srcPitch2,	    */
-				 dwPitch,				    /* int dstPitch,	    */
-				 height,				     /* int h,		     */
-				 width);				    /* int w		    */
+				    xf86XVCopyYUV12ToPacked(buf, buf + ySize, buf + ySize + uvSize,
+							    SWDevice.lpCAPOverlaySurface[dwFrameNum&1],
+							    width, width >> 1, dwPitch,	height,	width);
 				}
 				else /* (DA) 20030219	     0x32595559 YUY2 packed */
 				{
