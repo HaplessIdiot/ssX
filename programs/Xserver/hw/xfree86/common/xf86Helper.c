@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.117 2001/10/28 03:33:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.119 2001/11/30 12:11:55 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1214,7 +1214,7 @@ VWrite(int verb, const char *f, va_list args)
 	if (logfile) {
 	    fwrite(buffer, len, 1, logfile);
 	    if (xf86Info.syncLog)
-		fsync(logfile);
+		fflush(logfile);
 	} else {
 	    /*
 	     * Note, this code is used before OsInit() has been called, so
@@ -1409,7 +1409,7 @@ xf86LogInit()
     if (saveBuffer && size > 0) {
 	fwrite(saveBuffer, pos, 1, logfile);
 	if (xf86Info.syncLog)
-	    fsync(logfile);
+	    fflush(logfile);
 	free(saveBuffer);	/* Note, must be free(), not xfree() */
 	saveBuffer = 0;
 	size = 0;
