@@ -1,4 +1,5 @@
 /* $XConsortium: daemon.c,v 1.14 94/04/17 20:03:35 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -41,7 +42,7 @@ from the X Consortium.
 #else
 #include <sys/ioctl.h>
 #endif
-#ifdef __osf__
+#if defined(__osf__) || defined(linux)
 #define setpgrp setpgid
 #endif
 #ifdef hpux

@@ -1,5 +1,6 @@
 /*
  *	$XConsortium: misc.c,v 1.102 94/03/28 18:27:08 gildea Exp $
+ *	$XFree86$
  */
 
 /*
@@ -765,10 +766,14 @@ int a;
 char *SysErrorMsg (n)
     int n;
 {
+#if __STDC__
+    return strerror(n);
+#else
     extern char *sys_errlist[];
     extern int sys_nerr;
 
     return ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
+#endif /* __STDC__ */
 }
 
 
@@ -805,6 +810,12 @@ int code;
 	if (screen->pid > 1) {
 	    (void) kill_process_group (screen->pid, SIGHUP);
 	}
+#ifdef AMOEBA
+	if (!NULLPORT(&screen->proccap.cap_port))
+	    (void) pro_stun(&screen->proccap, -1L);
+	cb_close(screen->tty_outq);
+	cb_close(screen->tty_inq);
+#endif
 	Exit (code);
 }
 

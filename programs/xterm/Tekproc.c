@@ -1,5 +1,6 @@
 /*
  * $XConsortium: Tekproc.c,v 1.115 94/04/17 20:23:23 rws Exp $
+ * $XFree86$
  *
  * Warning, there be crufty dragons here.
  */
@@ -705,12 +706,25 @@ again:
 			(void) select (max_plus1, &Tselect_mask, (int *) NULL,
 				       (int *) NULL, &crocktimeout);
 #endif
+#ifndef AMOEBA
 			if(Tselect_mask & pty_mask) {
+#else
+			/* XXX resolve polling since it wastes CPU cycles */
+			if ((Tbcnt = cb_full(screen->tty_outq)) > 0) {
+#endif /* AMOEBA */
 #ifdef ALLOWLOGGING
 				if(screen->logging)
 					FlushLog(screen);
 #endif
+#ifndef AMOEBA
 				Tbcnt = read(screen->respond, (char *)(Tbptr = Tbuffer), BUF_SIZE);
+#else
+				Tbptr = Tbuffer;
+				if ((Tbcnt = cb_gets(screen->tty_outq, Tbptr, Tbcnt, BUF_SIZE)) == 0) {
+					errno = EIO;
+					Tbcnt = -1;
+				}
+#endif /* AMOEBA */
 				if(Tbcnt < 0) {
 					if(errno == EIO)
 						Cleanup (0);
@@ -736,6 +750,7 @@ again:
 				TCursorToggle(TOGGLE);
 				Ttoggled = FALSE;
 			}
+#ifndef AMOEBA
 			if(QLength(screen->display))
 				Tselect_mask = X_mask;
 			else {
@@ -749,6 +764,25 @@ again:
 					continue;
 				}
 			}
+#else
+			XFlush(screen->display);
+			i = _X11TransAmSelect(ConnectionNumber(screen->display),
+					      1);
+			/* if there are X events already in our queue,
+                           it counts as being readable */
+			if (QLength(screen->display) || i > 0) {
+				xevents();
+				continue;
+			} else if (i < 0) {
+				extern int exiting;
+				if (errno != EINTR && !exiting)
+					SysError(ERROR_SELECT);
+			}
+			if (Tbcnt > 0)
+				goto again;
+			if (cb_full(screen->tty_outq) <= 0)
+				SleepMainThread();
+#endif /* AMOEBA */
 			if(Tselect_mask & X_mask) {
 				xevents();
 				if(Tbcnt > 0)

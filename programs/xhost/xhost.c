@@ -1,4 +1,5 @@
 /* $XConsortium: xhost.c,v 11.62 94/04/17 20:23:18 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -29,7 +30,7 @@ from the X Consortium.
 
 */
 
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS
 #endif
 #ifdef UNIXCONN
@@ -60,9 +61,17 @@ typedef long sign32;
 #include <interlan/netdb.h>
 #include <interlan/in.h>
 #else
+#ifndef AMOEBA
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#else
+#include <server/ip/gen/socket.h>
+#include <server/ip/types.h>
+#include <server/ip/gen/in.h>
+#include <server/ip/gen/inet.h>
+#include <server/ip/gen/netdb.h>
+#endif
 #endif
 #endif /* NEEDSOCKETS */
 
@@ -288,7 +297,11 @@ int change_host (dpy, name, add)
     krb5_data kbuf;
 #endif
 #ifdef NEEDSOCKETS
+#ifndef AMTCPCONN
     static struct in_addr addr;	/* so we can point at it */
+#else
+    static ipaddr_t addr;
+#endif
 #endif
     char *cp;
 #ifdef DNETCONN
@@ -308,7 +321,7 @@ int change_host (dpy, name, add)
 	lname[i] = tolower(name[i]);
     }
     if (!strncmp("inet:", lname, 5)) {
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 	family = FamilyInternet;
 	name += 5;
 #else
@@ -462,7 +475,11 @@ int change_host (dpy, name, add)
     /*
      * First see if inet_addr() can grok the name; if so, then use it.
      */
+#ifndef AMTCPCONN
     if ((addr.s_addr = inet_addr(name)) != -1) {
+#else
+    if ((addr = inet_addr(name)) != -1) {
+#endif
 	ha.family = FamilyInternet;
 	ha.length = 4;		/* but for Cray would be sizeof(addr.s_addr) */
 	ha.address = (char *)&addr; /* but for Cray would be &addr.s_addr */
@@ -526,7 +543,7 @@ jmp_buf env;
 static char *get_hostname (ha)
     XHostAddress *ha;
 {
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
     struct hostent *hp = NULL;
     char *inet_ntoa();
 #endif
@@ -541,7 +558,7 @@ static char *get_hostname (ha)
     static char kname_out[255];
 #endif
 
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
     if (ha->family == FamilyInternet) {
 #ifdef CRAY
 	struct in_addr t_addr;
@@ -563,7 +580,11 @@ static char *get_hostname (ha)
 	alarm(0);
 	if (hp)
 	    return (hp->h_name);
+#ifndef AMTCPCONN
 	else return (inet_ntoa(*((struct in_addr *)(ha->address))));
+#else
+	else return (inet_ntoa(*((ipaddr_t *)(ha->address))));
+#endif
     }
 #endif
     if (ha->family == FamilyNetname) {

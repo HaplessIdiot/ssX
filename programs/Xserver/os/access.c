@@ -1,4 +1,5 @@
 /* $XConsortium: access.c,v 1.73 94/04/17 20:26:53 rws Exp $ */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -55,12 +56,32 @@ SOFTWARE.
 #include "misc.h"
 #include "site.h"
 #include <errno.h>
+#if !defined(AMOEBA) && !defined(_MINIX)
 #ifdef ESIX
 #include <lan/socket.h>
 #else
 #include <sys/socket.h>
 #endif
 #include <sys/ioctl.h>
+#else
+#ifdef AMOEBA
+#define port am_port_t
+#include <amoeba.h>
+#include <cmdreg.h>
+#include <stdcom.h>
+#include <stderr.h>
+#include <ampolicy.h>
+#include <server/ip/hton.h>
+#include <server/ip/types.h>
+#include <server/ip/tcpip.h>
+#include <server/ip/tcp_io.h>
+#include <server/ip/gen/in.h>
+#include <server/ip/gen/tcp.h>
+#include <server/ip/gen/tcp_io.h>
+#include <server/ip/gen/socket.h>
+#undef port
+#endif
+#endif /* AMOEBA || _MINIX */
 #include <ctype.h>
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(ISC)
@@ -71,6 +92,7 @@ SOFTWARE.
 #include <netdnet/dnetdb.h>
 #endif
 
+#if !defined(AMOEBA) && !defined(_MINIX)
 #ifdef hpux
 # include <sys/utsname.h>
 # ifdef HAS_IFREQ
@@ -89,6 +111,7 @@ SOFTWARE.
 # include <net/if.h>
 #endif
 #endif /* hpux */
+#endif /* !AMOEBA && !_MINIX */
 
 #ifdef SVR4
 #include <sys/sockio.h>
@@ -97,8 +120,14 @@ SOFTWARE.
 #ifdef ESIX
 #include <lan/netdb.h>
 #else
+#if !defined(AMOEBA) && !defined(_MINIX)
 #include <netdb.h>
+#else
+#ifdef AMOEBA
+#include <server/ip/gen/netdb.h>
 #endif
+#endif /* AMOEBA || _MINIX */
+#endif /* ESIX */
 
 #include "dixstruct.h"
 #include "osdep.h"
@@ -649,6 +678,7 @@ ResetHosts (display)
     FILE		*fd;
     char		*ptr;
     int                 i, hostlen;
+#ifndef AMOEBA
     union {
         struct sockaddr	sa;
 #if defined(TCPCONN) || defined(STREAMSCONN)
@@ -658,6 +688,7 @@ ResetHosts (display)
         struct sockaddr_dn dn;
 #endif
     } 			saddr;
+#endif /* AMOEBA */
 #ifdef DNETCONN
     struct nodeent 	*np;
     struct dn_naddr 	dnaddr, *dnaddrp, *dnet_addr();
@@ -1036,9 +1067,13 @@ CheckAddr (family, pAddr, length)
 
     switch (family)
     {
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
       case FamilyInternet:
+#if !defined(AMOEBA) && !defined(_MINIX)
 	if (length == sizeof (struct in_addr))
+#else
+	if (length == sizeof(ipaddr_t))
+#endif
 	    len = length;
 	else
 	    len = -1;
@@ -1069,7 +1104,11 @@ CheckAddr (family, pAddr, length)
  * Returns 1 if host is invalid, 0 if we've found it. */
 
 InvalidHost (saddr, len)
+#ifndef AMOEBA_ORIG
     register struct sockaddr	*saddr;
+#else
+    register ipaddr_t		*saddr;
+#endif
     int				len;
 {
     int 			family;
@@ -1112,10 +1151,15 @@ InvalidHost (saddr, len)
 
 static int
 ConvertAddr (saddr, len, addr)
+#ifndef AMOEBA_ORIG
     register struct sockaddr	*saddr;
+#else
+    register ipaddr_t		*saddr;
+#endif
     int				*len;
     pointer			*addr;
 {
+#ifndef AMOEBA
     if (*len == 0)
         return (FamilyLocal);
     switch (saddr->sa_family)
@@ -1150,6 +1194,12 @@ ConvertAddr (saddr, len, addr)
     default:
         return -1;
     }
+#else /* AMOEBA */
+    if (*len == 0) return -1;
+    *len = sizeof (ipaddr_t);
+    *addr = (pointer) saddr;
+    return FamilyInternet;
+#endif /* AMOEBA */
 }
 
 int

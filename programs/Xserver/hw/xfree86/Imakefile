@@ -32,12 +32,14 @@ SUBDIRS = common common_hw os-support $(SCREENS) $(ACCELDIRS)
 
 FILES = #COPYRIGHT README README.Config INSTALL $(EXTRAREADME)
 
+#if 0
 PROGRAMS = Xconfig
 
 all:: $(PROGRAMS)
 
 clean::
 	$(RM) $(PROGRAMS)
+#endif
 
 #if defined(i386BsdArchitecture) && !defined(FreeBSDArchitecture)
 MANPAGE=Concat(FileManDir,/Xconfig.0)

@@ -1,9 +1,13 @@
 XCOMM $XConsortium: Imakefile,v 1.24 93/09/21 17:58:25 kaleb Exp $
+XCOMM $XFree86$
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
 #endif
+#ifdef XFree86Version
+        OS_DEFS = -DXFREE86
+#endif
         DEFINES = ConnectionFlags $(VFORK_DEFINES) $(SIGNAL_DEFINES) \
-			-DBINDIR=\"$(BINDIR)\"
+			-DBINDIR=\"$(BINDIR)\" $(OS_DEFS)
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
           SRCS1 = xinit.c 

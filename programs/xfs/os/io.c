@@ -1,4 +1,5 @@
 /* $XConsortium: io.c,v 1.16 94/04/17 19:56:06 mor Exp $ */
+/* $XFree86$ */
 /*
  * i/o functions
  */
@@ -205,10 +206,14 @@ ReadRequest(client)
 	result = _FontTransRead(oc->trans_conn, oci->buffer + oci->bufcnt,
 		      oci->size - oci->bufcnt);
 	if (result <= 0) {
+#if !defined(SVR4) && !defined(i386)
 	    if ((result < 0) && ETEST(errno)) {
 		yield_control_no_input();
 		return 0;
-	    } else {
+	    } else
+#endif
+	    {
+
 		yield_control_death();
 		return -1;
 	    }

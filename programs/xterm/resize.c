@@ -1,5 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.29 93/09/20 17:42:18 hersh Exp $
+ *	$XFree86$
  */
 
 /*
@@ -54,7 +55,7 @@
 #undef SYSV				/* pretend to be bsd */
 #endif /* macII */
 
-#ifdef SYSV
+#if defined(SYSV) || defined(linux)
 #define USE_SYSV_TERMIO
 #define USE_SYSV_UTMP
 #else /* else not SYSV */
@@ -473,12 +474,12 @@ readstring(fp, buf, str)
 {
 	register int last, c;
 	SIGNAL_T timeout();
-#ifndef USG
+#if !defined(USG) && !defined(AMOEBA)
 	struct itimerval it;
 #endif
 
 	signal(SIGALRM, timeout);
-#ifdef USG
+#if defined(USG) || defined(AMOEBA)
 	alarm (TIMEOUT);
 #else
 	bzero((char *)&it, sizeof(struct itimerval));
@@ -497,7 +498,7 @@ readstring(fp, buf, str)
 	last = str[strlen(str) - 1];
 	while((*buf++ = getc(fp)) != last)
 	    ;
-#ifdef USG
+#if defined(USG) || defined(AMOEBA)
 	alarm (0);
 #else
 	bzero((char *)&it, sizeof(struct itimerval));

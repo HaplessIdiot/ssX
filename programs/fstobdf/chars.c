@@ -1,4 +1,5 @@
 /* $XConsortium: chars.c,v 1.4 94/04/17 20:24:26 gildea Exp $ */
+/* $XFree86$ */
 /*
  
 Copyright (c) 1990  X Consortium
@@ -53,6 +54,9 @@ extern long yResolution;	/* intended vertical resoultion for font */
 extern long pointSize;		/* font height in points */
 
 #define BIT_ORDER	BitmapFormatBitOrderMSB
+#ifdef __NetBSD__
+#undef BYTE_ORDER
+#endif
 #define BYTE_ORDER	BitmapFormatByteOrderMSB
 #define SCANLINE_UNIT	BitmapFormatScanlineUnit8
 #define SCANLINE_PAD	BitmapFormatScanlinePad8

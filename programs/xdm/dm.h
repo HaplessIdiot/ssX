@@ -1,4 +1,5 @@
 /* $XConsortium: dm.h,v 1.63 94/04/17 20:03:37 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -48,7 +49,8 @@ from the X Consortium.
 #include <setjmp.h>
 #include <limits.h>
 #undef _POSIX_C_SOURCE
-#elif defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
+#else
+#if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
 #include <setjmp.h>
 #include <limits.h>
 #else
@@ -56,6 +58,7 @@ from the X Consortium.
 #include <setjmp.h>
 #include <limits.h>
 #undef _POSIX_SOURCE
+#endif
 #endif
 
 /* If XDMCP symbol defined, compile to run XDMCP protocol */

@@ -1,4 +1,5 @@
 /* $XConsortium: rgb.c,v 11.19 94/04/17 20:24:45 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1985  X Consortium
@@ -61,15 +62,7 @@ from the X Consortium.
 extern int errno;
 #endif
 
-extern int sys_nerr;
-extern char *sys_errlist[];
-
 char *ProgramName;
-
-char *SysError ()
-{
-    return ((errno >= 0 && errno < sys_nerr) ? sys_errlist[errno] : "?");
-}
 
 main(argc, argv)
     int argc;
@@ -104,7 +97,7 @@ main(argc, argv)
     if (fd < 0) {
 	fprintf (stderr, 
 		 "%s:  unable to create dbm file \"%s\" (error %d, %s)\n",
-		 ProgramName, name, errno, SysError());
+		 ProgramName, name, errno, strerror(errno));
 	exit (1);
     }
     (void) close (fd);
@@ -115,7 +108,7 @@ main(argc, argv)
     if (fd < 0) {
 	fprintf (stderr, 
 		 "%s:  unable to create dbm file \"%s\" (error %d, %s)\n",
-		 ProgramName, name, errno, SysError());
+		 ProgramName, name, errno, strerror(errno));
 	exit (1);
     }
     (void) close (fd);
@@ -124,7 +117,7 @@ main(argc, argv)
     if (!rgb_dbm) {
 	fprintf (stderr,
 		 "%s:  unable to open dbm database \"%s\" (error %d, %s)\n",
-		 ProgramName, dbname, errno, SysError());
+		 ProgramName, dbname, errno, strerror(errno));
 	exit (1);
     }
 

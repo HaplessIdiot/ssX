@@ -1,4 +1,5 @@
 /* $XConsortium: connection.c,v 1.187 94/04/17 20:26:56 dpw Exp $ */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -98,8 +99,16 @@ extern int errno;
 # endif
 #endif
 
+#ifdef AMTCPCONN
+#include <server/ip/types.h>
+#include <server/ip/gen/in.h>
+#include <server/ip/gen/inet.h>
+#endif
+
 #include <stdio.h>
+#if !defined(AMOEBA) && !defined(_MINIX)
 #include <sys/uio.h>
+#endif
 #include "misc.h"		/* for typedef of pointer */
 #include "osdep.h"
 #include "opaque.h"
@@ -411,6 +420,16 @@ AuthAudit (client, letin, saddr, len, proto_n, auth_proto)
 		    dnet_ntoa(&((struct sockaddr_dn *) saddr)->sdn_add));
 	    break;
 #endif
+#ifdef AMRPCCONN
+	case FamilyAmoeba:
+	    sprintf(addr, "AM %s", saddr);
+	    break;
+#endif
+#if defined(AMTCPCONN) && !(defined(TCPCONN) || defined(STREAMSCONN))
+	case AF_INET:
+	    sprintf(addr, "AMIP %s", inet_ntoa(*((ipaddr_t *) saddr)));
+	    break;
+#endif
 	default:
 	    strcpy(addr, "unknown address");
 	}
@@ -463,6 +482,13 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 	if (_XSERVTransGetPeerAddr (priv->trans_conn,
 	    &family, &fromlen, &from) != -1)
 	{
+#ifdef AMRPCCONN
+	    /* Amoeba RPC connections are already checked by the capability. */
+	    if (family == FamilyAmoeba) {
+		auth_id = (XID) 0;
+	    }
+	    else
+#endif
 	    if (InvalidHost ((struct sockaddr *) from, fromlen))
 		AuthAudit(client->index, FALSE,
 		    (struct sockaddr *) from, fromlen, proto_n, auth_proto);
@@ -647,6 +673,7 @@ EstablishNewConnections(clientUnused, closure)
     extern int  writev(), close();
 #endif
 
+#ifndef AMOEBA
     readyconnections = (((FdMask)closure) & WellKnownConnections);
     if (!readyconnections)
 	return TRUE;
@@ -662,6 +689,12 @@ EstablishNewConnections(clientUnused, closure)
 		CloseDownClient(client);     
 	}
     }
+#else /* AMOEBA */
+    /* EstablishNewConnections is only called when there is one new
+     * connection waiting on the first transport.
+     */
+    readyconnections = 1;
+#endif /* AMOEBA */
     while (readyconnections) 
     {
 	XtransConnInfo trans_conn, new_trans_conn;
@@ -744,6 +777,7 @@ XtransConnInfo trans_conn;
     struct iovec iov[3];
     char byteOrder = 0;
     int whichbyte = 1;
+#ifndef AMOEBA
     struct timeval waittime;
     FdSet mask;
 
@@ -754,6 +788,7 @@ XtransConnInfo trans_conn;
     CLEARBITS(mask);
     BITSET(mask, fd);
     (void)select(fd + 1, (int *) mask, (int *) NULL, (int *) NULL, &waittime);
+#endif
     /* try to read the byte-order of the connection */
     (void)_XSERVTransRead(trans_conn, &byteOrder, 1);
     if ((byteOrder == 'l') || (byteOrder == 'B'))
@@ -846,6 +881,7 @@ CheckConnections()
     struct timeval	notime;
     int r;
 
+#ifndef AMOEBA
     notime.tv_sec = 0;
     notime.tv_usec = 0;
 
@@ -865,6 +901,7 @@ CheckConnections()
 	    mask &= ~(1 << curoff);
 	}
     }	
+#endif
 }
 
 
@@ -881,6 +918,7 @@ CloseDownConnection(client)
 
     if (oc->output && oc->output->count)
 	FlushClient(client, oc, (char *)NULL, 0);
+    ConnectionTranslation[oc->fd] = 0;
 #ifdef XDMCP
     XdmcpCloseDisplay(oc->fd);
 #endif

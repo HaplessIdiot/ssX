@@ -36,15 +36,14 @@ in this Software without prior written authorization from the X Consortium.
  * bring down X when you are finished.
  */
 
+/* $XFree86$ */
+
 #include <stdio.h>
 #include "dm.h"
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
-
-extern int sys_nerr;
-extern char *sys_errlist[];
 
 #ifdef macII
 #define ON_CONSOLE_ONLY
@@ -66,14 +65,6 @@ extern char *sys_errlist[];
 #endif
 
 char *ProgramName;
-
-static char *SysErrorMsg (n)
-    int n;
-{
-    char *s = (n > 0 && n < sys_nerr) ? sys_errlist[n] : "unknown";
-    return (s ? s : "null system error");
-}
-
 
 static int exec_args (filename, args)
     char *filename;
@@ -202,7 +193,7 @@ main (argc, argv)
     args[4] = NULL;
     if (exec_args (cmdbuf, args) == -1) {
 	fprintf (stderr, "%s:  unable to execute %s (error %d, %s)\r\n",
-		 ProgramName, cmdbuf, errno, SysErrorMsg(errno));
+		 ProgramName, cmdbuf, errno, strerror(errno));
 	exit (1);
     }
 

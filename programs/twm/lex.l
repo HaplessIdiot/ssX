@@ -54,6 +54,7 @@ in this Software without prior written authorization from the X Consortium.
 /***********************************************************************
  *
  * $XConsortium: lex.l,v 1.68 94/04/17 20:38:14 rws Exp $
+ * $XFree86$
  *
  * .twmrc lex file
  *
@@ -62,14 +63,15 @@ in this Software without prior written authorization from the X Consortium.
  ***********************************************************************/
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
+#include <sys/param.h>
 #include "gram.h"
 #include "parse.h"
 extern char *ProgramName;
 
 extern int ParseError;
-#ifdef __bsdi__
-int yylineno;
 
+#if (BSD >= 199103) || ((defined(AMOEBA) || defined(_MINIX)) && defined(yywrap)) || defined(linux)
+int yylineno;
 #undef YY_INPUT
 #define YY_INPUT(buf,result,size) ((result) = doinput((buf),(size)))
 doinput (buf, size)
@@ -136,6 +138,7 @@ number				[0-9]+
 yywrap() { return(1);}
 #endif
 
+#if !(BSD >= 199103)
 #undef unput
 #undef input
 #undef output
@@ -144,3 +147,4 @@ yywrap() { return(1);}
 #define input()		(*twmInputFunc)()
 #define output(c)	TwmOutput(c)
 #define feof()		(1)
+#endif

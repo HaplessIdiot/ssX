@@ -1,4 +1,5 @@
 /* $XConsortium: events.c,v 1.11 94/04/17 20:39:17 rws Exp $ */
+/* $XFree86$ */
 /**** module events.c ****/
 /******************************************************************************
 
@@ -220,6 +221,7 @@ Bool	verbose;
 			tv.tv_sec = delta;  
 			tv.tv_usec = 0L;
 			XFlush( xp->d );
+#ifndef AMOEBA
 #ifdef WIN32
 			FD_ZERO(&rd);
 			FD_SET(Xsocket, &rd);
@@ -227,6 +229,10 @@ Bool	verbose;
 			rd = 1 << Xsocket;
 #endif
 			select( Xsocket + 1, ( int * ) &rd, ( int * ) NULL, ( int * ) NULL, &tv );
+#else  /* AMOEBA */
+			(void) _X11TransAmSelect(ConnectionNumber(xp->d),
+						 delta * 1000);
+#endif /* AMOEBA */
 			continue;
 		}	
 		xie_event = event.type - xieInfo->first_event;
