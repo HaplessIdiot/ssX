@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.13 2002/03/12 23:28:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.14 2002/03/16 05:53:52 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -118,6 +118,10 @@ LispRead(LispMac *mac)
 	    break;
 	case '#':
 	    object = LispReadMacro(mac);
+	    /* Don't "link" EOLIST to COD, this may happen if
+	     * a multiline comment is the last token in a form. */
+	    if (INVALID_P(object))
+		return (object);
 	    break;
 	default:
 	    LispUnget(mac, ch);
