@@ -1665,8 +1665,8 @@ xf86XVPutImage(
 
      VPBox.x1 = portPriv->pScrn->frameX0;	
      VPBox.y1 = portPriv->pScrn->frameY0;
-     VPBox.x2 = portPriv->pScrn->frameX1;	
-     VPBox.y2 = portPriv->pScrn->frameY1;
+     VPBox.x2 = portPriv->pScrn->frameX1 + 1;	
+     VPBox.y2 = portPriv->pScrn->frameY1 + 1;
 
      REGION_INIT(pScreen, &VPReg, &VPBox, 1);
      REGION_INTERSECT(Screen, &ClipRegion, &ClipRegion, &VPReg); 
