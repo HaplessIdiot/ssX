@@ -14,7 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/freetype2/include/freetype/internal/ftdebug.h,v 1.2 2001/08/01 00:44:34 tsi Exp $ */
 
 #ifndef __FTDEBUG_H__
 #define __FTDEBUG_H__
@@ -220,6 +220,15 @@ FT_BEGIN_HEADER
 #define FT_TRACE5( varformat )  FT_TRACE( 5, varformat )
 #define FT_TRACE6( varformat )  FT_TRACE( 6, varformat )
 #define FT_TRACE7( varformat )  FT_TRACE( 7, varformat )
+
+
+#if defined( _MSC_VER )      /* Visual C++ (and Intel C++) */
+
+  /* we disable the warning `conditional expression is constant' here */
+  /* in order to compile cleanly with the maximum level of warnings   */
+#pragma warning( disable : 4127 )
+
+#endif /* _MSC_VER */
 
 
 FT_END_HEADER

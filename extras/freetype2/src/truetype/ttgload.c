@@ -26,6 +26,8 @@
 
 #include "ttgload.h"
 
+#include "tterrors.h"
+
 
   /*************************************************************************/
   /*                                                                       */
@@ -178,8 +180,8 @@
                          FT_UInt        start_point,
                          FT_UInt        start_contour )
   {
-    zone->n_points   = load->outline.n_points - start_point;
-    zone->n_contours = load->outline.n_contours - start_contour;
+    zone->n_points   = (FT_UShort)( load->outline.n_points - start_point );
+    zone->n_contours = (FT_Short) ( load->outline.n_contours - start_contour );
     zone->org        = load->extra_points + start_point;
     zone->cur        = load->outline.points + start_point;
     zone->tags       = (FT_Byte*)load->outline.tags + start_point;
@@ -199,11 +201,11 @@
   /*                                                                       */
   /*************************************************************************/
 
-  FT_CALLBACK_DEF
-  FT_Error  TT_Access_Glyph_Frame( TT_Loader*  loader,
-                                   FT_UInt     glyph_index,
-                                   FT_ULong    offset,
-                                   FT_UInt     byte_count )
+  FT_CALLBACK_DEF(FT_Error)
+  TT_Access_Glyph_Frame( TT_Loader*  loader,
+                         FT_UInt     glyph_index,
+                         FT_ULong    offset,
+                         FT_UInt     byte_count )
   {
     FT_Error   error;
     FT_Stream  stream = loader->stream;
@@ -222,8 +224,8 @@
   }
 
 
-  FT_CALLBACK_DEF
-  void  TT_Forget_Glyph_Frame( TT_Loader*  loader )
+  FT_CALLBACK_DEF(void)
+  TT_Forget_Glyph_Frame( TT_Loader*  loader )
   {
     FT_Stream  stream = loader->stream;
 
@@ -232,8 +234,8 @@
   }
 
 
-  FT_CALLBACK_DEF
-  FT_Error  TT_Load_Glyph_Header( TT_Loader*  loader )
+  FT_CALLBACK_DEF(FT_Error)
+  TT_Load_Glyph_Header( TT_Loader*  loader )
   {
     FT_Stream   stream = loader->stream;
 
@@ -255,8 +257,8 @@
   }
 
 
-  FT_CALLBACK_DEF
-  FT_Error  TT_Load_Simple_Glyph( TT_Loader*  load )
+  FT_CALLBACK_DEF(FT_Error)
+  TT_Load_Simple_Glyph( TT_Loader*  load )
   {
     FT_Error         error;
     FT_Stream        stream     = load->stream;
@@ -300,14 +302,14 @@
     if ( n_ins > face->max_profile.maxSizeOfInstructions )
     {
       FT_TRACE0(( "ERROR: Too many instructions!\n" ));
-      error = TT_Err_Too_Many_Ins;
+      error = TT_Err_Too_Many_Hints;
       goto Fail;
     }
 
     if ( stream->cursor + n_ins > stream->limit )
     {
       FT_TRACE0(( "ERROR: Instruction count mismatch!\n" ));
-      error = TT_Err_Too_Many_Ins;
+      error = TT_Err_Too_Many_Hints;
       goto Fail;
     }
 
@@ -406,16 +408,16 @@
     for ( n = 0; n < n_points; n++ )
       outline->tags[n] &= FT_Curve_Tag_On;
 
-    outline->n_points   = n_points;
-    outline->n_contours = n_contours;
+    outline->n_points   = (FT_UShort)n_points;
+    outline->n_contours = (FT_Short) n_contours;
 
   Fail:
     return error;
   }
 
 
-  FT_CALLBACK_DEF
-  FT_Error  TT_Load_Composite_Glyph( TT_Loader*  loader )
+  FT_CALLBACK_DEF(FT_Error)
+  TT_Load_Composite_Glyph( TT_Loader*  loader )
   {
     FT_Error         error;
     FT_Stream        stream  = loader->stream;
@@ -668,9 +670,8 @@
     TT_Face          face   = (TT_Face)loader->face;
     FT_ULong         offset;
     FT_Int           contours_count;
-    FT_UInt          index, num_points, num_contours, count;
+    FT_UInt          index, num_points, count;
     FT_Fixed         x_scale, y_scale;
-    FT_ULong         ins_offset;
     FT_GlyphLoader*  gloader = loader->gloader;
     FT_Bool          opened_frame = 0;
 
@@ -684,9 +685,7 @@
     }
 
     loader->glyph_index = glyph_index;
-    num_contours = 0;
     num_points   = 0;
-    ins_offset   = 0;
 
     x_scale = 0x10000L;
     y_scale = 0x10000L;
@@ -710,6 +709,12 @@
 
       loader->left_bearing = left_bearing;
       loader->advance      = advance_width;
+
+      if ( !loader->linear_def )
+      {
+        loader->linear_def = 1;
+        loader->linear     = advance_width;
+      }
     }
 
     offset = face->glyph_locations[index];
@@ -1019,7 +1024,7 @@
           {
             FT_TRACE0(( "Too many instructions (%d) in composite glyph %ld\n",
                         n_ins, subglyph->index ));
-            return TT_Err_Too_Many_Ins;
+            return TT_Err_Too_Many_Hints;
           }
 
           /* read the instructions */
@@ -1111,18 +1116,14 @@
   {
     FT_BBox       bbox;
     TT_Face       face = (TT_Face)loader->face;
-    FT_Fixed      x_scale, y_scale;
+    FT_Fixed      y_scale;
     TT_GlyphSlot  glyph = loader->glyph;
     TT_Size       size = (TT_Size)loader->size;
 
 
-    x_scale = 0x10000L;
     y_scale = 0x10000L;
     if ( ( loader->load_flags & FT_LOAD_NO_SCALE ) == 0 )
-    {
-      x_scale = size->root.metrics.x_scale;
       y_scale = size->root.metrics.y_scale;
-    }
 
     if ( glyph->format != ft_glyph_format_composite )
     {
@@ -1152,7 +1153,7 @@
     /* get the device-independent horizontal advance.  It is scaled later */
     /* by the base layer.                                                 */
     {
-      FT_Pos  advance = loader->advance;
+      FT_Pos  advance = loader->linear;
 
 
       /* the flag FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH was introduced to */
@@ -1182,7 +1183,6 @@
       FT_UShort  advance_height; /* vertical advance height   (EM units) */
 
       FT_Pos  left;     /* scaled vertical left side bearing         */
-      FT_Pos  Top;      /* scaled original vertical top side bearing */
       FT_Pos  top;      /* scaled vertical top side bearing          */
       FT_Pos  advance;  /* scaled vertical advance height            */
 
@@ -1215,14 +1215,14 @@
         /*                                                     */
         if ( face->os2.version != 0xFFFF )
         {
-          top_bearing    = face->os2.sTypoLineGap / 2;
+          top_bearing    = (FT_Short)( face->os2.sTypoLineGap / 2 );
           advance_height = (FT_UShort)( face->os2.sTypoAscender -
                                         face->os2.sTypoDescender +
                                         face->os2.sTypoLineGap );
         }
         else
         {
-          top_bearing    = face->horizontal.Line_Gap / 2;
+          top_bearing    = (FT_Short)( face->horizontal.Line_Gap / 2 );
           advance_height = (FT_UShort)( face->horizontal.Ascender  +
                                         face->horizontal.Descender +
                                         face->horizontal.Line_Gap );
@@ -1236,14 +1236,12 @@
       /* scale the metrics */
       if ( !( loader->load_flags & FT_LOAD_NO_SCALE ) )
       {
-        Top     = FT_MulFix( top_bearing, y_scale );
         top     = FT_MulFix( top_bearing + loader->bbox.yMax, y_scale )
                     - bbox.yMax;
         advance = FT_MulFix( advance_height, y_scale );
       }
       else
       {
-        Top     = top_bearing;
         top     = top_bearing + loader->bbox.yMax - bbox.yMax;
         advance = advance_height;
       }
@@ -1324,7 +1322,6 @@
     SFNT_Interface*  sfnt;
     TT_Face          face;
     FT_Stream        stream;
-    FT_Memory        memory;
     FT_Error         error;
     TT_Loader        loader;
 
@@ -1332,7 +1329,6 @@
     face   = (TT_Face)glyph->face;
     sfnt   = (SFNT_Interface*)face->sfnt;
     stream = face->root.stream;
-    memory = face->root.memory;
     error  = 0;
 
     if ( !size || ( load_flags & FT_LOAD_NO_SCALE )   ||
@@ -1492,4 +1488,3 @@
 
 
 /* END */
-
