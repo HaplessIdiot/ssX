@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xev/xev.c,v 1.7 2002/12/24 17:43:00 tsi Exp $ */
+/* $XFree86: xc/programs/xev/xev.c,v 1.8 2003/05/24 15:49:02 herrb Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -68,6 +68,8 @@ const char *ProgramName;
 Display *dpy;
 int screen;
 
+XIC xic = NULL;
+
 static void
 prologue (XEvent *eventp, char *event_name)
 {
@@ -77,6 +79,15 @@ prologue (XEvent *eventp, char *event_name)
 	    event_name, e->serial, e->send_event ? Yes : No, e->window);
 }
 
+static void
+dump (unsigned char *str, int len)
+{
+    printf("(");
+    len--;
+    while (len-- > 0)
+        printf("%02x ", *str++);
+    printf("%02x)", *str++);
+}
 
 static void
 do_KeyPress (XEvent *eventp)
@@ -84,10 +95,30 @@ do_KeyPress (XEvent *eventp)
     XKeyEvent *e = (XKeyEvent *) eventp;
     KeySym ks;
     char *ksname;
-    int nbytes;
+    int nbytes, nmbbytes;
     char str[256+1];
+    static char *buf = NULL;
+    static int bsize = 8;
+    Status status;
+
+    if (buf == NULL)
+        buf = malloc (bsize);
 
     nbytes = XLookupString (e, str, 256, &ks, NULL);
+
+    /* not supposed to call XmbLookupString on a key release event */
+    if (e->type == KeyPress && xic) {
+        do {
+            nmbbytes = XmbLookupString (xic, e, buf, bsize - 1, &ks, &status);
+            buf[nmbbytes] = '\0';
+
+            if (status == XBufferOverflow) {
+                bsize = nmbbytes + 1;
+                buf = realloc (buf, bsize);
+            }
+        } while (status == XBufferOverflow);
+    }
+
     if (ks == NoSymbol)
 	ksname = "NoSymbol";
     else if (!(ksname = XKeysymToString (ks)))
@@ -100,7 +131,27 @@ do_KeyPress (XEvent *eventp)
     if (nbytes < 0) nbytes = 0;
     if (nbytes > 256) nbytes = 256;
     str[nbytes] = '\0';
-    printf ("    XLookupString gives %d bytes:  \"%s\"\n", nbytes, str);
+    printf ("    XLookupString gives %d bytes: ", nbytes);
+    if (nbytes > 0) {
+        dump (str, nbytes);
+        printf (" \"%s\"\n", str);
+    } else {
+    	printf ("\n");
+    }
+
+    /* not supposed to call XmbLookupString on a key release event */
+    if (e->type == KeyPress && xic) {
+        printf ("    XmbLookupString gives %d bytes: ", nmbbytes);
+        if (nmbbytes > 0) {
+           dump (buf, nmbbytes);
+           printf (" \"%s\"\n", buf);
+        } else {
+    	   printf ("\n");
+        }
+
+        printf ("    XFilterEvent returns: %s\n", 
+                XFilterEvent (eventp, e->window) ? "True" : "False");
+    }
 }
 
 static void
@@ -664,6 +715,11 @@ main (int argc, char **argv)
     char *name = "Event Tester";
     Bool reverse = False;
     unsigned long back, fore;
+    XIM xim;
+    XIMStyles *xim_styles;
+    XIMStyle xim_style;
+    char *modifiers;
+    char *imvalret;
 
     ProgramName = argv[0];
 
@@ -733,6 +789,41 @@ main (int argc, char **argv)
 	exit (1);
     }
 
+    /* we're testing the default input method */
+    modifiers = XSetLocaleModifiers ("@im=none");
+    if (modifiers == NULL) {
+        fprintf (stderr, "%s:  XSetLocaleModifiers failed\n", ProgramName);
+    }
+
+    xim = XOpenIM (dpy, NULL, NULL, NULL);
+    if (xim == NULL) {
+        fprintf (stderr, "%s:  XOpenIM failed\n", ProgramName);
+    }
+
+    if (xim) {
+        imvalret = XGetIMValues (xim, XNQueryInputStyle, &xim_styles, NULL);
+        if (imvalret != NULL || xim_styles == NULL) {
+            fprintf (stderr, "%s:  input method doesn't support any styles\n", ProgramName);
+        }
+
+        if (xim_styles) {
+            xim_style = 0;
+            for (i = 0;  i < xim_styles->count_styles;  i++) {
+                if (xim_styles->supported_styles[i] ==
+                    (XIMPreeditNothing | XIMStatusNothing)) {
+                    xim_style = xim_styles->supported_styles[i];
+                    break;
+                }
+            }
+
+            if (xim_style == 0) {
+                fprintf (stderr, "%s: input method doesn't support the style we support\n",
+                         ProgramName);
+            }
+            XFree (xim_styles);
+        }
+    } 
+
     screen = DefaultScreen (dpy);
 
     /* select for all events */
@@ -789,6 +880,18 @@ main (int argc, char **argv)
 	XMapWindow (dpy, w);
 
 	printf ("Outer window is 0x%lx, inner window is 0x%lx\n", w, subw);
+    }
+
+    if (xim && xim_style) {
+        xic = XCreateIC (xim, 
+                         XNInputStyle, xim_style, 
+                         XNClientWindow, w, 
+                         XNFocusWindow, w, 
+                         NULL);
+
+        if (xic == NULL) {
+            fprintf (stderr, "XCreateIC failed\n");
+        }
     }
 
     for (done = 0; !done; ) {
