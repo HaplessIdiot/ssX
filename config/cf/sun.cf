@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: sun.cf /main/176 1997/12/09 17:27:51 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.44 1998/09/06 04:46:51 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.45 1998/10/02 06:15:06 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -306,7 +306,8 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 #    define DefaultCCOptions -DNO_ASM
 #   else
 #    if OSMinorVersion > 3
-#     define DefaultCCOptions -ansi -pedantic -DNO_ASM GccWarningOptions
+#     define DefaultCCOptions -ansi -pedantic -DNO_ASM \
+				-D__EXTENSIONS__ GccWarningOptions
 #    else
 #     define DefaultCCOptions -DNO_ASM
 #    endif
