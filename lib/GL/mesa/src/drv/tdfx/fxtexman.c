@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxtexman.c,v 1.1 2000/09/24 13:51:20 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxtexman.c,v 1.2 2000/12/08 19:36:23 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -511,7 +511,7 @@ fxTMMoveInTM_NoLock(fxMesaContext fxMesa, struct gl_texture_object *tObj,
     if (MESA_VERBOSE & (VERBOSE_DRIVER | VERBOSE_TEXTURE)) {
         fprintf(stderr,
                 "fxmesa: downloading %x (%d) in texture memory in %d\n",
-                (GLuint)(AnyPtr) tObj, tObj->Name, (int) targetTMU);
+                 tObj, tObj->Name, (int) targetTMU);
     }
 
     ti->whichTMU = targetTMU;
@@ -763,7 +763,7 @@ fxTMMoveOutTM_NoLock(fxMesaContext fxMesa, struct gl_texture_object *tObj)
 
     if (MESA_VERBOSE & VERBOSE_DRIVER) {
         fprintf(stderr, "fxmesa: fxTMMoveOutTM(%x (%d))\n", 
-		(GLuint)(AnyPtr)tObj, tObj->Name);
+		tObj, tObj->Name);
     }
 
     if (!ti->isInTM)
@@ -798,7 +798,7 @@ fxTMMoveOutTM(fxMesaContext fxMesa, struct gl_texture_object *tObj)
 
     if (MESA_VERBOSE & VERBOSE_DRIVER) {
         fprintf(stderr, "fxmesa: fxTMMoveOutTM(%x (%d))\n", 
-		(GLuint)(AnyPtr)tObj, tObj->Name);
+		tObj, tObj->Name);
     }
 
     if (!ti->isInTM)
