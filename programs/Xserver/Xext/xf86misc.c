@@ -1,4 +1,4 @@
-/* $XFree86*/
+/* $XFree86 */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
