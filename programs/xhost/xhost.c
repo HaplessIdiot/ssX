@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.20tsi Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.21 2003/07/09 15:27:41 tsi Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS
@@ -339,7 +339,7 @@ change_host(Display *dpy, char *name, Bool add)
 	return 0;
 #endif
     }
-    if (!strncmp("inet6:", lname, 7)) {
+    if (!strncmp("inet6:", lname, 6)) {
 #if (defined(TCPCONN) || defined(STREAMSCONN)) && \
     defined(IPv6) && defined(AF_INET6)
 	family = FamilyInternetV6;

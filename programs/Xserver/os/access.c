@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.45tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.46 2003/07/09 15:27:34 tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1099,7 +1099,7 @@ ResetHosts (char *display)
 	    hostname = ohostname + 5;
 	}
 #if defined(IPv6) && defined(AF_INET6)
-	else if (!strncmp("inet6:", lhostname, 7))
+	else if (!strncmp("inet6:", lhostname, 6))
 	{
 	    family = FamilyInternetV6;
 	    hostname = ohostname + 7;
