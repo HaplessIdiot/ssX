@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
 
 #include "win.h"
 
@@ -378,7 +378,7 @@ winAdjustVideoModePrimaryDD (ScreenPtr pScreen)
     }
   
   /* Release our DC */
-  ReleaseDC ((HDC) hdc, NULL);
+  ReleaseDC (NULL, hdc);
 
   return TRUE;
 }

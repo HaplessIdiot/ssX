@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.1 2001/04/05 20:13:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
 
 #include "win.h"
 
@@ -442,7 +442,7 @@ winAdjustVideoModeShadowGDI (ScreenPtr pScreen)
     }
   
   /* Release our DC */
-  ReleaseDC (hdc, NULL);
+  ReleaseDC (NULL, hdc);
      
   return TRUE;
 }
