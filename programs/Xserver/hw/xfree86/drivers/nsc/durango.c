@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/durango.c,v 1.3 2003/01/13 20:50:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/durango.c,v 1.4 2003/01/14 09:34:30 alanh Exp $ */
 /*
  * $Workfile: durango.c $
  * $Revision$
@@ -574,7 +574,7 @@ gfx_outd(unsigned short port, unsigned long data)
    outl(port, data);
 }
 
-#ifdef i386
+#ifdef __i386__
 extern unsigned long nsc_asm_msr_vsa_rd(unsigned long, unsigned long *,
 					unsigned long *);
 extern unsigned long nsc_asm_msr_vsa_wr(unsigned long, unsigned long,
@@ -585,7 +585,7 @@ void
 gfx_msr_asm_read(unsigned short msrReg, unsigned long msrAddr,
 		 unsigned long *ptrHigh, unsigned long *ptrLow)
 {
-#ifdef i386
+#ifdef __i386__
    unsigned long addr, val1, val2;
 
    addr = msrAddr | (unsigned long)msrReg;
@@ -599,7 +599,7 @@ void
 gfx_msr_asm_write(unsigned short msrReg, unsigned long msrAddr,
 		  unsigned long *ptrHigh, unsigned long *ptrLow)
 {
-#ifdef i386
+#ifdef __i386__
    unsigned long addr, val1, val2;
 
    val2 = *ptrHigh;
