@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.174 2000/10/28 21:31:22 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.175 2000/11/02 02:51:19 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2672,7 +2672,7 @@ MGACrtc2FillStrip(ScrnInfoPtr pScrn)
     } else {
 	xf86SetLastScrnFlag(pScrn->entityList[0], pScrn->scrnIndex);
 	pMga->RestoreAccelState(pScrn);
-	pMga->SetupForSolidFill(pScrn, 0, GXcopy, 0xFFFFFFFF);
+	pMga->SetupForSolidFill(pScrn, 0, GXcopy, 0x00000000);
 	pMga->SubsequentSolidFillRect(pScrn, pScrn->virtualX, 0,
 				  pScrn->displayWidth - pScrn->virtualX,
 				  pScrn->virtualY);
