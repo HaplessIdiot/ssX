@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.33 1998/08/13 14:46:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.34 1998/10/04 09:39:29 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -146,9 +146,6 @@ extern void SecurityExtensionInit(INITARGS);
 #endif
 #ifdef XPRINT
 extern void XpExtensionInit(INITARGS);
-#endif
-#ifdef DPMSExtension
-extern void DPMSExtensionInit(INITARGS);
 #endif
 #ifdef XF86VIDMODE
 extern void XFree86VidModeExtensionInit(INITARGS);
@@ -322,6 +319,13 @@ ExtensionModule extension[] =
     { NULL, "XFree86-DGA", NULL, NULL },
     { NULL, "DPMS", NULL, NULL },
     { NULL, "GLX", NULL, NULL },
+    { NULL, "TOG-CUP", NULL, NULL },
+    { NULL, "Extended-Visual-Information", NULL, NULL },
+#ifdef PANORAMIX
+    { NULL, "XINERAMA", &noPanoramiXExtension, NULL },
+#else
+    { NULL, "NOXINERAMA", NULL, NULL },
+#endif
     { NULL, NULL, NULL, NULL }
 };
 
@@ -387,6 +391,12 @@ InitExtensions(argc, argv)
     /* 26 - XF86DGA */
     /* 27 - DPMS */
     /* 28 - GLX */
+    /* 29 - TOG-CUP */
+    /* 30 - EVI */
+#ifdef PANORAMIX
+    extension[31].initFunc = PanoramiXExtensionInit;
+#endif
+
 #endif
     for (i = 0; extension[i].name != NULL; i++) 
 	if (extension[i].initFunc != NULL && 

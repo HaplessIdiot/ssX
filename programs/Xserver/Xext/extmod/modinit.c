@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.1 1998/07/25 08:48:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.2 1998/08/13 14:45:37 dawes Exp $ */
 
 /*
  *
@@ -25,6 +25,7 @@
 
 #ifdef XFree86LOADER
 #include "X.h"
+#include "Xlib.h"
 #include "misc.h"
 #include "xf86_ansic.h"
 
@@ -108,6 +109,16 @@ extern void XFree86DGAExtensionInit(INITARGS);
 #ifdef DPMSExtension
 extern void DPMSExtensionInit(INITARGS);
 #include "dpmsstr.h"
+#endif
+
+#ifdef TOGCUP
+extern void XcupExtensionInit(INITARGS);
+#include "Xcupstr.h"
+#endif
+
+#ifdef EVI
+extern void EVIExtensionInit(INITARGS);
+#include "XEVIstr.h"
 #endif
 
 #ifdef XV
@@ -212,6 +223,22 @@ ExtensionModule extensionModules[] = {
     {
 	DPMSExtensionInit,
 	DPMSExtensionName,
+	NULL,
+	NULL
+    },
+#endif
+#ifdef TOGCUP
+    {
+	XcupExtensionInit,
+	XCUPNAME,
+	NULL,
+	NULL
+    },
+#endif
+#ifdef EVI
+    {
+	EVIExtensionInit,
+	EVINAME,
 	NULL,
 	NULL
     },

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.43 1998/10/05 13:23:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.44 1998/10/06 04:39:38 dawes Exp $ */
 
 /*
  *
@@ -642,6 +642,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86stdout)
    SYMVAR(xf86stderr)
    SYMVAR(xf86errno)
+   SYMVAR(xf86HUGE_VAL)
 
 #ifdef XF86MISC
    SYMVAR(xf86AllowMouseOpenFail)
