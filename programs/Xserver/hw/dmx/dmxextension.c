@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxextension.c,v 1.1 2004/06/30 20:21:38 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxextension.c,v 1.2tsi Exp $ */
 /*
  * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -854,7 +854,7 @@ static void dmxBERestorePixmap(PixmapPtr pPixmap)
 static void dmxBECreateResources(pointer value, XID id, RESTYPE type,
 				 pointer n)
 {
-    int        scrnNum = (int)n;
+    int        scrnNum = (long)n;
     ScreenPtr  pScreen = screenInfo.screens[scrnNum];
 
     if ((type & TypeMask) == (RT_WINDOW & TypeMask)) {
@@ -1166,7 +1166,7 @@ int dmxAttachScreen(int idx, DMXScreenAttributesPtr attr)
     for (i = currentMaxClients; --i >= 0; )
 	if (clients[i])
 	    FindAllClientResources(clients[i], dmxBECreateResources,
-				   (pointer)idx);
+				   (pointer)(long)idx);
 
     /* Create window hierarchy (top down) */
     dmxBECreateWindowTree(idx);
@@ -1333,7 +1333,7 @@ static void dmxBESavePixmap(PixmapPtr pPixmap)
 static void dmxBEDestroyResources(pointer value, XID id, RESTYPE type,
 				  pointer n)
 {
-    int        scrnNum = (int)n;
+    int        scrnNum = (long)n;
     ScreenPtr  pScreen = screenInfo.screens[scrnNum];
 
     if ((type & TypeMask) == (RT_WINDOW & TypeMask)) {
@@ -1471,7 +1471,7 @@ int dmxDetachScreen(int idx)
     for (i = currentMaxClients; --i >= 0; )
 	if (clients[i])
 	    FindAllClientResources(clients[i], dmxBEDestroyResources,
-				   (pointer)idx);
+				   (pointer)(long)idx);
 
     /* Free scratch GCs */
     dmxBEDestroyScratchGCs(idx);
