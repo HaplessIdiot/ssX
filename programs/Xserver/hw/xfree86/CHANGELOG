@@ -1,8 +1,9 @@
-1236. Xinerama support for Render extension (Keith Packard)
-1235. Make some changes to the clock selection for trident driver.
+1237. Real 4:2:0 YUV support for the Rage 128 (Mark Vojkovich).
+1236. Xinerama support for Render extension (Keith Packard).
+1235. Make some changes to the clock selection for trident driver
       (Alan Hourihane).
-1234. Switch savage driver to fb (+Render), correct maxHValue (Keith Packard)
-1233. Add font property caching in Xft (Keith Packard)
+1234. Switch savage driver to fb (+Render), correct maxHValue (Keith Packard).
+1233. Add font property caching in Xft (Keith Packard).
 1232. Xterm patch #150 (Thomas Dickey).
 1231. Fix 24/8 Overlay support on Permedia2v and Permedia3 chipsets 
       (Alan Hourihane).
@@ -12158,4 +12159,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1507 2001/01/02 21:48:17 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1508 2001/01/03 02:54:14 keithp Exp $
