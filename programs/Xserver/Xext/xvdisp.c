@@ -1132,6 +1132,8 @@ ProcXvShmPutImage(ClientPtr client)
         ev.offset = stuff->offset;
         WriteEventsToClient(client, 1, (xEvent *) &ev);
   }
+
+  return (client->noClientException);
 }
 
 static int 
