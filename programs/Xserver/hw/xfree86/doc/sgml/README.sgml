@@ -47,12 +47,12 @@ October 1994:
 	url="S3.html" name="README.S3"> for details).
     <item> Support for ISC's SVR3 (only tested for 3.x and 4.x).
     <item> The `xf86config' utility for generating XF86Config files has
-	been improved and how uses a database of video cards.
+	been improved and now uses a database of video cards.
     <item> The X server LinkKit has been updated to include support for LBX.
-    <item> The slow X server startup time on machine without hardware
+    <item> The slow X server startup time on machines without hardware
 	floating point has been improved.
 </enum>
-Plus a number of other small.  Refer to the CHANGELOG file in the
+Plus a number of other small items.  Refer to the CHANGELOG file in the
 source distribution for full details.
 
 <sect> What's new in XFree86 3.1?
@@ -237,8 +237,7 @@ about 1600x1200 (with 1MB of video memory).  For other chipsets the display
 size is limited to approximately 800x600.
 
 
-<bf> Note:</bf>
-<quote>
+<bf>Note:</bf>
       The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards are
       NOT supported, even though they use the ET4000.  The Stealth 32 which
       uses the ET4000/W32p is also not supported.  Most other Diamond boards
@@ -248,7 +247,6 @@ size is limited to approximately 800x600.
       agreed to provide The XFree86 Project, Inc. with detailed information
       about Diamond products.  This should permit us to better support
       these in future versions of XFree86.
-</quote>
 
 
 <sect><heading><label id="Changes">Important Changes</>
@@ -800,7 +798,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.7 1995/01/15 10:34:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.8 1995/01/18 06:11:53 dawes Exp $
 </verb>
 
 </article>
