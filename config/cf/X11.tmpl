@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.227tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.228 2003/10/21 17:41:43 tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -4031,7 +4031,7 @@ file.ps: deps								@@\
 	-$(TROFF) $(MSMACROS) $(XDOCMACROS) srcs \			@@\
 		2> index.raw > file.nps \				@@\
 	&& PostProcessTroffPS(file.nps,$@)				@@\
-	@if grep '^[^1-9.]' index.raw; then exit 1; \			@@\
+	@if grep '^[^1-9.]' index.raw | grep -v warning; then exit 1; \	@@\
 		else test $$? -le 1; fi					@@\
 									@@\
 file.txt: deps								@@\
@@ -4059,7 +4059,7 @@ file.ps: srcs								@@\
 	-$(TBL) $(XDOCMACROS) srcs | $(TROFF) $(MSMACROS) \		@@\
 		2> index.raw > file.nps \				@@\
 	&& PostProcessTroffPS(file.nps,$@)				@@\
-	@if grep '^[^1-9.]' index.raw; then exit 1; \			@@\
+	@if grep '^[^1-9.]' index.raw | grep -v warning; then exit 1; \	@@\
 		else test $$? -le 1; fi					@@\
 									@@\
 file.txt: srcs								@@\
@@ -4083,7 +4083,7 @@ file.ps: srcs								@@\
 	-$(TBL) $(XDOCMACROS) srcs | $(EQN) | $(TROFF) $(MSMACROS) \	@@\
 		2> index.raw > file.nps \				@@\
 	&& PostProcessTroffPS(file.nps,$@)				@@\
-	@if grep '^[^1-9.]' index.raw; then exit 1; \			@@\
+	@if grep '^[^1-9.]' index.raw | grep -v warning; then exit 1; \	@@\
 		else test $$? -le 1; fi					@@\
 									@@\
 file.txt: srcs								@@\
