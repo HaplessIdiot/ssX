@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.10 1998/01/24 16:57:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.11 1998/07/25 16:55:09 dawes Exp $ */
 /*
  *
  * For Scancodes see notes in atKeynames.h  !!!!
@@ -265,31 +265,6 @@ static KeySym map[NUM_KEYCODES * GLYPHS_PER_KEY] = {
     /* 0x7d */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x7e */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
 #endif /* PC98 */
-    /* 0x7f */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-
-    /* These are for ServerNumLock handling */
-    /* 0x80 */  XK_KP_7,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x81 */  XK_KP_8,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x82 */  XK_KP_9,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x83 */  XK_KP_4,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x84 */  XK_KP_5,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x85 */  XK_KP_6,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x86 */  XK_KP_1,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x87 */  XK_KP_2,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x88 */  XK_KP_3,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x89 */  XK_KP_0,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x8a */  XK_KP_Decimal,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x8b */  XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x8c */  XK_Up,		NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x8d */  XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x8e */  XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x8f */  XK_Begin,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x90 */  XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x91 */  XK_End,		NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x92 */  XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x93 */  XK_Next,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x94 */  XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x95 */  XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,
 };
 
 #if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(linux) && !defined(CSRG_BASED)
@@ -422,30 +397,5 @@ static KeySym map84[NUM_KEYCODES * GLYPHS_PER_KEY] = {
     /* 0x7c */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x7d */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x7e */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x7f */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-
-    /* These are for ServerNumLock handling */
-    /* 0x80 */  XK_KP_7,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x81 */  XK_KP_8,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x82 */  XK_KP_9,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x83 */  XK_KP_4,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x84 */  XK_KP_5,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x85 */  XK_KP_6,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x86 */  XK_KP_1,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x87 */  XK_KP_2,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x88 */  XK_KP_3,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x89 */  XK_KP_0,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x8a */  XK_KP_Decimal,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x8b */  XK_Home,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x8c */  XK_Up,		NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x8d */  XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x8e */  XK_Left,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x8f */  XK_Begin,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x90 */  XK_Right,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x91 */  XK_End,		NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x92 */  XK_Down,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x93 */  XK_Next,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x94 */  XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x95 */  XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,
 };
 #endif

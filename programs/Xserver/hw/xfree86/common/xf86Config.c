@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.170 1999/04/25 10:02:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.171 1999/04/27 12:05:05 dawes Exp $ */
 
 
 /*
@@ -381,6 +381,8 @@ typedef enum {
     FLAG_DISABLEMODINDEV,
     FLAG_MODINDEVALLOWNONLOCAL,
     FLAG_ALLOWMOUSEOPENFAIL,
+    FLAG_VTINIT,
+    FLAG_VTSYSREQ,
     FLAG_PCIPROBE1,
     FLAG_PCIPROBE2,
     FLAG_PCIFORCECONFIG1,
@@ -408,6 +410,10 @@ static OptionInfoRec FlagOptions[] = {
   { FLAG_MODINDEVALLOWNONLOCAL,	"AllowNonLocalModInDev",	OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_ALLOWMOUSEOPENFAIL,	"AllowMouseOpenFail",		OPTV_BOOLEAN,
+	{0}, FALSE },
+  { FLAG_VTINIT,		"VTInit",			OPTV_STRING,
+	{0}, FALSE },
+  { FLAG_VTSYSREQ,		"VTSysReq",			OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_PCIPROBE1,		"PciProbe1"		,	OPTV_BOOLEAN,
 	{0}, FALSE },
@@ -484,6 +490,18 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     if (xf86GetOptValBool(FlagOptions, FLAG_ALLOWMOUSEOPENFAIL, &value))
 	xf86Info.allowMouseOpenFail = value;
 
+    if (xf86GetOptValBool(FlagOptions, FLAG_VTSYSREQ, &value)) {
+#ifdef USE_VT_SYSREQ
+	xf86Info.vtSysreq = value;
+	xf86Msg(X_CONFIG, "VTSysReq enabled\n");
+#else
+	if (value)
+	    xf86Msg(X_WARNING, "VTSysReq is not supported on this OS\n");
+#endif
+    }
+
+    xf86Info.vtinit = xf86GetOptValString(FlagOptions, FLAG_VTINIT);
+
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIPROBE1))
 	xf86Info.pciFlags = PCIProbe1;
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIPROBE2))
@@ -541,27 +559,6 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     return TRUE;
 }
 
-static KeymapKey
-keyConv(int km)
-{
-  switch (km) {
-  case CONF_KM_META:
-    return KM_META;
-  case CONF_KM_COMPOSE:
-    return KM_COMPOSE;
-  case CONF_KM_MODESHIFT:
-    return KM_MODESHIFT;
-  case CONF_KM_MODELOCK:
-    return KM_MODELOCK;
-  case CONF_KM_SCROLLLOCK:
-    return KM_SCROLLLOCK;
-  case CONF_KM_CONTROL:
-    return KM_CONTROL;
-  default:
-    return KM_META;
-  }
-}
-
 static Bool
 configKeyboard(XF86ConfKeyboardPtr keybconf)
 {
@@ -570,42 +567,38 @@ configKeyboard(XF86ConfKeyboardPtr keybconf)
 #endif
 
   /* Initialize defaults */
-  xf86Info.serverNumLock = FALSE;
   xf86Info.xleds         = 0L;
   xf86Info.kbdDelay      = 500;
   xf86Info.kbdRate       = 30;
   xf86Info.kbdProc       = NULL;
   xf86Info.vtinit        = NULL;
   xf86Info.vtSysreq      = VT_SYSREQ_DEFAULT;
-  xf86Info.specialKeyMap = xnfalloc(NUM_KEYMAP_TYPES * sizeof(KeymapKey));
-  xf86Info.specialKeyMap[K_INDEX_LEFTALT] = KM_META;
-  xf86Info.specialKeyMap[K_INDEX_RIGHTALT] = KM_META;
-  xf86Info.specialKeyMap[K_INDEX_SCROLLLOCK] = KM_COMPOSE;
-  xf86Info.specialKeyMap[K_INDEX_RIGHTCTL] = KM_CONTROL;
 #if defined(SVR4) && defined(i386) && !defined(PC98)
   xf86Info.panix106      = FALSE;
 #endif
-  /* XXX Change this so that rules/model/layout are set by default */
 #ifdef XKB
-  xf86Info.xkbkeymap     = NULL;
-  xf86Info.xkbtypes      = "default";
+  /* XXX Should handle PC98-specifics at runtime */
 #ifndef PC98
-  xf86Info.xkbcompat     = "default";
-  xf86Info.xkbkeycodes   = "xfree86";
-  xf86Info.xkbsymbols    = "us(pc101)";
-  xf86Info.xkbgeometry   = "pc";
+  xf86Info.xkbrules      = "xfree86";
+  xf86Info.xkbmodel      = "pc101";
+  xf86Info.xkblayout     = "us";
+  xf86Info.xkbvariant    = "";
+  xf86Info.xkboptions    = "";
 #else
-  xf86Info.xkbcompat     = "pc98";
-  xf86Info.xkbkeycodes   = "xfree98";
-  xf86Info.xkbsymbols    = "nec/jp(pc98)";
-  xf86Info.xkbgeometry   = "nec(pc98)";
+  xf86Info.xkbrules      = "xfree98";
+  xf86Info.xkbmodel      = "pc98";
+  xf86Info.xkblayout     = "nec/jp";
+  xf86Info.xkbvariant    = "";
+  xf86Info.xkboptions    = "";
 #endif
   xf86Info.xkbcomponents_specified = FALSE;
-  xf86Info.xkbrules      = "xfree86";
-  xf86Info.xkbmodel      = NULL;
-  xf86Info.xkblayout     = NULL;
-  xf86Info.xkbvariant    = NULL;
-  xf86Info.xkboptions    = NULL;
+  /* Should discourage the use of these. */
+  xf86Info.xkbkeymap     = NULL;
+  xf86Info.xkbtypes      = NULL;
+  xf86Info.xkbcompat     = NULL;
+  xf86Info.xkbkeycodes   = NULL;
+  xf86Info.xkbsymbols    = NULL;
+  xf86Info.xkbgeometry   = NULL;
 #endif
 
   if ( NameCompare(keybconf->keyb_protocol,"standard") == 0 ) {
@@ -636,45 +629,8 @@ configKeyboard(XF86ConfKeyboardPtr keybconf)
     xf86Info.kbdRate = keybconf->keyb_kbdRate;
   }
 
-  if ( keybconf->keyb_serverNumLock ) {
-    xf86Info.serverNumLock = TRUE;
-  }
-
   if ( keybconf->keyb_xleds ) {
     xf86Info.xleds = keybconf->keyb_xleds;
-  }
-
-  if ( keybconf->keyb_specialKeyMap[CONF_K_INDEX_LEFTALT] ) {
-    xf86Info.specialKeyMap[K_INDEX_LEFTALT] =
-		keyConv(keybconf->keyb_specialKeyMap[CONF_K_INDEX_LEFTALT]);
-  }
-
-  if ( keybconf->keyb_specialKeyMap[CONF_K_INDEX_RIGHTALT] ) {
-    xf86Info.specialKeyMap[K_INDEX_RIGHTALT] =
-		keyConv(keybconf->keyb_specialKeyMap[CONF_K_INDEX_RIGHTALT]);
-  }
-
-  if ( keybconf->keyb_specialKeyMap[CONF_K_INDEX_SCROLLLOCK] ) {
-    xf86Info.specialKeyMap[K_INDEX_SCROLLLOCK] =
-		keyConv(keybconf->keyb_specialKeyMap[CONF_K_INDEX_SCROLLLOCK]);
-  }
-
-  if ( keybconf->keyb_specialKeyMap[CONF_K_INDEX_RIGHTCTL] ) {
-    xf86Info.specialKeyMap[K_INDEX_RIGHTCTL] =
-		keyConv(keybconf->keyb_specialKeyMap[CONF_K_INDEX_RIGHTCTL]);
-  }
-
-  if ( keybconf->keyb_vtinit ) {
-    xf86Info.vtinit = keybconf->keyb_vtinit;
-  }
-
-  if ( keybconf->keyb_vtSysreq ) {
-#ifdef USE_VT_SYSREQ
-    xf86Info.vtSysreq = keybconf->keyb_vtSysreq;
-    xf86Msg(X_CONFIG, "VTSysReq enabled\n");
-#else
-  xf86ConfigError("VTSysReq not supported on this OS");
-#endif
   }
 
 #ifdef XKB

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.9 1999/03/07 08:29:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.10 1999/03/28 15:32:29 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -109,13 +109,11 @@ typedef struct {
     unsigned long	leds;
     unsigned long	xleds;
     char *		vtinit;
-    KeymapKey *		specialKeyMap;
     int			scanPrefix;		/* scancode-state */
     Bool		capsLock;
     Bool		numLock;
     Bool		scrollLock;
     Bool		modeSwitchLock;
-    Bool		serverNumLock;
     Bool		composeLock;
     Bool		vtSysreq;
 #if defined(SVR4) && defined(i386)

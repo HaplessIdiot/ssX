@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.62 1999/03/28 15:32:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.63 1999/04/15 08:36:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -494,44 +494,6 @@ xf86PostKbdEvent(unsigned key)
 #endif
 #endif /* not PC98 */
     }
-#ifndef PC98
-    if (xf86Info.serverNumLock) {
-     if ((!xf86Info.numLock && ModifierDown(ShiftMask)) ||
-         (xf86Info.numLock && !ModifierDown(ShiftMask))) {
-      /*
-       * Hardwired numlock handling ... (Some applications break if they have
-       * these keys double defined, like twm)
-       */
-      switch (scanCode) {
-      case KEY_KP_7:        scanCode = KEY_SN_KP_7;   break;  /* curs 7 */
-      case KEY_KP_8:        scanCode = KEY_SN_KP_8;   break;  /* curs 8 */
-      case KEY_KP_9:        scanCode = KEY_SN_KP_9;   break;  /* curs 9 */
-      case KEY_KP_4:        scanCode = KEY_SN_KP_4;   break;  /* curs 4 */
-      case KEY_KP_5:        scanCode = KEY_SN_KP_5;   break;  /* curs 5 */
-      case KEY_KP_6:        scanCode = KEY_SN_KP_6;   break;  /* curs 6 */
-      case KEY_KP_1:        scanCode = KEY_SN_KP_1;   break;  /* curs 1 */
-      case KEY_KP_2:        scanCode = KEY_SN_KP_2;   break;  /* curs 2 */
-      case KEY_KP_3:        scanCode = KEY_SN_KP_3;   break;  /* curs 3 */
-      case KEY_KP_0:        scanCode = KEY_SN_KP_0;   break;  /* curs 0 */
-      case KEY_KP_Decimal:  scanCode = KEY_SN_KP_Dec; break;  /* curs decimal */
-      }
-     } else {
-      switch (scanCode) {
-      case KEY_KP_7:        scanCode = KEY_SN_KP_Home;  break;  /* curs home */
-      case KEY_KP_8:        scanCode = KEY_SN_KP_Up  ;  break;  /* curs up */
-      case KEY_KP_9:        scanCode = KEY_SN_KP_Prior; break;  /* curs pgup */
-      case KEY_KP_4:        scanCode = KEY_SN_KP_Left;  break;  /* curs left */
-      case KEY_KP_5:        scanCode = KEY_SN_KP_Begin; break;  /* curs begin */
-      case KEY_KP_6:        scanCode = KEY_SN_KP_Right; break;  /* curs right */
-      case KEY_KP_1:        scanCode = KEY_SN_KP_End;   break;  /* curs end */
-      case KEY_KP_2:        scanCode = KEY_SN_KP_Down;  break;  /* curs down */
-      case KEY_KP_3:        scanCode = KEY_SN_KP_Next;  break;  /* curs pgdn */
-      case KEY_KP_0:        scanCode = KEY_SN_KP_Ins;   break;  /* curs ins */
-      case KEY_KP_Decimal:  scanCode = KEY_SN_KP_Del;   break;  /* curs del */
-      }
-     }
-    }
-#endif /* not PC98 */
   }
 
 #ifndef PC98

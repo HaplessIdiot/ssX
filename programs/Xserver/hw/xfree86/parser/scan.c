@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.3 1998/11/22 10:37:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.4 1999/01/14 13:05:17 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -494,6 +494,21 @@ xf86ParseError (char *format,...)
 	va_list ap;
 
 	fprintf (stderr, "Parse error on line %d of section %s in file %s\n",
+			 configLineNo, configSection, configPath);
+	fprintf (stderr, "\t");
+	va_start (ap, format);
+	vfprintf (stderr, format, ap);
+	va_end (ap);
+
+	fprintf (stderr, "\n");
+}
+
+void
+xf86ParseWarning (char *format,...)
+{
+	va_list ap;
+
+	fprintf (stderr, "Parse warning on line %d of section %s in file %s\n",
 			 configLineNo, configSection, configPath);
 	fprintf (stderr, "\t");
 	va_start (ap, format);

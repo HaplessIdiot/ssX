@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.30 1999/04/25 10:02:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.31 1999/04/27 12:05:07 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -705,26 +705,6 @@ typedef enum {
     PROT_ACECAD,			/* Acecad tablets */
     NUM_PROTOCOLS			/* MUST BE LAST */
 } MouseProtocol;
-
-/*
- * keyboard specialKeyMap paramters
- */
-typedef enum {
-    K_INDEX_LEFTALT	= 0,
-    K_INDEX_RIGHTALT,
-    K_INDEX_SCROLLLOCK,
-    K_INDEX_RIGHTCTL,
-    NUM_KEYMAP_TYPES
-} KeymapIndex;
-
-typedef enum {
-    KM_META		= 0,
-    KM_COMPOSE,
-    KM_MODESHIFT,
-    KM_MODELOCK,
-    KM_SCROLLLOCK,
-    KM_CONTROL
-} KeymapKey;
 
 
 /* For DPMS */

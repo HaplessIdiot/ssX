@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.8 1999/04/05 07:13:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.9 1999/04/25 10:02:39 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -171,5 +171,11 @@ else\
 "InputDevice section \"%s\" must have a Driver line."
 #define INVALID_GAMMA_MSG \
 "gamma correction value(s) expected\n either one value or three r/g/b values."
+
+/* Warning messages */
+#define OBSOLETE_MSG \
+"Ignoring obsolete keyword \"%s\"."
+#define MOVED_TO_FLAGS_MSG \
+"Keyword \"%s\" is now an Option flag in the ServerFlags section."
 
 #endif /* _Configint_h_ */

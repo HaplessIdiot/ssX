@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.11 1999/04/24 07:36:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.12 1999/04/28 05:36:13 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -75,13 +75,11 @@ xf86InfoRec xf86Info = {
 	0,		/* leds */
 	0,		/* xleds */
 	NULL,		/* vtinit */
-	NULL,		/* specialKeyMap */
 	0,		/* scanPrefix */
 	FALSE,		/* capsLock */
 	FALSE,		/* numLock */
 	FALSE,		/* scrollLock */
 	FALSE,		/* modeSwitchLock */
-	FALSE,		/* serverNumLock */
 	FALSE,		/* composeLock */
 	FALSE,		/* vtSysreq */
 #if defined(SVR4) && defined(i386)

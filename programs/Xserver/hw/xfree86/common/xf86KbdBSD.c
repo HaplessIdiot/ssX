@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.10.4.7 1998/06/04 17:35:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.11 1998/07/25 16:55:08 dawes Exp $ */
 /*
  * Derived from xf86Kbd.c by S_ren Schmidt (sos@login.dkuug.dk)
  * which is Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -35,7 +35,6 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "atKeynames.h"
-#include "coKeynames.h"
 #include "xf86Keymap.h"
 
 #define KD_GET_ENTRY(i,n) \
@@ -337,7 +336,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
      CARD8      *pModMap;
 {
   KeySym        *k;
-  int           i, j;
+  int           i;
 
 #ifndef __bsdi__
   switch (xf86Info.consType) {
@@ -481,58 +480,6 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 #endif /* !bsdi */
 
   /*
-   * Apply the special key mapping specified in XF86Config 
-   */
-  for (k = map, i = MIN_KEYCODE;
-       i < (NUM_KEYCODES + MIN_KEYCODE);
-       i++, k += 4) {
-    switch (k[0]) {
-      case XK_Alt_L:
-        j = K_INDEX_LEFTALT;
-        break;
-      case XK_Alt_R:
-        j = K_INDEX_RIGHTALT;
-        break;
-      case XK_Scroll_Lock:
-        j = K_INDEX_SCROLLLOCK;
-        break;
-      case XK_Control_R:
-        j = K_INDEX_RIGHTCTL;
-        break;
-      default:
-        j = -1;
-    }
-    if (j >= 0)
-      switch (xf86Info.specialKeyMap[j]) {
-        case KM_META:
-          if (k[0] == XK_Alt_R)
-            k[1] = XK_Meta_R;
-          else {
-            k[0] = XK_Alt_L;
-            k[1] = XK_Meta_L;
-          }
-          break;
-        case KM_COMPOSE:
-          k[0] = XK_Multi_key;
-          break;
-        case KM_MODESHIFT:
-          k[0] = XK_Mode_switch;
-          k[1] = NoSymbol;
-          break;
-        case KM_MODELOCK:
-          k[0] = XK_Mode_switch;
-          k[1] = XF86XK_ModeLock;
-          break;
-        case KM_SCROLLLOCK:
-          k[0] = XK_Scroll_Lock;
-          break;
-        case KM_CONTROL:
-          k[0] = XK_Control_R;
-          break;
-      }
-  }
-
-  /*
    * compute the modifier map
    */
   for (i = 0; i < MAP_LENGTH; i++)
@@ -564,7 +511,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
       break;
       
     case XK_Num_Lock:
-      if (!xf86Info.serverNumLock) pModMap[i] = NumLockMask;
+      pModMap[i] = NumLockMask;
       break;
 
     case XK_Scroll_Lock:
@@ -589,10 +536,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   pKeySyms->map        = map;
   pKeySyms->mapWidth   = GLYPHS_PER_KEY;
   pKeySyms->minKeyCode = MIN_KEYCODE;
-  if (xf86Info.serverNumLock)
-    pKeySyms->maxKeyCode = MAX_KEYCODE; 
-  else
-    pKeySyms->maxKeyCode = MAX_STD_KEYCODE;
+  pKeySyms->maxKeyCode = MAX_KEYCODE; 
 
 }
 

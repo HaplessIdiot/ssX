@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.4 1999/04/27 12:05:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.5 1999/04/28 15:04:56 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -74,12 +74,6 @@ static int write_modes(
   XF86ConfModeLinePtr *ptr2modeptr
 );
 
-static void
-set_key_type(
-  XF86ConfKeyboardPtr kptr,
-  int keyidx,
-  char *str
-);
 
 /*
    Implements the xf86config_writefile command which writes
@@ -254,7 +248,6 @@ putsection_keyboard(interp, varpfx)
 	config_list->conf_keyboard = kptr;
 	memset(kptr, 0, sizeof(XF86ConfKeyboardRec));
 	SETSTR (kptr->keyb_protocol,		"Protocol");
-	SETBOOL(kptr->keyb_serverNumLock,	"ServerNumLock");
 	ptr = Tcl_GetVar2(interp, section, "AutoRepeat_delay", 0);
 	if (ptr) Tcl_GetInt(interp, ptr, &(kptr->keyb_kbdDelay));
 	ptr = Tcl_GetVar2(interp, section, "AutoRepeat_rate", 0);
@@ -270,14 +263,6 @@ putsection_keyboard(interp, varpfx)
 #ifdef USE_VT_SYSREQ
 	SETBOOL(kptr->keyb_vtSysreq,	"VTSysReq");
 #endif
-	ptr = Tcl_GetVar2(interp, section, "LeftAlt", 0);
-	if (ptr) set_key_type(kptr, CONF_K_INDEX_LEFTALT, ptr);
-	ptr = Tcl_GetVar2(interp, section, "RightAlt", 0);
-	if (ptr) set_key_type(kptr, CONF_K_INDEX_RIGHTALT, ptr);
-	ptr = Tcl_GetVar2(interp, section, "ScrollLock", 0);
-	if (ptr) set_key_type(kptr, CONF_K_INDEX_SCROLLLOCK, ptr);
-	ptr = Tcl_GetVar2(interp, section, "RightCtl", 0);
-	if (ptr) set_key_type(kptr, CONF_K_INDEX_RIGHTCTL, ptr);
 #ifdef XKB
 	SETBOOL(kptr->keyb_xkbDisable,	"XkbDisable");
 	SETSTR(kptr->keyb_xkbkeycodes,	"XkbKeycodes");
@@ -910,28 +895,5 @@ write_modes(interp, section, idxname, ptr2modeptr)
 	}
 	XtFree(tmpbuf);
 	return TCL_OK;
-}
-
-static void
-set_key_type(kptr, keyidx, str)
-  XF86ConfKeyboardPtr kptr;
-  int keyidx;
-  char *str;
-{
-	static xf86ConfigSymTabRec keynametab[] = {
-		{CONF_KM_META, "meta"},
-		{CONF_KM_COMPOSE, "compose"},
-		{CONF_KM_MODESHIFT, "modeshift"},
-		{CONF_KM_MODELOCK, "modelock"},
-		{CONF_KM_SCROLLLOCK, "scrolllock"},
-		{CONF_KM_CONTROL, "control"},
-		{-1, ""},
-	};
-	int i;
-
-	for (i = 0; keynametab[i].token >= 0; i++) {
-	    if (!NameCompare(keynametab[i].name, str))
-		kptr->keyb_specialKeyMap[keyidx] = keynametab[i].token;
-	}
 }
 

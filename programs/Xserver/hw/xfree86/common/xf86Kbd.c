@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.17 1998/08/16 10:25:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.18 1998/12/13 07:37:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -40,6 +40,19 @@
 
 #define KD_GET_ENTRY(i,n) \
   eascii_to_x[((keymap.key[i].spcl << (n+1)) & 0x100) + keymap.key[i].map[n]]
+
+#if defined(KDGKBTYPE) && \
+	!defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && \
+	!defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && \
+	!defined(__arm32__) && !defined(__GNU__)
+#define HAS_GETKBTYPE
+#endif
+#if defined(GIO_KEYMAP) && \
+	!defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && \
+	!defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && \
+	!defined(__arm32__) && !defined(__GNU__) && !defined(DGUX)
+#define HAS_GETKEYMAP
+#endif
 
 /*
  * NOTE: Not all possible remappable symbols are remapped. There are two main
@@ -239,14 +252,14 @@ xf86KbdGetMapping (pKeySyms, pModMap)
      CARD8      *pModMap;
 {
   KeySym        *k;
-#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__) && !defined(__GNU__) && !defined(DGUX)
+#ifdef HAS_GETKEYMAP
   keymap_t      keymap;
-#endif /* !Lynx && !AMOEBA && !MINIX && !__OSF__ && !__EMX__ && !__mips__ && !__arm32__ && !__GNU__ && !DGUX */
+#endif
   char          type;
-  int           i, j;
+  int           i;
   KeySym        *pMap;
   
-#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__) && !defined(__GNU__)
+#ifdef HAS_GETKBTYPE
   xf86Info.kbdType =
     ioctl(xf86Info.consoleFd, KDGKBTYPE, &type) != -1 ? type : KB_101;
   if (xf86Info.kbdType == KB_84)
@@ -258,7 +271,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   pMap = map;
 #endif
 
-#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__) && !defined(__GNU__) && !defined(DGUX)
+#ifdef HAS_GETKEYMAP
   /*
    * use the keymap, which can be gotten from our oringinal vt??.
    * ( ttymap(1) !!!! )
@@ -281,59 +294,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 	if (k[0] == k[2] && k[1] == k[3]) k[2] = k[3] = NoSymbol;
       }
   }
-#endif /* !Lynx && !AMOEBA && !MINIX && !__OSF__ && !__EMX__ && !__mips__ && !__arm32__ && !__GNU__ && !DGUX */
-
-  /*
-   * Apply the special key mapping specified in XF86Config 
-   */
-  for (k = pMap, i = MIN_KEYCODE;
-       i < (NUM_KEYCODES + MIN_KEYCODE);
-       i++, k += 4) {
-    switch (k[0]) {
-      case XK_Alt_L:
-        j = K_INDEX_LEFTALT;
-        break;
-      case XK_Alt_R:
-        j = K_INDEX_RIGHTALT;
-        break;
-      case XK_Scroll_Lock:
-        j = K_INDEX_SCROLLLOCK;
-        break;
-      case XK_Control_R:
-        j = K_INDEX_RIGHTCTL;
-        break;
-      default:
-        j = -1;
-    }
-    if (j >= 0)
-      switch (xf86Info.specialKeyMap[j]) {
-        case KM_META:
-          if (k[0] == XK_Alt_R)
-            k[1] = XK_Meta_R;
-          else {
-            k[0] = XK_Alt_L;
-            k[1] = XK_Meta_L;
-          }
-          break;
-        case KM_COMPOSE:
-          k[0] = XK_Multi_key;
-          break;
-        case KM_MODESHIFT:
-          k[0] = XK_Mode_switch;
-          k[1] = NoSymbol;
-          break;
-        case KM_MODELOCK:
-          k[0] = XK_Mode_switch;
-          k[1] = XF86XK_ModeLock;
-          break;
-        case KM_SCROLLLOCK:
-          k[0] = XK_Scroll_Lock;
-          break;
-        case KM_CONTROL:
-          k[0] = XK_Control_R;
-          break;
-      }
-  }
+#endif
 
   /*
    * compute the modifier map
@@ -367,7 +328,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
       break;
       
     case XK_Num_Lock:
-      if (!xf86Info.serverNumLock) pModMap[i] = NumLockMask;
+      pModMap[i] = NumLockMask;
       break;
 
     case XK_Scroll_Lock:
@@ -387,7 +348,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 
     }
   
-#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__) && !defined(__GNU__)
+#ifdef HAS_GETKBTYPE
   xf86Info.kbdType =
     ioctl(xf86Info.consoleFd, KDGKBTYPE, &type) != -1 ? type : KB_101;
 #else
@@ -401,8 +362,5 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   pKeySyms->map        = pMap;
   pKeySyms->mapWidth   = GLYPHS_PER_KEY;
   pKeySyms->minKeyCode = MIN_KEYCODE;
-  if (xf86Info.serverNumLock)
-    pKeySyms->maxKeyCode = MAX_KEYCODE;
-  else
-    pKeySyms->maxKeyCode = MAX_STD_KEYCODE;
+  pKeySyms->maxKeyCode = MAX_KEYCODE;
 }

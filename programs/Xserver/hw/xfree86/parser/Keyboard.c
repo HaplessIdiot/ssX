@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Keyboard.c,v 1.3 1999/03/28 15:33:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Keyboard.c,v 1.4 1999/04/05 07:13:17 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -39,15 +39,7 @@ static xf86ConfigSymTabRec KeyboardTab[] =
 	{ENDSECTION, "endsection"},
 	{KPROTOCOL, "protocol"},
 	{AUTOREPEAT, "autorepeat"},
-	{SERVERNUM, "servernumlock"},
 	{XLEDS, "xleds"},
-	{VTINIT, "vtinit"},
-	{LEFTALT, "leftalt"},
-	{RIGHTALT, "rightalt"},
-	{RIGHTALT, "altgr"},
-	{SCROLLLOCK_TOK, "scrolllock"},
-	{RIGHTCTL, "rightctl"},
-	{VTSYSREQ, "vtsysreq"},
 	{PANIX106, "panix106"},
 	{XKBKEYMAP, "xkbkeymap"},
 	{XKBCOMPAT, "xkbcompat"},
@@ -61,9 +53,20 @@ static xf86ConfigSymTabRec KeyboardTab[] =
 	{XKBLAYOUT, "xkblayout"},
 	{XKBVARIANT, "xkbvariant"},
 	{XKBOPTIONS, "xkboptions"},
+	/* The next two have become ServerFlags options */
+	{VTINIT, "vtinit"},
+	{VTSYSREQ, "vtsysreq"},
+	/* Obsolete keywords */
+	{SERVERNUM, "servernumlock"},
+	{LEFTALT, "leftalt"},
+	{RIGHTALT, "rightalt"},
+	{RIGHTALT, "altgr"},
+	{SCROLLLOCK_TOK, "scrolllock"},
+	{RIGHTCTL, "rightctl"},
 	{-1, ""},
 };
 
+/* Obsolete */
 static xf86ConfigSymTabRec KeyMapTab[] =
 {
 	{CONF_KM_META, "meta"},
@@ -81,7 +84,6 @@ XF86ConfKeyboardPtr
 parseKeyboardSection (void)
 {
 	int ntoken;
-	int indx = 0;
 	parsePrologue (XF86ConfKeyboardPtr, XF86ConfKeyboardRec)
 
 		while ((token = xf86GetToken (KeyboardTab)) != ENDSECTION)
@@ -101,44 +103,23 @@ parseKeyboardSection (void)
 				Error (AUTOREPEAT_MSG, NULL);
 			ptr->keyb_kbdRate = val.num;
 			break;
-		case SERVERNUM:
-			ptr->keyb_serverNumLock = TRUE;
-			break;
 		case XLEDS:
 			while ((token = xf86GetToken (NULL)) == NUMBER)
 				ptr->keyb_xleds |= 1L << (val.num - 1);
 			xf86UnGetToken (token);
 			break;
+		case SERVERNUM:
+			xf86ParseWarning(OBSOLETE_MSG, xf86TokenString());
+			break;
 		case LEFTALT:
 		case RIGHTALT:
 		case SCROLLLOCK_TOK:
 		case RIGHTCTL:
-			switch (token)
-			{
-			case LEFTALT:
-				indx = CONF_K_INDEX_LEFTALT;
+			xf86ParseWarning(OBSOLETE_MSG, xf86TokenString());
 				break;
-			case RIGHTALT:
-				indx = CONF_K_INDEX_RIGHTALT;
-				break;
-			case SCROLLLOCK_TOK:
-				indx = CONF_K_INDEX_SCROLLLOCK;
-				break;
-			case RIGHTCTL:
-				indx = CONF_K_INDEX_RIGHTCTL;
-				break;
-			}
 			ntoken = xf86GetToken (KeyMapTab);
 			switch (ntoken)
 			{
-			case CONF_KM_META:
-			case CONF_KM_COMPOSE:
-			case CONF_KM_MODESHIFT:
-			case CONF_KM_MODELOCK:
-			case CONF_KM_SCROLLLOCK:
-			case CONF_KM_CONTROL:
-				ptr->keyb_specialKeyMap[indx] = ntoken;
-				break;
 			case EOF_TOKEN:
 				xf86ParseError (UNEXPECTED_EOF_MSG);
 				CLEANUP (ptr);
@@ -153,10 +134,10 @@ parseKeyboardSection (void)
 		case VTINIT:
 			if (xf86GetToken (NULL) != STRING)
 				Error (QUOTE_MSG, "VTInit");
-			ptr->keyb_vtinit = val.str;
+			xf86ParseWarning(MOVED_TO_FLAGS_MSG, "VTInit");
 			break;
 		case VTSYSREQ:
-			ptr->keyb_vtSysreq = TRUE;
+			xf86ParseWarning(MOVED_TO_FLAGS_MSG, "VTSysReq");
 			break;
 		case XKBDISABLE:
 			ptr->keyb_xkbDisable = TRUE;
@@ -250,8 +231,6 @@ printKeyboardSection (FILE * cf, XF86ConfKeyboardPtr ptr)
 	if (ptr->keyb_kbdDelay || ptr->keyb_kbdRate)
 		fprintf (cf, "\tAutoRepeat   %d %d\n", ptr->keyb_kbdDelay,
 						ptr->keyb_kbdRate);
-	if (ptr->keyb_serverNumLock)
-		fprintf (cf, "\tServerNumLock\n");
 	if (ptr->keyb_xleds) {
 		fprintf (cf, "\tXLeds       ");
 		for (i = 1; i < 8*sizeof(ptr->keyb_xleds); i++)
@@ -260,30 +239,6 @@ printKeyboardSection (FILE * cf, XF86ConfKeyboardPtr ptr)
 		fprintf (cf, "\n");
 	}
 
-#define SPECKEYMAP(idx, nam)  \
-	{ \
-	    if (ptr->keyb_specialKeyMap[idx]) { \
-		fprintf (cf, "\t%10s   ", nam); \
-		for (i = 0; KeyMapTab[i].token >= 0; i++) { \
-		    if (KeyMapTab[i].token == ptr->keyb_specialKeyMap[idx]) { \
-			fprintf(cf, "%c%s\n", toupper(*KeyMapTab[i].name), \
-				KeyMapTab[i].name+1); \
-			break; \
-		    } \
-		} \
-	    } \
-	}
-
-	SPECKEYMAP(CONF_K_INDEX_LEFTALT, "LeftAlt");
-	SPECKEYMAP(CONF_K_INDEX_RIGHTALT, "RightAlt");
-	SPECKEYMAP(CONF_K_INDEX_SCROLLLOCK, "ScrollLock");
-	SPECKEYMAP(CONF_K_INDEX_RIGHTCTL, "RightCtl");
-#undef SPECKEYMAP
-
-	if (ptr->keyb_vtinit)
-		fprintf (cf, "\tVTInit       \"%s\"\n", ptr->keyb_vtinit);
-	if (ptr->keyb_vtSysreq)
-		fprintf (cf, "\tVTSysReq\n");
 	if (ptr->keyb_xkbDisable)
 		fprintf (cf, "\tXkbDisable\n");
 	if (ptr->keyb_xkbkeycodes)
@@ -320,7 +275,6 @@ freeKeyboard (XF86ConfKeyboardPtr ptr)
 		return;
 
 	TestFree (ptr->keyb_protocol);
-	TestFree (ptr->keyb_vtinit);
 	TestFree (ptr->keyb_xkbkeymap);
 	TestFree (ptr->keyb_xkbkeymap);
 	TestFree (ptr->keyb_xkbcompat);

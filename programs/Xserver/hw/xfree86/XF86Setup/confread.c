@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.4 1999/04/27 12:05:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.5 1999/04/28 15:04:56 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -49,8 +49,6 @@ char *rgbPath = RGB_DB;
 #ifdef NEED_SNPRINTF
 #include "snprintf.h"
 #endif
-
-static char *keymap_type(XF86ConfKeyboardPtr kbd, int keyval, char *defval);
 
 static int  getsection_files   (Tcl_Interp *interp, char *varpfx);
 static int  getsection_module  (Tcl_Interp *interp, char *varpfx);
@@ -216,8 +214,6 @@ getsection_keyboard(interp, varpfx)
 	if (!NameCompare(keyboard->keyb_protocol, "Standard"))
 		Tcl_SetVar2(interp, section, "Protocol", "Standard", 0);
 
-	Tcl_SetVar2(interp, section, "ServerNumLock",
-		keyboard->keyb_serverNumLock ? "ServerNumLock": "", 0);
 	if (keyboard->keyb_kbdDelay) {
 		sprintf(tmpbuf, "%d", keyboard->keyb_kbdDelay);
 		Tcl_SetVar2(interp, section, "AutoRepeat_delay", tmpbuf, 0);
@@ -242,15 +238,6 @@ getsection_keyboard(interp, varpfx)
 	Tcl_SetVar2(interp, section, "VTSysReq", 
 		keyboard->keyb_vtSysreq ? "VTSysReq" : "", 0);
 #endif
-
-	Tcl_SetVar2(interp, section, "LeftAlt", 
-		keymap_type(keyboard, CONF_K_INDEX_LEFTALT, "Meta"), 0);
-	Tcl_SetVar2(interp, section, "RightAlt", 
-		keymap_type(keyboard, CONF_K_INDEX_RIGHTALT, "Meta"), 0);
-	Tcl_SetVar2(interp, section, "ScrollLock", 
-		keymap_type(keyboard, CONF_K_INDEX_SCROLLLOCK, "Compose"), 0);
-	Tcl_SetVar2(interp, section, "RightCtl", 
-		keymap_type(keyboard, CONF_K_INDEX_RIGHTCTL, "Control"), 0);
 
 #ifdef XKB
 	Tcl_SetVar2(interp, section, "XkbDisable",
@@ -902,21 +889,4 @@ read_modes(interp, arrname, idxname, modes)
 }
 
 #undef APPENDVAL
-
-static char *
-keymap_type(kptr, keyidx, defstr)
-  XF86ConfKeyboardPtr kptr;
-  int keyidx;
-  char *defstr;
-{
-	switch(kptr->keyb_specialKeyMap[keyidx]) {
-		case CONF_KM_META:		return "Meta";
-		case CONF_KM_COMPOSE:		return "Compose";
-		case CONF_KM_MODESHIFT:		return "ModeShift";
-		case CONF_KM_MODELOCK:		return "ModeLock";
-		case CONF_KM_SCROLLLOCK:	return "ScrollLock";
-		case CONF_KM_CONTROL:		return "Control";
-	}
-	return defstr;
-}
 
