@@ -4,12 +4,16 @@
 
   1.  Supported hardware
 
-  The current S3 Server supports all available S3 chipsets: 911, 924,
-  801/805, 928, 764 (Trio64), 864, and 964. Nevertheless, this is not
-  enough to support every board using one of these chipsets. The
-  following list contains some data points on boards that are known to
-  work. If your card is similar to one of the described ones, chances
-  are good it might work for you, too.
+  The current S3 Server supports the following S3 chipsets: 911, 924,
+  801/805, 928, 732 (Trio32), 764 (Trio64), 864, and 964.  The S3 server
+  will also recognise the 866, 868 and 968, but it has not been tested
+  these chipsets.  If you have any problems or success with these,
+  please report it to us.
+
+  Nevertheless, this is not enough to support every board using one of
+  these chipsets. The following list contains some data points on boards
+  that are known to work.  If your card is similar to one of the
+  described ones, chances are good it might work for you, too.
 
 
      S3 801/805, AT&T 20C490 (or similar) RAMDAC
@@ -56,9 +60,14 @@
         your XF86Config.
 
 
-           ClockChip "icd2061a"
-           RamDac    "att20c490"
-           Option    "dac_8_bit
+
+
+
+
+      ClockChip "icd2061a"
+      RamDac    "att20c490"
+      Option    "dac_8_bit
+
 
 
 
@@ -121,7 +130,6 @@
 
         Supports RGB with sync-on-green if "sync_on_green" option is
         provided and board jumper is set for BNC outputs.
-
         Option "stb_pegasus"
 
         The "dac_8_bit" option is recommended.
@@ -184,6 +192,7 @@
         o  Actix GraphicsENGINE 64 VLB/2MB
 
         8, 15/16 (and probably 24(32)) bpp
+
 
 
 
@@ -252,6 +261,7 @@
 
      S3 964, Ti3025 RAMDAC, Ti3025 Clockchip
 
+
         o  #9 GXE64 Pro VLB
 
         o  #9 GXE64 Pro PCI
@@ -262,6 +272,7 @@
 
         There are some known problems with the GXE64 Pro support,
         including some image shifting/wrapping at 15/16/24 bpp.
+
         We have found that #9 no longer support the GXE64 Pro at
         1600x1200.  They do however have a new (and more expensive)
         board called the GXE64Pro-1600 which uses a 220MHz RAMDAC
@@ -314,26 +325,26 @@
   markings on it are usually
 
 
-         <Company logo>
 
-             <company identifier><part number>-<speed grade>
-             <manufacturing week><manufacturing year>
-             <lot number><other funny numbers>
+
+
+    <Company logo>
+
+        <company identifier><part number>-<speed grade>
+        <manufacturing week><manufacturing year>
+        <lot number><other funny numbers>
 
 
 
   For example:
 
 
+                 @@
+                 @@ AT&T
 
-
-
-            @@
-            @@ AT&T
-
-          ATT20C490-11
-           9339S ES
-            9869874
+               ATT20C490-11
+                9339S ES
+                 9869874
 
 
 
@@ -383,7 +394,6 @@
   for a 55 MHz MCLK which will reduce snowing. Smaller MCLK values will
   reduce performance a bit so you shouldn't use a too low value (55 or
   50 should be a good guess in most cases).
-
   Below is a small shell script which might be useful to determine the
   approximate value for MCLK (about +/- 1-2 MHz error). Before running
   this script you have to add the line
@@ -445,17 +455,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.7 1995/01/21 10:44:31 dawes Exp $
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.8 1995/01/22 03:06:31 dawes Exp $
 
 
 

@@ -23,45 +23,49 @@
 
      2. A new accelerated server for Mach64 boards.
 
-     3. Bug fixes and some performance improvements for most of the
+     3. Support for the S3 Trio32 and Trio64 chipsets.
+
+     4. Support in the S3 server for the Chrontel 8391 clock chip.
+
+     5. Bug fixes and some performance improvements for most of the
         accelerated servers.
 
-     4. Support for `double scan' video modes (most servers).
+     6. Support for `double scan' video modes (most servers).
 
-     5. New chipset support for the SVGA server.  This includes the
+     7. New chipset support for the SVGA server.  This includes the
         Avance Logic 2228/2301, Chips & Technology 655xx, Cirrus Logic
         6440, and Oak OTI-087.  Accelerated support is included for the
         OTI-087.
 
-     6. Support for FreeBSD 2.0.
+     8. Support for FreeBSD 2.0.
 
-     7. Preliminary support for OS/2 (client-only at this stage; this is
+     9. Preliminary support for OS/2 (client-only at this stage; this is
         still under development).
 
-     8. Linear aperture access when running on BSD/386.
-
-     9. 16bpp and 32bpp support for more S3 boards (refer to README.S3
-        (S3.html) for details).
-
      10.
-        Support for ISC's SVR3 (only tested for 3.x and 4.x).
+        Linear aperture access when running on BSD/386.
 
      11.
+        16bpp and 32bpp support for more S3 boards (refer to README.S3
+        (S3.html) for details).
+
+     12.
+        Support for ISC's SVR3 (only tested for 3.x and 4.x).
+
+     13.
         The `xf86config' utility for generating XF86Config files has
         been improved and now uses a database of video cards.
 
-     12.
+     14.
         The X server LinkKit has been updated to include support for
         LBX.
 
-     13.
+     15.
         The slow X server startup time on machines without hardware
         floating point has been improved.
 
   Plus a number of other small items.  Refer to the CHANGELOG file in
   the source distribution for full details.
-
-
 
 
   2.  What's new in XFree86 3.1?
@@ -129,7 +133,6 @@
      18.
         Dual-headed vga2/mono and vga16/mono servers.
 
-
      19.
         Significant updates to the VGA16 code, including a wider range
         of banking support.
@@ -195,7 +198,6 @@
 
      Others:
 
-
         o  NetBSD 1.0,
 
         o  FreeBSD 1.1.5.1, 2.0
@@ -230,7 +232,8 @@
         CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
         CLGD5430, CLGD5434
 
-     S3 86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C864, 86C964
+     S3 86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C864, 86C964,
+        86C732, 86C764
 
      Western Digital
         WD90C31, WD90C33
@@ -456,6 +459,7 @@
 
      o  Jon Tombs <tombs@XFree86.org>
 
+
      o  Kees Verstoep <versto@cs.vu.nl>
 
      o  Paul Vixie <paul@vix.com>
@@ -520,6 +524,7 @@
         o  Doug Anson <danson@lgc.com>,
 
         o  David Holland <davidh@use.com>
+
 
      ISC SVR3 support by:
 
@@ -591,7 +596,6 @@
 
      Cirrus accelerated code by:
 
-
         o  Simon Cooper <scooper@vizlab.rutgers.edu>,
 
         o  Harm Hanemaayer <hhanemaa@cs.ruu.nl>,
@@ -653,10 +657,10 @@
 
         o  Randy Hendry <randy@sgi.com>
 
+
         o  Jeff Kirk <jeff@bambam.dsd.ES.COM>
 
      Compaq SVGA driver by:
-
 
         o  Hans Oey <hans@mo.hobby.nl>
 
@@ -790,6 +794,7 @@
   that by doing this, our corporation will be merely a formalization of
   what we have been doing in the past, rather than something entirely
   new.
+
   Here is a list of the organizations and individuals who have provided
   sponsorship to The XFree86 Project, Inc, either by financial
   contribution or by the donation of equipment and resources.  The
@@ -855,7 +860,6 @@
 
      o  S.u.S.E, GmbH, Fuerth, Germany
 
-
      o  Tekelec Airtronic GmbH, Muenchen, Germany
 
      o  Jim Tsillas
@@ -916,6 +920,7 @@
 
         +  sunsite.unc.edu:/pub/X11/XFree86
            (ftp://sunsite.unc.edu/pub/X11/XFree86) (source and binaries)
+
 
         +  abode.ccd.bnl.gov:/pub/XFree86
            (ftp://abode.ccd.bnl.gov/pub/XFree86) (Solaris, SVR4, SCO
@@ -983,7 +988,6 @@
 
 
 
-
   Refer to the README file under the specified directory for information
   on which files you need to get to build your distribution.
 
@@ -993,11 +997,7 @@
   archive, and which compile-time option selections were made when
   building the distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.12 1995/01/21 10:44:29 dawes Exp $
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.13 1995/01/22 03:06:29 dawes Exp $
 
 
 

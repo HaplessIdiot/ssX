@@ -1,10 +1,10 @@
   README for XFree86 3.1.1 on BSD/386 1.1
   Hans Nasten
-  13 November 1994
+  21 January 1995
 
   1.  What and Where is XFree86?
 
-  XFree86 3.1 is a port of X11R6 that supports several versions of
+  XFree86 3.1.1 is a port of X11R6 that supports several versions of
   Intel-based Unix.  It is derived from X386 1.2, which was the X server
   distributed with X11R5.  This release consists of many new features
   and performance improvements as well as many bug fixes.  The release
@@ -18,10 +18,10 @@
 
   Binaries for BSD/386 1.1 will be available from:
 
-  ftp.bsdi.com:/contrib/X11/XFree86
-  (ftp://ftp.bsdi.com/contrib/X11/XFree86)
+  ftp.XFree86.org:/pub/XFree86/current/binaries/Bsdi
+  (ftp://ftp.XFree86.org/pub/XFree86/current/binaries/Bsdi)
 
-  If you're running BSD 1.0, you'll have to build it from the source.
+  If you're running BSD 1.0, you'll have to build it from source.
   Building the distribution on BSD/386 1.0 is untested, but believed to
   work correctly. If you run into trouble building on BSD/386 1.0,
   please let us know so that we can correct any incompatibilities.  If
@@ -90,6 +90,9 @@
         XF86_Mach32.gz
            the X server for ATI Mach32 boards
 
+        XF86_Mach64.gz
+           the X server for ATI Mach64 boards
+
         XF86_P9000.gz
            the X server for P9000 based boards
 
@@ -127,9 +130,6 @@
 
         ie, on my machine, I do the following:
 
-
-
-
             % cd /usr/local
             % mkdir X11R6
             % ln -s /usr/local/X11R6 /usr/X11R6
@@ -138,7 +138,7 @@
      2. You must be logged in as root to unpack the archives and use a
         `umask' value of 022.  Typing `umask 022' sets it.  Caution: If
         you do not extract the files as user `root' with the correct
-        umask you may not be able to run XFree86 3.1.  The X server
+        umask you may not be able to run XFree86 3.1.1. The X server
         needs special permissions that are only granted to the root
         user. You must also cd to / before extracting the archives.
 
@@ -184,8 +184,9 @@
   card and mouse you have.  You must create it to tell the server what
   specific hardware you have.
 
-  XFree86 3.1 uses a new configuration file format. Consult the
-  XF86Config man page and the general INSTALL file for instructions.
+  XFree86 3.1 and later releases uses a new configuration file format.
+  Consult the XF86Config man page and the general INSTALL file for
+  instructions.
 
   If you have a Xconfig file for XFree86 2.x, use reconfig to translate
   part of it into the new format:
@@ -194,10 +195,11 @@
   and complete the rest according to the XF86Config man page and the
   XF86Config.sample file as a template.
 
-  In order to protect your hardware from damage, the server no longer
-  will read XF86Config files from a user's home directory, but requires
-  that it be in /etc/XF86Config, /usr/X11R6/lib/X11/XF86Config.hostname
-  or /usr/X11R6/lib/X11/XF86Config.
+  In order to protect your hardware from damage, the server will no
+  longer read XF86Config files from a user's home directory, but
+  requires that it be in /etc/XF86Config,
+  /usr/X11R6/lib/X11/XF86Config.hostname or
+  /usr/X11R6/lib/X11/XF86Config.
 
   You'll need info on your hardware:
 
@@ -258,6 +260,8 @@
   in the xc directory.
 
 
+
+
   8.  Building New X Clients
 
   The easiest way to build a new client (X application) is to use xmkmf
@@ -308,6 +312,22 @@
      o  reboot.
 
   vga.c patch:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   *** vga.c.orig  Sun Dec 19 09:35:01 1993
   --- vga.c       Mon Oct 24 01:38:44 1994
   ***************
@@ -328,28 +348,8 @@
                   return (-1);
     #endif
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.6 1995/01/21 07:16:29 dawes Exp $
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.7 1995/01/22 03:06:27 dawes Exp $
 
 
 
