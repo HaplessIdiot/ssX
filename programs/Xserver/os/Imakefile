@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/85 1997/12/07 18:26:23 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.24 1999/04/17 09:08:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.26 1999/11/19 13:55:09 hohndel Exp $
 #include <Server.tmpl>
 
 /*
@@ -73,15 +73,20 @@ COLOR_SRCS=oscolor.c
 COLOR_OBJS=oscolor.o
 #endif
 
+#if UseInternalMalloc
+MALLOC_SRCS=xalloc.c
+MALLOC_OBJS=xalloc.o
+#endif
+
 BOOTSTRAPCFLAGS = 
            SRCS = WaitFor.c access.c connection.c io.c $(COLOR_SRCS) \
                   osinit.c utils.c auth.c mitauth.c secauth.c $(XDMAUTHSRCS) \
                   $(RPCSRCS) $(KRB5SRCS) xdmcp.c decompress.c OtherSources \
-                  transport.c xalloc.c $(LBX_SRCS)
+                  transport.c $(MALLOC_SRCS) $(LBX_SRCS)
            OBJS = WaitFor.o access.o connection.o io.o $(COLOR_OBJS) \
                   osinit.o utils.o auth.o mitauth.o secauth.o $(XDMAUTHOBJS) \
                   $(RPCOBJS) $(KRB5OBJS) xdmcp.o decompress.o OtherObjects \
-                  transport.o xalloc.o $(LBX_OBJS)
+                  transport.o $(MALLOC_OBJS) $(LBX_OBJS)
 
 #if SpecialMalloc
      MEM_DEFINES = -DSPECIAL_MALLOC
