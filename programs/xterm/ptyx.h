@@ -1,6 +1,6 @@
 /*
- *	$XConsortium: ptyx.h,v 1.62 93/02/25 17:21:26 gildea Exp $
- *	$XFree86$
+ *	$XConsortium: ptyx.h,v 1.63 94/08/02 19:24:44 converse Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.0 1994/04/28 12:46:40 dawes Exp $
  */
 
 /*
@@ -360,7 +360,7 @@ typedef struct {
 	char		*selection;	/* the current selection */
 	int		selection_size; /* size of allocated buffer */
 	int		selection_length; /* number of significant bytes */
-	int		selection_time;	/* latest event timestamp */
+	Time		selection_time;	/* latest event timestamp */
 	int		startHRow, startHCol, /* highlighted text */
 			endHRow, endHCol,
 			startHCoord, endHCoord;
