@@ -19,6 +19,10 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
+/* $XFree86$ */
+
+#ifndef _MKS_HASH_H_
+#define _MKS_HASH_H_ 1
 
 typedef struct _HashBucket {
     char *key;
@@ -36,3 +40,5 @@ int putHash(HashTablePtr table, char *key, char *value, int prio);
 int hashElements(HashTablePtr table);
 HashBucketPtr *hashArray(HashTablePtr table, int value_first);
 void destroyHashArray(HashBucketPtr *array);
+
+#endif /* _MKS_HASH_H */

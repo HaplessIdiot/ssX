@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/regrec.c,v 1.1 2003/04/15 15:35:47 alanh Exp $ */
 #include "xf86.h"
 
 #include "via.h"
@@ -66,6 +66,7 @@ __inline void WaitVBI(void)
 __inline void WaitHQVDone(void)
 {
     CARD32 volatile *pdwState = (CARD32 volatile *) (lpVidMEMIO+HQV_CONTROL);
+    (void) pdwState;	/* Muffle compiler */
 }
 
 __inline void Macro_VidREGFlush(void)

@@ -19,6 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
+/* $XFree86$ */
 
 /* The function identifyBitmap returns -1 if filename is definitively not
    a font file, 1 if it is a single-face bitmap font with a XLFD name,
@@ -26,6 +27,7 @@
    much faster than parsing the whole font. */
 
 #include <stdlib.h>
+#include <string.h>
 #include "zlib.h"
 
 #define PCF_VERSION (('p'<<24)|('c'<<16)|('f'<<8)|1)

@@ -19,11 +19,12 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/list.c,v 1.4 2003/06/20 15:49:52 eich Exp $ */
+/* $XFree86: xc/programs/mkfontscale/list.c,v 1.5 2003/07/04 16:24:30 eich Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include "list.h"
 
 #ifdef NEED_SNPRINTF
