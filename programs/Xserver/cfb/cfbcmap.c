@@ -1,5 +1,5 @@
 /* $XConsortium: cfbcmap.c,v 4.19 94/04/17 20:28:46 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.1 1994/07/15 06:55:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.2 1997/04/10 10:06:12 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -567,10 +567,11 @@ cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, siz
 #ifdef GLXEXT
 #ifdef GLX_MODULE
     if( GlxInitVisualsPtr != NULL ) 
-       return (*GlxInitVisualsPtr)(
+       return (*GlxInitVisualsPtr)
 #else
-    return GlxInitVisuals(
+    return GlxInitVisuals
 #endif
+	   (
                visualp, 
                depthp,
                nvisualp,

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.20 1997/04/10 10:07:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.21 1997/05/06 09:46:47 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -294,7 +294,7 @@ InitExtensions(argc, argv)
         (*GlxExtensionInitPtr)();
     } else {
         if (serverGeneration == 1)
-            ErrorF("GLX extension module not loaded\n");
+            ErrorF("(--) GLX extension module not loaded\n");
     }
 #endif
 #endif

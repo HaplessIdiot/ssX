@@ -1,4 +1,5 @@
 XFree86 3.9d (9 May 1997)
+ 765. Fix name of GLX stub library (#389, Henry Worth).
  764. Renumber option flag definitions to allow more space in the various
       categories.
  763. Fix problems with DGA on 4/8MB Millenniums (#390, Radoslaw Kapitan).
@@ -344,7 +345,7 @@ XFree86 3.2Ao (18 March 1997)
  571. Fix ET6000 hardware cursor (#158, Harald Nordgard Hansen).
  570. Changes to NetBSD + BSD Elf library configuration (#157, Chris G.
       Demetriou).
- 569. Fix for the SVGA/S# hardware cursor (Xavier Ducoin).
+ 569. Fix for the SVGA/S3 hardware cursor (Xavier Ducoin).
 
 XFree86 3.2An (15 March 1997)
  568. Build fixes in order to get a clean compile on Linux and FreeBSD
@@ -4518,4 +4519,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.461 1997/05/09 11:13:05 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.462 1997/05/11 02:53:00 dawes Exp $

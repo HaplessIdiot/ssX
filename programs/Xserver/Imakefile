@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.108 1997/05/03 09:15:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.109 1997/05/06 09:44:43 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -49,7 +49,7 @@ INSTPGMFLAGS =
 
 #if BuildGlxExt && !GlxModule
 #if GlxStubLib 
-      GLXLIB = glxStub/LibraryTargetName(serverGlx) 
+      GLXLIB = glxStub/LibraryTargetName(ServerGlx) 
       GLXDIR = glxStub 
 #else
       GLXLIB = GlxStaticServerLib
