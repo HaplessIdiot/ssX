@@ -7,14 +7,12 @@
  * that use X include files to avoid symbol collisions.
  *
  **************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.2 2001/04/05 06:08:46 torrey Exp $ */
 
 #include <Cocoa/Cocoa.h>
 
 #import "Preferences.h"
 #include "quartzShared.h"
-
-static NSArray *pasteboardTypes = nil;
 
 // Read the user preferences from the Cocoa front end
 void QuartzReadPreferences(void)
@@ -27,6 +25,7 @@ void QuartzReadPreferences(void)
 void QuartzWriteCocoaPasteboard(char *text)
 {
     NSPasteboard *pasteboard;
+    NSArray *pasteboardTypes;
     NSString *string;
 
     if (! text) return;
@@ -34,15 +33,11 @@ void QuartzWriteCocoaPasteboard(char *text)
     if (! pasteboard) return;
     string = [NSString stringWithCString:text];
     if (! string) return;
-    if (! pasteboardTypes) {
-        pasteboardTypes = [NSArray arrayWithObject:NSStringPboardType];
-        [pasteboardTypes retain];
-    }
+    pasteboardTypes = [NSArray arrayWithObject:NSStringPboardType];
 
     // nil owner because we don't provide type translations
     [pasteboard declareTypes:pasteboardTypes owner:nil];
     [pasteboard setString:string forType:NSStringPboardType];
-    [string release];
 }
 
 // Read text from the Mac OS X pasteboard and return it as a heap string.
@@ -50,14 +45,11 @@ void QuartzWriteCocoaPasteboard(char *text)
 char *QuartzReadCocoaPasteboard(void)
 {
     NSPasteboard *pasteboard;
+    NSArray *pasteboardTypes;
     NSString *existingType;
     char *text = NULL;
     
-    if (! pasteboardTypes) {
-        pasteboardTypes = [NSArray arrayWithObject:NSStringPboardType];
-        [[pasteboardTypes retain] autorelease];
-    }
-    
+    pasteboardTypes = [NSArray arrayWithObject:NSStringPboardType];    
     pasteboard = [NSPasteboard generalPasteboard];
     if (! pasteboard) return NULL;
 
@@ -71,7 +63,6 @@ char *QuartzReadCocoaPasteboard(void)
         text = (char *) malloc(strlen(buffer));
         if (text)
             strcpy(text, buffer);
-        [string release];
     }
 
     return text;
