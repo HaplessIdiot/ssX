@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.35 2002/01/04 21:22:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.36 2002/01/25 21:56:02 tsi Exp $ */
 
 /*
  * Authors:
@@ -812,20 +812,12 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
     xf86LoaderReqSymLists(ramdacSymbols, NULL);
   }
 
-  /*  We wont be using the VGA access after the probe */
+  /* We won't be using the VGA access after the probe */
   if (!xf86ReturnOptValBool(pI740->Options, OPTION_USE_PIO, FALSE)) {
-    resRange vgaio[] = { {ResShrIoBlock,0x3B0,0x3BB},
-			 {ResShrIoBlock,0x3C0,0x3DF},
-			 _END };
-    resRange vgamem[] = {{ResShrMemBlock,0xA0000,0xAFFFF},
-			 {ResShrMemBlock,0xB8000,0xBFFFF},
-			 {ResShrMemBlock,0xB0000,0xB7FFF},
-			 _END };
-
     pI740->usePIO=FALSE;
     I740SetMMIOAccess(pI740);
-    xf86SetOperatingState(vgaio, pI740->pEnt->index, ResUnusedOpr);
-    xf86SetOperatingState(vgamem, pI740->pEnt->index, ResDisableOpr);
+    xf86SetOperatingState(resVgaIo, pI740->pEnt->index, ResUnusedOpr);
+    xf86SetOperatingState(resVgaMem, pI740->pEnt->index, ResDisableOpr);
   } else {
     pI740->usePIO=TRUE;
   }

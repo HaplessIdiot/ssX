@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.146 2002/02/27 18:41:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.147 2002/05/07 23:15:58 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1075,8 +1075,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
     }
 
-    xf86SetOperatingState(resVgaMemShared, pGlint->pEnt->index, ResDisableOpr);
-    xf86SetOperatingState(resVgaIoShared, pGlint->pEnt->index, ResDisableOpr);
+    xf86SetOperatingState(resVga, pGlint->pEnt->index, ResDisableOpr);
     
     /* Operations for which memory access is required. */
     pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;

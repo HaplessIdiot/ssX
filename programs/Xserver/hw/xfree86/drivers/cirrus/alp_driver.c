@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.26 2002/01/04 21:22:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.27 2002/01/25 21:56:00 tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -756,9 +756,9 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
       */
      if (!pCir->UseMMIO) {
          pScrn->racIoFlags = RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT | RAC_FB;
- 	xf86SetOperatingState(resVgaMemShared, pCir->pEnt->index,ResUnusedOpr);
+         xf86SetOperatingState(resVgaMem, pCir->pEnt->index, ResUnusedOpr);
      } else {
-         xf86SetOperatingState(RES_SHARED_VGA, pCir->pEnt->index, ResUnusedOpr);
+         xf86SetOperatingState(resVga, pCir->pEnt->index, ResUnusedOpr);
      }
 
      /* Register the PCI-assigned resources. */

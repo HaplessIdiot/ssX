@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.17 2001/08/07 07:04:47 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.18 2001/11/08 04:15:31 tsi Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -438,8 +438,8 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 
 	iptr->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
 	xf86RegisterResources(pEnt->index, NULL, ResNone);
-	xf86SetOperatingState(RES_SHARED_VGA, pEnt->index, ResUnusedOpr);
-	xf86SetOperatingState(resVgaMemShared, pEnt->index, ResDisableOpr);
+	xf86SetOperatingState(resVgaIo, pEnt->index, ResUnusedOpr);
+	xf86SetOperatingState(resVgaMem, pEnt->index, ResDisableOpr);
 
 	if (pEnt->device->chipset && *pEnt->device->chipset) {
 		pScrn->chipset = pEnt->device->chipset;

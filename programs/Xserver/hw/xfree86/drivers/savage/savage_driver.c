@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.23 2001/10/01 13:44:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.26 2002/05/14 20:19:51 alanh Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -934,8 +934,8 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
     psav->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
     xf86RegisterResources(pEnt->index, NULL, ResNone);
-    xf86SetOperatingState(RES_SHARED_VGA, pEnt->index, ResUnusedOpr);
-    xf86SetOperatingState(resVgaMemShared, pEnt->index, ResDisableOpr);
+    xf86SetOperatingState(resVgaIo, pEnt->index, ResUnusedOpr);
+    xf86SetOperatingState(resVgaMem, pEnt->index, ResDisableOpr);
 
     from = X_DEFAULT;
     if (pEnt->device->chipset && *pEnt->device->chipset) {

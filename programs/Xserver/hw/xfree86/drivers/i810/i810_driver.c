@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.68 2002/05/10 12:50:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.69 2002/05/14 20:28:18 alanh Exp $ */
 
 /*
  * Authors:
@@ -889,20 +889,10 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    }
 
 
-   /*  We wont be using the VGA access after the probe */
-   {
-      resRange vgaio[] = { {ResShrIoBlock,0x3B0,0x3BB},
-			   {ResShrIoBlock,0x3C0,0x3DF},
-			   _END };
-      resRange vgamem[] = {{ResShrMemBlock,0xA0000,0xAFFFF},
-			   {ResShrMemBlock,0xB8000,0xBFFFF},
-			   {ResShrMemBlock,0xB0000,0xB7FFF},
-			   _END };
-
-      I810SetMMIOAccess(pI810);
-      xf86SetOperatingState(vgaio, pI810->pEnt->index, ResUnusedOpr);
-      xf86SetOperatingState(vgamem, pI810->pEnt->index, ResDisableOpr);
-   }
+   /* We won't be using the VGA access after the probe */
+   I810SetMMIOAccess(pI810);
+   xf86SetOperatingState(resVgaIo, pI810->pEnt->index, ResUnusedOpr);
+   xf86SetOperatingState(resVgaMem, pI810->pEnt->index, ResDisableOpr);
 
    return TRUE;
 }

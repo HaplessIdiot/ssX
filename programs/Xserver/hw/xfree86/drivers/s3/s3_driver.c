@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.6 2001/10/28 03:33:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.7 2001/12/26 22:24:19 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -491,8 +491,8 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 
         pS3->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
         xf86RegisterResources(pEnt->index, NULL, ResNone);
-        xf86SetOperatingState(RES_SHARED_VGA, pEnt->index, ResUnusedOpr);
-        xf86SetOperatingState(resVgaMemShared, pEnt->index, ResDisableOpr);
+        xf86SetOperatingState(resVgaIo, pEnt->index, ResUnusedOpr);
+        xf86SetOperatingState(resVgaMem, pEnt->index, ResDisableOpr);
 
         if (pEnt->device->chipset && *pEnt->device->chipset) {
                 pScrn->chipset = pEnt->device->chipset;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.46 2001/11/08 04:15:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.48 2002/04/04 14:05:45 eich Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -513,13 +513,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
      * XXX This could be refined if some VGA memory resources are not
      * decoded in operating mode.
      */
-    {
-        resRange vgamem[] =     { {ResShrMemBlock,0xA0000,0xAFFFF},
-                                  {ResShrMemBlock,0xB0000,0xB7FFF},
-                                  {ResShrMemBlock,0xB8000,0xBFFFF},
-                                  _END };
-        xf86SetOperatingState(vgamem, pRendition->pEnt->index, ResUnusedOpr);
-    }
+    xf86SetOperatingState(resVgaMem, pRendition->pEnt->index, ResUnusedOpr);
 
     if (xf86RegisterResources(pRendition->pEnt->index, NULL, ResExclusive))
          return FALSE;
