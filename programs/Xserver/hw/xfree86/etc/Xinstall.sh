@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.65 2003/12/19 04:26:36 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.66 2003/12/31 05:04:25 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -523,11 +523,21 @@ FindDistName()
 			1.4* | 5.*)
 				DistName="Darwin-ppc-5.x"
 				;;
-			6.* | 7.*)
+			6.[0-2]*)
+				if [ -d /System/Library/Frameworks/ApplicationServices.framework ]; then
+					Message="No binaries available for Mac OS X 10.2.0 - 10.2.2"
+				else
+					DistName="Darwin-ppc-6.x"
+				fi
+				;;
+			6.[3-9]*)
+				DistName="Darwin-ppc-6.x"
+				;;
+			7.*)
 				DistName="Darwin-ppc-7.x"
 				;;
 			[8-9].*)
-				Message="No Darwin/ppc binaries available for this OS version. Try Darwin-ppc-7.x"
+				Message="No Darwin/ppc binaries available for this OS version.  Try Darwin-ppc-7.x"
 				;;
 			*)
 				Message="No Darwin/ppc binaries available for this OS version"
@@ -543,7 +553,7 @@ FindDistName()
 				DistName="Darwin-ix86-7.x"
 				;;
 			[8-9].*)
-				Message="No Darwin/ix86 binaries available for this OS version. Try Darwin-ix86-7.x"
+				Message="No Darwin/ix86 binaries available for this OS version.  Try Darwin-ix86-7.x"
 				;;
 			*)
 				Message="No Darwin/ix86 binaries available for this OS version"
