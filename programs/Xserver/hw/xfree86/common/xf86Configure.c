@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.2 2000/01/25 01:36:54 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -256,10 +256,10 @@ DoConfigure()
     Bool probeResult = FALSE;
     char *foundDriver = NULL;
     XF86ConfigPtr xf86config = NULL;
+    char **list, **l;
 
 #ifdef XFree86LOADER
     /* Find the list of video driver modules. */
-    char **list, **l;
     const char *subdirs[] = {
 	"drivers",
 	NULL
