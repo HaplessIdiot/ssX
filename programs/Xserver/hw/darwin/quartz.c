@@ -48,7 +48,6 @@ void QuartzStoreColors(
 ===========================================================================
 
  Pointer functions
- FIXME: None of these actually work
 
 ===========================================================================
 */
@@ -81,7 +80,15 @@ QuartzWarpCursor(
     int                     x,
     int                     y)
 {
-    return;
+    CGDisplayErr            cgErr;
+    CGPoint                 cgPoint;
+
+    cgPoint = CGPointMake(x, y);
+    cgErr = CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgPoint);
+    if (cgErr != CGDisplayNoErr) {
+        ErrorF("Could not set cursor position with error code 0x%x.\n", cgErr);
+    }
+    miPointerWarpCursor(pScreen, x, y);
 }
 
 static miPointerScreenFuncRec quartzScreenFuncsRec = {
@@ -147,8 +154,8 @@ static void QuartzCapture(void)
 static void QuartzRelease(void)
 {
     CGDisplayShowCursor(kCGDirectMainDisplay);
-        if (CGDisplayIsCaptured(kCGDirectMainDisplay)) {
-    CGDisplayRelease(kCGDirectMainDisplay);
+    if (CGDisplayIsCaptured(kCGDirectMainDisplay)) {
+        CGDisplayRelease(kCGDirectMainDisplay);
     }
 }
 
@@ -162,10 +169,12 @@ static void QuartzDisplayInit(void)
     dfb.pixelInfo.pixelType = kIORGBDirectPixels;
     dfb.pixelInfo.bitsPerComponent=CGDisplayBitsPerSample(kCGDirectMainDisplay);
     dfb.pixelInfo.componentCount=CGDisplaySamplesPerPixel(kCGDirectMainDisplay);
+#if FALSE
     // FIXME: endian and 24 bit color specific
     dfb.pixelInfo.componentMasks[0] = 0x00ff0000;
     dfb.pixelInfo.componentMasks[1] = 0x0000ff00;
     dfb.pixelInfo.componentMasks[2] = 0x000000ff;
+#endif
 
     dfb.width  = CGDisplayPixelsWide(kCGDirectMainDisplay);
     dfb.height = CGDisplayPixelsHigh(kCGDirectMainDisplay);
@@ -253,6 +262,7 @@ void QuartzShow(void) {
     }
     xhidden = false;
 }
+
 
 /* 
  * QuartzHide
