@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.96 94/04/17 20:14:42 kaleb Exp $ */
+/* $XConsortium: Selection.c,v 1.100 95/06/23 22:36:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -669,9 +669,7 @@ XtPointer value;
 unsigned long length;
 int format;
 {
-	req->requestor = window;
 	req->type = targetType;
-	req->property = property;
 	req->value = value;
 	req->bytelength = BYTELENGTH(length,format);
 	req->format = format;
@@ -711,6 +709,8 @@ Widget widget;			/* physical owner (receives events) */
 
     req->ctx = ctx;
     req->event = *event;
+    req->property = property;
+    req->requestor = event->requestor;
 
     if (timestamp_target) {
 	value = XtMalloc(sizeof(long));
@@ -752,9 +752,7 @@ Widget widget;			/* physical owner (receives events) */
 	if (! timestamp_target) {
 	    if (ctx->notify != NULL) {
 		  req->target = target;
-		  req->property = property;
 		  req->widget = widget;
-		  req->requestor = event->requestor;
 		  req->allSent = TRUE;
 #ifndef DEBUG_WO_TIMERS
 		  {
@@ -1426,8 +1424,10 @@ Atom property;
     Atom resulttype;
     unsigned long totallength = 0;
 
+        req->event.type = 0;
         req->event.target = target;
-        req->event.property = property;
+        req->event.property = req->property = property;
+        req->event.requestor = req->requestor = XtWindow(widget);
 
 	if (ctx->incremental) {
 	   unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
@@ -1533,8 +1533,6 @@ Atom property;
 	RequestRec req;
 	ctx->req = &req;
 	req.ctx = ctx;
-	req.event.type = 0;
-	req.event.requestor = XtWindow(widget);
 	req.event.time = time;
 	ctx->ref_count++;
 	DoLocalTransfer(&req, selection, target, widget,
@@ -1636,8 +1634,6 @@ Atom *properties;
 	RequestRec req;
 	ctx->req = &req;
 	req.ctx = ctx;
-	req.event.type = 0;
-	req.event.requestor = XtWindow(widget);
 	req.event.time = time;
 	ctx->ref_count++;
 	for (i = 0, j = 0; count; count--, i++, j++ ) {
@@ -1758,16 +1754,14 @@ Time time;
 }
 
 
-XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
+static Request GetRequestRecord(widget, selection, id)
     Widget widget;
     Atom selection;
     XtRequestId id;
 { 
     Request req = (Request)id;
-    Select ctx;
-    XtAppContext app = XtWidgetToApplicationContext (widget);
+    Select ctx = NULL;
 
-    LOCK_APP(app);
     if (   (req == NULL
 	    && ((ctx = FindCtx( XtDisplay(widget), selection )) == NULL
 		|| ctx->req == NULL
@@ -1780,25 +1774,40 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
     {
 	String params = XtName(widget);
 	Cardinal num_params = 1;
-	XtAppWarningMsg(app,
+	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 			 "notInConvertSelection", "xtGetSelectionRequest",
 			 XtCXtToolkitError,
-			 "XtGetSelectionRequest called for widget \"%s\" outside of ConvertSelection proc",
+			 "XtGetSelectionRequest or XtGetSelectionParameters called for widget \"%s\" outside of ConvertSelection proc",
 			 &params, &num_params
 		       );
-	UNLOCK_APP(app);
 	return NULL;
     }
 
     if (req == NULL) {
 	/* non-incremental owner; only one request can be
 	 * outstanding at a time, so it's safe to keep ptr in ctx */
-#ifdef lint
-	ctx = NULL;
-#endif
 	req = ctx->req;
     }
+    return req;
+}
 
+XSelectionRequestEvent *XtGetSelectionRequest(widget, selection, id)
+    Widget widget;
+    Atom selection;
+    XtRequestId id;
+{ 
+    Request req = (Request)id;
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
+
+    req = GetRequestRecord(widget, selection, id);
+
+    if (! req) {
+	UNLOCK_APP(app);
+	return (XSelectionRequestEvent*) NULL;
+    }
+    
     if (req->event.type == 0) {
 	/* owner is local; construct the remainder of the event */
 	req->event.type = SelectionRequest;
@@ -1806,11 +1815,7 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
 	req->event.send_event = True;
 	req->event.display = XtDisplay(widget);
 	req->event.owner = XtWindow(req->ctx->widget);
-    /*  req->event.requestor = XtWindow(requesting_widget); */
 	req->event.selection = selection;
-    /*  req->event.target = requestors_target; */
-    /*	req->event.property = None; *//* %%% what to do about side-effects? */
-    /*  req->event.time = requestors_time; */
     }
     UNLOCK_APP(app);
     return &req->event;
@@ -2141,11 +2146,9 @@ void XtSetSelectionParameters(requestor, selection, type, value, length, format)
     AddParamInfo(requestor, selection, property);
   }
 
-  StartProtectedSection(dpy, window);
   XChangeProperty(dpy, window, property,
 		  type, format, PropModeReplace,
 		  (unsigned char *) value, length);
-  EndProtectedSection(dpy);
 }
 
 /* Retrieves data passed in a parameter. Data for this is stored
@@ -2160,170 +2163,140 @@ void XtGetSelectionParameters(owner, selection, request_id, type_return,
     unsigned long* length_return;
     int* format_return;
 {
-  Display *dpy = XtDisplay(owner);
-  XSelectionRequestEvent *xselevent = 
-    XtGetSelectionRequest(owner, selection, request_id);
-  unsigned long max = XMaxRequestSize(dpy);
-  unsigned long dummy;
+    Request req;
+    Display *dpy = XtDisplay(owner);
+    WIDGET_TO_APPCON(owner);
 
-  if (xselevent->property != None) {
-    StartProtectedSection(dpy, XtWindow(owner));
-    XGetWindowProperty(dpy, xselevent->requestor,
-		       xselevent->property,
-		       0, max, False, AnyPropertyType,
-		       type_return, format_return,
-		       length_return, &dummy, 
-		       (unsigned char**) value_return);
-    EndProtectedSection(dpy);
-  } else {
     *value_return = NULL;
-    *length_return = 0;
-    *format_return = 0;
+    *length_return = *format_return = 0;
     *type_return = None;
-  }
+
+    LOCK_APP(app);
+
+    req = GetRequestRecord(owner, selection, request_id);
+
+    if (req && req->property) {
+	unsigned long bytes_after;	/* unused */
+	StartProtectedSection(dpy, req->requestor);
+	XGetWindowProperty(dpy, req->requestor, req->property, 0L, 10000000,
+			   False, AnyPropertyType, type_return, format_return,
+			   length_return, &bytes_after, 
+			   (unsigned char**) value_return);
+	EndProtectedSection(dpy);
+#ifdef XT_COPY_SELECTION
+	if (*value_return) {
+	    int size = BYTELENGTH(*length_return, *format_return) + 1;
+	    char *tmp = XtMalloc((Cardinal) size);
+	    (void) memmove(tmp, *value_return, size);
+	    XFree(*value_return);
+	    *value_return = tmp;
+	}
+#endif
+    }
+    UNLOCK_APP(app);
 }
 
-/* Temporary storage for parameter information is kept off the
-   requestor widget in an XContext.  This is kept as a list to
-   deal with multiple selections building requests.  Perhaps the
-   context should be deleted when its list is empty?  
-
-   For now there is a destroyCallback set to free the context 
-   block when the widget is destroyed. */
-static void RemoveParmContext(w, ignored, client_data)
-     Widget w;
-     XtPointer ignored;
-     XtPointer client_data;
-{
-  ParamInfo pinfo = (ParamInfo) client_data;
-
-  LOCK_PROCESS;
-  XtFree((char*) pinfo->paramlist);
-  XtFree((char*) pinfo);
-
-  (void)XDeleteContext(XtDisplay(w), XtWindow(w), paramPropertyContext);
-  UNLOCK_PROCESS;
-}
+/*  Parameters are temporarily stashed in an XContext.  A list is used because
+ *  there may be more than one selection request in progress.  The context
+ *  data is deleted when the list is empty.  In the future, the parameter
+ *  context could be merged with other contexts used during selections.
+ */
 
 static void AddParamInfo(w, selection, param_atom)
-     Widget w;
-     Atom selection;
-     Atom param_atom;
+    Widget w;
+    Atom selection;
+    Atom param_atom;
 {
-  ParamInfo pinfo;
-  Param cparm;
-  Display *dpy = XtDisplay(w);
-  Window window = XtWindow(w);
+    int n;
+    Param p;
+    ParamInfo pinfo;
 
-  LOCK_PROCESS;
-  if (paramPropertyContext == 0) paramPropertyContext = XUniqueContext();
+    LOCK_PROCESS;
+    if (paramPropertyContext == 0)
+	paramPropertyContext = XUniqueContext();
 
-  pinfo = NULL;
-  (void) XFindContext(dpy, window, paramPropertyContext,
-		      (XPointer *)&pinfo);
-
-  if (pinfo == NULL) {
-    pinfo = (ParamInfo) XtMalloc(sizeof(ParamInfoRec));
-    pinfo->count = 0;
-    pinfo->paramlist = NULL;
-    XtAddCallback(w, XtNdestroyCallback, RemoveParmContext, pinfo);
-  }
-
-  pinfo->count++;
-  pinfo->paramlist = (Param) XtRealloc((char*) pinfo->paramlist, 
-					 pinfo->count * sizeof(ParamRec));
-  cparm = &pinfo->paramlist[pinfo->count - 1];
-  cparm->selection = selection;
-  cparm->param = param_atom;
-
-  (void)XSaveContext(dpy, window, paramPropertyContext,
-		     (char *)pinfo);
-  UNLOCK_PROCESS;
+    if (XFindContext(XtDisplay(w), XtWindow(w), paramPropertyContext,
+		     (XPointer *) &pinfo)) {
+	pinfo = (ParamInfo) XtMalloc(sizeof(ParamInfoRec));
+	pinfo->count = 1;
+	pinfo->paramlist = XtNew(ParamRec);
+	p = pinfo->paramlist;
+	(void) XSaveContext(XtDisplay(w), XtWindow(w), paramPropertyContext,
+			    (char *)pinfo);
+    }
+    else {
+	for (n = pinfo->count, p = pinfo->paramlist; n; n--, p++) {
+	    if (p->selection == None || p->selection == selection)
+		break;
+	}
+	if (n == 0) {
+	    pinfo->count++;
+	    pinfo->paramlist = (Param)
+		XtRealloc((char*) pinfo->paramlist,
+			  pinfo->count * sizeof(ParamRec));
+	    p = &pinfo->paramlist[pinfo->count - 1];
+	    (void) XSaveContext(XtDisplay(w), XtWindow(w),
+				paramPropertyContext, (char *)pinfo);
+	}
+    }
+    p->selection = selection;
+    p->param = param_atom;
+    UNLOCK_PROCESS;
 }
 
 static void RemoveParamInfo(w, selection)
-     Widget w;
-     Atom selection;
+    Widget w;
+    Atom selection;
 {
-  ParamInfo pinfo;
-  Param cparm;
-  Display *dpy = XtDisplay(w);
-  Window window = XtWindow(w);
+    int n;
+    Param p;
+    ParamInfo pinfo;
+    Boolean retain = False;
 
-  LOCK_PROCESS;
-  if (paramPropertyContext == 0) paramPropertyContext = XUniqueContext();
+    LOCK_PROCESS;
+    if (paramPropertyContext
+	&& (XFindContext(XtDisplay(w), XtWindow(w), paramPropertyContext,
+			 (XPointer *) &pinfo) == 0)) {
 
-  pinfo = NULL;
-  (void) XFindContext(dpy, window, paramPropertyContext,
-		      (XPointer *)&pinfo);
-
-  if (pinfo != NULL) {
-    int i = 0;
-    Boolean modified = False;
-
-    while(i < pinfo->count) {
-      if (pinfo->paramlist[i].selection == selection) {
-	pinfo->count--;
-	modified = True;
-	break;
-      }
-      i++;
+	/* Find and invalidate the parameter data. */
+	for (n = pinfo->count, p = pinfo->paramlist; n; n--, p++) {
+	    if (p->selection != None) {
+		if (p->selection == selection)
+		    p->selection = None;
+		else
+		    retain = True;
+	    }
+	}
+	/* If there's no valid data remaining, release the context entry. */
+	if (! retain) {
+	    XtFree((char*) pinfo->paramlist);
+	    XtFree((char*) pinfo);
+	    XDeleteContext(XtDisplay(w), XtWindow(w), paramPropertyContext);
+	}
     }
-
-    /* Shift the remaining list elements back to fill in the removed
-       item.  If the removed item is the last,  pinfo->count will
-       be equal to i and this code won't execute as we decremented
-       count.  Same for the case where the particular parameter
-       wasn't found. */
-    if (modified) {
-      while(i < pinfo->count) {
-	pinfo->paramlist[i].selection = pinfo->paramlist[i + 1].selection;
-	pinfo->paramlist[i].param = pinfo->paramlist[i + 1].param;
-	i++;
-      }
-
-      /* Only need to save if we've modified */
-      (void)XSaveContext(dpy, window, paramPropertyContext,
-			 (char *)pinfo);
-    }
-  }
-  UNLOCK_PROCESS;
+    UNLOCK_PROCESS;
 }
 
 static Atom GetParamInfo(w, selection)
-     Widget w;
-     Atom selection;
+    Widget w;
+    Atom selection;
 {
-  ParamInfo pinfo;
-  Param cparm;
-  Display *dpy = XtDisplay(w);
-  Window window = XtWindow(w);
-  Boolean found = False;
-  Atom retval;
-  int i = 0;
+    int n;
+    Param p;
+    ParamInfo pinfo;
+    Atom atom = None;
 
-  LOCK_PROCESS;
-  if (paramPropertyContext == 0) paramPropertyContext = XUniqueContext();
+    LOCK_PROCESS;
+    if (paramPropertyContext
+	&& (XFindContext(XtDisplay(w), XtWindow(w), paramPropertyContext,
+			 (XPointer *) &pinfo) == 0)) {
 
-  pinfo = NULL;
-  (void) XFindContext(dpy, window, paramPropertyContext,
-		      (XPointer *)&pinfo);
-
-  if (pinfo != NULL) {
-    while(i < pinfo->count) {
-      if (pinfo->paramlist[i].selection == selection) {
-	pinfo->count--;
-	found = True;
-	break;
-      }
-      i++;
+	for (n = pinfo->count, p = pinfo->paramlist; n; n--, p++)
+	    if (p->selection == selection) {
+		atom = p->param;
+		break;
+	    }
     }
-  }
-
-  if (found)
-    retval = pinfo->paramlist[i].param;
-  else
-    retval = None;
-  UNLOCK_PROCESS;
-  return retval;
+    UNLOCK_PROCESS;
+    return atom;
 }

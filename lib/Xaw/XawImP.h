@@ -1,4 +1,4 @@
-/* $XConsortium: XawImP.h,v 1.3 94/04/17 20:13:32 kaleb Exp $ */
+/* $XConsortium: XawImP.h,v 1.4 95/06/06 20:50:30 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -181,6 +181,7 @@ void _XawImSetValues(
 #endif
 );
 
+/* DON'T USE THIS FUNCTION -- it's going away in the next release */
 void _XawImVASetValues( 
 #if NeedVarargsPrototypes
     Widget,  /* w */
@@ -196,6 +197,7 @@ void _XawImSetFocusValues(
 #endif
 );
 
+/* DON'T USE THIS FUNCTION -- it's going away in the next release */
 void _XawImVASetFocusValues( 
 #if NeedVarargsPrototypes
     Widget,  /* w */

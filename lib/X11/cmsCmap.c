@@ -1,4 +1,4 @@
-/* $XConsortium: cmsCmap.c,v 1.16 93/09/07 21:32:52 rws Exp $ */
+/* $XConsortium: cmsCmap.c,v 1.17 95/04/27 18:28:37 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -82,6 +82,7 @@ CmapRecForColormap(dpy, cmap)
     int nVisualsMatched;	/* Number of visuals that match */
     Window tmpWindow;
     Visual *vp;
+    unsigned long border = 0;
     _XAsyncHandler async;
     _XAsyncErrorState async_state;
 
@@ -172,8 +173,9 @@ CmapRecForColormap(dpy, cmap)
 		req->class = CopyFromParent;
 		req->visual = vp->visualid;
 		tmpWindow = req->wid = XAllocID(dpy);
-		req->mask = CWColormap;
-		req->length++;
+		req->mask = CWBorderPixel | CWColormap;
+		req->length += 2;
+		Data32 (dpy, (long *) &border, 4);
 		Data32 (dpy, (long *) &cmap, 4);
 	    }
 	    {

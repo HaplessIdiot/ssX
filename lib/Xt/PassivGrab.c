@@ -1,4 +1,4 @@
-/* $XConsortium: PassivGrab.c,v 1.26 94/04/17 20:14:33 converse Exp $ */
+/* $XConsortium: PassivGrab.c,v 1.27 95/06/15 20:03:09 converse Exp $ */
 
 /********************************************************
 
@@ -503,6 +503,7 @@ void _XtDestroyServerGrabs(w, closure, call_data)
 
     LOCK_PROCESS;
     pdi = _XtGetPerDisplayInput(XtDisplay(w));
+    _XtClearAncestorCache(w);
     UNLOCK_PROCESS;
     
     /* Remove the active grab, if necessary */

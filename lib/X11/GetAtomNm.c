@@ -1,4 +1,4 @@
-/* $XConsortium: GetAtomNm.c,v 11.22 94/04/17 20:19:29 rws Exp $ */
+/* $XConsortium: GetAtomNm.c,v 11.23 95/05/02 15:07:06 converse Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium
@@ -144,8 +144,13 @@ Bool _XGetAtomNameHandler(dpy, rep, buf, len, data)
     _XGetAsyncData(dpy, state->names[state->idx], buf, len,
 		   SIZEOF(xGetAtomNameReply), repl->nameLength,
 		   repl->length << 2);
-    _XUpdateAtomCache(dpy, state->names[state->idx],
-		      state->atoms[state->idx], 0, -1, 0);
+    if (state->names[state->idx]) {
+	state->names[state->idx][repl->nameLength] = '\0';
+	_XUpdateAtomCache(dpy, state->names[state->idx],
+			  state->atoms[state->idx], 0, -1, 0);
+    } else {
+	state->status = 0;
+    }
     return True;
 }
 

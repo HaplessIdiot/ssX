@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.8 95/01/27 14:45:24 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.20 1995/01/28 17:01:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.21 1995/04/09 13:46:08 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -186,6 +186,10 @@ extern Bool s3ATT498PixMux;
 #define S3_TRIO32_DAC     12
 #define S3_TRIO64_DAC     13
 #define TI3026_DAC        14
+#define IBMRGB52x_DAC     15
+#define IBMRGB524_DAC     16
+#define IBMRGB525_DAC     17
+#define IBMRGB528_DAC     18
 
 #define DAC_IS_BT485_SERIES	(s3RamdacType == BT485_DAC || \
 				 s3RamdacType == ATT20C505_DAC)
@@ -205,6 +209,10 @@ extern Bool s3ATT498PixMux;
 #define DAC_IS_TRIO32           (s3RamdacType == S3_TRIO32_DAC)
 #define DAC_IS_TRIO64           (s3RamdacType == S3_TRIO64_DAC)
 #define DAC_IS_TRIO             (DAC_IS_TRIO32 || DAC_IS_TRIO64)
+#define DAC_IS_IBMRGB524        (s3RamdacType == IBMRGB524_DAC)
+#define DAC_IS_IBMRGB525        (s3RamdacType == IBMRGB525_DAC)
+#define DAC_IS_IBMRGB528        (s3RamdacType == IBMRGB528_DAC)
+#define DAC_IS_IBMRGB           (DAC_IS_IBMRGB524 || DAC_IS_IBMRGB525 || DAC_IS_IBMRGB528 )
 
 /* Function Prototypes */
 
@@ -899,6 +907,56 @@ void s3Ti3026RecolorCursor(
 #endif
 );
 void s3Ti3026LoadCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr,
+    CursorPtr,
+    int,
+    int 
+#endif
+);
+
+void s3OutIBMRGBIndReg(
+#if NeedFunctionPrototypes
+    unsigned char,
+    unsigned char,
+    unsigned char 
+#endif
+);
+unsigned char s3InIBMRGBIndReg(
+#if NeedFunctionPrototypes
+    unsigned char 
+#endif
+);
+Bool s3IBMRGBRealizeCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr,
+    CursorPtr 
+#endif
+);
+void s3IBMRGBCursorOn(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void s3IBMRGBCursorOff(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void s3IBMRGBMoveCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr,
+    int,
+    int 
+#endif
+);
+void s3IBMRGBRecolorCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr,
+    CursorPtr 
+#endif
+);
+void s3IBMRGBLoadCursor(
 #if NeedFunctionPrototypes
     ScreenPtr,
     CursorPtr,

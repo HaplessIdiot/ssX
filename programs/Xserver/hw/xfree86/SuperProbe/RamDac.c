@@ -30,7 +30,7 @@
  */
 
 /* $XConsortium: RamDac.c,v 1.4 95/01/12 19:19:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.8 1995/04/09 13:44:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.9 1995/05/27 03:01:49 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -385,6 +385,120 @@ int *RamDac;
 	return(Found);
 }
 
+static Bool S3_IBMRGBCheck(RamDac)
+int *RamDac;
+{
+	Byte lock1, lock2;
+	Bool Found = FALSE;
+	unsigned char CR43, CR55, dac[3], lut[6];
+	unsigned char ilow, ihigh, id, rev, id2, rev2;	
+	int i,j;
+	int ret=0;
+
+	/*
+	 * IBM RGB52x support - Harald Koenig
+	 */
+
+	lock1 = rdinx(CRTC_IDX, 0x38);
+	lock2 = rdinx(CRTC_IDX, 0x39);
+	wrinx(CRTC_IDX, 0x38, 0x48);
+	wrinx(CRTC_IDX, 0x39, 0xA5);
+
+	CR43 = rdinx(CRTC_IDX, 0x43);
+	CR55 = rdinx(CRTC_IDX, 0x55);
+
+	wrinx(CRTC_IDX, 0x43, CR43 & ~0x02);
+	wrinx(CRTC_IDX, 0x55, CR55 & ~0x03);
+	
+	/* save DAC and first LUT entries */
+	for (i=0; i<3; i++) 
+	   dac[i] = inp(0x3c6+i);
+	for (i=j=0; i<2; i++) {
+	   outp(0x3c7, i);
+	   lut[j++] = inp(0x3c9);
+	   lut[j++] = inp(0x3c9);
+	   lut[j++] = inp(0x3c9);
+	}
+	
+	wrinx(CRTC_IDX, 0x55, (CR55 & ~0x03) | 0x01);  /* set RS2 */
+	
+	/* read ID and revision */
+	ilow  = inp(0x3c8);
+	ihigh = inp(0x3c9);
+	outp(0x3c9, 0);  /* index high */
+	outp(0x3c8, 0);
+	rev = inp(0x3c6);
+	outp(0x3c8, 1);
+	id  = inp(0x3c6);
+	
+	/* known IDs:  
+	   1 = RGB525
+	   2 = RGB524, RGB528 
+	   */
+	
+	if (id >= 1 && id <= 2) { 
+	   /* check if ID and revision are read only */
+	   outp(0x3c8, 0);
+	   outp(0x3c6, ~rev);
+	   outp(0x3c8, 1);
+	   outp(0x3c6, ~id);
+	   outp(0x3c8, 0);
+	   rev2 = inp(0x3c6);
+	   outp(0x3c8, 1);
+	   id2  = inp(0x3c6);
+      
+	   if (id == id2 && rev == rev2) { /* IBM RGB52x found */
+	      Found = TRUE;
+	      switch(id) {
+	      case 1: 
+		 *RamDac = DAC_IBMRGB525 | DAC_6_8_PROGRAM;
+		 break;
+	      case 2: 
+		 outp(0x3c8, 0x70);
+		 id2  = inp(0x3c6);
+		 if ((id2 & 0x03) == 3)
+		    *RamDac = DAC_IBMRGB528 | DAC_6_8_PROGRAM;
+		 else
+		    *RamDac = DAC_IBMRGB524 | DAC_6_8_PROGRAM;
+		 break;
+	      }
+	   }
+	   else {
+	      outp(0x3c8, 0);
+	      outp(0x3c6, rev);
+	      outp(0x3c8, 1);
+	      outp(0x3c6, id);
+	   }
+	}   
+	outp(0x3c8,  ilow);
+	outp(0x3c9, ihigh);
+	
+	wrinx(CRTC_IDX, 0x55, CR55 & ~0x03);
+	
+	/* restore DAC and first LUT entries */
+	for (i=j=0; i<2; i++) {
+	   outp(0x3c8, i);
+	   outp(0x3c9, lut[j++]);
+	   outp(0x3c9 ,lut[j++]);
+	   outp(0x3c9 ,lut[j++]);
+	}
+	for (i=0; i<3; i++) 
+	   outp(0x3c6+i, dac[i]);
+	
+	wrinx(CRTC_IDX, 0x43, CR43);
+	wrinx(CRTC_IDX, 0x55, CR55);
+	
+
+	if (Found && Width8Check()) {
+	   *RamDac |= DAC_8BIT;
+	}
+
+	wrinx(CRTC_IDX, 0x39, lock2);
+	wrinx(CRTC_IDX, 0x38, lock1);
+
+	return(Found);
+}
+
 static Bool S3_ATT498Check(RamDac)
 int *RamDac;
 {
@@ -705,6 +819,11 @@ int *RamDac;
 	else if ((SVGA_VENDOR(Chipset) == V_S3) && (Chipset >= CHIP_S3_928D))
 	{
 	    if (S3_TVP3026Check(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
+	    if (S3_IBMRGBCheck(RamDac))
 	    {
 		DisableIOPorts(NUMPORTS, Ports);
 		return;

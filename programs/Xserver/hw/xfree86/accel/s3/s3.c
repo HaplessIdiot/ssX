@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.81 1995/06/14 07:34:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.82 1995/06/14 09:44:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -46,6 +46,7 @@
 #include "s3linear.h"
 #include "s3Bt485.h"
 #include "Ti302X.h"
+#include "IBMRGB.h"
 #include "s3ELSA.h"
 
 extern int s3MaxClock;
@@ -120,6 +121,7 @@ ScrnInfoRec s3InfoRec =
    0,				/* int s3Nadjust */
    0,				/* int s3MClk */
    0,				/* unsigned long VGAbase */
+   0,				/* int s3RefClk */
 };
 
 short s3alu[16] =
@@ -164,6 +166,10 @@ static SymTabRec s3DacTable[] = {
    { ATT22C498_DAC,	"att22c498" },
    { TI3025_DAC,	"ti3025" },
    { TI3026_DAC,	"ti3026" },
+   { IBMRGB524_DAC,	"ibm_rgb524" },
+   { IBMRGB525_DAC,	"ibm_rgb525" },
+   { IBMRGB528_DAC,	"ibm_rgb528" },
+   { IBMRGB52x_DAC,	"ibm_rgb52x" },
    { ATT20C490_DAC,	"att20c490" },
    { SC15025_DAC,	"sc15025" },
    { STG1700_DAC,	"stg1700" },
@@ -185,6 +191,7 @@ static Bool icd2061ClockSelect();
 static Bool s3GendacClockSelect();
 static Bool ti3025ClockSelect();
 static Bool ti3026ClockSelect();
+static Bool IBMRGBClockSelect();
 static void s3ProgramTi3025Clock();
 static Bool ch8391ClockSelect();
 ScreenPtr s3savepScreen;
@@ -280,60 +287,62 @@ s3PrintIdent()
 }
 
 
-static int s3DetectMIRO_20SV_Rev(int BIOSbase)
+static unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
 {
 #define BIOS_BSIZE 1024
 #define BIOS_BASE  0xc0000
 
    long addr = BIOSbase>0 ? BIOSbase : BIOS_BASE;
-
-   unsigned char bios[BIOS_BSIZE];
-   char *match1 = "miroCRYSTAL\37720SV", *match2 = "Rev.";
+   static unsigned char bios[BIOS_BSIZE];
+   static int init=0;
    int i,j,l1,l2;
-   
-   if (xf86ReadBIOS(BIOSbase, 0, bios, BIOS_BSIZE) != BIOS_BSIZE)
-      return -1;
 
-   if ((bios[0] != 0x55) || (bios[1] != 0xaa))
-      return -2;
+   if (!init) {
+      init = 1;
+      if (xf86ReadBIOS(BIOSbase, 0, bios, BIOS_BSIZE) != BIOS_BSIZE)
+	 return NULL;
+      if ((bios[0] != 0x55) || (bios[1] != 0xaa))
+	 return NULL;
+   }
+   if (match1 == NULL)
+      return NULL;
 
    l1 = strlen(match1);
-   l2 = strlen(match2);
-   for (i=0; i<BIOS_BSIZE-l1; i++) 
-      if (bios[i] == match1[0] && !memcmp(&bios[i],match1,l1)) {
-	 for(j=i+l1; (j<BIOS_BSIZE-l2-2) && bios[j]; j++) 
-	    if (bios[j] == match2[0] && !memcmp(&bios[j],match2,l2)) {
-	       if (bios[j+l2] >= '0' && bios[j+l2] <= '9')
-		  return bios[j+l2] - '0';
-	       else {
-		  return -3;
-	       }
-	    }
-      }
-   return -4;
+   if (match2 != NULL) 
+      l2 = strlen(match2);
+
+   for (i=0; i<BIOS_BSIZE-l1; i++)
+      if (bios[i] == match1[0] && !memcmp(&bios[i],match1,l1))
+	 if (match2 == NULL) 
+	    return &bios[i+l1];
+	 else
+	    for(j=i+l1; (j<BIOS_BSIZE-l2) && bios[j]; j++) 
+	       if (bios[j] == match2[0] && !memcmp(&bios[j],match2,l2))
+		  return &bios[j+l2];
+   return NULL;
+}
+
+
+
+
+static int s3DetectMIRO_20SV_Rev(int BIOSbase)
+{
+   char *match1 = "miroCRYSTAL\37720SV", *match2 = "Rev.";
+   unsigned char *p;
+
+   if ((p = find_bios_string(BIOSbase,match1,match2)) != NULL)
+      if (*p >= '0' && *p <= '9')
+	 return *p - '0';
+   return -1;
 }
 
 static int check_SPEA_bios(int BIOSbase)
 {
-#define BIOS_BSIZE 1024
-#define BIOS_BASE  0xc0000
-
-   long addr = BIOSbase>0 ? BIOSbase : BIOS_BASE;
-
-   unsigned char bios[BIOS_BSIZE];
    char *match = " SPEA/Video";
-   int i,l;
-
-   if (xf86ReadBIOS(BIOSbase, 0, bios, BIOS_BSIZE) != BIOS_BSIZE)
-      return -1;
-
-   if ((bios[0] != 0x55) || (bios[1] != 0xaa))
-      return -2;
-
-   l = strlen(match);
-   for (i=0; i<BIOS_BSIZE-l; i++)
-      if (bios[i] == match[0] && !memcmp(&bios[i],match,l))
-         return 1;
+   unsigned char *p;
+   
+   if ((p = find_bios_string(BIOSbase,match,NULL)) != NULL)
+      return 1;
    return 0;
 }
 
@@ -614,7 +623,7 @@ s3Probe()
    OFLG_SET(OPTION_TI3020_CURS, &validOptions);
    OFLG_SET(OPTION_NO_TI3020_CURS, &validOptions);
    OFLG_SET(OPTION_TI3026_CURS, &validOptions);
-   OFLG_SET(OPTION_NO_TI3026_CURS, &validOptions);
+   OFLG_SET(OPTION_IBMRGB_CURS, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
    OFLG_SET(OPTION_FAST_DRAM, &validOptions);
    OFLG_SET(OPTION_MED_DRAM, &validOptions);
@@ -1206,6 +1215,37 @@ s3Probe()
          }
 	 xf86setdaccomm(daccomm);
       }
+
+      /* probe for IBM RGB52x ramdac */
+      if (s3RamdacType == UNKNOWN_DAC) {
+	 int ibm_id;
+	 
+	 if (ibm_id = s3IBMRGB_Probe()) {
+	    s3IBMRGB_Init();
+	    switch(ibm_id >> 8) {
+	    case 1:
+	       ErrorF("%s %s: Detected an IBM RGB525 ramdac rev. %x\n",
+		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
+	       s3RamdacType = IBMRGB525_DAC;
+	       break;
+	    case 2:
+	       ErrorF("%s %s: Detected an IBM RGB524 ramdac rev. %x\n",
+		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
+	       s3RamdacType = IBMRGB524_DAC;
+	       break;
+	    case 0x102:
+	       ErrorF("%s %s: Detected an IBM RGB528 ramdac rev. %x\n",
+		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
+	       s3RamdacType = IBMRGB528_DAC;
+	       break;
+	    default:
+	       ErrorF("%s %s: Detected an unknown IBM RGB52x ramdac rev. %x\n",
+		      XCONFIG_PROBED, s3InfoRec.name, ibm_id);
+	       ErrorF("\tplease report!\n");
+
+	    }
+	 }
+      }
    }
    
    /* probe for S3 GENDAC or SDAC */
@@ -1307,6 +1347,9 @@ s3Probe()
 	    chips = "the 964 chip";
 	 break;
       case TI3026_DAC:
+      case IBMRGB524_DAC:
+      case IBMRGB525_DAC:
+      case IBMRGB528_DAC:
 	 if (!S3_964_SERIES(s3ChipId) && !S3_968_SERIES(s3ChipId))
 	    chips = "964 and 968 chips";
 	 break;
@@ -1410,6 +1453,10 @@ s3Probe()
 	    break;
 	 case TI3026_DAC:
 	    break;
+	 case IBMRGB524_DAC:
+	 case IBMRGB525_DAC:
+	 case IBMRGB528_DAC:
+	    break;
 	 default:
 	    /* Should never get here */
 	    if (s3Bpp > 1)
@@ -1461,6 +1508,11 @@ s3Probe()
       case TI3026_DAC:
 	 s3InfoRec.dacSpeed = 135000;  /* push 135MHz part to 175 ? */
 	 break;
+      case IBMRGB524_DAC:
+      case IBMRGB525_DAC:
+      case IBMRGB528_DAC:
+	 s3InfoRec.dacSpeed = 170000;
+	 break;
       }
    }
    
@@ -1503,7 +1555,7 @@ s3Probe()
    }
 
    if (DAC_IS_TI3026) {
-      if (OFLG_ISSET(OPTION_NO_TI3026_CURS, &s3InfoRec.options)) {
+      if (OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
          ErrorF("%s %s: Use of Ti3026 cursor disabled in XF86Config\n",
 	        XCONFIG_GIVEN, s3InfoRec.name);
 	 OFLG_CLR(OPTION_TI3026_CURS, &s3InfoRec.options);
@@ -1518,6 +1570,27 @@ s3Probe()
       if (OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options)) {
 	 ErrorF("%s %s: Ti3026 cursor requires a Ti3026 RAMDAC\n",
 		XCONFIG_PROBED, s3InfoRec.name);
+	 OFLG_CLR(OPTION_TI3026_CURS, &s3InfoRec.options);
+      }
+   }
+
+   if (DAC_IS_IBMRGB) {
+      if (OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
+         ErrorF("%s %s: Use of IBM RGB52x cursor disabled in XF86Config\n",
+	        XCONFIG_GIVEN, s3InfoRec.name);
+	 OFLG_CLR(OPTION_IBMRGB_CURS, &s3InfoRec.options);
+      } else {
+	 /* use the ramdac cursor by default */
+	 ErrorF("%s %s: Using hardware cursor from IBM RGB52x RAMDAC\n",
+	        OFLG_ISSET(OPTION_IBMRGB_CURS, &s3InfoRec.options) ?
+		XCONFIG_GIVEN : XCONFIG_PROBED, s3InfoRec.name);
+	 OFLG_SET(OPTION_IBMRGB_CURS, &s3InfoRec.options);
+      }
+   } else {
+      if (OFLG_ISSET(OPTION_IBMRGB_CURS, &s3InfoRec.options)) {
+	 ErrorF("%s %s: IBM RGB52x cursor requires a IBM RGB52x RAMDAC\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+	 OFLG_CLR(OPTION_IBMRGB_CURS, &s3InfoRec.options);
       }
    }
 
@@ -1550,6 +1623,16 @@ s3Probe()
       pixMuxPossible = TRUE;
       allowPixMuxInterlace = FALSE;
       allowPixMuxSwitching = FALSE;
+      nonMuxMaxClock = 70000;
+      pixMuxLimitedWidths = FALSE;
+      if (S3_964_SERIES(s3ChipId)) {
+         nonMuxMaxClock = 0;  /* 964 can only be in pixmux mode when */
+         pixMuxMinWidth = 0;  /* working in enhanced mode */  
+      }
+   } else if (DAC_IS_IBMRGB) {
+      pixMuxPossible = TRUE;
+      allowPixMuxInterlace = TRUE;
+      allowPixMuxSwitching = TRUE;
       nonMuxMaxClock = 70000;
       pixMuxLimitedWidths = FALSE;
       if (S3_964_SERIES(s3ChipId)) {
@@ -1652,6 +1735,13 @@ s3Probe()
       clockchip_probed = XCONFIG_PROBED;
    }
 
+   if (DAC_IS_IBMRGB && 
+       !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
+      OFLG_SET(CLOCK_OPTION_IBMRGB, &s3InfoRec.clockOptions);
+      OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+      clockchip_probed = XCONFIG_PROBED;
+   }
+
    if (OFLG_ISSET(CLOCK_OPTION_TI3026, &s3InfoRec.clockOptions)) {
       int mclk, m, n, p;
       s3ClockSelectFunc = ti3026ClockSelect;
@@ -1710,6 +1800,75 @@ s3Probe()
 	 s3InfoRec.s3MClk = mclk;
       outb(vgaCRIndex, 0x5c);
       outb(vgaCRReg, cr5c);
+   } else if (OFLG_ISSET(CLOCK_OPTION_IBMRGB, &s3InfoRec.clockOptions)) {
+      int mclk=0, m, n, df;
+      int m0,m1,n0,n1;
+      double f0,f1,f,fdiff;
+      s3ClockSelectFunc = IBMRGBClockSelect;
+      OFLG_SET(CLOCK_OPTION_IBMRGB, &s3InfoRec.clockOptions);
+      OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+      if (s3InIBMRGBIndReg(IBMRGB_pll_ctrl1) & 1) {
+	 m0 = s3InIBMRGBIndReg(IBMRGB_m0+0*2);
+	 n0 = s3InIBMRGBIndReg(IBMRGB_n0+0*2) & 0x1f;
+	 m1 = s3InIBMRGBIndReg(IBMRGB_m0+1*2);
+	 n1 = s3InIBMRGBIndReg(IBMRGB_n0+1*2) & 0x1f;
+      }
+      else {
+	 m0 = s3InIBMRGBIndReg(IBMRGB_f0+0);
+	 m1 = s3InIBMRGBIndReg(IBMRGB_f0+1);
+	 n0 = s3InIBMRGBIndReg(IBMRGB_pll_ref_div_fix) & 0x1f;
+	 n1 = n0;
+      }
+      f0 = 25.175 / ((m0&0x3f)+65.0) * n0 * (8 >> (m0>>6));
+      f1 = 28.322 / ((m1&0x3f)+65.0) * n1 * (8 >> (m1>>6));
+
+      if (!s3InfoRec.s3RefClk) {
+	 s3InfoRec.s3RefClk = 16000;  /* default */
+	 if (f1>f0) fdiff = f1-f0;
+	 else       fdiff = f0-f1;
+	 if (find_bios_string(s3InfoRec.BIOSbase,"VideoBlitz III AV",
+			      "Genoa Systems Corporation") != NULL) {
+	    if (xf86Verbose)
+	       ErrorF("%s %s: Genoa VideoBlitz III AV detected\n",
+		      XCONFIG_PROBED, s3InfoRec.name);
+	    s3InfoRec.s3RefClk = 50000;
+	 }
+	 else {
+	    if (fdiff < f0*0.02) {
+	       /* f = (f0+f1)/2; */ 
+	       f = f1; /* 28.322 MHz clock seems to be more acurate then 25.175 */
+	       /* try to match some known reclock values */
+	       if ((int)(f*1e3/200+0.5) == 16000/200)
+		  s3InfoRec.s3RefClk = 16000;
+	       else if ((int)(f*1e3/200+0.5) == 50000/200)
+		  s3InfoRec.s3RefClk = 50000;
+	       else if ((int)(f*1e3/200+0.5) == 14318/200)
+		  s3InfoRec.s3RefClk = 14318;
+	       else 
+		  s3InfoRec.s3RefClk = (int)(f*2+0.5)*500;
+	    }
+	 }
+      }
+      if (!DAC_IS_IBMRGB525) {
+	 m = s3InIBMRGBIndReg(IBMRGB_sysclk_vco_div);
+	 n = s3InIBMRGBIndReg(IBMRGB_sysclk_ref_div) & 0x1f;
+	 df = m>>6;
+	 m &= 0x3f;
+	 if (!n) { m=0; n=1; }
+	 mclk = ((s3InfoRec.s3RefClk*100 * (m+65)) / n / (8 >> df) + 50) / 100;
+      }
+      if (xf86Verbose) {
+	 ErrorF("%s %s: Using IBM RGB52x programmable clock",
+		clockchip_probed, s3InfoRec.name);
+	 if (mclk)
+	    ErrorF(" (MCLK %1.3f MHz)", mclk / 1000.0);
+	 ErrorF("\n");
+	 ErrorF("\t with refclock %1.3f MHz (probed %1.3f & %1.3f)\n"
+		,s3InfoRec.s3RefClk/1e3,f0,f1);
+      }
+      numClocks = 3;
+      if (!s3InfoRec.s3MClk)
+	 s3InfoRec.s3MClk = mclk;
    } else if (OFLG_ISSET(OPTION_LEGEND, &s3InfoRec.options)) {
       s3ClockSelectFunc = LegendClockSelect;
       numClocks = 32;
@@ -1848,6 +2007,8 @@ s3Probe()
 	 maxRawClock = s3InfoRec.dacSpeed; /* Is this right?? */
       } else if (OFLG_ISSET(CLOCK_OPTION_TI3026, &s3InfoRec.clockOptions)) {
 	 maxRawClock = s3InfoRec.dacSpeed; /* Is this right?? */
+      } else if (OFLG_ISSET(CLOCK_OPTION_IBMRGB, &s3InfoRec.clockOptions)) {
+	 maxRawClock = s3InfoRec.dacSpeed; /* Is this right?? */
       } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 145000; /* This is what is in common_hw/ICS2595.h */
       } else if (OFLG_ISSET(CLOCK_OPTION_CH8391, &s3InfoRec.clockOptions)) {
@@ -1936,6 +2097,12 @@ s3Probe()
       s3InfoRec.maxClock = s3InfoRec.dacSpeed;
       break;
    case TI3026_DAC:
+      clockDoublingPossible = TRUE;
+      s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+      break;
+   case IBMRGB524_DAC:
+   case IBMRGB525_DAC:
+   case IBMRGB528_DAC:
       clockDoublingPossible = TRUE;
       s3InfoRec.maxClock = s3InfoRec.dacSpeed;
       break;
@@ -2110,6 +2277,9 @@ s3Probe()
 	    break;
 	 case TI3025_DAC:
 	 case TI3026_DAC:
+	 case IBMRGB524_DAC:
+	 case IBMRGB525_DAC:
+	 case IBMRGB528_DAC:
 	 case S3_SDAC_DAC:
 	 case S3_GENDAC_DAC:
 	 case S3_TRIO32_DAC:
@@ -2153,6 +2323,8 @@ s3Probe()
 	       DAC_IS_TI3020_SERIES) ||
 	      (OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options) &&
 	       DAC_IS_TI3026) ||
+	      (OFLG_ISSET(OPTION_IBMRGB_CURS, &s3InfoRec.options) &&
+	       DAC_IS_IBMRGB) ||
 	      OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
       maxDisplayWidth = 2048;
       maxDisplayHeight = 4096;
@@ -2403,7 +2575,7 @@ s3Probe()
 	       pMode->Flags |= V_DBLCLK;
 	    }
 	    break;
-	 case TI3026_DAC:
+	 case TI3026_DAC:  /* IBMRGB??? */
 	    if (pMode->SynthClock > 80000) {
                /* the SynthClock will be divided and clock doubled by the PLL */
 	       pMode->Flags |= V_DBLCLK;
@@ -2470,7 +2642,8 @@ s3Probe()
 	 pMode = pMode->next;
       } while (pMode != pEnd);
    }
-   if (DAC_IS_BT485_SERIES || DAC_IS_TI3020_SERIES || DAC_IS_TI3026) {
+   if (DAC_IS_BT485_SERIES || DAC_IS_TI3020_SERIES || DAC_IS_TI3026 
+       || DAC_IS_IBMRGB) {
       if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) || s3Bpp > 1 ||
 	  OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
 	 s3DAC8Bit = TRUE;
@@ -2561,6 +2734,7 @@ s3Probe()
    if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options) ||
        OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options) ||
        OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options) ||
+       OFLG_ISSET(OPTION_IBMRGB_CURS, &s3InfoRec.options) ||
        OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
       s3CursorStartY = s3InfoRec.virtualY;
       s3CursorLines = 0;
@@ -2909,6 +3083,39 @@ ti3026ClockSelect(freq)
 	 outb(vgaCRIndex, 0x42);/* select the clock */
 	 tmp = inb(vgaCRReg) & 0xf0;
 	 outb(vgaCRReg, tmp | 0x02);
+      }
+   }
+   LOCK_SYS_REGS;
+   return(result);
+}
+
+static Bool
+IBMRGBClockSelect(freq)
+     int   freq;
+
+{
+   Bool result = TRUE;
+   unsigned char tmp;
+ 
+   UNLOCK_SYS_REGS;
+   
+   switch(freq)
+   {
+   case CLK_REG_SAVE:
+   case CLK_REG_RESTORE:
+      result = s3ClockSelect(freq);
+      break;
+   default:
+      {
+	 /* Check if clock frequency is within range */
+	 /* XXXX Check this elsewhere */
+	 if (freq < 16250) {
+	    ErrorF("%s %s: Specified dot clock (%.3f) too low for IBM RGB52x",
+		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
+	    result = FALSE;
+	    break;
+	 }
+	 (void)IBMRGBSetClock(freq, 2, s3InfoRec.dacSpeed, s3InfoRec.s3RefClk);
       }
    }
    LOCK_SYS_REGS;

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_HWlib.h,v 1.5 95/01/23 15:34:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.11 1995/04/09 13:48:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.12 1995/04/10 12:01:28 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -223,6 +223,30 @@ extern void GlennsIODelay(
 	void
 #endif
 );
+
+/* IBMRGB.c */
+extern void IBMRGBSetClock(
+#if NeedFunctionPrototypes
+	long,
+	int,
+	long,
+	long
+#endif
+);
+extern unsigned char s3InIBMRGBIndReg(
+#if NeedFunctionPrototypes
+	unsigned char
+#endif
+);
+extern void s3OutIBMRGBIndReg(
+#if NeedFunctionPrototypes
+	unsigned char,
+	unsigned char,
+	unsigned char
+#endif
+);
+extern int  s3IBMRGB_Probe();
+extern void s3IBMRGB_Init();
 
 _XFUNCPROTOEND
 

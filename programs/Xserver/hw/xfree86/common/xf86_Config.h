@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.5 95/01/16 13:17:02 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.26 1995/06/14 10:36:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.27 1995/06/14 10:48:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -76,6 +76,7 @@ typedef struct {
    int s3Nadjust;
    int s3MClk;
    unsigned long VGAbase;      /* VGA ot XGA 64K aperature base address */
+   int s3RefClk;
 } GDevRec, *GDevPtr;
 
 typedef struct {
@@ -343,6 +344,7 @@ static SymTabRec KeyMapTab[] = {
 #define S3MNADJUST	28
 #define S3MCLK		29
 #define VGABASEADDR    100
+#define S3REFCLK       101
 
 #ifdef INIT_CONFIG
 static SymTabRec DeviceTab[] = {
@@ -370,6 +372,7 @@ static SymTabRec DeviceTab[] = {
   { S3MNADJUST,	"s3mnadjust" },
   { S3MCLK,	"s3mclk" },
   { VGABASEADDR,"vgabase" },
+  { S3REFCLK,	"s3refclk" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */

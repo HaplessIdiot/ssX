@@ -1,5 +1,5 @@
-/* $XConsortium: Shell.c,v 1.168 95/01/06 21:14:23 converse Exp $ */
-/* $XFree86: xc/lib/Xt/Shell.c,v 3.1 1994/09/17 13:44:36 dawes Exp $ */
+/* $XConsortium: Shell.c,v 1.169 95/06/22 22:31:11 converse Exp $ */
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.2 1995/01/27 04:46:59 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1048,6 +1048,7 @@ static void TopLevelInitialize(req, new, args, num_args)
 	    w->wm.wm_hints.initial_state = IconicState;
 }
 
+static String *NewArgv();
 static String *NewStringArray();
 static void FreeStringArray();
 
@@ -1059,8 +1060,9 @@ static void ApplicationInitialize(req, new, args, num_args)
 {
     ApplicationShellWidget w = (ApplicationShellWidget)new;
 
-    if (w->application.argv) w->application.argv =
-	NewStringArray(w->application.argv);
+    if (w->application.argc > 0)
+	w->application.argv = NewArgv(w->application.argc,
+				      w->application.argv);
 }
 
 #define XtSaveInactive 0
@@ -1671,7 +1673,8 @@ static void ApplicationDestroy(wid)
     Widget wid;
 {
     ApplicationShellWidget w = (ApplicationShellWidget) wid;
-    FreeStringArray(w->application.argv);
+    if (w->application.argc > 0)
+	FreeStringArray(w->application.argv);
 }
 
 static void SessionDestroy(wid)
@@ -2373,6 +2376,37 @@ static Boolean TopLevelSetValues(oldW, refW, newW, args, num_args)
     return False;
 }
 
+static String * NewArgv(count, str)
+    int count;
+    String *str;  /* do not assume it's terminated by a NULL element */
+{
+    Cardinal nbytes = 0;
+    Cardinal num = 0;
+    String *newarray, *new;
+    String *strarray = str;
+    String sptr;
+
+    if (count <= 0 || !str) return NULL;
+
+    for (num = count; num--; str++) {
+	nbytes += strlen(*str);
+	nbytes++;
+    }
+    num = (count+1) * sizeof(String);
+    new = newarray = (String *) XtMalloc(num + nbytes);
+    sptr = ((char *) new) + num;
+
+    for (str = strarray; count--; str++) {
+	*new = sptr;
+	strcpy(*new, *str);
+	new++;
+	sptr = strchr(sptr, '\0');
+	sptr++;
+    }
+    *new = NULL;
+    return newarray;
+}
+
 
 /*ARGSUSED*/
 static Boolean ApplicationSetValues(current, request, new, args, num_args)
@@ -2383,13 +2417,15 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
     ApplicationShellWidget nw = (ApplicationShellWidget) new;
     ApplicationShellWidget cw = (ApplicationShellWidget) current;
 
-    if (cw->application.argv != nw->application.argv) {
-	nw->application.argv = NewStringArray(nw->application.argv);
-	FreeStringArray(cw->application.argv);
-    }
+    if (cw->application.argc != nw->application.argc ||
+	cw->application.argv != nw->application.argv) {
 
-    if (cw->application.argv != nw->application.argv ||
-	cw->application.argc != nw->application.argc) {
+	if (nw->application.argc > 0)
+	    nw->application.argv = NewArgv(nw->application.argc,
+					   nw->application.argv);
+	if (cw->application.argc > 0)
+	    FreeStringArray(cw->application.argv);
+
 	if (XtIsRealized(new) && !nw->shell.override_redirect) {
 	    if (nw->application.argc >= 0 && nw->application.argv)
 		XSetCommand(XtDisplay(new), XtWindow(new),

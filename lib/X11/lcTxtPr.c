@@ -1,4 +1,4 @@
-/* $XConsortium: lcTxtPr.c,v 1.3 94/01/20 18:07:37 rws Exp $ */
+/* $XConsortium: lcTxtPr.c,v 1.5 95/06/07 15:32:21 kaleb Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -148,11 +148,11 @@ retry:
     for (i = 1; to_left > 0; i++) {
 	if (is_wide_char) {
 	    from = (XPointer) *wc_list;
-	    from_left = _Xwcslen(*wc_list) + 1;
+	    from_left = _Xwcslen(*wc_list);
 	    wc_list++;
 	} else {
 	    from = (XPointer) *mb_list;
-	    from_left = strlen(*mb_list) + 1;
+	    from_left = strlen(*mb_list);
 	    mb_list++;
 	}
 
@@ -170,6 +170,8 @@ retry:
 	}
 
 	unconv_num += ret;
+	*to++ = '\0';
+	to_left--;
 
 	if (i >= count)
 	    break;

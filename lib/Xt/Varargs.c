@@ -1,4 +1,4 @@
-/* $XConsortium: Varargs.c,v 1.26 94/04/17 20:15:03 converse Exp $ */
+/* $XConsortium: Varargs.c,v 1.30 95/06/15 19:30:38 converse Exp $ */
 
 /*
 
@@ -185,20 +185,23 @@ XtTypedArgList _XtVaCreateTypedArgList(var, count)
 /*
  *    _XtTypedArgToArg() invokes a resource converter to convert the
  *    passed typed arg into a name/value pair and stores the name/value
- *    pair in the passed Arg structure. It returns 1 if the conversion
- *    succeeded and 0 if the conversion failed.
+ *    pair in the passed Arg structure.  If memory is allocated for the
+ *    converted value, the address is returned in the value field of 
+ *    memory_return; otherwise that field is NULL.  The function returns
+ *    1 if the conversion succeeded and 0 if the conversion failed.
  */
 static int
-_XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
+_XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources,
+		 memory_return)
     Widget              widget;
     XtTypedArgList      typed_arg;
     ArgList             arg_return;
     XtResourceList      resources;
     Cardinal            num_resources;
+    ArgList		memory_return;
 {     
     String              to_type = NULL;
     XrmValue            from_val, to_val;
-    register int        i;
       
 
     if (widget == NULL) {
@@ -211,13 +214,11 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
        
     /* again we assume that the XtResourceList is un-compiled */
 
-    for (i = 0; i < num_resources; i++) {
-        if (StringToName(typed_arg->name) ==
-            StringToName(resources[i].resource_name)) {
-            to_type = resources[i].resource_type;
-            break;
-        }
-    }
+    for (; num_resources--; resources++)
+	if (strcmp(typed_arg->name, resources->resource_name) == 0) {
+	    to_type = resources->resource_type;
+	    break;
+	}
 
     if (to_type == NULL) {
         XtAppWarningMsg(XtWidgetToApplicationContext(widget),
@@ -246,6 +247,7 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
     }
 
     arg_return->name = typed_arg->name;
+    memory_return->value = (XtArgVal) NULL;
 
     if (strcmp(to_type, XtRString) == 0) {
 	arg_return->value = (XtArgVal) to_val.addr;
@@ -259,6 +261,11 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
 	    arg_return->value = (XtArgVal) *(char *)to_val.addr;
 	else if (to_val.size == sizeof(XtArgVal))
 	    arg_return->value = *(XtArgVal *)to_val.addr;
+	else if (to_val.size > sizeof(XtArgVal)) {
+	    arg_return->value = (XtArgVal) XtMalloc(to_val.size);
+	    memory_return->value = (XtArgVal)
+		memcpy((void *)arg_return->value, to_val.addr, to_val.size);
+	}
     }
        
     return(1);
@@ -270,12 +277,14 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
  *    an ArgList/count.
  */
 static int
-_XtNestedArgtoArg(widget, avlist, args, resources, num_resources)
+_XtNestedArgtoArg(widget, avlist, args, resources, num_resources,
+		  memory_return)
     Widget              widget;
     XtTypedArgList      avlist;
     ArgList             args;
     XtResourceList      resources;
     Cardinal            num_resources;
+    ArgList		memory_return;
 {
     int         count = 0;
  
@@ -285,11 +294,13 @@ _XtNestedArgtoArg(widget, avlist, args, resources, num_resources)
             if (widget != NULL) {
                 /* this is a typed arg */
                 count += _XtTypedArgToArg(widget, avlist, (args+count),
-                             resources, num_resources);
+					  resources, num_resources,
+					  (memory_return+count));
             }
         } else if (strcmp(avlist->name, XtVaNestedList) == 0) {
             count += _XtNestedArgtoArg(widget, (XtTypedArgList)avlist->value,
-                        (args+count), resources, num_resources);
+				       (args+count), resources, num_resources,
+				       (memory_return+count));
         } else {
             (args+count)->name = avlist->name;
             (args+count)->value = avlist->value;
@@ -300,13 +311,57 @@ _XtNestedArgtoArg(widget, avlist, args, resources, num_resources)
     return(count);
 }
 
+/*
+ * Free memory allocated through _XtVaToArgList.  The actual args array
+ * size is expected to be total_count * 2, where total_count is the number
+ * of elements needed for resource representations.  The lower half of the
+ * array contains pairs of resource names and values as usual.  For each
+ * element [n] in the lower half of the array, the value field of the
+ * corresponding element [n + total_count] in the upper half of the array
+ * has been pressed into service in order to note whether the resource value
+ * is a pointer to memory that was allocated in _XtTypedArgToArg.  In the
+ * upper half, if the value field is not NULL, it contains the address of
+ * memory which should now be freed.  That memory could have been allocated
+ * only as a result of the conversion of typed arguments.  Therefore, if
+ * there were no typed arguments in the original varargs, there is no need
+ * to examine the upper half of the array.  In the choice of data structure
+ * to make this representation, priority was given to the wish to retrofit
+ * the release of memory around the existing signature of _XtVaToArgList.
+ */
+#if NeedFunctionPrototypes
+void
+_XtFreeArgList(
+    ArgList	args,	     /* as returned by _XtVaToArgList */
+    int		total_count, /*  argument count returned by _XtCountVaList */
+    int 	typed_count) /* typed arg count returned by _XtCountVaList */
+#else
+void
+_XtFreeArgList(args, total_count, typed_count)
+    ArgList	args;
+    int		total_count;
+    int 	typed_count;
+#endif
+{
+    ArgList p;
+
+    if (args) {
+	if (typed_count)
+	    for (p = args + total_count; total_count--; ++p) {
+		if (p->value) XtFree((char *)p->value);
+	    }
+	XtFree((char *)args);
+    }
+}
+
+
 static void		GetResources();
 
  
 /* 
  *    Given a variable argument list, _XtVaToArgList() returns the 
  *    equivalent ArgList and count. _XtVaToArgList() handles nested 
- *    lists and typed arguments. 
+ *    lists and typed arguments.  If typed arguments are present, the
+ *    ArgList should be freed with _XtFreeArgList.
  */
 #if NeedFunctionPrototypes
 void
@@ -327,7 +382,7 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
 #endif
 {
     String		attr;
-    int			count = 0;
+    int			count;
     ArgList		args = (ArgList)NULL;
     XtTypedArg		typed_arg;
     XtResourceList	resources = (XtResourceList)NULL;
@@ -340,8 +395,12 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
 	return;
     }
 
-
+    max_count *= 2;
     args = (ArgList)XtMalloc((unsigned)(max_count * sizeof(Arg)));
+    for (count = max_count; --count >= 0; )
+	args[count].value = (XtArgVal) NULL;
+    max_count /= 2;
+    count = 0;
 
     for(attr = va_arg(var, String) ; attr != NULL;
 			attr = va_arg(var, String)) {
@@ -358,7 +417,8 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
 		    fetched_resource_list = True;
 		}
 		count += _XtTypedArgToArg(widget, &typed_arg, &args[count],
-			     resources, num_resources);
+					  resources, num_resources,
+					  &args[max_count + count]);
 	    }
 	} else if (strcmp(attr, XtVaNestedList) == 0) {
 	    if (widget != NULL || !fetched_resource_list) {
@@ -367,7 +427,8 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
 	    }
 
 	    count += _XtNestedArgtoArg(widget, va_arg(var, XtTypedArgList),
-			&args[count], resources, num_resources);
+				       &args[count], resources, num_resources,
+				       &args[max_count + count]);
 	} else {
 	    args[count].name = attr;
 	    args[count].value = va_arg(var, XtArgVal);
@@ -401,8 +462,7 @@ Cardinal * number;
     XtInitializeWidgetClass(XtClass(widget));
     XtGetResourceList(XtClass(widget), res_list, number);
     
-    /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
-    if (!XtIsShell(widget) && XtIsConstraint(parent)) {
+    if (!XtIsShell(widget) && parent && XtIsConstraint(parent)) {
 	XtResourceList res, constraint, cons_top;
 	Cardinal num_constraint, temp;
 

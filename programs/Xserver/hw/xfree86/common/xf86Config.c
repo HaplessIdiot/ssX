@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.49 1995/06/14 09:44:46 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.50 1995/06/14 10:36:24 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1376,6 +1376,7 @@ configDeviceSection()
   devp->s3Madjust = 0;
   devp->s3Nadjust = 0;
   devp->s3MClk = 0;
+  devp->s3RefClk = 0;
 
   while ((token = getToken(DeviceTab)) != ENDSECTION) {
     switch (token) {
@@ -1627,6 +1628,11 @@ configDeviceSection()
          configError("VGA aperature base address expected");
       devp->VGAbase = val.num;
       OFLG_SET(XCONFIG_VGABASE, &(devp->xconfigFlag));
+      break;
+
+    case S3REFCLK:
+      if (getToken(NULL) != NUMBER) configError("RefCLK value in MHz expected");
+      devp->s3RefClk = (int)(val.realnum * 1000.0 + 0.5);
       break;
 
     case EOF:
@@ -2155,6 +2161,7 @@ configScreenSection()
           screen->s3Madjust = device_list[i].s3Madjust;
           screen->s3Nadjust = device_list[i].s3Nadjust;
 	  screen->s3MClk = device_list[i].s3MClk;
+	  screen->s3RefClk = device_list[i].s3RefClk;
 	  if (OFLG_ISSET(XCONFIG_VGABASE, &screen->xconfigFlag))
 	    screen->VGAbase = device_list[i].VGAbase;
           break;

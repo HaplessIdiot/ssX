@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/23 15:33:48 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.14 1995/06/14 07:34:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.15 1995/06/14 09:42:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -105,6 +105,7 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int s3Nadjust */
   0,			/* int s3MClk */
   0,			/* unsigned long VGAbase */
+  0,			/* int s3RefClk */
 };
 
 pointer vgaOrigVideoState = NULL;

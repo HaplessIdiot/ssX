@@ -1,3 +1,12 @@
+XFree86 3.1.1Bg (29 June 1995)
+171. Workaround for the NumLock modifier interfering with the xterm
+     ctrl+btn menus.
+170. More pre-fix-12 fix-trackers.  Mostly some libX11 and libXt fixes.
+     Includes a workaround for the NumLock modifier interfering with
+     Xaw pull-down menus.
+169. Preliminary support for the IBM RGB52x ramdacs in the S3 server
+     (Harald Koenig).
+
 XFree86 3.1.1Bf (27 June 1995)
 168. Another stab at the ET4000/W32p mouse droppings fix (Glenn Lai).
 167. Back out some LBX fixes that won't be in fix-12.

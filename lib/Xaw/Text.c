@@ -67,7 +67,7 @@ SOFTWARE.
 #include <X11/Xaw/Scrollbar.h>
 #include <X11/Xaw/TextP.h>
 #include <X11/Xaw/MultiSinkP.h>
-#include <X11/Xaw/XawImP.h>	/* for _XawImVASetValues */
+#include <X11/Xaw/XawImP.h>
 
 #include <X11/Xfuncs.h>
 #include <ctype.h>		/* for isprint() */
@@ -660,9 +660,12 @@ XawTextInsertState state;
 
   /* Keep Input Method up to speed  */
 
-  if ( ctx->simple.international )
-      _XawImVASetValues( w, XtNinsertPosition, ctx->text.insertPos, NULL );
+  if ( ctx->simple.international ) {
+    Arg list[1];
 
+    XtSetArg (list[0], XtNinsertPosition, ctx->text.insertPos);
+    _XawImSetValues (w, list, 1);
+  }
 }
 
 /*
@@ -1141,6 +1144,7 @@ int n;
 {
   XawTextPosition top, target;
   int y;
+  Arg list[1];
   XawTextLineTable * lt = &(ctx->text.lt);
 
   if (abs(n) > ctx->text.lt.lines) 
@@ -1211,8 +1215,8 @@ int n;
     else if (lt->top != target)
       DisplayTextWindow((Widget)ctx);
   }
-  _XawImVASetValues( (Widget) ctx, XtNinsertPosition,		/*i18n patch3*/
-	   (ctx->text.lt.top + ctx->text.lt.lines), NULL);	/*i18n patch3*/
+  XtSetArg (list[0], XtNinsertPosition, ctx->text.lt.top+ctx->text.lt.lines);
+  _XawImSetValues ((Widget) ctx, list, 1);
 }
 
 /*ARGSUSED*/

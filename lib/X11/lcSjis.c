@@ -1,4 +1,4 @@
-/* $XConsortium: lcSjis.c,v 1.13 94/03/29 22:52:06 rws Exp $ */
+/* $XConsortium: lcSjis.c,v 1.14 95/06/26 20:41:49 kaleb Exp $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -839,11 +839,11 @@ initCTptr(lcd)
     for (i = 0; i < num_codesets; i++) {
 
 	codeset = codesets[i];
-	num_charsets = codesets[i]->num_charsets;
+	num_charsets = codeset->num_charsets;
 
 	for (j = 0; j < num_charsets; j++) {
 
-	    charset = codesets[i]->charset_list[0];
+	    charset = codeset->charset_list[j];
 
 	    for (ctdp = ctdata; ctdp <= ctd_endp; ctdp++)
 
@@ -1174,7 +1174,6 @@ sjis_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 		    break;
 		}
 	    }
-
 	    if (ctdp > ctd_endp)  	/* failed to match CT sequence */
 		unconv_num++;
 	}
@@ -1287,7 +1286,6 @@ sjis_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 		    break;
 		}
 	    }
-
 	    if (ctdp > ctd_endp)    	/* failed to match CT sequence */
 		unconv_num++;
 	}

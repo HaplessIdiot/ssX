@@ -1418,7 +1418,7 @@ Cardinal* n;
   TextWidget ctx = (TextWidget) w;
 
   /* Let the input method know focus has arrived. */
-  _XawImVASetFocusValues(w, NULL);
+  _XawImSetFocusValues (w, NULL, 0);
   if ( event->xfocus.detail == NotifyPointer ) return;
 
   ctx->text.hasfocus = TRUE; 
@@ -1452,7 +1452,7 @@ TextEnterWindow( w, event, params, num_params )
 
   if ((event->xcrossing.detail != NotifyInferior) && event->xcrossing.focus &&
       !ctx->text.hasfocus) {
-	_XawImVASetFocusValues(w, NULL);
+	_XawImSetFocusValues(w, NULL, 0);
   }
 }
 

@@ -27,8 +27,8 @@ in this Software without prior written authorization from the X Consortium.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shm.c,v 1.23 94/04/17 20:32:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.2 1994/12/02 05:45:07 dawes Exp $ */
+/* $XConsortium: shm.c,v 1.23.1.1 95/05/03 20:32:23 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.3 1995/03/08 04:50:32 dawes Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -59,18 +59,6 @@ typedef struct _ShmDesc {
     Bool writable;
     unsigned long size;
 } ShmDescRec, *ShmDescPtr;
-
-#if NeedFunctionPrototypes
-
-#ifndef SVR4
-#if !defined(sgi) && !defined(hpux) && !defined(__alpha) && !defined(__FreeBSD__) && !defined(__386BSD__) && !defined(__NetBSD__)
-char *shmat(int, char*, int);
-#endif
-#endif
-
-#else
-char *shmat();
-#endif
 
 static void miShmPutImage(), fbShmPutImage();
 static PixmapPtr fbShmCreatePixmap();
@@ -294,7 +282,7 @@ ProcShmAttach(client)
 	shmdesc = (ShmDescPtr) xalloc(sizeof(ShmDescRec));
 	if (!shmdesc)
 	    return BadAlloc;
-	shmdesc->addr = shmat(stuff->shmid, 0,
+	shmdesc->addr = (char *)shmat(stuff->shmid, 0,
 			      stuff->readOnly ? SHM_RDONLY : 0);
 	if ((shmdesc->addr == ((char *)-1)) ||
 	    shmctl(stuff->shmid, IPC_STAT, &buf))

@@ -1,4 +1,4 @@
-/* $XConsortium: omGeneric.c,v 1.7 95/02/22 22:48:22 kaleb Exp $ */
+/* $XConsortium: omGeneric.c,v 1.8 95/06/02 23:29:17 converse Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -125,16 +125,17 @@ check_fontname(oc, name, found_num)
     FontData data;
     FontSet font_set;
     XFontStruct *fs_list;
-    char **fn_list, *fname, *prop_fname;
+    char **fn_list, *fname, *prop_fname = NULL;
     int list_num, font_set_num, i;
+    int list2_num;
+    char **fn2_list = NULL;
 
-    fn_list = XListFontsWithInfo(dpy, name, MAXFONTS, &list_num, &fs_list);
+    fn_list = XListFonts(dpy, name, MAXFONTS, &list_num);
     if (fn_list == NULL)
 	return found_num;
 
     for (i = 0; i < list_num; i++) {
 	fname = fn_list[i];
- 	prop_fname = get_prop_name(dpy, fs_list + i);
 
 	font_set = gen->font_set;
 	font_set_num = gen->font_set_num;
@@ -143,28 +144,34 @@ check_fontname(oc, name, found_num)
 	    if (font_set->font_name)
 		continue;
 
-	    if (data = check_charset(font_set, fname))
-		goto found;
-	    else if (prop_fname &&
-		     (data = check_charset(font_set, prop_fname))) {
-		fname = prop_fname;
-found:
+	    if ((data = check_charset(font_set, fname)) == NULL) {
+		if ((fn2_list = XListFontsWithInfo(dpy, name, MAXFONTS,
+					      &list2_num, &fs_list))
+		    && (prop_fname = get_prop_name(dpy, fs_list))
+		    && (data = check_charset(font_set, prop_fname)))
+		    fname = prop_fname;
+	    }
+	    if (data) {
 		font_set->side = data->side;
 		font_set->font_name = (char *) Xmalloc(strlen(fname) + 1);
 		if (font_set->font_name) {
 		    strcpy(font_set->font_name, fname);
 		    found_num++;
 		}
-		if (found_num == gen->font_set_num)
-		    break;
 	    }
+	    if (fn2_list) {
+		XFreeFontInfo(fn2_list, fs_list, list2_num);
+		fn2_list = NULL;
+		if (prop_fname) {
+		    Xfree(prop_fname);
+		    prop_fname = NULL;
+		}
+	    }
+	    if (found_num == gen->font_set_num)
+		break;
 	}
-	if (prop_fname)
-	    Xfree(prop_fname);
     }
-
-    XFreeFontInfo(fn_list, fs_list, list_num);
-
+    XFreeFontNames(fn_list);
     return found_num;
 }
 

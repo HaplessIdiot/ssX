@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.5 95/01/16 13:16:56 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.17 1995/03/19 12:18:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.18 1995/06/14 09:44:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -168,6 +168,7 @@ typedef struct {
   int s3Nadjust;
   int s3MClk;
   unsigned long  VGAbase;         /* AGX - 64K aperture memory addreee    */
+  int s3RefClk;
 } ScrnInfoRec, *ScrnInfoPtr;
 
 typedef struct {
