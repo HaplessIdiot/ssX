@@ -1826,12 +1826,14 @@ SiSXineramaExtensionInit(ScrnInfoPtr pScrn)
           return;
        }
 
+#ifdef PANORAMIX
        if(!noPanoramiXExtension) {
           xf86DrvMsg(pScrn->scrnIndex, X_INFO,
        	     "Xinerama active, not initializing SiS Pseudo-Xinerama\n");
           SiSnoPanoramiXExtension = TRUE;
           return;
        }
+#endif
 
        if(SiSnoPanoramiXExtension) {
           xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -4922,7 +4924,9 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     if(pSiS->DualHeadMode) {
     	pSiS->SiS_SD_Flags |= SiS_SD_ISDUALHEAD;
 	if(pSiS->SecondHead)      pSiS->SiS_SD_Flags |= SiS_SD_ISDHSECONDHEAD;
+#ifdef PANORAMIX
 	if(!noPanoramiXExtension) pSiS->SiS_SD_Flags |= SiS_SD_ISDHXINERAMA;
+#endif
     }
 #endif
 #ifdef SISMERGED
