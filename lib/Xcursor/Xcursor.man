@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86: xc/lib/Xcursor/Xcursor.man,v 1.1 2002/08/29 04:40:34 keithp Exp $
+.\" $XFree86: xc/lib/Xcursor/Xcursor.man,v 1.2 2003/02/13 03:09:04 dawes Exp $
 .\"
 .\" Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 .\"
@@ -141,7 +141,7 @@ Images look like:
 Xcursor (mostly) follows the freedesktop.org spec for theming icons.  The
 default search path it uses is $HOME/.icons, /usr/share/icons,
 /usr/share/pimaps, /usr/X11R6/lib/X11/icons.  Within each of these
-directorys, it searches for a directory using the theme name.  Within the
+directories, it searches for a directory using the theme name.  Within the
 theme directory, it looks for cursor files in the 'cursors' subdirectory.
 It uses the first cursor file found along  the path.
 .PP

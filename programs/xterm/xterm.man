@@ -54,7 +54,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.92 2003/03/23 02:01:41 dickey Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.93 2003/05/19 00:47:34 dickey Exp $
 .\"
 .\" updated by Thomas E. Dickey for XFree86, July 1996 - May 2003.
 .TH XTERM 1 __vendorversion__
@@ -540,7 +540,7 @@ regardless of your locale and encoding.
 This corresponds to the \fBlocale\fR resource.
 .sp
 The actual list of encodings which are supported is determined by \fBluit\fR.
-Consult the \fBluit\fR manual page for futher details.
+Consult the \fBluit\fR manual page for further details.
 .TP 8
 .B +lc
 Turn off support of automatic selection of locale encodings.

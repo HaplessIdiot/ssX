@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.man,v 1.5 2002/12/17 20:55:21 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.man,v 1.6 2003/04/03 22:18:31 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH MOUSE __drivermansuffix__ __vendorversion__
@@ -192,7 +192,7 @@ Default: whatever the mouse is already set to.
 .TP 7
 .BI "Option \*qDragLockButtons\*q \*q" "L1 B2 L3 B4" \*q
 Sets \*qdrag lock buttons\*q that simulate holding a button down, so
-that low dexterity people do not have to hold a buttton down at the
+that low dexterity people do not have to hold a button down at the
 same time they move a mouse cursor. Button numbers occur in pairs,
 with the lock button number occurring first, followed by the button
 number that is the target of the lock button.

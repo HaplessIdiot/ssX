@@ -257,7 +257,7 @@ parameter.
 .P
 When the \%\f3GL_ARB_imaging\fP extension is supported, there are distinct
 raster texture coordinates for each texture unit. Each texture unit's
-current ratster texture coordinates are updated by \%\f3glRasterPos\fP.
+current raster texture coordinates are updated by \%\f3glRasterPos\fP.
 .SH ERRORS
 \%\f3GL_INVALID_OPERATION\fP is generated if \%\f3glRasterPos\fP
 is executed between the execution of \%\f3glBegin\fP
