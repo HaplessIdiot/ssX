@@ -1,16 +1,22 @@
-XFree86 3.1.2Dc (10 March 1996)
-435. PANIX-PC98 support, and fix 'make clean' problems for PC98
+XFree86 3.1.2Dc (11 March 1996)
+440. XKB updates from recent XC fix-tracker.
+439. Fix freeing a random pointer in the module code when an absolute
+     path is given (Thomas E. Dickey).
+438. Updates to Ti3026 PLL paramter limits (Harald Koenig).
+437. Support for ELSA Winner 2000PRO/X rev G (Harald Koenig).
+436. PANIX-PC98 support, and fix 'make clean' problems for PC98
      (Takefumi Tsukada).
-434. OS/2 updates (Holger Veit).
-433. Remove DEVINTPTR ifdefs by renaming the entrypoints of the affected
+435. OS/2 updates (Holger Veit).
+434. Remove DEVINTPTR ifdefs by renaming the entrypoints of the affected
      functions (Thomas E. Dickey).
-432. Fix for handling of long version strings in beta servers (Harald Koenig).
-431. Some XFree86-Misc cleanups (Joe Moss).
-430. Add an extended input device supporting mouse protocols.  This shares
+433. Fix for handling of long version strings in beta servers (Harald Koenig).
+432. Some XFree86-Misc cleanups (Joe Moss).
+431. Add an extended input device supporting mouse protocols.  This shares
      code with the core mouse (Frederic Lepied).
-429. Fix the behaviour of ANSI colours in xterm when reverse video is used,
+430. Fix the behaviour of ANSI colours in xterm when reverse video is used,
      and some other xterm updates (Thomas E. Dickey).
-428. Fix SEGV with ark driver when no Ramdac is given in the XF86Config.
+429. Fix SEGV with ark driver when no Ramdac is given in the XF86Config.
+428. Avoid retrace wait for S3 HW cursor when DGA is active (Jon Tombs).
 
 XFree86 3.1.2Db (5 March 1996)
 427. Fix a problem where hw cursors get recoloured incorrectly.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.85tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.86 1996/02/22 05:11:35 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -808,6 +808,10 @@ s3Init(mode)
    if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
       pixMuxShift = s3InfoRec.clock[mode->Clock] > 120000 ? 2 : 
 		      s3InfoRec.clock[mode->Clock] > 60000 ? 1 : 0 ;
+   else if (mode->Flags & V_DBLCLK
+	    && (DAC_IS_TI3026) 
+	    && (OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)))
+      pixMuxShift =  (s3Bpp <= 2) ? 2 : 1;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_IBMRGB)
       pixMuxShift = mode->Flags & V_DBLCLK ? 1 : 0;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_TI3025)
@@ -958,6 +962,10 @@ s3Init(mode)
 #endif
          s3OutTi3026IndReg(TI_INPUT_CLOCK_SELECT,0x00,0x00);
       }
+      if (s3Bpp == 4) 
+         s3OutTi3026IndReg(TI_LATCH_CONTROL, ~1, 1);  /* 0x06 -> 0x07 */
+      else
+         s3OutTi3026IndReg(TI_LATCH_CONTROL, ~1, 0);  /* 0x06 */
    }
 
    if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) &&
@@ -987,6 +995,16 @@ s3Init(mode)
 	 (void) (s3ClockSelectFunc)(mode->SynthClock);
       else
          (void) (s3ClockSelectFunc)(mode->Clock);
+
+      if(mode->Flags & V_DBLCLK
+	 && (DAC_IS_TI3026) 
+	 && (OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions))){
+	 if (s3Bpp <= 2)
+	    Ti3026SetClock(mode->SynthClock / 2, 2, s3Bpp, TI_LOOP_CLOCK);
+	 else 
+	    Ti3026SetClock(mode->SynthClock, 2, s3Bpp, TI_LOOP_CLOCK);	    
+	 s3OutTi3026IndReg(TI_MCLK_LCLK_CONTROL, ~0x20, 0x20);
+      }
    }
 
    /*
@@ -2019,8 +2037,15 @@ s3Init(mode)
 #endif
 	 outb(vgaCRIndex, 0x66);
 	 tmp = inb(vgaCRReg);
-	 outb(vgaCRReg, (tmp & 0xf8) | ((rclock - (vclock >> 3)) & 7));
-	 outb(vgaCRReg, (tmp & 0xf8) | rclock);
+	 if (mode->Flags & V_DBLCLK
+	     && (DAC_IS_TI3026) 
+	     && (OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)))
+	    if (s3Bpp <= 2)
+	       outb(vgaCRReg, (tmp & 0xf8) | (rclock-2));
+	    else
+	       outb(vgaCRReg, (tmp & 0xf8) | (rclock-1));
+	 else
+	    outb(vgaCRReg, (tmp & 0xf8) | (rclock-0));
 
          /*
           * set the serial access mode 256 words control
@@ -2568,7 +2593,7 @@ s3Init(mode)
 	 if (new->CRTC[4] + ((i&0x10)<<4) + 4 <= new->CRTC[0]+ ((i&0x01)<<8))
 	    itmp = new->CRTC[4] + ((i&0x10)<<4) + 4;
 	 else
-	    itmp = new->CRTC[0]+ ((i&0x01)<<8);      
+	    itmp = new->CRTC[0]+ ((i&0x01)<<8) + 1;
       outb(vgaCRReg, itmp & 0xff);
       i |= (itmp&0x100) >> 2;
       outb(vgaCRIndex, 0x3c);

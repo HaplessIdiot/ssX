@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.1 1996/02/12 11:12:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.2 1996/02/18 03:42:45 dawes Exp $ */
 
 /*    
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
@@ -60,15 +60,17 @@ xf86LoadModule(const char *	file,
     void	*module = NULL;
     char	*dir_elem, *path_elem, *keep;
     
+    /* allocate a copy even for the absolute path, for consistency in
+     * error reporting/recovery.
+     */
+    keep = dir_elem = (char *) xcalloc(1, strlen(path) + 1);
+    strcpy(dir_elem, path);
+
     /* absolute path */
     if (file[0] == '/') {
 	module = dlopen(path, DLOPEN_FLAGS);
     } else { /* look for file in path */
 	struct stat	stat_buf;
-	char		*(*xf86GetPathElem)(char**);
-
-	keep = dir_elem = (char *) xcalloc(1, strlen(path) + 1);
-	strcpy(dir_elem, path);
 
 	dir_elem = strtok(dir_elem, ",");
 	while (!module && (dir_elem != NULL)) {

@@ -1,5 +1,5 @@
-/* $XConsortium: xkbprint.c /main/3 1996/01/14 16:49:26 kaleb $ */
-/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.0 1996/01/10 05:43:46 dawes Exp $ */
+/* $XConsortium: xkbprint.c /main/4 1996/03/06 21:40:22 kaleb $ */
+/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.1 1996/01/16 15:09:15 dawes Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -658,9 +658,9 @@ XkbFileInfo 	result;
 	    exit(1);
 	}
     }
+    ok= True;
     if (file) {
 	unsigned tmp;
-	ok= True;
 	bzero((char *)&result,sizeof(result));
 	if ((result.xkb= XkbAllocKeyboard())==NULL) {
 	    uFatalError("Cannot allocate keyboard description\n");
@@ -708,6 +708,8 @@ XkbFileInfo 	result;
 	     ok= (ComputeKbdDefaults(result.xkb)==Success);
 	else ok= True;
 #endif
+	if (args.label==LABEL_AUTO) 
+	    args.label= LABEL_SYMBOLS;
     }
     else {
 	fprintf(stderr,"Cannot open \"%s\" to read geometry\n",inputFile);

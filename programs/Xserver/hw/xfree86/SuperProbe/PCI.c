@@ -7,7 +7,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.2 1996/02/22 05:11:09 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -31,9 +31,7 @@ xf86scanpci()
     }
 
     /* Enable I/O access */
-#if 0
-    EnableIOPorts(0);
-#endif
+    EnableIOPorts(Num_PCI_CtrlIOPorts,PCI_CtrlIOPorts);
 
     outp(0xCF8, 0x00);
     outp(0xCFA, 0x00);

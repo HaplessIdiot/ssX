@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.121 1996/02/20 14:34:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.122 1996/02/22 05:11:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -3302,6 +3302,12 @@ s3Probe()
 		  pMode->Private[S3_EARLY_SC] = 1;
 	       else
 		  pMode->Private[S3_EARLY_SC] = 0;
+	    } else if (DAC_IS_TI3026 
+		       && OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
+	       if (s3Bpp == 2 && (pMode->Flags & V_DBLCLK))
+		  pMode->Private[S3_EARLY_SC] = 1;
+	       else
+		  pMode->Private[S3_EARLY_SC] = 0;
 	    } else if (DAC_IS_IBMRGB) {
 	       if (s3BiosVendor == GENOA_BIOS) {
 	          pMode->Private[S3_EARLY_SC] = 0;
@@ -3611,6 +3617,7 @@ icd2061ClockSelect(freq)
 	        * then we need to setup the loop clock
 	        */
 	       Ti3026SetClock(freq/1000, 2, s3Bpp, TI_LOOP_CLOCK);
+	       s3OutTi3026IndReg(TI_MCLK_LCLK_CONTROL, ~0x20, 0x20);
             }
 	 } else if (OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions)) {
 	    result = SC11412SetClock((long)freq/1000);

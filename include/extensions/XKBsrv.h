@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h /main/21 1996/03/01 14:29:08 kaleb $ */
+/* $XConsortium: XKBsrv.h /main/22 1996/03/06 21:40:17 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

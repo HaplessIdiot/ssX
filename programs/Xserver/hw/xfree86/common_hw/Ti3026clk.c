@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3026clk.c,v 3.4 1996/01/08 08:55:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3026clk.c,v 3.5 1996/02/04 09:06:56 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -175,12 +175,12 @@ char which;
    
    mindiff = ffreq;
    
-   for (n=63; n >= 65 - (int)(TI_REF_FREQ/0.5); n--) {
+   for (n=62; n >= 40; n--) {
       m = 65 - (int)(ffreq * (65-n) / 8.0 + 0.5);
       if (m < 1)
 	 m = 1;
-      else if (m > 63) 
-	 m = 63;
+      else if (m > 62) 
+	 m = 62;
       
       diff = ((65-m) * 8) / (65.0-n) - ffreq;
       if (diff<0)
@@ -200,29 +200,21 @@ char which;
 #endif
 
    lk = 64 / 8 / bpp;
-   ln = 65 - 2 * lk;
-   lm = 63;
-#if THAT_CANT_BE_RIGHT
-   z = (100 * 110000 * (65-ln)) / (lk * freq);
-#else
-   z = 55000.0 / freq * (100 *  (65-ln)) / lk  ;
-#endif
+   ln = 65 - 4 * lk;
+   lm = 61;
+   z = 110000.0 / 4 / freq * (100 *  (65-ln)) / lk  ;
    if (z > 1600) {
       lp = 3;
       lq = (z-1600) / 1600 + 1; /* smallest q greater (z-16)/16 */
    }
    else { /* largest p less then log2(z) */
-#if THAT_CANT_BE_RIGHT
       for (lp=0; z > (200 << lp); lp++) ;
       lq = 0;
-#else
-      for (lp=0; z > 100*(1 << (lp+1)); lp++) ;
-      lq = 0;
-#endif
    }
 
 #ifdef DEBUG
-   ErrorF("bpp %d  ln %2d  lm %2d  lp %2d  lq %2d\n",bpp,ln,lm,lp,lq);
+   ErrorF("bpp %d  lk %2d  ln %2d  lm %2d  lz %4d  lp %2d  lq %2d\n",
+	  bpp,lk,ln,lm,z,lp,lq);
 #endif
 
    s3ProgramTi3026Clock(clk, best_n, best_m, p, ln, lm, lp, lq, which);

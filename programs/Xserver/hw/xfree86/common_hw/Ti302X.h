@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.4 1995/12/02 05:05:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.5 1996/02/04 09:06:57 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -59,6 +59,7 @@
 #define   TI_TC_NONVGAMODE	0x02    /* on = nonvgamode, off = vgamode */
 #define   TI_TC_8BIT		0x01    /* on = 8/4bit, off = 16/32bit */
 #define TI_VGA_SWITCH_CONTROL	0x0F    /* 3025 only */
+#define TI_LATCH_CONTROL	0x0F    /* 3026 only */
 #define TI_WINDOW_START_X_LOW	0x10
 #define TI_WINDOW_START_X_HIGH	0x11
 #define TI_WINDOW_STOP_X_LOW	0x12

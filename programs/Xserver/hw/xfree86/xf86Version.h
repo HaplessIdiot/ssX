@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.151 1996/03/05 05:41:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.152 1996/03/10 12:03:20 dawes Exp $ */
 
 #define XF86_VERSION " 3.1.2Dc "
 
@@ -18,6 +18,6 @@
 			XF86_VERSION_BETA,			\
 			XF86_VERSION_ALPHA)
 
-#define XF86_DATE	"Mar 10 1996"
+#define XF86_DATE	"Mar 11 1996"
 
 /* $XConsortium: xf86Version.h /main/36 1996/01/31 10:07:08 kaleb $ */
