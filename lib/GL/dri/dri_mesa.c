@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_mesa.c,v 1.1 1999/06/14 07:23:31 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_mesa.c,v 1.2 1999/06/27 14:07:22 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/dri/dri_mesa.c,v 1.16 1999/06/16 20:08:33 faith Exp $
+ * $PI: xc/lib/GL/dri/dri_mesa.c,v 1.18 1999/08/04 18:13:27 faith Exp $
  */
 
 #ifdef GLX_DIRECT_RENDERING
@@ -495,7 +495,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     */
     psp->drawLockID = 1;
 
-    psp->fd = drmOpenSub(BusID);
+    psp->fd = drmOpen(NULL,BusID);
     if (!psp->fd) {
 	Xfree(BusID);
 	Xfree(psp);
@@ -505,14 +505,14 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     Xfree(BusID); /* No longer needed */
 
     if (drmGetMagic(psp->fd, &magic)) {
-	(void)drmCloseSub(psp->fd);
+	(void)drmClose(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
 	return NULL;
     }
 
     if (!XF86DRIAuthConnection(dpy, scrn, magic)) {
-	(void)drmCloseSub(psp->fd);
+	(void)drmClose(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
 	return NULL;
@@ -523,7 +523,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 				    &psp->minor,
 				    &psp->patch,
 				    &driverName)) {
-	(void)drmCloseSub(psp->fd);
+	(void)drmClose(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
 	return NULL;
@@ -531,7 +531,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 
     psp->hLibrary = driMesaInitAPI(driverName, &psp->XMesaAPI, &psp->glAPI);
     if (!psp->hLibrary) {
-	(void)drmCloseSub(psp->fd);
+	(void)drmClose(psp->fd);
 	Xfree(driverName);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
@@ -547,7 +547,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 			      &psp->devPrivSize,
 			      &psp->pDevPriv)) {
 	driMesaDestroyAPI(psp->hLibrary);
-	(void)drmCloseSub(psp->fd);
+	(void)drmClose(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
 	return NULL;
@@ -559,7 +559,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     if (drmMap(psp->fd, hFB, psp->fbSize, (drmAddressPtr)&psp->pFB)) {
 	Xfree(psp->pDevPriv);
 	driMesaDestroyAPI(psp->hLibrary);
-	(void)drmCloseSub(psp->fd);
+	(void)drmClose(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
 	return NULL;
@@ -569,7 +569,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 	(void)drmUnmap((drmAddress)psp->pFB, psp->fbSize);
 	Xfree(psp->pDevPriv);
 	driMesaDestroyAPI(psp->hLibrary);
-	(void)drmCloseSub(psp->fd);
+	(void)drmClose(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
 	return NULL;
@@ -583,7 +583,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 	(void)drmUnmap((drmAddress)psp->pFB, psp->fbSize);
 	Xfree(psp->pDevPriv);
 	driMesaDestroyAPI(psp->hLibrary);
-	(void)drmCloseSub(psp->fd);
+	(void)drmClose(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
 	return NULL;
@@ -596,7 +596,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 	(void)drmUnmap((drmAddress)psp->pFB, psp->fbSize);
 	Xfree(psp->pDevPriv);
 	driMesaDestroyAPI(psp->hLibrary);
-	(void)drmCloseSub(psp->fd);
+	(void)drmClose(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);
 	return NULL;
@@ -627,7 +627,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 	    (void)drmUnmap((drmAddress)psp->pFB, psp->fbSize);
 	    Xfree(psp->pDevPriv);
 	    driMesaDestroyAPI(psp->hLibrary);
-	    (void)drmCloseSub(psp->fd);
+	    (void)drmClose(psp->fd);
 	    Xfree(psp);
 	    (void)XF86DRICloseConnection(dpy, scrn);
 	    return NULL;
@@ -647,7 +647,7 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 	    (void)drmUnmap((drmAddress)psp->pFB, psp->fbSize);
 	    Xfree(psp->pDevPriv);
 	    driMesaDestroyAPI(psp->hLibrary);
-	    (void)drmCloseSub(psp->fd);
+	    (void)drmClose(psp->fd);
 	    Xfree(psp);
 	    (void)XF86DRICloseConnection(dpy, scrn);
 	    return NULL;
@@ -689,7 +689,7 @@ static void driMesaDestroyScreen(Display *dpy, int scrn, void *private)
 	(void)drmUnmap((drmAddress)psp->pFB, psp->fbSize);
 	Xfree(psp->pDevPriv);
 	driMesaDestroyAPI(psp->hLibrary);
-	(void)drmCloseSub(psp->fd);
+	(void)drmClose(psp->fd);
 	Xfree(psp);
 
 #if 0

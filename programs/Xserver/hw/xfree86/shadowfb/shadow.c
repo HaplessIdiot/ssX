@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.4 1999/02/01 12:52:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.5 1999/02/07 06:18:48 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -271,7 +271,7 @@ ShadowRestoreAreas (
                 pPixmap, prgn, xorg, yorg, pWin);
     pScreen->BackingStoreFuncs.RestoreAreas = ShadowRestoreAreas;
 
-    if((num = REGION_NUM_RECTS(prgn)))
+    if(pPriv->vtSema && (num = REGION_NUM_RECTS(prgn)))
 	(*pPriv->refresh)(pPriv->pScrn, num, REGION_RECTS(prgn));
 }
 
@@ -296,7 +296,7 @@ ShadowPaintWindow(
 	pScreen->PaintWindowBorder = ShadowPaintWindow;
     }
 
-    if((num = REGION_NUM_RECTS(prgn)))
+    if(pPriv->vtSema && (num = REGION_NUM_RECTS(prgn)))
 	(*pPriv->refresh)(pPriv->pScrn, num, REGION_RECTS(prgn));    
 }
 
@@ -315,12 +315,14 @@ ShadowCopyWindow(
     (*pScreen->CopyWindow) (pWin, ptOldOrg, prgn);
     pScreen->CopyWindow = ShadowCopyWindow;
 
-    /* This is sortof cheating. We rely on the fact that
-	cfb translated prgn for us */
+    if (pPriv->vtSema) {
+	/* This is sortof cheating. We rely on the fact that
+	   cfb translated prgn for us */
 
-    REGION_INTERSECT(pScreen, prgn, &pWin->borderClip, prgn);
-    if((num = REGION_NUM_RECTS(prgn)))
-	(*pPriv->refresh)(pPriv->pScrn, num, REGION_RECTS(prgn));    
+	REGION_INTERSECT(pScreen, prgn, &pWin->borderClip, prgn);
+	if((num = REGION_NUM_RECTS(prgn)))
+	    (*pPriv->refresh)(pPriv->pScrn, num, REGION_RECTS(prgn));    
+    }
 
 }
 

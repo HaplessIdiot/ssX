@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/print.c,v 1.9 1999/05/15 06:25:05 dawes Exp $
+ * $XFree86: xc/programs/xterm/print.c,v 1.10 1999/07/11 08:49:39 dawes Exp $
  */
 
 /************************************************************
@@ -100,7 +100,7 @@ static void printLine(int row, int chr)
 	int last = screen->max_col;
 	int col;
 #if OPT_ISO_COLORS && OPT_PRINT_COLORS
-#if OPT_256_COLORS
+#if OPT_EXT_COLORS
 	register Char *fbf = 0;
 	register Char *fbb = 0;
 #else
@@ -113,7 +113,7 @@ static void printLine(int row, int chr)
 
 	TRACE(("printLine(row=%d, chr=%d)\n", row, chr));
 
-	if_OPT_256_COLORS(screen,{
+	if_OPT_EXT_COLORS(screen,{
 		fbf = SCRN_BUF_FGRND(screen, row);
 		fbb = SCRN_BUF_BGRND(screen, row);
 	})
@@ -134,7 +134,7 @@ static void printLine(int row, int chr)
 		for (col = 0; col < last; col++) {
 			Char ch = c[col];
 #if OPT_PRINT_COLORS
-			if_OPT_256_COLORS(screen,{
+			if_OPT_EXT_COLORS(screen,{
 				if (screen->print_attributes > 1) {
 					fg = (a[col] & FG_COLOR)
 						? extract_fg((fbf[col]<<8)|(fbb[col]), a[col])

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.35 1999/07/18 03:27:15 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.36 1999/08/21 13:49:08 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,8 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_115">Patch #115 - 1999/9/18 - XFree86 3.9.16a</A>
+<LI><A HREF="#xterm_114">Patch #114 - 1999/9/15 - XFree86 3.9.16</A>
 <LI><A HREF="#xterm_113">Patch #113 - 1999/8/15 - XFree86 3.9.15b</A>
 <LI><A HREF="#xterm_112">Patch #112 - 1999/7/17 - XFree86 3.9Pw</A>
 <LI><A HREF="#xterm_111">Patch #111 - 1999/7/10 - XFree86 3.9Pw</A>
@@ -156,6 +158,63 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_115">Patch #115 - 1999/9/18 - XFree86 3.9.16a</A></H1>
+<ul>
+	<li>integrated changes by Steve Wall to implement an 88-color model
+	  for systems where 256-colors cannot be allocated.
+
+	<li>when 256-color configuration is compiled, colored bold and
+	  underlining is not available; ifdef'd to avoid possible odd effects
+	  in this case (reported by Steve Wall).
+
+	<li>add resource <em>cacheDoublesize</em>, to limit the caching of font
+	  information for double-sized characters.  This addresses a problem
+	  reported by Aryeh Koenigsberg for X terminals with limited font
+	  memory.
+
+	<li>modify treatment of line-drawing characters in UTF-8 mode so that
+	  the Unicode values are used rather than the C0 codes for storing the
+	  translated characters (request by Markus Kuhn).
+</ul>
+
+<H1><A NAME="xterm_114">Patch #114 - 1999/9/15 - XFree86 3.9.16</A></H1>
+<ul>
+
+	<li>add configure script checks for Athena headers and libraries under
+	  /usr/contrib to work on HPUX (reported by several people:
+		David Nixon &lt;djn@csc.liv.ac.uk&gt; 
+		Aryeh Koenigsberg &lt;aryeh.koenigsberg@telrad.co.il&gt; 
+		Johannes M&#x00E4;hner &lt;johanm@camline.com&gt; 
+		Andrew Gaylard &lt;andrew.gaylard@bsw.co.za&gt;).
+
+	<li>add check to configure script if xterm is installed setgid rather
+	  than setuid, since wtmp and utmp may be installed with group-writable
+	  permissions other than root (based on Debian bug report #7112 by Bo
+	  Branten &lt;bosse@ing.umu.se&gt;).
+
+	<li>rewrote logic that removes data from termcap entry, e.g., for
+	  titeInhibit, to make it less likely to remove the wrong data.
+
+	<li>correct logic which checks for missing characters used for line
+	  drawing.  The 0 character was tested unnecessarily, leading to
+	  some inefficiency when rendering.
+
+	<li>change termcap capability which is used as input or output of
+	  ptyInitialErase logic from <em>kD</em> to <em>kb</em>.
+	  Christian Weisgerber &lt;naddy@mips.rhein-neckar.de&gt; pointed out
+	  in effect that <em>kD</em> (in terminfo <em>kdch1</em>) should
+	  correspond to the control sequence for <em>dch1</em>, which deletes
+	  from the current position toward the right.
+
+	<li>check for failure to change ownership of the PTY device and warn
+	  when xterm is running setuid'd to root.  This was reported to happen
+	  on the FreeBSD/NetBSD/OpenBSD systems as a result of the chflags()
+	  call.
+
+	<li>add xterm-noapp terminfo entry to illustate a nominally
+	  bash-compatible terminal description.
+</ul>
 
 <H1><A NAME="xterm_113">Patch #113 - 1999/8/15 - XFree86 3.9.15b</A></H1>
 Several fixes.  The main one is a first draft of pulldown menus.  It's not

@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclText.c,v 1.3 1996/12/31 07:06:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclText.c,v 1.4 1998/03/20 21:04:51 hohndel Exp $ */
 
 #ifdef DO_TWO_BYTE_PCL
 #include "iconv.h"
@@ -229,9 +229,9 @@ char font_type;
 		+ charinfo[n-1]->metrics.rightSideBearing + pDrawable->x;
     box.y2 = y + max_descent + pDrawable->y;
 
-    drawRegion = miRegionCreate( &box, 0 );
-    region = miRegionCreate( NULL, 0 );
-    miIntersect( region, drawRegion, pGC->pCompositeClip );
+    drawRegion = REGION_CREATE( pGC->pScreen, &box, 0 );
+    region = REGION_CREATE( pGC->pScreen, NULL, 0 );
+    REGION_INTERSECT( pGC->pScreen, region, drawRegion, pGC->pCompositeClip );
 
     /*
      * For each rectangle in the clip region, set the HP-GL/2 "input
@@ -245,8 +245,8 @@ char font_type;
     /*
      * Clean up the temporary regions
      */
-    miRegionDestroy( drawRegion );
-    miRegionDestroy( region );
+    REGION_DESTROY( pGC->pScreen, drawRegion );
+    REGION_DESTROY( pGC->pScreen, region );
 
     return x+w;
 }
@@ -427,9 +427,9 @@ char font_type;
 		+ charinfo[n-1]->metrics.rightSideBearing + pDrawable->x;
     box.y2 = y + max_descent + pDrawable->y;
 
-    drawRegion = miRegionCreate( &box, 0 );
-    region = miRegionCreate( NULL, 0 );
-    miIntersect( region, drawRegion, pGC->pCompositeClip );
+    drawRegion = REGION_CREATE( pGC->pScreen, &box, 0 );
+    region = REGION_CREATE( pGC->pScreen, NULL, 0 );
+    REGION_INTERSECT( pGC->pScreen, region, drawRegion, pGC->pCompositeClip );
 
     /*
      * For each rectangle in the clip region, set the HP-GL/2 "input
@@ -443,8 +443,8 @@ char font_type;
     /*
      * Clean up the temporary regions
      */
-    miRegionDestroy( drawRegion );
-    miRegionDestroy( region );
+    REGION_DESTROY( pGC->pScreen, drawRegion );
+    REGION_DESTROY( pGC->pScreen, region );
 
     return x+w;
 }

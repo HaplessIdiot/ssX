@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.1 1999/06/14 07:31:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.2 1999/06/27 14:07:38 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/GL/dri/dri.h,v 1.22 1999/06/16 20:08:35 faith Exp $
+ * $PI: xc/programs/Xserver/GL/dri/dri.h,v 1.24 1999/08/04 18:12:56 faith Exp $
  */
 
 /* Prototypes for DRI functions */
@@ -113,7 +113,7 @@ typedef struct {
 extern Bool DRIScreenInit(
     ScreenPtr pScreen,
     DRIInfoPtr pDRIInfo,
-    int* pDRMSubFD);
+    int* pDRMFD);
 void DRICloseScreen(ScreenPtr pScreen);
 Bool DRIExtensionInit(void);
 void DRIReset(void);
@@ -189,7 +189,7 @@ void DRIBlockHandler(
     struct timeval **pTimeout,
     pointer pReadmask);
 void DRISwapContext(
-    int drmSubFD,
+    int drmFD,
     void *oldctx,
     void *newctx);
 void** DRIGetContextStore(DRIContextPrivPtr context);

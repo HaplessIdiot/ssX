@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.4 1999/07/06 11:38:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.5 1999/08/01 07:57:20 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -197,7 +197,7 @@ ATIDSPCalculate
     if (pATIHW->crtc != ATI_CRTC_VGA)
         vshift++;               /* Nope, it's 64 bits wide */
 
-    if (pATI->LCDPanelID >= 0)
+    if (!pATI->OptionCRT && (pATI->LCDPanelID >= 0))
     {
         /* Compensate for horizontal stretching */
         Multiplier *= pATI->LCDHorizontal;

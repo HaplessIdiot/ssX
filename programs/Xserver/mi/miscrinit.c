@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.6 1998/11/29 13:09:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.7 1999/03/20 08:59:34 dawes Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -214,6 +214,7 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     /* CreateGC */
     /* CreateColormap, DestroyColormap, InstallColormap, UninstallColormap */
     /* ListInstalledColormaps, StoreColors, ResolveColor */
+#ifdef NEED_SCREEN_REGIONS
     pScreen->RegionCreate = miRegionCreate;
     pScreen->RegionInit = miRegionInit;
     pScreen->RegionCopy = miRegionCopy;
@@ -232,8 +233,11 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     pScreen->RegionExtents = miRegionExtents;
     pScreen->RegionAppend = miRegionAppend;
     pScreen->RegionValidate = miRegionValidate;
+#endif /* NEED_SCREEN_REGIONS */
     /* BitmapToRegion */
+#ifdef NEED_SCREEN_REGIONS
     pScreen->RectsToRegion = miRectsToRegion;
+#endif /* NEED_SCREEN_REGIONS */
     pScreen->SendGraphicsExpose = miSendGraphicsExpose;
     pScreen->BlockHandler = (void (*)())NoopDDA;
     pScreen->WakeupHandler = (void (*)())NoopDDA;

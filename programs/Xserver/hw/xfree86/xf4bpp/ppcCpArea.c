@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcCpArea.c,v 1.2 1998/07/25 16:59:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcCpArea.c,v 1.3 1999/06/06 08:48:58 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -375,8 +375,8 @@ int dstx, dsty;
     }
     else
     {
-	(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
-	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, prgnSrcClip);
+	REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
+	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst, prgnSrcClip);
     }
 
     dstx += pDstDrawable->x;
@@ -387,9 +387,9 @@ int dstx, dsty;
 	if (!((WindowPtr)pDstDrawable)->realized)
 	{
 	    if (!fastClip)
-		(*pGC->pScreen->RegionUninit)(&rgnDst);
+		REGION_UNINIT(pGC->pScreen, &rgnDst);
 	    if (freeSrcClip)
-		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+		REGION_DESTROY(pGC->pScreen, prgnSrcClip);
 	    return NULL;
 	}
     }
@@ -423,9 +423,13 @@ int dstx, dsty;
 
 	    /* Check to see if the region is empty */
 	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
-		(*pGC->pScreen->RegionInit)(&rgnDst, NullBox, 0);
+	    {
+		REGION_INIT(pGC->pScreen, &rgnDst, NullBox, 0);
+	    }
 	    else
-		(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
+	    {
+		REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
+	    }
 	}
         else
 	{
@@ -433,17 +437,17 @@ int dstx, dsty;
 	       a full blown region.  It is intersected with the
 	       composite clip below. */
 	    fastClip = 0;
-	    (*pGC->pScreen->RegionInit)(&rgnDst, &fastBox,1);
+	    REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
 	}
     }
     else
     {
-        (*pGC->pScreen->TranslateRegion)(&rgnDst, -dx, -dy);
+        REGION_TRANSLATE(pGC->pScreen, &rgnDst, -dx, -dy);
     }
 
     if (!fastClip)
     {
-	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, pGC->pCompositeClip);
+	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst, pGC->pCompositeClip);
     }
 
     /* Do bit blitting */
@@ -453,9 +457,9 @@ int dstx, dsty;
 	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL(numRects *
 						  sizeof(DDXPointRec))))
 	{
-	    (*pGC->pScreen->RegionUninit)(&rgnDst);
+	    REGION_UNINIT(pGC->pScreen, &rgnDst);
 	    if (freeSrcClip)
-		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+		REGION_DESTROY(pGC->pScreen, prgnSrcClip);
 	    return NULL;
 	}
 	pbox = REGION_RECTS(&rgnDst);
@@ -483,8 +487,8 @@ int dstx, dsty;
 				  (int)origSource.height,
 				  origDest.x, origDest.y, (unsigned long)0);
     }
-    (*pGC->pScreen->RegionUninit)(&rgnDst);
+    REGION_UNINIT(pGC->pScreen, &rgnDst);
     if (freeSrcClip)
-	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	REGION_DESTROY(pGC->pScreen, prgnSrcClip);
     return prgnExposed;
 }

@@ -1,3 +1,85 @@
+XFree86 3.9.16b (26 September 1999)
+3188. Turn MGA soft reset stuff back on but modified so that it doesn't
+      poll for fifos in case the PLLs aren't powered up (#3254,
+      Mark Vojkovich).
+3187. Xterm patch #115 (#3253, Thomas Dickey).
+3186. Comment out some of the CacheBlit tiling code since the logic is not
+      quite correct and it can get stuck in an endless loop in some cases
+      (#3250, Mark Vojkovich).
+3185. Fix tseng 24 bpp mode (#3249, Egbert Eich).
+3184. Fix et4000W32p font corruption with ColorExpandScanline in modes > 8bpp
+      (#3249, Egbert Eich).
+3183. Add Solaris 8 support (#3241, 3247, David Holland).
+3182. Fix some build problems in the Type1 code that show up on Solaris 8
+      (#3241, David Holland).
+3181. Add an ISO8859-1 version of the "micro" font (#3246, Mark Montague).
+3180. Minor DDC code improvement: xf86PrintEDID() now returns pointer to
+      monitor structure (#3245, Egbert Eich).
+3179. Problem with RAC wrapper (hopefully) fixed (#3245, Egbert Eich).
+3178. Neomagic ScreenToScreenCopy bug fix (#3245, Egbert Eich).
+3177. Initial INT10 module (Linux-only so far) (#3245, 3248, 3251, Egbert Eich).
+3176. Update the DRM Linux kernel module to match that in the Linux 2.3.18
+      tree, and update libdrm and the DRI routines that use libdrm to reflect
+      changes in the Linux kernel (#3244, Rik Faith).
+3175. Fix a WarpPointer bug in Xinerama (#3243, 3252, Mark Vojkovich).
+3174. Fix a seg fault when changing DGA mode (#3242, Loic Grenie).
+3173. Xterm patch #114 (#3240, Thomas Dickey).
+3172. Fix an XAA GC validation problem with Polygons for some fillStyles in
+      some situations (#3239, Mark Vojkovich).
+3171. Fix an incorrect method for preallocating a color on the default map
+      (#3237, Mark Vojkovich).
+3170. Fix a bad assumption in the XAA NonTE text rendering code (#3236,
+      Mark Vojkovich).
+3169. An attempt to autodetect the G400 Max and set the max pixel clock
+      appropriately (#3235, Mark Vojkovich).
+3168. Fix shadowfb problems when drawing is done while switched out (#3234,
+      Marc La France).
+3167. Attempt to autodetect SDRAM in the MGA driver for the primary head
+      (#3233, Mark Vojkovich).
+3166. Make Window->Pixmap copies in Xinerama less broken (#3232,
+      Mark Vojkovich).
+3165. Fix a bug in the Xinerama ShmGetImage support added in the last alpha
+      (#3230, Mark Vojkovich).
+3164. New cursor warping code.  This implements the new way of specifying
+      screen positions in the ServerLayout config file section (#3229,
+      Mark Vojkovich).
+3163. Add a xf86CheckMTRR function which returns TRUE when changing the
+      MTRR setting is supported and enabled (#3227, Alan Hourihane).
+3162. Resync SuperProbe and scanpci with the 3.3.x version (#3226,
+      Marc La France).
+3161. Make 8+24 work on Matrox 2064w (Millennium I) with >4MB (#3224,
+      Mark Montague).
+3160. Make xdpyinfo -ext XFree86-VidModeExtension print the current mode line
+      (#3223, Andrew Aitchison).
+3159. Minor fix to Xnest Imakefile (#3222, Marc La France).
+3158. Make the wrapping or replacement of ScreenRec region code function
+      pointers reliable when NEED_SCREEN_REGIONS is #define'd (#3221,
+      Marc La France).
+3157. Remove ScreenRec region code function pointers (except BitmapToRegion)
+      when the server is compiled with NEED_SCREEN_REGIONS #undef'ined
+      (#3221, Marc La France).
+3156. Fix memory leak during resource broker initialisation (#3220,
+      Marc La France).
+3155. During broker initialisation, use both system and non-system PCI
+      resources to "trim" OS resources.  Among other things, this allows the
+      maximum memory limit to be bumped back up to 2G (#3220, Marc La France).
+3154. Temporarily allow a driver to register resources that only conflict with
+      resources whose size the common layer has only estimated (#3220,
+      Marc La France).
+3153. ATI driver updates, including:
+       - Add option to display on the CRT interface whether or not a digital
+         flat panel is detected.
+       - Add support for ShadowFB (adapted from Henrik Harmsen).
+       - Always read BIOS from legacy location for adapters found enabled on
+         server entry.
+       - Ensure the primary CRTC is always used for the CRT interface.
+       - Fix determination of panel dimensions with older BIOS's.
+       - Stop driver when panel dimensions cannot be determined.
+      (#3219, Marc La France).
+3152. Thread-related updates to 'ico' (#3217, Carlos A M dos Santos).
+3151. Fix a build problem on 64-bit platforms introduced in 3.9.16a (#3216,
+      Matt Grossman).
+
 XFree86 3.9.16a (6 September 1999)
 3150. Add support to the parser for a new way of specifying the screen
       positions (not made use of yet) (David Dawes).
@@ -15,9 +97,6 @@ XFree86 3.9.16a (6 September 1999)
 3143. Fix some prototypes/casts in viewres (#3212, Carlos A M dos Santos).
 3142. Add an XtSetLanguageProc() call to all contrib programs except xman
       (#3212, Carlos A M dos Santos).
-3141. Fix a zero-height bug in the xaa text code (#3211, Mark Vojkovich).
-3142. Add an XtSetLanguageProc() call to all contrib programs except xman
-      Mark Vojkovich).
 3141. Fix a zero-height bug in the xaa text code (#3211, Mark Vojkovich).
 3140. ScreenToScreenColorExpansion bug fix for the G400 (#3210,
       Mark Vojkovich).
@@ -8733,4 +8812,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.828 1999/09/04 13:04:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.829 1999/09/06 11:27:20 dawes Exp $

@@ -1,4 +1,0 @@
-#define GMX_DATE "19990113"
-#define GMX_MAJOR 0
-#define GMX_MINOR 0
-#define GMX_PATCHLEVEL 1

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.3 1999/04/25 15:30:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.4 1999/04/25 15:39:36 dawes Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc
  *
@@ -206,6 +206,23 @@ xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 	else
 		vidMemInfo.unmapMem(ScreenNum, Base, Size);
 	removeMapping(vp, mp);
+}
+
+Bool
+xf86CheckMTRR(int ScreenNum)
+{
+	VidMapPtr vp = getVidMapRec(ScreenNum);
+
+	/*
+	 * Check the "mtrr" option even when MTRR isn't supported to avoid
+	 * warnings about unrecognised options.
+	 */
+	checkMtrrOption(vp);
+
+	if (vp->mtrrEnabled && vidMemInfo.setWC)
+		return TRUE;
+		
+	return FALSE;
 }
 
 Bool

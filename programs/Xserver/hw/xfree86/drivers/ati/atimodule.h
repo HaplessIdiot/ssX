@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.h,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.h,v 1.1 1999/07/06 11:38:32 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -24,9 +24,10 @@
 #if defined(XFree86LOADER) && !defined(___ATI_MODULE_H___)
 #define ___ATI_MODULE_H___ 1
 
+#include "atipriv.h"
 #include "atiproto.h"
 #include "xf86str.h"
 
-extern Bool ATILoadModules FunctionPrototype((ScrnInfoPtr));
+extern Bool ATILoadModules FunctionPrototype((ScrnInfoPtr, ATIPtr));
 
 #endif

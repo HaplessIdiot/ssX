@@ -1,4 +1,0 @@
-#define DRM_DATE "19990623"
-#define DRM_MAJOR 1
-#define DRM_MINOR 0
-#define DRM_PATCHLEVEL 0

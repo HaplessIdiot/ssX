@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/rac/xf86RAC.c,v 1.4 1999/06/12 07:19:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/rac/xf86RAC.c,v 1.5 1999/06/12 17:30:21 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -349,8 +349,7 @@ RACGetImage (
     ScreenPtr pScreen = pDrawable->pScreen;
     DPRINT_S("RACGetImage",pScreen->myNum);
     SCREEN_PROLOG(GetImage);
-    if (xf86Screens[pScreen->myNum]->vtSema && 
-       (pDrawable->type == DRAWABLE_WINDOW)) {
+    if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
     }
     (*pScreen->GetImage) (pDrawable, sx, sy, w, h,
@@ -372,9 +371,7 @@ RACGetSpans (
 
     DPRINT_S("RACGetSpans",pScreen->myNum);
     SCREEN_PROLOG (GetSpans);
-    if (pDrawable->type == DRAWABLE_WINDOW) {
-	ENABLE;
-    }
+    ENABLE;
     (*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
     SCREEN_EPILOG (GetSpans, RACGetSpans);
 }
@@ -847,9 +844,7 @@ RACCopyArea(
 
     GC_UNWRAP(pGC);
     DPRINT("RACCopyArea");
-    if ((pSrc->type == DRAWABLE_WINDOW) || (pDst->type == DRAWABLE_WINDOW)) {
-	ENABLE_GC;
-    }
+    ENABLE_GC;
     ret = (*pGC->ops->CopyArea)(pSrc, pDst,
 				pGC, srcx, srcy, width, height, dstx, dsty);
     GC_WRAP(pGC);
@@ -870,9 +865,7 @@ RACCopyPlane(
 
     GC_UNWRAP(pGC);
     DPRINT("RACCopyPlane");
-    if ((pSrc->type == DRAWABLE_WINDOW) || (pDst->type == DRAWABLE_WINDOW)) {
-	ENABLE_GC;
-    }
+    ENABLE_GC;
     ret = (*pGC->ops->CopyPlane)(pSrc, pDst, pGC, srcx, srcy,
 				 width, height, dstx, dsty, bitPlane);
     GC_WRAP(pGC);

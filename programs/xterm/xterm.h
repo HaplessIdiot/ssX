@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.44 1999/07/11 08:49:47 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.45 1999/08/21 13:49:08 dawes Exp $ */
 
 /************************************************************
 
@@ -108,7 +108,7 @@ extern void free();
 #endif
 
 #include <errno.h>
-#ifdef DECL_ERRNO
+#if defined(DECL_ERRNO) && !defined(errno)
 extern int errno;
 #endif
 
@@ -157,6 +157,7 @@ extern int errno;
 #define XtNboldFont		"boldFont"
 #define XtNboldMode		"boldMode"
 #define XtNc132			"c132"
+#define XtNcacheDoublesize	"cacheDoublesize"
 #define XtNcharClass		"charClass"
 #define XtNcolor0		"color0"
 #define XtNcolor1		"color1"
@@ -205,16 +206,16 @@ extern int errno;
 #define XtNlogInhibit		"logInhibit"
 #define XtNlogging		"logging"
 #define XtNloginShell		"loginShell"
+#define XtNmarginBell		"marginBell"
 #define XtNmenuBar		"menuBar"
 #define XtNmenuHeight		"menuHeight"
-#define XtNmarginBell		"marginBell"
 #define XtNmultiClickTime	"multiClickTime"
 #define XtNmultiScroll		"multiScroll"
 #define XtNnMarginBell		"nMarginBell"
 #define XtNnumLock		"numLock"
 #define XtNoldXtermFKeys	"oldXtermFKeys"
 #define XtNpointerColor		"pointerColor"
-#define XtNpointerColorBackground	"pointerColorBackground"
+#define XtNpointerColorBackground "pointerColorBackground"
 #define XtNpointerShape		"pointerShape"
 #define XtNprintAttributes	"printAttributes"
 #define XtNprinterAutoClose	"printerAutoClose"
@@ -261,13 +262,14 @@ extern int errno;
 #define XtCBoldFont		"BoldFont"
 #define XtCBoldMode		"BoldMode"
 #define XtCC132			"C132"
+#define XtCCacheDoublesize	"CacheDoublesize"
 #define XtCCharClass		"CharClass"
 #define XtCColorMode		"ColorMode"
 #define XtCColumn		"Column"
 #define XtCCurses		"Curses"
 #define XtCCursorBlink		"CursorBlink"
-#define XtCCursorOnTime		"CursorOnTime"
 #define XtCCursorOffTime	"CursorOffTime"
+#define XtCCursorOnTime		"CursorOnTime"
 #define XtCCutNewline		"CutNewline"
 #define XtCCutToBeginningOfLine	"CutToBeginningOfLine"
 #define XtCDecTerminalID	"DecTerminalID"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.4 1999/07/06 11:38:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.5 1999/08/01 07:57:21 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -64,7 +64,8 @@ ATIMach64PreInit
         /* SetBits(0, MEM_VGA_RPS0) | */
         SetBits(pATIHW->nPlane, MEM_VGA_RPS1);
 
-    pATIHW->dac_cntl = inl(pATI->CPIO_DAC_CNTL);
+    pATIHW->dac_cntl = inl(pATI->CPIO_DAC_CNTL) &
+        ~(DAC1_CLK_SEL | DAC_PALETTE_ACCESS_CNTL);
     if ((pScreenInfo->depth > 8) || (pScreenInfo->rgbBits == 8))
         pATIHW->dac_cntl |= DAC_8BIT_EN;
     else
@@ -198,7 +199,7 @@ ATIMach64Calculate
     {
         pMode->Flags &= ~(V_PHSYNC | V_NHSYNC | V_PVSYNC | V_NVSYNC);
 
-        if (pATI->LCDPanelID >= 0)
+        if (!pATI->OptionCRT && (pATI->LCDPanelID >= 0))
             VDisplay = pATI->LCDVertical;
         else
             VDisplay = pMode->CrtcVDisplay;

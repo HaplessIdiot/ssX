@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.47 1999/08/14 10:49:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.48 1999/08/21 13:48:35 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -85,6 +85,20 @@ const static unsigned char MGADACregs[] = {
 	0x06
 };
 
+/* note: to fix a cursor hw glitch, register 0x37 (blue color key) needs
+   to be set to magic numbers, even though they are "never" used because 
+   blue keying disabled in 0x38.
+
+   Matrox sez:
+
+   ...The more precise statement of the software workaround is to insure
+   that bits 7-5 of register 0x37 (Blue Color Key High) and bits 7-5 of
+   register 0x38 (HZOOM)are the same... */
+
+/* also note: the values of the MUX control register 0x19 are different
+   from the ones listed in table 2-17 of the 3026 manual. It is not clear
+   why this is the case, but it may be to deal with 2MB boards(?) */
+   
 #define DACREGSIZE sizeof(MGADACregs)
 /*
  * initial values of ti3026 registers
@@ -113,8 +127,12 @@ const static unsigned char MGADACbpp32[DACREGSIZE] = {
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0x00, 0x10,    0, 0x00,
 	0x00
 };
+
+/* on at least some 2064Ws, the PSEL line flips at 4MB or so, so PSEL keying
+   has to be off in register 0x1e -> bit4 clear */
+   
 const static unsigned char MGADACbpp8plus24[DACREGSIZE] = {
-	0x07, 0x06, 0x58, 0x05, 0x00,   0x00, 0x3C, 0x00, 0x1E, 0xFF, 
+	0x07, 0x06, 0x5C, 0x05, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF, 
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0x00, 0x01, 0x00, 0x00, 
 	0x00
 };

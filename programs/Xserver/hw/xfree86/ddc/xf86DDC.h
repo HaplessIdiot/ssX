@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.h,v 1.1 1998/11/28 10:43:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.h,v 1.2 1999/03/14 03:21:56 dawes Exp $ */
 
 /* xf86DDC.h
  *
@@ -34,7 +34,7 @@ extern xf86MonPtr xf86DoEDID_DDC2(
    I2CBusPtr pBus
 );
 
-extern void xf86PrintEDID(
+extern xf86MonPtr xf86PrintEDID(
     xf86MonPtr 
 );
 

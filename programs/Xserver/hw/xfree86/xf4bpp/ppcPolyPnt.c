@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPolyPnt.c,v 1.2 1998/07/25 16:59:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPolyPnt.c,v 1.3 1999/06/06 08:49:01 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -122,8 +122,6 @@ if ( pGC->miTranslate ) {
 }
 
 {
-	register PointInRegionProcPtr PointInRegion =
-                 pDrawable->pScreen->PointInRegion ;
 	register RegionPtr pRegion = pGC->pCompositeClip ;
 	register unsigned long int fg = devPriv->colorRrop.fgPixel ;
 	register unsigned long int pm = devPriv->colorRrop.planemask ;
@@ -133,7 +131,8 @@ if ( pGC->miTranslate ) {
 		return ;
 
 	for ( ppt = pptInit ; npt-- ; ppt++ )
-		if ( (* PointInRegion)( pRegion, ppt->x, ppt->y, &box ) )
+		if (POINT_IN_REGION(pDrawable->pScreen, pRegion,
+				    ppt->x, ppt->y, &box))
 			xf4bppFillSolid( (WindowPtr)pDrawable,
 				fg, alu, pm, ppt->x, ppt->y, 1, 1 ) ;
 }

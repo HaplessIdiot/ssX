@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibios.c,v 1.1 1999/08/01 07:57:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibios.c,v 1.2 1999/08/21 13:48:30 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -42,8 +42,15 @@ ATIReadBIOS
     pciVideoPtr  pVideo;
     pciConfigPtr pPCI;
 
-    /* Read PCI adapter expansion ROM */
-    if ((pVideo = pATI->PCIInfo))
+    /*
+     * Read PCI adapter expansion ROM, but only for adapters found to have been
+     * disabled on server entry.
+     */
+    if ((pVideo = pATI->PCIInfo) &&
+        ((((pciConfigPtr)(pVideo->thisCard))->pci_command &
+          (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE)) !=
+         (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE)))
+
     {
         pPCI = (pciConfigPtr)(pVideo->thisCard);
         pATI->BIOSBase = PCIGETROM(pciReadLong(pPCI->tag, PCI_MAP_ROM_REG));

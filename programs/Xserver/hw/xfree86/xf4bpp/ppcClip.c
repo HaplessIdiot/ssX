@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcClip.c,v 1.3 1999/01/31 12:22:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcClip.c,v 1.4 1999/06/06 08:48:58 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -90,7 +90,7 @@ xf4bppDestroyClip(pGC)
 	/* we know we'll never have a list of rectangles, since
 	   ChangeClip immediately turns them into a region 
 	*/
-        (*pGC->pScreen->RegionDestroy)(pGC->clientClip);
+        REGION_DESTROY(pGC->pScreen, pGC->clientClip);
     }
     pGC->clientClip = NULL;
     pGC->clientClipType = CT_NONE;
@@ -120,7 +120,7 @@ xf4bppChangeClip(pGC, type, pvalue, nrects)
     }
     else if (type != CT_NONE)
     {
-	pGC->clientClip = (pointer) (*pGC->pScreen->RectsToRegion)(nrects,
+	pGC->clientClip = (pointer) RECTS_TO_REGION(pGC->pScreen, nrects,
 						    (xRectangle *)pvalue,
 						    type);
 	xfree(pvalue);
@@ -145,9 +145,8 @@ xf4bppCopyClip (pgcDst, pgcSrc)
 	xf4bppChangeClip(pgcDst, pgcSrc->clientClipType, pgcSrc->clientClip, 0);
 	break;
       case CT_REGION:
-	prgnNew = (*pgcSrc->pScreen->RegionCreate)(NULL, 1);
-	(*pgcSrc->pScreen->RegionCopy)(prgnNew,
-				       (RegionPtr)(pgcSrc->clientClip));
+	prgnNew = REGION_CREATE(pgcSrc->pScreen, NULL, 1);
+	REGION_COPY(pgcSrc->pScreen, prgnNew, (RegionPtr)(pgcSrc->clientClip));
 	xf4bppChangeClip(pgcDst, CT_REGION, (pointer)prgnNew, 0);
 	break;
     }

@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.29 1999/08/21 13:48:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.30 1999/08/22 05:57:33 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -915,7 +915,12 @@ MGAGRamdacInit(ScrnInfoPtr pScrn)
 	        MGAdac->maxPixelClock = 220000;
 	    break;
     	case PCI_CHIP_MGAG400:
-	    MGAdac->maxPixelClock = 300000;
+	    /* We don't know the new pins format but we know that
+	       the maxclock / 4 is where the RamdacType was in the
+	       old pins format */
+	    MGAdac->maxPixelClock = pMga->Bios2.RamdacType * 4000;
+	    if(MGAdac->maxPixelClock < 300000)
+		MGAdac->maxPixelClock = 300000;
 	    break;
 	default:
 	    MGAdac->maxPixelClock = 250000;

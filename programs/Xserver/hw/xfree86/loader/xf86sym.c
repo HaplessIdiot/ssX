@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.109 1999/09/04 09:14:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.110 1999/09/04 13:04:40 dawes Exp $ */
 
 /*
  *
@@ -192,6 +192,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86DisableInterrupts)
    SYMFUNC(xf86EnableInterrupts)
    SYMFUNC(xf86LinearVidMem)
+   SYMFUNC(xf86CheckMTRR)
    SYMFUNC(xf86MapVidMem)
    SYMFUNC(xf86UnMapVidMem)
    SYMFUNC(xf86MapReadSideEffects)
@@ -262,6 +263,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetSparse)
    SYMFUNC(xf86ReallocatePciResources)
    SYMFUNC(xf86ChkConflict)
+   SYMFUNC(xf86IsPciDevPresent)
+   SYMFUNC(xf86FindScreenForEntity)
 	   
    /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)
@@ -634,6 +637,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86fwrite)
    SYMFUNC(xf86getc)
    SYMFUNC(xf86getenv)
+   SYMFUNC(xf86getpagesize)
    SYMFUNC(xf86hypot)
    SYMFUNC(xf86ioctl)
    SYMFUNC(xf86isalnum)
@@ -741,6 +745,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86chmod)
    SYMFUNC(xf86chown)
    SYMFUNC(xf86sleep)
+   SYMFUNC(xf86mkdir)
 #ifdef XF86DRI
 				/* These may have more general uses, but
                                    for now, they are only used by the DRI.
@@ -870,6 +875,9 @@ LOOKUP xfree86LookupTab[] = {
    /* Globals from xf86Globals.c and xf86Priv.h */
    SYMVAR(xf86ConfigDRI)
 
+   /* Pci.c */
+   SYMVAR(pciNumBuses)
+ 
   { 0, 0 },
 
 };

@@ -94,7 +94,7 @@ PclPolyPoint( pDrawable, pGC, mode, nPoints, pPoints )
     
     for( i = 0; i < nPoints; i++ )
       {
-	  if( miPointInRegion( pGC->clientClip, xloc, yloc, &box ) )
+	  if( POINT_IN_REGION( pGC->pScreen, pGC->clientClip, xloc, yloc, &box ) )
 	    {
 		sprintf( t, ",%d,%d", xloc, yloc );
 		SEND_PCL( outFile, t );
