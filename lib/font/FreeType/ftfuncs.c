@@ -21,7 +21,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE. */
 
-/* $XFree86: $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.2 1998/04/28 13:48:42 robin Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -72,19 +72,20 @@ FreeTypeFreeFont(FontPtr pFont, int freePropsP)
   int i;
   ttfont_t tf;
 
-  if (tf = (ttfont_t)pFont->fontPrivate) {
-    xfree(tf->encoding);
-    for (i = 0; i < tf->used; i++)
-      xfree(tf->glyphs[i].bits);
-    xfree(tf->glyphs);
-    xfree(tf);
+  if(pFont) {
+    if(tf=(ttfont_t)pFont->fontPrivate) {
+      xfree(tf->encoding);
+      for (i = 0; i < tf->used; i++)
+        xfree(tf->glyphs[i].bits);
+      xfree(tf->glyphs);
+      xfree(tf);
+    }
+    if(freePropsP && pFont->info.nprops>0) {
+      xfree(pFont->info.isStringProp);
+      xfree(pFont->info.props);
+    }
+    xfree(pFont);
   }
-  
-  if (freePropsP && pFont->info.nprops>0) {
-    xfree(pFont->info.isStringProp);
-    xfree(pFont->info.props);
-  }
-  xfree(pFont);
 }
 
 
@@ -128,13 +129,10 @@ FreeTypeAddProperties(FontScalablePtr vals, FontInfoPtr info,
     xlfdPropsP=0;
   }
 
-  /* What properties are we going to set?  Check what tables are there. */
+  /* What properties are we going to set?  Check what tables there are. */
   if(!TT_Get_Face_Properties(face, &properties)) {
     if(properties.header) {
       upm=properties.header->Units_Per_EM;
-      /* The typographical information doesn't make much sense when *
-       * the matrix is not diagonal.  Rather than provide information
-       * that could be misinterpreted, we just skip it. */
       if(properties.horizontal)
         hheaPropsP=1;
       if(properties.os2)
@@ -149,11 +147,12 @@ FreeTypeAddProperties(FontScalablePtr vals, FontInfoPtr info,
    * wonderfully flexible data structures. */
   maxprops=
     1+                          /* NAME */
-    (xlfdPropsP?14:0)+
-    (hheaPropsP?5:0)+
-    3+
-    (os2PropsP?6:0)+
-    (postPropsP?3:0);
+    (xlfdPropsP?14:0)+          /* from XLFD */
+    (hheaPropsP?5:0)+           /* from `hhea' table */
+    3+                          /* from `name' table */
+    (os2PropsP?6:0)+            /* from `os/2' table */
+    (postPropsP?3:0)+           /* from `post' table */
+    1;                          /* type */
 
   if ((info->props =
        (FontPropPtr)xalloc(maxprops * sizeof(FontPropRec))) == 0)
@@ -167,7 +166,6 @@ FreeTypeAddProperties(FontScalablePtr vals, FontInfoPtr info,
   memset((char *)info->isStringProp, 0, maxprops);
 
   /* Add the FONT property as the very first */
-  /* Xlib uses this */
   info->props[0].name = MakeAtom("FONT", 4, TRUE);
   info->props[0].value = MakeAtom(val, strlen(val), TRUE);
   info->isStringProp[0] = 1;
@@ -213,6 +211,7 @@ FreeTypeAddProperties(FontScalablePtr vals, FontInfoPtr info,
     }
     i++;
   }
+
 
   /* the following two have already been properly scaled */
 
@@ -274,6 +273,9 @@ FreeTypeAddProperties(FontScalablePtr vals, FontInfoPtr info,
   ((int) \
    ((((double)(yval)/(double)upm) * \
      ((double)trans->matrix.yy/TWO_SIXTEENTH) * (double)imetrics.y_ppem)+0.5))
+
+  /* In what follows, we assume the matrix is diagonal.  In the rare
+   * case when it is not, the values will be somewhat wrong. */
   
   if(TT_Get_Instance_Metrics(instance, &imetrics)==0) {
     if(os2PropsP) {
@@ -313,21 +315,27 @@ FreeTypeAddProperties(FontScalablePtr vals, FontInfoPtr info,
       info->props[i].value = underlineThickness;
       i++;
       info->props[i].name = MakeAtom("UNDERLINE_POSITION",18,TRUE);
+      /* PostScript and X use opposite conventions */
       underlinePosition=
-        TRANSFORM_FUNITS_Y(properties.postscript->underlinePosition)-1;
+        TRANSFORM_FUNITS_Y(-properties.postscript->underlinePosition);
       info->props[i].value = underlinePosition;
       i++;
       if(trans->matrix.xx == trans->matrix.yy) {
         info->props[i].name = MakeAtom("ITALIC_ANGLE",12,TRUE);
         info->props[i].value = 
-          /* Convert from TT_Fixed to 64th of a degree */
-          properties.postscript->italicAngle>>10;
+          /* Convert from TT_Fixed to 
+           * 64th of a degree counterclockwise from 3 o'clock */
+          90*64+(properties.postscript->italicAngle>>10);
         i++;
       }
     }
 #undef TRANSFORM_FUNITS_X
 #undef TRANSFORM_FUNITS_Y
   }
+
+  info->props[i].name  = MakeAtom("FONT_TYPE", 9, TRUE);
+  info->props[i].value = MakeAtom("TrueType", 8, TRUE);
+  i++;
 
   info->nprops=i;
   return Successful;
@@ -395,7 +403,7 @@ FreeTypePrepareRasteriser(char *fileName,
 
   /* Try to round stuff.  We want approximate zeros to be exact zeros,
      and if the elements on the diagonal are approximately equal, we
-     want them equal. */
+     want them equal.  We do this to avoid breaking hinting. */
   if(DIFFER(vals->point_matrix[0], vals->point_matrix[3])) {
     trans->matrix.xx=
       (int)((vals->point_matrix[0]*(double)TWO_SIXTEENTH)/trans->scale);
@@ -467,8 +475,9 @@ FreeTypeLoadFont(char *fileName,
   struct ttf_encoding cinfo;
   long totalWidth, rawTotalWidth;
   int gcnt, used, size;
-  int code, idx;
-  CARD16 *tep;
+  int code;
+  unsigned short idx;
+  unsigned short *tep;
   CharInfoPtr tgp=NULL;
   int i;
   int haveDefaultGlyphP=0;
@@ -498,23 +507,21 @@ FreeTypeLoadFont(char *fileName,
       return AllocError;
     }
     xf->fontPrivate = (pointer)tf;
+    tf->defaultGlyph = 0;
   }
-
-  tf->defaultGlyph = 0;
 
   /* Allocate the glyph and encoding arrays. */
 
-  /* Compute an upper bound for the number of glyphs.  We're asuming
-   * that no glyph is used twice by the same encoding -- which is 
-   * recommended but not compulsory practice as per the TrueType
-   * spec. */
+  /* Guess the number of glyphs.  If we underestimate, we'll have to
+   * resize the vector later on. */
   if(nocmap)
     size= properties.num_Glyphs;
   else
     size= MIN(cinfo.nchars, properties.num_Glyphs);
 
   if(size<=0) {
-    xfree(tf);
+    if(xf)
+      xfree(tf);
     TT_Close_Face(face);
     return BadFontName;
   }
@@ -522,7 +529,8 @@ FreeTypeLoadFont(char *fileName,
   used = 0;
 
   if(xf) {
-    if ((tf->encoding = (CARD16 *)xalloc(size * sizeof(CARD16))) == 0) {
+    if ((tf->encoding = (unsigned short *)xalloc(size*sizeof(unsigned short)))
+        == 0) {
       xfree(tf);
       TT_Close_Face(face);
       return AllocError;
@@ -535,6 +543,7 @@ FreeTypeLoadFont(char *fileName,
        * the strange feeling passes -more-
        * you return to hacking C. */
       xfree(tf);
+      TT_Close_Face(face);
       return AllocError;
     }
   }
@@ -569,7 +578,7 @@ FreeTypeLoadFont(char *fileName,
     info->maxbounds.characterWidth =
     info->maxbounds.leftSideBearing = 
     info->maxbounds.rightSideBearing = 
-    info->maxbounds.attributes = -32767;
+    info->maxbounds.attributes = (unsigned short)-32767;
   info->minbounds.ascent = info->minbounds.descent =
     info->minbounds.characterWidth =
     info->minbounds.leftSideBearing = 
@@ -605,11 +614,9 @@ FreeTypeLoadFont(char *fileName,
       if(cinfo.recode)
         idx = TT_Char_Index(cinfo.cmap, (*cinfo.recode)(code));
 
-    if(idx<0)
-      break;
-
     /* As a special case, we pass 0 even when its not in the ranges;
-     * this will allow for the default glyph if one is present. */
+     * this will allow for the default glyph, which should exist in
+     * any TrueType font. */
     
     if(code>0 && vals->nranges) {
       for(i=0; i<vals->nranges; i++) {
@@ -629,7 +636,8 @@ FreeTypeLoadFont(char *fileName,
         continue;
       else {
         info->defaultCh=code;
-        tf->defaultGlyph=tgp;
+        if(xf)
+          tf->defaultGlyph=tgp;
         haveDefaultGlyphP=1;
       }
     }
@@ -661,16 +669,44 @@ FreeTypeLoadFont(char *fileName,
       tep++;
       tgp++;
     }
-    if(used >= size)
-      break;                    /* our initial estimate was wrong! */
+    if(used >= size) {
+      /* our initial estimate was wrong; expand encoding and glyphs */
+      /* I do not know if realloc(3) can be trusted on all systems */
+      unsigned short *new_encoding;
+      CharInfoPtr new_glyphs;
+      int new_size=size+(size+1)/2;
+
+      if(xf) {
+        if((new_encoding=(unsigned short *)xalloc(new_size*
+                                                  sizeof(unsigned short)))
+           ==0)
+          break;                /* give up */
+        if((new_glyphs=
+            (CharInfoPtr)xalloc(new_size*sizeof(CharInfoRec)))==0) {
+          xfree(new_encoding);
+          break;
+        }
+        memcpy(new_encoding, tf->encoding, size*sizeof(short));
+        memcpy(new_glyphs, tf->glyphs, size*sizeof(CharInfoRec));
+        tep = new_encoding + (tep - tf->encoding);
+        free(tf->encoding);
+        tf->encoding=new_encoding;
+        tgp = new_glyphs + (tgp - tf->glyphs);
+        free(tf->glyphs);
+        tf->glyphs=new_glyphs;
+      }
+      size=new_size;
+    }
   }
 
   MUMBLE1("used=%d\n", used);
 
   if(used==0) {                 /* no glyphs found! */
-    xfree(tf->encoding);
-    xfree(tf->glyphs);
-    xfree(tf);
+    if(xf) {
+      xfree(tf->encoding);
+      xfree(tf->glyphs);
+      xfree(tf);
+    }
     TT_Close_Face(face);
     return BadFontName;
   }
@@ -691,8 +727,7 @@ FreeTypeLoadFont(char *fileName,
 
   /* Calculate the average width and the direction hint */
   info->drawDirection = (totalWidth>=0)?LeftToRight:RightToLeft;
-  if (info->minbounds.characterWidth == 
-      info->maxbounds.characterWidth) {
+  if(info->minbounds.characterWidth == info->maxbounds.characterWidth) {
     /* The font is monospace.*/
     vals->width = info->maxbounds.characterWidth * 10;
     info->constantWidth=1;
@@ -708,14 +743,14 @@ FreeTypeLoadFont(char *fileName,
     /* The font is proportional */
     vals->width = (totalWidth*10+used/2)/used;
 
-  /* Use the new XLFD name to generate the properties for the new font.
-   */
+  /* Use the new XLFD name to generate the properties for the new font. */
   if((xrc = FreeTypeAddProperties(vals, info, entry->name.name, 
                                   face, instance, &trans, 
                                   (int)((rawTotalWidth+used/2)/used)))
      != Successful) {
     MUMBLE1("Couldn't add properties: %d\n", xrc);
-    FreeTypeFreeFont(xf,0);
+    if(xf)
+      FreeTypeFreeFont(xf,0);
   }
   
   TT_Close_Face(face);
@@ -789,10 +824,11 @@ FreeTypeLoadGlyph(FontInfoPtr info,
       return AllocError;
     memset(raster.bitmap,0,(int)raster.size);
 
-    /* The original version of this code used to go to quite a bit
-       of trouble to make sure that it has the optimal bounding box.
-       Removing that code and trusting the library makes the code
-       simpler, and also avoids copying bitmaps. */
+    /* The original version of this code used to go to quite a bit of
+     * trouble to make sure that it had the optimal bounding box.
+     * Trusting the library instead makes the code simpler, avoids
+     * copying bitmaps to and fro, and allows us not to rasterise when
+     * we're only being asked for font info. */
     
     if(TT_Get_Glyph_Bitmap(glyph,&raster,xoff,yoff)) {
       MUMBLE("Failed to draw bitmap\n");
@@ -829,7 +865,6 @@ FreeTypeLoadGlyph(FontInfoPtr info,
       default:
         ;
       }
-    
   }
   xoff_pixels = xoff>>6;
   yoff_pixels = yoff>>6;
@@ -860,8 +895,11 @@ FreeTypeLoadGlyph(FontInfoPtr info,
             rightSideBearing);
   ADJUSTMIN(info->minbounds.characterWidth, characterWidth);
   ADJUSTMAX(info->maxbounds.characterWidth, characterWidth);
-  ADJUSTMIN(info->minbounds.attributes, rawCharacterWidth);
-  ADJUSTMAX(info->maxbounds.attributes, rawCharacterWidth);
+  /* cannot use ADJUST* as attributes is an unsigned field */
+  if(rawCharacterWidth<(short)info->minbounds.attributes)
+    info->minbounds.attributes=(unsigned short)((short)rawCharacterWidth);
+  if(rawCharacterWidth>(short)info->maxbounds.attributes)
+    info->maxbounds.attributes=(unsigned short)((short)rawCharacterWidth);
   
   /* Determine the maximum overlap.  Is this code wrong? */
   overlap = rightSideBearing - characterWidth;
@@ -873,7 +911,7 @@ FreeTypeLoadGlyph(FontInfoPtr info,
 
   if(tgp) {
     /* Set the glyph metrics. */
-    tgp->metrics.attributes = rawCharacterWidth;
+    tgp->metrics.attributes = (unsigned short)((short)rawCharacterWidth);
     tgp->metrics.leftSideBearing = leftSideBearing;
     tgp->metrics.rightSideBearing = rightSideBearing;
     tgp->metrics.characterWidth = characterWidth;
@@ -890,14 +928,16 @@ FreeTypeLoadGlyph(FontInfoPtr info,
 /* Locate a code in the encoding vector. 
  * Currently, we use our own encoding vector, completely unrelated to
  * the rest of the world, and do a binary search in it for every
- * single character.  This is wrong.
+ * single character.
  * This means that the time needed to get m characters from an
  * encoding that has n realized characters takes time m*n*logn.  This
  * is okay for small (8 bit) encodings, but not for bigger ones.
  * The simple solution -- mapping from codes to indexes in the
  * encoding array -- is not a good idea as TrueType fonts tend to be
- * rather sparse (we'd typically have a 400K encoding vector for a font
+ * rather sparse (we'd often have a 256Kb encoding vector for a font
  * containing only a few hundred characters).
+ * This is not a big deal as we spend most time in the rasteriser
+ * anyway.
  */
 
 static int
@@ -1010,8 +1050,7 @@ FreeTypeSetUpFont(FontPathElementPtr fpe, FontPtr xf, FontInfoPtr info,
   int xrc;
 
   /* Get the default bitmap format information for this X installation.
-   * Also check to see if the the format values were changed for some
-   * reason. */
+   * Also update it for the client if running in the font server. */
   FontDefaultFormat(&bmfmt->bit, &bmfmt->byte, &bmfmt->glyph, &bmfmt->scan);
   if ((xrc = CheckFSFormat(format, fmask, &bmfmt->bit, &bmfmt->byte,
                            &bmfmt->scan, &bmfmt->glyph,
@@ -1040,17 +1079,17 @@ FreeTypeSetUpFont(FontPathElementPtr fpe, FontPtr xf, FontInfoPtr info,
   }
 
   info->defaultCh = 0;
-  info->noOverlap = 0;          /* not maintained */
-  info->terminalFont = 0;       /* not maintained */
+  info->noOverlap = 0;          /* not updated */
+  info->terminalFont = 0;       /* not updated */
   info->constantMetrics = 0;    /* we'll set it later */
   info->constantWidth = 0;      /* we'll set it later */
   info->inkInside = 1;
   info->inkMetrics = 1;
-  info->allExist=0;             /* not maintained */
+  info->allExist=0;             /* not updated */
   info->drawDirection = LeftToRight; /* we'll set it later */
   info->cachable = 1;           /* we don't do licensing */
-  info->anamorphic = 0;         /* ??? */
-  info->maxOverlap = 0;         /* we'll set it later. ??? */
+  info->anamorphic = 0;         /* can hinting lead to anamorphic scaling? */
+  info->maxOverlap = 0;         /* we'll set it later. */
   info->pad = 0;                /* ??? */
   return Successful;
 }
@@ -1067,7 +1106,7 @@ FreeTypeOpenScalable(FontPathElementPtr fpe, FontPtr *ppFont, int flags,
   FontPtr xf;
   FontBitmapFormat bmfmt;
 
-  MUMBLE1("Open Scalable XLFD=",fileName);
+  MUMBLE1("Open Scalable %s, XLFD=",fileName);
   #ifdef DEBUG
   fwrite(entry->name.name, entry->name.length, 1, stdout);
   #endif
@@ -1113,8 +1152,6 @@ FreeTypeGetInfoScalable(FontPathElementPtr fpe, FontInfoPtr info,
                         char *fileName, FontScalablePtr vals)
 {
   int xrc;
-  FontPtr xf;
-  int i;
   FontBitmapFormat bmfmt;
 
   MUMBLE("Get info, XLFD= ");
@@ -1128,6 +1165,9 @@ FreeTypeGetInfoScalable(FontPathElementPtr fpe, FontInfoPtr info,
      <1.0)
     return BadFontName;
 
+  /* Format and fmask are irrelevant but should be valid;
+   * we pass 0 as the font pointer so that no rasterisation will be
+   * done. */
   if((xrc=FreeTypeSetUpFont(fpe, 0, info, 0, 0, &bmfmt))
      != Successful) {
     return xrc;
@@ -1138,7 +1178,6 @@ FreeTypeGetInfoScalable(FontPathElementPtr fpe, FontInfoPtr info,
   if ((xrc = FreeTypeLoadFont(fileName, vals, 0, info, &bmfmt, entry)) 
       != Successful) {
     MUMBLE1("Error during load: %d\n", xrc);
-    xfree(xf);
     return xrc;
   }
 
@@ -1147,13 +1186,11 @@ FreeTypeGetInfoScalable(FontPathElementPtr fpe, FontInfoPtr info,
 
 /* Renderer registration. */
 
-/* Set the capabilities of this renderer.  At the moment, only subsetting is
- * allowed because not all the transformations in the transformation matrix
- * are supported at the moment. */
-/* Need to get subsetting right */
+/* Set the capabilities of this renderer. */
 #define CAPABILITIES (CAP_CHARSUBSETTING | CAP_MATRIX)
 
-/* Set it up so file names with either upper or lower case can be loaded. */
+/* Set it up so file names with either upper or lower case can be
+ * loaded.  We don't support compressed fonts. */
 static FontRendererRec renderers[] = {
   {".ttf", 4, 0, FreeTypeOpenScalable, 0,
    FreeTypeGetInfoScalable, 0, CAPABILITIES},

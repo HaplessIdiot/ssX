@@ -21,7 +21,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE. */
 
-/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.3 1998/06/27 12:53:26 hohndel Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.4 1998/06/28 03:52:36 dawes Exp $ */
 
 #include "font.h"
 #include "freetype.h"
@@ -157,8 +157,9 @@ int FTtoXReturnCode(int rc)
 int 
 ttf_GetEnglishName(TT_Face face, char *name, int nameID)
 {
-  int i, j, slen, nrec;
-  short nrPlatformID, nrEncodingID, nrLanguageID, nrNameID;
+  int i, j, nrec;
+  unsigned short slen;
+  unsigned short nrPlatformID, nrEncodingID, nrLanguageID, nrNameID;
   char *s;
 
   nrec = TT_Get_Name_Count(face);
