@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_savage/vbe.h,v 1.1.2.1 1999/07/30 11:21:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_vbe.h,v 1.1 2000/12/02 01:16:15 dawes Exp $ */
 
 /*
 This file was originally part of the Linux Real-Mode Interface, or LRMI.
@@ -17,6 +17,10 @@ This software has NO WARRANTY.  Use it at your own risk.
 #define _SAVAGEVBE_H
 
 /* structures for vbe 2.0 */
+
+#ifndef __GNUC__
+#define __attribute__(a)
+#endif
 
 struct vbe_info_block
 	{
