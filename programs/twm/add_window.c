@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/add_window.c,v 1.7 2000/10/24 22:45:14 dawes Exp $ */
+/* $XFree86: xc/programs/twm/add_window.c,v 1.8 2001/01/17 23:45:05 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -198,7 +198,8 @@ IconMgr *iconp;
 
     XGetWindowAttributes(dpy, tmp_win->w, &tmp_win->attr);
 
-    I18N_FetchName(dpy, tmp_win->w, &name);
+    if (!I18N_FetchName(dpy, tmp_win->w, &name))
+	name = NULL;
     tmp_win->class = NoClass;
     XGetClassHint(dpy, tmp_win->w, &tmp_win->class);
     FetchWmProtocols (tmp_win);
