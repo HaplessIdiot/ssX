@@ -1,3 +1,6 @@
+XFree86 3.9Ah (XX April 1998)
+1650. Sync I128 server acceleration with 3.3.2 (Robin Cutshaw).
+
 XFree86 3.9Ag (05 April 1998)
 1649. AGX ScrnInfoRec fix, fix compiler warnings for Xprt and loader,
       fix vgaCloseScreen problem, add new ScreenRec functions to
@@ -6089,4 +6092,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.581 1998/04/05 16:15:46 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.582 1998/04/05 16:42:08 robin Exp $
