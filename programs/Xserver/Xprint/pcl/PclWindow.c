@@ -44,12 +44,11 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclWindow.c,v 1.2 1996/12/24 08:47:48 dawes Exp $ */
 
 
 #include <stdio.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <sys/wait.h>
 
 #include "mistruct.h"
