@@ -1,4 +1,11 @@
 XFree86 4.0.1g (28 November 2000)
+ 987. Safe tempfile handline for imake's probing of glibc version (based on
+      #4257, Colin Phipps).
+ 986. Fix typo in dvorak xkb symbols file, plus white space cleanup (#4256,
+      Branden Robinson).
+ 985. Fix typo in server startup message (#4255, Branden Robinson).
+ 984. Make XOpenDisplay() bail out if the server claims that its vendor
+      string is > 256 in length (#4254).
  983. Add some useful default key bindings for the xdm login widget (#4252,
       Branden Robinson).
  982. Change the default xdm Xaccess file to not allow any connections
@@ -11631,4 +11638,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1408 2000/11/26 10:08:50 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1409 2000/11/27 00:10:02 dawes Exp $

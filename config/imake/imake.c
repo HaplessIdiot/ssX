@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.38 2000/11/14 18:20:32 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.39 2000/11/21 23:10:22 tsi Exp $ */
 
 /*
  * 
@@ -994,13 +994,23 @@ get_distrib(FILE *inFile)
 static void
 get_libc_version(FILE *inFile)
 {
-  char *aout = tmpnam (NULL);
+  char aout[] = "/tmp/imakeXXXXXX";
   FILE *fp;
   const char *format = "%s -o %s -x c -";
   char *cc;
   int len;
   char *command;
 
+  /* Pre-create temp file safely */
+  {
+    /* Linux + ELF has mkstemp() */
+    int tmpfd;
+    if ((tmpfd = mkstemp(aout)) == -1) {
+      perror("mkstemp");
+      abort();
+    }
+    close(tmpfd);
+  }
   cc = getenv ("CC");
   if (cc == NULL)
     cc = "gcc";

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/OpenDis.c,v 3.6 2000/06/15 23:59:06 keithp Exp $ */
+/* $XFree86: xc/lib/X11/OpenDis.c,v 3.7 2000/06/16 01:50:18 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -397,6 +397,11 @@ Display *XOpenDisplay (display)
  * now extract the vendor string...  String must be null terminated,
  * padded to multiple of 4 bytes.
  */
+	/* Check for a sane vendor string length */
+	if (u.setup->nbytesVendor > 256) {
+	    OutOfMemory(dpy, setup);
+	    return (NULL);
+	}
 	dpy->vendor = (char *) Xmalloc((unsigned) (u.setup->nbytesVendor + 1));
 	if (dpy->vendor == NULL) {
 	    OutOfMemory(dpy, setup);

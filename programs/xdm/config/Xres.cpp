@@ -1,5 +1,5 @@
 ! $XConsortium: Xresources /main/8 1996/11/11 09:24:46 swick $
-! $XFree86: xc/programs/xdm/config/Xres.cpp,v 1.1 1999/03/14 03:22:24 dawes Exp $
+! $XFree86: xc/programs/xdm/config/Xres.cpp,v 1.2 2000/11/27 00:10:07 dawes Exp $
 #define BS \ /* cpp can be trickier than m4 */
 #define NLBS \n\ /* don't remove these comments */
 xlogin*login.translations: #override BS
@@ -11,7 +11,7 @@ xlogin*login.translations: #override BS
 	<Key>Home: move-to-begining()NLBS
 	<Key>End: move-to-end()NLBS\
 	Ctrl<Key>KP_Enter: set-session-argument(failsafe) finish-field()NLBS
-	Key>KP_Enter: set-session-argument() finish-field()NLBS
+	<Key>KP_Enter: set-session-argument() finish-field()NLBS
 	Ctrl<Key>Return: set-session-argument(failsafe) finish-field()NLBS
 	<Key>Return: set-session-argument() finish-field()
 #ifndef XPM
