@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.11 2000/02/13 03:06:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.12 2000/02/14 19:20:45 dawes Exp $ */
 
 
 /* Everything using inb/outb, etc needs "compiler.h" */
@@ -121,7 +121,7 @@ typedef struct {
     int			xbase;
     unsigned char	savedSR10;
     CARD8		MiscOut;
-    CARD8		c9, d9, db;
+    CARD8		c9, d9, db, Rush;
     unsigned long	saveCmd;
     pointer		FontInfo;
     Bool		hwCursor;

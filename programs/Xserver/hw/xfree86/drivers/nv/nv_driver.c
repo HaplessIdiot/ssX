@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.35 2000/02/22 02:00:51 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.37 2000/02/27 02:45:29 alanh Exp $ */
 
 #include "nv_include.h"
 
@@ -776,14 +776,12 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         resRange vgaio[] =      { {ResShrIoBlock,0x3B0,0x3BB},
                                   {ResShrIoBlock,0x3C0,0x3DF},
                                   _END };
- 	resRange vga1mem[] =	{ {ResShrMemBlock,0xA0000,0xAFFFF},
+ 	resRange vgamem[] =	{ {ResShrMemBlock,0xA0000,0xAFFFF},
  				  {ResShrMemBlock,0xB8000,0xBFFFF},
- 				  _END };
- 	resRange vga2mem[] =	{ {ResShrMemBlock,0xB0000,0xB7FFF},
+                                  {ResShrMemBlock,0xB0000,0xB7FFF},
  				  _END };
         xf86SetOperatingState(vgaio, pNv->pEnt->index, ResUnusedOpr);
- 	xf86SetOperatingState(vga1mem, pNv->pEnt->index, ResDisableOpr);
- 	xf86SetOperatingState(vga2mem, pNv->pEnt->index, ResDisableOpr);
+ 	xf86SetOperatingState(vgamem, pNv->pEnt->index, ResDisableOpr);
     }
 
     /* Set pScrn->monitor */
@@ -1159,8 +1157,8 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->minClock = pNv->MinClock;
     clockRanges->maxClock = pNv->MaxClock;
     clockRanges->clockIndex = -1;		/* programmable */
-    clockRanges->interlaceAllowed = FALSE;
-    clockRanges->doubleScanAllowed = FALSE;
+    clockRanges->interlaceAllowed = TRUE;
+    clockRanges->doubleScanAllowed = TRUE;
 
     /*
      * xf86ValidateModes will check that the mode HTotal and VTotal values

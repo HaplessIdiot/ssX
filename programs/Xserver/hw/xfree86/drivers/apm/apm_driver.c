@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.32 2000/02/15 18:00:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.34 2000/02/27 02:45:24 alanh Exp $ */
 
 
 #include "apm.h"
@@ -2055,7 +2055,7 @@ ApmEnterVT(int scrnIndex, int flags)
     if (pApm->Chipset >= AT3D) {
 	if (!pApm->noLinear) {
 	    /* If you change it, change it also in apm_funcs.c */
-	    WRXB(0xDB, (pApm->db & 0xF4) | 0x0A);
+	    WRXB(0xDB, (pApm->db & 0xF4) | 0x0A | pApm->Rush);
 	    WRXB(0xD9, (pApm->d9 & 0xCF) | 0x20);
 	}
 	else {
@@ -2070,9 +2070,10 @@ ApmEnterVT(int scrnIndex, int flags)
      * Set color mode
      */
     hwp->writeMiscOut(hwp, pApm->MiscOut | 0x0F);
-    /* Should we re-save the text mode on each VT enter? */
+
     if (!ApmModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
+    ApmAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
     return TRUE;
 }
