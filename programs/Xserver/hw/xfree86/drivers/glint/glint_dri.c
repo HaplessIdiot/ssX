@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.22 2001/03/21 17:02:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.23 2001/03/21 17:18:27 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -589,7 +589,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] %d DMA buffers mapped\n",
 	       pGlint->drmBufs->count);
 
-    xf86EnablePciBusMaster(pGlint->PciTag);
+    xf86EnablePciBusMaster(pGlint->PciInfo, TRUE);
 
     /* tell the generic kernel driver how to handle Gamma DMA */
     if (pGlint->irq <= 0) {

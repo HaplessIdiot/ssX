@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 287. Add a "cleanlinks" script for cleaning up dangling links in lndir-created
+      shadow trees (David Dawes).
  286. Resync with DRI CVS trunk (VA Linux Systems).
  285. Make extension headers available when the extension is enabled but the
       extension's client library is disabled (David Dawes).
@@ -12733,4 +12735,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1638 2001/03/21 03:29:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1639 2001/03/21 17:36:45 dawes Exp $
