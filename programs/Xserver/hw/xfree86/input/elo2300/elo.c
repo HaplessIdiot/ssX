@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.c,v 1.5 1999/01/26 05:54:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.c,v 1.6 1999/03/06 13:12:39 dawes Exp $ */
 
 #define _elo_C_
 /*****************************************************************************
@@ -188,8 +188,7 @@ SetupProc(	pointer module,
 
 	/* this results in an xstrdup that must be freed later */
 	local->name = xf86SetStrOption( merged, "DeviceName", "ELOGraphics 2300 TouchScreen" );
-	local->type = XI_TOUCHSCREEN;
-	xf86XInputProcessOptions (local, merged);
+	local->type_name = XI_TOUCHSCREEN;
 	local->device_control = DeviceControl;
 	local->read_input = ReadInput;
 	local->control_proc = ControlProc;

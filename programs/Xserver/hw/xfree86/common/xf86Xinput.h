@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.20 1998/12/13 05:32:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.21 1999/04/04 05:47:05 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -51,12 +51,15 @@
  */
 #define XI86_SEND_DRAG_EVENTS	8
 
-#ifdef PRIVATE
-#undef PRIVATE
-#endif
-#define PRIVATE(dev) (((LocalDevicePtr)((dev)->public.devicePrivate))->private)
+#define XI_PRIVATE(dev) \
+	(((LocalDevicePtr)((dev)->public.devicePrivate))->private)
 
-#define MOUSE_DEV(dev) (MouseDevPtr) PRIVATE(dev)
+#define MOUSE_DEV(dev) (MouseDevPtr) XI_PRIVATE(dev)
+
+#ifdef DBG
+#undef DBG
+#endif
+#define DBG(lvl, f) {if ((lvl) <= xf86GetVerbosity()) f;}
 
 #ifdef HAS_MOTION_HISTORY
 #undef HAS_MOTION_HISTORY
@@ -111,7 +114,8 @@ int
 xf86IsCoreKeyboard(DeviceIntPtr /*dev*/);
 
 void
-xf86AlwaysCore(LocalDevicePtr /*local*/, Bool /*always*/);
+xf86XInputSetSendCoreEvents(LocalDevicePtr /*local*/, Bool /*always*/);
+#define xf86AlwaysCore(a,b) xf86XInputSetSendCoreEvents(a,b)
 
 void
 InitExtInput(void);

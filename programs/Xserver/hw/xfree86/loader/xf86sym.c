@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.78 1999/03/29 07:06:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.79 1999/03/29 09:41:33 dawes Exp $ */
 
 /*
  *
@@ -222,10 +222,10 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ReadSerial)
    SYMFUNC(xf86WriteSerial)
    SYMFUNC(xf86CloseSerial)
-/* Next three merged in from Metrolink tree	(posix_tty.c) */
    SYMFUNC(xf86GetErrno)
    SYMFUNC(xf86WaitForInput)
    SYMFUNC(xf86SerialSendBreak)
+   SYMFUNC(xf86FlushInput)
 
 #ifdef XINPUT
 /* XISB routines  (Merged from Metrolink tree) */
@@ -455,19 +455,23 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86SetKbdRepeat)
 
 #ifdef XINPUT
-   SYMFUNC(xf86AlwaysCore)
+   SYMFUNC(xf86IsCorePointer)
    SYMFUNC(xf86PostMotionEvent)
-   SYMFUNC(xf86PostProximityEvent)		/* Merged from Metrolink tree */
+   SYMFUNC(xf86PostProximityEvent)
    SYMFUNC(xf86PostButtonEvent)
+   SYMFUNC(xf86PostKeyEvent)
    SYMFUNC(xf86GetMotionEvents)
    SYMFUNC(xf86MotionHistoryAllocate)
+   SYMFUNC(xf86FirstLocalDevice)
 
 /* The following segment merged from Metrolink tree */
    SYMFUNC(xf86AddLocalDevice)
    SYMFUNC(xf86RemoveLocalDevice)
    SYMFUNC(xf86XInputSetScreen)
    SYMFUNC(xf86ScaleAxis)
+#if 0
    SYMFUNC(xf86XInputProcessOptions)
+#endif
    SYMFUNC(xf86XInputSetSendCoreEvents)
 /* End merged segment */
 #endif

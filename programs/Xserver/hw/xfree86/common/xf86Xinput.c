@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.40 1999/03/21 07:34:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.41 1999/04/04 05:47:04 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -144,8 +144,7 @@ xf86IsCoreKeyboard(DeviceIntPtr	device)
 }
 
 void
-xf86AlwaysCore(LocalDevicePtr	local,
-	       Bool		always)
+xf86XInputSetSendCoreEvents(LocalDevicePtr local, Bool always)
 {
     if (always) {
 	local->flags |= XI86_ALWAYS_CORE;
@@ -365,10 +364,7 @@ InitExtInput()
  */
 
 void
-OpenInputDevice (dev, client, status)
-    DeviceIntPtr dev;
-    ClientPtr client;
-    int *status;
+OpenInputDevice(DeviceIntPtr dev, ClientPtr client, int *status)
 {
     if (!dev->inited) {
 	*status = BadDevice;
@@ -452,17 +448,11 @@ ChangeKeyboardDevice (DeviceIntPtr old_dev, DeviceIntPtr new_dev)
  */
 
 int
-#ifdef NeedFunctionPrototypes
 ChangePointerDevice (
      DeviceIntPtr	old_dev,
      DeviceIntPtr	new_dev,
      unsigned char	x,
      unsigned char	y)
-#else
-ChangePointerDevice (old_dev, new_dev, x, y)
-     DeviceIntPtr	old_dev, new_dev;
-     unsigned char	x, y;
-#endif /* NeedFunctionPrototypes */
 {
   /************************************************************************
     InitFocusClassDeviceStruct(old_dev);	* allow focusing old ptr*
@@ -690,6 +680,15 @@ xf86eqEnqueue (xEvent *e)
       {
       case KeyPress:
       case KeyRelease:
+#ifdef XFreeXDGA
+	/* we do this here, because nobody seems to be calling
+	 * xf86PostKeyEvent().  We can't steal MotionNotify events here
+	 * because the motion-relative information has been lost already.
+	 */
+	if(DGAStealKeyEvent(xf86EventQueue.pEnqueueScreen->myNum, e))
+	    return;
+	/* fall through */
+#endif
       case ButtonPress:
       case ButtonRelease:
       case MotionNotify:
@@ -706,11 +705,6 @@ xf86eqEnqueue (xEvent *e)
           }
         break;
       }
-#endif
-
-#ifdef XFreeXDGA
-    if(DGAStealEvent(xf86EventQueue.pEnqueueScreen->myNum, e))
-	return;
 #endif
 
     oldtail = xf86EventQueue.tail;
@@ -1049,8 +1043,10 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 		 * needs to integrate with DGA and XTEST event posting
 		 */
 
-		miPointerAbsoluteCursor(x, y, xf86Info.lastEventTime); 
-
+#ifdef XFreeXDGA
+		if(!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, x, y))
+#endif
+		    miPointerAbsoluteCursor(x, y, xf86Info.lastEventTime); 
 		if (!is_shared)
 		  break;
 	    }
@@ -1268,7 +1264,10 @@ xf86PostButtonEvent(DeviceIntPtr	device,
 	xE->u.keyButtonPointer.rootY = cx;
 	xE->u.keyButtonPointer.rootX = cy;
 	xf86Info.lastEventTime = xE->u.keyButtonPointer.time = GetTimeInMillis();
-	xf86eqEnqueue(xE);
+#ifdef XFreeXDGA
+	if(!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, 0, 0))
+#endif
+	    xf86eqEnqueue(xE);
     }
     DBG(5, ErrorF("xf86PostButtonEvent END\n"));
 }
