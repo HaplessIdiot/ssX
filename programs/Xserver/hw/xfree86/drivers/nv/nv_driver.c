@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.92 2002/10/14 18:22:45 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.93 2002/11/26 23:41:58 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -79,142 +79,75 @@ DriverRec NV = {
         0
 };
 
-/* Supported chipsets */
-static SymTabRec NVChipsets[] = {
-    {NV_CHIP_RIVA_128,           "RIVA 128"},
-    {NV_CHIP_TNT,                "RIVA TNT"},
-    {NV_CHIP_TNT2,               "RIVA TNT2/TNT2 Pro"},
-    {NV_CHIP_UTNT2,              "RIVA TNT2 Ultra"},
-    {NV_CHIP_VTNT2,              "Vanta"},
-    {NV_CHIP_UVTNT2,             "Riva TNT2 M64"},
-    {NV_CHIP_ITNT2,              "Aladdin TNT2"},
-    {NV_CHIP_GEFORCE_256,        "GeForce 256"},
-    {NV_CHIP_GEFORCE_DDR,        "GeForce DDR"},
-    {NV_CHIP_QUADRO,             "Quadro"},
-    {NV_CHIP_GEFORCE2_MX,        "GeForce2 MX/MX 400"},
-    {NV_CHIP_GEFORCE2_MX_100,    "GeForce2 MX 100/200"},
-    {NV_CHIP_GEFORCE2_GO,        "GeForce2 Go"},
-    {NV_CHIP_QUADRO2_MXR,        "Quadro2 MXR"},
-    {NV_CHIP_GEFORCE2_GTS,       "GeForce2 GTS/Pro"},
-    {NV_CHIP_GEFORCE2_TI,        "GeForce2 Ti"},
-    {NV_CHIP_GEFORCE2_ULTRA,     "GeForce2 Ultra"},
-    {NV_CHIP_QUADRO2_PRO,        "Quadro2 Pro"},
-    {NV_CHIP_GEFORCE4_MX_460,    "GeForce4 MX 460"},
-    {NV_CHIP_GEFORCE4_MX_440,    "GeForce4 MX 440"},
-    {NV_CHIP_GEFORCE4_MX_420,    "GeForce4 MX 420"},
-    {NV_CHIP_GEFORCE4_440_GO,    "GeForce4 440 Go"},
-    {NV_CHIP_GEFORCE4_420_GO,    "GeForce4 420 Go"},
-    {NV_CHIP_GEFORCE4_420_GO_M32,"GeForce4 420 Go M32"},
-    {NV_CHIP_QUADRO4_500XGL,     "Quadro4 500XGL"},
-    {NV_CHIP_GEFORCE4_440_GO_M64,"GeForce4 440 Go M64"},
-    {NV_CHIP_QUADRO4_200,        "Quadro4 200/400NVS"},
-    {NV_CHIP_QUADRO4_550XGL,     "Quadro4 550XGL"},
-    {NV_CHIP_QUADRO4_500_GOGL,   "Quadro4 GoGL"},
-    {NV_CHIP_0x0177,             "GeForce4 460 Go"},
-    {NV_CHIP_0x017D,             "GeForce4 410 Go"},
-    {NV_CHIP_0x0181,             "GeForce4 MX 440 with AGP8X"},
-    {NV_CHIP_0x0182,             "GeForce4 MX 440SE with AGP8X"},
-    {NV_CHIP_0x0183,             "GeForce4 MX 420 with AGP8X"},
-    {NV_CHIP_0x0186,             "0x0186"},
-    {NV_CHIP_0x0187,             "0x0187"},
-    {NV_CHIP_0x0188,             "Quadro4 580 XGL"},
-    {NV_CHIP_0x018A,             "Quadro4 280 NVS"},
-    {NV_CHIP_0x018B,             "Quadro4 380 XGL"},
-    {NV_CHIP_IGEFORCE2,          "GeForce2 Integrated GPU"},
-    {NV_CHIP_0x01F0,             "GeForce4 MX Integrated GPU"},
-    {NV_CHIP_GEFORCE3,           "GeForce3"},
-    {NV_CHIP_GEFORCE3_TI_200,    "GeForce3 Ti 200"},
-    {NV_CHIP_GEFORCE3_TI_500,    "GeForce3 Ti 500"},
-    {NV_CHIP_QUADRO_DCC,         "Quadro DCC"},
-    {NV_CHIP_GEFORCE4_TI_4600,   "GeForce4 Ti 4600"},
-    {NV_CHIP_GEFORCE4_TI_4400,   "GeForce4 Ti 4400"},
-    {NV_CHIP_GEFORCE4_TI_4200,   "GeForce4 Ti 4200"},
-    {NV_CHIP_QUADRO4_900XGL,     "Quadro4 900 XGL"},
-    {NV_CHIP_QUADRO4_750XGL,     "Quadro4 750 XGL"},
-    {NV_CHIP_QUADRO4_700XGL,     "Quadro4 700 XGL"},
-    {NV_CHIP_0x025A,             "Quadro4 600 XGL"},
-    {NV_CHIP_0x0280,             "GeForce4 Ti 4800"},
-    {NV_CHIP_0x0281,             "GeForce4 Ti 4200 with AGP8X"},
-    {NV_CHIP_0x0282,             "GeForce4 Ti 4800 SE"},
-    {NV_CHIP_0x0286,             "GeForce4 4000 Go"},
-    {NV_CHIP_0x0288,             "Quadro4 980 XGL"},
-    {NV_CHIP_0x0289,             "Quadro4 780 XGL"},
-    {NV_CHIP_0x028C,             "Quadro4 700 GoGL"},
-    {NV_CHIP_0x0300,             "0x0300"},
-    {NV_CHIP_0x0301,             "0x0301"},
-    {NV_CHIP_0x0302,             "0x0302"},
-    {NV_CHIP_0x0308,             "0x0308"},
-    {NV_CHIP_0x0309,             "0x0309"},
-    {-1,                        NULL }
+static SymTabRec NVKnownChipsets[] =
+{
+  { 0x12D20018, "RIVA 128" },
+  { 0x10DE0020, "RIVA TNT" },
+  { 0x10DE0028, "RIVA TNT2" },
+  { 0x10DE002C, "Vanta" },
+  { 0x10DE0029, "RIVA TNT2 Ultra" },
+  { 0x10DE002D, "RIVA TNT2 Model 64" },
+  { 0x10DE00A0, "Aladdin TNT2" },
+  { 0x10DE0100, "GeForce 256" },
+  { 0x10DE0101, "GeForce DDR" },
+  { 0x10DE0103, "Quadro" },
+  { 0x10DE0110, "GeForce2 MX/MX 400" },
+  { 0x10DE0111, "GeForce2 MX 100/200" },
+  { 0x10DE0112, "GeForce2 Go" },
+  { 0x10DE0113, "Quadro2 MXR/EX/Go" },
+  { 0x10DE01A0, "GeForce2 Integrated GPU" },
+  { 0x10DE0150, "GeForce2 GTS" },
+  { 0x10DE0151, "GeForce2 Ti" },
+  { 0x10DE0152, "GeForce2 Ultra" },
+  { 0x10DE0153, "Quadro2 Pro" },
+  { 0x10DE0170, "GeForce4 MX 460" },
+  { 0x10DE0171, "GeForce4 MX 440" },
+  { 0x10DE0172, "GeForce4 MX 420" },
+  { 0x10DE0173, "GeForce4 MX 440-SE" },
+  { 0x10DE0174, "GeForce4 440 Go" },
+  { 0x10DE0175, "GeForce4 420 Go" },
+  { 0x10DE0176, "GeForce4 420 Go 32M" },
+  { 0x10DE0177, "GeForce4 460 Go" },
+  { 0x10DE0179, "GeForce4 440 Go 64M" },
+  { 0x10DE017D, "GeForce4 410 Go 16M" },
+  { 0x10DE017C, "Quadro4 500 GoGL" },
+  { 0x10DE0178, "Quadro4 550 XGL" },
+  { 0x10DE017A, "Quadro4 NVS" },
+  { 0x10DE0181, "GeForce4 MX 440 with AGP8X" },
+  { 0x10DE0182, "GeForce4 MX 440SE with AGP8X" },
+  { 0x10DE0183, "GeForce4 MX 420 with AGP8X" },
+  { 0x10DE0186, "0x0186" },
+  { 0x10DE0187, "0x0187" },
+  { 0x10DE0188, "Quadro4 580 XGL" },
+  { 0x10DE018A, "Quadro4 280 NVS" },
+  { 0x10DE018B, "Quadro4 380 XGL" },
+  { 0x10DE01F0, "GeForce4 MX Integrated GPU" },
+  { 0x10DE0200, "GeForce3" },
+  { 0x10DE0201, "GeForce3 Ti 200" },
+  { 0x10DE0202, "GeForce3 Ti 500" },
+  { 0x10DE0203, "Quadro DCC" },
+  { 0x10DE0250, "GeForce4 Ti 4600" },
+  { 0x10DE0251, "GeForce4 Ti 4400" },
+  { 0x10DE0252, "0x0252" },
+  { 0x10DE0253, "GeForce4 Ti 4200" },
+  { 0x10DE0258, "Quadro4 900 XGL" },
+  { 0x10DE0259, "Quadro4 750 XGL" },
+  { 0x10DE025B, "Quadro4 700 XGL" },
+  { 0x10DE0280, "GeForce4 Ti 4800" },
+  { 0x10DE0281, "GeForce4 Ti 4200 with AGP8X" },
+  { 0x10DE0282, "GeForce4 Ti 4800 SE" },
+  { 0x10DE0286, "GeForce4 4200 Go" },
+  { 0x10DE028C, "Quadro4 700 GoGL" },
+  { 0x10DE0288, "Quadro4 980 XGL" },
+  { 0x10DE0289, "Quadro4 780 XGL" },
+  { 0x10DE0300, "0x0300" },
+  { 0x10DE0301, "0x0301" },
+  { 0x10DE0302, "0x0302" },
+  { 0x10DE0308, "0x0308" },
+  { 0x10DE0309, "0x0309" },
+  {-1, NULL}
 };
 
-static PciChipsets NVPciChipsets[] = {
-    {NV_CHIP_RIVA_128,           NV_CHIP_RIVA_128,           RES_SHARED_VGA},
-    {NV_CHIP_TNT,                NV_CHIP_TNT,                RES_SHARED_VGA},
-    {NV_CHIP_TNT2,               NV_CHIP_TNT2,               RES_SHARED_VGA},
-    {NV_CHIP_UTNT2,              NV_CHIP_UTNT2,              RES_SHARED_VGA},
-    {NV_CHIP_VTNT2,              NV_CHIP_VTNT2,              RES_SHARED_VGA},
-    {NV_CHIP_UVTNT2,             NV_CHIP_UVTNT2,             RES_SHARED_VGA},
-    {NV_CHIP_ITNT2,              NV_CHIP_ITNT2,              RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE_256,        NV_CHIP_GEFORCE_256,        RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE_DDR,        NV_CHIP_GEFORCE_DDR,        RES_SHARED_VGA},
-    {NV_CHIP_QUADRO,             NV_CHIP_QUADRO,             RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE2_MX,        NV_CHIP_GEFORCE2_MX,        RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE2_MX_100,    NV_CHIP_GEFORCE2_MX_100,    RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE2_GO,        NV_CHIP_GEFORCE2_GO,        RES_SHARED_VGA},
-    {NV_CHIP_QUADRO2_MXR,        NV_CHIP_QUADRO2_MXR,        RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE2_GTS,       NV_CHIP_GEFORCE2_GTS,       RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE2_TI,        NV_CHIP_GEFORCE2_TI,        RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE2_ULTRA,     NV_CHIP_GEFORCE2_ULTRA,     RES_SHARED_VGA},
-    {NV_CHIP_QUADRO2_PRO,        NV_CHIP_QUADRO2_PRO,        RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE4_MX_460,    NV_CHIP_GEFORCE4_MX_460,    RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE4_MX_440,    NV_CHIP_GEFORCE4_MX_440,    RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE4_MX_420,    NV_CHIP_GEFORCE4_MX_420,    RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE4_440_GO,    NV_CHIP_GEFORCE4_440_GO,    RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE4_420_GO,    NV_CHIP_GEFORCE4_420_GO,    RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE4_420_GO_M32,NV_CHIP_GEFORCE4_420_GO_M32,RES_SHARED_VGA},
-    {NV_CHIP_QUADRO4_500XGL,     NV_CHIP_QUADRO4_500XGL,     RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE4_440_GO_M64,NV_CHIP_GEFORCE4_440_GO_M64,RES_SHARED_VGA},
-    {NV_CHIP_QUADRO4_200,        NV_CHIP_QUADRO4_200,        RES_SHARED_VGA},
-    {NV_CHIP_QUADRO4_550XGL,     NV_CHIP_QUADRO4_550XGL,     RES_SHARED_VGA},
-    {NV_CHIP_QUADRO4_500_GOGL,   NV_CHIP_QUADRO4_500_GOGL,   RES_SHARED_VGA},
-    {NV_CHIP_0x0177,             NV_CHIP_0x0177,             RES_SHARED_VGA},
-    {NV_CHIP_0x017D,             NV_CHIP_0x017D,             RES_SHARED_VGA},
-    {NV_CHIP_0x0181,             NV_CHIP_0x0181,             RES_SHARED_VGA},
-    {NV_CHIP_0x0182,             NV_CHIP_0x0182,             RES_SHARED_VGA},
-    {NV_CHIP_0x0183,             NV_CHIP_0x0183,             RES_SHARED_VGA},
-    {NV_CHIP_0x0186,             NV_CHIP_0x0186,             RES_SHARED_VGA},
-    {NV_CHIP_0x0187,             NV_CHIP_0x0187,             RES_SHARED_VGA},
-    {NV_CHIP_0x0188,             NV_CHIP_0x0188,             RES_SHARED_VGA},
-    {NV_CHIP_0x018A,             NV_CHIP_0x018A,             RES_SHARED_VGA},
-    {NV_CHIP_0x018B,             NV_CHIP_0x018B,             RES_SHARED_VGA},
-    {NV_CHIP_IGEFORCE2,          NV_CHIP_IGEFORCE2,          RES_SHARED_VGA},
-    {NV_CHIP_0x01F0,             NV_CHIP_0x01F0,             RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE3,           NV_CHIP_GEFORCE3,           RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE3_TI_200,    NV_CHIP_GEFORCE3_TI_200,    RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE3_TI_500,    NV_CHIP_GEFORCE3_TI_500,    RES_SHARED_VGA},
-    {NV_CHIP_QUADRO_DCC,         NV_CHIP_QUADRO_DCC,         RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE4_TI_4600,   NV_CHIP_GEFORCE4_TI_4600,   RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE4_TI_4400,   NV_CHIP_GEFORCE4_TI_4400,   RES_SHARED_VGA},
-    {NV_CHIP_GEFORCE4_TI_4200,   NV_CHIP_GEFORCE4_TI_4200,   RES_SHARED_VGA},
-    {NV_CHIP_QUADRO4_900XGL,     NV_CHIP_QUADRO4_900XGL,     RES_SHARED_VGA},
-    {NV_CHIP_QUADRO4_750XGL,     NV_CHIP_QUADRO4_750XGL,     RES_SHARED_VGA},
-    {NV_CHIP_QUADRO4_700XGL,     NV_CHIP_QUADRO4_700XGL,     RES_SHARED_VGA},
-    {NV_CHIP_0x025A,             NV_CHIP_0x025A,             RES_SHARED_VGA},
-    {NV_CHIP_0x0280,             NV_CHIP_0x0280,             RES_SHARED_VGA},
-    {NV_CHIP_0x0281,             NV_CHIP_0x0281,             RES_SHARED_VGA},
-    {NV_CHIP_0x0282,             NV_CHIP_0x0282,             RES_SHARED_VGA},
-    {NV_CHIP_0x0286,             NV_CHIP_0x0286,             RES_SHARED_VGA},
-    {NV_CHIP_0x0288,             NV_CHIP_0x0288,             RES_SHARED_VGA},
-    {NV_CHIP_0x0289,             NV_CHIP_0x0289,             RES_SHARED_VGA},
-    {NV_CHIP_0x028C,             NV_CHIP_0x028C,             RES_SHARED_VGA},
-    {NV_CHIP_0x0300,             NV_CHIP_0x0300,             RES_SHARED_VGA},
-    {NV_CHIP_0x0301,             NV_CHIP_0x0301,             RES_SHARED_VGA},
-    {NV_CHIP_0x0302,             NV_CHIP_0x0302,             RES_SHARED_VGA},
-    {NV_CHIP_0x0308,             NV_CHIP_0x0308,             RES_SHARED_VGA},
-    {NV_CHIP_0x0309,             NV_CHIP_0x0309,             RES_SHARED_VGA},
-    { -1,                       -1,                          RES_UNDEFINED  }
-};
 
 /*
  * List of symbols from other modules that this module references.  This
@@ -474,9 +407,11 @@ NVAvailableOptions(int chipid, int busid)
 static void
 NVIdentify(int flags)
 {
-    xf86PrintChipsets(NV_NAME, "driver for NVIDIA chipsets", NVChipsets);
+    xf86PrintChipsets(NV_NAME, "driver for NVIDIA chipsets", NVKnownChipsets);
 }
 
+
+#define MAX_CHIPS MAXSCREENS
 
 /* Mandatory */
 static Bool
@@ -485,65 +420,78 @@ NVProbe(DriverPtr drv, int flags)
     int i;
     GDevPtr *devSections;
     int *usedChips;
+    SymTabRec NVChipsets[MAX_CHIPS + 1];
+    PciChipsets NVPciChipsets[MAX_CHIPS + 1];
+    pciVideoPtr *ppPci;
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;
 
-    /*
-     * The aim here is to find all cards that this driver can handle,
-     * and for the ones not already claimed by another driver, claim the
-     * slot, and allocate a ScrnInfoRec.
-     *
-     * This should be a minimal probe, and it should under no circumstances
-     * change the state of the hardware.  Because a device is found, don't
-     * assume that it will be used.  Don't do any initialisations other than
-     * the required ScrnInfoRec initialisations.  Don't allocate any new
-     * data structures.
-     */
 
-    /*
-     * Check if there has been a chipset override in the config file.
-     * For this we must find out if there is an active device section which
-     * is relevant, i.e., which has no driver specified or has THIS driver
-     * specified.
-     */
+    if ((numDevSections = xf86MatchDevice(NV_DRIVER_NAME, &devSections)) <= 0) 
+        return FALSE;  /* no matching device section */
 
-    if ((numDevSections = xf86MatchDevice(NV_DRIVER_NAME,
-                                          &devSections)) <= 0) {
-        /*
-         * There's no matching device section in the config file, so quit
-         * now.
-         */
-        return FALSE;
+    if (!(ppPci = xf86GetPciVideoInfo())) 
+        return FALSE;  /* no PCI cards found */
+
+    numUsed = 0;
+
+    /* Create the NVChipsets and NVPciChipsets from found devices */
+    while (*ppPci && (numUsed < MAX_CHIPS)) {
+        if(((*ppPci)->vendor == PCI_VENDOR_NVIDIA_SGS) || 
+           ((*ppPci)->vendor == PCI_VENDOR_NVIDIA)) 
+        {
+            SymTabRec *nvchips = NVKnownChipsets;
+            int token = ((*ppPci)->vendor << 16) | (*ppPci)->chipType;
+
+            while(nvchips->name) {
+               if(token == nvchips->token)
+                  break;
+               nvchips++;
+            }
+
+            if(nvchips->name) { /* found one */
+               NVChipsets[numUsed].token = nvchips->token;
+               NVChipsets[numUsed].name = nvchips->name;
+               NVPciChipsets[numUsed].numChipset = nvchips->token;
+               NVPciChipsets[numUsed].PCIid = nvchips->token;
+               NVPciChipsets[numUsed].resList = RES_SHARED_VGA;
+               numUsed++;
+            } else if ((*ppPci)->vendor == PCI_VENDOR_NVIDIA) {
+               /* look for a compatible devices which may be newer than 
+                  the NVKnownChipsets list above.  */
+               switch(token & 0xfff0) {
+               case 0x0170:   
+               case 0x0180:
+               case 0x0250:
+               case 0x0280:
+               case 0x0300:
+                   NVChipsets[numUsed].token = token;
+                   NVChipsets[numUsed].name = "Unknown NVIDIA chip";
+                   NVPciChipsets[numUsed].numChipset = token;
+                   NVPciChipsets[numUsed].PCIid = token;
+                   NVPciChipsets[numUsed].resList = RES_SHARED_VGA;
+                   numUsed++;
+                   break;
+               default:  break;  /* we don't recognize it */
+               }
+            }
+        }
+        ppPci++;
     }
 
-    /*
-     * We need to probe the hardware first.  We then need to see how this
-     * fits in with what is given in the config file, and allow the config
-     * file info to override any contradictions.
-     */
+    /* terminate the list */
+    NVChipsets[numUsed].token = -1;
+    NVChipsets[numUsed].name = NULL; 
+    NVPciChipsets[numUsed].numChipset = -1;
+    NVPciChipsets[numUsed].PCIid = -1;
+    NVPciChipsets[numUsed].resList = RES_UNDEFINED;
 
-    /*
-     * All of the cards this driver supports are PCI, so the "probing" just
-     * amounts to checking the PCI data that the server has already collected.
-     */
-    if (xf86GetPciVideoInfo() == NULL) {
-        /*
-         * We won't let anything in the config file override finding no
-         * PCI video cards at all.  This seems reasonable now, but we'll see.
-         */
-        return FALSE;
-    }
-
-    /* This should match both vendors, PCI_VENDOR_NVIDIA_SGS and
-       PCI_VENDOR_NVIDIA, see above */
     numUsed = xf86MatchPciInstances(NV_NAME, 0, NVChipsets, NVPciChipsets,
                                     devSections, numDevSections, drv,
                                     &usedChips);
                         
-    /* Free it since we don't need that list after this */
-    xfree(devSections);
-    if (numUsed <= 0)
+    if (numUsed <= 0) 
         return FALSE;
 
     if (flags & PROBE_DETECT)
@@ -572,7 +520,10 @@ NVProbe(DriverPtr drv, int flags)
 	    foundScreen = TRUE;
 	}    
     }
+
+    xfree(devSections);
     xfree(usedChips);
+
     return foundScreen;
 }
 
@@ -954,18 +905,22 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
      */
     if (pNv->pEnt->device->chipset && *pNv->pEnt->device->chipset) {
 	pScrn->chipset = pNv->pEnt->device->chipset;
-        pNv->Chipset = xf86StringToToken(NVChipsets, pScrn->chipset);
+        pNv->Chipset = xf86StringToToken(NVKnownChipsets, pScrn->chipset);
         from = X_CONFIG;
     } else if (pNv->pEnt->device->chipID >= 0) {
 	pNv->Chipset = pNv->pEnt->device->chipID;
-	pScrn->chipset = (char *)xf86TokenToString(NVChipsets, pNv->Chipset);
+	pScrn->chipset = (char *)xf86TokenToString(NVKnownChipsets, 
+                                                   pNv->Chipset);
 	from = X_CONFIG;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
 		   pNv->Chipset);
     } else {
 	from = X_PROBED;
-	pNv->Chipset = (pNv->PciInfo->vendor << 16) |pNv->PciInfo->chipType;
-	pScrn->chipset = (char *)xf86TokenToString(NVChipsets, pNv->Chipset);
+	pNv->Chipset = (pNv->PciInfo->vendor << 16) | pNv->PciInfo->chipType;
+	pScrn->chipset = (char *)xf86TokenToString(NVKnownChipsets, 
+                                                   pNv->Chipset);
+        if(!pScrn->chipset)
+          pScrn->chipset = "Unknown NVIDIA chipset";
     }
     if (pNv->pEnt->device->chipRev >= 0) {
 	pNv->ChipRev = pNv->pEnt->device->chipRev;
@@ -1012,7 +967,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
                 /* OK */
                 break;
             case 16:
-                if(pNv->Chipset == NV_CHIP_RIVA_128) {
+                if((pNv->Chipset & 0xffff) == 0x0018) {
                     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                         "The Riva 128 chipset does not support depth 16.  "
 			"Using depth 15 instead\n");

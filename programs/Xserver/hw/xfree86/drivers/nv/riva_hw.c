@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.36 2002/11/08 22:00:14 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.37 2002/11/26 23:41:59 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1278,8 +1278,8 @@ static void CalcStateExt
             break;
         case NV_ARCH_10:
         case NV_ARCH_20:
-            if((chip->Chipset == NV_CHIP_IGEFORCE2) ||
-               (chip->Chipset == NV_CHIP_0x01F0))
+            if(((chip->Chipset & 0xffff) == 0x01A0) ||
+               ((chip->Chipset & 0xffff) == 0x01f0))
             {
                 nForceUpdateArbitrationSettings(VClk,
                                           pixelDepth * 8,
@@ -1962,11 +1962,11 @@ static void nv10GetConfig
     /*
      * Fill in chip configuration.
      */
-    if(pNv->Chipset == NV_CHIP_IGEFORCE2) {
+    if((pNv->Chipset && 0xffff) == 0x01a0) {
 	int amt = pciReadLong(pciTag(0, 0, 1), 0x7C);
 
         chip->RamAmountKBytes = (((amt >> 6) & 31) + 1) * 1024;
-    } else if(pNv->Chipset == NV_CHIP_0x01F0) {
+    } else if((pNv->Chipset & 0xffff) == 0x01f0) {
         int amt = pciReadLong(pciTag(0, 0, 1), 0x84);
 
         chip->RamAmountKBytes = (((amt >> 4) & 127) + 1) * 1024;
