@@ -1,3 +1,6 @@
+XCOMM $XFree86: $ 
+XCOMM
+
 #include <Server.tmpl>
 
 #if defined(LinuxArchitecture) && defined(AlphaArchitecture)

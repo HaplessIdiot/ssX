@@ -1,3 +1,6 @@
+XCOMM $XFree86: $
+XCOMM
+XCOMM
 XCOMM This is the Imakefile for the server-specific subdirectories
 XCOMM (egc, ganbwap, nkvnec, pegc, trident, wabep, wabs, wsna). It is
 XCOMM included from the Imakefiles in these directories. VGADEFINES
