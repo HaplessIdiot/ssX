@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.12 2001/01/16 05:11:09 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.13 2001/01/21 21:19:19 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -474,7 +474,7 @@ do {									\
 	       (n) * (int)sizeof(CARD32) > RING_THRESHOLD ) {		\
       RADEONCPFlushIndirect( pScrn );					\
    }									\
-   __head = (CARD32 *)((char *)info->indirectBuffer->address +		\
+   __head = (pointer)((char *)info->indirectBuffer->address +		\
 		       info->indirectBuffer->used);			\
    __count = 0;								\
 } while (0)

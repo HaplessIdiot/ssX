@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.4 2000/12/02 01:16:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.5 2000/12/14 02:51:40 dawes Exp $ */
 
 /*
  *
@@ -14,21 +14,20 @@
 #define DEBUG
 #endif
 
-#include <xf86.h>
-#include <xf86_OSproc.h>
-#include <xf86_ansic.h>
-#include <xf86_libc.h>
+#include "xf86.h"
+#include "xf86_OSproc.h"
+#include "xf86_ansic.h"
 
-#include <xf86PciInfo.h>
-#include <xf86Pci.h>
+#include "xf86PciInfo.h"
+#include "xf86Pci.h"
 
-#include <compiler.h>
+#include "compiler.h"
 
-#include <miline.h>
+#include "miline.h"
 
-#include <xaa.h>
-#include <xaalocal.h>
-#include <xf86fbman.h>
+#include "xaa.h"
+#include "xaalocal.h"
+#include "xf86fbman.h"
 
 #include "sis.h"
 #include "sis300_accel.h"

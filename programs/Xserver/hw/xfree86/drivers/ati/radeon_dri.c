@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.3 2001/01/16 05:11:10 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.4 2001/01/21 21:19:20 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -362,22 +362,23 @@ static CARD32 radeon_mba_z32(RADEONInfoPtr info,
 
 /* 16-bit depth buffer functions */
 #define WRITE_DEPTH16(_x, _y, d)					\
-    *(CARD16 *)(buf + radeon_mba_z16(info, (_x), (_y))) = (d)
+    *(CARD16 *)(pointer)(buf + radeon_mba_z16(info, (_x), (_y))) = (d)
 
 #define READ_DEPTH16(d, _x, _y)						\
-    (d) = *(CARD16 *)(buf + radeon_mba_z16(info, (_x), (_y)))
+    (d) = *(CARD16 *)(pointer)(buf + radeon_mba_z16(info, (_x), (_y)))
 
 /* 24 bit depth, 8 bit stencil depthbuffer functions */
 #define WRITE_DEPTH32(_x, _y, d)					\
 do {									\
-    CARD32 tmp = *(CARD32 *)(buf + radeon_mba_z32(info, (_x), (_y)));	\
+    CARD32 tmp =							\
+	*(CARD32 *)(pointer)(buf + radeon_mba_z32(info, (_x), (_y)));	\
     tmp &= 0xff000000;							\
     tmp |= ((d) & 0x00ffffff);						\
-    *(CARD32 *)(buf + radeon_mba_z32(info, (_x), (_y))) = tmp;		\
+    *(CARD32 *)(pointer)(buf + radeon_mba_z32(info, (_x), (_y))) = tmp;	\
 } while (0)
 
 #define READ_DEPTH32(d, _x, _y)						\
-    d = *(CARD32 *)(buf + radeon_mba_z32(info, (_x), (_y))) & 0x00ffffff
+    d = *(CARD32 *)(pointer)(buf + radeon_mba_z32(info, (_x), (_y))) & 0x00ffffff
 
 /* Screen to screen copy of data in the depth buffer */
 static void RADEONScreenToScreenCopyDepth(ScrnInfoPtr pScrn,

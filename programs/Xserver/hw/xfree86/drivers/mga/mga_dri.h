@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.h,v 1.2 2000/06/17 00:03:19 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.h,v 1.3 2000/06/22 03:58:25 tsi Exp $ */
 
 #ifndef _MGA_DRI_
 #define _MGA_DRI_
 
-#include <xf86drm.h>
-#include <xf86drmMga.h>
+#include "xf86drm.h"
+#include "xf86drmMga.h"
 
 #define MGA_MAX_DRAWABLES 256
 

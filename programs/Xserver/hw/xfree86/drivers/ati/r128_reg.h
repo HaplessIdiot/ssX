@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.8 2001/01/08 01:07:35 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.9 2001/01/16 05:11:07 martin Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -59,7 +59,7 @@
 #define OUTREG16(addr, val) MMIO_OUT16(R128MMIO, addr, val)
 #define OUTREG(addr, val)   MMIO_OUT32(R128MMIO, addr, val)
 
-#define ADDRREG(addr)       ((volatile CARD32 *)(R128MMIO + (addr)))
+#define ADDRREG(addr)       ((volatile CARD32 *)(pointer)(R128MMIO + (addr)))
 
 
 #define OUTREGP(addr, val, mask)   \
