@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.12 1999/05/22 09:59:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.13 1999/06/05 15:55:23 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -25,7 +25,7 @@ static Bool ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p);
  * This function requires that the following have been initialised:
  *
  *	pScrn->confScreen
- *	pScrn->device
+ *	pScrn->Entities[i]->device
  *	pScrn->display
  *	pScrn->monitor
  *
@@ -42,10 +42,22 @@ xf86CollectOptions(ScrnInfoPtr pScrn, pointer extraOpts)
 {
     XF86OptionPtr tmp;
     XF86OptionPtr extras = (XF86OptionPtr)extraOpts;
+    EntityInfoPtr pEnt;
+    
+    int i;
 
     pScrn->options = NULL;
-    if (pScrn->device->options) {
-	pScrn->options = OptionListDup(pScrn->device->options);
+
+    for (i=pScrn->numEntities - 1; i >= 0; i--) {
+	pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
+	if (pEnt->device && pEnt->device->options) {
+	    tmp = OptionListDup(pEnt->device->options);
+	    if (pScrn->options)
+		OptionListMerge(pScrn->options,tmp);
+	    else
+		pScrn->options = tmp;
+	}
+	xfree(pEnt);
     }
     if (pScrn->monitor->options) {
 	tmp = OptionListDup(pScrn->monitor->options);

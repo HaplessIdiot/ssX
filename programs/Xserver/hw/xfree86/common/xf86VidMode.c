@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.2 1999/03/07 13:38:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.3 1999/03/14 11:17:57 dawes Exp $ */
 
 /*
  * This file contains the VidMode functions required by the extension.
@@ -320,7 +320,8 @@ Bool
 VidModeSwitchMode(int scrnIndex, pointer mode)
 {
     ScrnInfoPtr pScrn;
-
+    Bool tmp;
+    
     DEBUG_P("VidModeSwitchMode");
 
     if ((mode == NULL) || (!VidModeAvailable(scrnIndex)))
@@ -332,7 +333,10 @@ VidModeSwitchMode(int scrnIndex, pointer mode)
 
     if (pScrn->SwitchMode == NULL) return FALSE;
 
-    if (pScrn->SwitchMode(scrnIndex, (DisplayModePtr)mode, 0)) {
+    xf86EnterServerState(SETUP);
+    tmp = pScrn->SwitchMode(scrnIndex, (DisplayModePtr)mode, 0);
+    xf86EnterServerState(OPERATING);
+    if (tmp) {
 	/* 
 	 * adjust new frame for the displaysize
 	 */

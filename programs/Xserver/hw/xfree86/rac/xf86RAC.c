@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/rac/xf86RAC.c,v 1.2 1998/10/05 13:23:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/rac/xf86RAC.c,v 1.3 1999/01/14 13:05:19 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -15,13 +15,17 @@
 #include "windowstr.h"
 #include "window.h"
 #include "xf86str.h"
+#include "xf86Privstr.h"
+#include "xf86Priv.h"
 #include "xf86RAC.h"
 #include "mipointer.h"
 #include "mipointrst.h"
 
 #ifdef DEBUG
+#define DPRINT_S(x,y) ErrorF(x ": %i\n",y);
 #define DPRINT(x) ErrorF(x "\n");
 #else
+#define DPRINT_S(x,y)
 #define DPRINT(x)
 #endif
 
@@ -62,14 +66,17 @@
 #define GC_WRAP(x) pGCPriv->wrapOps = (x)->ops;\
 		 pGCPriv->wrapFuncs = (x)->funcs;\
                            (x)->ops = &RACGCOps;\
-			 (x)->funcs = &RACGCFuncs;
+                         (x)->funcs = &RACGCFuncs;
 #define GC_UNWRAP(x)\
            RACGCPtr  pGCPriv = (RACGCPtr) (x)->devPrivates[RACGCIndex].ptr;\
-                     (x)->ops = pGCPriv->wrapOps;\
-		   (x)->funcs = pGCPriv->wrapFuncs;
+                    (x)->ops = pGCPriv->wrapOps;\
+	          (x)->funcs = pGCPriv->wrapFuncs;
 
-#define ENABLE xf86EnableAccess(&(xf86Screens[pScreen->myNum]->Access))
-#define ENABLE_GC xf86EnableAccess(&(xf86Screens[pGC->pScreen->myNum]->Access))
+#define GC_SCREEN register ScrnInfoPtr pScrn \
+                           = xf86Screens[pGC->pScreen->myNum]
+
+#define ENABLE xf86EnableAccess(xf86Screens[pScreen->myNum])
+#define ENABLE_GC  xf86EnableAccess(xf86Screens[pGC->pScreen->myNum])
 
 typedef struct _RACScreen {
     CreateGCProcPtr 		CreateGC;
@@ -234,12 +241,14 @@ static unsigned long RACGeneration = 0;
 Bool 
 xf86RACInit(ScreenPtr pScreen, unsigned int flag)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    ScrnInfoPtr pScrn;
     RACScreenPtr pScreenPriv;
-    miPointerScreenPtr PointPriv
-	= (miPointerScreenPtr)pScreen->devPrivates[miPointerScreenIndex].ptr;
-    
-    DPRINT("RACInit");
+    miPointerScreenPtr PointPriv;
+
+    pScrn = xf86Screens[pScreen->myNum];
+    PointPriv = (miPointerScreenPtr)pScreen->devPrivates[miPointerScreenIndex].ptr;
+
+    DPRINT_S("RACInit",pScreen->myNum);
     if (RACGeneration != serverGeneration) {
 	if (	((RACScreenIndex = AllocateScreenPrivateIndex()) < 0) ||
 		((RACGCIndex = AllocateGCPrivateIndex()) < 0))
@@ -275,7 +284,7 @@ xf86RACInit(ScreenPtr pScreen, unsigned int flag)
     WRAP_SCREEN_COND(UnrealizeCursor, RACUnrealizeCursor, RAC_CURSOR);
     WRAP_SCREEN_COND(RecolorCursor, RACRecolorCursor, RAC_CURSOR);
     WRAP_SCREEN_COND(SetCursorPosition, RACSetCursorPosition, RAC_CURSOR);
-    WRAP_SCREEN_INFO(AdjustFrame, RACAdjustFrame);
+    WRAP_SCREEN_INFO_COND(AdjustFrame, RACAdjustFrame, RAC_VIEWPORT);
     WRAP_SCREEN_INFO(SwitchMode, RACSwitchMode);
     WRAP_SCREEN_INFO(EnterVT, RACEnterVT);
     WRAP_SCREEN_INFO(LeaveVT, RACLeaveVT);
@@ -295,7 +304,7 @@ RACCloseScreen (int i, ScreenPtr pScreen)
     miPointerScreenPtr PointPriv
 	= (miPointerScreenPtr)pScreen->devPrivates[miPointerScreenIndex].ptr;
     
-    DPRINT("RACCloseScreen");
+    DPRINT_S("RACCloseScreen",pScreen->myNum);
     UNWRAP_SCREEN(CreateGC);
     UNWRAP_SCREEN(CloseScreen);
     UNWRAP_SCREEN(GetImage);
@@ -323,6 +332,10 @@ RACCloseScreen (int i, ScreenPtr pScreen)
         
     xfree ((pointer) pScreenPriv);
 
+    if (xf86Screens[pScreen->myNum]->vtSema) {
+	xf86EnterServerState(SETUP);
+	ENABLE;
+    }
     return (*pScreen->CloseScreen) (i, pScreen);
 }
 
@@ -336,7 +349,7 @@ RACGetImage (
     )
 {
     ScreenPtr pScreen = pDrawable->pScreen;
-    DPRINT("RACGetImage");
+    DPRINT_S("RACGetImage",pScreen->myNum);
     SCREEN_PROLOG(GetImage);
     if (xf86Screens[pScreen->myNum]->vtSema && 
        (pDrawable->type == DRAWABLE_WINDOW)) {
@@ -359,10 +372,9 @@ RACGetSpans (
 {
     ScreenPtr	    pScreen = pDrawable->pScreen;
 
-    DPRINT("RACGetSpans");
+    DPRINT_S("RACGetSpans",pScreen->myNum);
     SCREEN_PROLOG (GetSpans);
-    if (xf86Screens[pScreen->myNum]->vtSema && 
-       (pDrawable->type == DRAWABLE_WINDOW)) {
+    if (pDrawable->type == DRAWABLE_WINDOW) {
 	ENABLE;
     }
     (*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
@@ -375,11 +387,9 @@ RACSourceValidate (
     int	x, int y, int width, int height )
 {
     ScreenPtr	pScreen = pDrawable->pScreen;
-    DPRINT("RACSourceValidate");
+    DPRINT_S("RACSourceValidate",pScreen->myNum);
     SCREEN_PROLOG (SourceValidate);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     if (pScreen->SourceValidate)
 	(*pScreen->SourceValidate) (pDrawable, x, y, width, height);
     SCREEN_EPILOG (SourceValidate, RACSourceValidate);
@@ -394,11 +404,9 @@ RACPaintWindowBackground(
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
-    DPRINT("RACPaintWindowBackground");
+    DPRINT_S("RACPaintWindowBackground",pScreen->myNum);
     SCREEN_PROLOG (PaintWindowBackground);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     (*pScreen->PaintWindowBackground) (pWin, prgn, what);
     SCREEN_EPILOG (PaintWindowBackground, RACPaintWindowBackground);
 }
@@ -412,11 +420,9 @@ RACPaintWindowBorder(
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
-    DPRINT("RACPaintWindowBorder");
+    DPRINT_S("RACPaintWindowBorder",pScreen->myNum);
     SCREEN_PROLOG (PaintWindowBorder);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     (*pScreen->PaintWindowBorder) (pWin, prgn, what);
     SCREEN_EPILOG (PaintWindowBorder, RACPaintWindowBorder);
 }
@@ -429,11 +435,9 @@ RACCopyWindow(
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
-    DPRINT("RACCopyWindow");
+    DPRINT_S("RACCopyWindow",pScreen->myNum);
     SCREEN_PROLOG (CopyWindow);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     (*pScreen->CopyWindow) (pWin, ptOldOrg, prgnSrc);
     SCREEN_EPILOG (CopyWindow, RACCopyWindow);
 }
@@ -447,11 +451,9 @@ RACClearToBackground (
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
-    DPRINT("RACClearToBackground");
+    DPRINT_S("RACClearToBackground",pScreen->myNum);
     SCREEN_PROLOG ( ClearToBackground);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     (*pScreen->ClearToBackground) (pWin, x, y, w, h, generateExposures);
     SCREEN_EPILOG (ClearToBackground, RACClearToBackground);
 }
@@ -466,11 +468,9 @@ RACSaveAreas (
     )
 {
     ScreenPtr pScreen = pPixmap->drawable.pScreen;
-    DPRINT("RACSaveAreas");
+    DPRINT_S("RACSaveAreas",pScreen->myNum);
     SCREEN_PROLOG (BackingStoreFuncs.SaveAreas);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     (*pScreen->BackingStoreFuncs.SaveAreas) (
 	pPixmap, prgnSave, xorg, yorg, pWin);
 
@@ -488,11 +488,9 @@ RACRestoreAreas (
 {
     ScreenPtr pScreen = pPixmap->drawable.pScreen;
 
-    DPRINT("RACRestoreAreas");
+    DPRINT_S("RACRestoreAreas",pScreen->myNum);
     SCREEN_PROLOG (BackingStoreFuncs.RestoreAreas);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     (*pScreen->BackingStoreFuncs.RestoreAreas) (
 	pPixmap, prgnRestore, xorg, yorg, pWin);
 
@@ -504,11 +502,9 @@ RACCreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
 {
     PixmapPtr pPix;
 
-    DPRINT("RACCreatePixmap");
+    DPRINT_S("RACCreatePixmap",pScreen->myNum);
     SCREEN_PROLOG ( CreatePixmap);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     pPix = (*pScreen->CreatePixmap) (pScreen, w, h, depth);
     SCREEN_EPILOG (CreatePixmap, RACCreatePixmap);
 
@@ -520,11 +516,9 @@ RACSaveScreen(ScreenPtr pScreen, Bool unblank)
 {
     Bool val;
 
-    DPRINT("RACSaveScreen");
+    DPRINT_S("RACSaveScreen",pScreen->myNum);
     SCREEN_PROLOG (SaveScreen);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     val = (*pScreen->SaveScreen) (pScreen, unblank);
     SCREEN_EPILOG (SaveScreen, RACSaveScreen);
 
@@ -539,11 +533,9 @@ RACStoreColors (
 {
     ScreenPtr pScreen = pmap->pScreen;
 
-    DPRINT("RACStoreColors");
+    DPRINT_S("RACStoreColors",pScreen->myNum);
     SCREEN_PROLOG (StoreColors);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     (*pScreen->StoreColors) (pmap,ndef,pdefs);
 
     SCREEN_EPILOG ( StoreColors, RACStoreColors);
@@ -556,11 +548,9 @@ RACRecolorCursor (
     Bool displayed
     )
 {
-    DPRINT("RACRecolorCursor");
+    DPRINT_S("RACRecolorCursor",pScreen->myNum);
     SCREEN_PROLOG (RecolorCursor);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     (*pScreen->RecolorCursor) (pScreen,pCurs,displayed);
     
     SCREEN_EPILOG ( RecolorCursor, RACRecolorCursor);
@@ -574,11 +564,9 @@ RACRealizeCursor (
 {
     Bool val;
 
-    DPRINT("RACRealizeCursor");
+    DPRINT_S("RACRealizeCursor",pScreen->myNum);
     SCREEN_PROLOG (RealizeCursor);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     val = (*pScreen->RealizeCursor) (pScreen,pCursor);
     
     SCREEN_EPILOG ( RealizeCursor, RACRealizeCursor);
@@ -593,11 +581,9 @@ RACUnrealizeCursor (
 {
     Bool val;
 
-    DPRINT("RACUnrealizeCursor");
+    DPRINT_S("RACUnrealizeCursor",pScreen->myNum);
     SCREEN_PROLOG (UnrealizeCursor);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     val = (*pScreen->UnrealizeCursor) (pScreen,pCursor);
     
     SCREEN_EPILOG ( UnrealizeCursor, RACUnrealizeCursor);
@@ -612,11 +598,9 @@ RACDisplayCursor (
 {
     Bool val;
 
-    DPRINT("RACDisplayCursor");
+    DPRINT_S("RACDisplayCursor",pScreen->myNum);
     SCREEN_PROLOG (DisplayCursor);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     val = (*pScreen->DisplayCursor) (pScreen,pCursor);
     
     SCREEN_EPILOG ( DisplayCursor, RACDisplayCursor);
@@ -631,11 +615,9 @@ RACSetCursorPosition (
 {
     Bool val;
 
-    DPRINT("RACSetCursorPosition");
+    DPRINT_S("RACSetCursorPosition",pScreen->myNum);
     SCREEN_PROLOG (SetCursorPosition);
-    if (xf86Screens[pScreen->myNum]->vtSema) {
-	ENABLE;
-    }
+    ENABLE;
     val = (*pScreen->SetCursorPosition) (pScreen,x,y,generateEvent);
     
     SCREEN_EPILOG ( SetCursorPosition, RACSetCursorPosition);
@@ -649,8 +631,8 @@ RACAdjustFrame(int index, int x, int y, int flags)
     RACScreenPtr pScreenPriv =
 	(RACScreenPtr) pScreen->devPrivates[RACScreenIndex].ptr;
 
-    DPRINT("RACAdjustFrame");
-    xf86EnableAccess(&(xf86Screens[index]->Access));
+    DPRINT_S("RACAdjustFrame",index);
+    xf86EnableAccess(xf86Screens[index]);
 
     (*pScreenPriv->AdjustFrame)(index, x, y, flags);
 }
@@ -662,8 +644,8 @@ RACSwitchMode(int index, DisplayModePtr mode, int flags)
     RACScreenPtr pScreenPriv =
 	(RACScreenPtr) pScreen->devPrivates[RACScreenIndex].ptr;
 
-    DPRINT("RACSwitchMode");
-    xf86EnableAccess(&(xf86Screens[index]->Access));
+    DPRINT_S("RACSwitchMode",index);
+    xf86EnableAccess(xf86Screens[index]);
 
     return (*pScreenPriv->SwitchMode)(index, mode, flags);
 }
@@ -675,8 +657,8 @@ RACEnterVT(int index, int flags)
     RACScreenPtr pScreenPriv =
 	(RACScreenPtr) pScreen->devPrivates[RACScreenIndex].ptr;
 
-    DPRINT("RACEnterVT");
-    xf86EnableAccess(&(xf86Screens[index]->Access));
+    DPRINT_S("RACEnterVT",index);
+    xf86EnableAccess(xf86Screens[index]);
 
     return (*pScreenPriv->EnterVT)(index, flags);
 }
@@ -688,8 +670,8 @@ RACLeaveVT(int index, int flags)
     RACScreenPtr pScreenPriv =
 	(RACScreenPtr) pScreen->devPrivates[RACScreenIndex].ptr;
 
-    DPRINT("RACLeaveVT");
-    xf86EnableAccess(&(xf86Screens[index]->Access));
+    DPRINT_S("RACLeaveVT",index);
+    xf86EnableAccess(xf86Screens[index]);
 
     (*pScreenPriv->LeaveVT)(index, flags);
 }
@@ -701,8 +683,8 @@ RACFreeScreen(int index, int flags)
     RACScreenPtr pScreenPriv =
 	(RACScreenPtr) pScreen->devPrivates[RACScreenIndex].ptr;
 
-    DPRINT("RACFreeScreen");
-    xf86EnableAccess(&(xf86Screens[index]->Access));
+    DPRINT_S("RACFreeScreen",index);
+    xf86EnableAccess(xf86Screens[index]);
 
     (*pScreenPriv->FreeScreen)(index, flags);
 }
@@ -714,7 +696,7 @@ RACCreateGC(GCPtr pGC)
     RACGCPtr     pGCPriv = (RACGCPtr) (pGC)->devPrivates[RACGCIndex].ptr;
     Bool         ret;
 
-    DPRINT("RACCreateGC");
+    DPRINT_S("RACCreateGC",pScreen->myNum);
     SCREEN_PROLOG(CreateGC);
 
     ret = (*pScreen->CreateGC)(pGC);
@@ -867,7 +849,7 @@ RACCopyArea(
 
     GC_UNWRAP(pGC);
     DPRINT("RACCopyArea");
-    if ((pSrc == DRAWABLE_WINDOW) || (pDst == DRAWABLE_WINDOW)) {
+    if ((pSrc->type == DRAWABLE_WINDOW) || (pDst->type == DRAWABLE_WINDOW)) {
 	ENABLE_GC;
     }
     ret = (*pGC->ops->CopyArea)(pSrc, pDst,
@@ -890,7 +872,7 @@ RACCopyPlane(
 
     GC_UNWRAP(pGC);
     DPRINT("RACCopyPlane");
-    if ((pSrc == DRAWABLE_WINDOW) || (pDst == DRAWABLE_WINDOW)) {
+    if ((pSrc->type == DRAWABLE_WINDOW) || (pDst->type == DRAWABLE_WINDOW)) {
 	ENABLE_GC;
     }
     ret = (*pGC->ops->CopyPlane)(pSrc, pDst, pGC, srcx, srcy,
@@ -1144,7 +1126,8 @@ RACSpriteRealizeCursor(ScreenPtr pScreen, CursorPtr pCur)
 {
     Bool val;
     SPRITE_PROLOG;
-    DPRINT("RACSpriteRealizeCursor");
+    DPRINT_S("RACSpriteRealizeCursor",pScreen->myNum);
+    ENABLE;
     val = PointPriv->spriteFuncs->RealizeCursor(pScreen, pCur);
     SPRITE_EPILOG;
     return val;
@@ -1155,7 +1138,8 @@ RACSpriteUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCur)
 {
     Bool val;
     SPRITE_PROLOG;
-    DPRINT("RACSpriteUnrealizeCursor");
+    DPRINT_S("RACSpriteUnrealizeCursor",pScreen->myNum);
+    ENABLE;
     val = PointPriv->spriteFuncs->UnrealizeCursor(pScreen, pCur);
     SPRITE_EPILOG;
     return val;
@@ -1165,7 +1149,8 @@ static void
 RACSpriteSetCursor(ScreenPtr pScreen, CursorPtr pCur, int x, int y)
 {
     SPRITE_PROLOG;
-    DPRINT("RACSpriteSetCursor");
+    DPRINT_S("RACSpriteSetCursor",pScreen->myNum);
+    ENABLE;
     PointPriv->spriteFuncs->SetCursor(pScreen, pCur, x, y);
     SPRITE_EPILOG;
 }
@@ -1174,7 +1159,8 @@ static void
 RACSpriteMoveCursor(ScreenPtr pScreen, int x, int y)
 {
     SPRITE_PROLOG;
-    DPRINT("RACSpriteMoveCursor");
+    DPRINT_S("RACSpriteMoveCursor",pScreen->myNum);
+    ENABLE;
     PointPriv->spriteFuncs->MoveCursor(pScreen, x, y);
     SPRITE_EPILOG;
 }

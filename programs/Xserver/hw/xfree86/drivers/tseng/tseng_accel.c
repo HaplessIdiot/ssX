@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.27tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.28 1999/03/14 03:22:06 dawes Exp $ */
 
 
 
@@ -113,7 +113,7 @@ TsengXAAInit(ScreenPtr pScreen)
     pXAAinfo->Flags = PIXMAP_CACHE;
 
 #ifdef TODO
-    if (Tseng_bus != BUS_PCI)
+    if (Tseng_bus != T_BUS_PCI)
 	pXAAinfo->Flags |= COP_FRAMEBUFFER_CONCURRENCY;
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.45 1999/05/23 04:26:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.46 1999/06/06 08:48:47 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -128,6 +128,12 @@ xf86AllocateScreen(DriverPtr drv, int flags)
 #else
     xf86Screens[i]->module = NULL;
 #endif
+    /*
+     * set the initial access state. This will be modified after PreInit.
+     * XXX Or should we do it some other place?
+     */
+    xf86Screens[i]->CurrentAccess = &xf86CurrentAccess;
+    xf86Screens[i]->resourceType = MEM_IO;
     return xf86Screens[i];
 }
 
@@ -176,17 +182,17 @@ xf86DeleteScreen(int scrnIndex, int flags)
     if (pScrn->privates);
 	xfree(pScrn->privates);
 
+    xf86ClearEntityListForScreen(scrnIndex);
+
     xfree(pScrn);
 
     /* Move the other entries down, updating their scrnIndex fields */
     
     xf86NumScreens--;
 
-    xf86DeleteBusSlotsForScreen(scrnIndex);
     for (i = scrnIndex; i < xf86NumScreens; i++) {
 	xf86Screens[i] = xf86Screens[i + 1];
 	xf86Screens[i]->scrnIndex = i;
-	xf86ChangeBusIndex(i + 1, i);
 	/* Also need to take care of the screen layout settings */
     }
 }
@@ -1331,7 +1337,7 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
     /*
      * This is a very important function that matches the device sections
      * as they show up in the config file with the drivers that the server
-     * laods at run time.
+     * loads at run time.
 
      * ChipProbe can call 
      * int xf86MatchDevice(char * drivername, GDevPtr * driversectlist) 
@@ -1426,12 +1432,19 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
 }
 
 #define DEBUG
+struct Inst {
+    pciVideoPtr	pci;
+    GDevPtr		dev;
+    Bool		foundHW;  /* PCIid in list of supported chipsets */
+    Bool		claimed;  /* BusID matches with a device section */
+    int             chip;
+};
+
 int
 xf86MatchPciInstances(const char *driverName, int vendorID, 
 		      SymTabPtr chipsets, PciChipsets *PCIchipsets,
-		      GDevPtr *devList, int numDevs,
-		      GDevPtr **foundDevs, pciVideoPtr **foundPCI, 
-		      int **foundChips)
+		      GDevPtr *devList, int numDevs, DriverPtr drvp,
+		      int **foundEntities)
 {
     int i,j;
     MessageType from;
@@ -1439,9 +1452,8 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     struct Inst {
 	pciVideoPtr	pci;
 	GDevPtr		dev;
-	Bool		foundHW;
-	Bool		claimed;
-	Bool		inuse;
+	Bool		foundHW;  /* PCIid in list of supported chipsets */
+	Bool		claimed;  /* BusID matches with a device section */
         int             chip;
     } *instances = NULL;
     int numClaimedInstances = 0;
@@ -1449,21 +1461,18 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     int numFound = 0;
     SymTabRec *c;
     PciChipsets *id;
-    GDevPtr *retDevs = NULL;
     GDevPtr devBus = NULL;
     GDevPtr dev = NULL;
-    pciVideoPtr *retPCI = NULL;
-    int *retChips = NULL;
+    int *retEntities = NULL;
 
     if (vendorID == 0) {
         for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
 	    for (id = PCIchipsets; id->PCIid != -1; id++) {
 	        if ( (((id->PCIid & 0xFFFF0000) >> 16) == (*ppPci)->vendor) && 
 		     ((id->PCIid & 0x0000FFFF)        == (*ppPci)->chipType)){
-	            numClaimedInstances = ++allocatedInstances;
+	            ++allocatedInstances;
 	            instances = xnfrealloc(instances,
 				  allocatedInstances * sizeof(struct Inst));
-	            instances[allocatedInstances - 1].inuse = TRUE;
 	            instances[allocatedInstances - 1].pci = *ppPci;
 	            instances[allocatedInstances - 1].dev = NULL;
 	            instances[allocatedInstances - 1].claimed = FALSE;
@@ -1476,10 +1485,9 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
 	    for (id = PCIchipsets; id->PCIid != -1; id++) {
 		if (id->PCIid == xf86CheckPciGAType(*ppPci)) {
-		    numClaimedInstances = ++allocatedInstances;
+		    ++allocatedInstances;
 		    instances = xnfrealloc(instances,
 				  allocatedInstances * sizeof(struct Inst));
-		    instances[allocatedInstances - 1].inuse = TRUE;
 		    instances[allocatedInstances - 1].pci = *ppPci;
 		    instances[allocatedInstances - 1].dev = NULL;
 		    instances[allocatedInstances - 1].claimed = FALSE;
@@ -1493,10 +1501,9 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 
 	for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
 	    if ((*ppPci)->vendor == vendorID) {
-		numClaimedInstances = ++allocatedInstances;
+		++allocatedInstances;
 		instances = xnfrealloc(instances,
 			      allocatedInstances * sizeof(struct Inst));
-		instances[allocatedInstances - 1].inuse = TRUE;
 		instances[allocatedInstances - 1].pci = *ppPci;
 		instances[allocatedInstances - 1].dev = NULL;
 		instances[allocatedInstances - 1].claimed = FALSE;
@@ -1527,13 +1534,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     ErrorF("%s instances found: %d\n", driverName, numClaimedInstances);
 #endif
 
-    /*
-     * If a matching device section without BusID is found use it
-     * unless one with matching busID is found. 
-     */    
-    for (i = 0; i< allocatedInstances; i++) {
-	if (!instances[i].inuse)
-	    continue;
+    for (i = 0; i < allocatedInstances; i++) {
 	pPci = instances[i].pci;
 	devBus = NULL;
 	dev = NULL;
@@ -1562,18 +1563,19 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 		    if (dev || devBus)
 			xf86MsgVerb(X_WARNING, 0,
 			    "%s: More than one matching Device section "
-			    "found: %s\n",driverName,devList[j]->identifier);
+			    "found: %s\n", devList[j]->identifier);
 		    else
 			dev = devList[j];
 		}
 	    }
 	}
-	if (devBus) dev = devBus; 
+	if (devBus) dev = devBus;  /* busID preferred */ 
 	if (!dev) {
 	    xf86MsgVerb(X_WARNING, 0, "%s: No matching Device section "
 			"for instance (BusID PCI:%i:%i:%i) found\n",
 			driverName, pPci->bus, pPci->device, pPci->func);
 	} else {
+	    numClaimedInstances++;
 	    instances[i].claimed = TRUE;
 	    instances[i].dev = dev;
 	}
@@ -1581,9 +1583,10 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     /*
      * Now check that a chipset or chipID override in the device section
      * is valid.  Chipset has precedence over chipID.
+     * If chipset is not valid ignore BusSlot completely.
      */
     for (i = 0; i < allocatedInstances && numClaimedInstances > 0; i++) {
-	if (!instances[i].inuse || !instances[i].claimed) {
+	if (!instances[i].claimed) {
 	    continue;
 	}
 	from = X_PROBED;
@@ -1593,7 +1596,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 		    break;
 	    }
 	    if (c->token == -1) {
-		instances[i].inuse = FALSE;
+		instances[i].claimed = FALSE;
 		numClaimedInstances--;
 		xf86MsgVerb(X_WARNING, 0, "%s: Chipset \"%s\" in Device "
 			    "section \"%s\" isn't valid for this driver\n",
@@ -1611,7 +1614,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 			     instances[i].dev->chipset);
 		    from = X_CONFIG;
 		} else {
-		    instances[i].inuse = FALSE;
+		    instances[i].claimed = FALSE;
 		    numClaimedInstances--;
 		    xf86MsgVerb(X_WARNING, 0, "%s: Chipset \"%s\" in Device "
 				"section \"%s\" isn't a valid PCI chipset\n",
@@ -1625,7 +1628,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 		    break;
 	    }
 	    if (id->numChipset == -1) {
-		instances[i].inuse = FALSE;
+		instances[i].claimed = FALSE;
 		numClaimedInstances--;
 		xf86MsgVerb(X_WARNING, 0, "%s: ChipID 0x%04X in Device "
 			    "section \"%s\" isn't valid for this driver\n",
@@ -1643,10 +1646,10 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	     * This means that there was no override and the PCI chipType
 	     * doesn't match one that is supported
 	     */
-	    instances[i].inuse = FALSE;
+	    instances[i].claimed = FALSE;
 	    numClaimedInstances--;
 	}
-	if (instances[i].inuse == TRUE){
+	if (instances[i].claimed == TRUE){
 	    for (c = chipsets; c->token >= 0; c++) {
 		if (c->token == instances[i].chip)
 		    break;
@@ -1661,70 +1664,54 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
      * claimed its slot.
      */
     for (i = 0; i < allocatedInstances && numClaimedInstances > 0; i++) {
-	if (!instances[i].inuse)
+	
+	if (!instances[i].claimed)
 	    continue;
 	pPci = instances[i].pci;
-
-#ifdef DEBUG
-	ErrorF("%s: found card at %d:%d:%d\n", driverName, pPci->bus,
-	       pPci->device, pPci->func);
-#endif
-
-	if (!instances[i].claimed) {
-	    numClaimedInstances--;
+	if (!xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func))
 	    continue;
-	}
 
 #ifdef DEBUG
 	ErrorF("%s: card at %d:%d:%d is claimed by a Device section\n",
 	       driverName, pPci->bus, pPci->device, pPci->func);
 #endif
-
+	
 	/* Allocate an entry in the lists to be returned */
 	numFound++;
-	retDevs = xnfrealloc(retDevs, numFound * sizeof(GDevPtr));
-	retPCI = xnfrealloc(retPCI, numFound * sizeof(pciVideoPtr));
-	retChips = xnfrealloc(retChips, numFound * sizeof(int));
-	retDevs[numFound - 1] = instances[i].dev;
-	retPCI[numFound - 1] = instances[i].pci;
-	retChips[numFound -1] = instances[i].chip;
+	retEntities = xnfrealloc(retEntities, numFound * sizeof(int));
+		
+	retEntities[numFound - 1]
+	    = xf86ClaimPciSlot(pPci->bus, pPci->device,
+			       pPci->func,drvp,	instances[i].chip,
+			       instances[i].dev,instances[i].dev->active ?
+			       TRUE : FALSE);
+
     }
     xfree(instances);
     if (numFound > 0) {
-	*foundDevs = retDevs;
-	*foundPCI = retPCI;
-	*foundChips = retChips;
+	*foundEntities = retEntities;
     }
     return numFound;
 }
 
-BusResource 
-xf86FindPciResource(int numChipset, PciChipsets *PCIchipsets)
-{
-    PciChipsets *c;
-
-    for (c=PCIchipsets; c->numChipset>=0; c++)
-    {
-	if (c->numChipset == numChipset)
-	    break;
-    }
-    return (c->Resource);
-}
-
 int
 xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
-		      IsaChipsets *ISAchipsets, FindIsaDevProc FindIsaDevice,
-		      GDevPtr *devList, int numDevs, GDevPtr *foundDev)
+		      IsaChipsets *ISAchipsets, DriverPtr drvp,
+		      FindIsaDevProc FindIsaDevice, GDevPtr *devList,
+		      int numDevs, int **foundEntities)
 {
-    GDevPtr dev = NULL;
-    GDevPtr devBus = NULL;
-    int foundChip = -1;
     SymTabRec *c;
     IsaChipsets *Chips;
     int i;
-    MessageType from = X_CONFIG;
-
+    int numFound = 0;
+    int *retEntities = NULL;
+    
     for (i = 0; i < numDevs; i++) {
+	MessageType from = X_CONFIG;
+	GDevPtr dev = NULL;
+	GDevPtr devBus = NULL;
+	int foundChip = -1;
+
 	if (devList[i]->busID && *devList[i]->busID) {
 	    if (xf86ParseIsaBusString(devList[i]->busID)) {
 		if (devBus) xf86MsgVerb(X_WARNING,0,
@@ -1732,7 +1719,7 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
 					"section for ISA-Bus found: %s\n",
 					driverName,devList[i]->identifier);
 		else devBus = devList[i];
-	    } 
+	    }
 	} else {
 	    if (xf86IsPrimaryIsa()) {
 		if (dev) xf86MsgVerb(X_WARNING,0,
@@ -1742,64 +1729,56 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
 		else dev = devList[i];
 	    }
 	}
-    }
-    if (devBus) dev = devBus; 
-    if (!dev) return -1;
-
-    if (dev->chipset) {
-	for (c = chipsets; c->token >= 0; c++) {
-	    if (xf86NameCmp(c->name, dev->chipset) == 0)
-		break;
+	if (devBus) dev = devBus;
+	if (dev) {
+	    if (dev->chipset) {
+		for (c = chipsets; c->token >= 0; c++) {
+		    if (xf86NameCmp(c->name, dev->chipset) == 0)
+			break;
+		}
+		if (c->token == -1) {
+		    xf86MsgVerb(X_WARNING, 0, "%s: Chipset \"%s\" in Device "
+				"section \"%s\" isn't valid for this driver\n",
+				driverName, dev->chipset,
+				dev->identifier);
+		} else
+		    foundChip = c->token;
+	    } else { 
+		if (FindIsaDevice) foundChip = (*FindIsaDevice)(dev);
+                                                        /* Probe it */
+		from = X_PROBED;
+	    }
 	}
-	if (c->token == -1) {
-	    xf86MsgVerb(X_WARNING, 0, "%s: Chipset \"%s\" in Device "
-			"section \"%s\" isn't valid for this driver\n",
-			driverName, dev->chipset,
-			dev->identifier);
-	} else
-	    foundChip = c->token;
-    } else { 
-	if (FindIsaDevice) foundChip = (*FindIsaDevice)();  /* Probe it */
-	from = X_PROBED;
-    }
+	
+/* Check if the chip type is listed in the chipset table - for sanity*/
 
-    /* Check if the chip type is listed in the chipset table - for sanity */
-    if (foundChip >= 0){
-	for (Chips = ISAchipsets; Chips->numChipset >= 0; Chips++) {
-	    if (Chips->numChipset == foundChip) 
-		break;
+	if (foundChip >= 0){
+	    for (Chips = ISAchipsets; Chips->numChipset >= 0; Chips++) {
+		if (Chips->numChipset == foundChip) 
+		    break;
+	    }
+	    if (Chips->numChipset == -1){
+		foundChip = -1;
+		xf86MsgVerb(X_WARNING,0,
+			    "%s: Driver detected unknown ISA-Bus Chipset\n",
+			    driverName);
+	    }
 	}
-	if (Chips->numChipset == -1){
-	    foundChip = -1;
-	    xf86MsgVerb(X_WARNING,0,"%s: Driver detected unknown ISA-Bus Chipset\n",
-			driverName);
+	if (foundChip != -1) {
+	    numFound++;
+	    retEntities = xnfrealloc(retEntities,numFound * sizeof(int));
+	    retEntities[numFound - 1] =
+	    xf86ClaimIsaSlot(drvp,foundChip,dev, dev->active ? TRUE : FALSE);
+	    for (c = chipsets; c->token >= 0; c++) {
+		if (c->token == foundChip)
+		    break;
+	    }
+	    xf86Msg(from, "Chipset %s found\n", c->name);
 	}
     }
-    if (foundChip == -1) 
-	*foundDev = NULL;
-    else {
-	*foundDev = dev;
-	for (c = chipsets; c->token >= 0; c++) {
-	    if (c->token == foundChip)
-		break;
-	}
-	xf86Msg(from, "Chipset %s found\n", c->name);
-    }
-
-    return foundChip;
-}
-
-BusResource 
-xf86FindIsaResource(int numChipset, IsaChipsets *ISAchipsets)
-{
-    IsaChipsets *c;
-
-    for (c=ISAchipsets; c->numChipset>=0; c++)
-    {
-	if (c->numChipset == numChipset)
-	    break;
-    }
-    return (c->Resource);
+    *foundEntities = retEntities;
+    
+    return numFound;
 }
 
 /*
@@ -2153,4 +2132,123 @@ xf86FindXvOptions(int scrnIndex, int adaptor_index, char *port_name,
 /* Rather than duplicate loader's get OS function, just include it directly */
 #define LoaderGetOS xf86GetOS
 #include "loader/os.c"
+
+/* new RAC */
+/*
+ * xf86ConfigActiveIsa/PciEntity() -- These helper functions assign an
+ * active entity to a screen, registers its fixed resources, assign
+ * special enter/leave functions and their private scratch area to
+ * this entity, take the dog for a walk...
+ */
+Bool
+xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, EntityInfoPtr pEnt,
+			  IsaChipsets *i_chip, resList res, EntityProc init,
+			  EntityProc enter, EntityProc leave, pointer private)
+{
+    IsaChipsets *i_id;
+
+    if (!pEnt->active || !(pEnt->location.type == BUS_ISA)) return FALSE;
+
+    xf86AddEntityToScreen(pScrn,pEnt->index);
+
+    if (i_chip) {
+	for (i_id = i_chip; i_id->numChipset != -1; i_id++) {
+	    if (pEnt->chipset == i_id->numChipset) break;
+	}
+	xf86ClaimFixedResources(i_id->resList,pEnt->index);
+    }
+    xf86ClaimFixedResources(res,pEnt->index);
+    if (!xf86SetEntityFuncs(pEnt->index,init,enter,leave,private))
+	return FALSE;
+
+    return TRUE;
+}
+
+Bool
+xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, EntityInfoPtr pEnt,
+			  PciChipsets *p_chip, resList res, EntityProc init,
+			  EntityProc enter, EntityProc leave, pointer private)
+{
+    PciChipsets *p_id;
+
+    if (!pEnt->active || !(pEnt->location.type == BUS_PCI)) return FALSE;
+    xf86AddEntityToScreen(pScrn,pEnt->index);
+    
+    if (p_chip) {
+	for (p_id = p_chip; p_id->numChipset != -1; p_id++) {
+	    if (pEnt->chipset == p_id->numChipset) break;
+	}
+	xf86ClaimFixedResources(p_id->resList,pEnt->index);
+    }
+    xf86ClaimFixedResources(res,pEnt->index);
+    if (!xf86SetEntityFuncs(pEnt->index,init,enter,leave,private))
+	return FALSE;
+
+    return TRUE;
+}
+
+/*
+ * xf86ConfigPci/IsaEntityInactive() -- These functions can be used
+ * to configure an inactive entity as well as to reconfigure an
+ * previously active entity inactive. If the entity has been
+ * assigned to a screen before it will be removed. If p_pci(p_isa) is
+ * non-NULL all static resources listed there will be registered.
+ */
+void
+xf86ConfigPciEntityInactive(EntityInfoPtr pEnt, PciChipsets *p_chip,
+			    resList res, EntityProc init, EntityProc enter,
+			    EntityProc leave, pointer private)
+{
+    PciChipsets *p_id;
+    ScrnInfoPtr pScrn;
+
+    if ((pScrn = xf86FindScreenForEntity(pEnt->index)))
+	xf86RemoveEntityFromScreen(pScrn,pEnt->index);
+    else if (p_chip) {
+	for (p_id = p_chip; p_id->numChipset != -1; p_id++) {
+	    if (pEnt->chipset == p_id->numChipset) break;
+	}
+	xf86ClaimFixedResources(p_id->resList,pEnt->index);
+    }
+    xf86ClaimFixedResources(res,pEnt->index);
+    /* shared resources are only needed when entity is active: remove */
+    xf86DeallocateResourcesForEntity(pEnt->index, ResShared);
+    xf86SetEntityFuncs(pEnt->index,init,enter,leave,private);
+}
+
+void
+xf86ConfigIsaEntityInactive(EntityInfoPtr pEnt, IsaChipsets *i_chip,
+			    resList res, EntityProc init, EntityProc enter,
+			    EntityProc leave, pointer private)
+{
+    IsaChipsets *i_id;
+    ScrnInfoPtr pScrn;
+
+    if ((pScrn = xf86FindScreenForEntity(pEnt->index)))
+	xf86RemoveEntityFromScreen(pScrn,pEnt->index);
+    else if (i_chip) {
+	for (i_id = i_chip; i_id->numChipset != -1; i_id++) {
+	    if (pEnt->chipset == i_id->numChipset) break;
+	}
+	xf86ClaimFixedResources(i_id->resList,pEnt->index);
+    }
+    xf86ClaimFixedResources(res,pEnt->index);
+    /* shared resources are only needed when entity is active: remove */
+    xf86DeallocateResourcesForEntity(pEnt->index, ResShared);
+    xf86SetEntityFuncs(pEnt->index,init,enter,leave,private);
+}
+
+Bool
+xf86IsScreenPrimary(int scrnIndex)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    int i;
+
+    for (i=0 ; i < pScrn->numEntities; i++) {
+	if (xf86IsEntityPrimary(i))
+	    return TRUE;
+    }
+    return FALSE;
+}
+
 

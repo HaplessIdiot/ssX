@@ -1,4 +1,12 @@
-XFree86 3.9Pr (xx June 1999)
+XFree86 3.9Pr (12 June 1999)
+2727. Increase the MAXSCREENS value from 4 to 16 (Egbert Eich).
+2726. Add support for printing out PCI-PCI bridge header information correctly
+      (Egbert Eich).
+2725. New RAC (Resource Access Control) code (Egbert Eich).
+2724. Update the Solaris/x86 version of xf86ReadBIOS() to handle BIOSs located
+      at high physical addresses (David Dawes).
+2723. An attempt at allowing the server to correct the /tmp/.X11-unix
+      directory when it is possible to do so safely (David Dawes).
 2722. Re-enable screen->screen blts for the Trident Image3D, and fix a problem
       with mapping/unmapping memory with VT switching (David Dawes).
 2721. Fix a problem linking with libXfont when building the shared version
@@ -8129,4 +8137,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.768 1999/06/06 15:23:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.769 1999/06/08 11:31:05 dawes Exp $

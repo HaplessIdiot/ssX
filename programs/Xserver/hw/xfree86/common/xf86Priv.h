@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.45 1999/05/23 14:38:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.46 1999/05/30 14:04:21 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -78,6 +78,7 @@ extern Bool xf86Initialising;
 extern Bool xf86ProbeFailed;
 extern int xf86NumScreens;
 extern pciVideoPtr *xf86PciVideoInfo;
+extern xf86CurrentAccessRec xf86CurrentAccess;
 extern const char *xf86VisualNames[];
 extern int xf86Verbose;                 /* verbosity level */
 extern int xf86LogVerbose;		/* log file verbosity level */
@@ -106,12 +107,29 @@ extern void xf86CheckBeta(int extraDays, char *key);
 
 void xf86BusProbe(void);
 void xf86ChangeBusIndex(int oldIndex, int newIndex);
+void xf86AccessInit(void);
 void xf86AccessEnter(void);
 void xf86AccessLeave(void);
-void xf86AccessSetup(void);
+void xf86EntityInit(void);
+void xf86EntityEnter(void);
+void xf86EntityLeave(void);
+void xf86AccessLeaveState(void);
+
 void xf86FindPrimaryDevice(void);
 /* new RAC */
+resPtr xf86AddResToList(resPtr rlist, resRange *range, int entityIndex);
+resPtr xf86JoinResLists(resPtr rlist1, resPtr rlist2);
+resPtr xf86DupResList(const resPtr rlist);
+void xf86FreeResList(resPtr rlist);
+void xf86PrintResList(int verb, resPtr list);
+unsigned long xf86ChkConflict(resRange *rgp, int entityIndex);
 void xf86ResourceBrokerInit(void);
+void xf86PostProbe(void);
+void xf86ClearEntityListForScreen(int scrnIndex);
+ScrnInfoPtr xf86FindScreenForEntity(int entityIndex);
+extern void xf86PostPreInit(void);
+extern void xf86PostScreenInit(void);
+extern void xf86EnterServerState(xf86State state);
 
 /* xf86Config.c */
 

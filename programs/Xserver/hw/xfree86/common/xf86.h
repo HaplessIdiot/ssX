@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.104 1999/05/09 06:06:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.105 1999/05/15 12:10:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -22,6 +22,7 @@
 /* General parameters */
 extern int xf86ScreenIndex;		/* Index into pScreen.devPrivates */
 extern int xf86PixmapIndex;
+extern Bool xf86ResAccessEnter;
 extern ScrnInfoPtr *xf86Screens;	/* List of pointers to ScrnInfoRecs */
 extern const unsigned char byte_reversed[256];
 
@@ -45,44 +46,49 @@ extern const unsigned char byte_reversed[256];
 
 /* xf86Bus.c */
 
-Bool xf86CheckPciSlot(int bus, int device, int func, BusResource res);
-Bool xf86ClaimPciSlot(int bus, int device, int func, BusResource res,
-		      DriverPtr drvp, int chipset, int scrnIndex);
-void xf86ReleasePciSlot(int bus, int device, int func);
-pciVideoPtr *xf86GetPciVideoInfo(void);
-#ifdef _XF86PCI_H
-pciConfigPtr *xf86GetPciConfigInfo(void);
-#endif
-int xf86GetPciInfoForScreen(int scrnIndex, pciVideoPtr **pPciList,
-			    BusResource **pRes);
-Bool xf86CheckIsaSlot(BusResource res);
-Bool xf86ClaimIsaSlot(BusResource res, DriverPtr drvp, int chipset, 
-		      int scrnIndex);
-void xf86ReleaseIsaSlot(BusResource res);
-int xf86GetIsaInfoForScreen(int scrnIndex, BusResource **pRes);
+Bool xf86CheckPciSlot(int bus, int device, int func);
+int xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
+		     int chipset, GDevPtr dev, Bool active);
 Bool xf86ParsePciBusString(const char *busID, int *bus, int *device,
 			   int *func);
-Bool xf86ParseIsaBusString(const char *busID);
 Bool xf86ComparePciBusString(const char *busID, int bus, int device, int func);
-void xf86DeleteBusSlotsForScreen(int scrnIndex);
-Bool xf86IsPciBus(int scrnIndex);
-Bool xf86IsIsaBus(int scrnIndex);
-int xf86FindChipsetsForScreen(int scrnIndex, DriverPtr drv, int **chipsets);
-void xf86AddControlledResource(ScrnInfoPtr pScreen, resType rt);
-void xf86DelControlledResource(xf86ScrnAccessPtr pScAcc, Bool enable);
-void xf86EnableAccess(xf86ScrnAccessPtr pScAcc);
+pciVideoPtr *xf86GetPciVideoInfo(void);
+#if 0
+pciConfigPtr *xf86GetPciConfigInfo(void);
+#endif
+int xf86ClaimIsaSlot(DriverPtr drvp, int chipset, GDevPtr dev, Bool active);
+int xf86GetIsaInfoForScreen(int scrnIndex);
+Bool xf86ParseIsaBusString(const char *busID);
+void xf86EnableAccess(ScrnInfoPtr pScrn);
 Bool xf86IsPrimaryPci(pciVideoPtr pPci);
 Bool xf86IsPrimaryIsa(void);
 int xf86CheckPciGAType(pciVideoPtr pPci);
 /* new RAC */
-resPtr xf86AddResToList(resPtr rlist, unsigned long begin, unsigned long end,
-			int type, int busIndex);
-resPtr xf86JoinResLists(resPtr rlist1, resPtr rlist2);
-resPtr xf86DupResList(const resPtr rlist);
-void xf86FreeResList(resPtr rlist);
-void xf86PrintResList(int verb, resPtr list);
-
-
+void xf86ClaimFixedResources(resList list, int entityIndex);
+void xf86AddEntityToScreen(ScrnInfoPtr pScrn, int entityIndex);
+void xf86RemoveEntityFromScreen(ScrnInfoPtr pScrn, int entityIndex);
+EntityInfoPtr xf86GetEntityInfo(int entityIndex);
+pciVideoPtr xf86GetPciInfoForEntity(int entityIndex);
+Bool xf86SetEntityFuncs(int entityIndex, EntityProc init,
+			EntityProc enter, EntityProc leave, pointer);
+void xf86DeallocateResourcesForEntity(int entityIndex, long type);
+resPtr xf86RegisterResources(int entityIndex, resList list, int access);
+Bool xf86CheckPciMemBase(pciVideoPtr pPci, unsigned long base);
+void xf86SetAccessFuncs(EntityInfoPtr pEnt, xf86AccessPtr p_io,
+			xf86AccessPtr p_mem, xf86AccessPtr p_io_mem,
+			xf86AccessPtr *ppAccessOld);
+Bool xf86IsEntityPrimary(int entityIndex);
+Bool xf86FixPciResource(int entityIndex, unsigned int prt, CARD32 alignment,
+			 long type);
+resPtr xf86ReallocatePciResources(int entityIndex, resPtr pRes);
+resPtr xf86SetOperatingState(resList list, int entityIndex, int mask);
+resRange xf86GetBlock(long type, unsigned long size,
+		      unsigned long window_start, unsigned long window_end,
+		      unsigned long align_mask, resPtr avoid);
+resRange xf86GetSparse(long type,  unsigned long fixed_bits,
+		       unsigned long decode_mask, unsigned long address_mask,
+		       resPtr avoid);
+ 
 /* xf86Cursor.c */
 
 void xf86LockZoom(ScreenPtr pScreen, int lock);
@@ -92,7 +98,7 @@ void xf86SetViewport(ScreenPtr pScreen, int x, int y);
 Bool xf86ZoomLocked(ScreenPtr pScreen);
 void xf86ZoomViewport(ScreenPtr pScreen, int zoom);
 void *xf86GetPointerScreenFuncs(void);
-
+ 
 /* xf86DPMS.c */
 
 Bool xf86DPMSInit(ScreenPtr pScreen, DPMSSetProcPtr set, int flags);
@@ -139,15 +145,13 @@ void xf86PrintChipsets(const char *drvname, const char *drvmsg,
 		       SymTabPtr chips);
 int xf86MatchDevice(const char *drivername, GDevPtr **driversectlist);
 int xf86MatchPciInstances(const char *driverName, int vendorID, 
-			  SymTabPtr chipsets, PciChipsets *PCIchipsets,
-			  GDevPtr *devList, int numDevs,
-			  GDevPtr **foundDevs, pciVideoPtr **foundPCI, 
-			  int **foundChips);
-BusResource xf86FindPciResource(int numChipset, PciChipsets *PCIchipsets);
+		      SymTabPtr chipsets, PciChipsets *PCIchipsets,
+		      GDevPtr *devList, int numDevs, DriverPtr drvp,
+		      int **foundEntities);
 int xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
-			  IsaChipsets *ISAchipsets, FindIsaDevProc,
-			  GDevPtr *devList, int numDevs, GDevPtr *foundDev);
-BusResource xf86FindIsaResource(int numChipset, IsaChipsets *ISAchipsets);
+			  IsaChipsets *ISAchipsets, DriverPtr drvp,
+			  FindIsaDevProc FindIsaDevice, GDevPtr *devList,
+			  int numDevs, int **foundEntities);
 void xf86GetClocks(ScrnInfoPtr pScrn, int num,
 		   Bool (*ClockFunc)(ScrnInfoPtr, int),
 		   void (*ProtectRegs)(ScrnInfoPtr, Bool),
@@ -180,6 +184,23 @@ int xf86NewSerialNumber(WindowPtr p, pointer unused);
 pointer xf86FindXvOptions(int scrnIndex, int adapt_index, char *port_name,
 			  char **adaptor_name, pointer *adaptor_options);
 void xf86GetOS(const char **name, int *major, int *minor, int *teeny);
+Bool xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, EntityInfoPtr pEnt,
+			       PciChipsets *p_chip, resList res,
+			       EntityProc init, EntityProc enter,
+			       EntityProc leave, pointer private);
+Bool xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, EntityInfoPtr pEnt,
+			       IsaChipsets *i_chip, resList res,
+			       EntityProc init, EntityProc enter,
+			       EntityProc leave, pointer private); 
+void xf86ConfigPciEntityInactive(EntityInfoPtr pEnt, PciChipsets *p_chip,
+				 resList res, EntityProc init,
+				 EntityProc enter, EntityProc leave,
+				 pointer private);
+void xf86ConfigIsaEntityInactive(EntityInfoPtr pEnt, IsaChipsets *i_chip,
+				 resList res, EntityProc init,
+				 EntityProc enter, EntityProc leave,
+				 pointer private);
+Bool xf86IsScreenPrimary(int scrnIndex);
 
 
 /* xf86Init.c */

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.48 1999/06/06 08:47:43 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.49 1999/06/06 11:40:04 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -402,12 +402,14 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.48 1999/06/06 08:47:43 dawes Exp $
 #endif
 #endif
 #endif
-#ifndef ExtraConnectionDefs
 #if HasStickyDirBit
-#define ExtraConnectionDefs -DHAS_STICKY_DIR_BIT
-#else
-#define ExtraConnectionDefs /**/
+STICKY_DEFINES = -DHAS_STICKY_DIR_BIT
 #endif
+#if HasFchown
+FCHOWN_DEFINES = -DHAS_FCHOWN
+#endif
+#ifndef ExtraConnectionDefs
+#define ExtraConnectionDefs $(STICKY_DEFINES) $(FCHOWN_DEFINES)
 #endif
 #ifndef ProjectThreadsDefines
 #define ProjectThreadsDefines -DXTHREADS

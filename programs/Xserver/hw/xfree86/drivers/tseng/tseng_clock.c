@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.12 1999/03/14 03:22:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.13 1999/04/27 12:05:16 dawes Exp $ */
 
 
 
@@ -42,9 +42,9 @@ Tseng_check_clockchip(ScrnInfoPtr pScrn)
 
     PDEBUG("	Tseng_check_clockchip\n");
 
-    if (pScrn->device->clockchip && *pScrn->device->clockchip) {
+    if (pTseng->pEnt->device->clockchip && *pTseng->pEnt->device->clockchip) {
 	/* clockchip given as a string in the config file */
-	pScrn->clockchip = pScrn->device->clockchip;
+	pScrn->clockchip = pTseng->pEnt->device->clockchip;
 	pTseng->ClockChip = xf86StringToToken(TsengClockChips, pScrn->clockchip);
 	if (pTseng->ClockChip == -1) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Unknown clockchip: \"%s\"\n",
@@ -98,7 +98,7 @@ void tseng_clock_setup(ScrnInfoPtr pScrn)
      * If the user has specified ramdac speed in the XF86Config
      * file, we respect that setting.
      */
-    if (pScrn->device->dacSpeeds[0]) {
+    if (pTseng->pEnt->device->dacSpeeds[0]) {
 	from = X_CONFIG;
 	forceSpeed = TRUE;
 	switch (pScrn->bitsPerPixel) {
@@ -106,22 +106,22 @@ void tseng_clock_setup(ScrnInfoPtr pScrn)
 	case 1:
 	case 4:
 	case 8:
-	    dacspeed = pScrn->device->dacSpeeds[DAC_BPP8];
+	    dacspeed = pTseng->pEnt->device->dacSpeeds[DAC_BPP8];
 	    break;
 	case 16:
-	    dacspeed = pScrn->device->dacSpeeds[DAC_BPP16];
+	    dacspeed = pTseng->pEnt->device->dacSpeeds[DAC_BPP16];
 	    break;
 	case 24:
-	    dacspeed = pScrn->device->dacSpeeds[DAC_BPP24];
+	    dacspeed = pTseng->pEnt->device->dacSpeeds[DAC_BPP24];
 	    break;
 	case 32:
-	    dacspeed = pScrn->device->dacSpeeds[DAC_BPP32];
+	    dacspeed = pTseng->pEnt->device->dacSpeeds[DAC_BPP32];
 	    break;
 	}
-	pTseng->max_vco_freq = pScrn->device->dacSpeeds[0]*2+1;
+	pTseng->max_vco_freq = pTseng->pEnt->device->dacSpeeds[0]*2+1;
 	/* if a bpp-specific DacSpeed is not defined, use the "default" one (=8bpp) */
 	if (dacspeed == 0)
-	    dacspeed = pScrn->device->dacSpeeds[0];
+	    dacspeed = pTseng->pEnt->device->dacSpeeds[0];
     } else {
 	from = X_PROBED;
 	forceSpeed = FALSE;
@@ -298,14 +298,14 @@ void tseng_clock_setup(ScrnInfoPtr pScrn)
 		    NoClocks = 16;
 	    }
 	/* now probe for the clocks if they are not specified */
-	if (!pScrn->device->numclocks) {
+	if (!pTseng->pEnt->device->numclocks) {
 	    pScrn->numClocks = NoClocks;
 	    xf86GetClocks(pScrn, NoClocks, TsengClockSelect,
 			  TsengProtect, TsengBlankScreen,
 			  iobase + 0x0A, 0x08, 1, 28322);
 	    from = X_PROBED;
 	} else {
-	    pScrn->numClocks = pScrn->device->numclocks;
+	    pScrn->numClocks = pTseng->pEnt->device->numclocks;
 	    if (pScrn->numClocks > NoClocks) {
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			   "Too many Clocks specified in configuration file.\n");
@@ -314,7 +314,7 @@ void tseng_clock_setup(ScrnInfoPtr pScrn)
 		pScrn->numClocks= NoClocks;
 	    }
 	    for (i = 0; i < pScrn->numClocks; i++)
-		pScrn->clock[i] = pScrn->device->clock[i];
+		pScrn->clock[i] = pTseng->pEnt->device->clock[i];
 	    from = X_CONFIG;
 	}
 	/*

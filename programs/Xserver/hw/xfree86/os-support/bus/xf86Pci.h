@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.15 1999/05/14 14:11:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.16 1999/05/16 14:24:22 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -89,6 +89,8 @@
 
 /* Command and status register */
 #define	PCI_CMD_STAT_REG		0x04
+#define PCI_CMD_BASE_REG                0x10
+#define PCI_CMD_BIOS_REG                0x30
 #define	PCI_CMD_MASK			0xffff
 #define	PCI_CMD_IO_ENABLE		0x01
 #define	PCI_CMD_MEM_ENABLE		0x02
@@ -326,6 +328,9 @@
 
 #define PCI_PPB_MEMBASE_EXTRACT(x)      (((x) << 16) & 0xFFFF0000)
 #define PCI_PPB_MEMLIMIT_EXTRACT(x)     (((x) <<  0) & 0xFFFF0000)
+
+#define PCI_PCI_BRIDGE_CONTROL_REG         0x3E
+#define PCI_PCI_BRIDGE_VGA_EN              0x08
 
 /* Subsystem identification register */
 #define PCI_SUBSYSTEM_ID_REG		0x2c
@@ -590,6 +595,7 @@ void          pciWriteLong(PCITAG tag, int offset, CARD32 val);
 void          pciWriteWord(PCITAG tag, int offset, CARD16 val);
 void          pciWriteByte(PCITAG tag, int offset, CARD8 val);
 void          pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val);
+void          pciSetBitsByte(PCITAG tag, int offset, CARD8 mask, CARD8 val);
 ADDRESS       pciBusAddrToHostAddr(PCITAG tag, ADDRESS addr);
 ADDRESS       pciHostAddrToBusAddr(PCITAG tag, ADDRESS addr);
 PCITAG        pciTag(int busnum, int devnum, int funcnum);

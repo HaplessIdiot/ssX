@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.15 1998/07/25 16:55:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.16 1999/02/28 11:19:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -192,7 +192,8 @@ void
 xf86ZoomViewport (ScreenPtr pScreen, int zoom)
 {
   ScrnInfoPtr   pScr = XF86SCRNINFO(pScreen);
-
+  Bool tmp;
+  
   if (pScr->zoomLocked)
     return;
 
@@ -201,7 +202,10 @@ xf86ZoomViewport (ScreenPtr pScreen, int zoom)
     pScr->currentMode = zoom > 0 ? pScr->currentMode->next
 				 : pScr->currentMode->prev;
 
-    if (pScr->SwitchMode(pScr->scrnIndex, pScr->currentMode, 0)) {
+    xf86EnterServerState(SETUP);
+    tmp = pScr->SwitchMode(pScr->scrnIndex, pScr->currentMode, 0);
+    xf86EnterServerState(OPERATING);
+    if (tmp) {
       /* 
        * adjust new frame for the displaysize
        */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.51 1999/04/27 12:05:19 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.52 1999/05/30 07:18:28 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -54,6 +54,8 @@
 #include "cfb24.h"
 #include "cfb32.h"
 #include "cfb24_32.h"
+#include "xf86RAC.h"
+#include "xf86Resources.h"
 
 /*** Chip-specific includes ***/
 
@@ -155,9 +157,9 @@ static PciChipsets TsengPciChipsets[] =
     
 static IsaChipsets TsengIsaChipsets[] =
 {
-    {TYPE_ET4000,	RES_VGA},
-    {TYPE_ET4000W32,	RES_VGA},
-    {TYPE_ET4000W32I,	RES_VGA},
+    {TYPE_ET4000,	RES_EXCLUSIVE_VGA},
+    {TYPE_ET4000W32,	RES_EXCLUSIVE_VGA},
+    {TYPE_ET4000W32I,	RES_EXCLUSIVE_VGA},
     {-1,		RES_UNDEFINED}
 };
 
@@ -449,15 +451,13 @@ TsengProbe(DriverPtr drv, int flags)
     int i;
     pciVideoPtr pPci, *usedPci;
     GDevPtr *devSections;
-    GDevPtr *usedDevs;
-    GDevPtr usedDev;
     int numDevSections;
     int numUsed;
     int *usedChips;
-    BusResource resource;
     Bool foundScreen = FALSE;
-    int usedChip;
-
+    EntityInfoPtr pEnt;
+    
+    
     PDEBUG("	TsengProbe\n");
     /*
      * The aim here is to find all cards that this driver can handle,
@@ -486,13 +486,6 @@ TsengProbe(DriverPtr drv, int flags)
      * device section. So issue a warning if more than one show up.
      * Multiple Tseng cards in the same machine are not possible.
      */
-    if (numDevSections > 1) {
-	xf86Msg(X_ERROR, "%s: More than one matching \"Device\" section!\n",
-	    TSENG_NAME);
-	xfree(devSections);
-	devSections = NULL;
-	return FALSE;
-    }
     /*
      * If this is a PCI card, "probing" just amounts to checking the PCI
      * data that the server has already collected.  If there is none,
@@ -504,48 +497,40 @@ TsengProbe(DriverPtr drv, int flags)
     numUsed = 0;
     if (xf86GetPciVideoInfo() != NULL) {
 	numUsed = xf86MatchPciInstances(TSENG_NAME, PCI_VENDOR_TSENG,
-	    TsengChipsets, TsengPciChipsets, devSections, numDevSections,
-	    &usedDevs, &usedPci, &usedChips);
-    }
-    if (numUsed > 0) {
-	/* Found some Tseng PCI cards */
-	for (i = 0; i < numUsed; i++) {
-	    pPci = usedPci[i];
-	    resource = xf86FindPciResource(usedChips[i], TsengPciChipsets);
-	    if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-		    resource)) {
-		ScrnInfoPtr pScrn;
-
-		/* Allocate a ScrnInfoRec and claim the slot */
-		pScrn = xf86AllocateScreen(drv, 0);
-		xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-			resource, &TSENG, usedChips[i], pScrn->scrnIndex);
-		TsengAssignFPtr(pScrn);
-		pScrn->device = usedDevs[i];
-		foundScreen = TRUE;
+					TsengChipsets, TsengPciChipsets, 
+					devSections,numDevSections, drv,
+					&usedChips);
+	if (numUsed > 0) {
+	    for (i = 0; i < numUsed; i++) {
+		pEnt = xf86GetEntityInfo(usedChips[i]);
+		if (pEnt->active) {
+		    /* Allocate a ScrnInfoRec  */
+		    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
+		    TsengAssignFPtr(pScrn);
+		    xf86ConfigActivePciEntity(pScrn,pEnt,TsengPciChipsets,
+					      NULL,NULL,NULL,NULL,NULL);
+		    foundScreen = TRUE;
+		}
+		xfree(pEnt);
 	    }
 	}
-	xfree(usedDevs);
-	xfree(usedPci);
     }
 
     /* Check for non-PCI cards */
-    usedChip = xf86MatchIsaInstances(TSENG_NAME, TsengChipsets,
-			TsengIsaChipsets, TsengFindIsaDevice, devSections,
-			numDevSections, &usedDev);
-    if (usedChip >= 0) {
-	ScrnInfoPtr pScrn;
-
-	resource = xf86FindIsaResource(usedChip, TsengIsaChipsets);
-
-	/* Allocate a ScrnInfoRec and claim the slot */
-	pScrn = xf86AllocateScreen(drv, 0);
-	xf86ClaimIsaSlot(resource, &TSENG, usedChip,  pScrn->scrnIndex);
-	TsengAssignFPtr(pScrn);
-	pScrn->device = devSections[0];
-	foundScreen = TRUE;
-    }
-
+    numUsed = xf86MatchIsaInstances(TSENG_NAME, TsengChipsets,
+			TsengIsaChipsets,drv, TsengFindIsaDevice, devSections,
+			numDevSections, &usedChips);
+    if (numUsed >= 0) 
+	for (i = 0; i < numUsed; i++) {
+	    pEnt = xf86GetEntityInfo(usedChips[i]);
+	    if (pEnt->active) {
+		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
+		TsengAssignFPtr(pScrn);
+		foundScreen = TRUE;
+		xf86ConfigActiveIsaEntity(pScrn,pEnt,TsengIsaChipsets,
+					  NULL,NULL,NULL,NULL,NULL);
+	    }
+	}
     xfree(devSections);
     return foundScreen;
 }
@@ -562,15 +547,15 @@ TsengPreInitPCI(ScrnInfoPtr pScrn)
      * * Set the ChipType and ChipRev, allowing config file entries to
      * * override.
      */
-    if (pScrn->device->chipset && *pScrn->device->chipset) {
+    if (pTseng->pEnt->device->chipset && *pTseng->pEnt->device->chipset) {
 	/* chipset given as a string in the config file */
-	pScrn->chipset = pScrn->device->chipset;
+	pScrn->chipset = pTseng->pEnt->device->chipset;
 	pTseng->ChipType = xf86StringToToken(TsengChipsets, pScrn->chipset);
 	/* FIXME: still need to probe for W32p revision here */
 	from = X_CONFIG;
-    } else if (pScrn->device->chipID >= 0) {
+    } else if (pTseng->pEnt->device->chipID >= 0) {
 	/* chipset given as a PCI ID in the config file */
-	if (!TsengPCI2Type(pScrn, pScrn->device->chipID))
+	if (!TsengPCI2Type(pScrn, pTseng->pEnt->device->chipID))
 	    return FALSE;
 	pScrn->chipset = (char *)xf86TokenToString(TsengChipsets, pTseng->ChipType);
 	from = X_CONFIG;
@@ -584,8 +569,8 @@ TsengPreInitPCI(ScrnInfoPtr pScrn)
 	pScrn->chipset = (char *)xf86TokenToString(TsengChipsets, pTseng->ChipType);
     }
 
-    if (pScrn->device->chipRev >= 0) {
-	pTseng->ChipRev = pScrn->device->chipRev;
+    if (pTseng->pEnt->device->chipRev >= 0) {
+	pTseng->ChipRev = pTseng->pEnt->device->chipRev;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
 	    pTseng->ChipRev);
 	if ((pTseng->ChipType == TYPE_ET6000) && (pTseng->ChipRev >= ET6100REVID))
@@ -636,8 +621,8 @@ TsengPreInitPCI(ScrnInfoPtr pScrn)
 
     /* only the ET6000 implements a PCI IO address */
     if (Is_ET6K) {
-	if (pScrn->device->IOBase != 0) {
-	    pTseng->IOAddress = pScrn->device->IOBase;
+	if (pTseng->pEnt->device->IOBase != 0) {
+	    pTseng->IOAddress = pTseng->pEnt->device->IOBase;
 	    from = X_CONFIG;
 	} else {
 	    if ((pTseng->PciInfo->ioBase[1]) != 0) {
@@ -742,7 +727,7 @@ TsengFindNonPciBusType(ScrnInfoPtr pScrn)
     TsengPtr pTseng = TsengPTR(pScrn);
 
     PDEBUG("	TsengFindNonPciBusType\n");
-    pTseng->Bustype = BUS_ISA;
+    pTseng->Bustype = T_BUS_ISA;
     pTseng->Linmem_1meg = FALSE;
     pTseng->LinFbAddressMask = 0;
 
@@ -766,19 +751,19 @@ TsengFindNonPciBusType(ScrnInfoPtr pScrn)
 	switch (bus) {
 	case 0x40:
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected W32/W32i bus type: MCA\n");
-	    pTseng->Bustype = BUS_MCA;
+	    pTseng->Bustype = T_BUS_MCA;
 	    pTseng->LinFbAddressMask = 0x01C00000;	/* MADE24, A23 and A22 are decoded */
 	    break;
 	case 0x60:
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected W32/W32i bus type: Local Bus\n");
-	    pTseng->Bustype = BUS_VLB;
+	    pTseng->Bustype = T_BUS_VLB;
 	    pTseng->LinFbAddressMask = 0x07C00000;	/* A26..A22 are decoded */
 	    break;
 	case 0x00:
 	case 0x20:
 	default:
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected W32/W32i bus type (0x%02X): ISA\n", bus);
-	    pTseng->Bustype = BUS_ISA;
+	    pTseng->Bustype = T_BUS_ISA;
 	    pTseng->LinFbAddressMask = 0x00C00000;	/* SEGE and A22 are decoded */
 	    break;
 	}
@@ -788,14 +773,14 @@ TsengFindNonPciBusType(ScrnInfoPtr pScrn)
 	bus = inb(0x217B) >> 3;	       /* Determine bus type */
 	switch (bus) {
 	case 0x1C:		       /* PCI case already handled in TsengPreInitPCI() */
-	    pTseng->Bustype = BUS_VLB;
+	    pTseng->Bustype = T_BUS_VLB;
 	    pTseng->LinFbAddressMask = 0x3FC00000;	/* A29..A22 */
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected W32p bus type: Local Buffered Bus\n");
 	    pTseng->Linmem_1meg = TRUE;		/* IMA bus support allows for only 1M linear memory */
 	    break;
 	case 0x13:
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected W32p bus type: Local Bus (option 1a)\n");
-	    pTseng->Bustype = BUS_VLB;
+	    pTseng->Bustype = T_BUS_VLB;
 	    if (pTseng->ChipRev == W32REVID_A)
 		pTseng->LinFbAddressMask = 0x07C00000;
 	    else
@@ -803,7 +788,7 @@ TsengFindNonPciBusType(ScrnInfoPtr pScrn)
 	    break;
 	case 0x11:
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected W32p bus type: Local Bus (option 1b)\n");
-	    pTseng->Bustype = BUS_VLB;
+	    pTseng->Bustype = T_BUS_VLB;
 	    pTseng->LinFbAddressMask = 0x00C00000;	/* SEGI,A22 */
 	    pTseng->Linmem_1meg = TRUE;		/* IMA bus support allows for only 1M linear memory */
 	    break;
@@ -811,7 +796,7 @@ TsengFindNonPciBusType(ScrnInfoPtr pScrn)
 	case 0x0B:
 	default:
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected W32p bus type: Local Bus (option 2)\n");
-	    pTseng->Bustype = BUS_VLB;
+	    pTseng->Bustype = T_BUS_VLB;
 	    pTseng->LinFbAddressMask = 0x3FC00000;	/* A29..A22 */
 	    break;
 	}
@@ -820,7 +805,7 @@ TsengFindNonPciBusType(ScrnInfoPtr pScrn)
 	break;
     case TYPE_ET6000:
     case TYPE_ET6100:
-	pTseng->Bustype = BUS_PCI;
+	pTseng->Bustype = T_BUS_PCI;
 	pTseng->LinFbAddressMask = 0xFF000000;
 	break;
     }
@@ -839,12 +824,12 @@ TsengPreInitNoPCI(ScrnInfoPtr pScrn)
      * Set the ChipType and ChipRev, allowing config file entries to
      * override.
      */
-    if (pScrn->device->chipset && *pScrn->device->chipset) {
+    if (pTseng->pEnt->device->chipset && *pTseng->pEnt->device->chipset) {
 	/* chipset given as a string in the config file */
-	pScrn->chipset = pScrn->device->chipset;
+	pScrn->chipset = pTseng->pEnt->device->chipset;
 	pTseng->ChipType = xf86StringToToken(TsengChipsets, pScrn->chipset);
 	from = X_CONFIG;
-    } else if (pScrn->device->chipID > 0) {
+    } else if (pTseng->pEnt->device->chipID > 0) {
 	/* chipset given as a PCI ID in the config file */
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "ChipID override only possible for PCI cards\n");
 	return FALSE;
@@ -857,8 +842,8 @@ TsengPreInitNoPCI(ScrnInfoPtr pScrn)
 	}
 	pScrn->chipset = (char *)xf86TokenToString(TsengChipsets, pTseng->ChipType);
     }
-    if (pScrn->device->chipRev >= 0) {
-	pTseng->ChipRev = pScrn->device->chipRev;
+    if (pTseng->pEnt->device->chipRev >= 0) {
+	pTseng->ChipRev = pTseng->pEnt->device->chipRev;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
 	    pTseng->ChipRev);
     } else {
@@ -1314,14 +1299,15 @@ TsengGetLinFbAddress(ScrnInfoPtr pScrn)
 {
     MessageType from;
     TsengPtr pTseng = TsengPTR(pScrn);
+    resRange range[] = { {ResExcMemBlock,0,0},_END };
 
     PDEBUG("	TsengGetLinFbAddress\n");
 
     from = X_PROBED;
 
     /* let config file override Base address */
-    if (pScrn->device->MemBase != 0) {
-	pTseng->LinFbAddress = pScrn->device->MemBase;
+    if (pTseng->pEnt->device->MemBase != 0) {
+	pTseng->LinFbAddress = pTseng->pEnt->device->MemBase;
 	from = X_CONFIG;
 	/* check for possible errors in given linear base address */
 	if ((pTseng->LinFbAddress & (~pTseng->LinFbAddressMask)) != 0) {
@@ -1331,6 +1317,15 @@ TsengGetLinFbAddress(ScrnInfoPtr pScrn)
 	    pTseng->LinFbAddress &= ~pTseng->LinFbAddressMask;
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "    Clipping MemBase to: 0x%x.\n",
 		pTseng->LinFbAddress);
+	    range[0].__begin = pTseng->LinFbAddress;
+	    range[0].__end = pTseng->LinFbAddress + 16 * 1024 * 1024;
+	    if (xf86RegisterResources(pTseng->pEnt->index,range,ResNone)) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "    Cannot register linear memory."
+			   " Using banked mode instead.\n");
+		pTseng->UseLinMem = FALSE;
+		return TRUE;
+	    }
 	}
     } else {
 	from = X_PROBED;
@@ -1345,6 +1340,13 @@ TsengGetLinFbAddress(ScrnInfoPtr pScrn)
 		    "No valid Framebuffer address in PCI config space;\n");
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		    "    Falling back to banked mode.\n");
+		pTseng->UseLinMem = FALSE;
+		return TRUE;
+	    }
+	    if (xf86RegisterResources(pTseng->pEnt->index,range,ResNone)) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "    Cannot register linear memory."
+			   " Using banked mode instead.\n");
 		pTseng->UseLinMem = FALSE;
 		return TRUE;
 	    }
@@ -1398,6 +1400,16 @@ TsengGetLinFbAddress(ScrnInfoPtr pScrn)
 		pTseng->UseLinMem = FALSE;
 		return TRUE;
 	    }
+	    range[0].type |= ResBios;
+	    range[0].__begin = pTseng->LinFbAddress;
+	    range[0].__end = pTseng->LinFbAddress + 16 * 1024 * 1024;
+	    if (xf86RegisterResources(pTseng->pEnt->index,range,ResNone)) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		    "    Cannot register linear memory."
+			   " Using banked mode instead.\n");
+		pTseng->UseLinMem = FALSE;
+		return TRUE;
+	    }
 	}
     }
 
@@ -1446,6 +1458,7 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
      */
 
     /* The vgahw module should be loaded here when needed */
+    
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
 
@@ -1455,11 +1468,7 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     if (!vgaHWGetHWRec(pScrn))
 	return FALSE;
 
-    xf86AddControlledResource(pScrn, MEM_IO);
-    xf86EnableAccess(&pScrn->Access);
-
     vgaHWGetIOBase(VGAHWPTR(pScrn));
-
     /*
      * Since, the capabilities are determined by the chipset, the very first
      * thing to do is to figure out the chipset and its capabilities.
@@ -1477,28 +1486,23 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
      * Find the bus slot for this screen (PCI or other). This also finds the
      * exact chipset type.
      */
-    if ((i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL)) == 0) {
-	/* we didn't have a PCI card. Check for other busses */
-	xfree(pciList);
-	if (!TsengPreInitNoPCI(pScrn)) {
+    /* This driver doesn't expect more than one entity per screen */
+    if (pScrn->numEntities > 1) {
 	    TsengFreeRec(pScrn);
 	    return FALSE;
 	}
-    } else {
-	/* found some PCI card(s) */
-	if (i > 1) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		"Expected one PCI card, but found %d\n", i);
-	    xfree(pciList);
+    /* This is the general case */
+    pTseng->pEnt = xf86GetEntityInfo(*pScrn->entityList);
+    /* This driver can handle ISA and PCI buses */
+    if (pTseng->pEnt->location.type == BUS_PCI) {
+	pTseng->PciInfo = xf86GetPciInfoForEntity(pTseng->pEnt->index);
+	if (!TsengPreInitPCI(pScrn)) {
 	    TsengFreeRec(pScrn);
 	    return FALSE;
-	} else {
-	    pTseng->PciInfo = *pciList;
-	    if (!TsengPreInitPCI(pScrn)) {
-		TsengFreeRec(pScrn);
-		return FALSE;
-	    }
 	}
+    } else if (!TsengPreInitNoPCI(pScrn)) {
+	TsengFreeRec(pScrn);
+	return FALSE;
     }
 
     /*
@@ -1659,6 +1663,18 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	VGAHWPTR(pScrn)->MapSize = 0x20000;  /* accelerator apertures and MMIO */
     else
 	VGAHWPTR(pScrn)->MapSize = 0x10000;
+
+    if (pTseng->UseLinMem) {
+	resRange vgamem[] =	{ {ResShrMemBlock,0xA0000,0xAFFFF},
+				  {ResShrMemBlock,0xB0000,0xB7FFF},
+				  {ResShrMemBlock,0xB8000,0xBFFFF},
+				  _END };
+	/*
+	 * XXX At least part of this range does appear to be disabled,
+	 * but to play safe, it is marked as "unused" for now.
+	 */
+	xf86SetOperatingState(vgamem, pTseng->pEnt->index, ResUnusedOpr);
+    }
     
     /* hibit processing (TsengProcessOptions() must have been called first) */
     pTseng->save_divide = 0x40;	       /* default */
@@ -1670,8 +1686,8 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
      * If the user has specified the amount of memory in the XF86Config
      * file, we respect that setting.
      */
-    if (pScrn->device->videoRam != 0) {
-	pScrn->videoRam = pScrn->device->videoRam;
+    if (pTseng->pEnt->device->videoRam != 0) {
+	pScrn->videoRam = pTseng->pEnt->device->videoRam;
 	from = X_CONFIG;
     } else {
 	from = X_PROBED;
@@ -1908,7 +1924,7 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     TsengPtr pTseng;
     int ret;
     VisualPtr visual;
-
+    
     PDEBUG("	TsengScreenInit\n");
 
     /* 
@@ -2093,6 +2109,8 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (pScrn->depth == 4 || pScrn->depth == 8) { /* cfb and xf4bpp */
 	vgaHWHandleColormaps(pScreen);
     }
+    pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+    pScrn->racMemFlags = pScrn->racIoFlags;
 
     /* Wrap the current CloseScreen and SaveScreen functions */
     pScreen->SaveScreen = TsengSaveScreen;
@@ -2165,8 +2183,10 @@ TsengCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     PDEBUG("	TsengCloseScreen\n");
 
+    if (pScrn->vtSema) {
     TsengRestore(pScrn, &(VGAHWPTR(pScrn)->SavedReg), &(pTseng->SavedReg));
     TsengUnmapMem(pScrn);
+    }
     if (pTseng->AccelInfoRec)
 	XAADestroyInfoRec(pTseng->AccelInfoRec);
     if (pTseng->CursorInfoRec)
@@ -3008,9 +3028,7 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
     outw(iobase + 4, (tsengReg->ExtCRTC[0x3F] << 8) | 0x3F);
     outw(iobase + 4, (tsengReg->ExtCRTC[0x30] << 8) | 0x30);
     outw(iobase + 4, (tsengReg->ExtCRTC[0x31] << 8) | 0x31);
-
     vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL); /* TODO: does this belong HERE, in the middle? */
-
     outw(0x3C4, (tsengReg->ExtTS[6] << 8) | 0x06);
     outw(0x3C4, (tsengReg->ExtTS[7] << 8) | 0x07);
     tmp = inb(iobase + 0x0A);	       /* reset flip-flop */

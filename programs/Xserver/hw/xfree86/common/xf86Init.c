@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.125 1999/06/05 15:55:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.126 1999/06/06 05:14:10 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -292,7 +292,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      * Locate bus slot that had register IO enabled at server startup
      */
 
-    xf86AccessSetup();
+    xf86AccessInit();
     xf86FindPrimaryDevice();
 
     /*
@@ -339,11 +339,20 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     for (i = 0; i < xf86NumScreens; i++) {
       for (layout = xf86ConfigLayout.screens; layout->screen != NULL;
 	   layout++) {
-	if (xf86Screens[i]->device == layout->screen->device) {
-	  /* A match has been found */
-	  xf86Screens[i]->confScreen = layout->screen;
-	  break;
-	}
+	  Bool found = FALSE;
+	  for (j = 0; j < xf86Screens[i]->numEntities; j++) {
+	      EntityInfoPtr pEnt =
+		  xf86GetEntityInfo(xf86Screens[i]->entityList[j]);
+	      if (pEnt->device == layout->screen->device) {
+		  /* A match has been found */
+		  xf86Screens[i]->confScreen = layout->screen;
+		  found = TRUE;
+		  xfree(pEnt);
+		  break;
+	      }
+	      xfree(pEnt);
+	  }
+	  if (found) break;
       }
       if (layout->screen == NULL) {
 	/* No match found */
@@ -363,6 +372,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
       return;
     }
 
+    xf86PostProbe();
+    xf86EntityInit();
+
     /*
      * Sort the drivers to match the requested ording.  Using a slow
      * bubble sort.
@@ -374,9 +386,6 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 		ScrnInfoPtr tmpScrn = xf86Screens[i + 1];
 		xf86Screens[i + 1] = xf86Screens[i];
 		xf86Screens[i] = tmpScrn;
-		xf86ChangeBusIndex(i + 1, xf86NumScreens);
-		xf86ChangeBusIndex(i, i + 1);
-		xf86ChangeBusIndex(xf86NumScreens, i);
 	    }
 	}
     }
@@ -397,10 +406,11 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     }
 
     for (i = 0; i < xf86NumScreens; i++)
+	xf86EnableAccess(xf86Screens[i]);
 	if (xf86Screens[i]->PreInit &&
 	    xf86Screens[i]->PreInit(xf86Screens[i], 0))
 	    xf86Screens[i]->configured = TRUE;
-
+    }
     for (i = 0; i < xf86NumScreens; i++)
 	if (!xf86Screens[i]->configured)
 	    xf86DeleteScreen(i--, 0);
@@ -438,10 +448,6 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 		    "Screen driver %d has no name set, using `%s'.\n",
 		    i, xf86Screens[i]->name);
       }
-      if (xf86Screens[i]->Probe == NULL)
-	WARN_SCREEN("Probe");
-      if (xf86Screens[i]->PreInit == NULL)
-	WARN_SCREEN("PreInit");
       if (xf86Screens[i]->ScreenInit == NULL)
 	WARN_SCREEN("ScreenInit");
       if (xf86Screens[i]->EnterVT == NULL)
@@ -577,7 +583,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 #ifdef XKB
     xf86InitXkb();
 #endif
-
+    /* set up the proper access funcs */
+    xf86PostPreInit();
+    
   } else {
     /*
      * serverGeneration != 1; some OSs have to do things here, too.
@@ -653,7 +661,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 #endif /* SCO */
 
   for (i = 0; i < xf86NumScreens; i++) {    
-      scr_index = AddScreen(xf86Screens[i]->ScreenInit, argc, argv);
+   	xf86EnableAccess(xf86Screens[i]);
+	scr_index = AddScreen(xf86Screens[i]->ScreenInit, argc, argv);
       if (scr_index == i) {
 	/*
 	 * Hook in our ScrnInfoRec, and initialise some other pScreen
@@ -678,6 +687,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
       if (!xf86Info.sharedMonitor) (xf86Screens[i]->EnterLeaveMonitor)(ENTER);
 #endif
   }
+  xf86PostScreenInit();
 
   xf86Resetting = FALSE;
   xf86Initialising = FALSE;
@@ -890,7 +900,7 @@ OsVendorInit()
 void
 ddxGiveUp()
 {
-    xf86AccessLeave();
+    xf86AccessLeaveState();
 #ifdef USE_XF86_SERVERLOCK
     xf86UnlockServer();
 #endif
@@ -945,10 +955,23 @@ AbortDDX()
   /* Need the sleep when starting X from within another X session */
   sleep(1);
 #endif
-  for (i = 0; i < xf86NumScreens; i++)
-    if (xf86Screens[i]->vtSema)
-      (xf86Screens[i]->LeaveVT)(i, 0);
-
+  if (xf86Screens) {
+      if (xf86Screens[0]->vtSema)
+	  xf86EnterServerState(SETUP);
+      for (i = 0; i < xf86NumScreens; i++)
+	  if (xf86Screens[i]->vtSema) {
+	      /*
+	       * if we are aborting before ScreenInit() has finished
+	       * we might not have been wrapped yet. Therefore enable
+	       * screen explicitely.
+	       */
+	      xf86EnableAccess(xf86Screens[i]);
+	      (xf86Screens[i]->LeaveVT)(i, 0);
+	  }
+  }
+  
+  xf86AccessLeave();
+  
   /*
    * This is needed for an abnormal server exit, since the normal exit stuff
    * MUST also be performed (i.e. the vt must be left in a defined state)

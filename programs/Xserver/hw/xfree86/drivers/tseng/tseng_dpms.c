@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.6 1998/07/25 16:56:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.7 1998/08/13 14:46:01 dawes Exp $ */
 
 
 
@@ -25,6 +25,7 @@ TsengCrtcDPMSSet(ScrnInfoPtr pScrn,
     unsigned char seq1, crtc34;
     int iobase = VGAHWPTR(pScrn)->IOBase;
 
+    xf86EnableAccess(pScrn);
     switch (PowerManagementMode) {
     case DPMSModeOn:
     default:

@@ -143,7 +143,7 @@ The following options are of particular interest to the Chips and
 Technologies driver. It should be noted that the options are case
 insensitive, and that  white space and "_" characters are ignored.
 There are therefore a wide variety of possible forms for all options.
-The forms given below are he preferred forms.
+The forms given below are the preferred forms.
 
 Options related to drivers can be present in the Screen, Device and
 Monitor sections and the Display subsections.  The order of precedence
@@ -853,7 +853,7 @@ We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.22 1999/03/21 12:46:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.23 1999/06/05 15:55:23 dawes Exp $
 </verb>
 
 </article>

@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.25 1999/05/23 04:26:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.26 1999/06/05 15:55:31 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -210,22 +210,16 @@ extern void xf86XqueEvents(void);
 #ifdef NEED_OS_RAC_PROTOS
 /* RAC-related privs */
 /* internal to os-support layer */
-void xf86StdMemWindowFromOS(unsigned long *begin, unsigned long *end);
-void xf86StdIoWindowFromOS(unsigned long *begin, unsigned long *end);
-resPtr xf86StdMemResFromOS(void);
-resPtr xf86StdIoResFromOS(void);
+resPtr xf86StdAccWindowsFromOS(void);
+resPtr xf86StdAccResFromOS(resPtr ret);
 void xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo,
-				resPtr *sysMem, resPtr *sysIo,
-				const resPtr pciMem, const resPtr pciIo);
+				resPtr *sysRes, const resPtr pciRes);
 
 /* available to the common layer */
-void xf86MemWindowFromOS(unsigned long *begin, unsigned long *end);
-void xf86IoWindowFromOS(unsigned long *begin, unsigned long *end);
-resPtr xf86MemResFromOS(void);
-resPtr xf86IoResFromOS(void);
-void xf86InitOSPciAllocator(const pciConfigPtr *pciInfo,
-				resPtr *sysMem, resPtr *sysIo,
-				const resPtr pciMem, const resPtr pciIo);
+resPtr xf86AccWindowsFromOS(void);
+resPtr xf86AccResFromOS(resPtr ret);
+PciBusPtr xf86InitOSPciAllocator(const pciConfigPtr *pciInfo,
+				resPtr *sysRes,	const resPtr pciRes);
 #endif /* NEED_OS_RAC_PROTOS */
 
 

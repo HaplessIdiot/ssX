@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.183 1999/05/30 07:50:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.184 1999/05/30 14:04:18 dawes Exp $ */
 
 
 /*
@@ -1944,6 +1944,7 @@ configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device, Bool active)
     devicep->chipset = conf_device->dev_chipset;
     devicep->ramdac = conf_device->dev_ramdac;
     devicep->driver = conf_device->dev_driver;
+    devicep->active = active;
     devicep->videoRam = conf_device->dev_videoram;
     devicep->BiosBase = conf_device->dev_bios_base;
     devicep->MemBase = conf_device->dev_mem_base;

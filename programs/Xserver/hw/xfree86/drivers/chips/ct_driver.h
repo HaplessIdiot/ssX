@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.19 1999/04/11 13:10:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.20 1999/04/17 07:06:08 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -237,6 +237,7 @@ typedef struct _CHIPSRec {
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
     int			Chipset;
+    EntityInfoPtr       pEnt;
     CARD32		IOAddress;
     CARD32		FbAddress;
     unsigned int	IOBase;

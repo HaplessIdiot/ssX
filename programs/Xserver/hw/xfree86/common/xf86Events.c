@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.70 1999/05/23 04:26:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.71 1999/05/30 07:18:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1277,6 +1277,10 @@ xf86SigHandler(int signo)
 {
   signal(signo,SIG_IGN);
   xf86Info.caughtSignal = TRUE;
+#if defined(DEBUG) && defined(XFree86LOADER)
+  if (signo == SIGSEGV)
+      LoaderDumpSymbols();
+#endif
   FatalError("Caught signal %d.  Server aborting\n", signo);
 }
 
@@ -1311,14 +1315,15 @@ xf86VTSwitch()
     ErrorF("xf86VTSwitch: Leaving, xf86Exiting is %s\n",
 	   BOOLTOSTRING(xf86Exiting));
 #endif
-
     for (i = 0; i < xf86NumScreens; i++) {
       if (!xf86Exiting)
 	if (xf86Screens[i]->SaveRestoreImage)
 	  xf86Screens[i]->SaveRestoreImage(i, SaveImage);
+    }
+    xf86EnterServerState(SETUP);
+    for (i = 0; i < xf86NumScreens; i++) {
       xf86Screens[i]->LeaveVT(i, 0);
     }
-
 #ifndef __EMX__
     DisableDevice((DeviceIntPtr)xf86Info.pKeyboard);
 #ifndef NEW_INPUT
@@ -1331,6 +1336,8 @@ xf86VTSwitch()
     }
 #endif /* NEW_INPUT */
 #endif /* !__EMX__ */
+    xf86AccessLeaveState(); /* We need this here, otherwise */
+    xf86AccessLeave();      /* console won't be restored    */
 
     if (!xf86VTSwitchAway()) {
       /*
@@ -1340,10 +1347,15 @@ xf86VTSwitch()
 #ifdef DEBUG
       ErrorF("xf86VTSwitch: Leave failed\n");
 #endif
+      xf86AccessEnter();
+      xf86EnterServerState(SETUP);
       for (i = 0; i < xf86NumScreens; i++) {
 	if (!xf86Screens[i]->EnterVT(i, 0))
 	  FatalError("EnterVT failed for screen %d\n", i);
-	if (!xf86Exiting) {
+      }
+      xf86EnterServerState(OPERATING);
+      if (!xf86Exiting) {
+	for (i = 0; i < xf86NumScreens; i++) {
 	  if (xf86Screens[i]->SaveRestoreImage)
 	    xf86Screens[i]->SaveRestoreImage(i, RestoreImage);
 	}
@@ -1364,9 +1376,11 @@ xf86VTSwitch()
 #endif /* !__EMX__ */
 
     } else {
-      for (i = 0; i < xf86NumScreens; i++)
-	xf86Screens[i]->vtSema = FALSE;
-      xf86AccessLeave();
+	for (i = 0; i < xf86NumScreens; i++) {
+	    xf86Screens[i]->vtSema = FALSE;
+	    xf86Screens[i]->access = NULL;
+	    xf86Screens[i]->busAccess = NULL;
+	}
       xf86DisableIO();
     }
   } else {
@@ -1377,10 +1391,14 @@ xf86VTSwitch()
       
     xf86EnableIO();
     xf86AccessEnter();
+    xf86EnterServerState(SETUP);
     for (i = 0; i < xf86NumScreens; i++) {
       xf86Screens[i]->vtSema = TRUE;
       if (!xf86Screens[i]->EnterVT(i, 0))
-	FatalError("EnterVT failed for screen %d\n", i);
+	  FatalError("EnterVT failed for screen %d\n", i);
+    }
+    xf86EnterServerState(OPERATING);
+    for (i = 0; i < xf86NumScreens; i++) {
       if (xf86Screens[i]->SaveRestoreImage)
 	xf86Screens[i]->SaveRestoreImage(i, RestoreImage);
     }
@@ -1400,7 +1418,6 @@ xf86VTSwitch()
     }
 #endif /* NEW_INPUT */
 #endif /* !__EMX__ */
-
   }
 }
 

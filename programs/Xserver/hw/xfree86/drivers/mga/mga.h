@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.36 1999/04/25 10:02:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.37 1999/06/06 08:48:49 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -92,13 +92,21 @@ typedef struct {
 
 #define MGAPTR(p) ((MGAPtr)((p)->driverPrivate))
 
+typedef struct mgaSave {
+    pciVideoPtr pvp;
+    Bool enable;
+} MgaSave, *MgaSavePtr;
+
 typedef struct {
+    EntityInfoPtr	pEnt;
     MGABiosInfo		Bios;
     MGABios2Info	Bios2;
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
+    xf86AccessRec	Access;
     int			Chipset;
     int                 ChipRev;
+    Bool		Primary;
     Bool		Interleave;
     int			HwBpp;
     int			Rounding;

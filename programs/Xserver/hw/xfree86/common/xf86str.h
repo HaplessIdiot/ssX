@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.35 1999/05/15 12:10:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.36 1999/05/30 03:03:29 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -88,7 +88,7 @@ typedef struct _DisplayModeRec {
     struct _DisplayModeRec *	next;
     char *			name;		/* identifier for the mode */
     ModeStatus			status;
-    int                         type;
+    int				type;
     
     /* These are the values that the user sees/provides */
     int				Clock;		/* pixel clock freq */
@@ -149,8 +149,8 @@ typedef struct {
     char *		vendor;
     char *		model;
     int			nHsync;
-    range		hsync[MAX_HSYNC];       
-    int			nVrefresh;                  
+    range		hsync[MAX_HSYNC];
+    int			nVrefresh;
     range		vrefresh[MAX_VREFRESH];
     DisplayModePtr	Modes;		/* Start of the monitor's mode list */
     DisplayModePtr	Last;		/* End of the monitor's mode list */
@@ -174,36 +174,48 @@ typedef struct x_ClockRange {
     int			PrivFlags;
 } ClockRange, *ClockRangePtr;
 
-/* Public bus-related types */
-typedef enum {
-    NONE,
-    IO,
-    MEM_IO,
-    MEM
-} resType;
+/*
+ * The driver list struct.  This contains the information required for each
+ * driver before a ScrnInfoRec has been allocated.
+ */
+typedef struct _DriverRec {
+    int			driverVersion;
+    char *		driverName;
+    void		(*Identify)(int flags);
+    Bool		(*Probe)(struct _DriverRec *drv, int flags);
+    pointer		module;
+    int			refCount;
+} DriverRec, *DriverPtr;
+
+/*
+ * These are the private bus types.  New types can be added here.  Types
+ * required for the public interface should be added to xf86str.h, with
+ * function prototypes added to xf86.h.
+ */
 
 typedef enum {
-    RES_UNDEFINED = -1,
-    RES_NONE,
-    RES_VGA,
-    RES_SHARED_VGA,
-    RES_8514,
-    RES_SHARED_8514,
-    RES_MONO
-} BusResource;
+    BUS_NONE,
+    BUS_ISA,
+    BUS_PCI
+} BusType;
 
 typedef struct {
-    int numChipset;
-    BusResource Resource;
-} IsaChipsets;
+    int		bus;
+    int		device;
+    int		func;
+} PciBusId;
+    
+typedef struct {
+    unsigned int dummy;
+} IsaBusId;
 
-typedef int (*FindIsaDevProc)(void);
-
-typedef struct { 
-    int numChipset;
-    int PCIid;
-    BusResource Resource;
-} PciChipsets;
+typedef struct _bus {
+    BusType type;
+    union {
+	IsaBusId isa;
+	PciBusId pci;
+    } id;
+} BusRec, *BusPtr;
 
 #define MAXCLOCKS   128
 typedef enum {
@@ -228,6 +240,8 @@ typedef struct {
    int				clock[MAXCLOCKS];
    char *			clockchip;
    char *			busID;
+   Bool				active;
+   Bool				inUse;
    int				videoRam;
    int				textClockFreq;
    unsigned long		BiosBase;	/* Base address of video BIOS */
@@ -237,6 +251,8 @@ typedef struct {
    int				chipRev;
    pointer			options;
 } GDevRec, *GDevPtr;
+
+typedef int (*FindIsaDevProc)(GDevPtr dev);
 
 typedef struct {
    char *			identifier;
@@ -359,19 +375,6 @@ typedef enum {
 } SaveRestoreFlags;
 
 /*
- * The driver list struct.  This contains the information required for each
- * driver before a ScrnInfoRec has been allocated.
- */
-typedef struct _DriverRec {
-    int			driverVersion;
-    char *		driverName;
-    void		(*Identify)(int flags);
-    Bool		(*Probe)(struct _DriverRec *drv, int flags);
-    pointer		module;
-    int			refCount;
-} DriverRec, *DriverPtr;
-
-/*
  * The IO access enabler struct. This contains the address for 
  * the IOEnable/IODisable funcs for their specific bus along
  * with a pointer to data needed by them
@@ -382,60 +385,139 @@ typedef struct _AccessRec {
     void *arg;
 } xf86AccessRec, *xf86AccessPtr;
 
-typedef struct _CurrAccRec {
-    xf86AccessPtr pMemAccess;
-    xf86AccessPtr pIoAccess;
-} xf86CurrentAccessRec, *xf86CurrentAccessPtr;
+/*  bus-access-related types */
+typedef enum {
+    NONE,
+    IO,
+    MEM_IO,
+    MEM
+} resType;
 
-typedef struct _ScrnAccessRec {
+typedef struct _EntityAccessRec {
+    xf86AccessPtr fallback;
     xf86AccessPtr pAccess;
-    xf86CurrentAccessPtr CurrentAccess;
     resType rt;
-} xf86ScrnAccessRec, *xf86ScrnAccessPtr;
+    pointer  busAcc;
+    struct _EntityAccessRec *next;
+} EntityAccessRec, *EntityAccessPtr;
+
+typedef struct _CurrAccRec {
+    EntityAccessPtr pMemAccess;
+    EntityAccessPtr pIoAccess;
+} xf86CurrentAccessRec, *xf86CurrentAccessPtr;
 
 /* new RAC */
 
 /* Resource Type values */
 #define ResNone		-1
 
-#define ResMem		0x0000
-#define ResIo		0x0001
+#define ResMem		0x0001
+#define ResIo		0x0002
 #define ResPhysMask	0x000F
 
-#define ResExclusive	0x0000
-#define ResShared	0x0010
-#define ResScratch	0x0020
-#define ResAccMask	0x00F0
+#define ResExclusive	0x0010
+#define ResShared	0x0020
+#define ResAny		0x0040
+#define ResAccMask	0x0070
+#define ResUnused	0x0080
 
-#define ResBlock	0x0000
-#define ResSparse	0x0100
-#define ResExtMask	0x0F00
+#define ResUnusedOpr	0x0100
+#define ResDisableOpr	0x0200
+#define ResOprMask	0x0300
+
+#define ResBlock	0x0400
+#define ResSparse	0x0800
+#define ResExtMask	0x0C00
 
 #define ResMinimised	0x1000
+#define ResInit 	0x2000
+#define ResBios		0x4000
 #define ResMiscMask	0xF000
 
-#define ResExcMemBlock	(ResMem | ResExclusive | ResBlock)
-#define ResExcIoBlock	(ResIo | ResExclusive | ResBlock)
+#define ResEnd		ResNone
+
+#define ResExcMemBlock		(ResMem | ResExclusive | ResBlock)
+#define ResExcIoBlock		(ResIo | ResExclusive | ResBlock)
+#define ResShrMemBlock		(ResMem | ResShared | ResBlock)
+#define ResShrIoBlock		(ResIo | ResShared | ResBlock)
+#define ResExcUusdMemBlock	(ResMem | ResExclusive | ResUnused | ResBlock)
+#define ResExcUusdIoBlock	(ResIo | ResExclusive | ResUnused | ResBlock)
+#define ResShrUusdMemBlock	(ResMem | ResShared | ResUnused | ResBlock)
+#define ResShrUusdIoBlock	(ResIo | ResShared | ResUnused | ResBlock)
+
+#define ResExcMemSparse		(ResMem | ResExclusive | ResSparse)
+#define ResExcIoSparse		(ResIo | ResExclusive | ResSparse)
+#define ResShrMemSparse		(ResMem | ResShared | ResSparse)
+#define ResShrIoSparse		(ResIo | ResShared | ResSparse)
+#define ResUusdMemSparse	(ResMem | ResUnused | ResSparse)
+#define ResUusdIoSparse		(ResIo | ResUnused | ResSparse)
 
 #define ResIsMem(r)		(((r)->type & ResPhysMask) == ResMem)
 #define ResIsIo(r)		(((r)->type & ResPhysMask) == ResIo)
 #define ResIsExclusive(r)	(((r)->type & ResAccMask) == ResExclusive)
 #define ResIsShared(r)		(((r)->type & ResAccMask) == ResShared)
-#define ResIsScratch(r)		(((r)->type & ResAccMask) == ResScratch)
+#define ResIsUnused(r)		(((r)->type & ResAccMask) == ResUnused)
 #define ResIsBlock(r)		(((r)->type & ResExtMask) == ResBlock)
 #define ResIsSparse(r)		(((r)->type & ResExtMask) == ResSparse)
 #define ResIsMinimised(r)	(((r)->type & ResMiscMask) == ResMinimised)
 
-/* XXX Maybe add a mask field for efficient representation of sparse ranges? */
+typedef struct {
+    long type;     /* shared, exclusive, unused etc. */
+    unsigned long a;
+    unsigned long b;
+} resRange, *resList;
+
+#define RANGE(r,u,v,t) (r).a = (u);\
+                       (r).b = (v);\
+                       (r).type = t;
+
+#define __base a
+#define __mask b
+#define __begin a
+#define __end b
+
+/* resource record */
 typedef struct _resRec *resPtr;
 typedef struct _resRec {
-    unsigned	long begin;	/* start of address range */
-    unsigned	long end;	/* end of address range */
-    int		busIndex;	/* who owns the resource */
-    int		type;		/* shared, exclusive, scratch */
+    resRange    val;
+    int		entityIndex;	/* who owns the resource */
     resPtr	next;
 } resRec;
 
+#define s_base  val.__base
+#define s_mask  val.__mask
+#define b_begin val.__begin
+#define b_end   val.__end
+#define r_type  val.type
+
+typedef struct {
+    int numChipset;
+    resRange *resList;
+} IsaChipsets;
+
+typedef struct { 
+    int numChipset;
+    int PCIid;
+    resRange *resList;
+} PciChipsets;
+
+#define pciPhysMask 0xF0
+#define pciMem      0x10
+#define pciIo       0x20
+#define pciBios     0x30
+#define pciRegMask  0x0F
+
+/* Entity properties */
+typedef void (*EntityProc)(int entityIndex,pointer private);
+
+typedef struct _entityInfo {
+    int index;
+    BusRec location;
+    int chipset;
+    Bool active;
+    resPtr resources;
+    GDevPtr device;
+} EntityInfoRec, *EntityInfoPtr;
 
 /* DGA */
 
@@ -472,7 +554,6 @@ typedef struct {
    PixmapPtr pPix;
 } DGADeviceRec, *DGADevicePtr;
 
-
 /*
  * ScrnInfoRec
  *
@@ -487,8 +568,8 @@ typedef struct {
 
 typedef struct _ScrnInfoRec {
     int			driverVersion;
-    char *              driverName;             /* canonical name used in */
-                                                /* the config file */   
+    char *		driverName;		/* canonical name used in */
+						/* the config file */   
     ScreenPtr		pScreen;		/* Pointer to the ScreenRec */
     int			scrnIndex;		/* Number of this screen */
     Bool		configured;		/* Is this screen valid */ 
@@ -538,8 +619,9 @@ typedef struct _ScrnInfoRec {
 						 * into a circular list */
     confScreenPtr	confScreen;		/* Screen config info */
     MonPtr		monitor;		/* Monitor information */
-    GDevPtr		device;			/* device information */
     DispPtr		display;		/* Display information */
+    int *		entityList;		/* List of device entities */
+    int			numEntities;
     int			widthmm;		/* physical display dimensions
 						 * in mm */
     int			heightmm;
@@ -574,10 +656,14 @@ typedef struct _ScrnInfoRec {
 
     int			chipID;
     int			chipRev;
-    xf86ScrnAccessRec   Access;
+    int			racMemFlags;
+    int			racIoFlags;
+    pointer		access;
+    xf86CurrentAccessPtr CurrentAccess;
+    resType		resourceType;
+    pointer		busAccess;
     /* Allow screens to be enabled/disabled individually */
     Bool		vtSema;
-
     /*
      * These can be used when the minor ABI version is incremented.
      * The NUM_* parameters must be reduced appropriately to keep the

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _XF86_RESOURCES_H
 
 #define _XF86_RESOURCES_H

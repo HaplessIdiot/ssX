@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.58 1999/04/18 04:08:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.59 1999/04/27 12:05:09 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -87,6 +87,9 @@
 /* This is used for module versioning */
 #include "xf86Version.h"
 
+/* Standard resources are defined here */
+#include "xf86Resources.h"
+
 /* All drivers using the vgahw module need this */
 #include "vgaHW.h"
 
@@ -158,7 +161,7 @@ static int      CHIPSValidMode(int scrnIndex, DisplayModePtr mode,
 static Bool	CHIPSSaveScreen(ScreenPtr pScreen, Bool unblank);
 
 /* Internally used functions */
-static int      chipsFindIsaDevice(void);
+static int      chipsFindIsaDevice(GDevPtr dev);
 static Bool     chipsClockSelect(ScrnInfoPtr pScrn, int no);
 static Bool     chipsModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void     chipsSave(ScrnInfoPtr pScrn);
@@ -508,21 +511,21 @@ static PciChipsets CHIPSPCIchipsets[] = {
 };
 
 static IsaChipsets CHIPSISAchipsets[] = {
-    { CHIPS_CT65520,		RES_VGA },
-    { CHIPS_CT65525,		RES_VGA },
-    { CHIPS_CT65530,		RES_VGA },
-    { CHIPS_CT65535,		RES_VGA },
-    { CHIPS_CT65540,		RES_VGA },
-    { CHIPS_CT65545,		RES_VGA },
-    { CHIPS_CT65546,		RES_VGA },
-    { CHIPS_CT65548,		RES_VGA },
-    { CHIPS_CT65550,		RES_VGA },
-    { CHIPS_CT65554,		RES_VGA },
-    { CHIPS_CT65555,		RES_VGA },
-    { CHIPS_CT68554,		RES_VGA },
-    { CHIPS_CT69000,		RES_VGA },
-    { CHIPS_CT64200,		RES_VGA },
-    { CHIPS_CT64300,		RES_VGA },
+    { CHIPS_CT65520,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT65525,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT65530,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT65535,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT65540,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT65545,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT65546,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT65548,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT65550,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT65554,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT65555,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT68554,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT69000,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT64200,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT64300,		RES_EXCLUSIVE_VGA },
     { -1,			RES_UNDEFINED }
 };
 
@@ -663,11 +666,6 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
-static const char *racSymbols[] = {
-    "xf86RACInit",
-    NULL
-};
-
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
     "xf86DoEDID_DDC1",
@@ -731,7 +729,7 @@ chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * might refer to.
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
-			  ramdacSymbols, racSymbols, ddcSymbols, i2cSymbols,
+			  ramdacSymbols, ddcSymbols, i2cSymbols,
 			  shadowSymbols, NULL);
 
 	/*
@@ -789,12 +787,11 @@ CHIPSProbe(DriverPtr drv, int flags)
 {
     Bool foundScreen = FALSE;
     int numDevSections, numUsed;
-    GDevPtr *devSections, *usedDevs;
-    GDevPtr usedDev;
-    pciVideoPtr *usedPci;
+    GDevPtr *devSections;
     int *usedChips;
-    int usedChip;
-
+    EntityInfoPtr pEnt;
+    int i;
+    
     /*
      * Find the config file Device sections that match this
      * driver, and return if there are none.
@@ -803,28 +800,18 @@ CHIPSProbe(DriverPtr drv, int flags)
 					  &devSections)) <= 0) {
 	return FALSE;
     }
-  
     /* PCI BUS */
     if (xf86GetPciVideoInfo() ) {
 	numUsed = xf86MatchPciInstances(CHIPS_NAME, PCI_VENDOR_CHIPSTECH,
 					CHIPSChipsets, CHIPSPCIchipsets, 
-					devSections,numDevSections,
-					&usedDevs, &usedPci, &usedChips);
-	if (numUsed > 0){
-	    int i;
+					devSections,numDevSections, drv,
+					&usedChips);
+	if (numUsed > 0) {
 	    for (i = 0; i < numUsed; i++) {
-		pciVideoPtr pPci;
-		BusResource Resource;
-		pPci = usedPci[i];
-		Resource = xf86FindPciResource(usedChips[i],CHIPSPCIchipsets);
-		if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-				     Resource)) {  
-		    ScrnInfoPtr pScrn;
-		    /* Allocate a ScrnInfoRec and claim the slot */
-		    pScrn = xf86AllocateScreen(drv,0);
-		    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-				     Resource, &CHIPS, usedChips[i],
-				     pScrn->scrnIndex);
+		pEnt = xf86GetEntityInfo(usedChips[i]);
+		if (pEnt->active) {
+		    /* Allocate a ScrnInfoRec  */
+		    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 		    pScrn->driverVersion = VERSION;
 		    pScrn->driverName    = CHIPS_DRIVER_NAME;
 		    pScrn->name          = CHIPS_NAME;
@@ -837,49 +824,49 @@ CHIPSProbe(DriverPtr drv, int flags)
 		    pScrn->LeaveVT       = CHIPSLeaveVT;
 		    pScrn->FreeScreen    = CHIPSFreeScreen;
 		    pScrn->ValidMode     = CHIPSValidMode;
-		    pScrn->device        = usedDevs[i];
 		    foundScreen = TRUE;
+		    xf86ConfigActivePciEntity(pScrn,pEnt,CHIPSPCIchipsets,
+					      NULL,NULL,NULL,NULL,NULL);
 		}
+		xfree(pEnt);
 	    }
-      
-	    xfree(usedDevs);
-	    xfree(usedPci);
 	}
     }
+
     /* Isa Bus */
-
-    usedChip = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
-				     chipsFindIsaDevice,devSections,
-				     numDevSections,&usedDev);    /*XXX*/
-    if(usedChip >= 0)
-    {
-	ScrnInfoPtr pScrn;
-	int Resource = xf86FindIsaResource(usedChip,CHIPSISAchipsets); /*XXX*/
+    numUsed = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
+				     drv,chipsFindIsaDevice,devSections,
+				     numDevSections,&usedChips);
+    if(numUsed >= 0)
+	for (i = 0; i < numUsed; i++) {
+	    pEnt = xf86GetEntityInfo(usedChips[i]);
+	    if (pEnt->active) {
+		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 	  
-	pScrn = xf86AllocateScreen(drv,0);
-	xf86ClaimIsaSlot(Resource,&CHIPS,usedChip,pScrn->scrnIndex);
-	pScrn->driverVersion = VERSION;
-	pScrn->driverName    = CHIPS_DRIVER_NAME;
-	pScrn->name          = CHIPS_NAME;
-	pScrn->Probe         = CHIPSProbe;
-	pScrn->PreInit       = CHIPSPreInit;
-	pScrn->ScreenInit    = CHIPSScreenInit;
-	pScrn->SwitchMode    = CHIPSSwitchMode;
-	pScrn->AdjustFrame   = CHIPSAdjustFrame;
-	pScrn->EnterVT       = CHIPSEnterVT;
-	pScrn->LeaveVT       = CHIPSLeaveVT;
-	pScrn->FreeScreen    = CHIPSFreeScreen;
-	pScrn->ValidMode     = CHIPSValidMode;
-	pScrn->device        = usedDev;
-	foundScreen = TRUE;
-    }
-
+		pScrn->driverVersion = VERSION;
+		pScrn->driverName    = CHIPS_DRIVER_NAME;
+		pScrn->name          = CHIPS_NAME;
+		pScrn->Probe         = CHIPSProbe;
+		pScrn->PreInit       = CHIPSPreInit;
+		pScrn->ScreenInit    = CHIPSScreenInit;
+		pScrn->SwitchMode    = CHIPSSwitchMode;
+		pScrn->AdjustFrame   = CHIPSAdjustFrame;
+		pScrn->EnterVT       = CHIPSEnterVT;
+		pScrn->LeaveVT       = CHIPSLeaveVT;
+		pScrn->FreeScreen    = CHIPSFreeScreen;
+		pScrn->ValidMode     = CHIPSValidMode;
+		foundScreen = TRUE;
+		xf86ConfigActiveIsaEntity(pScrn,pEnt,CHIPSISAchipsets,
+					  NULL,NULL,NULL,NULL,NULL);
+	    }
+	    xfree(pEnt);
+	}
     xfree(devSections);
     return foundScreen;
 }
 
 static int
-chipsFindIsaDevice(void)
+chipsFindIsaDevice(GDevPtr dev)
 {
     int found = -1;
     unsigned char tmp;
@@ -960,20 +947,16 @@ chipsFindIsaDevice(void)
 Bool
 CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 {
-    pciVideoPtr *pciList = NULL;
+    pciVideoPtr pciPtr;
     ClockRangePtr clockRanges;
     char *mod = NULL;
     int i;
     CHIPSPtr cPtr;
-    int *numChipsets;
     const char *reqSym = NULL;
-
-    xf86AddControlledResource(pScrn,IO);
 
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
-
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     /* Allocate the ChipsRec driverPrivate */
@@ -982,38 +965,33 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     }
     cPtr = CHIPSPTR(pScrn);
 
-    /* Since, the capabilities are determined by the chipset the very
+    /* Since the capabilities are determined by the chipset the very
      * first thing to do is, figure out the chipset and its capabilities
      */
-    if(xf86FindChipsetsForScreen(pScrn->scrnIndex,&CHIPS,&numChipsets) > 1)
+    /* This driver doesn't expect more than one entity per screen */
+    if (pScrn->numEntities > 1)
 	return FALSE;
-    cPtr->Chipset = *numChipsets;
-    pScrn->chipset = (char *)xf86TokenToString(CHIPSChipsets,
-					       *numChipsets);
+    /* This is the general case */
+    for (i = 0; i<pScrn->numEntities; i++) {
+	cPtr->pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
+	if (cPtr->pEnt->resources) return FALSE;
+	cPtr->Chipset = cPtr->pEnt->chipset;
+	pScrn->chipset = (char *)xf86TokenToString(CHIPSChipsets,
+						   cPtr->pEnt->chipset);
+	if ((cPtr->Chipset == CHIPS_CT64200) ||
+	    (cPtr->Chipset == CHIPS_CT64300)) cPtr->Flags |= ChipsWingine;
+	if ((cPtr->Chipset >= CHIPS_CT65550) &&
+	    (cPtr->Chipset <= CHIPS_CT69000)) cPtr->Flags |= ChipsHiQV;
 
-    if ((cPtr->Chipset == CHIPS_CT64200) ||
-	(cPtr->Chipset == CHIPS_CT64300)) cPtr->Flags |= ChipsWingine;
-    if ((cPtr->Chipset >= CHIPS_CT65550) &&
-	(cPtr->Chipset <= CHIPS_CT69000)) cPtr->Flags |= ChipsHiQV;
-
-    if(xf86IsPciBus(pScrn->scrnIndex)){
-	i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL);
-	if (i > 1) {
-	    /* This shouldn't happen */
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "Expected one PCI card, but found %d\n", i);
-	    CHIPSFreeRec(pScrn);
-	    xfree(pciList);
-	    return FALSE;
+	/* This driver can handle ISA and PCI buses */
+	if (cPtr->pEnt->location.type == BUS_PCI) {
+	    pciPtr = xf86GetPciInfoForEntity(cPtr->pEnt->index);
+	    cPtr->PciInfo = pciPtr;
+	    cPtr->PciTag = pciTag(cPtr->PciInfo->bus, 
+				  cPtr->PciInfo->device,
+				  cPtr->PciInfo->func);
 	}
-	cPtr->PciInfo = *pciList;
-	xfree(pciList);
-	      
-	cPtr->PciTag = pciTag(cPtr->PciInfo->bus, 
-			      cPtr->PciInfo->device,
-			      cPtr->PciInfo->func);
     }
-	
     /* Now that we've identified the chipset, setup the capabilities flags */
     switch (cPtr->Chipset) {
     case CHIPS_CT69000:
@@ -1050,11 +1028,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     case CHIPS_CT65520:
 	break;
     }
-
-    xf86EnableAccess(&pScrn->Access);
-
     CHIPSSetStdExtFuncs(cPtr);
-
     /* Call the device specific PreInit */
     if (IS_HiQV(cPtr)) {
 	if (!chipsPreInitHiQV(pScrn, flags)) {
@@ -1280,14 +1254,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
     
-    if (!xf86LoadSubModule(pScrn, "rac")){
-	if (cPtr->UseFullMMIO)
-	    chipsUnmapMem(pScrn);
-        CHIPSFreeRec(pScrn);
-	return FALSE;
-    }
-    xf86LoaderReqSymLists(racSymbols, NULL);
-
     if (cPtr->UseFullMMIO)
 	chipsUnmapMem(pScrn);
 
@@ -1311,7 +1277,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     CHIPSPanelSizePtr Size = &cPtr->PanelSize;
     CHIPSMemClockPtr MemClk = &cPtr->MemClock;
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
-
+    resRange linearRes[] = { {ResExcMemBlock|ResBios,0,0},_END };
+    
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -1439,52 +1406,54 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	       (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
 
     /* Default to nonlinear for < 8bpp and linear for >= 8bpp. */
-    if ((pScrn->bitsPerPixel < 8) && 
-	!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
+    if (pScrn->bitsPerPixel < 8) {
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
 	cPtr->Flags &= ~ChipsLinearSupport;
-    } else if ((cPtr->Flags & ChipsLinearSupport) && 
-	       xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "Enabling linear addressing\n");
+	from = X_CONFIG;
+	}
+    } else if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, TRUE)) {
+	cPtr->Flags &= ~ChipsLinearSupport;
+	from = X_CONFIG;
     }
-    
-    if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, TRUE)) {
-	cPtr->Flags &= ~ChipsLinearSupport;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "Disabling linear addressing\n");
-    } else
-	cPtr->UseMMIO = TRUE;
 
-    /* Are we using MMIO mapping of VGA registers */
-    if (xf86ReturnOptValBool(cPtr->Options, OPTION_MMIO, FALSE)) {
-	if ((cPtr->Flags & ChipsLinearSupport) && cPtr->UseMMIO && 
-		(cPtr->Flags & ChipsFullMMIOSupport) &&
-		xf86IsPciBus(pScrn->scrnIndex)) {
-
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling MMIO\n");
-	    cPtr->UseFullMMIO = TRUE;
-	    if (pScrn->device->MemBase) {
-		cPtr->FbAddress = pScrn->device->MemBase;
+    /* linear base */
+    if (cPtr->Flags & ChipsLinearSupport) {
+	if (cPtr->pEnt->location.type == BUS_PCI) {
+	    cPtr->FbAddress =  cPtr->PciInfo->memBase[0] & 0xff800000;
+	    from = X_PROBED;
+	    if (xf86RegisterResources(cPtr->pEnt->index,NULL,ResNone))
+		cPtr->Flags &= ~ChipsLinearSupport;
+	} else 	{
+	    if (cPtr->pEnt->device->MemBase) {
+		cPtr->FbAddress = cPtr->pEnt->device->MemBase;
+		from = X_CONFIG;
 	    } else {
-		cPtr->FbAddress =  cPtr->PciInfo->memBase[0] & 0xff800000;
+		cPtr->FbAddress = ((unsigned int)
+				   (cPtr->readXR(cPtr, 0x06))) << 24;
+		cPtr->FbAddress |= ((unsigned int)
+				    (0x80 & (cPtr->readXR(cPtr, 0x05)))) << 16;
+		from = X_PROBED;
 	    }
-	    cPtr->IOAddress = cPtr->FbAddress + 0x400000L;
-
-	    /* Setup fake memory size for now as we don't care in PreInit */
-	    cPtr->FbMapSize = 1024 * 1024;
-	
-	    /* Map the linear framebuffer */
-	    if (!chipsMapMem(pScrn))
-		return FALSE;
-
-	    /* Setup the MMIO register funstions */
-	    CHIPSSetMmioExtFuncs(cPtr);
-	    CHIPSHWSetMmioFuncs(pScrn, cPtr->MMIOBase, 0x0);
-	} else {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO option ignored\n");
+	    linearRes[0].__begin = cPtr->FbAddress;
+	    linearRes[0].__end = cPtr->FbAddress + 0x800000;
+	    if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
+		cPtr->Flags &= ~ChipsLinearSupport;
+		from = X_PROBED;
+	    }
 	}
     }
+    if (cPtr->Flags & ChipsLinearSupport) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Enabling linear addressing\n");
+	xf86DrvMsg(pScrn->scrnIndex, from,
+		   "base address is set at 0x%X.\n", cPtr->FbAddress);
+	cPtr->UseMMIO = TRUE;
+	cPtr->IOAddress = cPtr->FbAddress + 0x400000L;
+    } else
+	xf86DrvMsg(pScrn->scrnIndex, from,
+		   "Disabling linear addressing\n");
 
+    
     if (xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
 	if (!(cPtr->Flags & ChipsLinearSupport)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
@@ -1532,18 +1501,9 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	}
     }
     
-    /* Store register values that might be messed up by a suspend resume */
-    /* Do this early as some of the other code in PreInit relies on it   */
-    cPtr->SuspendHack.vgaIOBaseFlag = ((hwp->readMiscOut(hwp)) & 0x01);
-    cPtr->IOBase = (unsigned int)(cPtr->SuspendHack.vgaIOBaseFlag ?
-				  0x3D0 : 0x3B0);
-
-    /* monitor info */
-    cPtr->Monitor = chipsSetMonitor(pScrn);
-
     /* memory size */
-    if (pScrn->device->videoRam != 0) {
-	pScrn->videoRam = pScrn->device->videoRam;
+    if (cPtr->pEnt->device->videoRam != 0) {
+	pScrn->videoRam = cPtr->pEnt->device->videoRam;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "VideoRAM: %d kByte\n",
 		   pScrn->videoRam);
     } else {
@@ -1604,6 +1564,36 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		   pScrn->videoRam);
     }
     cPtr->FbMapSize = pScrn->videoRam * 1024;
+
+    /* Are we using MMIO mapping of VGA registers */
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_MMIO, FALSE)) {
+	if ((cPtr->Flags & ChipsLinearSupport) && cPtr->UseMMIO && 
+		(cPtr->Flags & ChipsFullMMIOSupport) &&
+		cPtr->pEnt->location.type == BUS_PCI) {
+
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling MMIO\n");
+	    cPtr->UseFullMMIO = TRUE;
+
+	    /* Map the linear framebuffer */
+	    if (!chipsMapMem(pScrn))
+		return FALSE;
+
+	    /* Setup the MMIO register funstions */
+	    CHIPSSetMmioExtFuncs(cPtr);
+	    CHIPSHWSetMmioFuncs(pScrn, cPtr->MMIOBase, 0x0);
+	} else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO option ignored\n");
+	}
+    }
+
+    /* Store register values that might be messed up by a suspend resume */
+    /* Do this early as some of the other code in PreInit relies on it   */
+    cPtr->SuspendHack.vgaIOBaseFlag = ((hwp->readMiscOut(hwp)) & 0x01);
+    cPtr->IOBase = (unsigned int)(cPtr->SuspendHack.vgaIOBaseFlag ?
+				  0x3D0 : 0x3B0);
+
+    /* monitor info */
+    cPtr->Monitor = chipsSetMonitor(pScrn);
 
     /*test STN / TFT */
     tmp = cPtr->readFR(cPtr, 0x10);
@@ -1738,30 +1728,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	cPtr->Flags &= ~ChipsAccelSupport;
     }
     
-    /* linear base */
-    if (cPtr->Flags & ChipsLinearSupport) {
-	if (pScrn->device->MemBase) {
-	    cPtr->FbAddress = pScrn->device->MemBase;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		       "base address is set at 0x%X.\n", cPtr->FbAddress);
-	} else {
-	    if (cPtr->Bus == ChipsPCI) {
-		cPtr->FbAddress =  cPtr->PciInfo->memBase[0] & 0xff800000;
-	    } else {
-		cPtr->FbAddress = ((unsigned int)
-				(cPtr->readXR(cPtr, 0x06))) << 24;
-		cPtr->FbAddress |= ((unsigned int)(0x80 &
-				(cPtr->readXR(cPtr, 0x05)))) << 16;
-	    }
-	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		       "base address is set at 0x%X.\n", cPtr->FbAddress);
-	}
-    }
-
-    /* If we support MMIO, setup the MMIO address */
-    if (cPtr->Flags & ChipsMMIOSupport)
-	cPtr->IOAddress = cPtr->FbAddress + 0x400000L;
-
     /* Set the flags for Colour transparency. This is dependent
      * on the revision on the chip. Until exactly which chips
      * have this bug are found, only allow 8bpp Colour transparency */
@@ -1794,8 +1760,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     pScrn->progClock = TRUE;
     cPtr->ClockType = HiQV_STYLE | TYPE_PROGRAMMABLE;
 
-    if (pScrn->device->textClockFreq > 0) {
-	SaveClk->Clock = pScrn->device->textClockFreq;
+    if (cPtr->pEnt->device->textClockFreq > 0) {
+	SaveClk->Clock = cPtr->pEnt->device->textClockFreq;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Using textclock freq: %7.3f.\n",
 		   SaveClk->Clock/1000.0);
@@ -1952,27 +1918,27 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	cPtr->MaxClock = min(cPtr->MaxClock, 
 			     MemClk->Clk * 4 * 0.7 / bytesPerPixel);
     
-    if (pScrn->device->dacSpeeds[0]) {
+    if (cPtr->pEnt->device->dacSpeeds[0]) {
 	int speed = 0;
 	switch (pScrn->bitsPerPixel) {
 	case 1:
 	case 4:
 	case 8:
-	    speed = pScrn->device->dacSpeeds[DAC_BPP8];
+	    speed = cPtr->pEnt->device->dacSpeeds[DAC_BPP8];
 	    break;
 	case 16:
-	    speed = pScrn->device->dacSpeeds[DAC_BPP16];
+	    speed = cPtr->pEnt->device->dacSpeeds[DAC_BPP16];
 	    break;
 	case 24:
-	    speed = pScrn->device->dacSpeeds[DAC_BPP24];
+	    speed = cPtr->pEnt->device->dacSpeeds[DAC_BPP24];
 	    break;
 	case 32:
-	    speed = pScrn->device->dacSpeeds[DAC_BPP32];
+	    speed = cPtr->pEnt->device->dacSpeeds[DAC_BPP32];
 	    break;
 	}
 
 	if (speed == 0)
-	    cPtr->MaxClock = pScrn->device->dacSpeeds[0];
+	    cPtr->MaxClock = cPtr->pEnt->device->dacSpeeds[0];
 	from = X_CONFIG;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "User max pixel clock of %7.3f MHz overrides %7.3f MHz limit\n",
@@ -2053,6 +2019,8 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     vgaHWPtr hwp;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
+    Bool useLinear;
+    resRange linearRes[] = { {ResExcMemBlock|ResBios,0,0},_END };
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -2199,43 +2167,9 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 	       (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
 
-    if ((pScrn->bitsPerPixel < 8) && 
-	!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
-	cPtr->Flags &= ~ChipsLinearSupport;
-    } else if ((cPtr->Flags & ChipsLinearSupport) && 
-	       xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "Enabling linear addressing\n");
-    }
-    if (cPtr->Flags & ChipsLinearSupport) {
-	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, TRUE)) {
-	    cPtr->Flags &= ~ChipsLinearSupport;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		       "Disabling linear addressing\n");
-	}
-    }
-
-    if (xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
-	if (!(cPtr->Flags & ChipsLinearSupport)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Option \"ShadowFB\" ignored. Not supported without linear addressing\n");
-	} else if (pScrn->depth < 8) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Option \"ShadowFB\" ignored. Not supported at this depth.\n");
-	} else {
-	    cPtr->Flags |= ChipsShadowFB;
-	    cPtr->Flags &= ~ChipsAccelSupport;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-		    "Using \"Shadow Framebuffer\" - acceleration disabled\n");
-	}
-    }
-
-    /* monitor info */
-    cPtr->Monitor = chipsSetMonitor(pScrn);
-
     /* memory size */
-    if (pScrn->device->videoRam != 0) {
-	pScrn->videoRam = pScrn->device->videoRam;
+    if (cPtr->pEnt->device->videoRam != 0) {
+	pScrn->videoRam = cPtr->pEnt->device->videoRam;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "VideoRAM: %d kByte\n",
                pScrn->videoRam);
     } else {
@@ -2266,6 +2200,78 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     }
     cPtr->FbMapSize = pScrn->videoRam * 1024;
 
+    /* Default to nonlinear for < 8bpp and linear for >= 8bpp. */
+    if (cPtr->Flags & ChipsLinearSupport) useLinear = TRUE;
+    if (pScrn->bitsPerPixel < 8) {
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
+	    useLinear = FALSE;
+	    from = X_CONFIG;
+	}
+    } else if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, TRUE)) {
+	useLinear = FALSE;
+	from = X_CONFIG;
+    }
+
+    /* linear base */
+    if (useLinear) {
+	unsigned char mask = 0xF8;
+	if (pScrn->videoRam == 1024)
+	    mask = 0xF0;
+	else if (pScrn->videoRam == 2048)
+	    mask = 0xE0;
+	if (cPtr->pEnt->device->MemBase) {
+	    cPtr->FbAddress = cPtr->pEnt->device->MemBase
+		& ((0xFF << 24) | (mask << 16));
+	    from = X_CONFIG;	    
+	} else {
+	    cPtr->FbAddress = ((0xFF & (cPtr->readXR(cPtr, 0x09))) << 24);
+	    cPtr->FbAddress |= ((mask  & (cPtr->readXR(cPtr, 0x08))) << 16);
+	    from = X_PROBED;
+	}
+	linearRes[0].__begin = cPtr->FbAddress;
+	linearRes[0].__end = cPtr->FbAddress + 0x800000;
+	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
+	    useLinear = FALSE;
+	    from = X_PROBED;
+	}
+    }
+
+    if (useLinear) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Enabling linear addressing\n");
+	xf86DrvMsg(pScrn->scrnIndex, from,
+		   "base address is set at 0x%X.\n", cPtr->FbAddress);
+	if (xf86ReturnOptValBool(cPtr->Options, OPTION_MMIO, FALSE) &&
+	    (cPtr->Flags & ChipsMMIOSupport)) {
+	    cPtr->UseMMIO = TRUE;
+	    cPtr->IOAddress = cPtr->FbAddress + 0x200000L;
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling MMIO\n");
+	}
+    } else {
+	if (cPtr->Flags & ChipsLinearSupport)	
+	    xf86DrvMsg(pScrn->scrnIndex, from,
+		       "Disabling linear addressing\n");
+	cPtr->Flags &= ~ChipsLinearSupport;
+    }
+
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
+	if (!(cPtr->Flags & ChipsLinearSupport)) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		"Option \"ShadowFB\" ignored. Not supported without linear addressing\n");
+	} else if (pScrn->depth < 8) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		"Option \"ShadowFB\" ignored. Not supported at this depth.\n");
+	} else {
+	    cPtr->Flags |= ChipsShadowFB;
+	    cPtr->Flags &= ~ChipsAccelSupport;
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		    "Using \"Shadow Framebuffer\" - acceleration disabled\n");
+	}
+    }
+
+    /* monitor info */
+    cPtr->Monitor = chipsSetMonitor(pScrn);
+
     cPtr->PanelType |= ChipsCRT;
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT\n");
 
@@ -2293,34 +2299,10 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	cPtr->Flags &= ~ChipsAccelSupport;
     }
 
-    /* linear base */
-    if (cPtr->Flags & ChipsLinearSupport) {
-	unsigned char mask = 0xF8;
-	if (pScrn->videoRam == 1024)
-	    mask = 0xF0;
-	else if (pScrn->videoRam == 2048)
-	    mask = 0xE0;
-	if (pScrn->device->MemBase) {
-	    cPtr->FbAddress = pScrn->device->MemBase
-		& ((0xFF << 24) | (mask << 16));
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		       "base address is set at 0x%X.\n", cPtr->FbAddress);
-	} else {
-	    cPtr->FbAddress = ((0xFF & (cPtr->readXR(cPtr, 0x09))) << 24);
-	    cPtr->FbAddress |= ((mask  & (cPtr->readXR(cPtr, 0x08))) << 16);
-	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		       "base address is set at 0x%X.\n", cPtr->FbAddress);
-	}
-    }
-
-    /* If we support MMIO, setup the MMIO address */
-    if (cPtr->Flags & ChipsMMIOSupport)
-	cPtr->IOAddress = cPtr->FbAddress + 0x200000L;
-
     /* 32bit register address offsets */
-    cPtr->Regs32 = xnfalloc(sizeof(ChipsReg32));
     if ((cPtr->Flags & ChipsAccelSupport) ||
 	    (cPtr->Flags & ChipsHWCursor)) {
+	cPtr->Regs32 = xnfalloc(sizeof(ChipsReg32));
 	tmp = cPtr->readXR(cPtr, 0x07);
 	for( i = 0; i < (sizeof(ChipsReg32) / sizeof(ChipsReg32[0])); i++) {
 	    cPtr->Regs32[i] =  ((ChipsReg32[i] & 0x7E03)) | ((tmp & 0x80)
@@ -2328,6 +2310,24 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 #ifdef DEBUG
 	    ErrorF("DR[%X] = %X\n",i,cPtr->Regs32[i]);
 #endif
+	}
+	linearRes[0].type = ResShrIoSparse | ResBios;
+	linearRes[0].__base = cPtr->Regs32[0];
+	linearRes[0].__mask = 0x83FC;
+	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
+	    if (cPtr->Flags & ChipsAccelSupport) {
+		cPtr->Flags &= ~ChipsAccelSupport;
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+			   "Cannot allocate IO registers: "
+			   "Disabling acceleration\n");
+	    }
+	    if (cPtr->Flags & ChipsHWCursor) {
+		cPtr->Flags &= ~ChipsHWCursor;
+		cPtr->Accel.UseHWCursor = FALSE;
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+			   "Cannot allocate IO registers: "
+			   "Disabling HWCursor\n");
+	    }
 	}
     }
 
@@ -2372,8 +2372,8 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 
     if (cPtr->ClockType & TYPE_PROGRAMMABLE) {
 	pScrn->numClocks = NoClocks;
-	if(pScrn->device->textClockFreq > 0) {
-	    SaveClk->Clock = pScrn->device->textClockFreq;
+	if(cPtr->pEnt->device->textClockFreq > 0) {
+	    SaveClk->Clock = cPtr->pEnt->device->textClockFreq;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Using textclock freq: %7.3f.\n",
 		       SaveClk->Clock/1000.0);
@@ -2384,14 +2384,14 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	SaveClk->Clock = chipsGetHWClock(pScrn);
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using textclock clock %i.\n",
 	       SaveClk->Clock);
-	if (!pScrn->device->numclocks) {
+	if (!cPtr->pEnt->device->numclocks) {
 	    pScrn->numClocks = NoClocks;
 	    xf86GetClocks(pScrn, NoClocks, chipsClockSelect,
 			  chipsProtect, chipsBlankScreen,
 			  cPtr->IOBase + 0x0A, 0x08, 1, 28322);
 	    from = X_PROBED;
 	} else {
-	    pScrn->numClocks = pScrn->device->numclocks;
+	    pScrn->numClocks = cPtr->pEnt->device->numclocks;
 	    if (pScrn->numClocks > NoClocks) {
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			   "Too many Clocks specified in configuration file.\n");
@@ -2400,7 +2400,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 		pScrn->numClocks= NoClocks;
 	    }
 	    for (i = 0; i < pScrn->numClocks; i++)
-		pScrn->clock[i] = pScrn->device->clock[i];
+		pScrn->clock[i] = cPtr->pEnt->device->clock[i];
 	    from = X_CONFIG;
 	}
 	xf86ShowClocks(pScrn, from);
@@ -2421,23 +2421,23 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	break;
     }
 
-    if (pScrn->device->dacSpeeds[0]) {
+    if (cPtr->pEnt->device->dacSpeeds[0]) {
 	int speed = 0;
 	switch (pScrn->bitsPerPixel) {
 	case 1:
 	case 4:
 	case 8:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP8];
+	   speed = cPtr->pEnt->device->dacSpeeds[DAC_BPP8];
 	   break;
 	case 16:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP16];
+	   speed = cPtr->pEnt->device->dacSpeeds[DAC_BPP16];
 	   break;
 	case 24:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP24];
+	   speed = cPtr->pEnt->device->dacSpeeds[DAC_BPP24];
 	   break;
 	}
 	if (speed == 0)
-	    cPtr->MaxClock = pScrn->device->dacSpeeds[0];
+	    cPtr->MaxClock = cPtr->pEnt->device->dacSpeeds[0];
 	from = X_CONFIG;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 	    "User max pixel clock of %7.3f MHz overrides %7.3f MHz limit\n",
@@ -2462,7 +2462,9 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSPanelSizePtr Size = &cPtr->PanelSize;
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
-
+    Bool useLinear;
+    resRange linearRes[] = { {ResExcMemBlock|ResBios,0,0},_END };
+    
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -2606,50 +2608,9 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 	       (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
 
-    if ((pScrn->bitsPerPixel < 8) && 
-	!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
-	cPtr->Flags &= ~ChipsLinearSupport;
-    } else if ((cPtr->Flags & ChipsLinearSupport) && 
-	       xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "Enabling linear addressing\n");
-    }
-    if (cPtr->Flags & ChipsLinearSupport) {
-	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, TRUE)) {
-	    cPtr->Flags &= ~ChipsLinearSupport;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		       "Disabling linear addressing\n");
-	}
-    }
-
-    if (xf86ReturnOptValBool(cPtr->Options, OPTION_MMIO, FALSE) &&
-	    (cPtr->Flags & ChipsLinearSupport) &&
-	    (cPtr->Flags & ChipsMMIOSupport)) {
-	cPtr->UseMMIO = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling MMIO\n");
-    }
-
-    if (xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
-	if (!(cPtr->Flags & ChipsLinearSupport)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Option \"ShadowFB\" ignored. Not supported without linear addressing\n");
-	} else if (pScrn->depth < 8) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Option \"ShadowFB\" ignored. Not supported at this depth.\n");
-	} else {
-	    cPtr->Flags |= ChipsShadowFB;
-	    cPtr->Flags &= ~ChipsAccelSupport;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-		    "Using \"Shadow Framebuffer\" - acceleration disabled\n");
-	}
-    }
-
-    /* monitor info */
-    cPtr->Monitor = chipsSetMonitor(pScrn);
-
     /* memory size */
-    if (pScrn->device->videoRam != 0) {
-	pScrn->videoRam = pScrn->device->videoRam;
+    if (cPtr->pEnt->device->videoRam != 0) {
+	pScrn->videoRam = cPtr->pEnt->device->videoRam;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "VideoRAM: %d kByte\n",
                pScrn->videoRam);
     } else {
@@ -2676,6 +2637,108 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
                pScrn->videoRam);
     }
     cPtr->FbMapSize = pScrn->videoRam * 1024;
+
+    /* Default to nonlinear for < 8bpp and linear for >= 8bpp. */
+    if (cPtr->Flags & ChipsLinearSupport) useLinear = TRUE;
+    if (pScrn->bitsPerPixel < 8) {
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
+	    useLinear = FALSE;
+	    from = X_CONFIG;
+	}
+    } else if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, TRUE)) {
+	useLinear = FALSE;
+	from = X_CONFIG;
+    }
+    
+    /* linear base */
+    if (useLinear) {
+	unsigned char mask;
+	if (cPtr->Chipset == CHIPS_CT65535) {
+	    mask = (pScrn->videoRam > 512) ? 0xF8 :0xFC;
+	    if (cPtr->Bus == ChipsISA)
+	    mask &= 0x7F;
+	} else if (cPtr->Bus == ChipsISA) {
+	    mask = 0x0F;
+	} else {
+	    mask = 0xFF;
+	    tmp = cPtr->readXR(cPtr, 0x01);
+	    if(tmp & 0x40)
+		mask &= 0x3F;
+	    if(!(tmp & 0x80))
+		mask &= 0xCF;
+	}
+	if (cPtr->pEnt->location.type == BUS_PCI) {
+	    cPtr->FbAddress =  cPtr->PciInfo->memBase[0] & 0xff800000;
+	    if (xf86RegisterResources(cPtr->pEnt->index,NULL,ResNone))
+		useLinear = FALSE;
+		from = X_PROBED;
+	} else {
+	    if (cPtr->pEnt->device->MemBase) {
+		cPtr->FbAddress = cPtr->pEnt->device->MemBase;
+		if (cPtr->Chipset == CHIPS_CT65535)
+		    cPtr->FbAddress &= (mask << 17);
+		else if (cPtr->Chipset > CHIPS_CT65535)
+		    cPtr->FbAddress &= (mask << 20);
+		from = X_CONFIG;
+	    } else { 
+		if (cPtr->Chipset <= CHIPS_CT65530) {
+		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+			       "base address assumed at  0xC00000!\n");
+		    cPtr->FbAddress = 0xC00000;
+		    from = X_CONFIG;
+		} else if (cPtr->Chipset == CHIPS_CT65535) {
+		    cPtr->FbAddress =
+			((mask & (cPtr->readXR(cPtr, 0x08))) << 17);
+		} else {
+		    cPtr->FbAddress =
+			((mask & (cPtr->readXR(cPtr, 0x08))) << 20);
+		}
+		from = X_PROBED;
+	    }
+	    linearRes[0].__begin = cPtr->FbAddress;
+	    linearRes[0].__end = cPtr->FbAddress + 0x800000;
+	    if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
+		useLinear = FALSE;
+		from = X_PROBED;
+	    }
+	}
+    }
+    
+    if (useLinear) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Enabling linear addressing\n");
+	xf86DrvMsg(pScrn->scrnIndex, from,
+		   "base address is set at 0x%X.\n", cPtr->FbAddress);
+	if (xf86ReturnOptValBool(cPtr->Options, OPTION_MMIO, FALSE) &&
+	    (cPtr->Flags & ChipsMMIOSupport)) {
+	    cPtr->UseMMIO = TRUE;
+	    cPtr->IOAddress = cPtr->FbAddress + 0x200000L;
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling MMIO\n");
+	}
+    } else {
+	if (cPtr->Flags & ChipsLinearSupport)	
+	    xf86DrvMsg(pScrn->scrnIndex, from,
+		       "Disabling linear addressing\n");
+	cPtr->Flags &= ~ChipsLinearSupport;
+    }
+    
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
+	if (!(cPtr->Flags & ChipsLinearSupport)) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		"Option \"ShadowFB\" ignored. Not supported without linear addressing\n");
+	} else if (pScrn->depth < 8) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		"Option \"ShadowFB\" ignored. Not supported at this depth.\n");
+	} else {
+	    cPtr->Flags |= ChipsShadowFB;
+	    cPtr->Flags &= ~ChipsAccelSupport;
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		    "Using \"Shadow Framebuffer\" - acceleration disabled\n");
+	}
+    }
+
+    /* monitor info */
+    cPtr->Monitor = chipsSetMonitor(pScrn);
 
     /*test STN / TFT */
     tmp = cPtr->readXR(cPtr, 0x51);
@@ -2879,52 +2942,6 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    /* linear base */
-    if (cPtr->Flags & ChipsLinearSupport) {
-	unsigned char mask;
-	if (cPtr->Chipset == CHIPS_CT65535) {
-	    mask = (pScrn->videoRam > 512) ? 0xF8 :0xFC;
-	    if (cPtr->Bus == ChipsISA)
-	    mask &= 0x7F;
-	} else if (cPtr->Bus == ChipsISA) {
-	    mask = 0x0F;
-	} else {
-	    mask = 0xFF;
-	    tmp = cPtr->readXR(cPtr, 0x01);
-	    if(tmp & 0x40)
-		mask &= 0x3F;
-	    if(!(tmp & 0x80))
-		mask &= 0xCF;
-	}
-	if (pScrn->device->MemBase) {
-	    cPtr->FbAddress = pScrn->device->MemBase;
-	    if (cPtr->Chipset == CHIPS_CT65535)
-		cPtr->FbAddress &= (mask << 17);
-	    else if (cPtr->Chipset > CHIPS_CT65535)
-		cPtr->FbAddress &= (mask << 20);
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		       "base address is set at 0x%X.\n", cPtr->FbAddress);
-	} else { 
-	    if (cPtr->Chipset <= CHIPS_CT65530) {
-		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-			   "base address assumed at  0xC00000!\n");
-		cPtr->FbAddress = 0xC00000;
-	    } else if (cPtr->Chipset == CHIPS_CT65535) {
-		cPtr->FbAddress = ((mask & (cPtr->readXR(cPtr, 0x08))) << 17);
-	    } else if (cPtr->Bus == ChipsPCI) {
-		cPtr->FbAddress =  cPtr->PciInfo->memBase[0] & 0xff800000;
-	    } else {
-		cPtr->FbAddress = ((mask & (cPtr->readXR(cPtr, 0x08))) << 20);
-	    }
-	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		       "base address is set at 0x%X.\n", cPtr->FbAddress);
-	}
-    }
-
-    /* If we support MMIO, setup the MMIO address */
-    if (cPtr->Flags & ChipsMMIOSupport)
-	cPtr->IOAddress = cPtr->FbAddress + 0x200000L;
-
 #if 0
 #ifdef XFreeXDGA 
     /* Setup DGA */
@@ -2940,17 +2957,34 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     /* MMIO address offset */
     if (cPtr->UseMMIO)
 	cPtr->Regs32 = ChipsReg32;
-    else {
+    else if ((cPtr->Flags & ChipsAccelSupport) ||
+	     (cPtr->Flags & ChipsHWCursor)) {
 	cPtr->Regs32 = xnfalloc(sizeof(ChipsReg32));
-	if ((cPtr->Flags & ChipsAccelSupport) ||
-		(cPtr->Flags & ChipsHWCursor)) {
-	    tmp =  cPtr->readXR(cPtr, 0x07);
-	    for (i = 0; i < (sizeof(ChipsReg32)/sizeof(ChipsReg32[0])); i++) {
-		cPtr->Regs32[i] =  ((ChipsReg32[i] & 0x7E03)) | ((tmp & 0x80)
-		    << 8)| ((tmp & 0x7F) << 2);
+	tmp =  cPtr->readXR(cPtr, 0x07);
+	for (i = 0; i < (sizeof(ChipsReg32)/sizeof(ChipsReg32[0])); i++) {
+	    cPtr->Regs32[i] =
+		((ChipsReg32[i] & 0x7E03)) | ((tmp & 0x80)<< 8)
+		| ((tmp & 0x7F) << 2);
 #ifdef DEBUG
-		ErrorF("DR[%X] = %X\n",i,cPtr->Regs32[i]);
+	    ErrorF("DR[%X] = %X\n",i,cPtr->Regs32[i]);
 #endif
+	}
+	linearRes[0].type = ResShrIoSparse;
+	linearRes[0].__base = cPtr->Regs32[0];
+	linearRes[0].__mask = 0x83FC;
+	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
+	    if (cPtr->Flags & ChipsAccelSupport) {
+		cPtr->Flags &= ~ChipsAccelSupport;
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+			   "Cannot allocate IO registers: "
+			   "Disabling acceleration\n");
+	    }
+	    if (cPtr->Flags & ChipsHWCursor) {
+		cPtr->Flags &= ~ChipsHWCursor;
+		cPtr->Accel.UseHWCursor = FALSE;
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+			   "Cannot allocate IO registers: "
+			   "Disabling HWCursor\n");
 	    }
 	}
     }
@@ -2990,8 +3024,8 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 
     if (cPtr->ClockType & TYPE_PROGRAMMABLE) {
 	pScrn->numClocks = NoClocks;
-	if (pScrn->device->textClockFreq > 0) {
-	    SaveClk->Clock = pScrn->device->textClockFreq;
+	if (cPtr->pEnt->device->textClockFreq > 0) {
+	    SaveClk->Clock = cPtr->pEnt->device->textClockFreq;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Using textclock freq: %7.3f.\n",
 		       SaveClk->Clock/1000.0);
@@ -3003,14 +3037,14 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	SaveClk->Clock = chipsGetHWClock(pScrn);
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using textclock clock %i.\n",
 	       SaveClk->Clock);
-	if (!pScrn->device->numclocks) {
+	if (!cPtr->pEnt->device->numclocks) {
 	    pScrn->numClocks = NoClocks;
 	    xf86GetClocks(pScrn, NoClocks, chipsClockSelect,
 			  chipsProtect, chipsBlankScreen,
 			  cPtr->IOBase + 0x0A, 0x08, 1, 28322);
 	    from = X_PROBED;
 	} else { 
-	    pScrn->numClocks = pScrn->device->numclocks;
+	    pScrn->numClocks = cPtr->pEnt->device->numclocks;
 	    if (pScrn->numClocks > NoClocks) {
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			   "Too many Clocks specified in configuration file.\n");
@@ -3019,7 +3053,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 		pScrn->numClocks = NoClocks;
 	    }
 	    for (i = 0; i < pScrn->numClocks; i++)
-		pScrn->clock[i] = pScrn->device->clock[i];
+		pScrn->clock[i] = cPtr->pEnt->device->clock[i];
 	    from = X_CONFIG;
 	}
 	xf86ShowClocks(pScrn, from);
@@ -3047,23 +3081,23 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    if (pScrn->device->dacSpeeds[0]) {
+    if (cPtr->pEnt->device->dacSpeeds[0]) {
 	int speed = 0;
 	switch (pScrn->bitsPerPixel) {
 	case 1:
 	case 4:
 	case 8:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP8];
+	   speed = cPtr->pEnt->device->dacSpeeds[DAC_BPP8];
 	   break;
 	case 16:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP16];
+	   speed = cPtr->pEnt->device->dacSpeeds[DAC_BPP16];
 	   break;
 	case 24:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP24];
+	   speed = cPtr->pEnt->device->dacSpeeds[DAC_BPP24];
 	   break;
 	}
 	if (speed == 0)
-	    cPtr->MaxClock = pScrn->device->dacSpeeds[0];
+	    cPtr->MaxClock = cPtr->pEnt->device->dacSpeeds[0];
 	from = X_CONFIG;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 	    "User max pixel clock of %7.3f MHz overrides %7.3f MHz limit\n",
@@ -3085,12 +3119,15 @@ CHIPSEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    
-    xf86EnableAccess(&pScrn->Access);
     chipsHWCursorOn(cPtr);
     /* Should we re-save the text mode on each VT enter? */
     if(!chipsModeInit(pScrn, pScrn->currentMode))
       return FALSE;
+    /*
+     * we need to wait until the chip frame accellerator has
+     * settled or the HW cursor might be messed up (seen on 65550)
+     */
+    usleep(50000);
     CHIPSAdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);    
     return TRUE;
 }
@@ -3103,7 +3140,7 @@ CHIPSLeaveVT(int scrnIndex, int flags)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
-    xf86EnableAccess(&pScrn->Access);
+    /*xf86EnableAccess(pScrn);*/
 #if 0
 #ifdef XFreeXDGA
     if (vga256InfoRec.directMode&XF86DGADirectGraphics) {
@@ -3274,7 +3311,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	cPtr->TVMode = XMODE_RGB;
 #endif
 
-    xf86EnableAccess(&pScrn->Access);
+    /*xf86EnableAccess(pScrn);*/
 
     /*
      * next we save the current state and setup the first mode
@@ -3433,8 +3470,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pBankInfo->pBankB = (unsigned char *)hwp->Base + 0x08000;
 	pBankInfo->BankSize = 0x08000;
 	pBankInfo->nBankDepth = (pScrn->depth == 4) ? 1 : pScrn->depth;
-	xf86AddControlledResource(pScrn,MEM_IO);
-	xf86EnableAccess(&pScrn->Access);
+	xf86EnableAccess(pScrn);
 
 	if (IS_HiQV(cPtr)) {
 	    pBankInfo->pBankB = hwp->Base;
@@ -3660,9 +3696,10 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         racflag = RAC_COLORMAP;
     if (cPtr->Flags & ChipsHWCursor)
         racflag |= RAC_CURSOR;
-        racflag |= RAC_FB;
-    xf86RACInit(pScreen, racflag);
-
+    racflag |= (RAC_FB | RAC_VIEWPORT);
+    /* XXX Check if I/O and Mem flags need to be the same. */
+    pScrn->racIoFlags = pScrn->racMemFlags = racflag;
+    
     pScreen->SaveScreen = CHIPSSaveScreen;
 
 #ifdef DPMSExtension
@@ -3688,7 +3725,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 static Bool
 CHIPSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
-    xf86EnableAccess(&xf86Screens[scrnIndex]->Access);
+    xf86EnableAccess(xf86Screens[scrnIndex]);
     return chipsModeInit(xf86Screens[scrnIndex], mode);
 }
 
@@ -3745,7 +3782,7 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
     /*
      * These are the generic starting address registers.
      */
-    xf86EnableAccess(&pScrn->Access);
+    xf86EnableAccess(pScrn);
     chipsFixResume(pScrn);
     hwp->writeCrtc(hwp, 0x0C, (Base & 0xFF00) >> 8);
     hwp->writeCrtc(hwp, 0x0D, Base & 0xFF);
@@ -3791,7 +3828,6 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     
     if(pScrn->vtSema){   /*§§§*/
-      xf86EnableAccess(&pScrn->Access);
       chipsHWCursorOff(cPtr);
       chipsRestore(pScrn, &(VGAHWPTR(pScrn))->SavedReg, &cPtr->SavedReg, TRUE);
       chipsLock(pScrn);
@@ -3850,7 +3886,7 @@ chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     unsigned char dpmsreg, seqreg, lcdoff, tmp;
     
-    xf86EnableAccess(&pScrn->Access);
+    xf86EnableAccess(pScrn);
     switch (PowerManagementMode) {
     case DPMSModeOn:
 	/* Screen: On; HSync: On, VSync: On */
@@ -3921,7 +3957,7 @@ CHIPSSaveScreen(ScreenPtr pScreen, Bool unblank)
       SetTimeSinceLastInputEvent();
 
    if ((pScrn != NULL) && pScrn->vtSema) { /* §§§ */
-     xf86EnableAccess(&pScrn->Access);
+     xf86EnableAccess(pScrn);
      chipsBlankScreen(pScrn, unblank);
    }
    return (TRUE);
@@ -4577,8 +4613,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ChipsNew->CR[0x41] = (tmp >> 8) & 0x0F;
 
     /* Set paging mode on the HiQV32 architecture, if required */
-    if ((!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, TRUE)) ||
-	    (pScrn->bitsPerPixel < 8))
+    if (!(cPtr->Flags & ChipsLinearSupport) || (pScrn->bitsPerPixel < 8))
 	ChipsNew->XR[0x0A] |= 0x1;
 
     ChipsNew->XR[0x09] |= 0x1;	       /* Enable extended CRT registers */

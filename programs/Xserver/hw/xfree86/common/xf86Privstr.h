@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.11 1999/04/29 05:12:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.12 1999/05/09 06:06:21 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -77,6 +77,12 @@ typedef struct _MouseDevRec {
 #define MSE_DFLTBUTTONS	 3
 #endif
 
+/* server states */
+
+typedef enum {
+    SETUP,
+    OPERATING
+} xf86State;
 
 /* PCI probe flags */
 
@@ -184,7 +190,6 @@ typedef struct {
     MessageType		pix24From;
 } xf86InfoRec, *xf86InfoPtr;
 
-
 #ifdef DPMSExtension
 /* Private info for DPMS */
 typedef struct {
@@ -205,6 +210,19 @@ typedef struct {
 } VidModeRec, *VidModePtr;
 #endif
 
+typedef struct pciBusRec {
+    int brbus, brdev, brfunc;	/* ID of the bridge to this bus */
+    int primary, secondary, subordinate;
+    int subclass;	/* bridge type */
+    resPtr io;		/* I/O range */
+    resPtr mem;		/* non-prefetchable memory range */
+    resPtr pmem;	/* prefetchable memory range */
+    int brcontrol;	/* bridge_control byte */
+    struct pciBusRec *next;
+} PciBusRec, *PciBusPtr;
+
+/* private resource types */
+#define ResNoAvoid  ResBios
 
 /* ISC's cc can't handle ~ of UL constants, so explicitly type cast them. */
 #define XLED1   ((unsigned long) 0x00000001)

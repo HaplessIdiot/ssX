@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.63 1999/02/28 11:19:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.64 1999/03/28 15:32:51 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -464,19 +464,28 @@ struct pci_config_reg {
     unsigned long rsvd3;
     unsigned long rsvd4;
     union {
-        unsigned long max_min_ipin_iline;
-	struct {
-	    unsigned char int_line;
-	    unsigned char int_pin;
-	    unsigned char min_gnt;
-	    unsigned char max_lat;
+	union {
+	    unsigned long max_min_ipin_iline;
+	    struct {
+		unsigned char int_line;
+		unsigned char int_pin;
+		unsigned char min_gnt;
+		unsigned char max_lat;
+	    } mmii;
 	} mmii;
-    } mmii;
-#define _max_min_ipin_iline mmii.max_min_ipin_iline
-#define _int_line mmii.mmii.int_line
-#define _int_pin  mmii.mmii.int_pin
-#define _min_gnt  mmii.mmii.min_gnt
-#define _max_lat  mmii.mmii.max_lat
+	struct {
+	    unsigned char res1;
+	    unsigned char res2;
+	    unsigned char bridge_control;
+	    unsigned char res3;
+	} bctrl;
+    } bm;
+#define _max_min_ipin_iline bm.mmii.max_min_ipin_iline
+#define _int_line bm.mmii.mmii.int_line
+#define _int_pin  bm.mmii.mmii.int_pin
+#define _min_gnt  bm.mmii.mmii.min_gnt
+#define _max_lat  bm.mmii.mmii.max_lat
+#define _b_ctrl   bm.bctrl.bridge_control
     /* I don't know how accurate or standard this is (DHD) */
     union {
 	unsigned long user_config;
@@ -616,19 +625,28 @@ struct pci_config_reg {
     unsigned long rsvd3;
     unsigned long rsvd4;
     union {
-        unsigned long max_min_ipin_iline;
-	struct {
-	    unsigned char max_lat;
-	    unsigned char min_gnt;
-	    unsigned char int_pin;
-	    unsigned char int_line;
+	union {
+	    unsigned long max_min_ipin_iline;
+	    struct {
+		unsigned char max_lat;
+		unsigned char min_gnt;
+		unsigned char int_pin;
+		unsigned char int_line;
+	    } mmii;
 	} mmii;
-    } mmii;
-#define _max_min_ipin_iline mmii.max_min_ipin_iline
-#define _int_line mmii.mmii.int_line
-#define _int_pin  mmii.mmii.int_pin
-#define _min_gnt  mmii.mmii.min_gnt
-#define _max_lat  mmii.mmii.max_lat
+	struct {
+	    unsigned char res1;
+	    unsigned char bridge_control;
+	    unsigned char res2;
+	    unsigned char res3;
+	} bctrl;
+    } bm;
+#define _max_min_ipin_iline bm.mmii.max_min_ipin_iline
+#define _int_line bm.mmii.mmii.int_line
+#define _int_pin  bm.mmii.mmii.int_pin
+#define _min_gnt  bm.mmii.mmii.min_gnt
+#define _max_lat  bm.mmii.mmii.max_lat
+#define _b_ctrl   bm.bctrl.bridge_control
     /* I don't know how accurate or standard this is (DHD) */
     union {
 	unsigned long user_config;
@@ -655,6 +673,9 @@ struct pci_config_reg {
 #endif
 
 extern void identify_card(struct pci_config_reg *, int);
+extern void print_default_class(struct pci_config_reg *pcr);
+extern void print_bridge_pci_class(struct pci_config_reg *pcr);
+extern void print_bridge_class(struct pci_config_reg *pcr);
 extern void print_i128(struct pci_config_reg *);
 extern void print_mach64(struct pci_config_reg *);
 extern void print_pcibridge(struct pci_config_reg *);
@@ -1539,53 +1560,114 @@ identify_card(struct pci_config_reg *pcr, int verbose)
                 printf("  CLASS     0x%02x 0x%02x 0x%02x  REVISION 0x%02x\n",
                     pcr->_base_class, pcr->_sub_class, pcr->_prog_if,
 		    pcr->_rev_id);
-            if (pcr->_bist_header_latency_cache)
-                printf("  BIST      0x%02x  HEADER 0x%02x  LATENCY 0x%02x  CACHE 0x%02x\n",
-                    pcr->_bist, pcr->_header_type, pcr->_latency_timer,
-		    pcr->_cache_line_size);
-            if (pcr->_base0)
-                printf("  BASE0     0x%08x  addr 0x%08x  %s\n",
-                    pcr->_base0, pcr->_base0 & (pcr->_base0 & 0x1 ?
-		    0xFFFFFFFC : 0xFFFFFFF0), 
-		    pcr->_base0 & 0x1 ? "I/O" : "MEM");
-            if (pcr->_base1)
-                printf("  BASE1     0x%08x  addr 0x%08x  %s\n",
-                    pcr->_base1, pcr->_base1 & (pcr->_base1 & 0x1 ?
-		    0xFFFFFFFC : 0xFFFFFFF0), 
-		    pcr->_base1 & 0x1 ? "I/O" : "MEM");
-            if (pcr->_base2)
-                printf("  BASE2     0x%08x  addr 0x%08x  %s\n",
-                    pcr->_base2, pcr->_base2 & (pcr->_base2 & 0x1 ?
-		    0xFFFFFFFC : 0xFFFFFFF0), 
-		    pcr->_base2 & 0x1 ? "I/O" : "MEM");
-            if (pcr->_base3)
-                printf("  BASE3     0x%08x  addr 0x%08x  %s\n",
-                    pcr->_base3, pcr->_base3 & (pcr->_base3 & 0x1 ?
-		    0xFFFFFFFC : 0xFFFFFFF0), 
-		    pcr->_base3 & 0x1 ? "I/O" : "MEM");
-            if (pcr->_base4)
-                printf("  BASE4     0x%08x  addr 0x%08x  %s\n",
-                    pcr->_base4, pcr->_base4 & (pcr->_base4 & 0x1 ?
-		    0xFFFFFFFC : 0xFFFFFFF0), 
-		    pcr->_base4 & 0x1 ? "I/O" : "MEM");
-            if (pcr->_base5)
-                printf("  BASE5     0x%08x  addr 0x%08x  %s\n",
-                    pcr->_base5, pcr->_base5 & (pcr->_base5 & 0x1 ?
-		    0xFFFFFFFC : 0xFFFFFFF0), 
-		    pcr->_base5 & 0x1 ? "I/O" : "MEM");
-            if (pcr->_baserom)
-                printf("  BASEROM   0x%08x  addr 0x%08x  %sdecode-enabled\n",
-                    pcr->_baserom, pcr->_baserom & 0xFFFF8000,
-                    pcr->_baserom & 0x1 ? "" : "not-");
-            if (pcr->_max_min_ipin_iline)
-                printf("  MAX_LAT   0x%02x  MIN_GNT 0x%02x  INT_PIN 0x%02x  INT_LINE 0x%02x\n",
-                    pcr->_max_lat, pcr->_min_gnt, 
-		    pcr->_int_pin, pcr->_int_line);
-            if (pcr->_user_config)
-                printf("  BYTE_0    0x%02x  BYTE_1  0x%02x  BYTE_2  0x%02x  BYTE_3  0x%02x\n",
-                    pcr->_user_config_0, pcr->_user_config_1, 
-		    pcr->_user_config_2, pcr->_user_config_3);
+	    switch (pcr->_class_revision & PCI_CLASS_MASK) {
+	    case PCI_CLASS_BRIDGE:
+		switch (pcr->_class_revision & PCI_SUBCLASS_MASK) {
+		case PCI_SUBCLASS_BRIDGE_PCI:
+		    print_bridge_pci_class(pcr);
+		    break;
+		default:
+		    print_bridge_class(pcr);
+		    break;
+		}
+		break;
+	    default:
+		print_default_class(pcr);
+		break;
+	    }
 	}
+}
+
+void
+print_default_class(struct pci_config_reg *pcr)
+{
+    if (pcr->_bist_header_latency_cache)
+	printf("  BIST      0x%02x  HEADER 0x%02x  LATENCY 0x%02x  CACHE 0x%02x\n",
+	       pcr->_bist, pcr->_header_type, pcr->_latency_timer,
+	       pcr->_cache_line_size);
+    if (pcr->_base0)
+	printf("  BASE0     0x%08x  addr 0x%08x  %s\n",
+	       pcr->_base0, pcr->_base0 & (pcr->_base0 & 0x1 ?
+					   0xFFFFFFFC : 0xFFFFFFF0), 
+	       pcr->_base0 & 0x1 ? "I/O" : "MEM");
+    if (pcr->_base1)
+	printf("  BASE1     0x%08x  addr 0x%08x  %s\n",
+	       pcr->_base1, pcr->_base1 & (pcr->_base1 & 0x1 ?
+					   0xFFFFFFFC : 0xFFFFFFF0), 
+	       pcr->_base1 & 0x1 ? "I/O" : "MEM");
+    if (pcr->_base2)
+	printf("  BASE2     0x%08x  addr 0x%08x  %s\n",
+	       pcr->_base2, pcr->_base2 & (pcr->_base2 & 0x1 ?
+					   0xFFFFFFFC : 0xFFFFFFF0), 
+	       pcr->_base2 & 0x1 ? "I/O" : "MEM");
+    if (pcr->_base3)
+	printf("  BASE3     0x%08x  addr 0x%08x  %s\n",
+	       pcr->_base3, pcr->_base3 & (pcr->_base3 & 0x1 ?
+					   0xFFFFFFFC : 0xFFFFFFF0), 
+	       pcr->_base3 & 0x1 ? "I/O" : "MEM");
+    if (pcr->_base4)
+	printf("  BASE4     0x%08x  addr 0x%08x  %s\n",
+	       pcr->_base4, pcr->_base4 & (pcr->_base4 & 0x1 ?
+					   0xFFFFFFFC : 0xFFFFFFF0), 
+	       pcr->_base4 & 0x1 ? "I/O" : "MEM");
+    if (pcr->_base5)
+	printf("  BASE5     0x%08x  addr 0x%08x  %s\n",
+	       pcr->_base5, pcr->_base5 & (pcr->_base5 & 0x1 ?
+					   0xFFFFFFFC : 0xFFFFFFF0), 
+	       pcr->_base5 & 0x1 ? "I/O" : "MEM");
+    if (pcr->_baserom)
+	printf("  BASEROM   0x%08x  addr 0x%08x  %sdecode-enabled\n",
+	       pcr->_baserom, pcr->_baserom & 0xFFFF8000,
+	       pcr->_baserom & 0x1 ? "" : "not-");
+    if (pcr->_max_min_ipin_iline)
+	printf("  MAX_LAT   0x%02x  MIN_GNT 0x%02x  INT_PIN 0x%02x  INT_LINE 0x%02x\n",
+	       pcr->_max_lat, pcr->_min_gnt, 
+	       pcr->_int_pin, pcr->_int_line);
+    if (pcr->_user_config)
+	printf("  BYTE_0    0x%02x  BYTE_1  0x%02x  BYTE_2  0x%02x  BYTE_3  0x%02x\n",
+	       pcr->_user_config_0, pcr->_user_config_1, 
+	       pcr->_user_config_2, pcr->_user_config_3);
+}
+
+#define PCI_B_FAST_B_B 0x80
+#define PCI_B_SB_RESET 0x40
+#define PCI_B_M_ABORT  0x20
+#define PCI_B_VGA_EN   0x08
+#define PCI_B_ISA_EN   0x04
+#define PCI_B_P_ERR    0x01
+void
+print_bridge_pci_class(struct pci_config_reg *pcr)
+{
+    if (pcr->_bist_header_latency_cache)
+        printf("  HEADER    0x%02x  LATENCY 0x%02x\n",
+	       pcr->_header_type, pcr->_latency_timer);
+    printf("  PRIBUS    0x%02x  SECBUS 0x%02x  SUBBUS 0x%02x  SECLT 0x%02x\n",
+           pcr->_primary_bus_number, pcr->_secondary_bus_number,
+	   pcr->_subordinate_bus_number, pcr->_secondary_latency_timer);
+    printf("  IOBASE    0x%02x  IOLIM 0x%02x  SECSTATUS 0x%04x\n",
+	   pcr->_io_base << 8, (pcr->_io_limit << 8) | 0xfff,
+	   pcr->_secondary_status);
+    printf("  NOPREFETCH_MEMBASE 0x%08x  MEMLIM 0x%08x\n",
+	   pcr->_mem_base << 16, (pcr->_mem_limit << 16) | 0xfffff);
+    printf("  PREFETCH_MEMBASE   0x%08x  MEMLIM 0x%08x\n",
+	   pcr->_prefetch_mem_base << 16,
+	   (pcr->_prefetch_mem_limit << 16) | 0xfffff);
+    printf("  %sFAST_B2B %sSEC_BUS_RST %sM_ABRT %sVGA_EN %sISA_EN"
+	   " %sPERR_EN\n",
+	   (pcr->_b_ctrl & PCI_B_FAST_B_B) ? "" : "NO_",
+	   (pcr->_b_ctrl & PCI_B_SB_RESET) ? "" : "NO_",
+	   (pcr->_b_ctrl & PCI_B_M_ABORT) ? "" : "NO_",
+	   (pcr->_b_ctrl & PCI_B_VGA_EN) ? "" : "NO_",
+	   (pcr->_b_ctrl & PCI_B_ISA_EN) ? "" : "NO_",
+	   (pcr->_b_ctrl & PCI_B_P_ERR) ? "" : "NO_");
+}
+
+void
+print_bridge_class(struct pci_config_reg *pcr)
+{
+    if (pcr->_bist_header_latency_cache)
+        printf("  HEADER    0x%02x  LATENCY 0x%02x\n",
+	       pcr->_header_type, pcr->_latency_timer);
 }
 
 
@@ -1684,15 +1766,17 @@ print_pcibridge(struct pci_config_reg *pcr)
         printf("  BIST      0x%02x  HEADER 0x%02x  LATENCY 0x%02x  CACHE 0x%02x\n",
             pcr->_bist, pcr->_header_type, pcr->_latency_timer,
             pcr->_cache_line_size);
-    printf("  PRIBUS 0x%02x SECBUS 0x%02x SUBBUS 0x%02x SECLT 0x%02x\n",
+    printf("  PRIBUS    0x%02x  SECBUS 0x%02x  SUBBUS 0x%02x  SECLT 0x%02x\n",
            pcr->_primary_bus_number, pcr->_secondary_bus_number,
 	   pcr->_subordinate_bus_number, pcr->_secondary_latency_timer);
-    printf("  IOBASE: 0x%02x00 IOLIM 0x%02x00 SECSTATUS 0x%04x\n",
-	pcr->_io_base, pcr->_io_limit, pcr->_secondary_status);
-    printf("  NOPREFETCH MEMBASE: 0x%08x MEMLIM 0x%08x\n",
-	pcr->_mem_base, pcr->_mem_limit);
-    printf("  PREFETCH MEMBASE: 0x%08x MEMLIM 0x%08x\n",
-	pcr->_prefetch_mem_base, pcr->_prefetch_mem_limit);
+    printf("  IOBASE    0x%02x  IOLIM 0x%02x  SECSTATUS 0x%04x\n",
+	   pcr->_io_base << 8, (pcr->_io_limit << 8) | 0xfff,
+	   pcr->_secondary_status);
+    printf("  NOPREFETCH_MEMBASE 0x%08x  MEMLIM 0x%08x\n",
+	   pcr->_mem_base << 16, (pcr->_mem_limit << 16) | 0xfffff);
+    printf("  PREFETCH_MEMBASE   0x%08x  MEMLIM 0x%08x\n",
+	   pcr->_prefetch_mem_base << 16,
+	   (pcr->_prefetch_mem_limit << 16) | 0xfffff);
     printf("  RBASE_E   0x%08x  addr 0x%08x  %sdecode-enabled\n",
         pcr->_baserom, pcr->_baserom & 0xFFFF8000,
         pcr->_baserom & 0x1 ? "" : "not-");

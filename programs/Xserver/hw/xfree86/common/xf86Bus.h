@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.3 1998/09/13 05:23:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.4 1998/10/05 13:22:59 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -13,44 +13,53 @@
 #ifndef _XF86_BUS_H
 #define _XF86_BUS_H
 
-/*
- * These are the private bus types.  New types can be added here.  Types
- * required for the public interface should be added to xf86str.h, with
- * function prototypes added to xf86.h.
- */
+typedef struct racInfo {
+    xf86AccessPtr mem_new;
+    xf86AccessPtr io_new;
+    xf86AccessPtr io_mem_new;
+    xf86AccessPtr *old;
+} AccessFuncRec, *AccessFuncPtr;
 
-typedef enum {
-    BUS_NONE,
-    BUS_ISA,
-    BUS_PCI
-} BusType;
+#define PCITAG_SPECIAL pciTag(0xFF,0xFF,0xFF)
 
 typedef struct {
-    int		bus;
-    int		device;
-    int		func;
-} PciBusId;
-    
-typedef struct {
-    unsigned int dummy;
-} IsaBusId;
-
-/*
- * The general Bus description record.  As new types are added, new fields
- * should be added to the x_busId field.
- */
-
-typedef struct {
-    BusType			busType;
-    int				scrnIndex;
     DriverPtr                   driver;
     int                         chipset;
-    BusResource                 resource;
-    union {
-	PciBusId x_pciBusId;
-	IsaBusId x_isaBusId;
-    }				x_busId;
-} BusRec, *BusPtr;
+    int                         entityProp;
+    EntityProc                  entityInit;
+    EntityProc                  entityEnter;
+    EntityProc                  entityLeave;
+    pointer                     private;
+    GDevPtr                     device;
+    resPtr                      resources;
+    Bool                        active;
+    Bool                        inUse;
+    BusRec                      bus;
+    EntityAccessPtr             access;
+    AccessFuncPtr               rac;
+    pointer                     busAcc;
+} EntityRec, *EntityPtr;
+
+#define NO_SEPARATE_IO_FROM_MEM 0x0001
+#define NO_SEPARATE_MEM_FROM_IO 0x0002
+#define NEED_VGA_ROUTED 0x0004
+#define NEED_VGA_ROUTED_SETUP 0x0008
+#define NEED_MEM 0x0010
+#define NEED_IO  0x0020
+#define NEED_MEM_SHARED 0x0040
+#define NEED_IO_SHARED 0x0080
+
+#define NEED_SHARED (NEED_MEM_SHARED | NEED_IO_SHARED)
+
+#define busType bus.type
+#define pciBusId bus.id.pci
+#define isaBusId bus.id.isa
+
+typedef struct {
+    CARD32       command;
+    CARD32       base[6];
+    CARD32       biosBase;
+} pciSave, *pciSavePtr;
 
 typedef struct pci_io {
     int    busnum;
@@ -60,11 +69,44 @@ typedef struct pci_io {
     xf86AccessRec ioAccess;
     xf86AccessRec io_memAccess;
     xf86AccessRec memAccess;
-    CARD32 saveio;
-    CARD32 restoreio;
+    pciSave save;
+    pciSave restore;
 } pciAccRec, *pciAccPtr;
 
-#define pciBusId        x_busId.x_pciBusId
-#define isaBusId        x_busId.x_isaBusId
+typedef struct {
+    CARD16      io;
+    CARD32      mem;
+    CARD32      pmem;
+    CARD8       control;
+} pciBridgeSave, *pciBridgeSavePtr;
+
+struct x_BusAccRec;
+typedef void (*BusAccProcPtr)(struct x_BusAccRec *ptr);
+
+typedef struct x_BusAccRec {
+    BusAccProcPtr set_f;
+    BusAccProcPtr enable_f;
+    BusAccProcPtr disable_f;
+    BusAccProcPtr save_f;
+    BusAccProcPtr restore_f;
+    struct x_BusAccRec *current; /* pointer to bridge open on this bus */
+    struct x_BusAccRec *primary; /* pointer to the bus connecting to this */
+    struct x_BusAccRec *next;    /* this links the different buses together */
+    BusType type;
+    /* Bus-specific fields */
+    union {
+	struct {
+	    int bus;
+	    PCITAG acc;
+	    pciBridgeSave save;
+	} pci;
+    } busdep;
+} BusAccRec, *BusAccPtr;
 
 #endif /* _XF86_BUS_H */
+
+
+
+
+
+

@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.48 1999/05/30 07:18:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.49 1999/06/06 08:48:47 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -1589,9 +1589,9 @@ xf86InitValuatorAxisStruct(DeviceIntPtr dev, int axnum, int minval, int maxval,
 #ifdef XINPUT
     if (maxval == -1) {
 	if (axnum == 0)
-	    maxval = screenInfo.screens[0]->width;
+	    maxval = screenInfo.screens[0]->width - 1;
 	else if (axnum == 1)
-	    maxval = screenInfo.screens[0]->height;
+	    maxval = screenInfo.screens[0]->height - 1;
 	/* else? */
     }
     InitValuatorAxisStruct(dev, axnum, minval, maxval, resolution, min_res,
