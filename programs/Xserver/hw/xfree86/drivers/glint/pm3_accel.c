@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.28 2001/08/18 11:41:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.29 2001/11/20 00:09:13 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -502,7 +502,6 @@ Permedia3EnableOffscreen (ScreenPtr pScreen)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     BoxRec AvailFBArea;
 
-    if (xf86FBManagerRunning(pScreen)) return;
     /* Available Framebuffer Area for XAA. */
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
