@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.68 2003/02/04 15:21:18 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.69 2003/02/11 03:33:06 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -471,7 +471,7 @@ MouseCommonOptions(InputInfoPtr pInfo)
 		lock--;
 
 		/* initialize table that maps drag lock mask to target mask */
-		pLock->nib_table[lock / NIB_SIZE][1 << (lock % NIB_BITS)] = 
+		pLock->nib_table[lock / NIB_BITS][1 << (lock % NIB_BITS)] = 
 			targetM;
 
 		/* add new drag lock to mask of drag locks */
