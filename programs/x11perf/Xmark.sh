@@ -1,5 +1,5 @@
 #! /bin/sh
-#$XConsortium: Xmark.sh,v 1.5 93/04/23 18:28:44 rws Exp $
+#$XConsortium: Xmark.sh,v 1.6 94/12/09 22:52:57 gildea Exp $
 #XPC Header: Xmark,v 1.15 93/04/12 10:10:07 hmgr Exp
 #
 ############################################################
@@ -8,6 +8,9 @@
 # Usage: Xmark datafile
 #
 ############################################################
+# $XFree86$
+#
+#
 # CHANGE HISTORY:
 #
 # X11perfcompDR  --  Creates a Digital Review compatible breakdown of 
@@ -101,7 +104,7 @@ LC1=`grep trep "$1" | wc -l`
 LC2=441		# Number of test without Shared Memory Transport
 LC3=447		# Number of test with Shared Memory Transport
 
-if [ "$LC1" -ne "$LC2" -a "$LC1" -ne "$LC3" ]
+if [ "$LC1" -ne "$LC2" ] && [ "$LC1" -ne "$LC3" ]
 then
     echo "WARNING: datafile contains $LC1, not "$LC2" or "$LC3" 'trep' results;" >& 2
     if [ "$LC1" -gt "$LC2" ]
@@ -587,10 +590,10 @@ cat > awkfile.$$ <<'EOS'
 	weight[name] = 0;			# clear to avoid double counting
 	sumofweights += thisweight;
 	printf("%d:",thisweight);		# output in new format
-	printf("%9.1f\n",rate);
+	printf("%.1f\n",rate);
     }
     END{
-	printf("sumof:%9.1f\n",sumofweights);
+	printf("sumof:%.1f\n",sumofweights);
     }
 EOS
 
@@ -600,7 +603,7 @@ rm -f awkfile.$$				# cleanup
 # calculate the weighted average 
 
 sumofweights=`grep sumof rates.$$ | awk -F: ' { print($2) }' - `
-if [ "$sumofweights" -ne "4566" ]
+if [ "$sumofweights" != "4566.0" ]
 then
     echo "ERROR: sum of weights =$sumofweights, not equal to 4566.0;"
     echo "ABORTING!"
