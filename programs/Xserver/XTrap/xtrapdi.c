@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/XTrap/xtrapdi.c,v 1.5 2002/09/18 17:11:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/XTrap/xtrapdi.c,v 1.6tsi Exp $ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991 by Digital Equipment Corp., Maynard, MA
 X11R6 Changes Copyright (c) 1994 by Robert Chesler of Absol-Puter, Hudson, NH.
@@ -152,7 +152,9 @@ static Bool      gate_closed = False;   /* The global "gatekeeper" */
 static Bool      key_ignore  = False;   /* The global "keymaster" */
 static Bool      ignore_grabs = False;
 static CARD8     next_key = XEKeyIsClear; /* Echo, Clear, or Other */
+#ifdef VECTORED_EVENTS
 static INT16     current_screen = -1L;   /* Current screen for events */
+#endif
 static INT16     vectored_requests[256L] = {0L}; /* cnt of vectoring clients */
 static INT16     vectored_events[KeyPress+MotionNotify]  = {0L};
 typedef struct _client_list
@@ -208,8 +210,9 @@ int XETrapDestroyEnv(pointer value, XID id)
         next_key = XEKeyIsClear;
     }
 
-
+#ifdef VECTORED_EVENTS
     current_screen = -1L;       /* Invalidate current screen */
+#endif
 
 #ifdef VERBOSE
     ErrorF("%s:  Client '%d' Disconnected\n", XTrapExtName, 
@@ -512,7 +515,9 @@ int XETrapCreateEnv(ClientPtr client)
         }
     }
 
+#ifdef VECTORED_EVENTS
     current_screen = -1L;       /* Invalidate current screen */
+#endif
 
 #ifdef VERBOSE
     if (status == Success)
