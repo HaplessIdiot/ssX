@@ -1,0 +1,96 @@
+
+#define CursorSources(name) name-16.png name-24.png name-32.png name-48.png name-64.png
+
+ICONDIR=$(LIBDIR)/icons
+THEME=redglass
+THEMEDIR=$(ICONDIR)/$(THEME)/cursors
+
+#define CursorShareTarget(name,orig)					@@\
+all:: name								@@\
+									@@\
+name: orig.cfg CursorSources(orig)					@@\
+	$(XCURSORGEN) orig.cfg name					@@\
+									@@\
+clean::									@@\
+	$(RM) name							@@\
+									@@\
+InstallTarget(install,name,$(INSTDATAFLAGS),$(THEMEDIR))
+
+#define CursorTarget(name) CursorShareTarget(name,name)
+
+CursorTarget(X_cursor)
+CursorShareTarget(arrow,right_ptr)
+CursorTarget(base_arrow_down)
+CursorTarget(base_arrow_up)
+/* CursorTarget(boat) */
+/* CursorTarget(bogosity) */
+CursorTarget(bottom_left_corner)
+CursorTarget(bottom_right_corner)
+CursorTarget(bottom_side)
+CursorTarget(bottom_tee)
+/* CursorTarget(box_spiral) */
+CursorTarget(center_ptr)
+CursorTarget(circle)
+/* CursorTarget(clock) */
+/* CursorTarget(coffee_mug) */
+CursorTarget(cross)
+CursorShareTarget(cross_reverse,cross)
+CursorShareTarget(crosshair,cross)
+CursorTarget(dot)
+CursorTarget(dot_box_mask)
+CursorTarget(double_arrow)
+CursorShareTarget(draft_large,right_ptr)
+CursorShareTarget(draft_small,right_ptr)
+CursorTarget(draped_box)
+/* CursorTarget(exchange) */
+CursorTarget(fleur)
+/* CursorTarget(gobbler) */
+CursorTarget(gumby)
+/* CursorTarget(hand1) */
+CursorTarget(hand2)
+/* CursorTarget(heart) */
+/* CursorTarget(icon) */
+/* CursorTarget(iron_cross) */
+CursorTarget(left_ptr)
+CursorTarget(left_side)
+CursorTarget(left_tee)
+/* CursorTarget(left_button) */
+CursorTarget(ll_angle)
+/* CursorTarget(lr_angle) */		/* need */
+/* CursorTarget(man) */
+/* CursorTarget(middlebutton) */
+/* CursorTarget(mouse) */
+CursorTarget(pencil)
+/* CursorTarget(pirate) */
+CursorShareTarget(plus,cross)
+/* CursorTarget(question_arrow) */
+CursorTarget(right_ptr)
+CursorTarget(right_side)
+CursorTarget(right_tee)
+/* CursorTarget(rightbutton) */
+/* CursorTarget(rtl_logo) */
+/* CursorTarget(sailboat) */
+/* CursorTarget(sb_down_arrow) */	/* need */
+CursorTarget(sb_h_double_arrow)
+/* CursorTarget(sb_left_arrow) */	/* need */
+CursorTarget(sb_right_arrow)
+CursorTarget(sb_up_arrow)
+CursorTarget(sb_v_double_arrow)
+CursorTarget(shuttle)
+/* CursorTarget(sizing) */		/* need? */
+/* CursorTarget(spider) */
+/* CursorTarget(spraycan) */
+/* CursorTarget(star) */
+/* CursorTarget(target) */		/* need */
+CursorShareTarget(tcross,cross)
+CursorShareTarget(top_left_arrow,left_ptr)
+CursorTarget(top_left_corner)
+CursorTarget(top_right_corner)
+CursorTarget(top_side)
+CursorTarget(top_tee)
+/* CursorTarget(trek) */
+/* CursorTarget(ul_angle) */		/* need */
+/* CursorTarget(umbrella) */
+/* CursorTarget(ur_angle) */		/* need */
+CursorTarget(watch)
+CursorTarget(xterm)

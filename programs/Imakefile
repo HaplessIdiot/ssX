@@ -104,6 +104,10 @@ XTRAPCLIENTDIRS = xtrap
        XRANDRDIR = xrandr
 #endif
 
+#if BuildXcursorgen
+   XCURSORGENDIR = xcursorgen
+#endif
+
 #if BuildServersOnly || !BuildClients
 SUBDIRS = $(XSSRCDIR)
 #else
@@ -128,7 +132,7 @@ SUBDIRS = \
 	$(XTERMSRCDIR) $(XTRAPCLIENTDIRS) $(XVIDTUNESRCDIR) xwd xwininfo xwud \
 	$(XPMCLIENTDIRS) $(XVINFOSRCDIR) \
 	$(XSSRCDIR) $(XASSRCDIR) $(LBXPROXYSRCDIR) $(SCRIPTSDIR) \
-	$(GLXCLIENTDIRS) $(XRANDRDIR)
+	$(GLXCLIENTDIRS) $(XRANDRDIR) $(XCURSORGENDIR)
 #endif
 
 MakeSubdirs($(SUBDIRS))
