@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.152 1999/03/06 13:12:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.153 1999/03/21 12:46:31 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -736,7 +736,7 @@ XNESTDDXDIR = hw
 #endif
 XNESTDIRS = $(STDDIRS) $(XNESTDDXDIR) $(DEPDIRS)
 #if !defined(LynxOSArchitecture) && !defined(Win32Architecture)
-XNESTOBJS = dix/main.o
+XNESTOBJS =
 #else
 XNESTOBJS = dix/main.o
 #endif
