@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.51 1996/02/18 03:43:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.52 1996/02/22 05:12:57 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1042,6 +1042,24 @@ cirrusProbe()
 		  		/* 2MB memory on the 5426/8/9 (not sure). */
 		  		vga256InfoRec.videoRam *= 2;
 		  	}
+	       }
+	  }
+     else
+	  {
+	  /*
+	   * Some cards don't initialise SRF correctly, so do it here if the
+	   * user has specified the videoram amount.
+	   */
+	  if (!HAVE543X())
+	       {
+	       unsigned char SRF = 0;
+	       if (vga256InfoRec.videoRam > 1024)
+		    SRF = 0x18;
+	       else if (vga256InfoRec.videoRam > 512)
+		    SRF = 0x10;
+	       outb(0x3c4, 0x0f);
+	       SRF |= (inb(0x3c5) & ~0x18);
+	       outb(0x3c5, SRF);
 	       }
 	  }
 

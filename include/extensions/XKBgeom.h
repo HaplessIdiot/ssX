@@ -36,7 +36,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbAddGeomOutline		SrvXkbAddGeomOutline
 #define XkbAddGeomOverlay		SrvXkbAddGeomOverlay
 #define XkbAddGeomOverlayRow		SrvXkbAddGeomOverlayRow
-#define XkbAddGeomOverlayKey		SrvXkbAddGeomOverlayKey
+#define	XkbAddGeomOverlayKey		SrvXkbAddGeomOverlayKey
 #define XkbAddGeomProperty		SrvXkbAddGeomProperty
 #define XkbAddGeomRow			SrvXkbAddGeomRow
 #define XkbAddGeomSection		SrvXkbAddGeomSection

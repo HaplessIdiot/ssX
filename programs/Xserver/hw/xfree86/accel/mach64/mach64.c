@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.39 1996/02/22 05:11:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.40 1996/03/03 03:56:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -579,7 +579,7 @@ GetATIPCIInformation()
 	     * but this doesn't seem to be reliable.  Instead check if
 	     * pcrp->_base1 is non-zero.
 	     */
-	    if (pcrp->_base1) {
+	    if (pcrp->_base1 & 0xfffffffc) {
 		info.BlockIO = TRUE;
 		info.IOBase = pcrp->_base1 & (pcrp->_base1 & 0x1 ?
 					      0xfffffffc : 0xfffffff0);

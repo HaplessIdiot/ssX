@@ -1,5 +1,5 @@
 /* $XConsortium: xkb.c /main/20 1996/03/01 14:30:56 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.6 1996/02/09 10:17:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.7 1996/03/04 05:24:26 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -2405,8 +2405,8 @@ unsigned	 first,last;
     if (maxRG>(int)xkbi->nRadioGroups) {
         int sz = (maxRG+1)*sizeof(XkbRadioGroupRec);
         if (xkbi->radioGroups)
-             xkbi->radioGroups=(XkbRadioGroupPtr)Xrealloc(xkbi->radioGroups,sz);
-        else xkbi->radioGroups= (XkbRadioGroupPtr)Xcalloc(sz);
+             xkbi->radioGroups=(XkbRadioGroupPtr)xrealloc(xkbi->radioGroups,sz);
+        else xkbi->radioGroups= (XkbRadioGroupPtr)xcalloc(1, sz);
         if (xkbi->radioGroups) {
              if (xkbi->nRadioGroups)
                 bzero(&xkbi->radioGroups[xkbi->nRadioGroups],
@@ -5632,7 +5632,7 @@ unsigned char	*wire,*str,*tmp,*legal;
     wire= *pWire;
     len= (*(unsigned char *)wire++);
     if (len>0) {
-	str= (unsigned char *)Xcalloc(len+1);
+	str= (unsigned char *)xcalloc(1, len+1);
 	if (str) {
 	    tmp= str;
 	    for (i=0;i<len;i++) {
@@ -5643,7 +5643,7 @@ unsigned char	*wire,*str,*tmp,*legal;
 	    if (tmp!=str)
 		*tmp++= '\0';
 	    else {
-		Xfree(str);
+		xfree(str);
 		str= NULL;
 	    }
 	}
@@ -6032,12 +6032,12 @@ ProcXkbGetKbdByName(client)
 	XkbFreeKeyboard(finfo.xkb,XkbAllComponentsMask,True);
 	finfo.xkb= NULL;
     }
-    if (names.keymap)	{ Xfree(names.keymap); names.keymap= NULL; }
-    if (names.keycodes)	{ Xfree(names.keycodes); names.keycodes= NULL; }
-    if (names.types)	{ Xfree(names.types); names.types= NULL; }
-    if (names.compat)	{ Xfree(names.compat); names.compat= NULL; }
-    if (names.symbols)	{ Xfree(names.symbols); names.symbols= NULL; }
-    if (names.geometry)	{ Xfree(names.geometry); names.geometry= NULL; }
+    if (names.keymap)	{ xfree(names.keymap); names.keymap= NULL; }
+    if (names.keycodes)	{ xfree(names.keycodes); names.keycodes= NULL; }
+    if (names.types)	{ xfree(names.types); names.types= NULL; }
+    if (names.compat)	{ xfree(names.compat); names.compat= NULL; }
+    if (names.symbols)	{ xfree(names.symbols); names.symbols= NULL; }
+    if (names.geometry)	{ xfree(names.geometry); names.geometry= NULL; }
     return client->noClientException;
 }
 
@@ -6892,7 +6892,6 @@ XkbExtensionInit()
 {
     ExtensionEntry *extEntry;
 
-	ErrorF("In XkbExtensionInit\n");
     if (extEntry = AddExtension(XkbName, XkbNumberEvents, XkbNumberErrors,
 				 ProcXkbDispatch, SProcXkbDispatch,
 				 XkbResetProc, StandardMinorOpcode)) {
@@ -6901,7 +6900,6 @@ XkbExtensionInit()
 	XkbErrorBase = (unsigned char)extEntry->errorBase;
 	XkbKeyboardErrorCode = XkbErrorBase+XkbKeyboard;
 	RT_XKBCLIENT = CreateNewResourceType(XkbClientGone);
-	ErrorF("In XkbExtensionInit - succeeded\n");
     }
     return;
 }
