@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.235 94/04/17 20:21:43 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.236 94/05/14 15:38:16 rws Exp $ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium
@@ -60,7 +60,9 @@ in this Software without prior written authorization from the X Consortium.
 
 #ifndef X_WCHAR
 #ifdef X_NOT_STDC_ENV
+#ifndef SCO324
 #define X_WCHAR
+#endif
 #endif
 #endif
 
@@ -1152,7 +1154,6 @@ typedef struct {
 #define XNStringConversionCallback "stringConversionCallback"
 #define XNStringConversion "stringConversion"
 #define XNResetState "resetState"
-#define XNResetReturn "resetReturn"
 #define XNHotKey "hotKey"
 #define XNHotKeyState "hotKeyState"
 #define XNPreeditState "preeditState"
@@ -1211,11 +1212,6 @@ typedef	unsigned long	 XIMResetState;
 
 #define	XIMInitialState		1L
 #define	XIMPreserveState	(1L<<1)
-
-typedef	unsigned short	 XIMResetReturn;
-
-#define	XIMReturnPreedit	1
-#define	XIMReturnNULL		0
 
 typedef unsigned long XIMStringConversionFeedback;
 

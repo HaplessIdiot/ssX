@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.3 1994/06/12 16:30:18 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.4 1994/08/20 07:26:49 dawes Exp $
 
 /*****************************************************************************
  *	            Defaults for SCO-specfic parameters                          *
@@ -70,7 +70,19 @@ XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.3 1994/06/12 16:30:18 dawes E
 #define Malloc0ReturnsNull		YES
 #define RemoveDSDENroffMacros   NO
 #define CompressManPages        YES
-#define ServerExtraSysLibs		$(CBRT)
+#define ServerExtraSysLibs		$(CBRT) -lm
+
+/*
+ *	The user should override this in their
+ *	site.def if they have the real crypt library,
+ *	we default to the international crypt library
+ *	here as anyone may obtain that
+ */
+
+#ifndef HasLibCrypt
+#define	HasLibCrypt				YES
+#define	SpecialLibCrypt			-lcrypt_i
+#endif
 
 /*
  * due to the extra '.' chars in the SCO man pages file name we have

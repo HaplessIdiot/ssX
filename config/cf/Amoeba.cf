@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: Amoeba.cf,v 1.4 94/04/04 13:20:04 dpw Exp $
-XCOMM platform:  $XFree86: xc/config/cf/Amoeba.cf,v 3.0 1994/05/29 02:01:37 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/Amoeba.cf,v 3.1 1994/06/01 09:12:34 dawes Exp $
 
 /*  The presence of this configuration file in the X distribution
  *  does not imply full support for the system it describes.
@@ -24,13 +24,13 @@ XCOMM operating system:  OSName
 
 /* Configuration defaults */
 #ifndef AmoebaTop
-#define AmoebaTop		/usr/proj/amwork
+#define AmoebaTop		__AM_TOP__
 #endif
 #ifndef AmoebaBin
 #define AmoebaBin		$(ATOP)/bin.sun4
 #endif
 #ifndef AmoebaConf
-#define AmoebaConf		/usr/proj/amwork/conf/amoeba
+#define AmoebaConf		__AM_CONF__
 #endif
 
 #define HasNdbm			YES
@@ -60,13 +60,13 @@ XCOMM operating system:  OSName
 #define PexCCOptions		DefaultCCOptions
 #define ServerOSDefines		-DDDXOSINIT
 
-#define UsrLibDir               $(DESTDIR)/public/module/x11/lib
-#define LibDir                  $(DESTDIR)/public/module/x11/lib
-#define ManDirectoryRoot        $(DESTDIR)/public/module/x11/man
-#define BinDir                  $(DESTDIR)/public/module/x11/bin
-#define IncRoot                 $(DESTDIR)/public/module/x11/include
-#define FontDir                 $(DESTDIR)/public/module/x11/fonts/$(ARCH)
-#define DefaultRGBDatabase      $(DESTDIR)/public/module/x11/lib/rgb/$(ARCH)/rgb
+#define UsrLibDir               $(DESTDIR)/profile/module/x11/lib
+#define LibDir                  $(DESTDIR)/profile/module/x11/lib
+#define ManDirectoryRoot        $(DESTDIR)/profile/module/x11/man
+#define BinDir                  $(DESTDIR)/profile/module/x11/bin
+#define IncRoot                 $(DESTDIR)/profile/module/x11/include
+#define FontDir                 $(DESTDIR)/profile/module/x11/fonts/$(ARCH)
+#define DefaultRGBDatabase      $(DESTDIR)/profile/module/x11/lib/rgb/$(ARCH)/rgb
 
 #define ManSuffix               1
 #define ManPath                 ManDirectoryRoot
@@ -193,7 +193,7 @@ SPARCLIBDIR     = AmoebaBin/gnu/sparc
 ALDFLAGS        = -mam_sparc -n -Ttext 40000 -Bstatic -e start -L$(SPARCLIBDIR)
 #endif
 
-#define BootstrapCFlags		-DAMOEBA -D$(ARCH) -DCROSS_COMPILE
+#define BootstrapCFlags		-DAMOEBA -DCROSS_$(ARCH) -DCROSS_COMPILE
 
 /*
  * The rest of this files consists of rules to allow cross-compilation

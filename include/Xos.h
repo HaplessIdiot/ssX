@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.66 94/04/17 20:10:51 rws Exp $
- * $XFree86: xc/include/Xos.h,v 3.4 1994/08/03 13:20:52 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.5 1994/08/06 05:57:16 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -260,6 +260,19 @@ typedef unsigned char u_char;
 
 #ifdef ISC
 #include <sys/bsdtypes.h>
+#endif
+
+#ifdef SCO
+/*
+ *	Some OS's may not have this, perhaps SCO is the only one
+ */
+
+#define X_NO_SYS_UN 1
+
+struct sockaddr_un {
+	short	sun_family;
+	char	sun_path[108];
+};
 #endif
 
 /* Get BSD definition */
