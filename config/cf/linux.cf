@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.4 94/04/07 15:46:42 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.8 1994/06/18 16:11:26 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.9 1994/07/21 13:37:46 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -51,6 +51,10 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.8 1994/06/18 16:11:26 dawes
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #define ServerExtraSysLibs	$(CBRT) -lm
 #define ConnectionFlags		-DUNIXCONN -DTCPCONN
+
+#ifndef PartialNetDefault
+#define PartialNetDefault	YES
+#endif
 
 /* Some of these man page defaults are overriden in the above OS sections */
 #ifndef ManSuffix
