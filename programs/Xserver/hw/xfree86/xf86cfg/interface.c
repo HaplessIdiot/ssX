@@ -117,6 +117,8 @@ extern void TextMode(void);
 Widget toplevel, work, config, layout, layoutsme, layoutp;
 XtAppContext appcon;
 
+Pixmap menuPixmap;
+
 char *XF86Config_path = NULL;
 char *XF86Module_path = NULL;
 char *XFree86_path = NULL;
@@ -184,12 +186,16 @@ static char *device_names[] = {
     "screen",
 };
 
-/*
 static XtResource appResources[] = {
+#if 0
     {"xf86config",  "XF86Config",  XtRString, sizeof(char*),
       0, XtRString, "/etc/X11/XF86Config"},
+#endif
+    {"menuBitmap",  "MenuBitmap",  XtRString, sizeof(char*),
+      0, XtRString, "menu10"},
 };
 
+/*
 static XrmOptionDescRec optionDescList[] = {
     {"-xf86config",  "*xf86config",  XrmoptionSepArg,  (XtPointer)"/etc/X11/XF86Config"},
 };
@@ -208,6 +214,8 @@ main(int argc, char *argv[])
     XGCValues values;
     XF86ConfLayoutPtr lay;
     int i, startedx;
+    char *menuPixmapPath;
+    XrmValue from, to;
 
 #ifdef USE_MODULES
     xf86Verbose = 1;
@@ -263,10 +271,15 @@ main(int argc, char *argv[])
     if (DPY == NULL)
 	DPY = XtDisplay(toplevel);
 
-/*
-    XtGetApplicationResources(toplevel, (XtPointer)&XF86Config_path,
-			      appResources, XtNumber(appResources), NULL, 0);
-*/
+    if (strlen(menuPixmapPath)) {
+	XtGetApplicationResources(toplevel, (XtPointer)&menuPixmapPath,
+				  appResources, XtNumber(appResources), NULL, 0);
+	from.size = strlen(menuPixmapPath);
+	from.addr = menuPixmapPath;
+	to.size = sizeof(Pixmap);
+	to.addr = (XtPointer)&(menuPixmap);
+	XtConvertAndStore(toplevel, XtRString, &from, XtRBitmap, &to);
+    }
 
     XtAppAddActions(appcon, actions, XtNumber(actions));
 
@@ -436,6 +449,7 @@ main(int argc, char *argv[])
 				      layoutp,
 				      XtNlabel, lay->lay_identifier,
 				      XtNmenuName, "options",
+				      XtNleftBitmap, menuPixmap,
 				      NULL, 0);
 	XtAddCallback(sme, XtNcallback, SelectLayoutCallback, (XtPointer)lay);
 	if (layoutsme == NULL)
@@ -996,6 +1010,7 @@ SelectLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 					    layoutp,
 					    XtNlabel, name,
 					    XtNmenuName, "options",
+					    XtNleftBitmap, menuPixmap,
 					    NULL, 0);
 	XtAddCallback(layoutsme, XtNcallback,
 		      SelectLayoutCallback, (XtPointer)l);
@@ -1098,6 +1113,7 @@ DefaultLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 				      layoutp,
 				      XtNlabel, lay->lay_identifier,
 				      XtNmenuName, "options",
+				      XtNleftBitmap, menuPixmap,
 				      NULL, 0);
 	XtAddCallback(sme, XtNcallback, SelectLayoutCallback, (XtPointer)lay);
 	if (layoutsme == NULL)
@@ -1732,7 +1748,7 @@ UpdateMenuDeviceList(int type)
 	    XtDestroyWidget(((CompositeWidget)menu)->composite.children[i]);
 
     if (count < 2) {
-	XtVaSetValues(sme, XtNmenuName, NULL, NULL);
+	XtVaSetValues(sme, XtNmenuName, NULL, XtNleftBitmap, None, NULL);
 	return;
     }
 
@@ -1742,33 +1758,36 @@ UpdateMenuDeviceList(int type)
 		menu = mouseMenu =
 		    XtCreatePopupShell(mouseM, simpleMenuWidgetClass,
 				       XtParent(mouseSme), NULL, 0);
-	    XtVaSetValues(mouseSme, XtNmenuName, mouseM, NULL);
+	    XtVaSetValues(mouseSme, XtNmenuName, mouseM,
+			  XtNleftBitmap, menuPixmap, NULL);
 	    break;
 	case KEYBOARD:
 	    if (keyboardMenu == NULL)
 		menu = keyboardMenu =
 		    XtCreatePopupShell(keyboardM, simpleMenuWidgetClass,
 				       XtParent(keyboardSme), NULL, 0);
-	    XtVaSetValues(keyboardSme, XtNmenuName, keyboardM, NULL);
+	    XtVaSetValues(keyboardSme, XtNmenuName, keyboardM,
+			  XtNleftBitmap, menuPixmap, NULL);
 	    break;
 	case CARD:
 	    if (cardMenu == NULL)
 		menu = cardMenu =
 		    XtCreatePopupShell(cardM, simpleMenuWidgetClass,
 				       XtParent(cardSme), NULL, 0);
-	    XtVaSetValues(cardSme, XtNmenuName, cardM, NULL);
+	    XtVaSetValues(cardSme, XtNmenuName, cardM,
+			  XtNleftBitmap, menuPixmap, NULL);
 	    break;
 	case MONITOR:
 	    if (monitorMenu == NULL)
 		menu = monitorMenu =
 		    XtCreatePopupShell(monitorM, simpleMenuWidgetClass,
 				       XtParent(monitorSme), NULL, 0);
-	    XtVaSetValues(monitorSme, XtNmenuName, monitorM, NULL);
+	    XtVaSetValues(monitorSme, XtNmenuName, monitorM,
+			  XtNleftBitmap, menuPixmap, NULL);
 	    break;
     }
 
     for (i = 0; i < computer.num_devices; i++)
-	
 	if (computer.devices[i]->type == type) {
 	    char *label = NULL;
 
