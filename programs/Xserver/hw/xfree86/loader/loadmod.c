@@ -52,8 +52,8 @@ LoadModule(module,path)
 {
 	char	* buf;
 	void	(*initfunc)() = NULL;
-	int	* data;
-	int	  magic;
+	pointer	  data;
+	INT32	  magic;
 
 	char	* p;
 	char	* name;

@@ -355,19 +355,19 @@ static int Num_OAK_ExtPorts = (sizeof(OAK_ExtPorts)/sizeof(OAK_ExtPorts[0]));
  */
 void
 oak_drvModuleInit(data,magic)
-    vgaVideoChipPtr * data;
-    int  * magic;
+    pointer *	data;
+    INT32 *	magic;
 {
     static int cnt = 0;
 
     switch(cnt++)
     {
     case 0:
-	* data = &OAK;
+	* data = (pointer)&OAK;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
     case 1:
-        * data = (int) "libvga256.a";
+        * data = (pointer) "libvga256.a";
 	* magic= MAGIC_LOAD;
 	break;
     default:

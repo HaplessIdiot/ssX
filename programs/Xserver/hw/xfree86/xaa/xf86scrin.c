@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.9 1997/02/14 12:20:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.10 1997/02/15 11:12:52 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -307,8 +307,8 @@ vgabppScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
  */
 void
 vgabppModuleInit( data, magic )
-    int * data;
-    int * magic;
+    pointer *	data;
+    INT32 *	magic;
 {
     static int  cnt = 0;
 
@@ -316,7 +316,7 @@ vgabppModuleInit( data, magic )
     {
     case 0:
     	* magic = MAGIC_CCD_XAA_SCREEN_INIT;
-	* data  = (int) &vgabppScreenInit;
+	* data  = (pointer) &vgabppScreenInit;
 	break;
     default:
     	* magic = MAGIC_DONE;

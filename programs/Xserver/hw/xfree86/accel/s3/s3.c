@@ -223,8 +223,8 @@ return &s3InfoRec;
  */
 void
 libs3ModuleInit(data,magic)
-    int  * data;
-    int  * magic;
+    pointer	* data;
+    INT32	* magic;
 {
     extern vgaVideoChipRec MGA;
     static int cnt = 0;
@@ -232,11 +232,11 @@ libs3ModuleInit(data,magic)
     switch(cnt++)
     {
     case 0:
-        * data = (int) &s3InfoRec;
+        * data = (pointer) &s3InfoRec;
         * magic= MAGIC_ADD_VIDEO_CHIP_REC;
         break;
     case 1:
-        * data = (int) "libmfb.a";
+        * data = (pointer) "libmfb.a";
         * magic= MAGIC_LOAD;
         break;
     default:
@@ -760,6 +760,7 @@ s3Probe()
    char *card, *serno, *elsa_modes;
    int card_id, max_pix_clock, max_mem_clock, hwconf;
    int lookupFlags;
+   unsigned char tmp;
 
    Bool OldPixMuxStatus;
 
