@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.51 1999/04/18 04:08:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.52 1999/04/25 10:02:29 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1947,6 +1947,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	Trident1bppColorMap(pScrn);
     }
 
+#if 0 /* Banking support has been disabled */
     if (pScrn->depth < 8) {
 	miBankInfoPtr pBankInfo;
 
@@ -1973,6 +1974,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
 	}
     }
+#endif
 
     if (!pTrident->NoAccel) {
 	if (Is3Dchip) {
