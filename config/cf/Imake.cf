@@ -17,7 +17,7 @@ XCOMM $Xorg: Imake.cf,v 1.4 2000/08/17 19:41:45 cpqbld Exp $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.75 2002/04/04 14:05:32 eich Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.76 2002/04/05 17:59:39 tsi Exp $
 
 #if defined(__APPLE__)
 # undef __APPLE__
@@ -47,6 +47,9 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.75 2002/04/04 14:05:32 eich Exp $
 #define cygwinArchitecture
 #define i386Architecture
 #undef i386
+#undef i486
+#undef i586
+#undef i686
 #undef __i386__
 #undef _X86_
 #undef __CYGWIN__

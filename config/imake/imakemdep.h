@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.58 2002/04/04 14:05:34 eich Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.59 2002/05/31 16:31:20 dawes Exp $ */
 
 
 /* 
@@ -769,6 +769,16 @@ char *cpp_argv[ARGUMENTS] = {
 #   include <linux/version.h>
 #   define CROSS_UTS_RELEASE UTS_RELEASE
 # endif
+# elif defined(__CYGWIN__)
+#  define DEFAULT_OS_MAJOR_REV	"r %[0-9]"
+#  define DEFAULT_OS_MINOR_REV	"r %*d.%[0-9]"
+#  define DEFAULT_OS_TEENY_REV	"r %*d.%*d.%[0-9]"
+#  define DEFAULT_OS_NAME	"srm %[^\n]"
+#  if defined(__CYGWIN__) && defined  (CROSSCOMPILE_CPP)
+#   define CROSS_UTS_SYSNAME "Cygwin"
+#   include <cygwin/version.h>
+#   define CROSS_UTS_RELEASE "1.3.12"
+#  endif
 # elif defined(__GNU__)
 #  define DEFAULT_OS_MAJOR_REV	"r %[0-9]"
 #  define DEFAULT_OS_MINOR_REV	"r %*d.%[0-9]"
@@ -1353,6 +1363,9 @@ int gnu_c_minor = -1;
 #    include <features.h>
 int glibc_major = __GLIBC__ + 4;
 int glibc_minor = __GLIBC_MINOR__;
+#   else
+int glibc_major = 0;
+int glibc_minor = -1;
 #   endif
 #  endif /* !CROSSCOMPILE || CROSSCOMPILE_CPP */
 

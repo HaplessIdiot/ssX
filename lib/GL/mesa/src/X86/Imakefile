@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.21 2002/03/01 18:00:42 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.22 2002/03/01 21:21:48 tsi Exp $
 
 /*
  * Need both shared and unshared Mesa objects in the following cases:
@@ -85,17 +85,17 @@ LinkSourceFile(gen_matypes.c, $(MESASRCDIR)/src/X86)
 MATYPES = ./gen_matypes
 
 matypes.h: gen_matypes.c
-	RemoveFiles($@ ProgramTargetName(gen_matypes))
-	-HostLinkRule(ProgramTargetName(gen_matypes),$(CFLAGS) $(LOCAL_LDFLAGS),gen_matypes.c,$(LDLIBS))
+	RemoveFiles($@ HostProgramTargetName(gen_matypes))
+	-HostLinkRule(HostProgramTargetName(gen_matypes),$(CFLAGS) $(LOCAL_LDFLAGS),gen_matypes.c,$(LDLIBS))
 	RunProgram(MATYPES,> matypes_h)
 	$(MV) matypes_h $@
-	RemoveFiles(ProgramTargetName(gen_matypes))
+	RemoveFiles(HostProgramTargetName(gen_matypes))
 
 includes:: matypes.h
 
 depend:: matypes.h
 
 clean::
-	RemoveFiles(matypes.h ProgramTargetName(gen_matypes))
+	RemoveFiles(matypes.h HostProgramTargetName(gen_matypes))
 
 DependTarget()
