@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.41 1999/06/14 07:32:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.42 1999/12/27 00:39:56 robin Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -180,6 +180,9 @@ extern void DPMSExtensionInit(INITARGS);
 #ifdef XANTI
 extern void XAntiExtensionInit(INITARGS);
 #endif
+#ifdef DPS
+extern void DPSExtensionInit(INITARGS);
+#endif
 
 #ifndef XFree86LOADER
 
@@ -299,6 +302,11 @@ InitExtensions(argc, argv)
     GlxExtensionInit();
 #endif
 #endif
+#ifdef DPSEXT
+#ifndef XPRINT
+    DPSExtensionInit();
+#endif
+#endif
 }
 
 void
@@ -361,6 +369,7 @@ ExtensionModule extension[] =
 #endif
     { NULL, "XAnti", NULL, NULL },
     { NULL, "XFree86-DRI", NULL, NULL },
+    { NULL, "Adobe-DPS-Extension", NULL, NULL },
     { NULL, NULL, NULL, NULL }
 };
 
@@ -433,6 +442,7 @@ InitExtensions(argc, argv)
 #endif
     /* 31 - XAnti */
     /* 32 - XF86DRI */
+    /* 33 - Adobe-DPS-Extension */
 
 #endif
     for (i = 0; extension[i].name != NULL; i++) 
