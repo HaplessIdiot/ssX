@@ -55,7 +55,7 @@ vgaVideoChipRec GENERIC = {
   0xFFFF,
   0x00000, 0x10000,
   0x00000, 0x10000,
-  FALSE,
+  TRUE,
   VGA_NO_DIVIDE_VERT,
   {0,},
   32,
