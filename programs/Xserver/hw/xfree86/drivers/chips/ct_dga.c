@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_dga.c,v 1.2 2000/12/06 15:35:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_dga.c,v 1.3tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -18,8 +18,10 @@ static int  CHIPS_GetViewport(ScrnInfoPtr);
 static void CHIPS_SetViewport(ScrnInfoPtr, int, int, int);
 static void CHIPS_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void CHIPS_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
+#if 0
 static void CHIPS_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
 					unsigned long);
+#endif
 
 static
 DGAFunctionRec CHIPS_DGAFuncs = {
@@ -273,7 +275,7 @@ CHIPS_BlitRect(
     }
 }
 
-
+#if 0
 static void 
 CHIPS_BlitTransRect(
    ScrnInfoPtr pScrn, 
@@ -285,7 +287,7 @@ CHIPS_BlitTransRect(
   /* this one should be separate since the XAA function would
      prohibit usage of ~0 as the key */
 }
-
+#endif
 
 static Bool 
 CHIPS_OpenFramebuffer(

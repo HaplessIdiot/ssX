@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.16 2002/04/24 16:20:40 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.17tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -923,11 +923,6 @@ static Bool RADEONDRIAgpInit(RADEONInfoPtr info, ScreenPtr pScreen)
 				/* Initialize Radeon's AGP registers */
     /* Ring buffer is at AGP offset 0 */
     OUTREG(RADEON_AGP_BASE, info->ringHandle);
-
-				/* Enable bus mastering in PCI config
-				 * space
-				 */
-    xf86EnablePciBusMaster(info->PciInfo, TRUE);
 
     return TRUE;
 }

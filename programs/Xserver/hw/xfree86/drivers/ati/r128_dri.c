@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.22 2001/12/28 15:49:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.23tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -602,8 +602,6 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
     OUTREG(R128_BM_CHUNK_0_VAL, chunk);
 
     OUTREG(R128_PCI_GART_PAGE, 1); /* Ensure AGP GART is used (for now) */
-
-    xf86EnablePciBusMaster(info->PciInfo, TRUE);
 
     return TRUE;
 }

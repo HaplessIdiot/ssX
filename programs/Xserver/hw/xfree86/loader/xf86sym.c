@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.213 2002/07/30 18:36:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.215tsi Exp $ */
 
 /*
  *
@@ -22,6 +22,9 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+
+#define INCLUDE_DEPRECATED 1
+
 #include <fcntl.h>
 #include "sym.h"
 #include "misc.h"
@@ -277,7 +280,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86FindScreenForEntity)
    SYMFUNC(xf86FindPciDeviceVendor)
    SYMFUNC(xf86FindPciClass)
+#ifdef INCLUDE_DEPRECATED
    SYMFUNC(xf86EnablePciBusMaster)
+#endif
    SYMFUNC(xf86RegisterStateChangeNotificationCallback)
    SYMFUNC(xf86DeregisterStateChangeNotificationCallback)
    SYMFUNC(xf86NoSharedResources)

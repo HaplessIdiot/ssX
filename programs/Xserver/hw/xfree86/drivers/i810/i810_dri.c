@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.27 2002/09/11 00:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.28 2002/10/08 20:15:46 dawes Exp $ */
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
  *
@@ -922,8 +922,6 @@ I810DRIScreenInit(ScreenPtr pScreen)
 
    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	      "[drm] added %d %d byte DMA buffers\n", bufs, I810_DMA_BUF_SZ);
-
-   xf86EnablePciBusMaster(pI810->PciInfo, TRUE);
 
    I810InitDma(pScrn);
 

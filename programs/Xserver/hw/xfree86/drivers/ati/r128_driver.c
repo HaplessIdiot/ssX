@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.64 2002/07/02 13:02:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.67tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -3464,14 +3464,6 @@ void R128LeaveVT(int scrnIndex, int flags)
     R128TRACE(("R128LeaveVT\n"));
 #ifdef XF86DRI
     if (info->directRenderingEnabled) {
-	/*
-	 *This seems to fix that !@#$ irritating switch to VT and back X-freeze
-	 * that has been plaguing some DRI users.  It seems that bus mastering
-	 * is turned off on the video card when one switches to a VT and this
-	 * needs to be reactivated when we get back, else things just stop. :)
-	 * Charl P. Botha <http://cpbotha.net/>
-	 */
-	xf86EnablePciBusMaster(info->PciInfo, TRUE);
 	DRILock(pScrn->pScreen, 0);
 	R128CCE_STOP(pScrn, info);
     }

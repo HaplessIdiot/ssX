@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 367. When enabling PCI adapters, also enable their bus mastering capability;
+      Consequently, deprecate xf86EnablePciBusMaster() (Marc La France).
  366. Fix lndir's handling of relative symbolic links, and update the man page
       to document the -withrevinfo flag (H. J. Lu, Marc La France).
  365. Xdm patches: realloc usage, zero malloc()ated memory, enable 
@@ -15255,4 +15257,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2326 2002/10/06 20:45:19 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2327 2002/10/07 15:28:53 tsi Exp $

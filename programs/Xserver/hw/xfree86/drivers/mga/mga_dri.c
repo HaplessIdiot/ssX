@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.22 2001/09/26 12:59:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.23tsi Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -780,9 +780,6 @@ static Bool MGADRIAgpInit(ScreenPtr pScreen)
                pMGADRIServer->agpTextures.handle );
    xf86DrvMsg( pScreen->myNum, X_INFO,
                "[agp] agpTexture size: %d kb\n", pMGADRIServer->agpTextures.size/1024 );
-
-
-   xf86EnablePciBusMaster( pMga->PciInfo, TRUE );
 
    return TRUE;
 }

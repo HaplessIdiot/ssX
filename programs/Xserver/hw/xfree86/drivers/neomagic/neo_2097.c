@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2097.c,v 1.8 2001/10/01 13:44:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2097.c,v 1.9tsi Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -77,6 +77,7 @@ static void Neo2097SubsequentScanlineCPUToScreenColorExpandFill(
 							int w, int h,
 							int skipleft);
 static void Neo2097SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
+#if 0
 static void Neo2097SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 					      int patternx,
 					      int patterny,
@@ -87,6 +88,7 @@ static void Neo2097SubsequentMono8x8PatternFill(ScrnInfoPtr pScrn,
 						int patterny, 
 						int x, int y,
 						int w, int h);
+#endif
 static void Neo2097SetupForScanlineImageWrite(ScrnInfoPtr pScrn, int rop,
                                 unsigned int planemask,
                                 int transparency_color, int bpp, int depth);
@@ -438,6 +440,7 @@ Neo2097SubsequentColorExpandScanline(ScrnInfoPtr pScrn,	int bufno)
 #endif
 }
 
+#if 0
 static void
 Neo2097SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 				     int patternx,
@@ -497,7 +500,7 @@ Neo2097SubsequentMono8x8PatternFill(ScrnInfoPtr pScrn,
     OUTREG(NEOREG_DSTSTARTOFF, (y<<16) | (x & 0xffff));
     OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
 }
-
+#endif
 
 static void 
 Neo2097SetupForScanlineImageWrite(        
@@ -539,5 +542,3 @@ Neo2097SubsequentImageWriteScanline(
 ){
     /* should I be checking for fifo slots here ? */
 }
-
-
