@@ -1,10 +1,14 @@
-XFree86 3.9f (16 June 1997)
+XFree86 3.9g (xx June 1997)
+1024. Fix xterm's op termcap entry, and shorten the entry so it fits within
+      the 1024 character limit.
 1023. Actually include changes 963-965.
 1022. Add accelerated server for cards based on 3DLabs GLINT chipsets. This
       server is known to work on Elsa GLoria L cards on most motherboards.
       It does not support any other cards at this time. This work was
       sponsored by S.u.S.E., Elsa, and SNI (Alan Hourihane, Stefan Dirsch,
       Dirk Hohndel).
+
+XFree86 3.9f (16 June 1997)
 1021. Fix some build problems with 3.9e.
 
 XFree86 3.9e (15 June 1997)
@@ -4953,4 +4957,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.489 1997/06/16 00:46:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.490 1997/06/17 08:17:50 hohndel Exp $
