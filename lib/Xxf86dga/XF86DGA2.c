@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.21 2002/12/14 04:41:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.22tsi Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -745,6 +745,8 @@ void XDGAKeyEventToXKeyEvent(
 #define DEV_MEM "/dev/pmem"
 #elif defined(SVR4) && defined(sun)
 #define DEV_MEM "/dev/xsvc"
+#elif defined(HAS_APERTURE_DRV)
+#define DEV_MEM "/dev/xf86"
 #else
 #define DEV_MEM "/dev/mem"
 #endif
