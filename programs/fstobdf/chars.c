@@ -39,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/fstobdf/chars.c,v 3.5 2000/06/15 20:50:03 dawes Exp $ */
+/* $XFree86: xc/programs/fstobdf/chars.c,v 3.6 2001/01/17 23:44:54 dawes Exp $ */
 
 /* Morten Storgaard Nielsen: chars.c,v 3.2-1 2000/01/30 14:11:19 kat Exp */
 
@@ -115,7 +115,7 @@ EmitBitmap(FILE *outFile,
 	    charInfo->left,
 	    -charInfo->descent);
     if (charInfo->attributes)
-	fprintf(outFile, "ATTRIBUTES 0x%04x\n", charInfo->attributes);
+	fprintf(outFile, "ATTRIBUTES %04x\n", charInfo->attributes);
 
     /*
      * emit the bitmap
