@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.8 1995/02/12 09:53:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.9 1995/03/04 06:12:50 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -62,7 +62,6 @@
 
 extern int defaultColorVisualClass;
 extern int mach64MaxClock;
-extern int mach64MaxATI68860Clock;
 extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
 extern void mach64QueryBestSize();
 extern void mach64WarpCursor();
@@ -222,18 +221,40 @@ typedef struct ATIInformationBlock {
 #endif
 } ATIInformationBlock;
 
-int	mach64Ramdac;
-char	*mach64ramdac_names[] = {
-	"ATI-68830",
-	"IMS-G173/SC1148[368]",
-	"ATI-68875/TLC34075/Bt885",
-	"Bt47[68]/INMOS17[68]",
-	"AT&T20C49[01]/Bt48[12]/IMS-G174/MU9C{1880,4910}/SC1502[56]",
-	"ATI-68860/ATI-68880",
-	"STG1700 (or similar)",
-	"SC15021/STG1702/AT&T21C498",
-};
+typedef struct _RamdacTable {
+    int subtype;
+    char *name;
+} mach64RamdacTableRec;
 
+mach64RamdacTableRec mach64RamdacTable[] = {
+    { DAC_ATI68875, "ATI-68875/TLC34075" },
+    { DAC_BT476, "Bt476/Bt478/INMOS176/INMOS178" },
+    { DAC_BT481, "Bt481" },  
+    { DAC_ATT20C491, "AT&T20C491" },
+    { DAC_SC15026, "SC15026" },
+    { DAC_MU9C1880, "MU9C1880" },
+    { DAC_IMSG174, "IMS-G174" },
+    { DAC_ATI68860, "ATI68860" },
+    { DAC_ATI68880, "ATI68880" },
+    { DAC_STG1700, "STG1700" },
+    { DAC_ATT498, "AT&T498" },
+    { DAC_STG1702, "STG1702" },
+    { DAC_SC15021, "SC15021" },
+    { DAC_ATT21C498, "AT&T21C498" },
+    { DAC_STG1703, "STG1703" },
+    { DAC_CH8398, "CH8398" },
+    { 0xff, "Unknown" },
+};  
+
+char *mach64ClockTypeTable[] = {
+    "ATI18818-0",
+    "ATI18818-1",
+    "STG1703",
+    "CH8398",
+    "BedRock",
+  };  
+
+int	mach64Ramdac;
 int	mach64RamdacSubType;
 int	mach64BusType;
 int	mach64MemType;
@@ -366,18 +387,21 @@ static ATIInformationBlock *GetATIInformationBlock()
    }
    info.Freq_Table[j].h_disp = 0;
 
-   CDepth_Table_Ptr += i + 2;
-   CTable_Size = bios_data[CDepth_Table_Ptr - 1];
-   for (i = 0, j = 0;
-        bios_data[CDepth_Table_Ptr + i] != 0;
-        i += CTable_Size, j++) {
-     info.Freq_Table2[j].h_disp        = bios_data[CDepth_Table_Ptr + i];
-     info.Freq_Table2[j].dacmask       = bios_data[CDepth_Table_Ptr + i + 1];
-     info.Freq_Table2[j].ram_req       = bios_data[CDepth_Table_Ptr + i + 2];
-     info.Freq_Table2[j].max_dot_clock = bios_data[CDepth_Table_Ptr + i + 3];
-     info.Freq_Table2[j].color_depth   = bios_data[CDepth_Table_Ptr + i + 4];
-   }
-   info.Freq_Table2[j].h_disp = 0;
+   if (bios_data[CDepth_Table_Ptr + i + 1] != 0) {
+       CDepth_Table_Ptr += i + 2;
+       CTable_Size = bios_data[CDepth_Table_Ptr - 1];
+       for (i = 0, j = 0;
+	    bios_data[CDepth_Table_Ptr + i] != 0;
+	    i += CTable_Size, j++) {
+	   info.Freq_Table2[j].h_disp        = bios_data[CDepth_Table_Ptr + i];
+	   info.Freq_Table2[j].dacmask       = bios_data[CDepth_Table_Ptr + i + 1];
+	   info.Freq_Table2[j].ram_req       = bios_data[CDepth_Table_Ptr + i + 2];
+	   info.Freq_Table2[j].max_dot_clock = bios_data[CDepth_Table_Ptr + i + 3];
+	   info.Freq_Table2[j].color_depth   = bios_data[CDepth_Table_Ptr + i + 4];
+       }
+       info.Freq_Table2[j].h_disp = 0;
+   } else
+       info.Freq_Table2[0].h_disp = 0;
 
    return &info;
 }
@@ -418,10 +442,21 @@ mach64Probe()
         xf86weight = mach64InfoRec.weight;
     }
 
-    if (info->DAC_Type != DAC_ATI68860_ATI68880 && xf86bpp != 8) {
-	ErrorF("mach64Probe: Invalid bpp: %d\n", xf86bpp);
-	xf86DisableIOPorts(mach64InfoRec.scrnIndex);
-	return(FALSE);
+    switch (info->DAC_SubType) {
+    case DAC_ATI68860:
+    case DAC_ATI68880:
+    case DAC_ATI68875:
+    case DAC_CH8398:
+    case DAC_STG1702:
+    case DAC_STG1703:
+	break;
+    default:
+	if (xf86bpp != 8) {
+	    ErrorF("mach64Probe: Invalid bpp: %d\n", xf86bpp);
+	    xf86DisableIOPorts(mach64InfoRec.scrnIndex);
+	    return(FALSE);
+	}
+	break;
     }
 
     switch (xf86bpp) {
@@ -457,6 +492,7 @@ mach64Probe()
             return(FALSE);
         }
 	break;
+    case 24:
     case 32:
         mach64InfoRec.depth = 24;
         mach64InfoRec.bitsPerPixel = 32;
@@ -479,9 +515,20 @@ mach64Probe()
 	return(FALSE);
     }
 
-    switch(info->DAC_Type) {
-    case DAC_ATI68860_ATI68880:
-	mach64InfoRec.maxClock = mach64MaxATI68860Clock;
+    switch(info->DAC_SubType) {
+    case DAC_ATI68860:
+    case DAC_ATI68880:
+	mach64InfoRec.maxClock = 135000;
+	break;
+    case DAC_ATI68875:
+	mach64InfoRec.maxClock = 135000;
+	break;
+    case DAC_CH8398:
+	mach64InfoRec.maxClock = 135000;
+	break;
+    case DAC_STG1702:
+    case DAC_STG1703:
+	mach64InfoRec.maxClock = 135000;
 	break;
     default:
 	mach64InfoRec.maxClock = mach64MaxClock;
@@ -491,9 +538,13 @@ mach64Probe()
     OFLG_ZERO(&validOptions);
     OFLG_SET(OPTION_SW_CURSOR, &validOptions);
     OFLG_SET(OPTION_CSYNC, &validOptions);
-    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
+    if (info->DAC_SubType != DAC_CH8398) {
+	OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
+    }
+    OFLG_SET(OPTION_OVERRIDE_BIOS, &validOptions);
+    OFLG_SET(OPTION_NO_BLOCK_WRITE, &validOptions);
     xf86VerifyOptions(&validOptions, &mach64InfoRec);
-    
+
     mach64InfoRec.chipset = "mach64";
     xf86ProbeFailed = FALSE;
 
@@ -558,6 +609,8 @@ mach64Probe()
     }
 
     if (xf86Verbose) {
+	ErrorF("%s %s: Clock type: %s\n", XCONFIG_GIVEN, mach64InfoRec.name,
+	       mach64ClockTypeTable[mach64ClockType]);
 	ErrorF("%s ",OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) ?
 			XCONFIG_GIVEN : XCONFIG_PROBED);
 	ErrorF("%s: ", mach64InfoRec.name);
@@ -611,7 +664,7 @@ mach64Probe()
 			(mach64FreqTable2[i].max_dot_clock >=
 			 mach64InfoRec.clock[pMode->Clock] / 1000) &&
 			(mach64CDepths[mach64FreqTable2[i].color_depth & 0x07]
-			 >= mach64InfoRec.depth)) {
+			 >= mach64InfoRec.bitsPerPixel)) {
 			found = TRUE;
 			break;
 		    }
@@ -623,10 +676,18 @@ mach64Probe()
 			    (mach64FreqTable[i].max_dot_clock >=
 			     mach64InfoRec.clock[pMode->Clock] / 1000) &&
 			    (mach64CDepths[mach64FreqTable[i].color_depth & 0x07]
-			     >= mach64InfoRec.depth)) {
+			     >= mach64InfoRec.bitsPerPixel)) {
 			    found = TRUE;
 			    break;
 			}
+
+		if (!found &&
+		    OFLG_ISSET(OPTION_OVERRIDE_BIOS, &mach64InfoRec.options)) {
+		    /* BIOS doesn't think this mode is legal! */
+		    ErrorF("%s %s: Illegal mode according to Mach64 BIOS (Overridden)\n",
+			   XCONFIG_GIVEN, mach64InfoRec.name);
+		    found = TRUE;
+		}
 
 		if (!found) {
 		    pModeSv=pMode->next;
@@ -760,20 +821,31 @@ mach64Probe()
 	    xf86DisableIOPorts(mach64InfoRec.scrnIndex);
 	    return(FALSE);
 	}
-	ErrorF("%s %s: Ramdac is %s\n", XCONFIG_PROBED, mach64InfoRec.name,
-	       mach64ramdac_names[mach64Ramdac]);
+	for (i = 0;
+	     ((mach64RamdacTable[i].subtype != 0xff) &&
+	      (mach64RamdacTable[i].subtype != mach64RamdacSubType));
+	     i++);
+	if (mach64RamdacTable[i].subtype == 0xff) {
+	    ErrorF("%s %s: Ramdac is %s (%d)\n", XCONFIG_PROBED,
+		   mach64InfoRec.name,
+		   mach64RamdacTable[i].name,
+		   mach64RamdacSubType);
+	} else {
+	    ErrorF("%s %s: Ramdac is %s\n", XCONFIG_PROBED, mach64InfoRec.name,
+		   mach64RamdacTable[i].name);
+	}
     }
 
-    mach64DAC8Bit = (OFLG_ISSET(OPTION_DAC_8_BIT, &mach64InfoRec.options)
-			&& (info->DAC_Type == DAC_ATI68860_ATI68880)
-			&& (mach64InfoRec.bitsPerPixel == 8))
+    mach64DAC8Bit = (OFLG_ISSET(OPTION_DAC_8_BIT, &mach64InfoRec.options) &&
+		     (mach64InfoRec.bitsPerPixel == 8) &&
+		     (mach64RamdacSubType != DAC_CH8398))
 		    || (mach64InfoRec.bitsPerPixel == 16)
 		    || (mach64InfoRec.bitsPerPixel == 32);
 
     if (xf86Verbose) {
 	if (mach64InfoRec.bitsPerPixel == 8) {
 	    ErrorF("%s %s: Using %d bits per RGB value\n",
-	           (info->DAC_Type == DAC_ATI68860_ATI68880)
+	           (info->DAC_Type == DAC_ATI68860)
 	           ? XCONFIG_GIVEN : XCONFIG_PROBED,
 	           mach64InfoRec.name,
 	           mach64DAC8Bit ?  8 : 6);
@@ -1113,12 +1185,14 @@ mach64SaveScreen (pScreen, on)
     if (xf86VTSema) {
 	if (on) {
 	    if (mach64HWCursorSave != -1) {
-		mach64SetRamdac(mach64CRTCRegs.color_depth >> 8, TRUE);
+		mach64SetRamdac(mach64CRTCRegs.color_depth, TRUE,
+				mach64CRTCRegs.dot_clock);
 		regwb(GEN_TEST_CNTL, mach64HWCursorSave);
 		mach64HWCursorSave = -1;
 	    }
 	    mach64RestoreColor0(pScreen);
-	    outb(ioDAC_REGS+2, 0xff);
+	    if (mach64RamdacSubType != DAC_ATI68875)
+		outb(ioDAC_REGS+2, 0xff);
 	} else {
 	    outb(ioDAC_REGS, 0);
 	    outb(ioDAC_REGS+1, 0);
@@ -1126,9 +1200,13 @@ mach64SaveScreen (pScreen, on)
 	    outb(ioDAC_REGS+1, 0);
 	    outb(ioDAC_REGS+2, 0x00);
 
-	    mach64SetRamdac(CRTC_PIX_WIDTH_8BPP >> 8, TRUE);
+	    mach64SetRamdac(CRTC_PIX_WIDTH_8BPP, TRUE,
+			    mach64CRTCRegs.dot_clock);
 	    mach64HWCursorSave = regrb(GEN_TEST_CNTL);
 	    regwb(GEN_TEST_CNTL, mach64HWCursorSave & ~HWCURSOR_ENABLE);
+
+	    if (mach64RamdacSubType != DAC_ATI68875)
+		outb(ioDAC_REGS+2, 0x00);
 	}
     }
 

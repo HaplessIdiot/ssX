@@ -1,5 +1,5 @@
 /* $XConsortium: mach64scrin.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64scrin.c,v 3.0 1994/11/26 12:42:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64scrin.c,v 3.1 1995/01/28 15:53:37 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -164,9 +164,21 @@ mach64ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	        	visual->offsetGreen = xf86weight.blue;
 	        	visual->offsetBlue = 0;
 		} else if (mach64InfoRec.bitsPerPixel == 32) {
+		    switch (mach64RamdacSubType) {
+		    case DAC_ATI68875:
+		    case DAC_CH8398:
+		    case DAC_STG1702:
+		    case DAC_STG1703:
+			visual->offsetRed = 24;
+			visual->offsetGreen = 16;
+			visual->offsetBlue = 8;
+			break;
+		    default:
 			visual->offsetRed = 0;
 			visual->offsetGreen = 8;
 			visual->offsetBlue = 16;
+			break;
+		    }
 		}
 		visual->redMask = ((1 << xf86weight.red) - 1)
 					<< visual->offsetRed;

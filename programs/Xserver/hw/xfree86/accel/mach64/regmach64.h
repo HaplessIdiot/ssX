@@ -1,5 +1,5 @@
 /* $XConsortium: regmach64.h,v 1.2 95/01/16 13:16:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.1 1995/01/15 10:31:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.2 1995/01/28 15:53:43 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -191,6 +191,7 @@
 #define CRTC_PIX_WIDTH_8BPP	0x00000200
 #define CRTC_PIX_WIDTH_15BPP	0x00000300
 #define CRTC_PIX_WIDTH_16BPP	0x00000400
+#define CRTC_PIX_WIDTH_24BPP	0x00000500
 #define CRTC_PIX_WIDTH_32BPP	0x00000600
 
 #define CRTC_BYTE_PIX_ORDER	0x00000800
@@ -207,6 +208,14 @@
 #define DAC_EXT_SEL_RS2		0x01
 #define DAC_EXT_SEL_RS3		0x02
 #define DAC_8BIT_EN		0x00000100
+#define DAC_PIX_DLY_MASK	0x00000600
+#define DAC_PIX_DLY_0NS		0x00000000
+#define DAC_PIX_DLY_2NS		0x00000200
+#define DAC_PIX_DLY_4NS		0x00000400
+#define DAC_BLANK_ADJ_MASK	0x00001800
+#define DAC_BLANK_ADJ_0		0x00000000
+#define DAC_BLANK_ADJ_1		0x00000800
+#define DAC_BLANK_ADJ_2		0x00001000
 
 
 /* Mix control values */
@@ -272,12 +281,22 @@
 #define EnhancedVRAMx16		5
 #define EnhancedVRAMx16ssr	6
 
-#define DAC_ATI68875		2
-#define DAC_BT476_BT478		3
-#define DAC_BT481		4
-#define DAC_ATI68860_ATI68880	5
-#define DAC_STG1700		6
-#define DAC_SC15021		7
+#define DAC_ATI68875		0x02
+#define DAC_BT476		0x03
+#define DAC_BT481		0x04
+#define DAC_ATT20C491		0x14
+#define DAC_SC15026		0x24
+#define DAC_MU9C1880		0x34
+#define DAC_IMSG174		0x44
+#define DAC_ATI68860		0x05
+#define DAC_ATI68880		0x15
+#define DAC_STG1700		0x06
+#define DAC_ATT498		0x16
+#define DAC_STG1702		0x07
+#define DAC_SC15021		0x17
+#define DAC_ATT21C498		0x27
+#define DAC_STG1703		0x37
+#define DAC_CH8398		0x47
 
 /* CONFIG_CNTL register constants */
 #define MEM_SIZE_ALIAS		0x00000007
@@ -467,11 +486,11 @@
 #define MACH64_NUM_FREQS	50
 
 typedef struct {
-    unsigned int h_disp;
-    unsigned int dacmask;
-    unsigned int ram_req;
-    unsigned int max_dot_clock;
-    unsigned int color_depth;
+    unsigned char h_disp;
+    unsigned char dacmask;
+    unsigned char ram_req;
+    unsigned char max_dot_clock;
+    unsigned char color_depth;
 } mach64FreqRec;
 
 typedef struct {

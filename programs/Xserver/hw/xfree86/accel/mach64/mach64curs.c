@@ -1,5 +1,5 @@
 /* $XConsortium: mach64curs.c,v 1.2 95/01/12 20:21:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.0 1994/11/26 12:42:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.1 1995/01/28 15:53:18 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -344,8 +344,26 @@ mach64MoveCursor(pScr, x, y)
     {
 	WaitQueue(4);
 	regw(CUR_OFFSET, (mach64CursorOffset >> 3) + (yoff << 1));
-	regw(CUR_HORZ_VERT_OFF, (((mach64CursYExtra + yoff) << 16) | xoff));
-	regw(CUR_HORZ_VERT_POSN, ((y << 16) | x));
+	switch (mach64RamdacSubType) {
+	case DAC_CH8398:
+	case DAC_STG1702:
+	case DAC_STG1703:
+	    if (mach64InfoRec.bitsPerPixel == 32) {
+		regw(CUR_HORZ_VERT_OFF,
+		     (((mach64CursYExtra + yoff) << 16) | (xoff & 0x1e)));
+		regw(CUR_HORZ_VERT_POSN, ((y << 16) | (x & 0x03fe)));
+	    } else {
+		regw(CUR_HORZ_VERT_OFF,
+		     (((mach64CursYExtra + yoff) << 16) | xoff));
+		regw(CUR_HORZ_VERT_POSN, ((y << 16) | x));
+	    }
+	    break;
+	default:
+	    regw(CUR_HORZ_VERT_OFF,
+		 (((mach64CursYExtra + yoff) << 16) | xoff));
+	    regw(CUR_HORZ_VERT_POSN, ((y << 16) | x));
+	    break;
+	}
 	if (!mach64CursLastEnabled)
 	    regw(GEN_TEST_CNTL, regr(GEN_TEST_CNTL) | HWCURSOR_ENABLE);
     }
@@ -423,7 +441,7 @@ mach64RecolorCursor(pScr, pCurs, displayed)
 
     WaitIdleEmpty(); 
 
-    if (mach64Ramdac == DAC_ATI68860_ATI68880) {
+    if (mach64Ramdac == DAC_ATI68860) {
 	/* Access cursor color registers */
 	outb(ioDAC_CNTL, 1);
 

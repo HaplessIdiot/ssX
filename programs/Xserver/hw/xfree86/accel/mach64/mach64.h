@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.h,v 1.2 95/01/16 13:16:32 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.4 1995/01/15 10:31:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.5 1995/01/28 15:53:12 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -308,7 +308,8 @@ void mach64InitAperture(
 void mach64SetRamdac(
 #if NeedFunctionPrototypes
     int colorDepth,
-    int AccelMode
+    int AccelMode,
+    int dotClock
 #endif
 );
 void mach64InitDisplay(

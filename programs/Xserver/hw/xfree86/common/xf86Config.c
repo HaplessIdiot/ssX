@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.34 1995/01/11 03:50:32 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.36 1995/01/28 17:03:20 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -661,7 +661,7 @@ static Bool graphFound = FALSE;
  *	Find closest clock to given frequency (in kHz).  This assumes the
  *	number of clocks is greater than zero.
  */
-static int
+int
 xf86GetNearestClock(Screen, Frequency)
 	ScrnInfoPtr Screen;
 	int Frequency;
