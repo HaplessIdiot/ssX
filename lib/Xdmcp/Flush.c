@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Flush.c,v 1.10 94/04/17 20:16:35 rws Exp $
- * $XFree86: xc/lib/Xdmcp/Flush.c,v 3.0 1994/05/08 05:15:41 dawes Exp $
+ * $XFree86: xc/lib/Xdmcp/Flush.c,v 3.1 1994/05/21 23:48:06 dawes Exp $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -103,11 +103,7 @@ XdmcpFlush (fd, buffer, to, tolen)
     Xfree(b);
     fcntl(fd, F_SETFD, flags);
     if (result != buffer->pointer + sizeof(udp_io_hdr_t))
-    {
-    	ErrorF("XdmcpFlush: unable to write: %d, '%s'\n", result,
-    		strerror(s_errno));
     	return FALSE;
-    }
 #endif /* MINIX */
 #endif
     return TRUE;

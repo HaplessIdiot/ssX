@@ -1,4 +1,5 @@
 /* $XConsortium: solx86_vid.c,v 1.1 94/03/28 21:32:44 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -44,7 +45,7 @@ pointer AllocAddress[MAXSCREENS][NUM_REGIONS];
 Bool xf86LinearVidMem()
 {
 
-#ifdef HAS_SOLX86_APERTUREDRV
+#ifdef HAS_APERTURE_DRV
 	int	mmapFd;
 
 	if((mmapFd = open("/dev/fbs/aperture", O_RDWR)) < 0)
@@ -84,11 +85,11 @@ unsigned long Size;
  	 * 
 	 * So what we'll do is use /dev/vtXX for the A0000-FFFFF stuff, and
 	 * try to use the /dev/fbs/aperture driver if the server
-	 * tries to mmap anything > FFFFF, and HAS_SOLX86_APERTUREDRV is
+	 * tries to mmap anything > FFFFF, and HAS_APERTURE_DRV is
 	 * defined. (its very very unlikely that the server will try to mmap
 	 * anything below FFFFF that can't be handled by /dev/vtXX.
 	 * If the server tries to mmap anything above FFFFF, and
-	 * HAS_SOLX86_APERTUREDRV the server will die.
+	 * HAS_APERTURE_DRV the server will die.
 	 * 
 	 * DWH - 2/23/94
 	 */
@@ -97,7 +98,7 @@ unsigned long Size;
 		sprintf(solx86_vtname,"/dev/vt%02d",xf86Info.vtno);
 	else
 
-#ifdef HAS_SOLX86_APERTUREDRV
+#ifdef HAS_APERTURE_DRV
 		sprintf(solx86_vtname, "/dev/fbs/aperture");
 #else
 		FatalError("%s: Could not mmap framebuffer [s=%x,a=%x] (%s)\n",

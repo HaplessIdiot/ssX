@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.1 1994/06/18 16:22:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.2 1994/06/19 11:04:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -817,8 +817,6 @@ agxPrintIdent()
 int
 agxGetMemSize()
 {
-   #include <sys/types.h>
-   #include <sys/mman.h>
    char i, lastBank=-1;
    unsigned int mask;
    unsigned int tmp1, tmp2;
