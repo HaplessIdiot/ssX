@@ -112,9 +112,8 @@ tseng_recover_timeout(TsengPtr pTseng)
 }
 
 void 
-tseng_init_acl(ScreenPtr pScreen)
+tseng_init_acl(ScrnInfoPtr pScrn)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     TsengPtr pTseng = TsengPTR(pScrn);
 
     PDEBUG("	tseng_init_acl\n");

@@ -601,8 +601,8 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
         pMga->AccelFlags = TRANSC_SOLID_FILL |
 			   TWO_PASS_COLOR_EXPAND;
 
-#if 0
-	if(pMga->FbMapSize > 8*1024*1024)
+#if 1
+	if((pMga->FbMapSize > 8*1024*1024) && (pScrn->depth == 8))
 	   pMga->AccelFlags |= LARGE_ADDRESSES;
 #endif
         break;
@@ -801,7 +801,6 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 
     maxlines = (min(pMga->FbUsableSize, 16*1024*1024)) / 
 	               (pScrn->displayWidth * PSZ / 8);
-
 #ifdef XF86DRI
     if (pMga->directRenderingEnabled) {
 	if(maxlines > (pMga->numXAALines + pScrn->virtualY)) 

@@ -764,21 +764,22 @@ NVdoDDC(ScrnInfoPtr pScrn)
 
     /*    if ((MonInfo = nvDoDDCVBE(pScrn))) return MonInfo;      */
 
-    /* Save the current state */
-    NVSave(pScrn);
-
     /* Enable access to extended registers */
     vgaHWUnlock(hwp);
     pNv->riva.LockUnlock(&pNv->riva, 0);
+    /* Save the current state */
+    NVSave(pScrn);
 
-    if ((MonInfo = nvDoDDC2(pScrn))) return MonInfo;
+    if ((MonInfo = nvDoDDC2(pScrn))) goto done;
 #if 0 /* disable for now - causes problems on AXP */
-    if ((MonInfo = nvDoDDC1(pScrn))) return MonInfo;
+    if ((MonInfo = nvDoDDC1(pScrn))) goto done;
 #endif
+
+ done:
     /* Restore previous state */
     NVRestore(pScrn);
-
-    xf86SetDDCproperties(pScrn, MonInfo);
+    pNv->riva.LockUnlock(&pNv->riva, 1);
+    vgaHWLock(hwp);
 
     return MonInfo;
 }
@@ -1507,7 +1508,7 @@ NVModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         if (!(*pNv->ModeInit)(pScrn, mode))
             return FALSE;
     }
-    
+
     /* Program the registers */
     vgaHWProtect(pScrn, TRUE);
     vgaReg = &hwp->ModeReg;

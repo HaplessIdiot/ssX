@@ -222,7 +222,7 @@ tseng_wait(TsengPtr pTseng, int reg, char *name, unsigned char mask)
 
 /***********************************************************************/
 
-void tseng_init_acl(ScreenPtr pScreen);
+void tseng_init_acl(ScrnInfoPtr pScrn);
 
 Bool TsengXAAInit(ScreenPtr pScreen);
 

@@ -121,7 +121,7 @@ OptionInfoRec renditionOptions[]={
 
 DriverRec RENDITION={
     RENDITION_VERSION_CURRENT,
-    "rendition driver",
+    "rendition",
     renditionIdentify,
     renditionProbe,
     renditionAvailableOptions,
@@ -644,7 +644,9 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 	       pRendition->board.mem_base);
 
     /* First of all get a "clean" starting state */
+#if 1
     verite_resetboard(pScreenInfo);
+#endif
 
     /* determine video ram -- to do so, we assume a full size memory of 16M,
      * then map it and use verite_getmemorysize() to determine the real amount of
