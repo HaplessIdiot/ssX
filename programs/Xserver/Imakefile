@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.184 94/05/09 13:16:03 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.3 1994/05/21 23:53:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.4 1994/05/22 06:46:09 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -549,6 +549,24 @@ SetUIDServerTarget(XF86_Mach32,$(XF86MACH32SUBDIRS),$(XF86MACH32OBJS),$(XF86MACH
 #define ServerToInstall XF86_Mach32
 #endif
 #endif	/* XF86Mach32Server */
+
+
+#if XF86P9000Server
+XCOMM
+XCOMM XFree86 P9000 Server
+XCOMM
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/xfree86
+XF86P9000SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+XF86P9000OBJS = $(XF86COMSRC)/XF86_P9000.o
+XF86P9000LIBS = $(XF86ACCELSRC)/p9000/libp9000.a $(XF86LIBS) CFB8Libs
+XF86P9000SYSLIBS = $(SYSLIBS)
+SetUIDServerTarget(XF86_P9000,$(XF86P9000SUBDIRS),$(XF86P9000OBJS),$(XF86P9000LIBS),$(XF86P9000SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_P9000
+#endif
+#endif	/* XF86P9000Server */
 
 
 #if XnestServer
