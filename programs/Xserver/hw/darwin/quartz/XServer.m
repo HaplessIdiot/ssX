@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.19 2003/11/24 05:39:01 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.20 2003/11/27 01:59:53 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -394,13 +394,32 @@ static io_connect_t root_port;
     }
 }
 
-// Append a string to the given enviroment variable
-+ (void)append:(NSString*)value toEnv:(NSString*)name
+
+// Make a safe path
+//
+// Return the path in single quotes in case there are problematic characters in it.
+// We still have to worry about there being single quotes in the path. So, replace
+// all instances of the ' character in the path with '\''.
+- (NSString *)makeSafePath:(NSString *)path
 {
-    setenv([name cString],
-        [[[NSString stringWithCString:getenv([name cString])]
-            stringByAppendingString:value] cString],1);
+    NSMutableString *safePath = [NSMutableString stringWithString:path];
+    NSRange aRange = NSMakeRange(0, [safePath length]);
+
+    while (aRange.length) {
+        aRange = [safePath rangeOfString:@"'" options:0 range:aRange];
+        if (!aRange.length)
+            break;
+        [safePath replaceCharactersInRange:aRange
+                        withString:@"\'\\'\'"];
+        aRange.location += 4;
+        aRange.length = [safePath length] - aRange.location;
+    }
+
+    safePath = [NSMutableString stringWithFormat:@"'%@'", safePath];
+
+    return safePath;
 }
+
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
@@ -580,8 +599,7 @@ static io_connect_t root_port;
 {
     struct passwd *passwdUser;
     NSString *shellPath, *dashShellName, *commandStr, *startXPath;
-    NSMutableString *safeStartXPath;
-    NSRange aRange;
+    NSString *safeStartXPath;
     NSBundle *thisBundle;
     const char *shellPathStr, *newargv[3], *shellNameStr;
     int fd[2], outFD, length, shellType, i;
@@ -684,28 +702,14 @@ static io_connect_t root_port;
         return NO;
     }
 
-    // We will run the startXClients script with the path in single quotes
-    // in case there are problematic characters in the path. We still have
-    // to worry about there being single quotes in the path. So, replace
-    // all instances of the ' character in startXPath with '\''.
-    safeStartXPath = [NSMutableString stringWithString:startXPath];
-    aRange = NSMakeRange(0, [safeStartXPath length]);
-    while (aRange.length) {
-        aRange = [safeStartXPath rangeOfString:@"'" options:0 range:aRange];
-        if (!aRange.length)
-            break;
-        [safeStartXPath replaceCharactersInRange:aRange
-                        withString:@"\'\\'\'"];
-        aRange.location += 4;
-        aRange.length = [safeStartXPath length] - aRange.location;
-    }
+    safeStartXPath = [self makeSafePath:startXPath];
 
     if ([Preferences addToPath]) {
-        commandStr = [NSString stringWithFormat:@"'%@' :%d %@\n",
+        commandStr = [NSString stringWithFormat:@"%@ :%d %@\n",
                         safeStartXPath, [Preferences display],
                         [Preferences addToPathString]];
     } else {
-        commandStr = [NSString stringWithFormat:@"'%@' :%d\n",
+        commandStr = [NSString stringWithFormat:@"%@ :%d\n",
                         safeStartXPath, [Preferences display]];
     }
 
@@ -725,7 +729,7 @@ static io_connect_t root_port;
 // FIXME: This should be unified with startXClients
 - (void)runClient:(NSString *)filename
 {
-    const char *command = [filename UTF8String];
+    const char *command = [[self makeSafePath:filename] UTF8String];
     const char *shell;
     const char *argv[5];
     int child1, child2 = 0;
