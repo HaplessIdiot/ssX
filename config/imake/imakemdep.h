@@ -219,11 +219,6 @@ in this Software without prior written authorization from The Open Group.
 #define FIXUP_CPP_WHITESPACE
 #endif
 
-#if defined(__APPLE__)
-#define DEFAULT_CPP "/usr/bin/cpp"
-#endif
-
-
 #if defined(Lynx)
 /* On LynxOS 2.4.0 imake gets built with the old "legacy"
  * /bin/cc which has a rather pedantic builtin preprocessor.
@@ -239,6 +234,9 @@ in this Software without prior written authorization from The Open Group.
  *     If use cc -E but want a different compiler, define DEFAULT_CC.
  *     If the cpp you need is not in /lib/cpp, define DEFAULT_CPP.
  */
+#if defined(__APPLE__)
+#define DEFAULT_CPP "/usr/bin/cpp"
+#endif
 #if defined(Lynx) || defined(__Lynx__)
 #define DEFAULT_CC "gcc"
 #define USE_CC_E
@@ -650,11 +648,11 @@ char *cpp_argv[ARGUMENTS] = {
 #if defined(MIPS)
         "-DMIPS",
 #endif
-
-#if defined(__APPLE__)
-        "-D__DARWIN__",
 #endif
 
+#if defined(__APPLE__)
+        "-D__APPLE__",
+        "-D__DARWIN__",
 #endif
 
 };
