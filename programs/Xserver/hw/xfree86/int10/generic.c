@@ -399,13 +399,6 @@ xf86FreeInt10(xf86Int10InfoPtr pInt)
 	Int10Current = NULL;
     xfree(INTPriv(pInt)->base);
     UnmapVRam(pInt);
-#ifdef _PC
-    if (INTPriv(pInt)->sysMem) {
-	xf86UnMapVidMem(pInt->scrnIndex, INTPriv(pInt)->sysMem,
-			BIOS_SIZE + SYS_BIOS - V_BIOS);
-	INTPriv(pInt)->sysMem = NULL;
-    }
-#endif
     xfree(INTPriv(pInt)->alloc);
     xfree(pInt->private);
     xfree(pInt);

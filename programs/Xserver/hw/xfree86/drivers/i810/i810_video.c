@@ -216,14 +216,51 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
    {XvSettable | XvGettable, 0, 255, "XV_CONTRAST"}
 };
 
-#define NUM_IMAGES 4
+#define NUM_IMAGES 6
+
+#define I810_RV15 0x35315652
+#define I810_RV16 0x36315652
 
 static XF86ImageRec Images[NUM_IMAGES] =
 {
-   XVIMAGE_YUY2,
-   XVIMAGE_YV12,
-   XVIMAGE_I420,
-   XVIMAGE_UYVY
+   {
+	I810_RV15,
+        XvRGB,
+	LSBFirst,
+	{'R','V','1','5',
+	  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	16,
+	XvPacked,
+	1,
+	15, 0x7C00, 0x03E0, 0x001F,
+	0, 0, 0,
+	0, 0, 0,
+	0, 0, 0,
+	{'R','V','B',0,
+	  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	XvTopToBottom
+   },
+   {
+	I810_RV16,
+        XvRGB,
+	LSBFirst,
+	{'R','V','1','6',
+	  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	16,
+	XvPacked,
+	1,
+	16, 0xF800, 0x07E0, 0x001F,
+	0, 0, 0,
+	0, 0, 0,
+	0, 0, 0,
+	{'R','V','B',0,
+	  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	XvTopToBottom
+   },
+	XVIMAGE_YUY2,
+	XVIMAGE_YV12,
+	XVIMAGE_I420,
+	XVIMAGE_UYVY
 };
 /* *INDENT-ON* */
 
@@ -848,6 +885,15 @@ I810DisplayVideo(
 	overlay->OV0STRIDE = (dstPitch << 1) | (dstPitch << 16);
 	overlay->OV0CMD &= ~SOURCE_FORMAT;
 	overlay->OV0CMD |= YUV_420;
+	break;
+    case I810_RV15:
+    case I810_RV16:
+	overlay->UV_VPH = 0;
+	overlay->INIT_PH = 0;
+	overlay->OV0STRIDE = dstPitch;
+	overlay->OV0CMD &= ~SOURCE_FORMAT;
+	overlay->OV0CMD |= (id==I810_RV15 ? RGB_555 : RGB_565);
+	overlay->OV0CMD &= ~OV_BYTE_ORDER;
 	break;
     case FOURCC_UYVY:
     case FOURCC_YUY2:

@@ -545,6 +545,10 @@ parent(int pid, int pty)
 #endif
     installHandler(SIGCHLD, sigchldHandler);
 
+    rc = copyTermios(0, pty);
+    if(rc < 0)
+        FatalError("Couldn't copy terminal settings\n");
+
     rc = setRawTermios();
     if(rc < 0)
         FatalError("Couldn't set terminal to raw\n");

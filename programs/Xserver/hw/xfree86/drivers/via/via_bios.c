@@ -9144,7 +9144,7 @@ void VIAPreSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
     CARD16          *DotCrawl, *Patch2;
     unsigned int    tvIndx = pBIOSInfo->resTVMode;
     int             i, j;
-    unsigned char   W_Buffer[VIA_BIOS_MAX_NUM_TV_REG];
+    unsigned char   W_Buffer[VIA_BIOS_MAX_NUM_TV_REG+1];
     unsigned char   W_Other[2];
     int             w_bytes;
     I2CDevPtr       dev;
@@ -9200,7 +9200,8 @@ void VIAPreSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
     }
 
     /* Set TV mode */
-    for (i = 0, j = 0; i < pViaModeTable->tv2MaskTable.numTV; j++) {
+    for (i = 0, j = 0; i < pViaModeTable->tv2MaskTable.numTV
+	     && j < VIA_BIOS_MAX_NUM_TV_REG ; j++) {
         if (pViaModeTable->tv2MaskTable.TV[j] == 0xFF) {
             W_Buffer[j+1] = TV[j];
             i++;
@@ -9262,7 +9263,7 @@ void VIAPreSetCH7019Mode(VIABIOSInfoPtr pBIOSInfo)
     CARD16          *DotCrawl, *Patch2;
     unsigned int    tvIndx = pBIOSInfo->resTVMode;
     int             i, j;
-    unsigned char   W_Buffer[VIA_BIOS_MAX_NUM_TV_REG];
+    unsigned char   W_Buffer[VIA_BIOS_MAX_NUM_TV_REG + 1];
     unsigned char   W_Other[2];
     int             w_bytes;
     I2CDevPtr       dev;
@@ -9305,7 +9306,8 @@ void VIAPreSetCH7019Mode(VIABIOSInfoPtr pBIOSInfo)
         }
     }
 
-    for (i = 0, j = 0; i < pViaModeTable->ch7019MaskTable.numTV; j++) {
+    for (i = 0, j = 0; i < pViaModeTable->ch7019MaskTable.numTV
+	     && j < VIA_BIOS_MAX_NUM_TV_REG ; j++) {
         if (pViaModeTable->ch7019MaskTable.TV[j] == 0xFF) {
             W_Buffer[j+1] = TV[j];
             i++;
@@ -9463,7 +9465,7 @@ void VIAPreSetSAA7108Mode(VIABIOSInfoPtr pBIOSInfo)
     CARD16          *RGB, *YCbCr, *Patch2;
     unsigned int    tvIndx = pBIOSInfo->resTVMode;
     int             i, j;
-    unsigned char   W_Buffer[VIA_BIOS_MAX_NUM_SAA7108_TV_REG];
+    unsigned char   W_Buffer[VIA_BIOS_MAX_NUM_SAA7108_TV_REG + 1];
     unsigned char   W_Other[4];
     int             w_bytes;
     I2CDevPtr       dev;
@@ -9512,7 +9514,8 @@ void VIAPreSetSAA7108Mode(VIABIOSInfoPtr pBIOSInfo)
         }
     }
 
-    for (i = 0, j = 0; i < pViaModeTable->saa7108MaskTable.numTV; j++) {
+    for (i = 0, j = 0; i < pViaModeTable->saa7108MaskTable.numTV
+	     && j < VIA_BIOS_MAX_NUM_SAA7108_TV_REG; j++) {
         if (pViaModeTable->saa7108MaskTable.TV[j] == 0xFF) {
             W_Buffer[j+1] = TV[j];
             i++;
@@ -9617,7 +9620,7 @@ void VIAPreSetVT1623Mode(VIABIOSInfoPtr pBIOSInfo)
     unsigned int    tvIndx = pBIOSInfo->resTVMode;
     int             tvType = pBIOSInfo->TVType;
     int             i, j;
-    unsigned char   W_Buffer[VIA_BIOS_MAX_NUM_TV_REG];
+    unsigned char   W_Buffer[VIA_BIOS_MAX_NUM_TV_REG + 1];
     unsigned char   W_Other[2];
     int             w_bytes;
     unsigned char   R_Buffer[1];
@@ -9670,7 +9673,8 @@ void VIAPreSetVT1623Mode(VIABIOSInfoPtr pBIOSInfo)
         }
     }
 
-    for (i = 0, j = 0; i < TVMaskTbl->numTV; j++) {
+    for (i = 0, j = 0; i < TVMaskTbl->numTV
+	     && j < VIA_BIOS_MAX_NUM_TV_REG ; j++) {
         if (TVMaskTbl->TV[j] == 0xFF) {
             W_Buffer[j+1] = TV[j];
             i++;
@@ -9683,7 +9687,7 @@ void VIAPreSetVT1623Mode(VIABIOSInfoPtr pBIOSInfo)
     VIAGPIOI2C_Write(pBIOSInfo, 0x1D, 0x0);
     VIAGPIOI2C_Write(pBIOSInfo, 0x1D, 0x80);
 
-    for (i = 0; i < w_bytes; i++) {
+    for (i = 0; i < w_bytes && i < VIA_BIOS_MAX_NUM_TV_REG; i++) {
         VIAGPIOI2C_Write(pBIOSInfo, i, W_Buffer[i+1]);
     }
 
@@ -10446,7 +10450,7 @@ void VIAPreSetTV3Mode(VIABIOSInfoPtr pBIOSInfo)
     unsigned int    tvIndx = pBIOSInfo->resTVMode;
     int             tvType = pBIOSInfo->TVType;
     int             i, j;
-    unsigned char   W_Buffer[VIA_BIOS_MAX_NUM_TV_REG];
+    unsigned char   W_Buffer[VIA_BIOS_MAX_NUM_TV_REG + 1];
     unsigned char   W_Other[2];
     int             w_bytes;
     I2CDevPtr       dev;
@@ -10539,7 +10543,8 @@ void VIAPreSetTV3Mode(VIABIOSInfoPtr pBIOSInfo)
 	    }
 	}
 
-    for (i = 0, j = 0; i < TVMaskTbl->numTV; j++) {
+    for (i = 0, j = 0; i < TVMaskTbl->numTV
+	     && j < VIA_BIOS_MAX_NUM_TV_REG; j++) {
         if (TVMaskTbl->TV[j] == 0xFF) {
             W_Buffer[j+1] = TV[j];
             i++;

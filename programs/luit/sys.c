@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/sys.c,v 1.8 2003/04/03 16:44:36 dawes Exp $ */
+/* $XFree86: xc/programs/luit/sys.c,v 1.9 2003/08/17 20:39:58 dawes Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -212,6 +212,23 @@ installHandler(int signum, void (*handler)(int))
     sa.sa_flags = 0;
     rc = sigaction(signum, &sa, NULL);
     return rc;
+}
+
+int
+copyTermios(int sfd, int dfd)
+{
+    struct termios tio;
+    int rc;
+
+    rc = tcgetattr(sfd, &tio);
+    if(rc < 0)
+        return -1;
+
+    rc = tcsetattr(dfd, TCSAFLUSH, &tio);
+    if(rc < 0)
+        return -1;
+
+    return 0;
 }
 
 int

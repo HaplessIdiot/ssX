@@ -13,7 +13,7 @@ XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.54 2003/07/09 15:27:37 tsi Exp $
 #endif
 
 #ifndef SharedLibXdmGreet
-#define SharedLibXdmGreet (HasSharedLibraries && (defined(AlphaArchitecture) || SystemV4))
+#define SharedLibXdmGreet (HasSharedLibraries && !defined(LinuxArchitecture) && (defined(AlphaArchitecture) || SystemV4))
 #endif
 
 #ifndef BuildBoth
