@@ -194,12 +194,12 @@ XkbConfigRtrnPtr	rtrn;
 
 	if (rtrn->keycodes!=NULL) {
 	    if (names->keycodes) _XkbFree(names->keycodes);
-	    names->keycodes= _XkbDupString(rtrn->keycodes);
+	    names->keycodes= rtrn->keycodes;
 	    rtrn->keycodes= NULL;
 	}
 	if (rtrn->geometry!=NULL) {
 	    if (names->geometry) _XkbFree(names->geometry);
-	    names->geometry= _XkbDupString(rtrn->geometry);
+	    names->geometry= rtrn->geometry;
 	    rtrn->geometry= NULL;
 	}
 	if (rtrn->symbols!=NULL) {
@@ -211,12 +211,12 @@ XkbConfigRtrnPtr	rtrn;
 	}
 	if (rtrn->types!=NULL) {
 	    if (names->types) _XkbFree(names->types);
-	    names->types= _XkbDupString(rtrn->types);
+	    names->types= rtrn->types;
 	    rtrn->types= NULL;
 	}
 	if (rtrn->compat!=NULL) {
 	    if (names->compat) _XkbFree(names->compat);
-	    names->compat= _XkbDupString(rtrn->compat);
+	    names->compat= rtrn->compat;
 	    rtrn->compat= NULL;
 	}
     }

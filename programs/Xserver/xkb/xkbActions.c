@@ -1018,6 +1018,68 @@ unsigned	mods,mask,oldCoreState = 0,oldCorePrevState = 0;
     return 1;
 }
 
+static int
+#if NeedFunctionPrototypes
+_XkbFilterSwitchScreen(	XkbSrvInfoPtr	xkbi,
+			XkbFilterPtr	filter,
+			unsigned	keycode,
+			XkbAction *	pAction)
+#else
+_XkbFilterSwitchScreen(xkbi,filter,keycode,pAction)
+    XkbSrvInfoPtr	xkbi;
+    XkbFilterPtr	filter;
+    unsigned		keycode;
+    XkbAction *		pAction;
+#endif
+{
+    if (filter->keycode==0) {		/* initial press */
+        DeviceIntPtr	dev = xkbi->device;
+	filter->keycode = keycode;
+	filter->active = 1;
+	filter->filterOthers = 0;
+	filter->filter = _XkbFilterSwitchScreen;
+	XkbDDXSwitchScreen(dev,keycode,pAction);
+        return 0; 
+    }
+    else if (filter->keycode==keycode) {
+	filter->active= 0;
+        return 0; 
+    }
+    return 1;
+}
+
+#ifdef XFree86Server
+static int
+#if NeedFunctionPrototypes
+_XkbFilterXF86Private(	XkbSrvInfoPtr	xkbi,
+			XkbFilterPtr	filter,
+			unsigned	keycode,
+			XkbAction *	pAction)
+#else
+_XkbFilterXF86Private(xkbi,filter,keycode,pAction)
+    XkbSrvInfoPtr	xkbi;
+    XkbFilterPtr	filter;
+    unsigned		keycode;
+    XkbAction *		pAction;
+#endif
+{
+    if (filter->keycode==0) {		/* initial press */
+        DeviceIntPtr	dev = xkbi->device;
+	filter->keycode = keycode;
+	filter->active = 1;
+	filter->filterOthers = 0;
+	filter->filter = _XkbFilterXF86Private;
+	XkbDDXPrivate(dev,keycode,pAction);
+        return 0; 
+    }
+    else if (filter->keycode==keycode) {
+	filter->active= 0;
+        return 0; 
+    }
+    return 1;
+}
+#endif
+
 #ifdef XINPUT
 
 static int
@@ -1246,7 +1308,8 @@ Bool		xiEvent;
 		    sendEvent= XkbDDXTerminateServer(dev,key,&act);
 		    break;
 		case XkbSA_SwitchScreen:
-		    sendEvent= XkbDDXSwitchScreen(dev,key,&act);
+		    filter = _XkbNextFreeFilter();
+		    sendEvent=_XkbFilterSwitchScreen(xkbi,filter,key,&act);
 		    break;
 		case XkbSA_SetControls:
 		case XkbSA_LockControls:
@@ -1270,7 +1333,8 @@ Bool		xiEvent;
 #endif
 #ifdef XFree86Server
 		case XkbSA_XFree86Private:
-		    sendEvent= XkbDDXPrivate(dev,key,&act);
+		    filter = _XkbNextFreeFilter();
+		    sendEvent= _XkbFilterXF86Private(xkbi,filter,key,&act);
 		    break;
 #endif
 	    }

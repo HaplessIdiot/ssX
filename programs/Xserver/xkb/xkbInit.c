@@ -702,12 +702,6 @@ XkbRF_VarDefsRec	defs;
     rules= XkbGetRulesDflts(&defs);
     config= XkbDDXPreloadConfig(&rules,&defs,&cfgNames,dev);
 
-    if (names->keymap) names->keymap = _XkbDupString(names->keymap);
-    if (names->keycodes) names->keycodes = _XkbDupString(names->keycodes);
-    if (names->types) names->types = _XkbDupString(names->types);
-    if (names->compat) names->compat = _XkbDupString(names->compat);
-    if (names->geometry) names->geometry = _XkbDupString(names->geometry);
-
     if (defs.model && defs.layout && rules) {
 	XkbComponentNamesRec	rNames;
 	bzero(&rNames,sizeof(XkbComponentNamesRec));
@@ -748,27 +742,27 @@ XkbRF_VarDefsRec	defs;
     }
     if (cfgNames.keymap){
 	if (names->keymap) _XkbFree(names->keymap);
-	names->keymap= _XkbDupString(cfgNames.keymap);
+	names->keymap= cfgNames.keymap;
     }
     if (cfgNames.keycodes){
 	if (names->keycodes) _XkbFree(names->keycodes);	
-	names->keycodes= _XkbDupString(cfgNames.keycodes);
+	names->keycodes= cfgNames.keycodes;
     }
     if (cfgNames.types) {
 	if (names->types) _XkbFree(names->types);	
-	names->types= _XkbDupString(cfgNames.types);
+	names->types= cfgNames.types;
     }
     if (cfgNames.compat) {
 	if (names->compat) _XkbFree(names->compat);	
-	names->compat= _XkbDupString(cfgNames.compat);
+	names->compat= cfgNames.compat;
     }
     if (cfgNames.symbols){
 	if (names->symbols) _XkbFree(names->symbols);	
-	names->symbols= _XkbDupString(cfgNames.symbols);
+	names->symbols= cfgNames.symbols;
     }
     if (cfgNames.geometry) {
 	if (names->geometry) _XkbFree(names->geometry);
-	names->geometry= _XkbDupString(cfgNames.geometry);
+	names->geometry= cfgNames.geometry;
     }
 
     if (names->keymap) {

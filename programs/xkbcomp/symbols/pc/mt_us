@@ -17,6 +17,6 @@ xkb_symbols "basic" {
 
     key <TLDE>	{ [ cabovedot,  Cabovedot,        grave,   asciitilde ]	};
 
-    key <AE03>	{ [         3,   EuroSign,   numbersign               ]	};,
+    key <AE03>	{ [         3,   EuroSign,   numbersign               ]	};
 
 };
