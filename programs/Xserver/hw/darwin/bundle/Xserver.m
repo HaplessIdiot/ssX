@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.9 2001/04/07 22:06:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.10 2001/04/09 03:32:08 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -54,7 +54,7 @@ extern int main(int argc, char *argv[], char *envp[]);
     if ([serverLock tryLock])
         return NSTerminateNow;
 
-    if ([clientTask isRunning]) {
+    if ([clientTask isRunning] || !quartzStartClients) {
         int but;
 
         [self hide];
@@ -185,9 +185,9 @@ extern int main(int argc, char *argv[], char *envp[]);
 
     // Display the help splash screen or show the X server
     if ([Preferences startupHelp]) {
-        [self sendShowHide:NO];
         [helpWindow makeKeyAndOrderFront:self];
     } else {
+        ShowMenuBar();
         [self closeHelpAndShow:self];
     }
 }
