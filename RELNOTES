@@ -814,8 +814,9 @@ site <URL:http://www.urwpp.de>.
 
 5.  Credits
 
-THIS IS A SAMPLE/DRAFT OF HOW A CREDITS SECTION IN THE XFREE86 RELEASE NOTES
-MIGHT LOOK
+THIS IS A DRAFT OF THE XFree86 4.4.0 CREDITS SECTION.  If you find missing
+credits, incorrect attributions, or other errors, please send details to
+<devel@XFree86.org>.
 
 This section lists the credits for the XFree86 4.3.99.903 release.  For a
 more detailed breakdown, refer to the CHANGELOG file in the XFree86 source
@@ -939,7 +940,29 @@ source files.
       Webmaster:
             Georgina O. Economou
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.109 dawes Exp $
+      Hosting:
+            Internet Systems Consortium, Inc <URL:http://www.isc.org/>.
+
+6.  Attributions/Acknowledgements
+
+This product includes software developed by The XFree86 Project, Inc
+(http://www.xfree86.org/) and its contributors.
+
+This produce includes software that is based in part of the work of the
+FreeType Team (http://www.freetype.org).
+
+This product includes software developed by the University of California,
+Berkeley and its contributors.
+
+This product includes software developed by Christopher G. Demetriou.
+
+This product includes software developed by the NetBSD Foundation, Inc. and
+its contributors
+
+This product includes software developed by X-Oz Technologies (http://www.x-
+oz.com/).
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.111 dawes Exp $
 
 
 $XFree86: $
