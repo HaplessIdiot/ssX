@@ -1,4 +1,6 @@
 XFree86 4.4.99.14 (xx September 2004)
+ 188. Fix bug that caused restacks to be optimized away in rootless mode
+      (Torrey T. Lyons).
  187. Remove stale references to XAudio (Marc La France).
  186. Fix stack and integer overflows in libXpm (Chris Evans, Alan
       Coopersmith, Matthieu Herrb). 
@@ -19105,7 +19107,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3317 2004/09/15 16:00:38 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3318 2004/09/20 15:24:58 tsi Exp $
 
 
 
