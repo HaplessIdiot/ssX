@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+   5. Fix int10 option handling and DDC max clock reporting (Marc La France).
    4. Fix problems with assembler file dependencies when using gccmakedep
       with the build (Frederic Lepied).
    3. Update Japanese localization of XDarwin help file (Toshimitsu Tanaka).
@@ -13313,4 +13314,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1789 2001/05/21 23:21:19 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1790 2001/05/22 13:29:21 dawes Exp $
