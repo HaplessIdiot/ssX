@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.484tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.485 2005/01/21 21:22:44 tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1411,7 +1411,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  endif
 
 #  ifndef BuildGlxInDmx
-#    define BuildGlxInDmx	NO
+#    define BuildGlxInDmx	XFree86Devel	/* Temporary */
 #  endif
 
 #else
