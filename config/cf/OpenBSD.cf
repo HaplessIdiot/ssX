@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.55 2001/08/15 19:01:03 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.56 2001/08/26 16:21:29 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -391,7 +391,7 @@ install:: fonts.alias							@@\
 
 
 /* A hack to work around an optimization problem with gcc 2.95.2 */
-# if OSMajorVersion == 2 && OSMinorVersion >= 6 
+# if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 6)
 #  define GccOptBug295
 # endif
 
