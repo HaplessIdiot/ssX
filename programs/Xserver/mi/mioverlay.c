@@ -1208,7 +1208,7 @@ miOverlayResizeWindow(
 		        REGION_UNION(pScreen, gravitate2[g],
 				   gravitate2[g], &tChild->borderClip);
 		    } else 
-			CollectUnderlayChildrenRegions(pChild, gravitate[g]);
+			CollectUnderlayChildrenRegions(pChild, gravitate2[g]);
 		}
 	    } else {
 		UnmapWindow(pChild, TRUE);
