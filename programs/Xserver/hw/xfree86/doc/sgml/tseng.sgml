@@ -965,6 +965,13 @@ on configurations that have not been tested. You can do this
 via the BetaReport form (mail it to report@XFree86.org). You may want to
 keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
+Gerald Delafond provided information how he got a Viewtop Vesa LocalBus 2MB
+card to work under Linux with 8 or 16 bit:
+<itemize>
+<item> limit PC memory to 56 MB (mem=56M as boot option).
+<item> use MemBase 0x03800000 in Device section.
+<item> use Option "linear"
+</itemize>
 
 <sect> Acknowledgments <p>
 Most of these stem from the old XF86_W32 server. That code was used
@@ -1041,7 +1048,7 @@ incomplete):
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.32 1999/08/23 06:38:54 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.33 2001/08/10 16:38:16 dawes Exp $ 
 
 
 
