@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: OpenBSD.cf,v 3.66 2002/01/03 16:33:49 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.67 2002/03/02 22:56:02 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -194,9 +194,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define NroffCmd		nroff -Tlatin1
 #define	EqnCmd 			eqn -Tps
 #define HasGroff		YES
-/* Don't build HTML manual pages */
-#define BuildRman		NO
-#define BuildHtmlManPages	NO
 
 #ifndef HasCookieMaker
 #  define HasCookieMaker	YES
@@ -724,16 +721,6 @@ install:: fonts.alias							@@\
 
 #ifndef ServerExtraDefines
 #  define ServerExtraDefines GccGasOption
-#endif
-
-#ifndef BuildCyrillicFonts
-# define BuildCyrillicFonts	YES
-#endif
-#ifndef BuildLatin2Fonts
-# define BuildLatin2Fonts	YES
-#endif
-#ifndef UseKoi8RForCyrillic
-# define UseKoi8RForCyrillic	YES
 #endif
 
 #ifndef HasWeakSymbols
