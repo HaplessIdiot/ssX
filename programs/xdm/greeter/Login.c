@@ -1,4 +1,5 @@
-/* $XConsortium: Login.c,v 1.42 94/04/17 20:03:53 gildea Mod $ */
+/* $XConsortium: Login.c,v 1.42 94/04/17 20:03:53 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  X Consortium

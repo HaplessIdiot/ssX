@@ -1,4 +1,5 @@
-/* $XConsortium: LoginP.h,v 1.7 94/04/17 20:03:54 jim Mod $ */
+/* $XConsortium: LoginP.h,v 1.7 94/04/17 20:03:54 jim Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  X Consortium

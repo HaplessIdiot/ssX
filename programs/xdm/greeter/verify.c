@@ -1,5 +1,5 @@
-/* $XConsortium: verify.c,v 1.32 94/04/17 20:03:55 gildea Mod $ */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.0 1994/06/26 13:12:06 dawes Exp $ */
+/* $XConsortium: verify.c,v 1.32 94/04/17 20:03:55 gildea Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.1 1995/10/21 11:51:38 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
