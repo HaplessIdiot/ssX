@@ -1,4 +1,16 @@
+XFree86 3.1.1f (23 April 1995)
+ 63. Fix cirrus MMIO problem introduced in 3.1.1e, and allow 135MHz clocks
+     for a wider range of CL-GD5434 revisions (Harm Hanemaayer).
+ 62. Update to S3 HW cursor fix (Harald Koenig).
+ 61. Preliminary support for S3 866 and 868 boards (tested with the
+     ELSA Winner 1000AVI) (Harald Koenig).
+ 60. Fix a problem with virtual resolution calculation in the Mach32 and
+     Mach64 servers (when none is given in the XF86Config file)
+     (David Holland).
+
 XFree86 3.1.1e (10 April 1995)
+ 59. Fix problems that can lead to S3 crash/lockup when using HW cursor
+     (Harald Koenig).
  58. S3 Trio updates (Harald Koenig).
  57. Fix return value of QueryBestSize() for HW cursors.
  56. Fix cirrus display error when scrolling without BitBLT engine

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.5 95/01/16 13:16:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.33 1995/03/04 06:03:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.34 1995/03/19 10:12:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -625,11 +625,12 @@ mach32Probe()
 		 */
 		if(pEnd == (DisplayModePtr) NULL)
 			pEnd = pMode;
-		pMode = pMode->next;
+
 		mach32InfoRec.virtualX = max(mach32InfoRec.virtualX,
 					     pMode->HDisplay);
 		mach32InfoRec.virtualY = max(mach32InfoRec.virtualY,
 					     pMode->VDisplay);
+		pMode = pMode->next;
 	  }
     } while (pMode != pEnd);
 
