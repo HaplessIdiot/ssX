@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmag/xmag.c,v 1.12tsi Exp $ */
+/* $XFree86: xmag.c,v 1.13 2003/05/27 22:27:07 tsi Exp $ */
 
 
 #include <stdlib.h>		/* for exit() and abs() */
@@ -88,8 +88,6 @@ static unsigned int srcWidth, srcHeight;
 
 /* forward declarations */
 
-#if NeedFunctionPrototypes
-/* xmag.c */
 static int Error(Display *, XErrorEvent *);
 static void CloseAP(Widget, XEvent *, String *, Cardinal *);
 static void SetCmapPropsAP(Widget, XEvent *, String *, Cardinal *);
@@ -121,47 +119,6 @@ static void PopupNewScale(hlPtr);
 static void RedoOldScale(hlPtr);
 static void InitCursors(void);
 static void ParseSourceGeom(void);
-#else
-static void 
-  CloseAP(), 
-  SetCmapPropsAP(),
-  UnsetCmapPropsAP(),
-  NewAP(), 
-  ReplaceAP(),
-  PopupPixelAP(), 
-  UpdatePixelAP(), 
-  PopdownPixelAP(), 
-  SelectRegionAP(), 
-  CheckPoints(), 
-  HighlightTO(),
-  CloseCB(), 
-  ReplaceCB(),
-  NewCB(), 
-  SelectCB(),
-  SetupGC(), 
-  ResizeEH(), 
-  DragEH(), 
-  StartRootPtrGrab(), 
-  CreateRoot(), 
-  GetImageAndAttributes(),
-  PopupNewScale(), 
-  RedoOldScale(),
-  InitCursors(), 
-  ParseSourceGeom();
-
-static Window
-  FindWindow();
-
-static int
-  Error(),
-  Get_XColors();
-
-static Pixel
-  GetMaxIntensity(),
-  GetMinIntensity();
-#endif
-
-
 
 /* application resources */
 
