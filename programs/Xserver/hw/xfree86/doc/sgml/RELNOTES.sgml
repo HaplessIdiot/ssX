@@ -9,7 +9,7 @@
 <date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.53 2000/12/15 20:20:03 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.54 2000/12/15 20:21:35 dawes Exp $
 </ident>
 
 <abstract>
@@ -109,7 +109,7 @@ don't have enough space to cover them all here.
   <item>The 3Dlabs (glint) driver now has Permedia3 support.
 
   <item>The SiS driver has had many updates, and XVideo support for the 630
-	is not included.
+	is included.
 
   <item>The NVIDIA (nv) driver has been updated to include support for the
 	GeForce2, and line acceleration has been added.  Also, DDC support
@@ -879,8 +879,8 @@ The following X server command line options have been changed since 3.3.x:
 <p>
 
 The XFree86 Acceleration Architecture (XAA) has been completely rewritten
-from scratch.  Most drivers implement acceleration by making use of the
-XAA module.
+from scratch for XFree86 4.x.  Most drivers implement acceleration by
+making use of the XAA module.
 
 <sect1>Multi-head
 <p>
@@ -985,9 +985,10 @@ compatible drivers can be found at the <url name="DRI Project"
 url="http://dri.sourceforge.net"> on <url name="SourceForge"
 url="http://www.sourceforge.net">.
 
-<sect1>X-Video Extension (Xv)
+<sect1>XVideo Extension (Xv)
 <p>
 
+The XVideo extension is supported in XFree86 4.x.
 An XvQueryPortAttributes function has been added as well as
 support for XvImages.  XvImages are XImages in alternate color spaces 
 such as YUV and can be passed to the server through shared memory
