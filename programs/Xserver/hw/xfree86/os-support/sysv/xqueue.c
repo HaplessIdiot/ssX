@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.5 1996/08/10 13:07:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.6 1996/08/13 11:31:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *
@@ -30,6 +30,7 @@
 #include "scrnintstr.h"
 #include "compiler.h"
 
+#include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 
@@ -43,6 +44,14 @@ static xqEventQueue      *XqueQaddr;
 #include <X11/extensions/XKBsrv.h>
 extern Bool noXkbExtension;
 #endif
+
+#ifdef XINPUT
+#include "xf86_Config.h"
+#include "xf86Xinput.h"
+#endif
+extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
+				unsigned long start, unsigned long stop,
+				ScreenPtr pScreen);
 
 /*
  * xf86XqueRequest --
@@ -104,7 +113,7 @@ xf86XqueEnable()
   static Bool              was_here = FALSE;
 
   if (!was_here) {
-    if ((xf86Info.mouseDev.xqueFd = open("/dev/mouse", O_RDONLY|O_NDELAY)) < 0)
+    if ((xf86Info.mouseDev->xqueFd = open("/dev/mouse", O_RDONLY|O_NDELAY)) < 0)
       {
 	if (xf86AllowMouseOpenFail) {
 	  ErrorF("Cannot open /dev/mouse (%s) - Continuing...\n",
@@ -118,7 +127,7 @@ xf86XqueEnable()
     was_here = TRUE;
   }
 
-  if (xf86Info.mouseDev.xqueSema++ == 0) 
+  if (xf86Info.mouseDev->xqueSema++ == 0) 
     {
       (void) signal(SIGUSR2, (void (*)()) xf86XqueRequest);
       xqueMode.qsize = 64;    /* max events */
@@ -148,7 +157,7 @@ xf86XqueEnable()
 static int
 xf86XqueDisable()
 {
-  if (xf86Info.mouseDev.xqueSema-- == 1)
+  if (xf86Info.mouseDev->xqueSema-- == 1)
     {
       
       XqueQaddr->xq_sigenable = 0; /* LOCK */
@@ -175,7 +184,7 @@ xf86XqueMseProc(pPointer, what)
      DeviceIntPtr	pPointer;
      int        what;
 {
-  MouseDevPtr	mouse = (MouseDevPtr) pPointer->public.devicePrivate;
+  MouseDevPtr	mouse = MOUSE_DEV(pPointer);
   unchar        map[4];
  
   mouse->device = pPointer;
@@ -192,9 +201,9 @@ xf86XqueMseProc(pPointer, what)
       InitPointerDeviceStruct((DevicePtr)pPointer, 
 			      map, 
 			      3, 
-			      GetMotionEvents, 
+			      miPointerGetMotionEvents, 
 			      (PtrCtrlProcPtr)xf86MseCtrl, 
-			      0);
+			      miPointerGetMotionBufferSize());
       break;
       
     case DEVICE_ON:

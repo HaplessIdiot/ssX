@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.3 1995/01/28 17:05:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.4 1996/02/04 09:10:29 dawes Exp $
 
 
 
@@ -21,7 +21,7 @@ OBJS = sysv_init.o sysv_video.o IO_utils.o sysv_io.o $(BIOS_MOD).o VTsw_usl.o \
        sysv_kbd.o std_kbdEv.o sysv_tty.o std_mouse.o std_mseEv.o xqueue.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(INCLUDESRC)
+           -I$(INCLUDESRC) -I$(EXTINCSRC)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()

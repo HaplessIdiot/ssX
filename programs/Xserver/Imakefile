@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.55 1996/06/29 09:05:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.56 1996/07/08 10:18:34 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -368,6 +368,7 @@ XF98HWLIB      = $(XF98HWSRC)/LibraryTargetName(xf86_hw)
 XF98HWNECLIB   = $(XF98HWNECSRC)/LibraryTargetName(xf86_hw)
 XF98HWPWSKBLIB = $(XF98HWPWSKBSRC)/LibraryTargetName(xf86_hw)
 XF98HWPWLBLIB  = $(XF98HWPWLBSRC)/LibraryTargetName(xf86_hw)
+XF98HWGA968LIB = $(XF98HWGA968SRC)/LibraryTargetName(xf86_hw)
 XF98LIBS       = $(XF98INIT) $(XF98CONFIG) $(XF98COMLIB) \
 		 $(XF98HWLIB)
 XF98LIBSNEC    = $(XF98INIT) $(XF98CONFIG) $(XF98COMLIB) \
@@ -376,6 +377,8 @@ XF98LIBSPWSKB  = $(XF98INIT) $(XF98CONFIG) $(XF98COMLIB) \
 		 $(XF98HWPWSKBLIB)
 XF98LIBSPWLB   = $(XF98INIT) $(XF98CONFIG) $(XF98COMLIB) \
 		 $(XF98HWPWLBLIB)
+XF98LIBSGA968  = $(XF98INIT) $(XF98CONFIG) $(XF98COMLIB) \
+		 $(XF98HWGA968LIB)
 XF98MLIBS      = $(XF98MINIT) $(XF98CONFIG) $(XF98COMLIB) \
 		 $(XF98HWLIB)
 XF98MLIBSNEC   = $(XF98MINIT) $(XF98CONFIG) $(XF98COMLIB) \
@@ -384,6 +387,8 @@ XF98MLIBSPWSKB = $(XF98MINIT) $(XF98CONFIG) $(XF98COMLIB) \
 		 $(XF98HWPWSKBLIB)
 XF98MLIBSPWLB  = $(XF98MINIT) $(XF98CONFIG) $(XF98COMLIB) \
 	 	 $(XF98HWPWLBLIB)
+XF98MLIBSGA968 = $(XF98MINIT) $(XF98CONFIG) $(XF98COMLIB) \
+	 	 $(XF98HWGA968LIB)
 #endif
 
 #if HasParallelMake
@@ -459,14 +464,17 @@ XF98PWSKB = XF98_PWSKB
 #if XF98PWLBServer
 XF98PWLB = XF98_PWLB
 #endif
+#if XF98GA968Server
+XF98GA968 = XF98_GA968
+#endif
 #if XnestServer
 XNEST = Xnest
 #endif
 #if XVirtualFramebufferServer
 XVFB = Xvfb
 #endif
-#if defined(XF86SVGAServer) || defined(XF98GANBWAPServer) || defined(XF98NEC480Server) || defined(XF98NKVNECServer) || defined(XF98WABSServer) || defined(XF98WABEPServer) || defined(XF98WSNAServer) || defined(XF98TGUIServer) || defined(XF86VGA16Server) || defined(XF98EGCServer) || defined(XF86W32Server) || defined(XF86MonoServer) || defined(XF86S3Server) || defined(XF98NECS3Server) || defined(XF98PWSKBServer) || defined(XF98PWLBServer) || defined(XF86I8514Server) || defined(XF86Mach8Server) || defined(XF86Mach32Server) || defined(XF86Mach64Server) || defined(XF86P9000Server) || defined(XF86AGXServer) || defined(XF86I128Server) || defined(XnestServer) || defined(XVirtualFramebufferServer)
-MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98NEC480) $(XF98NKVNEC) $(XF98WABS) $(XF98WABEP) $(XF98WSNA) $(XF98TGUI) $(XF86VGA16) $(XF98EGC) $(XF86W32) $(XF86MONO) $(XF86S3) $(XF98NECS3) $(XF98PWSKB) $(XF98PWLB) $(XF868514) $(XF86MACH8) $(XF86MACH32) $(XF86MACH64) $(XF86P9000) $(XF86AGX) $(XF86I128) $(XNEST) $(XVFB))
+#if defined(XF86SVGAServer) || defined(XF98GANBWAPServer) || defined(XF98NEC480Server) || defined(XF98NKVNECServer) || defined(XF98WABSServer) || defined(XF98WABEPServer) || defined(XF98WSNAServer) || defined(XF98TGUIServer) || defined(XF86VGA16Server) || defined(XF98EGCServer) || defined(XF86W32Server) || defined(XF86MonoServer) || defined(XF86S3Server) || defined(XF98NECS3Server) || defined(XF98PWSKBServer) || defined(XF98PWLBServer) || defined(XF98GA968Server) || defined(XF86I8514Server) || defined(XF86Mach8Server) || defined(XF86Mach32Server) || defined(XF86Mach64Server) || defined(XF86P9000Server) || defined(XF86AGXServer) || defined(XF86I128Server) || defined(XnestServer) || defined(XVirtualFramebufferServer)
+MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98NEC480) $(XF98NKVNEC) $(XF98WABS) $(XF98WABEP) $(XF98WSNA) $(XF98TGUI) $(XF86VGA16) $(XF98EGC) $(XF86W32) $(XF86MONO) $(XF86S3) $(XF98NECS3) $(XF98PWSKB) $(XF98PWLB) $(XF98GA968) $(XF868514) $(XF86MACH8) $(XF86MACH32) $(XF86MACH64) $(XF86P9000) $(XF86AGX) $(XF86I128) $(XNEST) $(XVFB))
 #endif
 MakeMutex($(STDDIRS) mfb cfb cfb16 cfb32)
 #endif
@@ -793,9 +801,10 @@ XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
 CFB16DIR = cfb16
+CFB24DIR = cfb24
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98GANBWAPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98GANBWAPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98GANBWAPOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o
 XF98GANBWAPLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverganbwap) \
 		  $(XF98SRC)/vga256/LibraryTargetName(ganbwap) $(XF98LIBS) \
@@ -820,9 +829,10 @@ XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
 CFB16DIR = cfb16
+CFB24DIR = cfb24
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98NEC480SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98NEC480SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98NEC480OBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/nec480Conf.o
 XF98NEC480LIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(drivernec480) \
 		 $(XF98SRC)/vga256/LibraryTargetName(nec480) $(XF98LIBS) \
@@ -847,9 +857,10 @@ XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
 CFB16DIR = cfb16
+CFB24DIR = cfb24
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98NKVNECSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98NKVNECSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98NKVNECOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o
 XF98NKVNECLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(drivernkvnec) \
 		 $(XF98SRC)/vga256/LibraryTargetName(nkvnec) $(XF98LIBS) \
@@ -874,9 +885,10 @@ XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
 CFB16DIR = cfb16
+CFB24DIR = cfb24
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98WABSSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98WABSSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98WABSOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o
 XF98WABSLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverwabs) \
 	       $(XF98SRC)/vga256/LibraryTargetName(wabs) $(XF98LIBS) CFBLibs \
@@ -901,9 +913,10 @@ XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
 CFB16DIR = cfb16
+CFB24DIR = cfb24
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98WABEPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98WABEPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98WABEPOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o
 XF98WABEPLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverwabep) \
 	       $(XF98SRC)/vga256/LibraryTargetName(wabep) $(XF98LIBS) CFBLibs \
@@ -928,9 +941,10 @@ XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
 CFB16DIR = cfb16
+CFB24DIR = cfb24
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98WSNASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98WSNASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98WSNAOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o
 XF98WSNALIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverwsna) \
 	       $(XF98SRC)/vga256/LibraryTargetName(wsna) $(XF98LIBS) CFBLibs \
@@ -955,9 +969,10 @@ XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
 CFB16DIR = cfb16
+CFB24DIR = cfb24
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98TGUISUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98TGUISUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98TGUIOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/tguiConf.o
 XF98TGUILIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(drivertrident) \
 	       $(XF98SRC)/vga256/LibraryTargetName(trident) $(XF98LIBS) \
@@ -1006,10 +1021,11 @@ XCOMM
 MFBDIR   = mfb
 CFB8DIR  = cfb
 CFB16DIR = cfb16
+CFB24DIR = cfb24
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
 XF98NECS3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) \
-                   $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+                   $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98NECS3OBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3nec/s3Conf.o \
                 $(XF98NECDRIVERSRC)/mmio_928/mmio_928.o \
                 $(XF98NECDRIVERSRC)/s3_generic/s3_generic.o
@@ -1037,10 +1053,11 @@ XCOMM
 MFBDIR   = mfb
 CFB8DIR  = cfb
 CFB16DIR = cfb16
+CFB24DIR = cfb24
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
 XF98PWSKBSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) \
-                   $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+                   $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98PWSKBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwskb/s3Conf.o \
                 $(XF98PWSKBDRIVERSRC)/mmio_928/mmio_928.o \
                 $(XF98PWSKBDRIVERSRC)/s3_generic/s3_generic.o
@@ -1068,9 +1085,10 @@ XCOMM
 MFBDIR   = mfb
 CFB8DIR  = cfb
 CFB16DIR = cfb16
+CFB24DIR = cfb24
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98PWLBSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) \
+XF98PWLBSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) \
                   $(DDXDIR2) $(DEPDIRS)
 XF98PWLBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwlb/s3Conf.o \
                $(XF98PWLBDRIVERSRC)/mmio_928/mmio_928.o \
@@ -1091,6 +1109,38 @@ SetUIDServerTarget(XF98_PWLB,$(XF98PWLBSUBDIRS),$(XF98PWLBOBJS),$(XF98PWLBLIBS),
 LinkFile(XF98_PWLB.def,PWLB.def)
 #endif
 #endif	/* XF98PWLBServer */
+
+#if XF98GA968Server
+XCOMM
+XCOMM XFree98 S3 GA-968 Server
+XCOMM
+MFBDIR   = mfb
+CFB8DIR  = cfb
+CFB16DIR = cfb16
+CFB24DIR = cfb24
+CFB32DIR = cfb32
+DDXDIR2 = hw/xfree98
+XF98GA968SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) \
+                   $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98GA968OBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3ga968/s3Conf.o \
+                $(XF98GA968DRIVERSRC)/mmio_928/mmio_928.o \
+                $(XF98GA968DRIVERSRC)/s3_generic/s3_generic.o
+XF98GA968LIBS = $(XF98ACCELSRC)/s3ga968/LibraryTargetName(s3) \
+                $(XF98ACCELSRC)/s3ga968/s3mmio/LibraryTargetName(s3mmio) \
+                $(XF98LIBSGA968) CFBLibs \
+                $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF98OSLIB)
+XF98GA968SYSLIBS = $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XF98GA968SUBDIRS) $(XF98GA968OBJS) $(XF98GA968LIBS) $(XF98GA968SYSLIBS))
+#endif
+SetUIDServerTarget(XF98_GA968,$(XF98GA968SUBDIRS),$(XF98GA968OBJS),$(XF98GA968LIBS),$(XF98GA968SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF98_GA968
+#endif
+#ifdef OS2Architecture
+LinkFile(XF98_GA968.def,GA968.def)
+#endif
+#endif	/* XF98GA968Server */
 
 
 #if XF86I128Server
