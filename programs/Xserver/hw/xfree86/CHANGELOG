@@ -1,4 +1,11 @@
 XFree86 4.3.99.2 (xx March 2003)
+  34. Add a new request to the XF86Misc extension that allows a client
+      to send an arbitrary message to the DDX, which in turn can send the
+      message to the driver.  The driver may also send a string back.
+      An example of this is implemented for the radeon driver (#5518,
+      Joe Moss).
+  33. Remove duplicate XShmGetEventBase() declaration (#5656,
+      Branden Robinson).
   32. Fix drag lock when using a mouse button greater than 4
       (Bugzilla #51, Paul Elliott)
   31. Fix lockup on server shutdown/restart with the radeon driver
@@ -16591,4 +16598,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2608 2003/04/03 12:46:25 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2609 2003/04/03 12:52:29 alanh Exp $

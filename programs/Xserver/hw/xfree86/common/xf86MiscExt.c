@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.11 2002/11/20 04:04:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.12 2003/03/25 04:18:21 dawes Exp $ */
 
 /*
  * This file contains the Pointer/Keyboard functions needed by the 
@@ -610,6 +610,19 @@ MiscExtGetFilePaths(const char **configfile, const char **modulepath,
     *logfile    = xf86LogFile;
 
     return TRUE;
+}
+
+int
+MiscExtPassMessage(int scrnIndex, const char *msgtype, const char *msgval,
+		   char **retstr)
+{
+    ScrnInfoPtr pScr = xf86Screens[scrnIndex];
+
+    DEBUG_P("MiscExtGetFilePaths");
+
+    if (*pScr->HandleMessage == NULL)
+	    return BadImplementation;
+    return (*pScr->HandleMessage)(scrnIndex, msgtype, msgval, retstr);
 }
 
 #endif /* XF86MISC */

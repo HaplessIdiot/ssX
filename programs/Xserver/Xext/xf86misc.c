@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.36 2002/04/04 14:05:37 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.37 2002/11/20 04:04:58 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -84,6 +84,7 @@ static DISPATCH_PROC(ProcXF86MiscSetMouseSettings);
 static DISPATCH_PROC(ProcXF86MiscSetGrabKeysState);
 static DISPATCH_PROC(ProcXF86MiscSetClientVersion);
 static DISPATCH_PROC(ProcXF86MiscGetFilePaths);
+static DISPATCH_PROC(ProcXF86MiscPassMessage);
 #ifdef _XF86MISC_SAVER_COMPAT_
 static DISPATCH_PROC(ProcXF86MiscGetSaver);
 static DISPATCH_PROC(ProcXF86MiscSetSaver);
@@ -97,6 +98,7 @@ static DISPATCH_PROC(SProcXF86MiscSetMouseSettings);
 static DISPATCH_PROC(SProcXF86MiscSetGrabKeysState);
 static DISPATCH_PROC(SProcXF86MiscSetClientVersion);
 static DISPATCH_PROC(SProcXF86MiscGetFilePaths);
+static DISPATCH_PROC(SProcXF86MiscPassMessage);
 #ifdef _XF86MISC_SAVER_COMPAT_
 static DISPATCH_PROC(SProcXF86MiscGetSaver);
 static DISPATCH_PROC(SProcXF86MiscSetSaver);
@@ -555,6 +557,59 @@ ProcXF86MiscGetFilePaths(client)
 }
 
 static int
+ProcXF86MiscPassMessage(client)
+    register ClientPtr client;
+{
+    xXF86MiscPassMessageReply rep;
+    char *msgtype, *msgval, *retstr;
+    int retval, size;
+    register int n;
+
+    REQUEST(xXF86MiscPassMessageReq);
+
+    DEBUG_P("XF86MiscPassMessage");
+
+    REQUEST_AT_LEAST_SIZE(xXF86MiscPassMessageReq);
+    size = (sizeof(xXF86MiscPassMessageReq) + 3) >> 2;
+    size+= (stuff->typelen + 3) >> 2;
+    size+= (stuff->vallen  + 3) >> 2;
+    if (client->req_len < size)
+	return BadLength;
+    if (stuff->typelen) {
+	if (!(msgtype = xalloc(stuff->typelen)))
+	    return BadAlloc;
+	strncpy(msgtype,(char*)(&stuff[1]),stuff->typelen);
+    } else return BadValue;
+    if (stuff->vallen) {
+	if (!(msgval = xalloc(stuff->vallen)))
+	    return BadAlloc;
+	strncpy(msgval,(char*)(&stuff[1] + ((stuff->typelen + 3) & ~3)),
+			stuff->vallen);
+    } else return BadValue;
+
+    if ((retval= MiscExtPassMessage(stuff->screen,msgtype,msgval,&retstr)) != 0)
+	return retval;
+
+    rep.type = X_Reply;
+    rep.sequenceNumber = client->sequence;
+    rep.mesglen = (retstr? strlen(retstr): 0);
+    rep.length = (SIZEOF(xXF86MiscPassMessageReply) - SIZEOF(xGenericReply) +
+		  ((rep.mesglen + 3) & ~3)) >> 2;
+    
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+    	swaps(&rep.mesglen, n);
+    }
+    WriteToClient(client, SIZEOF(xXF86MiscPassMessageReply), (char *)&rep);
+    
+    if (rep.mesglen)
+        WriteToClient(client, rep.mesglen, (char *)retstr);
+
+    return (client->noClientException);
+}
+
+static int
 ProcXF86MiscDispatch (client)
     register ClientPtr	client;
 {
@@ -577,6 +632,8 @@ ProcXF86MiscDispatch (client)
 		return ProcXF86MiscSetClientVersion(client);
     case X_XF86MiscGetFilePaths:
 	return ProcXF86MiscGetFilePaths(client);
+    case X_XF86MiscPassMessage:
+	return ProcXF86MiscPassMessage(client);
     default:
 	if (!xf86GetModInDevEnabled())
 	    return miscErrorBase + XF86MiscModInDevDisabled;
@@ -724,6 +781,17 @@ SProcXF86MiscGetFilePaths(client)
 }
 
 static int
+SProcXF86MiscPassMessage(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xXF86MiscPassMessageReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXF86MiscPassMessageReq);
+    return ProcXF86MiscPassMessage(client);
+}
+
+static int
 SProcXF86MiscDispatch (client)
     register ClientPtr	client;
 {
@@ -746,6 +814,8 @@ SProcXF86MiscDispatch (client)
 	return SProcXF86MiscSetClientVersion(client);
     case X_XF86MiscGetFilePaths:
 	return SProcXF86MiscGetFilePaths(client);
+    case X_XF86MiscPassMessage:
+	return SProcXF86MiscPassMessage(client);
     default:
 	if (!xf86GetModInDevEnabled())
 	    return miscErrorBase + XF86MiscModInDevDisabled;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.88 2002/10/29 15:48:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.90 2002/11/25 14:04:56 eich Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -452,7 +452,7 @@ typedef struct _confdrirec {
 /* These values should be adjusted when new fields are added to ScrnInfoRec */
 #define NUM_RESERVED_INTS		16
 #define NUM_RESERVED_POINTERS		15
-#define NUM_RESERVED_FUNCS		16
+#define NUM_RESERVED_FUNCS		15
 
 typedef pointer (*funcPointer)(void);
 
@@ -753,6 +753,7 @@ typedef int  xf86SetDGAModeProc           (int, int, DGADevicePtr);
 typedef int  xf86ChangeGammaProc          (int, Gamma);
 typedef void xf86PointerMovedProc         (int, int, int);
 typedef Bool xf86PMEventProc              (int, pmEvent, Bool);
+typedef int  xf86HandleMessageProc     (int, const char*, const char*, char**);
 
 /*
  * ScrnInfoRec
@@ -903,6 +904,7 @@ typedef struct _ScrnInfoRec {
     xf86ChangeGammaProc			*ChangeGamma;
     xf86PointerMovedProc		*PointerMoved;
     xf86PMEventProc			*PMEvent;
+    xf86HandleMessageProc		*HandleMessage;
     
     /*
      * This can be used when the minor ABI version is incremented.

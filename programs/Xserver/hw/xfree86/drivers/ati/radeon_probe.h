@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.7 2002/04/06 19:06:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.8 2002/04/24 16:20:40 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -79,6 +79,9 @@ extern Bool                 RADEONScreenInit
 			    FunctionPrototype((int, ScreenPtr, int, char **));
 extern Bool                 RADEONSwitchMode
 			    FunctionPrototype((int, DisplayModePtr, int));
+extern Bool                 RADEONHandleMessage
+			    FunctionPrototype((int, const char*, const char*,
+					       char**));
 extern void                 RADEONAdjustFrame
 			    FunctionPrototype((int, int, int, int));
 extern Bool                 RADEONEnterVT

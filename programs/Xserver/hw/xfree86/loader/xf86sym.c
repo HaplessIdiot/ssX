@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.229 2003/03/12 16:40:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.230 2003/03/25 04:18:22 dawes Exp $ */
 
 /*
  *
@@ -628,6 +628,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(MiscExtDestroyStruct)
    SYMFUNC(MiscExtApply)
    SYMFUNC(MiscExtGetFilePaths)
+   SYMFUNC(MiscExtPassMessage)
 #endif
 
    /* Misc */
