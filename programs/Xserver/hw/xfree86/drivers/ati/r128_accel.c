@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.11 2001/08/09 19:14:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.12 2001/10/02 11:44:16 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -82,8 +82,8 @@
 				/* Driver data structures */
 #include "r128.h"
 #include "r128_reg.h"
-#include "r128_sarea.h"
 #ifdef XF86DRI
+#include "r128_sarea.h"
 #define _XF86DRI_SERVER_
 #include "r128_dri.h"
 #endif
