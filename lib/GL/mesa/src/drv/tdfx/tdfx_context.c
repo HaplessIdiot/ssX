@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.3 2001/08/18 02:51:06 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.4 2001/10/02 11:44:13 alanh Exp $ */
 
 /*
  * Original rewrite:
@@ -185,7 +185,7 @@ GLboolean tdfxCreateContext( Display *dpy, GLvisual *mesaVis,
    if ( getenv( "FX_GLIDE_SWAPINTERVAL" ) ) {
       fxMesa->Glide.SwapInterval = atoi( getenv( "FX_GLIDE_SWAPINTERVAL" ) );
    } else {
-      fxMesa->Glide.SwapInterval = 1;
+      fxMesa->Glide.SwapInterval = 0;
    }
    if ( getenv( "FX_MAX_PENDING_SWAPS" ) ) {
       fxMesa->Glide.MaxPendingSwaps = atoi( getenv( "FX_MAX_PENDING_SWAPS" ) );
