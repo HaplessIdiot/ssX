@@ -1,4 +1,5 @@
 XFree86 4.3.99.2 (xx March 2003)
+  35. Fix SEGV in fbdev's mode validation (Alexandr Andreev).
   34. Add a new request to the XF86Misc extension that allows a client
       to send an arbitrary message to the DDX, which in turn can send the
       message to the driver.  The driver may also send a string back.
@@ -16598,4 +16599,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2609 2003/04/03 12:52:29 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2610 2003/04/03 16:15:48 dawes Exp $
