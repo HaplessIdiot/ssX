@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.66 2000/12/28 00:51:52 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.67 2000/12/30 19:15:47 dickey Exp $ */
 
 /************************************************************
 
@@ -220,6 +220,11 @@ extern int errno;
 
 #endif
 
+#if defined(SVR4) && defined(sun)
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE
+#endif
+#endif
 #include <setjmp.h>
 
 /***====================================================================***/
