@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/stubs/stubs.h,v 1.1 1999/01/11 05:13:22 dawes Exp $ */
+/* $XFree86: xc/lib/font/stubs/stubs.h,v 1.2 1999/08/21 13:48:07 dawes Exp $ */
 
 /* This directory includes dummy entry for bdftopcf and mkfontdir */
 
@@ -23,5 +23,7 @@ extern int set_font_authorizations ( char **authorizations,
 extern Bool XpClientIsBitmapClient ( ClientPtr client );
 extern Bool XpClientIsPrintClient ( ClientPtr client, 
 				    FontPathElementPtr fpe );
+
+extern unsigned long GetTimeInMillis (void);
 
 /* end of file */
