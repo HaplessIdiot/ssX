@@ -1,4 +1,5 @@
 XFree86 4.3.99.3 (xx April 2003)
+  89. Import expat 1.95.4 (Matthieu Herrb). 
 
 XFree86 4.3.99.2 (10 April 2003)
   88. Fix file descriptor leaks in xman (Ted Unangst, OpenBSD PR#3186).
@@ -16718,4 +16719,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2625 2003/04/09 20:31:31 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2626 2003/04/10 13:26:38 dawes Exp $
