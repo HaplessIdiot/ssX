@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winengine.c,v 1.2 2002/04/11 08:25:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winengine.c,v 1.3 2002/07/05 09:19:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -167,6 +167,17 @@ winSetEngine (ScreenPtr pScreen)
   if (dwBPP == 8 && !pScreenInfo->fFullScreen)
     {
       ErrorF ("winSetEngine - Windowed && PseudoColor => ShadowGDI\n");
+      pScreenInfo->dwEngine = WIN_SERVER_SHADOW_GDI;
+
+      /* Set engine function pointers */
+      winSetEngineFunctionsShadowGDI (pScreen);
+      return TRUE;
+    }
+
+  /* ShadowGDI is the only engine that supports Multi Window Mode */
+  if (pScreenInfo->fMultiWindow)
+    {
+      ErrorF ("winSetEngine - Multi Window => ShadowGDI\n");
       pScreenInfo->dwEngine = WIN_SERVER_SHADOW_GDI;
 
       /* Set engine function pointers */

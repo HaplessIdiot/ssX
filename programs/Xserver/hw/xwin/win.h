@@ -29,39 +29,32 @@
  *		Suhaib M Siddiqi
  *		Peter Busch
  *		Harold L Hunt II
- *		MATSUZAKI Kensuke
+ *		Kensuke Matsuzaki
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.32 2002/10/31 23:04:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.33 2002/11/07 10:31:32 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
 
 
 #ifndef NO
-#define NO			0
+#define NO					0
 #endif
 #ifndef YES
-#define YES			1
+#define YES					1
 #endif
 
 /*
  * Build toggles for experimental features
  */
-#define WIN_NATIVE_GDI_SUPPORT		YES
-#define WIN_LAYER_SUPPORT		NO
-#define WIN_NEW_KEYBOARD_SUPPORT	NO
-#define WIN_EMULATE_PSEUDO_SUPPORT	YES
-#define WIN_UPDATE_STATS		NO
+#define WIN_NATIVE_GDI_SUPPORT			YES
+#define WIN_LAYER_SUPPORT			NO
+#define WIN_NEW_KEYBOARD_SUPPORT		NO
+#define WIN_EMULATE_PSEUDO_SUPPORT		YES
+#define WIN_UPDATE_STATS			NO
 
 /* Turn debug messages on or off */
-#define CYGDEBUG		NO
-
-/* Constant strings */
-#define WINDOW_CLASS		"cygwin/xfree86"
-#define WINDOW_TITLE		"Cygwin/XFree86"
-#define WIN_SCR_PROP		"cyg_screen_prop"
-#define WIN_MSG_QUEUE_FNAME	"/dev/windows"
-#define WIN_LOG_FNAME		"/tmp/XWin.log"
+#define CYGDEBUG				NO
 
 #define NEED_EVENTS
 
@@ -84,12 +77,12 @@
 /*
  * Windows only supports 256 color palettes
  */
-#define WIN_NUM_PALETTE_ENTRIES	256
+#define WIN_NUM_PALETTE_ENTRIES			256
 
 /*
  * Number of times to call Restore in an attempt to restore the primary surface
  */
-#define WIN_REGAIN_SURFACE_RETRIES	1
+#define WIN_REGAIN_SURFACE_RETRIES		1
 
 /*
  * Build a supported display depths mask by shifting one to the left
@@ -132,6 +125,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <errno.h>
+#include <pthread.h>
 
 #include <X11/XWDFile.h>
 
@@ -187,6 +181,13 @@
  * Windows headers
  */
 #include "winms.h"
+
+
+/*
+ * Multi-Window Window Manager header
+ */
+
+#include "winwindow.h"
 
 
 /* Cygwin's winuser.h does not define VK_KANA as of 28Mar2001 */
@@ -286,17 +287,6 @@ typedef Bool (*winReleasePrimarySurfaceProcPtr)(ScreenPtr);
 
 
 /*
- * Window privates
- */
-
-typedef struct
-{
-  DWORD			dwDummy;
-  HRGN			hRgn;
-} winPrivWinRec, *winPrivWinPtr;
-
-
-/*
  * GC (graphics context) privates
  */
 
@@ -343,7 +333,7 @@ typedef struct
 {
   DWORD			dwXKeycodes[WIN_MAX_KEYS_PER_KEY];
   DWORD			dwReleaseModifiers;
-} winKeyEventsRec, winKeyEventsPtr;
+} winKeyEventsRec, *winKeyEventsPtr;
 
 #endif /* WIN_NEW_KEYBOARD_SUPPORT */
 
@@ -360,7 +350,12 @@ typedef struct
   Bool			fUserGaveHeightAndWidth;
 
   DWORD			dwScreen;
+  DWORD			dwUserWidth;
+  DWORD			dwUserHeight;
   DWORD			dwWidth;
+  DWORD			dwHeight;
+  DWORD			dwWidth_mm;
+  DWORD			dwHeight_mm;
   DWORD			dwPaddedWidth;
 
   /*
@@ -369,9 +364,6 @@ typedef struct
    * a rounding up of the width.
    */
   DWORD			dwStride;
-  DWORD			dwHeight;
-  DWORD			dwWidth_mm;
-  DWORD			dwHeight_mm;
 
   /* Offset of the screen in the window when using scrollbars */
   DWORD			dwXOffset;
@@ -390,6 +382,9 @@ typedef struct
   Bool			fFullScreen;
   Bool			fDecoration;
   Bool			fRootless;
+  Bool			fMultiWindow;
+  Bool                  fMultipleMonitors;
+  Bool			fClipboard;
   Bool			fLessPointer;
   Bool			fScrollbars;
   int			iE3BTimeout;
@@ -407,7 +402,7 @@ typedef struct
  * Screen privates
  */
 
-typedef struct
+typedef struct _winPrivScreenRec
 {
   winScreenInfoPtr	pScreenInfo;
 
@@ -415,7 +410,7 @@ typedef struct
   Bool			fClosed;
   Bool			fActive;
   Bool			fBadDepth;
-    
+
   int			iDeltaZ;
 
   CloseScreenProcPtr	CloseScreen;
@@ -428,9 +423,13 @@ typedef struct
   DWORD			dwModeKeyStates;
 
   /* Clipboard support */
+  pthread_t		ptClipboardProc;
+
+#if 0
   HWND			hwndNextViewer;
   void			*display;
   int			window;
+#endif
 
   /* Last width, height, and depth of the Windows display */
   DWORD			dwLastWindowsWidth;
@@ -481,6 +480,14 @@ typedef struct
   /* Privates used by both shadow fb DirectDraw servers */
   LPDIRECTDRAWCLIPPER	pddcPrimary;
 
+  /* Privates used by multi-window server */
+  pthread_t		ptWMProc;
+  void			*pWMInfo;
+
+  /* Privates used for any module running in a seperate thread */
+  pthread_mutex_t	pmServerStarted;
+  Bool			fServerStarted;
+  
   /* Engine specific functions */
   winAllocateFBProcPtr			pwinAllocateFB;
   winShadowUpdateProcPtr		pwinShadowUpdate;
@@ -517,10 +524,11 @@ typedef struct
   ClearToBackgroundProcPtr		ClearToBackground;
   ClipNotifyProcPtr			ClipNotify;
   RestackWindowProcPtr			RestackWindow;
+  ReparentWindowProcPtr			ReparentWindow;
 #ifdef SHAPE
   SetShapeProcPtr			SetShape;
 #endif
-} winPrivScreenRec, *winPrivScreenPtr;
+} winPrivScreenRec;
 
 
 /*
@@ -541,6 +549,7 @@ extern CARD32			g_c32LastInputEventTime;
 extern DWORD			g_dwEnginesSupported;
 extern HINSTANCE		g_hInstance;
 extern HWND			g_hDlgDepthChange;
+
 
 /*
  * Extern declares for dynamically loaded libraries and function pointers
@@ -683,6 +692,16 @@ winBlockHandler (int nScreen,
 
 RegionPtr
 winPixmapToRegionNativeGDI (PixmapPtr pPix);
+
+
+/*
+ * winclipboardinit.c
+ */
+
+Bool
+winInitClipboard (pthread_t *ptClipboardProc,
+		  pthread_mutex_t *ppmServerStarted,
+		  DWORD dwScreen);
 
 
 /*
@@ -1355,6 +1374,41 @@ winMapWindowPRootless (WindowPtr pWindow);
 void
 winSetShapePRootless (WindowPtr pWindow);
 #endif
+
+
+/*
+ * winmultiwindowwindow.c
+ */
+
+Bool
+winCreateWindowMultiWindow (WindowPtr pWindow);
+
+Bool
+winDestroyWindowMultiWindow (WindowPtr pWindow);
+
+Bool
+winPositionWindowMultiWindow (WindowPtr pWindow, int x, int y);
+
+Bool
+winChangeWindowAttributesMultiWindow (WindowPtr pWindow, unsigned long mask);
+
+Bool
+winUnmapWindowMultiWindow (WindowPtr pWindow);
+
+Bool
+winMapWindowMultiWindow (WindowPtr pWindow);
+
+void
+winReparentWindowMultiWindow (WindowPtr pWin, WindowPtr pPriorParent);
+
+void
+winRestackWindowMultiWindow (WindowPtr pWin, WindowPtr pOldNextSib);
+
+#ifdef SHAPE
+void
+winSetShapeMultiWindow (WindowPtr pWindow);
+#endif
+
 
 /*
  * winwndproc.c

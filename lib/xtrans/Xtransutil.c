@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.21 2001/12/14 19:57:07 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.22 2002/09/18 01:25:02 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -60,12 +60,6 @@ from The Open Group.
 
 #ifdef XTHREADS
 #include <X11/Xthreads.h>
-#endif
-
-#ifdef __CYGWIN__
-#include <sys/unistd.h>
-#define fchown chown
-#define fchmod chmod
 #endif
 
 #ifdef X11_t

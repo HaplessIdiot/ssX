@@ -26,7 +26,7 @@
   from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.9 2001/12/14 19:59:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.11 2002/07/05 09:19:25 alanh Exp $ */
 
 #include "win.h"
 
@@ -57,14 +57,14 @@ LegalModifier (unsigned int uiKey, DevicePtr pDevice)
 void
 ProcessInputEvents (void)
 {
-#if CYGDEBUG
+#if 0
   ErrorF ("ProcessInputEvents\n");
 #endif
 
   mieqProcessInputEvents ();
   miPointerUpdate ();
 
-#if CYGDEBUG
+#if 0
   ErrorF ("ProcessInputEvents - returning\n");
 #endif
 }

@@ -31,7 +31,7 @@
  *		Harold L Hunt II
  *		MATSUZAKI Kensuke
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.22 2002/07/05 09:19:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.23 2002/10/17 08:18:25 alanh Exp $ */
 
 #include "win.h"
 #include <commctrl.h>
@@ -300,6 +300,7 @@ winWindowProc (HWND hwnd, UINT message,
 	if (!s_pScreenInfo->fScrollbars
 	    || !s_pScreenInfo->fDecoration
 	    || s_pScreenInfo->fRootless
+	    || s_pScreenInfo->fMultiWindow
 	    || s_pScreenInfo->fFullScreen)
 	  break;
 
@@ -569,7 +570,8 @@ winWindowProc (HWND hwnd, UINT message,
 	    || !s_pScreenInfo->fScrollbars
 	    || s_pScreenInfo->fFullScreen
 	    || !s_pScreenInfo->fDecoration
-	    || s_pScreenInfo->fRootless)
+	    || s_pScreenInfo->fRootless
+	    || s_pScreenInfo->fMultiWindow)
 	  break;
 
 	/*

@@ -27,47 +27,42 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winerror.c,v 1.3 2001/10/23 22:22:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winclip.c,v 1.2 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
-extern FILE		*g_pfLog;
-
-#ifdef DDXOSVERRORF
-void
-OsVendorVErrorF (const char *pszFormat, va_list va_args)
-{
-  static pthread_mutex_t	s_pmPrinting = PTHREAD_MUTEX_INITIALIZER;
-
-  /* Check we opened the log file first */
-  if (g_pfLog == NULL) return;
-
-  /* Lock the printing mutex */
-  pthread_mutex_lock (&s_pmPrinting);
-
-  /* Print the error message to a log file, could be stderr */
-  vfprintf (g_pfLog, pszFormat, va_args);
-
-  /* Flush after every write, to make updates show up quickly */
-  fflush (g_pfLog);
-
-  /* Unlock the printing mutex */
-  pthread_mutex_unlock (&s_pmPrinting);
-}
-#endif
-
 
 /*
- * os/util.c/FatalError () calls our vendor ErrorF, so the message
- * from a FatalError will be logged.  Thus, the message for the
- * fatal error is not passed to this function.
- *
- * Attempt to do last-ditch, safe, important cleanup here.
+ * Determine whether we suport Unicode or not.
+ * NOTE: Currently, just check if we are on an NT-based platform or not.
  */
-#ifdef DDXOSFATALERROR
-void
-OsVendorFatalError (void)
+
+Bool
+winClipboardDetectUnicodeSupport ()
 {
+  Bool			fReturn = FALSE;
+  OSVERSIONINFO		osvi;
   
+  /* Get operating system version information */
+  ZeroMemory (&osvi, sizeof (osvi));
+  osvi.dwOSVersionInfoSize = sizeof (osvi);
+  GetVersionEx (&osvi);
+
+  /* Branch on platform ID */
+  switch (osvi.dwPlatformId)
+    {
+    case VER_PLATFORM_WIN32_NT:
+      /* Engine 4 is supported on NT only */
+      ErrorF ("DetectUnicodeSupport - Windows NT/2000/XP\n");
+      fReturn = TRUE;
+      break;
+
+    case VER_PLATFORM_WIN32_WINDOWS:
+      /* Engine 4 is supported on NT only */
+      ErrorF ("DetectUnicodeSupport - Windows 95/98/Me\n");
+      fReturn = FALSE;
+      break;
+    }
+
+  return fReturn;
 }
-#endif

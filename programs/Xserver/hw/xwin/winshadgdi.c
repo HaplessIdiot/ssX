@@ -27,9 +27,17 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.20 2002/07/05 09:19:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.21 2002/10/17 08:18:25 alanh Exp $ */
 
 #include "win.h"
+
+/*
+ * Local function prototypes
+ */
+
+BOOL CALLBACK
+winRedrawAllProcShadowGDI (HWND hwnd, LPARAM lParam);
+
 
 /*
  * Internal function to get the DIB format that is compatible with the screen
@@ -198,6 +206,27 @@ winQueryRGBBitsAndMasks (ScreenPtr pScreen)
 
 
 /*
+ * Redraw all ---?
+ */
+
+BOOL CALLBACK
+winRedrawAllProcShadowGDI (HWND hwnd, LPARAM lParam)
+{
+  char strClassName[100];
+
+  if (GetClassName (hwnd, strClassName, 100))
+    {
+      if(strcmp (WINDOW_CLASS_X, strClassName) == 0)
+	{
+	  InvalidateRect (hwnd, NULL, FALSE);
+	  UpdateWindow (hwnd);
+	}
+    }
+  return TRUE;
+}
+
+
+/*
  * Allocate a DIB for the shadow framebuffer GDI server
  */
 
@@ -207,9 +236,7 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
   BITMAPINFOHEADER	*pbmih = NULL;
-#if CYGDEBUG
   DIBSECTION		dibsection;
-#endif
   Bool			fReturn = TRUE;
 
   /* Get device contexts for the screen and shadow bitmap */
@@ -232,6 +259,10 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
   pbmih->biWidth = pScreenInfo->dwWidth;
   pbmih->biHeight = -pScreenInfo->dwHeight;
   
+  ErrorF ("winAllocateFBShadowGDI - Creating DIB with width: %d height: %d "
+	  "depth: %d\n",
+	  pbmih->biWidth, -pbmih->biHeight, pbmih->biBitCount);
+
   /* Create a DI shadow bitmap with a bit pointer */
   pScreenPriv->hbmpShadow = CreateDIBSection (pScreenPriv->hdcScreen,
 					      (BITMAPINFO *) pbmih,
@@ -251,14 +282,18 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
 #endif
     }
 
-#if CYGDEBUG
   /* Get information about the bitmap that was allocated */
-  GetObject (pScreenPriv->hbmpShadow, sizeof (dibsection),
+  GetObject (pScreenPriv->hbmpShadow,
+	     sizeof (dibsection),
 	     &dibsection);
 
+#if CYGDEBUG || YES
   /* Print information about bitmap allocated */
-  ErrorF ("winAllocateFBShadowGDI - Dibsection width: %d height: %d\n",
-	  dibsection.dsBmih.biWidth, dibsection.dsBmih.biHeight);
+  ErrorF ("winAllocateFBShadowGDI - Dibsection width: %d height: %d "
+	  "depth: %d size image: %d\n",
+	  dibsection.dsBmih.biWidth, dibsection.dsBmih.biHeight,
+	  dibsection.dsBmih.biBitCount,
+	  dibsection.dsBmih.biSizeImage);
 #endif
 
   /* Select the shadow bitmap into the shadow DC */
@@ -289,8 +324,14 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
     }
 
   /* Set screeninfo stride */
-  pScreenInfo->dwStride = (pScreenInfo->dwPaddedWidth * 8)
-    / pScreenInfo->dwBPP;
+  pScreenInfo->dwStride = ((dibsection.dsBmih.biSizeImage
+			    / dibsection.dsBmih.biHeight)
+			   * 8) / pScreenInfo->dwBPP;
+
+#if CYGDEBUG || YES
+  ErrorF ("winAllocateFBShadowGDI - Created shadow stride: %d\n",
+	  pScreenInfo->dwStride);
+#endif
 
   /* See if the shadow bitmap will be larger than the DIB size limit */
   if (pScreenInfo->dwWidth * pScreenInfo->dwHeight * pScreenInfo->dwBPP
@@ -310,6 +351,9 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
       ErrorF ("winAllocateFBShadowGDI - winQueryRGBBitsAndMasks failed\n");
       return FALSE;
     }
+
+  /* Redraw all windows */
+  if (pScreenInfo->fMultiWindow) EnumWindows(winRedrawAllProcShadowGDI, 0);
 
   return fReturn;
 }
@@ -428,6 +472,9 @@ winShadowUpdateGDI (ScreenPtr pScreen,
       /* Reset the clip region */
       SelectClipRgn (pScreenPriv->hdcScreen, NULL);
     }
+
+  /* Redraw all windows */
+  if (pScreenInfo->fMultiWindow) EnumWindows(winRedrawAllProcShadowGDI, 0);
 }
 
 
@@ -474,6 +521,9 @@ winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen)
       DestroyWindow (pScreenPriv->hwndScreen);
       pScreenPriv->hwndScreen = NULL;
     }
+
+  /* Destroy the thread startup mutex */
+  pthread_mutex_destroy (&pScreenPriv->pmServerStarted);
 
   /* Invalidate our screeninfo's pointer to the screen */
   pScreenInfo->pScreen = NULL;
@@ -715,6 +765,9 @@ winBltExposedRegionsShadowGDI (ScreenPtr pScreen)
   /* EndPaint frees the DC */
   EndPaint (pScreenPriv->hwndScreen, &ps);
 
+  /* Redraw all windows */
+  if (pScreenInfo->fMultiWindow) EnumWindows(winRedrawAllProcShadowGDI, 0);
+
   return TRUE;
 }
 
@@ -782,6 +835,8 @@ winRedrawScreenShadowGDI (ScreenPtr pScreen)
 	  0, 0,
 	  SRCCOPY);
 
+  /* Redraw all windows */
+  if (pScreenInfo->fMultiWindow) EnumWindows(winRedrawAllProcShadowGDI, 0);
   return TRUE;
 }
 
@@ -885,6 +940,9 @@ winInstallColormapShadowGDI (ColormapPtr pColormap)
 
   /* Save a pointer to the newly installed colormap */
   pScreenPriv->pcmapInstalled = pColormap;
+
+  /* Redraw all windows */
+  if (pScreenInfo->fMultiWindow) EnumWindows(winRedrawAllProcShadowGDI, 0);
 
   return TRUE;
 }

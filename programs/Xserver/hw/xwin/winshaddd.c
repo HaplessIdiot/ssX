@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.21 2002/07/05 09:19:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.22 2002/10/17 08:18:24 alanh Exp $ */
 
 #include "win.h"
 
@@ -124,18 +124,19 @@ winReleasePrimarySurfaceShadowDD (ScreenPtr pScreen)
 
   ErrorF ("winReleasePrimarySurfaceShadowDD - Hello\n");
 
-  /*
-   * Detach the clipper from the primary surface.
-   * NOTE: We do this explicity for clarity.  The Clipper is not released.
-   */
-  IDirectDrawSurface4_SetClipper (pScreenPriv->pddsPrimary,
-				  NULL);
-
-  ErrorF ("winReleasePrimarySurfaceShadowDD - Detached clipper\n");
-
-  /* Release the primary surface, if there is one */
+  /* Release the primary surface and clipper, if they exist */
   if (pScreenPriv->pddsPrimary)
     {
+      /*
+       * Detach the clipper from the primary surface.
+       * NOTE: We do this explicity for clarity.  The Clipper is not released.
+       */
+      IDirectDrawSurface2_SetClipper (pScreenPriv->pddsPrimary,
+				      NULL);
+
+      ErrorF ("winReleasePrimarySurfaceShadowDD - Detached clipper\n");
+
+      /* Release the primary surface */
       IDirectDrawSurface2_Release (pScreenPriv->pddsPrimary);
       pScreenPriv->pddsPrimary = NULL;
     }
@@ -289,10 +290,11 @@ winAllocateFBShadowDD (ScreenPtr pScreen)
 	}
 
       /* Only change the video mode when different than current mode */
-      if (pScreenInfo->dwWidth != GetSystemMetrics (SM_CXSCREEN)
-	  || pScreenInfo->dwHeight != GetSystemMetrics (SM_CYSCREEN)
-	  || pScreenInfo->dwBPP != GetDeviceCaps (hdc, BITSPIXEL)
-	  || pScreenInfo->dwRefreshRate != 0)
+      if (!pScreenInfo->fMultipleMonitors
+	  && (pScreenInfo->dwWidth != GetSystemMetrics (SM_CXSCREEN)
+	      || pScreenInfo->dwHeight != GetSystemMetrics (SM_CYSCREEN)
+	      || pScreenInfo->dwBPP != GetDeviceCaps (hdc, BITSPIXEL)
+	      || pScreenInfo->dwRefreshRate != 0))
 	{
 	  ErrorF ("winAllocateFBShadowDD - Changing video mode\n");
 
@@ -639,7 +641,7 @@ winCloseScreenShadowDD (int nIndex, ScreenPtr pScreen)
   if (pScreenPriv->pddcPrimary)
     {
       /* Detach the clipper */
-      IDirectDrawSurface4_SetClipper (pScreenPriv->pddsPrimary,
+      IDirectDrawSurface2_SetClipper (pScreenPriv->pddsPrimary,
 				      NULL);
 
       /* Release the clipper object */
@@ -675,6 +677,9 @@ winCloseScreenShadowDD (int nIndex, ScreenPtr pScreen)
       DestroyWindow (pScreenPriv->hwndScreen);
       pScreenPriv->hwndScreen = NULL;
     }
+
+  /* Destroy the thread startup mutex */
+  pthread_mutex_destroy (&pScreenPriv->pmServerStarted);
 
   /* Kill our screeninfo's pointer to the screen */
   pScreenInfo->pScreen = NULL;
@@ -992,7 +997,7 @@ winBltExposedRegionsShadowDD (ScreenPtr pScreen)
 	  /* Try to restore the surface, once */
 	  ddrval = IDirectDrawSurface2_Restore (pScreenPriv->pddsPrimary);
 	  ErrorF ("winBltExposedRegionsShadowDDNL - "
-		  "IDirectDrawSurface4_Restore returned: ");
+		  "IDirectDrawSurface2_Restore returned: ");
 	  if (ddrval == DD_OK)
 	    continue;
 	  else if (ddrval == DDERR_WRONGMODE)
