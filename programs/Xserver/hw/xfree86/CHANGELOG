@@ -1,3 +1,5 @@
+3977. Fix scanpci (Marc La France).
+3976. DPMS #include fix (Marc La France).
 3975. Fix an event ordering problem in Xinerama (Mark Vojkovich).
 3974. Fix some clipping bugs in the Xv DDX (Mark Vojkovich).
 3973. Remove 24bpp shadowfb support from the NV driver since the hardware
@@ -10040,4 +10042,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1078 2000/03/08 15:14:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1082 2000/03/14 01:51:40 mvojkovi Exp $
