@@ -2,7 +2,7 @@
  *	$Xorg: resize.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/resize.c,v 3.51 2001/10/09 21:52:40 alanh Exp $ */
+/* $XFree86: xc/programs/xterm/resize.c,v 3.52 2002/04/28 19:04:21 dickey Exp $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -204,7 +204,7 @@ static void readstring(FILE * fp, char *buf, char *str);
    resets termcap string to reflect current screen size
  */
 int
-main(int argc, char **argv)
+main(int argc, char **argv ENVP_ARG)
 {
     register char *ptr, *env;
     register int emu = VT100;
@@ -482,13 +482,13 @@ static void
 readstring(register FILE * fp, register char *buf, char *str)
 {
     register int last, c;
-#if !defined(USG) && !defined(AMOEBA) && !defined(MINIX) && !defined(__EMX__)
+#if !defined(USG) && !defined(AMOEBA) && !defined(MINIX) && !defined(__UNIXOS2__)
     /* What is the advantage of setitimer() over alarm()? */
     struct itimerval it;
 #endif
 
     signal(SIGALRM, resize_timeout);
-#if defined(USG) || defined(AMOEBA) || defined(MINIX) || defined(__EMX__)
+#if defined(USG) || defined(AMOEBA) || defined(MINIX) || defined(__UNIXOS2__)
     alarm(TIMEOUT);
 #else
     bzero((char *) &it, sizeof(struct itimerval));
@@ -507,7 +507,7 @@ readstring(register FILE * fp, register char *buf, char *str)
     }
     last = str[strlen(str) - 1];
     while ((*buf++ = getc(fp)) != last) ;
-#if defined(USG) || defined(AMOEBA) || defined(MINIX) || defined(__EMX__)
+#if defined(USG) || defined(AMOEBA) || defined(MINIX) || defined(__UNIXOS2__)
     alarm(0);
 #else
     bzero((char *) &it, sizeof(struct itimerval));

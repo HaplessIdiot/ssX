@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.78 2002/01/07 21:02:44 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.79 2002/03/26 01:46:40 dickey Exp $ */
 
 /************************************************************
 
@@ -94,7 +94,7 @@ authorization.
 #define HAVE_TCGETATTR 1
 #endif
 
-#if defined(__EMX__) || defined(__CYGWIN__) || defined(SCO) || defined(sco)
+#if defined(__UNIXOS2__) || defined(__CYGWIN__) || defined(SCO) || defined(sco)
 #define USE_TERMCAP 1
 #endif
 
@@ -597,12 +597,13 @@ extern int convertFromUTF8(unsigned long c, Char *strbuf);
 #endif
 
 /* main.c */
-#ifndef __EMX__
-extern int main (int argc, char **argv);
+#ifndef __UNIXOS2__
+#define ENVP_ARG /**/
 #else
-extern int main (int argc, char **argv,char **envp);
+#define ENVP_ARG , char **envp
 #endif
 
+extern int main (int argc, char **argv ENVP_ARG);
 extern int GetBytesAvailable (int fd);
 extern int kill_process_group (int pid, int sig);
 extern int nonblocking_wait (void);

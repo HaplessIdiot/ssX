@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.150 2002/04/14 17:14:18 tsi Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.151 2002/04/28 19:04:20 dickey Exp $ */
 
 /* main.c */
 
@@ -1473,7 +1473,7 @@ posix_signal(int signo, sigfunc func)
 #endif /* linux && _POSIX_SOURCE */
 
 int
-main(int argc, char *argv[])
+main(int argc, char *argv[]ENVP_ARG)
 {
     Widget form_top, menu_top;
     register TScreen *screen;

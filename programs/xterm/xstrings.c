@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xstrings.c,v 1.1 2000/09/22 10:44:29 alanh Exp $ */
+/* $XFree86: xc/programs/xterm/xstrings.c,v 1.2 2001/06/18 19:09:27 dickey Exp $ */
 
 /************************************************************
 
@@ -45,7 +45,7 @@ x_basename(char *name)
     char *cp;
 
     cp = strrchr(name, '/');
-#ifdef __EMX__
+#ifdef __UNIXOS2__
     if (cp == 0)
 	cp = strrchr(name, '\\');
 #endif

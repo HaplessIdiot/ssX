@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/ptydata.c,v 1.14 2001/08/15 09:59:26 alanh Exp $
+ * $XFree86: xc/programs/xterm/ptydata.c,v 1.15 2002/04/28 19:04:21 dickey Exp $
  */
 
 /************************************************************
@@ -93,7 +93,7 @@ getPtyData(TScreen * screen, fd_set * select_mask, PtyData * data)
 	    else if (!E_TEST(errno))
 		Panic("input: read returned unexpected error (%d)\n", errno);
 	} else if (data->cnt == 0) {
-#if defined(MINIX) || defined(__EMX__)
+#if defined(MINIX) || defined(__UNIXOS2__)
 	    Cleanup(0);
 #else
 	    Panic("input: read returned zero\n", 0);

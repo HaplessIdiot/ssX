@@ -2,7 +2,7 @@
  *	$Xorg: misc.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/misc.c,v 3.67 2002/03/26 01:46:40 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/misc.c,v 3.68 2002/04/28 19:04:21 dickey Exp $ */
 
 /*
  *
@@ -96,7 +96,7 @@
 #include <module/proc.h>
 #endif
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define environ gblenvp		/* circumvent a bug */
 #endif
 
@@ -777,12 +777,8 @@ Redraw(void)
 						       (XEvent *) & event,
 						       NULL);
 	if (ScrollbarWidth(screen)) {
-	    (screen->scrollWidget->core.widget_class->core_class.expose) (
-									     screen->scrollWidget,
-									     (XEvent
-									      *)
-									     & event,
-									     NULL);
+	    (screen->scrollWidget->core.widget_class->core_class.expose)
+		(screen->scrollWidget, (XEvent *) & event, NULL);
 	}
     }
 #if OPT_TEK4014

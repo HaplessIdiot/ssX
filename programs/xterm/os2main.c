@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid = "$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.50 2002/03/26 01:46:40 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.51 2002/04/28 19:04:21 dickey Exp $ */
 
 /***********************************************************
 
@@ -54,14 +54,13 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* main.c */
-
-#ifdef __EMX__
+/* os2main.c */
 #define INCL_DOSFILEMGR
 #define INCL_DOSDEVIOCTL
 #define INCL_DOSSEMAPHORES
+#define I_NEED_OS2_H
 #include <os2.h>
-#endif
+#define XTERM_MAIN
 
 #include <version.h>
 #include <xterm.h>
@@ -220,10 +219,6 @@ static int parse_tty_modes(char *s, struct _xttymodes *modelist);
 
 static int inhibit;
 static char passedPty[2];	/* name if pty if slave */
-
-#ifdef __EMX__
-#define TIOCCONS	108
-#endif
 
 static int Console;
 #include <X11/Xmu/SysUtil.h>	/* XmuGetHostname */
@@ -784,91 +779,11 @@ XtActionsRec actionProcs[] =
 
 Atom wm_delete_window;
 
-#ifdef __EMX__
-
-int
-ptioctl(int fd, int func, void *data)
-{
-    APIRET rc;
-    ULONG len;
-    struct pt_termios pt;
-    struct termio *t;
-    int i;
-
-    switch (func) {
-    case TCGETA:
-	rc = DosDevIOCtl(fd, XFREE86_PTY, func,
-			 NULL, 0, NULL,
-			 (ULONG *) & pt, sizeof(struct pt_termios), &len);
-	if (rc)
-	    return -1;
-	t = (struct termio *) data;
-	t->c_iflag = pt.c_iflag;
-	t->c_oflag = pt.c_oflag;
-	t->c_cflag = pt.c_cflag;
-	t->c_lflag = pt.c_lflag;
-	for (i = 0; i < NCC; i++)
-	    t->c_cc[i] = pt.c_cc[i];
-	return 0;
-    case TCSETA:
-    case TCSETAW:
-    case TCSETAF:
-	t = (struct termio *) data;
-	pt.c_iflag = t->c_iflag;
-	pt.c_oflag = t->c_oflag;
-	pt.c_cflag = t->c_cflag;
-	pt.c_lflag = t->c_lflag;
-
-	for (i = 0; i < NCC; i++)
-	    pt.c_cc[i] = t->c_cc[i];
-	if (func == TCSETA)
-	    i = XTY_TIOCSETA;
-	else if (func == TCSETAW)
-	    i = XTY_TIOCSETAW;
-	else
-	    i = XTY_TIOCSETAF;
-	rc = DosDevIOCtl(fd, XFREE86_PTY, i,
-			 (ULONG *) & pt, sizeof(struct pt_termios), &len,
-			 NULL, 0, NULL);
-	return (rc) ? -1 : 0;
-    case TIOCCONS:
-	return DosDevIOCtl(fd, XFREE86_PTY, XTY_TIOCCONS,
-			   (ULONG *) data, sizeof(ULONG), &len,
-			   NULL, 0, NULL);
-    case TIOCSWINSZ:
-	return DosDevIOCtl(fd, XFREE86_PTY, XTY_TIOCSWINSZ,
-			   (ULONG *) data, sizeof(struct winsize), &len,
-			   NULL, 0, NULL);
-    case TIOCGWINSZ:
-	return DosDevIOCtl(fd, XFREE86_PTY, XTY_TIOCGWINSZ,
-			   NULL, 0, NULL,
-			   (ULONG *) data, sizeof(struct winsize), &len);
-    case XTY_ENADUP:
-	i = 1;
-	return DosDevIOCtl(fd, XFREE86_PTY, XTY_ENADUP,
-			   (ULONG *) & i, sizeof(ULONG), &len,
-			   NULL, 0, NULL);
-    case XTY_TRACE:
-	i = 2;
-	return DosDevIOCtl(fd, XFREE86_PTY, XTY_TRACE,
-			   (ULONG *) & i, sizeof(ULONG), &len,
-			   NULL, 0, NULL);
-    case PTMS_GETPTY:
-	i = 1;
-	return DosDevIOCtl(fd, XFREE86_PTY, PTMS_GETPTY,
-			   (ULONG *) & i, sizeof(ULONG), &len,
-			   (UCHAR *) data, 14, &len);
-    default:
-	return -1;
-    }
-}
-#endif /* __EMX__ */
-
 char **gblenvp;
 extern char **environ;
 
 int
-main(int argc, char **argv, char **envp)
+main(int argc, char **argv ENVP_ARG)
 {
     Widget form_top, menu_top;
     register TScreen *screen;
@@ -1932,4 +1847,81 @@ int
 kill_process_group(int pid, int sig)
 {
     return kill(-pid, sig);
+}
+
+int
+ptioctl(int fd, int func, void *data)
+{
+    APIRET rc;
+    ULONG len;
+    struct pt_termios pt;
+    struct termio *t;
+    int i;
+
+    switch (func) {
+    case TCGETA:
+	rc = DosDevIOCtl(fd, XFREE86_PTY, func,
+			 NULL, 0, NULL,
+			 (ULONG *) & pt, sizeof(struct pt_termios), &len);
+	if (rc)
+	    return -1;
+	t = (struct termio *) data;
+	t->c_iflag = pt.c_iflag;
+	t->c_oflag = pt.c_oflag;
+	t->c_cflag = pt.c_cflag;
+	t->c_lflag = pt.c_lflag;
+	for (i = 0; i < NCC; i++)
+	    t->c_cc[i] = pt.c_cc[i];
+	return 0;
+    case TCSETA:
+    case TCSETAW:
+    case TCSETAF:
+	t = (struct termio *) data;
+	pt.c_iflag = t->c_iflag;
+	pt.c_oflag = t->c_oflag;
+	pt.c_cflag = t->c_cflag;
+	pt.c_lflag = t->c_lflag;
+
+	for (i = 0; i < NCC; i++)
+	    pt.c_cc[i] = t->c_cc[i];
+	if (func == TCSETA)
+	    i = XTY_TIOCSETA;
+	else if (func == TCSETAW)
+	    i = XTY_TIOCSETAW;
+	else
+	    i = XTY_TIOCSETAF;
+	rc = DosDevIOCtl(fd, XFREE86_PTY, i,
+			 (ULONG *) & pt, sizeof(struct pt_termios), &len,
+			 NULL, 0, NULL);
+	return (rc) ? -1 : 0;
+    case TIOCCONS:
+	return DosDevIOCtl(fd, XFREE86_PTY, XTY_TIOCCONS,
+			   (ULONG *) data, sizeof(ULONG), &len,
+			   NULL, 0, NULL);
+    case TIOCSWINSZ:
+	return DosDevIOCtl(fd, XFREE86_PTY, XTY_TIOCSWINSZ,
+			   (ULONG *) data, sizeof(struct winsize), &len,
+			   NULL, 0, NULL);
+    case TIOCGWINSZ:
+	return DosDevIOCtl(fd, XFREE86_PTY, XTY_TIOCGWINSZ,
+			   NULL, 0, NULL,
+			   (ULONG *) data, sizeof(struct winsize), &len);
+    case XTY_ENADUP:
+	i = 1;
+	return DosDevIOCtl(fd, XFREE86_PTY, XTY_ENADUP,
+			   (ULONG *) & i, sizeof(ULONG), &len,
+			   NULL, 0, NULL);
+    case XTY_TRACE:
+	i = 2;
+	return DosDevIOCtl(fd, XFREE86_PTY, XTY_TRACE,
+			   (ULONG *) & i, sizeof(ULONG), &len,
+			   NULL, 0, NULL);
+    case PTMS_GETPTY:
+	i = 1;
+	return DosDevIOCtl(fd, XFREE86_PTY, PTMS_GETPTY,
+			   (ULONG *) & i, sizeof(ULONG), &len,
+			   (UCHAR *) data, 14, &len);
+    default:
+	return -1;
+    }
 }
