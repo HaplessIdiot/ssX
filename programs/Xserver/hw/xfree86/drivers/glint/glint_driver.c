@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.99 2000/11/14 17:32:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.101 2000/12/06 15:35:18 eich Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -251,6 +251,9 @@ static const char *xaaSymbols[] = {
 
 static const char *fbSymbols[] = {
     "cfb8_32ScreenInit",
+#ifdef RENDER
+    "fbPictureInit",
+#endif
     "fbScreenInit",
     "fbBres",
     NULL
@@ -2450,6 +2453,8 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			      miGetDefaultVisualMask(pScrn->depth),
 			      pScrn->rgbBits, pScrn->defaultVisual))
 	    return FALSE;
+	if (!miSetPixmapDepths())
+	    return FALSE;
     }
 
 #ifdef XF86DRI
@@ -2489,6 +2494,10 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth, pScrn->bitsPerPixel);
+#ifdef RENDER
+	if (ret)
+	    fbPictureInit(pScreen, 0, 0);
+#endif
 	break;
     case 32:
 	if(pScrn->overlayFlags & OVERLAY_8_32_PLANAR)
@@ -2496,11 +2505,16 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth);
-	else 
+	else {
 	    ret = fbScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth, pScrn->bitsPerPixel);
+#ifdef RENDER
+	    if (ret)
+	    	fbPictureInit(pScreen, 0, 0);
+#endif
+	}
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
