@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.40 2003/06/18 16:17:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.41 2003/07/07 15:34:26 eich Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -723,7 +723,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
      * We support bpp of 8, 16, and 32.
      */
 
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support32bppFb))
+    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support32bppFb))
 	return FALSE;
     else {
         int requiredBpp;

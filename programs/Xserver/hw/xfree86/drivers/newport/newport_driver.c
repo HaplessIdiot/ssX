@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.24tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.25 2003/04/23 21:51:41 tsi Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -297,7 +297,7 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Fill in the monitor field */
 	pScrn->monitor = pScrn->confScreen->monitor;
 
-	if (!xf86SetDepthBpp(pScrn, 8, 8, 8, 
+	if (!xf86SetDepthBpp(pScrn, 24, 0, 0, 
 			Support24bppFb | SupportConvert32to24 | 
 				PreferConvert32to24 ))
 		return FALSE;

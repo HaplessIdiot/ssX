@@ -23,7 +23,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_driver.c $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_driver.c,v 1.1 2003/07/31 20:24:29 mvojkovi Exp $ */
 
 #include "riva_include.h"
 
@@ -33,7 +33,6 @@
  * Forward definitions for the functions that make up the driver.
  */
 /* Mandatory functions */
-const OptionInfoRec * RivaAvailableOptions(int chipid, int busid);
 static Bool    RivaPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool    RivaScreenInit(int Index, ScreenPtr pScreen, int argc,
                             char **argv);
@@ -555,10 +554,9 @@ RivaPreInit(ScrnInfoPtr pScrn, int flags)
 
     /*
      * The first thing we should figure out is the depth, bpp, etc.
-     * Our default depth is 8, so pass it to the helper function.
      */
 
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 15, 0, 0, Support32bppFb)) {
 	xf86FreeInt10(pRiva->pInt);
 	return FALSE;
     } else {

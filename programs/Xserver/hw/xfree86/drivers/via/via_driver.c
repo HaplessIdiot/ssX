@@ -29,7 +29,7 @@
  *
  ************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.5 2003/07/04 16:24:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.6 2003/08/04 10:32:27 eich Exp $ */
 #include "xf86RAC.h"
 #include "shadowfb.h"
 
@@ -809,7 +809,7 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
      * We support bpp of 8, 16, and 32.
      */
 
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support32bppFb)) {
         return FALSE;
     }
     else {

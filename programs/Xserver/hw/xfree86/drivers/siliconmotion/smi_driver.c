@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.30tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.31 2003/07/25 01:17:06 tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -561,11 +561,10 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->monitor = pScrn->confScreen->monitor;
 
 	/*
-	 * The first thing we should figure out is the depth, bpp, etc.  Our
-	 * default depth is 8, so pass it to the helper function.  We support
-	 * only 24bpp layouts, so indicate that.
+	 * The first thing we should figure out is the depth, bpp, etc.
+	 * We support only 24bpp layouts, so indicate that.
 	 */
-	if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb))
+	if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support24bppFb))
 	{
 		LEAVE_PROC("SMI_PreInit");
 		return(FALSE);

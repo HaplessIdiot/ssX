@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.20 2002/01/25 21:55:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.21 2002/07/24 01:47:24 tsi Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -285,7 +285,7 @@ static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags)
 
 	pScrn->monitor = pScrn->confScreen->monitor;
 
-	if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb))
+	if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support24bppFb | Support32bppFb))
 		return FALSE;
 	else {
 		switch (pScrn->depth) {

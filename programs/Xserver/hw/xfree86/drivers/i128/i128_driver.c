@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.28 2003/02/05 17:45:28 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.29 2003/02/17 16:08:28 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -581,7 +581,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
      * We support both 24bpp and 32bpp layouts, so indicate that.
      */
 
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support32bppFb)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */

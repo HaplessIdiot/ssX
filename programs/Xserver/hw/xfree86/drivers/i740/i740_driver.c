@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.44 2003/07/16 01:38:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.45 2003/08/11 17:41:33 eich Exp $ */
 
 /*
  * Authors:
@@ -544,7 +544,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
 
 
   flags24=Support24bppFb | Support32bppFb | SupportConvert32to24;
-  if (!xf86SetDepthBpp(pScrn, 8, 8, 8, flags24)) {
+  if (!xf86SetDepthBpp(pScrn, 0, 0, 0, flags24)) {
     return FALSE;
   } else {
     switch (pScrn->depth) {

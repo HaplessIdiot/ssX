@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.14 2003/07/07 15:34:25 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.15 2003/07/17 08:19:36 eich Exp $ */
 
 
 #include "xf86.h"
@@ -400,7 +400,7 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
         
         pScrn->monitor = pScrn->confScreen->monitor;
         
-        if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb))
+        if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support24bppFb | Support32bppFb))
                 return FALSE;
 
         switch (pScrn->depth) {

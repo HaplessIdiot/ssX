@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.125 2003/07/17 08:19:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.126 2003/08/04 10:32:24 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1389,7 +1389,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     pScrn->monitor = pScrn->confScreen->monitor;
     
     /* All HiQV chips support 16/24/32 bpp */
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb |
+    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support24bppFb | Support32bppFb |
 				SupportConvert32to24 | PreferConvert32to24))
 	return FALSE;
     else {
@@ -2415,10 +2415,10 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     pScrn->monitor = pScrn->confScreen->monitor;
 
     if (cPtr->Flags & ChipsHDepthSupport)
-	i = xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb |
+	i = xf86SetDepthBpp(pScrn, 0, 0, 0, Support24bppFb |
 				SupportConvert32to24 | PreferConvert32to24);
     else
-	i = xf86SetDepthBpp(pScrn, 8, 8, 8, NoDepth24Support);
+	i = xf86SetDepthBpp(pScrn, 8, 0, 0, NoDepth24Support);
 
     if (!i)
 	return FALSE;
@@ -2876,10 +2876,10 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     pScrn->monitor = pScrn->confScreen->monitor;
 
     if (cPtr->Flags & ChipsHDepthSupport)
-	i = xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb |
+	i = xf86SetDepthBpp(pScrn, 0, 0, 0, Support24bppFb |
 				SupportConvert32to24 | PreferConvert32to24);
     else
-	i = xf86SetDepthBpp(pScrn, 8, 8, 8, NoDepth24Support);
+	i = xf86SetDepthBpp(pScrn, 8, 0, 0, NoDepth24Support);
 
     if (!i)
 	return FALSE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.102 2003/07/19 15:59:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.103 2003/07/24 13:50:23 eich Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1705,7 +1705,7 @@ static Bool RADEONPreInitVisual(ScrnInfoPtr pScrn)
 {
     RADEONInfoPtr  info = RADEONPTR(pScrn);
 
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support32bppFb))
+    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support32bppFb))
 	return FALSE;
 
     switch (pScrn->depth) {
