@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/21 16:42:31 coskrey Exp $
 
 
 
-XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.27 2002/11/15 15:37:42 dawes Exp $
+XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.28 2002/12/14 03:55:25 dawes Exp $
 
 
 #if BuildUCSFonts
@@ -860,7 +860,7 @@ LinkSourceFile(cu-lig12.bdf,$(CLEARLYUDIR))
 LinkSourceFile(cu-pua12.bdf,$(CLEARLYUDIR))
 LinkSourceFile(cu12.bdf,$(CLEARLYUDIR))
 LinkSourceFile(cuarabic12.bdf,$(CLEARLYUDIR))
-LinkSourceFile(cudevnag.bdf,$(CLEARLYUDIR))
+LinkSourceFile(cudevnag12.bdf,$(CLEARLYUDIR))
 #endif
 
 #if BuildUCSFonts && TruncateUCSFonts
