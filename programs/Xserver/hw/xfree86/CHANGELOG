@@ -1,4 +1,7 @@
 XFree86 4.4.99.16 (xx October 2004)
+ 205. Fix off-by-one error in VGA sync pulse positions for siliconmotion, vga,
+      vesa and vmware drivers;  other drivers to follow;  also see CHANGELOG 133
+      (Marc La France).
  204. Update locale info for Kinyarwanda, the language of Rwanda
       (Bugzilla #1494, Steve Murphy).
  203. Fix for fstobdf generating corrupted BDF files (Bugzilla #93,
@@ -19138,7 +19141,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3330 2004/10/23 15:29:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3331 2004/10/25 21:23:57 dawes Exp $
 
 
 
