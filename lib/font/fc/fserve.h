@@ -24,7 +24,7 @@
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/fc/fserve.h,v 1.2 1999/07/17 05:30:36 dawes Exp $ */
 
 #ifndef _FSERVE_H_
 #define _FSERVE_H_
@@ -51,6 +51,12 @@
 #define	FS_LFWI_REPLY		1
 #define	FS_LFWI_FINISHED	2
 
+/* states of connection */
+#define FS_CONN_CLOSED		0
+#define FS_CONN_CONNECTING	1
+#define FS_CONN_READ_HEADER	2
+#define FS_CONN_READ_DATA	3
+
 #define	AccessDone	0x400
 
 typedef struct _fs_font_data *FSFontDataPtr;
@@ -60,11 +66,18 @@ typedef struct _fs_blocked_list *FSBlockedListPtr;
 typedef struct _fs_blocked_list_info *FSBlockedListInfoPtr;
 typedef struct _fs_block_data *FSBlockDataPtr;
 typedef struct _fs_font_table *FSFontTablePtr;
+typedef struct _fs_fpe_data *FSFpePtr;
 
 typedef struct _fs_blocked_bitmaps *FSBlockedBitmapPtr;
 typedef struct _fs_blocked_extents *FSBlockedExtentPtr;
 
 extern void _fs_convert_char_info ( fsXCharInfo *src, xCharInfo *dst );
+extern void _fs_free_props (FontInfoPtr pfi);
+extern FontPtr fs_create_font (FontPathElementPtr   fpe,
+			       char		    *name,
+			       int		    namelen,
+			       fsBitmapFormat	    format,
+			       fsBitmapFormatMask   fmask);
 
 extern int fs_load_all_glyphs ( FontPtr pfont );
 extern int _fs_load_glyphs ( pointer client, FontPtr pfont, Bool range_flag, 
@@ -72,5 +85,14 @@ extern int _fs_load_glyphs ( pointer client, FontPtr pfont, Bool range_flag,
 			     unsigned char *data );
 extern void fs_register_fpe_functions ( void );
 extern void check_fs_register_fpe_functions ( void );
+
+/*
+ * These should be declared elsewhere, but I'm concerned that moving them
+ * would cause problems building other pieces
+ */
+extern FontPtr find_old_font (Font id);
+extern int  set_font_authorizations (char **a, int *len, pointer client);
+extern long   GetTimeInMillis (void);
+
 
 #endif				/* _FSERVE_H_ */

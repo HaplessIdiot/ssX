@@ -22,7 +22,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.6 1999/08/21 13:48:00 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.7 1999/08/28 09:00:32 dawes Exp $ */
 /*
  * FS data conversion
  */
@@ -101,18 +101,18 @@ _fs_convert_props(fsPropInfo *pi, fsPropOffset *po, pointer pd,
 
     nprops = pfi->nprops = pi->num_offsets;
 
-    dprop = (FontPropPtr) xalloc(sizeof(FontPropRec) * nprops);
-    is_str = (char *) xalloc(sizeof(char) * nprops);
-    if (!dprop || !is_str) {
-	xfree(is_str);
-	xfree(dprop);
+    dprop = (FontPropPtr) xalloc(sizeof(FontPropRec) * nprops +
+				 sizeof (char) * nprops);
+    if (!dprop)
 	return -1;
-    }
+    
+    is_str = (char *) (dprop + nprops);
     pfi->props = dprop;
     pfi->isStringProp = is_str;
 
     off_adr = (char *)po;
-    for (i = 0; i < nprops; i++, dprop++, is_str++) {
+    for (i = 0; i < nprops; i++, dprop++, is_str++) 
+    {
 	memcpy(&local_off, off_adr, SIZEOF(fsPropOffset));
 	dprop->name = MakeAtom(&pdc[local_off.name.position],
 			       local_off.name.length, 1);
@@ -126,7 +126,6 @@ _fs_convert_props(fsPropInfo *pi, fsPropOffset *po, pointer pd,
 	    if (dprop->value == BAD_RESOURCE)
 	    {
 		xfree (pfi->props);
-		xfree (pfi->isStringProp);
 		pfi->props = 0;
 		pfi->isStringProp = 0;
 		return -1;
@@ -136,6 +135,16 @@ _fs_convert_props(fsPropInfo *pi, fsPropOffset *po, pointer pd,
     }
 
     return nprops;
+}
+
+void
+_fs_free_props (FontInfoPtr pfi)
+{
+    if (pfi->props)
+    {
+	xfree (pfi->props);
+	pfi->props = 0;
+    }
 }
 
 int
@@ -556,6 +565,9 @@ _fs_get_metrics(FontPtr pFont, unsigned long count, unsigned char *chars,
     fsdata = (FSFontPtr) pFont->fontPrivate;
     encoding = fsdata->inkMetrics;
     pDefault = fsdata->pDefault;
+    /* convert default bitmap metric to default ink metric */
+    if (pDefault)
+	pDefault = encoding + (pDefault - fsdata->encoding);
     firstCol = pFont->info.firstCol;
     numCols = pFont->info.lastCol - firstCol + 1;
     glyphsBase = glyphs;
@@ -635,38 +647,117 @@ _fs_get_metrics(FontPtr pFont, unsigned long count, unsigned char *chars,
 void
 _fs_unload_font(FontPtr pfont)
 {
-    FSFontPtr   fsdata = (FSFontPtr) pfont->fontPrivate;
+    FSFontPtr	    fsdata = (FSFontPtr) pfont->fontPrivate;
+    FSFontDataPtr   fsd = (FSFontDataPtr) pfont->fpePrivate;
+    CharInfoPtr	    encoding = fsdata->encoding;
+    FSGlyphPtr	    glyphs;
 
-    if (fsdata->encoding)
+    /*
+     * fsdata points at FSFontRec, FSFontDataRec and name
+     */
+    if (encoding)
+	xfree(encoding);
+
+    while ((glyphs = fsdata->glyphs))
     {
-	register int i;
-	register CharInfoPtr encoding = fsdata->encoding;
-	FontInfoPtr pfi = &pfont->info;
-	for (i = (pfi->lastCol - pfi->firstCol + 1) *
-	         (pfi->lastRow - pfi->firstRow + 1);
-	     i > 0;
-	     encoding++, i--)
-	{
-	    if (encoding->bits &&
-		encoding->bits != &_fs_glyph_undefined &&
-		encoding->bits != &_fs_glyph_requested &&
-		encoding->bits != &_fs_glyph_zero_length)
-		xfree(encoding->bits);
-	}
+	fsdata->glyphs = glyphs->next;
+	xfree (glyphs);
     }
-    xfree(fsdata->encoding);
+    
+    /* XXX we may get called after the resource DB has been cleaned out */
+    if (find_old_font(fsd->fontid))
+	DeleteFontClientID (fsd->fontid);
+    
+    _fs_free_props (&pfont->info);
+    
     xfree(fsdata);
-
-    pfont->fontPrivate = 0;
+	    
+    DestroyFontRec(pfont);
 }
 
-void
-_fs_init_font(pfont)
-    FontPtr     pfont;
+FontPtr
+fs_create_font (FontPathElementPtr  fpe,
+		char		    *name,
+		int		    namelen,
+		fsBitmapFormat	    format,
+		fsBitmapFormatMask  fmask)
 {
+    FontPtr	    pfont;
+    FSFontPtr	    fsfont;
+    FSFontDataPtr   fsd;
+    int		    bit, byte, scan, glyph;
+
+    pfont = CreateFontRec ();
+    if (!pfont)
+	return 0;
+    fsfont = (FSFontPtr) xalloc (sizeof (FSFontRec) +
+				 sizeof (FSFontDataRec) +
+				 namelen + 1);
+    if (!fsfont)
+    {
+	DestroyFontRec (pfont);
+	return 0;
+    }
+    fsd = (FSFontDataPtr) (fsfont + 1);
+    bzero((char *) fsfont, sizeof(FSFontRec));
+    bzero((char *) fsd, sizeof(FSFontDataRec));
+    
+    pfont->fpe = fpe;
+    pfont->fontPrivate = (pointer) fsfont;
+    pfont->fpePrivate = (pointer) fsd;
+    
+    /* These font components will be needed in packGlyphs */
+    CheckFSFormat(format, BitmapFormatMaskBit |
+		  BitmapFormatMaskByte |
+		  BitmapFormatMaskScanLineUnit |
+		  BitmapFormatMaskScanLinePad,
+		  &bit,
+		  &byte,
+		  &scan,
+		  &glyph,
+		  NULL);
+    pfont->format = format;
+    pfont->bit = bit;
+    pfont->byte = byte;
+    pfont->scan = scan;
+    pfont->glyph = glyph;
+    
+    pfont->info.props = 0;
+    pfont->info.isStringProp = 0;
+    
     /* set font function pointers */
     pfont->get_glyphs = _fs_get_glyphs;
     pfont->get_metrics = _fs_get_metrics;
     pfont->unload_font = _fs_unload_font;
     pfont->unload_glyphs = NULL;
+    
+    /* set the FPE private information */
+    fsd->format = format;
+    fsd->fmask = fmask;
+    fsd->name = (char *) (fsd + 1);
+    memcpy (fsd->name, name, namelen);
+    fsd->name[namelen] = '\0';
+    fsd->fontid = GetNewFontClientID ();
+    
+    /* save the ID */
+    if (!StoreFontClientFont(pfont, fsd->fontid)) 
+    {
+	xfree (fsfont);
+	DestroyFontRec (pfont);
+	return 0;
+    }
+
+    return pfont;
+}
+
+pointer
+fs_alloc_glyphs (FontPtr pFont, int size)
+{
+    FSGlyphPtr	glyphs;
+    FSFontPtr	fsfont = (FSFontPtr) pFont->fontPrivate;
+
+    glyphs = xalloc (sizeof (FSGlyphRec) + size);
+    glyphs->next = fsfont->glyphs;
+    fsfont->glyphs = glyphs;
+    return (pointer) (glyphs + 1);
 }
