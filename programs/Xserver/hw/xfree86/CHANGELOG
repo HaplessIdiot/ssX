@@ -1,4 +1,13 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 137. From the DRI trunk...
+       - Install dummy/noop read & poll fops unless the driver has
+         replacements (Keith Whitwell).
+       - Remove gamma-specific stuff from the BSD DRM (Eric Anholt).
+       - Remove DRM_DMA_HISTOGRAM and associated code from the BSD DRM
+         (Eric Anholt).
+       - Remove BSD DRM's unused drm_init.h (Eric Anholt).
+       - Handle read() failures in the drm X server module (Michel Daenzer).
+       - Set DRM device major for NetBSD.
  136. Fix bug that prevented fbman from using the last partial scanline of a
       Mach64 framebuffer (Marc La France).
  135. Make ATI Mach64 FIFO cache integrity testing optional (Marc La France).
@@ -16862,7 +16871,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2654 2003/04/23 18:35:29 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2655 2003/04/23 21:51:19 tsi Exp $
 
 
 

@@ -206,16 +206,10 @@ bad:
 
 int DRM(context_switch)( drm_device_t *dev, int old, int new )
 {
-        char buf[64];
-
         if ( test_and_set_bit( 0, &dev->context_flag ) ) {
                 DRM_ERROR( "Reentering -- FIXME\n" );
                 return DRM_ERR(EBUSY);
         }
-
-#if __HAVE_DMA_HISTOGRAM
-        dev->ctx_start = get_cycles();
-#endif
 
         DRM_DEBUG( "Context switch from %d to %d\n", old, new );
 
@@ -226,9 +220,6 @@ int DRM(context_switch)( drm_device_t *dev, int old, int new )
 
         if ( DRM(flags) & DRM_FLAG_NOCTX ) {
                 DRM(context_switch_complete)( dev, new );
-        } else {
-                sprintf( buf, "C %d %d\n", old, new );
-                DRM(write_string)( dev, buf );
         }
 
         return 0;
@@ -246,11 +237,6 @@ int DRM(context_switch_complete)( drm_device_t *dev, int new )
 				/* If a context switch is ever initiated
                                    when the kernel holds the lock, release
                                    that lock here. */
-#if __HAVE_DMA_HISTOGRAM
-        atomic_inc( &dev->histo.ctx[DRM(histogram_slot)(get_cycles()
-							- dev->ctx_start)] );
-
-#endif
         clear_bit( 0, &dev->context_flag );
         DRM_WAKEUP( (void *)&dev->context_wait );
 
@@ -374,7 +360,6 @@ int DRM(rmctx)( DRM_IOCTL_ARGS )
 
 int DRM(context_switch)(drm_device_t *dev, int old, int new)
 {
-	char	    buf[64];
 	drm_queue_t *q;
 
 #if 0
@@ -385,10 +370,6 @@ int DRM(context_switch)(drm_device_t *dev, int old, int new)
 		DRM_ERROR("Reentering -- FIXME\n");
 		return DRM_ERR(EBUSY);
 	}
-
-#if __HAVE_DMA_HISTOGRAM
-	dev->ctx_start = get_cycles();
-#endif
 
 	DRM_DEBUG("Context switch from %d to %d\n", old, new);
 
@@ -412,9 +393,6 @@ int DRM(context_switch)(drm_device_t *dev, int old, int new)
 
 	if (DRM(flags) & DRM_FLAG_NOCTX) {
 		DRM(context_switch_complete)(dev, new);
-	} else {
-		sprintf(buf, "C %d %d\n", old, new);
-		DRM(write_string)(dev, buf);
 	}
 
 	atomic_dec(&q->use_count);
@@ -440,11 +418,6 @@ int DRM(context_switch_complete)(drm_device_t *dev, int new)
 		}
 	}
 
-#if __HAVE_DMA_HISTOGRAM
-	atomic_inc(&dev->histo.ctx[DRM(histogram_slot)(get_cycles()
-						      - dev->ctx_start)]);
-
-#endif
 	clear_bit(0, &dev->context_flag);
 	DRM_WAKEUP_INT(&dev->context_wait);
 
