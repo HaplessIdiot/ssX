@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.74 2004/06/11 00:02:16 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.75tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -426,8 +426,12 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 #  ifndef OptimizedCDebugFlags
 #   ifdef i386Architecture
 #    define OptimizedCDebugFlags DefaultGcc2i386Opt
-#   else
-#    define OptimizedCDebugFlags -O2
+#   endif
+#   ifdef SparcArchitecture
+#    define OptimizedCDebugFlags DefaultGcc2SparcOpt
+#   endif
+#   ifndef OptimizedCDebugFlags
+#    define OptimizedCDebugFlags -O2 GccAliasingArgs
 #   endif
 #  endif
 # else

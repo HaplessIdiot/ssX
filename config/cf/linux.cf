@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.225 2004/06/11 00:02:16 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.226tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -829,7 +829,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #ifdef Arm32Architecture
 # define DefaultCCOptions	-fsigned-char
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	-O3
+#  define OptimizedCDebugFlags	-O3 GccAliasingArgs
 # endif
 # define LinuxMachineDefines	-D__arm__ -D__arm32__ -U__arm -Uarm
 # define ServerOSDefines	XFree86ServerOSDefines
@@ -837,7 +837,9 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif /* Arm32Achitecture */
 
 #ifdef HPArchitecture
-# define OptimizedCDebugFlags	-O2  GccAliasingArgs
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags	-O2 GccAliasingArgs
+# endif
 # define LinuxMachineDefines	-D__hppa__
 # define ServerOSDefines	XFree86ServerOSDefines
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
@@ -854,7 +856,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 
 #ifdef ia64Architecture
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	-O2  GccAliasingArgs
+#  define OptimizedCDebugFlags	-O2 GccAliasingArgs
 # endif
 # define LinuxMachineDefines	-D__ia64__
 # define ServerOSDefines	XFree86ServerOSDefines
@@ -863,7 +865,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 
 #ifdef Mc68020Architecture
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	-O2  GccAliasingArgs
+#  define OptimizedCDebugFlags	-O2 GccAliasingArgs
 # endif
 # define LinuxMachineDefines	-D__mc68000__
 # define ServerOSDefines	XFree86ServerOSDefines
@@ -872,7 +874,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 
 #ifdef MipsArchitecture
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	-O2  GccAliasingArgs
+#  define OptimizedCDebugFlags	-O2 GccAliasingArgs
 # endif
 # define LinuxMachineDefines	-D__mips__
 # define ServerOSDefines	XFree86ServerOSDefines
@@ -900,15 +902,17 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 
 #ifdef s390xArchitecture
 /*#define DefaultCCOptions	-fsigned-char */
-#define OptimizedCDebugFlags	-O3 -fomit-frame-pointer
-#define LinuxMachineDefines	-D__s390x__
-#define ServerOSDefines		XFree86ServerOSDefines
-#define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags	-O3 -fomit-frame-pointer
+# endif
+# define LinuxMachineDefines	-D__s390x__
+# define ServerOSDefines	XFree86ServerOSDefines
+# define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
 #endif /* s390xArchitecture */
 
 #ifdef SparcArchitecture
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	-O2  GccAliasingArgs
+#  define OptimizedCDebugFlags	DefaultGcc2SparcOpt
 # endif
 # define LinuxMachineDefines	-D__sparc__
 # define ServerOSDefines	XFree86ServerOSDefines
@@ -939,7 +943,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  endif
 # endif
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	-O2 SuperHArchOptFlags SuperHEndianFlags  GccAliasingArgs
+#  define OptimizedCDebugFlags	-O2 SuperHArchOptFlags SuperHEndianFlags GccAliasingArgs
 # endif
 # define LinuxMachineDefines	-D__sh__
 # define ServerOSDefines	XFree86ServerOSDefines

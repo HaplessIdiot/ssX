@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.50 2004/06/01 00:16:53 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.51tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -213,7 +213,14 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if HasGcc2
 # ifdef i386Architecture
 #  define OptimizedCDebugFlags	DefaultGcc2i386Opt
-# else
+# endif
+# ifdef PpcArchitecture
+#  define OptimizedCDebugFlags	DefaultGcc2PpcOpt
+# endif
+# ifdef SparcArchitecture
+#  define OptimizedCDebugFlags	DefaultGcc2SparcOpt
+# endif
+# ifndef OptimizedCDebugFlags
 #  define OptimizedCDebugFlags	-O2
 # endif
 #else

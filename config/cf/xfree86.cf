@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.478 2004/06/14 21:21:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.479tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1920,7 +1920,7 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # endif
 #endif
 
-#if  (GccMajorVersion == 3) &&  (GccMinorVersion >= 1)
+#if HasGcc3 && ((GccMajorVersion > 3) || (GccMinorVersion >= 1))
 # define GccAliasingArgs      -fno-strict-aliasing
 #else
 # define GccAliasingArgs      /* */
@@ -1947,6 +1947,12 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #if HasGcc2 && defined(PpcArchitecture)
 # ifndef DefaultGcc2PpcOpt
 #  define DefaultGcc2PpcOpt -O2 GccAliasingArgs
+# endif
+#endif
+
+#if HasGcc2 && defined(SparcArchitecture)
+# ifndef DefaultGcc2SparcOpt
+#  define DefaultGcc2SparcOpt -O2 GccAliasingArgs
 # endif
 #endif
 

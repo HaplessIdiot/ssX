@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.123 2003/11/20 16:18:18 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.124tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -266,17 +266,21 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define ServerExtraSysLibs	-li386
 # endif
 #else
-# define OptimizedCDebugFlags 	-O2
 # if defined(SparcArchitecture)
 #  define ServerOSDefines 	-DDDXOSINIT
+#  define OptimizedCDebugFlags	DefaultGcc2SparcOpt
 # elif defined(AlphaArchitecture)
 #  define ServerOSDefines 	XFree86ServerOSDefines
+#  define OptimizedCDebugFlags	DefaultGcc2AxpOpt
 # elif defined(Arm32Architecture)
-#   define ServerOSDefines	XFree86ServerOSDefines
+#  define ServerOSDefines	XFree86ServerOSDefines
+#  define OptimizedCDebugFlags 	-O2 GccAliasingArgs
 # elif defined(PpcArchitecture)
 #  define ServerOSDefines	XFree86ServerOSDefines -DDDXOSINIT
+#  define OptimizedCDebugFlags	DefaultGcc2PpcOpt
 # else
 #  define ServerOSDefines 	/**/
+#  define OptimizedCDebugFlags 	-O2
 # endif
 # if defined(AlphaArchitecture)
 #  define ServerExtraSysLibs	-lalpha

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.51 2004/01/07 04:28:01 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.52tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -318,6 +318,11 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.51 2004/01/07 04:28:01 dawes Exp $
 #endif
 #ifndef GccWarningOptions
 # define GccWarningOptions	/* */
+#endif
+#if HasGcc3 && ((GccMajorVersion > 3) || (GccMinorVersion >= 1))
+# define GccAliasingArgs      -fno-strict-aliasing
+#else
+# define GccAliasingArgs      /* */
 #endif
 #ifndef XFree86ServerDefines
 # define XFree86ServerDefines	/* */
