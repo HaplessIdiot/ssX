@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.37 2003/11/10 18:22:20 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1915,8 +1915,8 @@ GLINTDRIMoveBuffers(
     RegionPtr prgnSrc,
     CARD32 index)
 {
-#if 0
     ScreenPtr pScreen = pParent->drawable.pScreen;
+#if 0
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 #endif
     int dx, dy;
