@@ -1,5 +1,5 @@
 /* $XConsortium: mach32text.c,v 1.1 94/03/28 21:09:31 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.0 1994/05/08 05:19:47 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -42,13 +42,13 @@ mach32PolyText8(pDraw, pGC, x, y, count, chars)
     GCPtr	pGC;
     int		x, y;
     int 	count;
-    unsigned char *chars;
+    char	*chars;
 {
     int plane;
 
     if (((plane = mach32CacheFont8(pGC->font)) == -1) ||
 	(pGC->fillStyle != FillSolid))
-	return miPolyText8(pDraw, pGC, x, y, count, (char *)chars);
+	return miPolyText8(pDraw, pGC, x, y, count, chars);
     else
 	return mach32CPolyText8(pDraw, pGC, x, y, count, (unsigned char *)chars, plane);
 }

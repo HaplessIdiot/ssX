@@ -1,5 +1,5 @@
 /* $XConsortium: mach32init.c,v 1.1 94/03/28 21:08:34 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.0 1994/05/08 05:19:35 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -351,7 +351,7 @@ void mach32InitAperture(screen_idx)
 }
 
 void mach32SetRamdac(clock)
-    int *clock;
+    unsigned short *clock;
 {
     unsigned short old_EXT_GE_CONFIG;
     extern short mach32WeightMask;

@@ -1,4 +1,5 @@
 /* $XConsortium: ativga.c,v 1.1 94/03/28 21:06:30 dpw Exp $ */
+/* $XFree86$ */
 /***************************************************************************
  * Start of VGA font saving and restoration code.
  * Created: Sun Jun 27 12:50:09 1993 by faith@cs.unc.edu
@@ -179,7 +180,7 @@ void mach32RestoreVGAInfo()
    /*
     * Restore the generic vga registers
     */
-   vgaHWRestore(save);
+   vgaHWRestore((vgaHWPtr)save);
 }
 
 /*

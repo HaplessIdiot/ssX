@@ -1,5 +1,5 @@
 /* $XConsortium: mach32win.c,v 1.2 94/04/17 20:30:52 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32win.c,v 3.0 1994/05/08 05:19:49 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -106,7 +106,9 @@ mach32CopyWindow(pWin, ptOldOrg, prgnSrc)
 	return;
     }
 
-    mach32FindOrdering(pWin, pWin, &dummyGC, nbox, pboxOrig, ptOldOrg.x, ptOldOrg.y, pWin->drawable.x, pWin->drawable.y, ordering);
+    mach32FindOrdering(&pWin->drawable, &pWin->drawable, &dummyGC, nbox,
+		       pboxOrig, ptOldOrg.x, ptOldOrg.y, pWin->drawable.x,
+		       pWin->drawable.y, ordering);
 
     WaitQueue(3);
     outw(FRGD_MIX, FSS_BITBLT | MIX_SRC);

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32blt.c,v 1.2 94/04/17 20:30:42 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32blt.c,v 3.0 1994/05/08 05:19:14 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -64,7 +64,6 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include	"regmach32.h"
 #include	"mach32.h"
 
-void mach32FindOrdering();
 extern RegionPtr cfbBitBlt();
 
 RegionPtr
@@ -628,8 +627,8 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
  	    return(NULL);
  	}
  	ValidateGC((DrawablePtr)pPixmap, pGC1);
- 	mach32CopyArea(pSrcDrawable, pPixmap, pGC1, srcx, srcy, width, height,
- 		       0, 0);
+ 	mach32CopyArea(pSrcDrawable, (DrawablePtr)pPixmap, pGC1, srcx, srcy,
+		       width, height, 0, 0);
  	retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                               0, 0, width, height, dstx, dsty, bitPlane);
  	(*pSrcDrawable->pScreen->DestroyPixmap)(pPixmap);

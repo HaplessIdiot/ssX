@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.0 1994/05/06 08:50:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.1 1994/05/08 05:19:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -841,7 +841,7 @@ mach32Initialize (scr_index, pScreen, argc, argv)
 static int
 mach32NewSerialNumber(pWin, data)
     WindowPtr pWin;
-    int data;
+    pointer data;
 {
     pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
     return WT_WALKCHILDREN;
