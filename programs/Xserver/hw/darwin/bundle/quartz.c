@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.11 2001/07/01 02:13:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.12 2001/08/01 05:34:06 torrey Exp $ */
 
 // X headers
 #include "scrnintstr.h"
@@ -28,7 +28,7 @@
 #include "quartzCursor.h"
 #include "rootlessAqua.h"
 
-static BOOL xhidden = FALSE;
+BOOL serverVisible = TRUE;
 
 static CGDisplayCount       quartzDisplayCount = 0;
 static CGDirectDisplayID   *quartzDisplayList = NULL;
@@ -70,7 +70,7 @@ static void *QuartzPMThread(void *arg)
 
         // computer just woke up
         if (msg.header.msgh_id == 1) {
-            if (!xhidden) {
+            if (serverVisible) {
                 int i;
 
                 for (i = 0; i < screenInfo.numScreens; i++) {
@@ -254,7 +254,7 @@ void QuartzShow(
 {
     int i;
 
-    if (xhidden) {
+    if (!serverVisible) {
         for (i = 0; i < screenInfo.numScreens; i++) {
             if (screenInfo.screens[i]) {
 	        if (!quartzRootless)
@@ -263,7 +263,7 @@ void QuartzShow(
             }
         }
     }
-    xhidden = FALSE;
+    serverVisible = TRUE;
 }
 
 
@@ -277,7 +277,7 @@ void QuartzHide(void)
 {
     int i;
 
-    if (!xhidden) {
+    if (serverVisible) {
         for (i = 0; i < screenInfo.numScreens; i++) {
             if (screenInfo.screens[i]) {
                 QuartzSuspendXCursor(screenInfo.screens[i]);
@@ -287,7 +287,7 @@ void QuartzHide(void)
         }
     } 
     QuartzRelease();
-    xhidden = TRUE;
+    serverVisible = FALSE;
 }
 
 

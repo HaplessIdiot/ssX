@@ -3,7 +3,7 @@
  * Support for using the Quartz Window Manager cursor
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.3 2001/04/13 20:55:26 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.4 2001/05/09 07:16:19 torrey Exp $ */
 
 #include "mi.h"
 #include "scrnintstr.h"
@@ -24,11 +24,12 @@
 typedef struct {
     int                     qdCursorMode;
     int                     qdCursorVisible;
-    int                     serverVisible;
     CursorPtr               latentCursor;
     QueryBestSizeProcPtr    QueryBestSize;
     miPointerSpriteFuncPtr  spriteFuncs;
 } QuartzCursorScreenRec, *QuartzCursorScreenPtr;
+
+extern BOOL serverVisible;
 
 static int darwinCursorScreenIndex = -1;
 static unsigned long darwinCursorGeneration = 0;
@@ -273,7 +274,7 @@ QuartzSetCursor(
     ScreenPriv->latentCursor = pCursor;
 
     // Don't touch Mac OS cursor if X is hidden!
-    if (! ScreenPriv->serverVisible)
+    if (!serverVisible)
         return;
 
     if (!pCursor) {
@@ -368,7 +369,7 @@ QuartzWarpCursor(
 {
     CGDisplayErr            cgErr;
     CGPoint                 cgPoint;
-    int                     neverMoved = TRUE;
+    static int              neverMoved = TRUE;
 
     if (neverMoved) {
         // Don't move the cursor the first time. This is the jump-to-center 
@@ -377,7 +378,7 @@ QuartzWarpCursor(
         return;
     }
 
-    if (CURSOR_PRIV(pScreen)->serverVisible) {
+    if (serverVisible) {
         cgPoint = CGPointMake(x, y);
         cgErr = CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgPoint);
         if (cgErr != CGDisplayNoErr) {
@@ -469,7 +470,6 @@ QuartzInitCursor(
     ScreenPriv->qdCursorMode = TRUE;
     ScreenPriv->qdCursorVisible = TRUE;
     ScreenPriv->latentCursor = NULL;
-    ScreenPriv->serverVisible = FALSE; 
     return TRUE;
 }
 
@@ -482,8 +482,6 @@ void QuartzSuspendXCursor(
 
     SetCursor(&gQDArrow);
     SHOW_QD_CURSOR(kCGDirectMainDisplay, ScreenPriv->qdCursorVisible);
-
-    ScreenPriv->serverVisible = FALSE;
 }
 
 
@@ -494,8 +492,6 @@ void QuartzResumeXCursor(
     int y )
 {
     QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
-
-    ScreenPriv->serverVisible = TRUE;
 
     QuartzSetCursor(pScreen, ScreenPriv->latentCursor, x, y);
 }
