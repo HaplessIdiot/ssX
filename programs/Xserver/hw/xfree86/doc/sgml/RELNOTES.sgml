@@ -9,7 +9,7 @@
 <date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.54 2000/12/15 20:21:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.55 2000/12/15 21:56:47 dawes Exp $
 </ident>
 
 <abstract>
@@ -154,7 +154,7 @@ don't have enough space to cover them all here.
 	<p>Server implementation:
 
 	<itemize>
-	  <item>Implmented remaining code for client clip lists.
+	  <item>Implemented remaining code for client clip lists.
 
 	  <item>Fixed plenty of bugs related to text rendering.
 
@@ -884,7 +884,7 @@ making use of the XAA module.
 
 <sect1>Multi-head
 <p>
-Some multi-head configurations are supported in this release, primarily
+Some multi-head configurations are supported in XFree86 4.x, primarily
 with multiple PCI/AGP cards.  However, this is an area that is still
 being worked on, and we expect that the range of configurations for which
 it works well will increase in future releases.  A configuration that
@@ -911,12 +911,12 @@ an 8-bit screen together with a 16-bit screen in Xinerama mode.
 Xinerama is not enabled by default, and can be enabled with the
 <tt>+xinerama</tt> command line option for the X server.
 
-Xinerama was included with X11R6.4.  The version included in this release
+Xinerama was included with X11R6.4.  The version included in XFree86 4.x
 was completely rewritten for improved performance and correctness.
 
 Known problems:
 <itemize>
-  <item>Most (all?) window managers are not Xinerama-aware, and so some
+  <item>Most window managers are not Xinerama-aware, and so some
 	operations like window placement and resizing might not behave
 	in an ideal way.  This is an issue that needs to be dealt with
 	in the individual window managers, and isn't specifically an
