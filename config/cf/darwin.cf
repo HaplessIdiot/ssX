@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.8 2001/03/17 18:21:37 herrb Exp $
+XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.9 2001/03/26 02:55:59 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -19,13 +19,17 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.8 2001/03/17 18:21:37 herrb Exp $
 /*
  * This enables some settings for developers.
  */
-#define XFree86Devel            NO
+#ifndef XFree86Devel
+# define XFree86Devel            NO
+#endif
 
 /*
  * This enables Quartz compatibility.
  * Turn off to build on raw Darwin systems.
  */
-#define DarwinQuartzSupport     YES
+#ifndef DarwinQuartzSupport
+# define DarwinQuartzSupport     YES
+#endif
 
 /* we don't need -lm */
 #define MathLibrary             /**/
@@ -67,15 +71,18 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.8 2001/03/17 18:21:37 herrb Exp $
 # define LibraryCCOptions       DefaultCCOptions -fno-common
 #endif
 
-/* A lot of xfree86 code needs __powerpc__ to avoid doing outport asm.
- *
+/*
  * __DARWIN__ will be used for platform specific #ifdefs that can't
  * be handled by existing X defines.
  *
  * Darwin's alloca() seg faults (rather than returning NULL) on failed
  * allocations, so we can't use it.
  */
+#ifdef PpcDarwinArchitecture
 #define StandardDefines         -D__powerpc__ -D__DARWIN__ -DNO_ALLOCA
+#else
+#define StandardDefines         -D__DARWIN__ -DNO_ALLOCA
+#endif
 
 /* programs/rgb/rgb.h and others needs this */
 #define HasNdbm                 YES
@@ -97,8 +104,9 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.8 2001/03/17 18:21:37 herrb Exp $
 /* no direct graphics extension */
 #define BuildXF86DGA            NO
 
-/* no extra tablets and weird input devices */
+/* no server support for extra tablets and weird input devices */
 #define BuildXInputExt          NO
+#define BuildXInputLib          YES
 
 /* no Display Power Management extension */
 #define BuildDPMSExt            NO

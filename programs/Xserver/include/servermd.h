@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.42 2000/11/06 19:24:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.43 2001/01/17 22:36:58 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -148,21 +148,6 @@ SOFTWARE.
 #define AVOID_MEMORY_READ
 
 #endif /* __arm32__ */
-
-#ifdef __DARWIN__
-
-#define IMAGE_BYTE_ORDER        MSBFirst
-#define BITMAP_BIT_ORDER        MSBFirst
-#define GLYPHPADBYTES           4
-#define GETLEFTBITS_ALIGNMENT   1
-
-#define LARGE_INSTRUCTION_CACHE
-#define FAST_CONSTANT_OFFSET_MODE
-#define PLENTIFUL_REGISTERS
-#define AVOID_MEMORY_READ
-#define FAST_MEMCPY
-
-#endif /* __DARWIN__ */
 
 #if defined(__powerpc__)
 
