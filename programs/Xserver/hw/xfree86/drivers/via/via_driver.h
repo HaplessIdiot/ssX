@@ -1,0 +1,286 @@
+/*
+ * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
+ * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sub license,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+ * VIA, S3 GRAPHICS, AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+/* $XFree86$ */
+#ifndef _VIA_DRIVER_H
+#define _VIA_DRIVER_H
+
+/*#define DEBUG_PRINT*/
+#ifdef DEBUG_PRINT
+#define DEBUG(x) x
+#else
+#define DEBUG(x)
+#endif
+
+
+#include "vgaHW.h"
+#include "xf86.h"
+#include "xf86Resources.h"
+#include "xf86_ansic.h"
+#include "xf86Pci.h"
+#include "xf86PciInfo.h"
+#include "xf86_OSproc.h"
+#include "compiler.h"
+#include "xf86Cursor.h"
+#include "mipointer.h"
+#include "micmap.h"
+
+#define CallBIOS
+#define USE_FB
+#ifdef USE_FB
+#include "fb.h"
+#else
+#include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
+#endif
+
+#include "xf86cmap.h"
+#include "vbe.h"
+#include "xaa.h"
+
+#include "via_regs.h"
+#include "via_bios.h"
+
+
+#define DRIVER_NAME	"via"
+#define DRIVER_VERSION	"4.1.0"
+#define VERSION_MAJOR	4
+#define VERSION_MINOR	1
+#define PATCHLEVEL	26
+#define VIA_VERSION	((VERSION_MAJOR<<24) | (VERSION_MINOR<<16) | PATCHLEVEL)
+
+#define VGAIN8(addr)	    MMIO_IN8(pVia->MapBase+0x8000, addr)
+#define VGAIN16(addr)	    MMIO_IN16(pVia->MapBase+0x8000, addr)
+#define VGAIN(addr)	    MMIO_IN32(pVia->MapBase+0x8000, addr)
+
+#define VGAOUT8(addr, val)  MMIO_OUT8(pVia->MapBase+0x8000, addr, val)
+#define VGAOUT16(addr, val) MMIO_OUT16(pVia->MapBase+0x8000, addr, val)
+#define VGAOUT(addr, val)   MMIO_OUT32(pVia->MapBase+0x8000, addr, val)
+
+#define INREG(addr)	    MMIO_IN32(pVia->MapBase, addr)
+#define OUTREG(addr, val)   MMIO_OUT32(pVia->MapBase, addr, val)
+#define INREG16(addr)	    MMIO_IN16(pVia->MapBase, addr)
+#define OUTREG16(addr, val) MMIO_OUT16(pVia->MapBase, addr, val)
+
+#define VIA_PIXMAP_CACHE_SIZE	(256 * 1024)
+#define VIA_CURSOR_SIZE		(4 * 1024)
+#define VIA_VQ_SIZE		(256 * 1024)
+
+typedef struct {
+    unsigned int    mode, refresh, resMode;
+    int		    countWidthByQWord;
+    int		    offsetWidthByQWord;
+    unsigned char   SR08, SR0A, SR0F;
+
+    /*	 extended Sequencer registers */
+    unsigned char   SR10, SR11, SR12, SR13,SR14,SR15,SR16;
+    unsigned char   SR17, SR18, SR19, SR1A,SR1B,SR1C,SR1D,SR1E;
+    unsigned char   SR1F, SR20, SR21, SR22,SR23,SR24,SR25,SR26;
+    unsigned char   SR27, SR28, SR29, SR2A,SR2B,SR2C,SR2D,SR2E;
+    unsigned char   SR2F, SR30, SR31, SR32,SR33,SR34,SR40,SR41;
+    unsigned char   SR42, SR43, SR44, SR45,SR46,SR47;
+
+    unsigned char   Clock;
+
+    /*	 extended CRTC registers */
+    unsigned char   CR30, CR31, CR32, CR33, CR34, CR35, CR36, CR37;
+    unsigned char   CR38, CR39, CR3A, CR40, CR41, CR42, CR43, CR44;
+    unsigned char   CR45, CR46, CR47, CR48, CR49, CR4A;
+    unsigned char   CR6A, CR6B, CR6C;
+    unsigned char   LCDRegs[68];
+    unsigned char   TVRegs[9*16];
+
+} VIARegRec, *VIARegPtr;
+
+
+typedef struct _VIA {
+    VIARegRec		SavedReg;
+    VIARegRec		ModeReg;
+    xf86CursorInfoPtr	CursorInfoRec;
+    Bool		ModeStructInit;
+    int			Bpp, Bpl, ScissB;
+    unsigned		PlaneMask;
+
+    unsigned long	videoRambytes;
+    int			videoRamKbytes;
+    int			FBFreeStart;
+    int			FBFreeEnd;
+    int			CursorStart;
+    int			VQStart;
+    int			VQEnd;
+
+    /* These are physical addresses. */
+    unsigned long	FrameBufferBase;
+    unsigned long	MmioBase;
+
+    /* These are linear addresses. */
+    unsigned char*	MapBase;
+    unsigned char*	VidMapBase;
+    unsigned char*	BltBase;
+    unsigned char*	MapBaseDense;
+    unsigned char*	FBBase;
+    unsigned char*	FBStart;
+
+    Bool		PrimaryVidMapped;
+    int			dacSpeedBpp;
+    int			minClock, maxClock;
+    int			MCLK, REFCLK, LCDclk;
+    double		refclk_fact;
+
+    /* Here are all the Options */
+    Bool		VQEnable;
+    Bool		pci_burst;
+    Bool		NoPCIRetry;
+    Bool		hwcursor;
+    Bool		NoAccel;
+    Bool		shadowFB;
+    Bool		NoDDCValue;
+    int			rotate;
+
+    CloseScreenProcPtr	CloseScreen;
+    pciVideoPtr		PciInfo;
+    PCITAG		PciTag;
+    int			Chipset;
+    int			ChipId;
+    int			ChipRev;
+    vbeInfoPtr		pVbe;
+    int			EntityIndex;
+
+    /* Support for shadowFB and rotation */
+    unsigned char*	ShadowPtr;
+    int			ShadowPitch;
+    void		(*PointerMoved)(int index, int x, int y);
+
+    /* Support for XAA acceleration */
+    XAAInfoRecPtr	AccelInfoRec;
+    xRectangle		Rect;
+    CARD32		SavedCmd;
+    CARD32		SavedFgColor;
+    CARD32		SavedBgColor;
+    CARD32		SavedPattern0;
+    CARD32		SavedPattern1;
+    CARD32		SavedPatternAddr;
+
+    /* Support for Int10 processing */
+    xf86Int10InfoPtr	pInt10;
+
+    /* BIOS Info Ptr */
+    VIABIOSInfoPtr	pBIOSInfo;
+
+    /* Support for DGA */
+    int			numDGAModes;
+    DGAModePtr		DGAModes;
+    Bool		DGAactive;
+    int			DGAViewportStatus;
+
+    /* The various wait handlers. */
+    int			(*myWaitIdle)(struct _VIA*);
+
+    /* I2C & DDC */
+    I2CBusPtr		I2C_Port1;
+    I2CBusPtr		I2C_Port2;
+    xf86MonPtr		DDC1;
+    xf86MonPtr		DDC2;
+
+    /* MHS */
+    Bool		IsSecondary;
+    Bool		HasSecondary;
+
+} VIARec, *VIAPtr;
+
+
+typedef struct
+{
+    Bool IsDRIEnabled;
+
+    Bool HasSecondary;
+    Bool BypassSecondary;
+    /*These two registers are used to make sure the CRTC2 is
+      retored before CRTC_EXT, otherwise it could lead to blank screen.*/
+    Bool IsSecondaryRestored;
+    Bool RestorePrimary;
+
+    ScrnInfoPtr pSecondaryScrn;
+    ScrnInfoPtr pPrimaryScrn;
+}VIAEntRec, *VIAEntPtr;
+
+
+/* Shortcuts.  These depend on a local symbol "pVia". */
+
+#define WaitIdle()	pVia->myWaitIdle(pVia)
+
+
+#define VIAPTR(p)	((VIAPtr)((p)->driverPrivate))
+
+
+/* Prototypes. */
+void VIAAdjustFrame(int scrnIndex, int y, int x, int flags);
+Bool VIASwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+void VIADebugBreak(void);
+
+/* In via_cursor.c. */
+Bool VIAHWCursorInit(ScreenPtr pScreen);
+void VIAShowCursor(ScrnInfoPtr);
+void VIAHideCursor(ScrnInfoPtr);
+
+
+/* In via_accel.c. */
+Bool VIAInitAccel(ScreenPtr);
+void VIAInitialize2DEngine(ScrnInfoPtr);
+void VIAAccelSync(ScrnInfoPtr);
+
+
+/* In via_shadow.c */
+void VIAPointerMoved(int index, int x, int y);
+void VIARefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void VIARefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void VIARefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void VIARefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void VIARefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+
+/* In via_bios.c */
+#include "via_bios.h"
+
+/* In via_dga.c */
+Bool VIADGAInit(ScreenPtr);
+
+/* In via_driver.c */
+void FillGraphicInfo(ScrnInfoPtr pScrn);
+
+/* In via_i2c.c */
+Bool VIAI2CInit(ScrnInfoPtr pScrn);
+
+
+/*In via_video.c*/
+void viaInitVideo(ScreenPtr pScreen);
+void viaExitVideo(ScrnInfoPtr pScrn);
+void viaResetVideo(ScrnInfoPtr pScrn);
+void viaSaveVideo(ScrnInfoPtr pScrn);
+void viaRestoreVideo(ScrnInfoPtr pScrn);
+
+/*In via_xvmc.c */
+void viaInitMC(ScreenPtr pScreen);
+
+#endif /* _VIA_DRIVER_H */
+
