@@ -1,5 +1,5 @@
-/* $XConsortium: os.h,v 1.9 94/09/16 19:00:32 kaleb Exp $ */
-/* $XFree86$ */
+/* $XConsortium: os.h,v 1.10 95/04/07 20:34:17 kaleb Exp $ */
+/* $XFree86: xc/programs/xfs/include/os.h,v 3.0 1995/04/09 13:55:16 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 

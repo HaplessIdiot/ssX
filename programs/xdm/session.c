@@ -1,5 +1,5 @@
-/* $XConsortium: session.c,v 1.72 94/04/17 20:03:45 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/session.c,v 3.4 1994/11/26 12:49:31 dawes Exp $ */
+/* $XConsortium: session.c,v 1.75 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.5 1995/06/02 10:29:58 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -174,7 +174,7 @@ AbortClient (pid)
     int pid;
 {
     int	sig = SIGTERM;
-#if __STDC__
+#ifdef __STDC__
     volatile int	i;
 #else
     int	i;

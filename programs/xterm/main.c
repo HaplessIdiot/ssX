@@ -1,7 +1,7 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.225.1.1 95/01/13 21:13:04 kaleb Exp $";
+static char *rid="$XConsortium: main.c,v 1.230 95/06/08 21:08:14 gildea Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.16 1995/06/02 10:36:17 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.17 1995/06/08 06:55:49 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -261,6 +261,7 @@ static Bool IsPts = False;
 #define HAS_BSD_GROUPS
 #define USE_SYSV_UTMP
 #define HAS_UTMP_UT_HOST
+#define USE_POSIX_WAIT
 #include <sys/ptyio.h>
 #endif /* hpux */
 #ifdef sgi
@@ -501,6 +502,41 @@ static struct jtchars d_jtc = {
 };
 #endif /* sony */
 #endif /* USE_SYSV_TERMIO */
+
+/* allow use of system default characters if defined and reasonable */
+#ifndef CEOF
+#define CEOF ('D'&037)
+#endif
+#ifndef CSUSP
+#define CSUSP ('Z'&037)
+#endif
+#ifndef CQUIT
+#define CQUIT ('\\'&037)
+#endif
+#ifndef CEOL
+#define CEOL 0
+#endif
+#ifndef CSWTCH
+#define CSWTCH 0
+#endif
+#ifndef CLNEXT
+#define CLNEXT ('V'&037)
+#endif
+#ifndef CWERASE
+#define CWERASE ('W'&037)
+#endif
+#ifndef CRPRNT
+#define CRPRNT ('R'&037)
+#endif
+#ifndef CFLUSH
+#define CFLUSH ('O'&037)
+#endif
+#ifndef CSTOP
+#define CSTOP ('S'&037)
+#endif
+#ifndef CSTART
+#define CSTART ('Q'&037)
+#endif
 
 static int parse_tty_modes ();
 /*
@@ -1001,11 +1037,17 @@ char **argv;
 	** of the various terminal structures (which may change from
 	** implementation to implementation).
 	*/
-#if defined(macII) || defined(ATT) || defined(CRAY)
 	d_tio.c_iflag = ICRNL|IXON;
 	d_tio.c_oflag = OPOST|ONLCR|TAB3;
+#if defined(macII) || defined(ATT) || defined(CRAY) /* { */
     	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
     	d_tio.c_lflag = ISIG|ICANON|ECHO|ECHOE|ECHOK;
+#ifdef ECHOKE
+	d_tio.c_lflag |= ECHOKE|IEXTEN;
+#endif
+#ifdef ECHOCTL
+	d_tio.c_lflag |= ECHOCTL|IEXTEN;
+#endif
 
 #ifndef USE_TERMIOS
 	d_tio.c_line = 0;
@@ -1020,52 +1062,86 @@ char **argv;
 	d_tio.c_cc[VEOL2] = CNUL;
 	d_tio.c_cc[VSWTCH] = CNUL;
 
-#ifdef USE_TERMIOS
+#ifdef USE_TERMIOS /* { */
 	d_tio.c_cc[VSUSP] = CSUSP;
 	d_tio.c_cc[VDSUSP] = CDSUSP;
-	d_tio.c_cc[VREPRINT] = CNUL;
-	d_tio.c_cc[VDISCARD] = CNUL;
-	d_tio.c_cc[VWERASE] = CNUL;
-	d_tio.c_cc[VLNEXT] = CNUL;
-#endif
-#ifdef TIOCSLTC
+	d_tio.c_cc[VREPRINT] = CRPRNT;
+	d_tio.c_cc[VDISCARD] = CFLUSH;
+	d_tio.c_cc[VWERASE] = CWERASE;
+	d_tio.c_cc[VLNEXT] = CLNEXT;
+#endif /* } */
+#ifdef TIOCSLTC /* { */
         d_ltc.t_suspc = CSUSP;		/* t_suspc */
         d_ltc.t_dsuspc = CDSUSP;	/* t_dsuspc */
-        d_ltc.t_rprntc = 0;		/* reserved...*/
-        d_ltc.t_flushc = 0;
-        d_ltc.t_werasc = 0;
-        d_ltc.t_lnextc = 0;
-#endif /* TIOCSLTC */
-#ifdef TIOCLSET
+        d_ltc.t_rprntc = CRPRNT;
+        d_ltc.t_flushc = CFLUSH;
+        d_ltc.t_werasc = CWERASE;
+        d_ltc.t_lnextc = CLNEXT;
+#endif /* } TIOCSLTC */
+#ifdef TIOCLSET /* { */
 	d_lmode = 0;
-#endif /* TIOCLSET */
-#else  /* else !macII */
-	d_tio.c_iflag = ICRNL|IXON;
-	d_tio.c_oflag = OPOST|ONLCR|TAB3;
+#endif /* } TIOCLSET */
+#else  /* }{ else !macII, ATT, CRAY */
 #ifdef BAUD_0
     	d_tio.c_cflag = CS8|CREAD|PARENB|HUPCL;
-#else	/* !BAUD_0 */
+#else	/* }{ !BAUD_0 */
     	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
-#endif	/* !BAUD_0 */
+#endif	/* } !BAUD_0 */
     	d_tio.c_lflag = ISIG|ICANON|ECHO|ECHOE|ECHOK;
-#ifndef sgi
+#ifdef ECHOKE
+	d_tio.c_lflag |= ECHOKE|IEXTEN;
+#endif
+#ifdef ECHOCTL
+	d_tio.c_lflag |= ECHOCTL|IEXTEN;
+#endif
+#ifdef NTTYDISC
+	d_tio.c_line = NTTYDISC;
+#else
 	d_tio.c_line = 0;
 #endif
-#ifndef linux
-	d_tio.c_cc[VINTR] = 0x7f;		/* DEL  */
-	d_tio.c_cc[VERASE] = '#';		/* '#'	*/
-	d_tio.c_cc[VKILL] = '@';		/* '@'	*/
-#else
+#ifdef sgi
+	d_tio.c_cflag &= ~(HUPCL|PARENB);
+	d_tio.c_iflag |= BRKINT|ISTRIP|IGNPAR;
+#endif
 	d_tio.c_cc[VINTR] = 'C' & 0x3f;		/* '^C'	*/
 	d_tio.c_cc[VERASE] = 0x7f;		/* DEL	*/
 	d_tio.c_cc[VKILL] = 'U' & 0x3f;		/* '^U'	*/
-#endif
-	d_tio.c_cc[VQUIT] = '\\' & 0x3f;	/* '^\'	*/
-    	d_tio.c_cc[VEOF] = 'D' & 0x3f;		/* '^D'	*/
-	d_tio.c_cc[VEOL] = '@' & 0x3f;		/* '^@'	*/
+	d_tio.c_cc[VQUIT] = CQUIT;		/* '^\'	*/
+    	d_tio.c_cc[VEOF] = CEOF;		/* '^D'	*/
+	d_tio.c_cc[VEOL] = CEOL;		/* '^@'	*/
 #ifdef VSWTCH
-	d_tio.c_cc[VSWTCH] = '@' & 0x3f;	/* '^@'	*/
-#endif	/* VSWTCH */
+	d_tio.c_cc[VSWTCH] = CSWTCH;		/* usually '^Z'	*/
+#endif
+#ifdef VLNEXT
+	d_tio.c_cc[VLNEXT] = CLNEXT;
+#endif
+#ifdef VWERASE
+	d_tio.c_cc[VWERASE] = CWERASE;
+#endif
+#ifdef VREPRINT
+	d_tio.c_cc[VREPRINT] = CRPRNT;
+#endif
+#ifdef VRPRNT
+	d_tio.c_cc[VRPRNT] = CRPRNT;
+#endif
+#ifdef VDISCARD
+	d_tio.c_cc[VDISCARD] = CFLUSH;
+#endif
+#ifdef VFLUSHO
+	d_tio.c_cc[VFLUSHO] = CFLUSH;
+#endif
+#ifdef VSTOP
+	d_tio.c_cc[VSTOP] = CSTOP;
+#endif
+#ifdef VSTART
+	d_tio.c_cc[VSTART] = CSTART;
+#endif
+#ifdef VSUSP
+	d_tio.c_cc[VSUSP] = CSUSP;
+#endif
+#ifdef VDSUSP
+	d_tio.c_cc[VDSUSP] = CDSUSP;
+#endif
 	/* now, try to inherit tty settings */
 	{
 	    int i;
@@ -1081,7 +1157,40 @@ char **argv;
 		    d_tio.c_cc[VEOL] = deftio.c_cc[VEOL];
 #ifdef VSWTCH
 		    d_tio.c_cc[VSWTCH] = deftio.c_cc[VSWTCH];
-#endif /* VSWTCH */
+#endif
+#ifdef VEOL2
+		    d_tio.c_cc[VEOL2] = deftio.c_cc[VEOL2];
+#endif
+#ifdef VLNEXT
+		    d_tio.c_cc[VLNEXT] = deftio.c_cc[VLNEXT];
+#endif
+#ifdef VWERASE
+		    d_tio.c_cc[VWERASE] = deftio.c_cc[VWERASE];
+#endif
+#ifdef VREPRINT
+		    d_tio.c_cc[VREPRINT] = deftio.c_cc[VREPRINT];
+#endif
+#ifdef VRPRNT
+		    d_tio.c_cc[VRPRNT] = deftio.c_cc[VRPRNT];
+#endif
+#ifdef VDISCARD
+		    d_tio.c_cc[VDISCARD] = deftio.c_cc[VDISCARD];
+#endif
+#ifdef VFLUSHO
+		    d_tio.c_cc[VFLUSHO] = deftio.c_cc[VFLUSHO];
+#endif
+#ifdef VSTOP
+		    d_tio.c_cc[VSTOP] = deftio.c_cc[VSTOP];
+#endif
+#ifdef VSTART
+		    d_tio.c_cc[VSTART] = deftio.c_cc[VSTART];
+#endif
+#ifdef VSUSP
+		    d_tio.c_cc[VSUSP] = deftio.c_cc[VSUSP];
+#endif
+#ifdef VDSUSP
+		    d_tio.c_cc[VDSUSP] = deftio.c_cc[VDSUSP];
+#endif
 		    break;
 		}
 	    }
@@ -1095,11 +1204,7 @@ char **argv;
         d_ltc.t_lnextc = '\377';
 #endif	/* TIOCSLTC */
 #ifdef USE_TERMIOS
-#ifndef linux
-	d_tio.c_cc[VSUSP] = '\000';
-#else
-	d_tio.c_cc[VSUSP] = 'Z' & 0x3f;
-#endif
+	d_tio.c_cc[VSUSP] = CSUSP;
 	d_tio.c_cc[VDSUSP] = '\000';
 	d_tio.c_cc[VREPRINT] = '\377';
 	d_tio.c_cc[VDISCARD] = '\377';
@@ -1699,6 +1804,12 @@ SIGNAL_T hungtty(i)
 	SIGNAL_RETURN;
 }
 
+/*
+ * declared outside USE_HANDSHAKE so HsSysError() callers can use
+ */
+static int pc_pipe[2];	/* this pipe is used for parent to child transfer */
+static int cp_pipe[2];	/* this pipe is used for child to parent transfer */
+
 #ifdef USE_HANDSHAKE
 typedef enum {		/* c == child, p == parent                        */
 	PTY_BAD,	/* c->p: can't open pty slave for some reason     */
@@ -1744,9 +1855,6 @@ int error;
 	exit(error);
 }
 
-static int pc_pipe[2];	/* this pipe is used for parent to child transfer */
-static int cp_pipe[2];	/* this pipe is used for child to parent transfer */
-
 void first_map_occurred ()
 {
     handshake_t handshake;
@@ -1764,11 +1872,19 @@ void first_map_occurred ()
 /*
  * temporary hack to get xterm working on att ptys
  */
+void
+HsSysError(pf, error)
+    int pf;
+    int error;
+{
+    fprintf(stderr, "%s: fatal pty error %d (errno=%d) on tty %s\n",
+	    xterm_name, error, errno, ttydev);
+    exit(error);
+}
 void first_map_occurred ()
 {
     return;
 }
-#define HsSysError(a,b)
 #endif /* USE_HANDSHAKE else !USE_HANDSHAKE */
 
 
@@ -1894,11 +2010,11 @@ spawn ()
 		 * Check results and ignore current control terminal if
 		 * necessary.  ENXIO is what is normally returned if there is
 		 * no controlling terminal, but some systems (e.g. SunOS 4.0)
-		 * seem to return EIO.
+		 * seem to return EIO.  Solaris 2.3 is said to return EINVAL.
 		 */
  		if (tty < 0) {
 			if (tty_got_hung || errno == ENXIO || errno == EIO ||
-			    errno == ENOTTY) {
+			    errno == EINVAL || errno == ENOTTY) {
 				no_dev_tty = TRUE;
 #ifdef TIOCSLTC
 				ltc = d_ltc;
@@ -2323,15 +2439,55 @@ spawn ()
 		    tio.c_cflag |= B9600;
 #endif	/* !BAUD_0 */
 #endif /* MINIX */
+		    tio.c_cflag &= ~CSIZE;
+		    if (screen->input_eight_bits)
+			tio.c_cflag |= CS8;
+		    else
+			tio.c_cflag |= CS7;
 		    /* enable signals, canonical processing (erase, kill, etc),
 		    ** echo
 		    */
-		    tio.c_lflag |= ISIG|ICANON|ECHO;
-		    /* reset EOL to defalult value */
-		    tio.c_cc[VEOL] = '@' & 0x3f;		/* '^@'	*/
+		    tio.c_lflag |= ISIG|ICANON|ECHO|ECHOE|ECHOK;
+#ifdef ECHOKE
+		    tio.c_lflag |= ECHOKE|IEXTEN;
+#endif
+#ifdef ECHOCTL
+		    tio.c_lflag |= ECHOCTL|IEXTEN;
+#endif
+		    /* reset EOL to default value */
+		    tio.c_cc[VEOL] = CEOL;			/* '^@'	*/
 		    /* certain shells (ksh & csh) change EOF as well */
-		    tio.c_cc[VEOF] = 'D' & 0x3f;		/* '^D'	*/
-
+		    tio.c_cc[VEOF] = CEOF;			/* '^D'	*/
+#ifdef VLNEXT
+		    tio.c_cc[VLNEXT] = CLNEXT;
+#endif
+#ifdef VWERASE
+		    tio.c_cc[VWERASE] = CWERASE;
+#endif
+#ifdef VREPRINT
+		    tio.c_cc[VREPRINT] = CRPRNT;
+#endif
+#ifdef VRPRNT
+		    tio.c_cc[VRPRNT] = CRPRNT;
+#endif
+#ifdef VDISCARD
+		    tio.c_cc[VDISCARD] = CFLUSH;
+#endif
+#ifdef VFLUSHO
+		    tio.c_cc[VFLUSHO] = CFLUSH;
+#endif
+#ifdef VSTOP
+		    tio.c_cc[VSTOP] = CSTOP;
+#endif
+#ifdef VSTART
+		    tio.c_cc[VSTART] = CSTART;
+#endif
+#ifdef VSUSP
+		    tio.c_cc[VSUSP] = CSUSP;
+#endif
+#ifdef VDSUSP
+		    tio.c_cc[VDSUSP] = CDSUSP;
+#endif
 #define TMODE(ind,var) if (ttymodelist[ind].set) var = ttymodelist[ind].value;
 		    if (override_tty_modes) {
 			/* sysv-specific */
@@ -2342,7 +2498,37 @@ spawn ()
 			TMODE (XTTYMODE_eof, tio.c_cc[VEOF]);
 			TMODE (XTTYMODE_eol, tio.c_cc[VEOL]);
 #ifdef VSWTCH
-			TMODE (XTTYMODE_swtch, d_tio.c_cc[VSWTCH]);
+			TMODE (XTTYMODE_swtch, tio.c_cc[VSWTCH]);
+#endif
+#ifdef VSUSP
+			TMODE (XTTYMODE_susp, tio.c_cc[VSUSP]);
+#endif
+#ifdef VDSUSP
+			TMODE (XTTYMODE_dsusp, tio.c_cc[VDSUSP]);
+#endif
+#ifdef VREPRINT
+			TMODE (XTTYMODE_rprnt, tio.c_cc[VREPRINT]);
+#endif
+#ifdef VRPRNT
+			TMODE (XTTYMODE_rprnt, tio.c_cc[VRPRNT]);
+#endif
+#ifdef VDISCARD
+			TMODE (XTTYMODE_flush, tio.c_cc[VDISCARD]);
+#endif
+#ifdef VFLUSHO
+			TMODE (XTTYMODE_flush, tio.c_cc[VFLUSHO]);
+#endif
+#ifdef VWERASE
+			TMODE (XTTYMODE_weras, tio.c_cc[VWERASE]);
+#endif
+#ifdef VLNEXT
+			TMODE (XTTYMODE_lnext, tio.c_cc[VLNEXT]);
+#endif
+#ifdef VSTART
+			TMODE (XTTYMODE_start, tio.c_cc[VSTART]);
+#endif
+#ifdef VSTOP
+			TMODE (XTTYMODE_stop, tio.c_cc[VSTOP]);
 #endif
 #ifdef TIOCSLTC
 			/* both SYSV and BSD have ltchars */
@@ -2366,6 +2552,8 @@ spawn ()
 		    if (ioctl (tty, TIOCLSET, (char *)&lmode) == -1)
 			    HsSysError(cp_pipe[1], ERROR_TIOCLSET);
 #endif	/* TIOCLSET */
+		    if (ioctl (tty, TCSETA, &tio) == -1)
+			    HsSysError(cp_pipe[1], ERROR_TIOCSETP);
 #else	/* USE_SYSV_TERMIO */
 		    sg.sg_flags &= ~(ALLDELAY | XTABS | CBREAK | RAW);
 		    sg.sg_flags |= ECHO | CRMOD;
@@ -2374,11 +2562,13 @@ spawn ()
 		    sg.sg_ospeed = B9600;
 		    /* reset t_brkc to default value */
 		    tc.t_brkc = -1;
-#ifdef sony
+#ifdef LPASS8
 		    if (screen->input_eight_bits)
 			lmode |= LPASS8;
 		    else
 			lmode &= ~(LPASS8);
+#endif
+#ifdef sony
 		    jmode &= ~KM_KANJI;
 #endif /* sony */
 
@@ -2652,7 +2842,8 @@ spawn ()
 					       XDisplayString (screen->display),
 					       sizeof(utmp.ut_host));
 #endif
-				time(&utmp.ut_time);
+				/* cast needed on Ultrix 4.4 */
+				time((Time_t*)&utmp.ut_time);
 				lseek(i, (long)(tslot * sizeof(struct utmp)), 0);
 				write(i, (char *)&utmp, sizeof(struct utmp));
 				close(i);
