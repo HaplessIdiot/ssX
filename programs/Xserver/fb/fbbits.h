@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.6 2000/02/14 19:20:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.7 2000/02/23 20:29:41 dawes Exp $ */
 
 /*
  * This file defines functions for drawing some primitives using
@@ -140,9 +140,8 @@ BRESDASH (DrawablePtr	pDrawable,
     UNIT	*bits;
     FbStride	bitsStride;
     FbStride	majorStep, minorStep;
-    BITS	xor = (BITS) pPriv->xor;
-    BITS	bgxor = (BITS) pPriv->bgxor;
-    unsigned char   *dash, *lastDash;
+    BITS	xorfg, xorbg;
+    unsigned char   *dash, *lastDash, *firstDash;
     int		dashlen;
     Bool	even;
     Bool	doOdd;
@@ -150,17 +149,19 @@ BRESDASH (DrawablePtr	pDrawable,
     fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
     doOdd = pGC->lineStyle == LineDoubleDash;
     even = TRUE;
-    dash = pGC->dash;
-    lastDash = dash + pGC->numInDashList;
-    dashOffset %= pPriv->dashLength;
-    while (dashOffset >= *dash)
+    xorfg = (BITS) pPriv->xor;
+    xorbg = (BITS) pPriv->bgxor;
+    firstDash = pGC->dash;
+    lastDash = firstDash + pGC->numInDashList;
+    dash = firstDash;
+    while (dashOffset >= (dashlen = *dash++))
     {
-	dashOffset -= *dash++;
+	dashOffset -= dashlen;
 	if (dash == lastDash)
-	    dash = pGC->dash;
-	even = !even;
+	    dash = firstDash;
+	even ^= 1;
     }
-    dashlen = *dash - dashOffset;
+    dashlen -= dashOffset;
     bits = ((UNIT *) (dst + (y1 * dstStride))) + x1 * MUL;
     bitsStride = dstStride * (sizeof (FbBits) / sizeof (UNIT));
     if (signdy < 0)
@@ -175,25 +176,92 @@ BRESDASH (DrawablePtr	pDrawable,
 	majorStep = bitsStride;
 	minorStep = signdx * MUL;
     }
-    while (len--)
+    if (dashlen >= len)
+	dashlen = len;
+    if (doOdd)
     {
-	if (even)
-	    STORE(bits,xor);
-	else if (doOdd)
-	    STORE(bits,bgxor);
-	bits += majorStep;
-	e += e1;
-	if (e >= 0)
+	if (!even)
+	    goto doubleOdd;
+	for (;;)
 	{
-	    bits += minorStep;
-	    e += e3;
+	    len -= dashlen;
+	    while (dashlen--)
+	    {
+		STORE(bits,xorfg);
+		bits += majorStep;
+		if ((e += e1) >= 0)
+		{
+		    e += e3;
+		    bits += minorStep;
+		}
+	    }
+	    if (!len)
+		break;
+	    dashlen = *dash++;
+	    if (dash == lastDash)
+		dash = firstDash;
+	    if (dashlen >= len)
+		dashlen = len;
+doubleOdd:
+	    len -= dashlen;
+	    while (dashlen--)
+	    {
+		STORE(bits,xorbg);
+		bits += majorStep;
+		if ((e += e1) >= 0)
+		{
+		    e += e3;
+		    bits += minorStep;
+		}
+	    }
+	    if (!len)
+		break;
+	    dashlen = *dash++;
+	    /* numInDashList is even, no need to check here */
+	    if (dashlen >= len)
+		dashlen = len;
 	}
-	if (!--dashlen)
+    }
+    else
+    {
+	if (!even)
+	    goto onOffOdd;
+	for (;;)
 	{
-	    if (++dash == lastDash)
-		dash = pGC->dash;
-	    dashlen = *dash;
-	    even = !even;
+	    len -= dashlen;
+	    while (dashlen--)
+	    {
+		STORE(bits,xorfg);
+		bits += majorStep;
+		if ((e += e1) >= 0)
+		{
+		    e += e3;
+		    bits += minorStep;
+		}
+	    }
+	    if (!len)
+		break;
+	    dashlen = *dash++;
+	    if (dash == lastDash)
+		dash = firstDash;
+	    if (dashlen >= len)
+		dashlen = len;
+onOffOdd:
+	    len -= dashlen;
+	    while (dashlen--)
+	    {
+		bits += majorStep;
+		if ((e += e1) >= 0)
+		{
+		    e += e3;
+		    bits += minorStep;
+		}
+	    }
+	    if (!len)
+		break;
+	    dashlen = *dash++;
+	    if (dashlen >= len)
+		dashlen = len;
 	}
     }
 }
@@ -215,7 +283,8 @@ DOTS (FbBits	    *dst,
     INT32    	*pts = (INT32 *) ptsOrig;
     UNIT	*bits = (UNIT *) dst;
     UNIT	*point;
-    BITS	fg = (BITS) xor;
+    BITS	bxor = (BITS) xor;
+    BITS	band = (BITS) and;
     FbStride	bitsStride = dstStride * (sizeof (FbBits) / sizeof (UNIT));
     INT32    	ul, lr;
     INT32    	off;
@@ -228,13 +297,28 @@ DOTS (FbBits	    *dst,
     
     bits += bitsStride * yoff + xoff * MUL;
     
-    while (npt--)
+    if (and == 0)
     {
-	pt = *pts++;
-	if (!isClipped(pt,ul,lr))
+	while (npt--)
 	{
-	    point = bits + intToY(pt) * bitsStride + intToX(pt) * MUL;
-	    STORE(point,fg);
+	    pt = *pts++;
+	    if (!isClipped(pt,ul,lr))
+	    {
+		point = bits + intToY(pt) * bitsStride + intToX(pt) * MUL;
+		STORE(point,bxor);
+	    }
+	}
+    }
+    else
+    {
+	while (npt--)
+	{
+	    pt = *pts++;
+	    if (!isClipped(pt,ul,lr))
+	    {
+		point = bits + intToY(pt) * bitsStride + intToX(pt) * MUL;
+		RROP(point,band,bxor);
+	    }
 	}
     }
 }
@@ -282,10 +366,20 @@ ARC (FbBits	*dst,
     
     if (!(arc->width & 1))
     {
-	if (mask & 2)
-	    ARCRROP(yorgp + info.xorgo);
-	if (mask & 8)
-	    ARCRROP(yorgop + info.xorgo);
+	if (andBits == 0)
+	{
+	    if (mask & 2)
+		ARCCOPY(yorgp + info.xorgo);
+	    if (mask & 8)
+		ARCCOPY(yorgop + info.xorgo);
+	}
+	else
+	{
+	    if (mask & 2)
+		ARCRROP(yorgp + info.xorgo);
+	    if (mask & 8)
+		ARCRROP(yorgop + info.xorgo);
+	}
     }
     if (!info.end.x || !info.end.y)
     {
@@ -405,16 +499,33 @@ ARC (FbBits	*dst,
     }
     if ((x == info.start.x) || (y == info.start.y))
 	mask = info.start.mask;
-    if (mask & 1)
-	ARCRROP(yorgp + yoffset + info.xorg + x * MUL);
-    if (mask & 4)
-	ARCRROP(yorgop - yoffset + info.xorgo - x * MUL);
-    if (arc->height & 1)
+    if (andBits == 0)
     {
-	if (mask & 2)
-	    ARCRROP(yorgp + yoffset + info.xorgo - x * MUL);
-	if (mask & 8)
-	    ARCRROP(yorgop - yoffset + info.xorg + x * MUL);
+	if (mask & 1)
+	    ARCCOPY(yorgp + yoffset + info.xorg + x * MUL);
+	if (mask & 4)
+	    ARCCOPY(yorgop - yoffset + info.xorgo - x * MUL);
+	if (arc->height & 1)
+	{
+	    if (mask & 2)
+		ARCCOPY(yorgp + yoffset + info.xorgo - x * MUL);
+	    if (mask & 8)
+		ARCCOPY(yorgop - yoffset + info.xorg + x * MUL);
+	}
+    }
+    else
+    {
+	if (mask & 1)
+	    ARCRROP(yorgp + yoffset + info.xorg + x * MUL);
+	if (mask & 4)
+	    ARCRROP(yorgop - yoffset + info.xorgo - x * MUL);
+	if (arc->height & 1)
+	{
+	    if (mask & 2)
+		ARCRROP(yorgp + yoffset + info.xorgo - x * MUL);
+	    if (mask & 8)
+		ARCRROP(yorgop - yoffset + info.xorg + x * MUL);
+	}
     }
 }
 #undef ARCCOPY

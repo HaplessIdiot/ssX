@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbline.c,v 1.3 2000/02/14 19:20:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbline.c,v 1.4 2000/02/23 20:29:45 dawes Exp $ */
 
 #include "fb.h"
 
@@ -64,6 +64,30 @@ fbZeroLine (DrawablePtr	pDrawable,
 	    dashOffset = dashOffset % totalDash;
 	x1 = x2;
 	y1 = y2;
+    }
+}
+
+void
+fbZeroSegment (DrawablePtr  pDrawable,
+	       GCPtr	    pGC,
+	       int	    nseg,
+	       xSegment	    *pSegs)
+{
+    int	    dashOffset;
+    int	    x, y;
+    Bool    drawLast = pGC->capStyle != CapNotLast;
+    
+    x = pDrawable->x;
+    y = pDrawable->y;
+    while (--nseg)
+    {
+	dashOffset = 0;
+	fbSegment (pDrawable, pGC, 
+		   pSegs->x1 + x, pSegs->y1 + y,
+		   pSegs->x2 + x, pSegs->y2 + y,
+		   drawLast,
+		   &dashOffset);
+	pSegs++;
     }
 }
 
@@ -130,22 +154,28 @@ fbPolySegment (DrawablePtr  pDrawable,
 {
     void    (*seg) (DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pseg);
 
-    seg = miPolySegment;
-#ifndef FBNOPIXADDR
-    if (pGC->lineWidth == 0 &&
-	pGC->fillStyle == FillSolid &&
-	pGC->lineStyle == LineSolid &&
-	REGION_NUM_RECTS (fbGetCompositeClip(pGC)) == 1)
+    if (pGC->lineWidth == 0)
     {
-	switch (pDrawable->bitsPerPixel) {
-	case 8:  seg = fbPolySegment8; break;
-	case 16: seg = fbPolySegment16; break;
+	seg = fbZeroSegment;
+#ifndef FBNOPIXADDR
+	if (pGC->fillStyle == FillSolid &&
+	    pGC->lineStyle == LineSolid &&
+	    REGION_NUM_RECTS (fbGetCompositeClip(pGC)) == 1)
+	{
+	    switch (pDrawable->bitsPerPixel) {
+	    case 8:  seg = fbPolySegment8; break;
+	    case 16: seg = fbPolySegment16; break;
 #ifdef FB_24BIT
-	case 24: seg = fbPolySegment24; break;
+	    case 24: seg = fbPolySegment24; break;
 #endif
-	case 32: seg = fbPolySegment32; break;
+	    case 32: seg = fbPolySegment32; break;
+	    }
 	}
-    }
 #endif
+    }
+    else
+    {
+	seg = miPolySegment;
+    }
     (*seg) (pDrawable, pGC, nseg, pseg);
 }

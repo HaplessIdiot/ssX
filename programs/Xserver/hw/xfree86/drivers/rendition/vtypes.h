@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vtypes.h,v 1.2 1999/04/17 07:06:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vtypes.h,v 1.4 1999/11/19 13:54:47 hohndel Exp $ */
 #ifndef _VTYPES_H_
 #define _VTYPES_H_
 
@@ -141,6 +141,13 @@ struct v_board_t {
 
     vu32 fbOffset;          /* Currently busy fb-memory marker */
     Bool overclock_mem;     /* Memory overclock ? */
+
+    Bool shadowfb;          /* Use ShadowFB ? */
+    vu8 *shadowPtr;
+    vu32 shadowPitch;
+    void (*PointerMoved)(int index, int x, int y);
+
+    int rotate;             /* Rotate clockwise or counterclockwise */
 
     vu8 ucode_buffer[MC_SIZE]; /* Space for microcode, when not needed */
 };

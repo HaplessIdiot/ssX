@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.11 2000/02/18 16:23:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.12 2000/02/23 20:29:40 dawes Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -1356,6 +1356,12 @@ fbZeroLine (DrawablePtr	pDrawable,
 	    int		mode,
 	    int		npt,
 	    DDXPointPtr	ppt);
+
+void
+fbZeroSegment (DrawablePtr  pDrawable,
+	       GCPtr	    pGC,
+	       int	    nseg,
+	       xSegment	    *pSegs);
 
 void
 fbPolyLine (DrawablePtr	pDrawable,

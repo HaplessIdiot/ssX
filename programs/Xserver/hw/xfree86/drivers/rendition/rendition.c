@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.26 2000/02/27 02:45:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.27 2000/02/29 03:09:20 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -60,6 +60,7 @@
 #include "vvga.h"
 #include "accel.h"
 #include "vramdac.h"
+#include "rendition_shadow.h"
 
 /*
  * defines
@@ -109,7 +110,9 @@ OptionInfoRec renditionOptions[]={
     { OPTION_SW_CURSOR, "SW_Cursor", OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_NOACCEL,   "NoAccel",  OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_OVERCLOCK_MEM,"Overclock_Mem",  OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_NO_DDC,    "NoDDC",    OPTV_BOOLEAN, {0}, FALSE },    
+    { OPTION_NO_DDC,    "NoDDC",    OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_SHADOW_FB, "ShadowFB", OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_ROTATE,    "Rotate",   OPTV_ANYSTR,  {0}, FALSE },
     { -1,                NULL,      OPTV_NONE,    {0}, FALSE }
 };
 
@@ -187,6 +190,13 @@ static const char *fbSymbols[]={
     NULL
 };
 
+static const char *shadowfbSymbols[] = {
+    "ShadowFBInit",
+    NULL
+};
+
+
+
 #ifdef XFree86LOADER
 
 /* Module loader interface */
@@ -220,7 +230,7 @@ renditionSetup(pointer Module, pointer Options, int *ErrorMajor,
         xf86AddDriver(&RENDITION, Module, 0);
         LoaderRefSymLists(vgahwSymbols, ramdacSymbols, fbSymbols, 
 			  xaaSymbols, ddcSymbols, int10Symbols,
-			  NULL);
+			  shadowfbSymbols, NULL);
         return (pointer)TRUE;
     }
 
@@ -452,6 +462,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     const char       *Sym;
     vgaHWPtr          pvgaHW;
     renditionPtr      pRendition;
+    char             *in_string;
     
     if (flags & PROBE_DETECT) return FALSE;
 
@@ -656,8 +667,54 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     }
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
+
+    pRendition->board.shadowfb=TRUE;
+
+    if ((in_string = xf86GetOptValString(renditionOptions, OPTION_ROTATE))) {
+      if(!xf86NameCmp(in_string, "CW")) {
+	/* accel is disabled below for shadowFB */
+	pRendition->board.shadowfb = TRUE;
+	pRendition->board.rotate = 1;
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+		   "Rotating screen clockwise - acceleration disabled\n");
+      } else if(!xf86NameCmp(in_string, "CCW")) {
+	pRendition->board.shadowfb = TRUE;
+	pRendition->board.rotate = -1;
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,  "Rotating screen "
+		   "counter clockwise - acceleration disabled\n");
+      } else {
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG, "\"%s\" is not a valid"
+		   "value for Option \"Rotate\"\n", in_string);
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+		   "Valid options are \"CW\" or \"CCW\"\n");
+      }
+    }
+    xf86MarkOptionUsedByName(renditionOptions,"Rotate");
+
+    if (xf86ReturnOptValBool(renditionOptions, OPTION_SHADOW_FB,1)||
+	pRendition->board.rotate) {
+      if (!xf86LoadSubModule(pScreenInfo, "shadowfb")) {
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+	 "Oops, \"ShadowFB\" module loading failed, disabling ShadowFB!\n");
+      }
+      else{
+	xf86LoaderReqSymLists(shadowfbSymbols, NULL);
+	pRendition->board.shadowfb=TRUE;
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+		   "Using \"Shadow Framebuffer\"\n");
+      }
+    }
+    else {
+      pRendition->board.shadowfb=FALSE;
+      xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+		 "\"Shadow Framebuffer\" disabled\n");
+    }
+    xf86MarkOptionUsedByName(renditionOptions,"ShadowFB");
+
+
     /* Load Ramdac module if needed */
-    if (!xf86ReturnOptValBool(renditionOptions, OPTION_SW_CURSOR,0)){
+    if (!xf86ReturnOptValBool(renditionOptions, OPTION_SW_CURSOR,0) &&
+	!pRendition->board.rotate){
       if (!xf86LoadSubModule(pScreenInfo, "ramdac")) {
 	return FALSE;
       }
@@ -667,9 +724,10 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
 #if USE_ACCEL
     /* Load XAA if needed */
-    if (!xf86ReturnOptValBool(renditionOptions, OPTION_NOACCEL,0)) {
+    if (!xf86ReturnOptValBool(renditionOptions, OPTION_NOACCEL,0) &&
+	!pRendition->board.rotate) {
       if (!xf86LoadSubModule(pScreenInfo, "xaa")) {
-            return FALSE;
+	return FALSE;
       }
       xf86LoaderReqSymLists(xaaSymbols, NULL);
     }
@@ -765,12 +823,19 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
         pScreenInfo->chipset = (char *)renditionChipsets[0].name;
 
     if(!xf86ReturnOptValBool(renditionOptions, OPTION_SW_CURSOR,0)){
-      /* Do preemtive things for HW cursor */
-      RenditionHWCursorPreInit(pScreenInfo);
+      if(!pRendition->board.rotate)
+	/* Do preemtive things for HW cursor */
+	RenditionHWCursorPreInit(pScreenInfo);
+      else{
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+		   "Hardware cursor not supported on rotated screen\n");
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+		   "Software cursor activated\n");
+      }
     }
-    else {
-      ErrorF("RENDITION: Software cursor selected\n");
-    }
+    else 
+      xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+		 "Software cursor selected\n");
 
     renditionUnmapMem(pScreenInfo);
 
@@ -1030,11 +1095,12 @@ static Bool
 renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
     ScrnInfoPtr pScreenInfo = xf86Screens[scrnIndex];
-
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     renditionPtr prenditionPriv;
     Bool Inited = FALSE;
-    unsigned char *FBBase=RENDITIONPTR(pScreenInfo)->board.vmem_base;
+    unsigned char *FBBase;
     VisualPtr visual;
+    int displayWidth,width,height;
 
     vgaHWPtr          pvgaHW;
 
@@ -1062,27 +1128,48 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
               pScreenInfo->rgbBits, pScreenInfo->defaultVisual))
       return FALSE;
 
+    if (pRendition->board.rotate) {
+      height = pScreenInfo->virtualX;
+      width = pScreenInfo->virtualY;
+    } else {
+      width = pScreenInfo->virtualX;
+      height = pScreenInfo->virtualY;
+    }
+
+    if(pRendition->board.shadowfb) {
+      pRendition->board.shadowPitch = BitmapBytePad(pScreenInfo->bitsPerPixel * width);
+      pRendition->board.shadowPtr = xalloc(pRendition->board.shadowPitch * height);
+      displayWidth = pRendition->board.shadowPitch / 
+	             (pScreenInfo->bitsPerPixel >> 3);
+      FBBase = pRendition->board.shadowPtr;
+    } else {
+      pRendition->board.shadowPtr = NULL;
+      FBBase = pRendition->board.vmem_base+prenditionPriv->board.fbOffset;
+      displayWidth=pScreenInfo->displayWidth;
+    }
+
+
     /* initialise the framebuffer */
     switch (pScreenInfo->bitsPerPixel)
     {
         case 8:
-            Inited = cfbScreenInit(pScreen, FBBase+prenditionPriv->board.fbOffset,
-                pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi,
-                pScreenInfo->displayWidth);
+            Inited = cfbScreenInit(pScreen, FBBase,
+				   width, height,
+				   pScreenInfo->xDpi, pScreenInfo->yDpi,
+				   displayWidth);
             break;
         case 16:
-            Inited = cfb16ScreenInit(pScreen, FBBase+prenditionPriv->board.fbOffset,
-        pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi,
-                pScreenInfo->displayWidth);
-        break;
+            Inited = cfb16ScreenInit(pScreen, FBBase,
+				     width, height,
+				     pScreenInfo->xDpi, pScreenInfo->yDpi,
+				     displayWidth);
+	    break;
         case 32:
-            Inited = cfb32ScreenInit(pScreen, FBBase+prenditionPriv->board.fbOffset,
-                pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi,
-                pScreenInfo->displayWidth);
-        break;
+            Inited = cfb32ScreenInit(pScreen, FBBase,
+				     width, height,
+				     pScreenInfo->xDpi, pScreenInfo->yDpi,
+				     displayWidth);
+	    break;
     default:
         xf86DrvMsg(scrnIndex, X_ERROR,
                    "Internal error: invalid bpp (%d) in renditionScreenInit\n",
@@ -1124,16 +1211,8 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		        visual->greenMask=0x7e0;
 		        visual->blueMask=0x1f;
 		}
-/*
-		        visual->offsetRed=0;
-		        visual->offsetGreen=5;
-		        visual->offsetBlue=11;
-		        visual->redMask=0x1f;
-		        visual->greenMask=0x7e0;
-		        visual->blueMask=0xf800;
-*/
             }
-	    }
+	}
     }
 
     xf86SetBlackWhitePixels(pScreen);
@@ -1150,15 +1229,33 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise cursor functions */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
-    if(!xf86ReturnOptValBool(renditionOptions, OPTION_SW_CURSOR,0)){
+    if(!xf86ReturnOptValBool(renditionOptions, OPTION_SW_CURSOR,0)&&
+       !pRendition->board.rotate){
       /* Initialise HW cursor */
-      ErrorF("RENDITION: Hardware cursor used\n");
       if(!RenditionHWCursorInit(scrnIndex, pScreen)){
-	ErrorF("Hardware Cursor initalization failed!!\n");
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+		   "Hardware Cursor initalization failed!!\n");
       }
     }
-    else {
-      ErrorF("RENDITION: Software cursor selected\n");
+
+    if (pRendition->board.shadowfb) {
+      RefreshAreaFuncPtr refreshArea = renditionRefreshArea;
+
+      if(pRendition->board.rotate) {
+	if (!pRendition->board.PointerMoved) {
+	  pRendition->board.PointerMoved = pScreenInfo->PointerMoved;
+	  pScreenInfo->PointerMoved = renditionPointerMoved;
+	}
+
+	switch(pScreenInfo->bitsPerPixel) {
+	case 8:         refreshArea = renditionRefreshArea8;  break;
+	case 16:        refreshArea = renditionRefreshArea16; break;
+	case 24:        refreshArea = renditionRefreshArea24; break;
+	case 32:        refreshArea = renditionRefreshArea32; break;
+	}
+      }
+
+      ShadowFBInit(pScreen, refreshArea);
     }
 
     /* Setup default colourmap */
