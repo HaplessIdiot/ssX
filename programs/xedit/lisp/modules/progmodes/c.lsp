@@ -499,6 +499,11 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Handle braces
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indreduce :stat
+	;; If block finishes before current line, group as an statement
+	(< (+ *ind-offset* *ind-length*) *ind-start*)
+	((:obrace (not :obrace) :cbrace))
+    )
     (indreduce :obrace
 	;; If not in the first line
 	(< *ind-offset* *ind-start*)
@@ -509,11 +514,6 @@
 	;; XXX This may be the starting brace of a switch
 	(setq c-case-flag nil)
 	(indent-macro-reject-left)
-    )
-    (indreduce :stat
-	;; If block finishes before current line, group as an statement
-	(< (+ *ind-offset* *ind-length*) *ind-start*)
-	((:obrace (not :obrace) :cbrace))
     )
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
