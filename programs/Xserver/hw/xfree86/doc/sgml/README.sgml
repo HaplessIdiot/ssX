@@ -13,10 +13,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>20 January 2003
+<date>4 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.122 2003/01/04 04:20:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.123 2003/01/20 16:59:33 dawes Exp $
 </ident>
 
 <abstract>
@@ -54,7 +54,7 @@ XFree86 4 series.
 <![ %snapshot [
 XFree86 &relvers; is a pre-release snapshot of XFree86 &nextfullrelvers;.
 <![ %relcandidate [
-This snapshot is release candidate &rcnum;.
+This snapshot is release candidate &rcnum; for version &nextfullrelvers;.
 ]]>
 Pre-release snapshots are provided for beta testing.  You should only install
 snapshots if you're confortable dealing with possibly unstable beta-level
@@ -116,10 +116,17 @@ repository this is the list that will show you those updates.  This list
 is updated dynamically every time the repository is updated after the
 the commit happens.
 
-<sect1>Xpert
+<sect1>Devel
 <p>
-This public list is available for any questions or discussions related
-to XFree86.  Many experienced XFree86 developers monitor this list.
+This list is available for discussions about XFree86 development and
+for following up well-defined bug reports.  Many experienced XFree86
+developers are present on this list.
+
+<sect1>XFree86
+<p>
+This list is available for any discussions and questions related to XFree86.
+Support related questions should be sent here.  Many experienced XFree86
+developers monitor this list.
 
 </sect1>
 </sect>
@@ -322,14 +329,12 @@ To check out the latest development version, don't specify any tag.
 <sect>Reporting Bugs
 <p>
 
-Bugs should be reported to
-<email>XFree86@XFree86.org</email>.
-Before
-reporting bugs, please check the X server log file, which can be found
-at <tt>/var/log/XFree86.0.log</tt> on most platforms.  If you can't
-resolve the problem yourself, send the entire log file with your bug
-report but not the operating system core dump.  Do not edit  the log
-file as our developers use it to reproduce and debug your problem.
+Bugs should be reported to <email>XFree86@XFree86.org</email>.  Before
+reporting bugs, please check the XFree86 server log file, which can be
+found at <tt>/var/log/XFree86.0.log</tt> on most platforms.  If you
+can't resolve the problem yourself, send the entire log file with your
+bug report but not the operating system core dump.  Do not edit  the
+log file as our developers use it to reproduce and debug your problem.
 
 
 
