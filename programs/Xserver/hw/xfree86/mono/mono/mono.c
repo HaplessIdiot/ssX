@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.33 1997/03/11 11:11:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.34 1997/04/12 13:45:47 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -155,12 +155,12 @@ ScrnInfoRec monoInfoRec = {
   0,			/* int textClockFreq */
   NULL,			/* char* DDConfig */
   NULL,			/* char* DDOptions */
-  0,			/* int MemClk */
+  0			/* int MemClk */
 #ifdef XFreeXDGA
-  0,			/* int directMode */
+  ,0,			/* int directMode */
   NULL,			/* Set Vid Page */
   0,			/* unsigned long physBase */
-  0,			/* int physSize */
+  0			/* int physSize */
 #endif
 };
 
