@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_xmesa.c,v 1.3 2000/12/07 20:26:09 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_xmesa.c,v 1.4 2000/12/12 17:17:08 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -55,6 +55,41 @@ static r128ContextPtr r128Context = NULL;
 GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
 {
     sPriv->private = (void *)r128CreateScreen(sPriv);
+
+
+    /* Check the DRI version */
+    {
+      int major, minor, patch;
+      if (XF86DRIQueryVersion(sPriv->display, &major, &minor, &patch)) {
+         if (major != 3 || minor != 1 || patch < 0) {
+            char msg[1000];
+            sprintf(msg, "r128 DRI driver expected DRI version 3.1.x but got version %d.%d.%d", major, minor, patch);
+            __driMesaMessage(msg);
+            return GL_FALSE;
+         }
+      }
+    }
+
+    /* Check that the DDX driver version is compatible */
+    if (sPriv->ddxMajor != 1 ||
+       sPriv->ddxMinor != 0 ||
+       sPriv->ddxPatch < 0) {
+      char msg[1000];
+      sprintf(msg, "r128 DRI driver expected DDX driver version 1.0.x but got version %d.%d.%d", sPriv->ddxMajor, sPriv->ddxMinor, sPriv->ddxPatch);
+      __driMesaMessage(msg);
+      return GL_FALSE;
+    }
+
+    /* Check that the DRM driver version is compatible */
+    if (sPriv->drmMajor != 2 ||
+       sPriv->drmMinor != 1 ||
+       sPriv->drmPatch < 0) {
+      char msg[1000];
+      sprintf(msg, "r128 DRI driver expected DRM driver version 2.1.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
+      __driMesaMessage(msg);
+      return GL_FALSE;
+    }
+
     if (!sPriv->private) {
 	r128DestroyScreen(sPriv);
 	return GL_FALSE;
