@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 179. Fix an XDarwin bug that broke XWarpPointer in Quartz modes (Gregory
+      Parker).
  178. Fix some more mi build warnings (David Dawes).
  177. Fix some mi build warnings (#4716-4719,4721-4724, Adam Sulmicki).
  176. Port for Linux/SuperH (Jornada680/690 and SEGA Dreamcast) (#4680, 4681,
@@ -13621,4 +13623,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1898 2001/08/06 11:02:28 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1899 2001/08/06 20:51:05 dawes Exp $
