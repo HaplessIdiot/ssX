@@ -342,7 +342,7 @@ DRICloseScreen(ScreenPtr pScreen)
     if (pDRIPriv && pDRIPriv->directRenderingSupport) {
 
 	if (pDRIPriv->pDriverInfo->driverSwapMethod != DRI_KERNEL_SWAP) {
-	    if (drmRemoveSIGIOHandler(pDRIPriv->drmFD)) {
+	    if (!drmRemoveSIGIOHandler(pDRIPriv->drmFD)) {
 		DRIDrvMsg(pScreen->myNum, X_ERROR, 
 			  "[drm] failed to remove DRM signal handler\n");
 	    }
