@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.c,v 1.5 2001/04/16 15:47:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.c,v 1.6 2001/05/07 21:59:06 tsi Exp $ */
 /*
  * Copyright 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -29,7 +29,8 @@
 /*
  * ATIInitializeAcceleration --
  *
- * This function is called to initialise XAA on a screen.
+ * This function is called to initialise both the framebuffer manager and XAA
+ * on a screen.
  */
 Bool
 ATIInitializeAcceleration
@@ -40,38 +41,35 @@ ATIInitializeAcceleration
 )
 {
     BoxRec       ScreenArea;
-    unsigned int nScanlines, maxScanlines;
+    unsigned int nScanlines, maxScanlines = 32767;
 
-    if (!pATI->OptionAccel)
+    if (pATI->OptionAccel)
+    {
+        if (!(pATI->pXAAInfo = XAACreateInfoRec()))
+            return FALSE;
+
+        switch (pATI->Adapter)
+        {
+            case ATI_ADAPTER_MACH64:
+                maxScanlines = ATIMach64AccelInit(pATI, pATI->pXAAInfo);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    ScreenArea.x1 = ScreenArea.y1 = 0;
+    ScreenArea.x2 = pATI->displayWidth;
+    nScanlines = pScreenInfo->videoRam * 1024 * 8 / pATI->displayWidth /
+        pATI->bitsPerPixel;
+    if (nScanlines > maxScanlines)
+        nScanlines = maxScanlines;
+    ScreenArea.y2 = (short int)nScanlines;
+    xf86InitFBManager(pScreen, &ScreenArea);
+
+    if (XAAInit(pScreen, pATI->pXAAInfo))
         return TRUE;
-
-    if (!(pATI->pXAAInfo = XAACreateInfoRec()))
-        return FALSE;
-
-    switch (pATI->Adapter)
-    {
-        case ATI_ADAPTER_MACH64:
-            maxScanlines = ATIMach64AccelInit(pATI, pATI->pXAAInfo);
-            break;
-
-        default:
-            maxScanlines = 0;
-    }
-
-    if (maxScanlines > 0)
-    {
-        ScreenArea.x1 = ScreenArea.y1 = 0;
-        ScreenArea.x2 = pATI->displayWidth;
-        nScanlines = pScreenInfo->videoRam * 1024 * 8 / pATI->displayWidth /
-            pATI->bitsPerPixel;
-        if (nScanlines > maxScanlines)
-            nScanlines = maxScanlines;
-        ScreenArea.y2 = (short int)nScanlines;
-        xf86InitFBManager(pScreen, &ScreenArea);
-
-        if (XAAInit(pScreen, pATI->pXAAInfo))
-            return TRUE;
-    }
 
     XAADestroyInfoRec(pATI->pXAAInfo);
     pATI->pXAAInfo = NULL;
