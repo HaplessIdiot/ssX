@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/main/dlist.c,v 1.2 2004/06/24 02:21:15 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/dlist.c,v 1.3 2004/12/10 15:30:11 alanh Exp $ */
 
 
 /**
@@ -7661,7 +7661,7 @@ static void GLAPIENTRY print_list( GLcontext *ctx, GLuint list )
    Node *n;
    GLboolean done;
 
-   if (!glIsList(list)) {
+   if (!GL_CALL(IsList)(list)) {
       _mesa_printf("%u is not a display list ID\n", list);
       return;
    }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_tcl.c,v 1.1.1.2 2004/12/10 15:06:00 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_tcl.c,v 1.1.1.3 2004/12/10 15:33:04 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -177,11 +177,11 @@ while (0)
  * discrete and there are no intervening state changes.  (Somewhat
  * duplicates changes to DrawArrays code)
  */
-static void r200EmitPrim( GLcontext *ctx,
-			  GLenum prim,
-			  GLuint hwprim,
-			  GLuint start,
-			  GLuint count)
+static void r200EmitPrim( GLcontext *ctx, 
+		          GLenum prim, 
+		          GLuint hwprim, 
+		          GLuint start, 
+		          GLuint count)	
 {
    r200ContextPtr rmesa = R200_CONTEXT( ctx );
    r200TclPrimitive( ctx, prim, hwprim );
@@ -205,7 +205,6 @@ static void r200EmitPrim( GLcontext *ctx,
    r200EmitPrim( ctx, prim, hwprim, start, count );             \
    (void) rmesa; } while (0)
 
-
 /* Try & join small primitives
  */
 #if 0
@@ -224,12 +223,12 @@ static void r200EmitPrim( GLcontext *ctx,
 #define EMIT_ELT(dest, offset, x) do {                          \
         int off = offset + ( ( (GLuint)dest & 0x2 ) >> 1 );     \
         GLushort *des = (GLushort *)( (GLuint)dest & ~0x2 );    \
-        (des)[ off + 1 - 2 * ( off & 1 ) ] = (GLushort)(x);     \
-        (void) rmesa; } while (0)
+        (des)[ off + 1 - 2 * ( off & 1 ) ] = (GLushort)(x);	\
+	(void)rmesa; } while (0)
 #else
-#define EMIT_ELT(dest, offset, x) do {                          \
-        (dest)[offset] = (GLushort) (x);                        \
-        (void) rmesa; } while (0)
+#define EMIT_ELT(dest, offset, x) do {				\
+	(dest)[offset] = (GLushort) (x);			\
+	(void)rmesa; } while (0)
 #endif
 
 #define EMIT_TWO_ELTS(dest, offset, x, y)  *(GLuint *)((dest)+offset) = ((y)<<16)|(x);

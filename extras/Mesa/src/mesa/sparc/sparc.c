@@ -1,6 +1,6 @@
 /*
  * Mesa 3-D graphics library
- * Version:  5.1
+ * Version:  6.3
  * 
  * Copyright (C) 1999-2003  Brian Paul   All Rights Reserved.
  * 
@@ -21,19 +21,20 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/sparc/sparc.c,v 1.3 2004/04/24 13:59:42 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/sparc/sparc.c,v 1.4 2004/12/10 15:30:13 alanh Exp $ */
 
 /*
  * Sparc assembly code by David S. Miller
  */
 
 
+#include "sparc.h"
+
 #ifdef USE_SPARC_ASM
 
 #include "context.h"
 #include "math/m_xform.h"
 #include "tnl/t_context.h"
-#include "sparc.h"
 
 #ifdef DEBUG
 #include "math/m_debug.h"
@@ -101,11 +102,10 @@ extern void _mesa_sparc_transform_normals(NORM_ARGS);
 extern void _mesa_sparc_normalize_normals(NORM_ARGS);
 extern void _mesa_sparc_rescale_normals(NORM_ARGS);
 
-#endif
+
 
 void _mesa_init_all_sparc_transform_asm(void)
 {
-#ifdef USE_SPARC_ASM
    ASSIGN_XFORM_GROUP(sparc, 1)
    ASSIGN_XFORM_GROUP(sparc, 2)
    ASSIGN_XFORM_GROUP(sparc, 3)
@@ -143,8 +143,6 @@ void _mesa_init_all_sparc_transform_asm(void)
    _math_test_all_cliptest_functions("sparc");
    _math_test_all_normal_transform_functions("sparc");
 #endif
-
-#endif
 }
 
 #ifdef USE_SPARC_ASM
@@ -167,7 +165,7 @@ void _mesa_init_sparc_glapi_relocs(void)
 	disp_addr = (unsigned long) &_glapi_Dispatch;
 
 	while (insn_ptr < end_ptr) {
-#if defined(__sparc_v9__) && !defined(__linux__)
+#if (defined(__sparc_v9__) && (!defined(__linux__) || defined(__linux_sparc_64__)))
 		insn_ptr[0] |= (disp_addr >> (32 + 10));
 		insn_ptr[1] |= ((disp_addr & 0xffffffff) >> 10);
 		__glapi_sparc_icache_flush(&insn_ptr[0]);
