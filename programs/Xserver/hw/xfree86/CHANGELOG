@@ -1,11 +1,12 @@
 XFree86 4.4.99.21 (xx December 2004)
- 262. Add Intel i915GM support, also....
+ 263. Add Intel i915GM support, also....
       - PanelID identification
       - DRI suspend/resume support
       - Detection of monitor changes on VT switches
       - Support custom video modes if available in the Video BIOS
       - 3D enhancements
       (Tungsten Graphics, Alan Hourihane & Keith Whitwell)
+ 262. Import Mesa 6.2.1 and the latest DRM code. (DRI Project)
  261. Fix bug in the recognition of PCI ROM images (Marc La France).
  260. Add MAX_DOMAINS and MAX_PCI_BUSES limit checks in the OpenPROM scan on
       UltraSPARC's running SunOS/Solaris (Marc La France).
@@ -19267,7 +19268,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3380 2005/01/09 08:28:56 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3381 2005/01/09 20:47:17 alanh Exp $
 
 
 
