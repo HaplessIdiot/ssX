@@ -1,4 +1,4 @@
-/* $XFree86: r128_driver.c,v 1.53 2001/12/28 17:31:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.54 2001/12/31 15:33:08 herrb Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -194,7 +194,7 @@ static const char *vgahwSymbols[] = {
 static const char *fbdevHWSymbols[] = {
     "fbdevHWInit",
     "fbdevHWUseBuildinMode",
-
+    "fbdevHWGetLineLength",
     "fbdevHWGetVidmem",
 
     /* colormap */
@@ -1768,7 +1768,7 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 		      fbdevHWSymbols,
 		      vbeSymbols,
 		      /* ddcsymbols, */
-		      /* i2csymbols, */
+		      i2cSymbols,
 		      /* shadowSymbols, */
 		      NULL);
 
