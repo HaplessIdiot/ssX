@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.47 2003/08/23 16:09:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.48 2003/10/30 17:37:04 tsi Exp $ */
 
 /*
  * Authors:
@@ -241,10 +241,6 @@ static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
     "XAAInit",
-    "XAAStippleScanlineFuncLSBFirst",
-    "XAAOverlayFBfuncs",
-    "XAACachePlanarMonoStipple",
-    "XAAScreenIndex",
     NULL
 };
 
