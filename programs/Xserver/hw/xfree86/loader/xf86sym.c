@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.224 2003/02/09 00:18:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.225 2003/02/21 03:11:57 dawes Exp $ */
 
 /*
  *
@@ -61,6 +61,11 @@
 #include "xf86sbusBus.h"
 #endif
 #include "compiler.h"
+
+#if defined(setjmp) && \
+    defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ < 2
+#define HAS_GLIBC_SIGSETJMP 1
+#endif
 
 #ifdef __FreeBSD__
 /* XXX used in drmOpen(). This should change to use a less os-specific
@@ -888,8 +893,17 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86shmat)
    SYMFUNC(xf86shmdt)
    SYMFUNC(xf86shmctl)
+#ifdef HAS_GLIBC_SIGSETJMP
+   SYMFUNC(xf86setjmp)
+   SYMFUNCALIAS("xf86setjmp1",__sigsetjmp)
+#else
    SYMFUNCALIAS("xf86setjmp",setjmp)
+   SYMFUNC(xf86setjmp1)
+#endif
    SYMFUNCALIAS("xf86longjmp",longjmp)
+   SYMFUNC(xf86getjmptype)
+   SYMFUNC(xf86setjmp1_arg2)
+   SYMFUNC(xf86setjmperror)
 #ifdef XF86DRI
 				/* These may have more general uses, but
                                    for now, they are only used by the DRI.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.54 2002/09/19 13:22:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.55 2003/02/21 03:11:57 dawes Exp $ */
 
 
 
@@ -448,10 +448,6 @@ typedef int xf86jmp_buf[1024];
 #define shmdt(a)		xf86shmdt(a)
 #undef shmctl
 #define shmctl(a,b,c)		xf86shmctl(a,b,c)
-#undef setjmp
-#define setjmp(a)               xf86setjmp(a)
-#undef longjmp
-#define longjmp(a,b)            xf86longjmp(a,b) 
 
 #undef S_ISUID
 #define S_ISUID XF86_S_ISUID
@@ -507,8 +503,6 @@ typedef int xf86jmp_buf[1024];
 #define uid_t                   xf86uid_t
 #undef gid_t
 #define gid_t                   xf86gid_t
-#undef jmp_buf
-#define jmp_buf                 xf86jmp_buf
 #undef stat_t
 #define stat_t			struct xf86stat
 
@@ -663,6 +657,16 @@ typedef int xf86jmp_buf[1024];
 #undef FILENAME_MAX
 #define FILENAME_MAX		1024
 
-#endif /* XFree86LOADER */
+#endif /* XFree86LOADER  && !DONT_DEFINE_WRAPPERS */
+
+#if defined(XFree86LOADER) && \
+    (!defined(DONT_DEFINE_WRAPPERS) || defined(DEFINE_SETJMP_WRAPPERS))
+#undef setjmp
+#define setjmp(a)               xf86setjmp_macro(a)
+#undef longjmp
+#define longjmp(a,b)            xf86longjmp(a,b) 
+#undef jmp_buf
+#define jmp_buf                 xf86jmp_buf
+#endif
 
 #endif /* XF86_LIBC_H */
