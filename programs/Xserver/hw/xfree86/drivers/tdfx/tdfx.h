@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.18 2000/12/20 01:30:46 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.19 2001/03/03 22:41:34 tsi Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -39,6 +39,8 @@ typedef struct _TDFXRec *TDFXPtr;
 #include "tdfx_priv.h"
 extern void TDFXSwapContextFifo(ScreenPtr pScreen);
 extern void TDFXLostContext(ScreenPtr pScreen);
+extern Bool TDFXSetupSLI(ScrnInfoPtr pScrn, Bool sliEnable, int aaSamples);
+extern Bool TDFXDisableSLI(TDFXPtr pTDFX);
 
 #ifdef XF86DRI
 extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
@@ -269,7 +271,6 @@ extern void TDFXSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y,
 
 extern void TDFXSelectBuffer(TDFXPtr pTDFX, int which);
 
+extern void TDFXInitVideo(ScreenPtr pScreen);
 
 #endif
-
-

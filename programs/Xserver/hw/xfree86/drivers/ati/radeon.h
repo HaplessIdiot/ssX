@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.13 2001/01/21 21:19:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.14 2001/03/03 22:26:10 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -56,6 +56,11 @@
 #include "radeon_dripriv.h"
 #include "dri.h"
 #include "GL/glxint.h"
+#endif
+
+				/* Render support */
+#ifdef RENDER
+#include "picturestr.h"
 #endif
 
 #define RADEON_DEBUG    0       /* Turn off debugging output                */
@@ -358,6 +363,10 @@ typedef struct {
     CARD32            re_width_height;
 
     CARD32            aux_sc_cntl;
+
+#ifdef PER_CONTEXT_SAREA
+    int 	      perctx_sarea_size;
+#endif
 #endif
 
     XF86VideoAdaptorPtr adaptor;
@@ -405,19 +414,19 @@ extern void        RADEONCPReleaseIndirect(ScrnInfoPtr pScrn);
 
 #define RADEONCP_START(pScrn, info)					\
 do {									\
-    int _ret = drmRadeonStartCP(info->drmFD);				\
-    if (_ret) {								\
+    int ret = drmRadeonStartCP(info->drmFD);				\
+    if (ret) {								\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
-		   "%s: CP start %d\n", __FUNCTION__, _ret);		\
+		   "%s: CP start %d\n", __FUNCTION__, ret);		\
     }									\
 } while (0)
 
 #define RADEONCP_STOP(pScrn, info)					\
 do {									\
-    int _ret = drmRadeonStopCP(info->drmFD);				\
-    if (_ret) {								\
+    int ret = drmRadeonStopCP(info->drmFD);				\
+    if (ret) {								\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
-		   "%s: CP stop %d\n", __FUNCTION__, _ret);		\
+		   "%s: CP stop %d\n", __FUNCTION__, ret);		\
     }									\
     RADEONEngineRestore(pScrn);						\
 } while (0)
@@ -425,10 +434,10 @@ do {									\
 #define RADEONCP_RESET(pScrn, info)					\
 do {									\
     if (RADEONCP_USE_RING_BUFFER(info->CPMode)) {			\
-	int _ret = drmRadeonResetCP(info->drmFD);			\
-	if (_ret) {							\
+	int ret = drmRadeonResetCP(info->drmFD);			\
+	if (ret) {							\
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,			\
-		       "%s: CP reset %d\n", __FUNCTION__, _ret);	\
+		       "%s: CP reset %d\n", __FUNCTION__, ret);		\
 	}								\
     }									\
 } while (0)

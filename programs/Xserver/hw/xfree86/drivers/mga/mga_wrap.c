@@ -1,37 +1,32 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_wrap.c,v 1.1 2000/06/17 00:03:20 martin Exp $ */
-/**************************************************************************
-
-Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
-All Rights Reserved.
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sub license, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice (including the
-next paragraph) shall be included in all copies or substantial portions
-of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
-IN NO EVENT SHALL PRECISION INSIGHT AND/OR ITS SUPPLIERS BE LIABLE FOR
-ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-**************************************************************************/
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_wrap.c,v 1.2 2000/09/24 13:51:28 alanh Exp $ */
 
 /*
- * Authors:
- *   Keith Whitwell <keithw@precisioninsight.com>
+ * Copyright 2000 VA Linux Systems Inc., Fremont, California.
+ * All Rights Reserved.
  *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the next
+ * paragraph) shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * VA LINUX SYSTEMS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES
+ * OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Authors:
+ *   Keith WHitwell <keithw@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  */
-
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -56,46 +51,50 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "mga_macros.h"
 #include "mga_dri.h"
 #include "mga_wrap.h"
+#include "mga_sarea.h"
+
+#define MGA_WRAP_DEBUG	0
 
 
-
-static void MGAWakeupHandler(int screenNum,
-			     pointer wakeupData,
-			     unsigned long result,
-			     pointer pReadmask)
+static void MGAWakeupHandler( int screenNum, pointer wakeupData,
+			      unsigned long result, pointer pReadmask )
 {
     ScreenPtr pScreen = screenInfo.screens[screenNum];
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    /*DRIWrappedFuncsRec *pDRIWrap = DRIGetWrappedFuncs(pScreen);*/
 
-    if (0) ErrorF("MGAWakeupHandler (in)\n");
-
-    /* Disabled: Check contention like the 3d clients do before trying
-     *   to restore state.  
-     */
-    DRILock(pScreen, 0);
-    if (xf86IsEntityShared(pScrn->entityList[0]))
-        MGASwapContext_shared(pScreen);
-    else
-        MGASwapContext(pScreen);
+    if ( xf86IsEntityShared( pScrn->entityList[0] ) ) {
+        MGASwapContextShared( pScreen );
+    } else {
+        MGASwapContext( pScreen );
+    }
 }
 
-static void MGABlockHandler(int screenNum,
-			    pointer blockData,
-			    pointer pTimeout,
-			    pointer pReadmask)
+static void MGABlockHandler( int screenNum, pointer blockData,
+			     pointer pTimeout, pointer pReadmask )
 
 {
    ScreenPtr pScreen = screenInfo.screens[screenNum];
    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
    MGAPtr pMga = MGAPTR(pScrn);
-   /*DRIWrappedFuncsRec *pDRIWrap = DRIGetWrappedFuncs(pScreen);*/
-   MGASAREAPtr sa = (MGASAREAPtr)DRIGetSAREAPrivate( pScreen );
 
-   if (0) ErrorF("MGABlockHandler (out)\n");
+   if ( pMga->haveQuiescense ) {
+      pMga->haveQuiescense = 0;
+
+      if ( pMga->directRenderingEnabled ) {
+	 DRIUnlock( pScreen );
+      }
+   }
 
 
-   /* Examine the cliprects for the most recently used 3d drawable.
+
+
+#if 0
+   MGASAREAPrivPtr sa = (MGASAREAPrivPtr)DRIGetSAREAPrivate( pScreen );
+
+   if ( MGA_WRAP_DEBUG )
+      ErrorF( "MGABlockHandler (out)\n" );
+
+   /* Examine the cliprects for the most recently used 3D drawable.
     * If they've changed, attempt to push the updated values into the
     * sarea.
     *
@@ -106,46 +105,47 @@ static void MGABlockHandler(int screenNum,
     *
     * Thus the number of round trips in the cases where comparison is
     * possible is reduced to no more (and usually fewer) than the number
-    * Utah requires.  
+    * Utah requires.
     */
 
-   if (sa->req_drawable != sa->exported_drawable ||
-       sa->exported_stamp != DRIGetDrawableStamp( pScreen, sa->exported_index ))
+   if ( sa->req_drawable != sa->exported_drawable ||
+	sa->exported_stamp != DRIGetDrawableStamp( pScreen,
+						   sa->exported_index ) )
    {
       int i;
       XF86DRIClipRectPtr frontboxes, backboxes;
       XF86DRIClipRectPtr boxes = (XF86DRIClipRectPtr)sa->exported_boxes;
       WindowPtr window = LookupIDByType( sa->req_drawable, RT_WINDOW );
 
-      if (0)
-	 ErrorF("Trying to update req_drawable: %d (exp %d), stamp %d/%d\n", 
-		sa->req_drawable, sa->exported_drawable);
+      if ( MGA_WRAP_DEBUG )
+	 ErrorF( "Trying to update req_drawable: %d (exp %d), stamp %d/%d\n",
+		 sa->req_drawable, sa->exported_drawable );
 
       sa->exported_drawable = 0;
 
-      if (!window) {
-	 if (0)
-	    ErrorF("Couldn't retreive window\n");
+      if ( !window ) {
+	 if ( MGA_WRAP_DEBUG )
+	    ErrorF( "Couldn't retreive window\n" );
 	 sa->req_drawable = 0;
 	 goto finished;
       }
 
-      if (!DRIGetDrawableInfo( pScreen, &(window->drawable), 
-			       &sa->exported_index, 
-			       &sa->exported_stamp, 
-			       &sa->exported_front_x, 
-			       &sa->exported_front_y, 
-			       &sa->exported_w, 
-			       &sa->exported_h,
-			       &sa->exported_nfront, 
-			       &frontboxes,
-			       &sa->exported_back_x, 
-			       &sa->exported_back_y,
-			       &sa->exported_nback, 
-			       &backboxes ))
+      if ( !DRIGetDrawableInfo( pScreen, &(window->drawable),
+				&sa->exported_index,
+				&sa->exported_stamp,
+				&sa->exported_front_x,
+				&sa->exported_front_y,
+				&sa->exported_w,
+				&sa->exported_h,
+				&sa->exported_nfront,
+				&frontboxes,
+				&sa->exported_back_x,
+				&sa->exported_back_y,
+				&sa->exported_nback,
+				&backboxes ) )
       {
-	 if (0)
-	    ErrorF("Couldn't get DRI info\n");
+	 if ( MGA_WRAP_DEBUG )
+	    ErrorF( "Couldn't get DRI info\n" );
 	 sa->req_drawable = 0;
 	 goto finished;
       }
@@ -153,57 +153,55 @@ static void MGABlockHandler(int screenNum,
       /* If we can't fit both sets of cliprects into the sarea, try to
        * fit the current draw buffer.  Otherwise return.
        */
-      
       sa->exported_buffers = MGA_FRONT | MGA_BACK;
 
-      if (sa->exported_nback + sa->exported_nfront >= MGA_NR_SAREA_CLIPRECTS) {
-	 if (sa->req_draw_buffer == MGA_FRONT) {
+      if ( sa->exported_nback + sa->exported_nfront >= MGA_NR_SAREA_CLIPRECTS ) {
+	 if ( sa->req_draw_buffer == MGA_FRONT ) {
 	    sa->exported_buffers = MGA_FRONT;
-	    if (sa->exported_nfront >= MGA_NR_SAREA_CLIPRECTS)
+	    if ( sa->exported_nfront >= MGA_NR_SAREA_CLIPRECTS )
 	       goto finished;
 	 } else {
 	    sa->exported_buffers = MGA_BACK;
-	    if (sa->exported_nback >= MGA_NR_SAREA_CLIPRECTS)
+	    if ( sa->exported_nback >= MGA_NR_SAREA_CLIPRECTS )
 	       goto finished;
 	 }
       }
 
-      if (sa->exported_buffers & MGA_BACK) {
-	 for (i = 0 ; i < sa->exported_nback ; i++) 
-	    *boxes++ = backboxes[i];	 
+      if ( sa->exported_buffers & MGA_BACK ) {
+	 for ( i = 0 ; i < sa->exported_nback ; i++ )
+	    *boxes++ = backboxes[i];
       }
 
-      if (sa->exported_buffers & MGA_FRONT) {
-	 for (i = 0 ; i < sa->exported_nfront ; i++) 
-	    *boxes++ = frontboxes[i];	 
+      if ( sa->exported_buffers & MGA_FRONT ) {
+	 for ( i = 0 ; i < sa->exported_nfront ; i++ )
+	    *boxes++ = frontboxes[i];
       }
 
       sa->exported_drawable = sa->req_drawable;
-   } 
-
- finished:
-   if (xf86IsEntityShared(pScrn->entityList[0])) {
-      /* Restore to first screen */
-      pMga->RestoreAccelState(pScrn);
-      xf86SetLastScrnFlag(pScrn->entityList[0], pScrn->scrnIndex);
    }
 
-   DRIUnlock(pScreen);
+ finished:
+   if ( xf86IsEntityShared( pScrn->entityList[0] ) ) {
+      /* Restore to first screen */
+      pMga->RestoreAccelState( pScrn );
+      xf86SetLastScrnFlag( pScrn->entityList[0], pScrn->scrnIndex );
+   }
+
+   DRIUnlock( pScreen );
+#endif
 }
-
-
 
 
 /* Just wrap validate tree for now to remove the quiescense hack.
  * This is more of a win for the i810 than the mga, but should be useful
  * here too.
  */
-void MGADRIWrapFunctions(ScreenPtr pScreen, DRIInfoPtr pDRIInfo)
+void MGADRIWrapFunctions( ScreenPtr pScreen, DRIInfoPtr pDRIInfo )
 {
-   pDRIInfo->wrap.BlockHandler = MGABlockHandler;   
-   pDRIInfo->wrap.WakeupHandler = MGAWakeupHandler;    
-/*     pDRIInfo->wrap.ValidateTree = NULL; */
-/*     pDRIInfo->wrap.PostValidateTree = NULL; */
+   pDRIInfo->wrap.BlockHandler = MGABlockHandler;
+   pDRIInfo->wrap.WakeupHandler = MGAWakeupHandler;
+#if 1
+   pDRIInfo->wrap.ValidateTree = NULL;
+   pDRIInfo->wrap.PostValidateTree = NULL;
+#endif
 }
-
-

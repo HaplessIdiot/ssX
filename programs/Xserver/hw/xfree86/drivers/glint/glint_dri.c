@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.20 2001/01/31 16:14:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.21 2001/02/07 13:26:18 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -353,9 +353,9 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     {
        int major, minor, patch;
        DRIQueryVersion(&major, &minor, &patch);
-       if (major != 3 || minor != 1 || patch < 0) {
+       if (major != 4 || minor < 0) {
           xf86DrvMsg(pScreen->myNum, X_ERROR,
-                     "GLINTDRIScreenInit failed (DRI version = %d.%d.%d, expected 3.1.x).  Disabling DRI.\n",
+                     "GLINTDRIScreenInit failed (DRI version = %d.%d.%d, expected 4.0.x).  Disabling DRI.\n",
                      major, minor, patch);
           return FALSE;
        }
@@ -427,6 +427,9 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->MoveBuffers    = GLINTDRIMoveBuffers;
     pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
 
+    pDRIInfo->createDummyCtx     = TRUE;
+    pDRIInfo->createDummyCtxPriv = FALSE;
+
     if (!DRIScreenInit(pScreen, pDRIInfo, &(pGlint->drmSubFD))) {
 	DRIDestroyInfoRec(pGlint->pDRIInfo);
 	xfree(pGlintDRI);
@@ -438,8 +441,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
         drmVersionPtr version = drmGetVersion(pGlint->drmSubFD);
         if (version) {
             if (version->version_major != 1 ||
-                version->version_minor != 0 ||
-                version->version_patchlevel < 0) {
+                version->version_minor < 0) {
                 /* incompatible drm version */
                 xf86DrvMsg(pScreen->myNum, X_ERROR,
                            "GLINTDRIScreenInit failed (DRM version = %d.%d.%d, expected 1.0.x).  Disabling DRI.\n",
@@ -586,6 +588,8 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	       pGlint->drmBufs);
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] %d DMA buffers mapped\n",
 	       pGlint->drmBufs->count);
+
+    xf86EnableBusMaster(pGlint->PciTag);
 
     /* tell the generic kernel driver how to handle Gamma DMA */
     if (pGlint->irq <= 0) {

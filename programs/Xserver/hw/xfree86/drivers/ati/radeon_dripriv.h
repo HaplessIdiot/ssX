@@ -38,6 +38,8 @@
 #define _RADEON_DRIPRIV_H_
 
 #include "GL/glxint.h"
+#include "xf86drm.h"
+#include "xf86drmRadeon.h"
 
 #define RADEON_MAX_DRAWABLES 256
 
@@ -50,8 +52,13 @@ typedef struct {
 } RADEONConfigPrivRec, *RADEONConfigPrivPtr;
 
 typedef struct {
+#ifdef PER_CONTEXT_SAREA
+    drmContext ctx_id;
+    drmHandle sarea_handle;
+#else
     /* Nothing here yet */
     int dummy;
+#endif
 } RADEONDRIContextRec, *RADEONDRIContextPtr;
 
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.13 2000/12/01 14:28:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.14 2000/12/21 12:22:56 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -68,14 +68,15 @@ Bool I810InitDma(ScrnInfoPtr pScrn)
 {
    I810Ptr pI810 = I810PTR(pScrn);
    I810RingBuffer *ring = &(pI810->LpRing);
+   I810DRIPtr pI810DRI = (I810DRIPtr) pI810->pDRIInfo->devPrivate;
    drmI810Init info;
    Bool ret_val;
    
    info.start = ring->mem.Start;
    info.end = ring->mem.End; 
    info.size = ring->mem.Size;
-   info.ring_map_idx = 6; 
-   info.buffer_map_idx = 5; 
+   info.mmio_offset = (unsigned int)pI810DRI->regs;
+   info.buffers_offset = (unsigned int)pI810->buffer_map;
    info.sarea_off = sizeof(XF86DRISAREARec);
 
    info.front_offset = 0;
@@ -203,7 +204,6 @@ static unsigned int mylog2(unsigned int n)
    return log2;
 }
 
-
 Bool I810DRIScreenInit(ScreenPtr pScreen)
 {
    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
@@ -240,9 +240,9 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    {
       int major, minor, patch;
       DRIQueryVersion(&major, &minor, &patch);
-      if (major != 3 || minor != 1 || patch < 0) {
+      if (major != 4 || minor < 0) {
          xf86DrvMsg(pScreen->myNum, X_ERROR,
-                    "I810DRIScreenInit failed (DRI version = %d.%d.%d, expected 3.1.x).  Disabling DRI.\n",
+                    "I810DRIScreenInit failed (DRI version = %d.%d.%d, expected 4.0.x).  Disabling DRI.\n",
                     major, minor, patch);
          return FALSE;
       }
@@ -310,6 +310,8 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    pDRIInfo->MoveBuffers = I810DRIMoveBuffers;
    pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
    
+   pDRIInfo->createDummyCtx = TRUE;
+   pDRIInfo->createDummyCtxPriv = FALSE;
    
    /* This adds the framebuffer as a drm map *before* we have asked agp
     * to allocate it.  Scary stuff, hold on...
@@ -328,8 +330,7 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
       drmVersionPtr version = drmGetVersion(pI810->drmSubFD);
       if (version) {
          if (version->version_major != 1 ||
-             version->version_minor != 1 ||
-             version->version_patchlevel < 0) {
+             version->version_minor < 1) {
             /* incompatible drm version */
             xf86DrvMsg(pScreen->myNum, X_ERROR,
                        "I810DRIScreenInit failed (DRM version = %d.%d.%d, expected 1.0.x).  Disabling DRI.\n",
@@ -683,6 +684,7 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] added %d %d byte DMA buffers\n",
 	      bufs, I810_DMA_BUF_SZ);
 
+   xf86EnableBusMaster(pI810->PciTag);
 
    I810InitDma(pScrn);
    
@@ -733,6 +735,7 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    
    pI810DRI->auxPitch = pI810->auxPitch;
    pI810DRI->auxPitchBits = pI810->auxPitchBits;
+   pI810DRI->sarea_priv_offset = sizeof(XF86DRISAREARec);
 
    if (!(I810InitVisualConfigs(pScreen))) {
       xf86DrvMsg(pScreen->myNum, X_ERROR, "I810InitVisualConfigs failed\n");

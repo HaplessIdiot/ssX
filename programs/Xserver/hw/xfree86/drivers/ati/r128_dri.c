@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.8 2000/12/21 12:22:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.9 2001/01/08 01:07:34 martin Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -576,6 +576,8 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
     OUTREG(R128_AGP_BASE, info->ringHandle); /* Ring buf is at AGP offset 0 */
     OUTREG(R128_AGP_CNTL, cntl);
 
+    xf86EnableBusMaster(info->PciTag);
+
     return TRUE;
 }
 
@@ -735,10 +737,10 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 
     /* Check the DRI version */
     DRIQueryVersion(&major, &minor, &patch);
-    if (major != 3 || minor != 1 || patch < 0) {
+    if (major != 4 || minor < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "R128DRIScreenInit failed "
-		   "(DRI version = %d.%d.%d, expected 3.1.x).  "
+		   "(DRI version = %d.%d.%d, expected 4.0.x).  "
 		   "Disabling DRI.\n",
 		   major, minor, patch);
 	return FALSE;
@@ -817,6 +819,9 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->MoveBuffers    = R128DRIMoveBuffers;
     pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
 
+    pDRIInfo->createDummyCtx     = TRUE;
+    pDRIInfo->createDummyCtxPriv = FALSE;
+
     if (!DRIScreenInit(pScreen, pDRIInfo, &info->drmFD)) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR, "DRIScreenInit failed!\n");
 	xfree(pDRIInfo->devPrivate);
@@ -830,8 +835,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     version = drmGetVersion(info->drmFD);
     if (version) {
 	if (version->version_major != 2 ||
-	    version->version_minor != 1 ||
-	    version->version_patchlevel < 0) {
+	    version->version_minor < 1) {
 	    /* incompatible drm version */
 	    xf86DrvMsg(pScreen->myNum, X_ERROR,
 		       "R128DRIScreenInit failed "
@@ -954,6 +958,7 @@ Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
     pR128DRI->agpTexMapSize  = info->agpTexMapSize;
     pR128DRI->log2AGPTexGran = info->log2AGPTexGran;
     pR128DRI->agpTexOffset   = info->agpTexStart;
+    pR128DRI->sarea_priv_offset      = sizeof(XF86DRISAREARec);
 
     return TRUE;
 }

@@ -11,7 +11,7 @@ typedef int   int32;
 typedef short int16;
 typedef char  int8;
 
-#define CMDFIFO_PAGES 64
+#define CMDFIFO_PAGES 255
 
 #define PROPSAREADATA \
   volatile int fifoPtr; \

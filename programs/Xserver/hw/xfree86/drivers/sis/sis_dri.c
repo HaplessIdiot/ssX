@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.8 2000/12/02 01:16:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.9 2000/12/21 12:22:57 alanh Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -194,9 +194,9 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
    {
       int major, minor, patch;
       DRIQueryVersion(&major, &minor, &patch);
-      if (major != 3 || minor != 1 || patch < 0) {
+      if (major != 4 || minor < 0) {
          xf86DrvMsg(pScreen->myNum, X_ERROR,
-                    "[drm] SISDRIScreenInit failed (DRI version = %d.%d.%d, expected 3.1.x).  Disabling DRI.\n",
+                    "[drm] SISDRIScreenInit failed (DRI version = %d.%d.%d, expected 4.0.x).  Disabling DRI.\n",
                     major, minor, patch);
          return FALSE;
       }
@@ -261,6 +261,9 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo->InitBuffers = SISDRIInitBuffers;
   pDRIInfo->MoveBuffers = SISDRIMoveBuffers;
   pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
+
+  pDRIInfo->createDummyCtx = TRUE;
+  pDRIInfo->createDummyCtxPriv = FALSE;
 
   if (!DRIScreenInit(pScreen, pDRIInfo, &pSIS->drmSubFD)) {
     xfree(pDRIInfo->devPrivate);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.21 2001/02/12 04:24:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.23 2001/03/08 17:12:10 eich Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -107,6 +107,8 @@
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
 
+#define USE_CRT_ONLY	0
+
 				/* Forward definitions for driver functions */
 static Bool R128CloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool R128SaveScreen(ScreenPtr pScreen, int mode);
@@ -133,6 +135,10 @@ typedef enum {
   OPTION_RING_SIZE,
   OPTION_BUFFER_SIZE,
   OPTION_USE_CCE_2D,
+#endif
+#if USE_CRT_ONLY
+  /* FIXME: Disable CRTOnly until it is tested */
+  OPTION_CRT,
 #endif
   OPTION_BIOS_DISPLAY,
   OPTION_PANEL_WIDTH,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.4 2001/01/21 21:19:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.5 2001/03/03 22:26:10 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -105,7 +105,7 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 	    for (stencil = 0; stencil <= RADEON_USE_STENCIL; stencil++) {
 		pRADEONConfigPtrs[i] = &pRADEONConfigs[i];
 
-		pConfigs[i].vid                = (VisualID)(-1);
+		pConfigs[i].vid                = -1;
 		pConfigs[i].class              = -1;
 		pConfigs[i].rgba               = TRUE;
 		pConfigs[i].redSize            = 5;
@@ -181,7 +181,7 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 	    for (stencil = 0; stencil <= RADEON_USE_STENCIL; stencil++) {
 		pRADEONConfigPtrs[i] = &pRADEONConfigs[i];
 
-		pConfigs[i].vid                = (VisualID)(-1);
+		pConfigs[i].vid                = -1;
 		pConfigs[i].class              = -1;
 		pConfigs[i].rgba               = TRUE;
 		pConfigs[i].redSize            = 8;
@@ -244,7 +244,36 @@ static Bool RADEONCreateContext(ScreenPtr pScreen, VisualPtr visual,
 				drmContext hwContext, void *pVisualConfigPriv,
 				DRIContextType contextStore)
 {
-    /* Nothing yet */
+#ifdef PER_CONTEXT_SAREA
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    RADEONInfoPtr info = RADEONPTR(pScrn);
+    RADEONDRIContextPtr ctx_info;
+
+    ctx_info = (RADEONDRIContextPtr)contextStore;
+    if (!ctx_info) return FALSE;
+
+    if (drmAddMap(info->drmFD, 0,
+		  info->perctx_sarea_size,
+		  DRM_SHM,
+		  DRM_REMOVABLE,
+		  &ctx_info->sarea_handle) < 0) {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "[DRI] could not create private sarea for ctx id (%d)\n",
+		   (int)hwContext);
+        return FALSE;
+    }
+
+    if (drmAddContextPrivateMapping(info->drmFD, hwContext,
+				    ctx_info->sarea_handle) < 0) {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "[DRI] could not associate private sarea to ctx id (%d)\n",
+		   (int)hwContext);
+        drmRmMap(info->drmFD, ctx_info->sarea_handle);
+        return FALSE;
+    }
+
+    ctx_info->ctx_id = hwContext;
+#endif
     return TRUE;
 }
 
@@ -252,7 +281,20 @@ static Bool RADEONCreateContext(ScreenPtr pScreen, VisualPtr visual,
 static void RADEONDestroyContext(ScreenPtr pScreen, drmContext hwContext,
 				 DRIContextType contextStore)
 {
-    /* Nothing yet */
+#ifdef PER_CONTEXT_SAREA
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    RADEONInfoPtr info = RADEONPTR(pScrn);
+    RADEONDRIContextPtr ctx_info;
+
+    ctx_info = (RADEONDRIContextPtr) contextStore;
+    if (!ctx_info) return;
+
+    if (drmRmMap(info->drmFD, ctx_info->sarea_handle) < 0) {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "[DRI] could not remove private sarea for ctx id (%d)\n",
+		   (int)hwContext);
+    }
+#endif
 }
 
 /* Called when the X server is woken up to allow the last client's
@@ -382,8 +424,8 @@ do {									\
 
 /* Screen to screen copy of data in the depth buffer */
 static void RADEONScreenToScreenCopyDepth(ScrnInfoPtr pScrn,
-					  int xa, int ya,
-					  int xb, int yb,
+					  int x1, int y1,
+					  int x2, int y2,
 					  int w, int h)
 {
     RADEONInfoPtr info = RADEONPTR(pScrn);
@@ -392,26 +434,26 @@ static void RADEONScreenToScreenCopyDepth(ScrnInfoPtr pScrn,
     int           x, y, d;
     unsigned char *buf = info->FB + info->depthOffset;
 
-    if (xa < xb) xdir = -1, xstart = w-1, xend = 0;
+    if (x1 < x2) xdir = -1, xstart = w-1, xend = 0;
     else         xdir =  1, xstart = 0,   xend = w-1;
 
-    if (ya < yb) ydir = -1, ystart = h-1, yend = 0;
+    if (y1 < y2) ydir = -1, ystart = h-1, yend = 0;
     else         ydir =  1, ystart = 0,   yend = h-1;
 
     switch (pScrn->bitsPerPixel) {
     case 16:
 	for (x = xstart; x != xend; x += xdir) {
 	    for (y = ystart; y != yend; y += ydir) {
-		READ_DEPTH16(d, xa+x, ya+y);
-		WRITE_DEPTH16(xb+x, yb+y, d);
+		READ_DEPTH16(d, x1+x, y1+y);
+		WRITE_DEPTH16(x2+x, y2+y, d);
 	    }
 	}
 	break;
     case 32:
 	for (x = xstart; x != xend; x += xdir) {
 	    for (y = ystart; y != yend; y += ydir) {
-		READ_DEPTH32(d, xa+x, ya+y);
-		WRITE_DEPTH32(xb+x, yb+y, d);
+		READ_DEPTH32(d, x1+x, y1+y);
+		WRITE_DEPTH32(x2+x, y2+y, d);
 	    }
 	}
 	break;
@@ -420,7 +462,7 @@ static void RADEONScreenToScreenCopyDepth(ScrnInfoPtr pScrn,
 }
 
 /* Initialize the state of the back and depth buffers. */
-static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
+static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
 {
     /* FIXME: This routine needs to have acceleration turned on */
     ScreenPtr          pScreen = pWin->drawable.pScreen;
@@ -429,15 +471,27 @@ static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
     RADEONSAREAPrivPtr pSAREAPriv;
     BoxPtr             pbox;
     int                nbox;
-    int                depth;
+    unsigned int       color, depth;
+    unsigned int       color_mask, depth_mask;
 
     /* FIXME: This should be based on the __GLXvisualConfig info */
+    color = 0;
     switch (pScrn->bitsPerPixel) {
-    case  8: depth = 0x000000ff; break;
-    case 16: depth = 0x0000ffff; break;
-    case 24: depth = 0x00ffffff; break;
-    case 32: depth = 0xffffffff; break;
-    default: depth = 0x00000000; break;
+    case 16:
+       depth = 0x0000ffff;
+       color_mask = 0x0000ffff;
+       depth_mask = 0xffffffff;
+       break;
+    case 32:
+       depth = 0x00ffffff;
+       color_mask = 0xffffffff;
+       depth_mask = 0xffffffff;
+       break;
+    default:
+       depth = 0x00000000;
+       color_mask = 0x00000000;
+       depth_mask = 0x00000000;
+       break;
     }
 
     /* FIXME: Copy XAAPaintWindow() and use REGION_TRANSLATE() */
@@ -465,11 +519,8 @@ static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
 
 	ret = drmRadeonClear(info->drmFD,
 			     DRM_RADEON_BACK | DRM_RADEON_DEPTH,
-			     pbox->x1,
-			     pbox->y1,
-			     pbox->x2 - pbox->x1,
-			     pbox->y2 - pbox->y1,
-			     0, depth);
+			     color, depth, color_mask, depth_mask,
+			     pSAREAPriv->boxes, pSAREAPriv->nbox);
 	if (ret) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "DRIInitBuffers timed out, resetting engine...\n");
@@ -496,14 +547,14 @@ static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
  * are reversed.
  */
 static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
-				 RegionPtr prgnSrc, CARD32 indx)
+				 RegionPtr prgnSrc, CARD32 index)
 {
     ScreenPtr     pScreen  = pParent->drawable.pScreen;
     ScrnInfoPtr   pScrn    = xf86Screens[pScreen->myNum];
     RADEONInfoPtr info     = RADEONPTR(pScrn);
 
     BoxPtr        pboxTmp, pboxNext, pboxBase;
-    DDXPointPtr   pptTmp;
+    DDXPointPtr   pptTmp, pptNew2;
     int           xdir, ydir;
 
     int           screenwidth = pScrn->virtualX;
@@ -512,10 +563,9 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
     BoxPtr        pbox     = REGION_RECTS(prgnSrc);
     int           nbox     = REGION_NUM_RECTS(prgnSrc);
 
-    BoxPtr        pboxNew1 = NULL;
-    BoxPtr        pboxNew2 = NULL;
-    DDXPointPtr   pptNew1  = NULL;
-    DDXPointPtr   pptNew2  = NULL;
+    BoxPtr        pboxNew1 = 0;
+    BoxPtr        pboxNew2 = 0;
+    DDXPointPtr   pptNew1  = 0;
     DDXPointPtr   pptSrc   = &ptOldOrg;
 
     int           dx       = pParent->drawable.x - ptOldOrg.x;
@@ -565,10 +615,12 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 	    pboxNew2 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec)*nbox);
 	    pptNew2  = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec)*nbox);
 	    if (!pboxNew2 || !pptNew2) {
-		DEALLOCATE_LOCAL(pptNew2);
-		DEALLOCATE_LOCAL(pboxNew2);
-		DEALLOCATE_LOCAL(pptNew1);
-		DEALLOCATE_LOCAL(pboxNew1);
+		if (pptNew2) DEALLOCATE_LOCAL(pptNew2);
+		if (pboxNew2) DEALLOCATE_LOCAL(pboxNew2);
+		if (pboxNew1) {
+		    DEALLOCATE_LOCAL(pptNew1);
+		    DEALLOCATE_LOCAL(pboxNew1);
+		}
 		return;
 	    }
 	    pboxBase = pboxNext = pbox;
@@ -595,18 +647,18 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
     }
 
     (*info->accel->SetupForScreenToScreenCopy)(pScrn, xdir, ydir, GXcopy,
-					       (CARD32)(-1), -1);
+					       -1, -1);
 
     for (; nbox-- ; pbox++) {
-	int xa    = pbox->x1;
-	int ya    = pbox->y1;
-	int destx = xa + dx;
-	int desty = ya + dy;
-	int w     = pbox->x2 - xa + 1;
-	int h     = pbox->y2 - ya + 1;
+	int x1    = pbox->x1;
+	int y1    = pbox->y1;
+	int destx = x1 + dx;
+	int desty = y1 + dy;
+	int w     = pbox->x2 - x1 + 1;
+	int h     = pbox->y2 - y1 + 1;
 
-	if (destx < 0)                xa -= destx, w += destx, destx = 0;
-	if (desty < 0)                ya -= desty, h += desty, desty = 0;
+	if (destx < 0)                x1 -= destx, w += destx, destx = 0;
+	if (desty < 0)                y1 -= desty, h += desty, desty = 0;
 	if (destx + w > screenwidth)  w = screenwidth  - destx;
 	if (desty + h > screenheight) h = screenheight - desty;
 
@@ -615,24 +667,28 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 
 	RADEONSelectBuffer(pScrn, RADEON_BACK);
 	(*info->accel->SubsequentScreenToScreenCopy)(pScrn,
-						     xa, ya,
+						     x1, y1,
 						     destx, desty,
 						     w, h);
 	RADEONSelectBuffer(pScrn, RADEON_DEPTH);
 
 	if (info->depthMoves)
 	    RADEONScreenToScreenCopyDepth(pScrn,
-					  xa, ya,
+					  x1, y1,
 					  destx, desty,
 					  w, h);
     }
 
     RADEONSelectBuffer(pScrn, RADEON_FRONT);
 
-    DEALLOCATE_LOCAL(pptNew2);
-    DEALLOCATE_LOCAL(pboxNew2);
-    DEALLOCATE_LOCAL(pptNew1);
-    DEALLOCATE_LOCAL(pboxNew1);
+    if (pboxNew2) {
+	DEALLOCATE_LOCAL(pptNew2);
+	DEALLOCATE_LOCAL(pboxNew2);
+    }
+    if (pboxNew1) {
+	DEALLOCATE_LOCAL(pptNew1);
+	DEALLOCATE_LOCAL(pboxNew1);
+    }
 
     info->accel->NeedToSync = TRUE;
 }
@@ -804,9 +860,7 @@ static Bool RADEONDRIAgpInit(RADEONInfoPtr info, ScreenPtr pScreen)
 
 				/* Enable bus mastering in PCI config
 				   space */
-    info->pciCommand = pciReadLong(info->PciTag, PCI_CMD_STAT_REG);
-    pciWriteLong(info->PciTag, PCI_CMD_STAT_REG,
-		 info->pciCommand | PCI_CMD_MASTER_ENABLE);
+    xf86EnableBusMaster(info->PciTag);
 
     return TRUE;
 }
@@ -1029,9 +1083,9 @@ static void RADEONDRISAREAInit(ScreenPtr pScreen,
     ctx->pp_rot_matrix_0 = 0x00000000;
     ctx->pp_rot_matrix_1 = 0x00000000;
 
-    ctx->rb3d_stencilrefmask = ((0x000 << RADEON_STENCIL_REF_SHIFT) |
-				(0x0ff << RADEON_STENCIL_MASK_SHIFT) |
-				(0x0ff << RADEON_STENCIL_WRITEMASK_SHIFT));
+    ctx->rb3d_stencilrefmask = ((0x00 << RADEON_STENCIL_REF_SHIFT) |
+				(0xff << RADEON_STENCIL_MASK_SHIFT) |
+				(0xff << RADEON_STENCIL_WRITEMASK_SHIFT));
 
     ctx->rb3d_ropcntl   = 0x00000000;
     ctx->rb3d_planemask = 0xffffffff;
@@ -1134,10 +1188,10 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
 
     /* Check the DRI version */
     DRIQueryVersion(&major, &minor, &patch);
-    if (major != 3 || minor != 1 || patch < 0) {
+    if (major != 4 || minor < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "RADEONDRIScreenInit failed "
-		   "(DRI version = %d.%d.%d, expected 3.1.x).  "
+		   "(DRI version = %d.%d.%d, expected 4.0.x).  "
 		   "Disabling DRI.\n",
 		   major, minor, patch);
 	return FALSE;
@@ -1181,6 +1235,11 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
 					    < RADEON_MAX_DRAWABLES
 					    ? SAREA_MAX_DRAWABLES
 					    : RADEON_MAX_DRAWABLES);
+#ifdef PER_CONTEXT_SAREA
+    /* This is only here for testing per-context SAREAs.  When used, the
+       magic number below would be properly defined in a header file. */
+    info->perctx_sarea_size = 64 * 1024;
+#endif
 
 #ifdef NOT_DONE
     /* FIXME: Need to extend DRI protocol to pass this size back to
@@ -1216,6 +1275,9 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->MoveBuffers    = RADEONDRIMoveBuffers;
     pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
 
+    pDRIInfo->createDummyCtx     = TRUE;
+    pDRIInfo->createDummyCtxPriv = FALSE;
+
     if (!DRIScreenInit(pScreen, pDRIInfo, &info->drmFD)) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR, "DRIScreenInit failed!\n");
 	xfree(pDRIInfo->devPrivate);
@@ -1229,8 +1291,7 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
     version = drmGetVersion(info->drmFD);
     if (version) {
 	if (version->version_major != 1 ||
-	    version->version_minor != 0 ||
-	    version->version_patchlevel < 0) {
+	    version->version_minor < 0) {
             /* incompatible drm version */
             xf86DrvMsg(pScreen->myNum, X_ERROR,
                        "RADEONDRIScreenInit failed "
@@ -1324,6 +1385,7 @@ Bool RADEONDRIFinishScreenInit(ScreenPtr pScreen)
     /* Initialize the SAREA private data structure */
     pSAREAPriv = (RADEONSAREAPrivPtr)DRIGetSAREAPrivate(pScreen);
     memset(pSAREAPriv, 0, sizeof(*pSAREAPriv));
+
     RADEONDRISAREAInit(pScreen, pSAREAPriv);
 
     pRADEONDRI                 = (RADEONDRIPtr)info->pDRIInfo->devPrivate;
@@ -1357,6 +1419,13 @@ Bool RADEONDRIFinishScreenInit(ScreenPtr pScreen)
     pRADEONDRI->agpTexMapSize  = info->agpTexMapSize;
     pRADEONDRI->log2AGPTexGran = info->log2AGPTexGran;
     pRADEONDRI->agpTexOffset   = info->agpTexStart;
+
+    pRADEONDRI->sarea_priv_offset  = sizeof(XF86DRISAREARec);
+
+#ifdef PER_CONTEXT_SAREA
+    /* Set per-context SAREA size */
+    pRADEONDRI->perctx_sarea_size = info->perctx_sarea_size;
+#endif
 
     return TRUE;
 }
@@ -1405,9 +1474,6 @@ void RADEONDRICloseScreen(ScreenPtr pScreen)
 	info->agpMemHandle = 0;
 	drmAgpRelease(info->drmFD);
     }
-
-				/* Restore PCI command register */
-    pciWriteLong(info->PciTag, PCI_CMD_STAT_REG, info->pciCommand);
 
 				/* De-allocate all DRI resources */
     DRICloseScreen(pScreen);

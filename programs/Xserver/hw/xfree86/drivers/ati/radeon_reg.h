@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.6 2001/01/11 03:36:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.7 2001/03/03 22:26:10 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1073,36 +1073,36 @@
 #define RADEON_PP_TXFORMAT_0                0x1c58
 #define RADEON_PP_TXFORMAT_1                0x1c70
 #define RADEON_PP_TXFORMAT_2                0x1c88
-#       define RADEON_TXF_8BPP_I             (0  <<  0)
-#       define RADEON_TXF_16BPP_AI88         (1  <<  0)
-#       define RADEON_TXF_8BPP_RGB332        (2  <<  0)
-#       define RADEON_TXF_16BPP_ARGB1555     (3  <<  0)
-#       define RADEON_TXF_16BPP_RGB565       (4  <<  0)
-#       define RADEON_TXF_16BPP_ARGB4444     (5  <<  0)
-#       define RADEON_TXF_32BPP_ARGB8888     (6  <<  0)
-#       define RADEON_TXF_32BPP_RGBA8888     (7  <<  0)
-#       define RADEON_TXF_8BPP_Y             (8  <<  0)
-#       define RADEON_TXF_FORMAT_MASK        (31 <<  0)
-#       define RADEON_TXF_FORMAT_SHIFT       0
-#       define RADEON_TXF_APPLE_YUV_MODE     (1  <<  5)
-#       define RADEON_TXF_ALPHA_IN_MAP       (1  <<  6)
-#       define RADEON_TXF_NON_POWER2         (1  <<  7)
-#       define RADEON_TXF_WIDTH_MASK         (15 <<  8)
-#       define RADEON_TXF_WIDTH_SHIFT        8
-#       define RADEON_TXF_HEIGHT_MASK        (15 << 12)
-#       define RADEON_TXF_HEIGHT_SHIFT       12
-#       define RADEON_TXF_ST_ROUTE_STQ0      (0  << 24)
-#       define RADEON_TXF_ST_ROUTE_MASK      (3  << 24)
-#       define RADEON_TXF_ST_ROUTE_STQ1      (1  << 24)
-#       define RADEON_TXF_ST_ROUTE_STQ2      (2  << 24)
-#       define RADEON_TXF_ENDIAN_NO_SWAP     (0  << 26)
-#       define RADEON_TXF_ENDIAN_16BPP_SWAP  (1  << 26)
-#       define RADEON_TXF_ENDIAN_32BPP_SWAP  (2  << 26)
-#       define RADEON_TXF_ENDIAN_HALFDW_SWAP (3  << 26)
-#       define RADEON_TXF_ALPHA_MASK_ENABLE  (1  << 28)
-#       define RADEON_TXF_CHROMA_KEY_ENABLE  (1  << 29)
-#       define RADEON_TXF_CUBIC_MAP_ENABLE   (1  << 30)
-#       define RADEON_TXF_PERSPECTIVE_ENABLE (1  << 31)
+#       define RADEON_TXFORMAT_I8                 (0  <<  0)
+#       define RADEON_TXFORMAT_AI88               (1  <<  0)
+#       define RADEON_TXFORMAT_RGB332             (2  <<  0)
+#       define RADEON_TXFORMAT_ARGB1555           (3  <<  0)
+#       define RADEON_TXFORMAT_RGB565             (4  <<  0)
+#       define RADEON_TXFORMAT_ARGB4444           (5  <<  0)
+#       define RADEON_TXFORMAT_ARGB8888           (6  <<  0)
+#       define RADEON_TXFORMAT_RGBA8888           (7  <<  0)
+#       define RADEON_TXFORMAT_Y8                 (8  <<  0)
+#       define RADEON_TXFORMAT_FORMAT_MASK        (31 <<  0)
+#       define RADEON_TXFORMAT_FORMAT_SHIFT       0
+#       define RADEON_TXFORMAT_APPLE_YUV_MODE     (1  <<  5)
+#       define RADEON_TXFORMAT_ALPHA_IN_MAP       (1  <<  6)
+#       define RADEON_TXFORMAT_NON_POWER2         (1  <<  7)
+#       define RADEON_TXFORMAT_WIDTH_MASK         (15 <<  8)
+#       define RADEON_TXFORMAT_WIDTH_SHIFT        8
+#       define RADEON_TXFORMAT_HEIGHT_MASK        (15 << 12)
+#       define RADEON_TXFORMAT_HEIGHT_SHIFT       12
+#       define RADEON_TXFORMAT_ST_ROUTE_STQ0      (0  << 24)
+#       define RADEON_TXFORMAT_ST_ROUTE_MASK      (3  << 24)
+#       define RADEON_TXFORMAT_ST_ROUTE_STQ1      (1  << 24)
+#       define RADEON_TXFORMAT_ST_ROUTE_STQ2      (2  << 24)
+#       define RADEON_TXFORMAT_ENDIAN_NO_SWAP     (0  << 26)
+#       define RADEON_TXFORMAT_ENDIAN_16BPP_SWAP  (1  << 26)
+#       define RADEON_TXFORMAT_ENDIAN_32BPP_SWAP  (2  << 26)
+#       define RADEON_TXFORMAT_ENDIAN_HALFDW_SWAP (3  << 26)
+#       define RADEON_TXFORMAT_ALPHA_MASK_ENABLE  (1  << 28)
+#       define RADEON_TXFORMAT_CHROMA_KEY_ENABLE  (1  << 29)
+#       define RADEON_TXFORMAT_CUBIC_MAP_ENABLE   (1  << 30)
+#       define RADEON_TXFORMAT_PERSPECTIVE_ENABLE (1  << 31)
 #define RADEON_PP_TXOFFSET_0                0x1c5c
 #define RADEON_PP_TXOFFSET_1                0x1c74
 #define RADEON_PP_TXOFFSET_2                0x1c8c
