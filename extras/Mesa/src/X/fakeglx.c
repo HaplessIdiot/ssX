@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X/fakeglx.c,v 1.8 2000/11/13 21:55:37 dawes Exp $ */
+
 
 /*
  * This is an emulation of the GLX API which allows Mesa/GLX-based programs
