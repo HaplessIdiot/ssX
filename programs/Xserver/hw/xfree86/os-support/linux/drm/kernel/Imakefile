@@ -1,0 +1,301 @@
+XCOMM $XFree86: $(DRMSRCDIR)/progra$(DRMSRCDIR)/Xserv$(DRMSRCDIR)/$(DRMSRCDIR)/xfree$(DRMSRCDIR)/os-suppo$(DRMSRCDIR)/shar$(DRMSRCDIR)/d$(DRMSRCDIR)/kern$(DRMSRCDIR)/Imakefile,v 1.12 20$(DRMSRCDIR)/$(DRMSRCDIR)/05 18:43:05 dawes Exp $
+
+#include <Server.tmpl>
+
+XCOMM This is a kludge until we determine how best to build the
+XCOMM kernel-specific device driver.  This allows us to continue
+XCOMM to maintain the single Makefile.linux with kernel-specific
+XCOMM support.  Later, we can move to a different Imakefile.
+
+#if BuildXF86DRI && BuildXF86DRM
+all::
+	$(MAKE) -f Makefile.linux
+
+clean::
+	$(MAKE) -f Makefile.linux clean
+#else
+all::
+	@echo 'Use "make -f Makefile.linux" to manually build drm.o'
+#endif
+
+SRCS_DRM = \
+	drm.h \
+	drmP.h \
+	drm_agpsupport.h \
+	drm_auth.h \
+	drm_bufs.h \
+	drm_context.h \
+	drm_compat.h \
+	drm_core.h \
+	drm_dma.h \
+	drm_drawable.h \
+	drm_drv.h \
+	drm_fops.h \
+	drm_init.h \
+	drm_ioctl.h \
+	drm_irq.h \
+	drm_lock.h \
+	drm_memory.h \
+	drm_memory_debug.h \
+	drm_os_linux.h \
+	drm_proc.h \
+	drm_pci.h \
+	drm_sarea.h \
+	drm_scatter.h \
+	drm_stub.h \
+	drm_vm.h
+
+SRCS_GAMMA = \
+	gamma.h \
+	gamma_context.h \
+	gamma_drm.h \
+	gamma_drv.h \
+	gamma_lists.h \
+	gamma_lock.h \
+	gamma_old_dma.h \
+	gamma_dma.c \
+	gamma_drv.c
+
+SRCS_I810 = \
+	i810.h \
+	i810_drm.h \
+	i810_drv.h \
+	i810_dma.c \
+	i810_drv.c
+
+SRCS_I830 = \
+	i830.h \
+	i830_drm.h \
+	i830_drv.h \
+	i830_dma.c \
+	i830_drv.c \
+	i830_irq.c
+
+SRCS_I915 = \
+	i915.h \
+	i915_drm.h \
+	i915_drv.h \
+	i915_dma.c \
+	i915_mem.c \
+	i915_drv.c \
+	i915_irq.c
+
+SRCS_R128 = \
+	ati_pcigart.h \
+	r128.h \
+	r128_drm.h \
+	r128_drv.h \
+	r128_cce.c \
+	r128_drv.c \
+	r128_irq.c \
+	r128_state.c
+
+SRCS_MACH64 = \
+	mach64_drv.c \
+	mach64_irq.c \
+	mach64_dma.c \
+	mach64.h \
+	mach64_drm.h \
+	mach64_drv.h \
+	mach64_state.c
+
+SRCS_SAVAGE = \
+	savage_dma.c \
+	savage_drm.h \
+	savage_drv.c \
+	savage_drv.h \
+	savage.h
+
+SRCS_VIA = \
+	via_irq.c \
+	via_drm.h \
+	via_drv.c \
+	via_dma.c \
+	via_drv.h \
+	via_ds.c \
+	via_ds.h \
+	via.h \
+	via_map.c \
+	via_mm.c \
+	via_mm.h \
+	via_3d_reg.h \
+	via_verifier.c \
+	via_verifier.h
+
+SRCS_RADEON = \
+	ati_pcigart.h \
+	radeon.h \
+	radeon_drm.h \
+	radeon_drv.h \
+	radeon_cp.c \
+	radeon_drv.c \
+	radeon_irq.c \
+	radeon_mem.c \
+	radeon_state.c \
+
+SRCS_SIS = \
+	sis.h \
+	sis_drm.h \
+	sis_drv.h \
+	sis_ds.h \
+	sis_drv.c \
+	sis_ds.c \
+	sis_mm.c
+
+SRCS_MGA = \
+	mga.h \
+	mga_drm.h \
+	mga_drv.h \
+	mga_ucode.h \
+	mga_dma.c \
+	mga_drv.c \
+	mga_irq.c \
+	mga_state.c \
+	mga_warp.c
+
+SRCS_TDFX = \
+	tdfx.h \
+	tdfx_drv.c
+
+SRCS_BUILD = \
+	Config.in \
+	Kconfig \
+	Makefile.linux \
+	drm_pciids.txt \
+	create_linux_pci_lists.sh \
+	Makefile.kernel
+
+DRMINSTSRCDIR = $(INSTSRCDIR)/drm/linux
+
+SRCS = $(SRCS_DRM) $(SRCS_GAMMA) $(SRCS_I810) $(SRCS_I830) $(SRCS_I915) \
+	$(SRCS_R128) $(SRCS_MACH64) $(SRCS_SAVAGE) $(SRCS_VIA) \
+	$(SRCS_RADEON) $(SRCS_SIS) $(SRCS_MGA) $(SRCS_TDFX) $(SRCS_BUILD)
+
+InstallMultiple($(SRCS),$(DRMINSTSRCDIR))
+install::
+	MakeDir($(DESTDIR)$(DRMINSTSRCDIR))
+	@(cd $(DESTDIR)$(DRMINSTSRCDIR); sh ./create_linux_pci_lists.sh < drm_pciids.txt; rm -f Makefile; set -x; ln Makefile.linux Makefile)
+
+LinkSourceFile(drm.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(drm_sarea.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(mga.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(mga_drm.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(mga_drv.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(mga_ucode.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(mga_dma.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(mga_irq.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(mga_state.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(mga_warp.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(r128.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(r128_drm.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(r128_drv.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(r128_cce.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(r128_irq.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(r128_state.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(radeon.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(radeon_drm.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(radeon_drv.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(radeon_cp.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(radeon_irq.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(radeon_mem.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(radeon_state.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(sis.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(sis_drm.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(sis_drv.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(sis_ds.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(sis_ds.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(sis_mm.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(tdfx.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(tdfx_drv.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(ati_pcigart.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_agpsupport.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_auth.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_bufs.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_compat.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_core.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_context.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_dma.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_drawable.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_drv.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_fops.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_init.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_ioctl.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_irq.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_lock.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_memory_debug.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_memory.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_os_linux.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_pci.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drmP.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_pm.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_proc.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_scatter.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_stub.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_vm.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(ffb_context.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(ffb_drv.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(ffb_drv.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(ffb.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(gamma_context.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(gamma_dma.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(gamma_drm.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(gamma_drv.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(gamma_drv.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(gamma.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(gamma_lists.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(gamma_lock.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(gamma_old_dma.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(i810_dma.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(i810_drm.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(i810_drv.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(i810_drv.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(i810.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(i830_dma.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(i830_drm.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(i830_drv.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(i830_drv.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(i830.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(i830_irq.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(i915_dma.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(i915_drm.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(i915_drv.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(i915_drv.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(i915_mem.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(i915.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(i915_irq.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(mach64_dma.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(mach64_drm.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(mach64_drv.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(mach64_drv.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(mach64_irq.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(mach64_state.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(mach64.h,$(DRMSRCDIR)/shared)
+LinkFile(Makefile.linux,$(DRMSRCDIR)/linux/Makefile)
+LinkSourceFile(Makefile.kernel,$(DRMSRCDIR)/linux)
+LinkSourceFile(mga_drv.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(r128_drv.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(radeon_drv.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(savage_dma.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(savage_drm.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(savage_drv.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(savage_drv.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(savage.h,$(DRMSRCDIR)/linux)
+LinkSourceFile(sis_drv.c,$(DRMSRCDIR)/linux)
+LinkSourceFile(via_drm.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(via_drv.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(via_dma.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(via_drv.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(via_3d_reg.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(via_ds.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(via_ds.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(via_verifier.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(via_verifier.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(via.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(via_irq.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(via_map.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(via_mm.c,$(DRMSRCDIR)/shared)
+LinkSourceFile(via_mm.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(Config.in,$(DRMSRCDIR)/linux)
+LinkSourceFile(Kconfig,$(DRMSRCDIR)/linux)
+LinkSourceFile(drm_pciids.txt,$(DRMSRCDIR)/shared)
+LinkSourceFile(create_linux_pci_lists.sh,$(DRMSRCDIR)/scripts)
