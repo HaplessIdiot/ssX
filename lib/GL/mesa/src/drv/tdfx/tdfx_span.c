@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_span.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_span.c,v 1.5 2002/04/10 16:20:04 tsi Exp $ */
 
 /*
  * Original rewrite:
@@ -573,11 +573,11 @@ GetFbParams(tdfxContextPtr fxMesa,
  * Recall that x and y are screen coordinates.
  */
 #define GET_ORDINARY_FB_DATA(ReadParamsp, type, x, y)               \
-    ((*(type **)((ReadParamsp)->lfbPtr))                            \
+    ((*(type **)(&(ReadParamsp)->lfbPtr))                            \
                  [(y) * ((ReadParamsp)->LFBStrideInElts)            \
                    + (x)])
 #define GET_WRAPPED_FB_DATA(ReadParamsp, type, x, y)                \
-    ((*(type **)((ReadParamsp)->lfbWrapPtr))                        \
+    ((*(type **)(&(ReadParamsp)->lfbWrapPtr))                        \
                  [(y) * ((ReadParamsp)->LFBStrideInElts)            \
                    + ((x) - (ReadParamsp)->firstWrappedX)])
 #define GET_FB_DATA(ReadParamsp, type, x, y)                        \
