@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_solid.c,v 3.0 1994/12/25 12:35:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_solid.c,v 3.1 1995/01/04 04:42:30 dawes Exp $ */
 
 /*
 
@@ -110,7 +110,7 @@ Modified for Cirrus by Harm Hanemaayer (hhanemaa@cs.ruu.nl)
 #include "vga.h"
 #include "compiler.h"
 #include "cir_driver.h"
-#include "cir_blitmm.h"		/* MMIO BitBLT commands */
+#include "cirBlitMM.h"		/* MMIO BitBLT commands */
 
 
 /*

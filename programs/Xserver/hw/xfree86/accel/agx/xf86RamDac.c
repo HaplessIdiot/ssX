@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.1 1994/07/15 06:57:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.2 1994/09/07 15:47:45 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  * 
@@ -43,8 +43,8 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "xf86RamDac.h"
-#include "xf86Bt485.h"
-#include "xf86Bt481.h"
+#include "Bt485.h"
+#include "Bt481.h"
 #include "xf861502x.h"
 
 /* RamDac related globals */

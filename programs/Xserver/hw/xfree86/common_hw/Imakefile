@@ -1,12 +1,12 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:25:10 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.5 1995/01/15 10:33:35 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.6 1995/01/20 04:21:17 dawes Exp $
 #include <Server.tmpl>
 
-SRCS = ICD2061Acal.c ICD2061Aset.c ICD2061Aalt.c xf86_ClkPr.c BUSmemcpy.s \
+SRCS = I2061Acal.c I2061Aset.c I2061Aalt.c xf86_ClkPr.c BUSmemcpy.s \
        SC11412.c ATTDac.c S3gendac.c Ti3025clk.c SlowBcopy.s IODelay.s \
        ICS2595.c CirrusClk.c Ch8391clk.c
 
-OBJS = ICD2061Acal.o ICD2061Aset.o ICD2061Aalt.o xf86_ClkPr.o BUSmemcpy.o \
+OBJS = I2061Acal.o I2061Aset.o I2061Aalt.o xf86_ClkPr.o BUSmemcpy.o \
        SC11412.o ATTDac.o S3gendac.o Ti3025clk.o SlowBcopy.o IODelay.o \
        ICS2595.o CirrusClk.o Ch8391clk.o
 

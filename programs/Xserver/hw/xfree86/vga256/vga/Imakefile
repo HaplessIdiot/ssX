@@ -1,12 +1,12 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:43:27 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.2 1994/09/07 15:56:03 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.3 1994/12/17 10:08:48 dawes Exp $
 #include <Server.tmpl>
 
 FSRCS =  fBitBlt.s fFillCopy.s fFillOr.s fFillAnd.s \
          fFillXor.s fFillSet.s vgabres.s vgalineH.s vgalineV.s
 
 SRCS =	 vgagc.c vgawindow.c vgascrinit.c \
-	 vgapntwin.c vgapntwinS.c vgabitblt.c \
+	 vgapntwin.c vgapwinS.c vgabitblt.c \
 	 vgafillsp.c vgasetsp.c vgaimage.c \
 	 vgagetsp.c vgafillrct.c vgaBitBlt.c \
 	 vgasolidC.c vgasolidCS.c vgasolidX.c \
@@ -35,7 +35,7 @@ OBJS =   vgagc.o vgawindow.o vgascrinit.o \
 	 vgatile32C.o vgatile32G.o \
 	 vgatileoddC.o vgatileoddG.o \
 	 vgafillsp.o vgasetsp.o \
-	 vgapntwin.o vgapntwinS.o vgaBitBlt.o \
+	 vgapntwin.o vgapwinS.o vgaBitBlt.o \
 	 vgazerarcC.o vgazerarcX.o vgazerarcG.o \
 	 vgafillarcC.o vgafillarcG.o \
 	 vgategblt.o vgabstore.o vga8cppl.o \
@@ -71,7 +71,7 @@ NormalAsmObjectRule()
 NormalLintTarget($(SRCS))
 
 ObjectFromSpecialAsmSource(BitBlt,../enhanced/suBitBlt,NullParameter)
-ObjectFromSpecialAsmSource(BitBlt2,../enhanced/suBitBlt2,NullParameter)
+ObjectFromSpecialAsmSource(BitBlt2,../enhanced/suBBlt2,NullParameter)
 ObjectFromSpecialAsmSource(Box,../enhanced/suBox,NullParameter)
 ObjectFromSpecialAsmSource(Line,../enhanced/suLine,NullParameter)
 ObjectFromSpecialAsmSource(VHLine,../enhanced/suVHLine,NullParameter)

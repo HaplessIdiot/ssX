@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86Bt485.c,v 3.0 1994/06/15 15:35:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt485.c,v 3.1 1994/09/07 15:47:42 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth  <haw30@eng.amdahl.com>
@@ -41,7 +41,7 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86RamDac.h"
-#include "xf86Bt485.h"
+#include "Bt485.h"
 
 static unsigned char xf86BtYPosMask = 0xFF;
 

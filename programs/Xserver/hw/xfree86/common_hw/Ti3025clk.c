@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.4 1995/01/20 04:21:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.6 1995/01/21 14:07:58 dawes Exp $ */
 
 /*
  * Copyright 1994 The XFree86 Project, Inc
@@ -6,7 +6,7 @@
  * programming the on-chip clock on the Ti3025, derived from the
  * S3 gendac code by Jon Tombs
  * Dirk Hohndel <hohndel@aib.com>
- * Robin Cutshaw <robin@paros.com>
+ * Robin Cutshaw <robin@XFree86.org>
  */
 
 #include "s3Ti3020.h" 

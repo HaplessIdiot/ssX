@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.7 1995/01/15 10:35:18 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.8 1995/01/20 04:23:07 dawes Exp $
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
  *
@@ -44,7 +44,7 @@
 #include "xf86_OSlib.h"
 #include "vga.h"
 #include "cir_driver.h"
-#include "cir_blitter.h"
+#include "cirBlitter.h"
 
 static Bool cirrusRealizeCursor();
 static Bool cirrusUnrealizeCursor();
