@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.23 2002/07/14 17:08:16 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.24 2002/11/25 12:58:55 tsi Exp $
 
 /*
  * Need both shared and unshared Mesa objects in the following cases:
@@ -10,7 +10,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.23 2002/07/14 17:08:16 alan
  * driver modules.
  */
 
-#if GlxDriverUsesMesa || GlxBuiltInXMesa || BuildOSMesaLib
+#if BuildXF86DRI && (GlxDriverUsesMesa || GlxBuiltInXMesa || BuildOSMesaLib)
 #define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
 #define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
 #define DoExtraLib SharedLibGlx
