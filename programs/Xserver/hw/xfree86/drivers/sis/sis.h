@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   12
-#define SISDRIVERVERSIONDAY     4
+#define SISDRIVERVERSIONDAY     8
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -516,6 +516,7 @@ typedef struct {
     unsigned char       *RenderAccelArray;
     unsigned char *	FbBase1;
     unsigned long	OnScreenSize1;
+    unsigned char       OldMode;
 #ifdef SIS_CP
     SIS_CP_H_ENT
 #endif

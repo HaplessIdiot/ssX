@@ -1585,6 +1585,8 @@ SiSUpdateXineramaScreenInfo(ScrnInfoPtr pScrn1)
     /* Attention: Usage of RandR may lead into virtual X and Y values
      * actually smaller than our MetaModes! To avoid this, we calculate
      * the maxCRT fields here (and not somewhere else, like in CopyNLink)
+     *
+     * *** For now: RandR will be disabled if SiS pseudo-Xinerama is on
      */
 
     if((pSiS->SiSXineramaVX != pScrn1->virtualX) || (pSiS->SiSXineramaVY != pScrn1->virtualY)) {
@@ -6174,7 +6176,7 @@ SISRestore(ScrnInfoPtr pScrn)
        /* First, restore CRT1 on/off and VB connection registers */
        outSISIDXREG(SISCR, 0x32, pSiS->oldCR32);
        if(!(pSiS->oldCR17 & 0x80)) {			/* CRT1 was off */
-          if(!(SiSBridgeIsInSlaveMode(pScrn))) {       /* Bridge is NOT in SlaveMode now -> do it */
+          if(!(SiSBridgeIsInSlaveMode(pScrn))) {        /* Bridge is NOT in SlaveMode now -> do it */
 	     doit = TRUE;
 	  } else {
 	     doitlater = TRUE;
@@ -6574,8 +6576,8 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	  /* Read 0:449 which the BIOS sets to the current mode number
 	   * Unfortunately, this not reliable since the int10 emulation
 	   * does not change this. So if we call the VBE later, this
-	   * byte won't be touched. (which is why we set this manually
-	   * then)
+	   * byte won't be touched (which is why we set this manually
+	   * then).
 	   */
           unsigned char myoldmode = SiS_GetSetModeID(pScrn,0xFF);
 	  unsigned char cr30, cr31;
@@ -6585,7 +6587,6 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	   * bridge...
 	   */
           inSISIDXREG(SISCR, 0x34, pSiS->OldMode);
-	  pSiS->OldMode &= 0x7f;
 	  inSISIDXREG(SISCR, 0x30, cr30);
 	  inSISIDXREG(SISCR, 0x31, cr31);
 
@@ -6603,12 +6604,15 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	   * two is valid).
 	   */
 	  if(pSiS->OldMode > 0x7f) {
-	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	   	"Previous video mode (%02x) invalid, using BIOS scratch (%02x)\n",
-		pSiS->OldMode, myoldmode);
 	     pSiS->OldMode = myoldmode;
 	  }
        }
+#ifdef SISDUALHEAD
+       if(pSiS->DualHeadMode) {
+          if(!pSiS->SecondHead) pSiSEnt->OldMode = pSiS->OldMode;
+          else                  pSiS->OldMode = pSiSEnt->OldMode;
+       }
+#endif
     }
 
     /* Initialise the first mode */
@@ -6937,6 +6941,11 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
           SiSnoPanoramiXExtension = FALSE;
           SiSXineramaExtensionInit(pScrn);
 	  if(!SiSnoPanoramiXExtension) {
+#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,0,0,0)
+             xf86DisableRandR();
+             xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	  	 "SiS Pseudo-Xinerama enabled, RandR disabled\n");
+#endif
 	     pSiS->SiS_SD_Flags |= SiS_SD_PSEUDOXINERAMA;
 	  }
        }
@@ -7713,10 +7722,6 @@ SISEnterVT(int scrnIndex, int flags)
 
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 
-    if(pSiS->VGAEngine == SIS_300_VGA || pSiS->VGAEngine == SIS_315_VGA) {
-       andSISIDXREG(SISCR,0x34,0x7f);
-    }
-
     if(!SISModeInit(pScrn, pScrn->currentMode)) {
        SISErrorLog(pScrn, "SiSEnterVT: SISModeInit() failed\n");
        return FALSE;
@@ -7804,7 +7809,7 @@ SISLeaveVT(int scrnIndex, int flags)
 
     }
 
-    /* We use this (otherwise unused) bit to indicate that we are running
+    /* We use (otherwise unused) bit 7 to indicate that we are running
      * to keep sisfb to change the displaymode (this would result in
      * lethal display corruption upon quitting X or changing to a VT
      * until a reboot)
@@ -7880,12 +7885,16 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	}
 
         vgaHWLock(hwp);
+
     }
 
-    if(pSiS->VGAEngine == SIS_300_VGA || pSiS->VGAEngine == SIS_315_VGA) {
-       andSISIDXREG(SISCR,0x34,0x7f);
-    }
-
+    /* We should restore the mode number in case vtsema = false as well,
+     * but since we haven't register access then we can't do it. I think
+     * I need to rework the save/restore stuff, like saving the video
+     * status when returning to the X server and by that save me the
+     * trouble if sisfb was started from a textmode VT while X was on.
+     */
+    
     SISUnmapMem(pScrn);
     vgaHWUnmapMem(pScrn);
 
