@@ -2,7 +2,7 @@
 
           VA Linux Systems, Inc. Professional Services - Graphics.
 
-                               22 August 2000
+                               24 October 2000
 
 1.  Preamble
 
@@ -512,6 +512,14 @@ ules/dri/tdfx_dri.so.  This will be automatically loaded by libGL.so.
 
 10.1.3  Troubleshooting
 
+   o If you try to run an OpenGL application and see an error message similar
+     to
+
+                        gd error (glide): gd error (glide): grSstSelect:  non-existent SSTgd error (glide): grSstSelect:  non-existent SSTS
+
+     it means that you have the wrong version of the Glide library for your
+     hardware.
+
    o 3D acceleration for Voodoo3 is only supported in the 16 bit/pixel screen
      mode.  Use xdpyinfo to verify that all your visuals are depth 16.  Edit
      your XF86Config file if needed.
@@ -532,6 +540,38 @@ ules/dri/tdfx_dri.so.  This will be automatically loaded by libGL.so.
      not implemented at this time.  Applications which use that mode, such as
      the Performer Town demo, may become sluggish when falling back to soft-
      ware rendering to render in that mode.
+
+   o The Voodoo3/Banshee driver reverts to software rendering under the fol-
+     lowing conditions:
+
+        o Setting GL_LIGHT_MODEL_COLOR_CONTROL to GL_SEPARATE_SPECULAR_COLOR.
+
+        o Enabling line stippline or polygon stippling.
+
+        o Enabling point smoothing or polygon smoothing.
+
+        o Enabling line smoothing when line width is not 1.0.  That is,
+          antialiased lines are done in hardware only when the line width is
+          1.0.
+
+        o Using 1-D or 3-D texture maps.
+
+        o Using the GL_BLEND texture environment.
+
+        o Using stencil operations.
+
+        o Using the accumulation buffer.
+
+        o Using glBlendEquation(GL_LOGIC_OP).
+
+        o Using glDrawBuffer(GL_FRONT_AND_BACK).
+
+        o Using glPolygonMode(face, GL_POINT) or glPolygonMode(face,
+          GL_LINE).
+
+        o Using point size attenuation (i.e. GL_DISTANCE_ATTENUATION_EXT).
+
+        o Using glColorMask(r, g, b, a) when r!=g or g!=b.
 
 10.1.5  Known Problems
 
@@ -611,13 +651,30 @@ A software-based accumulation buffer is available in both 16 and 32bpp modes.
      variable indicates the maximum number of swap buffer commands can be
      buffered.  Zero allows maximum frame rate.
 
+   o Rendering with 16-bit per texel textures is faster than using 32-bit per
+     texel textures.  The internalFormat parameter to glTexImage2D can be
+     used to control texel size.
+
+   o The Voodoo5 driver reverts to software rendering under the same condi-
+     tions Voodoo3 with three exceptions.  First, stencil operations are
+     implemented in hardware when the screen is configured for 32 bits/pixel.
+     Second, the GL_BLEND texture env mode is fully supported in hardware.
+     Third, glColorMask is fully supported in hardware when the screen is
+     configured for 32 bits/pixel.
+
 10.2.5  Known Problems
 
    o The Glide library cannot be used directly; it's only meant to be used
      via the tdfx DRI driver.
 
    o 24bpp screen modes are supported by the hardware but not by the current
-     driver.
+     driver.  32bpp is fully supported.
+
+   o As of October, 2000 the second VSA-100 chip on the Voodoo5 is not yet
+     operational.  Therefore, the board isn't being used to its full capac-
+     ity.  The second VSA-100 chip will allow Scan-Line Interleave (SLI) mode
+     for full-screen applications and games, potentially doubling the sys-
+     tem's fill rate.
 
 10.3  Intel i810
 
@@ -928,7 +985,7 @@ forge.net/resources/resources.html
    o In the future there may be IHV and Linux vendor support resources for
      the DRI.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.8 2000/09/24 13:51:26 alanh Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.9 2000/11/08 05:03:03 dawes Exp $
 
 
 $XFree86$

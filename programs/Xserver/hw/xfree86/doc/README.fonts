@@ -390,9 +390,25 @@ encoding, high bit clear), it should be
 
      SIZE 0x75 0x80
 
-Codes outside the region defined by the size line are supposed to be unde-
-fined.  Encodings default to linear encoding with a size of 256 (0x100).
-This means that you must declare the size of all 16 bit encodings.
+In the case of a matrix encoding, a `FIRSTINDEX' may be included to specify
+the minimum glyph index in an encoding.  The keyword `FIRSTINDEX' is followed
+by two integers, the minimum row number followed by the minimum column num-
+ber:
+
+     FIRSTINDEX 0x20 0x20
+
+In the case of a linear encoding, a `FIRSTINDEX' line should usually not be
+included.  If for some reason however it is desired that it should be
+included, it should be followed by a single integer.
+
+Note that in some font backends inclusion of a `FIRSTINDEX' line has the side
+effect of disabling default glyph generation, and this keyword should there-
+fore be avoided unless absolutely necessary.
+
+Codes outside the region defined by the `SIZE' and `FIRSTINDEX' lines are
+supposed to be undefined.  Encodings default to linear encoding with a size
+of 256 (0x100).  This means that you must declare the size of all 16 bit
+encodings.
 
 What follows is one or more mapping sections.  A mapping section starts with
 a `STARTMAPPING' line stating the target of the mapping.  The target may be
@@ -769,7 +785,7 @@ used for horizontal text (e.g. the CMap `KSC-EUC-H' will be used, but not
 `KSC-EUC-V').  This limitation is due to the fact that the core X11 protocol
 only provides support for horizontal writing.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.7 2000/03/06 22:59:25 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.8 2000/11/14 16:54:49 dawes Exp $
 
 
 $XFree86$
