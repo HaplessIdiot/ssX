@@ -1,4 +1,9 @@
-XFree86 3.1.2Eb (29 June 1996)
+XFree86 3.1.2Eb (30 June 1996)
+584. Fix twm/gram.y problems that show up when using bison-1.15
+     (Matthieu Herrb).
+583. Move the beta expiry check code into a separate file, and add a command
+     line option to allow the expiry date to be extended when a key is
+     provided.
 582. Preliminary 24bpp packed support for some S3 cards (Harald Koenig).
 581. Add 24bpp (packed pixel) support for cfb (cfb24), and the required
      hooks for using it with the SVGA server (NoZomi Ytow).
