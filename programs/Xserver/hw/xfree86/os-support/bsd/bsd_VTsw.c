@@ -1,4 +1,5 @@
 /* $XConsortium: bsd_VTsw.c,v 1.1 94/03/28 21:27:54 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Derived from VTsw_usl.c which is
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
