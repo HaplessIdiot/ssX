@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.118 2000/12/07 19:03:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.119 2000/12/08 09:05:16 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -208,7 +208,8 @@ typedef enum {
     OPTION_VIDEO_KEY,
     OPTION_NOMMIO,
     OPTION_NOPCIBURST,
-    OPTION_CYBER_SHADOW
+    OPTION_CYBER_SHADOW,
+    OPTION_CYBER_STRETCH
 } TRIDENTOpts;
 
 static OptionInfoRec TRIDENTOptions[] = {
@@ -224,6 +225,7 @@ static OptionInfoRec TRIDENTOptions[] = {
     { OPTION_NOPCIBURST,	"NoPciBurst",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MMIO_ONLY,		"MMIOonly",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_CYBER_SHADOW,	"CyberShadow",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_CYBER_STRETCH,	"CyberStretch",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1214,6 +1216,10 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_CYBER_SHADOW, FALSE)) {
 	pTrident->CyberShadow = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Shadow enabled\n");
+    }
+    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_CYBER_STRETCH, FALSE)) {
+	pTrident->CyberStretch = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Stretch enabled\n");
     }
 
     pTrident->MUXThreshold = 160000; /* 160MHz */
