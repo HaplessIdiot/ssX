@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/09/28 17:26:58 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/et4000/Imakefile,v 3.7 1996/12/23 06:54:35 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/et4000/Imakefile,v 3.10 1997/02/19 06:04:15 hohndel Exp $
 #include <Server.tmpl>
 
 SRCS = et4_driver.c et4_bank.s tseng_ramdac.c tseng_clock.c tseng_cursor.c
@@ -15,7 +15,8 @@ OBJS = et4_driver.o et4_bank.o tseng_ramdac.o tseng_clock.o tseng_cursor.o
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
-           -I../../../vga256/vga -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+           -I../../../vga256/vga -I$(SERVERSRC)/include \
+           -I$(SERVERSRC)/mi -I$(XINCLUDESRC)
 #endif
 
 DEFINES = -DMONOVGA -DW32_SUPPORT
