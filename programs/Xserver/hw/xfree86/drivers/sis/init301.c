@@ -6849,6 +6849,11 @@ SiS_GetLCDResInfo(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,
 	   /* TEMP - no idea about the timing and zoom factors */
 	   SiS_Pr->SiS_LCDInfo |= DontExpandLCD;
 	}
+	if(SiS_Pr->SiS_CustomT == CUT_CLEVO1024) {
+           if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {
+	      SiS_Pr->SiS_LCDInfo &= ~DontExpandLCD;
+	   }
+	}
      }
   }
 
