@@ -111,7 +111,7 @@ CardConfig(XtPointer config)
 	XtSetArg(args[0], XtNstring, card->dev_busid);
 	XtSetValues(busid, args, 1);
 #ifdef USE_MODULES
-	XtSetArg(args[0], XtNlabel, driver_str = card->dev_driver);
+	XtSetArg(args[0], XtNlabel, driver_str = XtNewString(card->dev_driver));
 #else
 	XtSetArg(args[0], XtNstring, card->dev_driver);
 #endif
@@ -136,7 +136,7 @@ CardConfig(XtPointer config)
 	XtSetArg(args[0], XtNstring, "");
 	XtSetValues(busid, args, 1);
 #ifdef USE_MODULES	
-	XtSetArg(args[0], XtNlabel, driver_str = "vga");
+	XtSetArg(args[0], XtNlabel, driver_str = XtNewString("vga"));
 #else
 	XtSetArg(args[0], XtNstring, "vga");
 #endif
@@ -194,8 +194,15 @@ CardConfig(XtPointer config)
 	XtFree(card->dev_driver);
 	card->dev_driver = XtNewString(drv_nam);
 
+#ifdef USE_MODULES
+	XtFree(driver_str);
+#endif
+
 	return ((XtPointer)card);
     }
+#ifdef USE_MODULES
+    XtFree(driver_str);
+#endif
 
     return (NULL);
 }
@@ -249,9 +256,15 @@ CardModelCallback(Widget w, XtPointer user_data, XtPointer call_data)
     if (card_entry->chipset != NULL)
 	len += XmuSnprintf(tip + len, sizeof(tip) - len,
 			   "Chipset:   %s\n", card_entry->chipset);
-    if (card_entry->driver != NULL)
+    if (card_entry->driver != NULL) {
+#ifdef USE_MODULES
+	XtFree(driver_str);
+	driver_str = XtNewString(card_entry->driver);
+	XtVaSetValues(driver, XtNlabel, driver_str, NULL, 0);
+#endif
 	len += XmuSnprintf(tip + len, sizeof(tip) - len,
 			   "Driver:    %s\n", card_entry->driver);
+    }
     if (card_entry->ramdac != NULL)
 	len += XmuSnprintf(tip + len, sizeof(tip),
 			   "Ramdac:    %s\n", card_entry->ramdac);
@@ -274,8 +287,10 @@ CardModelCallback(Widget w, XtPointer user_data, XtPointer call_data)
     else
 	first = 0;
 
+#ifndef USE_MODULES
     XtSetArg(args[0], XtNstring, card_entry->driver ? card_entry->driver : "vga");
     XtSetValues(driver, args, 1);
+#endif
 
     str = XtNewString(tip);
     XtSetArg(args[0], XtNtip, str);
@@ -327,7 +342,8 @@ DriverCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     Arg args[1];
 
-    driver_str = XtName(w);
+    XtFree(driver_str);
+    driver_str = XtNewString(XtName(w));
     XtSetArg(args[0], XtNlabel, driver_str);
     XtSetValues(driver, args, 1);
 }
