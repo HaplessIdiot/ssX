@@ -1,4 +1,8 @@
 XFree86 4.4.99.19 (xx November 2004)
+ 231. Cleanup loader.c's handling of MAP_32BIT to match that in elfloader.c
+      (Bugzilla #1515, Nicolas Joly);
+ 230. Fix the code sequence order for the repaya in the Sinhala XKB map
+      (Bugzilla #1509, Harshula).
  229. Xterm patch #197 (Thomas Dickey).
  228. Build dummylib before drivers/chips/util, since the latter depends upon
       the former (Thomas Dickey).
@@ -19185,7 +19189,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3354 2004/11/30 22:31:44 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3355 2004/12/01 01:27:45 dickey Exp $
 
 
 
