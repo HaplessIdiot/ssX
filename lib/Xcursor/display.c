@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/Xcursor/display.c,v 1.1 2002/08/29 04:40:34 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -24,6 +24,7 @@
 
 #include "xcursorint.h"
 #include <X11/Xlibint.h>
+#include <ctype.h>
 
 static XcursorDisplayInfo *_XcursorDisplayInfo;
 
@@ -48,6 +49,31 @@ _XcursorCloseDisplay (Display *dpy, XExtCodes *codes)
     return 0;
 }
 
+static int
+_XcursorDefaultParseBool (char *v)
+{
+    char    c0, c1;
+
+    c0 = *v;
+    if (isupper ((int)c0))
+	c0 = tolower (c0);
+    if (c0 == 't' || c0 == 'y' || c0 == '1')
+	return 1;
+    if (c0 == 'f' || c0 == 'n' || c0 == '0')
+	return 0;
+    if (c0 == 'o')
+    {
+	c1 = v[1];
+	if (isupper ((int)c1))
+	    c1 = tolower (c1);
+	if (c1 == 'n')
+	    return 1;
+	if (c1 == 'f')
+	    return 0;
+    }
+    return -1;
+}
+
 XcursorDisplayInfo *
 _XcursorGetDisplayInfo (Display *dpy)
 {
@@ -55,6 +81,7 @@ _XcursorGetDisplayInfo (Display *dpy)
     int			event_base, error_base;
     int			major, minor;
     char		*v;
+    int			i;
 
     _XLockMutex (_Xglobal_lock);
     for (prev = &_XcursorDisplayInfo; (info = *prev); prev = &(*prev)->next)
@@ -162,7 +189,43 @@ _XcursorGetDisplayInfo (Display *dpy)
 	    strcpy (info->theme, v);
     }
 
+    /*
+     * Get the desired dither
+     */
+    info->dither = XcursorDitherThreshold;
+    v = getenv ("XCURSOR_DITHER");
+    if (!v)
+	v = XGetDefault (dpy, "Xcursor", "dither");
+    if (v)
+    {
+	if (!strcmp (v, "threshold"))
+	    info->dither = XcursorDitherThreshold;
+	if (!strcmp (v, "median"))
+	    info->dither = XcursorDitherMedian;
+	if (!strcmp (v, "ordered"))
+	    info->dither = XcursorDitherOrdered;
+	if (!strcmp (v, "diffuse"))
+	    info->dither = XcursorDitherDiffuse;
+    }
+
+    info->theme_core = False;
+    /*
+     * Find out if core cursors should
+     * be themed
+     */
+    v = getenv ("XCURSOR_THEME_CORE");
+    if (!v)
+	v = XGetDefault (dpy, "Xcursor", "theme_core");
+    if (v)
+    {
+	i = _XcursorDefaultParseBool (v);
+	if (i >= 0)
+	    info->theme_core = i;
+    }
+
     info->fonts = 0;
+    for (i = 0; i < NUM_BITMAPS; i++)
+	info->bitmaps[i].bitmap = None;
 
     /*
      * Link new info info list
@@ -230,4 +293,26 @@ XcursorGetTheme (Display *dpy)
     if (!info)
 	return 0;
     return info->theme;
+}
+
+XcursorBool
+XcursorGetThemeCore (Display *dpy)
+{
+    XcursorDisplayInfo	*info = _XcursorGetDisplayInfo (dpy);
+
+    if (!info)
+	return XcursorFalse;
+    return info->theme_core;
+    
+}
+
+XcursorBool
+XcursorSetThemeCore (Display *dpy, XcursorBool theme_core)
+{
+    XcursorDisplayInfo	*info = _XcursorGetDisplayInfo (dpy);
+
+    if (!info)
+	return XcursorFalse;
+    info->theme_core = theme_core;
+    return XcursorTrue;
 }

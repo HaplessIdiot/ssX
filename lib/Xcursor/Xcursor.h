@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/Xcursor/Xcursor.h,v 1.1 2002/08/29 04:40:34 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -407,6 +407,32 @@ XcursorTryShapeCursor (Display	    *dpy,
 		       XColor _Xconst *foreground,
 		       XColor _Xconst *background);
 
+void
+XcursorNoticeCreateBitmap (Display	*dpy,
+			   Pixmap	pid,
+			   unsigned int width,
+			   unsigned int height);
+
+void
+XcursorNoticePutBitmap (Display	    *dpy,
+			Drawable    draw,
+			XImage	    *image);
+
+Cursor
+XcursorTryShapeBitmapCursor (Display		*dpy,
+			     Pixmap		source,
+			     Pixmap		mask,
+			     XColor		*foreground,
+			     XColor		*background,
+			     unsigned int	x,
+			     unsigned int	y);
+
+#define XCURSOR_BITMAP_HASH_SIZE    16
+
+void
+XcursorImageHash (XImage	*image, 
+		  unsigned char	hash[XCURSOR_BITMAP_HASH_SIZE]);
+
 /*
  * Display information APIs
  */
@@ -424,6 +450,12 @@ XcursorSetTheme (Display *dpy, const char *theme);
 
 char *
 XcursorGetTheme (Display *dpy);
+
+XcursorBool
+XcursorGetThemeCore (Display *dpy);
+
+XcursorBool
+XcursorSetThemeCore (Display *dpy, XcursorBool theme_core);
 
 _XFUNCPROTOEND
 
