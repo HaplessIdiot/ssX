@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.12 1997/05/17 12:52:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.13 1997/10/26 13:24:53 dawes Exp $ */
 
 /*
 
@@ -170,12 +170,18 @@ static void GetHostname (buf, maxlen)
 #ifdef USE_UNAME
     struct utsname name;
 
+    if (maxlen <= 0 || buf == NULL)
+	return;
+
     uname (&name);
     len = strlen (name.nodename);
     if (len >= maxlen) len = maxlen;
-    (void) strncpy (buf, name.nodename, len);
+    (void) strncpy (buf, name.nodename, len-1);
     buf[len-1] = '\0';
 #else
+    if (maxlen <= 0 || buf == NULL)
+	return;
+
     buf[0] = '\0';
     (void) gethostname (buf, maxlen);
     buf [maxlen - 1] = '\0';
@@ -231,7 +237,7 @@ String _XtGetUserName(dest, len)
     String ptr = NULL;
 
     if ((ptr = getenv("USERNAME"))) {
-	(void) strncpy (dest, ptr, len);
+	(void) strncpy (dest, ptr, len-1);
 	dest[len-1] = '\0';
     } else
 	*dest = '\0';
@@ -241,12 +247,13 @@ String _XtGetUserName(dest, len)
     char* ptr;
 
     if ((ptr = getenv("USER"))) {
-	(void) strncpy (dest, ptr, len);
+	(void) strncpy (dest, ptr, len-1);
 	dest[len-1] = '\0';
     } else {
-	if ((pw = _XGetpwuid(getuid(),pwparams)) != NULL)
-	    (void) strcpy (dest, pw->pw_name);
-	else
+	if ((pw = _XGetpwuid(getuid(),pwparams)) != NULL) {
+	    (void) strncpy (dest, pw->pw_name, len-1);
+	    dest[len-1] = '\0';
+	} else
 	    *dest = '\0';
     }
 #endif
@@ -281,17 +288,21 @@ static String GetRootDirName(dest, len)
     struct passwd *pw;
     static char *ptr;
 
+    if (len <= 0 || dest == NULL)
+	return NULL;
+
     if ((ptr = getenv("HOME"))) {
-	(void) strncpy (dest, ptr, len);
+	(void) strncpy (dest, ptr, len-1);
 	dest[len-1] = '\0';
     } else {
 	if (ptr = getenv("USER"))
 	    pw = _XGetpwnam(ptr,pwparams);
 	else
  	    pw = _XGetpwuid(getuid(),pwparams);
-	if (pw != NULL)
-	    (void) strcpy (dest, pw->pw_dir);
-	else
+	if (pw != NULL) {
+	    (void) strncpy (dest, pw->pw_dir, len-1);
+	    dest[len-1] = '\0';
+	} else
 	    *dest = '\0';
     }
 #endif
