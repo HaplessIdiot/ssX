@@ -1,4 +1,5 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 710. DPMS support in the nv driver.  CRTs only at this time (Mark Vojkovich).
  709. Fix for recognition of non-existent PCI devices (Marc La France).
  708. Fix for when firmware/BIOS initialisation does not enable the extra
       command FIFO entries available on second-generation integrated Mach64
@@ -15974,4 +15975,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2470 2003/01/10 20:57:54 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2471 2003/01/10 22:05:42 tsi Exp $
