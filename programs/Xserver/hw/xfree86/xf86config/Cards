@@ -19,7 +19,7 @@
 # chipset/server and untested.
 # 
 # $XConsortium: Cards,v 1.3 95/01/23 15:35:21 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.25 1995/12/17 05:04:25 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.26 1996/01/14 13:46:38 dawes Exp $
 
 # Cirrus Logic
 
@@ -967,6 +967,26 @@ NOCLOCKPROBE
 
 NAME Trident 8900/9000 (generic)
 CHIPSET TVGA8900/9000
+SERVER SVGA
+
+NAME Trident 8900D (generic)
+CHIPSET TVGA8900D
+SERVER SVGA
+
+NAME Trident TVGA9200CXr (generic)
+CHIPSET TVGA9200CXr
+SERVER SVGA
+
+NAME Trident TGUI9400CXi (generic)
+CHIPSET TGUI9400CXi
+SERVER SVGA
+
+NAME Trident TGUI9420DGi (generic)
+CHIPSET TGUI9420DGi
+SERVER SVGA
+
+NAME Trident TGUI9430DGi (generic)
+CHIPSET TGUI9430DGi
 SERVER SVGA
 
 NAME Trident TGUI9440 (generic)
