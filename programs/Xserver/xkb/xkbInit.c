@@ -1,7 +1,7 @@
 /*
  * @(#)$RCSfile$ $Revision$ (DEC) $Date$
  */
-/* $XConsortium: xkbInit.c /main/12 1996/01/14 16:46:29 kaleb $ */
+/* $XConsortium: xkbInit.c /main/13 1996/02/05 09:59:15 dpw $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -488,7 +488,7 @@ XkbInitKeyboardDeviceStruct( dev, names, pSymsIn, pModsIn, bellProc, ctrlProc )
 {
 XkbFileInfo	finfo;
 KeySymsRec	tmpSyms,*pSyms;
-CARD8		tmpMods[XkbMaxKeyCount],*pMods;
+CARD8		tmpMods[XkbMaxLegalKeyCode+1],*pMods;
 char		name[PATH_MAX];
 Bool		ok;
 XPointer	config;

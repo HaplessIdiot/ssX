@@ -1,5 +1,5 @@
-/* $XConsortium: xkb.c /main/18 1996/02/02 14:39:27 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.4 1996/01/16 15:08:16 dawes Exp $ */
+/* $XConsortium: xkb.c /main/19 1996/02/05 10:18:27 kaleb $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.5 1996/02/04 09:17:37 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -1961,7 +1961,8 @@ unsigned			first,last;
 	    *errorRtrn = _XkbErrCode3(0x33,wire->key,wire->type);
 	    return 0;
 	}
-	if ((wire->type==XkbKB_RadioGroup)&&(wire->data>XkbMaxRadioGroups)) {
+	if ((wire->type==XkbKB_RadioGroup)&&
+		((wire->data&(~XkbKB_RGAllowNone))>XkbMaxRadioGroups)) {
 	    *errorRtrn= _XkbErrCode4(0x34,wire->key,wire->data,
 							XkbMaxRadioGroups);
 	    return 0;
@@ -2381,7 +2382,7 @@ unsigned	 first,last;
     last= req->firstKeyBehavior+req->nKeyBehaviors-1;
     bzero(&server->behaviors[first],req->nKeyBehaviors*sizeof(XkbBehavior));
     for (i=0;i<req->totalKeyBehaviors;i++) {
-	if (server->behaviors[wire->key].type&XkbKB_Permanent==0) {
+	if ((server->behaviors[wire->key].type&XkbKB_Permanent)==0) {
 	    server->behaviors[wire->key].type= wire->type;
 	    server->behaviors[wire->key].data= wire->data;
 	    if ((wire->type==XkbKB_RadioGroup)&&(((int)wire->data)>maxRG))
@@ -5115,7 +5116,8 @@ xkbOverlayRowWireDesc *	rWire;
 	row= XkbAddGeomOverlayRow(ol,rWire->rowUnder,rWire->nKeys);
 	kWire= (xkbOverlayKeyWireDesc *)&rWire[1];
 	for (k=0;k<rWire->nKeys;k++,kWire++) {
-	    if (XkbAddGeomOverlayKey(ol,row,kWire->over,kWire->under)==NULL) {
+	    if (XkbAddGeomOverlayKey(ol,row,
+	    		(char *)kWire->over,(char *)kWire->under)==NULL) {
 		client->errorValue= _XkbErrCode3(0x21,r,k);
 		return BadMatch;
 	    }	

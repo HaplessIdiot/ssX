@@ -1,4 +1,4 @@
-/* $XConsortium: PassivGrab.c,v 1.27 95/06/15 20:03:09 converse Exp $ */
+/* $XConsortium: PassivGrab.c /main/28 1996/01/26 17:34:47 converse $ */
 
 /********************************************************
 
@@ -562,9 +562,12 @@ XtServerGrabPtr _XtCheckServerGrabsOnWidget (event, widget, isKeyboard)
     if (!*passiveListPtr)
 	return (XtServerGrabPtr)NULL;
     
+    /* Take only the lower thirteen bits as modifier state.  The X Keyboard
+     * Extension may be representing keyboard group state in two upper bits.
+     */
     tempGrab.widget = widget;
     tempGrab.keybut = event->xkey.keycode; /* also xbutton.button */
-    tempGrab.modifiers = event->xkey.state; /*also xbutton.state*/
+    tempGrab.modifiers = event->xkey.state & 0x1FFF; /*also xbutton.state*/
     tempGrab.hasExt = False;
 
     for (grab = *passiveListPtr; grab; grab = grab->next) {

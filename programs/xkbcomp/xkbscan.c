@@ -1,5 +1,5 @@
-/* $XConsortium: xkbscan.c /main/7 1996/02/02 14:17:53 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.1 1996/01/16 15:09:07 dawes Exp $ */
+/* $XConsortium: xkbscan.c /main/8 1996/02/05 06:00:09 kaleb $ */
+/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.2 1996/02/04 09:17:49 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -474,7 +474,10 @@ int	rtrn;
     else if ( isdigit(ch) )		rtrn = yyGetNumber(ch);
     else if ( ch == EOF )		rtrn = END_OF_FILE;
     else {
+#ifdef DEBUG
+    if (debugFlags)
 	fprintf(stderr,"Unexpected character %c (%d) in input stream\n",ch,ch);
+#endif
 	rtrn = ERROR_TOK;
     }
 #ifdef DEBUG

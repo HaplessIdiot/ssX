@@ -1,4 +1,4 @@
-/* $XConsortium: xkbPrKeyEv.c /main/5 1996/01/14 16:46:38 kaleb $ */
+/* $XConsortium: xkbPrKeyEv.c /main/6 1996/02/05 10:18:46 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -109,15 +109,17 @@ XkbBehavior	behavior;
 		if ( xE->u.u.type == KeyRelease )
 		    return;
 		else {
-		    unsigned	ndx= behavior.data;
+		    unsigned	ndx= (behavior.data&(~XkbKB_RGAllowNone));
 		    if ( ndx<xkbi->nRadioGroups ) {
 			XkbRadioGroupPtr	rg;
 
 			rg = &xkbi->radioGroups[ndx];
 			if ( rg->currentDown == xE->u.u.detail ) {
-			    xE->u.u.type = KeyRelease;
-			    XkbHandleActions(keybd,keybd,xE,count);
-			    rg->currentDown= 0;
+			    if (behavior.data&XkbKB_RGAllowNone) {
+				xE->u.u.type = KeyRelease;
+				XkbHandleActions(keybd,keybd,xE,count);
+				rg->currentDown= 0;
+			    }
 			    return;
 			}
 			if ( rg->currentDown!=0 ) {
