@@ -1,5 +1,5 @@
 // $TOG: xfree86 /main/5 1997/08/02 10:11:05 kaleb $
-// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.11 2000/06/15 20:50:04 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.12 2000/06/17 17:44:25 dawes Exp $
 default xkb_keycodes "xfree86" {
 
     minimum= 8;
@@ -127,10 +127,18 @@ default xkb_keycodes "xfree86" {
     <KP0>  =  90;
     <KPDL> =  91;
 
+    <FK13> =  118;
+    <FK14> =  119;
+    <FK15> =  120;
+    <FK16> =  121;
+    <FK17> =  122;
+    <KPDC> =  123;
+
     // Extended keys that may be generated on "Internet" keyboards.
     // These are not standardised, hence the meaningless names.
     // The entries commented out are never generated because the raw codes
     // in those positions are already used for well-defined keys.
+
     <I01> =   129;
     <I02> =   130;
     <I03> =   131;
@@ -159,7 +167,7 @@ default xkb_keycodes "xfree86" {
     <I1A> =   154;
     <I1B> =   155;
     // <I1C> =   156;
-    <I1D> =   157;
+    // <I1D> =   157;
     <I1E> =   158;
     <I1F> =   159;
     <I20> =   160;
@@ -180,24 +188,24 @@ default xkb_keycodes "xfree86" {
     <I2F> =   175;
     <I30> =   176;
     <I31> =   177;
-    // <I32> =   178;
+    <I32> =   178;
     <I33> =   179;
     <I34> =   180;
-    <I35> =   181;
+    // <I35> =   181;
     // <I36> =   182;
     // <I37> =   183;
-    <I38> =   184;
+    // <I38> =   184;
     <I39> =   185;
     <I3A> =   186;
     <I3B> =   187;
     <I3C> =   188;
-    <I3D> =   189;
-    <I3E> =   190;
-    <I3F> =   191;
-    <I40> =   192;
-    <I41> =   193;
+    // <I3D> =   189;
+    // <I3E> =   190;
+    // <I3F> =   191;
+    // <I40> =   192;
+    // <I41> =   193;
     <I42> =   194;
-    // <I43> =   195;
+    <I43> =   195;
     <I44> =   196;
     <I45> =   197;
     // <I46> =   198;
@@ -208,7 +216,7 @@ default xkb_keycodes "xfree86" {
     // <I4B> =   203;
     // <I4C> =   204;
     // <I4D> =   205;
-    <I4E> =   206;
+    // <I4E> =   206;
     // <I4F> =   207;
     // <I50> =   208;
     // <I51> =   209;
@@ -230,11 +238,11 @@ default xkb_keycodes "xfree86" {
     <I61> =   225;
     <I62> =   226;
     <I63> =   227;
-    // <I64> =   228;
-    // <I65> =   229;
-    // <I66> =   230;
-    // <I67> =   231;
-    // <I68> =   232;
+    <I64> =   228;
+    <I65> =   229;
+    <I66> =   230;
+    <I67> =   231;
+    <I68> =   232;
     <I69> =   233;
     <I6A> =   234;
     <I6B> =   235;
@@ -245,8 +253,8 @@ default xkb_keycodes "xfree86" {
     <I70> =   240;
     <I71> =   241;
     <I72> =   242;
-    // <I73> =   243;
-    // <I74> =   244;
+    <I73> =   243;
+    <I74> =   244;
     <I75> =   245;
     <I76> =   246;
     <I77> =   247;
