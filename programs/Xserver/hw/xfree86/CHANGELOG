@@ -1,4 +1,8 @@
 XFree86 3.9.17b (24 January 2000)
+3588. Add new -configure option to generate a clean XF86Config without the
+      need for a config tool. But hopefully could be used with XF86Setup.
+      (Needs some OS based updates - tested only on linux so far)
+      (Alan Hourihane).
 3587. Fix 64 bit problem in the Xv client header files (Mark Vojkovich).
 3586. Change the default charset for et_EE from ISO8859-4 to ISO8859-15,
       which conforms with the upcoming standard EVS8:1999
