@@ -1,4 +1,5 @@
 /* $XConsortium: fontdir.c,v 1.23 95/02/21 14:25:17 mor Exp $ */
+/* $XFree86$ */
 
 /*
 
