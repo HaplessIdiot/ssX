@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64xv.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64xv.c,v 1.5 2003/04/30 16:56:27 tsi Exp $ */
 /*
  * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -31,7 +31,7 @@
 #include "Xv.h"
 #include "fourcc.h"
 
-#define MAKE_ATOM(string) MakeAtom(string, SizeOf(string) - 1, TRUE)
+#define MAKE_ATOM(string) MakeAtom(string, strlen(string), TRUE)
 #define MaxScale          (CARD32)(CARD16)(-1)
 
 static unsigned long ATIMach64XVAtomGeneration = (unsigned long)(-1);
