@@ -1,4 +1,17 @@
-XFree86 3.9Nu (xx January 1999)
+XFree86 3.9Nu (15 January 1999)
+2139. Don't allow arbitrarily long display number strings to be passed on
+      to xtrans by _X11TransConnectDisplay().
+2138. Update the parser and xf86Config.c to allow Options to be specified in
+      the config file's ServerLayout section.  Options in the ServerLayout
+      section can override those in the ServerFlags section.
+2137. Update the parser and xf86Config.c to allow "Inactive" devices
+      to be specified in the config file's ServerLayout section.
+2136. Import xpm version 3.4k.
+      Options in the ServerLayout section an override those in the
+      ServerFlags section.
+
+2137. Update the parser and xf86Config.c to allow "Inactive" devices
+      to be specified in the config file's ServerLayout section.
 2136. Import xpm version 3.4k.
 
 XFree86 3.9Nt (11 January 1999)
@@ -7053,4 +7066,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.657 1999/01/11 12:09:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.658 1999/01/11 14:40:03 dawes Exp $

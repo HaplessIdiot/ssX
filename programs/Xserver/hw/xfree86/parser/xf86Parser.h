@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.2 1998/07/25 16:57:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.3 1998/07/26 09:56:20 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -288,8 +288,18 @@ XF86ConfAdjacencyRec, *XF86ConfAdjacencyPtr;
 typedef struct
 {
 	GenericListRec list;
+	char *inactive_device_str;
+	XF86ConfDevicePtr inactive_device;
+}
+XF86ConfInactiveRec, *XF86ConfInactivePtr;
+
+typedef struct
+{
+	GenericListRec list;
 	char *lay_identifier;
 	XF86ConfAdjacencyPtr lay_adjacency_lst;
+	XF86ConfInactivePtr lay_inactive_lst;
+	XF86OptionPtr lay_option_lst;
 }
 XF86ConfLayoutRec, *XF86ConfLayoutPtr;
 
