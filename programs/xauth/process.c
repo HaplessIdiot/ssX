@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.17 2002/11/25 14:05:05 eich Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.18 2003/02/13 02:50:22 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -824,8 +824,7 @@ write_auth_file(char *tmp_nam)
 	}
     }
 
-    (void) fclose (fp);
-    return 0;
+    return fclose (fp) == 0 ? 0 : -1;
 }
 
 int 
