@@ -1,5 +1,5 @@
 //
-// $XFree86: xc/programs/xkbcomp/symbols/br,v 1.2 1999/08/30 02:28:56 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/br,v 1.3 2000/10/27 18:31:08 dawes Exp $
 //
 partial default alphanumeric_keys 
 xkb_symbols "abnt2" {
@@ -58,7 +58,7 @@ xkb_symbols "abnt2" {
     key <AB10> {        [       semicolon,           colon      ]       };
 // ABNT-2 keyboard has this special key
     key <AB11> {        [           slash,        question      ],
-                        [          degree                       ]       };
+                        [          degree,    questiondown	]       };
 
     key <KPPT> {	[  KP_Decimal				]	};
     key <KPDL> {	[  KP_Delete,	comma			]	};
@@ -68,8 +68,10 @@ xkb_symbols "abnt2" {
     modifier_map Shift  { Shift_L };
     modifier_map Lock   { Caps_Lock };
     modifier_map Control{ Control_L };
-    modifier_map Mod3   { Mode_switch };
-
+    key <RALT> {
+	symbols[Group1]= [ Mode_switch, Multi_key ],
+	virtualMods= AltGr
+    };
 };
 
 partial alphanumeric_keys 

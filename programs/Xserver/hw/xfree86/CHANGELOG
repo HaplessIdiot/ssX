@@ -1,4 +1,19 @@
 XFree86 4.0.1g (28 November 2000)
+1009. Fix the glide driver's resolution of symbols from the glide library
+      (#4281, Pontus Lidman).
+1008. Fix X server stalling forever with local font servers on Linux 2.4
+      kernels (#4280, Branden Robinson).
+1007. Improve temp file handling in the Xaw library (#4279, Branden Robinson).
+1006. Add support for Rage 128 RG (#4277, Michael Mattice).
+1005. Modify XimGetCharCode() to use conversion from keysym to UCS and then
+      from UCS to the appropriate charset specified in the locale description
+      (#4276, Ivan Pascal).
+1004. Allow Unicode fonts to be used as UTF-8 locale native fonts (#4275,
+      Ivan Pascal).
+1003. Fix abnt2/br XKB config (#4274, Paulo Cesar Pereira de Andrade).
+1002. Let the Darwin X server build on pure Darwin as well as Mac OS X systems
+      (#4273, Torrey T. Lyons).
+1001. Patch to allow xdm to build on Darwin (#4273, Torrey T. Lyons).
 1000. Fix parser not dup'ing a string (#4272, Paulo Cesar Pereira de Andrade).
  999. Improve direct fifo writes for the glint/permedia3 pixmapwrite hook
       when using FIFO disconnect (#4271, Sven Luther).
@@ -11659,4 +11674,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1413 2000/11/28 00:04:48 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1414 2000/11/28 16:10:34 dawes Exp $

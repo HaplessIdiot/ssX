@@ -3,7 +3,7 @@ XCOMM $TOG: Imakefile /main/196 1997/05/20 10:06:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.31 2000/06/17 01:40:40 dawes Exp $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.32 2000/10/24 18:07:36 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoExtraLib SharedLibX11
@@ -787,6 +787,7 @@ LCSRCS = \
 	imImSw.c \
 	imInsClbk.c \
 	imInt.c \
+	imKStoUCS.c \
 	imLcFlt.c \
 	imLcGIc.c \
 	imLcIc.c \
@@ -855,6 +856,7 @@ LCOBJS = \
 	imImSw.o \
 	imInsClbk.o \
 	imInt.o \
+	imKStoUCS.o \
 	imLcFlt.o \
 	imLcGIc.o \
 	imLcIc.o \

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.4 2000/11/18 19:37:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.5 2000/11/21 23:10:34 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -848,6 +848,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RAGE128ML: info->HasPanelRegs = TRUE;  break;
 	case PCI_CHIP_RAGE128RE:
 	case PCI_CHIP_RAGE128RF:
+	case PCI_CHIP_RAGE128RG:
 	case PCI_CHIP_RAGE128RK:
 	case PCI_CHIP_RAGE128RL:
 	case PCI_CHIP_RAGE128PF:
@@ -878,7 +879,8 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RAGE128MF:
 	case PCI_CHIP_RAGE128ML:
 	case PCI_CHIP_RAGE128RE:
-	case PCI_CHIP_RAGE128RF: offset = 0; break; /* 128-bit SDR SGRAM 1:1 */
+	case PCI_CHIP_RAGE128RF:
+	case PCI_CHIP_RAGE128RG: offset = 0; break; /* 128-bit SDR SGRAM 1:1 */
 	case PCI_CHIP_RAGE128RK:
 	case PCI_CHIP_RAGE128RL:
 	default:                 offset = 1; break; /*  64-bit SDR SGRAM 1:1 */
@@ -953,6 +955,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RAGE128MF:
 	case PCI_CHIP_RAGE128ML:
 	case PCI_CHIP_RAGE128RF:
+	case PCI_CHIP_RAGE128RG:
 	case PCI_CHIP_RAGE128RL:
 	case PCI_CHIP_RAGE128PF:
 	default:                 info->IsPCI = FALSE; break;

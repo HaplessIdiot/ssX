@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.16 2000/09/19 12:46:16 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.17 2000/11/21 23:10:36 tsi Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -1015,7 +1015,8 @@ GLIDERestore(ScrnInfoPtr pScrn, Bool Closing)
 
 
 #define GLIDE_FIND_FUNC(x) \
-  if (!xf86LoaderCheckSymbol(#x)) \
+  p##x = (p##x##_t)LoaderSymbol(#x); \
+  if (!p##x) \
   { \
     xf86Msg(X_ERROR, "Could not find " #x "() in libglide2x.so.\n"); \
     return FALSE; \

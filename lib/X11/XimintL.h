@@ -32,7 +32,7 @@ THIS SOFTWARE.
 	                          frankyling@hgrd01.enet.dec.com
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XimintL.h,v 1.3 2000/06/14 18:20:33 dawes Exp $ */
 
 #ifndef _XIMINTL_H
 #define _XIMINTL_H
@@ -55,14 +55,13 @@ typedef struct _DefTree {
 } DefTree;
 
 typedef struct _XimLocalPrivateRec {
-	XlcConv			 ctom_conv;
-	XlcConv			 ctow_conv;
-	XlcConv			 cstomb_conv;
-	XlcConv			 cstowc_conv;
-	XlcCharSet		 keyboard_charset;
-        unsigned long		 locale_code;
-	XIC			 current_ic;
-	DefTree			*top;
+	XlcConv		 ctom_conv;
+	XlcConv		 ctow_conv;
+	XlcConv		 cstomb_conv;
+	XlcConv		 cstowc_conv;
+        XlcConv		 ucs_conv;
+	XIC		 current_ic;
+	DefTree		*top;
 } XimLocalPrivateRec;
 
 typedef struct _XicThaiPart {

@@ -31,7 +31,7 @@ OF THIS SOFTWARE.
                                makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefIm.c,v 1.3 1999/08/01 07:56:52 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefIm.c,v 1.4 2000/06/13 02:28:28 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
@@ -1661,8 +1661,10 @@ _XimGetEncoding(im, buf, name, name_len, detail, detail_len)
 	return False;
     private->cstowc_conv = conv;
 
-    private->locale_code = * _XimGetLocaleCode(XLC_PUBLIC(lcd,encoding_name),
-                            (XlcCharSet*) &(private->keyboard_charset));
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNUcsChar, lcd, XlcNChar)))
+	return False;
+    private->ucs_conv = conv;
+
     return True;
 }
 

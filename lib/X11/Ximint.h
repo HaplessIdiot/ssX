@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/Ximint.h,v 3.4 1998/10/03 08:41:27 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Ximint.h,v 3.5 2000/06/13 02:28:28 dawes Exp $ */
 
 #ifndef _XIMINT_H
 #define _XIMINT_H
@@ -65,8 +65,7 @@ typedef struct _XimCommonPrivateRec {
     XlcConv		ctow_conv;
     XlcConv		cstomb_conv;
     XlcConv		cstowc_conv;
-    XlcCharSet		keyboard_charset;
-    unsigned long	locale_code;
+    XlcConv		ucs_conv;
 } XimCommonPrivateRec;
 
 typedef union _XIMPrivateRec {
@@ -187,10 +186,24 @@ typedef struct _XimDefICValues {
  * Global symbols
  */
 
-unsigned long Const * _XimGetLocaleCode (
+XPointer _XimGetLocaleCode (
 #if NeedFunctionPrototypes
-    _Xconst char*	encoding_name,
-    XlcCharSet*		cset_ret
+    Const char	*encoding_name
+#endif
+);
+
+int _XimGetCharCode (
+#if NeedFunctionPrototypes
+    XPointer		conv,
+    KeySym		keysym,
+    unsigned char	*buf,
+    int			nbytes
+#endif
+);
+
+unsigned int KeySymToUcs4 (
+#if NeedFunctionPrototypes
+    KeySym		keysym
 #endif
 );
 

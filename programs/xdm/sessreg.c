@@ -26,7 +26,7 @@
  *   by Andreas Stolcke <stolcke@icsi.berkeley.edu>
  */
 
-/* $XFree86: xc/programs/xdm/sessreg.c,v 3.13 2000/05/31 07:15:12 eich Exp $ */
+/* $XFree86: xc/programs/xdm/sessreg.c,v 3.14 2000/11/06 19:24:10 dawes Exp $ */
 
 /*
  * sessreg
@@ -51,7 +51,7 @@
 # include	<stdio.h>
 # include	<utmp.h>
 
-#if defined(SYSV) || defined(SVR4) || defined(Lynx) || defined(__QNX__)
+#if defined(SYSV) || defined(SVR4) || defined(Lynx) || defined(__QNX__) || defined(__DARWIN__)
 #define NO_LASTLOG
 #endif
 

@@ -32,7 +32,7 @@ THIS SOFTWARE.
 	                          frankyling@hgrd01.enet.dec.com
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/imThaiIm.c,v 1.3 2000/06/14 18:20:33 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -113,8 +113,9 @@ _XimThaiOpenIM(im)
 	goto Open_Error;
     private->cstowc_conv = conv;
 
-    private->locale_code = * _XimGetLocaleCode(XLC_PUBLIC(lcd,encoding_name),
-                            (XlcCharSet*) &(private->keyboard_charset));
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNUcsChar, lcd, XlcNChar)))
+	goto Open_Error;
+    private->ucs_conv = conv;
 
     im->methods = &Xim_im_thai_methods;
     private->current_ic = (XIC)NULL;
