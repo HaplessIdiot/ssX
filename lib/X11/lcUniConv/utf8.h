@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/utf8.h,v 1.1 2000/06/23 19:50:59 dawes Exp $ */
 
 /*
  * UTF-8
