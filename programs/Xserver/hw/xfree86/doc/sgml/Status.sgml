@@ -9,7 +9,7 @@
 <date>12 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.12 2000/02/18 16:23:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.13 2000/02/21 22:29:08 dawes Exp $
 </ident>
 
 <abstract>
@@ -347,12 +347,14 @@ dependencies/limitations, other architectures known to work on
 
 <tag>&relvers;:</tag>
 	Support (accelerated) for the Intel i740 is provided by the
-	"i740" driver.  The i810 driver has not yet been ported and/or
-	contributed.
+	"i740" driver, and support for the Intel i810 is provided by
+	the "i810" driver.  The "i810" driver is currently Linux-only,
+	and requires the agpgart.o kernel module.  Building it is not
+	yet enabled by default.
 
 <tag>Summary:</tag>
-	The i740 is supported in both version, but the i810 is not supported
-	in &relvers; or on non-Linux/x86 platforms.
+	The i740 and i810 are supported in both versions, but the i810 is
+	only supported on Linux/x86 platforms at present.
 
 </descrip>
 
