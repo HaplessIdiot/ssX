@@ -6,13 +6,21 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.21 2001/07/15 02:23:29 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.22 2001/08/07 02:40:36 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
 #import "quartzShared.h"
-
 #import "XWindow.h"
+
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/syslimits.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <pwd.h>
+#include <signal.h>
+#include <fcntl.h>
 
 // Macros to build the path name
 #ifndef XBINDIR
@@ -28,23 +36,29 @@ extern char **envpGlobal;
 extern int main(int argc, char *argv[], char *envp[]);
 extern void HideMenuBar(void);
 extern void ShowMenuBar(void);
+static void childDone(int sig);
 
 static NSPortMessage *signalMessage;
+static pid_t clientPID;
+static Xserver *oneXserver;
+
 
 @implementation Xserver
 
 - (id)init
 {
-    self=[super init];
+    self = [super init];
+    oneXserver = self;
 
     serverLock = [[NSLock alloc] init];
-    clientTask = nil;
-    serverRunning = NO;
+    clientPID = 0;
+    sendServerEvents = NO;
     serverVisible = NO;
     rootlessMenuBarVisible = YES;
     appQuitting = NO;
     mouseState = 0;
     eventWriteFD = quartzEventWriteFD;
+    windowClass = [XWindow class];
 
     // set up a port to safely send messages to main thread from server thread
     signalPort = [[NSPort port] retain];
@@ -61,16 +75,24 @@ static NSPortMessage *signalMessage;
     return self;
 }
 
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
+- (NSApplicationTerminateReply)
+        applicationShouldTerminate:(NSApplication *)sender
 {
     // Quit if the X server is not running
-    if ([serverLock tryLock])
+    if ([serverLock tryLock]) {
+        appQuitting = YES;
+        if (clientPID != 0)
+            kill(clientPID, SIGINT);
         return NSTerminateNow;
+    }
 
-    if ([clientTask isRunning] || !quartzStartClients) {
+    if (clientPID != 0 || !quartzStartClients) {
         int but;
 
+        // Hide the X server and stop sending it events
         [self hide];
+        sendServerEvents = NO;
+
         but = NSRunAlertPanel(NSLocalizedString(@"Quit X server?",@""),
                               NSLocalizedString(@"Quitting the X server will terminate any running X Window programs.",@""),
                               NSLocalizedString(@"Quit",@""),
@@ -81,15 +103,38 @@ static NSPortMessage *signalMessage;
             case NSAlertDefaultReturn:		// quit
                 break;
             case NSAlertAlternateReturn:	// cancel
+                sendServerEvents = YES;
                 return NSTerminateCancel;
         }
     }
 
     appQuitting = YES;
+    if (clientPID != 0)
+        kill(clientPID, SIGINT);
     [self killServer];
+    return NSTerminateNow;
+}
 
-    // Wait until the X server shuts down
-    return NSTerminateLater;
+// Ensure that everything has quit cleanly
+- (void)applicationWillTerminate:(NSNotification *)aNotification
+{
+    // Make sure the client process has finished
+    if (clientPID != 0) {
+        NSLog(@"Waiting on client process...");
+        sleep(2);
+
+        // If the client process hasn't finished yet, kill it off
+        if (clientPID != 0) {
+            int clientStatus;
+            NSLog(@"Killing client process...");
+            killpg(clientPID, SIGKILL);
+            waitpid(clientPID, &clientStatus, 0);
+        }
+    }
+
+    // Give the X server thread some time to quit
+    if (![serverLock lockBeforeDate:[NSDate dateWithTimeIntervalSinceNow:5]])
+        NSLog(@"X server thread never quit.");
 }
 
 // returns YES when event was handled
@@ -97,33 +142,35 @@ static NSPortMessage *signalMessage;
 {
     NXEvent ev;
     static BOOL mouse1Pressed = NO;
-    unsigned int adjustedModifiers;
 
-    if (!serverRunning)
+    if (!sendServerEvents) {
         return NO;
+    }
+
+    ev.type  = [anEvent type];
+    ev.flags = [anEvent modifierFlags];
 
     // Check for switch keypress
-    // Ignore caps lock iff the swich key preference does not use caps lock.
-    if ([Preferences modifiers] & NSAlphaShiftKeyMask) {
-        adjustedModifiers = [anEvent modifierFlags];
-    } else {
-        adjustedModifiers = [anEvent modifierFlags] & ~NSAlphaShiftKeyMask;
-    }
-    if (([anEvent type] == NSKeyDown) && (![anEvent isARepeat]) &&
-        ([anEvent keyCode] == [Preferences keyCode]) &&
-        (adjustedModifiers == [Preferences modifiers]))
+    if ((ev.type == NSKeyDown) && (![anEvent isARepeat]) &&
+        ([anEvent keyCode] == [Preferences keyCode]))
     {
-        [self toggle];
-        return YES;
+        unsigned int switchFlags = [Preferences modifiers];
+
+        // Switch if all the switch modifiers are pressed, while none are
+        // pressed that should not be, except for caps lock.
+        if (((ev.flags & switchFlags) == switchFlags) &&
+            ((ev.flags & ~(switchFlags | NSAlphaShiftKeyMask)) == 0))
+        {
+            [self toggle];
+            return YES;
+        }
     }
 
-    if(!serverVisible && !quartzRootless)
+    if (!serverVisible && !quartzRootless)
         return NO;
 
     [self getNXMouse:&ev];
-    ev.type=[anEvent type];
-    ev.flags=[anEvent modifierFlags];
-    switch(ev.type) {
+    switch (ev.type) {
         case NSLeftMouseUp:
             if (quartzRootless && !mouse1Pressed) {
                 // MouseUp after MouseDown in menu - ignore
@@ -134,7 +181,7 @@ static NSPortMessage *signalMessage;
         case NSLeftMouseDown:
             if (quartzRootless &&
                 ! ([anEvent window] &&
-                   [[anEvent window] isKindOfClass:[XWindow class]])) {
+                   [[anEvent window] isKindOfClass:windowClass])) {
                 // Click in non X window - ignore
                 return NO;
             }
@@ -183,10 +230,9 @@ static NSPortMessage *signalMessage;
     // Don't pass further events - they (incorrectly?) bring the window
     // forward no matter what.
     if (quartzRootless  &&
-        ([anEvent type]==NSLeftMouseDown || [anEvent type]==NSLeftMouseUp) &&
+        (ev.type == NSLeftMouseDown || ev.type == NSLeftMouseUp) &&
         [anEvent clickCount] == 1 &&
-        [anEvent window] &&
-        [[anEvent window] isKindOfClass:[XWindow class]])
+        [[anEvent window] isKindOfClass:windowClass])
     {
         return NO;
     }
@@ -204,7 +250,8 @@ static NSPortMessage *signalMessage;
 }
 
 // Append a string to the given enviroment variable
-+ (void)append:(NSString*)value toEnv:(NSString*)name {
++ (void)append:(NSString*)value toEnv:(NSString*)name
+{
     setenv([name cString],
         [[[NSString stringWithCString:getenv([name cString])]
             stringByAppendingString:value] cString],1);
@@ -249,57 +296,102 @@ static NSPortMessage *signalMessage;
     // Start the X server thread
     [NSThread detachNewThreadSelector:@selector(run) toTarget:self
               withObject:nil];
-    serverRunning = YES;
+    sendServerEvents = YES;
 
     // Start the X clients if started from GUI
     if (quartzStartClients) {
-        char *home;
-        char xinitrcbuf[PATH_MAX];
-        NSString *path = [NSString stringWithCString:XPATH(xinit)];
-        NSString *server = [NSString stringWithCString:XPATH(XDarwinStartup)];
-        NSString *client, *displayName;
+        struct passwd *passwdUser;
+        NSString *shellPath, *shellName, *commandStr;
         BOOL hasClient = YES;
-        NSArray *args;
+        char xinitrcbuf[PATH_MAX];
+        const char *shellPathStr, *newargv[2];
+        int fd[2], outFD, length;
 
-        // Register to receive notification when the client task finishes
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                selector:@selector(clientTaskDone:)
-                name:NSTaskDidTerminateNotification
-                object:nil];
+        // Register to catch the signal when the client processs finishes
+        signal(SIGCHLD, childDone);
 
-        // Change to user's home directory (so xterms etc. start there)
-        home = getenv("HOME");
-        if (home)
-            chdir(home);
-        else
-            home = "";
+        // Get user's password database entry
+        passwdUser = getpwuid(getuid());
 
-        // Add X binary directory to path
-        [Xserver append:@":" toEnv:@"PATH"];
-        [Xserver append:@XSTRPATH(XBINDIR) toEnv:@"PATH"];
+        // Find the user's default shell
+        shellPath = [NSString stringWithCString:passwdUser->pw_shell];
+        shellName = [NSString stringWithFormat:@"-%@",
+                                [shellPath lastPathComponent]];
+        shellPathStr = [shellPath cString];
+        newargv[0] = [shellName cString];
+        newargv[1] = NULL;
 
-        displayName = [NSString localizedStringWithFormat:@":%d",
-                                [Preferences display]];
+        // Create a pipe to communicate with the X client process
+        NSAssert(pipe(fd) == 0, @"Could not create new pipe.");
+
+        // Open a file descriptor for writing to stdout and stderr
+        outFD = open("/dev/console", O_WRONLY, 0);
+        if (outFD == -1) {
+            outFD = open("/dev/null", O_WRONLY, 0);
+            NSAssert(outFD != -1, @"Could not open shell output.");
+        }
+
+        // Fork process to start X clients in user's default shell
+        // Sadly we can't use NSTask because we need to start a login shell.
+        // Login shells are started by passing "-" as the first character of
+        // argument 0. NSTask forces argument 0 to be the shell's name.
+        clientPID = vfork();
+        if (clientPID == 0) {
+
+            // Inside the new process:
+            if (fd[0] != STDIN_FILENO) {
+                dup2(fd[0], STDIN_FILENO);	// Take stdin from pipe
+                close(fd[0]);
+            }
+            close(fd[1]);			// Close write end of pipe
+            if (outFD == STDOUT_FILENO) {	// Setup stdout and stderr
+                dup2(outFD, STDERR_FILENO);
+            } else if (outFD == STDERR_FILENO) {
+                dup2(outFD, STDOUT_FILENO);
+            } else {
+                dup2(outFD, STDERR_FILENO);
+                dup2(outFD, STDOUT_FILENO);
+                close(outFD);
+            }
+
+            if (chdir(passwdUser->pw_dir))	// Change to user's home dir
+                NSLog(@"Could not change to user's home directory.");
+            execv(shellPathStr, newargv);	// Start user's shell
+
+            NSLog(@"Could not start X client process with errno = %i.", errno);
+            _exit(127);
+        }
+
+        // In parent process:
+        close(fd[0]);	// Close read end of pipe
+        close(outFD);	// Close output file descriptor
 
         // Find the client init file to use
-        snprintf(xinitrcbuf, PATH_MAX, "%s/.xinitrc", home);
+        snprintf(xinitrcbuf, PATH_MAX, "%s/.xinitrc", passwdUser->pw_dir);
         if (access(xinitrcbuf, F_OK)) {
             snprintf(xinitrcbuf, PATH_MAX, XSTRPATH(XINITDIR) "/xinitrc");
             if (access(xinitrcbuf, F_OK)) {
                 hasClient = NO;
             }
         }
+
+        // Form xinit command
         if (hasClient) {
-            client = [NSString stringWithCString:xinitrcbuf];
-            args = [NSArray arrayWithObjects:client, @"--", server,
-                            displayName, @"-idle", nil];
+            commandStr = [NSString stringWithFormat:
+                            @"xinit %s -- XDarwinStartup :%d -idle\n",
+                            xinitrcbuf, [Preferences display]];
         } else {
-            args = [NSArray arrayWithObjects:@"--", server, displayName,
-                            @"-idle", nil];
+            commandStr = [NSString stringWithFormat:
+                            @"xinit -- XDarwinStartup :%d -idle\n",
+                            [Preferences display]];
         }
 
-        // Launch a new task to run start X clients
-        clientTask = [NSTask launchedTaskWithLaunchPath:path arguments:args];
+        length = [commandStr cStringLength];
+        if (write(fd[1], [commandStr cString], length) != length)
+            NSLog(@"Write to X client process failed.");
+
+        // Close the pipe so that shell will terminate when xinit quits
+        close(fd[1]);
     }
 
     if (quartzRootless) {
@@ -375,7 +467,7 @@ static NSPortMessage *signalMessage;
 // Show the X server when sent message from GUI
 - (IBAction)showAction:(id)sender
 {
-    if (serverRunning)
+    if (sendServerEvents)
         [self sendShowHide:YES];
 }
 
@@ -399,7 +491,7 @@ static NSPortMessage *signalMessage;
 // Show the X server on screen
 - (void)show
 {
-    if (!serverVisible && serverRunning) {
+    if (!serverVisible && sendServerEvents) {
         [self sendShowHide:YES];
     }
 }
@@ -407,12 +499,12 @@ static NSPortMessage *signalMessage;
 // Hide the X server from the screen
 - (void)hide
 {
-    if (serverVisible && serverRunning) {
+    if (serverVisible && sendServerEvents) {
         [self sendShowHide:NO];
     }
 }
 
-// Kill the Xserver thread
+// Kill the X server thread
 - (void)killServer
 {
     NXEvent ev;
@@ -455,8 +547,6 @@ static NSPortMessage *signalMessage;
 
         ev.data.compound.subType = kXDarwinHide;
         [self sendNXEvent:&ev];
-        if (!quartzRootless)
-            ShowMenuBar();
     }
 
     serverVisible = show;
@@ -512,19 +602,15 @@ static NSPortMessage *signalMessage;
 
     switch(msg) {
         case kQuartzServerHidden:
+            if (!quartzRootless)
+                ShowMenuBar();
             // FIXME: This hack is necessary (but not completely effective)
             // since Mac OS X 10.0.2
             [NSCursor unhide];
             break;
         case kQuartzServerDied:
-            serverRunning = NO;
-            if (appQuitting) {
-                // If we quit before the clients start, they may sit and wait
-                // for the X server to start. Kill them instead.
-                if ([clientTask isRunning])
-                    [clientTask terminate];
-                [NSApp replyToApplicationShouldTerminate:YES];
-            } else {
+            sendServerEvents = NO;
+            if (!appQuitting) {
                 [NSApp terminate:nil];	// quit if we aren't already
             }
             break;
@@ -533,18 +619,19 @@ static NSPortMessage *signalMessage;
     }
 }
 
-// Quit the X server when the X client task finishes
-- (void)clientTaskDone:(NSNotification *)aNotification
+// Quit the X server when the X client process finishes
+- (void)clientProcessDone:(int)clientStatus
 {
-    // Make sure it was the client task that finished
-    if (![clientTask isRunning]) {
-        int status = [[aNotification object] terminationStatus];
+    if (WIFEXITED(clientStatus)) {
+        int exitStatus = WEXITSTATUS(clientStatus);
+        if (exitStatus != 0)
+            NSLog(@"X client process terminated with status %i.", exitStatus);
+    } else {
+        NSLog(@"X client process terminated abnormally.");
+    }
 
-        if (status != 0)
-            NSLog(@"X client task terminated abnormally.");
-
-        if (!appQuitting)
-            [NSApp terminate:nil];	// quit if we aren't already
+    if (!appQuitting) {
+        [NSApp terminate:nil];	// quit if we aren't already
     }
 }
 
@@ -580,4 +667,21 @@ void QuartzMessageMainThread(unsigned msg)
 {
     [signalMessage setMsgid:msg];
     [signalMessage sendBeforeDate:[NSDate distantPast]];
+}
+
+// Handle SIGCHLD signals
+static void childDone(int sig)
+{
+    int clientStatus;
+
+    if (clientPID == 0)
+        return;
+
+    // Make sure it was the client task that finished
+    if (waitpid(clientPID, &clientStatus, WNOHANG) == clientPID) {
+        if (WIFSTOPPED(clientStatus))
+            return;
+        clientPID = 0;
+        [oneXserver clientProcessDone:clientStatus];
+    }
 }

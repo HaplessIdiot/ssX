@@ -1,7 +1,7 @@
 /*
  * NSWindow subclass for Mac OS X rootless X server
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XWindow.h,v 1.1 2001/07/01 02:13:41 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 #import "XView.h"
@@ -13,25 +13,24 @@
     XView *mView;
 }
 
--(id) initWithContentRect:(NSRect)aRect
+- (id)initWithContentRect:(NSRect)aRect
                    isRoot:(BOOL)isRoot;
--(void) dealloc;
+- (void)dealloc;
 
--(char *) bits;
--(void) getBits:(char **)bits
+- (char *)bits;
+- (void)getBits:(char **)bits
        rowBytes:(int *)rowBytes
           depth:(int *)depth
    bitsPerPixel:(int *)bpp;
 
--(void) refreshRects:(fakeBoxRec *)rectList
+- (void)refreshRects:(fakeBoxRec *)rectList
                count:(int)count;
 
--(void) orderWindow:(NSWindowOrderingMode)place
+- (void)orderWindow:(NSWindowOrderingMode)place
          relativeTo:(int)otherWindowNumber;
 
--(void) sendEvent:(NSEvent *)anEvent;
--(BOOL) canBecomeMainWindow;
--(BOOL) canBecomeKeyWindow;
--(BOOL) useOptimizedDrawing;
+- (void)sendEvent:(NSEvent *)anEvent;
+- (BOOL)canBecomeMainWindow;
+- (BOOL)canBecomeKeyWindow;
 
 @end
