@@ -1,3 +1,5 @@
+XFree86 4.2.99.2 (xx June 2002)
+
 XFree86 4.2.99.1 (7 June 2002)
  188. Fix some build problems when building with shared libraries disabled
       (David Dawes).
@@ -14901,4 +14903,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2247 2002/06/07 21:03:24 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2248 2002/06/08 03:44:55 dawes Exp $
