@@ -11,7 +11,7 @@
 # everything required for in-kernel source builds.  It is included into
 # this file, so none of that should be duplicated here.
 #
-# $XFree86: xc/extras/drm/linux/Makefile,v 1.1.1.1 2004/12/10 16:05:32 alanh Exp $
+# $XFree86: xc/extras/drm/linux/Makefile,v 1.2 2005/01/27 22:35:08 alanh Exp $
 #
 
 #
@@ -242,6 +242,11 @@ $(SHAREDSRC):
 		(rm -f $@; set -x; ln -s $(SHAREDDIR)/$@ $@); fi
 
 CLEANFILES += $(SHAREDSRC)
+else
+includes:: drm_pciids.h
+
+drm_pciids.h: drm_pciids.txt
+	sh create_linux_pci_lists.sh < drm_pciids.txt
 endif
 
 includes:: linux

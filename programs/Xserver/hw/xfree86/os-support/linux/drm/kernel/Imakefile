@@ -1,4 +1,4 @@
-XCOMM $XFree86: $(DRMSRCDIR)/progra$(DRMSRCDIR)/Xserv$(DRMSRCDIR)/$(DRMSRCDIR)/xfree$(DRMSRCDIR)/os-suppo$(DRMSRCDIR)/shar$(DRMSRCDIR)/d$(DRMSRCDIR)/kern$(DRMSRCDIR)/Imakefile,v 1.12 20$(DRMSRCDIR)/$(DRMSRCDIR)/05 18:43:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Imakefile,v 1.14 2005/01/27 22:32:32 alanh Exp $
 
 #include <Server.tmpl>
 
@@ -165,7 +165,7 @@ SRCS_BUILD = \
 	create_linux_pci_lists.sh \
 	Makefile.kernel
 
-DRMINSTSRCDIR = $(INSTSRCDIR)/drm/linux
+DRMINSTSRCDIR = $(INSTSRCDIR)/drm/linux/kernel
 
 SRCS = $(SRCS_DRM) $(SRCS_GAMMA) $(SRCS_I810) $(SRCS_I830) $(SRCS_I915) \
 	$(SRCS_R128) $(SRCS_MACH64) $(SRCS_SAVAGE) $(SRCS_VIA) \
@@ -174,7 +174,7 @@ SRCS = $(SRCS_DRM) $(SRCS_GAMMA) $(SRCS_I810) $(SRCS_I830) $(SRCS_I915) \
 InstallMultiple($(SRCS),$(DRMINSTSRCDIR))
 install::
 	MakeDir($(DESTDIR)$(DRMINSTSRCDIR))
-	@(cd $(DESTDIR)$(DRMINSTSRCDIR); sh ./create_linux_pci_lists.sh < drm_pciids.txt; rm -f Makefile; set -x; ln Makefile.linux Makefile)
+	@(cd $(DESTDIR)$(DRMINSTSRCDIR); rm -f Makefile; set -x; ln Makefile.linux Makefile)
 
 LinkSourceFile(drm.h,$(DRMSRCDIR)/shared)
 LinkSourceFile(drm_sarea.h,$(DRMSRCDIR)/shared)
