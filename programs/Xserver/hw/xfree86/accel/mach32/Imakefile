@@ -44,7 +44,7 @@ ObjectFromSpecialSource(mach32line1r,mach32line,-DONE_RECT)
 InstallLinkKitLibrary(mach32,$(LINKKITDIR)/drivers)
 
 #if DoLoadableServer
-InstallDynamicModule(libmach32.a,$(MODULEDIR))
+InstallDynamicModule(LibraryTargetName(mach32),$(MODULEDIR))
 #endif
 
 #ifndef OS2Architecture

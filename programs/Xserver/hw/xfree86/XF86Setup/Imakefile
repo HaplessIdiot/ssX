@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/10/24 10:16:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.16 1997/02/18 03:34:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.17 1997/02/18 06:28:55 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -24,10 +24,10 @@ includes::
 #else
             SRCS = main.c tclmisc.c tclvidmode.c tclcards.c tclother.c \
 		   tclkbd.c tclxfconf.c xf86Config.c cards.c tclxkbui.c \
-		   tkother.c
+		   tkother.c 
             OBJS = main.o tclmisc.o tclvidmode.o tclcards.o tclother.o \
 		   tclkbd.o tclxfconf.o xf86Config.o cards.o tclxkbui.o \
-		   tkother.o
+		   tkother.o 
        TCL_FILES = phase1.tcl phase2.tcl phase3.tcl phase4.tcl phase5.tcl \
 		   setuplib.tcl srvflags.tcl carddata.tcl \
 		   card.tcl done.tcl filelist.tcl keyboard.tcl \

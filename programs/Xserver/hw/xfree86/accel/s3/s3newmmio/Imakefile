@@ -63,7 +63,7 @@ LinkSourceFile(s3win.c,..)
 InstallLinkKitLibrary(s3newmmio,$(LINKKITDIR)/drivers)
 
 #if DoLoadableServer
-InstallDynamicModule(libs3newmmio.a,$(MODULEDIR))
+InstallDynamicModule(LibraryTargetName(s3newmmio),$(MODULEDIR))
 #endif
 
 #ifndef OS2Architecture

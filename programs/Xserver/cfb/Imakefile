@@ -233,19 +233,19 @@ stipsprcte32.o: stipsprcte32.s
 #if PixelSize == 32
 InstallLinkKitNamedLibrary(cfb,cfb32,$(LINKKITDIR)/lib)
 #if DoLoadableServer
-InstallDynamicNamedModule(libcfb.a,libcfb32.a,$(MODULEDIR))
+InstallDynamicNamedModule(LibraryTargetName(cfb),LibraryTargetName(cfb32),$(MODULEDIR))
 #endif
 #endif
 #if PixelSize == 24
 InstallLinkKitNamedLibrary(cfb,cfb24,$(LINKKITDIR)/lib)
 #if DoLoadableServer
-InstallDynamicNamedModule(libcfb.a,libcfb24.a,$(MODULEDIR))
+InstallDynamicNamedModule(LibraryTargetName(cfb),LibraryTargetName(cfb24),$(MODULEDIR))
 #endif
 #endif
 #if PixelSize == 16
 InstallLinkKitNamedLibrary(cfb,cfb16,$(LINKKITDIR)/lib)
 #if DoLoadableServer
-InstallDynamicNamedModule(libcfb.a,libcfb16.a,$(MODULEDIR))
+InstallDynamicNamedModule(LibraryTargetName(cfb),LibraryTargetName(cfb16),$(MODULEDIR))
 #endif
 #endif
 #if PixelSize == 8
@@ -256,7 +256,7 @@ InstallLinkKitNonExecFile(cfbmap.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(cfbmskbits.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(cfbrrop.h,$(LINKKITDIR)/include)
 #if DoLoadableServer
-InstallDynamicModule(libcfb.a,$(MODULEDIR))
+InstallDynamicModule(LibraryTargetName(cfb),$(MODULEDIR))
 #endif
 #endif
 

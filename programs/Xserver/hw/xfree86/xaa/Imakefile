@@ -60,7 +60,7 @@ ObjectFromSpecialSource(xf86seg, xf86line, -DPOLYSEGMENT)
 ObjectFromSpecialSource(xf86seg2, xf86line2, -DPOLYSEGMENT)
 
 #if DoLoadableServer
-InstallDynamicModule(libxaa.a,$(MODULEDIR))
+InstallDynamicModule(LibraryTargetName(xaa),$(MODULEDIR))
 #endif
 
 DependTarget()

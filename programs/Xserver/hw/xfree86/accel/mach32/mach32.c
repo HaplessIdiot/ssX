@@ -363,7 +363,7 @@ static ATIInformationBlock *GetATIInformationBlock()
 		    (unsigned char *)bios_signature, 10) != 10) {
       return NULL;
    }
-   if (strncmp( signature, bios_signature, 10 ))
+   if (xf86strncmp( signature, bios_signature, 10 ))
 	 return NULL;
 
    if (xf86ReadBIOS(mach32InfoRec.BIOSbase, 0x00,

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.49 1997/02/14 12:17:19 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.50 1997/02/18 04:33:34 dawes Exp $
 
 
 
@@ -81,8 +81,10 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.49 1997/02/1
 #  if XieDynamicModule
    XIE_MODULE_DEFINES = -DXIE_MODULE
 #endif
+#ifndef OS2Architecture
    XF86DL_SRC = xf86Dl.c
    XF86DL_OBJ = xf86Dl.o
+#endif
 #if HasDlsymBug
 DLSYM_DEFINES = -DDLSYM_BUG
 #endif

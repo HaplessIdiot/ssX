@@ -62,7 +62,7 @@ InstallLinkKitNonExecFile(regs3.h,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(s3.h,$(LINKKITDIR)/drivers)
 
 #if DoLoadableServer
-InstallDynamicModule(libs3.a,$(MODULEDIR))
+InstallDynamicModule(LibraryTargetName(s3),$(MODULEDIR))
 InstallDynamicModule(s3Conf.o,$(MODULEDIR))
 #endif
 

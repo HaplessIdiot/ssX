@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2.rules /main/1 1996/10/31 14:47:27 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.14 1996/12/27 06:50:24 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.15 1997/01/05 11:49:39 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -535,3 +535,18 @@ $(BUILDBINDIR)/binary: binary						@@\
 	ImakeHelper 13 $(BUILDBINDIR) $(BUILDBINTOP)/$(CURRENT_DIR)/binary binary @@\
 	$(CP) binary /
 #endif /* LinkBuildBinary */
+
+/* And this replaces a similarlry ugly hack in InstallDynamicModule */
+
+#ifndef LinkBuildModule
+#define LinkBuildModule(module) MakeDir($(BUILDMODULEDIR))              @@\
+	RemoveFile($(BUILDMODULEDIR)/module)                            @@\
+	ImakeHelper 13 $(BUILDMODULEDIR) $(BUILDMODULETOP)/$(CURRENT_DIR)/module module
+#endif /* LinkBuildModule */
+
+#ifndef LinkBuildNamedModule
+#define LinkBuildNamedModule(module,name) MakeDir($(BUILDMODULEDIR))    @@\
+	RemoveFile($(BUILDMODULEDIR)/module)                            @@\
+	ImakeHelper 13 $(BUILDMODULEDIR) $(BUILDMODULETOP)/$(CURRENT_DIR)/module name
+#endif /* LinkBuildNamedModule */
+

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.91 1997/02/19 06:04:02 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.92 1997/02/20 08:49:21 hohndel Exp $
 /*
  * Server Master Makefile
  */
@@ -1003,7 +1003,7 @@ CFB32DIR = cfb32
 DDXDIR1  = hw/xfree86
 XF86LOADERSUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
 XF86LOADEROBJS = $(XF86COMSRC)/XF86_LOADER.o
-XF86LOADERLIB = $(XF86SRC)/loader/libloader.a
+XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
 XF86LOADERLIBS = $(XF86LLIBS) $(XF86COMLIB) $(XF86LOADERLIB)  $(XF86HWLIB) \
                  $(XF86OSLIB) PreFbLibs $(OTHEREXTS) PostFbLibs
 XF86LOADERSYSLIBS = $(SYSLIBS)

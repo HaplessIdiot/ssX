@@ -91,7 +91,7 @@ InstallLinkKitNonExecFile(mfb.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mergerop.h,$(LINKKITDIR)/include)
 
 #if DoLoadableServer
-InstallDynamicModule(libmfb.a,$(MODULEDIR))
+InstallDynamicModule(LibraryTargetName(mfb),$(MODULEDIR))
 #endif
 
 DependTarget()
