@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.59 2001/08/06 20:51:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.60 2001/08/15 11:54:25 tsi Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -616,6 +616,10 @@ configureModuleSection (void)
 	"extensions",
 	NULL
     };
+    const char *fsubdirs[] = {
+	"fonts",
+	NULL
+    };
 #endif
     parsePrologue (XF86ConfModulePtr, XF86ConfModuleRec)
 
@@ -630,6 +634,28 @@ configureModuleSection (void)
     	    module->load_name = *el;
 	    /* HACK, remove GLcore, glx, loads it as a submodule */
 	    if (strcmp(*el, "GLcore"))
+	    	ptr->mod_load_lst = (XF86LoadPtr)xf86addListItem(
+					(glp)ptr->mod_load_lst, (glp)module);
+    	}
+	xfree(elist);
+    }
+
+    /* Process list of font backends separately to include only required ones */
+    elist = LoaderListDirs(fsubdirs, NULL);
+    if (elist) {
+	for (el = elist; *el; el++) {
+	    XF86LoadPtr module;
+
+    	    module = xf86confmalloc(sizeof(XF86LoadRec));
+    	    memset((XF86LoadPtr)module,0,sizeof(XF86LoadRec));
+    	    module->load_name = *el;
+
+            /* Add only those font backends which are referenced by fontpath */
+            /* 'strstr(dFP,"/dir")' is meant as 'dFP =~ m(/dir\W)' */
+    	    if (defaultFontPath  &&  (
+    	        strcmp(*el, "type1")  == 0  &&  strstr(defaultFontPath, "/Type1")  ||
+    	        strcmp(*el, "speedo") == 0  &&  strstr(defaultFontPath, "/Speedo")
+    	       ))
 	    	ptr->mod_load_lst = (XF86LoadPtr)xf86addListItem(
 					(glp)ptr->mod_load_lst, (glp)module);
     	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.35 2001/07/25 08:04:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.36 2001/08/07 07:04:43 keithp Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -886,6 +886,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RAGE128RL:
 	case PCI_CHIP_RAGE128PD:
 	case PCI_CHIP_RAGE128PF:
+	case PCI_CHIP_RAGE128PR:
 	/* R128 ULTRA can have dual-head and DFP, not support yet */
 	case PCI_CHIP_RAGE128TF: 
 	case PCI_CHIP_RAGE128TL:
@@ -1022,6 +1023,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RAGE128LE:
 	case PCI_CHIP_RAGE128RE:
 	case PCI_CHIP_RAGE128RK:
+	case PCI_CHIP_RAGE128PR:
 	case PCI_CHIP_RAGE128PD: info->IsPCI = TRUE;  break;
 	case PCI_CHIP_RAGE128LF:
 	case PCI_CHIP_RAGE128MF:

@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.21 2001/05/24 19:43:05 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.22 2001/05/25 18:41:02 dawes Exp $
 
 default xkb_keymap "us" {
     xkb_keycodes	{ include "xfree86"		};
@@ -143,6 +143,20 @@ xkb_keymap "mk" {
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
     xkb_symbols		{ include "en_US(pc105)+mk"	};
+    xkb_geometry	{ include "pc(pc102)"		};
+};
+xkb_keymap "mt" {
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+mt"	};
+    xkb_geometry	{ include "pc(pc102)"		};
+};
+xkb_keymap "mt_uk" {
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_us(pc105)+mt_uk"	};
     xkb_geometry	{ include "pc(pc102)"		};
 };
 xkb_keymap "no"	{

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.64 2001/06/20 19:07:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.65 2001/08/16 14:33:52 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -887,7 +887,7 @@ xf86PostMotionEvent(DeviceIntPtr	device,
     
     va_start(var, num_valuators);
 
-    loop_start = 0;
+    loop_start = first_valuator;
     for(loop=0; loop<num_valuators; loop++) {
 	
 	valuator[loop%6] = va_arg(var,int);
@@ -1031,7 +1031,7 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 		    axisvals[1] = y;
 		}
 	    }
-	    loop_start = loop + 1;
+	    loop_start += 6;
 	}
     }
     va_end(var);

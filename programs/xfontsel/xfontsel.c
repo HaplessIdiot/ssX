@@ -31,7 +31,7 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 	one weekend in November, 1989
 Modified: Mark Leisher <mleisher@crl.nmsu.edu> to deal with UCS sample text.
 */
-/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.4 2001/04/01 14:00:20 tsi Exp $ */
+/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.5 2001/08/01 00:45:03 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -755,6 +755,47 @@ void FixScalables( closure )
 }
 
 
+/* A verbatim copy from xc/lib/font/fontfile/fontdir.c */
+
+/*
+ * Compare two strings just like strcmp, but preserve decimal integer
+ * sorting order, i.e. "2" < "10" or "iso8859-2" < "iso8859-10" <
+ * "iso10646-1". Strings are sorted as if sequences of digits were
+ * prefixed by a length indicator (i.e., does not ignore leading zeroes).
+ *
+ * Markus Kuhn <Markus.Kuhn@cl.cam.ac.uk>
+ */
+#define Xisdigit(c) ('\060' <= (c) && (c) <= '\071')
+
+static int strcmpn(const char *s1, const char *s2)
+{
+    int digits, predigits = 0;
+    const char *ss1, *ss2;
+
+    while (1) {
+	if (*s1 == 0 && *s2 == 0)
+	    return 0;
+	digits = Xisdigit(*s1) && Xisdigit(*s2);
+	if (digits && !predigits) {
+	    ss1 = s1;
+	    ss2 = s2;
+	    while (Xisdigit(*ss1) && Xisdigit(*ss2))
+		ss1++, ss2++;
+	    if (!Xisdigit(*ss1) && Xisdigit(*ss2))
+		return -1;
+	    if (Xisdigit(*ss1) && !Xisdigit(*ss2))
+		return 1;
+	}
+	if ((unsigned char)*s1 < (unsigned char)*s2)
+	    return -1;
+	if ((unsigned char)*s1 > (unsigned char)*s2)
+	    return 1;
+	predigits = digits;
+	s1++, s2++;
+    }
+}
+
+
 /* Order is *, (nil), rest */
 int AlphabeticSort(fval1, fval2)
     FieldValue *fval1, *fval2;
@@ -767,7 +808,7 @@ int AlphabeticSort(fval1, fval2)
 	return -1;
     if (!fval2->string)
 	return 1;
-    return strcmp(fval1->string, fval2->string);
+    return strcmpn(fval1->string, fval2->string);
 }
 
 
