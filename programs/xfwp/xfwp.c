@@ -33,6 +33,8 @@ from the X Consortium.
   under contract to X Consortium, Inc.
  */
 
+/* $XFree86$ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xos.h>
@@ -65,6 +67,10 @@ from the X Consortium.
 #include <X11/PM/PMproto.h>
 #include <assert.h>
 #include "xfwp.h"
+
+#ifndef SOMAXCONN
+#define SOMAXCONN 128
+#endif
 
 extern int errno;
 struct clientDataStruct global_data;  /* necessary for ICE callbacks */
