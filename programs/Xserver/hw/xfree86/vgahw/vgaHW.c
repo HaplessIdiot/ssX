@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.7 1998/09/20 06:01:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.8 1998/09/20 14:41:08 dawes Exp $ */
 
 /*
  *
@@ -341,8 +341,15 @@ vgaHWSetStdFuncs(vgaHWPtr hwp)
  * adderss is added the correct memory address results.
  */
 
-#define minb(p) *(volatile CARD8 *)(hwp->MemBase + (p))
-#define moutb(p,v) *(volatile CARD8 *)(hwp->MemBase + (p)) = (v)
+#ifndef __alpha__
+#define minb(p) *(volatile CARD8 *)(hwp->MMIOBase + hwp->MMIOOffset + (p))
+#define moutb(p,v) \
+	*(volatile CARD8 *)(hwp->MMIOBase + hwp->MMIOOffset + (p)) = (v)
+#else
+#define minb(p) xf86ReadSparse8(hwp->MMIOBase, hwp->MMIOOffset + (p))
+#define moutb(p,v) \
+	xf86WriteSparse8((v), hwp->MMIOBase, hwp->MMIOOffset + (p))
+#endif
 
 static void
 mmioWriteCrtc(vgaHWPtr hwp, CARD8 index, CARD8 value)
@@ -485,7 +492,7 @@ mmioReadDacData(vgaHWPtr hwp)
 }
 
 void
-vgaHWSetMmioFuncs(vgaHWPtr hwp, CARD8 *memBase)
+vgaHWSetMmioFuncs(vgaHWPtr hwp, CARD8 *base, int offset)
 {
     hwp->writeCrtc		= mmioWriteCrtc;
     hwp->readCrtc		= mmioReadCrtc;
@@ -505,7 +512,8 @@ vgaHWSetMmioFuncs(vgaHWPtr hwp, CARD8 *memBase)
     hwp->writeDacReadAddr	= mmioWriteDacReadAddr;
     hwp->writeDacData		= mmioWriteDacData;
     hwp->readDacData		= mmioReadDacData;
-    hwp->MemBase		= memBase;
+    hwp->MMIOBase		= base;
+    hwp->MMIOOffset		= offset;
 }
 
 /*

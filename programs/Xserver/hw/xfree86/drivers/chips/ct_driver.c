@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.33 1998/09/19 12:14:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.34 1998/09/20 06:01:19 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -150,7 +150,7 @@ static int      CHIPSValidMode(int scrnIndex, DisplayModePtr mode,
 static Bool	CHIPSSaveScreen(ScreenPtr pScreen, Bool unblank);
 
 /* Internally used functions */
-static int      chipsFindIsaDevice();
+static int      chipsFindIsaDevice(void);
 static Bool     chipsClockSelect(ScrnInfoPtr pScrn, int no);
 static Bool     chipsModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void     chipsSave(ScrnInfoPtr pScrn);
@@ -560,6 +560,58 @@ static OptionInfoRec ChipsHiQVOptions[] = {
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
+/*
+ * List of symbols from other modules that this module references.  This
+ * list is used to tell the loader that it is OK for symbols here to be
+ * unresolved providing that it hasn't been told that they haven't been
+ * told that they are essential via a call to xf86LoaderReqSymbols() or
+ * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * unresolved symbols that are not required.
+ */
+
+static const char *vgahwSymbols[] = {
+    "vgaHWGetHWRec",
+    "vgaHWUnlock",
+    "vgaHWInit",
+    "vgaHWProtect",
+    "vgaHWGetIOBase",
+    "vgaHWMapMem",
+    "vgaHWLock",
+    "vgaHWFreeHWRec",
+    "vgaHWSaveScreen",
+    NULL
+};
+
+static const char *cfbSymbols[] = {
+    "xf1bppScreenInit",
+    "xf4bppScreenInit",
+    "cfbScreenInit",
+    "cfb16ScreenInit",
+    "cfb24ScreenInit",
+    "cfb32ScreenInit",
+    NULL
+};
+
+static const char *xaaSymbols[] = {
+    "XAADestroyInfoRec",
+    "XAACreateInfoRec",
+    "XAAInit",
+    "XAAStippleScanlineFuncMSBFirst",
+    NULL
+};
+
+static const char *ramdacSymbols[] = {
+    "xf86InitCursor",
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    NULL
+};
+
+static const char *racSymbols[] = {
+    "xf86RACInit",
+    NULL
+};
+
 #ifdef XFree86LOADER
 
 MODULEINITPROTO(chipsModuleInit);
@@ -577,6 +629,7 @@ static XF86ModuleVersionInfo chipsVersRec =
 	ABI_VIDEODRV_VERSION,
 	{0,0,0,0}
 };
+
 /*
  * This function is the module init function.
  * Its name has to be the driver name followed by ModuleInit()
@@ -603,6 +656,13 @@ chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Modules that this driver always requires can be loaded here
 	 * by calling LoadSubModule().
 	 */
+
+	/*
+	 * Tell the loader about symbols from other modules that this module
+	 * might refer to.
+	 */
+	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
+			  ramdacSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -661,7 +721,7 @@ CHIPSProbe(DriverPtr drv, int flags)
     int numDevSections, numUsed;
     GDevPtr *devSections, *usedDevs;
     GDevPtr usedDev;
-    pciVideoPtr pPci, *usedPci;
+    pciVideoPtr *usedPci;
     int *usedChips;
     int usedChip;
 
@@ -749,7 +809,7 @@ CHIPSProbe(DriverPtr drv, int flags)
 }
 
 static int
-chipsFindIsaDevice()
+chipsFindIsaDevice(void)
 {
     int found = -1;
     unsigned char tmp;
@@ -826,16 +886,17 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     ClockRangePtr clockRanges;
     char *mod = NULL;
     int i;
-    unsigned char tmp;
-    MessageType from;
     CHIPSPtr cPtr;
     int *numChipsets;
+    const char *reqSym = NULL;
 
     xf86AddControlledResource(pScrn,IO);
 
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
+
+    xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     /* Allocate the ChipsRec driverPrivate */
     if (!CHIPSGetRec(pScrn)) {
@@ -1014,43 +1075,57 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     switch (pScrn->bitsPerPixel) {
     case 1:
 	mod = "xf1bpp";
+	reqSym = "xf1bppScreenInit";
 	break;
     case 4:
 	mod = "xf4bpp";
+	reqSym = "xf4bppScreenInit";
 	break;
     case 8:
 	mod = "cfb";
+	reqSym = "cfbScreenInit";
 	break;
     case 16:
 	mod = "cfb16";
+	reqSym = "cfb26ScreenInit";
 	break;
     case 24:
 	mod = "cfb24";
+	reqSym = "cfb24ScreenInit";
 	break;
     case 32:
 	mod = "cfb32";
+	reqSym = "cfb32ScreenInit";
 	break;
     }
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
 	CHIPSFreeRec(pScrn);
 	return FALSE;
     }
-    if (cPtr->Flags & ChipsAccelSupport) 
+
+    xf86LoaderReqSymbols(reqSym, NULL);
+
+    if (cPtr->Flags & ChipsAccelSupport) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
+	xf86LoaderReqSymLists(xaaSymbols, NULL);
+    }
 
-    if (cPtr->Flags & ChipsHWCursor)
+    if (cPtr->Flags & ChipsHWCursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
-
+	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    }
+    
     if (!xf86LoadSubModule(pScrn, "rac")){
         CHIPSFreeRec(pScrn);
 	return FALSE;
     }
+    xf86LoaderReqSymLists(racSymbols, NULL);
 
     return TRUE;
 }
@@ -1078,6 +1153,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	case 1:
 	case 4:
 	case 8:
+	case 15:
 	case 16:
 	case 24:
 	case 32:
@@ -1219,7 +1295,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	    case 1:
 	    case 2:
 	    case 3:
-		pScrn->videoRam = 1024;
+		pScrn->videoRam = 2048;
 		break;
 	    }
 	default:
@@ -1683,6 +1759,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	case 8:
 	    /* OK */
 	    break;
+	case 15:
 	case 16:
 	case 24:
 	    if (cPtr->Flags & ChipsHDepthSupport) 
@@ -2065,6 +2142,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	case 8:
 	    /* OK */
 	    break;
+	case 15:
 	case 16:
 	case 24:
 	    if (cPtr->Flags & ChipsHDepthSupport) 
@@ -2692,7 +2770,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     VisualPtr visual;
     int savedDefaultVisualClass;
     int allocatebase, freespace, currentaddr;
-    unsigned int racflag;
+    unsigned int racflag = 0;
 
     /*
      * we need to get the ScrnInfoRec for this screen, so let's allocate
@@ -3018,8 +3096,8 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    if (cAcl->CacheStart >= cAcl->CacheEnd) {
 		xf86DrvMsg(scrnIndex, X_ERROR,
 		       "Too little space for pixmap cache.\n");
-		cAcl->CacheStart = -1;
-		cAcl->CacheEnd = -1;
+		cAcl->CacheStart = 0;
+		cAcl->CacheEnd = 0;
 	    }
 
 	    if (IS_HiQV(cPtr)) {
@@ -3060,21 +3138,8 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
     
     /* Initialise default colourmap */
-    switch (pScrn->depth)
-    {
-    case 1:
-	if (!xf1bppCreateDefColormap(pScreen))
-	    return FALSE;
-	break;
-    case 4:
-	if (!xf4bppCreateDefColormap(pScreen))
-	    return FALSE;
-	break;
-    default:
-	if (!cfbCreateDefColormap(pScreen))
-	    return FALSE;
-	break;
-    }
+    if (!miCreateDefColormap(pScreen))
+	return FALSE;
 
     if (pScrn->bitsPerPixel <= 8)
         racflag = RAC_COLORMAP;
@@ -3832,7 +3897,6 @@ static Bool
 chipsModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    unsigned char tmp;
 
     chipsUnlock(pScrn);
     chipsFixResume(cPtr);
@@ -4433,10 +4497,6 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    mode->CrtcHAdjusted = TRUE;
 	}
     }
-    ErrorF("bl start: 0x%X bl end: 0x%X  e - s = 0x%X\n",
-	   mode->CrtcHBlankStart>>3,
-	   mode->CrtcHBlankEnd>>3,
-	   ((mode->CrtcHBlankEnd - mode->CrtcHBlankStart)>>3)&0x3F);
 	   
     /* store orig. HSyncStart needed for flat panel mode */
     HSyncStart = mode->CrtcHSyncStart / (pScrn->bitsPerPixel >= 8 ? 
@@ -4857,8 +4917,7 @@ chipsRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, CHIPSRegPtr ChipsReg,
 	     Bool restoreFonts)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    unsigned char tmp;
-    int i;
+    unsigned char tmp = 0;
 
     /*vgaHWProtect(pScrn, TRUE);*/
 

@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 20 September 1998.
+Last modified: 26 September 1998.
 
 
 
@@ -2616,18 +2616,19 @@ B.2  General vgahw Functions:
       The register access functions are described below.
 
 
-    void vgaHWSetMmioFuncs(vgaHWPtr hwp, unsigned long memBase)
+    void vgaHWSetMmioFuncs(vgaHWPtr hwp, CARD8 *base, int offset)
 
       This function initialised the register access function fields of
-      hwp with a generic MMIO set of functions.  hwp->MemBase is
-      initialised with memBase, which must be the the virtual address
-      of the MMIO area, calculated in such a way that when the standard
-      VGA I/O port value is added to it the correct access address
-      results.  That means that these functions are only suitable when
-      the VGA I/O ports are made available in a direct mapping to the
-      MMIO space.  If that is not the case, the driver will need to
-      provide its own register access functions. The register access
-      functions are described below.
+      hwp with a generic MMIO set of functions.  hwp->MMIOBase is
+      initialised with `base', which must be the virtual address that
+      the start of MMIO area is mapped to.  hwp->MMIOOffset is initialised
+      with `offset', which must be calculated in such a way that when the
+      standard VGA I/O port value is added to it the correct offset into
+      the MMIO area results.  That means that these functions are only
+      suitable when the VGA I/O ports are made available in a direct
+      mapping to the MMIO space.  If that is not the case, the driver
+      will need to provide its own register access functions. The register
+      access functions are described below.
 
 
     Bool vgaHWMapMem(ScrnInfoPtr pScrn)
@@ -3926,4 +3927,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.12 1998/09/13 05:23:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.13 1998/09/20 06:01:16 dawes Exp $

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.38 1998/09/13 09:10:24 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.39 1998/09/20 06:01:27 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2072,21 +2072,8 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /* Initialise default colourmap */
-    switch (pScrn->depth)
-    {
-    case 1:
-	if (!xf1bppCreateDefColormap(pScreen))
-	    return FALSE;
-	break;
-    case 4:
-	if (!xf4bppCreateDefColormap(pScreen))
-	    return FALSE;
-	break;
-    default:
-	if (!cfbCreateDefColormap(pScreen))
-	    return FALSE;
-	break;
-    }
+    if (!miCreateDefColormap(pScreen))
+	return FALSE;
 
     /* Wrap the current CloseScreen and SaveScreen functions */
     pScreen->SaveScreen = TsengSaveScreen;

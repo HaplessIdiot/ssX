@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_cmap.c,v 1.3 1998/08/29 05:43:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_cmap.c,v 1.4 1998/09/20 06:01:23 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -52,28 +52,39 @@ MGAStoreColors(
     vgaRegPtr pReg = &hwp->ModeReg;
     unsigned char *pal;
     int i;
-    
-    if (pmap != InstalledMaps[pmap->pScreen->myNum])
-        return;
+    int shift;
 
-    
+    if (pmap != InstalledMaps[pmap->pScreen->myNum])
+      return;
+
+
     writeColormap = pScrn->vtSema;
 #ifdef XFreeXDGA
     if (DGAAvailable(index)) {
-	writeColormap = writeColormap ||
-			(DGAGetDirectMode(index) &&
-			 !(DGAGetFlags(index) & XF86DGADirectColormap)) ||
-			(DGAGetFlags(index) & XF86DGAHasColormap);
+      writeColormap = writeColormap ||
+	(DGAGetDirectMode(index) &&
+	 !(DGAGetFlags(index) & XF86DGADirectColormap)) ||
+	(DGAGetFlags(index) & XF86DGAHasColormap);
     }
 #endif
 
 
-    if ((pmap->pVisual->class | DynamicClass) == DirectColor) {
-	ndef = miExpandDirectColors (pmap, ndef, pdefs, directDefs);
-	pdefs = directDefs;
+    if ( pmap->pVisual->nplanes > MAX_PSEUDO_DEPTH ) {
+      /* green because it is deepest color in 565 mode */
+      shift = 8 - pScrn->weight.green;
+    } else {
+      if ((pmap->pVisual->class | DynamicClass) == DirectColor) {
+        ndef = miExpandDirectColors (pmap, ndef, pdefs, directDefs);
+        pdefs = directDefs;
+      }
+      shift = 0;
     }
 
     for(i = 0; i < ndef; i++) {
+        /* miExpandColors uses bottom bits of LUT address, 
+         * but ramdac uses top bits of LUT address.
+         */
+        pdefs[i].pixel = pdefs[i].pixel << shift;
         pal = pReg->DAC + (pdefs[i].pixel * 3);
         pal[0] = pdefs[i].red >> 8;
         pal[1] = pdefs[i].green >> 8;
@@ -81,8 +92,8 @@ MGAStoreColors(
     }
 
     if(writeColormap)
-	(*MGAdac->StoreColors)(pScrn, pdefs, ndef);
-	
+      (*MGAdac->StoreColors)(pScrn, pdefs, ndef);
+
 }
 
 
@@ -93,6 +104,7 @@ MGAInstallColormap(ColormapPtr pmap)
     int index = pmap->pScreen->myNum;
     ScrnInfoPtr pScrn = xf86Screens[index];
     ColormapPtr oldpmap = InstalledMaps[index];
+    VisualPtr pVisual = pmap->pVisual;
     Pixel 	*ppix;
     xrgb 	*prgb;
     xColorItem 	*defs;
@@ -100,7 +112,7 @@ MGAInstallColormap(ColormapPtr pmap)
 
 
     if (pmap == oldpmap)
-	return;
+      return;
 
     if(oldpmap != (ColormapPtr)None)
 	WalkTree(pmap->pScreen, TellLostMap, (char *)&oldpmap->mid);
@@ -119,10 +131,8 @@ MGAInstallColormap(ColormapPtr pmap)
 			pmap->pVisual->blueMask) + 1;
 	else
 	     entries = pmap->pVisual->ColormapEntries;
-    } else if (pmap->pVisual->class == DirectColor) {
-	     entries = (pmap->pVisual->redMask |
-			pmap->pVisual->greenMask |
-			pmap->pVisual->blueMask) + 1;
+    } else if ((pmap->pVisual->class | DynamicClass) == DirectColor) {
+      entries = pmap->pVisual->ColormapEntries;
     } else if ((pScrn->bitsPerPixel == 32) && 
 		(pmap->pVisual->class == PseudoColor)) {
 	     entries = pmap->pVisual->ColormapEntries;
@@ -133,12 +143,27 @@ MGAInstallColormap(ColormapPtr pmap)
     prgb = (xrgb *)ALLOCATE_LOCAL( entries * sizeof(xrgb));
     defs = (xColorItem *)ALLOCATE_LOCAL(entries * sizeof(xColorItem));
 
-    for ( i=0; i<entries; i++) ppix[i] = i;
+    for (i = 0; i < entries; i++ ) {
+      if ( pVisual->nplanes <= MAX_PSEUDO_DEPTH ) {
+	ppix[i] = i; 
+      } else {
+	/*
+	  int r = (i << pVisual->offsetRed) & pVisual->redMask;
+	  int g = (i << pVisual->offsetGreen) & pVisual->greenMask;
+	  int b = (i << pVisual->offsetBlue) & pVisual->blueMask;
+	  */
+	int maxEnt = entries-1;
+	int r = ((i *  pVisual->redMask)  / maxEnt) & pVisual->redMask;
+	int g = ((i *  pVisual->greenMask)/ maxEnt) & pVisual->greenMask;
+	int b = ((i *  pVisual->blueMask) / maxEnt) & pVisual->blueMask;
+	ppix[i] = r | g | b ;
+      }
+    }
 
     QueryColors( pmap, entries, ppix, prgb);
 
     for ( i=0; i<entries; i++) { /* convert xrgbs to xColorItems */
-	defs[i].pixel = ppix[i];
+	defs[i].pixel = i;
 	defs[i].red = prgb[i].red;
 	defs[i].green = prgb[i].green;
 	defs[i].blue = prgb[i].blue;

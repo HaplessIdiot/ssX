@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.19 1998/09/13 05:23:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.22 1998/09/20 08:39:21 hohndel Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -19,16 +19,12 @@
 #include "vgaHW.h"
 
 #if defined(__alpha__)
-#define mb() __asm__ __volatile__("mb": : :"memory")
 #define INREG8(addr) xf86ReadSparse8(pMga->IOBase, (addr))
 #define INREG16(addr) xf86ReadSparse16(pMga->IOBase, (addr))
 #define INREG(addr) xf86ReadSparse32(pMga->IOBase, (addr))
-#define OUTREG8(addr,val) do { xf86WriteSparse8((val),pMga->IOBase,(addr)); \
-				mb();} while(0)
-#define OUTREG16(addr,val) do { xf86WriteSparse16((val),pMga->IOBase,(addr)); \
-				mb();} while(0)
-#define OUTREG(addr, val) do { xf86WriteSparse32((val),pMga->IOBase,(addr)); \
-				mb();} while(0)
+#define OUTREG8(addr,val) xf86WriteSparse8((val),pMga->IOBase,(addr))
+#define OUTREG16(addr,val) xf86WriteSparse16((val),pMga->IOBase,(addr))
+#define OUTREG(addr, val) xf86WriteSparse32((val),pMga->IOBase,(addr))
 #else /* __alpha__ */
 #if defined(EXTRADEBUG)
 CARD8 dbg_inreg8(ScrnInfoPtr,int,int);

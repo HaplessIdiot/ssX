@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcRslvC.c,v 1.1.2.1 1998/06/27 14:48:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcRslvC.c,v 1.2 1998/07/25 16:59:40 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -179,29 +179,3 @@ register VisualPtr const pVisual ;
 	}
 }
 
-Bool
-xf4bppCreateDefColormap(pScreen)
-    ScreenPtr pScreen;
-{
-    unsigned short	zero = 0, ones = 0xFFFF;
-    VisualPtr	pVisual;
-    ColormapPtr	cmap;
-    
-    for (pVisual = pScreen->visuals;
-	 pVisual->vid != pScreen->rootVisual;
-	 pVisual++)
-	;
-
-    if (CreateColormap(pScreen->defColormap, pScreen, pVisual, &cmap,
-		       (pVisual->class & DynamicClass) ? AllocNone : AllocAll,
-		       0)
-	!= Success)
-	return FALSE;
-    if ((AllocColor(cmap, &ones, &ones, &ones, &(pScreen->whitePixel), 0) !=
-       	   Success) ||
-    	(AllocColor(cmap, &zero, &zero, &zero, &(pScreen->blackPixel), 0) !=
-       	   Success))
-    	return FALSE;
-    (*pScreen->InstallColormap)(cmap);
-    return TRUE;
-}
