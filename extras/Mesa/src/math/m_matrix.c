@@ -1,10 +1,10 @@
-/* $Id: m_matrix.c,v 1.1 2002/02/22 17:14:12 dawes Exp $ */
+/* $Id: m_matrix.c,v 1.2 2002/09/12 15:16:51 tsi Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.2
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,6 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+/* $XFree86$ */
 
 
 /*
@@ -468,6 +469,7 @@ static GLboolean invert_matrix_2d_no_rot( GLmatrix *mat )
 }
 
 
+#if 0
 static GLboolean invert_matrix_perspective( GLmatrix *mat )
 {
    const GLfloat *in = mat->m;
@@ -492,6 +494,7 @@ static GLboolean invert_matrix_perspective( GLmatrix *mat )
 
    return GL_TRUE;
 }
+#endif
 
 
 typedef GLboolean (*inv_mat_func)( GLmatrix *mat );
@@ -501,7 +504,14 @@ static inv_mat_func inv_mat_tab[7] = {
    invert_matrix_general,
    invert_matrix_identity,
    invert_matrix_3d_no_rot,
+#if 0
+   /* Don't use this function for now - it fails when the projection matrix
+    * is premultiplied by a translation (ala Chromium's tilesort SPU).
+    */
    invert_matrix_perspective,
+#else
+   invert_matrix_general,
+#endif
    invert_matrix_3d,		/* lazy! */
    invert_matrix_2d_no_rot,
    invert_matrix_3d
