@@ -1,4 +1,6 @@
 XFree86 3.9.16f (xx December 1999)
+3368. Change font client code to recover from font server hangs/crashes
+      and reduce memory fragmentation (#3446, Keith Packard).
 3367. Allow MAXCLIENT to be any of 64, 128, 256, or 512 and adjust the
       resource allocation code as appropriate (#3445, Keith Packard).
 3366. Fix compile problems with Solaris 7 (#3437, Nicholas Brealey).
@@ -9141,4 +9143,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.863 1999/12/13 02:32:14 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.864 1999/12/13 02:42:12 robin Exp $

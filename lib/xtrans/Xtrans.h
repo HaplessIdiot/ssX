@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.12 1998/10/03 09:07:34 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.13 1999/06/20 08:41:21 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -221,6 +221,7 @@ typedef struct _XtransConnInfo *XtransConnInfo;
 
 #define TRANS_CONNECT_FAILED 	-1
 #define TRANS_TRY_CONNECT_AGAIN -2
+#define TRANS_IN_PROGRESS	-3
 
 
 /*

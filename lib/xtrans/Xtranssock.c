@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.42 1999/07/04 06:38:30 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.43 1999/07/04 13:39:53 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -1382,12 +1382,12 @@ else
 	int olderrno = errno;
 #endif
 
-	PRMSG (1,"SocketINETConnect: Can't connect: errno = %d\n",
-	  EGET(),0, 0);
-
 	/*
 	 * If the error was ECONNREFUSED, the server may be overloaded
 	 * and we should try again.
+	 *
+	 * If the error was EWOULDBLOCK or EINPROGRESS then the socket
+	 * was non-blocking and we should poll using select
 	 *
 	 * If the error was EINTR, the connect was interrupted and we
 	 * should try again.
@@ -1395,8 +1395,15 @@ else
 
 	if (olderrno == ECONNREFUSED || olderrno == EINTR)
 	    return TRANS_TRY_CONNECT_AGAIN;
+	else if (olderrno == EWOULDBLOCK || olderrno == EINPROGRESS)
+	    return TRANS_IN_PROGRESS;
 	else
+	{
+	    PRMSG (2,"SocketINETConnect: Can't connect: errno = %d\n",
+		   olderrno,0, 0);
+
 	    return TRANS_CONNECT_FAILED;	
+	}
     }
     
 
@@ -1620,13 +1627,28 @@ TRANS(SocketUNIXConnect) (XtransConnInfo ciptr, char *host, char *port)
 	{
 	    errno = olderrno;
 	    
-	    PRMSG (1,"SocketUNIXConnect: Can't connect: errno = %d\n",
-		  EGET(),0, 0);
+	    /*
+	     * If the error was ENOENT, the server may be starting up
+	     * and we should try again.
+	     *
+	     * If the error was EWOULDBLOCK or EINPROGRESS then the socket
+	     * was non-blocking and we should poll using select
+	     *
+	     * If the error was EINTR, the connect was interrupted and we
+	     * should try again.
+	     */
 
 	    if (olderrno == ENOENT || olderrno == EINTR)
 		return TRANS_TRY_CONNECT_AGAIN;
+	    else if (olderrno == EWOULDBLOCK || olderrno == EINPROGRESS)
+		return TRANS_IN_PROGRESS;
 	    else
+	    {
+		PRMSG (2,"SocketUNIXConnect: Can't connect: errno = %d\n",
+		       EGET(),0, 0);
+
 		return TRANS_CONNECT_FAILED;
+	    }
 	}
     }
 
