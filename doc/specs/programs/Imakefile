@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:50 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.7 2001/01/24 00:06:09 dawes Exp $
+XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.8 2001/04/03 22:37:30 dawes Exp $
 
 /* does not include manual pages under util (not X programs)
    or any of the library function manual pages under doc/man */
@@ -83,6 +83,8 @@ MANUALS = \
   $(TOP)/programs/xfsinfo/xfsinfo.man \
   $(TOP)/programs/fslsfonts/fslsfonts.man \
   $(TOP)/programs/fstobdf/fstobdf.man \
+  $(TOP)/programs/glxinfo/glxinfo.man \
+  $(TOP)/programs/glxgears/glxgears.man \
   $(TOP)/programs/iceauth/iceauth.man \
   $(TOP)/config/imake/imake.man \
   $(TOP)/programs/Xserver/hw/sun/kbd_mode.man \
