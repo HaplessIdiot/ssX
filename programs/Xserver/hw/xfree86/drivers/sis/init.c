@@ -3614,7 +3614,7 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
 
    if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {
       if(HwInfo->jChipType >= SIS_315H) {
-         if(HwInfo->jChipType < SIS_661) {
+         if(!SiS_Pr->SiS_ROMNew) {
 	    if(SiS_IsVAMode(SiS_Pr,HwInfo)) {
 	       SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x35,0x01);
 	    } else {
@@ -3850,7 +3850,7 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
 
    if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {
       if(HwInfo->jChipType >= SIS_315H) {
-         if(HwInfo->jChipType < SIS_661) {
+         if(!SiS_Pr->SiS_ROMNew) {
 	    if(SiS_IsVAMode(SiS_Pr,HwInfo)) {
 	       SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x35,0x01);
 	    } else {

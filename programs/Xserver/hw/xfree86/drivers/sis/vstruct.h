@@ -289,6 +289,7 @@ typedef struct _SiS_Private
 #endif
 	BOOLEAN SiS_UseROM;
 	BOOLEAN SiS_ROMNew;
+	BOOLEAN PanelSelfDetected;
 	int     SiS_CHOverScan;
 	BOOLEAN SiS_CHSOverScan;
 	BOOLEAN SiS_ChSW;
