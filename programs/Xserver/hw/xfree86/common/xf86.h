@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.60 1997/06/03 14:11:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.61 1997/06/25 08:24:57 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -31,9 +31,6 @@
 #include "scrnintstr.h"
 
 #include "xf86_Option.h"
-
-#define DONT_DEFINE_WRAPPERS
-#include "xf86_libc.h"
 
 /*
  * structure common for all modes

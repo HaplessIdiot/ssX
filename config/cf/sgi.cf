@@ -1,4 +1,4 @@
-XCOMM platform:  $TOG: sgi.cf /main/44 1997/06/06 09:50:21 kaleb $
+XCOMM platform:  $TOG: sgi.cf /main/45 1997/06/18 18:01:03 kaleb $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -131,10 +131,13 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 #   define ThreadedX HasPosixThreads
 #   define ThreadsLibraries -lpthread
 /* 
- * Add "#define SgiThreadsPatch 1403" to your site.def or host.def if 
+ * Add "#define HasSgiThreadsPatch1403 NO" to your site.def or host.def if 
  * that's which patch you have.
  */
-#   if (SgiThreadsPatch == 1403) 
+#   ifndef HasSgiThreadsPatch1403
+#    define HasSgiThreadsPatch1403 YES
+#   endif
+#   if (HasSgiThreadsPatch1403) 
 #    define SystemMTDefines -D_POSIX_THREAD_SAFE_FUNCTIONS
 #   endif
 #  endif

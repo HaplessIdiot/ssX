@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.9 1997/03/24 13:10:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.10 1997/04/18 09:11:55 hohndel Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -382,52 +382,6 @@ extern void xf86OsMouseOption(
 #endif
 );
 
-#ifdef XFree86LOADER
-/*
- * at this point I don't think we support any non-ANSI compilers...
- */
-
-extern void xf86getsecs(INT32 *, INT32 *);
-
-int xf86getbitsperpixel(int);
-
-int xf86sprintf();
-
-Bool xf86setexternclock(char *, int, int);
-
-int xf86execl();
-
-int xf86fprintf(/*XF86FILE f, char *s, const char *format, ...*/);
-
-int xf86fscanf(/*XF86FILE f, char *s, const char *format, ...*/);
-
-char *xf86fgets(char *buf, INT32 n, XF86FILE f);
-
-int xf86fputs(char *buf, XF86FILE f);
-
-int xf86fgetc(XF86FILE f);
-
-int xf86fputc(int c,XF86FILE f);
-
-int xf86fflush(XF86FILE f);
-
-long xf86ftell(XF86FILE f);
-
-long xf86fpossize();
-
-int xf86fgetpos(XF86FILE f,XF86FPOS_T pos);
-
-int xf86fsetpos(XF86FILE f,const XF86FPOS_T pos);
-
-void xf86perror(const char *s);
-
-int xf86remove(const char *s);
-
-int xf86rename(const char *old, const char *new);
-
-void xf86rewind(XF86FILE f);
-
-#endif /* XFree86LOADER */
 
 _XFUNCPROTOEND
 #endif /* NO_OSLIB_PROTOTYPES */

@@ -1,4 +1,4 @@
-/* $XConsortium: omDefault.c,v 1.2 94/03/28 21:38:48 rws Exp $ */
+/* $TOG: omDefault.c /main/6 1997/06/22 15:53:43 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -22,6 +22,11 @@
  *
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
+ */
+/*
+ *  (c) Copyright 1995 FUJITSU LIMITED
+ *  This is source code modified by FUJITSU LIMITED under the Joint
+ *  Development Agreement for the CDE/Motif PST.
  */
 
 #include "Xlibint.h"
@@ -64,9 +69,9 @@ wcs_to_mbs(oc, to, from, length)
 
 int
 #if NeedFunctionPrototypes
-_XmbDefalutTextEscapement(XOC oc, _Xconst char *text, int length)
+_XmbDefaultTextEscapement(XOC oc, _Xconst char *text, int length)
 #else
-_XmbDefalutTextEscapement(oc, text, length)
+_XmbDefaultTextEscapement(oc, text, length)
     XOC oc;
     char *text;
     int length;
@@ -77,9 +82,9 @@ _XmbDefalutTextEscapement(oc, text, length)
 
 int
 #if NeedFunctionPrototypes
-_XwcDefalutTextEscapement(XOC oc, _Xconst wchar_t *text, int length)
+_XwcDefaultTextEscapement(XOC oc, _Xconst wchar_t *text, int length)
 #else
-_XwcDefalutTextEscapement(oc, text, length)
+_XwcDefaultTextEscapement(oc, text, length)
     XOC oc;
     wchar_t *text;
     int length;
@@ -95,7 +100,7 @@ _XwcDefalutTextEscapement(oc, text, length)
     if (wcs_to_mbs(oc, buf, text, length) == False)
 	goto err;
 
-    ret = _XmbDefalutTextEscapement(oc, buf, length);
+    ret = _XmbDefaultTextEscapement(oc, buf, length);
 
 err:
     FreeLocalBuf(buf);
@@ -105,10 +110,10 @@ err:
 
 int
 #if NeedFunctionPrototypes
-_XmbDefalutTextExtents(XOC oc, _Xconst char *text, int length,
+_XmbDefaultTextExtents(XOC oc, _Xconst char *text, int length,
 		       XRectangle *overall_ink, XRectangle *overall_logical)
 #else
-_XmbDefalutTextExtents(oc, text, length, overall_ink, overall_logical)
+_XmbDefaultTextExtents(oc, text, length, overall_ink, overall_logical)
     XOC oc;
     char *text;
     int length;
@@ -141,10 +146,10 @@ _XmbDefalutTextExtents(oc, text, length, overall_ink, overall_logical)
 
 int
 #if NeedFunctionPrototypes
-_XwcDefalutTextExtents(XOC oc, _Xconst wchar_t *text, int length,
+_XwcDefaultTextExtents(XOC oc, _Xconst wchar_t *text, int length,
 		       XRectangle *overall_ink, XRectangle *overall_logical)
 #else
-_XwcDefalutTextExtents(oc, text, length, overall_ink, overall_logical)
+_XwcDefaultTextExtents(oc, text, length, overall_ink, overall_logical)
     XOC oc;
     wchar_t *text;
     int length;
@@ -162,7 +167,7 @@ _XwcDefalutTextExtents(oc, text, length, overall_ink, overall_logical)
     if (wcs_to_mbs(oc, buf, text, length) == False)
 	goto err;
 
-    ret = _XmbDefalutTextExtents(oc, buf, length, overall_ink, overall_logical);
+    ret = _XmbDefaultTextExtents(oc, buf, length, overall_ink, overall_logical);
 
 err:
     FreeLocalBuf(buf);
@@ -172,13 +177,13 @@ err:
 
 Status
 #if NeedFunctionPrototypes
-_XmbDefalutTextPerCharExtents(XOC oc, _Xconst char *text, int length,
+_XmbDefaultTextPerCharExtents(XOC oc, _Xconst char *text, int length,
 			      XRectangle *ink_buf, XRectangle *logical_buf,
 			      int buf_size, int *num_chars,
 			      XRectangle *overall_ink,
 			      XRectangle *overall_logical)
 #else
-_XmbDefalutTextPerCharExtents(oc, text, length, ink_buf, logical_buf, buf_size,
+_XmbDefaultTextPerCharExtents(oc, text, length, ink_buf, logical_buf, buf_size,
 			      num_chars, overall_ink, overall_logical)
     XOC oc;
     char *text;	
@@ -195,12 +200,11 @@ _XmbDefalutTextPerCharExtents(oc, text, length, ink_buf, logical_buf, buf_size,
     XCharStruct *def, *cs, overall;
     Bool first = True;
 
-    *num_chars = length;
-
     if (buf_size < length)
 	return 0;
 
     bzero((char *) &overall, sizeof(XCharStruct));
+    *num_chars = 0;
 
     CI_GET_DEFAULT_INFO_1D(font, def)
 
@@ -234,6 +238,8 @@ _XmbDefalutTextPerCharExtents(oc, text, length, ink_buf, logical_buf, buf_size,
 				   cs->rbearing);
 	    overall.width += cs->width;
 	}
+
+	(*num_chars)++;
     }
 
     if (overall_ink) {
@@ -255,13 +261,13 @@ _XmbDefalutTextPerCharExtents(oc, text, length, ink_buf, logical_buf, buf_size,
 
 Status
 #if NeedFunctionPrototypes
-_XwcDefalutTextPerCharExtents(XOC oc, _Xconst wchar_t *text, int length,
+_XwcDefaultTextPerCharExtents(XOC oc, _Xconst wchar_t *text, int length,
 			      XRectangle *ink_buf, XRectangle *logical_buf,
 			      int buf_size, int *num_chars,
 			      XRectangle *overall_ink,
 			      XRectangle *overall_logical)
 #else
-_XwcDefalutTextPerCharExtents(oc, text, length, ink_buf, logical_buf, buf_size,
+_XwcDefaultTextPerCharExtents(oc, text, length, ink_buf, logical_buf, buf_size,
 			      num_chars, overall_ink, overall_logical)
     XOC oc;
     wchar_t *text;
@@ -284,7 +290,7 @@ _XwcDefalutTextPerCharExtents(oc, text, length, ink_buf, logical_buf, buf_size,
     if (wcs_to_mbs(oc, buf, text, length) == False)
 	goto err;
 
-    ret = _XmbDefalutTextPerCharExtents(oc, buf, length, ink_buf, logical_buf,
+    ret = _XmbDefaultTextPerCharExtents(oc, buf, length, ink_buf, logical_buf,
 					buf_size, num_chars, overall_ink,
 					overall_logical);
 
@@ -296,10 +302,10 @@ err:
 
 int
 #if NeedFunctionPrototypes
-_XmbDefalutDrawString(Display *dpy, Drawable d, XOC oc, GC gc, int x, int y,
+_XmbDefaultDrawString(Display *dpy, Drawable d, XOC oc, GC gc, int x, int y,
 		      _Xconst char *text, int length)
 #else
-_XmbDefalutDrawString(dpy, d, oc, gc, x, y, text, length)
+_XmbDefaultDrawString(dpy, d, oc, gc, x, y, text, length)
     Display *dpy;
     Drawable d;
     XOC oc;
@@ -319,10 +325,10 @@ _XmbDefalutDrawString(dpy, d, oc, gc, x, y, text, length)
 
 int
 #if NeedFunctionPrototypes
-_XwcDefalutDrawString(Display *dpy, Drawable d, XOC oc, GC gc, int x, int y,
+_XwcDefaultDrawString(Display *dpy, Drawable d, XOC oc, GC gc, int x, int y,
 		      _Xconst wchar_t *text, int length)
 #else
-_XwcDefalutDrawString(dpy, d, oc, gc, x, y, text, length)
+_XwcDefaultDrawString(dpy, d, oc, gc, x, y, text, length)
     Display *dpy;
     Drawable d;
     XOC oc;
@@ -342,7 +348,7 @@ _XwcDefalutDrawString(dpy, d, oc, gc, x, y, text, length)
     if (wcs_to_mbs(oc, buf, text, length) == False)
 	goto err;
 
-    ret = _XmbDefalutDrawString(dpy, d, oc, gc, x, y, buf, length);
+    ret = _XmbDefaultDrawString(dpy, d, oc, gc, x, y, buf, length);
 
 err:
     FreeLocalBuf(buf);
@@ -352,10 +358,10 @@ err:
 
 void
 #if NeedFunctionPrototypes
-_XmbDefalutDrawImageString(Display *dpy, Drawable d, XOC oc, GC gc, int x,
+_XmbDefaultDrawImageString(Display *dpy, Drawable d, XOC oc, GC gc, int x,
 			   int y, _Xconst char *text, int length)
 #else
-_XmbDefalutDrawImageString(dpy, d, oc, gc, x, y, text, length)
+_XmbDefaultDrawImageString(dpy, d, oc, gc, x, y, text, length)
     Display *dpy;
     Drawable d;
     XOC oc;
@@ -371,10 +377,10 @@ _XmbDefalutDrawImageString(dpy, d, oc, gc, x, y, text, length)
 
 void
 #if NeedFunctionPrototypes
-_XwcDefalutDrawImageString(Display *dpy, Drawable d, XOC oc, GC gc, int x,
+_XwcDefaultDrawImageString(Display *dpy, Drawable d, XOC oc, GC gc, int x,
 			   int y, _Xconst wchar_t *text, int length)
 #else
-_XwcDefalutDrawImageString(dpy, d, oc, gc, x, y, text, length)
+_XwcDefaultDrawImageString(dpy, d, oc, gc, x, y, text, length)
     Display *dpy;
     Drawable d;
     XOC oc;
@@ -393,7 +399,7 @@ _XwcDefalutDrawImageString(dpy, d, oc, gc, x, y, text, length)
     if (wcs_to_mbs(oc, buf, text, length) == False)
 	goto err;
 
-    _XmbDefalutDrawImageString(dpy, d, oc, gc, x, y, buf, length);
+    _XmbDefaultDrawImageString(dpy, d, oc, gc, x, y, buf, length);
 
 err:
     FreeLocalBuf(buf);

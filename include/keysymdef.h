@@ -1,4 +1,4 @@
-/* $XConsortium: keysymdef.h,v 1.20 94/04/17 18:57:37 rws Exp $ */
+/* $TOG: keysymdef.h /main/25 1997/06/21 10:54:51 kaleb $ */
 
 /***********************************************************
 Copyright (c) 1987, 1994  X Consortium
@@ -75,6 +75,9 @@ SOFTWARE.
 /* International & multi-key character composition */
 
 #define XK_Multi_key		0xFF20  /* Multi-key character compose */
+#define XK_SingleCandidate	0xFF3C
+#define XK_MultipleCandidate	0xFF3D
+#define XK_PreviousCandidate	0xFF3E
 
 /* Japanese keyboard support */
 
@@ -95,6 +98,8 @@ SOFTWARE.
 #define XK_Kana_Shift		0xFF2E  /* Kana Shift */
 #define XK_Eisu_Shift		0xFF2F  /* Alphanumeric Shift */
 #define XK_Eisu_toggle		0xFF30  /* Alphanumeric toggle */
+#define XK_Zen_Koho		0xFF3D	/* Multiple/All Candidate(s) */
+#define XK_Mae_Koho		0xFF3E	/* Previous Candidate */
 
 /* 0xFF31 thru 0xFF3F are under XK_KOREAN */
 
@@ -321,12 +326,25 @@ SOFTWARE.
 #define	XK_dead_iota					0xFE5D
 #define	XK_dead_voiced_sound				0xFE5E
 #define	XK_dead_semivoiced_sound			0xFE5F
+#define	XK_dead_belowdot				0xFE60
 
 #define	XK_First_Virtual_Screen				0xFED0
 #define	XK_Prev_Virtual_Screen				0xFED1
 #define	XK_Next_Virtual_Screen				0xFED2
 #define	XK_Last_Virtual_Screen				0xFED4
 #define	XK_Terminate_Server				0xFED5
+
+#define	XK_AccessX_Enable				0xFE70
+#define	XK_AccessX_Feedback_Enable			0xFE71
+#define	XK_RepeatKeys_Enable				0xFE72
+#define	XK_SlowKeys_Enable				0xFE73
+#define	XK_BounceKeys_Enable				0xFE74
+#define	XK_StickyKeys_Enable				0xFE75
+#define	XK_MouseKeys_Enable				0xFE76
+#define	XK_MouseKeys_Accel_Enable			0xFE77
+#define	XK_Overlay1_Enable				0xFE78
+#define	XK_Overlay2_Enable				0xFE79
+#define	XK_AudibleBell_Enable				0xFE7A
 
 #define	XK_Pointer_Left					0xFEE0
 #define	XK_Pointer_Right				0xFEE1
@@ -353,11 +371,51 @@ SOFTWARE.
 #define	XK_Pointer_Drag2				0xFEF6
 #define	XK_Pointer_Drag3				0xFEF7
 #define	XK_Pointer_Drag4				0xFEF8
+#define	XK_Pointer_Drag5				0xFEFD
 
 #define	XK_Pointer_EnableKeys				0xFEF9
 #define	XK_Pointer_Accelerate				0xFEFA
 #define	XK_Pointer_DfltBtnNext				0xFEFB
 #define	XK_Pointer_DfltBtnPrev				0xFEFC
+
+#endif
+
+/*
+ * 3270 Terminal Keys
+ * Byte 3 = 0xFD
+ */
+
+#ifdef XK_3270
+#define XK_3270_Duplicate      0xFD01
+#define XK_3270_FieldMark      0xFD02
+#define XK_3270_Right2         0xFD03
+#define XK_3270_Left2          0xFD04
+#define XK_3270_BackTab        0xFD05
+#define XK_3270_EraseEOF       0xFD06
+#define XK_3270_EraseInput     0xFD07
+#define XK_3270_Reset          0xFD08
+#define XK_3270_Quit           0xFD09
+#define XK_3270_PA1            0xFD0A
+#define XK_3270_PA2            0xFD0B
+#define XK_3270_PA3            0xFD0C
+#define XK_3270_Test           0xFD0D
+#define XK_3270_Attn           0xFD0E
+#define XK_3270_CursorBlink    0xFD0F
+#define XK_3270_AltCursor      0xFD10
+#define XK_3270_KeyClick       0xFD11
+#define XK_3270_Jump           0xFD12
+#define XK_3270_Ident          0xFD13
+#define XK_3270_Rule           0xFD14
+#define XK_3270_Copy           0xFD15
+#define XK_3270_Play           0xFD16
+#define XK_3270_Setup          0xFD17
+#define XK_3270_Record         0xFD18
+#define XK_3270_ChangeScreen   0xFD19
+#define XK_3270_DeleteWord     0xFD1A
+#define XK_3270_ExSelect       0xFD1B
+#define XK_3270_CursorSelect   0xFD1C
+#define XK_3270_PrintScreen    0xFD1D
+#define XK_3270_Enter          0xFD1E
 #endif
 
 /*

@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/3 1996/10/25 11:32:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/common/Imakefile,v 3.6 1997/01/25 04:14:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/common/Imakefile,v 3.7 1997/05/03 09:16:00 dawes Exp $
 
 
 
@@ -43,11 +43,17 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/common/Imakefile,v 3.6 1997/01/25
 # if ElographicsSupport
    ELOGRAPHICS_SRC = xf86Elo.c
 # endif
+# if MicroTouchSupport
+    MICROTOUCH_SRC = xf86MuTouch.c
+# endif
 # if SummaSketchSupport
    SUMMASKETCH_SRC = xf86Summa.c
 # endif
+# if AceCadSupport
+        ACECAD_SRC = xf86AceCad.c
+# endif
 # if ! BuildDynamicLoading
-    XINPUT_DEVICES = JoystickDefines WacomDefines ElographicsDefines SummaSketchDefines
+    XINPUT_DEVICES = JoystickDefines WacomDefines ElographicsDefines MicroTouchDefines SummaSketchDefines AceCadDefines
 #  if JoystickSupport
       JOYSTICK_OBJ = xf86Jstk.o
 #  endif
@@ -57,8 +63,14 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/common/Imakefile,v 3.6 1997/01/25
 #  if ElographicsSupport
    ELOGRAPHICS_OBJ = xf86Elo.o
 #  endif
+#  if MicroTouchSupport
+    MICROTOUCH_OBJ = xf86MuTouch.o
+#  endif
 #  if SummaSketchSupport
    SUMMASKETCH_OBJ = xf86Summa.o
+#  endif
+#  if AceCadSupport
+        ACECAD_OBJ = xf86AceCad.o
 #  endif
 # else
  SHARED_CFLAGS = PositionIndependentCFlags $(MODULEDEFINES)
@@ -118,6 +130,24 @@ SERVERSRCS = \
 	XF68_FBDev.c \
 	XF68_LOADER.c
 
+#ifndef DoLoadableServer
+XINPUT_DEV_SRCS = \
+	$(JOYSTICK_SRC) \
+	$(WACOM_SRC) \
+	$(ELOGRAPHICS_SRC) \
+	$(MICROTOUCH_SRC) \
+	$(SUMMASKETCH_SRC) \
+	$(ACECAD_SRC)
+
+XINPUT_DEV_OBJS = \
+	$(JOYSTICK_OBJ) \
+	$(WACOM_OBJ) \
+	$(ELOGRAPHICS_OBJ) \
+	$(MICROTOUCH_OBJ) \
+	$(SUMMASKETCH_OBJ) \
+	$(ACECAD_OBJ)
+#endif
+
 SRCS =	\
 	$(XF86DL_SRC) \
 	$(XCONFIGSRC).c \
@@ -135,10 +165,7 @@ SRCS =	\
 	xf86_Option.c \
 	$(KBD).c \
 	$(XF86_XINPUT_SRC) \
-	$(JOYSTICK_SRC) \
-	$(WACOM_SRC) \
-	$(ELOGRAPHICS_SRC) \
-	$(SUMMASKETCH_SRC) \
+	$(XINPUT_DEV_SRCS) \
 	$(XKBDDXSRC) \
 	$(BETASRC) \
 	$(SERVERSRCS)
@@ -153,10 +180,7 @@ OBJS = \
 	xf86Lock.o \
 	xf86_Mouse.o \
 	$(XF86_XINPUT_OBJ) \
-	$(JOYSTICK_OBJ) \
-	$(WACOM_OBJ) \
-	$(ELOGRAPHICS_OBJ) \
-	$(SUMMASKETCH_OBJ) \
+	$(XINPUT_DEV_OBJS) \
 	$(XKBDDXOBJ) \
 	$(BETAOBJ) \
 	$(KBD).o
@@ -203,11 +227,31 @@ SpecialObjectRule(xf86Elo.o,xf86Elo.c,$(SHARED_CFLAGS))
 DynamicModuleTarget(xf86Elo.so,xf86Elo.o)
 InstallDynamicModule(xf86Elo.so,$(MODULEDIR))
 #  endif
+#  if MicroTouchSupport
+SpecialObjectRule(xf86MuTouch.o,xf86MuTouch.c,$(SHARED_CFLAGS))
+DynamicModuleTarget(xf86MuTouch.so,xf86MuTouch.o)
+InstallDynamicModule(xf86MuTouch.so,$(MODULEDIR))
+#  endif
 #  if SummaSketchSupport
 SpecialObjectRule(xf86Summa.o,xf86Summa.c,$(SHARED_CFLAGS))
 DynamicModuleTarget(xf86Summa.so,xf86Summa.o)
 InstallDynamicModule(xf86Summa.so,$(MODULEDIR))
 #  endif
+#  if AceCadSupport
+SpecialObjectRule(xf86AceCad.o,xf86AceCad.c,$(SHARED_CFLAGS))
+DynamicModuleTarget(xf86AceCad.so,xf86AceCad.o)
+InstallDynamicModule(xf86AceCad.so,$(MODULEDIR))
+#  endif
+# endif
+# if DoLoadableServer
+AllTarget($(XINPUT_DEV_OBJS))
+
+InstallDynamicModule($(JOYSTICK_OBJ),$(MODULEDIR))
+InstallDynamicModule($(WACOM_OBJ),$(MODULEDIR))
+InstallDynamicModule($(MICROTOUCH_OBJ),$(MODULEDIR))
+InstallDynamicModule($(ELOGRAPHICS_OBJ),$(MODULEDIR))
+InstallDynamicModule($(SUMMASKETCH_OBJ),$(MODULEDIR))
+InstallDynamicModule($(ACECAD_OBJ),$(MODULEDIR))
 # endif
 #endif
 SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))
@@ -236,6 +280,7 @@ ObjectFromSpecialSource(xf86MIniExt,$(SERVERSRC)/mi/miinitext,$(EXT_DEFINES) -UP
 NormalLibraryObjectRule()
 NormalLibraryTarget(xf86,$(OBJS))
 
+LinkSourceFile(xf86AceCad.c,$(XF86SRC)/common)
 #if NeedXF86Beta
 LinkSourceFile(xf86Beta.c,$(XF86SRC)/common)
 #endif
@@ -251,6 +296,7 @@ LinkSourceFile(xf86Io.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Jstk.c,$(XF86SRC)/common)
 LinkSourceFile(xf86KbdLnx.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Kbd.c,$(XF86SRC)/common)
+LinkSourceFile(xf86MuTouch.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Summa.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Wacom.c,$(XF86SRC)/common)
 LinkSourceFile(xf86XKB.c,$(XF86SRC)/common)

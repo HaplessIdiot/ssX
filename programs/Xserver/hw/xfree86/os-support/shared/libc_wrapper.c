@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.14 1997/03/22 09:36:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.15 1997/06/25 08:25:07 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -51,6 +51,9 @@ int xf86execl(char *, ...);
 #else
 int xf86execl();
 #endif
+
+#define DONT_DEFINE_WRAPPERS
+#include "xf86_libc.h"
 
 #ifndef X_NOT_POSIX
 #include <dirent.h>
@@ -428,11 +431,10 @@ int xf86fclose(XF86FILE f)
 int
 xf86fprintf(
 #if NeedVarargsPrototypes
-XF86FILE f, char *s, const char *format, ...)
+XF86FILE f, const char *format, ...)
 #else
-f, s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
+f, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
     XF86FILE f;
-    char *s;
     const char *format;
     char *a0, *a1, *a2, *a3, *a4, *a5, *a6, *a7, *a8, *a9;
 #endif
@@ -470,11 +472,10 @@ f, s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
 int
 xf86fscanf(
 #ifdef HAVE_VFSCANF
-XF86FILE f, char *s, const char *format, ...)
+XF86FILE f, const char *format, ...)
 #else
-f, s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
+f, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
     XF86FILE f;
-    char *s;
     const char *format;
     char *a0, *a1, *a2, *a3, *a4, *a5, *a6, *a7, *a8, *a9;
 #endif

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.27 1997/06/15 07:12:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.28 1997/06/25 08:24:59 hohndel Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -94,8 +94,15 @@ extern DeviceAssocRec   wacom_eraser_assoc;
 #ifdef ELOGRAPHICS_SUPPORT
 extern DeviceAssocRec	elographics_assoc;
 #endif
+#ifdef MICROTOUCH_SUPPORT
+extern DeviceAssocRec	MuT_finger_assoc;
+extern DeviceAssocRec	MuT_stylus_assoc;
+#endif
 #ifdef SUMMASKETCH_SUPPORT
 extern DeviceAssocRec summasketch_assoc;
+#endif
+#ifdef ACECAD_SUPPORT
+extern DeviceAssocRec acecad_assoc;
 #endif
 #endif
 
@@ -262,11 +269,18 @@ xf86ConfigExtendedInputSection(LexPtr       val)
   xf86AddDeviceAssoc(&wacom_cursor_assoc);
   xf86AddDeviceAssoc(&wacom_eraser_assoc);
 # endif
+# ifdef MICROTOUCH_SUPPORT
+  xf86AddDeviceAssoc(&MuT_finger_assoc);
+  xf86AddDeviceAssoc(&MuT_stylus_assoc);
+# endif
 # ifdef ELOGRAPHICS_SUPPORT
   xf86AddDeviceAssoc(&elographics_assoc);
 # endif
 # ifdef SUMMASKETCH_SUPPORT
   xf86AddDeviceAssoc(&summasketch_assoc);
+# endif
+# ifdef ACECAD_SUPPORT
+  xf86AddDeviceAssoc(&acecad_assoc);
 # endif
 #endif
 

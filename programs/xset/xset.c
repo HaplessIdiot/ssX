@@ -1,6 +1,6 @@
 /* 
  * $XConsortium: xset.c /main/71 1996/11/24 17:24:48 rws $ 
- * $XFree86: xc/programs/xset/xset.c,v 3.10 1997/03/10 10:12:52 hohndel Exp $ 
+ * $XFree86: xc/programs/xset/xset.c,v 3.11 1997/05/11 04:58:53 dawes Exp $ 
  */
 
 /*
@@ -382,7 +382,8 @@ for (i = 1; i < argc; ) {
 		  fprintf(stderr, "  suspend time of %d is greater than off time of %d\n", suspend_timeout, off_timeout);
 		  exit(0);
 	      }
-	      if ((suspend_timeout == 0)&&(standby_timeout > off_timeout))
+	      if ((suspend_timeout == 0)&&(off_timeout != 0)&&
+		  (standby_timeout > off_timeout))
 	      {
 		  fprintf(stderr, "illegal combination of values\n");
 		  fprintf(stderr, "  standby time of %d is greater than off time of %d\n", standby_timeout, off_timeout);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_accel.c,v 1.6 1997/05/03 09:18:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_accel.c,v 1.7 1997/06/03 14:12:17 hohndel Exp $ */
 
 /*
  *
@@ -493,7 +493,7 @@ int cmd = s3vAccelCmd;
         s3vSavedCmd = NO_MONO_FILL;
         }
     else {
-        cmd |= (s3vAlu_sp[rop] & ROP_S) | (ROP_D & ~ROP_S);
+        cmd |= s3vAlu_MonoTrans[rop];
         cmd |= MIX_CPUDATA | MIX_MONO_SRC | CMD_ITA_DWORD;
         if(S3VROPHasSrc(cmd)) 
             s3vSavedCmd = NEED_MONO_FILL;
@@ -692,7 +692,7 @@ unsigned planemask;
             s3vSavedCmd = NO_MONO_FILL;
             }
         else {
-            cmd |= (( s3vAlu_sp[rop] & ROP_S) | (ROP_D & ~ROP_S));
+            cmd |= s3vAlu_MonoTrans[rop];
             cmd |= ( MIX_CPUDATA | CMD_ITA_DWORD | CMD_HWCLIP | MIX_MONO_SRC );
             if(S3VROPHasSrc(cmd)) 
                 s3vSavedCmd = NEED_MONO_FILL; 
@@ -708,8 +708,8 @@ unsigned planemask;
             }
         }
     else {
-        cmd |= ( s3vAlu_MonoTrans[rop] | MIX_CPUDATA | 
-                CMD_ITA_DWORD | CMD_HWCLIP | MIX_MONO_SRC );
+        cmd |= s3vAlu_MonoTrans[rop];
+	cmd |= ( MIX_CPUDATA | CMD_ITA_DWORD | CMD_HWCLIP | MIX_MONO_SRC );
         if(S3VROPHasSrc(cmd)) 
             s3vSavedCmd = NEED_MONO_FILL; 
         else 
@@ -803,7 +803,7 @@ int trans_col;
         s3vSavedCmd = NO_MONO_FILL;
         }
     else {
-        cmd |= (( s3vAlu_sp[rop] & ROP_S) | (ROP_D & ~ROP_S));
+        cmd |= s3vAlu_MonoTrans[rop];
         cmd |= ( CMD_ITA_DWORD | MIX_MONO_SRC | MIX_CPUDATA | CMD_HWCLIP );
         if(S3VROPHasSrc(cmd)) 
             s3vSavedCmd = NEED_MONO_FILL;

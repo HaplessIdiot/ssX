@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.64 1997/06/15 07:12:23 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.65 1997/06/25 08:24:57 hohndel Exp $
 
 
 
@@ -44,11 +44,17 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.64 1997/06/1
 # if ElographicsSupport
    ELOGRAPHICS_SRC = xf86Elo.c
 # endif
+# if MicroTouchSupport
+    MICROTOUCH_SRC = xf86MuTouch.c
+# endif
 # if SummaSketchSupport
    SUMMASKETCH_SRC = xf86Summa.c
 # endif
+# if AceCadSupport
+        ACECAD_SRC = xf86AceCad.c
+# endif
 # if ! BuildDynamicLoading
-    XINPUT_DEVICES = JoystickDefines WacomDefines ElographicsDefines SummaSketchDefines
+    XINPUT_DEVICES = JoystickDefines WacomDefines ElographicsDefines MicroTouchDefines SummaSketchDefines AceCadDefines
 #  if JoystickSupport
       JOYSTICK_OBJ = xf86Jstk.o
 #  endif
@@ -58,8 +64,14 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.64 1997/06/1
 #  if ElographicsSupport
    ELOGRAPHICS_OBJ = xf86Elo.o
 #  endif
+#  if MicroTouchSupport
+    MICROTOUCH_OBJ = xf86MuTouch.o
+#  endif
 #  if SummaSketchSupport
    SUMMASKETCH_OBJ = xf86Summa.o
+#  endif
+#  if AceCadSupport
+        ACECAD_OBJ = xf86AceCad.o
 #  endif
 # else
  SHARED_CFLAGS = PositionIndependentCFlags $(MODULEDEFINES)
@@ -141,13 +153,17 @@ XINPUT_DEV_SRCS = \
 	$(JOYSTICK_SRC) \
 	$(WACOM_SRC) \
 	$(ELOGRAPHICS_SRC) \
-	$(SUMMASKETCH_SRC)
+	$(MICROTOUCH_SRC) \
+	$(SUMMASKETCH_SRC) \
+	$(ACECAD_SRC)
 
 XINPUT_DEV_OBJS = \
 	$(JOYSTICK_OBJ) \
 	$(WACOM_OBJ) \
 	$(ELOGRAPHICS_OBJ) \
-	$(SUMMASKETCH_OBJ)
+	$(MICROTOUCH_OBJ) \
+	$(SUMMASKETCH_OBJ) \
+	$(ACECAD_OBJ)
 #endif
 
 SRCS =	\
@@ -244,19 +260,31 @@ SpecialObjectRule(xf86Elo.o,xf86Elo.c,$(SHARED_CFLAGS))
 DynamicModuleTarget(xf86Elo.so,xf86Elo.o)
 InstallDynamicModule(xf86Elo.so,$(MODULEDIR))
 #  endif
+#  if MicroTouchSupport
+SpecialObjectRule(xf86MuTouch.o,xf86MuTouch.c,$(SHARED_CFLAGS))
+DynamicModuleTarget(xf86MuTouch.so,xf86MuTouch.o)
+InstallDynamicModule(xf86MuTouch.so,$(MODULEDIR))
+#  endif
 #  if SummaSketchSupport
 SpecialObjectRule(xf86Summa.o,xf86Summa.c,$(SHARED_CFLAGS))
 DynamicModuleTarget(xf86Summa.so,xf86Summa.o)
 InstallDynamicModule(xf86Summa.so,$(MODULEDIR))
 #  endif
+#  if AceCadSupport
+SpecialObjectRule(xf86AceCad.o,xf86AceCad.c,$(SHARED_CFLAGS))
+DynamicModuleTarget(xf86AceCad.so,xf86AceCad.o)
+InstallDynamicModule(xf86AceCad.so,$(MODULEDIR))
+#  endif
 # endif
 # if DoLoadableServer
-all:: $(XINPUT_DEV_OBJS)
+AllTarget($(XINPUT_DEV_OBJS))
 
 InstallDynamicModule($(JOYSTICK_OBJ),$(MODULEDIR))
 InstallDynamicModule($(WACOM_OBJ),$(MODULEDIR))
+InstallDynamicModule($(MICROTOUCH_OBJ),$(MODULEDIR))
 InstallDynamicModule($(ELOGRAPHICS_OBJ),$(MODULEDIR))
 InstallDynamicModule($(SUMMASKETCH_OBJ),$(MODULEDIR))
+InstallDynamicModule($(ACECAD_OBJ),$(MODULEDIR))
 # endif
 #endif
 SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))

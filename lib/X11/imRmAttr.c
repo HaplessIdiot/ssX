@@ -1,4 +1,4 @@
-/* $XConsortium: imRmAttr.c,v 1.8 94/03/26 17:00:51 rws Exp $ */
+/* $TOG: imRmAttr.c /main/13 1997/06/22 18:11:18 kaleb $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -150,6 +150,7 @@ _XimMakeICAttrIDList(ic, res_list, res_num, arg, buf, len, mode)
 	if (!(res = _XimGetResourceListRec(res_list, res_num, p->name))) {
 	    if (_XimCheckInnerICAttributes(ic, p, mode))
 		continue;
+	    *len = -1;
 	    return p->name;
 	}
 
@@ -157,6 +158,7 @@ _XimMakeICAttrIDList(ic, res_list, res_num, arg, buf, len, mode)
 	if(check == XIM_CHECK_INVALID)
 	    continue;
 	else if(check == XIM_CHECK_ERROR) {
+	    *len = -1;
 	    return p->name;
 	}
 
@@ -168,14 +170,16 @@ _XimMakeICAttrIDList(ic, res_list, res_num, arg, buf, len, mode)
 		if (name = _XimMakeICAttrIDList(ic, res_list, res_num,
 				(XIMArg *)p->value, buf, &new_len,
 				(mode | XIM_PREEDIT_ATTR))) {
-		    *len += new_len;
+		    if (new_len < 0) *len = -1;
+		    else *len += new_len;
 		    return name;
 		}
 	    } else if (res->xrm_name == sts_quark) {
 		if (name = _XimMakeICAttrIDList(ic, res_list, res_num,
 				(XIMArg *)p->value, buf, &new_len,
 				(mode | XIM_STATUS_ATTR))) {
-		    *len += new_len;
+		    if (new_len < 0) *len = -1;
+		    else *len += new_len;
 		    return name;
 		}
 	    }
@@ -184,6 +188,7 @@ _XimMakeICAttrIDList(ic, res_list, res_num, arg, buf, len, mode)
 	    if (!(res = _XimGetNestedListSeparator(res_list, res_num))) {
 		p++;
 		if (p) {
+		    *len = -1;
 		    return p->name;
 		}
 		else {
@@ -460,8 +465,8 @@ _XimDecodeIMATTRIBUTE(im, res_list, res_num,  data, data_len, arg, mode)
 	if (total < min_len)
 	    return p->name;
 
-	if (!(_XimAttributeToValue(im, res, &buf[2], buf[1],
-							p->value, mode)))
+	if (!(_XimAttributeToValue((Xic) im->private.local.current_ic, 
+				   res, &buf[2], buf[1], p->value, mode)))
 	    return p->name;
     }
     return (char *)NULL;
@@ -599,7 +604,7 @@ _XimValueToAttribute(res, buf, buf_size, value, len, mode, param)
 	    return False;
 	}
 
-	*((CARD8 *)buf) = (CARD8)value;
+	*((CARD8 *)buf) = (CARD8)(long)value;
 	*len = ret_len;
 	break;
 
@@ -610,7 +615,7 @@ _XimValueToAttribute(res, buf, buf_size, value, len, mode, param)
 	    return False;
 	}
 
-	*((CARD16 *)buf) = (CARD16)value;
+	*((CARD16 *)buf) = (CARD16)(long)value;
 	*len = ret_len;
 	break;
 
@@ -989,17 +994,19 @@ _XimEncodePreeditValue(ic, res, p)
 	for (i = 0, len = 0; i < list_ret; i++) {
 	     len += (strlen(name_list[i]) + sizeof(char));
 	}
-	if (!(tmp = Xmalloc(len + 1)))
-	     return False;
+	if (!(tmp = Xmalloc(len + 1))) {
+	    ic->private.proto.preedit_font = NULL;
+	    return False;
+	}
 
 	tmp[0] = '\0';
 	for (i = 0; i < list_ret; i++) {
 	    strcat(tmp, name_list[i]);
 	    strcat(tmp, ",");
 	}
-	tmp[len] = 0;
+	tmp[len - 1] = 0;
 	ic->private.proto.preedit_font        = tmp;
-	ic->private.proto.preedit_font_length = len;
+	ic->private.proto.preedit_font_length = len - 1;
     }
     return True;
 }
@@ -1038,18 +1045,19 @@ _XimEncodeStatusValue(ic, res, p)
 	for (i = 0, len = 0; i < list_ret; i++) {
 	     len += (strlen(name_list[i]) + sizeof(char));
 	}
-	if (!(tmp = Xmalloc(len+1)))
-	     return False;
+	if (!(tmp = Xmalloc(len+1))) {
+	    ic->private.proto.status_font = NULL;
+	    return False;
+	}
 
 	tmp[0] = '\0';
 	for(i = 0; i < list_ret; i++) {
 	    strcat(tmp, name_list[i]);
 	    strcat(tmp, ",");
 	}
-	tmp[len] = 0;
+	tmp[len - 1] = 0;
 	ic->private.proto.status_font        = tmp;
-	ic->private.proto.status_font_length = len;
-
+	ic->private.proto.status_font_length = len - 1;
     }
     return True;
 }
@@ -1214,17 +1222,19 @@ _XimEncodeSavedPreeditValue(ic, res, value)
 	for(i = 0, len = 0; i < list_ret; i++) {
 	    len += (strlen(name_list[i]) + sizeof(char));
 	}
-	if(!(tmp = Xmalloc(len + 1)))
+	if(!(tmp = Xmalloc(len + 1))) {
+	    ic->private.proto.preedit_font = NULL;
 	    return False;
+	}
 
 	tmp[0] = '\0';
 	for(i = 0; i < list_ret; i++) {
 	    strcat(tmp, name_list[i]);
 	    strcat(tmp, ",");
 	}
-	tmp[len] = 0;
+	tmp[len - 1] = 0;
 	ic->private.proto.preedit_font        = tmp;
-	ic->private.proto.preedit_font_length = len;
+	ic->private.proto.preedit_font_length = len - 1;
     }
     return True;
 }
@@ -1254,17 +1264,19 @@ _XimEncodeSavedStatusValue(ic, res, value)
 	for(i = 0, len = 0; i < list_ret; i++) {
 	    len += (strlen(name_list[i]) + sizeof(char));
 	}
-	if(!(tmp = Xmalloc(len + 1)))
+	if(!(tmp = Xmalloc(len + 1))) {
+	    ic->private.proto.status_font = NULL;
 	    return False;
+	}
 
 	tmp[0] = '\0';
 	for(i = 0; i < list_ret; i++) {
 	    strcat(tmp, name_list[i]);
 	    strcat(tmp, ",");
 	}
-	tmp[len] = 0;
+	tmp[len - 1] = 0;
 	ic->private.proto.status_font        = tmp;
-	ic->private.proto.status_font_length = len;
+	ic->private.proto.status_font_length = len - 1;
     }
     return True;
 }

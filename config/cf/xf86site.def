@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.120 1997/06/10 12:30:20 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.121 1997/06/22 10:16:48 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -431,7 +431,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.120 1997/06/10 12:30:20 hohndel Ex
 #define JoystickSupport		NO
 #define WacomSupport		YES
 #define ElographicsSupport	YES 
+#define MicroTouchSupport	YES
 #define SummaSketchSupport	YES
+#define AceCadSupport		YES
  */
 
 /*

@@ -75,3 +75,26 @@ EXPORTS
  XmbufGetVersion
  XmbufGetWindowAttributes
  XmbufQueryExtension
+ XdbeQueryExtension
+ XdbeAllocateBackBufferName
+ XdbeDeallocateBackBufferName
+ XdbeSwapBuffers
+ XdbeBeginIdiom
+ XdbeEndIdiom
+ XdbeGetVisualInfo
+ XdbeFreeVisualInfo
+ XdbeGetBackBufferAttributes
+ XSecurityQueryExtension
+ XSecurityAllocXauth
+ XSecurityFreeXauth
+ XSecurityGenerateAuthorization
+ XSecurityRevokeAuthorization
+ XagQueryVersion
+ XagCreateAssociation
+ XagCreateEmbeddedApplicationGroup
+ XagCreateNonembeddedApplicationGroup
+ XagDestroyApplicationGroup
+ XagDestroyAssociation
+ XagGetApplicationGroupAttributes
+ XagQueryApplicationGroup
+/* $TOG: Xext-def.cpp /main/7 1997/06/08 21:07:33 kaleb $ */
