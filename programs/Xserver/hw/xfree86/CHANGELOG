@@ -1,3 +1,19 @@
+XFree86 3.2Ak ( 5 March 1997)
+ 537. Change name of Screen Section to "XFree86".
+ 536. Set correct clipping rectangle for SVGA/S3 (#112, Mark Vojkovich).
+ 535. Fix a problem in trapezoid solid fill code (not sure if this fixes
+      the problems that caused change 533 to be disabled) (#110,
+      Mark Vojkovich).
+ 534. Add 'Doublescan' support to MGA driver (#109, Radoslaw Kapitan).
+ 533. Add trapezoid solid fill acceleration to MGA driver; disabled as it
+      doesn't draw correctly at this point (#109, Radoslaw Kapitan).
+ 532. Remove MgaAccelSwitch (#108, Radoslaw Kapitan).
+ 531. Improve SolidFill speed on C&T65545/6/8 (#107, Nozomi Ytow).
+ 530. Fix libc_wrapper.c build problem on SVR4 (#106, Takaaki Nomura).
+ 529. Fix VGA16 driver (#105, Thomas Mueller).
+ 528. Fix Compaq AVGA driver (#104, Ming Yu, Joseph Pfeiffer, Gerry Toll).
+ 527. Add more comments to MGA driver (#103, Radoslaw Kapitan).
+
 XFree86 3.2Aj (28 February 1997)
  526. Various build fixes for FreeBSD, NetBSD, Linux, Solaris (Dirk Hohndel).
  525. Fixes for OS/2 loader and ar code (#100, Sebastien Marineau).

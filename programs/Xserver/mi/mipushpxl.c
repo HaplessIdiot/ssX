@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mipushpxl.c,v 5.5 94/04/17 20:27:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.1 1996/12/09 12:02:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.3 1997/02/27 14:00:19 hohndel Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
@@ -149,9 +149,9 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 		}
 #ifdef XFree86LOADER
 	if( xf86bpp >= 8 ) /* LSBFirst */
-		LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) << (1));
+		msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) << (1));
 	else
-		LONG2CHARSDIFFORDER(LONG2CHARSDIFFORDER(msk) >> (1));
+		msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) >> (1));
 #else
 		msk = SCRRIGHT(msk, 1);
 #endif
@@ -194,9 +194,9 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 		}
 #ifdef XFree86LOADER
 		if( xf86bpp >= 8 ) /* LSBFirst */
-			LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) << (1));
+			msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) << (1));
 		else
-			LONG2CHARSDIFFORDER(LONG2CHARSDIFFORDER(msk) >> (1));
+			msk = LONG2CHARSDIFFORDER(LONG2CHARSDIFFORDER(msk) >> (1));
 #else
 			msk = SCRRIGHT(msk, 1);
 #endif

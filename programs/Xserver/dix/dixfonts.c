@@ -22,7 +22,7 @@ SOFTWARE.
 ************************************************************************/
 
 /* $XConsortium: dixfonts.c /main/58 1996/09/28 17:11:55 rws $ */
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.6 1996/12/23 06:29:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.7 1997/02/27 13:57:48 hohndel Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -277,7 +277,7 @@ doOpenFont(client, c)
     BitmapFormatByteOrderMSB |
 #endif
 
-    (xf86bpp < 8) ? BitmapFormatBitOrderMSB : BitmapFormatBitOrderLSB |
+    ((xf86bpp < 8) ? BitmapFormatBitOrderMSB : BitmapFormatBitOrderLSB) |
 
     BitmapFormatImageRectMin |
 
