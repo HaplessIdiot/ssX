@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 #ifndef _XF86_PCI_BUS_H
 #define _XF86_PCI_BUS_H
 
