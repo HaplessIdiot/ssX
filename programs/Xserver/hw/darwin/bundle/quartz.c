@@ -5,6 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
+/* $XFree86: $ */
 
 // X headers
 #include "mi.h"
@@ -244,6 +245,7 @@ static void QuartzDisplayInit(void)
  */
 void QuartzOsVendorInit(void)
 {
+    QuartzAudioInit();
     QuartzDisplayInit();
 }
 

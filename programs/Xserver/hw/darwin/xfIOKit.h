@@ -3,6 +3,7 @@
 
   IOKit specific functions and definitions
 */
+/* $XFree86: $ */
 
 #ifndef _XFIOKIT_H
 #define _XFIOKIT_H
@@ -14,5 +15,6 @@ Bool XFIOKitAddScreen(ScreenPtr pScreen);
 Bool XFIOKitInitCursor(ScreenPtr pScreen);
 void XFIOKitOsVendorInit(void);
 void XFIOKitGiveUp(void);
+void XFIOKitBell(int volume, DeviceIntPtr pDevice, pointer ctrl, int class);
 
 #endif

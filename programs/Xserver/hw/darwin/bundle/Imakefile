@@ -7,14 +7,16 @@ SRCS =	Preferences.m \
         Xserver.m \
         quartz.c \
         quartzCocoa.m \
-        quartzPasteboard.c
+        quartzPasteboard.c \
+        quartzAudio.c
 
 OBJS =	Preferences.o \
         XApplication.o \
         Xserver.o \
         quartz.o \
         quartzCocoa.o \
-        quartzPasteboard.o
+        quartzPasteboard.o \
+        quartzAudio.o
 
 INCLUDES = -I. -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
            -I$(FONTINCSRC)
@@ -26,8 +28,6 @@ CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
 
 DEFINES = $(CUSTOMVERDEF) -DXBINDIR=$(DESTDIR)$(BINDIR)
 XDARWINBINDIR = $(DESTDIR)$(BINDIR)/XDarwin.app/Contents/MacOS
-QUARTZSYSLIBS = -framework IOKit -framework ApplicationServices \
-		-framework Cocoa -framework Carbon
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(XQuartz,$(OBJS))
@@ -48,3 +48,4 @@ clean::
 	pbxbuild "clean" -target XDarwin
 
 DependTarget()
+

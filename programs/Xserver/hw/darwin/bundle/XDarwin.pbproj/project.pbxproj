@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 30;
+	objectVersion = 32;
 	objects = {
 		01279092000747AA0A000002 = {
 			isa = PBXFileReference;
@@ -307,10 +307,12 @@
 				0A79E1A4004499A1CE6F79C2,
 			);
 			buildSettings = {
+				INSTALL_PATH = "";
 				OPTIMIZATION_CFLAGS = "";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = XDarwin;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
 				WRAPPER_EXTENSION = app;
@@ -345,11 +347,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>XDarwin (v0.4)</string>
+	<string>XDarwin (v0.5)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.4</string>
+	<string>0.5</string>
 	<key>NSHelpFile</key>
 	<string>XDarwinHelp.html</string>
 	<key>NSMainNibFile</key>
@@ -406,55 +408,30 @@
 			fileRef = 29B97318FDCFA39411CA2CEA;
 			isa = PBXBuildFile;
 			settings = {
-				INCLUDED_OSS = (
-					MACOS,
-					WINDOWS,
-					PDOUNIX,
-				);
 			};
 		};
 		0A79E1A700449EB2CE6F79C2 = {
 			fileRef = 089C165CFE840E0CC02AAC07;
 			isa = PBXBuildFile;
 			settings = {
-				INCLUDED_OSS = (
-					MACOS,
-					WINDOWS,
-					PDOUNIX,
-				);
 			};
 		};
 		0A79E1A800449EB2CE6F79C2 = {
 			fileRef = 0157A37D002CF6D7CE6F79C2;
 			isa = PBXBuildFile;
 			settings = {
-				INCLUDED_OSS = (
-					MACOS,
-					WINDOWS,
-					PDOUNIX,
-				);
 			};
 		};
 		0A79E1A900449EB2CE6F79C2 = {
 			fileRef = 02E03CA000348209CE6F79C2;
 			isa = PBXBuildFile;
 			settings = {
-				INCLUDED_OSS = (
-					MACOS,
-					WINDOWS,
-					PDOUNIX,
-				);
 			};
 		};
 		0A79E1AA00449EB2CE6F79C2 = {
 			fileRef = 015698ED003DF345CE6F79C2;
 			isa = PBXBuildFile;
 			settings = {
-				INCLUDED_OSS = (
-					MACOS,
-					WINDOWS,
-					PDOUNIX,
-				);
 			};
 		};
 		1058C7A0FEA54F0111CA2CBB = {
@@ -502,11 +479,6 @@
 			fileRef = 1220774300712D2D416877C2;
 			isa = PBXBuildFile;
 			settings = {
-				INCLUDED_OSS = (
-					MACOS,
-					WINDOWS,
-					PDOUNIX,
-				);
 			};
 		};
 		1220774600712D75416877C2 = {
@@ -551,7 +523,39 @@
 			path = Xserver.h;
 			refType = 4;
 		};
+		237A34C10076E37E7F000001 = {
+			isa = PBXFileReference;
+			path = quartzAudio.c;
+			refType = 4;
+		};
+		237A34C20076E37E7F000001 = {
+			buildRules = (
+			);
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			isa = PBXBuildStyle;
+			name = Development;
+		};
+		237A34C30076E37E7F000001 = {
+			buildRules = (
+			);
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			isa = PBXBuildStyle;
+			name = Deployment;
+		};
+		237A34C40076F4F07F000001 = {
+			isa = PBXFileReference;
+			path = quartzAudio.h;
+			refType = 4;
+		};
 		29B97313FDCFA39411CA2CEA = {
+			buildStyles = (
+				237A34C20076E37E7F000001,
+				237A34C30076E37E7F000001,
+			);
 			isa = PBXProject;
 			mainGroup = 29B97314FDCFA39411CA2CEA;
 			targets = (
@@ -640,8 +644,10 @@
 			children = (
 				018F40F8003E1979CE6F79C2,
 				018F40FA003E197ECE6F79C2,
-				43B962CF00617089416877C2,
+				237A34C10076E37E7F000001,
+				237A34C40076F4F07F000001,
 				43B962D000617089416877C2,
+				43B962CF00617089416877C2,
 				43B962D100617089416877C2,
 				06EB6C3B004099E7CE6F79C2,
 				02A1FEA8006D38F0416877C2,
