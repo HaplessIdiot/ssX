@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.115 2001/11/24 14:25:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.116 2001/12/08 16:24:32 alanh Exp $ */
 /*
  * PCI Probe
  *
@@ -202,6 +202,7 @@
 
 /* ATI */
 #define PCI_CHIP_MACH32		0x4158
+#define PCI_CHIP_R200_BB	0x4242
 #define PCI_CHIP_MACH64CT	0x4354
 #define PCI_CHIP_MACH64CX	0x4358
 #define PCI_CHIP_MACH64ET	0x4554
@@ -837,6 +838,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 #endif
     {PCI_VENDOR_ATI,	{
 				{PCI_CHIP_MACH32,	"Mach32",0},
+				{PCI_CHIP_R200_BB,	"Radeon 8500 BB",0},
 				{PCI_CHIP_MACH64CT,	"Mach64 CT",0},
 				{PCI_CHIP_MACH64CX,	"Mach64 CX",0},
 				{PCI_CHIP_MACH64ET,	"Mach64 ET",0},

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.45 2001/12/06 15:28:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.46 2001/12/10 23:13:40 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -151,7 +151,7 @@ const OptionInfoRec RADEONOptions[] = {
     { OPTION_BUFFER_SIZE,  "BufferSize",       OPTV_INTEGER, {0}, FALSE },
     { OPTION_DEPTH_MOVE,   "EnableDepthMoves", OPTV_BOOLEAN, {0}, FALSE },
 #endif
-    { OPTION_CRT_SCREEN,   "crt_screen",       OPTV_BOOLEAN, {0}, FALSE},
+    { OPTION_CRT_SCREEN,   "CrtScreen",        OPTV_BOOLEAN, {0}, FALSE},
     { OPTION_PANEL_SIZE,   "PanelSize",        OPTV_ANYSTR,  {0}, FALSE },
     { OPTION_FBDEV,        "UseFBDev",         OPTV_BOOLEAN, {0}, FALSE },
     { -1,                  NULL,               OPTV_NONE,    {0}, FALSE }
@@ -1130,6 +1130,7 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
             info->HasCRTC2 = TRUE;  
             break;
    	case PCI_CHIP_R200_QL:
+	case PCI_CHIP_R200_BB:
             /*R200 has secondary CRTC*/
             info->HasCRTC2 = TRUE;  
             info->IsR200 = TRUE;
@@ -1273,6 +1274,7 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RADEON_QF:
 	case PCI_CHIP_RADEON_QG:
 	case PCI_CHIP_R200_QL:
+	case PCI_CHIP_R200_BB:
 	case PCI_CHIP_RV200_QW:
 	default:                 info->IsPCI = FALSE; break;
 	}
@@ -1789,6 +1791,10 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn)
         {
             xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
                  "No valid mode found for this DFP/LCD\n");
+            xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+                 "If you have an analog monitor attached but no DFP/LCD try"
+                 "specifying\n\t'Option \"CrtScreen\"' in your X server"
+                 "config file.\n");
             return FALSE;
         }
     }
@@ -3215,6 +3221,7 @@ static void RADEONRestoreDDARegisters(ScrnInfoPtr pScrn, RADEONSavePtr restore)
     OUTREG(RADEON_DDA_ON_OFF, restore->dda_on_off);
 }
 
+#if 0
 /* Write palette data. */
 static void RADEONRestorePalette(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 {
@@ -3238,6 +3245,7 @@ static void RADEONRestorePalette(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 	OUTPAL_NEXT_CARD32(restore->palette[i]);
     }
 }
+#endif
 
 /* Write out state to define a new video mode.  */
 static void
@@ -3336,7 +3344,9 @@ RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
     }
     */
 
-    /*RADEONRestorePalette(pScrn, &info->SavedReg);*/
+#if 0
+    RADEONRestorePalette(pScrn, &info->SavedReg);
+#endif
 }
 
 /* Read common registers. */
