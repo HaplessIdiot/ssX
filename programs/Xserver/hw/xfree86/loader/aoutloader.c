@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.9 1998/03/20 21:06:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.10 1998/04/26 18:31:57 robin Exp $ */
 
 
 
@@ -37,6 +37,9 @@
 #include <fcntl.h>
 #else
 #include <sys/fcntl.h>
+#endif
+#ifdef __EMX__
+#include <sys/param.h>
 #endif
 #include <sys/stat.h>
 
@@ -487,6 +490,7 @@ AOUTCollectRelocations(AOUTModulePtr aoutfile)
     }
     return reloc_head;
 } /* AOUTCollectRelocations */
+
 /*
  * AOUT_GetSymbols()
  * 
@@ -585,6 +589,16 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 	    } else {
 		xf86loaderfree(symname);
 	    }
+	    break;
+	  case AOUT_FN:
+#ifdef AOUTDEBUG
+	    if (n->n_type& AOUT_EXT) {
+		AOUTDEBUG("Ignoring AOUT_FN %s\n", symname);
+	    } else {
+		AOUTDEBUG("Ignoring AOUT_WARN %s\n", symname);
+	    }
+#endif
+	    xf86loaderfree(symname);
 	    break;
 	  default:
 		ErrorF("Unknown symbol type %x\n", s->n_type & AOUT_TYPE);

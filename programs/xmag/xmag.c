@@ -448,7 +448,14 @@ PopdownPixelAP(w, event, params, num_params)
   n = 0;
   XtSetArg(wargs[0], XtNuserData, &data); n++;
   XtGetValues(w, wargs, n);
-  XtPopdown(data->pixShell);
+/* 
+ * When the mouse button is released inside the popup window, this
+ * function is called twice, presumably once for the main window and
+ * once for the popup window.  In the latter case, data turns out to
+ * be a null pointer.  This probably isn't the best fix, but it works.
+ */
+  if (data)
+    XtPopdown(data->pixShell);
 }
 
 

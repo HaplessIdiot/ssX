@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/16 1997/09/03 17:04:58 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.10 1997/11/16 06:42:56 dawes Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.12 1998/01/01 14:51:46 robin Exp $
 #define IHaveSubdirs
 
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)" LDSTRIPFLAGS="$(LDSTRIPFLAGS)"
@@ -34,13 +34,18 @@ SpecialCObjectRule(xkbpath,$(ICONFIGFILES),$(ROOT_DEFINES))
 
 LinkBuildBinary(ProgramTargetName(xkbcomp))
 
-all::	xkbcomp
+#ifndef OS2Architecture
+all::	ProgramTargetName(xkbcomp)
 	@MakeFlagsToShellFlags(ik,set +e); \
 	for i in $(SUBDIRS); \
 	do \
 		echo "making all in $(CURRENT_DIR)/$$i..."; \
 		MakeNamedTargetSubdir($$i,PassCDebugFlags,all); \
 	done
+#else
+all::	ProgramTargetName(xkbcomp)
+	for %i in ($(SUBDIRS)) do ImakeIndir %i $(MAKE) SHELL= MAKE=x11make $(MFLAGS) PassCDebugFlags all
+#endif
 
 install::
 	@echo "Creating $(LIBDIR)/xkb"

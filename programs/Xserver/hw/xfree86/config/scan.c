@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/config/scan.c,v 1.1 1998/01/24 16:57:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/config/scan.c,v 1.2 1998/04/05 00:45:55 robin Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -452,9 +452,11 @@ xf86OpenConfigFile (char *filename)
 		 * and another one with the -xf86config option
 		 */
 		xwinhome = getenv ("X11ROOT");	/* get drive letter */
-		if (!xwinhome)
-			FatalError ("X11ROOT environment variable not set\n");
-		strcpy (configPaths[pcount], __XOS2RedirRoot ("/XFree86/lib/X11/XConfig"));
+		if (!xwinhome) {
+			fprintf(stderr,"X11ROOT environment variable not set\n");
+			exit(42);
+		}
+		strcpy (configPaths[pcount], __XOS2RedirRoot ("/XFree86/lib/X11/XConfig",'/'));
 #endif
 
 		if ((configFile = fopen (configPaths[pcount], "r")) != 0)

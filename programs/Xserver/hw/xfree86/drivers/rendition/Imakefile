@@ -1,0 +1,36 @@
+XCOMM
+XCOMM This is an Imakefile for the Rendition driver.  
+XCOMM
+
+#include <Server.tmpl>
+
+XCOMM #define IHaveSubdirs
+XCOMM #define SUBDIRS vlib
+
+SRCS=rendition_driver.c hwcursor.c vmodes.c vos.c vramdac.c vvga.c v1krisc.o vboard.c vloaduc.c
+OBJS=rendition_driver.o hwcursor.o vmodes.o vos.o vramdac.o vvga.o v1krisc.o vboard.o vloaduc.o
+
+EXTRA_DEFINES=-DXSERVER 
+#-DDEBUG
+
+RDRVDIR=drivers/vga256/rendition
+
+#if XF86LinkKit
+INCLUDES=-I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES=-I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+         -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+         -I$(SERVERSRC)/cfb -I../../vga -I../../../xaa \
+         -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+#endif
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+NormalRelocatableTarget(rendition_drv, $(OBJS))
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/$(RDRVDIR))
+
+DependTarget()

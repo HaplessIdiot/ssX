@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.1.2.1 1997/07/21 10:17:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/config/Files.c,v 1.1 1998/01/24 16:57:41 hohndel Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -44,6 +44,28 @@ static xf86ConfigSymTabRec FilesTab[] =
 	{-1, ""},
 };
 
+#ifdef __EMX__
+/* yet another instance of this code, sigh! */
+char *__XOS2RedirRoot(char *path, char sep)
+{
+	static char pn[300];
+	char *root;
+	int i,l;
+	if ((isalpha(path[0]) && path[1]==':') || path[0] != '/')
+		return path;
+
+	root = getenv("X11ROOT");
+	if (!root) root = "";
+	sprintf(pn,"%s%s",root,path);
+	if (sep=='\\') {
+		l = strlen(pn);
+		for (i=0; i<l; i++) 
+			if (pn[i]=='/') pn[i]='\\';
+	}
+	return pn;
+}
+#endif
+
 static char *
 prependRoot (char *pathname)
 {
@@ -51,7 +73,7 @@ prependRoot (char *pathname)
 	return pathname;
 #else
 	/* XXXX caveat: multiple path components in line */
-	return (char *) __XOS2RedirRoot (pathname);
+	return (char *) __XOS2RedirRoot (pathname,'/');
 #endif
 }
 

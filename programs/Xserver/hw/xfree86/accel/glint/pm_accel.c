@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm_accel.c,v 1.7 1998/04/05 00:45:49 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm_accel.c,v 1.8 1998/04/26 16:04:40 robin Exp $ */
 
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
@@ -731,9 +731,9 @@ PermediaWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
 
     srcp = (srcwidth * srcy) + (srcx >> 3) + src; 
     srcx &= 0x07;
-    if(skipleft = (int)srcp & 0x03) { 
+    if(skipleft = (long)srcp & 0x03) { 
 	skipleft = (skipleft << 3) + srcx;	
-	srcp = (unsigned char *)((int)srcp & ~0x03);
+	srcp = (unsigned char *)((long)srcp & ~0x03);
     } else
 	skipleft = srcx;    
 

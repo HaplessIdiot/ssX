@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.2 1998/03/20 21:06:32 hohndel Exp $ */
 /*
  * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -635,11 +635,15 @@ ATIClockProbe(void)
             {
                 ErrorF("%s programmable clock generator detected.\n",
                     ATIClockDescriptor->ClockName);
-                ErrorF("Reference clock %.6g/%d (%.3f) MHz.\n",
-                    ((double)ATIReferenceNumerator) / 1000.0,
-                    ATIReferenceDenominator,
-                    ((double)ATIReferenceNumerator) /
-                        ((double)ATIReferenceDenominator * 1000.0));
+                if (ATIReferenceDenominator == 1)
+                    ErrorF("Reference clock %.3f MHz.\n",
+                        ((double)ATIReferenceNumerator) / 1000.0);
+                else
+                    ErrorF("Reference clock %.6g/%d (%.3f) MHz.\n",
+                        ((double)ATIReferenceNumerator) / 1000.0,
+                        ATIReferenceDenominator,
+                        ((double)ATIReferenceNumerator) /
+                            ((double)ATIReferenceDenominator * 1000.0));
             }
 
             /* Clobber XF86Config clock line */

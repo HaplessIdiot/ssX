@@ -1,6 +1,7 @@
 XCOMM $XConsortium: Imakefile /main/11 1996/12/02 10:18:28 lehors $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/Imakefile,v 3.6 1997/02/23 13:11:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/Imakefile,v 3.8 1998/01/01 14:51:32 robin Exp $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 #define IHaveSubdirs

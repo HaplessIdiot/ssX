@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.6 1998/03/27 23:23:39 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.7 1998/03/28 06:35:58 hohndel Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
@@ -130,7 +130,7 @@ extern void CHIPSHiQVSetWritePlanar(int);
 extern void CHIPSHiQVSetReadWritePlanar(int);
 
 /* in ct_cursor.c */
-extern void  CHIPSInitCursor();
+extern Bool  CHIPSInitCursor();
 
 #define MMIOmeml(x) *(unsigned int *)(ctMMIOBase + (x))
 #define MMIOmemw(x) *(unsigned short *)(ctMMIOBase + (x))

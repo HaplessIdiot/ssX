@@ -1,4 +1,33 @@
 XFree86 3.9Ai (xx April 1998)
+1686. Add rendition directory. This is not included in the build process, yet
+      (#1707, Marc Langenbach).
+1685. Make glint compile on Alpha. Some xtest fixes for Alpha (#1705,
+      Christian Worley).
+1684. xterm patch 77,78, convert to ANSI C (#1702,1706 Thomas Dickey).
+1683. Fix compile problems under OS/2 (#1693, Holger Veit).
+1682. Fix xmag segfault (#1675, Andy Sloane).
+1681. Fix build problem of the static servers on FreeBSD. Fix build problem
+      on SVR4(incomplete). Update PC98 Card Database(#1691, Isao Ohishi,
+      Takaaki Nomura).
+1680. Minor fix to ATI driver clock code. Fix vga16 for xtest-detected
+      problems. Fix up vga16's pixmap printing when enabled by DEBUG. There's
+      no need for XFree86LOADER specifics in mibitblt.c(#1690, Marc La France).
+1679. Fix hw cursor on CT65555 and fix loader problem (#1688,1689 Nozomi Ytow).
+1678. Fix freeing of names when removing modes (#1685, Matthieu Herrb).
+1677. Enable ImageWrite in 24 bpp for C&T HiQV (#1684,1687,1700 Nozomi Ytow).
+1676. Fix unknown symbol type 1e message in a.out loader (#1683, 
+      Matthieu Herrb).
+1675. xterm patches 75 and 76. Fix for print-window function, minor cleanups,
+      lots of fixes from other people (see xterm.log.html) (#1681,1682,
+      Thomas Dickey).
+1674. Make vga16 use backing store functions to save/restore the screen on VT
+      switches. Don't call xf86InvalidatePixmapCache when bpp is 1 or 4
+      (#1680, Marc La France).
+1673. Change PIC code to print names of ALL devices capable of displaying
+      video. Return pointer to the last card instead of the first (#1662,
+      Dejan Ilic).
+1672. Add skeleton driver for Tritech Pyramid 3D (#1661, Dejan Ilic, 
+      Mark Vojkovich).
 1671. Check additional pci bus in scanpci (Robin Cutshaw).
 
 XFree86 3.9Ah (28 April 1998)
@@ -6128,4 +6157,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.591 1998/04/28 13:07:22 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.592 1998/04/30 13:51:49 robin Exp $

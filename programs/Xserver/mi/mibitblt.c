@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mibitblt.c /main/55 1996/08/01 19:25:20 dpw $ */
-/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.4 1997/04/12 13:47:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.5tsi Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -61,10 +61,6 @@ SOFTWARE.
 #include "regionstr.h"
 #include "Xmd.h"
 #include "servermd.h"
-
-#ifdef XFree86LOADER
-#define memset(a,b,c) xf86memset(a,b,c)
-#endif
 
 /* MICOPYAREA -- public entry for the CopyArea request 
  * For each rectangle in the source region
@@ -274,6 +270,10 @@ miCopyArea(pSrcDrawable, pDstDrawable,
  * No clever strategy here, we grab a scanline at a time, pull out the
  * bits and then stuff them in a 1 bit deep map.
  */
+/*
+ * This should be replaced with something more general.  mi shouldn't have to
+ * care about such things as scanline padding et alia.
+ */
 static
 unsigned long	*
 miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
@@ -350,18 +350,22 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		 * Now get the bit and insert into a bitmap in XY format.
 		 */
 		bit = (pixel >> planeNum) & 1;
-		/* XXX assuming bit order == byte order */
 #ifndef XFree86Server
+		/* XXX assuming bit order == byte order */
 #if BITMAP_BIT_ORDER == LSBFirst
 		bit <<= k;
 #else
 		bit <<= ((BITMAP_SCANLINE_UNIT - 1) - k);
 #endif
 #else
+		/* XXX assuming byte order == LSBFirst */
 		if (screenInfo.bitmapBitOrder == LSBFirst)
 			bit <<= k;
 		else
-			bit <<= ((BITMAP_SCANLINE_UNIT - 1) - k);
+			bit <<= ((screenInfo.bitmapScanlineUnit - 1) -
+				 (k % screenInfo.bitmapScanlineUnit)) +
+				((k / screenInfo.bitmapScanlineUnit) *
+				 screenInfo.bitmapScanlineUnit);
 #endif
 		*pOut |= (OUT_TYPE) bit;
 		k++;

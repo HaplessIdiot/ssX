@@ -1,18 +1,18 @@
 XCOMM $XConsortium: Imakefile /main/12 1995/12/07 21:15:22 gildea $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.8 1998/01/01 14:51:31 robin Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.9 1998/04/19 11:10:52 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
 
 #if BuildFreeType
-FREETYPEDIRS  = FreeType
-FREETYPEOBJS  = FreeType/?*.o
-FREETYPEDONES = FreeType/DONE
+FREETYPEDIRS  = FreeType FreeType/lib
+FREETYPEOBJS  = FreeType/?*.o FreeType/lib/?*.o
+FREETYPEDONES = FreeType/DONE FreeType/lib/DONE
 #endif
 
 SUBDIRS = bitmap fontfile fc Speedo Type1 $(FREETYPEDIRS) util
 OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o Speedo/?*.o Type1/?*.o \
-       $(FREETYPEOBJ) util/?*.o
+       $(FREETYPEOBJS) util/?*.o
 DONES = bitmap/DONE fontfile/DONE fc/DONE Speedo/DONE Type1/DONE \
        $(FREETYPEDONES) util/DONE
 

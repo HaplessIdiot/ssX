@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.13 1998/04/05 00:45:49 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.14 1998/04/26 16:04:39 robin Exp $ */
 
 /*
  * glint register file 
@@ -887,10 +887,12 @@ typedef struct {
 	if( xf86Verbose > 2)					\
 		ErrorF("reg 0x%04x to 0x%08x\n",r,v);		\
 	*(unsigned int *)((char*)GLINTMMIOBase+r) = v;		\
+    mem_barrier() ; \
 }
 #else
 #define GLINT_WRITE_REG(v,r)					\
-        *(unsigned int *)((char*)GLINTMMIOBase+r) = v;		
+        *(unsigned int *)((char*)GLINTMMIOBase+r) = v;		\
+    mem_barrier() ; 
 #endif
 
 

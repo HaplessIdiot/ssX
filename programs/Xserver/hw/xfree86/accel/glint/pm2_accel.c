@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm2_accel.c,v 1.4 1998/04/05 00:45:49 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm2_accel.c,v 1.5 1998/04/26 16:04:40 robin Exp $ */
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
  *
@@ -949,9 +949,9 @@ Permedia2WriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
 
     srcp = (srcwidth * srcy) + (srcx >> 3) + src; 
     srcx &= 0x07;
-    if(skipleft = (int)srcp & 0x03) { 
+    if(skipleft = (long)srcp & 0x03) { 
 	skipleft = (skipleft << 3) + srcx;
-	srcp = (unsigned char *)((int)srcp & ~0x03);
+	srcp = (unsigned char *)((long)srcp & ~0x03);
     } else
 	skipleft = srcx;    
 
@@ -1272,7 +1272,7 @@ Permedia2DoImageWrite8bpp(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
 	if (alu == GXcopy) {
 	  skipleft = 0;
 	} else {
-	  if((skipleft = (int)srcPntr & 0x03)) {
+	  if((skipleft = (long)srcPntr & 0x03)) {
 	 	if(Bpp == 3)
 			skipleft = 4 - skipleft;
 	    	else
@@ -1284,7 +1284,7 @@ Permedia2DoImageWrite8bpp(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
 	    	if(Bpp == 3)
 	    	   srcPntr = (unsigned char*)(srcPntr - (3*skipleft));  
 	    	else   
-	    	   srcPntr = (unsigned char*)((int)srcPntr & ~0x03); 
+	    	   srcPntr = (unsigned char*)((long)srcPntr & ~0x03); 
 	  }
 	}
 	
@@ -1451,7 +1451,7 @@ Permedia2DoImageWrite16bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
 	if (alu == GXcopy) {
 	  skipleft = 0;
 	} else {
-	  if((skipleft = (int)srcPntr & 0x03)) {
+	  if((skipleft = (long)srcPntr & 0x03)) {
 	   	if(Bpp == 3)
 			skipleft = 4 - skipleft;
 	    	else
@@ -1463,7 +1463,7 @@ Permedia2DoImageWrite16bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
 	    	if(Bpp == 3)
 	    	   srcPntr = (unsigned char*)(srcPntr - (3*skipleft));  
 	    	else   
-	    	   srcPntr = (unsigned char*)((int)srcPntr & ~0x03); 
+	    	   srcPntr = (unsigned char*)((long)srcPntr & ~0x03); 
 	  }
 	}
 	
@@ -1627,7 +1627,7 @@ Permedia2DoImageWrite32bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
 		FastTexLoad = FALSE;
 	
 	if (!FastTexLoad) {
-	  if((skipleft = (int)srcPntr & 0x03)) {
+	  if((skipleft = (long)srcPntr & 0x03)) {
 	   	if(Bpp == 3)
 			skipleft = 4 - skipleft;
 	    	else
@@ -1639,7 +1639,7 @@ Permedia2DoImageWrite32bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
 	    	if(Bpp == 3)
 	    	   srcPntr = (unsigned char*)(srcPntr - (3*skipleft));  
 	    	else   
-	    	   srcPntr = (unsigned char*)((int)srcPntr & ~0x03); 
+	    	   srcPntr = (unsigned char*)((long)srcPntr & ~0x03); 
 	  }
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/trace.h,v 3.2 1998/04/27 03:15:06 robin Exp $
+ * $XFree86: xc/programs/xterm/trace.h,v 3.3 1998/04/28 02:51:02 robin Exp $
  */
 
 /************************************************************
@@ -33,9 +33,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef	included_trace_h
 #define	included_trace_h
 
-#include "proto.h"
-
-extern	void	Trace PROTO(( char *, ... ))
+extern	void	Trace ( char *, ... )
 #if __GNUC__
 	__attribute__ ((format(printf,1,2)))
 #endif
