@@ -102,10 +102,7 @@ typedef struct _head {
 
 typedef struct _tail {
     magic    	    tailMagic;
-#if defined(__alpha) || defined(__alpha__) || \
-    defined(ia64) || deined(__ia64__)
     magic    	    tailPad;
-#endif
 } TailRec, *TailPtr;
 
 #define Header(p)	((HeadPtr) (((char *) (p)) - sizeof (HeadRec)))
@@ -487,6 +484,7 @@ CheckMemory ()
 {
     mem	foo;
 
+    foo = 1;
     fprintf (stderr, "\nCheckMemory\n");
     fprintf (stderr, "%d bytes active memory in %d allocations\n",
 	     activeMemoryTotal, activeMemoryCount);
