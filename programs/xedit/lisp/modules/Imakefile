@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xedit/lisp/modules/Imakefile,v 1.9 2002/07/22 07:26:29 paulo Exp $
+XCOMM $XFree86: xc/programs/xedit/lisp/modules/Imakefile,v 1.11 2002/11/02 22:58:10 paulo Exp $
 
 #include "../lisp.cf"
 #include "../lisp.rules"
@@ -25,5 +25,8 @@ InstallMultipleFlags(progmodes/imake.lsp,$(LISPDIR)/progmodes,$(INSTINCFLAGS))
 InstallMultipleFlags(progmodes/lisp.lsp,$(LISPDIR)/progmodes,$(INSTINCFLAGS))
 InstallMultipleFlags(progmodes/make.lsp,$(LISPDIR)/progmodes,$(INSTINCFLAGS))
 InstallMultipleFlags(progmodes/man.lsp,$(LISPDIR)/progmodes,$(INSTINCFLAGS))
+InstallMultipleFlags(progmodes/rpm.lsp,$(LISPDIR)/progmodes,$(INSTINCFLAGS))
 InstallMultipleFlags(progmodes/sgml.lsp,$(LISPDIR)/progmodes,$(INSTINCFLAGS))
+InstallMultipleFlags(progmodes/sh.lsp,$(LISPDIR)/progmodes,$(INSTINCFLAGS))
+InstallMultipleFlags(progmodes/xconf.lsp,$(LISPDIR)/progmodes,$(INSTINCFLAGS))
 InstallMultipleFlags(progmodes/xrdb.lsp,$(LISPDIR)/progmodes,$(INSTINCFLAGS))

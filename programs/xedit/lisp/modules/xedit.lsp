@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.7 2002/11/10 23:22:01 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.8 2002/12/16 03:59:28 paulo Exp $
 ;;
 
 (provide "xedit")
@@ -61,6 +61,8 @@
 	"X imake"	"imake"	. *imake-mode*)
     ("[Mm]akefile.*|\\.mk$"
 	"Makefile"	"make"	. *make-mode*)
+    ("\\.sh$"
+	"Unix shell"	"sh"	. *sh-mode*)
     ("\\.sgml?$"
 	"SGML"		"sgml"	. *sgml-mode*)
     ("\\.html?$"
@@ -69,6 +71,10 @@
 	"Man page"	"man"	. *man-mode*)
     ("app-defaults/\\w+|\\u[A-Za-z0-9_-]+\\.ad"
 	"X resource"	"xrdb"	. *xrdb-mode*)
+    ("\\<XF86Config[^/]*"
+	"XF86Config"	"xconf"	. *xconf-mode*)
+    ("\\.spec$"
+	"RPM spec"	"rpm"	. *rpm-mode*)
 ))
 
 
