@@ -1,13 +1,15 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.cpp,v 1.2 2000/03/06 13:57:44 martin Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.cpp,v 1.3 2000/03/06 22:59:26 dawes Exp $ 
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH R128 __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 r128 \- ATI Rage 128 video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""r128"""
+.B  "  Driver \*qr128\*q"
 .br
 \ \ ...
 .br
@@ -48,16 +50,16 @@ In addition, the following driver
 .B Options
 are supported:
 .TP
-.BI "Option ""SWcursor"" """ boolean """
+.BI "Option \*qSWcursor\*q \*q" boolean \*q
 Selects software cursor.  The default is
 .B off.
 .TP
-.BI "Option ""NoAccel"" """ boolean """
+.BI "Option \*qNoAccel\*q \*q" boolean \*q
 Enables or disables all hardware acceleration.  The default is to
 .B enable
 hardware acceleration.
 .TP
-.BI "Option ""Dac6Bit"" """ boolean """
+.BI "Option \*qDac6Bit\*q \*q" boolean \*q
 Enables or disables the use of 6 bits per color component when in 8 bpp
 mode (emulates VGA mode).  By default, all 8 bits per color component
 are used.  The default is

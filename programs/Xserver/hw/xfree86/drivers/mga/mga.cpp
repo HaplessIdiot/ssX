@@ -1,13 +1,15 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.12 2000/03/03 18:48:38 mvojkovi Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.13 2000/03/07 01:37:49 dawes Exp $ 
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH MGA __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 mga \- Matrox video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""mga"""
+.B  "  Driver \*qmga\*q"
 .br
 \ \ ...
 .br
@@ -49,7 +51,7 @@ driver.
 The driver auto-detects the chipset type, but the following
 .B ChipSet
 names may optionally be specified in the config file
-.B """Device"""
+.B \*qDevice\*q
 section, and will override the auto-detection:
 .PP
 .RS 4
@@ -63,64 +65,64 @@ to 4096\ kBytes.  When using a Millennium II, the actual amount of video
 memory should be specified with a
 .B VideoRam
 entry in the config file
-.B """Device"""
+.B \*qDevice\*q
 section.
 .PP
 The following driver
 .B Options
 are supported:
 .TP
-.BI "Option ""ColorKey"" """ integer """
+.BI "Option \*qColorKey\*q \*q" integer \*q
 Set the colormap index used for the transparency key for the depth 8 plane
 when operating in 8+24 overlay mode.  The value must be in the range
 2\-255.  Default: 255.
 .TP
-.BI "Option ""HWCursor"" """ boolean """
+.BI "Option \*qHWCursor\*q \*q" boolean \*q
 Enable or disable the HW cursor.  Default: on.
 .TP
-.BI "Option ""MGASDRAM"" """ boolean """
+.BI "Option \*qMGASDRAM\*q \*q" boolean \*q
 Specify whether G100 and G200 cards have SDRAM.  The driver attempts to
 auto-detect this based on the card's PCI subsystem ID.  This option may
 be used to override that auto-detection.  The mga driver is not able to 
 auto-detect the prescence SDRAM on secondary heads in multihead configurations.
 Default: auto-detected.
 .TP
-.BI "Option ""NoAccel"" """ boolean """
+.BI "Option \*qNoAccel\*q \*q" boolean \*q
 Disable or enable acceleration.  Default: acceleration is enabled.
 .TP
-.BI "Option ""OverclockMem""
+.BI "Option \*qOverclockMem\*q"
 Set clocks to values used by some commercial X-Servers (G100, G200 and G400
 only).  Default: off.
 .TP
-.BI "Option ""Overlay""
+.BI "Option \*qOverlay\*q"
 Enable 8+24 overlay mode.  Only appropriate for depth 24.
 .RB ( Note: 
 the G100 is unaccelerated in the 8+24 overlay mode due to a missing 
 hardware feature) Default: off.
 .TP
-.BI "Option ""PciRetry"" """ boolean """
+.BI "Option \*qPciRetry\*q \*q" boolean \*q
 Enable or disable PCI retries.  Default: off.
 .TP
-.BI "Option ""Rotate"" ""CW""
+.BI "Option \*qRotate\*q \*qCW\*q"
 .TP
-.BI "Option ""Rotate"" ""CCW""
+.BI "Option \*qRotate\*q \*qCCW\*q"
 Rotate the display clockwise or counterclockwise.  This mode is unaccelerated.
 Default: no rotation.
 .TP
-.BI "Option ""ShadowFB"" """ boolean """
+.BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer.  See
 shadowfb(__drivermansuffix__) for further information.  Default: off.
 .TP
-.BI "Option ""SyncOnGreen"" """ boolean """
+.BI "Option \*qSyncOnGreen\*q \*q" boolean \*q
 Enable or disable combining the sync signals with the green signal.
 Default: off.
 .TP
-.BI "Option ""UseFBDev"" """ boolean """
+.BI "Option \*qUseFBDev\*q \*q" boolean \*q
 Enable or disable use of on OS-specific fb interface (and is not supported
 on all OSs).  See fbdevhw(__drivermansuffix__) for further information.
 Default: off.
 .TP
-.BI "Option ""VideoKey"" """ integer """
+.BI "Option \*qVideoKey\*q \*q" integer \*q
 This sets the default pixel value for the YUV video overlay key.
 Default: undefined.
 .SH "SEE ALSO"

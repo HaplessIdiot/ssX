@@ -1,13 +1,15 @@
-.\" $XFree86$ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.cpp,v 1.1 2000/03/03 01:05:39 dawes Exp $ 
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH I810 __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 i810 \- Intel i810 video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""i810"""
+.B  "  Driver \*qi810\*q"
 .br
 \ \ ...
 .br

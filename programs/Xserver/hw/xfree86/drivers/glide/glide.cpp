@@ -1,13 +1,15 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide.cpp,v 1.6 1999/08/28 10:43:35 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide.cpp,v 1.7 2000/03/03 01:05:37 dawes Exp $
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH GLIDE __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 glide \- Glide video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""glide"""
+.B  "  Driver \*qglide\*q"
 .br
 \ \ ...
 .br
@@ -101,7 +103,7 @@ Section "Device"
 .br
    Option      "dpms" "on"
 .br
-   Option      "GlideDevice" "0" 
+   Option      "GlideDevice" "0"
 .br
 EndSection
 .PP
@@ -129,13 +131,13 @@ The following driver
 .B Options
 are supported:
 .TP
-.BI "Option ""OnAtExit"" """ boolean """
+.BI "Option \*qOnAtExit\*q \*q" boolean \*q
 If true, will leave the Voodoo board on when the server exits. Useful in a multihead setup when
 only the Voodoo board is connected to a second monitor and you don't want that monitor to lose
 signal when you quit the server. Put this option in the Device section.
 Default: off.
 .TP
-.BI "Option ""GlideDevice"" """ integer """
+.BI "Option \*qGlideDevice\*q \*q" integer \*q
 Selects which Voodoo board to use. (Or boards, in an SLI configuration).
 The value should be 0 for the first board, 1 for the second and so on.
 If it is not present, the first Voodoo board found will be selected.

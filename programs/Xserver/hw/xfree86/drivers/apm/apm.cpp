@@ -1,13 +1,15 @@
-.\" $XFree86$ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.cpp,v 1.1 2000/03/03 01:05:33 dawes Exp $ 
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH APM __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 apm \- Alliance ProMotion video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""apm"""
+.B  "  Driver \*qapm\*q"
 .br
 \ \ ...
 .br

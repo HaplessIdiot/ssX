@@ -1,13 +1,15 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.cpp,v 1.2 1999/11/19 14:59:17 hohndel Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.cpp,v 1.3 2000/03/03 01:05:34 dawes Exp $
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH CHIPS __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 chips \- Chips and Technologies video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""chips"""
+.B  "  Driver \*qchips\*q"
 .br
 \ \ ...
 .br
@@ -84,7 +86,7 @@ driver.
 The driver auto-detects the chipset type, but the following
 .B ChipSet
 names may optionally be specified in the config file
-.B """Device"""
+.B \*qDevice\*q
 section, and will override the auto-detection:
 .PP
 .RS 4
@@ -97,93 +99,93 @@ The driver will auto-detect the amount of video memory present for all
 chipsets.  But maybe overridden with the
 .B VideoRam
 entry in the config file
-.B """Device"""
+.B \*qDevice\*q
 section.
 .PP
 The following driver
 .B Options
 are supported, on one or more of the supported chipsets:
 .TP
-.BI "Option ""NoAccel"" """ boolean """
+.BI "Option \*qNoAccel\*q \*q" boolean \*q
 Disable or enable acceleration.  Default: acceleration is enabled.
 .TP
-.BI "Option ""NoLinear"" """ boolean """
+.BI "Option \*qNoLinear\*q \*q" boolean \*q
 Disables linear addressing in cases where it is enabled by default.
 Default: off
 .TP
-.BI "Option ""Linear"" """ boolean """
+.BI "Option \*qLinear\*q \*q" boolean \*q
 Enables linear addressing in cases where it isdisabled by default.
 Default: off
 .TP
-.BI "Option ""HWCursor"" """ boolean """
+.BI "Option \*qHWCursor\*q \*q" boolean \*q
 Enable or disable the HW cursor.  Default: on.
 .TP
-.BI "Option ""SWCursor"" """ boolean """
+.BI "Option \*qSWCursor\*q \*q" boolean \*q
 Enable or disable the HW cursor.  Default: off.
 .TP
-.BI "Option ""STN"" """ boolean """
+.BI "Option \*qSTN\*q \*q" boolean \*q
 Force detection of STN screen type. Default: off.
 .TP
-.BI "Option ""UseModeline"" """ boolean """
+.BI "Option \*qUseModeline\*q \*q" boolean \*q
 Reprogram flat panel timings with values from the modeline. Default: off
 .TP
-.BI "Option ""FixPanelSize"" """ boolean """
+.BI "Option \*qFixPanelSize\*q \*q" boolean \*q
 Reprogram flat panel size with values from the modeline. Default: off
 .TP
-.BI "Option ""NoStretch"" """ boolean """
+.BI "Option \*qNoStretch\*q \*q" boolean \*q
 This option disables the stretching on a mode on a flat panel to fill the
 screen. Default: off
 .TP
-.BI "Option ""LcdCenter"" """ boolean """
+.BI "Option \*qLcdCenter\*q \*q" boolean \*q
 Center the mode displayed on the flat panel on the screen. Default: off
 .TP
-.BI "Option ""HWclocks"" """ boolean """
+.BI "Option \*qHWclocks\*q \*q" boolean \*q
 Force the use of fixed hardware clocks on chips that support both fixed
 and programmable clocks. Default: off
 .TP
-.BI "Option ""UseVclk1"" """ boolean """
+.BI "Option \*qUseVclk1\*q \*q" boolean \*q
 Use the Vclk1 programable clock on
 .B HiQV
 chipsets instead of Vclk2. Default: off
 .TP
-.BI "Option ""FPClock8"" """ float """
+.BI "Option \*qFPClock8\*q \*q" float \*q
 .TP
-.BI "Option ""FPClock16"" """ float """
+.BI "Option \*qFPClock16\*q \*q" float \*q
 .TP
-.BI "Option ""FPClock24"" """ float """
+.BI "Option \*qFPClock24\*q \*q" float \*q
 .TP
-.BI "Option ""FPClock32"" """ float """
+.BI "Option \*qFPClock32\*q \*q" float \*q
 Force the use of a particular video clock speed for use with the 
 flat panel at a specified depth
 .TP
-.BI "Option ""MMIO"" """ boolean """
+.BI "Option \*qMMIO\*q \*q" boolean \*q
 Force the use of memory mapped IO where it can be used. Default: off
 .TP
-.BI "Option ""SuspendHack"" """ boolean """
+.BI "Option \*qSuspendHack\*q \*q" boolean \*q
 Force driver to leave centering and stretching resgisters alone. This
 can fix some laptop suspend/resume problems. Default: off
 .TP
-.BI "Option ""Overlay""
+.BI "Option \*qOverlay\*q"
 Enable 8+24 overlay mode.  Only appropriate for depth 24.  Default: off.
 .TP
-.BI "Option ""ColorKey"" """ integer """
+.BI "Option \*qColorKey\*q \*q" integer \*q
 Set the colormap index used for the transparency key for the depth 8 plane
 when operating in 8+16 overlay mode.  The value must be in the range
 2\-255.  Default: 255.
 .TP
-.BI "Option ""ShadowFB"" """ boolean """
+.BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer.  See
 shadowfb(__drivermansuffix__) for further information.  Default: off.
 .TP
-.BI "Option ""SyncOnGreen"" """ boolean """
+.BI "Option \*qSyncOnGreen\*q \*q" boolean \*q
 Enable or disable combining the sync signals with the green signal.
 Default: off.
 .TP
-.BI "Option ""ShowCache"" """ boolean """
+.BI "Option \*qShowCache\*q \*q" boolean \*q
 Enable or disable viewing offscreen memory. Used for debugging only
 Default: off.
 .TP
-.BI "Option ""18bitBus"" """ boolean """
+.BI "Option \*q18bitBus\*q \*q" boolean \*q
 Force the driver to assume that the flat panel has an 18bit data bus.
 Default: off.
 .SH "SEE ALSO"

@@ -1,13 +1,15 @@
-.\" $XFree86$ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.cpp,v 1.1 2000/03/03 01:05:44 dawes Exp $ 
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH TSENG __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 tseng \- Tseng Labs video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""tseng"""
+.B  "  Driver \*qtseng\*q"
 .br
 \ \ ...
 .br

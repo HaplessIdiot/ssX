@@ -1,17 +1,19 @@
-.\" $XFree86$ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.cpp,v 1.1 2000/03/03 01:05:50 dawes Exp $ 
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH MOUSE __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 mouse \- Mouse input driver
 .SH SYNOPSIS
-.B "Section ""InputDevice"""
+.B "Section \*qInputDevice\*q"
 .br
-.BI "  Identifier """ idevname """"
+.BI "  Identifier \*q" idevname \*q
 .br
-.B  "  Driver ""mouse"""
+.B  "  Driver \*qmouse\*q"
 .br
-.BI "  Option ""Protocol"" """ protoname """"
+.BI "  Option \*qProtocol\*q \*q" protoname \*q
 .br
-.BI "  Option ""Device""   """ devpath """"
+.BI "  Option \*qDevice\*q   \*q" devpath \*q
 .br
 \ \ ...
 .br
@@ -52,7 +54,7 @@ The following driver
 .B Options
 are supported:
 .TP 7
-.BI "Option ""Protocol"" """ string """
+.BI "Option \*qProtocol\*q \*q" string \*q
 Specify the mouse protocol.  Valid protocol types include:
 .PP
 .RS 12
@@ -66,37 +68,38 @@ NetMousePS/2, NetScrollPS/2, BusMouse, SysMouse, WSMouse, USB, Xqueue.
 Not all protocols are supported on all platforms.  The "Auto" platform
 specifies that protocol auto-detection should be attempted.  There is no
 default protocol setting, and specifying this option is mandatory.
+.RE
 .TP 7
-.BI "Option ""Device"" """ string """
+.BI "Option \*qDevice\*q \*q" string \*q
 Specifies the device through which the mouse can be accessed.  A common
 setting is "/dev/mouse", which is often a symbolic link to the real
 device.  This option is mandatory, and there is no default setting.
 .TP 7
-.BI "Option ""Buttons"" """ integer """
+.BI "Option \*qButtons\*q \*q" integer \*q
 Specifies the number of mouse buttons.  In cases where the number of buttons
 cannot be auto-detected, the default value is 3.
 .TP 7
-.BI "Option ""Emulate3Buttons"" """ boolean """
+.BI "Option \*qEmulate3Buttons\*q \*q" boolean \*q
 Enable/disable the emulation of the third (middle) mouse button for mice
 which only have two physical buttons.  The third button is emulated by
 pressing both buttons simultaneously.  Default: off
 .TP 7
-.BI "Option ""Emulate3Timeout"" """ integer """
+.BI "Option \*qEmulate3Timeout\*q \*q" integer \*q
 Sets the timeout (in milliseconds) that the driver waits before decicing
 if two buttons where pressed "simultaneously" when 3 button emulation is
 enabled.  Default: 50.
 .TP 7
-.BI "Option ""ChordMiddle"" """ boolean """
+.BI "Option \*qChordMiddle\*q \*q" boolean \*q
 Enable/disable handling of mice that send left+right events when the middle
 button is used.  Default: off.
 .TP 7
-.BI "Option ""ZAxisMapping"" ""X"""
+.BI "Option \*qZAxisMapping\*q \*qX\*q"
 .TP 7
-.BI "Option ""ZAxisMapping"" ""Y"""
+.BI "Option \*qZAxisMapping\*q \*qY\*q"
 .TP 7
-.BI "Option ""ZAxisMapping"" """ "N1 N2" """
+.BI "Option \*qZAxisMapping\*q \*q" "N1 N2" \*q
 .TP 7
-.BI "Option ""ZAxisMapping"" """ "N1 N2 N3 N4" """
+.BI "Option \*qZAxisMapping\*q \*q" "N1 N2 N3 N4" \*q
 Set the mapping for the Z axis (wheel) motion to buttons or another axis
 .RB ( X
 or
@@ -112,33 +115,33 @@ of the second wheel mapped respectively to buttons number
 and
 .IR N4 .
 .TP 7
-.BI "Option ""FlipXY"" """ boolean """
+.BI "Option \*qFlipXY\*q \*q" boolean \*q
 Enable/disable swapping the X and Y axes.  Default: off.
 .TP 7
-.BI "Option ""SampleRate"" """ integer """
+.BI "Option \*qSampleRate\*q \*q" integer \*q
 Sets the number of motion/button events the mouse sends per second.  Setting
 this is only supported for some mice, including some Logitech mice and
 some PS/2 mice on some platforms.  Default: whatever the mouse is
 already set to.
 .TP 7
-.BI "Option ""Resolution"" """ integer """
+.BI "Option \*qResolution\*q \*q" integer \*q
 Sets the resolution of the device in counts per inch.  Setting this is
 only supported for some mice, including some PS/2 mice on some platforms.
 Default: whatever the mouse is already set to.
 .TP 7
-.BI "Option ""ClearDTR"" """ boolean """
+.BI "Option \*qClearDTR\*q \*q" boolean \*q
 Enable/disable clearing the DTR line on the serial port used by the mouse.
 Some dual-protocol mice require the DTR line to be cleared to operate
 in the non-default protocol.  This option is for serial mice only.
 Default: off.
 .TP 7
-.BI "Option ""ClearRTS"" """ boolean """
+.BI "Option \*qClearRTS\*q \*q" boolean \*q
 Enable/disable clearing the RTS line on the serial port used by the mouse.
 Some dual-protocol mice require the RTS line to be cleared to operate
 in the non-default protocol.  This option is for serial mice only.
 Default: off.
 .TP 7
-.BI "Option ""BaudRate"" """ integer """
+.BI "Option \*qBaudRate\*q \*q" integer \*q
 Set the baud rate to use for communicating with a serial mouse.  This
 option should rarely be required because the default is correct for almost
 all situations.  Valid values include: 300, 1200, 2400, 4800, 9600, 19200.

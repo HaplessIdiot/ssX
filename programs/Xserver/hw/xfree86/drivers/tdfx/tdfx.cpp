@@ -1,13 +1,15 @@
-.\" $XFree86$ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.cpp,v 1.1 2000/03/03 01:05:43 dawes Exp $ 
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH TDFX __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 tdfx \- 3Dfx video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""tdfx"""
+.B  "  Driver \*qtdfx\*q"
 .br
 \ \ ...
 .br

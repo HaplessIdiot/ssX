@@ -1,13 +1,15 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.cpp,v 1.1 2000/03/03 01:05:37 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.cpp,v 1.2 2000/03/07 01:37:46 dawes Exp $ 
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH GLINT __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 glint \- GLINT/Permedia video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""glint"""
+.B  "  Driver \*qglint\*q"
 .br
 \ \ ...
 .br
@@ -31,7 +33,7 @@ driver.
 The driver auto-detects the chipset type, but the following
 .B ChipSet
 names may optionally be specified in the config file
-.B """Device"""
+.B \*qDevice\*q
 section, and will override the auto-detection:
 .PP
 .RS 4
@@ -43,66 +45,66 @@ chips.  If it's not detected correctly, the actual amount of video memory should
 be specified with a
 .B VideoRam
 entry in the config file
-.B """Device"""
+.B \*qDevice\*q
 section.
 .PP
 Additionally, you may need to specify the bus ID of your card with a
 .B BusID
 entry in the config file
-.B """Device"""
+.B \*qDevice\*q
 section, especially with FBDev support.
 .PP
 The following driver
 .B Options
 are supported:
 .TP
-.BI "Option ""HWCursor"" """ boolean """
+.BI "Option \*qHWCursor\*q \*q" boolean \*q
 Enable or disable the HW cursor.  Default: on.
 .TP
-.BI "Option ""SWCursor"" """ boolean """
+.BI "Option \*qSWCursor\*q \*q" boolean \*q
 Enable or disable the SW cursor.  Default: off.
 This option disables the
 .B HWCursor
 option and vice versa.
 .TP
-.BI "Option ""NoAccel"" """ boolean """
+.BI "Option \*qNoAccel\*q \*q" boolean \*q
 Disable or enable acceleration.  Default: acceleration is enabled.
 .TP
-.BI "Option ""Overlay""
+.BI "Option \*qOverlay\*q"
 Enable 8+24 overlay mode.  Only appropriate for depth 24, 32 bpp.
 .RB ( Note:
 This hasn't been tested with FBDev support and probably won't work.) 
 Recognized values are: "8,24", "24,8". Default: off.
 .TP
-.BI "Option ""PciRetry"" """ boolean """
+.BI "Option \*qPciRetry\*q \*q" boolean \*q
 Enable or disable PCI retries.
 .RB ( Note:
 This doesn't work with Permedia2 based cards for Amigas.)  Default: off.
 .TP
-.BI "Option ""ShadowFB"" """ boolean """
+.BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer.  See
 shadowfb(__drivermansuffix__) for further information.
 .RB ( Note:
 This disables hardware acceleration.)  Default: off.
 .TP
-.BI "Option ""UseFBDev"" """ boolean """
+.BI "Option \*qUseFBDev\*q \*q" boolean \*q
 Enable or disable use of an OS-specific fb interface (which is not supported
 on all OSs).  See fbdevhw(__drivermansuffix__) for further information.
 Default: off.
 .ig
 .TP
-.BI "Option ""RGBbits"" """ integer """
+.BI "Option \*qRGBbits\*q \*q" integer \*q
 Each gun of the RGB triple can have either 8 or 10 bits.  Default: 8
 ..
 .TP
-.BI "Option ""BlockWrite"" """ boolean """
+.BI "Option \*qBlockWrite\*q \*q" boolean \*q
 Enable or disable block writes for the various Permedia 2 chips. This improves
 acceleration in general, but disables it for some special cases.  Default: off.
 .TP
-.BI "Option ""FireGL3000"" """ boolean """
+.BI "Option \*qFireGL3000\*q \*q" boolean \*q
 If you have a card of the same name, turn this on.  Default: off.
 .TP
-.BI "Option ""SetMClk"" """ freq """
+.BI "Option \*qSetMClk\*q \*q" freq \*q
 The driver will try to auto-detect the memory clock for all chips.  If it's not
 detected correctly, the actual value (in MHz) should be specified with this
 option.

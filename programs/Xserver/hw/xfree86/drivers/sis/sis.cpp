@@ -1,13 +1,15 @@
-.\" $XFree86$ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.cpp,v 1.1 2000/03/03 01:05:42 dawes Exp $ 
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH SIS __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 sis \- SiS video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""sis"""
+.B  "  Driver \*qsis\*q"
 .br
 \ \ ...
 .br

@@ -1,4 +1,6 @@
 XFree86 4.0a (xx March 2000)
+  24. Fix some man page formatting problems that show up on some platforms
+      (David Dawes).
   23. Fix an 8+24 bug that occured when shared memory pixmaps were used as
       tiles (Mark Vojkovich). 
   22. Support for the Trident CyberBlade/DSTN/i1 (Alan Hourihane).
@@ -10071,4 +10073,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1089 2000/03/18 23:07:36 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1092 2000/03/20 02:57:09 mvojkovi Exp $
