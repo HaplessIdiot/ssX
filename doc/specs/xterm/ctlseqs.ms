@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.24 1999/06/13 13:46:49 dawes Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.25 1999/07/04 06:38:23 dawes Exp $
 .\"
 .\"
 .\" Copyright 1999 by Thomas E. Dickey <dickey@clark.net>
@@ -758,6 +758,10 @@ If \fIxterm\fP is compiled with the 16-color support disabled, it supports
 the following, from \fIrxvt\fP:
   \*(Ps = \*1\*0\*0 \(-> Set foreground and background color to default
 .sp
+If 256-color support is compiled, the following apply.
+  \*(Ps = \*3\*8 ; \*5 ; \*(Ps \(-> Set background color to \*(Ps
+  \*(Ps = \*4\*8 ; \*5 ; \*(Ps \(-> Set foreground color to \*(Ps
+.sp
 .
 .IP \\*(Cs\\*(Ps\\*s\\*n
 Device Status Report (DSR)
@@ -955,6 +959,7 @@ and window title.
   \*(Ps = \*2 \(-> Change Window Title to \*(Pt
   \*(Ps = \*3 \(-> Set X property on top-level window. \*(Pt should be in the form
 "\fIprop=value\fP", or just "\fIprop\fP" to delete the property
+  \*(Ps = \*4 ; \fIc ; name\fP \(-> Change Color #\fIc\fP to \fIcname\fP
   \*(Ps = \*1\*0 \(-> Change color names starting with text foreground to \*(Pt
 (a list of one or more color names or RGB specifications, separated by
 semicolon, up to eight, as per \fIXParseColor\fP).

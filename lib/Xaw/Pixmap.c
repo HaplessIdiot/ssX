@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.11 1999/04/11 13:10:31 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.12 1999/06/06 08:48:06 dawes Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -677,6 +677,8 @@ BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
       if (XAllocNamedColor(DisplayOfScreen(screen), colormap, argval->value,
 			   &color, &exact))
 	fg = color.pixel;
+      else
+	return (False);
     }
   if ((argval = XawFindArgVal(params, "background")) != NULL
       && argval->value)
@@ -684,6 +686,8 @@ BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
       if (XAllocNamedColor(DisplayOfScreen(screen), colormap, argval->value,
 			   &color, &exact))
 	bg = color.pixel;
+      else
+	return (False);
     }
 
   if (params->name[0] != '/' && params->name[0] != '.')
@@ -736,6 +740,7 @@ GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
   Pixmap pixmap;
   XawArgVal *argval;
   int orientation, dimension, steps;
+  char *value;
 
   if (XmuCompareISOLatin1(params->name, "vertical") == 0)
     orientation = VERTICAL;
@@ -766,29 +771,35 @@ GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 
   steps = XawMin(steps, dimension);
 
+  value = NULL;
+  if ((argval = XawFindArgVal(params, "start")) != NULL)
+    value = argval->value;
+  if (value && !XAllocNamedColor(DisplayOfScreen(screen), colormap, value,
+			    &start, &color))
+    return (False);
+  else if (!value)
+    {
+      start.pixel = WhitePixelOfScreen(screen);
+      XQueryColor(DisplayOfScreen(screen), colormap, &start);
+    }
+  value = NULL;
+  if ((argval = XawFindArgVal(params, "end")) != NULL)
+    value = argval->value;
+  if (value && !XAllocNamedColor(DisplayOfScreen(screen), colormap, value,
+			    &end, &color))
+    return (False);
+  else if (!value)
+    {
+      end.pixel = BlackPixelOfScreen(screen);
+      XQueryColor(DisplayOfScreen(screen), colormap, &end);
+    }
+
   if ((pixmap = XCreatePixmap(DisplayOfScreen(screen),
 			      RootWindowOfScreen(screen),
 			      orientation == VERTICAL ? 1 : dimension,
 			      orientation == VERTICAL ? dimension : 1, depth))
       == 0)
     return (False);
-
-  if (!((argval = XawFindArgVal(params, "start")) != NULL
-	&& argval->value
-	&& XAllocNamedColor(DisplayOfScreen(screen), colormap, argval->value,
-			    &start, &color)))
-    {
-      start.pixel = WhitePixelOfScreen(screen);
-      XQueryColor(DisplayOfScreen(screen), colormap, &start);
-    }
-  if (!((argval = XawFindArgVal(params, "end")) != NULL
-	&& argval->value
-	&& XAllocNamedColor(DisplayOfScreen(screen), colormap, argval->value,
-			    &end, &color)))
-    {
-      end.pixel = BlackPixelOfScreen(screen);
-      XQueryColor(DisplayOfScreen(screen), colormap, &end);
-    }
 
   ired   = (double)(end.red   - start.red)   / (double)steps;
   igreen = (double)(end.green - start.green) / (double)steps; 
@@ -827,7 +838,11 @@ GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 	  color.red   = (unsigned short)red;
 	  color.green = (unsigned short)green;
 	  color.blue  = (unsigned short)blue;
-	  (void)XAllocColor(DisplayOfScreen(screen), colormap, &color);
+	  if (!XAllocColor(DisplayOfScreen(screen), colormap, &color))
+	    {
+	      XFreePixmap(DisplayOfScreen(screen), pixmap);
+	      return (False);
+	    }
 	  XSetForeground(DisplayOfScreen(screen), gc, color.pixel);
 	  if (orientation == VERTICAL)
 	    y = yend;

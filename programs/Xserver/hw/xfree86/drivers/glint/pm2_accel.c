@@ -29,7 +29,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.15 1999/03/21 07:35:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.16 1999/07/04 06:39:00 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -51,7 +51,6 @@
 
 #include "xaalocal.h"		/* For replacements */
 
-static void Permedia2Sync(ScrnInfoPtr pScrn);
 static void Permedia2SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
 static void Permedia2SubsequentFillRectSolid(ScrnInfoPtr pScrn, int x,
@@ -400,7 +399,7 @@ static void Permedia2LoadCoord(
 }
 
 
-static void
+void
 Permedia2Sync(ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);

@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>10 July 1999 (this document needs work!)
+<date>11 July 1999 (this document needs work!)
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.4 1999/07/08 08:28:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.5 1999/07/10 12:17:25 dawes Exp $
 </ident>
 
 <abstract>
@@ -183,6 +183,101 @@ way of doing this with the config file too.
 
 <sect1>xterm
 <p>
+
+New Features:
+
+<itemize>
+  <item>Support Unix98 PTY's.
+
+  <item>Support Unicode using UTF-8 input and output.  There are a few
+	limitations, this work is still in progress:
+
+	<itemize>
+	  <item>You must use the <tt>-u8</tt> command line option to
+		use this feature, as well as compile with the
+		<tt>OPT_WIDE_CHARS</tt> definition.  (The feature is
+		compiled when using imake).
+
+	  <item>Input (from keyboard) and output (select/paste) are in
+		UTF-8 form.  There is no support in Xlib for UTF-8;
+		xterm uses a lookup table to map keysym codes.
+		Select/paste is done either via <tt>STRING</tt> or using
+		the new atom <tt>UTF8_STRING</tt>.
+
+	</itemize>
+
+  <item>Add optional feature (resource and command-line options) to make
+	xterm use the PTY's sense of erase character on startup, rather
+	than requiring it to be <tt>\177</tt>, or set the PTY's erase
+	character to match xterm's configuration.  Note that while
+	<tt>$TERMCAP</tt> is modified to reflect the actual configuration,
+	the terminfo <tt>kdch1</tt> string is not.  (This feature is
+	also in XFree86 3.3.4).
+
+  <item>Revised keyboard handling, making two modes (VT220 and Sun/PC) which
+	are switched by popup menu.  This makes the numeric keypad work as
+	expected.  Codes sent by the backarrow and delete keys also are
+	affected.
+
+  <item>Add parameters to function key escape sequences to indicate if
+	shift, control or alt are set.  This works for Sun/PC keyboard
+	mode.
+
+  <item>Separated command-line and menu settings for reverse video from that
+	done under program control.  This is a problem which was introduced
+	by X11R6.  Though correct, most users are confused by allowing
+	the reset command to undo the effect of the command-line
+	<tt>-rv</tt> option.
+
+  <item>Blinking cursor can be specified by resource or popup menu.
+
+  <item>New control sequences for switching between normal and alternate
+	screens maintain separate cursor-save locations for the two screens,
+	avoiding incorrect cursor placement on exit from vi.
+
+  <item>Support line-drawing characters when the font does not include them
+	by drawing them.
+
+  <item>Add support for switching font sizes, by stepping through the font
+	menu using shifted keypad plus and minus.
+
+  <item>New resource <tt>trimSelection</tt> allows xterm to trim trailing
+	blanks from selected lines.
+
+  <item>Provide user applications a means of determining the version of xterm
+	for feature comparison by returning the patch number (e.g., 111) in
+	the secondary DA response.
+
+</itemize>
+
+Bug fixes/improvements:
+
+<itemize>
+  <item>If <tt>colorMode</tt> is enabled by default, compile-in default
+	resources to match the colors listed in <tt>XTerm-col.ad</tt>.
+
+  <item>Deprecate DA answerback string, making it settable via a resource
+	value for applications which may need this.
+
+  <item>Input characters which are mapped when in vt220 National Replacement
+	Character mode.
+
+  <item>Completed support for double size characters.
+
+  <item>Remove <tt>kfnd</tt>/<tt>kll</tt>/<tt>kslt</tt> strings from
+	terminfo, because curses applications do not necessarily return
+	<tt>khome</tt>/<tt>kend</tt> pairs.
+
+  <item>Corrected ifdef's for menus, which did not allow tek4014 to be
+	suppressed properly.
+
+  <item>Improved tests for determining if xterm should use overstriking to
+	simulate bold fonts.
+
+  <item>Add test/demo scripts for double size characters, font switching,
+	screen resizing and colors.
+
+</itemize>
 
 <sect1>xedit
 <p>

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.16 1999/06/06 08:48:17 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.17 1999/06/13 13:47:23 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -221,6 +221,8 @@ TextSrcClassRec textSrcClassRec = {
 WidgetClass textSrcObjectClass = (WidgetClass)&textSrcClassRec;
 
 static XrmQuark QRead, QAppend, QEdit;
+static char *SrcNL = "\n";
+static wchar_t SrcWNL[2];
 
 /*
  * Implementation
@@ -230,6 +232,8 @@ XawTextSrcClassInitialize(void)
 {
     XawInitializeWidgetSet();
 
+    SrcWNL[0] = _Xaw_atowc(XawLF);
+    SrcWNL[1] = 0;
     QRead   = XrmPermStringToQuark(XtEtextRead);
     QAppend = XrmPermStringToQuark(XtEtextAppend);
     QEdit   = XrmPermStringToQuark(XtEtextEdit);
@@ -524,16 +528,12 @@ _XawTextSourceNewLineAtEOF(Widget w)
 {
     TextSrcObject src = (TextSrcObject)w;
     XawTextBlock text;
-    wchar_t wc_nl[2];
 
     text.firstPos = 0;
     if ((text.format = src->textSrc.text_format) == XawFmt8Bit)
-	text.ptr = "\n";
-    else {
-	wc_nl[0] = _Xaw_atowc(XawLF);
-	wc_nl[1] = 0;
-	text.ptr = (char*)&wc_nl;
-    }
+	text.ptr = SrcNL;
+    else
+	text.ptr = (char*)SrcWNL;
     text.length = 1;
 
     return (XawTextSourceSearch(w, XawTextSourceScan(w, 0, XawstAll,
@@ -721,6 +721,17 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 	    l_state->buffer = NULL;
 	}
 	l_state->format = src->textSrc.text_format;
+	if (l_state->length == 1) {
+	    if (l_state->format == XawFmtWide &&
+		*(wchar_t*)l_state->buffer == *SrcWNL) {
+		XtFree(l_state->buffer);
+		l_state->buffer = (char*)SrcWNL;
+	    }
+	    else if (*l_state->buffer == '\n') {
+		XtFree(l_state->buffer);
+		l_state->buffer = SrcNL;
+	    }
+	}
 
 	if (src->textSrc.undo->r_save) {
 	    r_state = src->textSrc.undo->r_save;
@@ -734,12 +745,18 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 	size = block->format == XawFmtWide ? sizeof(wchar_t) : sizeof(char);
 	total = size * block->length;
 	r_state->length = block->length;
-	if (total) {
+	r_state->buffer = NULL;
+	if (total == size) {
+	    if (r_state->format == XawFmtWide &&
+		*(wchar_t*)block->ptr == *SrcWNL)
+		r_state->buffer = (char*)SrcWNL;
+	    else if (*block->ptr == '\n')
+		r_state->buffer = SrcNL;
+	}
+	if (total && !r_state->buffer) {
 	    r_state->buffer = XtMalloc(total);
 	    memcpy(r_state->buffer, block->ptr, total);
 	}
-	else
-	    r_state->buffer = NULL;
 
 	if (src->textSrc.undo->u_save) {
 	    undo = src->textSrc.undo->u_save;
@@ -795,12 +812,14 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
     if (error != XawEditDone) {
 	if (enable_undo) {
 	    if (l_state->buffer) {
-		XtFree(l_state->buffer);
+		if (l_state->buffer != SrcNL && l_state->buffer != (char*)SrcWNL)
+		    XtFree(l_state->buffer);
 		l_state->buffer = NULL;
 	    }
 	     src->textSrc.undo->l_save = l_state;
 	     if (r_state->buffer) {
-		XtFree(r_state->buffer);
+		if (r_state->buffer != SrcNL && r_state->buffer != (char*)SrcWNL)
+		    XtFree(r_state->buffer);
 		r_state->buffer = NULL;
 	    }
 	    src->textSrc.undo->r_save = r_state;
@@ -1056,7 +1075,8 @@ FreeUndoBuffer(XawTextUndo *undo)
     XawTextUndoList *head, *del;
 
     for (i = 0; i < undo->num_undo; i++) {
-	if (undo->undo[i]->buffer)
+	if (undo->undo[i]->buffer && undo->undo[i]->buffer != SrcNL &&
+	    undo->undo[i]->buffer != (char*)SrcWNL)
 	    XtFree(undo->undo[i]->buffer);
 	XtFree((char*)undo->undo[i]);
     }
@@ -1114,10 +1134,12 @@ UndoGC(XawTextUndo *undo)
 		    redo->left = redo->right;
 		    redo->right = tmp;
 		}
-		if (head->left->buffer)
+		if (head->left->buffer && head->left->buffer != SrcNL &&
+		    head->left->buffer != (char*)SrcWNL)
 		    XtFree(head->left->buffer);
 		XtFree((char*)head->left);
-		if (head->right->buffer)
+		if (head->right->buffer && head->right->buffer != SrcNL &&
+		    head->right->buffer != (char*)SrcWNL)
 		    XtFree(head->right->buffer);
 		XtFree((char*)head->right);
 

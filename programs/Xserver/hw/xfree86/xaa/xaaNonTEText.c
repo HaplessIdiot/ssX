@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.7 1999/07/04 06:39:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.8 1999/07/10 12:17:42 dawes Exp $ */
 
 /********************************************************************
 
@@ -244,7 +244,7 @@ CollectCharacterInfo(
 	glyphs->end = w + (*ppci)->metrics.rightSideBearing;
 	glyphs->yoff = (*ppci)->metrics.ascent;
 	glyphs->height = glyphs->yoff + (*ppci)->metrics.descent;
-	glyphs->srcwidth = BitmapBytePad(glyphs->end - glyphs->start);
+	glyphs->srcwidth = PADGLYPHWIDTHBYTES(glyphs->end - glyphs->start);
 	w += (*ppci)->metrics.characterWidth;
    }
    return w;

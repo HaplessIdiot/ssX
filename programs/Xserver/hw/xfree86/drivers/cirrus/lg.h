@@ -10,7 +10,7 @@
  *  Inspired by cir.h
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg.h,v 1.5 1999/02/28 11:19:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg.h,v 1.6 1999/06/13 15:49:03 dawes Exp $ */
 
 #ifndef LG_H
 #define LG_H
@@ -38,6 +38,8 @@ enum {
     /* Must be last! */
     LG_LAST_REG
 };
+
+#undef FORMAT
 
 typedef struct {
     unsigned char	ExtVga[LG_LAST_REG];

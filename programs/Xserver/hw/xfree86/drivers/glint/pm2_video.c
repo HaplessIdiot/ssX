@@ -1,7 +1,7 @@
 /*
- * Permedia 2 Xv Driver for Elsa Winner Office/2000 and GLoria Synergy
+ * Permedia 2 Xv Driver for Elsa Winner Office/2000 and GLoria Synergy cards
  *
- * Copyright (C) 1998, 1999 Michael Schimek
+ * Copyright (C) 1998, 1999 Michael Schimek <m.schimek@netway.at>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -20,9 +20,21 @@
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Kernel backbone, docs and test/demo applications at
+ * <http://millennium.diads.com/mschimek/pm2>.
+ *
+ * Implementation note: The kernel backbone uses VSA, VSB and DMA (FIFO)
+ * interrupts. It launches Input and Output FIFO DMAs when entered in
+ * xvipcHandshake(). These resources are assumed to be available any time,
+ * the server code must not touch them. All DMA will be completed before
+ * returning from the kernel, no need to test.
+ *
+ * This driver is meant for the on-board video hardware only, no V4L
+ * support in this file.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.10 1999/06/13 05:18:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.11 1999/07/04 06:39:01 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -67,7 +79,6 @@ typedef struct _pm2_xvipc {
 
 static pm2_xvipc xvipc;
 static int xvipc_fd = -1;
-static LocalDevicePtr xvipc_local;
 
 typedef enum {
     OPTION_DEVICE,
@@ -1333,6 +1344,7 @@ Permedia2StopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 {
     PortPrivPtr pPPriv = (PortPrivPtr) data;  
     AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
+    GLINTPtr pGlint = GLINTPTR(pScrn);
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
 	"StopVideo port=%d, exit=%d\n",
@@ -1345,6 +1357,9 @@ Permedia2StopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 	ReallocateOffscreenBuffer(pPPriv, 0);
     } else
 	pPPriv->APO = 750; /* Delay, appx. 30 sec */
+
+    if (pGlint->NoAccel)
+	Permedia2Sync(pScrn);
 }
 
 static void
@@ -1514,7 +1529,7 @@ Permedia2SetPortAttribute(ScrnInfoPtr pScrn,
     return Success;
 }
 
-/* FIXME? Should update attrs via XVIPC too,
+/* Should update attrs via XVIPC too,
  * Xv has XvPortNotify but no DDX equivalent.
  */
 
@@ -1748,7 +1763,9 @@ AdaptorPrivUninit(AdaptorPrivPtr pAPriv)
     xfree(pAPriv);
 }
 
-/* XXX This code appears to assume single head? */
+/* Only a single file for all heads, the device ID is transmitted at initial
+ * handshake and encoded in all subsequent xvipc headers.
+ */
 
 static Bool
 xvipcOpen(char *name, ScrnInfoPtr pScrn)
@@ -1789,7 +1806,13 @@ xvipcOpen(char *name, ScrnInfoPtr pScrn)
 	    break;
 	}
 
-	/* XXX This device should probably be closed when VT switched away. */
+	/* Typical input devices should be closed when VT switched away, but
+	 * this is proprietary IPC between this driver and the kernel driver
+	 * only. Actually, it would be better to continue listening to kernel
+	 * events, at least keeping the file open, to avoid side effects of
+	 * repeated dis- and reconnection, shouldn't hurt.
+	 */
+
 	xf86AddInputHandler(xvipc_fd, Permedia2ReadInput, NULL);
 
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Xv driver connected to %s\n", name);
@@ -1845,14 +1868,18 @@ AdaptorPrivInit(ScrnInfoPtr pScrn)
 	}
 
 	if (xvipc_fd >= 0) {
+	    /* Initial handshake, take over control of this head */
+
 	    xvipc.magic = XVIPC_MAGIC;
-	    xvipc.pm2p = (void *) -1;
-	    xvipc.pAPriv = pAPriv;
+	    xvipc.pm2p = (void *) -1;		/* Kernel head ID */
+	    xvipc.pAPriv = pAPriv;		/* Server head ID */
 	    xvipc.op = OP_CONNECT;
+
 	    xvipc.a = pGlint->PciInfo->bus;
 	    xvipc.b = pGlint->PciInfo->device;
 	    xvipc.c = pGlint->PciInfo->func;
-	    xvipc.d = pScrn->videoRam << 10;
+
+	    xvipc.d = pScrn->videoRam << 10;	/* XF86Config overrides probing */
 
 	    if (ioctl(xvipc_fd, VIDIOC_PM2_XVIPC, (void *) &xvipc) < 0) {
 		if (errno == EBUSY)
@@ -1980,7 +2007,7 @@ Permedia2VideoUninit(ScrnInfoPtr pScrn)
     }
 }
 
-/* Required to retire delayed stop */
+/* Required to retire delayed stop (VT switching away) */
 
 void
 Permedia2VideoReset(ScrnInfoPtr pScrn)

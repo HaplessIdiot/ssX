@@ -1261,7 +1261,7 @@ xedit.c:
  + Fixes xedit.man to avoid problems with accented characters.
 
 
-# 3 Jul 1999
+#2964 3 Jul 1999
 -- Xaw --
  + Fix for problem found in the search/replace dialog when using splitted
    windows in xedit.
@@ -1271,5 +1271,26 @@ xedit.c:
  + Fixed some problems in the undo code of ispell interface.
 
 
+# 10 Jul 1999
+-- Xaw --
+ + Added code to check the return value of XAllocColor and XAllocNamedColor in
+   Pixmap.c.
+ + Reverted back some code, and did a carefull review of the code in TextPop.c
+   to avoid the possibility of calling XawTextDisableRedisplay, and not calling
+   XawTextEnableRedisplay later (due to errors or end of file reached).
+ + Added code to TextSrc.c, to use two static variables, that represent a new
+   line in 8 bits and wchar_t, to avoid allocating memory in the undo buffers
+   to store only a new line.
+ + Small change in the behavior of the Tip widget, to not unmap the tip window
+   when the cursor is moved.
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.27 1999/06/27 14:07:32 dawes Exp $
+-- Xmu --
+ + Fixed a bug and a typo in the XmuToupper macro.
+
+-- xedit --
+ + Small update to the Xedit-sample file.
+ + Fixed a bug in the ispell code that checks for repeated words.
+
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.28 1999/07/04 06:38:25 dawes Exp $

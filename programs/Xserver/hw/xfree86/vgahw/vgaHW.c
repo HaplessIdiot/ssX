@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.26 1999/07/10 12:17:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.27 1999/07/10 14:42:55 dawes Exp $ */
 
 /*
  *
@@ -1447,6 +1447,12 @@ Bool
 vgaHWSetRegCounts(ScrnInfoPtr scrp, int numCRTC, int numSequencer,
 		  int numGraphics, int numAttribute)
 {
+#define VGAHWMINNUM(regtype) \
+	((newMode.num##regtype < regp->num##regtype) ? \
+	 (newMode.num##regtype) : (regp->num##regtype))
+#define VGAHWCOPYREGSET(regtype) \
+	memcpy (newMode.regtype, regp->regtype, VGAHWMINNUM(regtype))
+
     vgaRegRec newMode, newSaved;
     vgaRegPtr regp;
 
@@ -1478,21 +1484,17 @@ vgaHWSetRegCounts(ScrnInfoPtr scrp, int numCRTC, int numSequencer,
 
     /* allocations succeeded, copy register data into new space */
 
-    /*
-     * XXX This assumes that the new num* values are not smaller than the
-     * old ones.
-     */
     regp = &VGAHWPTR(scrp)->ModeReg;
-    memcpy (newMode.CRTC, regp->CRTC, regp->numCRTC);
-    memcpy (newMode.Sequencer, regp->Sequencer, regp->numSequencer);
-    memcpy (newMode.Graphics, regp->Graphics, regp->numGraphics);
-    memcpy (newMode.Attribute, regp->Attribute, regp->numAttribute);
+    VGAHWCOPYREGSET(CRTC);
+    VGAHWCOPYREGSET(Sequencer);
+    VGAHWCOPYREGSET(Graphics);
+    VGAHWCOPYREGSET(Attribute);
 
     regp = &VGAHWPTR(scrp)->SavedReg;
-    memcpy (newSaved.CRTC, regp->CRTC, regp->numCRTC);
-    memcpy (newSaved.Sequencer, regp->Sequencer, regp->numSequencer);
-    memcpy (newSaved.Graphics, regp->Graphics, regp->numGraphics);
-    memcpy (newSaved.Attribute, regp->Attribute, regp->numAttribute);
+    VGAHWCOPYREGSET(CRTC);
+    VGAHWCOPYREGSET(Sequencer);
+    VGAHWCOPYREGSET(Graphics);
+    VGAHWCOPYREGSET(Attribute);
 
     /* free old register arrays */
 
@@ -1505,6 +1507,9 @@ vgaHWSetRegCounts(ScrnInfoPtr scrp, int numCRTC, int numSequencer,
     memcpy(regp, &newSaved, sizeof(vgaRegRec));
 
     return TRUE;
+
+#undef VGAHWMINNUM
+#undef VGAHWCOPYREGSET
 }
 
 

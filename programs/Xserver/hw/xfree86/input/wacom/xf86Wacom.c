@@ -22,13 +22,16 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.10 1999/06/12 15:37:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.11 1999/07/06 11:38:46 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
  *
  * Wacom V protocol work done by Raph Levien <raph@gtk.org> and
  * Frédéric Lepied <lepied@xfree86.org>.
+ *
+ * Many thanks to Dave Fleck from Wacom for the help provided to
+ * build this driver.
  */
 
 /*
@@ -46,7 +49,7 @@
  *
  */
 
-static const char identification[] = "$Identification: 4 $";
+static const char identification[] = "$Identification: 7 $";
 
 #include <xf86Version.h>
 
@@ -100,6 +103,18 @@ static const char identification[] = "$Identification: 4 $";
 static const char *default_options[] =
 {
 	"BaudRate", "9600",
+	"StopBits", "1",
+	"DataBits", "8",
+	"Parity", "None",
+	"Vmin", "1",
+	"Vtime", "10",
+	"FlowControl", "None",
+	NULL
+};
+
+static const char *b19200_options[] =
+{
+	"BaudRate", "19200",
 	"StopBits", "1",
 	"DataBits", "8",
 	"Parity", "None",
@@ -187,6 +202,7 @@ static int      debug_level = 0;
 #define ABSOLUTE_FLAG		8
 #define FIRST_TOUCH_FLAG	16
 #define	KEEP_SHAPE_FLAG		32
+#define BAUD_19200_FLAG		64
 
 /******************************************************************************
  * WacomCommonRec flags
@@ -297,6 +313,7 @@ typedef struct _WacomCommonRec
 #define	BOTTOM_X	12
 #define	BOTTOM_Y	13
 #define	SERIAL		14
+#define	BAUD_RATE	15
 
 #if !defined(sun) || defined(i386)
 static SymTabRec WcmTab[] = {
@@ -315,6 +332,7 @@ static SymTabRec WcmTab[] = {
   { BOTTOM_X,		"bottomx" },
   { BOTTOM_Y,		"bottomy" },
   { SERIAL,		"serial" },
+  { BAUD_RATE,		"baudrate" },
   { -1,			"" }
 };
 
@@ -326,7 +344,7 @@ static SymTabRec ModeTabRec[] = {
   { ABSOLUTE,	"absolute" },
   { -1,		"" }
 };
-  
+
 #endif
 
 #endif /* Pre 3.9 headers */
@@ -340,11 +358,12 @@ static SymTabRec ModeTabRec[] = {
 #define XI_ERASER "ERASER"	/* X device name for the eraser */
 #define MAX_VALUE 100           /* number of positions */
 #define MAXTRY 3                /* max number of try to receive magic number */
-#define MAX_COORD_RES 1270	/* Resolution of the returned MaxX and MaxY */
+#define MAX_COORD_RES 1270.0	/* Resolution of the returned MaxX and MaxY */
 
 #define SYSCALL(call) while(((call) == -1) && (errno == EINTR))
 
-#define WC_RESET_IV	"#\rRE\r" /* reset to wacom IV command set or wacom V reset */
+#define WC_RESET	"\r#" /* reset to wacom IV command set or wacom V reset */
+#define WC_RESET_BAUD	"\r$" /* reset baud rate to default (wacom V) or switch to wacom IIs (wacom IV) */
 #define WC_CONFIG	"~R\r"	/* request a configuration string */
 #define WC_COORD	"~C\r"	/* request max coordinates */
 #define WC_MODEL	"~#\r"	/* request model and ROM version */
@@ -359,24 +378,26 @@ static SymTabRec ModeTabRec[] = {
 #define WC_NO_INCREMENT	"IN0\r"	/* do not enable increment mode */
 #define WC_STREAM_MODE	"SR\r"	/* enable continuous mode */
 #define WC_PRESSURE_MODE "PH1\r" /* enable pressure mode */
-#define WC_STOP		"SP\r"	/* stop sending coordinates */
+#define WC_STOP		"\nSP\r" /* stop sending coordinates */
 #define WC_START	"ST\r"	/* start sending coordinates */
 #define WC_NEW_RESOLUTION "NR"	/* change the resolution */
 
 static const char * setup_string = WC_MULTI WC_UPPER_ORIGIN
- WC_ALL_MACRO WC_NO_MACRO1 WC_RATE WC_NO_INCREMENT WC_STREAM_MODE WC_START;
+ WC_ALL_MACRO WC_NO_MACRO1 WC_RATE WC_NO_INCREMENT WC_STREAM_MODE;
 
 static const char * penpartner_setup_string = WC_PRESSURE_MODE WC_START;
 
 #define WC_V_SINGLE	"MT0\r"
 #define WC_V_MULTI	"MT1\r"
 #define WC_V_ID		"ID1\r"
-#define WC_V_BAUD	"BA19\r"
+#define WC_V_19200	"BA19\r"
+/*  #define WC_V_9600	"BA96\r" */
+#define WC_V_9600	"$\r"
 
 #define WC_RESET_19200	"\r$"	/* reset to 9600 baud */
 #define WC_RESET_19200_IV "\r#"
 
-static const char * intuos_setup_string = WC_V_MULTI WC_V_ID WC_RATE WC_START;
+static const char * intuos_setup_string = WC_V_MULTI WC_V_ID WC_RATE;
 
 #define COMMAND_SET_MASK	0xc0
 #define BAUD_RATE_MASK		0x0a
@@ -671,6 +692,25 @@ xf86WcmConfig(LocalDevicePtr    *array,
 	    if (xf86Verbose)
 		ErrorF("%s Wacom serial number = %u\n", XCONFIG_GIVEN,
 		       priv->serial);
+	    break;
+	    
+	case BAUD_RATE:
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    switch(val->num) {
+		case 19200:
+		    common->wcmFlags = common->wcmFlags | BAUD_19200_FLAG;
+		    break;
+		case 9600:
+		    common->wcmFlags = common->wcmFlags & ~BAUD_19200_FLAG; 
+		    break;
+		default:
+		    xf86ConfigError("Illegal speed value");
+		    break;
+	    }
+	    if (xf86Verbose)
+		ErrorF("%s Wacom baud rate of %u\n", XCONFIG_GIVEN,
+		       val->num);
 	    break;
 	    
 	case EOF:
@@ -1853,6 +1893,24 @@ xf86WcmControlProc(DeviceIntPtr	device,
  *
  ***************************************************************************
  */
+#ifdef XFREE86_V4
+#define WAIT(t)							\
+    err = xf86WaitForInput(-1, ((t) * 1000));			\
+    if (err == -1) {						\
+	ErrorF("Wacom select error : %s\n", strerror(errno));	\
+	return !Success;					\
+    }
+#else
+#define WAIT(t)							\
+    timeout.tv_sec = 0;						\
+    timeout.tv_usec = (t) * 1000;				\
+    SYSCALL(err = select(0, NULL, NULL, NULL, &timeout));	\
+    if (err == -1) {						\
+	ErrorF("Wacom select error : %s\n", strerror(errno));	\
+	return !Success;					\
+    }
+#endif
+
 static Bool
 xf86WcmOpen(LocalDevicePtr	local)
 {
@@ -1883,7 +1941,38 @@ xf86WcmOpen(LocalDevicePtr	local)
     }
 
     DBG(1, ErrorF("initializing tablet\n"));    
+
+    /* Set the speed of the serial link to 19200 */
+#ifdef XFREE86_V4
+   if (xf86SetSerial(local->fd, b19200_options) < 0) {
+       return !Success;
+   }
+#else
+    if (set_serial_speed(local->fd, B19200) == !Success)
+        return !Success;
+#endif
     
+    /* Send reset to the tablet */
+    SYSCALL(err = write(local->fd, WC_RESET_BAUD, strlen(WC_RESET_BAUD)));
+    if (err == -1) {
+	ErrorF("Wacom write error : %s\n", strerror(errno));
+	return !Success;
+    }
+    
+    /* Wait 250 mSecs */
+    WAIT(250);
+
+    /* Send reset to the tablet */
+    SYSCALL(err = write(local->fd, WC_RESET, strlen(WC_RESET)));
+    if (err == -1) {
+	ErrorF("Wacom write error : %s\n", strerror(errno));
+	return !Success;
+    }
+    
+    /* Wait 75 mSecs */
+    WAIT(75);
+
+    /* Set the speed of the serial link to 9600 */
 #ifdef XFREE86_V4
    if (xf86SetSerial(local->fd, local->options) < 0) {
        return !Success;
@@ -1894,45 +1983,40 @@ xf86WcmOpen(LocalDevicePtr	local)
 #endif
     
     /* Send reset to the tablet */
-    SYSCALL(err = write(local->fd, WC_RESET_IV, strlen(WC_RESET_IV)));
+    SYSCALL(err = write(local->fd, WC_RESET_BAUD, strlen(WC_RESET_BAUD)));
     if (err == -1) {
 	ErrorF("Wacom write error : %s\n", strerror(errno));
 	return !Success;
     }
     
-    /* Wait 15 mSecs */
-#ifdef XFREE86_V4
-    err = xf86WaitForInput(-1, 15000);
-#else
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 15000;
-    SYSCALL(err = select(0, NULL, NULL, NULL, &timeout));
-#endif
-    if (err == -1) {
-	ErrorF("Wacom select error : %s\n", strerror(errno));
-	return !Success;
-    }
+    /* Wait 250 mSecs */
+    WAIT(250);
 
-    SYSCALL(err = write(local->fd, WC_START, strlen(WC_START)));
+    SYSCALL(err = write(local->fd, WC_STOP, strlen(WC_STOP)));
     if (err == -1) {
 	ErrorF("Wacom write error : %s\n", strerror(errno));
 	return !Success;
     }
+
+    /* Wait 30 mSecs */
+    WAIT(30);
 
 #ifdef XFREE86_V4
     xf86FlushInput(local->fd);
 #else
     flush_input_fd(local->fd);
 #endif
-    
+
     DBG(2, ErrorF("reading model\n"));
-    if (!send_request(local->fd, WC_MODEL, buffer)) 
+    if (!send_request(local->fd, WC_MODEL, buffer)) {
 	return !Success;
+    }
     DBG(2, ErrorF("%s\n", buffer));
   
-    if (xf86Verbose)
+    if (xf86Verbose) {
 	ErrorF("%s Wacom tablet model : %s\n", XCONFIG_PROBED, buffer+2);
-
+    }
+    
     /* Answer is in the form ~#Tablet-Model VRom_Version */
     /* look for the first V from the end of the string */
     /* this seems to be the better way to find the version of the ROM */
@@ -1978,7 +2062,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 	 * config header don't use buffer+xx because the header size
 	 * varies on different tablets
 	 */
-	if (sscanf(buffer, "%[^,],%d,%d,%d,%d", header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
+	if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
 	    DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
 	}
 	else {
@@ -1994,13 +2078,36 @@ xf86WcmOpen(LocalDevicePtr	local)
 	ErrorF("WACOM: unable to read max coordinates. Using default.\n");
     }
 
+    DBG(2, ErrorF("setup is max X=%d max Y=%d resol X=%d resol Y=%d\n",
+		  common->wcmMaxX, common->wcmMaxY, common->wcmResolX,
+		  common->wcmResolY));
+  
     if (!is_a_penpartner && common->wcmProtocolLevel == 4) {
-	/*
-	 * Force the resolution.
+	/* Force the resolution.
 	 */
+        if (((float)version) >= 1.2) {
+	    common->wcmResolY = common->wcmResolX = 2540;
+	}
 	sprintf(buffer, "%s%d\r", WC_NEW_RESOLUTION, common->wcmResolX);
 	SYSCALL(err = write(local->fd, buffer, strlen(buffer)));
 	
+	/* Verify the resolution change.
+	 */
+	DBG(2, ErrorF("rereading config\n"));
+	if (!send_request(local->fd, WC_CONFIG, buffer))
+	    return !Success;
+	DBG(2, ErrorF("%s\n", buffer));
+	/* The header string is simply a place to put the unwanted
+	 * config header don't use buffer+xx because the header size
+	 * varies on different tablets
+	 */
+	if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
+	    DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
+	}
+	else {
+	    ErrorF("WACOM: unable to reread resolution. Using default.\n");
+	}
+
 	/* The following couple of lines convert the MaxX and MaxY returned by
 	 * the Wacom from 1270lpi to the Wacom's active resolution.
 	 */
@@ -2018,6 +2125,8 @@ xf86WcmOpen(LocalDevicePtr	local)
 			    strlen(penpartner_setup_string)));
     }
     else if (common->wcmProtocolLevel == 4) {
+        SYSCALL(err = write(local->fd, WC_RESET, strlen(WC_RESET)));
+	WAIT(75);
 	SYSCALL(err = write(local->fd, setup_string, strlen(setup_string)));
     }
     else {
@@ -2075,6 +2184,44 @@ xf86WcmOpen(LocalDevicePtr	local)
   
     if (err <= 0) {
 	SYSCALL(close(local->fd));
+	return !Success;
+    }
+
+    /* change the serial speed if requested */
+    if (common->wcmFlags & BAUD_19200_FLAG) {
+	if (common->wcmProtocolLevel == 5) {
+	    DBG(1, ErrorF("Switching serial link to 19200\n"));
+	    
+	    /* Switch the tablet to 19200 */
+	    SYSCALL(err = write(local->fd, WC_V_19200, strlen(WC_V_19200)));
+	    if (err == -1) {
+		ErrorF("Wacom write error : %s\n", strerror(errno));
+		return !Success;
+	    }
+	    
+	    /* Wait 75 mSecs */
+	    WAIT(75);
+    
+	    /* Set the speed of the serial link to 19200 */
+#ifdef XFREE86_V4
+	    if (xf86SetSerial(local->fd, b19200_options) < 0) {
+		return !Success;
+	    }
+#else
+	    if (set_serial_speed(local->fd, B19200) == !Success)
+		return !Success;
+#endif
+	}
+	else {
+	    ErrorF("Changing the speed of a wacom IV device is not yet implemented\n");
+	}
+    }
+
+    /* Tell the tablet to start sending coordinates */
+    SYSCALL(err = write(local->fd, WC_START, strlen(WC_START)));
+
+    if (err == -1) {
+	ErrorF("Wacom write error : %s\n", strerror(errno));
 	return !Success;
     }
 
@@ -2850,7 +2997,26 @@ xf86WcmInit(InputDriverPtr	drv,
 	xf86Msg(X_CONFIG, "%s: serial number = %u\n", dev->identifier,
 		priv->serial);
     }
-	    
+
+    {
+	int	val;
+	val = xf86SetIntOption(local->options, "BaudRate", 0);
+
+	switch(val) {
+	case 19200:
+	    common->wcmFlags = common->wcmFlags | BAUD_19200_FLAG;
+	    break;
+	case 9600:
+	    common->wcmFlags = common->wcmFlags & ~BAUD_19200_FLAG; 
+	    break;
+	default:
+	    xf86Msg(X_ERROR, "%s: Illegal speed value (must be 9600 or 19200).", dev->identifier);
+	    break;
+	}
+	if (xf86Verbose)
+	    xf86Msg(X_CONFIG, "%s: serial speed %u\n", dev->identifier,
+		    val);
+    }
     /* mark the device configured */
     local->flags |= XI86_CONFIGURED;
 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # Generate keysym2ucs.c file
 #
-# $XFree86: xc/programs/xterm/unicode/convmap.pl,v 1.2 1999/06/20 08:41:49 dawes Exp $
+# $XFree86: xc/programs/xterm/unicode/convmap.pl,v 1.3 1999/06/27 14:08:47 dawes Exp $
 
 sub utf8 ($) {
     my $c = shift(@_);
@@ -146,7 +146,7 @@ print <<EOT;
 long keysym2ucs(KeySym keysym)
 {
     int min = 0;
-    int max = sizeof(keysymtab) / sizeof(struct codepair);
+    int max = sizeof(keysymtab) / sizeof(struct codepair) - 1;
     int mid;
 
     /* first check for Latin-1 characters (1:1 mapping) */

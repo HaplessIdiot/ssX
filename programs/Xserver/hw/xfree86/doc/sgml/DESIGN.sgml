@@ -30,7 +30,7 @@
 <date>Last modified 6 July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.5 1999/07/07 12:05:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.6 1999/07/10 12:17:24 dawes Exp $
 </ident>
 
 
@@ -5312,13 +5312,12 @@ programming the standard VGA registers, and for handling VGA colourmaps.
 		&f.indent;int numSequencer, int numGraphics, int numAttribute)&e.code;
     <quote><p>
       This function allows the number of CRTC, Sequencer, Graphics and
-      Attribute registers to be set to a value higher than the defaults.
-      This makes it possible for extended registers to be saved and
-      restored with &s.code;vgaHWSave()&e.code; and
-      &s.code;vgaHWRestore()&e.code;.  This function should be called
-      after a &s.code;vgaHWRec&e.code; has been allocated with
-      &s.code;vgaHWGetHWRec()&e.code;.  The default values are defined
-      in &s.code;vgaHW.h&e.code; as follows:
+      Attribute registers to be changed.  This makes it possible for
+      extended registers to be saved and restored with
+      &s.code;vgaHWSave()&e.code; and &s.code;vgaHWRestore()&e.code;.
+      This function should be called after a &s.code;vgaHWRec&e.code;
+      has been allocated with &s.code;vgaHWGetHWRec()&e.code;.  The
+      default values are defined in &s.code;vgaHW.h&e.code; as follows:
 
       <quote><verb>
 #define VGA_NUM_CRTC 25

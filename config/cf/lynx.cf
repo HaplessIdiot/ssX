@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.27 1999/04/04 08:45:58 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.28 1999/04/25 10:01:02 dawes Exp $
 
 
 #ifndef OSName
@@ -192,7 +192,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 
 #if (defined(i386Architecture) || defined(PpcArchitecture)) && (OSMajorVersion > 2 || OSMinorVersion > 2)
-# define DoLoadableServer	YES
+# ifndef DoLoadableServer
+#  define DoLoadableServer	YES
+# endif
 #endif
 
 /* 3.0 ships with a useable Tcl/Tk for XF86Setup */

@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.26 1999/04/29 09:14:05 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.27 1999/06/13 13:47:58 dawes Exp $ */
 
 /***********************************************************
 
@@ -104,9 +104,6 @@ char *ttyname(int fd) { return "/dev/tty"; }
 
 extern char *strindex ();
 
-#undef  CTRL
-#define	CTRL(c)	((c) & 0x1f)
-
 static SIGNAL_T reapchild (int n);
 static char *base_name (char *name);
 static int pty_search (int *pty);
@@ -127,13 +124,13 @@ static struct termio d_tio;
 
 /* allow use of system default characters if defined and reasonable */
 #ifndef CEOF
-#define CEOF     CTRL('D')
+#define CEOF     CONTROL('D')
 #endif
 #ifndef CSUSP
-#define CSUSP    CTRL('Z')
+#define CSUSP    CONTROL('Z')
 #endif
 #ifndef CQUIT
-#define CQUIT    CTRL('\\')
+#define CQUIT    CONTROL('\\')
 #endif
 #ifndef CEOL
 #define CEOL 0
@@ -145,22 +142,22 @@ static struct termio d_tio;
 #define CSWTCH 0
 #endif
 #ifndef CLNEXT
-#define CLNEXT   CTRL('V')
+#define CLNEXT   CONTROL('V')
 #endif
 #ifndef CWERASE
-#define CWERASE  CTRL('W')
+#define CWERASE  CONTROL('W')
 #endif
 #ifndef CRPRNT
-#define CRPRNT   CTRL('R')
+#define CRPRNT   CONTROL('R')
 #endif
 #ifndef CFLUSH
-#define CFLUSH   CTRL('O')
+#define CFLUSH   CONTROL('O')
 #endif
 #ifndef CSTOP
-#define CSTOP    CTRL('S')
+#define CSTOP    CONTROL('S')
 #endif
 #ifndef CSTART
-#define CSTART   CTRL('Q')
+#define CSTART   CONTROL('Q')
 #endif
 
 /*
@@ -874,9 +871,9 @@ main (int argc, char **argv, char **envp)
     	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
     	d_tio.c_lflag = ISIG|ICANON|ECHO|ECHOE|ECHOK;
 	d_tio.c_line = 0;
-	d_tio.c_cc[VINTR] = CTRL('C');		/* '^C'	*/
+	d_tio.c_cc[VINTR] = CONTROL('C');	/* '^C'	*/
 	d_tio.c_cc[VERASE] = 0x7f;		/* DEL	*/
-	d_tio.c_cc[VKILL] = CTRL('U');		/* '^U'	*/
+	d_tio.c_cc[VKILL] = CONTROL('U');	/* '^U'	*/
 	d_tio.c_cc[VQUIT] = CQUIT;		/* '^\'	*/
     	d_tio.c_cc[VEOF] = CEOF;		/* '^D'	*/
 	d_tio.c_cc[VEOL] = CEOL;		/* '^@'	*/
@@ -1850,7 +1847,7 @@ static int parse_tty_modes (char *s, struct _xttymodes *modelist)
 
 	if (*s == '^') {
 	    s++;
-	    c = ((*s == '?') ? 0177 : CTRL(*s));
+	    c = ((*s == '?') ? 0177 : CONTROL(*s));
 	    if (*s == '-') {
 		errno = 0;
 		c = fpathconf(0, _PC_VDISABLE);
