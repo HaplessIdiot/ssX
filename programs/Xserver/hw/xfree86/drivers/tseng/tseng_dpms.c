@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.1 1997/06/15 23:23:28 dawes Exp $ */
 
 #ifdef DPMSExtension
 
@@ -17,7 +17,8 @@
  *
  * '97 Harald Nordgård Hansen
  */
-static void TsengCrtcDPMSSet(Mode)
+void
+TsengCrtcDPMSSet(Mode)
      CARD16 Mode;
 {
   unsigned char seq1, crtc34;
@@ -94,7 +95,8 @@ static void TsengCrtcDPMSSet(Mode)
  * _beyond_ the total H or V counter range, which causes the sync to never
  * toggle.
  */
-static void TsengHVSyncDPMSSet(Mode)
+void
+TsengHVSyncDPMSSet(Mode)
      CARD16 Mode;
 {
   unsigned char seq1, tmpb;
