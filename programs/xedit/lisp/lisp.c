@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.85tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.86 2003/04/27 18:17:33 tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -1415,10 +1415,10 @@ LispDecrementAtomReference(LispAtom *atom)
 	/* if atom->property is NOPROPERTY, this is an unbound symbol */
 	return;
 
-    --atom->property->refcount;
-
-    if (atom->property->refcount < 0)
+    if (atom->property->refcount <= 0)
 	LispDestroy("internal error at DECREMENT-ATOM-REFERENCE");
+
+    --atom->property->refcount;
 
     if (atom->property->refcount == 0) {
 	LispRemAtomAllProperties(atom);
