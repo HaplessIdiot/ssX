@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.416 2000/02/14 18:11:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.417 2000/02/16 15:36:26 dawes Exp $ */
 
-#define XF86_VERSION " 3.9.17Z "
+#define XF86_VERSION " 3.9.18 "
 
 /* The finer points in versions... */
 #define XF86_VERSION_MAJOR	3
