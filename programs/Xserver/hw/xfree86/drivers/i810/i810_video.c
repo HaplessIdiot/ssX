@@ -1,0 +1,999 @@
+/***************************************************************************
+ 
+Copyright 2000 Intel Corporation.  All Rights Reserved. 
+
+Permission is hereby granted, free of charge, to any person obtaining a 
+copy of this software and associated documentation files (the 
+"Software"), to deal in the Software without restriction, including 
+without limitation the rights to use, copy, modify, merge, publish, 
+distribute, sub license, and/or sell copies of the Software, and to 
+permit persons to whom the Software is furnished to do so, subject to 
+the following conditions: 
+
+The above copyright notice and this permission notice (including the 
+next paragraph) shall be included in all copies or substantial portions 
+of the Software. 
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. 
+IN NO EVENT SHALL INTEL, AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, 
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR 
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+**************************************************************************/
+
+/*
+ * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
+ *
+ * Authors: 
+ * 	Jonathan Bian <jonathan.bian@intel.com>
+ *
+ * Notes:
+ * 	This module currently allocates 810KB out of "SysMem" for the YUV 
+ * 	buffers.  This should be OK as the 2D does not use a big pixmap cache
+ * 	as the other drivers do.  If this ever becomes a problem then it 
+ * 	could be changed to allocate the buffers on-demand in I810PutImage() 
+ * 	in the future ...
+ *
+ */
+
+#include "xf86.h"
+#include "xf86_OSproc.h"
+#include "xf86Resources.h"
+#include "xf86_ansic.h"
+#include "compiler.h"
+#include "xf86PciInfo.h"
+#include "xf86Pci.h"
+#include "xf86fbman.h"
+#include "regionstr.h"
+
+#include "i810.h"
+#include "xf86xv.h"
+#include "Xv.h"
+#include "xaa.h"
+#include "xaalocal.h"
+#include "dixstruct.h"
+
+#define OFF_DELAY 	200  /* milliseconds */
+#define FREE_DELAY 	60000
+
+#define OFF_TIMER 	0x01
+#define FREE_TIMER	0x02
+#define CLIENT_VIDEO_ON	0x04
+
+#define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
+
+static XF86VideoAdaptorPtr I810SetupImageVideo(ScreenPtr);
+static void I810StopVideo(ScrnInfoPtr, pointer, Bool);
+static int I810SetPortAttribute(ScrnInfoPtr, Atom, INT32, pointer);
+static int I810GetPortAttribute(ScrnInfoPtr, Atom ,INT32 *, pointer);
+static void I810QueryBestSize(ScrnInfoPtr, Bool,
+	short, short, short, short, unsigned int *, unsigned int *, pointer);
+static int I810PutImage( ScrnInfoPtr, 
+	short, short, short, short, short, short, short, short,
+	int, unsigned char*, short, short, Bool, RegionPtr, pointer);
+static int I810QueryImageAttributes(ScrnInfoPtr, 
+	int, unsigned short *, unsigned short *,  int *, int *);
+
+static void I810BlockHandler(int, pointer, pointer, pointer);
+
+#define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
+
+static Atom xvBrightness, xvContrast, xvColorKey;
+
+#define IMAGE_MAX_WIDTH		720
+#define IMAGE_MAX_HEIGHT	576
+#define Y_BUF_SIZE		(IMAGE_MAX_WIDTH * IMAGE_MAX_HEIGHT)
+
+#define OVERLAY_UPDATE(p)	OUTREG(0x30000, p | 0x80000000);
+
+/*
+ * OV0CMD - Overlay Command Register
+ */
+#define	VERTICAL_CHROMINANCE_FILTER 	0x70000000
+#define VC_SCALING_OFF		0x00000000
+#define VC_LINE_REPLICATION	0x10000000
+#define VC_UP_INTERPOLATION	0x20000000
+#define VC_PIXEL_DROPPING	0x50000000
+#define VC_DOWN_INTERPOLATION	0x60000000
+#define VERTICAL_LUMINANCE_FILTER	0x0E000000
+#define VL_SCALING_OFF		0x00000000
+#define VL_LINE_REPLICATION	0x02000000
+#define VL_UP_INTERPOLATION	0x04000000
+#define VL_PIXEL_DROPPING	0x0A000000
+#define VL_DOWN_INTERPOLATION	0x0C000000
+#define	HORIZONTAL_CHROMINANCE_FILTER 	0x01C00000
+#define HC_SCALING_OFF		0x00000000
+#define HC_LINE_REPLICATION	0x00400000
+#define HC_UP_INTERPOLATION	0x00800000
+#define HC_PIXEL_DROPPING	0x01400000
+#define HC_DOWN_INTERPOLATION	0x01800000
+#define HORIZONTAL_LUMINANCE_FILTER	0x00380000
+#define HL_SCALING_OFF		0x00000000
+#define HL_LINE_REPLICATION	0x00080000
+#define HL_UP_INTERPOLATION	0x00100000
+#define HL_PIXEL_DROPPING	0x00280000
+#define HL_DOWN_INTERPOLATION	0x00300000
+
+#define Y_ADJUST			0x00010000	
+#define SOURCE_FORMAT			0x00003C00
+#define	RGB_555			0x00000800
+#define	RGB_565			0x00000C00
+#define	YUV_422			0x00002000
+#define	YUV_411			0x00002400
+#define	YUV_420			0x00003000
+#define	YUV_410			0x00003800
+#define OVERLAY_ENABLE			0x00000001
+
+#define MINUV_SCALE	0x1
+
+void I810InitVideo(ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
+    XF86VideoAdaptorPtr newAdaptor = NULL;
+    int num_adaptors;
+	
+    if (pScrn->bitsPerPixel != 8) 
+    {
+	newAdaptor = I810SetupImageVideo(pScreen);
+    }
+
+    num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
+
+    if(newAdaptor) {
+	if(!num_adaptors) {
+	    num_adaptors = 1;
+	    adaptors = &newAdaptor;
+	} else {
+	    newAdaptors =  /* need to free this someplace */
+		xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr*));
+	    if(newAdaptors) {
+		memcpy(newAdaptors, adaptors, num_adaptors * 
+					sizeof(XF86VideoAdaptorPtr));
+		newAdaptors[num_adaptors] = newAdaptor;
+		adaptors = newAdaptors;
+		num_adaptors++;
+	    }
+	}
+    }
+
+    if(num_adaptors)
+        xf86XVScreenInit(pScreen, adaptors, num_adaptors);
+
+    if(newAdaptors)
+	xfree(newAdaptors);
+}
+
+/* client libraries expect an encoding */
+static XF86VideoEncodingRec DummyEncoding[1] =
+{
+ {
+   0,
+   "XV_IMAGE",
+   IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT,
+   {1, 1}
+ }
+};
+
+#define NUM_FORMATS 2
+
+static XF86VideoFormatRec Formats[NUM_FORMATS] = 
+{
+   {16, TrueColor}, {24, TrueColor}
+};
+
+#define NUM_ATTRIBUTES 3
+
+static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
+{
+   {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"},
+   {XvSettable | XvGettable, -128, 127, "XV_BRIGHTNESS"},
+   {XvSettable | XvGettable, 0, 255, "XV_CONTRAST"}
+};
+
+#define NUM_IMAGES 2
+
+static XF86ImageRec Images[NUM_IMAGES] =
+{
+   {
+	0x32595559,
+        XvYUV,
+	LSBFirst,
+	{'Y','U','Y','2',
+	  0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
+	16,
+	XvPacked,
+	1,
+	0, 0, 0, 0 ,
+	8, 8, 8, 
+	1, 2, 2,
+	1, 1, 1,
+	{'Y','U','Y','V',
+	  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	XvTopToBottom
+   },
+   {
+	0x32315659,
+        XvYUV,
+	LSBFirst,
+	{'Y','V','1','2',
+	  0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
+	12,
+	XvPlanar,
+	3,
+	0, 0, 0, 0 ,
+	8, 8, 8, 
+	1, 2, 2,
+	1, 2, 2,
+	{'Y','V','U',
+	  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	XvTopToBottom
+   }
+};
+
+typedef struct {
+    CARD32 OBUF_0Y;
+    CARD32 OBUF_1Y;
+    CARD32 OBUF_0U;
+    CARD32 OBUF_0V;
+    CARD32 OBUF_1U;
+    CARD32 OBUF_1V;
+    CARD32 OV0STRIDE;
+    CARD32 YRGB_VPH;
+    CARD32 UV_VPH;
+    CARD32 HORZ_PH;
+    CARD32 INIT_PH;
+    CARD32 DWINPOS;
+    CARD32 DWINSZ;
+    CARD32 SWID;
+    CARD32 SWIDQW;
+    CARD32 SHEIGHT;
+    CARD32 YRGBSCALE;
+    CARD32 UVSCALE;
+    CARD32 OV0CLRC0;
+    CARD32 OV0CLRC1;
+    CARD32 DCLRKV;
+    CARD32 DCLRKM;
+    CARD32 SCLRKVH;
+    CARD32 SCLRKVL;
+    CARD32 SCLRKM;
+    CARD32 OV0CONF;
+    CARD32 OV0CMD;
+} I810OverlayRegRec, *I810OverlayRegPtr;
+
+typedef struct {
+	CARD32       YBufVirtAddr;
+	CARD32       UBufVirtAddr;
+	CARD32       VBufVirtAddr;
+
+	unsigned char brightness;
+	unsigned char contrast;
+
+	RegionRec    clip;
+	CARD32       colorKey;
+
+	CARD32       videoStatus;
+	Time         offTime;
+	Time         freeTime;
+} I810PortPrivRec, *I810PortPrivPtr;        
+
+#define GET_PORT_PRIVATE(pScrn) \
+   (I810PortPrivPtr)((I810PTR(pScrn))->adaptor->pPortPrivates[0].ptr)
+
+void I810ResetVideo(ScrnInfoPtr pScrn) 
+{
+    I810Ptr pI810 = I810PTR(pScrn);
+    I810PortPrivPtr pPriv = pI810->adaptor->pPortPrivates[0].ptr;
+    I810OverlayRegPtr overlay = (I810OverlayRegPtr) (pI810->FbBase + pI810->OverlayStart); 
+
+    /*
+     * Default to maximum image size in YV12
+     */
+
+    overlay->OBUF_0Y = pI810->OverlayBuf.Start;
+    overlay->OBUF_1Y = 0;
+    overlay->OBUF_0U = overlay->OBUF_0Y + Y_BUF_SIZE;
+    overlay->OBUF_0V = overlay->OBUF_0U + (Y_BUF_SIZE >> 2);
+    overlay->OBUF_1U = 0;
+    overlay->OBUF_1V = 0;
+    overlay->OV0STRIDE = IMAGE_MAX_WIDTH | (IMAGE_MAX_WIDTH << 15); /* YV12 */
+    overlay->YRGB_VPH = 0;
+    overlay->UV_VPH = 0;
+    overlay->HORZ_PH = 0;
+    overlay->INIT_PH = 0;
+    overlay->DWINPOS = 0;
+    overlay->DWINSZ = (IMAGE_MAX_HEIGHT << 16) | IMAGE_MAX_WIDTH; 
+    overlay->SWID =  IMAGE_MAX_WIDTH | (IMAGE_MAX_WIDTH << 15);       
+    overlay->SWIDQW = (IMAGE_MAX_WIDTH >> 3) | (IMAGE_MAX_WIDTH << 12);
+    overlay->SHEIGHT = IMAGE_MAX_HEIGHT | (IMAGE_MAX_HEIGHT << 15);
+    overlay->YRGBSCALE = 0x80004000; /* scale factor 1 */
+    overlay->UVSCALE = 0x80004000; /* scale factor 1 */
+    overlay->OV0CLRC0 = 0x4000; /* brightness: 0 contrast: 1.0 */
+    overlay->OV0CLRC1 = 0x80; /* saturation: bypass */
+    overlay->DCLRKV = 0; /* destination color key: 0 */
+    overlay->DCLRKM = 0x80FFFFFF; /* destination color key enable */
+    overlay->SCLRKVH = 0;
+    overlay->SCLRKVL = 0;
+    overlay->SCLRKM = 0; /* source color key disable */
+    overlay->OV0CONF = 0; /* two 720 pixel line buffers */ 
+
+    overlay->OV0CMD = VC_UP_INTERPOLATION | HC_UP_INTERPOLATION | Y_ADJUST |
+		      YUV_420;
+
+    OVERLAY_UPDATE(pI810->OverlayPhysical);
+}
+
+
+static XF86VideoAdaptorPtr 
+I810SetupImageVideo(ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    I810Ptr pI810 = I810PTR(pScrn);
+    XF86VideoAdaptorPtr adapt;
+    I810PortPrivPtr pPriv;
+
+    if(!(adapt = xcalloc(1, sizeof(XF86VideoAdaptorRec) +
+			    sizeof(I810PortPrivRec) +
+			    sizeof(DevUnion))))
+	return NULL;
+
+    adapt->type = XvWindowMask | XvInputMask | XvImageMask;
+    adapt->flags = VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT;
+    adapt->name = "I810 Video Overlay";
+    adapt->nEncodings = 1;
+    adapt->pEncodings = DummyEncoding;
+    adapt->nFormats = NUM_FORMATS;
+    adapt->pFormats = Formats;
+    adapt->nPorts = 1;
+    adapt->pPortPrivates = (DevUnion*)(&adapt[1]);
+
+    pPriv = (I810PortPrivPtr)(&adapt->pPortPrivates[1]);
+
+    adapt->pPortPrivates[0].ptr = (pointer)(pPriv);
+    adapt->pAttributes = Attributes;
+    adapt->nImages = 2;
+    adapt->nAttributes = 3;
+    adapt->pImages = Images;
+    adapt->PutVideo = NULL;
+    adapt->PutStill = NULL;
+    adapt->GetVideo = NULL;
+    adapt->GetStill = NULL;
+    adapt->StopVideo = I810StopVideo;
+    adapt->SetPortAttribute = I810SetPortAttribute;
+    adapt->GetPortAttribute = I810GetPortAttribute;
+    adapt->QueryBestSize = I810QueryBestSize;
+    adapt->PutImage = I810PutImage;
+    adapt->QueryImageAttributes = I810QueryImageAttributes;
+
+    pPriv->colorKey = 0;
+    pPriv->videoStatus = 0;
+    pPriv->brightness = 0;
+    pPriv->contrast = 128;
+
+#ifndef XF86DRI
+    if (!I810AllocHigh(&(pI810->OverlayBuf), &(pI810->SysMem), Y_BUF_SIZE*2))
+	return NULL;
+#endif
+
+    if(!pI810->OverlayBuf.Start)
+	return NULL;
+
+    pPriv->YBufVirtAddr = (CARD32) (pI810->FbBase + pI810->OverlayBuf.Start);
+    pPriv->UBufVirtAddr = pPriv->YBufVirtAddr + Y_BUF_SIZE;
+    pPriv->VBufVirtAddr = pPriv->UBufVirtAddr + (Y_BUF_SIZE >> 2);
+    
+    /* gotta uninit this someplace */
+    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
+
+    pI810->adaptor = adapt;
+
+    pI810->BlockHandler = pScreen->BlockHandler;
+    pScreen->BlockHandler = I810BlockHandler;
+
+    xvBrightness = MAKE_ATOM("XV_BRIGHTNESS");
+    xvContrast   = MAKE_ATOM("XV_CONTRAST");
+    xvColorKey   = MAKE_ATOM("XV_COLORKEY");
+
+    I810ResetVideo(pScrn);
+
+    return adapt;
+}
+
+
+static Bool
+RegionsEqual(RegionPtr A, RegionPtr B)
+{
+    int *dataA, *dataB;
+    int num;
+
+    num = REGION_NUM_RECTS(A);
+    if(num != REGION_NUM_RECTS(B))
+	return FALSE;
+
+    if((A->extents.x1 != B->extents.x1) ||
+       (A->extents.x2 != B->extents.x2) ||
+       (A->extents.y1 != B->extents.y1) ||
+       (A->extents.y2 != B->extents.y2))
+	return FALSE;
+
+    dataA = (int*)REGION_RECTS(A);
+    dataB = (int*)REGION_RECTS(B);
+
+    while(num--) {
+	if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
+	   return FALSE;
+	dataA += 2; 
+	dataB += 2;
+    }
+
+    return TRUE;
+}
+
+
+/* I810ClipVideo -  
+
+   Takes the dst box in standard X BoxRec form (top and left
+   edges inclusive, bottom and right exclusive).  The new dst
+   box is returned.  The source boundaries are given (x1, y1 
+   inclusive, x2, y2 exclusive) and returned are the new source 
+   boundaries in 16.16 fixed point. 
+*/
+
+static void
+I810ClipVideo(
+  BoxPtr dst, 
+  INT32 *x1, 
+  INT32 *x2, 
+  INT32 *y1, 
+  INT32 *y2,
+  BoxPtr extents,            /* extents of the clip region */
+  INT32 width, 
+  INT32 height
+){
+    INT32 vscale, hscale, delta;
+    int diff;
+
+    hscale = ((*x2 - *x1) << 16) / (dst->x2 - dst->x1);
+    vscale = ((*y2 - *y1) << 16) / (dst->y2 - dst->y1);
+
+    *x1 <<= 16; *x2 <<= 16;
+    *y1 <<= 16; *y2 <<= 16;
+
+    diff = extents->x1 - dst->x1;
+    if(diff > 0) {
+	dst->x1 = extents->x1;
+	*x1 += diff * hscale;     
+    }
+    diff = dst->x2 - extents->x2;
+    if(diff > 0) {
+	dst->x2 = extents->x2;
+	*x2 -= diff * hscale;     
+    }
+    diff = extents->y1 - dst->y1;
+    if(diff > 0) {
+	dst->y1 = extents->y1;
+	*y1 += diff * vscale;     
+    }
+    diff = dst->y2 - extents->y2;
+    if(diff > 0) {
+	dst->y2 = extents->y2;
+	*y2 -= diff * vscale;     
+    }
+
+    if(*x1 < 0) {
+	diff =  (- *x1 + hscale - 1)/ hscale;
+	dst->x1 += diff;
+	*x1 += diff * hscale;
+    }
+    delta = *x2 - (width << 16);
+    if(delta > 0) {
+	diff = (delta + hscale - 1)/ hscale;
+	dst->x2 -= diff;
+	*x2 -= diff * hscale;
+    }
+    if(*y1 < 0) {
+	diff =  (- *y1 + vscale - 1)/ vscale;
+	dst->y1 += diff;
+	*y1 += diff * vscale;
+    }
+    delta = *y2 - (height << 16);
+    if(delta > 0) {
+	diff = (delta + vscale - 1)/ vscale;
+	dst->y2 -= diff;
+	*y2 -= diff * vscale;
+    }
+} 
+
+static void 
+I810StopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
+{
+  I810PortPrivPtr pPriv = (I810PortPrivPtr)data;
+  I810Ptr pI810 = I810PTR(pScrn);
+
+  I810OverlayRegPtr overlay = (I810OverlayRegPtr) (pI810->FbBase + pI810->OverlayStart); 
+
+  REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
+
+  if(exit) {
+     if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
+	overlay->OV0CMD &= 0xFFFFFFFE;
+	OVERLAY_UPDATE(pI810->OverlayPhysical);
+     }
+     pPriv->videoStatus = 0;
+  } else {
+     if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
+	pPriv->videoStatus |= OFF_TIMER;
+	pPriv->offTime = currentTime.milliseconds + OFF_DELAY; 
+     }
+  }
+
+}
+
+static int 
+I810SetPortAttribute(
+  ScrnInfoPtr pScrn, 
+  Atom attribute,
+  INT32 value, 
+  pointer data
+){
+  I810PortPrivPtr pPriv = (I810PortPrivPtr)data;
+  I810Ptr pI810 = I810PTR(pScrn);
+  I810OverlayRegPtr overlay = (I810OverlayRegPtr) (pI810->FbBase + pI810->OverlayStart); 
+
+  if(attribute == xvBrightness) {
+	if((value < -128) || (value > 127))
+	   return BadValue;
+	pPriv->brightness = value;
+	overlay->OV0CLRC0 &= 0xFFFFFF00;
+	overlay->OV0CLRC0 |= value;
+	OVERLAY_UPDATE(pI810->OverlayPhysical);
+  } else
+  if(attribute == xvContrast) {
+	if((value < 0) || (value > 255))
+	   return BadValue;
+	pPriv->contrast = value;
+	overlay->OV0CLRC0 &= 0xFFFE00FF;
+	overlay->OV0CLRC0 |= value << 9;
+	OVERLAY_UPDATE(pI810->OverlayPhysical);
+  } else
+  if(attribute == xvColorKey) {
+	pPriv->colorKey = value;
+	overlay->DCLRKV = value;
+	OVERLAY_UPDATE(pI810->OverlayPhysical);
+	REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
+  } else return BadMatch;
+
+  return Success;
+}
+
+static int 
+I810GetPortAttribute(
+  ScrnInfoPtr pScrn, 
+  Atom attribute,
+  INT32 *value, 
+  pointer data
+){
+  I810PortPrivPtr pPriv = (I810PortPrivPtr)data;
+
+  if(attribute == xvBrightness) {
+	*value = pPriv->brightness;
+  } else
+  if(attribute == xvContrast) {
+	*value = pPriv->contrast;
+  } else
+  if(attribute == xvColorKey) {
+	*value = pPriv->colorKey;
+  } else return BadMatch;
+
+  return Success;
+}
+
+static void 
+I810QueryBestSize(
+  ScrnInfoPtr pScrn, 
+  Bool motion,
+  short vid_w, short vid_h, 
+  short drw_w, short drw_h, 
+  unsigned int *p_w, unsigned int *p_h, 
+  pointer data
+){
+  *p_w = drw_w;
+  *p_h = drw_h; 
+
+  if(*p_w > 16384) *p_w = 16384;
+}
+
+
+static void
+I810CopyPackedData(
+   ScrnInfoPtr pScrn, 
+   unsigned char *buf,
+   int srcPitch,
+   int top,
+   int left,
+   int h,
+   int w
+   )
+{
+    I810Ptr pI810 = I810PTR(pScrn);
+    I810PortPrivPtr pPriv = pI810->adaptor->pPortPrivates[0].ptr;
+    unsigned char *src, *dst;
+    
+    src = buf + (top*srcPitch) + (left<<1);
+    dst = (unsigned char*) pPriv->YBufVirtAddr;
+    w <<= 1;
+    while(h--) {
+	memcpy(dst, src, w);
+	src += srcPitch;
+	dst += 720*2;
+    }
+}
+
+static void
+I810CopyPlanarData(
+   ScrnInfoPtr pScrn, 
+   unsigned char *buf,
+   int srcPitch,
+   int top,
+   int left,
+   int h,
+   int w
+   )
+{
+    I810Ptr pI810 = I810PTR(pScrn);
+    I810PortPrivPtr pPriv = pI810->adaptor->pPortPrivates[0].ptr;
+    int i;
+    unsigned char *src1, *src2, *src3, *dst1, *dst2, *dst3;
+
+    /* Copy Y data */
+    src1 = buf + (top*srcPitch) + left;
+    dst1 = (unsigned char *) pPriv->YBufVirtAddr;
+    for (i = 0; i < h; i++) {
+	memcpy(dst1, src1, w);
+	src1 += srcPitch;
+	dst1 += 720;
+    }
+
+    /* Copy V data */
+    src2 = buf + (h*srcPitch) + (top*(srcPitch>>1)) + (left>>1);
+    dst2 = (unsigned char *) pPriv->VBufVirtAddr;
+    for (i = 0; i < h/2; i++) {
+	memcpy(dst2, src2, w/2);
+	src2 += srcPitch>>1;
+	dst2 += 360;
+    }
+
+    /* Copy U data */
+    src3 = buf + (h*srcPitch) + (h*srcPitch/4) + (top*(srcPitch>>1)) + (left>>1);
+    dst3 = (unsigned char *) pPriv->UBufVirtAddr;
+    for (i = 0; i < h/2; i++) {
+	memcpy(dst3, src3, w/2);
+	src3 += srcPitch>>1;
+	dst3 += 360;
+    }
+}
+
+static void
+I810DisplayVideo(
+    ScrnInfoPtr pScrn,
+    int id,
+    short width, short height,
+    int x1, int y1, int x2, int y2,
+    BoxPtr dstBox,
+    short src_w, short src_h,
+    short drw_w, short drw_h
+){
+    I810Ptr pI810 = I810PTR(pScrn);
+    I810OverlayRegPtr overlay = (I810OverlayRegPtr) (pI810->FbBase + pI810->OverlayStart); 
+    int xscaleInt, xscaleFract, yscaleInt, yscaleFract;
+    int xscaleIntUV, xscaleFractUV, yscaleIntUV, yscaleFractUV;
+    unsigned int swidth;
+
+    xscaleIntUV = 0;
+    yscaleIntUV = 0;
+
+    switch(id) {
+    case 0x32315659: /* YV12 */
+	swidth = (width + 7) & ~7;
+	overlay->SWID = (swidth << 15) | swidth;
+	overlay->SWIDQW = (swidth << 12) | (swidth >> 3);
+	break;
+    case 0x32595559: /* YUY2 */
+    default:
+	swidth = ((width + 3) & ~3) << 1;
+	overlay->SWID = swidth;
+	overlay->SWIDQW = swidth >> 3;
+	break;
+    }
+
+    overlay->SHEIGHT = height | (height << 15);
+    overlay->DWINPOS = (dstBox->y1 << 16) | dstBox->x1;
+    overlay->DWINSZ = ((dstBox->y2 - dstBox->y1) << 16) | 
+	              (dstBox->x2 - dstBox->x1);
+
+    /* 
+     * Calculate horizontal and vertical scaling factors, default to 1:1
+     */
+    overlay->YRGBSCALE = 0x80004000;
+    overlay->UVSCALE = 0x80004000;
+
+    /* 
+     * Initially, YCbCr and Overlay Enable and
+     * vertical chrominance up interpolation and horozontal chrominance
+     * up interpolation
+     */
+    overlay->OV0CMD = VC_UP_INTERPOLATION | HC_UP_INTERPOLATION | Y_ADJUST | 
+	              OVERLAY_ENABLE; 
+
+    if ((drw_w != src_w) || (drw_h != src_h)) 
+    {
+	xscaleInt = (src_w / drw_w) & 0x3;
+	xscaleFract = (src_w << 12) / drw_w;
+	yscaleInt = (src_h / drw_h) & 0x3;
+	yscaleFract = (src_h << 12) / drw_h;
+
+	overlay->YRGBSCALE = (xscaleInt << 15) | 
+	                     ((xscaleFract & 0xFFF) << 3) |
+	                     (yscaleInt) |
+			     ((yscaleFract & 0xFFF) << 20);
+
+	if (drw_w > src_w) 
+	{
+	    /* horizontal up-scaling */
+	    overlay->OV0CMD &= ~HORIZONTAL_CHROMINANCE_FILTER;
+	    overlay->OV0CMD &= ~HORIZONTAL_LUMINANCE_FILTER;
+	    overlay->OV0CMD |= (HC_UP_INTERPOLATION | HL_UP_INTERPOLATION);
+	}
+
+	if (drw_h > src_h) 
+	{ 
+	    /* vertical up-scaling */
+	    overlay->OV0CMD &= ~VERTICAL_CHROMINANCE_FILTER;
+	    overlay->OV0CMD &= ~VERTICAL_LUMINANCE_FILTER;
+	    overlay->OV0CMD |= (VC_UP_INTERPOLATION | VL_UP_INTERPOLATION);
+	}
+
+	if (drw_w < src_w) 
+	{ 
+	    /* horizontal down-scaling */
+	    overlay->OV0CMD &= ~HORIZONTAL_CHROMINANCE_FILTER;
+	    overlay->OV0CMD &= ~HORIZONTAL_LUMINANCE_FILTER;
+	    overlay->OV0CMD |= (HC_DOWN_INTERPOLATION | HL_DOWN_INTERPOLATION);
+	}
+
+	if (drw_h < src_h) 
+	{ 
+	    /* vertical down-scaling */
+	    overlay->OV0CMD &= ~VERTICAL_CHROMINANCE_FILTER;
+	    overlay->OV0CMD &= ~VERTICAL_LUMINANCE_FILTER;
+	    overlay->OV0CMD |= (VC_DOWN_INTERPOLATION | VL_DOWN_INTERPOLATION);
+	}
+
+	/* now calculate the UV scaling factor */
+
+	if (xscaleFract)
+	{
+	    xscaleFractUV = xscaleFract >> MINUV_SCALE;
+	    overlay->OV0CMD &= ~HC_DOWN_INTERPOLATION;
+	    overlay->OV0CMD |= HC_UP_INTERPOLATION;
+	}
+
+	if (xscaleInt)
+	{
+	    xscaleIntUV = xscaleInt >> MINUV_SCALE;
+	    if (xscaleIntUV)
+	    {
+		overlay->OV0CMD &= ~HC_UP_INTERPOLATION;
+	    }
+	}
+
+	if (yscaleFract)
+	{
+	    yscaleFractUV = yscaleFract >> MINUV_SCALE;
+	    overlay->OV0CMD &= ~VC_DOWN_INTERPOLATION;
+	    overlay->OV0CMD |= VC_UP_INTERPOLATION;
+	}
+
+	if (yscaleInt)
+	{
+	    yscaleIntUV = yscaleInt >> MINUV_SCALE;
+	    if (yscaleIntUV)
+	    {
+		overlay->OV0CMD &= ~VC_UP_INTERPOLATION;
+		overlay->OV0CMD |= VC_DOWN_INTERPOLATION;
+	    }
+	}
+
+	overlay->UVSCALE = yscaleIntUV | ((xscaleFractUV & 0xFFF) << 3) |
+	                   ((yscaleFractUV & 0xFFF) << 20);
+    }
+
+    switch(id) {
+    case 0x32315659: /* YV12 */
+	overlay->OV0STRIDE = IMAGE_MAX_WIDTH | (IMAGE_MAX_WIDTH << 15);
+	overlay->OV0CMD &= ~SOURCE_FORMAT;
+	overlay->OV0CMD |= YUV_420;
+	break;
+    case 0x32595559: /* YUY2 */
+	overlay->OV0STRIDE = IMAGE_MAX_WIDTH << 1;
+	overlay->OV0CMD &= ~SOURCE_FORMAT;
+	overlay->OV0CMD |= YUV_422;
+    default: /* we may have to do something different here ? */
+	break;
+    }
+
+    OVERLAY_UPDATE(pI810->OverlayPhysical);
+}
+
+static int 
+I810PutImage( 
+  ScrnInfoPtr pScrn, 
+  short src_x, short src_y, 
+  short drw_x, short drw_y,
+  short src_w, short src_h, 
+  short drw_w, short drw_h,
+  int id, unsigned char* buf, 
+  short width, short height, 
+  Bool sync,
+  RegionPtr clipBoxes, pointer data
+){
+   I810PortPrivPtr pPriv = (I810PortPrivPtr)data;
+   INT32 x1, x2, y1, y2;
+   int srcPitch;
+   int top, left, npixels, nlines;
+   BoxRec dstBox;
+
+   if(drw_w > 16384) drw_w = 16384;
+
+   /* Clip */
+   x1 = src_x;
+   x2 = src_x + src_w;
+   y1 = src_y;
+   y2 = src_y + src_h;
+
+   dstBox.x1 = drw_x;
+   dstBox.x2 = drw_x + drw_w;
+   dstBox.y1 = drw_y;
+   dstBox.y2 = drw_y + drw_h;
+
+   I810ClipVideo(&dstBox, &x1, &x2, &y1, &y2, 
+		REGION_EXTENTS(pScreen, clipBoxes), width, height);
+
+   if((x1 >= x2) || (y1 >= y2))
+     return Success;
+
+   dstBox.x1 -= pScrn->frameX0;
+   dstBox.x2 -= pScrn->frameX0;
+   dstBox.y1 -= pScrn->frameY0;
+   dstBox.y2 -= pScrn->frameY0;
+
+   switch(id) {
+   case 0x32315659: /* YV12 */
+	srcPitch = (width + 3) & ~3;
+	break;
+   case 0x32595559: /* YUY2 */
+   default:
+	srcPitch = (width << 1);
+	break;
+   }  
+
+    /* copy data */
+    top = y1 >> 16;
+    left = (x1 >> 16) & ~1;
+    npixels = ((((x2 + 0xffff) >> 16) + 1) & ~1) - left;
+
+    switch(id) {
+    case 0x32315659: /* YV12 */
+	nlines = ((((y2 + 0xffff) >> 16) + 1) & ~1) - top;
+	I810CopyPlanarData(pScrn, buf, srcPitch, top, left, nlines, npixels);
+	break;
+    case 0x32595559: /* YUY2 */
+    default:
+	nlines = ((y2 + 0xffff) >> 16) - top;
+	I810CopyPackedData(pScrn, buf, srcPitch, top, left, nlines, npixels);
+        break;
+    }
+
+    /* update cliplist */
+    if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
+	REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
+	/* draw these */
+	XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0, 
+					REGION_NUM_RECTS(clipBoxes),
+					REGION_RECTS(clipBoxes));
+    }
+
+
+    I810DisplayVideo(pScrn, id, width, height,
+	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
+
+    pPriv->videoStatus = CLIENT_VIDEO_ON;
+
+    return Success;
+}
+
+
+static int 
+I810QueryImageAttributes(
+  ScrnInfoPtr pScrn, 
+  int id, 
+  unsigned short *w, unsigned short *h, 
+  int *pitches, int *offsets
+){
+    int size, tmp;
+
+    if(*w > 720) *w = 720;
+    if(*h > 576) *h = 576;
+
+    *w = (*w + 1) & ~1;
+    if(offsets) offsets[0] = 0;
+
+    switch(id) {
+    case 0x32315659: /* YV12 */
+	*h = (*h + 1) & ~1;
+	size = (*w + 3) & ~3;
+	if(pitches) pitches[0] = size;
+	size *= *h;
+	if(offsets) offsets[1] = size;
+	tmp = ((*w >> 1) + 3) & ~3;
+	if(pitches) pitches[1] = pitches[2] = tmp;
+	tmp *= (*h >> 1);
+	size += tmp;
+	if(offsets) offsets[2] = size;
+	size += tmp;
+	break;
+    case 0x32595559: /* YUY2 */
+    default:
+	size = *w << 1;
+	if(pitches) pitches[0] = size;
+	size *= *h;
+	break;
+    }
+
+    return size;
+}
+
+static void
+I810BlockHandler (
+    int i,
+    pointer     blockData,
+    pointer     pTimeout,
+    pointer     pReadmask
+){
+    ScreenPtr   pScreen = screenInfo.screens[i];
+    ScrnInfoPtr pScrn = xf86Screens[i];
+    I810Ptr      pI810 = I810PTR(pScrn);
+    I810PortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);
+    I810OverlayRegPtr overlay = (I810OverlayRegPtr) (pI810->FbBase + pI810->OverlayStart); 
+
+    pScreen->BlockHandler = pI810->BlockHandler;
+    
+    (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
+
+    pScreen->BlockHandler = I810BlockHandler;
+
+    if(pPriv->videoStatus & TIMER_MASK) {
+	UpdateCurrentTime();
+	if(pPriv->videoStatus & OFF_TIMER) {
+	    if(pPriv->offTime < currentTime.milliseconds) {
+		/* Turn off the overlay */
+		overlay->OV0CMD &= 0xFFFFFFFE;
+		OVERLAY_UPDATE(pI810->OverlayPhysical);
+
+		pPriv->videoStatus = FREE_TIMER;
+		pPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
+	    }
+	} else {  /* FREE_TIMER */
+	    if(pPriv->freeTime < currentTime.milliseconds) {
+		/*
+		 * If we want to allocate the buffers on-demand, then should 
+		 * free the YUV buffers here 
+		 */
+		pPriv->videoStatus = 0;
+	    }
+        }
+    }
+}
