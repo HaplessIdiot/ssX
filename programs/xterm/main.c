@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.18 1995/06/14 07:55:29 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.19 1995/07/08 10:33:37 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1550,6 +1550,7 @@ char **argv;
 	    if (ioctl (pty, TCSETA, &tio) == -1)
 		SysError(ERROR_TIOCSETP);
 	}
+#endif
 #endif
 #ifndef AMOEBA
 #ifdef MINIX
