@@ -1,4 +1,4 @@
-; $XConsortium: cr16.s,v 1.1 93/08/08 12:58:34 rws Exp $
+; $XConsortium: cr16.s,v 1.2 95/06/15 15:25:19 dpw Exp $
         .SPACE  $TEXT$
         .SUBSPA $CODE$
         .export cr16
@@ -8,4 +8,5 @@
 cr16
         bv      (%rp)
 	mfctl	16,%ret0
+	.EXIT
         .PROCEND

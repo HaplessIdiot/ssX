@@ -1,4 +1,4 @@
-/* $XConsortium: Manage.c,v 1.34 95/03/30 19:15:14 converse Exp $ */
+/* $XConsortium: Manage.c,v 1.35 95/06/29 19:19:29 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -88,6 +88,11 @@ static void UnmanageChildren(children, num_children, parent, num_unique_children
 		    ->composite_class.change_managed;
 	UNLOCK_PROCESS;
 	parent_realized = XtIsRealized((Widget)parent);
+    } else {
+        XtAppErrorMsg(XtWidgetToApplicationContext((Widget)parent),
+		      "invalidParent",caller_func, XtCXtToolkitError,
+		   "Attempt to unmanage a child when parent is not Composite",
+		      (String *) NULL, (Cardinal *) NULL);
     }
 
     for (i = 0; i < num_children; i++) {
@@ -419,8 +424,6 @@ void XtChangeManagedSet(unmanage_children, num_unmanage, do_change_proc,
 	XtAppWarningMsg(app, "ambiguousParent", XtNxtChangeManagedSet,
 			XtCXtToolkitError, "Not all children have same parent",
 			(String *)NULL, (Cardinal *)NULL);
-	UNLOCK_APP(app);
-	return;
     }
     if (! XtIsComposite(parent)) {
 	UNLOCK_APP(app);

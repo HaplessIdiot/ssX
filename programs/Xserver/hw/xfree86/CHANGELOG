@@ -1,3 +1,10 @@
+XFree86 3.1.1Bh (1 July 1995)
+175. Updates to AGX server.  Includes reversing previous copyplane change,
+     restoring the setting of membase for AGX chips, cleanup setting
+     of the default planemask, and fixes to the agxIm routines + some
+     speedups (Henry Worth).
+174. Some more pre-fix-12 fix-trackers.
+
 XFree86 3.1.1Bg (29 June 1995)
 173. Turn on "dac_8_bit" by default in the S3 server for RAMDACs that
      support it.  Add "dac_6_bit" option to allow 6-bit mode to be selected.

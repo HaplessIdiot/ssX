@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.7 95/01/16 13:17:55 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.16 1995/03/12 13:01:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.17 1995/06/02 10:17:31 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -37,6 +37,7 @@
 #define _XF86_OSLIB_H
 
 #include <X11/Xos.h>
+#include <X11/Xfuncproto.h>
 
 #ifdef __EMX__
 #define NO_INLINE

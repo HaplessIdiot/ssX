@@ -1,10 +1,18 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.50 94/03/28 20:23:42 matt Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.55 95/04/07 19:22:30 kaleb Exp $
 
 #ifdef RsArchitecture
-#define OSName		AIX 3.2.5
-#define OSMajorVersion	3
-#define OSMinorVersion	2
-#define OSTeenyVersion	5
+#ifndef OSName
+#define OSName		AIX 4.1.1
+#endif
+#ifndef OSMajorVersion
+#define OSMajorVersion	4
+#endif
+#ifndef OSMinorVersion
+#define OSMinorVersion	1
+#endif
+#ifndef OSTeenyVersion
+#define OSTeenyVersion	1
+#endif
 #else
 #ifdef RtArchitecture
 #ifdef AIXArchitecture
@@ -27,17 +35,24 @@ XCOMM operating system:  OSName
 
 #ifdef RsArchitecture
 
-#if OSMajorVersion >= 3 && OSMinorVersion >= 2
+#if OSMajorVersion > 3 || (OSMajorVersion == 3 && OSMinorVersion >= 2)
 #define HasBSD44Sockets		YES
-#if OSMajorVersion > 3 || OSMinorVersion > 2 || OSTeenyVersion > 4
+#define HasPutenv		YES
+/*
+ * If you do not have threads support installed, put
+ * #define HasPosixThreads NO
+ * in the BeforeVendorCF section of your site.def.
+ */
+#if !defined(HasPosixThreads) && ((OSMajorVersion == 3 && (OSMinorVersion > 2 || (OSMinorVersion == 2 && OSTeenyVersion > 4))) || (OSMajorVersion == 4 && (OSMinorVersion > 1 || (OSMinorVersion == 1 && OSTeenyVersion > 1))))
 #define HasPosixThreads		YES
+#endif
+#if HasPosixThreads
 #define SystemMTDefines -D_THREAD_SAFE
 #define ThreadedX		YES
 #define ThreadsLibraries -lpthreads -lc_r
 #endif
-#endif
+#endif /* OS > 3.2 */
 
-#define CcCmd xlc
 
 /*
  * For IBM platforms, we must define both the location of the compiler
@@ -46,8 +61,15 @@ XCOMM operating system:  OSName
  * C++ shared libraries like libFresco
  */
 
+#ifndef CplusplusCmd
 #define CplusplusCmd xlC
+#endif
+#ifndef CplusplusLibC
 #define CplusplusLibC /usr/lpp/xlC/lib/libC.a
+#endif
+#ifndef CplusplusDependIncludes
+#define CplusplusDependIncludes -I/usr/lpp/xlC/include
+#endif
 
 /*
  * IBM's xlC refuses to compile files unless their names end in ".C".
@@ -75,16 +97,30 @@ baseobj.Osuf:	basedep.CCsuf						@@\
 #define ExecableScripts		YES
 #define Malloc0ReturnsNull	YES
 #define CppCmd			/usr/lpp/X11/Xamples/util/cpp/cpp
-#define StandardDefines         -DSYSV -DAIXV3 -D_ALL_SOURCE
 #define ExpandManNames		YES
 #define ExtensionOSDefines -DXTESTEXT1
+#define StandardDefines         -DSYSV -DAIXV3 -D_ALL_SOURCE
+#if OSMajorVersion >= 4
+#define XawI18nDefines		-DHAS_WCHAR_H -DHAS_ISW_FUNCS
+#define CcCmd c89		/* full conforming ANSI C w/ ANSI headers */
+ _NULLCMD_ = @ echo
+#else
 #define XibmServer 		YES
 #define ibmIncludeSKYWAY	YES
+#define CcCmd xlc
+#endif
 #define OPERATING_SYSTEM 	AIX /* directory name under server/ddx/ibm/ */
 #define InstallCmd              /usr/ucb/install
 #include <ibmLib.rules>
 
-#else
+#ifndef ManKeywordsTarget
+#define ManKeywordsTarget(manpath)					@@\
+man_keywords::								@@\
+	/usr/lib/makewhatis $(DESTDIR)manpath
+#endif
+
+
+#else /* end of RsArchitecture */
 
 
 #define UnixCpp /**/

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.rules,v 1.9 93/12/24 11:28:07 rws Exp $
+XCOMM $XConsortium: ibmLib.rules,v 1.10 95/04/07 19:22:32 kaleb Exp $
 
 /*
  * AIX shared library rules
@@ -37,6 +37,7 @@ XCOMM $XConsortium: ibmLib.rules,v 1.9 93/12/24 11:28:07 rws Exp $
 /*
  * SharedLibReferences - variables for shared libraries
  */
+#if OSMajorVersion < 4
 #ifndef SharedLibReferences
 #define SharedLibReferences(varname,libname,libsource,revname,rev)	@@\
 Concat3(DEP,varname,LIB) = /**/						@@\
@@ -50,6 +51,7 @@ LintLibReferences(varname,libname,libsource)
 #ifndef SharedDSLibReferences
 #define SharedDSLibReferences(varname,libname,libsource,revname,rev)	@@\
 SharedLibReferences(varname,libname,libsource,revname,rev)
+#endif
 #endif
 
 /*
