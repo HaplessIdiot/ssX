@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.11 2000/10/24 18:07:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.12 2000/12/18 15:52:25 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -8,6 +8,8 @@
 
 #ifndef _XF86OSMOUSE_H_
 #define _XF86OSMOUSE_H_
+
+#include "xf86Xinput.h"
 
 /* Mouse interface classes */
 #define MSE_NONE	0x00
