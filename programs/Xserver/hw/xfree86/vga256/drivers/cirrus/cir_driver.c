@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.25 1995/01/04 04:42:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.26 1995/01/07 04:12:03 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -195,6 +195,7 @@ static char *   cirrusIdent();
 static Bool     cirrusClockSelect();
 static void     cirrusEnterLeave();
 static Bool     cirrusInit();
+static Bool     cirrusValidMode();
 static void *   cirrusSave();
 static void     cirrusRestore();
 static void     cirrusAdjust();
@@ -223,6 +224,7 @@ vgaVideoChipRec CIRRUS = {
   cirrusIdent,			/* ChipIdent(); */
   cirrusEnterLeave,		/* ChipEnterLeave() */
   cirrusInit,			/* ChipInit() */
+  cirrusValidMode,		/* ChipValidMode() */
   cirrusSave,			/* ChipSave() */
   cirrusRestore,		/* ChipRestore() */
   cirrusAdjust,			/* ChipAdjust() */
@@ -1051,11 +1053,6 @@ cirrusProbe()
 		       vga256InfoRec.clock[i] =
 		          CLOCKVAL(cirrusClockTab[i].numer, cirrusClockTab[i].denom);
 		   }
-	       else
-	           if (xf86Verbose)
-                       ErrorF("%s %s: %s: Using programmable clocks\n",
-	                   XCONFIG_PROBED, vga256InfoRec.name,
-	                   vga256InfoRec.chipset);
 	       }
      else
           if (vga256InfoRec.clocks > cirrusClockNo)
@@ -1176,6 +1173,12 @@ cirrusFbInit()
       }
 
 #endif
+
+    if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+        if (xf86Verbose)
+            ErrorF("%s %s: %s: Using programmable clocks\n",
+	        XCONFIG_PROBED, vga256InfoRec.name,
+	        vga256InfoRec.chipset);
 
   /*
    * Report the internal MCLK value of the card, and change it if the
@@ -2366,3 +2369,15 @@ cirrusAdjust(x, y)
 	outb(0x3C0, tmp | lsb);
 #endif
 }
+
+/*
+ * cirrusValidMode --
+ *
+ */
+static Bool
+cirrusValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

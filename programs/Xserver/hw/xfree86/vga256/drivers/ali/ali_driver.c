@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.1 1995/01/02 05:01:42 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.2 1995/01/08 07:00:50 dawes Exp $
  */
 
 #include "X.h"
@@ -62,6 +62,7 @@ static Bool     LegendClockSelect();
  */
 static void     ALIEnterLeave();
 static Bool     ALIInit();	/* 2nd most important routine */
+static Bool     ALIValidMode();
 static void *   ALISave();
 static void     ALIRestore();
 static void     ALIAdjust();
@@ -83,6 +84,7 @@ vgaVideoChipRec ALI = {
 	ALIIdent,
 	ALIEnterLeave,
 	ALIInit,
+	ALIValidMode,
 	ALISave,
 	ALIRestore,
 	ALIAdjust,
@@ -555,6 +557,17 @@ ALIAdjust(x, y)
    exceeds 0xFFFF to fix the 640x480 screen scrolling back problem. */
 
   outw(vgaIOBase + 4, ((Base & 0x070000) >> 8) | 0x20);
+}
+
+/*
+ * ALIValidMode --
+ *
+ */
+static Bool
+ALIValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
 }
 
 

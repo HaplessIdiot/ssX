@@ -1,5 +1,5 @@
 /* $XConsortium: vga.h,v 1.1 94/03/28 21:55:30 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.4 1994/09/11 00:53:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.5 1994/11/26 12:48:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -72,6 +72,7 @@ typedef struct {
   char * (* ChipIdent)();
   void (* ChipEnterLeave)();
   Bool (* ChipInit)();
+  Bool (* ChipValidMode)();
   void * (* ChipSave)();
   void (* ChipRestore)();
   void (* ChipAdjust)();
@@ -110,11 +111,37 @@ typedef struct {
 /*
  * hooks for communicating with the VideoChip on the VGA
  */
-extern Bool (* vgaInitFunc)();
-extern void (* vgaEnterLeaveFunc)();
-extern void * (* vgaSaveFunc)();
-extern void (* vgaRestoreFunc)();
-extern void (* vgaAdjustFunc)();
+extern Bool (* vgaInitFunc)(
+#if NeedFunctionPrototypes
+    DisplayModePtr
+#endif
+);
+extern Bool (* vgaValidModeFunc)(
+#if NeedFunctionPrototypes
+    DisplayModePtr
+#endif
+);
+extern void (* vgaEnterLeaveFunc)(
+#if NeedFunctionPrototypes
+    Bool
+#endif
+);
+extern void * (* vgaSaveFunc)(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+extern void (* vgaRestoreFunc)(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+extern void (* vgaAdjustFunc)(
+#if NeedFunctionPrototypes
+    int,
+    int
+#endif
+);
 extern void (* vgaSaveScreenFunc)();
 extern void (* vgaSetReadFunc)();
 extern void (* vgaSetWriteFunc)();
@@ -288,6 +315,12 @@ Bool vgaScreenInit(
     ScreenPtr pScreen,
     int argc,
     char **argv
+#endif
+);
+
+Bool vgaValidMode(
+#if NeedFunctionPrototypes
+    DisplayModePtr
 #endif
 );
 

@@ -1,3 +1,25 @@
+XFree86 3.1.0Bb (10 January 1995)
+181. Updates to linear fb code for OTI087, and allow the FIFO threshold
+     to be set from XF86Config (Jorge Delgado).
+180. Add hooks for server/driver mode validation.  This is currently used
+     only by the NCR SVGA driver (Stuart Anderson).
+179. Fix for ET4000/W32 bank switching code in the SVGA et4000 driver
+     (David Etherton).
+178. Similar hw cursor move fix for S3 server.
+177. Fix for Cirrus crash when the hw cursor is moved while in another VT
+     (Harm Hanemaayer).
+176. Allow the "s3_964_bt485_vclk" to be used for the Diamond Stealth64 (VRAM).
+     This requires the "diamond" option (Harald Koenig).
+175. Rewrite xlfd_round_double() to speed it up on machines with no
+     hw floating point.  This reduces server startup time on such machines
+     (Harald Koenig).
+174. Reduce amount of floating-point calculation in icd2061a and S3 gendac
+     clock code (Harald Koenig).
+173. Probe code to detect some SPEA boards and correctly set the clockchip
+     (Norbert Distler).
+172. Allow Xservers to be built with only PCVT support on *BSD, and
+     clean up the console driver probing for *BSD (Joerg Wunsch).
+
 XFree86 3.1.0Ba (8 January 1995)
 171. Change "ct5??" chips&tech names to "ct655??".
 170. Fix for Xnest (and Xvfb) not calling OsInitColors().

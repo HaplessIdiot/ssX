@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514.h,v 1.1 94/03/28 21:03:01 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.h,v 3.1 1994/07/24 11:43:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.h,v 3.2 1994/11/26 12:40:52 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -96,6 +96,11 @@ Bool ibm8514Initialize(
     ScreenPtr,
     int,
     char **
+#endif
+);
+Bool ibm8514ValidMode(
+#if NeedFunctionPrototypes
+    DisplayModePtr
 #endif
 );
 void ibm8514EnterLeaveVT(

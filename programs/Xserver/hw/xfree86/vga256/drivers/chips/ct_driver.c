@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.2 1995/01/04 04:42:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.3 1995/01/08 07:01:00 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@>
@@ -110,6 +110,7 @@ static char *       CHIPSIdent();
 static Bool         CHIPSClockSelect();
 static void         CHIPSEnterLeave();
 static Bool         CHIPSInit();
+static Bool         CHIPSValidMode();
 static void *       CHIPSSave();
 static void         CHIPSRestore();
 static void         CHIPSAdjust();
@@ -137,6 +138,7 @@ vgaVideoChipRec CHIPS = {
     CHIPSIdent,
     CHIPSEnterLeave,
     CHIPSInit,
+    CHIPSValidMode,
     CHIPSSave,
     CHIPSRestore,
     CHIPSAdjust,
@@ -931,6 +933,18 @@ int x, y;
     outb(0x3D7, ((Base &0xFF0000) >> 16));
 
 }
+
+/*
+ * CHIPSValidMode --
+ *
+ */
+static Bool
+CHIPSValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+
 
 /*
  * CHIPSSaveScreen --

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.4 1994/09/21 13:24:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.5 1994/10/20 06:11:20 dawes Exp $
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
  *
@@ -198,6 +198,9 @@ cirrusLoadCursorToCard (pScr, pCurs, x, y)
   unsigned long *pDstM, *pSrcM;
   unsigned long dAddr;
 
+  if (!xf86VTSema)
+      return;
+
   /* check for blitter operation: must not meddle with ram when blitter is
      running...
    */
@@ -382,6 +385,10 @@ cirrusMoveCursor(pScr, x, y)
      ScreenPtr pScr;
      int   x, y;
 {
+
+  if (!xf86VTSema)
+      return;
+
   x -= vga256InfoRec.frameX0 + cirrusCur.hotX;
   y -= vga256InfoRec.frameY0 + cirrusCur.hotY;
 
@@ -421,6 +428,9 @@ cirrusRecolorCursor(pScr, pCurs, displayed)
    int i;
    VisualPtr pVisual;
    unsigned char sr12;
+
+   if (!xf86VTSema)
+       return;
 
    /* Find the PseudoColour or TrueColor visual for the colour mapping
     * function

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.2 94/03/28 21:51:05 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.6 1994/11/19 07:58:28 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.7 1994/12/11 10:57:12 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -75,6 +75,7 @@ static Bool     ET4000ClockSelect();
 static Bool     LegendClockSelect();
 static void     ET4000EnterLeave();
 static Bool     ET4000Init();
+static Bool     ET4000ValidMode();
 static void *   ET4000Save();
 static void     ET4000Restore();
 static void     ET4000Adjust();
@@ -97,6 +98,7 @@ vgaVideoChipRec ET4000 = {
   ET4000Ident,
   ET4000EnterLeave,
   ET4000Init,
+  ET4000ValidMode,
   ET4000Save,
   ET4000Restore,
   ET4000Adjust,
@@ -708,5 +710,13 @@ ET4000Adjust(x, y)
   outw(vgaIOBase + 4, ((Base & 0x0F0000) >> 8) | 0x33);
 }
 
-
-
+/*
+ * ET4000ValidMode --
+ *
+ */
+static Bool
+ET4000ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}

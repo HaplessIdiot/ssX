@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.4 1994/09/11 00:52:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.5 1994/12/11 10:57:16 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -71,6 +71,7 @@ static char *   GenericIdent();
 static Bool     GenericClockSelect();
 static void     GenericEnterLeave();
 static Bool     GenericInit();
+static Bool     GenericValidMode();
 static void *   GenericSave();
 static void     GenericRestore();
 static void     GenericAdjust();
@@ -111,6 +112,7 @@ vgaVideoChipRec GENERIC = {
 	GenericIdent,
 	GenericEnterLeave,
 	GenericInit,
+	GenericValidMode,
 	GenericSave,
 	GenericRestore,
 	GenericAdjust,
@@ -342,3 +344,15 @@ int x, y;
 	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
   	outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
 }
+
+/*
+ * GenericValidMode --
+ *
+ */
+static Bool
+GenericValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.5 1994/09/23 10:26:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.6 1994/12/17 10:08:32 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -95,6 +95,7 @@ static char *   MXIdent();
 static Bool     MXClockSelect();
 static void     MXEnterLeave();
 static Bool     MXInit();
+static Bool     MXValidMode();
 static void *   MXSave();
 static void     MXRestore();
 static void     MXAdjust();
@@ -118,6 +119,7 @@ vgaVideoChipRec MX = {
 	MXIdent,
 	MXEnterLeave,
 	MXInit,
+	MXValidMode,
 	MXSave,
 	MXRestore,
 	MXAdjust,
@@ -712,5 +714,16 @@ unsigned char temp;
 	temp &= 0xFC;
 	temp |= ((Base & 0x30000) >> 16);
 	outb(0x3C5,temp);
+}
+
+/*
+ * MXValidMode --
+ *
+ */
+static Bool
+MXValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.6 1994/11/19 07:49:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.7 1994/11/26 12:39:55 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -90,6 +90,11 @@ Bool agxInit(
     ScreenPtr ,
     int ,
     char **
+#endif
+);
+Bool agxValidMode(
+#if NeedFunctionPrototypes
+    DisplayModePtr 
 #endif
 );
 void agxEnterLeaveVT(

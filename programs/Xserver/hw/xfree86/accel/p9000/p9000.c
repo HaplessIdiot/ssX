@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.20 1994/11/26 12:44:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.21 1994/12/29 10:05:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -73,6 +73,7 @@ ScrnInfoRec p9000InfoRec = {
     -1,			/* int scrnIndex */
     p9000Probe,      	/* Bool (* Probe)() */
     p9000Initialize,	/* Bool (* Init)() */
+    p9000ValidMode,	/* Bool (* ValidMode)() */
     p9000EnterLeaveVT,	/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
@@ -797,5 +798,16 @@ p9000SwitchMode(mode)
   p9000SetCRTCRegs(&p9000CRTCRegs); 
   
   return(TRUE);
+}
+
+/*
+ * p9000ValidMode --
+ *
+ */
+static Bool
+p9000ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
 }
 

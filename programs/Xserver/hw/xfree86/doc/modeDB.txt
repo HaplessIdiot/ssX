@@ -1,4 +1,4 @@
-#  $XFree86: xc/programs/Xserver/hw/xfree86/doc/modeDB.txt,v 3.2 1994/08/31 04:40:15 dawes Exp $
+#  $XFree86: xc/programs/Xserver/hw/xfree86/doc/modeDB.txt,v 3.3 1994/10/29 22:39:06 dawes Exp $
 #
 # XFree86/X386 Mode database
 # Compiled by David Wexelblat [dwex@xfree86.org]
@@ -989,7 +989,7 @@
 
 ###############################################################################
 # Monitor:              Data General 6628
-# Contributor:          J"org Wunsch [joerg_wunsch@tcd-dresden.de]
+# Contributor:          J"org Wunsch [joerg_wunsch@uriah.sax.de]
 # Last Edit Date:       11/19/93
 #
 # name        clock   horizontal timing     vertical timing      flags

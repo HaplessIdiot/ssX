@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_KbdBSD.c,v 1.1 94/03/28 21:23:59 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdBSD.c,v 3.2 1994/12/10 02:13:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdBSD.c,v 3.3 1994/12/11 10:54:43 dawes Exp $ */
 /*
  * Derived from xf86Kbd.c by S_ren Schmidt (sos@login.dkuug.dk)
  * which is Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -228,9 +228,8 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   KeySym        *k;
   char          type;
   int           i, j;
-#ifndef __bsdi__
-  keymap_t      keymap;
 
+#ifndef __bsdi__
   switch (xf86Info.consType) {
 
 #ifdef PCCONS_SUPPORT
@@ -238,25 +237,30 @@ xf86KbdGetMapping (pKeySyms, pModMap)
     break;
 #endif
 
-#ifdef SYSCONS_SUPPORT
+#if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
   case SYSCONS:
-    if (ioctl(xf86Info.consoleFd, GIO_KEYMAP, &keymap) != -1) {
-      for (i = 0; i < keymap.n_keys && i < NUM_KEYCODES; i++)
-        if (remap[i]) {
-	  k = map + (remap[i] << 2);
-	  k[0] = KD_GET_ENTRY(i,0);           /* non-shifed */
-	  k[1] = KD_GET_ENTRY(i,1);	      /* shifted */
-	  k[2] = KD_GET_ENTRY(i,4);	      /* alt */
-	  k[3] = KD_GET_ENTRY(i,5);	      /* alt - shifted */
-	  if (k[3] == k[2]) k[3] = NoSymbol;
-	  if (k[2] == k[1]) k[2] = NoSymbol;
-	  if (k[1] == k[0]) k[1] = NoSymbol;
-	  if (k[0] == k[2] && k[1] == k[3])
-	    k[2] = k[3] = NoSymbol;
-        }
+  case PCVT:
+    {
+      keymap_t keymap;
+    
+      if (ioctl(xf86Info.consoleFd, GIO_KEYMAP, &keymap) != -1) {
+	for (i = 0; i < keymap.n_keys && i < NUM_KEYCODES; i++)
+	  if (remap[i]) {
+	    k = map + (remap[i] << 2);
+	    k[0] = KD_GET_ENTRY(i,0);           /* non-shifed */
+	    k[1] = KD_GET_ENTRY(i,1);	      /* shifted */
+	    k[2] = KD_GET_ENTRY(i,4);	      /* alt */
+	    k[3] = KD_GET_ENTRY(i,5);	      /* alt - shifted */
+	    if (k[3] == k[2]) k[3] = NoSymbol;
+	    if (k[2] == k[1]) k[2] = NoSymbol;
+	    if (k[1] == k[0]) k[1] = NoSymbol;
+	    if (k[0] == k[2] && k[1] == k[3])
+	      k[2] = k[3] = NoSymbol;
+	  }
+      }
     }
     break;
-#endif
+#endif /* SYSCONS || PCVT */
     
 #ifdef CODRV_SUPPORT
   case CODRV011:
@@ -297,9 +301,9 @@ xf86KbdGetMapping (pKeySyms, pModMap)
       }
     }
     break;
-#endif
+#endif /* CODRV */
   } 
-#endif
+#endif /* !bsdi */
 
   /*
    * Apply the special key mapping specified in XF86Config 
@@ -420,8 +424,8 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 #ifdef CODRV_SUPPORT
 /* Converts a CoDriver ASCII+Special combination into a KeySym
  */
-static 
-KeySym coGetKeysym(typ,str,old)
+static KeySym
+coGetKeysym(typ,str,old)
 	int typ;
 	CARD8 *str;
 	KeySym old;

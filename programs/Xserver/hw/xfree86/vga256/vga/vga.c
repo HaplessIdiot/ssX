@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.25 1994/12/29 10:21:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.26 1995/01/02 05:02:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -79,6 +79,7 @@ ScrnInfoRec vga256InfoRec = {
   -1,			/* int scrnIndex */
   vgaProbe,		/* Bool (* Probe)() */
   vgaScreenInit,	/* Bool (* Init)() */
+  vgaValidMode,		/* Bool (* ValidMode)() */
   vgaEnterLeaveVT,	/* void (* EnterLeaveVT)() */
   (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
   (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
@@ -167,6 +168,11 @@ void (* vgaEnterLeaveFunc)(
 #endif
 ) = (void (*)())NoopDDA;
 Bool (* vgaInitFunc)(
+#if NeedFunctionPrototypes
+    DisplayModePtr
+#endif
+) = (Bool (*)())NoopDDA;
+Bool (* vgaValidModeFunc)(
 #if NeedFunctionPrototypes
     DisplayModePtr
 #endif
@@ -506,6 +512,7 @@ vgaProbe()
 
 	vgaEnterLeaveFunc = Drivers[i]->ChipEnterLeave;
 	vgaInitFunc = Drivers[i]->ChipInit;
+	vgaValidModeFunc = Drivers[i]->ChipValidMode;
 	vgaSaveFunc = Drivers[i]->ChipSave;
 	vgaRestoreFunc = Drivers[i]->ChipRestore;
 	vgaAdjustFunc = Drivers[i]->ChipAdjust;
@@ -1309,6 +1316,25 @@ vgaSwitchMode(mode)
   else
   {
     ErrorF("Mode switch failed because of hardware initialisation error\n");
+    return(FALSE);
+  }
+}
+
+/*
+ * vgaValidMode --
+ *     Validate a mode for VGA architecture. Also checks the chip driver
+ *     to see if the mode can be supported.
+ */
+Bool
+vgaValidMode(mode)
+     DisplayModePtr mode;
+{
+  if ((vgaValidModeFunc)(mode))
+  {
+    return(TRUE);
+  }
+  else
+  {
     return(FALSE);
   }
 }

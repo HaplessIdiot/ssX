@@ -1,5 +1,5 @@
 /* $XConsortium: ICD2061Aalt.c,v 1.1 94/03/28 21:24:51 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICD2061Aalt.c,v 3.0 1994/04/29 14:08:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICD2061Aalt.c,v 3.1 1994/12/18 11:01:11 dawes Exp $ */
 
 /*
  * This code is derived from code available from the STB bulletin board
@@ -24,8 +24,6 @@ static double range[15] = {50.0, 51.0, 53.2, 58.5, 60.7, 64.4, 66.8, 73.5,
 			   75.6, 80.9, 83.2, 91.5, 100.0, 120.0, 120.0000001};
 
 #ifdef __STDC__
-static double genratio(unsigned int *p, unsigned int *q, double tgt);
-static double f(unsigned int p, unsigned int q, double basefreq);
 #if 0
 static void prtbinary(unsigned int size, unsigned int val);
 #endif
@@ -33,8 +31,6 @@ static void wait_vb();
 static void wrt_clk_bit(unsigned int value);
 static void init_clock(unsigned long setup, unsigned short crtcport);
 #else
-static double genratio();
-static double f();
 #if 0
 static void prtbinary();
 #endif
@@ -47,15 +43,16 @@ void AltICD2061SetClock(frequency, select)
 register long   frequency;               /* in Hz */
 int select;
 {
-   unsigned int m, mval, ival;
+   unsigned int m;
    int i;
    long dwv;
    double realval;
    double freq, fvco;
    double dev, devx;
    double delta, deltax;
-   unsigned int p, q;
-   unsigned int bestp, bestq;
+   double f0;
+   unsigned int p, q, p0;
+   unsigned int bestp=0, bestq=0, bestm=0, besti=0;
    unsigned char tmp;
 
    crtcaddr=(inb(0x3CC) & 0x01) ? 0x3D4 : 0x3B4;
@@ -72,48 +69,51 @@ int select;
 
    freq = ((double)frequency)/1000000.0;
    if (freq > range[13])
-	freq =range[13];
-   else if (freq <= 6.99)
+      freq = range[13];
+   else if (freq < 7.0)
       freq = 7.0;
 
 /*
  *  Calculate values to load into ICD 2061A clock chip to set frequency
  */
    delta = 999.0;
-   dev = 999.0;
-   ival = 99;
-   mval = 99;
+   dev   = 999.0;
 
-   fvco = freq / 2;
    for (m = 0; m < 8; m++) {
-      fvco *= 2.0;
-      for (i = 14; i >= 0; i--)
-         if (fvco >= range[i])
-            break;
-      if (i < 0)
-         continue;
-      if (i == 14)
-         break;
-      devx = (fvco - (range[i] + range[i+1])/2)/fvco;
-      if (devx < 0)
-         devx = -devx;
-      deltax = genratio(&p, &q, fvco);
-      if (delta < deltax)
-         continue;
-      if (deltax < delta || devx < dev) {
-         bestp = p;
-         bestq = q;
-         delta = deltax;
-         dev = devx;
-         ival = i;
-         mval = m;
-         }
+      fvco = freq * (1<<m);
+      if (fvco < 50.0 || fvco > 120.0) continue;
+      
+      f0  = fvco / fref;
+
+      for (q = 14; q <= 71; q++) {     /* q={15..71}:Constraint 2 on page 14 */
+	 p0 = f0 * q;
+	 for (p=p0-1; p<=p0+1; p++) {
+	    if (p < 4 || p > 130)      /* p={4..130}:Constraint 5 on page 14 */
+	       continue; 
+	    deltax = (double)(p) / (double)(q) - f0;
+	    if (deltax < 0) deltax = -deltax;
+	    if (deltax <= delta) {
+	       for (i = 13; i >= 0; i--)
+		  if (fvco >= range[i])
+		     break;
+	       devx = (fvco - (range[i] + range[i+1])/2)/fvco;
+	       if (devx < 0)
+		  devx = -devx;
+	       if (deltax < delta || devx < dev) {
+		  delta = deltax;
+		  dev   = devx;
+		  bestp = p;
+		  bestq = q;
+		  bestm = m;
+		  besti = i;
+	       }
+	    }
+	 }
       }
-   fvco = fref;
-   for (m=0; m<mval; m++)
-      fvco /= 2.0;
-   realval = f(bestp, bestq, fvco);
-   dwv = ((((((long)ival << 7) | bestp) << 3) | mval) << 7) | bestq;
+   }
+   fvco = fref / (1<<bestm);
+   realval = (fvco * bestp) /  bestq;
+   dwv = ((((((long)besti << 7) | (bestp-3)) << 3) | bestm) << 7) | (bestq-2);
 
 /*
  * Write ICD 2061A clock chip
@@ -129,44 +129,6 @@ int select;
    wait_vb();		/* 0.10 second delay... */
 }
 
-static double f(p, q, base)
-   unsigned int p;
-   unsigned int q;
-   double base;
-   {
-   return(base * (p + 3)/(q + 2));
-   }
-
-static double genratio(p, q, tgt)
-   unsigned int *p;
-   unsigned int *q;
-   double tgt;
-   {
-   int k, m;
-   double test, mindiff;
-   unsigned int mmax;
-
-   mindiff = 999999999.0;
-   for (k = 13; k < 69; k++) {	       /* q={15..71}:Constraint 2 on page 14 */
-      m = 50.0*(k+2)/fref - 3;
-      if (m < 0)
-         m = 0;
-      mmax = 120*(k+2)/fref - 2;	       /* m..mmax is constraint 3 on page 14 */
-      if (mmax > 128)
-         mmax = 128;
-      while (m < mmax) {
-         test = f(m, k, fref) - tgt;
-         if (test < 0) test = -test;
-         if (mindiff > test) {
-            mindiff = test;
-            *p = m;
-            *q = k;
-            }
-         m++;
-         }
-      }
-   return (mindiff);
-   }
 
 #if 0
 static void prtbinary(size, val)

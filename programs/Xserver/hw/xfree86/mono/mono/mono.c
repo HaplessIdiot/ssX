@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.10 1994/12/29 10:20:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.11 1995/01/02 04:53:43 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -78,6 +78,12 @@ ScreenPtr pScreen
 #endif
 );
 
+Bool monoValidMode(
+#if NeedFunctionPrototypes
+    DisplayModePtr
+#endif 
+);
+
 /* ScrnInfoRec (common/xf86.h) describes the SCREEN */
 /* This record is device and driver independent */
 /* Used by the upper levels: xf86Init.c uses */
@@ -89,6 +95,7 @@ ScrnInfoRec monoInfoRec = {
   -1,			/* int scrnIndex */
   monoProbe,		/* Bool (* Probe)() */
   monoScreenInit,	/* Bool (* Init)() */
+  monoValidMode,	/* Bool (* ValidMode)() */
   monoEnterLeaveVT,	/* void (* EnterLeaveVT)(int,int) */
   (void (*)())NoopDDA,	/* void (* EnterLeaveMonitor)(int) */
   (void (*)())NoopDDA,	/* void (* EnterLeaveCursor)(int) */
@@ -640,4 +647,12 @@ monoAdjustFrame(x, y)
 		monoInfoRec.name, x);
 #endif
     }
+}
+
+Bool
+monoValidMode(mode)
+     DisplayModePtr mode;
+{
+  /* XXXX Maybe this should return FALSE since no XF86Config modes are used? */
+  return(TRUE);
 }

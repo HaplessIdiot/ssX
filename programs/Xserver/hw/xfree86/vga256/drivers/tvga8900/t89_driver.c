@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.1 94/03/28 21:53:18 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.4 1994/09/23 10:26:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.5 1994/12/11 10:57:35 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -78,6 +78,7 @@ static char *TVGA8900Ident();
 static Bool TVGA8900Probe();
 static void TVGA8900EnterLeave();
 static Bool TVGA8900Init();
+static Bool TVGA8900ValidMode();
 static void *TVGA8900Save();
 static void TVGA8900Restore();
 static void TVGA8900Adjust();
@@ -90,6 +91,7 @@ vgaVideoChipRec TVGA8900 = {
   TVGA8900Ident,
   TVGA8900EnterLeave,
   TVGA8900Init,
+  TVGA8900ValidMode,
   TVGA8900Save,
   TVGA8900Restore,
   TVGA8900Adjust,
@@ -756,4 +758,13 @@ TVGA8900Adjust(x, y)
 	outb(vgaIOBase + 5, temp);
 }
 
-
+/*
+ * TVGA8900ValidMode --
+ *
+ */
+static Bool
+TVGA8900ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}

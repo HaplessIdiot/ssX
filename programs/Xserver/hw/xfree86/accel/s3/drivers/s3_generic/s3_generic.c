@@ -1,5 +1,5 @@
 /* $XConsortium: s3_generic.c,v 1.1 94/03/28 21:17:48 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.0 1994/09/23 10:10:20 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -31,6 +31,7 @@ static Bool S3_GENERICProbe();
 static char *S3_GENERICIdent();
 extern void s3EnterLeaveVT();
 extern Bool s3Initialize();
+static Bool S3_GENERICValidMode();
 extern void s3AdjustFrame();
 extern Bool s3SwitchMode();
 
@@ -39,6 +40,7 @@ s3VideoChipRec S3_GENERIC = {
   S3_GENERICIdent,
   s3EnterLeaveVT,
   s3Initialize,
+  S3_GENERICValidMode,
   s3AdjustFrame,
   s3SwitchMode,
 };
@@ -75,3 +77,15 @@ S3_GENERICProbe()
    s3InfoRec.chipset = S3_GENERICIdent(0);
    return(TRUE);
 }
+
+/*
+ * S3_GENERICValidMode --
+ *
+ */
+static Bool
+S3_GENERICValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

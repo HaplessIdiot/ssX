@@ -620,7 +620,7 @@ Section "Monitor"
     ModeLine "1152x900"    95    1152 1152 1192 1472    900  900  931  939
 EndSection
 
-#From: J Wunsch <j@julia.tcd-dresden.de>
+#From: J Wunsch <joerg_wunsch@uriah.sax.de>
 #Date: Fri, 23 Sep 1994 09:28:58 +0200 (MET DST)
 Section "Monitor"
     Identifier "Nokia 447B (1)"
@@ -979,4 +979,4 @@ Section "Monitor"
     ModeLine "640x480"  28  640  664  728  792 480 484 490 505
 EndSection
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.3 1994/10/01 01:48:14 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.4 1994/10/04 03:29:48 dawes Exp $

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.4 1994/09/25 12:28:01 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.5 1994/11/19 07:52:09 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -48,6 +48,7 @@ static Bool     ET4000W32Probe();
 static char *   ET4000W32Ident();
 static void     ET4000W32EnterLeave();
 static Bool     ET4000W32Init();
+static Bool     ET4000W32ValidMode();
 static void *   ET4000W32Save();
 static void     ET4000W32Restore();
 static void     ET4000W32Adjust();
@@ -63,6 +64,7 @@ vgaVideoChipRec ET4000W32 = {
     ET4000W32Ident,
     ET4000W32EnterLeave,
     ET4000W32Init,
+    ET4000W32ValidMode,
     ET4000W32Save,
     ET4000W32Restore,
     ET4000W32Adjust,
@@ -450,3 +452,15 @@ ET4000W32SaveScreen(start_finish)
 	RESET_ACL
     }
 }
+
+/*
+ * ET4000W32ValidMode --
+ *
+ */
+static Bool
+ET4000W32ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

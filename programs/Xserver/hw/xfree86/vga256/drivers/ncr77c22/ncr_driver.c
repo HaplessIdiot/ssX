@@ -1,5 +1,5 @@
 /* $XConsortium: ncr_driver.c,v 1.1 94/03/28 21:51:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.3 1994/09/11 00:52:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.4 1994/12/11 10:57:20 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -77,6 +77,7 @@ static char *NCRIdent();
 static Bool  NCRClockSelect();
 static void  NCREnterLeave();
 static Bool  NCRInit();
+static Bool  NCRValidMode();
 static void *NCRSave();
 static void  NCRRestore();
 static void  NCRAdjust();
@@ -92,6 +93,7 @@ vgaVideoChipRec NCR77C22 = {
   NCRIdent,
   NCREnterLeave,
   NCRInit,
+  NCRValidMode,
   NCRSave,
   NCRRestore,
   NCRAdjust,
@@ -586,4 +588,30 @@ NCRAdjust(x, y)
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
   outb(vgaIOBase+4,0x31); temp=inb(vgaIOBase+5);	/* Extended Display Position Register */
   outb(vgaIOBase+5, ((Base&0x0F0000)>>16)|(temp&0xF0));
+}
+
+/*
+ * NCRValidMode --
+ *     Check to see if the mode can be supported on this chip
+ */
+static Bool
+NCRValidMode(mode)
+DisplayModePtr mode;
+{
+#if !defined(MONOVGA) && !defined(XF86VGA16)
+/*
+ * None of the system that have the 77C22 chip installed in them can
+ * support resolutions greater that 800x600. This is caused by a bandwidth
+ * limitation in the chip/video memory. Check to see if this is a 77C22,
+ * and if the resolution will exceed the bandwidth capability of these systems.
+ */
+   if ( (NCRchipset == NCR77C22) &&
+        ((mode->HDisplay*mode->VDisplay) > (512*1024)) )
+	return FALSE;
+
+#endif /* !MONOVGA && !XF86VGA16 */
+
+/* Otherwise, the resolution is probably fine */
+
+return TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.1 1994/11/27 07:04:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.2 1994/12/05 03:45:38 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -131,6 +131,11 @@ Bool mach64Initialize(
     ScreenPtr pScreen,
     int argc,
     char **argv
+#endif
+);
+Bool mach64ValidMode(
+#if NeedFunctionPrototypes
+    DisplayModePtr
 #endif
 );
 void mach64EnterLeaveVT(

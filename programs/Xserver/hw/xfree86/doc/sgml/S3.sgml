@@ -168,7 +168,7 @@ might work for you, too.
 
 <tag>S3 864, 20C498 or 21C498 RAMDAC, ICS2595 Clockchip</tag>
 	<itemize>
-        <item> SPEA MirageP64 2MB DRAM
+        <item> SPEA MirageP64 2MB DRAM  (BIOS 3.xx)
 	</itemize>
 
  	8 and 15/16 bpp
@@ -179,6 +179,8 @@ might work for you, too.
  	problems with the first mode after startup of XF86_S3 or after
  	switching back from VT have been seen; switching to next mode
  	with CTRL+ALT+``+'' and back seems to solve this problem
+
+        Mirage P64 with BIOS 4.xx uses the S3 SDAC.  
 
 
 <tag>S3 864, AT&amp;T21C498-13 RAMDAC, ICD2061A Clockchip</tag>
@@ -335,7 +337,7 @@ symptom of this not being correct is the HW cursor being chopped off
 when positioned close to the right edge of the screen.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.0 1994/12/25 08:38:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.1 1994/12/26 11:03:35 dawes Exp $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.55 1994/12/25 12:23:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.56 1994/12/29 10:06:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -68,6 +68,7 @@ ScrnInfoRec s3InfoRec =
    -1,				/* int scrnIndex */
    s3Probe,			/* Bool (* Probe)() */
    (Bool (*)())NoopDDA,		/* Bool (* Init)() */
+   (Bool (*)())NoopDDA,		/* Bool (* ValidMode)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveVT)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
@@ -297,6 +298,30 @@ static int s3DetectMIRO_20SV_Rev(int BIOSbase)
    return -4;
 }
 
+static int check_SPEA_bios(int BIOSbase)
+{
+#define BIOS_BSIZE 1024
+#define BIOS_BASE  0xc0000
+
+   long addr = BIOSbase>0 ? BIOSbase : BIOS_BASE;
+
+   unsigned char bios[BIOS_BSIZE];
+   char *match = "SPEA";
+   int i,l;
+
+   if (xf86ReadBIOS(BIOSbase, 0, bios, BIOS_BSIZE) != BIOS_BSIZE)
+      return -1;
+
+   if ((bios[0] != 0x55) || (bios[1] != 0xaa))
+      return -2;
+
+   l = strlen(match);
+   for (i=0; i<BIOS_BSIZE-l; i++)
+      if (bios[i] == match[0] && !memcmp(&bios[i],match,l))
+         return 1;
+   return 0;
+}
+
 
 static Bool s3ProbeSDAC()
 {
@@ -477,6 +502,7 @@ s3Probe()
       if ((s3Drivers[i]->ChipProbe)()) {
 	 xf86ProbeFailed = FALSE;
 	 s3InfoRec.Init = s3Drivers[i]->ChipInitialize;
+	 s3InfoRec.ValidMode = s3Drivers[i]->ChipValidMode;
 	 s3InfoRec.EnterLeaveVT = s3Drivers[i]->ChipEnterLeaveVT;
 	 s3InfoRec.AdjustFrame = s3Drivers[i]->ChipAdjustFrame;
 	 s3InfoRec.SwitchMode = s3Drivers[i]->ChipSwitchMode;
@@ -523,10 +549,7 @@ s3Probe()
    /* ELSA_W1000PRO isn't really required any more */
    OFLG_SET(OPTION_ELSA_W1000PRO, &validOptions);
    OFLG_SET(OPTION_ELSA_W2000PRO, &validOptions);
-#if 0
-   /* These aren't needed any more */
-   OFLG_SET(OPTION_STEALTH64, &validOptions);
-#endif
+   OFLG_SET(OPTION_DIAMOND, &validOptions);
    if (S3_928_P(s3ChipId))
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
@@ -1015,7 +1038,64 @@ s3Probe()
    if (s3RamdacType == UNKNOWN_DAC) {
       s3RamdacType = NORMAL_DAC;
    }
-   
+  
+   if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions) &&
+       !OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+     card_id = check_SPEA_bios(s3InfoRec.BIOSbase); 
+     if (card_id > 0) {
+        
+       switch (s3RamdacType) {
+       case BT485_DAC: 
+          if (S3_928_ONLY(s3ChipId)) {
+             /* SPEA Mercury */
+             ErrorF("%s %s: SPEA Mercury detected.\n",
+             XCONFIG_PROBED, s3InfoRec.name);
+             OFLG_SET(OPTION_SPEA_MERCURY, &s3InfoRec.options);
+             OFLG_SET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions);
+             OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+             s3ClockSelectFunc = icd2061ClockSelect;
+             numClocks = 3;
+             clockchip_probed = XCONFIG_PROBED; 
+          } else if  (S3_964_SERIES(s3ChipId)) { 
+             /* SPEA Mercury P64 */ 
+             ErrorF("%s %s: SPEA Mercury P64 detected.\n",
+             XCONFIG_PROBED, s3InfoRec.name);
+             OFLG_SET(OPTION_SPEA_MERCURY, &s3InfoRec.options);
+             OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions);
+             OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+             s3ClockSelectFunc = icd2061ClockSelect;
+             numClocks = 3;
+             clockchip_probed = XCONFIG_PROBED;
+          } 
+          break;
+       case ATT20C498_DAC: 
+          if (S3_864_SERIES(s3ChipId)) { 
+            /* SPEA MirageP64 Bios < 4.00 */
+            ErrorF("%s %s: SPEA Mirage P64 with BIOS 3.x detected.\n",
+            XCONFIG_PROBED, s3InfoRec.name);
+            OFLG_SET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions);
+            OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+            s3ClockSelectFunc = icd2061ClockSelect;
+            numClocks = 3;
+            clockchip_probed = XCONFIG_PROBED;
+          }
+          break;
+       case S3_SDAC_DAC:
+          if (S3_864_SERIES(s3ChipId)) 
+            /* SPEA Mirage P64 Bios 4.xx */
+            ErrorF("%s %s: SPEA Mirage P64 with BIOS 4.x detected.\n",
+            XCONFIG_PROBED, s3InfoRec.name);
+          break;
+       case S3_GENDAC_DAC:
+          if (S3_801_SERIES(s3ChipId))
+            /* SPEA Mirage Bios 5.x */
+            ErrorF("%s %s: SPEA Mirage with BIOS 5.x detected.\n",
+            XCONFIG_PROBED, s3InfoRec.name);
+          break;
+      } 
+     }
+    }   /* end SPEA autodetect */
+
    /* make sure s3InfoRec.ramdac is set correctly */
    s3InfoRec.ramdac = xf86TokenToString(s3DacTable, s3RamdacType);
 

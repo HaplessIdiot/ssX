@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.4 1994/09/11 00:52:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.5 1994/10/20 06:11:01 dawes Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -51,6 +51,7 @@ static char *   AL2101Ident();
 static Bool     AL2101ClockSelect();
 static void     AL2101EnterLeave();
 static Bool     AL2101Init();
+static Bool     AL2101ValidMode();
 static void *   AL2101Save();
 static void     AL2101Restore();
 static void     AL2101Adjust();
@@ -63,6 +64,7 @@ vgaVideoChipRec AL2101 = {
   AL2101Ident,
   AL2101EnterLeave,
   AL2101Init,
+  AL2101ValidMode,
   AL2101Save,
   AL2101Restore,
   AL2101Adjust,
@@ -339,4 +341,15 @@ AL2101Adjust(x, y)
   outw(vgaIOBase + 4, (Base & 0x00FF00)        | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8)   | 0x0D);
   outw(vgaIOBase + 4, ((Base & 0x070000) >> 8) | 0x20);
+}
+
+/*
+ * AL2101ValidMode --
+ *
+ */
+static Bool
+AL2101ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.41 1994/12/25 12:23:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.42 1994/12/29 10:06:58 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1954,17 +1954,37 @@ s3Init(mode)
 	 /*
 	  * This is the design alert from S3 with Bt485A and Vision 964. 
 	  */
-	 int i,last,tmp,cr55,cr67;
+	 int i,j,last,tmp,cr55,cr67;
+	 int port, bit;
 
-	 outb(vgaCRIndex, 0x55);
-	 cr55 = inb(vgaCRReg);
-	 outb(vgaCRReg, cr55 | 0x04); /* enable rad of general input */
+#define VerticalRetraceWait() \
+	 { \
+	      while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
+	      while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x08) ; \
+	      while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
+	}
+
+	 if (OFLG_ISSET(OPTION_DIAMOND, &s3InfoRec.options)) {
+	    port = 0x3c2;
+	    bit  = 0x10;
+	 }
+	 else {  /* MIRO 20SV Rev.2 */
+	    port = 0x3c8;
+	    bit  = 0x04;
+	 }
+
+	 if (port == 0x3c8) {
+	    outb(vgaCRIndex, 0x55);
+	    cr55 = inb(vgaCRReg);
+	    outb(vgaCRReg, cr55 | 0x04); /* enable rad of general input */
+	 }
 	 outb(vgaCRIndex, 0x67);
 	 cr67 = inb(vgaCRReg);
 
-	 for(last=i=0; i<20; i++) {
-	    usleep(20*1000);
-	    if ((inb(0x3c8) & 0x04) == 0) { /* if GD2 is low then */
+	 for(last=i=0; i<30; i++) { /* should be an even number */
+	    VerticalRetraceWait();
+	    VerticalRetraceWait();
+	    if ((inb(port) & bit) == 0) { /* if GD2 is low then */
 	       last = i;
 	       outb(vgaCRIndex, 0x67);
 	       tmp = inb(vgaCRReg);
@@ -1975,8 +1995,10 @@ s3Init(mode)
 	    }
 	    if (i-last > 4) break;
 	 }
-	 outb(vgaCRIndex, 0x55);
-	 outb(vgaCRReg, cr55); 
+	 if (port == 0x3c8) {
+	    outb(vgaCRIndex, 0x55);
+	    outb(vgaCRReg, cr55); 
+	 }
 	 outb(vgaCRIndex, 0x67);
 	 tmp = inb(vgaCRReg);
 #if 0

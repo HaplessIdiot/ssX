@@ -1,5 +1,5 @@
 /* $XConsortium: s3TiCursor.c,v 1.1 94/03/28 21:17:18 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3TiCursor.c,v 3.1 1994/08/20 07:34:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3TiCursor.c,v 3.2 1994/09/08 14:26:49 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@paros.com>
  *
@@ -311,6 +311,9 @@ s3TiMoveCursor(pScr, x, y)
      int   x, y;
 {
 
+   if (!xf86VTSema)
+      return;
+   
    if (s3BlockCursor)
       return;
    

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.15 1994/12/18 10:58:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.16 1994/12/29 10:07:33 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -92,13 +92,13 @@ typedef struct {
 #define OPTION_BT482_CURS       55 /* Use Bt482 RAMDAC cursor */
 #define OPTION_S3_964_BT485_VCLK	56 /* probe/invert VCLK for 964 + Bt485 */
 
-/* Vendor specific pixmux enabling options */
+/* Vendor specific options */
 #define OPTION_SPEA_MERCURY	70 /* pixmux for SPEA Mercury (S3) */
 #define OPTION_NUMBER_NINE	71 /* pixmux for #9 with Bt485 (S3) */
 #define OPTION_STB_PEGASUS	72 /* pixmux for STB Pegasus (S3) */
 #define OPTION_ELSA_W1000PRO	73 /* pixmux for ELSA Winner 1000PRO (S3) */
 #define OPTION_ELSA_W2000PRO	74 /* pixmux for ELSA Winner 2000PRO (S3) */
-#define OPTION_STEALTH64	75 /* pixmux for Diamond Stealth 64 (S3) */
+#define OPTION_DIAMOND		75 /* Diamond boards (S3) */
 
 /* Misc options */
 #define OPTION_CSYNC		90 /* Composite sync */
@@ -193,7 +193,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "elsa_w1000pro",	OPTION_ELSA_W1000PRO },
   { "elsa_w1000isa",	OPTION_ELSA_W1000PRO }, /* These are treated the same */
   { "elsa_w2000pro",	OPTION_ELSA_W2000PRO },
-  { "stealth64",	OPTION_STEALTH64 },
+  { "diamond",		OPTION_DIAMOND },
 
   { "composite",	OPTION_CSYNC },
   { "secondary",	OPTION_SECONDARY },

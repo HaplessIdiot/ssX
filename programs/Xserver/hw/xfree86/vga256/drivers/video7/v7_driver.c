@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_driver.c,v 3.4 1994/09/11 00:53:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_driver.c,v 3.5 1994/09/23 10:26:55 dawes Exp $ */
 /*
  * Copyright 1994 by Craig Struble   <cstruble@acm.vt.edu>
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -122,6 +122,7 @@ static char *   VIDEO7Ident();
 static Bool     VIDEO7ClockSelect();
 static void     VIDEO7EnterLeave();
 static Bool     VIDEO7Init();
+static Bool     VIDEO7ValidMode();
 static void *   VIDEO7Save();
 static void     VIDEO7Restore();
 static void     VIDEO7Adjust();
@@ -145,6 +146,7 @@ vgaVideoChipRec VIDEO7 = {
 	VIDEO7Ident,
 	VIDEO7EnterLeave,
 	VIDEO7Init,
+	VIDEO7ValidMode,
 	VIDEO7Save,
 	VIDEO7Restore,
 	VIDEO7Adjust,
@@ -812,3 +814,15 @@ int x, y;
 	temp &= 0xCF;
 	outb(0x3C5, temp | ((Base & 0x030000) >> 12));
 }
+
+/*
+ * VIDEO7ValidMode --
+ *
+ */
+static Bool
+VIDEO7ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

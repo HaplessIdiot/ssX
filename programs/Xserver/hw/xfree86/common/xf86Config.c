@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.31 1994/12/25 12:25:34 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.32 1994/12/29 10:07:25 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2594,6 +2594,18 @@ xf86LookupMode(target, driver)
       target->CrtcVTotal *= 2;
       target->CrtcVAdjusted = TRUE;
     }
+
+    /* I'm not sure if this is the best place for this in the
+     * new XF86Config organization. - SRA
+     */
+    if (found_mode)
+      if ((driver->ValidMode)(target) == FALSE)
+        {
+         ErrorF("%s %s: Unable to support mode \"%s\"\n",
+              XCONFIG_GIVEN,driver->name, target->name );
+         return(FALSE);
+        }
+
     if (xf86Verbose)
     {
       ErrorF("%s %s: Mode \"%s\": mode clock = %7.3f",

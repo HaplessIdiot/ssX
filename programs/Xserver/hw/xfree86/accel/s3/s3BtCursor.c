@@ -1,5 +1,5 @@
 /* $XConsortium: s3BtCursor.c,v 1.1 94/03/28 21:13:54 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.3 1994/09/04 10:46:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.4 1994/12/17 10:05:36 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -313,6 +313,9 @@ s3BtMoveCursor(pScr, x, y)
 {
    extern int s3hotX, s3hotY;
    extern Bool s3PixelMultiplexing;
+
+   if (!xf86VTSema)
+      return;
 
    if (s3BlockCursor)
       return;

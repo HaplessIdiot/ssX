@@ -119,7 +119,7 @@ Section "Device"
  #   Membase 0xf8000000
 EndSection
 
-#From: J Wunsch <j@julia.tcd-dresden.de>
+#From: J Wunsch <joerg_wunsch@uriah.sax.de>
 #Date: Fri, 23 Sep 1994 09:28:58 +0200 (MET DST)
 Section "Device"
     Identifier "ELSA Winner 1000"
@@ -555,4 +555,4 @@ Section "Device"
 EndSection
 
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.3 1994/10/01 01:48:12 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.4 1994/10/01 01:49:52 dawes Exp $

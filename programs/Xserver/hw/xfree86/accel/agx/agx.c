@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.21 1994/12/25 12:19:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.22 1994/12/29 09:43:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -71,6 +71,7 @@ ScrnInfoRec agxInfoRec = {
     -1,			/* int scrnIndex */
     agxProbe,      	/* Bool (* Probe)() */
     agxInit,	        /* Bool (* Init)() */
+    agxValidMode,       /* Bool (* ValidMode)() */
     agxEnterLeaveVT,    /* void (* EnterLeaveVT)() */
     (void(*)())NoopDDA,	/* void (* EnterLeaveMonitor)() */
     (void(*)())NoopDDA,	/* void (* EnterLeaveCursor)() */
@@ -1240,3 +1241,13 @@ agxAdjustFrame(x, y)
    /*agxRepositionCursor(savepScreen); */
 }
 
+/*
+ * agxValidMode --
+ *
+ */
+static Bool
+agxValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}

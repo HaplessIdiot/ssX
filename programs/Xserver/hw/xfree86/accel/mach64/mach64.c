@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.2 1994/12/05 03:45:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.3 1994/12/29 10:02:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -81,6 +81,7 @@ ScrnInfoRec mach64InfoRec = {
     -1,			/* int scrnIndex */
     mach64Probe,      	/* Bool (* Probe)() */
     mach64Initialize,	/* Bool (* Init)() */
+    mach64ValidMode,	/* Bool (* ValidMode)() */
     mach64EnterLeaveVT, /* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
@@ -1119,3 +1120,15 @@ mach64SwitchMode(mode)
 
     return(TRUE);
 }
+
+/*
+ * mach64ValidMode --
+ *
+ */
+static Bool
+mach64ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.6 1994/09/23 10:09:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.7 1994/11/26 12:44:17 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -144,6 +144,12 @@ extern Bool p9000Probe(
 extern Bool p9000Initialize(
 #if NeedFunctionPrototypes
    int, ScreenPtr, int, char **
+#endif
+);
+
+extern Bool p9000ValidMode(
+#if NeedFunctionPrototypes
+   DisplayModePtr
 #endif
 );
 

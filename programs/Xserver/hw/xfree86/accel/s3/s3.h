@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.1 94/03/28 21:13:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.14 1994/11/05 23:42:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.15 1994/11/26 12:44:45 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -120,6 +120,7 @@ typedef struct {
    char *(*ChipIdent)();
    void (*ChipEnterLeaveVT)();
    Bool (*ChipInitialize)();
+   Bool (*ChipValidMode)();
    void (*ChipAdjustFrame)();
    Bool (*ChipSwitchMode)();
 } s3VideoChipRec, *s3VideoChipPtr;

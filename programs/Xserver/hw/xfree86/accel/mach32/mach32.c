@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.25 1994/12/17 10:05:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.26 1994/12/29 09:47:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -73,6 +73,7 @@ ScrnInfoRec mach32InfoRec = {
     -1,			/* int scrnIndex */
     mach32Probe,      	/* Bool (* Probe)() */
     mach32Initialize,	/* Bool (* Init)() */
+    mach32ValidMode,	/* Bool (* ValidMode)() */
     mach32EnterLeaveVT,/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
@@ -1173,3 +1174,15 @@ mach32ClockSelect(no)
   }
   return(TRUE);
 }
+
+/*
+ * mach32ValidMode --
+ *
+ */
+static Bool
+mach32ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.2 94/03/31 11:11:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.5 1994/12/11 10:54:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.6 1994/12/17 10:06:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -313,7 +313,7 @@ xf86PostKbdEvent(key)
   KeySym      *keysym;
   int         keycode;
   static int  lockkeys = 0;
-#if defined(SYSCONS_SUPPORT)
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
   static Bool first_time = TRUE;
 #endif
 
@@ -322,11 +322,12 @@ xf86PostKbdEvent(key)
     scanCode = xf86CodrvMap[scanCode];
 #endif
 
-#if defined(SYSCONS_SUPPORT)
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
   if (first_time)
   {
     first_time = FALSE;
-    VTSwitchEnabled = (xf86Info.consType == SYSCONS);
+    VTSwitchEnabled = (xf86Info.consType == SYSCONS)
+	    || (xf86Info.consType == PCVT);
   }
 #endif
   /*
@@ -338,12 +339,13 @@ xf86PostKbdEvent(key)
       
     case KEY_Prefix0:
     case KEY_Prefix1:
-#if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT)
-      if (xf86Info.consType == PCCONS || xf86Info.consType == SYSCONS) {
+#if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
+      if (xf86Info.consType == PCCONS || xf86Info.consType == SYSCONS
+	  || xf86Info.consType == PCVT) {
 #endif
         xf86Info.scanPrefix = scanCode;  /* special prefixes */
         return;
-#if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT)
+#if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
       }
       break;
 #endif
@@ -393,7 +395,8 @@ xf86PostKbdEvent(key)
 
   else if (
 #ifdef CSRG_BASED
-           (xf86Info.consType == PCCONS || xf86Info.consType == SYSCONS) &&
+           (xf86Info.consType == PCCONS || xf86Info.consType == SYSCONS
+	    || xf86Info.consType == PCVT) &&
 #endif
            (xf86Info.scanPrefix == KEY_Prefix0)) {
     xf86Info.scanPrefix = 0;
@@ -465,7 +468,7 @@ xf86PostKbdEvent(key)
 	if (down) xf86ZoomViewport(xf86Info.currentScreen,  1);
 	return;
 
-#if defined(linux) || (defined(CSRG_BASED) && !defined(__bsdi__))
+#if defined(linux) || (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)))
 	/*
 	 * Under Linux, the raw keycodes are consumed before the kernel
 	 * does any processing on them, so we must emulate the vt switching
@@ -481,7 +484,11 @@ xf86PostKbdEvent(key)
       case KEY_F8:
       case KEY_F9:
       case KEY_F10:
-        if (VTSwitchEnabled && !xf86Info.vtSysreq)
+        if (VTSwitchEnabled && !xf86Info.vtSysreq
+#if (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)))
+	    && (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT)
+#endif
+	    )
         {
 	  if (down)
             ioctl(xf86Info.consoleFd, VT_ACTIVATE, scanCode - KEY_F1 + 1);
@@ -490,25 +497,29 @@ xf86PostKbdEvent(key)
 	break;
       case KEY_F11:
       case KEY_F12:
-        if (VTSwitchEnabled && !xf86Info.vtSysreq)
+        if (VTSwitchEnabled && !xf86Info.vtSysreq
+#if (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)))
+	    && (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT)
+#endif
+	    )
         {
 	  if (down)
             ioctl(xf86Info.consoleFd, VT_ACTIVATE, scanCode - KEY_F11 + 11);
           return;
         }
 	break;
-#endif
+#endif /* linux || BSD with VTs */
 
       /* just worth mentioning here: any 386bsd keyboard driver
        * (pccons.c or co_kbd.c) catches CTRL-ALT-DEL and CTRL-ALT-ESC
        * before any application (e.g. XF86) will see it
-       * OBS: syscons does not !
+       * OBS: syscons does not, nor does pcvt !
        */
       } 
     }
 
     /*
-     * Start of acutal Solaris VT switching code.  
+     * Start of actual Solaris VT switching code.  
      * This should pretty much emulate standard SVR4 switching keys.
      * 
      * DWH 12/2/93
@@ -739,7 +750,7 @@ xf86PostKbdEvent(key)
    * normal, non-keypad keys
    */
   if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
-#if !defined(__bsdi__) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__)
+#if !defined(CSRG_BASED) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__)
     /*
      * magic ALT_L key on AT84 keyboards for multilingual support
      */
@@ -750,7 +761,7 @@ xf86PostKbdEvent(key)
 	UsePrefix = TRUE;
 	Direction = TRUE;
       }
-#endif /* !__bsdi__ && !MACH386 && !MINIX && !__OSF__ */
+#endif /* !CSRG_BASED && !MACH386 && !MINIX && !__OSF__ */
   }
 
 

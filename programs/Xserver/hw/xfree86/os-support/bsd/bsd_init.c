@@ -1,5 +1,5 @@
 /* $XConsortium: bsd_init.c,v 1.1 94/03/28 21:28:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.0 1994/09/23 10:23:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.1 1994/10/23 12:59:53 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -68,6 +68,12 @@ static int initialVT = -1;
 #define SYSCONS_CONSOLE_MODE O_RDWR|O_NDELAY
 #endif
 
+#ifdef PCVT_SUPPORT
+/* Hellmuth Michaelis' pcvt driver */
+#define PCVT_CONSOLE_DEV "/dev/ttyv0"
+#define PCVT_CONSOLE_MODE O_RDWR|O_NDELAY
+#endif
+
 #define CHECK_DRIVER_MSG \
   "Check your kernel's console driver configuration and /dev entries"
 
@@ -86,20 +92,92 @@ static char *supported_drivers[] = {
 #endif
 };
 
-void xf86OpenConsole()
-{
-    int i, fd = -1, onoff;
-    vtmode_t vtmode;
-    char vtname[12];
-    struct stat status;
-    long syscons_version;
-#ifdef PCVT_SUPPORT
-    struct pcvtid pcvt_version;
-#endif
 
+/*
+ * Functions to probe for the existance of a supported console driver.
+ * Any function returns either a valid file descriptor (driver probed
+ * succesfully), -1 (driver not found), or uses FatalError() if the
+ * driver was found but proved to not support the required mode to run
+ * an X server.
+ */
+
+typedef int (*xf86ConsOpen_t)(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+#ifdef PCCONS_SUPPORT
+static int xf86OpenPccons(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+#endif /* PCCONS_SUPPORT */
+
+#ifdef CODRV_SUPPORT
+static int xf86OpenCodrv(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+#endif /* CODRV_SUPPORT */
+
+#ifdef SYSCONS_SUPPORT
+static int xf86OpenSyscons(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+#endif /* SYSCONS_SUPPORT */
+
+#ifdef PCVT_SUPPORT
+static int xf86OpenPcvt(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+#endif /* PCVT_SUPPORT */
+
+/*
+ * The sequence of the driver probes is important; start with the
+ * driver that is best distinguishable, and end with the most generic
+ * driver.  (Otherwise, pcvt would also probe as syscons, and either
+ * pcvt or syscons might succesfully probe as pccons.  Only codrv is
+ * at its own.)
+ */
+static xf86ConsOpen_t xf86ConsTab[] = {
+#ifdef PCVT_SUPPORT
+    xf86OpenPcvt,
+#endif
+#ifdef CODRV_SUPPORT
+    xf86OpenCodrv,
+#endif
+#ifdef SYSCONS_SUPPORT
+    xf86OpenSyscons,
+#endif
+#ifdef PCCONS_SUPPORT
+    xf86OpenPccons,
+#endif
+    (xf86ConsOpen_t)NULL
+};
+
+
+void
+xf86OpenConsole()
+{
+    int i, fd;
+#ifdef CODRV_SUPPORT
+    int onoff;
+#endif
+    xf86ConsOpen_t *driver;
+#if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
+    vtmode_t vtmode;
+#endif
+    
     if (serverGeneration == 1)
     {
-	/* check if we're run with euid==0 */
+	/* check if we are run with euid==0 */
 	if (geteuid() != 0)
 	{
 	    FatalError("xf86OpenConsole: Server must be suid root\n");
@@ -120,26 +198,178 @@ void xf86OpenConsole()
 	    }
 	}
 
-#ifdef SYSCONS_SUPPORT
-	/* First check for syscons */
-	if (((fd = open(SYSCONS_CONSOLE_DEV1, SYSCONS_CONSOLE_MODE, 0)) >= 0
-	    || (fd = open(SYSCONS_CONSOLE_DEV2, SYSCONS_CONSOLE_MODE, 0)) >= 0)
-	    && (ioctl(fd, VT_GETMODE, &vtmode) >= 0))
+	/* detect which driver we are running on */
+	for (driver = xf86ConsTab; *driver; driver++)
 	{
-#ifdef PCVT_SUPPORT
-	    /* Check if PCVT */
-	    if (ioctl(fd, VGAPCVTID, &pcvt_version) >= 0)
+	    if((fd = (*driver)()) >= 0)
+		break;
+	}
+
+	/* Check that a supported console driver was found */
+	if (fd < 0)
+	{
+	    char cons_drivers[80] = {0, };
+	    for (i = 0; i < sizeof(supported_drivers) / sizeof(char *); i++)
 	    {
-		syscons_version = -1;
-	    }
-	    else
-#endif
-	    /* Get syscons version */
-	    {
-		if (ioctl(fd, CONS_GETVERS, &syscons_version) < 0)
+		if (i)
 		{
-		    syscons_version = 0;
+		    strcat(cons_drivers, ", ");
 		}
+		strcat(cons_drivers, supported_drivers[i]);
+	    }
+	    FatalError(
+		"%s: No console driver found\n\tSupported drivers: %s\n\t%s\n",
+		"xf86OpenConsole", cons_drivers, CHECK_DRIVER_MSG);
+	}
+	fclose(stdin);
+	xf86Info.consoleFd = fd;
+	xf86Info.screenFd = fd;
+
+	xf86Config(FALSE); /* Read XF86Config */
+
+	switch (xf86Info.consType)
+	{
+#ifdef CODRV_SUPPORT
+	case CODRV011:
+	case CODRV01X:
+	    onoff = X_MODE_ON;
+	    if (ioctl (xf86Info.consoleFd, CONSOLE_X_MODE, &onoff) < 0)
+	    {
+		FatalError("%s: CONSOLE_X_MODE ON failed (%s)\n%s\n", 
+			   "xf86OpenConsole", strerror(errno),
+			   CHECK_DRIVER_MSG);
+	    }
+	    if (xf86Info.consType == CODRV01X)
+		ioctl(xf86Info.consoleFd, VGATAKECTRL, 0);
+	    break;
+#endif
+#ifdef PCCONS_SUPPORT
+	case PCCONS:
+	    if (ioctl (xf86Info.consoleFd, CONSOLE_X_MODE_ON, 0) < 0)
+	    {
+		FatalError("%s: CONSOLE_X_MODE_ON failed (%s)\n%s\n", 
+			   "xf86OpenConsole", strerror(errno),
+			   CHECK_DRIVER_MSG);
+	    }
+	    /*
+	     * Hack to prevent keyboard hanging when syslogd closes
+	     * /dev/console
+	     */
+	    if ((devConsoleFd = open("/dev/console", O_WRONLY,0)) < 0)
+	    {
+		ErrorF("Warning: couldn't open /dev/console (%s)\n",
+		       strerror(errno));
+	    }
+	    break;
+#endif
+#if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
+	case SYSCONS:
+	case PCVT:
+	    /*
+	     * now get the VT
+	     */
+	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
+	    {
+    	        ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
+	    }
+	    if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
+	    {
+	        ErrorF("xf86OpenConsole: VT_WAITACTIVE failed\n");
+	    }
+
+	    signal(SIGUSR1, xf86VTRequest);
+
+	    vtmode.mode = VT_PROCESS;
+	    vtmode.relsig = SIGUSR1;
+	    vtmode.acqsig = SIGUSR1;
+	    vtmode.frsig = SIGUSR1;
+	    if (ioctl(xf86Info.consoleFd, VT_SETMODE, &vtmode) < 0) 
+	    {
+	        FatalError("xf86OpenConsole: VT_SETMODE VT_PROCESS failed\n");
+	    }
+	    if (ioctl(xf86Info.consoleFd, KDENABIO, 0) < 0)
+	    {
+	        FatalError("xf86OpenConsole: KDENABIO failed (%s)\n",
+		           strerror(errno));
+	    }
+	    if (ioctl(xf86Info.consoleFd, KDSETMODE, KD_GRAPHICS) < 0)
+	    {
+	        FatalError("xf86OpenConsole: KDSETMODE KD_GRAPHICS failed\n");
+	    }
+   	    break; 
+#endif /* SYSCONS_SUPPORT || PCVT_SUPPORT */
+        }
+    }
+    else 
+    {
+	/* serverGeneration != 1 */
+#if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
+    	if (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT)
+    	{
+	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
+	    {
+	        ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
+	    }
+        }
+#endif /* SYSCONS_SUPPORT || PCVT_SUPPORT */
+    }
+    return;
+}
+
+
+#ifdef PCCONS_SUPPORT
+
+static int
+xf86OpenPccons()
+{
+    int fd = -1;
+
+    if ((fd = open(PCCONS_CONSOLE_DEV1, PCCONS_CONSOLE_MODE, 0))
+	>= 0 ||
+	(fd = open(PCCONS_CONSOLE_DEV2, PCCONS_CONSOLE_MODE, 0))
+	>= 0)
+    {
+	if (ioctl(fd, CONSOLE_X_MODE_OFF, 0) < 0)
+	{
+	    FatalError(
+		"%s: CONSOLE_X_MODE_OFF failed (%s)\n%s\n%s\n",
+		"xf86OpenPccons",
+		strerror(errno),
+		"Was expecting pccons driver with X support",
+		CHECK_DRIVER_MSG);
+	}
+	xf86Info.consType = PCCONS;
+	if (xf86Verbose)
+	{
+	    ErrorF("Using pccons driver with X support\n");
+	}
+    }
+    return fd;
+}
+
+#endif /* PCCONS_SUPPORT */
+
+#ifdef SYSCONS_SUPPORT
+
+static int
+xf86OpenSyscons()
+{
+    int fd = -1;
+    vtmode_t vtmode;
+    char vtname[12];
+    struct stat status;
+    long syscons_version;
+
+    /* Check for syscons */
+    if ((fd = open(SYSCONS_CONSOLE_DEV1, SYSCONS_CONSOLE_MODE, 0)) >= 0
+	|| (fd = open(SYSCONS_CONSOLE_DEV2, SYSCONS_CONSOLE_MODE, 0)) >= 0)
+    {
+	if (ioctl(fd, VT_GETMODE, &vtmode) >= 0)
+	{
+	    /* Get syscons version */
+	    if (ioctl(fd, CONS_GETVERS, &syscons_version) < 0)
+	    {
+		syscons_version = 0;
 	    }
 
 	    xf86Info.vtno = VTnum;
@@ -181,8 +411,9 @@ void xf86OpenConsole()
 		    {
 			xf86Info.vtno = initialVT;
 		    }
-		    else if ((fstat(0, &status) >= 0) && S_ISCHR(status.st_mode)
-		        && (ioctl(0, VT_GETMODE, &vtmode) >= 0))
+		    else if ((fstat(0, &status) >= 0)
+			     && S_ISCHR(status.st_mode)
+			     && (ioctl(0, VT_GETMODE, &vtmode) >= 0))
 		    {
 			/* stdin is a VT */
 			xf86Info.vtno = minor(status.st_rdev) + 1;
@@ -192,11 +423,11 @@ void xf86OpenConsole()
 			if (syscons_version >= 0x100)
 			{
 			    FatalError("%s: Cannot find a free VT\n",
-				       "xf86OpenConsole");
+				       "xf86OpenSyscons");
 			}
 			/* Should no longer reach here */
 			FatalError("%s: %s %s\n\t%s %s\n",
-				   "xf86OpenConsole",
+				   "xf86OpenSyscons",
 				   "syscons versions prior to 1.0 require",
 				   "either the",
 				   "server's stdin be a VT",
@@ -205,263 +436,220 @@ void xf86OpenConsole()
 		}
 	    }
 
-	    /* Don't need stdin any more */
-	    fclose(stdin);
-
 	    close(fd);
 	    sprintf(vtname, "/dev/ttyv%01x", xf86Info.vtno - 1);
 	    if ((fd = open(vtname, SYSCONS_CONSOLE_MODE, 0)) < 0)
 	    {
-		FatalError("xf86OpenConsole: Cannot open %s (%s)\n",
+		FatalError("xf86OpenSyscons: Cannot open %s (%s)\n",
 			   vtname, strerror(errno));
 	    }
 	    if (ioctl(fd, VT_GETMODE, &vtmode) < 0)
 	    {
-		FatalError("xf86OpenConsole: VT_GETMODE failed\n");
+		FatalError("xf86OpenSyscons: VT_GETMODE failed\n");
 	    }
 	    xf86Info.consType = SYSCONS;
 	    if (xf86Verbose)
 	    {
-#ifdef PCVT_SUPPORT
-		if (syscons_version == -1)
+		ErrorF("Using syscons driver with X support");
+		if (syscons_version >= 0x100)
 		{
-		    ErrorF("Using pcvt driver (version %d.%d)\n",
-			   pcvt_version.rmajor, pcvt_version.rminor);
+		    ErrorF(" (version %d.%d)\n", syscons_version >> 8,
+			   syscons_version & 0xFF);
 		}
 		else
-#endif
 		{
-		    ErrorF("Using syscons driver with X support");
-		    if (syscons_version >= 0x100)
-		    {
-	                ErrorF(" (version %d.%d)\n", syscons_version >> 8,
-			       syscons_version & 0xFF);
-		    }
-		    else
-		    {
-	                ErrorF(" (version 0.x)\n");
-		    }
+		    ErrorF(" (version 0.x)\n");
 		}
-
 		ErrorF("(using VT number %d)\n\n", xf86Info.vtno);
 	    }
 	}
-        else
-#endif /* SYSCONS_SUPPORT */
+	else
 	{
+	    /* VT_GETMODE failed, probably not syscons */
+	    close(fd);
 	    fd = -1;
-#ifdef CODRV_SUPPORT
-	    /* Try codrv next */
-	    if ((fd = open(CODRV_CONSOLE_DEV, CODRV_CONSOLE_MODE, 0)) >= 0) 
-	    {
-	        int onoff = X_MODE_OFF;
-     
-	        if (ioctl(fd, CONSOLE_X_MODE, &onoff) < 0)
-	        {
-		    FatalError("%s: CONSOLE_X_MODE on %s failed (%s)\n%s\n%s\n",
-			       "xf86OpenConsole",
-			       CODRV_CONSOLE_DEV, strerror(errno),
-			       "Was expecting codrv driver",
-			       CHECK_DRIVER_MSG);
-	        }
-	        xf86Info.consType = CODRV011;
-	    }
-	    else
-#endif /* CODRV_SUPPORT */
-	    {
-#ifdef CODRV_SUPPORT
-	        if (errno == EBUSY)
-	        {
-		   FatalError("xf86OpenConsole: %s is already in use (codrv)\n",
-			      CODRV_CONSOLE_DEV);
-	        }
-#endif /* CODRV_SUPPORT */
-#ifdef PCCONS_SUPPORT
-	        /* Now try pccons */
-	        if ((fd = open(PCCONS_CONSOLE_DEV1, PCCONS_CONSOLE_MODE, 0))
-		    >= 0 ||
-		    (fd = open(PCCONS_CONSOLE_DEV2, PCCONS_CONSOLE_MODE, 0))
-		    >= 0)
-	        {
-		    if (ioctl(fd, CONSOLE_X_MODE_OFF, 0) < 0)
-		    {
-		        FatalError(
-			   "%s: CONSOLE_X_MODE_OFF failed (%s)\n%s\n%s\n",
-			    "xf86OpenConsole",
-			    strerror(errno),
-			    "Was expecting pccons driver with X support",
-			    CHECK_DRIVER_MSG);
-		    }
-		    xf86Info.consType = PCCONS;
-		    if (xf86Verbose)
-		    {
-#ifdef PCVT_SUPPORT
-			/* Check if PCVT */
-			if (ioctl(fd, VGAPCVTID, &pcvt_version) >= 0)
-			{
-			    ErrorF("Using pcvt driver (version %d.%d)\n",
-			           pcvt_version.rmajor, pcvt_version.rminor);
-			}
-			else
-#endif
-		            ErrorF("Using pccons driver with X support\n");
-		    }
-	        }
-#endif /* PCCONS_SUPPORT */
-	    }
-     	}
-	/* Check that a supported console driver was found */
-        if (fd < 0)
-	{
-		char cons_drivers[80] = {0, };
-		for (i = 0; i < sizeof(supported_drivers) / sizeof(char *); i++)
-		{
-			if (i)
-			{
-				strcat(cons_drivers, ", ");
-			}
-			strcat(cons_drivers, supported_drivers[i]);
-		}
-		FatalError(
-		 "%s: No console driver found\n\tSupported drivers: %s\n\t%s\n",
-		 "xf86OpenConsole", cons_drivers, CHECK_DRIVER_MSG);
 	}
-     	fclose(stdin);
-	xf86Info.consoleFd = fd;
-	xf86Info.screenFd = fd;
-
-#ifdef CODRV_SUPPORT
-	if (xf86Info.consType == CODRV011)
-	{
-	    /* 
-	     * analyse whether this kernel has sufficient capabilities for 
-	     * this xserver, if not don't proceed: it won't work.  Also 
-	     * find out which codrv version.
-	     */
-#define NECESSARY	(CONS_HASKBD|CONS_HASKEYNUM|CONS_HASPX386)
-	    struct oldconsinfo ci;
-	    if ((ioctl(fd, OLDCONSGINFO, &ci) < 0 ||
-	        (ci.info1 & NECESSARY) != NECESSARY))
-	    {
-		FatalError("xf86OpenConsole: %s\n%s\n%s\n",
-		    "This Xserver has detected the codrv driver, but your",
-		    "kernel doesn't appear to have the required facilities",
-		    CHECK_DRIVER_MSG);
-	    }
-	    /* Check for codrv 0.1.2 or later */
-	    if (ci.info1 & CONS_CODRV2)
-	    {
-		xf86Info.consType = CODRV01X;
-		if (xf86Verbose)
-		{
-		    ErrorF("Using codrv 0.1.2 (or later)\n");
-		}
-	    }
-	    else
-	    {
-		if (xf86Verbose)
-		{
-		    ErrorF("Using codrv 0.1.1\n");
-		}
-	    }
-#undef NECESSARY
-	}
-#endif /* CODRV_SUPPORT */
-
-	xf86Config(FALSE); /* Read XF86Config */
-
-	switch (xf86Info.consType)
-	{
-#ifdef CODRV_SUPPORT
-	case CODRV011:
-	case CODRV01X:
-	    onoff = X_MODE_ON;
-	    if (ioctl (xf86Info.consoleFd, CONSOLE_X_MODE, &onoff) < 0)
-	    {
-		FatalError("%s: CONSOLE_X_MODE ON failed (%s)\n%s\n", 
-			   "xf86OpenConsole", strerror(errno),
-			   CHECK_DRIVER_MSG);
-	    }
-	    if (xf86Info.consType == CODRV01X)
-		ioctl(xf86Info.consoleFd, VGATAKECTRL, 0);
-	    break;
-#endif
-#ifdef PCCONS_SUPPORT
-	case PCCONS:
-	    if (ioctl (xf86Info.consoleFd, CONSOLE_X_MODE_ON, 0) < 0)
-	    {
-		FatalError("%s: CONSOLE_X_MODE_ON failed (%s)\n%s\n", 
-			   "xf86OpenConsole", strerror(errno),
-			   CHECK_DRIVER_MSG);
-	    }
-	    /*
-	     * Hack to prevent keyboard hanging when syslogd closes
-	     * /dev/console
-	     */
-	    if ((devConsoleFd = open("/dev/console", O_WRONLY,0)) < 0)
-	    {
-		ErrorF("Warning: couldn't open /dev/console (%s)\n",
-		       strerror(errno));
-	    }
-	    break;
-#endif
-#ifdef SYSCONS_SUPPORT
-	case SYSCONS:
-	    /*
-	     * now get the VT
-	     */
-	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
-	    {
-    	        ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
-	    }
-	    if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
-	    {
-	        ErrorF("xf86OpenConsole: VT_WAITACTIVE failed\n");
-	    }
-
-	    signal(SIGUSR1, xf86VTRequest);
-
-	    vtmode.mode = VT_PROCESS;
-	    vtmode.relsig = SIGUSR1;
-	    vtmode.acqsig = SIGUSR1;
-	    vtmode.frsig = SIGUSR1;
-	    if (ioctl(xf86Info.consoleFd, VT_SETMODE, &vtmode) < 0) 
-	    {
-	        FatalError("xf86OpenConsole: VT_SETMODE VT_PROCESS failed\n");
-	    }
-	    if (ioctl(xf86Info.consoleFd, KDENABIO, 0) < 0)
-	    {
-	        FatalError("xf86OpenConsole: KDENABIO failed (%s)\n",
-		           strerror(errno));
-	    }
-	    if (ioctl(xf86Info.consoleFd, KDSETMODE, KD_GRAPHICS) < 0)
-	    {
-	        FatalError("xf86OpenConsole: KDSETMODE KD_GRAPHICS failed\n");
-	    }
-   	    break; 
-#endif /* SYSCONS_SUPPORT */
-        }
     }
-    else 
-    {
-	/* serverGeneration != 1 */
-#ifdef SYSCONS_SUPPORT
-    	if (xf86Info.consType == SYSCONS)
-    	{
-	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
-	    {
-	        ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
-	    }
-        }
-#endif /* SYSCONS_SUPPORT */
-    }
-    return;
+    return fd;
 }
 
-void xf86CloseConsole()
+#endif /* SYSCONS_SUPPORT */
+
+
+#ifdef CODRV_SUPPORT
+
+static int
+xf86OpenCodrv()
 {
+    int fd = -1, onoff = X_MODE_OFF;
+    struct oldconsinfo ci;
+
+    if ((fd = open(CODRV_CONSOLE_DEV, CODRV_CONSOLE_MODE, 0)) >= 0) 
+    {
+	if (ioctl(fd, CONSOLE_X_MODE, &onoff) < 0)
+	{
+	    FatalError("%s: CONSOLE_X_MODE on %s failed (%s)\n%s\n%s\n",
+		       "xf86OpenCodrv",
+		       CODRV_CONSOLE_DEV, strerror(errno),
+		       "Was expecting codrv driver",
+		       CHECK_DRIVER_MSG);
+	}
+	xf86Info.consType = CODRV011;
+    }
+    else
+    {
+	if (errno == EBUSY)
+	{
+	    FatalError("xf86OpenCodrv: %s is already in use (codrv)\n",
+		       CODRV_CONSOLE_DEV);
+	}
+    }
+    else
+    {
+	fd = -1;
+    }
+    
+    if(fd >= 0)
+    {
+	/* 
+	 * analyse whether this kernel has sufficient capabilities for 
+	 * this xserver, if not don't proceed: it won't work.  Also 
+	 * find out which codrv version.
+	 */
+#define NECESSARY	(CONS_HASKBD|CONS_HASKEYNUM|CONS_HASPX386)
+	if ((ioctl(fd, OLDCONSGINFO, &ci) < 0 ||
+	     (ci.info1 & NECESSARY) != NECESSARY))
+	{
+	    FatalError("xf86OpenCodrv: %s\n%s\n%s\n",
+		       "This Xserver has detected the codrv driver, but your",
+		       "kernel doesn't appear to have the required facilities",
+		       CHECK_DRIVER_MSG);
+	}
+	/* Check for codrv 0.1.2 or later */
+	if (ci.info1 & CONS_CODRV2)
+	{
+	    xf86Info.consType = CODRV01X;
+	    if (xf86Verbose)
+	    {
+		ErrorF("Using codrv 0.1.2 (or later)\n");
+	    }
+	}
+	else
+	{
+	    if (xf86Verbose)
+	    {
+		ErrorF("Using codrv 0.1.1\n");
+	    }
+	}
+#undef NECESSARY
+    }
+    
+    return fd;
+}
+#endif /* CODRV_SUPPORT */
+
+#ifdef PCVT_SUPPORT
+
+static int
+xf86OpenPcvt()
+{
+    /* This looks much like syscons, since pcvt is API compatible */
+    int fd = -1;
+    vtmode_t vtmode;
+    char vtname[12];
+    struct stat status;
+    struct pcvtid pcvt_version;
+
+    if ((fd = open(PCVT_CONSOLE_DEV, PCVT_CONSOLE_MODE, 0)) >= 0)
+    {
+	if (ioctl(fd, VGAPCVTID, &pcvt_version) >= 0)
+	{
+	    if(ioctl(fd, VT_GETMODE, &vtmode) < 0)
+	    {
+		FatalError("%s: VT_GETMODE failed\n%s%s\n%s\n",
+			   "xf86OpenPcvt",
+			   "Found pcvt driver but X11 seems to be",
+			   " not supported.", CHECK_DRIVER_MSG);
+	    }
+
+	    xf86Info.vtno = VTnum;
+		
+	    if (ioctl(fd, VT_GETACTIVE, &initialVT) < 0)
+		initialVT = -1;
+
+	    if (xf86Info.vtno == -1)
+	    {
+		if (ioctl(fd, VT_OPENQRY, &xf86Info.vtno) < 0)
+		{
+		    /* No free VTs */
+		    xf86Info.vtno = -1;
+		}
+
+		if (xf86Info.vtno == -1)
+		{
+		    /*
+		     * All VTs are in use.  If initialVT was found, use it.
+		     * Otherwise, if stdin is a VT, use that one.
+		     */
+		    if (initialVT != -1)
+		    {
+			xf86Info.vtno = initialVT;
+		    }
+		    else if ((fstat(0, &status) >= 0)
+			     && S_ISCHR(status.st_mode)
+			     && (ioctl(0, VT_GETMODE, &vtmode) >= 0))
+		    {
+			/* stdin is a VT */
+			xf86Info.vtno = minor(status.st_rdev) + 1;
+		    }
+		    else
+		    {
+			FatalError("%s: Cannot find a free VT\n",
+				   "xf86OpenPcvt");
+		    }
+		}
+	    }
+
+	    close(fd);
+	    sprintf(vtname, "/dev/ttyv%01x", xf86Info.vtno - 1);
+	    if ((fd = open(vtname, PCVT_CONSOLE_MODE, 0)) < 0)
+	    {
+		FatalError("xf86OpenPcvt: Cannot open %s (%s)\n",
+			   vtname, strerror(errno));
+	    }
+	    if (ioctl(fd, VT_GETMODE, &vtmode) < 0)
+	    {
+		FatalError("xf86OpenPcvt: VT_GETMODE failed\n");
+	    }
+	    xf86Info.consType = PCVT;
+	    if (xf86Verbose)
+	    {
+		ErrorF("Using pcvt driver (version %d.%d)\n",
+		       pcvt_version.rmajor, pcvt_version.rminor);
+	    }
+	}
+	else
+	{
+	    /* Not pcvt */
+	    close(fd);
+	    fd = -1;
+	}
+    }
+    return fd;
+}
+
+#endif /* PCVT_SUPPORT */
+
+
+void
+xf86CloseConsole()
+{
+#if defined(CODRV_SUPPORT)
     int onoff;
+#endif
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
     struct vt_mode   VT;
+#endif
 
     switch (xf86Info.consType)
     {
@@ -481,8 +669,9 @@ void xf86CloseConsole()
 	ioctl (xf86Info.consoleFd, CONSOLE_X_MODE_OFF, 0);
 	break;
 #endif /* PCCONS_SUPPORT */
-#ifdef SYSCONS_SUPPORT
+#if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
     case SYSCONS:
+    case PCVT:
         ioctl(xf86Info.consoleFd, KDSETMODE, KD_TEXT);  /* Back to text mode */
         if (ioctl(xf86Info.consoleFd, VT_GETMODE, &VT) != -1)
         {
@@ -491,13 +680,13 @@ void xf86CloseConsole()
         }
         if (ioctl(xf86Info.consoleFd, KDDISABIO, 0) < 0)
         {
-            xf86FatalError("xf86OpenConsole: KDDISABIO failed (%s)\n",
+            xf86FatalError("xf86CloseConsole: KDDISABIO failed (%s)\n",
 	                   strerror(errno));
         }
 	if (initialVT != -1)
 		ioctl(xf86Info.consoleFd, VT_ACTIVATE, initialVT);
         break;
-#endif /* SYSCONS_SUPPORT */
+#endif /* SYSCONS_SUPPORT || PCVT_SUPPORT */
     }
 
     if (xf86Info.screenFd != xf86Info.consoleFd)
@@ -516,7 +705,8 @@ void xf86CloseConsole()
     return;
 }
 
-int xf86ProcessArgument (argc, argv, i)
+int
+xf86ProcessArgument (argc, argv, i)
 int argc;
 char *argv[];
 int i;
@@ -530,7 +720,7 @@ int i;
 		KeepTty = TRUE;
 		return(1);
 	}
-#ifdef SYSCONS_SUPPORT
+#if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	if ((argv[i][0] == 'v') && (argv[i][1] == 't'))
 	{
 		if (sscanf(argv[i], "vt%2d", &VTnum) == 0 ||
@@ -542,15 +732,16 @@ int i;
 		}
 		return(1);
 	}
-#endif /* SYSCONS_SUPPORT */
+#endif /* SYSCONS_SUPPORT || PCVT_SUPPORT */
 	return(0);
 }
 
-void xf86UseMsg()
+void
+xf86UseMsg()
 {
-#ifdef SYSCONS_SUPPORT
+#if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	ErrorF("vtXX                   use the specified VT number (1-12)\n");
-#endif /* SYSCONS_SUPPORT */
+#endif /* SYSCONS_SUPPORT || PCVT_SUPPORT */
 	ErrorF("-keeptty               ");
 	ErrorF("don't detach controlling tty (for debugging only)\n");
 	return;
