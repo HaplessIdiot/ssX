@@ -18,7 +18,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/include/Xos_r.h,v 1.7 2000/08/28 15:29:11 dawes Exp $ */
+/* $XFree86: xc/include/Xos_r.h,v 1.8 2001/01/17 17:53:11 dawes Exp $ */
 
 /* 
  * Various and sundry Thread-Safe functions used by X11, Motif, and CDE.
@@ -243,9 +243,12 @@ typedef struct {
   size_t len;
 } _Xgetpwparams;
 
-/* NetBSD, at least, is missing several of the unixware passwd fields. */
+/*
+ * NetBSD and FreeBSD, at least, are missing several of the unixware passwd
+ * fields.
+ */
    
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__FreeBSD__)
 __inline__ void _Xpw_copyPasswd(_Xgetpwparams p)
 {
    memcpy(&(p).pws, (p).pwp, sizeof(struct passwd));
@@ -412,7 +415,7 @@ typedef int _Xgetservbynameparams; /* dummy */
 /* UnixWare 2.0, or other systems with thread support but no _r API. */
 /* WARNING:  The h_addr_list and s_aliases values are *not* copied! */
 
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__FreeBSD__)
 #include <sys/param.h>
 #endif
 

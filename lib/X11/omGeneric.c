@@ -31,7 +31,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.17 2000/11/28 18:49:52 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.18 2001/01/17 19:41:56 dawes Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -1161,7 +1161,7 @@ parse_vw(oc, font_set, name_list, count)
 		}
 		vrotate_num = font_set->vrotate_num = sub_num;
 	    } else {
-		font_set->vrotate = (VRotate)NULL;
+		vrotate = font_set->vrotate = (VRotate)NULL;
 	    }
 
 	    ret = parse_fontdata(oc, font_set, (FontData) vrotate, vrotate_num,
