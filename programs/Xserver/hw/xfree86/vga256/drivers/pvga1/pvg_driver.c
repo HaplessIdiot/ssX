@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.2 94/03/28 21:52:30 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.2 1994/06/01 01:02:22 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.3 1994/06/15 15:43:54 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -34,6 +34,10 @@
  * 16 (17) clock support added by Anders Bostrom <erabosa@lmera.ericsson.se>
  */
 
+/*
+ * Support for 90C33 added by Bill Morgart <wsm@morticia.ssw.com>
+ */
+
 #include "X.h"
 #include "input.h"
 #include "screenint.h"
@@ -54,7 +58,7 @@
 #endif
 
 #ifndef MONOVGA
-#include "cfbfuncs.h"
+#include "vga256.h"
 
 extern void pvgacfbFillRectSolidCopy();
 extern void pvgacfbDoBitbltCopy();
@@ -66,6 +70,7 @@ extern void C33cfbDoBitbltCopy();
 extern void C33cfbFillBoxSolid();
 extern void C33BitBlt();
 #endif
+#include "paradise.h"
 
 typedef struct {
   vgaHWRec      std;          /* std IBM VGA register */
@@ -98,6 +103,9 @@ static void  PVGA1FbInit();
 extern void  PVGA1SetRead();
 extern void  PVGA1SetWrite();
 extern void  PVGA1SetReadWrite();
+extern void  WD90C33SetRead();
+extern void  WD90C33SetWrite();
+extern void  WD90C33SetReadWrite();
 
 vgaVideoChipRec PVGA1 = {
   PVGA1Probe,
@@ -127,21 +135,11 @@ vgaVideoChipRec PVGA1 = {
 
 #define new ((vgaPVGA1Ptr)vgaNewVideoState)
 
-#define C_PVGA1	0		/* PVGA1 */
-#define WD90C00	1		/* WD90C00 */
-#define WD90C10	2		/* WD90C1x */
-#define WD90C30	3		/* WD90C30 */
-#define WD90C31	4		/* WD90C31 */
-#define WD90C33	5		/* WD90C33 */
-#define WD90C20 6		/* WD90C2x */
-static int WDchipset;
+int WDchipset;
 static int MClk = 45000;
 static int MClkIndex = 8;
 static unsigned char save_cs2 = 0;
 static Bool use_cs2 = TRUE;
-
-#define IS_WD90C3X(x)	(((x) == WD90C30) || ((x) == WD90C31) || \
-			 ((x) == WD90C33))
 
 #undef DO_WD90C20
 
@@ -151,18 +149,21 @@ static unsigned PVGA1_ExtPorts[] = {            /* extra ports for WD90C31 */
 static int NumPVGA1_ExtPorts =
              ( sizeof(PVGA1_ExtPorts) / sizeof(PVGA1_ExtPorts[0]) );
 
-static unsigned C33_ExtPorts[] = {            /* extra ports for WD90C33 */
-             0x23C0,
-	     0x23C1,
-	     0x23C2,
-	     0x23C3,
-	     0x23C4,
-	     0x23C5,
-	     0x23CE };
+static unsigned PVGA1_ExtPorts_WD90C33[] =    /* extra ports for WD90C33 */
+{ 
+  EXT_REG_ACCESS_PORT,
+  EXT_REG_IO_PORT,  
+  HBITBLT_PORT0,  
+  HBITBLT_PORT1,  
+  LINE_DRAW_K1,
+  LINE_DRAW_K2,
+  LINE_DRAW_ERROR_TERM,
+  COMMAND_BUFFER
+};
 
-static int NumC33_ExtPorts =
-             ( sizeof(C33_ExtPorts) / sizeof(C33_ExtPorts[0]) );
-
+static int NumPVGA1_ExtPorts_WD90C33 =
+             ( sizeof(PVGA1_ExtPorts_WD90C33)
+            / sizeof(PVGA1_ExtPorts_WD90C33[0]) );
 
 /*
  * PVGA1Ident
@@ -346,7 +347,7 @@ PVGA1Probe()
 	    }
 	    else if (testinx2(0x3C4, 0x14, 0x0F)) {
 		/* 
-		 * WD90C24, 26, 30, 31.
+		 * WD90C24, 26, 30, 31, 33.
 		 */
 		tmp1 = rdinx(vgaIOBase+0x04, 0x34);
 		wrinx(vgaIOBase+0x04, 0x34, 0x00);
@@ -402,8 +403,9 @@ PVGA1Probe()
 
     if (WDchipset == WD90C33)  /* enable extra hardware accel registers */
     {
+	/* Enable the WD90C33 features */
         xf86AddIOPorts(vga256InfoRec.scrnIndex,
-                       NumC33_ExtPorts, C33_ExtPorts);
+                       NumPVGA1_ExtPorts_WD90C33, PVGA1_ExtPorts_WD90C33);
       	PVGA1EnterLeave(LEAVE);   /* force update of IO ports enable */
       	PVGA1EnterLeave(ENTER);
     }
@@ -431,6 +433,9 @@ PVGA1Probe()
 	  outb(vgaIOBase+4,0x3e); 
 	  if (inb(vgaIOBase + 5) & 0x80) {
 	    vga256InfoRec.videoRam = 2048; 
+	    PVGA1.ChipSetWrite = WD90C33SetWrite;
+	    PVGA1.ChipSetRead = WD90C33SetRead;
+	    PVGA1.ChipSetReadWrite = WD90C33SetReadWrite;
 	  }
 	}
 	break;
@@ -515,18 +520,18 @@ PVGA1Probe()
  *      initialize the cfb SpeedUp functions
  */
 /* block of current settings for speedup registers */
-int pvga1_blt_cntrl2 = -1;
-int pvga1_blt_src_low = -1;
-int pvga1_blt_src_hgh = -1;
-int pvga1_blt_dim_x = -1;
-int pvga1_blt_dim_y = -1;
-int pvga1_blt_row_pitch = -1;
-int pvga1_blt_rop = -1;
-int pvga1_blt_for_color = -1;
-int pvga1_blt_bck_color = -1;
-int pvga1_blt_trns_color = -1;
-int pvga1_blt_trns_mask = -1;
-int pvga1_blt_planemask = -1;
+unsigned int pvga1_blt_cntrl2 = (unsigned int)-1;
+unsigned int pvga1_blt_src_low = (unsigned int)-1;
+unsigned int pvga1_blt_src_hgh = (unsigned int)-1;
+unsigned int pvga1_blt_dim_x = (unsigned int)-1;
+unsigned int pvga1_blt_dim_y = (unsigned int)-1;
+unsigned int pvga1_blt_row_pitch = (unsigned int)-1;
+unsigned int pvga1_blt_rop = (unsigned int)-1;
+unsigned int pvga1_blt_for_color = (unsigned int)-1;
+unsigned int pvga1_blt_bck_color = (unsigned int)-1;
+unsigned int pvga1_blt_trns_color = (unsigned int)-1;
+unsigned int pvga1_blt_trns_mask = (unsigned int)-1;
+unsigned int pvga1_blt_planemask = (unsigned int)-1;
 
 void (*pvga1_stdcfbFillRectSolidCopy)();
 void (*pvga1_stdcfbDoBitbltCopy)();
@@ -555,28 +560,25 @@ PVGA1FbInit()
   if (useSpeedUp & SPEEDUP_FILLRECT)
   {
    /** must save default because if not screen to screen must use default **/
-    pvga1_stdcfbFillRectSolidCopy = cfbLowlevFuncs.fillRectSolidCopy;
-    if (WDchipset == WD90C31) cfbLowlevFuncs.fillRectSolidCopy = pvgacfbFillRectSolidCopy;
-    if (WDchipset == WD90C33) cfbLowlevFuncs.fillRectSolidCopy = C33cfbFillRectSolidCopy;
+    pvga1_stdcfbFillRectSolidCopy = vga256LowlevFuncs.fillRectSolidCopy;
+    vga256LowlevFuncs.fillRectSolidCopy = pvgacfbFillRectSolidCopy;
   }
   if (useSpeedUp & SPEEDUP_BITBLT)
   {
-    pvga1_stdcfbDoBitbltCopy = cfbLowlevFuncs.doBitbltCopy;
-    if (WDchipset == WD90C31) cfbLowlevFuncs.doBitbltCopy = pvgacfbDoBitbltCopy;
-    if (WDchipset == WD90C33) cfbLowlevFuncs.doBitbltCopy = C33cfbDoBitbltCopy;
-    pvga1_stdcfbBitblt = cfbLowlevFuncs.vgaBitblt;
-    if (WDchipset == WD90C31) cfbLowlevFuncs.vgaBitblt = pvgaBitBlt;
-    if (WDchipset == WD90C33) cfbLowlevFuncs.vgaBitblt = C33BitBlt;
+    pvga1_stdcfbDoBitbltCopy = vga256LowlevFuncs.doBitbltCopy;
+    vga256LowlevFuncs.doBitbltCopy = pvgacfbDoBitbltCopy;
+    pvga1_stdcfbBitblt = vga256LowlevFuncs.vgaBitblt;
+    vga256LowlevFuncs.vgaBitblt = pvgaBitBlt;
   }
   if (useSpeedUp & SPEEDUP_LINE)
   {
+    /* 90C33 has this stuff */
     ;
   }
   if (useSpeedUp & SPEEDUP_FILLBOX)
   {
-    pvga1_stdcfbFillBoxSolid = cfbLowlevFuncs.fillBoxSolid;
-    if (WDchipset == WD90C31) cfbLowlevFuncs.fillBoxSolid = pvgacfbFillBoxSolid;
-    if (WDchipset == WD90C33) cfbLowlevFuncs.fillBoxSolid = C33cfbFillBoxSolid;
+    pvga1_stdcfbFillBoxSolid = vga256LowlevFuncs.fillBoxSolid;
+    vga256LowlevFuncs.fillBoxSolid = pvgacfbFillBoxSolid;
   }
 #endif /* MONOVGA */
 }
@@ -604,8 +606,13 @@ PVGA1EnterLeave(enter)
       outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
       outb(vgaIOBase + 5, temp & 0x7F);
       /* Unlock sequencer extended registers */
-      outb(0x3C4, 0x06); temp = inb (0x3C5);
-      outb(0x3C5, temp | 0x48);
+      outb(0x3C4, 0x06);
+      if (WDchipset == WD90C33) {
+	outb(0x3C5, 0x48);
+      } else {
+	temp = inb (0x3C5);
+	outb(0x3C5, temp | 0x48);
+      }
     }
   else
     {
@@ -637,8 +644,13 @@ PVGA1Restore(restore)
   outb(vgaIOBase + 5, temp & 0xF8);
 
   /* Unlock sequencer extended registers */
-  outb(0x3C4, 0x06); temp = inb (0x3C5);
-  outb(0x3C5, temp | 0x48);
+  outb(0x3C4, 0x06);
+  if (WDchipset == WD90C33) {
+    outb(0x3C5, 0x48);
+  } else {
+    temp = inb (0x3C5);
+    outb(0x3C5, temp | 0x48);
+  }
 
   outw(0x3CE, 0x0009);   /* segment select A */
   outw(0x3CE, 0x000A);   /* segment select B */
@@ -707,10 +719,11 @@ PVGA1Restore(restore)
       outb(vgaIOBase + 5, (temp & 0xCF) | (restore->FlatPanelCtrl & 0x30));
     }
 
-  if (WDchipset == WD90C31)    /* set hardware cursor register */
+  if (WDchipset == WD90C31 ||
+      WDchipset == WD90C33)    /* set hardware cursor register */
   {
-     outw (0x23C0, 2);
-     outw (0x23C2, restore->CursorCntl);
+     outw (EXT_REG_ACCESS_PORT, CURSOR_BLOCK);
+     outw (EXT_REG_IO_PORT, restore->CursorCntl);
   }
 }
 
@@ -735,8 +748,13 @@ PVGA1Save(save)
   outb(vgaIOBase + 5, temp & 0xF8);
 
   /* Unlock sequencer extended registers */
-  outb(0x3C4, 0x06); temp = inb (0x3C5);
-  outb(0x3C5, temp | 0x48);
+  outb(0x3C4, 0x06);
+  if (WDchipset == WD90C33) {
+    outb(0x3C5, 0x48);
+  } else {
+    temp = inb (0x3C5);
+    outb(0x3C5, temp | 0x48);
+  }
 
   outb(0X3CE, 0x09); PR0A = inb(0x3CF); outb(0x3CF, 0x00);
   outb(0X3CE, 0x0A); PR0B = inb(0x3CF); outb(0x3CF, 0x00);
@@ -776,10 +794,11 @@ PVGA1Save(save)
       outb(vgaIOBase + 4, 0x32); save->FlatPanelCtrl = inb(vgaIOBase + 5);
     }
 
-  if (WDchipset == WD90C31)   /* save hardware cursor register */
+  if (WDchipset == WD90C31 ||
+      WDchipset == WD90C33)   /* save hardware cursor register */
   {
-     outw (0x23C0, 2);
-     save->CursorCntl = inw(0x23C2);
+     outw (EXT_REG_ACCESS_PORT, CURSOR_BLOCK);
+     save->CursorCntl = inw(EXT_REG_IO_PORT);
   }
 
   return ((void *) save);
@@ -801,10 +820,16 @@ PVGA1Init(mode)
   if (!vgaHWInit(mode,sizeof(vgaPVGA1Rec)))
     return(FALSE);
 
+  /* disable c33 command buffer fifo ... */
+  /* for now                             */
+  if (WDchipset == WD90C33)
+    outw(COMMAND_BUFFER, 0);
+
 #ifndef MONOVGA
   new->std.CRTC[19] = vga256InfoRec.virtualX >> 3; /* we are in byte-mode */
   if (WDchipset == WD90C33)
-    new->std.CRTC[20] = 0x00;
+    new->std.CRTC[20] = 0x00;	/* this needs to be 00 for wd90C33 */
+				/* should also be true for C31 too */
   else
     new->std.CRTC[20] = 0x40;
   new->std.CRTC[23] = 0xE3; /* thats what the man says */
@@ -847,7 +872,12 @@ PVGA1Init(mode)
 
   /* WD90C1x */
   if ((WDchipset != C_PVGA1)&&(WDchipset != WD90C00)&&(WDchipset != WD90C20))
-    new->InterfaceCtrl = 0x5C;
+  {
+    if (WDchipset == WD90C33)
+      new->InterfaceCtrl = 0x5F;
+    else
+      new->InterfaceCtrl = 0x5C;
+  }
   else
     new->InterfaceCtrl = 0x00;
 
@@ -866,7 +896,7 @@ PVGA1Init(mode)
       } else
 	new->MemoryInterface = 0xC1;
 
-      if (WDchipset == WD90C31)
+      if (WDchipset == WD90C31 || WDchipset == WD90C33)
 	{
 /*** MJT ***/
 /**** not yet

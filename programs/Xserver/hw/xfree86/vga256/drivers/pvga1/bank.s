@@ -100,3 +100,116 @@ GLNAME(PVGA1SetRead):
 	MOV_L	(CONST(0x3CE),EDX)
 	OUT_W
 	RET
+
+	AS_BEGIN
+
+	SEG_DATA
+oldpr34:
+	D_WORD	0x14
+newpr34:
+ 	D_WORD	0x14		
+
+	SEG_TEXT
+
+/* 
+ * for ReadWrite operations, we are using only PR0B as pointer to a 32k
+ * window.
+ */
+	ALIGNTEXT4
+	GLOBL	GLNAME(WD90C33SetReadWrite)
+GLNAME(WD90C33SetReadWrite):
+	SHL_W	(CONST(11),EAX)            /* combined %al*8 & movb %al,%ah */
+	JC	(LA0) 
+	/* Carry is not set */
+	AND_W	(CONST(0X7FFF),CONTENT(newpr34))
+	JP	(LA1)
+LA0:
+	/* Carry is set */
+	OR_W	(CONST(0X8000),CONTENT(newpr34))
+LA1:
+	
+	/* Write PRB */
+	MOV_B	(CONST(10),AL)
+	MOV_L	(CONST(0x3CE),EDX)
+	OUT_W
+
+	/* Write extra bit if necessary */
+	MOV_W	(CONTENT(newpr34),EAX)
+	CMP_W	(CONTENT(oldpr34),EAX)
+	JZ	(LA2)
+	MOV_L	(CONST(0x3C4),EDX)
+	OUT_W
+        /* Remember old value */
+	MOV_W	(EAX,CONTENT(oldpr34))
+LA2:
+	RET
+
+/* 
+ * for Write operations, we are using PR0B as write pointer to a 32k
+ * window.
+ */
+	ALIGNTEXT4
+	GLOBL	GLNAME(WD90C33SetWrite)
+GLNAME(WD90C33SetWrite):
+	SHL_W	(CONST(11),EAX)
+	JC	(LB0) 
+	/* Carry is not set */
+	AND_W	(CONST(0X7FFF),CONTENT(newpr34))
+	JP	(LB1)
+LB0:
+	/* Carry is set */
+	OR_W	(CONST(0X8000),CONTENT(newpr34))
+LB1:
+	
+	/* Write PRB */
+	MOV_B	(CONST(10),AL)
+	MOV_L	(CONST(0x3CE),EDX)
+	OUT_W
+
+	/* Write extra bit if necessary */
+	MOV_W	(CONTENT(newpr34),EAX)
+	CMP_W	(CONTENT(oldpr34),EAX)
+	JZ	(LB2)
+	MOV_B	(CONST(0x14),AL)
+	MOV_L	(CONST(0x3C4),EDX)
+	OUT_W
+        /* Remember old value */
+	MOV_W	(EAX,CONTENT(oldpr34))
+LB2:
+	RET
+
+/* 
+ * for Read operations, we are using PR0A as read pointer to a 32k
+ * window.
+ */
+	ALIGNTEXT4
+	GLOBL	GLNAME(WD90C33SetRead)
+GLNAME(WD90C33SetRead):
+	DEC_L	(EAX)			/* segment wrap ... */
+	SHL_W	(CONST(11),EAX)
+	JC	(L0) 
+	/* Carry is not set */
+	AND_W	(CONST(0XBFFF),CONTENT(newpr34))
+	JP	(L1)
+L0:
+	/* Carry is set */
+	OR_W	(CONST(0X4000),CONTENT(newpr34))
+L1:
+	
+	/* Write PRA */
+	MOV_B	(CONST(9),AL)
+	MOV_L	(CONST(0x3CE),EDX)
+	OUT_W
+
+	/* Write extra bit if necessary */
+	MOV_W	(CONTENT(newpr34),EAX)
+	CMP_W	(CONTENT(oldpr34),EAX)
+	JZ	(L2)
+	MOV_B	(CONST(0x14),AL)
+	MOV_L	(CONST(0x3C4),EDX)
+	OUT_W
+
+        /* Remember old value */
+	MOV_W	(EAX,CONTENT(oldpr34))
+L2:
+	RET

@@ -1,4 +1,5 @@
 /* $XConsortium: pvgablt.c,v 1.2 94/04/17 20:32:38 dpw Exp $ */
+/* $XFree86$ */
 /*
  * cfb copy area
  */
@@ -33,6 +34,7 @@ Author: Keith Packard
 */
 
 /* WD90C31 code: Mike Tierney <floyd@eng.umd.edu> */
+/* WD90C33 accel code: Bill Morgart <wsm@morticia.ssw.com> */
 
 /* $XConsortium: pvgablt.c,v 1.2 94/04/17 20:32:38 dpw Exp $ */
 
@@ -214,36 +216,41 @@ pvgacfbDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	w = pbox->x2 - pbox->x1;
 	h = pbox->y2 - pbox->y1;
 
-        if (xdir == -1 || ydir == -1)
-        {
-           dstaddr = (pbox->y1+h-1)*widthSrc + pbox->x1+w-1;
-           srcaddr = (pptSrc->y+h-1)*widthDst + pptSrc->x+w-1;
-        }
-        else
-        {
-           dstaddr = pbox->y1*widthDst + pbox->x1;
-           srcaddr = pptSrc->y*widthSrc + pptSrc->x;
-        }
-
-       /** handle the blit, this could actually handle and ROP **/
-        WAIT_BLIT;
-        SET_BLT_SRC_LOW ((srcaddr & 0xFFF));
-        SET_BLT_SRC_HGH (((srcaddr >> 12) & 0xFF));
-        SET_BLT_DST_LOW ((dstaddr & 0xFFF));
-        SET_BLT_DST_HGH (((dstaddr >> 12) & 0xFF));
-        SET_BLT_ROW_PTCH (widthDst);
-        SET_BLT_DIM_X   (w);
-        SET_BLT_DIM_Y   (h);
-        SET_BLT_MASK    ((planemask & 0xFF));
-        SET_BLT_RAS_OP  (ROP_SRC);
-        SET_BLT_CNTRL2  (0x00);
-        SET_BLT_CNTRL1  ((BLT_ACT_STAT | BLT_PACKED | BLT_SRC_COLR | blit_dir));
+	switch (WDchipset)
+	{
+	case WD90C31:
+	  wd90c31BitBlt((unsigned char *)psrcBase, (unsigned char *)pdstBase,
+			widthSrc, widthDst,
+			pptSrc->x, pptSrc->y,
+			pbox->x1, pbox->y1,
+			w, h,
+			xdir, ydir,
+			ROP_SRC >> 8,
+			planemask,
+			BLT_SRC_COLR,
+			NULL);
+	  break;
+	case WD90C33:
+	  wd90c33BitBlt((unsigned char *)psrcBase, (unsigned char *)pdstBase,
+			widthSrc, widthDst,
+			pptSrc->x, pptSrc->y,
+			pbox->x1, pbox->y1,
+			w, h,
+			xdir, ydir,
+			ROP_SRC >> 8,
+			planemask,
+			COLOR_FORMAT,
+			NULL);
+	  break;
+	}
 
         pbox++;
         pptSrc++;
     }
 
-    WAIT_BLIT; /* must wait, since memory writes can mess up as well */
+    /* the c33 bitblt code does its own waiting */
+    if (WDchipset == WD90C31)
+      WAIT_BLIT; /* must wait, since memory writes can mess up as well */
 
     if (pboxNew2)
     {
