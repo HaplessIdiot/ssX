@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.4 2001/10/28 03:33:33 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2294,9 +2294,11 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    if(pI810->directRenderingEnabled) {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering: Enabled\n");
       /* Setup 3D engine */
+#ifdef XF86DRI
       I830EmitInvarientState(pScrn);
 #if 0
       I830EmitInvarientState2(pScrn);
+#endif
 #endif
    } else {
       if(pI810->agpAcquired2d == TRUE) {
