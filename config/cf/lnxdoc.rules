@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.3 1994/12/25 12:12:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.4 1995/08/13 10:05:25 dawes Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
@@ -33,13 +33,13 @@ AllTarget(textfile)							@@\
 textfile: sgmlfile							@@\
 	RemoveFile(textfile)						@@\
 	$(LINUXDOCFORMAT) -T nroff sgmlfile | \				@@\
-	    $(LINUXDOCROFF) | $(XFREE86IDENTFIX) > +textfile && \	@@\
-	    $(MV) +textfile $@						@@\
+	    $(LINUXDOCROFF) | $(XFREE86IDENTFIX) > _$@ && \		@@\
+	    $(MV) _$@ $@						@@\
 									@@\
 InstallNonExecFile(textfile,$(XFREE86DOCDIR))				@@\
 									@@\
 clean::									@@\
-	RemoveFiles(+textfile textfile)
+	RemoveFiles(Concat(_,textfile) textfile)
 #else
 #define LinuxDocSgmlToText(sgmlfile,textfile) /**/
 #endif
