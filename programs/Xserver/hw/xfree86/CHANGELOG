@@ -1,3 +1,4 @@
+3530. Fix fb for module compiling and ifdef fbcmap for now (Alan Hourihane).
 3529. Add Cyber9397 and Cyber9397DVD PCI ID detection to trident driver
       (Alan Hourihane).
 3528. Fix Multiple MX RegisterResources with RAC in glint 
