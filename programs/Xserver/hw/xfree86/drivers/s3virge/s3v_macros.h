@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.1 1999/03/02 10:42:00 dawes Exp $ */
 
 #define SUB_SYS_CTL	0x8504
 
@@ -46,5 +46,5 @@
     y -= ps3v->SrcBaseY
 
 
-#define ROP_NEEDS_SRC(r) \
+#define NO_SRC_ROP(r) \
   ((r == GXnoop) || (r == GXclear) || (r == GXinvert) || (r == GXset))

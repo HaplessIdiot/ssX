@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * @(#)extentst.h	4.1	91/05/02
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/include/extentst.h,v 1.3 1998/10/25 12:48:04 dawes Exp $ */
 
 #ifndef _EXTENTST_H_
 #define _EXTENTST_H_
@@ -63,7 +63,7 @@ typedef struct _ExtensionEntry {
     unsigned short (*MinorOpcode) (ClientPtr);
 }           ExtensionEntry;
 
-extern void (*EventSwapVector[]) ();
+extern void (*EventSwapVector[]) (fsError *, fsError *);
 
 #if 0
 typedef void (*ExtensionLookupProc) ();
@@ -77,6 +77,8 @@ extern ExtensionEntry *AddExtension();
 extern ExtensionLookupProc LookupProc();
 extern Bool RegisterProc();
 #endif
+
+extern ExtensionEntry * AddExtension ( char *name, int num_events, int num_errors, int (*main_proc) (ClientPtr), int (*smain_proc) (ClientPtr), void (*closedown_proc) (struct _ExtensionEntry *), unsigned short (*minorop_proc) (ClientPtr) );
 
 extern Bool AddExtensionAlias(char *alias, ExtensionEntry *ext);
 extern int  ProcListExtensions(ClientPtr client);

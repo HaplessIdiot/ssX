@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/dispatch.c,v 3.2 1998/10/04 09:41:08 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/dispatch.c,v 3.3 1998/10/25 07:12:19 dawes Exp $ */
 
 #include	<dispatch.h>
 #include	<swapreq.h>
@@ -61,6 +61,8 @@ in this Software without prior written authorization from The Open Group.
 #include	"site.h"
 #include	"fsevents.h"
 #include	"cache.h"
+#include	"globals.h"
+#include	"difs.h"
 
 static void kill_all_clients(void);
 
@@ -78,12 +80,6 @@ extern int  ConnInfoLen;
 extern char *configfilename;
 
 extern Bool drone_server;
-
-extern void NotImplemented();
-
-extern int  (*InitialVector[3]) ();
-extern void (*EventSwapVector[NUM_EVENT_VECTORS]) ();
-extern void (*ReplySwapVector[NUM_PROC_VECTORS]) ();
 
 #define	MAJOROP	((fsReq *)client->requestBuffer)->reqType
 
@@ -732,7 +728,7 @@ ProcGetResolution(ClientPtr client)
 	client->pSwapReplyFunc = CopySwap16Write;
 
     WriteSwappedDataToClient(client,
-       (client->num_resolutions * SIZEOF(fsResolution)), client->resolutions);
+       (client->num_resolutions * SIZEOF(fsResolution)), (short *)client->resolutions);
 
     return client->noClientException;
 }
@@ -999,11 +995,11 @@ InitProcVectors(void)
     for (i = 0; i < NUM_PROC_VECTORS; i++) {
 	if (!ProcVector[i]) {
 	    ProcVector[i] = SwappedProcVector[i] = ProcBadRequest;
-	    ReplySwapVector[i] = NotImplemented;
+	    ReplySwapVector[i] = (ReplySwapFunc)NotImplemented;
 	}
     }
     for (i = FSLASTEvent; i < NUM_EVENT_VECTORS; i++) {
-	EventSwapVector[i] = NotImplemented;
+	EventSwapVector[i] = (EventSwapFunc)NotImplemented;
     }
 }
 
@@ -1036,7 +1032,6 @@ NextAvailableClient(pointer ospriv)
     int         i;
     ClientPtr   client;
     fsFakeReq   data;
-    extern long MaxClients;
 
     i = nextFreeClientID;
     if (i == MaxClients)

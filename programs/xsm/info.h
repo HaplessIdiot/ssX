@@ -19,9 +19,15 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/info.h,v 3.0 1996/08/25 14:15:40 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/info.h,v 3.1 1998/10/04 09:41:59 dawes Exp $ */
 
-extern void create_client_info_popup ();
-extern void UpdateClientList ();
-extern void ClientInfoXtProc ();
-extern char *GetProgramName ();
+extern void ShowHint(ClientRec *client);
+extern void DisplayProps(ClientRec *client);
+extern char * GetProgramName(char *fullname);
+extern void UpdateClientList(void);
+extern void ClientInfoStructureNotifyXtHandler(Widget w, XtPointer closure, 
+					       XEvent *event, 
+					       Boolean *continue_to_dispatch);
+extern void ClientInfoXtProc(Widget w, XtPointer client_data, 
+			     XtPointer callData);
+extern void create_client_info_popup(void);

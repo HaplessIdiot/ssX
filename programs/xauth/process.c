@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.4 1998/12/06 06:08:47 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.5 1999/02/28 11:20:05 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -34,6 +34,7 @@ from The Open Group.
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
+#include <sys/stat.h>
 
 #include <signal.h>
 #include <X11/X.h>			/* for Family constants */
@@ -880,7 +881,7 @@ process_command(char *inputfilename, int lineno, int argc, char **argv)
  */
 
 static char * 
-bintohex(unsigned int len, unsigned char *bindata)
+bintohex(unsigned int len, char *bindata)
 {
     char *hexdata, *starthex;
 
@@ -890,7 +891,7 @@ bintohex(unsigned int len, unsigned char *bindata)
 	return NULL;
 
     for (; len > 0; len--, bindata++) {
-	register char *s = hex_table[*bindata];
+	register char *s = hex_table[(unsigned char)*bindata];
 	*hexdata++ = s[0];
 	*hexdata++ = s[1];
     }
@@ -899,7 +900,7 @@ bintohex(unsigned int len, unsigned char *bindata)
 }
 
 static void 
-fprintfhex(register FILE *fp, unsigned int len, char *cp)
+fprintfhex(register FILE *fp, int len, char *cp)
 {
     char *hex;
 

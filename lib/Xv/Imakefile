@@ -1,9 +1,13 @@
+XCOMM $XFree86$
+
 #define DoNormalLib NormalLibXv
 #define DoSharedLib SharedLibXv
 #define DoDebugLib DebugLibXv
 #define DoProfileLib ProfileLibXv
 #define LibName Xv
 #define SoRev SOXVREV
+#define IncSubdir X11
+#define IncSubSubdir extensions
 
 #include <Threads.tmpl>
 

@@ -19,15 +19,16 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/lock.c,v 3.0 1996/01/30 15:28:15 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/lock.c,v 3.1 1998/10/04 09:41:59 dawes Exp $ */
 
 #include "xsm.h"
+#include "lock.h"
+#include "choose.h"
 #include <sys/types.h>
 
 
 static char *
-GetPath ()
-
+GetPath(void)
 {
     char *path = (char *) getenv ("SM_SAVE_DIR");
 
@@ -43,11 +44,7 @@ GetPath ()
 
 
 Status
-LockSession (session_name, write_id)
-
-char *session_name;
-Bool write_id;
-
+LockSession(char *session_name, Bool write_id)
 {
     char *path;
     char lock_file[PATH_MAX];
@@ -67,8 +64,8 @@ Bool write_id;
     if ((fd = creat (temp_lock_file, 0444)) < 0)
 	return (0);
 
-    if (write_id &&
-        (write (fd, networkIds, strlen (networkIds)) != strlen (networkIds)) ||
+    if ((write_id &&
+        (write (fd, networkIds, strlen (networkIds)) != strlen (networkIds))) ||
 	(write (fd, "\n", 1) != 1))
     {
 	close (fd);
@@ -94,10 +91,7 @@ Bool write_id;
 
 
 void
-UnlockSession (session_name)
-
-char *session_name;
-
+UnlockSession(char *session_name)
 {
     char *path;
     char lock_file[PATH_MAX];
@@ -111,10 +105,7 @@ char *session_name;
 
 
 char *
-GetLockId (session_name)
-
-char *session_name;
-
+GetLockId(char *session_name)
 {
     char *path;
     FILE *fp;
@@ -142,12 +133,7 @@ char *session_name;
 
 
 Bool
-CheckSessionLocked (session_name, get_id, id_ret)
-
-char *session_name;
-Bool get_id;
-char **id_ret;
-
+CheckSessionLocked(char *session_name, Bool get_id, char **id_ret)
 {
     if (get_id)
 	*id_ret = GetLockId (session_name);
@@ -161,10 +147,7 @@ char **id_ret;
 
 
 void
-UnableToLockSession (session_name)
-
-char *session_name;
-
+UnableToLockSession(char *session_name)
 {
     /*
      * We should popup a dialog here giving error.

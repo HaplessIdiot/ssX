@@ -1,15 +1,10 @@
 /*
- * $XConsortium: xlsclients.c,v 1.7 94/04/17 20:38:32 gildea Exp $
+ * $TOG: xlsclients.c /main/8 1998/02/09 14:09:58 kaleb $
  *
  * 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
@@ -34,19 +29,27 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
+#include <X11/Xmu/WinUtil.h>
 
 char *ProgramName;
 
-static void usage ()
+static void lookat ( Display *dpy, Window root, Bool verbose, int maxcmdlen );
+static void print_client_properties ( Display *dpy, Window w, 
+				      Bool verbose, int maxcmdlen );
+static void print_text_field ( Display *dpy, char *s, XTextProperty *tp );
+static int print_quoted_word ( char *s, int maxlen );
+static void unknown ( Display *dpy, Atom actual_type, int actual_format );
+
+static void 
+usage(void)
 {
     fprintf (stderr,
 	     "usage:  %s  [-display dpy] [-m len] [-[a][l]]\n", ProgramName);
     exit (1);
 }
 
-main (argc, argv)
-    int argc;
-    char **argv;
+int
+main(int argc, char *argv[])
 {
     int i;
     char *displayname = NULL;
@@ -110,11 +113,8 @@ main (argc, argv)
     exit (0);
 }
 
-lookat (dpy, root, verbose, maxcmdlen)
-    Display *dpy;
-    Window root;
-    Bool verbose;
-    int maxcmdlen;
+static void
+lookat(Display *dpy, Window root, Bool verbose, int maxcmdlen)
 {
     Window dummy, *children = NULL, client;
     unsigned int i, nchildren = 0;
@@ -142,11 +142,8 @@ lookat (dpy, root, verbose, maxcmdlen)
 
 static char *Nil = "(nil)";
 
-print_client_properties (dpy, w, verbose, maxcmdlen)
-    Display *dpy;
-    Window w;
-    Bool verbose;
-    int maxcmdlen;
+static void
+print_client_properties(Display *dpy, Window w, Bool verbose, int maxcmdlen)
 {
     char **cliargv = NULL;
     int i, cliargc;
@@ -224,11 +221,8 @@ print_client_properties (dpy, w, verbose, maxcmdlen)
     }
 }
 
-
-print_text_field (dpy, s, tp)
-    Display *dpy;
-    char *s;
-    XTextProperty *tp;
+static void
+print_text_field(Display *dpy, char *s, XTextProperty *tp)
 {
     if (tp->encoding == None || tp->format == 0) {
 	printf ("''");
@@ -245,10 +239,9 @@ print_text_field (dpy, s, tp)
 }
 
 /* returns the number of characters printed */
-int
-print_quoted_word (s, maxlen)
-    char *s;
-    int maxlen;			/* max number of chars we can print */
+static int
+print_quoted_word(char *s, 
+		  int maxlen)		/* max number of chars we can print */
 {
     register char *cp;
     Bool need_quote = False, in_quote = False;
@@ -303,10 +296,8 @@ print_quoted_word (s, maxlen)
     return charsprinted;
 }
 
-unknown (dpy, actual_type, actual_format)
-    Display *dpy;
-    Atom actual_type;
-    int actual_format;
+static void
+unknown(Display *dpy, Atom actual_type, int actual_format)
 {
     char *s;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xsetpointer/xsetpointer.c,v 3.3 1996/01/11 13:32:23 dawes Exp $ */
+/* $XFree86: xc/programs/xsetpointer/xsetpointer.c,v 3.4 1996/01/30 15:28:11 dawes Exp $ */
 
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
@@ -24,22 +24,23 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 #include <X11/Xproto.h>
 #include <X11/extensions/XInput.h>
 
 int           event_type;
 
-int StrCaseCmp(s1, s2)
-char *s1, *s2;
+static int 
+StrCaseCmp(char *s1, char *s2)
 {
 	char c1, c2;
 
-	if (*s1 == 0)
+	if (*s1 == 0) {
 		if (*s2 == 0)
 			return(0);
 		else
 			return(1);
-
+	}
 	c1 = (isupper(*s1) ? tolower(*s1) : *s1);
 	c2 = (isupper(*s2) ? tolower(*s2) : *s2);
 	while (c1 == c2)
@@ -59,11 +60,9 @@ main(int argc, char * argv[])
   int           loop, num_extensions, num_devices;
   char          **extensions;
   XDeviceInfo   *devices;
-  Window        win;
   Display       *dpy;
   Window        root_win;
   unsigned long screen;
-  XEvent        Event;
   int		list = 0;
   
   if (argc != 2) {

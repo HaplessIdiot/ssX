@@ -23,10 +23,13 @@ in this Software without prior written authorization from The Open Group.
 #include "xsm.h"
 
 #include <X11/ICE/ICEutil.h>
+#include "auth.h"
 
 #ifdef HAS_MKSTEMP
 #include <unistd.h>
 #endif
+#include <sys/types.h>
+#include <sys/stat.h>
 
 static char *addAuthFile = NULL;
 static char *remAuthFile = NULL;
@@ -40,10 +43,7 @@ static char *remAuthFile = NULL;
  */
 
 Bool
-HostBasedAuthProc (hostname)
-
-char *hostname;
-
+HostBasedAuthProc(char *hostname)
 {
     return (0);	      /* For now, we don't support host based authentication */
 }
@@ -56,12 +56,7 @@ char *hostname;
  */
 
 static void
-write_iceauth (addfp, removefp, entry)
-
-FILE		 *addfp;
-FILE 		 *removefp;
-IceAuthDataEntry *entry;
-
+write_iceauth(FILE *addfp, FILE *removefp, IceAuthDataEntry *entry)
 {
     fprintf (addfp,
 	"add %s \"\" %s %s ",
@@ -82,17 +77,11 @@ IceAuthDataEntry *entry;
 
 #ifndef HAS_MKSTEMP
 static char *
-unique_filename (path, prefix)
-char *path;
-char *prefix;
+unique_filename(char *path, char *prefix)
 #else
 static char *
-unique_filename (path, prefix, pFd)
-char *path;
-char *prefix;
-int *pFd;
+unique_filename(char *path, char *prefix, int *pFd)
 #endif
-
 {
 #ifndef HAS_MKSTEMP
 #ifndef X_NOT_POSIX
@@ -137,12 +126,8 @@ int *pFd;
 #define MAGIC_COOKIE_LEN 16
 
 Status
-SetAuthentication (count, listenObjs, authDataEntries)
-
-int			count;
-IceListenObj		*listenObjs;
-IceAuthDataEntry	**authDataEntries;
-
+SetAuthentication(int count, IceListenObj *listenObjs, 
+		  IceAuthDataEntry **authDataEntries)
 {
     FILE	*addfp = NULL;
     FILE	*removefp = NULL;
@@ -262,11 +247,7 @@ IceAuthDataEntry	**authDataEntries;
  */
 
 void
-FreeAuthenticationData (count, authDataEntries)
-
-int			count;
-IceAuthDataEntry 	*authDataEntries;
-
+FreeAuthenticationData(int count, IceAuthDataEntry *authDataEntries)
 {
     /* Each transport has entries for ICE and XSMP */
 

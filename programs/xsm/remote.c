@@ -1,14 +1,9 @@
-/* $XConsortium: remote.c,v 1.15 95/01/03 17:26:52 mor Exp $ */
+/* $TOG: remote.c /main/16 1998/02/09 14:14:54 kaleb $ */
 /******************************************************************************
 
-Copyright (c) 1993  X Consortium
+Copyright 1993, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
 
 /*
@@ -30,33 +25,23 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include "xsm.h"
+#include "log.h"
 
 #include <X11/ICE/ICEutil.h>
 
-static char 		*format_rstart_env();
+static char 		*format_rstart_env(char *str);
 
 extern IceAuthDataEntry	*authDataEntries;
 extern int		numTransports;
-extern void		fprintfhex ();
 
 
 void
-remote_start (restart_protocol, restart_machine, program, args, cwd, env,
-    non_local_display_env, non_local_session_env)
-
-char	*restart_protocol;
-char	*restart_machine;
-char	*program;
-char	**args;
-char	*cwd;
-char	**env;
-char	*non_local_display_env;
-char	*non_local_session_env;
-
+remote_start(char *restart_protocol, char *restart_machine, char *program, 
+	     char **args, char *cwd, char **env,
+	     char *non_local_display_env, char *non_local_session_env)
 {
     FILE *fp;
     int	 pipefd[2];
-    extern char **environ;
     char msg[256];
     int  i;
 
@@ -213,10 +198,7 @@ char	*non_local_session_env;
  */
 
 static char *
-format_rstart_env (str)
-
-char *str;
-
+format_rstart_env(char *str)
 {
     int escape_count = 0, i;
     char *temp = str;

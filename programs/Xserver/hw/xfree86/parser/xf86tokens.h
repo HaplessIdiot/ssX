@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.4 1998/08/29 05:44:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.5 1999/01/12 06:24:25 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -111,6 +111,9 @@ typedef enum {
     DEFAULTBPP,
     DEFAULTFBBPP,
     
+    /* VideoAdaptor tokens */
+    VIDEOADAPTOR,
+
     /* Mode timing tokens */
     TT_INTERLACE,
     TT_PHSYNC,

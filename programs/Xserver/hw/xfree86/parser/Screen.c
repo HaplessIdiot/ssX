@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.3 1999/01/13 03:19:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.4 1999/01/14 13:05:16 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -164,6 +164,7 @@ static xf86ConfigSymTabRec ScreenTab[] =
         {OBSDRIVER, "driver"},
 	{MDEVICE, "device"},
 	{MONITOR, "monitor"},
+	{VIDEOADAPTOR, "videoadaptor"},
 	{SCREENNO, "screenno"},
 	{SUBSECTION, "subsection"},
 	{DEFAULTDEPTH, "defaultcolordepth"},
@@ -228,6 +229,29 @@ parseScreenSection (void)
 				Error (QUOTE_MSG, "Monitor");
 			ptr->scrn_monitor_str = val.str;
 			break;
+		case VIDEOADAPTOR:
+			{
+				XF86ConfAdaptorLinkPtr aptr;
+
+				if (xf86GetToken (NULL) != STRING)
+					Error (QUOTE_MSG, "VideoAdaptor");
+
+				/* Don't allow duplicates */
+				for (aptr = ptr->scrn_adaptor_lst; aptr; 
+					aptr = (XF86ConfAdaptorLinkPtr) aptr->list.next)
+					if (NameCompare (val.str, aptr->al_adaptor_str) == 0)
+						break;
+
+				if (aptr == NULL)
+				{
+					aptr = xf86confmalloc (sizeof (XF86ConfAdaptorLinkRec));
+					aptr->list.next = NULL;
+					aptr->al_adaptor_str = val.str;
+					ptr->scrn_adaptor_lst = (XF86ConfAdaptorLinkPtr)
+						addListItem ((glp) ptr->scrn_adaptor_lst, (glp) aptr);
+				}
+			}
+			break;
 		case OPTION:
 			{
 				char *name;
@@ -279,6 +303,7 @@ parseScreenSection (void)
 void
 printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 {
+	XF86ConfAdaptorLinkPtr aptr;
 	XF86ConfDisplayPtr dptr;
 	XF86ModePtr mptr;
 	XF86OptionPtr optr;
@@ -309,6 +334,10 @@ printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 			if (optr->opt_val)
 				fprintf (cf, " \"%s\"", optr->opt_val);
 			fprintf (cf, "\n");
+		}
+		for (aptr = ptr->scrn_adaptor_lst; aptr; aptr = aptr->list.next)
+		{
+			fprintf (cf, "\tVideoAdaptor \"%s\"\n", aptr->al_adaptor_str);
 		}
 		for (dptr = ptr->scrn_display_lst; dptr; dptr = dptr->list.next)
 		{
@@ -373,7 +402,22 @@ freeScreenList (XF86ConfScreenPtr ptr)
 		TestFree (ptr->scrn_monitor_str);
 		TestFree (ptr->scrn_device_str);
 		OptionListFree (ptr->scrn_option_lst);
+		freeAdaptorLinkList (ptr->scrn_adaptor_lst);
 		freeDisplayList (ptr->scrn_display_lst);
+		prev = ptr;
+		ptr = ptr->list.next;
+		xf86conffree (prev);
+	}
+}
+
+void
+freeAdaptorLinkList (XF86ConfAdaptorLinkPtr ptr)
+{
+	XF86ConfAdaptorLinkPtr prev;
+
+	while (ptr)
+	{
+		TestFree (ptr->al_adaptor_str);
 		prev = ptr;
 		ptr = ptr->list.next;
 		xf86conffree (prev);
@@ -415,6 +459,7 @@ validateScreen (XF86ConfigPtr p)
 	XF86ConfScreenPtr screen = p->conf_screen_lst;
 	XF86ConfMonitorPtr monitor;
 	XF86ConfDevicePtr device;
+	XF86ConfAdaptorLinkPtr adaptor;
 
 	if (!screen)
 	{
@@ -446,6 +491,26 @@ validateScreen (XF86ConfigPtr p)
 		}
 		else
 			screen->scrn_device = device;
+
+		adaptor = screen->scrn_adaptor_lst;
+		while (adaptor)
+		{
+			adaptor->al_adaptor = xf86FindVideoAdaptor (adaptor->al_adaptor_str, p->conf_videoadaptor_lst);
+			if (!adaptor->al_adaptor)
+			{
+				xf86ValidationError (UNDEFINED_ADAPTOR_MSG, adaptor->al_adaptor_str, screen->scrn_identifier);
+				return (FALSE);
+			}
+			else if (adaptor->al_adaptor->va_fwdref)
+			{
+				xf86ValidationError (ADAPTOR_REF_TWICE_MSG, adaptor->al_adaptor_str,
+						     adaptor->al_adaptor->va_fwdref);
+				return (FALSE);
+			}
+
+			adaptor->al_adaptor->va_fwdref = screen->scrn_identifier;
+			adaptor = adaptor->list.next;
+		}
 
 		screen = screen->list.next;
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.1.2.7 1998/06/04 17:36:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.2 1998/07/25 16:57:14 dawes Exp $ */
 
 /* Private procs.  Public procs are in xf86Parser.h and xf86Optrec.h */
 
@@ -31,6 +31,13 @@ XF86ConfModulePtr parseModuleSection(void);
 void printModuleSection(FILE *cf, XF86ConfModulePtr ptr);
 XF86LoadPtr addNewLoadDirective(XF86LoadPtr head, char *name, int type, XF86OptionPtr opts);
 void freeModules(XF86ConfModulePtr ptr);
+/* Video.c */
+XF86ConfVideoPortPtr parseVideoPortSubSection(void);
+XF86ConfVideoAdaptorPtr parseVideoAdaptorSection(void);
+void printVideoAdaptorSection(FILE *cf, XF86ConfVideoAdaptorPtr ptr);
+void freeVideoAdaptorList(XF86ConfVideoAdaptorPtr ptr);
+void freeVideoPortList(XF86ConfVideoPortPtr ptr);
+XF86ConfVideoAdaptorPtr xf86FindVideoAdaptor(const char *ident, XF86ConfVideoAdaptorPtr p);
 /* Monitor.c */
 XF86ConfModeLinePtr parseModeLine(void);
 XF86ConfModeLinePtr parseVerboseMode(void);
@@ -47,6 +54,7 @@ XF86ConfDisplayPtr parseDisplaySubSection(void);
 XF86ConfScreenPtr parseScreenSection(void);
 void printScreenSection(FILE *cf, XF86ConfScreenPtr ptr);
 void freeScreenList(XF86ConfScreenPtr ptr);
+void freeAdaptorLinkList(XF86ConfAdaptorLinkPtr ptr);
 void freeDisplayList(XF86ConfDisplayPtr ptr);
 void freeModeList(XF86ModePtr ptr);
 int validateScreen(XF86ConfigPtr p);

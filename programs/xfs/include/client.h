@@ -39,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/include/client.h,v 1.3 1998/10/25 12:48:03 dawes Exp $ */
 
 #ifndef	_CLIENT_H_
 #define	_CLIENT_H_
@@ -60,8 +60,6 @@ extern ClientPtr serverClient;
 #define	CLIENT_GONE		1
 #define	CLIENT_AGED		2
 #define	CLIENT_TIMED_OUT	4
-
-extern int  currentMaxClients;
 
 #define	REQUEST(type)	\
 	type *stuff = (type *)client->requestBuffer
@@ -99,8 +97,6 @@ extern int  currentMaxClients;
 	    (*(client)->pSwapReplyFunc)(client, (int)(size), pbuf);	\
 	else (void) WriteToClient(client, (int)(size), (char *)(pbuf));
 
-
-extern void SendErrToClient (ClientPtr client, int error, pointer data);
 
 typedef struct _WorkQueue       *WorkQueuePtr;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.2 1998/07/25 16:57:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.3 1999/01/14 13:05:17 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -80,6 +80,11 @@ xf86ReadConfigFile (void)
 			else if (NameCompare (val.str, "pointer") == 0)
 			{
 				HANDLE_RETURN (conf_pointer, parsePointerSection ());
+			}
+			else if (NameCompare (val.str, "videoadaptor") == 0)
+			{
+				HANDLE_LIST (conf_videoadaptor_lst, parseVideoAdaptorSection,
+							 XF86ConfVideoAdaptorPtr);
 			}
 			else if (NameCompare (val.str, "device") == 0)
 			{
@@ -196,6 +201,7 @@ XF86FreeConfig (XF86ConfigPtr p)
 	freeKeyboard (p->conf_keyboard);
 	freePointer (p->conf_pointer);
 	freeMonitorList (p->conf_monitor_lst);
+	freeVideoAdaptorList (p->conf_videoadaptor_lst);
 	freeDeviceList (p->conf_device_lst);
 	freeScreenList (p->conf_screen_lst);
 	freeLayoutList (p->conf_layout_lst);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.13 1999/01/31 12:21:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.14 1999/03/02 10:41:59 dawes Exp $ */
 
 /*
  *
@@ -163,7 +163,8 @@ typedef enum {
    OPTION_LATE_RAS_PRECHARGE,
    OPTION_LCD_CENTER,
    OPTION_LCDCLOCK,
-   OPTION_MCLK
+   OPTION_MCLK,
+   OPTION_SHOWCACHE
 } S3VOpts;
 
 static OptionInfoRec S3VOptions[] =
@@ -187,6 +188,7 @@ static OptionInfoRec S3VOptions[] =
    { OPTION_LCD_CENTER, 	"lcd_center", 	OPTV_BOOLEAN, 	{0}, FALSE },
    { OPTION_LCDCLOCK, 		"set_lcdclk", 	OPTV_INTEGER, 	{0}, FALSE },
    { OPTION_MCLK, 		"set_mclk", 	OPTV_INTEGER, 	{0}, FALSE },
+   { OPTION_SHOWCACHE,		"show_cache",   OPTV_BOOLEAN,	{0}, FALSE },
    {-1, NULL, OPTV_NONE,
 	{0}, FALSE}
 };
@@ -701,6 +703,12 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: lcd_center set\n");
     } else
    	ps3v->lcd_center = FALSE;
+
+    if (xf86IsOptionSet(S3VOptions, OPTION_SHOWCACHE)) {
+	ps3v->ShowCache = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: show_cache set\n");
+    } else
+   	ps3v->ShowCache = FALSE;
 
     if (xf86GetOptValInteger(S3VOptions, OPTION_LCDCLOCK, &ps3v->LCDClk)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: lcd_setclk set to %1.3f Mhz\n",
@@ -2809,6 +2817,9 @@ S3VAdjustFrame(int scrnIndex, int x, int y, int flags)
    vgaCRIndex = vgaIOBase + 4;
    vgaCRReg = vgaIOBase + 5;
 
+   if(ps3v->ShowCache && y)
+	y += pScrn->virtualY - 1;
+
    if( (ps3v->STREAMSRunning == FALSE) ||
       S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
       Base = ((y * pScrn->displayWidth + x)
@@ -2831,15 +2842,6 @@ S3VAdjustFrame(int scrnIndex, int x, int y, int flags)
 	((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr0 =
 	((y * pScrn->displayWidth + (x & ~3)) * pScrn->bitsPerPixel / 8);
       }
-
-#if 0
-#ifdef XFreeXDGA
-   if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
-      /* Wait until vertical retrace is in progress. */
-      VerticalRetraceWait();
-   }
-#endif
-#endif
 
    return;
 }

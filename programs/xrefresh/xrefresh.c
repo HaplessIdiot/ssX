@@ -47,7 +47,7 @@ SOFTWARE.
  * Kitchen sink version, useful for clearing small areas and flashing the 
  * screen.
  */
-/* $XFree86: xc/programs/xrefresh/xrefresh.c,v 3.1 1996/06/10 10:02:46 dawes Exp $ */
+/* $XFree86: xc/programs/xrefresh/xrefresh.c,v 3.2 1998/10/04 09:41:45 dawes Exp $ */
 
 #include <stdio.h>
 #include <errno.h>
@@ -66,7 +66,8 @@ Window win;
 
 char *ProgramName;
 
-void Syntax ()
+static void 
+Syntax(void)
 {
     fprintf (stderr, "usage:  %s [-options] [geometry] [display]\n\n", 
     	     ProgramName);
@@ -82,8 +83,8 @@ void Syntax ()
     exit (1);
 }
 
-static char *copystring (s)
-    register char *s;
+static char *
+copystring(char *s)
 {
     int len = (s ? strlen (s) : 0) + 1;
     char *retval;
@@ -103,8 +104,8 @@ static char *copystring (s)
  * for error, no, yes.
  */
 
-static int parse_boolean_option (option)
-    register char *option;
+static int 
+parse_boolean_option(char *option)
 {
     static struct _booltable {
         char *name;
@@ -132,10 +133,8 @@ static int parse_boolean_option (option)
  * whether or not the given string is an abbreviation of the arg.
  */
 
-static Bool isabbreviation (arg, s, minslen)
-    char *arg;
-    char *s;
-    int minslen;
+static Bool 
+isabbreviation(char *arg, char *s, int minslen)
 {
     int arglen;
     int slen;
@@ -169,10 +168,8 @@ struct s_pair {
 	{ "Root", doRoot },
 	{ NULL, doDefault }};
 
-
-main(argc, argv)
-int	argc;
-char	*argv[];
+int
+main(int argc, char *argv[])
 {
     Visual visual;
     XSetWindowAttributes xswa;

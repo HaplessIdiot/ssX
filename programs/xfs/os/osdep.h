@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * @(#)osdep.h	4.1	5/2/91
  *
  */
-/* $XFree86: xc/programs/xfs/os/osdep.h,v 3.4 1998/08/16 10:25:58 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/osdep.h,v 3.5 1998/10/04 09:41:14 dawes Exp $ */
 
 #ifndef _OSDEP_H_
 #define	_OSDEP_H_
@@ -128,8 +128,5 @@ typedef struct _osComm {
     long        conn_time;	/* timestamp if not established, else 0  */
     struct _XtransConnInfo *trans_conn; /* transport connection object */
 }           OsCommRec, *OsCommPtr;
-
-extern Bool CloneSelf;
-extern Bool UseSyslog;
 
 #endif				/* _OSDEP_H_ */

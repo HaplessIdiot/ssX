@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * @(#)cache.c	4.2	91/05/02
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/difs/cache.c,v 1.3 1998/10/25 12:47:58 dawes Exp $ */
 
 #include	"cachestr.h"
 #include	"misc.h"
@@ -212,7 +212,7 @@ flush_cache(CachePtr cache, unsigned long needed)
     CacheEntryPtr cp,
                 oldest,
                *oldprev;
-    int         oldbucket,
+    int         oldbucket = -1,
                 i;
 
     while ((cache->cursize + needed) > cache->maxsize) {

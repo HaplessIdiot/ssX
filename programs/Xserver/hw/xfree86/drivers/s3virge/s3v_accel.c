@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.6 1999/03/02 11:49:26 dawes Exp $ */
 
 #define COMPMACROS3X
 #include "s3v.h"
@@ -78,6 +78,7 @@ S3VAccelInit(ScreenPtr pScreen)
     infoPtr->Sync = S3VAccelSync;
 
     /* Solid filled rects */
+    infoPtr->SolidFillFlags = ROP_NEEDS_SOURCE;
     infoPtr->SetupForSolidFill = 
         S3VSetupForSolidFill;
     infoPtr->SubsequentSolidFillRect = 
@@ -95,7 +96,7 @@ S3VAccelInit(ScreenPtr pScreen)
         S3VSetupForMono8x8PatternFill;
     infoPtr->SubsequentMono8x8PatternFillRect =
         S3VSubsequentMono8x8PatternFillRect;
-    infoPtr->Mono8x8PatternFillFlags = NO_TRANSPARENCY |
+    infoPtr->Mono8x8PatternFillFlags = NO_TRANSPARENCY | ROP_NEEDS_SOURCE |
 				HARDWARE_PATTERN_PROGRAMMED_BITS |
 				HARDWARE_PATTERN_SCREEN_ORIGIN |
 				BIT_ORDER_IN_BYTE_LSBFIRST;
@@ -131,9 +132,12 @@ S3VAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentImageWriteRect = S3VSubsequentImageWriteRect;
 
     /* Lines */
+    infoPtr->SolidLineFlags = ROP_NEEDS_SOURCE;
     infoPtr->SetupForSolidLine = S3VSetupForSolidFill;
     infoPtr->SubsequentSolidHorVertLine = S3VSubsequentSolidHorVertLine;
     infoPtr->SubsequentSolidBresenhamLine = S3VSubsequentSolidBresenhamLine;
+    infoPtr->PolySegmentThinSolidFlags = ROP_NEEDS_SOURCE;
+    infoPtr->PolylinesThinSolidFlags = ROP_NEEDS_SOURCE;
     infoPtr->PolySegmentThinSolid = S3VPolySegmentThinSolidWrapper;
     infoPtr->PolylinesThinSolid = S3VPolylinesThinSolidWrapper;
 

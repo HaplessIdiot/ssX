@@ -2,7 +2,7 @@
  * xrdb - X resource manager database utility
  *
  * $XConsortium: xrdb.c,v 11.76 95/05/12 18:36:46 mor Exp $
- * $XFree86: xc/programs/xrdb/xrdb.c,v 3.9 1997/09/30 04:51:05 hohndel Exp $
+ * $XFree86: xc/programs/xrdb/xrdb.c,v 3.10 1998/08/16 10:25:59 dawes Exp $
  */
 
 /*
@@ -45,6 +45,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/Xos.h>
+#include <X11/Xmu/SysUtil.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
@@ -56,14 +57,11 @@ char *malloc();
 char *realloc();
 #endif
 
-#if !defined(X_NOT_STDC_ENV) && !defined(__EMX__)
+#if defined(X_NOT_STDC_ENV)
 extern int errno;
 #endif
 
-
-#if NeedVarargsPrototypes
-# include <stdarg.h>
-#endif
+#include <stdarg.h>
 
 #define SCREEN_RESOURCES "SCREEN_RESOURCES"
 
@@ -142,16 +140,22 @@ Buffer buffer;
 Entries newDB;
 
 #if !defined(sgi) && !defined(WIN32)
+#ifdef X_NOT_STDC_ENV
 extern FILE *popen();
 #endif
-
-#if NeedVarargsPrototypes
-extern fatal(char *, ...);
 #endif
 
+static void fatal(char *, ...);
+static void addstring ( String *arg, __const char *s );
+static void FormatEntries ( Buffer *buffer, Entries *entries );
+static void StoreProperty ( Display *dpy, Window root, Atom res_prop );
+static void Process ( int scrno, Bool doScreen, Bool execute );
+static void ShuffleEntries ( Entries *db, Entries *dbs, int num );
+static void ReProcess ( int scrno, Bool doScreen );
+
 #if defined(USG) && !defined(CRAY) && !defined(MOTOROLA)
-int rename (from, to)
-    char *from, *to;
+static int 
+rename(char *from, char *to)
 {
     (void) unlink (to);
     if (link (from, to) == 0) {
@@ -163,24 +167,24 @@ int rename (from, to)
 }
 #endif
 
-void InitBuffer(b)
-    Buffer *b;
+static void 
+InitBuffer(Buffer *b)
 {
     b->room = INIT_BUFFER_SIZE;
     b->used = 0;
     b->buff = (char *)malloc(INIT_BUFFER_SIZE*sizeof(char));
 }
 
-void FreeBuffer(b)
-    Buffer *b;
+#ifdef notyet
+static void 
+FreeBuffer(Buffer *b)
 {
     free(b->buff);
 }
+#endif
 
-void AppendToBuffer(b, str, len)
-    register Buffer *b;
-    char *str;
-    register int len;
+static void 
+AppendToBuffer(Buffer *b, char *str, int len)
 {
     while (b->used + len > b->room) {
 	b->buff = (char *)realloc(b->buff, 2*b->room*(sizeof(char)));
@@ -190,16 +194,16 @@ void AppendToBuffer(b, str, len)
     b->used += len;
 }
 
-void InitEntries(e)
-    Entries *e;
+static void 
+InitEntries(Entries *e)
 {
     e->room = INIT_ENTRY_SIZE;
     e->used = 0;
     e->entry = (Entry *)malloc(INIT_ENTRY_SIZE*sizeof(Entry));
 }
 
-void FreeEntries(e)
-    Entries *e;
+static void 
+FreeEntries(Entries *e)
 {
     register int i;
 
@@ -212,9 +216,8 @@ void FreeEntries(e)
     free((char *)e->entry);
 }
 
-void AddEntry(e, entry)
-    register Entries *e;
-    Entry *entry;
+static void 
+AddEntry(Entries *e, Entry *entry)
 {
     register int n;
 
@@ -245,15 +248,14 @@ void AddEntry(e, entry)
 }
 
 
-int CompareEntries(e1, e2)
-    Entry *e1, *e2;
+static int 
+CompareEntries(const void *e1, const void *e2)
 {
-    return strcmp(e1->tag, e2->tag);
+    return strcmp(((Entry *)e1)->tag, ((Entry *)e2)->tag);
 }
 
-void AppendEntryToBuffer(buffer, entry)
-    register Buffer *buffer;
-    Entry *entry;
+static void 
+AppendEntryToBuffer(Buffer *buffer, Entry *entry)
 {
     AppendToBuffer(buffer, entry->tag, strlen(entry->tag));
     AppendToBuffer(buffer, ":\t", 2);
@@ -265,10 +267,8 @@ void AppendEntryToBuffer(buffer, entry)
  * Return the position of the first unescaped occurrence of dest in string.
  * If lines is non-null, return the number of newlines skipped over.
  */
-char *FindFirst(string, dest, lines)
-    register char *string;
-    register char dest;
-    register int *lines;	/* RETURN */
+static char *
+FindFirst(char *string, char dest, int *lines)
 {
     if (lines)
 	*lines = 0;
@@ -286,10 +286,8 @@ char *FindFirst(string, dest, lines)
     }
 }
 
-void GetEntries(entries, buff, bequiet)
-    register Entries *entries;
-    Buffer *buff;
-    int bequiet;
+static void 
+GetEntries(Entries *entries, Buffer *buff, int bequiet)
 {
     register char *line, *colon, *temp, *str;
     Entry entry;
@@ -356,9 +354,8 @@ void GetEntries(entries, buff, bequiet)
     }
 }
 
-GetEntriesString(entries, str)
-    register Entries *entries;
-    char *str;
+static void
+GetEntriesString(Entries *entries, char *str)
 {
     Buffer buff;
 
@@ -369,9 +366,8 @@ GetEntriesString(entries, str)
     }
 }
 
-void ReadFile(buffer, input)
-	register Buffer *buffer;
-	FILE *input;
+static void 
+ReadFile(Buffer *buffer, FILE *input)
 {
 	     char	buf[BUFSIZ + 1];
     register int	bytes;
@@ -393,9 +389,8 @@ void ReadFile(buffer, input)
     AppendToBuffer(buffer, "", 1);
 }
 
-AddDef(buff, title, value)
-    String *buff;
-    char *title, *value;
+static void
+AddDef(String *buff, char *title, char *value)
 {
 #ifdef PATHETICCPP
     if (need_real_defines) {
@@ -422,9 +417,8 @@ AddDef(buff, title, value)
     }
 }
 
-AddDefQ(buff, title, value)
-    String *buff;
-    char *title, *value;
+static void
+AddDefQ(String *buff, char *title, char *value)
 {
 #ifdef PATHETICCPP
     if (need_real_defines)
@@ -439,26 +433,22 @@ AddDefQ(buff, title, value)
 	AddDef(buff, title, NULL);
 }
 
-AddNum(buff, title, value)
-    String *buff;
-    char *title;
-    int value;
+static void
+AddNum(String *buff, char *title, int value)
 {
     char num[20];
     sprintf(num, "%d", value);
     AddDef(buff, title, num);
 }
 
-AddSimpleDef(buff, title)
-    String *buff;
-    char *title;
+static void
+AddSimpleDef(String *buff, char *title)
 {
     AddDef(buff, title, (char *)NULL);
 }
 
-AddDefTok(buff, prefix, title)
-    String *buff;
-    char *prefix, *title;
+static void
+AddDefTok(String *buff, char *prefix, char *title)
 {
     char *s;
     char name[512];
@@ -466,16 +456,15 @@ AddDefTok(buff, prefix, title)
 
     strcpy(name, prefix);
     strcat(name, title);
-    for (s = name; c = *s; s++) {
+    for (s = name; (c = *s); s++) {
 	if (!isalpha(c) && !isdigit(c) && c != '_')
 	    *s = '_';
     }
     AddSimpleDef(buff, name);
 }
 
-AddUndef(buff, title)
-    String *buff;
-    char *title;
+static void
+AddUndef(String *buff, char *title)
 {
 #ifdef PATHETICCPP
     if (need_real_defines) {
@@ -494,8 +483,8 @@ AddUndef(buff, title)
     addstring(buff, title);
 }
 
-DoCmdDefines(buff)
-    String *buff;
+static void 
+DoCmdDefines(String *buff)
 {
     int i;
     char *arg, *val;
@@ -515,18 +504,15 @@ DoCmdDefines(buff)
     }
 }
 
-int Resolution(pixels, mm)
-    int pixels, mm;
+static int 
+Resolution(int pixels, int mm)
 {
     return ((pixels * 100000 / mm) + 50) / 100;
 }
 
 
-void
-DoDisplayDefines(display, defs, host)
-    Display *display;
-    register String *defs;
-    char *host;
+static void
+DoDisplayDefines(Display *display, String *defs, char *host)
 {
 #define MAXHOSTNAME 255
     char client[MAXHOSTNAME], server[MAXHOSTNAME], *colon;
@@ -571,11 +557,8 @@ char *ClassNames[] = {
     "DirectColor"
 };
 
-void
-DoScreenDefines(display, scrno, defs)
-    Display *display;
-    int scrno;
-    register String *defs;
+static void
+DoScreenDefines(Display *display, int scrno, String *defs)
 {
     Screen *screen;
     Visual *visual;
@@ -620,9 +603,8 @@ DoScreenDefines(display, scrno, defs)
     XFree((char *)vinfos);
 }
 
-Entry *FindEntry(db, b)
-    register Entries *db;
-    Buffer *b;
+static Entry *
+FindEntry(Entries *db, Buffer  *b)
 {
     int i;
     register Entry *e;
@@ -652,9 +634,8 @@ Entry *FindEntry(db, b)
     return NULL;
 }
 
-void EditFile(new, in, out)
-    register Entries *new;
-    FILE *in, *out;
+static void 
+EditFile(Entries *new, FILE *in, FILE *out)
 {
     Buffer b;
     char buff[BUFSIZ];
@@ -674,7 +655,7 @@ void EditFile(new, in, out)
 	    if ((*(c--) == '\n') && (b.used == 1 || *c != '\\'))
 		break;
 	}
-	if (e = FindEntry(new, &b))
+	if ((e = FindEntry(new, &b)))
 	    fprintf(out, "%s:\t%s\n", e->tag, e->value);
 	else
 	    fwrite(b.buff, 1, b.used, out);
@@ -687,7 +668,8 @@ cleanup:
     }
 }
 
-void Syntax ()
+static void 
+Syntax (void)
 {
     fprintf (stderr, 
 	     "usage:  %s [-options ...] [filename]\n\n",
@@ -747,10 +729,8 @@ void Syntax ()
  * whether or not the given string is an abbreviation of the arg.
  */
 
-Bool isabbreviation (arg, s, minslen)
-    char *arg;
-    char *s;
-    int minslen;
+static Bool 
+isabbreviation(char *arg, char *s, int minslen)
 {
     int arglen;
     int slen;
@@ -771,13 +751,8 @@ Bool isabbreviation (arg, s, minslen)
     return (False);
 }
 
-addstring (arg, s)
-    String *arg;
-#if __STDC__
-    const char *s;
-#else
-    char *s;
-#endif
+static void
+addstring(String *arg, const char *s)
 {
     if(arg->used + strlen(s) + 1 >= arg->room) {
 	if(arg->val)
@@ -795,9 +770,9 @@ addstring (arg, s)
     arg->used += strlen(s);
 }   
 
-main (argc, argv)
-    int argc;
-    char **argv;
+
+int
+main(int argc, char *argv[])
 {
     int i;
     char *displayname = NULL;
@@ -1052,9 +1027,9 @@ main (argc, argv)
     exit (0);
 }
 
-void FormatEntries(buffer, entries)
-    register Buffer *buffer;
-    register Entries *entries;
+
+static void 
+FormatEntries(Buffer *buffer, Entries *entries)
 {
     register int i;
 
@@ -1063,17 +1038,15 @@ void FormatEntries(buffer, entries)
 	return;
     if (oper == OPMERGE)
 	qsort(entries->entry, entries->used, sizeof(Entry),
-	      (int (*)())CompareEntries);
+	      CompareEntries);
     for (i = 0; i < entries->used; i++) {
 	if (entries->entry[i].usable)
 	    AppendEntryToBuffer(buffer, &entries->entry[i]);
     }
 }
 
-StoreProperty(dpy, root, res_prop)
-    Display *dpy;
-    Window root;
-    Atom res_prop;
+static void
+StoreProperty(Display *dpy, Window root, Atom res_prop)
 {
     int len = buffer.used;
     int mode = PropModeReplace;
@@ -1094,10 +1067,8 @@ StoreProperty(dpy, root, res_prop)
 	XUngrabServer(dpy);
 }
 
-Process(scrno, doScreen, execute)
-    int scrno;
-    Bool doScreen;
-    Bool execute;
+static void
+Process(int scrno, Bool doScreen, Bool execute)
 {
     char *xdefs;
     Window root;
@@ -1286,10 +1257,8 @@ Process(scrno, doScreen, execute)
 	XFree(xdefs);
 }
 
-ShuffleEntries(db, dbs, num)
-    Entries *db;
-    Entries *dbs;
-    int num;
+static void
+ShuffleEntries(Entries *db, Entries *dbs, int num)
 {
     int *hits;
     register int i, j, k;
@@ -1325,13 +1294,11 @@ ShuffleEntries(db, dbs, num)
     free((char *)hits);
 }
 
-ReProcess(scrno, doScreen)
-    int scrno;
-    Bool doScreen;
+static void
+ReProcess(int scrno, Bool doScreen)
 {
     Window root;
     Atom res_prop;
-    register int i;
 
     FormatEntries(&buffer, &newDB);
     if (doScreen) {
@@ -1355,26 +1322,15 @@ ReProcess(scrno, doScreen)
     FreeEntries(&newDB);
 }
 
-#if NeedVarargsPrototypes
+static void
 fatal(char *msg, ...)
-#else
-fatal(msg, x1, x2, x3, x4, x5, x6)
-    char *msg;
-    int x1, x2, x3, x4, x5, x6;
-#endif
 {
-#if NeedVarargsPrototypes
     va_list args;
-#endif
 
     if (errno != 0)
 	perror(ProgramName);
-#if NeedVarargsPrototypes
     va_start(args, msg);
     vfprintf(stderr, msg, args);
     va_end(args);
-#else
-    (void) fprintf(stderr, msg, x1, x2, x3, x4, x5, x6);
-#endif
     exit(1);
 }

@@ -63,7 +63,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.15 1998/10/25 07:12:34 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.16 1998/12/20 11:58:20 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	"misc.h"
@@ -95,6 +95,8 @@ in this Software without prior written authorization from The Open Group.
 #include	"globals.h"
 #include	"osstruct.h"
 #include	"servermd.h"
+#include	"dispatch.h"
+#include	"fsevents.h"
 
 #ifdef MINIX
 #include <sys/nbio.h>
@@ -121,7 +123,6 @@ fd_set      LastSelectMask;
 fd_set      ClientsWithInput;
 fd_set      ClientsWriteBlocked;
 fd_set      OutputPending;
-extern long MaxClients;
 long        OutputBufferSize = BUFSIZE;
 
 Bool        NewOutputPending;
@@ -133,7 +134,6 @@ XtransConnInfo 	*ListenTransConns = NULL;
 int	       	*ListenTransFds = NULL;
 int		ListenTransCount;
 
-extern ClientPtr NextAvailableClient();
 
 static void error_conn_max(XtransConnInfo trans_conn);
 static void close_fd(OsCommPtr oc);
@@ -179,8 +179,7 @@ StopListening(void)
 void
 CreateSockets(int old_listen_count, OldListenRec *old_listen)
 {
-    int         request,
-                i;
+    int	i;
 
     FD_ZERO(&AllSockets);
     FD_ZERO(&AllClients);
@@ -291,7 +290,7 @@ ResetSockets(void)
 }
 
 void
-CloseSockets()
+CloseSockets(void)
 {
     int i;
 
@@ -550,7 +549,6 @@ ReapAnyOldClients(void)
     int         i;
     long        cur_time = GetTimeInMillis();
     ClientPtr   client;
-    extern void SendKeepAliveEvent(ClientPtr);
 
 #ifdef DEBUG
     fprintf(stderr, "Looking for clients to reap\n");

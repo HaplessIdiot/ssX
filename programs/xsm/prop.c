@@ -1,14 +1,9 @@
-/* $XConsortium: prop.c,v 1.6 94/12/16 17:30:38 mor Exp $ */
+/* $TOG: prop.c /main/7 1998/02/09 14:14:41 kaleb $ */
 /******************************************************************************
 
-Copyright (c) 1993  X Consortium
+Copyright 1993, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,25 +11,25 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
 
 #include "xsm.h"
+#include "info.h"
+#include "prop.h"
+#include <X11/Xaw/List.h>
 
 extern Widget clientListWidget;
 
 
 void
-FreePropValues (propValues)
-
-List *propValues;
-
+FreePropValues(List *propValues)
 {
     List	*pv;
     PropValue	*pval;
@@ -52,10 +47,7 @@ List *propValues;
 
 
 void
-FreeProp (prop)
-
-Prop *prop;
-
+FreeProp(Prop *prop)
 {
     FreePropValues (prop->values);
     XtFree (prop->name);
@@ -66,11 +58,7 @@ Prop *prop;
 
 
 void
-SetInitialProperties (client, props)
-
-ClientRec	*client;
-List		*props;
-
+SetInitialProperties(ClientRec *client, List *props)
 {
     List *pl;
 
@@ -130,12 +118,7 @@ List		*props;
 
 
 void
-SetProperty (client, theProp, freeIt)
-
-ClientRec	*client;
-SmProp		*theProp;
-Bool		freeIt;
-
+SetProperty(ClientRec *client, SmProp *theProp, Bool freeIt)
 {
     List 	*pl;
     Prop	*pprop = NULL;
@@ -233,11 +216,7 @@ Bool		freeIt;
 
 
 void
-DeleteProperty (client, propname)
-
-ClientRec	*client;
-char		*propname;
-
+DeleteProperty(ClientRec *client, char *propname)
 {
     List *pl;
 
@@ -272,13 +251,8 @@ char		*propname;
 
 
 void
-SetPropertiesProc (smsConn, managerData, numProps, props)
-
-SmsConn 	smsConn;
-SmPointer 	managerData;
-int		numProps;
-SmProp 		**props;
-
+SetPropertiesProc(SmsConn smsConn, SmPointer managerData, int numProps, 
+		  SmProp **props)
 {
     ClientRec	*client = (ClientRec *) managerData;
     int		updateList, i;
@@ -318,12 +292,8 @@ SmProp 		**props;
 
 
 void
-DeletePropertiesProc (smsConn, managerData, numProps, propNames)
-
-SmsConn 	smsConn;
-SmPointer 	managerData;
-int		numProps;
-char		**propNames;
+DeletePropertiesProc(SmsConn smsConn, SmPointer managerData, 
+		     int numProps, char **propNames)
 
 {
     ClientRec	*client = (ClientRec *) managerData;
@@ -351,11 +321,7 @@ char		**propNames;
 
 
 void
-GetPropertiesProc (smsConn, managerData)
-
-SmsConn 	smsConn;
-SmPointer 	managerData;
-
+GetPropertiesProc(SmsConn smsConn, SmPointer managerData)
 {
     ClientRec	*client = (ClientRec *) managerData;
     SmProp	**propsRet, *propRet;

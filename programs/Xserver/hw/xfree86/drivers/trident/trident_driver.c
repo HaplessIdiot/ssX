@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.43 1999/01/26 10:40:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.44 1999/01/28 05:24:26 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -64,6 +64,7 @@
 
 #ifdef DPMSExtension
 #include "globals.h"
+#define DPMS_SERVER
 #include "extensions/dpms.h"
 #endif
 

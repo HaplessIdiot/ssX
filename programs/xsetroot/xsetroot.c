@@ -28,14 +28,20 @@ in this Software without prior written authorization from The Open Group.
  *  Author:	Mark Lillibridge, MIT Project Athena
  *		11-Jun-87
  */
-/* $XFree86: xc/programs/xsetroot/xsetroot.c,v 1.3 1997/07/29 12:08:28 hohndel Exp $ */
+/* $XFree86: xc/programs/xsetroot/xsetroot.c,v 1.4 1998/10/04 09:41:57 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <X11/Xmu/CurUtil.h>
 #include <stdio.h>
 #include "X11/bitmaps/gray"
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern int atoi(char *);
+#endif
 
 #define Dynamic 1
 
@@ -50,7 +56,19 @@ int save_colors = 0;
 int unsave_past = 0;
 Pixmap save_pixmap = (Pixmap)None;
 
-usage()
+static void usage(void);
+static void FixupState(void);
+static void SetBackgroundToBitmap(Pixmap bitmap, 
+				  unsigned int width, unsigned int height);
+static Cursor CreateCursorFromFiles(char *cursor_file, char *mask_file);
+static Cursor CreateCursorFromName(char *name);
+static Pixmap MakeModulaBitmap(int mod_x, int mod_y);
+static XColor NameToXColor(char *name, unsigned long pixel);
+static unsigned long NameToPixel(char *name, unsigned long pixel);
+static Pixmap ReadBitmapFile(char *filename, unsigned int *width, unsigned int *height, int *x_hot, int *y_hot);
+
+static void
+usage(void)
 {
     fprintf(stderr, "usage: %s [options]\n", program_name);
     fprintf(stderr, "  where options are:\n");
@@ -71,14 +89,9 @@ usage()
     /*NOTREACHED*/
 }
 
-Pixmap MakeModulaBitmap(), ReadBitmapFile();
-XColor NameToXColor();
-unsigned long NameToPixel();
-Cursor	CreateCursorFromName();
 
-main(argc, argv) 
-    int argc;
-    char **argv;
+int
+main(int argc, char *argv[]) 
 {
     int excl = 0;
     int nonexcl = 0;
@@ -261,7 +274,8 @@ main(argc, argv)
 
 
 /* Free past incarnation if needed, and retain state if needed. */
-FixupState()
+static void
+FixupState(void)
 {
     Atom prop, type;
     int format;
@@ -296,9 +310,8 @@ FixupState()
  * SetBackgroundToBitmap: Set the root window background to a caller supplied 
  *                        bitmap.
  */
-SetBackgroundToBitmap(bitmap, width, height)
-    Pixmap bitmap;
-    unsigned int width, height;
+static void
+SetBackgroundToBitmap(Pixmap bitmap, unsigned int width, unsigned int height)
 {
     Pixmap pix;
     GC gc;
@@ -333,8 +346,8 @@ SetBackgroundToBitmap(bitmap, width, height)
  */
 #define BITMAP_HOT_DEFAULT 8
 
-CreateCursorFromFiles(cursor_file, mask_file)
-    char *cursor_file, *mask_file;
+static Cursor
+CreateCursorFromFiles(char *cursor_file, char *mask_file)
 {
     Pixmap cursor_bitmap, mask_bitmap;
     unsigned int width, height, ww, hh;
@@ -378,9 +391,8 @@ CreateCursorFromFiles(cursor_file, mask_file)
     return(cursor);
 }
 
-Cursor
-CreateCursorFromName (name)
-    char    *name;
+static Cursor
+CreateCursorFromName(char *name)
 {
     XColor fg, bg, temp;
     int	    i;
@@ -404,8 +416,8 @@ CreateCursorFromName (name)
 /*
  * MakeModulaBitmap: Returns a modula bitmap based on an x & y mod.
  */
-Pixmap MakeModulaBitmap(mod_x, mod_y)
-    int mod_x, mod_y;
+static Pixmap 
+MakeModulaBitmap(int mod_x, int mod_y)
 {
     int i;
     long pattern_line = 0;
@@ -432,9 +444,8 @@ Pixmap MakeModulaBitmap(mod_x, mod_y)
 /*
  * NameToXColor: Convert the name of a color to its Xcolor value.
  */
-XColor NameToXColor(name, pixel)
-    char *name;
-    unsigned long pixel;
+static XColor 
+NameToXColor(char *name, unsigned long pixel)
 {
     XColor c;
     
@@ -450,9 +461,8 @@ XColor NameToXColor(name, pixel)
     return(c);
 }
 
-unsigned long NameToPixel(name, pixel)
-    char *name;
-    unsigned long pixel;
+static unsigned long 
+NameToPixel(char *name, unsigned long pixel)
 {
     XColor ecolor;
 
@@ -476,10 +486,9 @@ unsigned long NameToPixel(name, pixel)
     return(ecolor.pixel);
 }
 
-Pixmap ReadBitmapFile(filename, width, height, x_hot, y_hot)
-    char *filename;
-    unsigned int *width, *height;
-    int *x_hot, *y_hot;
+static Pixmap 
+ReadBitmapFile(char *filename, unsigned int *width, unsigned int *height, 
+	       int *x_hot, int *y_hot)
 {
     Pixmap bitmap;
     int status;

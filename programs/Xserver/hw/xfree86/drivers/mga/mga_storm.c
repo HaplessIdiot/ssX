@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.43 1999/02/07 06:18:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.44 1999/02/13 08:00:00 hohndel Exp $ */
 
 
 /* All drivers should typically include these */
@@ -366,7 +366,9 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     AvailFBArea.x2 = pScrn->displayWidth;
     AvailFBArea.y2 = pMga->FbUsableSize / (pScrn->displayWidth * PSZ / 8);
 
-    xf86InitFBManager(pScreen, &AvailFBArea); 
+    if (!pMga->FBDev) /* FIXME: quick&dirty workaround, this _should_
+				work with fbdev too */
+	xf86InitFBManager(pScreen, &AvailFBArea); 
 
     return(XAAInit(pScreen, infoPtr));
 }

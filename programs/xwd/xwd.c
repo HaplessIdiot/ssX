@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xwd/xwd.c,v 3.3 1998/03/20 21:08:45 hohndel Exp $ */
+/* $XFree86: xc/programs/xwd/xwd.c,v 3.4 1998/10/04 09:42:02 dawes Exp $ */
 
 /*
  * xwd.c MIT Project Athena, X Window system window raster image dumper.
@@ -103,34 +103,16 @@ Bool silent = False;
 Bool use_installed = False;
 long add_pixel_value = 0;
 
-extern int (*_XErrorFunction)();
-extern int _XDefaultError();
 
-#if NeedFunctionPrototypes
 extern int main(int, char **);
 extern void Window_Dump(Window, FILE *);
 extern int Image_Size(XImage *);
 extern int Get_XColors(XWindowAttributes *, XColor **);
 extern void _swapshort(register char *, register unsigned);
 extern void _swaplong(register char *, register unsigned);
-extern int Image_Size(XImage *);
-extern int Get_XColors(XWindowAttributes *, XColor **);
 static long parse_long(char *);
 static int Get24bitDirectColors(XColor **);
 static int ReadColors(Visual *, Colormap, XColor **);
-#else
-extern int main();
-extern void Window_Dump();
-extern int Image_Size();
-extern int Get_XColors();
-extern void _swapshort();
-extern void _swaplong();
-extern int Image_Size();
-extern int Get_XColors();
-static long parse_long();
-static int Get24bitDirectColors();
-static int ReadColors();
-#endif
 
 
 static long parse_long (s)
@@ -154,7 +136,7 @@ main(argc, argv)
     int argc;
     char **argv;
 {
-    register i;
+    register int i;
     Window target_win;
     FILE *out_file = stdout;
     Bool frame_only = False;

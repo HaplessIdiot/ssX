@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.19 1998/08/16 10:25:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.20 1998/10/04 09:39:41 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -95,6 +95,7 @@ mffs(fd_mask mask)
 }
 
 #ifdef DPMSExtension
+#define DPMS_SERVER
 #include "dpms.h"
 extern void DPMSSet();
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.14 1999/01/31 12:22:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.15 1999/02/05 04:49:55 dawes Exp $ */
 
 
 /*
@@ -26,6 +26,7 @@
 
 #ifdef DPMSExtension
 #include "globals.h"
+#define DPMS_SERVER
 #include "extensions/dpms.h"
 #endif
 

@@ -19,11 +19,13 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xsm/info.c,v 1.3 1999/01/11 05:37:49 dawes Exp $ */
 
 #include "xsm.h"
 #include "restart.h"
 #include "popup.h"
+#include "info.h"
+#include "prop.h"
 
 #include <X11/Shell.h>
 #include <X11/Xaw/Form.h>
@@ -61,10 +63,7 @@ Widget     clientPropTextWidget;
 
 
 void
-ShowHint (client)
-
-ClientRec *client;
-
+ShowHint(ClientRec *client)
 {
     static Widget active = NULL;
     int hint = client->restartHint;
@@ -98,11 +97,7 @@ typedef struct {
 
 
 static void
-AppendStr (buffer, str)
-
-Buffer *buffer;
-char *str;
-
+AppendStr(Buffer *buffer, char *str)
 {
     int len = strlen (str);
 
@@ -127,10 +122,7 @@ char *str;
 
 
 void
-DisplayProps (client)
-
-ClientRec *client;
-
+DisplayProps(ClientRec *client)
 {
     int index;
     List *pl, *pj, *vl;
@@ -261,12 +253,7 @@ ClientRec *client;
 
 
 static void
-ClientListXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+ClientListXtProc(Widget w, XtPointer client_data, XtPointer callData)
 {
     XawListReturnStruct *current = (XawListReturnStruct *) callData;
     ClientRec *client;
@@ -285,12 +272,7 @@ XtPointer 	callData;
 
 
 static void
-ViewPropXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+ViewPropXtProc(Widget w, XtPointer client_data, XtPointer callData)
 {
     ClientRec *client;
     XawListReturnStruct *current;
@@ -312,12 +294,7 @@ XtPointer 	callData;
 
 
 static void
-CloneXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+CloneXtProc(Widget w, XtPointer client_data, XtPointer callData)
 {
     ClientRec *client;
     XawListReturnStruct *current;
@@ -342,12 +319,7 @@ XtPointer 	callData;
 
 
 static void
-KillClientXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+KillClientXtProc(Widget w, XtPointer client_data, XtPointer callData)
 {
     ClientRec *client;
     XawListReturnStruct *current;
@@ -371,12 +343,7 @@ XtPointer 	callData;
 
 
 static void
-listDoneXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+listDoneXtProc(Widget w, XtPointer client_data, XtPointer callData)
 {
     XtPopdown (clientInfoPopup);
     client_info_visible = 0;
@@ -385,10 +352,7 @@ XtPointer 	callData;
 
 
 char *
-GetProgramName (fullname)
-
-char *fullname;
-
+GetProgramName(char *fullname)
 {
     char *lastSlash = NULL;
     int i;
@@ -406,8 +370,7 @@ char *fullname;
 
 
 void
-UpdateClientList ()
-
+UpdateClientList(void)
 {
     ClientRec *client;
     char *progName, *hostname, *tmp1, *tmp2;
@@ -614,12 +577,7 @@ UpdateClientList ()
 
 
 static void
-RestartHintXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+RestartHintXtProc(Widget w, XtPointer client_data, XtPointer callData)
 {
     XawListReturnStruct *current;
     ClientRec *client;
@@ -704,12 +662,7 @@ XtPointer 	callData;
 
 
 static void
-clientPropDoneXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+clientPropDoneXtProc(Widget w, XtPointer client_data, XtPointer callData)
 {
     XtPopdown (clientPropPopup);
     client_prop_visible = 0;
@@ -718,13 +671,9 @@ XtPointer 	callData;
 
 
 void
-ClientInfoStructureNotifyXtHandler (w, closure, event, continue_to_dispatch)
-
-Widget w;
-XtPointer closure;
-XEvent *event;
-Boolean *continue_to_dispatch;
-
+ClientInfoStructureNotifyXtHandler(Widget w, XtPointer closure, 
+				   XEvent *event, 
+				   Boolean *continue_to_dispatch)
 {
     if (event->type == MapNotify)
     {
@@ -741,11 +690,7 @@ Boolean *continue_to_dispatch;
 
 
 void
-ClientInfoXtProc (w, client_data, callData)
-    Widget	w;
-    XtPointer 	client_data;
-    XtPointer 	callData;
-
+ClientInfoXtProc(Widget w, XtPointer client_data, XtPointer callData)
 {
     static int first_time = 1;
 
@@ -799,13 +744,8 @@ static unsigned char check_bits[] = {
 
 
 static void
-DelClientInfoWinAction (w, event, params, num_params)
-
-Widget w;
-XEvent *event;
-String *params;
-Cardinal *num_params;
-
+DelClientInfoWinAction(Widget w, XEvent *event, String *params, 
+		       Cardinal *num_params)
 {
     XtCallCallbacks (clientInfoDoneButton, XtNcallback, NULL);
 }
@@ -813,13 +753,7 @@ Cardinal *num_params;
 
 
 static void
-DelPropWinAction (w, event, params, num_params)
-
-Widget w;
-XEvent *event;
-String *params;
-Cardinal *num_params;
-
+DelPropWinAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     XtCallCallbacks (clientPropDoneButton, XtNcallback, NULL);
 }
@@ -827,7 +761,7 @@ Cardinal *num_params;
 
 
 void
-create_client_info_popup ()
+create_client_info_popup(void)
 
 {
     /*

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmag/CutPaste.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/xmag/CutPaste.c,v 1.2 1999/01/31 12:22:29 dawes Exp $ */
 /*
  * Author:  Davor Matic, MIT X Consortium
  */
@@ -33,19 +33,14 @@ from The Open Group.
 #include <X11/Xatom.h>
 #include "ScaleP.h"	/* This file should be part of the Scale widget */
 #include "Scale.h"
+#include "CutPaste.h"
 #include <stdio.h>
 
-extern Pixmap SWGetPixmap();
-extern void SWAutoscale();
 
 /*ARGSUSED*/
 static Boolean
-ConvertSelection(w, selection, target, type, value, length, format)
-    Widget w;
-    Atom *selection, *target, *type;
-    XtPointer *value;
-    unsigned long *length;
-    int *format;
+ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type, 
+		 XtPointer *value, unsigned long *length, int *format)
 {
     Boolean success;
 
@@ -83,9 +78,8 @@ ConvertSelection(w, selection, target, type, value, length, format)
     return success;
 }
 
-void SWGrabSelection(w, time)
-    Widget w;
-    Time time;
+void 
+SWGrabSelection(Widget w, Time time)
 {
     (void) XtOwnSelection(w, XA_PRIMARY, time, ConvertSelection, NULL, NULL);
 }
@@ -93,13 +87,9 @@ void SWGrabSelection(w, time)
 
 /*ARGSUSED*/
 static void
-SelectionCallback(w, client_data, selection, type, value, length, format)
-    Widget w;
-    XtPointer client_data;	/* unused */
-    Atom *selection, *type;
-    XtPointer value;
-    unsigned long *length;
-    int *format;
+SelectionCallback(Widget w, XtPointer client_data, Atom *selection, 
+		  Atom *type, XtPointer value, unsigned long *length, 
+		  int *format)
 {
 
     if  (*type == XA_PIXMAP) {
@@ -114,16 +104,15 @@ SelectionCallback(w, client_data, selection, type, value, length, format)
 		     &width, &height, &border_width, &depth);
 	image = XGetImage(XtDisplay(w), *pixmap, 0, 0, width, height, 
 			  AllPlanes, ZPixmap);
-	SWAutoscale(w);
+	SWAutoscale(w, NULL, NULL, NULL);
 	SWSetImage(w, image);
 	XtFree(value);
 	XDestroyImage(image);
     }
 }
 
-void SWRequestSelection(w, time)
-    Widget w;
-    Time time;
+void 
+SWRequestSelection(Widget w, Time time)
 {
     XtGetSelectionValue(w, XA_PRIMARY, XA_PIXMAP, SelectionCallback, NULL,
 			time);

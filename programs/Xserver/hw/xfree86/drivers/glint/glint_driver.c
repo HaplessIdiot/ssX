@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.26 1999/02/12 22:52:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.27 1999/03/06 13:12:34 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -63,6 +63,7 @@
 
 #ifdef DPMSExtension
 #include "globals.h"
+#define DPMS_SERVER
 #include "extensions/dpms.h"
 #endif
 
@@ -392,7 +393,7 @@ GLINTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
        (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX)) {
 	vtgpolarity = GLINT_READ_REG(VTGPolarity) & 0xFFFFFFF0;
     } else {
-        videocontrol = GLINT_READ_REG(PMVideoControl) & 0xFFFFFF86;
+        videocontrol = GLINT_READ_REG(PMVideoControl) & 0xFFFFFFD6;
     }
 
     switch (PowerManagementMode) {
@@ -413,7 +414,7 @@ GLINTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	    break;
 	case DPMSModeOff:
 	    /* Screen: Off, HSync: Off, VSync: Off */
-	    videocontrol |= 0x28;
+	    videocontrol |= 0x00;
 	    vtgpolarity |= 0x00;
 	    break;
 	default:
@@ -1971,13 +1972,13 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Initialise cursor functions */
     if (pGlint->HWCursor) {
-#if 0
-	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V)
-	    Permedia2vHWCursorInit(pScreen);
-	else
 	if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) || 
 	    (pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2))
 	    Permedia2HWCursorInit(pScreen);
+	else
+#if 0
+	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V)
+	    Permedia2vHWCursorInit(pScreen);
 	else
 #endif
 	if ( ((pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) &&

@@ -1,15 +1,9 @@
-/* $XConsortium: xmodmap.c,v 1.24 94/04/17 20:24:24 converse Exp $ */
+/* $TOG: xmodmap.c /main/25 1998/02/09 14:11:38 kaleb $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -41,8 +35,8 @@ int min_keycode, max_keycode;
 Bool verbose = False;
 Bool dontExecute = False;
 
-void Exit (status)
-    int status;
+static void 
+Exit(int status)
 {
     if (dpy) {
 	XCloseDisplay (dpy);
@@ -68,7 +62,8 @@ static char *help_message[] = {
 NULL};
 
 
-void usage ()
+static void 
+usage(void)
 {
     char **cpp;
 
@@ -101,7 +96,8 @@ static char *grammar_message[] = {
 NULL };
 
 
-void grammar_usage ()
+static void 
+grammar_usage(void)
 {
     char **cpp;
 
@@ -115,9 +111,8 @@ void grammar_usage ()
 
 int parse_errors = 0;
 
-main (argc, argv)
-    int argc;
-    char **argv;
+int
+main(int argc, char *argv[])
 {
     int i;
     char *displayname = NULL;
@@ -338,6 +333,6 @@ main (argc, argv)
 	print_pointer_map ();
     }
 
-    Exit (status < 0 ? 1 : 0);
+    exit (status < 0 ? 1 : 0);
 }
 
