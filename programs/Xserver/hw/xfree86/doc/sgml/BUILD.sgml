@@ -47,9 +47,9 @@ case, the procedure is as follows:
 	around 270MB, and a similar amount is required in addition to this
 	for the compiled binaries):
 	<quote><tt>
-	gzip -d &lt; X410src-1.tgz | tar vxf -<newline>
-	gzip -d &lt; X410src-2.tgz | tar vxf -<newline>
-	gzip -d &lt; X410src-3.tgz | tar vxf -<newline>
+	gzip -d &lt; X&srcvers;src-1.tgz | tar vxf -<newline>
+	gzip -d &lt; X&srcvers;src-2.tgz | tar vxf -<newline>
+	gzip -d &lt; X&srcvers;src-3.tgz | tar vxf -<newline>
 	</tt></quote>
     <item>If the release is not a full release, it is available as a
     patch against the previous full release in the 
@@ -240,7 +240,7 @@ XFree86@XFree86.org.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.4 2001/05/27 17:08:18 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.5 2001/08/10 16:38:10 dawes Exp $
 </verb>
 
 </article>
