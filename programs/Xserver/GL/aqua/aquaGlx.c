@@ -32,12 +32,12 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/GL/aqua/aquaGlx.c,v 1.1 2002/08/28 06:41:26 torrey Exp $ */
 
 
 #include "aquaCommon.h"
-#include "rootlessCommon.h"
 #include <AGL/agl.h>
+#include "rootlessCommon.h"
 
 // X11 and X11's glx
 #include <miscstruct.h>
