@@ -111,7 +111,7 @@ screen. Lowering dotclock in that case could solve the problem.
 
      Document based on 3.3 version written by Xavier Ducoin.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.3.2.6 1999/04/12 07:54:30 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.4 1999/04/18 13:49:09 dawes Exp $
 
 
 $XFree86$
