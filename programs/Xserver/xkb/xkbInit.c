@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.22 2002/04/04 14:05:57 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.24 2002/12/20 20:18:35 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -692,6 +692,12 @@ Bool			ok=False;
 XPointer		config;
 XkbComponentNamesRec	cfgNames;
 XkbRF_VarDefsRec	defs;
+Bool freeKeymap = (!names->keymap);
+Bool freeKeycodes = (!names->keycodes);
+Bool freeTypes = (!names->types);
+Bool freeCompat = (!names->compat);
+Bool freeSymbols = (!names->symbols);
+Bool freeGeometry = (!names->geometry);
 
     if ((dev->key!=NULL)||(dev->kbdfeed!=NULL))
 	return False;
@@ -824,17 +830,17 @@ XkbRF_VarDefsRec	defs;
 	pSyms->map= NULL;
     }
 
-    if (names->keymap) _XkbFree(names->keymap);
+    if (names->keymap && freeKeymap) _XkbFree(names->keymap);
     names->keymap = NULL;
-    if (names->keycodes) _XkbFree(names->keycodes);
+    if (names->keycodes && freeKeycodes) _XkbFree(names->keycodes);
     names->keycodes = NULL;
-    if (names->types) _XkbFree(names->types);
+    if (names->types && freeTypes) _XkbFree(names->types);
     names->types = NULL;
-    if (names->compat) _XkbFree(names->compat);
+    if (names->compat && freeCompat) _XkbFree(names->compat);
     names->compat = NULL;
-    if (names->geometry) _XkbFree(names->geometry);
+    if (names->geometry && freeGeometry) _XkbFree(names->geometry);
     names->geometry = NULL;
-    if (names->symbols) _XkbFree(names->symbols);
+    if (names->symbols && freeSymbols) _XkbFree(names->symbols);
     names->symbols = NULL;
 
     return ok;
