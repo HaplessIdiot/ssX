@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.100 1997/03/11 11:08:46 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.101 1997/03/11 13:04:58 hohndel Exp $
 /*
  * Server Master Makefile
  */
@@ -1056,7 +1056,7 @@ DDXDIR2 = hw/xfree98
 XF98GANBWAPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98GANBWAPOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o \
 		 $(XF98SRC)/xaa/xaa16/xaa16.o $(XF98SRC)/xaa/xaa24/xaa24.o $(XF98SRC)/xaa/xaa32/xaa32.o $(XF98SRC)/xaa/xaavga256/xaavga256.o
-XF98GANBWAPLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverganbwap) \
+XF98GANBWAPLIBS = $(XF98DRIVERSRC)/LibraryTargetName(driverganbwap) \
 		  $(XF98SRC)/xaa/LibraryTargetName(xaa) \
 		  $(XF98SRC)/vga256/LibraryTargetName(ganbwap) $(XF98LIBS) \
 		  CFBLibs
@@ -1088,7 +1088,7 @@ DDXDIR2 = hw/xfree98
 XF98PEGCSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98PEGCOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/pegcConf.o\
 		 $(XF98SRC)/xaa/xaa16/xaa16.o $(XF98SRC)/xaa/xaa24/xaa24.o $(XF98SRC)/xaa/xaa32/xaa32.o $(XF98SRC)/xaa/xaavga256/xaavga256.o
-XF98PEGCLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverpegc) \
+XF98PEGCLIBS = $(XF98DRIVERSRC)/LibraryTargetName(driverpegc) \
 		 $(XF98SRC)/xaa/LibraryTargetName(xaa) \
 		 $(XF98SRC)/vga256/LibraryTargetName(pegc) $(XF98LIBS) \
 		 CFBLibs
@@ -1120,7 +1120,7 @@ DDXDIR2 = hw/xfree98
 XF98NKVNECSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98NKVNECOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o \
 		 $(XF98SRC)/xaa/xaa16/xaa16.o $(XF98SRC)/xaa/xaa24/xaa24.o $(XF98SRC)/xaa/xaa32/xaa32.o $(XF98SRC)/xaa/xaavga256/xaavga256.o
-XF98NKVNECLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(drivernkvnec) \
+XF98NKVNECLIBS = $(XF98DRIVERSRC)/LibraryTargetName(drivernkvnec) \
 		 $(XF98SRC)/xaa/LibraryTargetName(xaa) \
 		 $(XF98SRC)/vga256/LibraryTargetName(nkvnec) $(XF98LIBS) \
 		 CFBLibs
@@ -1152,7 +1152,7 @@ DDXDIR2 = hw/xfree98
 XF98WABSSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98WABSOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o \
 		 $(XF98SRC)/xaa/xaa16/xaa16.o $(XF98SRC)/xaa/xaa24/xaa24.o $(XF98SRC)/xaa/xaa32/xaa32.o $(XF98SRC)/xaa/xaavga256/xaavga256.o
-XF98WABSLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverwabs) \
+XF98WABSLIBS = $(XF98DRIVERSRC)/LibraryTargetName(driverwabs) \
 	       $(XF98SRC)/xaa/LibraryTargetName(xaa) \
 	       $(XF98SRC)/vga256/LibraryTargetName(wabs) $(XF98LIBS) CFBLibs
 XF98WABSSYSLIBS = $(SYSLIBS)
@@ -1183,7 +1183,7 @@ DDXDIR2 = hw/xfree98
 XF98WABEPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98WABEPOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o \
 		 $(XF98SRC)/xaa/xaa16/xaa16.o $(XF98SRC)/xaa/xaa24/xaa24.o $(XF98SRC)/xaa/xaa32/xaa32.o $(XF98SRC)/xaa/xaavga256/xaavga256.o
-XF98WABEPLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverwabep) \
+XF98WABEPLIBS = $(XF98DRIVERSRC)/LibraryTargetName(driverwabep) \
 	       $(XF98SRC)/xaa/LibraryTargetName(xaa) \
 	       $(XF98SRC)/vga256/LibraryTargetName(wabep) $(XF98LIBS) CFBLibs
 XF98WABEPSYSLIBS = $(SYSLIBS)
@@ -1214,7 +1214,7 @@ DDXDIR2 = hw/xfree98
 XF98WSNASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98WSNAOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o \
 		 $(XF98SRC)/xaa/xaa16/xaa16.o $(XF98SRC)/xaa/xaa24/xaa24.o $(XF98SRC)/xaa/xaa32/xaa32.o $(XF98SRC)/xaa/xaavga256/xaavga256.o
-XF98WSNALIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverwsna) \
+XF98WSNALIBS = $(XF98DRIVERSRC)/LibraryTargetName(driverwsna) \
 	       $(XF98SRC)/xaa/LibraryTargetName(xaa) \
 	       $(XF98SRC)/vga256/LibraryTargetName(wsna) $(XF98LIBS) CFBLibs
 XF98WSNASYSLIBS = $(SYSLIBS)
@@ -1245,7 +1245,7 @@ DDXDIR2 = hw/xfree98
 XF98TGUISUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98TGUIOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/tguiConf.o \
 		 $(XF98SRC)/xaa/xaa16/xaa16.o $(XF98SRC)/xaa/xaa24/xaa24.o $(XF98SRC)/xaa/xaa32/xaa32.o $(XF98SRC)/xaa/xaavga256/xaavga256.o
-XF98TGUILIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(drivertrident) \
+XF98TGUILIBS = $(XF98DRIVERSRC)/LibraryTargetName(drivertrident) \
 	       $(XF98SRC)/xaa/LibraryTargetName(xaa) \
 	       $(XF98SRC)/vga256/LibraryTargetName(trident) $(XF98LIBS) CFBLibs
 XF98TGUISYSLIBS = $(SYSLIBS)
@@ -1271,7 +1271,7 @@ DDXDIR2 = hw/xfree98
 XF98EGCSUBDIRS = $(STDDIRS) $(DDXDIR2) $(DEPDIRS)
 XF98EGCOBJS = $(XF98COMSRC)/XF86_VGA16.o $(XF98SRC)/vga16/vga16Conf.o \
                 $(XF98SRC)/vga16/misc/vga16misc.o
-XF98EGCLIBS = $(XF98VGA16DRIVERSRC)/LibraryTargetName(driver16) \
+XF98EGCLIBS = $(XF98DRIVERSRC)/LibraryTargetName(driveregc) \
 		$(XF98SRC)/vga16/LibraryTargetName(vga16) $(XF98MLIBS) \
 		NoMFBBareLibs $(OTHEREXTS)
 XF98EGCSYSLIBS = $(SYSLIBS)
@@ -1442,8 +1442,8 @@ CFB8DIR = cfb
 CFB16DIR = cfb16
 CFB24DIR = cfb24
 CFB32DIR = cfb32
-DDXDIR1  = hw/xfree98
-XF98LOADERSUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
+DDXDIR2  = hw/xfree98
+XF98LOADERSUBDIRS = $(STDDIRS) $(DDXDIR2) $(DEPDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
 XF98LOADEROBJS = $(XF98COMSRC)/XF86_LOADER.o
 XF98LOADERLIB = $(XF98SRC)/loader/LibraryTargetName(loader)
 XF98LOADERLIBS = $(XF98LLIBS) $(XF98COMLIB) $(XF98LOADERLIB)  $(XF98HWLIB) \

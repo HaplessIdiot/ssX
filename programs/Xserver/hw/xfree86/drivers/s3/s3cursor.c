@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3Cursor.c,v 3.32 1997/01/08 20:33:41 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.1 1997/03/06 23:16:34 hohndel Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -183,18 +183,33 @@ s3RecolorCursor(pScr, pCurs, displayed)
       s3IBMRGBRecolorCursor(pScr, pCurs);
 }
 
+#define	reorder(a,b)	b = \
+	(a & 0x80) >> 7 | \
+	(a & 0x40) >> 5 | \
+	(a & 0x20) >> 3 | \
+	(a & 0x10) >> 1 | \
+	(a & 0x08) << 1 | \
+	(a & 0x04) << 3 | \
+	(a & 0x02) << 5 | \
+	(a & 0x01) << 7;
 
 Bool
 S3CursorInit(pm, pScr)
      char *pm;
      ScreenPtr pScr;
 {
+   int i;
+
    s3BlockCursor = FALSE;
    s3ReloadCursor = FALSE;
    
    if (s3CursGeneration != serverGeneration) {
       s3hotX = 0;
       s3hotY = 0;
+
+      for (i = 0; i < 256; i++) {
+	  reorder (i, s3SwapBits[i]);
+      }
 
       if (OFLG_ISSET(OPTION_BT485_CURS, &vga256InfoRec.options)) {
          if (!(miPointerInitialize(pScr, &s3BtPointerSpriteFuncs,

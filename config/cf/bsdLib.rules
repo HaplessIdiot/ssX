@@ -4,7 +4,7 @@ XCOMM $XConsortium: bsdLib.rules /main/3 1996/09/28 16:09:18 rws $
 
 
 
-XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.3 1996/12/23 05:50:15 dawes Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.4 1996/12/31 04:14:35 dawes Exp $
 /*
  * NetBSD/FreeBSD shared library rules
  */
@@ -122,7 +122,11 @@ LintLibReferences(varname,libname,libsource)
 
 /*
  * NetBSD/FreeBSD (ELF) shared library rules
- * Cloned from Linux ELF rules, but with a minor number.
+ * Cloned from Linux ELF rules, with the following major change:
+ *
+ * 	Shared libraries depend on -lc.  Since we don't have to worry
+ *	about libc vs. libg, etc., this is a good idea.  (This is actually
+ *	implied by using $(CC) to build the shared libraries.)
  */
 
 #ifndef HasSharedLibraries
@@ -132,23 +136,9 @@ LintLibReferences(varname,libname,libsource)
 #define ForceNormalLib YES
 #endif
 
-/*
- *	#define BaseShLibReqs	-lc
- *
- * I don't want to use this since the normal ELF executables should
- * be linked with libc.so. If it is not, i.e., static, the variables in
- * libc.so which is loaded in because of the other shared libraries
- * may have different values than the ones in the static ELF
- * executables. That happens if the binaries are linked with libg.a
- * or libc_p.a.
- *
- * If an ELF executable linked with libg.a or libc_p.a loads a shared
- * object which needs libc.so via dlopen (), I think it should fail.
- * It is a very bad idea. The moral story is DON'T USE dlopen () IN
- * ELF EXECUTABLES LINKED WITH libg.a OR libc_p.a. H.J.
- *
- */
-#define BaseShLibReqs
+#ifndef BaseShLibReqs
+#define BaseShLibReqs		/* -lc implied by $(CC) */
+#endif
 
 #ifndef SharedDataSeparation
 #define SharedDataSeparation NO
@@ -172,7 +162,11 @@ LintLibReferences(varname,libname,libsource)
 #define PositionIndependentCplusplusFlags -fPIC
 #endif
 #ifndef ExtraLoadFlags
-#define ExtraLoadFlags -Wl,-rpath,$(USRLIBDIR)
+#ifdef UseInstalled
+#define ExtraLoadFlags -Wl,-rpath,$(USRLIBDIRPATH)
+#else
+#define ExtraLoadFlags -Wl,-rpath,$(USRLIBDIRPATH) -Wl,-rpath-link,$(BUILDLIBDIR)
+#endif
 #endif
 
 /*
@@ -180,17 +174,23 @@ LintLibReferences(varname,libname,libsource)
  * NOTE: file must be executable, hence "INSTBINFLAGS"
  */
 #ifndef InstallSharedLibrary
-#define	InstallSharedLibrary(libname,rev,dest)				@@\
+#define InstallSharedLibrary(libname,rev,dest)				@@\
 install:: Concat(lib,libname.so.rev) 					@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest
+	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
+	(T=`echo Concat($(DESTDIR)dest/lib,libname.so.rev) | sed 's/\.[^\.]*$$//'`;\
+		$(RM) $$T && $(LN) Concat(lib,libname.so.rev) $$T)	@@\
+	(T=`echo Concat($(DESTDIR)dest/lib,libname.so.rev) | sed 's/\.so.*$$/.so/'`;\
+		$(RM) $$T && $(LN) Concat(lib,libname.so.rev) $$T)	@@\
+	$(RM) Concat($(DESTDIR)dest/lib,libname.so)			@@\
+	$(LN) Concat(lib,libname.so.rev) Concat($(DESTDIR)dest/lib,libname.so)
 #endif /* InstallSharedLibrary */
 
 /*
  * InstallSharedLibraryData - generate rules to install the shared library data
  */
 #ifndef InstallSharedLibraryData
-#define	InstallSharedLibraryData(libname,rev,dest)
+#define InstallSharedLibraryData(libname,rev,dest)
 #endif /* InstallSharedLibraryData */
 
 
@@ -200,15 +200,28 @@ install:: Concat(lib,libname.so.rev) 					@@\
  * the library gone for long periods.
  */
 #ifndef SharedLibraryTarget
+#ifdef UseInstalled  
+#define LinkBuildSonameLibrary(lib) true
+#else
+#define LinkBuildSonameLibrary(lib) (RemoveFile($(BUILDLIBDIR)/lib); \
+	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib .)
+#endif
+
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
 AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
-	(cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$@ solist $(REQUIREDLIBS) BaseShLibReqs) @@\
-	$(RM) $@ 							@@\
+	SONAME=`echo $@ | sed 's/\.[^\.]*$$//'`; \			@@\
+		(cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs); \ @@\
+		$(RM) $$SONAME; $(LN) $@ $$SONAME; \			@@\
+		LinkBuildSonameLibrary($$SONAME)			@@\
+	$(RM) $@							@@\
 	$(MV) $@~ $@							@@\
+	$(RM) Concat(lib,libname.so)					@@\
+	$(LN) $@ Concat(lib,libname.so)					@@\
 	LinkBuildLibrary($@)						@@\
+	LinkBuildLibrary(Concat(lib,libname.so))			@@\
 									@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.so.rev)

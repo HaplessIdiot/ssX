@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.1 1997/03/06 23:16:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.2 1997/03/10 10:12:09 hohndel Exp $ */
 
 /*
  *
@@ -26,17 +26,23 @@ void S3SubsequentFillRectSolid();
 void S3SubsequentBresenhamLine();
 void S3SetupForFill8x8Pattern();
 void S3SubsequentFill8x8Pattern();
-
+void S3SetupForScanlineScreenToScreenColorExpand();
+void S3SubsequentScanlineScreenToScreenColorExpand16();
+void S3SubsequentScanlineScreenToScreenColorExpand32();
 
 static Bool Transfer32 = FALSE;
+
+static unsigned char ScratchBuffer[512];
 
 void S3AccelInit() {
 
     if(S3_x64_SERIES(s3ChipId))
-	Transfer32 = TRUE;
+	Transfer32 = TRUE; 
 
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS  | PIXMAP_CACHE  |
-				 HARDWARE_PATTERN_NOT_LINEAR; 
+
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS  | PIXMAP_CACHE |
+				 HARDWARE_PATTERN_NOT_LINEAR |
+				COP_FRAMEBUFFER_CONCURRENCY; 
 	
     xf86AccelInfoRec.Sync = S3Sync;
 
@@ -60,10 +66,30 @@ void S3AccelInit() {
 
     /* 8x8 pattern fills */
     if(S3_801_928_SERIES(s3ChipId)) {
-	/* vgadoc4b says this is only for 80x and newer (MArk) */
        xf86AccelInfoRec.SetupForFill8x8Pattern = S3SetupForFill8x8Pattern;
        xf86AccelInfoRec.SubsequentFill8x8Pattern = S3SubsequentFill8x8Pattern;
     }
+
+    /* Image Write */
+    xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand = 
+			S3SetupForScanlineScreenToScreenColorExpand;
+    if(Transfer32) {
+	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
+			S3SubsequentScanlineScreenToScreenColorExpand32;
+
+    } else {
+	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
+			S3SubsequentScanlineScreenToScreenColorExpand16;
+
+    }
+
+    xf86AccelInfoRec.ColorExpandFlags = SCANLINE_PAD_DWORD |
+					BIT_ORDER_IN_BYTE_MSBFIRST|
+					VIDEO_SOURCE_GRANULARITY_DWORD;
+    xf86AccelInfoRec.ScratchBufferAddr = 1;
+    xf86AccelInfoRec.ScratchBufferSize = 512;
+    xf86AccelInfoRec.ScratchBufferBase = (void*)ScratchBuffer;
+    xf86AccelInfoRec.PingPongBuffers = 1;
 
 
     /* pixmap cache */    
@@ -192,7 +218,7 @@ void S3SubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
    
      	WaitQueue(4);
     	SET_CURPT((short)x1, (short)y1);
-    	SET_MAJ_AXIS_PCNT(length - 1);
+    	SET_MAJ_AXIS_PCNT((short)length - 1);
     	SET_CMD(cmd);
     }
 }
@@ -225,3 +251,63 @@ void S3SubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
 }
 
 
+	/***************************************\
+	|	Scanline Color Expand Hack  	|
+	\***************************************/
+
+static int ScanlineWordCount;
+
+void S3SetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg,
+						 rop, planemask)
+   int x, y, w, h, bg, fg, rop, planemask;
+{
+    BLOCK_CURSOR;
+    WaitQueue16_32(5,8);
+    SET_FRGD_COLOR(fg);
+    SET_FRGD_MIX(FSS_FRGDCOL | s3alu[rop]); 
+    if(bg == -1) {  
+    	SET_BKGD_MIX(BSS_BKGDCOL | MIX_XOR); 
+    	SET_BKGD_COLOR(0);
+    } else {
+   	SET_BKGD_MIX(BSS_BKGDCOL | s3alu[rop]); 
+    	SET_BKGD_COLOR(bg);
+    }
+    SET_WRT_MASK(planemask);
+
+    WaitQueue(5);
+    SET_CURPT((short)x, (short)y); 
+    SET_PIX_CNTL(MIXSEL_EXPPC);
+    SET_AXIS_PCNT(w - 1, h - 1);
+
+    if(Transfer32) {
+    	ScanlineWordCount = (w + 31) >> 5; 
+
+    	WaitIdle();
+    	SET_CMD(CMD_RECT | BYTSEQ | _32BIT | PCDATA | DRAW | PLANAR |
+					INC_Y | INC_X | WRTDATA);
+    } else {
+    	ScanlineWordCount = (w + 15) >> 4;
+
+    	WaitIdle();
+    	SET_CMD(CMD_RECT | BYTSEQ | _16BIT | PCDATA | DRAW | PLANAR |
+					INC_Y | INC_X | WRTDATA);
+    }
+}
+
+void S3SubsequentScanlineScreenToScreenColorExpand16(int srcaddr)
+{
+    register unsigned short *ptr = (unsigned short*)ScratchBuffer;
+    register int count = ScanlineWordCount;
+
+    while(count--)
+	SET_PIX_TRANS_W(*(ptr++)); 
+}
+
+void S3SubsequentScanlineScreenToScreenColorExpand32(int srcaddr)
+{
+    register unsigned long *ptr = (unsigned long*)ScratchBuffer;
+    register int count = ScanlineWordCount;
+
+    while(count--)
+	SET_PIX_TRANS_L(*(ptr++)); 
+}

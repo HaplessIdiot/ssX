@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.3 1997/03/11 11:10:41 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.4 1997/03/11 13:06:02 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -181,8 +181,13 @@ static SymTabRec chipsets[] = {
 #ifdef W32_SUPPORT
   { TYPE_ET4000W32,	"ET4000W32" },
   { TYPE_ET4000W32I,	"ET4000W32i" },
-  { TYPE_ET4000W32P,	"ET4000W32p" },
-  { TYPE_ET4000W32Pc,	"ET4000W32p" },
+  { TYPE_ET4000W32Ib,	"ET4000W32i_rev_b" },
+  { TYPE_ET4000W32Ic,	"ET4000W32i_rev_c" },
+  { TYPE_ET4000W32P,	"ET4000W32p" }, /* treated as a W32p_rev_a, used for backwards-compatibility */
+  { TYPE_ET4000W32Pa,	"ET4000W32p_rev_a" },
+  { TYPE_ET4000W32Pb,	"ET4000W32p_rev_b" },
+  { TYPE_ET4000W32Pc,	"ET4000W32p_rev_c" },
+  { TYPE_ET4000W32Pd,	"ET4000W32p_rev_d" },
 #endif
   { TYPE_ET6000,	"ET6000" },
   { -1,			"" },
@@ -292,27 +297,33 @@ ET4000LinMem(Bool autodetect)
 
   if (vgaBitsPerPixel < 8) return FALSE;
 
+  if (et4000_type < TYPE_ET4000W32I) {
+    ErrorF("%s %s: This chipset does not support linear memory.\n",
+           XCONFIG_PROBED, vga256InfoRec.name);
+    return (FALSE); /* no can do */
+  }
+
   if (vga256InfoRec.MemBase != 0)   /* MemBase given from XF86Config */
   {
     switch(et4000_type)
     {
       case TYPE_ET4000W32I:   /* A26..A22 are decoded */
+      case TYPE_ET4000W32Ib:
+      case TYPE_ET4000W32Ic:
           mask = 0x07C00000;
           break;
-      case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space */
-          mask = 0xFFC00000; /* A31..A22 are decoded */
-          break;
-      case TYPE_ET4000W32P:  /* A31,A30 are decoded as 00 (=always mapped below 512 MB) */
+      case TYPE_ET4000W32P:
+      case TYPE_ET4000W32Pa:
+      case TYPE_ET4000W32Pb:
           mask = 0x3FC00000; /* A29..A22 */
+          break;
+      case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space */
+      case TYPE_ET4000W32Pd:
+          mask = 0xFFC00000; /* A31..A22 are decoded */
           break;
       case TYPE_ET6000:
           mask = 0xFF000000;
           break;
-      default:
-        ErrorF("%s %s: This chipset does not support linear memory.\n",
-               XCONFIG_PROBED, vga256InfoRec.name);
-        return (FALSE); /* no can do */
-
     }
     /* check for possible errors in given linear base address */
     if ((vga256InfoRec.MemBase & (~mask)) != 0) {
@@ -326,14 +337,19 @@ ET4000LinMem(Bool autodetect)
     switch(et4000_type)
     {
       case TYPE_ET4000W32I:   /* A26..A22 are decoded */
+      case TYPE_ET4000W32Ib:
+      case TYPE_ET4000W32Ic:
         outb(vgaIOBase+0x04, 0x30);
         vga256InfoRec.MemBase = (inb(vgaIOBase+0x05) & 0x1F) << 22;
         break;
-      case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space */
-        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0;
-        break;
       case TYPE_ET4000W32P:  /* A31,A30 are decoded as 00 (=always mapped below 512 MB) */
-        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0 & ~0xC0000000;
+      case TYPE_ET4000W32Pa:
+      case TYPE_ET4000W32Pb:
+        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0 & 0x3F000000;
+        break;
+      case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space, but in PCI mode only */
+      case TYPE_ET4000W32Pd:
+        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0 & 0xFF000000;
         break;
       case TYPE_ET6000:
         if (tseng_pcr && autodetect) /* don't trust PCI when not autodetecting */
@@ -345,15 +361,15 @@ ET4000LinMem(Bool autodetect)
                   XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.MemBase);
         }
         break;
-      default:
-        ErrorF("%s %s: This chipset does not support linear memory.\n",
-               XCONFIG_PROBED, vga256InfoRec.name);
-        return (FALSE); /* no can do */
     }
     if (vga256InfoRec.MemBase == 0) {
-        ErrorF("%s %s: Could not autodetect linear memory base address -- please specify it.\n",
+        /* use a default MemBase as high as possible */
+        if (et4000_type > TYPE_ET4000W32I)
+          vga256InfoRec.MemBase = 512*1024*1024; /* map memory at 512MB by default */
+        else
+          vga256InfoRec.MemBase = 128*1024*1024; /* map memory at 128MB by default */
+        ErrorF("%s %s: Using default linear memory base address -- use 'MemBase' in case of trouble.\n",
                XCONFIG_PROBED, vga256InfoRec.name);
-        return (FALSE);
     }
   }
   /*
@@ -384,6 +400,7 @@ ET4000LinMem(Bool autodetect)
   TSENG.ChipLinearBase = vga256InfoRec.MemBase;
 
   TSENG.ChipUseLinearAddressing = TRUE;
+
   if (TSENG.ChipLinearBase==0L)
   {
     ErrorF("%s %s: Linear memory address == 0x0. KABOOM! Going back to banked mode.\n",
@@ -518,14 +535,23 @@ Bool ET4000AutoDetect()
           et4000_type = TYPE_ET4000W32;
           break;
       case 1 : /* ET4000/W32i */
-      case 3 : /* ET4000/W32i rev b */ 
-      case 11: /* ET4000/W32i rev c */
           et4000_type = TYPE_ET4000W32I;
           break;
+      case 3 : /* ET4000/W32i rev b */ 
+          et4000_type = TYPE_ET4000W32Ib;
+          break;
+      case 11: /* ET4000/W32i rev c */
+          et4000_type = TYPE_ET4000W32Ic;
+          break;
       case 2 : /* ET4000/W32p rev a */
+          et4000_type = TYPE_ET4000W32Pa;
+          break;
       case 5 : /* ET4000/W32p rev b */
-          et4000_type = TYPE_ET4000W32P;
+          et4000_type = TYPE_ET4000W32Pb;
+          break;
       case 6 : /* ET4000/W32p rev d */
+          et4000_type = TYPE_ET4000W32Pd;
+          break;
       case 7 : /* ET4000/W32p rev c */
           et4000_type = TYPE_ET4000W32Pc;
           break;
@@ -676,7 +702,7 @@ TsengDetectMem()
   unsigned char config;
   int ramtype=0;
   
-  if (et4000_type == TYPE_ET6000)
+  if (et4000_type >= TYPE_ET6000)
   {
     ramtype = inb(0x3C2) & 0x03;
     switch (ramtype)
@@ -787,12 +813,16 @@ ET4000Probe()
                         et4000_type = TYPE_ET6000;
                         break;
                       case PCI_CHIP_ET4000_W32P_A:
+                        et4000_type = TYPE_ET4000W32Pa;
+                        break;
                       case PCI_CHIP_ET4000_W32P_B:
-                        et4000_type = TYPE_ET4000W32P;
+                        et4000_type = TYPE_ET4000W32Pb;
                         break;
                       case PCI_CHIP_ET4000_W32P_C:
-                      case PCI_CHIP_ET4000_W32P_D:
                         et4000_type = TYPE_ET4000W32Pc;
+                        break;
+                      case PCI_CHIP_ET4000_W32P_D:
+                        et4000_type = TYPE_ET4000W32Pd;
                         break;
                       default: 
                         ErrorF("%s %s: Unknown Tseng Labs PCI device 0x%x -- please report.\n",
@@ -810,7 +840,7 @@ ET4000Probe()
      if (ET4000AutoDetect()==FALSE) return(FALSE);
   }
 
-  if (et4000_type == TYPE_ET6000)
+  if (et4000_type >= TYPE_ET6000)
       ET6000InitVars(autodetect);
 
   ET4000EnterLeave(ENTER);
@@ -1099,7 +1129,7 @@ ET4000Probe()
     }
 #endif
 #endif
-    if (et4000_type == TYPE_ET6000)
+    if (et4000_type >= TYPE_ET6000)
     {
       int tmp = inb(ET6Kbase+0x67);
       initialET6KMemBase   = inb(ET6Kbase+0x13);
@@ -1354,7 +1384,7 @@ ET4000Restore(restore)
     }
   }
 
-  if (et4000_type == TYPE_ET6000)
+  if (et4000_type >= TYPE_ET6000)
   {
     outb(ET6Kbase+0x13, restore->ET6KMemBase);
     outb(ET6Kbase+0x40, restore->ET6KMMAPCtrl);
@@ -1549,7 +1579,7 @@ ET4000Save(save)
     }
   }
 
-  if (et4000_type == TYPE_ET6000)
+  if (et4000_type >= TYPE_ET6000)
   {
     save->ET6KMemBase   = inb(ET6Kbase+0x13);
     save->ET6KMMAPCtrl  = inb(ET6Kbase+0x40);
@@ -1761,7 +1791,7 @@ ET4000Init(mode)
     else
 #endif
 
-    if (et4000_type>=TYPE_ET6000)
+    if (et4000_type >= TYPE_ET6000)
     {
        /* setting min_n2 to "1" will ensure a more stable clock ("0" is allowed though) */
        commonCalcClock(vga256InfoRec.clock[new->std.NoClock],1,1,31,1,3,
@@ -1827,7 +1857,7 @@ ET4000Init(mode)
    * linear mode handling
    */
 
-   if (et4000_type==TYPE_ET6000)
+   if (et4000_type >= TYPE_ET6000)
    {
       if (TSENG.ChipUseLinearAddressing)
       {
@@ -1891,7 +1921,7 @@ ET4000Init(mode)
 #ifdef USE_XAA
   if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
   {
-    if (et4000_type==TYPE_ET6000)
+    if (et4000_type >= TYPE_ET6000)
     {
       if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
         new->ET6KMMAPCtrl |= 0x02; /* MMU can't be used here (causes system hang...) */

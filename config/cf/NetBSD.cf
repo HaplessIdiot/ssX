@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.49 1997/01/05 11:49:32 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.50 1997/03/10 10:09:31 hohndel Exp $
 
 
 #ifndef OSName
@@ -109,40 +109,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # endif
 #endif
 
-#ifdef i386Architecture
-# define OptimizedCDebugFlags 	-m486 DefaultGcc2i386Opt
-# if OSMajorVersion < 1
-#  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DXNO_SYSCONF
-# else
-#  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
-# endif
-# if OSMajorVersion == 1 && OSMinorVersion >= 1 || OSMajorVersion >= 2
-#  define ServerExtraSysLibs	-li386
-# endif
-#else
-# define OptimizedCDebugFlags 	-O2
-# if defined(SparcArchitecture) || defined(AlphaArchitecture)
-#  define ServerOSDefines 	-DDDXOSINIT
-# else
-#  define ServerOSDefines 	/**/
-# endif
-#endif
-#ifdef i386Architecture
-# define ServerExtraDefines GccGasOption XFree86ServerDefines
-# ifndef XFree86ConsoleDefines
-#  define XFree86ConsoleDefines -DPCCONS_SUPPORT -DPCVT_SUPPORT
-# endif
-#else
-# if defined(AlphaArchitecture)
-#  define ServerExtraDefines GccGasOption -D_XSERVER64
-# else
-#  define ServerExtraDefines GccGasOption
-# endif
-#endif
-
-#define StandardDefines	-DCSRG_BASED
-#define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
-
 /*
  * Dynamic loading supported starting in 1.0 on a.out platforms,
  * and on all ELF platforms.
@@ -164,6 +130,55 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #endif
 #endif
+
+#if UseElfFormat
+#define DlLibrary		-rdynamic /* no -ldl yet */
+#else
+#define DlLibrary		/**/
+#endif
+
+#ifdef i386Architecture
+# define OptimizedCDebugFlags 	-m486 DefaultGcc2i386Opt
+# if OSMajorVersion < 1
+#  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DXNO_SYSCONF
+# else
+#  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
+# endif
+# if OSMajorVersion == 1 && OSMinorVersion >= 1 || OSMajorVersion >= 2
+#  if BuildDynamicLoading
+#   define ServerExtraSysLibs	-li386 DlLibrary
+#  else
+#   define ServerExtraSysLibs	-li386
+#  endif
+# endif
+#else
+# define OptimizedCDebugFlags 	-O2
+# if defined(SparcArchitecture) || defined(AlphaArchitecture)
+#  define ServerOSDefines 	-DDDXOSINIT
+# else
+#  define ServerOSDefines 	/**/
+# endif
+# if BuildDynamicLoading 
+#  define ServerExtraSysLibs	DlLibrary
+# else
+#  define ServerExtraSysLibs	/**/
+# endif
+#endif
+#ifdef i386Architecture
+# define ServerExtraDefines GccGasOption XFree86ServerDefines
+# ifndef XFree86ConsoleDefines
+#  define XFree86ConsoleDefines -DPCCONS_SUPPORT -DPCVT_SUPPORT
+# endif
+#else
+# if defined(AlphaArchitecture)
+#  define ServerExtraDefines GccGasOption -D_XSERVER64
+# else
+#  define ServerExtraDefines GccGasOption
+# endif
+#endif
+
+#define StandardDefines	-DCSRG_BASED
+#define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
 #ifndef ExtraLibraries
 #define ExtraLibraries		/**/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3.h,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.1 1997/03/06 23:16:28 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -80,14 +80,11 @@ extern char  s3Mbanks;
 extern char *s3ClockChipProbed;
 extern Bool  s3Localbus;
 extern Bool  s3VLB;
-extern Bool  s3Trio32FCBug;
-extern Bool  s3_968_DashBug;
 extern Bool  s3DAC8Bit;
 extern Bool  s3DACSyncOnGreen;
 extern Bool  s3PixelMultiplexing;
 extern Bool  s3Bt485PixMux;
 extern Bool  s3ATT498PixMux;
-extern Bool  s3PCIHack;
 extern Bool  s3PowerSaver;
 extern Bool  s3BlockCursor;
 extern Bool  s3ReloadCursor;

@@ -1,4 +1,4 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/pegc/Imakefile,v 1.2 1997/03/11 14:35:24 hohndel Exp $
 
 
 #include <Server.tmpl>
@@ -9,7 +9,7 @@ OBJS = pegc_dr.o pegc_bank.o
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 #else
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) -I$(XF86SRC) \
 	   -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(XINCLUDESRC)
 #endif
 
@@ -24,6 +24,10 @@ NormalAsmObjectRule()
 NormalRelocatableTarget(pegc_drv, $(OBJS))
 
 ObjectFromSpecialAsmSource(pegc_bank,bank,NullParameter)
+
+#if !XF86LinkKit
+LinkSourceFile(bank.s,$(XF98SRC)/vga256/drivers/pegc)
+#endif
 
 InstallLinkKitNonExecFile(pegc_dr.c,$(XF98LINKKITDIR)/drivers98/pegc)
 InstallLinkKitNonExecFile(bank.s,$(XF98LINKKITDIR)/drivers98/pegc)
