@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.0 1994/05/29 02:05:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -75,9 +75,11 @@ ScrnInfoRec p9000InfoRec = {
     p9000SwitchMode,	/* Bool (* SwitchMode)() */
     p9000PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
+    {0, 0, 0},		/* xrgb weight */
     8,			/* int bitsPerPixel */
     PseudoColor,       	/* int defaultVisual */
     -1, -1,		/* int virtualX,virtualY */
+    -1,			/* int displayWidth */
     -1, -1, -1, -1,	/* int frameX0, frameY0, frameX1, frameY1 */
     {0, },              /* OFlagSet options */
     {0, },              /* OFlagSet clockOptions */

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.1 1994/05/08 05:19:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.2 1994/05/08 06:21:29 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -78,9 +78,11 @@ ScrnInfoRec mach32InfoRec = {
     mach32SwitchMode,	/* Bool (* SwitchMode)() */
     mach32PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
+    {0, 0, 0},          /* xrgb weight */
     8,			/* int bitsPerPixel */
     PseudoColor,       	/* int defaultVisual */
     -1, -1,		/* int virtualX,virtualY */
+    -1,                 /* int displayWidth */
     -1, -1, -1, -1,	/* int frameX0, frameY0, frameX1, frameY1 */
     {0, },	       	/* OFlagSet options */
     {0, },	       	/* OFlagSet clockOptions */
