@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.83 2004/06/19 13:53:46 pascal Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.84 2004/06/25 13:23:25 pascal Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -199,6 +199,7 @@
   tr_f		Turkish (F)
   ua		Ukrainian 
   gb		United Kingdom
+  ur_PK		Urdu
   uz            Uzbek
   vn		Vietnamese
   nec/jp	PC-98xx Series

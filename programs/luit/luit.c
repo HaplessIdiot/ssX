@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/luit.c,v 1.9 2002/10/17 01:06:09 dawes Exp $ */
+/* $XFree86: xc/programs/luit/luit.c,v 1.11 2003/09/08 14:25:30 eich Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,6 +45,8 @@ THE SOFTWARE.
 #include "charset.h"
 #include "iso2022.h"
 
+static int p2c_waitpipe[2];
+static int c2p_waitpipe[2];
 static Iso2022Ptr inputState = NULL, outputState = NULL;
 
 static char *child_argv0 = NULL;
@@ -462,6 +464,8 @@ condom(int argc, char **argv)
         exit(1);
     }
 
+    pipe(p2c_waitpipe);
+    pipe(c2p_waitpipe);
     pid = fork();
     if(pid < 0) {
         perror("Couldn't fork");
@@ -470,8 +474,12 @@ condom(int argc, char **argv)
 
     if(pid == 0) {
         close(pty);
+	close(p2c_waitpipe[1]);
+	close(c2p_waitpipe[0]);
         child(line, path, child_argv);
     } else {
+	close(p2c_waitpipe[0]);
+	close(c2p_waitpipe[1]);
         free(child_argv);
         free(path);
         free(line);
@@ -486,6 +494,7 @@ child(char *line, char *path, char **argv)
 {
     int tty;
     int pgrp;
+    char tmp[10];
 
     close(0);
     close(1);
@@ -501,6 +510,7 @@ child(char *line, char *path, char **argv)
         kill(getppid(), SIGABRT);
         exit(1);
     }
+    write(c2p_waitpipe[1],"1",1);
     
     if(tty != 0)
         dup2(tty, 0);
@@ -512,6 +522,9 @@ child(char *line, char *path, char **argv)
     if(tty > 2)
         close(tty);
     
+    read(p2c_waitpipe[0],tmp,1);
+    close(c2p_waitpipe[1]);
+    close(p2c_waitpipe[0]);
     execvp(path, argv);
     perror("Couldn't exec");
     exit(1);
@@ -535,7 +548,9 @@ parent(int pid, int pty)
     int i;
     int val;
     int rc;
+    char tmp[10];
 
+    read(c2p_waitpipe[0],tmp,1);
     if(verbose) {
         reportIso2022(outputState);
     }
@@ -564,6 +579,9 @@ parent(int pid, int pty)
 
     setWindowSize(0, pty);
 
+    write(p2c_waitpipe[1],"1",1);
+    close(c2p_waitpipe[0]);
+    close(p2c_waitpipe[1]);
     for(;;) {
         rc = waitForInput(0, pty);
 
