@@ -1,3 +1,17 @@
+XFree86 3.1.0Cc (20 January 1995)
+227. Add a check to the W32 server for invalid depths.
+226. Fix bug in PaintWindow in Mach32 and AGX servers (Stuart Anderson).
+225. Chrontel 8391 programmable clock support (Richard Burdick
+     and Harald Koenig).
+224. S3 programmable clock code updates (Harald Koenig).
+223. Support for S3 Trio32 and Trio64 (Harald Koenig).
+222. Updates to S3 Ti3025 code for the Miro 40SV (Harald Koenig).
+221. Update xf86config to know about the latest clockchip changes
+     (Harm Hanemaayer).
+220. Minor cirrus HW cursor patch (Harm Hanemaayer).
+219. Updates to OAK driver, including mapping the linear fb above 64MB
+     (Jorge Delgado).
+
 XFree86 3.1.0Cb (19 January 1995)
 218. Fix XLOCAL parsing problem introduced in XC fix-06 (Steve Forsythe).
 217. Added a DocIndex (to use as a starting point for the HTML docs).
