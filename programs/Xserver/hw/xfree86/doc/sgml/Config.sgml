@@ -96,7 +96,6 @@ The server binaries are:
 	<tag>XF86_8514:</tag>   8514/A accelerated server.
 	<tag>XF86_P9000:</tag>  P9000 accelerated server.
 	<tag>XF86_AGX:</tag>    AGX accelerated server.
-	<tag>XF86_W32:</tag>    ET4000/W32 and ET6000 accelerated server.
  </descrip>
 
 There is a manual page for each of these servers; refer to the manual
@@ -289,8 +288,7 @@ file.  You need to supply a Screen section for each of the server
 driver types you will be using.  
 The driver types are "SVGA" (XF86_SVGA), "VGA16" (XF86_VGA16), "VGA2"
 (XF86_Mono), "MONO" (XF86_Mono, XF86_VGA16), and "ACCEL" (XF86_S3,
-XF86_Mach32, XF86_Mach8, XF86_Mach64, XF86_8514, XF86_P9000, XF86_AGX,
-XF86_W32).
+XF86_Mach32, XF86_Mach8, XF86_Mach64, XF86_8514, XF86_P9000, XF86_AGX).
 Each Screen section specifies which Monitor description and Device
 description are to be used. 
 
@@ -517,7 +515,7 @@ installation.
 </code>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Config.sgml,v 3.10 1997/01/24 09:32:04 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Config.sgml,v 3.11 1997/01/25 03:21:50 dawes Exp $ 
 
 
 

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.68 1997/07/05 08:45:13 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.69 1997/07/06 05:30:50 dawes Exp $
 
 
 
@@ -143,7 +143,6 @@ SERVERSRCS = \
 	XF86_P9000.c \
 	XF86_AGX.c \
 	XF86_LOADER.c \
-	XF86_W32.c \
 	XF86_I128.c \
 	XF86_TGA.c \
 	XF86_GLINT.c
@@ -343,10 +342,6 @@ all:: XF86_P9000.o
 SpecialObjectRule(XF86_AGX.o,XF86_AGX.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_AGX.o
 #endif
-#if XF86W32Server
-SpecialObjectRule(XF86_W32.o,XF86_W32.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
-all:: XF86_W32.o
-#endif
 #if XF86I128Server
 SpecialObjectRule(XF86_I128.o,XF86_I128.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_I128.o
@@ -407,7 +402,6 @@ InstallLinkKitNonExecFile(XF86_Mach32.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_Mach64.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_P9000.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_AGX.c,$(LINKKITDIR))
-InstallLinkKitNonExecFile(XF86_W32.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_I128.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_TGA.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(cfb16.h,$(LINKKITDIR)/include)

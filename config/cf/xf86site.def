@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.124 1997/09/19 11:24:27 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.125 1997/10/25 13:49:54 hohndel Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -194,7 +194,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.124 1997/09/19 11:24:27 hohndel Ex
 #define XF86Mach64Server        NO
 #define XF86P9000Server		NO
 #define XF86AGXServer		NO
-#define XF86W32Server		NO
 #define XF86I128Server		NO
 #define XF86GLINTServer         NO
  */
@@ -344,12 +343,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.124 1997/09/19 11:24:27 hohndel Ex
  * Mono driver in Mono or VGA16 server:
  *
 #define XF86MonoDrivers		hgc1280 sigma apollo hercules
- */
-
-/*
- * ET4000/W32 server:
- *
-#define XF86W32Drivers		et4000w32
  */
 
 /*

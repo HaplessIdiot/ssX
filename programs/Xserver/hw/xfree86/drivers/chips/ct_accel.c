@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.14 1997/11/01 15:04:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.15 1997/11/22 00:00:12 hohndel Exp $ */
 
 
 
@@ -254,12 +254,12 @@ void _ctAccelInit() {
         break;
 #ifdef CHIPS_HIQV
     case 32:
-        xf86AccelInfoRec.SetupForFillRectSolid = 
-	    CTNAME(32SetupForFillRectSolid);
-	xf86AccelInfoRec.SubsequentFillRectSolid =
-	    CTNAME(32SubsequentFillRectSolid);      
-        if (ctBLTPatternAddress < 0)
-	    xf86GCInfoRec.PolyFillRectSolidFlags |= GXCOPY_ONLY;
+        if (ctBLTPatternAddress > 0) {
+	    xf86AccelInfoRec.SetupForFillRectSolid = 
+		CTNAME(32SetupForFillRectSolid);
+	    xf86AccelInfoRec.SubsequentFillRectSolid =
+		CTNAME(32SubsequentFillRectSolid);      
+	}
         break;
 #endif
     }
@@ -332,7 +332,10 @@ void _ctAccelInit() {
 #ifdef CHIPS_IMAGEWRITE
     xf86AccelInfoRec.ImageWriteFlags =
 	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
-        | LEFT_EDGE_CLIPPING_NEGATIVE_X;
+        | LEFT_EDGE_CLIPPING_NEGATIVE_X | NO_TRANSPARENCY;
+
+    if (vga256InfoRec.bitsPerPixel == 24)
+        xf86AccelInfoRec.ImageWriteFlags |= NO_PLANEMASK;
 
     xf86AccelInfoRec.DoImageWrite = CTNAME(DoPixWinBitBltCopy);
 #else
@@ -1253,15 +1256,24 @@ void CTNAME(DoPixWinBitBltCopy)(pSrc, pDst, alu, prgnDst,
     pbox = REGION_RECTS(prgnDst);
     nbox = REGION_NUM_RECTS(prgnDst);
 
+    CommandFlags = ctSRCSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM;
+    ctBLTWAIT;
+    if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
+    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
+    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
+    (vga256InfoRec.bitsPerPixel == 32))
+    {
+	ctSETROP(CommandFlags | ctAluConv[alu & 0xF]);
+    } else {
+	ctSETROP(CommandFlags | ctAluConv3[alu & 0xF]);
+	ctSETPATSRCADDR(ctBLTPatternAddress);
+	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
+    }
+    ctSETPITCH(byteWidthSrc, byteWidthDst);
+
     for (; nbox; pbox++, pptSrc++, nbox--) {
 	unsigned int psrc, pdst;
 	int w, h;
-
-	CommandFlags = ctSRCSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM;
-
-	ctBLTWAIT;
-	ctSETROP(CommandFlags | ctAluConv[alu & 0xF]);
-	ctSETPITCH(byteWidthSrc, byteWidthDst);
 
 	w = pbox->x2 - pbox->x1;
 	h = pbox->y2 - pbox->y1;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.7 1997/09/30 04:51:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.9 1997/11/01 15:04:33 hohndel Exp $ */
 
 /*
  * glint register file 
@@ -153,6 +153,9 @@
     #define Burst1Cycle4  1 << 31
     #define SDRAM4        0 << 4
 
+/* Permedia 2 Control */
+#define MemControl							0x1040
+
 #define PMBypassWriteMask						0x1100
 #define PMFramebufferWriteMask					        0x1140
 #define PMCount								0x1180
@@ -220,6 +223,7 @@
 #define PM2DACCursorYLsb						0x4070
 #define PM2DACCursorMLsb						0x4078
 #define PM2DACIndexCMR							0x18
+#define   PM2DAC_TRUECOLOR				0x80
 #define   PM2DAC_RGB					0x20
 #define   PM2DAC_GRAPHICS				0x10
 #define   PM2DAC_PACKED					0x09
@@ -293,6 +297,7 @@
 	#define PrimitiveLine						0
 	#define PrimitiveTrapezoid					0x00040
 	#define PrimitivePoint						0x00080
+	#define PrimitiveRectangle					0x000C0
 	#define AntialiasEnable         				0x00100
 	#define AntialiasingQuality     				0x00200
 	#define UsePointTable						0x00400
@@ -317,11 +322,15 @@
 #define PointTable2							GLINT_TAG_ADDR(0x01,0x02)
 #define PointTable3							GLINT_TAG_ADDR(0x01,0x03)
 #define RasterizerMode							GLINT_TAG_ADDR(0x01,0x04)
+#define		ForceBackgroundColor		1<<6
 #define YLimits								GLINT_TAG_ADDR(0x01,0x05)
 #define ScanLineOwnership						GLINT_TAG_ADDR(0x01,0x06)
 #define WaitForCompletion						GLINT_TAG_ADDR(0x01,0x07)
 #define PixelSize							GLINT_TAG_ADDR(0x01,0x08)
 #define XLimits								GLINT_TAG_ADDR(0x01,0x09) /* PM only */
+
+#define RectangleOrigin							GLINT_TAG_ADDR(0x01,0x0A) /* PM2 only */
+#define RectangleSize							GLINT_TAG_ADDR(0x01,0x0B) /* PM2 only */
 
 #define PackedDataLimits						GLINT_TAG_ADDR(0x02,0x0a) /* PM only */
 
@@ -382,6 +391,9 @@
 
 #define TextureReadMode						GLINT_TAG_ADDR(0x09,0x00)
 #define TextureFormat						GLINT_TAG_ADDR(0x09,0x01)
+  #define Texture_4_Components 3 << 3
+  #define Texture_Texel        0
+
 #define TextureCacheControl					GLINT_TAG_ADDR(0x09,0x02)
   #define TextureCacheControlEnable     2
   #define TextureCacheControlInvalidate 1
@@ -408,6 +420,11 @@
 #define TextureFilter						GLINT_TAG_ADDR(0x0c,0x0d)
 
 #define TextureColorMode					GLINT_TAG_ADDR(0x0d,0x00)
+  #define TextureTypeOpenGL 0
+  #define TextureTypeApple  1 << 4
+  #define TextureKsDDA      1 << 5 /* only Apple-Mode */
+  #define TextureKdDDA      1 << 6 /* only Apple-Mode */
+
 #define TextureEnvColor						GLINT_TAG_ADDR(0x0d,0x01)
 #define FogMode							GLINT_TAG_ADDR(0x0d,0x02)
 	/* 0:				*/
@@ -524,6 +541,10 @@
 
 #define FBWriteData						GLINT_TAG_ADDR(0x10,0x06)
 #define RouterMode						GLINT_TAG_ADDR(0x10,0x08)
+        #define ROUTER_Depth_Texture 1
+        #define ROUTER_Texture_Depth 0
+
+
 #define LBReadMode						GLINT_TAG_ADDR(0x11,0x00)
 	/* 0:				*/
 	/* SrcNoRead			*/
@@ -723,6 +744,8 @@
 #define FBBlockColorL						GLINT_TAG_ADDR(0x18,0x0e)
 #define SuspendUntilFrameBlank					GLINT_TAG_ADDR(0x18,0x0f)
 
+#define FBSourceDelta						GLINT_TAG_ADDR(0x1B,0x01)
+#define Config							GLINT_TAG_ADDR(0x1B,0x02)
 #define YUVMode                                                 GLINT_TAG_ADDR(0x1E,0x00)
 
 
@@ -784,11 +807,24 @@
 	#define DM_ClampedTexParMode				0x4000 
 	#define DM_NormalizedTexParMode				0xC000 
 
-	#define DDCMD_AntialiasEnable				0x0080 /* Bit 8 */
-     	#define DDCMD_AntialiasingQuality			0x0100 /* Bit 9 */
-     	#define DDCMD_TextureEnable			        0x1000 /* Bit 13 */
-	#define DDCMD_FogEnable                                 0x2000 /* Bit 14 */
-	#define DDCMD_SubPixelCorrectionEnable                  0x8000 /* Bit 16 */
+
+        #define DDCMD_AreaStrippleEnable                        0x0001
+	#define DDCMD_LineStrippleEnable                        0x0002
+	#define DDCMD_ResetLineStripple                         1 << 2
+        #define DDCMD_FastFillEnable                            1 << 3
+        /*  2 Bits reserved */
+	#define DDCMD_PrimitiveType_Point                       2 << 6
+	#define DDCMD_PrimitiveType_Line                        0 << 6
+	#define DDCMD_PrimitiveType_Trapezoid                   1 << 6
+	#define DDCMD_AntialiasEnable				1 << 8
+     	#define DDCMD_AntialiasingQuality			1 << 9
+        #define DDCMD_UsePointTable                             1 << 10
+	#define DDCMD_SyncOnBitMask                             1 << 11
+	#define DDCMD_SyncOnHostDate                            1 << 12
+     	#define DDCMD_TextureEnable			        1 << 13
+	#define DDCMD_FogEnable                                 1 << 14
+	#define DDCMD_CoverageEnable                            1 << 15
+	#define DDCMD_SubPixelCorrectionEnable                  1 << 16
 
 
 
@@ -830,19 +866,20 @@ typedef struct {
 {								\
 	if( xf86Verbose > 2)					\
 		ErrorF("reg 0x%04x to 0x%08x\n",r,v);		\
+	GLINT_WAIT(1);						\
 	*(unsigned int *)((char*)GLINTMMIOBase+r) = v;		\
 }
-
-
 #else
-#define GLINT_WRITE_REG(v,r) \
-        *(unsigned int *)((char*)GLINTMMIOBase+r) = v
+#define GLINT_WRITE_REG(v,r)					\
+{								\
+	GLINT_WAIT(1);						\
+        *(unsigned int *)((char*)GLINTMMIOBase+r) = v;		\
+}
 #endif
 
 
 #define GLINT_READ_REG(r) \
 	*(unsigned int *)((char*)GLINTMMIOBase+r)
-
 
 #define GLINT_WAIT(n)	\
  	if (!OFLG_ISSET(OPTION_PCI_RETRY, &glintInfoRec.options))  \
@@ -855,21 +892,34 @@ typedef struct {
 #define GLINT_LOAD_PAR(v,r) \
         *(unsigned long *)((char*)GLINTMMIOBase+r) = *((unsigned long *) &v)
 
-
-#endif
-
-
-#define REPLICATE(r)					\
-{							\
-	if (glintInfoRec.bitsPerPixel < 32)		\
-	{						\
-		r |= r << 16;				\
-		if (glintInfoRec.bitsPerPixel < 16)	\
-		{					\
-			r |= r << 8;			\
-		}					\
-	}						\
+#define REPLICATE(r)						\
+{								\
+	if (glintInfoRec.bitsPerPixel == 16) {			\
+		r = ((r & 0xFFFF) << 16) | (r & 0xFFFF);	\
+	} else							\
+	if (glintInfoRec.bitsPerPixel == 15) {			\
+		r = ((r & 0x7FFF) << 16) | (r & 0x7FFF);	\
+	} else							\
+	if (glintInfoRec.bitsPerPixel == 8) { 			\
+		r = (r & 0xFF);					\
+		r = (r<<24) | (r<<16) | (r<<8) | r;		\
+	}							\
 }
 
+#define CHECKPLANEMASK(planemask)					\
+{									\
+	if ( (planemask & ((1<<glintInfoRec.bitsPerPixel)-1)) ==	\
+			   ((1<<glintInfoRec.bitsPerPixel)-1) ) {	\
+		blitmode = FBRM_DstEnable;				\
+	} else {							\
+		blitmode = 0;						\
+	}								\
+}
 
-/* end of glint_regs.h *******************************************************/
+#define DO_PLANEMASK(planemask)					\
+{ 								\
+	CHECKPLANEMASK(planemask); 				\
+	REPLICATE(planemask); 					\
+	GLINT_WRITE_REG(planemask, FBHardwareWriteMask);	\
+} 
+#endif

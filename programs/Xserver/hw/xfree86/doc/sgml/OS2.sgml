@@ -219,7 +219,6 @@ were ported to XFree86.
     <tag/X33S3V/ 	the X server for S3 ViRGE based boards
     <tag/X33SVGA/	the 8-bit pseudo-color X server for Super VGA cards
     <tag/X33VG16/	the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
-    <tag/X33W32/	the X server for et4000w32 based boards
     </descrip>
 
 <tag/OPTIONAL:/
@@ -615,7 +614,7 @@ port heavily relies on
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.9 1997/01/27 07:47:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.10 1997/05/18 12:12:10 dawes Exp $
 
 
 

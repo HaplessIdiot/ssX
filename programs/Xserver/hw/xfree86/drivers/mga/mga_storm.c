@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.9 1997/11/01 15:04:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.10 1997/11/08 16:24:27 hohndel Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -28,6 +28,7 @@ void MGAStormEngineInit();
 
 void MGAWriteBitmap();
 void MGAFillRectStippled();
+void MGAPolyArcWrapper();
 
 /*
  * forward definitions for the functions in this file.
@@ -81,7 +82,8 @@ void MGANAME(AccelInit)()
                              DO_NOT_BLIT_STIPPLES |
                              HARDWARE_CLIP_LINE |
                              LINE_PATTERN_MSBFIRST_LSBJUSTIFIED |
-                             NO_SYNC_AFTER_CPU_COLOR_EXPAND;
+                             NO_SYNC_AFTER_CPU_COLOR_EXPAND |
+			     DELAYED_SYNC;
     /*
      * Currently, no ScreenToScreenCopy for this chip -- why?
      */
@@ -208,6 +210,9 @@ void MGANAME(AccelInit)()
     xf86AccelInfoRec.WriteBitmap = MGAWriteBitmap;
     xf86AccelInfoRec.FillRectStippled = MGAFillRectStippled;
     xf86AccelInfoRec.FillRectOpaqueStippled = MGAFillRectStippled;
+#if PSZ == 8
+    xf86GCInfoRec.PolyArcWrapper = MGAPolyArcWrapper;
+#endif
 
     /*
      * Finally, we set up the video memory space available to the pixmap
@@ -318,6 +323,31 @@ void MGAStormEngineInit()
     OUTREG(MGAREG_PLNWT, ~0);
     OUTREG(MGAREG_OPMODE, 0);
 }
+
+void 
+MGAPolyArcWrapper(pDraw, pGC, narcs, parcs)
+    DrawablePtr	pDraw;
+    GCPtr	pGC;
+    int		narcs;
+    xArc	*parcs;
+{
+    cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+
+    SYNC_CHECK;   
+
+    switch (devPriv->rop) {
+	case GXxor:
+	    cfbZeroPolyArcSS8Xor(pDraw, pGC, narcs, parcs);
+	    break;
+	case GXcopy:
+	    cfbZeroPolyArcSS8Copy(pDraw, pGC, narcs, parcs);
+	    break;
+	default:
+	    cfbZeroPolyArcSS8General(pDraw, pGC, narcs, parcs);
+	    break;
+    }
+}
+
 
 #endif /* PSZ == 8 */ /* once only compilation */
 

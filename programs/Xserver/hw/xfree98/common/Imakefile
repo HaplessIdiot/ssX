@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/19 1996/10/25 21:24:28 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.39 1997/07/29 12:08:15 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.40 1997/09/19 09:01:20 hohndel Exp $
 
 
 
@@ -143,7 +143,6 @@ SERVERSRCS = \
 	XF86_P9000.c \
 	XF86_AGX.c \
 	XF86_LOADER.c \
-	XF86_W32.c \
 	XF86_I128.c \
 	XF86_TGA.c \
 	XF86_GLINT.c
@@ -347,7 +346,6 @@ LinkSourceFile(XF86_S3.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_TGA.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_SVGA.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_VGA16.c,$(XF86SRC)/common)
-LinkSourceFile(XF86_W32.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_I128.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_GLINT.c,$(XF86SRC)/common)
 LinkSourceFile(atKeynames.h,$(XF86SRC)/common)

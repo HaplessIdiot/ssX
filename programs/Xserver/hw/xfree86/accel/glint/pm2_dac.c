@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm2_dac.c,v 1.1 1997/09/25 06:55:33 hohndel Exp $ */
 /*
  * Copyright 1997 The XFree86 Project, Inc
  *
@@ -10,7 +10,6 @@
 #include "Xfuncproto.h"
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
-#include "xf86_OSlib.h"
 #include "xf86.h"
 #include "xf86_Config.h"
 
@@ -63,6 +62,8 @@ PM2DAC_CalculateMNPCForClock
     long		freqerr, lowestfreqerr = INITIALFREQERR;
     unsigned long  	clock,actualclock = 0;
 
+    if (glintInfoRec.bitsPerPixel > 8) reqclock *= 2;
+
     for (n = 2; n <= 14; n++) {
         for (m = 2; m != 0; m++) { /* this is a char, so this counts to 255 */
 	    f = refclock * m / n;
@@ -109,15 +110,19 @@ PM2DACGlintSetClock(long freq)
      */
     glintOutPM2IndReg(PM2DACIndexClockCM,0x00,m);
     glintOutPM2IndReg(PM2DACIndexClockCN,0x00,n);
-    glintOutPM2IndReg(PM2DACIndexClockCP,0x00,p);
+    glintOutPM2IndReg(PM2DACIndexClockCP,0x00,p|0x08);
 }
 
 int
 PM2DACInit(int clock)
 {
+    int CC = GLINT_READ_REG(ChipConfig);
     /*
      * set up the RAMDAC in the right mode
      */
+    GLINT_WRITE_REG(CC & 0xFFFFFFFD, ChipConfig); /* Disable VGA */
+    glintOutPM2IndReg(PM2DACIndexMCR,0x00, 0x02); /* 8bit DAC */
+  
     switch (glintInfoRec.depth)
     {
     case 8:
@@ -125,11 +130,19 @@ PM2DACInit(int clock)
 			  PM2DAC_RGB|PM2DAC_GRAPHICS|PM2DAC_CI8);
     	break;
     case 15:
+    	glintOutPM2IndReg(PM2DACIndexCMR,0x00,
+			  PM2DAC_RGB|PM2DAC_TRUECOLOR|PM2DAC_GRAPHICS|
+			  PM2DAC_5551);
     	break;
     case 16:
-    	break;
+    	glintOutPM2IndReg(PM2DACIndexCMR,0x00,
+			  PM2DAC_RGB|PM2DAC_TRUECOLOR|PM2DAC_GRAPHICS|
+			  PM2DAC_565);
     	break;
     case 32:
+    	glintOutPM2IndReg(PM2DACIndexCMR,0x00,
+			  PM2DAC_RGB|PM2DAC_TRUECOLOR|PM2DAC_GRAPHICS|
+			  PM2DAC_8888);
     	break;
     }
     PM2DACGlintSetClock(clock);

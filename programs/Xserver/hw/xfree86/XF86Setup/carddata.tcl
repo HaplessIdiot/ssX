@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.16 1997/07/29 12:07:23 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.17 1997/08/26 10:00:53 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -18,9 +18,9 @@
 
 if !$pc98 {
     set ServerList		[list Mono VGA16 SVGA 8514 AGX I128 \
-			          Mach8 Mach32 Mach64 P9000 S3 S3V TGA W32 ]
+			          Mach8 Mach32 Mach64 P9000 S3 S3V TGA ]
     set AccelServerList	[list 8514 AGX I128 Mach8 Mach32 Mach64 P9000 \
-			          S3 S3V TGA W32 ]
+			          S3 S3V TGA ]
 } else {
     set ServerList		[list EGC PEGC GANBWAP NKVNEC TGUI MGA \
 			          WABS WABEP WSNA NECS3 PWSKB PWLB GA968 ]
@@ -118,11 +118,6 @@ set CardChipSets(P9000)	   { orchid_p9000 viperpci vipervlb }
 set CardChipSets(S3)	   { mmio_928 newmmio s3_generic }
 set CardChipSets(S3V)	   { s3_virge }
 set CardChipSets(TGA)	   { tga }
-set CardChipSets(W32)	   { et4000w32 et4000w32i et4000w32i_rev_b \
-			     et4000w32i_rev_c et4000w32p_rev_a \
-			     et4000w32p_rev_b et4000w32p_rev_c \
-			     et4000w32p_rev_d et6000 }
-
 set CardChipSets(EGC)	   { vga }
 set CardChipSets(PEGC)	   { pegc }
 set CardChipSets(GANBWAP)  { clgd5426 clgd5428 clgd5429 clgd5430 \
@@ -199,11 +194,6 @@ set CardRamDacs(S3)	   { normal \
 			   }
 set CardRamDacs(S3V)	   {} ;# { normal s3_trio64 }
 set CardRamDacs(TGA)	   { bt485 }
-set CardRamDacs(W32)	   { normal \
-			     att20c47xa att20c490 att20c491 \
-			     att20c492 att20c493 att20c497 \
-			     ics5341 sc1502x stg1700 stg1702 \
-			     stg1703 ch8398 gendac et6000 }
 
 set CardRamDacs(SVGA-ark)	   { ark1491a att20c490 att20c498 \
 					ics5342 stg1700 \
@@ -213,7 +203,11 @@ set CardRamDacs(SVGA-ati)	   [lrmdups [concat \
 					$CardRamDacs(Mach8) \
 					$CardRamDacs(Mach32) \
 					$CardRamDacs(Mach64)] ]
-set CardRamDacs(SVGA-et4000)	   $CardRamDacs(W32)
+set CardRamDacs(SVGA-et4000)	   { normal \
+			     att20c47xa att20c490 att20c491 \
+			     att20c492 att20c493 att20c497 \
+			     ics5341 sc1502x stg1700 stg1702 \
+			     stg1703 ch8398 ics5301 et6000 }
 set CardRamDacs(SVGA-mga)	   ti3026
 set daclist ""
 foreach idx [array names CardRamDacs SVGA-*] {
@@ -267,11 +261,10 @@ set CardClockChips(S3)	   { att20c409 att20c499 att20c408 \
 			   }
 set CardClockChips(S3V)	   {} ;# { s3_trio64 }
 set CardClockChips(TGA)	   ics1562 
-set CardClockChips(W32)	   { dcs2824 et6000 icd2061a ics5341 stg1703 }
 
 set CardClockChips(SVGA-ark)		ics5342
 set CardClockChips(SVGA-cirrus)		cirrus
-set CardClockChips(SVGA-et4000)		$CardClockChips(W32)
+set CardClockChips(SVGA-et4000)		{ dcs2824 et6000 icd2061a ics5341 ics5301 stg1703 }
 set CardClockChips(SVGA-mga)		ti3026
 set CardClockChips(SVGA-pvga1)          icd2061A
 set CardClockChips(SVGA-tvga8900)	tgui
@@ -428,11 +421,6 @@ set CardOptions(S3V)	   { sw_cursor dac_6_bit dac_8_bit power_saver \
 set CardOptions(TGA)	   { bt485_cursor dac_6_bit dac_8_bit hw_cursor \
 	                     power_saver sw_cursor \
 			   }
-set CardOptions(W32)	   { clkdiv2 fast_dram hibit_high hibit_low \
-			     legend linear noaccel no_pci_probe \
-			     pci_burst_off pci_burst_on \
-			     power_saver slow_dram \
-			     w32_interleave_off w32_interleave_on }
 
 set CardOptions(EGC)		{}
 set CardOptions(PEGC)		{}

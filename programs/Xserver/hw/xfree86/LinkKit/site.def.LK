@@ -4,7 +4,7 @@ XCOMM $XConsortium: site.def.LK /main/12 1996/10/28 04:23:14 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.28 1997/03/17 07:17:56 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.29 1997/04/08 10:10:49 hohndel Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -120,9 +120,6 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.28 1997/0
 
 /* The AGX server */
 #define XF86AGXServer		YES
-
-/* The W32 server */
-#define XF86W32Server		NO
 
 /* The I128 server */
 #define XF86I128Server		YES

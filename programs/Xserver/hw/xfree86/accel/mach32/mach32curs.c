@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.13 1997/02/17 09:44:56 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.14 1997/05/31 13:51:28 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -184,10 +184,13 @@ mach32RealizeCursor(pScr, pCurs)
   register int	  j;
   unsigned char   *pServMsk;
   unsigned char   *pServSrc;
+  unsigned char   CarryMsk;
+  unsigned char   CarrySrc;
   int             index = pScr->myNum;
   Mach32CursPriv  *cursPriv;
   pointer         *pPriv = &pCurs->bits->devPriv[index];
   int             w;
+  int             w2;
   int             h;
   unsigned short  *ram;
   CursorBitsPtr   bits = pCurs->bits;
@@ -208,22 +211,39 @@ mach32RealizeCursor(pScr, pCurs)
   if (h > MACH32_CURSMAX)
       h = MACH32_CURSMAX;
 
-  w = PixmapBytePad(bits->width, 1) + 1;
-  if(w > MACH32_CURSMAX / 8)
-      w = MACH32_CURSMAX / 8;
+  w2 = w = PixmapBytePad(bits->width, 1);
+  if(w2 > MACH32_CURSMAX / 8)
+      w2 = MACH32_CURSMAX / 8;
 
   for(i = 0; i < h; i++) {
-      *ram++ = 0xaaaa;
-      for(j = 1; j < w; j++) {
-	  *ram++ = cursor_mask[*pServMsk] |
-		   cursor_lookup[*pServSrc & *pServMsk];
+      CarryMsk = 0;
+      CarrySrc = 0;
+      for(j = 0; j < w2; j++) {
+	  *ram++ = cursor_mask[CarryMsk | (unsigned char)((*pServMsk) << 1)] |
+		   cursor_lookup[CarrySrc |
+                                 (unsigned char)((*pServSrc & *pServMsk) << 1)];
+          if (*pServMsk & 0x80)
+              CarryMsk = 0x01;
+          else
+              CarryMsk = 0x00;
+          if ((*pServSrc & *pServMsk) & 0x80)
+              CarrySrc = 0x01;
+          else
+              CarrySrc = 0x00;
 	  pServMsk++;
 	  pServSrc++;
       }
-      for(; j < MACH32_CURSMAX / 8; j++)
-	  *ram++ = 0xaaaa;
+      if(w2 == w) {
+	  for(; j < MACH32_CURSMAX / 8; j++)
+	      *ram++ = 0xaaaa;
+      } else {
+	  for(; j < w; j++) {
+	      pServMsk++;
+	      pServSrc++;
+	  }
+      }
   }
-  xf86memset(ram, 0xaa, (MACH32_CURSMAX-h)*16);
+  xf86memset(ram, 0xaa, (MACH32_CURSMAX-h)*(MACH32_CURSMAX/4));
 
   cursPriv->yExtra = MACH32_CURSMAX - h - 1;
   return(TRUE);
@@ -285,7 +305,7 @@ mach32SetCursor(pScr, pCurs, x, y)
   if(!pCurs)
 	return;
 
-  xhot = pCurs->bits->xhot + 8;
+  xhot = pCurs->bits->xhot + 1;
   yhot = pCurs->bits->yhot;
   mach32SaveCursors[index] = pCurs;
   
@@ -470,7 +490,7 @@ mach32QueryBestSize(class, pwidth, pheight, pScr)
 
 	case CursorShape:
 		if (*pwidth > 64)
-		    *pwidth = 64;
+		    *pwidth = 63;
 		if (*pheight > 64)
 		    *pheight = 64;
 		break;

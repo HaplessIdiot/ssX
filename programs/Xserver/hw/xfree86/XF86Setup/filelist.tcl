@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/filelist.tcl,v 3.3 1996/08/24 12:50:45 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/filelist.tcl,v 3.4 1996/12/27 06:54:03 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -100,6 +100,6 @@ array set FilePermsReadMe {
 	lib/X11/doc/README.Mach64		444
 	lib/X11/doc/README.P9000		444
 	lib/X11/doc/README.S3			444
-	lib/X11/doc/README.W32			444
+	lib/X11/doc/README.tseng		444
 }
 

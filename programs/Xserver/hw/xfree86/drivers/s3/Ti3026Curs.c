@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/Ti3026Curs.c,v 1.2 1997/08/26 10:01:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/Ti3026Curs.c,v 1.3 1997/09/25 16:13:54 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -44,15 +44,6 @@
 #include "s3reg.h"
 #include "Ti302X.h"
 #include "mipointer.h"
-
-#define MAX_CURS_HEIGHT 64   /* 64 scan lines */
-#define MAX_CURS_WIDTH  64   /* 64 pixels     */
-
-extern Bool tmp_useSWCursor;
-
-#ifndef __GNUC__
-# define __inline__ /**/
-#endif
 
 
 /*
@@ -246,6 +237,7 @@ s3Ti3026LoadCursorImage(bits, xorigin, yorigin)
 {
    register int   i;
    unsigned char  tmp, tmpcurs;
+   register unsigned char *mask = bits + 1;
 
    /* turn the cursor off */
    if ((tmpcurs = s3InTi3026IndReg(TI_CURS_CONTROL)) & 0x03)
@@ -272,8 +264,10 @@ s3Ti3026LoadCursorImage(bits, xorigin, yorigin)
    outb(vgaCRIndex, 0x55);
    outb(vgaCRReg, tmp | 0x02);
 
-   for (i = 0; i < 1024; i++)
-      outb(0x3c7, *bits++);
+   for (i = 0; i < 512; i++, mask+=2)
+      outb(0x3c7, *mask);
+   for (i = 0; i < 512; i++, bits+=2)
+      outb(0x3c7, *bits);
 
    outb(vgaCRIndex, 0x55);
    outb(vgaCRReg, tmp);

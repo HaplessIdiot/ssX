@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.46 1997/07/29 12:07:20 hohndel Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.47 1997/11/16 06:18:43 dawes Exp $ 
 .TH XF86_SVGA 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XF86_SVGA - SVGA X Window System servers for UNIX on 
@@ -39,8 +39,8 @@ ATI:
 68800LX, 88800GX-C, 88800GX_D, 88800GX-E, 88800GX-F, 88800CX, 264CT, 264ET,
 264VT, 264VT-B, 264VT3, 264GT, 264GT-B, 264GT3
 .TP 4
-Tseng:
-ET3000, ET4000, ET4000/W32, ET6000
+Tseng Labs:
+ET3000, ET4000, ET4000/W32, ET4000/W32i, ET4000/W32p, ET6000
 .TP 4
 Western Digital:
 PVGA1, WD90C00, WD90C10, WD90C11, WD90C24A, WD90C30, WD90C31, WD90C33
@@ -105,10 +105,8 @@ NV1, STG2000
 .PP
 Accelerated support is included for most of the Cirrus chipsets, the Western
 Digital WD90C31 and WD90C33 chipsets, the Oak OTI087 chipset, Chips &
-Technologies, ARK Logic chipsets, the ET6000 and the ET4000/W32p.
-Accelerated 8bpp support for the ET4000/W32 (i and p) and ET6000 is
-implemented in a separate server (see
-\fIXF86_W32(1)\fP). Users of boards based on ATI's Mach8, Mach32 and Mach64
+Technologies, ARK Logic chipsets, the ET6000 and the entire ET4000/W32 family.
+Users of boards based on ATI's Mach8, Mach32 and Mach64
 chipsets should refer to the \fIXF86_Mach8(1)\fP, \fIXF86_Mach32(1)\fP and
 \fIXF86_Mach64(1)\fP manual pages, respectively.
 .SH OPTIONS
@@ -142,10 +140,10 @@ are:
 ATI:
 ati (See README.ati for other recognized names)
 .TP 4
-Tseng:
+Tseng Labs:
 et3000, et4000W32, et4000W32i, et4000W32i_rev_b, et4000W32i_rev_c,
 et4000W32p, et4000W32p_rev_a, et4000W32p_rev_b, et4000W32p_rev_c,
-et4000W32p_rev_d, et6000
+et4000W32p_rev_d, et6000, et6100, et6300
 .TP 4
 Western Digital:
 pvga1, wd90c00, wd90c10, wd90c24, wd90c30, wd90c31, wd90c33
@@ -323,11 +321,10 @@ I/O for BitBLT communication.
 .sp
 \fBlinear\fP - Attempt a linear mapping of the framebuffer into high
 memory. Currently only supported for some Cirrus and oti087 configurations,
-the ET6000, the ET4000W32p rev C and D and the ET4000W32i.
+the ET6000, and most of the ET4000/W32 family.
 Automatically selected (and hence the option is ignored) for the clgd5462
-and clgd5464, C&T, NVidia, and the ARK chipsets. This is also true for Tseng
-chips, except for 8bpp modes, where this flag allows linear mapping to be
-forced (it defaults to banked mode at 8bpp).
+and clgd5464, C&T, NVidia, and the ARK chipsets. Also on the ET6000 and
+ET4000/W32 family, except for 8bpp modes.
 .sp
 \fBnolinear\fP - Disable linear mapping. Useful for C&T, ARK and some
 Cirrus chipsets.
@@ -384,7 +381,7 @@ disables the SpeedUp code.  This is equivalent to \fBspeedup "none"\fP.
 .TP 8
 .B Ramdac \fI"ramdac-type"\fP
 This specifies the type of RAMDAC used on the board.  The ARK and
-ET4000W32i/p drivers use this. Refer to the chips-specific documentation for
+ET4000/W32 family drivers use this. Refer to the chips-specific documentation for
 details.
 .TP 8
 .B TextClockFreq \fItxtclk\fP
@@ -434,7 +431,7 @@ Extra documentation for the Matrox MGA driver
 Extra documentation for the Trident driver
 .TP 30
 <XRoot>/lib/X11/doc/README.tseng
-Extra documentation for the ET4000 and ET3000 drivers
+Extra documentation for the Tseng Labs driver.
 .TP 30
 <XRoot>/lib/X11/doc/README.Oak
 Extra documentation for the Oak driver

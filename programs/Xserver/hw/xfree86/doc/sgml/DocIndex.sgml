@@ -98,8 +98,6 @@
 	url="tseng.html">
 <item><htmlurl name="README.VIDEO7"
 	url="Video7.html">
-<item><htmlurl name="Information for ET4000/W32 and ET6000 Chipset Users"
-	url="W32.html">
 <item><htmlurl name="Information for Western Digital Chipset Users"
 	url="WstDig.html">
 <item><htmlurl name="The Linux/m68k Frame Buffer Device"
@@ -107,7 +105,7 @@
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.26 1997/05/17 12:02:31 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.27 1997/05/24 11:34:32 dawes Exp $ 
 
 
 

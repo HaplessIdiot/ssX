@@ -33,7 +33,6 @@ The following files are provided in the binary distribution:
 <tag/X312Mc64.tgz/          The Mach 64 server
 <tag/X312Mc8.tgz/           The Mach 8 server
 <tag/X312P9k.tgz/           The P9000 server
-<tag/X312W32.tgz/           The ET4000/W32 server
 <tag/*X312cfg.tgz/          The local configuration files for 
 <tt>xdm/fs/xinit</tt>.
 <tag/*X312bin.tgz/          The <tt>bin</tt> directory, contains most executables.
@@ -136,11 +135,11 @@ some or all of these things:
         The output should contain the `s' character instead of the `x'
         character.  For example:
 	<quote><verb>
--rwsr-xr-x   1 root     bin      1074060 Jul 24 11:54 XF86_W32
+-rwsr-xr-x   1 root     bin      1074060 Jul 24 11:54 XF86_S3
 	</verb></quote>
         is correct while:
 	<quote><verb>
--rwxr-xr-x   1 root     bin      1074060 Jul 24 11:54 XF86_W32
+-rwxr-xr-x   1 root     bin      1074060 Jul 24 11:54 XF86_S3
 	</verb></quote>
         is not.
      
@@ -525,7 +524,7 @@ for providing an
 ftp site for the binary distribution.
 
 <verb>  
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.15 1997/01/24 09:32:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.16 1997/01/25 03:22:12 dawes Exp $
 
 
 

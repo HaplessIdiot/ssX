@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.5 1997/06/15 07:12:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.6 1997/08/12 12:02:05 hohndel Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -39,14 +39,15 @@
 
 typedef struct {
     Bool	isHwCursor;
-    pointer	(*RealizeCursor)();
-    void	(*LoadCursor)();
-    void	(*QueryCursorSize)();
-    Bool	(*CursorState)();
-    void	(*CursorOn)();
-    void	(*CursorOff)();
-    void	(*MoveCursor)();
-    void	(*RecolorCursor)();
+    int		CursorMaxWidth;
+    int 	CursorMaxHeight;
+    int		CursorFlags;
+    Bool	(*UseHWCursor)();
+    void	(*LoadCursorImage)();
+    void	(*ShowCursor)();
+    void	(*HideCursor)();
+    void	(*SetCursorPosition)();
+    void	(*SetCursorColors)();
     long	maxPixelClock;
     long	MemoryClock;
 } MGARamdacRec;

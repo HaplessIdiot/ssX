@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.5 1997/11/01 15:04:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.6 1997/12/05 06:39:04 hohndel Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -10,7 +10,6 @@
 #include "Xfuncproto.h"
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
-#include "xf86_OSlib.h"
 #include "xf86.h"
 #include "xf86_Config.h"
 

@@ -262,6 +262,26 @@ Device section).
         crash your machine as soon as you start the server. Use them with
         caution.
 <tag>
+option &dquot;w32_interleave_off&dquot; &dquot;w32_interleave_on&dquot;   (W32i, W32p)
+</tag>
+	Force memory interleaving off or on. W32i and W32p chips can
+	increase memory bandwidth when they have 2MB or more video memory.
+	Normally the VGA BIOS sets the W32i or W32p chip to the correct
+	mode. If you suspect problems with memory sizing or interleaving,
+	fooling around with these options may improve the situation. It may
+	also make things worse. These options are not normally needed: the
+	server will use the correct value automatically. Setting this option
+	the wrong way will result in a completely distorted display.
+<tag>
+option &dquot;pci_burst_off&dquot; &dquot;pci_burst_on&dquot;   (W32p)
+</tag>
+	This option disables or enables PCI bursts on the W32p chip if it's
+	a PCI card. Normally, a good BIOS will set the motherboard and the
+	VGA card to the same setting, but if both don't match, you may
+	experience garbage on the screen (e.g. mouse droppings). These
+	options allow you to match the W32p burst setting to the motherboard
+	setting.
+<tag>
 videoram 1024 (or another value)   (all chips)
 </tag>
         This option will override the detected amount of video memory, and
@@ -691,6 +711,27 @@ driver works on your configuration. The default mode used will always be
 the first mode listed in the modes line, with the highest dot clock listed
 for that resolution in the timing section.
 
+Some general hints:
+<itemize>
+<item>Put Option "slow_dram" in the Device Section.
+<item>Put Option "pci_burst_off" in the Device Section.
+<item>Put Option "w32_interleave_off" in the Device Section.
+<item>Take out the Hercules monochrome adapter, if you have one.  Many
+    configurations of the ET4000/W32 series do not allow one in the
+    system.
+<item>Get a motherboard with its local bus running at 33 MHz.  Many, if not
+    all, ET4000/W32 boards will surely behave in a funny way on a 50-MHz
+    bus.  You may have to use a wait state or two, but first try without
+    any.
+<item>Cold-boot your machine.  Do not run anything that messes with the
+    video hardware, including other X servers, before running
+    <tt>XF86_SVGA</tt>.
+<item>In case of an ET6000 card, try specifying chipset "et6000"
+    in the Device Section. The card normally auto-probes from the PCI bus,
+    but on some systems, another on-board VGA card, although disabled, may
+    cause the ET6000 server to want to use the other card.
+
+
 Note that some VESA standard mode timings may give problems on some monitors
 (try increasing the horizontal sync pulse, i.e. the difference between
 the middle two horizontal timing values, or try multiples of 16 or 32 for
@@ -819,11 +860,6 @@ Problems with DMA hardware (floppy, tape)
 For other screen drawing related problems, try the <tt>"noaccel"</tt>
 option.
 
-As a final fallback, consider trying the separate accelerated W32 server. It
-is more mature, and has been tested more extensively as a result. See
-<htmlurl name="README.W32" url="W32.html">. However, it has only limited
-features (only banked 8bpp support), and will not be actively maintained. 
-
 
 If you are having driver-related problems that are not addressed by this
 document, or if you have found bugs in accelerated functions, you can try
@@ -835,9 +871,87 @@ via the BetaReport form (mail it to report@XFree86.org). You may want to
 keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 
+<sect> Acknowledgments <p>
+Most of these stem from the old XF86_W32 server. That code was used
+extensively for getting the SVGA server to work on all the Tseng cards, so
+they are still somewhat valid.
+
+Glenn G. Lai wrote the original XF86_W32 server. It was modified by
+Dirk Hohndel and Koen Gadeyne to support some more hardware.
+
+Jerry J. Shekhel (<it>jerry@msi.com</it>) gave me (GGL) the 1-M Mirage
+ET4000/W32 VLB board on which the initial development (X_W32) was done.
+
+X11R6 and The XFree86 Project provide the base code for XF86_W32.
+
+Hercules Computer Technology Inc. lent me (GGL) a 2-M Hercules Dynamite Pro VLB
+board for the development that led to <tt>XF86_W32</tt>.   They donated a
+Dynamite Power PCI to The XFree86 Project, that was used by DHH to extend
+the server.
+
+Tseng Labs kindly donated (KMG) an ET6000-based board (a Jazz Multimedia
+G-Force 128), which spurred the development of the ET6000 code. They also
+provided an ET6100 evaluation board.
+
+Heiko Eissfeldt provided an ET4000W32p_rev_b board which allowed us to get
+better support for those rev_a and rev_b boards.
+
+Numerous testers have given me feedback for <tt>X_W32</tt> and later
+<tt>XF86_W32</tt>.  I
+apologize for my failure to keep track of the people who tested
+<tt>X_W32</tt>, but
+the names of the people involved with the <tt>XF86_W32</tt> testing are
+listed below:
+<descrip>
+<tag>Linux:</tag>
+<it>bf11620@coewl.cen.uiuc.edu</it> (Byron Thomas Faber) <newline>
+<it>dlj0@chern.math.lehigh.edu</it> (David Johnson) <newline>
+<it>peterc@a3.ph.man.ac.uk</it> (Peter Chang)  <newline>
+<it>dmm0t@rincewind.mech.virginia.edu</it> (David Meyer) <newline>
+<it>nrh@philabs.Philips.COM</it> (Nikolaus R. Haus) <newline>
+<it>jdooley@dbp.caltech.edu</it> (James Dooley) <newline>
+<it>thumper@hitchcock.eng.uiowa.edu</it> (Timothy Paul Schlie) <newline>
+<it>klatta@pkdla5.syntex.com</it> (Ken Latta) <newline>
+<it>robinson@cnj.digex.net</it> (Andrew Robinson) <newline>
+<it>reggie@phys.washington.edu</it> (Reginald S. Perry) <newline>
+<it>sjm@cs.tut.fi</it> (M{kinen Sami J) <newline>
+<it>engel@yacc.central.de</it> (C. Engelmann) <bf>use</bf>
+        <it>cengelm@gwdg.de</it> <newline>
+<it>postgate@cafe.net</it> (Richard Postgate) <newline>
+<it>are1@cec.wustl.edu</it> (Andy Ellsworth) <newline>
+<it>bill@celtech.com</it> (Bill Foster)
+<tag> FreeBSD: </tag>
+<it>ljo@ljo-slip.DIALIN.CWRU.Edu</it> (L Jonas Olsson)
+</descrip>
+
+Several people have developed code for the SVGA Tseng driver (this list is
+incomplete):
+<itemize>
+<item>Glenn G. Lai
+<item>Dirk H. Hohndel
+<item>Koen Gadeyne
+<item>OEyvind Aabling
+<item>Dejan Ilic
+<item>Mark Vojkovich
+<item>Harald Nordgard Hansen
+<item>David Bateman
+<item>Gyorgy Krajcsovits
+<item>Kurt Olsen
+
+
+
+
+
+
+
+
+
+
+
+
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.27 1997/07/26 12:59:07 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.28 1997/10/13 17:16:39 hohndel Exp $ 
 
 
 

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Tekproc.c /main/120 1996/11/29 10:33:20 swick $
- * $XFree86: xc/programs/xterm/Tekproc.c,v 3.15 1997/08/26 10:01:51 hohndel Exp $
+ * $XFree86: xc/programs/xterm/Tekproc.c,v 3.16 1997/09/19 08:30:11 hohndel Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -123,8 +123,6 @@ extern long time();		/* included in <time.h> by Xos.h */
 
 #include "xterm.h"
 
-#define TekColormap DefaultColormap( screen->display, \
-				    DefaultScreen(screen->display) )
 #define DefaultGCID XGContextFromGC(DefaultGC(screen->display, DefaultScreen(screen->display)))
 
 /* Tek defines */

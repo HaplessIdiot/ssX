@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.40 1997/06/15 07:12:15 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.41 1997/07/06 05:30:42 dawes Exp $ 
 .TH XFree86 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -251,9 +251,6 @@ The accelerated P9000 X server
 .TP 30
 <XRoot>/bin/XF86_AGX
 The accelerated AGX X server
-.TP 30
-<XRoot>/bin/XF86_W32
-The accelerated ET4000/W32 and ET6000 X server
 .TP 30
 <XRoot>/bin/XF86_8514
 The accelerated 8514/A X server

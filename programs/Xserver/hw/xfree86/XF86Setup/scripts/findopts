@@ -9,8 +9,8 @@ set xf86dir $Xwinhome/xc/programs/Xserver/hw/xfree86
 
 set dirlist [list accel/ibm8514 accel/agx accel/i128 accel/mach8\
 		accel/mach32 accel/mach64 accel/p9000 accel/s3 \
-		accel/et4000w32 vga256 vga16 vga2]
-set srvlist {8514 AGX I128 Mach8 Mach32 Mach64 P9000 S3 W32 SVGA VGA16 Mono}
+		vga256 vga16 vga2]
+set srvlist {8514 AGX I128 Mach8 Mach32 Mach64 P9000 S3 SVGA VGA16 Mono}
 
 set fd [open $xf86dir/common/xf86_Option.h r]
 set table none

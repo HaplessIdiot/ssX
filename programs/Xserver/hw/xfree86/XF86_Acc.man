@@ -1,9 +1,9 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.60 1997/07/10 08:17:17 hohndel Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.61 1997/11/16 06:18:43 dawes Exp $ 
 .TH XF86_Accel 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
 UNIX on x86 and Alpha platforms with an S3, Mach8, Mach32, Mach64, P9000, AGX,
-ET4000/W32, ET6000, I128*, TGA*, or 8514/A accelerator board
+I128*, TGA*, or 8514/A accelerator board
 (* not currently accelerated)
 .SH SYNOPSIS
 .B XF86_S3
@@ -25,9 +25,6 @@ ET4000/W32, ET6000, I128*, TGA*, or 8514/A accelerator board
 [:displaynumber] [ option ] ...
 .LP
 .B XF86_AGX
-[:displaynumber] [ option ] ...
-.LP
-.B XF86_W32
 [:displaynumber] [ option ] ...
 .LP
 .B XF86_I128
@@ -72,11 +69,6 @@ server for Weitek Power 9000 (P9000) graphic accelerator boards.
 .I XF86_AGX
 is an 8-bit PseudoColor and 16-bit TrueColor server for AGX/XGA graphic
 accelerator boards.
-.PP
-.I XF86_W32
-is an 8-bit PseudoColor server for ET4000/W32, ET4000/W32i, ET4000/W32p and
-ET6000 graphic accelerator boards. For 16, 24 and 32 bits per pixel support
-on the ET6000, try the XF86_SVGA server.
 .PP
 .I XF86_I128
 is an server for Number Nine Imagine 128
@@ -124,9 +116,6 @@ Diamond Viper VLB, Diamond Viper PCI, Orchid P9000, and some clones
 .TP 13
 XF86_AGX:
 AGX-010, AGX-014, AGX-015, AGX-016, XGA-1, XGA-2
-.TP 13
-XF86_W32:
-ET4000/W32, ET4000/W32i, ET3000/W32p, ET6000
 .TP 13
 XF86_I128:
 Number Nine Imagine 128 series 1 and 2
@@ -194,7 +183,7 @@ See the
 manpage for general details. Here only the
 parts specific to the
 .I XF86_S3, XF86_S3V, XF86_Mach8, XF86_Mach32, XF86_Mach64, XF86_P9000,
-.I XF86_AGX, XF86_W32, XF86_TGA, XF86_I128,
+.I XF86_AGX, XF86_TGA, XF86_I128,
 and 
 .I XF86_8514
 servers are explained.
@@ -289,30 +278,6 @@ Refer to \fIREADME.agx\fP before attempting to use.)
 .RE
 .RS 8
 .PP
-XF86_W32:
-.RE
-.RS 1.5i
-.PP
-et4000w32
-.TP 12
-et4000w32i
-.TP 12
-et4000w32i_rev_b
-.TP 12
-et4000w32i_rev_c
-.TP 12
-et4000w32p_rev_a
-.TP 12
-et4000w32p_rev_b
-.TP 12
-et4000w32p_rev_c
-.TP 12
-et4000w32p_rev_d
-.TP 12
-et6000
-.RE
-.RS 8
-.PP
 XF86_I128:
 .RE
 .RS 1.5i
@@ -351,8 +316,6 @@ the clocks given in the XF86Config file are ignored unless the
 .B ClockChip \fI"clockchip-type"\fP
 For boards with programmable clock chips (except with the 
 P9000 and AGX servers), the name of the clock chip is given.  
-The only supported values for the W32 server
-are \fB"icd2061a"\fP, \fB"dcs2834"\fP, \fB"ics5341"\fP and \fB"stg1703"\fP.
 Possible values for the S3 server
 include \fB"icd2061a"\fP, \fB"ics9161a"\fP, \fB"dcs2834"\fP, \fB"sc11412"\fP,
 \fB"s3gendac"\fP, \fB"s3_sdac"\fP, \fB"ti3025"\fP, \fB"ti3026"\fP,
@@ -363,20 +326,16 @@ and \fB"ibm_rgb5xx"\fP.
 Possible values for the Mach64 server include \fB"ati18818"\fP,
 \fB"ics2595"\fP, \fB"stg1703"\fP, \fB"ch8398"\fP, \fB"ibm_rgb514"\fP and
 \fB"att20c408"\fP.
-The only possible clockchip value for the ET6000 is \fB"et6000"\fP.
 .TP 8
 .B Ramdac \fI"ramdac-type"\fP
 This specifies the type of RAMDAC used on the board.  Only the S3,
-AGX, Mach32, Mach64, and W32 servers use this.
+AGX, Mach32, and Mach64 servers use this.
 .sp
 \fBnormal\fP - (S3, AGX) Card does not have one of the other RAMDACs mentioned
 here.  This option is only required for the S3 server if the server 
 incorrectly detects one of those other RAMDACs. 
 The AGX server does not yet auto-detect RAMDACs, this 
 is the default if no RAMDAC is specified.
-.sp
-\fBgeneric\fP - (W32) This forces the W32 server to treat the RAMDAC
-as a generic VGA RAMDAC.
 .sp
 \fBatt20c490\fP - (S3, AGX, Mach32) Card has an AT&T 20C490 or AT&T 20C491
 RAMDAC.
@@ -434,9 +393,8 @@ This must be specified if the server fails to detect it.
 \fBstg1700\fP - (S3) Card has an STG1700 RAMDAC.  This must be specified
 if the server fails to detect it.
 .sp
-\fBstg1703\fP - (S3,W32) Card has an STG1703 RAMDAC.  This must be specified
-if the server fails to detect it. Using the W32 server you MUST explicitly 
-set the STG1703 as ClockChip to be able to use the programming capabilities.
+\fBstg1703\fP - (S3) Card has an STG1703 RAMDAC.  This must be specified
+if the server fails to detect it.
 .sp
 \fBs3gendac\fP - (S3) Card has an S3 86C708 GENDAC.
 This RAMDAC does not support 8 bit per RGB mode (don't specify
@@ -450,13 +408,6 @@ if the server fails to detect it.
 \fBics5300\fP - (S3) Card has an ICS5300 RAMDAC.  This must be specified
 if the server fails to detect it (the server will recognise this as
 an S3 GENDAC which is OK).
-.sp
-\fBics5341\fP - (W32) Card has an ICS5341 RAMDAC.  This must be specified
-if the server fails to detect it. For pixel clocks higher than 86MHz the
-server uses pixel multiplexing which seems to fail in a small band around
-90MHz on most boards. While the ICS5341 RAMDAC is usually recognized as 
-RAMDAC you MUST set it as ClockChip to be able to use the programming 
-capabilities.
 .sp
 \fBics5342\fP - (S3) Card has an ICS5342 RAMDAC.  This must be specified
 if the server fails to detect it (the server will recognise this as
@@ -695,27 +646,8 @@ Hercules Terminator 64 cards.
 There will be display errors and pixel garbage if your card can't support
 it.
 .sp
-\fBslow_dram\fP - (W32) Adjusts the DRAM refresh for cards with
-slow DRAM. Try this if your monitor goes into power save mode with the
-W32 server and older W32 cards.
-.sp
 \fBslow_dram_refresh\fP - (S3) Adjusts the DRAM refresh for cards with
 slow DRAM to avoid lines of corrupted pixels when switching modes.
-.sp
-\fBpci_burst_on\fP - (W32) Turns on the PCI burst for the W32p chipset.
-Use this if your picture looks distorted and your mouse leaves trails
-behind with burst disabled.
-.sp
-\fBpci_burst_off\fP - (W32) Turns off the PCI burst for the W32p chipset.
-Use this if your picture looks distorted and your mouse leaves trails
-behind with burst enabled.
-.sp
-\fBw32_interleave_on\fP - (W32) Turns on the memory interleave for the 
-W32i and W32p chipset.  Try this if your server runs stable with it.
-.sp
-\fBw32_interleave_off\fP - (W32) Turns off the memory interleave for the
-W32i and W32p chipset.  Try this if your picture looks distorted or you
-don't get a picture at all.
 .sp
 \fBno_block_write\fP - (Mach64) Disables the block write mode on
 certain types of VRAM Mach64 cards.  If noise or shadows appear on the
@@ -737,8 +669,8 @@ and forces the use of the pre-programmed clocks either read from the
 BIOS or given on the Clocks line in the XF86Config file.
 .sp
 \fBclkdiv2\fP - for all accelerated chipsets using a set of discrete clocks
-(i.e. not using a programmable ClockChip or a ClockProg, like older S3 cards
-and most ET4000W32 cards). With this option enabled, the accelerated driver
+(i.e. not using a programmable ClockChip or a ClockProg, like older S3 cards).
+With this option enabled, the accelerated driver
 can also use all the clocks mentionned in the clocks line divided by 2,
 presenting the server with twice as many clocks to choose from, especially
 in the low- and mid-range. This is useful for creating very low resolution
@@ -784,9 +716,6 @@ The 8, 16, and 32-bit color X server for the P9000
 <XRoot>/bin/XF86_AGX
 The 8, and 16-bit color X server for AGX and XGA
 .TP 30
-<XRoot>/bin/XF86_W32
-The 8-bit color X server for ET4000/W32 and ET6000
-.TP 30
 <XRoot>/bin/XF86_I128
 The 8, 16 and 32-bit color X server for Imagine 128
 .TP 30
@@ -810,9 +739,6 @@ Extra documentation for the P9000 server
 .TP 30
 <XRoot>/lib/X11/doc/README.S3
 Extra documentation for the S3 server
-.TP 30
-<XRoot>/lib/X11/doc/README.W32
-Extra documentation for the W32 server
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
@@ -906,15 +832,6 @@ Henry Worth,        \fIhenry.worth@amail.amdahl.com\fP
 Development of the AGX specific code.
 .RE
 .PP
-.nf
-Glenn Lai,          \fIglenn@cs.utexas.edu\fP
-Dirk Hohndel,       \fIhohndel@XFree86.org\fP
-Koen Gadeyne,       \fIkoen.gadeyne@barco.com\fP 
-.fi
-.RS 8
-Development of the ET4000/W32 and ET6000 specific code.
-.RE
-.PP
 See also the
 .I XFree86(1)
 manual page.
@@ -938,10 +855,6 @@ features are being tested and may be available in the next release.
 There seems to be a problem with olvwm when used with xdm and VT
 switching.  The cursor will be messed up when you return to a VT
 if the cursor changed while you were in the VT.
-.sp
-The ET6000 server is quite new, and therefor not very thoroughly tested.
-Accelerated support is present, but doesn't use the full potential of the
-ET6000 chip (yet).
 .SH CONTACT INFO
 \fIXFree86\fP source is available from the FTP server
 \fIftp.XFree86.Org\fP and mirrors.  Send email to

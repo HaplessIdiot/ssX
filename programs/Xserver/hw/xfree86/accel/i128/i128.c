@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.37 1997/08/26 10:00:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.38 1997/11/22 00:00:10 hohndel Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -485,7 +485,7 @@ i128Probe()
    }
 
    maxDisplayWidth = 4096;
-   maxDisplayHeight = 2048;
+   maxDisplayHeight = 4096;
 
    if (i128InfoRec.virtualX > maxDisplayWidth) {
       ErrorF("%s: Virtual width (%d) is too large.  Maximum is %d\n",
@@ -761,9 +761,7 @@ i128Probe()
    else
       i128DisplayWidth = 2048;
 
-   if (pcrp->_device_vendor == I128_DEVICE_ID3)
-      i128DisplayOffset = 0;
-   else if (i128InfoRec.videoRam > 4096)
+   if (i128InfoRec.videoRam > 4096)
       i128DisplayOffset = 0x400000L %
 		          (i128DisplayWidth * (i128InfoRec.bitsPerPixel/8));
 

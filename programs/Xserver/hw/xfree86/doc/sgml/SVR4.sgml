@@ -393,7 +393,7 @@ registers.  XFree86 supports boards that tickle this bug.  In
 preparation for using these servers, we have produced a kernel patch 
 that works around the problem, and provided scripts for you that will 
 both install and back out the patch.  You must install this if you
-intend to use the S3, 8514, Mach8, Mach32, P9000, AGX or W32 servers.<p>
+intend to use the S3, 8514, Mach8, Mach32, P9000, AGX servers.<p>
 
 Dell 2.2 is known to not need the patch, because Thomas Roell found and
 fixed the bug while he was working for Dell.  Microport has fixed this in
@@ -419,7 +419,7 @@ workaround for this problem, and giving us permission to release the
 information.<p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.12 1997/01/24 09:32:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.13 1997/01/25 03:22:14 dawes Exp $
 
 
 

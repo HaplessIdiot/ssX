@@ -52,8 +52,6 @@
 
 	 o To build the AGX server: set XF86AGXServer to YES.
 
-	 o To build the ET4000/W32 server: set XF86W32Server to YES.
-
 	 o To build the IBM 8514/A server: set XF86I8514Server to YES.
 
 	 o To build the I128 server: set XF86I128Server to YES.
@@ -329,4 +327,4 @@ Readme for the XFree86 3.2 LinkKit
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/README,v 3.21 1997/01/27 22:12:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/README,v 3.22 1997/03/17 07:17:55 hohndel Exp $

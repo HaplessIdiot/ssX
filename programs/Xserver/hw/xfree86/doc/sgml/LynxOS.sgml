@@ -87,7 +87,6 @@ binaries only.
     <tag/X33S3V/	S3 ViRGE server
     <tag/X33SVGA/	SVGA server
     <tag/X33VG16/	16 colour VGA server
-    <tag/X33W32/	ET4000W32, ET6000 server
     </descrip>
 
 <tag/OPTIONAL:/
@@ -661,7 +660,7 @@ few little adjustments to your system:
   <tt>lynx.cf</tt> but it has never been tested (reports are welcome).
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.14 1997/01/25 03:21:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.15 1997/06/03 14:11:52 hohndel Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.16 1997/11/22 00:00:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.17 1997/12/05 06:39:04 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -36,7 +36,6 @@
 
 #include "xf86Procs.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "xf86Version.h"
@@ -168,7 +167,7 @@ ScrnInfoRec glintInfoRec = {
     0,			/* int s3MClk */
     0,			/* int chipID */
     0,			/* int chipRev */
-    0,			/* unsigned long VGAbase */
+    0xA0000,		/* unsigned long VGAbase */
     40000,		/* int s3RefClk */
     -1,			/* int s3BlankDelay */
     0,			/* int textClockFreq */
@@ -875,6 +874,9 @@ glintProbe()
 	 */
 	ErrorF("%s %s: Using builtin RAMDAC of Permedia 2 chip\n",
 	           XCONFIG_PROBED,glintInfoRec.name);
+	ErrorF("%s %s: Fitted Memory type is : %s\n", XCONFIG_PROBED,
+		glintInfoRec.name, GLINT_READ_REG(MemControl) & 0x10 ? 
+					"SDRAM" : "SGRAM");
   }
 #if DEBUG
 	glintDumpRegs();
@@ -887,7 +889,12 @@ glintProbe()
 	OFLG_SET(CLOCK_OPTION_IBMRGB, &validOptions);
 	OFLG_SET(CLOCK_OPTION_IBMRGB, &glintInfoRec.clockOptions);
   }
+
+  if (IS_3DLABS_TX_MX_CLASS(coprotype)) 
+    OFLG_SET(OPTION_FIREGL3000, &validOptions);
+
   OFLG_SET(OPTION_XAA_BENCHMARK, &validOptions);
+  OFLG_SET(OPTION_NO_PIXMAP_CACHE, &validOptions);
   OFLG_SET(OPTION_NOACCEL, &validOptions);
   OFLG_SET(OPTION_PCI_RETRY, &validOptions);
   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &validOptions);
@@ -895,7 +902,6 @@ glintProbe()
   OFLG_SET(OPTION_FIREGL3000, &validOptions);
 
   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &glintInfoRec.clockOptions);
-  OFLG_SET(OPTION_PCI_RETRY, &glintInfoRec.options);
 
   xf86VerifyOptions(&validOptions, &glintInfoRec);
   glintInfoRec.chipset = "glint";
@@ -991,7 +997,7 @@ glintProbe()
   } while (pModeInited == FALSE) /* (pMode != pEnd) */; 
 
 #if 1
-  ErrorF("%s %s: GLINT chipset currently only supports one modeline.\n",
+  ErrorF("%s %s: 3Dlabs driver currently only supports one modeline.\n",
 		XCONFIG_PROBED, glintInfoRec.name);
 #endif
 
@@ -1102,12 +1108,13 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 	Bool (*ScreenInitFunc)(register ScreenPtr,pointer,int,int,int,int,int);
 
 	/* Init the screen */
+        xf86EnableIOPorts(scr_index);
 	glintInitAperture(scr_index);
 	glintInit(glintInfoRec.modes);
-	glintInitEnvironment();
-	AlreadyInited = TRUE;
 	glintCalcCRTCRegs(&glintCRTCRegs, glintInfoRec.modes);
 	glintSetCRTCRegs(&glintCRTCRegs);
+	glintInitEnvironment();
+	AlreadyInited = TRUE;
 
 	for (i = 0; i < 256; i++)
 	{ 
@@ -1127,10 +1134,16 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 	if (OFLG_ISSET(OPTION_NOACCEL, &glintInfoRec.options)) {
 		OFLG_SET(OPTION_SW_CURSOR, &glintInfoRec.options);
 	} else {
-		if (IS_3DLABS_TX_MX_CLASS(coprotype)) 
+  		if (IS_3DLABS_TX_MX_CLASS(coprotype)) 
 			GLINTAccelInit();
-		else if (IS_3DLABS_PERMEDIA_CLASS(coprotype))
+		else
+  		if (IS_3DLABS_PERMEDIA_CLASS(coprotype))
 			PermediaAccelInit();
+		else
+  		if (IS_3DLABS_PM2_CLASS(coprotype)) {
+			OFLG_SET(OPTION_SW_CURSOR, &glintInfoRec.options);
+			Permedia2AccelInit();
+		}
 	}
 
 	switch (glintInfoRec.depth) {
@@ -1257,11 +1270,12 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 	xf86MapDisplay(screen_idx, LINEAR_REGION);
 	if (!xf86Resetting) {
 	    ScrnInfoPtr pScr = (ScrnInfoPtr)XF86SCRNINFO(pScreen);
+	    xf86EnableIOPorts(screen_idx);
 	    glintInit(glintInfoRec.modes);
-	    glintInitEnvironment();
-	    AlreadyInited = TRUE;
 	    glintCalcCRTCRegs(&glintCRTCRegs, glintInfoRec.modes);
 	    glintSetCRTCRegs(&glintCRTCRegs);
+	    glintInitEnvironment();
+	    AlreadyInited = TRUE;
 
 	    glintRestoreDACvalues();
 	    glintRestoreColor0(pScreen);
@@ -1272,8 +1286,8 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 	    if (pspix->devPrivate.ptr != glintVideoMem && ppix) {
 		pspix->devPrivate.ptr = glintVideoMem;
 
-  xf86AccelInfoRec.ImageWriteFallBack(&ppix->drawable,
-   &pspix->drawable, GXcopy, &pixReg, &pixPt, ~0);
+		xf86AccelInfoRec.ImageWriteFallBack(&ppix->drawable,
+			&pspix->drawable, GXcopy, &pixReg, &pixPt, ~0);
 	    }
 	}
 	if (ppix) {
@@ -1288,8 +1302,8 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 					    pScreen->rootDepth);
 
 	    if (ppix) {
-  xf86AccelInfoRec.ImageWriteFallBack(&pspix->drawable,
-   &ppix->drawable, GXcopy, &pixReg, &pixPt, ~0);
+		xf86AccelInfoRec.ImageWriteFallBack(&pspix->drawable,
+			&ppix->drawable, GXcopy, &pixReg, &pixPt, ~0);
 
 		pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	    }
@@ -1308,6 +1322,7 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 #endif
 		if (AlreadyInited) {
 		    glintCleanUp();
+		    xf86DisableIOPorts(screen_idx);
 		    AlreadyInited = FALSE;
 		}
 #ifdef XFreeXDGA

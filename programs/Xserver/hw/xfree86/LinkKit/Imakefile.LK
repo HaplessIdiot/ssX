@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile.LK /main/11 1996/10/25 21:18:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.42 1997/03/17 07:17:53 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.43 1997/04/08 10:10:45 hohndel Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -299,29 +299,6 @@ SetUIDServerTarget(XF86_SVGA,$(XF86SVGASUBDIRS),$(XF86SVGAOBJS),$(XF86SVGALIBS),
 LinkFile(XF86_SVGA.def,SVGA.def)
 #endif
 #endif	/* XF86SVGAServer */
-
-
-#if XF86W32Server
-XCOMM
-XCOMM XFree86 W32 Server
-XCOMM
-XF86W32OBJS = XF86_W32.o w32Conf.o
-XF86W32LIBS = $(DRIVERSRC)/LibraryTargetName(w32) \
-	      $(DRIVERSRC)/LibraryTargetName(w32cfb) \
-	      $(DRIVERSRC)/LibraryTargetName(w32) \
-	      $(DRIVERSRC)/LibraryTargetName(w32asm) $(XF86LIBS) CFB8Libs
-XF86W32SYSLIBS = $(SYSLIBS)
-W32DRIVERS = XF86W32Drivers
-ConfigTargetNoDepend(w32Conf,$(ICONFIGFILES),confw32.sh,$(W32DRIVERS))
-XF86_W32.o: XF86_W32.c $(ICONFIGFILES)
-SetUIDServerTarget(XF86_W32,$(XF86W32SUBDIRS),$(XF86W32OBJS),$(XF86W32LIBS),$(XF86W32SYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall XF86_W32
-#endif
-#ifdef OS2Architecture
-LinkFile(XF86_W32.def,W32.def)
-#endif
-#endif
 
 
 #if XF86S3Server

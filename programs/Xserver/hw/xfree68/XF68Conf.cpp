@@ -3,7 +3,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/XF68Conf.cpp,v 3.2 1996/09/14 13:06:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/XF68Conf.cpp,v 3.3 1996/12/27 06:51:50 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -452,7 +452,7 @@ XCOMM     Subsection "Display"
 XCOMM     EndSubsection
 XCOMM EndSection
 
-XCOMM The accelerated servers (S3, Mach32, Mach8, 8514, P9000, AGX, W32)
+XCOMM The accelerated servers (S3, Mach32, Mach8, 8514, P9000, AGX)
 
 XCOMM Section "Screen"
 XCOMM     Driver	"accel"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.13 1997/08/26 10:00:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.14 1997/11/22 00:00:10 hohndel Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -37,7 +37,7 @@ static int i128FontsSaved = 0;
 static int i128LUTSaved = 0;
 static Bool LUTInited = FALSE;
 static LUTENTRY oldlut[256];
-#define VGA_SAVE_COUNT 64*1024
+#define VGA_SAVE_COUNT 512*1024
 static unsigned char vgamem[VGA_SAVE_COUNT];    /* vga text memory */
 int i128InitCursorFlag = TRUE;
 int i128HDisplay;
@@ -470,12 +470,24 @@ i128Init(mode)
 	i128mem.rbase_g[CRT_2CON] = tmp;
 
 	i128mem.rbase_w[MW0_CTRL] = 0x00000000;
-	if (i128InfoRec.videoRam == 2048)
-		i128mem.rbase_w[MW0_SZ]   = 0x00000009;
-	else if (i128InfoRec.videoRam == 8192)
-		i128mem.rbase_w[MW0_SZ]   = 0x0000000B;
-	else
-		i128mem.rbase_w[MW0_SZ]   = 0x0000000A;  /* default to 4MB */
+	switch (i128InfoRec.videoRam) {
+		case 2048:
+			i128mem.rbase_w[MW0_SZ]   = 0x00000009;
+			break;
+		case 8192:
+			i128mem.rbase_w[MW0_SZ]   = 0x0000000B;
+			break;
+		case 8192+4096:
+			/* no break */
+		case 16384:
+			i128mem.rbase_w[MW0_SZ]   = 0x0000000C;
+			break;
+		case 4096:
+			/* no break */
+		default:
+			i128mem.rbase_w[MW0_SZ]   = 0x0000000A;/* default 4MB */
+			break;
+	}
 	i128mem.rbase_w[MW0_PGE]  = 0x00000000;
 	i128mem.rbase_w[MW0_ORG]  = 0x00000000;
 	i128mem.rbase_w[MW0_MSRC] = 0x00000000;

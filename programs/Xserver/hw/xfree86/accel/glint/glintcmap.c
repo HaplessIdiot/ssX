@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintcmap.c,v 1.1 1997/06/17 08:17:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintcmap.c,v 1.2 1997/11/22 00:00:09 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -58,6 +58,7 @@
 extern int pciaddr;
 extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
 extern struct glintmem glintmem;
+extern int coprotype;
 
 #define NOMAPYET        (ColormapPtr) 0
 
@@ -87,12 +88,22 @@ glintRestoreDACvalues()
 
    if (xf86VTSema) {
      BLOCK_CURSOR;
-      GLINT_SLOW_WRITE_REG(0x00, IBMRGB_WRITE_ADDR);
+	if (IS_3DLABS_PM2_CLASS(coprotype)) {
+		GLINT_WRITE_REG(0x00, PM2DACWriteAddress);
+	} else {
+      		GLINT_SLOW_WRITE_REG(0x00, IBMRGB_WRITE_ADDR);
+	}
       
       for (i=0; i<256; i++) {
+	if (IS_3DLABS_PM2_CLASS(coprotype)) {
+	GLINT_WRITE_REG(currentglintdac[i].r, PM2DACData);
+	GLINT_WRITE_REG(currentglintdac[i].g, PM2DACData);
+	GLINT_WRITE_REG(currentglintdac[i].b, PM2DACData);
+	} else {
 	GLINT_SLOW_WRITE_REG(currentglintdac[i].r, IBMRGB_RAMDAC_DATA);
 	GLINT_SLOW_WRITE_REG(currentglintdac[i].g, IBMRGB_RAMDAC_DATA);
 	GLINT_SLOW_WRITE_REG(currentglintdac[i].b, IBMRGB_RAMDAC_DATA);
+	}
       }
       UNBLOCK_CURSOR;
    }
@@ -137,10 +148,17 @@ glintStoreColors( ColormapPtr pmap, int ndef, xColorItem *pdefs)
 		|| (glintInfoRec.directMode & XF86DGAHasColormap)
 #endif
 	 ) {
+	if (IS_3DLABS_PM2_CLASS(coprotype)) {
+	 GLINT_WRITE_REG(pdefs[i].pixel, PM2DACWriteAddress); 
+	 GLINT_WRITE_REG(r, PM2DACData);
+	 GLINT_WRITE_REG(g, PM2DACData);
+	 GLINT_WRITE_REG(b, PM2DACData); 
+	} else {
 	 GLINT_SLOW_WRITE_REG(pdefs[i].pixel, IBMRGB_WRITE_ADDR); 
 	 GLINT_SLOW_WRITE_REG(r, IBMRGB_RAMDAC_DATA);
 	 GLINT_SLOW_WRITE_REG(g, IBMRGB_RAMDAC_DATA);
 	 GLINT_SLOW_WRITE_REG(b, IBMRGB_RAMDAC_DATA); 
+	}
       }
    }
    UNBLOCK_CURSOR;
@@ -229,11 +247,19 @@ glintRestoreColor0(ScreenPtr pScreen)
    QueryColors(InstalledMaps[pScreen->myNum], 1, &pix, &rgb);
 
    BLOCK_CURSOR;
+   if (IS_3DLABS_PM2_CLASS(coprotype)) {
+   GLINT_WRITE_REG(0x00, PM2DACWriteAddress);
+
+   GLINT_WRITE_REG(xf86rGammaMap[rgb.red >> 8], PM2DACData);
+   GLINT_WRITE_REG(xf86gGammaMap[rgb.green >> 8], PM2DACData);
+   GLINT_WRITE_REG(xf86bGammaMap[rgb.blue >> 8], PM2DACData);
+   } else {
    GLINT_SLOW_WRITE_REG(0x00, IBMRGB_WRITE_ADDR);
 
    GLINT_SLOW_WRITE_REG(xf86rGammaMap[rgb.red >> 8], IBMRGB_RAMDAC_DATA);
    GLINT_SLOW_WRITE_REG(xf86gGammaMap[rgb.green >> 8], IBMRGB_RAMDAC_DATA);
    GLINT_SLOW_WRITE_REG(xf86bGammaMap[rgb.blue >> 8], IBMRGB_RAMDAC_DATA);
+   }
 
    UNBLOCK_CURSOR;
 }

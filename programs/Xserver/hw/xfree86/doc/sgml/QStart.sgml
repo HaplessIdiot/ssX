@@ -440,7 +440,7 @@ This guide is for them.
 
 	If you have a card which uses one of the chipsets for which a
 	specific server exists (Mach8, Mach32, Mach64, AGX/XGA,
-	8514/A, S3, ET4000/W32, I128, P9000) you'll want to pick the
+	8514/A, S3, I128, P9000) you'll want to pick the
 	<tt/accel/ option.
 
 	Otherwise you'll probably want to use the SVGA server.
@@ -644,7 +644,7 @@ This guide is for them.
 <!-- Lots of things still need to be added -->
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/QStart.sgml,v 3.3 1997/01/24 09:32:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/QStart.sgml,v 3.4 1997/01/25 03:22:04 dawes Exp $
 </verb>
 
 </article>

@@ -42,8 +42,6 @@
 	set <tt>XF86P9000Server</tt> to <tt>YES</tt>.
     <item>To build the AGX server:
 	set <tt>XF86AGXServer</tt> to <tt>YES</tt>.
-    <item>To build the ET4000/W32 server:
-	set <tt>XF86W32Server</tt> to <tt>YES</tt>.
     <item>To build the IBM 8514/A server:
 	set <tt>XF86I8514Server</tt> to <tt>YES</tt>.
     <item>To build the I128 server:
@@ -148,7 +146,7 @@
 </enum>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.13 1997/01/24 09:32:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.14 1997/01/25 03:21:55 dawes Exp $
 
 
 
