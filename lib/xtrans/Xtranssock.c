@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.53 2001/12/14 19:57:06 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.54 2002/05/31 18:45:51 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -1820,7 +1820,8 @@ TRANS(SocketUNIXClose) (XtransConnInfo ciptr)
     {
 	strncpy (path, sockname->sun_path,
 		ciptr->addrlen - sizeof (sockname->sun_family));
-	unlink (path);
+	if (!(ciptr->flags & TRANS_NOUNLINK))
+		unlink (path);
     }
 
     return ret;

@@ -1,4 +1,5 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 497. Fixes and updates for the SCO OpenServer port (#5459, J. Kean Johnston).
  496. Add PCI ID defines for some ATI R300 chipsets (#5458,
       Vladimir Dergachev).
  495. Fix error message typo in MakeRootTile() (#5451, Mike Harris).
@@ -15529,4 +15530,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2394 2002/11/19 23:01:25 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2395 2002/11/20 05:28:33 dawes Exp $

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.32 2002/04/04 14:05:36 eich Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.33 2002/05/31 18:45:51 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -368,6 +368,7 @@ typedef struct _Xtransport_table {
 #define TRANS_LOCAL	(1<<1)	/* local transport */
 #define TRANS_DISABLED	(1<<2)	/* Don't open this one */
 #define TRANS_NOLISTEN  (1<<3)  /* Don't listen on this one */
+#define TRANS_NOUNLINK	(1<<4)	/* Dont unlink transport endpoints */
 
 
 /*
