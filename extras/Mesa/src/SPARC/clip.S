@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/SPARC/clip.S,v 1.3 2003/12/02 20:27:34 dawes Exp $ */
 
 #if defined(__sparc_v9__) && !defined(__linux__)
 #define SPARC_64BIT_ADDR
@@ -26,6 +26,13 @@
 #define VEC_SIZE_2   	3
 #define VEC_SIZE_3   	7
 #define VEC_SIZE_4   	15
+
+#ifdef SVR4
+        /* Solaris requires this for 64-bit. */
+        .register %g2, #scratch
+        .register %g3, #scratch
+        .register %g7, #scratch
+#endif
 
 	.text
 	.align		64

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/radeon/Imakefile.inc,v 1.5 2003/05/27 16:34:34 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/radeon/Imakefile.inc,v 1.6 2003/09/28 20:15:27 alanh Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(GLXLIBSRC)/mesa/src/drv
@@ -76,6 +76,29 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src \
    RADEONOBJS += $(MESADRVRADEONBUILDDIR)radeon_vtxfmt_x86.o \
 		$(MESADRVRADEONBUILDDIR)radeon_vtxtmp_x86.o \
 		$(MESADRVRADEONBUILDDIR)radeon_vtxfmt_sse.o 
+#endif
+
+   RADEONEOBJS = $(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_context.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_ioctl.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_lock.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_maos.o \
+	        $(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_sanity.o \
+	        $(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_screen.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_span.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_state.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_state_init.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_swtcl.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_tcl.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_tex.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_texmem.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_texstate.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_vtxfmt.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_vtxfmt_c.o
+
+#ifdef i386Architecture
+   RADEONEOBJS += $(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_vtxfmt_x86.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_vtxtmp_x86.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_vtxfmt_sse.o 
 #endif
 
    RADEONUOBJS = $(MESADRVRADEONBUILDDIR)unshared/radeon_context.o \

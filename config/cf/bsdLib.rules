@@ -4,7 +4,7 @@ XCOMM $Xorg: bsdLib.rules,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.32 2004/03/25 03:25:58 dawes Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.33 2004/03/25 03:36:21 dawes Exp $
 /*
  * NetBSD/FreeBSD shared library rules
  */
@@ -494,6 +494,8 @@ clean::									@@\
 
 #define ExtraLibRules
 
+#define AoutSubdir aout
+
 #ifndef AoutSharedLibraryDef
 #define AoutSharedLibraryDef -DBSDSHLIB
 #endif
@@ -504,6 +506,10 @@ clean::									@@\
 #define AoutPositionIndependentCFlags -fpic
 #endif
 
+#ifndef AoutAsmOptions
+#define AoutAsmOptions -aout
+#endif
+
 /*
  * InstallAoutSharedLibrary - generate rules to install the shared library.
  */
@@ -511,8 +517,7 @@ clean::									@@\
 #define InstallAoutSharedLibrary(libname,rev,dest)			@@\
 install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) Concat(aout/lib,libname.so.rev) $(DESTDIR)dest 
-@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) Concat(AoutSubdir/lib,libname.so.rev) $(DESTDIR)dest 
 
 #endif /* InstallAoutSharedLibrary */
 
@@ -527,7 +532,7 @@ AllTarget(Concat(down/lib,libname.so.rev))				@@\
 									@@\
 Concat(down/lib,libname.so.rev):  solist $(EXTRALIBRARYDEPS)		@@\
 	$(RM) $@~							@@\
-	(cd down; $(LD) -o up/$@~ AoutSharedLibraryLoadFlags solist)	@@\
+	$(LD) -o $@~ AoutSharedLibraryLoadFlags solist			@@\
 	$(RM) $@							@@\
 	$(MV) $@~ $@							@@\
 									@@\
@@ -536,19 +541,41 @@ clean::									@@\
 
 #endif /* AoutSharedLibraryTarget */
 
+#ifndef AoutSharedDepLibraryTarget
+#define AoutSharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
+AllTarget(Concat(down/lib,libname.so.rev))				@@\
+									@@\
+Concat(down/lib,libname.so.rev):  deplist $(EXTRALIBRARYDEPS)		@@\
+	$(RM) $@~							@@\
+	$(LD) -o $@~ AoutSharedLibraryLoadFlags solist			@@\
+	$(RM) $@							@@\
+	$(MV) $@~ $@							@@\
+									@@\
+clean::									@@\
+	$(RM) Concat(down/lib,libname.so.rev)
+
+#endif /* AoutSharedDepLibraryTarget */
+
 #define AoutCDebugFlags -aout DefaultCDebugFlags
 #define AoutCplusplusDebugFlags -aout DefaultCplusplusDebugFlags
 
-#define AoutLibObjCompile(options) LibObjCompile(aout,AoutCDebugFlags AoutSharedLibraryDef AoutPositionIndependentCFlags options)
-#define AoutLibObjCplusplusCompile(options) LibObjCompile(aout,AoutCplusplusDebugFlags options)
+#define AoutLibObjCompile(options) LibObjCompile(AoutSubdir,AoutCDebugFlags AoutSharedLibraryDef AoutPositionIndependentCFlags options)
+#define AoutLibObjAsm(options) LibObjAsm(AoutSubdir,options -U__ELF__ -D__AOUT__ -UUSE_SSE_ASM -UUSE_MMX_ASM -UUSE_3DNOW_ASM, AoutAsmOptions)
+#define AoutLibObjCplusplusCompile(options) LibObjCompile(AoutSubdir,AoutCplusplusDebugFlags options)
 
-#define ExtraLibMkdir() _LibMkdir(aout)
+#define ExtraSubdir AoutSubdir
+EXTRASUBDIR = ExtraSubdir
+#define ObjectPrefix ExtraSubdir/
+
+#define ExtraLibMkdir() _LibMkdir(AoutSubdir)
 #define ExtraObjCompile(options) AoutLibObjCompile(options)
+#define ExtraObjAsm(options) AoutLibObjAsm(options)
 #define ExtraObjCplusplusCompile(options) AoutLibObjCplusplusCompile(options)
-#define ExtraCleanDir() LibCleanDir(aout)
+#define ExtraCleanDir() LibCleanDir(AoutSubdir)
 
-#define ExtraLibraryTarget(libname,so,objs) AoutSharedLibraryTarget(libname,so,objs,aout,..)
-#define ExtraInstallLibrary(libname,so) InstallAoutSharedLibrary(libname,so,$(SHLIBDIR)/aout)
+#define ExtraLibraryTarget(libname,so,objs) AoutSharedLibraryTarget(libname,so,objs,AoutSubdir,..)
+#define ExtraDepLibraryTarget(libname,so,deplist,objs) AoutSharedDepLibraryTarget(libname,so,deplist,objs,AoutSubdir,..)
+#define ExtraInstallLibrary(libname,so) InstallAoutSharedLibrary(libname,so,$(SHLIBDIR)/AoutSubdir)
 
 #endif
 #endif

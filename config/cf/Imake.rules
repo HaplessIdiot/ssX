@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.132 2004/03/25 03:36:20 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.133 2004/04/04 17:53:17 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2186,6 +2186,16 @@ LintLibReferences(varname,libname,libsource)
 	$(CC) -S $(CFLAGS) options $*.c
 #endif
 
+/*
+ * ObjectAsm - assemble fragment for a normal object file
+ */
+#ifndef ObjectAsm
+#define ObjectAsm(options) RemoveFile($@)				@@\
+	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options $*.S | \	@@\
+		grep -v '^\#' > $*.i					@@\
+	$(AS) $(ASMOPTS) -o $*.o $*.i					@@\
+	RemoveFile($*.i)
+#endif
 
 /*
  * CompileCplusplusToAsm - compile C++ file to assembler
@@ -2218,6 +2228,10 @@ LintLibReferences(varname,libname,libsource)
 # endif
 #endif
 
+#ifndef NormalLibObjAsm
+#define NormalLibObjAsm(options) ObjectAsm(options)
+#endif
+
 #ifndef NormalLibObjCplusplusCompile
 #define NormalLibObjCplusplusCompile(options) ObjectCplusplusCompile(options)
 #endif
@@ -2227,6 +2241,10 @@ LintLibReferences(varname,libname,libsource)
  */
 #ifndef NormalSharedLibObjCompile
 #define NormalSharedLibObjCompile(options) NormalLibObjCompile(options $(SHLIBDEF) $(SHAREDCODEDEF) $(PICFLAGS))
+#endif
+
+#ifndef NormalSharedLibObjAsm
+#define NormalSharedLibObjAsm(options) NormalLibObjAsm(options)
 #endif
 
 #ifndef NormalSharedLibObjCplusplusCompile
@@ -2249,6 +2267,17 @@ LintLibReferences(varname,libname,libsource)
 	options $*.c							@@\
 	$(MV) $@ dir/$@
 #endif
+#endif
+
+/*
+ * LibObjAsm - assemble fragment for unshared/profiled/debugged objects
+ */
+#ifndef LibObjAsm
+#define LibObjAsm(dir,options,asmopt) RemoveFiles($@ dir/$@)		@@\
+	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options $*.S | \	@@\
+		grep -v '^\#' > $*.i					@@\
+	$(AS) asmopt -o dir/$@ $*.i					@@\
+	RemoveFile($*.i)
 #endif
 
 #ifndef LibObjCplusplusCompile
@@ -2293,6 +2322,12 @@ LintLibReferences(varname,libname,libsource)
  */
 #ifndef UnsharedLibObjCompile
 #define UnsharedLibObjCompile(options) LibObjCompile(unshared,$(CDEBUGFLAGS) $(CLIBDEBUGFLAGS) options)
+#endif
+
+#if 0
+#ifndef UnsharedLibObjAsm
+#define UnsharedLibObjAsm(options) LibObjAsm(unshared,$(CDEBUGFLAGS) $(CLIBDEBUGFLAGS) options,NullParameter)
+#endif
 #endif
 
 #ifndef UnsharedLibObjCplusplusCompile
@@ -2389,7 +2424,7 @@ clean::									@@\
 #ifndef AssembleObject
 #define AssembleObject(flags) CPPOnlyAsm($*,flags)			@@\
 	RemoveFile($*.o)						@@\
-	$(AS) -o $*.o $*.i						@@\
+	$(AS) $(ASMOPTS) -o $*.o $*.i					@@\
 	RemoveFile($*.i)
 #endif
 
@@ -2567,26 +2602,34 @@ clean::									@@\
 #define MakeLibrary(libname,objlist) $(AR) libname objlist
 #endif
 
-#ifndef LinkBuildLibrary
+#ifndef LinkBuildLibrarySubdir
 #ifdef UseInstalled
-#define LinkBuildLibrary(lib) $(_NULLCMD_)
+#define LinkBuildLibrarySubdir(lib,down,up) $(_NULLCMD_)
 #else
-#define LinkBuildLibrary(lib) MakeDir($(BUILDLIBDIR))			@@\
+#define LinkBuildLibrarySubdir(lib,down,up) MakeDir($(BUILDLIBDIR)/down) @@\
 	RemoveFile($(BUILDLIBDIR)/lib)					@@\
-	cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .
+	cd $(BUILDLIBDIR)/down && $(LN) $(BUILDLIBTOP)/up/$(CURRENT_DIR)/lib .
 #endif
+#endif /* LinkBuildLibrarySubdir */
+
+#ifndef LinkBuildLibrary
+#define LinkBuildLibrary(lib) LinkBuildLibrarySubdir(lib,.,.)
 #endif /* LinkBuildLibrary */
 
-#ifndef LinkBuildLibraryMaybe
+#ifndef LinkBuildLibrarySubdirMaybe
 #ifdef UseInstalled
-#define LinkBuildLibraryMaybe(lib,doit) $(_NULLCMD_)
+#define LinkBuildLibrarySubdirMaybe(lib,down,up,doit) $(_NULLCMD_)
 #else
-#define LinkBuildLibraryMaybe(lib,doit) MakeDir($(BUILDLIBDIR))		@@\
+#define LinkBuildLibrarySubdirMaybe(lib,down,up,doit) MakeDir($(BUILDLIBDIR)/down) @@\
 	@if doit; then (set -x; \					@@\
 	  RemoveFile($(BUILDLIBDIR)/lib); \				@@\
-	  cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .); fi
+	  cd $(BUILDLIBDIR)/down && $(LN) $(BUILDLIBTOP)/up/$(CURRENT_DIR)/lib .); fi
 #endif
 #endif /* LinkBuildLibraryMaybe */
+
+#ifndef LinkBuildLibraryMaybe
+#define LinkBuildLibraryMaybe(lib,doit) LinkBuildLibrarySubdirMaybe(lib,.,.,doit)
+#endif
 
 #ifndef _LinkBuildLibrary /* will get redefined elsewhere */
 #define _LinkBuildLibrary(lib) $(_NULLCMD_)

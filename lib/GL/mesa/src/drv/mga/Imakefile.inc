@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile.inc,v 1.4 2003/05/27 16:34:33 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile.inc,v 1.5 2003/09/28 20:15:16 alanh Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(GLXLIBSRC)/mesa/src/drv
@@ -61,6 +61,20 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src \
 		$(MESADRVMGABUILDDIR)mgatris.o \
 		$(MESADRVMGABUILDDIR)mgavb.o \
 		$(MESADRVMGABUILDDIR)mga_xmesa.o
+
+      MGAEOBJS = $(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mgadd.o \
+		$(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mgarender.o \
+		$(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mgaioctl.o \
+		$(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mgapixel.o \
+		$(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mgaspan.o \
+		$(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mgastate.o \
+		$(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mgatex.o \
+		$(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mgatexmem.o \
+		$(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mga_texstate.o \
+		$(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mga_texcombine.o \
+		$(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mgatris.o \
+		$(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mgavb.o \
+		$(MESADRVMGABUILDDIR)$(EXTRASUBDIR)/mga_xmesa.o
 
       MGAUOBJS = $(MESADRVMGABUILDDIR)unshared/mgadd.o \
 		$(MESADRVMGABUILDDIR)unshared/mgarender.o \

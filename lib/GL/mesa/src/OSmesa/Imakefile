@@ -1,10 +1,10 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/OSmesa/Imakefile,v 1.21 2004/03/05 04:02:09 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/OSmesa/Imakefile,v 1.22 2004/03/18 07:06:22 dawes Exp $
 
 #include <Threads.tmpl>
 
 #define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
 #define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
-#define DoExtraLib SharedLibGlx
+#define DoExtraLib ExtraLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 
@@ -38,12 +38,14 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/OSmesa -I$(MESASRCDIR)/src \
      	 	$(DRI_INCLUDES) -I$(GLXLIBSRC)/include
 
      MESAOBJS = $(COREMESAOBJS) $(MESA_ASM_OBJS)
+    MESAEOBJS = $(COREMESAEOBJS) $(MESA_ASM_EOBJS)
     MESAUOBJS = $(COREMESAUOBJS) $(MESA_ASM_UOBJS)
     MESADOBJS = $(COREMESADOBJS) $(MESA_ASM_DOBJS)
     MESAPOBJS = $(COREMESAPOBJS) $(MESA_ASM_POBJS)
 
          SRCS = osmesa.c
          OBJS = osmesa.o $(MESAOBJS)
+        EOBJS = $(EXTRASUBDIR)/osmesa.o $(MESAEOBJS)
 #if DoSharedLib
         UOBJS = unshared/osmesa.o $(MESAUOBJS)
 #else
@@ -87,6 +89,14 @@ SharedLibraryTarget($(LIBNAME),$(SOREV), $(OBJS), ., .)
 InstallSharedLibrary($(LIBNAME),$(SOREV),$(SHLIBDIR))
 #endif
 
+#if ExtraLibGlx && defined(ExtraLibRules)
+all::
+	ExtraLibMkdir()
+include::
+	ExtraLibMkdir()
+ExtraDepLibraryTarget($(LIBNAME),$(SOREV),$(EOBJS),$(EOBJS) $(THREADOBJS))
+ExtraInstallLibrary($(LIBNAME),$(SOREV))
+#endif
 #if DoDebugLib
 DebuggedLibraryTarget($(LIBNAME),$(DOBJS))
 InstallLibrary($(LIBNAME_d,$(USRLIBDIR))

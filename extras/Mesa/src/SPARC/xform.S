@@ -17,6 +17,12 @@
 
 #include "sparc_matrix.h"
 
+#ifdef SVR4
+	/* Solaris requires this for 64-bit. */
+        .register %g2, #scratch
+        .register %g3, #scratch
+#endif
+
 	.text
 	.align	64
 

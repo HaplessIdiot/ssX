@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.24 2004/03/05 04:02:09 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.25 2004/03/18 07:06:22 dawes Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -20,7 +20,7 @@ XCOMM are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 
 #define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
 #define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
-#define DoExtraLib SharedLibGlx
+#define DoExtraLib ExtraLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 

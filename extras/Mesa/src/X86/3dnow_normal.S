@@ -22,11 +22,13 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X86/3dnow_normal.S,v 1.3 2003/01/12 03:55:44 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X86/3dnow_normal.S,v 1.4 2003/09/28 19:17:08 alanh Exp $ */
 
 /*
  * 3Dnow assembly code by Holger Waechtler
  */
+
+#ifdef USE_3DNOW_ASM
 
 #include "matypes.h"
 #include "norm_args.h"
@@ -834,3 +836,5 @@ LLBL (G3R_end):
     POP_L      ( ESI )
     POP_L      ( EDI )
     RET
+
+#endif

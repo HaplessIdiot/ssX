@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/math/Imakefile,v 1.10 2004/03/05 04:02:10 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/math/Imakefile,v 1.11 2004/03/18 07:06:27 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -15,7 +15,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/math/Imakefile,v 1.10 2004/03/05 04:02:10 daw
 #if BuildOSMesaLib || (BuildXF86DRI && (GlxDriverUsesMesa || GlxBuiltInXMesa))
 #define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
 #define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
-#define DoExtraLib SharedLibGlx
+#define DoExtraLib ExtraLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 #else

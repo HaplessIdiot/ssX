@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile.inc,v 1.1 2001/03/23 19:18:43 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile.inc,v 1.3 2003/09/28 20:15:33 alanh Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(GLXLIBSRC)/mesa/src/drv
@@ -36,6 +36,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src -I$(MESASRCDIR)/include \
 #if 0
  DEBUG_SRC = $(MESADRVSISBUILDDIR)sis_debug.c
  DEBUG_OBJ = $(MESADRVSISBUILDDIR)sis_debug.o
+ DEBUG_EOBJ = $(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_debug.o
  DEBUG_UOBJ = $(MESADRVSISBUILDDIR)unshared/sis_debug.o
  DEBUG_DOBJ = $(MESADRVSISBUILDDIR)debugger/sis_debug.o
  DEBUG_POBJ = $(MESADRVSISBUILDDIR)profiled/sis_debug.o
@@ -76,6 +77,22 @@ LinkSourceFile(sis_debug.c, $(MESADRVSRCDIR)/sis)
 		$(MESADRVSISBUILDDIR)sis_tris.o \
 		$(MESADRVSISBUILDDIR)sis_vb.o \
 		$(DEBUG_OBJ)
+
+      SISEOBJS = $(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_alloc.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_dd.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_lock.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_context.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_fog.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_clear.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_screen.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_state.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_stencil.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_span.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_tex.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_texstate.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_tris.o \
+		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_vb.o \
+		$(DEBUG_EOBJ)
 
       SISUOBJS = $(MESADRVSISBUILDDIR)unshared/sis_alloc.o \
 		$(MESADRVSISBUILDDIR)unshared/sis_dd.o \

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.156tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.157 2004/03/14 22:36:15 tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -2121,6 +2121,11 @@ XCOMM common rules for all Makefiles - do not edit
 
 .c.i:
 	CPPOnlyCompile($*.c,$(_NOOP_))
+
+.SUFFIXES: .S
+
+.S.i:
+	CPPOnlyAsm($*,$(_NOOP_))
 
 .SUFFIXES: .ii
 

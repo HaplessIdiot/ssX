@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile.inc,v 1.3tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile.inc,v 1.4 2003/05/27 16:34:33 tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(GLXLIBSRC)/mesa/src/drv
@@ -64,6 +64,21 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src \
 		$(MESADRVGAMMABUILDDIR)gamma_tris.o \
 		$(MESADRVGAMMABUILDDIR)gamma_vb.o \
 		$(MESADRVGAMMABUILDDIR)gamma_xmesa.o
+
+    GAMMAEOBJS = $(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_context.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_dd.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_inithw.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_lock.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_render.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_screen.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_span.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_state.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_tex.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_texmem.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_texstate.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_tris.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_vb.o \
+		$(MESADRVGAMMABUILDDIR)$(EXTRASUBDIR)/gamma_xmesa.o
 
     GAMMAUOBJS = $(MESADRVGAMMABUILDDIR)unshared/gamma_context.o \
 		$(MESADRVGAMMABUILDDIR)unshared/gamma_dd.o \

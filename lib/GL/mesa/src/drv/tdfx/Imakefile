@@ -1,11 +1,11 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.32 2002/11/25 14:04:52 eich Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.33 2004/03/18 07:06:27 dawes Exp $
 
 #include <Threads.tmpl>
 
 #if GlxUseBuiltInDRIDriver
 #define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
 #define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
-#define DoExtraLib SharedLibGlx
+#define DoExtraLib ExtraLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 #else
