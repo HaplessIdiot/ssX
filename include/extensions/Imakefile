@@ -3,38 +3,38 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/18 04:05:44 coskrey Exp $
 
 
 
-XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.39 2001/03/25 05:31:58 tsi Exp $
+XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.40 2001/04/23 16:17:06 tsi Exp $
 
-#if BuildScreenSaverExt
+#if BuildScreenSaverExt || BuildScreenSaveLibrary
 SCREENSAVERHEADERS = saver.h saverproto.h scrnsaver.h
 #endif
 
-#if BuildXF86MiscExt
+#if BuildXF86MiscExt || BuildXF86MiscLibrary
 XF86MISCHEADERS = xf86misc.h xf86mscstr.h
 #endif
 #if BuildXF86BigfontExt
 XF86BIGFONTHEADERS = xf86bigfont.h xf86bigfstr.h
 #endif
-#if BuildXF86VidModeExt
+#if BuildXF86VidModeExt || BuildXF86VidModeLibrary
 XF86VIDMODEHEADERS = xf86vmode.h xf86vmstr.h
 #endif
-#if BuildXF86DGA
+#if BuildXF86DGA || BuildXF86DGALibrary
 XF86DGAHEADERS = xf86dga.h xf86dgastr.h xf86dga1.h xf86dga1str.h
 #endif
 #if BuildLBX
 LBXHEADERS = lbxbuf.h lbxbufstr.h lbxdeltastr.h lbximage.h lbxopts.h lbxstr.h lbxzlib.h
 #endif
-#if BuildXvExt
+#if BuildXvExt || BuildXvLibrary
 XVHEADERS = Xv.h Xvlib.h Xvproto.h
 XVMCHEADERS = XvMC.h XvMClib.h XvMCproto.h
 #endif
-#if BuildXF86RushExt
+#if BuildXF86RushExt || BuildXF86RushLibrary
 XF86RUSHHEADERS = xf86rush.h xf86rushstr.h
 #endif
 #if BuildFontCache
 FONTCACHEHEADERS = fontcache.h fontcacheP.h fontcachstr.h
 #endif
-#if BuildXinerama
+#if BuildXinerama || BuildXineramaLibrary
 XINERAMAHEADERS = panoramiXext.h panoramiXproto.h Xinerama.h
 #endif
 #if BuildRender || BuildXftLibrary
