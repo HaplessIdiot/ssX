@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_lock.c,v 1.1 2000/12/04 19:21:46 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_lock.c,v 1.2 2001/01/08 01:07:21 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -55,7 +55,6 @@ void r128GetLock( r128ContextPtr rmesa, GLuint flags )
    __DRIdrawablePrivate *dPriv = rmesa->driDrawable;
    __DRIscreenPrivate *sPriv = rmesa->driScreen;
    R128SAREAPrivPtr sarea = rmesa->sarea;
-   int stamp = dPriv->lastStamp;
    int i;
 
    drmGetLock( rmesa->driFd, rmesa->hHWContext, flags );
@@ -70,7 +69,8 @@ void r128GetLock( r128ContextPtr rmesa, GLuint flags )
     */
    XMESA_VALIDATE_DRAWABLE_INFO( rmesa->display, sPriv, dPriv );
 
-   if ( stamp != dPriv->lastStamp ) {
+   if ( rmesa->lastStamp != dPriv->lastStamp ) {
+      rmesa->lastStamp = dPriv->lastStamp;
       rmesa->new_state |= R128_NEW_WINDOW | R128_NEW_CLIP;
       rmesa->SetupDone = 0;
    }

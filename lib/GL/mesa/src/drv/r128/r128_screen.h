@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.h,v 1.3 2000/12/04 19:21:47 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.h,v 1.4 2001/01/08 01:07:21 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -74,6 +74,7 @@ typedef struct {
    drmBufMapPtr buffers;
 
    __DRIscreenPrivate *driScreen;
+   unsigned int sarea_priv_offset;
 
 } r128ScreenRec, *r128ScreenPtr;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_dd.c,v 1.2 2001/01/11 03:36:55 tsi Exp $ */
+/* $XFree86$ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -46,7 +46,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "X86/common_x86_asm.h"
 #endif
 
-#define RADEON_DATE	"20010105"
+#define RADEON_DATE	"20010319"
 
 
 /* Return the width and height of the current color buffer.
@@ -67,11 +67,11 @@ static void radeonDDGetBufferSize( GLcontext *ctx,
 static const GLubyte *radeonDDGetString( GLcontext *ctx, GLenum name )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   static char buffer[128];
+   static GLubyte buffer[128];
 
    switch ( name ) {
    case GL_VENDOR:
-      return (GLubyte *)"VA Linux Systems, Inc.";
+      return "VA Linux Systems, Inc.";
 
    case GL_RENDERER:
       sprintf( buffer, "Mesa DRI Radeon " RADEON_DATE );
@@ -100,6 +100,11 @@ static const GLubyte *radeonDDGetString( GLcontext *ctx, GLenum name )
 	 strncat( buffer, " x86", 4 );
       }
 #endif
+#ifdef USE_MMX_ASM
+      if ( cpu_has_mmx ) {
+	 strncat( buffer, "/MMX", 4 );
+      }
+#endif
 #ifdef USE_3DNOW_ASM
       if ( cpu_has_3dnow ) {
 	 strncat( buffer, "/3DNow!", 7 );
@@ -110,7 +115,7 @@ static const GLubyte *radeonDDGetString( GLcontext *ctx, GLenum name )
 	 strncat( buffer, "/SSE", 4 );
       }
 #endif
-      return (GLubyte *)buffer;
+      return buffer;
 
    default:
       return NULL;

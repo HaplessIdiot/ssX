@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.4 2000/12/12 17:17:06 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.5 2001/01/08 01:07:20 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -88,10 +88,16 @@ typedef struct r128_context *r128ContextPtr;
 #define R128_BLEND_ENV_COLOR	0x1
 #define R128_BLEND_MULTITEX	0x2
 
-/* Subpixel offsets for window coordinates:
+/* Subpixel offsets for window coordinates (triangles):
  */
-#define SUBPIXEL_X		(-0.125F)
-#define SUBPIXEL_Y		( 0.375F)
+#define SUBPIXEL_X  (0.0F)
+#define SUBPIXEL_Y  (0.125F)
+
+/* Offset for points:
+ */
+#define PNT_X_OFFSET  ( 0.125F)
+#define PNT_Y_OFFSET  (-0.125F)
+
 
 typedef void (*r128_interp_func)( GLfloat t,
 				  GLfloat *result,
@@ -127,10 +133,12 @@ struct r128_context {
    GLuint vc_format;
    GLfloat depth_scale;
 
-   CARD32 Color;			/* Current draw color */
-   CARD32 ClearColor;			/* Color used to clear color buffer */
-   CARD32 ClearDepth;			/* Value used to clear depth buffer */
-   CARD32 ClearStencil;			/* Value used to clear stencil */
+   GLuint Color;			/* Current draw color */
+   GLuint ClearColor;			/* Color used to clear color buffer */
+   GLuint ClearDepth;			/* Value used to clear depth buffer */
+   GLuint ClearStencil;			/* Value used to clear stencil */
+   GLuint DepthMask;
+   GLuint StencilMask;
 
    /* Map GL texture units onto hardware
     */
@@ -210,6 +218,8 @@ struct r128_context {
    __DRIscreenPrivate	*driScreen;	/* DRI screen */
    __DRIdrawablePrivate	*driDrawable;	/* DRI drawable bound to this ctx */
 
+   int lastStamp;		        /* mirror driDrawable->lastStamp */
+
    drmContext hHWContext;
    drmLock *driHwLock;
    int driFd;
@@ -249,10 +259,10 @@ extern r128ContextPtr r128MakeCurrent( r128ContextPtr oldCtx,
 /* ================================================================
  * Debugging:
  */
-#define DEBUG			0
+#define DO_DEBUG		0
 #define ENABLE_PERF_BOXES	0
 
-#if DEBUG
+#if DO_DEBUG
 extern int R128_DEBUG;
 #else
 #define R128_DEBUG		0

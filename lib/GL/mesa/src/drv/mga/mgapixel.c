@@ -46,7 +46,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 #if defined(MESA_packed_depth_stencil)
-static GLboolean 
+static GLboolean
 check_depth_stencil_24_8( const GLcontext *ctx, GLenum type,
 			  const struct gl_pixelstore_attrib *packing,
 			  const void *pixels, GLint sz,
@@ -59,10 +59,10 @@ check_depth_stencil_24_8( const GLcontext *ctx, GLenum type,
 	   ctx->Visual->StencilBits == 8 &&
 	   mmesa->mgaScreen->cpp == 4 &&
 	   mmesa->hw_stencil &&
-	   !ctx->Pixel.IndexShift && 
+	   !ctx->Pixel.IndexShift &&
 	   !ctx->Pixel.IndexOffset &&
 	   !ctx->Pixel.MapStencilFlag &&
-	   ctx->Pixel.DepthBias == 0.0 && 
+	   ctx->Pixel.DepthBias == 0.0 &&
 	   ctx->Pixel.DepthScale == 1.0 &&
 	   !packing->SwapBytes &&
 	   pitch % 32 == 0 &&
@@ -72,19 +72,19 @@ check_depth_stencil_24_8( const GLcontext *ctx, GLenum type,
 #endif
 
 
-static GLboolean 
+static GLboolean
 check_depth( const GLcontext *ctx, GLenum type,
 	     const struct gl_pixelstore_attrib *packing,
 	     const void *pixels, GLint sz, GLint pitch )
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
 
-   if (IS_AGP_MEM(mmesa, pixels) && 
+   if (IS_AGP_MEM(mmesa, pixels) &&
        !((type == GL_UNSIGNED_INT && mmesa->mgaScreen->cpp == 4) ||
 	 (type == GL_UNSIGNED_SHORT && mmesa->mgaScreen->cpp == 2)))
       return GL_FALSE;
 
-   return (ctx->Pixel.DepthBias == 0.0 && 
+   return (ctx->Pixel.DepthBias == 0.0 &&
 	   ctx->Pixel.DepthScale == 1.0 &&
 	   !packing->SwapBytes &&
 	   pitch % 32 == 0 &&
@@ -93,7 +93,7 @@ check_depth( const GLcontext *ctx, GLenum type,
 
 
 static GLboolean
-check_color( const GLcontext *ctx, GLenum type, GLenum format, 
+check_color( const GLcontext *ctx, GLenum type, GLenum format,
 		const struct gl_pixelstore_attrib *packing,
 		const void *pixels, GLint sz, GLint pitch )
 {
@@ -102,7 +102,7 @@ check_color( const GLcontext *ctx, GLenum type, GLenum format,
 
    /* Can't do conversions on agp reads/draws.
     */
-   if (IS_AGP_MEM(mmesa, pixels) && 
+   if (IS_AGP_MEM(mmesa, pixels) &&
        !(pitch % 32 == 0 &&
 	 pitch < 4096 &&
 	 ((type == GL_UNSIGNED_BYTE && cpp == 4 && format == GL_BGRA) ||
@@ -110,25 +110,25 @@ check_color( const GLcontext *ctx, GLenum type, GLenum format,
 	  (type == GL_UNSIGNED_SHORT_5_6_5_REV && cpp==2 && format == GL_RGB))))
       return GL_FALSE;
 
-   return 
-      (ctx->ColorMatrix.type == MATRIX_IDENTITY && 
-       !ctx->Pixel.ScaleOrBiasRGBA && 
-       !ctx->Pixel.ScaleOrBiasRGBApcm && 
-       !ctx->Pixel.MapColorFlag && 
-       !ctx->Pixel.ColorTableEnabled && 
-       !ctx->Pixel.PostColorMatrixColorTableEnabled && 
-       !ctx->Pixel.MinMaxEnabled && 
-       !ctx->Pixel.HistogramEnabled && 
-       !packing->SwapBytes &&   
+   return
+      (ctx->ColorMatrix.type == MATRIX_IDENTITY &&
+       !ctx->Pixel.ScaleOrBiasRGBA &&
+       !ctx->Pixel.ScaleOrBiasRGBApcm &&
+       !ctx->Pixel.MapColorFlag &&
+       !ctx->Pixel.ColorTableEnabled &&
+       !ctx->Pixel.PostColorMatrixColorTableEnabled &&
+       !ctx->Pixel.MinMaxEnabled &&
+       !ctx->Pixel.HistogramEnabled &&
+       !packing->SwapBytes &&
        !packing->LsbFirst);
 }
 
 static GLboolean
 check_color_per_fragment_ops( const GLcontext *ctx )
 {
-   return (!(ctx->RasterMask & ~(SCISSOR_BIT|WINCLIP_BIT|MULTI_DRAW_BIT)) && 
+   return (!(ctx->RasterMask & ~(SCISSOR_BIT|WINCLIP_BIT|MULTI_DRAW_BIT)) &&
 	   ctx->Current.RasterPosValid &&
-	   ctx->Pixel.ZoomX == 1.0F && 
+	   ctx->Pixel.ZoomX == 1.0F &&
 	   (ctx->Pixel.ZoomY == 1.0F || ctx->Pixel.ZoomY == -1.0F));
 }
 
@@ -140,7 +140,7 @@ check_depth_per_fragment_ops( const GLcontext *ctx )
 	   ctx->Color.ColorMask[BCOMP] == 0 &&
 	   ctx->Color.ColorMask[GCOMP] == 0 &&
 	   ctx->Color.ColorMask[ACOMP] == 0 &&
-	   ctx->Pixel.ZoomX == 1.0F && 
+	   ctx->Pixel.ZoomX == 1.0F &&
 	   (ctx->Pixel.ZoomY == 1.0F || ctx->Pixel.ZoomY == -1.0F));
 }
 
@@ -150,7 +150,7 @@ check_depth_per_fragment_ops( const GLcontext *ctx )
 static GLboolean
 check_stencil_per_fragment_ops( const GLcontext *ctx )
 {
-   return (!ctx->Pixel.IndexShift && 
+   return (!ctx->Pixel.IndexShift &&
 	   !ctx->Pixel.IndexOffset);
 }
 #endif
@@ -198,14 +198,14 @@ clip_pixelrect( const GLcontext *ctx,
 
    *size = ((*y + *height - 1) * mmesa->mgaScreen->frontPitch +
 	    (*x + *width - 1) * mmesa->mgaScreen->cpp);
-   
+
    return GL_TRUE;
 }
 
-static GLboolean 
-mgaDDReadPixels( GLcontext *ctx,  
+static GLboolean
+mgaDDReadPixels( GLcontext *ctx,
 		 GLint x, GLint y, GLsizei width, GLsizei height,
-		 GLenum format, GLenum type, 
+		 GLenum format, GLenum type,
 		 const struct gl_pixelstore_attrib *pack,
 		 GLvoid *pixels )
 {
@@ -215,7 +215,15 @@ mgaDDReadPixels( GLcontext *ctx,
    GLint pitch = pack->RowLength ? pack->RowLength : width;
    GLboolean ok;
 
-   if (!clip_pixelrect(ctx, ctx->ReadBuffer, 
+   GLuint planemask;
+   GLuint source, dest;
+   GLint source_pitch, dest_pitch;
+   GLint delta_sx, delta_sy;
+   GLint delta_dx, delta_dy;
+   GLint blit_height, ydir;
+
+
+   if (!clip_pixelrect(ctx, ctx->ReadBuffer,
 		       &x, &y, &width, &height,
 		       &skipPixels, &skipRows, &size)) {
       return GL_TRUE;
@@ -231,8 +239,8 @@ mgaDDReadPixels( GLcontext *ctx,
 #if defined(MESA_packed_depth_stencil)
    case GL_DEPTH_STENCIL_MESA:
       ok = check_depth_stencil_24_8(ctx, type, pack, pixels, size, pitch);
-      blit.planemask = ~0;
-      blit.source = mmesa->mgaScreen->depthOffset;
+      planemask = ~0;
+      source = mmesa->mgaScreen->depthOffset;
       break;
 #endif
 
@@ -241,25 +249,25 @@ mgaDDReadPixels( GLcontext *ctx,
 
       /* Can't accelerate at this depth -- planemask does the wrong
        * thing; it doesn't clear the low order bits in the
-       * destination, instead it leaves them untouched. 
+       * destination, instead it leaves them untouched.
        *
        * Could get the acclerator to solid fill the destination with
        * zeros first...  Or get the cpu to do it...
        */
-      if (ctx->Visual->DepthBits == 24) 
+      if (ctx->Visual->DepthBits == 24)
 	 return GL_FALSE;
 
-      blit.planemask = ~0;
-      blit.source = mmesa->mgaScreen->depthOffset;
+      planemask = ~0;
+      source = mmesa->mgaScreen->depthOffset;
       break;
 
    case GL_RGB:
    case GL_BGRA:
       ok = check_color(ctx, type, format, pack, pixels, size, pitch);
-      blit.planemask = ~0;
-      blit.source = (mmesa->draw_buffer == MGA_FRONT ?
-		     mmesa->mgaScreen->frontOffset :
-		     mmesa->mgaScreen->backOffset);
+      planemask = ~0;
+      source = (mmesa->draw_buffer == MGA_FRONT ?
+		mmesa->mgaScreen->frontOffset :
+		mmesa->mgaScreen->backOffset);
       break;
 
    default:
@@ -277,37 +285,37 @@ mgaDDReadPixels( GLcontext *ctx,
       __DRIdrawablePrivate *dPriv = mmesa->driDrawable;
       int nbox, retcode, i;
 
-      mgaUpdateLock( mmesa, DRM_LOCK_FLUSH | DRM_LOCK_QUIESCENT );  
+      UPDATE_LOCK( mmesa, DRM_LOCK_FLUSH | DRM_LOCK_QUIESCENT );
 
-      if (mmesa->dirty_cliprects & MGA_FRONT) 
+      if (mmesa->dirty_cliprects & MGA_FRONT)
 	 mgaUpdateRects( mmesa, MGA_FRONT );
-   
+
       nbox = dPriv->numClipRects;
 
       y = dPriv->h - y - height;
       x += mmesa->drawX;
       y += mmesa->drawY;
 
-      blit.dest = ((mmesa->mgaScreen->agp.handle + AGP_OFFSET(mmesa, pixels)) |
-		   DO_dstmap_sys | DO_dstacc_agp);
-      blit.source_pitch = mmesa->mgaScreen->frontPitch / mmesa->mgaScreen->cpp;
-      blit.dest_pitch = pitch;
-      blit.delta_sx = 0;
-      blit.delta_sy = 0;
-      blit.delta_dx = -x;
-      blit.delta_dy = -y;
-      blit.height = 2*y + height;
-      blit.ydir = -1;
-      
-      if (0) fprintf(stderr, "XX doing readpixel blit src_pitch %d dst_pitch %d\n", 
-		     blit.source_pitch, blit.dest_pitch);
+      dest = ((mmesa->mgaScreen->agp.handle + AGP_OFFSET(mmesa, pixels)) |
+	      DO_dstmap_sys | DO_dstacc_agp);
+      source_pitch = mmesa->mgaScreen->frontPitch / mmesa->mgaScreen->cpp;
+      dest_pitch = pitch;
+      delta_sx = 0;
+      delta_sy = 0;
+      delta_dx = -x;
+      delta_dy = -y;
+      blit_height = 2*y + height;
+      ydir = -1;
+
+      if (0) fprintf(stderr, "XX doing readpixel blit src_pitch %d dst_pitch %d\n",
+		     source_pitch, dest_pitch);
 
 
 
       for (i = 0 ; i < nbox ; )
       {
 	 int nr = MIN2(i + MGA_NR_SAREA_CLIPRECTS, dPriv->numClipRects);
-	 XF86DRIClipRectRec *box = dPriv->pClipRects;	 
+	 XF86DRIClipRectRec *box = dPriv->pClipRects;
 	 drm_clip_rect_t *b = mmesa->sarea->boxes;
 	 int n = 0;
 
@@ -317,7 +325,7 @@ mgaDDReadPixels( GLcontext *ctx,
 	    GLint bw = box[i].x2 - bx;
 	    GLint bh = box[i].y2 - by;
 
-	    if (bx < x) bw -= x - bx, bx = x; 
+	    if (bx < x) bw -= x - bx, bx = x;
 	    if (by < y) bh -= y - by, by = y;
 	    if (bx + bw > x + width) bw = x + width - bx;
 	    if (by + bh > y + height) bh = y + height - by;
@@ -333,7 +341,7 @@ mgaDDReadPixels( GLcontext *ctx,
 	 }
 
 	 mmesa->sarea->nbox = n;
-	 
+
 	 if (n && (retcode = ioctl(mmesa->driFd, DRM_IOCTL_MGA_BLIT, &blit))) {
 	    fprintf(stderr, "blit ioctl failed, retcode = %d\n", retcode);
 	    UNLOCK_HARDWARE( mmesa );
@@ -341,7 +349,7 @@ mgaDDReadPixels( GLcontext *ctx,
 	 }
       }
 
-      mgaUpdateLock( mmesa, DRM_LOCK_FLUSH | DRM_LOCK_QUIESCENT );  
+      UPDATE_LOCK( mmesa, DRM_LOCK_FLUSH | DRM_LOCK_QUIESCENT );
    }
 
    UNLOCK_HARDWARE( mmesa );
@@ -358,7 +366,7 @@ static void do_draw_pix( GLcontext *ctx,
 			 GLuint dest, GLuint planemask)
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
-   drm_mga_blit_t blit;	
+   drm_mga_blit_t blit;
    __DRIdrawablePrivate *dPriv = mmesa->driDrawable;
    XF86DRIClipRectPtr pbox = dPriv->pClipRects;
    int nbox = dPriv->numClipRects;
@@ -386,14 +394,14 @@ static void do_draw_pix( GLcontext *ctx,
       blit.ydir = -1;
    }
 
-   if (0) fprintf(stderr, 
-		  "doing drawpixel blit src_pitch %d dst_pitch %d\n", 
+   if (0) fprintf(stderr,
+		  "doing drawpixel blit src_pitch %d dst_pitch %d\n",
 		  blit.source_pitch, blit.dest_pitch);
 
    for (i = 0 ; i < nbox ; )
    {
       int nr = MIN2(i + MGA_NR_SAREA_CLIPRECTS, dPriv->numClipRects);
-      XF86DRIClipRectRec *box = mmesa->pClipRects;	 
+      XF86DRIClipRectRec *box = mmesa->pClipRects;
       drm_clip_rect_t *b = mmesa->sarea->boxes;
       int n = 0;
 
@@ -403,7 +411,7 @@ static void do_draw_pix( GLcontext *ctx,
 	 GLint bw = box[i].x2 - bx;
 	 GLint bh = box[i].y2 - by;
 
-	 if (bx < x) bw -= x - bx, bx = x; 
+	 if (bx < x) bw -= x - bx, bx = x;
 	 if (by < y) bh -= y - by, by = y;
 	 if (bx + bw > x + width) bw = x + width - bx;
 	 if (by + bh > y + height) bh = y + height - by;
@@ -419,7 +427,7 @@ static void do_draw_pix( GLcontext *ctx,
       }
 
       mmesa->sarea->nbox = n;
-	 
+
       if (n && (retcode = ioctl(mmesa->driFd, DRM_IOCTL_MGA_BLIT, &blit))) {
 	 fprintf(stderr, "blit ioctl failed, retcode = %d\n", retcode);
 	 UNLOCK_HARDWARE( mmesa );
@@ -432,7 +440,7 @@ static void do_draw_pix( GLcontext *ctx,
 
 
 static GLboolean
-mgaDDDrawPixels( GLcontext *ctx, 
+mgaDDDrawPixels( GLcontext *ctx,
 		 GLint x, GLint y, GLsizei width, GLsizei height,
 		 GLenum format, GLenum type,
 		 const struct gl_pixelstore_attrib *unpack,
@@ -444,13 +452,13 @@ mgaDDDrawPixels( GLcontext *ctx,
    GLuint dest, planemask;
    GLuint cpp = mmesa->mgaScreen->cpp;
 
-   if (!clip_pixelrect(ctx, ctx->DrawBuffer, 
+   if (!clip_pixelrect(ctx, ctx->DrawBuffer,
 		       &x, &y, &width, &height,
 		       &skipPixels, &skipRows, &size)) {
       return GL_TRUE;
    }
 
-   
+
    switch (format) {
 #if defined(MESA_packed_depth_stencil)
    case GL_DEPTH_STENCIL_MESA:
@@ -503,23 +511,22 @@ mgaDDDrawPixels( GLcontext *ctx,
       return GL_FALSE;
    }
 
-   LOCK_HARDWARE( mmesa );
-	 mgaUpdateLock( mmesa, DRM_LOCK_FLUSH | DRM_LOCK_QUIESCENT ); 
+   LOCK_HARDWARE_QUIESCENT( mmesa );
 
-   if (mmesa->dirty_cliprects & MGA_FRONT) 
+   if (mmesa->dirty_cliprects & MGA_FRONT)
       mgaUpdateRects( mmesa, MGA_FRONT );
-   
+
    if ( IS_AGP_MEM(mmesa, (char *)pixels) &&
 	IS_AGP_MEM(mmesa, (char *)pixels + size) )
    {
-      do_draw_pix( ctx, x, y, width, height, pitch, pixels, 
+      do_draw_pix( ctx, x, y, width, height, pitch, pixels,
 		   dest, planemask );
-      mgaUpdateLock( mmesa, DRM_LOCK_FLUSH | DRM_LOCK_QUIESCENT ); 
-   } 
-   else 
+      UPDATE_LOCK( mmesa, DRM_LOCK_FLUSH | DRM_LOCK_QUIESCENT );
+   }
+   else
    {
       /* Pixels is in regular memory -- get dma buffers and perform
-       * upload through them. 
+       * upload through them.
        */
 /*        drmBufPtr buf = mgaGetBufferLocked(mmesa); */
       GLuint bufferpitch = (width*cpp+31)&~31;
@@ -528,21 +535,21 @@ mgaDDDrawPixels( GLcontext *ctx,
       do {
 /*  	 GLuint rows = MIN2( height, MGA_DMA_BUF_SZ / bufferpitch ); */
 	 GLuint rows = height;
-	 
-	 
+
+
 	 if (0) fprintf(stderr, "trying to upload %d rows (pitch %d)\n",
 			rows, bufferpitch);
-	 
+
 	 /* The texture conversion code is so slow that there is only
 	  * negligble speedup when the buffers/images don't exactly
 	  * match:
 	  */
-#if 1
+#if 0
 	 if (cpp == 2) {
-	    if (!_mesa_convert_teximage( MESA_R5_G6_B5,
-					 width, rows, 
+	    if (!_mesa_convert_teximage( MESA_FORMAT_RGB565,
+					 width, rows,
 					 address, bufferpitch,
-					 width, rows, 
+					 width, rows,
 					 format, type,
 					 pixels, unpack )) {
 /*  	       mgaReleaseBufLocked( mmesa, buf ); */
@@ -550,10 +557,10 @@ mgaDDDrawPixels( GLcontext *ctx,
 	       return GL_FALSE;
 	    }
 	 } else {
-	    if (!_mesa_convert_teximage( MESA_A8_R8_G8_B8,
-					 width, rows, 
+	    if (!_mesa_convert_teximage( MESA_FORMAT_ARGB8888,
+					 width, rows,
 					 address, bufferpitch,
-					 width, rows, 
+					 width, rows,
 					 format, type,
 					 pixels, unpack )) {
 /*  	       mgaReleaseBufLocked( mmesa, buf ); */
@@ -565,12 +572,12 @@ mgaDDDrawPixels( GLcontext *ctx,
 	 MEMCPY( address, pixels, rows*bufferpitch );
 #endif
 
-	 do_draw_pix( ctx, x, y, width, rows, 
+	 do_draw_pix( ctx, x, y, width, rows,
 		      bufferpitch/cpp, address, dest, planemask );
 
 	 /* Fix me -- use multiple buffers to avoid flush.
 	  */
-	 mgaUpdateLock( mmesa, DRM_LOCK_FLUSH | DRM_LOCK_QUIESCENT ); 
+	 UPDATE_LOCK( mmesa, DRM_LOCK_FLUSH | DRM_LOCK_QUIESCENT );
 
 	 pixels = (void *)((char *) pixels + rows * pitch);
 	 height -= rows;
@@ -591,7 +598,7 @@ mgaDDDrawPixels( GLcontext *ctx,
 
 /* Stub functions - not a real allocator, always returns pointer to
  * the same block of agp space which isn't used for anything else at
- * present. 
+ * present.
  */
 #if defined(MESA_hacked_agp_allocator)
 static void mgaDDFreeAgpMemory( GLcontext *ctx, void *ptr )
@@ -613,7 +620,7 @@ static GLint mgaDDGetAgpOffset( GLcontext *ctx, const void *ptr )
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
 
-   if (!IS_AGP_MEM(mmesa, ptr)) 
+   if (!IS_AGP_MEM(mmesa, ptr))
       return -1;
 
    return AGP_OFFSET(mmesa, ptr);
@@ -623,7 +630,7 @@ static GLint mgaDDGetAgpOffset( GLcontext *ctx, const void *ptr )
 
 void mgaDDInitPixelFuncs( GLcontext *ctx )
 {
-#if defined (MESA_hacked_agp_allocator)
+#if defined (MESA_experimetal_agp_allocator)
    ctx->Driver.AllocateAgpMemory = mgaDDAllocateAgpMemory;
    ctx->Driver.GetAgpOffset = mgaDDGetAgpOffset;
    ctx->Driver.FreeAgpMemory = mgaDDFreeAgpMemory;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_xmesa.c,v 1.6 2001/01/08 01:07:24 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_xmesa.c,v 1.7 2001/01/23 18:14:38 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -60,33 +60,31 @@ GLboolean XMesaInitDriver( __DRIscreenPrivate *sPriv )
    /* Check the DRI version */
    {
       int major, minor, patch;
-      if (XF86DRIQueryVersion(sPriv->display, &major, &minor, &patch)) {
-         if (major != 3 || minor != 1 || patch < 0) {
+      if ( XF86DRIQueryVersion( sPriv->display, &major, &minor, &patch ) ) {
+         if ( major != 4 || minor < 0 ) {
             char msg[1000];
-            sprintf(msg, "R128 DRI driver expected DRI version 3.1.x but got version %d.%d.%d", major, minor, patch);
-            __driMesaMessage(msg);
+            sprintf( msg, "R128 DRI driver expected DRI version 4.0.x but got version %d.%d.%d", major, minor, patch );
+            __driMesaMessage( msg );
             return GL_FALSE;
          }
       }
    }
 
    /* Check that the DDX driver version is compatible */
-   if (sPriv->ddxMajor != 4 ||
-       sPriv->ddxMinor != 0 ||
-       sPriv->ddxPatch < 0) {
+   if ( sPriv->ddxMajor != 4 ||
+	sPriv->ddxMinor < 0 ) {
       char msg[1000];
-      sprintf(msg, "R128 DRI driver expected DDX driver version 4.0.x but got version %d.%d.%d", sPriv->ddxMajor, sPriv->ddxMinor, sPriv->ddxPatch);
-      __driMesaMessage(msg);
+      sprintf( msg, "R128 DRI driver expected DDX driver version 4.0.x but got version %d.%d.%d", sPriv->ddxMajor, sPriv->ddxMinor, sPriv->ddxPatch );
+      __driMesaMessage( msg );
       return GL_FALSE;
    }
 
    /* Check that the DRM driver version is compatible */
-   if (sPriv->drmMajor != 2 ||
-       sPriv->drmMinor != 1 ||
-       sPriv->drmPatch < 4) {
+   if ( sPriv->drmMajor != 2 ||
+	sPriv->drmMinor < 1 ) {
       char msg[1000];
-      sprintf(msg, "R128 DRI driver expected DRM driver version 2.1.x (x>=4) but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
-      __driMesaMessage(msg);
+      sprintf( msg, "R128 DRI driver expected DRM driver version 2.1.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch );
+      __driMesaMessage( msg );
       return GL_FALSE;
    }
 
@@ -158,11 +156,13 @@ GLframebuffer *XMesaCreateWindowBuffer( Display *dpy,
 					__DRIdrawablePrivate *driDrawPriv,
 					GLvisual *mesaVis )
 {
+   GLboolean swStencil;
+   swStencil = (mesaVis->StencilBits > 0) /* && (mesaVis->RedBits < 8) */ ;
    return gl_create_framebuffer( mesaVis,
 				 GL_FALSE,  /* software depth buffer? */
-				 mesaVis->StencilBits > 0,
+				 swStencil,
 				 mesaVis->AccumRedBits > 0,
-				 mesaVis->AlphaBits > 0 );
+				 GL_FALSE   /* software alpha buffer? */ );
 }
 
 /* Create and initialize the Mesa and driver specific pixmap buffer
@@ -267,6 +267,7 @@ void __driRegisterExtensions( void )
 GLboolean
 XMesaOpenFullScreen( __DRIcontextPrivate *driContextPriv )
 {
+#if 0
    r128ContextPtr rmesa = (r128ContextPtr)driContextPriv->driverPrivate;
    GLint ret;
 
@@ -285,6 +286,7 @@ XMesaOpenFullScreen( __DRIcontextPrivate *driContextPriv )
    UNLOCK_HARDWARE( rmesa );
 
    rmesa->doPageFlip = ( ret == 0 );
+#endif
 
    return GL_TRUE;
 }
@@ -296,6 +298,7 @@ XMesaCloseFullScreen( __DRIcontextPrivate *driContextPriv )
 {
    r128ContextPtr rmesa = (r128ContextPtr)driContextPriv->driverPrivate;
 
+#if 0
    LOCK_HARDWARE( rmesa );
    r128WaitForIdleLocked( rmesa );
 
@@ -307,6 +310,7 @@ XMesaCloseFullScreen( __DRIcontextPrivate *driContextPriv )
 
    rmesa->doPageFlip = GL_FALSE;
    rmesa->currentPage = 0;
+#endif
 
    return GL_TRUE;
 }

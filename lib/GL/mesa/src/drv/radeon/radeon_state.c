@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state.c,v 1.1 2001/01/08 01:07:28 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -54,10 +54,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 static void radeonUpdateAlphaMode( GLcontext *ctx )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   CARD32 a = rmesa->setup.pp_misc;
-   CARD32 p = rmesa->setup.pp_cntl;
-   CARD32 b = rmesa->setup.rb3d_blendcntl;
-   CARD32 c = rmesa->setup.rb3d_cntl;
+   GLuint a = rmesa->setup.pp_misc;
+   GLuint p = rmesa->setup.pp_cntl;
+   GLuint b = rmesa->setup.rb3d_blendcntl;
+   GLuint c = rmesa->setup.rb3d_cntl;
 
    if ( ctx->Color.AlphaEnabled ) {
       GLubyte ref = ctx->Color.AlphaRef;
@@ -194,6 +194,11 @@ static void radeonDDBlendEquation( GLcontext *ctx, GLenum mode )
 
    FLUSH_BATCH( rmesa );
    rmesa->new_state |= RADEON_NEW_ALPHA;
+
+   if (ctx->Color.ColorLogicOpEnabled && ctx->Color.LogicOp != GL_COPY)
+      rmesa->Fallback |= RADEON_FALLBACK_LOGICOP;
+   else
+      rmesa->Fallback &= ~RADEON_FALLBACK_LOGICOP;
 }
 
 static void radeonDDBlendFunc( GLcontext *ctx, GLenum sfactor, GLenum dfactor )
@@ -222,8 +227,8 @@ static void radeonDDBlendFuncSeparate( GLcontext *ctx,
 static void radeonUpdateZMode( GLcontext *ctx )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   CARD32 z = rmesa->setup.rb3d_zstencilcntl;
-   CARD32 c = rmesa->setup.rb3d_cntl;
+   GLuint z = rmesa->setup.rb3d_zstencilcntl;
+   GLuint c = rmesa->setup.rb3d_cntl;
 
    if ( ctx->Depth.Test ) {
       z &= ~RADEON_Z_TEST_MASK;
@@ -314,9 +319,9 @@ static void radeonDDClearDepth( GLcontext *ctx, GLclampd d )
 static void radeonUpdateFogAttrib( GLcontext *ctx )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   CARD32 p = rmesa->setup.pp_cntl;
+   GLuint p = rmesa->setup.pp_cntl;
    GLubyte c[4];
-   CARD32 col;
+   GLuint col;
 
    if ( ctx->FogMode == FOG_FRAGMENT ) {
       p |=  RADEON_FOG_ENABLE;
@@ -378,8 +383,8 @@ static void radeonUpdateClipping( GLcontext *ctx )
 
       rmesa->scissor_rect.x1 = x + rmesa->driDrawable->x;
       rmesa->scissor_rect.y1 = y + rmesa->driDrawable->y;
-      rmesa->scissor_rect.x2 = w + rmesa->driDrawable->x;
-      rmesa->scissor_rect.y2 = h + rmesa->driDrawable->y;
+      rmesa->scissor_rect.x2 = w + rmesa->driDrawable->x + 1;
+      rmesa->scissor_rect.y2 = h + rmesa->driDrawable->y + 1;
 
       rmesa->dirty |= RADEON_UPLOAD_CLIPRECTS;
    }
@@ -402,7 +407,7 @@ static void radeonDDScissor( GLcontext *ctx,
 static void radeonUpdateCull( GLcontext *ctx )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   CARD32 s = rmesa->setup.se_cntl;
+   GLuint s = rmesa->setup.se_cntl;
 
    s &= ~RADEON_FFACE_CULL_DIR_MASK;
 
@@ -483,7 +488,8 @@ static GLboolean radeonDDColorMask( GLcontext *ctx,
    FLUSH_BATCH( rmesa );
    rmesa->new_state |= RADEON_NEW_MASKS;
 
-   return GL_TRUE;
+   return GL_FALSE; /* This forces the software paths to do colormasking. */
+                    /* This function will return void when we use Mesa 3.5 */
 }
 
 
@@ -501,11 +507,12 @@ static void radeonDDLightModelfv( GLcontext *ctx, GLenum pname,
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
 
    if ( pname == GL_LIGHT_MODEL_COLOR_CONTROL ) {
-      CARD32 p = rmesa->setup.pp_cntl;
+      GLuint p = rmesa->setup.pp_cntl;
 
       FLUSH_BATCH( rmesa );
 
-      if ( ctx->Light.Model.ColorControl == GL_SEPARATE_SPECULAR_COLOR ) {
+      if ( ctx->Light.Model.ColorControl == GL_SEPARATE_SPECULAR_COLOR &&
+           ctx->Light.Enabled && ctx->Texture.ReallyEnabled) {
 	 p |=  RADEON_SPECULAR_ENABLE;
       } else {
 	 p &= ~RADEON_SPECULAR_ENABLE;
@@ -521,7 +528,7 @@ static void radeonDDLightModelfv( GLcontext *ctx, GLenum pname,
 static void radeonDDShadeModel( GLcontext *ctx, GLenum mode )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   CARD32 s = rmesa->setup.se_cntl;
+   GLuint s = rmesa->setup.se_cntl;
 
    s &= ~(RADEON_DIFFUSE_SHADE_MASK |
 	  RADEON_ALPHA_SHADE_MASK |
@@ -566,10 +573,8 @@ void radeonUpdateWindow( GLcontext *ctx )
    GLfloat xoffset = (GLfloat)dPriv->x;
    GLfloat yoffset = (GLfloat)dPriv->y + dPriv->h;
    const GLfloat one = 1.0;
-#if 0
-   CARD32 m = rmesa->setup.re_misc;
-   CARD32 sx, sy;
-#endif
+   GLuint m = rmesa->setup.re_misc;
+   GLuint sx, sy;
 
    rmesa->setup.se_vport_xscale  = *(GLuint *)&one;
    rmesa->setup.se_vport_xoffset = *(GLuint *)&xoffset;
@@ -578,14 +583,14 @@ void radeonUpdateWindow( GLcontext *ctx )
    rmesa->setup.se_vport_zscale  = *(GLuint *)&rmesa->depth_scale;
    rmesa->setup.se_vport_zoffset = 0x00000000;
 
-#if 0
-   /* FIXME: This appears to be broken...
-    */
+   /* Update polygon stipple offsets */
    m &= ~(RADEON_STIPPLE_X_OFFSET_MASK |
 	  RADEON_STIPPLE_Y_OFFSET_MASK);
 
-   sx = rmesa->driDrawable->x & RADEON_STIPPLE_COORD_MASK;
-   sy = rmesa->driDrawable->y & RADEON_STIPPLE_COORD_MASK;
+   /* add magic offsets, then invert */
+   sx = 31 - ((rmesa->driDrawable->x - 1) & RADEON_STIPPLE_COORD_MASK);
+   sy = 31 - ((rmesa->driDrawable->y + rmesa->driDrawable->h - 1)
+              & RADEON_STIPPLE_COORD_MASK);
 
    m |= ((sx << RADEON_STIPPLE_X_OFFSET_SHIFT) |
 	 (sy << RADEON_STIPPLE_Y_OFFSET_SHIFT));
@@ -594,7 +599,7 @@ void radeonUpdateWindow( GLcontext *ctx )
       rmesa->setup.re_misc = m;
       rmesa->dirty |= RADEON_UPLOAD_MISC;
    }
-#endif
+
    rmesa->dirty |= RADEON_UPLOAD_VIEWPORT;
 }
 
@@ -623,9 +628,9 @@ static void radeonDDColor( GLcontext *ctx,
 
 static void radeonDDLogicOpCode( GLcontext *ctx, GLenum opcode )
 {
-   if ( ctx->Color.ColorLogicOpEnabled ) {
-      radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
+   radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
 
+   if ( ctx->Color.ColorLogicOpEnabled ) {
       FLUSH_BATCH( rmesa );
 
       /* FIXME: We can do color logic ops.
@@ -636,6 +641,8 @@ static void radeonDDLogicOpCode( GLcontext *ctx, GLenum opcode )
 	 rmesa->Fallback |= RADEON_FALLBACK_LOGICOP;
       }
    }
+   else
+      rmesa->Fallback &= ~RADEON_FALLBACK_LOGICOP;
 }
 
 static GLboolean radeonDDSetDrawBuffer( GLcontext *ctx, GLenum mode )
@@ -705,7 +712,12 @@ static void radeonDDSetReadBuffer( GLcontext *ctx,
 static void radeonDDPolygonStipple( GLcontext *ctx, const GLubyte *mask )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   GLuint *stipple = (GLuint *)mask;
+   GLuint i, stipple[32];
+
+   /* must flip pattern upside down */
+   for (i = 0; i < 32; i++) {
+      stipple[31 - i] = ((GLuint *) mask)[i];
+   }
 
    FLUSH_BATCH( rmesa );
 
@@ -738,9 +750,18 @@ static void radeonDDEnable( GLcontext *ctx, GLenum cap, GLboolean state )
 
    switch ( cap ) {
    case GL_ALPHA_TEST:
+      FLUSH_BATCH( rmesa );
+      rmesa->new_state |= RADEON_NEW_ALPHA;
+      break;
+
    case GL_BLEND:
       FLUSH_BATCH( rmesa );
       rmesa->new_state |= RADEON_NEW_ALPHA;
+
+      if (ctx->Color.ColorLogicOpEnabled && ctx->Color.LogicOp != GL_COPY)
+	 rmesa->Fallback |= RADEON_FALLBACK_LOGICOP;
+      else
+	 rmesa->Fallback &= ~RADEON_FALLBACK_LOGICOP;
       break;
 
    case GL_CULL_FACE:
@@ -755,7 +776,7 @@ static void radeonDDEnable( GLcontext *ctx, GLenum cap, GLboolean state )
 
    case GL_DITHER:
       do {
-	 CARD32 r = rmesa->setup.rb3d_cntl;
+	 GLuint r = rmesa->setup.rb3d_cntl;
 	 FLUSH_BATCH( rmesa );
 
 	 if ( ctx->Color.DitherFlag ) {
@@ -776,7 +797,6 @@ static void radeonDDEnable( GLcontext *ctx, GLenum cap, GLboolean state )
       rmesa->new_state |= RADEON_NEW_FOG;
       break;
 
-   case GL_INDEX_LOGIC_OP:
    case GL_COLOR_LOGIC_OP:
       FLUSH_BATCH( rmesa );
       if ( state && ctx->Color.LogicOp != GL_COPY ) {
@@ -785,6 +805,22 @@ static void radeonDDEnable( GLcontext *ctx, GLenum cap, GLboolean state )
 	 rmesa->Fallback &= ~RADEON_FALLBACK_LOGICOP;
       }
       break;
+
+   case GL_LIGHTING:
+      {
+         GLuint p = rmesa->setup.pp_cntl;
+         if ( ctx->Light.Model.ColorControl == GL_SEPARATE_SPECULAR_COLOR &&
+              ctx->Light.Enabled && ctx->Texture.ReallyEnabled) {
+            p |=  RADEON_SPECULAR_ENABLE;
+         } else {
+            p &= ~RADEON_SPECULAR_ENABLE;
+         }
+         if ( rmesa->setup.pp_cntl != p ) {
+            rmesa->setup.pp_cntl = p;
+            rmesa->dirty |= RADEON_UPLOAD_CONTEXT;
+         }
+         break;
+      }
 
    case GL_SCISSOR_TEST:
       FLUSH_BATCH( rmesa );
@@ -900,29 +936,29 @@ void radeonEmitHwStateLocked( radeonContextPtr rmesa )
    if ( (rmesa->dirty & RADEON_UPLOAD_TEX0) && t0 ) {
       radeon_texture_regs_t *tex = &sarea->TexState[0];
 
-      tex->pp_txfilter = t0->setup.pp_txfilter | rmesa->lod_bias[0] << 8;
-      tex->pp_txformat = t0->setup.pp_txformat | RADEON_TXF_ST_ROUTE_STQ0;
-      tex->pp_txoffset = t0->setup.pp_txoffset;
+      tex->pp_txfilter = t0->pp_txfilter | rmesa->lod_bias[0] << 8;
+      tex->pp_txformat = t0->pp_txformat | RADEON_TXFORMAT_ST_ROUTE_STQ0;
+      tex->pp_txoffset = t0->pp_txoffset;
 
       tex->pp_txcblend = rmesa->color_combine[0];
       tex->pp_txablend = rmesa->alpha_combine[0];
       tex->pp_tfactor = rmesa->env_color[0];
 
-      tex->pp_border_color = t0->setup.pp_border_color;
+      tex->pp_border_color = t0->pp_border_color;
    }
 
    if ( (rmesa->dirty & RADEON_UPLOAD_TEX1) && t1 ) {
       radeon_texture_regs_t *tex = &sarea->TexState[1];
 
-      tex->pp_txfilter = t1->setup.pp_txfilter | rmesa->lod_bias[1] << 8;
-      tex->pp_txformat = t1->setup.pp_txformat | RADEON_TXF_ST_ROUTE_STQ1;
-      tex->pp_txoffset = t1->setup.pp_txoffset;
+      tex->pp_txfilter = t1->pp_txfilter | rmesa->lod_bias[1] << 8;
+      tex->pp_txformat = t1->pp_txformat | RADEON_TXFORMAT_ST_ROUTE_STQ1;
+      tex->pp_txoffset = t1->pp_txoffset;
 
       tex->pp_txcblend = rmesa->color_combine[1];
       tex->pp_txablend = rmesa->alpha_combine[1];
       tex->pp_tfactor = rmesa->env_color[1];
 
-      tex->pp_border_color = t1->setup.pp_border_color;
+      tex->pp_border_color = t1->pp_border_color;
    }
 
    if ( rmesa->dirty & RADEON_UPLOAD_TEX2 ) {
@@ -1006,7 +1042,7 @@ void radeonDDUpdateHWState( GLcontext *ctx )
 static void radeonDDReducedPrimitiveChange( GLcontext *ctx, GLenum prim )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   CARD32 s = rmesa->setup.se_cntl;
+   GLuint s = rmesa->setup.se_cntl;
 
    s |= RADEON_FFACE_SOLID | RADEON_BFACE_SOLID;
 
@@ -1098,11 +1134,13 @@ void radeonDDInitState( radeonContextPtr rmesa )
    switch ( rmesa->glCtx->Visual->DepthBits ) {
    case 16:
       rmesa->ClearDepth = 0x0000ffff;
+      rmesa->DepthMask= 0xffffffff;
       depth_fmt = RADEON_DEPTH_FORMAT_16BIT_INT_Z;
       rmesa->depth_scale = 1.0 / (GLfloat)0xffff;
       break;
    case 24:
       rmesa->ClearDepth = 0x00ffffff;
+      rmesa->DepthMask= 0x00ffffff;
       depth_fmt = RADEON_DEPTH_FORMAT_24BIT_INT_Z;
       rmesa->depth_scale = 1.0 / (GLfloat)0xffffff;
       break;
@@ -1270,7 +1308,7 @@ void radeonDDInitState( radeonContextPtr rmesa )
 
    rmesa->setup.re_misc = ((0 << RADEON_STIPPLE_X_OFFSET_SHIFT) |
 			   (0 << RADEON_STIPPLE_Y_OFFSET_SHIFT) |
-			   RADEON_STIPPLE_LITTLE_BIT_ORDER);
+			   RADEON_STIPPLE_BIG_BIT_ORDER);
 
    rmesa->env_color[0] = 0x00000000;
    rmesa->env_color[1] = 0x00000000;

@@ -81,6 +81,16 @@ typedef struct radeon_context *radeonContextPtr;
 #define RADEON_FALLBACK_MULTIDRAW	0x0020
 #define RADEON_FALLBACK_LOGICOP		0x0040
 
+/* Subpixel offsets for window coordinates (triangles):
+ */
+#define SUBPIXEL_X  (0.0625)
+#define SUBPIXEL_Y  (0.125)
+
+/* Offset for points:
+ */
+#define PNT_X_OFFSET  ( 0.125F)
+#define PNT_Y_OFFSET  (-0.125F)
+
 typedef void (*radeon_interp_func)( GLfloat t,
 				    GLfloat *result,
 				    const GLfloat *in,
@@ -115,10 +125,12 @@ struct radeon_context {
    GLuint vc_format;
    GLfloat depth_scale;
 
-   CARD32 Color;			/* Current draw color */
-   CARD32 ClearColor;			/* Color used to clear color buffer */
-   CARD32 ClearDepth;			/* Value used to clear depth buffer */
-   CARD32 ClearStencil;			/* Value used to clear stencil */
+   GLuint Color;			/* Current draw color */
+   GLuint ClearColor;			/* Color used to clear color buffer */
+   GLuint ClearDepth;			/* Value used to clear depth buffer */
+   GLuint ClearStencil;			/* Value used to clear stencil */
+   GLuint DepthMask;
+   GLuint StencilMask;
 
    /* Map GL texture units onto hardware
     */
@@ -200,12 +212,18 @@ struct radeon_context {
    __DRIscreenPrivate	*driScreen;	/* DRI screen */
    __DRIdrawablePrivate	*driDrawable;	/* DRI drawable bound to this ctx */
 
+   int lastStamp;		        /* mirror driDrawable->lastStamp */
+
    drmContext hHWContext;
    drmLock *driHwLock;
    int driFd;
 
    radeonScreenPtr radeonScreen;	/* Screen private DRI data */
    RADEONSAREAPrivPtr sarea;		/* Private SAREA data */
+
+#ifdef PER_CONTEXT_SAREA
+   char *private_sarea;			/* Per-context private SAREA */
+#endif
 
    /* Performance counters
     */
@@ -248,6 +266,7 @@ extern int RADEON_DEBUG;
 #define DEBUG_VERBOSE_DRI	0x10
 #define DEBUG_VERBOSE_IOCTL	0x20
 #define DEBUG_VERBOSE_2D	0x40
+#define DEBUG_VERBOSE_TEXTURE	0x80
 
 #endif
 #endif /* __RADEON_CONTEXT_H__ */

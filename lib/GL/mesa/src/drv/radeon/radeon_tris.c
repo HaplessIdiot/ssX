@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tris.c,v 1.1 2001/01/08 01:07:28 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -53,6 +53,13 @@ static struct {
 #define RADEON_COLOR( to, from )					\
 do {									\
    *(GLuint *)(to) = *(GLuint *)(from);					\
+} while (0)
+
+#define RADEON_COLOR3( to, from )		\
+do {						\
+  (to)[0] = (from)[2];				\
+  (to)[1] = (from)[1];				\
+  (to)[2] = (from)[0];				\
 } while (0)
 
 
@@ -162,6 +169,10 @@ void radeonDDChooseRenderState( GLcontext *ctx )
 
    if ( rmesa->Fallback ) {
       rmesa->RenderIndex = RADEON_FALLBACK_BIT;
+      /* fixes vorder.c failure: */
+      if (flags & DD_TRI_LIGHT_TWOSIDE) {
+         rmesa->IndirectTriangles = DD_TRI_LIGHT_TWOSIDE;
+      }
       return;
    }
 
@@ -199,6 +210,11 @@ void radeonDDChooseRenderState( GLcontext *ctx )
 	 rmesa->QuadFunc = 0;
 	 rmesa->IndirectTriangles |= (DD_TRI_SW_RASTERIZE |
 				      DD_QUAD_SW_RASTERIZE);
+      }
+
+      /* fixes vorder.c failure: */
+      if (flags & DD_TRI_LIGHT_TWOSIDE) {
+         rmesa->IndirectTriangles |= DD_TRI_LIGHT_TWOSIDE;
       }
    }
 

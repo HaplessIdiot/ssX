@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.6 2000/12/12 17:17:07 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.7 2001/01/08 01:07:21 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -41,6 +41,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r128_vb.h"
 #include "r128_tex.h"
 
+#include "context.h"
 #include "mmath.h"
 #include "pb.h"
 #include "enums.h"
@@ -53,8 +54,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 static void r128UpdateAlphaMode( GLcontext *ctx )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
-   CARD32 a = rmesa->setup.misc_3d_state_cntl_reg;
-   CARD32 t = rmesa->setup.tex_cntl_c;
+   GLuint a = rmesa->setup.misc_3d_state_cntl_reg;
+   GLuint t = rmesa->setup.tex_cntl_c;
 
    if ( ctx->Color.AlphaEnabled ) {
       GLubyte ref = ctx->Color.AlphaRef;
@@ -183,6 +184,12 @@ static void r128DDBlendEquation( GLcontext *ctx, GLenum mode )
 
    FLUSH_BATCH( rmesa );
    rmesa->new_state |= R128_NEW_ALPHA;
+
+   if ( ctx->Color.ColorLogicOpEnabled && ctx->Color.LogicOp != GL_COPY ) {
+      rmesa->Fallback |= R128_FALLBACK_LOGICOP;
+   } else {
+      rmesa->Fallback &= ~R128_FALLBACK_LOGICOP;
+   }
 }
 
 static void r128DDBlendFunc( GLcontext *ctx, GLenum sfactor, GLenum dfactor )
@@ -211,8 +218,8 @@ static void r128DDBlendFuncSeparate( GLcontext *ctx,
 static void r128UpdateZMode( GLcontext *ctx )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
-   CARD32 z = rmesa->setup.z_sten_cntl_c;
-   CARD32 t = rmesa->setup.tex_cntl_c;
+   GLuint z = rmesa->setup.z_sten_cntl_c;
+   GLuint t = rmesa->setup.tex_cntl_c;
 
    if ( ctx->Depth.Test ) {
       z &= ~R128_Z_TEST_MASK;
@@ -306,9 +313,9 @@ static void r128DDClearDepth( GLcontext *ctx, GLclampd d )
 static void r128UpdateFogAttrib( GLcontext *ctx )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
-   CARD32 t = rmesa->setup.tex_cntl_c;
+   GLuint t = rmesa->setup.tex_cntl_c;
    GLubyte c[4];
-   CARD32 col;
+   GLuint col;
 
    if ( ctx->FogMode == FOG_FRAGMENT ) {
       t |=  R128_FOG_ENABLE;
@@ -397,7 +404,7 @@ static void r128DDScissor( GLcontext *ctx,
 static void r128UpdateCull( GLcontext *ctx )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
-   CARD32 f = rmesa->setup.pm4_vc_fpu_setup;
+   GLuint f = rmesa->setup.pm4_vc_fpu_setup;
 
    f &= ~R128_FRONT_DIR_MASK;
 
@@ -479,7 +486,8 @@ static GLboolean r128DDColorMask( GLcontext *ctx,
    FLUSH_BATCH( rmesa );
    rmesa->new_state |= R128_NEW_MASKS;
 
-   return GL_TRUE;
+   return GL_FALSE; /* This forces the software paths to do colormasking. */
+                    /* This function will return void when we use Mesa 3.5 */
 }
 
 
@@ -497,7 +505,7 @@ static void r128DDLightModelfv( GLcontext *ctx, GLenum pname,
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
 
    if ( pname == GL_LIGHT_MODEL_COLOR_CONTROL ) {
-      CARD32 t = rmesa->setup.tex_cntl_c;
+      GLuint t = rmesa->setup.tex_cntl_c;
 
       FLUSH_BATCH( rmesa );
 
@@ -517,7 +525,7 @@ static void r128DDLightModelfv( GLcontext *ctx, GLenum pname,
 static void r128DDShadeModel( GLcontext *ctx, GLenum mode )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
-   CARD32 s = rmesa->setup.pm4_vc_fpu_setup;
+   GLuint s = rmesa->setup.pm4_vc_fpu_setup;
 
    s &= ~R128_FPU_COLOR_MASK;
 
@@ -583,9 +591,9 @@ static void r128DDColor( GLcontext *ctx,
 
 static void r128DDLogicOpCode( GLcontext *ctx, GLenum opcode )
 {
-   if ( ctx->Color.ColorLogicOpEnabled ) {
-      r128ContextPtr rmesa = R128_CONTEXT(ctx);
+   r128ContextPtr rmesa = R128_CONTEXT(ctx);
 
+   if ( ctx->Color.ColorLogicOpEnabled ) {
       FLUSH_BATCH( rmesa );
 
       if ( opcode == GL_COPY ) {
@@ -593,6 +601,8 @@ static void r128DDLogicOpCode( GLcontext *ctx, GLenum opcode )
       } else {
          rmesa->Fallback |= R128_FALLBACK_LOGICOP;
       }
+   } else {
+      rmesa->Fallback &= ~R128_FALLBACK_LOGICOP;
    }
 }
 
@@ -700,9 +710,19 @@ static void r128DDEnable( GLcontext *ctx, GLenum cap, GLboolean state )
 
    switch ( cap ) {
    case GL_ALPHA_TEST:
+      FLUSH_BATCH( rmesa );
+      rmesa->new_state |= R128_NEW_ALPHA;
+      break;
+
    case GL_BLEND:
       FLUSH_BATCH( rmesa );
       rmesa->new_state |= R128_NEW_ALPHA;
+
+      if ( ctx->Color.ColorLogicOpEnabled && ctx->Color.LogicOp != GL_COPY ) {
+	 rmesa->Fallback |= R128_FALLBACK_LOGICOP;
+      } else {
+	 rmesa->Fallback &= ~R128_FALLBACK_LOGICOP;
+      }
       break;
 
    case GL_CULL_FACE:
@@ -717,7 +737,7 @@ static void r128DDEnable( GLcontext *ctx, GLenum cap, GLboolean state )
 
    case GL_DITHER:
       do {
-	 CARD32 t = rmesa->setup.tex_cntl_c;
+	 GLuint t = rmesa->setup.tex_cntl_c;
 	 FLUSH_BATCH( rmesa );
 
 	 if ( ctx->Color.DitherFlag ) {
@@ -738,7 +758,6 @@ static void r128DDEnable( GLcontext *ctx, GLenum cap, GLboolean state )
       rmesa->new_state |= R128_NEW_FOG;
       break;
 
-   case GL_INDEX_LOGIC_OP:
    case GL_COLOR_LOGIC_OP:
       FLUSH_BATCH( rmesa );
       if ( state && ctx->Color.LogicOp != GL_COPY ) {
@@ -950,7 +969,7 @@ void r128DDUpdateHWState( GLcontext *ctx )
 static void r128DDReducedPrimitiveChange( GLcontext *ctx, GLenum prim )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
-   CARD32 f = rmesa->setup.pm4_vc_fpu_setup;
+   GLuint f = rmesa->setup.pm4_vc_fpu_setup;
 
    f |= R128_BACKFACE_SOLID | R128_FRONTFACE_SOLID;
 
@@ -1038,11 +1057,13 @@ void r128DDInitState( r128ContextPtr rmesa )
    switch ( rmesa->glCtx->Visual->DepthBits ) {
    case 16:
       rmesa->ClearDepth = 0x0000ffff;
+      rmesa->DepthMask = 0xffffffff;
       depth_bpp = R128_Z_PIX_WIDTH_16;
       rmesa->depth_scale = 1.0 / (GLfloat)0xffff;
       break;
    case 24:
       rmesa->ClearDepth = 0x00ffffff;
+      rmesa->DepthMask = 0x00ffffff;
       depth_bpp = R128_Z_PIX_WIDTH_24;
       rmesa->depth_scale = 1.0 / (GLfloat)0xffffff;
       break;

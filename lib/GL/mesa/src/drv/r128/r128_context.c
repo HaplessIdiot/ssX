@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.c,v 1.4 2000/12/12 17:17:06 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.c,v 1.5 2001/01/08 01:07:20 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -88,7 +88,7 @@ GLboolean r128CreateContext( Display *dpy, GLvisual *glVisual,
    r128scrn = rmesa->r128Screen = (r128ScreenPtr)(sPriv->private);
 
    rmesa->sarea = (R128SAREAPrivPtr)((char *)sPriv->pSAREA +
-				     sizeof(XF86DRISAREARec));
+				     r128scrn->sarea_priv_offset);
 
    rmesa->tmp_matrix = (GLfloat *) ALIGN_MALLOC( 16 * sizeof(GLfloat), 16 );
    if ( !rmesa->tmp_matrix ) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.6 2000/12/04 19:21:47 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.7 2001/01/08 01:07:21 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -1572,6 +1572,9 @@ static void r128DDTexSubImage( GLcontext *ctx, GLenum target,
    if ( t ) {
       if ( t->bound ) FLUSH_BATCH( rmesa );
 
+#if 0
+      /* FIXME: Only upload textures if we already have space in the heap.
+       */
       LOCK_HARDWARE( rmesa );
       r128UploadSubImage( rmesa, t, level,
 			  xoffset, yoffset, width, height );
@@ -1579,6 +1582,9 @@ static void r128DDTexSubImage( GLcontext *ctx, GLenum target,
 
       /* Update the context state */
       rmesa->setup.tex_cntl_c |= R128_TEX_CACHE_FLUSH;
+#else
+      r128DestroyTexObj( rmesa, t );
+#endif
 
       rmesa->new_state |= R128_NEW_TEXTURE;
    }

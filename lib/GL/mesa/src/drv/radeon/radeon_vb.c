@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vb.c,v 1.1 2001/01/08 01:07:28 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vb.c,v 1.2 2001/01/11 03:36:55 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -88,7 +88,7 @@ do {									\
    }									\
 } while (0)
 
-#ifdef USE_RHW2
+#if USE_RHW2
 
 #define TEX1_4								\
 do {									\
@@ -120,8 +120,8 @@ do {									\
 #define COORD								\
 do {									\
    GLfloat *win = VB->Win.data[i];					\
-   v->v.x =   win[0];							\
-   v->v.y = - win[1];							\
+   v->v.x =   win[0] + SUBPIXEL_X;					\
+   v->v.y = - win[1] + SUBPIXEL_Y;					\
    v->v.z =   win[2];							\
    v->v.rhw = win[3];							\
 } while (0)								\

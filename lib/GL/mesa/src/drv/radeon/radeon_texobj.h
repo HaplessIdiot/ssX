@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texobj.h,v 1.1 2001/01/08 01:07:28 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -40,17 +40,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_sarea.h"
 #include "mm.h"
 
-/* Handle the Radeon's tightly packed mipmaps and strict offset,
- * pitch rules for blits by assigning each mipmap a set of
- * coordinates that can be used for a hostdata blit.
- */
-typedef struct {
-   GLuint x;				/* Blit coordinates */
-   GLuint y;
-   GLuint width;			/* Blit dimensions */
-   GLuint height;
-   GLuint dwords;			/* Size of image level */
-} radeonTexImage;
+#define TEX_0 1
+#define TEX_1 2
 
 typedef struct radeon_tex_obj radeonTexObj, *radeonTexObjPtr;
 
@@ -72,16 +63,15 @@ struct radeon_tex_obj {
    GLint bound;				/* Texture unit currently bound to */
    GLint heap;				/* Texture heap currently stored in */
 
-   radeonTexImage image[RADEON_MAX_TEXTURE_LEVELS]; /* Image data for all
-						      mipmap levels */
+   drmRadeonTexImage image[RADEON_MAX_TEXTURE_LEVELS];
 
    GLint totalSize;			/* Total size of the texture
 					   including all mipmap levels */
-   GLint texelBytes;			/* Number of bytes per texel */
 
-   GLboolean hasAlpha;
-
-   radeon_texture_regs_t setup;		/* Setup regs for texture */
+   GLuint pp_txfilter;		        /* Hardware register values */
+   GLuint pp_txformat;
+   GLuint pp_txoffset;
+   GLuint pp_border_color;
 };
 
 #endif /* __RADEON_TEXOBJ_H__ */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tex.h,v 1.1 2001/01/08 01:07:28 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -45,9 +45,11 @@ extern int radeonUploadTexImages( radeonContextPtr rmesa, radeonTexObjPtr t );
 
 extern void radeonAgeTextures( radeonContextPtr rmesa, int heap );
 extern void radeonDestroyTexObj( radeonContextPtr rmesa, radeonTexObjPtr t );
+extern void radeonSwapOutTexObj( radeonContextPtr rmesa, radeonTexObjPtr t );
 
 extern void radeonPrintLocalLRU( radeonContextPtr rmesa, int heap );
 extern void radeonPrintGlobalLRU( radeonContextPtr rmesa, int heap );
+extern void radeonUpdateTexLRU(radeonContextPtr rmesa, radeonTexObjPtr t );
 
 extern void radeonDDInitTextureFuncs( GLcontext *ctx );
 

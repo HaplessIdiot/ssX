@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.8 2001/01/08 01:07:20 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.9 2001/01/11 03:36:54 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -45,7 +45,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "X86/common_x86_asm.h"
 #endif
 
-#define R128_DATE	"20010101"
+#define R128_DATE	"20010130"
 
 
 /* Return the width and height of the current color buffer.
@@ -73,15 +73,15 @@ static const GLubyte *r128DDGetString( GLcontext *ctx, GLenum name )
       return (GLubyte *)"VA Linux Systems, Inc.";
 
    case GL_RENDERER:
-      sprintf((void *)buffer, "Mesa DRI Rage128 " R128_DATE );
+      sprintf( (void *)buffer, "Mesa DRI Rage128 " R128_DATE );
 
       /* Append any chipset-specific information.
        */
       if ( R128_IS_PRO( rmesa ) ) {
-	 strncat( (pointer)buffer, " Pro", 4 );
+	 strncat( buffer, " Pro", 4 );
       }
       if ( R128_IS_MOBILITY( rmesa ) ) {
-	 strncat( (pointer)buffer, " M3", 3 );
+	 strncat( buffer, " M3", 3 );
       }
 
       /* Append any AGP-specific information.
@@ -103,6 +103,11 @@ static const GLubyte *r128DDGetString( GLcontext *ctx, GLenum name )
 #ifdef USE_X86_ASM
       if ( gl_x86_cpu_features ) {
 	 strncat( (pointer)buffer, " x86", 4 );
+      }
+#endif
+#ifdef USE_MMX_ASM
+      if ( cpu_has_mmx ) {
+	 strncat( buffer, "/MMX", 4 );
       }
 #endif
 #ifdef USE_3DNOW_ASM
@@ -182,6 +187,7 @@ void r128DDInitExtensions( GLcontext *ctx )
    gl_extensions_disable( ctx, "GL_ARB_texture_cube_map" );
 
    gl_extensions_disable( ctx, "GL_EXT_blend_color" );
+   gl_extensions_disable( ctx, "GL_EXT_blend_func_separate" );
    gl_extensions_disable( ctx, "GL_EXT_blend_logic_op" );
    gl_extensions_disable( ctx, "GL_EXT_blend_minmax" );
    gl_extensions_disable( ctx, "GL_EXT_blend_subtract" );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_span.c,v 1.4 2000/12/12 17:17:07 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_span.c,v 1.5 2001/01/08 01:07:21 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -61,7 +61,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 			     rmesa->readOffset +			\
 			     (dPriv->x * r128scrn->cpp) +		\
 			     (dPriv->y * pitch));			\
-   GLushort p;								\
+   GLuint p;								\
    (void) read_buf; (void) buf; (void) p
 
 #define LOCAL_DEPTH_VARS						\
@@ -81,13 +81,13 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 #define CLIPSPAN( _x, _y, _n, _x1, _n1, _i )				\
-   if (( _y < miny) || (_y >= maxy)) {					\
+   if ( _y < miny || _y >= maxy ) {					\
       _n1 = 0, _x1 = x;							\
    } else {								\
       _n1 = _n;								\
       _x1 = _x;								\
-      if (_x1 < minx) _i += (minx - _x1), _x1 = minx;			\
-      if (_x1 + _n1 >= maxx) n1 -= (_x1 + n1 - maxx) + 1;		\
+      if ( _x1 < minx ) _i += (minx-_x1), n1 -= (minx-_x1), _x1 = minx; \
+      if ( _x1 + _n1 >= maxx ) n1 -= (_x1 + n1 - maxx);		        \
    }
 
 #define Y_FLIP( _y )		(height - _y - 1)
@@ -148,6 +148,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define TAG(x) r128##x##_RGB565
 #include "spantmp.h"
 
+#define READ_DEPTH(d, _x, _y)                                                 \
+    d = *(GLushort *)(buf + _x*2 + _y*pitch)
 
 /* 32 bit, ARGB8888 color spanline and pixel functions
  */
@@ -173,6 +175,23 @@ do {									\
 #include "spantmp.h"
 
 
+/* 24 bit, RGB888 color spanline and pixel functions */
+#define WRITE_RGBA(_x, _y, r, g, b, a)                                        \
+    *(GLuint *)(buf + _x*3 + _y*pitch) = ((r << 16) |                         \
+					  (g << 8)  |                         \
+					  (b << 0))
+
+#define WRITE_PIXEL(_x, _y, p)                                                \
+    *(GLuint *)(buf + _x*3 + _y*pitch) = p
+
+#define READ_RGBA(rgba, _x, _y)                                               \
+    do {                                                                      \
+	GLuint p = *(GLuint *)(read_buf + _x*3 + _y*pitch);                   \
+	rgba[0] = (p >> 16) & 0xff;                                           \
+	rgba[1] = (p >> 8)  & 0xff;                                           \
+	rgba[2] = (p >> 0)  & 0xff;                                           \
+	rgba[3] = 0xff;                                                       \
+    } while (0)
 
 /* ================================================================
  * Depth buffer
@@ -341,6 +360,9 @@ do {									\
  */
 
 
+/* 32 bit depthbuffer functions */
+#define WRITE_DEPTH(_x, _y, d)                                                \
+    *(GLuint *)(buf + _x*4 + _y*pitch) = d
 
 void r128DDInitSpanFuncs( GLcontext *ctx )
 {

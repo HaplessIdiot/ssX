@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tris.h,v 1.1 2001/01/08 01:07:28 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -168,53 +168,76 @@ static __inline void radeon_draw_line( radeonContextPtr rmesa,
 #if 1
    GLuint vertsize = rmesa->vertsize;
    CARD32 *vb = radeonAllocVerticesInline( rmesa, 6 );
-   GLfloat dx, dy, ix, iy;
+   GLfloat hw, dx, dy, ix, iy;
    GLuint j;
+   GLfloat x0 = tmp0->v.x;
+   GLfloat y0 = tmp0->v.y;
+   GLfloat x1 = tmp1->v.x;
+   GLfloat y1 = tmp1->v.y;
 
-   dx = tmp0->v.x - tmp1->v.x;
-   dy = tmp0->v.y - tmp1->v.y;
-
-   ix = width * .5; iy = 0;
-
-   if ((ix<.5) && (ix>0.1)) ix = .5; /* I want to see lines with width
-					0.5 also */
-
-   if (dx * dx > dy * dy) {
-      iy = ix; ix = 0;
+   hw = 0.5F * width;
+   if (hw > 0.1F && hw < 0.5F) {
+      hw = 0.5F;
    }
 
-   *(float *)&vb[0] = tmp0->v.x - ix;
-   *(float *)&vb[1] = tmp0->v.y - iy;
+   /* adjust vertices depending on line direction */
+   dx = tmp0->v.x - tmp1->v.x;
+   dy = tmp0->v.y - tmp1->v.y;
+   if (dx * dx > dy * dy) {
+      /* X-major line */
+      ix = 0.0F;
+      iy = hw;
+      if (x1 < x0) {
+         x0 += 0.5F;
+         x1 += 0.5F;
+      }
+      y0 -= 0.5F;
+      y1 -= 0.5F;
+   }
+   else {
+      /* Y-major line */
+      ix = hw;
+      iy = 0.0F;
+      if (y1 > y0) {
+         y0 -= 0.5F;
+         y1 -= 0.5F;
+      }
+      x0 += 0.5F;
+      x1 += 0.5F;
+   }
+
+   *(float *)&vb[0] = x0 - ix;
+   *(float *)&vb[1] = y0 - iy;
    for (j = 2 ; j < vertsize ; j++)
       vb[j] = tmp0->ui[j];
    vb += vertsize;
 
-   *(float *)&vb[0] = tmp1->v.x + ix;
-   *(float *)&vb[1] = tmp1->v.y + iy;
+   *(float *)&vb[0] = x1 + ix;
+   *(float *)&vb[1] = y1 + iy;
    for (j = 2 ; j < vertsize ; j++)
       vb[j] = tmp1->ui[j];
    vb += vertsize;
 
-   *(float *)&vb[0] = tmp0->v.x + ix;
-   *(float *)&vb[1] = tmp0->v.y + iy;
+   *(float *)&vb[0] = x0 + ix;
+   *(float *)&vb[1] = y0 + iy;
    for (j = 2 ; j < vertsize ; j++)
       vb[j] = tmp0->ui[j];
    vb += vertsize;
 
-   *(float *)&vb[0] = tmp0->v.x - ix;
-   *(float *)&vb[1] = tmp0->v.y - iy;
+   *(float *)&vb[0] = x0 - ix;
+   *(float *)&vb[1] = y0 - iy;
    for (j = 2 ; j < vertsize ; j++)
       vb[j] = tmp0->ui[j];
    vb += vertsize;
 
-   *(float *)&vb[0] = tmp1->v.x - ix;
-   *(float *)&vb[1] = tmp1->v.y - iy;
+   *(float *)&vb[0] = x1 - ix;
+   *(float *)&vb[1] = y1 - iy;
    for (j = 2 ; j < vertsize ; j++)
       vb[j] = tmp1->ui[j];
    vb += vertsize;
 
-   *(float *)&vb[0] = tmp1->v.x + ix;
-   *(float *)&vb[1] = tmp1->v.y + iy;
+   *(float *)&vb[0] = x1 + ix;
+   *(float *)&vb[1] = y1 + iy;
    for (j = 2 ; j < vertsize ; j++)
       vb[j] = tmp1->ui[j];
 #else
@@ -254,39 +277,41 @@ static __inline void radeon_draw_point( radeonContextPtr rmesa,
    GLuint vertsize = rmesa->vertsize;
    CARD32 *vb = radeonAllocVerticesInline( rmesa, 6 );
    GLuint j;
+   const float x = tmp->v.x + PNT_X_OFFSET;
+   const float y = tmp->v.y + PNT_Y_OFFSET;
 
-   *(float *)&vb[0] = tmp->v.x - sz;
-   *(float *)&vb[1] = tmp->v.y - sz;
+   *(float *)&vb[0] = x - sz;
+   *(float *)&vb[1] = y - sz;
    for (j = 2 ; j < vertsize ; j++)
       vb[j] = tmp->ui[j];
    vb += vertsize;
 
-   *(float *)&vb[0] = tmp->v.x + sz;
-   *(float *)&vb[1] = tmp->v.y - sz;
+   *(float *)&vb[0] = x + sz;
+   *(float *)&vb[1] = y - sz;
    for (j = 2 ; j < vertsize ; j++)
       vb[j] = tmp->ui[j];
    vb += vertsize;
 
-   *(float *)&vb[0] = tmp->v.x + sz;
-   *(float *)&vb[1] = tmp->v.y + sz;
+   *(float *)&vb[0] = x + sz;
+   *(float *)&vb[1] = y + sz;
    for (j = 2 ; j < vertsize ; j++)
       vb[j] = tmp->ui[j];
    vb += vertsize;
 
-   *(float *)&vb[0] = tmp->v.x + sz;
-   *(float *)&vb[1] = tmp->v.y + sz;
+   *(float *)&vb[0] = x + sz;
+   *(float *)&vb[1] = y + sz;
    for (j = 2 ; j < vertsize ; j++)
       vb[j] = tmp->ui[j];
    vb += vertsize;
 
-   *(float *)&vb[0] = tmp->v.x - sz;
-   *(float *)&vb[1] = tmp->v.y + sz;
+   *(float *)&vb[0] = x - sz;
+   *(float *)&vb[1] = y + sz;
    for (j = 2 ; j < vertsize ; j++)
       vb[j] = tmp->ui[j];
    vb += vertsize;
 
-   *(float *)&vb[0] = tmp->v.x - sz;
-   *(float *)&vb[1] = tmp->v.y - sz;
+   *(float *)&vb[0] = x - sz;
+   *(float *)&vb[1] = y - sz;
    for (j = 2 ; j < vertsize ; j++)
       vb[j] = tmp->ui[j];
 

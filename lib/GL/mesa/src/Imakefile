@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.20 2000/11/13 23:31:25 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.21 2000/12/12 23:24:27 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -152,6 +152,8 @@ LinkSourceFile(state.c, $(MESASRCDIR)/src)
 LinkSourceFile(state.h, $(MESASRCDIR)/src)
 LinkSourceFile(stencil.c, $(MESASRCDIR)/src)
 LinkSourceFile(stencil.h, $(MESASRCDIR)/src)
+LinkSourceFile(texformat.c, $(MESASRCDIR)/src)
+LinkSourceFile(texformat.h, $(MESASRCDIR)/src)
 LinkSourceFile(texgen_tmp.h, $(MESASRCDIR)/src)
 LinkSourceFile(teximage.c, $(MESASRCDIR)/src)
 LinkSourceFile(teximage.h, $(MESASRCDIR)/src)
@@ -163,6 +165,7 @@ LinkSourceFile(texture.c, $(MESASRCDIR)/src)
 LinkSourceFile(texture.h, $(MESASRCDIR)/src)
 LinkSourceFile(texutil.c, $(MESASRCDIR)/src)
 LinkSourceFile(texutil.h, $(MESASRCDIR)/src)
+LinkSourceFile(texutil_tmp.h, $(MESASRCDIR)/src)
 LinkSourceFile(trans_tmp.h, $(MESASRCDIR)/src)
 LinkSourceFile(translate.c, $(MESASRCDIR)/src)
 LinkSourceFile(translate.h, $(MESASRCDIR)/src)
@@ -252,6 +255,7 @@ LinkSourceFile(zoom.h, $(MESASRCDIR)/src)
 		stages.c \
 		state.c \
 		stencil.c \
+		texformat.c \
 		teximage.c \
 		texobj.c \
 		texstate.c \
@@ -325,6 +329,7 @@ LinkSourceFile(zoom.h, $(MESASRCDIR)/src)
 		stages.o \
 		state.o \
 		stencil.o \
+		texformat.o \
 		teximage.o \
 		texobj.o \
 		texstate.o \
@@ -346,8 +351,8 @@ LinkSourceFile(zoom.h, $(MESASRCDIR)/src)
 		zoom.o
 
 #ifdef i386Architecture
-     ASM_SRCS = 
-     ASM_OBJS = 
+     ASM_SRCS =
+     ASM_OBJS =
 #if MesaUseMMX
      MMX_DEFS = -DUSE_MMX_ASM
 #endif

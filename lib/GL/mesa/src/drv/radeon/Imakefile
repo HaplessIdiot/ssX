@@ -59,6 +59,8 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		radeon_span.c \
 		radeon_state.c \
 		radeon_tex.c \
+		radeon_texmem.c \
+		radeon_texstate.c \
 		radeon_tris.c \
 		radeon_vb.c \
 		radeon_xmesa.c
@@ -74,6 +76,8 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		radeon_span.o \
 		radeon_state.o \
 		radeon_tex.o \
+		radeon_texmem.o \
+		radeon_texstate.o \
 		radeon_tris.o \
 		radeon_vb.o \
 		radeon_xmesa.o
@@ -152,6 +156,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		../../stages.c \
 		../../state.c \
 		../../stencil.c \
+		../../texformat.c \
 		../../teximage.c \
 		../../texobj.c \
 		../../texstate.c \
@@ -225,6 +230,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		../../stages.o \
 		../../state.o \
 		../../stencil.o \
+		../../texformat.o \
 		../../teximage.o \
 		../../texobj.o \
 		../../texstate.o \
