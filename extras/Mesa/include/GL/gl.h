@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/include/GL/gl.h,v 1.5 2000/08/09 23:40:10 dawes Exp $ */
 
 
 #ifndef __gl_h_
@@ -48,7 +48,7 @@
 #define __WIN32__
 #endif
 
-#if !defined(OPENSTEP) && (defined(__WIN32__) || !defined(__CYGWIN__))
+#if !defined(OPENSTEP) && (defined(__WIN32__) && !defined(__CYGWIN__))
 #  if defined(_MSC_VER) && defined(BUILD_GL32) /* tag specify we're building mesa as a DLL */
 #    define GLAPI __declspec(dllexport)
 #  elif defined(_MSC_VER) && defined(_DLL) /* tag specifying we're building for DLL runtime support */
