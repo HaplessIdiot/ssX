@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_cursor.c,v 1.5 2002/05/10 12:50:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_cursor.c,v 1.1 2002/09/11 00:29:32 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -76,9 +76,13 @@ I830InitHWCursor(ScrnInfoPtr pScrn)
       temp &= ~(CURSOR_MODE | MCURSOR_GAMMA_ENABLE | MCURSOR_MEM_TYPE_LOCAL |
 		MCURSOR_PIPE_SELECT);
       temp |= CURSOR_MODE_DISABLE;
+      /*
+       * XXX Should enable cursor B when both pipes are enabled.
+       * For now, give pipe A preference.
+       */
       if (pI830->pipeEnabled[0])
 	 temp |= MCURSOR_PIPE_A;
-      if (pI830->pipeEnabled[1])
+      else if (pI830->pipeEnabled[1])
 	 temp |= MCURSOR_PIPE_B;
       /* Need to set control, then address. */
       OUTREG(CURSOR_A_CONTROL, temp);
