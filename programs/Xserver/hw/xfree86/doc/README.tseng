@@ -1,14 +1,14 @@
   Information for Tseng Chipset Users
   The XFree86 Project, Inc.
-  13 November 1994
+  29 July 1996
 
   1.  Supported chipsets
 
-  The Tseng chipsets supported by XFree86 are ET3000, ET4000, and
-  ET4000/W32.  At this time, the accelerated features of the ET4000/W32
-  are not supported; the chipset is treated as a standard ET4000.  For
-  details about the accelerated ET4000/W32 server, refer to README.W32
-  <W32.html>.
+  The Tseng chipsets supported by XFree86 are ET3000, ET4000, ET4000/W32
+  and ET6000. At this time, the accelerated features of the ET4000/W32
+  and ET6000 are not supported by the SVGA driver; the chipset is
+  treated as a standard ET4000. For details about the accelerated
+  ET4000/W32 and ET6000 server, refer to README.W32 <W32.html>.
 
   2.  Clock selection problems with some ET4000 boards
 
@@ -64,7 +64,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.5 1996/02/04 09:08:39 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.6 1996/08/13 11:30:59 dawes Exp $
 
 
 

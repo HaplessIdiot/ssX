@@ -245,7 +245,7 @@
         XGA-2
 
      Tseng
-        ET4000/W32, ET4000/W32i, ET4000/W32p
+        ET4000/W32, ET4000/W32i, ET4000/W32p, ET6000
 
      Oak Technologies Inc
         OTI087
@@ -260,7 +260,7 @@
   In addition, the following SVGA chipsets are supported:
 
      Tseng
-        ET3000, ET4000AX, ET4000/W32
+        ET3000, ET4000AX, ET4000/W32, ET6000
 
      Western Digital/Paradise
         PVGA1
@@ -334,11 +334,14 @@
   the display size is limited to approximately 800x600.
 
   Note: The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards
-  are NOT supported, even though they use the ET4000.  The Stealth 32
-  which uses the ET4000/W32p is also not fully supported.  The Weitek
-  9100 and 9130 chipsets are not supported (these are used on the
-  Diamond Viper Pro and Viper SE boards).  Most other Diamond boards
-  will work with this release of XFree86.  Diamond is now actively
+  are NOT supported, even though they use the ET4000. The Stealth 32
+  which uses the ET4000/W32p is also not fully supported by the SVGA
+  server, but it is supported by the accelerated server, XF86_W32 (using
+  the icd2061a clockchip).
+
+  The Weitek 9100 and 9130 chipsets are not supported (these are used on
+  the Diamond Viper Pro and Viper SE boards). Most other Diamond boards
+  will work with this release of XFree86. Diamond is now actively
   supporting The XFree86 Project, Inc.
 
   The Trident TGUI9440 series of chips is not yet supported, but we are
@@ -393,7 +396,6 @@
 
   The files README.Config and VideoModes.doc should be consulted for
   information on how to set up the XFree86 servers.  All supplied
-
   documents and manual pages should be read before contacting the
   XFree86 team for assistance.
 
@@ -456,9 +458,9 @@
 
      o  Ted Lemon <mellon@ncd.com>
 
+
+
      o  Rich Murphey <rich@XFree86.org>
-
-
 
      o  Hans Nasten <nasten@everyware.se>
 
@@ -523,8 +525,8 @@
 
      BSD/OS support by:
 
-        o  Hans Nasten <nasten@everyware.se>,
 
+        o  Hans Nasten <nasten@everyware.se>,
 
         o  Paul Vixie <paul@vix.com>
 
@@ -588,9 +590,9 @@
 
         o  Ishida Kazuo <ishidakz@obp.cl.nec.co.jp>,
 
+
+
         o  Takaaki Nomura <tnomura@sfc.keio.ac.jp>,
-
-
 
         o  Tadaaki Nagao <nagao@cs.titech.ac.jp>,
 
@@ -654,9 +656,9 @@
 
         o  Rik Faith <faith@cs.unc.edu>,
 
+
+
         o  Tiago Gons <tiago@comosjn.hobby.nl>,
-
-
 
         o  Hans Nasten <nasten@everyware.se>,
 
@@ -694,6 +696,11 @@
 
         o  Glenn Lai <glenn@cs.utexas.edu>,
 
+     ET6000 SVGA and accelerated support (both based on the existing W32
+        code) by:
+
+        o  Koen Gadeyne <koen.gadeyne@barco.com>,
+
      Oak Technologies Inc. accelerated code by:
 
         o  Jorge Delgado <ernar@dit.upm.es>,
@@ -715,6 +722,8 @@
 
         o  Rewritten by Marc La France <Marc.La-France@ualberta.ca>
 
+
+
      WD90C24 support by:
 
         o  Brad Bosch <brad@lachman.com>
@@ -722,7 +731,6 @@
      Trident SVGA driver by:
 
         o  Alan Hourihane <alanh@fairlite.demon.co.uk>
-
 
      NCR SVGA driver by:
 
@@ -781,6 +789,7 @@
 
      MX SVGA driver by:
 
+
         o  Frank Dikker <dikker@cs.utwente.nl>
 
      Video7 SVGA driver by:
@@ -788,7 +797,6 @@
         o  Craig Struble <cstruble@acm.vt.edu>
 
      RealTek SVGA driver by:
-
 
         o  Peter Trattler <peter@sbox.tu-graz.ac.at>
 
@@ -855,7 +863,6 @@
   The first of these was the primary motivation.  We have held discus-
   sions with the X Consortium on and off for many months, attempting to
   find an avenue by which our loosely-organized free software project
-
   could be given a voice within the X Consortium.  The bylaws of the
   Consortium would not recognize such an organization.  After an initial
   investigation about funding, we decided to form our own corporation to
@@ -913,13 +920,14 @@
   quality free software for the betterment of the Internet community as
   a whole.
 
+
+
      o  UUNET Communications Services, Inc. <http://www.uu.net/>
 
   UUNET Communications Services, Inc, deserves special mention.  This
   organization stepped forward and contributed the entire 1994 X Consor-
   tium membership fee on a moment's notice.  This single act ensured
   XFree86's involvement in X11R6.
-
 
 
      o  GUUG -- 1st German Linux Congress
@@ -978,6 +986,8 @@
 
      o  LunetIX Softfair <http://www.lunetix.de>, Berlin, Germany
 
+
+
      o  Morse Telecommunications <http://www.morse.net>, Long Beach, NY
 
      o  MIRO Computer Products AG, Braunschweig, Germany
@@ -985,8 +995,6 @@
      o  Rich & Amy Murphey
 
      o  Brett Neumeier
-
-
 
      o  Number Nine, Lexington, MA
 
@@ -1044,6 +1052,8 @@
 
         +  ftp://XFree86.cdrom.com/pub/XFree86 (source and binaries)
 
+
+
         +  ftp://ftp.rge.com/pub/X/XFree86/XFree86 (source and binaries)
 
         +  ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2 (source
@@ -1051,8 +1061,6 @@
 
            (Also via AFS:
            /afs/iastate.edu/public/ftp/pub/XFree86/XFree86-3.1.2)
-
-
 
         +  ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.2
            (Linux binaries and source)
@@ -1119,27 +1127,19 @@
   on which files you need to get to build your distribution.
 
   Ensure that you are getting XFree86 3.1.2 - some of these sites may
-
   archive older releases as well.  Each binary distribution will contain
   a README file that describes what files you need to take from the
   archive, and which compile-time option selections were made when
   building the distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.49 1996/08/10 13:06:40 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.50 1996/08/13 11:30:56 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
-
-
-
-
-
-
-
 
 
 
