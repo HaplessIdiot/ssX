@@ -27,7 +27,7 @@ in this Software without prior written authorization from the copyright holder.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/access.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/xdm/access.c,v 3.11 2003/07/09 15:27:37 tsi Exp $ */
 
 /*
  * Access control for XDMCP - keep a database of allowable display addresses
@@ -475,7 +475,7 @@ ReadDisplayEntry (FILE *file)
 #endif
 #if defined(IPv6) && defined(AF_INET6)
 	    case AF_INET6:
-	    	display->connectionType = FamilyInternetV6;
+	    	display->connectionType = FamilyInternet6;
 	    	break;
 #endif
 #ifdef AF_DECnet

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.27tsi Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.28 2003/07/09 15:27:38 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -995,7 +995,7 @@ DefineSelf (int fd, FILE *file, Xauth *auth)
 		    continue;
 	    }
 #if defined(IPv6) && defined(AF_INET6)
-	    if(family == FamilyInternetV6) {
+	    if(family == FamilyInternet6) {
 		if (IN6_IS_ADDR_LOOPBACK(((struct in6_addr *)addr))) {
 		    Debug ("Skipping IPv6 localhost address\n");
 		    continue;

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.21tsi Exp $ */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.22 2003/07/09 15:27:39 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -178,7 +178,7 @@ sendForward (
 	break;
 #endif
 #if defined(IPv6) && defined(AF_INET6)
-    case FamilyInternetV6:
+    case FamilyInternet6:
 	addr = (struct sockaddr *) &in6_addr;
 	bzero ((char *) &in6_addr, sizeof (in6_addr));
 #ifdef SIN6_LEN
@@ -484,7 +484,7 @@ NetworkAddressToName(
     {
     case FamilyInternet:
 #if defined(IPv6) && defined(AF_INET6)
-    case FamilyInternetV6:
+    case FamilyInternet6:
 	{
 	    CARD8		*data;
 	    struct hostent	*hostent;
@@ -495,7 +495,7 @@ NetworkAddressToName(
 	    struct addrinfo	 hints, *ai = NULL, *nai;
 	    int 		 type;
 
-	    if (connectionType == FamilyInternetV6)
+	    if (connectionType == FamilyInternet6)
 		type = AF_INET6;
 	    else
 		type = AF_INET;
@@ -1353,7 +1353,7 @@ NetworkAddressToHostname (
     {
     case FamilyInternet:
 #if defined(IPv6) && defined(AF_INET6)
-    case FamilyInternetV6:
+    case FamilyInternet6:
 #endif
 	{
 	    struct hostent	*hostent = NULL;
@@ -1366,7 +1366,7 @@ NetworkAddressToHostname (
 	    int af_type;
 
 #if defined(IPv6) && defined(AF_INET6)
-	    if (connectionType == FamilyInternetV6)
+	    if (connectionType == FamilyInternet6)
 		af_type = AF_INET6;
 	    else
 #endif

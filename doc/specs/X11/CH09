@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/specs/X11/CH09,v 1.2 2003/07/09 15:27:25 tsi Exp $
 \&
 .sp 1
 .ce 3
@@ -969,7 +969,7 @@ typedef struct {
 The family member specifies which protocol address family to use 
 (for example, TCP/IP or DECnet) and can be
 .PN FamilyInternet ,
-.PN FamilyInternetV6 ,
+.PN FamilyInternet6 ,
 .PN FamilyDECnet ,
 or
 .PN FamilyChaos .
@@ -979,7 +979,7 @@ The address member specifies a pointer to the address.
 For TCP/IP, the address should be in network byte order.
 For IP version 4 addresses, the family should be FamilyInternet
 and the length should be 4 bytes.  For IP version 6 addresses, the
-family should be FamilyInternetV6 and the length should be 16 bytes.
+family should be FamilyInternet6 and the length should be 16 bytes.
 .LP
 For the DECnet family, 
 the server performs no automatic swapping on the address bytes.
