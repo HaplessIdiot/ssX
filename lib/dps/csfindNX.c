@@ -35,13 +35,11 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <sys/param.h>				/* for MAXHOSTNAMELEN */
 #include <stdlib.h>
 #include <string.h>
-#if !defined(sun) || !defined(SVR4)
-#include <strings.h>
-#endif /* !sun || !SVR4 */
 #include <pwd.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>

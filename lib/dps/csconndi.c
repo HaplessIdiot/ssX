@@ -47,6 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
+/* $XFree86$ */
 
 #if defined(sun) && !defined(SVR4)
 #define memmove(t,f,c) bcopy(f,t,c)
@@ -74,6 +75,8 @@
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
 #endif
+
+#include <netdb.h>
 
 #include "DPSCAPproto.h"
 #include "cslibint.h"
@@ -338,7 +341,11 @@ DPSCAPConnect(display_name, fullnamep, dpynump,
     (void) fcntl (fd, F_SETFL, O_NONBLOCK);
 #endif
 #else /* sun && SVR4 */
+#ifdef FNDELAY
     (void) fcntl (fd, F_SETFL, FNDELAY);
+#else
+    (void) fcntl (fd, F_SETFL, O_NDELAY);
+#endif /* FNDELAY */
 #endif /* sun && SVR4 */
 #endif /* FIOSNBIO */
 
