@@ -35,6 +35,7 @@
 * Description:  Header file for FPU register definitions.
 *
 ****************************************************************************/
+/* $XFree86$ */
 
 #ifndef __X86EMU_FPU_REGS_H
 #define __X86EMU_FPU_REGS_H
@@ -87,7 +88,7 @@ struct x86_fpu_registers {
     short               x86_fpu_tos, x86_fpu_bos;
 	};
 
-#pragma	pack()
+#pragma	pack(0)
 
 /*
  * There are two versions of the following macro.
