@@ -23,6 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86: $ */
 
 #include <stdio.h>
 #include <stdlib.h>
