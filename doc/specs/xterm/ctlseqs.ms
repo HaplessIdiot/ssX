@@ -5,7 +5,7 @@
 .\"
 .\"
 .\"
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.41 2000/12/30 19:11:00 dickey Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.42 2001/01/17 16:57:45 dawes Exp $
 .\"
 .\"
 .\" Copyright 1996,1997,1998,1999,2000 by Thomas E. Dickey
@@ -209,7 +209,7 @@
 .[] & &
 .[] ^ ^
 .[] _ _
-.[] qu \`
+.[] qu \'
 .[] ` \`
 .[] a a
 .[] b b
@@ -904,8 +904,8 @@ the following, from \fIrxvt\fP:
   \*(Ps = \*1\*0\*0 \(-> Set foreground and background color to default
 .sp
 If 88- or 256-color support is compiled, the following apply.
-  \*(Ps = \*3\*8 ; \*5 ; \*(Ps \(-> Set background color to \*(Ps
-  \*(Ps = \*4\*8 ; \*5 ; \*(Ps \(-> Set foreground color to \*(Ps
+  \*(Ps = \*3\*8 ; \*5 ; \*(Ps \(-> Set foreground color to the second \*(Ps
+  \*(Ps = \*4\*8 ; \*5 ; \*(Ps \(-> Set background color to the second \*(Ps
 .sp
 .
 .IP \\*(Cs\\*(Ps\\*s\\*n
