@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.28 2000/05/10 18:55:29 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.29 2000/06/12 10:11:37 alanh Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -269,9 +269,10 @@ void Permedia2I2CUDelay(I2CBusPtr b, int usec);
 void Permedia2I2CPutBits(I2CBusPtr b, int scl, int sda);
 void Permedia2I2CGetBits(I2CBusPtr b, int *scl, int *sda);
 
-void Permedia2VideoUninit(ScrnInfoPtr pScrn);
-void Permedia2VideoReset(ScrnInfoPtr pScrn);
 void Permedia2VideoInit(ScreenPtr pScreen);
+void Permedia2VideoUninit(ScrnInfoPtr pScrn);
+void Permedia2VideoEnterVT(ScrnInfoPtr pScrn);
+void Permedia2VideoLeaveVT(ScrnInfoPtr pScrn);
 
 void Permedia2vOutIndReg(ScrnInfoPtr pScrn,
 		   CARD32, unsigned char mask, unsigned char data);

@@ -1,3 +1,9 @@
+XFree86 4.0d (14 June 2000)
+ 278. xf86cfg fixes (#3983, Paulo Cesar Pereira de Andrade).
+ 277. Add SilkenMouse support to the s3virge driver (#3982, Kevin Brosius).
+ 276. Update Xv support in the glint driver and add the XvPutImage function
+      for the Permedia 2 (#3926, Michael Schimek).
+
 XFree86 4.0c (13 June 2000)
  275. Doc update for the chips driver (#3981, David Bateman).
  274. Fix some problems building with the SDK (#3981, David Bateman).
@@ -10550,4 +10556,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1181 2000/06/14 00:16:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1182 2000/06/14 01:43:48 dawes Exp $
