@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.2 2002/12/10 01:27:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.3 2002/12/12 17:55:35 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -613,13 +613,13 @@ I830SetupImageVideo(ScreenPtr pScreen)
       break;
    }
 
-   /* Initialise pPriv->refreshOK */
-   I830VideoSwitchModeAfter(pScrn, pScrn->currentMode);
-
    /* gotta uninit this someplace */
    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0);
 
    pI830->adaptor = adapt;
+
+   /* Initialise pPriv->refreshOK */
+   I830VideoSwitchModeAfter(pScrn, pScrn->currentMode);
 
    pI830->BlockHandler = pScreen->BlockHandler;
    pScreen->BlockHandler = I830BlockHandler;
@@ -1808,6 +1808,10 @@ I830VideoSwitchModeAfter(ScrnInfoPtr pScrn, DisplayModePtr mode)
    pPriv = GET_PORT_PRIVATE(pScrn);
    if (!pPriv)
       return;
+
+   /* If this isn't initialised, assume 60Hz. */
+   if (mode->VRefresh == 0)
+      mode->VRefresh = 60;
 
    pixrate = (mode->HDisplay * mode->VDisplay * mode->VRefresh) / 1000000;
    pPriv->refreshOK = (pixrate <= pPriv->maxRate);
