@@ -10,6 +10,7 @@
  */
 
 XCOMM $XConsortium: Library.tmpl,v 1.34 95/06/16 17:44:51 gildea Exp $
+XCOMM $XFree86$
 
 #ifndef LibraryCplusplusOptions
 #if DoSharedLib && defined(SharedLibraryCplusplusOptions)
@@ -240,7 +241,7 @@ MAKESTRS = $(CONFIGSRC)/util/makestrs					@@\
 $(MAKESTRS): $(MAKESTRS).c						@@\
 	cd $(CONFIGSRC)/util && make makestrs				@@\
 									@@\
-files: $(MAKESTRS) source depends $(ICONFIGFILES)			@@\
+files: $(MAKESTRS) source depends 					@@\
 	RemoveFiles(files)						@@\
 	RunProgram(MAKESTRS,options < source > dest)			@@\
 									@@\

@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl,v 1.227 95/05/05 17:42:07 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.12tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.13 1995/06/17 12:06:42 dawes Exp $
 XCOMM
 
 /*
@@ -224,6 +224,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #else
 #define GnuMallocLibrary /**/
 #endif
+#endif
+#ifndef MallocLibraries
+#define MallocLibraries	GnuMallocLibrary
 #endif
 #ifndef UseMemLeak
 #define UseMemLeak		NO
@@ -912,7 +915,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
       STD_DEFINES = StandardDefines
  EXTRA_LOAD_FLAGS = ExtraLoadFlags
   EXTRA_LDOPTIONS = ExtraLoadOptions
-  EXTRA_LIBRARIES = ExtraLibraries Krb5Libraries
+  EXTRA_LIBRARIES = MallocLibraries ExtraLibraries Krb5Libraries
              TAGS = TagsCmd
 #if ConstructMFLAGS
            MFLAGS = -$(MAKEFLAGS)

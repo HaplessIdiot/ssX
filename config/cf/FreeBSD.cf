@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.4 95/01/05 19:39:23 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.26 1995/04/09 13:39:12 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.27 1995/06/14 09:21:31 dawes Exp $
 
 #define OSName            FreeBSD 2.0.5
 #define OSVendor          /**/
@@ -46,11 +46,10 @@ XCOMM operating system:  OSName
 #define DefaultCCOptions	-ansi -pedantic -Dasm=__asm
 #endif
 #ifndef ExtraLibraries
-#if OSMajorVersion == 1
-#define ExtraLibraries		/* -lmalloc */
-#else
-#define ExtraLibraries		/* -lgnumalloc */
+#define ExtraLibraries		/**/
 #endif
+#ifndef GnuMallocLibrary
+#define GnuMallocLibrary	-lgnumalloc
 #endif
 
 #ifdef InstallCmd
