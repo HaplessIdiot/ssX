@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xtrap/xtrapout.c,v 1.1 2001/11/02 23:29:34 dawes Exp $ */
 /*
  * @DEC_COPYRIGHT@
  */
@@ -94,6 +94,7 @@ SOFTWARE.
 #include <signal.h>
 #include <X11/keysym.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "XEKeybCtrl.h"
 

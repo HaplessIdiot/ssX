@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xtrap/xtrapchar.c,v 1.1 2001/11/02 23:29:34 dawes Exp $ */
+/* $XFree86: xc/programs/xtrap/xtrapchar.c,v 1.2 2001/11/19 15:33:41 tsi Exp $ */
 /*
  * @DEC_COPYRIGHT@
  */
@@ -79,6 +79,7 @@ SOFTWARE.
 **--
 */
 #include <unistd.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <X11/extensions/xtraplib.h>
 #include <X11/extensions/xtraplibp.h>
