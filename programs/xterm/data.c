@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.c,v 1.12 95/04/05 19:58:47 kaleb Exp $
- *	$XFree86: xc/programs/xterm/data.c,v 3.18 2000/02/08 17:19:33 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.c,v 3.19 2000/02/10 18:57:38 dawes Exp $
  */
 
 /*
@@ -25,10 +25,6 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
-#ifdef HAVE_CONFIG_H
-#include <xtermcfg.h>
-#endif
 
 #include <ptyx.h>		/* gets Xt stuff, too */
 #include <data.h>
@@ -68,12 +64,12 @@ Boolean zIconBeep_flagged; /* True if the icon name has been changed */
 #endif /* OPT_ZICONBEEP */
 
 #if OPT_SAME_NAME
-Boolean sameName;            /* Don't change the title or icon name if it
+Boolean sameName;	/* Don't change the title or icon name if it
 			is the same.  This prevents flicker on the screen at
 			the cost of an extra request to the server */
 #endif
 
-int am_slave = 0;	/* set to 1 if running as a slave process */
+int am_slave = -1;	/* set to file-descriptor if we're a slave process */
 int max_plus1;
 #ifdef VMS
 int Select_mask;

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/112 1996/11/29 10:34:07 swick $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.53 2000/06/14 00:16:19 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.54 2000/08/25 21:51:12 dawes Exp $
  */
 
 /*
@@ -1974,23 +1974,6 @@ xtermSetenv (register char *var, register char *value)
 	(void) strcpy (environ [envindex], var);
 	strcat (environ [envindex], value);
 	environ [++envindex] = NULL;
-}
-
-/*
- * returns a pointer to the first occurrence of s2 in s1,
- * or NULL if there are none.
- */
-char *strindex ( register char *s1, register char *s2)
-{
-	register char	*s3;
-	size_t s2len = strlen (s2);
-
-	while ((s3=strchr(s1, *s2)) != NULL) {
-		if (strncmp(s3, s2, s2len) == 0)
-			return (s3);
-		s1 = ++s3;
-	}
-	return (NULL);
 }
 
 /*ARGSUSED*/

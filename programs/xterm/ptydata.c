@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/ptydata.c,v 1.11 2000/02/08 17:19:40 dawes Exp $
+ * $XFree86: xc/programs/xterm/ptydata.c,v 1.12 2000/06/13 02:28:40 dawes Exp $
  */
 
 /************************************************************
@@ -133,6 +133,10 @@ int getPtyData(TScreen *screen, fd_set *select_mask, PtyData *data)
 			    } else {
 			      screen->utf_char <<= 6;
 			      screen->utf_char |= (c & 0x3f);
+			    }
+			    if ((screen->utf_char >= 0xd800 && screen->utf_char <= 0xdfff) ||
+				(screen->utf_char == 0xfffe) || (screen->utf_char == 0xffff)) {
+			      screen->utf_char = UCS_REPL;
 			    }
 			    screen->utf_count--;
 			    if (screen->utf_count == 0)

@@ -1,3 +1,6 @@
+XFree86 4.0.1d (22 September 2000)
+ 704. Xterm patch #146 (#4144, Thomas Dickey).
+ 703. Xterm patch #145 (#4140, Thomas Dickey).
  702. Fix 32bpp on the Permedia3 (Sven Luther).
  701. Fix to xterm InsertChar() to handle cases where cur_col + n
       ends up past the end of the line (Andreas Schwab).
@@ -24,8 +27,6 @@
  594. Enlarge the i810 pixmap cache and have the YUV overlay use that memory 
       rather than allocate dedicated memory for overlay data (Mark Vojkovich).
  593. Add/fix support for the Rage 128 Mobility chips (M3/M4) (Kevin Martin).
-
-XFree86 4.0.1d (8 September 2000)
  592. Fix RegisterResources for multiple heads in glint driver 
       (#4143, Berend Ozceri).
  591. Update Permedia3's hw cursor to match the Permedia2v's they are
@@ -11150,4 +11151,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1314 2000/09/19 12:46:09 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1315 2000/09/19 14:12:27 alanh Exp $
