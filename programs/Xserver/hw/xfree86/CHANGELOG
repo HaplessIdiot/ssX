@@ -1,4 +1,6 @@
 XFree86 4.0.99.4 (xx May 2001)
+ 505. Add Croatian keyboard for xkbcomp from Slovenian keyboard layout
+      (#A.405, Vlatko Kosturjak).
  504. Fix XvQueryAdaptors when there is no adaptors found 
       (#A.394, Jamie Strachan).
  503. Remove a stray INCLUDES in Xmuu/Imakefile when snprintf isn't used.
@@ -13208,4 +13210,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1763 2001/05/11 08:16:55 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1764 2001/05/11 08:23:22 alanh Exp $
