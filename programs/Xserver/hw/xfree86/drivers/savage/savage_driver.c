@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.22 2001/08/09 19:14:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.23 2001/10/01 13:44:09 eich Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -80,10 +80,10 @@ extern ScrnInfoPtr gpScrn;
 #define iabs(a)	((int)(a)>0?(a):(-(a)))
 
 #define DRIVER_NAME	"savage"
-#define DRIVER_VERSION	"1.1.19"
+#define DRIVER_VERSION	"1.1.20"
 #define VERSION_MAJOR	1
 #define VERSION_MINOR	1
-#define PATCHLEVEL	19
+#define PATCHLEVEL	20
 #define SAVAGE_VERSION	((VERSION_MAJOR << 24) | \
 			 (VERSION_MINOR << 16) | \
 			 PATCHLEVEL)
@@ -121,9 +121,17 @@ static SymTabRec SavageChips[] = {
     { PCI_CHIP_SAVAGE_IX,	"Savage/IX" },
     { PCI_CHIP_PROSAVAGE_PM,	"ProSavage PM133" },
     { PCI_CHIP_PROSAVAGE_KM,	"ProSavage KM133" },
-    /* Twister is a code name; hope I get the real name soon. */
-    { PCI_CHIP_S3TWISTER_P,	"Twister" },
-    { PCI_CHIP_S3TWISTER_K,	"TwisterK" },
+    { PCI_CHIP_S3TWISTER_P,	"ProSavage PN133" },
+    { PCI_CHIP_S3TWISTER_K,	"ProSavage KN133" },
+    { PCI_CHIP_SUPSAV_MX128,	"SuperSavage/MX 128" },
+    { PCI_CHIP_SUPSAV_MX64,	"SuperSavage/MX 64" },
+    { PCI_CHIP_SUPSAV_MX64C,	"SuperSavage/MX 64C" },
+    { PCI_CHIP_SUPSAV_IX128SDR,	"SuperSavage/IX 128" },
+    { PCI_CHIP_SUPSAV_IX128DDR,	"SuperSavage/IX 128" },
+    { PCI_CHIP_SUPSAV_IX64SDR,	"SuperSavage/IX 64" },
+    { PCI_CHIP_SUPSAV_IX64DDR,	"SuperSavage/IX 64" },
+    { PCI_CHIP_SUPSAV_IXCSDR,	"SuperSavage/IXC 64" },
+    { PCI_CHIP_SUPSAV_IXCDDR,	"SuperSavage/IXC 64" },
     { -1,			NULL }
 };
 
@@ -132,7 +140,8 @@ static SymTabRec SavageChipsets[] = {
     { S3_SAVAGE4,	"Savage4" },
     { S3_SAVAGE2000,	"Savage2000" },
     { S3_SAVAGE_MX,	"MobileSavage" },
-    { S3_PROSAVAGE,	"ProSavage/Twister" },
+    { S3_PROSAVAGE,	"ProSavage" },
+    { S3_SUPERSAVAGE,   "SuperSavage" },
     { -1,		NULL }
 };
 
@@ -151,6 +160,15 @@ static PciChipsets SavagePciChipsets[] = {
     { S3_PROSAVAGE,	PCI_CHIP_PROSAVAGE_KM,	RES_SHARED_VGA },
     { S3_PROSAVAGE,	PCI_CHIP_S3TWISTER_P,	RES_SHARED_VGA },
     { S3_PROSAVAGE,	PCI_CHIP_S3TWISTER_K,	RES_SHARED_VGA },
+    { S3_SUPERSAVAGE,	PCI_CHIP_SUPSAV_MX128,	RES_SHARED_VGA },
+    { S3_SUPERSAVAGE,	PCI_CHIP_SUPSAV_MX64,	RES_SHARED_VGA },
+    { S3_SUPERSAVAGE,	PCI_CHIP_SUPSAV_MX64C,	RES_SHARED_VGA },
+    { S3_SUPERSAVAGE,	PCI_CHIP_SUPSAV_IX128SDR,	RES_SHARED_VGA },
+    { S3_SUPERSAVAGE,	PCI_CHIP_SUPSAV_IX128DDR,	RES_SHARED_VGA },
+    { S3_SUPERSAVAGE,	PCI_CHIP_SUPSAV_IX64SDR,	RES_SHARED_VGA },
+    { S3_SUPERSAVAGE,	PCI_CHIP_SUPSAV_IX64DDR,	RES_SHARED_VGA },
+    { S3_SUPERSAVAGE,	PCI_CHIP_SUPSAV_IXCSDR,	RES_SHARED_VGA },
+    { S3_SUPERSAVAGE,	PCI_CHIP_SUPSAV_IXCDDR,	RES_SHARED_VGA },
     { -1,		-1,			RES_UNDEFINED }
 };
 
@@ -168,7 +186,8 @@ typedef enum {
     OPTION_SHADOW_FB,
     OPTION_ROTATE,
     OPTION_USEBIOS,
-    OPTION_SHADOW_STATUS
+    OPTION_SHADOW_STATUS,
+    OPTION_VIDEORAM
 } SavageOpts;
 
 
@@ -182,6 +201,7 @@ static const OptionInfoRec SavageOptions[] =
     { OPTION_USEBIOS,	"UseBIOS",	OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_LCDCLOCK,	"LCDClock",	OPTV_FREQ,    {0}, FALSE },
     { OPTION_SHADOW_STATUS, "ShadowStatus", OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_VIDEORAM,  "VideoRAM",     OPTV_INTEGER, {0}, FALSE },
     { -1,		NULL,		OPTV_NONE,    {0}, FALSE }
 };
 
@@ -231,6 +251,8 @@ static const char *vbeSymbols[] = {
 static const char *vbeOptSymbols[] = {
     "vbeModeInit",
     "VBESetVBEMode",
+    "VBEGetVBEInfo",
+    "VBEFreeVBEInfo",
     NULL
 };
 
@@ -841,6 +863,13 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "%ssing video BIOS to set modes\n",
         psav->UseBIOS ? "U" : "Not u" );
 
+    pScrn->videoRam = 0;
+    if( xf86GetOptValInteger(psav->Options, OPTION_VIDEORAM, &pScrn->videoRam ) )
+    {
+	xf86DrvMsg( pScrn->scrnIndex, X_CONFIG,
+	            "Option: VideoRAM %dkB\n", pScrn->videoRam );
+    }
+
     psav->LCDClock = 0.0;
     if( xf86GetOptValFreq( psav->Options, OPTION_LCDCLOCK, OPTUNITS_MHZ, &psav->LCDClock ) )
 	xf86DrvMsg( pScrn->scrnIndex, X_CONFIG, 
@@ -929,6 +958,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
         vbeFree(psav->pVbe);
 	return FALSE;
     }
+
     vgaHWGetIOBase(hwp);
     vgaIOBase = hwp->IOBase;
     vgaCRIndex = vgaIOBase + 4;
@@ -973,11 +1003,23 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     /* Compute the amount of video memory and offscreen memory. */
 
     psav->MemOffScreen = 0;
+
+    if( psav->pVbe )
+    {
+        /* If VBE is available, it is the best judge of onboard memory. */
+
+	VbeInfoBlock* vib;
+
+	vib = VBEGetVBEInfo( psav->pVbe );
+	pScrn->videoRam = vib->TotalMemory * 64;
+	VBEFreeVBEInfo( vib );
+    }
+
     if (!pScrn->videoRam) {
 	static unsigned char RamSavage3D[] = { 8, 4, 4, 2 };
 	static unsigned char RamSavage4[] =  { 2, 4, 8, 12, 16, 32, 64, 32 };
 	static unsigned char RamSavageMX[] = { 2, 8, 4, 16, 8, 16, 4, 16 };
-	static unsigned char RamSavageNB[] = { 0, 2, 4, 8, 16, 32, 2, 2 };
+	static unsigned char RamSavageNB[] = { 0, 2, 4, 8, 16, 32, 16, 2 };
 
 	switch( psav->Chipset ) {
 	case S3_SAVAGE3D:
@@ -1004,6 +1046,14 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	case S3_SAVAGE_MX:
 	    pScrn->videoRam = RamSavageMX[ (config1 & 0x0E) >> 1 ] * 1024;
 	    break;
+
+	case S3_SUPERSAVAGE:
+	    vbeFree(psav->pVbe);
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		    "Cannot determine video RAM for SuperSavage chips.\n");
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		    "Please set Option \"VideoRAM\" \"xxxxx\" in XF86Config.\n");
+	    return FALSE;
 
 	case S3_PROSAVAGE:
 	    pScrn->videoRam = RamSavageNB[ (config1 & 0xE0) >> 5 ] * 1024;
@@ -1094,6 +1144,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
 	case S3_SAVAGE4:
 	case S3_PROSAVAGE:
+	case S3_SUPERSAVAGE:
 	    psav->WaitQueue	= WaitQueue4;
 	    psav->WaitIdle	= WaitIdle4;
 	    psav->WaitIdleEmpty	= WaitIdleEmpty4;
@@ -1127,17 +1178,15 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	       xf86SetDDCproperties(pScrn,pMon);
 	    else 
 #endif
-	    {
-		if (!SavageDDC1(pScrn->scrnIndex)) {
-		    if ( xf86LoadSubModule(pScrn, "i2c") ) {
-			xf86LoaderReqSymLists(i2cSymbols,NULL);
-			if (SavageI2CInit(pScrn)) {
-			    CARD32 temp = (INREG(DDC_REG));
-			    OUTREG(DDC_REG,(temp | 0x13));
-			    xf86SetDDCproperties(pScrn,xf86PrintEDID(
-				xf86DoEDID_DDC2(pScrn->scrnIndex,psav->I2C)));
-			    OUTREG(DDC_REG,temp);
-			}
+	    if (!SavageDDC1(pScrn->scrnIndex)) {
+		if ( xf86LoadSubModule(pScrn, "i2c") ) {
+		    xf86LoaderReqSymLists(i2cSymbols,NULL);
+		    if (SavageI2CInit(pScrn)) {
+			CARD32 temp = (INREG(DDC_REG));
+			OUTREG(DDC_REG,(temp | 0x13));
+			xf86SetDDCproperties(pScrn,xf86PrintEDID(
+			    xf86DoEDID_DDC2(pScrn->scrnIndex,psav->I2C)));
+			OUTREG(DDC_REG,temp);
 		    }
 		}
 	    }
@@ -1191,7 +1240,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Check LCD panel information */
 
-    if( psav->Chipset == S3_SAVAGE_MX )
+    if( S3_SAVAGE_MOBILE_SERIES(psav->Chipset) )
     {
 	unsigned char cr6b = hwp->readCrtc( hwp, 0x6b );
 
@@ -1543,7 +1592,7 @@ static void SavageSave(ScrnInfoPtr pScrn)
 
     /* Save flat panel expansion regsters. */
 
-    if( psav->Chipset == S3_SAVAGE_MX ) {
+    if( S3_SAVAGE_MOBILE_SERIES(psav->Chipset) ) {
 	int i;
 	for( i = 0; i < 8; i++ ) {
 	    VGAOUT8(0x3c4, 0x54+i);
@@ -1559,7 +1608,7 @@ static void SavageSave(ScrnInfoPtr pScrn)
     VGAOUT8(vgaCRReg, cr3a | 0x80);
 
     /* now save MIU regs */
-    if( psav->Chipset != S3_SAVAGE_MX ) {
+    if( ! S3_SAVAGE_MOBILE_SERIES(psav->Chipset) ) {
 	save->MMPR0 = INREG(FIFO_CONTROL_REG);
 	save->MMPR1 = INREG(MIU_CONTROL_REG);
 	save->MMPR2 = INREG(STREAMS_TIMEOUT_REG);
@@ -1656,7 +1705,7 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 
 	/* Patch CR79.  These values are magical. */
 
-	if( psav->Chipset != S3_SAVAGE_MX )
+	if( !S3_SAVAGE_MOBILE_SERIES(psav->Chipset) )
 	{
 	    VGAOUT8(vgaCRIndex, 0x6d);
 	    cr6d = VGAIN8(vgaCRReg);
@@ -1703,7 +1752,7 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 	}
 
         if( (psav->Chipset != S3_SAVAGE2000) && 
-	    (psav->Chipset != S3_SAVAGE_MX) )
+	    !S3_SAVAGE_MOBILE_SERIES(psav->Chipset) )
 	    VGAOUT16(vgaCRIndex, (cr79 << 8) | 0x79);
 
 	/* Make sure 16-bit memory access is enabled. */
@@ -1812,7 +1861,7 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
     VGAOUT8(0x3c5, restore->SR15);
 
     /* Restore flat panel expansion regsters. */
-    if( psav->Chipset == S3_SAVAGE_MX ) {
+    if( S3_SAVAGE_MOBILE_SERIES(psav->Chipset) ) {
 	int i;
 	for( i = 0; i < 8; i++ ) {
 	    VGAOUT8(0x3c4, 0x54+i);
@@ -1955,7 +2004,7 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
     if (Entering)
 	SavageGEReset(pScrn,0,__LINE__,__FILE__);
 
-    if( psav->Chipset != S3_SAVAGE_MX )
+    if( !S3_SAVAGE_MOBILE_SERIES(psav->Chipset) )
     {
 	VerticalRetraceWait();
 	OUTREG(FIFO_CONTROL_REG, restore->MMPR0);
@@ -2117,7 +2166,7 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
 
     pEnt = xf86GetEntityInfo(pScrn->entityList[0]); 
     psav->pVbe = VBEInit(NULL, pEnt->index);
-
+ 
     SavageEnableMMIO(pScrn);
 
     if (!SavageMapFB(pScrn))
@@ -2404,7 +2453,7 @@ static Bool SavageModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	break;
     case 15:
 	if( 
-	    (psav->Chipset == S3_SAVAGE_MX) ||
+	    S3_SAVAGE_MOBILE_SERIES(psav->Chipset) ||
 	    ((psav->Chipset == S3_SAVAGE2000) && (dclk >= 230000))
 	)
 	    new->CR67 = 0x30;	/* 15bpp, 2 pixel/clock */
@@ -2413,7 +2462,7 @@ static Bool SavageModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	break;
     case 16:
 	if( 
-	    (psav->Chipset == S3_SAVAGE_MX) ||
+	    S3_SAVAGE_MOBILE_SERIES(psav->Chipset) ||
 	    ((psav->Chipset == S3_SAVAGE2000) && (dclk >= 230000))
 	)
 	    new->CR67 = 0x50;	/* 16bpp, 2 pixel/clock */
@@ -2622,7 +2671,7 @@ static Bool SavageModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	else
 	    new->CR50 |= 0xc1;	/* Use GBD */
 
-	if( psav->Chipset == S3_SAVAGE_MX )
+	if( S3_SAVAGE_MOBILE_SERIES(psav->Chipset) )
 	    new->CR33 = 0x00;
 	else
 	    new->CR33 = 0x08;
@@ -2924,7 +2973,7 @@ void SavageGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
     } else
 	psav->WaitIdleEmpty(psav);
 
-    if (from_timeout && (psav->Chipset != S3_SAVAGE_MX) ) {
+    if (from_timeout && !S3_SAVAGE_MOBILE_SERIES(psav->Chipset) ) {
 	fifo_control = INREG(FIFO_CONTROL_REG);
 	miu_control = INREG(MIU_CONTROL_REG);
 	streams_timeout = INREG(STREAMS_TIMEOUT_REG);
@@ -2953,6 +3002,7 @@ void SavageGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
 	      break;
 	    case S3_SAVAGE4:
 	    case S3_PROSAVAGE:
+	    case S3_SUPERSAVAGE:
 	      success = (ALT_STATUS_WORD0 & 0x0081ffff) == 0x00800000;
 	      break;
 	    case S3_SAVAGE2000:
@@ -2970,7 +3020,7 @@ void SavageGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
 
     /* At this point, the FIFO is empty and the engine is idle. */
 
-    if (from_timeout && (psav->Chipset != S3_SAVAGE_MX) ) {
+    if (from_timeout && !S3_SAVAGE_MOBILE_SERIES(psav->Chipset) ) {
 	OUTREG(FIFO_CONTROL_REG, fifo_control);
 	OUTREG(MIU_CONTROL_REG, miu_control);
 	OUTREG(STREAMS_TIMEOUT_REG, streams_timeout);

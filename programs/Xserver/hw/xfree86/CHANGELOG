@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 430. Bug fixes and updates for Savage driver (#5001, Tim Roberts).
  429. Add luit (#4914, Juliusz Chroboczek).
  428. Fix a typo in fontenc that prevents building with no dependency on
       libfont (#4913, Juliusz Chroboczek).
@@ -14076,4 +14077,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2012 2001/11/02 02:47:23 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2013 2001/11/02 03:06:41 dawes Exp $
