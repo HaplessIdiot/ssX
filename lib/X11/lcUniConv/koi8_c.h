@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcUniConv/koi8_c.h,v 1.1 2000/10/27 20:26:08 dawes Exp $ */
 
 /*
  * KOI8-C
@@ -32,13 +32,13 @@ static const unsigned short koi8_c_2uni[128] = {
 };
 
 static int
-koi8_c_mbtowc (conv_t conv, wchar_t *pwc, const unsigned char *s, int n)
+koi8_c_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, int n)
 {
   unsigned char c = *s;
   if (c < 0x80)
-    *pwc = (wchar_t) c;
+    *pwc = (ucs4_t) c;
   else
-    *pwc = (wchar_t) koi8_c_2uni[c-0x80];
+    *pwc = (ucs4_t) koi8_c_2uni[c-0x80];
   return 1;
 }
 
@@ -82,7 +82,7 @@ static const unsigned char koi8_c_page22[1] = {
 };
 
 static int
-koi8_c_wctomb (conv_t conv, unsigned char *r, wchar_t wc, int n)
+koi8_c_wctomb (conv_t conv, unsigned char *r, ucs4_t wc, int n)
 {
   unsigned char c = 0;
   if (wc < 0x0080) {

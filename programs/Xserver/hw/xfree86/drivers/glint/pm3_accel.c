@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.5 2000/10/26 17:57:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.6 2000/11/14 17:32:59 dawes Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -749,72 +749,6 @@ static void Permedia3SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     TRACE_EXIT("Permedia3SubsequentCPUToScreenColorExpandFill");
 }
 
-/* Direct Fifo BItmap Writes */
-
-/* Be carefull, if we use the gamma, the fifo is only 32 entries deep. */
-#define BitmapWriteRange 120
-#define BitmapWriteBase_Fixed ((CARD32 *)(pGlint->IOBase + BitMaskPattern))
-#define BitmapWriteBase ((CARD32 *)(pGlint->IOBase + OutputFIFO + 4))
-
-static void
-Permedia3WriteBitmap(ScrnInfoPtr pScrn,
-    int x, int y, int w, int h,
-    unsigned char *src,
-    int srcwidth, int skipleft,
-    int fg, int bg, int rop,
-    unsigned int planemask
-)
-{
-    int dwords;
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    TRACE_ENTER("Permedia3WriteBitmap");
-
-    w += skipleft;
-    x -= skipleft;
-    dwords = (w + 31) >>5;
-
-    /* width of the stuff to copy in 32 bit words */
-    Permedia3SetupForCPUToScreenColorExpandFill(pScrn, fg, bg, rop, planemask);
-    Permedia3SubsequentCPUToScreenColorExpandFill(pScrn, x, y, w, h, skipleft);
-
-    if (dwords > BitmapWriteRange) {
-	while(h--) {
-	    XAAMoveDWORDS_FixedBase(BitmapWriteBase_Fixed,
-		(CARD32*)src, dwords);
-	    src += srcwidth;
-	}
-    } else {
-	/* the src is exatcly as wide as the target rectangle. We copy all
-	 * of it, so no need to separate stuff by scanline */
-	if(srcwidth == (dwords << 5)) {
-	    /* decrement contains the number of lines that can be
-	     * put in the fifo */
- 	    int decrement = BitmapWriteRange/dwords;
-
-	    while(h > decrement) {
-		GLINT_WAIT(dwords * decrement);
-       		GLINT_WRITE_REG((((dwords * decrement)-1) << 16) | 0xd,
-		    OutputFIFO);
-		XAAMoveDWORDS(BitmapWriteBase, (CARD32*)src, dwords * decrement);
-		src += (srcwidth * decrement);
-		h -= decrement;
-	    }
-	    if(h) {
-		GLINT_WAIT(dwords * h);
-       		GLINT_WRITE_REG((((dwords * h)-1) << 16) | 0xd, OutputFIFO);
-		XAAMoveDWORDS(BitmapWriteBase, (CARD32*)src, dwords * h);
-	    }
-	} else {
-	    while(h--) {
-		GLINT_WAIT(dwords);
-       		GLINT_WRITE_REG(((dwords-1) << 16) | 0xd, OutputFIFO);
-		XAAMoveDWORDS(BitmapWriteBase, (CARD32*)src, dwords);
-		src += srcwidth;
-	    }
-	}
-    }
-    TRACE_EXIT("Permedia3WriteBitmap");
-}
 
 /* Images Writes */
 static void Permedia3SetupForImageWrite(ScrnInfoPtr pScrn, int rop,
@@ -857,12 +791,79 @@ static void Permedia3SubsequentImageWriteRect(ScrnInfoPtr pScrn,
     TRACE_EXIT("Permedia3SubsequentImageWrite");
 }
 
+
+/* Defines for Direct Fifo access */
+
+#define WriteRange 120
+#define PciRetryWriteRange 1023
+#define WriteBase_Fixed ((CARD32 *)(pGlint->IOBase + PM3FBSourceData))
+#define WriteBase ((CARD32 *)(pGlint->IOBase + OutputFIFO + 4))
+
+/* Direct Fifo Bitmap Writes */
+
+static void
+Permedia3WriteBitmap(ScrnInfoPtr pScrn,
+    int x, int y, int w, int h,
+    unsigned char *src,
+    int srcwidth, int skipleft,
+    int fg, int bg, int rop,
+    unsigned int planemask
+)
+{
+    int dwords;
+    int ApertureRange;
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    TRACE_ENTER("Permedia3WriteBitmap");
+
+    w += skipleft;
+    x -= skipleft;
+    dwords = (w + 31) >>5;
+    if (pGlint->UsePCIRetry) ApertureRange = PciRetryWriteRange;
+    else ApertureRange = WriteRange;
+
+    /* width of the stuff to copy in 32 bit words */
+    Permedia3SetupForCPUToScreenColorExpandFill(pScrn, fg, bg, rop, planemask);
+    Permedia3SubsequentCPUToScreenColorExpandFill(pScrn, x, y, w, h, skipleft);
+
+    if (dwords > ApertureRange) {
+	while(h--) {
+	    XAAMoveDWORDS_FixedBase(WriteBase_Fixed, (CARD32*)src, dwords);
+	    src += srcwidth;
+	}
+    } else {
+	/* the src is exatcly as wide as the target rectangle. We copy all
+	 * of it, so no need to separate stuff by scanline */
+	if(srcwidth == (dwords << 5)) {
+	    /* decrement contains the number of lines that can be
+	     * put in the fifo */
+ 	    int decrement = ApertureRange/dwords;
+
+	    while(h > decrement) {
+		GLINT_WAIT(dwords * decrement);
+       		GLINT_WRITE_REG((((dwords * decrement)-1) << 16) | 0xd,
+		    OutputFIFO);
+		XAAMoveDWORDS(WriteBase, (CARD32*)src, dwords * decrement);
+		src += (srcwidth * decrement);
+		h -= decrement;
+	    }
+	    if(h) {
+		GLINT_WAIT(dwords * h);
+       		GLINT_WRITE_REG((((dwords * h)-1) << 16) | 0xd, OutputFIFO);
+		XAAMoveDWORDS(WriteBase, (CARD32*)src, dwords * h);
+	    }
+	} else {
+	    while(h--) {
+		GLINT_WAIT(dwords);
+       		GLINT_WRITE_REG(((dwords-1) << 16) | 0xd, OutputFIFO);
+		XAAMoveDWORDS(WriteBase, (CARD32*)src, dwords);
+		src += srcwidth;
+	    }
+	}
+    }
+    TRACE_EXIT("Permedia3WriteBitmap");
+}
 /* Direct Fifo Images Writes */
 
-/* Be carefull, if we use the gamma, the fifo is only 32 entries deep. */
-#define ImageWriteRange 120
-#define ImageWriteBase_Fixed ((CARD32 *)(pGlint->IOBase + PM3FBSourceData))
-#define ImageWriteBase ((CARD32 *)(pGlint->IOBase + OutputFIFO + 4))
 static void
 Permedia3WritePixmap(
     ScrnInfoPtr pScrn,
@@ -878,6 +879,7 @@ Permedia3WritePixmap(
     int dwords;
     int skipleft = (long)src & 0x03L;
     int Bpp = bpp >> 3;
+    int ApertureRange;
     GLINTPtr pGlint = GLINTPTR(pScrn);
     TRACE_ENTER("Permedia3WritePixmap");
 
@@ -899,10 +901,12 @@ Permedia3WritePixmap(
 
     /* width of the stuff to copy in 32 bit words */
     dwords = ((w * Bpp) + 3) >> 2;
+    if (pGlint->UsePCIRetry) ApertureRange = PciRetryWriteRange;
+    else ApertureRange = WriteRange;
 
-    if (dwords > ImageWriteRange) {
+    if (dwords > ApertureRange) {
 	while(h--) {
-	    XAAMoveDWORDS_FixedBase(ImageWriteBase_Fixed, (CARD32*)src, dwords);
+	    XAAMoveDWORDS_FixedBase(WriteBase_Fixed, (CARD32*)src, dwords);
 	    src += srcwidth;
 	}
     } else {
@@ -911,26 +915,26 @@ Permedia3WritePixmap(
 	if(srcwidth == (dwords << 2)) {
 	    /* decrement contains the number of lines that can be
 	     * put in the fifo */
- 	    int decrement = ImageWriteRange/dwords;
+ 	    int decrement = ApertureRange/dwords;
 
 	    while(h > decrement) {
 		GLINT_WAIT(dwords * decrement);
        		GLINT_WRITE_REG((((dwords * decrement)-1) << 16) | 0x155,
 		    OutputFIFO);
-		XAAMoveDWORDS(ImageWriteBase, (CARD32*)src, dwords * decrement);
+		XAAMoveDWORDS(WriteBase, (CARD32*)src, dwords * decrement);
 		src += (srcwidth * decrement);
 		h -= decrement;
 	    }
 	    if(h) {
 		GLINT_WAIT(dwords * h);
        		GLINT_WRITE_REG((((dwords * h)-1) << 16) | 0x155, OutputFIFO);
-		XAAMoveDWORDS(ImageWriteBase, (CARD32*)src, dwords * h);
+		XAAMoveDWORDS(WriteBase, (CARD32*)src, dwords * h);
 	    }
 	} else {
 	    while(h--) {
 		GLINT_WAIT(dwords);
        		GLINT_WRITE_REG(((dwords-1) << 16) | 0x155, OutputFIFO);
-		XAAMoveDWORDS(ImageWriteBase, (CARD32*)src, dwords);
+		XAAMoveDWORDS(WriteBase, (CARD32*)src, dwords);
 		src += srcwidth;
 	    }
 	}

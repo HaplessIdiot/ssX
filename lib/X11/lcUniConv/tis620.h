@@ -25,11 +25,11 @@ static const unsigned short tis620_2uni[96] = {
 };
 
 static int
-tis620_mbtowc (conv_t conv, wchar_t *pwc, const unsigned char *s, int n)
+tis620_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, int n)
 {
   unsigned char c = *s;
   if (c < 0x80) {
-    *pwc = (wchar_t) c;
+    *pwc = (ucs4_t) c;
     return 1;
   }
   else if (c < 0xa0) {
@@ -37,7 +37,7 @@ tis620_mbtowc (conv_t conv, wchar_t *pwc, const unsigned char *s, int n)
   else {
     unsigned short wc = tis620_2uni[c-0xa0];
     if (wc != 0xfffd) {
-      *pwc = (wchar_t) wc;
+      *pwc = (ucs4_t) wc;
       return 1;
     }
   }
@@ -60,7 +60,7 @@ static const unsigned char tis620_page0e[96] = {
 };
 
 static int
-tis620_wctomb (conv_t conv, unsigned char *r, wchar_t wc, int n)
+tis620_wctomb (conv_t conv, unsigned char *r, ucs4_t wc, int n)
 {
   unsigned char c = 0;
   if (wc < 0x0080) {

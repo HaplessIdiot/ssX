@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.82 2000/08/25 13:42:15 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.83 2000/11/09 01:35:05 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -629,12 +629,15 @@ TCLIBDIR = TclLibDir
 #define AlternateUsrLibDir YES
 #endif
 #endif
-#ifndef VarLibDir
+#ifndef VarDirectory
 #ifdef ProjectVar
-#define VarLibDir Concat(ProjectVar,/lib)
+#define VarDirectory ProjectVar
 #else
-#define VarLibDir /var/lib
+#define VarDirectory /var
 #endif
+#endif
+#ifndef VarLibDir
+#define VarLibDir $(VARDIR)/lib
 #endif
 
 /*
@@ -728,7 +731,7 @@ TCLIBDIR = TclLibDir
 
 #ifndef LogDirectory
 #if HasVarDirectory
-#define LogDirectory /var/log
+#define LogDirectory $(VARDIR)/log
 #else
 #define LogDirectory /usr/adm
 #endif
@@ -740,7 +743,7 @@ TCLIBDIR = TclLibDir
 
 #ifndef VarRunDirectory
 #if HasVarRun
-#define VarRunDirectory /var/run
+#define VarRunDirectory $(VARDIR)/run
 #endif
 #endif
 
@@ -750,7 +753,7 @@ TCLIBDIR = TclLibDir
 
 #ifndef VarDbDirectory
 #if HasVarDb
-#define VarDbDirectory /var/db
+#define VarDbDirectory $(VARDIR)/db
 #endif
 #endif
 
@@ -1361,6 +1364,7 @@ TCLIBDIR = TclLibDir
 
           INCROOT = IncRoot		/* base of where to put header files */
         USRLIBDIR = UsrLibDir		/* nonshared libraries */
+           VARDIR = VarDirectory	/* usually /var */
         VARLIBDIR = VarLibDir		/* xdm runtime files */
   SYSTEMUSRLIBDIR = SystemUsrLibDir	/* system's "/usr/lib" */
   SYSTEMUSRINCDIR = SystemUsrIncDir	/* system's "/usr/include" */

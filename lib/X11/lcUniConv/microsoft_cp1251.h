@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/X11/lcUniConv/microsoft_cp1251.h,v 1.1 2000/10/27 20:26:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUniConv/microsoft_cp1251.h,v 1.2 2000/11/02 19:10:46 dawes Exp $ */
 
 /*
  * MICROSOFT-CP1251
@@ -32,13 +32,13 @@ static const unsigned short microsoft_cp1251_2uni[128] = {
 };
 
 static int
-microsoft_cp1251_mbtowc (conv_t conv, wchar_t *pwc, const unsigned char *s, int n)
+microsoft_cp1251_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, int n)
 {
   unsigned char c = *s;
   if (c < 0x80)
-    *pwc = (wchar_t) c;
+    *pwc = (ucs4_t) c;
   else
-    *pwc = (wchar_t) microsoft_cp1251_2uni[c-0x80];
+    *pwc = (ucs4_t) microsoft_cp1251_2uni[c-0x80];
   return 1;
 }
 
@@ -87,7 +87,7 @@ static const unsigned char microsoft_cp1251_page22[1] = {
 };
 
 static int
-microsoft_cp1251_wctomb (conv_t conv, unsigned char *r, wchar_t wc, int n)
+microsoft_cp1251_wctomb (conv_t conv, unsigned char *r, ucs4_t wc, int n)
 {
   unsigned char c = 0;
   if (wc < 0x0080) {

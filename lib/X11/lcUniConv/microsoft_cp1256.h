@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/X11/lcUniConv/microsoft_cp1256.h,v 1.1 2000/10/27 20:26:09 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUniConv/microsoft_cp1256.h,v 1.2 2000/11/02 19:10:46 dawes Exp $ */
 
 /*
  * MICROSOFT-CP1256
@@ -32,18 +32,18 @@ static const unsigned short microsoft_cp1256_2uni[128] = {
 };
 
 static int
-microsoft_cp1256_mbtowc (conv_t conv, wchar_t *pwc, const unsigned char *s, int n)
+microsoft_cp1256_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, int n)
 {
   unsigned char c = *s;
   if (c >= 0x80) {
     unsigned short wc = microsoft_cp1256_2uni[c-0x80];
     if (wc != 0xfffd) {
-      *pwc = (wchar_t) wc;
+      *pwc = (ucs4_t) wc;
       return 1;
     }
   }
   else {
-    *pwc = (wchar_t) c;
+    *pwc = (ucs4_t) c;
     return 1;
   }
   return RET_ILSEQ;
@@ -102,7 +102,7 @@ static const unsigned char microsoft_cp1256_page20[56] = {
 };
 
 static int
-microsoft_cp1256_wctomb (conv_t conv, unsigned char *r, wchar_t wc, int n)
+microsoft_cp1256_wctomb (conv_t conv, unsigned char *r, ucs4_t wc, int n)
 {
   unsigned char c = 0;
   if (wc < 0x00a0) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/X11/lcUniConv/iso8859_9e.h,v 1.1 2000/10/27 20:26:07 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUniConv/iso8859_9e.h,v 1.2 2000/11/02 19:10:45 dawes Exp $ */
 
 /*
  * ISO-8859-9E
@@ -26,13 +26,13 @@ static const unsigned short iso8859_9e_2uni[96] = {
 };
 
 static int
-iso8859_9e_mbtowc (conv_t conv, wchar_t *pwc, const unsigned char *s, int n)
+iso8859_9e_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, int n)
 {
   unsigned char c = *s;
   if (c >= 0xa0)
-    *pwc = (wchar_t) iso8859_9e_2uni[c-0xa0];
+    *pwc = (ucs4_t) iso8859_9e_2uni[c-0xa0];
   else
-    *pwc = (wchar_t) c;
+    *pwc = (ucs4_t) c;
   return 1;
 }
 
@@ -76,7 +76,7 @@ static const unsigned char iso8859_9e_page01_d[24] = {
 };
   
 static int
-iso8859_9e_wctomb (conv_t conv, unsigned char *r, wchar_t wc, int n)
+iso8859_9e_wctomb (conv_t conv, unsigned char *r, ucs4_t wc, int n)
 {
   unsigned char c = 0;
   if (wc < 0x00a0) {
