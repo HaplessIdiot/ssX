@@ -1,7 +1,7 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86: $ */
+/* $XFree86: xc/include/extensions/XResproto.h,v 1.1 2002/03/04 19:31:35 mvojkovi Exp $ */
 
 #ifndef _XRESPROTO_H
 #define _XRESPROTO_H
@@ -11,9 +11,10 @@
 
 #define XRES_NAME "X-Resource"
 
-#define X_XResQueryVersion          0
-#define X_XResQueryClients          1
-#define X_XResQueryClientResources  2
+#define X_XResQueryVersion            0
+#define X_XResQueryClients            1
+#define X_XResQueryClientResources    2
+#define X_XResQueryClientPixmapBytes  3
 
 typedef struct {
    CARD32 resource_base;
@@ -100,5 +101,30 @@ typedef struct {
    CARD32  pad6 B32;
 } xXResQueryClientResourcesReply;
 #define sz_xXResQueryClientResourcesReply  32
+
+/* XResQueryClientPixmapBytes */
+
+typedef struct _XResQueryClientPixmapBytes {
+   CARD8   reqType;
+   CARD8   XResReqType;
+   CARD16  length B16;
+   CARD32  xid B32;
+} xXResQueryClientPixmapBytesReq;
+#define sz_xXResQueryClientPixmapBytesReq 8
+
+typedef struct {
+   CARD8   type;
+   CARD8   pad1;
+   CARD16  sequenceNumber B16;
+   CARD32  length B32;
+   CARD32  bytes B32;
+   CARD32  bytes_overflow B32;
+   CARD32  pad2 B32;
+   CARD32  pad3 B32;
+   CARD32  pad4 B32;
+   CARD32  pad5 B32;
+} xXResQueryClientPixmapBytesReply;
+#define sz_xXResQueryClientPixmapBytesReply  32
+
 
 #endif /* _XRESPROTO_H */
