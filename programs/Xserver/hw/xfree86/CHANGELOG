@@ -1,3 +1,13 @@
+XFree86 3.1.1Ab (2 June 1995)
+108. Support for LynxOS (Thomas Mueller).
+107. Update LinkKit to make it self-contained regarding X headers
+     (Marc Aurele La France).
+106. Realtek SVGA driver.  It works with the RTG3106, and possibly the
+     RTG3103 and RTG3105 (Peter Trattler).
+105. Enable the s3MCLK option for the S3 805i, and fix some bugs relating to
+     s3MCLK (Harald Koenig).
+104. Fix XF86Config problem when monitor and screen sections are interleaved.
+
 XFree86 3.1.1Aa (1 June 1995)
 103. Fix SiteIConfigFiles settings for the LinkKit (Marc Aurele La France).
 102. Fix gccmakedep problem with .s files.

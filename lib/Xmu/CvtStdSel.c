@@ -1,5 +1,5 @@
 /* $XConsortium: CvtStdSel.c,v 1.29 94/04/17 20:15:57 gildea Exp $ */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.1 1994/05/21 23:51:43 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.2 1994/06/28 12:23:29 dawes Exp $ */
 
 /*
  
@@ -59,6 +59,9 @@ in this Software without prior written authorization from the X Consortium.
 #undef BOOL
 #else
 #ifndef MINIX
+#ifdef Lynx
+#include <sys/types.h>
+#endif
 #include <netdb.h>
 #include <sys/socket.h>
 #else
