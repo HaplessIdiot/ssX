@@ -164,9 +164,11 @@ xf86InitInt10(int entityIndex)
 	if (xf86ReadBIOS(cs, 0, (pointer)cs, V_BIOS_SIZE) < V_BIOS_SIZE)
 	    xf86DrvMsg(screen, X_WARNING,
 		"Unable to retrieve all of segment 0x%06X.\n", cs);
+    
+    if (xf86IsEntityPrimary(entityIndex) 
+	&& !(initPrimary(xf86Screens[screen],entityIndex))) {
+	cs = ((CARD16*)0)[(0x10<<1) + 1];
 
-    if (xf86IsEntityPrimary(entityIndex)) {
-	cs = ((CARD16*)0)[(0x10 <<1) + 1];
 	bios_base = (unsigned char *)(cs << 4);
 
 	if (!int10_check_bios(screen, cs, bios_base)) {
@@ -186,12 +188,38 @@ xf86InitInt10(int entityIndex)
 	pInt->BIOSseg = cs;
 	set_return_trap(pInt);
     } else {
-	if (!mapPciRom(pInt, (unsigned char *)(V_BIOS))) {
-	    xf86DrvMsg(screen, X_ERROR, "Cannot read V_BIOS\n");
+        EntityInfoPtr pEnt = xf86GetEntityInfo(pInt->entityIndex);
+	switch (pEnt->location.type) {
+	case BUS_PCI:
+	    if (!mapPciRom(pInt, (unsigned char *)(V_BIOS))) {
+	        xf86DrvMsg(screen, X_ERROR, "Cannot read V_BIOS\n");
+		goto error3;
+	    }
+	    pInt->BIOSseg = V_BIOS >> 4;
+	    break;
+	case BUS_ISA:
+	    cs = ((CARD16*)0)[(0x10<<1)+1];
+	    bios_base = (unsigned char *)(cs << 4);
+	
+	    if (!int10_check_bios(screen, cs, bios_base)) {
+	        cs = ((CARD16*)0)[(0x42<<1)+1];
+		bios_base = (unsigned char *)(cs << 4);
+		if (!int10_check_bios(screen, cs, bios_base)) {
+		    cs = V_BIOS >> 4;
+		    bios_base = (unsigned char *)(cs << 4);
+		    if (!int10_check_bios(screen, cs, bios_base)) {
+		        xf86DrvMsg(screen,X_ERROR,"No V_BIOS found\n");
+			goto error3;
+		    }
+		}
+	    }
+	    xf86DrvMsg(screen,X_INFO,"Primary V_BIOS segment is: 0x%x\n",cs);
+	    pInt->BIOSseg = cs;
+	    break;
+	default:
 	    goto error3;
 	}
-
-	pInt->BIOSseg = V_BIOS >> 4;
+	xfree(pEnt);
 	pInt->num = 0xe6;
 	reset_int_vect(pInt);
 	set_return_trap(pInt);
@@ -249,6 +277,7 @@ xf86FreeInt10(xf86Int10InfoPtr pInt)
     shmctl(((linuxInt10Priv*)pInt->private)->highMem, IPC_RMID, NULL);
     xfree(((linuxInt10Priv*)pInt->private)->alloc);
     xfree(pInt->private);
+    xfree(pInt->cpuRegs);
     xfree(pInt);
 }
 
@@ -395,6 +424,7 @@ vm86_GP_fault(xf86Int10InfoPtr pInt)
 	case 0x36:      /* SS */              pref_seg=X86_SS; break;
 	case 0x65:      /* GS */              pref_seg=X86_GS; break;
 	case 0x64:      /* FS */              pref_seg=X86_FS; break;
+	case 0xf0:      /* lock */            break;
 	case 0xf2:      /* repnz */
 	case 0xf3:      /* rep */             is_rep=1; break;
 	default: done=1;
@@ -509,7 +539,6 @@ vm86_GP_fault(xf86Int10InfoPtr pInt)
 	    "CPU 0x0f Trap at CS:EIP=0x%4.4x:0x%8.8x\n", X86_CS, X86_EIP);
 	goto op0ferr;
 
-    case 0xf0:                  /* lock */
     default:
 	xf86DrvMsg(pInt->scrnIndex, X_ERROR, "unknown reason for exception\n");
 
