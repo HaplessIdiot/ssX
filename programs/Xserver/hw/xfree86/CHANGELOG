@@ -1,4 +1,6 @@
 XFree86 3.9Pc (27 February 1999)
+2267. Fix for Millennium II hardware cursor-related loss of sync problem
+      that shows up with some revs of the 3026 ramdac (Trey Boudreau).
 2266. Update the setting of the option registers in G-type RAMDAC
       Matrox cards and add "no_ddc" flag (Dirk Hohndel, Michael
       Brown).
@@ -7309,4 +7311,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.692 1999/02/19 21:26:55 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.693 1999/02/24 17:18:20 hohndel Exp $
