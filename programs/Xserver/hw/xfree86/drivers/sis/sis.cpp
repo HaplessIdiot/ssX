@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.cpp,v 1.2 2000/03/20 15:57:58 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.cpp,v 1.3 2000/03/21 19:57:19 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH SIS __drivermansuffix__ "Version 4.0"  "XFree86"
+.TH SIS __drivermansuffix__ "Version 4.0.1"  "XFree86"
 .SH NAME
 sis \- SiS video driver
 .SH SYNOPSIS

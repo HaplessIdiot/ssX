@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.cpp,v 1.2 2000/03/20 15:57:59 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.cpp,v 1.3 2000/03/21 19:57:20 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH V4L __drivermansuffix__ "Version 4.0"  "XFree86"
+.TH V4L __drivermansuffix__ "Version 4.0.1"  "XFree86"
 .SH NAME
 v4l \- Video 4 Linux driver
 .SH SYNOPSIS

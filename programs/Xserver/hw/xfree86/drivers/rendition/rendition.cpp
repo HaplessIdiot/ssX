@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.cpp,v 1.3 2000/03/20 15:57:57 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.cpp,v 1.4 2000/03/21 19:57:17 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH RENDITION __drivermansuffix__ "Version 4.0"  "XFree86"
+.TH RENDITION __drivermansuffix__ "Version 4.0.1"  "XFree86"
 .SH NAME
 rendition \- Rendition video driver
 .SH SYNOPSIS

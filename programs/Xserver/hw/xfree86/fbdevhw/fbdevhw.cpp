@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.2 1999/03/21 07:35:12 dawes Exp $ 
-.TH FBDEVHW __drivermansuffix__ "Version 4.0"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.cpp,v 1.1 1999/04/04 08:46:22 dawes Exp $ 
+.TH FBDEVHW __drivermansuffix__ "Version 4.0.1"  "XFree86"
 .SH NAME
 fbdevhw \- os-specific submodule for framebuffer device access
 .SH DESCRIPTION
