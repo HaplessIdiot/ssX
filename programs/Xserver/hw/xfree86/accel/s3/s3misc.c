@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.50 1996/08/27 03:13:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.51 1996/09/01 04:15:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -191,7 +191,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
       /* s3Port59/s3Port5A need to be checked/initialized
 	 before s3Init() is called the first time */
 
-      if (S3_801_928_SERIES (s3ChipId)) {
+      if (xf86LinearVidMem() && S3_801_928_SERIES (s3ChipId)) {
 	 if (S3_x64_SERIES(s3ChipId)) 
 	    if (s3InfoRec.MemBase != 0) {
 	       if (s3InfoRec.MemBase & 0x3ffffff) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.140 1996/08/26 10:48:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.141 1996/09/01 04:15:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -222,6 +222,7 @@ static SymTabRec s3DacTable[] = {
    { S3_TRIO64_DAC,	"s3_trio64" },
    { S3_TRIO64_DAC,	"s3_trio" },
    { ATT20C409_DAC,	"att20c409" },
+   { SS2410_DAC,	"ss2410" },
    { -1,		"" },
 };
 
@@ -1732,8 +1733,10 @@ s3Probe()
                         switch (inb(0x3C6)) {
                         case 0x44:
                         case 0x82:
+			    break;
                         case 0x8E:
-                            break;
+			    s3RamdacType = SS2410_DAC;		
+			    break;
                         default:
                             xf86dactopel();
                             outb(0x3C6, olddacpel & 0xFB);
@@ -1926,6 +1929,11 @@ s3Probe()
 	    if (s3Bpp > 2)
 	       reason = "an ATT20C490 RAMDAC";
 	    break;
+	 case SS2410_DAC: 
+	    /* ???  This ramdac should do 24 bpp... */
+	    if ( s3InfoRec.depth > 24 ) 
+		reason = "an Diamond SS2410 RAMDAC";
+	    break;
 	 case SC1148x_M2_DAC:
 	    if (s3InfoRec.depth > 15)
 	       reason = "a Sierra 1148{2,3,4} RAMDAC";
@@ -1993,6 +2001,7 @@ s3Probe()
       case ATT20C490_DAC:
       case SC1148x_M2_DAC:
       case SC1148x_M3_DAC:
+      case SS2410_DAC:		/* Just guessing at this based on the 490 */
 	 s3InfoRec.dacSpeed = 110000;
 	 break;
       case SC15025_DAC:
@@ -2796,6 +2805,7 @@ s3Probe()
       /* XXXX What happens for 16bpp and 32bpp?? */
       /* XXXX Include scaling of maxRawClock for 16bpp and 32bpp */
    case ATT20C490_DAC:
+   case SS2410_DAC:	/* ?? Another GUESS! ( based on the 490)  */
    case SC1148x_M2_DAC:
    case SC1148x_M3_DAC:
       s3InfoRec.maxClock = s3InfoRec.dacSpeed;
@@ -2954,6 +2964,7 @@ s3Probe()
 	    }
 	    break;
 	 case ATT20C490_DAC:
+	 case SS2410_DAC:	/* GUESSING!! (based on 490)  */
 	 case SC1148x_M2_DAC:
 	 case SC1148x_M3_DAC:
 	    if (s3Bpp > 1) {
@@ -3412,6 +3423,7 @@ redo_mode_lookup:
 	    }
 	    break;
 	 case ATT20C490_DAC:
+ 	 case SS2410_DAC:    /* just guessing ( based on 490 ) */
 	 case SC1148x_M2_DAC:
 	 case SC1148x_M3_DAC:
 	 case SC15025_DAC:

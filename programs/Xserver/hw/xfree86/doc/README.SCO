@@ -1,5 +1,6 @@
   Information for SCO Users
-  David McCullough (davidm@stallion.com)
+  David McCullough (davidm@stallion.com), J. Kean Johnston
+  (hug@netecom.com)
   14 December 1994
 
   1.  Binary Distribution
@@ -61,8 +62,10 @@
           *X312fnt1.tgz
              75dpi and misc fonts.
 
-          X312fnt2.tgz
-             100dpi and Speedo fonts.
+
+
+     X312fnt2.tgz
+        100dpi and Speedo fonts.
 
      *X312inc.tgz
         The X11 include files.
@@ -123,12 +126,15 @@
         document, to see if there are any system requirements you have
         to make for the server to operate correctly.
 
+
+
+
+
   2.  Source Distribution
 
   The SCO port comes as part of the standard XFree86 distribution.
   Consult the XFree86 README for more information on the location of
   sources.
-
 
   3.  Before Running XFree86
 
@@ -196,6 +202,7 @@
      o  you may have to install streams into the kernel with ``mkdev
         streams'' Check the SCO Manuals for more information on this.
 
+
      o  you may have to configure some devices in /dev,  check in the
         "Trouble Shooting" section of this document for the entry which
         comments on ``/dev/spx'' and ``Xsco''.
@@ -254,6 +261,7 @@
 
 
      To your startup script (ie., .startxrc, .xinitrc, ...).  This will
+
      turn the screen saver off and prevent the bug from occurring.
 
   4.  Switching Consoles
@@ -261,7 +269,6 @@
   XFree86 uses similar console switching keys as the SCO R4 and R5
   servers.  That is, Ctrl-PrntScr takes you to the next console along
   from the one X is running on.  If this is the last console it will
-
   take you to console 1.  Those interested in modifying the console
   switching should look in
   xc/programs/Xserver/hw/xfree86/common/xf86Events.c.
@@ -320,13 +327,12 @@
 
   Make sure you do the fixincludes for gcc.
 
+
   In order to compile the current XFree86 version for SCO you will have
   to create the following header files in the appropriate places.
 
 
      1. create a /usr/include/sys/uio.h containing the following:
-
-
 
             #ifndef _XFREE86_UIO_
             #define _XFREE86_UIO_ 1
@@ -388,8 +394,7 @@
   Compiling gcc2.5.8 is accomplished after doing the following.
 
 
-           ./configure i386-*-sco3.2v4.2
-
+      ./configure i386-*-sco3.2v4.2
 
 
 
@@ -455,8 +460,8 @@
 
   should become,
 
-
            #define GCC_STDC_VALUE 0
+
 
 
 
@@ -479,21 +484,23 @@
   There is no reason to modify gcc in any way.  It compiles cleanly on
   Open Server 5.
 
-  Build the system using
 
-          make World
+     1. Check the paragraph on site.def/xf86site.def in the compiling
+        for 3.2.2 section.
+
+     2. Add a -DSCO325 to the BOOTSTRAPCFLAGS when you do the make
+        World.
+
+                make BOOTSTRAPCFLAGS="-DSYSV -Di386 -DSCO -DSCO324 -DSCO325" World
 
 
 
-  Under Open Server 5 things are very different to previous versions of
-  SCO UNIX.
+     Under Open Server 5 things are very different to previous versions
+     of SCO UNIX.
 
-     o  All programs are compiled in ELF mode to reduce size
+        o  All programs are compiled in ELF mode to reduce size
 
-     o  Both ELF and COFF libraries are generated
-
-     o  You do not need to provide a BOOTSTAPCFLAGS line when building.
-        Open Server 5 is automatically detected.
+        o  Both ELF and COFF libraries are generated
 
   11.  Relevant Documentation
 
@@ -524,7 +531,6 @@
 
      o  Shared libraries are not implemented in XFree86 3.1 yet.  This
         means the binaries use a log of disk space and a lot of memory
-
 
   13.  Trouble Shooting
 
@@ -585,13 +591,13 @@
 
           When first trying to get XFree86 to run,  be sure to use
           a simple setup.  Get 640x480 working first then move on
-          to higher resolutions.  Always trap the output of the
-          server as shown earlier.  Once you have the valid clocks
-          for your video card (as provided in the server output),
-          hard code them into your XF86Config as this will take
-          some strain off your monitor during XFree86 startup where
-          it usually probes the various clock frequencies.  Getting
 
+     to higher resolutions.  Always trap the output of the
+     server as shown earlier.  Once you have the valid clocks
+     for your video card (as provided in the server output),
+     hard code them into your XF86Config as this will take
+     some strain off your monitor during XFree86 startup where
+     it usually probes the various clock frequencies.  Getting
      the ``X'' screen to appear can be a painfully slow task.
      Be patient and read as much of the doco as you can han-
      dle.  You will get it to work.
@@ -652,11 +658,9 @@
           /usr/X11R6/lib/X11/doc with the binary distribution).
           These files explains how to fix up your video modes.
 
-
      Problem:
 
         1. Can only run a limited number of xterms.
-
 
         2. xterm does not work but other programs like xclock do work.
 
@@ -720,15 +724,14 @@
           My SCO 3.2.4 system fails to build libXext.a for shared
           libraries.
 
-
      Causes:
 
 
-     This behaviour was observed when compiling with a
-     STDC_VALUE=0 for gcc.  mkshlib was core dumping on build-
-     ing the shared library in this case.  Using a new gcc
-     without the STDC_VALUE=0 or using a 3.2.2 mkshlib appears
-     to fix this problem.
+          This behaviour was observed when compiling with a
+          STDC_VALUE=0 for gcc.  mkshlib was core dumping on build-
+          ing the shared library in this case.  Using a new gcc
+          without the STDC_VALUE=0 or using a 3.2.2 mkshlib appears
+          to fix this problem.
 
 
      Problem:
@@ -780,9 +783,6 @@
 
              3. You need a file in /etc/conf/node.d which contains
                 something like:
-
-
-
 
 
 
@@ -847,7 +847,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.11 1996/08/11 13:00:44 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.12 1996/09/01 04:16:08 dawes Exp $
 
 
 

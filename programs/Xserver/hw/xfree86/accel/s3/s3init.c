@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.97 1996/08/24 12:51:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.98 1996/09/01 04:15:40 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -51,6 +51,7 @@ typedef struct {
    unsigned char SC1148x;	/* Sierra SC 1148x command register */
    unsigned char SC15025[3];    /* Sierra SC 15025/6 command registers */
    unsigned char ATT490_1;	/* AT&T 20C490/1 command register */
+   unsigned char SS2410;	/* Diamond SS2410 command register */
    unsigned char ATT498;	/* AT&T 20C498 command register */
    unsigned char Bt485[4];	/* Bt485 Command Registers 0-3 */
    unsigned char Ti3020[0x40];	/* Ti3020 Indirect Registers 0x0-0x3F */
@@ -181,6 +182,17 @@ s3CleanUp(void)
     */
    if (DAC_IS_ATT490) {
        xf86setdaccomm(oldS3->ATT490_1);
+   }
+
+   /*
+    * Restore Diamond SS2410 command register.
+    */
+   if ( DAC_IS_SS2410 ) {
+ 	outb( vgaCRIndex, 0x55 );
+	tmp = inb( vgaCRReg );
+	outb( vgaCRReg, tmp | 1 ); 
+	xf86setdaccomm( oldS3->SS2410 );
+	outb( vgaCRReg, tmp );
    }
    
    /*
@@ -582,6 +594,19 @@ s3Init(mode)
       if (DAC_IS_ATT490) {
          oldS3->ATT490_1 = xf86getdaccomm();
       }
+
+      /*
+       * Save Diamond SS2410 command register.
+       */
+      if ( DAC_IS_SS2410 ) {
+ 	  outb( vgaCRIndex, 0x55 );
+	  tmp = inb( vgaCRReg );
+	  outb( vgaCRReg, tmp | 1 ); 
+	  oldS3->SS2410 = xf86getdaccomm( );
+	  outb( vgaCRReg, tmp );
+       }
+   
+
 
       /*
        * Save AT&T 20C498 command register.
@@ -1183,6 +1208,46 @@ s3Init(mode)
       }    
    }
 
+   /*
+    * Set the Diamond SS2410 command register to desired settings. 
+    */
+   if ( DAC_IS_SS2410 ) {
+	if ( s3InfoRec.bitsPerPixel == 8 ) {
+ 		outb( vgaCRIndex, 0x55 );
+		tmp = inb( vgaCRReg );
+		outb( vgaCRReg, tmp | 1 ); 
+		xf86setdaccomm( 0 );
+		outb( vgaCRReg, tmp );
+		}
+	else {
+		switch ( s3InfoRec.depth ) { 
+			case 15:
+ 				outb( vgaCRIndex, 0x55 );
+				tmp = inb( vgaCRReg );
+				outb( vgaCRReg, tmp | 1 ); 
+				xf86setdaccomm( 0xA0 );
+				outb( vgaCRReg, tmp );
+				break;
+			case 16:
+ 				outb( vgaCRIndex, 0x55 );
+				tmp = inb( vgaCRReg );
+				outb( vgaCRReg, tmp | 1 ); 
+				xf86setdaccomm( 0xA6 );
+				outb( vgaCRReg, tmp );
+				break;
+			case 24:
+ 				outb( vgaCRIndex, 0x55 );
+				tmp = inb( vgaCRReg );
+				outb( vgaCRReg, tmp | 1 ); 
+				xf86setdaccomm( 0x9E );
+				outb( vgaCRReg, tmp );
+				break;
+			default:
+				ErrorF("unsupported mode! \n");
+			}
+		}
+   	}
+   
    /*
     * Set AT&T 20C498/409/499 command register to 8-bit mode if desired.
     */
@@ -2569,7 +2634,8 @@ s3Init(mode)
       break;
    case 15:
    case 16:
-      if (DAC_IS_ATT490 || DAC_IS_GENDAC || DAC_IS_SC1148x_SERIES) /* JON */
+      if (DAC_IS_ATT490 || DAC_IS_GENDAC || DAC_IS_SC1148x_SERIES /* JON */
+		|| DAC_IS_SS2410 ) /*??? I'm not sure - but the 490 does it */  
 	 outb(vgaCRReg, 0x80);
       else if (DAC_IS_TI3025)
 	 outb(vgaCRReg, 0x10);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.38 1996/08/23 11:03:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.39 1996/08/24 12:51:51 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -210,6 +210,7 @@ extern int s3_968_DashBug;
 #define SC1148x_M3_DAC    21
 #define ATT20C409_DAC     22
 #define TI3030_DAC        23
+#define	SS2410_DAC	  24
 
 #define DAC_IS_BT485_SERIES	(s3RamdacType == BT485_DAC || \
 				 s3RamdacType == ATT20C505_DAC)
@@ -239,6 +240,7 @@ extern int s3_968_DashBug;
 #define DAC_IS_SC1148x_M3	(s3RamdacType == SC1148x_M3_DAC)
 #define DAC_IS_SC1148x_SERIES	(DAC_IS_SC1148x_M2 || DAC_IS_SC1148x_M3)
 #define DAC_IS_ATT20C409	(s3RamdacType == ATT20C409_DAC)
+#define DAC_IS_SS2410		(s3RamdacType == SS2410_DAC )
 
 /* Vendor BIOS types */
 

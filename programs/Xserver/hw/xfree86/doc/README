@@ -1056,7 +1056,10 @@
 
         +  ftp://XFree86.cdrom.com/pub/XFree86 (source and binaries)
 
-        +  ftp://ftp.rge.com/pub/X/XFree86/XFree86 (source and binaries)
+        +  ftp://ftp.redhat.com/pub/mirrors/ftp.xfree86.org (source and
+           Linux binaries)
+
+        +  ftp://ftp.rge.com/pub/X/XFree86 (source and binaries)
 
         +  ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2 (source
            patches and NetBSD binaries)
@@ -1067,10 +1070,12 @@
         +  ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.2
            (Linux binaries and source)
 
-        +  ftp://ref.tfs.com/pub/mirrors/XFree86 (source patches and
-           FreeBSD binaries)
-
         +  ftp://ftp.eecs.umich.edu/BSD/XFree86 (source and binaries)
+
+        +  ftp://ftp.cs.umn.edu/pub/XFree86 (source and binaries)
+
+        +  ftp://despair.capecod.net/pub/XFree86 (Linux, NetBSD and
+           FreeBSD binaries)
 
 
      o  Europe:
@@ -1114,11 +1119,11 @@
 
         +  ftp://x.physics.usyd.edu.au/pub/XFree86 (source and binaries)
 
+
         +  ftp://ftp.iij.ad.jp/pub/X/XFree86/XFree86 (source and
            binaries)
 
         +  ftp://ftp.sf.co.kr/pub/XFree86 (source and binaries)
-
 
         +  ftp://ftp.nectec.or.th/pub/mirrors/XFree86 (source patches
            and binaries)
@@ -1136,18 +1141,13 @@
   building the distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.52 1996/08/27 03:13:50 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.53 1996/09/01 08:33:03 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
-
-
-
-
-
 
 
 
