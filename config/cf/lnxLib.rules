@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules,v 1.2 94/03/31 11:37:29 gildea Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.5 1994/09/11 06:53:26 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.6 1994/10/21 11:20:19 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -454,6 +454,9 @@ $(JUMP_DIR)/stubs.import: $(Concat(JUMP_STUBS_IMPORT_,libname))		@@\
 									@@\
 down/mk_JUMP_AR: solist							@@\
 	$(RM) $(JUMP_AR)						@@\
+	@if [ -s $(JUMP_DIR)/jump.log ]; then \
+		echo "Error: Leftover globals for shared lib"; \
+		exit 1; fi						@@\
 	(cd down; $(AR) up/$(JUMP_AR) solist) || exit 1			@@\
 	$(RANLIB) $(JUMP_AR)						@@\
 	touch $@							@@\
