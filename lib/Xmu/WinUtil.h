@@ -48,7 +48,7 @@ Window XmuClientWindow
 
 Bool XmuUpdateMapHints
 (
- Display	*dpy.
+ Display	*dpy,
  Window		win,
  XSizeHints	*hints
  );
