@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: contrib/programs/xedit/commands.c,v 1.3 1998/10/11 11:20:00 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.1 1998/10/25 07:12:16 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include "xedit.h"
@@ -479,7 +479,7 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	(void)readdir(dir);	/* "." */
 	(void)readdir(dir);	/* ".." */
 	while ((ent = readdir(dir)) != NULL) {
-	    if (ent->d_namlen >= len
+	    if (strlen(ent->d_name) >= len
 		&& strncmp(ent->d_name, file_name, len) == 0) {
 		char *tmp = &(ent->d_name[len]), *mat = match;
 
@@ -488,10 +488,12 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		    match[sizeof(match) - 2] = '\0';
 		    mlen = strlen(match);
 		    first = 0;
+#if 0
 		    if (ent->d_type == DT_LNK)
 			isdir = IsDir(dir_name, ent->d_name, True);
 		    else
 			isdir = ent->d_type == DT_DIR;
+#endif
 		}
 		else {
 		    while (*tmp++ == *mat++)
@@ -503,15 +505,17 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		if (show_matches != SM_NEVER) {
 		    Bool is_dir;
 
+#if 0
 		    if (ent->d_type == DT_LNK)
 			is_dir = IsDir(dir_name, ent->d_name, False);
 		    else
 			is_dir = ent->d_type == DT_DIR;
+#endif
 		    matches = (char **)XtRealloc((char*)matches, sizeof(char**)
 						 * (n_matches + 1));
-		    buflen += ent->d_namlen + 1;
+		    buflen += strlen(ent->d_name) + 1;
 		    if (is_dir) {
-			matches[n_matches] = XtMalloc(ent->d_namlen + 2);
+			matches[n_matches] = XtMalloc(strlen(ent->d_name) + 2);
 			strcpy(matches[n_matches], ent->d_name);
 			strcat(matches[n_matches], "/");
 			++buflen;
