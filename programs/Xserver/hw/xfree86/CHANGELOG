@@ -1,4 +1,5 @@
 XFree86 4.3.99.1 (xx March 2003)
+  23. int10 fix for all ix86 non-Linux systems (Marc La France).
   22. Add preliminary support for generating HTML and PDF versions of most
       spec documents (David Dawes).
   21. Use lower-case extensions uniformly for text and PostScript documents
@@ -16574,4 +16575,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2598 2003/03/18 23:08:17 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2599 2003/03/19 01:49:25 dawes Exp $
