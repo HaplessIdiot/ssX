@@ -7,7 +7,7 @@ partial default alphanumeric_keys
 xkb_symbols "basic" {
     include "pc/latin(type2)"
     include "pc/fi(fi)"
-}
+};
 
 partial alphanumeric_keys
 xkb_symbols "fi" {
@@ -71,5 +71,5 @@ xkb_symbols "nodeadkeys" {
 
     key <AE12> { [ acute, grave ] };
     key <AD12> { [ diaeresis, asciicircum, asciitilde, caron ] };
-}
+};
 
