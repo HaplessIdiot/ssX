@@ -18,11 +18,6 @@ XFree86 3.9Nu (13 January 1999)
 2137. Update the parser and xf86Config.c to allow "Inactive" devices
       to be specified in the config file's ServerLayout section.
 2136. Import xpm version 3.4k.
-      Options in the ServerLayout section an override those in the
-      ServerFlags section.
-2137. Update the parser and xf86Config.c to allow "Inactive" devices
-      to be specified in the config file's ServerLayout section.
-2136. Import xpm version 3.4k.
 
 XFree86 3.9Nt (11 January 1999)
 2135. Fix 8+32 rendering bugs (#2374, Mark Vojkovich).
@@ -7076,4 +7071,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.664 1999/01/13 12:17:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.665 1999/01/13 12:44:10 dawes Exp $

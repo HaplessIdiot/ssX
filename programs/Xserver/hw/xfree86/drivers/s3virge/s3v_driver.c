@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.6 1998/12/13 10:33:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.7 1998/12/13 11:10:46 dawes Exp $ */
 
 /*
  *
@@ -2096,7 +2096,7 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       
   xf86SetBlackWhitePixels(pScreen);
 	 
-  if (pScrn->pixmapBPP > 8) {
+  if (pScrn->bitsPerPixel > 8) {
     	VisualPtr visual;
 					/* Fixup RGB ordering */
 	visual = pScreen->visuals + pScreen->numVisuals;
