@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.8 2003/09/28 20:15:29 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.9 2003/12/02 13:02:39 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -38,6 +38,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "glheader.h"
 #include "imports.h"
 
+#define STANDALONE_MMIO
 #include "radeon_context.h"
 #include "radeon_screen.h"
 #include "radeon_macros.h"

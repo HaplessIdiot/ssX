@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.10 2002/12/16 16:18:53 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.11 2003/09/28 20:15:20 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -32,6 +32,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
+#define STANDALONE_MMIO
 #include "r128_context.h"
 #include "r128_state.h"
 #include "r128_ioctl.h"
