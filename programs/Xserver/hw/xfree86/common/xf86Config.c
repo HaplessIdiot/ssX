@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.250 2001/10/21 12:30:38 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.253 2001/11/30 12:11:53 eich Exp $ */
 
 
 /*
@@ -2142,18 +2142,6 @@ xf86HandleConfigFile(void)
     xf86closeConfigFile ();
 
     /* Initialise a few things. */
-
-    /* Show what the marker symbols mean */
-    xf86ErrorF("Markers: " X_PROBE_STRING " probed, "
-			   X_CONFIG_STRING " from config file, "
-			   X_DEFAULT_STRING " default setting,\n"
-	       "         " X_CMDLINE_STRING " from command line, "
-			   X_NOTICE_STRING " notice, "
-			   X_INFO_STRING " informational,\n"
-	       "         " X_WARNING_STRING " warning, "
-			   X_ERROR_STRING " error, "
-			   X_NOT_IMPLEMENTED_STRING " not implemented, "
-			   X_UNKNOWN_STRING " unknown.\n");
 
     /*
      * now we convert part of the information contained in the parser

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.74 2001/08/15 16:25:21 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.75 2001/08/17 22:08:12 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -90,7 +90,7 @@ extern Bool xf86ProbeOnly;
 extern Bool xf86DoProbe;
 
 #ifndef DEFAULT_VERBOSE
-#define DEFAULT_VERBOSE		1
+#define DEFAULT_VERBOSE		0
 #endif
 #ifndef DEFAULT_LOG_VERBOSE
 #define DEFAULT_LOG_VERBOSE	3

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.183 2001/08/15 16:25:21 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.184 2001/10/29 18:16:38 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -57,6 +57,7 @@ extern int xtest_command_key;
 /* forward declarations */
 
 static void xf86PrintBanner(void);
+static void xf86PrintMarkers(void);
 static void xf86RunVtInit(void);
 
 #ifdef DO_CHECK_BETA
@@ -237,6 +238,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 #endif
 
     xf86PrintBanner();
+    xf86PrintMarkers();
     {
 	time_t t;
 	const char *ct;
@@ -1005,6 +1007,10 @@ InitInput(argc, argv)
 #endif
 }
 
+#ifndef SET_STDERR_NONBLOCKING
+#define SET_STDERR_NONBLOCKING 1
+#endif
+
 /*
  * OsVendorInit --
  *      OS/Vendor-specific initialisations.  Called from OsInit(), which
@@ -1027,6 +1033,33 @@ OsVendorInit()
 
   if (!beenHere)
     xf86LogInit();
+
+#if SET_STDERR_NONBLOCKING
+        /* Set stderr to non-blocking. */
+#ifndef O_NONBLOCK
+#if defined(FNDELAY)
+#define O_NONBLOCK FNDELAY
+#elif defined(O_NDELAY)
+#define O_NONBLOCK O_NDELAY
+#endif
+#endif
+
+#ifdef O_NONBLOCK
+  if (!beenHere) {
+#if !defined(__EMX__)
+    if (geteuid() == 0 && getuid() != geteuid())
+#endif
+    {
+      int status;
+
+      status = fcntl(fileno(stderr), F_GETFL, 0);
+      if (status != -1) {
+	fcntl(fileno(stderr), F_SETFL, status | O_NONBLOCK);
+      }
+    }
+  }
+#endif
+#endif
 
   beenHere = TRUE;
 }
@@ -1594,6 +1627,22 @@ xf86PrintBanner()
 #ifdef XFree86LOADER
   ErrorF("Module Loader present\n");
 #endif
+}
+
+static void
+xf86PrintMarkers()
+{
+    /* Show what the marker symbols mean */
+  ErrorF("Markers: " X_PROBE_STRING " probed, "
+		     X_CONFIG_STRING " from config file, "
+		     X_DEFAULT_STRING " default setting,\n"
+	 "         " X_CMDLINE_STRING " from command line, "
+		     X_NOTICE_STRING " notice, "
+		     X_INFO_STRING " informational,\n"
+	 "         " X_WARNING_STRING " warning, "
+		     X_ERROR_STRING " error, "
+		     X_NOT_IMPLEMENTED_STRING " not implemented, "
+		     X_UNKNOWN_STRING " unknown.\n");
 }
 
 static void
