@@ -61,7 +61,7 @@ in this Software without prior written authorization from the X Consortium.
  * 11-Nov-90 Dave Sternlicht            Adding SaveColors
  * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  *
- * $XFree86: xc/programs/twm/gram.y,v 3.0 1996/06/29 14:13:06 dawes Exp $
+ * $XFree86: xc/programs/twm/gram.y,v 3.1 1997/07/05 15:16:57 dawes Exp $
  *
  ***********************************************************************/
 
@@ -105,8 +105,7 @@ extern int yylineno;
     char *ptr;
 };
 
-%token LB RB LP RP
-%token <num> MENUS MENU BUTTON DEFAULT_FUNCTION PLUS MINUS
+%token <num> LB RB LP RP MENUS MENU BUTTON DEFAULT_FUNCTION PLUS MINUS
 %token <num> ALL OR CURSORS PIXMAPS ICONS COLOR SAVECOLOR MONOCHROME FUNCTION 
 %token <num> ICONMGR_SHOW ICONMGR WINDOW_FUNCTION ZOOM ICONMGRS
 %token <num> ICONMGR_GEOMETRY ICONMGR_NOSHOW MAKE_TITLE GRAYSCALE
