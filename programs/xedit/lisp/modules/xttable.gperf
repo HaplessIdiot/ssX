@@ -37,6 +37,9 @@ XT-APP-INITIALIZE,Lisp_XtAppInitialize,1,2,3
 XT-APP-MAIN-LOOP,Lisp_XtAppMainLoop,1,1,1
 XT-CREATE-MANAGED-WIDGET,Lisp_XtCreateManagedWidget,1,3,4
 XT-CREATE-WIDGET,Lisp_XtCreateWidget,1,3,4
+XT-CREATE-POPUP-SHELL,Lisp_XtCreatePopupShell,1,3,4
 XT-GET-VALUES,Lisp_XtGetValues,1,2,2
+XT-POPUP,Lisp_XtPopup,1,2,2
+XT-POPDOWN,Lisp_XtPopdown,1,1,1
 XT-REALIZE-WIDGET,Lisp_XtRealizeWidget,1,1,1
 XT-SET-VALUES,Lisp_XtSetValues,1,2,2

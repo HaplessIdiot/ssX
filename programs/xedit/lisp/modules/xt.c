@@ -27,12 +27,13 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.2 2001/09/21 05:08:43 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
+#include <X11/Shell.h>
 #include "internal.h"
 
 /*
@@ -73,10 +74,14 @@ LispObj *Lisp_XtAppInitialize(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtAppMainLoop(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtCreateWidget(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtCreateManagedWidget(LispMac*, LispObj*, char*);
-LispObj *_LispXtCreateWidget(LispMac*, LispObj*, char*, int);
+LispObj *Lisp_XtCreatePopupShell(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtGetValues(LispMac*, LispObj*, char*);
+LispObj *Lisp_XtPopup(LispMac*, LispObj*, char*);
+LispObj *Lisp_XtPopdown(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtRealizeWidget(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtSetValues(LispMac*, LispObj*, char*);
+
+LispObj *_LispXtCreateWidget(LispMac*, LispObj*, char*, int);
 
 static Resources *LispConvertResources(LispMac*, LispObj*, Widget,
 				       ResourceList*, ResourceList*);
@@ -119,9 +124,21 @@ xtLoadModule(LispMac *mac)
     xtWidget_t = LispRegisterOpaqueType(mac, "Widget");
     xtWidgetClass_t = LispRegisterOpaqueType(mac, "WidgetClass");
     GCPRO();
-    (void)LispSetVariable(mac, ATOM(LispGetString(mac, "coreWidgetClass")),
+    (void)LispSetVariable(mac, ATOM2("CORE-WIDGET-CLASS"),
 			  OPAQUE(coreWidgetClass, xtWidgetClass_t),
 			  fname, 0);
+    (void)LispSetVariable(mac, ATOM2("TRANSIENT-SHELL-WIDGET-CLASS"),
+			  OPAQUE(transientShellWidgetClass, xtWidgetClass_t),
+			  fname, 0);
+
+    /* parameters for XtPopup */
+    (void)LispSetVariable(mac, ATOM2("XT-GRAB-EXCLUSIVE"),
+			  REAL(XtGrabExclusive), fname, 0);
+    (void)LispSetVariable(mac, ATOM2("XT-GRAB-NONE"),
+			  REAL(XtGrabNone), fname, 0);
+    (void)LispSetVariable(mac, ATOM2("XT-GRAB-NONE-EXCLUSIVE"),
+			  REAL(XtGrabNonexclusive), fname, 0);
+
     GCUPRO();
 
     return (1);
@@ -256,21 +273,29 @@ Lisp_XtRealizeWidget(LispMac *mac, LispObj *list, char *fname)
     return (NIL);
 }
 
+#define UNMANAGED	0
+#define MANAGED		1
+#define SHELL		2
 LispObj *
 Lisp_XtCreateWidget(LispMac *mac, LispObj *list, char *fname)
 {
-    return (_LispXtCreateWidget(mac, list, fname, 0));
+    return (_LispXtCreateWidget(mac, list, fname, UNMANAGED));
 }
 
 LispObj *
 Lisp_XtCreateManagedWidget(LispMac *mac, LispObj *list, char *fname)
 {
-    return (_LispXtCreateWidget(mac, list, fname, 1));
+    return (_LispXtCreateWidget(mac, list, fname, MANAGED));
 }
 
+LispObj *
+Lisp_XtCreatePopupShell(LispMac *mac, LispObj *list, char *fname)
+{
+    return (_LispXtCreateWidget(mac, list, fname, SHELL));
+}
 
 LispObj *
-_LispXtCreateWidget(LispMac *mac, LispObj *list, char *fname, int managed)
+_LispXtCreateWidget(LispMac *mac, LispObj *list, char *fname, int options)
 {
     char *name;
     WidgetClass widget_class;
@@ -295,7 +320,10 @@ _LispXtCreateWidget(LispMac *mac, LispObj *list, char *fname, int managed)
     parent = (Widget)(CAR(list)->data.opaque.data);
     list = CDR(list);
 
-    widget = XtCreateWidget(name, widget_class, parent, NULL, 0);
+    if (options != SHELL)
+	widget = XtCreateWidget(name, widget_class, parent, NULL, 0);
+    else
+	widget = XtCreatePopupShell(name, widget_class, parent, NULL, 0);
 
     if (list == NIL || CAR(list) == NIL)
 	resources = NULL;
@@ -307,7 +335,7 @@ _LispXtCreateWidget(LispMac *mac, LispObj *list, char *fname, int managed)
 					 GetResourceList(XtClass(parent)));
 	XtSetValues(widget, resources->args, resources->num_args);
     }
-    if (managed)
+    if (options == MANAGED)
 	XtManageChild(widget);
     if (resources)
 	LispFreeResources(resources);
@@ -419,6 +447,38 @@ Lisp_XtGetValues(LispMac *mac, LispObj *list, char *fname)
     GCUProtect();
 
     return (res);
+}
+
+LispObj *
+Lisp_XtPopup(LispMac *mac, LispObj *list, char *fname)
+{
+    XtGrabKind kind;
+
+    if (!CHECKO(CAR(list), xtWidget_t))
+	LispDestroy(mac, "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+    if (CAR(CDR(list))->type != LispReal_t)
+	LispDestroy(mac, "cannot convert %s to XtGrabKind, at %s",
+		    LispStrObj(mac, CAR(CDR(list))), fname);
+    kind = (XtGrabKind)(CAR(CDR(list))->data.real);
+    if (kind != XtGrabExclusive && kind != XtGrabNone &&
+	kind != XtGrabNonexclusive)
+	LispDestroy(mac, "cannot convert %d to XtGrabKind, at %s",
+		    kind, fname);
+    XtPopup((Widget)(CAR(list)->data.opaque.data), kind);
+
+    return (NIL);
+}
+
+LispObj *
+Lisp_XtPopdown(LispMac *mac, LispObj *list, char *fname)
+{
+    if (!CHECKO(CAR(list), xtWidget_t))
+	LispDestroy(mac, "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+    XtPopdown((Widget)(CAR(list)->data.opaque.data));
+
+    return (NIL);
 }
 
 LispObj *

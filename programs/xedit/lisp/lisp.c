@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.6 2001/09/21 05:08:43 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.7 2001/09/28 04:38:31 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -1495,7 +1495,8 @@ LispEval(LispMac *mac, LispObj *obj)
 		    }
 		    else {
 			if (key) {
-			    if (CAR(cdr)->data.atom[0] != ':')
+			    if (CAR(cdr)->type != LispAtom_t ||
+				CAR(cdr)->data.atom[0] != ':')
 				LispDestroy(mac, "&KEY needs arguments as pairs,"
 					    " at %s", name);
 			    else if (CDR(cdr) == NIL)
@@ -1571,7 +1572,7 @@ LispEval(LispMac *mac, LispObj *obj)
 			if (CAR(arg) == list) {
 			    if (CAR(list)->type == LispCons_t &&
 				CDR(CAR(list))->type == LispCons_t)
-				CAR(arg) = CAR(CDR(CAR(list)));
+				CAR(arg) = EVAL(CAR(CDR(CAR(list))));
 			    else
 				CAR(arg) = NIL;
 			}

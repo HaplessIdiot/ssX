@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/test/widgets.lsp,v 1.1 2001/08/31 15:00:15 paulo Exp $
 ;;
 (require "xaw")
 (require "xt")
@@ -39,31 +39,31 @@
 	'(("title" . "Widgets (without customization)"))))
 
 (setq vpane
-    (xt-create-managed-widget "vpane" panedWidgetClass toplevel))
+    (xt-create-managed-widget "vpane" paned-widget-class toplevel))
 (setq form
-    (xt-create-managed-widget "form" formWidgetClass vpane))
-(xt-create-managed-widget "command" commandWidgetClass form
+    (xt-create-managed-widget "form" form-widget-class vpane))
+(xt-create-managed-widget "command" command-widget-class form
     '(("label" . "Command Widget")))
-(xt-create-managed-widget "label" labelWidgetClass form
+(xt-create-managed-widget "label" label-widget-class form
     '(("label" . "Label Widget") ("fromVert" . "command")))
-(xt-create-managed-widget "button" menuButtonWidgetClass form
+(xt-create-managed-widget "button" menu-button-widget-class form
     '(("label" . "MenuButton Widget") ("fromVert" . "label")))
 
 (setq popup
-    (xt-create-managed-widget "menu" simpleMenuWidgetClass toplevel))
-(xt-create-managed-widget "smebsb" smeBSBObjectClass popup
+    (xt-create-managed-widget "menu" simple-menu-widget-class toplevel))
+(xt-create-managed-widget "smebsb" sme-bsb-object-class popup
     '(("label" . "SmeBSB Object")))
-(xt-create-managed-widget "smeline" smeLineObjectClass popup)
-(xt-create-managed-widget "smebsb2" smeBSBObjectClass popup
+(xt-create-managed-widget "smeline" sme-line-object-class popup)
+(xt-create-managed-widget "smebsb2" sme-bsb-object-class popup
     '(("label" . "SmeBSB Object two")))
 
-(xt-create-managed-widget "toggle" toggleWidgetClass form
+(xt-create-managed-widget "toggle" toggle-widget-class form
     '(("label" . "Toggle Widget") ("fromVert" . "button")))
-(xt-create-managed-widget "repeater" repeaterWidgetClass form
+(xt-create-managed-widget "repeater" repeater-widget-class form
     '(("label" . "Repeater Widget") ("fromVert" . "toggle")))
 
 (setq quit
-    (xt-create-managed-widget "quit" commandWidgetClass vpane
+    (xt-create-managed-widget "quit" command-widget-class vpane
 	'(("label" . "Quit"))))
 (xt-add-callback quit "callback" 'quit-callback)
 

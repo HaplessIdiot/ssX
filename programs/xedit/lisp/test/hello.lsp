@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/test/hello.lsp,v 1.1 2001/08/31 15:00:15 paulo Exp $
 ;;
 (require "xaw")
 (require "xt")
@@ -50,13 +50,13 @@
 	'(("title" . "Hello World!"))))
 
 (setq form
-    (xt-create-managed-widget "form" formWidgetClass toplevel
+    (xt-create-managed-widget "form" form-widget-class toplevel
 	'(("background" . "gray85")
 	  ("displayList" . "foreground rgb:7/9/7;lines 1,-1,-1,-1,-1,1;foreground gray90;lines -1,0,0,0,0,-1")
 	)))
 
 (setq button
-    (xt-create-managed-widget "button" commandWidgetClass form
+    (xt-create-managed-widget "button" command-widget-class form
 	'(("label" . "Goodbye world!")
 	  ("tip" . "This sample uses some customizations")
 	  ("foreground" . "gray10")
