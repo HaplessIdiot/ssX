@@ -48,6 +48,9 @@ in this Software without prior written authorization from The Open Group.
  * Class Methods
  */
 static void XawMenuButtonClassInitialize(void);
+static void XawMenuButtonInitialize(Widget, Widget, ArgList, Cardinal*);
+static void XawMenuButtonDestroy(Widget);
+static Boolean XawMenuButtonSetValues(Widget, Widget, Widget, ArgList, Cardinal*);
 
 /*
  * Actions
@@ -64,6 +67,8 @@ static char defaultTranslations[] =
 "<Leave>:"	"reset()\n"
 "Any<BtnDown>:"	"reset() PopupMenu()\n";
 
+static char default_menu_name[] = "menu";
+
 #define offset(field) XtOffsetOf(MenuButtonRec, field)
 static XtResource resources[] = {
   {
@@ -73,7 +78,7 @@ static XtResource resources[] = {
     sizeof(String),
     offset(menu_button.menu_name),
     XtRString,
-    (XtPointer)"menu"
+    (XtPointer)default_menu_name
   },
 };
 #undef offset
@@ -92,7 +97,7 @@ MenuButtonClassRec menuButtonClassRec = {
     XawMenuButtonClassInitialize,	/* class_initialize	  */
     NULL,				/* class_part_initialize  */
     False,				/* class_inited		  */
-    NULL,				/* initialize		  */
+    XawMenuButtonInitialize,		/* initialize		  */
     NULL,				/* initialize_hook	  */
     XtInheritRealize,			/* realize		  */
     actionsList,			/* actions		  */
@@ -104,10 +109,10 @@ MenuButtonClassRec menuButtonClassRec = {
     True,				/* compress_exposure	  */
     True,				/* compress_enterleave	  */
     False,				/* visible_interest	  */
-    NULL,				/* destroy		  */
+    XawMenuButtonDestroy,		/* destroy		  */
     XtInheritResize,			/* resize		  */
     XtInheritExpose,			/* expose		  */
-    NULL,				/* set_values		  */
+    XawMenuButtonSetValues,		/* set_values		  */
     NULL,				/* set_values_hook	  */
     XtInheritSetValuesAlmost,		/* set_values_almost	  */
     NULL,				/* get_values_hook	  */
@@ -149,6 +154,45 @@ XawMenuButtonClassInitialize(void)
     XtRegisterGrabAction(PopupMenu, True,
 			 ButtonPressMask | ButtonReleaseMask,
 			 GrabModeAsync, GrabModeAsync);
+}
+
+/*ARGSUSED*/
+static void
+XawMenuButtonInitialize(Widget request, Widget cnew,
+			ArgList args, Cardinal *num_args)
+{
+    MenuButtonWidget mbw = (MenuButtonWidget)cnew;
+
+    if (mbw->menu_button.menu_name != default_menu_name)
+	mbw->menu_button.menu_name = XtNewString(mbw->menu_button.menu_name);
+}
+
+static void
+XawMenuButtonDestroy(Widget w)
+{
+    MenuButtonWidget mbw = (MenuButtonWidget)w;
+
+    if (mbw->menu_button.menu_name != default_menu_name)
+	XtFree(mbw->menu_button.menu_name);
+}
+
+/*ARGSUSED*/
+static Boolean
+XawMenuButtonSetValues(Widget current, Widget request, Widget cnew,
+		       ArgList args, Cardinal *num_args)
+{
+    MenuButtonWidget mbw_old = (MenuButtonWidget)current;
+    MenuButtonWidget mbw_new = (MenuButtonWidget)cnew;
+
+    if (mbw_old->menu_button.menu_name != mbw_new->menu_button.menu_name) {
+	if (mbw_old->menu_button.menu_name != default_menu_name)
+	    XtFree(mbw_old->menu_button.menu_name);
+	if (mbw_new->menu_button.menu_name != default_menu_name)
+	    mbw_new->menu_button.menu_name =
+		XtNewString(mbw_new->menu_button.menu_name);
+    }
+
+    return (False);
 }
 
 /*ARGSUSED*/
