@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.37 2003/06/30 01:45:07 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.38 2003/08/12 23:47:09 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -59,7 +59,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 
 /* Libtool on Darwin always uses minor numbers */
-#define LibtoolMinorVersions	YES
+#define LibtoolMinorVersions    YES
 
 /* The most common file system, HFS+, is not case sensitive. */
 #ifndef CaseSensitiveFileSystem
@@ -240,12 +240,31 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define BuildXF86MiscExt        NO
 
 /* no XFree86-VidMode extension */
-#define BuildXF86VidModeExt	NO
+#define BuildXF86VidModeExt     NO
 
 #define BuildLibPathVar         DYLD_LIBRARY_PATH
 
 /* include rules to build shared libraries */
 #include <darwinLib.rules>
+
+/*
+ * BundleProgramTarget - Generate rules for compiling, linking and
+ * installing a bundle executable. 
+ */
+#ifndef BundleProgramTarget
+#define BundleProgramTarget(program,loader,subdirs,objs,deplib,syslib,dstdir) @@\
+                                                                        @@\
+AllTarget(program)							@@\
+									@@\
+program: loader subdirs objs deplib					@@\
+	RemoveTargetProgram($@)						@@\
+	LinkRule($@,-bundle $(LDOPTIONS),objs,deplib $(LDLIBS) syslib -bundle_loader loader) @@\
+									@@\
+InstallProgram(program,dstdir/program.bundle/Contents/MacOS)		@@\
+									@@\
+clean::									@@\
+	RemoveFile(program)
+#endif /* BundleProgramTarget */
 
 /*
  * Darwin specific Imake Config files

@@ -1,8 +1,11 @@
 /*
- * Xplugin rootless implementation
+ * quartzCursor.h
+ *
+ * External interface for Quartz hardware cursor
  */
 /*
- * Copyright (c) 2003 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2001 Torrey T. Lyons and Greg Parker.
+ *                 All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -26,21 +29,16 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xpr.h,v 1.2 2003/06/30 01:45:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCursor.h,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
-#ifndef XPR_H
-#define XPR_H
+#ifndef QUARTZCURSOR_H
+#define QUARTZCURSOR_H
 
 #include "screenint.h"
 
-extern Bool QuartzModeBundleInit(void);
-
-void AppleDRIExtensionInit(void);
-void xprAppleWMInit(void);
-Bool xprInit(ScreenPtr pScreen);
-
 Bool QuartzInitCursor(ScreenPtr pScreen);
+void QuartzReallySetCursor(void);
 void QuartzSuspendXCursor(ScreenPtr pScreen);
 void QuartzResumeXCursor(ScreenPtr pScreen, int x, int y);
 
-#endif /* XPR_H */
+#endif

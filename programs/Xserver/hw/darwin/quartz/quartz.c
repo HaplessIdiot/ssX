@@ -29,15 +29,12 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.9 2003/05/14 05:27:56 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.10 2003/08/12 23:47:10 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
 #include "darwin.h"
 #include "quartzAudio.h"
-#include "quartzCursor.h"
-#include "fullscreen.h"
-#include "rootlessAqua.h"
 #include "pseudoramiX.h"
 #define _APPLEWM_SERVER_
 #include "applewmstr.h"
@@ -64,7 +61,8 @@ int                     quartzScreenIndex = 0;
 int                     quartzUsesNSWindow = TRUE;
 int                     aquaMenuBarHeight = 0;
 int                     noPseudoramiXExtension = TRUE;
-
+QuartzModeProcsPtr      quartzProcs = NULL;
+const char             *quartzOpenGLBundle = NULL;
 
 /*
 ===========================================================================
@@ -86,12 +84,8 @@ Bool DarwinModeAddScreen(
     QuartzScreenPtr displayInfo = xcalloc(sizeof(QuartzScreenRec), 1);
     QUARTZ_PRIV(pScreen) = displayInfo;
 
-    // do full screen or rootless specific initialization
-    if (quartzRootless) {
-        return AquaAddScreen(index, pScreen);
-    } else {
-        return QuartzFSAddScreen(index, pScreen);
-    }
+    // do Quartz mode specific initialization
+    return quartzProcs->AddScreen(index, pScreen);
 }
 
 
@@ -103,17 +97,12 @@ Bool DarwinModeSetupScreen(
     int index,
     ScreenPtr pScreen)
 {
-    // do full screen or rootless specific setup
-    if (quartzRootless) {
-        if (! AquaSetupScreen(index, pScreen))
-            return FALSE;
-    } else {
-        if (! QuartzFSSetupScreen(index, pScreen))
-            return FALSE;
-    }
+    // do Quartz mode specific setup
+    if (! quartzProcs->SetupScreen(index, pScreen))
+        return FALSE;
 
     // setup cursor support
-    if (! QuartzInitCursor(pScreen))
+    if (! quartzProcs->InitCursor(pScreen))
         return FALSE;
 
     return TRUE;
@@ -147,13 +136,8 @@ void DarwinModeInitOutput(
         FatalError("Could not register block and wakeup handlers.");
     }
 
-    if (quartzRootless) {
-        ErrorF("Display mode: Rootless Quartz\n");
-        AquaDisplayInit();
-    } else {
-        ErrorF("Display mode: Full screen Quartz\n");
-        QuartzFSDisplayInit();
-    }
+    // Do display mode specific initialization
+    quartzProcs->DisplayInit();
 
     // Init PseudoramiX implementation of Xinerama.
     // This should be in InitExtensions, but that causes link errors
@@ -174,9 +158,9 @@ void DarwinModeInitInput(
 {
     QuartzMessageMainThread(kQuartzServerStarted, NULL, 0);
 
-    if (quartzRootless) {
-        AquaInitInput(argc, argv);
-    }
+    // Do final display mode specific initialization before handling events
+    if (quartzProcs->InitInput)
+        quartzProcs->InitInput(argc, argv);
 }
 
 
@@ -195,9 +179,7 @@ static void QuartzShow(
         quartzServerVisible = TRUE;
         for (i = 0; i < screenInfo.numScreens; i++) {
             if (screenInfo.screens[i]) {
-                QuartzResumeXCursor(screenInfo.screens[i], x, y);
-                if (!quartzRootless)
-                    xf86SetRootClip(screenInfo.screens[i], TRUE);
+                quartzProcs->ResumeScreen(screenInfo.screens[i], x, y);
             }
         }
     }
@@ -217,9 +199,7 @@ static void QuartzHide(void)
     if (quartzServerVisible) {
         for (i = 0; i < screenInfo.numScreens; i++) {
             if (screenInfo.screens[i]) {
-                QuartzSuspendXCursor(screenInfo.screens[i]);
-                if (!quartzRootless)
-                    xf86SetRootClip(screenInfo.screens[i], FALSE);
+                quartzProcs->SuspendScreen(screenInfo.screens[i]);
             }
         }
     }
@@ -314,5 +294,5 @@ void DarwinModeGiveUp(void)
 #endif
 
     if (!quartzRootless)
-        QuartzFSRelease();
+        quartzProcs->ReleaseScreens();
 }

@@ -34,9 +34,10 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/GL/aqua/aquaGlx.c,v 1.2 2002/08/29 02:22:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/apple/indirect.c,v 1.1 2003/06/30 01:45:12 torrey Exp $ */
 
 #include "dri.h"
+#include "quartz.h"
 
 #include <CoreGraphics/CoreGraphics.h>
 #include <OpenGL/OpenGL.h>
@@ -312,7 +313,7 @@ static void attach(__GLcontext *gc, __GLdrawablePrivate *glPriv)
 
 	if (aquaPriv->sid == 0)
 	{
-	    if (!DRICreateSurface(pWin->drawable.pScreen,
+	    if (!quartzProcs->CreateSurface(pWin->drawable.pScreen,
                                   pWin->drawable.id, &pWin->drawable,
                                   0, &aquaPriv->sid, NULL,
                                   surface_notify, aquaPriv))
@@ -326,7 +327,7 @@ static void attach(__GLcontext *gc, __GLdrawablePrivate *glPriv)
 	{
 	    if (xp_attach_gl_context(gc->ctx, aquaPriv->sid) != Success)
 	    {
-		DRIDestroySurface(pWin->drawable.pScreen,
+		quartzProcs->DestroySurface(pWin->drawable.pScreen,
                                   pWin->drawable.id, &pWin->drawable, 
                                   surface_notify, aquaPriv);
 

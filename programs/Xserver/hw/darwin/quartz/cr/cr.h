@@ -41,7 +41,12 @@ typedef struct OpaqueXView XView;
 #undef BOOL
 #define BOOL xBOOL
 #include "screenint.h"
+#include "window.h"
 #undef BOOL
+
+// Predefined style for the window which is about to be framed
+extern WindowPtr nextWindowToFrame;
+extern unsigned int nextWindowStyle;
 
 typedef struct {
     NSWindow *window;
@@ -51,5 +56,6 @@ typedef struct {
 } CRWindowRec, *CRWindowPtr;
 
 Bool CRInit(ScreenPtr pScreen);
+void CRAppleWMInit(void);
 
 #endif /* _CR_H */

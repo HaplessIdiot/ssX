@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crScreen.m,v 1.1 2003/06/07 05:49:07 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crScreen.m,v 1.2 2003/06/30 01:45:12 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "cr.h"
@@ -35,9 +35,10 @@
 #undef BOOL
 #define BOOL xBOOL
 #include "darwin.h"
-#include "rootlessAqua.h"
+#include "quartz.h"
+#include "quartzCursor.h"
 #include "rootless.h"
-#include "aqua.h"
+#include "safeAlpha.h"
 #include "pseudoramiX.h"
 
 #include "regionstr.h"
@@ -46,34 +47,38 @@
 #undef BOOL
 
 // Name of GLX bundle using AGL framework
-const char *quartzOpenGLBundle = "glxAGL.bundle";
+static const char *crOpenGLBundle = "glxAGL.bundle";
 
 
 /*
- * AquaDisplayInit
+ * CRDisplayInit
  *  Find all screens.
  *
  *  Multihead note: When rootless mode uses PseudoramiX, the
  *  X server only sees one screen; only PseudoramiX itself knows
  *  about all of the screens.
  */
-void
-AquaDisplayInit(void)
+static void
+CRDisplayInit(void)
 {
+    ErrorF("Display mode: Rootless Quartz -- Cocoa implementation\n");
+
     if (noPseudoramiXExtension) {
         darwinScreensFound = [[NSScreen screens] count];
     } else {
         darwinScreensFound = 1; // only PseudoramiX knows about the rest
     }
+
+    CRAppleWMInit();
 }
 
 
 /*
- * AquaScreenParams
+ * CRScreenParams
  *  Set the basic screen parameters.
  */
 static void
-AquaScreenParams(int index, DarwinFramebufferPtr dfb)
+CRScreenParams(int index, DarwinFramebufferPtr dfb)
 {
     dfb->bitsPerComponent = CGDisplayBitsPerSample(kCGDirectMainDisplay);
     dfb->bitsPerPixel = CGDisplayBitsPerPixel(kCGDirectMainDisplay);
@@ -167,11 +172,11 @@ AquaScreenParams(int index, DarwinFramebufferPtr dfb)
 
 
 /*
- * AquaAddScreen
+ * CRAddScreen
  *  Init the framebuffer and record pixmap parameters for the screen.
  */
-Bool
-AquaAddScreen(int index, ScreenPtr pScreen)
+static Bool
+CRAddScreen(int index, ScreenPtr pScreen)
 {
     DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
     QuartzScreenPtr displayInfo = QUARTZ_PRIV(pScreen);
@@ -181,7 +186,7 @@ AquaAddScreen(int index, ScreenPtr pScreen)
     CGDirectDisplayID *displays = NULL;
     CGDisplayErr cgErr;
 
-    AquaScreenParams(index, dfb);
+    CRScreenParams(index, dfb);
 
     dfb->colorType = TrueColor;
 
@@ -218,20 +223,20 @@ AquaAddScreen(int index, ScreenPtr pScreen)
 
 
 /*
- * AquaSetupScreen
+ * CRSetupScreen
  *  Setup the screen for rootless access.
  */
-Bool
-AquaSetupScreen(int index, ScreenPtr pScreen)
+static Bool
+CRSetupScreen(int index, ScreenPtr pScreen)
 {
-    // Add Aqua specific replacements for fb screen functions
-    pScreen->PaintWindowBackground = AquaPaintWindow;
-    pScreen->PaintWindowBorder = AquaPaintWindow;
+    // Add alpha protecting replacements for fb screen functions
+    pScreen->PaintWindowBackground = SafeAlphaPaintWindow;
+    pScreen->PaintWindowBorder = SafeAlphaPaintWindow;
 
 #ifdef RENDER
     {
         PictureScreenPtr ps = GetPictureScreen(pScreen);
-        ps->Composite = AquaComposite;
+        ps->Composite = SafeAlphaComposite;
     }
 #endif /* RENDER */
 
@@ -241,12 +246,46 @@ AquaSetupScreen(int index, ScreenPtr pScreen)
 
 
 /*
- * AquaInitInput
+ * CRInitInput
  *  Finalize CR specific setup.
  */
-void
-AquaInitInput(int argc, char **argv)
+static void
+CRInitInput(int argc, char **argv)
 {
     rootlessGlobalOffsetX = darwinMainScreenX;
     rootlessGlobalOffsetY = darwinMainScreenY;
+}
+
+
+/*
+ * Quartz display mode function list.
+ */
+static QuartzModeProcsRec crModeProcs = {
+    CRDisplayInit,
+    CRAddScreen,
+    CRSetupScreen,
+    CRInitInput,
+    QuartzInitCursor,
+    QuartzReallySetCursor,
+    QuartzSuspendXCursor,
+    QuartzResumeXCursor,
+    NULL,               // No capture or release in rootless mode
+    NULL,
+    RootlessFrameForWindow,
+    TopLevelParent,
+    NULL,		// No support for DRI surfaces
+    NULL
+};
+
+
+/*
+ * QuartzModeBundleInit
+ *  Initialize the display mode bundle after loading.
+ */
+Bool
+QuartzModeBundleInit(void)
+{
+    quartzProcs = &crModeProcs;
+    quartzOpenGLBundle = crOpenGLBundle;
+    return TRUE;
 }

@@ -1,8 +1,8 @@
 /*
- * Rootless implementation for the Mac OS X Aqua environment
+ * Replacement functions to protect the alpha channel
  */
 /*
- * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2002-2003 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -26,29 +26,21 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/aqua.h,v 1.2 2002/07/24 05:58:33 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/aqua.h,v 1.3 2003/01/20 05:42:52 torrey Exp $ */
 
-#ifndef _AQUA_H
-#define _AQUA_H
+#ifndef _SAFEALPHA_H
+#define _SAFEALPHA_H
 
 #include "picturestr.h"
+#include "rootlessConfig.h"
 
-void AquaPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what);
+void SafeAlphaPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what);
 
 #ifdef RENDER
 void
-AquaComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
-              INT16 xSrc, INT16 ySrc, INT16 xMask, INT16 yMask,
-              INT16 xDst, INT16 yDst, CARD16 width, CARD16 height);
+SafeAlphaComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
+                   INT16 xSrc, INT16 ySrc, INT16 xMask, INT16 yMask,
+                   INT16 xDst, INT16 yDst, CARD16 width, CARD16 height);
 #endif /* RENDER */
 
-
-/*
- * AquaAlphaMask
- *  Bit mask for alpha channel with a particular number of bits per pixel.
- *  Note that we only care for 32bpp data. Mac OS X uses planar alpha for
- *  16bpp.
- */
-#define AquaAlphaMask(bpp) ((bpp) == 32 ? 0xFF000000 : 0)
-
-#endif /* _AQUA_H */
+#endif /* _SAFEALPHA_H */

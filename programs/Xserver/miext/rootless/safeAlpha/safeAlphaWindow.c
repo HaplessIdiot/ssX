@@ -1,8 +1,8 @@
 /*
- * Specialized window functions for rootless Aqua
+ * Specialized window functions to protect the alpha channel
  */
 /*
- * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2002-2003 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -31,10 +31,10 @@
  *
  * Copyright © 1998 Keith Packard
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/aquaWindow.c,v 1.1 2002/07/24 05:58:33 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/aquaWindow.c,v 1.2 2003/01/31 00:01:45 torrey Exp $ */
 
 #include "fb.h"
-#include "aqua.h"
+#include "safeAlpha.h"
 
 #ifdef PANORAMIX
 #include "panoramiX.h"
@@ -42,12 +42,12 @@
 #endif
 
 /*
- * AquaFillRegionTiled
+ * SafeAlphaFillRegionTiled
  *  Fill using a tile while leaving the alpha channel untouched.
  *  Based on fbfillRegionTiled.
  */
 void
-AquaFillRegionTiled(
+SafeAlphaFillRegionTiled(
     DrawablePtr pDrawable,
     RegionPtr   pRegion,
     PixmapPtr   pTile)
@@ -85,7 +85,7 @@ AquaFillRegionTiled(
     tileHeight = pTile->drawable.height;
     xRot += dstXoff;
     yRot += dstYoff;
-    planeMask = FB_ALLONES & ~AquaAlphaMask(dstBpp);
+    planeMask = FB_ALLONES & ~RootlessAlphaMask(dstBpp);
 
     while (n--)
     {
@@ -109,12 +109,12 @@ AquaFillRegionTiled(
 
 
 /*
- * AquaPaintWindow
+ * SafeAlphaPaintWindow
  *  Paint the window while filling in the alpha channel with all on.
  *  We can't use fbPaintWindow because it zeros the alpha channel.
  */
 void
-AquaPaintWindow(
+SafeAlphaPaintWindow(
     WindowPtr pWin,
     RegionPtr pRegion,
     int what)
@@ -130,17 +130,17 @@ AquaPaintWindow(
                     pWin = pWin->parent;
                 } while (pWin->backgroundState == ParentRelative);
                 (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, pRegion,
-                                                                    what);
+                                                                 what);
                 break;
             case BackgroundPixmap:
-                AquaFillRegionTiled (&pWin->drawable,
-                                     pRegion,
-                                     pWin->background.pixmap);
+                SafeAlphaFillRegionTiled (&pWin->drawable,
+                                          pRegion,
+                                          pWin->background.pixmap);
                 break;
             case BackgroundPixel:
             {
                 Pixel pixel = pWin->background.pixel |
-                              AquaAlphaMask(pWin->drawable.bitsPerPixel);
+                              RootlessAlphaMask(pWin->drawable.bitsPerPixel);
                 fbFillRegionSolid (&pWin->drawable, pRegion, 0,
                                    fbReplicatePixel (pixel,
                                         pWin->drawable.bitsPerPixel));
@@ -152,7 +152,7 @@ AquaPaintWindow(
         if (pWin->borderIsPixel)
         {
             Pixel pixel = pWin->border.pixel |
-                          AquaAlphaMask(pWin->drawable.bitsPerPixel);
+                          RootlessAlphaMask(pWin->drawable.bitsPerPixel);
             fbFillRegionSolid (&pWin->drawable, pRegion, 0,
                                fbReplicatePixel (pixel,
                                     pWin->drawable.bitsPerPixel));
@@ -163,9 +163,9 @@ AquaPaintWindow(
             for (pBgWin = pWin; pBgWin->backgroundState == ParentRelative;
                  pBgWin = pBgWin->parent);
     
-            AquaFillRegionTiled (&pBgWin->drawable,
-                                 pRegion,
-                                 pWin->border.pixmap);
+            SafeAlphaFillRegionTiled (&pBgWin->drawable,
+                                      pRegion,
+                                      pWin->border.pixmap);
         }
         break;
     }
