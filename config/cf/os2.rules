@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.3 1995/04/24 07:18:51 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.4 1996/01/24 21:51:53 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -38,7 +38,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.3 1995/04/24 07:18:51 dawe
 #define MakeDir(dir) if not exist dir $(MKDIRHIER) dir
 
 #define BuildIncludesTop(srclist)					@@\
-includes::								@@\
+includes:: srclist							@@\
 	MakeDir($(BUILDINCDIR))						@@\
 	@for %i in (srclist) do ImakeHelper 2 $(BUILDINCDIR) $(BUILDINCTOP) $(CURRENT_DIR) %i
 
@@ -61,7 +61,7 @@ InstallProgram(program,$(BINDIR))
 
 
 #define BuildIncludes(srclist,dstsubdir,dstupdir)			@@\
-includes::								@@\
+includes:: srclist							@@\
 	MakeDir($(BUILDINCDIR)/dstsubdir)				@@\
 	@for %i in (srclist) do ImakeHelper 3 $(BUILDINCTOP)/dstupdir/$(CURRENT_DIR) $(BUILDINCDIR)/dstsubdir %i
 
