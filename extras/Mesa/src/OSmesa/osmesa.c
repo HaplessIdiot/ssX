@@ -1,8 +1,8 @@
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.2
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -425,21 +425,19 @@ static void compute_row_addresses( OSMesaContext ctx )
  * with the lower-left image pixel stored in the first array position
  * (ie. bottom-to-top).
  *
- * Since the only type initially supported is GL_UNSIGNED_BYTE, if the
- * context is in RGBA mode, each pixel will be stored as a 4-byte RGBA
- * value.  If the context is in color indexed mode, each pixel will be
- * stored as a 1-byte value.
- *
  * If the context's viewport hasn't been initialized yet, it will now be
  * initialized to (0,0,width,height).
  *
  * Input:  ctx - the rendering context
  *         buffer - the image buffer memory
- *         type - data type for pixel components, only GL_UNSIGNED_BYTE
- *                and GL_UNSIGNED_SHORT_5_6_5 supported now.
+ *         type - data type for pixel components
+ *            Normally, only GL_UNSIGNED_BYTE and GL_UNSIGNED_SHORT_5_6_5
+ *            are supported.  But if Mesa's been compiled with CHAN_BITS==16
+ *            then type must be GL_UNSIGNED_SHORT.  And if Mesa's been build
+ *            with CHAN_BITS==32 then type must be GL_FLOAT.
  *         width, height - size of image buffer in pixels, at least 1
  * Return:  GL_TRUE if success, GL_FALSE if error because of invalid ctx,
- *          invalid buffer address, type!=GL_UNSIGNED_BYTE, width<1, height<1,
+ *          invalid buffer address, invalid type, width<1, height<1,
  *          width>internal limit or height>internal limit.
  */
 GLAPI GLboolean GLAPIENTRY
@@ -876,11 +874,21 @@ static void clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 
 
 
-static void buffer_size( GLcontext *ctx, GLuint *width, GLuint *height )
+static void buffer_size( GLframebuffer *buffer, GLuint *width, GLuint *height )
 {
-   OSMesaContext osmesa = OSMESA_CONTEXT(ctx);
-   *width = osmesa->width;
-   *height = osmesa->height;
+#ifdef WIN32
+   /* Hack to get around problems with exporting glapi_Context from MesaGL
+      and importing into OSMesa. */
+   GLcontext *ctx = (GLcontext *) _glapi_get_context();
+#else
+   GET_CURRENT_CONTEXT(ctx);
+#endif
+   (void) buffer;
+   if (ctx) {
+      OSMesaContext osmesa = OSMESA_CONTEXT(ctx);
+      *width = osmesa->width;
+      *height = osmesa->height;
+   }
 }
 
 
@@ -1995,7 +2003,13 @@ static const GLubyte *get_string( GLcontext *ctx, GLenum name )
    (void) ctx;
    switch (name) {
       case GL_RENDERER:
+#if CHAN_BITS == 32
+         return (const GLubyte *) "Mesa OffScreen32";
+#elif CHAN_BITS == 16
+         return (const GLubyte *) "Mesa OffScreen16";
+#else
          return (const GLubyte *) "Mesa OffScreen";
+#endif
       default:
          return NULL;
    }
@@ -2018,8 +2032,8 @@ static void osmesa_update_state( GLcontext *ctx, GLuint new_state )
    ctx->Driver.GetString = get_string;
    ctx->Driver.UpdateState = osmesa_update_state;
    ctx->Driver.SetDrawBuffer = set_draw_buffer;
-   ctx->Driver.ResizeBuffersMESA = _swrast_alloc_buffers;
    ctx->Driver.GetBufferSize = buffer_size;
+   ctx->Driver.ResizeBuffers = _swrast_alloc_buffers;
 
    ctx->Driver.Accum = _swrast_Accum;
    ctx->Driver.Bitmap = _swrast_Bitmap;

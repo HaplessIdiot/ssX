@@ -1,10 +1,10 @@
-/* $Id: context.c,v 1.12 2002/06/06 13:56:14 dawes Exp $ */
+/* $Id: context.c,v 1.13 2002/09/09 21:07:14 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.2
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -396,31 +396,31 @@ _mesa_free_framebuffer_data( GLframebuffer *buffer )
       return;
 
    if (buffer->DepthBuffer) {
-      FREE( buffer->DepthBuffer );
+      MESA_PBUFFER_FREE( buffer->DepthBuffer );
       buffer->DepthBuffer = NULL;
    }
    if (buffer->Accum) {
-      FREE( buffer->Accum );
+      MESA_PBUFFER_FREE( buffer->Accum );
       buffer->Accum = NULL;
    }
    if (buffer->Stencil) {
-      FREE( buffer->Stencil );
+      MESA_PBUFFER_FREE( buffer->Stencil );
       buffer->Stencil = NULL;
    }
    if (buffer->FrontLeftAlpha) {
-      FREE( buffer->FrontLeftAlpha );
+      MESA_PBUFFER_FREE( buffer->FrontLeftAlpha );
       buffer->FrontLeftAlpha = NULL;
    }
    if (buffer->BackLeftAlpha) {
-      FREE( buffer->BackLeftAlpha );
+      MESA_PBUFFER_FREE( buffer->BackLeftAlpha );
       buffer->BackLeftAlpha = NULL;
    }
    if (buffer->FrontRightAlpha) {
-      FREE( buffer->FrontRightAlpha );
+      MESA_PBUFFER_FREE( buffer->FrontRightAlpha );
       buffer->FrontRightAlpha = NULL;
    }
    if (buffer->BackRightAlpha) {
-      FREE( buffer->BackRightAlpha );
+      MESA_PBUFFER_FREE( buffer->BackRightAlpha );
       buffer->BackRightAlpha = NULL;
    }
 }
@@ -2048,6 +2048,9 @@ _mesa_error( GLcontext *ctx, GLenum error, const char *where )
       }
       fprintf(stderr, "Mesa user error: %s in %s\n", errstr, where);
    }
+
+   if (!ctx)
+      return;
 
    if (ctx->ErrorValue == GL_NO_ERROR) {
       ctx->ErrorValue = error;

@@ -1,8 +1,8 @@
 /*
  * Mesa 3-D graphics library
- * Version:  4.0
+ * Version:  4.0.2
  * 
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -361,6 +361,15 @@ extern unsigned long XMesaDitherColor( XMesaContext xmesa,
  */
 extern GLboolean XMesaSetFXmode( GLint mode );
 
+
+
+/*
+ * Reallocate the back/depth/stencil/accum/etc/ buffers associated with
+ * buffer <b> if its size has changed.
+ *
+ * New in Mesa 4.0.2
+ */
+extern void XMesaResizeBuffers( XMesaBuffer b );
 
 
 #ifdef __cplusplus

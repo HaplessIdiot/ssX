@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.2
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -187,6 +187,9 @@ void _mesa_set_enable( GLcontext *ctx, GLenum cap, GLboolean state )
 	 _mesa_transform_vector( ctx->Transform._ClipUserPlane[p],
 			      ctx->Transform.EyeUserPlane[p],
 			      ctx->ProjectionMatrix.inv );
+      }
+      else {
+	 ctx->Transform._AnyClip--;
       }
    }
    break;

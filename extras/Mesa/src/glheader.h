@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/glheader.h,v 1.16 2002/05/31 16:36:49 dawes Exp $ */
 
 
 #ifndef GLHEADER_H
@@ -261,12 +261,12 @@ typedef struct tagPIXELFORMATDESCRIPTOR PIXELFORMATDESCRIPTOR, *PPIXELFORMATDESC
 typedef union { GLfloat f; GLint i; } fi_type;
 
 
+                                                       
 #ifndef GL_MIRRORED_REPEAT_ARB
 #define GL_MIRRORED_REPEAT_ARB  0x8370
 #endif
 #ifndef GL_ARB_texture_mirrored_repeat
 #define GL_ARB_texture_mirrored_repeat 1
 #endif
-
 
 #endif /* GLHEADER_H */

@@ -143,7 +143,6 @@ struct xmesa_buffer {
    GLboolean wasCurrent;	/* was ever the current buffer? */
    XMesaVisual xm_visual;	/* the X/Mesa visual */
 
-   XMesaContext xm_context;     /* the context associated with this buffer */
    XMesaDisplay *display;
    GLboolean pixmap_flag;	/* is the buffer a Pixmap? */
    GLboolean pbuffer_flag;	/* is the buffer a Pbuffer? */
@@ -531,5 +530,7 @@ extern void XMesaReset( void );
 
 extern void xmesa_set_read_buffer( GLcontext *ctx, 
 				   GLframebuffer *buffer, GLenum mode );
+
+extern void xmesa_resize_buffers( GLframebuffer *buffer );
 
 #endif
