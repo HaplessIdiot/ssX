@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86$ */
+/* $XFree86: xc/include/DPS/dpsconfig.h,v 1.2 2000/08/23 22:10:02 tsi Exp $ */
 
 #ifndef	DPSCONFIG_H
 #define	DPSCONFIG_H
@@ -86,17 +86,18 @@
 #define IEEEFLOAT 1
 #endif /* _IBMR2 */
 
-#ifndef IEEEFLOAT
-#define IEEEFLOAT 1
-#endif /* IEEEFLOAT */
-
-#if defined(__alpha) || defined(__alpha__)
+#if defined(__alpha) || defined(__alpha__) || \
+    defined(__ia64__) || defined(ia64)
 #define IEEEFLOAT 1
 #endif /* __alpha */
 
 #ifdef __i386__
 #define IEEEFLOAT 1
 #endif /* __i386__ */
+
+#ifndef IEEEFLOAT
+#define IEEEFLOAT 1
+#endif /* IEEEFLOAT */
 
 #endif /* IEEEFLOAT */
 
@@ -125,7 +126,8 @@
 
 #ifndef SWAPBITS
 
-#if defined(__alpha) || defined(__alpha__)
+#if defined(__alpha) || defined(__alpha__) || \
+    defined(__ia64__) || defined(ia64)
 #define SWAPBITS 1
 #endif /* __alpha */
 
@@ -170,14 +172,15 @@
  * MIN_POINTER_ALIGN.  MIN_POINTER_ALIGN must be a power of 2.
  *
  * MIN_POINTER_ALIGN must be 8 on
- *	Alpha
+ *	Alpha, IA-64
  * MIN_POINTER_ALIGN must be 4 on
  *	VAX, i80x86 series, MIPS, mc680x0 series, IBM R6000, SPARC, HPPA
  */
 
 #ifndef MIN_POINTER_ALIGN
  
-#if defined(__alpha) || defined(__alpha__)
+#if defined(__alpha) || defined(__alpha__) || \
+    defined(__ia64__) || defined(ia64)
 #define MIN_POINTER_ALIGN 8
 #endif /* __alpha */
 

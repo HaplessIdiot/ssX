@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.23 2000/08/04 21:07:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.24 2000/08/22 21:54:30 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -840,6 +840,10 @@ ATIMach64SetDPMSMode
             default:            /* Muffle compiler */
                 return;
         }
+
+        /* Panel power management seems to involve the engine */
+        if (pATI->OptionAccel)
+            ATIMach64WaitForIdle(pATI);
 
         if (pATI->Chip == ATI_CHIP_264LT)
             outr(POWER_MANAGEMENT, power_management);

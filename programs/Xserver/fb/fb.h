@@ -1,5 +1,5 @@
 /*
- * Id: fb.h,v 1.1 1999/11/02 03:54:45 keithp Exp $
+ * $XFree86$
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,6 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.16 2000/05/06 21:09:30 keithp Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -105,7 +104,8 @@
 # ifdef WIN32
 typedef unsigned __int64    FbBits;
 # else
-#  if defined(__alpha__) || defined(__alpha)
+#  if defined(__alpha__) || defined(__alpha) || \
+      defined(ia64) || defined(__ia64__)
 typedef unsigned long	    FbBits;
 #  else
 typedef unsigned long long  FbBits;

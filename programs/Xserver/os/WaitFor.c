@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.24 2000/05/05 17:53:50 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.25 2000/08/10 17:40:39 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -561,7 +561,7 @@ WaitForSomething(pClientsReady)
 {
     register int	i, wt, nt;
     struct timeval	*wtp;
-    long        	alwaysCheckForInput[2];
+    HWEventQueueType   	alwaysCheckForInput[2];
     int 		nready;
     int 		timeout;
     unsigned long	now;

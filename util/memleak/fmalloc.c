@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/util/memleak/fmalloc.c,v 3.7 2000/05/06 22:23:48 keithp Exp $ */
+/* $XFree86: xc/util/memleak/fmalloc.c,v 3.8 2000/06/15 01:26:22 dawes Exp $ */
 
 
 /*
@@ -102,7 +102,8 @@ typedef struct _head {
 
 typedef struct _tail {
     magic    	    tailMagic;
-#if defined(__alpha) || defined(__alpha__)
+#if defined(__alpha) || defined(__alpha__) || \
+    defined(ia64) || deined(__ia64__)
     magic    	    tailPad;
 #endif
 } TailRec, *TailPtr;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.12 1999/10/14 02:45:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.13 2000/05/18 23:46:23 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -291,11 +291,7 @@ extern ClientPtr *clients;
 extern ClientPtr serverClient;
 extern int currentMaxClients;
 
-#if !(defined(__alpha) || defined(__alpha__))
-typedef long HWEventQueueType;
-#else
 typedef int HWEventQueueType;
-#endif
 typedef HWEventQueueType* HWEventQueuePtr;
 
 extern HWEventQueuePtr checkForInput[2];

@@ -1,4 +1,8 @@
-
+XFree86 4.0.1d (?? ?????? 2000)
+ 571. Fix input event queueuing for 64-bit platforms (Marc La France).
+ 570. IA-64 changes resulting from a source cross-check with Alpha support
+      for 64-bit dependencies (Marc La France).
+ 569. Fix in ATI drivber for DPMS support on panels (Marc La France).
  568. Fix I810 driver bug relating to Xv (Jonathan Bian).
 
 XFree86 4.0.1c (28 August 2000)
@@ -11088,4 +11092,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1287 2000/08/28 16:35:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1288 2000/08/30 19:28:57 mvojkovi Exp $

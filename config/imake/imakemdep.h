@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.40 2000/08/09 23:40:09 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.41 2000/08/11 17:27:10 dawes Exp $ */
 
 
 /* 
@@ -336,12 +336,15 @@ char *cpp_argv[ARGUMENTS] = {
 # ifdef __i386__
 	"-D__i386__",
 # endif
+# ifdef __ia64__
+	"-D__ia64__",
+# endif
 # ifdef __alpha__
 	"-D__alpha__",
 # endif
-#ifdef __arm__
+# ifdef __arm__
 	"-D__arm__",
-#endif
+# endif
 # ifdef __sparc__
 	"-D__sparc__",
 # endif
@@ -1035,6 +1038,12 @@ struct symtab	predefs[] = {
 # endif
 # ifdef PowerMAX_OS
 	{"PowerMAX_OS", "1"},
+# endif
+# ifdef ia64
+	{"ia64", "1"},
+# endif
+# ifdef __ia64__
+	{"__ia64__", "1"},
 # endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}
