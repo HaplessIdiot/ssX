@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.7 2002/05/27 16:40:05 alanh Exp $
+XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.9 2002/05/31 06:38:43 keithp Exp $
 
 XCOMM Allow for builds against old installed bits
 #if UseInstalled
@@ -79,6 +79,12 @@ LDPRELIBS=LdPreLibs
 
 YFLAGS = -d
 
+#ifndef XftLibDir
+#define XftLibDir $(LIBDIR)
+#endif
+
+XFTLIBDIR=XftLibDir
+
 INCLUDES=$(FREETYPE2INCLUDES)
 DEFINES=$(FREETYPE2DEFINES) $(RENDERDEFINES)
 
@@ -114,6 +120,30 @@ OLD = xftgram.c xftlex.c
 #if DoSharedLib && SharedDataSeparation
 SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 #endif
+
+/*
+ * InstallNamedTargetRelated - like InstallNamedTarget, but only
+ * installs if a related file already exists.  Useful for
+ * annotating older systems with information on the relationship
+ * with the new system.
+ */
+ 
+#ifndef InstallNamedTargetRelated
+#define InstallNamedTargetRelated(step,srcname,flags,dest,dstname,dstrel)@@\
+step:: srcname								@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	@if [ -f $(DESTDIR)dest/dstrel ]; then \			@@\
+	 set -x; \							@@\
+	 $(INSTALL) $(INSTALLFLAGS) flags srcname $(DESTDIR)dest/dstname; fi
+#endif
+
+#ifndef InstallNonExecFileRelated
+#define InstallNonExecFileRelated(file,dest,rel)			@@\
+InstallNamedTargetRelated(install,file,$(INSTDATFLAGS),dest,file,rel)
+#endif /* InstallNonExecFileBackup */
+
+InstallNonExecFileRelated(XftConfig-OBSOLETE,$(XFTLIBDIR),XftConfig)
+InstallNonExecFileRelated(XftConfig-OBSOLETE,$(CONFDIR),XftConfig)
 
 MANSUFFIX = $(LIBMANSUFFIX)
 InstallManPage(Xft,$(LIBMANDIR))
