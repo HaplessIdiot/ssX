@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.10 2001/10/31 22:50:25 tsi Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.11 2001/12/14 19:54:10 dawes Exp $ */
 
 /*
 **++ 
@@ -1241,7 +1241,8 @@ XPointer	client_data;
 
     count = XmbLookupString((XIC)ic, &ev->xkey, buf, sizeof(buf), &symbol, NULL);
 
-    if (((symbol >> 8 == 0xFF) &&
+    if ((ev->xkey.state & (AllMods & ~ShiftMask)) ||
+         ((symbol >> 8 == 0xFF) &&
          ((XK_BackSpace <= symbol && symbol <= XK_Clear) ||
            (symbol == XK_Return) ||
            (symbol == XK_Pause) ||
@@ -1249,23 +1250,20 @@ XPointer	client_data;
            (symbol == XK_Sys_Req) ||
            (symbol == XK_Escape) ||
            (symbol == XK_Delete) ||
-           (XK_Home <= symbol && symbol <= XK_Begin) ||
-           (XK_Select <= symbol && symbol <= XK_Insert) ||
-           (XK_Undo <= symbol && symbol <= XK_Break) ||
-           (symbol == XK_Num_Lock) ||
-           (symbol == XK_KP_Space) ||
-           (symbol == XK_KP_Tab) ||
-           (symbol == XK_KP_Enter) ||
-           (XK_KP_F1 <= symbol && symbol <= XK_KP_Delete) ||
-           (XK_KP_Multiply <= symbol && symbol <= XK_KP_9) ||
-           (XK_F1 <= symbol && symbol <= XK_F35) ||
-           (symbol == XK_KP_Equal))))
+           IsCursorKey(symbol) ||
+           IsKeypadKey(symbol) ||
+           IsMiscFunctionKey(symbol) ||
+           IsFunctionKey(symbol))))
         {
             IC_ClearPreviousChar(ic); 
             return False;
         }
     if (((symbol >> 8 == 0xFF) &&
-         (XK_Shift_L <= symbol && symbol <= XK_Hyper_R)) ||
+         IsModifierKey(symbol)) ||
+#ifdef XK_XKB_KEYS
+        ((symbol >> 8 == 0xFE) &&
+         (XK_ISO_Lock <= symbol && symbol <= XK_ISO_Last_Group_Lock)) ||
+#endif
         (symbol == NoSymbol))
     {
         return False;
