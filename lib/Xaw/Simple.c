@@ -64,6 +64,8 @@ static Bool ChangeSensitive(Widget);
 static void XawSimpleClassInitialize(void);
 static void XawSimpleClassPartInitialize(WidgetClass);
 #ifndef OLDXAW
+static void XawSimpleInitialize(Widget, Widget, ArgList, Cardinal*);
+static void XawSimpleDestroy(Widget);
 static void XawSimpleExpose(Widget, XEvent*, Region);
 #endif
 static void XawSimpleRealize(Widget, Mask*, XSetWindowAttributes*);
@@ -174,7 +176,11 @@ SimpleClassRec simpleClassRec = {
     XawSimpleClassInitialize,		/* class_initialize */
     XawSimpleClassPartInitialize,	/* class_part_initialize */
     False,				/* class_inited */
+#ifndef OLDXAW
+    XawSimpleInitialize,		/* initialize */
+#else
     NULL,				/* initialize */
+#endif
     NULL,				/* initialize_hook */
     XawSimpleRealize,			/* realize */
 #ifndef OLDXAW
@@ -191,7 +197,11 @@ SimpleClassRec simpleClassRec = {
     True,				/* compress_exposure */
     True,				/* compress_enterleave */
     False,				/* visible_interest */
+#ifndef OLDXAW
+    XawSimpleDestroy,			/* destroy */
+#else
     NULL,				/* destroy */
+#endif
     NULL,				/* resize */
 #ifndef OLDXAW
     XawSimpleExpose,			/* expose */
@@ -270,6 +280,28 @@ XawSimpleClassPartInitialize(WidgetClass cclass)
     if (c->simple_class.change_sensitive == XtInheritChangeSensitive)
 	c->simple_class.change_sensitive = super->simple_class.change_sensitive;
 }
+
+#ifndef OLDXAW
+/*ARGSUSED*/
+static void
+XawSimpleInitialize(Widget request, Widget cnew,
+		    ArgList args, Cardinal *num_args)
+{
+    SimpleWidget simple = (SimpleWidget)cnew;
+
+    if (simple->simple.tip)
+	simple->simple.tip = XtNewString(simple->simple.tip);
+}
+
+static void
+XawSimpleDestroy(Widget w)
+{
+    SimpleWidget simple = (SimpleWidget)w;
+
+    if (simple->simple.tip)
+	XtFree((XtPointer)simple->simple.tip);
+}
+#endif
 
 static void
 XawSimpleRealize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
@@ -406,6 +438,13 @@ XawSimpleSetValues(Widget current, Widget request, Widget cnew,
 				    s_new->core.depth);
 	if ((npix && npix->mask) || (opix && opix->mask))
 	    XawReshapeWidget(cnew, npix);
+    }
+
+    if (s_old->simple.tip != s_new->simple.tip) {
+	if (s_old->simple.tip)
+	    XtFree((XtPointer)s_old->simple.tip);
+	if (s_new->simple.tip)
+	    s_new->simple.tip = XtNewString(s_new->simple.tip);
     }
 
     if (s_old->simple.tip && !s_new->simple.tip)
