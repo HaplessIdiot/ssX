@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.12 1994/11/19 07:32:20 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.13 1994/11/26 12:32:17 dawes Exp $
 
 #define OSName		NetBSD 1.0
 #define	OSVendor	/**/
@@ -33,6 +33,7 @@ XCOMM operating system:  OSName
 #  define HasShm          	YES
 # endif
 #endif
+#define HasWChar32		YES
 
 /*
  * Compiler Features
@@ -87,6 +88,7 @@ XCOMM operating system:  OSName
 #endif
 
 #define StandardDefines	-DCSRG_BASED
+#define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
 #define ExtraLibraries		-lgnumalloc
 
@@ -192,22 +194,22 @@ install.man:: 								@@\
 /*
  * Definitions for the SUN server on NetBSD/sparc
  */
-#if defined(SparcArchitecture)
+#ifdef SparcArchitecture
 #ifndef Xsun24Server
-#define Xsun24Server    	NO
+#define Xsun24Server	NO
 #endif
 #ifndef XsunServer
-#define XsunServer      	YES
+#define XsunServer	YES
 #endif
 #ifndef XsunMonoServer
-#define XsunMonoServer		YES
+#define XsunMonoServer	YES
 #endif
-#ifndef	UseRgbTxt
-#define UseRgbTxt		YES
+#ifndef UseRgbTxt
+#define UseRgbTxt	YES
 #endif
 #endif
 
-#if defined(i386Architecture)
+#ifdef i386Architecture
 # include <xfree86.cf>
 #endif
 
