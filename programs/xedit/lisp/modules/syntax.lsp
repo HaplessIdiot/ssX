@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.8 2002/10/06 17:11:47 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.9 2002/11/02 22:58:10 paulo Exp $
 ;;
 
 (provide "syntax")
@@ -720,6 +720,12 @@ is used.
 			 indent-table
 			)
 
+    ;;  Make sure the property list is in use.
+    ;;  The interactive flag is only set after loading the file.
+    (or interactive
+	(property-list (syntax-quark *syntax*))
+    )
+
 #+debug
     (setq *from* 0 *to* 0)
 
@@ -728,9 +734,6 @@ is used.
 
     ;;  Remove any existing properties from the text.
     (clear-entities *from* (1+ *to*))
-
-    ;;  Make sure the property list is in use.
-    (property-list (syntax-quark *syntax*))
 
     (setq stream
 #-debug	(make-string-input-stream (read-text *from* (- *to* *from*)))
