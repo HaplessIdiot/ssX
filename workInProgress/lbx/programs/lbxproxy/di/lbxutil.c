@@ -1,4 +1,4 @@
-/* $XConsortium: lbxutil.c,v 1.10 95/05/30 18:59:31 mor Exp $ */
+/* $XConsortium: lbxutil.c,v 1.8 95/05/03 19:07:53 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -28,15 +28,20 @@
 
 
 #include	<stdio.h>
-#include	"misc.h"
+#define NEED_REPLIES
+#define NEED_EVENTS
+#include	<X11/X.h>	/* for KeymapNotify */
+#include	<X11/Xproto.h>
 #include	"assert.h"
-#include	"lbx.h"
+#include	"lbxdata.h"
 #include	"util.h"
 #include	"tags.h"
+#include	"lbx.h"		/* gets dixstruct.h */
 #include	"resource.h"
 #include	"wire.h"
 #include	"swap.h"
-#include	"colormap.h"
+#define _XLBX_SERVER_
+#include	"lbxstr.h"	/* gets dixstruct.h */
 
 static int  pad[4] = {0, 3, 2, 1};
 
@@ -183,7 +188,6 @@ Bool
 SaveReplyData(client, rep, len, data)
     ClientPtr   client;
     xReply     *rep;
-    int		len;
     pointer     data;
 {
     ReplyDataPtr new,
@@ -199,7 +203,7 @@ SaveReplyData(client, rep, len, data)
 	    xfree(new);
 	    return FALSE;
 	} else {
-	    memcpy((char *) new->data, (char *) data, len);
+	    bcopy((char *) data, (char *) new->data, len);
 	}
     }
     new->reply = *rep;
@@ -250,7 +254,6 @@ FlushDelayedReply(client, seqno)
 	}
 	list = next;
     }
-    return TRUE;
 }
 
 void
@@ -272,7 +275,6 @@ ForceSequenceUpdate(client)
     }
 }
 
-void
 WriteToClientPad(client, len, data)
     ClientPtr   client;
     char       *data;
@@ -288,7 +290,7 @@ XXX -- OS layer pads for us.  this may be a mess later...
 }
 
 /* XXX this is quite gross -- need a better way... */
-void
+int
 QueryTag(client, qtp)
     ClientPtr   client;
     QueryTagPtr qtp;
@@ -354,7 +356,7 @@ GetQueryTagReply(client, data)
 	    SwapLongs((CARD32 *) tdata, len / 4);
 	    break;
 	case LbxTagTypeFont:
-	    LbxSwapFontInfo((xLbxFontInfo *) tdata,
+	    LbxSwapFontInfo((xQueryFontReply *) tdata,
 		qtp->typedata.query_font.compression);
 	    break;
 	case LbxTagTypeConnInfo:
@@ -613,7 +615,6 @@ ZeroStats()
 
 #endif
 
-void
 SendInitLBXPackets()
 {
 
@@ -630,7 +631,6 @@ static      have_client_setup_info = FALSE;
  * Save away some connection info.  Also apply necessary changes
  * before sending on to the client.
  */
-void
 GetConnectionInfo(client, cs, changes)
     ClientPtr   client;
     xConnSetup *cs;
@@ -689,7 +689,40 @@ GetConnectionInfo(client, cs, changes)
     have_client_setup_info = TRUE;
 }
 
+Bool
+MakeLBXStuff(client)
+    ClientPtr   client;
+
+{
+    LBXDataPtr  new;
+
+    new = (LBXDataPtr) xalloc(sizeof(LBXDataRec));
+    if (!new)
+	return FALSE;
+    bzero((char *) new, sizeof(LBXDataRec));
+    client->screenPrivate[0] = (pointer) new;
+    return TRUE;
+}
+
+#ifdef DEBUG
+LBXDataPtr
+lbx_data_stuff(client)
+    ClientPtr   client;
+
+{
+    return (LBXDataPtr) client->screenPrivate[0];
+}
+
+#endif
+
 void
+FreeLBXStuff(client)
+    ClientPtr   client;
+
+{
+    xfree(client->screenPrivate[0]);
+}
+
 LbxCleanupSession()
 {
 

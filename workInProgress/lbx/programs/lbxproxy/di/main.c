@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.9 95/05/24 16:14:13 mor Exp $ */
+/* $XConsortium: main.c,v 1.7 94/12/01 20:43:25 mor Exp $ */
 /*
  * $NCDOr$
  * $NCDId: @(#)main.c,v 1.17 1994/11/16 02:27:55 lemke Exp $
@@ -25,20 +25,30 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
+#include "X.h"
+#include "Xproto.h"
+#include "input.h"
+#include "misc.h"
+#include "os.h"
+#include "resource.h"
 #include "lbx.h"
+#include "opaque.h"
+#include "servermd.h"
+#include "site.h"
 #include "wire.h"
 #include "atomcache.h"
 #include "colormap.h"
 #include "tags.h"
 #include "lbxext.h"
-#include "os.h"
-#include "resource.h"
+
+char	*display = "10";
+
+extern Bool NoticeServer ();
 
 XServerPtr  servers[MAX_SERVERS];
 
-char *display;
+extern char *display;
 
-int
 main (argc, argv)
     int	    argc;
     char    **argv;
@@ -69,11 +79,11 @@ main (argc, argv)
             serverClient->clientGone = FALSE;
             serverClient->server = servers[0];
 	    serverClient->index = 0;
-	    serverClient->server_client_index = 0;
 	    serverClient->clientAsMask = (Mask)0;
 	    serverClient->noClientException = Success;
             serverClient->awaitingSetup = FALSE;
             serverClient->swapped = FALSE;
+
 	}
 	TagsInit();
         if (!InitClientResources(serverClient))
@@ -81,7 +91,6 @@ main (argc, argv)
         InitDeleteFuncs();
 	InitExtensions();
         clients[0] = serverClient;
-	lastLbxClientIndexLookup = NULL;
         currentMaxClients = 1;
 
 	if (Dispatch () != 0)

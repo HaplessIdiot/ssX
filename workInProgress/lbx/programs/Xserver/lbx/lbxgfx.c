@@ -1,4 +1,4 @@
-/* $XConsortium: lbxgfx.c,v 1.15 95/05/30 19:59:09 mor Exp $ */
+/* $XConsortium: lbxgfx.c,v 1.14 95/04/04 21:25:44 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -57,7 +57,7 @@ push (cache, xid)
     XID	    cache[GFX_CACHE_SIZE];
     XID	    xid;
 {
-    memmove (cache+1, cache, (GFX_CACHE_SIZE - 1) * sizeof (cache[0]));
+    bcopy (cache, cache+1, (GFX_CACHE_SIZE - 1) * sizeof (cache[0]));
     cache[0] = xid;
 }
 
@@ -71,7 +71,7 @@ use (cache, i)
     tmp = cache[i];
     if (i != 0)
     {
-	memmove (cache + 1, cache, i * sizeof (cache[0]));
+	bcopy (cache, cache + 1, i * sizeof (cache[0]));
 	cache[0] = tmp;
     }
     return tmp;
@@ -95,7 +95,7 @@ LbxDecodeGFXCache(client, cacheEnts, after, drawp, gcp)
     skip = 0;
     if (dcache == GFXCacheNone)
     {
-	memcpy (drawp, after, sizeof (Drawable));
+	bcopy (after, drawp, sizeof (Drawable));
 	push (DrawableCache(client), *drawp);
 	after += sizeof (Drawable);
 	skip += sizeof (Drawable);
@@ -104,7 +104,7 @@ LbxDecodeGFXCache(client, cacheEnts, after, drawp, gcp)
 	*drawp = use (DrawableCache(client), dcache);
     if (gcache == GFXCacheNone)
     {
-	memcpy (gcp, after, sizeof (GContext));
+	bcopy (after, gcp, sizeof (GContext));
 	push (GContextCache(client), *gcp);
 	skip += sizeof (GContext);
     }
@@ -127,7 +127,7 @@ LbxDecodeDrawableCache(client, cacheEnts, after, drawp)
     skip = 0;
     if (dcache == GFXCacheNone)
     {
-	memcpy (drawp, after, sizeof (Drawable));
+	bcopy (after, drawp, sizeof (Drawable));
 	push (DrawableCache(client), *drawp);
 	after += sizeof (Drawable);
 	skip += sizeof (Drawable);
@@ -151,7 +151,7 @@ LbxDecodeGCCache(client, cacheEnts, after, gcp)
     skip = 0;
     if (gcache == GFXCacheNone)
     {
-	memcpy (gcp, after, sizeof (GContext));
+	bcopy (after, gcp, sizeof (GContext));
 	push (GContextCache(client), *gcp);
 	after += sizeof (GContext);
 	skip += sizeof (GContext);
@@ -503,7 +503,7 @@ LbxDecodePolyText (client)
     DECODE_SHORT(in, xreq->x);
     DECODE_SHORT(in, xreq->y);
     len -= (in - pos);
-    memmove ((char *) (xreq + 1), in, len);
+    bcopy (in, (char *) (xreq + 1), len);
     client->req_len = xreq->length = (sizeof (xPolyTextReq) + len) >> 2;
     client->requestBuffer = (pointer) xreq;
     return (*ProcVector[xreq->reqType])(client);
@@ -533,7 +533,7 @@ LbxDecodeImageText (client)
     DECODE_SHORT(in, xreq->x);
     DECODE_SHORT(in, xreq->y);
     len -= (in - pos);
-    memmove ((char *) (xreq + 1), in, len);
+    bcopy (in, (char *) (xreq + 1), len);
     client->req_len = xreq->length = (sizeof (xImageTextReq) + len) >> 2;
     client->requestBuffer = (pointer) xreq;
     return (*ProcVector[xreq->reqType])(client);

@@ -1,6 +1,6 @@
 /*
  * $NCDId: @(#)lbxdelta.c,v 1.2 1994/01/22 02:23:40 dct Exp $
- * $XConsortium: lbxdelta.c,v 1.5 95/05/30 18:26:59 mor Exp $
+ * $XConsortium: lbxdelta.c,v 1.4 94/03/27 12:05:47 dpw Exp $
  * Copyright 1993 Network Computing Devices
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -176,7 +176,7 @@ LBXDecodeDelta(pcache, deltas, ndiff, index, buf)
 
     pcache->nextDelta = (pcache->nextDelta + 1) % pcache->nDeltas;
     if (index != newindex) {
-	memcpy(p, pcache->deltas[index].buf, len);
+	bcopy(pcache->deltas[index].buf, p, len);
 	pcache->deltas[newindex].length = len;
     }
     for (i = 0; i < ndiff; i++)
@@ -194,7 +194,7 @@ LBXAddDeltaOut(pcache, inmsg, inmsglen)
     unsigned char	*inmsg;
     int			inmsglen;
 {
-    memcpy(pcache->deltas[pcache->nextDelta].buf, inmsg, inmsglen);
+    bcopy(inmsg, pcache->deltas[pcache->nextDelta].buf, inmsglen);
     pcache->deltas[pcache->nextDelta].length = inmsglen;
     pcache->nextDelta = (pcache->nextDelta + 1) % pcache->nDeltas;
     if (pcache->activeDeltas < pcache->nDeltas)
@@ -210,7 +210,7 @@ LBXAddDeltaIn(pcache, inmsg, inmsglen)
     unsigned char	*inmsg;
     int			inmsglen;
 {
-    memcpy(pcache->deltas[pcache->nextDelta].buf, inmsg, inmsglen);
+    bcopy(inmsg, pcache->deltas[pcache->nextDelta].buf, inmsglen);
     pcache->deltas[pcache->nextDelta].length = inmsglen;
     pcache->nextDelta = (pcache->nextDelta + 1) % pcache->nDeltas;
 }

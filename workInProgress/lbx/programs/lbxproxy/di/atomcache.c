@@ -1,4 +1,4 @@
-/* $XConsortium: atomcache.c,v 1.6 95/05/17 18:26:41 dpw Exp $ */
+/* $XConsortium: atomcache.c,v 1.5 94/03/27 13:30:22 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -49,8 +49,7 @@
  */
 
 
-#include "misc.h"
-#include "util.h"
+#include "os.h"
 #include "atomcache.h"
 
 typedef struct _AtomList {
@@ -71,10 +70,9 @@ static AtomListPtr *reverseMap;
 static int  reverseMapSize;
 static Atom lastAtom;
 
-static int
+static
 Hash(string, len)
     char       *string;
-    int		len;
 {
     int         h;
 
@@ -86,7 +84,7 @@ Hash(string, len)
     return h;
 }
 
-static Bool
+static
 ResizeHashTable()
 {
     int         newHashSize;
@@ -129,7 +127,6 @@ ResizeHashTable()
     return TRUE;
 }
 
-static Bool
 ResizeReverseMap()
 {
     if (reverseMapSize == 0)
@@ -143,11 +140,10 @@ ResizeReverseMap()
     return TRUE;
 }
 
-static Bool
+static
 NameEqual(a, b, l)
     char       *a,
                *b;
-    int		l;
 {
     while (l--)
 	if (*a++ != *b++)

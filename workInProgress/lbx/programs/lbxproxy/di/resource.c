@@ -50,7 +50,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.8 95/05/24 16:14:13 mor Exp $ */
+/* $XConsortium: resource.c,v 1.6 94/12/01 20:42:14 mor Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -75,10 +75,15 @@ SOFTWARE.
  *      resource "owned" by the client.
  */
 
+#include <X11/X.h>
+#define	NEED_REPLIES
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "os.h"
 #include "resource.h" 
+#include "lbxdata.h" 
 #include "lbx.h" 
+#include "opaque.h"
 #include "colormap.h"
 
 static void RebuildTable();
@@ -146,7 +151,6 @@ CreateNewResourceClass()
 
 ClientResourceRec clientTable[MAXCLIENTS];
 
-Bool
 InitDeleteFuncs()
 {
     lastResourceType = RT_LASTPREDEF;
@@ -295,70 +299,6 @@ FakeClientID(client)
     return id;
 }
 
-
-/*
- * Return the client index assigned by the proxy for this XID.
- * The XID has encoded in it the client index assigned by the server.
- * We must map the client index assigned by the server to the client
- * index assigned by the proxy.
- *
- * Each ClientRec has a 'server_client_index' field which contains the
- * client index assigned by the server for that client.  This function
- * extracts the client index from the XID and searches the list of
- * ClientRec's for a matching server_client_index.  We then return
- * the proxy assigned client index for the ClientRec found.
- *
- * To possibly speed up this operation, we keep a pointer to the last
- * ClientRec used to map a server client index to a proxy client index.
- * Before we attempt a linear search of all ClientRec's, we first check
- * the 'lastLbxClientIndexLookup' ClientRec for a match.
- */
-
-int
-LbxClientIndex (id)
-
-XID id;
-
-{
-    int server_client_index = CLIENT_ID(id);
-
-    if (server_client_index == 0)
-	return (0);
-    else if (lastLbxClientIndexLookup &&
-	lastLbxClientIndexLookup->server_client_index == server_client_index) {
-
-	/* This is the same client referenced last time */
-	return (lastLbxClientIndexLookup->index);
-    } else {
-	int i, found = 0;
-
-	for (i = 1; i < MAXCLIENTS; i++) {
-	    if (clients[i] &&
-		clients[i]->server_client_index == server_client_index) {
-		    found = 1;
-		    lastLbxClientIndexLookup = clients[i];
-		    break;
-		}
-	}		
-
-	if (found) {
-	    /*
-	     * We found it.  Return the client index assigned by the proxy.
-	     */
-
-	    return (clients[i]->index);
-	} else {
-	    /*
-	     * The proxy doesn't know about this client.  Just return
-	     * the client indexed assigned by the server.
-	     */
-
-	    return (server_client_index);
-	}
-    }
-}
-
-
 Bool
 AddResource(id, type, value)
     XID id;
@@ -369,7 +309,7 @@ AddResource(id, type, value)
     register ClientResourceRec *rrec;
     register ResourcePtr res, *head;
     	
-    client = LbxClientIndex(id);
+    client = CLIENT_ID(id);
     rrec = &clientTable[client];
     if (!rrec->buckets)
     {
@@ -460,7 +400,7 @@ FreeResource(id, skipDeleteFuncType)
     int		elements;
     Bool	gotOne = FALSE;
 
-    if (((cid = LbxClientIndex(id)) < MAXCLIENTS) && clientTable[cid].buckets)
+    if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
     {
 	head = &clientTable[cid].resources[Hash(cid, id)];
 	eltptr = &clientTable[cid].elements;
@@ -497,7 +437,7 @@ FreeResourceByType(id, type, skipFree)
     register    ResourcePtr res;
     register	ResourcePtr *prev, *head;
 
-    if (((cid = LbxClientIndex(id)) < MAXCLIENTS) && clientTable[cid].buckets)
+    if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
     {
 	head = &clientTable[cid].resources[Hash(cid, id)];
 
@@ -533,7 +473,7 @@ ChangeResourceValue (id, rtype, value)
     int    cid;
     register    ResourcePtr res;
 
-    if (((cid = LbxClientIndex(id)) < MAXCLIENTS) && clientTable[cid].buckets)
+    if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
     {
 	res = clientTable[cid].resources[Hash(cid, id)];
 
@@ -622,7 +562,7 @@ LookupIDByType(id, rtype)
     int    cid;
     register    ResourcePtr res;
 
-    if (((cid = LbxClientIndex(id)) < MAXCLIENTS) && clientTable[cid].buckets)
+    if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
     {
 	res = clientTable[cid].resources[Hash(cid, id)];
 
@@ -645,7 +585,7 @@ LookupIDByClass(id, classes)
     int    cid;
     register    ResourcePtr res;
 
-    if (((cid = LbxClientIndex(id)) < MAXCLIENTS) && clientTable[cid].buckets)
+    if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
     {
 	res = clientTable[cid].resources[Hash(cid, id)];
 
