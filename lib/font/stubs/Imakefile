@@ -1,14 +1,14 @@
-XCOMM $XFree86: xc/lib/font/stubs/Imakefile,v 1.1 1999/01/11 05:13:18 dawes Exp $
+XCOMM $XFree86: xc/lib/font/stubs/Imakefile,v 1.2 1999/08/30 01:24:57 dawes Exp $
 
 #include <Server.tmpl>
 
 INCLUDES = -I$(FONTINCSRC) -I../include -I$(XTOP)/include
 SRCS = cauthgen.c csignal.c delfntcid.c errorf.c fatalerror.c \
-       findoldfnt.c getcres.c getdefptsize.c getnewfntcid.c \
+       findoldfnt.c getcres.c getdefptsize.c getnewfntcid.c gettime.c \
        initfshdl.c regfpefunc.c rmfshdl.c servclient.c setfntauth.c \
        stfntcfnt.c xpstubs.c
 OBJS = cauthgen.o csignal.o delfntcid.o errorf.o fatalerror.o \
-       findoldfnt.o getcres.o getdefptsize.o getnewfntcid.o \
+       findoldfnt.o getcres.o getdefptsize.o getnewfntcid.o gettime.o \
        initfshdl.o regfpefunc.o rmfshdl.o servclient.o setfntauth.o \
        stfntcfnt.o xpstubs.o
 
