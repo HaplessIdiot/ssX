@@ -3,6 +3,7 @@
 #define NEED_REPLIES
 
 #include "Xlibint.h"
+#include "Xvproto.h"
 #include "XvMCproto.h"
 #include "XvMClib.h"
 
