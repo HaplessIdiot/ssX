@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.4 1999/06/20 15:02:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.5 1999/06/27 16:17:29 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -63,7 +63,7 @@ extern int afbInverseAlu[];
 extern int afbScreenPrivateIndex;
 /* warning: PixelType definition duplicated in maskbits.h */
 #ifndef PixelType
-#define PixelType unsigned long
+#define PixelType CARD32 
 #endif /* PixelType */
 
 #define AFB_MAX_DEPTH 8
