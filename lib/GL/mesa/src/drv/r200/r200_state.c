@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state.c,v 1.2 2002/11/05 17:46:08 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state.c,v 1.3 2002/12/16 16:18:54 dawes Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -552,7 +552,8 @@ static void r200FrontFace( GLcontext *ctx, GLenum mode )
  */
 static void r200PointSize( GLcontext *ctx, GLfloat size )
 {
-   fprintf(stderr, "%s: %f\n", __FUNCTION__, size );
+   if (R200_DEBUG & DEBUG_STATE)
+      fprintf(stderr, "%s: %f\n", __FUNCTION__, size );
 }
 
 /* =============================================================
