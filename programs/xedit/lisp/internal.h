@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.21 2002/03/10 08:56:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.22 2002/03/12 17:34:36 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -218,24 +218,24 @@
  * avoid name clashes
 */
 #define MACRO_ARGUMENT1()				\
-	mac->env.names[mac->env.base] = UNBOUND
+	mac->env.names[mac->env.base] = NULL
 #define MACRO_ARGUMENT2()				\
 	mac->env.names[mac->env.base] =			\
-	    mac->env.names[mac->env.base + 1] = UNBOUND
+	    mac->env.names[mac->env.base + 1] = NULL
 #define MACRO_ARGUMENT3()				\
 	mac->env.names[mac->env.base] =			\
 	  mac->env.names[mac->env.base + 1] =		\
-	    mac->env.names[mac->env.base + 2] = UNBOUND
+	    mac->env.names[mac->env.base + 2] = NULL
 #define MACRO_ARGUMENT4()				\
 	mac->env.names[mac->env.base] =			\
 	  mac->env.names[mac->env.base + 1] =		\
 	    mac->env.names[mac->env.base + 2] =		\
-		mac->env.names[mac->env.base + 3] = UNBOUND
+		mac->env.names[mac->env.base + 3] = NULL
 #define MACRO_ARGUMENTS(count)				\
     {							\
 	int i = (count) + mac->env.base;		\
 	for (; i >= mac->env.base; i--)			\
-	    mac->env.names[i] = UNBOUND;		\
+	    mac->env.names[i] = NULL;			\
     }
 
 /* Error checking, to be called from builtin functions */

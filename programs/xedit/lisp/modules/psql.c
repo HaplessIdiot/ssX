@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.5 2002/03/10 06:53:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.6 2002/03/20 05:12:18 paulo Exp $ */
 
 #include <stdlib.h>
 #include <libpq-fe.h>
@@ -35,6 +35,7 @@
 #include <postgres.h>
 #include <utils/geo_decls.h>
 #include "internal.h"
+#include "private.h"
 
 /*
  * Prototypes
@@ -647,7 +648,7 @@ Lisp_PQnotifies(LispMac *mac, LispBuiltin *builtin)
  pq-notifies connection
  */
 {
-    LispObj *result, *code, *frm = FRM;
+    LispObj *result, *code, *cod = COD;
     PGconn *conn;
     PGnotify *notifies;
 
@@ -669,10 +670,10 @@ Lisp_PQnotifies(LispMac *mac, LispBuiltin *builtin)
 		       CONS(STRING(notifies->relname),
 			    CONS(KEYWORD("BE-PID"),
 				 CONS(REAL(notifies->be_pid), NIL)))));
-    FRM = CONS(code, FRM);
+    COD = CONS(code, COD);
     GCUProtect();
     result = EVAL(code);
-    FRM = frm;
+    COD = cod;
 
     free(notifies);
 

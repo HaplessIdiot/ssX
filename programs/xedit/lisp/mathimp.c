@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.3 2002/02/08 02:59:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.4 2002/03/08 04:33:18 paulo Exp $ */
 
 #ifdef __GNUC__
 #define CONST __attribute__ ((__const__))
@@ -1891,12 +1891,12 @@ sqrt_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 	    if (cmp < 0) {
 		bigi = XALLOC(mpi);
 		mpi_init(bigi);
-		mpi_seti(bigi, (long)value);
+		mpi_setd(bigi, value);
 		imagpart = BIGINTEGER(bigi);
 		XMEM(bigi);
 	    }
 	    else
-		mpi_seti(XBI(accum), (long)value);
+		mpi_setd(XBI(accum), value);
 	}
     }
     else {

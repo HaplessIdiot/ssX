@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.23 2002/03/08 04:33:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.24 2002/03/10 04:57:47 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -262,7 +262,7 @@ struct _LispMac {
     /* environment */
     struct {
 	LispObj **values;
-	LispObj **names;
+	Atom_id *names;
 	int lex;		/* until where variables are visible */
 	int head;		/* top of environment */
 	int base;		/* base of arguments to function */
@@ -273,7 +273,7 @@ struct _LispMac {
     /* rebound special variables, dynamic variables */
     struct {
 	LispObj **values;
-	LispObj **names;
+	Atom_id *names;
 	int length;		/* number of dynamics * 2 */
 	int space;		/* number of objects in pairs */
     } dyn;

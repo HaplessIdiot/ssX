@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.44tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.45 2002/04/10 16:20:08 tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -725,17 +725,13 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 
 	/* Protect global symbols */
 	for (pentry = pack->glb.pairs, eentry = pentry + pack->glb.length;
-	    pentry < eentry; pentry++) {
-	    (*pentry)->mark = LispTrue_t;
+	    pentry < eentry; pentry++)
 	    LispMark((*pentry)->data.atom->property->value);
-	}
 
 	/* Protect special symbols */
 	for (pentry = pack->spc.pairs, eentry = pentry + pack->spc.length;
-	     pentry < eentry; pentry++) {
-	    (*pentry)->mark = LispTrue_t;
+	     pentry < eentry; pentry++)
 	    LispMark((*pentry)->data.atom->property->value);
-	}
 
 	/* Traverse atom list, protecting properties, and function/structure
 	 * definitions if mac->gc.immutablebits set */
@@ -2753,12 +2749,12 @@ LispGetVar(LispMac *mac, LispObj *atom)
     id = name->string;
 
     for (base = mac->env.lex, i = mac->env.head - 1; i >= base; i--)
-	if (ATOMID(mac->env.names[i]) == id)
+	if (mac->env.names[i] == id)
 	    return (mac->env.values[i]);
 
     if (name->dyn) {
 	for (i = mac->dyn.length - 1; i >= 0; i--)
-	    if (ATOMID(mac->dyn.names[i]) == id)
+	    if (mac->dyn.names[i] == id)
 		return (mac->dyn.values[i]);
 
 	if (name->a_object) {
@@ -2789,12 +2785,12 @@ LispGetVarAddr(LispMac *mac, LispObj *atom)
     id = name->string;
 
     for (base = mac->env.lex, i = mac->env.head - 1; i >= base; i--)
-	if (ATOMID(mac->env.names[i]) == id)
+	if (mac->env.names[i] == id)
 	    return (&(mac->env.values[i]));
 
     if (name->dyn) {
 	for (i = mac->dyn.length - 1; i >= 0; i--)
-	    if (ATOMID(mac->dyn.names[i]) == id)
+	    if (mac->dyn.names[i] == id)
 		return (&(mac->dyn.values[i]));
 
 	if (name->a_object) {
@@ -2866,11 +2862,11 @@ LispDoAddVar(LispMac *mac, LispObj *atom, LispObj *obj)
 	    LispMoreDynamics(mac);
 
 	mac->dyn.values[mac->dyn.length] = obj;
-	mac->dyn.names[mac->dyn.length++] = atom;
+	mac->dyn.names[mac->dyn.length++] = ATOMID(atom);
     }
 
     mac->env.values[mac->env.length] = obj;
-    mac->env.names[mac->env.length++] = atom;
+    mac->env.names[mac->env.length++] = ATOMID(atom);
 }
 
 LispObj *
@@ -2885,12 +2881,12 @@ LispSetVar(LispMac *mac, LispObj *atom, LispObj *obj)
     id = name->string;
 
     for (base = mac->env.lex, i = mac->env.head - 1; i >= base; i--)
-	if (ATOMID(mac->env.names[i]) == id)
+	if (mac->env.names[i] == id)
 	    return (mac->env.values[i] = obj);
 
     if (name->dyn) {
 	for (i = mac->dyn.length - 1; i >= 0; i--)
-	    if (ATOMID(mac->dyn.names[i]) == id)
+	    if (mac->dyn.names[i] == id)
 		return (mac->dyn.values[i] = obj);
 
 	if (name->watch) {
@@ -3468,9 +3464,10 @@ LispEvalBackquote(LispMac *mac, LispObj *argument, int quote)
 static void
 LispMoreEnvironment(LispMac *mac)
 {
-    LispObj **names, **values;
+    Atom_id *names;
+    LispObj **values;
 
-    names = realloc(mac->env.names, (mac->env.space + 256) * sizeof(LispObj*));
+    names = realloc(mac->env.names, (mac->env.space + 256) * sizeof(Atom_id));
     if (names != NULL) {
 	values = realloc(mac->env.values,
 			 (mac->env.space + 256) * sizeof(LispObj*));
@@ -3517,9 +3514,10 @@ LispMoreSpecials(LispMac *mac, LispPackage *pack)
 static void
 LispMoreDynamics(LispMac *mac)
 {
-    LispObj **names, **values;
+    Atom_id *names;
+    LispObj **values;
 
-    names = realloc(mac->dyn.names, (mac->dyn.space + 32) * sizeof(LispObj*));
+    names = realloc(mac->dyn.names, (mac->dyn.space + 32) * sizeof(Atom_id));
     if (names != NULL) {
 	values = realloc(mac->dyn.values,
 			 (mac->dyn.space + 32) * sizeof(LispObj*));
@@ -4046,7 +4044,7 @@ LispRunFunMac(LispMac *mac, LispObj *name, LispObj *code, int macro)
 	    result = EVAL(CAR(code));
 
 	for (; base < head; base++)
-	    mac->env.names[base] = UNBOUND;
+	    mac->env.names[base] = NULL;
     }
 
     if (macro) {
