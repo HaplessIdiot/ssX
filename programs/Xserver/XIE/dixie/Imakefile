@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/6 1995/12/07 21:15:29 gildea $
-XCOMM $XFree86: xc/programs/Xserver/XIE/dixie/Imakefile,v 3.5 1996/10/03 08:30:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/dixie/Imakefile,v 3.7 1997/02/18 17:51:10 hohndel Exp $
 XCOMM build dixie archive
 #include <Server.tmpl>
 
@@ -7,7 +7,7 @@ SUBDIRS = request import process export
 OBJS = request/?*.o import/?*.o process/?*.o export/?*.o 
 DONES = request/DONE import/DONE process/DONE export/DONE 
 
-#if !XieModule
+#if !XieModule || DoLoadableServer
 #define	IHaveSubdirs
 
 
@@ -22,7 +22,7 @@ $(DONES): $(SUBDIRS)
 
 NormalDepLibraryTarget(dixie,$(SUBDIRS) $(DONES),$(OBJS))
 
-#if !XieModule
+#if !XieModule || DoLoadableServer
 ForceSubdirs($(SUBDIRS))
 
 DependSubdirs($(SUBDIRS))

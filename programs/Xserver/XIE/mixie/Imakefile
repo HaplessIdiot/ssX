@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/6 1995/12/07 21:15:34 gildea $
-XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/Imakefile,v 3.6 1996/10/03 08:31:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/Imakefile,v 3.8 1997/02/18 17:51:20 hohndel Exp $
 #include <Server.tmpl>
 
 #if BuildDIS
@@ -12,7 +12,7 @@ OBJS = control/?*.o fax/?*.o import/?*.o jpeg/?*.o process/?*.o export/?*.o
 DONES = control/DONE fax/DONE import/DONE jpeg/DONE process/DONE export/DONE 
 #endif
 
-#if 0 && !XieModule
+#if !XieModule || DoLoadableServer
 #define	IHaveSubdirs
 
 
@@ -34,7 +34,7 @@ NormalDepLibraryTarget(mixie,$(SUBDIRS) $(DONES),?*.o)
 NormalDepLibraryTarget(mixie,$(SUBDIRS) $(DONES),$(OBJS))
 #endif
 
-#if !XieDynamicModule
+#if !XieModule || DoLoadableServer
 ForceSubdirs($(SUBDIRS))
 
 DependSubdirs($(SUBDIRS))
