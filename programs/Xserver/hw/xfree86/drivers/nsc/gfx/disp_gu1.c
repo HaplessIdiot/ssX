@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/disp_gu1.c,v 1.3 2003/02/05 18:38:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/disp_gu1.c,v 1.4 2003/02/06 17:46:02 alanh Exp $ */
 /*
  * $Workfile: disp_gu1.c $
  *
@@ -409,6 +409,9 @@ gu1_video_shutdown(void)
    /* SC1200, for example, also disables the alpha blending regions. */
 
    gfx_reset_video();
+
+   /* Cyrix Corporation 5530 Video [Kahlua] rev 0 needs some more time */
+   gfx_delay_milliseconds(1);
 
    /* UNLOCK THE DISPLAY CONTROLLER REGISTERS */
 
