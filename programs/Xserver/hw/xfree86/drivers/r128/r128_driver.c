@@ -314,6 +314,7 @@ static const char *i2cSymbols[] = {
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
+    "vbeFree",
     NULL
 };
 
@@ -1181,6 +1182,7 @@ static Bool R128PreInitDDC(ScrnInfoPtr pScrn)
     xf86LoaderReqSymLists(ddcSymbols, NULL);
 
     if (xf86LoadSubModule(pScrn, "vbe")) {
+        xf86LoaderReqSymLists(vbeSymbols,NULL);
  	pVbe = VBEInit(info->pInt,info->pEnt->index);
  	if (!pVbe) 
 	  goto RETURN;

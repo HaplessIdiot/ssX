@@ -200,6 +200,13 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    "vbeFree",
+    NULL
+};
+
 static const char *i2cSymbols[] = {
     "xf86CreateI2CBusRec",
     "xf86I2CBusInit",
@@ -366,7 +373,7 @@ nvSetup(pointer module, pointer opts, int *errmaj, int *errmin)
                           fbSymbols,
 #endif                          
                           ramdacSymbols, shadowSymbols,
-                          i2cSymbols, ddcSymbols,
+                          i2cSymbols, ddcSymbols, vbeSymbols,
                           fbdevHWSymbols, int10Symbols, NULL);
 
         /*
@@ -654,10 +661,44 @@ NVdoDDC(ScrnInfoPtr pScrn)
     NVPtr pNv;
     NVRamdacPtr NVdac;
     xf86MonPtr MonInfo = NULL;
-
+#if 0
+    vbeInfoPtr pVbe;
+#endif
     hwp = VGAHWPTR(pScrn);
     pNv = NVPTR(pScrn);
     NVdac = &pNv->Dac;
+
+    /* Load DDC if we have the code to use it */
+    /* This gives us DDC1 */
+    if (xf86LoadSubModule(pScrn, "ddc")) {
+      xf86LoaderReqSymLists(ddcSymbols, NULL);
+    } else {
+      /* ddc module not found, we can do without it */
+      pNv->ddc1Read = NULL;
+      
+      /* Without DDC, we have no use for the I2C bus */
+      pNv->i2cInit = NULL;
+      return NULL;
+    }
+
+#if 0 /* for some reason vbe messes up modes */
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+        xf86LoaderReqSymLists(vbeSymbols,NULL);
+	pVbe = VBEInit(pNv->pInt,pNv->pEnt->index);
+	if (pVbe) {
+	    MonInfo = xf86PrintEDID(vbeDoEDID(pVbe,NULL));
+	    vbeFree(pVbe);
+	    if (MonInfo) {
+	        xf86SetDDCproperties(pScrn,MonInfo);
+		return MonInfo;
+	    }
+	}
+    } 
+#endif
+
+     if (pNv->pInt)
+         xf86FreeInt10(pNv->pInt);
+     pNv->pInt = NULL;
 
     if (!pNv->Primary) {
         /* XXX Need to write an NV mode ddc1SetSpeed */
@@ -676,6 +717,18 @@ NVdoDDC(ScrnInfoPtr pScrn)
 
     /* It is now safe to talk to the card */
 #if NVuseI2C
+    /* - DDC can use I2C bus */
+    /* Load I2C if we have the code to use it */
+    if (pNv->i2cInit) {
+        if ( xf86LoadSubModule(pScrn, "i2c") ) {
+            xf86LoaderReqSymLists(i2cSymbols,NULL);
+        } else {
+            /* i2c module not found, we can do without it */
+            pNv->i2cInit = NULL;
+            pNv->I2C = NULL;
+        }
+    }
+
     /* Initialize I2C bus - used by DDC if available */
     if (pNv->i2cInit) {
         pNv->i2cInit(pScrn);
@@ -755,17 +808,6 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     if (pNv->pEnt->location.type != BUS_PCI)
 	return FALSE;
  
-    /* Initialize the card through int10 interface if needed */
-    if ( xf86LoadSubModule(pScrn, "int10")){
-        xf86Int10InfoPtr pInt;
-
-	xf86LoaderReqSymLists(int10Symbols, NULL);
-
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
-        pInt = xf86InitInt10(pNv->pEnt->index);
-        xf86FreeInt10(pInt);
-    }
-   
     /* Find the PCI info for this screen */
     pNv->PciInfo = xf86GetPciInfoForEntity(pNv->pEnt->index);
     pNv->PciTag = pciTag(pNv->PciInfo->bus, pNv->PciInfo->device,
@@ -773,6 +815,15 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 
     pNv->Primary = xf86IsPrimaryPci(pNv->PciInfo);
 
+    /* Initialize the card through int10 interface if needed */
+     if ( !pNv->Primary && xf86LoadSubModule(pScrn, "int10")){
+ 
+ 	xf86LoaderReqSymLists(int10Symbols, NULL);
+ 
+         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
+         pNv->pInt = xf86InitInt10(pNv->pEnt->index);
+     }
+   
     {
         resRange vgaio[] =      { {ResShrIoBlock,0x3B0,0x3BB},
                                   {ResShrIoBlock,0x3C0,0x3DF},
@@ -1107,36 +1158,39 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	
     pNv->FbMapSize = pScrn->videoRam * 1024;
 
-    /* Load DDC if we have the code to use it */
-    /* This gives us DDC1 */
-    if (pNv->ddc1Read || pNv->i2cInit) {
-        if (xf86LoadSubModule(pScrn, "ddc")) {
-            xf86LoaderReqSymLists(ddcSymbols, NULL);
-        } else {
-            /* ddc module not found, we can do without it */
-            pNv->ddc1Read = NULL;
-
-            /* Without DDC, we have no use for the I2C bus */
-            pNv->i2cInit = NULL;
-        }
-    }
-#if NVuseI2C
-    /* - DDC can use I2C bus */
-    /* Load I2C if we have the code to use it */
-    if (pNv->i2cInit) {
-        if ( xf86LoadSubModule(pScrn, "i2c") ) {
-            xf86LoaderReqSymLists(i2cSymbols,NULL);
-        } else {
-            /* i2c module not found, we can do without it */
-            pNv->i2cInit = NULL;
-            pNv->I2C = NULL;
-        }
-    }
-#endif /* NVuseI2C */
-
     /* Read and print the Monitor DDC info */
     pScrn->monitor->DDC = NVdoDDC(pScrn);
-
+#if 0
+    /*
+     * This code was for testing. It will be removed as soon
+     * as this is integrated into the common level.
+     */
+    if ((!pScrn->monitor->nHsync || !pScrn->monitor->nVrefresh)
+ 	&& pScrn->monitor->DDC) {
+ 	int i;
+ 	int h = (!pScrn->monitor->nHsync) ? 0 : -1;
+ 	int v = (!pScrn->monitor->nVrefresh) ? 0 : -1;
+ 	xf86MonPtr pMon = (xf86MonPtr)pScrn->monitor->DDC;
+ 	for (i = 0; i < DET_TIMINGS; i++) {
+ 	    if (pMon->det_mon[i].type == DS_RANGES) {
+ 		if (h != -1) {
+ 		    pScrn->monitor->hsync[h].lo
+ 			= pMon->det_mon[i].section.ranges.min_h;
+ 		    pScrn->monitor->hsync[h++].hi
+ 			= pMon->det_mon[i].section.ranges.max_h;
+ 		}
+ 		if (v != -1) {
+ 		    pScrn->monitor->vrefresh[v].lo
+ 			= pMon->det_mon[i].section.ranges.min_v;
+ 		    pScrn->monitor->vrefresh[v++].hi
+ 			= pMon->det_mon[i].section.ranges.max_v;
+ 		}
+ 	    }
+ 	}
+ 	if (h != -1) pScrn->monitor->nHsync = h;
+ 	if (v != -1) pScrn->monitor->nVrefresh = v;
+     }     
+#endif
     /*
      * If the driver can do gamma correction, it should call xf86SetGamma()
      * here.

@@ -111,6 +111,7 @@ typedef struct {
     void                (*DDC1SetSpeed)(ScrnInfoPtr, xf86ddcSpeed);
     Bool                (*i2cInit)(ScrnInfoPtr);
     I2CBusPtr           I2C;
+  xf86Int10InfoPtr pInt;
 } NVRec, *NVPtr;
 
 #define NVPTR(p) ((NVPtr)((p)->driverPrivate))

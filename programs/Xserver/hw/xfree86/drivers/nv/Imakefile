@@ -27,7 +27,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/Xext -I$(XF86SRC)/int10 \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
            -I$(XF86SRC)/shadowfb -I$(EXTINCSRC) -I$(SERVERSRC)/fb \
-	   -I$(SERVERSRC)/render
+	   -I$(SERVERSRC)/render -I$(XF86OSSRC)/vbe
 #endif
 DEFINES = -DPSZ=8
 
