@@ -1,9 +1,10 @@
 
 // based on a keyboard map from an 'xkb/symbols/de' file
-//
-// $XFree86: xc/programs/xkbcomp/symbols/pc/de,v 1.4 2002/12/19 01:21:30 dawes Exp $
+// Written by Eduard Werner.
+// $XFree86: xc/programs/xkbcomp/symbols/pc/hsb,v 1.1 2004/04/03 13:43:43 pascal Exp $
 
-xkb_symbols "basic" {
+partial default alphanumeric_keys
+xkb_symbols "qwertz" {
 
     include "pc/latin(type4)"
 
@@ -30,6 +31,14 @@ xkb_symbols "basic" {
     key <KPDL>	{ [ KP_Delete, KP_Separator                           ]	};
 
     include "level3(ralt_switch_multikey)"
+};
+
+partial default alphanumeric_keys
+xkb_symbols "qwerty" {
+
+    include "pc/hsb(qwertz)"
+    key <AD06>	{ [         y,          Y,    leftarrow,          yen ]	};
+    key <AB01>	{ [         z,          Z, guillemotleft,        less ]	};
 };
 
 partial alphanumeric_keys

@@ -5,11 +5,11 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.80 2004/01/17 14:59:36 pascal Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.81 2004/04/03 13:43:41 pascal Exp $
 //
 
 // Layouts that still need be composed by old rules
-! $oldlayouts = az bs ca ca_enhanced de_CH fr_CH hu hu_qwerty lt_std mn vn hr_US
+! $oldlayouts = bs ca_enhanced de_CH fr_CH lt_std hr_US
 
 // If you want non-latin layouts implicitly include the en_US layout
 // uncomment lines below
@@ -30,7 +30,7 @@
   *		=	xfree86
 
 ! $azerty = be fr fr-latin9
-! $qwertz = al cz de hr pl2 ro si sk 
+! $qwertz = al cz de hr hu pl2 ro si sk 
 
 ! layout[1]	=	keycodes
   $azerty       =       +aliases(azerty)
@@ -78,6 +78,8 @@
  $pcmodels      intl    =       us(%mcompose)
   *		intl	=	us(pc104compose) 
   *		jp	=	jp
+ $pcmodels      ca      =       pc/pc(%m)+pc/ca(multi)+pc/ca(multi-2gr):2+group(rctrl_switch)
+  *             ca      =       pc/pc(pc105)+pc/ca(multi)+pc/ca(multi-2gr):2+group(rctrl_switch)
  $pcmodels $oldlayouts  =       en_US(%m)+%l%(v)
  $pcmodels $nonlatin	=	pc/pc(%m)+pc/us+pc/%l%(v):2
  $pcmodels	*	=	pc/pc(%m)+pc/%l%(v)
