@@ -1,4 +1,5 @@
 XFree86 4.0.1d (8 September 2000)
+ 580. Fix an Xaw problem with illegal aliases (Jakub Jelinek).
  579. Set $(SHELL) to '/bin/sh -e' on Linux to allow builds/installs stop
       immediately on errors as on other platforms (Brandon Robinson).
  578. Update i810 driver for -configure to work (Alan Hourihane).
@@ -11106,4 +11107,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1296 2000/09/04 13:26:24 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1297 2000/09/05 17:48:54 dawes Exp $
