@@ -30,12 +30,10 @@ from The Open Group.
 
 
 Bool
-_XieFloError (display, host, wire)
-
-Display		*display;
-XErrorEvent	*host;
-xError		*wire;
-
+_XieFloError (
+	Display		*display,
+	XErrorEvent	*host,
+	xError		*wire)
 {
     XieFloAccessError	*flo_host_error = (XieFloAccessError *) host;
     xieFloAccessErr	*flo_wire_error = (xieFloAccessErr *) wire;

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.10 1999/05/16 10:12:51 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.11 1999/06/06 08:48:16 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -356,7 +356,6 @@ ClearToBackground(Widget w, int x, int y,
      * Don't clear in height or width are zero
      * XClearArea() has special semantic for these values
      */
-#ifndef OLDXAW
     TextWidget xaw = (TextWidget)XtParent(w);
     Position x1, y1, x2, y2;
 
@@ -369,7 +368,6 @@ ClearToBackground(Widget w, int x, int y,
     y = y1;
     width = XawMax(0, x2 - x1);
     height = XawMax(0, y2 - y1);
-#endif
 
     if (height != 0 && width != 0)
 	XClearArea(XtDisplayOfObject(w), XtWindowOfObject(w),

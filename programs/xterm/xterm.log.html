@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.28 1999/06/06 08:49:18 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.29 1999/06/12 15:37:20 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_107">Patch #107 - 1999/6/12 - XFree86 3.9Pq</A>
 <LI><A HREF="#xterm_106">Patch #106 - 1999/6/9 - XFree86 3.9Pq</A>
 <LI><A HREF="#xterm_105">Patch #105 - 1999/6/5 - XFree86 3.9Pp</A>
 <LI><A HREF="#xterm_104">Patch #104 - 1999/5/30 - XFree86 3.9Pn</A>
@@ -149,6 +150,38 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_107">Patch #107 - 1999/6/12 - XFree86 3.9Pq</A></H1>
+<ul>
+	<li>Two changes from Stephen P Wall &lt;steve_wall@redcom.com&gt;.
+	  From his description:
+	<blockquote>
+	The first change is simple - I added ESC[3J to erase the stored lines
+	above the screen.  That's what the changes to util.c and ctlseqs.ms
+	are. 
+	<p> 
+	The second change is to get the blinking cursor working.  I took out
+	the cursorBlinkTime resource, and put in cursorBlink (Boolean),
+	cursorOnTime (time cursor is on in msecs) and cursorOffTime, and added
+	a cursorblink item to the vtMenu to enable/disable it. 
+	</blockquote>
+
+	<li>Integrated a patch from Juliusz Chroboczek &lt;jec@dcs.ed.ac.uk&gt;.
+	  From his description:
+	<blockquote>
+	With this patch, selection conversion works properly: 
+<pre> 
+	ISO 8859-1 xterm -&gt; ISO 8859-1 xterm (transferred as STRING);
+	ISO 8859-1 xterm -&gt; UTF-8 xterm (transferred as STRING);
+	UTF-8 xterm -&gt; ISO 8859-1 xterm (transferred as STRING);
+	UTF-8 xterm -&gt; UTF-8 xterm (transferred as UTF-8).
+</pre> 
+	It will not work properly if one xterm is in, say, ISO 8859-2. 
+	Actually, for this case xterm breaks the ICCCM routinely (sending ISO 
+	8859-2 data as STRING), so I wouldn't worry too much about it.  I have 
+	not changed the behaviour in eight-bit mode in any way. 
+	</blockquote>
+</ul>
 
 <H1><A NAME="xterm_106">Patch #106 - 1999/6/9 - XFree86 3.9Pq</A></H1>
 <ul>

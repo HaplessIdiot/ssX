@@ -1084,7 +1084,7 @@ xedit.c:
  + Added some new resources, to let easier customization of the ispell status
    bar strings. The new resources are documented in xedit.man.
 
-# 5 Jun 1999
+#2849 5 Jun 1999
 -- Xaw --
  + Add a OLDXAW define, to enable building a binary compatible version with
    6.1, and changes to the Imakefile, to try to keep the changes only in Xaw.
@@ -1148,6 +1148,64 @@ xedit.c:
    *ispell*skipLines: <VALUE>
 
 
+# 12 Jun 1999
+-- Xaw --
+ + Note: The compatible old version of Xaw is not fully compatible. There
+   a few things that are not equal to the standard old Xaw. These are:
+	+ The cursor code in the *Sink.c files is not identical, and the
+	  field insertCursorOn (type Pixmap) was replaced by the field
+	  cursor_position (type XawTextPosition).
+	+ There are some changes in TextP.h, that include changes to the fields:
+	  options		->	left_margin
+	  unrealize_callbacks	->	pad1
+	  updateFrom		->	update
+	  updateTo		->	pad2
+	  numranges		->	pad3
+	  maxranges		->	from_left
+	  copy_area_offsets	->	pad4
+	+ The text window does not increase its size when text is typed past
+	  the end of the window, instead of it, it is automatically scrolled
+	  horizontally, but this may not be enough to every usage of this
+	  feature; xmh uses that code to make the text widget auto resize
+	  warning popup widgets. I dont know what is better in this case,
+	  if re-enabling the auto resize code of changing xmh to use label
+	  widgets in the warning popups.
+   It is very unlikely that exists code that will have problems with these
+   changes in the fields of the TextWidget and the *SinkObject, but if any
+   code that has trouble with it exists, I will promptly make the required
+   changes to correct it (at least for the compatible version of Xaw).
+ + Several optimizations for the code to redisplay the text window in the
+   TextWidget. Including fixes for bugs in the XawTextScroll function, and
+   making it really works. Previous versions of the library have made this
+   function ineffective, because it was always redrawing everything when
+   the text window was scrolled. The optimizations should be more noticeable
+   when running some application that uses the TextWidget (like xedit) on
+   slow hardware, or over slow connections.
+ + Corrections for the FormWidget geometry management code, to work correctly
+   in the old version of Xaw, and some bug fixes for the new Xaw. Also added
+   8 pad bytes to the FormConstraintsPart structure, to have space for extra
+   information on possible future optimizations for the FormWidget geometry
+   management code.
+ + Some fixes for the OLDXAW define in the SimpleMenuWidget code, that was
+   not hiding some of the new fields introduced in the new Xaw code.
+ + Some corrections for the code handling the necessity of having scrollbars
+   in the text widget, and bug fixes for cases where the scrollbars were not
+   being updated when the text window contents were changed.
+ + Re-enabled code to also process GraphicsExpose events in the text code. It
+   became required due to the optimizations in the text redisplay code.
+ + Several fixes in TextAction.c, for symbols that were not being included
+   in the compatible version of the library, and for symbols that were being
+   included with no need.
+ + Fixes for the form-paragraph action, in the old Xaw code.
+
+-- xedit --
+ + Some bug fixes for the ispell undo code, to avoid deferencing a NULL pointer
+   in the function IspellCheckUndo.
+ + Added code to handle correctly &<VALUE>; in ispell.c, when using the html
+   mode.
+ + Fixed some compile time warnings, and updated the code for setting the
+   scrollbars in options.c.
 
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.23 1999/05/30 03:03:20 dawes Exp $
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.24 1999/06/06 08:47:53 dawes Exp $

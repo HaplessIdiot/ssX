@@ -1,5 +1,5 @@
 /* $XConsortium: fontstruct.h /main/17 1996/08/09 16:23:54 kaleb $ */
-/* $XFree86: xc/include/fonts/fontstruct.h,v 3.0 1996/04/15 11:14:54 dawes Exp $ */
+/* $XFree86: xc/include/fonts/fontstruct.h,v 3.1 1996/12/23 05:58:39 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -146,6 +146,18 @@ typedef struct _Font {
     pointer	*devPrivates;
 }           FontRec;
 
+extern FontPtr  CreateFontRec(
+#if NeedFunctionPrototypes
+                void
+#endif
+);
+
+extern void  DestroyFontRec(
+#if NeedFunctionPrototypes
+                FontPtr font
+#endif
+);
+
 extern Bool     _FontSetNewPrivate (
 #if NeedFunctionPrototypes
                 FontPtr        /* pFont */,
@@ -153,11 +165,12 @@ extern Bool     _FontSetNewPrivate (
                 pointer        /* ptr */
 #endif
                 );
+
 extern int      AllocateFontPrivateIndex (
 #if NeedFunctionPrototypes
                 void
 #endif
-                );
+);
 
 #define FontGetPrivate(pFont,n) ((n) > (pFont)->maxPrivate ? (pointer) 0 : \
 			     (pFont)->devPrivates[n])

@@ -23,49 +23,51 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/XIE/globals.h,v 1.1.1.1.12.2 1998/10/19 20:57:06 hohndel Exp $ */
+/* $XFree86: xc/lib/XIE/globals.h,v 1.2 1998/12/20 11:56:59 dawes Exp $ */
+
+extern void _XieElemImportClientLUT		(char **, XiePhotoElement *);
+extern void _XieElemImportClientPhoto		(char **, XiePhotoElement *);
+extern void _XieElemImportClientROI		(char **, XiePhotoElement *);
+extern void _XieElemImportDrawable		(char **, XiePhotoElement *);
+extern void _XieElemImportDrawablePlane		(char **, XiePhotoElement *);
+extern void _XieElemImportLUT			(char **, XiePhotoElement *);
+extern void _XieElemImportPhotomap		(char **, XiePhotoElement *);
+extern void _XieElemImportROI			(char **, XiePhotoElement *);
+extern void _XieElemArithmetic			(char **, XiePhotoElement *);
+extern void _XieElemBandCombine			(char **, XiePhotoElement *);
+extern void _XieElemBandExtract			(char **, XiePhotoElement *);
+extern void _XieElemBandSelect			(char **, XiePhotoElement *);
+extern void _XieElemBlend			(char **, XiePhotoElement *);
+extern void _XieElemCompare			(char **, XiePhotoElement *);
+extern void _XieElemConstrain			(char **, XiePhotoElement *);
+extern void _XieElemConvertFromIndex		(char **, XiePhotoElement *);
+extern void _XieElemConvertFromRGB		(char **, XiePhotoElement *);
+extern void _XieElemConvertToIndex		(char **, XiePhotoElement *);
+extern void _XieElemConvertToRGB		(char **, XiePhotoElement *);
+extern void _XieElemConvolve			(char **, XiePhotoElement *);
+extern void _XieElemDither			(char **, XiePhotoElement *);
+extern void _XieElemGeometry			(char **, XiePhotoElement *);
+extern void _XieElemLogical			(char **, XiePhotoElement *);
+extern void _XieElemMatchHistogram		(char **, XiePhotoElement *);
+extern void _XieElemMath			(char **, XiePhotoElement *);
+extern void _XieElemPasteUp			(char **, XiePhotoElement *);
+extern void _XieElemPoint			(char **, XiePhotoElement *);
+extern void _XieElemUnconstrain			(char **, XiePhotoElement *);
+extern void _XieElemExportClientHistogram	(char **, XiePhotoElement *);
+extern void _XieElemExportClientLUT		(char **, XiePhotoElement *);
+extern void _XieElemExportClientPhoto		(char **, XiePhotoElement *);
+extern void _XieElemExportClientROI		(char **, XiePhotoElement *);
+extern void _XieElemExportDrawable		(char **, XiePhotoElement *);
+extern void _XieElemExportDrawablePlane		(char **, XiePhotoElement *);
+extern void _XieElemExportLUT			(char **, XiePhotoElement *);
+extern void _XieElemExportPhotomap		(char **, XiePhotoElement *);
+extern void _XieElemExportROI			(char **, XiePhotoElement *);
+
+#ifdef NEED_XIE_GLOBALS
 
 XieExtInfo *_XieExtInfoHeader = NULL;
 
-extern void _XieElemImportClientLUT();
-extern void _XieElemImportClientPhoto();
-extern void _XieElemImportClientROI();
-extern void _XieElemImportDrawable();
-extern void _XieElemImportDrawablePlane();
-extern void _XieElemImportLUT();
-extern void _XieElemImportPhotomap();
-extern void _XieElemImportROI();
-extern void _XieElemArithmetic();
-extern void _XieElemBandCombine();
-extern void _XieElemBandExtract();
-extern void _XieElemBandSelect();
-extern void _XieElemBlend();
-extern void _XieElemCompare();
-extern void _XieElemConstrain();
-extern void _XieElemConvertFromIndex();
-extern void _XieElemConvertFromRGB();
-extern void _XieElemConvertToIndex();
-extern void _XieElemConvertToRGB();
-extern void _XieElemConvolve();
-extern void _XieElemDither();
-extern void _XieElemGeometry();
-extern void _XieElemLogical();
-extern void _XieElemMatchHistogram();
-extern void _XieElemMath();
-extern void _XieElemPasteUp();
-extern void _XieElemPoint();
-extern void _XieElemUnconstrain();
-extern void _XieElemExportClientHistogram();
-extern void _XieElemExportClientLUT();
-extern void _XieElemExportClientPhoto();
-extern void _XieElemExportClientROI();
-extern void _XieElemExportDrawable();
-extern void _XieElemExportDrawablePlane();
-extern void _XieElemExportLUT();
-extern void _XieElemExportPhotomap();
-extern void _XieElemExportROI();
-
-void (*(_XieElemFuncs[]))() =
+void (*(_XieElemFuncs[]))(char **, XiePhotoElement *) =
 {
     _XieElemImportClientLUT,
     _XieElemImportClientPhoto,
@@ -114,3 +116,5 @@ XieTechFuncRec *_XieTechFuncs[xieValMaxTechGroup] = {0};
 #endif
 
 Bool _XieTechFuncsInitialized = 0;
+
+#endif /* NEED_XIE_GLOBALS */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/fontsym.c,v 1.3 1999/01/31 13:45:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/fontsym.c,v 1.4 1999/03/14 11:18:06 dawes Exp $ */
 
 #include "font.h"
 #include "sym.h"
@@ -36,6 +36,8 @@ LOOKUP fontLookupTab[] = {
   SYMFUNC(font_encoding_recode)
   SYMFUNC(font_encoding_find)
   SYMFUNC(font_encoding_from_xlfd)
+  SYMFUNC(CreateFontRec)
+  SYMFUNC(DestroyFontRec)
   
   SYMVAR(FontFileBitmapSources)
 

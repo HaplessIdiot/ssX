@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/fontfile/module/Imakefile,v 1.1.2.1 1998/07/05 14:36:05 dawes Exp $
+XCOMM $XFree86: xc/lib/font/fontfile/module/Imakefile,v 1.2 1998/07/25 06:57:08 dawes Exp $
 #include <Server.tmpl>
 
    INCLUDES = -I$(FONTINCSRC) -I../../include -I$(SERVERSRC)/include \
@@ -9,9 +9,7 @@ XCOMM $XFree86: xc/lib/font/fontfile/module/Imakefile,v 1.1.2.1 1998/07/05 14:36
        SRCS = ffcheck.c register.c
        OBJS = ffcheck.o register.o
 
-AllTarget(fontbase.o)
-
-NormalRelocatableTarget(fontbase, $(OBJS))
+SubdirLibraryRule($(OBJS))
 
 NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))

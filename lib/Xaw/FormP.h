@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/FormP.h,v 1.8 1998/11/15 04:29:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/FormP.h,v 1.9 1999/06/06 08:47:57 dawes Exp $ */
 
 /* Form widget private definitions */
 
@@ -116,6 +116,9 @@ typedef struct _FormConstraintsPart {
     Boolean	deferred_resize;/* was resized while no_refigure is set */
 #ifndef OLDXAW
     short	virtual_x, virtual_y;
+    char	pad[8];		/* leave some space for further optimizations
+				 * in the form widget geometry
+				 */
 #endif
 } FormConstraintsPart;
 

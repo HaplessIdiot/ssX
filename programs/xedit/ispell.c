@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/ispell.c,v 1.7 1999/05/30 03:03:36 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/ispell.c,v 1.8 1999/06/06 08:49:14 dawes Exp $ */
 
 #include "xedit.h"
 #ifndef X_NOT_STDC_ENV
@@ -62,7 +62,7 @@ typedef struct _ispell_undo {
     char *undo_str;
     int undo_count;
     XawTextPosition undo_pos;
-    Boolean repeat;	/* two misspelled words together? */
+    Boolean repeat;	/* two (misspelled?) words together */
     Boolean terse;
     int format;		/* remember text formatting style */
     struct _ispell_undo *next, *prev;
@@ -154,6 +154,7 @@ static void CheckIspell(Widget, XtPointer, XtPointer);
 static void IgnoreIspell(Widget, XtPointer, XtPointer);
 static Bool InitIspell(void);
 static void IspellCheckUndo(void);
+static int IspellConvertHtmlAmp(char*);
 static Bool IspellDoIgnoredWord(char*, int, int);
 static Bool IspellIgnoredWord(char*, int, int);
 static void IspellInputCallback(XtPointer, int*, XtInputId*);
@@ -266,13 +267,27 @@ ToUpper(int ch)
 static int
 IsLower(int ch)
 {
-    return (ch == ToLower(ch));
+    char upbuf[2];
+    char lobuf[2];
+
+    *upbuf = *lobuf = ch;
+    XmuNCopyISOLatin1Lowered(lobuf, lobuf, sizeof(lobuf));
+    XmuNCopyISOLatin1Uppered(upbuf, upbuf, sizeof(upbuf));
+
+    return (*lobuf != *upbuf && ch == *lobuf);
 }
 
 static int
 IsUpper(int ch)
 {
-    return (ch == ToUpper(ch));
+    char upbuf[2];
+    char lobuf[2];
+
+    *upbuf = *lobuf = ch;
+    XmuNCopyISOLatin1Lowered(lobuf, lobuf, sizeof(lobuf));
+    XmuNCopyISOLatin1Uppered(upbuf, upbuf, sizeof(upbuf));
+
+    return (*lobuf != *upbuf && ch == *upbuf);
 }
 #else
 #define	ToLower	tolower
@@ -359,7 +374,7 @@ IspellCheckUndo(void)
 {
     ispell_undo *undo = XtNew(ispell_undo);
 
-    if (strcmp(ispell.undo_for, ispell.dictionary)) {
+    if (ispell.undo_for && strcmp(ispell.undo_for, ispell.dictionary)) {
 	XeditPrintf("Undo: Dictionary changed. Previous undo information lost.\n");
 	IspellKillUndoBuffer();
 	Feep();
@@ -485,9 +500,9 @@ IspellIgnoredWord(char *word, int cmd, int add)
 	for (i = 1; *word && i < sizeof(string) - 1; i++, word++) {
 	    if (upper && IsLower(*word))
 		status = False;
-	    else if (!upper && isupper(*word))
+	    else if (!upper && IsUpper(*word))
 		status = False;
-	    string[i] = tolower(*word);
+	    string[i] = ToLower(*word);
 	}
 	string[i] = '\0';
 
@@ -502,7 +517,7 @@ IspellIgnoredWord(char *word, int cmd, int add)
 static Bool
 IspellReceive(void)
 {
-    int i, len, buflen, old_len;
+    int i, len, old_len;
     Arg args[2];
     char *str, *end, **list, **old_list;
     char *tmp, word[1024];
@@ -733,7 +748,7 @@ IspellReceive(void)
 		IspellSetStatus(ispell.repeat_label);
 		ispell.format_mode = ispell.format_info->value;
 		ispell.lock = True;
-		return;
+		return (True);
 	    }
 	    break;
 	default:
@@ -750,14 +765,111 @@ IspellReceive(void)
     return (True);
 }
 
+static int
+IspellConvertHtmlAmp(char *buf)
+{
+    int len, ch = '?';
+
+    /* this function is static, so I can do it */
+    *strchr(++buf, ';') = '\0';
+
+    len = strlen(buf);
+    if (len == 0)
+	return ('&');
+    if (len > 1) {
+	if (strcasecmp(&buf[1], "lt") == 0)
+	    ch = '<';
+	else if (strcasecmp(&buf[1], "gt") == 0)
+	    ch = '>';
+	else if (strcasecmp(&buf[1], "nbsp") == 0)
+	    ch = ' ';
+	else if (strcasecmp(&buf[1], "amp") == 0)
+	    ch = '&';
+	else if (strcasecmp(&buf[1], "quot") == 0)
+	    ch = '"';
+	else if (*buf == '#') {
+	    char *tmp;
+
+	    if (len == 1);
+		return ('?');
+	    ch = strtol(&buf[1], &tmp, 10);
+	    if (*tmp)
+		fprintf(stderr, "Warning: bad html interpreting '&#' mark.\n");
+	}
+	else if (strcmp(&buf[1], "acute") == 0) {
+	    switch (*buf) {
+		case 'a': ch = 'á'; break;
+		case 'e': ch = 'é'; break;
+		case 'i': ch = 'í'; break;
+		case 'o': ch = 'ó'; break;
+		case 'u': ch = 'ú'; break;
+		case 'A': ch = 'Á'; break;
+		case 'E': ch = 'É'; break;
+		case 'I': ch = 'Í'; break;
+		case 'O': ch = 'Ó'; break;
+		case 'U': ch = 'Ú'; break;
+	    }
+	}
+	else if (strcmp(&buf[1], "grave") == 0) {
+	    switch (*buf) {
+		case 'a': ch = 'à'; break;
+		case 'e': ch = 'è'; break;
+		case 'i': ch = 'ì'; break;
+		case 'o': ch = 'ò'; break;
+		case 'u': ch = 'ù'; break;
+		case 'A': ch = 'À'; break;
+		case 'E': ch = 'È'; break;
+		case 'I': ch = 'Ì'; break;
+		case 'O': ch = 'Ò'; break;
+		case 'U': ch = 'Ù'; break;
+	    }
+	}
+	else if (strcmp(&buf[1], "tilde") == 0) {
+	    switch (*buf) {
+		case 'a': ch = 'ã'; break;
+		case 'o': ch = 'õ'; break;
+		case 'n': ch = 'ñ'; break;
+		case 'A': ch = 'ã'; break;
+		case 'O': ch = 'Õ'; break;
+		case 'N': ch = 'Ñ'; break;
+	    }
+	}
+	else if (strcmp(&buf[1], "circ") == 0) {
+	    switch (*buf) {
+		case 'a': ch = 'â'; break;
+		case 'e': ch = 'ê'; break;
+		case 'i': ch = 'î'; break;
+		case 'o': ch = 'ô'; break;
+		case 'u': ch = 'û'; break;
+		case 'A': ch = 'Â'; break;
+		case 'E': ch = 'Ê'; break;
+		case 'I': ch = 'Î'; break;
+		case 'O': ch = 'Ô'; break;
+		case 'U': ch = 'Û'; break;
+	    }
+	}
+	else if (strcmp(&buf[1], "cedil") == 0) {
+	    switch (*buf) {
+		case 'c': ch = 'ç'; break;
+		case 'C': ch = 'Ç'; break;
+	    }
+	}
+	/* add more cases here */
+    }
+
+    return (ch);
+}
+
 /*ARGSUSED*/
 static int
 IspellSend(void)
 {
-    XawTextPosition position, old_left;
+    XawTextPosition position, old_left, pos;
     XawTextBlock block;
     int i, len, spaces, nls;
     Bool nl, html, inside_html;
+    char ampbuf[32];
+    int amplen;
 
     if (ispell.lock || ispell.stat != SEND)
 	return (-1);
@@ -769,14 +881,16 @@ IspellSend(void)
 
     html = ispell.format_info->value == HTML;
     inside_html = False;
+    amplen = 0;
 
     /* skip non word characters */
-    position = ispell.right;
-    nl = position == 0;
+    pos = position = ispell.right;
+    nl = False;
     while (1) {
 	Bool done = False;
 	char mb[sizeof(wchar_t)];
 
+	retry_html_space:
 	position = XawTextSourceRead(ispell.source, position,
 				     &block, BUFSIZ);
 	if (block.length == 0) {	/* end of file */
@@ -793,12 +907,45 @@ IspellSend(void)
 		wctomb(mb, ((wchar_t*)block.ptr)[i]);
 	    else
 		*mb = block.ptr[i];
-	    if ((!html || !inside_html) && (isalpha(*mb) ||
+	    if (amplen) {
+		if (amplen + 2 >= sizeof(ampbuf)) {
+		    if (!ispell.terse_mode)
+			fprintf(stderr, "Warning: error interpreting '&' mark.\n");
+		    amplen = 0;
+		    position = pos + 1;
+		    goto retry_html_space;
+		}
+		else if ((ampbuf[amplen++] = *mb) == ';') {
+		    int ch;
+
+		    ampbuf[amplen] = '\0';
+		    ch = IspellConvertHtmlAmp(ampbuf);
+		    amplen = 0;
+		    if (isalpha(ch) ||
+			(ch && strchr(ispell.wchars, ch))) {
+			/* interpret it again */
+			ispell.right = pos;
+			i = 0;
+			done = True;
+			break;
+		    }
+		    else if ((ch == '\n' || isspace(ch)) && spaces >= 0)
+			++spaces;
+		    else
+			spaces = -1;
+		}
+	    }
+	    else if (html && *mb == '&') {
+		ampbuf[amplen++] = *mb;
+		pos = block.firstPos + i;
+		continue;
+	    }
+	    else if ((!html || !inside_html) && (isalpha(*mb) ||
 		(*mb && strchr(ispell.wchars, *mb)))) {
 		done = True;
 		break;
 	    }
-	    else if (*mb == '\n') {
+	    else if (!html && *mb == '\n') {
 		nl = True;
 		if (++nls > 1 && (!html || !inside_html))
 		    spaces = -1;
@@ -807,13 +954,7 @@ IspellSend(void)
 	    }
 	    else if (nl) {
 		nl = False;
-		if (html && inside_html) {
-		    if (*mb == '>')
-			inside_html = False;
-		}
-		else if (html && *mb == '<')
-		    inside_html = True;
-		else if (*mb && strchr(ispell.skip, *mb)) {
+		if (*mb && strchr(ispell.skip, *mb)) {
 		    position = ispell.right =
 			XawTextSourceScan(ispell.source, ispell.right + i,
 					  XawstEOL, XawsdRight, 1, False);
@@ -827,7 +968,8 @@ IspellSend(void)
 	    }
 	    else if (html && *mb == '<')
 		inside_html = True;
-	    else if (spaces >= 0 && (*mb == ' ' || *mb == '\t'))
+	    else if (spaces >= 0 && (isspace(*mb == ' ') ||
+				     (html && *mb == '\n')))
 		++spaces;
 	    else
 		spaces = -1;
@@ -844,7 +986,9 @@ IspellSend(void)
     position = ispell.left = ispell.right;
     while (1) {
 	Bool done = False;
+	char mb[sizeof(wchar_t)];
 
+	retry_html_word:
 	position = XawTextSourceRead(ispell.source, position,
 				     &block, BUFSIZ);
 	if (block.length == 0 && len == 1) {	/* end of file */
@@ -856,37 +1000,65 @@ IspellSend(void)
 	    IspellSetStatus(ispell.eof_label);
 	    return (-1);
 	}
-	if (international) {
-	    wchar_t *wptr = (wchar_t*)block.ptr;
-	    char mb[sizeof(wchar_t)];
+	for (i = 0; i < block.length; i++) {
+	    if (international)
+		wctomb(mb, ((wchar_t*)block.ptr)[i]);
+	    else
+		*mb = block.ptr[i];
+	    if (amplen) {
+		if (amplen + 2 >= sizeof(ampbuf)) {
+		    if (!ispell.terse_mode)
+			fprintf(stderr, "Warning: error interpreting '&' mark.\n");
+		    amplen = 0;
+		    position = pos + 1;
+		    if (strchr(ispell.wchars, '&')) {
+			if (len + 1 >= sizeof(ispell.sendbuf) - 1) {
+			    done = True;
+			    fprintf(stderr, "Warning: word is too large!\n");
+			    break;
+			}
+			ispell.sendbuf[len++] = '&';
+			goto retry_html_word;
+		    }
+		    else {
+			ispell.right = position;
+			i = 0;
+			done = True;
+			break;
+		    }
+		}
+		else if ((ampbuf[amplen++] = *mb) == ';') {
+		    int ch;
 
-	    for (i = 0; i < block.length; i++) {
-		wctomb(mb, wptr[i]);
-		if (!isalpha(*mb) && (!*mb || !strchr(ispell.wchars, *mb))) {
-		    done = True;
-		    break;
+		    ampbuf[amplen] = '\0';
+		    ch = IspellConvertHtmlAmp(ampbuf);
+		    amplen = 0;
+		    if (!isalpha(ch) &&
+			(!ch || !strchr(ispell.wchars, ch))) {
+			ispell.right = pos;
+			i = 0;
+			done = True;
+			break;
+		    }
+		    *mb = ch;
 		}
-		ispell.sendbuf[len] = *mb;
-		if (++len >= sizeof(ispell.sendbuf) - 1) {
-		    done = True;
-		    fprintf(stderr, "Warning: word is too large!\n");
-		    break;
-		}
+		else
+		    continue;
 	    }
-	}
-	else {
-	    for (i = 0; i < block.length; i++) {
-		if (!isalpha(block.ptr[i]) &&
-		    (!block.ptr[i] || !strchr(ispell.wchars, block.ptr[i]))) {
-		    done = True;
-		    break;
-		}
-		ispell.sendbuf[len] = block.ptr[i];
-		if (++len >= sizeof(ispell.sendbuf) - 1) {
-		    done = True;
-		    fprintf(stderr, "Warning: word is too large!\n");
-		    break;
-		}
+	    else if (html && *mb == '&') {
+		ampbuf[amplen++] = *mb;
+		pos = block.firstPos + i;
+		continue;
+	    }
+	    else if (!isalpha(*mb) && (!*mb || !strchr(ispell.wchars, *mb))) {
+		done = True;
+		break;
+	    }
+	    ispell.sendbuf[len] = *mb;
+	    if (++len >= sizeof(ispell.sendbuf) - 1) {
+		done = True;
+		fprintf(stderr, "Warning: word is too large!\n");
+		break;
 	    }
 	}
 	ispell.right += i;

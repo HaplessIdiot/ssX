@@ -1,16 +1,10 @@
-/* $XConsortium: elements.c,v 1.5 94/04/17 20:18:21 rws Exp $ */
+/* $TOG: elements.c /main/6 1998/02/06 15:11:48 kaleb $ */
 
 /*
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,30 +12,29 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
 #include "XIElibint.h"
 #include "elements.h"
+#include "globals.h"
 
 #include <stdio.h>
 
 
 int
-_XiePhotofloSize (elem_list, elem_count)
-
-XiePhotoElement	*elem_list;
-int		elem_count;
-
+_XiePhotofloSize (
+	XiePhotoElement	*elem_list,
+	int		elem_count)
 {
     XiePhotoElement	*elemSrc;
     int 		size = 0;
@@ -247,11 +240,9 @@ int		elem_count;
 
 
 void
-_XieElemImportClientLUT (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemImportClientLUT (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloImportClientLUT	*elemDest;
 
@@ -272,11 +263,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemImportClientPhoto (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemImportClientPhoto (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloImportClientPhoto	*elemDest;
     unsigned			techLen;
@@ -313,11 +302,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemImportClientROI (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemImportClientROI (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloImportClientROI	*elemDest;
 
@@ -331,11 +318,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemImportDrawable (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemImportDrawable (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloImportDrawable	*elemDest;
 
@@ -355,11 +340,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemImportDrawablePlane (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemImportDrawablePlane (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloImportDrawablePlane	*elemDest;
 
@@ -380,11 +363,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemImportLUT (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemImportLUT (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloImportLUT	*elemDest;
 
@@ -398,11 +379,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemImportPhotomap (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemImportPhotomap (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloImportPhotomap	*elemDest;
 
@@ -417,11 +396,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemImportROI (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemImportROI (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloImportROI	*elemDest;
 
@@ -435,11 +412,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemArithmetic (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemArithmetic (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloArithmetic	*elemDest;
 
@@ -465,11 +440,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemBandCombine (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemBandCombine (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloBandCombine	*elemDest;
 
@@ -485,11 +458,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemBandExtract (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemBandExtract (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloBandExtract	*elemDest;
 
@@ -510,11 +481,9 @@ XiePhotoElement	*elemSrc;
 }
 
 void
-_XieElemBandSelect (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemBandSelect (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloBandSelect	*elemDest;
 
@@ -529,11 +498,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemBlend (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemBlend (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloBlend	*elemDest;
 
@@ -592,11 +559,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemConstrain (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemConstrain (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloConstrain	*elemDest;
     unsigned		techLen;
@@ -647,11 +612,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemConvertFromRGB (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemConvertFromRGB (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloConvertFromRGB	*elemDest;
     unsigned			techLen;
@@ -678,11 +641,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemConvertToIndex (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemConvertToIndex (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloConvertToIndex	*elemDest;
     unsigned			techLen;
@@ -712,11 +673,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemConvertToRGB (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemConvertToRGB (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloConvertToRGB	*elemDest;
     unsigned	        techLen;
@@ -798,11 +757,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemDither (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemDither (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloDither	*elemDest;
     unsigned		techLen;
@@ -833,11 +790,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemGeometry (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemGeometry (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloGeometry	*elemDest;
     unsigned		techLen;
@@ -885,11 +840,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemLogical (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemLogical (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloLogical	*elemDest;
 
@@ -949,11 +902,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemMath (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemMath (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloMath	*elemDest;
 
@@ -972,11 +923,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemPasteUp (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemPasteUp (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloPasteUp	*elemDest;
 
@@ -1005,10 +954,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemPoint (bufDest, elemSrc)
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemPoint (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloPoint	*elemDest;
 
@@ -1026,11 +974,9 @@ XiePhotoElement	*elemSrc;
 }
 
 void 
-_XieElemUnconstrain (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemUnconstrain (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloUnconstrain	*elemDest;
 
@@ -1043,11 +989,9 @@ XiePhotoElement	*elemSrc;
 }
 
 void
-_XieElemExportClientHistogram (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemExportClientHistogram (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloExportClientHistogram	*elemDest;
 
@@ -1068,11 +1012,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemExportClientLUT (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemExportClientLUT (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloExportClientLUT	*elemDest;
 
@@ -1094,11 +1036,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemExportClientPhoto (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemExportClientPhoto (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloExportClientPhoto	*elemDest;
     unsigned			techLen;
@@ -1126,11 +1066,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemExportClientROI (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemExportClientROI (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloExportClientROI	*elemDest;
 
@@ -1145,11 +1083,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemExportDrawable (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemExportDrawable (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloExportDrawable	*elemDest;
 
@@ -1167,11 +1103,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemExportDrawablePlane (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemExportDrawablePlane (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloExportDrawablePlane	*elemDest;
 
@@ -1189,11 +1123,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemExportLUT (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemExportLUT (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloExportLUT	*elemDest;
 
@@ -1212,11 +1144,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemExportPhotomap (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemExportPhotomap (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloExportPhotomap	*elemDest;
     unsigned			techLen;
@@ -1244,11 +1174,9 @@ XiePhotoElement	*elemSrc;
 
 
 void
-_XieElemExportROI (bufDest, elemSrc)
-
-char		**bufDest;
-XiePhotoElement	*elemSrc;
-
+_XieElemExportROI (
+	char		**bufDest,
+	XiePhotoElement	*elemSrc)
 {
     xieFloExportROI	*elemDest;
 

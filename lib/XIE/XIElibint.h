@@ -102,7 +102,7 @@ typedef struct _XieExtInfo
 #define GET_EXTENSION_INFO(_display, _info) \
 \
 { \
-    if (_info = _XieExtInfoHeader) \
+    if ((_info = _XieExtInfoHeader) != 0) \
     { \
         if (_XieExtInfoHeader->display != _display) \
         { \
@@ -246,7 +246,7 @@ typedef struct _XieExtInfo
 
 
 
-typedef int (*XieTechFuncPtr) ();
+typedef int (*XieTechFuncPtr) (char **, XiePointer, int);
 
 typedef struct _XieTechFuncRec {
     int technique;
@@ -282,10 +282,25 @@ typedef struct _XieTechFuncRec {
  */
 
 extern XieExtInfo	*_XieExtInfoHeader;
-extern void		(*(_XieElemFuncs[]))();
+extern void		(*(_XieElemFuncs[]))(char **, XiePhotoElement *);
 extern XieTechFuncRec 	*_XieTechFuncs[];
 extern Bool 		_XieTechFuncsInitialized;
-extern xieTypFloat	_XieConvertToIEEE();
+
+extern Bool             _XieFloError (Display *, XErrorEvent *, xError *);
+extern Status           _XieColorAllocEvent (Display *, XEvent *, xEvent *);
+extern Status           _XieDecodeNotifyEvent (Display *, XEvent *, xEvent *);
+extern Status           _XieExportAvailableEvent (Display *, XEvent *, xEvent *);
+extern Status           _XieImportObscuredEvent (Display *, XEvent *, xEvent *);
+extern Status           _XiePhotofloDoneEvent (Display *, XEvent *, xEvent *);
+extern Status           _XieRegisterTechFunc (int, int, XieTechFuncPtr);
+extern XieTechFuncPtr   _XieLookupTechFunc (int, int);
+extern int              _XieCloseDisplay (Display *, XExtCodes *);
+extern int              _XiePhotofloSize (XiePhotoElement *, int);
+extern int              _XieTechniqueLength (int, int, XiePointer);
+extern void             _XieEncodeTechnique (char **, int, int, XiePointer);
+extern void             _XieInitTechFuncTable (void);
+extern void             _XiePrintError (Display *display, XErrorEvent *error, void *fp);
+extern xieTypFloat	_XieConvertToIEEE(double);
 
 /* for X-Window system protocol elements */
 #define sz_CARD32 				4

@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/configure.in,v 3.26 1999/05/30 14:41:07 dawes Exp $
+dnl $XFree86: xc/programs/xterm/configure.in,v 3.27 1999/06/12 15:37:17 dawes Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl
@@ -190,6 +190,14 @@ CF_ARG_DISABLE(16-color,
 	[enable_16_color=yes])
 AC_MSG_RESULT($enable_16_color)
 test $enable_16_color = no && AC_DEFINE(OPT_AIX_COLORS,0)
+
+AC_MSG_CHECKING(if you want blinking cursor)
+CF_ARG_DISABLE(blink-cursor,
+	[  --disable-blink-cursor  disable support for blinking cursor],
+	[enable_blink_curs=no],
+	[enable_blink_curs=yes])
+AC_MSG_RESULT($enable_blink_curs)
+test $enable_blink_curs = no && AC_DEFINE(OPT_BLINK_CURS,0)
 
 AC_MSG_CHECKING(if you want bold colors mapped like IBM PC)
 CF_ARG_DISABLE(bold-color,

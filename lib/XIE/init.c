@@ -26,6 +26,7 @@ from The Open Group.
 
 #define NEED_EVENTS	/* so XErrorEvent will get pulled in */
 
+#define NEED_XIE_GLOBALS
 #include "XIElibint.h"
 #include "globals.h"
 #include "init.h"
@@ -45,17 +46,6 @@ XieExtensionInfo	**extinfo_ret;
     xieQueryImageExtensionReq	*req;
     xieQueryImageExtensionReply	rep;
     char			*pBuf;
-
-    int				_XieCloseDisplay();
-    void			_XiePrintError();
-
-    int				_XieColorAllocEvent();
-    int				_XieDecodeNotifyEvent();
-    int				_XieExportAvailableEvent();
-    int				_XieImportObscuredEvent();
-    int				_XiePhotofloDoneEvent();
-
-    int				_XieFloError();
 
     LockDisplay (display);
     GET_EXTENSION_INFO (display, xieExtInfo);
@@ -263,11 +253,9 @@ XieTechnique		**techniques_ret;
  */
 
 int
-_XieCloseDisplay (display, codes)
-
-Display		*display;
-XExtCodes	*codes;
-
+_XieCloseDisplay (
+	Display		*display,
+	XExtCodes	*codes)
 {
     XieExtInfo	*xieExtInfo;
 
@@ -292,15 +280,10 @@ XExtCodes	*codes;
  */
 
 void
-_XiePrintError (display, error, fp)
-
-Display		*display;
-XErrorEvent	*error;
-#if NeedFunctionPrototypes
-void		*fp;
-#else
-FILE		*fp;
-#endif
+_XiePrintError (
+	Display		*display,
+	XErrorEvent	*error,
+	void		*fp)
 {
     XieExtInfo		 *xieExtInfo;
     XieFloAccessError    *flo_error      = (XieFloAccessError *) error;
@@ -445,12 +428,12 @@ FILE		*fp;
 	    break;
 
 	case xieErrNoFloOperator:
-	    fprintf (fp, "  Operator:  0x%lx\n", operator_error->operator);
+	    fprintf (fp, "  Operator:  0x%lx\n", (long) operator_error->operator);
 	    break;
 
 	case xieErrNoFloTechnique:
 	    fprintf (fp, "  Technique number:  0x%lx\n",
-		tech_error->technique_number);
+		(long) tech_error->technique_number);
 	    fprintf (fp, "  Number of technique params:  %d\n",
 		tech_error->num_tech_params);
 	    fprintf (fp, "  Technique group:  %d\n",

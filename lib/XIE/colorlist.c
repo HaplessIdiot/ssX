@@ -1,16 +1,10 @@
-/* $XConsortium: colorlist.c,v 1.5 94/04/17 20:18:19 rws Exp $ */
+/* $TOG: colorlist.c /main/7 1998/02/06 15:11:36 kaleb $ */
 
 /*
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,26 +12,23 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
 #include "XIElibint.h"
 
-
+
 XieColorList
-XieCreateColorList (display)
-
-Display	*display;
-
+XieCreateColorList (Display *display)
 {
     xieCreateColorListReq	*req;
     char			*pBuf;
@@ -62,13 +53,9 @@ Display	*display;
     return (id);
 }
 
-
+
 void
-XieDestroyColorList (display, color_list)
-
-Display		*display;
-XieColorList	color_list;
-
+XieDestroyColorList (Display *display, XieColorList color_list)
 {
     xieDestroyColorListReq	*req;
     char			*pBuf;
@@ -88,13 +75,9 @@ XieColorList	color_list;
     SYNC_HANDLE (display);
 }
 
-
+
 void
-XiePurgeColorList (display, color_list)
-
-Display		*display;
-XieColorList	color_list;
-
+XiePurgeColorList (Display *display, XieColorList color_list)
 {
     xiePurgeColorListReq	*req;
     char			*pBuf;
@@ -114,16 +97,14 @@ XieColorList	color_list;
     SYNC_HANDLE (display);
 }
 
-
+
 Status
-XieQueryColorList (display, color_list, colormap_ret, ncolors_ret, colors_ret)
-
-Display    	*display;
-XieColorList  	color_list;
-Colormap   	*colormap_ret;
-unsigned   	*ncolors_ret;
-unsigned long  	**colors_ret;
-
+XieQueryColorList (
+	Display    	*display,
+	XieColorList  	color_list,
+	Colormap   	*colormap_ret,
+	unsigned   	*ncolors_ret,
+	unsigned long  	**colors_ret)
 {
     xieQueryColorListReq	*req;
     xieQueryColorListReply	rep;
@@ -160,9 +141,9 @@ unsigned long  	**colors_ret;
       *colors_ret = (unsigned long *) Xmalloc (
 	rep.length * sizeof (unsigned long));
 
-      _XRead32 (display, colors_ret, rep.length << 2);
+      _XRead32 (display, *colors_ret, rep.length << 2);
     }
-    else 
+    else
 	*colors_ret = NULL;
 
     UnlockDisplay (display);

@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xaw/TreeP.h,v 1.3 1999/06/06 15:35:48 dawes Exp $ */
 
 
 #ifndef _XawTreeP_h
@@ -108,6 +108,11 @@ typedef struct _TreeConstraintsPart {
     Dimension bbsubwidth, bbsubheight;	/* bounding box of sub tree */
     Dimension bbwidth, bbheight;	/* bounding box including node */
     Position x, y;
+#ifndef OLDXAW
+    char pad[8];	/* leave some space for future optimizations, and
+			 * keep binary compatability
+			 */
+#endif
 } TreeConstraintsPart;
 
 typedef struct _TreeConstraintsRec {

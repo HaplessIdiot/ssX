@@ -46,7 +46,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.3 1998/10/03 09:07:20 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.4 1999/03/14 11:17:45 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -776,8 +776,7 @@ bdfUnloadFont(pFont)
     FontPtr     pFont;
 {
     bdfFreeFontBits (pFont);
-    xfree (pFont->devPrivates);
-    xfree(pFont);
+    DestroyFontRec(pFont);
 }
 
 int

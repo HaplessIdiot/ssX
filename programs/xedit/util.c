@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.10 1999/04/25 10:02:52 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.11 1999/05/09 10:52:02 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -36,6 +36,7 @@
 #include <X11/Xos.h>		/* for types.h */
 
 #include <sys/stat.h>
+#include <X11/Xmu/CharSet.h>
 #include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/SimpleMenu.h>
 
@@ -351,7 +352,7 @@ SwitchTextSource(xedit_flist_item *item)
 	XtGetValues(texts[i], args, num_args);
     }
     if (old_item != item) {
-	int count, idx;
+	int count, idx = 0;
 
 	num_args = 0;
 	XtSetArg(args[num_args], XtNdisplayPosition,

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.56 1999/04/17 09:08:02 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.57 1999/06/06 08:47:42 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2299,6 +2299,20 @@ objname.Osuf: objlist $(EXTRALIBRARYDEPS)				@@\
 	RemoveFile($@)							@@\
 	$(LD) $(LDCOMBINEFLAGS) objlist -o $@
 #endif /* NormalRelocatableTarget */
+
+
+/*
+ * NormalDepRelocatableTarget - generate rules to produce a relocatable object
+ * file instead of a library.  
+ */
+#ifndef NormalDepRelocatableTarget
+#define	NormalDepRelocatableTarget(objname,deplist,objlist)		@@\
+AllTarget(objname.Osuf)							@@\
+									@@\
+objname.Osuf: deplist $(EXTRALIBRARYDEPS)				@@\
+	RemoveFile($@)							@@\
+	$(LD) $(LDCOMBINEFLAGS) objlist -o $@
+#endif /* NormalDepRelocatableTarget */
 
 
 /*

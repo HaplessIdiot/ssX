@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.6 1999/01/31 12:21:25 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.7 1999/01/31 12:53:35 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -675,8 +675,7 @@ pcfUnloadFont(pFont)
     xfree(pFont->info.isStringProp);
     xfree(pFont->info.props);
     xfree(bitmapFont);
-    xfree(pFont->devPrivates);
-    xfree(pFont);
+    DestroyFontRec(pFont);
 }
 
 int

@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Form.c,v 1.12 1999/05/03 12:15:39 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.c,v 1.13 1999/06/06 08:47:56 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -773,6 +773,8 @@ XawFormResize(Widget w)
 				    fw->form.old_height, XtHeight(fw),
 				    form->form.bottom) -
 				    (y + (XtBorderWidth(*childP) << 1));
+	    form->form.virtual_width = width;
+	    form->form.virtual_height = height;
 #endif
 
 	    width = width < 1 ? 1 : width;
@@ -784,6 +786,11 @@ XawFormResize(Widget w)
 
     if (unmap)
 	XtMapWidget(w);
+
+#ifdef OLDXAW
+    fw->form.old_width = XtWidth(fw);
+    fw->form.old_height = XtHeight(fw);
+#endif
 }
 
 /*ARGSUSED*/
@@ -895,11 +902,38 @@ XawFormGeometryManager(Widget w, XtWidgetGeometry *request,
 
     if (ret_val != XtGeometryNo && !(request->request_mode & XtCWQueryOnly)) {
 #ifndef OLDXAW
-	form->form.virtual_x = XtX(w);
-	form->form.virtual_y = XtY(w);
-#endif
+	int x, y, width, height;
+
+	if (!fw->form.old_width || !fw->form.old_height) {
+	    x = TransformCoord(XtX(w), XtWidth(fw), fw->form.old_width,
+			      form->form.left);
+	    y = TransformCoord(XtY(w), XtHeight(fw), fw->form.old_height,
+			       form->form.top);
+	    width = TransformCoord(XtX(w) + XtWidth(w) +
+				   (XtBorderWidth(w) << 1),
+				   XtWidth(fw), fw->form.old_width,
+				   form->form.right) -
+				   (x + (XtBorderWidth(w) << 1));
+	    height = TransformCoord(XtY(y) + XtHeight(w) +
+				    (XtBorderWidth(w) << 1),
+				    XtHeight(fw), fw->form.old_height,
+				    form->form.bottom) -
+				    (y + (XtBorderWidth(w) << 1));
+	}
+	else {
+	    x = XtX(w);
+	    y = XtY(w);
+	    width = XtWidth(w);
+	    height = XtHeight(w);
+	}
+	form->form.virtual_x = x;
+	form->form.virtual_y = y;
+	form->form.virtual_width = width;
+	form->form.virtual_height = height;
+#else
 	form->form.virtual_width = XtWidth(w);
 	form->form.virtual_height = XtHeight(w);
+#endif /* OLDXAW */
     }
 
     return (ret_val);
@@ -910,7 +944,7 @@ static Boolean
 XawFormSetValues(Widget current, Widget request, Widget cnew,
 		 ArgList args, Cardinal *num_args)
 {
-#ifdef USE_XPM
+#ifndef OLDXAW
     FormWidget f_old = (FormWidget)current;
     FormWidget f_new = (FormWidget)cnew;
 
@@ -924,7 +958,7 @@ XawFormSetValues(Widget current, Widget request, Widget cnew,
 	if ((npix && npix->mask) || (opix && opix->mask))
 	    XawReshapeWidget(cnew, npix);
     }
-#endif
+#endif /* OLDXAW */
 
     return (False);
 }

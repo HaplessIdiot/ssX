@@ -66,7 +66,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.15 1999/05/09 10:51:38 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.16 1999/06/06 08:48:00 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -93,9 +93,7 @@ SOFTWARE.
 static void XawMultiSinkClassInitialize(void);
 static void XawMultiSinkInitialize(Widget, Widget, ArgList, Cardinal*);
 static void XawMultiSinkDestroy(Widget);
-#ifndef OLDXAW
 static void XawMultiSinkResize(Widget);
-#endif
 static Boolean XawMultiSinkSetValues(Widget, Widget, Widget,
 				     ArgList, Cardinal*);
 static int MaxLines(Widget, unsigned int);
@@ -184,11 +182,7 @@ MultiSinkClassRec multiSinkClassRec = {
     False,				/* obj6 */
     False,				/* obj7 */
     XawMultiSinkDestroy,		/* destroy */
-#ifndef OLDXAW
     (XtProc)XawMultiSinkResize,		/* obj8 */
-#else
-    NULL,				/* obj8 */
-#endif
     NULL,				/* obj9 */
     XawMultiSinkSetValues,		/* set_values */
     NULL,				/* set_values_hook */
@@ -656,7 +650,8 @@ Resolve(Widget w, XawTextPosition pos, int fromx, int width,
 static void
 GetGC(MultiSinkObject sink)
 {
-    XtGCMask valuemask = (GCClipXOrigin | GCForeground | GCBackground );
+    XtGCMask valuemask = (GCGraphicsExposures | GCClipXOrigin |
+			  GCForeground | GCBackground);
     XGCValues values;
 
     /* XXX We dont want do share a gc that will change the clip-mask */
@@ -674,7 +669,7 @@ GetGC(MultiSinkObject sink)
 #ifndef OLDXAW
     values.background = sink->text_sink.cursor_color;
 #else
-    values.background = XtParent((Widget)sink)->core.background_pixel;
+    values.background = sink->text_sink.foreground;
 #endif
     sink->multi_sink.invgc = XtAllocateGC((Widget)sink, 0, valuemask, &values,
 					  GCFont | GCClipMask, 0);
@@ -686,11 +681,10 @@ GetGC(MultiSinkObject sink)
 					      &values, GCFont | GCClipMask, 0);
     }
     else
-#endif
+#endif /* OLDXAW */
 	sink->multi_sink.xorgc = NULL;
-#ifndef OLDXAW
+
     XawMultiSinkResize((Widget)sink);
-#endif
 }
 
 static void
@@ -749,7 +743,6 @@ XawMultiSinkDestroy(Widget w)
 	sink->multi_sink.xorgc = NULL;
 }
 
-#ifndef OLDXAW
 static void
 XawMultiSinkResize(Widget w)
 {
@@ -792,7 +785,6 @@ XawMultiSinkResize(Widget w)
 	    XSetClipMask(XtDisplay((Widget)ctx), sink->multi_sink.xorgc, None);
     }
 }
-#endif
 
 /*
  * Function:

@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.92 1999/05/15 12:10:40 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.93 1999/05/16 06:55:55 dawes Exp $ */
 
 
 /* main.c */
@@ -865,6 +865,10 @@ static XrmOptionDescRec optionDescList[] = {
 {"+ai",		"*activeIcon",	XrmoptionNoArg,		(caddr_t) "on"},
 #endif /* NO_ACTIVE_ICON */
 {"-b",		"*internalBorder",XrmoptionSepArg,	(caddr_t) NULL},
+{"-bc",		"*cursorBlink",	XrmoptionNoArg,		(caddr_t) "on"},
+{"+bc",		"*cursorBlink",	XrmoptionNoArg,		(caddr_t) "off"},
+{"-bcf",	"*cursorOffTime",XrmoptionSepArg,	(caddr_t) NULL},
+{"-bcn",	"*cursorOnTime",XrmoptionSepArg,	(caddr_t) NULL},
 {"-bdc",	"*colorBDMode",	XrmoptionNoArg,		(caddr_t) "off"},
 {"+bdc",	"*colorBDMode",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "off"},
@@ -1001,6 +1005,9 @@ static struct _options {
 { "-fi fontname",	   "icon font for active icon" },
 #endif /* NO_ACTIVE_ICON */
 { "-b number",             "internal border in pixels" },
+{ "-/+bc",		   "turn on/off text cursor blinking" },
+{ "-bcf milliseconds",	   "time text cursor is off when blinking"},
+{ "-bcn milliseconds",	   "time text cursor is on when blinking"},
 { "-/+bdc",                "turn off/on display of bold as color"},
 { "-/+cb",                 "turn on/off cut-to-beginning-of-line inhibit" },
 { "-cc classrange",        "specify additional character classes" },

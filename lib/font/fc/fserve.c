@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.9 1999/01/31 12:25:11 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.10 1999/03/14 11:17:47 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -641,7 +641,7 @@ fs_free_font(bfont)
     xfree(pfont->info.isStringProp);
     xfree(pfont->info.props);
 
-    xfree(pfont);
+    DestroyFontRec(pfont);
     xfree(fsd);
 
     bfont->pfont = (FontPtr) 0;
@@ -1440,7 +1440,7 @@ fs_send_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont)
 	newid = GetNewFontClientID();
 
 	/* make the font */
-	newfont = (FontPtr) xalloc(sizeof(FontRec));
+	newfont = CreateFontRec();
 
 	/* and the FS data */
 	fsd = (FSFontDataPtr) xalloc(sizeof(FSFontDataRec));
@@ -1453,7 +1453,7 @@ fs_send_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont)
 lowmem:
 	    if (!(flags & FontReopen))
 	    {
-		xfree((char *) newfont);
+		DestroyFontRec(newfont);
 		xfree((char *) fsd);
 		xfree((char *) fsfont);
 		xfree((char *) fontname);
@@ -1461,7 +1461,6 @@ lowmem:
 	    if (blockrec) fs_abort_blockrec(conn, blockrec);
 	    return AllocError;
 	}
-	bzero((char *) newfont, sizeof(FontRec));
 	bzero((char *) fsfont, sizeof(FSFontRec));
 	bzero((char *) fsd, sizeof(FSFontDataRec));
     }
@@ -1477,8 +1476,6 @@ lowmem:
 	int bit, byte, scan, glyph;
 
 	newfont->refcnt = 0;
-	newfont->maxPrivate = -1;
-	newfont->devPrivates = (pointer *) 0;
 	newfont->format = format;
 
 	/* These font components will be needed in packGlyphs */
@@ -1718,8 +1715,7 @@ fs_close_font(fpe, pfont)
     xfree(fsd);
     xfree(pfont->info.isStringProp);
     xfree(pfont->info.props);
-    xfree(pfont->devPrivates);
-    xfree(pfont);
+    DestroyFontRec(pfont);
 
 
     return Successful;
