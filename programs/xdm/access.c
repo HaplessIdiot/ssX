@@ -27,7 +27,7 @@ in this Software without prior written authorization from the copyright holder.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/access.c,v 3.13 2003/11/22 04:51:02 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/access.c,v 3.14tsi Exp $ */
 
 /*
  * Access control for XDMCP - keep a database of allowable display addresses
@@ -903,9 +903,12 @@ void ForEachListenAddr (
 	    h = d->hosts;
 	    if (h != NULL) {
 		(*listenfunction) (&h->entry.hostAddress, closure);
-	    }
-	    for (h = h->next; h != NULL; h = h->next) {
-		(*mcastfunction) (&h->entry.hostAddress, closure);
+		for (h = h->next; h != NULL; h = h->next) {
+		    (*mcastfunction) (&h->entry.hostAddress, closure);
+		}
+	    } else {
+		/* Default "LISTEN" to "LISTEN *" */
+		(*listenfunction) (NULL, closure);
 	    }
 	}
     }

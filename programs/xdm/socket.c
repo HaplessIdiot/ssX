@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the copyright holder.
 
 */
-/* $XFree86: xc/programs/xdm/socket.c,v 3.14tsi Exp $ */
+/* $XFree86: xc/programs/xdm/socket.c,v 3.15tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -298,22 +298,24 @@ static void
 UpdateListener(ARRAY8Ptr addr, void **closure)
 {
     struct socklist *s;
-    ARRAY8 tmpaddr;
 
     *closure = NULL;
 
     if (addr == NULL || addr->length == 0) {
+	ARRAY8 tmpaddr;
+	struct in_addr in;
 #if defined(IPv6) && defined(AF_INET6)
 	struct in6_addr in6 = in6addr_any;
 	tmpaddr.length = sizeof(in6);
 	tmpaddr.data = (CARD8Ptr) &in6;
-#else
-	struct in_addr in;
+	UpdateListener(&tmpaddr, closure);
+	if (*closure) return;
+#endif
 	in.s_addr = htonl (INADDR_ANY);
 	tmpaddr.length = sizeof(in);
 	tmpaddr.data = (CARD8Ptr) &in;
-#endif
-	addr = &tmpaddr;
+	UpdateListener(&tmpaddr, closure);
+	return;
     }
     
     s = FindInList(listensocks, addr);
@@ -371,12 +373,12 @@ ChangeMcastMembership(struct socklist *s, struct socklist *g, int op)
 		  (op == JOIN_MCAST_GROUP) ? "join" : "drop",
 		  inet_ntoa(((struct sockaddr_in *) g->addr)->sin_addr),
 		  errno);
-		return;
 	    } else if (debugLevel > 0) {
 		Debug ("XDMCP socket multicast %s to %s succeeded\n", 
 		  (op == JOIN_MCAST_GROUP) ? "join" : "drop",
 		  inet_ntoa(((struct sockaddr_in *) g->addr)->sin_addr));
 	    }
+	    return;
 	}
 #if defined(IPv6) && defined(AF_INET6)
 #ifndef IPV6_JOIN_GROUP
@@ -409,7 +411,6 @@ ChangeMcastMembership(struct socklist *s, struct socklist *g, int op)
 		LogError ("XDMCP socket multicast %s to %s failed, errno %d\n",
 		  (op == JOIN_MCAST_GROUP) ? "join" : "drop", addrbuf,
 		  saveerr);
-		return;
 	    } else if (debugLevel > 0) {
 		char addrbuf[INET6_ADDRSTRLEN];
 
@@ -420,6 +421,7 @@ ChangeMcastMembership(struct socklist *s, struct socklist *g, int op)
 		Debug ("XDMCP socket multicast %s to %s succeeded\n", 
 		  (op == JOIN_MCAST_GROUP) ? "join" : "drop", addrbuf);
 	    }
+	    return;
 	}
 #endif
     }

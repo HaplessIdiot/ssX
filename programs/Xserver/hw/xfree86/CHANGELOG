@@ -1,4 +1,5 @@
 XFree86 4.4.99.2 (xx March 2004)
+  48. IPv6 changes to xdm (Peter Breitenlohner).
   47. Free XrmDB in XCloseDisplay() only when implicitely allocated by 
       XGetDefaults(). If Client allocates it itself it should free it also.
       Trying to free it for the client may result in segfault if the client
@@ -18776,7 +18777,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3195 2004/03/29 16:25:14 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3196 2004/03/30 10:34:05 eich Exp $
 
 
 
