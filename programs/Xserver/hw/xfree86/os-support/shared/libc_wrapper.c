@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.38 1999/03/21 12:46:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.39 1999/03/28 15:33:00 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -377,7 +377,7 @@ xf86close(int fd)
 }
 
 int
-xf86ioctl(int fd, unsigned long request, char *argp)
+xf86ioctl(int fd, unsigned long request, pointer argp)
 {
     int status = ioctl(fd, request, argp);
 

@@ -2,7 +2,9 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.1 1999/03/28 15:32:50 dawes Exp $ */
+
+#include "videodev.h"
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -18,8 +20,9 @@
 
 
 #include <asm/ioctl.h>		/* _IORW(xxx) #defines are here */
+#if 0
 typedef unsigned long ulong;
-#include "videodev.h"
+#endif
 
 #define DEBUG(x) (x)
 
@@ -149,7 +152,7 @@ static int V4lOpenDevice(PortPrivPtr pPPriv, ScrnInfoPtr pScrn)
 	pPPriv->ov_fbuf.height       = pScrn->virtualY;
 	pPPriv->ov_fbuf.depth        = pScrn->bitsPerPixel;
 	pPPriv->ov_fbuf.bytesperline = pScrn->displayWidth * ((pScrn->bitsPerPixel + 7)/8);
-	pPPriv->ov_fbuf.base         = pScrn->memPhysBase + pScrn->fbOffset;
+	pPPriv->ov_fbuf.base         = (pointer)(pScrn->memPhysBase + pScrn->fbOffset);
 	
 	if (-1 == ioctl(pPPriv->fd,VIDIOCSFBUF,&(pPPriv->ov_fbuf)))
 	    perror("ioctl VIDIOCSFBUF");
@@ -176,7 +179,7 @@ static int
 V4lPutVideo(ScrnInfoPtr pScrn,
     short vid_x, short vid_y, short drw_x, short drw_y,
     short vid_w, short vid_h, short drw_w, short drw_h,
-    pointer data)
+    RegionPtr clipBoxes, pointer data)
 {
     PortPrivPtr pPPriv = (PortPrivPtr) data;
     struct video_clip *clip;
@@ -185,6 +188,8 @@ V4lPutVideo(ScrnInfoPtr pScrn,
     int one=1;
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/PV\n"));
+
+/* FIXME: needs to be updated for clipping changes */
 
     /* ignore vid-* for now */
 
@@ -237,7 +242,7 @@ static int
 V4lPutStill(ScrnInfoPtr pScrn,
     short vid_x, short vid_y, short drw_x, short drw_y,
     short vid_w, short vid_h, short drw_w, short drw_h,
-    pointer data)
+    RegionPtr clipBoxes, pointer data)
 {
     PortPrivPtr pPPriv = (PortPrivPtr) data;  
 
@@ -262,6 +267,7 @@ V4lStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
     pPPriv->VideoOn = 0;
 }
 
+#if 0
 static void
 V4lReclipVideo(ScrnInfoPtr pScrn, RegionPtr clipBoxes, pointer data)
 {
@@ -270,6 +276,7 @@ V4lReclipVideo(ScrnInfoPtr pScrn, RegionPtr clipBoxes, pointer data)
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/Reclip\n"));
     REGION_COPY(pScrn->pScreen, &pPPriv->Region, clipBoxes);
 }
+#endif
 
 static int
 V4lSetPortAttribute(ScrnInfoPtr pScrn,
@@ -363,7 +370,9 @@ V4LProbe(DriverPtr drv, int flags)
 	VAR[i]->PutVideo = V4lPutVideo;
 	VAR[i]->PutStill = V4lPutStill;
 	VAR[i]->StopVideo = V4lStopVideo;
+#if 0
 	VAR[i]->ReclipVideo = V4lReclipVideo;
+#endif
 	VAR[i]->SetPortAttribute = V4lSetPortAttribute;
 	VAR[i]->GetPortAttribute = V4lGetPortAttribute;
 	VAR[i]->QueryBestSize = V4lQueryBestSize;
@@ -390,5 +399,5 @@ V4LProbe(DriverPtr drv, int flags)
 	xf86XVRegisterGenericAdaptor(VAR, i);
 	drv->refCount++;
     }
-    return VAR;
+    return (VAR != NULL);
 }
