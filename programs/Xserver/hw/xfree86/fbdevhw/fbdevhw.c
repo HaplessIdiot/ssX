@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.26 2001/10/01 13:44:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.27 2001/10/31 22:50:29 tsi Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -300,30 +300,39 @@ fbdev_open_pci(pciVideoPtr pPci, char **namep)
 }
 
 static int
-fbdev_open(char *dev, char** namep)
+fbdev_open(int scrnIndex, char *dev, char** namep)
 {
 	struct	fb_fix_screeninfo fix;
 	int    fd;
 
 	/* try argument (from XF86Config) first */
-	if ((NULL == dev) || ((fd = open(dev,O_RDWR,0)) == -1)) {
+	if (dev) {
+	    fd = open(dev,O_RDWR,0);
+	} else {
 	    /* second: environment variable */
 	    dev = getenv("FRAMEBUFFER");
 	    if ((NULL == dev) || ((fd = open(dev,O_RDWR,0)) == -1)) {
 		/* last try: default device */
-		if (-1 == (fd = open("/dev/fb0",O_RDWR,0)))
-		    return -1;
+		dev = "/dev/fb0";
+		fd = open(dev,O_RDWR,0);
 	    }
 	}
+
+	if (fd == -1) {
+	    xf86DrvMsg(scrnIndex, X_ERROR,
+		       "open %s: %s\n", dev, strerror(errno));
+	    return -1;
+	}
+
 	if (namep) {
 	    if (-1 == ioctl(fd,FBIOGET_FSCREENINFO,(void*)(&fix))) {
 		*namep = NULL;
+		xf86DrvMsg(scrnIndex, X_ERROR,
+			   "FBIOGET_FSCREENINFO: %s\n", strerror(errno));
 		return -1;
 	    } else {
-		if (namep) {
-		    *namep = xnfalloc(16);
-		    strncpy(*namep,fix.id,16);
-		}
+		*namep = xnfalloc(16);
+		strncpy(*namep,fix.id,16);
 	    }
 	}
 	return fd;
@@ -339,7 +348,7 @@ fbdevHWProbe(pciVideoPtr pPci, char *device,char **namep)
 	if (pPci)
 		fd = fbdev_open_pci(pPci,namep);
 	else
-		fd = fbdev_open(device,namep);
+		fd = fbdev_open(-1,device,namep);
 
 	if (-1 == fd)
 		return FALSE;
@@ -361,7 +370,7 @@ fbdevHWInit(ScrnInfoPtr pScrn, pciVideoPtr pPci, char *device)
 	if (pPci)
 		fPtr->fd = fbdev_open_pci(pPci,NULL);
 	else
-		fPtr->fd = fbdev_open(device,NULL);
+		fPtr->fd = fbdev_open(pScrn->scrnIndex,device,NULL);
 	if (-1 == fPtr->fd)
 		return FALSE;
 
@@ -545,7 +554,8 @@ fbdevHWMapVidmem(ScrnInfoPtr pScrn)
 		fPtr->fbmem = mmap(NULL, fPtr->fbmem_len, PROT_READ | PROT_WRITE,
 				   MAP_SHARED, fPtr->fd, 0);
 		if (-1 == (long)fPtr->fbmem) {
-			perror("mmap fbmem");
+			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+				   "mmap fbmem: %s\n", strerror(errno));
 			fPtr->fbmem = NULL;
 		} else {
 		    /* Perhaps we'd better add fboff to fbmem and return 0 in
@@ -576,7 +586,8 @@ fbdevHWUnmapVidmem(ScrnInfoPtr pScrn)
 	TRACE_ENTER("UnmapVidmem");
 	if (NULL != fPtr->fbmem) {
 		if (-1 == munmap(fPtr->fbmem, fPtr->fbmem_len))
-			perror("munmap fbmem");
+			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+				   "munmap fbmem: %s\n", strerror(errno));
 		fPtr->fbmem = NULL;
 	}
 	return TRUE;
@@ -594,7 +605,8 @@ fbdevHWMapMMIO(ScrnInfoPtr pScrn)
 		/* tell the kernel not to use accels to speed up console scrolling */
 		fPtr->var.accel_flags = 0;
 		if (0 != ioctl(fPtr->fd,FBIOPUT_VSCREENINFO,(void*)(&fPtr->var))) {
-			perror("FBIOPUT_VSCREENINFO");
+			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+				   "FBIOPUT_VSCREENINFO: %s\n", strerror(errno));
 			return FALSE;
 		}
 		mmio_off = (unsigned long) fPtr->fix.mmio_start & ~PAGE_MASK;
@@ -605,7 +617,8 @@ fbdevHWMapMMIO(ScrnInfoPtr pScrn)
 		fPtr->mmio = mmap(NULL, fPtr->mmio_len, PROT_READ | PROT_WRITE,
 				  MAP_SHARED, fPtr->fd, fPtr->fbmem_len);
 		if (-1 == (long)fPtr->mmio) {
-			perror("mmap mmio");
+			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+				   "mmap mmio: %s\n", strerror(errno));
 			fPtr->mmio = NULL;
 		} else
 			fPtr->mmio += mmio_off;
@@ -621,7 +634,8 @@ fbdevHWUnmapMMIO(ScrnInfoPtr pScrn)
 	TRACE_ENTER("UnmapMMIO");
 	if (NULL != fPtr->mmio) {
 		if (-1 == munmap((void *)((unsigned long)fPtr->mmio & PAGE_MASK), fPtr->mmio_len))
-			perror("munmap mmio");
+			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+				   "munmap mmio: %s\n", strerror(errno));
 		fPtr->mmio = NULL;
 		/* FIXME: restore var.accel_flags [geert] */
 	}
@@ -646,16 +660,19 @@ fbdevHWModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	/* set */
 	if (0 != ioctl(fPtr->fd,FBIOPUT_VSCREENINFO,(void*)(&fPtr->var))) {
-		perror("FBIOPUT_VSCREENINFO");
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "FBIOPUT_VSCREENINFO: %s\n", strerror(errno));
 		return FALSE;
 	}
 	/* read back */
 	if (0 != ioctl(fPtr->fd,FBIOGET_FSCREENINFO,(void*)(&fPtr->fix))) {
-		perror("FBIOGET_FSCREENINFO");
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "FBIOGET_FSCREENINFO: %s\n", strerror(errno));
 		return FALSE;
 	}
 	if (0 != ioctl(fPtr->fd,FBIOGET_VSCREENINFO,(void*)(&fPtr->var))) {
-		perror("FBIOGET_VSCREENINFO");
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "FBIOGET_VSCREENINFO: %s\n", strerror(errno));
 		return FALSE;
 	}
 	return TRUE;
@@ -672,7 +689,8 @@ fbdevHWSave(ScrnInfoPtr pScrn)
 
 	TRACE_ENTER("Save");
 	if (0 != ioctl(fPtr->fd,FBIOGET_VSCREENINFO,(void*)(&fPtr->saved_var)))
-		perror("FBIOGET_VSCREENINFO");
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "FBIOGET_VSCREENINFO: %s\n", strerror(errno));
 }
 
 void
@@ -682,7 +700,8 @@ fbdevHWRestore(ScrnInfoPtr pScrn)
 
 	TRACE_ENTER("Restore");
 	if (0 != ioctl(fPtr->fd,FBIOPUT_VSCREENINFO,(void*)(&fPtr->saved_var)))
-		perror("FBIOPUT_VSCREENINFO");
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "FBIOPUT_VSCREENINFO: %s\n", strerror(errno));
 }
 
 /* -------------------------------------------------------------------- */
@@ -712,7 +731,8 @@ fbdevHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 		blue  = (colors[indices[i]].blue  << 8) |
 			colors[indices[i]].blue;
 		if (-1 == ioctl(fPtr->fd,FBIOPUTCMAP,(void*)&cmap))
-			perror("ioctl FBIOPUTCMAP");
+			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+				   "FBIOPUTCMAP: %s\n", strerror(errno));
 	}
 }
 
@@ -731,7 +751,8 @@ fbdevHWValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 	xfree2fbdev_timing(mode, &var);
 	var.activate = FB_ACTIVATE_TEST;
 	if (0 != ioctl(fPtr->fd,FBIOPUT_VSCREENINFO,(void*)(&fPtr->var))) {
-		perror("FBIOPUT_VSCREENINFO");
+		xf86DrvMsg(scrnIndex, X_ERROR,
+			   "FBIOPUT_VSCREENINFO: %s\n", strerror(errno));
 		return MODE_BAD;
 	}
 	return MODE_OK;
@@ -746,7 +767,8 @@ fbdevHWSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 	TRACE_ENTER("SwitchMode");
 	xfree2fbdev_timing(mode, &fPtr->var);
 	if (0 != ioctl(fPtr->fd,FBIOPUT_VSCREENINFO,(void*)(&fPtr->var))) {
-		perror("FBIOPUT_VSCREENINFO");
+		xf86DrvMsg(scrnIndex, X_ERROR,
+			   "FBIOPUT_VSCREENINFO: %s\n", strerror(errno));
 		return FALSE;
 	}
 	return TRUE;
@@ -762,7 +784,8 @@ fbdevHWAdjustFrame(int scrnIndex, int x, int y, int flags)
 	fPtr->var.xoffset = x;
 	fPtr->var.yoffset = y;
 	if (-1 == ioctl(fPtr->fd,FBIOPAN_DISPLAY,(void*)&fPtr->var))
-		perror("ioctl FBIOPAN_DISPLAY");
+		xf86DrvMsg(scrnIndex, X_ERROR,
+			   "FBIOPAN_DISPLAY: %s\n", strerror(errno));
 }
 
 Bool
@@ -813,7 +836,8 @@ fbdevHWDPMSSet(ScrnInfoPtr pScrn, int mode, int flags)
 	}
 
 	if (-1 == ioctl(fPtr->fd, FBIOBLANK, (void *)fbmode))
-		perror("ioctl FBIOBLANK");
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "FBIOBLANK: %s\n", strerror(errno));
 }
 
 Bool
@@ -828,8 +852,11 @@ fbdevHWSaveScreen(ScreenPtr pScreen, int mode)
 
 	unblank = xf86IsUnblank(mode);
 
-	if (-1 == ioctl(fPtr->fd, FBIOBLANK, (void *)(1-unblank)))
+	if (-1 == ioctl(fPtr->fd, FBIOBLANK, (void *)(1-unblank))) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "FBIOBLANK: %s\n", strerror(errno));
 		return FALSE;
+	}
 
 	return TRUE;
 }

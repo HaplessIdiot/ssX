@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 126. Fix problems opening /dev/fb0 in fbdevhw layer (#5229, Michel Dänzer).
  125. Update the apm driver (#5227, Loic Grenie).
  124. Update the Japanese localization of XDarwin (Toshimitsu Tanaka).
  123. Symbol table cleanup, leaving xf86GetPointerScreenFuncs() as the only
@@ -14781,4 +14782,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2205 2002/05/04 01:25:37 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2206 2002/05/07 12:53:46 alanh Exp $
