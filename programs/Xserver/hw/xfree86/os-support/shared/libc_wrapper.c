@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.13 1997/03/03 15:55:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.14 1997/03/22 09:36:05 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -29,6 +29,8 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <math.h>
+#include <stdarg.h>
+#include <fcntl.h>
 #include "Xfuncproto.h"
 #include "os.h"
 #if NeedVarargsPrototypes
@@ -269,6 +271,7 @@ xf86strerror(n)
     return strerror(n);
 }
 
+
 void
 xf86usleep(usec)
     unsigned long usec;
@@ -285,6 +288,63 @@ xf86usleep(usec)
 #endif
 }
 
+/* Basic I/O */
+
+int xf86errno;
+
+int 
+xf86open(const char *path, int flags, ...)
+{
+    int fd;
+    va_list ap;
+
+    va_start(ap, flags);
+    if (flags & O_CREAT) {
+	mode_t mode = va_arg(ap, mode_t);
+	fd = open(path, flags, mode);
+    } else {
+	fd = open(path, flags);
+    }
+    va_end(ap);
+    xf86errno = errno;
+    return fd;
+}
+
+int
+xf86close(int fd)
+{
+    int status = close(fd);
+
+    xf86errno = errno;
+    return status;
+}
+
+int
+xf86ioctl(int fd, unsigned long request, char *argp)
+{
+    int status = ioctl(fd, request, argp);
+
+    xf86errno = errno;
+    return status;
+}
+
+unsigned int
+xf86read(int fd, void *buf, size_t nbytes)
+{
+    unsigned int n = read(fd, buf, nbytes);
+
+    xf86errno = errno;
+    return n;
+}
+
+unsigned int
+xf86write(int fd, void *buf, size_t nbytes)
+{
+    unsigned int n = write(fd, buf, nbytes);
+
+    xf86errno = errno;
+    return n;
+}
 
 /* limited stdio support */
 

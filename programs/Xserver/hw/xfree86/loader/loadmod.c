@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.14 1997/05/03 09:19:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.15 1997/06/15 07:12:37 dawes Exp $ */
 
 
 
@@ -37,6 +37,8 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "vga.h"
+#include "xf86_Config.h"
+#include "xf86Xinput.h"
 #include "xf86_ldext.h"
 
 int  *xf86ccdScreenPrivateIndex = NULL;
@@ -299,6 +301,9 @@ LoadModule(module,path)
 				GlxInitVisualsPtr = (GlxInitVisualsType)data;
                                 break; 
 #endif
+			case MAGIC_ADD_XINPUT_DEVICE:
+			        xf86AddDeviceAssoc((DeviceAssocRec *)data);
+				break;
 
 			default:
 				ErrorF("Unknown magic action %d\n",magic);

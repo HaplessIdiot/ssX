@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.5 1997/02/24 17:46:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.6 1997/03/03 15:55:26 hohndel Exp $ */
 
 
 
@@ -47,7 +47,7 @@
 #define LD_COFFOBJECT	2
 #define LD_XCOFFOBJECT	3
 #define LD_AOUTOBJECT   4
-#define LD_DLOPEN	5
+#define LD_AOUTDLOBJECT	5
 
 #define LD_PROCESSED_ARCHIVE -1
 
@@ -288,6 +288,32 @@ int
 #endif
 );
 void AOUTUnloadModule(
+#if NeedFunctionPrototypes
+void *
+#endif
+);
+
+
+/* LD_DLOBJECT */
+void *DLLoadModule(
+#if NeedFunctionPrototypes
+int,
+char *,
+int,
+int
+#endif
+);
+void DLResolveSymbols(
+#if NeedFunctionPrototypes
+void
+#endif
+);
+int DLCheckForUnresolved(
+#if NeedFunctionPrototypes
+int
+#endif
+);
+void DLUnloadModule(
 #if NeedFunctionPrototypes
 void *
 #endif

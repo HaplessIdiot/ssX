@@ -1,4 +1,31 @@
-XFree86 3.9h (22 June 1997)
+XFree86 3.9h (25 June 1997)
+1049. First stab at adding dlopen() style loader (#712, Matthieu Herrb).
+1048. Add further acceleration to the GLINT server (mostly disabled) (#711,
+      Alan Hourihane).
+1047. Add support for I128 Series II Rev 2 chips (#704, Robin Cutshaw).
+1046. Additions to the apm driver. Add support for AT3D, acceleration for
+      8,16,32bpp (for AT3D and AT24, filled rectangles, screen-screen bitblts,
+      host-screen color expansion bitblts for text). DPMS support, hardware
+      cursor code (also in 8bpp), use programmable clock, set MCLK to 57.3
+      MHz on AT3D, various bugfixes and cleanups (#702, Hendrik Harmsen).
+1045. Fix problems with displaying card READMEs in XF86Setup (#701, Dirk
+      Hohndel).
+1044. Add left-edge clipping to s3_newmmio. There's bug in both the scanline 
+      screen->screen and CPU->screen stipple fallback routines though.  Both 
+      break certain patterns and the screen->screen bug is worse than the 
+      CPU->screen one (#694, Mark Vojkovich).
+1043. Enables the XInput modules from 3.2 to be loaded as modules in 
+      XF86_LOADER (#693, Matthieu Herrb).
+1042. Add code to have XAA check to see if a stipple can be reduced to an 8x8
+      pattern before banishing it from the pixmap cache on account of it's 
+      size (#692, Mark Vojkovich).
+1041. Fix CapNotLast problem in dashed line code (#686, Mark Vojkovich).
+1040. Add stippled fill fallback for SVGA/S3 if the pixmap cache is too small
+      (#685, Mark Vojkovich)
+1039. Fix for xf86initac,c so that drivers can specify their own WriteBitmap 
+      functions and fallbacks for non-cachable stippled fills. This also
+      allows usage of both CPU->screen and scanline screen->screen color 
+      expansion instead of one or the other (#684, Mark Vojkovich).
 1038. Some minor Xlib fixes (#687-690, Kaleb Keithley).
 1037. XKB updates (#674, 675, Kaleb Keithley).
 1036. Config updates to make use of change 1033 (#673, Kaleb Keithley).
@@ -4983,4 +5010,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.495 1997/06/22 10:16:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.496 1997/06/22 12:20:22 dawes Exp $

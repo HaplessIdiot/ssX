@@ -2,8 +2,7 @@
 
 
 
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_bank.s,v 3.1 1996/12/27 07:04:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_bank.s,v 1.1 1997/03/06 23:14:28 hohndel Exp $ */
 
 #include "assyntax.h"
 

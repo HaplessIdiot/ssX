@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/newmmio.h,v 1.1 1997/03/06 23:16:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/newmmio.h,v 1.2 1997/06/10 12:30:29 hohndel Exp $ */
 
 /*
  *
@@ -229,6 +229,7 @@ typedef struct {
 				((mmtr)s3MmioMem)->pk_enh_regs.regs.sciss_botright = ((y2)&0xffff) | ((x2) << 16);\
 				}
 #define SET_SCISSORS_RB(x,y)	((mmtr)s3MmioMem)->pk_enh_regs.regs.sciss_botright = ((y)&0xffff) | ((x) << 16)
+#define SET_SCISSORS_L(l)	((mmtr)s3MmioMem)->pk_enh_regs.regs.sciss_topleft  = ((l) << 16);
 #define SET_MULT_MISC(val)	((mmtr)s3MmioMem)->pk_enh_regs.regs.mult_misc = (val)
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.1 1997/06/17 08:17:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.2 1997/06/20 09:24:38 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -224,7 +224,13 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(0x8842,			LBReadFormat);
 	GLINT_WRITE_REG(0x8842,			LBWriteFormat);
 	GLINT_WRITE_REG(pprod,			FBReadMode);
-	GLINT_WRITE_REG(0x0,			ScissorMode);
+#if 0
+	GLINT_WRITE_REG((glintInfoRec.displayWidth - 1) |
+		        0x7FFF0000,	ScreenSize);
+	GLINT_WRITE_REG(2,			ScissorMode);
+#else
+	GLINT_WRITE_REG(0,			ScissorMode);
+#endif
 
 	/*
 	 * this one depends on the color depth
@@ -302,7 +308,6 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	 */
 	GLINT_WRITE_REG(1,			DFIFODis);
 	GLINT_WRITE_REG(3,			FIFODis);
-	
 	GLINT_WRITE_REG(crtcRegs->vclkctl,	VClkCtl);
 
 	GLINT_WRITE_REG(pprod,			FBReadMode);
@@ -461,6 +466,7 @@ glintInit(DisplayModePtr mode)
 		     glintInfoRec.bitsPerPixel / 8);
 
 	IBMRGB52x_Init(mode);
+
 #if 0
 	/*
 	 * this is hardwired for setting the FB and LB memory control
@@ -469,8 +475,7 @@ glintInit(DisplayModePtr mode)
 		GLINT_WRITE_REG(0xdc000017,      LBMemoryEDO);
 		GLINT_WRITE_REG(0x60400800,      FBMemoryCtl);
 		GLINT_WRITE_REG(0xFFFFFFFF,	 FBWrMaskk);
-		GLINT_WRITE_REG(
-			GLINT_READ_REG(FBTXMemCtl)&0xfffffffe, FBTXMemCtl);
+		GLINT_WRITE_REG(0x00000002, 	 FBTXMemCtl);
 	} else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
 		GLINT_WRITE_REG(0xFFFFFFFF,	 PMFramebufferWriteMask);
 	}

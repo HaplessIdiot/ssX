@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.13 1997/05/03 12:53:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.14 1997/06/03 14:12:28 hohndel Exp $ */
 
 
 
@@ -156,6 +156,11 @@ if( buf[0] == 0x07 && buf[1] == 0x01 && (buf[2] == 0x64 || buf[2] == 0x86)) {
         /* AOUTMAGIC, (Linux OMAGIC, old impure format, also used by OS/2 */
         return LD_AOUTOBJECT;
         }
+if( buf[0] == 0xc0 && buf[1] == 0x86) {
+        /* i386 shared object */
+        return LD_AOUTDLOBJECT;
+        }
+
 return LD_UNKNOWN;
 }
 
@@ -614,7 +619,11 @@ char * sym ;
   if ( item )
     return item->address ;
   else
+#ifdef DLOPEN_SUPPORT
+      return(DLFindSymbol(sym));
+#else
     return 0 ;
+#endif
 
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.20 1997/05/06 09:46:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.21 1997/06/17 12:33:25 dawes Exp $ */
 
 
 
@@ -25,6 +25,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#include <fcntl.h>
 #include "sym.h"
 #include "misc.h"
 #include "mi.h"
@@ -39,6 +40,7 @@
 #include "xf86_OSlib.h"
 #include "xf86_PCI.h"
 #include "xf86_Config.h"
+#include "xf86Xinput.h"
 #include "CirrusClk.h"
 #include "vga.h"
 
@@ -98,6 +100,15 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86LockZoom)
    SYMFUNC(xf86MouseInit)
    SYMFUNC(xf86SetKbdRepeat)
+   SYMFUNC(xf86GetToken)
+   SYMFUNC(xf86ConfigError)
+#ifdef XINPUT
+   SYMFUNC(xf86AlwaysCore)
+   SYMFUNC(xf86PostMotionEvent)
+   SYMFUNC(xf86PostButtonEvent)
+   SYMFUNC(xf86GetMotionEvents)
+   SYMFUNC(xf86MotionHistoryAllocate)
+#endif
 #ifdef DPMSExtension
    SYMFUNC(DPMSSet)
 #endif
@@ -174,6 +185,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86strncmp)
    SYMFUNC(xf86strcmp)
    SYMFUNC(xf86strlen)
+   SYMFUNC(xf86strdup)
    SYMFUNC(xf86exp)
    SYMFUNC(xf86log)
    SYMFUNC(xf86pow)
@@ -185,9 +197,15 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86getbitsperpixel)
    SYMFUNC(xf86sprintf)
    SYMFUNC(xf86strerror)
+   SYMFUNC(xf86errno)
    SYMFUNC(xf86setexternclock)
    SYMFUNC(xf86execl)
    SYMFUNC(xf86getenv)
+   SYMFUNC(xf86open)
+   SYMFUNC(xf86close)
+   SYMFUNC(xf86ioctl)
+   SYMFUNC(xf86read)
+   SYMFUNC(xf86write)
 
 /*
  * these are our own interfaces where libc functions
