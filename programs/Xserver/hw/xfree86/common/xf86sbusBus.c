@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.1 2000/05/18 23:21:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.2 2000/05/23 04:47:41 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -364,7 +364,7 @@ xf86ClaimSbusSlot(sbusDevicePtr psdp, DriverPtr drvp,
         p->driver = drvp;
         p->chipset = -1;
         p->busType = BUS_SBUS;
-        p->device = dev;
+        xf86AddDevToEntity(num, dev);
         p->sbusBusId.fbNum = psdp->fbNum;
         p->active = active;
         p->inUse = FALSE;
