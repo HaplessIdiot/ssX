@@ -1,4 +1,6 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 118. Remove stale code for Mac OS X 10.0 support (Torrey T. Lyons).
+ 117. Add initial Xinput support for XDarwin (Greg Parker).
  116. Xterm patch #191 (Thomas Dickey).
  115. Integrate the TinyX servers into the standard XFree86 build:
        - Numerous build and warning fixes.
@@ -18954,7 +18956,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3264 2004/06/02 22:43:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3265 2004/06/06 22:15:24 dickey Exp $
 
 
 
