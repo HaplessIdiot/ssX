@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.24 2001/12/05 19:23:52 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.25 2003/08/24 17:36:55 dawes Exp $ */
 
 /*
  * Copyright (c) 1998-2001 by The XFree86 Project, Inc.
@@ -34,6 +34,8 @@
 #include "scrnintstr.h"
 #include "regionstr.h"
 #include "xf86fbman.h"
+
+#define DEBUG
 
 static int xf86FBMangerIndex = -1;
 static unsigned long xf86ManagerGeneration = 0;
@@ -145,19 +147,19 @@ xf86FreeOffscreenArea(FBAreaPtr area)
 
 
 void
-xf86FreeOffscreenLinear(FBLinearPtr area)
+xf86FreeOffscreenLinear(FBLinearPtr linear)
 {
    FBManagerFuncsPtr funcs;
 
-   if(!area) return;
+   if(!linear) return;
 
    if(xf86FBMangerIndex < 0) 
 	return;
    if(!(funcs = 
-	(FBManagerFuncsPtr)area->pScreen->devPrivates[xf86FBMangerIndex].ptr))
+	(FBManagerFuncsPtr)linear->pScreen->devPrivates[xf86FBMangerIndex].ptr))
 	return;
 
-   (*funcs->FreeOffscreenLinear)(area);
+   (*funcs->FreeOffscreenLinear)(linear);
 
    return;
 }
@@ -271,18 +273,19 @@ typedef struct _FBLink {
 } FBLink, *FBLinkPtr;
 
 typedef struct _FBLinearLink {
-  FBLinear  linear;
-  FBAreaPtr area;
+  FBLinear linear;
+  int free;	/* need to add free here as FBLinear is publicly accessible */
+  FBAreaPtr area;	/* only used if allocation came from XY area */
   struct _FBLinearLink *next;  
 } FBLinearLink, *FBLinearLinkPtr;
 
 
 typedef struct {
-   ScreenPtr    pScreen;
-   RegionPtr    InitialBoxes;
-   RegionPtr    FreeBoxes;
-   FBLinkPtr    UsedAreas;
-   int          NumUsedAreas;
+   ScreenPtr    		pScreen;
+   RegionPtr    		InitialBoxes;
+   RegionPtr    		FreeBoxes;
+   FBLinkPtr    		UsedAreas;
+   int          		NumUsedAreas;
    FBLinearLinkPtr              LinearAreas;
    CloseScreenProcPtr           CloseScreen;
    int                          NumCallbacks;
@@ -799,6 +802,97 @@ LinearRemoveCBWrapper(FBAreaPtr area)
    xfree(pLink);
 }
 
+#ifdef DEBUG
+static void
+Dump(FBLinearLinkPtr pLink)
+{
+   if (!pLink) ErrorF("MMmm, PLINK IS NULL!\n");
+
+   while (pLink) {
+	 ErrorF("  Offset:%08x, Size:%08x, %s,%s\n",
+		pLink->linear.offset,
+		pLink->linear.size,
+		pLink->free ? "Free" : "Used",
+		pLink->area ? "Area" : "Linear");
+
+	 pLink = pLink->next;
+   }
+}
+#endif
+
+static FBLinearPtr
+AllocateLinear(
+   FBManagerPtr offman,
+   int size,
+   int granularity,
+   pointer privData
+){
+   ScreenPtr pScreen = offman->pScreen;
+   FBLinearLinkPtr linear = NULL;
+   FBLinearLinkPtr newlink = NULL;
+   int offset, end;
+
+   if(size <= 0) return NULL;
+
+   if (!offman->LinearAreas) return NULL;
+
+   linear = offman->LinearAreas;
+   while (linear) {
+ 	/* Make sure we get a free area that's not an XY fallback case */
+      if (!linear->area && linear->free) {
+	 offset = (linear->linear.offset + granularity) & ~granularity;
+	 end = offset+size;
+	 if (end <= (linear->linear.offset + linear->linear.size))
+	    break;
+      }
+      linear = linear->next;
+   }
+   if (!linear)
+      return NULL;
+
+   /* break left */
+   if (offset > linear->linear.offset) {
+      newlink = xalloc(sizeof(FBLinearLink));
+      if (!newlink)
+	 return NULL;
+      newlink->area = NULL;
+      newlink->linear.offset = offset;
+      newlink->linear.size = linear->linear.size - (offset - linear->linear.offset);
+      newlink->free = 1;
+      newlink->next = linear->next;
+      linear->linear.size -= newlink->linear.size;
+      linear->next = newlink;
+      linear = newlink;
+   }
+
+   /* break right */
+   if (size < linear->linear.size) {
+      newlink = xalloc(sizeof(FBLinearLink));
+      if (!newlink)
+	 return NULL;
+      newlink->area = NULL;
+      newlink->linear.offset = offset + size;
+      newlink->linear.size = linear->linear.size - size;
+      newlink->free = 1;
+      newlink->next = linear->next;
+      linear->linear.size = size;
+      linear->next = newlink;
+   }
+
+   /* p = middle block */
+   linear->linear.granularity = granularity;
+   linear->free = 0;
+   linear->linear.pScreen = pScreen;
+   linear->linear.MoveLinearCallback = NULL;
+   linear->linear.RemoveLinearCallback = NULL;
+   linear->linear.devPrivate.ptr = NULL;
+
+#ifdef DEBUG
+   Dump(offman->LinearAreas);
+#endif
+
+   return &(linear->linear);
+}
 
 static FBLinearPtr
 localAllocateOffscreenLinear(
@@ -818,28 +912,21 @@ localAllocateOffscreenLinear(
 
    offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
 
+   /* Try to allocate from linear memory first...... */
+#ifdef DEBUG
+   ErrorF("ALLOCATING LINEAR\n");
+#endif
+   if ((linear = AllocateLinear(offman, length, gran, privData)))
+   	return linear;
+
+#ifdef DEBUG
+   ErrorF("NOPE, ALLOCATING AREA\n");
+#endif
+
    if(!(link = xalloc(sizeof(FBLinearLink))))
      return NULL;
 
-#if 0
-   if(we have linear heap space) {
-	if(able to allocate some) {
-	    link->area = NULL;
-	    link->next = offman->LinearAreas;
-	    offman->LinearAreas = link;
-	    linear = link->linear;
-	    linear->pScreen = pScreen;
-	    linear->size = length;
-	    linear->offset = ????;
-	    linear->granularity = gran;
-	    linear->MoveLinearAreaCallback = moveCB;
-	    linear->RemoveLinearAreaCallback = removeCB;
-	    linear->devPrivate.ptr = privData;
-	    return linear;
-	} /* else fallthrough */
-   }
-#endif
-
+   /* No linear available, so try and pinch some from the XY areas */
    extents = REGION_EXTENTS(pScreen, offman->InitialBoxes);
    pitch = extents->x2 - extents->x1;
 
@@ -863,6 +950,7 @@ localAllocateOffscreenLinear(
 			privData))) 
    {
 	link->area = area;
+	link->free = 0;
 	link->next = offman->LinearAreas;
 	offman->LinearAreas = link;
 	linear = &(link->linear);
@@ -876,6 +964,10 @@ localAllocateOffscreenLinear(
    } else 
 	xfree(link);
 
+#ifdef DEBUG
+   Dump(offman->LinearAreas);
+#endif
+
    return linear;
 }
 
@@ -888,7 +980,7 @@ localFreeOffscreenLinear(FBLinearPtr linear)
    ScreenPtr pScreen = linear->pScreen;
 
    offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
-       
+
    pLink = offman->LinearAreas;
    if(!pLink) return;  
  
@@ -899,16 +991,42 @@ localFreeOffscreenLinear(FBLinearPtr linear)
    }
 
    if(pLink->area) {  /* really an XY area */
-       localFreeOffscreenArea(pLink->area);
-   } else {
-	/* free the linear area */
+#ifdef DEBUG
+	ErrorF("FREEING AREA\n");
+#endif
+	localFreeOffscreenArea(pLink->area);
+   	if(pLinkPrev)
+	    pLinkPrev->next = pLink->next;
+   	else offman->LinearAreas = pLink->next;
+   	xfree(pLink); 
+#ifdef DEBUG
+   	Dump(offman->LinearAreas);
+#endif
+	return;
    }
 
-   if(pLinkPrev)
-        pLinkPrev->next = pLink->next;
-   else offman->LinearAreas = pLink->next;
+   pLink->free = 1;
 
-   xfree(pLink);
+   if (pLink->next && pLink->next->free) {
+      FBLinearLinkPtr p = pLink->next;
+      pLink->linear.size += p->linear.size;
+      pLink->next = p->next;
+      free(p);
+   }
+
+   if(pLinkPrev) {
+   	if (pLinkPrev->next && pLinkPrev->next->free && !pLinkPrev->area) {
+      	    FBLinearLinkPtr p = pLinkPrev->next;
+      	    pLinkPrev->linear.size += p->linear.size;
+      	    pLinkPrev->next = p->next;
+      	    free(p);
+    	}
+   } 
+   
+#ifdef DEBUG
+   ErrorF("FREEING LINEAR\n");
+   Dump(offman->LinearAreas);
+#endif
 }
 
 
@@ -955,7 +1073,7 @@ localResizeOffscreenLinear(FBLinearPtr resize, int length)
 	    return TRUE;	
 	}
    } else {
-	/* resize the linear area */
+	/* TODO!!!! resize the linear area */
    }
 
    return FALSE;
@@ -970,22 +1088,45 @@ localQueryLargestOffscreenLinear(
     int priority
 )
 {
-    int w, h;
+    FBManagerPtr offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
+    FBLinearLinkPtr pLink;
+    FBLinearLinkPtr pLinkRet;
 
     *size = 0;
+    
+    if (!offman->LinearAreas) return FALSE;
 
-    /* for now, we only look at XY space */
-    if(localQueryLargestOffscreenArea(pScreen, &w, &h, gran, 
+    pLink = offman->LinearAreas;
+    pLinkRet = pLink;
+
+    if (!pLink->area) {
+	while (pLink) {
+	    if (pLink->free) {
+		if (pLink->linear.size > pLinkRet->linear.size)
+		    pLinkRet = pLink;
+	    }
+	    pLink = pLink->next;
+    	}
+
+	if (pLinkRet->free) {
+	    *size = pLinkRet->linear.size;
+	    return TRUE;
+    	}
+    } else {
+	int w, h;
+
+    	if(localQueryLargestOffscreenArea(pScreen, &w, &h, gran, 
 				FAVOR_WIDTH_THEN_AREA, priority))
-    {
-	FBManagerPtr offman;
-	BoxPtr extents;
+    	{
+	    FBManagerPtr offman;
+	    BoxPtr extents;
 
-	offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
-	extents = REGION_EXTENTS(pScreen, offman->InitialBoxes);
-	if((extents->x2 - extents->x1) == w)
-	    *size = w * h;
-	return TRUE;
+	    offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
+	    extents = REGION_EXTENTS(pScreen, offman->InitialBoxes);
+	    if((extents->x2 - extents->x1) == w)
+	    	*size = w * h;
+	    return TRUE;
+        }
     }
 
     return FALSE;
@@ -1216,6 +1357,44 @@ xf86InitFBManagerRegion(
    return TRUE;
 } 
 
+Bool
+xf86InitFBManagerLinear(
+    ScreenPtr pScreen,  
+    int offset,
+    int size
+){
+   FBManagerPtr offman;
+   FBLinearLinkPtr link;
+   FBLinearPtr linear;
+
+   if (size <= 0)
+	return FALSE;
+
+   /* we expect people to have called the Area setup first for pixmap cache */
+   if (!pScreen->devPrivates[xf86FBScreenIndex].ptr)
+	return FALSE;
+
+   offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
+
+   offman->LinearAreas = xalloc(sizeof(FBLinearLink));
+   if (!offman->LinearAreas)
+	return FALSE;
+
+   link = offman->LinearAreas;
+   link->area = NULL;
+   link->next = NULL;
+   link->free = 1;
+   linear = &(link->linear);
+   linear->pScreen = pScreen;
+   linear->size = size;
+   linear->offset = offset;
+   linear->granularity = 0;
+   linear->MoveLinearCallback = NULL;
+   linear->RemoveLinearCallback = NULL;
+   linear->devPrivate.ptr = NULL;
+
+   return TRUE;
+}
 
 
 /* This is an implementation specific function and should 

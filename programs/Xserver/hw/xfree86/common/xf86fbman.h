@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.12 2001/08/28 16:55:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.13 2003/08/24 17:36:55 dawes Exp $ */
 
 /*
  * Copyright (c) 1998-2001 by The XFree86 Project, Inc.
@@ -133,6 +133,13 @@ Bool
 xf86InitFBManager(
     ScreenPtr pScreen, 
     BoxPtr FullBox
+);
+
+Bool
+xf86InitFBManagerLinear(
+    ScreenPtr pScreen, 
+    int offset,
+    int size
 );
 
 Bool 
