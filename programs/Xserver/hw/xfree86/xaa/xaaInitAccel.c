@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.6 1998/08/19 07:49:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.7 1998/08/29 05:44:07 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -62,9 +62,9 @@ static OptionInfoRec XAAOptions[] = {
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_MONO_8x8_PATTERN_FILL_TRAP,	"XaaNoMono8x8PatternFillTrap",
 				OPTV_BOOLEAN,	{0}, FALSE },
-    {XAAOPT_COL_8x8_PATTERN_FILL_RECT,	"XaaNoMono8x8PatternFillRect",
+    {XAAOPT_COL_8x8_PATTERN_FILL_RECT,	"XaaNoColor8x8PatternFillRect",
 				OPTV_BOOLEAN,	{0}, FALSE },
-    {XAAOPT_COL_8x8_PATTERN_FILL_TRAP,	"XaaNoMono8x8PatternFillTrap",
+    {XAAOPT_COL_8x8_PATTERN_FILL_TRAP,	"XaaNoColor8x8PatternFillTrap",
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_CPU_TO_SCREEN_COL_EXP_FILL,	"XaaNoCPUToScreenColorExpandFill",
 				OPTV_BOOLEAN,	{0}, FALSE },
@@ -76,7 +76,7 @@ static OptionInfoRec XAAOptions[] = {
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_SCANLINE_IMAGE_WRITE_RECT,	"XaaNoScanlineImageWriteRect",
 				OPTV_BOOLEAN,	{0}, FALSE },
-    {XAAOPT_IMAGE_READ_RECT,		"XaaNoImageWriteRect",
+    {XAAOPT_IMAGE_READ_RECT,		"XaaNoImageReadRect",
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_PIXMAP_CACHE,		"XaaNoPixmapCache",
 				OPTV_BOOLEAN,	{0}, FALSE },
