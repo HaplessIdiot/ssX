@@ -1,3 +1,7 @@
+XFree86 3.0Cc (19 July 1994)
+132. Make use of the Xconfig Ramdac keyword in the S3 server.
+131. Improved support for the ELSA W2000Pro (Dirk Hohndel).
+
 XFree86 3.0Cb (16 July 1994)
 130. Updated xc/bug-report for XC fix-03.
 129. Don't mark duplicate clocks as zero in VGA servers.
