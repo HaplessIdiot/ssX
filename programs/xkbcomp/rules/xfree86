@@ -4,7 +4,7 @@
 //  Rules for resolving XKB components for use with XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.16 2000/02/09 22:00:06 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.17 2000/02/13 03:42:42 dawes Exp $
 //
 
 ! model 	=	keycodes	geometry
@@ -78,6 +78,9 @@
   itouch	us	=	us(pc104)+inet(itouch)
   itouch	en_US	=	en_US(pc104)+inet(itouch)
   itouch	*	=	en_US(pc104)+inet(itouch)+%l%(v)
+  microsoftpro	us	=	us(pc104)+inet(microsoftpro)
+  microsoftpro	en_US	=	en_US(pc104)+inet(microsoftpro)
+  microsoftpro	*	=	en_US(pc104)+inet(microsoftpro)+%l%(v)
   *		us	=	us(pc101)
   *		en_US	=	en_US(pc101)
   *		intl	=	us(pc101compose)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.146 2000/06/15 02:58:50 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.147 2000/06/17 00:03:25 martin Exp $ */
 
 /*
  *
@@ -144,7 +144,12 @@ LOOKUP SparcLookupTab[] = {
 
 #if defined(__powerpc__) && (defined(Lynx) || defined(linux))
 void eieio();
+void _restf14();
 void _restf17();
+void _restf18();
+void _restf19();
+void _restf20();
+void _restf22();
 void _restf23();
 void _restf24();
 void _restf25();
@@ -152,7 +157,12 @@ void _restf26();
 void _restf27();
 void _restf28();
 void _restf29();
+void _savef14();
 void _savef17();
+void _savef18();
+void _savef19();
+void _savef20();
+void _savef22();
 void _savef23();
 void _savef24();
 void _savef25();
@@ -900,7 +910,12 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(testinx2)
    SYMFUNC(testinx)
 #if defined(Lynx)
+   SYMFUNC(_restf14)
    SYMFUNC(_restf17)
+   SYMFUNC(_restf18)
+   SYMFUNC(_restf19)
+   SYMFUNC(_restf20)
+   SYMFUNC(_restf22)
    SYMFUNC(_restf23)
    SYMFUNC(_restf24)
    SYMFUNC(_restf25)
@@ -908,7 +923,12 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(_restf27)
    SYMFUNC(_restf28)
    SYMFUNC(_restf29)
+   SYMFUNC(_savef14)
    SYMFUNC(_savef17)
+   SYMFUNC(_savef18)
+   SYMFUNC(_savef19)
+   SYMFUNC(_savef20)
+   SYMFUNC(_savef22)
    SYMFUNC(_savef23)
    SYMFUNC(_savef24)
    SYMFUNC(_savef25)

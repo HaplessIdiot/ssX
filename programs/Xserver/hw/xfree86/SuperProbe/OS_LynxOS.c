@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.6 1997/03/17 11:22:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.7 1997/07/10 08:17:19 hohndel Exp $ */
 /*
  * Copyright 1993 by Thomas Mueller
  *
@@ -30,8 +30,7 @@
 #include <kd.h>
 #include <vt.h>
 #include <smem.h>
-
-#include <kernel.h>		/* for PHYSBASE */
+#include <info.h>
 
 #ifdef __powerpc__
 unsigned char *ioBase = NULL;
@@ -141,9 +140,15 @@ Byte *Buffer;
 int Len;
 #endif
 {
+	unsigned long physbase;
 	Word tmp;
 	Byte *Base = Bios_Base + Offset;
 
+	physbase = info(_I_PHYSBASE);
+	if (physbase == -1) {
+		fprintf(stderr, "%s: can't inquire PHYSBASE\n", MyName);
+		return(-1);
+	}
 	if (BIOS_fd == -1)
 	{
 		if ((BIOS_fd = open("/dev/mem", O_RDONLY, 0)) < 0)
@@ -157,7 +162,7 @@ int Len;
 		/*
 	 	 * Sanity check...
 	 	 */
-		(void)lseek(BIOS_fd, (off_t)PHYSBASE + ((off_t)Base & 0xF8000), SEEK_SET);
+		(void)lseek(BIOS_fd, (off_t)physbase + ((off_t)Base & 0xF8000), SEEK_SET);
 		(void)read(BIOS_fd, &tmp, 2);
 		if (tmp != (Word)0xAA55)
 		{
@@ -170,8 +175,8 @@ int Len;
 			return(-1);
 		}
 	}
-	/* check carefully against -1 because of PHYSBASE offset..	*/
-	if (lseek(BIOS_fd, (off_t)(PHYSBASE + Base), SEEK_SET) == -1)
+	/* check carefully against -1 because of physbase offset..	*/
+	if (lseek(BIOS_fd, (off_t)(physbase + Base), SEEK_SET) == -1)
 	{
 		fprintf(stderr, "%s: BIOS seek failed\n", MyName);
 		return(-1);

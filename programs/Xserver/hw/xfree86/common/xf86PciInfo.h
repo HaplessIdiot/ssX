@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.57 2000/06/15 01:26:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.58 2000/06/17 00:03:17 martin Exp $ */
 /*
  * PCI Probe
  *
@@ -52,6 +52,7 @@
 #define PCI_VENDOR_NS		0x100B
 #define PCI_VENDOR_TSENG	0x100C
 #define PCI_VENDOR_WEITEK	0x100E
+#define PCI_VENDOR_VIDEOLOGIC	0x1010
 #define PCI_VENDOR_DIGITAL	0x1011
 #define PCI_VENDOR_CIRRUS	0x1013
 #define PCI_VENDOR_IBM		0x1014
@@ -136,6 +137,7 @@
 #define PCI_VENDOR_TOSHIBA	0x1179
 #define PCI_VENDOR_RICOH	0x1180
 #define PCI_VENDOR_ZEINET	0x1193
+#define PCI_VENDOR_LITEON	0x11AD
 #define PCI_VENDOR_SPECIALIX	0x11CB
 #define PCI_VENDOR_CONTROL	0x11FE
 #define PCI_VENDOR_CYCLADES	0x120E
@@ -559,6 +561,7 @@ static SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_NS, "NS"},
     {PCI_VENDOR_TSENG,	"Tseng Labs"},
     {PCI_VENDOR_WEITEK,	"Weitek"},
+    {PCI_VENDOR_VIDEOLOGIC,	"Video Logic"},
     {PCI_VENDOR_DIGITAL, "Digital"},
     {PCI_VENDOR_CIRRUS,	"Cirrus Logic"},
     {PCI_VENDOR_IBM, "IBM"},
@@ -639,6 +642,8 @@ static SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_RENDITION, "Rendition"},
     {PCI_VENDOR_TOSHIBA, "Toshiba"},
     {PCI_VENDOR_RICOH,	"Ricoh"},
+    {PCI_VENDOR_ZEINET,	"Zeinet"},
+    {PCI_VENDOR_LITEON,	"Lite-On"},
     {PCI_VENDOR_3DFX,	"3Dfx Interactive"},
     {PCI_VENDOR_SIGMADESIGNS, "Sigma Designs"},
     {PCI_VENDOR_ENSONIQ, "Ensoniq"},
@@ -1237,6 +1242,9 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_ZEINET, {
                                 {0x0001, "1221",0 },
 				{0x0000,		NULL,0}}},
+    {PCI_VENDOR_LITEON, {
+                                {0xC115, "LC82C115 PNIC II 10/100BaseTX",0 },
+				{0x0000,		NULL,0}}},
 #ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_SPECIALIX, {
 				{0x0000,		NULL,0}}},
@@ -1480,6 +1488,7 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x2000, "Stealth II S220",0, NF },
                         { 0x1092, "Viper 330",0, NF },
                         { 0x0550, "Viper 550",0, NF },
+                        { 0x6820, "Viper 770",0, NF },
 			{ 0x8760, "Fireport 40 Dual",0, NF },
 			{ 0x2110, "Sonic Impact S70",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },

@@ -8,7 +8,7 @@
 <date>25 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.18 2000/03/03 20:02:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.19 2000/03/03 21:28:08 dawes Exp $
 </ident>
 
 <toc>
@@ -43,6 +43,11 @@ don't run on LynxOS versions earlier than 3.0.0.
 
 Building of this XFree86 version has never been tested on LynxOS versions
 earlier than 2.5.1.
+
+This release contains preliminary build support for `LynxOS 3.1.0'.
+Since this OS release was not available long enough for serious testing
+`LynxOS 3.1.0' support has to be considered to be in `alpha state'.
+Initial tests were performed on LynxOS x86 only!
 
 XFree86 &relvers; supports LynxOS on the x86 and on
 the PowerPC platform. X servers are currently available only on the

@@ -1,4 +1,21 @@
-XFree86 4.0d (15 June 2000)
+XFree86 4.0d (16 June 2000)
+ 311. Add a check for PS/2 mice on Linux for the X server's -configure
+      option (#3991, Paulo Cesar Pereira de Andrade).
+ 310. Fix a problem mouse driver button flush was causing with Xaw menus
+      (#3991, Paulo Cesar Pereira de Andrade, David Dawes).
+ 309. Modify scanpci to print out card/subsys information, and add a few
+      more entries to the pci data (David Dawes).
+ 308. Fix r128_cursor.c build problem for big-endian machines (#3989,
+      Thomas Mueller, #3994, Ani Joshi).
+ 307. Update LynxOS docs (#3989, Thomas Mueller).
+ 306. Add a few PPC compiler internal symbols to the loader's export list
+      (#3989, Thomas Mueller).
+ 305. Add crypt support to xdm for LynxOS (#3989, Thomas Mueller).
+ 304. Add preliminary build support for LynxOS 3.1.0 (#3989, Thomas Mueller).
+ 303. Add keysyms to complete the set for the Compaq SK2850 keyboard and
+      the Microsoft Natural Keyboard Pro (David Dawes).
+ 302. Add new keysyms for PDAs (#3985, 3987, 3988, Jim Gettys).
+ 301. Xterm patch #138 (#3986, Thomas Dickey).
  300. DRI megapatch III.  This includes DRI enhancements, 3dfx fixes and
       updates, updates Mesa to the latest version, adds Intel i810, Matrox
       G200/G400, ATI Rage 128 and 3dfx Voodoo5 3D support, adds ATI Rage
@@ -10603,4 +10620,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1186 2000/06/16 01:50:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1187 2000/06/17 00:03:13 martin Exp $

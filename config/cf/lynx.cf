@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.34 2000/03/21 19:56:58 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.35 2000/05/23 04:47:34 dawes Exp $
 
 
 #ifndef OSName
@@ -53,7 +53,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #define HasPosixThreads		YES
 #define ThreadedX		YES
-#define HasThreadSafeAPI	YES	/* only 2.[345].0 ?? */
+#define HasThreadSafeAPI	YES
 #if HasGcc2
 # if OSMajorVersion == 2 && OSMinorVersion == 3
 #  define ThreadsCompileFlags	-mposix -mthreads
@@ -69,7 +69,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if OSMajorVersion == 2 && OSMinorVersion < 3
 # define ThreadsLibraries /lib/thread/libc.a /lib/thread/libc_p.a
 #endif
-#if OSMajorVersion == 3 || (OSMajorVersion == 2 && OSMinorVersion <= 5)
+#if (OSMajorVersion == 3 && OSMinorVersion == 0) || (OSMajorVersion == 2 && OSMinorVersion <= 5)
 # define ThreadPreStdAPIDefines	-DXPRE_STANDARD_API
 #endif
 #define AvoidNullMakeCommand	YES
@@ -206,13 +206,21 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /* 3.0 ships with a useable Tcl/Tk for XF86Setup */
 #if OSMajorVersion == 3
 # ifndef TkLibName
-#  define TkLibName             tk4.2
+#  if OSMinorVersion == 0
+#   define TkLibName		tk4.2
+#  else
+#   define TkLibName		tk8.0
+#  endif
 # endif
 # ifndef TkLibDir
 #  define TkLibDir              /usr/lib
 # endif
 # ifndef TclLibName
-#  define TclLibName            tcl7.6
+#  if OSMinorVersion == 0
+#   define TclLibName		tcl7.6
+#  else
+#   define TclLibName		tcl8.0
+#  endif
 # endif
 # ifndef TclLibDir
 #  define TclLibDir             /usr/lib

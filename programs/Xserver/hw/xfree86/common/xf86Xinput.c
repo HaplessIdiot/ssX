@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.54 1999/12/13 23:38:11 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.55 2000/03/31 22:55:34 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -180,7 +180,7 @@ xf86CheckButton(int	button,
     int	state = (inputInfo.pointer->button->state & 0x1f00) >> 8;
     int	check = (state & (1 << (button - 1)));
     
-    if ((check && down) && (!check && !down)) {
+    if ((check && down) || (!check && !down)) {
 	return FALSE;
     }
 

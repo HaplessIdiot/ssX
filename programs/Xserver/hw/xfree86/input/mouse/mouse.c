@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.28 2000/03/06 22:59:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.31 2000/05/31 07:15:05 eich Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1511,11 +1511,11 @@ MouseProc(DeviceIntPtr device, int what)
 	device->public.on = TRUE;
 	/*
 	 * send button up events for sanity. If no button down is pending
-	 * xf86PostButtonEvent() will discard them. So we are on the save side.
+	 * xf86PostButtonEvent() will discard them. So we are on the safe side.
 	 */
-	for (i = 0; i < 5; i++)
+	for (i = 1; i <= 5; i++)
 	    xf86PostButtonEvent(device,0,i,0,0,0);
-	
+
 	break;
 	    
     case DEVICE_OFF:

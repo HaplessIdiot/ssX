@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.35 2000/05/31 07:15:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.37 2000/06/16 13:11:18 eich Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -64,8 +64,8 @@ Bool xf86DoConfigurePass1 = TRUE;
 Bool foundMouse = FALSE;
 
 #ifndef __EMX__
-#define DFLT_MOUSE_DEV	"/dev/mouse"
-#define DFLT_MOUSE_PROTO "auto"
+static char *DFLT_MOUSE_DEV = "/dev/mouse";
+static char *DFLT_MOUSE_PROTO = "auto";
 #else
 #define DFLT_MOUSE_DEV "mouse$"
 #define DFLT_MOUSE_PROTO "OS2Mouse"
@@ -260,6 +260,16 @@ configureInputSection (void)
     /* Crude mechanism to auto-detect mouse (os dependent) */
     { 
 	int fd;
+#ifdef linux
+	int len;
+	char path[32];
+
+	if ((len = readlink(DFLT_MOUSE_DEV, path, sizeof(path) - 1)) > 0) {
+	    path[len] = '\0';
+	    if (strstr(path, "psaux") != NULL)
+		DFLT_MOUSE_PROTO = "PS/2";
+	}
+#endif
 
 	fd = open(DFLT_MOUSE_DEV, 0);
 	if (fd != -1) {

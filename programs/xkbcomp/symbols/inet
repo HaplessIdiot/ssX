@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.3 2000/02/10 15:48:33 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.4 2000/02/10 22:33:46 dawes Exp $
 
 partial alphanumeric_keys 
 xkb_symbols "hp" {
@@ -21,19 +21,18 @@ xkb_symbols "compaq" {
 
     name[Group1]= "Compaq";
     key <I1E>	{	[ XF86Mail		]	};
-    key <I23>	{	[ XF86HomePage		]	};
+    key <I23>	{	[ Help			]	};
     key <I21>	{	[ XF86Search		]	};
-    // Don't have the correct keysyms for these yet.
-    // key <I25>	{	[ XF86CompaqQ		]	};
-    // key <I26>	{	[ XF86People		]	};
-    // key <I12>	{	[ XF86LightBulb		]	};
-    // key <I32>	{	[ XF86Shop		]	};
+    key <I25>	{	[ XF86VendorHome	]	};
+    key <I26>	{	[ XF86HomePage		]	};
+    key <I12>	{	[ XF86LightBulb		]	};
+    key <I32>	{	[ XF86Shop		]	};
 };
 
 partial alphanumeric_keys 
 xkb_symbols "itouch" {
 
-    // Describes the extra keys on an Logitech iTouch keyboard.
+    // Describes the extra keys on a Logitech iTouch keyboard.
 
     name[Group1]= "iTouch";
     key <I5F>	{	[ XF86Standby		]	};
@@ -48,6 +47,33 @@ xkb_symbols "itouch" {
     key <I6C>	{	[ XF86Mail		]	};
     key <I65>	{	[ XF86Search		]	};
     key <I66>	{	[ XF86Start		]	};
+};
+
+
+partial alphanumeric_keys 
+xkb_symbols "microsoftpro" {
+
+    // Describes the extra keys on a Microsoft Natrual Keyboard Pro
+
+    name[Group1]= "MicrosoftPro";
+    key <I6A>	{	[ XF86Back		]	};
+    key <I69>	{	[ XF86Forward		]	};
+    key <I68>	{	[ XF86Stop		]	};
+    key <I67>	{	[ XF86Refresh		]	};
+    key <I65>	{	[ XF86Search		]	};
+    key <I66>	{	[ XF86Favorites		]	};
+    key <I32>	{	[ XF86HomePage		]	};
+    key <I6C>	{	[ XF86Mail		]	};
+    key <I20>	{	[ XF86AudioMute		]	};
+    key <I2E>	{	[ XF86AudioLowerVolume	]	};
+    key <I30>	{	[ XF86AudioRaiseVolume	]	};
+    key <I22>	{	[ XF86AudioPlay, XF86AudioPause		]	};
+    key <I24>	{	[ XF86AudioStop		]	};
+    key <I10>	{	[ XF86AudioPrev		]	};
+    key <I19>	{	[ XF86AudioNext		]	};
+    key <I6D>	{	[ XF86AudioMedia	]	};
+    key <I6B>	{	[ XF86MyComputer	]	};
+    key <I5F>	{	[ XF86Standby		]	};
 };
 
 

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.77 2000/03/15 16:52:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.78 2000/03/24 18:12:38 tsi Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -192,13 +192,14 @@ identify_card(pciConfigPtr pcr, int verbose)
 
     int i, j; 
     int foundit = 0;
+    int foundvendor = 0;
 
     SymTabRec *pvnd;
     pciVendorDeviceInfo *pvd;
     pciVendorDevFuncInfo *vdf = vendorDeviceFuncInfo;
-    pciVendorCardInfo *dummy;
+    pciVendorCardInfo *pvc;
     
-    xf86SetupScanPci(&pvnd,&pvd,&dummy);
+    xf86SetupScanPci(&pvnd,&pvd,&pvc);
     
     printf("\npci bus 0x%x cardnum 0x%02x function 0x%04x: vendor 0x%04x device 0x%04x\n",
 	   pcr->busnum, pcr->devnum, pcr->funcnum,
@@ -211,7 +212,9 @@ identify_card(pciConfigPtr pcr, int verbose)
 	}
     }
 
-    for (i = 0;  pvd[i].VendorID;  i++) {
+    for (i = 0; pvd[i].VendorID && pvd[i].VendorID != pcr->pci_vendor; i++)
+	;
+    if (pvd[i].VendorID) {
 	for (j = 0;  pvd[i].Device[j].DeviceName;  j++) {
 	    if (pvd[i].Device[j].DeviceID == pcr->pci_device) {
 		printf("%s", pvd[i].Device[j].DeviceName);
@@ -219,8 +222,6 @@ identify_card(pciConfigPtr pcr, int verbose)
 		break;
 	    }
 	}
-	if (foundit)
-	    break;
     }
 
     if (!foundit)
@@ -242,10 +243,42 @@ identify_card(pciConfigPtr pcr, int verbose)
 	}
     }
 
+    if (verbose && !(pcr->pci_header_type & 0x7f) &&
+	(pcr->pci_subsys_vendor != 0 || pcr->pci_subsys_card != 0)) {
+        foundit = 0;
+        foundvendor = 0;
+	printf(" CardVendor 0x%04x card 0x%04x",
+	       pcr->pci_subsys_vendor, pcr->pci_subsys_card);
+	for (i = 0;  pvnd[i].name;  i++) {
+	    if (pvnd[i].token == pcr->pci_subsys_vendor) {
+	        printf(" (%s", pvnd[i].name);
+		foundvendor = 1;
+	        break;
+	    }
+        }
+
+        for (i = 0; pvc[i].VendorID && pvc[i].VendorID != pcr->pci_subsys_vendor; i++)
+	    ;
+        if (pvc[i].VendorID) {
+	    for (j = 0;  pvc[i].Device[j].CardName;  j++) {
+	        if (pvc[i].Device[j].SubsystemID == pcr->pci_subsys_card) {
+		    printf(" %s)", pvc[i].Device[j].CardName);
+		    foundit = 1;
+		    break;
+	        }
+	    }
+        }
+        if (!foundit) {
+	    if (!foundvendor)
+		printf(" (");
+	    else
+		printf(", ");
+	    printf("Card unknown)");
+	}
+	printf("\n");
+    }
+
     if (verbose) {
-	if (!(pcr->pci_header_type & 0x7f))
-	    printf(" CardVendor 0x%04x card 0x%04x\n",
-		   pcr->pci_subsys_vendor, pcr->pci_subsys_card);
 	if (pcr->pci_status_command)
 	    printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
 		   pcr->pci_status, pcr->pci_command);

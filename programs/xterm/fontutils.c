@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.16 2000/03/03 20:02:31 dawes Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.17 2000/06/13 02:28:39 dawes Exp $
  */
 
 /************************************************************
@@ -619,7 +619,6 @@ xtermLoadFont (
 	}
 	TRACE(("Will %suse internal line-drawing characters\n", screen->fnt_boxes ? "not " : ""));
 #endif
-	screen->force_box_chars = !screen->fnt_boxes;
 
 	screen->enbolden = screen->bold_mode
 		&& ((nfs == bfs) || same_font_name(normal, bfontname));

@@ -18,7 +18,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/include/Xos_r.h,v 1.4 1997/11/16 06:17:31 dawes Exp $ */
+/* $XFree86: xc/include/Xos_r.h,v 1.5 1998/10/02 07:38:51 dawes Exp $ */
 
 /* 
  * Various and sundry Thread-Safe functions used by X11, Motif, and CDE.
@@ -188,6 +188,14 @@ extern void XtProcessUnlock(
  * thread-safe feature test macro.  Fix the feature test macro.
  */
 #if defined(sun) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+# undef _POSIX_THREAD_SAFE_FUNCTIONS
+#endif
+
+/*
+ * LynxOS 3.1 defines _POSIX_THREAD_SAFE_FUNCTIONS but 
+ * getpwuid_r has different semantics than defined by POSIX
+ */
+#if defined(Lynx) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
 # undef _POSIX_THREAD_SAFE_FUNCTIONS
 #endif
 

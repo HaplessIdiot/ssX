@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/XF86keysym.h,v 1.2 2000/02/10 00:38:17 dawes Exp $ */
+/* $XFree86: xc/include/XF86keysym.h,v 1.3 2000/02/10 15:48:28 dawes Exp $ */
 
 /*
  * ModeLock (not needed since XKB offers this functionality)
@@ -21,5 +21,30 @@
 #define XF86XK_Mail		0x1008FF19
 #define XF86XK_Start		0x1008FF1A
 #define XF86XK_Search		0x1008FF1B
+#define XF86XK_AudioRecord	0x1008FF1C
+
+/* These are sometimes found on PDA's (e.g. Palm, PocketPC or elsewhere) */
+#define XF86XK_Calculator	0x1008FF1D
+#define XF86XK_Memo		0x1008FF1E
+#define XF86XK_ToDoList		0x1008FF1F
+#define XF86XK_Calendar		0x1008FF20
+#define XF86XK_PowerDown	0x1008FF21
+#define XF86XK_ContrastAdjust	0x1008FF22
+#define XF86XK_RockerUp		0x1008FF23
+#define XF86XK_RockerDown	0x1008FF24
+#define XF86XK_RockerEnter	0x1008FF25
+
+/* Some more "Internet" keyboard symbols */
+#define XF86XK_Back		0x1008FF26
+#define XF86XK_Forward		0x1008FF27
+#define XF86XK_Stop		0x1008FF28
+#define XF86XK_Refresh		0x1008FF29
+#define XF86XK_Favorites	0x1008FF30
+#define XF86XK_AudioPause	0x1008FF31
+#define XF86XK_AudioMedia	0x1008FF32
+#define XF86XK_MyComputer	0x1008FF33
+#define XF86XK_VendorHome	0x1008FF34
+#define XF86XK_LightBulb	0x1008FF35
+#define XF86XK_Shop		0x1008FF36
 
 
