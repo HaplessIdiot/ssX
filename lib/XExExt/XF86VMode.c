@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -182,6 +182,97 @@ Bool XVGAHelpModModeLine (dpy, screen, modeline)
     req->vsyncend = modeline->vsyncend;
     req->vtotal = modeline->vtotal;
     req->flags = modeline->flags;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool XVGAHelpSwitchMode(dpy, screen, zoom)
+    Display* dpy;
+    int screen;
+    int zoom;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xVGAHelpSwitchModeReq *req;
+
+    VGAHelpCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(VGAHelpSwitchMode, req);
+    req->reqType = info->codes->major_opcode;
+    req->vgahelpReqType = X_VGAHelpSwitchMode;
+    req->screen = screen;
+    req->zoom = zoom;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+    
+Bool XVGAHelpGetMonitor(dpy, screen, monitor)
+    Display* dpy;
+    int screen;
+    XVGAHelpMonitor* monitor;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xVGAHelpGetMonitorReply rep;
+    xVGAHelpGetMonitorReq *req;
+    CARD32 syncrange;
+    int i;
+
+    VGAHelpCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(VGAHelpGetMonitor, req);
+    req->reqType = info->codes->major_opcode;
+    req->vgahelpReqType = X_VGAHelpGetMonitor;
+    req->screen = screen;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+    monitor->nhsync = rep.nhsync;
+    monitor->nvsync = rep.nvsync;
+    monitor->bandwidth = (float)rep.bandwidth / 1e6;
+    if (!(monitor->vendor = (char *)Xcalloc(rep.vendorLength + 1, 1))) {
+	_XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
+		  (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
+	return False;
+    }
+    if (!(monitor->model = Xcalloc(rep.modelLength + 1, 1))) {
+	_XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
+		  (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
+	Xfree(monitor->vendor);
+	return False;
+    }
+    if (!(monitor->hsync = Xcalloc(rep.nhsync, sizeof(XVGAHelpSyncRange)))) {
+	_XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
+		  (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
+	Xfree(monitor->vendor);
+	Xfree(monitor->model);
+	return False;
+    }
+    if (!(monitor->vsync = Xcalloc(rep.nvsync, sizeof(XVGAHelpSyncRange)))) {
+	_XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
+		  (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
+	Xfree(monitor->vendor);
+	Xfree(monitor->model);
+	Xfree(monitor->hsync);
+	return False;
+    }
+    for (i = 0; i < rep.nhsync; i++) {
+	_XRead32(dpy, (long *)&syncrange, 4);
+	monitor->hsync[i].lo = (float)(syncrange & 0xFFFF) / 100.0;
+	monitor->hsync[i].hi = (float)(syncrange >> 16) / 100.0;
+    }
+    for (i = 0; i < rep.nvsync; i++) {
+	_XRead32(dpy, (long *)&syncrange, 4);
+	monitor->vsync[i].lo = (float)(syncrange & 0xFFFF) / 100.0;
+	monitor->vsync[i].hi = (float)(syncrange >> 16) / 100.0;
+    }
+    _XReadPad(dpy, monitor->vendor, rep.vendorLength);
+    _XReadPad(dpy, monitor->model, rep.modelLength);
+	
     UnlockDisplay(dpy);
     SyncHandle();
     return True;

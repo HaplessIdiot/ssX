@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.7 95/01/16 13:16:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.15 1995/01/15 10:31:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.17 1995/01/28 17:00:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -104,7 +104,7 @@ ScrnInfoRec mach8InfoRec = {
     240, 180,		/* int width, height */
     0,                  /* unsigned long  speedup */
     NULL,	       	/* DisplayModePtr modes */
-    NULL,	       	/* DisplayModePtr pModes */
+    NULL,	       	/* MonPtr monitor */
     NULL,               /* char *clockprog */
     -1,                 /* int textclock, 1.3 new */
     FALSE,              /* Bool bankedMono */

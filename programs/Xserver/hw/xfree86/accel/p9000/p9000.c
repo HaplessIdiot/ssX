@@ -1,5 +1,5 @@
 /* $XConsortium: p9000.c,v 1.6 95/01/16 13:16:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.23 1995/01/15 10:31:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.24 1995/01/28 15:54:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -109,7 +109,7 @@ ScrnInfoRec p9000InfoRec = {
     240, 180,		/* int width, height */
     0,                  /* unsigned long  speedup */
     NULL,	       	/* DisplayModePtr modes */
-    NULL,	       	/* DisplayModePtr pModes */
+    NULL,	       	/* MonPtr monitor */
     NULL,               /* char *clockprog */
     -1,                 /* int textclock, 1.3 new */
     FALSE,              /* Bool bankedMono */

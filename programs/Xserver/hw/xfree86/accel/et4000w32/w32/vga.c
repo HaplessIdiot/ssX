@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/23 15:33:48 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.10 1995/01/20 05:18:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.11 1995/01/28 15:51:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -87,7 +87,7 @@ ScrnInfoRec vga256InfoRec = {
   240, 180,		/* int width, height */
   0,			/* unsigned long speedup */
   NULL,			/* DisplayModePtr modes */
-  NULL,			/* DisplayModePtr pModes */
+  NULL,			/* MonPtr monitor */
   NULL,			/* char *clockprog */
   -1,                   /* int textclock */
   FALSE,		/* Bool bankedMono */

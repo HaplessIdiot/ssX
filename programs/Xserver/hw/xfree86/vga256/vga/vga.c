@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/16 13:18:27 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.28 1995/01/11 03:52:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.30 1995/01/28 17:09:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -119,7 +119,7 @@ ScrnInfoRec vga256InfoRec = {
   240, 180,		/* int width, height */
   0,			/* unsigned long speedup */
   NULL,			/* DisplayModePtr modes */
-  NULL,			/* DisplayModePtr pModes */
+  NULL,			/* MonPtr monitor */
   NULL,			/* char *clockprog */
   -1,                   /* int textclock */
   FALSE,		/* Bool bankedMono */

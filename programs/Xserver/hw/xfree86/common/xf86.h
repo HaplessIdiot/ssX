@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.5 95/01/16 13:16:56 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.13 1995/01/10 10:23:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.15 1995/01/28 17:03:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -75,6 +75,25 @@ typedef struct _DispM {
 #define V_PIXMUX    0x1000
 #define V_DBLCLK    0x2000
 
+/* The monitor description */
+
+#define MAX_HSYNC 8
+#define MAX_VREFRESH 8
+
+typedef struct { float hi, lo; } range;
+
+typedef struct {
+   char *id;
+   char *vendor;
+   char *model;
+   float bandwidth;
+   int n_hsync;
+   range hsync[MAX_HSYNC];       
+   int n_vrefresh;                  
+   range vrefresh[MAX_VREFRESH];
+   DisplayModePtr Modes, Last; /* Start and end of monitor's mode list */
+} MonRec, *MonPtr;
+
 #define MAXCLOCKS   128
 
 /* Set default max allowed clock to 90MHz */
@@ -131,7 +150,7 @@ typedef struct {
   int            width, height;            /* real display dimensions */
   unsigned long  speedup;                  /* Use SpeedUp code */
   DisplayModePtr modes;
-  DisplayModePtr pModes;          /* GJA -- mode records for this screen. */
+  MonPtr         monitor;
   char           *clockprog;
   int            textclock;
   Bool           bankedMono;	  /* display supports banking for mono server */
@@ -162,6 +181,11 @@ typedef struct {
 
 #define ENTER       1
 #define LEAVE       0
+
+/* These are the return values of xf86CheckMode() */
+#define MODE_OK	    0
+#define MODE_HSYNC  1		/* hsync out of range */
+#define MODE_VSYNC  2		/* vsync out of range */
 
 /* SpeedUp options */
 
@@ -281,6 +305,22 @@ void xf86VerifyOptions(
 #if NeedFunctionPrototypes
     OFlagSet *allowedOptions,
     ScrnInfoPtr driver
+#endif
+);
+
+int xf86CheckMode(
+#if NeedFunctionPrototypes
+    DisplayModePtr dispmp,
+    MonPtr monp,
+    char *scrname,
+    Bool verbose
+#endif
+);
+
+int xf86GetNearestClock(
+#if NeedFunctionPrototypes
+    ScrnInfoPtr Screen,
+    int Frequency
 #endif
 );
 

@@ -1,5 +1,5 @@
 /* $XConsortium: agx.c,v 1.7 95/01/23 15:33:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.25 1995/01/23 01:28:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.26 1995/01/28 15:48:26 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -105,7 +105,7 @@ ScrnInfoRec agxInfoRec = {
     240, 180,		/* int width, height */
     0,                  /* unsigned long  speedup */
     NULL,	       	/* DisplayModePtr modes */
-    NULL,	       	/* DisplayModePtr pModes */
+    NULL,	       	/* MonPtr monitor */
     NULL,               /* char *clockprog */
     -1,                 /* int textclock */   
     FALSE,              /* Bool bankedMono */

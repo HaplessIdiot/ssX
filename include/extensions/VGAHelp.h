@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -38,11 +38,15 @@ from the Kaleb S. KEITHLEY
 #define X_VGAHelpQueryVersion		0
 #define X_VGAHelpGetModeLine		1
 #define X_VGAHelpModModeLine		2
+#define X_VGAHelpSwitchMode		3
+#define X_VGAHelpGetMonitor		4
 
 #define VGAHelpNumberEvents		0
 
 #define BadClock			0
-#define VGAHelpNumberErrors		(BadClock + 1)
+#define BadHTimings			1
+#define BadVTimings			2
+#define VGAHelpNumberErrors		(BadVTimings + 1)
 
 #ifndef _XVGAHELP_SERVER_
 
@@ -57,6 +61,24 @@ typedef struct {
     unsigned short	vtotal;
     unsigned int	flags;
 } XVGAHelpModeLine;
+
+typedef struct {
+    float		hi;
+    float		lo;
+} XVGAHelpSyncRange;
+
+typedef struct {
+    char*		vendor;
+    char*		model;
+    float		bandwidth;
+    unsigned short	nhsync;
+    XVGAHelpSyncRange*	hsync;
+    unsigned short	nvsync;
+    XVGAHelpSyncRange*	vsync;
+} XVGAHelpMonitor;
+    
+#define XVGAHelpSelectNextMode(disp, scr) XVGAHelpSwitchMode(disp, scr, 1)
+#define XVGAHelpSelectPrevMode(disp, scr) XVGAHelpSwitchMode(disp, scr, -1)
 
 _XFUNCPROTOBEGIN
 
@@ -82,6 +104,22 @@ Status XVGAHelpModModeLine(
     Display*		/* dpy */,
     int			/* screen */,
     XVGAHelpModeLine*	/* modeline */
+#endif
+);
+
+Status XVGAHelpSwitchMode(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen */,
+    int			/* zoom */
+#endif
+);
+
+Status XVGAHelpGetMonitor(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen */,
+    XVGAHelpMonitor*	/* monitor */
 #endif
 );
 

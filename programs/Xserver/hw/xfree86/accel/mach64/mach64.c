@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.9 1995/03/04 06:12:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.10 1995/03/06 14:47:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -116,7 +116,7 @@ ScrnInfoRec mach64InfoRec = {
     240, 180,		/* int width, height */
     0,                  /* unsigned long  speedup */
     NULL,	       	/* DisplayModePtr modes */
-    NULL,               /* DisplayModePtr pModes */
+    NULL,               /* MonPtr monitor */
     NULL,               /* char *clockprog */
     -1,                 /* int textclock */   
     FALSE,              /* Bool bankedMono */

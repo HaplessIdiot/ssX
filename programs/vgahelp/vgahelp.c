@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/vgahelp/vgahelp.c,v 3.1 1995/02/12 09:57:22 dawes Exp $ */
 
 /*
 
@@ -39,6 +39,9 @@ from Kaleb S. KEITHLEY.
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/extensions/VGAHelp.h>
+#include <stdio.h>
+
+int MajorVersion, MinorVersion;
 
 typedef enum { HDisplay, HSyncStart, HSyncEnd, HTotal,
 	VDisplay, VSyncStart, VSyncEnd, VTotal, Flags, fields_num } fields;
@@ -119,6 +122,29 @@ static Bool GetModeLine (dpy, scrn)
     AppRes.field[Flags].val = mode_line.flags;
     for (i = HDisplay; i < fields_num; i++) 
 	AppRes.orig[i] = AppRes.field[i].val;
+    return TRUE;
+}
+
+static Bool GetMonitor (dpy, scrn)
+    Display* dpy;
+    int scrn;
+{
+    XVGAHelpMonitor monitor;
+    int i;
+
+    if (!XVGAHelpGetMonitor (dpy, scrn, &monitor))
+	return FALSE;
+
+    printf("Vendor: %s, Model: %s\n", monitor.vendor, monitor.model);
+    printf("Num hsync: %d, Num vsync: %d\n", monitor.nhsync, monitor.nvsync);
+    for (i = 0; i < monitor.nhsync; i++) {
+	printf("hsync range %d: %6.2f - %6.2f\n", i, monitor.hsync[i].lo,
+	       monitor.hsync[i].hi);
+    }
+    for (i = 0; i < monitor.nvsync; i++) {
+	printf("vsync range %d: %6.2f - %6.2f\n", i, monitor.vsync[i].lo,
+	       monitor.vsync[i].hi);
+    }
     return TRUE;
 }
 
@@ -512,8 +538,31 @@ int main (argc, argv)
 	return 0;
     }
 
+    if (!XVGAHelpQueryVersion(XtDisplay (top), &MajorVersion, &MinorVersion))
+	return 0;
+
+    if (MinorVersion > 0 || MajorVersion > 0) {
+	if (!strcmp(argv[1], "-next")) {
+	    XVGAHelpSwitchMode(XtDisplay (top), DefaultScreen (XtDisplay (top)),
+			       1);
+	    XSync(XtDisplay (top), True);
+	    return 0;
+	} else if (!strcmp(argv[1], "-prev")) {
+	    XVGAHelpSwitchMode(XtDisplay (top), DefaultScreen (XtDisplay (top)),
+			       -1);
+	    XSync(XtDisplay (top), True);
+	    return 0;
+	}
+	if (!GetMonitor(XtDisplay (top), DefaultScreen (XtDisplay (top))))
+	    return 0;
+    } else {
+	fprintf(stderr, "Warning, Xserver is running old VGAHelp (%d.%d)\n",
+		MajorVersion, MinorVersion);
+    }
+
     if (!GetModeLine(XtDisplay (top), DefaultScreen (XtDisplay (top))))
 	return 0;
+
 
     CreateHierarchy (top);
 

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.40 1995/03/12 13:44:19 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.41 1995/03/18 10:59:35 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -120,13 +120,6 @@ static DisplayModePtr xf86PruneModes(
 static void readVerboseMode(
 #if NeedFunctionPrototypes
     MonPtr monp
-#endif
-);
-static Bool mode_fits(
-#if NeedFunctionPrototypes
-    DisplayModePtr dispmp,
-    MonPtr monp,
-    char *scrname
 #endif
 );
 
@@ -1902,11 +1895,6 @@ configMonitorSection()
       break;
     }
   }
-#if 0
-  /* DHD -- do this later so errors only show up for the monitor in use */
-  /* GJA -- check the modes against the monitor specs. */
-  monp->Modes = xf86PruneModes(monp,monp->Modes);
-#endif
 }
 
 static void
@@ -2174,7 +2162,7 @@ configScreenSection()
             monitor_list[i].Modes = xf86PruneModes(&monitor_list[i],
                                                    monitor_list[i].Modes,
                                                    screen->name);
-            screen->pModes = monitor_list[i].Modes;
+            screen->monitor = &monitor_list[i];
           }
           break;
         }
@@ -2528,7 +2516,7 @@ xf86LookupMode(target, driver)
     first_time = FALSE;
   }
 
-  for (p = driver->pModes; p != NULL; p = p->next)	/* scan list */
+  for (p = driver->monitor->Modes; p != NULL; p = p->next)	/* scan list */
   {
     if (!strcmp(p->name, target->name))		/* names equal ? */
     {
@@ -2683,9 +2671,9 @@ xf86VerifyOptions(allowedOptions, driver)
  */
 static DisplayModePtr
 xf86PruneModes(monp, allmodes, scrname)
-MonPtr monp;			/* Monitor specification */
-DisplayModePtr allmodes;	/* List to be pruned */
-char *scrname;			/* Screen name for use in error messages */
+     MonPtr monp;		/* Monitor specification */
+     DisplayModePtr allmodes;	/* List to be pruned */
+     char *scrname;		/* Screen name for use in error messages */
 {
 	DisplayModePtr dispmp;	/* To walk the list */
 	DisplayModePtr olddispmp; /* The one being freed. */
@@ -2696,7 +2684,8 @@ char *scrname;			/* Screen name for use in error messages */
 	/* The first modes to be deleted require that the pointer to the
 	 * mode list is updated. Also, they have no predecessor in the list.
 	 */
-	while ( dispmp && !mode_fits(dispmp, monp, scrname) ) {
+	while (dispmp &&
+	       xf86CheckMode(dispmp, monp, scrname, xf86Verbose != MODE_OK)) {
 		olddispmp = dispmp;
 		dispmp = dispmp->next;
 		xfree(olddispmp->name);
@@ -2708,7 +2697,8 @@ char *scrname;			/* Screen name for use in error messages */
 	}
 	remainder = dispmp;
 	while ( dispmp->next ) {
-		if ( !mode_fits(dispmp->next, monp, scrname) ) {
+		if (xf86CheckMode(dispmp->next, monp, scrname, xf86Verbose) !=
+                    MODE_OK) {
 			olddispmp = dispmp->next;
 			dispmp->next = dispmp->next->next;
 			xfree(olddispmp->name);
@@ -2720,27 +2710,19 @@ char *scrname;			/* Screen name for use in error messages */
 	return remainder; /* Return pointer to {the first / the list } */
 }
 
-/* Return TRUE if the mode pointed to by dispmp agrees with all constraints
+/*
+ * Return MODE_OK if the mode pointed to by dispmp agrees with all constraints
  * we can make up for the monitor pointed to by monp.
- * FALSE otherwise.
  */
-static Bool mode_fits(dispmp, monp, scrname)
-DisplayModePtr	dispmp;
-MonPtr monp;
-char *scrname;
+int
+xf86CheckMode(dispmp, monp, scrname, verbose)
+     DisplayModePtr	dispmp;
+     MonPtr monp;
+     char *scrname;
+     Bool verbose;
 {
 	int i;
 	float dotclock, hsyncfreq, vrefreshrate;
-
-#if 0
-	/* max dotclock != monitor bandwidth, do exclude this check */
-	dotclock = (float)(dispmp->Clock);
-	if ( dotclock > monp->bandwidth * 1000.0 ) {
-		ErrorF("%s %s: Mode \"%s\" needs %f MHz bandwidth. Deleted.\n",
-			XCONFIG_PROBED, scrname, dispmp->name, dotclock/1000.0);
-		return FALSE;
-	}
-#endif
 
 	hsyncfreq = (float)(dispmp->Clock) / (float)(dispmp->HTotal);
 	for ( i = 0 ; i < monp->n_hsync ; i++ ) {
@@ -2760,10 +2742,12 @@ char *scrname;
 	}
 	/* Now see whether we ran out of sync frequencies */
 	if ( i == monp->n_hsync ) {
+	    if (verbose) {
 		ErrorF(
 		  "%s %s: Mode \"%s\" needs hsync freq of %.2f kHz. Deleted.\n",
 		  XCONFIG_PROBED, scrname, dispmp->name, hsyncfreq);
-		return FALSE;
+	    }
+	    return FALSE;
 	}
 			
 	vrefreshrate = (float)(dispmp->Clock) * 1000.0 /
@@ -2788,12 +2772,14 @@ char *scrname;
 	}
 	/* Now see whether we ran out of refresh rates */
 	if ( i == monp->n_vrefresh ) {
+	    if (verbose) {
 		ErrorF(
 		  "%s %s: Mode \"%s\" needs vert refresh rate of %.2f Hz. Deleted.\n",
 		  XCONFIG_PROBED, scrname, dispmp->name, vrefreshrate);
-		return FALSE;
+	    }
+	    return FALSE;
 	}
 
 	/* Passed every test. */
-	return TRUE;
+	return MODE_OK;
 }

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/vgahelp.c,v 3.1 1995/02/12 09:52:15 dawes Exp $ */
 
 /*
 
@@ -178,6 +178,8 @@ ProcVGAHelpModModeLine(client)
     mptr->VSyncStart = stuff->vsyncstart;
     mptr->VSyncEnd   = stuff->vsyncend;
     mptr->VTotal     = stuff->vtotal;
+    switch (xf86CheckMode(mptr, vptr->monitor, NULL, FALSE)) {
+	case MODE_HSYNC:
     /* Should call ValidMode */
     mptr->CrtcHDisplay   = stuff->hdisplay;
     mptr->CrtcHSyncStart = stuff->hsyncstart;
@@ -205,6 +207,89 @@ ProcVGAHelpModModeLine(client)
 }
 
 static int
+ProcVGAHelpSwitchMode(client)
+    register ClientPtr client;
+{
+    REQUEST(xVGAHelpSwitchModeReq);
+    ScreenPtr vptr;
+
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = screenInfo.screens[stuff->screen];
+
+    REQUEST_SIZE_MATCH(xVGAHelpSwitchModeReq);
+
+    xf86ZoomViewport(vptr, (short)stuff->zoom);
+    return (client->noClientException);
+}
+
+static int
+ProcVGAHelpGetMonitor(client)
+    register ClientPtr client;
+{
+    REQUEST(xVGAHelpGetMonitorReq);
+    xVGAHelpGetMonitorReply rep;
+    register int n;
+    ScrnInfoPtr vptr;
+    MonPtr mptr;
+    CARD32 *hsyncdata, *vsyncdata;
+    int i;
+
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+    mptr = vptr->monitor;
+
+    REQUEST_SIZE_MATCH(xVGAHelpGetMonitorReq);
+    rep.type = X_Reply;
+    rep.vendorLength = strlen(mptr->vendor);
+    rep.modelLength = strlen(mptr->model);
+    rep.length = (SIZEOF(xVGAHelpGetMonitorReply) - SIZEOF(xGenericReply) +
+		  (mptr->n_hsync + mptr->n_vrefresh) * sizeof(CARD32) +
+	          (rep.vendorLength + 3 & ~3) +
+		  (rep.modelLength + 3 & ~3)) >> 2;
+    rep.sequenceNumber = client->sequence;
+    rep.nhsync = mptr->n_hsync;
+    rep.nvsync = mptr->n_vrefresh;
+    rep.bandwidth = (unsigned long)(mptr->bandwidth * 1e6);
+    hsyncdata = ALLOCATE_LOCAL(mptr->n_hsync * sizeof(CARD32));
+    if (!hsyncdata) {
+	return BadAlloc;
+    }
+    vsyncdata = ALLOCATE_LOCAL(mptr->n_vrefresh * sizeof(CARD32));
+    if (!vsyncdata) {
+	DEALLOCATE_LOCAL(hsyncdata);
+	return BadAlloc;
+    }
+    for (i = 0; i < mptr->n_hsync; i++) {
+	hsyncdata[i] = (unsigned short)(mptr->hsync[i].lo * 100.0) |
+		       (unsigned short)(mptr->hsync[i].hi * 100.0) << 16;
+    }
+    for (i = 0; i < mptr->n_vrefresh; i++) {
+	vsyncdata[i] = (unsigned short)(mptr->vrefresh[i].lo * 100.0) |
+		       (unsigned short)(mptr->vrefresh[i].hi * 100.0) << 16;
+    }
+    
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+    	swapl(&rep.bandwidth, n);
+    }
+    WriteToClient(client, SIZEOF(xVGAHelpGetMonitorReply), (char *)&rep);
+    WriteSwappedDataToClient(client, mptr->n_hsync * sizeof(CARD32),
+			     hsyncdata);
+    WriteSwappedDataToClient(client, mptr->n_vrefresh * sizeof(CARD32),
+			     vsyncdata);
+    WriteToClient(client, rep.vendorLength, mptr->vendor);
+    WriteToClient(client, rep.modelLength, mptr->model);
+    DEALLOCATE_LOCAL(hsyncdata);
+    DEALLOCATE_LOCAL(vsyncdata);
+    return (client->noClientException);
+}
+
+static int
 ProcVGAHelpDispatch (client)
     register ClientPtr	client;
 {
@@ -217,6 +302,10 @@ ProcVGAHelpDispatch (client)
 	return ProcVGAHelpGetModeLine(client);
     case X_VGAHelpModModeLine:
 	return ProcVGAHelpModModeLine(client);
+    case X_VGAHelpSwitchMode:
+	return ProcVGAHelpSwitchMode(client);
+    case X_VGAHelpGetMonitor:
+	return ProcVGAHelpGetMonitor(client);
     default:
 	return BadRequest;
     }
@@ -266,6 +355,31 @@ SProcVGAHelpModModeLine(client)
 }
 
 static int
+SProcVGAHelpSwitchMode(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xVGAHelpSwitchModeReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xVGAHelpSwitchModeReq);
+    swapl(&stuff->screen, n);
+    swaps(&stuff->zoom, n);
+    return ProcVGAHelpSwitchMode(client);
+}
+
+static int
+SProcVGAHelpGetMonitor(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xVGAHelpGetMonitorReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xVGAHelpGetMonitorReq);
+    swapl(&stuff->screen, n);
+    return ProcVGAHelpGetMonitor(client);
+}
+
+static int
 SProcVGAHelpDispatch (client)
     register ClientPtr	client;
 {
@@ -278,6 +392,10 @@ SProcVGAHelpDispatch (client)
 	return SProcVGAHelpGetModeLine(client);
     case X_VGAHelpModModeLine:
 	return SProcVGAHelpModModeLine(client);
+    case X_VGAHelpSwitchMode:
+	return SProcVGAHelpSwitchMode(client);
+    case X_VGAHelpGetMonitor:
+	return SProcVGAHelpGetMonitor(client);
     default:
 	return BadRequest;
     }

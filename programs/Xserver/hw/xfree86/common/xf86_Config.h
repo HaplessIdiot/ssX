@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.5 95/01/16 13:17:02 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.22 1995/03/12 13:00:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.23 1995/03/18 10:59:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -48,24 +48,6 @@ typedef struct {
   char          *str;                 /* private copy of the return-string */
   double        realnum;              /* returned number as a real */
 } LexRec, *LexPtr;
-
-/* Monitor and device records. */
-#define MAX_HSYNC 8
-#define MAX_VREFRESH 8
-
-typedef struct { float hi, lo; } range ;
-
-typedef struct {
-   char *id;
-   char *vendor;
-   char *model;
-   float bandwidth;
-   int n_hsync;
-   range hsync[MAX_HSYNC];
-   int n_vrefresh;
-   range vrefresh[MAX_VREFRESH];
-   DisplayModePtr Modes, Last; /* Start and end of monitor's mode list */
-} MonRec, *MonPtr ;
 
 typedef struct {
    char *identifier;
