@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-
+/* $XFree86$ */
 /*
  * xdm - display manager daemon
  * Author:  Keith Packard, MIT X Consortium

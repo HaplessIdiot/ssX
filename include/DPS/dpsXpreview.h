@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef DPS_X_PREVIEW_H
 #define DPS_X_PREVIEW_H
@@ -47,23 +48,6 @@ typedef struct {
 	unsigned long binaryCount;
 	Bool continuedLine;
 } XDPSPosition;
-
-#ifdef _NO_PROTO
-
-typedef void (*XDPSRewindFunction)();
-typedef char *(*XDPSGetsFunction)();
-extern int XDPSSetFileFunctions();
-extern void XDPSFileRewindFunc();
-extern char *XDPSFileGetsFunc();
-extern void XDPSEmbeddedEPSFRewindFunc();
-extern char *XDPSEmbeddedEPSFGetsFunc();
-extern int XDPSCreatePixmapForEPSF();
-extern double XDPSPixelsPerPoint();
-extern int XDPSImageFileIntoDrawable();
-extern int XDPSCheckImagingResults();
-extern void XDPSSetImagingTimeout();
-
-#else /* _NO_PROTO */
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
@@ -125,6 +109,8 @@ extern char *XDPSFileGetsFunc(char *buf,
 
 extern void XDPSEmbeddedEPSFRewindFunc(FILE *f,
 				       DPSPointer data);
+
+extern char *XDPSEmbeddedGetsFunc(char *buf, int n, FILE *f, DPSPointer data);
 
 extern char *XDPSEmbeddedEPSFGetsFunc(char *buf,
 				      int n,
@@ -232,7 +218,5 @@ extern void XDPSSetImagingTimeout(int timeout,
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-
-#endif /* _NO_PROTO */
 
 #endif /* DPS_X_PREVIEW_H */

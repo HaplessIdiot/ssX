@@ -35,15 +35,20 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
+
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <X11/Xlib.h>
+
 #include <DPS/dpsXclient.h>
 #include <DPS/dpsops.h>
 #include <DPS/XDPSlib.h>
-#include "DPS/dpsXshare.h"
+#include <DPS/dpsXshare.h>
+
 #include "XDPSswraps.h"
 #include "dpsXcommonI.h"
-#include <stdio.h>
 
 static int extensionId = 0;
 
@@ -52,9 +57,6 @@ static int extensionId = 0;
    Find...Info looks for an info entry and returns NULL if not found.
    Lookup...Info looks for an info entry and creates one if not found.
 */
-
-void _DPSSSetContextParameters(), _DPSSSetContextDrawable(),
-	_DPSSInstallDPSlibDict();
 
 typedef struct _ContextInfoRec {
     int extensionId;
@@ -83,10 +85,9 @@ typedef struct _DisplayInfoRec {
 
 static DisplayInfo displayList = NULL;
 
-static DisplayInfo FindDisplayInfo(), LookupDisplayInfo();
+static DisplayInfo LookupDisplayInfo(Display *display);
 
-static ContextInfo AllocContextInfo(context)
-    DPSContext context;
+static ContextInfo AllocContextInfo(DPSContext context)
 {
     ContextInfo c = (ContextInfo) calloc(1, sizeof(ContextInfoRec));
 
@@ -98,16 +99,14 @@ static ContextInfo AllocContextInfo(context)
     return c;
 }
 
-static ContextInfo FindContextInfo(context)
-    DPSContext context;
+static ContextInfo FindContextInfo(DPSContext context)
 {
     if (extensionId == 0) extensionId = DPSGenerateExtensionRecID();
 
     return (ContextInfo) DPSGetContextExtensionRec(context, extensionId);
 }
 
-static ContextInfo RemoveContextInfo(context)
-    DPSContext context;
+static ContextInfo RemoveContextInfo(DPSContext context)
 {
     return (ContextInfo) DPSRemoveContextExtensionRec(context,
 						      extensionId);
@@ -115,9 +114,9 @@ static ContextInfo RemoveContextInfo(context)
 
 /* May only be called for a display in the display list. */
 
-static ContextInfo LookupContext(display, context)
-    Display *display;
-    DPSContext context;
+static ContextInfo LookupContext(
+    Display *display,
+    DPSContext context)
 {
     ContextInfo c = FindContextInfo(context);
 
@@ -130,9 +129,9 @@ static ContextInfo LookupContext(display, context)
     return c;
 }
 
-static DisplayInfo AllocDisplayInfo(display, context)
-    Display *display;
-    DPSContext context;
+static DisplayInfo AllocDisplayInfo(
+    Display *display,
+    DPSContext context)
 {
     DisplayInfo d = (DisplayInfo) malloc(sizeof(DisplayInfoRec));
     register int i;
@@ -157,8 +156,7 @@ static DisplayInfo AllocDisplayInfo(display, context)
     return d;
 }
 
-static DisplayInfo FindDisplayInfo(display)
-    Display *display;
+static DisplayInfo FindDisplayInfo(Display *display)
 {
     DisplayInfo d = displayList;
 
@@ -166,8 +164,7 @@ static DisplayInfo FindDisplayInfo(display)
     return d;
 }
 
-static DisplayInfo LookupDisplayInfo(display)
-    Display *display;
+static DisplayInfo LookupDisplayInfo(Display *display)
 {
     DisplayInfo d = FindDisplayInfo(display);
 
@@ -176,9 +173,7 @@ static DisplayInfo LookupDisplayInfo(display)
     return d;
 }
 
-int _XDPSSetComponentInitialized(context, bit)
-    DPSContext context;
-    unsigned long bit;
+int _XDPSSetComponentInitialized(DPSContext context, unsigned long bit)
 {
     ContextInfo c = FindContextInfo(context);
 
@@ -187,10 +182,10 @@ int _XDPSSetComponentInitialized(context, bit)
     return dps_status_success;
 }
 
-int _XDPSTestComponentInitialized(context, bit, result)
-    DPSContext context;
-    unsigned long bit;
-    Bool *result;
+int _XDPSTestComponentInitialized(
+    DPSContext context,
+    unsigned long bit,
+    Bool *result)
 {
     ContextInfo c = FindContextInfo(context);
 
@@ -202,10 +197,10 @@ int _XDPSTestComponentInitialized(context, bit, result)
     return dps_status_success;
 }
 
-int XDPSSetContextDepth(context, screen, depth)
-    DPSContext context;
-    Screen *screen;
-    int depth;
+int XDPSSetContextDepth(
+    DPSContext context,
+    Screen *screen,
+    int depth)
 {
     return XDPSSetContextParameters(context, screen, depth, None, 0,
 				    (XDPSStandardColormap *) NULL,
@@ -213,38 +208,35 @@ int XDPSSetContextDepth(context, screen, depth)
 				    XDPSContextScreenDepth);
 }
 
-int XDPSSetContextDrawable(context, drawable, height)
-    DPSContext context;
-    Drawable drawable;
-    int height;
+int XDPSSetContextDrawable(
+    DPSContext context,
+    Drawable drawable,
+    int height)
 {
     if (drawable != None && height <= 0) return dps_status_illegal_value;
     _DPSSSetContextDrawable(context, drawable, height);
     return dps_status_success;
 }
 
-int XDPSSetContextRGBMap(context, map)
-    DPSContext context;
-    XDPSStandardColormap *map;
+int XDPSSetContextRGBMap(
+    DPSContext context,
+    XDPSStandardColormap *map)
 {
     return XDPSSetContextParameters(context, (Screen *) NULL, 0, None, 0,
 				    map, (XDPSStandardColormap *) NULL,
 				    XDPSContextRGBMap);
 }
 
-int XDPSSetContextGrayMap(context, map)
-    DPSContext context;
-    XDPSStandardColormap *map;
+int XDPSSetContextGrayMap(
+    DPSContext context,
+    XDPSStandardColormap *map)
 {
     return XDPSSetContextParameters(context, (Screen *) NULL, 0, None, 0,
 				    map, (XDPSStandardColormap *) NULL,
 				    XDPSContextGrayMap);
 }
 
-static GC DisplayInfoSharedGC(d, screen, depth)
-    DisplayInfo d;
-    Screen *screen;
-    int depth;
+static GC DisplayInfoSharedGC(DisplayInfo d, Screen *screen, int depth)
 {
     int s = XScreenNumberOfScreen(screen);
     register int i;
@@ -274,16 +266,15 @@ static GC DisplayInfoSharedGC(d, screen, depth)
     return d->gcForDepth[s][i];
 }
 
-int XDPSSetContextParameters(context, screen, depth, drawable, height,
-			     rgbMap, grayMap, flags)
-    DPSContext context;
-    Screen *screen;
-    int depth;
-    Drawable drawable;
-    int height;
-    XDPSStandardColormap *rgbMap;
-    XDPSStandardColormap *grayMap;
-    unsigned int flags;
+int XDPSSetContextParameters(
+    DPSContext context,
+    Screen *screen,
+    int depth,
+    Drawable drawable,
+    int height,
+    XDPSStandardColormap *rgbMap,
+    XDPSStandardColormap *grayMap,
+    unsigned int flags)
 {
     ContextInfo c = FindContextInfo(context);
     Bool doDepth = False, doDrawable = False, doRGB = False, doGray = False;
@@ -293,8 +284,16 @@ int XDPSSetContextParameters(context, screen, depth, drawable, height,
     GContext gctx = None;
     DisplayInfo d;
     Display *dpy;
-    int rgb_base_pixel, red_max, red_mult, green_max, green_mult,
-	    blue_max, blue_mult, gray_base_pixel, gray_max, gray_mult;
+    int rgb_base_pixel = 0;
+    int red_max = 0;
+    int red_mult = 0;
+    int green_max = 0;
+    int green_mult = 0;
+    int blue_max = 0;
+    int blue_mult = 0;
+    int gray_base_pixel = 0;
+    int gray_max = 0;
+    int gray_mult = 0;
     
     if (c == NULL) return dps_status_unregistered_context;
     d = c->displayInfo;
@@ -375,17 +374,16 @@ int XDPSSetContextParameters(context, screen, depth, drawable, height,
     return dps_status_success;
 }
 
-int XDPSPushContextParameters(context, screen, depth, drawable, height,
-			      rgbMap, grayMap, flags, pushCookieReturn)
-    DPSContext context;
-    Screen *screen;
-    int depth;
-    Drawable drawable;
-    int height;
-    XDPSStandardColormap *rgbMap;
-    XDPSStandardColormap *grayMap;
-    unsigned int flags;
-    DPSPointer *pushCookieReturn;
+int XDPSPushContextParameters(
+    DPSContext context,
+    Screen *screen,
+    int depth,
+    Drawable drawable,
+    int height,
+    XDPSStandardColormap *rgbMap,
+    XDPSStandardColormap *grayMap,
+    unsigned int flags,
+    DPSPointer *pushCookieReturn)
 {
     ContextInfo c = FindContextInfo(context);
     int status;
@@ -401,8 +399,7 @@ int XDPSPushContextParameters(context, screen, depth, drawable, height,
     return status;
 }
 
-int XDPSPopContextParameters(pushCookie)
-    DPSPointer pushCookie;
+int XDPSPopContextParameters(DPSPointer pushCookie)
 {
     DPSContext context = (DPSContext) pushCookie;
     ContextInfo c = FindContextInfo(context);
@@ -414,9 +411,7 @@ int XDPSPopContextParameters(pushCookie)
     return dps_status_success;
 }
     
-int XDPSCaptureContextGState(context, gsReturn)
-    DPSContext context;
-    DPSGState *gsReturn;
+int XDPSCaptureContextGState(DPSContext context, DPSGState *gsReturn)
 {
     *gsReturn = DPSNewUserObjectIndex();
     /* We want to keep 0 as an unassigned value */
@@ -427,37 +422,33 @@ int XDPSCaptureContextGState(context, gsReturn)
     return dps_status_success;
 }
 
-int XDPSUpdateContextGState(context, gs)
-    DPSContext context;
-    DPSGState gs;
+int XDPSUpdateContextGState(DPSContext context, DPSGState gs)
 {
     _DPSSUpdateGState(context, gs);
 
     return dps_status_success;
 }
 
-int XDPSFreeContextGState(context, gs)
-    DPSContext context;
-    DPSGState gs;
+int XDPSFreeContextGState(DPSContext context, DPSGState gs)
 {
     _DPSSUndefineUserObject(context, gs);
 
     return dps_status_success;
 }
 
-int XDPSSetContextGState(context, gs)
-    DPSContext context;
-    DPSGState gs;
+int XDPSSetContextGState(
+    DPSContext context,
+    DPSGState gs)
 {
     _DPSSRestoreGState(context, gs);
 
     return dps_status_success;
 }
 
-int XDPSPushContextGState(context, gs, pushCookieReturn)
-    DPSContext context;
-    DPSGState gs;
-    DPSPointer *pushCookieReturn;
+int XDPSPushContextGState(
+    DPSContext context,
+    DPSGState gs,
+    DPSPointer *pushCookieReturn)
 {
     int status;
 
@@ -468,8 +459,7 @@ int XDPSPushContextGState(context, gs, pushCookieReturn)
     return status;
 }
 
-int XDPSPopContextGState(pushCookie)
-    DPSPointer pushCookie;
+int XDPSPopContextGState(DPSPointer pushCookie)
 {
     DPSContext context = (DPSContext) pushCookie;
 
@@ -477,9 +467,7 @@ int XDPSPopContextGState(pushCookie)
     return dps_status_success;
 }
 
-void XDPSRegisterContext(context, makeSharedContext)
-    DPSContext context;
-    Bool makeSharedContext;
+void XDPSRegisterContext(DPSContext context, Bool makeSharedContext)
 {
     Display *display;
     Bool inited;
@@ -504,8 +492,7 @@ void XDPSRegisterContext(context, makeSharedContext)
     }
 }
 
-DPSContext XDPSGetSharedContext(display)
-    Display *display;
+DPSContext XDPSGetSharedContext(Display *display)
 {
     DisplayInfo d = LookupDisplayInfo(display);
     ContextInfo c;
@@ -538,8 +525,7 @@ DPSContext XDPSGetSharedContext(display)
     return context;
 }
 
-void XDPSDestroySharedContext(context)
-    DPSContext context;
+void XDPSDestroySharedContext(DPSContext context)
 {
     ContextInfo c = RemoveContextInfo(context);
 
@@ -553,8 +539,7 @@ void XDPSDestroySharedContext(context)
     free((char *) c);
 }
 
-void XDPSUnregisterContext(context)
-    DPSContext context;
+void XDPSUnregisterContext(DPSContext context)
 {
     ContextInfo c = RemoveContextInfo(context);
 
@@ -567,8 +552,7 @@ void XDPSUnregisterContext(context)
     free((char *) c);
 }
 
-void XDPSFreeDisplayInfo(display)
-    Display *display;
+void XDPSFreeDisplayInfo(Display *display)
 {
     DisplayInfo *dp = &displayList;
     DisplayInfo d;
@@ -601,9 +585,7 @@ void XDPSFreeDisplayInfo(display)
     free((char *) d);
 }
 
-int XDPSChainTextContext(context, enable)
-    DPSContext context;
-    Bool enable;
+int XDPSChainTextContext(DPSContext context, Bool enable)
 {
     ContextInfo c = FindContextInfo(context);
 
@@ -631,8 +613,7 @@ int XDPSChainTextContext(context, enable)
     return dps_status_success;
 }
 
-Bool XDPSExtensionPresent(display)
-    Display *display;
+Bool XDPSExtensionPresent(Display *display)
 {
     DisplayInfo d = LookupDisplayInfo(display);
 
@@ -649,25 +630,22 @@ Bool XDPSExtensionPresent(display)
     return (d->extensionPresent == ext_yes);
 }
 
-int PSDefineAsUserObj()
+int PSDefineAsUserObj(void)
 {
     return DPSDefineAsUserObj(DPSGetCurrentContext());
 }
 
-void PSRedefineUserObj(uo)
-    int uo;
+void PSRedefineUserObj(int uo)
 {
     DPSRedefineUserObj(DPSGetCurrentContext(), uo);
 }
 
-void PSUndefineUserObj(uo)
-    int uo;
+void PSUndefineUserObj(int uo)
 {
     DPSUndefineUserObj(DPSGetCurrentContext(), uo);
 }
 
-int DPSDefineAsUserObj(ctxt)
-    DPSContext ctxt;
+int DPSDefineAsUserObj(DPSContext ctxt)
 {
     int out = DPSNewUserObjectIndex();
     /* We want to keep 0 as an unassigned value */
@@ -677,29 +655,22 @@ int DPSDefineAsUserObj(ctxt)
     return out;
 }
 
-void DPSRedefineUserObj(ctxt, uo)
-    DPSContext ctxt;
-    int uo;
+void DPSRedefineUserObj(DPSContext ctxt, int uo)
 {
     _DPSSDefineUserObject(ctxt, uo);
 }
 
-void DPSUndefineUserObj(ctxt, uo)
-    DPSContext ctxt;
-    int uo;
+void DPSUndefineUserObj(DPSContext ctxt, int uo)
 {
     _DPSSUndefineUserObject(ctxt, uo);
 }
 
-int PSReserveUserObjIndices(number)
-    int number;
+int PSReserveUserObjIndices(int number)
 {
     return DPSReserveUserObjIndices(DPSGetCurrentContext(), number);
 }
 
-int DPSReserveUserObjIndices(ctxt, number)
-    DPSContext ctxt;
-    int number;
+int DPSReserveUserObjIndices(DPSContext ctxt, int number)
 {
     int out = DPSNewUserObjectIndex();
 
@@ -711,15 +682,12 @@ int DPSReserveUserObjIndices(ctxt, number)
     return out;
 }
 
-void PSReturnUserObjIndices(start, number)
-    int start, number;
+void PSReturnUserObjIndices(int start, int number)
 {
     DPSReturnUserObjIndices(DPSGetCurrentContext(), start, number);
 }
 
-void DPSReturnUserObjIndices(ctxt, start, number)
-    DPSContext ctxt;
-    int start, number;
+void DPSReturnUserObjIndices(DPSContext ctxt, int start, int number)
 {
     /* Nothing left any more */
 }
@@ -730,10 +698,10 @@ void DPSReturnUserObjIndices(ctxt, start, number)
 /*
  * XListDepths - return info from connection setup
  */
-int *XListDepths (dpy, scrnum, countp)
-    Display *dpy;
-    int scrnum;
-    int *countp;
+int *XListDepths (
+    Display *dpy,
+    int scrnum,
+    int *countp)
 {
     Screen *scr;
     int count;

@@ -35,25 +35,10 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef _FontSelectionBoxI_H
 #define _FontSelectionBoxI_H
-
-#ifdef _NO_PROTO
-
-extern Widget _FSBCreateFontSampler();
-extern Boolean _FSBDownloadFontIfNecessary();
-extern XmString _FSBCreateSharedCS();
-extern void _FSBSetCreatorFamily();
-extern void _FSBSetUpFaceList();
-extern void _FSBBogusFont();
-extern void _FSBFlushFont();
-extern void _FSBSetCurrentFont();
-extern float _FSBNormalize();
-extern int _FSBUnnormalize();
-extern String _FSBGenFontName();
-
-#else /* _NO_PROTO */
 
 extern Widget _FSBCreateFontSampler(FontSelectionBoxWidget fsb);
 extern Boolean _FSBDownloadFontIfNecessary(FontRec *f,
@@ -67,8 +52,6 @@ extern void _FSBSetCurrentFont(FontSelectionBoxWidget fsb, String name);
 extern float _FSBNormalize(int val, BlendDataRec *bd, int i);
 extern int _FSBUnnormalize(double val, BlendDataRec *bd, int i);
 extern String _FSBGenFontName(String name, int *val, BlendDataRec *bd);
-
-#endif /* _NO_PROTO */
 
 #endif /* _FontSelectionBoxI_H */
 /* DON'T ADD ANYTHING AFTER THIS #endif */

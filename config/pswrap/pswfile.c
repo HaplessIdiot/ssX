@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include "pswversion.h"
@@ -80,7 +81,11 @@ void InitOFile(void)
 #endif /* __MACH__ */
     printf("#include %s\n", FRIENDSFILE);
     printf("#include <string.h>\n");
-    printf("#include \"DPS/%spsops.h\"\n\n", dpsops ? "d" : "");
+    if (special_h == 0) {
+	printf("#include \"%spsops.h\"\n\n", dpsops ? "d" : "");
+    } else {
+	printf("#include \"%s\"\n\n", special_h);
+    }
     outlineno += 4;  /* UPDATE this if you add more prolog */
     printf("#line 1 \"%s\"\n",ifile);
     outlineno++;

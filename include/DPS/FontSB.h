@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef _FontSelectionBox_h
 #define _FontSelectionBox_h
@@ -96,7 +97,9 @@
 #define XtNokCallback "okCallback"
 #define XtNapplyCallback "applyCallback"
 #define XtNresetCallback "resetCallback"
+#ifndef XtNcancelCallback
 #define XtNcancelCallback "cancelCallback"
+#endif
 #define XtNvalidateCallback "validateCallback"
 #define XtNfaceSelectCallback "faceSelectCallback"
 #define XtNvalueChangedCallback "valueChangedCallback"
@@ -199,31 +202,6 @@ typedef enum {FSBAddBlend, FSBReplaceBlend, FSBDeleteBlend} FSBBlendAction;
 
 /* Convenience and info routines */
 
-#ifdef _NO_PROTO
-
-extern void FSBSetFontName();
-extern void FSBSetFontFamilyFace();
-extern void FSBSetFontSize();
-extern void FSBRefreshFontList();
-extern void FSBGetFamilyList();
-extern void FSBGetFaceList();
-extern void FSBUndefineUnusedFonts();
-extern Boolean FSBDownloadFontName();
-extern Boolean FSBMatchFontFace();
-extern void FSBFontNameToFamilyFace();
-extern void FSBFontFamilyFaceToName();
-extern String FSBFindAFM();
-extern String FSBFindFontFile();
-extern void FSBGetTextDimensions();
-extern void FSBSetFontFamilyFaceBlend();
-extern void FSBFontNameToFamilyFaceBlend();
-extern void FSBFontFamilyFaceBlendToName();
-extern void FSBGetBlendList();
-extern void FSBGetBlendInfo();
-extern Boolean FSBChangeBlends();
-
-#else /* _NO_PROTO */
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -304,7 +282,6 @@ extern Boolean FSBChangeBlends(Widget w, String base_name, String blend_name,
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-#endif /* _NO_PROTO */
 
 #endif /* _FontSelectionBox_h */
 /* DON'T ADD ANYTHING AFTER THIS #endif */

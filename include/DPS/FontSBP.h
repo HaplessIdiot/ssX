@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef _FontSelectionBoxP_H
 #define _FontSelectionBoxP_H
@@ -186,31 +187,6 @@ typedef struct _FontSelectionBoxRec {
     FontSelectionBoxPart	fsb;
 } FontSelectionBoxRec;
 
-#ifdef _NO_PROTO
-
-typedef void (*FSBSetFontNameProc) ();
-typedef void (*FSBSetFontFamilyFaceProc) ();
-typedef void (*FSBSetFontSizeProc) ();
-typedef void (*FSBRefreshFontListProc) ();
-typedef void (*FSBGetFamilyListProc) ();
-typedef void (*FSBGetFaceListProc) ();
-typedef void (*FSBUndefUnusedFontsProc) ();
-typedef Boolean (*FSBDownloadFontNameProc) ();
-typedef Boolean (*FSBMatchFontFaceProc) ();
-typedef void (*FSBFontNameToFamilyFaceProc) ();
-typedef void (*FSBFontFamilyFaceToNameProc) ();
-typedef String (*FSBFindAFMProc) ();
-typedef String (*FSBFindFontFileProc) ();
-typedef void (*FSBGetTextDimensionsProc) ();
-typedef void (*FSBSetFontFamilyFaceBlendProc) ();
-typedef void (*FSBFontNameToFamilyFaceBlendProc) ();
-typedef void (*FSBFontFamilyFaceBlendToNameProc) ();
-typedef void (*FSBGetBlendListProc) ();
-typedef void (*FSBGetBlendInfoProc) ();
-typedef Boolean (*FSBChangeBlendsProc) ();
-
-#else /* _NO_PROTO */
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -296,7 +272,6 @@ typedef Boolean (*FSBChangeBlendsProc) (Widget w, String base_name,
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-#endif /* _NO_PROTO */
 
 #define InheritSetFontName ((FSBSetFontNameProc) _XtInherit)
 #define InheritSetFontFamilyFace ((FSBSetFontFamilyFaceProc) _XtInherit)

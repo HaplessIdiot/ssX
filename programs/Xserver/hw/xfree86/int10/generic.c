@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.7 2000/05/11 18:14:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.8 2000/05/23 04:47:48 dawes Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -135,6 +135,7 @@ xf86InitInt10(int entityIndex)
     INTPriv(pInt)->sysMem = sysMem;
     setup_int_vect(pInt);
     set_return_trap(pInt);
+    vbiosMem = (unsigned char *)base + V_BIOS;
     if (!mapPciRom(pInt,(unsigned char *)(vbiosMem))) {
 	xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (4)\n");
 	goto error1;

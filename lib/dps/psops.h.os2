@@ -36,6 +36,8 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
+
 #ifndef PSOPS_H
 #define PSOPS_H
 
@@ -603,7 +605,7 @@ extern void PSsetXgcdrawable( /* int gc, draw, x, y; */ );
 
 extern void PSsetXgcdrawablecolor( /* int gc, draw, x, y, colorInfo[]; */ );
 
-extern void PSsetXoffset( /* short int x, y; */ );
+extern void PSsetXoffset( /* int x, y; */ );
 
 extern void PSsetXrgbactual( /* float r, g, b; int *success; */ );
 
@@ -1381,7 +1383,7 @@ extern void PSsetXgcdrawable(int gc, int draw, int x, int y);
 
 extern void PSsetXgcdrawablecolor(int gc, int draw, int x, int y, const int colorInfo[]);
 
-extern void PSsetXoffset(short int x, short int y);
+extern void PSsetXoffset(int x, int y);
 
 extern void PSsetXrgbactual(float r, float g, float b, int *success);
 

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.10 2000/05/23 23:58:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.11 2000/05/24 01:11:10 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -291,14 +291,10 @@ static int      debug_level = 0;
 #undef read
 #undef write
 #undef close
-#undef strdup
-#undef strcmp
 #define SYSCALL(call) call
 #define read(fd, ptr, num) xf86ReadSerial(fd, ptr, num)
 #define write(fd, ptr, num) xf86WriteSerial(fd, ptr, num)
 #define close(fd) xf86CloseSerial(fd)
-#define strdup(str) xf86strdup(str)
-#define strcmp(str1, str2) xf86strcmp(str1, str2)
 #endif
 
 

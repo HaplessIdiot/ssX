@@ -1,4 +1,10 @@
 XCOMM $XConsortium: Imakefile /main/7 1996/09/28 17:17:38 rws $
+
+
+
+
+
+XCOMM $XFree86$
 #define DoNormalLib NO
 #define DoSharedLib YES
 #define DoDebugLib NO

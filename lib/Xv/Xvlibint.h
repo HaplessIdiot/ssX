@@ -21,6 +21,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
+
 #ifndef XVLIBINT_H
 #define XVLIBINT_H
 /*

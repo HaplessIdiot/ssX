@@ -35,6 +35,11 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
+
+#ifndef X_NOT_POSIX
+#include <unistd.h>
+#endif
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -61,9 +66,10 @@
 #include <Xm/RowColumn.h>
 #include <Xm/Frame.h>
 #include <Xm/MessageB.h>
-#include "DPS/dpsXclient.h"
+
+#include <DPS/dpsXclient.h>
 #include "dpsXcommonI.h"
-#include "DPS/dpsXshare.h"
+#include <DPS/dpsXshare.h>
 #include "eyedrop16.xbm"
 #include "eyedropmask16.xbm"
 #include "eyedrop32.xbm"
@@ -75,7 +81,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <pwd.h>
-#include "DPS/ColorSBP.h"
+#include <DPS/ColorSBP.h>
 
 #define PATH_BUF_SIZE 1024
 
@@ -234,24 +240,55 @@ static XtResource resources[] = {
 	Offset(value_changed_callback), XtRCallback, (XtPointer) NULL}
 };
 
-static void ClassInitialize(), ClassPartInitialize(), Initialize(), Destroy(),
-	ChangeManaged(), Realize(), Resize(), GetColor();
-static Boolean SetValues(), SetColor();
-static XtGeometryResult GeometryManager();
+static Boolean SetColor         (Widget w, CSBColorSpace space, double c1, double c2, double c3, double c4, Bool setSpace);
+static Boolean SetValues        (Widget old, Widget req, Widget new, ArgList args, Cardinal *num_args);
+static XtGeometryResult GeometryManager (Widget w, XtWidgetGeometry *desired, XtWidgetGeometry *allowed);
+static void ChangeLabel         (Widget label, double n);
+static void ChangeManaged       (Widget w);
+static void ClassInitialize     (void);
+static void ClassPartInitialize (WidgetClass widget_class);
+static void CreateChildren      (ColorSelectionBoxWidget csb);
+static void Destroy             (Widget widget);
+static void DrawDock            (ColorSelectionBoxWidget csb);
+static void DrawPalette         (ColorSelectionBoxWidget csb);
+static void FillPatch           (ColorSelectionBoxWidget csb);
+static void GetColor            (Widget w, CSBColorSpace space, float *c1, float *c2, float *c3, float *c4);
+static void Initialize          (Widget request, Widget new, ArgList args, Cardinal *num_args);
+static void InitializeDock      (ColorSelectionBoxWidget csb);
+static void Realize             (Widget w, XtValueMask *mask, XSetWindowAttributes *attr);
+static void Resize              (Widget widget);
+static void SaveDockContents    (ColorSelectionBoxWidget csb);
+static void SetBackground       (ColorSelectionBoxWidget csb);
+static void SetCMYKValues       (ColorSelectionBoxWidget csb);
+static void SetColorSpace       (ColorSelectionBoxWidget csb);
+static void SetGrayValues       (ColorSelectionBoxWidget csb);
+static void SetHSBValues        (ColorSelectionBoxWidget csb);
+static void SetRGBValues        (ColorSelectionBoxWidget csb);
+static void SetRendering        (ColorSelectionBoxWidget csb);
+static void SetSliders          (ColorSelectionBoxWidget csb);
+static void UpdateColorSpaces   (ColorSelectionBoxWidget csb, CSBColorSpace masterSpace);
 
-static void CreateChildren(), UpdateColorSpaces(), FillPatch(),
-	SetBackground();
-static void SetSliders(), SetRGBValues(), SetCMYKValues(), SetHSBValues(),
-	SetGrayValues(), ChangeLabel(), SetColorSpace(), SetRendering();
-static void FormResize(), EyedropPointer(), PatchPress(), PatchRelease(),
-	DrawDock(), DockPress(), DrawPalette(),
-	PalettePress(), InitializeDock(), SaveDockContents();
-static void SetRGBCallback(), SetCMYKCallback(),
-	SetHSBCallback(), SetGrayCallback(),
-	Slider1Callback(), Slider2Callback(),
-	Slider3Callback(), Slider4Callback(),
-	FillPatchCallback(), DrawDockCallback(), DrawPaletteCallback(),
-	DoEyedropCallback(), OKCallback(), ApplyCallback();
+static void DockPress           (Widget w, XtPointer data, XEvent *event, Boolean *goOn);
+static void EyedropPointer      (Widget w, XtPointer data, XEvent *event, Boolean *goOn);
+static void FormResize          (Widget w, XtPointer data, XEvent *event, Boolean *goOn);
+static void PalettePress        (Widget w, XtPointer data, XEvent *event, Boolean *goOn);
+static void PatchPress          (Widget w, XtPointer data, XEvent *event, Boolean *goOn);
+static void PatchRelease        (Widget w, XtPointer data, XEvent *event, Boolean *goOn);
+
+static void ApplyCallback       (Widget w, XtPointer clientData, XtPointer callData);
+static void DoEyedropCallback   (Widget w, XtPointer clientData, XtPointer callData);
+static void DrawDockCallback    (Widget w, XtPointer clientData, XtPointer callData);
+static void DrawPaletteCallback (Widget w, XtPointer clientData, XtPointer callData);
+static void FillPatchCallback   (Widget w, XtPointer clientData, XtPointer callData);
+static void OKCallback          (Widget w, XtPointer clientData, XtPointer callData);
+static void SetCMYKCallback     (Widget w, XtPointer clientData, XtPointer callData);
+static void SetGrayCallback     (Widget w, XtPointer clientData, XtPointer callData);
+static void SetHSBCallback      (Widget w, XtPointer clientData, XtPointer callData);
+static void SetRGBCallback      (Widget w, XtPointer clientData, XtPointer callData);
+static void Slider1Callback     (Widget w, XtPointer clientData, XtPointer callData);
+static void Slider2Callback     (Widget w, XtPointer clientData, XtPointer callData);
+static void Slider3Callback     (Widget w, XtPointer clientData, XtPointer callData);
+static void Slider4Callback     (Widget w, XtPointer clientData, XtPointer callData);
 
 ColorSelectionBoxClassRec colorSelectionBoxClassRec = {
     /* Core class part */
@@ -328,9 +365,7 @@ ColorSelectionBoxClassRec colorSelectionBoxClassRec = {
 WidgetClass colorSelectionBoxWidgetClass =
 	(WidgetClass) &colorSelectionBoxClassRec;
 
-static XmString CreateSharedCS(str, w)
-    String str;
-    Widget w;
+static XmString CreateSharedCS(String str, Widget w)
 {
     XrmValue src, dst;
     XmString result;
@@ -346,9 +381,7 @@ static XmString CreateSharedCS(str, w)
     } else return NULL;
 }
  
-static Boolean LowerCase(from, to, size)
-    register String from, to;
-    int size;
+static Boolean LowerCase(String from, String to, int size)
 {
     register char ch;
     register int i;
@@ -364,12 +397,13 @@ static Boolean LowerCase(from, to, size)
 
 /* ARGSUSED */
 
-static Boolean CvtStringToColorSpace(dpy, args, num_args, from, to, data)
-    Display *dpy;
-    XrmValuePtr args;
-    Cardinal *num_args;
-    XrmValuePtr from, to;
-    XtPointer *data;
+static Boolean CvtStringToColorSpace(
+    Display *dpy,
+    XrmValuePtr args,
+    Cardinal *num_args,
+    XrmValuePtr from,
+    XrmValuePtr to,
+    XtPointer *data)
 {
 #define LOWER_SIZE 5
     char lower[LOWER_SIZE];	/* Lower cased string value */
@@ -414,12 +448,13 @@ static Boolean CvtStringToColorSpace(dpy, args, num_args, from, to, data)
 
 /* ARGSUSED */
 
-static Boolean CvtStringToRenderingType(dpy, args, num_args, from, to, data)
-    Display *dpy;
-    XrmValuePtr args;
-    Cardinal *num_args;
-    XrmValuePtr from, to;
-    XtPointer *data;
+static Boolean CvtStringToRenderingType(
+    Display *dpy,
+    XrmValuePtr args,
+    Cardinal *num_args,
+    XrmValuePtr from,
+    XrmValuePtr to,
+    XtPointer *data)
 {
 #define LOWER_SIZE 5
     char lower[LOWER_SIZE];	/* Lower cased string value */
@@ -460,7 +495,7 @@ static Boolean CvtStringToRenderingType(dpy, args, num_args, from, to, data)
 #undef LOWER_SIZE
 }
 
-static void ClassInitialize()
+static void ClassInitialize(void)
 {
     /* Register converters */
 
@@ -474,8 +509,7 @@ static void ClassInitialize()
 
 /* ARGSUSED */
 
-static void ClassPartInitialize(widget_class)
-    WidgetClass widget_class;
+static void ClassPartInitialize(WidgetClass widget_class)
 {
     register ColorSelectionBoxWidgetClass wc =
 	    (ColorSelectionBoxWidgetClass) widget_class;
@@ -490,10 +524,10 @@ static void ClassPartInitialize(widget_class)
     }
 }
 
-static void ToUserSpace(csb, xWidth, xHeight, uWidth, uHeight)
-    ColorSelectionBoxWidget csb;
-    int xWidth, xHeight;
-    float *uWidth, *uHeight;
+static void ToUserSpace(
+    ColorSelectionBoxWidget csb,
+    int xWidth, int xHeight,
+    float *uWidth, float *uHeight)
 {
     register float *i = csb->csb.itransform;
 
@@ -501,8 +535,7 @@ static void ToUserSpace(csb, xWidth, xHeight, uWidth, uHeight)
     *uHeight= i[1] * xWidth - i[3] * xHeight + i[5];
 }
 
-static void ColorizeRGB(csb)
-    ColorSelectionBoxWidget csb;
+static void ColorizeRGB(ColorSelectionBoxWidget csb)
 {
     Dimension height, width;
     int depth, steps;
@@ -561,8 +594,7 @@ static void ColorizeRGB(csb)
 		  XtNbackgroundPixmap, csb->csb.blue_pixmap, NULL);
 }
 
-static void ColorizeCMYK(csb)
-    ColorSelectionBoxWidget csb;
+static void ColorizeCMYK(ColorSelectionBoxWidget csb)
 {
     Dimension height, width;
     int depth, steps;
@@ -634,8 +666,7 @@ static void ColorizeCMYK(csb)
 		  csb->csb.black_pixmap, NULL);
 }
 
-static void ColorizeHSB(csb)
-    ColorSelectionBoxWidget csb;
+static void ColorizeHSB(ColorSelectionBoxWidget csb)
 {
     Dimension height, width;
     int depth, steps;
@@ -694,8 +725,7 @@ static void ColorizeHSB(csb)
 		  csb->csb.bright_pixmap, NULL);
 }
 
-static void ColorizeGray(csb)
-    ColorSelectionBoxWidget csb;
+static void ColorizeGray(ColorSelectionBoxWidget csb)
 {
     Dimension height, width;
     int depth, steps;
@@ -732,8 +762,7 @@ static void ColorizeGray(csb)
 		  csb->csb.gray_pixmap, NULL);
 }
 
-static void ColorizeSliders(csb)
-    ColorSelectionBoxWidget csb;
+static void ColorizeSliders(ColorSelectionBoxWidget csb)
 {
     if (!XtIsRealized(csb)) return;
 
@@ -755,11 +784,11 @@ static void ColorizeSliders(csb)
 
 /* ARGSUSED */
 
-static void FormResize(w, data, event, goOn)
-    Widget w;
-    XtPointer data;
-    XEvent *event;
-    Boolean *goOn;
+static void FormResize(
+    Widget w,
+    XtPointer data,
+    XEvent *event,
+    Boolean *goOn)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) data;
     
@@ -784,9 +813,9 @@ static void FormResize(w, data, event, goOn)
     }
 }
 
-static void FillCallbackRec(csb, rec)
-    ColorSelectionBoxWidget csb;
-    CSBCallbackRec *rec;
+static void FillCallbackRec(
+    ColorSelectionBoxWidget csb,
+    CSBCallbackRec *rec)
 {
     rec->current_space = csb->csb.current_space;
     rec->red = csb->csb.current_color.red;
@@ -804,9 +833,9 @@ static void FillCallbackRec(csb, rec)
 
 /* ARGSUSED */
 
-static void OKCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void OKCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     CSBCallbackRec rec;
@@ -822,9 +851,9 @@ static void OKCallback(w, clientData, callData)
 
 /* ARGSUSED */
 
-static void ApplyCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void ApplyCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     CSBCallbackRec rec;
@@ -840,9 +869,9 @@ static void ApplyCallback(w, clientData, callData)
 
 /* ARGSUSED */
 
-static void ResetCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void ResetCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     CSBCallbackRec rec;
@@ -858,9 +887,9 @@ static void ResetCallback(w, clientData, callData)
 
 /* ARGSUSED */
 
-static void CancelCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void CancelCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     CSBCallbackRec rec;
@@ -877,8 +906,7 @@ static void CancelCallback(w, clientData, callData)
 
 /* ARGSUSED */
 
-static void DoValueChangedCallback(csb)
-    ColorSelectionBoxWidget csb;
+static void DoValueChangedCallback(ColorSelectionBoxWidget csb)
 {
     CSBCallbackRec rec;
 
@@ -890,18 +918,16 @@ static void DoValueChangedCallback(csb)
 
 /* ARGSUSED */
 
-static void ChangeLabelCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void ChangeLabelCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     XmScaleCallbackStruct *scaleData = (XmScaleCallbackStruct *) callData;
 
     ChangeLabel((Widget) clientData, ((float) scaleData->value) / 100.0);
 }
 
-static void ChangeLabel(label, n)
-    Widget label;
-    float n;
+static void ChangeLabel(Widget label, double n)
 {
     char buf[10];
 
@@ -909,8 +935,7 @@ static void ChangeLabel(label, n)
     XtVaSetValues(label, XmNlabelString, CS(buf, label), NULL);
 }
 
-static void CreateModelMenu(parent, csb)
-    Widget parent, csb;
+static void CreateModelMenu(Widget parent, Widget csb)
 {
     Widget kids[4];
 
@@ -937,9 +962,9 @@ typedef struct {
 
 /* ARGSUSED */
 
-static void SetRenderingCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void SetRenderingCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     RenderingRec *r = (RenderingRec *) clientData;
 
@@ -947,9 +972,7 @@ static void SetRenderingCallback(w, clientData, callData)
     FillPatch(r->csb);
 }
 
-static void CreateDisplayMenu(parent, csb)
-    Widget parent;
-    ColorSelectionBoxWidget csb;
+static void CreateDisplayMenu(Widget parent, ColorSelectionBoxWidget csb)
 {
     Widget kids[3];
     RenderingRec *r;
@@ -985,9 +1008,9 @@ typedef struct {
 
 /* ARGSUSED */
 
-static void SetPaletteCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void SetPaletteCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     PaletteRec *p = (PaletteRec *) clientData;
 
@@ -1002,9 +1025,7 @@ static void SetPaletteCallback(w, clientData, callData)
     DrawPalette(p->csb);
 }
 
-static void CreatePaletteMenu(parent, csb)
-    Widget parent;
-    ColorSelectionBoxWidget csb;
+static void CreatePaletteMenu(Widget parent, ColorSelectionBoxWidget csb)
 {
     Widget w, managed[PALETTE_MAX];
     int j, k;
@@ -1033,8 +1054,7 @@ static void CreatePaletteMenu(parent, csb)
     if (j != 0) XtManageChildren(managed, j);
 }
 
-static void CreateChildren(csb)
-    ColorSelectionBoxWidget csb;
+static void CreateChildren(ColorSelectionBoxWidget csb)
 {
     int i;
     Arg args[20];
@@ -1365,8 +1385,7 @@ static void CreateChildren(csb)
 			 False, PatchRelease, (XtPointer) csb);
 }
 
-static void NoBackgroundPixel(csb)
-    ColorSelectionBoxWidget csb;
+static void NoBackgroundPixel(ColorSelectionBoxWidget csb)
 {
     Widget w, message;
 
@@ -1391,9 +1410,7 @@ static void NoBackgroundPixel(csb)
 
 /* labelString is changed by this */
 
-static void ParseLabels(labelString, labels, n)
-    String labelString;
-    register String labels[4];
+static void ParseLabels(String labelString, String labels[4], int n)
 {
     register char *ch;
     int i;
@@ -1408,9 +1425,7 @@ static void ParseLabels(labelString, labels, n)
     for (i = n; i < 4; i++) labels[i] = NULL;
 }
 
-static void SetLabels(csb, labels)
-    ColorSelectionBoxWidget csb;
-    String *labels;
+static void SetLabels(ColorSelectionBoxWidget csb, String *labels)
 {
     Widget w = (Widget) csb;
     int i;
@@ -1423,22 +1438,17 @@ static void SetLabels(csb, labels)
     }
 }
 
-static void MapChildren(children, n)
-    Widget *children;
-    int n;
+static void MapChildren(Widget *children, int n)
 {
     XtManageChildren(children, n);
 }
 
-static void UnmapChildren(children, n)
-    Widget *children;
-    int n;
+static void UnmapChildren(Widget *children, int n)
 {
     XtUnmanageChildren(children, n);
 }
 
-static void SetSliders(csb)
-    ColorSelectionBoxWidget csb;
+static void SetSliders(ColorSelectionBoxWidget csb)
 {
     switch(csb->csb.current_space) {
 	case CSBSpaceRGB:		SetRGBValues(csb);	break;
@@ -1448,8 +1458,7 @@ static void SetSliders(csb)
     }
 }
 
-static void SetRGBValues(csb)
-    ColorSelectionBoxWidget csb;
+static void SetRGBValues(ColorSelectionBoxWidget csb)
 {
     XmScaleSetValue(csb->csb.slider_child[0],
 		    TO_PCT(csb->csb.current_color.red));
@@ -1464,9 +1473,9 @@ static void SetRGBValues(csb)
 
 /* ARGSUSED */
 
-static void SetRGBCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void SetRGBCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     Widget rgb;
@@ -1505,8 +1514,7 @@ static void SetRGBCallback(w, clientData, callData)
     FillPatch(csb);
 }
 
-static void SetCMYKValues(csb)
-    ColorSelectionBoxWidget csb;
+static void SetCMYKValues(ColorSelectionBoxWidget csb)
 {
     XmScaleSetValue(csb->csb.slider_child[0],
 		    TO_PCT(csb->csb.current_color.cyan));
@@ -1524,9 +1532,9 @@ static void SetCMYKValues(csb)
 
 /* ARGSUSED */
 
-static void SetCMYKCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void SetCMYKCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     Widget cmyk;
@@ -1560,8 +1568,7 @@ static void SetCMYKCallback(w, clientData, callData)
     FillPatch(csb);
 }
 
-static void SetHSBValues(csb)
-    ColorSelectionBoxWidget csb;
+static void SetHSBValues(ColorSelectionBoxWidget csb)
 {
     XmScaleSetValue(csb->csb.slider_child[0],
 		    TO_PCT(csb->csb.current_color.hue));
@@ -1576,9 +1583,9 @@ static void SetHSBValues(csb)
 
 /* ARGSUSED */
 
-static void SetHSBCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void SetHSBCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     Widget hsb;
@@ -1617,8 +1624,7 @@ static void SetHSBCallback(w, clientData, callData)
     FillPatch(csb);
 }
 
-static void SetGrayValues(csb)
-    ColorSelectionBoxWidget csb;
+static void SetGrayValues(ColorSelectionBoxWidget csb)
 {
     XmScaleSetValue(csb->csb.slider_child[0],
 		    TO_PCT(csb->csb.current_color.gray));
@@ -1627,9 +1633,9 @@ static void SetGrayValues(csb)
 
 /* ARGSUSED */
 
-static void SetGrayCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void SetGrayCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     Widget gray;
@@ -1662,8 +1668,7 @@ static void SetGrayCallback(w, clientData, callData)
     FillPatch(csb);
 }
 
-static void RGBToCMYK(csb)
-    ColorSelectionBoxWidget csb;
+static void RGBToCMYK(ColorSelectionBoxWidget csb)
 {
     csb->csb.current_color.cyan = 1.0 - csb->csb.current_color.red;
     csb->csb.current_color.magenta = 1.0 - csb->csb.current_color.green;
@@ -1671,16 +1676,14 @@ static void RGBToCMYK(csb)
     csb->csb.current_color.black = 0.0;
 }
 
-static void RGBToGray(csb)
-    ColorSelectionBoxWidget csb;
+static void RGBToGray(ColorSelectionBoxWidget csb)
 {
     csb->csb.current_color.gray = .3 * csb->csb.current_color.red +
 	    .59 * csb->csb.current_color.green +
 	    .11 * csb->csb.current_color.blue;
 }
 
-static void HSBToRGB(csb)
-    ColorSelectionBoxWidget csb;
+static void HSBToRGB(ColorSelectionBoxWidget csb)
 {
     double r, g, bl;
     double h, s, b;
@@ -1703,6 +1706,7 @@ static void HSBToRGB(csb)
 	k = b * (1.0 - (s * (1.0 - f)));
 
 	switch(i) {
+	    default:
 	    case 0:     r = b;		g = k;		bl = m;		break;
 	    case 1:	r = n;		g = b;		bl = m;		break;
 	    case 2:	r = m;		g = b;		bl = k;		break;
@@ -1717,8 +1721,7 @@ static void HSBToRGB(csb)
     csb->csb.current_color.blue = bl;
 }
 
-static void RGBToHSB(csb)
-    ColorSelectionBoxWidget csb;
+static void RGBToHSB(ColorSelectionBoxWidget csb)
 {
     double hue, sat, value;
     double diff, x, r, g, b;
@@ -1752,9 +1755,9 @@ static void RGBToHSB(csb)
     csb->csb.current_color.brightness = value;
 }
 
-static void UpdateColorSpaces(csb, masterSpace)
-    ColorSelectionBoxWidget csb;
-    CSBColorSpace masterSpace;
+static void UpdateColorSpaces(
+    ColorSelectionBoxWidget csb,
+    CSBColorSpace masterSpace)
 {
     switch (masterSpace) {
 	case CSBSpaceRGB:
@@ -1800,9 +1803,9 @@ static void UpdateColorSpaces(csb, masterSpace)
 
 /* ARGSUSED */
 
-static void Slider1Callback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void Slider1Callback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     XmScaleCallbackStruct *scaleData = (XmScaleCallbackStruct *) callData;
@@ -1829,9 +1832,9 @@ static void Slider1Callback(w, clientData, callData)
 
 /* ARGSUSED */
 
-static void Slider2Callback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void Slider2Callback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     XmScaleCallbackStruct *scaleData = (XmScaleCallbackStruct *) callData;
@@ -1846,6 +1849,8 @@ static void Slider2Callback(w, clientData, callData)
 	case CSBSpaceHSB:
 	    csb->csb.current_color.saturation = scaleData->value / 100.0;
 	    break;
+	case CSBSpaceGray:
+	    break;
     }
 
     UpdateColorSpaces(csb, csb->csb.current_space);
@@ -1855,9 +1860,9 @@ static void Slider2Callback(w, clientData, callData)
 
 /* ARGSUSED */
 
-static void Slider3Callback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void Slider3Callback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     XmScaleCallbackStruct *scaleData = (XmScaleCallbackStruct *) callData;
@@ -1872,6 +1877,8 @@ static void Slider3Callback(w, clientData, callData)
 	case CSBSpaceHSB:
 	    csb->csb.current_color.brightness = scaleData->value / 100.0;
 	    break;
+	case CSBSpaceGray:
+	    break;
     }
 
     UpdateColorSpaces(csb, csb->csb.current_space);
@@ -1881,9 +1888,9 @@ static void Slider3Callback(w, clientData, callData)
 
 /* ARGSUSED */
 
-static void Slider4Callback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void Slider4Callback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     XmScaleCallbackStruct *scaleData = (XmScaleCallbackStruct *) callData;
@@ -1895,8 +1902,7 @@ static void Slider4Callback(w, clientData, callData)
     FillPatch(csb);
 }
 
-static void FillPatch(csb)
-    ColorSelectionBoxWidget csb;
+static void FillPatch(ColorSelectionBoxWidget csb)
 {
     Colormap c;
     XColor xc;
@@ -1937,9 +1943,9 @@ static void FillPatch(csb)
 
 /* ARGSUSED */
 
-static void FillPatchCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void FillPatchCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     Dimension height, width;
@@ -1994,8 +2000,7 @@ static void FillPatchCallback(w, clientData, callData)
 Corporation, Maynard, Massachusetts, and the Massachusetts Institute of
 Technology, Cambridge, Massachusetts. */
 
-static String GetRootDirName(buf)
-     String buf;
+static String GetRootDirName(String buf)
 {
 #ifndef X_NOT_POSIX
      uid_t uid;
@@ -2011,8 +2016,9 @@ static String GetRootDirName(buf)
 
      if (ptr == NULL) {
         if (!(ptr = getenv("HOME"))) {
-            if (ptr = getenv("USER")) pw = getpwnam(ptr);
-            else {
+            if ((ptr = getenv("USER")) != 0) {
+		pw = getpwnam(ptr);
+            } else {
                 uid = getuid();
                 pw = getpwuid(uid);
             }
@@ -2034,8 +2040,7 @@ static String GetRootDirName(buf)
      return buf;
 }
 
-static void AllocateDock(csb)
-    ColorSelectionBoxWidget csb;
+static void AllocateDock(ColorSelectionBoxWidget csb)
 {
     int entry;
 
@@ -2054,8 +2059,7 @@ static void AllocateDock(csb)
     }
 }
 
-static void InitializeDock(csb)
-    ColorSelectionBoxWidget csb;
+static void InitializeDock(ColorSelectionBoxWidget csb)
 {
     String dockEnv;
     char homeDir[PATH_BUF_SIZE];
@@ -2106,8 +2110,7 @@ static void InitializeDock(csb)
 #undef CHECK
 }
 
-static void SaveDockContents(csb)
-    ColorSelectionBoxWidget csb;
+static void SaveDockContents(ColorSelectionBoxWidget csb)
 {
     String dockEnv;
     char homeDir[PATH_BUF_SIZE];
@@ -2144,9 +2147,9 @@ static void SaveDockContents(csb)
 
 /* ARGSUSED */
 
-static void DrawDockCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void DrawDockCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
 
@@ -2155,8 +2158,7 @@ static void DrawDockCallback(w, clientData, callData)
     DrawDock(csb);
 }
 
-static void DrawDock(csb)
-    ColorSelectionBoxWidget csb;
+static void DrawDock(ColorSelectionBoxWidget csb)
 {
     Dimension height;
     float w, h;
@@ -2194,10 +2196,11 @@ static void DrawDock(csb)
     if (!didAny) _DPSCShowFillMe(csb->csb.context, csb->csb.fill_me);
 }
 
-static void StoreColorInDock(csb, x_offset, y_offset, dockHeight)
-    ColorSelectionBoxWidget csb;
-    int x_offset, y_offset;
-    Dimension dockHeight;
+static void StoreColorInDock(
+    ColorSelectionBoxWidget csb,
+    int x_offset,
+    int y_offset,
+    Dimension dockHeight)
 {
     int i, lines, row, col;
 
@@ -2219,11 +2222,11 @@ static void StoreColorInDock(csb, x_offset, y_offset, dockHeight)
 
 /* ARGSUSED */
 
-static void DockPress(w, data, event, goOn)
-    Widget w;
-    XtPointer data;
-    XEvent *event;
-    Boolean *goOn;
+static void DockPress(
+    Widget w,
+    XtPointer data,
+    XEvent *event,
+    Boolean *goOn)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) data;
     Dimension height;
@@ -2250,8 +2253,7 @@ static void DockPress(w, data, event, goOn)
     SetSliders(csb);
 }
 
-static void InitializePalettes(csb)
-    ColorSelectionBoxWidget csb;
+static void InitializePalettes(ColorSelectionBoxWidget csb)
 {
     int k;
 
@@ -2265,8 +2267,7 @@ static void InitializePalettes(csb)
     }
 }
 
-static void InvalidatePalette(csb)
-    ColorSelectionBoxWidget csb;
+static void InvalidatePalette(ColorSelectionBoxWidget csb)
 {
     int len;
     char *buf;
@@ -2288,10 +2289,11 @@ static void InvalidatePalette(csb)
     XtVaSetValues(w, XtVaTypedArg, XmNlabelString, XtRString, buf, len, NULL);
 }
 
-static void DoPalette(csb, pixelWidth, w, h)
-    ColorSelectionBoxWidget csb;
-    Dimension pixelWidth;
-    float w, h;
+static void DoPalette(
+    ColorSelectionBoxWidget csb,
+    Dimension pixelWidth,
+    float w,
+    float h)
 {
     char whichFunc[25];
     int steps;
@@ -2357,8 +2359,7 @@ static void DoPalette(csb, pixelWidth, w, h)
     }
 }
 
-static void DrawPalette(csb)
-    ColorSelectionBoxWidget csb;
+static void DrawPalette(ColorSelectionBoxWidget csb)
 {
     DrawPaletteCallback(csb->csb.palette_child,
 			(XtPointer) csb, (XtPointer) NULL);
@@ -2366,9 +2367,9 @@ static void DrawPalette(csb)
 
 /* ARGSUSED */
 
-static void DrawPaletteCallback(wid, clientData, callData)
-    Widget wid;
-    XtPointer clientData, callData;
+static void DrawPaletteCallback(
+    Widget wid,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     Dimension width, height;
@@ -2403,11 +2404,11 @@ static void DrawPaletteCallback(wid, clientData, callData)
 
 /* ARGSUSED */
 
-static void PalettePress(w, data, event, goOn)
-    Widget w;
-    XtPointer data;
-    XEvent *event;
-    Boolean *goOn;
+static void PalettePress(
+    Widget w,
+    XtPointer data,
+    XEvent *event,
+    Boolean *goOn)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) data;
     Dimension width;
@@ -2520,9 +2521,9 @@ static void PalettePress(w, data, event, goOn)
 
 /* ARGSUSED */
 
-static void DoEyedropCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void DoEyedropCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) clientData;
     Pixmap eyedropBitmap, eyedropMaskBitmap;
@@ -2598,11 +2599,11 @@ static void DoEyedropCallback(w, clientData, callData)
 
 /* ARGSUSED */
 
-static void EyedropPointer(w, data, event, goOn)
-    Widget w;
-    XtPointer data;
-    XEvent *event;
-    Boolean *goOn;
+static void EyedropPointer(
+    Widget w,
+    XtPointer data,
+    XEvent *event,
+    Boolean *goOn)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) data;
     XColor fg, black;
@@ -2612,7 +2613,7 @@ static void EyedropPointer(w, data, event, goOn)
     XWindowAttributes att;
     XImage *image;
     Pixel pixel;
-    Colormap colormap;
+    Colormap colormap = 0;
     Display *dpy = XtDisplay(w);
 
     if (!csb->csb.eyedrop_grabbed) return;
@@ -2679,11 +2680,11 @@ static void EyedropPointer(w, data, event, goOn)
 
 /* ARGSUSED */
 
-static void PatchPress(w, data, event, goOn)
-    Widget w;
-    XtPointer data;
-    XEvent *event;
-    Boolean *goOn;
+static void PatchPress(
+    Widget w,
+    XtPointer data,
+    XEvent *event,
+    Boolean *goOn)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) data;
     Pixmap squareBitmap, squareMaskBitmap;
@@ -2724,11 +2725,11 @@ static void PatchPress(w, data, event, goOn)
 
 /* ARGSUSED */
 
-static void PatchRelease(w, data, event, goOn)
-    Widget w;
-    XtPointer data;
-    XEvent *event;
-    Boolean *goOn;
+static void PatchRelease(
+    Widget w,
+    XtPointer data,
+    XEvent *event,
+    Boolean *goOn)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) data;
     Dimension width, height;
@@ -2752,9 +2753,9 @@ static void PatchRelease(w, data, event, goOn)
     }
 }
 
-static void GetVisualInfo(csb, visual)
-    ColorSelectionBoxWidget csb;
-    Visual **visual;
+static void GetVisualInfo(
+    ColorSelectionBoxWidget csb,
+    Visual **visual)
 {
     Widget w = (Widget) csb;
     XVisualInfo *vip, viproto;
@@ -2780,8 +2781,7 @@ static void GetVisualInfo(csb, visual)
     if (n > 0) XFree((char *) vip);
 }
 
-static void SetBackground(csb)
-    ColorSelectionBoxWidget csb;
+static void SetBackground(ColorSelectionBoxWidget csb)
 {
     Colormap c;
     XColor xc;
@@ -2834,10 +2834,10 @@ static void SetBackground(csb)
 
 /* ARGSUSED */
 
-static void Initialize(request, new, args, num_args)
-    Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
+static void Initialize(
+    Widget request, Widget new,
+    ArgList args,
+    Cardinal *num_args)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) new;
     Bool inited;
@@ -2929,8 +2929,7 @@ static void Initialize(request, new, args, num_args)
     SetRendering(csb);
 }
 
-static void Destroy(widget)
-    Widget widget;
+static void Destroy(Widget widget)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) widget;
     Display *dpy = XtDisplay(csb);
@@ -2991,8 +2990,7 @@ static void Destroy(widget)
     if (csb->csb.gray_pixmap != None) XFreePixmap(dpy, csb->csb.gray_pixmap);
 }
 
-static void ChangeManaged(w)
-    Widget w;
+static void ChangeManaged(Widget w)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) w;
 
@@ -3002,9 +3000,9 @@ static void ChangeManaged(w)
 
 /* ARGSUSED */
 
-static XtGeometryResult GeometryManager(w, desired, allowed)
-    Widget w;
-    XtWidgetGeometry *desired, *allowed;
+static XtGeometryResult GeometryManager(
+    Widget w,
+    XtWidgetGeometry *desired, XtWidgetGeometry *allowed)
 {
 #define WANTS(flag) (desired->request_mode & flag)
 
@@ -3022,8 +3020,7 @@ static XtGeometryResult GeometryManager(w, desired, allowed)
 #undef WANTS
 }
 
-static void SetColorSpace(csb)
-    ColorSelectionBoxWidget csb;
+static void SetColorSpace(ColorSelectionBoxWidget csb)
 {
     switch(csb->csb.current_space) {
 	case CSBSpaceRGB:	
@@ -3044,17 +3041,17 @@ static void SetColorSpace(csb)
     }
 }
 
-static void SetRendering(csb)
-    ColorSelectionBoxWidget csb;
+static void SetRendering(ColorSelectionBoxWidget csb)
 {
     Widget w;
 
     switch(csb->csb.current_rendering) {
-	case CSBDisplayX:
-	    w = XtNameToWidget((Widget) csb, "*displayX");
-	    break;
+	default:
 	case CSBDisplayDPS:
 	    w = XtNameToWidget((Widget) csb, "*displayDPS");
+	    break;
+	case CSBDisplayX:
+	    w = XtNameToWidget((Widget) csb, "*displayX");
 	    break;
 	case CSBDisplayBoth:
 	    w = XtNameToWidget((Widget) csb, "*displayBoth");
@@ -3067,8 +3064,7 @@ static void SetRendering(csb)
     }
 }
 
-static void SetPalette(csb)
-    ColorSelectionBoxWidget csb;
+static void SetPalette(ColorSelectionBoxWidget csb)
 {
     Widget w;
     char buf[10];
@@ -3082,9 +3078,9 @@ static void SetPalette(csb)
     DrawPalette(csb);
 }
 
-static void SetBaseGState(csb, visual)
-    ColorSelectionBoxWidget csb;
-    Visual *visual;
+static void SetBaseGState(
+    ColorSelectionBoxWidget csb,
+    Visual *visual)
 {
     XStandardColormap colorCube, grayRamp;
     int match;
@@ -3121,16 +3117,16 @@ static void SetBaseGState(csb, visual)
 
 /* ARGSUSED */
 
-static Boolean SetValues(old, req, new, args, num_args)
-    Widget old, req, new;
-    ArgList args;
-    Cardinal *num_args;
+static Boolean SetValues(
+    Widget old, Widget req, Widget new,
+    ArgList args,
+    Cardinal *num_args)
 {
     ColorSelectionBoxWidget oldcsb = (ColorSelectionBoxWidget) old;
     ColorSelectionBoxWidget newcsb = (ColorSelectionBoxWidget) new;
     Bool inited;
     char buf[10];
-    Widget w;
+    Widget w = 0;
     int i;
 
 #define NE(field) newcsb->csb.field != oldcsb->csb.field
@@ -3266,10 +3262,10 @@ static Boolean SetValues(old, req, new, args, num_args)
 #undef NE
 }
 
-static void Realize(w, mask, attr)
-    Widget w;
-    XtValueMask *mask;
-    XSetWindowAttributes *attr;
+static void Realize(
+    Widget w,
+    XtValueMask *mask,
+    XSetWindowAttributes *attr)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) w;
     Visual *v;
@@ -3283,19 +3279,18 @@ static void Realize(w, mask, attr)
     _DPSCGetInvCTM(csb->csb.context, csb->csb.itransform);
 }
 
-static void Resize(widget)
-    Widget widget;
+static void Resize(Widget widget)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) widget;
 
     XtResizeWidget(csb->csb.form_child, csb->core.width, csb->core.height, 0);
 }
 
-static Boolean SetColor(w, space, c1, c2, c3, c4, setSpace)
-    Widget w;
-    CSBColorSpace space;
-    double c1, c2, c3, c4;
-    Bool setSpace;
+static Boolean SetColor(
+    Widget w,
+    CSBColorSpace space,
+    double c1, double c2, double c3, double c4,
+    Bool setSpace)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) w;
 #define CHECK(c) if ((c) > 1.0 || (c) < 0.0) return False;
@@ -3339,11 +3334,11 @@ static Boolean SetColor(w, space, c1, c2, c3, c4, setSpace)
 #undef CHECK
 }
 
-Boolean CSBSetColor(w, space, c1, c2, c3, c4, setSpace)
-    Widget w;
-    CSBColorSpace space;
-    double c1, c2, c3, c4;
-    Bool setSpace;
+Boolean CSBSetColor(
+    Widget w,
+    CSBColorSpace space,
+    double c1, double c2, double c3, double c4,
+    Bool setSpace)
 {
     XtCheckSubclass(w, colorSelectionBoxWidgetClass, NULL);
 
@@ -3351,10 +3346,10 @@ Boolean CSBSetColor(w, space, c1, c2, c3, c4, setSpace)
 	    csb_class.set_color) (w, space, c1, c2, c3, c4, setSpace);
 }
 
-static void GetColor(w, space, c1, c2, c3, c4)
-    Widget w;
-    CSBColorSpace space;
-    float *c1, *c2, *c3, *c4;
+static void GetColor(
+    Widget w,
+    CSBColorSpace space,
+    float *c1, float *c2, float *c3, float *c4)
 {
     ColorSelectionBoxWidget csb = (ColorSelectionBoxWidget) w;
 
@@ -3381,10 +3376,10 @@ static void GetColor(w, space, c1, c2, c3, c4)
     }
 }
 
-void CSBGetColor(w, space, c1, c2, c3, c4)
-    Widget w;
-    CSBColorSpace space;
-    float *c1, *c2, *c3, *c4;
+void CSBGetColor(
+    Widget w,
+    CSBColorSpace space,
+    float *c1, float *c2, float *c3, float *c4)
 {
     XtCheckSubclass(w, colorSelectionBoxWidgetClass, NULL);
 

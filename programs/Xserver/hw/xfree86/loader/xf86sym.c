@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.141 2000/05/18 23:21:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.143 2000/05/31 07:15:07 eich Exp $ */
 
 /*
  *
@@ -54,8 +54,6 @@
 #include "xf86Priv.h"
 #include "vbe.h"
 #include "xf86sbusBus.h"
-
-extern xf86MonPtr ConfiguredMonitor;
 
 /* XXX Should get all of these from elsewhere */
 #if defined (PowerMAX_OS)
@@ -261,6 +259,10 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86IsPrimaryIsa)
    SYMFUNC(xf86CheckPciGAType)
    SYMFUNC(xf86PrintResList)
+   SYMFUNC(xf86AddResToList)
+   SYMFUNC(xf86JoinResLists)
+   SYMFUNC(xf86DupResList)
+   SYMFUNC(xf86FreeResList)
    SYMFUNC(xf86ClaimFixedResources)
    SYMFUNC(xf86AddEntityToScreen)
    SYMFUNC(xf86RemoveEntityFromScreen)

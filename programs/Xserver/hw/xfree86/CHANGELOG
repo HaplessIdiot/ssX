@@ -1,3 +1,9 @@
+XFre86 4.0c (?? June 2000)
+ 230. Fix xdm when PAM is not available (Marc La France).
+ 229. Fix int10 bug on non-PC platforms (Marc La France).
+ 228. Finish prototyping of DPS libraries.  Fix argument promotions in
+      pswrap.  Fix yytext portability problem.  Fix non-standard format
+      in pswrap (#3941, #3942, Nomura Takaaki, Thomas Dickey).
  227. Fixed FP chipset handling in Trident driver. LCD-CRT switching
       should work now (Egbert Eich).
  226. Modified device detection on PCI bus to handle Host-to-PCI bridges
@@ -10431,4 +10437,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1170 2000/05/31 07:14:54 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1172 2000/06/06 18:07:33 eich Exp $

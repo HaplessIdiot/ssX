@@ -35,10 +35,11 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <DPS/dpsXclient.h>
 #include <DPS/dpsops.h>
-#include "DPS/dpsXuserpath.h"
+#include <DPS/dpsXuserpath.h>
 
 typedef struct _t_NumStrHeader {
     unsigned char type;

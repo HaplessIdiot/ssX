@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef _DPSScrolledWindow_h
 #define _DPSScrolledWindow_h
@@ -148,29 +149,6 @@ typedef struct _DPSScrolledWindowRec *DPSScrolledWindowWidget;
 
 /* Interface routines */
 
-#ifdef _NO_PROTO
-
-extern void DSWSetScale();
-extern void DSWScrollPoint();
-extern void DSWScrollBy();
-extern void DSWScrollTo();
-extern void DSWSetScaleAndScroll();
-extern void DSWConvertXToPS();
-extern void DSWConvertPSToX();
-extern void DSWAddToDirtyArea();
-extern Boolean DSWTakeFeedbackPixmap();
-extern Boolean DSWGiveFeedbackPixmap();
-extern void DSWStartFeedbackDrawing();
-extern void DSWEndFeedbackDrawing();
-extern void DSWSetFeedbackDirtyArea();
-extern void DSWFinishPendingDrawing();
-extern void DSWAbortPendingDrawing();
-extern void DSWGetDrawingInfo();
-extern void DSWUpdateDrawing();
-extern void DSWGetScrollInfo();
-
-#else /* _NO_PROTO */
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -209,8 +187,6 @@ extern void DSWGetScrollInfo(Widget w, int *h_value, int *h_size, int *h_max,
 #if defined(__cplusplus) || defined(c_plusplus)
 };
 #endif
-
-#endif /* _NO_PROTO */
 
 #endif /* _DPSScrolledWindow_h */
 /* DON'T ADD ANYTHING AFTER THIS #endif */

@@ -22,7 +22,7 @@
  *
  * Author:  Dale Tonogai, Network Computing Devices
  */
-/* $XFree86: xc/lib/lbxutil/delta/lbxdelta.c,v 1.3 1999/03/02 11:49:23 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/delta/lbxdelta.c,v 1.4 2000/05/18 23:46:16 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -88,7 +88,7 @@ LBXFreeDeltaCache(LBXDeltasPtr pcache)
 }
 
 static int 
-BytesDiff(char *ptr1, char *ptr2,
+BytesDiff(unsigned char *ptr1, unsigned char *ptr2,
 	  int  n,
 	  int  maxn)
 {

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mi/mioverlay.c,v 3.7 2000/05/20 18:04:28 mvojkovi Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -720,7 +720,7 @@ miOverlayMarkUnrealizedWindow(
             (* pChild->drawable.pScreen->ClipNotify)(pChild, 0, 0);
         REGION_EMPTY(pChild->drawable.pScreen, &pChild->borderClip);
 	if((pTree = MIOVERLAY_GET_WINDOW_TREE(pChild))) {
-	    if(pTree->valdata != UnmapValData) {
+	    if(pTree->valdata != (miOverlayValDataPtr)UnmapValData) {
 		REGION_EMPTY(pChild->drawable.pScreen, &pTree->clipList);
 		REGION_EMPTY(pChild->drawable.pScreen, &pTree->borderClip);
 	    }

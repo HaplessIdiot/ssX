@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef _FontSamplerP_H
 #define _FontSamplerP_H
@@ -136,12 +137,6 @@ typedef struct _FontSamplerRec {
     FontSamplerPart		sampler;
 } FontSamplerRec;
 
-#ifdef _NO_PROTO
-
-typedef void (*FSBCancelProc) ();
-
-#else /* _NO_PROTO */
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -151,7 +146,6 @@ typedef void (*FSBCancelProc) (Widget w);
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-#endif /* _NO_PROTO */
 
 #define InheritCancel ((FSBCancelProc) _XtInherit)
 

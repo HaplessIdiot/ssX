@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.33 2000/04/20 21:28:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.35 2000/05/31 07:15:00 eich Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -309,12 +309,8 @@ configureScreenSection (int screennum)
     sprintf(ptr->scrn_identifier, "Screen%d", screennum);
     ptr->scrn_monitor_str = xf86confmalloc(19);
     sprintf(ptr->scrn_monitor_str, "Monitor%d", screennum);
-    {
-	int len = xf86strlen(DevToConfig[screennum].GDev.identifier) + 1;
-	ptr->scrn_device_str = xf86confmalloc(len);
-	xf86strncpy(ptr->scrn_device_str,
-		    DevToConfig[screennum].GDev.identifier,len);
-    }
+    ptr->scrn_device_str = xf86confmalloc(16);
+    sprintf(ptr->scrn_device_str, "Card%d", screennum);
 
     for (i=0; i<6; i++)
     {
@@ -342,7 +338,7 @@ configureDeviceSection (int screennum)
     /* Move device info to parser structure */
     sprintf(identifier, "Card%d", screennum);
     ptr->dev_identifier = strdup(identifier);
-    ptr->dev_identifier = DevToConfig[screennum].GDev.identifier;
+/*    ptr->dev_identifier = DevToConfig[screennum].GDev.identifier;*/
     ptr->dev_vendor = DevToConfig[screennum].GDev.vendor;
     ptr->dev_board = DevToConfig[screennum].GDev.board;
     ptr->dev_chipset = DevToConfig[screennum].GDev.chipset;

@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -54,12 +55,13 @@
 #include <Xm/DrawingA.h>
 #include <Xm/ScrolledW.h>
 #include <Xm/ScrollBar.h>
-#include "DPS/dpsXclient.h"
+
+#include <DPS/dpsXclient.h>
 #include "dpsXcommonI.h"
-#include "DPS/dpsXshare.h"
+#include <DPS/dpsXshare.h>
 #include "DSWwraps.h"
 #include <stdio.h>
-#include "DPS/DPSScrollWP.h"
+#include <DPS/DPSScrollWP.h>
 
 #undef MIN
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -149,29 +151,50 @@ static XtResource resources[] = {
 	Offset(resize_callback), XtRCallback, (XtPointer) NULL},
 };
 
-static void ClassPartInitialize(), Initialize(), Destroy(),
-	Realize(), Resize();
-static Boolean SetValues();
-static XtGeometryResult GeometryManager(), QueryGeometry();
-
-static void SetScale(), ScrollPoint(), ScrollBy(), ScrollTo(),
-	SetScaleAndScroll(), ConvertXToPS(), ConvertPSToX(),
-	AddToDirtyArea(), StartFeedbackDrawing(), EndFeedbackDrawing(),
-	SetFeedbackDirtyArea(), FinishPendingDrawing(),
-	AbortPendingDrawing(), GetDrawingInfo(), UpdateDrawing(),
-	GetScrollInfo();
-
-static Boolean TakeFeedbackPixmap(), GiveFeedbackPixmap();
-
-static void ConvertToX(), ConvertToPS(), ConvertToOrigPS(),
-	AddRectsToPending(), AddExposureToPending(), 
-	AddUserSpaceRectsToPending(),
-	CopyRectsToCurrentDrawing(), CallFeedbackCallback(),
-	CopyRectsToDirtyArea(), AddRectsToDirtyArea(), FinishDrawing(),
-	CheckFeedbackPixmap(), CopyToFeedbackPixmap();
-
-static void DrawingAreaExpose(), DrawingAreaGraphicsExpose(), ScrollMoved(),
-	HScrollCallback(), VScrollCallback();
+static Boolean GiveFeedbackPixmap(Widget w, Pixmap p, int width, int height, int depth, Screen *screen);
+static Boolean SetValues(Widget old, Widget req, Widget new, ArgList args, Cardinal *num_args);
+static Boolean TakeFeedbackPixmap(Widget w, Pixmap *p, int *width, int *height, int *depth, Screen **screen);
+static XtGeometryResult GeometryManager(Widget w, XtWidgetGeometry *desired, XtWidgetGeometry *allowed);
+static XtGeometryResult QueryGeometry(Widget w, XtWidgetGeometry *desired, XtWidgetGeometry *allowed);
+static void AbortPendingDrawing(Widget w);
+static void AddExposureToPending(DPSScrolledWindowWidget dsw, XExposeEvent *ev);
+static void AddRectsToDirtyArea(DPSScrolledWindowWidget dsw, float *newRect, int n);
+static void AddRectsToPending(DPSScrolledWindowWidget dsw, int *newRect, int n);
+static void AddToDirtyArea(Widget w, float *rect, long n);
+static void AddUserSpaceRectsToPending(DPSScrolledWindowWidget dsw, float *newRect, int n);
+static void CallFeedbackCallback(DPSScrolledWindowWidget dsw, float *r, int n);
+static void CheckFeedbackPixmap(DPSScrolledWindowWidget dsw);
+static void ClassPartInitialize(WidgetClass widget_class);
+static void ConvertPSToX(Widget w, double psX, double psY, int *xX, int *xY);
+static void ConvertToOrigPS(DPSScrolledWindowWidget dsw, int xX, int xY, float *psX, float *psY);
+static void ConvertToPS(DPSScrolledWindowWidget dsw, float xX, float xY, float *psX, float *psY);
+static void ConvertToX(DPSScrolledWindowWidget dsw, float psX, float psY, int *xX, int *xY);
+static void ConvertXToPS(Widget w, long xX, long xY, float *psX, float *psY);
+static void CopyRectsToCurrentDrawing(DPSScrolledWindowWidget dsw, float *newRect, int n);
+static void CopyRectsToDirtyArea(DPSScrolledWindowWidget dsw, float *newRect, int n);
+static void CopyToFeedbackPixmap(DPSScrolledWindowWidget dsw, float *rects, int n);
+static void Destroy(Widget widget);
+static void DrawingAreaExpose(Widget w, XtPointer clientData, XtPointer callData);
+static void DrawingAreaGraphicsExpose(Widget w, XtPointer clientData, XEvent *event, Boolean *goOn);
+static void EndFeedbackDrawing(Widget w, int restore);
+static void FinishDrawing(DPSScrolledWindowWidget dsw);
+static void FinishPendingDrawing(Widget w);
+static void GetDrawingInfo(Widget w, DSWDrawableType *type, Drawable *drawable, DPSGState *gstate, DPSContext *context);
+static void GetScrollInfo(Widget w, int *h_value, int *h_size, int *h_max, int *v_value, int *v_size, int *v_max);
+static void HScrollCallback(Widget w, XtPointer clientData, XtPointer callData);
+static void Initialize(Widget request, Widget new, ArgList args, Cardinal *num_args);
+static void Realize(Widget w, XtValueMask *mask, XSetWindowAttributes *attr);
+static void Resize(Widget w);
+static void ScrollBy(Widget w, long dx, long dy);
+static void ScrollMoved(DPSScrolledWindowWidget dsw);
+static void ScrollPoint(Widget w, double psX, double psY, long xX, long xY);
+static void ScrollTo(Widget w, long x, long y);
+static void SetFeedbackDirtyArea(Widget w, float *rects, int count, XtPointer continue_feedback_data);
+static void SetScale(Widget w, double scale, long fixedX, long fixedY);
+static void SetScaleAndScroll(Widget w, double scale, double psX, double psY, long xX, long xY);
+static void StartFeedbackDrawing(Widget w, XtPointer start_feedback_data);
+static void UpdateDrawing(Widget w, float *rects, int count);
+static void VScrollCallback(Widget w, XtPointer clientData, XtPointer callData);
 
 DPSScrolledWindowClassRec dpsScrolledWindowClassRec = {
     /* Core class part */
@@ -266,9 +289,7 @@ WidgetClass dpsScrolledWindowWidgetClass =
 
 /***** UTILITY FUNCTIONS *****/
 
-static void PrintRectList(r, num_r)
-    float *r;
-    short num_r;
+static void PrintRectList(float *r, short num_r)
 {
     int i;
 
@@ -282,11 +303,11 @@ static void PrintRectList(r, num_r)
 /* Make sure the list pointed to by r can hold n more rectangles.  Always
    grow by at least min_grow */
 
-static void GrowRectList(r, r_size, num_r, n, min_grow)
-    float **r;
-    short *r_size;
-    short num_r;
-    int n, min_grow;
+static void GrowRectList(
+    float **r,
+    short *r_size,
+    short num_r,
+    int n, int min_grow)
 {
     if (*r_size < num_r + n) {
 	if (min_grow > 1 && num_r + n - *r_size < min_grow) {
@@ -296,11 +317,11 @@ static void GrowRectList(r, r_size, num_r, n, min_grow)
     }
 }
 
-static void GrowIntRectList(r, r_size, num_r, n, min_grow)
-    int **r;
-    short *r_size;
-    short num_r;
-    int n, min_grow;
+static void GrowIntRectList(
+    int **r,
+    short *r_size,
+    short num_r,
+    int n, int min_grow)
 {
     if (*r_size < num_r + n) {
 	if (min_grow > 1 && num_r + n - *r_size < min_grow) {
@@ -310,8 +331,7 @@ static void GrowIntRectList(r, r_size, num_r, n, min_grow)
     }
 }
 
-static Boolean Intersects(r1, r2)
-    float *r1, *r2;
+static Boolean Intersects(float *r1, float *r2)
 {
     if (RIGHT(r1) <= LEFT(r2)) return False;
     if (RIGHT(r2) <= LEFT(r1)) return False;
@@ -323,8 +343,7 @@ static Boolean Intersects(r1, r2)
 
 /* Subtract sub from src, putting result into dst.  Return rectangle count */
 
-static int Subtract(src, sub, dst)
-    float *src, *sub, *dst;
+static int Subtract(float *src, float *sub, float *dst)
 {
     int n = 0;
 
@@ -372,8 +391,7 @@ static int Subtract(src, sub, dst)
     return n;
 }
 
-static void Copy(src, dst)
-    float *src, *dst;
+static void Copy(float *src, float *dst)
 {
     LEFT(dst) = LEFT(src);
     BOTTOM(dst) = BOTTOM(src);
@@ -381,8 +399,7 @@ static void Copy(src, dst)
     HEIGHT(dst) = HEIGHT(src);
 }
 
-static void Intersection(r1, r2, dst)
-    float *r1, *r2, *dst;
+static void Intersection(float *r1, float *r2, float *dst)
 {
     LEFT(dst) = MAX(LEFT(r1), LEFT(r2));
     BOTTOM(dst) = MAX(BOTTOM(r1), BOTTOM(r2));
@@ -398,12 +415,12 @@ static short rbuf_size = 0;
 
 /* Replace the rectangle list in src with src minus sub */
 
-static void SubtractRects(src, src_size, num_src, sub, num_sub)
-    float **src;
-    short *src_size;
-    short *num_src;
-    float *sub;
-    int num_sub;
+static void SubtractRects(
+    float **src,
+    short *src_size,
+    short *num_src,
+    float *sub,
+    int num_sub)
 {
     short num_rbuf;
     float *r;
@@ -447,12 +464,12 @@ static void SubtractRects(src, src_size, num_src, sub, num_sub)
 
 /* Replace list r1 with the intersection of r1 and r2 */
 
-static void IntersectRects(r1, r1_size, num_r1, r2, num_r2)
-    float **r1;
-    short *r1_size;
-    short *num_r1;
-    float *r2;
-    int num_r2;
+static void IntersectRects(
+    float **r1,
+    short *r1_size,
+    short *num_r1,
+    float *r2,
+    int num_r2)
 {
     short num_rbuf = 0;
     float *r;
@@ -479,9 +496,7 @@ static void IntersectRects(r1, r1_size, num_r1, r2, num_r2)
     *num_r1 = num_rbuf;
 }
 
-static void SimplifyRects(rect, num)
-    float *rect;
-    register short *num;
+static void SimplifyRects(float *rect, short *num)
 {
     int i, j, k;
     float *r, *r1;
@@ -513,9 +528,7 @@ LOOPEND:;
     }
 }
 
-static void ComputeOffsets(dsw, dx, dy)
-    DPSScrolledWindowWidget dsw;
-    int *dx, *dy;
+static void ComputeOffsets(DPSScrolledWindowWidget dsw, int *dx, int *dy)
 {
     if (dsw->sw.doing_feedback && dsw->sw.feedback_pixmap != None) {
 	*dx = *dy = 0;
@@ -527,8 +540,7 @@ static void ComputeOffsets(dsw, dx, dy)
     }
 }
 
-static void ClassPartInitialize(widget_class)
-    WidgetClass widget_class;
+static void ClassPartInitialize(WidgetClass widget_class)
 {
     register DPSScrolledWindowWidgetClass wc =
 	    (DPSScrolledWindowWidgetClass) widget_class;
@@ -599,8 +611,7 @@ static void ClassPartInitialize(widget_class)
     }
 }
 
-static void CreateChildren(dsw)
-    DPSScrolledWindowWidget dsw;
+static void CreateChildren(DPSScrolledWindowWidget dsw)
 {
     Widget w;
 
@@ -648,10 +659,7 @@ static void CreateChildren(dsw)
 
 /* ARGSUSED */
 
-static void Initialize(request, new, args, num_args)
-    Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
+static void Initialize(Widget request, Widget new, ArgList args, Cardinal *num_args)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) new;
     XGCValues gcVal;
@@ -730,8 +738,7 @@ static void Initialize(request, new, args, num_args)
 			       &gcVal);
 }
 
-static void Destroy(widget)
-    Widget widget;
+static void Destroy(Widget widget)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) widget;
 
@@ -769,8 +776,7 @@ static void Destroy(widget)
     XtReleaseGC(widget, dsw->sw.no_ge_gc);
 }
 
-static void SetOriginAndGetTransform(dsw)
-    DPSScrolledWindowWidget dsw;
+static void SetOriginAndGetTransform(DPSScrolledWindowWidget dsw)
 {
     float psX, psY;
 
@@ -781,8 +787,7 @@ static void SetOriginAndGetTransform(dsw)
 				   &dsw->sw.x_offset, &dsw->sw.y_offset);
 }
 
-static void SetPixmapOrigin(dsw)
-    DPSScrolledWindowWidget dsw;
+static void SetPixmapOrigin(DPSScrolledWindowWidget dsw)
 {
     float psX, psY;
 
@@ -791,8 +796,7 @@ static void SetPixmapOrigin(dsw)
 		    dsw->sw.origin_x, dsw->sw.origin_y);
 }
 
-static void SetPixmapOffset(dsw)
-    DPSScrolledWindowWidget dsw;
+static void SetPixmapOffset(DPSScrolledWindowWidget dsw)
 {
     int ox, oy;
 
@@ -807,11 +811,9 @@ static void SetPixmapOffset(dsw)
 }
 
 static Boolean pixmapError;
-static int (*oldHandler)();
+static int (*oldHandler)(Display *, XErrorEvent *);
 
-static int PixmapHandler(dpy, error)
-    Display *dpy;
-    XErrorEvent *error;
+static int PixmapHandler(Display *dpy, XErrorEvent *error)
 {
     if (error->error_code == BadAlloc &&
         error->request_code == X_CreatePixmap) {
@@ -820,23 +822,22 @@ static int PixmapHandler(dpy, error)
     } else return (*oldHandler) (dpy, error);
 }
 
-static Pixmap AllocPixmap(dsw, w, h)
-    DPSScrolledWindowWidget dsw;
-    unsigned int w, h;
+static Pixmap AllocPixmap(DPSScrolledWindowWidget dsw, unsigned w, unsigned h)
 {
     Pixmap p;
     unsigned int dBytes;
     Widget wid = dsw->sw.drawing_area;
+    unsigned area = (w * h);
 
     if (dsw->sw.pixmap_limit > 0) {
-	if (w * h > dsw->sw.pixmap_limit) return None;
-    } else if (dsw->sw.pixmap_limit < 0 &&
-	       w * h > dsw->sw.unscaled_width * dsw->sw.unscaled_height &&
-	       w * h > wid->core.width * wid->core.height) return None;
+	if (area > (unsigned)dsw->sw.pixmap_limit) return None;
+    } else if (dsw->sw.pixmap_limit < 0
+       && area > (unsigned)(dsw->sw.unscaled_width * dsw->sw.unscaled_height)
+       && area > (unsigned)(wid->core.width * wid->core.height)) return None;
 
     if (dsw->sw.absolute_pixmap_limit > 0) {
 	dBytes = (wid->core.depth + 7) / 8;	/* Convert into bytes */
-	if (w * h * dBytes > dsw->sw.absolute_pixmap_limit * 1024) {
+	if (area * dBytes > (unsigned)dsw->sw.absolute_pixmap_limit * 1024) {
 	    return None;
 	}
     }
@@ -852,8 +853,7 @@ static Pixmap AllocPixmap(dsw, w, h)
     else return p;
 }
 
-static void CreateBackingPixmap(dsw)
-    DPSScrolledWindowWidget dsw;
+static void CreateBackingPixmap(DPSScrolledWindowWidget dsw)
 {
     Pixmap p;
 
@@ -884,8 +884,7 @@ static void CreateBackingPixmap(dsw)
     if (p == None) dsw->sw.pixmap_width = dsw->sw.pixmap_height = 0;
 }
 
-static void FreeBackingPixmap(dsw)
-    DPSScrolledWindowWidget dsw;
+static void FreeBackingPixmap(DPSScrolledWindowWidget dsw)
 {
     if (dsw->sw.backing_pixmap == None) return;
     XFreePixmap(XtDisplay(dsw), dsw->sw.backing_pixmap);
@@ -895,13 +894,13 @@ static void FreeBackingPixmap(dsw)
     XDPSFreeContextGState(dsw->sw.context, dsw->sw.backing_gstate);
 }    
 
-static void SetDrawingAreaPosition(dsw, ix, iy, vx, vy, setOrigin)
-    DPSScrolledWindowWidget dsw;
-    float ix;
-    float iy;
-    int vx;
-    int vy;
-    Boolean setOrigin;
+static void SetDrawingAreaPosition(
+    DPSScrolledWindowWidget dsw,
+    float ix,
+    float iy,
+    int vx,
+    int vy,
+    Boolean setOrigin)
 {
     int xoff, yoff;
     int hSize, vSize;
@@ -986,9 +985,9 @@ static void SetDrawingAreaPosition(dsw, ix, iy, vx, vy, setOrigin)
     }
 }
 
-static void DrawBackground(dsw, which)
-    DPSScrolledWindowWidget dsw;
-    DSWDrawableType which;
+static void DrawBackground(
+    DPSScrolledWindowWidget dsw,
+    DSWDrawableType which)
 {
     DSWExposeCallbackRec e;
 
@@ -1038,9 +1037,9 @@ static void DrawBackground(dsw, which)
     DPSinitviewclip(dsw->sw.context);
 }
 
-static void ClipToDrawingSize(dsw, which)
-    DPSScrolledWindowWidget dsw;
-    DSWDrawableType which;
+static void ClipToDrawingSize(
+    DPSScrolledWindowWidget dsw,
+    DSWDrawableType which)
 {
     int i;
     float r[4];
@@ -1091,11 +1090,11 @@ static void ClipToDrawingSize(dsw, which)
     }
 }    
 
-static DSWResults ClipAndDraw(dsw, which, howMuch, first)
-    DPSScrolledWindowWidget dsw;
-    DSWDrawableType which;
-    DSWDirections howMuch;
-    Boolean first;
+static DSWResults ClipAndDraw(
+    DPSScrolledWindowWidget dsw,
+    DSWDrawableType which,
+    DSWDirections howMuch,
+    Boolean first)
 {
     DSWExposeCallbackRec e;
 
@@ -1157,9 +1156,9 @@ static DSWResults ClipAndDraw(dsw, which, howMuch, first)
     return e.results;
 }
 
-static void SplitExposeEvent(dsw, ev)
-    DPSScrolledWindowWidget dsw;
-    XExposeEvent *ev;
+static void SplitExposeEvent(
+    DPSScrolledWindowWidget dsw,
+    XExposeEvent *ev)
 {
     float *r;
     float llx, lly, urx, ury;
@@ -1212,10 +1211,10 @@ static void SplitExposeEvent(dsw, ev)
 
 /* ARGSUSED */
 
-static Bool CheckWatchProgressEvent(dpy, e, arg)
-    Display *dpy;
-    XEvent *e;
-    char *arg;
+static Bool CheckWatchProgressEvent(
+    Display *dpy,
+    XEvent *e,
+    char *arg)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) arg;
     
@@ -1225,8 +1224,8 @@ static Bool CheckWatchProgressEvent(dpy, e, arg)
 	    e->type == Expose);
 }
 
-static void CopyWindowToBackingPixmap(dsw)
-    DPSScrolledWindowWidget dsw;
+static void CopyWindowToBackingPixmap(
+    DPSScrolledWindowWidget dsw)
 {
     int llx, lly, urx, ury;
     XEvent e;
@@ -1285,8 +1284,8 @@ static void CopyWindowToBackingPixmap(dsw)
 /* Subtract the window area from the dirty area, and make the
    result be the new current drawing list */
 
-static void SetCurrentDrawingToBackground(dsw)
-    DPSScrolledWindowWidget dsw;
+static void SetCurrentDrawingToBackground(
+    DPSScrolledWindowWidget dsw)
 {
     int i;
     float r[4];
@@ -1309,8 +1308,7 @@ static void SetCurrentDrawingToBackground(dsw)
     dsw->sw.num_current_drawing = dsw->sw.num_dirty_areas;
 }
 
-static void CopyPendingExpose(dsw)
-    DPSScrolledWindowWidget dsw;
+static void CopyPendingExpose(DPSScrolledWindowWidget dsw)
 {
     int dx, dy;
     int i;
@@ -1329,10 +1327,10 @@ static void CopyPendingExpose(dsw)
     dsw->sw.num_pending_expose = dsw->sw.num_pending_dirty = 0;
 }
 
-static void UpdateWindowFromBackingPixmap(dsw, rects, n)
-    DPSScrolledWindowWidget dsw;
-    float *rects;
-    int n;
+static void UpdateWindowFromBackingPixmap(
+    DPSScrolledWindowWidget dsw,
+    float *rects,
+    int n)
 {
     int dx, dy;
     int llx, lly, urx, ury;
@@ -1353,10 +1351,10 @@ static void UpdateWindowFromBackingPixmap(dsw, rects, n)
     }
 }
 
-static void UpdateWindowFromFeedbackPixmap(dsw, rects, n)
-    DPSScrolledWindowWidget dsw;
-    float *rects;
-    int n;
+static void UpdateWindowFromFeedbackPixmap(
+    DPSScrolledWindowWidget dsw,
+    float *rects,
+    int n)
 {
     int llx, lly, urx, ury;
     int i;
@@ -1376,8 +1374,7 @@ static void UpdateWindowFromFeedbackPixmap(dsw, rects, n)
 /* This is the heart of the drawing code; it does one piece of drawing.
    It can be called either directly or as a work procedure */
 
-static Boolean DoDrawing(clientData)
-    XtPointer clientData;
+static Boolean DoDrawing(XtPointer clientData)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) clientData;
     DSWResults results;
@@ -1459,8 +1456,7 @@ static Boolean DoDrawing(clientData)
     } else return False;
 }
 
-static void StartDrawing(dsw)
-    DPSScrolledWindowWidget dsw;
+static void StartDrawing(DPSScrolledWindowWidget dsw)
 {
     float r[4];
 
@@ -1504,8 +1500,7 @@ static void StartDrawing(dsw)
     }
 }
 
-static void RedisplaySliver(dsw, deltaX, deltaY)
-    DPSScrolledWindowWidget dsw;
+static void RedisplaySliver(DPSScrolledWindowWidget dsw, int deltaX, int deltaY)
 {
     float r[8];
     int xr[8];
@@ -1608,8 +1603,7 @@ static void RedisplaySliver(dsw, deltaX, deltaY)
     StartDrawing(dsw);
 }
 
-static void SetUpInitialPixmap(dsw)
-    DPSScrolledWindowWidget dsw;
+static void SetUpInitialPixmap(DPSScrolledWindowWidget dsw)
 {
     float *r = dsw->sw.dirty_areas;
     int llx, lly, urx, ury;
@@ -1658,17 +1652,14 @@ static void SetUpInitialPixmap(dsw)
 
 /* ARGSUSED */
 
-static void TimerStart(clientData, id)
-    XtPointer clientData;
-    XtIntervalId *id;
+static void TimerStart(XtPointer clientData, XtIntervalId *id)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) clientData;
 
     if (dsw->sw.drawing_stage == DSWStart) StartDrawing(dsw);
 }
 
-static void SetUpInitialInformation(dsw)
-    DPSScrolledWindowWidget dsw;
+static void SetUpInitialInformation(DPSScrolledWindowWidget dsw)
 {
     int i;
     float llx, lly, urx, ury;
@@ -1770,10 +1761,10 @@ static void SetUpInitialInformation(dsw)
     }
 }
 
-static void Realize(w, mask, attr)
-    Widget w;
-    XtValueMask *mask;
-    XSetWindowAttributes *attr;
+static void Realize(
+    Widget w,
+    XtValueMask *mask,
+    XSetWindowAttributes *attr)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
     DSWSetupCallbackRec setup;
@@ -1795,8 +1786,7 @@ static void Realize(w, mask, attr)
     SetUpInitialInformation(dsw);
 }
 
-static void AbortOrFinish(dsw)
-    DPSScrolledWindowWidget dsw;
+static void AbortOrFinish(DPSScrolledWindowWidget dsw)
 {
     DSWResults results;
     DSWDrawableType which;
@@ -1876,8 +1866,7 @@ static void AbortOrFinish(dsw)
     return;
 }
 
-static void AbortDrawing(dsw)
-    DPSScrolledWindowWidget dsw;
+static void AbortDrawing(DPSScrolledWindowWidget dsw)
 {
     DSWDrawableType which;
 
@@ -1908,8 +1897,7 @@ static void AbortDrawing(dsw)
     dsw->sw.num_pending_expose = dsw->sw.num_pending_dirty = 0;
 }
 
-static void FinishDrawing(dsw)
-    DPSScrolledWindowWidget dsw;
+static void FinishDrawing(DPSScrolledWindowWidget dsw)
 {
     DSWDrawableType which;
     
@@ -1965,9 +1953,9 @@ static void FinishDrawing(dsw)
     dsw->sw.num_dirty_areas = 0;
 }
 
-static void DoScroll(dsw, deltaX, deltaY)
-    DPSScrolledWindowWidget dsw;
-    int deltaX, deltaY;
+static void DoScroll(
+    DPSScrolledWindowWidget dsw,
+    int deltaX, int deltaY)
 {
     /* Set the PS origin in the X window to the new settings of 
        the scrollbars */
@@ -1992,9 +1980,9 @@ static void DoScroll(dsw, deltaX, deltaY)
     dsw->sw.scroll_y += deltaY;
 }
 
-static void ShiftPendingExpose(dsw, deltaX, deltaY)
-    DPSScrolledWindowWidget dsw;
-    int deltaX, deltaY;
+static void ShiftPendingExpose(
+    DPSScrolledWindowWidget dsw,
+    int deltaX, int deltaY)
 {
     int i;
     int *r;
@@ -2006,9 +1994,9 @@ static void ShiftPendingExpose(dsw, deltaX, deltaY)
     }
 }
 
-static void HScrollCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void HScrollCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) clientData;
     XmScrollBarCallbackStruct *sb = (XmScrollBarCallbackStruct *) callData;
@@ -2019,9 +2007,9 @@ static void HScrollCallback(w, clientData, callData)
     }
 }
 
-static void VScrollCallback(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void VScrollCallback(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) clientData;
     XmScrollBarCallbackStruct *sb = (XmScrollBarCallbackStruct *) callData;
@@ -2034,8 +2022,7 @@ static void VScrollCallback(w, clientData, callData)
 
 /* ARGSUSED */
 
-static void ScrollMoved(dsw)
-    DPSScrolledWindowWidget dsw;
+static void ScrollMoved(DPSScrolledWindowWidget dsw)
 {
     int deltaX, deltaY;
 
@@ -2147,9 +2134,9 @@ static void ScrollMoved(dsw)
     }
 }
 
-static void AddExposureToPending(dsw, ev)
-    DPSScrolledWindowWidget dsw;
-    XExposeEvent *ev;
+static void AddExposureToPending(
+    DPSScrolledWindowWidget dsw,
+    XExposeEvent *ev)
 {
     float *f;
     int *i;
@@ -2178,10 +2165,10 @@ static void AddExposureToPending(dsw, ev)
     dsw->sw.num_pending_expose++;
 }
 
-static void AddRectsToPending(dsw, newRect, n)
-    DPSScrolledWindowWidget dsw;
-    int *newRect;
-    int n;
+static void AddRectsToPending(
+    DPSScrolledWindowWidget dsw,
+    int *newRect,
+    int n)
 {
     int *r;
     int i;
@@ -2210,10 +2197,10 @@ static void AddRectsToPending(dsw, newRect, n)
     dsw->sw.num_pending_expose += n;
 }
 
-static void AddUserSpaceRectsToPending(dsw, newRect, n)
-    DPSScrolledWindowWidget dsw;
-    float *newRect;
-    int n;
+static void AddUserSpaceRectsToPending(
+    DPSScrolledWindowWidget dsw,
+    float *newRect,
+    int n)
 {
     int *r;
     int i;
@@ -2242,10 +2229,10 @@ static void AddUserSpaceRectsToPending(dsw, newRect, n)
     }
 }
 
-static void CopyRectsToCurrentDrawing(dsw, newRect, n)
-    DPSScrolledWindowWidget dsw;
-    float *newRect;
-    int n;
+static void CopyRectsToCurrentDrawing(
+    DPSScrolledWindowWidget dsw,
+    float *newRect,
+    int n)
 {
     float *r;
     int i;
@@ -2258,10 +2245,10 @@ static void CopyRectsToCurrentDrawing(dsw, newRect, n)
     dsw->sw.num_current_drawing = n;
 }
 
-static void CopyRectsToDirtyArea(dsw, newRect, n)
-    DPSScrolledWindowWidget dsw;
-    float *newRect;
-    int n;
+static void CopyRectsToDirtyArea(
+    DPSScrolledWindowWidget dsw,
+    float *newRect,
+    int n)
 {
     float *r;
     int i;
@@ -2273,10 +2260,10 @@ static void CopyRectsToDirtyArea(dsw, newRect, n)
     dsw->sw.num_dirty_areas = n;
 }
 
-static void AddRectsToDirtyArea(dsw, newRect, n)
-    DPSScrolledWindowWidget dsw;
-    float *newRect;
-    int n;
+static void AddRectsToDirtyArea(
+    DPSScrolledWindowWidget dsw,
+    float *newRect,
+    int n)
 {
     float *r;
     int i;
@@ -2289,10 +2276,10 @@ static void AddRectsToDirtyArea(dsw, newRect, n)
     dsw->sw.num_dirty_areas += n;
 }
 
-static void CopyRectsToPrevDirtyArea(dsw, newRect, n)
-    DPSScrolledWindowWidget dsw;
-    float *newRect;
-    int n;
+static void CopyRectsToPrevDirtyArea(
+    DPSScrolledWindowWidget dsw,
+    float *newRect,
+    int n)
 {
     float *r;
     int i;
@@ -2307,11 +2294,11 @@ static void CopyRectsToPrevDirtyArea(dsw, newRect, n)
 
 /* ARGSUSED */
 
-static void DrawingAreaGraphicsExpose(w, clientData, event, goOn)
-    Widget w;
-    XtPointer clientData;
-    XEvent *event;
-    Boolean *goOn;
+static void DrawingAreaGraphicsExpose(
+    Widget w,
+    XtPointer clientData,
+    XEvent *event,
+    Boolean *goOn)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) clientData;
     XExposeEvent *ev = (XExposeEvent *) event;
@@ -2334,8 +2321,7 @@ static void DrawingAreaGraphicsExpose(w, clientData, event, goOn)
     }
 }
 
-static Boolean MoreExposes(w)
-    Widget w;
+static Boolean MoreExposes(Widget w)
 {
     XEvent event;
 
@@ -2349,9 +2335,9 @@ static Boolean MoreExposes(w)
     return False;
 }
 
-static void DrawingAreaExpose(w, clientData, callData)
-    Widget w;
-    XtPointer clientData, callData;
+static void DrawingAreaExpose(
+    Widget w,
+    XtPointer clientData, XtPointer callData)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) clientData;
     XmDrawingAreaCallbackStruct *d = (XmDrawingAreaCallbackStruct *) callData;
@@ -2427,8 +2413,7 @@ static void DrawingAreaExpose(w, clientData, callData)
     }
 }	      
 
-static void Resize(w)
-    Widget w;
+static void Resize(Widget w)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
     DSWResizeCallbackRec r;
@@ -2547,8 +2532,7 @@ static void Resize(w)
     }
 }
 
-static void CheckFeedbackPixmap(dsw)
-    DPSScrolledWindowWidget dsw;
+static void CheckFeedbackPixmap(DPSScrolledWindowWidget dsw)
 {
     if (dsw->sw.feedback_pixmap != None &&
 	(dsw->sw.feedback_width < (int) dsw->sw.drawing_area->core.width ||
@@ -2574,8 +2558,7 @@ static void CheckFeedbackPixmap(dsw)
     }
 }
 
-static void UpdateGStates(dsw)
-    DPSScrolledWindowWidget dsw;
+static void UpdateGStates(DPSScrolledWindowWidget dsw)
 {
     /* Create graphics states for the window and backing pixmap in
        the new context */
@@ -2598,8 +2581,7 @@ static void UpdateGStates(dsw)
     }
 }
 
-static void CheckPixmapSize(dsw)
-    DPSScrolledWindowWidget dsw;
+static void CheckPixmapSize(DPSScrolledWindowWidget dsw)
 {
     Boolean freeIt = False;
     int w = dsw->sw.pixmap_width, h = dsw->sw.pixmap_height;
@@ -2616,7 +2598,7 @@ static void CheckPixmapSize(dsw)
 
     if (dsw->sw.absolute_pixmap_limit > 0) {
 	dBytes = (wid->core.depth + 7) / 8;	  /* Convert into bytes */
-	if (w * h * dBytes > dsw->sw.absolute_pixmap_limit * 1024) {
+	if (w * h * dBytes > (unsigned)dsw->sw.absolute_pixmap_limit * 1024) {
 	    freeIt = True;
 	}
     }
@@ -2629,8 +2611,7 @@ static void CheckPixmapSize(dsw)
     }
 }
 
-static void ResizeArea(dsw)
-    DPSScrolledWindowWidget dsw;
+static void ResizeArea(DPSScrolledWindowWidget dsw)
 {
     AbortDrawing(dsw);
 
@@ -2661,8 +2642,7 @@ static void ResizeArea(dsw)
     SetUpInitialInformation(dsw);
 }
 
-static void ClearDirtyAreas(dsw)
-    DPSScrolledWindowWidget dsw;
+static void ClearDirtyAreas(DPSScrolledWindowWidget dsw)
 {
     int i;
     float *r;
@@ -2677,8 +2657,7 @@ static void ClearDirtyAreas(dsw)
     }
 }
 
-static void HandleFeedbackPixmapChange(dsw)
-    DPSScrolledWindowWidget dsw;
+static void HandleFeedbackPixmapChange(DPSScrolledWindowWidget dsw)
 {
     if (!dsw->sw.use_feedback_pixmap) {
 	/* Get rid of one if we have it */
@@ -2722,10 +2701,10 @@ static void HandleFeedbackPixmapChange(dsw)
 
 /* ARGSUSED */
 
-static Boolean SetValues(old, req, new, args, num_args)
-    Widget old, req, new;
-    ArgList args;
-    Cardinal *num_args;
+static Boolean SetValues(
+    Widget old, Widget req, Widget new,
+    ArgList args,
+    Cardinal *num_args)
 {
     DPSScrolledWindowWidget olddsw = (DPSScrolledWindowWidget) old;
     DPSScrolledWindowWidget newdsw = (DPSScrolledWindowWidget) new;
@@ -2830,17 +2809,17 @@ static Boolean SetValues(old, req, new, args, num_args)
 #undef DONT_CHANGE
 }
 
-static XtGeometryResult GeometryManager(w, desired, allowed)
-    Widget w;
-    XtWidgetGeometry *desired, *allowed;
+static XtGeometryResult GeometryManager(
+    Widget w,
+    XtWidgetGeometry *desired, XtWidgetGeometry *allowed)
 {
     /* Pass geometry requests up to our parent */
     return XtMakeGeometryRequest(XtParent(w), desired, allowed);
 }
 
-static XtGeometryResult QueryGeometry(w, desired, allowed)
-    Widget w;
-    XtWidgetGeometry *desired, *allowed;
+static XtGeometryResult QueryGeometry(
+    Widget w,
+    XtWidgetGeometry *desired, XtWidgetGeometry *allowed)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
 
@@ -2848,10 +2827,10 @@ static XtGeometryResult QueryGeometry(w, desired, allowed)
     return XtQueryGeometry(dsw->sw.scrolled_window, desired, allowed);
 }
 
-static void CopyToFeedbackPixmap(dsw, rects, n)
-    DPSScrolledWindowWidget dsw;
-    float *rects;
-    int n;
+static void CopyToFeedbackPixmap(
+    DPSScrolledWindowWidget dsw,
+    float *rects,
+    int n)
 {
     int llx, lly, urx, ury;
     int dx, dy;
@@ -2871,10 +2850,10 @@ static void CopyToFeedbackPixmap(dsw, rects, n)
     }
 }
 
-static void CallFeedbackCallback(dsw, r, n)
-    DPSScrolledWindowWidget dsw;
-    float *r;
-    int n;
+static void CallFeedbackCallback(
+    DPSScrolledWindowWidget dsw,
+    float *r,
+    int n)
 {
     DSWFeedbackCallbackRec f;
 
@@ -2900,10 +2879,10 @@ static void CallFeedbackCallback(dsw, r, n)
     DPSWaitContext(dsw->sw.context);
 }
 
-static void SetScale(w, scale, fixedX, fixedY)
-    Widget w;
-    double scale;
-    long fixedX, fixedY;
+static void SetScale(
+    Widget w,
+    double scale,
+    long fixedX, long fixedY)
 {
     float psX, psY;
 
@@ -2912,10 +2891,10 @@ static void SetScale(w, scale, fixedX, fixedY)
     SetScaleAndScroll(w, scale, psX, psY, fixedX, fixedY);
 }
 
-void DSWSetScale(w, scale, fixedX, fixedY)
-    Widget w;
-    double scale;
-    long fixedX, fixedY;
+void DSWSetScale(
+    Widget w,
+    double scale,
+    long fixedX, long fixedY)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -2923,10 +2902,10 @@ void DSWSetScale(w, scale, fixedX, fixedY)
      sw_class.set_scale) (w, scale, fixedX, fixedY);
 }
 
-static void ScrollPoint(w, psX, psY, xX, xY)
-    Widget w;
-    double psX, psY;
-    long xX, xY;
+static void ScrollPoint(
+    Widget w,
+    double psX, double psY,
+    long xX, long xY)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
 
@@ -2943,10 +2922,10 @@ static void ScrollPoint(w, psX, psY, xX, xY)
     }
 }
 
-void DSWScrollPoint(w, psX, psY, xX, xY)
-    Widget w;
-    double psX, psY;
-    long xX, xY;
+void DSWScrollPoint(
+    Widget w,
+    double psX, double psY,
+    long xX, long xY)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -2954,9 +2933,7 @@ void DSWScrollPoint(w, psX, psY, xX, xY)
      sw_class.scroll_point) (w, psX, psY, xX, xY);
 }
 
-static void ScrollBy(w, dx, dy)
-    Widget w;
-    long dx, dy;
+static void ScrollBy(Widget w, long dx, long dy)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
     int value;
@@ -2995,9 +2972,7 @@ static void ScrollBy(w, dx, dy)
     }
 }
 
-void DSWScrollBy(w, dx, dy)
-    Widget w;
-    long dx, dy;
+void DSWScrollBy(Widget w, long dx, long dy)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3005,9 +2980,7 @@ void DSWScrollBy(w, dx, dy)
      sw_class.scroll_by) (w, dx, dy);
 }
 
-static void ScrollTo(w, x, y)
-    Widget w;
-    long x, y;
+static void ScrollTo(Widget w, long x, long y)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
     int max, size;
@@ -3034,9 +3007,7 @@ static void ScrollTo(w, x, y)
     }
 }
 
-void DSWScrollTo(w, x, y)
-    Widget w;
-    long x, y;
+void DSWScrollTo(Widget w, long x, long y)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3044,11 +3015,11 @@ void DSWScrollTo(w, x, y)
      sw_class.scroll_to) (w, x, y);
 }
 
-static void SetScaleAndScroll(w, scale, psX, psY, xX, xY)
-    Widget w;
-    double scale;
-    double psX, psY;
-    long xX, xY;
+static void SetScaleAndScroll(
+    Widget w,
+    double scale,
+    double psX, double psY,
+    long xX, long xY)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
     Arg arg;
@@ -3070,11 +3041,11 @@ static void SetScaleAndScroll(w, scale, psX, psY, xX, xY)
     XtSetValues(w, &arg, 1);
 }
 
-void DSWSetScaleAndScroll(w, scale, psX, psY, xX, xY)
-    Widget w;
-    double scale;
-    double psX, psY;
-    long xX, xY;
+void DSWSetScaleAndScroll(
+    Widget w,
+    double scale,
+    double psX, double psY,
+    long xX, long xY)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3082,18 +3053,18 @@ void DSWSetScaleAndScroll(w, scale, psX, psY, xX, xY)
      sw_class.set_scale_and_scroll) (w, scale, psX, psY, xX, xY);
 }
 
-static void ConvertXToPS(w, xX, xY, psX, psY)
-    Widget w;
-    long xX, xY;
-    float *psX, *psY;
+static void ConvertXToPS(
+    Widget w,
+    long xX, long xY,
+    float *psX, float *psY)
 {
     ConvertToPS((DPSScrolledWindowWidget) w, (float) xX, (float) xY, psX, psY);
 }
 
-void DSWConvertXToPS(w, xX, xY, psX, psY)
-    Widget w;
-    long xX, xY;
-    float *psX, *psY;
+void DSWConvertXToPS(
+    Widget w,
+    long xX, long xY,
+    float *psX, float *psY)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3101,18 +3072,18 @@ void DSWConvertXToPS(w, xX, xY, psX, psY)
      sw_class.convert_x_to_ps) (w, xX, xY, psX, psY);
 }
 
-static void ConvertPSToX(w, psX, psY, xX, xY)
-    Widget w;
-    double psX, psY;
-    int *xX, *xY;
+static void ConvertPSToX(
+    Widget w,
+    double psX, double psY,
+    int *xX, int *xY)
 {
     ConvertToX((DPSScrolledWindowWidget) w, psX, psY, xX, xY);
 }
 
-void DSWConvertPSToX(w, psX, psY, xX, xY)
-    Widget w;
-    double psX, psY;
-    int *xX, *xY;
+void DSWConvertPSToX(
+    Widget w,
+    double psX, double psY,
+    int *xX, int *xY)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3120,10 +3091,10 @@ void DSWConvertPSToX(w, psX, psY, xX, xY)
      sw_class.convert_ps_to_x) (w, psX, psY, xX, xY);
 }
 
-static void AddToDirtyArea(w, rect, n)
-    Widget w;
-    float *rect;
-    long n;
+static void AddToDirtyArea(
+    Widget w,
+    float *rect,
+    long n)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
 
@@ -3136,10 +3107,10 @@ static void AddToDirtyArea(w, rect, n)
     XtVaSetValues(w, XtNdirtyAreas, rect, XtNnumDirtyAreas, n, NULL);
 }
 
-void DSWAddToDirtyArea(w, rect, n)
-    Widget w;
-    float *rect;
-    long n;
+void DSWAddToDirtyArea(
+    Widget w,
+    float *rect,
+    long n)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3147,11 +3118,11 @@ void DSWAddToDirtyArea(w, rect, n)
      sw_class.add_to_dirty_area) (w, rect, n);
 }
 
-static Boolean TakeFeedbackPixmap(w, p, width, height, depth, screen)
-    Widget w;
-    Pixmap *p;
-    int *width, *height, *depth;
-    Screen **screen;
+static Boolean TakeFeedbackPixmap(
+    Widget w,
+    Pixmap *p,
+    int *width, int *height, int *depth,
+    Screen **screen)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
     
@@ -3174,11 +3145,11 @@ static Boolean TakeFeedbackPixmap(w, p, width, height, depth, screen)
     return True;
 }
 
-Boolean DSWTakeFeedbackPixmap(w, p, width, height, depth, screen)
-    Widget w;
-    Pixmap *p;
-    int *width, *height, *depth;
-    Screen **screen;
+Boolean DSWTakeFeedbackPixmap(
+    Widget w,
+    Pixmap *p,
+    int *width, int *height, int *depth,
+    Screen **screen)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3187,9 +3158,9 @@ Boolean DSWTakeFeedbackPixmap(w, p, width, height, depth, screen)
 					    depth, screen);
 }
 
-static void StartFeedbackDrawing(w, start_feedback_data)
-    Widget w;
-    XtPointer start_feedback_data;
+static void StartFeedbackDrawing(
+    Widget w,
+    XtPointer start_feedback_data)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
     float *r;
@@ -3223,9 +3194,9 @@ static void StartFeedbackDrawing(w, start_feedback_data)
     dsw->sw.start_feedback_data = start_feedback_data;
 }
 
-void DSWStartFeedbackDrawing(w, start_feedback_data)
-    Widget w;
-    XtPointer start_feedback_data;
+void DSWStartFeedbackDrawing(
+    Widget w,
+    XtPointer start_feedback_data)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3233,9 +3204,9 @@ void DSWStartFeedbackDrawing(w, start_feedback_data)
      sw_class.start_feedback_drawing) (w, start_feedback_data);
 }
 
-static void EndFeedbackDrawing(w, restore)
-    Widget w;
-    Boolean restore;
+static void EndFeedbackDrawing(
+    Widget w,
+    int restore)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
 
@@ -3255,9 +3226,9 @@ static void EndFeedbackDrawing(w, restore)
     dsw->sw.doing_feedback = dsw->sw.feedback_displayed = False;
 }
 
-void DSWEndFeedbackDrawing(w, restore)
-    Widget w;
-    Bool restore;
+void DSWEndFeedbackDrawing(
+    Widget w,
+    Bool restore)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3265,11 +3236,11 @@ void DSWEndFeedbackDrawing(w, restore)
      sw_class.end_feedback_drawing) (w, restore);
 }
 
-static void SetFeedbackDirtyArea(w, rects, count, continue_feedback_data)
-    Widget w;
-    float *rects;
-    int count;
-    XtPointer continue_feedback_data;
+static void SetFeedbackDirtyArea(
+    Widget w,
+    float *rects,
+    int count,
+    XtPointer continue_feedback_data)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
     int i;
@@ -3318,11 +3289,11 @@ static void SetFeedbackDirtyArea(w, rects, count, continue_feedback_data)
     dsw->sw.feedback_displayed = True;
 }
 
-void DSWSetFeedbackDirtyArea(w, rects, count, continue_feedback_data)
-    Widget w;
-    float *rects;
-    int count;
-    XtPointer continue_feedback_data;
+void DSWSetFeedbackDirtyArea(
+    Widget w,
+    float *rects,
+    int count,
+    XtPointer continue_feedback_data)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3331,14 +3302,12 @@ void DSWSetFeedbackDirtyArea(w, rects, count, continue_feedback_data)
 					continue_feedback_data);
 }
 
-static void FinishPendingDrawing(w)
-    Widget w;
+static void FinishPendingDrawing(Widget w)
 {
     FinishDrawing((DPSScrolledWindowWidget) w);
 }
 
-void DSWFinishPendingDrawing(w)
-    Widget w;
+void DSWFinishPendingDrawing(Widget w)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3346,14 +3315,12 @@ void DSWFinishPendingDrawing(w)
      sw_class.finish_pending_drawing) (w);
 }
 
-static void AbortPendingDrawing(w)
-    Widget w;
+static void AbortPendingDrawing(Widget w)
 {
     AbortDrawing((DPSScrolledWindowWidget) w);
 }
 
-void DSWAbortPendingDrawing(w)
-    Widget w;
+void DSWAbortPendingDrawing(Widget w)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3361,10 +3328,10 @@ void DSWAbortPendingDrawing(w)
      sw_class.abort_pending_drawing) (w);
 }
 
-static void UpdateDrawing(w, rects, count)
-    Widget w;
-    float *rects;
-    int count;
+static void UpdateDrawing(
+    Widget w,
+    float *rects,
+    int count)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
     int i;
@@ -3389,10 +3356,10 @@ static void UpdateDrawing(w, rects, count)
     }
 }
 
-void DSWUpdateDrawing(w, rects, count)
-    Widget w;
-    float *rects;
-    int count;
+void DSWUpdateDrawing(
+    Widget w,
+    float *rects,
+    int count)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3400,9 +3367,9 @@ void DSWUpdateDrawing(w, rects, count)
      sw_class.update_drawing) (w, rects, count);
 }
 
-static void GetScrollInfo(w, h_value, h_size, h_max, v_value, v_size, v_max)
-    Widget w;
-    int *h_value, *h_size, *h_max, *v_value, *v_size, *v_max;
+static void GetScrollInfo(
+    Widget w,
+    int *h_value, int *h_size, int *h_max, int *v_value, int *v_size, int *v_max)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
 
@@ -3414,9 +3381,9 @@ static void GetScrollInfo(w, h_value, h_size, h_max, v_value, v_size, v_max)
     if (v_max != NULL) *v_max = dsw->sw.scroll_v_max;
 }
 
-void DSWGetScrollInfo(w, h_value, h_size, h_max, v_value, v_size, v_max)
-    Widget w;
-    int *h_value, *h_size, *h_max, *v_value, *v_size, *v_max;
+void DSWGetScrollInfo(
+    Widget w,
+    int *h_value, int *h_size, int *h_max, int *v_value, int *v_size, int *v_max)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3425,12 +3392,12 @@ void DSWGetScrollInfo(w, h_value, h_size, h_max, v_value, v_size, v_max)
 				v_value, v_size, v_max);
 }
 
-static void GetDrawingInfo(w, type, drawable, gstate, context)
-    Widget w;
-    DSWDrawableType *type;
-    Drawable *drawable;
-    DPSGState *gstate;
-    DPSContext *context;
+static void GetDrawingInfo(
+    Widget w,
+    DSWDrawableType *type,
+    Drawable *drawable,
+    DPSGState *gstate,
+    DPSContext *context)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
 
@@ -3446,12 +3413,12 @@ static void GetDrawingInfo(w, type, drawable, gstate, context)
     *context = dsw->sw.context;
 }
 
-void DSWGetDrawingInfo(w, type, drawable, gstate, context)
-    Widget w;
-    DSWDrawableType *type;
-    Drawable *drawable;
-    DPSGState *gstate;
-    DPSContext *context;
+void DSWGetDrawingInfo(
+    Widget w,
+    DSWDrawableType *type,
+    Drawable *drawable,
+    DPSGState *gstate,
+    DPSContext *context)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3459,17 +3426,17 @@ void DSWGetDrawingInfo(w, type, drawable, gstate, context)
      sw_class.get_drawing_info) (w, type, drawable, gstate, context);
 }
 
-static Boolean GiveFeedbackPixmap(w, p, width, height, depth, screen)
-    Widget w;
-    Pixmap p;
-    int width, height, depth;
-    Screen *screen;
+static Boolean GiveFeedbackPixmap(
+    Widget w,
+    Pixmap p,
+    int width, int height, int depth,
+    Screen *screen)
 {
     DPSScrolledWindowWidget dsw = (DPSScrolledWindowWidget) w;
     
-    if (depth != dsw->sw.drawing_area->core.depth ||
-	screen != dsw->core.screen ||
-	dsw->sw.feedback_pixmap != None) return False;
+    if ((unsigned) depth != dsw->sw.drawing_area->core.depth
+     || screen != dsw->core.screen
+     || dsw->sw.feedback_pixmap != None) return False;
 
     dsw->sw.feedback_pixmap = p;
     dsw->sw.feedback_width = width;
@@ -3478,11 +3445,11 @@ static Boolean GiveFeedbackPixmap(w, p, width, height, depth, screen)
     return True;
 }
 
-Boolean DSWGiveFeedbackPixmap(w, p, width, height, depth, screen)
-    Widget w;
-    Pixmap p;
-    int width, height, depth;
-    Screen *screen;
+Boolean DSWGiveFeedbackPixmap(
+    Widget w,
+    Pixmap p,
+    int width, int height, int depth,
+    Screen *screen)
 {
     XtCheckSubclass(w, dpsScrolledWindowWidgetClass, NULL);
 
@@ -3491,10 +3458,12 @@ Boolean DSWGiveFeedbackPixmap(w, p, width, height, depth, screen)
 					    depth, screen);
 }
 
-static void ConvertToX(dsw, psX, psY, xX, xY)
-    DPSScrolledWindowWidget dsw;
-    float psX, psY;
-    int *xX, *xY;
+static void ConvertToX(
+    DPSScrolledWindowWidget dsw,
+    float psX,
+    float psY,
+    int *xX,
+    int *xY)
 {
     *xX = dsw->sw.ctm[0] * psX + dsw->sw.ctm[2] * psY + dsw->sw.ctm[4] +
 	    dsw->sw.x_offset + 0.5;
@@ -3502,10 +3471,10 @@ static void ConvertToX(dsw, psX, psY, xX, xY)
 	    dsw->sw.y_offset + 0.5;
 }
 
-static void ConvertToPS(dsw, xX, xY, psX, psY)
-    DPSScrolledWindowWidget dsw;
-    float xX, xY;
-    float *psX, *psY;
+static void ConvertToPS(
+    DPSScrolledWindowWidget dsw,
+    float xX, float xY,
+    float *psX, float *psY)
 {
     xX -= dsw->sw.x_offset;
     xY -= dsw->sw.y_offset;
@@ -3516,10 +3485,10 @@ static void ConvertToPS(dsw, xX, xY, psX, psY)
 	    dsw->sw.inv_ctm[5];
 }
 
-static void ConvertToOrigPS(dsw, xX, xY, psX, psY)
-    DPSScrolledWindowWidget dsw;
-    int xX, xY;
-    float *psX, *psY;
+static void ConvertToOrigPS(
+    DPSScrolledWindowWidget dsw,
+    int xX, int xY,
+    float *psX, float *psY)
 {
     xX -= dsw->sw.x_offset;
     xY -= dsw->sw.y_offset;

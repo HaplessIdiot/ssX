@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.8 2000/05/23 23:58:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.9 2000/05/24 01:11:09 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -292,12 +292,10 @@ static int      debug_level = 0;
 #undef read
 #undef write
 #undef close
-#undef strdup
 #define SYSCALL(call) call
 #define read(fd, ptr, num) xf86ReadSerial(fd, ptr, num)
 #define write(fd, ptr, num) xf86WriteSerial(fd, ptr, num)
 #define close(fd) xf86CloseSerial(fd)
-#define strdup(str) xf86strdup(str)
 #endif
 
 

@@ -46,7 +46,7 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.h,v 1.5 1999/03/14 03:21:20 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.h,v 1.6 2000/05/18 23:46:17 dawes Exp $ */
 
 #include "zlib.h"
 #include "Xfuncproto.h"
@@ -116,7 +116,7 @@ extern int InitZlibBuffer ( ZlibBufferPtr b, int size );
 extern void FreeZlibBuffer ( ZlibBufferPtr b );
 extern int GetInputPtr ( int fd, ZlibBufferPtr inbuf, int reqlen, 
 			 unsigned char **ppkt );
-extern int StuffInput ( ZlibBufferPtr inbuf, char *pkt, int reqlen );
+extern int StuffInput ( ZlibBufferPtr inbuf, unsigned char *pkt, int reqlen );
 extern void FreeInput ( ZlibBufferPtr inbuf, int len );
 extern char * ReserveOutBuf ( ZlibBufferPtr outbuf, int outlen );
 extern void CommitOutBuf ( ZlibBufferPtr outbuf, int outlen );

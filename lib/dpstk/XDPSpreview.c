@@ -35,17 +35,21 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <X11/Xlib.h>
 #include <DPS/dpsXclient.h>
 #include <DPS/XDPSlib.h>
 #include <DPS/psops.h>
 #include <stdio.h>
+#include <stdlib.h>
+
 #ifndef NeXT
 #include <unistd.h>
 #endif
-#include "DPS/dpsXshare.h"
-#include "DPS/dpsXpreview.h"
+
+#include <DPS/dpsXshare.h>
+#include <DPS/dpsXpreview.h>
 #include "XDPSpwraps.h"
 #include "dpsXcommonI.h"
 #include <math.h>
@@ -60,19 +64,25 @@
 #define BEGINDOCUMENTLEN 15	/* Length of "%%BeginDocument" */
 #define BEGINBINARYLEN 14	/* Length of "%%BeginBinary:" */
 
-static int ParseFileForBBox();
-static void FillPixmapWithGray();
+static int ParseFileForBBox(FILE *file, XRectangle *bb);
+static void FillPixmapWithGray(
+    Screen *screen,
+    Drawable dest,
+    XRectangle *bbox,
+    int xOffset, int yOffset,
+    double pixelsPerPoint,
+    Bool createMask);
 
 static XDPSRewindFunction rewindFunction = XDPSFileRewindFunc;
 static DPSPointer rewindClientData = NULL;
 static XDPSGetsFunction getsFunction = XDPSFileGetsFunc;
 static DPSPointer getsClientData = NULL;
 
-int XDPSSetFileFunctions(rewindFunc, rewindData, getsFunc, getsData)
-    XDPSRewindFunction rewindFunc;
-    DPSPointer rewindData;
-    XDPSGetsFunction getsFunc;
-    DPSPointer getsData;
+int XDPSSetFileFunctions(
+    XDPSRewindFunction rewindFunc,
+    DPSPointer rewindData,
+    XDPSGetsFunction getsFunc,
+    DPSPointer getsData)
 {
     if (rewindFunc != NULL) {
 	rewindFunction = rewindFunc;
@@ -82,31 +92,24 @@ int XDPSSetFileFunctions(rewindFunc, rewindData, getsFunc, getsData)
 	getsFunction = getsFunc;
 	getsClientData = getsData;
     }
+    return 0;
 }
 
 /* ARGSUSED */
 
-void XDPSFileRewindFunc(f, data)
-    FILE *f;
-    DPSPointer data;
+void XDPSFileRewindFunc(FILE *f, DPSPointer data)
 {
     rewind(f);
 }
 
 /* ARGSUSED */
 
-char *XDPSFileGetsFunc(buf, n, f, data)
-    char *buf;
-    int n;
-    FILE *f;
-    DPSPointer data;
+char *XDPSFileGetsFunc(char *buf, int n, FILE *f, DPSPointer data)
 {
     return fgets(buf, n, f);
 }
 
-void XDPSEmbeddedEPSFRewindFunc(f, data)
-    FILE *f;
-    DPSPointer data;
+void XDPSEmbeddedEPSFRewindFunc(FILE *f, DPSPointer data)
 {
     XDPSPosition *p = (XDPSPosition *) data;
 
@@ -121,14 +124,11 @@ void XDPSEmbeddedEPSFRewindFunc(f, data)
 
 static Bool imaging = False;
 
-char *XDPSEmbeddedGetsFunc(buf, n, f, data)
-    char *buf;
-    int n;
-    FILE *f;
-    DPSPointer data;
+char *XDPSEmbeddedGetsFunc(char *buf, int n, FILE *f, DPSPointer data)
 {
     XDPSPosition *p = (XDPSPosition *) data;
-    int count, len;
+    int count;
+    unsigned len;
 
     if (fgets(buf, n, f) == NULL) {
 	if (imaging) p->startPos = -1;
@@ -162,22 +162,21 @@ char *XDPSEmbeddedGetsFunc(buf, n, f, data)
 	}
     }
 
-    if (len == n-1 && buf[n-1] != '\n') p->continuedLine = True;
+    if ((int)len == n-1 && buf[n-1] != '\n') p->continuedLine = True;
     else p->continuedLine = False;
 
     return buf;
 }
 
-int XDPSCreatePixmapForEPSF(context, screen, epsf, depth, 
-			    pixelsPerPoint, pixmap, pixelSize, bbox)
-    DPSContext context;
-    Screen *screen;
-    FILE *epsf;
-    int depth;
-    double pixelsPerPoint;
-    Pixmap *pixmap;
-    XRectangle *pixelSize;
-    XRectangle *bbox;
+int XDPSCreatePixmapForEPSF(
+    DPSContext context,
+    Screen *screen,
+    FILE *epsf,
+    int depth,
+    double pixelsPerPoint,
+    Pixmap *pixmap,
+    XRectangle *pixelSize,
+    XRectangle *bbox)
 {
     Pixmap p;
     int width, height;
@@ -217,9 +216,7 @@ int XDPSCreatePixmapForEPSF(context, screen, epsf, depth,
     else return dps_status_no_extension;
 }
 
-static int ParseFileForBBox(file, bb)
-    FILE *file;
-    XRectangle *bb;
+static int ParseFileForBBox(FILE *file, XRectangle *bb)
 {
 #define BBOXLEN 14		/* Length of "%%BoundingBox:" */
 #define BUFLEN 256
@@ -232,7 +229,7 @@ static int ParseFileForBBox(file, bb)
     int nestingLevel = 0;
     unsigned long binaryCount = 0;
     Bool continuedLine = False;
-    int len;
+    unsigned len;
 
     while (1) {
        if ((*getsFunction)(buf, BUFLEN, file, getsClientData) == NULL) {
@@ -305,8 +302,7 @@ static int ParseFileForBBox(file, bb)
 
 #define mmPerPoint (25.4/72.0)
 
-double XDPSPixelsPerPoint(screen)
-    Screen *screen;
+double XDPSPixelsPerPoint(Screen *screen)
 {
     return (float) WidthOfScreen(screen) * mmPerPoint /
 	    (float) WidthMMOfScreen(screen);
@@ -314,9 +310,7 @@ double XDPSPixelsPerPoint(screen)
 
 static int timeStart = 200, maxDoubles = 3;
 
-void XDPSSetImagingTimeout(timeout, max)
-    int timeout;
-    int max;
+void XDPSSetImagingTimeout(int timeout, int max)
 {
     timeStart = timeout;
     maxDoubles = max;
@@ -333,12 +327,12 @@ typedef struct _StatusInfo {
 
 static StatusInfo *StatusList;
 
-static void SetUpStatusVariables(context, cookie, doneFlag, startReq, oldProc)
-    DPSContext context;
-    DPSPointer cookie;
-    Bool *doneFlag;
-    unsigned long startReq;
-    XDPSStatusProc oldProc;
+static void SetUpStatusVariables(
+    DPSContext context,
+    DPSPointer cookie,
+    Bool *doneFlag,
+    unsigned long startReq,
+    XDPSStatusProc oldProc)
 {
     StatusInfo *info = (StatusInfo *) malloc(sizeof(StatusInfo));
 
@@ -354,9 +348,9 @@ static void SetUpStatusVariables(context, cookie, doneFlag, startReq, oldProc)
     StatusList = info;
 }
 
-static void SetEndReqNum(context, endReq)
-    DPSContext context;
-    unsigned long endReq;
+static void SetEndReqNum(
+    DPSContext context,
+    unsigned long endReq)
 {
     StatusInfo *info = StatusList;
 
@@ -364,9 +358,9 @@ static void SetEndReqNum(context, endReq)
     if (info != NULL) info->endReqNum = endReq;
 }
 
-static void HandlePreviewStatus(context, status)
-    DPSContext context;
-    int status;
+static void HandlePreviewStatus(
+    DPSContext context,
+    int status)
 {
     unsigned long serial;
     Display *dpy;
@@ -391,9 +385,9 @@ static void HandlePreviewStatus(context, status)
     if (status == PSFROZEN) *info->doneFlag = True;
 }
 
-static int FinishUp(context, cookie)
-    DPSContext context;
-    DPSPointer cookie;
+static int FinishUp(
+    DPSContext context,
+    DPSPointer cookie)
 {
     static char restorebuf[] =
 	    "\n$Adobe$DPS$Lib$Dict /EPSFsave get restore grestore\n";
@@ -424,9 +418,9 @@ static int FinishUp(context, cookie)
     else return dps_status_success;
 }
 
-int XDPSCheckImagingResults(context, screen)
-    DPSContext context;
-    Screen *screen;
+int XDPSCheckImagingResults(
+    DPSContext context,
+    Screen *screen)
 {
     StatusInfo *info = StatusList;
     int status;
@@ -446,8 +440,7 @@ int XDPSCheckImagingResults(context, screen)
     return FinishUp(context, info->cookie);
 }
 
-static void msleep(ms)
-    int ms;
+static void msleep(int ms)
 {
     struct timeval incr;
 
@@ -457,23 +450,19 @@ static void msleep(ms)
 		   (SELECT_TYPE) NULL, &incr);
 }
 
-int XDPSImageFileIntoDrawable(context, screen, dest, file,
-			      drawableHeight, drawableDepth,
-			      bbox, xOffset, yOffset,
-			      pixelsPerPoint,
-			      clear, createMask, waitForCompletion, doneFlag)
-    DPSContext context;
-    Screen *screen;
-    Drawable dest;
-    FILE *file;
-    int drawableHeight;
-    int drawableDepth;
-    XRectangle *bbox;
-    int xOffset, yOffset;
-    double pixelsPerPoint;
-    Bool clear, createMask;
-    Bool waitForCompletion;
-    Bool *doneFlag;
+int XDPSImageFileIntoDrawable(
+    DPSContext context,
+    Screen *screen,
+    Drawable dest,
+    FILE *file,
+    int drawableHeight,
+    int drawableDepth,
+    XRectangle *bbox,
+    int xOffset, int yOffset,
+    double pixelsPerPoint,
+    Bool clear, Bool createMask,
+    Bool waitForCompletion,
+    Bool *doneFlag)
 {
 #define BUFSIZE 256
 #define EXECLEN 6
@@ -490,7 +479,7 @@ Magic end of data line )))))))))) 99#2 2#99 <xyz> // 7gsad,32h4ghNmndFgj2\n";
     int doublings;
     int ms;
     XDPSStatusProc oldProc;
-    unsigned long startReqNum, endReqNum;
+    unsigned long startReqNum = 0, endReqNum;
 
     if (screen == NULL || dest == None || 
 	drawableHeight <= 0 || drawableDepth <= 0 ||
@@ -602,15 +591,13 @@ Magic end of data line )))))))))) 99#2 2#99 <xyz> // 7gsad,32h4ghNmndFgj2\n";
 #undef BUFSIZE
 }
 
-static void FillPixmapWithGray(screen, dest, bbox, xOffset, yOffset,
-			       pixelsPerPoint,
-			       createMask)
-    Screen *screen;
-    Drawable dest;
-    XRectangle *bbox;
-    int xOffset, yOffset;
-    double pixelsPerPoint;
-    Bool createMask;
+static void FillPixmapWithGray(
+    Screen *screen,
+    Drawable dest,
+    XRectangle *bbox,
+    int xOffset, int yOffset,
+    double pixelsPerPoint,
+    Bool createMask)
 {
     int width, height, x, y;
     GC gc;

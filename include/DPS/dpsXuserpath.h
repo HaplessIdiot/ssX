@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef DPS_X_DOUSERPATH_H
 #define DPS_X_DOUSERPATH_H
@@ -105,18 +106,6 @@ typedef enum _DPSUserPathAction {
     dps_send = 113	/* This is really the null operator */
 } DPSUserPathAction;
  
-#ifdef _NO_PROTO
-
-extern void PSDoUserPath();
-
-extern void DPSDoUserPath();
-
-extern Bool PSHitUserPath();
-
-extern Bool DPSHitUserPath();
-
-#else /* _NO_PROTO */
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -164,7 +153,5 @@ extern Bool DPSHitUserPath(DPSContext ctx,
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-
-#endif /* _NO_PROTO */
 
 #endif /* DPS_X_DOUSERPATH_H */

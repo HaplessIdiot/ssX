@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.90 2000/04/28 18:19:21 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.92 2000/05/31 09:39:44 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1529,22 +1529,18 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
 
     /* Then handle the inactive devices */
     j = 0;
-    if (xf86ConfigLayout.inactives)
-	while (xf86ConfigLayout.inactives[j].identifier) {
-	    gdp = &xf86ConfigLayout.inactives[j];
-	    if (gdp->driver != NULL
-		&& (xf86NameCmp(gdp->driver,drivername) == 0)
-		&& (! gdp->claimed)) {
-		/*
-		 * we have a matching driver that wasn't claimed, yet
-		 */
-		gdp->claimed = TRUE;
-		devices[i] = xnfrealloc(devices[i],
-					(count[i] + 2) * sizeof(GDevPtr));
-		devices[i][count[i]++] = gdp;
-	    }
-	    j++;
+    while (xf86ConfigLayout.inactives[j].identifier) {
+	gdp = &xf86ConfigLayout.inactives[j];
+	if (gdp->driver && !gdp->claimed &&
+	    !xf86NameCmp(gdp->driver,drivername)) {
+	    /* we have a matching driver that wasn't claimed yet */
+	    gdp->claimed = TRUE;
+	    devices[i] =
+		xnfrealloc(devices[i], (count[i] + 2) * sizeof(GDevPtr));
+	    devices[i][count[i]++] = gdp;
 	}
+	j++;
+    }
     
 #if 0
     /*
