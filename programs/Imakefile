@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.69 94/07/06 16:26:01 mor Exp $
-XCOMM $XFree86: xc/programs/Imakefile,v 3.7 1995/03/11 14:10:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.8 1995/06/08 06:21:30 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -46,7 +46,7 @@ SUBDIRS = \
 SUBDIRS = \
 	appres bdftopcf $(SCRNSAVDIR) bitmap editres iceauth \
 	mkfontdir oclock $(RGBDIR) rstart smproxy \
-	twm $(VGAHELPDIR) x11perf xauth xclipboard xclock \
+	twm $(XVIDTUNE) x11perf xauth xclipboard xclock \
 	xcmsdb xconsole xdpyinfo xfd xhost \
 	xieperf $(XINIDIR) xkill xlogo xlsatoms xlsclients xlsfonts \
 	xmag xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap xterm \
@@ -57,7 +57,7 @@ SUBDIRS = \
 #else /* Win32Architecture */
 SUBDIRS = \
 	appres bdftopcf bitmap editres fsinfo fslsfonts fstobdf iceauth \
-	mkfontdir oclock $(VGAHELPDIR) x11perf xauth xclipboard xclock \
+	mkfontdir oclock $(XVIDTUNE) x11perf xauth xclipboard xclock \
 	xcmsdb xdpyinfo xfd $(XFSDIR) \
 	xieperf xkill xlogo xlsatoms xlsclients xlsfonts \
 	xmag xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap \

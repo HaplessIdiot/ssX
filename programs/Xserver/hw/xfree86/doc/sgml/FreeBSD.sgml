@@ -3,7 +3,7 @@
 <article>
 <title> README for XFree86 3.1.2 on FreeBSD 2.0.5
 <author>Rich Murphey, David Dawes
-<date>17 July 1995
+<date>24 July 1995
 
 <toc>
  
@@ -117,10 +117,10 @@ need 9Mb for the minimum required run-time binaries only.
 <descrip>
 
 <tag/X312doc.tgz/
-     (.5Mb) READMEs and XFree86 specific man pages
+     (.5Mb) READMEs
 
 <tag/X312man.tgz/
-     (1.7Mb) man pages except XFree86 specific ones in etc archive
+     (1.7Mb) man pages
 
 <tag/X312f100.tgz/
      (1.8Mb) 100dpi fonts
@@ -130,6 +130,9 @@ need 9Mb for the minimum required run-time binaries only.
 
 <tag/X312fnon.tgz/
      (3.3Mb) Japanese, Chinese and other non-english fonts
+
+<tag/X312fcyr.tgz/
+     (.4Mb) Cyrillic fonts
 
 <tag/X312fsrv.tgz/
      (.3Mb) the font server and its man page
@@ -579,7 +582,7 @@ Many thanks to:
 
 <verb>
 $XConsortium: FreeBSD.sgml,v 1.3 95/01/23 15:34:41 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.11 1995/07/17 13:52:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.12 1995/07/19 12:43:26 dawes Exp $
 </verb>
 
 </article>

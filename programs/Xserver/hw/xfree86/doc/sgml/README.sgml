@@ -4,7 +4,7 @@
 
  <title>README for XFree86&tm; 3.1.2
  <author> The XFree86 Project, Inc
- <date>22 July 1995
+ <date>24 July 1995
 
 
 <abstract>
@@ -35,6 +35,7 @@ January 1995:
     <item> 16bpp support for the AGX server.
     <item> Bug fixes and enhancements to the Mach64 server.
     <item> Bug fixes for the Mach32 server.
+    <item> Improved performance for the P9000 server.
     <item> Bug fixes for the VGA16 and Mono servers.
     <item> A new Xserver extension (and client) to allow interactive
 	video mode tuning.
@@ -694,11 +695,11 @@ involvement in X11R6.
 </itemize>
 Also deserving of special mention are the organizers and attendees of the
 1st German Linux Congress in Heidelberg.  Significant funding to The
-XFree86 Project has bee provided from its proceeds.
+XFree86 Project has been provided from its proceeds.
 
 <itemize>
   <item>  <url url="ftp://ftp.uu.net/vendor/AIB/" 
-	name="AIB Software Corporation">, Dulles, VA
+	name="AIB Software Corporation">, Herndon, VA
   <item>  Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
   <item>  American Micro Group
   <item>  <url url="http://www.attgis.com/"  
@@ -718,12 +719,16 @@ XFree86 Project has bee provided from its proceeds.
   <item>  Genoa Systems Corporation
   <item>  <url url="http://www.hercules.com/"
 	name="Hercules Computer Technology, Inc.">
+  <item>  Ralf Hockens
   <item>  Dirk Hohndel
-  <item>  Daniel Kraemer
-  <item>  Frank &amp; Paige McCormick
   <item>  <url url="http://www.infomagic.com/"  
 	name="InfoMagic">, Flagstaff, AZ
-  <item>  LunetIX Softfair, Berlin, Germany
+  <item>  Daniel Kraemer
+  <item>  Frank &amp; Paige McCormick
+  <item>  Linux International
+  <item>  Linux Support Team, Erlangen, Germany
+  <item>  <url url="http://www.lunetix.de"
+	name="LunetIX Softfair">, Berlin, Germany
   <item>  <url url="http://www.morse.net"
 	name="Morse Telecommunications">, Long Beach, NY
   <item>  MIRO Computer Products AG, Braunschweig, Germany
@@ -774,7 +779,7 @@ and the following mirror sites:
 <itemize>
 <item>   <url url="ftp://ftp.bsdi.com/contrib/X11/XFree86" 
 	name="ftp.bsdi.com:/contrib/X11/XFree86">
-	(source and BSD/386 binaries)
+	(source and BSD/OS binaries)
 <item>   <url url="ftp://XFree86.cdrom.com/pub/XFree86" 
 	name="XFree86.cdrom.com:/pub/XFree86">
 	(source and binaries)
@@ -808,8 +813,8 @@ and the following mirror sites:
 	name="ftp.switch.ch:/mirror/XFree86">
 	(source and binaries)
 <item>   <url url="ftp://ftp.fee.vutbr.cz/pub/XFree86" 
-	name="ftp.fee.vutbr.cz:/pub/XFree86">
-	(source and binaries)
+	name="ftp.fee.vutbr.cz:/pub/XFree86/3.1.2">
+	(source patches and binaries)
 <item>   <url url="ftp://ftp.gwdg.de/pub/xfree86" 
 	name="ftp.gwdg.de:/pub/xfree86">
 	(source and binaries)
@@ -825,16 +830,19 @@ and the following mirror sites:
 <item>   <url url="ftp://anasgard.calvacom.fr/pub/unix/X/XFree86" 
 	name="anasgard.calvacom.fr:/pub/unix/X/XFree86">
 	(source and binaries)
+<item>   <url url="ftp://ftp.ibp.fr/pub/X11/XFree86" 
+	name="ftp.ibp.fr:/pub/X11/XFree86">
+	(source and binaries)
 <item>   <url url="ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.2" 
 	name="ftp.laas.fr:/pub/netbsd/XFree86-3.1.2">
 	(NetBSD binaries only)
 <item>   <url url="ftp://ftp.unipi.it/pub/mirrors/XFree86-3.1.2"
 	name="ftp.unipi.it:/pub/mirrors/XFree86-3.1.2">
 	(source and binaries)
-<!--
-<item>   <url url="ftp://nova.pvv.unit.no/pub/XFree86/current" 
-	name="nova.pvv.unit.no:/pub/XFree86/current">
+<item>   <url url="ftp://ftp.pvv.unit.no/pub/XFree86/current" 
+	name="ftp.pvv.unit.no:/pub/XFree86/current">
 	(source and binaries)
+<!--
 <item>   <url url="ftp://ftp.demon.co.uk/pub/Xwindows/XFree86" 
 	name="ftp.demon.co.uk:/pub/Xwindows/XFree86">
 	(source and binaries)
@@ -864,8 +872,8 @@ and the following mirror sites:
 <item>   <url url="ftp://ftp.hk.super.net/mirror/XFree86" 
 	name="ftp.hk.super.net:/mirror/XFree86">
 	(source and binaries)
-<item>   <url url="ftp://ftp.nectec.or.th/pub/mirrors/XFree86" 
-	name="ftp.nectec.or.th:/pub/mirrors/XFree86">
+<item>   <url url="ftp://ftp.nectec.or.th/pub/mirrors/XFree86/3.1.2" 
+	name="ftp.nectec.or.th:/pub/mirrors/XFree86/3.1.2">
 	(source patches and binaries)
 <item>   <url url="ftp://ftp.edu.tw/X/XFree86/3.1.2" 
 	name="ftp.edu.tw:/X/XFree86/3.1.2">
@@ -886,7 +894,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.25 1995/07/22 09:42:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.26 1995/07/22 13:03:47 dawes Exp $
 </verb>
 
 </article>
