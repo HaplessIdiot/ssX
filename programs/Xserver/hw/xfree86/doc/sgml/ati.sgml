@@ -8,10 +8,10 @@
 
 <title>ATI Adapters README file
 <author>Marc Aurele La France
-<date>1999 October 25
+<date>2000 May 3
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.28 1999/10/26 15:58:15 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.29 2000/02/18 12:19:08 tsi Exp $
 </ident>
 
 <abstract>
@@ -41,8 +41,8 @@ otherwise
 <item>generic VGA support if a non-ATI VGA-capable adapter is detected
 <it>and</it> the user has requested such support.
 </itemize>
-Thus, the support provided not only depends on what the driver detects in the
-system, but also, on what the user specifies in the XF86Config file.
+Thus, the level of support provided not only depends on what the driver detects
+in the system, but also, on what the user specifies in the XF86Config file.
 See the <bf>``XF86Config specifications''</bf> section below for details.<p>
 If none of the above conditions are met, the ATI driver will essentially
 disable itself to allow other drivers to examine the system.<p>
@@ -80,11 +80,12 @@ VGAWonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
                    264CT, 264ET, 264VT, 264GT (3D Rage), 264VT-B, 264VT3,
                    264VT4, 264GT-B (3D Rage II), 3D Rage IIc, 3D Rage Pro,
                    3D Rage LT, 3D Rage LT Pro, 3D Rage XL, 3D Rage XC,
-                   3D Rage Mobility</verb>
+                   3D Rage Mobility (including the -M and -P variants)</verb>
 The driver also supports 32K, 64K and 16M-colour modes on the 264xT and 3D Rage
-series of adapters using the accelerator CRTC (but not the VGA CRTC).
-This support is as yet unaccelerated.<p>
-The newer Rage 128 chips are not yet supported.<p>
+series of adapters using the accelerator CRTC (but not the VGA CRTC).<p>
+The newer Rage 128 chips are not yet supported by this driver.
+Rage 128's are, however, supported by a separate driver, and Rage 128 owners
+should read the r128 driver's documentation for details.<p>
 Adapters based on the above chips have been marketed under a rather large
 number of names over the years.
 Among them are:
@@ -107,20 +108,22 @@ VGAWonder series:  VGAWonder V3, VGAWonder V4, VGAWonder V5, VGAWonder+,
                    All-In-Wonder PRO, 3D Pro Turbo, XPERT@Play,
                    XPERT@Play 98, XPERT@Work, XPERT 98, XPERT LCD,
                    XPERT XL</verb>
+Also, a number of mainboards, laptops and notebooks harbour a Mach32 or Mach64
+controller.<p>
 VGAWonder, Mach8 and Mach32 ISA adapters are available with or without a
 mouse.<p>
 These adapters are available with a variety of clock generators and RAMDACs.
 The 264xT and 3D Rage series of chips are integrated controllers, meaning that
 they include a programmable clock generator and a RAMDAC.<p>
-This driver still does not provide support for accelerated drawing to the
-screen.
+For all but Mach64 adapters, this driver still does not provide support for
+accelerated drawing to the screen.
 This means that all drawing is done by the CPU, rather than by any accelerator
 present in the system.
 This can make opaque moves, for example, quite ``jerky''.
 Also, given that IBM 8514/A and ATI Mach8 do not allow CPU access to their
 frame buffer, the driver will currently ignore these accelerators.
-Most Mach32 adapters provide both accelerated function and VGA functionality,
-but the driver currently only uses the VGA.<p>
+Most Mach32 adapters provide both accelerated function and SuperVGA
+functionality, but the driver currently only uses the VGA.<p>
 The driver <it>does</it> however support the accelerator CRTC present in all
 ATI Mach64 adapters.
 For 256-colour, and higher depth modes, this support will be used by default,
@@ -129,8 +132,12 @@ instead.
 A linear video memory aperture is also available in 256-colour and higher depth
 modes and enabled by default if a 264xT or 3D Rage controller is detected or,
 on 88800 controllers, if the accelerator CRTC is used.
-An XF86Config option is available to disable this aperture, or (on non-PCI
+XF86Config options are available to disable this aperture, or (for non-PCI
 adapters) enable it or move it to some other address.<p>
+By default, the driver provides some acceleration for Mach64 if the accelerator
+CRTC is used.
+This support is as yet incomplete and can be disabled entirely with an
+XF86Config option.<p>
 <sect>Current implementation of generic VGA support for non-ATI adapters<p>
 Support for generic VGA with non-ATI adapters is also implemented, but has
 undergone only limited testing.
@@ -151,9 +158,10 @@ VGA implementation:
 <item>Video memory is limited to 256kB in monochrome and 16-colour modes.
 <item>Video memory is limited to 64kB in 256-colour modes.
 <item>Interlaced modes are not available.
+<item>Colour depths higher than 8 are not available.
 </itemize>
 <sect>XF86Config specifications<p>
-The driver recognizes a number of XF86Config options.
+The driver recognises a number of XF86Config options.
 In general, all such options should be specified in a ``Device'' section, and
 affect only that ``Device'' section.<p>
 Those options that affect how the driver associates adapters with ``Device''
@@ -168,7 +176,7 @@ Other options affect the driver's operation once an adapter has been assigned
 to the ``Device'' section which contains them.<p>
 <sect1>Driver ``ati''<p>
 The use of this specification is highly recommended if the ``Device'' section
-is to be recognized by the driver.
+is to be recognised by the driver.
 In fact, it is almost (but not quite) mandatory, particularly when using the
 loader server as it indicates what driver is to be loaded and associated with
 the ``Device'' section.<p>
@@ -180,7 +188,8 @@ CRTC will be used to drive the screen.
 Otherwise, the driver will programme the adapter's SuperVGA CRTC.<p>
 If ``<it>ativga</it>'' is specified instead, the driver will ignore any ATI
 accelerator it detects, but otherwise operate as if ``<it>ati</it>'' had been
-specified.<p>
+specified.
+This specification ensures the VGA CRTC is used.<p>
 A ChipSet name of ``<it>ibmvga</it>'' causes any VGA-capable adapter in the
 system to be associated with the ``Device'' section.
 It enables the driver's generic VGA support, but only for non-ATI adapters.
@@ -206,18 +215,22 @@ They are otherwise equivalent to ``<it>ati</it>''.<p>
 <sect1>ChipID & ChipRev specifications<p>
 These specifications will cause the driver to associate the ``Device'' section
 only with an adapter having the same attributes, or an adapter whose PCI device
-ID the driver does not recognize.
+ID the driver does not recognise.
 In the second case, these options cause the driver to treat the adapter as if
 it was one with the specified PCI device ID or revision.
-ChipID can only be used with Mach32 or Mach64 adapters.
-ChipRev is meaningful only with Mach64 adapters.<p>
+ChipID can only be used with Mach32 or Mach64 adapters, and, thus, specifically
+excludes any other adapter from matching the ``Device'' section.
+ChipRev is meaningful only with Mach64 adapters, and then only if ChipID is
+also specified in the same ``Device'' section.<p>
 <sect1>IOBase<p>
 This option limits the adapters that can be associated with the ``Device''
-section to those with the specified I/O base.
-This option only applies to Mach64 adapters.<p>
+section to the one with the specified I/O base.
+This option only applies to Mach64 adapters and specifically excludes other
+adapters.<p>
 <sect1>BusID<p>
 This option limits the adapters that can be associated with the ``Device''
-section to those with the specified PCI Bus ID.<p>
+section to the one with the specified PCI Bus ID.
+This specification excludes non-PCI adapters.<p>
 <sect1>Clocks<p>
 For the purpose of specifying a clock line in your XF86Config, one of four
 different situations can occur, as follows.<p>
@@ -236,7 +249,7 @@ used on the great majority of Mach64 adapters.<p>
 If you are uncertain which situation applies to your adapter, you can run a
 clock probe with the command ``<tt>X -probeonly</tt>''.<p>
 <sect2>Clocks for supported programmable clock generators<p>
-At bootup, video BIOS initialization programmes an initial set of frequencies.
+At bootup, video BIOS initialisation programmes an initial set of frequencies.
 Two of these are reserved to allow the setting of modes that do not use a
 frequency from this initial set.
 One of these reserved slots is used by the BIOS mode set routine, the other by
@@ -253,7 +266,7 @@ This case is unlikely to occur, but is documented for the sake of
 completeness.<p>
 In this situation, the driver will probe the adapter for clock frequencies
 unless XF86Config clocks are already specified.
-In either case, the driver will then attempt to normalize the clocks to one of
+In either case, the driver will then attempt to normalise the clocks to one of
 the following specifications:
 <verb>
 BIOS setting 1:
@@ -345,17 +358,25 @@ Mach32 and Mach64 owners should note that this order is different than what
 they would use for previous XFree86 accelerated servers.<p>
 <sect2>Clocks for non-ATI adapters<p>
 If no clocks are specified in the XF86Config, the driver will probe for four
-clocks, the second of which will be assumed to be 28.322MHz.
+clocks, the second of which will be assumed to be 28.322 MHz.
+The first clock will typically be 25.175 MHz, but there are exceptions.
 You can include up to four clock frequencies in your XF86Config to specify the
 actual values used by the adapter.
 Any more will be ignored.<p>
 <sect1>Option <it>``crt_screen''</it><p>
 This specification is only effective when the driver detects that the adapter's
-BIOS has initialized both the digital flat panel and CRT interfaces.
+BIOS has initialised both the digital flat panel and CRT interfaces.
 In such a situation, the driver will normally drive the panel and disable the
 CRT.
 This specification causes the driver to disable the digital flat panel and
-display the screen image on the CRT instead.<p>
+display the screen image on the CRT instead.
+This specification will be reworked in the near future.<p>
+<sect1>Option <it>``noaccel''</it><p>
+By default, the driver will accelerate draw operations if a Mach64 CRTC is used
+to drive the display.
+As implemented in this driver, acceleration does not require a linear video
+memory aperture.
+This option disables this acceleration.<p>
 <sect1>Option <it>``nolinear''</it><p>
 By default, the driver will enable a linear video memory aperture for
 256-colour and higher depth modes if it is also using a Mach64 accelerator CRTC
@@ -373,10 +394,17 @@ This is normally the case for PCI or AGP adapters, and, so, this option is
 enabled by default.
 For other bus types, the default behaviour is to disable this option.<p>
 Note that, due to various limitations, this option is forcibly disabled when a
-linear video memory aperture is not enabled, or when the frame buffer depth is
-less than 8.
-The use of video acceleration, when implemented in a future driver release,
-will also disable frame buffer shadowing.<p>
+linear video memory aperture is not enabled, when the frame buffer depth is
+less than 8, or when acceleration is used.<p>
+<sect1>Option <it>``dpms''</it><p>
+This option enables the driver's support for VESA's Display Power Management
+Specification.<p>
+<sect1>Option <it>``backingstore''</it><p>
+This is not specifically a driver option.
+It is used to enable the server's support for backing store, a mechanism by
+which pixel data for occluded window regions is remembered by the server
+thereby alleviating the need to send expose events to X clients when the data
+needs to be redisplayed.<p>
 <sect1>MemBase <it>address</it><p>
 This specification is only effective for non-PCI Mach64 adapters, and is used
 to override the CPU address at which the adapter will map its video memory.
@@ -384,10 +412,33 @@ Normally, for non-PCI adapters, this address is set by a DOS install utility
 provided with the adapter.
 The MemBase option can also be used to enable the linear aperture in those
 cases where ATI's utility was not, or can not be, used.<p>
-For PCI adapters, this address is determined at system bootup according to the
-PCI Plug'n'Play specification which arbitrates the resource requirements of
-most devices in the system.
+For PCI and AGP adapters, this address is determined at system bootup according
+to the PCI Plug'n'Play specification which arbitrates the resource requirements
+of most devices in the system.
 This means the driver can not easily change the linear aperture address.<p>
+<sect>Video modes<p>
+Mode timings can be derived from the information in XFree86's doc subdirectory.
+However, it is no longer required to specify such timings in an XF86Config's
+``Monitor'' section(s), if only standard mode timings are to be used.
+The server automatically inserts VESA standard mode timings in every
+``Monitor'' section, and these modes will be checked first for mode constraints
+(monitor sync tolerances, video memory size, etc.).<p>
+Furthermore, it is also no longer required to specify mode names in ``Display''
+subsections.
+Should no mode names be specified (or those specified do not yield a usable
+mode), the server will automatically select as a default resolution the largest
+usable mode, whether or not the chosen mode is specified in the corresponding
+``Monitor'' section.<p>
+For a CRT monitor, you should still specify horizontal sync and vertical
+refresh rates in the corresponding ``Monitor'' section.
+Otherwise, the server will default these to those of a VGA monitor, which will
+limit resolutions to not much more than 640x480 at 72 Hz.
+For a digital flat panel, any sync tolerances should be removed from the
+corresponding ``Monitor'' section.
+The driver will automatically calculate these from the mode that is active on
+server entry.
+The driver also inserts timings for a mode called <it>"Native panel mode"</it>
+that represents the panel's native resolution.<p>
 <sect>Known problems and limitations<p>
 There are several known problems or limitations related to the XFree86 ATI
 driver.
@@ -397,13 +448,13 @@ They include:<p>
 using PCI Mach64 adapters.
 The great majority of these problems have been found to be due to system
 aspects that are unrelated to this driver.
-As of this writing, these problems can be divided into three general areas:<p>
+As of this writing, these problems can be divided into two general areas:<p>
 Improper mouse protocol specification with some recent mice.
 Try different protocol specifications or another mouse.<p>
 A system conflict with APM.
 This problem is Linux-specific.
 There is a bug in kernels 2.0.31 or earlier that prevents proper APM operation.
-Upgrade to a more recent kernel or disable APM support.<p>
+Upgrade to a more recent kernel or disable APM support in the kernel.<p>
 <item>When using a Mach64's accelerator CRTC, the virtual resolution must be
 less than 8192 pixels wide.
 The VGA CRTC further limits the virtual resolution width to less than 4096
@@ -453,18 +504,24 @@ This will be fixed in a future release.
 </itemize>
 Support for the following will be added in a future release:
 <itemize>
-<item>Mach32 accelerator's CRTC.
+<item>Mach32's accelerator CRTC.
 This support is the first step towards accelerated support for Mach32's,
 Mach8's, 8514/A's and other clones.
-<item>Colour depth greater than 8, where permitted by the hardware.
-<item>Mach64, Mach32, Mach8 and 8514/A Draw Engines.
+<item>Colour depth greater than 8 on non-integrated controllers, where
+permitted by the hardware.
+<item>Mach32, Mach8 and 8514/A Draw Engines.
 <item>Hardware cursors.
+<item>DGA X server extension.
+<item>TVOut, i.e. the ability to use a television screen as a monitor.
+<item>Motion Video, i.e. displaying an asynchronous data stream (TV signal,
+DVD, etc.) in a window or full-screen.
+<item>3D operations.
 </itemize>
 <sect>Reporting problems<p>
 If you are experiencing problems that are not already recorded in this
 document, first ensure that you have the latest current release of this driver
 and XFree86.
-Check the server's stderr output and <htmlurl
+Check the server's log (usually found in /var/log/XFree86.0.log) and <htmlurl
 name="ftp://ftp.xfree86.org/pub/XFree86"
 url="ftp://ftp.xfree86.org/pub/XFree86"> if you are uncertain.<p>
 Secondly, please check XFree86's doc directory for additional information.<p>
@@ -473,10 +530,10 @@ url="http://www.xfree86.org/FAQ">.<p>
 Fourth, a scan through the comp.windows.x.i386unix and comp.os.linux.x
 newsgroups using your favourite archiving service can also prove useful in
 resolving problems.<p>
-If you are still experiencing problems, you can send me e-mail at
-<email>tsi@ualberta.ca</email>.
+If you are still experiencing problems, you can send me <it>non-HTMLised</it>
+e-mail at <email>tsi@ualberta.ca</email>.
 Please be as specific as possible when describing the problem(s), and include
-an unedited copy of the server's stderr and the XF86Config file used.<p>
+an <it>unedited</it> copy of the server's log and the XF86Config file used.<p>
 <sect>Driver history<p>
 The complete history of the driver is rather cloudy.
 The following is more than likely to be incomplete and inaccurate.<p>
@@ -487,20 +544,19 @@ driver written by Thomas Roell (currently of Xi Graphics).<p>
 Then Doug Evans (<it>dje@cygnus.com</it>) added support for the ATI VGA Wonder
 XL, trying in the process to make the driver work with all other ATI adapters
 available at the time.<p>
-Rik Faith (<it>faith@cs.unc.edu</it>) obtained the X11R4 driver from Doug Evans
-in the summer of 1992 and ported the code to the X386 part of X11R5.
+Rik Faith (<it>faith@precisioninsight.com</it>) obtained the X11R4 driver from
+Doug Evans in the summer of 1992 and ported the code to the X386 part of X11R5.
 This subsequently became part of XFree86.<p>
 I (Marc Aurele La France) took over development and maintenance of the driver
 in the fall of 1993 after Rik got rid of his VGA Wonder adapter.<p>
 <sect>Driver versions<p>
 Due to the introduction of loadable drivers in XFree86 4.0, it has become
 necessary to track driver versions separately.
-With this release of the driver, I am introducing the following version
-numbering scheme.<p>
+Driver releases use the following version numbering scheme.<p>
 Version 1 of this driver is the one I inherited from Rik Faith.
 This is the version found in XFree86 2.0 and 2.1.<p>
 Version 2 is my first rewrite of this code which only ended up being a
-partially unsuccessful attempt at generalizing the driver for all VGA Wonder,
+partially unsuccessful attempt at generalising the driver for all VGA Wonder,
 Mach32, and early Mach64 adapters.
 Various releases of this version of the driver can be found in XFree86 2.1.1,
 3.1, 3.1.1 and 3.1.2.<p>
@@ -511,10 +567,8 @@ in the old ati_test debugging tool.
 This is the version found in XFree86 3.2, 3.3 and 3.3.1.<p>
 Version 4 is a rather major restructuring of version 3, which became larger
 than I could comfortably handle in one source file.
-This version will make it quite a bit easier to introduce new function such as
-acceleration, additional colour depths, and so on.
-This is the version found in XFree86 3.3.2, 3.3.3, 3.3.3.1, 3.3.3.2 and
-3.3.4.<p>
-Version 5 is an almost complete restructuring of version 4 to fit in the new
-driver API of XFree86 4.0.<p>
+This is the version found in XFree86 3.3.2, 3.3.3, 3.3.3.1, 3.3.3.2, 3.3.4,
+3.3.5 and 3.3.6.<p>
+Version 5 is an almost complete restructuring of version 4 to fit in the newer
+driver API of XFree86 4.0 and later.<p>
 </article>
