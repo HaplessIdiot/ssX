@@ -1,4 +1,5 @@
 XFree86 3.9.16Z (28 December 1999)
+3406. Temporary fix for building linux platform without glide (Robin Cutshaw).
 3405. Fix unresolved symbols for the loader (#3501, Matthieu Herrb).
 3404. Fix compiles on non-NetBSD systems (#3499, Matthieu Herrb).
 3403. Fix XKB XlookupString usage (#3511, Ivan Pascal).
@@ -9199,4 +9200,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.901 1999/12/27 03:36:01 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.902 1999/12/28 13:47:36 robin Exp $
