@@ -1,0 +1,20 @@
+XCOMM $XFree86$
+
+ XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup
+      SCRIPTSDIR = $(XF86SETUPLIBDIR)/scripts
+
+     SCRIPTFILES = mseconfig.tcl
+   
+all::
+
+#ifndef DontInstallPC98Version
+InstallNamedProg(xmseconfig,xmseconfig,$(BINDIR))
+InstallMultiple($(SCRIPTFILES),$(SCRIPTSDIR))
+
+InstallManPage(xmseconfig,$(MANDIR))
+#endif
+
+LinkSourceFile(mseconfig.tcl,$(XF86SRC)/XF86Setup/scripts)
+LinkSourceFile(xmseconfig,$(XF86SRC)/XF86Setup/scripts)
+LinkSourceFile(xmseconfig.man,$(XF86SRC)/XF86Setup/scripts)
+
