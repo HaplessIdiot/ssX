@@ -10107,8 +10107,8 @@ SiS_HandleDDC(SiS_Private *SiS_Pr, unsigned long VBFlags, int VGAEngine,
    if((!(VBFlags & VB_VIDEOBRIDGE)) && (adaptnum > 0)) return 0xFFFF;
    if(SiS_InitDDCRegs(SiS_Pr, VBFlags, VGAEngine, adaptnum, DDCdatatype, TRUE) == 0xFFFF) return 0xFFFF;
 
-   sr1f = SiS_GetReg(SiS_Pr->SiS_P3c4,0x1f) & 0xc0;
-   SiS_SetRegAND(SiS_Pr->SiS_P3c4,0x1f,0x3f);
+   sr1f = SiS_GetReg(SiS_Pr->SiS_P3c4,0x1f);
+   SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x1f,0x3f,0x04);
    if(VGAEngine == SIS_300_VGA) {
       cr17 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x17) & 0x80;
       if(!cr17) {
@@ -10129,7 +10129,7 @@ SiS_HandleDDC(SiS_Private *SiS_Pr, unsigned long VBFlags, int VGAEngine,
    } else {
       result = SiS_ReadDDC(SiS_Pr, DDCdatatype, buffer);
    }
-   SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x1f,sr1f);
+   SiS_SetReg(SiS_Pr->SiS_P3c4,0x1f,sr1f);
    if(VGAEngine == SIS_300_VGA) {
       SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x17,0x7f,cr17);
    }
@@ -10715,7 +10715,7 @@ SiS_SenseVGA2DDC(SiS_Private *SiS_Pr, SISPtr pSiS)
       SiS_Pr->SiS_DDC_DeviceAddr = 0xa0;	/* EDID V1 */
       DDCdatatype = 1;
    } else {
-   	xf86DrvMsg(pSiS->pScrn->scrnIndex, X_INFO, 
+   	xf86DrvMsg(pSiS->pScrn->scrnIndex, X_INFO,
 		"Do DDC answer\n");
    	return 0;				/* no DDC support (or no device attached) */
    }

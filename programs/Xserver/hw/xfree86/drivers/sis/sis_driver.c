@@ -1526,10 +1526,10 @@ SiSMergedFBSetDpi(ScrnInfoPtr pScrn1, ScrnInfoPtr pScrn2, SiSScrn2Rel srel)
       pScrn1->widthmm = ddcWidthmm;
       pScrn1->heightmm = ddcHeightmm;
       if(pScrn1->widthmm > 0) {
-	 pScrn1->xDpi = (int)((double)pScrn1->virtualX * 2.54 / pScrn1->widthmm);
+	 pScrn1->xDpi = (int)((double)pScrn1->virtualX * 25.4 / pScrn1->widthmm);
       }
       if(pScrn1->heightmm > 0) {
-	 pScrn1->yDpi = (int)((double)pScrn1->virtualY * 2.54 / pScrn1->heightmm);
+	 pScrn1->yDpi = (int)((double)pScrn1->virtualY * 25.4 / pScrn1->heightmm);
       }
 
     } else {
@@ -2113,7 +2113,7 @@ static xf86MonPtr
 SiSInternalDDC(ScrnInfoPtr pScrn, int crtno)
 {
    SISPtr        pSiS = SISPTR(pScrn);
-   USHORT        temp, i, realcrtno = crtno;
+   USHORT        temp = 0xffff, temp1, i, realcrtno = crtno;
    unsigned char buffer[256];
    xf86MonPtr    pMonitor = NULL;
 
@@ -2129,13 +2129,12 @@ SiSInternalDDC(ScrnInfoPtr pScrn, int crtno)
       else return NULL;
    }
 
-   temp = SiS_HandleDDC(pSiS->SiS_Pr, pSiS->VBFlags, pSiS->VGAEngine, realcrtno, 0, &buffer[0]);
-   if((!temp) || (temp == 0xffff)) {
-      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-                "CRT%d DDC probing failed%s\n", crtno + 1,
-		(crtno == 0) ? ", now trying via VBE" : "");
-      return(NULL);
-   } else {
+   i = 3; /* Number of retrys */
+   do {
+      temp1 = SiS_HandleDDC(pSiS->SiS_Pr, pSiS->VBFlags, pSiS->VGAEngine, realcrtno, 0, &buffer[0]);
+      if((temp1) && (temp1 != 0xffff)) temp = temp1;
+   } while((temp == 0xffff) && i--);
+   if(temp != 0xffff) {
       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT%d DDC supported\n", crtno + 1);
       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT%d DDC level: %s%s%s%s\n",
 	     crtno + 1,
@@ -2144,7 +2143,7 @@ SiSInternalDDC(ScrnInfoPtr pScrn, int crtno)
 	     (temp & 0x08) ? "D&P" : "",
              (temp & 0x10) ? "FPDI-2" : "");
       if(temp & 0x02) {
-	 i = 3;  /* Number of retrys */
+	 i = 5;  /* Number of retrys */
 	 do {
 	    temp = SiS_HandleDDC(pSiS->SiS_Pr, pSiS->VBFlags, pSiS->VGAEngine, realcrtno, 1, &buffer[0]);
 	 } while((temp) && i--);
@@ -2171,26 +2170,36 @@ SiSInternalDDC(ScrnInfoPtr pScrn, int crtno)
          return(NULL);
       } 
       return(NULL);
+   } else {
+      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+                "CRT%d DDC probing failed\n", crtno + 1);
+      return(NULL);
    }
 }
 
 static xf86MonPtr
-SiSDoPrivateDDC(ScrnInfoPtr pScrn)
+SiSDoPrivateDDC(ScrnInfoPtr pScrn, int *crtnum)
 {
     SISPtr pSiS = SISPTR(pScrn);
 
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
-       if(pSiS->SecondHead)
+       if(pSiS->SecondHead) {
+          *crtnum = 1;
 	  return(SiSInternalDDC(pScrn, 0));
-       else
+       } else {
+          *crtnum = 2;
 	  return(SiSInternalDDC(pScrn, 1));
+       }
     } else
 #endif
-    if(pSiS->CRT1off)
+    if(pSiS->CRT1off) {
+       *crtnum = 2;
        return(SiSInternalDDC(pScrn, 1));
-    else
+    } else {
+       *crtnum = 1;
        return(SiSInternalDDC(pScrn, 0));
+    }
 }
 
 static BOOLEAN
@@ -4368,20 +4377,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
        if(xf86LoadSubModule(pScrn, "ddc")) {
+          int crtnum = 0;
           xf86LoaderReqSymLists(ddcSymbols, NULL);
-	  if((pMonitor = SiSDoPrivateDDC(pScrn))) {
+	  if((pMonitor = SiSDoPrivateDDC(pScrn, &crtnum))) {
 	     didddc2 = TRUE;
-	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, ddcsstr,
-#ifdef SISDUALHEAD
-		pSiS->DualHeadMode ? (pSiS->SecondHead ? 1 : 2) :
-#endif
-		   (pSiS->CRT1off ? 2 : 1));
+	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, ddcsstr, crtnum);
 	     xf86PrintEDID(pMonitor);
-	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, ddcestr,
-#ifdef SISDUALHEAD
-		pSiS->DualHeadMode ? (pSiS->SecondHead ? 1 : 2) :
-#endif
-		   (pSiS->CRT1off ? 2 : 1));
+	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, ddcestr, crtnum);
 	     xf86SetDDCproperties(pScrn, pMonitor);
 	     pScrn->monitor->DDC = pMonitor;
           }
