@@ -5,8 +5,19 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.42 2002/09/17 01:26:24 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.43 2002/11/25 14:05:06 eich Exp $
 //
+
+// Layouts that still need be composed by old rules
+! $oldlayouts = az ca fr_CH de_CH hu lt_std vn
+
+// If you want non-latin layouts implicitly include the en_US layout
+// uncomment lines below
+//! $nonlatin = am ar ben bg by dev el ge_la ge_ru guj gur il il_phonetic\
+//              ir iu mk mm ru sr th tj tml ua
+
+! $pcmodels = pc101 pc102 pc104 pc105
+! $mac = macintosh macintosh_old
 
 ! model 	=	keycodes
   macintosh_old	=	macintosh
@@ -15,18 +26,18 @@
   abnt2		=	xfree86(abnt2)
   *		=	xfree86
 
+! $azerty = be fr
+! $qwertz = al cz de hr pl2 si sk
+
 ! layout[1]	=	keycodes
-  be		= 	+aliases(azerty)
-  fr		= 	+aliases(azerty)
-  al		= 	+aliases(qwertz)
-  cz		= 	+aliases(qwertz)
-  de		= 	+aliases(qwertz)
-  hr		= 	+aliases(qwertz)
-  pl2		= 	+aliases(qwertz)
-  si		= 	+aliases(qwertz)
-  sk		= 	+aliases(qwertz)
-  si		= 	+aliases(qwertz)
-  *		=	+aliases(qwerty)
+  $azerty       =       +aliases(azerty)
+  $qwertz       =       +aliases(qwertz)
+  *             =       +aliases(qwerty)
+
+! layout	=	keycodes
+  $azerty       =       +aliases(azerty)
+  $qwertz       =       +aliases(qwertz)
+  *             =       +aliases(qwerty)
 
 ! model 	=	geometry
   microsoft	=	microsoft(natural)
@@ -35,10 +46,7 @@
   dell101	=	dell(dell101)
   flexpro	=	keytronic(FlexPro)
   omnikey101	=	northgate(omnikey101)
-  pc101		=	pc(pc101)
-  pc102		=	pc(pc102)
-  pc104		=	pc(pc104)
-  pc105		=	pc(pc105)
+ $pcmodels	=	pc(%m)
   jp106		=	pc(jp106)
   everex	=	everex(STEPnote)
   winbook	=	winbook(XP5)
@@ -49,59 +57,30 @@
   *		=       pc(pc104)
 
 ! model		variant		layout	=	symbols
-  pc102		nodeadkeys	*	=	en_US(pc102%_v)+%l%(v)
-  pc104		nodeadkeys	*	=	en_US(pc104%_v)+%l%(v)
-  pc105		nodeadkeys	*	=	en_US(pc105%_v)+%l%(v)
-  microsoft	nodeadkeys	*	=	en_US(pc104%_v)+%l%(v)
   macintosh	nodeadkeys	*	=	macintosh/us(extended)+macintosh/%l%(v)
-  powerpcps2	nodeadkeys	*	=	en_US(pc104%_v)+%l%(v)
-  *		nodeadkeys	*	=	en_US(pc101%_v)+%l%(v)
+ $pcmodels	nodeadkeys  $oldlayouts	=	en_US(%m%_v)+%l%(v)
+  *		nodeadkeys  $oldlayouts	=	en_US(pc104%_v)+%l%(v)
 
 ! model		layout	=	symbols
-  pc101		us	=	us(pc101)
-  pc101		en_US	=	en_US(pc101)
-  pc101		intl	=	us(pc101compose)
-  pc101		*	=	en_US(pc101)+%l%(v)
-  pc102		us	=	us(pc102)
-  pc102		en_US	=	en_US(pc102)
-  pc102		intl	=	us(pc102compose)
-  pc102		*	=	en_US(pc102)+%l%(v)
-  pc104		us	=	us(pc104)
-  pc104		en_US	=	en_US(pc104)
-  pc104		intl	=	us(pc104compose)
-  pc104		*	=	en_US(pc104)+%l%(v)
-  pc105		us	=	us(pc105)
-  pc105		en_US	=	en_US(pc105)
-  pc105		intl	=	us(pc105compose)
-  pc105		*	=	en_US(pc105)+%l%(v)
-  pc104		us	=	us(pc104)
-  pc104		en_US	=	en_US(pc104)
-  pc104		*	=	en_US(pc104)+%l%(v)
-  pc105		us	=	us(pc105)
-  pc105		en_US	=	en_US(pc105)
-  pc105		*	=	en_US(pc105)+%l%(v)
-  pc101		us_intl	=	us(pc101)+us_intl
   pc98		nec/jp	=	nec/jp(pc98)
   abnt2		br	=	us(pc101)+br
-  macintosh	us	=	macintosh/us(extended)
-  macintosh	en_US	=	macintosh/us(extended)
-  macintosh	*	=	macintosh/us(extended)+macintosh/%l%(v)
-  macintosh_old	us	=	macintosh/us(extended)
-  macintosh_old	en_US	=	macintosh/us(extended)
-  macintosh_old	*	=	macintosh/us(extended)+macintosh/%l%(v)
+  pc101		us_intl	=	us(pc101)+us_intl
+ $mac		us	=	macintosh/us(extended)
+ $mac		en_US	=	macintosh/us(extended)
+ $mac		*	=	macintosh/us(extended)+macintosh/%l%(v)
+ $pcmodels      intl    =       us(%mcompose)
+  *		intl	=	us(pc104compose) 
   *		jp	=	jp
-  *		us	=	us(pc104)
-  *		en_US	=	en_US(pc104)
-  *		intl	=	us(pc104compose)
-  *		*	=	en_US(pc104)+%l%(v)
+ $pcmodels $oldlayouts  =       en_US(%m)+%l%(v)
+ $pcmodels $nonlatin	=	pc/pc(%m)+pc/us+pc/%l%(v):2
+ $pcmodels	*	=	pc/pc(%m)+pc/%l%(v)
+  *	   $oldlayouts  =       en_US(pc104)+%l%(v)
+  *	   $nonlatin	=	pc/pc(pc104)+pc/us+pc/%l%(v):2
+  *		*	=	pc/pc(pc104)+pc/%l%(v)
 
 ! model	    layout[1]	=	symbols
-  pc101		*	=	pc/pc(%m)+pc/%l[1]%(v[1])
-  pc102		*	=	pc/pc(%m)+pc/%l[1]%(v[1])
-  pc103		*	=	pc/pc(%m)+pc/%l[1]%(v[1])
-  pc104		*	=	pc/pc(%m)+pc/%l[1]%(v[1])
-  pc105		*	=	pc/pc(%m)+pc/%l[1]%(v[1])
-  *		*	=	pc/pc(104)+pc/%l[1]%(v[1])
+ $pcmodels	*	=	pc/pc(%m)+pc/%l[1]%(v[1])
+  *		*	=	pc/pc(pc104)+pc/%l[1]%(v[1])
 
 ! layout[2]	=	symbols
   *		=	+pc/%l[2]%(v[2]):2
@@ -112,70 +91,28 @@
 ! layout[4]	=	symbols
   *		=	+pc/%l[4]%(v[4]):4
  
-! model		=	symbols
-  airkey	=	+inet(%m)
-  acpi		=	+inet(%m)
-  scorpius	=	+inet(%m)
-  btc5113rf	=	+inet(%m)
-  btc5126t	=	+inet(%m)
-  btc9000	=	+inet(%m)
-  btc9000a	=	+inet(%m)
-  cherryblue	=	+inet(%m)
-  cherrybluea	=	+inet(%m)
-  chicony	=	+inet(%m)
-  chicony9885	=	+inet(%m)
-  compaqeak8	=	+inet(%m)
-  compaqik7	=	+inet(%m)
-  compaqik13	=	+inet(%m)
-  compaqik18	=	+inet(%m)
-  armada	=	+inet(%m)
-  presario	=	+inet(%m)
-  ipaq		=	+inet(%m)
-  dell		=	+inet(%m)
-  inspiron	=	+inet(%m)
-  dexxa		=	+inet(%m)
-  diamond	=	+inet(%m)
-  genius	=	+inet(%m)
-  hpi6		=	+inet(%m)
-  hp2501	=	+inet(%m)
-  hp2505	=	+inet(%m)
-  rapidaccess	=	+inet(%m)
-  rapidaccess2	=	+inet(%m)
-  rapidaccess2a	=	+inet(%m)
-  ltcd		=	+inet(%m)
-  logicdit	=	+inet(%m)
-  logicdp	=	+inet(%m)
-  logicdpa	=	+inet(%m)
-  logicdpa2	=	+inet(%m)
-  logicdo	=	+inet(%m)
-  logicfn	=	+inet(%m)
-  logidak	=	+inet(%m)
-  logiik	=	+inet(%m)
-  itouch	=	+inet(%m)
-  logiitc	=	+inet(%m)
-  logiik	=	+inet(%m)
-  logiink	=	+inet(%m)
-  itouchin	=	+inet(%m)
-  mx1998	=	+inet(%m)
-  mx2500	=	+inet(%m)
-  mx2750	=	+inet(%m)
-  microsoftinet	=	+inet(%m)
-  microsoftpro	=	+inet(%m)
-  microsoftprose =	+inet(%m)
-  microsoftoffice =	+inet(%m)
-  oretec	=	+inet(%m)
-  propeller	=	+inet(%m)
-  qtronix	=	+inet(%m)
-  samsung4500	=	+inet(%m)
-  samsung4510	=	+inet(%m)
-  sk1300	=	+inet(%m)
-  sk2500	=	+inet(%m)
-  sk6200	=	+inet(%m)
-  sk7100	=	+inet(%m)
-  sven		=	+inet(%m)
-  symplon	=	+inet(%m)
-  trust		=	+inet(%m)
-  yahoo		=	+inet(%m)
+! $inetkbds = airkey acpi scorpius \
+              btc5113rf btc5126t btc9000 btc9000a \
+              cherryblue cherrybluea \
+              chicony chicony9885 \
+              compaqeak8 compaqik7 compaqik13 compaqik18 armada presario ipaq \
+              dell inspiron \
+              dexxa diamond genius \
+              hpi6 hp2501 hp2505 \
+              rapidaccess rapidaccess2 rapidaccess2a \
+              ltcd logicdit logicdp logicdpa logicdpa2 logicdo logicfn \
+              logidak logiik itouch logiitc logiik logiink itouchin \
+              mx1998 mx2500 mx2750 \
+              microsoftinet microsoftpro microsoftprose microsoftoffice \
+              oretec \
+              propeller \
+              qtronix \
+              samsung4500 samsung4510 \
+              sk1300 sk2500 sk6200 sk7100 \
+              sven symplon trust yahoo
+
+! model         =       symbols
+  $inetkbds     =       +inet(%m)
 
 ! model		layout	=	compat
   pc98		nec/jp	=	pc98(basic)

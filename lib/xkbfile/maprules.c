@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.15 2002/04/04 14:05:36 eich Exp $ */
+/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.16 2002/06/05 00:00:33 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -459,12 +459,14 @@ static Bool
 #if NeedFunctionPrototypes
 CheckLine(	InputLine *		line,
 		RemapSpec *		remap,
-		XkbRF_RulePtr		rule)
+		XkbRF_RulePtr		rule,
+		XkbRF_GroupPtr		group)
 #else
-CheckLine(line,remap,rule)
+CheckLine(line,remap,rule,group)
     InputLine *		line;
     RemapSpec *		remap;
     XkbRF_RulePtr	rule;
+    XkbRF_GroupsPtr	group;
 #endif
 {
 char *		str,*tok;
@@ -474,9 +476,35 @@ _Xstrtokparams	strtok_buf;
 Bool 		append = False;
 
     if (line->line[0]=='!') {
-	SetUpRemap(line,remap);
-	return False;
+        if (line->line[1] == '$' ||
+            (line->line[1] == ' ' && line->line[2] == '$')) {
+            char *gname = strchr(line->line, '$');
+            char *words = strchr(gname, ' ');
+            if(!words)
+                return False;
+            *words++ = '\0';
+            for (; *words; words++) {
+                if (*words != '=' && *words != ' ')
+                    break;
+            }
+            if (*words == '\0')
+                return False;
+            group->name = _XkbDupString(gname);
+            group->words = _XkbDupString(words);
+            for (i = 1, words = group->words; *words; words++) {
+                 if ( *words == ' ') {
+                     *words++ = '\0';
+                     i++;
+                 }
+            }
+            group->number = i;
+            return True;
+        } else {
+	    SetUpRemap(line,remap);
+	    return False;
+        }
     }
+
     if (remap->num_remap==0) {
 	PR_DEBUG("Must have a mapping before first line of data\n");
 	PR_DEBUG("Illegal line of data ignored\n");
@@ -690,16 +718,49 @@ XkbRF_ApplyRule(rule,names)
     Apply(rule->keymap,   &names->keymap);
 }
 
+static Bool
+#if NeedFunctionPrototypes
+CheckGroup(	XkbRF_RulesPtr          rules,
+		char * 			group_name,
+		char * 			name)
+#else
+XkbRF_CheckApplyRule(rules,group,name)
+    XkbRF_RulesPtr      rules;
+    char *		group_name;
+    char *		name;
+#endif
+{
+   int i;
+   char *p;
+   XkbRF_GroupPtr group;
+
+   for (i = 0, group = rules->groups; i < rules->num_groups; i++, group++) {
+       if (! strcmp(group->name, group_name)) {
+           break;
+       }
+   }
+   if (i == rules->num_groups)
+       return False;
+   for (i = 0, p = group->words; i < group->number; i++, p += strlen(p)+1) {
+       if (! strcmp(p, name)) {
+           return True;
+       }
+   }
+   return False;
+}
+
 static int
 #if NeedFunctionPrototypes
 XkbRF_CheckApplyRule(	XkbRF_RulePtr 		rule,
 			XkbRF_MultiDefsPtr	mdefs,
-			XkbComponentNamesPtr	names)
+			XkbComponentNamesPtr	names,
+			XkbRF_RulesPtr          rules)
 #else
 XkbRF_CheckApplyRule(rule,mdefs,names)
     XkbRF_RulePtr		rule;
     XkbRF_MultiDefsPtr		mdefs;
     XkbComponentNamesPtr	names;
+    XkbRF_RulesPtr          	rules;
 #endif
 {
     Bool pending = False;
@@ -710,8 +771,13 @@ XkbRF_CheckApplyRule(rule,mdefs,names)
         if (strcmp(rule->model, "*") == 0) {
             pending = True;
         } else {
-	    if (strcmp(rule->model, mdefs->model) != 0)
-	       return 0;
+            if (rule->model[0] == '$') {
+               if (!CheckGroup(rules, rule->model, mdefs->model))
+                  return 0;
+            } else {
+	       if (strcmp(rule->model, mdefs->model) != 0)
+	          return 0;
+	    }
 	}
     }
     if (rule->option != NULL) {
@@ -728,8 +794,14 @@ XkbRF_CheckApplyRule(rule,mdefs,names)
         if (strcmp(rule->layout, "*") == 0) {
             pending = True;
         } else {
-	    if (strcmp(rule->layout, mdefs->layout[rule->layout_num]) != 0)
-	       return 0;
+            if (rule->layout[0] == '$') {
+               if (!CheckGroup(rules, rule->layout,
+                               mdefs->layout[rule->layout_num]))
+                  return 0;
+	    } else {
+	       if (strcmp(rule->layout, mdefs->layout[rule->layout_num]) != 0)
+	           return 0;
+	    }
 	}
     }
     if (rule->variant != NULL) {
@@ -739,8 +811,15 @@ XkbRF_CheckApplyRule(rule,mdefs,names)
         if (strcmp(rule->variant, "*") == 0) {
             pending = True;
         } else {
-	    if (strcmp(rule->variant, mdefs->variant[rule->variant_num]) != 0)
-	       return 0;
+            if (rule->variant[0] == '$') {
+               if (!CheckGroup(rules, rule->variant,
+                               mdefs->variant[rule->variant_num]))
+                  return 0;
+            } else {
+	       if (strcmp(rule->variant,
+                          mdefs->variant[rule->variant_num]) != 0)
+	           return 0;
+	    }
 	}
     }
     if (pending) {
@@ -808,7 +887,7 @@ int		skip;
     for (rule = rules->rules, i=0; i < rules->num_rules; rule++, i++) {
 	if ((rule->flags & flags) != flags)
 	    continue;
-	skip = XkbRF_CheckApplyRule(rule, mdefs, names);
+	skip = XkbRF_CheckApplyRule(rule, mdefs, names, rules);
 	if (skip && !(flags & XkbRF_Option)) {
 	    for ( ;(i < rules->num_rules) && (rule->number == skip);
 		  rule++, i++);
@@ -991,6 +1070,33 @@ XkbRF_AddRule(rules)
     return &rules->rules[rules->num_rules++];
 }
 
+XkbRF_GroupPtr
+#if NeedFunctionPrototypes
+XkbRF_AddGroup(XkbRF_RulesPtr	rules)
+#else
+XkbRF_AddGroup(rules)
+    XkbRF_RulesPtr	rules;
+#endif
+{
+    if (rules->sz_groups<1) {
+	rules->sz_groups= 16;
+	rules->num_groups= 0;
+	rules->groups= _XkbTypedCalloc(rules->sz_groups,XkbRF_GroupRec);
+    }
+    else if (rules->num_groups >= rules->sz_groups) {
+	rules->sz_groups *= 2;
+	rules->groups= _XkbTypedRealloc(rules->groups,rules->sz_groups,
+							XkbRF_GroupRec);
+    }
+    if (!rules->groups) {
+	rules->sz_groups= rules->num_groups= 0;
+	return NULL;
+    }
+
+    bzero((char *)&rules->groups[rules->num_groups],sizeof(XkbRF_GroupRec));
+    return &rules->groups[rules->num_groups++];
+}
+
 Bool
 #if NeedFunctionPrototypes
 XkbRF_LoadRules(FILE *file, XkbRF_RulesPtr rules)
@@ -1003,16 +1109,25 @@ XkbRF_LoadRules(file,rules)
 InputLine	line;
 RemapSpec	remap;
 XkbRF_RuleRec	trule,*rule;
+XkbRF_GroupRec  tgroup,*group;
 
     if (!(rules && file))
 	return False;
     bzero((char *)&remap,sizeof(RemapSpec));
+    bzero((char *)&tgroup,sizeof(XkbRF_GroupRec));
     InitInputLine(&line);
     while (GetInputLine(file,&line,True)) {
-	if (CheckLine(&line,&remap,&trule)) {
-	    if ((rule= XkbRF_AddRule(rules))!=NULL) {
-		*rule= trule;
-		bzero((char *)&trule,sizeof(XkbRF_RuleRec));
+	if (CheckLine(&line,&remap,&trule,&tgroup)) {
+            if (tgroup.number) {
+	        if ((group= XkbRF_AddGroup(rules))!=NULL) {
+		    *group= tgroup;
+		    bzero((char *)&tgroup,sizeof(XkbRF_GroupRec));
+	        }
+	    } else {
+	        if ((rule= XkbRF_AddRule(rules))!=NULL) {
+		    *rule= trule;
+		    bzero((char *)&trule,sizeof(XkbRF_RuleRec));
+	        }
 	    }
 	}
 	line.num_line= 0;
@@ -1384,6 +1499,7 @@ XkbRF_Free(rules,freeRules)
 {
 int		i;
 XkbRF_RulePtr	rule;
+XkbRF_GroupPtr	group;
 
     if (!rules)
 	return;
@@ -1416,6 +1532,16 @@ XkbRF_RulePtr	rule;
 	_XkbFree(rules->rules);
 	rules->num_rules= rules->sz_rules= 0;
 	rules->rules= NULL;
+    }
+
+    if (rules->groups) {
+	for (i=0, group=rules->groups;i<rules->num_groups;i++,group++) {
+	    if (group->name)	_XkbFree(group->name);
+	    if (group->words)	_XkbFree(group->words);
+	}
+	_XkbFree(rules->groups);
+	rules->num_groups= 0;
+	rules->groups= NULL;
     }
     if (freeRules)
 	_XkbFree(rules);

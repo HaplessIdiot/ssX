@@ -27,7 +27,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/xkbfile/XKBrules.h,v 3.4 2002/07/01 02:25:53 tsi Exp $ */
 
 /***====================================================================***/
 
@@ -71,6 +71,12 @@ typedef struct _XkbRF_Rule {
 	unsigned		flags;
 } XkbRF_RuleRec,*XkbRF_RulePtr;
 
+typedef struct _XkbRF_Group {
+	int			number;
+	char *			name;
+	char *			words;
+} XkbRF_GroupRec, *XkbRF_GroupPtr;
+
 #define	XkbRF_PendingMatch	(1L<<1)
 #define	XkbRF_Option		(1L<<2)
 #define	XkbRF_Append		(1L<<3)
@@ -90,6 +96,9 @@ typedef struct _XkbRF_Rules {
 	unsigned short		sz_rules;
 	unsigned short		num_rules;
 	XkbRF_RulePtr		rules;
+	unsigned short		sz_groups;
+	unsigned short		num_groups;
+        XkbRF_GroupPtr		groups;
 } XkbRF_RulesRec, *XkbRF_RulesPtr;
 
 /***====================================================================***/
@@ -109,6 +118,8 @@ extern XkbRF_RulePtr	XkbRF_AddRule(
     XkbRF_RulesPtr	/* rules */
 #endif
 );
+
+extern XkbRF_GroupPtr XkbRF_AddGroup(XkbRF_RulesPtr  rules);
 
 extern Bool	XkbRF_LoadRules(
 #if NeedFunctionPrototypes
