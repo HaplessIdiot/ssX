@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.8 1999/04/11 13:11:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.10 2000/09/20 00:09:14 keithp Exp $ */
 
 /*
  * This is based on cfbcmap.c.  The functions here are useful independently
@@ -447,7 +447,7 @@ miGetDefaultVisualMask(int depth)
 	return SMALL_VISUALS;
 }
 
-Bool
+static Bool
 miVisualTypesSet (int depth)
 {
     miVisualsPtr    visuals;
@@ -473,6 +473,7 @@ miSetPixmapDepths (void)
 		return FALSE;
 	}
     }
+    return TRUE;
 }
 
 Bool

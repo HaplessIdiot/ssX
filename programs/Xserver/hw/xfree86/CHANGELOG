@@ -1,4 +1,10 @@
 XFree86 4.1.99.1 (xx June 2001)
+  53. Add missing return value for miSetPixmapDepths() (#4708,
+      ISHIKAWA Mutsumi).
+  52. Fill in the v4l man page template with some useful information (#4707,
+      Gerd Knorr).
+  51. Fix FFB OpenGL SwapBuffers (#4705, David S. Miller).
+  50. Fix some mi build warnings (#4695-4701,4704, Adam Sulmicki).
   49. Work around a problem building the rstart specs doc with a symlinked
       build tree (David Dawes).
   48. Fix Glint 300SX+Delta support. Add faster 500TX text acceleration
@@ -13397,4 +13403,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1810 2001/05/29 11:23:36 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1811 2001/05/29 18:14:13 dawes Exp $
