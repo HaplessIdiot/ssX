@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.47 2004/03/20 01:52:16 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.48 2004/08/26 22:38:47 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -44,6 +44,7 @@ typedef struct _riva_hw_state
     U032 scale;
     U032 dither;
     U032 extra;
+    U032 fifo;
     U032 pixel;
     U032 horiz;
     U032 arbitration0;
