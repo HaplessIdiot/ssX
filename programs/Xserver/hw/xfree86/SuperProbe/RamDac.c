@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.28 1997/03/27 18:38:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.29 1997/04/08 10:11:03 hohndel Exp $ */
 
 #include "Probe.h"
 
@@ -554,6 +554,28 @@ int *RamDac;
 	return(Found);
 }
 
+static Bool CH8398Check(RamDac)
+int *RamDac;
+{
+/* This dac does not provide much information to distinguish itself. */
+/* So this probe may not be suitable, unless you know that the ch8398 */
+/* is a possibility. */
+	Byte cid;
+	Bool Found = FALSE;
+
+	dactopel();
+	inp(0x3c6);
+	inp(0x3c6);
+	inp(0x3c6);
+	cid = inp(0x3c6);     /* device ID */
+        if (cid == 0xc0) {
+	    Found = TRUE;
+	    *RamDac = DAC_CH8398;
+	}
+	dactopel();
+	return Found;
+}
+
 static Bool S3_STG1700Check(RamDac)
 int *RamDac;
 {
@@ -1036,6 +1058,11 @@ int *RamDac;
 		return;
 	    }
 	    if (S3_STG1700Check(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
+	    if (CH8398Check(RamDac))
 	    {
 		DisableIOPorts(NUMPORTS, Ports);
 		return;

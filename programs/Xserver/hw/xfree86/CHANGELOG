@@ -1,4 +1,5 @@
 XFree86 3.9c (xx May 1997)
+ 773. Add CH8398 RAMDAC detection to SuperProbe (#418, Kurt Olsen).
  772. Fix an error in xterm's vt220 emulation: the DECUDK is only supposed
       to be interpreted for _shifted_ function keys (#384, Thomas E. Dickey).
  771. Patch to GLX comment/example in xf86site.def (#409, Henry Worth).
