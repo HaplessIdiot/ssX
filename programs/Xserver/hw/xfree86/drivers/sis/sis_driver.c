@@ -27,7 +27,7 @@
  *
  *  Fixes for 630 chipsets: Thomas Winischhofer.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.69 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.74 2002/01/10 19:05:45 eich Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -829,7 +829,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         }
     }
 
-    /* We use a programamble clock */
+    /* We use a programmable clock */
     pScrn->progClock = TRUE;
 
     /* Set the bits per RGB for 8bpp mode */
@@ -884,6 +884,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         pSiS->IOAddress = pSiS->PciInfo->memBase[1] & 0xFFFFFFF0;
     }
 
+    from = X_PROBED;
     xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
            (unsigned long)pSiS->IOAddress);
 
@@ -1868,7 +1869,9 @@ static Bool
 SISEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+#ifdef XF86DRI
     SISPtr pSiS = SISPTR(pScrn);
+#endif
 
     if (!SISModeInit(pScrn, pScrn->currentMode))
 	return FALSE;

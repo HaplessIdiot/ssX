@@ -1,7 +1,17 @@
 XFree86 4.1.99.6 (xx January 2002)
- 657. More ROP_NEEDS_SOURCE fixes for Savage chipsets (Egbert Eich).
- 656. Improvements to the SiS driver which should fix a lot of the 630
+ 663. More ROP_NEEDS_SOURCE fixes for Savage chipsets (Egbert Eich).
+ 662. Improvements to the SiS driver which should fix a lot of the 630
       issues (Thomas Winischhofer).
+ 661. In XDarwin IOKit mode, ignore screens sized 1x1 (Torrey T. Lyons).
+ 660. Some missing QNX fixes (#5121, Frank Liu).
+ 659. Update XDarwin man page and usage message for XFree86 4.2.0. Add
+      XFree86 man page to XDarwin distribution (Torrey T. Lyons).
+ 658. Add bn_BD.UTF-8 to locale.dir (Taneem Ahmed).
+ 657. Fix luit not dropping priviledges when run with the -c flag (#5134,
+      Juliusz Chroboczek).
+ 656. Fix unresolved symbol and loader symbol registration problems in the
+      i810 driver that were introduced with the i830 support (David Dawes,
+      Abraham vd Merwe).   
  655. Fix sparklies problem for other Trident *BladeXP chipsets 
       (Alan Hourihane).
  654. In XDarwin IOKit mode, ignore screens that can not provide the requested
@@ -14496,4 +14506,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2122 2002/01/10 06:59:47 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2123 2002/01/10 19:08:58 eich Exp $
