@@ -1,4 +1,6 @@
 XFree86 4.0b (?? May 2000)
+ 153. Fix lib/GL/mesa/src/X86/Imakefile for m4 (Alan Hourihane).
+ 152. Fix m4 rules in Imake.tmpl (Alan Hourihane).
  151. ATI documentation update (Marc La France).
  150. Disable debugging messages from XF86-Misc extension (Marc La France).
  149. Ensure XAA always respects user options that disable subsets of its
