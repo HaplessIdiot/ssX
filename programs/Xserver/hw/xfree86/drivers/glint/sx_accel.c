@@ -351,6 +351,12 @@ SXSetupForFillRectSolid(
     GLINT_WAIT(6);
     REPLICATE(color);
     DO_PLANEMASK(planemask);
+    if (pScrn->bitsPerPixel >= 24) {
+	GLINT_WRITE_REG(pGlint->pprod | FBRM_DstEnable, FBReadMode);
+	GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
+	GLINT_WRITE_REG(color, ConstantColor);
+	pGlint->FrameBufferReadMode = 0;
+    } else
     if (rop == GXcopy) {
 	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
 	GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
@@ -861,6 +867,7 @@ SXSetupForSolidLine(ScrnInfoPtr pScrn, int color,
     GLINT_WAIT(7);
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG(color, GLINTColor);
+    GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
     if (rop == GXcopy) {
   	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
     } else {

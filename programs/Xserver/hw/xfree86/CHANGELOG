@@ -1,4 +1,5 @@
 XFree86 4.0b (?? April 2000)
+ 100. Fix depth24 acceleration problems with 300SX (Alan Hourihane).
   99. Update glint driver for fb24_32 and ensure memset used in fb is
       xf86memset when using loader (Alan Hourihane).
   98. By default, limit ATI 3DRage LTPro's to 200 MHz, instead of 230 MHz
