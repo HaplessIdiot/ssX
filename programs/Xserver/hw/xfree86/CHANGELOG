@@ -1,4 +1,6 @@
 XFree86 3.1.0f (1 December 1994)
+104. Eliminate references to SYSV386.
+103. Add check for usable linear fb for 864/964 boards.
 102. Detect and reject Mach64 boards whose ROM or VGA capability has been
      disabled (Marc Aurele La France).
 101. Expermental code in the vgawonder driver to reset Mach* boards.  This
