@@ -32,7 +32,7 @@ authorization from The Open Group.
 X Window System is a trademark of The Open Group.
 
 */
-/* $XFree86: xc/programs/xfwp/io.c,v 1.6 1999/03/02 11:49:39 dawes Exp $ */
+/* $XFree86: xc/programs/xfwp/io.c,v 1.7 2000/05/11 18:14:44 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -219,8 +219,9 @@ doProcessWritables(
 	     * since we just wrote data to the conn_to fd, mark it as ready 
 	     * to check for reading when we go through select() the next time
 	     */
-	    if (client_conn_array[fd_counter]->conn_to != -1)
-		FD_SET(client_conn_array[fd_counter]->conn_to, rinit);
+	    if (client_conn_array[fd_counter] != NULL)
+		if (client_conn_array[fd_counter]->conn_to != -1)
+		    FD_SET(client_conn_array[fd_counter]->conn_to, rinit);
 	} /* end else no errors on write  */
     } else
     {

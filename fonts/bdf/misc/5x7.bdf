@@ -2,8 +2,8 @@ STARTFONT 2.1
 COMMENT AUTOMATICALLY GENERATED FILE. DO NOT EDIT!
 COMMENT In this version of the font file, all characters >= U+3200 are
 COMMENT not encoded to keep XFontStruct small.
-COMMENT "Id: 5x7.bdf,v 1.30 1999-11-20 17:59:07+00 mgk25 Rel mgk25 $"
-COMMENT "Send bug reports to Markus Kuhn <mkuhn@acm.org>"
+COMMENT Derived from 5x7.bdf,v 1.30 1999-11-20 17:59:07+00 mgk25 Rel mgk25 
+COMMENT Send bug reports to Markus Kuhn <mkuhn@acm.org>
 FONT -Misc-Fixed-Medium-R-Normal--7-70-75-75-C-50-ISO10646-1
 SIZE 7 75 75
 FONTBOUNDINGBOX 5 7 0 -1

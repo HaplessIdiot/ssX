@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.38 1999/05/15 12:10:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.39 2000/05/18 23:46:26 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -641,24 +641,7 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 				  string_n, auth_string, client, &reason);
 
 #ifdef LBX
-    if (restore_trans_conn) {
-	/*
-	 * Restore client's trans_conn state
-	 */
-	priv = (OsCommPtr)client->osPrivate;
-	priv->trans_conn = NULL;
-
-	trans_conn = NULL;
-    }
-	
-#endif
-
-#ifdef LBX
-    if (!trans_conn) {
-	/*
-	 * Use the proxy's trans_conn
-	 */
-	trans_conn = ((OsCommPtr)lbxpc->osPrivate)->trans_conn;
+    if (! priv->trans_conn) {
 	if (auth_id == (XID) ~0L && !GetAccessControl())
 	    auth_id = ((OsCommPtr)lbxpc->osPrivate)->auth_id;
 #ifdef XCSECURITY
@@ -688,7 +671,7 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 #endif
 	    if (
 #ifdef LBX
-		!priv->trans_conn ||
+		!trans_conn ||
 #endif
 		InvalidHost ((struct sockaddr *) from, fromlen))
 		AuthAudit(client, FALSE, (struct sockaddr *) from,
@@ -705,11 +688,20 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 	    xfree ((char *) from);
 	}
 
-	if (auth_id == (XID) ~0L)
+	if (auth_id == (XID) ~0L) {
+#ifdef LBX
+	  /*
+	   * Restore client's trans_conn state
+	   */
+	  if (restore_trans_conn) {
+		priv->trans_conn = NULL;
+	  }
+#endif
 	    if (reason)
 		return reason;
 	    else
 		return "Client is not authorized to connect to Server";
+	}
     }
     else if (auditTrailLevel > 1)
     {
@@ -739,6 +731,11 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
      * true purpose of the selfhosts list is to see who may change the
      * access control list.
      */
+#ifdef LBX
+     if (restore_trans_conn) {
+	priv->trans_conn = NULL;
+     }
+#endif
     return((char *)NULL);
 }
 

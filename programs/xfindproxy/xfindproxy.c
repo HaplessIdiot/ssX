@@ -21,7 +21,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfindproxy/xfindproxy.c,v 1.3 1999/03/02 11:49:39 dawes Exp $ */
 
 
 #include <stdio.h>
@@ -328,15 +328,17 @@ main(int argc, char *argv[])
 	    if (reply.status == PM_Success)
 	    {
 		fprintf (stdout, "%s\n", reply.addr);
+		exit (0);
 	    }
 	    else
 	    {
 		fprintf (stderr, "Error from proxy manager: %s\n",
 		    reply.error);
+		exit (1);
 	    }
 	}
     }
-    exit(0);
+    /*NOTREACHED*/
 }
 
 
@@ -421,7 +423,7 @@ _XtProcessIceMsgProc(XtPointer client_data, int *source, XtInputId *id)
 
     if (status == IceProcessMessagesIOError)
     {
-	printf ("IO error occured\n");
+	fprintf (stderr, "IO error occured\n");
 	exit (1);
     }
 }

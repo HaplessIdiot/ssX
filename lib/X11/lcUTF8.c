@@ -24,7 +24,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.2 2000/02/29 03:09:04 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.3 2000/06/23 19:50:59 dawes Exp $ */
 
 /*
  * This file contains:
@@ -518,7 +518,7 @@ charset_wctocs(preferred, charsetp, sidep, conv, r, wc, n)
     Utf8Conv convptr;
     int i;
 
-    while (*preferred != (Utf8Conv) NULL) {
+    for (; *preferred != (Utf8Conv) NULL; preferred++) {
 	convptr = *preferred;
 	count = convptr->wctocs(conv, r, wc, n);
 	if (count == RET_TOOSMALL)
