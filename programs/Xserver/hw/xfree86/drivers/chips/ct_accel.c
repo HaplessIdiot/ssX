@@ -1,27 +1,34 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.18 1998/06/04 16:43:24 hohndel Exp $ */
-/*
- * Copyright 1996, 1997 by David Bateman <dbateman@ee.uts.edu.au>
- *   Modified 1997, 1998 by Nozomi Ytow
- *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of the authors not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  The authors makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
- *
- * THE AUTHORS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THE AUTHORS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.19 1998/06/27 12:54:24 hohndel Exp $ */
 
+
+
+/*
+ * Copyright 1997
+ * Digital Equipment Corporation. All rights reserved.
+ * This software is furnished under license and may be used and copied only in 
+ * accordance with the following terms and conditions.  Subject to these conditions, 
+ * you may download, copy, install, use, modify and distribute this software in 
+ * source and/or binary form. No title or ownership is transferred hereby.
+ *
+ * 1) Any source code used, modified or distributed must reproduce and retain this 
+ *    copyright notice and list of conditions as they appear in the source file.
+ *
+ * 2) No right is granted to use any trade name, trademark, or logo of Digital 
+ *    Equipment Corporation. Neither the "Digital Equipment Corporation" name nor 
+ *    any trademark or logo of Digital Equipment Corporation may be used to endorse or 
+ *    promote products derived from this software without the prior written permission 
+ *    of Digital Equipment Corporation.
+ *
+ * 3) This software is provided "AS-IS" and any express or implied warranties, including 
+ *    but not limited to, any implied warranties of merchantability, fitness for a 
+ *    particular purpose, or non-infringement are disclaimed. In no event shall DIGITAL 
+ *    be liable for any damages whatsoever, and in particular, DIGITAL shall not be 
+ *    liable for special, indirect, consequential, or incidental damages or damages for 
+ *    lost profits, loss of revenue or loss of use, whether such damages arise in contract, 
+ *    negligence, tort, under statute, in equity, at law or otherwise, even if advised of 
+ *    the possibility of such damage. 
+ *
+ */
 
 #include "vga256.h"
 #include "compiler.h"
@@ -83,7 +90,7 @@ void CTNAME(SetupForImageWrite)(int, unsigned int, int);
 void CTNAME(SubsequentImageWrite)(int, int, int, int, int);
 
 #ifdef CHIPS_HIQV
-void CTNAME(DoImageWrite)();
+void CTNAME(DoPixWinBitBltCopy)();
 #endif
 
 static unsigned int old_planemask;
@@ -170,7 +177,6 @@ void _ctAccelInit() {
 	HARDWARE_PATTERN_MONO_TRANSPARENCY | HARDWARE_PATTERN_MOD_64_OFFSET |
 	HARDWARE_PATTERN_SCREEN_ORIGIN | HARDWARE_PATTERN_BIT_ORDER_MSBFIRST;
 #ifdef CHIPS_HIQV
-    xf86AccelInfoRec.PatternFlags |=  HARDWARE_PATTERN_ALIGN_32;
     if (ctColorTransparency)
 	xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;
 #endif
@@ -312,7 +318,7 @@ void _ctAccelInit() {
     xf86AccelInfoRec.CPUToScreenColorExpandRange = 64 * 1024;
 
     /* HiQV chips support 24bpp pattern tile. But XAA has problems with it */
-    /*    if (vga256InfoRec.bitsPerPixel != 24)*/ {
+    if (vga256InfoRec.bitsPerPixel != 24) {
         xf86AccelInfoRec.SetupForFill8x8Pattern =
 	    CTNAME(SetupForFill8x8Pattern);
         xf86AccelInfoRec.SubsequentFill8x8Pattern =
@@ -331,7 +337,8 @@ void _ctAccelInit() {
 
     if (vga256InfoRec.bitsPerPixel == 24)
         xf86AccelInfoRec.ImageWriteFlags |= NO_PLANEMASK;
-    xf86AccelInfoRec.DoImageWrite = CTNAME(DoImageWrite);
+    if (vga256InfoRec.bitsPerPixel != 24)
+    xf86AccelInfoRec.DoImageWrite = CTNAME(DoPixWinBitBltCopy);
 #else
     xf86AccelInfoRec.SetupForImageWrite = CTNAME(SetupForImageWrite);
     xf86AccelInfoRec.SubsequentImageWrite = CTNAME(SubsequentImageWrite);
@@ -1224,36 +1231,8 @@ void CTNAME(SubsequentImageWrite)(x,y,w,h,skipleft)
 #endif
 }
 
-/*
- * Copyright 1997
- * Digital Equipment Corporation. All rights reserved.
- * This software is furnished under license and may be used and copied only in 
- * accordance with the following terms and conditions.  Subject to these conditions, 
- * you may download, copy, install, use, modify and distribute this software in 
- * source and/or binary form. No title or ownership is transferred hereby.
- *
- * 1) Any source code used, modified or distributed must reproduce and retain this 
- *    copyright notice and list of conditions as they appear in the source file.
- *
- * 2) No right is granted to use any trade name, trademark, or logo of Digital 
- *    Equipment Corporation. Neither the "Digital Equipment Corporation" name nor 
- *    any trademark or logo of Digital Equipment Corporation may be used to endorse or 
- *    promote products derived from this software without the prior written permission 
- *    of Digital Equipment Corporation.
- *
- * 3) This software is provided "AS-IS" and any express or implied warranties, including 
- *    but not limited to, any implied warranties of merchantability, fitness for a 
- *    particular purpose, or non-infringement are disclaimed. In no event shall DIGITAL 
- *    be liable for any damages whatsoever, and in particular, DIGITAL shall not be 
- *    liable for special, indirect, consequential, or incidental damages or damages for 
- *    lost profits, loss of revenue or loss of use, whether such damages arise in contract, 
- *    negligence, tort, under statute, in equity, at law or otherwise, even if advised of 
- *    the possibility of such damage. 
- *
- */
-
 #ifdef	CHIPS_HIQV
-void CTNAME(DoImageWrite)(pSrc, pDst, alu, prgnDst,
+void CTNAME(DoPixWinBitBltCopy)(pSrc, pDst, alu, prgnDst,
 			     pptSrc, planemask, bitPlane)
     DrawablePtr	    pSrc, pDst;
     int		    alu;
@@ -1263,15 +1242,15 @@ void CTNAME(DoImageWrite)(pSrc, pDst, alu, prgnDst,
     int		    bitPlane;
 {
     unsigned long *psrcBase;
-    unsigned int widthSrc, widthDst;
-    unsigned int byteWidthSrc, byteWidthDst;
+    int widthSrc, widthDst;
+    int byteWidthSrc, byteWidthDst;
     BoxPtr pbox;
     int nbox;
 
     cfbGetLongWidthAndPointer(pSrc, widthSrc, psrcBase);
     widthSrc = cfbGetByteWidth(pSrc)/vgaBytesPerPixel;
     widthDst = vga256InfoRec.displayWidth;
-    byteWidthSrc = ((widthSrc * vgaBytesPerPixel + 3L) & ~0x3L);
+    byteWidthSrc = widthSrc * vgaBytesPerPixel;
     byteWidthDst = widthDst * vgaBytesPerPixel;
 
     pbox = REGION_RECTS(prgnDst);
@@ -1279,7 +1258,6 @@ void CTNAME(DoImageWrite)(pSrc, pDst, alu, prgnDst,
 
     CommandFlags = ctSRCSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM;
     ctBLTWAIT;
-
     if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
     (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
     (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
@@ -1295,15 +1273,12 @@ void CTNAME(DoImageWrite)(pSrc, pDst, alu, prgnDst,
 
     for (; nbox; pbox++, pptSrc++, nbox--) {
 	unsigned int psrc, pdst;
-	unsigned int w, h;
-	unsigned int y;
+	int w, h;
 
 	w = pbox->x2 - pbox->x1;
 	h = pbox->y2 - pbox->y1;
 	psrc = (pptSrc->x + pptSrc->y * widthSrc) * vgaBytesPerPixel;
-	psrc = pptSrc->x * vgaBytesPerPixel + pptSrc->y * byteWidthSrc;
-
-	pdst = pbox->x1 * vgaBytesPerPixel + pbox->y1 * byteWidthDst;
+	pdst = (pbox->x1 + pbox->y1 * widthDst) * vgaBytesPerPixel;
 
 	/*
 	 *  There is an annoying bug in the CT65550, or at least when used
@@ -1339,91 +1314,43 @@ void CTNAME(DoImageWrite)(pSrc, pDst, alu, prgnDst,
 	 *  further.
 	 */
 	{
+	    Bool buggyCase = (byteWidthSrc & 0x7) != 0;
 	    unsigned char *src = (unsigned char *)psrcBase + psrc;
 	    unsigned char *dst = (unsigned char *)pdst;
-	    unsigned int bytesperline = w * vgaBytesPerPixel;
+	    int bytesperline = w * vgaBytesPerPixel;
 
-	    if (byteWidthSrc & 0x7 == 0) {
-		ctBLTWAIT;
+	    if (!buggyCase) {
+		/* One-time set-up. */
 		ctSETSRCADDR((unsigned int)src);
 		ctSETDSTADDR((unsigned int)dst);
 		ctSETHEIGHTWIDTHGO(h, bytesperline);
-
-		while (h--) {
-		  register unsigned long long *qwa_src = (unsigned long long *)((unsigned int)src & (~0x7));
-		  unsigned int qwords = (((unsigned int)src & 0x7) + bytesperline + 0x7) >> 3;
-
-		  while (qwords--) {
-		    *(unsigned long long *)ctBltDataWindow = *qwa_src++;
-		  }
-		  
-		  src += byteWidthSrc;
-		}
-		ctBLTWAIT;
 	    }
-	    else{
-#if 0
-	      while (h--) {
-		register unsigned long long *qwa_src = (unsigned long long *)((unsigned int)src & (~0x7));
-		unsigned int qwords = (((unsigned int)src & 0x7) + bytesperline + 0x7) >> 3;
 
-		ctSETSRCADDR((unsigned int)src);
-		ctSETDSTADDR((unsigned int)dst);
-		ctSETHEIGHTWIDTHGO(1, bytesperline);
+	    while (h--) {
+		unsigned int *qwa_src = (unsigned int *)((unsigned int)src & (~0x7));
+		int qwords = (((unsigned int)src & 0x7) + bytesperline + 0x7) >> 3;
+
+		if (buggyCase) {
+		    /* N-time set-up. */
+		    ctSETSRCADDR((unsigned int)src);
+		    ctSETDSTADDR((unsigned int)dst);
+		    ctSETHEIGHTWIDTHGO(1, bytesperline);
+		}
 
 		while (qwords--) {
-		  *(unsigned long long *)ctBltDataWindow = *qwa_src++;
+		    *(unsigned int *)ctBltDataWindow = *qwa_src++;
+		    *(unsigned int *)ctBltDataWindow = *qwa_src++;
 		}
-		
+
 		src += byteWidthSrc;
-		dst += byteWidthDst;
-		ctBLTWAIT;
-	      }
-#else
-	      unsigned int vert = h;
-	      
-	      h = (vert + 1) >> 1;
-	      ctBLTWAIT;
-	      ctSETPITCH(byteWidthSrc << 1, byteWidthDst << 1);
-	      ctSETSRCADDR((unsigned int)src);
-	      ctSETDSTADDR((unsigned int)dst);
-	      ctSETHEIGHTWIDTHGO(h, bytesperline);
-	      while (h--) {
-		register unsigned long long *qwa_src = (unsigned long long *)((unsigned int)src & (~0x7));
-		unsigned int qwords = (((unsigned int)src & 0x7) + bytesperline + 0x7) >> 3;
-		
-		while (qwords--) {
-		  *(unsigned long long *)ctBltDataWindow = *qwa_src++;
+		if (buggyCase) {
+		    dst += byteWidthDst;
+		    ctBLTWAIT;
 		}
-		src += (byteWidthSrc << 1);
-	      }
-		
-
-	      h = vert  >> 1;
-	      psrc = pptSrc->x * vgaBytesPerPixel + (pptSrc->y + 1)* byteWidthSrc;
-
-	      pdst = pbox->x1 * vgaBytesPerPixel + (pbox->y1 + 1) * byteWidthDst;
-	      src = (unsigned char *)psrcBase + psrc;
-	      dst = (unsigned char *)pdst;
-
-	      ctBLTWAIT;
-	      ctSETPITCH(byteWidthSrc << 1, byteWidthDst << 1);
-	      ctSETSRCADDR((unsigned int)src);
-	      ctSETDSTADDR((unsigned int)dst);
-	      ctSETHEIGHTWIDTHGO(h, bytesperline);
-	      while (h--) {
-		register unsigned long long *qwa_src = (unsigned long long *)((unsigned int)src & (~0x7));
-		unsigned int qwords = (((unsigned int)src & 0x7) + bytesperline + 0x7) >> 3;
-		
-		while (qwords--) {
-		  *(unsigned long long *)ctBltDataWindow = *qwa_src++;
-		}
-		src += (byteWidthSrc << 1);
-	      }
-		
-#endif
 	    }
 
+	    if (!buggyCase)
+		ctBLTWAIT;
 	}
     }
 }
