@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.42 2000/09/20 00:09:30 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.43 2000/09/24 13:51:31 alanh Exp $ */
 
 /*
  * Authors:
@@ -667,11 +667,6 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 
   if (pTDFX->pEnt->location.type != BUS_PCI) return FALSE;
 
-  if (flags & PROBE_DETECT) {
-    TDFXProbeDDC(pScrn, pTDFX->pEnt->index);
-    return TRUE;
-  }
-  
   /* The vgahw module should be loaded here when needed */
   if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
 
@@ -701,8 +696,11 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   match=pTDFX->PciInfo=xf86GetPciInfoForEntity(pTDFX->pEnt->index);
   TDFXFindChips(pScrn, match);
 
-  if (xf86RegisterResources(pTDFX->pEnt->index, 0, ResNone))
+  if (xf86RegisterResources(pTDFX->pEnt->index, 0, ResExclusive)) {
+      TDFXFreeRec(pScrn);
       return FALSE;
+  }
+
   if (pTDFX->usePIO)
     pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
   else

@@ -1,3 +1,6 @@
+ 912. Fix tdfx driver to register resources and remove some redundant code
+      (Alan Hourihane).
+
 XFree86 4.0.1e (6 November 2000)
  911. Fix the ksc5601.1987-0 encoding file (#4226, 4228, Pablo Saratxaga).
  910. Update xdm/sessreg to write ":0" type entried in utmp on OpenBSD
@@ -11497,4 +11500,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1380 2000/11/06 18:21:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1381 2000/11/06 19:24:02 dawes Exp $
