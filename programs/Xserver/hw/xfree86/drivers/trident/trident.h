@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.51 2002/01/13 00:15:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.52 2002/01/25 21:56:12 tsi Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -277,8 +277,7 @@ typedef enum {
     CYBERBLADEAI1,
     CYBERBLADEAI1D,
     CYBERBLADEE4,
-    CYBERBLADEXPm8,
-    CYBERBLADEXPm16,
+    BLADEXP,
     CYBERBLADEXPAI1
 } TRIDENTType;
 
@@ -290,7 +289,9 @@ typedef enum {
 			 (xf86IsPrimaryIsa()))
 
 #define HAS_DST_TRANS	((pTrident->Chipset == PROVIDIA9682) || \
-			 (pTrident->Chipset == PROVIDIA9685))
+			 (pTrident->Chipset == PROVIDIA9685) || \
+			 (pTrident->Chipset == BLADEXP) || \
+			 (pTrident->Chipset == CYBERBLADEXPAI1))
 
 #define Is3Dchip	((pTrident->Chipset == CYBER9397) || \
 			 (pTrident->Chipset == CYBER9397DVD) || \
@@ -307,8 +308,7 @@ typedef enum {
 			 (pTrident->Chipset == CYBERBLADEAI1D)  || \
 			 (pTrident->Chipset == BLADE3D) || \
 			 (pTrident->Chipset == CYBERBLADEXPAI1) || \
-			 (pTrident->Chipset == CYBERBLADEXPm8) || \
-			 (pTrident->Chipset == CYBERBLADEXPm16))
+			 (pTrident->Chipset == BLADEXP))
 
 /*
  * Trident DAC's

@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.22 2002/01/28 14:30:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.23 2002/01/28 14:33:39 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -258,7 +258,7 @@ void TRIDENTResetVideo(ScrnInfoPtr pScrn)
 	}
     }
 
-    if (pTrident->Chipset >= CYBERBLADEXPm8) {
+    if (pTrident->Chipset >= BLADEXP) {
 	OUTW(0x3C4, 0x007A);
 	OUTW(0x3C4, 0x007D);
     }
@@ -1380,8 +1380,7 @@ tridentFixFrame(ScrnInfoPtr pScrn, int *fixFrame)
   case PROVIDIA9685:
     /* Spot on */
     break;
-  case CYBERBLADEXPm8:
-  case CYBERBLADEXPm16:
+  case BLADEXP:
   case CYBERBLADEXPAI1:
     pTrident->hsync -= 15;
     pTrident->hsync_rskew = 3;

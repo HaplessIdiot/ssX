@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.63 2002/01/11 13:06:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.64 2002/03/29 18:33:28 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -396,7 +396,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->tridentRegs3x4[PreEndFetch] = INB(vgaIOBase + 5);
 #endif
 	/* set mode */
-	if (pTrident->Chipset < CYBERBLADEXPm8) {
+	if (pTrident->Chipset < BLADEXP) {
 	  pReg->tridentRegs3CE[BiosMode] = TridentFindMode(
 					   pScrn->currentMode->HDisplay,
 					   pScrn->currentMode->VDisplay,
@@ -428,8 +428,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* Enable Chipset specific options */
     switch (pTrident->Chipset) {
 	case CYBERBLADEXPAI1:
-	case CYBERBLADEXPm8:
-	case CYBERBLADEXPm16:
+	case BLADEXP:
 	case CYBERBLADEI7:
 	case CYBERBLADEI7D:
 	case CYBERBLADEI1:
@@ -571,8 +570,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     OUTB(vgaIOBase+ 4, Performance);
     pReg->tridentRegs3x4[Performance] = INB(vgaIOBase + 5);
-
-    if (pTrident->Chipset < CYBERBLADEXPm8)
+    if (pTrident->Chipset < BLADEXP)
 	pReg->tridentRegs3x4[Performance] |= 0x10;
 
     OUTB(vgaIOBase+ 4, DRAMControl);
@@ -695,7 +693,7 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 
 	OUTW_3CE(VertStretch);
 	OUTW_3CE(HorStretch);
-	if (pTrident->Chipset < CYBERBLADEXPm8) {
+	if (pTrident->Chipset < BLADEXP) {
 	    OUTW_3CE(BiosMode);
 	} else {
 	    OUTW_3CE(BiosNewMode1);
