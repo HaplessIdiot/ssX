@@ -36,6 +36,9 @@
 #define HAVE_GETOPT_LONG 1
 #endif
 #define HAVE_GETOPT 1
+#if defined(ISC) || defined(Lynx)
+#define HAVE_OPTARG_IN_UNISTD 0
+#endif
 #endif
 
 #ifndef HAVE_GETOPT
@@ -43,6 +46,9 @@
 #endif
 #ifndef HAVE_GETOPT_LONG
 #define HAVE_GETOPT_LONG 0
+#endif
+#ifndef HAVE_OPTARG_IN_UNISTD
+#define HAVE_OPTARG_IN_UNISTD HAVE_GETOPT
 #endif
 
 #if HAVE_GETOPT_LONG
@@ -57,7 +63,7 @@ const struct option longopts[] = {
     {NULL,0,0,0},
 };
 #else
-#if HAVE_GETOPT
+#if HAVE_GETOPT && !HAVE_OPTARG_IN_UNISTD
 extern char *optarg;
 extern int optind, opterr, optopt;
 #endif

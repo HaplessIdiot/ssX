@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXh.h,v 1.1 2003/07/16 01:38:29 dawes Exp $ */
 
 /*
  *	Server dispatcher function replacements
@@ -76,3 +76,7 @@ extern int SProcPanoramiXDispatch(ClientPtr client);
 extern char *ConnectionInfo;
 extern int connBlockScreenStart;
 extern xConnSetupPrefix connSetupPrefix;
+
+extern ScreenInfo *GlobalScrInfo;
+extern int (* SavedProcVector[256]) (ClientPtr client);
+

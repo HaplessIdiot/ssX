@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.34 2003/06/25 19:17:13 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.35 2003/07/16 01:38:29 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -54,6 +54,7 @@ Equipment Corporation.
 
 
 static unsigned char PanoramiXReqCode = 0;
+
 /*
  *	PanoramiX data declarations
  */
@@ -63,14 +64,13 @@ int 		PanoramiXPixHeight = 0;
 int 		PanoramiXNumScreens = 0;
 
 PanoramiXData 	*panoramiXdataPtr = NULL;
+RegionRec   	PanoramiXScreenRegion = {{0, 0, 0, 0}, NULL};
 
+static int		PanoramiXNumDepths;
+static DepthPtr		PanoramiXDepths;
+static int		PanoramiXNumVisuals;
+static VisualPtr	PanoramiXVisuals;
 
-RegionRec   	PanoramiXScreenRegion;
-
-int		PanoramiXNumDepths;
-DepthPtr	PanoramiXDepths;
-int		PanoramiXNumVisuals;
-VisualPtr	PanoramiXVisuals;
 /* We support at most 256 visuals */
 XID		*PanoramiXVisualTable = NULL;
 
@@ -79,10 +79,6 @@ unsigned long XRT_WINDOW;
 unsigned long XRT_PIXMAP;
 unsigned long XRT_GC;
 unsigned long XRT_COLORMAP;
-
-
-int (* SavedProcVector[256]) (ClientPtr client);
-ScreenInfo *GlobalScrInfo;
 
 /*
  *	Function prototypes
@@ -98,6 +94,9 @@ static void PanoramiXResetProc(ExtensionEntry*);
  */
 
 #include "panoramiXh.h"
+
+int (* SavedProcVector[256]) (ClientPtr client) = { NULL, };
+ScreenInfo *GlobalScrInfo = NULL;
 
 static int PanoramiXGCIndex = -1;
 static int PanoramiXScreenIndex = -1;

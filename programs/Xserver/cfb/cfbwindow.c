@@ -54,8 +54,6 @@ SOFTWARE.
 #include "regionstr.h"
 #include "cfbmskbits.h"
 
-extern WindowPtr *WindowTable;
-
 Bool
 cfbCreateWindow(pWin)
     WindowPtr pWin;

@@ -26,7 +26,7 @@ Equipment Corporation.
 
 /* Massively rewritten by Mark Vojkovich <markv@valinux.com> */
 
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.34 2003/03/23 04:56:02 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.35 2003/07/16 01:38:29 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -52,11 +52,6 @@ Equipment Corporation.
 #define INPUTONLY_LEGAL_MASK (CWWinGravity | CWEventMask | \
                               CWDontPropagate | CWOverrideRedirect | CWCursor )
 
-extern ScreenInfo *GlobalScrInfo;
-extern char *ConnectionInfo;
-extern int connBlockScreenStart;
-
-extern int (* SavedProcVector[256]) (ClientPtr client);
 #if 0
 extern void (* EventSwapVector[128]) (fsError *, fsError *);
 

@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Keyboard.c,v 1.7 2001/08/01 00:44:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Keyboard.c,v 1.8 2001/10/28 03:34:11 tsi Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -85,7 +85,6 @@ extern	Status	XkbGetControls(
 #define	XKB_DFLT_KB_OPTIONS	NULL
 #endif
 
-extern Bool noXkbExtension;
 #endif
 
 void xnestBell(volume, pDev, ctrl, cls)

@@ -1,7 +1,7 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86: xc/programs/Xserver/Xext/xres.c,v 1.5 2002/07/01 02:25:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xres.c,v 1.6 2003/07/16 01:38:30 dawes Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -15,10 +15,6 @@
 #include "XResproto.h"
 #include "pixmapstr.h"
 #include "modinit.h"
-
-extern RESTYPE lastResourceType;
-extern RESTYPE TypeMask;
-extern Atom *ResourceNames;
 
 static int
 ProcXResQueryVersion (ClientPtr client)

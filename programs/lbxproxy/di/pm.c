@@ -24,7 +24,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.13 2003/07/20 16:12:20 tsi Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -51,8 +51,6 @@ from The Open Group.
 #include "wire.h"
 #include "pmP.h"
 #include "pm.h"
-
-extern char *display_name;
 
 /*
  * Local constants

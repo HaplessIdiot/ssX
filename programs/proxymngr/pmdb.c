@@ -25,7 +25,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/proxymngr/pmdb.c,v 1.6 2001/08/01 00:45:01 tsi Exp $ */
+/* $XFree86: xc/programs/proxymngr/pmdb.c,v 1.7 2001/12/14 20:01:02 dawes Exp $ */
 
 #include "pmint.h"
 #include "pmdb.h"
@@ -41,8 +41,6 @@ from The Open Group.
 #define SIGVAL void
 #endif
 typedef SIGVAL (*Signal_Handler)(int);
-
-void SetCloseOnExec (int fd);
 
 static proxy_service *proxyServiceList = NULL;
 

@@ -24,7 +24,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  * */
-/* $XFree86: xc/programs/xlsfonts/xlsfonts.c,v 1.7 2001/04/27 12:58:28 dawes Exp $ */
+/* $XFree86: xc/programs/xlsfonts/xlsfonts.c,v 1.9 2003/09/08 14:25:33 eich Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -57,13 +57,10 @@ typedef struct {
 FontList	*font_list;
 
 
-#if NeedFunctionPrototypes
-extern void usage(void);
-extern int main(int, char **);
-extern void get_list(char *);
-extern void show_fonts(void);
-extern void copy_number(char **, char **, int, int);
-extern void do_query_font(Display *, char *);
+static void get_list(char *);
+static void show_fonts(void);
+static void copy_number(char **, char **, int, int);
+static void do_query_font(Display *, char *);
 static int compare(const void *, const void *);
 #ifndef max
 static int max(int, int);
@@ -72,7 +69,6 @@ static int IgnoreError(Display *, XErrorEvent *);
 static void PrintProperty(XFontProp *);
 static void ComputeFontType(XFontStruct *);
 static void print_character_metrics(register XFontStruct *);
-#endif
 
 
 void

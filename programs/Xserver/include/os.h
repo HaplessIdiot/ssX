@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.47 2003/09/09 03:20:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.48 2003/09/09 23:53:12 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -213,9 +213,7 @@ extern OsTimerPtr TimerSet(
     pointer /* arg */);
 
 extern void TimerCheck(void);
-
 extern void TimerCancel(OsTimerPtr /* pTimer */);
-
 extern void TimerFree(OsTimerPtr /* pTimer */);
 
 extern SIGVAL AutoResetServer(int /*sig*/);
@@ -231,19 +229,17 @@ extern int set_font_authorizations(
     int * /*authlen */, 
     pointer /* client */);
 
+#ifndef _HAVE_XALLOC_DECLS
+#define _HAVE_XALLOC_DECLS
 extern pointer Xalloc(unsigned long /*amount*/);
+extern pointer Xcalloc(unsigned long /*amount*/);
+extern pointer Xrealloc(pointer /*ptr*/, unsigned long /*amount*/);
+extern void Xfree(pointer /*ptr*/);
+#endif
 
 extern pointer XNFalloc(unsigned long /*amount*/);
-
-extern pointer Xcalloc(unsigned long /*amount*/);
-
 extern pointer XNFcalloc(unsigned long /*amount*/);
-
-extern pointer Xrealloc(pointer /*ptr*/, unsigned long /*amount*/);
-
 extern pointer XNFrealloc(pointer /*ptr*/, unsigned long /*amount*/);
-
-extern void Xfree(pointer /*ptr*/);
 
 extern void OsInitAllocator(void);
 
@@ -258,7 +254,6 @@ extern int auditTrailLevel;
 
 #ifdef SERVER_LOCK
 extern void LockServer(void);
-
 extern void UnlockServer(void);
 #endif
 

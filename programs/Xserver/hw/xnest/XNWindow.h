@@ -1,4 +1,4 @@
-/* $XConsortium: Window.h,v 1.1 93/07/12 15:28:58 rws Exp $ */
+/* $Xorg: XNWindow.h,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -56,8 +56,6 @@ extern int xnestWindowPrivateIndex;
 
 #define CWParent CWSibling
 #define CWStackingOrder CWStackMode
-
-extern WindowPtr *WindowTable;
 
 WindowPtr xnestWindowPtr();
 Bool xnestCreateWindow();

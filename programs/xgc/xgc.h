@@ -3,7 +3,7 @@
 **
 ** xgc.h
 */
-/* $XFree86: xc/programs/xgc/xgc.h,v 1.4 2003/05/07 21:02:07 herrb Exp $ */
+/* $XFree86: xc/programs/xgc/xgc.h,v 1.5 2003/05/07 21:17:06 herrb Exp $ */
 
 #include "constants.h"
 
@@ -81,7 +81,6 @@ extern XgcStuff FillstyleStuff;
 extern XgcStuff FillruleStuff;
 extern XgcStuff ArcmodeStuff;
 
-extern XStuff X;
 extern ChoiceDesc *GCdescs[];
 extern ChoiceDesc *testchoicedesc;
 extern Widget test;

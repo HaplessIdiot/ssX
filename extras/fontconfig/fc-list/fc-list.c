@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/fontconfig/fc-list/fc-list.c,v 1.2 2003/06/04 16:29:39 dawes Exp $ */
 
 #include <fontconfig/fontconfig.h>
 #include <stdio.h>
@@ -32,6 +32,9 @@
 #define HAVE_GETOPT_LONG 1
 #endif
 #define HAVE_GETOPT 1
+#if defined(ISC) || defined(Lynx)
+#define HAVE_OPTARG_IN_UNISTD 0
+#endif
 #endif
 
 #ifndef HAVE_GETOPT
@@ -39,6 +42,9 @@
 #endif
 #ifndef HAVE_GETOPT_LONG
 #define HAVE_GETOPT_LONG 0
+#endif
+#ifndef HAVE_OPTARG_IN_UNISTD
+#define HAVE_OPTARG_IN_UNISTD HAVE_GETOPT
 #endif
 
 #if HAVE_GETOPT_LONG
@@ -52,7 +58,7 @@ const struct option longopts[] = {
     {NULL,0,0,0},
 };
 #else
-#if HAVE_GETOPT
+#if HAVE_GETOPT && !HAVE_OPTARG_IN_UNISTD
 extern char *optarg;
 extern int optind, opterr, optopt;
 #endif

@@ -52,7 +52,7 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest1di.c,v 3.3 2001/12/14 19:58:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest1di.c,v 3.4 2003/07/16 01:38:30 dawes Exp $ */
 
 /*****************************************************************************
  * include files
@@ -79,23 +79,6 @@ University of California.
 /*****************************************************************************
  * defines
  ****************************************************************************/
-
-/*****************************************************************************
- * externals
- ****************************************************************************/
-
-/*
- * id of client using XTestGetInput
- *
- * defined in xtest1dd.c
- */
-extern ClientPtr	current_xtest_client;
-/*
- * id of client using XTestFakeInput
- *
- * defined in xtest1dd.c
- */
-extern ClientPtr	playback_client;
 
 /*****************************************************************************
  * variables
