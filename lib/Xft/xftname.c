@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftname.c,v 1.10 2001/03/30 18:50:18 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftname.c,v 1.11 2002/02/15 07:36:11 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -23,6 +23,7 @@
  */
 
 #include "xftint.h"
+#include <stdlib.h>
 
 static const FcObjectType	_XftObjectTypes[] = {
     { XFT_CORE,		FcTypeBool, },
@@ -47,4 +48,22 @@ FcPattern
 { 
     _XftNameInit ();
     return FcNameParse ((FcChar8 *) name); 
+}
+
+FcBool
+XftNameUnparse (FcPattern *pat, char *dest, int len)
+{
+    FcChar8 *name;
+
+    name = FcNameUnparse (pat);
+    if (!name)
+	return FcFalse;
+    if (strlen ((char *) name) + 1 > len)
+    {
+	free (name);
+	return FcFalse;
+    }
+    strcpy (dest, ((char *) name));
+    free (name);
+    return FcTrue;
 }
