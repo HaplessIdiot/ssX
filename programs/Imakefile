@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/85 1998/02/26 17:14:44 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/Imakefile,v 3.26 2000/02/13 03:26:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.27 2000/02/23 20:29:39 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -74,7 +74,7 @@ SUBDIRS = \
 	setxkbmap showfont \
 	$(SMPROXYSRCDIR) $(TWMSRCDIR) viewres x11perf xauth xbiff xcalc \
 	xclipboard xclock \
-	xcmsdb $(XCONSOLESRCDIR) $(XDMSRCDIR) xdpyinfo \
+	xcmsdb $(XCONSOLESRCDIR) xditview $(XDMSRCDIR) xdpyinfo \
 	$(XF86DGASRCDIR) xedit xev xeyes xfd xfontsel $(XFSSRCDIR) \
 	$(XFINDPROXYSRCDIR) $(XFWPSRCDIR) $(XGAMMASRCDIR) xgc $(XHOSTSRCDIR) \
 	xieperf $(XINITSRCDIR) $(XKBSRCDIRS) xkill xload xlogo xlsatoms \
