@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.51 2001/11/19 20:44:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.52 2001/11/25 13:42:31 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2679,9 +2679,15 @@ ATIPreInit
 
             case ATI_DAC_IBMRGB514:
                 pATI->maxClock = 220000;
+
+#ifndef AVOID_CPIO
+
                 if (pATI->NewHW.crtc == ATI_CRTC_VGA)
                     DefaultmaxClock = 100000;
                 else
+
+#endif /* AVOID_CPIO */
+
                     DefaultmaxClock = 220000;
                 break;
 
