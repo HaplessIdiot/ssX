@@ -24,9 +24,8 @@
  * Authors:
  *    Ian Romanick <idr@us.ibm.com>
  */
-/* $XFree86: xc/lib/GL/glx/glxextensions.c,v 1.1 2003/09/28 20:15:03 alanh Exp $ */
+/* $XFree86:$ */
 
-#include "packsingle.h"
 #include "glxclient.h"
 #include <extutil.h>
 #include <Xext.h>
@@ -58,15 +57,15 @@ static const struct {
     */
    unsigned char  version_major;
    unsigned char  version_minor;
-   unsigned char  client_support;
-   unsigned char  direct_support;
-   unsigned char  client_only;     /** Is the extension client-side only? */
-   unsigned char  direct_only;     /** Is the extension for direct
+   unsigned char  client_support:1;
+   unsigned char  direct_support:1;
+   unsigned char  client_only:1;     /** Is the extension client-side only? */
+   unsigned char  direct_only:1;     /** Is the extension for direct
 				      * contexts only?
 				      */
 } known_glx_extensions[] = {
    { GLX(ARB_get_proc_address),        VER(1,4), Y, N, Y, N },
-   { GLX(ARB_multisample),             VER(1,4), Y, N, N, N },
+   { GLX(ARB_multisample),             VER(1,4), Y, Y, N, N },
    { GLX(ARB_render_texture),          VER(0,0), N, N, N, N },
    { GLX(ATI_pixel_format_float),      VER(0,0), N, N, N, N },
    { GLX(EXT_import_context),          VER(0,0), Y, Y, N, N },
@@ -92,7 +91,7 @@ static const struct {
    { GLX(SGI_video_sync),              VER(0,0), Y, N, N, Y },
    { GLX(SGIS_blended_overlay),        VER(0,0), N, N, N, N },
    { GLX(SGIS_color_range),            VER(0,0), N, N, N, N },
-   { GLX(SGIS_multisample),            VER(0,0), Y, N, N, N },
+   { GLX(SGIS_multisample),            VER(0,0), Y, Y, N, N },
    { GLX(SGIX_dm_buffer),              VER(0,0), N, N, N, N },
    { GLX(SGIX_fbconfig),               VER(1,3), Y, N, N, N },
    { GLX(SGIX_pbuffer),                VER(1,3), N, N, N, N },
@@ -100,7 +99,7 @@ static const struct {
    { GLX(SGIX_swap_group),             VER(0,0), N, N, N, N },
    { GLX(SGIX_video_resize),           VER(0,0), N, N, N, N },
    { GLX(SGIX_video_source),           VER(0,0), N, N, N, N },
-   { GLX(SGIX_visual_select_group),    VER(0,0), Y, N, N, N },
+   { GLX(SGIX_visual_select_group),    VER(0,0), Y, Y, N, N },
    { GLX(SUN_get_transparent_index),   VER(0,0), N, N, N, N },
    { NULL }
 };
@@ -203,9 +202,15 @@ __glXProcessServerString( const char * server_string,
 
 /**
  * Enable a named GLX extension on a given screen.
- * 
+ * Drivers should not call this function directly.  They should instead use
+ * \c glXGetProcAddress to obtain a pointer to the function.
+ *
  * \param psc   Pointer to GLX per-screen record.
  * \param name  Name of the extension to enable.
+ *
+ * \sa glXGetProcAddress
+ *
+ * \since Internal API version 20030813.
  */
 void
 __glXScrEnableExtension( __GLXscreenConfigs *psc, const char * name )

@@ -1,7 +1,7 @@
 #ifndef _GLX_glxproto_h_
 #define _GLX_glxproto_h_
 
-/* $XFree86: xc/include/GL/glxproto.h,v 1.6 2003/09/28 20:14:58 alanh Exp $ */
+/* $XFree86: xc/include/GL/glxproto.h,v 1.7 2004/01/28 18:11:37 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -74,9 +74,15 @@
 
 #define __GLX_MAX_CONTEXT_PROPS 3
 
+#ifndef GLX_VENDOR
 #define GLX_VENDOR		0x1
+#endif
+#ifndef GLX_VERSION
 #define GLX_VERSION		0x2
+#endif
+#ifndef GLX_EXTENSIONS
 #define GLX_EXTENSIONS		0x3
+#endif
 
 /*****************************************************************************/
 

@@ -30,8 +30,7 @@
 #ifndef GLCONTEXTMODES_H
 #define GLCONTEXTMODES_H
 
-#include "glapi.h"
-#include "glxclient.h"
+#include "GL/internal/glcore.h"
 
 extern GLint _gl_convert_from_x_visual_type( int visualType );
 extern GLint _gl_convert_to_x_visual_type( int visualType );
@@ -39,5 +38,8 @@ extern void _gl_copy_visual_to_context_mode( __GLcontextModes * mode,
     const __GLXvisualConfig * config );
 extern int _gl_get_context_mode_data( const __GLcontextModes *mode,
     int attribute, int *value_return );
+extern __GLcontextModes * _gl_context_modes_create( unsigned count,
+    size_t minimum_size );
+extern void _gl_context_modes_destroy( __GLcontextModes * modes );
 
 #endif /* GLCONTEXTMODES_H */

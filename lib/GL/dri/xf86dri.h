@@ -76,79 +76,102 @@ typedef struct _XF86DRIClipRect {
 _XFUNCPROTOBEGIN
 
 Bool XF86DRIQueryExtension(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int*		/* event_base */,
     int*		/* error_base */
+#endif
 );
 
 Bool XF86DRIQueryVersion(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int*		/* majorVersion */,
     int*		/* minorVersion */,
     int*		/* patchVersion */
+#endif
 );
 
 Bool XF86DRIQueryDirectRenderingCapable(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     Bool*		/* isCapable */
+#endif
 );
 
 Bool XF86DRIOpenConnection(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     drmHandlePtr	/* hSAREA */,
     char**		/* busIDString */
+#endif
 );
 
 Bool XF86DRIAuthConnection(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     drmMagic            /* magic */
+#endif
 );
 
 Bool XF86DRICloseConnection(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */
+#endif
 );
 
 Bool XF86DRIGetClientDriverName(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     int*		/* ddxDriverMajorVersion */,
     int*		/* ddxDriverMinorVersion */,
     int*		/* ddxDriverPatchVersion */,
     char**		/* clientDriverName */
+#endif
 );
 
 Bool XF86DRICreateContext(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     Visual*		/* visual */,
     XID*		/* ptr to returned context id */,
     drmContextPtr	/* hHWContext */
+#endif
 );
 
 Bool XF86DRIDestroyContext(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     XID 	        /* context id */
+#endif
 );
 
 Bool XF86DRICreateDrawable(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     Drawable		/* drawable */,
     drmDrawablePtr 	/* hHWDrawable */
+#endif
 );
 
 Bool XF86DRIDestroyDrawable(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     Drawable 		/* drawable */
+#endif
 );
 
 Bool XF86DRIGetDrawableInfo(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     Drawable 		/* drawable */,
@@ -164,9 +187,11 @@ Bool XF86DRIGetDrawableInfo(
     int*		/* backY */,
     int*		/* numBackClipRects */,
     XF86DRIClipRectPtr*	/* pBackClipRects */    
+#endif
 );
 
 Bool XF86DRIGetDeviceInfo(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     drmHandlePtr	/* hFrameBuffer */,
@@ -175,18 +200,23 @@ Bool XF86DRIGetDeviceInfo(
     int*		/* fbStride */,
     int*		/* devPrivateSize */,
     void**		/* pDevPrivate */
+#endif
 );
 
 Bool XF86DRIOpenFullScreen(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int                 /* screen */,
     Drawable 		/* drawable */
+#endif
 );
 
 Bool XF86DRICloseFullScreen(
+#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int                 /* screen */,
     Drawable 		/* drawable */
+#endif
 );
 
 _XFUNCPROTOEND

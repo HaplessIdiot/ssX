@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.12 2004/03/18 07:06:20 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.13 2004/04/05 02:33:08 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -8,6 +8,8 @@ XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.12 2004/03/18 07:06:20 dawes Exp $
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 
+LinkSourceFile(glcontextmodes.c,$(LIBSRC)/GL/glx)
+
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
@@ -15,10 +17,12 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #if !GlxUseSGISI
      DRI_SRCS = dri_glx.c
      DRI_OBJS = dri_glx.o
-     DRI_INCS = -I. -I$(GLXLIBSRC)/glx -I$(INCLUDESRC) -I$(INCLUDESRC)/GL \
+     DRI_INCS = -I. -I$(GLXLIBSRC)/glx \
 		-I$(XINCLUDESRC) -I$(SERVERSRC)/GL/dri \
 		-I$(GLXLIBSRC)/include \
-		-I$(MESASRCDIR)/include -I$(MESASRCDIR)/src
+		-I$(MESASRCDIR)/include \
+		-I$(MESASRCDIR)/src/mesa/main \
+		-I$(MESASRCDIR)/src/mesa/glapi
 #endif
 
 #if GlxUseBuiltInDRIDriver
@@ -29,8 +33,8 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
       DEFINES = $(ALLOC_DEFINES) GlxDefines $(GLX_DEFS) $(PATHDEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I$(XF86OSSRC) $(DRI_INCS)
-         SRCS = XF86dri.c dri_util.c $(DRI_SRCS)
-         OBJS = XF86dri.o dri_util.o $(DRI_OBJS)
+         SRCS = XF86dri.c dri_util.c glcontextmodes.c $(DRI_SRCS)
+         OBJS = XF86dri.o dri_util.o glcontextmodes.o $(DRI_OBJS)
 
 #include <Library.tmpl>
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.25 2004/03/18 07:06:22 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.26 2004/04/05 02:33:09 dawes Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -35,13 +35,13 @@ XCOMM 	glw
 
 # Files from Mesa
 
-LinkSourceFile(glapi.c, $(MESASRCDIR)/src)
-LinkSourceFile(glthread.c, $(MESASRCDIR)/src)
+LinkSourceFile(glapi.c, $(MESASRCDIR)/src/mesa/glapi)
+LinkSourceFile(glthread.c, $(MESASRCDIR)/src/mesa/glapi)
 #if defined(i386Architecture)
-LinkSourceFile(glapi_x86.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(glapi_x86.S, $(MESASRCDIR)/src/mesa/x86)
 #endif
 #if defined(SparcArchitecture) && !defined(OpenBSDArchitecture)
-LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/SPARC)
+LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/mesa/sparc)
 #endif
 
 
@@ -99,14 +99,14 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/SPARC)
      GLX_DEFS = GlxDefines VidModeExtensionDefines
 
 #ifdef i386Architecture
-      ASM_DIR = X86
+      ASM_DIR = x86
 #endif
 #ifdef SparcArchitecture
-      ASM_DIR = SPARC
+      ASM_DIR = sparc
 #endif
 
 #if BuildXF86DRI
-     DRI_INCS = -I$(GLXLIBSRC)/dri
+     DRI_INCS = -I$(GLXLIBSRC)/dri -I$(SERVERSRC)/GL/dri
 #if defined(i386Architecture) && MesaUseX86Asm
      ASM_SRCS = glapi_x86.S
      ASM_OBJS = glapi_x86.o
@@ -131,17 +131,17 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/SPARC)
          OBJS = $(GLX_OBJS) $(ASM_OBJS)
       DEFINES = $(GLX_DEFS) $(ASM_DEFS) $(XMESA_DEFINES) $(ALIAS_DEFINES)
 
-     INCLUDES = -I$(INCLUDESRC) \
-		-I$(XINCLUDESRC) \
+     INCLUDES = -I$(XINCLUDESRC) \
+		-I$(MESASRCDIR)/include \
 		-I$(EXTINCSRC) \
 		-I$(INCLUDESRC)/GL \
 		-I$(GLXLIBSRC)/glx \
-		-I$(MESASRCDIR)/src \
-		-I$(MESASRCDIR)/src/X \
-		-I$(MESASRCDIR)/src/$(ASM_DIR) \
-		-I$(MESASRCDIR)/include \
-		-I$(GLXLIBSRC)/include \
-		$(DRI_INCS)
+		-I$(MESASRCDIR)/src/mesa/main \
+		-I$(MESASRCDIR)/src/mesa/glapi \
+		-I$(MESASRCDIR)/src/mesa/drivers/x11 \
+		-I$(MESASRCDIR)/src/mesa/$(ASM_DIR) \
+		-I$(XF86OSSRC) \
+ 		$(DRI_INCS)
 
 #include <Library.tmpl>
 

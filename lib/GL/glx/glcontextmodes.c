@@ -24,11 +24,28 @@
 
 /**
  * \file glcontextmodes.c
+ * Utility routines for working with \c __GLcontextModes structures.  At
+ * some point most or all of these functions will be moved to the Mesa
+ * code base.
+ *
  * \author Ian Romanick <idr@us.ibm.com>
  */
 
-#include "glapi.h"
-#include "glxclient.h"
+#include <X11/X.h>
+#include <GL/glx.h>
+#include "GL/glxint.h"
+
+#ifdef XFree86Server
+# include "GL/glx_ansic.h"
+extern void * __glXMalloc( size_t size );
+extern void __glXFree( void * ptr );
+# define Xmalloc __glXMalloc
+# define Xfree   __glXFree
+#else
+# include <X11/Xlibint.h>
+# define __glXMemset  memset
+#endif /* XFree86Server */
+
 #include "glcontextmodes.h"
 
 #define NUM_VISUAL_TYPES   6
@@ -41,7 +58,6 @@
  * \return If \c visualType is a valid X visual type, a GLX visual type will
  *         be returned.  Otherwise \c GLX_NONE will be returned.
  */
-
 GLint
 _gl_convert_from_x_visual_type( int visualType )
 {
@@ -64,18 +80,17 @@ _gl_convert_from_x_visual_type( int visualType )
  * \return If \c visualType is a valid GLX visual type, an X visual type will
  *         be returned.  Otherwise -1 will be returned.
  */
-
 GLint
 _gl_convert_to_x_visual_type( int visualType )
 {
     static const int x_visual_types[ NUM_VISUAL_TYPES ] = {
-	StaticGray,  GrayScale,
-	StaticColor, PseudoColor,
-	TrueColor,   DirectColor
+	TrueColor,   DirectColor,
+	PseudoColor, StaticColor,
+	GrayScale,   StaticGray
     };
 
-    return ( (unsigned) (visualType - GLX_STATIC_GRAY) <= NUM_VISUAL_TYPES )
-	? x_visual_types[ visualType - GLX_STATIC_GRAY ] : -1;
+    return ( (unsigned) (visualType - GLX_TRUE_COLOR) <= NUM_VISUAL_TYPES )
+	? x_visual_types[ visualType - GLX_TRUE_COLOR ] : -1;
 }
 
 
@@ -89,12 +104,14 @@ _gl_convert_to_x_visual_type( int visualType )
  * \param mode   Destination GL context mode.
  * \param config Source GLX visual config.
  */
-
 void
 _gl_copy_visual_to_context_mode( __GLcontextModes * mode,
 				 const __GLXvisualConfig * config )
 {
-    (void) memset( mode, 0, sizeof( __GLcontextModes ) );
+    __GLcontextModes * const next = mode->next;
+
+    (void) __glXMemset( mode, 0, sizeof( __GLcontextModes ) );
+    mode->next = next;
 
     mode->visualID = config->vid;
     mode->visualType = _gl_convert_from_x_visual_type( config->class );
@@ -156,7 +173,6 @@ _gl_copy_visual_to_context_mode( __GLcontextModes * mode,
  * \return  If \c attribute is a valid attribute of \c mode, \c Success is
  *          returned.  Otherwise \c GLX_BAD_ATTRIBUTE is returned.
  */
-
 int
 _gl_get_context_mode_data(const __GLcontextModes *mode, int attribute,
 			  int *value_return)
@@ -285,4 +301,88 @@ _gl_get_context_mode_data(const __GLcontextModes *mode, int attribute,
       default:
 	return GLX_BAD_ATTRIBUTE;
     }
+}
+
+
+/**
+ * Allocate a linked list of \c __GLcontextModes structures.  The fields of
+ * each structure will be initialized to "reasonable" default values.  In
+ * most cases this is the default value defined by table 3.4 of the GLX
+ * 1.3 specification.  This means that most values are either initialized to
+ * zero or \c GLX_DONT_CARE (which is -1).  As support for additional
+ * extensions is added, the new values will be initialized to appropriate
+ * values from the extension specification.
+ * 
+ * \param count         Number of structures to allocate.
+ * \param minimum_size  Minimum size of a structure to allocate.  This allows
+ *                      for differences in the version of the
+ *                      \c __GLcontextModes stucture used in libGL and in a
+ *                      DRI-based driver.
+ * \returns A pointer to the first element in a linked list of \c count
+ *          stuctures on success, or \c NULL on failure.
+ * 
+ * \warning Use of \c minimum_size does \b not guarantee binary compatibility.
+ *          The fundamental assumption is that if the \c minimum_size
+ *          specified by the driver and the size of the \c __GLcontextModes
+ *          structure in libGL is the same, then the meaning of each byte in
+ *          the structure is the same in both places.  \b Be \b careful!
+ *          Basically this means that fields have to be added in libGL and
+ *          then propagated to drivers.  Drivers should \b never arbitrarilly
+ *          extend the \c __GLcontextModes data-structure.
+ */
+__GLcontextModes *
+_gl_context_modes_create( unsigned count, size_t minimum_size )
+{
+   const size_t size = (minimum_size > sizeof( __GLcontextModes ))
+       ? minimum_size : sizeof( __GLcontextModes );
+   __GLcontextModes * base = NULL;
+   __GLcontextModes ** next;
+   unsigned   i;
+
+   next = & base;
+   for ( i = 0 ; i < count ; i++ ) {
+      *next = (__GLcontextModes *) Xmalloc( size );
+      if ( *next == NULL ) {
+	 _gl_context_modes_destroy( base );
+	 base = NULL;
+	 break;
+      }
+      
+      (void) __glXMemset( *next, 0, size );
+      (*next)->visualID = GLX_DONT_CARE;
+      (*next)->visualType = GLX_DONT_CARE;
+      (*next)->visualRating = GLX_NONE;
+      (*next)->transparentPixel = GLX_NONE;
+      (*next)->transparentRed = GLX_DONT_CARE;
+      (*next)->transparentGreen = GLX_DONT_CARE;
+      (*next)->transparentBlue = GLX_DONT_CARE;
+      (*next)->transparentAlpha = GLX_DONT_CARE;
+      (*next)->transparentIndex = GLX_DONT_CARE;
+      (*next)->xRenderable = GLX_DONT_CARE;
+      (*next)->fbconfigID = GLX_DONT_CARE;
+      (*next)->swapMethod = GLX_SWAP_UNDEFINED_OML;
+
+      next = & ((*next)->next);
+   }
+
+   return base;
+}
+
+
+/**
+ * Destroy a linked list of \c __GLcontextModes structures created by
+ * \c _gl_context_modes_create.
+ * 
+ * \param modes  Linked list of structures to be destroyed.  All structres
+ *               in the list will be freed.
+ */
+void
+_gl_context_modes_destroy( __GLcontextModes * modes )
+{
+   while ( modes != NULL ) {
+      __GLcontextModes * const next = modes->next;
+
+      Xfree( modes );
+      modes = next;
+   }
 }

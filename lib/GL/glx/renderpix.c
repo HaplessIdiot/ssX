@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/renderpix.c,v 1.5 2003/09/28 20:15:04 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/renderpix.c,v 1.4 2002/02/22 21:32:54 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
