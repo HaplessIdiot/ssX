@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.7 1994/06/05 13:39:02 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.8 1994/06/12 16:30:04 dawes Exp $
 
 #define OSName            FreeBSD 1.1
 #define OSVendor          /**/
@@ -39,7 +39,9 @@ XCOMM operating system:  OSName
 #define PreProcessCmd		CppCmd
 #define StandardCppDefines	-traditional
 #define DefaultCCOptions	/**/
-#define ExtraLibraries		-lgnumalloc
+#ifndef ExtraLibraries
+#define ExtraLibraries		-lmalloc
+#endif
 
 #ifdef InstallCmd
 #undef  InstallCmd
@@ -79,9 +81,8 @@ XCOMM operating system:  OSName
 /*
  * Compress manual pages
  */
-/* Off for now since the man(1) in 1.1 doesn't understand .gz man pages */
 #ifndef CompressManPages
-# define CompressManPages        NO
+# define CompressManPages        YES
 #endif
 
 #if CompressManPages
