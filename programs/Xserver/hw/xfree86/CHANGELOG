@@ -1,4 +1,9 @@
 XFree86 4.2.99.901 (4 February 2003)
+ 834. Radeon driver: make sure  RADEONCPStop() is only called when
+      RADEONCPStart() has been called before. Failing to do so may
+      make the kernel driver oops (Egbert Eich).
+ 833. Disabling MMX, 3DNow and SSE support for x86-64 as the function
+      call sequence is hardcoded to ia32 (Egbert Eich).
  832. Fix a hang in multi-thread mode caused by a missing UnlockDisplay() in
       XkbGetMapChanges() (Jose Luu).
  831. Resync with DRI mesa-4-0-4 branch:
@@ -16228,4 +16233,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2514 2003/02/04 03:06:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2515 2003/02/04 04:00:31 dawes Exp $

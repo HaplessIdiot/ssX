@@ -368,7 +368,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
  * Streaming SIMD Extensions, was introduced in the 2.4.x kernels.
  */
 #ifndef HasSSESupport
-#  if defined(i386Architecture) || defined(x86_64Architecture)
+#  if defined(i386Architecture)
 #    if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 4)
 #      define HasSSESupport		YES
 #    else
@@ -384,7 +384,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
  * don't enable it for libc5 as a reasonable default.
  */
 #ifndef HasMMXSupport
-#  if defined(i386Architecture) || defined(x86_64Architecture)
+#  if defined(i386Architecture)
 #    if (LinuxCLibMajorVersion > 5)
 #      define HasMMXSupport		YES
 #    else
@@ -402,7 +402,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
  * XXX This is preliminary.
  */
 #ifndef Has3DNowSupport
-#  if defined(i386Architecture) || defined(x86_64Architecture)
+#  if defined(i386Architecture)
 #    if (LinuxCLibMajorVersion > 5)
 #      define Has3DNowSupport		YES
 #    else
