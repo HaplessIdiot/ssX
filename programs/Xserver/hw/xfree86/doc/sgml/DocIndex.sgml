@@ -90,8 +90,8 @@
 	url="P9000.html">
 <item><htmlurl name="Information for S3 Chipset Users"
 	url="S3.html">
-<item><htmlurl name="Information for S3 ViRGE and ViRGE/VX Users"
-	url="S3V.html">
+<item><htmlurl name="Information for S3 ViRGE Users"
+	url="s3virge.html">
 <item><htmlurl name="Information for SiS Users"
 	url="SiS.html">
 <item><htmlurl name="Information for Trident Chipset Users"
@@ -107,7 +107,7 @@
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.29 1998/06/28 03:53:11 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.30 1999/05/29 09:54:48 dawes Exp $ 
 
 
 
