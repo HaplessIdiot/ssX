@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Glyph.c,v 1.6 2001/12/16 18:27:55 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Glyph.c,v 1.8 2002/02/12 07:17:37 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -448,7 +448,7 @@ XRenderCompositeText8 (Display			    *dpy,
 	/*
 	 * Switch glyphsets
 	 */
-	if (elts[i].glyphset != req->glyphset)
+	if (elts[i].glyphset != elts[0].glyphset)
 	{
 	    BufAlloc (xGlyphElt *, elt, SIZEOF (xGlyphElt));
 	    elt->len = 0xff;
@@ -462,15 +462,17 @@ XRenderCompositeText8 (Display			    *dpy,
 	chars = elts[i].chars;
 	while (nchars)
 	{
+	    int this_chars = nchars > MAX_8 ? MAX_8 : nchars;
+
 	    BufAlloc (xGlyphElt *, elt, SIZEOF(xGlyphElt))
-	    elt->len = nchars > MAX_8 ? MAX_8 : nchars;
+	    elt->len = this_chars;
 	    elt->deltax = xDst;
 	    elt->deltay = yDst;
 	    xDst = 0;
 	    yDst = 0;
-	    Data (dpy, chars, elt->len);
-	    nchars -= elt->len;
-	    chars += elt->len;
+	    Data (dpy, chars, this_chars);
+	    nchars -= this_chars;
+	    chars += this_chars;
 	}
     }
     
@@ -524,7 +526,7 @@ XRenderCompositeText16 (Display			    *dpy,
     
     for (i = 0; i < nelt; i++)
     {
-	if (elts[i].glyphset != req->glyphset)
+	if (elts[i].glyphset != elts[0].glyphset)
 	    len += (SIZEOF (xGlyphElt) + 4) >> 2;
 	nchars = elts[i].nchars;
 	/*
@@ -550,7 +552,7 @@ XRenderCompositeText16 (Display			    *dpy,
 	/*
 	 * Switch glyphsets
 	 */
-	if (elts[i].glyphset != req->glyphset)
+	if (elts[i].glyphset != elts[0].glyphset)
 	{
 	    BufAlloc (xGlyphElt *, elt, SIZEOF (xGlyphElt));
 	    elt->len = 0xff;
@@ -564,15 +566,18 @@ XRenderCompositeText16 (Display			    *dpy,
 	chars = elts[i].chars;
 	while (nchars)
 	{
+	    int this_chars = nchars > MAX_16 ? MAX_16 : nchars;
+	    int this_bytes = this_chars * 2;
+    
 	    BufAlloc (xGlyphElt *, elt, SIZEOF(xGlyphElt))
-	    elt->len = nchars > MAX_16 ? MAX_16 : nchars;
+	    elt->len = this_chars;
 	    elt->deltax = xDst;
 	    elt->deltay = yDst;
 	    xDst = 0;
 	    yDst = 0;
-	    Data16 (dpy, chars, elt->len * 2);
-	    nchars -= elt->len;
-	    chars += elt->len;
+	    Data16 (dpy, chars, this_bytes);
+	    nchars -= this_chars;
+	    chars += this_chars;
 	}
     }
     
@@ -661,15 +666,17 @@ XRenderCompositeText32 (Display			    *dpy,
 	chars = elts[i].chars;
 	while (nchars)
 	{
+	    int this_chars = nchars > MAX_32 ? MAX_32 : nchars;
+	    int this_bytes = this_chars * 4;
 	    BufAlloc (xGlyphElt *, elt, SIZEOF(xGlyphElt))
-	    elt->len = nchars > MAX_32 ? MAX_32 : nchars;
+	    elt->len = this_chars;
 	    elt->deltax = xDst;
 	    elt->deltay = yDst;
 	    xDst = 0;
 	    yDst = 0;
-	    Data32 (dpy, chars, elt->len * 4);
-	    nchars -= elt->len;
-	    chars += elt->len;
+	    Data32 (dpy, chars, this_bytes);
+	    nchars -= this_chars;
+	    chars += this_chars;
 	}
     }
     
