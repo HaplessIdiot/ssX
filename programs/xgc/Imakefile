@@ -6,7 +6,7 @@ XCOMM $XFree86: contrib/programs/xgc/Imakefile,v 3.1 1999/07/19 13:34:53 dawes E
            OBJS = dashlist.o planemask.o getfile.o tests.o text.o \
                   choice.o main.o interpret.o record.o testfrac.o \
                   gram.o lex.o
-LOCAL_LIBRARIES = XawClientLibs $(LEXLIB)
+LOCAL_LIBRARIES = XawClientLibs
         DEPLIBS = XawClientDepLibs $(DEPXLIB)
   SYS_LIBRARIES = MathLibrary
          YFLAGS = -d
