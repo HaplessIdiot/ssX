@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.13 2001/06/08 19:36:34 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.14 2001/07/18 10:15:02 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -224,8 +224,6 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
 	pFormats[f].depth = formats[f].depth;
 	format = formats[f].format;
 	pFormats[f].format = format;
-	ErrorF ("Format 0x%x depth %d format 0x%x\n",
-		pFormats[f].id, pFormats[f].depth, pFormats[f].format);
 	switch (PICT_FORMAT_TYPE(format)) {
 	case PICT_TYPE_ARGB:
 	    pFormats[f].type = PictTypeDirect;
