@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imRm.c,v 3.4 1998/06/28 08:41:36 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imRm.c,v 3.5 1998/10/03 08:41:35 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -38,7 +38,6 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "Xlcint.h"
 #include "Ximint.h"
 #include "Xresource.h"
-#include "snprintf.h"
 
 #ifndef	isalnum
 #define	isalnum(c)	\

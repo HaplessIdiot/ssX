@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.3 1999/04/25 10:01:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.4 1999/04/27 12:05:04 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -43,6 +43,9 @@
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef NEED_SNPRINTF
+#include "snprintf.h"
+#endif
 
 static int putsection_files   (Tcl_Interp *interp, char *varpfx);
 static int putsection_module  (Tcl_Interp *interp, char *varpfx);

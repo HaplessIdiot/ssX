@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/10/24 10:16:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.26 1999/04/05 07:12:57 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.27 1999/04/05 08:28:22 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -22,12 +22,17 @@ includes::
 	@exit 1
 
 #else
+#if !HasSnprintf
+        MISCSRCS = snprintf.c
+        MISCOBJS = snprintf.o
+    MISC_DEFINES = -DNEED_SNPRINTF
+#endif
             SRCS = main.c tclmisc.c tclvidmode.c tclcards.c tclother.c \
 		   tclkbd.c tclxfconf.c confread.c confwrite.c \
-		   cards.c tclxkbui.c tkother.c tclcurses.c
+		   cards.c tclxkbui.c tkother.c tclcurses.c $(MISCSRCS)
             OBJS = main.o tclmisc.o tclvidmode.o tclcards.o tclother.o \
 		   tclkbd.o tclxfconf.o confread.o confwrite.o \
-		   cards.o tclxkbui.o tkother.o tclcurses.o
+		   cards.o tclxkbui.o tkother.o tclcurses.o $(MISCOBJS)
        TCL_FILES = phase1.tcl phase2.tcl phase3.tcl phase4.tcl phase5.tcl \
 		   setuplib.tcl srvflags.tcl carddata.tcl \
 		   card.tcl done.tcl filelist.tcl keyboard.tcl \
@@ -111,7 +116,8 @@ CURSES_DEFINES = -DCURSES
 
  XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup
          DEFINES = -DCARD_DATABASE_FILE='"$(CARDDBFILE)"' \
-		   $(XCONFIG_DEFINES) $(MODULEDEFINES) $(CURSES_DEFINES)
+		   $(XCONFIG_DEFINES) $(MODULEDEFINES) $(CURSES_DEFINES) \
+		   $(MISC_DEFINES)
         INCLUDES = -I../os-support -I../common -I../vgahw \
 		   -I$(FONTLIBSRC)/include -I$(SERVERSRC)/mi -I../parser \
 		   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(INCLUDESRC) \
@@ -130,6 +136,11 @@ AllTarget(ProgramTargetName(XF86Setup))
 LinkSourceFile(Cards,../xf86config)
 LinkSourceFile(cards.h,../xf86config)
 LinkSourceFile(cards.c,../xf86config)
+
+#if !HasSnprintf
+LinkSourceFile(snprintf.c,$(LIBSRC)/misc)
+LinkSourceFile(snprintf.h,$(LIBSRC)/misc)
+#endif
 
 CppFileTarget(mseproto.tcl, mseproto.cpp, $(MSEPROTODEFS), NullParameter)
 

@@ -1,4 +1,7 @@
 XFree86 3.9Pl (29 April 1999)
+2786. Add a new, more complete version of snprintf, vsnprintf for OSs that
+      don't have it.  This one is based on the "SIO" stdio-like package
+      (David Dawes).
 2785. Add log file support, including separate log and stderr streams, and
       separate verbosity levels for each stream.  Changed the -verbose option
       to accept an optional integer argument that specifies the verbosity
@@ -7893,4 +7896,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.735 1999/04/27 12:04:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.736 1999/04/28 05:36:09 dawes Exp $

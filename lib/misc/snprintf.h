@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/misc/snprintf.h,v 3.1 1996/08/26 14:42:33 dawes Exp $ */
 
 #ifndef SNPRINTF_H
 #define SNPRINTF_H
@@ -23,21 +23,8 @@
 #define vsnprintf _XVsnprintf
 #endif
 
-#include <X11/Xos.h>
-#include <X11/Xlib.h>
-
-#if NeedVarargsPrototypes
-#define HAVE_STDARG_H
-#endif
-
-#ifdef HAVE_STDARG_H
-#include <stdarg.h>
 extern int snprintf (char *str, size_t count, const char *fmt, ...);
 extern int vsnprintf (char *str, size_t count, const char *fmt, va_list arg);
-#else
-extern int snprintf ();
-extern int vsnprintf ();
-#endif
 
 #endif /* HAS_SNPRINTF */
 
