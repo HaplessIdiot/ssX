@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.25 2003/07/25 14:17:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.26 2003/08/22 17:56:24 dawes Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -346,7 +346,7 @@ DDCRead_DDC2(int scrnIndex, I2CBusPtr pBus, int start, int len)
 
 	dev->pI2CBus = pBus;
 	if (!xf86I2CDevInit(dev)) {
-	    xf86DrvMsg(X_PROBED,scrnIndex,"No DDC2 device\n");
+	    xf86DrvMsg(scrnIndex, X_PROBED, "No DDC2 device\n");
 	    return NULL;
 	}
     }

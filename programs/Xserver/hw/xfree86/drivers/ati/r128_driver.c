@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.82 2003/10/08 15:48:38 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.83 2003/10/30 17:36:58 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -3417,7 +3417,7 @@ ModeStatus R128ValidMode(int scrnIndex, DisplayModePtr mode,
 		return MODE_OK;
 	    }
 	}
-	xf86DrvMsgVerb(5,pScrn->scrnIndex, X_INFO,
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 5,
 		       "Mode rejected for FP %ix%i [pclk: %.1f] "
 		       "(not listed in VBIOS)\n",
 		       mode->CrtcHDisplay, mode->CrtcVDisplay,
