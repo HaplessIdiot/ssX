@@ -46,6 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mibitblt.c,v 5.24 94/04/17 20:27:19 dpw Exp $ */
+/* $XFree86$ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -506,8 +507,8 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     gcv[1] = (pointer)pGC->fgPixel;
     gcv[2] = (pointer)oldfill;
     gcv[3] = (pointer)pStipple;
-    gcv[4] = (pointer)oldOrg.x;
-    gcv[5] = (pointer)oldOrg.y;
+    gcv[4] = (pointer)(unsigned long) oldOrg.x;
+    gcv[5] = (pointer)(unsigned long) oldOrg.y;
     DoChangeGC(pGC, 
         GCForeground | GCBackground | GCFillStyle | GCStipple | 
 	GCTileStipXOrigin | GCTileStipYOrigin, (XID *)gcv, 1);

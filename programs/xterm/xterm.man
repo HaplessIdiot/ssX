@@ -1,5 +1,5 @@
 .\" $XConsortium: xterm.man /main/83 1995/12/15 14:06:17 gildea $
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.5 1996/02/12 11:16:50 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.6 1996/03/10 12:15:29 dawes Exp $
 .\" Copyright (c) 1989  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -595,6 +595,11 @@ The default is ``false.''
 .B "autoWrap (\fPclass\fB AutoWrap)"
 Specifies whether or not auto-wraparound should be enabled.  The
 default is ``true.''
+.TP 8
+.B "awaitInput (\fPclass\fB AwaitInput)"
+Specifies whether or not the xterm uses a 50 millisecond timeout to
+await input (i.e., to support the Xaw3d arrow scrollbar).
+The default is ``false.''
 .TP 8
 .B "bellSuppressTime (\fPclass\fB BellSuppressTime)"
 Number of milliseconds after a bell command is sent during which additional

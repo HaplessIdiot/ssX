@@ -1,5 +1,5 @@
 /* $XConsortium: window.c /main/199 1995/09/22 10:22:27 dpw $ */
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.0 1996/04/15 11:20:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.1 1996/05/06 05:56:26 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -3523,7 +3523,8 @@ DrawLogo(pWin)
     GC *pGC;
     int thin, gap, d31;
     DDXPointRec poly[4];
-    XID fore[2], back[2];
+    XID fore[2];
+    pointer back[2];
     xrgb rgb[2];
     BITS32 fmask, bmask;
     ColormapPtr cmap;
@@ -3566,7 +3567,7 @@ DrawLogo(pWin)
 	back[1] = 0;
 	(void)DoChangeGC(pGC, GCTileStipXOrigin|GCTileStipYOrigin, back, 0);
 	back[0] = FillTiled;
-	back[1] = (XID)pWin->background.pixmap;
+	back[1] = pWin->background.pixmap;
 	bmask = GCFillStyle|GCTile;
     }
 
@@ -3602,7 +3603,7 @@ DrawLogo(pWin)
     poly[1].x = x + size-d31;	       poly[1].y = y;
     poly[2].x = x + 0;		       poly[2].y = y + size;
     poly[3].x = x + d31;	       poly[3].y = y + size;
-    (void)DoChangeGC(pGC, fmask, fore, 1);
+    (void)DoChangeGC(pGC, fmask, fore, 0);
     ValidateGC(pDraw, pGC);
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
@@ -3621,7 +3622,7 @@ DrawLogo(pWin)
     poly[1].x = x + size / 2;			 poly[1].y = y + size/2;
     poly[2].x = x + (size/2)+(d31-(d31/2));	 poly[2].y = y + size/2;
     poly[3].x = x + d31;			 poly[3].y = y + size;
-    (void)DoChangeGC(pGC, bmask, back, 1);
+    (void)DoChangeGC(pGC, bmask, (XID *)back, 1);
     ValidateGC(pDraw, pGC);
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
@@ -3660,7 +3661,7 @@ DrawLogo(pWin)
     poly[1].x = x + size/4;	       poly[1].y = y;
     poly[2].x = x + size;	       poly[2].y = y + size;
     poly[3].x = x + size - size/4;     poly[3].y = y + size;
-    (void)DoChangeGC(pGC, fmask, fore, 1);
+    (void)DoChangeGC(pGC, fmask, fore, 0);
     ValidateGC(pDraw, pGC);
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
@@ -3678,7 +3679,7 @@ DrawLogo(pWin)
     poly[1].x = x + size-( thin+gap);  poly[1].y = y;
     poly[2].x = x + thin;	      poly[2].y = y + size;
     poly[3].x = x + thin + gap;	      poly[3].y = y + size;
-    (void)DoChangeGC(pGC, bmask, back, 1);
+    (void)DoChangeGC(pGC, bmask, (XID *)back, 1);
     ValidateGC(pDraw, pGC);
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 

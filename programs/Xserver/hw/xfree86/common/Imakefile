@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/18 1996/01/16 16:08:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.34 1996/05/06 05:57:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.35 1996/05/11 11:03:56 dawes Exp $
 
 
 
@@ -139,10 +139,7 @@ OFILES = \
    OSVENDOR = OSVendor
   OSNAMEDEF = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
 CONSDEFINES = XFree86ConsoleDefines
-/* 828316800 is Mon Apr  1 00:00:00 1996 GMT */
-/* 833587200 is Sat Jun  1 00:00:00 1996 GMT */
-/* 841536000 is Sun Sep  1 00:00:00 1996 GMT */
-EXP_DEFINES = -DEXPIRY_TIME=841536000
+EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry
 
     DEFINES = $(XCONFIGDEFINES) $(CONSDEFINES)
 

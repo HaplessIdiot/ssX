@@ -1,4 +1,5 @@
-/* $XConsortium: xwd.c,v 1.62 94/04/17 20:23:57 rws Exp $ */
+/* $XConsortium: xwd.c /main/64 1996/01/14 16:53:13 kaleb $ */
+/* $XFree86$ */
 
 /*
 
@@ -85,6 +86,13 @@ typedef unsigned long Pixel;
 
 /* Include routines to do parsing */
 #include "dsimple.h"
+#include "list.h"
+#include "wsutils.h"
+#include "multiVis.h"
+
+#ifdef XKB
+#include <X11/extensions/XKBbells.h>
+#endif
 
 /* Setable Options */
 
@@ -93,6 +101,7 @@ Bool nobdrs = False;
 Bool on_root = False;
 Bool standard_out = True;
 Bool debug = False;
+Bool silent = False;
 Bool use_installed = False;
 long add_pixel_value = 0;
 
@@ -170,6 +179,10 @@ main(argc, argv)
 	    frame_only = True;
 	    continue;
 	}
+	if (!strcmp(argv[i], "-silent")) {
+	    silent = True;
+	    continue;
+	}
 	usage();
     }
 #ifdef WIN32
@@ -208,13 +221,35 @@ main(argc, argv)
     exit(0);
 }
 
+static int
+Get24bitDirectColors(colors)
+XColor **colors ;
+{
+    int i , ncolors = 256 ;
+    XColor *tcol ;
+
+    *colors = tcol = (XColor *)malloc(sizeof(XColor) * ncolors) ;
+
+    for(i=0 ; i < ncolors ; i++)
+    {
+	tcol[i].pixel = i << 16 | i << 8 | i ;
+	tcol[i].red = tcol[i].green = tcol[i].blue = i << 8   | i ;
+    }
+
+    return ncolors ;
+}
+
 
 /*
  * Window_Dump: dump a window to a file which must already be open for
  *              writting.
  */
 
+#ifdef X_NOT_STDC_ENV
 char *calloc();
+#else
+#include <stdlib.h>
+#endif
 
 Window_Dump(window, out)
      Window window;
@@ -238,10 +273,30 @@ Window_Dump(window, out)
     XWDFileHeader header;
     XWDColor xwdcolor;
     
+    int                 transparentOverlays , multiVis;
+    int                 numVisuals;
+    XVisualInfo         *pVisuals;
+    int                 numOverlayVisuals;
+    OverlayInfo         *pOverlayVisuals;
+    int                 numImageVisuals;
+    XVisualInfo         **pImageVisuals;
+    list_ptr            vis_regions;    /* list of regions to read from */
+    list_ptr            vis_image_regions ;
+    Colormap 		cmap ; 
+    Visual		vis_h,*vis ;
+    int			allImage = 0 ;
+
     /*
      * Inform the user not to alter the screen.
      */
-    Beep();
+    if (!silent) {
+#ifdef XKB
+	XkbStdBell(dpy,None,50,XkbBI_Wait);
+#else
+	XBell(dpy,FEEP_VOLUME);
+#endif
+	XFlush(dpy);
+    }
 
     /*
      * Get the parameters of the window being dumped.
@@ -298,8 +353,24 @@ Window_Dump(window, out)
 
     x = absx - win_info.x;
     y = absy - win_info.y;
-    if (on_root)
-	image = XGetImage (dpy, RootWindow(dpy, screen), absx, absy, width, height, AllPlanes, format);
+
+    multiVis = GetMultiVisualRegions(dpy,RootWindow(dpy, screen), 
+               absx, absy, 
+	       width, height,&transparentOverlays,&numVisuals, &pVisuals,
+               &numOverlayVisuals,&pOverlayVisuals,&numImageVisuals,
+               &pImageVisuals,&vis_regions,&vis_image_regions,&allImage) ;
+    if (on_root || multiVis)
+    {
+	if(!multiVis)
+	    image = XGetImage (dpy, RootWindow(dpy, screen), absx, absy, 
+                    width, height, AllPlanes, format);
+	else
+	    image = ReadAreaToImage(dpy, RootWindow(dpy, screen), absx, absy, 
+                width, height,
+    		numVisuals,pVisuals,numOverlayVisuals,pOverlayVisuals,
+                numImageVisuals, pImageVisuals,vis_regions,
+                vis_image_regions,format,allImage);
+    }
     else
 	image = XGetImage (dpy, window, x, y, width, height, AllPlanes, format);
     if (!image) {
@@ -317,14 +388,30 @@ Window_Dump(window, out)
 
     if (debug) outl("xwd: Getting Colors.\n");
 
-    ncolors = Get_XColors(&win_info, &colors);
-
+    if( !multiVis)
+    {
+       ncolors = Get_XColors(&win_info, &colors);
+       vis = win_info.visual ;
+    }
+    else
+    {
+       ncolors = Get24bitDirectColors(&colors) ;
+       initFakeVisual(&vis_h) ;
+       vis = &vis_h ;
+    }
     /*
      * Inform the user that the image has been retrieved.
      */
-    XBell(dpy, FEEP_VOLUME);
-    XBell(dpy, FEEP_VOLUME);
-    XFlush(dpy);
+    if (!silent) {
+#ifdef XKB
+	XkbStdBell(dpy,window,FEEP_VOLUME,XkbBI_Proceed);
+	XkbStdBell(dpy,window,FEEP_VOLUME,XkbBI_RepeatingLastBell);
+#else
+	XBell(dpy, FEEP_VOLUME);
+	XBell(dpy, FEEP_VOLUME);
+#endif
+	XFlush(dpy);
+    }
 
     /*
      * Calculate header size.
@@ -349,12 +436,21 @@ Window_Dump(window, out)
     header.bitmap_pad = (CARD32) image->bitmap_pad;
     header.bits_per_pixel = (CARD32) image->bits_per_pixel;
     header.bytes_per_line = (CARD32) image->bytes_per_line;
+    /****
     header.visual_class = (CARD32) win_info.visual->class;
     header.red_mask = (CARD32) win_info.visual->red_mask;
     header.green_mask = (CARD32) win_info.visual->green_mask;
     header.blue_mask = (CARD32) win_info.visual->blue_mask;
     header.bits_per_rgb = (CARD32) win_info.visual->bits_per_rgb;
     header.colormap_entries = (CARD32) win_info.visual->map_entries;
+    *****/
+    header.visual_class = (CARD32) vis->class;
+    header.red_mask = (CARD32) vis->red_mask;
+    header.green_mask = (CARD32) vis->green_mask;
+    header.blue_mask = (CARD32) vis->blue_mask;
+    header.bits_per_rgb = (CARD32) vis->bits_per_rgb;
+    header.colormap_entries = (CARD32) vis->map_entries;
+
     header.ncolors = ncolors;
     header.window_width = (CARD32) win_info.width;
     header.window_height = (CARD32) win_info.height;
@@ -473,6 +569,52 @@ int Image_Size(image)
 
 #define lowbit(x) ((x) & (~(x) + 1))
 
+static int
+ReadColors(vis,cmap,colors)
+Visual *vis ;
+Colormap cmap ;
+XColor **colors ;
+{
+    int i,ncolors ;
+
+    ncolors = vis->map_entries;
+
+    if (!(*colors = (XColor *) malloc (sizeof(XColor) * ncolors)))
+      Fatal_Error("Out of memory!");
+
+    if (vis->class == DirectColor ||
+	vis->class == TrueColor) {
+	Pixel red, green, blue, red1, green1, blue1;
+
+	red = green = blue = 0;
+	red1 = lowbit(vis->red_mask);
+	green1 = lowbit(vis->green_mask);
+	blue1 = lowbit(vis->blue_mask);
+	for (i=0; i<ncolors; i++) {
+	  (*colors)[i].pixel = red|green|blue;
+	  (*colors)[i].pad = 0;
+	  red += red1;
+	  if (red > vis->red_mask)
+	    red = 0;
+	  green += green1;
+	  if (green > vis->green_mask)
+	    green = 0;
+	  blue += blue1;
+	  if (blue > vis->blue_mask)
+	    blue = 0;
+	}
+    } else {
+	for (i=0; i<ncolors; i++) {
+	  (*colors)[i].pixel = i;
+	  (*colors)[i].pad = 0;
+	}
+    }
+
+    XQueryColors(dpy, cmap, *colors, ncolors);
+    
+    return(ncolors);
+}
+
 /*
  * Get the XColors of all pixels in image - returns # of colors
  */
@@ -488,42 +630,8 @@ int Get_XColors(win_info, colors)
 	cmap = XListInstalledColormaps(dpy, win_info->root, &i)[0];
     if (!cmap)
 	return(0);
-
-    ncolors = win_info->visual->map_entries;
-    if (!(*colors = (XColor *) malloc (sizeof(XColor) * ncolors)))
-      Fatal_Error("Out of memory!");
-
-    if (win_info->visual->class == DirectColor ||
-	win_info->visual->class == TrueColor) {
-	Pixel red, green, blue, red1, green1, blue1;
-
-	red = green = blue = 0;
-	red1 = lowbit(win_info->visual->red_mask);
-	green1 = lowbit(win_info->visual->green_mask);
-	blue1 = lowbit(win_info->visual->blue_mask);
-	for (i=0; i<ncolors; i++) {
-	  (*colors)[i].pixel = red|green|blue;
-	  (*colors)[i].pad = 0;
-	  red += red1;
-	  if (red > win_info->visual->red_mask)
-	    red = 0;
-	  green += green1;
-	  if (green > win_info->visual->green_mask)
-	    green = 0;
-	  blue += blue1;
-	  if (blue > win_info->visual->blue_mask)
-	    blue = 0;
-	}
-    } else {
-	for (i=0; i<ncolors; i++) {
-	  (*colors)[i].pixel = i;
-	  (*colors)[i].pad = 0;
-	}
-    }
-
-    XQueryColors(dpy, cmap, *colors, ncolors);
-    
-    return(ncolors);
+    ncolors = ReadColors(win_info->visual,cmap,colors) ;
+    return ncolors ;
 }
 
 _swapshort (bp, n)

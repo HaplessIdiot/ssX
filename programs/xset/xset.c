@@ -1,6 +1,6 @@
 /* 
  * $XConsortium: xset.c,v 1.70 95/05/12 17:22:03 mor Exp $ 
- * $XFree86: xc/programs/xset/xset.c,v 3.0 1996/01/17 12:51:15 dawes Exp $ 
+ * $XFree86: xc/programs/xset/xset.c,v 3.1 1996/01/24 22:04:52 dawes Exp $ 
  */
 
 /*
@@ -914,9 +914,9 @@ Bool onoff;
   mods = XGetModifierMapping(dpy);
 
   if (onoff)
-    mods = XInsertModifiermapEntry(mods, XK_Caps_Lock, LockMapIndex);
+    mods = XInsertModifiermapEntry(mods, (KeyCode) XK_Caps_Lock, LockMapIndex);
   else
-    mods = XDeleteModifiermapEntry(mods, XK_Caps_Lock, LockMapIndex);
+    mods = XDeleteModifiermapEntry(mods, (KeyCode) XK_Caps_Lock, LockMapIndex);
   XSetModifierMapping(dpy, mods);
   return;
 }

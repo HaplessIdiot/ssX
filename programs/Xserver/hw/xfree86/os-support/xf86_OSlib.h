@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.24 1996/02/19 09:50:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.25 1996/03/10 12:05:15 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -307,7 +307,10 @@ extern int errno;
 # include <sys/stat.h>
 
 # if defined(__bsdi__)
+#  include <sys/param.h>
+# if (_BSDI_VERSION < 199510)
 #  include <i386/isa/vgaioctl.h>
+# endif
 # endif /* __bsdi__ */
 
 # define CLEARDTR_SUPPORT

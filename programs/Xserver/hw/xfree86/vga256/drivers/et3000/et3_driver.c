@@ -1,5 +1,5 @@
 /* $XConsortium: et3_driver.c /main/6 1996/01/12 12:17:02 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.11 1996/02/22 05:13:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.12 1996/03/29 22:17:47 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -47,6 +47,10 @@
 #include "servermd.h"
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
+#endif
+
+#ifdef XF86VGA16
+#define MONOVGA
 #endif
 
 typedef struct {
@@ -345,8 +349,10 @@ ET3000Init(mode)
      DisplayModePtr mode;
 {
 #ifdef MONOVGA
+#ifndef XF86VGA16
   Bool first_time = (!new);
   int i;
+#endif
 #endif
    
 #ifdef MONOVGA
@@ -383,6 +389,7 @@ ET3000Init(mode)
   new->std.CRTC[5] |= 0x60;	/* Hsync skew */
   new->std.CRTC[19] = vga256InfoRec.virtualX >> 5;
   /* This weird mode uses the DAC in an unusual way */
+#ifndef XF86VGA16
   if (first_time)
   {
     for (i = 0; i < 768; i+=3)
@@ -399,6 +406,7 @@ ET3000Init(mode)
         new->std.DAC[i + 2] = vga256InfoRec.blackColour.blue;
       }
   }
+#endif
   new->std.Attribute[17] = 0x00;
    
 #else /* !MONOVGA */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.26 1995/12/17 05:03:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.27 1996/02/04 09:03:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -364,7 +364,7 @@ mach8Probe()
 	/* 2-oct-93 TCG : detect clocks with dif4 fix */
 	mach8clkprobedif4fix = TRUE;
 	xf86GetClocks(16, mach8ClockSelect, (void (*)())NoopDDA,
-			(void (*)())NoopDDA, DISP_STAT, 2, 7, 44900,
+			(SaveScreenProcPtr)NoopDDA, DISP_STAT, 2, 7, 44900,
 			&mach8InfoRec);
 	outw(CLOCK_SEL, 0); /* reset pass-through */
 	mach8clkprobedif4fix = FALSE;

@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.32 95/04/05 19:58:18 kaleb Exp $ */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.8 1996/01/05 13:21:34 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.9 1996/05/06 06:00:59 dawes Exp $ */
 /*
  * handles connections
  */
@@ -87,10 +87,6 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #include	<signal.h>
 
-#ifdef __EMX__
-#define _NFILE OPEN_MAX
-#endif
-
 #include	"FS.h"
 #include	"FSproto.h"
 #include	"clientstr.h"
@@ -103,6 +99,11 @@ in this Software without prior written authorization from the X Consortium.
 #ifdef MINIX
 #include <sys/nbio.h>
 #define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
+#endif
+
+#ifdef __EMX__
+#define _NFILE OPEN_MAX
+#define select(n,r,w,x,t) os2PseudoSelect(n,r,w,x,t)
 #endif
 
 #ifdef X_NOT_STDC_ENV

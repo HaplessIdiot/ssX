@@ -1,5 +1,5 @@
 /* $XConsortium: Init.c /main/5 1996/01/15 21:05:07 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.5 1996/02/18 03:45:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.6 1996/03/10 12:10:50 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -35,11 +35,6 @@ is" without express or implied warranty.
 #ifdef __EMX__
 #include "os2GC.h"
 #include "os2Font.h"
-/*
- * for Sebastien's changes to waitfor, we have to resolve an empty
- * function CAVEAT: this code maybe does not work!
- */
-int os2PseudoSelect() { return 1; }
 #else
 #include "GC.h"
 #include "Font.h"

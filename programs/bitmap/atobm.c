@@ -1,4 +1,5 @@
 /* $XConsortium: atobm.c,v 1.5 94/04/17 20:23:47 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988, 1993  X Consortium
@@ -38,7 +39,11 @@ from the X Consortium.
 #include <ctype.h>
 #include <X11/Xos.h>
 
+#ifdef X_NOT_STDC_ENV
 extern char *malloc(), *calloc();
+#else
+#include <stdlib.h>
+#endif
 
 char *ProgramName;
 

@@ -60,7 +60,11 @@ SOFTWARE.
 #include <X11/Xutil.h>
 #include <ctype.h>
 
+#ifdef X_NOT_STDC_ENV
 char *malloc();
+#else
+#include <stdlib.h>
+#endif
 
 Window win;
 
@@ -86,7 +90,6 @@ static char *copystring (s)
     register char *s;
 {
     int len = (s ? strlen (s) : 0) + 1;
-    char *malloc();
     char *retval;
 
     retval = malloc (len);

@@ -1,5 +1,5 @@
 /* $XConsortium: waitfor.c,v 1.14 95/04/05 19:58:24 kaleb Exp $ */
-/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.1 1994/11/26 12:49:46 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.2 1996/01/05 13:21:36 dawes Exp $ */
 /*
  * waits for input
  */
@@ -69,6 +69,10 @@ in this Software without prior written authorization from the X Consortium.
 #ifdef MINIX
 #include <sys/nbio.h>
 #define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
+#endif
+
+#ifdef __EMX__
+#define select(n,r,w,x,t) os2PseudoSelect(n,r,w,x,t)
 #endif
 
 extern WorkQueuePtr workQueue;

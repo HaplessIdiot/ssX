@@ -1,5 +1,5 @@
-/* $XConsortium: button.c /main/70 1996/01/14 16:52:34 kaleb $ */
-/* $XFree86: xc/programs/xterm/button.c,v 3.4 1996/03/10 12:15:20 dawes Exp $ */
+/* $XConsortium: button.c /main/72 1996/05/25 08:23:02 kaleb $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.5 1996/05/13 06:50:44 dawes Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -423,23 +423,30 @@ Cardinal *num_params;
 }
 
 
-static void
-SetSelectUnit(buttonDownTime, defaultUnit)
+static SelectUnit
+EvalSelectUnit(buttonDownTime, defaultUnit)
     Time buttonDownTime;
     SelectUnit defaultUnit;
 {
     int delta;
-    if (buttonDownTime > lastButtonUpTime) /* most of the time */
-	delta = buttonDownTime - lastButtonUpTime;
-    else /* time has rolled over since lastButtonUpTime */
-	delta = (((Time) ~0) - lastButtonUpTime) + buttonDownTime;
+    static int firstTime = 1;
+
+    if (!firstTime) {
+	if (buttonDownTime > lastButtonUpTime) /* most of the time */
+	    delta = buttonDownTime - lastButtonUpTime;
+	else /* time has rolled over since lastButtonUpTime */
+	    delta = (((Time) ~0) - lastButtonUpTime) + buttonDownTime;
+    } else {
+	firstTime--;
+	delta = term->screen.multiClickTime + 1;
+    }
 
     if (delta > term->screen.multiClickTime) {
 	numberOfClicks = 1;
-	selectUnit = defaultUnit;
+	return defaultUnit;
     } else {
 	++numberOfClicks;
-	selectUnit = ((selectUnit + 1) % NSELECTUNITS);
+	return ((selectUnit + 1) % NSELECTUNITS);
     }
 }
 
@@ -449,7 +456,7 @@ XEvent *event;			/* must be XButtonEvent* */
 int startrow, startcol;
 {
 	if (SendMousePosition(w, event)) return;
-	SetSelectUnit(event->xbutton.time, SELECTCHAR);
+	selectUnit = EvalSelectUnit(event->xbutton.time, SELECTCHAR);
 	replyToEmacs = FALSE;
 	StartSelect(startrow, startcol);
 }
@@ -492,7 +499,7 @@ TrackDown(event)
 {
 	int startrow, startcol;
 
-	SetSelectUnit(event->time, SELECTCHAR);
+	selectUnit = EvalSelectUnit(event->time, SELECTCHAR);
 	if (numberOfClicks > 1 ) {
 		PointToRowCol(event->y, event->x, &startrow, &startcol);
 		replyToEmacs = TRUE;
@@ -650,7 +657,7 @@ Bool use_cursor_loc;
 	if (SendMousePosition(w, event)) return;
 	firstValidRow = 0;
 	lastValidRow  = screen->max_row;
-	SetSelectUnit(event->xbutton.time, selectUnit);
+	selectUnit = EvalSelectUnit(event->xbutton.time, selectUnit);
 	replyToEmacs = FALSE;
 
 	if (numberOfClicks == 1) {

@@ -1,4 +1,5 @@
 /* $XConsortium: dsimple.c,v 1.16 94/04/17 20:24:39 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -41,6 +42,12 @@ from the X Consortium.
  * Written by Mark Lillibridge.   Last updated 7/1/87
  */
 
+#ifdef X_NOT_STDC_ENV
+char *malloc(), *realloc();
+#else
+#include <stdlib.h>
+#endif
+
 unsigned long Resolve_Color();
 Pixmap Bitmap_To_Pixmap();
 Window Select_Window();
@@ -72,7 +79,7 @@ extern int screen;
 char *Malloc(size)
      unsigned size;
 {
-	char *data, *malloc();
+	char *data;
 
 	if (!(data = malloc(size)))
 	  Fatal_Error("Out of memory!");
@@ -88,7 +95,7 @@ char *Realloc(ptr, size)
         char *ptr;
         int size;
 {
-	char *new_ptr, *realloc();
+	char *new_ptr;
 
 	if (!ptr)
 	  return(Malloc(size));

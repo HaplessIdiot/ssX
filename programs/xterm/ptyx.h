@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/66 1995/12/09 08:58:41 kaleb $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.9 1996/02/12 11:16:46 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.10 1996/03/10 12:15:24 dawes Exp $
  */
 
 /*
@@ -346,6 +346,7 @@ typedef struct {
 	int		select;		/* xterm selected		*/
 	Boolean		visualbell;	/* visual bell mode		*/
 	Boolean		allowSendEvents;/* SendEvent mode		*/
+	Boolean		awaitInput;	/* select-timeout mode		*/
 	Boolean		grabbedKbd;	/* keyboard is grabbed		*/
 #ifdef ALLOWLOGGING
 	int		logging;	/* logging mode			*/

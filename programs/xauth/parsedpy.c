@@ -1,5 +1,6 @@
 /*
  * $XConsortium: parsedpy.c,v 1.9 94/04/17 20:37:51 hersh Exp $
+ * $XFree86$
  *
  * parse_displayname - utility routine for splitting up display name strings
  *
@@ -45,7 +46,11 @@ in this Software without prior written authorization from the X Consortium.
 #define UNIX_CONNECTION_LENGTH 4
 #endif
 
+#ifdef X_NOT_STDC_ENV
 extern char *malloc();
+#else
+#include <stdlib.h>
+#endif
 
 
 /*

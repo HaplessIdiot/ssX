@@ -1,4 +1,4 @@
-/* $XConsortium: InitInput.c,v 1.6 94/04/17 20:30:24 dpw Exp $ */
+/* $XConsortium: InitInput.c /main/11 1996/01/15 21:06:13 kaleb $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -55,6 +55,10 @@ ProcessInputEvents()
     miPointerUpdate();
 }
 
+#define VFB_MIN_KEY 8
+#define VFB_MAX_KEY 255
+KeySym  map[MAP_LENGTH * LK201_GLYPHS_PER_KEY];
+
 /* The only reason for using the LK201 mappings here was that they were
  * easy to lift.
  */
@@ -63,14 +67,8 @@ GetLK201Mappings(pKeySyms, pModMap)
     KeySymsPtr pKeySyms;
     CARD8 *pModMap;
 {
-#define INDEX(in) ((in - MIN_LK201_KEY) * LK201_GLYPHS_PER_KEY)
+#define INDEX(in) ((in - VFB_MIN_KEY) * LK201_GLYPHS_PER_KEY)
     int i;
-    KeySym *map;
-
-    map = (KeySym *)xalloc(sizeof(KeySym) * 
-				    (MAP_LENGTH * LK201_GLYPHS_PER_KEY));
-    if (!map)
-	return FALSE;
 
     for (i = 0; i < MAP_LENGTH; i++)
 	pModMap[i] = NoSymbol;	/* make sure it is restored */
@@ -79,8 +77,8 @@ GetLK201Mappings(pKeySyms, pModMap)
     pModMap[ KEY_CTRL ] = ControlMask;
     pModMap[ KEY_COMPOSE ] = Mod1Mask;
 
-    pKeySyms->minKeyCode = MIN_LK201_KEY;
-    pKeySyms->maxKeyCode = MAX_LK201_KEY;
+    pKeySyms->minKeyCode = VFB_MIN_KEY;
+    pKeySyms->maxKeyCode = VFB_MAX_KEY;
     pKeySyms->mapWidth = LK201_GLYPHS_PER_KEY;
     pKeySyms->map = map;
 
@@ -324,7 +322,7 @@ InitInput(argc, argv)
     int argc;
     char *argv[];
 {
-    DevicePtr p, k;
+    DeviceIntPtr p, k;
     p = AddInputDevice(vfbMouseProc, TRUE);
     k = AddInputDevice(vfbKeybdProc, TRUE);
     RegisterPointerDevice(p);
