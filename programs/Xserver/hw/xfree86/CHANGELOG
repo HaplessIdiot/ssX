@@ -1,4 +1,14 @@
 XFree86 4.3.99.2 (xx March 2003)
+  63. PPC updates for Radeon (Michel Dänzer, Hui Yu@ATI).
+  62. Radeon patch from ATI (Hui Yu@ATI).
+      - IGP320/330/340 support (2D only)
+      - RV280 (9200/M9+) support
+      - Fix for some M9 laptop panels
+      - Improved version of monitor detection code previously submitted
+      - Fixed bug for two or more radeon cards
+      - Man page updates
+      - Workaround for double scan modes problem at high resolutions
+      - Overlay scaling problem when RMX is used
   61. Fix xprop to get all windows (not only the first) in a property holding
       a window list printed (#A.1676, Kim Woelders).
   60. Fix for spontaneous repeated keyboard events during sync grab (#A.1713,
@@ -16658,4 +16668,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2615 2003/04/04 17:06:04 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2616 2003/04/05 18:27:00 dawes Exp $

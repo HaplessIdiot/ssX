@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.36 2003/02/04 12:02:19 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.37 2003/02/23 23:28:48 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -123,7 +123,7 @@ typedef struct {
     CARD32            cap1_trig_cntl;
     CARD32            bus_cntl;
     CARD32            surface_cntl;
-
+    CARD32            bios_5_scratch;
 				/* Other registers to save for VT switches */
     CARD32            dp_datatype;
     CARD32            rbbm_soft_reset;
@@ -171,6 +171,7 @@ typedef struct {
     CARD32            lvds_gen_cntl;
     CARD32            lvds_pll_cntl;
     CARD32            tmds_pll_cntl;
+    CARD32            tmds_transmitter_cntl;
 
 				/* Computed values for PLL */
     CARD32            dot_clock_freq;
@@ -250,11 +251,15 @@ typedef enum {
     CHIP_FAMILY_RADEON,
     CHIP_FAMILY_VE,
     CHIP_FAMILY_M6,
+    CHIP_FAMILY_RS100,    /* U1 (IGP320M) or A3 (IGP320)*/
     CHIP_FAMILY_RV200,
     CHIP_FAMILY_M7,
+    CHIP_FAMILY_RS200,    /* U2 (IGP330M/340M/350M) or A4 (IGP330/340/345/350) */
     CHIP_FAMILY_R200,
     CHIP_FAMILY_RV250,
     CHIP_FAMILY_M9,
+    CHIP_FAMILY_RV280,
+    CHIP_FAMILY_M9PLUS,
     CHIP_FAMILY_R300
 } RADEONChipFamily;
 
@@ -285,10 +290,9 @@ typedef struct {
     RADEONDDCType     DDCType;
     RADEONConnectorType ConnectorType;
     Bool              HasCRTC2;         /* All cards except original Radeon  */
+    Bool              IsMobility;       /* Mobile chips for laptops */      
     Bool              IsSecondary;      /* Second Screen                     */
     Bool              IsSwitching;      /* Flag for switching mode           */
-    Bool              IsDell;           /* Dell OEM VE card                  */
-    int               DellType;
     Bool              Clone;            /* Force second head to clone primary*/
     RADEONMonitorType CloneType;
     RADEONDDCType     CloneDDCType;
@@ -315,6 +319,10 @@ typedef struct {
     int               VBlank;
     int               PanelPwrDly;
     int               DotClock;
+    int               RefDivider;
+    int               FeedbackDivider;
+    int               PostDivider;
+    Bool              UseBiosDividers;
 
 				/* EDID data using DDC interface */
     Bool              ddc_bios;

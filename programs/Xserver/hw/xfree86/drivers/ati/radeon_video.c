@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.23 2003/01/29 18:06:07 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.24 2003/02/19 01:19:43 dawes Exp $ */
 
 #include "radeon.h"
 #include "radeon_macros.h"
@@ -485,6 +485,12 @@ RADEONAllocAdaptor(ScrnInfoPtr pScrn)
  
     OUTPLL(RADEON_VCLK_ECP_CNTL, (INPLL(pScrn, RADEON_VCLK_ECP_CNTL) & 
 				  0xfffffCff) | (pPriv->ecp_div << 8));
+
+    if ((info->ChipFamily == CHIP_FAMILY_RS100) || (info->ChipFamily == CHIP_FAMILY_RS200)) {
+        /* Force the overlay clock on for integrated chips
+	 */ 
+        OUTPLL(RADEON_VCLK_ECP_CNTL, (INPLL(pScrn, RADEON_VCLK_ECP_CNTL) | (1<<18)));
+    }
 
     info->adaptor = adapt;
 
@@ -995,7 +1001,11 @@ RADEONDisplayVideo(
 	v_inc_shift++;
     if (pScrn->currentMode->Flags & V_DBLSCAN)
 	v_inc_shift--;
-    v_inc = (src_h << v_inc_shift) / drw_h;
+    if (pScrn->currentMode->Flags & RADEON_USE_RMX) {
+	v_inc = ((src_h * pScrn->currentMode->CrtcVDisplay / info->PanelYRes) << v_inc_shift) / drw_h;
+    } else {
+	v_inc = (src_h << v_inc_shift) / drw_h;
+    }
     h_inc = ((src_w << (12 + ecp_div)) / drw_w);
     step_by = 1;
 
