@@ -1,4 +1,12 @@
 XFree86 4.3.99.5 (xx May 2003)
+ 172. Add workaround for problems that arise when in multi-layout map
+      different modifier keysyms share the same key (Ivan Pascal).
+ 171. Fix bug that causes XGetKeyboardMapping produce incorrect map when keys
+      have more then two keysyms.  Also add a map columns duplication for better
+      compatibility with core protocol keyboard maps (Ivan Pascal).
+ 170. Fix XKB bug (Bugzilla #253) that causes an Xserver crash when XKB action
+      RedirectKey is used (Ivan Pascal).
+ 169. Add missing letters to Ukrainian phonetic keyboard map (Andriy Rysin).
 
 XFree86 4.3.99.4 (10 May 2003)
  168. Prevent a SIGFPE with the glint/pm3 driver when attempting to display
@@ -16952,7 +16960,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2691 2003/05/09 03:01:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2692 2003/05/10 11:06:57 dawes Exp $
 
 
 
