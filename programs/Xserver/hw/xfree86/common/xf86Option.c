@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.22 2001/03/13 16:03:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.24 2002/04/04 14:05:40 eich Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -577,6 +577,11 @@ OptionInfoPtr
 xf86TokenToOptinfo(const OptionInfoRec *table, int token)
 {
     const OptionInfoRec *p;
+
+    if (!table) {
+	ErrorF("xf86TokenToOptinfo: table is NULL\n");
+	return NULL;
+    }
 
     for (p = table; p->token >= 0 && p->token != token; p++)
 	;
