@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/xvidtune/xvidtune.man,v 3.6 1995/07/12 15:43:16 dawes Exp $
+.\" $XFree86: xc/programs/xvidtune/xvidtune.man,v 3.7 1995/07/19 13:01:48 dawes Exp $
 .\"
 .\" Copyright (c) 1995  Kaleb S. KEITHLEY
 .\"
@@ -136,6 +136,17 @@ Set the blank delay values.  This affects screen wrapping.  Acceptable
 values are in the range 0\-7.  The values may be incremented or decremented
 with the `+' and `-' buttons, or by pressing the `+' or `-' keys in the
 text field.
+.RE
+.PP
+For S3-864/868 based cards \fIInvertVCLK\fP and \fIBlankDelay1\fP may
+be useful.  For S3 Trio32/Trio64 cards only \fIInvertVCLK\fP is available.
+At the moment there are no default settings available for these chips 
+in the video mode extension and thus this feature is disabled in xvidtune.
+It can be enabled by setting any of the optional S3 commands in the
+screen section of XF86Config, e.g. using
+.RS 10
+.B blank_delay \fI"\(**"\fP 0
+.RE
 .SH OPTIONS
 \fIxvidtune\fP accepts the standard X Toolkit command line options as well
 as the following:
