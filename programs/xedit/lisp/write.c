@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.4 2002/02/12 16:07:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.6 2002/07/08 03:54:01 paulo Exp $ */
 
 #include "write.h"
 #include <math.h>
@@ -406,6 +406,32 @@ write_again:
 	    length += LispWriteStr(mac, stream, THESTR(object->data.package.name));
 	    length += LispWriteStr(mac, stream, ">");
 	    break;
+	case LispRegex_t:
+	    length += LispWriteStr(mac, stream, "#<REGEX ");
+	    length += LispDoWriteObject(mac, stream,
+					object->data.regex.pattern, 1);
+#ifdef REG_EXTENDED
+	    if (object->data.regex.options & REG_EXTENDED)
+		length += LispWriteStr(mac, stream, " :EXTENDED");
+#endif
+#ifdef REG_NOSPEC
+	    if (object->data.regex.options & REG_NOSPEC)
+		length += LispWriteStr(mac, stream, " :NOSPEC");
+#endif
+#ifdef REG_ICASE
+	    if (object->data.regex.options & REG_ICASE)
+		length += LispWriteStr(mac, stream, " :ICASE");
+#endif
+#ifdef REG_NOSUB
+	    if (object->data.regex.options & REG_NOSUB)
+		length += LispWriteStr(mac, stream, " :NOSUB");
+#endif
+#ifdef REG_NEWLINE
+	    if (object->data.regex.options & REG_NEWLINE)
+		length += LispWriteStr(mac, stream, " :NEWLINE");
+#endif
+	    length += LispWriteStr(mac, stream, ">");
+	    break;
     }
 
     return (length);
@@ -620,7 +646,7 @@ LispWriteArray(LispMac *mac, LispObj *stream, LispObj *object)
 		count *= CAR(ary)->data.integer;
 	    for (ary = object->data.array.list; count > 0;
 		 ary = CDR(ary), count--) {
-		length += LispDoWriteObject(mac, stream, CAR(ary), 0);
+		length += LispDoWriteObject(mac, stream, CAR(ary), 1);
 		if (count - 1 > 0)
 		    length += LispWriteChar(mac, stream, ' ');
 	    }

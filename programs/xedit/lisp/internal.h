@@ -37,6 +37,9 @@
 
 #include "mp.h"
 
+#include <sys/types.h>
+#include <regex.h>
+
 /*
  * Defines
  */
@@ -52,6 +55,8 @@
 #define CONS(car, cdr)		LispNewCons(mac, car, cdr)
 #define EVAL(list)		LispEval(mac, list)
 #define APPLY(fun, args)	LispApply(mac, fun, args)
+#define APPLY1(fun, arg)	LispApply1(mac, fun, arg)
+#define APPLY2(fun, arg1, arg2)	LispApply2(mac, fun, arg1, arg2)
 #define EXECUTE(string)		LispExecute(mac, string)
 #define SYMBOL(atom)		LispNewSymbol(mac, atom)
 #define ATOM(string)		LispNewAtom(mac, string)
@@ -169,6 +174,7 @@
 	FSTREAMP((str)->data.stream.source.program->errorp)
 
 #define PACKAGE_P(object)	((object)->type == LispPackage_t)
+#define REGEX_P(object)		((object)->type == LispRegex_t)
 
 #define LispFileno(file)	((file)->descriptor)
 
@@ -317,6 +323,11 @@
 	LispDestroy(mac, "%s: %s is a constant",		\
 		    STRFUN(builtin), STROBJ(object))
 
+#define ERROR_CHECK_REGEX(object)				\
+    if (!REGEX_P(object))					\
+	LispDestroy(mac, "%s: %s is not a regexp",		\
+		    STRFUN(builtin), STROBJ(object))
+
 /*
  * Types
  */
@@ -362,7 +373,8 @@ typedef enum _LispType {
     LispBackquote_t,
     LispComma_t,
     LispPathname_t,
-    LispPackage_t
+    LispPackage_t,
+    LispRegex_t
 } LispType;
 
 typedef enum _LispFunType {
@@ -458,6 +470,11 @@ struct _LispObj {
 	    LispObj *nicknames;
 	    LispPackage *package;
 	} package;
+	struct {
+	    regex_t *regex;
+	    LispObj *pattern;		/* regex string */
+	    int options;		/* regex compile flags */
+	} regex;
     } data;
 };
 
@@ -495,6 +512,8 @@ struct _LispModuleData {
  */
 LispObj *LispEval(LispMac*, LispObj*);
 LispObj *LispApply(LispMac*, LispObj*, LispObj*);
+LispObj *LispApply1(LispMac*, LispObj*, LispObj*);
+LispObj *LispApply2(LispMac*, LispObj*, LispObj*, LispObj*);
 
 LispObj *LispNew(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewSymbol(LispMac*, LispAtom*);

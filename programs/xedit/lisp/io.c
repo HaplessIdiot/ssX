@@ -59,10 +59,8 @@ extern int pagesize;
 int
 LispGet(LispMac *mac)
 {
-    int ch;
+    int ch = EOF;
     LispUngetInfo *unget = mac->unget[mac->iunget];
-
-    ch = EOF;	/* fix gcc warning */
 
     if (unget->offset)
 	ch = unget->buffer[--unget->offset];

@@ -544,6 +544,7 @@ Lisp_Decf(LispMac *mac, LispBuiltin *builtin)
  decf place &optional delta
  */
 {
+    GC_ENTER();
     LispObj *place, *delta, *number, *accumulator;
 
     delta = ARGUMENT(1);
@@ -566,30 +567,23 @@ Lisp_Decf(LispMac *mac, LispBuiltin *builtin)
 	if (NCONSTANT_P(operand = delta))
 	    operand = EVAL(operand);
 	accumulator = copy_number(mac, builtin, number);
+	GC_PROTECT(accumulator);
 	sub_accumulator(mac, builtin, accumulator, operand);
 	number = accumulator;
     }
     else {
 	accumulator = INTEGER(-1);
+	GC_PROTECT(accumulator);
 	add_accumulator(mac, builtin, accumulator, number);
 	number = accumulator;
     }
 
     if (SYMBOL_P(place))
 	LispSetVar(mac, place, number);
-    else {
-	int length = mac->protect.length;
-	LispObj *setf;
+    else
+	(void)APPLY2(Osetf, place, number);
 
-	GCProtect();
-	if (mac->protect.length + 1 >= mac->protect.space)
-	    LispMoreProtects(mac);
-	setf = CONS(Osetf, CONS(place, CONS(number, NIL)));
-	mac->protect.objects[mac->protect.length++] = setf;
-	GCUProtect();
-	(void)EVAL(setf);
-	mac->protect.length = length;
-    }
+    GC_LEAVE();
 
     return (number);
 }
@@ -778,6 +772,7 @@ Lisp_Incf(LispMac *mac, LispBuiltin *builtin)
  incf place &optional delta
  */
 {
+    GC_ENTER();
     LispObj *place, *delta, *number, *accumulator;
 
     delta = ARGUMENT(1);
@@ -803,25 +798,17 @@ Lisp_Incf(LispMac *mac, LispBuiltin *builtin)
     }
     else
 	accumulator = INTEGER(1);
+    GC_PROTECT(accumulator);
 
     add_accumulator(mac, builtin, accumulator, number);
     number = accumulator;
 
     if (SYMBOL_P(place))
 	LispSetVar(mac, place, number);
-    else {
-	int length = mac->protect.length;
-	LispObj *setf;
+    else
+	(void)APPLY2(Osetf, place, number);
 
-	GCProtect();
-	if (mac->protect.length + 1 >= mac->protect.space)
-	    LispMoreProtects(mac);
-	setf = CONS(Osetf, CONS(place, CONS(number, NIL)));
-	mac->protect.objects[mac->protect.length++] = setf;
-	GCUProtect();
-	(void)EVAL(setf);
-	mac->protect.length = length;
-    }
+    GC_LEAVE();
 
     return (number);
 }

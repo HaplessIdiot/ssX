@@ -27,9 +27,22 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/fun.lsp,v 1.6 2002/01/30 21:01:00 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/fun.lsp,v 1.7 2002/02/12 16:07:56 paulo Exp $
 ;;
 (provide "fun")
+
+(in-package lisp)
+
+(export '(
+    caar cadr cdar cddr
+    caaar caadr cadar caddr cdaar cdadr cddar cdddr
+    caaaar caaadr caadar caaddr cadaar cadadr caddar cadddr
+    cdaaar cdaadr cdadar cdaddr cddaar cddadr cdddar cddddr
+    second third fourth fifth sixth seventh eighth ninth tenth
+    pathname merge-pathnames
+    logtest signum
+    alphanumericp copy-seq push pop prog prog* with-open-file
+))
 
 (defun caar (a)		(car (car a)))
 (defun cadr (a)		(nth 1 a))

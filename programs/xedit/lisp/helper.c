@@ -833,6 +833,7 @@ LispLoadFile(LispMac *mac, LispObj *filename,
     savepack = mac->pack;
 
     /*CONSTCOND*/
+    mac->eof = 0;
     while (1) {
 	if ((obj = LispRead(mac)) != NULL) {
 	    if (obj == EOLIST)

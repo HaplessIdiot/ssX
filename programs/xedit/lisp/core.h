@@ -40,10 +40,13 @@ LispObj *Lisp_Acons(LispMac*, LispBuiltin*);		/* acons */
 LispObj *Lisp_Append(LispMac*, LispBuiltin*);		/* append */
 LispObj *Lisp_Aref(LispMac*, LispBuiltin*);		/* aref */
 LispObj *Lisp_Assoc(LispMac*, LispBuiltin*);		/* assoc */
+LispObj *Lisp_AssocIf(LispMac*, LispBuiltin*);		/* assoc-if */
+LispObj *Lisp_AssocIfNot(LispMac*, LispBuiltin*);	/* assoc-if-not */
 LispObj *Lisp_And(LispMac*, LispBuiltin*);		/* and */
 LispObj *Lisp_Apply(LispMac*, LispBuiltin*);		/* apply */
 LispObj *Lisp_Atom(LispMac*, LispBuiltin*);		/* attom */
 LispObj *Lisp_Block(LispMac*, LispBuiltin*);		/* block */
+LispObj *Lisp_Boundp(LispMac*, LispBuiltin*);		/* boundp */
 LispObj *Lisp_Butlast(LispMac*, LispBuiltin*);		/* butlast */
 LispObj *Lisp_Car(LispMac*, LispBuiltin*);		/* car */
 LispObj *Lisp_Case(LispMac*, LispBuiltin*);		/* case */
@@ -124,6 +127,7 @@ LispObj *Lisp_ReturnFrom(LispMac*, LispBuiltin*);	/* return-from */
 LispObj *Lisp_Reverse(LispMac*, LispBuiltin*);		/* reverse */
 LispObj *Lisp_Rplaca(LispMac*, LispBuiltin*);		/* rplaca */
 LispObj *Lisp_Rplacd(LispMac*, LispBuiltin*);		/* rplaca */
+LispObj *Lisp_Search(LispMac*, LispBuiltin*);		/* search */
 LispObj *Lisp_Setenv(LispMac*, LispBuiltin*);		/* setenv */
 LispObj *Lisp_Set(LispMac*, LispBuiltin*);		/* set */
 LispObj *Lisp_SetDifference(LispMac*, LispBuiltin*);	/* set-difference */
@@ -131,7 +135,7 @@ LispObj *Lisp_SetExclusiveOr(LispMac*, LispBuiltin*);	/* set-exclusive-or */
 LispObj *Lisp_Setf(LispMac*, LispBuiltin*);		/* setf */
 LispObj *Lisp_SetQ(LispMac*, LispBuiltin*);		/* setq */
 LispObj *Lisp_Sleep(LispMac*, LispBuiltin*);		/* sleep */
-LispObj *Lisp_Stringp(LispMac*, LispBuiltin*);		/* stringp */
+LispObj *Lisp_Sort(LispMac*, LispBuiltin*);		/* sort */
 LispObj *Lisp_Subseq(LispMac*, LispBuiltin*);		/* subseq */
 LispObj *Lisp_Subsetp(LispMac*, LispBuiltin*);		/* subsetp */
 LispObj *Lisp_Substitute(LispMac*, LispBuiltin*);	/* substitute */

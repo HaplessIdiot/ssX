@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 by The XFree86 Project, Inc.
+ * Copyright (c) 2002 by The XFree86 Project, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,49 +27,20 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lsp.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
+/* $XFree86$ */
 
-#include <stdio.h>
-#include "lisp.h"
+#ifndef Lisp_regex_h
+#define Lisp_regex_h
 
-#ifdef NEED_STRCASECMP
-int strcasecmp(const char *s1, const char *s2);
-int strncasecmp(const char *s1, const char *s2, size_t n);
-#endif
-#ifdef NEED_REALPATH
-#include <sys/param.h>
-#if defined(ISC)
-#ifndef MAXPATHLEN
-#define MAXPATHLEN      1024
-#endif
-#endif
-char *realpath(const char *pathname, char resolvedname[MAXPATHLEN]);
-#endif
+#include "internal.h"
 
-int
-main(int argc, char *argv[])
-{
-    int i;
-    LispMac *mac = LispBegin();
+/*
+ * Prototypes
+ */
+void LispRegexInit(LispMac*);
 
-    i = 1;
-    if (argc > 1 && strcmp(argv[1], "-d") == 0) {
-	LispDebug(mac, 1);
-	++i;
-    }
+LispObj *Lisp_Regcomp(LispMac*, LispBuiltin*);		/* regcomp */
+LispObj *Lisp_Regexec(LispMac*, LispBuiltin*);		/* regexec */
+LispObj *Lisp_Regexp(LispMac*, LispBuiltin*);		/* regexp */
 
-    if (i < argc) {
-	char buffer[2048];
-
-	for (; i < argc; i++) {
-	    snprintf(buffer, sizeof(buffer), "(load \"%s\")\n", argv[i]);
-	    LispExecute(mac, buffer);
-	}
-    }
-    else
-	LispMachine(mac);
-
-    LispEnd(mac);
-
-    return (0);
-}
+#endif /* Lisp_regex_h */

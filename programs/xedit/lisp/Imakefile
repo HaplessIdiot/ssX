@@ -63,6 +63,7 @@ SRCS		= $(SYS_SRCS) \
 		package.c \
 		pathname.c \
 		read.c \
+		regex.c \
 		require.c \
 		string.c \
 		struct.c \
@@ -80,6 +81,7 @@ OBJS		= $(SYS_OBJS) \
 		package.o \
 		pathname.o \
 		read.o \
+		regex.o \
 		require.o \
 		string.o \
 		struct.o \
@@ -102,7 +104,7 @@ SHARED_DEFINES	= -DSHARED_MODULES
 		  $(SNPRINTF_DEFS) $(SYS_DEFINES) $(SIGNAL_DEFINES)
         DEPLIBS = mp
        INCLUDES = -I. -Imp -I- $(MISC_INCLUDES)
-LOCAL_LIBRARIES = -L. -llisp -Lmp -lmp -lm $(DLLIB)
+LOCAL_LIBRARIES = -L. -llisp -Lmp -lmp -lm $(DLLIB) RegexLibrary
 
 #ifdef IHaveSubdirs
 ForceSubdirs($(SUBDIRS))

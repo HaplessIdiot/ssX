@@ -21,7 +21,7 @@ LOCAL_LDFLAGS	= -Xlinker -E
 
         DEPLIBS = XawClientDepLibs $(SUBDIRS)
 LOCAL_LIBRARIES = XawClientLibs $(LISPLIBS) $(DLLIB)
-  SYS_LIBRARIES = MathLibrary
+  SYS_LIBRARIES = MathLibrary RegexLibrary
 #if defined(LynxOSArchitecture) || defined(SVR3Architecture) || defined(LinuxArchitecture)
         RP_SRCS = realpath.c
         RP_OBJS = realpath.o
