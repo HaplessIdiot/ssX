@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx February 2004)
+ 799. Some more font path checks.
  798. Don't define X_LOCALE on Panther (Etsushi Kato and Toshimitsu Tanaka).
  797. Fix GL_VERSION string for indirect rendering (Bugzilla #1147, DRI Project)
  796. Fix the 1024x576 modes in the via driver (Bugzilla #812, Luc Verhaegen,
@@ -18632,7 +18633,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3137 2004/02/10 02:18:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3138 2004/02/11 00:30:33 torrey Exp $
 
 
 
