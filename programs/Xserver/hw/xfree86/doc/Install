@@ -44,9 +44,18 @@ for you to download.   If you are careful with this step you  will save your-
 self a lot  time and trouble  from NOT downloading an incompatible distribu-
 tion.
 
-Once that is done download the necessary files.  The twelve  (12) mandatory
-files for all installations are listed below.  If you have not downloaded all
-of the files, the installer script will complain.
+NOTE: the Xinstall.sh script must be downloaded in binary mode, otherwise it
+won't run correctly.  If you get lots of "command not found" messages when
+you try to run it, then it is most likely because the script wasn't down-
+loaded in binary mode.  Some web browsers won't do this for files of that
+name, so we also have a copy of it called "Xinstall.bin", and most browsers
+should download that correctly.  When downloading it under this name, select
+"save as" on your browser, and save the file under the name "Xinstall.sh".
+
+Once you're run the Xinstall.sh script and found which binary distribution is
+suitable for your system, download the necessary files.  The twelve  (12)
+mandatory files for all installations are listed below.  If you have not
+downloaded all of the files, the installer script will complain.
 
           1.   Xinstall.sh      The installer script
           2.   extract          The utility for extracting tarballs
@@ -335,7 +344,7 @@ Once that's done, the main part of the installation can be done:
      /sbin/ldconfig -m /usr/X11R6/lib    # For FreeBSD, NetBSD, OpenBSD
      /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.6 2000/07/02 02:35:27 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.7 2000/07/03 16:51:11 dawes Exp $
 
 
 $XFree86$
