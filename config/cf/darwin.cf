@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.13 2001/05/16 06:10:05 torrey Exp $
+XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.14 2001/05/18 17:48:23 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -11,7 +11,8 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.13 2001/05/16 06:10:05 torrey Exp $
 #define HasSnprintf             YES
 #define HasPutenv               YES
 #define HasBSD44Sockets         YES
-#define BuildGlxExt             NO
+#define HasUsableFileMmap       YES
+#define HasZlib                 YES
 #ifndef HasShm
 # define HasShm                 YES
 #endif
@@ -48,13 +49,6 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.13 2001/05/16 06:10:05 torrey Exp $
 #define CcCmd                   /usr/bin/cc
 #define CplusplusCmd            /usr/bin/c++
 
-/* uncommenting this line will get -g instead of -O, which builds
- * a lot faster and gets debug info
- */
-#if 0
-#define DefaultCDebugFlags      -g
-#endif
-
 /* default flags to pass to cc */
 #ifndef DefaultCCOptions
 #if XFree86Devel
@@ -72,6 +66,16 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.13 2001/05/16 06:10:05 torrey Exp $
 # define LibraryCCOptions       DefaultCCOptions -fno-common
 #endif
 
+#ifdef PpcDarwinArchitecture
+# define DarwinMachineDefines   -D__powerpc__
+# define OptimizedCDebugFlags   -O2
+#endif /* PpcDarwinArchitecture */
+
+#ifdef i386DarwinArchitecture
+# define DarwinMachineDefines   -D__i386__
+# define OptimizedCDebugFlags   -O2 -fno-strength-reduce
+#endif /* i386DarwinArchitecture */
+
 /*
  * __DARWIN__ will be used for platform specific #ifdefs that can't
  * be handled by existing X defines.
@@ -79,11 +83,7 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.13 2001/05/16 06:10:05 torrey Exp $
  * Darwin's alloca() seg faults (rather than returning NULL) on failed
  * allocations, so we can't use it.
  */
-#ifdef PpcDarwinArchitecture
-#define StandardDefines         -D__powerpc__ -D__DARWIN__ -DNO_ALLOCA
-#else
-#define StandardDefines         -D__DARWIN__ -DNO_ALLOCA
-#endif
+#define StandardDefines         DarwinMachineDefines -D__DARWIN__ -DNO_ALLOCA
 
 /* programs/rgb/rgb.h and others needs this */
 #define HasNdbm                 YES
@@ -116,16 +116,6 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.13 2001/05/16 06:10:05 torrey Exp $
 
 /* no Display Power Management extension */
 #define BuildDPMSExt            NO
-
-#define BuildXvExt              NO
-
-/* no OpenGL libraries */
-#ifndef BuildGLXLibrary	
-# define BuildGLXLibrary        NO
-#endif
-#ifndef BuildGLULibrary
-# define BuildGLULibrary        NO
-#endif
 
 #define BuildLibPathVar         DYLD_LIBRARY_PATH
 
