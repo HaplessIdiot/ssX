@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.279 2000/03/03 23:12:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.280 2000/03/06 22:59:09 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1097,6 +1097,19 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 
 #if HasGcc2 && DebuggableLibraries
 # define LibraryDebugOpt DefaultGcc2DebugOpt
+#endif
+
+/*
+ * Some versions of gcc have optimisation bugs that cause problems building
+ * some files.  The definitions here cover those.
+ */
+
+#ifndef Egcs112Bug
+# if HasGcc2 && defined(i386Architecture)
+#  define Egcs112Bug YES
+# else
+#  define Egcs112Bug NO
+# endif
 #endif
 
 #include <xf86.rules>
