@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.69 2003/10/08 14:58:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.70 2004/02/13 23:58:38 dawes Exp $ */
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1414,9 +1414,9 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		    Bool good = FALSE;
 		    for (j = 0; j < numTimings; j++) {
 			if ((1.0 - DDC_SYNC_TOLERANCE) * vrefresh[j].lo <=
-				monitor->vrefresh[0].lo &&
+				monitor->vrefresh[i].lo &&
 			    (1.0 + DDC_SYNC_TOLERANCE) * vrefresh[j].hi >=
-				monitor->vrefresh[0].hi) {
+				monitor->vrefresh[i].hi) {
 			    good = TRUE;
 			    break;
 			}
