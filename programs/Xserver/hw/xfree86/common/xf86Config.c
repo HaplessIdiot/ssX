@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.42 1995/03/19 10:18:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.43 1995/03/19 12:18:33 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2685,7 +2685,7 @@ xf86PruneModes(monp, allmodes, scrp)
 	 * mode list is updated. Also, they have no predecessor in the list.
 	 */
 	while (dispmp &&
-	       xf86CheckMode(scrp, dispmp, monp, xf86Verbose != MODE_OK)) {
+	       xf86CheckMode(scrp, dispmp, monp, xf86Verbose) != MODE_OK) {
 		olddispmp = dispmp;
 		dispmp = dispmp->next;
 		xfree(olddispmp->name);
