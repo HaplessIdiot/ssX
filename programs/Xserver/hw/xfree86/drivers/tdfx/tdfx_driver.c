@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.54 2000/12/08 21:46:10 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.55 2000/12/11 09:29:05 alanh Exp $ */
 
 /*
  * Authors:
@@ -934,7 +934,8 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   xf86LoaderReqSymbols("fbPictureInit", NULL);
 #endif
 
-  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE)) {
+  pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
+  if (!pTDFX->NoAccel) {
     if (!xf86LoadSubModule(pScrn, "xaa")) {
       TDFXFreeRec(pScrn);
       return FALSE;
@@ -1751,7 +1752,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   if (!vgaHWMapMem(pScrn)) return FALSE;
 
 #ifdef XF86DRI
-  pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
   if (!pTDFX->NoAccel) {
     pTDFX->pixmapCacheLines = PIXMAP_CACHE_LINES;
   } else
