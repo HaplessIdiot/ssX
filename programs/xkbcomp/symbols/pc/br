@@ -5,7 +5,7 @@
 // Adds suport for dead-keys in I18N applications
 // by Conectiva  (http://www.conectiva.com.br)"
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/br,v 1.2 2002/11/22 04:03:28 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/br,v 1.3 2003/04/19 12:22:11 pascal Exp $
 
 xkb_symbols "abnt2" {
 
@@ -27,10 +27,13 @@ xkb_symbols "abnt2" {
 
     key <AC10>	{ [  ccedilla,   Ccedilla,  dead_acute, dead_doubleacute] };
     key <AC11>	{ [dead_tilde, dead_circumflex, asciitilde, asciicircum ] };
+    key <AC12>  { [bracketright, braceright,  masculine,    masculine   ] };
+
     key <TLDE>	{ [apostrophe,   quotedbl,      notsign,      notsign ]	};
 
     key <BKSL>	{ [ backslash,        bar,    masculine,   dead_breve ]	};
     key <AB03>	{ [         c,          C,    copyright,    copyright ]	};
+    key <AB07>  { [         m,          M,           mu,           mu ] };
     key <AB10>	{ [ semicolon,    colon, dead_belowdot, dead_abovedot ]	};
 
 // ABNT-2 keyboard has this special key
