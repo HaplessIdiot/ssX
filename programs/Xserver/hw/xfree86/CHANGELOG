@@ -1,4 +1,7 @@
 XFree86 4.3.99.13 (xx September 2003)
+ 454. Add support for chip ID 5964 (Radeon 9200 SE) to the radeon driver, and
+      fix detection of IDs 5962 and 5963 with Driver "ati" (Bugzilla #732,
+      Michel Daenzer)
  453. Add gcc format checking for the X server's message and logging
       functions, and fix lots of associated warnings (David Dawes).
  452. Replace the perl version of ucs2any with a C version ( Ben Collver and 
@@ -17754,7 +17757,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2862 2003/09/21 10:54:10 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2863 2003/09/24 02:43:13 dawes Exp $
 
 
 
