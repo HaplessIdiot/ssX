@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcore.c,v 1.10 2002/10/11 17:53:02 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftcore.c,v 1.11 2002/10/16 21:07:08 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1273,6 +1273,9 @@ XftGlyphFontSpecCore (XftDraw			*draw,
 	}
     }
     
+    if (x1 == x2 || y1 == y2)
+	goto bail1;
+
     for (i = 0; i < nglyphs; i++)
 	if (((XftFontInt *) glyphs[i].font)->info.antialias)
 	    break;
