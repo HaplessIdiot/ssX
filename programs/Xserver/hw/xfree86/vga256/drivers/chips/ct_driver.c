@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.4 1995/01/10 10:30:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.5 1995/01/11 03:52:09 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@>
@@ -261,12 +261,12 @@ static int Num_CHIPS_ExtPorts =
 #define CT_545   3
 #ifdef CT45X_SUPPORT
 /* CT_451 - CT457 are not supproted */
-#define CT_451   0
-#define CT_452   1
-#define CT_453   2
-#define CT_455   3
-#define CT_456   4
-#define CT_457   5
+#define CT_451   4
+#define CT_452   5
+#define CT_453   6
+#define CT_455   7
+#define CT_456   8
+#define CT_457   9
 #endif
 
 static unsigned char CHIPSchipset;
