@@ -916,11 +916,11 @@ source files.
             Sergey V. Oudaltsov, Séamus Ó Ciardhuáin, Bob Paauwe, Paul
             Pacheco, Tom Pala, Ivan Pascal, T. M. Pederson, Earle F. Phil-
             hower III, Nils Philippsen, Manfred Pohler, Alexander Pohoyda,
-            Arnaud Quette, Jim Radford, Dale Rahn, Lucas Correia Villa Real,
-            René Rebe, Tyler Retzlaff, Sebastian Rittau, Tim Roberts, Alas-
-            tair M. Robinson, Branden Robinson, Daniel Rock, Ian Romanick,
-            Bernhard Rosenkraenzer, Måns Rullgård, Andriy Rysin, Supphachoke
-            Santiwichaya, Pablo Saratxaga, Matthias Scheler, Jens
+            Alain Poirier, Arnaud Quette, Jim Radford, Dale Rahn, Lucas Cor-
+            reia Villa Real, René Rebe, Tyler Retzlaff, Sebastian Rittau, Tim
+            Roberts, Alastair M. Robinson, Branden Robinson, Daniel Rock, Ian
+            Romanick, Bernhard Rosenkraenzer, Måns Rullgård, Andriy Rysin,
+            Supphachoke Santiwichaya, Pablo Saratxaga, Matthias Scheler, Jens
             Schweikhardt, Danilo Segan, Shantonu Sen, Stas Sergeev, Jungshik
             Shin, Nikola Smolenski, Andreas Stenglein, Paul Stewart, Alexan-
             der Stohr, Alan Strohm, Will Styles, James Su, Mike Sulivan,
@@ -962,7 +962,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.113 herrb Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.114 dawes Exp $
 
 
 $XFree86: $
