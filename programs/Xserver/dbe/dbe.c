@@ -1819,6 +1819,10 @@ DbeExtensionInit()
     int			nStubbedScreens = 0;
     Bool		ddxInitSuccess;
 
+#ifdef PANORAMIX
+    extern Bool noPanoramiXExtension;
+    if(!noPanoramiXExtension) return;
+#endif
 
     /* Allocate private pointers in windows and screens. */
 
