@@ -628,6 +628,7 @@ Section "Monitor"
     Bandwidth	200
     HorizSync   30-102
     VertRefresh 50-120
+    ModeLine "1600x1200"  188.58 1600 1792 1856 2208   1200 1202 1205 1256
     ModeLine "1280x1024"  135    1280 1312 1456 1712   1024 1027 1030 1064
     ModeLine "1152x900"    95    1152 1152 1192 1472    900  900  931  939
 EndSection
@@ -1010,5 +1011,5 @@ Section "Monitor"
     ModeLine "640x480"  28  640  664  728  792 480 484 490 505
 EndSection
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.8 1995/01/28 15:58:36 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.9 1995/02/12 02:39:04 dawes Exp $
 # $XConsortium: Monitors,v 1.7 95/01/27 15:58:08 kaleb Exp $

@@ -351,10 +351,6 @@ chances are good it might work for you, too.
  	board called the GXE64Pro-1600 which uses a 220MHz RAMDAC
  	instead of 135MHz part used on the other boards.
 
- <tscreen><verb>
- ClockChip "icd2061a"
- </verb></tscreen>
-
 
 <tag>S3 764 (Trio64)</tag>
 	<itemize>
@@ -559,7 +555,7 @@ exit
 
 <verb>
 $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.20 1995/07/07 15:40:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.21 1995/07/08 01:36:18 dawes Exp $
 </verb>
 
 </article>

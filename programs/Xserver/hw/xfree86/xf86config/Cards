@@ -19,7 +19,7 @@
 # chipset/server and untested.
 # 
 # $XConsortium: Cards,v 1.3 95/01/23 15:35:21 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.7 1995/01/28 16:15:15 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.8 1995/02/12 02:41:50 dawes Exp $
 
 # Cirrus Logic
 
@@ -204,7 +204,10 @@ LINE     #Clocks     25.20 28.32 40.0 0.0 50.10 77.0 36.10 45.0
 LINE     #Clocks     130.0 120.20 80.0 31.50 110.30 65.0 75.0 94.60
 
 NAME Diamond Stealth 24
-SEE S3-801/805 (generic)
+CHIPSET S3-801/805
+SERVER S3
+CLOCKCHIP icd2061a
+LINE     #Option    "nolinear"
 
 NAME Miro Crystal 8S
 SEE S3-801/805 (generic)
@@ -224,7 +227,10 @@ SEE S3-801/805 with Chrontel 8391
 NAME VL-41
 SEE S3-801/805 with Chrontel 8391
 
-# S3-864/Trio64
+NAME SPEA Mirage
+SEE S3-801/805 with Chrontel 8391
+
+# S3-864/Trio64/Trio32/868
 
 NAME S3-864 (generic)
 CHIPSET S3-864
@@ -241,7 +247,15 @@ NAME S3-864 with ATT 20C498 or 21C498
 CHIPSET S3-864
 SERVER S3
 RAMDAC att20c498
-LINE     Option "dac_8_bit"
+
+NAME S3-868 (generic)
+CHIPSET S3-868
+SERVER S3
+
+NAME S3-868 with SDAC (86C716)
+CHIPSET S3-868
+SERVER S3
+NOCLOCKPROBE
 
 NAME S3-Trio64 (generic)
 CHIPSET S3-Trio64
@@ -261,9 +275,7 @@ NAME Number Nine GXE64
 CHIPSET S3-864
 SERVER S3
 CLOCKCHIP icd2061a
-LINE     Chipset "mmio_928"
 LINE     Option "number_nine"
-LINE     Option "dac_8_bit"
 
 NAME Number Nine GXE64 with S3-Trio64
 SEE S3-Trio64 (generic)
@@ -275,7 +287,11 @@ SEE S3-864 with SDAC (86C716)
 NAME Diamond Stealth 64 DRAM with S3-Trio64
 SEE S3-Trio64 (generic)
 
+NAME Diamond Stealth 64 DRAM SE
+SEE S3-Trio32 (generic)
+
 NAME Actix GE64
+CLOCKCHIP icd2061a
 SEE S3-864 (generic)
 
 NAME Elsa Winner 1000 PRO with S3-SDAC
@@ -285,14 +301,13 @@ NAME Elsa Winner 1000 PRO with STG or AT&T RAMDAC
 CHIPSET S3-864
 SERVER S3
 CLOCKCHIP icd2061a
-LINE	  Option "dac_8_bit"
 
 NAME Elsa Winner 1000 ISA
 CHIPSET S3-805i
 SERVER S3
 CLOCKCHIP icd2061a
 LINE     Option "dac_8_bit"
-LINE     # the following settings should be detected and set automaticly by XF86_S3
+LINE     # the following settings should be detected and set automatically by XF86_S3
 LINE     # if the serial number of the ELSA card is printed correctly:
 LINE     #ClockChip "icd2061a"
 
@@ -306,33 +321,49 @@ SEE S3-864 with ATT 20C498 or 21C498
 NAME Miro Crystal 20SD with S3-SDAC (BIOS 3.xx)
 SEE S3-864 with SDAC (86C716)
 
+NAME Elsa Winner 1000AVI
+SEE S3-868 with SDAC (86C716)
+
 NAME SPEA/V7 Mirage P64
+CLOCKCHIP ics2595
 SEE S3-864 (generic)
 
 NAME SPEA/V7 Mirage P64 with S3-Trio64
 SEE S3-Trio64 (generic)
 
-NAME VideoMagic PCI V864
+NAME ASUS Video Magic PCI V864
 SEE S3-864 (generic)
+
+NAME ASUS Video Magic PCI VT64
+SEE S3-Trio64 (generic)
 
 NAME VidTech FastMax P20
 SEE S3-864 (generic)
 
-# S3-964
+# S3-964/968
 
 NAME S3-964 (generic)
 CHIPSET S3-964
+SERVER S3
+
+NAME S3-968 (generic)
+CHIPSET S3-968
 SERVER S3
 
 NAME Number Nine GXE64 Pro
 CHIPSET S3-964
 SERVER S3
 RAMDAC ti3025
-LINE     Option "dac_8_bit"
 LINE     Option "number_nine"
 
 NAME Diamond Stealth 64 VRAM
+CLOCKCHIP icd2061a
 SEE S3-964 (generic)
+
+NAME Diamond Stealth 64 Video VRAM
+CHIPSET S3-968
+SERVER S3
+NOCLOCKPROBE
 
 NAME Hercules Graphics Terminator 64
 SEE S3-964 (generic)
@@ -344,24 +375,40 @@ NAME Miro Crystal 20SV
 CHIPSET S3-964
 SERVER S3
 CLOCKCHIP icd2061a
-LINE     Option "dac_8_bit"
 
 NAME Miro Crystal 40SV
 CHIPSET S3-964
 SERVER S3
 CLOCKCHIP ti3025
-LINE     Option "dac_8_bit"
+
+NAME SPEA Mercury 64
+CHIPSET S3-964
+SERVER S3
+CLOCKCHIP ics9161a
+LINE     #Option "spea_mercury"
 
 NAME Elsa Winner 2000 Pro 4Mb
 CHIPSET S3-964
 SERVER S3
-LINE     Option "elsa_w2000pro"
+LINE     #Option "elsa_w2000pro"
+NOCLOCKPROBE
+
+NAME Elsa Winner 2000PRO/X
+CHIPSET S3-968
+SERVER S3
+NOCLOCKPROBE
 
 # S3-928
 
 NAME S3-928 (generic)
 CHIPSET S3-928
 SERVER S3
+
+NAME Actix Ultra
+CHIPSET S3-928
+SERVER S3
+RAMDAC att20c490
+LINE     #Option "dac_8_bit"
 
 NAME Diamond Stealth Pro
 CHIPSET S3-928
@@ -370,14 +417,16 @@ CLOCKCHIP icd2061a
 RAMDAC normal
 LINE     # 16/32bpp not supported? (SS2410 DAC?)
 
-NAME Elsa Winner 1000
+NAME Elsa Winner 1000 VL
 CHIPSET S3-928
 SERVER S3
-LINE     Option "dac_8_bit"
-LINE     # the following settings should be detected and set automaticly by XF86_S3
+LINE     # the following settings should be detected and set automatically by XF86_S3
 LINE     # if the serial number of the ELSA card is printed correctly:
 LINE     #ClockChip "icd2061a"
 LINE     #Membase 0xf8000000
+
+NAME Elsa Winner 1000 TwinBus
+SEE Elsa Winner 1000 VL
 
 NAME Elsa Winner 2000
 SEE S3-928 (generic)
@@ -386,35 +435,33 @@ NAME Miro Crystal 16S
 SEE S3-928 (generic)
 
 NAME SPEA/V7 Mercury
-SEE S3-928 (generic)
+CHIPSET S3-928
+SERVER S3
+CLOCKCHIP sc11412
+LINE     Option "spea_mercury"
 
 NAME STB Pegasus
 CHIPSET S3-928
 SERVER S3
 RAMDAC bt485
 CLOCKCHIP icd2061a
-LINE     Chipset "mmio_928"
 LINE     Option "stb_pegasus"
-LINE     Option "bt485_curs"
-LINE     Option "dac_8_bit"
-LINE     Option "sync_on_green"
+LINE     #Option "sync_on_green"
 
-NAME Number Nine GXE Level 16
+NAME Number Nine GXE Level 14/16
 CHIPSET S3-928
 SERVER S3
 DACSPEED 200
 CLOCKCHIP icd2061a
-LINE     Option "dac_8_bit"
 LINE     Option "number_nine"
-LINE     Option "nolinear"
-LINE     Option "nomemaccess"
+LINE     #Option "nolinear"
+LINE     #Option "nomemaccess"
 
-NAME Number Nine GXE Level 12/14 2Mb
+NAME Number Nine GXE Level 10/11/12
 CHIPSET S3-928
 SERVER S3
 CLOCKCHIP icd2061a
-LINE     OPTION "dac_8_bit"
-LINE     OPTION "number_nine"
+LINE     Option "number_nine"
 
 NAME 928Movie
 CHIPSET S3-928
@@ -611,15 +658,15 @@ NAME Diamond SpeedStar 24X
 CHIPSET WD90C31
 SERVER SVGA
 
-NAME WD 90C24 (laptop) (wd90c30 compatible)
-CHIPSET WD90C24
-SERVER SVGA
-LINE     Chipset "wd90c30"
-
-NAME WD 90C24A (laptop) (wd90c31 compatible)
-CHIPSET WD90C24A
-SERVER SVGA
-LINE     Chipset "wd90c31"
+#NAME WD 90C24 (laptop) (wd90c30 compatible)
+#CHIPSET WD90C24
+#SERVER SVGA
+#LINE     Chipset "wd90c30"
+#
+#NAME WD 90C24A (laptop) (wd90c31 compatible)
+#CHIPSET WD90C24A
+#SERVER SVGA
+#LINE     Chipset "wd90c31"
 
 # Avance Logic
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.8 95/01/27 14:45:24 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.22 1995/06/29 13:30:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.23 1995/07/05 12:39:30 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -191,6 +191,8 @@ extern Bool s3ATT498PixMux;
 #define IBMRGB525_DAC     17
 #define IBMRGB528_DAC     18
 #define STG1703_DAC       19
+#define SC1148x_M2_DAC    20
+#define SC1148x_M3_DAC    21
 
 #define DAC_IS_BT485_SERIES	(s3RamdacType == BT485_DAC || \
 				 s3RamdacType == ATT20C505_DAC)
@@ -215,6 +217,9 @@ extern Bool s3ATT498PixMux;
 #define DAC_IS_IBMRGB525        (s3RamdacType == IBMRGB525_DAC)
 #define DAC_IS_IBMRGB528        (s3RamdacType == IBMRGB528_DAC)
 #define DAC_IS_IBMRGB           (DAC_IS_IBMRGB524 || DAC_IS_IBMRGB525 || DAC_IS_IBMRGB528 )
+#define DAC_IS_SC1148x_M2	(s3RamdacType == SC1148x_M2_DAC)
+#define DAC_IS_SC1148x_M3	(s3RamdacType == SC1148x_M3_DAC)
+#define DAC_IS_SC1148x_SERIES	(DAC_IS_SC1148x_M2 || DAC_IS_SC1148x_M3)
 
 /* Function Prototypes */
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.69 1995/07/07 16:03:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.70 1995/07/12 15:36:51 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -49,6 +49,7 @@
 
 typedef struct {
    vgaHWRec std;                /* good old IBM VGA */
+   unsigned char SC1148x;	/* Sierra SC 1148x command register */
    unsigned char SC15025[3];    /* Sierra SC 15025/6 command registers */
    unsigned char ATT490_1;	/* AT&T 20C490/1 command register */
    unsigned char ATT498;	/* AT&T 20C498 command register */
@@ -154,6 +155,13 @@ s3CleanUp(void)
 
  /* (s3ClockSelectFunc)(restore->std.NoClock); */
 
+   /*
+    * Restore Sierra SC1148x command register.
+    */
+   if (DAC_IS_SC1148x_SERIES) {
+       xf86setdaccomm(oldS3->SC1148x);
+   }
+   
    /*
     * Restore AT&T 20C490/1 command register.
     */
@@ -512,6 +520,13 @@ s3Init(mode)
          s3SAM256 = 0x80; /* set 6 MCLK cycles for R/W time on Mercury */
       else
          s3SAM256 = 0x00;
+
+      /*
+       * Save Sierra SC1148x command register.
+       */
+      if (DAC_IS_SC1148x_SERIES) {
+         oldS3->SC1148x = xf86getdaccomm();
+      }
 
       /*
        * Save AT&T 20C490/1 command register.
@@ -935,6 +950,24 @@ s3Init(mode)
 	 (void) (s3ClockSelectFunc)(mode->SynthClock);
       else
          (void) (s3ClockSelectFunc)(mode->Clock);
+   }
+
+   /*
+    * Set Sierra SC1148x command register for 8/15/16 bpp
+    */
+
+   if (DAC_IS_SC1148x_SERIES) {
+      if (s3InfoRec.bitsPerPixel == 8) {
+         xf86clrdaccommbit(0xe0);
+      } else {
+        if (s3InfoRec.depth == 16 && DAC_IS_SC1148x_M3) {
+	   xf86setdaccommbit(0xe0);
+        } else if (s3InfoRec.depth == 15) {
+           xf86setdaccommbit(0xa0);
+        } else {
+	   ErrorF("unsupported mode!\n");
+        }
+      }
    }
 
    /*
@@ -2250,7 +2283,7 @@ s3Init(mode)
       break;
    case 15:
    case 16:
-      if (DAC_IS_ATT490 || DAC_IS_GENDAC) /* JON */
+      if (DAC_IS_ATT490 || DAC_IS_GENDAC || DAC_IS_SC1148x_SERIES) /* JON */
 	 outb(vgaCRReg, 0x80);
       else if (DAC_IS_TI3025)
 	 outb(vgaCRReg, 0x10);

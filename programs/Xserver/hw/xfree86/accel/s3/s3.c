@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.90tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.91 1995/07/12 15:36:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -178,6 +178,12 @@ static SymTabRec s3DacTable[] = {
    { ATT20C490_DAC,	"att20c490" },
    { ATT20C490_DAC,	"att20c491" },
    { ATT20C490_DAC,	"ch8391" },
+   { SC1148x_M2_DAC,	"sc11482" },
+   { SC1148x_M2_DAC,	"sc11483" },
+   { SC1148x_M2_DAC,	"sc11484" },
+   { SC1148x_M3_DAC,	"sc11485" },
+   { SC1148x_M3_DAC,	"sc11487" },
+   { SC1148x_M3_DAC,	"sc11489" },
    { SC15025_DAC,	"sc15025" },
    { STG1700_DAC,	"stg1700" },
    { STG1703_DAC,	"stg1703" },
@@ -1460,6 +1466,14 @@ s3Probe()
 	    if (s3Bpp > 2)
 	       reason = "an ATT20C490 RAMDAC";
 	    break;
+	 case SC1148x_M2_DAC:
+	    if (s3InfoRec.depth > 15)
+	       reason = "a Sierra 1148{2,3,4} RAMDAC";
+	    break;
+	 case SC1148x_M3_DAC:
+	    if (s3Bpp > 2)
+	       reason = "a Sierra 1148{5,7,9} RAMDAC";
+	    break;
 	 case BT485_DAC:
 	 case ATT20C505_DAC:
 	    /*
@@ -1515,6 +1529,8 @@ s3Probe()
       switch (s3RamdacType) {
       case NORMAL_DAC:
       case ATT20C490_DAC:
+      case SC1148x_M2_DAC:
+      case SC1148x_M3_DAC:
 	 s3InfoRec.dacSpeed = 110000;
 	 break;
       case SC15025_DAC:
@@ -2248,6 +2264,8 @@ s3Probe()
       /* XXXX What happens for 16bpp and 32bpp?? */
       /* XXXX Include scaling of maxRawClock for 16bpp and 32bpp */
    case ATT20C490_DAC:
+   case SC1148x_M2_DAC:
+   case SC1148x_M3_DAC:
       s3InfoRec.maxClock = s3InfoRec.dacSpeed;
       /* Halve it for 16bpp (32bpp not supported) */
       if (s3Bpp > 1) {
@@ -2404,6 +2422,8 @@ s3Probe()
 	    }
 	    break;
 	 case ATT20C490_DAC:
+	 case SC1148x_M2_DAC:
+	 case SC1148x_M3_DAC:
 	    if (s3Bpp > 1) {
 	       s3InfoRec.clock[j] /= s3Bpp;
 	       clocksChanged = TRUE;
@@ -2775,6 +2795,8 @@ s3Probe()
 	    }
 	    break;
 	 case ATT20C490_DAC:
+	 case SC1148x_M2_DAC:
+	 case SC1148x_M3_DAC:
 	 case SC15025_DAC:
 	 case S3_GENDAC_DAC:
 	    if (s3Bpp > 1) {

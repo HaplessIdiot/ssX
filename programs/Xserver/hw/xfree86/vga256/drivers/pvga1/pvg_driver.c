@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.5 95/01/16 13:18:21 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.17 1995/05/27 03:17:20 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.18 1995/07/07 15:45:00 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -738,15 +738,25 @@ PVGA1Restore(restore)
   outb(0x3CE, 0x0D); temp = inb(0x3CF); outb(0x3CF, temp & 0x1C);
   outb(0x3CE, 0x0E); temp = inb(0x3CF); outb(0x3CF, temp & 0xFB);
 
-  if (WDchipset != WD90C24 || !((rdinx(vgaIOBase+0x04, 0x031) & 0x0B) ||
-		       (rdinx(vgaIOBase+0x04, 0x032) & 0x10)))
-      /* Leave 8/9 character clock unlocked */
-      temp = 0xF8;
-  else {
-      /* this is a wd90c24 in CRT only mode */
-      wrinx(vgaIOBase+0x04, 0x34, 0xA0); /* Unlock FP Reg, lock shadows*/
-      temp = 0xFF;
+  if (WDchipset == WD90C24) {
+      temp = rdinx(vgaIOBase+0x04, 0x34);
+      /* Unlock FP Reg */
+      wrinx(vgaIOBase+0x04, 0x34, (0x0F & temp) | 0xA0);
+      if (!(rdinx(vgaIOBase+0x04, 0x032) & 0x10)) {
+	  /* this is a wd90c24 in CRT only mode */
+	  /* unlock clock select, some graphics/sequencer bits, 8/9 char */
+	  temp = 0xF8;	/* mask */
+      } else {
+	  /* this is a wd90c24 with LCD on */
+	  wrinx(vgaIOBase+0x04, 0x34, 0xA0); /* Unlock FP Reg, lock shadows*/
+	  /* unlock nothing*/
+	  temp = 0xFF;	/* mask */
+      }
+  } else {
+      /* unlock clock select, some graphics/sequencer bits, 8/9 char clock */
+      temp = 0xF8;	/* mask */
   }
+      
   outb(vgaIOBase + 4, 0x2A); temp &= inb(vgaIOBase + 5);
   outb(vgaIOBase + 5, temp);
 
@@ -886,8 +896,10 @@ PVGA1Save(save)
   outb(0x3CE, 0x0E); temp = inb(0x3CF); outb(0x3CF, temp & 0xFD);
 
   if (WDchipset != WD90C24 || wd90c24_use_1meg)
+      /* unlock clock select, some graphics/sequencer bits, 8/9 char clock */
       temp = 0xF8;
   else
+      /* unlock nothing */
       temp = 0xFF;
   outb(vgaIOBase + 4, 0x2A); temp &= inb(vgaIOBase + 5);
   outb(vgaIOBase + 5, temp);
