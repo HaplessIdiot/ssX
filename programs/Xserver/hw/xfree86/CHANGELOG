@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 120. Indent'd most of xterm's C code (Thomas Dickey).
  119. Major Radeon driver code cleanup (Kevin Martin).
  118. Radeon Xv fixes and video key support added (Keith Packard).
  117. DPMS support for DFP/LCD and second head added for Radeon (Hui Yu@ATI).
@@ -14772,4 +14773,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2201 2002/04/15 09:24:10 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2202 2002/04/24 16:20:36 martin Exp $
