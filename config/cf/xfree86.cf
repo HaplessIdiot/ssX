@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.451 2003/06/27 15:21:04 eich Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.452 2003/08/10 16:39:22 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -365,25 +365,26 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 
 /* Pure PCI drivers should go first */
 # ifndef XF86CardDrivers
-#  ifdef ia64Architecture /* removed nsc driver */
-#   define XF86CardDrivers	mga glint nv tga s3 s3virge sis rendition \
-				neomagic i740 tdfx savage \
-				cirrus vmware tseng trident chips apm \
-				GlideDriver fbdev i128 \
-				ati i810 AgpGartDrivers DevelDrivers ark \
-				cyrix siliconmotion via \
-				vesa vga \
-				dummy XF86OSCardDrivers XF86ExtraCardDrivers
+#  /* Don't build the nsc driver on IA64 */
+#  ifndef ia64Architecture
+#   define NscDriver		nsc
 #  else
-#   define XF86CardDrivers	mga glint nv tga s3 s3virge sis rendition \
+#   define NscDriver		/**/
+#  endif
+#  /* The via driver breaks the static build.  Remove this stuff when fixed. */
+#  if DoLoadableServer
+#   define ViaDriver		via
+#  else
+#   define ViaDriver		/**/
+#  endif
+#  define XF86CardDrivers	mga glint nv tga s3 s3virge sis rendition \
 				neomagic i740 tdfx savage \
 				cirrus vmware tseng trident chips apm \
-				GlideDriver fbdev i128 nsc \
+				GlideDriver fbdev i128 NscDriver \
 				ati i810 AgpGartDrivers DevelDrivers ark \
-				cyrix siliconmotion via \
+				cyrix siliconmotion ViaDriver \
 				vesa vga \
 				dummy XF86OSCardDrivers XF86ExtraCardDrivers
-#  endif
 # endif
 
 /*
