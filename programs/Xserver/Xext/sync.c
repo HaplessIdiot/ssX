@@ -50,7 +50,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.11 2001/12/14 19:58:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.12tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -81,7 +81,6 @@ PERFORMANCE OF THIS SOFTWARE.
 /*
  * Local Global Variables
  */
-static int      SyncReqCode;
 static int      SyncEventBase;
 static int      SyncErrorBase;
 static RESTYPE  RTCounter = 0;
@@ -1595,6 +1594,8 @@ ProcSyncSetCounter(client)
     SyncCounter    *pCounter;
     CARD64	   newvalue;
 
+    REQUEST_SIZE_MATCH(xSyncSetCounterReq);
+
     pCounter = (SyncCounter *)SecurityLookupIDByType(client, stuff->cid,
 					   RTCounter, SecurityWriteAccess);
     if (pCounter == NULL)
@@ -2038,12 +2039,11 @@ static int
 ProcSyncDestroyAlarm(client)
     ClientPtr       client;
 {
-    SyncAlarm      *pAlarm;
     REQUEST(xSyncDestroyAlarmReq);
 
     REQUEST_SIZE_MATCH(xSyncDestroyAlarmReq);
 
-    if (!(pAlarm = (SyncAlarm *)SecurityLookupIDByType(client, stuff->alarm,
+    if (!((SyncAlarm *)SecurityLookupIDByType(client, stuff->alarm,
 					      RTAlarm, SecurityDestroyAccess)))
     {
 	client->errorValue = stuff->alarm;
@@ -2431,7 +2431,6 @@ SyncExtensionInit(INITARGS)
 	return;
     }
 
-    SyncReqCode = extEntry->base;
     SyncEventBase = extEntry->eventBase;
     SyncErrorBase = extEntry->errorBase;
     EventSwapVector[SyncEventBase + XSyncCounterNotify] = (EventSwapPtr) SCounterNotifyEvent;
@@ -2495,6 +2494,7 @@ pointer LastSelectMask;
 	{
 	    Bool overflow;
             XSyncValueSubtract(&delay, *pnext_time, Now, &overflow);
+	    (void)overflow;
             timeout = XSyncValueLow32(delay);
         }
         AdjustWaitForDelay(wt, timeout); /* os/utils.c */
