@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.2 2000/10/05 21:59:29 tsi Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.3 2000/10/07 05:57:01 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -705,7 +705,7 @@ fbFetch_a1 (FbBits *line, CARD32 offset)
     CARD32  pixel = ((CARD32 *)line)[offset >> 5];
     CARD32  a;
 #if BITMAP_BIT_ORDER == MSBFirst
-    a = pixel >> (1f - offset & 0x1f);
+    a = pixel >> (0x1f - offset & 0x1f);
 #else
     a = pixel >> (offset & 0x1f);
 #endif
