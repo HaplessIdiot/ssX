@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.30 2001/03/25 05:32:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.31 2001/04/08 23:19:30 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1979,7 +1979,7 @@ ATIMach64HideCursor
         return;
 
     pATI->NewHW.gen_test_cntl &= ~GEN_CUR_EN;
-    outr(GEN_TEST_CNTL, pATI->NewHW.gen_test_cntl);
+    out8(GEN_TEST_CNTL, GetByte(pATI->NewHW.gen_test_cntl, 0));
 }
 
 /*
@@ -1999,7 +1999,7 @@ ATIMach64ShowCursor
         return;
 
     pATI->NewHW.gen_test_cntl |= GEN_CUR_EN;
-    outr(GEN_TEST_CNTL, pATI->NewHW.gen_test_cntl);
+    out8(GEN_TEST_CNTL, GetByte(pATI->NewHW.gen_test_cntl, 0));
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.41 2001/02/14 22:04:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.42 2001/04/01 14:00:09 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -24,7 +24,6 @@
 #include "ati.h"
 #include "atiadapter.h"
 #include "atiadjust.h"
-#include "atibios.h"
 #include "atibus.h"
 #include "atichip.h"
 #include "aticonsole.h"
@@ -504,7 +503,8 @@ ATI8514Probe
             if (!(IOValue1 & (_8514_ONLY | CHIP_DIS)))
             {
                 pATI->VGAAdapter = ATI_ADAPTER_MACH32;
-                if ((ATIReadBIOS(pATI, &pATI->CPIO_VGAWonder, 0x10U,
+                if ((xf86ReadBIOS(pATI->BIOSBase, 0x10U,
+                         (pointer)(&pATI->CPIO_VGAWonder),
                          SizeOf(pATI->CPIO_VGAWonder)) <
                          SizeOf(pATI->CPIO_VGAWonder)) ||
                     !(pATI->CPIO_VGAWonder &= SPARSE_IO_PORT))

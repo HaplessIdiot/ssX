@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.18 2001/04/03 17:10:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.19 2001/04/10 16:07:59 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1740,9 +1740,6 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	y2        = (info->FbMapSize
 		     / (pScrn->displayWidth *
 			info->CurrentLayout.pixel_bytes));
-	if (y2 >= 32768) y2 = 32767; /* because MemBox.y2 is signed short */
-	MemBox.y2 = y2;
-
 				/* The acceleration engine uses 14 bit
 				   signed coordinates, so we can't have any
 				   drawable caches beyond this region. */

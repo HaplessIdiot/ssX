@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmMga.h,v 3.4 2001/03/21 18:08:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmMga.h,v 3.5 2001/04/10 16:08:03 dawes Exp $ */
 
 #ifndef __XF86DRI_MGA_H__
 #define __XF86DRI_MGA_H__
@@ -54,11 +54,11 @@ extern int drmMGAClear( int fd, unsigned int flags,
 			unsigned int clear_color, unsigned int clear_depth,
 			unsigned int color_mask, unsigned int depth_mask );
 
-extern int drmMGAFlushVertexBuffer( int fd, int index, int used, int discard );
-extern int drmMGAFlushIndices( int fd, int index,
+extern int drmMGAFlushVertexBuffer( int fd, int indx, int used, int discard );
+extern int drmMGAFlushIndices( int fd, int indx,
 			       int start, int end, int discard );
 
-extern int drmMGATextureLoad( int fd, int index,
+extern int drmMGATextureLoad( int fd, int indx,
 			      unsigned int dstorg, unsigned int length );
 
 extern int drmMGAAgpBlit( int fd, unsigned int planemask,

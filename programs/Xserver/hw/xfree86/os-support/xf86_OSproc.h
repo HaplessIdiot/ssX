@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.49 2000/12/07 15:43:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.50 2001/02/15 11:03:54 alanh Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -245,7 +245,7 @@ resPtr xf86IsaBusAccWindowsFromOS(void);
 resPtr xf86AccResFromOS(resPtr ret);
 #endif /* NEED_OS_RAC_PROTOS */
 
-Bool xf86GetPciSizeFromOS(PCITAG tag, int index, int* bits);
+Bool xf86GetPciSizeFromOS(PCITAG tag, int indx, int* bits);
 
 #endif /* XF86_OS_PRIVS */
 

@@ -27,7 +27,7 @@
  *   Gareth Hughes <gareth@valinux.com>
  *   Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmRadeon.h,v 1.4 2001/03/25 05:32:13 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmRadeon.h,v 1.5 2001/04/10 16:08:03 dawes Exp $
  *
  */
 
@@ -90,9 +90,9 @@ extern int drmRadeonClear( int fd, unsigned int flags,
 			   unsigned int color_mask, unsigned int depth_mask,
 			   void *boxes, int nbox );
 
-extern int drmRadeonFlushVertexBuffer( int fd, int prim, int index,
+extern int drmRadeonFlushVertexBuffer( int fd, int prim, int indx,
 				       int count, int discard );
-extern int drmRadeonFlushIndices( int fd, int prim, int index,
+extern int drmRadeonFlushIndices( int fd, int prim, int indx,
 				  int start, int end, int discard );
 
 extern int drmRadeonLoadTexture( int fd, int offset, int pitch, int format,
@@ -101,7 +101,7 @@ extern int drmRadeonLoadTexture( int fd, int offset, int pitch, int format,
 
 extern int drmRadeonPolygonStipple( int fd, unsigned int *mask );
 
-extern int drmRadeonFlushIndirectBuffer( int fd, int index,
+extern int drmRadeonFlushIndirectBuffer( int fd, int indx,
 					 int start, int end, int discard );
 
 #endif

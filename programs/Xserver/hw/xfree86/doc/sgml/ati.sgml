@@ -8,14 +8,14 @@
 
 <title>ATI Adapters README file
 <author>Marc Aurele La France
-<date>2001 March 24
+<date>2001 April 10
 
 
 
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.35 2001/01/06 20:58:03 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.36 2001/03/25 05:32:07 tsi Exp $
 </ident>
 
 <abstract>
@@ -405,6 +405,13 @@ Currently, these options are only acted upon for 256-colour or higher depth
 modes, if a Mach64 accelerator CRTC, or a Mach64 integrated controller is being
 used.
 In all other situations, a software cursor will be used.<p>
+<sect1>Option <it>``SilkenMouse''</it><p>
+This option is only acted upon when a hardware cursor is being used.
+It specifies that the cursor's position on the screen is to be updated as
+quickly as possible when the mouse is moved.
+This is the default behaviour.
+If this option is negated, the cursor may lag the mouse when the X server is
+very busy.<p>
 <sect1>Option <it>``shadowfb''</it><p>
 If this option is enabled, the driver will cause the CPU to do each drawing
 operation first into a shadow frame buffer in system virtual memory and then
