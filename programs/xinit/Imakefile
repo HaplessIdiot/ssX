@@ -21,12 +21,10 @@ LOCAL_LIBRARIES = $(XMUULIB) $(XLIB)
           SRCS1 = xinit.c 
           OBJS1 = xinit.o 
    SAMPLECONFIG = xinitrc
-
+       PROGRAMS = ProgramTargetName(xinit) startx $(SAMPLECONFIG)
 #if HasCookieMaker
      COOKIEDEFS = -DHAS_COOKIE_MAKER -DMK_COOKIE=MkCookieCmd
 #endif
-
-all:: ProgramTargetName(xinit) startx $(SAMPLECONFIG)
 
 ComplexProgramTarget_1(xinit,$(LOCAL_LIBRARIES),$(DEFFILE))
 
