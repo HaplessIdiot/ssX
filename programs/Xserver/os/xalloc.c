@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.17 1998/07/26 02:33:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.18 1998/10/10 15:25:28 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -242,6 +242,8 @@ static unsigned long *free_lists[MAX_SMALL/SIZE_STEPS];
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <asm/page.h>	/* PAGE_SIZE */
+#define HAS_SC_PAGESIZE	/* _SC_PAGESIZE may be an enum for Linux */
+#define HAS_GETPAGESIZE
 #endif /* linux */
 
 #if defined(CSRG_BASED)
@@ -690,8 +692,12 @@ OsInitAllocator (void)
 
 #if defined(HAS_MMAP_ANON) || defined (MMAP_DEV_ZERO)
     pagesize = -1;
-#if defined(_SC_PAGESIZE) /* || defined(linux) */
+#if defined(_SC_PAGESIZE) || defined(HAS_SC_PAGESIZE)
     pagesize = sysconf(_SC_PAGESIZE);
+#endif
+#ifdef _SC_PAGE_SIZE
+    if (pagesize == -1)
+	pagesize = sysconf(_SC_PAGE_SIZE);
 #endif
 #ifdef HAS_GETPAGESIZE
     if (pagesize == -1)
