@@ -1,4 +1,5 @@
 XFree86 3.1.1Ba (14 June 1995)
+136. Fix some mono (VGA2) problems that can lead to a server crash.
 135. New "VGAbase" keyword for XF86Config -- currently used only by the
      AGX server (Henry Worth).
 134. Fixes for XGA autoconfig code in the AGX server (Henry Worth).
