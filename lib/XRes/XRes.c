@@ -1,7 +1,7 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86: xc/lib/XRes/XRes.c,v 1.1 2002/03/04 19:34:51 mvojkovi Exp $ */
+/* $XFree86: xc/lib/XRes/XRes.c,v 1.2 2002/03/05 04:32:37 mvojkovi Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -190,5 +190,41 @@ Status XResQueryClientResources (
     UnlockDisplay (dpy);
     SyncHandle ();
     return result;
+}
+
+Status XResQueryClientPixmapBytes (
+    Display *dpy,
+    XID xid,
+    unsigned long *bytes
+)
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXResQueryClientPixmapBytesReq *req;
+    xXResQueryClientPixmapBytesReply rep;
+
+    *bytes = 0;
+
+    XResCheckExtension (dpy, info, 0);
+
+    LockDisplay (dpy);
+    GetReq (XResQueryClientPixmapBytes, req);
+    req->reqType = info->codes->major_opcode;
+    req->XResReqType = X_XResQueryClientPixmapBytes;
+    req->xid = xid;
+    if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {
+        UnlockDisplay (dpy);
+        SyncHandle ();
+        return 0;
+    }
+
+#ifdef LONG64
+    *bytes = (rep.bytes_overflow * 4294967295) + rep.bytes;
+#else
+    *bytes = rep.bytes_overflow ? 0xffffffff : rep.bytes;
+#endif
+
+    UnlockDisplay (dpy);
+    SyncHandle ();
+    return 1;
 }
 
