@@ -11,7 +11,7 @@ XCOMM and pop a clock and serveral xterms.
 XCOMM
 XCOMM Site administrators are STRONGLY urged to write nicer versions.
 XCOMM 
-XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.6 2001/01/17 23:45:42 dawes Exp $
+XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.7 2001/04/19 15:08:32 dawes Exp $
 
 #ifdef SCO
 
@@ -104,10 +104,10 @@ while [ "x$1" != "x" ]; do
 done
 
 if [ x"$clientargs" = x ]; then
-    clientsargs="$defaultclientargs"
+    clientargs="$defaultclientargs"
 fi
 if [ x"$serverargs" = x ]; then
-    serversargs="$defaultserverargs"
+    serverargs="$defaultserverargs"
 fi
     
 if [ X"$XAUTHORITY" = X ]; then
