@@ -4,9 +4,10 @@
  * This version is for both Linux and FreeBSD.
  *
  * Copyright © 2000 VA Linux Systems, Inc.
+ * Copyright © 2001 The XFree86 Project, Inc.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.6 2001/09/18 20:49:40 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.7 2001/11/26 16:24:17 dawes Exp $ */
 
 #include "X.h"
 #include "xf86.h"
@@ -175,6 +176,16 @@ xf86ReleaseGART(int screenNum)
 		return FALSE;
 
 	if (acquiredScreen == screenNum) {
+		/*
+		 * The FreeBSD agp driver removes allocations on release.
+		 * The Linux driver doesn't.  xf86ReleaseGART() is expected
+		 * to give up access to the GART, but not to remove any
+		 * allocations.
+		 */
+#if !defined(linux)
+	    if (screenNum == -1)
+#endif
+	    {
 		if (ioctl(gartFd, AGPIOC_RELEASE, 0) != 0) {
 			xf86DrvMsg(screenNum, X_WARNING,
 				"xf86ReleaseGART: AGPIOC_RELEASE failed (%s)\n",
@@ -182,7 +193,8 @@ xf86ReleaseGART(int screenNum)
 			return FALSE;
 		}
 		acquiredScreen = -1;
-		return TRUE;
+	    }
+	    return TRUE;
 	}
 	return FALSE;
 }
