@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.11 2001/01/31 16:15:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.12 2001/01/31 17:09:10 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -72,7 +72,7 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 			pGlint->MultiPciInfo[1]->memBase[2] & 0xFF800000);
     }
 
-    if (IS_GMX2000) {
+    if (IS_GMX2000 || IS_GLORIAXXL) {
     	pReg->glintRegs[LBMemoryEDO >> 3] = GLINT_READ_REG(LBMemoryEDO);
     	pReg->glintRegs[LBMemoryEDO >> 3] &= ~(LBEDOMask |
 					   LBEDOBankSizeMask |
@@ -146,7 +146,6 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
     	STOREREG(VTGHGateEnd, Shiftbpp(pScrn, mode->CrtcHTotal) - 1);
 	STOREREG(FBModeSel, 0x907);
 	STOREREG(VTGModeCtl, 0x04);
-	STOREREG(FBMemoryCtl, 0x0800);
     } else {
     	STOREREG(VTGSerialClk, 0x05);
 	STOREREG(VTGHGateStart, 
@@ -155,6 +154,9 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 	STOREREG(FBModeSel, 0x0A07);
 	STOREREG(VTGModeCtl, 0x44);
     }
+
+    if (IS_GMX2000 || IS_GLORIAXXL)
+    	STOREREG(FBMemoryCtl, 0x800); /* Optimum memory timings */
 
     /* Override FBModeSel for 300SX chip */
     if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_300SX) {
@@ -332,9 +334,9 @@ TXSave(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
     SAVEREG(FBModeSel);
     SAVEREG(VTGHGateStart);
     SAVEREG(VTGHGateEnd);
+    SAVEREG(FBMemoryCtl);
 
-    if (IS_GMX2000) {
-    	SAVEREG(FBMemoryCtl);
+    if (IS_GMX2000 || IS_GLORIAXXL) {
     	SAVEREG(LBMemoryEDO);
     	SAVEREG(LBMemoryCtl);
     }
@@ -381,9 +383,9 @@ TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
     RESTOREREG(FBModeSel);
     RESTOREREG(VTGHGateStart);
     RESTOREREG(VTGHGateEnd);
+    RESTOREREG(FBMemoryCtl);
 
-    if (IS_GMX2000) {
-    	RESTOREREG(FBMemoryCtl);
+    if (IS_GMX2000 || IS_GLORIAXXL) {
     	RESTOREREG(LBMemoryEDO);
     	RESTOREREG(LBMemoryCtl);
     }

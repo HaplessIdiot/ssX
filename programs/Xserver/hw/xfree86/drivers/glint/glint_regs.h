@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.24 2001/01/31 16:14:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.25 2001/02/15 11:03:57 alanh Exp $ */
 
 /*
  * glint register file 
@@ -32,6 +32,9 @@
 #define PCI_CHIP_TI_PERMEDIA 	  				0x3d04
 
 /* The boards we know */
+#define IS_GLORIAXXL	((pGlint->PciInfo->subsysVendor == 0x1048) && \
+			 (pGlint->PciInfo->subsysCard   == 0x0a42))
+
 #define IS_GMX2000	((pGlint->PciInfo->subsysVendor == 0x3d3d) && \
 			 (pGlint->PciInfo->subsysCard   == 0x0106))
 
