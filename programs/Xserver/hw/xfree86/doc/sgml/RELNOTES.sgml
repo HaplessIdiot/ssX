@@ -9,7 +9,7 @@
 <date>17 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.62 2001/08/09 19:14:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.63 2001/08/10 16:38:11 dawes Exp $
 </ident>
 
 <abstract>
@@ -99,7 +99,10 @@ don't have enough space to cover them all here.
 <item> support for ATI Radeon on Linux/Alpha
 <item> vmware driver for use by X servers running under a VMWare guest OS
 <item> Matrox G450 support
-<item> support for Trident CyberBladeXP and CyberBladeXPm
+<item> Support for Trident *BladeXP chipsets (currently not-accelerated)
+<item> Xv support for Trident TGUI series chips (not 9440 though)
+<item> Support the older Trident chipsets again for ISA/VLBus (not tested)
+<item> Support for 3DLabs Permedia4, GLINT R4 and Gamma 2 chipsets.
 <item> support for NVidia GeForce 3
 <item> XvImage support for GeForce 3 chips
 <item> add 1400x1050 builtin modes
@@ -121,7 +124,7 @@ don't have enough space to cover them all here.
 <item> more locale/international keyboards support
 <item> initial DPS extension support
 <item> support several 'internet' keyboards additional keys
-<item> X11R6.5.1 merge
+<item> X11R6.6 merge
 <item> lots of int10 support bug fixes
 <item> add XvMC extension (an experimental, not yet finished video
   acceleration extension)
