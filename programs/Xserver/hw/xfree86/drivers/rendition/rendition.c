@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.3 1999/04/24 07:36:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.4 1999/04/25 10:02:14 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -39,11 +39,13 @@
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
+#include "xf86Resources.h"
 #include "xf86_ansic.h"
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
 #include "compiler.h"
 #include "vgaHW.h"
+#include "xf86RAC.h"
 
 /* This is used for module versioning */
 #include "xf86Version.h"
@@ -147,11 +149,6 @@ static const char *fbSymbols[]={
     NULL
 };
 
-static const char *racSymbols[] = {
-    "xf86RACInit",
-    NULL
-};
-
 #ifdef XFree86LOADER
 
 /* Module loader interface */
@@ -183,7 +180,7 @@ renditionSetup(pointer Module, pointer Options, int *ErrorMajor,
     if (!Initialised) {
         Initialised=TRUE;
         xf86AddDriver(&RENDITION, Module, 0);
-        LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols, NULL);
+        LoaderRefSymLists(vgahwSymbols, fbSymbols, NULL);
         return (pointer)TRUE;
     }
 
@@ -253,8 +250,7 @@ renditionProbe(DriverPtr drv, int flags)
 {
     Bool foundScreen=FALSE;
     int numDevSections, numUsed;
-    GDevPtr *devSections, *usedDevs;
-    pciVideoPtr *usedPci;
+    GDevPtr *devSections;
     int *usedChips;
     int c;
 
@@ -267,45 +263,29 @@ renditionProbe(DriverPtr drv, int flags)
     if (xf86GetPciVideoInfo()) {
         numUsed=xf86MatchPciInstances(RENDITION_NAME, PCI_VENDOR_RENDITION,
                     renditionChipsets, renditionPCIchipsets, 
-                    devSections,numDevSections,
-                    &usedDevs, &usedPci, &usedChips);
-        if (numUsed > 0) {
-            for (c=0; c<numUsed; c++) {
-                pciVideoPtr pPci;
-                BusResource Resource;
-                pPci=usedPci[c];
-                Resource=xf86FindPciResource(usedChips[c], 
-                    renditionPCIchipsets);
-
-                if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-                        Resource)) {  
-                    ScrnInfoPtr pScrn;
-                    /* Allocate a ScrnInfoRec and claim the slot */
-                    pScrn=xf86AllocateScreen(drv, 0);
-                    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-                        Resource, &RENDITION, usedChips[c], pScrn->scrnIndex);
-                    pScrn->driverVersion=RENDITION_VERSION_CURRENT;
-                    pScrn->driverName   =RENDITION_DRIVER_NAME;
-                    pScrn->name         =RENDITION_NAME;
-                    pScrn->Probe        =renditionProbe;
-                    pScrn->PreInit      =renditionPreInit;
-                    pScrn->ScreenInit   =renditionScreenInit;
-                    pScrn->SwitchMode   =renditionSwitchMode;
-                    pScrn->AdjustFrame  =renditionAdjustFrame;
-                    pScrn->EnterVT      =renditionEnterVT;
-                    pScrn->LeaveVT      =renditionLeaveVT;
-                    pScrn->FreeScreen   =renditionFreeScreen;
-                    pScrn->ValidMode    =renditionValidMode;
-                    pScrn->device       =usedDevs[c];
-                    foundScreen=TRUE;
-                }
-            }
-      
-            xfree(usedDevs);
-            xfree(usedPci);
+                    devSections, numDevSections, drv, &usedChips);
+        for (c=0; c<numUsed; c++) {
+            ScrnInfoPtr pScrn;
+            /* Allocate a ScrnInfoRec and claim the slot */
+            pScrn=xf86AllocateScreen(drv, 0);
+            pScrn->driverVersion=RENDITION_VERSION_CURRENT;
+            pScrn->driverName   =RENDITION_DRIVER_NAME;
+            pScrn->name         =RENDITION_NAME;
+            pScrn->Probe        =renditionProbe;
+            pScrn->PreInit      =renditionPreInit;
+            pScrn->ScreenInit   =renditionScreenInit;
+            pScrn->SwitchMode   =renditionSwitchMode;
+            pScrn->AdjustFrame  =renditionAdjustFrame;
+            pScrn->EnterVT      =renditionEnterVT;
+            pScrn->LeaveVT      =renditionLeaveVT;
+            pScrn->FreeScreen   =renditionFreeScreen;
+            pScrn->ValidMode    =renditionValidMode;
+            foundScreen=TRUE;
+            xf86ConfigActivePciEntity(pScrn, usedChips[c],
+                    renditionPCIchipsets, NULL, NULL, NULL, NULL, NULL);
         }
+        xfree(usedChips);
     }
-
     xfree(devSections);
     return foundScreen;
 }
@@ -343,8 +323,10 @@ typedef struct _renditionRec
 {
     struct v_board_t board;             /* information on the board */
     struct v_modeinfo_t mode;           /* information on the mode */
-    int pcitag;                         /* something for mapping? */
-    CloseScreenProcPtr CloseScreen;     /* no idea why this is here ;) */
+    int pcitag;                         /* tag for the PCI config space */
+    pciVideoPtr PciInfo;                /* PCI config data */
+    EntityInfoPtr pEnt;                 /* entity information */
+    CloseScreenProcPtr CloseScreen;     /* wrap CloseScreen */
 } renditionRec, *renditionPtr;
 
 
@@ -389,28 +371,6 @@ renditionBlankScreen(ScrnInfoPtr pScreenInfo, Bool Unblank)
 }
 
 
-/* the default mode -- suppose we do not need this <ml> */
-static DisplayModeRec renditionDefaultMode =
-{
-    NULL, NULL,                         /* prev & next */
-    "rendition 320x200 default mode",
-    MODE_OK,                            /* Mode status */
-    M_T_CRTC_C,                         /* Mode type   */
-    12588,                              /* Pixel clock */
-    320, 336, 384, 400,                 /* HTiming */
-    0,                                  /* HSkew */
-    200, 206, 207, 224,                 /* VTiming */
-    2,                                  /* VScan */
-    V_CLKDIV2 | V_NHSYNC | V_PVSYNC,    /* Flags */
-    0, 25176,                           /* ClockIndex & SynthClock */
-    0, 0, 0, 0, 0, 0,                   /* Crtc timings set by ... */
-    0,                                  /* ... xf86SetCrtcForModes() */
-    0, 0, 0, 0, 0, 0,
-    FALSE, FALSE,                       /* These are unadjusted timings */
-    0, NULL                             /* PrivSize & Private */
-};
-
-
 /*
  * This function is called once for each screen at the start of the first
  * server generation to initialise the screen for all server generations.
@@ -424,18 +384,51 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     char             *Module;
     const char       *Sym;
     vgaHWPtr          pvgaHW;
-    pciVideoPtr       *pciList;
+    renditionPtr      pRendition;
+    
 
 #ifdef DEBUG
     ErrorF("Rendition: renditionPreInit() called\n");
 #endif
 
-    xf86AddControlledResource(pScreenInfo,IO);
-    xf86EnableAccess(&pScreenInfo->Access);
+    /* Check the number of entities, and fail if it isn't one. */
+    if (pScreenInfo->numEntities != 1)
+	return FALSE;
 
     /* set the monitor */
     pScreenInfo->monitor=pScreenInfo->confScreen->monitor;
 
+    /* allocate driver private structure */
+    if (!renditionGetRec(pScreenInfo))
+        return FALSE;
+    pRendition=RENDITIONPTR(pScreenInfo);
+
+    /* Get the entity, and make sure it is PCI. */
+    pRendition->pEnt = xf86GetEntityInfo(pScreenInfo->entityList[0]);
+    if (pRendition->pEnt->location.type != BUS_PCI)
+	return FALSE;
+
+    /* Find the PCI info for this screen */
+    pRendition->PciInfo = xf86GetPciInfoForEntity(pRendition->pEnt->index);
+    pRendition->pcitag= pciTag(pRendition->PciInfo->bus,
+               pRendition->PciInfo->device, pRendition->PciInfo->func);
+
+    /*
+     * XXX This could be refined if some VGA memory resources are not
+     * decoded in operating mode.
+     */
+    {
+        resRange vgamem[] =     { {ResShrMemBlock,0xA0000,0xAFFFF},
+                                  {ResShrMemBlock,0xB0000,0xB7FFF},
+                                  {ResShrMemBlock,0xB8000,0xBFFFF},
+                                  _END };
+        xf86SetOperatingState(vgamem, pRendition->pEnt->index, ResUnusedOpr);
+    }
+    /* Operations for which memory access is required. */
+    pScreenInfo->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+    /* Operations for which I/O access is required. (XXX Check this) */
+    pScreenInfo->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+    
     /* determine depth, bpp, etc. */
     if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, NoDepth24Support))
         return FALSE;
@@ -489,11 +482,6 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     /* the Rendition chips have a programmable clock */
     pScreenInfo->progClock=TRUE;
 
-    /* allocate driver private structure */
-    if (!renditionGetRec(pScreenInfo))
-        return FALSE;
-    /* pRendition=RENDITIONPTR(PScrn); Haeh? <ml> */
-
     /* collect all of the options flags and process them */
     /* Deal with options */
 
@@ -504,35 +492,23 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     /* set various fields according to the given options */
     /* to be filled in <ml> */
 
-    /* now determine some hardware characteristics */
-    if ((i=xf86GetPciInfoForScreen(pScreenInfo->scrnIndex, &pciList, NULL)) 
-            != 1) {
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-            "Some error occured during accessing board information\n");
-        renditionFreeRec(pScreenInfo);
-        if (i > 0)
-            xfree(pciList);
-        return FALSE;
-    }
-    /* for now I assume i equals 1 and pciList[0]->... references the right data
-     * <ml> */
-    if (PCI_CHIP_V1000==pciList[0]->chipType){
-      RENDITIONPTR(pScreenInfo)->board.chip=V1000_DEVICE;
+    if (PCI_CHIP_V1000==pRendition->PciInfo->chipType){
+      pRendition->board.chip=V1000_DEVICE;
     }
     else {
-      RENDITIONPTR(pScreenInfo)->board.chip=V2000_DEVICE;
+      pRendition->board.chip=V2000_DEVICE;
       renditionClockRange.maxClock = 170000;
       renditionClockRange.clockIndex = -1;
     }
 
-    RENDITIONPTR(pScreenInfo)->board.accel=0;
-    RENDITIONPTR(pScreenInfo)->board.io_base=pciList[0]->ioBase[1];
-    RENDITIONPTR(pScreenInfo)->board.mmio_base=0;
-    RENDITIONPTR(pScreenInfo)->board.vmmio_base=0;
-    RENDITIONPTR(pScreenInfo)->board.mem_size=0;
-    RENDITIONPTR(pScreenInfo)->board.mem_base=(vu8 *)pciList[0]->memBase[0];
-    RENDITIONPTR(pScreenInfo)->board.vmem_base=NULL;
-    RENDITIONPTR(pScreenInfo)->board.init=0;
+    pRendition->board.accel=0;
+    pRendition->board.io_base=pRendition->PciInfo->ioBase[1];
+    pRendition->board.mmio_base=0;
+    pRendition->board.vmmio_base=0;
+    pRendition->board.mem_size=0;
+    pRendition->board.mem_base=(vu8 *)pRendition->PciInfo->memBase[0];
+    pRendition->board.vmem_base=NULL;
+    pRendition->board.init=0;
 
     if (pScreenInfo->chipset)
         xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG, "Chipset: \"%s\".\n",
@@ -540,30 +516,28 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     else
         xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED, "Chipset: \"%s\".\n",
             renditionChipsets[
-        RENDITIONPTR(pScreenInfo)->board.chip==V1000_DEVICE ? 0:1].name);
+        pRendition->board.chip==V1000_DEVICE ? 0:1].name);
 
     /* I do not get the IO base addres <ml> */
+    /* XXX Is this still true?  If so, the wrong base is being checked */
     ErrorF("Rendition %s @ %x/%x\n",renditionChipsets[
-      RENDITIONPTR(pScreenInfo)->board.chip==V1000_DEVICE ? 0:1].name,
-        RENDITIONPTR(pScreenInfo)->board.io_base,
-        RENDITIONPTR(pScreenInfo)->board.mem_base);
+      pRendition->board.chip==V1000_DEVICE ? 0:1].name,
+        pRendition->board.io_base,
+        pRendition->board.mem_base);
     /* so I hardcoded it <ml> */
-    /* RENDITIONPTR(pScreenInfo)->board.io_base=0x9800; */
-
-    RENDITIONPTR(pScreenInfo)->pcitag=
-        pciTag(pciList[0]->bus, pciList[0]->device, pciList[0]->func);
+    /* pRendition->board.io_base=0x9800; */
 
     /* determine video ram -- to do so, we assume a full size memory of 16M,
      * then map it and use v_getmemorysize() to determine the real amount of
      * memory */
-    pScreenInfo->videoRam=RENDITIONPTR(pScreenInfo)->board.mem_size=16<<20;
+    pScreenInfo->videoRam=pRendition->board.mem_size=16<<20;
     renditionMapMem(pScreenInfo);
-    videoRam=v_getmemorysize(&RENDITIONPTR(pScreenInfo)->board)>>10;
+    videoRam=v_getmemorysize(&pRendition->board)>>10;
     renditionUnmapMem(pScreenInfo);
     From = X_PROBED;
     xf86DrvMsg(pScreenInfo->scrnIndex, From, "videoRam: %d kBytes\n", videoRam);
     pScreenInfo->videoRam=videoRam;
-    RENDITIONPTR(pScreenInfo)->board.mem_size=videoRam;
+    pRendition->board.mem_size=videoRam;
 
     if (!xf86LoadSubModule(pScreenInfo, "vgahw"))
         return FALSE;
@@ -578,25 +552,18 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     pvgaHW->MapSize = 0x00010000;       /* Standard 64kB VGA window */
     vgaHWGetIOBase(pvgaHW);             /* Get VGA I/O base */
 
-#if 0
-    /* Defaultmode needed ? <DI> */
-    if (pScreenInfo->depth == 8) {
-        pScreenInfo->numClocks = 1;
-        pScreenInfo->clock[0] = 25175;
-        goto SetDefaultMode;
-    }
-#endif
-
     /*
      * Determine clocks.  Limit them to the first four because that's all that
      * can be addressed.
+     * XXX Aren't the clocks programmable?  If so, this discrete clock stuff
+     * shouldn't be used.
      */
-    if ((pScreenInfo->numClocks = pScreenInfo->device->numclocks))
+    if ((pScreenInfo->numClocks = pRendition->pEnt->device->numclocks))
     {
         if (pScreenInfo->numClocks > 4)
             pScreenInfo->numClocks = 4;
         for (i = 0;  i < pScreenInfo->numClocks;  i++)
-            pScreenInfo->clock[i] = pScreenInfo->device->clock[i];
+            pScreenInfo->clock[i] = pRendition->pEnt->device->clock[i];
         From = X_CONFIG;
     }
     else
@@ -632,22 +599,6 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
         /* Remove invalid modes */
         xf86PruneDriverModes(pScreenInfo);
-    }
-
-    if (!nModes || !pScreenInfo->modes)
-    {
-  SetDefaultMode:
-        /* Set a default mode, overridding any virtual settings */
-        pScreenInfo->virtualX = pScreenInfo->displayWidth = 320;
-        pScreenInfo->virtualY = 200;
-        pScreenInfo->modes = (DisplayModePtr)xalloc(sizeof(DisplayModeRec));
-        if (!pScreenInfo->modes)
-            return FALSE;
-        *pScreenInfo->modes = renditionDefaultMode;
-        pScreenInfo->modes->prev = pScreenInfo->modes;
-        pScreenInfo->modes->next = pScreenInfo->modes;
-
-        pScreenInfo->virtualFrom = X_DEFAULT;
     }
 
     /* Set CRTC values for the modes */
@@ -880,8 +831,6 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     ErrorF("RENDITION: renditionScreenInit() called\n");
 #endif
 
-    xf86EnableAccess(&pScreenInfo->Access);
-    
     /* Get driver private */
     prenditionPriv=renditionGetRec(pScreenInfo);
     if (NULL == prenditionPriv) /* xcalloc failed */
@@ -999,14 +948,6 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if (!Inited)
         renditionCloseScreen(scrnIndex, pScreen);
-
-    if (!xf86LoadSubModule(pScreenInfo, "rac")){
-        renditionFreeRec(pScreenInfo);
-        return FALSE;
-    }
-    xf86LoaderReqSymLists(racSymbols, NULL);
-
-    /* xf86RACInit(pScreen, RAC_COLORMAP | RAC_FB); FAILS!!*/
 
     if (serverGeneration == 1)
       xf86ShowUnusedOptions(pScreenInfo->scrnIndex, pScreenInfo->options);

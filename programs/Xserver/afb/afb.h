@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.2 1998/04/05 16:42:03 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.3 1999/06/13 13:47:37 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -299,6 +299,7 @@ extern Bool afbSetVisualTypes(
 extern int afbListInstalledColormaps(ScreenPtr, Colormap *);
 extern void afbInstallColormap(ColormapPtr);
 extern void afbUninstallColormap(ColormapPtr);
+extern Bool afbCreateDefColormap(ScreenPtr);
 
 /* afbfillarc.c */
 
@@ -1167,6 +1168,7 @@ typedef struct _afbpos{
 #define fnCOPYINVERTED(src, dst)		(~src)
 #define fnORINVERTED(src, dst)		(~src | dst)
 #define fnNAND(src, dst)				(~(src & dst))
+#undef fnSET
 #define fnSET(src, dst)					(~0)
 
 /*  Using a "switch" statement is much faster in most cases
@@ -1183,6 +1185,7 @@ typedef struct _afbpos{
  *  Note that this requires a change to the "calling sequence"
  *  since we can't engineer a "switch" statement to have an lvalue.
  */
+#undef DoRop
 #define DoRop(result, alu, src, dst) \
 { \
 	if (alu == GXcopy) \

@@ -1,4 +1,6 @@
 XFree86 3.9Pt (20 June 1999)
+2774. First cut at converting the fbdev, sis, glide, neomagic and rendition
+      drivers for the new RAC code (David Dawes).
 2773. Fix a PM2 lockup problem during GLINTSave, and fix a text mode font
       corruption problem (#2907, Egbert Eich).
 2772. Xterm patch #108 (#2906, Thomas Dickey).
@@ -8227,4 +8229,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.780 1999/06/20 07:14:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.781 1999/06/20 08:41:27 dawes Exp $

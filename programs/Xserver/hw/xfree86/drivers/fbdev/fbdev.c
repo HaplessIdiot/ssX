@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.6 1999/04/11 13:10:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.7 1999/06/13 13:47:47 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -19,6 +19,12 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#ifdef USE_AFB
+#include "afb.h"
+#endif
+
+#include "xf86Resources.h"
+#include "xf86RAC.h"
 
 #include "fbdevhw.h"
 
@@ -97,7 +103,7 @@ static OptionInfoRec FBDevOptions[] = {
 
 static const char *afbSymbols[] = {
 	"afbScreenInit",
-    "afbCreateDefColormap",
+	"afbCreateDefColormap",
 	NULL
 };
 
@@ -106,7 +112,7 @@ static const char *cfbSymbols[] = {
 	"cfb16ScreenInit",
 	"cfb24ScreenInit",
 	"cfb32ScreenInit",
-    "cfbCreateDefColormap",
+	"cfbCreateDefColormap",
 	NULL
 };
 
@@ -186,6 +192,7 @@ typedef struct {
 	int				shadowPitch;
 	Bool				shadowFB;
 	CloseScreenProcPtr		CloseScreen;
+	EntityInfoPtr			pEnt;
 } FBDevRec, *FBDevPtr;
 
 #define FBDEVPTR(p) ((FBDevPtr)((p)->driverPrivate))
@@ -245,7 +252,7 @@ FBDevProbe(DriverPtr drv, int flags)
 		dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
 		if (devSections[i]->busID) {
 			xf86ParsePciBusString(devSections[i]->busID,&bus,&device,&func);
-			if (!xf86CheckPciSlot(bus,device,func,RES_SHARED_VGA))
+			if (!xf86CheckPciSlot(bus,device,func))
 				continue;
 		}
 		if (fbdevHWProbe(NULL,dev)) {
@@ -265,15 +272,30 @@ FBDevProbe(DriverPtr drv, int flags)
 			pScrn->EnterVT       = fbdevHWEnterVT;
 			pScrn->LeaveVT       = fbdevHWLeaveVT;
 			pScrn->ValidMode     = fbdevHWValidMode;
-			pScrn->device        = devSections[i];
 
 			xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 				   "using %s\n", dev ? dev : "default device");
 			if (devSections[i]->busID) {
+				/* XXX what about when there's no busID set? */
+				int entity;
+
 				xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 					   "claimed PCI slot %d:%d:%d\n",bus,device,func);
-				xf86ClaimPciSlot(bus,device,func,RES_SHARED_VGA,
-						 &FBDEV,0,pScrn->scrnIndex);
+				entity = xf86ClaimPciSlot(bus,device,func,drv,
+							  0,devSections[i],
+							  TRUE);
+				xf86ConfigActivePciEntity(pScrn,entity,
+							  NULL,RES_SHARED_VGA,
+							  NULL,NULL,NULL,NULL);
+			} else {
+				/* XXX This is a quick hack */
+				int entity;
+
+				entity = xf86ClaimIsaSlot(drv, 0,
+							  devSections[i], TRUE);
+				xf86ConfigActiveIsaEntity(pScrn,entity,
+							  NULL,RES_SHARED_VGA,
+							  NULL,NULL,NULL,NULL);
 			}
 		}
 	}
@@ -294,13 +316,30 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 
 	TRACE_ENTER("PreInit");
 
+	/* Check the number of entities, and fail if it isn't one. */
+	if (pScrn->numEntities != 1)
+		return FALSE;
+
 	pScrn->monitor = pScrn->confScreen->monitor;
 
 	FBDevGetRec(pScrn);
 	fPtr = FBDEVPTR(pScrn);
 
+	fPtr->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
+
+	pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+	/* XXX Is this right?  Can probably remove RAC_FB */
+	pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+
+	if (fPtr->pEnt->location.type == BUS_PCI &&
+	    xf86RegisterResources(fPtr->pEnt->index,NULL,ResExclusive)) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "xf86RegisterResources() found resource conflicts\n");
+		return FALSE;
+	}
+
 	/* open device */
-	if (!fbdevHWInit(pScrn,NULL,xf86FindOptionValue(pScrn->device->options,"fbdev")))
+	if (!fbdevHWInit(pScrn,NULL,xf86FindOptionValue(fPtr->pEnt->device->options,"fbdev")))
 		return FALSE;
 	default_depth = fbdevHWGetDepth(pScrn);
 	if (!xf86SetDepthBpp(pScrn, default_depth, default_depth, default_depth,
@@ -339,7 +378,7 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 
 	/* handle options */
 	xf86CollectOptions(pScrn, NULL);
-	xf86ProcessOptions(pScrn->scrnIndex, pScrn->device->options, FBDevOptions);
+	xf86ProcessOptions(pScrn->scrnIndex, fPtr->pEnt->device->options, FBDevOptions);
 	fPtr->shadowFB = xf86ReturnOptValBool(FBDevOptions, OPTION_SHADOW_FB, TRUE);
 	xf86DrvMsg(pScrn->scrnIndex,
 		   xf86IsOptionSet(FBDevOptions, OPTION_SHADOW_FB) ? X_CONFIG : X_DEFAULT,
@@ -487,8 +526,6 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	fPtr->fboff = fbdevHWLinearOffset(pScrn);
 
 	fbdevHWSave(pScrn);
-	xf86AddControlledResource(pScrn, MEM);
-	xf86EnableAccess(&pScrn->Access);
 
 	if (!fbdevHWModeInit(pScrn, pScrn->currentMode))
 		return FALSE;
@@ -663,7 +700,6 @@ FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 	FBDevPtr fPtr = FBDEVPTR(pScrn);
 	
-	xf86DelControlledResource(&pScrn->Access, FALSE);
 	fbdevHWRestore(pScrn);
 	fbdevHWUnmapVidmem(pScrn);
 	if (fPtr->shadowmem)

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.6 1999/04/04 08:46:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.7 1999/05/09 10:51:58 dawes Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -47,6 +47,7 @@ typedef struct {
     ScrnInfoPtr		pScrn;
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
+    EntityInfoPtr	pEnt;
     int			Chipset;
     int			ChipRev;
     int			DACtype;
@@ -99,5 +100,7 @@ Bool SiSAccelInit(ScreenPtr pScreen);
 Bool SiS2AccelInit(ScreenPtr pScreen);
 int  SiSMclk(void);
 int sisMemBandWidth(ScrnInfoPtr pScrn);
+Bool SiSHWCursorInit(ScreenPtr pScreen);
+
 
 #endif

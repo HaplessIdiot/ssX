@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.8 1999/05/09 10:51:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.9 1999/05/15 12:10:27 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -597,8 +597,10 @@ SiSLoadCursorImage(
 static Bool 
 SiSUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
+#if 0
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     SISPtr pSiS = SISPTR(pScrn);
+#endif
     return TRUE;
 }
 
@@ -639,7 +641,9 @@ SiSHWCursorInit(ScreenPtr pScreen)
 unsigned int
 SiSddc1Read(ScrnInfoPtr pScrn)
 {
+#if 0
     SISPtr pSiS = SISPTR(pScrn);
+#endif
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
     unsigned char temp, temp2;
 
