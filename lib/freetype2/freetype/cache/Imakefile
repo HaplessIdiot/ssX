@@ -5,6 +5,8 @@ FREETYPESRC = $(FREETYPETOP)/src
 FREETYPEINC = $(FREETYPETOP)/include/freetype
 
 HEADERS= \
+        ftccache.h \
+        ftccmap.h \
         ftcglyph.h \
         ftcimage.h \
         ftcmanag.h \
@@ -14,6 +16,8 @@ HEADERS= \
 BuildIncludes($(HEADERS),freetype2/freetype/cache,../../..)
 InstallMultipleFlags($(HEADERS),$(INCDIR)/freetype2/freetype/cache,$(INSTINCFLAGS))
 
+LinkSourceFile(ftccache.h,$(FREETYPEINC)/cache)
+LinkSourceFile(ftccmap.h,$(FREETYPEINC)/cache)
 LinkSourceFile(ftcglyph.h,$(FREETYPEINC)/cache)
 LinkSourceFile(ftcimage.h,$(FREETYPEINC)/cache)
 LinkSourceFile(ftcmanag.h,$(FREETYPEINC)/cache)
