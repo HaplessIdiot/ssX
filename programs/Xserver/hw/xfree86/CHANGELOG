@@ -1,4 +1,7 @@
 XFree86 4.1.99.6 (14 January 2002)
+ 673. Avoid duplicate symbol problem with xkbevd on some platform (#A.769,
+      Nicholas Leippe).
+ 672. Updated Ukranian XKB symbols file (#A.764, Andriy Rysin).
  671. Fix ELF loader for ARM architecture (#5138, Phil Blundell and
       Adam C. Powell IV).
  670. Fix a race condition in the Linux kernel DRM code (#5136,
@@ -14520,4 +14523,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2132 2002/01/14 18:11:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2133 2002/01/14 18:16:48 dawes Exp $

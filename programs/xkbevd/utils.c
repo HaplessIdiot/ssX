@@ -1,6 +1,6 @@
 
   /*\
-   * $XFree86: xc/programs/xkbevd/utils.c,v 3.4 2001/01/17 23:46:08 dawes Exp $
+   * $XFree86: xc/programs/xkbevd/utils.c,v 3.5 2001/07/25 15:05:25 dawes Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -27,6 +27,7 @@
   \*/
 /* $Xorg: utils.c,v 1.5 2000/08/17 19:54:49 cpqbld Exp $ */
 
+#define DEBUG_VAR_LOCAL
 #include 	"utils.h"
 #include	<ctype.h>
 #include	<stdlib.h>
