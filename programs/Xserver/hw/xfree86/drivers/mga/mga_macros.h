@@ -21,8 +21,10 @@
 
 #define MGAISBUSY() (INREG8(MGAREG_Status + 2) & 0x01)
 
-#define WAITFIFO(n) \
+#define WAITFIFO(cnt) \
    if(!pMga->UsePCIRetry) {\
+	register int n = cnt; \
+	if(n > pMga->FifoSize) n = pMga->FifoSize; \
 	while(pMga->fifoCount < (n))\
 	    pMga->fifoCount = INREG8(MGAREG_FIFOSTATUS);\
 	pMga->fifoCount -= n;\

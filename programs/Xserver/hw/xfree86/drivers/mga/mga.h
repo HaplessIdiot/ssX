@@ -161,6 +161,7 @@ typedef struct {
     CARD32		PlaneMask;
     CARD32		FgColor;
     CARD32		BgColor;
+    int			FifoSize;
     int			StyleLen;
     XAAInfoRecPtr	AccelInfoRec;
     xf86CursorInfoPtr	CursorInfoRec;
