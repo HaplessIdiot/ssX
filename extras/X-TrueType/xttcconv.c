@@ -30,7 +30,7 @@
 
 Notice===
  */
-/* $XFree86: $ */
+/* $XFree86: xc/extras/X-TrueType/xttcconv.c,v 1.6 2000/02/18 12:18:48 tsi Exp $ */
 
 #include "xttversion.h"
 
@@ -110,11 +110,11 @@ static char *X_TT_CodeConvModulePath = NULL;
 #   endif /* CCONV_MODULE_SUBDIR */
 
 #   ifndef CCONV_MODULE_EXTENTION
-#     if !defined(MakeDllModules)
+#     ifndef DLOPEN_HACK
 #       define CCONV_MODULE_EXTENTION ".a"
 #     else
 #       define CCONV_MODULE_EXTENTION ".so"
-#     endif /* defined(FONTMODULE) && ! MakeDllModules */
+#     endif /* DLOPEN_HACK */
 #   endif /* CCONV_MODULE_EXTENTION */
 #   define LEN_CCONV_MODULE_EXTENTION (sizeof(CCONV_MODULE_EXTENTION)-1)
 #   ifndef CCONV_ENTRYPOINT_POSTFIX
