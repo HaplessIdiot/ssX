@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c,v 1.21 95/01/19 18:06:04 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.6 1995/01/19 07:04:05 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.7 1995/01/25 10:46:12 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1065,6 +1065,9 @@ char		*port;
      */
 #else
     if( link(server_path, server_unix_path) < 0 )
+#ifdef ISC40
+      if( symlink(server_path, server_unix_path) < 0 )
+#endif
 	PRMSG(1,"TRANS(ISCOpenServer): failed to link %s to %s\n",
 	      server_path, server_unix_path, 0 );
     /*
@@ -1182,7 +1185,7 @@ char		*port;
 	return -1;
     }
     
-    if ((fd = open(DEV_SPX, O_RDWR)) >= 0) {
+    if ((fd = open(DEV_SPX, O_RDWR)) < 0) {
 	PRMSG(1,"TRANS(SCOOpenClient) failed to open %s\n", DEV_SPX, 0,0 );
 	close(server);
 	return -1;

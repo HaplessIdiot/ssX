@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl,v 1.224 94/12/27 03:57:50 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.7 1994/11/26 12:32:15 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.8 1995/01/25 10:42:43 dawes Exp $
 XCOMM
 
 /*
@@ -211,6 +211,16 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define Krb5Includes /**/
 #undef Krb5Libraries
 #define Krb5Libraries /**/
+#endif
+#ifndef UseGnuMalloc
+#define UseGnuMalloc		NO
+#endif
+#ifndef GnuMallocLibrary
+#if UseGnuMalloc
+#define GnuMallocLibrary -lgmalloc
+#else
+#define GnuMallocLibrary /**/
+#endif
 #endif
 #ifndef NeedConstPrototypes
 #define NeedConstPrototypes	NO
@@ -584,7 +594,11 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define StandardCppDefines StandardDefines
 #endif
 #ifndef Malloc0ReturnsNull
+#if UseGnuMalloc
+#define Malloc0ReturnsNull YES
+#else
 #define Malloc0ReturnsNull NO
+#endif
 #endif
 #ifndef NdbmDefines
 #if HasNdbm

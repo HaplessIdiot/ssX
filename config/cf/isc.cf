@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.1 1994/12/17 09:32:43 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.2 1995/01/11 03:42:47 dawes Exp $
 
 #ifndef HasGcc2
 #define HasGcc2			YES
@@ -38,14 +38,26 @@ XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.1 1994/12/17 09:32:43 dawes E
 # define LocalLibraries	-lpt
 # define PosixLibraries	-lcposix
 #else
-# define LocalLibraries        -lmalloc -lpt
+# define LocalLibraries        MallocLibrary -lpt
 # define PosixLibraries
 #endif
 
 #define SocketLibraries		-linet
 
+#ifndef MallocLibrary
+# if UseGnuMalloc
+#  define MallocLibrary		-lmalloc
+# else
+#  define MallocLibrary		GnuMallocLibrary
+# endif
+#endif
+
 #ifndef ExtraLibraries
-#define ExtraLibraries SocketLibraries LocalLibraries -lc_s PosixLibraries
+# if UseGnuMalloc
+#  define ExtraLibraries SocketLibraries LocalLibraries MallocLibrary -lc_s PosixLibraries
+# else
+#  define ExtraLibraries SocketLibraries LocalLibraries -lc_s PosixLibraries
+# endif
 #endif
 
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC

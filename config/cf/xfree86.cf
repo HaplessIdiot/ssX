@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.48 1995/01/28 15:40:38 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.49 1995/02/12 02:23:28 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -324,8 +324,8 @@ VGA16DRIVERSRC = $(XF86SRC)/vga16/drivers
  * These libraries are needed by all X Servers
  */
 
-XF86INIT   = $(XF86COMSRC)/xf86Init.o
-XF86MINIT  = $(XF86COMSRC)/xf86Init_m.o
+XF86INIT   = $(XF86COMSRC)/xf86Init.o $(XF86CONFIGSRC)/xf86IniExt.o
+XF86MINIT  = $(XF86COMSRC)/xf86Init_m.o $(XF86CONFIGSRC)/xf86MIniExt.o
 XF86CONFIG = $(XF86CONFIGSRC)/xf86_Option.o
 XF86COMLIB = $(XF86COMSRC)/libxf86.a
 XF86OSLIB  = $(XF86OSSRC)/libxf86_os.a

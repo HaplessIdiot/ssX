@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.34 1995/01/25 10:42:52 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.35 1995/01/25 11:17:10 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -23,6 +23,19 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.34 1995/01/25 10:42:52 dawes Exp $
  * the following.
  *
 #define HasGcc2ForCplusplus		YES
+ */
+
+/*
+ * If you want to use the GNU malloc library, uncomment this
+ *
+#define UseGnuMalloc		YES
+ */
+
+/*
+ * Set this to whatever is required to access the GNU malloc library.
+ * The default is '-lgmalloc'.
+ *
+#define GnuMallocLibrary	-L/usr/local/lib -lgmalloc
  */
 
 /*
