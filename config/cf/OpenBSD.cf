@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.65 2002/01/02 17:31:01 tsi Exp $
+XCOMM platform:  $XFree86: OpenBSD.cf,v 3.66 2002/01/03 16:33:49 tsi Exp $
 XCOMM
 
 #ifndef OSName
@@ -417,6 +417,10 @@ install:: fonts.alias							@@\
 #  define GccOptBug295
 # endif
 
+/* No MMX support in OpenBSD/a.out gas */
+# if !UseElfFormat
+#   define HasMMXSupport		NO
+# endif
 # include <xfree86.cf>
 
 #endif /* i386Architecture */
