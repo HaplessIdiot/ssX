@@ -42,6 +42,10 @@ static void quit(Widget w, XEvent *event, String *params,
 
 static XrmOptionDescRec options[] = {
 { "-shape", "*shapeWindow", XrmoptionNoArg, (XPointer) "on" },
+#ifdef XRENDER
+{"-render", "*render",XrmoptionNoArg, "TRUE"},
+{"-sharp", "*sharp", XrmoptionNoArg, "TRUE"},
+#endif
 };
 
 static XtActionsRec actions[] = {
@@ -78,15 +82,20 @@ Syntax(Widget toplevel, char *call)
 {
     Arg arg;
     SmcConn connection;
-    String reasons[6];
-    int i, num_reasons = 6;
+    String reasons[7];
+    int i, num_reasons = 7;
 
     reasons[0] = "Usage: ";
     reasons[1] = call;
     reasons[2] = " [-fg <color>] [-bg <color>] [-rv] [-bw <pixels>] [-bd <color>]\n";
     reasons[3] = "             [-d [<host>]:[<vs>]]\n";
     reasons[4] = "             [-g [<width>][x<height>][<+-><xoff>[<+-><yoff>]]]\n";
-    reasons[5] = "             [-shape]\n\n";
+#ifdef XRENDER
+    reasons[5] = "             [-render] [-sharp]\n";
+#else
+    reasons[5] = "";
+#endif
+    reasons[6] = "             [-shape]\n\n";
 
     XtSetArg(arg, XtNconnection, &connection);
     XtGetValues(toplevel, &arg, (Cardinal)1);
