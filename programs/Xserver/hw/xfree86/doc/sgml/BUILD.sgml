@@ -51,7 +51,7 @@ case, the procedure is as follows:
 	gzip -d &lt; X410src-2.tgz | tar vxf -<newline>
 	gzip -d &lt; X410src-3.tgz | tar vxf -<newline>
 	</tt></quote>
-    <item>If the realease is not a full release, it is available as a
+    <item>If the release is not a full release, it is available as a
     patch against the previous full release in the 
 <htmlurl
 name="ftp://ftp.xfree86.org/pub/XFree86/&relvers;/patches/"
@@ -67,7 +67,7 @@ Look for special patching instructions in the <htmlurl name="Release
 Notes" url="http://www.xfree86.org/&relvers;/RELNOTES.html">.
 </itemize>
 
-Another option is to get the source by anonymous CVS or CVsup. 
+Another option is to get the source by anonymous CVS or CVSup. 
 See <htmlurl name="http://www.xfree86.org/cvs/"
 url="http://www.xfree86.org/cvs/"> for details on the different
 procedure available. 
@@ -104,7 +104,7 @@ the control of CVS.
 System or architectures from the same sources, shared by NFS.
 <item>It is possible to build XFree86 with different configuration
 options, just by putting a real copy<tt>host.def</tt> in each build
-tree and by cutomizing it separatly in each build tree.
+tree and by customizing it separately in each build tree.
 </itemize>
 <p>
 To make a shadow directory of symbolic links, use the following steps:
@@ -201,7 +201,7 @@ wish to build.  Also, change the driver lists to suit your needs.
 <tt>Makefile</tt>of XFree86: 
 <itemize>
 <item><bf/Everything/ after a <tt>make World</tt>, <tt>make
-Everything</tt>does everything a <tt>make World</tt> does, execpt the
+Everything</tt>does everything a <tt>make World</tt> does, except the
 cleaning of the tree. It is a way to quickly rebuild the tree after a
 source patch, but it is not 100% bullet proof. There are cases were it
 is better to force a full build by using <tt>make World</tt>. 
@@ -240,7 +240,7 @@ XFree86@XFree86.org.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.3 1999/07/19 14:38:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.4 2001/05/27 17:08:18 herrb Exp $
 </verb>
 
 </article>

@@ -614,10 +614,12 @@ This guide is for them.
 	OS (if they exist), the XFree86 Configuration Guide
 	(README.Config), and the XF86Config man page.
 
+<!--
 	You should also look at
         <url name="the XFree86 FAQ" url="http://www.XFree86.org/FAQ">
 	for more up-to-date information,
 	especially if you are trying to configure a fairly new card.
+-->
 
 	If all else fails, you can try posting a message to
 	comp.windows.x.i386unix or comp.os.linux.x or send email
@@ -671,7 +673,7 @@ This guide is for them.
 <!-- Lots of things still need to be added -->
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/QStart.sgml,v 3.7 1999/08/23 06:38:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/QuickStart.sgml,v 1.1 2001/06/04 13:50:15 dawes Exp $
 </verb>
 
 </article>

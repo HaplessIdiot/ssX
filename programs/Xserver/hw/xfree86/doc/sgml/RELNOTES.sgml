@@ -9,7 +9,7 @@
 <date>17 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.61 2001/06/04 19:01:21 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.62 2001/08/09 19:14:12 dawes Exp $
 </ident>
 
 <abstract>
@@ -111,7 +111,7 @@ don't have enough space to cover them all here.
 
 </itemize>
 
-<sect1>Miscelaneous X Server / Extensions updates
+<sect1>Miscellaneous X Server / Extensions updates
 
 <p>
 <itemize>
