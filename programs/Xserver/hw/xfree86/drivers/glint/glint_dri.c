@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.27 2001/05/02 15:06:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.28tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -723,8 +723,6 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] %d DMA buffers mapped\n",
 	       pGlint->drmBufs->count);
     } /* PCIMODE */
-
-    xf86EnablePciBusMaster(pGlint->PciInfo, TRUE);
 
     if (pGlint->irq <= 0) {
 	pGlint->irq = drmGetInterruptFromBusID(pGlint->drmSubFD,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.13 2001/05/16 06:48:10 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.15tsi Exp $ */
 /*
  * includes
  */
@@ -93,7 +93,9 @@
 static void Bt485_write_masked(IOADDRESS port, vu8 reg, vu8 mask, vu8 data);
 static void Bt485_write_cmd3_masked(IOADDRESS port, vu8 mask, vu8 data);
 static vu8 Bt485_read_masked(IOADDRESS port, vu8 reg, vu8 mask);
+#if 0
 static vu8 Bt485_read_cmd3_masked(IOADDRESS port, vu8 mask);
+#endif
 
 
 
@@ -528,7 +530,7 @@ Bt485_read_masked(IOADDRESS port, vu8 reg, vu8 mask)
 }
 
 
-
+#if 0
 /*
  * static vu8 Bt485_read_cmd3_masked(IOADDRESS port, vu8 mask)
  *
@@ -546,7 +548,7 @@ Bt485_read_cmd3_masked(IOADDRESS port, vu8 mask)
 
     return value;
 }
-
+#endif
 
 
 /*

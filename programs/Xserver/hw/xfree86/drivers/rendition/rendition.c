@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.48 2002/04/04 14:05:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.49tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -340,7 +340,7 @@ renditionProbe(DriverPtr drv, int flags)
 }
 
 
-
+#if 0
 static Bool
 renditionClockSelect(ScrnInfoPtr pScreenInfo, int ClockNumber)
 {
@@ -365,7 +365,7 @@ renditionClockSelect(ScrnInfoPtr pScreenInfo, int ClockNumber)
 
     return TRUE;
 }
-
+#endif
 
 static renditionPtr
 renditionGetRec(ScrnInfoPtr pScreenInfo)
@@ -405,7 +405,7 @@ renditionFreeRec(ScrnInfoPtr pScreenInfo)
 #endif
 }
 
-
+#if 0
 static void
 renditionProtect(ScrnInfoPtr pScreenInfo, Bool On)
 {
@@ -421,7 +421,7 @@ renditionProtect(ScrnInfoPtr pScreenInfo, Bool On)
     sleep(1);
 #endif
 }
-
+#endif
 
 static Bool
 renditionSaveScreen(ScreenPtr pScreen, int mode)
@@ -434,6 +434,7 @@ renditionSaveScreen(ScreenPtr pScreen, int mode)
     return vgaHWSaveScreen(pScreen, mode);
 }
 
+#if 0
 static void
 renditionBlankScreen(ScrnInfoPtr pScreenInfo, Bool Unblank)
 {
@@ -448,6 +449,7 @@ renditionBlankScreen(ScrnInfoPtr pScreenInfo, Bool Unblank)
     sleep(1);
 #endif
 }
+#endif
 
 
 /*
@@ -881,7 +883,7 @@ renditionSave(ScrnInfoPtr pScreenInfo)
 #endif
 }
 
-
+#if 0
 /* Restore the mode that was saved on server entry */
 static void
 renditionRestore(ScrnInfoPtr pScreenInfo)
@@ -902,7 +904,7 @@ renditionRestore(ScrnInfoPtr pScreenInfo)
     sleep(1);
 #endif
 }
-
+#endif
 
 /* Set a graphics mode */
 static Bool

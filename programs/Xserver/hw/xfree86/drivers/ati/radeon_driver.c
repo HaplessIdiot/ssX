@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.62 2002/09/16 18:05:51 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.64tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -5073,13 +5073,6 @@ Bool RADEONEnterVT(int scrnIndex, int flags)
 
 #ifdef XF86DRI
     if (info->directRenderingEnabled) {
-       /* This seems to fix that !@#$ irritating switch to VT and back X-freeze
-        * that has been plaguing some DRI users.  It seems that bus mastering
-        * is turned off on the video card when one switches to a VT and this
-        * needs to be reactivated when we get back, else things just stop. :)
-        * Charl P. Botha <http://cpbotha.net/> */
-       xf86EnablePciBusMaster(info->PciInfo, TRUE);
-
 	RADEONCP_START(pScrn, info);
 	DRIUnlock(pScrn->pScreen);
     }

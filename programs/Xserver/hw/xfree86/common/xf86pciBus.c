@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.61tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.62tsi Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -6,6 +6,8 @@
 /*
  * This file contains the interfaces to the bus-specific code
  */
+#define INCLUDE_DEPRECATED 1
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -562,7 +564,7 @@ pciIoAccessEnable(void* arg)
 #ifdef DEBUG
     ErrorF("pciIoAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
-    pArg->ctrl |= SETBITS;
+    pArg->ctrl |= SETBITS | PCI_CMD_MASTER_ENABLE;
     (*pArg->func)(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
 }
 
@@ -584,7 +586,7 @@ pciIo_MemAccessEnable(void* arg)
 #ifdef DEBUG
     ErrorF("pciIo_MemAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
-    pArg->ctrl |= SETBITS;
+    pArg->ctrl |= SETBITS | PCI_CMD_MASTER_ENABLE;
     (*pArg->func)(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
 }
 
@@ -606,7 +608,7 @@ pciMemAccessEnable(void* arg)
 #ifdef DEBUG
     ErrorF("pciMemAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
-    pArg->ctrl |= SETBITS;
+    pArg->ctrl |= SETBITS | PCI_CMD_MASTER_ENABLE;
     (*pArg->func)(pArg->tag, PCI_CMD_STAT_REG, pArg->ctrl);
 }
 
@@ -3447,6 +3449,7 @@ pciConvertRange2Host(int entityIndex, resRange *pRange)
 }
 
 
+#ifdef INCLUDE_DEPRECATED
 void
 xf86EnablePciBusMaster(pciVideoPtr pPci, Bool enable)
 {
@@ -3462,3 +3465,4 @@ xf86EnablePciBusMaster(pciVideoPtr pPci, Bool enable)
     else
 	pciWriteLong(tag, PCI_CMD_STAT_REG, temp & ~PCI_CMD_MASTER_ENABLE);
 }
+#endif /* INCLUDE_DEPRECATED */

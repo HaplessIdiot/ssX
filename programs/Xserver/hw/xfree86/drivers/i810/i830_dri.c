@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.4 2002/09/11 00:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.5 2002/10/08 20:15:46 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -706,8 +706,6 @@ I830DRIDoMappings(ScreenPtr pScreen)
 
    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	      "[drm] added %d %d byte DMA buffers\n", bufs, I830_DMA_BUF_SZ);
-
-   xf86EnablePciBusMaster(pI830->PciInfo, TRUE);
 
    I830InitDma(pScrn);
 

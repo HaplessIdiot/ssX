@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.88 2002/07/24 01:47:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.89tsi Exp $ */
 
 #include "nv_include.h"
 
@@ -756,6 +756,7 @@ nvDoDDC2(ScrnInfoPtr pScrn)
     return MonInfo;
 }
 
+#if 0
 static xf86MonPtr
 nvDoDDC1(ScrnInfoPtr pScrn)
 {
@@ -776,7 +777,9 @@ nvDoDDC1(ScrnInfoPtr pScrn)
     }
     return MonInfo;
 }
+#endif
  
+/*
 static xf86MonPtr
 nvDoDDCVBE(ScrnInfoPtr pScrn)
 {
@@ -800,7 +803,7 @@ nvDoDDCVBE(ScrnInfoPtr pScrn)
      }
      return MonInfo;
 }
- 
+*/ 
 
 /* Internally used */
 xf86MonPtr

@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.147 2002/05/07 23:15:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.149tsi Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -3332,11 +3332,6 @@ GLINTEnterVT(int scrnIndex, int flags)
 
     TRACE_ENTER("GLINTEnterVT");
 
-#ifdef XF86DRI
-    if (pGlint->directRenderingEnabled)
-	xf86EnablePciBusMaster(pGlint->PciInfo, TRUE);
-#endif
-    
     if (pGlint->FBDev)
     	fbdevHWEnterVT(scrnIndex, flags);
     else

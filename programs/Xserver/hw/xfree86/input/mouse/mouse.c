@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.55 2002/09/16 18:06:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.56tsi Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -64,7 +64,9 @@
 #include "mousePriv.h"
 #include "mipointer.h"
 
+#ifdef XFree86LOADER
 static const OptionInfoRec *MouseAvailableOptions(void *unused);
+#endif
 static InputInfoPtr MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags);
 #if 0
 static void MouseUnInit(InputDriverPtr drv, InputInfoPtr pInfo, int flags);
@@ -297,12 +299,14 @@ static MouseProtocolRec mouseProtocols[] = {
     { NULL,			MSE_NONE,	NULL,		PROT_UNKNOWN }
 };
 
+#ifdef XFree86LOADER
 /*ARGSUSED*/
 static const OptionInfoRec *
 MouseAvailableOptions(void *unused)
 {
     return (mouseOptions);
 }
+#endif
 
 /* Process options common to all mouse types. */
 static void

@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.219 2002/04/04 14:05:43 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.221tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -3667,18 +3667,12 @@ MGAEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     MGAPtr pMga;
-#ifdef XF86DRI
-    ScreenPtr pScreen;
-#endif
 
     pMga = MGAPTR(pScrn);
 
 #ifdef XF86DRI
-    if (pMga->directRenderingEnabled) {
-	xf86EnablePciBusMaster( pMga->PciInfo, TRUE );
-        pScreen = screenInfo.screens[scrnIndex];
-        DRIUnlock(pScreen);
-    }
+    if (pMga->directRenderingEnabled)
+        DRIUnlock(screenInfo.screens[scrnIndex]);
 #endif
 
     if (!MGAModeInit(pScrn, pScrn->currentMode))

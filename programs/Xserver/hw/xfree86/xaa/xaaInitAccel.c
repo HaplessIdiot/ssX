@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.31 2001/05/15 18:22:23 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.33tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -13,7 +13,9 @@
 #include "xf86fbman.h"
 #include "servermd.h"
 
+#ifdef XFree86LOADER
 static const OptionInfoRec *XAAAvailableOptions(void *unused);
+#endif
 
 /*
  * XAA Config options
@@ -133,7 +135,6 @@ xaaSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
 
     return (pointer)TRUE;
 }
-#endif
 
 /*ARGSUSED*/
 static const OptionInfoRec *
@@ -141,6 +142,7 @@ XAAAvailableOptions(void *unused)
 {
     return (XAAOptions);
 }
+#endif
 
 Bool
 XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)

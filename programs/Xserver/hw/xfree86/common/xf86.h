@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.160 2002/07/27 16:41:16 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.163tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -140,7 +140,9 @@ pciVideoPtr xf86FindPciDeviceVendor(CARD16 vendorID, CARD16 deviceID,
 				    char n, pciVideoPtr pvp_exclude);
 pciVideoPtr xf86FindPciClass(CARD8 intf, CARD8 subClass, CARD16 class,
 			     char n, pciVideoPtr pvp_exclude);
+#ifdef INCLUDE_DEPRECATED
 void xf86EnablePciBusMaster(pciVideoPtr pPci, Bool enable);
+#endif
 void xf86RegisterStateChangeNotificationCallback(xf86StateChangeNotificationCallbackFunc func, pointer arg);
 Bool xf86DeregisterStateChangeNotificationCallback(xf86StateChangeNotificationCallbackFunc func);
 #ifdef async

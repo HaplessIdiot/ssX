@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.20 2001/05/04 19:05:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.21tsi Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -10,7 +10,9 @@
 #include "xf86_OSproc.h"
 #include "xf86DDC.h"
 
+#ifdef XFree86LOADER
 static const OptionInfoRec *DDCAvailableOptions(void *unused);
+#endif
 
 const char *i2cSymbols[] = {
     "xf86CreateI2CDevRec",
@@ -133,12 +135,14 @@ static const OptionInfoRec DDCOptions[] = {
     { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
 };
 
+#ifdef XFree86LOADER
 /*ARGSUSED*/
 static const OptionInfoRec *
 DDCAvailableOptions(void *unused)
 {
     return (DDCOptions);
 }
+#endif
 
 xf86MonPtr 
 xf86DoEDID_DDC1(

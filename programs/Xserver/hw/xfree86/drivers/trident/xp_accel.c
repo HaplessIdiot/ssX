@@ -23,7 +23,7 @@
  * 
  * BladeXP accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/xp_accel.c,v 1.1 2002/04/01 12:06:20 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/xp_accel.c,v 1.2tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -41,6 +41,7 @@
 #include "xaarop.h"
 
 static void XPSync(ScrnInfoPtr pScrn);
+#if 0
 static void XPSetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, 
 				int rop, unsigned int planemask, int length,
     				unsigned char *pattern);
@@ -52,6 +53,7 @@ static void XPSetupForSolidLine(ScrnInfoPtr pScrn, int color,
 static void XPSubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
         			int x, int y, int dmaj, int dmin, int e, 
 				int len, int octant);
+#endif
 static void XPSubsequentSolidHorVertLine(ScrnInfoPtr pScrn, int x, int y,
     				int len, int dir);
 static void XPSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
@@ -71,6 +73,7 @@ static void XPSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 static void XPSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, int x, int y, 
 				int w, int h);
+#if 0
 static void XPSetupForScanlineCPUToScreenColorExpandFill(
 				ScrnInfoPtr pScrn,
 				int fg, int bg, int rop, 
@@ -79,6 +82,7 @@ static void XPSubsequentScanlineCPUToScreenColorExpandFill(
 				ScrnInfoPtr pScrn, int x,
 				int y, int w, int h, int skipleft);
 static void XPSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
+#endif
 
 static void
 XPInitializeAccelerator(ScrnInfoPtr pScrn)
@@ -299,6 +303,7 @@ XPSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
     XPClearSync(pScrn);
 }
 
+#if 0
 static void
 XPSetupForSolidLine(ScrnInfoPtr pScrn, int color,
 					 int rop, unsigned int planemask)
@@ -332,6 +337,7 @@ XPSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
     TGUI_COMMAND(GE_BRESLINE);
     XPSync(pScrn);
 }
+#endif
 
 static void 
 XPSubsequentSolidHorVertLine(
@@ -353,6 +359,7 @@ XPSubsequentSolidHorVertLine(
     XPSync(pScrn);
 }
 
+#if 0
 void
 XPSetupForDashedLine(
     ScrnInfoPtr pScrn, 
@@ -396,7 +403,6 @@ XPSetupForDashedLine(
     pTrident->LinePattern = NiceDashPattern;
 }
 
-
 void
 XPSubsequentDashedBresenhamLine(ScrnInfoPtr pScrn,
         int x, int y, int dmaj, int dmin, int e, int len, int octant, int phase)
@@ -417,6 +423,7 @@ XPSubsequentDashedBresenhamLine(ScrnInfoPtr pScrn,
     TGUI_COMMAND(GE_BRESLINE);
     XPSync(pScrn);
 }
+#endif
 
 static void
 XPSetupForFillRectSolid(ScrnInfoPtr pScrn, int color, 
@@ -441,6 +448,7 @@ XPSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     XPSync(pScrn);
 }
 
+#if 0
 static void MoveDWORDS(
    register CARD32* dest,
    register CARD32* src,
@@ -468,6 +476,7 @@ static void MoveDWORDS(
      dest += 1;
      src += 1;
 }
+#endif
 
 static void MoveDWORDS_FixedBase(
    register CARD32* dest,
@@ -533,6 +542,7 @@ XPSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
     XPSync(pScrn);
 }
 
+#if 0
 static void
 XPSetupForScanlineCPUToScreenColorExpandFill(
 	ScrnInfoPtr pScrn,
@@ -586,3 +596,4 @@ XPSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     if (pTrident->h)
     	XPSync(pScrn);
 }
+#endif
