@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.7 1997/08/26 10:01:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.8 1997/08/26 10:53:18 hohndel Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -145,6 +145,7 @@ void TGUIAccelInit() {
 					NO_TRANSPARENCY |
 					NO_PLANEMASK;
 
+    if (!(TVGAchipset == TGUI96xx && revision == TGUI9685)) {
     xf86AccelInfoRec.SetupForCPUToScreenColorExpand = 
 	TGUISetupForCPUToScreenColorExpand;
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand = 
@@ -153,6 +154,7 @@ void TGUIAccelInit() {
 	TGUISetupForScreenToScreenColorExpand;
     xf86AccelInfoRec.SubsequentScreenToScreenColorExpand = 
 	TGUISubsequentScreenToScreenColorExpand;
+    }
 
     xf86AccelInfoRec.ImageWriteFlags = NO_TRANSPARENCY | NO_PLANEMASK;
     xf86AccelInfoRec.SetupForImageWrite = TGUISetupForImageWrite;
@@ -217,6 +219,10 @@ void TGUI9685SetupForFillRectSolid(color, rop, planemask)
     int color, rop;
     unsigned planemask;
 {
+	/* 9680 has a bug and needs this replication ! */
+	if (vgaBitsPerPixel == 8)
+		color = color << 16 | color << 8 | color;
+
 	TGUI_FPATCOL(color);
 	TGUI_BPATCOL(color);
 	TGUI_FMIX(TGUIRops_Pixalu[rop]);

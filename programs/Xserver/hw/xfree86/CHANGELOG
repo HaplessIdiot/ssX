@@ -1,3 +1,14 @@
+XFree86 3.9p (9 September 1997)
+1249. Fix some problems in the trident driver with the 9685 programmable clock 
+      and disable the GE when too little memory is available (#950,
+      Alan Hourihane).
+1248. Fix build problem with non gcc compilers (#948,949, Takaaki Nomura,
+      David Bateman).
+1247. Fix some dangling references and max MClk value in matrox driver (#951,
+      Dirk Hohndel).
+1246. Disable debugging messages in DirectColor support (Andrew Aitchison).
+1245. Fix saving video memory for glint server (Helmut Fahrion).
+
 XFree86 3.9o (9 September 1997)
 1244. Yet another fix for the problems around installing xkbcomp 
       (Michael Rohleder, David Dawes, Dirk Hohndel).
@@ -5334,4 +5345,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.523 1997/08/26 10:00:49 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.524 1997/09/09 10:27:36 hohndel Exp $

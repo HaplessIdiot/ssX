@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.9 1997/08/26 10:01:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.10 1997/09/09 10:27:46 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -156,21 +156,22 @@ MGATi3026InstallColormap(ColormapPtr pmap, int entries, Pixel *ppix, xrgb *prgb)
   int i;
   unsigned long pixel;
 
-  ErrorF("MGATi3026InstallColormap(%p, %d, %p, %p)\n",
-       pmap, entries, ppix, prgb);
-
   switch (pmap->pVisual->class) {
   case StaticGray:
   case GrayScale:
   case StaticColor:
   case PseudoColor:
   case TrueColor: /* or DirectColor in TVP docs! */ 
+#ifdef DEBUG
     ErrorF("MGATi3026InstallColormap selected TVP DirectColor\n");
+#endif
     outTi3026(TVP3026_KEY_CTL,        ~0x10, 0x00);
     outTi3026(TVP3026_TRUE_COLOR_CTL, ~0x40, 0x00);
     break;
   case DirectColor: /* or TrueColor in TVP docs! */ 
+#ifdef DEBUG
     ErrorF("MGATi3026InstallColormap selected TVP TrueColor\n");
+#endif
     outTi3026(TVP3026_KEY_CTL,        ~0x10, 0x10);
     outTi3026(TVP3026_TRUE_COLOR_CTL, ~0x40, 0x40);
     break;
@@ -193,7 +194,7 @@ MGATi3026InstallColormap(ColormapPtr pmap, int entries, Pixel *ppix, xrgb *prgb)
     prgb[i].blue  = prgb[i].blue  >> 8;
     outTi3026dreg(TVP3026_COL_PAL, (unsigned char)(prgb[i].blue) );
 
-#if 1 /* DEBUG */
+#ifdef DEBUG
     if ( i<8 || i>entries-8 )  /* keep the logfile manageable */
     {
       volatile xrgb old;
@@ -213,10 +214,8 @@ MGATi3026InstallColormap(ColormapPtr pmap, int entries, Pixel *ppix, xrgb *prgb)
 	}
       ErrorF("\n");
     }
-#endif /* DEBUG */
+#endif
   }
-
-  ErrorF("MGATi3026InstallColormap done\n");
 }
 
 /*
@@ -1079,6 +1078,9 @@ MGA3026RamdacInit()
 		    break;
 	    }
 
+#if DEBUG
+		ErrorF("ClkGE %d ClkMem %d\n",MGABios2.ClkGE,MGABios2.ClkMem);
+#endif
 		if ( MGABios2.ClkGE != 0xff && MGABios2.ClkMem == 0xff )
 		    MGABios2.ClkMem = MGABios2.ClkGE;
 		else if ( MGABios2.ClkGE == 0xff && MGABios2.ClkMem != 0xff )
@@ -1094,24 +1096,31 @@ MGA3026RamdacInit()
 	    else
 	    {
 		/* bios is not available, initialize to rational figures */
-		MGAdac.MemoryClock = 60000.0;	/* 60 MHz WRAM */
+		MGAdac.MemoryClock = 60000;	/* 60 MHz WRAM */
 		MGAdac.maxPixelClock = 220000;  /* 220 MHz */
             }
 	} /* 2164 specific initialization */
 
 #if MCLK_FROM_XCONFIG
     /* or get it from XF86Config */
-    if (vga256InfoRec.MemClk)
+    if (vga256InfoRec.MemClk) {
         MGAdac.MemoryClock = vga256InfoRec.MemClk;
+#if DEBUG
+	ErrorF("From XF86Config MemoryClock %d\n",MGAdac.MemoryClock);
+#endif
+    }
 #endif
 
     /* safety check. Too slow = corruption, too fast = smoking chips */
     /* 40 MHz (=40000) is a little slower, 50 MHz is safe (and the default */
     /* 60 MHz is pushing it (YMMV), and > 65 is in Danger Will Robinson territory */
 
-    if ( (MGAdac.MemoryClock < 40000.0) ||
-         (MGAdac.MemoryClock > 65000.0) )
-	MGAdac.MemoryClock = 50000.0; 
+    if ( (MGAdac.MemoryClock < 40000) ||
+         (MGAdac.MemoryClock > 70000) )
+	MGAdac.MemoryClock = 50000; 
 
+#if DEBUG
+	ErrorF("Setting MemoryClock %d\n",MGAdac.MemoryClock);
+#endif
     MGATi3026SetMCLK( MGAdac.MemoryClock );
 }
