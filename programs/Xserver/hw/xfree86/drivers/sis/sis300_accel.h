@@ -103,9 +103,11 @@
 
 */
 
-/* TW: BR(16)+2 = 0x8242 */
+/* BR(16)+2 = 0x8242 */
 
-#define CmdQueLen pSiS->cmdQueueLen
+/* As sis_dri.c relocated the cmd-q len to the sarea, don't use it directly here */
+/* #define CmdQueLen pSiS->cmdQueueLen */
+#define CmdQueLen (*(pSiS->cmdQueueLenPtr))
 
 #define SiSIdle \
   { \

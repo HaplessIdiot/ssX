@@ -54,13 +54,16 @@
 #define VB_SIS301B302B          (VB_SIS301B|VB_SIS302B)
 #define VB_SIS301LV302LV        (VB_SIS301LV|VB_SIS302LV)
 
-#define IS_SIS650		(HwDeviceExtension->jChipType == SIS_650)
-#define IS_SIS740		(HwDeviceExtension->jChipType == SIS_740)
 #define IS_SIS330		(HwDeviceExtension->jChipType == SIS_330)
 #define IS_SIS550		(HwDeviceExtension->jChipType == SIS_550)
+#define IS_SIS650		(HwDeviceExtension->jChipType == SIS_650)
+#define IS_SIS740		(HwDeviceExtension->jChipType == SIS_740)
 #define IS_SIS651	        (SiS_Pr->SiS_SysFlags & (SF_Is651 | SF_Is652))
 #define IS_SISM650	        (SiS_Pr->SiS_SysFlags & (SF_IsM650 | SF_IsM652 | SF_IsM653))
+#define IS_SIS661		(SiS_Pr->SiS_SysFlags & (SF_Is661 | SF_IsM651))
+#define IS_SIS741		(SiS_Pr->SiS_SysFlags & SF_IsM741)
 #define IS_SIS65x               (IS_SIS651 || IS_SISM650)
+#define IS_SIS661741	        (SiS_Pr->SiS_SysFlags & (SF_Is661 | SF_IsM661 | SF_Is741))
 #define IS_SIS660		(HwDeviceExtension->jChipType == SIS_660)
 #define IS_SIS760		(HwDeviceExtension->jChipType == SIS_760)
 #define IS_SIS650660            (IS_SIS650 || IS_SIS660)
@@ -160,6 +163,9 @@
 #define SF_Is652		0x0004
 #define SF_IsM652		0x0008
 #define SF_IsM653		0x0010
+#define SF_Is661		0x0020
+#define SF_IsM661		0x0040
+#define SF_Is741		0x0080
 #define SF_Is660		0x8000
 
 #define PanelRGB18Bit           0x0100

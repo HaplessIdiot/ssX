@@ -1801,33 +1801,25 @@ SiS_VerifyMclk(SiS_Private *SiS_Pr, ULONG FBAddr)
    }
 }
 
-/* TW: Is this a 315E? */
+/* Is this a 315E? */
 int
 Is315E(SiS_Private *SiS_Pr)
 {
-   USHORT  data;
-
-   data = SiS_GetReg1(SiS_Pr->SiS_P3d4,0x5F);
-   if(data & 0x10) return 1;
-   else return 0;
+   if((HwDeviceExtension->jChipType == SIS_315H)   ||
+      (HwDeviceExtension->jChipType == SIS_315)    ||
+      (HwDeviceExtension->jChipType == SIS_315PRO)) {
+      if(SiS_GetReg1(SiS_Pr->SiS_P3d4,0x5F) & 0x10) return 1;
+   }
+   return 0;
 }
 
-/* TW: For 315 only */
+/* For 315 only */
 void
 SiS_SetDRAMSize_310(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 {
    UCHAR  *ROMAddr  = HwDeviceExtension->pjVirtualRomBase;
    ULONG   FBAddr   = (ULONG)HwDeviceExtension->pjVideoMemoryAddress;
    USHORT  data;
-
-#ifdef SIS301	/* TW: SIS301 ??? */
-   /*SiS_SetReg1(SiS_Pr->SiS_P3d4,0x30,0x40);   */
-#endif
-#ifdef SIS302   /* TW: SIS302 ??? */
-   SiS_SetReg1(SiS_Pr->SiS_P3d4,0x30,0x4D);  /* alan,should change value */
-   SiS_SetReg1(SiS_Pr->SiS_P3d4,0x31,0xc0);  /* alan,should change value */
-   SiS_SetReg1(SiS_Pr->SiS_P3d4,0x34,0x3F);  /* alan,should change value */
-#endif
 
    SiSSetMode(SiS_Pr, HwDeviceExtension, 0x2e);
 
@@ -1959,33 +1951,35 @@ void SiSRegInit(SiS_Private *SiS_Pr, USHORT BaseAddr)
 void
 SiSInitPCIetc(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 {
-/* #ifdef LINUX_XF86 */
-   if ((HwDeviceExtension->jChipType == SIS_540)||
-       (HwDeviceExtension->jChipType == SIS_630)||
-       (HwDeviceExtension->jChipType == SIS_730)||
-       (HwDeviceExtension->jChipType == SIS_300)) {
-       /* TW: Set - PCI LINEAR ADDRESSING ENABLE (0x80)
-		  - PCI IO ENABLE  (0x20)
-		  - MMIO ENABLE (0x1)
-  	*/
-       SiS_SetReg1(SiS_Pr->SiS_P3c4,0x20,0xa1);
-       /* TW: Enable 2D (0x42) & 3D accelerator (0x18) */
-       SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x1E,0xFF,0x5A);
-   }
-   if((HwDeviceExtension->jChipType == SIS_315H)||
-      (HwDeviceExtension->jChipType == SIS_315) ||
-      (HwDeviceExtension->jChipType == SIS_315PRO)||
-      (HwDeviceExtension->jChipType == SIS_550) ||
-      (HwDeviceExtension->jChipType == SIS_650) ||
-      (HwDeviceExtension->jChipType == SIS_740) ||
-      (HwDeviceExtension->jChipType == SIS_330) ||
-      (HwDeviceExtension->jChipType == SIS_660) ||
-      (HwDeviceExtension->jChipType == SIS_760)) {
-      /* TW: This seems to be done the same way on these chipsets */
+   switch(HwDeviceExtension->jChipType) {
+   case SIS_300:
+   case SIS_540:
+   case SIS_630:
+   case SIS_730:
+      /* Set - PCI LINEAR ADDRESSING ENABLE (0x80)
+       *     - PCI IO ENABLE  (0x20)
+       *     - MMIO ENABLE (0x1)
+       */
       SiS_SetReg1(SiS_Pr->SiS_P3c4,0x20,0xa1);
-      SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x1E,0xFF,0x5A);
+      /* Enable 2D (0x42) & 3D accelerator (0x18) */
+      SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x1E,0x5A);
+      break;
+   case SIS_315H:
+   case SIS_315:
+   case SIS_315PRO:
+   case SIS_650:
+   case SIS_740:
+   case SIS_330:
+   case SIS_660:
+   case SIS_760:
+      SiS_SetReg1(SiS_Pr->SiS_P3c4,0x20,0xa1);
+      SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x1E,0x5A);
+      break;
+   case SIS_550:
+      SiS_SetReg1(SiS_Pr->SiS_P3c4,0x20,0xa1);
+      /* No 3D engine ! */
+      SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x1E,0x42);
    }
-/* #endif */
 }
 
 void
@@ -2011,12 +2005,12 @@ SiSSetLVDSetc(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT 
    }
 #endif
 
+   switch(HwDeviceExtension->jChipType) {
 #ifdef SIS300
-   if((HwDeviceExtension->jChipType == SIS_540) ||
-      (HwDeviceExtension->jChipType == SIS_630) ||
-      (HwDeviceExtension->jChipType == SIS_730))
-    {
-        /* TW: Check for SiS30x first */
+   case SIS_540:
+   case SIS_630:
+   case SIS_730:
+        /* Check for SiS30x first */
         temp = SiS_GetReg1(SiS_Pr->SiS_Part4Port,0x00);
 	if((temp == 1) || (temp == 2)) return;
       	temp = SiS_GetReg1(SiS_Pr->SiS_P3d4,0x37);
@@ -2024,62 +2018,58 @@ SiSSetLVDSetc(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT 
       	if((temp >= 2) && (temp <= 5)) SiS_Pr->SiS_IF_DEF_LVDS = 1;
       	if(temp == 3)   SiS_Pr->SiS_IF_DEF_TRUMPION = 1;
       	if((temp == 4) || (temp == 5)) {
-		/* TW: Save power status (and error check) - UNUSED */
+		/* Save power status (and error check) - UNUSED */
 		SiS_Pr->SiS_Backup70xx = SiS_GetCH700x(SiS_Pr, 0x0e);
 		SiS_Pr->SiS_IF_DEF_CH70xx = 1;
         }
-   }
+	break;
 #endif
 #ifdef SIS315H
-   if((HwDeviceExtension->jChipType == SIS_550) ||
-      (HwDeviceExtension->jChipType == SIS_650) ||
-      (HwDeviceExtension->jChipType == SIS_740) ||
-      (HwDeviceExtension->jChipType == SIS_330) ||
-      (HwDeviceExtension->jChipType == SIS_660) ||
-      (HwDeviceExtension->jChipType == SIS_760))
-    {
-        /* TW: CR37 is different on 315 series */
-#if 0
-        if(SiS_Pr->SiS_IF_DEF_FSTN)                       /* fstn: set CR37=0x04 */
-             SiS_SetReg1(SiS_Pr->SiS_P3d4,0x37,0x04);      /* (fake LVDS bridge) */
-#endif
-
+   case SIS_550:
+   case SIS_650:
+   case SIS_740:
+   case SIS_330:
+   case SIS_660:
+   case SIS_760:
 	temp=SiS_GetReg1(SiS_Pr->SiS_P3d4,0x37);
       	temp = (temp & 0x0E) >> 1;
       	if((temp >= 2) && (temp <= 3)) SiS_Pr->SiS_IF_DEF_LVDS = 1;
-      	if(temp == 3)  {
-			SiS_Pr->SiS_IF_DEF_CH70xx = 2;
-        }
-	
-	/* HiVision (HDTV) is done differently now. */
-	/* SiS_Pr->SiS_IF_DEF_HiVision = 1; */
-    }
+      	if(temp == 3)  SiS_Pr->SiS_IF_DEF_CH70xx = 2;
+        break;
 #endif
+   default:
+        break;
+   }
 }
 
 void
 SiSInitPtr(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 {
+   switch(HwDeviceExtension->jChipType) {
 #ifdef SIS315H
-   if((HwDeviceExtension->jChipType == SIS_315H) ||
-      (HwDeviceExtension->jChipType == SIS_315) ||
-      (HwDeviceExtension->jChipType == SIS_315PRO) ||
-      (HwDeviceExtension->jChipType == SIS_550) ||
-      (HwDeviceExtension->jChipType == SIS_650) ||
-      (HwDeviceExtension->jChipType == SIS_740) ||
-      (HwDeviceExtension->jChipType == SIS_330) ||
-      (HwDeviceExtension->jChipType == SIS_660) ||
-      (HwDeviceExtension->jChipType == SIS_760))
-     InitTo310Pointer(SiS_Pr, HwDeviceExtension);
+   case SIS_315H:
+   case SIS_315:
+   case SIS_315PRO:
+   case SIS_550:
+   case SIS_650:
+   case SIS_740:
+   case SIS_330:
+   case SIS_660:
+   case SIS_760:
+      InitTo310Pointer(SiS_Pr, HwDeviceExtension);
+      break;
 #endif
-
 #ifdef SIS300
-   if ((HwDeviceExtension->jChipType == SIS_540) ||
-       (HwDeviceExtension->jChipType == SIS_630) ||
-       (HwDeviceExtension->jChipType == SIS_730) ||
-       (HwDeviceExtension->jChipType == SIS_300))
-     InitTo300Pointer(SiS_Pr, HwDeviceExtension);
+   case SIS_300:
+   case SIS_540:
+   case SIS_630:
+   case SIS_730:
+      InitTo300Pointer(SiS_Pr, HwDeviceExtension);
+      break;
 #endif
+   default:
+      break;
+   }
 }
 
 void
@@ -4158,11 +4148,11 @@ GetDRAMSize(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
   USHORT  counter;
 #endif
 
+  switch(HwDeviceExtension->jChipType) {
 #ifdef SIS315H
-  if ((HwDeviceExtension->jChipType == SIS_315H) ||
-      (HwDeviceExtension->jChipType == SIS_315)  ||
-      (HwDeviceExtension->jChipType == SIS_315PRO)) {
-
+  case SIS_315H:
+  case SIS_315:
+  case SIS_315PRO:
     	counter = SiS_GetReg1(SiS_Pr->SiS_P3c4,0x14);
 	AdapterMemorySize = 1 << ((counter & 0xF0) >> 4);
 	counter >>= 2;
@@ -4173,9 +4163,9 @@ GetDRAMSize(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 		AdapterMemorySize <<= 1;                           /* SINGLE_CHANNEL_2_RANK or DUAL_CHANNEL_1_RANK */
 	}
 	AdapterMemorySize *= (1024*1024);
+        break;
 
-  } else if(HwDeviceExtension->jChipType == SIS_330) {
-
+  case SIS_330:
     	counter = SiS_GetReg1(SiS_Pr->SiS_P3c4,0x14);
 	AdapterMemorySize = 1 << ((counter & 0xF0) >> 4);
 	counter &= 0x0c;
@@ -4183,32 +4173,33 @@ GetDRAMSize(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 		AdapterMemorySize <<= 1;
 	}
 	AdapterMemorySize *= (1024*1024);
+	break;
 
-  } else if((HwDeviceExtension->jChipType == SIS_550) ||
-            (HwDeviceExtension->jChipType == SIS_740) ||
-            (HwDeviceExtension->jChipType == SIS_650) ||
-	    (HwDeviceExtension->jChipType == SIS_660) ||
-	    (HwDeviceExtension->jChipType == SIS_760)) {
-
+  case SIS_550:
+  case SIS_650:
+  case SIS_740:
+  case SIS_660:
+  case SIS_760:
   	counter = SiS_GetReg1(SiS_Pr->SiS_P3c4,0x14) & 0x3F;
       	counter++;
       	AdapterMemorySize = counter * 4;
       	AdapterMemorySize *= (1024*1024);
-  }
+	break;
 #endif
 
 #ifdef SIS300
-  if ((HwDeviceExtension->jChipType==SIS_300) ||
-      (HwDeviceExtension->jChipType==SIS_540) ||
-      (HwDeviceExtension->jChipType==SIS_630) ||
-      (HwDeviceExtension->jChipType==SIS_730)) {
-
+  case SIS_300:
+  case SIS_540:
+  case SIS_630:
+  case SIS_730:
       	AdapterMemorySize = SiS_GetReg1(SiS_Pr->SiS_P3c4,0x14) & 0x3F;
       	AdapterMemorySize++;
       	AdapterMemorySize *= (1024*1024);
-
-  }
+	break;
 #endif
+  default:
+        break;
+  }
 
   return AdapterMemorySize;
 }

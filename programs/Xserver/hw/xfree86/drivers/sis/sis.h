@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   8
-#define SISDRIVERVERSIONDAY     10
+#define SISDRIVERVERSIONDAY     23
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -115,6 +115,10 @@ typedef unsigned long IOADDRESS;
 #endif
 #endif
 
+#if 1
+#define SISVRAMQ		/* Use VRAM queue mode on 315 series */
+#endif
+
 /* For SiS315/550/650/740/330/660 - these should be moved elsewhere! */
 #ifndef PCI_CHIP_SIS315H
 #define PCI_CHIP_SIS315H		0x0310
@@ -135,7 +139,7 @@ typedef unsigned long IOADDRESS;
 #define PCI_CHIP_SIS330 		0x0330
 #endif
 #ifndef PCI_CHIP_SIS660
-#define PCI_CHIP_SIS660 		0x6330	/* 660_VGA and 760_VGA */
+#define PCI_CHIP_SIS660 		0x6330	/* 660_VGA and 760_VGA (obviously DOA) */
 #endif
 
 #define SIS_NAME                "SIS"
@@ -267,6 +271,9 @@ typedef unsigned long IOADDRESS;
 #define PDEBUG(p)
 #endif
 
+#define BITMASK(h,l)             (((unsigned)(1U << ((h)-(l)+1))-1)<<(l))
+#define GENMASK(mask)            BITMASK(1?mask,0?mask)
+
 typedef unsigned long ULong;
 typedef unsigned short UShort;
 typedef unsigned char UChar;
@@ -305,9 +312,14 @@ typedef unsigned char UChar;
 #define SiSCF_IsM652       0x00000008
 #define SiSCF_IsM653       0x00000010
 #define SiSCF_Is652        0x00000020
-#define SiSCF_Is65x        (SiSCF_Is651 | SiSCF_IsM650 | SiSCF_IsM652 | SiSCF_IsM653 | SiSCF_Is652)
-#define SiSCF_IsM660       0x00000100
-#define SiSCF_IsM760       0x00000200
+#define SiSCF_Is661FX	   0x00000040
+#define SiSCF_IsM661FX	   0x00000080
+#define SiSCF_Is661	   (SiSCF_Is661FX | SiSCF_IsM661FX)
+#define SiSCF_Is741        0x00000100
+#define SiSCF_Is65x        (SiSCF_Is651|SiSCF_IsM650|SiSCF_IsM652|SiSCF_IsM653| \
+			    SiSCF_Is652|SiSCF_Is661FX|SiSCF_IsM661FX|SiSCF_Is741)
+#define SiSCF_IsM660       0x00000200
+#define SiSCF_IsM760       0x00000400
 #define SiSCF_Is66x        (SiSCF_IsM660 | SiSCF_IsM760)
 #define SiSCF_XabreCore    0x00010000
 #define SiSCF_Glamour3     0x40000000
@@ -387,6 +399,23 @@ typedef struct {
     ScrnInfoPtr         pScrn_2;
     unsigned char *     BIOS;
     SiS_Private   *     SiS_Pr;
+    unsigned long 	agpHandle;
+    CARD32 		agpAddr;
+    unsigned char 	*agpBase;
+    unsigned int 	agpSize;
+    CARD32 		agpCmdBufAddr;  /* 300 series */
+    unsigned char 	*agpCmdBufBase;
+    unsigned int 	agpCmdBufSize;
+    unsigned int 	agpCmdBufFree;
+    CARD32              agpVtxBufAddr;	/* 315 series */
+    unsigned char       *agpVtxBufBase;
+    unsigned int        agpVtxBufSize;
+    unsigned int        agpVtxBufFree;
+    sisRegion 		agp;
+#ifdef XF86DRI
+    int 		drmSubFD;
+#endif
+    Bool		AGPInitOK;
     int			CRT1ModeNo;		/* Current display mode for CRT1 */
     DisplayModePtr	CRT1DMode;		/* Current display mode for CRT1 */
     int 		CRT2ModeNo;		/* Current display mode for CRT2 */
@@ -583,16 +612,33 @@ typedef struct {
     void        	(*LoadCRT2Palette)(ScrnInfoPtr pScrn, int numColors,
                 		int *indicies, LOCO *colors, VisualPtr pVisual);
 
-    int                 cmdQueueLen;		/* Current cmdQueueLength (for 2D and 3D) */
-    int	 		*cmdQueueLenPtr;
+    unsigned long       cmdQueueLen;		/* Current cmdQueueLength (for 2D and 3D) */
+    unsigned long	cmdQueueLenMax;
+    unsigned long	cmdQueueLenMin;
+    unsigned long	*cmdQueueBase;
+    unsigned long	*cmdQueueLenPtr;	/* Ptr to variable holding the current queue length */
+    unsigned int        cmdQueueOffset;
+    unsigned int        cmdQueueSize;
+    unsigned long       cmdQueueSizeMask;
+    unsigned long	cmdQ_SharedWritePort_2D;
+    unsigned long	*cmdQ_SharedWritePort;
+    unsigned int        cmdQueueSize_div2;
+    unsigned int        cmdQueueSize_div4;
+    unsigned int        cmdQueueSize_4_3;
     unsigned long 	agpHandle;
     CARD32 		agpAddr;
     unsigned char 	*agpBase;
     unsigned int 	agpSize;
-    CARD32 		agpCmdBufAddr;
+    CARD32 		agpCmdBufAddr;  /* 300 series */
     unsigned char 	*agpCmdBufBase;
     unsigned int 	agpCmdBufSize;
     unsigned int 	agpCmdBufFree;
+    CARD32              agpVtxBufAddr;	/* 315 series */
+    unsigned char       *agpVtxBufBase;
+    unsigned int        agpVtxBufSize;
+    unsigned int        agpVtxBufFree;
+    sisRegion 		agp;
+    Bool		AGPInitOK;
     Bool 		irqEnabled;
     int 		irq;
 

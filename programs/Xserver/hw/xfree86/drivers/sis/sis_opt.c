@@ -110,6 +110,7 @@ typedef enum {
     OPTION_XVYUVCHROMAKEY,
     OPTION_SCALELCD,
     OPTION_SPECIALTIMING,
+    OPTION_LVDSHL,
     OPTION_ENABLEHOTKEY,
     OPTION_MERGEDFB,
     OPTION_CRT2HSYNC,
@@ -210,6 +211,7 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_SCALELCD,			"ScaleLCD",	   	  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_ENABLEHOTKEY,		"EnableHotkey",	   	  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_SPECIALTIMING,        	"SpecialTiming",          OPTV_STRING,    {0}, -1    },
+    { OPTION_LVDSHL,			"LVDSHL", 	  	  OPTV_INTEGER,   {0}, -1    },
     { OPTION_ENABLESISCTRL,		"EnableSiSCtrl",   	  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_STOREDBRIR,		"StoredGammaBrightnessRed", 	  OPTV_INTEGER,   {0}, -1    },
     { OPTION_STOREDBRIG,		"StoredGammaBrightnessGreen", 	  OPTV_INTEGER,   {0}, -1    },
@@ -268,6 +270,11 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->NoHostBus = FALSE;
 /*  pSiS->UsePCIRetry = TRUE; */
     pSiS->TurboQueue = TRUE;
+#ifdef SISVRAMQ
+    /* TODO: Option (315 series VRAM command queue) */
+    /* But beware: sisfb does not know about this!!! */
+    pSiS->cmdQueueSize = 512*1024;
+#endif
     pSiS->HWCursor = TRUE;
     pSiS->Rotate = FALSE;
     pSiS->ShadowFB = FALSE;
@@ -688,6 +695,9 @@ SiSOptions(ScrnInfoPtr pScrn)
        if(xf86GetOptValString(pSiS->Options, OPTION_SPECIALTIMING)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "SpecialTiming");
        }
+       if(xf86GetOptValString(pSiS->Options, OPTION_LVDSHL)) {
+          xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "LVDSHL");
+       }
        if(xf86GetOptValString(pSiS->Options, OPTION_TVSTANDARD)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "TVStandard");
        }
@@ -737,11 +747,19 @@ SiSOptions(ScrnInfoPtr pScrn)
     } else
 #endif    
     {
-       if(pSiS->VGAEngine != SIS_315_VGA) {
+       if(pSiS->VGAEngine == SIS_315_VGA) {
 
-	 /* TurboQueue
-          * We always use this on 315 series.
-	  */
+#ifdef SISVRAMQ
+          xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using VRAM command queue, size %dk\n",
+	  	pSiS->cmdQueueSize / 1024);
+#else
+	  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using MMIO command queue, size 512k\n");
+#endif
+
+       } else {
+
+	  /* TurboQueue */
+
           from = X_DEFAULT;
           if(xf86GetOptValBool(pSiS->Options, OPTION_TURBOQUEUE, &pSiS->TurboQueue)) {
     	     from = X_CONFIG;
@@ -754,26 +772,26 @@ SiSOptions(ScrnInfoPtr pScrn)
 
           Bool val;
 
-	 /* RestoreBySetMode (300/315/330 series only)
-          * Set this to force the driver to set the old mode instead of restoring
-          * the register contents. This can be used to overcome problems with
-          * LCD panels and video bridges.
-          */
+	  /* RestoreBySetMode (300/315/330 series only)
+           * Set this to force the driver to set the old mode instead of restoring
+           * the register contents. This can be used to overcome problems with
+           * LCD panels and video bridges.
+           */
           if(xf86GetOptValBool(pSiS->Options, OPTION_RESTOREBYSET, &val)) {
              pSiS->restorebyset = val ? TRUE : FALSE;
           }
 
-	 /* EnableHotkey (300/315/330 series only)
-	  * Enables or disables the BIOS hotkey switch for
-	  * switching the output device on laptops.
-	  * This key causes a total machine hang on many 300 series
-	  * machines, it is therefore by default disabled on such.
-	  * In dual head mode, using the hotkey is lethal, so we
-	  * forbid it then in any case.
-	  * However, although the driver disables the hotkey as
-	  * BIOS developers intented to do that, some buggy BIOSes
-	  * still cause the machine to freeze. Hence the warning.
-	  */
+	  /* EnableHotkey (300/315/330 series only)
+	   * Enables or disables the BIOS hotkey switch for
+	   * switching the output device on laptops.
+	   * This key causes a total machine hang on many 300 series
+	   * machines, it is therefore by default disabled on such.
+	   * In dual head mode, using the hotkey is lethal, so we
+	   * forbid it then in any case.
+	   * However, although the driver disables the hotkey as
+	   * BIOS developers intented to do that, some buggy BIOSes
+	   * still cause the machine to freeze. Hence the warning.
+	   */
           {
 	  int flag = 0;
 #ifdef SISDUALHEAD
@@ -798,12 +816,12 @@ SiSOptions(ScrnInfoPtr pScrn)
 	  }
 	  }
 
-         /* UseROMData (300/315/330 series only)
-          * This option is enabling/disabling usage of some machine
-          * specific data from the BIOS ROM. This option can - and
-          * should - be used in case the driver makes problems
-          * because SiS changed the location of this data.
-          */
+          /* UseROMData (300/315/330 series only)
+           * This option is enabling/disabling usage of some machine
+           * specific data from the BIOS ROM. This option can - and
+           * should - be used in case the driver makes problems
+           * because SiS changed the location of this data.
+           */
 	  if(xf86GetOptValBool(pSiS->Options, OPTION_USEROMDATA, &val)) {
 	     pSiS->OptROMUsage = val ? 1 : 0;
 	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
@@ -811,13 +829,13 @@ SiSOptions(ScrnInfoPtr pScrn)
 	          val ? enabledstr : disabledstr);
 	  }
 
-         /* UseOEMData (300/315/330 series only)
-          * The driver contains quite a lot data for OEM LCD panels
-          * and TV connector specifics which override the defaults.
-          * If this data is incorrect, the TV may lose color and
-          * the LCD panel might show some strange effects. Use this
-          * option to disable the usage of this data.
-          */
+          /* UseOEMData (300/315/330 series only)
+           * The driver contains quite a lot data for OEM LCD panels
+           * and TV connector specifics which override the defaults.
+           * If this data is incorrect, the TV may lose color and
+           * the LCD panel might show some strange effects. Use this
+           * option to disable the usage of this data.
+           */
 	  if(xf86GetOptValBool(pSiS->Options, OPTION_USEOEM, &val)) {
 	     pSiS->OptUseOEM = val ? 1 : 0;
 	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
@@ -825,12 +843,12 @@ SiSOptions(ScrnInfoPtr pScrn)
 	         val ? enabledstr : disabledstr);
 	  }
 
-         /* ForceCRT1 (300/315/330 series only)
-          * This option can be used to force CRT1 to be switched on/off. Its
-          * intention is mainly for old monitors that can't be detected
-          * automatically. This is only useful on machines with a video bridge.
-          * In normal cases, this option won't be necessary.
-          */
+          /* ForceCRT1 (300/315/330 series only)
+           * This option can be used to force CRT1 to be switched on/off. Its
+           * intention is mainly for old monitors that can't be detected
+           * automatically. This is only useful on machines with a video bridge.
+           * In normal cases, this option won't be necessary.
+           */
 	  if(xf86GetOptValBool(pSiS->Options, OPTION_FORCECRT1, &val)) {
 	     pSiS->forceCRT1 = val ? 1 : 0;
 	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
@@ -838,26 +856,26 @@ SiSOptions(ScrnInfoPtr pScrn)
 	         val ? "ON" : "OFF");
 	  }
 
-	 /* NoCRT2DDCDetection (315/330 series only)
-          * If set to true, this disables CRT2 detection using DDC. This is
-          * to avoid problems with not entirely DDC compiant LCD panels or
-          * VGA monitors connected to the secondary VGA plug. Since LCD and
-          * VGA share the same DDC channel, it might in some cases be impossible
-          * to determine if the device is a CRT monitor or a flat panel.
-          */
+	  /* NoCRT2DDCDetection (315/330 series only)
+           * If set to true, this disables CRT2 detection using DDC. This is
+           * to avoid problems with not entirely DDC compiant LCD panels or
+           * VGA monitors connected to the secondary VGA plug. Since LCD and
+           * VGA share the same DDC channel, it might in some cases be impossible
+           * to determine if the device is a CRT monitor or a flat panel.
+           */
           if(xf86GetOptValBool(pSiS->Options, OPTION_NODDCFORCRT2, &val)) {
              pSiS->nocrt2ddcdetection = val ? TRUE : FALSE;
           }
 
-	 /* ForceCRT2ReDetection (315/330 series only)
-          * If set to true, it forces re-detection of the LCD panel and
-	  * a secondary VGA connection even if the BIOS already had found
-	  * about it. This is meant for custom panels (ie such with
-	  * non-standard resolutions) which the BIOS will "detect" according
-	  * to the established timings, resulting in only a very vague idea
-	  * about the panels real resolution. As for secondary VGA, this
-	  * enables us to include a Plasma panel's proprietary modes.
-          */
+	  /* ForceCRT2ReDetection (315/330 series only)
+           * If set to true, it forces re-detection of the LCD panel and
+	   * a secondary VGA connection even if the BIOS already had found
+	   * about it. This is meant for custom panels (ie such with
+	   * non-standard resolutions) which the BIOS will "detect" according
+	   * to the established timings, resulting in only a very vague idea
+	   * about the panels real resolution. As for secondary VGA, this
+	   * enables us to include a Plasma panel's proprietary modes.
+           */
           if(xf86GetOptValBool(pSiS->Options, OPTION_FORCECRT2REDETECTION, &val)) {
              if(val) {
 	             pSiS->forcecrt2redetection = TRUE;
@@ -865,11 +883,11 @@ SiSOptions(ScrnInfoPtr pScrn)
 	     } else  pSiS->forcecrt2redetection = FALSE;
           }
 
-	 /* ForceCRT2Type (300/315/330 series only)
-	  * Used for forcing the driver to initialize a given
-	  * CRT2 device type.
-          * (SVIDEO, COMPOSITE and SCART for overriding detection)
-          */
+	  /* ForceCRT2Type (300/315/330 series only)
+	   * Used for forcing the driver to initialize a given
+	   * CRT2 device type.
+           * (SVIDEO, COMPOSITE and SCART for overriding detection)
+           */
           strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_FORCE_CRT2TYPE);
           if(strptr != NULL) {
              if(!xf86NameCmp(strptr,"TV"))
@@ -962,6 +980,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 	  * scaling of modes lower than the panel's native resolution.
           * Setting this to TRUE will force the bridge/panel link
 	  * to scale; FALSE will rely on the panel's capabilities.
+	  * Not supported on all machines.
           */
 	  if(xf86GetOptValBool(pSiS->Options, OPTION_SCALELCD, &val)) {
 	     pSiS->UsePanelScaler = val ? 0 : 1;
@@ -988,6 +1007,22 @@ SiSOptions(ScrnInfoPtr pScrn)
                 xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
                     "Panel delay compensation shall be %d\n",
 	             pSiS->PDC);
+	     }
+          }
+
+	 /* LVDSHL (300/315/330 series + 30xLV bridge only)
+          * This might be required if the LCD panel is too dark.
+          * The parameter is an integer from 0 to 3.
+          */
+          if(xf86GetOptValInteger(pSiS->Options, OPTION_LVDSHL, &pSiS->SiS_Pr->LVDSHL)) {
+	     if((pSiS->SiS_Pr->LVDSHL < 0) || (pSiS->SiS_Pr->LVDSHL > 3)) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	            "Illegal LVDSHL parameter, valid is 0 through 3\n");
+	        pSiS->SiS_Pr->LVDSHL = -1;
+	     } else {
+                xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+                    "LVDSHL will be %d\n",
+	             pSiS->SiS_Pr->LVDSHL);
 	     }
           }
 
@@ -1324,12 +1359,19 @@ SiSOptions(ScrnInfoPtr pScrn)
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
 	  pSiS->NoXvideo = TRUE;
           xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-              "Rotating screen %sclockwise (2D acceleration and Xv disabled)\n",
+              "Rotating screen %sclockwise; (2D acceleration and Xv disabled)\n",
 	      (pSiS->Rotate == -1) ? "counter " : "");
 #else
 	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-              "Rotating screen %sclockwise (2D acceleration disabled)\n",
-	      (pSiS->Rotate == -1) ? "counter " : "");
+              "Rotating screen %sclockwise (2D acceleration %sdisabled)\n",
+	      (pSiS->Rotate == -1) ? "counter " : "",
+#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,0,0,0)
+              "and RandR extension "
+#else
+	      ""
+#endif
+	      );
+
 #endif
 
        }
@@ -1406,7 +1448,8 @@ SiSOptions(ScrnInfoPtr pScrn)
           }
 	  if(xf86GetOptValBool(pSiS->Options, OPTION_XVDEFDISABLEGFX, &val)) {
 	     if(val)  pSiS->XvDefDisableGfx = TRUE;
-	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Graphics display will be %s during Xv usage\n",
+	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+	        "Graphics display will be %s during Xv usage\n",
 	     	val ? disabledstr : enabledstr);
           }
 	  if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {

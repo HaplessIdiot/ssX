@@ -239,9 +239,11 @@ static SymTabRec SISChipsets[] = {
     { PCI_CHIP_SIS315H,     "SIS315H" },
     { PCI_CHIP_SIS315PRO,   "SIS315PRO" },
     { PCI_CHIP_SIS550,	    "SIS550" },
-    { PCI_CHIP_SIS650,      "SIS650/M650/651/652/M652/740" },
+    { PCI_CHIP_SIS650,      "SIS650/M650/651/652/M652/661FX/M661FX/740/741" },
     { PCI_CHIP_SIS330,      "SIS330(Xabre)" },
+#if 0
     { PCI_CHIP_SIS660,      "SIS660/M660/760/M760" },
+#endif
     { -1,                   NULL }
 };
 
@@ -258,7 +260,9 @@ static PciChipsets SISPciChipsets[] = {
     { PCI_CHIP_SIS315PRO,   PCI_CHIP_SIS315PRO, RES_SHARED_VGA },
     { PCI_CHIP_SIS650,      PCI_CHIP_SIS650,    RES_SHARED_VGA },
     { PCI_CHIP_SIS330,      PCI_CHIP_SIS330,    RES_SHARED_VGA },
+#if 0
     { PCI_CHIP_SIS660,      PCI_CHIP_SIS660,    RES_SHARED_VGA },
+#endif
     { -1,                   -1,                 RES_UNDEFINED }
 };
 
@@ -2498,10 +2502,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		            xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		        	"sisfb: %sreserved hardware cursor, using %s command queue\n",
 			        (mysisfbinfo.sisfb_caps & 0x80) ? "" : "not ",
-				(mysisfbinfo.sisfb_caps & 0x40) ? "SiS300 series Turbo" :
-			   	   (mysisfbinfo.sisfb_caps & 0x20) ? "SiS315 series AGP" :
-			              (mysisfbinfo.sisfb_caps & 0x10) ? "SiS315 series VRAM" :
-			                 (mysisfbinfo.sisfb_caps & 0x08) ? "SiS315 series MMIO" :
+				(mysisfbinfo.sisfb_caps & 0x40) ? "SiS300 Turbo" :
+			   	   (mysisfbinfo.sisfb_caps & 0x20) ? "SiS315/330 AGP" :
+			              (mysisfbinfo.sisfb_caps & 0x10) ? "SiS315/330 VRAM" :
+			                 (mysisfbinfo.sisfb_caps & 0x08) ? "SiS315/330 MMIO" :
 				            "no");
 		         }
 		         if(sisfbversion >= 0x01050A) {
@@ -2629,6 +2633,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        pSiS->SiS_Pr->SiS_ChSW = FALSE;
        pSiS->SiS_Pr->SiS_CustomT = CUT_NONE;
        pSiS->SiS_Pr->CRT1UsesCustomMode = FALSE;
+       pSiS->SiS_Pr->LVDSHL = -1;
     }
 
     /* Get our relocated IO registers */
@@ -3146,9 +3151,9 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     from = X_PROBED;
-    if (pSiS->pEnt->device->videoRam != 0)  {
-        pScrn->videoRam = pSiS->pEnt->device->videoRam;
-        from = X_CONFIG;
+    if(pSiS->pEnt->device->videoRam != 0)  {
+       pScrn->videoRam = pSiS->pEnt->device->videoRam;
+       from = X_CONFIG;
     }
 
     pSiS->RealVideoRam = pScrn->videoRam;
@@ -3194,12 +3199,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
       case SIS_300_VGA:
       	pSiS->TurboQueueLen = 512;
        	if(pSiS->TurboQueue) {
-			      pSiS->availMem -= (pSiS->TurboQueueLen*1024);
-			      pSiS->cursorOffset = 512;
+	   pSiS->availMem -= (pSiS->TurboQueueLen*1024);
+	   pSiS->cursorOffset = 512;
         }
-	if(pSiS->HWCursor)   {
-			      pSiS->availMem -= pSiS->CursorSize;
-			      if(pSiS->OptUseColorCursor) pSiS->availMem -= pSiS->CursorSize;
+	if(pSiS->HWCursor) {
+	   pSiS->availMem -= pSiS->CursorSize;
+	   if(pSiS->OptUseColorCursor) pSiS->availMem -= pSiS->CursorSize;
 	}
 	pSiS->CmdQueLenMask = 0xFFFF;
 	pSiS->CmdQueLenFix  = 0;
@@ -3210,13 +3215,26 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
 
       case SIS_315_VGA:
+#ifdef SISVRAMQ
+	pSiS->cmdQueueSizeMask = pSiS->cmdQueueSize - 1;	/* VRAM Command Queue is variable */
+	pSiS->cmdQueueOffset = (pScrn->videoRam * 1024) - pSiS->cmdQueueSize;
+	pSiS->cmdQueueLen = 0;
+        pSiS->cmdQueueLenMin = 0x200;
+        pSiS->cmdQueueLenMax = pSiS->cmdQueueSize - pSiS->cmdQueueLenMin;
+	pSiS->cmdQueueSize_div2 = pSiS->cmdQueueSize / 2;
+	pSiS->cmdQueueSize_div4 = pSiS->cmdQueueSize / 4;
+	pSiS->cmdQueueSize_4_3 = (pSiS->cmdQueueSize / 4) * 3;
+	pSiS->availMem -= pSiS->cmdQueueSize;
+        pSiS->cursorOffset = (pSiS->cmdQueueSize / 1024);
+#else
        	if(pSiS->TurboQueue) {
-			      pSiS->availMem -= (512*1024);  		/* Command Queue is 512k */
-			      pSiS->cursorOffset = 512;
+	   pSiS->availMem -= (512*1024);  			/* MMIO Command Queue is 512k */
+	   pSiS->cursorOffset = 512;
 	}
-	if(pSiS->HWCursor)   {
-			      pSiS->availMem -= pSiS->CursorSize;
-			      if(pSiS->OptUseColorCursor) pSiS->availMem -= pSiS->CursorSize;
+#endif
+	if(pSiS->HWCursor) {
+           pSiS->availMem -= pSiS->CursorSize;
+	   if(pSiS->OptUseColorCursor) pSiS->availMem -= pSiS->CursorSize;
 	}
 	pSiS->cursorBufferNum = 0;
 #ifdef SISDUALHEAD
@@ -3323,15 +3341,16 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using %dK of framebuffer memory\n",
     	pSiS->maxxfbmem / 1024);
 
-    /* Check if the chipset supports two video overlays */
-    if( (!pSiS->NoXvideo) &&
-        ( pSiS->VGAEngine == SIS_300_VGA    ||
-          pSiS->VGAEngine == SIS_315_VGA    ||
-	  pSiS->Chipset == PCI_CHIP_SIS530  ||
-	  pSiS->Chipset == PCI_CHIP_SIS6326 ||
-	  pSiS->Chipset == PCI_CHIP_SIS5597 ) ) {
+    /* Find out about sub-classes of some chipsets and check
+     * if the chipset supports two video overlays
+     */
+    if(pSiS->VGAEngine == SIS_300_VGA    ||
+       pSiS->VGAEngine == SIS_315_VGA    ||
+       pSiS->Chipset == PCI_CHIP_SIS530  ||
+       pSiS->Chipset == PCI_CHIP_SIS6326 ||
+       pSiS->Chipset == PCI_CHIP_SIS5597)  {
        pSiS->hasTwoOverlays = FALSE;
-       switch (pSiS->Chipset) {
+       switch(pSiS->Chipset) {
          case PCI_CHIP_SIS300:
          case PCI_CHIP_SIS630:
          case PCI_CHIP_SIS550:
@@ -3380,7 +3399,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	        andSISIDXREG(SISCR, 0x5c, 0x07);
 		inSISIDXREG(SISCR, 0x5c, tempreg1);
 		tempreg1 &= 0xf8;
-		setSISIDXREG(SISCR, 0x5c, 0x07, 0xf8);
+		orSISIDXREG(SISCR, 0x5c, 0xf8);
 		inSISIDXREG(SISCR, 0x5c, tempreg2);
 		tempreg2 &= 0xf8;
 		if((!tempreg1) || (tempreg2)) {
@@ -5837,6 +5856,22 @@ SISRestore(ScrnInfoPtr pScrn)
 
 	   }
 
+#ifdef SISVRAMQ
+	   /* Restore queue mode registers on 315/330 series */
+	   /* (This became necessary due to the switch to VRAM queue) */
+	   if(pSiS->VGAEngine == SIS_315_VGA) {
+	      unsigned char tempCR55;
+	      inSISIDXREG(SISCR,0x55,tempCR55);
+	      andSISIDXREG(SISCR,0x55,0x33);
+	      outSISIDXREG(SISSR,0x26,0x01);
+	      MMIO_OUT32(pSiS->IOBase, 0x85c4, 0);
+	      outSISIDXREG(SISSR,0x27,sisReg->sisRegs3C4[0x27]);
+	      outSISIDXREG(SISSR,0x26,sisReg->sisRegs3C4[0x26]);
+	      MMIO_OUT32(pSiS->IOBase, 0x85C0, sisReg->sisMMIO85C0);
+	      outSISIDXREG(SISCR,0x55,tempCR55);
+	   }
+#endif
+
         } else {
 
 	   if(pSiS->VBFlags & VB_VIDEOBRIDGE) {
@@ -6411,6 +6446,11 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
              case 24: refreshArea = SISRefreshArea24; break;
              case 32: refreshArea = SISRefreshArea32; break;
           }
+#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,0,0,0)
+	  xf86DisableRandR();
+	  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	  	"Driver rotation enabled, RandR disabled\n");
+#endif
        }
 
        ShadowFBInit(pScreen, refreshArea);
@@ -6444,10 +6484,10 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
 	        if(pSiS->hasTwoOverlays)
                    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		       "Using SiS300/315 series HW Xv\n" );
+		       "Using SiS300/315/330 series HW Xv\n" );
                 else
 		   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		       "Using SiS300/315 series HW Xv by default on CRT%d\n",
+		       "Using SiS300/315/330 series HW Xv by default on CRT%d\n",
 		       (pSiS->XvOnCRT2 ? 2 : 1));
 	        SISInitVideo(pScreen);
 #ifdef SISDUALHEAD
@@ -6478,17 +6518,17 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef XF86DRI
     if(pSiS->directRenderingEnabled) {
-        /* Now that mi, drm and others have done their thing,
-         * complete the DRI setup.
-         */
-        pSiS->directRenderingEnabled = SISDRIFinishScreenInit(pScreen);
+       /* Now that mi, drm and others have done their thing,
+        * complete the DRI setup.
+        */
+       pSiS->directRenderingEnabled = SISDRIFinishScreenInit(pScreen);
     }
     if(pSiS->directRenderingEnabled) {
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering enabled\n");
-        /* TODO */
-        /* SISSetLFBConfig(pSiS); */
+       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering enabled\n");
+       /* TODO */
+       /* SISSetLFBConfig(pSiS); */
     } else {
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering disabled\n");
+       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering disabled\n");
     }
 #endif
 
@@ -7310,6 +7350,7 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
     }
 #endif
 
+
     if(pScrn->vtSema) {
 
         if(pSiS->CursorInfoPtr) {
@@ -7735,27 +7776,19 @@ SiSEnableTurboQueue(ScrnInfoPtr pScrn)
            	outSISIDXREG(SISSR, 0x27, SR27);
 	   }
 	   break;
+
 	case SIS_315_VGA:
-	   if (!pSiS->NoAccel) {
+	   if(!pSiS->NoAccel) {
 	      /* On 315 series, there are three queue modes available
 	       * which are chosen by setting bits 7:5 in SR26:
 	       * 1. MMIO queue mode (bit 5, 0x20). The hardware will keep
 	       *    track of the queue, the FIFO, command parsing and so
 	       *    on. This is the one comparable to the 300 series.
 	       * 2. VRAM queue mode (bit 6, 0x40). In this case, one will
-	       *    have to do queue management himself. Register 0x85c4 will
-	       *    hold the location of the next free queue slot, 0x85c8
-	       *    is the "queue read pointer" whose way of working is
-	       *    unknown to me. Anyway, this mode would require a
-	       *    translation of the MMIO commands to some kind of
-	       *    accelerator assembly and writing these commands
-	       *    to the memory location pointed to by 0x85c4.
-	       *    We will not use this, as nobody knows how this
-	       *    "assembly" works, and as it would require a complete
-	       *    re-write of the accelerator code.
+	       *    have to do queue management himself. 
 	       * 3. AGP queue mode (bit 7, 0x80). Works as 2., but keeps the
 	       *    queue in AGP memory space.
-	       * We go MMIO here.
+	       * We go MMIO or VRAM here.
 	       * SR26 bit 4 is called "Bypass H/W queue".
 	       * SR26 bit 1 is called "Enable Command Queue Auto Correction"
 	       * SR26 bit 0 resets the queue
@@ -7766,30 +7799,60 @@ SiSEnableTurboQueue(ScrnInfoPtr pScrn)
 	       *    11  (0x0C)  4M
 	       * The queue location is to be written to 0x85C0.
 	       */
-#if 0
-	      if (pSiS->TurboQueue) {
-#endif
-	   	/* We only use MMIO Cmd Queue, not VRAM or AGP */
-	   	/* Set Command Queue Threshold to max value 11111b */
-	   	outSISIDXREG(SISSR, 0x27, 0x1F);
-	   	/* Syncronous reset for Command Queue */
-	   	outSISIDXREG(SISSR, 0x26, 0x01);
-	   	/* Do some magic (cp readport to writeport) */
-	   	temp = MMIO_IN32(pSiS->IOBase, 0x85C8);
-	   	MMIO_OUT32(pSiS->IOBase, 0x85C4, temp);
-	   	/* Enable MMIO Command Queue mode (0x20),
-		 * Enable_command_queue_auto_correction (0x02)
-		 *        (no idea, but sounds good, so use it)
-		 * 512k (0x00) (does this apply to MMIO mode?) */
-    	   	outSISIDXREG(SISSR, 0x26, 0x22);
-	   	/* Calc Command Queue position (Q is always 512k)*/
-	   	temp = (pScrn->videoRam - 512) * 1024;
-	   	/* Set Q position */
-	   	MMIO_OUT32(pSiS->IOBase, 0x85C0, temp);
-#if 0
-              } else {
-	      	/* Is there a non-TurboQueue mode within MMIO mode? */
+#ifdef SISVRAMQ
+	      /* We use VRAM Cmd Queue, not MMIO or AGP */
+	      unsigned char tempCR55;
+
+	      /* Set Command Queue Threshold to max value 11111b (?) */
+	      outSISIDXREG(SISSR, 0x27, 0x1F);
+	      /* No idea what this does */
+	      inSISIDXREG(SISCR, 0x55, tempCR55) ;
+    	      andSISIDXREG(SISCR, 0x55, 0x33) ;
+	      /* Syncronous reset for Command Queue */
+	      outSISIDXREG(SISSR, 0x26, 0x01);
+	      MMIO_OUT32(pSiS->IOBase, 0x85c4, 0);
+	      /* Enable VRAM Command Queue mode */
+	      switch(pSiS->cmdQueueSize) {
+    		case 1*1024*1024: SR26 = (0x40 | 0x04); break;
+    		case 2*1024*1024: SR26 = (0x40 | 0x08); break;
+    		case 4*1024*1024: SR26 = (0x40 | 0x0C); break;
+		default:
+		case    512*1024: SR26 = (0x40 | 0x00);
 	      }
+    	      outSISIDXREG(SISSR, 0x26, SR26);
+	      pSiS->cmdQ_SharedWritePort_2D = (unsigned long)(MMIO_IN32(pSiS->IOBase, 0x85c8));
+    	      pSiS->cmdQ_SharedWritePort = &(pSiS->cmdQ_SharedWritePort_2D);
+              *(pSiS->cmdQ_SharedWritePort) = pSiS->cmdQ_SharedWritePort_2D;
+              MMIO_OUT32(pSiS->IOBase, 0x85c4, pSiS->cmdQ_SharedWritePort_2D);
+	      MMIO_OUT32(pSiS->IOBase, 0x85C0, pSiS->cmdQueueOffset);
+	      temp = (unsigned long)pSiS->FbBase;
+#ifdef SISDUALHEAD
+	      if(pSiS->DualHeadMode) {
+	         SISEntPtr pSiSEnt = pSiS->entityPrivate;
+	         temp = (unsigned long)pSiSEnt->FbBase;
+	      }
+#endif
+              temp += pSiS->cmdQueueOffset;
+              pSiS->cmdQueueBase = (unsigned long *)temp;
+    	      outSISIDXREG(SISCR, 0x55, tempCR55);
+#else
+	      /* We use MMIO Cmd Queue, not VRAM or AGP */
+	      /* Set Command Queue Threshold to max value 11111b */
+	      outSISIDXREG(SISSR, 0x27, 0x1F);
+	      /* Syncronous reset for Command Queue */
+	      outSISIDXREG(SISSR, 0x26, 0x01);
+	      /* Do some magic (cp readport to writeport) */
+	      temp = MMIO_IN32(pSiS->IOBase, 0x85C8);
+	      MMIO_OUT32(pSiS->IOBase, 0x85C4, temp);
+	      /* Enable MMIO Command Queue mode (0x20),
+	       * Enable_command_queue_auto_correction (0x02)
+	       *        (no idea, but sounds good, so use it)
+	       * 512k (0x00) (does this apply to MMIO mode?) */
+    	      outSISIDXREG(SISSR, 0x26, 0x22);
+	      /* Calc Command Queue position (Q is always 512k)*/
+	      temp = (pScrn->videoRam - 512) * 1024;
+	      /* Set Q position */
+	      MMIO_OUT32(pSiS->IOBase, 0x85C0, temp);
 #endif
 	   }
 	   break;
@@ -8125,7 +8188,10 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
      pSiS->SiS_Pr->SiS_UseOEM = pSiS->OptUseOEM;
 
      /* Enable TurboQueue */
-     SiSEnableTurboQueue(pScrn);
+#ifdef SISVRAMQ
+     if(pSiS->VGAEngine != SIS_315_VGA)
+#endif     
+        SiSEnableTurboQueue(pScrn);
 
      if((!pSiS->UseVESA) && (pSiS->VBFlags & CRT2_ENABLE)) {
         /* Switch on CRT1 for modes that require the bridge in SlaveMode */
@@ -9994,6 +10060,13 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	  
        }
     }
+
+#ifdef SISVRAMQ
+    if(pSiS->VGAEngine == SIS_315_VGA) {
+       /* Re-Enable TurboQueue */
+       SiSEnableTurboQueue(pScrn);
+    }
+#endif
 
     /*  Apply TV settings given by options
            Do this even in DualHeadMode:
