@@ -306,6 +306,18 @@
     </model>
     <model>
       <configItem>
+        <name>hp5xx</name>
+        <description>Hewlett-Packard Omnibook 5xx</description>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
+        <name>hp6000</name>
+        <description>Hewlett-Packard Omnibook 6000/6100</description>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
         <name>honeywell_euroboard</name>
         <description>Honeywell Euroboard</description>
       </configItem>
@@ -327,6 +339,12 @@
         <name>rapidaccess2a</name>
         <description>IBM Rapid Access II (alternate option)</description>
         <description xml:lang="ru">IBM Rapid Access II (альтернативный вариант)</description>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
+        <name>thinkpad</name>
+        <description>IBM ThinkPad 560Z/600/600E/A22E</description>
       </configItem>
     </model>
     <model>
@@ -2141,6 +2159,13 @@
     </layout>
     <layout>
       <configItem>
+        <name>uz</name>
+        <description>Uzbek</description>
+      </configItem>
+      <variantList/>
+    </layout>
+    <layout>
+      <configItem>
         <name>vn</name>
         <description>Vietnamese</description>
         <description xml:lang="bg">виетнамска</description>
@@ -2494,6 +2519,12 @@
           <description>Control key at bottom left</description>
           <description xml:lang="bg">Control е долу вляво</description>
           <description xml:lang="ru">Клавиша Control снизу слева</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
+          <name>ctrl:ctrl_ra</name>
+          <description>Right Control key works as Right Alt</description>
         </configItem>
       </option>
     </group>

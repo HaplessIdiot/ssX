@@ -1,5 +1,5 @@
 // -*- indent-tabs-mode: nil -*-
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/geometry/ibm/thinkpad,v 1.1 2003/05/29 12:41:57 pascal Exp $
 
 // Created by Alexander Pohoyda <alexander.pohoyda@gmx.net>
 // Geometry specification for IBM ThinkPad keyboard.
@@ -27,7 +27,7 @@ xkb_geometry "stick" {
 };
 
 xkb_geometry "common" {
-    description = "IBM ThinkPad, Common";
+    description = "IBM ThinkPad 560Z/600/600E/A22E, Common";
     width = 290;
     height = 150;
     baseColor = "grey80";
@@ -170,6 +170,7 @@ xkb_geometry "common" {
 // US/English (FRU 02K4785).
 xkb_geometry "us" {
     include "thinkpad(common)"
+    description = "IBM ThinkPad 560Z/600/600E/A22E, US";
 
     shape "RTRN" { cornerRadius = 1, { [43, 18] }, { [2.5, 0], [40.5, 14] } };
     shape "LFSH" { cornerRadius = 1, { [43, 18] }, { [2.5, 0], [40.5, 14] } };
@@ -221,6 +222,7 @@ xkb_geometry "us" {
 // Tested on: DE/German, UK/English (FRU 02K4787).
 xkb_geometry "intl" {
     include "thinkpad(common)"
+    description = "IBM ThinkPad 560Z/600/600E/A22E, Intl";
 
     shape "RTRN" { cornerRadius = 1, { [28, 0], [28, 37], [4, 37], [4, 18],
                                        [0, 18], [0, 0] },

@@ -1,4 +1,4 @@
- // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.28 2003/02/26 19:08:43 dawes Exp $
+ // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.29 2003/04/04 17:06:07 eich Exp $
 
 // EAK (Easy Access, Internet, Multimedia, PDA) keyboards
 // Copyright (C) 2002 Stanislav Brabec <sbrabec@suse.cz>
@@ -13,7 +13,7 @@
 // Option "XkbModel"	"my_eak_type"
 // Option "XkbRules"	"xfree86"
 // Simple command line usage:
-// setxkbmap 'my_kb_layout(my_kb_variant)+inet(my_eak_type)'
+// setxkbmap 'my_kb_layout' -variant 'my_kb_variant' -model 'my_eak_type'
 
 
 // Acer
@@ -658,6 +658,7 @@ xkb_symbols "hpxe3gc" {
     key <I19>	{	[ XF86AudioNext		]	};
     key <I2E>	{	[ XF86AudioLowerVolume	]	};
     key <I30>	{	[ XF86AudioRaiseVolume	]	};
+    key <I20>	{	[ XF86AudioMute		]	};
 };
 
 partial alphanumeric_keys

@@ -1,5 +1,5 @@
 //
-// $XFree86: xc/programs/xkbcomp/symbols/us_intl,v 1.5 2002/04/04 14:05:59 eich Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/us_intl,v 1.6 2003/05/29 12:41:58 pascal Exp $
 //
 // Dead-keys definition for a very simple US/ASCII layout.
 // by Conectiva (http://www.conectiva.com.br)
@@ -48,6 +48,9 @@ xkb_symbols "basic" {
     key <AE12> {	[     equal,	plus		],
 			[ dead_doubleacute, dead_horn	]	};
 
+    key <AD03>  {	[         e,    E		],
+			[  EuroSign,    cent		]	};
+
     key <AC10> {	[ semicolon,	colon		],
 			[ dead_ogonek,	dead_diaeresis	]	};
     key <AC11> {	[ dead_acute,	dead_diaeresis	],
@@ -62,4 +65,3 @@ xkb_symbols "basic" {
 
     // End alphanumeric section
 };
-
