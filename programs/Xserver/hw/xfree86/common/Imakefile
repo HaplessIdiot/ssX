@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.117 2000/06/30 17:15:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.119 2000/08/04 16:13:21 eich Exp $
 
 
 
@@ -175,10 +175,6 @@ PROJECTROOT = ProjectRoot
 XCONFIGDEFINES = -DPROJECTROOT='"$(PROJECTROOT)"' \
 		 -DDRIVERS='"$(DRIVERS)"' \
 		 -DIDRIVERS='"$(IDRIVERS)"'
-
-#if defined(SunArchitecture) && defined(SVR4Architecture) && OSMinorVersion >= 8
-  OSDEFINES = -DSOL8
-#endif
 
     DEFINES = $(CONSDEFINES) $(KBDDEFINES) $(EXT_DEFINES) $(OSDEFINES)
 

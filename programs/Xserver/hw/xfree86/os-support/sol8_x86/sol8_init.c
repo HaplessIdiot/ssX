@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_init.c,v 1.1 1999/09/25 14:38:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_init.c,v 1.2 1999/10/13 04:21:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -50,7 +50,7 @@ char	fb_dev[PATH_MAX] = "/dev/console";
 #define MAX_SECONDS	60	
 #define USEC_IN_SEC     (unsigned long)1000000
 
-#ifndef SOL8
+#ifndef __SOL8__
 int xf86_sol8usleep(unsigned long);
 static void xf86_sol8sleep(int);
 #endif

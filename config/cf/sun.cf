@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: sun.cf /main/176 1997/12/09 17:27:51 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.51 2000/05/18 23:21:30 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.52 2000/06/20 22:08:36 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -157,8 +157,13 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 
 #ifdef i386Architecture
 # if OSMajorVersion > 4
-#  define ServerExtraDefines	AllocateLocalDefines XFree86ServerDefines \
+#  if OSMinorVersion >= 8
+#   define ServerExtraDefines	AllocateLocalDefines XFree86ServerDefines \
+				-D__EXTENSIONS__ -D__SOL8__
+#  else
+#   define ServerExtraDefines	AllocateLocalDefines XFree86ServerDefines \
 				-D__EXTENSIONS__
+#  endif
 #  define ServerOSDefines	XFree86ServerOSDefines
 # else
 #  define ServerExtraDefines	AllocateLocalDefines

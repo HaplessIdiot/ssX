@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.95 2000/08/10 17:40:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.96 2000/08/11 17:27:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -296,7 +296,7 @@ ProcessInputEvents ()
 extern u_char SpecialServerMap[];
 #endif /* ASSUME_CUSTOM_KEYCODES */
 
-#if !defined(__EMX__) && !defined(SOL8) && !defined(__CYGWIN__)
+#if !defined(__EMX__) && !defined(__SOL8__) && !defined(__CYGWIN__)
 void
 xf86PostKbdEvent(unsigned key)
 {
