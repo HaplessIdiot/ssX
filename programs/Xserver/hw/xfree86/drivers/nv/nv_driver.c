@@ -1,6 +1,6 @@
 /* $XConsortium: nv_driver.c /main/3 1996/10/28 05:13:37 kaleb $ */
 /*
- * Copyright 1996  David J. McKay
+ * Copyright 1996-1997  David J. McKay
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,9 +21,10 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.10 1997/02/28 08:21:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.2 1996/10/23 13:10:51 dawes Exp $ */
 
 #include <math.h>
+
 #include "X.h"
 #include "input.h"
 #include "screenint.h"
@@ -66,18 +67,46 @@
 
 #define NV_MAX_VCLK_PIN_CLOCK_IN_KHZ  50000
 
-
 #include "nvreg.h"
 
-/* This holds the pointer to the ramdac micro port */
-volatile int *nvPort = NULL;
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#endif
+
+volatile unsigned  *nvPDACPort;   /* Points to the DAC */
+volatile unsigned  *nvPFBPort;    /* Points to the Frame buffer */
+volatile unsigned  *nvPRMPort;    /* Points to real mode stuff */
+volatile unsigned  *nvPGRAPHPort; /* Graphics unit */
+volatile unsigned  *nvPDMAPort;   /* DMA engine */
+volatile unsigned  *nvPFIFOPort;  /* FIFO registers */ 
+volatile unsigned  *nvPRAMPort;   /* Priviliged RAM registers */
+volatile unsigned  *nvPRAMFCPort; /* Priviliged RAM (Fifo) */
+volatile unsigned  *nvPRAMHTPort; /* Priviliged RAM (hash) */
+volatile unsigned  *nvPMCPort;    /* Priviliged RAM (hash) */
+volatile unsigned  *nvCHAN0Port;  /* User channel 0 */
 
 /* Function to read extended register */
 
-static int MapNvRegs(void *base)
+#define MapDevice(device,base) \
+  nv##device##Port=(unsigned*)xf86MapVidMem(vga256InfoRec.scrnIndex,\
+                                 LINEAR_REGION,\
+                                 ((char*)(base))+DEVICE_BASE(device),\
+                                 DEVICE_SIZE(device))
+
+static void MapNvRegs(void *base)
 {
-  nvPort=(int *)xf86MapVidMem(vga256InfoRec.scrnIndex,LINEAR_REGION,
-                              (pointer)base,NV_FRAME_BUFFER);
+  MapDevice(PDAC,base);
+  MapDevice(PFB,base);
+  MapDevice(PRM,base);
+  MapDevice(PGRAPH,base);
+  MapDevice(PDMA,base);
+  MapDevice(PFIFO,base);
+  MapDevice(PRAM,base);
+  MapDevice(PRAMFC,base);
+  MapDevice(PRAMHT,base);
+  MapDevice(PMC,base);
+  MapDevice(CHAN0,base);
+
 }
 
 /*
@@ -92,7 +121,7 @@ typedef struct {
   unsigned char dacRgbPalCtrl;
   unsigned long confReg0;
   unsigned long memoryTrace;
-  unsigned long startAddr; /* Where to start readin out from the buffer */
+  unsigned long startAddr; /* Where to start reading out from the buffer */
   /* All the following registers control the display */
   unsigned long prmConfig0;     /* Controls if text mode on or off */
   unsigned long horFrontPorch;  /* Front porch in pixels */
@@ -103,6 +132,14 @@ typedef struct {
   unsigned long verSyncWidth;   /* Vertical sync width in lines */
   unsigned long verBackPorch;   /* Vertical back porch in lines */
   unsigned long verDispWidth;   /* Vertical display width in lines */
+  /* Hardware cursor registers */
+  unsigned char cursorCtrl;
+  unsigned char xHi,xLo,yHi,yLo;
+  unsigned char colour1[3]; /* RGB values for cursor planes */
+  unsigned char colour2[3];
+  unsigned char colour3[3];
+  unsigned char plane0[NV_PDAC_CURSOR_PLANE_SIZE];
+  unsigned char plane1[NV_PDAC_CURSOR_PLANE_SIZE];
 } vgaNVRec, *vgaNVPtr;
 
 /*
@@ -113,10 +150,11 @@ static Bool NVProbe(void);
 static char *NVIdent(int n);
 static void NVEnterLeave(Bool enter);
 static Bool NVInit(DisplayModePtr mode);
-static int NVValidMode(DisplayModePtr mode,Bool verbose, int flag);
-static void *NVSave(void *data);
+static int NVValidMode(DisplayModePtr mode,Bool verbose,int flag);
+static void *NVSave(void * data);
 static void NVRestore(void *data);
 static void NVAdjust(int x,int y);
+static void NVFbInit(void);
 
 
 vgaVideoChipRec NV =
@@ -129,9 +167,9 @@ vgaVideoChipRec NV =
   NVSave,
   NVRestore,
   NVAdjust,
-  vgaHWSaveScreen,
   (void (*)())NoopDDA,
   (void (*)())NoopDDA,
+  NVFbInit,
   (void (*)())NoopDDA,
   (void (*)())NoopDDA,
   (void (*)())NoopDDA,
@@ -148,72 +186,65 @@ vgaVideoChipRec NV =
   8,     /* Multiple to which the virtual width rounded */
   TRUE,  /* Support linear-mapped frame buffer */	
   0,     /* Physical base address of the linear-mapped frame buffer */	
-  0  ,     /* Size  of the linear-mapped frame buffer */		
-  /*
-   * This is TRUE if the driver has support for the given depth for 
-   * the detected configuration. It must be set in the Probe function.
-   * It most cases it should be FALSE.
-   */
-  FALSE,	/* 1bpp */
-  FALSE,	/* 4bpp */
-  TRUE,		/* 8bpp */
-  FALSE,	/* 15bpp */
-  FALSE,	/* 16bpp */
-  FALSE,	/* 24bpp */
-  FALSE,	/* 32bpp */
+  0  ,   /* Size  of the linear-mapped frame buffer */		
+  FALSE, /* 1 bpp */
+  FALSE, /* 4 bpp */
+  TRUE,  /* 8 bpp */
+  TRUE,  /* 15 bpp */
+  TRUE,  /* 16 bpp */
+  FALSE, /* 24 bpp */ 
+  FALSE, /* 32 bpp */	
   NULL,  /* Pointer to a list of builtin driver modes */   
   1      /* Scale factor used to scale the raw clocks to pixel clocks */
 };
+
+
+#ifdef XFree86LOADER
+
+XF86ModuleVersionInfo nvVersRec =
+{
+        "nv_drv.o",
+        "The XFree86 Project",
+        MODINFOSTRING1,
+        MODINFOSTRING2,
+        XF86_VERSION_CURRENT,
+        0x00010001,
+        {0,0,0,0}
+};
+
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * its name has to be ModuleInit()
+ */
+void ModuleInit(pointer *data,INT32 *magic)
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+        * data = (pointer)&NV;
+        * magic= MAGIC_ADD_VIDEO_CHIP_REC;
+        break;
+    case 1:
+        * data = (pointer) "libvga256.a";
+        * magic= MAGIC_LOAD;
+        break;
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+
+    return;
+}
+#endif /* XFree86LOADER */
 
 /*
  * This is a convenience macro, so that entries in the driver structure
  * can simply be dereferenced with 'new->xxx'.
  */
 #define new ((vgaNVPtr)vgaNewVideoState)
-
-#ifdef XFree86LOADER
-XF86ModuleVersionInfo nvVersRec =
-{
-	"nv_drv.o",
-	"The XFree86 Project",
-	MODINFOSTRING1,
-	MODINFOSTRING2,
-	XF86_VERSION_CURRENT,
-	0x00010001,
-	{0,0,0,0}
-};
-/*
- * this function returns the vgaVideoChipPtr for this driver
- *
- * its name has to be ModuleInit()
- */
-void
-ModuleInit(data,magic)
-    pointer *	data;
-    INT32 *	magic;
-{
-    static int cnt = 0;
-
-    switch(cnt++)
-    {
-    /* MAGIC_VERSION must be first in ModuleInit */
-    case 0:
-    	* data = (pointer) &nvVersRec;
-	* magic= MAGIC_VERSION;
-	break;
-    case 1:
-	* data = (pointer)&NV;
-	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
-	break;
-    default:
-        xf86issvgatype = TRUE; /* later load the correct libvgaxx.a */
-        * magic= MAGIC_DONE;
-	break;
-    }
-
-    return;
-}
-#endif /* XFree86LOADER */
 
 static char *NVIdent(int n)
 {
@@ -323,25 +354,27 @@ static int pixelPortWidth=0; /* Holds how big it is,needed in NVInit() */
 
 static int ProbeRamdac(void)
 {
-  int id=ReadExtReg(NV_DAC_COMPANY_ID);
+  int id=PDAC_ReadExt(COMPANY_ID);
 
-  if(id!=NV_DAC_SGS_ID) {
-    ErrorF("Unsupported RAMDAC (vendor number 0x%02x)\n",id); 
+  if(id!=NV_PDAC_SGS_ID) {
+    ErrorF("%s %s: %s: Unsupported RAMDAC (vendor number 0x%02x)\n",
+           XCONFIG_PROBED,vga256InfoRec.name,vga256InfoRec.chipset,id); 
     return 0;
   }
   /* Figure out what sort of RAMDAC we have. I don't know if the RAMDACS
    * have different PCI device numbers, but this test will always work
    */  
-  switch(id=ReadExtReg(NV_DAC_DEVICE_ID)) {
-    case NV_DAC_1764_ID:
+  switch(id=PDAC_ReadExt(DEVICE_ID)) {
+    case NV_PDAC_1764_ID:
       /* I believe all Diamond Edge3D boards use the 1764 */
       vga256InfoRec.maxClock = NV_1764_MAX_CLOCK_IN_KHZ;
       break;
-    case NV_DAC_1732_ID:      
+    case NV_PDAC_1732_ID:      
       vga256InfoRec.maxClock = NV_1732_MAX_CLOCK_IN_KHZ;
       break;
     default: 
-      ErrorF("Unsupported SGS RAMDAC (id number 0x%02x)\n",id); 
+      ErrorF("%s %s: %s: Unsupported SGS RAMDAC (id number 0x%02x)\n",
+          XCONFIG_PROBED,vga256InfoRec.name,vga256InfoRec.chipset,id); 
       return 0;
       break;
   }
@@ -349,10 +382,11 @@ static int ProbeRamdac(void)
    * on memory configuration etc, so we read it here so the NVInit() 
    * function can put it back in.
    */
-   pixelPortWidth=GETBITFIELD(ReadExtReg(NV_DAC_CONF_0),
-                              NV_DAC_CONF_0_PORT_WIDTH);
+   pixelPortWidth=GetBF(PDAC_ReadExt(CONF_0),NV_PDAC_CONF_0_PORT_WIDTH);
    return 1;
 }
+
+extern Bool nv1VGABodge;
 
 static Bool NVProbe(void)
 {
@@ -394,9 +428,10 @@ static Bool NVProbe(void)
   MapNvRegs((pointer)base); 
 
   /* Calculate how much RAM, unless user supplies */
+
   if(!vga256InfoRec.videoRam) {
-    vga256InfoRec.videoRam = 1024 << 
-      GETBITFIELD(nvPort[NV_PFB_BOOT_0],NV_PFB_BOOT_0_RAM_AMOUNT);
+    vga256InfoRec.videoRam = (1024 << 
+      GetBF(PFB_Read(BOOT_0),NV_PFB_BOOT_0_RAM_AMOUNT));
   }
   NV.ChipLinearSize=vga256InfoRec.videoRam*1024;
 
@@ -412,9 +447,10 @@ static Bool NVProbe(void)
 #endif
 #endif
   vga256InfoRec.bankedMono = FALSE;
-  
+
   NVEnterLeave(ENTER);
   vgaIOBase = (inb (0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
+  nv1VGABodge=TRUE; /* This prevents certain VGA registers being written */
   return (TRUE);
 }
 
@@ -456,44 +492,73 @@ static void NVEnterLeave(Bool enter)
  * used when the server enters/changes video modes.  The mode definitions 
  * have previously been initialized by the Init() function, below.
  */
-static void NVRestore(void *data)     
+static void NVRestore(void *data)
 {
+  int i;
   vgaNVPtr restore = data;
+
+#if 0
   vgaProtect(TRUE);
+#endif
 
   /*
    * This function handles restoring the generic VGA registers.
    */
-  vgaHWRestore ((vgaHWPtr) restore);
+  /* Only restore generic vga IF WE ARE GOING TO TEXT MODE */
+
+  if(!(PRM_Read(CONFIG_0)==0  && restore->prmConfig0==0)) {
+    vgaHWRestore ((vgaHWPtr) restore);
+  }
 
   /* Set the clock registers */
-  nvPort[NV_MEMORY_TRACE]=restore->memoryTrace;
-  nvPort[NV_PRM_CONFIG_0]=restore->prmConfig0;
 
-  WriteExtReg(NV_DAC_VPLL_M_PARAM,restore->Mparam);
-  WriteExtReg(NV_DAC_VPLL_N_PARAM,restore->Nparam);
-  WriteExtReg(NV_DAC_VPLL_O_PARAM,restore->Oparam);
-  WriteExtReg(NV_DAC_VPLL_P_PARAM,restore->Pparam);
+  PRM_Write(TRACE,restore->memoryTrace);
+  PRM_Write(CONFIG_0,restore->prmConfig0);
+  PDAC_WriteExt(VPLL_M_PARAM,restore->Mparam);
+  PDAC_WriteExt(VPLL_N_PARAM,restore->Nparam);
+  PDAC_WriteExt(VPLL_O_PARAM,restore->Oparam);
+  PDAC_WriteExt(VPLL_P_PARAM,restore->Pparam);
 
   /* Set the dac conf reg that sets the pixel depth */
-  WriteExtReg(NV_DAC_CONF_0,restore->dacConfReg0);
-  WriteExtReg(NV_DAC_CONF_1,restore->dacConfReg1);
-  WriteExtReg(NV_DAC_RGB_PAL_CTRL,restore->dacRgbPalCtrl);
+  PDAC_WriteExt(CONF_0,restore->dacConfReg0);
+  PDAC_WriteExt(CONF_1,restore->dacConfReg1);
+  PDAC_WriteExt(RGB_PAL_CTRL,restore->dacRgbPalCtrl);
 
   /* Write out the registers that control the dumb framebuffer */ 
-  nvPort[NV_PFB_CONFIG_0]=restore->confReg0;
-  nvPort[NV_PFB_START]=restore->startAddr;
+  PFB_Write(CONFIG_0,restore->confReg0);
+  PFB_Write(START,restore->startAddr);
 
-  nvPort[NV_PFB_HOR_FRONT_PORCH]=restore->horFrontPorch;
-  nvPort[NV_PFB_HOR_SYNC_WIDTH]=restore->horSyncWidth;
-  nvPort[NV_PFB_HOR_BACK_PORCH]=restore->horBackPorch;
-  nvPort[NV_PFB_HOR_DISP_WIDTH]=restore->horDispWidth;
-  nvPort[NV_PFB_VER_FRONT_PORCH]=restore->verFrontPorch;
-  nvPort[NV_PFB_VER_SYNC_WIDTH]=restore->verSyncWidth;
-  nvPort[NV_PFB_VER_BACK_PORCH]=restore->verBackPorch;
-  nvPort[NV_PFB_VER_DISP_WIDTH]=restore->verDispWidth;
+  PFB_Write(HOR_FRONT_PORCH,restore->horFrontPorch);
+  PFB_Write(HOR_SYNC_WIDTH,restore->horSyncWidth);
+  PFB_Write(HOR_BACK_PORCH,restore->horBackPorch);
+  PFB_Write(HOR_DISP_WIDTH,restore->horDispWidth);
+  PFB_Write(VER_FRONT_PORCH,restore->verFrontPorch);
+  PFB_Write(VER_SYNC_WIDTH,restore->verSyncWidth);
+  PFB_Write(VER_BACK_PORCH,restore->verBackPorch);
+  PFB_Write(VER_DISP_WIDTH,restore->verDispWidth);
 
+  /* Now restore cursor registers. I don't know if this is strictly 
+   * needed or not, but it isn't hard to do
+   */
+  PDAC_WriteExt(CURSOR_CTRL_A,restore->cursorCtrl);
+  PDAC_WriteExt(CURSOR_X_POS_LO,restore->xLo);
+  PDAC_WriteExt(CURSOR_X_POS_HI,restore->xHi);  
+  PDAC_WriteExt(CURSOR_Y_POS_LO,restore->yLo);
+  PDAC_WriteExt(CURSOR_Y_POS_HI,restore->yHi);
+ 
+  for(i=0;i<3;i++) {
+    PDAC_WriteExt(CURSOR_COLOUR_1_RGB+i,restore->colour1[i]);
+    PDAC_WriteExt(CURSOR_COLOUR_2_RGB+i,restore->colour2[i]);
+    PDAC_WriteExt(CURSOR_COLOUR_3_RGB+i,restore->colour3[i]);
+  }
+  for(i=0;i<NV_PDAC_CURSOR_PLANE_SIZE;i++) {
+    PDAC_WriteExt(CURSOR_PLANE_0+i,restore->plane0[i]);
+    PDAC_WriteExt(CURSOR_PLANE_1+i,restore->plane1[i]);
+  }
+
+#if 0
   vgaProtect(FALSE);
+#endif
 }
 
 /*
@@ -506,36 +571,54 @@ static void NVRestore(void *data)
 static void *NVSave(void *data)
 {
   vgaNVPtr save = data;
+  int i;
   /*
    * This function will handle creating the data structure and filling
    * in the generic VGA portion.
    */
   save = (vgaNVPtr) vgaHWSave ((vgaHWPtr) save, sizeof (vgaNVRec));
 
-  save->prmConfig0=nvPort[NV_PRM_CONFIG_0];
-  save->memoryTrace=nvPort[NV_MEMORY_TRACE];
+  save->prmConfig0=PRM_Read(CONFIG_0);
+  save->memoryTrace=PRM_Read(TRACE);
+  
+  save->dacConfReg0=PDAC_ReadExt(CONF_0);
+  save->dacConfReg1=PDAC_ReadExt(CONF_1);
+  save->dacRgbPalCtrl=PDAC_ReadExt(RGB_PAL_CTRL);
+  save->Mparam=PDAC_ReadExt(VPLL_M_PARAM);
+  save->Nparam=PDAC_ReadExt(VPLL_N_PARAM);
+  save->Oparam=PDAC_ReadExt(VPLL_O_PARAM);
+  save->Pparam=PDAC_ReadExt(VPLL_P_PARAM);
 
-  save->dacConfReg0=ReadExtReg(NV_DAC_CONF_0);
-  save->dacConfReg1=ReadExtReg(NV_DAC_CONF_1);
-  save->dacRgbPalCtrl=ReadExtReg(NV_DAC_RGB_PAL_CTRL);
-  save->Mparam=ReadExtReg(NV_DAC_VPLL_M_PARAM);
-  save->Nparam=ReadExtReg(NV_DAC_VPLL_N_PARAM);
-  save->Oparam=ReadExtReg(NV_DAC_VPLL_O_PARAM);
-  save->Pparam=ReadExtReg(NV_DAC_VPLL_P_PARAM);
+  save->confReg0=PFB_Read(CONFIG_0);
+  save->startAddr=PFB_Read(START);
 
-  save->confReg0=nvPort[NV_PFB_CONFIG_0];
-  save->startAddr=nvPort[NV_PFB_START];
+  save->horFrontPorch=PFB_Read(HOR_FRONT_PORCH);
+  save->horSyncWidth=PFB_Read(HOR_SYNC_WIDTH);
+  save->horBackPorch=PFB_Read(HOR_BACK_PORCH);
+  save->horDispWidth=PFB_Read(HOR_DISP_WIDTH);
+  save->verFrontPorch=PFB_Read(VER_FRONT_PORCH);
+  save->verSyncWidth=PFB_Read(VER_SYNC_WIDTH);
+  save->verBackPorch=PFB_Read(VER_BACK_PORCH);
+  save->verDispWidth=PFB_Read(VER_DISP_WIDTH);
 
-  save->horFrontPorch=nvPort[NV_PFB_HOR_FRONT_PORCH];
-  save->horSyncWidth=nvPort[NV_PFB_HOR_SYNC_WIDTH];
-  save->horBackPorch=nvPort[NV_PFB_HOR_BACK_PORCH];
-  save->horDispWidth=nvPort[NV_PFB_HOR_DISP_WIDTH];
-  save->verFrontPorch=nvPort[NV_PFB_VER_FRONT_PORCH];
-  save->verSyncWidth=nvPort[NV_PFB_VER_SYNC_WIDTH];
-  save->verBackPorch=nvPort[NV_PFB_VER_BACK_PORCH];
-  save->verDispWidth=nvPort[NV_PFB_VER_DISP_WIDTH];
+  /* Restore the HW cursor registers */
+  save->cursorCtrl=PDAC_ReadExt(CURSOR_CTRL_A);
+  save->xLo=PDAC_ReadExt(CURSOR_X_POS_LO);
+  save->xHi=PDAC_ReadExt(CURSOR_X_POS_HI);
+  save->yLo=PDAC_ReadExt(CURSOR_Y_POS_LO);
+  save->yHi=PDAC_ReadExt(CURSOR_Y_POS_HI);
+ 
+  for(i=0;i<3;i++) {
+    save->colour1[i]=PDAC_ReadExt(CURSOR_COLOUR_1_RGB+i);
+    save->colour2[i]=PDAC_ReadExt(CURSOR_COLOUR_2_RGB+i);
+    save->colour3[i]=PDAC_ReadExt(CURSOR_COLOUR_3_RGB+i);
+  }
+  for(i=0;i<NV_PDAC_CURSOR_PLANE_SIZE;i++) {
+    save->plane0[i]=PDAC_ReadExt(CURSOR_PLANE_0+i);
+    save->plane1[i]=PDAC_ReadExt(CURSOR_PLANE_1+i);
+  }
 
-  return ((void *) save);
+  return ((void*)save);
 }
 
 
@@ -550,6 +633,37 @@ static int VirtualScreenOk(DisplayModePtr mode)
  return (vga256InfoRec.virtualY==mode->CrtcVDisplay);
 }
 
+
+#define RESOLUTION_NOT_SUPPORTED (-1)
+
+static int GetResolutionValue(int xwidth)
+{
+  int resolution;
+
+  /* We need to do more here with respect to rejecting modes !! */
+  switch(xwidth) {
+    case 576:
+      resolution=0;break;
+    case 640:
+      resolution=1;break;      
+    case 800:
+      resolution=2;break;      
+    case 1024:
+      resolution=3;break;      
+    case 1152:
+      resolution=4;break;      
+    case 1280:
+      resolution=5;break;      
+    case 1600:
+      resolution=6;break;      
+    default: 
+      /* Oops. Will have to switch off accel */
+      resolution=RESOLUTION_NOT_SUPPORTED; 
+      break;
+  }
+  return resolution;
+}
+
 static Bool NVInit(DisplayModePtr mode)     
 {
   int bppShift=(vgaBitsPerPixel==8)  ? 1 : 2;
@@ -558,6 +672,7 @@ static Bool NVInit(DisplayModePtr mode)
   float clockOut;
   int pclkVclkRatio;
   int i;
+  int resolution;
 
   /* Check to see that we are not trying to do a virtual screen */
   if(!VirtualScreenOk(mode)) {
@@ -567,7 +682,8 @@ static Bool NVInit(DisplayModePtr mode)
   }
 
   if(!NVClockSelect(clockIn,&clockOut,&m,&n,&o,&p)) {
-    ErrorF("Unable to set desired clock\n");
+    ErrorF("%s %s: %s: Unable to set desired clock\n",
+           XCONFIG_PROBED, vga256InfoRec.name,vga256InfoRec.chipset);
     return FALSE;
   
   }
@@ -593,26 +709,30 @@ static Bool NVInit(DisplayModePtr mode)
   }
 
   new->Mparam=m;new->Nparam=n;new->Oparam=o;new->Pparam=p;
-  new->dacConfReg0=0;
-  SETBITFIELD(new->dacConfReg0,NV_DAC_CONF_0_VGA_STATE,1);
-  SETBITFIELD(new->dacConfReg0,NV_DAC_CONF_0_PORT_WIDTH,pixelPortWidth);
-  SETBITFIELD(new->dacConfReg0,NV_DAC_CONF_0_VISUAL_DEPTH,bppShift);
-  SETBITFIELD(new->dacConfReg0,NV_DAC_CONF_0_IDC_MODE,vgaBitsPerPixel==8);
+  new->dacConfReg0= PDAC_Val(CONF_0_VGA_STATE,1) | 
+                    PDAC_Val(CONF_0_PORT_WIDTH,pixelPortWidth) | 
+                    PDAC_Val(CONF_0_VISUAL_DEPTH,bppShift) |
+                    PDAC_Val(CONF_0_IDC_MODE,vgaBitsPerPixel==8);
 
-  new->dacConfReg1=0;
-  SETBITFIELD(new->dacConfReg1,NV_DAC_CONF_1_VCLK_IMPEDANCE,1);
-  SETBITFIELD(new->dacConfReg1,NV_DAC_CONF_1_PCLK_VCLK_RATIO,pclkVclkRatio);
+  new->dacConfReg1=PDAC_Val(CONF_1_VCLK_IMPEDANCE,1) | 
+                   PDAC_Val(CONF_1_PCLK_VCLK_RATIO,pclkVclkRatio);
 
   new->dacRgbPalCtrl=0;
   new->prmConfig0=0;  
   new->memoryTrace=0;
 
-  new->confReg0=0; 
-  /* We should set resolution here, but it doesn't seem to do anything */
-  SETBITFIELD(new->confReg0,NV_PFB_CONFIG_0_PIXEL_DEPTH,bppShift);
-  SETBITFIELD(new->confReg0,NV_PFB_CONFIG_0_PCLK_VCLK_RATIO,pclkVclkRatio);
-  SETBITFIELD(new->confReg0,NV_PFB_CONFIG_0_RESOLUTION,4);
-  
+  resolution=GetResolutionValue(vga256InfoRec.virtualX);
+  /* If we have an "error" here , just set it to zero. If we are 
+   * not using any acceleration, the value doesn't matter
+   */
+  if(resolution==RESOLUTION_NOT_SUPPORTED) resolution=0;
+
+  new->confReg0=PFB_Val(CONFIG_0_PIXEL_DEPTH,bppShift) | 
+                PFB_Val(CONFIG_0_PCLK_VCLK_RATIO,pclkVclkRatio) | 
+                PFB_Val(CONFIG_0_RESOLUTION,resolution) | 
+                PFB_Val(CONFIG_0_SCANLINE,
+                        (mode->Flags & V_DBLSCAN)==V_DBLSCAN);
+   
   new->startAddr=0;
   /* Calculate the monitor timings */
   new->horFrontPorch=mode->CrtcHSyncStart - mode->CrtcHDisplay+1;
@@ -626,34 +746,70 @@ static Bool NVInit(DisplayModePtr mode)
   new->verSyncWidth=mode->CrtcVSyncEnd - mode->CrtcVSyncStart+1;
   new->verDispWidth=mode->CrtcVDisplay;
 
-  /* Probably need a bit more in here */
-  if(mode->Flags & V_DBLSCAN) {
-    SETBITFIELD(new->confReg0,NV_PFB_CONFIG_0_SCANLINE,1);
+
+  /* The server will initialise the cursor correctly, so we just set it 
+   * all to zero here
+   */
+  new->cursorCtrl=NV_PDAC_CURSOR_CTRL_A_OFF;
+  new->xLo=0;new->xHi=0;new->yLo=0;new->yHi=0;
+ 
+  for(i=0;i<3;i++) {
+    new->colour1[i]=0;new->colour2[i]=0;new->colour3[i]=0;
+  }
+  for(i=0;i<NV_PDAC_CURSOR_PLANE_SIZE;i++) {
+    new->plane0[i]=0;new->plane1[i]=0;
   }
 
   return (TRUE);
 }
 
-/*
- * NVAdjust --
- *
- * This function is used to initialize the SVGA Start Address - the first
- * displayed location in the video memory.  This is used to implement the
- * virtual window.
- */
 static void NVAdjust(int x, int y)
 {
   int bppShift=(vgaBitsPerPixel==8)  ? 1 : 2;
 
   /* Wait for vertical blank */
-  while(GETBITFIELD(nvPort[NV_PFB_CONFIG_0],NV_PFB_CONFIG_0_VERTICAL)==0);
+  while(GetBF(PFB_Read(CONFIG_0),NV_PFB_CONFIG_0_VERTICAL)==0);
 
-  nvPort[NV_PFB_START]=(y * vga256InfoRec.displayWidth + x)*bppShift;
+  PFB_Write(START,(y * vga256InfoRec.displayWidth + x)*bppShift);
  
 }
 
-static int NVValidMode(DisplayModePtr mode,Bool verbose, int flag)
+static int NVValidMode(DisplayModePtr mode,Bool verbose,int flag)
 {
   return (MODE_OK);
 }
+
+#include "nvcursor.h"
+
+extern vgaHWCursorRec vgaHWCursor;
+
+static void NVFbInit(void)
+{
+  if(!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
+    /* Initialise the hardware cursor */
+    vgaHWCursor.Initialized = TRUE;
+    vgaHWCursor.Init = NVCursorInit;
+    vgaHWCursor.Restore = NVRestoreCursor;
+    vgaHWCursor.Warp = NVWarpCursor;
+    vgaHWCursor.QueryBestSize = NVQueryBestSize;
+    if(xf86Verbose) {
+      ErrorF("%s %s: %s: Using hardware cursor\n",XCONFIG_PROBED, 
+             vga256InfoRec.name,vga256InfoRec.chipset);
+    }
+  }
+
+  if(GetResolutionValue(vga256InfoRec.virtualX)==RESOLUTION_NOT_SUPPORTED) {
+    OFLG_SET(OPTION_NOACCEL,&vga256InfoRec.options);
+    ErrorF("%s %s: %s: Acceleration switched off\n",
+             XCONFIG_PROBED,vga256InfoRec.name,vga256InfoRec.chipset);
+    ErrorF("%s %s: %s: Display width must be "
+           "576,640,800,1024,1152,1280 or 1600 pixels\n",
+            XCONFIG_PROBED,vga256InfoRec.name,vga256InfoRec.chipset);
+  }
+    
+  if(!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) {
+    NVAccelInit();
+  }
+}
+
 

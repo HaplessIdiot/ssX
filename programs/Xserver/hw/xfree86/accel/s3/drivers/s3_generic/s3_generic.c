@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.5 1996/02/04 09:05:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.6 1996/12/23 06:42:35 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -25,6 +25,44 @@
 /* $XConsortium: s3_generic.c /main/5 1996/02/21 17:34:05 kaleb $ */
 
 #include "s3.h"
+#include "xf86Version.h"
+
+extern char *xf86ModulePath;
+
+XF86ModuleVersionInfo s3_genericVersRec =
+{
+	"s3_generic.o", 
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}	/* signature, to be patched into the file by a tool */
+};
+
+
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * it name has to be ModuleInit()
+ */
+void
+ModuleInit(data,magic)
+    pointer	* data;
+    INT32	* magic;
+{
+    extern vgaVideoChipRec MGA;
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
+
 
 static Bool S3_GENERICProbe();
 static char *S3_GENERICIdent();
@@ -72,5 +110,6 @@ S3_GENERICProbe()
    }
 
    s3InfoRec.chipset = S3_GENERICIdent(0);
+   LoadModule("libs3pio.a", xf86ModulePath);
    return(TRUE);
 }

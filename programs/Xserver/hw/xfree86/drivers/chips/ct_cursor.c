@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.10 1997/02/23 09:25:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.1 1997/03/06 23:14:59 hohndel Exp $ */
 
 /*
  * Hardware cursor handling. Adapted from cirrus/cir_cursor.c and
@@ -47,35 +47,6 @@
 #include "xf86_OSlib.h"
 #include "vga.h"
 #include "ct_driver.h"
-
-#define ctBLITWAIT \
-   if (ctUseMMIO){ \
-      HW_DEBUG(MR(4)); \
-      if (ctisHiQV32){ \
-         outb(0x3D6,0x20); \
-         { \
-             int timeout; \
-             timeout = 0; \
-	     for (;;) { \
-                if (!(inb(0x3D7)&0x1)) break; \
-                timeout++; \
-                if (timeout == 10000000) { \
-		   unsigned char tmp; \
-                   ErrorF("CHIPS: BitBlt Engine Timeout\n"); \
-		   tmp = inb(0x3D7); \
-		   outb(0x3D7, ((tmp & 0xFD) | 0x2)); \
-		   break; \
-                } \
-	     } \
-	 } \
-      } else { \
-         while(*(volatile unsigned int *)(ctMMIOBase + MR(4))\
-         & 0x00100000){}; \
-      } \
-   } else { \
-      HW_DEBUG(0x4+2); \
-      while (inw(DR(0x4)+2) & 0x10) {}; \
-   };
 
 static Bool CHIPSRealizeCursor();
 static Bool CHIPSUnrealizeCursor();
@@ -233,9 +204,11 @@ CHIPSRealizeCursor(pScr, pCurs)
 
     if (!ctisHiQV32) {
       if (ctisWINGINE) {
+	unsigned char *tmpMsk = pServMsk;
+
 	for (i = 0; i < MAX_CURS; i++) {
 	    for (j = 0; j < MAX_CURS / 8; j++) {
-		unsigned char mask, source;
+		unsigned char mask;
 
 		if (i < h && j < wsrc) {
 		    mask = *pServMsk++;
@@ -259,15 +232,16 @@ CHIPSRealizeCursor(pScr, pCurs)
 	  }
 	 for (i = 0; i < MAX_CURS; i++) {
 	    for (j = 0; j < MAX_CURS / 8; j++) {
-		unsigned char mask, source;
-
+		unsigned char source;
+		unsigned char tmp;
+		
 		if (i < h && j < wsrc) {
 		    source = *pServSrc++;
-
+		    tmp = (unsigned char)(*tmpMsk++);
 		    if (j < MAX_CURS / 8) {
-		      *ram++ = byte_reversed[source];	      /*chip depend */
+		      *ram++ = byte_reversed[(tmp & source)];	/*chip depend */
 #ifdef DEBUG
-			ErrorF("s:%s\n", hex2bmp(source, bmp));
+			ErrorF("s:%s\n", hex2bmp(tmp & source, bmp));
 #endif
 		    }
 		} else {
@@ -278,13 +252,16 @@ CHIPSRealizeCursor(pScr, pCurs)
 	     * if we still have more bytes on this line (j < wsrc),
 	     * we have to ignore the rest of the line.
 	     */
-	    while (j++ < wsrc)
+	    while (j++ < wsrc) {
 		pServSrc++;
+		tmpMsk++;
+            }
 	  }
     } else {
       for (i = 0; i < MAX_CURS; i++) {
 	    for (j = 0; j < MAX_CURS / 8; j++) {
 		unsigned char mask, source;
+		unsigned char tmp;
 
 		if (i < h && j < wsrc) {
 		    mask = *pServMsk++;
@@ -292,7 +269,8 @@ CHIPSRealizeCursor(pScr, pCurs)
 
 		    if (j < MAX_CURS / 8) {
 			*ram++ = ~byte_reversed[mask];	/*chip depend */
-			*ram++ = byte_reversed[source];		/*chip depend */
+			tmp = ~mask ^ source;
+			*ram++ = byte_reversed[(tmp & source)];	/*chip depend */
 #ifdef DEBUG
 			ErrorF("m:%s\n", hex2bmp(mask, bmp));
 			ErrorF("s:%s\n", hex2bmp(source, bmp));
@@ -312,6 +290,7 @@ CHIPSRealizeCursor(pScr, pCurs)
 	  }
     }
     } else {
+        unsigned char *tmpMsk = pServMsk;
 	for (i = 0; i < MAX_CURS; i += 2) {
 	    for (j = 0; j < 2; j++) {
 		for (k = 0; k < MAX_CURS / 8; k++) {
@@ -341,8 +320,7 @@ CHIPSRealizeCursor(pScr, pCurs)
 
 		    if ((i + j) < h && k < wsrc) {
 			source = *pServSrc++;
-
-			*ram++ = byte_reversed[source];		/*chip depend */
+			*ram++ = byte_reversed[((*tmpMsk++) & source)];	/*chip depend */
 #ifdef DEBUG
 			ErrorF("s:%s\n", hex2bmp(source, bmp));
 #endif
@@ -354,8 +332,10 @@ CHIPSRealizeCursor(pScr, pCurs)
 		 * if we still have more bytes on this line (j < wsrc),
 		 * we have to ignore the rest of the line.
 		 */
-		while (k++ < wsrc)
+		while (k++ < wsrc) {
 		    pServSrc++;
+		    tmpMsk++;
+                }
 	    }
 	}
     }
@@ -382,7 +362,6 @@ CHIPSUnrealizeCursor(pScr, pCurs)
 	pCurs->bits->devPriv[pScr->myNum] = 0x0;
     }
     if ((--ctRealizedCursorCount == 0) && xf86VTSema) {/* count down to erase cursor when exit the server */
-	ctBLITWAIT;
 	CHIPSHideCursor();
     }
     return TRUE;
@@ -393,46 +372,23 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
     CursorPtr pCurs;
     int x, y;
 {
-  int i;
+    int i, j;
     unsigned char *cursor_image;
     int index = pScr->myNum;
 
     if (!xf86VTSema)
 	return;
 
-    /* Check if blitter is active. Mustn't touch the video ram till it is finished */
-    ctBLITWAIT;
-
     cursor_image = pCurs->bits->devPriv[index];
     if (ctisWINGINE) {
       outl(DR(0x8),0x20);
-      for (i=0;i<32;i++)
-	{
+      for (i=0;i<64;i++) {
 	  outl(DR(0xC),*(unsigned long *)cursor_image);
 #ifdef DEBUG1
 	  ErrorF("CURSOR: %X\n",*(unsigned long *)cursor_image);
 #endif
 	  (cursor_image)+= sizeof (unsigned long);
-	}
-/*
-      for (;i<128;i++)
-	  outl(DR(0xC),0xFF);
-*/	
-#ifdef DEBUG1
-      ErrorF("\n");
-#endif
-      outl(DR(0x8),0x1000020);
-      for (i=0;i<32;i++)
-	{
-	  outl(DR(0xC),*(unsigned long *)cursor_image);
-#ifdef DEBUG1
-	  ErrorF("CURSOR: %x\n",*(unsigned long *)cursor_image);
-#endif
-	  (cursor_image)+= sizeof (unsigned long);
-	}
-/*      for (;i<256;i++)
-	  outl(DR(0xC),0x00);
-*/
+      }
     } else {
     if (ctLinearSupport) {
 #ifdef DEBUG
@@ -443,8 +399,8 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	    cursor_image, 256);
 #ifdef DEBUG1
 	for(i=0;i<256;i++){
-	  ErrorF("CURSOR: %X\n",*(unsigned char *)cursor_image);
-	  cursor_image += sizeof(unsigned char);
+	  ErrorF("CURSOR: %X\n",*(unsigned long *)cursor_image);
+	  cursor_image += sizeof(unsigned long);
 	}
 #endif
     } else {
@@ -485,7 +441,7 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	outb(0x3D7, (ctCursorAddress >> 8) & 0xFF);
 	outb(0x3D6, 0xA3);
 	outb(0x3D7, (ctCursorAddress >> 16) & 0x3F);
-    } else
+    } else if (!ctisWINGINE) {
       if (!ctUseMMIO) {
 	HW_DEBUG(0xC);
 	outl(DR(0xC), ctCursorAddress);
@@ -493,6 +449,7 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	HW_DEBUG(MR(0xC));
 	MMIOmeml(MR(0xC)) = ctCursorAddress;
       }
+    }
   }
 }
 
@@ -527,8 +484,6 @@ CHIPSLoadCursor(pScr, pCurs, x, y)
 
     /* Position cursor */
     CHIPSMoveCursor(pScr, x, y);
-
-    ctBLITWAIT;
 
     /* Turn it on. */
     CHIPSShowCursor();
@@ -638,6 +593,12 @@ CHIPSRecolorCursor(pScr, pCurs, displayed)
     unsigned long packedcolfg, packedcolbg;
     xColorItem sourceColor, maskColor;
 
+#ifdef DEBUG
+    ErrorF("RecolorCursor: fb: %X fg %X fr:%X\n bb %X bg %X br %X\n",
+	pCurs->foreBlue, pCurs->foreGreen, pCurs->foreRed,
+	pCurs->backBlue, pCurs->backGreen, pCurs->backRed);
+#endif
+
     if (!xf86VTSema)
 	return;
 
@@ -662,31 +623,19 @@ CHIPSRecolorCursor(pScr, pCurs, displayed)
 	outb(0x3D6, 0x80);
 	outb(0x3D7, xr80);	       /* Enable normal palette addressing */
     } else if (ctisWINGINE) {
-	outl(DR(0x9), (((pCurs->backBlue) & 0xff00) >> 8) ||
-	     (((pCurs->backGreen) & 0xff00)) ||
+	outl(DR(0xA), (((pCurs->backBlue) & 0xff00) >> 8) |
+	     (((pCurs->backGreen) & 0xff00)) |
 	     (((pCurs->backRed) & 0xff00) << 8));
-	outl(DR(0xA), (((pCurs->foreBlue) & 0xff00) >> 8) ||
-	     (((pCurs->foreGreen) & 0xff00)) ||
+	outl(DR(0x9), (((pCurs->foreBlue) & 0xff00) >> 8) |
+	     (((pCurs->foreGreen) & 0xff00)) |
 	     (((pCurs->foreRed) & 0xff00) << 8));
     } else {
-#if 0	/* It appears that the colour is always specified in Hi-Color! */
-	if (xf86weight.green == 5) {
-	    packedcolbg = ((pCurs->backRed & 0xf800) >> 1)
-		| ((pCurs->backGreen & 0xf800) >> 6)
-		| ((pCurs->backBlue & 0xf800) >> 11);
-	    packedcolfg = ((pCurs->foreRed & 0xf800) >> 1)
-		| ((pCurs->foreGreen & 0xf800) >> 6)
-		| ((pCurs->foreBlue & 0xf800) >> 11);
-	} else
-#endif
-       {
-	    packedcolfg = ((pCurs->foreRed & 0xf800) >> 0)
-		| ((pCurs->foreGreen & 0xfc00) >> 5)
-		| ((pCurs->foreBlue & 0xf800) >> 11);
-	    packedcolbg = ((pCurs->backRed & 0xf800) >> 0)
-		| ((pCurs->backGreen & 0xfc00) >> 5)
-		| ((pCurs->backBlue & 0xf800) >> 11);
-	}
+	packedcolfg = ((pCurs->foreRed & 0xf800) >> 0)
+	    | ((pCurs->foreGreen & 0xfc00) >> 5)
+	    | ((pCurs->foreBlue & 0xf800) >> 11);
+	packedcolbg = ((pCurs->backRed & 0xf800) >> 0)
+	    | ((pCurs->backGreen & 0xfc00) >> 5)
+	    | ((pCurs->backBlue & 0xf800) >> 11);
 	packedcolfg = (packedcolfg << 16) | packedcolbg;
 	if(!ctUseMMIO) {
 	  HW_DEBUG(0x9);

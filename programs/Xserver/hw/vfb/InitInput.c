@@ -1,5 +1,5 @@
 /* $XConsortium: InitInput.c /main/11 1996/01/15 21:06:13 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitInput.c,v 3.1 1996/06/10 10:03:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitInput.c,v 3.2 1997/02/27 16:45:49 hohndel Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -41,7 +41,7 @@ from the X Consortium.
 #include "lk201kbd.h"
 #include "keysym.h"
 
-#ifdef XFree86LOADER
+#ifdef XFree86Server
 /*
  * when building the loader, we add some code that tries to 
  * switch bit ordering based on xf86bpp; since Xvfb doesn't

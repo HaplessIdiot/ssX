@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3driver.c,v 1.1 1997/03/06 23:16:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3driver.c,v 1.2 1997/03/17 07:18:05 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -118,8 +118,8 @@ int   s3ScissR;
 int   s3BankSize;
 int   s3HDisplay;
 int   s3DisplayWidth = 0;
-short s3ChipRev;
-short s3ChipId;
+unsigned short s3ChipRev;
+unsigned short s3ChipId;
 short s3BiosVendor = UNKNOWN_BIOS;
 short s3RamdacType = UNKNOWN_DAC;
 short s3Weight = RGB8_PSEUDO;

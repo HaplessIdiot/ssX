@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.8 1996/02/04 09:05:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.9 1996/12/23 06:42:28 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -26,6 +26,44 @@
 
 #include "s3.h"
 #include "regs3.h"
+#include "xf86Version.h"
+
+extern char *xf86ModulePath;
+
+XF86ModuleVersionInfo mmio_928VersRec =
+{
+	"mmio_928.o", 
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}	/* signature, to be patched into the file by a tool */
+};
+
+
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * it name has to be ModuleInit()
+ */
+void
+ModuleInit(data,magic)
+    pointer	* data;
+    INT32	* magic;
+{
+    extern vgaVideoChipRec MGA;
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
+
 
 static Bool MMIO_928Probe();
 static char *MMIO_928Ident();
@@ -83,19 +121,18 @@ MMIO_928Probe()
    if (s3InfoRec.chipset) {
       if (StrCaseCmp(s3InfoRec.chipset, MMIO_928Ident(0)))
 	 return(FALSE);
-      else {
-	 s3Mmio928 = TRUE;
-	 return(TRUE);
-      }
    }
 
    if (S3_928_SERIES(s3ChipId)) {
       s3InfoRec.chipset = MMIO_928Ident(0);
-      s3Mmio928 = TRUE;
-      return(TRUE);
    } else {
       return(FALSE);
    }
+
+   s3Mmio928 = TRUE;
+   LoadModule("libs3mmio.a", xf86ModulePath);
+   return(TRUE);
+
 #else
    return(FALSE);
 #endif

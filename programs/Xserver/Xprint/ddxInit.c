@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.4 1997/01/12 10:40:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.5 1997/02/27 16:45:45 hohndel Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -42,7 +42,7 @@ copyright holders.
 #include "servermd.h"
 #include "Xos.h"
 
-#ifdef XFree86LOADER
+#ifdef XFree86Server
 /*
  * when building the loader, we add some code that tries to 
  * switch bit ordering based on xf86bpp; since Xprt doesn't

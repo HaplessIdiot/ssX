@@ -1,13 +1,10 @@
-$XFree86: $
-
-
-
 XFree driver for NVidia NV1 / SGS-Thomson STG2000 v1.0
 ======================================================
 
-This is the first release of a driver for the above chips. This driver 
-has very basic functionality, and does not use the accelerated features of 
-the chip. 
+This driver now accelerates bitblits and filled rectangles. It also support a 
+hardware cursor.
+More graphic acceleration is planned. There is no plan to support the audio 
+functionality of the chip.
 
 Notes
 -----
@@ -20,12 +17,13 @@ config file. Comment out all but the mode you wish to use.
 * The NV1 only supports a 555 RGB Weight in 16 bpp, the hardware does
 not do 565. You must put a Weight 555 in the Display section.
 
-* 24/32 bpp mode is not yet supported.
-
 Known Bugs 
 ---------- 
 
-* Corruption of a single pixel in 8bpp mode when switching VC's
-
 * The driver should force Weight 555 in 16 bpp mode
+
+* The hardware cursor doesn't work if an doublescan mode is selected.
+
+* Screen blanking doesn't work, nor does DPMS.
+
 

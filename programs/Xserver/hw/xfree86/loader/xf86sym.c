@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.14 1997/03/07 00:29:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.15 1997/03/11 13:06:14 hohndel Exp $ */
 
 
 
@@ -59,6 +59,8 @@ extern void STG1703setIndex(unsigned int, unsigned char);
 
 extern int vgaIOBase,vgaCRReg,vgaCRIndex;
 extern unsigned char *xf86rGammaMap,*xf86gGammaMap,*xf86bGammaMap;
+extern char *xf86ModulePath;
+extern LoadModule();
 
 /* XFree86 things */
 
@@ -107,6 +109,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(IBMRGBSetClock)
    SYMFUNC(ICS5342SetClock)
    SYMFUNC(S3TrioSetClock)
+   SYMFUNC(S3Trio64V2SetClock)
    SYMFUNC(S3gendacSetClock)
    SYMFUNC(STG1703SetClock)
    SYMFUNC(ET6000SetClock)
@@ -140,6 +143,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(AllocatePixmapPrivateIndex)
    SYMFUNC(AllocatePixmapPrivate)
    SYMFUNC(LoaderDefaultFunc)
+   SYMFUNC(LoadModule)
+   SYMFUNC(xf86ModulePath)
 
 /*
  * these here are our own interfaces to libc functions
