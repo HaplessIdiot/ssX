@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_P9000.c,v 3.0 1994/05/29 02:06:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_P9000.c,v 3.1 1994/05/30 08:24:30 dawes Exp $ */
 /* Id: XF86_P9000.c,v 4.0 1994/05/28 01:26:10 nygren Exp */
 
 #include "X.h"
@@ -56,14 +56,5 @@ int p9000ValidTokens[] =
   -1
 };
 
-/* Dummy function for PEX in LinkKit */
+#include "xf86ExtInit.h"
 
-#if defined(LINKKIT) && !defined(PEXEXT)
-PexExtensionInit() {}
-#endif
-
-/* Dummy function for XIE in LinkKit */
-
-#if defined(LINKKIT) && !defined(XIE)
-XieInit() {}
-#endif

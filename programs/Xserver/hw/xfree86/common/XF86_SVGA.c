@@ -1,5 +1,5 @@
 /* $XConsortium: XF86_SVGA.c,v 1.1 94/03/28 21:22:11 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_SVGA.c,v 3.0 1994/05/30 08:24:33 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 
@@ -46,14 +46,5 @@ int vga256ValidTokens[] =
   -1
 };
 
-/* Dummy function for PEX in LinkKit */
+#include "xf86ExtInit.h"
 
-#if defined(LINKKIT) && !defined(PEXEXT)
-PexExtensionInit() {}
-#endif
-
-/* Dummy function for XIE in LinkKit */
-
-#if defined(LINKKIT) && !defined(XIE)
-XieInit() {}
-#endif

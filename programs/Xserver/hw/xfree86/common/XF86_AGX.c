@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_AGX.c,v 3.0 1994/06/15 15:42:30 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -60,14 +60,5 @@ int agxValidTokens[] =
   -1
 };
 
-/* Dummy function for PEX in LinkKit */
+#include "xf86ExtInit.h"
 
-#if defined(LINKKIT) && !defined(PEXEXT)
-PexExtensionInit() {}
-#endif
-
-/* Dummy function for XIE in LinkKit */
-
-#if defined(LINKKIT) && !defined(XIE)
-XieInit() {}
-#endif

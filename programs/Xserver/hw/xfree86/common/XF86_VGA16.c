@@ -1,5 +1,5 @@
 /* $XConsortium: XF86_VGA16.c,v 1.1 94/03/28 21:22:17 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_VGA16.c,v 3.0 1994/05/04 14:59:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_VGA16.c,v 3.1 1994/05/30 08:24:34 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 
@@ -75,8 +75,6 @@ int monoValidTokens[] =
 };
 #endif
 
-/* Dummy function for PEX in LinkKit and non-8-bit server */
+#define MONO_SERVER
+#include "xf86ExtInit.h"
 
-PexExtensionInit() {}
-
-XieInit() {}
