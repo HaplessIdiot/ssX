@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.56 1999/04/11 13:10:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.57 1999/04/17 09:08:03 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -589,6 +589,14 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef ExtraManDefs
 #define ExtraManDefs /**/
+#endif
+
+#ifndef LogDirectory
+#if HasVarDirectory
+#define LogDirectory /var/log
+#else
+#define LogDirectory /usr/adm
+#endif
 #endif
 
 #ifndef ConfigSrc
@@ -1203,6 +1211,7 @@ TCLIBDIR = TclLibDir
        FILEMANDIR = FileManDir		/* man pages for config files */
        MISCMANDIR = MiscManDir		/* man pages for miscellaneous files */
      DRIVERMANDIR = DriverManDir	/* man pages for drivers */
+     LOGDIRECTORY = LogDirectory	/* OS location of log files */
 
                AR = ArCmd
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp does not have uniq sym */

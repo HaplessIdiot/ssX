@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.8 1998/06/27 12:53:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.9 1998/10/04 09:38:51 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -212,6 +212,11 @@ OsVendorInit()
 
 void
 OsVendorFatalError()
+{
+}
+
+void
+OsVendorVErrorF(const char *f, va_list args)
 {
 }
 

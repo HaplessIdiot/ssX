@@ -1,7 +1,12 @@
 XFree86 3.9Pl (29 April 1999)
-2783. Unify the "Overlay" options and "SetMclk" options, and remove the
+2785. Add log file support, including separate log and stderr streams, and
+      separate verbosity levels for each stream.  Changed the -verbose option
+      to accept an optional integer argument that specifies the verbosity
+      level, add a -logverbose option and a root-only -logfile option
+      (David Dawes).
+2784. Unify the "Overlay" options and "SetMclk" options, and remove the
       SetMClk Device section keyword (David Dawes).
-2784. Add a "frequency" option value type for use with options processed
+2783. Add a "frequency" option value type for use with options processed
       by xf86ProcessOptions().  This value type consists of a floating point
       number optionally followed by "Hz", "kHz" or "MHz" (David Dawes).
 
@@ -7888,4 +7893,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.734 1999/04/25 15:30:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.735 1999/04/27 12:04:59 dawes Exp $

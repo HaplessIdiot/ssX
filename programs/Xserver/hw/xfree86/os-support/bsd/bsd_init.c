@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.11 1998/12/20 21:59:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.12 1999/02/14 03:20:40 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -184,7 +184,9 @@ xf86OpenConsole()
 		"%s: No console driver found\n\tSupported drivers: %s\n\t%s\n",
 		"xf86OpenConsole", cons_drivers, CHECK_DRIVER_MSG);
 	}
+#if 0 /* stdin is already closed in OsInit() */
 	fclose(stdin);
+#endif
 	xf86Info.consoleFd = fd;
 	xf86Info.screenFd = fd;
 
@@ -370,6 +372,7 @@ xf86OpenSyscons()
 		    /*
 		     * All VTs are in use.  If initialVT was found, use it.
 		     * Otherwise, if stdin is a VT, use that one.
+		     * XXX stdin is already closed, so this won't work.
 		     */
 		    if (initialVT != -1)
 		    {
@@ -498,6 +501,7 @@ xf86OpenPcvt()
 		    /*
 		     * All VTs are in use.  If initialVT was found, use it.
 		     * Otherwise, if stdin is a VT, use that one.
+		     * XXX stdin is already closed, so this won't work.
 		     */
 		    if (initialVT != -1)
 		    {
