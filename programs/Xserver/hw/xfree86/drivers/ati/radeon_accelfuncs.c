@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accelfuncs.c,v 1.3 2002/11/05 17:46:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accelfuncs.c,v 1.4 2003/01/17 19:54:03 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1224,7 +1224,7 @@ FUNC_NAME(RADEONAccelInit)(ScreenPtr pScreen, XAAInfoRecPtr a)
 					   | HARDWARE_PATTERN_SCREEN_ORIGIN);
 
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
-    if (info->ChipFamily > CHIP_FAMILY_RV200)
+    if (info->ChipFamily >= CHIP_FAMILY_RV200)
 	a->Mono8x8PatternFillFlags |= BIT_ORDER_IN_BYTE_MSBFIRST;
     else
 	a->Mono8x8PatternFillFlags |= BIT_ORDER_IN_BYTE_LSBFIRST;

@@ -1,4 +1,5 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 757. Fix typo in Radeon Mono8x8 code (#A.1526, Juergen Keil).
  756. PS/2 mice initialization sequence changed: rerun entire sequence
       when something goes wrong - this needs to be rewritten completely
       after 4.3 is out (Egbert Eich).
@@ -16064,4 +16065,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2480 2003/01/18 07:27:15 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2481 2003/01/18 15:22:20 eich Exp $
