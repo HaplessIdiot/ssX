@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.23 2002/05/13 19:06:22 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.24 2002/05/23 23:01:56 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -261,6 +261,10 @@ XftDrawRect (XftDraw	    *d,
 Bool
 XftDrawSetClip (XftDraw	    *d,
 		Region	    r);
+
+void
+XftDrawSetSubwindowMode (XftDraw    *d,
+			 int	    mode);
 
 /* xftextent.c */
 

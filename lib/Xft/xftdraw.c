@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.17 2002/02/19 07:56:29 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.18 2002/05/13 19:06:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -154,6 +154,7 @@ XftDrawCreate (Display   *dpy,
     draw->core.gc = 0;
     draw->core.use_pixmap = 0;
     draw->clip = 0;
+    draw->subwindow_mode = ClipByChildren;
     XftMemAlloc (XFT_MEM_DRAW, sizeof (XftDraw));
     return draw;
 }
@@ -177,6 +178,7 @@ XftDrawCreateBitmap (Display	*dpy,
     draw->render.pict = 0;
     draw->core.gc = 0;
     draw->clip = 0;
+    draw->subwindow_mode = ClipByChildren;
     XftMemAlloc (XFT_MEM_DRAW, sizeof (XftDraw));
     return draw;
 }
@@ -201,6 +203,7 @@ XftDrawCreateAlpha (Display *dpy,
     draw->render.pict = 0;
     draw->core.gc = 0;
     draw->clip = 0;
+    draw->subwindow_mode = ClipByChildren;
     XftMemAlloc (XFT_MEM_DRAW, sizeof (XftDraw));
     return draw;
 }
@@ -379,12 +382,20 @@ _XftDrawRenderPrepare (XftDraw	*draw)
     if (!draw->render.pict)
     {
 	XRenderPictFormat	    *format;
+	XRenderPictureAttributes    pa;
+	unsigned long		    mask = 0;
 
 	format = _XftDrawFormat (draw);
 	if (!format)
 	    return FcFalse;
+	
+	if (draw->subwindow_mode == IncludeInferiors)
+	{
+	    pa.subwindow_mode = IncludeInferiors;
+	    mask |= CPSubwindowMode;
+	}
 	draw->render.pict = XRenderCreatePicture (draw->dpy, draw->drawable,
-						  format, 0, 0);
+						  format, mask, &pa);
 	if (!draw->render.pict)
 	    return FcFalse;
 	if (draw->clip)
@@ -399,7 +410,14 @@ _XftDrawCorePrepare (XftDraw *draw, XftColor *color)
 {
     if (!draw->core.gc)
     {
-	draw->core.gc = XCreateGC (draw->dpy, draw->drawable, 0, 0);
+	XGCValues	gcv;
+	unsigned long	mask = 0;
+	if (draw->subwindow_mode == IncludeInferiors)
+	{
+	    gcv.subwindow_mode = IncludeInferiors;
+	    mask |= GCSubwindowMode;
+	}
+	draw->core.gc = XCreateGC (draw->dpy, draw->drawable, mask, &gcv);
 	if (!draw->core.gc)
 	    return FcFalse;
 	if (draw->clip)
@@ -771,4 +789,22 @@ XftDrawSetClip (XftDraw	*draw,
 	    XSetClipMask (draw->dpy, draw->core.gc, None);
     }
     return True;
+}
+
+void
+XftDrawSetSubwindowMode (XftDraw *draw, int mode)
+{
+    if (mode == draw->subwindow_mode)
+	return;
+    draw->subwindow_mode = mode;
+    if (draw->render.pict)
+    {
+	XRenderPictureAttributes    pa;
+
+	pa.subwindow_mode = mode;
+	XRenderChangePicture (draw->dpy, draw->render.pict, 
+			      CPSubwindowMode, &pa);
+    }
+    if (draw->core.gc)
+	XSetSubwindowMode (draw->dpy, draw->core.gc, mode);
 }
