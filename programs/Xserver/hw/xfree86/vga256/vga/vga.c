@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.84 1997/03/13 15:12:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.85 1997/03/17 07:18:17 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1276,25 +1276,6 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   /*
    * Inititalize the dragon to color display
    */
-#ifdef XFree86LOADER		/* { */
-  if (vgaBitsPerPixel == 8)
-      if (!xf86ccdXAAScreenInit(pScreen,
-		     (pointer) vgaVirtBase,
-		     vga256InfoRec.virtualX,
-		     vga256InfoRec.virtualY,
-		     displayResolution, displayResolution,
-		     vga256InfoRec.displayWidth))
-          return(FALSE);
-  if((vgaBitsPerPixel == 16) || 
-     (vgaBitsPerPixel == 24) ||
-     (vgaBitsPerPixel == 32))
-      if (!xf86ccdXAAScreenInit(pScreen,
-		     vgaLinearBase,
-		     vga256InfoRec.virtualX,
-		     vga256InfoRec.virtualY,
-		     displayResolution, displayResolution,
-		     vga256InfoRec.displayWidth))
-#else /* XFree86LOADER */	/* } { */
   switch (xf86bpp) {
     case 1:
 #ifndef PC98
@@ -1322,6 +1303,26 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     	break;
     default:
   	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
+#ifdef XFree86LOADER		/* { */
+	if (vgaBitsPerPixel == 8)
+	    if (!xf86ccdXAAScreenInit(pScreen,
+		     (pointer) vgaVirtBase,
+		     vga256InfoRec.virtualX,
+		     vga256InfoRec.virtualY,
+		     displayResolution, displayResolution,
+		     vga256InfoRec.displayWidth))
+	        return(FALSE);
+	if((vgaBitsPerPixel == 16) || 
+	   (vgaBitsPerPixel == 24) ||
+	   (vgaBitsPerPixel == 32))
+	    if (!xf86ccdXAAScreenInit(pScreen,
+		     vgaLinearBase,
+		     vga256InfoRec.virtualX,
+		     vga256InfoRec.virtualY,
+		     displayResolution, displayResolution,
+		     vga256InfoRec.displayWidth))
+	        return(FALSE);
+#else /* XFree86LOADER */	/* } { */
 	if (vgaBitsPerPixel == 8)
 	      if (!xf86XAAScreenInitvga256(pScreen,
 			     (pointer) vgaVirtBase,
@@ -1355,8 +1356,8 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 			     vga256InfoRec.displayWidth))
     		  return(FALSE);
     	break;
-    }
 #endif /* XFree86LOADER */	/* } */
+    }
 
   pScreen->CloseScreen = vgaCloseScreen;
   pScreen->SaveScreen = vgaSaveScreen;
@@ -1479,7 +1480,10 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
             else
             {
                 /* Set the bank, then clear it */
-                vgaPhysPtr=vgaSetWrite(vgaVirtPtr);
+		if (xf86bpp == 4)
+			vgaPhysPtr=vga16SetWrite(vgaVirtPtr);
+		else
+			vgaPhysPtr=vgaSetWrite(vgaVirtPtr);
             }
             xf86memset(vgaPhysPtr,pScreen->blackPixel,vgaSegmentSize);
         }

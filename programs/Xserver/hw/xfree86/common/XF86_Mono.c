@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_Mono.c,v 3.7 1996/02/04 09:05:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_Mono.c,v 3.8 1996/12/23 06:43:07 dawes Exp $ */
 
 
 
@@ -13,11 +13,11 @@
 #include "xf86.h"
 #include "xf86_Config.h"
 
-extern ScrnInfoRec vga2InfoRec;
+extern ScrnInfoRec vga256InfoRec;
 extern ScrnInfoRec monoInfoRec;
 
 #ifdef BUILD_VGA2
-#define SCREEN0 &vga2InfoRec
+#define SCREEN0 &vga256InfoRec
 #else
 #define SCREEN0 NULL
 #endif

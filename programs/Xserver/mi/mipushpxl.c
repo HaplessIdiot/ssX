@@ -46,14 +46,16 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mipushpxl.c,v 5.5 94/04/17 20:27:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.3 1997/02/27 14:00:19 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.4 1997/03/03 10:20:42 hohndel Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "miscstruct.h"
-#if defined(XFree86LOADER)
+#ifdef XFree86LOADER
 #define endtab (*LOADERVAR(endtab))
+#endif
+#ifdef XFree86Server
 extern int xf86bpp;
 #endif
 #include "../mfb/maskbits.h"
@@ -147,7 +149,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 			fInBox = FALSE;
 		    }
 		}
-#ifdef XFree86LOADER
+#ifdef XFree86Server
 	if( xf86bpp >= 8 ) /* LSBFirst */
 		msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) << (1));
 	else
@@ -192,7 +194,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 			fInBox = FALSE;
 		    }
 		}
-#ifdef XFree86LOADER
+#ifdef XFree86Server
 		if( xf86bpp >= 8 ) /* LSBFirst */
 			msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) << (1));
 		else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.7 1996/12/23 06:52:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.8 1997/03/13 15:11:08 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -219,7 +219,7 @@ vga16DoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	h = pbox->y2 - pbox->y1;
 	
 	if( pSrc->type == DRAWABLE_WINDOW )
-		vgaBitBlt( (WindowPtr)pDst,
+		vga16BitBlt( (WindowPtr)pDst,
 			alu, planemask, planemask,
 			pptSrc->x,		/* x0 */
 			pptSrc->y,		/* y0 */

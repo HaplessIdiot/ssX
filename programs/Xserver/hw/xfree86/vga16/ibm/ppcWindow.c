@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcWindow.c,v 3.4 1996/12/23 06:53:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcWindow.c,v 3.5 1997/03/13 15:11:29 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -184,7 +184,7 @@ ppcCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pm = ( 1 << pWin->drawable.depth ) - 1 ;
     for ( ; nbox-- ; pbox++ )
-	vgaBitBlt( pWin, GXcopy, pm, pm, 
+	vga16BitBlt( pWin, GXcopy, pm, pm, 
 		 pbox->x1 + dx, pbox->y1 + dy, 
 		 pbox->x1, pbox->y1, 
 		 pbox->x2 - pbox->x1, pbox->y2 - pbox->y1) ;
@@ -291,7 +291,7 @@ ppcCopyWindowForXYhardware(pWin, ptOldOrg, prgnSrc)
     if ( box_direction < 0 )
 	pbox += nbox - 1 ;
     for ( ; nbox-- ; pbox += box_direction )
-	vgaBitBlt( pWin, GXcopy, pm, pm, 
+	vga16BitBlt( pWin, GXcopy, pm, pm, 
 		 pbox->x1 + dx, pbox->y1 + dy, 
 		 pbox->x1, pbox->y1, 
 		 pbox->x2 - pbox->x1, pbox->y2 - pbox->y1) ;

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mibitblt.c /main/55 1996/08/01 19:25:20 dpw $ */
-/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.1 1996/12/23 07:09:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.2 1997/02/27 14:00:17 hohndel Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -64,6 +64,8 @@ SOFTWARE.
 
 #ifdef XFree86LOADER
 #define memset(a,b,c) xf86memset(a,b,c)
+#endif
+#ifdef XFree86Server
 extern int xf86bpp;
 #endif
 
@@ -352,7 +354,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		 */
 		bit = (pixel >> planeNum) & 1;
 		/* XXX assuming bit order == byte order */
-#ifndef XFree86LOADER
+#ifndef XFree86Server
 #if BITMAP_BIT_ORDER == LSBFirst
 		bit <<= k;
 #else

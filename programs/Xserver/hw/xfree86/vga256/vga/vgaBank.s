@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.7 1996/12/23 06:59:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.8 1997/03/11 13:07:54 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -121,6 +121,9 @@ GLNAME(saveseg):
  * #endif
  * }
  *
+ *
+ * since we now have 1/4/8bpp in the same binary, we need to have
+ * both versions of the function in here
  */
 	ALIGNTEXT4
 	GLOBL GLNAME(vgaSetReadWrite)
@@ -144,6 +147,26 @@ GLNAME(vgaSetReadWrite):
 #ifdef XF86VGA16
 	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
 #endif
+	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
+	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)),EAX)
+ 	RET
+
+	ALIGNTEXT4
+	GLOBL GLNAME(vga16SetReadWrite)
+GLNAME(vga16SetReadWrite):
+	MOV_L	(REGOFF(4,ESP),EAX)
+	PUSH_L	(ECX)
+	PUSH_L	(EDX)
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+	MOV_L	(CONTENT(GLNAME(vgaSegmentShift)),ECX)
+	SHR_L	(CL,EAX)
+	MOV_L	(EAX,CONTENT(GLNAME(writeseg)))
+	MOV_L	(CONTENT(GLNAME(vgaSetReadWriteFunc)),EDX)
+	CALL	(CODEPTR(EDX))
+	POP_L	(EDX)
+	POP_L	(ECX)
+	MOV_L	(REGOFF(4,ESP),EAX)
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
 	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)),EAX)
  	RET
@@ -240,6 +263,9 @@ GLNAME(vgaReadWritePrev):
  * #endif
  * }
  *
+ * since we now have 1/4/8bpp in the same binary, we need to have
+ * both versions of the function in here
+ *
  */
 	ALIGNTEXT4
 	GLOBL	GLNAME(vgaSetRead)
@@ -263,6 +289,26 @@ GLNAME(vgaSetRead):
 #ifdef XF86VGA16
 	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
 #endif
+	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
+	ADD_L	(CONTENT(GLNAME(vgaReadBottom)),EAX)
+ 	RET
+
+	ALIGNTEXT4
+	GLOBL	GLNAME(vga16SetRead)
+GLNAME(vga16SetRead):
+	MOV_L	(REGOFF(4,ESP),EAX)
+	PUSH_L  (ECX)
+	PUSH_L	(EDX)
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+	MOV_L	(CONTENT(GLNAME(vgaSegmentShift)),ECX)
+	SHR_L	(CL,EAX)
+	MOV_L	(EAX,CONTENT(GLNAME(readseg)))
+	MOV_L	(CONTENT(GLNAME(vgaSetReadFunc)),EDX)
+	CALL	(CODEPTR(EDX))
+	POP_L	(EDX)
+	POP_L	(ECX)
+	MOV_L	(REGOFF(4,ESP),EAX)
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
 	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
 	ADD_L	(CONTENT(GLNAME(vgaReadBottom)),EAX)
  	RET
@@ -359,6 +405,9 @@ GLNAME(vgaReadPrev):
  * #endif
  * }
  *
+ * since we now have 1/4/8bpp in the same binary, we need to have
+ * both versions of the function in here
+ *
  */
 	ALIGNTEXT4
 	GLOBL	GLNAME(vgaSetWrite)
@@ -382,6 +431,26 @@ GLNAME(vgaSetWrite):
 #ifdef XF86VGA16
 	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
 #endif
+	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
+	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)),EAX)
+ 	RET
+
+	ALIGNTEXT4
+	GLOBL	GLNAME(vga16SetWrite)
+GLNAME(vga16SetWrite):
+	MOV_L	(REGOFF(4,ESP),EAX)
+	PUSH_L  (ECX)
+	PUSH_L	(EDX)
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+	MOV_L	(CONTENT(GLNAME(vgaSegmentShift)),ECX)
+	SHR_L	(CL,EAX)
+	MOV_L	(EAX,CONTENT(GLNAME(writeseg)))
+	MOV_L	(CONTENT(GLNAME(vgaSetWriteFunc)),EDX)
+	CALL	(CODEPTR(EDX))
+	POP_L	(EDX)
+	POP_L	(ECX)
+	MOV_L	(REGOFF(4,ESP),EAX)
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
 	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)),EAX)
  	RET

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.7 1996/12/23 06:53:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.8 1997/03/13 15:11:30 hohndel Exp $ */
 /* GJA -- span move routines */
 
 
@@ -103,7 +103,7 @@ unsigned char rmasktab[] = {
 	}
 
 
-void vgaBitBlt(pWin,alu,readplanes,writeplanes,x0,y0,x1,y1,w,h)
+void vga16BitBlt(pWin,alu,readplanes,writeplanes,x0,y0,x1,y1,w,h)
 WindowPtr pWin; /* GJA */
 int alu;
 int readplanes; /* unused */
@@ -738,7 +738,7 @@ return;
 }
 
 void
-vgaBitBlt( pWin,alu, readplanes, writeplanes, x0, y0, x1, y1, w, h )
+vga16BitBlt( pWin,alu, readplanes, writeplanes, x0, y0, x1, y1, w, h )
 WindowPtr pWin; /* GJA */
 int alu;
 int readplanes; /* unused */
