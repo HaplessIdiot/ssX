@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.194tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.195tsi Exp $ */
 /* $XdotOrg$ */
 /*
  * SiS driver main code
@@ -6566,11 +6566,35 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	     /* For other chipsets, use the old method */
 
 	     /* Initialise the ModeReg values */
+#ifdef VGA_FIX_SYNC_PULSES
 	     hwp->Flags |= VGA_FIX_SYNC_PULSES;
-    	     if(!vgaHWInit(pScrn, mode)) {
+	     if(!vgaHWInit(pScrn, mode)) {
 	        SISErrorLog(pScrn, "vgaHWInit() failed\n");
 	        return FALSE;
 	     }
+#else
+	     {
+		Bool inited;
+
+		/* Compensate for vgaHWInit() buglet */
+		mode->CrtcHSyncStart -= 8;
+		mode->CrtcHSyncEnd -= 8;
+		mode->CrtcVSyncStart--;
+		mode->CrtcVSyncEnd--;
+
+		inited = vgaHWInit(pScrn, mode);
+
+		mode->CrtcHSyncStart += 8;
+		mode->CrtcHSyncEnd += 8;
+		mode->CrtcVSyncStart++;
+		mode->CrtcVSyncEnd++;
+
+		if(!inited) {
+		    SISErrorLog(pScrn, "vgaHWInit() failed\n");
+		    return FALSE;
+		}
+	     }
+#endif
 
 	     /* Reset our PIOOffset as vgaHWInit might have reset it */
 	     hwp->PIOOffset = pSiS->MyPIOOffset;
