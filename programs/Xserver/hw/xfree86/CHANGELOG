@@ -1,4 +1,6 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 917. Fix a typo in the nsc Imakefile when installing the linkkit 
+      (#A.1624, Stanislav Brabec).
  916. Miscellaneous 64-bit and warning fixes to mfb, xf1bpp and xf4bpp
       (Marc La France).
  915. Fix a bug in beforelight that was preventing it from being restarted 
@@ -16424,4 +16426,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2564 2003/02/18 20:45:05 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2565 2003/02/18 21:29:53 tsi Exp $
