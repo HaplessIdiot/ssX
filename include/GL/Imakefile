@@ -1,5 +1,6 @@
 
 XCOMM Header: /p0/cvs/X39-3D/xc/include/GL/Imakefile,v 1.1 1999/02/26 08:08:09 martin Exp $
+XCOMM $XFree86$
 
 #if BuildGLXLibrary
 GLXHEADERS = gl.h glx.h glxint.h glxmd.h glxproto.h glxtokens.h
