@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.19 2002/02/22 21:45:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.1 2002/02/25 00:45:41 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -52,10 +52,5 @@ NormalDepLibraryTarget(GLcore, $(DONES) $(OBJS), $(OBJS) $(XOBJS))
 NormalLibraryObjectRule()
 #endif
 
-DependTarget()
-
 InstallDriverSDKLibraryModule(GLcore,$(DRIVERSDKMODULEDIR),extensions)
 
-DependSubdirs($(SUBDIRS))
-MakeLintLibSubdirs($(SUBDIRS))
-LintSubdirs($(SUBDIRS))
