@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.54 2003/10/02 13:29:36 eich Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.55 2003/10/26 18:15:38 herrb Exp $
 
 #ifndef OSName
 # define OSName                 Cygwin
@@ -40,6 +40,10 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.54 2003/10/02 13:29:36 eic
 #define HasLibCrypt             YES
 #define HasPutenv               YES
 #define HasPoll			NO
+
+#if (OSMajorVersion > 1) || (OSMajorVersion == 1 && OSMinorVersion >= 5)
+#define HasStrlcat		YES
+#endif
 
 #ifndef UseCygIPC
 # define UseCygIPC		YES
