@@ -1,4 +1,7 @@
 XFree86 4.3.99.904 (xx February 2004)
+ 813. Add FT_Get_Postscript_Name() to the freetype2 export list for OS/2.
+      This is needed for the recent PostScript fontname property fix
+      (Bugzilla #1189, Frank Giessler).
  812. Fix MGA driver for big endian and EXTRADEBUG compilation (derived from
       #6132, Rene Rebe).
  811. Turn off the GetDisplayInfo BIOS call by default and add an option 
@@ -18658,7 +18661,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3149 2004/02/20 00:05:56 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3150 2004/02/20 16:59:45 tsi Exp $
 
 
 
