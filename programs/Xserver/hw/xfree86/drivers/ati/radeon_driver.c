@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.60 2002/07/16 13:31:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.62 2002/09/16 18:05:51 eich Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -116,7 +116,6 @@ static void RADEONDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 
 typedef enum {
     OPTION_NOACCEL,
-    OPTION_NOLINE_ACCEL,
     OPTION_SW_CURSOR,
     OPTION_DAC_6BIT,
     OPTION_DAC_8BIT,
@@ -143,7 +142,6 @@ typedef enum {
 
 const OptionInfoRec RADEONOptions[] = {
     { OPTION_NOACCEL,        "NoAccel",          OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_NOLINE_ACCEL,   "NoLineAccel",      OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_SW_CURSOR,      "SWcursor",         OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_DAC_6BIT,       "Dac6Bit",          OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_DAC_8BIT,       "Dac8Bit",          OPTV_BOOLEAN, {0}, TRUE  },
@@ -3631,9 +3629,6 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 				/* Acceleration setup */
     if (!xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
-	info->EnableLineAccel =
-	    !(xf86ReturnOptValBool
-	      (info->Options, OPTION_NOLINE_ACCEL, FALSE));
 	if (RADEONAccelInit(pScreen)) {
 	    xf86DrvMsg(scrnIndex, X_INFO, "Acceleration enabled\n");
 	    info->accelOn = TRUE;

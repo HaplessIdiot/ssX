@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.15 2002/06/27 22:39:29 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.16 2002/07/02 13:02:48 tsi Exp $ */
 
 #include "radeon.h"
 #include "radeon_reg.h"
@@ -385,7 +385,7 @@ RADEONResetVideo(ScrnInfoPtr pScrn)
     RADEONPortPrivPtr pPriv = info->adaptor->pPortPrivates[0].ptr;
 
 
-    RADEONWaitForIdle(pScrn);
+    RADEONWaitForIdleMMIO(pScrn);
     OUTREG(RADEON_OV0_SCALE_CNTL, 0x80000000);
     OUTREG(RADEON_OV0_AUTO_FLIP_CNTL, 0);   /* maybe */
     OUTREG(RADEON_OV0_EXCLUSIVE_HORZ, 0);
@@ -1017,7 +1017,7 @@ RADEONDisplayVideo(
 
     RADEONWaitForFifo(pScrn, 2);
     OUTREG(RADEON_OV0_REG_LOAD_CNTL, 1);
-    RADEONWaitForIdle(pScrn);
+    RADEONWaitForIdleMMIO(pScrn);
     while(!(INREG(RADEON_OV0_REG_LOAD_CNTL) & (1 << 3)));
 
     RADEONWaitForFifo(pScrn, 14);

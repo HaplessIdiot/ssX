@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dga.c,v 1.9 2002/04/24 16:20:40 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dga.c,v 1.10 2002/05/29 22:48:39 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -234,7 +234,7 @@ Bool RADEONDGAInit(ScreenPtr pScreen)
     info->DGAFuncs.BlitTransRect         = NULL;
 
     if (info->accel) {
-	info->DGAFuncs.Sync              = RADEONWaitForIdle;
+	info->DGAFuncs.Sync              = info->accel->Sync;
 	if (info->accel->SetupForSolidFill &&
 	    info->accel->SubsequentSolidFillRect)
 	    info->DGAFuncs.FillRect      = RADEON_FillRect;

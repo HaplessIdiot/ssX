@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.35 2000/11/18 19:37:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.36 2001/06/03 19:47:59 mvojkovi Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -15,7 +15,7 @@
 21           LINE_PATTERN_MSBFIRST_MSBJUSTIFIED
 20           LINE_PATTERN_MSBFIRST_LSBJUSTIFIED
 19           LINE_PATTERN_POWER_OF_2_ONLY
-18                         .
+18           LINE_LIMIT_COORDS
 17                         .
 16                         .
 ---------               -------
@@ -162,7 +162,8 @@
 #define LINE_PATTERN_LSBFIRST_LSBJUSTIFIED	0x00400000
 #define LINE_PATTERN_MSBFIRST_MSBJUSTIFIED	0x00200000
 #define LINE_PATTERN_MSBFIRST_LSBJUSTIFIED	0x00100000
-#define LINE_PATTERN_POWER_OF_2_ONLY 		0x00080000
+#define LINE_PATTERN_POWER_OF_2_ONLY		0x00080000
+#define LINE_LIMIT_COORDS			0x00040000
 
 /* clipping flags */
 #define HARDWARE_CLIP_SCREEN_TO_SCREEN_COLOR_EXPAND	0x00400000
@@ -314,6 +315,7 @@ typedef struct _XAAInfoRec {
 	unsigned int planemask
    );    
    int SolidLineFlags;  
+   BoxRec SolidLineLimits;
 
    void (*SubsequentSolidTwoPointLine)(
 	ScrnInfoPtr pScrn,
@@ -343,6 +345,7 @@ typedef struct _XAAInfoRec {
    );    
    int DashedLineFlags; 
    int DashPatternMaxLength; 
+   BoxRec DashedLineLimits;
 
    void (*SubsequentDashedTwoPointLine)(
 	ScrnInfoPtr pScrn,
