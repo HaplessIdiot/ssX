@@ -1393,7 +1393,7 @@ SiSMclk(SISPtr pSiS)
  * For VGA2, we share the bandwith equally.
  */
 static int
-SiSEstimateCRT2Clock(ScrnInfoPtr pScrn)
+SiSEstimateCRT2Clock(ScrnInfoPtr pScrn, BOOLEAN IsForMergedFBCRT2)
 {
         SISPtr pSiS = SISPTR(pScrn);
 
@@ -1404,7 +1404,11 @@ SiSEstimateCRT2Clock(ScrnInfoPtr pScrn)
 	      return 65000;
 	   else if(pSiS->VBLCDFlags & VB_LCD_1280x768)
 	      return 81000;
-	   else if(pSiS->VBLCDFlags & (VB_LCD_1280x1024 | VB_LCD_1280x960 | VB_LCD_1400x1050))
+	   else if(pSiS->VBLCDFlags & VB_LCD_1400x1050) {
+	      /* Must fake clock; built-in mode shows 122 for VGA, but uses only 108 for LCD */
+	      if(IsForMergedFBCRT2) return 123000;
+	      else                  return 108000;
+	   } else if(pSiS->VBLCDFlags & (VB_LCD_1280x1024 | VB_LCD_1280x960))
 	      return 108000;
 	   else if(pSiS->VBLCDFlags & VB_LCD_1600x1200)
 	      return 162000;
@@ -1538,7 +1542,7 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 		       301B anyway */
 
 		    crt2used = 0.0;
-		    crt2clock = SiSEstimateCRT2Clock(pScrn);
+		    crt2clock = SiSEstimateCRT2Clock(pScrn, IsForCRT2);
 		    if(crt2clock) {
 		    	crt2used = crt2clock + 2000;
 		    }
