@@ -1,5 +1,5 @@
 /* $XConsortium: imake.c,v 1.87 94/04/17 20:10:28 rws Exp $ */
-/* $XFree86: xc/config/imake/imake.c,v 3.1 1994/05/08 05:13:14 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.2 1994/06/18 16:12:19 dawes Exp $ */
 
 /*****************************************************************************
  *                                                                           *
@@ -191,6 +191,9 @@ extern int	errno;
 
 #ifdef __minix_vmd
 #define USE_FREOPEN		1
+#endif
+
+#if !(defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII))
 #define USE_STRERROR		1
 #endif
 
