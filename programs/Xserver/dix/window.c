@@ -70,7 +70,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.24 2001/12/14 19:59:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.25 2002/02/19 11:09:22 alanh Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -339,6 +339,9 @@ MakeRootTile(pWin)
    for (i = 4; i > 0; i--, from++)
 	for (j = len; j > 0; j--)
 	    *to++ = *from;
+
+   if (blackRoot)
+       bzero(back, sizeof(back));
 
    (*pGC->ops->PutImage)((DrawablePtr)pWin->background.pixmap, pGC, 1,
 		    0, 0, len, 4, 0, XYBitmap, (char *)back);

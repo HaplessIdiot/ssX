@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.81 2002/01/16 20:39:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.82 2002/05/31 18:46:06 dawes Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -492,6 +492,7 @@ void UseMsg()
     ErrorF("-audit int             set audit trail level\n");	
     ErrorF("-auth file             select authorization file\n");	
     ErrorF("bc                     enable bug compatibility\n");
+    ErrorF("-br                    create root window with black background\n");
     ErrorF("+bs                    enable any backing store support\n");
     ErrorF("-bs                    disable any backing store support\n");
     ErrorF("-c                     turns off key-click\n");
@@ -655,6 +656,8 @@ char	*argv[];
 	}
 	else if ( strcmp( argv[i], "bc") == 0)
 	    permitOldBugs = TRUE;
+	else if ( strcmp( argv[i], "-br") == 0)
+	    blackRoot = TRUE;
 	else if ( strcmp( argv[i], "+bs") == 0)
 	    enableBackingStore = TRUE;
 	else if ( strcmp( argv[i], "-bs") == 0)
