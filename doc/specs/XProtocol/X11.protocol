@@ -3,7 +3,7 @@
 .\"
 .\"
 .\"
-.\" $XFree86: xc/doc/specs/XProtocol/X11.protocol,v 1.3tsi Exp $
+.\" $XFree86: xc/doc/specs/XProtocol/X11.protocol,v 1.4 2003/07/09 15:27:26 tsi Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -17,7 +17,7 @@
 
 \s+1\fBX Consortium Standard\fP\s-1
 
-\s+1\fBX Version 11, Release 6.7\fP\s-1
+\s+1\fBX Version 11, Release 6.7 DRAFT\fP\s-1
 .sp 6
 .ce 5
 \s-1Robert W. Scheifler
@@ -124,8 +124,8 @@ Robert W. Scheifler
 X Consortium, Inc.
 .De
 .bp 1
-.EH '\fBX Protocol\fP''\fBX11, Release 6.4\fP'
-.OH '\fBX Protocol\fP''\fBX11, Release 6.4\fP'
+.EH '\fBX Protocol\fP''\fBX11, Release 6.7 DRAFT\fP'
+.OH '\fBX Protocol\fP''\fBX11, Release 6.7 DRAFT\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .NH 1
@@ -8708,6 +8708,16 @@ or an improper address length within a supported family results in a
 .PN Value 
 error.
 .LP
+Note that use of a host address in the ChangeHosts request is deprecated.
+It is only useful when a host has a unique, constant address, a requirement
+that is increasingly unmet as sites adopt dynamically assigned
+addresses, network address translation gateways, IPv6 link local
+addresses, and various other technologies.  It also assumes all users of
+a host share equivalent access rights, and as such has never been
+suitable for many multi-user machine environments.  Instead, more
+secure forms of authentication, such as those based on shared secrets
+or public key encryption, are recommended.
+.LP
 For the Internet family, 
 the address must be four bytes long.
 The address bytes are in standard IP order;
@@ -8732,20 +8742,6 @@ the address must be two bytes long.
 The host number is always the first byte in the address, 
 and the subnet number is always the second byte.
 The server performs no automatic swapping on the address bytes.
-.LP
-The ServerInterpreted family may be of any length up to 65535 bytes.
-The address is simply a string of characters which is interpreted by
-the server.  The server performs no automatic swapping on the address bytes.
-.LP
-Use of a host address in the ChangeHosts request is deprecated.  It is
-only useful when a host has a unique, constant address, a requirement
-that is increasingly unmet as sites adopt dynamically assigned
-addresses, network address translation gateways, IPv6 link local
-addresses, and various other technologies.  It also assumes all users of
-a host share equivalent access rights, and as such has never been
-suitable for many multi-user machine environments.  Instead, more
-secure forms of authentication, such as those based on shared secrets
-or public key encryption, are recommended.
 .sp
 .LP
 .sM

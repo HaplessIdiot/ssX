@@ -1,4 +1,4 @@
-.\" $XFree86$
+.\" $XFree86: xc/doc/specs/X11/abstract.t,v 1.2 2003/07/09 15:27:26 tsi Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -12,7 +12,7 @@
 
 \s+1\fBX Consortium Standard\fP\s-1
 
-\s+1\fBX Version 11, Release 6.7\fP\s-1
+\s+1\fBX Version 11, Release 6.7 DRAFT\fP\s-1
 .sp 6
 .ce 4
 \s-1James Gettys
