@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.89tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.90tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1235,6 +1235,8 @@ xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, ADDRESS Base,
 	return((pointer)base);
 }
 
+#define TMP_SIZE 64
+
 static int
 handlePciBIOS(PCITAG Tag, int basereg,
 		int (*func)(PCITAG, CARD8*, ADDRESS, pointer),
@@ -1244,7 +1246,7 @@ handlePciBIOS(PCITAG Tag, int basereg,
     int i;
     romBaseSource b_reg;
     ADDRESS hostbase;
-    CARD8 tmp[64];
+    CARD8 tmp[TMP_SIZE];
     int ret = 0;
 
     romsave = pciReadLong(Tag, PCI_MAP_ROM_REG);
@@ -1282,8 +1284,7 @@ handlePciBIOS(PCITAG Tag, int basereg,
 
 	hostbase = pciBusAddrToHostAddr(Tag, PCI_MEM, PCIGETROM(romaddr));
 
-	if ((xf86ReadDomainMemory(Tag, hostbase, sizeof(tmp), tmp) !=
-	     sizeof(tmp)) ||
+	if ((xf86ReadDomainMemory(Tag, hostbase, TMP_SIZE, tmp) != TMP_SIZE) ||
 	    (tmp[0] != 0x55) || (tmp[1] != 0xaa) || !tmp[2] ) {
 	  /* Restore the base register if it was changed. */
 	    if (savebase) pciWriteLong(Tag, PCI_MAP_REG_START + (b_reg << 2),
@@ -1350,8 +1351,7 @@ readPciBios(PCITAG Tag, CARD8* tmp, ADDRESS hostbase, pointer args)
 	     image_length, indicator);
 #endif
       hostbase += i_length;
-      if (xf86ReadDomainMemory(Tag, hostbase, sizeof(tmp), tmp)
-	  != sizeof(tmp))
+      if (xf86ReadDomainMemory(Tag, hostbase, TMP_SIZE, tmp) != TMP_SIZE)
 	break;
       continue;
     }
@@ -1433,8 +1433,7 @@ getPciBIOSTypes(PCITAG Tag, CARD8* tmp, ADDRESS hostbase, pointer arg)
 	   image_length, indicator);
 #endif
     hostbase += i_length;
-    if (xf86ReadDomainMemory(Tag, hostbase, sizeof(tmp), tmp)
-	!= sizeof(tmp))
+    if (xf86ReadDomainMemory(Tag, hostbase, TMP_SIZE, tmp) != TMP_SIZE)
       break;
     continue;
   }   while ((tmp[0] == 0x55) && (tmp[1] == 0xAA));
