@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.12 1999/01/23 09:55:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.13 1999/01/31 12:21:49 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -185,6 +185,7 @@
 #define PCI_CHIP_PERMEDIA	0x0004
 #define PCI_CHIP_MX		0x0006
 #define PCI_CHIP_PERMEDIA2	0x0007
+#define PCI_CHIP_GAMMA		0x0008
 #define PCI_CHIP_PERMEDIA2V	0x0009
 
 /* S3 */
@@ -388,6 +389,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_PERMEDIA,	"GLINT Permedia"},
 				{PCI_CHIP_MX,		"GLINT MX"},
 				{PCI_CHIP_PERMEDIA2,	"GLINT Permedia 2"},
+				{PCI_CHIP_GAMMA,	"GLINT Gamma"},
 				{PCI_CHIP_PERMEDIA2V,	"GLINT Permedia 2v"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_S3,	"S3",	{

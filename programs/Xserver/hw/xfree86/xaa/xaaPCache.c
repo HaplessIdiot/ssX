@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.11 1999/01/24 13:59:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.12 1999/01/31 12:22:12 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -12,6 +12,7 @@
 #include "pixmapstr.h"
 #include "windowstr.h"
 #include "regionstr.h"
+#include "servermd.h"
 #include "xf86str.h"
 #include "xaa.h"
 #include "xaalocal.h"
@@ -1895,11 +1896,20 @@ XAAWritePixmapToCacheLinear(
    pGC = GetScratchGC(depth, pScreen);
    ValidateGC((DrawablePtr)pDstPix, pGC);
 
-   /* We assume that there is no leftPad.  I think that's true.
-       For now anyhow.  */
+   if(bpp == BitsPerPixel(depth))
+	(*pGC->ops->PutImage)((DrawablePtr)pDstPix, pGC, depth, x, y, w, 
+					h, 0, ZPixmap, (pointer)src);
+   else {
+	PixmapPtr pSrcPix;
 
-   (*pGC->ops->PutImage)((DrawablePtr)pDstPix, pGC, depth, x, y, w, h, 0,
-					ZPixmap, (pointer)src);
+	pSrcPix = GetScratchPixmapHeader(pScreen, w, h, depth, bpp,
+					srcwidth, (pointer)src);
+	
+	(*pGC->ops->CopyArea)((DrawablePtr)pSrcPix, (DrawablePtr)pDstPix,
+					pGC, 0, 0, w, h, x, y);
+		
+	FreeScratchPixmapHeader(pSrcPix);
+   }
 
    FreeScratchGC(pGC);
    FreeScratchPixmapHeader(pDstPix);

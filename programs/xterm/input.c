@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: input.c /main/21 1996/04/17 15:54:23 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.25 1998/12/20 11:58:33 dawes Exp $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.26 1999/01/23 09:56:21 dawes Exp $
  */
 
 /*
@@ -38,6 +38,7 @@
 #include <X11/Xutil.h>
 
 #include <data.h>
+#include <fontutils.h>
 
 static char *kypd_num = " XXXXXXXX\tXXX\rXXXxxxxXXXXXXXXXXXXXXXXXXXXX*+,-./0123456789XXX=";
 static char *kypd_apl = " ABCDEFGHIJKLMNOPQRSTUVWXYZ??????abcdefghijklmnopqrstuvwxyzXXX";
@@ -144,6 +145,22 @@ Input (
 	reply.a_final = 0;
 	reply.a_nparam = 0;
 	reply.a_inters = 0;
+
+#if OPT_SHIFT_KEYS
+	if (term->misc.shift_keys
+	 && (event->state & ShiftMask) != 0) {
+		switch (keysym) {
+		case XK_KP_Add:
+		    HandleLargerFont((Widget)0, (XEvent *)0, (String *)0, (Cardinal *)0);
+		    return;
+		case XK_KP_Subtract:
+		    HandleSmallerFont((Widget)0, (XEvent *)0, (String *)0, (Cardinal *)0);
+		    return;
+		default:
+		    break;
+		}
+	}
+#endif
 
 	/* VT220 & up: National Replacement Characters */
 	if ((nbytes == 1)

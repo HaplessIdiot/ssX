@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.5 1998/03/20 21:06:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.6 1998/03/27 23:23:38 hohndel Exp $ */
 /*
  * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -686,10 +686,6 @@ Skip8514Probe:
                 if ((ATIChip < ATI_CHIP_264VT) || (IO_Value2 & CFG_VGA_EN_T))
                     ATIVGAAdapter = ATI_ADAPTER_MACH64;
 
-                if ((ATIChipType == 0x4742U) || (ATIChipType == 0x4744U))
-                    ATIBusType = ATI_BUS_AGP;
-                else
-                    ATIBusType = ATI_BUS_PCI;
                 ATIMemoryType = GetBits(IO_Value2, CFG_MEM_TYPE_T);
             }
 
@@ -1047,7 +1043,7 @@ Skip8514Probe:
                         GetBits(IO_Value, CFG_MEM_AP_SIZE) << 22;
 
                 /* Except for PCI, allow user override */
-                if (ATIBusType != ATI_BUS_PCI)
+                if ((ATIBusType != ATI_BUS_PCI) && (ATIBusType != ATI_BUS_AGP))
                 {
                     if (ATIChip >= ATI_CHIP_88800GXE)
                         IO_Value2 = vga256InfoRec.MemBase &
@@ -1507,7 +1503,7 @@ Skip8514Probe:
 
             if ((ATIChip >= ATI_CHIP_264VTB) && (ATIChip != ATI_CHIP_Mach64))
             {
-                if (ATIChip >= ATI_CHIP_264GT3)
+                if (ATIChip >= ATI_CHIP_264GTPRO)
                     DefaultmaxClock = 230000;
                 else if (ATIChip >= ATI_CHIP_264VT3)
                     DefaultmaxClock = 200000;

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.10 1998/10/03 08:41:30 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.11 1998/10/05 13:21:59 dawes Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1
@@ -259,7 +259,7 @@ typedef struct _LockInfoRec *LockInfoPtr;
 struct _XLockPtrs {
     /* used by all, including extensions; do not move */
     void (*lock_display)(
-		LockInfoPtr lip
+		Display *dpy
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 		, char *file
 		, int line

@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.7 1998/09/05 06:36:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.8 1998/11/28 10:43:12 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -189,9 +189,9 @@ Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* Get the programmable clock values */
     	unsigned char m,n,p;
     	unsigned long clockused;
-    	unsigned long fref = 14318;
 	
-    	clockused = PM2DAC_CalculateMNPCForClock(mode->Clock,fref,&m,&n,&p);
+    	clockused = PM2DAC_CalculateMNPCForClock(mode->Clock,pGlint->RefClock,
+								&m,&n,&p);
 	pReg->DacRegs[PM2DACIndexClockAM] = m;
 	pReg->DacRegs[PM2DACIndexClockAN] = n;
 	pReg->DacRegs[PM2DACIndexClockAP] = p|0x08;
@@ -201,10 +201,9 @@ Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* Get the memory clock values */
     	unsigned char m,n,p;
     	unsigned long clockused;
-    	unsigned long fref = 14318;
 	
     	clockused = PM2DAC_CalculateMNPCForClock(pGlint->MemClock*1000,
-								fref,&m,&n,&p);
+						pGlint->RefClock,&m,&n,&p);
 	pReg->DacRegs[PM2DACIndexMemClockM] = m;
 	pReg->DacRegs[PM2DACIndexMemClockN] = n;
 	pReg->DacRegs[PM2DACIndexMemClockP] = p;
@@ -474,4 +473,40 @@ Permedia2HWCursorInit(ScreenPtr pScreen)
     infoPtr->UseHWCursor = Permedia2UseHWCursor;
 
     return(xf86InitCursor(pScreen, infoPtr));
+}
+
+/* I2C Functions */
+
+void
+Permedia2I2CUDelay(I2CBusPtr b, int usec)
+{
+    GLINTPtr pGlint = (GLINTPtr) b->DriverPrivate.ptr;
+    CARD32 ct2 = usec * ((pGlint->MemClock > 0) ? pGlint->MemClock : 100);
+    CARD32 ct1 = GLINT_READ_REG(PMCount);
+
+    while ((GLINT_READ_REG(PMCount) - ct1) < ct2);
+}
+
+void
+Permedia2I2CPutBits(I2CBusPtr b, int scl, int sda)
+{
+    GLINTPtr pGlint = (GLINTPtr) b->DriverPrivate.ptr;
+    int r = (pGlint->DDCBus == b) ? PMDDCData : VSSerialBusControl;
+    CARD32 v = GLINT_READ_REG(r) & ~(ClkOut | DataOut);
+
+    if (scl > 0) v |= ClkOut;
+    if (sda > 0) v |= DataOut;
+
+    GLINT_WRITE_REG(v, r);
+}
+
+void
+Permedia2I2CGetBits(I2CBusPtr b, int *scl, int *sda)
+{
+    GLINTPtr pGlint = (GLINTPtr) b->DriverPrivate.ptr;
+    CARD32 v = GLINT_READ_REG((pGlint->DDCBus == b) ?
+	    PMDDCData : VSSerialBusControl);
+
+    *scl = (v & ClkIn) > 0;
+    *sda = (v & DataIn) > 0;
 }

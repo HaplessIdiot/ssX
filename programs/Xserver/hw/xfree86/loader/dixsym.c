@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.15 1998/11/15 06:20:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.16 1999/01/13 08:31:07 dawes Exp $ */
 
 
 /*
@@ -256,8 +256,9 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(Xrealloc)
   /* WaitFor.c */
   SYMFUNC(ScreenSaverTime)
-  SYMVAR(TimerFree)
-  SYMVAR(TimerSet)
+  SYMFUNC(TimerFree)
+  SYMFUNC(TimerSet)
+  SYMFUNC(TimerCancel)
   /* io.c */
   SYMFUNC(WriteToClient)
   SYMFUNC(SetCriticalOutputPending)

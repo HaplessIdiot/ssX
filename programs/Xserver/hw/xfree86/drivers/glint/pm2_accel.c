@@ -29,7 +29,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.10 1998/12/06 06:08:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.11 1998/12/13 05:32:45 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -75,6 +75,7 @@ static void Permedia2SetupForScreenToScreenCopy2432bpp(ScrnInfoPtr pScrn,
 				int transparency_color);
 static void Permedia2SetClippingRectangle(ScrnInfoPtr pScrn, int x, int y,
 				int w, int h);
+static void Permedia2DisableClipping(ScrnInfoPtr pScrn);
 static void Permedia2SetupForSolidLine(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
 static void Permedia2SubsequentHorVertLine(ScrnInfoPtr pScrn, int x, int y, 
@@ -131,7 +132,7 @@ static void Permedia2PolySegmentThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
 
 #define MAX_FIFO_ENTRIES 256
 
-static void
+void
 Permedia2InitializeEngine(ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
@@ -177,20 +178,20 @@ Permedia2InitializeEngine(ScrnInfoPtr pScrn)
 
     switch (pScrn->bitsPerPixel) {
 	case 8:
-	    GLINT_SLOW_WRITE_REG(0x0, FBReadPixel); /* 8 Bits */
-	    GLINT_SLOW_WRITE_REG(pGlint->pprod,	PMTextureMapFormat);
+	    pGlint->PixelWidth = 0x0; /* 8 Bits */
+	    pGlint->TexMapFormat = pGlint->pprod;
 	    break;
 	case 16:
-	    GLINT_SLOW_WRITE_REG(0x1, FBReadPixel); /* 16 Bits */
-	    GLINT_SLOW_WRITE_REG(pGlint->pprod | 1<<19,	PMTextureMapFormat);
+	    pGlint->PixelWidth = 0x1; /* 16 Bits */
+	    pGlint->TexMapFormat = pGlint->pprod | 1<<19;
 	    break;
 	case 24:
- 	    GLINT_SLOW_WRITE_REG(0x4, FBReadPixel); /* 24 Bits */
-	    GLINT_SLOW_WRITE_REG(pGlint->pprod | 2<<19,	PMTextureMapFormat);
+ 	    pGlint->PixelWidth = 0x4; /* 24 Bits */
+	    pGlint->TexMapFormat = pGlint->pprod | 2<<19;
 	    break;
 	case 32:
-	    GLINT_SLOW_WRITE_REG(0x2, FBReadPixel); /* 32 Bits */
-	    GLINT_SLOW_WRITE_REG(pGlint->pprod | 2<<19,	PMTextureMapFormat);
+	    pGlint->PixelWidth = 0x2; /* 32 Bits */
+	    pGlint->TexMapFormat = pGlint->pprod | 2<<19;
   	    break;
     }
     pGlint->ClippingOn = FALSE;
@@ -205,6 +206,8 @@ Permedia2InitializeEngine(ScrnInfoPtr pScrn)
     pGlint->h = 0;
     pGlint->w = 0;
     pGlint->ROP = 0xFF;
+    GLINT_SLOW_WRITE_REG(pGlint->PixelWidth, FBReadPixel);
+    GLINT_SLOW_WRITE_REG(pGlint->TexMapFormat, PMTextureMapFormat);
     GLINT_SLOW_WRITE_REG(0, RectangleSize);
     GLINT_SLOW_WRITE_REG(0, RectangleOrigin);
     GLINT_SLOW_WRITE_REG(0, dXDom);
@@ -233,6 +236,13 @@ Permedia2AccelInit(ScreenPtr pScreen)
 		     LINEAR_FRAMEBUFFER;
  
     infoPtr->Sync = Permedia2Sync;
+
+    infoPtr->SetClippingRectangle = Permedia2SetClippingRectangle;
+    infoPtr->DisableClipping = Permedia2DisableClipping;
+    infoPtr->ClippingFlags = 	HARDWARE_CLIP_SOLID_LINE |
+				HARDWARE_CLIP_SOLID_FILL |
+				HARDWARE_CLIP_MONO_8x8_FILL |
+				HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY;
 
     infoPtr->SolidFillFlags = 0;
     infoPtr->ScreenToScreenCopyFlags = NO_TRANSPARENCY; 
@@ -389,6 +399,15 @@ Permedia2SetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
     GLINT_WRITE_REG(((y2&0x0fff)<<16)|(x2&0x0fff), ScissorMaxXY);
     GLINT_WRITE_REG(1, ScissorMode);
     pGlint->ClippingOn = TRUE;
+}
+
+static void
+Permedia2DisableClipping(ScrnInfoPtr pScrn)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    GLINT_WAIT(1);
+    GLINT_WRITE_REG(0, ScissorMode);
+    pGlint->ClippingOn = FALSE;
 }
 
 static void

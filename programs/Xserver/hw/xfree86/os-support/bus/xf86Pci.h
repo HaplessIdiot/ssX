@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.6 1998/11/28 10:43:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.7 1999/01/14 13:05:03 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -285,6 +285,9 @@
 
 #define PCI_PPB_MEMBASE_EXTRACT(x)      (((x) << 16) & 0xFFFF0000)
 #define PCI_PPB_MEMLIMIT_EXTRACT(x)     (((x) <<  0) & 0xFFFF0000)
+
+/* Subsystem identification register */
+#define PCI_SUBSYSTEM_ID_REG		0x2c
 
 /* User defined cfg space regs */
 #define PCI_REG_USERCONFIG 		0x40

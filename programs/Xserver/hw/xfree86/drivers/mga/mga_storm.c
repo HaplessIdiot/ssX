@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.41 1999/01/17 10:54:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.42 1999/01/31 12:21:56 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -331,11 +331,9 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 				MGAFillMono8x8PatternRectsTwoPass;
     }
 
-    if(pMga->UsePCIRetry) {
-	infoPtr->ValidatePolyArc = MGAValidatePolyArc;
-	infoPtr->PolyArcMask = GCFunction | GCLineWidth | GCPlaneMask | 
+    infoPtr->ValidatePolyArc = MGAValidatePolyArc;
+    infoPtr->PolyArcMask = GCFunction | GCLineWidth | GCPlaneMask | 
 				GCLineStyle | GCFillStyle;
-    }
 
     if((pScrn->bitsPerPixel == 24) || (pMga->AccelFlags & MGA_NO_PLANEMASK)) {
 	infoPtr->ImageWriteFlags |= NO_PLANEMASK;
@@ -1677,14 +1675,17 @@ MGAValidatePolyArc(
    unsigned long changes,
    DrawablePtr pDraw
 ){
-   MGAPtr pMga = MGAPTR(xf86Screens[pGC->pScreen->myNum]);
+   ScrnInfoPtr pScrn = xf86Screens[pGC->pScreen->myNum];
+   MGAPtr pMga = MGAPTR(pScrn);
 
    if((pMga->AccelFlags & MGA_NO_PLANEMASK) & (pGC->planemask != ~0))
 	return;
 
-   if(!pGC->lineWidth && (pGC->fillStyle == FillSolid) &&
-	(pGC->lineStyle == LineSolid) && 
-	((pGC->alu != GXcopy) || (pGC->planemask != ~0))) {
+   if(!pGC->lineWidth && 
+      (pGC->fillStyle == FillSolid) &&
+      (pGC->lineStyle == LineSolid) &&
+      ((pGC->alu != GXcopy) || (pGC->planemask != ~0) ||
+		(pScrn->bitsPerPixel == 24))) {
 	pGC->ops->PolyArc = MGAPolyArcThinSolid;
    }
 }

@@ -1,4 +1,33 @@
 XFree86 3.9P (7 February 1999)
+2245. Fix a lock_display() prototype problem in Xlibint.h that shows up
+      when building with -DXTHREADS.
+2244. Allow the driver to override XAA's assignment of Screen functions which
+      access the framebuffer (#2453, Mark Vojkovich).
+2243. Fix mga overlay problems related to the software cursor and disable
+      overlays for the G100 since it doesn't support planemasks (#2452,
+      Mark Vojkovich).
+2242. Rectangle outline performance improvements for the shadow framebuffer
+      (2451, Mark Vojkovich).
+2241. Update the ati driver code to include changes in 3.3.3.1.  The driver
+      is not buildable yet (#2450, Marc La France).
+2240. Add support for VT switching to the 8+16 layer (#2449, Mark Vojkovich).
+2239. Export xf86NewSerialNumber() (#2448, Mark Vojkovich).
+2238. Fix XAA pixmap cache in 24bpp when ImageWrites are not available and
+      32bpp pixmaps are used (#2447, Mark Vojkovich).
+2237. Improve performance for zero width arcs at 24bpp in the mga driver
+      (#2446, Mark Vojkovich).
+2236. Optimise 24->32bpp transfers (#2445, Mark Vojkovich).
+2235. Xterm patch #92 (#2444, Thomas Dickey).
+2234. Fix some compiler warnings in libfont (#2443, Marc La France).
+2233. Make building the Speedo and Type1 font code optional (#2443,
+      Marc La France).
+2232. Add DDC2 and Xv support for Permedia 2 to the glint driver (#2442,
+      Michael Schimek).
+2231. Update the glint driver's clipping for the new XAA clip support
+      (#2440, Alan Hourihane).
+2230. Add support for the ELSA Gloria-XXL with Glint Gamma chip (#2440, 2441,
+      Alan Hourihane).
+2229. Fix some ANSI vs non-ANSI prototype mixing in the Speedo code.
 2228. Fix a bug setting the framebuffer pixmap format for depth 4 in
       xf86SetDepthBpp().
 2227. Fix some misuse of the VGA "Palette" enable/disable functions in the
@@ -7234,4 +7263,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.682 1999/02/01 11:55:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.683 1999/02/05 04:49:48 dawes Exp $

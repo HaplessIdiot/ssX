@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.15 1998/12/20 11:58:39 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.16 1999/01/23 09:56:24 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_92">Patch #92 - 1999/2/5 - XFree86 3.9Nz</A>
 <LI><A HREF="#xterm_91">Patch #91 - 1999/1/21 - XFree86 3.9Nw</A>
 <LI><A HREF="#xterm_90">Patch #90 - 1998/12/13 - XFree86 3.9Nq</A>
 <LI><A HREF="#xterm_89">Patch #89 - 1998/11/20 - XFree86 3.9Nm</A>
@@ -135,14 +136,37 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
-<H1><A NAME="xterm_91">Patch #91 - 1999/1/21 - XFree86 3.9Nw</A>/<H1>
+<H1><A NAME="xterm_92">Patch #92 - 1999/2/5 - XFree86 3.9Nz</A></H1>
+<ul>
+	<li>increase buffer size for tgetent (i.e., termcap) to 1500.  This
+	  fixes a problem where <em>screen</em> is built using ncurses or
+	  GNU termcap and <em>xterm</em> is built using the standard termcap
+	  interface.  The former does not limit the termcap size, while the
+	  latter is assumed to be no longer than 1023 characters.  The
+	  <em>screen</em> program's termcap entry is about 1200 characters
+	  long.
+	<li>change update_menu_item() to a function, to simplify debugging.
+	  This also reduces the executable by 4Kb.
+	<li>add control sequences for DECSET 30, 1010, 1011 like rxvt (enable
+	  or disable some features that were only settable via resources or
+	  command line arguments).
+	<li>add control sequence for DECSET 35, which enables/disables the
+	  shifted keypad functions.
+	<li>add support for switching font sizes, by stepping through the
+	  font menu using shifted keypad plus and minue.
+	<li>correct missing initialization of tekInhibit and tekSmall resources.
+	<li>correct ifdefs in charproc.c for XtNgeometry and XtCGeometry
+	  (reported by Bram Moolenaar).
+</ul>
+
+<H1><A NAME="xterm_91">Patch #91 - 1999/1/21 - XFree86 3.9Nw</A></H1>
 <ul>
 	<li>Implement logic to translate input characters which are mapped
 	  when in vt220 National Replacement Character mode (requested by
 	  Tomas Vanhala).
 	<li>Resync configure scripts with my patches to autoconf 2.13
 	<li>Change order of -lXmu and -lXext to accommodate cygwin32
-	  (reported by Vikas Vikas Agnihotri).
+	  (reported by Vikas Agnihotri).
 	<li>Add "-ti" option to set terminal emulation level from command
 	  line rather than via resource.
 	<li>Simplify some of the preprocessor logic using #elif.
@@ -1040,11 +1064,11 @@ minor corrections are added:
 
 This patch is based on analysis by Arfst Ludwig &lt;arfst@luxor.IN-Berlin.DE&gt;,
 who reported:
-<dl>
-<P>
+<blockquote>
 	Setting the following resources xterm (all current versions) receives a
 	segmentation fault on &lt;Btn2Up&gt; after scrolling:
 <PRE>
+
 	  *XTerm*VT100*translations:    #override \
 	      ~Shift~Ctrl&lt;Btn2Up&gt;: insert-selection(PRIMARY, CUT_BUFFER0)\n\
 	      Shift~Ctrl&lt;Btn2Up&gt;:  insert-selection(CLIPBOARD, CUT_BUFFER1)\n\
@@ -1058,7 +1082,7 @@ who reported:
 	handler as first argument is not guaranteed to be a XtermWidget (it can
 	be the ScrollbarWidget).  Instead of accessing the widget's member
 	directly XtDisplay gives the required pointer in a safe way.
-</dl>
+</blockquote>
 I noticed that this was not the only instance (by reading the code, and testing
 with his example), and extended the solution to check the widget-class to
 ensure that it is indeed xterm's widget class before attempting to use it in

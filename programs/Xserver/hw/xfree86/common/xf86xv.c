@@ -4,7 +4,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.4 1998/12/06 06:08:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.5 1999/01/14 13:04:11 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -537,11 +537,11 @@ xf86XVRegetVideo(XvPortRecPrivatePtr portPriv)
 	portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
      portPriv->isOn = FALSE;
   }
-
+#if 0
   /* that's all if it's totally obscured */
   if(!REGION_NOTEMPTY(pScreen, &ClipRegion))
 	goto CLIP_VIDEO_BAILOUT;
-
+#endif
 #if 1
   /* if you wanted VIDEO_NO_CLIPPING hardware to grab the window area
      if part of it was visible rather than just failing, you could 

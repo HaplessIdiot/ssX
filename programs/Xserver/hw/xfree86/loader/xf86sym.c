@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.61 1999/01/26 10:40:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.62 1999/01/31 12:22:04 dawes Exp $ */
 
 /*
  *
@@ -295,6 +295,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86Break2)
    SYMFUNC(xf86Break3)
    SYMFUNC(xf86SetBackingStore)
+   SYMFUNC(xf86NewSerialNumber)
 
    /* xf86Init.c */
    SYMFUNC(xf86GetPixFormat)
@@ -350,6 +351,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86RegisterFreeBoxCallback)
    SYMFUNC(xf86FreeOffscreenArea)
    SYMFUNC(xf86AllocateOffscreenArea)
+   SYMFUNC(xf86ResizeOffscreenArea)
    SYMFUNC(xf86FBManagerRunning)
 
    /* xf86cmap.c */

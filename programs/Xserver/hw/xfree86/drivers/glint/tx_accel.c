@@ -28,7 +28,7 @@
  * 
  * GLINT 500TX / MX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.10 1998/12/13 05:32:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.11 1998/12/20 11:57:46 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -72,6 +72,7 @@ static void TXWriteBitmap(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     				unsigned int planemask);
 static void TXSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, 
 						int x2,int y2);
+static void TXDisableClipping(ScrnInfoPtr pScrn);
 static void TXWritePixmap(ScrnInfoPtr pScrn, int x, int y, int w, int h,
    				unsigned char *src, int srcwidth, int rop,
    				unsigned int planemask, int trans,
@@ -196,6 +197,14 @@ TXAccelInit(ScreenPtr pScreen)
 		     OFFSCREEN_PIXMAPS;
  
     infoPtr->Sync = TXSync;
+
+    infoPtr->SetClippingRectangle = TXSetClippingRectangle;
+    infoPtr->DisableClipping = TXDisableClipping;
+    infoPtr->ClippingFlags = 	HARDWARE_CLIP_SOLID_LINE |
+				HARDWARE_CLIP_SOLID_FILL |
+				HARDWARE_CLIP_MONO_8x8_FILL |
+				HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY;
+
 
     infoPtr->SolidFillFlags = 0;
     infoPtr->SetupForSolidFill = TXSetupForFillRectSolid;
@@ -386,6 +395,17 @@ TXSetClippingRectangle(
     GLINT_WRITE_REG(y2<<16|x2, ScissorMaxXY);
     GLINT_WRITE_REG(1, ScissorMode); /* Enable Scissor Mode */
     pGlint->ClippingOn = TRUE;
+}
+
+static void
+TXDisableClipping(
+	ScrnInfoPtr pScrn
+){
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+
+    GLINT_WAIT(1);
+    GLINT_WRITE_REG(0, ScissorMode); /* Disable Scissor Mode */
+    pGlint->ClippingOn = FALSE;
 }
 
 static void

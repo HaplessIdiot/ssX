@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.87 1999/01/17 11:25:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.88 1999/01/26 10:40:14 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -167,6 +167,8 @@ void xf86Break1(void);
 void xf86Break2(void);
 void xf86Break3(void);
 void xf86SetBackingStore(ScreenPtr pScreen);
+int xf86NewSerialNumber(WindowPtr p, pointer unused);
+
 
 /* xf86Init.c */
 

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.73 1999/01/31 13:45:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.74 1999/02/01 11:55:59 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1036,7 +1036,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Has SDRAM\n");
     }
     if (xf86IsOptionSet(MGAOptions, OPTION_8_PLUS_24)) {
-	if(pScrn->bitsPerPixel == 32) {
+	if(pMga->Chipset == PCI_CHIP_MGAG100) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Option \"8Plus24\" is not supported by the G100\n");
+	} else if(pScrn->bitsPerPixel == 32) {
 	    pMga->Overlay8Plus24 = TRUE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 				"PseudoColor overlay enabled\n");
@@ -2013,11 +2016,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
 
-    if(pMga->Overlay8Plus24) {
-	if(!xf86Overlay8Plus32Init(pScreen))
-	    return FALSE;
-    }
-
     /* Initialize software cursor.  
 	Must precede creation of the default colormap */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
@@ -2028,6 +2026,11 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if(!MGAHWCursorInit(pScreen))
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 		"Hardware cursor initialization failed\n");
+    }
+
+    if(pMga->Overlay8Plus24) {
+	if(!xf86Overlay8Plus32Init(pScreen))
+	    return FALSE;
     }
 
     if(pMga->ShadowFB)

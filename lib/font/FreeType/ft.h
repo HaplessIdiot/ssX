@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.8 1998/10/06 06:59:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.9 1999/01/31 04:59:21 dawes Exp $ */
 
 #undef DEBUG_TRUETYPE
 
@@ -76,7 +76,6 @@ void FreeTypeRegisterFontFileFunctions(void);
 /* ftenc.c */
 
 int ttf_pick_cmap(char*, int, char*, TT_Face, struct ttf_mapping *);
-unsigned ttf_recode(unsigned, struct ttf_encoding*);
 int ftstrcasecmp(const char *s1, const char *s2);
 
 /* ftutil.c */

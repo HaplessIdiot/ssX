@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.25 1999/01/26 10:40:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.26 1999/02/05 04:49:54 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -755,7 +755,7 @@ xf86SetBlackWhitePixels(ScreenPtr pScreen)
  * to force revalidation of all the GC in the window tree of each screen.
  */
 /*ARGSUSED*/
-static int
+int
 xf86NewSerialNumber(WindowPtr p, pointer unused)
 {
     p->drawable.serialNumber = NEXT_SERIAL_NUMBER;

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.134 1998/12/20 11:56:26 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.135 1999/02/01 11:55:48 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -281,9 +281,22 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.134 1998/12/20 11:56:26 dawes Exp 
  */
 
 /*
- * To disable support for TrueType fonts, uncomment this.
+ * To disable support for Speedo fonts, uncomment this.
+ *
+#define BuildSpeedo		NO
+ */
+
+/*
+ * To disable support for Type1 fonts, uncomment this.
+ *
+#define BuildType1		NO
+ */
+
+/*
+ * To disable support for TrueType fonts, uncomment these.
  *
 #define BuildFreeType		NO
+#define BuildXTT		NO
  */
 
 /*

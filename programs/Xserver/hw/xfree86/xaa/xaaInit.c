@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.13 1999/01/26 05:54:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.14 1999/01/31 12:22:10 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -133,30 +133,46 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     pScreenPriv->AccelInfoRec = infoRec;
     infoRec->ScratchGC.pScreen = pScreen;
 
+    
+    if(!infoRec->GetImage)
+	infoRec->GetImage = XAAGetImage;
+    if(!infoRec->GetSpans)
+	infoRec->GetSpans = XAAGetSpans;
+    if(!infoRec->PaintWindowBackground)
+	infoRec->PaintWindowBackground = XAAPaintWindow;
+    if(!infoRec->PaintWindowBorder)
+	infoRec->PaintWindowBorder = XAAPaintWindow;
+    if(!infoRec->CopyWindow)
+	infoRec->CopyWindow = XAACopyWindow;
+    if(!infoRec->SaveAreas)
+	infoRec->SaveAreas = XAASaveAreas;
+    if(!infoRec->RestoreAreas)
+	infoRec->RestoreAreas = XAARestoreAreas;
+
     pScreenPriv->CreateGC = pScreen->CreateGC;
     pScreen->CreateGC = XAACreateGC;
     pScreenPriv->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = XAACloseScreen;
     pScreenPriv->GetImage = pScreen->GetImage;
-    pScreen->GetImage = XAAGetImage;
+    pScreen->GetImage = infoRec->GetImage;
     pScreenPriv->GetSpans = pScreen->GetSpans;
-    pScreen->GetSpans = XAAGetSpans;
+    pScreen->GetSpans = infoRec->GetSpans;
     pScreenPriv->PaintWindowBackground = pScreen->PaintWindowBackground;
-    pScreen->PaintWindowBackground =  XAAPaintWindow;
+    pScreen->PaintWindowBackground = infoRec->PaintWindowBackground;
     pScreenPriv->PaintWindowBorder = pScreen->PaintWindowBorder;
-    pScreen->PaintWindowBorder =  XAAPaintWindow;
+    pScreen->PaintWindowBorder = infoRec->PaintWindowBorder;
     pScreenPriv->CopyWindow = pScreen->CopyWindow;
-    pScreen->CopyWindow = XAACopyWindow;
+    pScreen->CopyWindow = infoRec->CopyWindow;
     pScreenPriv->CreatePixmap = pScreen->CreatePixmap;
     pScreen->CreatePixmap = XAACreatePixmap;
     pScreenPriv->DestroyPixmap = pScreen->DestroyPixmap;
     pScreen->DestroyPixmap = XAADestroyPixmap;
     pScreenPriv->BackingStoreFuncs.RestoreAreas = 
 			pScreen->BackingStoreFuncs.RestoreAreas;
-    pScreen->BackingStoreFuncs.RestoreAreas = XAARestoreAreas;
+    pScreen->BackingStoreFuncs.RestoreAreas = infoRec->RestoreAreas;
     pScreenPriv->BackingStoreFuncs.SaveAreas = 
 			pScreen->BackingStoreFuncs.SaveAreas;
-    pScreen->BackingStoreFuncs.SaveAreas = XAASaveAreas;
+    pScreen->BackingStoreFuncs.SaveAreas = infoRec->SaveAreas;
 
     pScreenPriv->EnterVT = pScrn->EnterVT;
     pScrn->EnterVT = XAAEnterVT; 

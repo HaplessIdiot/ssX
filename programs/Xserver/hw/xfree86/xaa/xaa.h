@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.17 1999/01/23 09:56:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.18 1999/01/31 12:22:09 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -1207,6 +1207,17 @@ typedef struct _XAAInfoRec {
    XAACacheInfoRec ScratchCacheInfoRec;
 
    Bool NeedToSync;
+
+   /* These can be supplied to override the defaults */
+
+   GetImageProcPtr GetImage;
+   GetSpansProcPtr GetSpans;
+   PaintWindowBackgroundProcPtr PaintWindowBackground;
+   PaintWindowBorderProcPtr PaintWindowBorder;
+   CopyWindowProcPtr CopyWindow;
+   BackingStoreSaveAreasProcPtr SaveAreas;
+   BackingStoreRestoreAreasProcPtr RestoreAreas;
+
 } XAAInfoRec, *XAAInfoRecPtr;
 
 

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/register.c,v 1.7 1998/10/06 06:59:33 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/register.c,v 1.8 1998/12/13 05:32:32 dawes Exp $ */
 
 /*
  * This is in a separate source file so that small programs
@@ -44,8 +44,12 @@ FontFileRegisterFpeFunctions()
 #ifndef LOWMEMFTPT
 
 #ifndef CRAY
+#ifdef BUILD_SPEEDO
     SpeedoRegisterFontFileFunctions ();
+#endif
+#ifdef BUILD_TYPE1
     Type1RegisterFontFileFunctions();
+#endif
 #endif
 #ifdef BUILD_FREETYPE
     FreeTypeRegisterFontFileFunctions();

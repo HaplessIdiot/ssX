@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.199 1999/01/31 02:24:37 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.200 1999/01/31 12:21:12 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -510,8 +510,16 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 
 /*
- * Include TrueType fonts support
+ * Include fonts support
  */
+#ifndef BuildSpeedo
+#define BuildSpeedo		YES
+#endif
+
+#ifndef BuildType1
+#define BuildType1		YES
+#endif
+
 #ifndef BuildFreeType
 #define BuildFreeType		YES
 #endif
