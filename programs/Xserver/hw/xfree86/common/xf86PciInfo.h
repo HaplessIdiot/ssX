@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.141 2003/01/16 16:09:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.142 2003/01/17 19:54:02 martin Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -405,6 +405,7 @@
 #define PCI_CHIP_IMSTT3D		0x9135
 
 /* VIA Technologies */
+#define PCI_CHIP_APOLLOVP1		0x0585
 #define PCI_CHIP_APOLLOPRO133X		0x0691
 
 /* Alliance Semiconductor */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.15tsi Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -669,6 +669,7 @@ static struct {
 } host_bridges[] = {
     { DEVID(ALI_2,	M1541),			128},
     { DEVID(VIA,	APOLLOPRO133X),		64},
+    { DEVID(VIA,	APOLLOVP1),		64},
     { DEVID(INTEL,	430HX_BRIDGE),		16},
     { DEVID(INTEL,	440BX_BRIDGE),		32},
     { PCI_NOT_FOUND,				MAX_PCI_BUSES}

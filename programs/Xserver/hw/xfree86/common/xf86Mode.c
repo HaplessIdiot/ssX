@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.60 2002/11/07 18:04:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.62tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -364,7 +364,7 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
     Bool allowDiv2 = (strategy & LOOKUP_CLKDIV2) != 0;
     Bool haveBuiltin;
 
-    strategy &= ~LOOKUP_CLKDIV2;
+    strategy &= ~(LOOKUP_CLKDIV2 | LOOKUP_OPTIONAL_TOLERANCES);
 
     /* Some sanity checking */
     if (scrp == NULL || scrp->modePool == NULL ||
