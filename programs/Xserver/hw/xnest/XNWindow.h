@@ -12,6 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
 
 #ifndef XNESTWINDOW_H
 #define XNESTWINDOW_H
