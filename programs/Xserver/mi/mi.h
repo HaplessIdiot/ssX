@@ -1,5 +1,5 @@
 /* $XConsortium: mi.h,v 1.17 94/04/17 20:27:10 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/mi/mi.h,v 3.0 1994/06/18 16:30:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mi.h,v 3.1 1997/01/14 22:22:51 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -541,11 +541,6 @@ extern Bool miScreenDevPrivateInit(
 #endif
 );
 
-#ifndef _XTYPEDEF_MIBSFUNCPTR
-typedef struct _miBSFuncRec *miBSFuncPtr;
-#define _XTYPEDEF_MIBSFUNCPTR
-#endif
-
 extern Bool miScreenInit(
 #if NeedFunctionPrototypes
     ScreenPtr /*pScreen*/,
@@ -560,14 +555,25 @@ extern Bool miScreenInit(
     DepthPtr /*depths*/,
     VisualID /*rootVisual*/,
     int /*numVisuals*/,
-    VisualPtr /*visuals*/,
-    miBSFuncPtr /*bsfuncs*/
+    VisualPtr /*visuals*/
 #endif
 );
 
 extern int miAllocateGCPrivateIndex(
 #if NeedFunctionPrototypes
     void
+#endif
+);
+
+extern PixmapPtr miGetScreenPixmap(
+#if NeedFunctionPrototypes
+    ScreenPtr pScreen
+#endif
+);
+
+extern void miSetScreenPixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr pPix
 #endif
 );
 

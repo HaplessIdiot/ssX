@@ -1,5 +1,5 @@
 /* $XConsortium: cfb.h,v 5.37 94/04/17 20:28:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.11 1998/03/21 04:19:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.12 1998/03/21 14:23:15 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -1034,6 +1034,19 @@ extern Bool cfbScreenInit(
     int /*width*/
 #endif
 );
+
+extern PixmapPtr cfbGetScreenPixmap(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern void cfbSetScreenPixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPix*/
+#endif
+);
+
 /* cfbseg.c */
 
 extern void cfbSegmentSS(
@@ -1416,16 +1429,10 @@ extern void cfbZeroPolyArcSS8Xor(
 #define CFB_NEED_SCREEN_PRIVATE
 
 extern int cfbScreenPrivateIndex;
-#define cfbGetScreenPixmap(s)	((PixmapPtr) (s)->devPrivates[cfbScreenPrivateIndex].ptr)
-#else
-#define cfbGetScreenPixmap(s)	((PixmapPtr) (s)->devPrivate)
 #endif
 
-#ifdef PIXMAP_PER_WINDOW
-#define cfbGetWindowPixmap(d)	((PixmapPtr) ((WindowPtr) d)->devPrivates[frameWindowPrivateIndex].ptr)
-#else
-#define cfbGetWindowPixmap(d) cfbGetScreenPixmap((d)->pScreen)
-#endif
+#define cfbGetWindowPixmap(d) \
+    ((* ((DrawablePtr)(d))->pScreen->GetWindowPixmap)((WindowPtr)(d)))
 
 #define cfbGetTypedWidth(pDrawable,wtype) (\
     (((pDrawable)->type != DRAWABLE_PIXMAP) ? \

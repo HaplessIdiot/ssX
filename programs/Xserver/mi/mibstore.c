@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.62 94/04/17 20:27:23 dpw Exp $ */
+/* $XConsortium: mibstore.c,v 5.63 94/10/21 20:25:08 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -42,6 +42,8 @@ of this software for any purpose.  It is provided "as is" without express or
 implied warranty.
 
 ******************************************************************/
+
+/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.0tsi Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -283,13 +285,13 @@ static GCFuncs miBSCheapGCFuncs = {
 
 /*
  * called from device screen initialization proc.  Gets a GCPrivateIndex
- * and wraps appropriate per-screen functions
+ * and wraps appropriate per-screen functions.  pScreen->BackingStoreFuncs
+ * must be previously initialized.
  */
 
 void
-miInitializeBackingStore (pScreen, funcs)
+miInitializeBackingStore (pScreen)
     ScreenPtr	pScreen;
-    miBSFuncPtr	funcs;
 {
     miBSScreenPtr    pScreenPriv;
 
@@ -313,7 +315,6 @@ miInitializeBackingStore (pScreen, funcs)
     pScreenPriv->ChangeWindowAttributes = pScreen->ChangeWindowAttributes;
     pScreenPriv->CreateGC = pScreen->CreateGC;
     pScreenPriv->DestroyWindow = pScreen->DestroyWindow;
-    pScreenPriv->funcs = funcs;
 
     pScreen->CloseScreen = miBSCloseScreen;
     pScreen->GetImage = miBSGetImage;
@@ -838,7 +839,7 @@ miBSCreateGCPrivate (pGC)
     pPriv->pBackingGC = NULL;
     pPriv->guarantee = GuaranteeNothing;
     pPriv->serialNumber = 0;
-    pPriv->stateChanges = (1 << GCLastBit + 1) - 1;
+    pPriv->stateChanges = (1 << (GCLastBit + 1)) - 1;
     pPriv->wrapOps = pGC->ops;
     pPriv->wrapFuncs = pGC->funcs;
     pGC->funcs = &miBSGCFuncs;
@@ -2147,6 +2148,10 @@ miBSPushPixels(pGC, pBitMap, pDst, w, h, x, y)
     PROLOGUE(pGC);
 
     (* pGC->ops->PushPixels)(pGC, pBitMap, pDst, w, h, x, y);
+    if (pGC->miTranslate) {
+ 	x -= pDst->x;
+ 	y -= pDst->y;
+    }
     (* pBackingGC->ops->PushPixels)(pBackingGC, pBitMap,
 			       pBackingDrawable, w, h,
 			       x - pBackingStore->x, y - pBackingStore->y);
@@ -2783,9 +2788,6 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 	 */
 	if (pBackingStore->status != StatusVirtual)
 	{
-	    miBSScreenPtr	pScreenPriv;
-
-	    pScreenPriv = (miBSScreenPtr) pScreen->devPrivates[miBSScreenIndex].ptr;
 	    if (!pBackingStore->pBackingPixmap)
 		miCreateBSPixmap (pWin, &oldExtents);
 	    else
@@ -2800,8 +2802,9 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 		    x += pBackingStore->x;
 		    y += pBackingStore->y;
 		}
-		(* pScreenPriv->funcs->SaveAreas) (pBackingStore->pBackingPixmap,
-						   pObscured, x - dx, y - dy, pWin);
+		(* pScreen->BackingStoreFuncs.SaveAreas)
+		    (pBackingStore->pBackingPixmap, pObscured,
+		     x - dx, y - dy, pWin);
 	    }
 	}
 	REGION_TRANSLATE(pScreen, pObscured, x, y);
@@ -2867,21 +2870,17 @@ miBSRestoreAreas(pWin, prgnExposed)
 
 	if (REGION_NOTEMPTY( pScreen, prgnRestored))
 	{
-	    miBSScreenPtr	pScreenPriv;
-
 	    REGION_SUBTRACT( pScreen, prgnSaved, prgnSaved, prgnExposed);
 	    REGION_SUBTRACT( pScreen, prgnExposed, prgnExposed, prgnRestored);
 
 	    /*
 	     * Do the actual restoration
 	     */
-
-	    pScreenPriv = (miBSScreenPtr)
-		pScreen->devPrivates[miBSScreenIndex].ptr;
-	    (* pScreenPriv->funcs->RestoreAreas) (pBackingPixmap,
+	    (* pScreen->BackingStoreFuncs.RestoreAreas) (pBackingPixmap,
 					  prgnRestored,
 					  pWin->drawable.x + pBackingStore->x,
-					  pWin->drawable.y + pBackingStore->y, pWin);
+					  pWin->drawable.y + pBackingStore->y,
+					  pWin);
 	    /*
 	     * if the saved region is completely empty, dispose of the
 	     * backing pixmap, otherwise, retranslate the saved
@@ -3453,17 +3452,13 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
 
 	if (pGC->clientClipType == CT_PIXMAP)
 	{
-	    miBSScreenPtr   pScreenPriv;
-
 	    (*pBackingGC->funcs->CopyClip)(pBackingGC, pGC);
 	    REGION_TRANSLATE(pGC->pScreen, backingCompositeClip,
 					-pGC->clipOrg.x, -pGC->clipOrg.y);
 	    vals[0] = pGC->clipOrg.x - pWindowPriv->x;
 	    vals[1] = pGC->clipOrg.y - pWindowPriv->y;
 	    DoChangeGC(pBackingGC, GCClipXOrigin|GCClipYOrigin, vals, 0);
-	    pScreenPriv = (miBSScreenPtr) 
-		pGC->pScreen->devPrivates[miBSScreenIndex].ptr;
-	    (* pScreenPriv->funcs->SetClipmaskRgn)
+	    (* pGC->pScreen->BackingStoreFuncs.SetClipmaskRgn)
 		(pBackingGC, backingCompositeClip);
 	    REGION_DESTROY( pGC->pScreen, backingCompositeClip);
 	}

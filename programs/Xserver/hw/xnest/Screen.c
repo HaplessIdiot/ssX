@@ -1,5 +1,5 @@
 /* $XConsortium: Screen.c /main/8 1996/12/02 10:21:46 lehors $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.2 1996/01/24 22:04:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.3 1996/12/23 07:09:19 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -180,7 +180,7 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
 	       visuals[xnestDefaultVisualIndex].nplanes, /* rootDepth */
 	       numDepths, depths,
 	       visuals[xnestDefaultVisualIndex].vid, /* root visual */
-	       numVisuals, visuals, NULL);
+	       numVisuals, visuals);
 
   pScreen->mmWidth = xnestWidth * DisplayWidthMM(xnestDisplay, 
 		       DefaultScreen(xnestDisplay)) / 

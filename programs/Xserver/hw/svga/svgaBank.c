@@ -23,7 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/svga/svgaBank.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/svga/svgaBank.c,v 1.3 1998/03/20 21:05:12 hohndel Exp $ */
 
 #include "svga.h"
 #include "cfb.h"
@@ -1586,12 +1586,12 @@ svgaBankRestoreAreas(
   REGION_UNINIT(pScreen, &rgnClipped);
 }
 
-miBSFuncRec svgaBankBSFuncRec = {
+BSFuncRec svgaBankBSFuncRec = {
     svgaBankSaveAreas,
     svgaBankRestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 

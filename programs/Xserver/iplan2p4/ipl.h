@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/ipl.h,v 3.1 1996/12/31 04:18:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/ipl.h,v 3.2 1998/03/20 21:08:07 hohndel Exp $ */
 /* $XConsortium: ipl.h,v 5.37 94/04/17 20:28:38 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -1027,6 +1027,19 @@ extern Bool iplScreenInit(
     int /*width*/
 #endif
 );
+
+extern PixmapPtr iplGetScreenPixmap(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern void iplSetScreenPixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPix*/
+#endif
+);
+
 /* iplseg.c */
 
 extern void iplSegmentSS(
@@ -1409,16 +1422,10 @@ extern void iplZeroPolyArcSS8Xor(
 #define CFB_NEED_SCREEN_PRIVATE
 
 extern int iplScreenPrivateIndex;
-#define iplGetScreenPixmap(s)	((PixmapPtr) (s)->devPrivates[iplScreenPrivateIndex].ptr)
-#else
-#define iplGetScreenPixmap(s)	((PixmapPtr) (s)->devPrivate)
 #endif
 
-#ifdef PIXMAP_PER_WINDOW
-#define iplGetWindowPixmap(d)	((PixmapPtr) ((WindowPtr) d)->devPrivates[frameWindowPrivateIndex].ptr)
-#else
-#define iplGetWindowPixmap(d) iplGetScreenPixmap((d)->pScreen)
-#endif
+#define iplGetWindowPixmap(d) \
+    ((* ((DrawablePtr)(d))->pScreen->GetWindowPixmap)((WindowPtr)(d)))
 
 #define iplGetTypedWidth(pDrawable,wtype) (\
     (((pDrawable)->type != DRAWABLE_PIXMAP) ? \

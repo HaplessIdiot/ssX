@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/mfb/mfbmap.h,v 1.3 1997/03/28 09:42:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/mfb/mfbmap.h,v 1.4 1997/04/12 13:46:09 hohndel Exp $ */
 
 /* mfbmap.h */
 
@@ -42,6 +42,7 @@
 #define mfbGCPrivateIndex  vga16_mfbGCPrivateIndex
 #define mfbGetImage  vga16_mfbGetImage
 #define mfbGetSpans  vga16_mfbGetSpans
+#define mfbGetWindowPixmap  vga16_mfbGetWindowPixmap
 #define mfbHorzS  vga16_mfbHorzS
 #define mfbImageGlyphBltBlack  vga16_mfbImageGlyphBltBlack
 #define mfbImageGlyphBltWhite  vga16_mfbImageGlyphBltWhite
@@ -76,6 +77,7 @@
 #define mfbSegmentSS  vga16_mfbSegmentSS
 #define mfbSetScanline  vga16_mfbSetScanline
 #define mfbSetSpans  vga16_mfbSetSpans
+#define mfbSetWindowPixmap  vga16_mfbSetWindowPixmap
 #define mfbSolidBlackArea  vga16_mfbSolidBlackArea
 #define mfbSolidInvertArea  vga16_mfbSolidInvertArea
 #define mfbSolidPP  vga16_mfbSolidPP

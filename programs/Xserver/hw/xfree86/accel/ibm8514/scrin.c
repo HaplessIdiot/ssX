@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/scrin.c,v 3.4 1996/02/04 09:02:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/scrin.c,v 3.5 1996/12/23 06:38:04 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -99,12 +99,12 @@ static DepthRec depths[] = {
 
 static unsigned long cfbGeneration = 0;
 
-miBSFuncRec ibm8514BSFuncRec = {
+BSFuncRec ibm8514BSFuncRec = {
     ibm8514SaveAreas,
     ibm8514RestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
@@ -178,9 +178,13 @@ ibm8514ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->ResolveColor = cfbResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
     mfbRegisterCopyPlaneProc (pScreen, miCopyPlane);
-    return miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
+    if (!miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			8, NUMDEPTHS, depths,
-			visuals[i].vid, NUMVISUALS, visuals,
-			&ibm8514BSFuncRec);
-
+			visuals[i].vid, NUMVISUALS, visuals))
+	return FALSE;
+    pScreen->BackingStoreFuncs = ibm8514BSFuncRec;
+    miInitializeBackingStore(pScreen);
+    pScreen->GetScreenPixmap = cfbGetScreenPixmap;
+    pScreen->SetScreenPixmap = cfbSetScreenPixmap;
+    return TRUE;
 }
