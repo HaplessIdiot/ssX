@@ -11,7 +11,7 @@
 <date> 1st January 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.34 2001/05/09 19:57:04 dbateman Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.35 2001/05/18 19:59:18 dawes Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -661,7 +661,7 @@ The device section must include the PCI BusID. This can be found from the
 log file of a working single-head installation. For instance, the line 
 
 <quote><verb>
-(--) PCI:*(0:20:0) C&T 69030 rev 97, Mem @ 0xed000000/24
+(--) PCI:*(0:20:0) C&amp;T 69030 rev 97, Mem @ 0xed000000/24
 </verb></quote>
 
 appears for the case above. Additionally, the "<tt>Screen</tt>" option

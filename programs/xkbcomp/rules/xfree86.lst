@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.28 2001/04/06 02:16:25 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.29 2001/05/18 23:35:34 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -61,6 +61,7 @@
   lt		Lithuanian querty "numeric"
   lt_std	Lithuanian azerty standard
   lt_p		Lithuanian querty "programmer's"
+  lv		Latvian
   mk		Macedonian
   no		Norwegian
   pl		Polish
