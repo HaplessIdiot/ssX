@@ -1,14 +1,20 @@
+XCOMM $XFree86: $
+
 #include <Server.tmpl>
 
 SRCS =	Preferences.m \
         XApplication.m \
-        Xserver.m
+        Xserver.m \
+        quartzCocoa.m \
+        quartzPasteboard.c
 
 OBJS =	Preferences.o \
         XApplication.o \
-        Xserver.o
+        Xserver.o \
+        quartzCocoa.o \
+        quartzPasteboard.o
 
-INCLUDES = -I.
+INCLUDES = -I. -I$(SERVERSRC)/include -I$(XINCLUDESRC)
 
 #if defined(XFree86CustomVersion)
 CUSTOMVERSION = XFree86CustomVersion

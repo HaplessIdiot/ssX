@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.9 2001/03/04 17:40:04 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.10 2001/03/11 14:52:00 herrb Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -739,7 +739,15 @@ void ProcessInputEvents(void)
                 case kXDarwinQuit:
                     GiveUp(0);
                     break;
-    
+
+                case kXDarwinReadPasteboard:
+                    QuartzReadPasteboard();
+                    break;
+
+                case kXDarwinWritePasteboard:
+                    QuartzWritePasteboard();
+                    break;
+
                 default:
                     ErrorF("Unknown application defined event.\n");
                 } // switch (ev.data.compound.subType)

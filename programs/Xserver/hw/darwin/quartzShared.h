@@ -2,6 +2,7 @@
  * Shared definitions between the Darwin X Server
  * and the Cocoa front end. 
  */
+/* $XFree86: $ */
 
 #ifndef _QUARTZSHARED_H
 #define _QUARTZSHARED_H
@@ -13,11 +14,16 @@ extern int                  gDarwinEventWriteFD;
 // show: vt switch to X server; recapture screen and restore X drawing
 // hide: vt switch away from X server; release screen and clip X drawing
 // quit: kill the X server and release the display
+// read pasteboard: copy Mac OS X pasteboard into X cut buffer
+// write pasteboard: copy X cut buffer onto Mac OS X pasteboard
+
 enum {
   kXDarwinUpdateModifiers,
   kXDarwinShow,
   kXDarwinHide,
-  kXDarwinQuit
+  kXDarwinQuit, 
+  kXDarwinReadPasteboard,
+  kXDarwinWritePasteboard
 };
 
 #endif	/* _QUARTZSHARED_H */
