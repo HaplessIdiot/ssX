@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.40 2001/10/23 06:10:30 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.41 2001/10/28 03:33:09 tsi Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -961,9 +961,9 @@ void InitOutput( ScreenInfo *pScreenInfo, int argc, char **argv )
 
     // Discover screens and do mode specific initialization
     if (quartz) {
-        QuartzInitOutput();
+        QuartzInitOutput(argc, argv);
     } else {
-        XFIOKitInitOutput();
+        XFIOKitInitOutput(argc, argv);
     }
 
     // Add screens

@@ -6,7 +6,7 @@
  * This file should be included before any X11 or IOKit headers
  * so that it can avoid symbol conflicts.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCommon.h,v 1.2 2001/10/07 18:47:49 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCommon.h,v 1.3 2001/10/26 06:13:59 torrey Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
@@ -29,7 +29,12 @@
 
 // Quartz specific per screen storage structure
 typedef struct {
-    CGDirectDisplayID   displayID;
+    // List of CoreGraphics displays that this X11 screen covers.
+    // This is more than one CG display for video mirroring and
+    // rootless PseudoramiX mode.
+    // No CG display will be covered by more than one X11 screen.
+    int displayCount;
+    CGDirectDisplayID *displayIDs;
 } QuartzScreenRec, *QuartzScreenPtr;
 
 #define QUARTZ_PRIV(pScreen) \

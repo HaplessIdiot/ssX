@@ -6,7 +6,7 @@
  * February 2001  Created
  * March 3, 2001  Restructured as generic rootless mode
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessScreen.c,v 1.3 2001/11/04 08:12:17 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessScreen.c,v 1.4 2001/12/12 03:52:51 torrey Exp $ */
 
 
 #include "mi.h"
@@ -55,7 +55,6 @@ static void
 RootlessGetImage(DrawablePtr pDrawable, int sx, int sy, int w, int h,
                  unsigned int format, unsigned long planeMask, char *pdstLine)
 {
-    WindowPtr pWin, topRealWin = NULL;
     ScreenPtr pScreen = pDrawable->pScreen;
     SCREEN_UNWRAP(pScreen, GetImage);
 
@@ -63,35 +62,9 @@ RootlessGetImage(DrawablePtr pDrawable, int sx, int sy, int w, int h,
         /* Many apps use GetImage to sync with the visible frame buffer */
         // fixme entire screen or just window or all screens?
         RootlessRedisplayScreen(pScreen);
-
-        // If this is a fake window, it won't have a pixmap associated
-        // with it. Borrow the real window's pixmap.
-        // The real window is on screen 0.
-        pWin = (WindowPtr)pDrawable;
-        if (IS_FAKE_WINDOW(pWin)) {
-            RootlessWindowRec *winRec;
-            WindowPtr realWin = PanoramiXChangeWindow(0, pWin);
-            WindowPtr topWin = TopLevelParent(pWin);
-            topRealWin = TopLevelParent(realWin);
-            winRec = WINREC(topRealWin);
-
-            // Adjust pixmap base to fake window's screen.
-            winRec->pixmap->devPrivate.ptr = (pointer) winRec->frame.pixelData;
-            SetPixmapBaseToScreen(winRec->pixmap,
-                                  topWin->drawable.x - topWin->borderWidth,
-                                  topWin->drawable.y - topWin->borderWidth);
-            pScreen->SetWindowPixmap(pWin, winRec->pixmap);
-        }
     }
 
     pScreen->GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
-
-    if (topRealWin) {
-        // Remove real window's pixmap from fake window, and readjust
-        // real window's pixmap back to real window's screen.
-        pScreen->SetWindowPixmap(pWin, NULL);
-        UpdatePixmap(topRealWin);
-    }
 
     SCREEN_WRAP(pScreen, GetImage);
 }
