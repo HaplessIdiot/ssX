@@ -327,7 +327,7 @@ chances are good it might work for you, too.
  	<item> Elsa Winner2000PRO PCI
 	</itemize>
 
- 	8 bpp only
+ 	8, 15/16, 24(32) bpp
 
  <tscreen><verb>
  ClockChip "icd2061a"
@@ -559,7 +559,7 @@ exit
 
 <verb>
 $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.19 1995/06/25 09:53:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.20 1995/07/07 15:40:17 dawes Exp $
 </verb>
 
 </article>
