@@ -1,10 +1,15 @@
 XFree86 4.0f (23 June 2000)
+ 377. Suppress the use of a temporary directory to build man pages on
+      OpenBSD, which fixes problems with some external programs (#4028,
+      Matthieu Herrb).
+ 376. Allow some linux/mips settings in linux.cf to be overriden (#4026,
+      Guido Guenther).
  375. Synchronize the pointer state before checking it in xf86CheckButton()
       (Paulo Cesar Pereira de Andrade).
  374. s3virge driver fixes for noise and console corruptionn on the GX2 and
       MX (but they're commented out for the MX because it hasn't been tested
-      yet) (Kevin Brosius).
- 373. Fixes for lib/GL Imakefiles (Marc La France, David Dawes).
+      yet) (#4027, Kevin Brosius).
+ 373. Fixes for lib/GL Imakefiles (Marc La France).
  372. Update DRI drivers sunffb,mga,i810,glint,r128,tdfx to check for 
       DRIQueryVersion, overcomes an older libdri issue (Alan Hourihane).
  371. Change tdfx driver to use fb instead of cfb (Alan Hourihane).

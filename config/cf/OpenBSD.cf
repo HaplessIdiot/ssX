@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.35 2000/06/20 05:08:16 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.36 2000/06/23 22:42:00 dawes Exp $
 XCOMM
 
 #ifndef OSName
@@ -220,10 +220,8 @@ all:: file.0								@@\
 file.0:: file.man							@@\
 	@if [ -f file.man ]; \						@@\
 	then \								@@\
-	tmpdir=`mktemp -d /tmp/man.XXXXXXXX` || exit 2 ; \		@@\
-	cat file.man | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) | $(COL) > $$tmpdir/file.man; \	@@\
-	cp $$tmpdir/file.man file.0; \					@@\
-	$(RM) -r $$tmpdir; \						@@\
+	cat file.man | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) \	@@\
+		| $(COL) > file.0; \					@@\
 	fi 								@@\
 									@@\
 install.man::                                                           @@\

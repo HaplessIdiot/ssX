@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.127 2000/06/21 00:53:43 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.128 2000/06/24 04:38:11 mvojkovi Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -294,9 +294,12 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #if LinuxElfDefault
 #if UseElfFormat
 # ifdef MipsArchitecture
-#  define AsCmd                   gcc -c -x assembler-with-cpp
-/* until we have loadable modules working */
-#  define DoLoadableServer NO
+#  ifndef AsCmd
+#    define AsCmd                gcc -c -x assembler-with-cpp
+#  endif
+#  ifndef DoLoadableServer
+#    define DoLoadableServer NO
+#  endif
 # endif /* MipsArchitecure */
 #ifndef CcCmd
 #define CcCmd			gcc
