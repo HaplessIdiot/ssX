@@ -1,4 +1,11 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 424. Improvement of Xlib's keysym compose module:
+      - Allow to figure out a mulibyte string if it is ommited in Compose file.
+      - Add 'include' instruction with some substitutions.
+      - Add a searching of Compose file as a value of XCOMPOSEFILE environment
+        variable and as a $HOME/.XCompose file. (Ivan Pascal).
+ 423. Add a writing of some Xserver XKB module error messages into a servers
+      log file (Ivan Pascal).
  422. Add Trident CyberBladeXP4 support, but acceleration is currently
       disabled. (Alan Hourihane).
  421. Xinstall.sh updates to reduce its reliance on external utilities and
@@ -17666,7 +17673,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2843 2003/09/05 17:05:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2844 2003/09/05 22:07:24 alanh Exp $
 
 
 
