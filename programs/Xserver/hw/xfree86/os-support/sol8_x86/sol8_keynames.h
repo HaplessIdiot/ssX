@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_keynames.h,v 1.5 2000/12/05 15:03:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_keynames.h,v 1.6 2000/12/15 22:48:43 dawes Exp $ */
 
 #ifndef _SOL8KEYNAMES_H
 #define _SOL8KEYNAMES_H
@@ -136,6 +136,14 @@ unsigned char sol8map[256] = {
 	KEY_ScrollLock,		/* 125 */
 	KEY_Pause,		/* 126 */
 	KEY_UNKNOWN,		/* 127 */
+	KEY_UNKNOWN,		/* 128 */
+	KEY_UNKNOWN,		/* 129 */
+	KEY_UNKNOWN,		/* 130 */
+	0x7B, /*KEY_P_NFER*/	/* 131 */
+	0x79, /*KEY_P_XFER*/	/* 132 */
+	KEY_Menu,		/* 133 */
+	KEY_UNKNOWN,		/* 134 */
+	/* The rest default to KEY_UNKNOWN */
 };
 #endif
 
