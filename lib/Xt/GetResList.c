@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/GetResList.c,v 3.3 1998/12/20 11:57:08 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/GetResList.c,v 3.4 2001/01/17 19:43:05 dawes Exp $ */
 
 /*
 
@@ -115,8 +115,7 @@ void XtGetResourceList(widget_class, resources, num_resources)
 }
 
 
-static Boolean ClassIsSubclassOf(class, superclass)
-    WidgetClass class, superclass;
+static Boolean ClassIsSubclassOf(WidgetClass class, WidgetClass superclass)
 {
     for (; class != NULL; class = class->core_class.superclass) {
 	if (class == superclass) return True;

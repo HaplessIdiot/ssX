@@ -1,4 +1,4 @@
-/* $XConsortium: ActionHook.c,v 1.7 94/04/17 20:13:35 kaleb Exp $ */
+/* $Xorg: ActionHook.c,v 1.3 2000/08/17 19:46:08 cpqbld Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -37,14 +37,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*
 
-Copyright (c) 1987, 1988  X Consortium
+Copyright 1987, 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -52,15 +47,16 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 /* 
  * Contains XtAppAddActionHook, XtRemoveActionHook
@@ -70,10 +66,10 @@ in this Software without prior written authorization from the X Consortium.
 
 
 /*ARGSUSED*/
-static void FreeActionHookList( widget, closure, call_data )
-    Widget widget;		/* unused (and invalid) */
-    XtPointer closure;		/* ActionHook* */
-    XtPointer call_data;	/* unused */
+static void FreeActionHookList(
+    Widget widget,		/* unused (and invalid) */
+    XtPointer closure,		/* ActionHook* */
+    XtPointer call_data)	/* unused */
 {
     ActionHook list = *(ActionHook*)closure;
     while (list != NULL) {
@@ -114,16 +110,19 @@ void XtRemoveActionHook( id )
     XtAppContext app = hook->app;
     LOCK_APP(app);
     for (p = &app->action_hook_list; p != NULL && *p != hook; p = &(*p)->next);
-    if (p == NULL) {
+    if (p) {
+	*p = hook->next;
+	XtFree( (XtPointer)hook );
+	if (app->action_hook_list == NULL)
+	    _XtRemoveCallback(&app->destroy_callbacks, FreeActionHookList,
+			      (XtPointer) &app->action_hook_list);
+    }
 #ifdef DEBUG
+    else {
 	XtAppWarningMsg(app, "badId", "xtRemoveActionHook", XtCXtToolkitError,
 			"XtRemoveActionHook called with bad or old hook id",
 			(String*)NULL, (Cardinal*)NULL);
-#endif /*DEBUG*/	
-	UNLOCK_APP(app);
-	return;
     }
-    *p = hook->next;
-    XtFree( (XtPointer)hook );
+#endif /*DEBUG*/
     UNLOCK_APP(app);
 }

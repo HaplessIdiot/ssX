@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Shell.c,v 3.11 2001/08/01 00:44:41 tsi Exp $ */
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.12 2001/08/18 02:41:29 dawes Exp $ */
 
 /*
 
@@ -2739,13 +2739,6 @@ static void ApplicationShellInsertChild(widget)
 
 #define XtSessionCheckpoint	0
 #define XtSessionInteract	1
-
-extern String _XtGetUserName(
-#if NeedFunctionPrototypes
-    String		/* dest_dir */,
-    int			/* len */
-#endif
-);
 
 static void CallSaveCallbacks();
 static String *EditCommand();

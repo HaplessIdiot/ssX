@@ -54,7 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xt/Event.c,v 3.8 2001/07/29 05:01:12 tsi Exp $ */
 
 #include "IntrinsicI.h"
 #include "Shell.h"
@@ -260,7 +260,7 @@ AddEventHandler(widget, select_data, type, has_type_specifier, other, proc,
     XtListPosition  position;
 {
     register XtEventRec *p, **pp;
-    EventMask oldMask, eventMask;
+    EventMask oldMask = 0, eventMask = 0;
 
     if (!has_type_specifier) {
 	eventMask = *(EventMask*)select_data & ~NonMaskableMask;
@@ -1305,11 +1305,12 @@ static Widget LookupSpringLoaded(grabList)
     XtGrabList	gl;
 
     for (gl = grabList; gl != NULL; gl = gl->next) {
-	if (gl->spring_loaded)
+	if (gl->spring_loaded) {
 	  if (XtIsSensitive(gl->widget))
 	    return gl->widget;
 	  else
 	    return NULL;
+	}
 	if (gl->exclusive) break;
     }
     return NULL;
@@ -1329,10 +1330,10 @@ static Boolean DispatchEvent(event, widget)
 	    if (nextEvent.type == LeaveNotify &&
 		event->xcrossing.window == nextEvent.xcrossing.window &&
 		nextEvent.xcrossing.mode == NotifyNormal &&
-		(event->xcrossing.detail != NotifyInferior &&
-		 nextEvent.xcrossing.detail != NotifyInferior ||
-		 event->xcrossing.detail == NotifyInferior &&
-		 nextEvent.xcrossing.detail == NotifyInferior)) {
+		((event->xcrossing.detail != NotifyInferior &&
+		 nextEvent.xcrossing.detail != NotifyInferior) ||
+		 (event->xcrossing.detail == NotifyInferior &&
+		 nextEvent.xcrossing.detail == NotifyInferior))) {
 		/* skip the enter/leave pair */
 		XNextEvent(event->xcrossing.display, &nextEvent);
 		return False;
@@ -1423,8 +1424,6 @@ Boolean _XtDefaultDispatcher(event)
 	EventMask	mask = _XtConvertTypeToMask(event->type);
 	Widget		dspWidget;
 	Boolean		was_filtered = False;
-	extern Widget	_XtFindRemapWidget();
-	extern void	_XtUngrabBadGrabs();
 
 	dspWidget = _XtFindRemapWidget(event, widget, mask, pdi);
 	    

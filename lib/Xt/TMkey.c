@@ -55,7 +55,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xt/TMkey.c,v 3.8 2001/08/01 00:44:41 tsi Exp $ */
 
 #define XK_MISCELLANY
 #define XK_LATIN1
@@ -213,8 +213,7 @@ void _XtAllocTMContext(pd)
     pd->tm_context = ctx;
 }
 
-static unsigned int num_bits(mask)
-    unsigned long mask;
+static unsigned int num_bits(unsigned long mask)
 {
     register unsigned long y;
 
@@ -684,7 +683,7 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
     KeySym lsym, usym;
     unsigned maxcodes = 0;
     unsigned ncodes = 0;
-    KeyCode *keycodes, *codeP;
+    KeyCode *keycodes, *codeP = NULL;
     DPY_TO_APPCON(dpy);
 
     LOCK_APP(app);

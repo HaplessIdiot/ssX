@@ -48,7 +48,7 @@ dealings in this Software without prior written authorization from the IBM
 Corporation.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xt/ResConfig.c,v 3.6 2001/08/01 00:44:40 tsi Exp $ */
 
 #include "Intrinsic.h"
 #include "IntrinsicI.h"
@@ -695,7 +695,7 @@ _search_widget_tree (w, resource, value)
 {
 	Widget	parent = w;
 	char	*last_part;
-	char	*remainder;
+	char	*remainder = NULL;
 	char	last_token;
 	char	*indx, *copy;
 	char	*loose, *tight;

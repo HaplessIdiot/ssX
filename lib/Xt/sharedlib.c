@@ -21,13 +21,14 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/sharedlib.c,v 3.3 2001/01/17 19:43:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/sharedlib.c,v 3.4 2001/07/25 15:04:52 dawes Exp $ */
 
 #if (defined(SUNSHLIB) || defined(AIXSHLIB)) && !defined(SHAREDCODE)
 #include "IntrinsicI.h"
 #include "VarargsI.h"
 #include "ShellP.h"
 #include "VendorP.h"
+#include "CreateI.h"
 
 
 #if defined(AIXSHLIB) || defined(__EMX__)

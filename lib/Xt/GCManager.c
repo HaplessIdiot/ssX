@@ -54,6 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "IntrinsicI.h"
 
@@ -85,13 +86,13 @@ typedef struct _GCrec {
 		   GCClipXOrigin | GCClipYOrigin | GCDashOffset | \
 		   GCArcMode)
 
-static Bool Matches(dpy, ptr, valueMask, v, readOnlyMask, dynamicMask)
-    Display *dpy;
-    GCptr ptr;
-    register XtGCMask valueMask;
-    register XGCValues *v;
-    XtGCMask readOnlyMask;
-    XtGCMask dynamicMask;
+static Bool Matches(
+    Display *dpy,
+    GCptr ptr,
+    register XtGCMask valueMask,
+    register XGCValues *v,
+    XtGCMask readOnlyMask,
+    XtGCMask dynamicMask)
 {
     XGCValues gcv;
     register XtGCMask checkMask;

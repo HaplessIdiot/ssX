@@ -1,4 +1,4 @@
-/* $XConsortium: SetValues.c,v 1.21 94/04/17 20:14:45 kaleb Exp $ */
+/* $Xorg: SetValues.c,v 1.3 2000/08/17 19:46:17 cpqbld Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -35,14 +35,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*
 
-Copyright (c) 1987, 1988, 1994  X Consortium
+Copyright 1987, 1988, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -50,15 +45,16 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "IntrinsicI.h"
 
@@ -67,15 +63,12 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 
-extern void _XtCopyFromArg();
-extern XrmResourceList* _XtCreateIndirectionTable();
-
-static void SetValues(base, res, num_resources, args, num_args)
-  char*			base;		/* Base address to write values to   */
-  XrmResourceList*	res;		/* The current resource values.      */
-  register Cardinal	num_resources;	/* number of items in resources      */
-  ArgList 		args;		/* The resource values to set        */
-  Cardinal		num_args;	/* number of items in arg list       */
+static void SetValues(
+  char*			base,		/* Base address to write values to   */
+  XrmResourceList*	res,		/* The current resource values.      */
+  register Cardinal	num_resources,	/* number of items in resources      */
+  ArgList 		args,		/* The resource values to set        */
+  Cardinal		num_args)	/* number of items in arg list       */
 {
     register ArgList		arg;
     register int 	        i;
@@ -98,11 +91,13 @@ static void SetValues(base, res, num_resources, args, num_args)
     }
 } /* SetValues */
 
-static Boolean CallSetValues (class, current, request, new, args, num_args)
-    WidgetClass class;
-    Widget      current, request, new;
-    ArgList     args;
-    Cardinal    num_args;
+static Boolean CallSetValues (
+    WidgetClass class,
+    Widget      current,
+    Widget      request,
+    Widget      new,
+    ArgList     args,
+    Cardinal    num_args)
 {
     Boolean redisplay = FALSE;
     WidgetClass superclass;
@@ -131,11 +126,13 @@ static Boolean CallSetValues (class, current, request, new, args, num_args)
 }
 
 static Boolean
-CallConstraintSetValues (class, current, request, new, args, num_args)
-    ConstraintWidgetClass class;
-    Widget      current, request, new;
-    ArgList     args;
-    Cardinal    num_args;
+CallConstraintSetValues (
+    ConstraintWidgetClass class,
+    Widget      current,
+    Widget      request,
+    Widget      new,
+    ArgList     args,
+    Cardinal    num_args)
 {
     Boolean redisplay = FALSE;
     XtSetValuesFunc set_values;
@@ -190,7 +187,7 @@ void XtSetValues(w, args, num_args)
     XtGeometryResult result;
     XtWidgetGeometry geoReq, geoReply;
     WidgetClass     wc;
-    ConstraintWidgetClass cwc;
+    ConstraintWidgetClass cwc = 0;
     Boolean	    hasConstraints;
     XtAlmostProc set_values_almost;
     XtAppContext app = XtWidgetToApplicationContext(w);
@@ -223,8 +220,7 @@ void XtSetValues(w, args, num_args)
 
     (void) memmove ((char *) reqw, (char *) w, (int) widgetSize);
 
-    /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
-    hasConstraints = (!XtIsShell(w) && XtIsConstraint(XtParent(w)));
+    hasConstraints = (XtParent(w) != NULL && !XtIsShell(w) && XtIsConstraint(XtParent(w)));
 
     /* Some widget sets apparently do ugly things by freeing the
      * constraints on some children, thus the extra test here */
@@ -333,6 +329,10 @@ void XtSetValues(w, args, num_args)
 		    }
 		}
 	    }
+	    CALLGEOTAT(_XtGeoTrace(w,
+		     "\nXtSetValues sees some geometry changes for \"%s\".\n", 
+			   XtName(w)));
+	    CALLGEOTAT(_XtGeoTab(1));
 	    do {
 		XtGeometryHookDataRec call_data;
 
@@ -372,6 +372,7 @@ void XtSetValues(w, args, num_args)
 		    break;
 		}
 		if (result == XtGeometryNo) geoReply.request_mode = 0;
+		CALLGEOTAT(_XtGeoTrace(w,"calling SetValuesAlmost.\n"));
 		(*set_values_almost) (oldw, w, &geoReq, &geoReply);
 	    } while (geoReq.request_mode != 0);
 	    /* call resize proc if we changed size and parent
@@ -384,9 +385,14 @@ void XtSetValues(w, args, num_args)
 	    if ((w->core.width != oldw->core.width ||
 		 w->core.height != oldw->core.height)
 		&& result != XtGeometryDone
-		&& resize != (XtWidgetProc) NULL)
+		&& resize != (XtWidgetProc) NULL) {
+		CALLGEOTAT(_XtGeoTrace(w,
+				 "XtSetValues calls \"%s\"'s resize proc.\n",
+			       XtName(w)));
 		(*resize)(w);
+	      }
 	    }
+	    CALLGEOTAT(_XtGeoTab(-1));
 	}
 	/* Redisplay if needed.  No point in clearing if the window is
 	 * about to disappear, as the Expose event will just go straight
@@ -394,17 +400,25 @@ void XtSetValues(w, args, num_args)
         if (XtIsWidget(w)) {
             /* widgets can distinguish between redisplay and resize, since
              the server will cause an expose on resize */
-            if (redisplay && XtIsRealized(w) && !w->core.being_destroyed)
-                XClearArea (XtDisplay(w), XtWindow(w), 0, 0, 0, 0, TRUE);
+            if (redisplay && XtIsRealized(w) && !w->core.being_destroyed) {
+                CALLGEOTAT(_XtGeoTrace(w,
+				 "XtSetValues calls ClearArea on \"%s\".\n",
+			       XtName(w)));
+		XClearArea (XtDisplay(w), XtWindow(w), 0, 0, 0, 0, TRUE);
+	    }
         } else { /*non-window object */
 	  if (redisplay && ! cleared_rect_obj ) {
 	      Widget pw = _XtWindowedAncestor(w);
 	      if (XtIsRealized(pw) && !pw->core.being_destroyed) {
 		  RectObj r = (RectObj)w;
 		  int bw2 = r->rectangle.border_width << 1;
+		  CALLGEOTAT(_XtGeoTrace(w,
+		   "XtSetValues calls ClearArea on \"%s\"'s parent \"%s\".\n",
+				 XtName(w),XtName(pw)));
 		  XClearArea (XtDisplay (pw), XtWindow (pw),
-		      r->rectangle.x, r->rectangle.y,
-		      r->rectangle.width + bw2,r->rectangle.height + bw2,TRUE);
+			      r->rectangle.x, r->rectangle.y,
+			      r->rectangle.width + bw2,
+			      r->rectangle.height + bw2,TRUE);
 	      }
 	  }
         }

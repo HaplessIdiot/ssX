@@ -54,7 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/Callback.c,v 1.5 1998/12/20 22:18:57 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Callback.c,v 1.6 2001/01/17 19:43:03 dawes Exp $ */
 
 #include "IntrinsicI.h"
 
@@ -67,9 +67,9 @@ static String XtNxtCallCallback = "xtCallCallback";
 /* However it doesn't contain a final NULL record */
 #define ToList(p) ((XtCallbackList) ((p)+1))
 
-static InternalCallbackList* FetchInternalList(widget, name)
-    Widget	widget;
-    String	name;
+static InternalCallbackList* FetchInternalList(
+    Widget	widget,
+    _Xconst char *name)
 {
     XrmQuark quark;
     int n;
@@ -187,10 +187,10 @@ void XtAddCallback(widget, name, callback, closure)
 } /* XtAddCallback */
 
 /* ARGSUSED */
-static void AddCallbacks(widget, callbacks, newcallbacks)
-    Widget		    widget;
-    InternalCallbackList   *callbacks;
-    XtCallbackList	    newcallbacks;
+static void AddCallbacks(
+    Widget		    widget,
+    InternalCallbackList   *callbacks,
+    XtCallbackList	    newcallbacks)
 {
     register InternalCallbackList icl;
     register int i, j;

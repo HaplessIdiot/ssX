@@ -54,6 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*LINTLIBRARY*/
 #include "IntrinsicI.h"
@@ -192,7 +193,7 @@ static void PrintCode(sb, mask, code)
     if (mask != 0) {
 	if (mask != (unsigned long)~0L)
 	    (void) sprintf(sb->current, "0x%lx:0x%lx", mask, code);
-	else (void) sprintf(sb->current, /*"0x%lx"*/ "%d", code);
+	else (void) sprintf(sb->current, /*"0x%lx"*/ "%d", (unsigned)code);
 	sb->current += strlen(sb->current);
     }
 }

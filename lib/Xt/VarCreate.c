@@ -48,28 +48,25 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xt/VarCreate.c,v 3.5 2001/07/29 05:01:12 tsi Exp $ */
 
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 #include "Shell.h"
 #include "VarargsI.h"
+#include "CreateI.h"
 
 #if (defined(SUNSHLIB) || defined(AIXSHLIB)) && defined(SHAREDCODE)
 #define XtToolkitInitialize _XtToolkitInitialize
 #endif /* (SUNSHLIB || AIXSHLIB) && SHAREDCODE */
 
-extern Widget _XtCreateWidget();
-extern Widget _XtAppCreateShell();
-extern Widget _XtCreatePopupShell();
-
 static Widget
-_XtVaCreateWidget(name, widget_class, parent, var, count)
-    String      name;
-    WidgetClass widget_class;
-    Widget      parent;
-    va_list     var;
-    int		count;
+_XtVaCreateWidget(
+    String      name,
+    WidgetClass widget_class,
+    Widget      parent,
+    va_list     var,
+    int		count)
 {
     register Widget         widget;
     XtTypedArgList	    typed_args = NULL;
@@ -106,7 +103,8 @@ XtVaCreateWidget(
     va_end(var);
 
     va_start(var,parent);
-    widget = _XtVaCreateWidget(name, widget_class, parent, var, total_count);
+    widget = _XtVaCreateWidget((String)name, widget_class, parent, var,
+				total_count);
     va_end(var);
     UNLOCK_APP(app);
     return widget;
@@ -131,7 +129,8 @@ XtVaCreateManagedWidget(
     va_end(var);
 
     va_start(var,parent);
-    widget = _XtVaCreateWidget(name, widget_class, parent, var, total_count);
+    widget = _XtVaCreateWidget((String)name, widget_class, parent, var,
+				total_count);
     XtManageChild(widget);
     va_end(var);
     UNLOCK_APP(app);
@@ -162,8 +161,8 @@ XtVaAppCreateShell(
     va_start(var,display);
 
     _XtVaToTypedArgList(var, total_count, &typed_args, &num_args);
-    widget = _XtAppCreateShell(name, class, widget_class, display,
-		(ArgList)NULL, (Cardinal)0, typed_args, num_args);
+    widget = _XtAppCreateShell((String)name, (String)class, widget_class,
+		display, (ArgList)NULL, (Cardinal)0, typed_args, num_args);
     if (typed_args != NULL) {
 	XtFree((XtPointer)typed_args);
     }
@@ -196,7 +195,7 @@ XtVaCreatePopupShell(
     va_start(var,parent);
 
     _XtVaToTypedArgList(var, total_count, &typed_args, &num_args);
-    widget = _XtCreatePopupShell(name, widget_class, parent,
+    widget = _XtCreatePopupShell((String)name, widget_class, parent,
 		(ArgList)NULL, (Cardinal)0, typed_args, num_args);
     if (typed_args != NULL) {
 	XtFree((XtPointer)typed_args);

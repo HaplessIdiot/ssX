@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.17 2001/01/17 19:43:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.18 2001/07/25 15:04:52 dawes Exp $ */
 
 /*
 
@@ -575,7 +575,7 @@ static Widget SearchChildren(root, names, bindings, matchproc,
     NameMatchProc matchproc;
     int in_depth, *out_depth, *found_depth;
 {
-    Widget w1, w2;
+    Widget w1 = 0, w2;
     int d1, d2;
 
     if (XtIsComposite(root)) {
@@ -1247,7 +1247,7 @@ static char *ExtractLocaleName(lang)
 	start += strlen(STARTSTR);
 # endif
 
-	if (end = strchr (start, ENDCHAR)) {
+	if ((end = strchr (start, ENDCHAR))) {
 	    len = end - start;
 	    if (buf != NULL) XtFree (buf);
 	    buf = XtMalloc (len + 1);

@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/TMparse.c,v 3.5 2001/01/17 19:43:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/TMparse.c,v 3.6 2001/08/01 00:44:41 tsi Exp $ */
 
 /*
 
@@ -1237,7 +1237,7 @@ static void RepeatDownPlus(eventP, reps, actionsP)
     ActionPtr **actionsP;
 {
     EventRec upEventRec;
-    register EventPtr event, downEvent, lastDownEvent;
+    register EventPtr event, downEvent, lastDownEvent = NULL;
     EventPtr upEvent = &upEventRec;
     register int i;
 
@@ -1343,7 +1343,7 @@ static void RepeatUpPlus(eventP, reps, actionsP)
     ActionPtr **actionsP;
 {
     EventRec upEventRec;
-    register EventPtr event, downEvent, lastUpEvent;
+    register EventPtr event, downEvent, lastUpEvent = NULL;
     EventPtr upEvent = &upEventRec;
     register int i;
 

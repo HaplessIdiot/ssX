@@ -18,7 +18,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/include/Xos_r.h,v 1.10 2001/03/03 09:53:00 herrb Exp $ */
+/* $XFree86: xc/include/Xos_r.h,v 1.11 2001/08/18 02:45:19 dawes Exp $ */
 
 /* 
  * Various and sundry Thread-Safe functions used by X11, Motif, and CDE.
@@ -251,7 +251,7 @@ typedef struct {
  */
    
 #if defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-__inline__ void _Xpw_copyPasswd(_Xgetpwparams p)
+static __inline__ void _Xpw_copyPasswd(_Xgetpwparams p)
 {
    memcpy(&(p).pws, (p).pwp, sizeof(struct passwd));
 
@@ -311,12 +311,12 @@ __inline__ void _Xpw_copyPasswd(_Xgetpwparams p)
 #endif
 # define _XGetpwuid(u,p) \
 ( (_Xos_processLock), \
-  (((p).pwp = getpwuid((u))) ? _Xpw_copyPasswd(p) : 0), \
+  (((p).pwp = getpwuid((u))) ? _Xpw_copyPasswd(p), 0 : 0), \
   (_Xos_processUnlock), \
   (p).pwp )
 # define _XGetpwnam(u,p) \
 ( (_Xos_processLock), \
-  (((p).pwp = getpwnam((u))) ? _Xpw_copyPasswd(p) : 0), \
+  (((p).pwp = getpwnam((u))) ? _Xpw_copyPasswd(p), 0 : 0), \
   (_Xos_processUnlock), \
   (p).pwp )
 

@@ -54,7 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xt/Selection.c,v 3.7 2001/08/01 00:44:40 tsi Exp $ */
 
 #include "IntrinsicI.h"
 #include "StringDefs.h"
@@ -612,13 +612,14 @@ Boolean *cont;
     XtRemoveTimeOut(req->timeout);
 #endif 
     if (req->allSent) { 
-	if (ctx->notify)  
+	if (ctx->notify) {
 	    if (ctx->incremental) {
 		(*(XtSelectionDoneIncrProc)ctx->notify)
 			      (ctx->widget, &ctx->selection, &req->target,
 			       (XtRequestId*)&req, ctx->owner_closure);
 	    }
 	    else (*ctx->notify)(ctx->widget, &ctx->selection, &req->target);
+	}
 	RemoveHandler(req, (EventMask)PropertyChangeMask,
 		      HandlePropertyGone, closure); 
 	XtFree((char*)req);
