@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.9 1998/11/15 04:30:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.10 1999/04/04 08:46:02 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -493,8 +493,10 @@ XawSimpleMenuRealize(Widget w, XtValueMask *mask, XSetWindowAttributes *attrs)
     if (w->core.background_pixmap > XtUnspecifiedPixmap) {
 	pixmap = XawPixmapFromXPixmap(w->core.background_pixmap, XtScreen(w),
 				      w->core.colormap, w->core.depth);
+#ifdef USE_XPM
 	if (pixmap && pixmap->mask)
 	    XawReshapeWidget(w, pixmap);
+#endif
     }
 }
 
@@ -593,8 +595,10 @@ XawSimpleMenuSetValues(Widget current, Widget request, Widget cnew,
 				    smw_old->core.colormap, smw_old->core.depth);
 	npix = XawPixmapFromXPixmap(smw_new->core.background_pixmap, XtScreen(smw_new),
 				    smw_new->core.colormap, smw_new->core.depth);
+#ifdef USE_XPM
 	if ((npix && npix->mask) || (opix && opix->mask))
 	    XawReshapeWidget(cnew, npix);
+#endif
     }
 
     if (layout)

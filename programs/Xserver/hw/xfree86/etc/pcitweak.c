@@ -5,7 +5,7 @@
  *
  * Author: David Dawes <dawes@xfree86.org>
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.1 1999/04/03 09:34:54 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -16,7 +16,12 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
-#include <ctype.h>
+#ifdef __linux__
+#ifndef __USE_POSIX2
+#define __USE_POSIX2
+#endif
+#include <unistd.h>	/* for getopt on Linux */
+#endif
 
 int xf86Verbose = 1;
 xf86InfoRec xf86Info;
