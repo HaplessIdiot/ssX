@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.71 2003/06/12 14:12:26 eich Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.72 2003/12/30 01:53:52 tsi Exp $ */
 
 
 /* 
@@ -373,6 +373,9 @@ char *cpp_argv[ARGUMENTS] = {
 # endif
 # ifdef __AMD64__
 	"-D__AMD64__",
+# endif
+# ifdef __amd64__
+	"-D__amd64__",
 # endif
 # ifdef __x86_64__
 	"-D__AMD64__",
@@ -1271,6 +1274,9 @@ struct symtab	predefs[] = {
 # if defined (__AMD64__) || defined (__x86_64__)
 	{"__AMD64__", "1"},
 	{"__x86_64__", "1"},
+# endif
+# if defined (__amd64__)
+	{"__amd64__", "1"},
 # endif
 # ifdef __i386
 	{"__i386", "1"},

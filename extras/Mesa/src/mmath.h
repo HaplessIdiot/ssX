@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mmath.h,v 1.22 2003/10/22 15:44:41 tsi Exp $ */
 
 
 /*
@@ -205,7 +205,7 @@ do {						\
 
 
 #if defined(__i386__) || defined(__sparc__) || defined(__s390x__) || \
-    defined(__powerpc__) || defined(__AMD64__) || \
+	defined(__powerpc__) || defined(__AMD64__) || defined(__amd64__) || \
     ( defined(__alpha__) && ( defined(__IEEE_FLOAT) || !defined(VMS) ) )
 #define USE_IEEE
 #endif
