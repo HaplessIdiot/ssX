@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.31 1995/12/02 05:05:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.32 1995/12/09 11:07:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -114,6 +114,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
   */
 
    if (serverGeneration == 1) {
+      unsigned long addr = 0;
       s3BankSize = 0x10000;
       s3LinApOpt = 0x14;
 
@@ -179,7 +180,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	     */
 	    if (OFLG_ISSET(OPTION_FB_DEBUG, &s3InfoRec.options)) {
 	       for (i = 0xff; i >= 3; i--) { /* 4080Mb..48Mb stepsize 16Mb */
-		  unsigned long addr = (i << 24);
+		  addr = (i << 24);
 
 	          s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 				          (pointer)addr, 4096);
@@ -196,8 +197,6 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	     * Pro is different.
 	     */
 	    if (s3InfoRec.MemBase != 0) {
-	       unsigned long addr;
-
 	       addr = (s3InfoRec.MemBase & 0xffc00000);
 	       s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 					  (pointer)addr, s3BankSize);
@@ -220,8 +219,6 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		   !(S3_TRIO64_SERIES(s3ChipId) &&
 		     s3InfoRec.videoRam > 1024 && s3VLB)) {
 		  /* So far, only tested for the PCI ELSA W2000Pro */
-		  unsigned long addr;
-
 		  s3DisableLinear();
 	          outb(vgaCRIndex, 0x59);
 	          addr = inb(vgaCRReg) << 8;
@@ -255,7 +252,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		  }
 	       } else {
 	          for (i = 0xff; i >= 3; i--) { /* 4080Mb..48Mb stepsize 16Mb */
-		     unsigned long addr = (i << 24);
+		     addr = (i << 24);
 
 		     s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 						(pointer)addr, s3BankSize);
@@ -335,6 +332,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       ErrorF(" linear access disabled\n");
 	       s3BankSize = 0x10000;
 	       s3VideoMem = NULL;
+	       addr = 0xA0000;
 	    }
             s3DisableLinear();
          }
@@ -343,6 +341,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
       /* No linear mapping */
       if (!s3VideoMem) {
 	 s3VideoMem = vgaBase;
+	 addr = 0xA0000;
 	 /* If using VGA aperture, set it up */
 	 if (s3BankSize == 0x10000) {
 	    outb(vgaCRIndex, 0x59);
@@ -352,6 +351,11 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    s3LinApOpt = 0x14;
 	 }
       }
+
+#ifdef XFreeXDGA
+      s3InfoRec.physBase = addr;
+      s3InfoRec.physSize = s3BankSize;
+#endif
 
         
       /* Save CR59, CR5A for future calls to s3Init() */

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64cmap.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64cmap.c,v 3.0 1994/11/26 12:42:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64cmap.c,v 3.1 1995/01/28 15:53:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -39,6 +39,14 @@
 #include "windowstr.h"
 #include "compiler.h"
 #include "mach64.h"
+
+#ifdef XFreeXDGA
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 #define NOMAPYET        (ColormapPtr) 0
 
@@ -97,7 +105,11 @@ mach64StoreColors(pmap, ndef, pdefs)
 	    mach64savedLUT[pdefs[i].pixel].g = pdefs[i].green >> 10;
 	    mach64savedLUT[pdefs[i].pixel].b = pdefs[i].blue >> 10;
 	}
-	if (xf86VTSema) {
+	if (xf86VTSema
+#ifdef XFreeXDGA
+	    || (mach64InfoRec.directMode & XF86DGADirectGraphics)
+#endif
+	   ) {
             /* WaitQueue(4); */
             outb(ioDAC_REGS, pdefs[i].pixel);
 	    if (mach64DAC8Bit) {

@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514.c,v 1.6 95/01/26 15:34:40 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.21 1995/12/02 05:04:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.22 1995/12/09 11:07:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -121,6 +121,8 @@ ScrnInfoRec ibm8514InfoRec = {
 #ifdef XFreeXDGA
     0,			/* int directMode */
     NULL,		/* Set Vid Page */
+    0,			/* unsigned long physBase */
+    0,			/* int physSize */
 #endif
 };
 

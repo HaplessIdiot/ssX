@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.27 1995/12/09 11:07:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.28 1995/12/16 08:19:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -61,6 +61,16 @@
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 extern int defaultColorVisualClass;
 extern int mach64MaxClock;
@@ -145,6 +155,8 @@ ScrnInfoRec mach64InfoRec = {
 #ifdef XFreeXDGA
     0,                  /* int directMode */
     NULL,               /* Set Vid Page */
+    0,                  /* unsigned long physBase */
+    0,                  /* int physSize */
 #endif
 };
 
@@ -702,8 +714,11 @@ mach64Probe()
 
     if (pciInfo) {
 	if (pciInfo->ChipType != info->ChipType) {
-	    ErrorF("PCI and CHIP_CONFIG don't agree on ChipType, using PCI"
-		   " value\n");
+	    ErrorF("%s %s: PCI (%s) and CONFIG_CHIP_ID (%s) don't agree on"
+		   " ChipType,\n"
+		   "\tusing PCI value\n", XCONFIG_PROBED, mach64InfoRec.name,
+		   xf86TokenToString(mach64ChipTable, pciInfo->ChipType),
+		   xf86TokenToString(mach64ChipTable, info->ChipType));
 	}
 	mach64ChipType = pciInfo->ChipType;
     } else {
@@ -712,8 +727,10 @@ mach64Probe()
 
     if (pciInfo) {
 	if (pciInfo->ChipRev != info->ChipRev) {
-	    ErrorF("PCI and CHIP_CONFIG don't agree on ChipRev, using PCI"
-		   " value\n");
+	    ErrorF("%s %s: PCI (%d) and CONFIG_CHIP_ID (%d) don't agree on"
+		   " ChipRev,\n"
+		   "\tusing PCI value\n", XCONFIG_PROBED, mach64InfoRec.name,
+		   pciInfo->ChipRev, info->ChipRev);
 	}
 	mach64ChipRev = pciInfo->ChipRev;
     } else {
@@ -881,6 +898,8 @@ mach64Probe()
     OFLG_SET(OPTION_POWER_SAVER, &validOptions);
     OFLG_SET(OPTION_NO_BIOS_CLOCKS, &validOptions);
     OFLG_SET(OPTION_NO_PROGRAM_CLOCKS, &validOptions);
+    OFLG_SET(OPTION_NO_FONT_CACHE, &validOptions);
+    OFLG_SET(OPTION_NO_PIXMAP_CACHE, &validOptions);
     xf86VerifyOptions(&validOptions, &mach64InfoRec);
 
     mach64InfoRec.chipset = "mach64";
@@ -1322,6 +1341,11 @@ mach64Probe()
     if (OFLG_ISSET(OPTION_POWER_SAVER, &mach64InfoRec.options))
 	mach64PowerSaver = TRUE;
 
+#ifdef XFreeXDGA
+    mach64InfoRec.displayWidth = mach64InfoRec.virtualX;
+    mach64InfoRec.directMode = XF86DGADirectPresent;
+#endif
+
     return(TRUE);
 }
 
@@ -1584,7 +1608,10 @@ mach64EnterLeaveVT(enter, screen_idx)
 	mach64SaveLUT(mach64savedLUT);
 	LUTissaved = TRUE;
 	if (!xf86Resetting) {
-	    mach64CleanUp();
+#ifdef XFreeXDGA
+	    if (!(mach64InfoRec.directMode & XF86DGADirectGraphics))
+#endif
+		mach64CleanUp();
 	}
 	if (vgaBase)
 	    xf86UnMapDisplay(screen_idx, VGA_REGION);

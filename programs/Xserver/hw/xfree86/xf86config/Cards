@@ -19,7 +19,7 @@
 # chipset/server and untested.
 # 
 # $XConsortium: Cards,v 1.3 95/01/23 15:35:21 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.23 1995/12/09 12:01:51 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.24 1995/12/16 08:21:24 dawes Exp $
 
 # Cirrus Logic
 
@@ -699,6 +699,12 @@ SERVER Mach64
 LINE     #Ramdac "ch8398"
 NOCLOCKPROBE
 
+NAME ATI Mach64 with IBM RGB514 RAMDAC
+CHIPSET ATI-Mach64
+SERVER Mach64
+LINE     #Ramdac "ibm_rgb514"
+NOCLOCKPROBE
+
 NAME ATI Mach64 CT (264CT), Internal RAMDAC
 CHIPSET ATI-Mach64
 SERVER Mach64
@@ -735,7 +741,7 @@ NAME ATI Graphics Pro Turbo
 SEE ATI Mach64
 
 NAME ATI Graphics Pro Turbo 1600
-SEE ATI Mach64
+SEE ATI Mach64 with IBM RGB514 RAMDAC
 
 NAME ATI Win Turbo
 SEE ATI Mach64

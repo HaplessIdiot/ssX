@@ -1,5 +1,5 @@
 /* $XConsortium: mach64pcach.c,v 1.2 95/01/16 13:16:35 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.7 1995/11/12 09:51:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.8 1995/12/02 01:35:45 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -166,10 +166,25 @@ mach64CacheInit(w, h)
                    - w * h * (mach64InfoRec.bitsPerPixel / 8); 
     int lines    = free_ram / (w * (mach64InfoRec.bitsPerPixel / 8));
     int cache_sets;
+    static Bool first = TRUE;
 
+
+    if (OFLG_ISSET(OPTION_NO_PIXMAP_CACHE, &mach64InfoRec.options)) {
+	if (first) {
+	    ErrorF("%s %s: Pixmap cache disabled\n", XCONFIG_GIVEN,
+	           mach64InfoRec.name);
+	    First256Slot = -1;
+	    First128Slot = -1;
+	    First64Slot  = -1;
+	    MaxSlots     = -1;
+	    first = FALSE;
+	}
+	return;
+    }
 
     if (lines < 0 || w < 1024)
 	  lines = 0;
+
 				/* If cache_sets is changed, remember
 				 * to change mach64MaxY in mach64c.im.
 				 */

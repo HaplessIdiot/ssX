@@ -1,5 +1,5 @@
 /* $XConsortium: s3BtCursor.c,v 1.4 95/01/16 13:16:49 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.6 1995/01/12 12:03:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.8 1995/01/28 17:01:39 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -333,10 +333,15 @@ s3BtMoveCursor(pScr, x, y)
       return;
 
    y -= s3InfoRec.frameY0;
+
+   if (s3InfoRec.modes->Flags & V_DBLSCAN)
+      y <<= 1;
+
    y += 64;
    y -= s3hotY;
    if (y < 0)
       return;
+
 
    UNLOCK_SYS_REGS;
 
@@ -448,6 +453,35 @@ s3BtLoadCursor(pScr, pCurs, x, y)
 
       s3BtYPosMask = 0xFE;
       s3OutBtReg(BT_COMMAND_REG_2, 0xF7, 0x08);
+   } else if (s3InfoRec.modes->Flags & V_DBLSCAN) {
+      s3StartBtData(BT_WRITE_ADDR, 0x00, BT_CURS_RAM_DATA);
+
+      for (i=0; i < 32; i++) {		/* 64 rows in cursor */
+	 p = ram + i * 8;
+	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
+            s3OutBtData(BT_CURS_RAM_DATA, *p);
+	 }
+	 p = ram + i * 8;
+	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
+            s3OutBtData(BT_CURS_RAM_DATA, *p);
+	 }
+      }
+      ram += 512;
+      for (i=0; i < 32; i++) {		/* 64 rows in cursor */
+	 p = ram + i * 8;
+	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
+            s3OutBtData(BT_CURS_RAM_DATA, *p);
+	 }
+	 p = ram + i * 8;
+	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
+            s3OutBtData(BT_CURS_RAM_DATA, *p);
+	 }
+      }
+
+      s3EndBtData();
+
+      s3BtYPosMask = 0xFF;
+      s3OutBtReg(BT_COMMAND_REG_2, 0xF7, 0x00);
    } else {
       /* Start data output */
       s3StartBtData(BT_WRITE_ADDR, 0x00, BT_CURS_RAM_DATA);

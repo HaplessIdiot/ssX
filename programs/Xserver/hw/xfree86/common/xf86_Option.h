@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.37 1995/12/09 11:07:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.38 1995/12/16 08:20:18 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -90,6 +90,8 @@ typedef struct {
 #define OPTION_NO_BITBLT	43 /* Disable hardware bitblt (cirrus) */
 #define OPTION_FAVOUR_BITBLT	44 /* Favour use of BitBLT (cirrus) */
 #define OPTION_NO_IMAGEBLT	45 /* Avoid system-to-video BitBLT (cirrus) */
+#define OPTION_NO_FONT_CACHE	46 /* Don't enable the font cache */
+#define OPTION_NO_PIXMAP_CACHE	47 /* Don't enable the pixmap cache */
 
 /* RAMDAC options */
 #define OPTION_BT485_CURS	50 /* Override Bt485 RAMDAC probe */
@@ -231,6 +233,8 @@ OptFlagRec xf86_OptionTab[] = {
   { "favour_bitblt",	OPTION_FAVOUR_BITBLT },
   { "favor_bitblt",	OPTION_FAVOUR_BITBLT },
   { "no_imageblt",	OPTION_NO_IMAGEBLT },
+  { "no_font_cache",	OPTION_NO_FONT_CACHE },
+  { "no_pixmap_cache",	OPTION_NO_PIXMAP_CACHE },
 
   { "bt485_curs",	OPTION_BT485_CURS },
   { "ti3020_curs",	OPTION_TI3020_CURS },

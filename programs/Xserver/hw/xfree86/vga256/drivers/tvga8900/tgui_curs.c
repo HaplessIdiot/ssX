@@ -25,6 +25,8 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
+/* $XFree86$ */
+
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"
@@ -41,8 +43,10 @@
 #include "xf86_OSlib.h"
 #include "vga.h"
 #include "t89_driver.h"
+#include "tgui_ger.h"
 
 extern int TVGAchipset;
+extern int tridentHWCursorType;
 
 extern Bool vgaUseLinearAddressing;
 extern Bool tridentUseLinear;
@@ -162,6 +166,14 @@ Bool TridentCursorInit(pm, pScr)
  */
 
 static void TridentShowCursor() {
+	if (tridentHWCursorType == 2)
+	{
+		outb(GER_INDEX, 0x34);
+		outb(GER_BYTE2, 0x01);	/* Enable Cursor in GER */
+		outb(GER_INDEX, 0x78);
+		outb(GER_BYTE0, TridentCursorWidth - 1); 
+		outb(GER_BYTE2, TridentCursorHeight - 1);
+	} else 
 	wrinx(vgaIOBase + 4, 0x50, TridentCursorControlMode | 0x80);
 }
 
@@ -170,6 +182,11 @@ static void TridentShowCursor() {
  */
 
 void TridentHideCursor() {
+	if (tridentHWCursorType == 2)
+	{
+		outb(GER_INDEX, 0x34);
+		outb(GER_BYTE2, 0x00);	/* Disable Cursor in GER */
+	} else
 	wrinx(vgaIOBase + 4, 0x50, TridentCursorControlMode & 0x7F);
 }
 
@@ -317,8 +334,21 @@ static void TridentLoadCursor(pScr, pCurs, x, y)
 	TridentHideCursor();
 
 	/* Program the cursor image address in video memory. */
- 	wrinx(vgaIOBase + 4, 0x44, ((TridentCursorAddress/1024) & 0x00FF));
-	wrinx(vgaIOBase + 4, 0x45, ((TridentCursorAddress/1024) & 0xFF00) >> 8);
+	if (tridentHWCursorType == 2)
+	{
+		outb(GER_INDEX, 0x74);
+		outb(GER_BYTE0, TridentCursorAddress & 0x000000FF);
+		outb(GER_BYTE1, (TridentCursorAddress & 0x0000FF00) >> 8);
+		outb(GER_BYTE2, (TridentCursorAddress & 0x00FF0000) >> 16);
+		outb(GER_BYTE3, (TridentCursorAddress & 0xFF000000) >> 24);
+	} 
+	else
+	{
+ 		wrinx(vgaIOBase + 4, 0x44, 
+			((TridentCursorAddress/1024) & 0x00FF));
+		wrinx(vgaIOBase + 4, 0x45, 
+			((TridentCursorAddress/1024) & 0xFF00) >> 8);
+	}
 
 	TridentLoadCursorToCard(pScr, pCurs, x, y);
 
@@ -401,14 +431,29 @@ static void TridentMoveCursor(pScr, x, y)
 		y *= 2;
 
 	/* Program the cursor origin (offset into the cursor bitmap). */
-	wrinx(vgaIOBase + 4, 0x46, xorigin);
-	wrinx(vgaIOBase + 4, 0x47, yorigin);
+	if (tridentHWCursorType == 1)
+	{
+		wrinx(vgaIOBase + 4, 0x46, xorigin);
+		wrinx(vgaIOBase + 4, 0x47, yorigin);
+	}
 
 	/* Program the new cursor position. */
-	wrinx(vgaIOBase + 4, 0x40, x);		/* Low byte. */
-	wrinx(vgaIOBase + 4, 0x41, x >> 8);	/* High byte. */
-	wrinx(vgaIOBase + 4, 0x42, y);		/* Low byte. */
-	wrinx(vgaIOBase + 4, 0x43, y >> 8);	/* High byte. */
+	if (tridentHWCursorType == 2)
+	{
+		outb(GER_INDEX, 0x30);
+		outb(GER_BYTE0, x);
+		outb(GER_BYTE1, x >> 8);
+		outb(GER_BYTE3, y);
+		outb(GER_INDEX, 0x34);
+		outb(GER_BYTE0, y >> 8);
+	}
+	else
+	{
+		wrinx(vgaIOBase + 4, 0x40, x);		/* Low byte. */
+		wrinx(vgaIOBase + 4, 0x41, x >> 8);	/* High byte. */
+		wrinx(vgaIOBase + 4, 0x42, y);		/* Low byte. */
+		wrinx(vgaIOBase + 4, 0x43, y >> 8);	/* High byte. */
+	}
 }
 
 /*
@@ -463,40 +508,36 @@ TridentRecolorCursor(pScr, pCurs, displayed)
 
    pScr->ResolveColor (&fred, &fgreen, &fblue, pVisual);
 
-   /*
-    * The Trident 9440 doesn't have adjustable colors for the cursor 
-    * Whereas the 9660/9680 do.
-    */
-   if (TVGAchipset == TGUI9440AGi)
-   {	
-	/* We've setup the overscan to black in the Init function */
+   outb(0x3c8, 0x00);		/* DAC color 0 */
+   outb(0x3c9, fred>>shift);
+   outb(0x3c9, fgreen>>shift);
+   outb(0x3c9, fblue>>shift);
 
-	outb (0x3c8, 0x00);		/* DAC color 0 (Dangerous) */
-	outb (0x3c9, fred>>shift);
-	outb (0x3c9, fgreen>>shift);
-	outb (0x3c9, fblue>>shift);
+   outb (0x3c8, 0xFF);		/* DAC color 255 */
+   outb (0x3c9, bred>>shift);
+   outb (0x3c9, bgreen>>shift);
+   outb (0x3c9, bblue>>shift);
 
-   	outb (0x3c8, 0xFF);		/* DAC color 255 */
-   	outb (0x3c9, bred>>shift);
-   	outb (0x3c9, bgreen>>shift);
-   	outb (0x3c9, bblue>>shift);
-	return;
+   if (tridentHWCursorType == 2)
+   {
+	outb(GER_INDEX, 0x38);
+	outb(GER_BYTE0, 0x00);
+	outb(GER_BYTE1, 0xFF);
    }
-#if 0
+   else
    if ((TVGAchipset == TGUI9660XGi) || (TVGAchipset == TGUI9680))
    {
 	/* We've got specific colours now for the cursor */
 
-	wrinx(vgaIOBase + 4, 0x48,
-	wrinx(vgaIOBase + 4, 0x49, 
-	wrinx(vgaIOBase + 4, 0x4A, 
-	wrinx(vgaIOBase + 4, 0x4B,
-	wrinx(vgaIOBase + 4, 0x4C,
-	wrinx(vgaIOBase + 4, 0x4D,
-	wrinx(vgaIOBase + 4, 0x4E,
-	wrinx(vgaIOBase + 4, 0x4F,
+	wrinx(vgaIOBase + 4, 0x48, 0x00);
+	wrinx(vgaIOBase + 4, 0x49, 0x00);
+	wrinx(vgaIOBase + 4, 0x4A, 0x00);
+	wrinx(vgaIOBase + 4, 0x4B, 0x00);
+	wrinx(vgaIOBase + 4, 0x4C, 0xFF);
+	wrinx(vgaIOBase + 4, 0x4D, 0x00);
+	wrinx(vgaIOBase + 4, 0x4E, 0x00);
+	wrinx(vgaIOBase + 4, 0x4F, 0x00);
    }
-#endif
 }
 
 /*

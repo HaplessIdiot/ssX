@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/16 13:18:27 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.37 1995/12/02 05:07:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.38 1995/12/09 11:08:57 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -172,6 +172,8 @@ ScrnInfoRec vga256InfoRec = {
 #ifdef XFreeXDGA
   0,                    /* int directMode */
   NULL,                 /* Set Vid Page */
+  0,                    /* unsigned long physBase */
+  0,                    /* int physSize */
 #endif
 };
 
@@ -815,6 +817,16 @@ vgaProbe()
 	vgaUseLinearAddressing = Drivers[i]->ChipUseLinearAddressing;
 	vgaPhysLinearBase = Drivers[i]->ChipLinearBase;
 	vgaLinearSize = Drivers[i]->ChipLinearSize;
+
+#ifdef XFreeXDGA
+	if (vgaUseLinearAddressing) {
+	    vga256InfoRec.physBase = vgaPhysLinearBase;
+	    vga256InfoRec.physSize = vgaLinearSize;
+	} else {
+	    vga256InfoRec.physBase = 0xA0000;
+	    vga256InfoRec.physSize = Drivers[i]->ChipMapSize;
+	}
+#endif
 
 	/* Currently linear addressing is required for 16/32bpp. */
 	/* Bail out if it is not enabled. */

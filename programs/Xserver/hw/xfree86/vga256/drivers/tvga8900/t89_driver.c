@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.13 1995/11/16 11:06:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.15 1995/12/16 08:21:17 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -169,7 +169,7 @@ vgaVideoChipRec TVGA8900 = {
 
 int TVGAchipset;
 static int numClocks;
-static int tridentHWCursorType = 0;
+int tridentHWCursorType = 0;
 static int tridentReprogrammedMCLK = 0;
 int tridentDisplayWidth;
 Bool tridentUseLinear = FALSE;
@@ -701,9 +701,7 @@ TVGA8900Probe()
 	case TGUI9680:
 		tridentIsTGUI = TRUE;			/* This should work */
 		tridentTGUIProgrammableClocks = TRUE;
-#if 0 /* NOT YET ! */
 		tridentHWCursorType = 1;
-#endif
 		break;
 	case TGUI9440AGi:			/* This works for me ! */
 		tridentIsTGUI = TRUE;
@@ -1135,7 +1133,7 @@ TVGA8900FbInit()
 	offscreen_available = vga256InfoRec.videoRam * 1024 -
 				TridentDisplayableMemory;
 
-	if (tridentHWCursorType == 1)
+	if (tridentHWCursorType)
 	{
 	  if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options))
 	  {

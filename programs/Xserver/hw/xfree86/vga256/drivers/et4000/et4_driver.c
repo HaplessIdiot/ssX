@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.6 95/01/16 13:18:14 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.18 1995/12/09 11:08:47 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.19 1995/12/16 08:21:03 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1027,10 +1027,12 @@ ET4000Init(mode)
    * when something is being drawn. This only happens WAY beyond 80 MHz 
    * (those 135 MHz ramdac's...)
    */
+#ifdef W32_ACCEL_SUPPORT
    new->Compatibility = (initialCompatibility & 0x7F) | 0x80;
    new->VSConf2 = initialVSConf2;
    if (vga256InfoRec.clock[mode->Clock] > 80000)
      new->VSConf2 = (new->VSConf2 & 0x7f) | 0x80;
+#endif
 
    if (et4000_type >= TYPE_ET4000W32P)
    {

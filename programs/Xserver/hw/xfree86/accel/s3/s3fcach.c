@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.4 95/01/23 15:33:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.16 1995/07/12 15:36:43 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -69,6 +69,19 @@ s3FontCache8Init()
    int BitPlane;
    CachePool FontPool;
 
+   if (OFLG_ISSET(OPTION_NO_FONT_CACHE, &s3InfoRec.options)) {
+      if (first) {
+	 ErrorF("%s %s: Font cache disabled\n", XCONFIG_GIVEN, s3InfoRec.name);
+      }
+   }
+
+   if (OFLG_ISSET(OPTION_NO_PIXMAP_CACHE, &s3InfoRec.options)) {
+      if (first) {
+	 ErrorF("%s %s: Pixmap expansion disabled\n", XCONFIG_GIVEN,
+		s3InfoRec.name);
+      }
+   }
+
    /* y now includes the cursor space */
    x = x2 = 0;
    y = y2 = s3CursorStartY + s3CursorLines;
@@ -79,7 +92,8 @@ s3FontCache8Init()
     * If a full-size pixmap expansion area will fit to the right, put it
     * there.
     */
-   if (s3DisplayWidth - s3InfoRec.virtualX >= MAX_PIXMAP_WIDTH ||
+   if (!OFLG_ISSET(OPTION_NO_PIXMAP_CACHE, &s3InfoRec.options)) {
+    if (s3DisplayWidth - s3InfoRec.virtualX >= MAX_PIXMAP_WIDTH ||
        s3DisplayWidth - s3InfoRec.virtualX >= h) {
       /* use area at right of screen */
       if (s3DisplayWidth - s3InfoRec.virtualX > MAX_PIXMAP_WIDTH)
@@ -102,7 +116,7 @@ s3FontCache8Init()
 	 y2 = y - pmwidth;
 	 h2 = h + pmwidth;
       }
-   } else if (h >= MIN_PIXMAP_WIDTH) {
+    } else if (h >= MIN_PIXMAP_WIDTH) {
       /* use area below screen, right most location */
       if (h > MAX_PIXMAP_WIDTH )
 	pmwidth = MAX_PIXMAP_WIDTH;
@@ -120,37 +134,42 @@ s3FontCache8Init()
       /* x2, w2 unchanged */
       y2 += pmwidth;
       h2 -= pmwidth;
-   }
+    }
 
-   /* Initialise the pixmap expansion area */
-   if (pmwidth > 0) {
+    /* Initialise the pixmap expansion area */
+    if (pmwidth > 0) {
       s3InitFrect(pmx, pmy, pmwidth);
       if (first) {
 	 ErrorF(
 	  "%s %s: Using a single %dx%d area at (%d,%d) for expanding pixmaps\n",
 	  XCONFIG_PROBED, s3InfoRec.name, pmwidth, pmwidth, pmx, pmy);
       }
-   } else {
+    } else {
       if (first) {
 	 ErrorF("%s %s: No pixmap expanding area available\n",
 		XCONFIG_PROBED, s3InfoRec.name);
       }
+    }
    }
 
-   /* Choose the largest font cache area */
-   if ((w2 * h2 > w * h) && (w2 > MIN_FONTCACHE_WIDTH) &&
+   if (OFLG_ISSET(OPTION_NO_FONT_CACHE, &s3InfoRec.options)) {
+      if (first)
+	 xf86InitText( NULL, s3NoCPolyText, s3NoCImageText );
+   } else {
+    /* Choose the largest font cache area */
+    if ((w2 * h2 > w * h) && (w2 > MIN_FONTCACHE_WIDTH) &&
        (h2 > MIN_FONTCACHE_HEIGHT)) {
       x = x2;
       w = w2;
       y = y2;
       h = h2;
-   }
+    }
 
-   /*
-    * Don't allow a font cache if we don't have room for at least
-    * a complete 6x13 font.
-    */
-   if (w >= 6*32 && h >= MIN_FONTCACHE_HEIGHT) {
+    /*
+     * Don't allow a font cache if we don't have room for at least
+     * a complete 6x13 font.
+     */
+    if (w >= 6*32 && h >= MIN_FONTCACHE_HEIGHT) {
       if( first ) {
          FontPool = xf86CreateCachePool(ALIGNMENT);
          for( BitPlane = s3InfoRec.bitsPerPixel-1; BitPlane >= 0; BitPlane-- ) {
@@ -166,7 +185,7 @@ s3FontCache8Init()
       else {
         xf86ReleaseFontCache();
       }
-   } else if (first) {
+    } else if (first) {
 
       /*
        * Crash and burn if the cached glyph write function gets called.
@@ -174,6 +193,7 @@ s3FontCache8Init()
       xf86InitText( NULL, s3NoCPolyText, s3NoCImageText );
       ErrorF( "%s %s: No font cache available\n",
               XCONFIG_PROBED, s3InfoRec.name );
+    }
    }
    first = 0;
    return;

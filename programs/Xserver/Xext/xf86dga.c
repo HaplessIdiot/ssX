@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.0 1995/12/09 11:05:55 dawes Exp $ */
 
 /*
 
@@ -113,7 +113,12 @@ ProcXF86DGAGetVideoLL(client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
+#if 0
     xf86GetVidMemData(stuff->screen, &rep.offset, &rep.bank_size);
+#else
+    rep.offset = vptr->physBase;
+    rep.bank_size = vptr->physSize;
+#endif
     rep.width = vptr->displayWidth;
     rep.ram_size = vptr->videoRam;
 

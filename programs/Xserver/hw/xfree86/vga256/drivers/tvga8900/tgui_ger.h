@@ -24,25 +24,10 @@
 
 /* $XFree86$ */
 
-/*
- * Trident Chipset Definitions
- */
+/* Graphics Engine for 9420/9430 */
 
-#define TVGA8200LX	0
-#define TVGA8800CS	1
-#define TVGA8900B	2
-#define TVGA8900C	3
-#define TVGA8900CL	4
-#define TVGA8900D	5
-#define TVGA9000	6
-#define TVGA9000i	7
-#define TVGA9100B	8
-#define TVGA9200CXr	9
-#define TGUI9320LCD	10
-#define TGUI9400CXi	11
-#define TGUI9420	12
-#define TGUI9420DGi	13
-#define TGUI9430DGi	14
-#define TGUI9440AGi	15
-#define TGUI9660XGi	16
-#define TGUI9680	17
+#define GER_INDEX	0x210A
+#define GER_BYTE0	0x210C
+#define GER_BYTE1	0x210D
+#define GER_BYTE2	0x210E
+#define GER_BYTE3	0x210F

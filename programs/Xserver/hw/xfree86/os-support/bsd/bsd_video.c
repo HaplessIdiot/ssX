@@ -1,5 +1,5 @@
 /* $XConsortium: bsd_video.c,v 1.2 94/10/12 20:45:13 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.5 1995/01/28 17:04:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.6 1995/12/09 11:08:07 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -60,10 +60,12 @@ static Bool devMemChecked = FALSE;
 static Bool useDevMem = FALSE;
 static int  devMemFd = -1;
 
+#if 0
 static struct xf86memMap {
   int offset;
   int memSize;
 } xf86memMaps[MAXSCREENS];
+#endif
 
 #ifdef HAS_APERTURE_DRV
 #define DEV_APERTURE "/dev/xf86"
@@ -186,8 +188,10 @@ unsigned long Size;
 			   "xf86MapVidMem", DEV_MEM, Size, Base, 
 			   strerror(errno));
 	    }
+#if 0
 	    xf86memMaps[ScreenNum].offset = (int) Base;
 	    xf86memMaps[ScreenNum].memSize = Size;
+#endif
 	    return(base);
 	}
 		
@@ -234,12 +238,15 @@ unsigned long Size;
 	    FatalError("xf86MapVidMem: Could not mmap /dev/vga (%s)\n",
 		       strerror(errno));
 	}
+#if 0
 	xf86memMaps[ScreenNum].offset = (int) Base;
 	xf86memMaps[ScreenNum].memSize = Size;
 	return(base);
 #endif
+#endif
 }
 
+#if 0
 void xf86GetVidMemData(ScreenNum, Base, Size)
 int ScreenNum;
 int *Base;
@@ -248,6 +255,7 @@ int *Size;
    *Base = xf86memMaps[ScreenNum].offset;
    *Size = xf86memMaps[ScreenNum].memSize;
 }
+#endif
                              
 void xf86UnMapVidMem(ScreenNum, Region, Base, Size)
 int ScreenNum;

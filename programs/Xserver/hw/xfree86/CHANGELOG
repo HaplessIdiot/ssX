@@ -1,4 +1,17 @@
-XFree86 3.1.2Ac (16 December 1995)
+XFree86 3.1.2Ac (17 December 1995)
+143. Modify the XDGA implementation in the server, and add support for it
+     to the Mach64 server.  Also, XDGA is now enabled for all OSs since there
+     are now no OS-specific parts on the server side.
+142. Add "no_font_cache" and "no_pixmap_cache" options to allow the font
+     cache and pixmap cache/expansion to be disabled in the S3 and Mach64
+     servers.
+141. Fix positioning and shape of the Bt485 HW cursor for doublescan modes
+     in the S3 server.
+140. Fix positioning of the HW cursor for interlaced and doublescan modes
+     with the IBM RGB RAMDACs in the S3 server.  The cursor shape still
+     isn't correct though (Trent Piepho and R.E. Wolff).
+139. HW cursor support for the Trident 9660/9680 and 9430 -- not tested
+     (Alan Hourihane).
 138. XFree86-DGA extension support for ISC SVR3, and SVR4 (Michael Rohleder).
 137. Fix for "XIOerror 11 (Resource temporarily unavailable)" errors while
      running xterm on ISC (Michael Rohleder).

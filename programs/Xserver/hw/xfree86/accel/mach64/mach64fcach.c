@@ -1,5 +1,5 @@
 /* $XConsortium: mach64fcach.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fcach.c,v 3.3 1995/07/12 15:35:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fcach.c,v 3.4 1995/11/12 09:51:12 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -70,6 +70,16 @@ mach64FontCache8Init(x,y)
     int        lines       = free_ram / (x * (mach64InfoRec.bitsPerPixel / 8));
     int        cache_sets;
     static int initialized = 0;
+
+    if (OFLG_ISSET(OPTION_NO_FONT_CACHE, &mach64InfoRec.options)) {
+	if (!initialized) {
+	    ErrorF("%s %s: Font cache disabled\n", XCONFIG_GIVEN,
+		   mach64InfoRec.name);
+	    NumFonts = 0;
+	    initialized++;
+	}
+	return;
+    }
 
     if (!initialized) {
        ++initialized;

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.72 1995/12/02 05:02:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.73 1995/12/16 08:13:03 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -198,7 +198,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.72 1995/12/02 05:02:46 dawes Exp $
  * Build the XFree86 DGA support
  */
 #ifndef BuildXF86DGA
-#define BuildXF86DGA			NO
+#define BuildXF86DGA			YES
 #endif
 
 /*

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.107 1995/12/09 11:07:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.108 1995/12/16 08:20:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -138,6 +138,8 @@ ScrnInfoRec s3InfoRec =
 #ifdef XFreeXDGA
    0,				/* int directMode */
    s3SetVidPage,		/* Set Vid Page */
+   0,				/* unsigned long physBase */
+   0,				/* int physSize */
 #endif
 };
 
@@ -725,6 +727,8 @@ s3Probe()
    OFLG_SET(OPTION_BT485_CURS, &validOptions);
    OFLG_SET(OPTION_SHOWCACHE, &validOptions);
    OFLG_SET(OPTION_FB_DEBUG, &validOptions);
+   OFLG_SET(OPTION_NO_FONT_CACHE, &validOptions);
+   OFLG_SET(OPTION_NO_PIXMAP_CACHE, &validOptions);
    OFLG_SET(OPTION_TI3020_CURS, &validOptions);
    OFLG_SET(OPTION_NO_TI3020_CURS, &validOptions);
    OFLG_SET(OPTION_TI3026_CURS, &validOptions);
