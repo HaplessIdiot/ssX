@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.90 2003/09/09 03:20:27 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.91 2003/09/17 05:48:30 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -544,12 +544,13 @@ install:: fonts.alias							@@\
  */
 #ifdef AmigaArchitecture
 
-# include <xf86.rules>
 # ifndef BuildServer
 #  define BuildServer		NO
 # endif
 
 # define ServerExtraDefines	-DXFree86Server
+
+# include <xfree86.cf>
 
 #endif /* AmigaArchitecture */
 
@@ -566,6 +567,7 @@ install:: fonts.alias							@@\
 # define CompressAllFonts	NO
 # define InstallFontAliases	InstallFontAliasesNoComment
 # define UseRgbTxt		NO
+# define UseRgb			YES
 
 # define ServerExtraDefines	-DXFree86Server
 
@@ -578,7 +580,6 @@ install:: fonts.alias							@@\
  * Definitions for the mac68k architecture
  */
 #ifdef Mac68kArchitecture
-
 
 # ifndef BuildServer
 #  define BuildServer		NO
@@ -618,7 +619,8 @@ install:: fonts.alias							@@\
 # define BootstrapCFlags       -Dsun3
 # define UnalignedReferencesAllowed	YES /* changes _XtCopyArgs() */
 /* Note: -ansi turns off -Dmc68000 */
-# define ServerExtraDefines    GccGasOption -Dmc68000 -Dmc68020 -DXFree86Server
+# define ServerExtraDefines    GccGasOption -Dmc68000 -Dmc68020 \
+				-DXFree86Server -DINCLUDE_CG2_HEADER
 
 # ifndef Xsun24Server
 #  define Xsun24Server		NO
@@ -696,7 +698,7 @@ install:: fonts.alias							@@\
 #  define HasWeakSymbols	YES
 # endif
 # ifndef GccWarningOptions
-#  if XFree86Devel
+#  if defined(XFree86Devel) && XFree86Devel
 #   define GccWarningOptions -Wall -Wpointer-arith -Wstrict-prototypes \
 			  -Wmissing-prototypes -Wmissing-declarations \
 			  -Wnested-externs
@@ -742,14 +744,18 @@ install:: fonts.alias							@@\
  */
 #ifdef SparcArchitecture
 
-# define ServerOSDefines 	-DDDXOSINIT
-# define ServerExtraDefines	-DAVOID_GLYPHBLT -DPIXPRIV  -DXFree86Server \
-				DebugDefines \
-				-DX_BYTE_ORDER=$(X_BYTE_ORDER)
 # define BuildXF86MiscExt	NO
 # define BuildMITMiscExt	NO
 
+# if OSMajorVersion > 3 || OSMajorVersion == 3 && OSMinorVersion >= 2
+#  define HasWeakSymbols	YES
+#endif 
+
 # if OSMajorVersion == 2 || OSMajorVersion == 3 && OSMinorVersion < 2
+#  define ServerOSDefines 	-DDDXOSINIT
+#  define ServerExtraDefines	-DAVOID_GLYPHBLT -DPIXPRIV  -DXFree86Server \
+				DebugDefines -DINCLUDE_CG2_HEADER \
+				-DX_BYTE_ORDER=$(X_BYTE_ORDER)
 #  ifndef Xsun24Server
 #   define Xsun24Server		YES
 #  endif
@@ -769,7 +775,7 @@ install:: fonts.alias							@@\
 #  ifndef XsunMonoServer
 #   define XsunMonoServer	NO
 #  endif
-#endif
+# endif
 
 # define XkbServerDefines	-DXKB_ALWAYS_USES_SOFT_REPEAT
 
@@ -796,7 +802,7 @@ install:: fonts.alias							@@\
 
 # define ServerExtraDefines	GccGasOption -D_XSERVER64 XFree86ServerDefines
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DDDXOSINIT
-# define XkbServerDefines  -DXKB_ALWAYS_USES_SOFT_REPEAT
+# define XkbServerDefines	-DXKB_ALWAYS_USES_SOFT_REPEAT
 
 # if XF86Server
 #   ifndef DoLoadableServer
@@ -809,6 +815,33 @@ install:: fonts.alias							@@\
 
 #endif /* Sparc64Architecture */
 
+/*
+ * Definitions for the vax architecture
+ */
+#ifdef VaxArchitecture
+
+# ifndef BuildServer
+#  define BuildServer		NO
+# endif
+
+/* For the X11R5 server */
+# define CompressAllFonts	NO
+# define InstallFontAliases	InstallFontAliasesNoComment
+# define UseRgbTxt		NO
+# define UseRgb			YES
+
+# define ServerExtraDefines	-DXFree86Server
+# define UnalignedReferencesAllowed YES
+# define HasSharedLibraries	NO
+# define HasDlopen		NO
+
+# define BuildGlxExt		NO
+# define BuildGLXLibrary	NO
+
+# include <xfree86.cf>
+
+#endif /* VaxArchitecture */
+ 
 /* End or architecture specific section */
 
 /*
