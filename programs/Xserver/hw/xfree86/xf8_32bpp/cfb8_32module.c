@@ -1,12 +1,12 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfb8_32module.c,v 1.1 1999/01/03 03:58:55 dawes Exp $ */
 
 
 #ifdef XFree86LOADER
 
 #include "xf86Module.h"
 
-MODULEINITPROTO(cfb8_32ModuleInit);
-static MODULESETUPPROTO(cfb8_32Setup);
+MODULEINITPROTO(xf8_32bppModuleInit);
+static MODULESETUPPROTO(xf8_32bppSetup);
 
 static XF86ModuleVersionInfo VersRec =
 {
@@ -22,16 +22,16 @@ static XF86ModuleVersionInfo VersRec =
 };
 
 void
-cfb8_32ModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
+xf8_32bppModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
               ModuleTearDownProc *teardown)
 {
     *vers = &VersRec;
-    *setup = cfb8_32Setup;
+    *setup = xf8_32bppSetup;
     *teardown = NULL;
 }
 
 static pointer
-cfb8_32Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+xf8_32bppSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     if (!LoadSubModule(module, "cfb", NULL, NULL, NULL, NULL, errmaj, errmin))
         return NULL;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.14 1998/12/13 05:32:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.15 1999/01/03 03:58:50 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -1146,6 +1146,8 @@ typedef struct _XAAInfoRec {
    
    char* PixmapCachePrivate;
 
+   /* Overlays */
+   unsigned int OverlayKey;
 
    /* Miscellaneous */
 

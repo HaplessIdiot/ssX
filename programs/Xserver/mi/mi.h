@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/mi/mi.h,v 3.2 1998/04/05 16:42:27 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mi.h,v 3.3 1998/10/04 09:39:22 dawes Exp $ */
 
 #ifndef MI_H
 #define MI_H
@@ -720,6 +720,10 @@ extern void miMarkUnrealizedWindow(
     Bool /*fromConfigure*/
 #endif
 );
+
+extern void miSegregateChildren(WindowPtr pWin, RegionPtr pReg, int depth);
+
+/* mizerarc.c */
 
 extern void miZeroPolyArc(
 #if NeedFunctionPrototypes

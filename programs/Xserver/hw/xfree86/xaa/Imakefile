@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.28 1998/12/06 06:08:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.29 1999/01/03 03:58:50 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -33,8 +33,7 @@ DONES = lsb_first/DONE msb_first/DONE lsb_fixed/DONE msb_fixed/DONE
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
-	   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC) \
-	   -I$(XF86SRC)/xf8_32bpp
+	   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC)
 
 ModuleObjectRule()
 

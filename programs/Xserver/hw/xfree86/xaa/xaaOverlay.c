@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.3 1998/12/06 06:08:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.4 1999/01/03 03:58:51 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -14,7 +14,6 @@
 #include "xaawrap.h"
 #include "gcstruct.h"
 #include "pixmapstr.h"
-#include "cfb8_32.h"
 
 extern WindowPtr *WindowTable;
 
@@ -70,7 +69,7 @@ XAACopyWindow8_32(
 	DEALLOCATE_LOCAL(pptSrc);
     }
 
-    cfb8_32SegregateChildren(pWin, &rgnDst32);
+    miSegregateChildren(pWin, &rgnDst32, 24);
     if(REGION_NOTEMPTY(pScreen, &rgnDst32)) {
 	REGION_INTERSECT(pScreen, &rgnDst32, &rgnDst32, prgnSrc);
 	nbox = REGION_NUM_RECTS(&rgnDst32);
@@ -133,7 +132,7 @@ XAAPaintWindow8_32(
 	break;
     case PW_BORDER:
 	if(depth == 24)
-	   key = cfb8_32GetKey(pScreen) << 24;
+	   key = infoRec->OverlayKey << 24;
 	if (pWin->borderIsPixel) 
 	    fg = pWin->border.pixel;
 	else 	/* pixmap */ 
@@ -289,7 +288,7 @@ XAAWindowExposures8_32(
 	XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
 	if(REGION_NUM_RECTS(pReg) && infoRec->FillSolidRects) {
 	    (*infoRec->FillSolidRects)(infoRec->pScrn, 
-			(cfb8_32GetKey(pScreen) << 24), GXcopy, 0xff000000,
+			(infoRec->OverlayKey << 24), GXcopy, 0xff000000,
 			REGION_NUM_RECTS(pReg), REGION_RECTS(pReg));
 	    miWindowExposures(pWin, pReg, pOtherReg);
 	    return;

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.62 1998/12/13 10:33:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.63 1999/01/03 03:58:35 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -242,6 +242,12 @@ static const char *cfbSymbols[] = {
     "cfb16ScreenInit",
     "cfb24ScreenInit",
     "cfb32ScreenInit",
+    "cfb8_32ScreenInit",
+    NULL
+};
+
+static const char *xf8_32bppSymbols[] = {
+    "xf86Overlay8Plus32Init",
     NULL
 };
 
@@ -251,6 +257,7 @@ static const char *xaaSymbols[] = {
     "XAAInit",
     "XAAStippleScanlineFuncLSBFirst",
     "XAAOverlayFBfuncs",
+    "XAACachePlanarMonoStipple",
     "XAAScreenIndex",
     NULL
 };
@@ -327,8 +334,8 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
-			  ramdacSymbols, ddcSymbols, NULL);
+	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
+			  xf8_32bppSymbols, ramdacSymbols, ddcSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -1410,8 +1417,15 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	reqSym = "cfb24ScreenInit";
 	break;
     case 32:
-	mod = "cfb32";
-	reqSym = "cfb32ScreenInit";
+	if (pMga->Overlay8Plus24) {
+	    mod = "xf8_32bpp";
+	    reqSym = "cfb8_32ScreenInit";
+	    xf86LoaderReqSymLists(xf8_32bppSymbols, NULL);
+	} else {
+	    mod = "cfb32";
+	    reqSym = "cfb32ScreenInit";
+	    
+	}
 	break;
     }
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
