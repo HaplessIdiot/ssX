@@ -1,8 +1,14 @@
-XCOMM $XFree86: xc/programs/xf86dga/Imakefile,v 3.1 1995/12/21 11:45:41 dawes Exp $
+XCOMM $XFree86: xc/programs/xf86dga/Imakefile,v 3.2 1995/12/23 09:41:10 dawes Exp $
 
         DEPLIBS = $(DEPXLIB)
 LOCAL_LIBRARIES = $(XLIB)
            SRCS = dga.c
            OBJS = dga.o
 
-ComplexProgramTarget(dga)
+AllTarget(ProgramTargetName(dga))
+
+NormalProgramTarget(dga,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES),NullParameter)
+InstallProgramWithFlags(dga,$(BINDIR),$(INSTUIDFLAGS))
+DependTarget()
+
+InstallManPage(dga,$(MANDIR))

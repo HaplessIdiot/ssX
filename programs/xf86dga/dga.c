@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.3 1995/12/17 05:04:35 dawes Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.4 1995/12/23 09:41:11 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -38,6 +38,11 @@ main(int argc, char *argv[])
     Visual *vis;
     Window root;
     XSetWindowAttributes xswa;
+
+    if (geteuid()) {
+	fprintf(stderr, "Must be suid root\n");
+	exit(1);
+    }
 
     if ( (dis = XOpenDisplay(NULL)) == NULL )
      {
@@ -124,6 +129,9 @@ main(int argc, char *argv[])
 			   XF86DGADirectGraphics|
 			   XF86DGADirectMouse|
 			   XF86DGADirectKeyb);
+
+   /* Give up root privs */
+   setuid(getuid());
 
 
    XF86DGASetViewPort(dis, DefaultScreen(dis), 0, 0);
