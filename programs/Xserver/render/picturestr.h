@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.6 2000/10/11 23:55:33 tsi Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.8 2000/11/16 19:45:07 eich Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -62,7 +62,8 @@ typedef struct _Picture {
     unsigned int    polyMode : 1;
     unsigned int    freeCompClip : 1;
     unsigned int    clientClipType : 2;
-    unsigned int    unused : 24;
+    unsigned int    componentAlpha : 1;
+    unsigned int    unused : 23;
 
     PicturePtr	    alphaMap;
     DDXPointRec	    alphaOrigin;
@@ -115,6 +116,12 @@ typedef void	(*GlyphsProcPtr)	    (CARD8      op,
 					     GlyphListPtr   lists,
 					     GlyphPtr	*glyphs);
 
+typedef void	(*CompositeRectsProcPtr)    (CARD8	    op,
+					     PicturePtr	    pDst,
+					     xRenderColor   *color,
+					     int	    nRect,
+					     xRectangle	    *rects);
+
 typedef struct _PictureScreen {
     int				totalPictureSize;
     unsigned int		*PicturePrivateSizes;
@@ -134,6 +141,7 @@ typedef struct _PictureScreen {
 
     CompositeProcPtr		Composite;
     GlyphsProcPtr		Glyphs;
+    CompositeRectsProcPtr	CompositeRects;
 
     DestroyWindowProcPtr	DestroyWindow;
     CloseScreenProcPtr		CloseScreen;

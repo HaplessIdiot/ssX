@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/fb/fbpict.h,v 1.1 2000/10/02 05:25:46 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -26,13 +26,31 @@
 #define _FBPICT_H_
 
 #define FbIntMult(a,b,t) ( (t) = (a) * (b) + 0x80, ( ( ( (t)>>8 ) + (t) )>>8 ) )
+
 #define FbGet8(v,i)   ((CARD16) (CARD8) ((v) >> i))
-#define FbOver(x,y,i,a,t) ((t) = FbIntMult(FbGet8(y,i),(a),(t)) + FbGet8(x,i),\
+
+/*
+ * There are two ways of handling alpha -- either as a single unified value or
+ * a separate value for each component, hence each macro must have two
+ * versions.  The unified alpha version has a 'U' at the end of the name,
+ * the component version has a 'C'.  Similarly, functions which deal with
+ * this difference will have two versions using the same convention.
+ */
+
+#define FbOverU(x,y,i,a,t) ((t) = FbIntMult(FbGet8(y,i),(a),(t)) + FbGet8(x,i),\
 			   (CARD32) ((CARD8) ((t) | (0 - ((t) >> 8)))) << (i))
-#define FbIn(x,i,a,t) ((CARD32) FbIntMult(FbGet8(x,i),(a),(t)) << (i))
-#define FbGen(x,y,i,ax,ay,t) ((t) = (FbIntMult(FbGet8(y,i),(ay),(t)) + \
-				     FbIntMult(FbGet8(x,i),(ax),(t))),\
+
+#define FbOverC(x,y,i,a,t) ((t) = FbIntMult(FbGet8(y,i),FbGet8(a,i),(t)) + FbGet8(x,i),\
+			    (CARD32) ((CARD8) ((t) | (0 - ((t) >> 8)))) << (i))
+
+#define FbInU(x,i,a,t) ((CARD32) FbIntMult(FbGet8(x,i),(a),(t)) << (i))
+
+#define FbInC(x,i,a,t) ((CARD32) FbIntMult(FbGet8(x,i),FbGet8(a,i),(t)) << (i))
+
+#define FbGen(x,y,i,ax,ay,t) ((t) = (FbIntMult(FbGet8(y,i),ay,(t)) + \
+				     FbIntMult(FbGet8(x,i),ax,(t))),\
 			      (CARD32) ((CARD8) ((t) | (0 - ((t) >> 8)))) << (i))
+
 #define FbAdd(x,y,i,t)	((t) = FbGet8(x,i) + FbGet8(y,i), \
 			 (CARD32) ((CARD8) ((t) | (0 - ((t) >> 8)))) << (i))
 
@@ -59,6 +77,7 @@ typedef struct _FbCompositeOperand {
     FbStride		stride;
     int			bpp;
     FbCompositeFetch	fetch;
+    FbCompositeFetch	fetcha;
     FbCompositeStore	store;
 } FbCompositeOperand;
 
@@ -74,6 +93,7 @@ extern FbCombineFunc	fbCombineFunc[];
 typedef struct _FbAccessMap {
     CARD32		format;
     FbCompositeFetch	fetch;
+    FbCompositeFetch	fetcha;
     FbCompositeStore	store;
 } FbAccessMap;
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.3 2000/10/07 05:57:01 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.4 2000/10/13 02:37:47 tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -35,12 +35,18 @@
  * and storing these exist for each format.
  */
 
+typedef struct _fbCompSrc {
+    CARD32	value;
+    CARD32	alpha;
+} FbCompSrc;
+
 /*
  * Combine src and mask using IN
  */
+
 CARD32
-fbCombineMask (FbCompositeOperand   *src,
-	       FbCompositeOperand   *msk)
+fbCombineMaskU (FbCompositeOperand   *src,
+		FbCompositeOperand   *msk)
 {
     CARD32  x;
     CARD16  a;
@@ -58,10 +64,95 @@ fbCombineMask (FbCompositeOperand   *src,
     if (a == 0xff)
 	return x;
     
-    m = FbIn(x,0,a,t);
-    n = FbIn(x,8,a,t);
-    o = FbIn(x,16,a,t);
-    p = FbIn(x,24,a,t);
+    m = FbInU(x,0,a,t);
+    n = FbInU(x,8,a,t);
+    o = FbInU(x,16,a,t);
+    p = FbInU(x,24,a,t);
+    return m|n|o|p;
+}
+
+FbCompSrc
+fbCombineMaskC (FbCompositeOperand   *src,
+		FbCompositeOperand   *msk)
+{
+    FbCompSrc	s;
+    CARD32	x;
+    CARD32	a;
+    CARD16	xa;
+    CARD16	t;
+    CARD32	m,n,o,p;
+
+    if (!msk)
+    {
+	x = (*src->fetch) (src->line, src->offset);
+	s.value = x;
+	x = x >> 24;
+	x |= x << 8;
+	x |= x << 16;
+	s.alpha = x;
+	return s;
+    }
+    
+    a = (*msk->fetcha) (msk->line, msk->offset);
+    if (!a)
+    {
+	s.value = 0;
+	s.alpha = 0;
+	return s;
+    }
+    
+    x = (*src->fetch) (src->line, src->offset);
+    if (a == 0xffffffff)
+    {
+	s.value = x;
+	x = x >> 24;
+	x |= x << 8;
+	x |= x << 16;
+	s.alpha = x;
+	return s;
+    }
+    
+    m = FbInC(x,0,a,t);
+    n = FbInC(x,8,a,t);
+    o = FbInC(x,16,a,t);
+    p = FbInC(x,24,a,t);
+    s.value = m|n|o|p;
+    xa = x >> 24;
+    m = FbInU(a,0,xa,t);
+    n = FbInU(a,8,xa,t);
+    o = FbInU(a,16,xa,t);
+    p = FbInU(a,24,xa,t);
+    s.alpha = m|n|o|p;
+    return s;
+}
+
+CARD32
+fbCombineMaskValueC (FbCompositeOperand   *src,
+		     FbCompositeOperand   *msk)
+{
+    CARD32	x;
+    CARD32	a;
+    CARD16	xa;
+    CARD16	t;
+    CARD32	m,n,o,p;
+
+    if (!msk)
+    {
+	return (*src->fetch) (src->line, src->offset);
+    }
+    
+    a = (*msk->fetcha) (msk->line, msk->offset);
+    if (!a)
+	return a;
+    
+    x = (*src->fetch) (src->line, src->offset);
+    if (a == 0xffffffff)
+	return x;
+    
+    m = FbInC(x,0,a,t);
+    n = FbInC(x,8,a,t);
+    o = FbInC(x,16,a,t);
+    p = FbInC(x,24,a,t);
     return m|n|o|p;
 }
 
@@ -69,8 +160,8 @@ fbCombineMask (FbCompositeOperand   *src,
  * Combine src and mask using IN, generating only the alpha component
  */
 CARD32
-fbCombineMaskAlpha (FbCompositeOperand   *src,
-		    FbCompositeOperand   *msk)
+fbCombineMaskAlphaU (FbCompositeOperand   *src,
+		     FbCompositeOperand   *msk)
 {
     CARD32  x;
     CARD16  a;
@@ -87,7 +178,35 @@ fbCombineMaskAlpha (FbCompositeOperand   *src,
     if (a == 0xff)
 	return x;
     
-    return FbIn(x,24,a,t);
+    return FbInU(x,24,a,t);
+}
+
+CARD32
+fbCombineMaskAlphaC (FbCompositeOperand   *src,
+		     FbCompositeOperand   *msk)
+{
+    CARD32	x;
+    CARD32	a;
+    CARD16	xa;
+    CARD16	t;
+    CARD32	m,n,o,p;
+
+    if (!msk)
+	return (*src->fetch) (src->line, src->offset);
+    
+    a = (*msk->fetcha) (msk->line, msk->offset);
+    if (!a)
+	return 0;
+    
+    x = (*src->fetcha) (src->line, src->offset);
+    if (a == 0xffffffff)
+	return x;
+    
+    m = FbInC(x,0,a,t);
+    n = FbInC(x,8,a,t);
+    o = FbInC(x,16,a,t);
+    p = FbInC(x,24,a,t);
+    return m|n|o|p;
 }
 
 /*
@@ -102,11 +221,19 @@ fbCombineClear (FbCompositeOperand   *src,
 }
 
 void
-fbCombineSrc (FbCompositeOperand    *src,
-	      FbCompositeOperand    *msk,
-	      FbCompositeOperand    *dst)
+fbCombineSrcU (FbCompositeOperand    *src,
+	       FbCompositeOperand    *msk,
+	       FbCompositeOperand    *dst)
 {
-    (*dst->store) (dst->line, dst->offset, fbCombineMask (src, msk));
+    (*dst->store) (dst->line, dst->offset, fbCombineMaskU (src, msk));
+}
+
+void
+fbCombineSrcC (FbCompositeOperand    *src,
+	       FbCompositeOperand    *msk,
+	       FbCompositeOperand    *dst)
+{
+    (*dst->store) (dst->line, dst->offset, fbCombineMaskValueC (src, msk));
 }
 
 void
@@ -118,26 +245,26 @@ fbCombineDst (FbCompositeOperand    *src,
 }
 
 void
-fbCombineOver (FbCompositeOperand   *src,
-	       FbCompositeOperand   *msk,
-	       FbCompositeOperand   *dst)
+fbCombineOverU (FbCompositeOperand   *src,
+		FbCompositeOperand   *msk,
+		FbCompositeOperand   *dst)
 {
     CARD32  s, d;
     CARD16  a;
     CARD16  t;
     CARD32  m,n,o,p;
 
-    s = fbCombineMask (src, msk);
+    s = fbCombineMaskU (src, msk);
     a = ~s >> 24;
     if (a != 0xff)
     {
 	if (a)
 	{
 	    d = (*dst->fetch) (dst->line, dst->offset);
-	    m = FbOver(s,d,0,a,t);
-	    n = FbOver(s,d,8,a,t);
-	    o = FbOver(s,d,16,a,t);
-	    p = FbOver(s,d,24,a,t);
+	    m = FbOverU(s,d,0,a,t);
+	    n = FbOverU(s,d,8,a,t);
+	    o = FbOverU(s,d,16,a,t);
+	    p = FbOverU(s,d,24,a,t);
 	    s = m|n|o|p;
 	}
 	(*dst->store) (dst->line, dst->offset, s);
@@ -145,9 +272,38 @@ fbCombineOver (FbCompositeOperand   *src,
 }
 
 void
-fbCombineOverReverse (FbCompositeOperand    *src,
-		      FbCompositeOperand    *msk,
-		      FbCompositeOperand    *dst)
+fbCombineOverC (FbCompositeOperand   *src,
+		FbCompositeOperand   *msk,
+		FbCompositeOperand   *dst)
+{
+    FbCompSrc	cs;
+    CARD32  s, d;
+    CARD32  a;
+    CARD16  t;
+    CARD32  m,n,o,p;
+
+    cs = fbCombineMaskC (src, msk);
+    s = cs.value;
+    a = ~cs.alpha;
+    if (a != 0xffffffff)
+    {
+	if (a)
+	{
+	    d = (*dst->fetch) (dst->line, dst->offset);
+	    m = FbOverC(s,d,0,a,t);
+	    n = FbOverC(s,d,8,a,t);
+	    o = FbOverC(s,d,16,a,t);
+	    p = FbOverC(s,d,24,a,t);
+	    s = m|n|o|p;
+	}
+	(*dst->store) (dst->line, dst->offset, s);
+    }
+}
+
+void
+fbCombineOverReverseU (FbCompositeOperand    *src,
+		       FbCompositeOperand    *msk,
+		       FbCompositeOperand    *dst)
 {
     CARD32  s, d;
     CARD16  a;
@@ -158,13 +314,13 @@ fbCombineOverReverse (FbCompositeOperand    *src,
     a = ~d >> 24;
     if (a)
     {
-	s = fbCombineMask (src, msk);
+	s = fbCombineMaskU (src, msk);
 	if (a != 0xff)
 	{
-	    m = FbOver(d,s,0,a,t);
-	    n = FbOver(d,s,8,a,t);
-	    o = FbOver(d,s,16,a,t);
-	    p = FbOver(d,s,24,a,t);
+	    m = FbOverU(d,s,0,a,t);
+	    n = FbOverU(d,s,8,a,t);
+	    o = FbOverU(d,s,16,a,t);
+	    p = FbOverU(d,s,24,a,t);
 	    s = m|n|o|p;
 	}
 	(*dst->store) (dst->line, dst->offset, s);
@@ -172,9 +328,36 @@ fbCombineOverReverse (FbCompositeOperand    *src,
 }
 
 void
-fbCombineIn (FbCompositeOperand	    *src,
-	     FbCompositeOperand	    *msk,
-	     FbCompositeOperand	    *dst)
+fbCombineOverReverseC (FbCompositeOperand    *src,
+		       FbCompositeOperand    *msk,
+		       FbCompositeOperand    *dst)
+{
+    CARD32  s, d;
+    CARD32  a;
+    CARD16  t;
+    CARD32  m,n,o,p;
+
+    d = (*dst->fetch) (dst->line, dst->offset);
+    a = ~d >> 24;
+    if (a)
+    {
+	s = fbCombineMaskValueC (src, msk);
+	if (a != 0xff)
+	{
+	    m = FbOverU(d,s,0,a,t);
+	    n = FbOverU(d,s,8,a,t);
+	    o = FbOverU(d,s,16,a,t);
+	    p = FbOverU(d,s,24,a,t);
+	    s = m|n|o|p;
+	}
+	(*dst->store) (dst->line, dst->offset, s);
+    }
+}
+
+void
+fbCombineInU (FbCompositeOperand	    *src,
+	      FbCompositeOperand	    *msk,
+	      FbCompositeOperand	    *dst)
 {
     CARD32  s, d;
     CARD16  a;
@@ -186,13 +369,13 @@ fbCombineIn (FbCompositeOperand	    *src,
     s = 0;
     if (a)
     {
-	s = fbCombineMask (src, msk);
+	s = fbCombineMaskU (src, msk);
 	if (a != 0xff)
 	{
-	    m = FbIn(s,0,a,t);
-	    n = FbIn(s,8,a,t);
-	    o = FbIn(s,16,a,t);
-	    p = FbIn(s,24,a,t);
+	    m = FbInU(s,0,a,t);
+	    n = FbInU(s,8,a,t);
+	    o = FbInU(s,16,a,t);
+	    p = FbInU(s,24,a,t);
 	    s = m|n|o|p;
 	}
     }
@@ -200,16 +383,44 @@ fbCombineIn (FbCompositeOperand	    *src,
 }
 
 void
-fbCombineInReverse (FbCompositeOperand  *src,
-		    FbCompositeOperand  *msk,
-		    FbCompositeOperand  *dst)
+fbCombineInC (FbCompositeOperand	    *src,
+	      FbCompositeOperand	    *msk,
+	      FbCompositeOperand	    *dst)
 {
     CARD32  s, d;
     CARD16  a;
     CARD16  t;
     CARD32  m,n,o,p;
 
-    s = fbCombineMaskAlpha (src, msk);
+    d = (*dst->fetch) (dst->line, dst->offset);
+    a = d >> 24;
+    s = 0;
+    if (a)
+    {
+	s = fbCombineMaskValueC (src, msk);
+	if (a != 0xff)
+	{
+	    m = FbInU(s,0,a,t);
+	    n = FbInU(s,8,a,t);
+	    o = FbInU(s,16,a,t);
+	    p = FbInU(s,24,a,t);
+	    s = m|n|o|p;
+	}
+    }
+    (*dst->store) (dst->line, dst->offset, s);
+}
+
+void
+fbCombineInReverseU (FbCompositeOperand  *src,
+		     FbCompositeOperand  *msk,
+		     FbCompositeOperand  *dst)
+{
+    CARD32  s, d;
+    CARD16  a;
+    CARD16  t;
+    CARD32  m,n,o,p;
+
+    s = fbCombineMaskAlphaU (src, msk);
     a = s >> 24;
     if (a != 0xff)
     {
@@ -217,10 +428,10 @@ fbCombineInReverse (FbCompositeOperand  *src,
 	if (a)
 	{
 	    d = (*dst->fetch) (dst->line, dst->offset);
-	    m = FbIn(d,0,a,t);
-	    n = FbIn(d,8,a,t);
-	    o = FbIn(d,16,a,t);
-	    p = FbIn(d,24,a,t);
+	    m = FbInU(d,0,a,t);
+	    n = FbInU(d,8,a,t);
+	    o = FbInU(d,16,a,t);
+	    p = FbInU(d,24,a,t);
 	    d = m|n|o|p;
 	}
 	(*dst->store) (dst->line, dst->offset, d);
@@ -228,9 +439,37 @@ fbCombineInReverse (FbCompositeOperand  *src,
 }
 
 void
-fbCombineOut (FbCompositeOperand    *src,
-	      FbCompositeOperand    *msk,
-	      FbCompositeOperand    *dst)
+fbCombineInReverseC (FbCompositeOperand  *src,
+		     FbCompositeOperand  *msk,
+		     FbCompositeOperand  *dst)
+{
+    CARD32  s, d;
+    CARD32  a;
+    CARD16  t;
+    CARD32  m,n,o,p;
+
+    s = fbCombineMaskAlphaC (src, msk);
+    a = s;
+    if (a != 0xffffffff)
+    {
+	d = 0;
+	if (a)
+	{
+	    d = (*dst->fetch) (dst->line, dst->offset);
+	    m = FbInC(d,0,a,t);
+	    n = FbInC(d,8,a,t);
+	    o = FbInC(d,16,a,t);
+	    p = FbInC(d,24,a,t);
+	    d = m|n|o|p;
+	}
+	(*dst->store) (dst->line, dst->offset, d);
+    }
+}
+
+void
+fbCombineOutU (FbCompositeOperand    *src,
+	       FbCompositeOperand    *msk,
+	       FbCompositeOperand    *dst)
 {
     CARD32  s, d;
     CARD16  a;
@@ -242,13 +481,13 @@ fbCombineOut (FbCompositeOperand    *src,
     s = 0;
     if (a)
     {
-	s = fbCombineMask (src, msk);
+	s = fbCombineMaskU (src, msk);
 	if (a != 0xff)
 	{
-	    m = FbIn(s,0,a,t);
-	    n = FbIn(s,8,a,t);
-	    o = FbIn(s,16,a,t);
-	    p = FbIn(s,24,a,t);
+	    m = FbInU(s,0,a,t);
+	    n = FbInU(s,8,a,t);
+	    o = FbInU(s,16,a,t);
+	    p = FbInU(s,24,a,t);
 	    s = m|n|o|p;
 	}
     }
@@ -256,16 +495,44 @@ fbCombineOut (FbCompositeOperand    *src,
 }
 
 void
-fbCombineOutReverse (FbCompositeOperand *src,
-		     FbCompositeOperand *msk,
-		     FbCompositeOperand *dst)
+fbCombineOutC (FbCompositeOperand    *src,
+	       FbCompositeOperand    *msk,
+	       FbCompositeOperand    *dst)
 {
     CARD32  s, d;
     CARD16  a;
     CARD16  t;
     CARD32  m,n,o,p;
 
-    s = fbCombineMaskAlpha (src, msk);
+    d = (*dst->fetch) (dst->line, dst->offset);
+    a = ~d >> 24;
+    s = 0;
+    if (a)
+    {
+	s = fbCombineMaskValueC (src, msk);
+	if (a != 0xff)
+	{
+	    m = FbInU(s,0,a,t);
+	    n = FbInU(s,8,a,t);
+	    o = FbInU(s,16,a,t);
+	    p = FbInU(s,24,a,t);
+	    s = m|n|o|p;
+	}
+    }
+    (*dst->store) (dst->line, dst->offset, s);
+}
+
+void
+fbCombineOutReverseU (FbCompositeOperand *src,
+		      FbCompositeOperand *msk,
+		      FbCompositeOperand *dst)
+{
+    CARD32  s, d;
+    CARD16  a;
+    CARD16  t;
+    CARD32  m,n,o,p;
+
+    s = fbCombineMaskAlphaU (src, msk);
     a = ~s >> 24;
     if (a != 0xff)
     {
@@ -273,10 +540,10 @@ fbCombineOutReverse (FbCompositeOperand *src,
 	if (a)
 	{
 	    d = (*dst->fetch) (dst->line, dst->offset);
-	    m = FbIn(d,0,a,t);
-	    n = FbIn(d,8,a,t);
-	    o = FbIn(d,16,a,t);
-	    p = FbIn(d,24,a,t);
+	    m = FbInU(d,0,a,t);
+	    n = FbInU(d,8,a,t);
+	    o = FbInU(d,16,a,t);
+	    p = FbInU(d,24,a,t);
 	    d = m|n|o|p;
 	}
 	(*dst->store) (dst->line, dst->offset, d);
@@ -284,16 +551,44 @@ fbCombineOutReverse (FbCompositeOperand *src,
 }
 
 void
-fbCombineAtop (FbCompositeOperand   *src,
-	       FbCompositeOperand   *msk,
-	       FbCompositeOperand   *dst)
+fbCombineOutReverseC (FbCompositeOperand *src,
+		      FbCompositeOperand *msk,
+		      FbCompositeOperand *dst)
+{
+    CARD32  s, d;
+    CARD32  a;
+    CARD16  t;
+    CARD32  m,n,o,p;
+
+    s = fbCombineMaskAlphaC (src, msk);
+    a = ~s;
+    if (a != 0xffffffff)
+    {
+	d = 0;
+	if (a)
+	{
+	    d = (*dst->fetch) (dst->line, dst->offset);
+	    m = FbInC(d,0,a,t);
+	    n = FbInC(d,8,a,t);
+	    o = FbInC(d,16,a,t);
+	    p = FbInC(d,24,a,t);
+	    d = m|n|o|p;
+	}
+	(*dst->store) (dst->line, dst->offset, d);
+    }
+}
+
+void
+fbCombineAtopU (FbCompositeOperand   *src,
+		FbCompositeOperand   *msk,
+		FbCompositeOperand   *dst)
 {
     CARD32  s, d;
     CARD16  ad, as;
     CARD16  t;
     CARD32  m,n,o,p;
     
-    s = fbCombineMask (src, msk);
+    s = fbCombineMaskU (src, msk);
     d = (*dst->fetch) (dst->line, dst->offset);
     ad = ~s >> 24;
     as = d >> 24;
@@ -305,16 +600,40 @@ fbCombineAtop (FbCompositeOperand   *src,
 }
 
 void
-fbCombineAtopReverse (FbCompositeOperand    *src,
-		      FbCompositeOperand    *msk,
-		      FbCompositeOperand    *dst)
+fbCombineAtopC (FbCompositeOperand   *src,
+		FbCompositeOperand   *msk,
+		FbCompositeOperand   *dst)
+{
+    FbCompSrc	cs;
+    CARD32  s, d;
+    CARD32  ad;
+    CARD16  as;
+    CARD16  t;
+    CARD32  m,n,o,p;
+    
+    cs = fbCombineMaskC (src, msk);
+    d = (*dst->fetch) (dst->line, dst->offset);
+    s = cs.value;
+    ad = cs.alpha;
+    as = d >> 24;
+    m = FbGen(s,d,0,as,FbGet8(ad,0),t);
+    n = FbGen(s,d,8,as,FbGet8(ad,8),t);
+    o = FbGen(s,d,16,as,FbGet8(ad,16),t);
+    p = FbGen(s,d,24,as,FbGet8(ad,24),t);
+    (*dst->store) (dst->line, dst->offset, m|n|o|p);
+}
+
+void
+fbCombineAtopReverseU (FbCompositeOperand    *src,
+		       FbCompositeOperand    *msk,
+		       FbCompositeOperand    *dst)
 {
     CARD32  s, d;
     CARD16  ad, as;
     CARD16  t;
     CARD32  m,n,o,p;
     
-    s = fbCombineMask (src, msk);
+    s = fbCombineMaskU (src, msk);
     d = (*dst->fetch) (dst->line, dst->offset);
     ad = s >> 24;
     as = ~d >> 24;
@@ -326,16 +645,39 @@ fbCombineAtopReverse (FbCompositeOperand    *src,
 }
 
 void
-fbCombineXor (FbCompositeOperand    *src,
-	      FbCompositeOperand    *msk,
-	      FbCompositeOperand    *dst)
+fbCombineAtopReverseC (FbCompositeOperand    *src,
+		       FbCompositeOperand    *msk,
+		       FbCompositeOperand    *dst)
+{
+    FbCompSrc	cs;
+    CARD32  s, d, ad;
+    CARD16  as;
+    CARD16  t;
+    CARD32  m,n,o,p;
+    
+    cs = fbCombineMaskC (src, msk);
+    d = (*dst->fetch) (dst->line, dst->offset);
+    s = cs.value;
+    ad = cs.alpha;
+    as = ~d >> 24;
+    m = FbGen(s,d,0,as,FbGet8(ad,0),t);
+    n = FbGen(s,d,8,as,FbGet8(ad,8),t);
+    o = FbGen(s,d,16,as,FbGet8(ad,16),t);
+    p = FbGen(s,d,24,as,FbGet8(ad,24),t);
+    (*dst->store) (dst->line, dst->offset, m|n|o|p);
+}
+
+void
+fbCombineXorU (FbCompositeOperand    *src,
+	       FbCompositeOperand    *msk,
+	       FbCompositeOperand    *dst)
 {
     CARD32  s, d;
     CARD16  ad, as;
     CARD16  t;
     CARD32  m,n,o,p;
     
-    s = fbCombineMask (src, msk);
+    s = fbCombineMaskU (src, msk);
     d = (*dst->fetch) (dst->line, dst->offset);
     ad = ~s >> 24;
     as = ~d >> 24;
@@ -347,15 +689,38 @@ fbCombineXor (FbCompositeOperand    *src,
 }
 
 void
-fbCombineAdd (FbCompositeOperand    *src,
-	      FbCompositeOperand    *msk,
-	      FbCompositeOperand    *dst)
+fbCombineXorC (FbCompositeOperand    *src,
+	       FbCompositeOperand    *msk,
+	       FbCompositeOperand    *dst)
+{
+    FbCompSrc	cs;
+    CARD32  s, d, ad;
+    CARD16  as;
+    CARD16  t;
+    CARD32  m,n,o,p;
+    
+    cs = fbCombineMaskC (src, msk);
+    d = (*dst->fetch) (dst->line, dst->offset);
+    s = cs.value;
+    ad = ~cs.alpha;
+    as = ~d >> 24;
+    m = FbGen(s,d,0,as,ad,t);
+    n = FbGen(s,d,8,as,ad,t);
+    o = FbGen(s,d,16,as,ad,t);
+    p = FbGen(s,d,24,as,ad,t);
+    (*dst->store) (dst->line, dst->offset, m|n|o|p);
+}
+
+void
+fbCombineAddU (FbCompositeOperand    *src,
+	       FbCompositeOperand    *msk,
+	       FbCompositeOperand    *dst)
 {
     CARD32  s, d;
     CARD16  t;
     CARD32  m,n,o,p;
 
-    s = fbCombineMask (src, msk);
+    s = fbCombineMaskU (src, msk);
     if (s == ~0)
 	(*dst->store) (dst->line, dst->offset, s);
     else
@@ -373,9 +738,35 @@ fbCombineAdd (FbCompositeOperand    *src,
 }
 
 void
-fbCombineSaturate (FbCompositeOperand   *src,
-		   FbCompositeOperand   *msk,
-		   FbCompositeOperand   *dst)
+fbCombineAddC (FbCompositeOperand    *src,
+	       FbCompositeOperand    *msk,
+	       FbCompositeOperand    *dst)
+{
+    CARD32  s, d;
+    CARD16  t;
+    CARD32  m,n,o,p;
+
+    s = fbCombineMaskValueC (src, msk);
+    if (s == ~0)
+	(*dst->store) (dst->line, dst->offset, s);
+    else
+    {
+	d = (*dst->fetch) (dst->line, dst->offset);
+	if (s && d != ~0)
+	{
+	    m = FbAdd(s,d,0,t);
+	    n = FbAdd(s,d,8,t);
+	    o = FbAdd(s,d,16,t);
+	    p = FbAdd(s,d,24,t);
+	    (*dst->store) (dst->line, dst->offset, m|n|o|p);
+	}
+    }
+}
+
+void
+fbCombineSaturateU (FbCompositeOperand   *src,
+		    FbCompositeOperand   *msk,
+		    FbCompositeOperand   *dst)
 {
     CARD32  s, d;
     CARD16  sa, da;
@@ -383,7 +774,7 @@ fbCombineSaturate (FbCompositeOperand   *src,
     CARD16  t;
     CARD32  m,n,o,p;
     
-    s = fbCombineMask (src, msk);
+    s = fbCombineMaskU (src, msk);
     d = (*dst->fetch) (dst->line, dst->offset);
     sa = s >> 24;
     da = ~d >> 24;
@@ -406,21 +797,82 @@ fbCombineSaturate (FbCompositeOperand   *src,
     (*dst->store) (dst->line, dst->offset, m|n|o|p);
 }
 
-FbCombineFunc	fbCombineFunc[] = {
+void
+fbCombineSaturateC (FbCompositeOperand   *src,
+		    FbCompositeOperand   *msk,
+		    FbCompositeOperand   *dst)
+{
+    FbCompSrc	cs;
+    CARD32  s, d;
+    CARD16  sa, sr, sg, sb, da;
+    CARD16  ad, as;
+    CARD16  t;
+    CARD32  m,n,o,p;
+    
+    cs = fbCombineMaskC (src, msk);
+    d = (*dst->fetch) (dst->line, dst->offset);
+    s = cs.value;
+    sa = (cs.alpha >> 24) & 0xff;
+    sr = (cs.alpha >> 16) & 0xff;
+    sg = (cs.alpha >>  8) & 0xff;
+    sb = (cs.alpha      ) & 0xff;
+    da = ~d >> 24;
+    
+    if (sb <= da)
+	m = FbAdd(s,d,0,t);
+    else
+	m = FbGen (s, d, 0, (da << 8) / sb, 0xff, t);
+    
+    if (sg <= da)
+	n = FbAdd(s,d,8,t);
+    else
+	n = FbGen (s, d, 8, (da << 8) / sg, 0xff, t);
+    
+    if (sr < da)
+	o = FbAdd(s,d,16,t);
+    else
+	o = FbGen (s, d, 16, (da << 8) / sr, 0xff, t);
+
+    if (sa <= da)
+	p = FbAdd(s,d,24,t);
+    else
+	p = FbGen (s, d, 24, (da << 8) / sa, 0xff, t);
+    
+    (*dst->store) (dst->line, dst->offset, m|n|o|p);
+}
+
+FbCombineFunc	fbCombineFuncU[] = {
     fbCombineClear,
-    fbCombineSrc,
+    fbCombineSrcU,
     fbCombineDst,
-    fbCombineOver,
-    fbCombineOverReverse,
-    fbCombineIn,
-    fbCombineInReverse,
-    fbCombineOut,
-    fbCombineOutReverse,
-    fbCombineAtop,
-    fbCombineAtopReverse,
-    fbCombineXor,
-    fbCombineAdd,
-    fbCombineSaturate,
+    fbCombineOverU,
+    fbCombineOverReverseU,
+    fbCombineInU,
+    fbCombineInReverseU,
+    fbCombineOutU,
+    fbCombineOutReverseU,
+    fbCombineAtopU,
+    fbCombineAtopReverseU,
+    fbCombineXorU,
+    fbCombineAddU,
+    fbCombineSaturateU,
+};
+
+FbCombineFunc	fbCombineFuncC[] = {
+    fbCombineClear,
+    fbCombineSrcC,
+    fbCombineDst,
+    fbCombineOverC,
+    fbCombineOverReverseC,
+    fbCombineInC,
+    fbCombineInReverseC,
+    fbCombineOutC,
+    fbCombineOutReverseC,
+    fbCombineAtopC,
+    fbCombineAtopReverseC,
+    fbCombineXorC,
+    fbCombineAddC,
+    fbCombineSaturateC,
 };
 
 /*
@@ -578,6 +1030,16 @@ fbFetch_a8 (FbBits *line, CARD32 offset)
 }
 
 CARD32
+fbFetcha_a8 (FbBits *line, CARD32 offset)
+{
+    CARD32   pixel = ((CARD8 *) line)[offset>>3];
+    
+    pixel |= pixel << 8;
+    pixel |= pixel << 16;
+    return pixel;
+}
+
+CARD32
 fbFetch_r3g3b2 (FbBits *line, CARD32 offset)
 {
     CARD32   pixel = ((CARD8 *) line)[offset>>3];
@@ -646,7 +1108,20 @@ CARD32
 fbFetch_a4 (FbBits *line, CARD32 offset)
 {
     CARD32  pixel = Fetch4(line, offset);
-    return (pixel | pixel << 4) << 24;
+    
+    pixel |= pixel << 4;
+    return pixel << 24;
+}
+
+CARD32
+fbFetcha_a4 (FbBits *line, CARD32 offset)
+{
+    CARD32  pixel = Fetch4(line, offset);
+    
+    pixel |= pixel << 4;
+    pixel |= pixel << 8;
+    pixel |= pixel << 16;
+    return pixel;
 }
 
 CARD32
@@ -700,6 +1175,25 @@ fbFetch_a1b1g1r1 (FbBits *line, CARD32 offset)
 }
 
 CARD32
+fbFetcha_a1 (FbBits *line, CARD32 offset)
+{
+    CARD32  pixel = ((CARD32 *)line)[offset >> 5];
+    CARD32  a;
+#if BITMAP_BIT_ORDER == MSBFirst
+    a = pixel >> (0x1f - offset & 0x1f);
+#else
+    a = pixel >> (offset & 0x1f);
+#endif
+    a = a & 1;
+    a |= a << 1;
+    a |= a << 2;
+    a |= a << 4;
+    a |= a << 8;
+    a |= a << 16;
+    return a;
+}
+
+CARD32
 fbFetch_a1 (FbBits *line, CARD32 offset)
 {
     CARD32  pixel = ((CARD32 *)line)[offset >> 5];
@@ -709,8 +1203,11 @@ fbFetch_a1 (FbBits *line, CARD32 offset)
 #else
     a = pixel >> (offset & 0x1f);
 #endif
-    a = ((a & 0x1) & 0xff) << 24;
-    return a;
+    a = a & 1;
+    a |= a << 1;
+    a |= a << 2;
+    a |= a << 4;
+    return a << 24;
 }
 
 /*
@@ -955,39 +1452,39 @@ fbStore_a1 (FbBits *line, CARD32 offset, CARD32 value)
 
 FbAccessMap fbAccessMap[] = {
     /* 32bpp formats */
-    PICT_a8r8g8b8,	fbFetch_a8r8g8b8,	fbStore_a8r8g8b8,
-    PICT_x8r8g8b8,	fbFetch_x8r8g8b8,	fbStore_x8r8g8b8,
-    PICT_a8b8g8r8,	fbFetch_a8b8g8r8,	fbStore_a8b8g8r8,
-    PICT_x8b8g8r8,	fbFetch_x8b8g8r8,	fbStore_x8b8g8r8,
+    PICT_a8r8g8b8,	fbFetch_a8r8g8b8,	fbFetch_a8r8g8b8,	fbStore_a8r8g8b8,
+    PICT_x8r8g8b8,	fbFetch_x8r8g8b8,	fbFetch_x8r8g8b8,	fbStore_x8r8g8b8,
+    PICT_a8b8g8r8,	fbFetch_a8b8g8r8,	fbFetch_a8b8g8r8,	fbStore_a8b8g8r8,
+    PICT_x8b8g8r8,	fbFetch_x8b8g8r8,	fbFetch_x8b8g8r8,	fbStore_x8b8g8r8,
 
     /* 24bpp formats */
-    PICT_r8g8b8,	fbFetch_r8g8b8,		fbStore_r8g8b8,
-    PICT_b8g8r8,	fbFetch_b8g8r8,		fbStore_b8g8r8,
+    PICT_r8g8b8,	fbFetch_r8g8b8,		fbFetch_r8g8b8,		fbStore_r8g8b8,
+    PICT_b8g8r8,	fbFetch_b8g8r8,		fbFetch_b8g8r8,		fbStore_b8g8r8,
 
     /* 16bpp formats */
-    PICT_r5g6b5,	fbFetch_r5g6b5,		fbStore_r5g6b5,
-    PICT_b5g6r5,	fbFetch_b5g6r5,		fbStore_b5g6r5,
+    PICT_r5g6b5,	fbFetch_r5g6b5,		fbFetch_r5g6b5,		fbStore_r5g6b5,
+    PICT_b5g6r5,	fbFetch_b5g6r5,		fbFetch_b5g6r5,		fbStore_b5g6r5,
 
-    PICT_a1r5g5b5,	fbFetch_a1r5g5b5,	fbStore_a1r5g5b5,
-    PICT_x1r5g5b5,	fbFetch_x1r5g5b5,	fbStore_x1r5g5b5,
-    PICT_a1b5g5r5,	fbFetch_a1b5g5r5,	fbStore_a1b5g5r5,
-    PICT_x1b5g5r5,	fbFetch_x1b5g5r5,	fbStore_x1b5g5r5,
+    PICT_a1r5g5b5,	fbFetch_a1r5g5b5,	fbFetch_a1r5g5b5,	fbStore_a1r5g5b5,
+    PICT_x1r5g5b5,	fbFetch_x1r5g5b5,	fbFetch_x1r5g5b5,	fbStore_x1r5g5b5,
+    PICT_a1b5g5r5,	fbFetch_a1b5g5r5,	fbFetch_a1b5g5r5,	fbStore_a1b5g5r5,
+    PICT_x1b5g5r5,	fbFetch_x1b5g5r5,	fbFetch_x1b5g5r5,	fbStore_x1b5g5r5,
 
     /* 8bpp formats */
-    PICT_a8,		fbFetch_a8,		fbStore_a8,
-    PICT_r3g3b2,	fbFetch_r3g3b2,		fbStore_r3g3b2,
-    PICT_b2g3r3,	fbFetch_b2g3r3,		fbStore_b2g3r3,
-    PICT_a2r2g2b2,	fbFetch_a2r2g2b2,	fbStore_a2r2g2b2,
+    PICT_a8,		fbFetch_a8,		fbFetcha_a8,		fbStore_a8,
+    PICT_r3g3b2,	fbFetch_r3g3b2,		fbFetch_r3g3b2,		fbStore_r3g3b2,
+    PICT_b2g3r3,	fbFetch_b2g3r3,		fbFetch_b2g3r3,		fbStore_b2g3r3,
+    PICT_a2r2g2b2,	fbFetch_a2r2g2b2,	fbFetch_a2r2g2b2,	fbStore_a2r2g2b2,
 
     /* 4bpp formats */
-    PICT_a4,		fbFetch_a4,		fbStore_a4,
-    PICT_r1g2b1,	fbFetch_r1g2b1,		fbStore_r1g2b1,
-    PICT_b1g2r1,	fbFetch_b1g2r1,		fbStore_b1g2r1,
-    PICT_a1r1g1b1,	fbFetch_a1r1g1b1,	fbStore_a1r1g1b1,
-    PICT_a1b1g1r1,	fbFetch_a1b1g1r1,	fbStore_a1b1g1r1,
+    PICT_a4,		fbFetch_a4,		fbFetcha_a4,		fbStore_a4,
+    PICT_r1g2b1,	fbFetch_r1g2b1,		fbFetch_r1g2b1,		fbStore_r1g2b1,
+    PICT_b1g2r1,	fbFetch_b1g2r1,		fbFetch_b1g2r1,		fbStore_b1g2r1,
+    PICT_a1r1g1b1,	fbFetch_a1r1g1b1,	fbFetch_a1r1g1b1,	fbStore_a1r1g1b1,
+    PICT_a1b1g1r1,	fbFetch_a1b1g1r1,	fbFetch_a1b1g1r1,	fbStore_a1b1g1r1,
 
     /* 1bpp formats */
-    PICT_a1,		fbFetch_a1,		fbStore_a1,
+    PICT_a1,		fbFetch_a1,		fbFetcha_a1,		fbStore_a1,
 };
 #define NumAccessMap (sizeof fbAccessMap / sizeof fbAccessMap[0])
 
@@ -1003,8 +1500,15 @@ fbBuildCompositeOperand (PicturePtr	    pPict,
 	if (fbAccessMap[i].format == pPict->format)
 	{
 	    op->fetch = fbAccessMap[i].fetch;
+	    op->fetcha = fbAccessMap[i].fetcha;
 	    op->store = fbAccessMap[i].store;
 	    fbGetDrawable (pPict->pDrawable, op->line, op->stride, op->bpp);
+	    if (pPict->repeat && pPict->pDrawable->width == 1 && 
+		pPict->pDrawable->height == 1)
+	    {
+		op->bpp = 0;
+		op->stride = 0;
+	    }
 	    op->line = op->line + y * op->stride;
 	    op->offset = 0;
 	    return TRUE;
@@ -1034,15 +1538,17 @@ fbCompositeGeneral (CARD8	op,
 	return;
     if (!fbBuildCompositeOperand (pDst, &dst, xDst, yDst))
 	return;
+    f = fbCombineFuncU[op];
     if (pMask)
     {
 	if (!fbBuildCompositeOperand (pMask, &msk, xMask, yMask))
 	    return;
 	pmsk = &msk;
+	if (pMask->componentAlpha)
+	    f = fbCombineFuncC[op];
     }
     else
 	pmsk = 0;
-    f = fbCombineFunc[op];
     while (height--)
     {
 	w = width;

@@ -33,7 +33,7 @@ typedef unsigned long	PictFormat;
 
 #define RENDER_NAME	"RENDER"
 #define RENDER_MAJOR	0
-#define RENDER_MINOR	0
+#define RENDER_MINOR	1
 
 #define X_RenderQueryVersion		    0
 #define X_RenderQueryPictFormats	    1
@@ -61,6 +61,7 @@ typedef unsigned long	PictFormat;
 #define X_RenderCompositeGlyphs8	    23
 #define X_RenderCompositeGlyphs16	    24
 #define X_RenderCompositeGlyphs32	    25
+#define X_RenderFillRectangles		    26
 
 #define BadPictFormat			    0
 #define BadPicture			    1
@@ -106,6 +107,7 @@ typedef unsigned long	PictFormat;
 #define CPPolyEdge			    (1 << 9)
 #define CPPolyMode			    (1 << 10)
 #define CPDither			    (1 << 11)
+#define CPComponentAlpha		    (1 << 12)
 #define CPLastBit			    11
 
 #endif	/* _RENDER_H_ */

@@ -74,9 +74,9 @@ GlyphHashSetRec glyphHashSets[] = {
 
 #define NGLYPHHASHSETS	(sizeof(glyphHashSets)/sizeof(glyphHashSets[0]))
 
-const CARD8	glyphDepths[3] = { 1, 4, 8 };
+const CARD8	glyphDepths[GlyphFormatNum] = { 1, 4, 8, 16, 32 };
 
-GlyphHashRec	globalGlyphs[3];
+GlyphHashRec	globalGlyphs[GlyphFormatNum];
 
 GlyphHashSetPtr
 FindGlyphHashSet (CARD32 filled)
@@ -119,7 +119,12 @@ FindGlyphRef (GlyphHashPtr hash, CARD32 signature, Bool match, GlyphPtr compare)
 	    break;
 	}
 	if (glyph == DeletedGlyph)
-	    del = gr;
+	{
+	    if (!del)
+		del = gr;
+	    else if (gr == del)
+		break;
+	}
 	else if (s == signature &&
 		 (!match || 
 		  memcmp (&compare->info, &glyph->info, compare->size) == 0))
@@ -152,6 +157,7 @@ HashGlyph (GlyphPtr glyph)
     return hash;
 }
 
+#ifdef CHECK_DUPLICATES
 void
 DuplicateRef (GlyphPtr glyph, char *where)
 {
@@ -174,6 +180,10 @@ CheckDuplicates (GlyphHashPtr hash, char *where)
 		DuplicateRef (g, where);
     }
 }
+#else
+#define CheckDuplicates(a,b)
+#define DuplicateRef(a,b)
+#endif
 
 void
 FreeGlyph (GlyphPtr glyph, int format)

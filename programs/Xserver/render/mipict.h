@@ -92,5 +92,21 @@ miGlyphs (CARD8		op,
 	  GlyphListPtr	list,
 	  GlyphPtr	*glyphs);
 
+void
+miRenderColorToPixel (PicturePtr    pPict,
+		      xRenderColor  *color,
+		      CARD32	    *pixel);
+
+void
+miRenderPixelToColor (PicturePtr    pPict,
+		      CARD32	    pixel,
+		      xRenderColor  *color);
+
+void
+miCompositeRects (CARD8		op,
+		  PicturePtr	pDst,
+		  xRenderColor  *color,
+		  int		nRect,
+		  xRectangle    *rects);
 
 #endif /* _MIPICT_H_ */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.2 2000/10/02 05:25:46 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.3 2000/10/21 00:26:48 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -62,10 +62,10 @@ fbOver (CARD32 x, CARD32 y)
     CARD16  t;
     CARD32  m,n,o,p;
 
-    m = FbOver(x,y,0,a,t);
-    n = FbOver(x,y,8,a,t);
-    o = FbOver(x,y,16,a,t);
-    p = FbOver(x,y,24,a,t);
+    m = FbOverU(x,y,0,a,t);
+    n = FbOverU(x,y,8,a,t);
+    o = FbOverU(x,y,16,a,t);
+    p = FbOverU(x,y,24,a,t);
     return m|n|o|p;
 }
 
@@ -76,10 +76,10 @@ fbIn (CARD32 x, CARD8 y)
     CARD16  t;
     CARD32  m,n,o,p;
 
-    m = FbIn(x,0,a,t);
-    n = FbIn(x,8,a,t);
-    o = FbIn(x,16,a,t);
-    p = FbIn(x,24,a,t);
+    m = FbInU(x,0,a,t);
+    n = FbInU(x,8,a,t);
+    o = FbInU(x,16,a,t);
+    p = FbInU(x,24,a,t);
     return m|n|o|p;
 }
 
@@ -670,7 +670,8 @@ fbComposite (CARD8      op,
 	{
 	    if (srcRepeat && 
 		pSrc->pDrawable->width == 1 &&
-		pSrc->pDrawable->height == 1)
+		pSrc->pDrawable->height == 1 &&
+		!pMask->componentAlpha)
 	    {
 		srcRepeat = FALSE;
 		if (PICT_FORMAT_COLOR(pSrc->format)) {
@@ -831,5 +832,6 @@ fbPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
     ps = GetPictureScreen(pScreen);
     ps->Composite = fbComposite;
     ps->Glyphs = miGlyphs;
+    ps->CompositeRects = miCompositeRects;
     return TRUE;
 }

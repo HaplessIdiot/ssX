@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/include/extensions/renderproto.h,v 1.2 2000/08/28 02:43:11 tsi Exp $
+ * $XFree86: xc/include/extensions/renderproto.h,v 1.4 2000/10/07 05:59:32 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -103,10 +103,19 @@ typedef struct {
     CARD16	red B16;
     CARD16	green B16;
     CARD16	blue B16;
-    CARD16	pad B16;
+    CARD16	alpha B16;
 } xIndexValue;
 
 #define sz_xIndexValue	12
+
+typedef struct {
+    CARD16	red B16;
+    CARD16	green B16;
+    CARD16	blue B16;
+    CARD16	alpha B16;
+} xRenderColor;
+
+#define sz_xRenderColor	8
 
 typedef struct {
     Fixed	x B32;
@@ -378,6 +387,21 @@ xRenderCompositeGlyphs16Req, xRenderCompositeGlyphs32Req;
 #define sz_xRenderCompositeGlyphs8Req		    28
 #define sz_xRenderCompositeGlyphs16Req		    28
 #define sz_xRenderCompositeGlyphs32Req		    28
+
+/* 0.1 and higher */
+
+typedef struct {
+    CARD8	reqType;
+    CARD8       renderReqType;
+    CARD16      length B16;
+    CARD8	op;
+    CARD8	pad1;
+    CARD16	pad2 B16;
+    Picture	dst B32;
+    xRenderColor    color;
+} xRenderFillRectanglesReq;
+
+#define sz_xRenderFillRectanglesReq		    20
 
 #undef Window
 #undef Drawable
