@@ -2784,12 +2784,12 @@ DGAInit.
 
      void FillRect (pScrn, x, y, w, h, color)
 
-          This optional function should fill a rectangle w  h
+          This optional function should fill a rectangle w × h
           located at (x,y) in the given color.
 
      void BlitRect (pScrn, srcx, srcy, w, h, dstx, dsty)
 
-          This optional function should copy an area w  h located
+          This optional function should copy an area w × h located
           at (srcx,srcy) to location (dstx,dsty).  This function
           will need to handle copy directions as appropriate.
 
@@ -2982,8 +2982,8 @@ The XF86VideoAdaptorRec:
                RegionPtr clipBoxes, pointer data )
 
           This indicates that the driver should take a subsection
-          vid_w  vid_h at location (vid_x,vid_y) from the video
-          stream and direct it into the rectangle rw_w  drw_h at
+          vid_w × vid_h at location (vid_x,vid_y) from the video
+          stream and direct it into the rectangle rw_w × drw_h at
           location (drw_x,drw_y) on the screen, scaling as neces-
           sary.  Due to the large variations in capabilities of the
           various hardware expected to be used with this extension,
@@ -3086,8 +3086,8 @@ The XF86VideoAdaptorRec:
 
           QueryBestSize provides the client with a way to query
           what the destination dimensions would end up being if
-          they were to request that an area vid_w  vid_h from the
-          video stream be scaled to rectangle of drw_w  drw_h on
+          they were to request that an area vid_w × vid_h from the
+          video stream be scaled to rectangle of drw_w × drw_h on
           the screen.  Since it is not expected that all hardware
           will be able to get the target dimensions exactly, it is
           important that the driver provide this function.  The
@@ -5984,3 +5984,4 @@ eScreen() function.
 
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.13 1999/10/26 15:58:14 tsi Exp $
 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.8 1999/10/26 16:32:30 tsi Exp $
