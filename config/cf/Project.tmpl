@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl /main/r61_main/6 1996/01/15 12:26:59 gildea $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.26 1996/01/21 01:47:15 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.27 1996/04/15 11:13:52 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -91,6 +91,9 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.26 1996/01/21 01:47:15 dawes Exp $
 #endif
 #ifndef BuildXKBlib
 #define BuildXKBlib		YES
+#endif
+#ifndef BuildXKBuilib
+#define BuildXKBuilib		NO
 #endif
 	/*
 	 * WARNING: Setting UseXKBInClients to YES cause incompatibilities
@@ -1109,6 +1112,24 @@ UnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC))
 #define	XkbClientLibs
 #endif
 #endif /* BuildXKBlib */
+
+#ifdef BuildXKBuilib
+    XKBUILIBSRC = $(LIBSRC)/xkbui
+UnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC))
+#ifndef XkbuiLibs
+#define	XkbuiLibs $(XKBUILIB)
+#endif
+#ifndef XkbuiDepLibs
+#define	XkbuiDepLibs $(DEPXKBFILELIB)
+#endif
+#else /* !BuildXKBuilib */
+#ifndef XkbuiLibs
+#define	XkbuiLibs
+#endif
+#ifndef XkbuiDepLibs
+#define	XkbuiDepLibs
+#endif
+#endif /* BuildXKBuilib */
 
 #ifndef XawClientDepLibs
 #define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)

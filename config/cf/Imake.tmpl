@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/r61_main/3 1996/02/02 18:57:32 gildea $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.21 1996/02/10 10:35:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.22 1996/02/24 04:32:47 dawes Exp $
 XCOMM
 
 /*
@@ -284,6 +284,40 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define MallocLibraries	GnuMallocLibrary
 #else
 #define MallocLibraries	/**/
+#endif
+#endif
+#ifndef HasTk
+#define HasTk NO
+#endif
+#ifndef TkLibrary
+#if HasTk
+#define TkLibrary -ltk
+#else
+#define TkLibrary
+#endif
+#endif
+#ifndef HasTcl
+#define HasTcl NO
+#endif
+#ifndef TclLibrary
+#if HasTcl
+#define TclLibrary -ltcl
+#else
+#define TclLibrary
+#endif
+#endif
+#ifndef StartStaticLib
+#if HasGcc
+#define StartStaticLib	-static
+#else
+#define StartStaticLib
+#endif
+#endif
+#ifndef EndStaticLib
+#if HasGcc
+#define EndStaticLib	-Wl,-Bdynamic
+#else
+#define EndStaticLib
 #endif
 #endif
 #ifndef NeedConstPrototypes

@@ -1,0 +1,78 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+#if !BuildXKB || !BuildXF86MiscExt || !BuildXF86VidModeExt
+all::
+	@echo This program requires that you build with XKB, XF86MiscExt, and XF86VidModeExt
+	@exit 1
+
+depend::
+	@echo This program requires that you build with XKB, XF86MiscExt, and XF86VidModeExt
+	@exit 1
+
+includes::
+	@echo This program requires that you build with XKB, XF86MiscExt, and XF86VidModeExt
+	@exit 1
+
+#else
+            SRCS = main.c tclmisc.c tclvidmode.c tclcards.c tclother.c \
+		   tclkbd.c tclxfconf.c xf86Config.c cards.c
+            OBJS = main.o tclmisc.o tclvidmode.o tclcards.o tclother.o \
+		   tclkbd.o tclxfconf.o xf86Config.o cards.o
+       TCL_FILES = phase1.tcl phase2.tcl setuplib.tcl carddata.tcl \
+		   card.tcl done.tcl filelist.tcl keyboard.tcl \
+		   monitor.tcl mouse.tcl other.tcl
+    TCLLIB_FILES = tcllib/button.tcl tcllib/combobox.tcl \
+		   tcllib/downarrow.ppm tcllib/dialog.tcl tcllib/entry.tcl \
+		   tcllib/focus.tcl tcllib/init.tcl tcllib/listbox.tcl \
+		   tcllib/menu.tcl tcllib/optionMenu.tcl tcllib/palette.tcl \
+		   tcllib/scale.tcl tcllib/scrollbar.tcl tcllib/tclIndex \
+		   tcllib/tearoff.tcl tcllib/text.tcl tcllib/tk.tcl \
+		   tcllib/tkerror.tcl
+      PICS_FILES = pics/vidcard.xbm pics/vidcard.msk \
+		   pics/XFree86.xbm pics/XFree86.msk
+XCOMM
+XCOMM  Change these to point to the Tcl and Tk libraries on your system
+XCOMM
+ TCLTK_LIBRARIES = StartStaticLib $(TKLIBRARY) $(TCLLIBRARY) EndStaticLib
+
+ LOCAL_LIBRARIES = $(XKBUILIB) $(XKBFILELIB) \
+		   $(TCLTK_LIBRARIES) $(XXF86VMLIB) $(XXF86MISCLIB) \
+		   XawClientLibs MathLibrary
+         DEPLIBS = XawClientDepLibs $(DEPXXF86VMLIB)
+      CARDDBFILE = $(LIBDIR)/Cards
+      XCONFIGSRC = xf86Config
+     XCONFIGFILE = XF86Config
+
+ XCONFIG_DEFINES = $(EXT_DEFINES) -DXF86SETUP \
+		   '-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"'
+
+ XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup
+         DEFINES = -DCARD_DATABASE_FILE='"$(CARDDBFILE)"' \
+		   $(XCONFIG_DEFINES)
+        INCLUDES = -I$(TCLINCDIR) -I../os-support -I../common \
+		   -I$(SERVERSRC)/include -I$(INCLUDESRC) \
+		   -I$(EXTINCSRC)
+
+#if HasLdRunPath
+       CCENVSETUP = LD_RUN_PATH=$(USRLIBDIR):$(TCLLIBDIR)
+           CCLINK = $(CCENVSETUP) $(CC)
+#endif
+
+AllTarget(ProgramTargetName(XF86Setup))
+
+LinkSourceFile(Cards,../xf86config)
+LinkSourceFile(cards.h,../xf86config)
+LinkSourceFile(cards.c,../xf86config)
+LinkSourceFile(xf86Config.c,../common)
+LinkSourceFile(xf86_Config.h,../common)
+
+NormalProgramTarget(XF86Setup,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES) $(SYSTEM_LIBRARIES),NullParameter)
+InstallProgram(XF86Setup,$(BINDIR))
+DependTarget()
+
+InstallMultiple($(TCL_FILES),$(XF86SETUPLIBDIR))
+InstallMultiple($(TCLLIB_FILES),$(XF86SETUPLIBDIR)/tcllib)
+InstallManPage(XF86Setup,$(MANDIR))
+
+#endif

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.91 1996/06/10 08:42:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.92 1996/06/10 09:25:17 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -292,6 +292,51 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
  */
 #ifndef BuildXF86MiscExt
 #define BuildXF86MiscExt		YES
+#endif
+
+/*
+ * Not sure this belongs here
+ */
+#if HasTk
+#ifdef TkLibDir
+   TKLIBDIR = TkLibDir
+  TKLIBRARY = -L$(TKLIBDIR) TkLibrary
+#else
+  TKLIBRARY = TkLibrary
+#endif
+#ifdef TkIncDir
+   TKINCDIR = TkIncDir
+#endif
+#endif
+
+#if HasTcl
+#ifdef TclLibDir
+   TCLLIBDIR = TclLibDir
+  TCLLIBRARY = -L$(TCLLIBDIR) TclLibrary
+#else
+  TCLLIBRARY = TclLibrary
+#endif
+#ifdef TclIncDir
+   TCLINCDIR = TclIncDir
+#endif
+#endif
+
+/*
+ * Build XF86Setup -- needs Tk and Tcl
+ */
+#ifndef BuildXF86Setup
+#if HasTk && HasTcl && BuildXF86VidModeLibrary && BuildXF86MiscLibrary
+#define BuildXF86Setup			YES
+#else
+#define BuildXF86Setup			NO
+#endif
+#endif
+
+/*
+ * Build the XKBui lib if building XF86Setup
+ */
+#ifndef BuildXKBuilib
+#define BuildXKBuilib			BuildXF86Setup
 #endif
 
 /*
