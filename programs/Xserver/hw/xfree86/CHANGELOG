@@ -1,4 +1,6 @@
 XFree86 4.0Z (30 June 2000)
+ 412. Add some SiS DRI code, but currently disabled because the X server
+      driver level support hasn't been integrated yet (Can-Ru Yeou, SiS).
  411. Remove the PPC-specific assembly for load/stores from the r128 driver,
       and use the versions now provided in compiler.h, which are faster (#4051,
       Ani Joshi).
@@ -10806,4 +10808,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1223 2000/06/30 17:15:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1224 2000/06/30 18:27:01 dawes Exp $

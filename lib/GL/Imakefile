@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.26 2000/06/26 22:27:41 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.27 2000/06/30 17:15:07 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -174,6 +174,38 @@ REQUIREDLIBS += -lglide3x -ldl
 
   GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/r128
 
+#elif GlxBuiltInFfb
+
+     FFBOBJS = mesa/src/drv/ffb/?*.o
+    FFBUOBJS = mesa/src/drv/ffb/unshared/?*.o
+    FFBDOBJS = mesa/src/drv/ffb/debugger/?*.o
+    FFBPOBJS = mesa/src/drv/ffb/profiled/?*.o
+    FFBDONES = mesa/src/drv/ffb/DONE
+
+     DRVOBJS = $(FFBOBJS)  $(MESAOBJS)  $(DRIMESAOBJS)  $(DRMOBJS)
+    DRVUOBJS = $(FFBUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
+    DRVDOBJS = $(FFBDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
+    DRVPOBJS = $(FFBPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
+    DRVDONES = $(FFBDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
+
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/ffb
+
+#elif GlxBuiltInSIS
+
+     SISOBJS = mesa/src/drv/sis/?*.o
+    SISUOBJS = mesa/src/drv/sis/unshared/?*.o
+    SISDOBJS = mesa/src/drv/sis/debugger/?*.o
+    SISPOBJS = mesa/src/drv/sis/profiled/?*.o
+    SISDONES = mesa/src/drv/sis/DONE
+
+     DRVOBJS = $(SISOBJS) $(MESAOBJS) $(DRIMESAOBJS) $(DRMOBJS)
+    DRVUOBJS = $(SISUOBJS) $(MESAUOBJS) $(DRIMESAUOBJS) $(DRMUOBJS)
+    DRVDOBJS = $(SISDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
+    DRVPOBJS = $(SISPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
+    DRVDONES = $(SISDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
+
+  GLXSUBDIRS = glx dri mesa/dri mesa/include/GL mesa/src mesa/src/drv/sis
+
 #elif GlxBuiltInMesa
 
 #ifndef GlxDriverUsesMesa
@@ -290,6 +322,8 @@ XCOMM libGL has now been made, continue with building the drivers.
     !GlxBuiltInI810 && \
     !GlxBuiltInMga && \
     !GlxBuiltInR128 && \
+    !GlxBuiltInFfb && \
+    !GlxBuiltInSIS && \
     !GlxBuiltInMesa
 
 DRIVERSUBDIRS = mesa/src/drv
