@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.60 2000/12/20 01:30:46 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.61 2000/12/27 04:57:16 dawes Exp $ */
 
 /*
  * Authors:
@@ -1757,7 +1757,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     return FALSE;
   }
 
-  pTDFX->pixmapCacheLinesMax = ((pScrn->videoRam<<10) - pTDFX->fbOffset) / 
+  pTDFX->pixmapCacheLinesMax = (pTDFX->backOffset - pTDFX->fbOffset) / 
 				pTDFX->stride;
 
   if(pTDFX->ChipType < PCI_CHIP_VOODOO5) {
@@ -1768,6 +1768,11 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
       if(pTDFX->pixmapCacheLinesMax > 4095) 
 	pTDFX->pixmapCacheLinesMax = 4095;
   }
+
+  xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+    "%i lines of offscreen memory available for 2D and video\n", 
+	pTDFX->pixmapCacheLinesMax);
+
      
   MemBox.y1 = 0;
   MemBox.x1 = 0;
