@@ -51,14 +51,16 @@ static int nv3Busy
     RIVA_HW_INST *chip
 )
 {
-    return ((chip->FIFO[5] < chip->FifoEmptyCount) || (chip->PGRAPH[0x000006B0/4] & 0x01));
+    return ((chip->Rop->FifoFree < chip->FifoEmptyCount) || 
+		(chip->PGRAPH[0x000006B0/4] & 0x01));
 }
 static int nv4Busy
 (
     RIVA_HW_INST *chip
 )
 {
-    return ((chip->FIFO[5] < chip->FifoEmptyCount) || (chip->PGRAPH[0x00000700/4] & 0x01));
+    return ((chip->Rop->FifoFree < chip->FifoEmptyCount) ||
+		(chip->PGRAPH[0x00000700/4] & 0x01));
 }
 
 static int ShowHideCursor
@@ -69,7 +71,8 @@ static int ShowHideCursor
 {
     int current;
     current                     =  chip->CurrentState->cursor1;
-    chip->CurrentState->cursor1 = (chip->CurrentState->cursor1 & 0xFE) | (ShowHide & 0x01);
+    chip->CurrentState->cursor1 = (chip->CurrentState->cursor1 & 0xFE) | 
+				  (ShowHide & 0x01);
     outb(0x3D4,0x31);
     outb(0x3D5, chip->CurrentState->cursor1);
     return (current & 0x01);
@@ -1060,7 +1063,8 @@ static void LoadStateExt
      * Reset FIFO free and empty counts.
      */
     chip->FifoFreeCount  = 0;
-    chip->FifoEmptyCount = chip->FIFO[5]; /* Free count from first subchannel */
+    /* Free count from first subchannel */
+    chip->FifoEmptyCount = chip->Rop->FifoFree; 
 }
 static void UnloadStateExt
 (
@@ -1135,10 +1139,10 @@ static void SetStartAddress
     offset >>= 8;
     outb(0x3D4, 0x19);
     tmp = inb(0x3D5);
-    outb(0x3D5, (offset & 0x1F) | (tmp & 0xE0));
+    outb(0x3D5, (offset & 0x1F) | (tmp & ~0x1F));
     outb(0x3D4, 0x2D);
     tmp = inb(0x3D5);
-    outb(0x3D5, (offset & 0x60) | (tmp & 0x9F));
+    outb(0x3D5, (offset & 0x60) | (tmp & ~0x60));
     /*
      * 4 pixel pan register.
      */

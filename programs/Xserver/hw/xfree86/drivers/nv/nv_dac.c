@@ -90,7 +90,7 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	((pLayout->displayWidth/8)*(pLayout->bitsPerPixel/8));
     pVga->CRTC[0x15] = Set8Bits(vertDisplay);
     pVga->CRTC[0x16] = Set8Bits(vertTotal + 1);
-    
+
     /*
      * Initialize DAC palette.
      */
@@ -99,15 +99,9 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         if (pNv->riva.Architecture == 3)
             for (i = 0; i < 256; i++)
             {
-#if 0
                 pVga->DAC[i*3]     = i >> 2;
                 pVga->DAC[(i*3)+1] = i >> 2;
                 pVga->DAC[(i*3)+2] = i >> 2;
-#endif
-                pVga->DAC[i*3]     = 0;
-                pVga->DAC[(i*3)+1] = 0;
-                pVga->DAC[(i*3)+2] = 0;
-
             }
         else
             for (i = 0; i < 256; i++)
@@ -117,7 +111,7 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
                 pVga->DAC[(i*3)+2] = i;
             }
     }
-
+    
     /*
      * Calculate the extended registers.
      */
@@ -151,9 +145,9 @@ NVDACRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, NVRegPtr nvReg,
 {
     NVPtr pNv = NVPTR(pScrn);
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVDACRestore\n"));
+    vgaHWRestore(pScrn, vgaReg, VGA_SR_CMAP | VGA_SR_MODE | 
+			(restoreFonts? VGA_SR_FONTS : 0));
     pNv->riva.LoadStateExt(&pNv->riva, nvReg);
-    vgaHWRestore(pScrn, vgaReg,
-                 VGA_SR_MODE | (restoreFonts? VGA_SR_FONTS : 0));
 }
 
 /*
