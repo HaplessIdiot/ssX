@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/freetype/Imakefile,v 1.4 2001/05/16 03:57:27 keithp Exp $
+XCOMM $XFree86: Imakefile,v 1.6 2001/12/18 03:21:48 keithp Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -22,7 +22,6 @@ HEADERS= \
         ftmm.h \
         ftmoderr.h \
         ftmodule.h \
-        ftnames.h \
         ftoutln.h \
         ftrender.h \
         ftsizes.h \
@@ -51,7 +50,6 @@ LinkSourceFile(ftmac.h,$(FREETYPEINC))
 LinkSourceFile(ftmm.h,$(FREETYPEINC))
 LinkSourceFile(ftmoderr.h,$(FREETYPEINC))
 LinkSourceFile(ftmodule.h,$(FREETYPEINC))
-LinkSourceFile(ftnames.h,$(FREETYPEINC))
 LinkSourceFile(ftoutln.h,$(FREETYPEINC))
 LinkSourceFile(ftrender.h,$(FREETYPEINC))
 LinkSourceFile(ftsizes.h,$(FREETYPEINC))
