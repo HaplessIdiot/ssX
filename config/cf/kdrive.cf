@@ -28,12 +28,19 @@ XCOMM $XConsortium: $
 #ifndef XItsyServer
 #define XItsyServer	NO
 #endif
+#ifndef XiPAQH3600Server
+#define XiPAQH3600Server	NO
+#endif
 #ifndef XvesaServer
 #define XvesaServer	NO
 #endif
 
 #if XItsyServer
 #include <itsy.cf>
+#endif
+
+#if XiPAQH3600Server
+#include <iPAQH3600.cf>
 #endif
 
 #define XprtServer	NO
@@ -48,6 +55,9 @@ XCOMM $XConsortium: $
 #endif
 #ifndef BuildRender
 #define BuildRender	YES
+#endif
+#ifndef TouchScreen
+#define TouchScreen 	NO
 #endif
 
 /*
@@ -158,6 +168,12 @@ XCOMM $XConsortium: $
 FONTSERVERACCESS=-DNOFONTSERVERACCESS
 #endif
 
+#if TouchScreen
+#define TouchScreenDefines -DTOUCHSCREEN
+#else
+#define TouchScreenDefines /**/
+#endif
+
 #if BuildPseudo8
 #define Pseudo8Defines -DPSEUDO8
 #else
@@ -171,7 +187,7 @@ FONTSERVERACCESS=-DNOFONTSERVERACCESS
 XF86COMSRC=.
 
 #undef ServerExtraDefines
-#define ServerExtraDefines -DKDRIVESERVER -DGCCUSESGAS -DDDXOSINIT -DSMART_SCHEDULE $(FONTSERVERACCESS) Pseudo8Defines KdriveServerExtraDefines
+#define ServerExtraDefines -DKDRIVESERVER -DGCCUSESGAS -DDDXOSINIT -DSMART_SCHEDULE $(FONTSERVERACCESS) Pseudo8Defines TouchScreenDefines KdriveServerExtraDefines
 #undef ServerOSDefines
 #define ServerOSDefines -DDDXOSINIT
 
