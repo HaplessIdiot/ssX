@@ -1,4 +1,5 @@
 XFree86 4.0.1d (8 September 2000)
+ 583. Turn of visual ID matching in Xv (Mark Vojkovich).
  582. Add the IA-64 ELF loader (Jakub Jelinek).
  581. Add I420 and UYVY image formats to the I810 driver (#4135, Jonathan Bian).
  580. Fix an Xaw problem with illegal aliases (Jakub Jelinek).
@@ -11109,4 +11110,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1300 2000/09/07 19:06:50 anderson Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1301 2000/09/07 19:44:26 tsi Exp $
