@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/SuperProbe/Imakefile,v 3.3 1996/02/04 09:15:48 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/SuperProbe/Imakefile,v 3.4 1996/02/12 11:13:58 dawes Exp $
 
 
 
@@ -38,10 +38,6 @@ XCOMM $XConsortium: Imakefile /main/3 1996/01/10 11:05:20 kaleb $
 # define OSModule OS_Os2
   CCOPTIONS = -Zmts
 #endif
-#if defined(OS2Architecture)
-# define OSModule OS_Os2
-  CCOPTIONS = -Zmts
-#endif
 
 OS_SRC = OSModule.c $(OS_IO_SRC)
 OS_OBJ = OSModule.o $(OS_IO_OBJ)
@@ -63,11 +59,11 @@ GASDEFINES = GccGasOption
 #endif
 CONSDEFINES = XFree86ConsoleDefines
 
-DEFINES = $(GASDEFINES) $(CONSDEFINES)
-
 #ifdef OS2Architecture
-SPECIALS = -lemxio
+SPECIALS= sprobe.def
 #endif
+
+DEFINES = $(GASDEFINES) $(CONSDEFINES)
 
 PROG = SuperProbe
 
@@ -85,6 +81,8 @@ LinkSourceFile(AL.c,$(XF86SRC)/SuperProbe)
 LinkSourceFile(ATI.c,$(XF86SRC)/SuperProbe)
 LinkSourceFile(ATIMach.c,$(XF86SRC)/SuperProbe)
 LinkSourceFile(Ahead.c,$(XF86SRC)/SuperProbe)
+LinkSourceFile(Amake.cmds,$(XF86SRC)/SuperProbe)
+LinkSourceFile(Amake.srclist,$(XF86SRC)/SuperProbe)
 LinkSourceFile(AsmMacros.h,$(XF86SRC)/SuperProbe)
 LinkSourceFile(CGA.c,$(XF86SRC)/SuperProbe)
 LinkSourceFile(ChangeLog,$(XF86SRC)/SuperProbe)
@@ -130,5 +128,6 @@ LinkSourceFile(Video7.c,$(XF86SRC)/SuperProbe)
 LinkSourceFile(WD.c,$(XF86SRC)/SuperProbe)
 LinkSourceFile(Weitek.c,$(XF86SRC)/SuperProbe)
 LinkSourceFile(Yamaha.c,$(XF86SRC)/SuperProbe)
+LinkSourceFile(sprobe.def,$(XF86SRC)/SuperProbe)
 
 DependTarget()

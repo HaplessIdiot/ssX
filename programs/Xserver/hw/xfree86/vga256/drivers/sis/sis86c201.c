@@ -29,7 +29,7 @@
  *
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.2 1996/01/13 12:22:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.3 1996/02/04 09:14:14 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -60,6 +60,7 @@ typedef struct {
 	unsigned char ClockReg;
 	unsigned char DualBanks;
 	unsigned char BankReg;
+	unsigned char CRTCOff;
 	unsigned char DispCRT;
 	unsigned char ReadBank;
 	unsigned char WriteBank;
@@ -212,16 +213,6 @@ SISProbe()
 			{
 			case PCI_CHIP_SG86C201: 	/* 86C201 */
 				SISchipset = SIS86C201;
-#ifndef MONOVGA
-/* PCI space doesn't seem to have this set, check out FbInit */
-#if PCI_BASE_0
-				if (vgaPCIInfo->MemBase != 0)
-				{
-				    SIS.ChipLinearBase = vgaPCIInfo->MemBase;
-				    isUseLinear = TRUE;
-				}
-#endif
-#endif
 				break;
 			}
 		}
@@ -267,7 +258,7 @@ SISProbe()
 
 #ifndef MONOVGA
 	/* MaxClock set at 90MHz for 256 - ??? */
-	OFLG_SET(OPTION_NOLINEAR_MODE, &SIS.ChipOptionFlags);
+	OFLG_SET(OPTION_LINEAR, &SIS.ChipOptionFlags);
 #else
 	/* Set to 130MHz at 16 colours */
 	vga256InfoRec.maxClock = 130000;
@@ -289,28 +280,21 @@ SISFbInit()
 	 * address for the linear aperture. We can do this with the
 	 * linear registers. But - We must use MemBase to do this.
 	 */
-	unsigned char temp_lo, temp_hi;
-
 	outb(0x3C4, 0x20);
-	temp_lo = inb(0x3C5); 		/* Get Linear Status */
+	SIS.ChipLinearBase = (inb(0x3C5) << 8) * 1024; 	/* Get Linear Status */
 
-	outb(0x3C4, 0x21);
-	temp_hi = inb(0x3C5);
+	if (SIS.ChipLinearBase == 0)
+		SIS.ChipLinearBase = (64 * 1024 * 1024) -
+					(vga256InfoRec.videoRam * 1024);
 
 	if (vga256InfoRec.MemBase != 0)
+		SIS.ChipLinearBase = vga256InfoRec.MemBase;
+
+	if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
 	{
-		temp_lo = (vga256InfoRec.MemBase / (512*1024)) & 0x00FF;
-		temp_hi = ((vga256InfoRec.MemBase / (512*1024)) & 0xFF00) >> 8;
-		outw(0x3C4, (temp_lo << 8) | 0x20);
-		outw(0x3C4, ((temp_hi | 0x30) << 8) | 0x21);
+		sisUseLinear = TRUE;
+		outw(0x3C4, 0x0621); /* Enable Linear */
 	}
-
-	/* Linear address is in 512K segments */
-	SIS.ChipLinearBase = ((temp_hi << 8) | temp_lo) * (512*1024);
-
-	if ( (SIS.ChipLinearBase == 0) ||
-	     (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)) )
-		sisUseLinear = FALSE;
 
 	if (xf86LinearVidMem() && sisUseLinear)
 	{
@@ -318,7 +302,6 @@ SISFbInit()
 		ErrorF("%s %s: Using Linear Frame Buffer at 0x0%x, Size %dMB\n",
 			XCONFIG_PROBED, vga256InfoRec.name,
 			SIS.ChipLinearBase, SIS.ChipLinearSize/1048576);
-		outb(0x3C4, 0xF021);	/* Enable Linear */
 	}
 
 	if (sisUseLinear)
@@ -364,6 +347,7 @@ SISRestore(restore)
      	vgaSISPtr restore;
 {
 	outw(0x3C4, ((restore->BankReg) << 8) | 0x06);
+	outw(0x3C4, ((restore->CRTCOff) << 8) | 0x0A);
 	outw(0x3C4, ((restore->ClockReg) << 8) | 0x07);
 	outw(0x3C4, ((restore->DualBanks) << 8) | 0x0B);
 	outw(0x3C4, ((restore->DispCRT) << 8) | 0x27);
@@ -385,6 +369,7 @@ SISSave(save)
   	save = (vgaSISPtr)vgaHWSave((vgaHWPtr)save, sizeof(vgaSISRec));
 
 	outb(0x3C4, 0x06); save->BankReg = inb(0x3C5);
+	outb(0x3C4, 0x0A); save->CRTCOff = inb(0x3C5);
 	outb(0x3C4, 0x07); save->ClockReg = inb(0x3C5);
 	outb(0x3C4, 0x0B); save->DualBanks = inb(0x3C5);
 	outb(0x3C4, 0x27); save->DispCRT = inb(0x3C5);
@@ -401,16 +386,31 @@ SISInit(mode)
     	DisplayModePtr mode;
 {
 	unsigned char temp;
+	int offset;
 
 	/*
 	 * Initialize generic VGA registers.
 	 */
 	vgaHWInit(mode, sizeof(vgaSISRec));
   
-	new->std.CRTC[19] = vga256InfoRec.virtualX >>
+	offset = vga256InfoRec.virtualX >>
+#ifdef MONOVGA
 		(mode->Flags & V_INTERLACE ? 3 : 4);
+#else
+		(mode->Flags & V_INTERLACE ? 2 : 3);
 
+	new->std.CRTC[20] = 0x40;
+	new->std.CRTC[23] = 0xA3;
+
+	if (sisUseLinear)
+	{
+		temp = ((SIS.ChipLinearBase/1024) & 0xFF00) >> 8;
+		outw(0x3C4, (temp << 8) | 0x20);
+	}
+#endif
 	new->BankReg = 0x02;
+	new->std.CRTC[0x13] = offset & 0xFF;
+	new->CRTCOff = (offset & 0xF00) >> 4;
 
 	if (mode->Flags & V_INTERLACE)
 		new->BankReg |= 0x20;
@@ -435,15 +435,18 @@ SISAdjust(x, y)
 	unsigned char temp;
 	int base;
 
+#ifdef MONOVGA
 	base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
+#else
+	base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
+#endif
 
   	outw(vgaIOBase + 4, (base & 0x00FF00) | 0x0C);
 	outw(vgaIOBase + 4, ((base & 0x00FF) << 8) | 0x0D);
 
 	outb(0x3C4, 0x27); temp = inb(0x3C5) & 0xF0;
-	if (base > 0xFFFF)
-		temp |= (base & 0xFF0000) >> 16;
-	outw(0x3C4, (temp << 8) | 0x27);
+	temp |= (base & 0x0F0000) >> 16;
+	outb(0x3C5, temp);
 }
 
 /*

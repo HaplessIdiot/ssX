@@ -41,7 +41,7 @@ JSPUNIX、FreeBSD-users-jp ML(FreeBSD user ML)、FreeBSD kit MLで多くの議論、
 	<ITEM>README98	PC98サーバに関する説明
 	<ITEM>Install.98	簡単なインストール手順の解説(準備中)
 	<ITEM>XF86Config.98	標準的なPC98用XF86Config
-	<ITEM>VideoBoards	対応ビデオボードに関する情報
+	<ITEM>VideoBoards98	対応ビデオボードに関する情報
 	<ITEM>NetBSD98.doc	NetBSD/pc98に関する追加情報(準備中)
 	<ITEM>FreeBSD98.doc	FreeBSD(98)に関する追加情報(準備中)
 </itemize>
@@ -68,7 +68,7 @@ JSPUNIX、FreeBSD-users-jp ML(FreeBSD user ML)、FreeBSD kit MLで多くの議論、
         <ITEM>鈴木 孝一郎<it/&lt;ksuzuki@cc.tuat.ac.jp&gt;/
         <ITEM>塚田 剛文<it/&lt;tsuka@kawalab.dnj.ynu.ac.jp&gt;/
 	<ITEM>永尾 禎啓<it/&lt;nagao@cs.titech.ac.jp&gt;/
-	<ITEM>野田 みのる<it/&lt;tarda@ce.tokushima-u.ac.jp&gt;/
+	<ITEM>野田 稔<it/&lt;tarda@ce.tokushima-u.ac.jp&gt;/
         <ITEM>野村 高明<it/&lt;tnomura@sfc.keio.ac.jp&gt;/
         <ITEM>藤浦 豊徳<it/&lt;toyo@center.nitech.ac.jp&gt;/
 	<ITEM>本多 尚文<it/&lt;honda@math.hokudai.ac.jp&gt;/

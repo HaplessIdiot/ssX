@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/01/21 14:32:46 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Imakefile,v 3.6 1996/02/05 11:27:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Imakefile,v 3.7 1996/02/12 11:14:25 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -95,7 +95,7 @@ DATABASE = /*modeDB.txt*/ AccelCards Monitors Devices
 
 FILES = $(MAINDOCS) $(OSREADME) $(HWREADME) $(OTHERDOCS) $(MISCDOCS) $(DATABASE)
 
-EXTRAFILES = PC98
+EXTRAFILES = VideoBoard98
 
 #ifndef DontInstallPC98Version
 InstallMultipleDest(install,$(FILES),$(XFREE86DOCDIR))

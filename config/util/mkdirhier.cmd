@@ -1,6 +1,5 @@
 /* OS/2 REXX SCRIPT */
-/* DON'T REMOVE 0x0d (^M) CHARACTERS FROM THIS FILE */
-/* $XFree86: xc/config/util/mkdirhier.cmd,v 3.0 1994/10/20 06:01:02 dawes Exp $ */
+/* $XFree86: xc/config/util/mkdirhier.cmd,v 3.1 1996/02/09 08:18:04 dawes Exp $ */
 
 CALL RxFuncAdd 'SysMkDir', 'RexxUtil', 'SysMkDir'
 

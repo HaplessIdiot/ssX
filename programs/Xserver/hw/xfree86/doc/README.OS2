@@ -61,16 +61,11 @@
 
   See the Copyright Notice <COPYRIGHT.html>.
 
-  The sources for XFree86/OS2 are available by anonymous ftp from:
-
-
-  ftp.XFree86.org:/pub/XFree86/current
-  <ftp://ftp.XFree86.org/pub/XFree86/current>
-
   Binaries for OS/2 2.11 and OS/2 Warp are available from:
 
-  ftp.XFree86.org:/pub/XFree86/current/binaries/OS2
-  <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/OS2>
+
+  ftp.XFree86.org:/pub/XFree86/beta/binaries/OS2
+  <ftp://ftp.XFree86.org/pub/XFree86/beta/binaries/OS2>
 
   more archives to be added ...
 
@@ -129,12 +124,12 @@
         software.  In a future version, this restriction might be no
         longer present.
 
-
         1. For OS/2 2.11, IBM TCP/IP 2.0 or later is mandatory.
 
         2. Warp comes with the Internet Access Kit (IAK), which is
            sufficient. Warp Connect and Warp Server come with a full
            version of TCP/IP (3.0). Use of this software is prefered
+
            over IAK then.
 
         Other versions of TCP/IP, such as FTP's, DEC's, or Hummingbird's
@@ -193,7 +188,6 @@
            Runtime libraries of EMX
 
         Choose at least one of the following to match your hardware:
-
 
 
         312D8514
@@ -267,6 +261,7 @@
   1.4MB and occupies 2.5MB on the disk. You won't normally need more
   than the single Xserver tailored to your video card.
 
+
   If it is your first time install, get the 312Dbase archive before any
   of the other packages. This package contains a driver and a test
   program, which analyzes your video hardware. If this program fails or
@@ -328,9 +323,8 @@
         write this down or redirect the output of ``SuperProbe'' into a
         file by entering:
 
+
           [C:\] Y:\XFree86\bin\SuperProbe >filename
-
-
 
 
 
@@ -393,7 +387,6 @@
 
 
 
-
      Note that forward ``/'' is used as a directory separator.
 
      ETC
@@ -401,7 +394,7 @@
         ETC directory of the TCP/IP code, such as
 
 
-          SET ETC=C:\TCPIP\ETC
+     SET ETC=C:\TCPIP\ETC
 
 
 
@@ -458,9 +451,7 @@
         variable might be set to
 
 
-
-
-     SET HOME=H:\user\holger
+          SET HOME=H:\user\holger
 
 
 
@@ -468,6 +459,7 @@
      X11ROOT
         This is one of the most important settings, it determines the
         root of the XFree86 directory tree. Normally, you will set this
+
         to the drive letter of the partition where the \XFree86 tree
         resides, such as in
 
@@ -525,7 +517,6 @@
 
      It is possible to move the binaries to another directory in the
      search path; for maintenance reasons and clarity of the structure,
-
      this is not recommended, though.
 
      LIBPATH
@@ -533,7 +524,9 @@
         This is normally the directory (adjust the letter)
 
 
-          Y:\XFree86\lib
+
+
+     Y:\XFree86\lib
 
 
 
@@ -590,12 +583,11 @@
 
 
 
-
-
      6. After rebooting, verify that the following command works:
 
 
           [C:\] ping localhost
+
 
 
 
@@ -657,7 +649,6 @@
   version from Linux or another platform may be used without changes.
 
   Once you've set up a XF86Config file, you can fine tune the video
-
   modes with the xvidtune utility.
 
   11.  Running X
@@ -666,6 +657,7 @@
   software, X and the presentation manager in parallel.  The server,
   window manager and an xterm take about 4-6 Mb of memory themselves.  X
   will start up on a system with 8MB or less, but the performance will
+
   severely suffer from heavy disk swapping. Your mileage may vary,
   though, so some people might consider this still tolerable.
 
@@ -723,7 +715,6 @@
 
   Many thanks to:
 
-
      o  Sebastien Marineau for his great work on getting the server code
         debugged
 
@@ -733,7 +724,7 @@
      o  ME - no, no, forget this: I won't praise myself :-)
 
 
-  $XFree86$
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.0 1996/02/19 09:50:43 dawes Exp $
 
 
 
@@ -790,3 +781,14 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+$XFree86$

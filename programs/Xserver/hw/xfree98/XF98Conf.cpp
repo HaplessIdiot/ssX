@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.3 1996/02/04 09:15:45 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.4 1996/02/12 11:13:52 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -135,12 +135,12 @@ XCOMM To tailor a combination not already in keymap/xfree98 modify
 XCOMM keymap/xfree98 or uncomment and modify the other lines as
 XCOMM desired.
 
-XCOMM    XkbKeymap   "keymap/xfree98"
-XCOMM    Xkbkeycodes "keycodes/xfree98"
-XCOMM    XkbTypes    "types/default"
-XCOMM    XkbCompat   "compat/default"
-XCOMM    XkbSymbols  "symbols/nec/jp(pc98)"
-XCOMM    XkbGeometry "geometry/nec(pc98)"
+XCOMM XkbKeymap   "keymap/xfree98"
+Xkbkeycodes "keycodes/xfree98"
+XkbTypes    "types/default"
+XkbCompat   "compat/pc98"
+XkbSymbols  "symbols/nec/jp(pc98)"
+XkbGeometry "geometry/nec(pc98)"
 
 EndSection
 

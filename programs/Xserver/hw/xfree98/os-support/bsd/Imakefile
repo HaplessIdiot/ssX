@@ -4,9 +4,10 @@ XCOMM $XConsortium: Imakefile /main/4 1996/01/26 10:52:18 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/bsd/Imakefile,v 3.5 1996/02/12 11:14:35 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/bsd/Imakefile,v 3.6 1996/02/18 03:44:32 dawes Exp $
 #include <Server.tmpl>
 
+#if defined(FreeBSDArchitecture) || defined(NetBSDArchitecture)
 #ifdef BuildXInputExt
 # if BuildDynamicLoading
 SHARED_CFLAGS = PositionIndependentCFlags
@@ -16,6 +17,7 @@ SHARED_CFLAGS = PositionIndependentCFlags
  JOYSTICK_OBJ = bsd_jstk.o
 #  endif
 # endif
+#endif
 #endif
 
 SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c bios_devmem.c mapVT_noop.c \

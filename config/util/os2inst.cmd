@@ -1,7 +1,6 @@
 /* OS/2 REXX SCRIPT */
-/* WARNING! DON'T REMOVE 0x0d (^M) CHARACTERS! */
 
-/* $XFree86$
+/* $XFree86: xc/config/util/os2inst.cmd,v 3.0 1994/10/20 06:01:03 dawes Exp $
  *
  * This is a wrapper for the install command. As any utility, 
  * install could have been lifted from the BSD sources, but I just wanted

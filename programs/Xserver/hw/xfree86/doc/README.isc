@@ -1,6 +1,6 @@
   Information for ISC Users
   Michael Rohleder
-  06 July 1995
+  18 February 1996
 
   1.  X11R6/XFree86[TM] on Interactive Unix
 
@@ -41,6 +41,11 @@
          #define DefaultCDebugFlags -O3 -fomit-frame-pointer inside
         xf86site.def to overwrite the default -O2.
 
+        With 2.7.x you must specify #define UsePosix               YES
+        inside xf86site.def.  This is necessary to build the sources
+        successfully.  Versions prior to 2.7.0 could define it, but
+        don't need it for a clean build.
+
       libg++-2.6.x
         The needed g++ Libraries for use with g++ 2.6.x
 
@@ -61,7 +66,6 @@
 
         Enable and set #define GnuMallocLibrary to your needs, if it
         isn't like the default -L/usr/local/lib -lgmalloc.
-
 
 
   3.  Changes to the System Header Files
@@ -123,7 +127,6 @@
           #define _NET_ERRNO_H
           ...
           #endif
-
 
 
 
@@ -192,9 +195,8 @@
 
      You need the mmap-2.2.3 driver installed on your system.  If you
      don't have the mmap-2.2.3 driver installed, you could use the
+
      driver source in the file
-
-
 
      xc/programs/Xserver/hw/xfree86/etc/mmapSVR3.shar
 
@@ -248,41 +250,257 @@
 
 
 
-  6.  Fresco
+        This bug seems to be fixed since 3.1.2, and therefore the
+        workaraound is not needed anymore.
+
+  6.  XKeyboard Extension
 
 
-     o  Compiling ...
+     o  Sample Setup ...
 
-        If you want to include the build of the Fresco library, you have
-        to setup
-
-        #define BuildFresco             YES
+        Here is a sample XKeyboard Definition to include inside the
+        Keyboard Section of your XF86Config File.
 
 
-     in either xf86site.def (just uncomment the appropriate definition.
+            Xkbkeycodes "keycodes/xfree86"
+            XkbSymbols  "symbols/us(pc101)+de_nodead"
+            XkbTypes    "types/default"
+            XkbCompat   "compat/default"
+            XkbGeometry "geometry/pc"
 
 
-     o  Using ...
 
-        To use the library you need the gnu-ld installed.  The standard
-        ISC ld couldn't link libFresco.a inside a program.
+     This works, at least for me. Please note the XkbSymbols Option
+     where I use a special version of the file symbols/de. With the
+     normal Version you have the dead keys working. This means, you have
+     to hit another key to compose special characters like e-acute. I
+     really don't like this behavior, so I change the dead keys
+     accordingly. Please see the next item for the changes.
 
-        I could test the Lib. with the sample Fresco Application fdraw,
-        which compiled without problem.  It seems that Fresco
-        applications has some problems running with display :0.0 on
-        Interactive. (I test it only against standard XLOCAL transport
-        mechanism, this could maybe improved by using another XLOCAL
-        configuration).  The fdraw window is closed with the following
-        message:
+     o  symbols/de_nodead ...
 
-        XIO:  fatal IO error 11 (Resource temporarily unavailable) on X server ":0.0"
+        This file is located under /usr/X11R6/lib/X11/xkb, and is a
+        special version of the file symbols/de.
 
 
-     As a workaround you could specify local-machinename:0 to the -dis-
-     play Argument when starting the Fresco application. On TCP/IP
-     transport you got a workable Fresco App.
 
-  7.  Installation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        default partial xkb_symbols "basic" {
+
+            // Describes the differences between a very simple US/ASCII
+            // keyboard and a very simple German keybaord
+
+            // Alphanumeric section
+            name[Group1]= "German";
+            key <TLDE> {        [ asciicircum,  degree  ],
+                                [   notsign                     ]       };
+            key <AE02> {        [         2,    quotedbl        ],
+                                [ twosuperior                   ]       };
+            key <AE03> {        [         3,    section ],
+                                [ threesuperior,sterling        ]       };
+            key <AE04> {        [         4,    dollar          ],
+                                [ onequarter,   currency        ]       };
+            key <AE05> {        [         5,    percent         ],
+                                [   onehalf                     ]       };
+            key <AE06> {        [         6,    ampersand       ],
+                                [ threequarters                 ]       };
+            key <AE07> {        [         7,    slash           ],
+                                [ braceleft                     ]       };
+            key <AE08> {        [         8,    parenleft       ],
+                                [ bracketleft                   ]       };
+            key <AE09> {        [         9,    parenright      ],
+                                [ bracketright, plusminus       ]       };
+            key <AE10> {        [         0,    equal           ],
+                                [ braceright,   degree          ]       };
+            key <AE11> {        [    ssharp,    question        ],
+                                [ backslash,    questiondown    ]       };
+            key <AE12> {        [ apostrophe,   grave   ],
+                                [ dead_cedilla                  ]       };
+
+            key <AD01> {        [         q,    Q               ],
+                                [        at                     ]       };
+            key <AD05> {        [         t,    T               ]       };
+            key <AD06> {        [         z,    Z               ]       };
+            key <AD07> {        [         u,    U               ]       };
+            key <AD08> {        [         i,    I               ]       };
+            key <AD11> {        [ udiaeresis,   Udiaeresis      ],
+                                [ dead_diaeresis                ]       };
+            key <AD12> {        [      plus,    asterisk        ],
+                                [ asciitilde,   dead_macron     ]       };
+            key <AC04> {        [         f,    F               ]       };
+            key <AC05> {        [         g,    G               ]       };
+            key <AC10> {        [ odiaeresis,   Odiaeresis      ],
+                                [ dead_acute                    ]       };
+            key <AC11> {        [ adiaeresis,   Adiaeresis      ],
+                                [ dead_circumflex               ]       };
+
+            key <LSGT> {        [      less,    greater         ],
+                                [       bar                     ]       };
+            key <AB01> {        [         y,    Y               ],
+                                [ guillemotleft,less            ]       };
+            key <AB07> {        [         m,    M               ],
+                                [        mu                     ]       };
+            key <AB08> {        [     comma,    semicolon       ]       };
+            key <AB09> {        [    period,    colon           ],
+                                [ periodcentered, division      ]       };
+            key <AB10> {        [     minus,    underscore      ]       };
+            key <BKSL> {        [ numbersign,   acute           ],
+                                [ dead_grave                    ]       };
+            key <RALT> {        [ Mode_switch,  Multi_key       ]       };
+
+            // End alphanumeric section
+
+
+            // begin modifier mappings
+            modifier_map Shift  { Shift_L };
+            modifier_map Lock   { Caps_Lock };
+            modifier_map Control{ Control_L };
+            modifier_map Mod3   { Mode_switch };
+        };
+
+
+
+  7.  Multibuffer Extension
+
+  This is an obsolete Extension. Anyway, if you want to include this
+  Extension inside your build, you have to add: #define BuildMultibuffer
+  YES inside xf86site.def
+
+  And you need to patch programs/Xserver/Imakefile with the following
+  diff:
+
+  *** xc/programs/Xserver/Imakefile.orig  Mon Feb 12 21:16:12 1996
+  --- xc/programs/Xserver/Imakefile       Mon Feb 12 08:46:05 1996
+  ***************
+  *** 81,87 ****
+  --- 81,92 ----
+                      $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
+            EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) \
+                      $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(SITEEXTDIRS)
+  + #if defined(i386IscArchitecture) && defined(BuildMultibuffer) && \
+  +     defined(XFree86Version)
+  +      EXTENSIONS = $(PEXLIBS) $(OTHEREXTS)
+  + #else
+         EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
+  + #endif
+             XAULIB = $(XAUTHSRC)/LibraryTargetName(Xau)
+           XDMCPLIB = $(XDMCPLIBSRC)/LibraryTargetName(Xdmcp)
+                 OS = os/LibraryTargetName(os) $(XAULIB) $(XDMCPLIB)
+
+
+
+  8.  Sample Definition for xf86site.def
+
+  These are my additions to xf86site.def, if I build the sources.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* Try MultiBuffer Extension */
+  #define BuildMultibuffer        YES
+
+  /* Build all Contrib SW */
+  #ifdef XF86Contrib
+  #undef XF86Contrib
+  #endif
+
+  /* gcc 2.6.3 tested Optimization Flags                               */
+  # define DefaultGcc2i386Opt     -O3 -fomit-frame-pointer -fstrength-reduce
+
+  /* For a POSIXized build on Interactive maybe needed to use gcc2.7.2 */
+  # define UsePosix               YES
+
+  /* Use GNUs MallocLibrary (and the Location for the Lib)             */
+  # define UseGnuMalloc           YES
+  # define GnuMallocLibrary       -L/usr/local/lib -lgnumalloc
+
+  /* Build Xvfb                                                        */
+  # define XVirtualFramebufferServer      YES
+
+  /* Use mmap Driver                                                   */
+  # define HasSVR3mmapDrv         YES
+
+  /* Expand Manual Pages (needs S5L)                                   */
+  # define ExpandManNames         YES
+
+  /* Has LinuxDoc (and the Location for LinuxDoc / only HTML and Text) */
+  # define HasLinuxDoc            YES
+  # define BuildLinuxDocHtml      YES
+  # define BuildAllDocs           YES
+  # define LinuxDocDir            /usr/local/lib/linuxdoc-sgml
+
+  /* Install Config's for xdm, xfs, and xinit */
+  # define InstallXinitConfig    YES
+  # define InstallXdmConfig      YES
+  # define InstallFSConfig               YES
+
+
+
+  9.  Installation
 
   After your make World BOOTSTRAPCFLAGS="... succeed,
 
@@ -305,6 +523,9 @@
   to install the server binary LinkKit into /usr/X11R6/lib/Server.
 
 
+
+
+
   ______________________________________________________________________
          You could tune the Kernel using the command-file
 
@@ -318,14 +539,13 @@
 
 
 
-  8.  Using ...
+  10.  Using ...
 
 
      o  Keyboard:
 
         You don't need any modmap-File to get your keyboard working with
         any iso-8859-1 Font. Simply enable
-
 
 
         +  LeftAlt  Meta
@@ -371,6 +591,7 @@
      o  ISC Streams Pipes
 
         The old path to the pipes on ISC's R4 /tmp/.X11-unix has changed
+
         to /dev/X/ISCCONN. For compatibility reasons on ISC, the pipes
         in the new directory will be linked to a file inside the old.
         This will normally be a hard link, so it can't go across
@@ -381,43 +602,20 @@
         maybe abort due to a SIGSYS.  We tried to catch this signal, so
         if it dumps please send me a note.
 
-  9.  Acknowledgements
+  11.  Acknowledgements
 
   All thanks should go to the members of the XFree86 Team for their
   great work and the X Consortium for their Public Release of X11R6, as
   to all who contribute to this excellent piece of free software.
 
 
-
-
-
-
-
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.9 1996/02/10 10:42:03 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.10 1996/02/19 09:50:44 dawes Exp $
 
 
 
 
 
   $XConsortium: isc.sgml /main/4 1995/11/12 20:00:42 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

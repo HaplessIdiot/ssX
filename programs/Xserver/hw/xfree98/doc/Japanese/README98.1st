@@ -41,7 +41,7 @@
 
   o  XF86Config.98   標準的なPC98用XF86Config
 
-  o  VideoBoards     対応ビデオボードに関する情報
+  o  VideoBoards98   対応ビデオボードに関する情報
 
   o  NetBSD98.doc    NetBSD/pc98に関する追加情報(準備中)
 
@@ -88,7 +88,7 @@
 
   o  永尾 禎啓<nagao@cs.titech.ac.jp>
 
-  o  野田 みのる<tarda@ce.tokushima-u.ac.jp>
+  o  野田 稔<tarda@ce.tokushima-u.ac.jp>
 
   o  野村 高明<tnomura@sfc.keio.ac.jp>
 
