@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX March 2002)
+  56. Restore effect of option "NoSilkenMouse" (Marc La France).
   55. Fix some nForce graphics regressions caused by recent flat panel and
       Mac updates to the nv driver (Mark Vojkovich).
   54. Recognise the "Absolute" keyword that was documented in the
@@ -14671,4 +14672,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2186 2002/03/11 21:34:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2187 2002/03/15 00:57:18 mvojkovi Exp $
