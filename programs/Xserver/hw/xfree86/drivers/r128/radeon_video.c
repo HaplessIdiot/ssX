@@ -41,8 +41,9 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   My apologies to Vladimir as there is more good work in his code that
  *   should be brought forward.
  *
+ *   RADEON ALERT !
  *   This is an extremely quick port to the Radeon, it hasn't been tested
- *   throughly.
+ *   thoroughly, although it appears to work.
  */
 #include "xf86.h"
 #include "xf86_OSproc.h"
