@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.16 2001/11/02 03:41:03 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.17 2001/11/03 07:01:36 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -61,7 +61,8 @@ PBXBUILDSTYLE = -buildstyle Development
 PBXBUILDSTYLE = -buildstyle Deployment
 #endif
 
-SUBDIRS = English.lproj French.lproj German.lproj Japanese.lproj Swedish.lproj
+SUBDIRS = Dutch.lproj English.lproj French.lproj German.lproj Japanese.lproj \
+          Swedish.lproj
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

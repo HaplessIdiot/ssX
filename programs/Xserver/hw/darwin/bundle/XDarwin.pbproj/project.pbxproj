@@ -72,6 +72,7 @@
 		};
 		0157A37D002CF6D7CE6F79C2 = {
 			children = (
+				F533214601A4B45401000001,
 				0157A37E002CF6D7CE6F79C2,
 				F58D65DF018F79B101000001,
 				F533213D0193CBE001000001,
@@ -179,6 +180,7 @@
 		};
 		02E03CA000348209CE6F79C2 = {
 			children = (
+				F533214701A4B48301000001,
 				02E03CA100348209CE6F79C2,
 				F58D65E0018F79C001000001,
 				F533213E0193CBF401000001,
@@ -275,6 +277,7 @@
 		};
 		089C165CFE840E0CC02AAC07 = {
 			children = (
+				F533214301A4B3F001000001,
 				089C165DFE840E0CC02AAC07,
 				F58D65DD018F798F01000001,
 				F533213A0193CBA201000001,
@@ -490,6 +493,7 @@
 //124
 		1220774300712D2D416877C2 = {
 			children = (
+				F533214501A4B42501000001,
 				1220774400712D2D416877C2,
 				F58D65DE018F79A001000001,
 				F533213C0193CBC901000001,
@@ -576,6 +580,7 @@
 //1B4
 		1BD8DE4200B8A3567F000001 = {
 			children = (
+				F533214401A4B40F01000001,
 				1BD8DE4300B8A3567F000001,
 				F58D65DC018F794D01000001,
 				F533213B0193CBB401000001,
@@ -595,6 +600,7 @@
 		};
 		1BD8DE4400B8A38E7F000001 = {
 			children = (
+				F533214801A4B4D701000001,
 				1BD8DE4500B8A38E7F000001,
 				F58D65E1018F79E001000001,
 				F533213F0193CC2501000001,
@@ -705,6 +711,7 @@
 				French,
 				German,
 				Swedish,
+				Dutch,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA;
 			projectDirPath = "";
@@ -759,6 +766,7 @@
 		};
 		29B97318FDCFA39411CA2CEA = {
 			children = (
+				F533214201A4B3CE01000001,
 				29B97319FDCFA39411CA2CEA,
 				F58D65DB018F793801000001,
 				F53321390193CB6A01000001,
@@ -1037,6 +1045,48 @@
 			name = CoreAudio.framework;
 			path = /System/Library/Frameworks/CoreAudio.framework;
 			refType = 0;
+		};
+		F533214201A4B3CE01000001 = {
+			isa = PBXFileReference;
+			name = Dutch;
+			path = Dutch.lproj/MainMenu.nib;
+			refType = 4;
+		};
+		F533214301A4B3F001000001 = {
+			isa = PBXFileReference;
+			name = Dutch;
+			path = Dutch.lproj/InfoPlist.strings;
+			refType = 4;
+		};
+		F533214401A4B40F01000001 = {
+			isa = PBXFileReference;
+			name = Dutch;
+			path = Dutch.lproj/InfoPlist.strings.cpp;
+			refType = 4;
+		};
+		F533214501A4B42501000001 = {
+			isa = PBXFileReference;
+			name = Dutch;
+			path = Dutch.lproj/Localizable.strings;
+			refType = 4;
+		};
+		F533214601A4B45401000001 = {
+			isa = PBXFileReference;
+			name = Dutch;
+			path = Dutch.lproj/Credits.rtf;
+			refType = 4;
+		};
+		F533214701A4B48301000001 = {
+			isa = PBXFileReference;
+			name = Dutch;
+			path = Dutch.lproj/XDarwinHelp.html;
+			refType = 4;
+		};
+		F533214801A4B4D701000001 = {
+			isa = PBXFileReference;
+			name = Dutch;
+			path = Dutch.lproj/XDarwinHelp.html.cpp;
+			refType = 4;
 		};
 		F54BF6EA017D500901000001 = {
 			isa = PBXFileReference;
