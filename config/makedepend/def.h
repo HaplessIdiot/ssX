@@ -1,4 +1,4 @@
-/* $TOG: def.h /main/32 1998/03/25 08:17:45 kaleb $ */
+/* $Xorg: def.h,v 1.3 2000/08/17 19:41:50 cpqbld Exp $ */
 /*
 
 Copyright (c) 1993, 1994, 1998 The Open Group.
@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/def.h,v 3.6 1999/03/21 07:34:25 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/def.h,v 3.7 2000/10/24 18:07:35 dawes Exp $ */
 
 #include "Xos.h"
 #include "Xfuncproto.h"

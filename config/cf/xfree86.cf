@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.340 2001/01/12 19:28:25 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.341 2001/01/15 22:17:48 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -6,7 +6,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.340 2001/01/12 19:28:25 dawes Exp $
  * Most of these settings can be overridden in a vendor.cf or the
  * BeforeVendor part of the site.def file.
  */
-XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
+XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 
 /*
  * This enables some settings for developers.

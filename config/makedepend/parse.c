@@ -1,4 +1,4 @@
-/* $TOG: parse.c /main/35 1998/03/25 08:17:55 kaleb $ */
+/* $Xorg: parse.c,v 1.4 2000/08/17 19:41:51 cpqbld Exp $ */
 /*
 
 Copyright (c) 1993, 1994, 1998 The Open Group
@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/parse.c,v 1.5 1998/10/05 13:21:49 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/parse.c,v 1.6 1999/03/21 07:34:26 dawes Exp $ */
 
 #include "def.h"
 

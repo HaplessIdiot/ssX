@@ -1,4 +1,4 @@
-/* $TOG: lndir.c /main/17 1998/02/06 11:23:50 kaleb $ */
+/* $Xorg: lndir.c,v 1.4 2000/08/17 19:41:52 cpqbld Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -22,7 +22,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/util/lndir.c,v 3.8 1998/10/05 13:21:51 dawes Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.10 2000/04/17 16:29:45 eich Exp $ */
 
 /* From the original /bin/sh script:
 

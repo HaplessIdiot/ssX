@@ -1,4 +1,4 @@
-/* $TOG: imakemdep.h /main/102 1998/02/06 11:02:26 kaleb $ */
+/* $Xorg: imakemdep.h,v 1.5 2000/08/17 19:41:50 cpqbld Exp $ */
 /*
 
 Copyright (c) 1993, 1994, 1998  The Open Group
@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.44 2000/11/02 02:51:08 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.45 2000/11/14 18:20:32 dawes Exp $ */
 
 
 /* 
@@ -151,12 +151,8 @@ in this Software without prior written authorization from The Open Group.
 #define imake_ccflags "-DSYSV -DUSG -DNOSTDHDRS"
 #endif
 
-#ifdef sequent
-#define imake_ccflags "-DX_NOT_STDC_ENV -DX_NOT_POSIX"
-#endif
-
 #ifdef _SEQUENT_
-#define imake_ccflags "-DSYSV -DUSG"
+#define imake_ccflags "-Xa -DSVR4"
 #endif
 
 #if defined(SX) || defined(PC_UX)
@@ -805,14 +801,19 @@ char *cpp_argv[ARGUMENTS] = {
 	if ((__sp = strchr((buf), ' ')) != NULL)			\
 		*__sp = '/';						\
     } while (0)
-#else
-# if defined(__Lynx__) || defined(Lynx)
+#elif defined(__Lynx__) || defined(Lynx)
 /* Lynx 2.4.0 /bin/cc doesn't like #elif */
 #  define DEFAULT_OS_MAJOR_REV   "r %[0-9]"
 #  define DEFAULT_OS_MINOR_REV   "r %*d.%[0-9]"
 #  define DEFAULT_OS_TEENY_REV   "r %*d.%*d.%[0-9]" 
 #  define DEFAULT_OS_NAME        "srm %[^\n]"
 # endif
+#elif defined(_SEQUENT_)
+/* uname -v returns 'Vx.y.z', e.g. 'V4.4.2' */
+# define DEFAULT_OS_MAJOR_REV	"v V%[0-9]"
+# define DEFAULT_OS_MINOR_REV	"v V%*d.%[0-9]"
+# define DEFAULT_OS_TEENY_REV	"v V%*d.%*d.%[0-9]"
+# define DEFAULT_OS_NAME	"s %[^\n]"
 #endif
 
 #else /* else MAKEDEPEND */
