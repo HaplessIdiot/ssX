@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.7 1999/08/21 13:48:34 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.8 1999/08/22 05:57:32 dawes Exp $ 
 .TH MGA __drivermansuffix__ "Version 3.9.16"  "XFree86"
 .SH NAME
 mga \- Matrox video driver
@@ -107,7 +107,7 @@ Enable or disable use of the shadow framebuffer layer.  See
 shadowfb(__drivermansuffix__) for further information.  Default: off.
 .TP
 .BI "Option ""SyncOnGreen"" """ boolean """
-Enable or disable combinging the sync signals with the green signal.
+Enable or disable combining the sync signals with the green signal.
 Default: off.
 .TP
 .BI "Option ""UseFBDev"" """ boolean """

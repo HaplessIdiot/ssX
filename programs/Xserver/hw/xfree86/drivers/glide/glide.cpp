@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide.cpp,v 1.4 1999/08/22 13:04:25 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide.cpp,v 1.5 1999/08/28 09:01:03 dawes Exp $
 .TH GLIDE __drivermansuffix__ "Version 3.9.16"  "XFree86"
 .SH NAME
 glide \- Glide video driver
@@ -20,7 +20,7 @@ file. Read the second paragraph in the description below to find out how.
 .B glide 
 is an XFree86 driver for Glide capable video boards (such as 3Dfx
 Voodoo boards). This driver is mainly for Voodoo 1 and Voodoo 2 boards, later
-boards from 3dfx have 2D built-in and you should preferrably use a driver separate for
+boards from 3Dfx have 2D built-in and you should preferably use a driver separate for
 those boards or the fbdev(__drivermansuffix__) driver.
 This driver is a bit special because Voodoo 1 and 2 boards are
 very much NOT made for running 2D graphics. Therefore, this driver
