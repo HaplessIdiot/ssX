@@ -1302,7 +1302,10 @@ init_attrib_groups( GLcontext *ctx )
    ctx->NoDither = getenv("MESA_NO_DITHER") ? GL_TRUE : GL_FALSE;
    if (ctx->NoDither) {
       if (getenv("MESA_DEBUG")) {
+	/* XXX This causes an OSMesa build problem on Solaris 2.6 */
+#ifndef SVR4
          fprintf(stderr, "MESA_NO_DITHER set - dithering disabled\n");
+#endif
       }
       ctx->Color.DitherFlag = GL_FALSE;
    }
