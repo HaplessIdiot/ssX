@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.47 2001/05/11 08:16:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.48 2001/05/15 10:19:42 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -628,20 +628,20 @@ pciMfDev(int busnum, int devnum)
 PCITAG
 pciGenFindNext(void)
 {
-  unsigned long devid, tmp;
-  unsigned char base_class, sub_class, sec_bus, pri_bus;
-  Bool speculativeProbe = FALSE;
+    unsigned long devid, tmp;
+    unsigned char base_class, sub_class, sec_bus, pri_bus;
+    Bool speculativeProbe = FALSE;
   
 #ifdef DEBUGPCI
-ErrorF("pciGenFindNext\n");
+    ErrorF("pciGenFindNext\n");
 #endif
 
-  for (;;) {
+    for (;;) {
 
 #ifdef DEBUGPCI
-ErrorF("pciGenFindNext: pciBusNum %d\n", pciBusNum);
+	ErrorF("pciGenFindNext: pciBusNum %d\n", pciBusNum);
 #endif
-    if (pciBusNum == -1) {
+	if (pciBusNum == -1) {
 	    /*
 	     * Start at top of the order
 	     */
@@ -651,34 +651,32 @@ ErrorF("pciGenFindNext: pciBusNum %d\n", pciBusNum);
 	    pciBusNum = 0;
 	    pciFuncNum = 0;
 	    pciDevNum = 0;
-    }
-    else {
+	} else {
 #ifdef PCI_MFDEV_SUPPORT
 #ifdef DEBUGPCI
-ErrorF("pciGenFindNext: pciFuncNum %d\n", pciFuncNum);
+	    ErrorF("pciGenFindNext: pciFuncNum %d\n", pciFuncNum);
 #endif
 	    /*
 	     * Somewhere in middle of order.  Determine who's
 	     * next up
 	     */
 	    if (pciFuncNum == 0) {
+		/*
+		 * Is current dev a multifunction device?
+		 */
+		if (pciMfDev(pciBusNum, pciDevNum))
+		    /* Probe for other functions */
+		    pciFuncNum = 1;
+		else
 		    /*
-		     * Is current dev a multifunction device?
+		     * No more functions this device. Next
+		     * device please
 		     */
-		    if (pciMfDev(pciBusNum, pciDevNum))
-			    /* Probe for other functions */
-			    pciFuncNum = 1;
-		    else
-			    /*
-			     * No more functions this device. Next
-			     * device please
-			     */
-			    pciDevNum ++;
-	    }
-	    else if (++pciFuncNum >= 8) {
-		    /* No more functions for this device. Next device please */
-		    pciFuncNum = 0;
 		    pciDevNum ++;
+	    } else if (++pciFuncNum >= 8) {
+		/* No more functions for this device. Next device please */
+		pciFuncNum = 0;
+		pciDevNum ++;
 	    }
 #else
 	    pciDevNum ++;
@@ -687,116 +685,113 @@ ErrorF("pciGenFindNext: pciFuncNum %d\n", pciFuncNum);
 		!pciBusInfo[pciBusNum] ||
 		pciDevNum >= pciBusInfo[pciBusNum]->numDevices) {
 #ifdef DEBUGPCI
-ErrorF("pciGenFindNext: next bus\n");
+		ErrorF("pciGenFindNext: next bus\n");
 #endif
-		    /*
-		     * No more devices for this bus. Next bus please
-		     */
-     if (speculativeProbe) {
-	 xfree(pciBusInfo[pciBusNum]);
-	 pciBusInfo[pciBusNum] = NULL;
-     }
+		/*
+		 * No more devices for this bus. Next bus please
+		 */
+		if (speculativeProbe) {
+		    xfree(pciBusInfo[pciBusNum]);
+		    pciBusInfo[pciBusNum] = NULL;
+		}
      
 	 
-     if (++pciBusNum >= MAX_PCI_BUSES) {
+		if (++pciBusNum >= MAX_PCI_BUSES) {
 #ifdef DEBUGPCI
-ErrorF("pciGenFindNext: out of buses\n");
+		    ErrorF("pciGenFindNext: out of buses\n");
 #endif
-			    /* No more buses.  All done for now */
-			    return(PCI_NOT_FOUND);
-		    }
+		    /* No more buses.  All done for now */
+		    return(PCI_NOT_FOUND);
+		}
 		    
-		    pciDevNum = 0;
+		pciDevNum = 0;
 	    }
-    }
+	}
 
 #ifdef DEBUGPCI
-ErrorF("pciGenFindNext: pciBusInfo[%d] = 0x%lx\n", pciBusNum, pciBusInfo[pciBusNum]);
+	ErrorF("pciGenFindNext: pciBusInfo[%d] = 0x%lx\n", pciBusNum, pciBusInfo[pciBusNum]);
 #endif
- if (!pciBusInfo[pciBusNum]) {
-     pciBusInfo[pciBusNum] = xnfalloc(sizeof(pciBusInfo_t));
-     *pciBusInfo[pciBusNum] = *pciBusInfo[0];
+	if (!pciBusInfo[pciBusNum]) {
+	    pciBusInfo[pciBusNum] = xnfalloc(sizeof(pciBusInfo_t));
+	    *pciBusInfo[pciBusNum] = *pciBusInfo[0];
      
-     speculativeProbe = TRUE;
- }
+	    speculativeProbe = TRUE;
+	}
     
-    /*
-     * At this point, pciBusNum, pciDevNum, and pciFuncNum have been
-     * advanced to the next device.  Compute the tag, and read the
-     * device/vendor ID field.
-     */
+	/*
+	 * At this point, pciBusNum, pciDevNum, and pciFuncNum have been
+	 * advanced to the next device.  Compute the tag, and read the
+	 * device/vendor ID field.
+	 */
 #ifdef DEBUGPCI
-ErrorF("pciGenFindNext: [%d, %d, %d]\n", pciBusNum, pciDevNum, pciFuncNum);
+	ErrorF("pciGenFindNext: [%d, %d, %d]\n", pciBusNum, pciDevNum, pciFuncNum);
 #endif
-    pciDeviceTag = PCI_MAKE_TAG(pciBusNum, pciDevNum, pciFuncNum);
-    inProbe = TRUE;
-    devid = pciReadLong(pciDeviceTag, 0);
-    inProbe = FALSE;
+	pciDeviceTag = PCI_MAKE_TAG(pciBusNum, pciDevNum, pciFuncNum);
+	inProbe = TRUE;
+	devid = pciReadLong(pciDeviceTag, 0);
+	inProbe = FALSE;
 #ifdef DEBUGPCI
-ErrorF("pciGenFindNext: pciDeviceTag = 0x%lx, devid = 0x%lx\n", pciDeviceTag, devid);
+	ErrorF("pciGenFindNext: pciDeviceTag = 0x%lx, devid = 0x%lx\n", pciDeviceTag, devid);
 #endif
-    if (devid == 0xffffffff)
+	if (devid == 0xffffffff)
 	    continue; /* Nobody home.  Next device please */
 
-    if (speculativeProbe && (pciNumBuses <= pciBusNum))
-	pciNumBuses = pciBusNum + 1;
+	if (speculativeProbe && (pciNumBuses <= pciBusNum))
+	    pciNumBuses = pciBusNum + 1;
     
-    speculativeProbe = FALSE;
+	speculativeProbe = FALSE;
     
-    /*
-     * Before checking for a specific devid, look for enabled
-     * PCI to PCI bridge devices.  If one is found, create and
-     * initialize a bus info record (if one does not already exist).
-     */
+	/*
+	 * Before checking for a specific devid, look for enabled
+	 * PCI to PCI bridge devices.  If one is found, create and
+	 * initialize a bus info record (if one does not already exist).
+	 */
 #ifdef PCI_BRIDGE_SUPPORT    
-    tmp = pciReadLong(pciDeviceTag, PCI_CLASS_REG);
-    base_class = PCI_CLASS_EXTRACT(tmp);
-    sub_class = PCI_SUBCLASS_EXTRACT(tmp); 
-    if (base_class == PCI_CLASS_BRIDGE)
-	if (sub_class == PCI_SUBCLASS_BRIDGE_PCI) {
+	tmp = pciReadLong(pciDeviceTag, PCI_CLASS_REG);
+	base_class = PCI_CLASS_EXTRACT(tmp);
+	sub_class = PCI_SUBCLASS_EXTRACT(tmp); 
+	if ((base_class == PCI_CLASS_BRIDGE) &&
+	    (sub_class == PCI_SUBCLASS_BRIDGE_PCI)) {
 	    tmp = pciReadLong(pciDeviceTag, PCI_PCI_BRIDGE_BUS_REG);
 	    sec_bus = PCI_SECONDARY_BUS_EXTRACT(tmp);
 	    pri_bus = PCI_PRIMARY_BUS_EXTRACT(tmp);
 #ifdef DEBUGPCI
-ErrorF("pciGenFindNext: pri_bus %d sec_bus %d\n", pri_bus, sec_bus);
+	    ErrorF("pciGenFindNext: pri_bus %d sec_bus %d\n", pri_bus, sec_bus);
 #endif
 	    if (sec_bus > 0 && sec_bus < MAX_PCI_BUSES && pciBusInfo[pri_bus]) {
-		    /*
-		     * Found a secondary PCI bus
-		     */
-		    if (!pciBusInfo[sec_bus]) {
-			    pciBusInfo[sec_bus] =
-				xnfalloc(sizeof(pciBusInfo_t));
+		/*
+		 * Found a secondary PCI bus
+		 */
+		if (!pciBusInfo[sec_bus])
+		    pciBusInfo[sec_bus] = xnfalloc(sizeof(pciBusInfo_t));
 
-		    }
+		/* Copy parents settings... */
+		*pciBusInfo[sec_bus] = *pciBusInfo[pri_bus];
 
-		    /* Copy parents settings... */
-		    *pciBusInfo[sec_bus] = *pciBusInfo[pri_bus];
+		/* ...but not everything same as parent */
+		pciBusInfo[sec_bus]->primary_bus = pri_bus;
+		pciBusInfo[sec_bus]->secondary = TRUE;
+		pciBusInfo[sec_bus]->numDevices = 32;
 
-		    /* ...but not everything same as parent */
-		    pciBusInfo[sec_bus]->primary_bus = pri_bus;
-		    pciBusInfo[sec_bus]->secondary = TRUE;
-		    pciBusInfo[sec_bus]->numDevices = 32;
-
-		    if (pciNumBuses <= sec_bus)
-			    pciNumBuses = sec_bus+1;
+		if (pciNumBuses <= sec_bus)
+		    pciNumBuses = sec_bus+1;
 	    }
-    }
+	}
 #endif
     
-    /*
-     * Does this device match the requested devid after
-     * applying mask?
-     */
+	/*
+	 * Does this device match the requested devid after
+	 * applying mask?
+	 */
 #ifdef DEBUGPCI
-ErrorF("pciGenFindNext: pciDevidMask = 0x%lx, pciDevid = 0x%lx\n", pciDevidMask, pciDevid);
+	ErrorF("pciGenFindNext: pciDevidMask = 0x%lx, pciDevid = 0x%lx\n", pciDevidMask, pciDevid);
 #endif
-    if ((devid & pciDevidMask) == pciDevid)
-	  /* Yes - Return it.  Otherwise, next device */
-	  return(pciDeviceTag); /* got a match */
+	if ((devid & pciDevidMask) == pciDevid)
+	    /* Yes - Return it.  Otherwise, next device */
+	    return(pciDeviceTag); /* got a match */
 
-  } /* for */
-  /*NOTREACHED*/
+    } /* for */
+    /*NOTREACHED*/
 }
 
 PCITAG
@@ -1114,6 +1109,7 @@ readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 	    continue;
 	}
 
+#if 0
 	/* 
 	 * Currently this is only good for PC style BIOSes.
 	 * This code needs to be revistited after 4.1 is out.
@@ -1130,6 +1126,7 @@ readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 	    xf86Msg(X_INFO,"Truncating PCI BIOS Length to %i\n",Len);
 	  }
 	}
+#endif
 
 	/* Read BIOS in 64kB chunks */
 	ret = 0;
