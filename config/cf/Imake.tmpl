@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.79 2000/06/07 02:13:01 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.80 2000/06/14 00:16:01 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -102,14 +102,26 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 /* the following are needed before we can include Imake.rules */
 
+#ifndef NothingOutsideProjectRoot
+#define NothingOutsideProjectRoot NO
+#endif
+
 #ifndef HasVarDirectory
 #define HasVarDirectory		YES
 #endif
 #ifndef UseEtcX11
 #define UseEtcX11		YES
 #endif
+#if NothingOutsideProjectRoot
+#undef UseEtcX11
+#define UseEtcX11		NO
+#endif
 #ifndef UseSeparateConfDir
 #define UseSeparateConfDir	(UseEtcX11 || HasVarDirectory)
+#endif
+#if NothingOutsideProjectRoot
+#undef UseSeparateConfDir
+#define UseSeparateConfDir	NO
 #endif
 #ifndef SystemV
 #define SystemV			NO	/* SYSV (R3) */
@@ -612,6 +624,9 @@ TCLIBDIR = TclLibDir
  */
 #ifndef SystemUsrLibDir
 #define SystemUsrLibDir /usr/lib
+#endif
+#ifndef SystemUsrIncDir
+#define SystemUsrIncDir /usr/include
 #endif
 
 #ifndef ShLibDir
@@ -1328,6 +1343,7 @@ TCLIBDIR = TclLibDir
         USRLIBDIR = UsrLibDir		/* nonshared libraries */
         VARLIBDIR = VarLibDir		/* xdm runtime files */
   SYSTEMUSRLIBDIR = SystemUsrLibDir	/* system's "/usr/lib" */
+  SYSTEMUSRINCDIR = SystemUsrIncDir	/* system's "/usr/include" */
          SHLIBDIR = ShLibDir            /* shared libraries */
        LINTLIBDIR = LintlibDir		/* lint libraries */
           MANPATH = ManPath		/* top of manual page tree */

@@ -1,4 +1,12 @@
 XFree86 4.0g (xx June 2000)
+ 381. Possible fix for a problem introduced with item 332 that resulted
+      in the first screen's config file data being used for all screens
+      (Mark Vojkovich, David Dawes).
+ 380. Add an imake parameter NothingOutsideProjectRoot that turns off
+      installing links and config files, etc, outside of ProjectRoot
+      (David Dawes).
+ 379. Possible fix a problem with 'make install' on Linux when there is
+      already a /usr/include/GL directory (David Dawes).
  378. Fix a DGA-related crash when using multiple input devices with the
       DGA extension disabled (Matthieu Herrb).
 
@@ -10735,4 +10743,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1211 2000/06/24 17:43:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1212 2000/06/24 18:59:17 dawes Exp $
