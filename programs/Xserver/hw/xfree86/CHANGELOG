@@ -1,4 +1,9 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 392. Numerous man pages fixes, add some missing manpages (#5365, #5373,
+      #5376, #5377, #5382-5385, #5390, #5391, #5393, #5295 Branden Robinson
+      #5374, Jonathan Amery, #5378, Jochen Voss)
+ 391. Install bdftruncate and ucs2any without the .pl extension
+      (#5391, Branden Robinson) 
  390. Rewrite Radeon DDC/DFP mode detection and management (Kevin Martin).
  389. Integrate ATI patch:
       - Add 2D support for Radeon 9000 (RV250), Mobility M9 (RV250 mobile)
@@ -15319,4 +15324,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2337 2002/10/12 00:29:55 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2338 2002/10/12 01:38:03 martin Exp $
