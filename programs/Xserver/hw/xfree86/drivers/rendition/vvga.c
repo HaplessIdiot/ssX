@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.2 1999/04/17 07:06:45 dawes Exp $ */
 /*
  * file vvga.c
  *
@@ -185,7 +185,7 @@ void v_textmode(struct v_board_t *board)
     if (V1000_DEVICE == board->chip) {
         v_out32(iob+DRAMCTL, 0x140000);
         set_PLL(iob, 0x40000);
-        xf86usleep(500);
+        usleep(500);
      }
     else {
         /* memctl */
@@ -199,7 +199,7 @@ void v_textmode(struct v_board_t *board)
 
         /* Need to wait 200uS for PLL to stabilize --
          * let's play it safe with 500 */
-        xf86usleep(500);
+        usleep(500);
 
         /* wait until VBLANK */
         while ((v_in32(iob+CRTCSTATUS)&CRTCSTATUS_VERT_MASK) !=
