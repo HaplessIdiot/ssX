@@ -27,7 +27,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.27 2002/01/27 14:56:47 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.29 2002/04/04 14:05:50 eich Exp $
  */
 
 #include "vesa.h"
@@ -1473,8 +1473,10 @@ ReadSeq(VESAPtr pVesa, int index)
     return (inb(pVesa->ioBase + VGA_SEQ_DATA));
 }
 
-#define WriteGr(index, value)	outb(pVesa->ioBase + VGA_GRAPH_INDEX, index);\
-				outb(pVesa->ioBase + VGA_GRAPH_DATA, value)
+#define WriteGr(index, value)				\
+    outb(pVesa->ioBase + VGA_GRAPH_INDEX, index);	\
+    outb(pVesa->ioBase + VGA_GRAPH_DATA, value)
+
 static int
 ReadGr(VESAPtr pVesa, int index)
 {
@@ -1483,14 +1485,15 @@ ReadGr(VESAPtr pVesa, int index)
     return (inb(pVesa->ioBase + VGA_GRAPH_DATA));
 }
 
-#define WriteCrtc(index, value)	outb(pVesa->ioBase + VGA_CRTC_INDEX_OFFSET, index);\
-				outb(pVesa->ioBase + VGA_CRTC_DATA_OFFSET, value)
+#define WriteCrtc(index, value)						     \
+    outb(pVesa->ioBase + (VGA_IOBASE_COLOR + VGA_CRTC_INDEX_OFFSET), index); \
+    outb(pVesa->ioBase + (VGA_IOBASE_COLOR + VGA_CRTC_DATA_OFFSET), value)
 
 static int
 ReadCrtc(VESAPtr pVesa, int index)
 {
-    outb(pVesa->ioBase + VGA_CRTC_INDEX_OFFSET, index);
-    return inb(pVesa->ioBase + VGA_CRTC_DATA_OFFSET);
+    outb(pVesa->ioBase + (VGA_IOBASE_COLOR + VGA_CRTC_INDEX_OFFSET), index);
+    return inb(pVesa->ioBase + (VGA_IOBASE_COLOR + VGA_CRTC_DATA_OFFSET));
 }
 
 static void
