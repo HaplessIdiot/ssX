@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.1 2000/10/02 05:25:46 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -853,7 +853,7 @@ fbStore_a2r2g2b2 (FbBits *line, CARD32 offset, CARD32 value)
 	      ((b >> 6)       ));
 }
 
-#define Store8(l,o,v)  ((CARD8 *) (l)[(o) >> 3] = (v))
+#define Store8(l,o,v)  (((CARD8 *) l)[(o) >> 3] = (v))
 #if IMAGE_BYTE_ORDER == MSBFirst
 #define Store4(l,o,v)  Store8(l,o,((o) & 2 ? \
 				   Fetch8(l,o) & 0xf0 | (v) : \

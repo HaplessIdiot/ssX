@@ -67,7 +67,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. July, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mpctoi.c,v 3.2 1998/10/04 09:36:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mpctoi.c,v 3.3 1998/10/05 13:22:43 dawes Exp $ */
 
 #define _XIEC_MPCTOI
 #define _XIEC_PCTOI
@@ -599,7 +599,7 @@ static int ResetCtoIAll(flo,ped)
       Pixel p, *ppix = (Pixel*) ddx->tmpLst[0];
       
       for(i = 0; i < ddx->pixCnt; ++ppix)
-	if((long int)(p = *ppix) >= 0)
+	if((INT32)(p = *ppix) >= 0)
 	  lst->cellPtr[i++] = p;
 
     } /* else pixels are already in place */
@@ -904,7 +904,7 @@ static void fn_do(ddx, DST, SRC)  					      \
   CARD32  w, val, mask = ddx->mask[0], trim = ddx->trim[0];		      \
   CARD16  r, g, b;							      \
   for(w = ddx->width; w--; *dst++ = px) {				      \
-    if((long int)(px = *(pp = &lst[(val = *src++ >> trim & mask)])) < 0) {    \
+    if((INT32)(px = *(pp = &lst[(val = *src++ >> trim & mask)])) < 0) {       \
       if(!ddx->cmapFull) {						      \
 	r = g = b = (unsigned short)((float)val * ddx->coef[0]);	      \
 	if(!(ddx->cmapFull = (*ddx->alloc)(ddx->cmap,&r,&g,&b,pp,	      \
@@ -946,7 +946,7 @@ static void fn_do(ddx, DST, SRCR, SRCG, SRCB)				      \
     rv  = *srcR++ >> Rtrim & Rmask;					      \
     gv  = *srcG++ >> Gtrim & Gmask;					      \
     bv  = *srcB++ >> Btrim & Bmask;					      \
-    if((long int)(px = *(pp = &lst[rv | gv<<Gshft | bv<<Bshft])) < 0) {	      \
+    if((INT32)(px = *(pp = &lst[rv | gv<<Gshft | bv<<Bshft])) < 0) {	      \
       if(!ddx->cmapFull) {					      	      \
 	r = (unsigned short)((float)rv * ddx->coef[0]);			      \
 	g = (unsigned short)((float)gv * ddx->coef[1]);			      \
