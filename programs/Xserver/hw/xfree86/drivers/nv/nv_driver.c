@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.115 2003/10/02 13:29:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.116 2003/10/30 17:37:09 tsi Exp $ */
 
 #include "nv_include.h"
 
@@ -167,26 +167,26 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0325, "GeForce FX Go5250" },
   { 0x10DE0328, "GeForce FX Go5200 32M/64M" },
   { 0x10DE0329, "0x0329" },
-  { 0x10DE032A, "0x032A" },
+  { 0x10DE032A, "Quadro NVS 280 PCI" },
   { 0x10DE032B, "Quadro FX 500" },
   { 0x10DE032C, "GeForce FX Go5300" },
   { 0x10DE032D, "GeForce FX Go5100" },
   { 0x10DE032F, "0x032F" },
   { 0x10DE0330, "GeForce FX 5900 Ultra" },
   { 0x10DE0331, "GeForce FX 5900" },
-  { 0x10DE0332, "0x0332" },
+  { 0x10DE0332, "GeForce FX 5900XT" },
   { 0x10DE0333, "GeForce FX 5950 Ultra" },
   { 0x10DE0334, "0x0334" },
   { 0x10DE0338, "Quadro FX 3000" },
-  { 0x10DE0341, "0x0341" },
-  { 0x10DE0342, "0x0342" },
+  { 0x10DE0341, "GeForce FX 5700 Ultra" },
+  { 0x10DE0342, "GeForce FX 5700" },
   { 0x10DE0343, "0x0343" },
   { 0x10DE0347, "0x0347" },
   { 0x10DE0348, "0x0348" },
   { 0x10DE0349, "0x0349" },
   { 0x10DE034B, "0x034B" },
   { 0x10DE034C, "0x034C" },
-  { 0x10DE034E, "0x034E" },
+  { 0x10DE034E, "Quadro FX 1100" },
   { 0x10DE034F, "0x034F" },
   {-1, NULL}
 };
@@ -1500,12 +1500,52 @@ NVRestore(ScrnInfoPtr pScrn)
     vgaHWProtect(pScrn, FALSE);
 }
 
+static void NVBacklightEnable(NVPtr pNv,  Bool on)
+{
+    /* This is done differently on each laptop.  Here we
+       define the ones we know for sure.  For now, this is
+       only the Apple NV17 {i,power}books. */
+
+#if defined(__powerpc__)
+    if(pNv->Chipset == 0x10DE0179) {
+       CARD32 tmp;
+       tmp = pNv->PMC[0x10F0/4] & 0x7FFFFFFF;
+       pNv->PMC[0x10F0/4] = tmp;
+       tmp = pNv->PCRTC0[0x081C/4] & 0xFFFFFFFC;
+       if(on)
+           tmp |= 0x1;
+       pNv->PCRTC0[0x081C/4] = tmp;
+    }
+#endif
+}
+
+static void
+NVDPMSSetLCD(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
+{
+  NVPtr pNv = NVPTR(pScrn);
+
+  if (!pScrn->vtSema) return;
+
+  switch (PowerManagementMode) {
+  case DPMSModeStandby:  /* HSync: Off, VSync: On */
+  case DPMSModeSuspend:  /* HSync: On, VSync: Off */
+  case DPMSModeOff:      /* HSync: Off, VSync: Off */
+    NVBacklightEnable(pNv, 0);
+    break;
+  case DPMSModeOn:       /* HSync: On, VSync: On */
+    NVBacklightEnable(pNv, 1);
+  default:
+    break;
+  }
+  vgaHWDPMSSet(pScrn, PowerManagementMode, flags);
+}
+
+
 static void
 NVDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
   unsigned char crtc1A;
   vgaHWPtr hwp = VGAHWPTR(pScrn);
-  NVPtr pNv = NVPTR(pScrn);
 
   if (!pScrn->vtSema) return;
 
@@ -1529,8 +1569,7 @@ NVDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
   /* vgaHWDPMSSet will merely cut the dac output */
   vgaHWDPMSSet(pScrn, PowerManagementMode, flags);
 
-  if(!pNv->FlatPanel)  /* this doesn't work for flat panels */
-     hwp->writeCrtc(hwp, 0x1A, crtc1A);
+  hwp->writeCrtc(hwp, 0x1A, crtc1A);
 }
 
 
@@ -1740,7 +1779,10 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ShadowFBInit(pScreen, refreshArea);
     }
 
-    xf86DPMSInit(pScreen, NVDPMSSet, 0);
+    if(pNv->FlatPanel)
+       xf86DPMSInit(pScreen, NVDPMSSetLCD, 0);
+    else
+       xf86DPMSInit(pScreen, NVDPMSSet, 0);
     
     pScrn->memPhysBase = pNv->FbAddress;
     pScrn->fbOffset = 0;
