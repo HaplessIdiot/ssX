@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.127 1998/01/24 16:56:16 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.122.2.3 1998/06/27 14:47:21 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -49,6 +49,14 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.127 1998/01/24 16:56:16 hohndel Ex
  * -m486
  *
 #define DefaultGcc2i386Opt	-O2 -fno-strength-reduce
+ */
+
+/*
+ * This allows the GCC warning flags to be set.  The default is shown here.
+ *
+#define GccWarningOptions -Wall -Wpointer-arith -Wstrict-prototypes \
+                          -Wmissing-prototypes -Wmissing-declarations \
+                          -Wredundant-decls -Wnested-externs
  */
 
 /*
@@ -157,161 +165,29 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.127 1998/01/24 16:56:16 hohndel Ex
 
 /*
  * Build a server that dynamically loads the modules by setting
- * this to YES.
+ * this to YES.  This defaults to YES on most platforms.  A static server
+ * can be built by setting this to NO.
  *
-#define DoLoadableServer	YES
+#define DoLoadableServer	NO
  */
 
 /*
- * Which servers do you wish to build, you can save a lot of disk space
- * by only compiling the server you will be using.  It will also save you
- * considerable compile time.
+ * Build dlopen() style modules instead of the standard loader modules.
  *
- * The following servers are supported in Intel x86 platforms
- *
-#define XF86LoaderServer        NO
-#define XF86MonoModule          NO
-#define XF86SVGAModule          NO
-#define XF86VGA16Module         NO
-#define XF86S3Module            NO
-#define XF86S3VModule           NO
-#define XF86Mach32Module        NO
-#define XF86P9000Module         NO
-#define XF86I128Module          NO
-#define XF86Mach64Module        NO
-#define XF86GLINTModule         NO
-
-#define XF86SVGAServer          NO
-#define XF86VGA16Server         NO
-#define XF86VGA16DualServer	NO
-#define XF86MonoServer          NO
-#define XF86MonoDualServer	NO
-#define XF86S3Server            NO
-#define XF86S3VServer           NO
-#define XF86I8514Server         NO
-#define XF86Mach8Server         NO
-#define XF86Mach32Server        NO
-#define XF86Mach64Server        NO
-#define XF86P9000Server		NO
-#define XF86AGXServer		NO
-#define XF86I128Server		NO
-#define XF86GLINTServer         NO
+#define MakeDllModules		YES
  */
 
 /*
- * Which servers do you wish to build, you can save a lot of disk space
- * by only compiling the server you will be using.  It will also save you
- * considerable compile time.
+ * Which servers to build.  There is now only one XFree86 server.
+ * It can be disabled by the following.
  *
- * The following servers are supported on Digital Alpha platforms:
- *
-#define XF86SVGAServer          NO
-#define XF86MonoServer          NO
-#define XF86S3Server            NO
-#define XF86S3VServer           NO
-#define XF86P9000Server		NO
-#define XF86TGAServer		NO
- */
-
-/*
- * Which servers do you wish to build, you can save a lot of disk space
- * by only compiling the server you will be using.  It will also save you
- * considerable compile time.
- *
- * The following server is supported on Mips/Arc platforms:
- *
-#define XF86S3Server            NO
- */
-
-/*
- * Which servers do you wish to build, you can save a lot of disk space
- * by only compiling the server you will be using.  It will also save you
- * considerable compile time.
- *
- * The following servers/modules have been compiled for PowerPC
- * platforms, but not all have been tested.
- *
-#define XF86LoaderServer        NO
-#define XF86SVGAModule          NO
-#define XF86VGA16Module         NO
-#define XF86MonoModule          NO
-#define XF86S3Module            NO
-#define XF86S3VModule           NO
-#define XF86I128Module		NO
-#define XF86GLINTModule         NO
-
-#define XF86SVGAServer          NO
-#define XF86VGA16Server         NO
-#define XF86MonoServer          NO
-#define XF86S3Server            NO
-#define XF86S3VServer           NO
-#define XF86I128Server		NO
-#define XF86GLINTServer         NO
- */
-
-/*
- * PC98 X servers and modules
- *
- * Uncommenting the following automatically enables all PC98 servers/modules
- *
-#define BuildPC98Servers	YES
- */
-
-/*
- * Which servers do you wish to build, you can save a lot of disk space
- * by only compiling the server you will be using.  It will also save you
- * considerable compile time.
- *
- * The following servers are supported in Intel/pc98 platforms:
- *
-#define XF98LoaderServer        YES
-#define XF98EGCModule		YES
-#define XF98GANBWAPModule	YES
-#define XF98PEGCModule		YES
-#define XF98NKVNECModule	YES
-#define XF98WABSModule		YES
-#define XF98WABEPModule		YES
-#define XF98WSNAModule		YES
-#define XF98TGUIModule		YES
-#define XF98MGAModule		YES
-#define XF98SVGAModule		YES
-#define XF98NECS3Module		YES
-#define XF98PWSKBModule		YES
-#define XF98PWLBModule		YES
-#define XF98GA968Module		YES
-
-#define XF98EGCServer		YES
-#define XF98GANBWAPServer	YES
-#define XF98PEGCServer		YES
-#define XF98NKVNECServer	YES
-#define XF98WABSServer		YES
-#define XF98WABEPServer		YES
-#define XF98WSNAServer		YES
-#define XF98TGUIServer		YES
-#define XF98MGAServer		YES
-#define XF98SVGAServer		YES
-#define XF98NECS3Server		YES
-#define XF98PWSKBServer		YES
-#define XF98PWLBServer		YES
-#define XF98GA968Server		YES
+#define XF86Server		NO
  */
 
 /*
  * The following server is supported on Motorola 68k platforms:
  *
 #define XF68FBDevServer		NO
- */
-
-/*
- * Which servers do you wish to build, you can save a lot of disk space
- * by only compiling the server you will be using.  It will also save you
- * considerable compile time.
- *
- * The following servers are supported on Arm32 platforms:
- *
-#define XF86SVGAServer          NO
-#define XF86VGA16Server         NO
-#define XF86MonoServer          NO
  */
 
 /*
@@ -335,7 +211,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.127 1998/01/24 16:56:16 hohndel Ex
 /*
  * Set the default server (ie the one that gets the sym-link to "X")
  *
-#define ServerToInstall		XF86_S3
+#define ServerToInstall		XFree86
  */
 
 
@@ -344,33 +220,36 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.127 1998/01/24 16:56:16 hohndel Ex
  */
 
 /*
- * SVGA server:
+ * Which drivers to build.  When building a static server, each of these
+ * will be included in it.
  *
-#define XF86SvgaDrivers		nv tseng et3000 wd gvga ati sis trident \
-				cirrus ncr mga oak al2101 ali cl64xx \
-				video7 chips ark mx realtek apm s3 p9x00 \
-				tritech vga
+#define XF86CardDrivers		mga glint vga
  */
 
 /*
- * VGA16 server:
+ * Build XAA.  This can be disabled with:
  *
-#define XF86Vga16Drivers	tseng et3000 ncr ati sis trident oak \
-				cl64xx vga 
+#define XF86XAA			NO
  */
 
 /*
- * VGA2 driver in Mono server:
+ * Build vgahw.  This can be disabled with:
  *
-#define XF86Vga2Drivers		tseng et3000 wd gvga ati sis trident \
-				cirrus ncr oak cl64xx vga
+#define XF86VgaHw		NO
  */
 
 /*
- * Mono driver in Mono or VGA16 server:
+ * Build xf1bpp.  This can be disabled with:
  *
-#define XF86MonoDrivers		hgc1280 sigma apollo hercules
+#define XF1Bpp			NO
  */
+
+/*
+ * Build xf4bpp.  This can be disabled with:
+ *
+#define XF4Bpp			NO
+ */
+
 
 /*
  * BSD Console driver support (for FreeBSD and NetBSD).
@@ -379,9 +258,8 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.127 1998/01/24 16:56:16 hohndel Ex
  * pccons, syscons and pcvt for FreeBSD.
  *
  * To change the list of supported drivers, set the following parameter.
- * Possible values are -DPCCONS_SUPPORT, -DSYSCONS_SUPPORT, -DPCVT_SUPPORT,
- * -DCODRV_SUPPORT.  The following example includes support for syscons and
- * pcvt only.
+ * Possible values are -DPCCONS_SUPPORT, -DSYSCONS_SUPPORT, -DPCVT_SUPPORT.
+ * The following example includes support for syscons and pcvt only.
  *
 #define XFree86ConsoleDefines	-DSYSCONS_SUPPORT -DPCVT_SUPPORT
  */
@@ -474,13 +352,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.127 1998/01/24 16:56:16 hohndel Ex
 #define MicroTouchSupport	YES
 #define SummaSketchSupport	YES
 #define AceCadSupport		YES
- */
-
-/*
- * if your system supports dynamic loading of modules using
- * dlopen set this to YES.
- *
-#define BuildDynamicLoading	YES
  */
 
 /*

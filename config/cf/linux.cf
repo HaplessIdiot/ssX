@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/36 1997/06/16 22:21:03 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.73 1997/09/14 13:15:02 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.74 1997/11/22 06:50:05 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -237,22 +237,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 #if UseElfFormat
 #ifndef DoLoadableServer
-#ifdef i386Architecture
 #define DoLoadableServer	YES
-#else
-#ifdef Mc68020Architecture
-#define DoLoadableServer	YES
-#else
-#define DoLoadableServer	NO
-#endif
-#endif
-#endif
-#ifndef BuildDynamicLoading
-#if DoLoadableServer
-#define BuildDynamicLoading	NO
-#else
-#define BuildDynamicLoading	YES
-#endif
 #endif
 #endif
 #define CppCmd			/lib/cpp
@@ -305,11 +290,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define DlLibrary		/**/
 #endif
 
-#if BuildDynamicLoading || DoLoadableServer
-#define ServerExtraSysLibs	DlLibrary
-#else
 #define ServerExtraSysLibs	/**/
-#endif
 #define ConnectionFlags		-DUNIXCONN -DTCPCONN
 
 /* Some of these man page defaults are overriden in the above OS sections */

@@ -3,8 +3,8 @@
  * that Imakefiles in the server subtree will need.
  */
 
-XCOMM $TOG: Server.tmpl /main/15 1997/07/16 14:43:38 kaleb $
-XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.9 1997/11/16 10:46:15 dawes Exp $
+XCOMM $XConsortium: Server.tmpl /main/14 1996/04/30 14:37:27 mw $
+XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.8.2.1 1998/06/03 15:49:17 dawes Exp $
 
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)" LDSTRIPFLAGS="$(LDSTRIPFLAGS)"
 
@@ -43,21 +43,10 @@ ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(INSTUIDFLAGS))
 #endif /* SetUIDServerTarget */
 
 /*
- * BuildDynamicLoading - dynamic module support
- */
-#ifndef BuildDynamicLoading
-#define BuildDynamicLoading		NO
-#endif
-
-/*
- * ExtensionsModules  - compile server extensions as modules
- *			either traditional shared libraries, 
- *			(BuildDynamicLoading) or static libraries 
- *			that are loaded by a special loader at runtime
- *			(DoLoadableServer)
+ * ExtensionsModules  - compile server extensions as modules.
  */
 #ifndef ExtensionsModules
-#define ExtensionsModules	(BuildDynamicLoading || DoLoadableServer)
+#define ExtensionsModules	DoLoadableServer
 #endif
 
 #ifndef PexModule
@@ -70,32 +59,6 @@ ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(INSTUIDFLAGS))
 #define GlxModule		ExtensionsModules
 #endif
 
-#ifndef ExtensionModuleDefines
-#ifndef PexModuleDefines
-#if PexModule || DoLoadableServer
-#define PexModuleDefines -DPEX_MODULE
-#else
-#define PexModuleDefines /**/
-#endif
-#endif
-#ifndef XieModuleDefines
-#if XieModule || DoLoadableServer
-#define XieModuleDefines -DXIE_MODULE
-#else
-#define XieModuleDefines /**/
-#endif
-#endif
-#ifndef GlxModuleDefines
-#if GlxModule || DoLoadableServer
-#define GlxModuleDefines -DGLX_MODULE
-#else
-#define GlxModuleDefines -UGLXEXT
-#endif
-#endif
-#define ExtensionModuleDefines PexModuleDefines XieModuleDefines \
-				GlxModuleDefines
-#endif
-
          CC = ServerCcCmd
   CCOPTIONS = ServerCCOptions
 #if DoThreadedServer
@@ -104,13 +67,8 @@ SERVER_THREAD_DEFINES = XThreadsDefines ThreadTypeDefines
 STD_DEFINES = ServerDefines $(SERVER_THREAD_DEFINES)
 CDEBUGFLAGS = ServerCDebugFlags
 EXT_DEFINES = ExtensionDefines
-EXT_MODULE_DEFINES = ExtensionModuleDefines
 
-#if GlxModule | DoLoadableServer
-GLX_DEFINES = GlxDefines -DGLX_MODULE
-#else
 GLX_DEFINES = GlxDefines
-#endif
  
 #ifndef GlxStaticServerLib
 #define GlxStubLib    YES

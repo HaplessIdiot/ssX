@@ -1,5 +1,5 @@
 XCOMM $TOG: svr4.cf /main/17 1997/06/08 20:08:31 kaleb $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.30 1998/01/01 14:51:30 robin Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.31 1998/01/24 16:56:15 hohndel Exp $
 /*
  * A default OS name
  */
@@ -158,6 +158,9 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.30 1998/01/01 14:51:30 robin Exp $
 #ifndef DefaultCDebugFlags
 #if HasGcc
 #if HasGcc2
+#ifndef CcCmd
+#define CcCmd gcc
+#endif
 #define DefaultCDebugFlags DefaultGcc2i386Opt
 #else
 #define DefaultCDebugFlags -O2
@@ -168,12 +171,6 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.30 1998/01/01 14:51:30 robin Exp $
 #endif
 #ifndef ServerOSDefines
 #define ServerOSDefines -DDDXTIME XFree86ServerOSDefines
-#endif
-#ifndef BuildDynamicLoading
-#define BuildDynamicLoading NO
-#endif
-#if BuildDynamicLoading
-#define ServerExtraSysLibs -ldl
 #endif
 #endif
 

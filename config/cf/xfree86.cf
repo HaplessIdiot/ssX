@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.178 1998/03/27 23:22:56 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.168.2.11 1998/07/18 17:53:08 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -20,6 +20,16 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #endif
 
 /*
+ * settings for the config file parser
+ */
+#ifndef XConfigFile
+#define XConfigFile		XF86Config
+#endif
+#ifndef XConfigDir
+#define XConfigDir		$(LIBDIR)
+#endif
+
+/*
  * Default settings for which X Servers to build.
  */
 
@@ -28,88 +38,24 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  * are supported on this platform.
  */
 #ifdef i386Architecture
-#ifndef XF86LoaderServer
-#define XF86LoaderServer	DoLoadableServer
+#ifndef XF86Server
+#define XF86Server		YES
 #endif
-#ifndef XF86MonoModule
-#define XF86MonoModule          XF86LoaderServer
+#ifndef XF1Bpp
+#define XF1Bpp			YES
 #endif
-#ifndef XF86SVGAModule
-#define XF86SVGAModule          XF86LoaderServer
+#ifndef XF4Bpp
+#define XF4Bpp			YES
 #endif
-#ifndef XF86VGA16Module
-#define XF86VGA16Module         XF86LoaderServer
+#ifndef XF86VgaHw
+#define XF86VgaHw		YES
 #endif
-#ifndef XF86S3Module
-#define XF86S3Module            XF86LoaderServer
+#ifndef XF86XAA
+#define XF86XAA			YES
 #endif
-#ifndef XF86S3VModule
-#define XF86S3VModule           XF86LoaderServer
-#endif
-#ifndef XF86Mach8Module
-#define XF86Mach8Module         XF86LoaderServer
-#endif
-#ifndef XF86Mach32Module
-#define XF86Mach32Module        XF86LoaderServer
-#endif
-#ifndef XF86P9000Module
-#define XF86P9000Module         XF86LoaderServer
-#endif
-#ifndef XF86I128Module
-#define XF86I128Module		XF86LoaderServer
-#endif
-#ifndef XF86GLINTModule
-#define XF86GLINTModule		XF86LoaderServer
-#endif
-#ifndef XF86Mach64Module
-#define XF86Mach64Module        XF86LoaderServer
-#endif
-#if !XF86LoaderServer
-#ifndef XF86SVGAServer
-#define XF86SVGAServer          YES
-#endif
-#ifndef XF86VGA16Server
-#define XF86VGA16Server         NO
-#endif
-#ifndef XF86VGA16DualServer
-#define XF86VGA16DualServer	NO
-#endif
-#ifndef XF86MonoServer
-#define XF86MonoServer          NO
-#endif
-#ifndef XF86MonoDualServer
-#define XF86MonoDualServer	NO
-#endif
-#ifndef XF86S3Server
-#define XF86S3Server            YES
-#endif
-#ifndef XF86S3VServer
-#define XF86S3VServer		YES
-#endif
-#ifndef XF86I8514Server
-#define XF86I8514Server         YES
-#endif
-#ifndef XF86Mach8Server
-#define XF86Mach8Server         YES
-#endif
-#ifndef XF86Mach32Server
-#define XF86Mach32Server        YES
-#endif
-#ifndef XF86Mach64Server
-#define XF86Mach64Server        YES
-#endif
-#ifndef XF86P9000Server
-#define XF86P9000Server		YES
-#endif
-#ifndef XF86AGXServer
-#define XF86AGXServer		YES
-#endif
-#ifndef XF86I128Server
-#define XF86I128Server		YES
-#endif
-#ifndef XF86GLINTServer
-#define XF86GLINTServer		YES
-#endif
+/* Pure PCI drivers should go first */
+#ifndef XF86CardDrivers
+#define XF86CardDrivers		mga glint tga tseng chips vga
 #endif
 #endif
 
@@ -118,29 +64,23 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  * are supported on this platform.
  */
 #ifdef AlphaArchitecture
-#ifndef XF86S3Server
-#define XF86S3Server		YES
+#ifndef XF86Server
+#define XF86Server		YES
 #endif
-#ifndef XF86S3VServer
-#define XF86S3VServer		YES
+#ifndef XF1Bpp
+#define XF1Bpp			NO
 #endif
-#ifndef XF86Mach64Server
-#define XF86Mach64Server	YES
+#ifndef XF4Bpp
+#define XF4Bpp			NO
 #endif
-#ifndef XF86P9000Server
-#define XF86P9000Server		YES
+#ifndef XF86VgaHw
+#define XF86VgaHw		YES
 #endif
-#ifndef XF86I128Server
-#define XF86I128Server		YES
+#ifndef XF86XAA
+#define XF86XAA			YES
 #endif
-#ifndef XF86TGAServer
-#define XF86TGAServer		YES
-#endif
-#ifndef XF86SVGAServer
-#define XF86SVGAServer		YES
-#endif
-#ifndef XF86MonoServer
-#define XF86MonoServer		NO
+#ifndef XF86CardDrivers
+#define XF86CardDrivers		mga glint tga vga
 #endif
 #endif
 
@@ -167,500 +107,34 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  * are supported on this platform. 
  */
 #ifdef ArcArchitecture
-#ifndef XF86S3Server
-#define XF86S3Server          YES
+#ifndef XF86Server
+#define XF86Server		YES
 #endif
 #endif
 
 /*
- * For PowerPC platforms, the default is to build all X servers which
+ * For LynxOS/PowerPC platforms, the default is to build all X servers which
  * are supported on this platform.
  */
-#if defined(PpcArchitecture)
-#ifndef XF86LoaderServer
-#define XF86LoaderServer        DoLoadableServer
+#if defined(ppcArchitecture) && defined(LynxOSArchitecture)
+#ifndef XF86Server
+#define XF86Server		YES
 #endif
-#ifndef XF86MonoModule
-#define XF86MonoModule          XF86LoaderServer
+#ifndef XF1Bpp
+#define XF1Bpp			YES
 #endif
-#ifndef XF86SVGAModule
-#define XF86SVGAModule          XF86LoaderServer
+#ifndef XF4Bpp
+#define XF4Bpp			YES
 #endif
-#ifndef XF86VGA16Module
-#define XF86VGA16Module         XF86LoaderServer
+#ifndef XF86VgaHw
+#define XF86VgaHw		YES
 #endif
-
-#if defined(PmaxOSArchitecture)
-# ifndef XF86S3Module
-#  define XF86S3Module          XF86LoaderServer
-# endif
-# ifndef XF86S3VModule
-#  define XF86S3VModule         XF86LoaderServer
-# endif
-# ifndef XF86I128Module
-#  define XF86I128Module	XF86LoaderServer
-# endif
-# ifndef XF86GLINTModule
-#  define XF86GLINTModule	XF86LoaderServer
-# endif
-#endif /* PmaxOSArchitecture */
-
-#if !XF86LoaderServer
-# ifndef XF86SVGAServer
-#  define XF86SVGAServer        YES
-# endif
-# ifndef XF86VGA16Server
-#  define XF86VGA16Server       YES
-# endif
-
-# if defined(PmaxOSArchitecture) 
-#  ifndef XF86S3Server
-#   define XF86S3Server		YES
-#  endif
-#  ifndef XF86S3VServer
-#   define XF86S3VServer	YES
-#  endif
-#  ifndef XF86I128Server
-#   define XF86I128Server	YES
-#  endif
-#  ifndef XF86GLINTServer
-#   define XF86GLINTServer	YES
-#  endif
-# endif /* PmaxOSArchitecture */
-#endif /* !XF86LoaderServer */
-#endif /* PpcArchitecture */
-
-/*
- * For Arm32/SHARK platforms, the default is to build all X servers which
- * are supported on this platform.
- */
-#ifdef Arm32Architecture
-#ifndef XF86SVGAServer
-#define XF86SVGAServer		YES
+#ifndef XF86XAA
+#define XF86XAA			NO
 #endif
-#ifndef XF86VGA16Server
-#define XF86VGA16Server		YES
-#endif
-#ifndef XF86MonoServer
-#define XF86MonoServer		YES
-#endif
-#ifndef XF86SvgaDrivers
-#define XF86SvgaDrivers		chips igs vga
-#endif
-#ifndef XF86Vga16Drivers
-#define XF86Vga16Drivers		vga
-#endif
-#ifndef XF86Vga2Drivers
-#define XF86Vga2Drivers		vga
-#endif
-#endif
-
-/*
- * The following disables all X servers not already enabled above
- */
-#ifndef XF86VGA16Server
-# define XF86VGA16Server	NO
-# ifndef XF86VGA16DualServer
-#  define XF86VGA16DualServer	NO
-# endif
-#endif
-
-#ifndef XF86MonoServer
-# define XF86MonoServer		NO
-# ifndef XF86MonoDualServer
-#  define XF86MonoDualServer	NO
-# endif
-#endif
-
-#ifndef XF86S3Server
-# define XF86S3Server		NO
-#endif
-
-#ifndef XF86S3VServer
-# define XF86S3VServer		NO
-#endif
-
-#ifndef XF86I8514Server
-# define XF86I8514Server	NO
-#endif
-
-#ifndef XF86Mach8Server
-# define XF86Mach8Server	NO
-#endif
-
-#ifndef XF86Mach32Server
-# define XF86Mach32Server	NO
-#endif
-
-#ifndef XF86Mach64Server
-# define XF86Mach64Server	NO
-#endif
-
-#ifndef XF86AGXServer
-# define XF86AGXServer		NO
-#endif
-
-#ifndef XF86P9000Server
-# define XF86P9000Server	NO
-#endif
-
-#ifndef XF86I128Server
-# define XF86I128Server		NO
-#endif
-
-#ifndef XF86GLINTServer
-# define XF86GLINTServer	NO
-#endif
-
-#ifndef XF86TGAServer
-# define XF86TGAServer		NO
-#endif
-
-#if XF86S3Server || XF86S3Module
-# define XF86S3Dir		s3
-#else
-# define XF86S3Dir		/**/
-#endif
-
-#if XF86S3VServer || XF86S3VModule
-# define XF86S3VDir		s3_virge
-#else
-# define XF86S3VDir		/**/
-#endif
-
-#if XF86I8514Server
-# define XF86I8514Dir		ibm8514
-#else
-# define XF86I8514Dir		/**/
-#endif
-
-#if XF86Mach8Server || XF86Mach8Module
-# define XF86Mach8Dir		mach8
-#else
-# define XF86Mach8Dir		/**/
-#endif
-
-#if XF86Mach32Server || XF86Mach32Module
-# define XF86Mach32Dir		mach32
-#else
-# define XF86Mach32Dir		/**/
-#endif
-
-#if XF86Mach64Server || XF86Mach64Module
-# define XF86Mach64Dir		mach64
-#else
-# define XF86Mach64Dir		/**/
-#endif
-
-#if XF86P9000Server || XF86P9000Module
-# define XF86P9000Dir		p9000
-#else
-# define XF86P9000Dir		/**/
-#endif
-
-#if XF86AGXServer
-# define XF86AGXDir		agx
-#else
-# define XF86AGXDir		/**/
-#endif
-
-#if XF86I128Server || XF86I128Module
-# define XF86I128Dir		i128
-#else
-# define XF86I128Dir		/**/
-#endif
-
-#if XF86GLINTServer || XF86GLINTModule
-# define XF86GLINTDir		glint
-#else
-# define XF86GLINTDir		/**/
-#endif
-
-#if XF86TGAServer
-# define XF86TGADir		tga
-#else
-# define XF86TGADir		/**/
-#endif
-
-#ifndef BuildPC98Servers
-#define BuidlPC98Servers	NO
-#endif
-
-#ifndef XF98LoaderServer
-#define XF98LoaderServer	(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98GANBWAPServer
-# define XF98GANBWAPServer	(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98PEGCServer
-# define XF98PEGCServer		(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98NKVNECServer
-# define XF98NKVNECServer	(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98WABSServer
-# define XF98WABSServer		(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98WABEPServer
-# define XF98WABEPServer	(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98WSNAServer
-# define XF98WSNAServer		(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98TGUIServer
-# define XF98TGUIServer		(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98MGAServer
-# define XF98MGAServer		(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98SVGAServer
-# define XF98SVGAServer		(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98EGCServer
-# define XF98EGCServer		(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98NECS3Server
-# define XF98NECS3Server	(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98PWSKBServer
-# define XF98PWSKBServer	(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98PWLBServer
-#define XF98PWLBServer		(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98GA968Server
-#define XF98GA968Server		(BuildPC98Servers && !DoLoadableServer)
-#endif
-
-#ifndef XF98NECS3Module
-#define XF98NECS3Module		(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98PWSKBModule
-#define XF98PWSKBModule		(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98PWLBModule
-#define XF98PWLBModule		(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98GA968Module
-#define XF98GA968Module		(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98GANBWAPModule
-#define XF98GANBWAPModule	(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98PEGCModule
-#define XF98PEGCModule		(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98NKVNECModule
-#define XF98NKVNECModule	(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98WABSModule
-#define XF98WABSModule		(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98WABEPModule
-#define XF98WABEPModule		(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98WSNAModule
-#define XF98WSNAModule		(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98TGUIModule
-#define XF98TGUIModule		(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98MGAModule
-#define XF98MGAModule		(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98SVGAModule
-#define XF98SVGAModule		(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#ifndef XF98EGCModule
-#define XF98EGCModule		(BuildPC98Servers && DoLoadableServer)
-#endif
-
-#if XF98NECS3Server || XF98NECS3Module
-# define XF98NECS3Dir		s3nec
-#else
-# define XF98NECS3Dir		/**/
-#endif
-
-#if XF98PWSKBServer || XF98PWSKBModule
-# define XF98PWSKBDir		s3pwskb
-#else
-# define XF98PWSKBDir		/**/
-#endif
-
-#if XF98PWLBServer || XF98PWLBModule
-# define XF98PWLBDir		s3pwlb
-#else
-# define XF98PWLBDir		/**/
-#endif
-
-#if XF98GA968Server || XF98GA968Module
-# define XF98GA968Dir		s3ga968
-#else
-# define XF98GA968Dir		/**/
-#endif
-
-#undef XF86AccelServerDirs
-#define XF86AccelServerDirs	XF86S3Dir XF86S3VDir XF86I8514Dir \
-				XF86Mach8Dir XF86Mach32Dir XF86Mach64Dir \
-				XF86P9000Dir XF86AGXDir \
-				XF86I128Dir XF86GLINTDir XF86TGADir
-
-#undef XF86AccelServer
-#if XF86S3Server || XF86S3VServer || XF86I8514Server || XF86Mach8Server || \
-    XF86Mach32Server || XF86Mach64Server || XF86P9000Server || \
-    XF86AGXServer || XF86I128Server || XF86GLINTServer || \
-    XF86TGAServer || XF86LoaderServer
-# define XF86AccelServer	YES
-#else
-# define XF86AccelServer	NO
-#endif
-
-#undef XF98AccelServerDirs
-#define XF98AccelServerDirs   XF98NECS3Dir XF98PWSKBDir XF98PWLBDir XF98GA968Dir
-
-#undef XF98AccelServer
-#if XF98NECS3Server || XF98PWSKBServer || XF98PWLBServer || \
-    XF98GA968Server || XF98LoaderServer
-# define XF98AccelServer	YES
-#else
-# define XF98AccelServer	NO
-#endif
-
-/*
- * Driver list for several of the X Servers.
- *
- * This controls which drivers get built.  During the transition period,
- * this must contain all drivers that may be statically linked into
- * the old separate servers.
- */
 #ifndef XF86CardDrivers
-# ifdef AlphaArchitecture
-#  define XF86CardDrivers	trident mga s3v
-# elif defined(PpcArchitecture)
-#  if defined(PmaxOSArchitecture)
-#   define XF86CardDrivers    cirrus mga s3_newmmio s3v vga
-#  else
-#   define XF86CardDrivers    cirrus vga
-#  endif
-# elif defined(Arm32Architecture)
-#  define XF86CardDrivers     chips igs vga
-# else
-#  define XF86CardDrivers	nv tseng et3000 wd gvga ati sis trident \
-				cirrus ncr compaq mga oak al2101 ali \
-				cl64xx video7 chips ark mx realtek apm \
-				s3_pio s3_newmmio s3v p9x00 tritech \
-				apollo hercules hgc1280 sigma \
-				vga 
-# endif
+#define XF86CardDrivers		vga
 #endif
-
-#if XF86LoaderServer
-# undef XF86SvgaDrivers
-# define XF86SvgaDrivers	/* */
-# undef XF86Vga16Drivers
-# define XF86Vga16Drivers	/* */
-# undef XF86Vga2Drivers
-# define XF86Vga2Drivers	/* */
-# undef XF86MonoDrivers
-# define XF86MonoDrivers	/* */
-#endif
-
-#ifndef XF86SvgaDrivers
-# ifdef AlphaArchitecture
-#  define XF86SvgaDrivers	mga trident s3v
-# elif defined(PpcArchitecture)
-#  if defined(PmaxOSArchitecture)
-#   define XF86SvgaDrivers	cirrus mga s3_newmmio s3v vga
-#  else
-#   define XF86SvgaDrivers	cirrus vga
-#  endif
-# else
-#  define XF86SvgaDrivers	nv tseng et3000 wd gvga ati sis trident \
-				cirrus ncr compaq mga oak al2101 ali \
-				cl64xx video7 chips ark mx realtek apm \
-				s3_pio s3v p9x00 tritech \
-				apollo hercules hgc1280 sigma \
-				vga
-# endif
-#endif
-
-#ifndef XF86Vga16Drivers
-# if defined(PpcArchitecture)
-#  define XF86Vga16Drivers	vga
-# else
-#  define XF86Vga16Drivers	tseng et3000 ncr ati sis trident \
-				oak cl64xx vga
-# endif
-#endif
-
-#ifndef XF86Vga2Drivers
-# if defined(AlphaArchitecture) || defined(PpcArchitecture)
-#  define XF86Vga2Drivers	vga
-# else
-#  define XF86Vga2Drivers	tseng et3000 wd gvga ati sis trident \
-				cirrus ncr compaq oak cl64xx vga
-# endif
-#endif
-
-#ifndef XF86MonoDrivers
-# define XF86MonoDrivers	hgc1280 sigma apollo hercules
-#endif
-
-#ifndef XF98CardDrivers
-# define XF98CardDrivers	egc pegc ganbwap nkvnec trident mga svga \
-				wabep wabs wsna
-#endif
-
-#ifdef XF98LoaderServer
-# define XF98SvgaDrivers	/* */
-# define XF98Vga16Drivers	/* */
-#endif /* XF98LoaderServer */
-
-#ifndef XF98SvgaDrivers
-# define XF98SvgaDrivers	generic
-#endif
-#ifndef XF98Vga16Drivers
-# define XF98Vga16Drivers	generic
-#endif
-
-#ifndef XF86Vga2Banked
-# define XF86Vga2Banked		YES
-#endif
-
-/* This doesn't do everything (yet) */
-#ifndef XF86S3Drivers
-# define XF86S3Drivers		newmmio mmio_928 s3_generic
-#endif
-
-#ifndef XF86S3VDrivers
-# define XF86S3VDrivers		s3_virge
 #endif
 
 #if XF68FBDevServer || XF68LoaderServer
@@ -715,14 +189,6 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 # endif
 #endif
 
-#ifndef XnestServer
-#define XnestServer		YES
-#endif
-
-#ifndef XVirtualFramebufferServer
-#define XVirtualFramebufferServer YES
-#endif
-
 /*
  * The default is to install the X servers setuid-root on most OSs.
  * It the servers are only started by xdm, they should not be setuid-root.
@@ -747,10 +213,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  */
 #if !defined(BuildPexExt) || BuildPexExt
 #undef BuildPexExt
-#if XF86AccelServer   || XF86SVGAServer  || XF98AccelServer  || \
-    XF98GANBWAPServer || XF98PEGCServer  || XF98NKVNECServer || \
-    XF98WABSServer    || XF98WABEPServer || XF98WSNAServer   || \
-    XF98TGUIServer    || XF98MGAServer   || XF98SVGAServer
+#if XF86Server
 #define BuildPexExt		YES
 #else
 #define BuildPexExt		NO
@@ -761,13 +224,9 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  * Build GLX server interface
  *   --- Does't work for 1-bit and 4-bit servers
  */
-#if !defined(BuildGlxExt) || BuildGlxExt
-#  undef BuildGlxExt
-#  if XF86AccelServer   || XF86SVGAServer   || XF98AccelServer || \
-      XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || \
-      XF98WABSServer    || XF98WABEPServer  || XF98WSNAServer  || \
-      XF98TGUIServer    || XF98MGAServer    || XF98SVGAServer
-#    define BuildGlxExt             YES
+#if !defined(BuildGlxExt)
+#  if XF86Server
+#    define BuildGlxExt             DoLoadableServer
 #  else
 #    define BuildGlxExt             NO
 #  endif
@@ -778,10 +237,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  */
 #if !defined(BuildXIE) || BuildXIE
 #undef BuildXIE
-#if XF86AccelServer   || XF86SVGAServer  || XF98AccelServer  || \
-    XF98GANBWAPServer || XF98PEGCServer  || XF98NKVNECServer || \
-    XF98WABSServer    || XF98WABEPServer || XF98WSNAServer  || \
-    XF98TGUIServer    || XF98MGAServer   || XF98SVGAServer
+#if XF86Server
 #define BuildXIE		YES
 #else
 #define BuildXIE		NO
@@ -819,19 +275,19 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  * Include support for these XInput devices
  */
 #ifndef WacomSupport
-#define WacomSupport		YES
+#define WacomSupport		NO
 #endif
 #ifndef ElographicsSupport
-#define ElographicsSupport	YES 
+#define ElographicsSupport	NO
 #endif
 #ifndef MicroTouchSupport
-#define MicroTouchSupport	YES
+#define MicroTouchSupport	NO
 #endif
 #ifndef SummaSketchSupport
-#define SummaSketchSupport	YES
+#define SummaSketchSupport	NO
 #endif
 #ifndef AceCadSupport
-#define AceCadSupport		YES
+#define AceCadSupport		NO
 #endif
 #ifndef JoystickSupport
 #define JoystickSupport		NO
@@ -853,19 +309,23 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #ifndef BuildXF86VidModeLibrary
 #define BuildXF86VidModeLibrary	YES
 #endif
+#ifndef BuildXvLibrary
+#define BuildXvLibrary		YES
+#endif
 
+/* Don't build these two now because the interface hasn't been done yet */
 /*
  * Build the XFree86-VidMode extension
  */
 #ifndef BuildXF86VidModeExt
-#define BuildXF86VidModeExt		YES
+#define BuildXF86VidModeExt		NO
 #endif
 
 /*
  * Build the XFree86-Misc extension
  */
 #ifndef BuildXF86MiscExt
-#define BuildXF86MiscExt		YES
+#define BuildXF86MiscExt		NO
 #endif
 
 /*
@@ -898,6 +358,20 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  */
 #ifndef BuildXF86DGA
 #define BuildXF86DGA			YES
+#endif
+
+/*
+ * Build the DPMS extension support
+ */
+#ifndef BuildDPMSExt
+#define BuildDPMSExt			YES
+#endif
+
+/*
+ * Build the X Video Extension 
+ */
+#ifndef BuildXvExt
+#define BuildXvExt			YES
 #endif
 
 #if Malloc0ReturnsNull
@@ -994,8 +468,20 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #define XFree86DGADefines	/**/
 #endif
 
+#ifndef DlopenHack
+#define DlopenHack		-DDLOPEN_HACK
+#endif
+
+#ifndef LoaderDefines
+#if MakeDllModules
+#define ExtraLoaderDefines	DlopenHack
+#else
+#define ExtraLoaderDefines	/**/
+#endif
+#endif
+
 #if DoLoadableServer
-#define XFree86LoaderDefines	-DXFree86LOADER
+#define XFree86LoaderDefines	-DXFree86LOADER ExtraLoaderDefines
 #else
 #define XFree86LoaderDefines	/**/
 #endif
@@ -1014,7 +500,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #endif
 
 #ifndef XFree86ServerOSDefines
-#define XFree86ServerOSDefines	-DDDXOSINIT -DSERVER_LOCK -DDDXOSFATALERROR 
+#define XFree86ServerOSDefines	-DDDXOSINIT -DSERVER_LOCK -DDDXOSFATALERROR
 #endif
 
 #ifndef XFree86ConsoleDefines
@@ -1027,6 +513,19 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 
 #ifndef UseServerLock
 #define UseServerLock	YES
+#endif
+
+#if DoLoadableServer
+/* These are currenty not compatible with the loadable server */
+#ifndef XnestServer
+#define XnestServer			NO
+#endif
+#ifndef XVirtualFramebufferServer
+#define XVirtualFramebufferServer	NO
+#endif
+#ifndef XprtServer
+#define XprtServer			NO
+#endif
 #endif
 
 #if XF86LinkKit
@@ -1100,8 +599,7 @@ XF98LINKKITDIR = LinkKitDir
        XF86SRC = $(TOP)
   XF86ACCELSRC = $(XF86SRC)/lib86
     XF86COMSRC = $(XF86SRC)/lib86
- XF86CONFIGSRC = $(XF86SRC)
-     XF86HWSRC = $(XF86SRC)/lib86
+ XF86PARSERSRC = $(XF86SRC)/parser
      XF86OSSRC = $(XF86SRC)/lib86
  XF86DRIVERSRC = $(XF86SRC)/drivers
      DRIVERSRC = $(XF86DRIVERSRC)
@@ -1112,12 +610,6 @@ XF98LINKKITDIR = LinkKitDir
            XF98SRC = $(TOP)
       XF98ACCELSRC = $(XF98SRC)/lib98
         XF98COMSRC = $(XF98SRC)/lib98
-     XF98CONFIGSRC = $(XF98SRC)
-         XF98HWSRC = $(XF98SRC)/lib98
-      XF98HWNECSRC = $(XF98SRC)/lib98
-    XF98HWPWSKBSRC = $(XF98SRC)/lib98
-     XF98HWPWLBSRC = $(XF98SRC)/lib98
-    XF98HWGA968SRC = $(XF98SRC)/lib98
          XF98OSSRC = $(XF98SRC)/lib98
      XF98DRIVERSRC = $(XF98SRC)/drivers98
  XF98SVGADRIVERSRC = $(XF98SRC)/drivers98/svga
@@ -1134,32 +626,21 @@ XF98GA968DRIVERSRC = $(XF98SRC)/drivers98/s3ga968
        XF86SRC = $(SERVERSRC)/hw/xfree86
   XF86ACCELSRC = $(XF86SRC)/accel
     XF86COMSRC = $(XF86SRC)/common
- XF86CONFIGSRC = $(XF86COMSRC)
-     XF86HWSRC = $(XF86SRC)/common_hw
+ XF86PARSERSRC = $(XF86SRC)/parser
      XF86OSSRC = $(XF86SRC)/os-support
  XF86DRIVERSRC = $(XF86SRC)/drivers
      DRIVERSRC = $(XF86DRIVERSRC)
-  VGADRIVERSRC = $(XF86SRC)/vga256/drivers
-VGA16DRIVERSRC = $(XF86SRC)/vga16/drivers
- VGA2DRIVERSRC = $(XF86SRC)/vga2/drivers
- MONODRIVERSRC = $(XF86SRC)/mono/drivers
    S3DRIVERSRC = $(XF86SRC)/accel/s3/drivers
   S3VDRIVERSRC = $(XF86SRC)/accel/s3_virge/drivers
 
        XF68SRC = $(SERVERSRC)/hw/xfree68
     XF68COMSRC = $(XF68SRC)/common
- XF68CONFIGSRC = $(XF68COMSRC)
+ XF68PARSERSRC = $(XF68SRC)/parser
      XF68OSSRC = $(XF68SRC)/os-support
 
            XF98SRC = $(SERVERSRC)/hw/xfree98
       XF98ACCELSRC = $(XF98SRC)/accel
         XF98COMSRC = $(XF98SRC)/common
-     XF98CONFIGSRC = $(XF98COMSRC)
-         XF98HWSRC = $(XF98SRC)/common_hw/generic
-      XF98HWNECSRC = $(XF98SRC)/common_hw/nec
-    XF98HWPWSKBSRC = $(XF98SRC)/common_hw/pwskb
-     XF98HWPWLBSRC = $(XF98SRC)/common_hw/pwlb
-    XF98HWGA968SRC = $(XF98SRC)/common_hw/ga968
          XF98OSSRC = $(XF98SRC)/os-support
      XF98DRIVERSRC = $(XF98SRC)/drivers
   XF98VGADRIVERSRC = $(XF98SRC)/vga256/drivers
@@ -1194,7 +675,7 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3901
+#define XFree86Version	3902
 #endif
 
 #ifndef XVendorString
@@ -1213,14 +694,6 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #define ManSuffix	1
 #endif
 
-#ifndef XConfigFile
-#define XConfigFile	XF86Config
-#endif
-
-#ifndef XConfigDir
-#define XConfigDir	$(LIBDIR)
-#endif
-
 /*
  * GNU Compiler stuff
  */
@@ -1235,11 +708,16 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #endif
 
 #if HasGcc
+#ifndef GccWarningOptions
+#define GccWarningOptions -Wall -Wpointer-arith -Wstrict-prototypes \
+			  -Wmissing-prototypes -Wmissing-declarations \
+			  -Wredundant-decls -Wnested-externs
+#endif
 #ifndef DefaultCCOptions
 #if defined(UseInstalled) && !XF86LinkKit
 #define DefaultCCOptions /* -ansi */
 #else
-#define DefaultCCOptions -ansi -pedantic
+#define DefaultCCOptions -ansi -pedantic GccWarningOptions
 #endif
 #endif
 #if defined(UseInstalled) || XF86LinkKit

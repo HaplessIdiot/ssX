@@ -2,7 +2,7 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.17 1997/05/18 12:12:03 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.18.2.1 1998/06/03 15:49:18 dawes Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -43,7 +43,7 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.17 1997/05/18 12:12:03 dawes Exp $
 #define AceCadSupport		NO
 #endif
 
-#if !BuildDynamicLoading && BuildXInputExt
+#if !DoLoadableServer && BuildXInputExt
 # if JoystickSupport
 #  define JoystickDefines -DJOYSTICK_SUPPORT
 # else
@@ -80,6 +80,11 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.17 1997/05/18 12:12:03 dawes Exp $
  * because they will replace rules after having seen the first lines
  * of Imakefile (include <Server.tmpl>)
  */
+
+#if defined(IHaveModules) && MakeDllModules
+MODULE_CFLAGS = $(PICFLAGS)
+#endif
+
 #if defined(IHaveModules) && DoLoadableServer && defined(OS2Architecture)
 
 /* This overrides the ObjCompile in Imake.rules! */
