@@ -1,4 +1,15 @@
-XFree86 3.9r (25 September 1997)
+XFree86 3.9r (30 September 1997)
+1294. Bug fixes to xterm. Change default resource of colorMode to true. Fix
+      'ech' control. Add resource boldColors and +pc / -pc. Add resource
+      colorAttrMode. Fix conflict between colorULMode/colorBDMode versus ANSI
+      colors. Correct two problems with the optional logging support. Various
+      updates to configure-script macros (#1004, Thomas Dickey).
+1293. Make sure ImageWriteBase gets set with a default value (#1003,
+      Alan Hourihane).
+1292. Replace mktemp() with mkstemp() in xrdb (#1002, Matthieu Herrb).
+1291. Don't fail to start if there isn't enough memory for the hw cursor in
+      tseng driver (#1001, Koen Gadeyne).
+1290. Fix the install problem with XF98_SVGA (#1000, Takaaki Nomura).
 1289. Add bresenham lines to tseng driver (#997, Koen Gadeyne).
 1288. Significantly accelerate clipped terminal font performance (#996,998,999,
       Andrew van der Stock, David Bateman).
@@ -5395,4 +5406,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.532 1997/09/25 16:13:50 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.533 1997/09/29 08:40:26 hohndel Exp $

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.19 1997/09/09 10:27:49 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.20 1997/09/29 08:40:32 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1062,46 +1062,17 @@ ET4000Probe()
 
   TSENG_MEMLIMIT(4096, "on any Tseng card");
 
- /*
-  * Acceleration requires 1kb scratch buffer memory.
-  */  
-
-  if (tseng_use_ACL)
-  {
-    ErrorF("%s %s: Reserving 1kb of video memory for accelerator.\n",
-           XCONFIG_PROBED, vga256InfoRec.name);
-    vga256InfoRec.videoRam -= 1;
-    scratchVidBase = vga256InfoRec.videoRam * 1024;
-  }
-
-      /* Hardware Cursor support */
+  /* Hardware Cursor support */
 #ifdef W32_HW_CURSOR_FIXED
   if (et4000_type >= TYPE_ET4000W32P)
 #else
   if (Is_ET6K)
 #endif
   {
-          /* Set HW Cursor option valid */
+      /* Set HW Cursor option valid */
       OFLG_SET(OPTION_HW_CURSOR, &TSENG.ChipOptionFlags);
   }
 
-  if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
-  {
-#ifdef W32_HW_CURSOR_FIXED
-      if (et4000_type >= TYPE_ET4000W32P)
-#else
-      if (Is_ET6K)
-#endif
-      {
-          ErrorF("%s %s: Reserving 1kb of video memory for hardware cursor.\n",
-                 XCONFIG_PROBED, vga256InfoRec.name);
-          vga256InfoRec.videoRam -= 1; /* 1kb reserved for hardware cursor */
-          tsengCursorAddress = vga256InfoRec.videoRam * 1024;
-      }
-      else   /* clear illegal option */
-          OFLG_CLR(OPTION_HW_CURSOR, &vga256InfoRec.options);
-  }
-        
   } /* if (vgaBitsPerPixel >= 8) */
   else {
     OFLG_CLR(OPTION_HW_CURSOR, &vga256InfoRec.options);
@@ -1278,7 +1249,8 @@ static void
 ET4000FbInit()
 {
   int useSpeedUp;
-
+  int FBmem = (vga256InfoRec.virtualY * vga256InfoRec.displayWidth * vgaBitsPerPixel / 8)/1024;
+     
   if (vgaBitsPerPixel < 8) return;
   
   if (xf86Verbose && TSENG.ChipUseLinearAddressing)
@@ -1328,19 +1300,37 @@ ET4000FbInit()
     }
   }
 
-      /* Hardware cursor setup */
-  if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options)) {
-      tsengCursorWidth = 64;
-      tsengCursorHeight = 64;
-      vgaHWCursor.Initialized = TRUE;
-      vgaHWCursor.Init = TsengCursorInit;
-      vgaHWCursor.Restore = TsengRestoreCursor;
-      vgaHWCursor.Warp = TsengWarpCursor;
-      vgaHWCursor.QueryBestSize = TsengQueryBestSize;
-      if (xf86Verbose)
-          ErrorF("%s %s: %s: Using hardware cursor\n",
-                 XCONFIG_PROBED, vga256InfoRec.name,
-                 vga256InfoRec.chipset);             
+  /* Hardware cursor setup */
+  if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options) &&
+#ifdef W32_HW_CURSOR_FIXED
+      (et4000_type >= TYPE_ET4000W32P)
+#else
+      (Is_ET6K)
+#endif
+   )
+  {
+      if ((vga256InfoRec.videoRam - FBmem) < 1)
+      {
+        ErrorF("%s %s: Hardware cursor disabled. It requires 1kb of free video memory\n",
+               XCONFIG_PROBED, vga256InfoRec.name);
+        OFLG_CLR(OPTION_HW_CURSOR, &vga256InfoRec.options);
+      }
+      else
+      {
+        vga256InfoRec.videoRam -= 1; /* 1kb reserved for hardware cursor */
+        tsengCursorAddress = vga256InfoRec.videoRam * 1024;
+
+        tsengCursorWidth = 64;
+        tsengCursorHeight = 64;
+        vgaHWCursor.Initialized = TRUE;
+        vgaHWCursor.Init = TsengCursorInit;
+        vgaHWCursor.Restore = TsengRestoreCursor;
+        vgaHWCursor.Warp = TsengWarpCursor;
+        vgaHWCursor.QueryBestSize = TsengQueryBestSize;
+        if (xf86Verbose)
+            ErrorF("%s %s: %s: Using hardware cursor\n",
+                   XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
+      }
   }
 
   if (OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options))
@@ -1351,9 +1341,20 @@ ET4000FbInit()
 
   if ( (vgaBitsPerPixel >= 8) && (tseng_use_ACL) )
     {
-      /* initialize the XAA interface software */
-      /* TsengAccelInit();
-         This relies on variables that are setup later, so it's called there */ 
+      if ((vga256InfoRec.videoRam - FBmem) < 1)
+      {
+        ErrorF("%s %s: Acceleration disabled. It requires AT LEAST 1kb of free video memory\n",
+               XCONFIG_PROBED, vga256InfoRec.name);
+        tseng_use_ACL = FALSE;
+      }
+      else
+      {
+        vga256InfoRec.videoRam -= 1;
+        scratchVidBase = vga256InfoRec.videoRam * 1024;
+        /* initialize the XAA interface software */
+        /* TsengAccelInit();
+           This relies on variables that are setup later, so it's called there */ 
+      }
     }
 }
 

@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.6 1997/06/03 14:12:39 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.7 1997/09/19 08:30:18 hohndel Exp $ */
 
 /***********************************************************
 
@@ -340,10 +340,10 @@ static XrmOptionDescRec optionDescList[] = {
 {"-nb",		"*nMarginBell",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-nul",	"*underLine",	XrmoptionNoArg,		(caddr_t) "off"},
 {"+nul",	"*underLine",	XrmoptionNoArg,		(caddr_t) "on"},
+{"-pc",		"*boldColors",	XrmoptionNoArg,		(caddr_t) "on"},
+{"+pc",		"*boldColors",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-rw",		"*reverseWrap",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+rw",		"*reverseWrap",	XrmoptionNoArg,		(caddr_t) "off"},
-{"-aw",		"*autoWrap",	XrmoptionNoArg,		(caddr_t) "on"},
-{"+aw",		"*autoWrap",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-s",		"*multiScroll",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+s",		"*multiScroll",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-sb",		"*scrollBar",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -435,6 +435,7 @@ static struct _options {
 { "-nb number",            "margin bell in characters from right end" },
 { "-/+nul",                "turn on/off display of underlining" },
 { "-/+aw",                 "turn on/off auto wraparound" },
+{ "-/+pc",                 "turn on/off PC-style bold colors" },
 { "-/+rw",                 "turn on/off reverse wraparound" },
 { "-/+s",                  "turn on/off multiscroll" },
 { "-/+sb",                 "turn on/off scrollbar" },

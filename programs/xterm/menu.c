@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/66 1996/12/01 23:46:59 swick $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.11 1997/08/26 10:01:56 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.12 1997/09/19 08:30:17 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -474,8 +474,9 @@ static void do_visualbell (gw, closure, data)
 
 #ifdef ALLOWLOGGING
 static void do_logging (gw, closure, data)
-    Widget gw;
-    XtPointer closure, data;
+    Widget gw GCC_UNUSED;
+    XtPointer closure GCC_UNUSED;
+    XtPointer data GCC_UNUSED;
 {
     register TScreen *screen = &term->screen;
 
@@ -1059,7 +1060,7 @@ void HandleSetVisualBell(w, event, params, param_count)
 #ifdef ALLOWLOGGING
 void HandleLogging(w, event, params, param_count)
     Widget w;
-    XEvent *event;
+    XEvent *event GCC_UNUSED;
     String *params;
     Cardinal *param_count;
 {

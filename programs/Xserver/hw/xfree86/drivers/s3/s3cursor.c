@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.3 1997/05/03 12:53:08 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.4 1997/09/25 16:13:55 hohndel Exp $
 *
 */
 
@@ -58,7 +58,7 @@ extern void s3Ti3026SetCursorColors();
 extern void s3Ti3026LoadCursorImage();
 
 static void s3ShowCursor();
-static void s3HideCursor();
+void s3HideCursor(); /* this is needed in EnterLeave for DGA... */
 static void s3SetCursorPosition();
 static void s3SetCursorColors();
 static void s3LoadCursorImage();

@@ -2,7 +2,7 @@
  * xrdb - X resource manager database utility
  *
  * $XConsortium: xrdb.c,v 11.76 95/05/12 18:36:46 mor Exp $
- * $XFree86: xc/programs/xrdb/xrdb.c,v 3.7 1996/12/26 01:41:16 dawes Exp $
+ * $XFree86: xc/programs/xrdb/xrdb.c,v 3.8 1997/05/25 14:41:24 dawes Exp $
  */
 
 /*
@@ -957,9 +957,17 @@ main (argc, argv)
 	strcpy(tmpname, "/tmp/xrdb_XXXXXX");
 #endif
 #endif
+#ifndef HAS_MKSTEMP
 	(void) mktemp(tmpname);
 	filename = tmpname;
 	fp = fopen(filename, "w");
+#else
+	{
+	int fd = mkstemp(tmpname);
+	filename = tmpname;
+	fp = fdopen(fd, "w");
+	}
+#endif /* MKSTEMP */
 	if (!fp)
 	    fatal("%s: Failed to open temp file: %s\n", ProgramName,
 		  filename);
@@ -1124,8 +1132,15 @@ Process(scrno, doScreen, execute)
 	input = fopen(editFile, "r");
 	strcpy(template, editFile);
 	strcat(template, "XXXXXX");
+#ifndef HAS_MKSTEMP
 	(void) mktemp(template);
 	output = fopen(template, "w");
+#else
+	{ 
+	int fd = mkstemp(template);
+	output = fdopen(fd, "w");
+	}
+#endif
 	if (!output)
 	    fatal("%s: can't open temporary file '%s'\n", ProgramName, template);
 	GetEntriesString(&newDB, xdefs);

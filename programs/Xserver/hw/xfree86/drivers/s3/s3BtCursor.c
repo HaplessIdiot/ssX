@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3BtCursor.c,v 1.2 1997/08/26 10:01:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3BtCursor.c,v 1.3 1997/09/25 16:13:54 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -198,7 +198,7 @@ static __inline__ void s3EndBtData()
 
 
 void 
-s3BtCursorShowCursor()
+s3BtShowCursor()
 {
    unsigned char tmp;
 

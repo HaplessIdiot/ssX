@@ -1,4 +1,4 @@
-## $XFree86: $ ##
+## $XFree86: xc/programs/xterm/Makefile.in,v 3.7 1997/09/19 11:24:40 hohndel Exp $ ##
 
 #### Start of system configuration section. ####
 
@@ -90,7 +90,7 @@ uninstall:
 		$(mandir)/resize.$(manext)
 
 mostlyclean:
-	-$(RM) *.[oi] .pure core *~ *.BAK
+	-$(RM) *.[oi] XtermLog.* .pure core *~ *.BAK *.out
 
 clean: mostlyclean
 	-$(RM) $(PROGRAMS)
