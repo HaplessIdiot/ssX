@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/39 1997/02/26 18:09:44 kaleb $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.32 2000/02/13 00:12:49 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.34 2000/02/27 23:10:03 mvojkovi Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -24,54 +24,59 @@ XKBUILIBDIR = xkbui
 #endif
 
 #if BuildThreadStubLibrary
-THRSTUBLIB = XThrStub
+THRSTUBLIBDIR = XThrStub
 #endif
 
 #if BuildScreenSaverLibrary
-SSLIB = Xss
+SSLIBDIR = Xss
 #endif
 
 #if BuildXF86MiscLibrary
-XF86MISCLIB = Xxf86misc
+XF86MISCLIBDIR = Xxf86misc
 #endif
 
 #if BuildXF86VidModeLibrary
-XF86VMLIB = Xxf86vm
+XF86VMLIBDIR = Xxf86vm
 #endif
 
 #if BuildXF86DGALibrary
-XF86DGALIB = Xxf86dga
+XF86DGALIBDIR = Xxf86dga
 #endif
 
 #if BuildXF86RushLibrary
-XF86RUSHLIB = Xxf86rush
+XF86RUSHLIBDIR = Xxf86rush
 #endif
 
 #if BuildXvLibrary
-XVLIB = Xv
+XVLIBDIR = Xv
+#endif
+
+#if BuildXineramaLibrary
+XINERAMADIR=Xinerama
 #endif
 
 #if BuildXantiLibrary
-XANTILIB = Xanti
+XANTILIBDIR = Xanti
 #endif
 
 #if BuildGLXLibrary
-GLXLIB = GL
+GLXLIBDIR = GL
 #endif
 
 #if BuildDPSLibrary
-DPSLIB = dps
+DPSLIBDIR = dps
 #endif
 
 #if BuildDPSTkLibrary
-DPSTKLIB = dpstk
+DPSTKLIBDIR = dpstk
 #endif
 
 #if BuildPSResLibrary
-PSRESLIB = psres
+PSRESLIBDIR = psres
 #endif
 
-XF86EXTLIBS = $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB) $(XF86RUSHLIB)
+XF86EXTLIBS = $(XF86MISCLIBDIR) $(XF86VMLIBDIR) \
+		$(XF86DGALIBDIR) $(XF86RUSHLIBDIR)
 
 #if BuildLBX
 LBXUTILDIR = lbxutil
@@ -96,18 +101,20 @@ FONTCACHELIBDIR = Xfontcache
 FONTSUBDIR = font
 
 #if !BuildServersOnly
-LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext Xt \
-	     $(SSLIB) $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB) $(XF86RUSHLIB) \
-	     Xmu Xpm Xaw $(XAW6LIBDIR) XIE Xi Xtst FS \
+LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIBDIR) X11 oldX ICE SM Xext Xt \
+	     $(SSLIBDIR) $(XF86MISCLIBDIR) $(XF86VMLIBDIR) $(XF86DGALIBDIR) \
+	     $(XF86RUSHLIBDIR) Xmu Xpm Xaw $(XAW6LIBDIR) XIE Xi Xtst FS \
 	     PEX5 $(XKBLIBDIR) $(XKBUILIBDIR) $(LBXUTILDIR) $(XALIBDIR) \
-	     Xp $(XVLIB) $(XANTILIB) $(GLXLIB) $(DPSLIB) $(DPSTKLIB) \
-	     $(PSRESLIB) $(ZLIBDIR) $(REGEXDIR) Xinerama
+	     Xp $(XVLIBDIR) $(XANTILIBDIR) $(GLXLIBDIR) $(DPSLIBDIR) \
+	     $(DPSTKLIBDIR) $(PSRESLIBDIR) $(XINERAMADIR) \
+	     $(ZLIBDIR) $(REGEXDIR)
 #else
 #if XnestServer || BuildGLXLibrary
 XEXTDIR = Xext
 #endif
 
-LINTSUBDIRS = Xau Xdmcp X11 Xinerama $(XEXTDIR) $(XKBLIBDIR) $(XKBUILIBDIR) \
+LINTSUBDIRS = Xau Xdmcp X11 $(XINERAMADIR) $(XEXTDIR) $(XKBLIBDIR) \
+	      $(XKBUILIBDIR) \
 	      $(LBXUTILDIR) $(XF86EXTLIBS) $(XVLIB) $(GLXLIB) $(ZLIBDIR) \
 	      $(REGEXDIR)
 #endif
