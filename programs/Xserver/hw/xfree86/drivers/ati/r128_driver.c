@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.61 2002/05/14 20:02:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.62 2002/06/04 23:04:50 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -200,6 +200,8 @@ static const char *fbdevHWSymbols[] = {
     "fbdevHWUseBuildinMode",
     "fbdevHWGetLineLength",
     "fbdevHWGetVidmem",
+
+    "fbdevHWDPMSSet",
 
     /* colormap */
     "fbdevHWLoadPalette",
@@ -2409,13 +2411,17 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
 			     )) return FALSE;
 
-				/* DPMS setup - FIXME: also for mirror mode? - Michel */
-    if (!info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_CRT)
-	xf86DPMSInit(pScreen, R128DisplayPowerManagementSet, 0);
-    if (info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_FP)
-	xf86DPMSInit(pScreen, R128DisplayPowerManagementSetLCD, 0);
+    /* DPMS setup - FIXME: also for mirror mode in non-fbdev case? - Michel */
+    if (info->FBDev)
+	xf86DPMSInit(pScreen, fbdevHWDPMSSet, 0);
+    else {
+	if (!info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_CRT)
+	    xf86DPMSInit(pScreen, R128DisplayPowerManagementSet, 0);
+	if (info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_FP)
+	    xf86DPMSInit(pScreen, R128DisplayPowerManagementSetLCD, 0);
+    }
 
-	R128InitVideo(pScreen);
+    R128InitVideo(pScreen);
 
 				/* Provide SaveScreen */
     pScreen->SaveScreen  = R128SaveScreen;
@@ -3228,6 +3234,7 @@ static Bool R128Init(ScrnInfoPtr pScrn, DisplayModePtr mode, R128SavePtr save)
 	   pScrn->depth,
 	   pScrn->bitsPerPixel);
     if (mode->Flags & V_DBLSCAN)   ErrorF(" D");
+    if (mode->Flags & V_CSYNC)     ErrorF(" C");
     if (mode->Flags & V_INTERLACE) ErrorF(" I");
     if (mode->Flags & V_PHSYNC)    ErrorF(" +H");
     if (mode->Flags & V_NHSYNC)    ErrorF(" -H");
@@ -3250,6 +3257,7 @@ static Bool R128Init(ScrnInfoPtr pScrn, DisplayModePtr mode, R128SavePtr save)
 	   pScrn->depth,
 	   pScrn->bitsPerPixel);
     if (mode->Flags & V_DBLSCAN)   ErrorF(" D");
+    if (mode->Flags & V_CSYNC)     ErrorF(" C");
     if (mode->Flags & V_INTERLACE) ErrorF(" I");
     if (mode->Flags & V_PHSYNC)    ErrorF(" +H");
     if (mode->Flags & V_NHSYNC)    ErrorF(" -H");
