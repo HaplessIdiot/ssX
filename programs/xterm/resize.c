@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.37 1999/08/21 13:49:06 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.38 1999/09/27 06:30:23 dawes Exp $
  */
 
 /*
@@ -31,6 +31,13 @@
 
 #ifdef HAVE_CONFIG_H
 #include <xtermcfg.h>
+
+#else
+
+#if defined(__EMX__) || defined(__CYGWIN__) || defined(SCO) || defined(sco)
+#define USE_TERMCAP 1
+#endif
+
 #endif
 
 #include <X11/Xos.h>
@@ -60,19 +67,14 @@
 #define CANT_OPEN_DEV_TTY
 #endif
 
-#ifdef __EMX__
+#if defined(__EMX__) || defined(__CYGWIN__)
 #define USE_SYSV_TERMIO
-#define USE_TERMCAP
 #endif
 
 #ifdef macII
 #define USE_SYSV_TERMIO
 #undef SYSV				/* pretend to be bsd */
 #endif /* macII */
-
-#if defined(SCO) || defined(sco)
-#define USE_TERMCAP
-#endif
 
 #ifdef linux
 #define USE_TERMIOS
@@ -93,12 +95,12 @@
 #endif
 #endif
 
-#if defined(SYSV) || defined(__CYGWIN32__)
+#if defined(SYSV) || defined(__CYGWIN__)
 #define USE_SYSV_TERMIO
 #elif defined(__QNX__)
 #define USE_TERMINFO
 #include <unix.h>
-#else
+#elif !defined(USE_TERMCAP)
 #define USE_TERMCAP
 #endif /* SYSV */
 
@@ -114,7 +116,7 @@
 #define USE_TERMIOS
 #endif
 
-#ifndef __CYGWIN32__
+#ifndef __CYGWIN__
 #include <sys/ioctl.h>
 #endif
 
@@ -263,7 +265,6 @@ static void Usage (void);
 static void readstring (FILE *fp, char *buf, char *str);
 
 #ifdef USE_TERMCAP
-static char *strindex (char *s1, char *s2);
 #ifdef HAVE_TERMCAP_H
 #include <termcap.h>
 #if defined(NCURSES_VERSION)
@@ -277,6 +278,10 @@ static char *strindex (char *s1, char *s2);
 #else
 #include <curses.h>
 #endif /* HAVE_TERMCAP_H  */
+#endif
+
+#ifdef USE_TERMCAP
+static char *strindex (char *s1, char *s2);
 #endif
 
 #define TERMCAP_SIZE 1500		/* 1023 is standard; 'screen' exceeds */

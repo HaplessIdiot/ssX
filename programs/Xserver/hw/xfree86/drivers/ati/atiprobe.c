@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.9 1999/08/01 07:57:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.10 1999/08/21 13:48:32 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -798,7 +798,7 @@ ATIProbe
     int       flags
 )
 {
-    ATIPtr              pATI, *ATIPtrs = NULL, pVGA, p8514 = NULL;
+    ATIPtr              pATI, *ATIPtrs = NULL, pVGA = NULL, p8514 = NULL;
     ATIPtr              pMach64[3] = {NULL, NULL, NULL};
     GDevPtr             *GDevs, pGDev;
     pciVideoPtr         pVideo, *xf86PciVideoInfo = xf86GetPciVideoInfo();

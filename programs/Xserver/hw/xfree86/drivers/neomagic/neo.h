@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.3 1999/06/20 15:02:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.4 1999/06/27 14:08:08 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -140,6 +140,7 @@ typedef struct {
     /* Hardware cursor address */
     unsigned int CursorAddress;
     Bool UseHWCursor;
+    unsigned char CursTemp[1024];
     /* Boundaries of the pixmap cache */
     unsigned int cacheStart;
     unsigned int cacheEnd;

@@ -1,20 +1,12 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.2 1999/04/17 07:06:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.3 1999/04/25 10:02:16 dawes Exp $ */
 /*
  * includes
  */
 
+#include "rendition.h"
 #include "vramdac.h"
 #include "vos.h"
 #include "v1kregs.h"
-#include "xf86.h"
-
-/*
-#define XCONFIG_FLAGS_ONLY
-#include "xf86_Config.h"
-*/
-
-
-
 
 /*
  * defines
@@ -115,16 +107,17 @@ int Cursor_size=0;
  */
 
 /*
- * int v_initdac(struct v_board_t *board, vu8 bpp, vu8 doubleclock)
+ * int v_initdac(ScrnInfoPtr pScreenInfo, vu8 bpp, vu8 doubleclock)
  *
  * Used to initialize the ramdac. Palette-bypass is dis-/enabled with respect
  * to the color depth, the cursor is disabled by default. If needed (i.e. if
  * the corresponding field in the v_board_t struct is set), the clock doubling
  * is turned on.
  */
-int v_initdac(struct v_board_t *board, vu8 bpp, vu8 doubleclock)
+int v_initdac(ScrnInfoPtr pScreenInfo, vu8 bpp, vu8 doubleclock)
 {
-    vu16 iob=board->io_base+RAMDACBASEADDR;
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+    vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
     vu8 cmd3_data=0;
 
     if (doubleclock)
@@ -199,19 +192,22 @@ int v_initdac(struct v_board_t *board, vu8 bpp, vu8 doubleclock)
 
 
 /*
- * void v_enablecursor(struct v_board_t *board, int type, int size)
+ * void v_enablecursor(ScrnInfoPtr pScreenInfo, int type, int size)
  *
  * Used to enable the hardware cursor. Size indicates, whether to use no cursor
  * at all, a 32x32 or a 64x64 cursor. The type selects a two-color, three-color
  * or X-window-like cursor. Valid values are defined in vramdac.h. 
+ *
  */
-void v_enablecursor(struct v_board_t *board, int type, int size)
+void v_enablecursor(ScrnInfoPtr pScreenInfo, int type, int size)
 {
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+
     static vu8 ctypes[]={ BT485_DISABLE_CURSOR, BT485_2_COLOR_CURSOR,
                       BT485_3_COLOR_CURSOR, BT485_X_WINDOW_CURSOR };
     static vu8 csizes[]={ BT485_32_BY_32_CURSOR, BT485_64_BY_64_CURSOR };
   
-    vu16 iob=board->io_base+RAMDACBASEADDR;
+    vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
 
     /* ensure proper ranges */
     type&=3;
@@ -232,14 +228,16 @@ void v_enablecursor(struct v_board_t *board, int type, int size)
 
 
 /*
- * void v_movecursor(struct v_board_t *board, vu16 x, vu16 y, vu8 xo, vu8 yo)
+ * void v_movecursor(ScrnInfoPtr pScreenInfo, vu16 x, vu16 y, vu8 xo, vu8 yo)
  *
  * Moves the cursor to the specified location. To hide the cursor, call
  * this routine with x=0x0 and y=0x0.
+ *
  */
-void v_movecursor(struct v_board_t *board, vu16 x, vu16 y, vu8 xo, vu8 yo)
+void v_movecursor(ScrnInfoPtr pScreenInfo, vu16 x, vu16 y, vu8 xo, vu8 yo)
 {
-    vu16 iob=board->io_base+RAMDACBASEADDR;
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+    vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
 
     x+=Cursor_size-xo;
     y+=Cursor_size-yo;
@@ -253,13 +251,15 @@ void v_movecursor(struct v_board_t *board, vu16 x, vu16 y, vu8 xo, vu8 yo)
 
 
 /*
- * void v_setcursorcolor(struct v_board_t *board, vu32 fg, vu32 bg)
+ * void v_setcursorcolor(ScrnInfoPtr pScreenInfo, vu32 fg, vu32 bg)
  *
  * Sets the color of the cursor -- should be revised for use with 3 colors!
+ *
  */
-void v_setcursorcolor(struct v_board_t *board, vu32 fg, vu32 bg)
+void v_setcursorcolor(ScrnInfoPtr pScreenInfo, vu32 fg, vu32 bg)
 {
-    vu16 iob=board->io_base+RAMDACBASEADDR;
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+    vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
 
     /* load the cursor color 0, i.e. overscan */
     v_out8(iob+BT485_CURS_WR_ADDR, 0x00);
@@ -284,12 +284,14 @@ void v_setcursorcolor(struct v_board_t *board, vu32 fg, vu32 bg)
 /*
  * Oh god, this code is quite a mess ... should be re-written soon.
  * But for now I'm happy it works ;) <ml> 
+ *
  */
-void v_loadcursor(struct v_board_t *board, vu8 size, vu8 *cursorimage)
+void v_loadcursor(ScrnInfoPtr pScreenInfo, vu8 size, vu8 *cursorimage)
 {
     int c, bytes, row;
     vu8 *src;
-    vu16 iob=board->io_base+RAMDACBASEADDR;
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+    vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
     vu8 tmp;
 
     if (NULL == cursorimage) 
@@ -302,7 +304,7 @@ void v_loadcursor(struct v_board_t *board, vu8 size, vu8 *cursorimage)
         bytes=32;
     bytes=(bytes*bytes)/8;
 
-    if (board->chip == V1000_DEVICE) {
+    if (pRendition->board.chip == V1000_DEVICE) {
       /* now load the cursor data into the cursor ram */
 /*
   Bt485_write_cmd3_masked(iob, 0xfc, 0x00);
@@ -324,7 +326,6 @@ void v_loadcursor(struct v_board_t *board, vu8 size, vu8 *cursorimage)
         v_out8(iob+BT485_CURS_RAM_DATA, *src);
         src+=2;
       }
-      
 /*
     tmp=v_in8(iob+BT485_STATUS_REG)&0xf8;
     v_out8(iob+BT485_STATUS_REG, tmp|(size<<2)|(1<<size));
@@ -341,12 +342,12 @@ void v_loadcursor(struct v_board_t *board, vu8 size, vu8 *cursorimage)
       v_out32(iob+0xAC /* CURSORBASE - v2k */, 0);
       for (row=0; row<64; row++)
 	for (c=0, src=cursorimage+1+16*row; c<8; c++, src+=2)
-	  v_write_memory8(board->vmem_base, 16*(63-row)+c,
+	  v_write_memory8(pRendition->board.vmem_base, 16*(63-row)+c,
 			  (c&1)?(*(src-2)):(*(src+2)));
 
       for (row=0; row<64; row++)
 	for (c=0, src=cursorimage+16*row; c<8; c++, src+=2)
-	  v_write_memory8(board->vmem_base, 8+16*(63-row)+c,
+	  v_write_memory8(pRendition->board.vmem_base, 8+16*(63-row)+c,
 			  (c&1)?(*(src-2)):(*(src+2)));
     }
 }
@@ -354,9 +355,11 @@ void v_loadcursor(struct v_board_t *board, vu8 size, vu8 *cursorimage)
 
 
 /* NOTE: count is the actual number of colors decremented by 1 */
-void v_setpalette(struct v_board_t *board, vu8 start, vu8 count, vu8 *table)
+
+void v_setpalette(ScrnInfoPtr pScreenInfo, vu8 start, vu8 count, vu8 *table)
 {
-    vu16 iob=board->io_base;
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+    vu16 iob=pRendition->board.io_base;
     vu32 crtc_status;
     int c;
 

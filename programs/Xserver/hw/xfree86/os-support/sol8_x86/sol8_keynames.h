@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.11 1999/04/29 05:12:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_keynames.h,v 1.1 1999/09/25 14:38:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -32,8 +32,8 @@
 
 #define GLYPHS_PER_KEY	4
 #define NUM_KEYCODES	127
-#define MIN_KEYCODE     0
-#define MAX_KEYCODE     127
+#define MIN_KEYCODE     8
+#define MAX_KEYCODE     135
 
 #define AltMask		Mod1Mask
 #define NumLockMask	Mod2Mask

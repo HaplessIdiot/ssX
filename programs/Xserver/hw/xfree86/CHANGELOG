@@ -1,3 +1,51 @@
+XFree86 3.9.16c (13 October 1999)
+3245. Fix text mode restoration when large modes are used in the ATI driver
+      (#3318, Marc La France).
+3244. Rendition driver update, including skeleton HW cursor and accelerated
+      support (#3317, Dejan Ilic, Marc Langenbach).
+3243. Change mode validation to allow drivers to modify a mode before it
+      is checked against the monitor's constraints (#3316, Marc La France).
+3242. C&T driver fix (#3314, David Bateman).
+3241. Change the ati mode validation strategy for programmable clocks to best
+      refresh (#3313, Marc La France).
+3240. Fix ATI Rage XL/XC & Mobility support so that it actually works this time
+      (#3313, Marc La France).
+3239. Update the xfsft code to version 1.1.7 (#3310, Juliusz Chroboczek).
+3238. Remaining keyboard support for Solaris 8/x86, including keyboard beep,
+      auto-repeat, keyboard LEDs, modifier keys (#3294, 3309, David Holland).
+3237. Add xf86RegisterRootWindowProperty() - a mechanism for drivers etc
+      to add properties to the root window before the screen is created
+      (#3307, Andrew Aitchison).
+3236. Fix two problems that may occur when some extension allocates a "font
+      private index" while a font is already open (#3305, Bruno Haible).
+3235. Xterm patch #118 (#3303, Thomas Dickey).
+3234. Fix a typo in a dga header file (#3302, Mark Vojkovich).
+3233. Update rendition name info in scanpci (#3301, Dejan Ilic).
+3232. Getuid fix for scanpci (#3300, Marc La France).
+3231. This patch will avoid compilation warnings when GCC 3.0 comes out (#3299,
+      Bruno Haible).
+3230. Fix some build warnings (#3298, Bruno Haible).
+3229. Fix for the DebuggableLibraries support (#3297, Bruno Haible).
+3228. Revert to always using bison instead of yacc on Linux (#3296,
+      Bruno Haible).
+3227. Fix XAA flags checking for the ScanlineImageWrite function (#3293,
+      Alan Hourihane).
+3226. Fix some problems wth the SiS 2x5 chipsets, and disable advertising
+      support for the 201 and 202 chipsets (#3292, Juanjo Santamarta).
+3225. Call SoftReset for MGA cards on PC-98 machines (#3291, Isao Ohishi).
+3224. Use the int10 soft booter to get a non-primary voodoo3 card to work
+      with the tdfx driver (#3290, Henrik Harmsen).
+3223. Fixes for the i740 and neomagic drivers (#3289, Jeff Hartmann).
+3222. Enable compiling ico on systems with pre-standard pthread API (e.g.,
+      LynxOS), and fix a problem where a condition variable is used without
+      holding the corresponding mutex (#3288, Thomas Mueller).
+3221. Add soft-booting capability to the glint and nv drivers (#3287,
+      Jarno Paananen).
+3220. Xterm patch #117 (#3285, Thomas Dickey).
+3219. Fix xf8_32bpp's VT switching by restoring the previous
+      xf86SaveRestoreImage() into it (#3284, Marc La France).
+3218. Remove duplicate symbol in misym.c (#3283, Alan Hourihane).
+
 XFree86 3.9.16b (27 September 1999)
 3217. Xterm patch #116 (#3280, Thomas Dickey).
 3216. Add new flags to the Xv adaptor type to indicate that it can be used
@@ -8877,4 +8925,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.831 1999/09/27 06:29:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.832 1999/09/27 14:33:29 dawes Exp $

@@ -1,12 +1,12 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.h,v 1.2 1999/04/17 07:06:44 dawes Exp $ */
 /*
  * file vramdac.h
  *
  * headfile for vramdac.c
  */
 
-#ifndef _VRAMDAC_H_
-#define _VRAMDAC_H_
+#ifndef __VRAMDAC_H__
+#define __VRAMDAC_H__
 
 
 
@@ -36,12 +36,12 @@
  * function prototypes
  */
 
-int v_initdac(struct v_board_t *board, vu8 bpp, vu8 doubleclock);
-void v_enablecursor(struct v_board_t *board, int type, int size);
-void v_movecursor(struct v_board_t *board, vu16 x, vu16 y, vu8 xo, vu8 yo);
-void v_setcursorcolor(struct v_board_t *board, vu32 fg, vu32 bg);
-void v_loadcursor(struct v_board_t *board, vu8 type, vu8 *cursorimage);
-void v_setpalette(struct v_board_t *board, vu8 start, vu8 count, vu8 *table);
+int v_initdac(ScrnInfoPtr pScreenInfo, vu8 bpp, vu8 doubleclock);
+void v_enablecursor(ScrnInfoPtr pScreenInfo, int type, int size);
+void v_movecursor(ScrnInfoPtr pScreenInfo, vu16 x, vu16 y, vu8 xo, vu8 yo);
+void v_setcursorcolor(ScrnInfoPtr pScreenInfo, vu32 fg, vu32 bg);
+void v_loadcursor(ScrnInfoPtr pScreenInfo, vu8 type, vu8 *cursorimage);
+void v_setpalette(ScrnInfoPtr pScreenInfo, vu8 start, vu8 count, vu8 *table);
 
 
 

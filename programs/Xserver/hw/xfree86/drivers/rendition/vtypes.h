@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vtypes.h,v 1.2 1999/04/17 07:06:45 dawes Exp $ */
 #ifndef _VTYPES_H_
 #define _VTYPES_H_
 
@@ -8,9 +8,6 @@
  * includes
  */
 
-#if 0
-#include <sys/types.h>
-#endif
 #include "Xmd.h"
 
 
@@ -22,10 +19,9 @@
 #define V1000_DEVICE            0x0001
 #define V2000_DEVICE            0x2000
 
-#define FBOFFSET                0x0 /* for now <ml> */
-/*
-#define FBOFFSET                0x10000
-*/
+/* Size of microcode */
+#define MC_SIZE                 0x10000
+
 
 #define XSERVER
 
@@ -94,6 +90,7 @@ struct v_modeinfo_t {
     int vsynchi;
     int pixelformat;        /* set by the mode init routines */
     int fifosize;
+    int flags;              /* additional information like interlace etc */
     vu8 pll_n;
     vu8 pll_m;
     vu8 pll_p;
@@ -109,7 +106,6 @@ struct v_modeinfo_t {
 struct v_board_t {
     /* type of chip */
     vu16  chip;
-    vu8 accel;
 
     /* */
     vu16 io_base;
@@ -118,7 +114,8 @@ struct v_board_t {
     vu32 mem_size;
     vu8 *mem_base;
     vu8 *vmem_base;
-    vu8 init;
+    Bool accel;
+    Bool init;
 
     /* */
     vu32 csucode_base;
@@ -135,9 +132,30 @@ struct v_board_t {
     vu8 offset_hi;
     vu8 offset_low;
     vu8 *scr_contents;
+
+    /* Is HW-cursor used? */
+    Bool hwcursor_used;
+
+    /* How much videomem does it use */
+    vu16 hwcursor_vmemsize;
 };
     
 
+/*
+ * This structure is used to wrap the screen's CloseScreen vector.
+ */
+typedef struct _renditionRec
+{
+    struct v_board_t board;             /* information on the board */
+    struct v_modeinfo_t mode;           /* information on the mode */
+    int pcitag;                         /* tag for the PCI config space */
+    pciVideoPtr PciInfo;                /* PCI config data */
+    EntityInfoPtr pEnt;                 /* entity information */
+    CloseScreenProcPtr CloseScreen;     /* wrap CloseScreen */
+    xf86CursorInfoPtr CursorInfoRec;    /* Cursor data */
+} renditionRec, *renditionPtr;
+
+#define RENDITIONPTR(p)     ((renditionPtr)((p)->driverPrivate))
 
 #endif /* #ifndef _VTYPES_H_ */
 

@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.24 1999/09/25 14:38:24 dawes Exp $
+dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.25 1999/09/27 06:30:12 dawes Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl 
@@ -306,7 +306,12 @@ LIBS="$cf_save_LIBS"
 # they are not executed when a cached value exists.)
 if test "$cf_cv_lib_tgetent" != no ; then
 	test "$cf_cv_lib_tgetent" != yes && LIBS="$LIBS $cf_cv_lib_tgetent"
-	AC_CHECK_HEADERS(termcap.h)
+	AC_DEFINE(USE_TERMCAP)
+	AC_TRY_COMPILE([
+#include <termcap.h>],[
+#ifdef NCURSES_VERSION
+make an error
+#endif],[AC_DEFINE(HAVE_TERMCAP_H)])
 else
         # If we didn't find a tgetent() that supports the buffer
         # argument, look again to see whether we can find even
@@ -462,6 +467,35 @@ fi
 AC_SUBST(EXTRA_CFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Check if we must define _GNU_SOURCE to get a reasonable value for
+dnl _XOPEN_SOURCE, upon which many POSIX definitions depend.  This is a defect
+dnl (or misfeature) of glibc2, which breaks portability of many applications,
+dnl since it is interwoven with GNU extensions.
+dnl
+dnl Well, yes we could work around it...
+AC_DEFUN([CF_GNU_SOURCE],
+[
+AC_CACHE_CHECK(if we must define _GNU_SOURCE,cf_cv_gnu_source,[
+AC_TRY_COMPILE([],[
+#ifndef _XOPEN_SOURCE
+make an error
+#endif],
+	[cf_cv_gnu_source=no],
+	[cf_save="$CFLAGS"
+	 CFLAGS="$CFLAGS -D_GNU_SOURCE"
+	 AC_TRY_COMPILE([],[
+#ifndef _XOPEN_SOURCE
+make an error
+#endif],
+	[cf_cv_gnu_source=no],
+	[cf_cv_gnu_source=yes])
+	CFLAGS="$cf_save"
+	])
+])
+test "$cf_cv_gnu_source" = yes && CFLAGS="$CFLAGS -D_GNU_SOURCE"
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl ---------------------------------------------------------------------------
 dnl Use imake to obtain compiler flags.  We could, in principle, write tests to
 dnl get these, but if imake is properly configured there is no point in doing
 dnl this.
@@ -595,6 +629,29 @@ AC_TRY_LINK([
 [cf_cv_input_method=no])])
 ])dnl
 dnl ---------------------------------------------------------------------------
+AC_DEFUN([CF_LASTLOG],
+[
+AC_CHECK_HEADERS(lastlog.h paths.h)
+AC_CACHE_CHECK(for lastlog path,cf_cv_path_lastlog,[
+AC_TRY_COMPILE([
+#include <sys/types.h>
+#ifdef HAVE_LASTLOG_H
+#include <lastlog.h>
+#else
+#ifdef HAVE_PATHS_H
+#include <paths.h>
+#endif
+#endif],[char *path = _PATH_LASTLOG],
+	[cf_cv_path_lastlog="_PATH_LASTLOG"],
+	[if test -f /usr/adm/lastlog ; then
+	 	cf_cv_path_lastlog=/usr/adm/lastlog
+	else
+		cf_cv_path_lastlog=no
+	fi])
+])
+test $cf_cv_path_lastlog != no && AC_DEFINE(USE_LASTLOG)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Special test to workaround gcc 2.6.2, which cannot parse C-preprocessor
 dnl conditionals.
 dnl
@@ -662,7 +719,7 @@ AC_DEFUN([CF_SYSV_UTMP],
 [
 AC_REQUIRE([CF_UTMP])
 AC_CACHE_CHECK(if $cf_cv_have_utmp is SYSV flavor,cf_cv_sysv_utmp,[
-AC_TRY_COMPILE([
+AC_TRY_LINK([
 #include <sys/types.h>
 #include <${cf_cv_have_utmp}.h>],[
 struct $cf_cv_have_utmp x;
@@ -733,25 +790,31 @@ dnl ---------------------------------------------------------------------------
 dnl Check for UTMP/UTMPX headers
 AC_DEFUN([CF_UTMP],
 [
+AC_REQUIRE([CF_LASTLOG])
 AC_CACHE_CHECK(for utmp implementation,cf_cv_have_utmp,[
+	cf_cv_have_utmp=no
+for cf_header in utmpx utmp ; do
 	AC_TRY_COMPILE([
 #include <sys/types.h>
-#include <utmp.h>],
-	[struct utmp x],
-	[cf_cv_have_utmp=utmp],
-	[AC_TRY_COMPILE([
-#include <sys/types.h>
-#include <utmpx.h>],
-		[struct utmpx x],
-		[cf_cv_have_utmp=utmpx],
-		[cf_cv_have_utmp=no])
-		])
-	])
+#include <${cf_header}.h>
+#define getutent getutxent
+#ifdef USE_LASTLOG
+#include <lastlog.h>	/* may conflict with utmpx.h on Linux */
+#endif
+],
+	[struct $cf_header x;
+	 char *name = x.ut_name; /* HP-UX 10.x omits this in utmpx.h */
+	],
+	[cf_cv_have_utmp=$cf_header
+	 break])
+done
+])
 
 if test $cf_cv_have_utmp != no ; then
 	AC_DEFINE(HAVE_UTMP)
 	test $cf_cv_have_utmp = utmpx && AC_DEFINE(UTMPX_FOR_UTMP)
 	CF_UTMP_UT_HOST
+	CF_UTMP_UT_XTIME
 	CF_SYSV_UTMP
 fi
 ])
@@ -760,100 +823,43 @@ dnl Check if UTMP/UTMPX struct defines ut_host member
 AC_DEFUN([CF_UTMP_UT_HOST],
 [
 AC_REQUIRE([CF_UTMP])
+if test $cf_cv_have_utmp != no ; then
 AC_MSG_CHECKING(if utmp.ut_host is declared)
 AC_CACHE_VAL(cf_cv_have_utmp_ut_host,[
 	AC_TRY_COMPILE([
 #include <sys/types.h>
-#ifdef UTMPX_FOR_UTMP
-#include <utmpx.h>
-#define utmp utmpx
-#else
-#include <utmp.h>
-#endif],
-	[struct utmp x; char *y = &x.ut_host[0]],
+#include <${cf_cv_have_utmp}.h>],
+	[struct $cf_cv_have_utmp x; char *y = &x.ut_host[0]],
 	[cf_cv_have_utmp_ut_host=yes],
 	[cf_cv_have_utmp_ut_host=no])
 	])
 AC_MSG_RESULT($cf_cv_have_utmp_ut_host)
 test $cf_cv_have_utmp_ut_host != no && AC_DEFINE(HAVE_UTMP_UT_HOST)
+fi
+])
+dnl ---------------------------------------------------------------------------
+dnl Check if UTMP/UTMPX struct defines ut_xtime member
+AC_DEFUN([CF_UTMP_UT_XTIME],
+[
+AC_REQUIRE([CF_UTMP])
+if test $cf_cv_have_utmp != no ; then
+AC_MSG_CHECKING(if utmp.ut_xtime is declared)
+AC_CACHE_VAL(cf_cv_have_utmp_ut_xtime,[
+	AC_TRY_COMPILE([
+#include <sys/types.h>
+#include <${cf_cv_have_utmp}.h>],
+	[struct $cf_cv_have_utmp x; long y = x.ut_xtime],
+	[cf_cv_have_utmp_ut_xtime=yes],
+	[cf_cv_have_utmp_ut_xtime=no])
+	])
+AC_MSG_RESULT($cf_cv_have_utmp_ut_xtime)
+test $cf_cv_have_utmp_ut_xtime != no && AC_DEFINE(HAVE_UTMP_UT_XTIME)
+fi
 ])
 dnl ---------------------------------------------------------------------------
 dnl Use AC_VERBOSE w/o the warnings
 AC_DEFUN([CF_VERBOSE],
 [test -n "$verbose" && echo "	$1" 1>&AC_FD_MSG
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl Check if xterm is installed setuid/setgid, assume we want to do the same on a
-dnl new install
-AC_DEFUN([CF_XTERM_MODE],[
-AC_PATH_PROG(XTERM_PATH,xterm)
-XTERM_MODE=755
-XTERM_USR=
-XTERM_GRP=
-AC_MSG_CHECKING(for presumed installation-mode)
-if test -f "$XTERM_PATH" ; then
-	cf_option="-l -L"
-
-	# Expect listing to have fields like this:
-	#-r--r--r--   1 user      group       34293 Jul 18 16:29 pathname
-	ls $cf_option $XTERM_PATH >conftest.out
-	read cf_mode cf_links cf_usr cf_grp cf_size cf_date1 cf_date2 cf_date3 cf_rest <conftest.out
-	echo "if \"$cf_rest\" is null, try the -g option" 1>&AC_FD_CC
-	if test -z "$cf_rest" ; then
-		cf_option="$cf_option -g"
-		ls $cf_option $XTERM_PATH >conftest.out
-		read cf_mode cf_links cf_usr cf_grp cf_size cf_date1 cf_date2 cf_date3 cf_rest <conftest.out
-	fi
-
-	# If we have a pathname, and the date fields look right, assume we've
-	# captured the group as well.
-	echo "if \"$cf_rest\" is null, we do not look for group" 1>&AC_FD_CC
-	if test -n "$cf_rest" ; then
-changequote(,)dnl
-		cf_test=`echo "${cf_date2}${cf_date3}" | sed -e 's/[0-9:]//g'`
-changequote([,])dnl
-		echo "if we have date in proper columns ($cf_date1 $cf_date2 $cf_date3), \"$cf_test\" is null" 1>&AC_FD_CC
-		if test -z "$cf_test" ; then
-			XTERM_USR=$cf_usr;
-			XTERM_GRP=$cf_grp;
-		fi
-	fi
-	echo "derived user \"$XTERM_USR\", group \"$XTERM_GRP\" of previously-installed xterm" 1>&AC_FD_CC
-
-	echo "see if mode \"$cf_mode\" has s-bit set" 1>&AC_FD_CC
-	case ".$cf_mode" in #(vi
-	.???s*) #(vi
-		XTERM_MODE=4711
-		XTERM_GRP=
-		;;
-	.??????s*)
-		XTERM_MODE=2711
-		XTERM_USR=
-		;;
-	esac
-fi
-
-if test -n "${XTERM_USR}${XTERM_GRP}" ; then
-changequote(,)dnl
-	cf_usr=`id | sed -e 's/^[^(]*(//' -e 's/).*$//'`
-	cf_grp=`id | sed -e 's/^.* gid=[^(]*(//' -e 's/).*$//'`
-changequote([,])dnl
-	echo "configuring as user \"$cf_usr\", group \"$cf_grp\" of previously-installed xterm" 1>&AC_FD_CC
-	test "$XTERM_USR" = "$cf_usr" && XTERM_USR=""
-	test "$XTERM_USR" = "root"    && XTERM_USR=""
-	test "$XTERM_GRP" = "$cf_grp" && XTERM_GRP=""
-	test "$XTERM_GRP" = "root"    && XTERM_GRP=""
-	test "$XTERM_GRP" = "wheel"   && XTERM_GRP=""
-fi
-
-AC_MSG_RESULT($XTERM_MODE $XTERM_USR $XTERM_GRP)
-
-test -n "$XTERM_USR" && XTERM_USR="-o $XTERM_USR"
-test -n "$XTERM_GRP" && XTERM_GRP="-g $XTERM_GRP"
-
-AC_SUBST(XTERM_MODE)
-AC_SUBST(XTERM_USR)
-AC_SUBST(XTERM_GRP)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for Xaw (Athena) libraries

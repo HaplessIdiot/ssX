@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.8 1999/05/15 12:10:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.9 1999/07/06 11:38:46 dawes Exp $ */
 
 /* 3C4 */
 #define BankReg 0x06
@@ -39,6 +39,7 @@
 #define Mode64 0x0C
 #define ExtConfStatus0 0x0D
 #define ExtConfStatus1 0x0E
+#define RAMSize86 0x0F
 #define ClockBase 0x13
 #define LinearAdd0 0x20
 #define LinearAdd1 0x21

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.59 1999/07/04 06:38:20 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.60 1999/08/14 10:48:57 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1915,18 +1915,18 @@ LintLibReferences(varname,libname,libsource)
  * UnsharedLibObjCompile - compile fragment for unshared objects
  */
 #ifndef UnsharedLibObjCompile
-#define UnsharedLibObjCompile(options) LibObjCompile(unshared,$(CDEBUGFLAGS) options)
+#define UnsharedLibObjCompile(options) LibObjCompile(unshared,$(CDEBUGFLAGS) $(CLIBDEBUGFLAGS) options)
 #endif
 
 #ifndef UnsharedLibObjCplusplusCompile
-#define UnsharedLibObjCplusplusCompile(options) LibObjCplusplusCompile(unshared,$(CXXDEBUGFLAGS) options)
+#define UnsharedLibObjCplusplusCompile(options) LibObjCplusplusCompile(unshared,$(CXXDEBUGFLAGS) $(CXXLIBDEBUGFLAGS) options)
 #endif
 
 /*
  * SharedLibObjCompile - compile fragment for shared objects
  */
 #ifndef SharedLibObjCompile
-#define SharedLibObjCompile(options) LibObjCompile(shared,options $(SHLIBDEF) $(SHAREDCODEDEF) $(PICFLAGS) $(CDEBUGFLAGS))
+#define SharedLibObjCompile(options) LibObjCompile(shared,options $(SHLIBDEF) $(SHAREDCODEDEF) $(PICFLAGS) $(CDEBUGFLAGS) $(CLIBDEBUGFLAGS))
 #endif
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.3 1999/04/17 07:31:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.4 1999/04/25 10:02:15 dawes Exp $ */
 /*
  * file vmodes.c
  *
@@ -11,9 +11,7 @@
  * includes
  */
 
-#include "xf86.h"
-#include "xf86_ansic.h"
-
+#include "rendition.h"
 #include "vmodes.h"
 #include "vos.h"
 #include "vramdac.h"
@@ -21,6 +19,10 @@
 #include "v1kregs.h"
 #include "v2kregs.h"
 #include "vvga.h"
+
+/* Options data */
+#include "rendition_options.h"
+extern OptionInfoRec renditionOptions[];
 
 
 /*
@@ -200,16 +202,18 @@ static double V2200CalcClock(double target, int *m, int *n, int *p);
  * functions
  */
 
-int v_setmodefixed(struct v_board_t *board)
+int v_setmodefixed(ScrnInfoPtr pScreenInfo)
 {
-    int iob=board->io_base;
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+
+    int iob=pRendition->board.io_base;
     int tmp;
 
 #ifdef SAVEVGA
-    v_savetextmode(board);
+    v_savetextmode(pRendition->board);
 #endif
 
-    v1k_softreset(board);
+    v1k_softreset(pScreenInfo);
 
     /* switching to native mode */
     v_out8(iob+MODEREG, NATIVE_MODE);
@@ -222,7 +226,7 @@ int v_setmodefixed(struct v_board_t *board)
     v_out32(iob+DRAMCTL, tmp|DEFAULT_WREFRESH);
 
     /* program pixel clock */
-    if (board->chip == V1000_DEVICE) {
+    if (pRendition->board.chip == V1000_DEVICE) {
         set_PLL(iob, combineNMP(21, 55, 0));
     } 
     else {
@@ -232,18 +236,18 @@ int v_setmodefixed(struct v_board_t *board)
     }
     usleep(500);
   
-    v_initdac(board, 16, 0);
+    v_initdac(pScreenInfo, 16, 0);
   
     v_out32(iob+CRTCHORZ, HORZ(24, 136, 144, 1024));
     v_out32(iob+CRTCVERT, VERT(3, 6, 29, 768));
 
-    board->mode.screenwidth=1024;
-    board->mode.virtualwidth=1024;
-    board->mode.bitsperpixel=16;
-    board->mode.fifosize=128;
+    pRendition->board.mode.screenwidth=1024;
+    pRendition->board.mode.virtualwidth=1024;
+    pRendition->board.mode.bitsperpixel=16;
+    pRendition->board.mode.fifosize=128;
 
-    board->init=1;
-    v_setframebase(board, 0);
+    pRendition->board.init=1;
+    v_setframebase(pScreenInfo, 0);
 
     v_out32(iob+CRTCCTL, CTL(0, 0, 0)
                          |V_PIXFMT_565 
@@ -257,12 +261,14 @@ int v_setmodefixed(struct v_board_t *board)
 
 
 
-int v_setmode(struct v_board_t *board, struct v_modeinfo_t *mode)
+int v_setmode(ScrnInfoPtr pScreenInfo, struct v_modeinfo_t *mode)
 {
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+
     int tmp;
     int doubleclock=0;
     int M, N, P;
-    int iob=board->io_base;
+    int iob=pRendition->board.io_base;
  
     /* switching to native mode */
     v_out8(iob+MODEREG, NATIVE_MODE|VESA_MODE);
@@ -281,10 +287,17 @@ int v_setmode(struct v_board_t *board, struct v_modeinfo_t *mode)
       break;
     }
 
-    /* increase Mem/Sys clock to avoid nasty artifacts */
-    if (board->chip != V1000_DEVICE) {
-      v_out32(iob+SCLKPLL, 0xa4854);  /* mclk=125 sclk=60 */
-                                      /* M/N/P/P = 84/5/2/4 */
+    if (pRendition->board.chip != V1000_DEVICE) {
+      if(!xf86ReturnOptValBool(renditionOptions, OPTION_OVERCLOCK_MEM,0)){
+	v_out32(iob+SCLKPLL, 0xa484d);  /* mclk=110 sclk=50 */
+                                        /* M/N/P/P = 77/5/2/4 */
+      }
+      else{
+	ErrorF ("*** OVERCLOCKING ***\n");
+	/* increase Mem/Sys clock on request */
+	v_out32(iob+SCLKPLL, 0xa4854);  /* mclk=125 sclk=60 */
+                                        /* M/N/P/P = 84/5/2/4 */
+      }
       usleep(500);
     }
 
@@ -293,7 +306,7 @@ int v_setmode(struct v_board_t *board, struct v_modeinfo_t *mode)
     v_out32(iob+DRAMCTL, tmp|0x330000);
  
     /* program pixel clock */
-    if (board->chip == V1000_DEVICE) {
+    if (pRendition->board.chip == V1000_DEVICE) {
         if (110.0 < V1000CalcClock(mode->clock/1000.0, &M, &N, &P)) {
             P++;
             doubleclock=1;
@@ -309,7 +322,7 @@ int v_setmode(struct v_board_t *board, struct v_modeinfo_t *mode)
     usleep(500);
 
     /* init the ramdac */
-    v_initdac(board, mode->bitsperpixel, doubleclock);
+    v_initdac(pScreenInfo, mode->bitsperpixel, doubleclock);
 
     v_out32(iob+CRTCHORZ, HORZ(mode->hsyncstart-mode->hdisplay, 
                                mode->hsyncend-mode->hsyncstart,
@@ -321,17 +334,17 @@ int v_setmode(struct v_board_t *board, struct v_modeinfo_t *mode)
                                mode->vdisplay));
 
     /* fill in the mode parameters */
-    memcpy(&(board->mode), mode, sizeof(struct v_modeinfo_t));
-    board->mode.fifosize=128;
-    board->mode.pll_m=M;
-    board->mode.pll_n=N;
-    board->mode.pll_p=P;
-    board->mode.doubleclock=doubleclock;
-    if (0 == board->mode.virtualwidth)
-        board->mode.virtualwidth=board->mode.screenwidth;
+    memcpy(&(pRendition->board.mode), mode, sizeof(struct v_modeinfo_t));
+    pRendition->board.mode.fifosize=128;
+    pRendition->board.mode.pll_m=M;
+    pRendition->board.mode.pll_n=N;
+    pRendition->board.mode.pll_p=P;
+    pRendition->board.mode.doubleclock=doubleclock;
+    if (0 == pRendition->board.mode.virtualwidth)
+        pRendition->board.mode.virtualwidth=pRendition->board.mode.screenwidth;
 
-    board->init=1;
-    v_setframebase(board, 0);
+    pRendition->board.init=1;
+    v_setframebase(pScreenInfo, 0);
 
     /* Need to fix up syncs */
 
@@ -342,21 +355,25 @@ int v_setmode(struct v_board_t *board, struct v_modeinfo_t *mode)
                         |CRTCCTL_HSYNCENABLE
                         |CRTCCTL_VSYNCENABLE
                         |CRTCCTL_VIDEOENABLE);
- 
+
+    ErrorF ("Interlace mode -> %d\n", mode->flags);
+
    return 0;
 }
 
 
 
-void v_setframebase(struct v_board_t *board, vu32 framebase)
+void v_setframebase(ScrnInfoPtr pScreenInfo, vu32 framebase)
 {
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+
     vu32 offset;
 
-    int iob=board->io_base;
-    int swidth=board->mode.screenwidth;
-    int vwidth=board->mode.virtualwidth;
-    int bytespp=board->mode.bitsperpixel>>3;
-    int fifo_size=board->mode.fifosize;
+    int iob=pRendition->board.io_base;
+    int swidth=pRendition->board.mode.screenwidth;
+    int vwidth=pRendition->board.mode.virtualwidth;
+    int bytespp=pRendition->board.mode.bitsperpixel>>3;
+    int fifo_size=pRendition->board.mode.fifosize;
 
 #ifdef DEBUG
     ErrorF( "w=%d v=%d b=%d f=%d\n", 
@@ -375,14 +392,14 @@ void v_setframebase(struct v_board_t *board, vu32 framebase)
 
     /* wait for vertical retrace */
 #ifndef DEBUG
-    if (!board->init) {
+    if (!pRendition->board.init) {
         while ((v_in32(iob+CRTCSTATUS) & CRTCSTATUS_VERT_MASK) !=
                CRTCSTATUS_VERT_ACTIVE) ;
         while ((v_in32(iob+CRTCSTATUS) & CRTCSTATUS_VERT_MASK) ==
                CRTCSTATUS_VERT_ACTIVE) ;
     }
     else
-        board->init=0;
+        pRendition->board.init=0;
 #endif
 
     /* framebase */
@@ -395,12 +412,13 @@ void v_setframebase(struct v_board_t *board, vu32 framebase)
 
 
 
-int v_getstride(struct v_board_t *board, int *width, vu16 *stride0, vu16 *stride1)
+int v_getstride(ScrnInfoPtr pScreenInfo, int *width, vu16 *stride0, vu16 *stride1)
 {
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     int bytesperline;
     int c=0;
 
-    bytesperline=board->mode.virtualwidth*(board->mode.bitsperpixel>>3);
+    bytesperline=pRendition->board.mode.virtualwidth*(pRendition->board.mode.bitsperpixel>>3);
 #ifdef DEBUG
      ErrorF("RENDITION: %d bytes per line\n", bytesperline);
 #endif
@@ -408,7 +426,7 @@ int v_getstride(struct v_board_t *board, int *width, vu16 *stride0, vu16 *stride
     /* for now, I implemented a linear search only, should be fixed <ml> */
     while (0 != width_to_stride_table[c].width8bpp) {
         if (width_to_stride_table[c].width8bpp==bytesperline 
-            && width_to_stride_table[c].chip == board->chip) {
+            && width_to_stride_table[c].chip == pRendition->board.chip) {
             *stride0=width_to_stride_table[c].stride0;
             *stride1=width_to_stride_table[c].stride1;
             return 1;

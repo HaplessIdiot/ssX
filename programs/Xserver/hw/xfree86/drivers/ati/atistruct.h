@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.4 1999/09/25 14:37:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.5 1999/09/27 06:29:43 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -56,7 +56,7 @@ typedef struct _ATIHWRec
     CARD8             a3,         a6, a7,             ab, ac, ad, ae,
           b0, b1, b2, b3,     b5, b6,     b8, b9, ba,         bd, be, bf;
 
-    /* Mach64 PLL register */
+    /* Mach64 PLL registers */
     CARD8 pll_vclk_cntl, pll_ext_vpll_cntl;
 
     /* Mach64 registers */
@@ -68,8 +68,9 @@ typedef struct _ATIHWRec
            dac_cntl, config_cntl;
 
     /* LCD registers */
-    CARD32 lcd_index, config_panel, lcd_gen_ctrl, power_management,
-           horz_stretching, vert_stretching, ext_vert_stretch;
+    CARD32 lcd_index, config_panel, lcd_gen_ctrl,
+           horz_stretching, vert_stretching, ext_vert_stretch,
+           power_management, power_management_2;
 
     /* Shadow VGA CRTC registers */
     CARD8 shadow_vga[25];

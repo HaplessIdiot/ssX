@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.5 1999/01/31 12:21:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.6 1999/08/21 13:48:14 dawes Exp $ */
 
 /*
 
@@ -49,7 +49,7 @@ Author: Keith Packard
 #define cfbCopyPlane1toN cfbCopyPlane1to8
 #define cfbCopyPlaneNto1 cfbCopyPlane8to1
 #else
-unsigned int FgPixel, BgPixel;
+static unsigned int FgPixel, BgPixel;
 # if PSZ == 16
 #define cfbCopyPlane1toN cfbCopyPlane1to16
 #define cfbCopyPlaneNto1 cfbCopyPlane16to1

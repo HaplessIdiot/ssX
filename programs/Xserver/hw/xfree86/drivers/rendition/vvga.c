@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.4 1999/04/18 04:08:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.5 1999/04/25 10:02:16 dawes Exp $ */
 /*
  * file vvga.c
  *
@@ -10,11 +10,7 @@
 /*
  * includes
  */
-
-#include "xf86.h"
-#include "xf86_OSproc.h"
-#include "xf86_ansic.h"
-
+#include "rendition.h"
 #include "vvga.h"
 #include "vtypes.h"
 #include "vos.h"

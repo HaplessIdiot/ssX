@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.5 1999/07/06 11:38:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.6 1999/09/27 06:29:40 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,6 +26,7 @@
 
 #include "atipriv.h"
 #include "atiregs.h"
+#include "Xmd.h"
 
 /*
  * Chip-related definitions.

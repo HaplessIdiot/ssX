@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.28 1999/05/15 12:10:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.29 1999/06/20 15:02:56 dawes Exp $ */
 
 #define DEBUG
 
@@ -127,8 +127,10 @@ DriverRec SIS = {
 };
 
 static SymTabRec SISChipsets[] = {
+#ifdef NoLinearSupport
     { PCI_CHIP_SG86C201,	"SIS86c201" },
     { PCI_CHIP_SG86C202,	"SIS86c202" },
+#endif
     { PCI_CHIP_SG86C205,	"SIS86c205" },
     { PCI_CHIP_SG86C215,	"SIS86c215" },
     { PCI_CHIP_SG86C225,	"SIS86c225" },
@@ -140,10 +142,13 @@ static SymTabRec SISChipsets[] = {
 };
 
 static PciChipsets SISPciChipsets[] = {
+#ifdef NoLinearSupport
     { PCI_CHIP_SG86C201,	PCI_CHIP_SG86C201,	RES_SHARED_VGA },
     { PCI_CHIP_SG86C202,	PCI_CHIP_SG86C202,	RES_SHARED_VGA },
+#endif
     { PCI_CHIP_SG86C205,	PCI_CHIP_SG86C205,	RES_SHARED_VGA },
-    { PCI_CHIP_SG86C205,	PCI_CHIP_SG86C205,	RES_SHARED_VGA },
+    { PCI_CHIP_SG86C215,	PCI_CHIP_SG86C215,	RES_SHARED_VGA },
+    { PCI_CHIP_SG86C225,	PCI_CHIP_SG86C225,	RES_SHARED_VGA },
     { PCI_CHIP_SIS5597,		PCI_CHIP_SIS5597,	RES_SHARED_VGA },
     { PCI_CHIP_SIS530,		PCI_CHIP_SIS530,	RES_SHARED_VGA },
     { PCI_CHIP_SIS6326,		PCI_CHIP_SIS6326,	RES_SHARED_VGA },
@@ -747,8 +752,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     outw(VGA_SEQ_INDEX, 0x8605); /* Unlock registers */
 
     switch (pSiS->Chipset) {
+#ifdef NoLinearSupport
         case PCI_CHIP_SG86C201:
         case PCI_CHIP_SG86C202:
+#endif
         case PCI_CHIP_SG86C205:
         case PCI_CHIP_SG86C215:
         case PCI_CHIP_SG86C225:
@@ -920,6 +927,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     } else {
 	pSiS->IOAddress = pSiS->PciInfo->memBase[1] & 0xFFFFFFF0;
+        if (pSiS->IOAddress == 0) pSiS->IOAddress = 0xA0000;
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
@@ -941,12 +949,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     } else {
     switch (pSiS->Chipset) {
 
+#ifdef NoLinearSupport
         case PCI_CHIP_SG86C201:
         case PCI_CHIP_SG86C202:
+#endif
         case PCI_CHIP_SG86C205:
         case PCI_CHIP_SG86C215:
         case PCI_CHIP_SG86C225:
- 	    outb(VGA_SEQ_INDEX, RAMSize); /* Memory configuration register */
+ 	    outb(VGA_SEQ_INDEX, RAMSize86); /* Memory configuration register */
 	    temp = inb(VGA_SEQ_DATA);
   	    switch (temp & 0x03) {
 	    case 0: 
@@ -962,6 +972,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		pScrn->videoRam = 1024;
 		break;
 	    }
+	    break;
+	    
 	case PCI_CHIP_SIS5597:
  	    outb(VGA_SEQ_INDEX, FBSize);
 	    /* The framebuffer size is configured in 256K increments

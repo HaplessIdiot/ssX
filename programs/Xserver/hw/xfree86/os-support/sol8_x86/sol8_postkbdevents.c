@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.75 1999/06/27 09:20:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_postkbdevents.c,v 1.1 1999/09/25 14:38:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -48,8 +48,6 @@
 
 #include <sys/vuid_event.h>
 #include "sol8_keynames.h"
-
-#define KeyPressed(a) 1
 
 #ifdef XKB
 extern Bool noXkbExtension;
@@ -108,6 +106,24 @@ extern void  XTestStealMotionData();
   miPointerDeltaCursor (dx, dy, time)
 
 #endif
+
+
+/* 
+ * Static variables to handle auto-repeat of keyboard keys. 
+ * (Only needed if not using XKB)
+ * 
+ */
+
+void sol8_setkbdinitiate(double value);
+void sol8_setkbdrepeat(double value);
+void sol8_startautorepeat(int keycode);
+CARD32 sol8_processautorepeat(OsTimerPtr timer, CARD32 now, pointer arg);
+
+
+static int sol8AutoRepeatInitiate = 400; 	/* defaults .4 sec */
+static int sol8AutoRepeatDelay = 50;		/* default of .05 sec */
+
+static OsTimerPtr	sol8Timer = NULL;
 
 
 /*
@@ -197,90 +213,113 @@ void sol8PostKbdEvent(Firm_event	*event)
   if (noXkbExtension) {
 #endif
   /*
-   * Filter autorepeated caps/num/scroll lock keycodes.
+   * Toggle lock keys.
    */
 #define CAPSFLAG 0x01
 #define NUMFLAG 0x02
 #define SCROLLFLAG 0x04
 #define MODEFLAG 0x08
-  if( down ) {
-    switch( keysym[0] ) {
-        case XK_Caps_Lock :
-          if (lockkeys & CAPSFLAG)
-              return;
-	  else
-	      lockkeys |= CAPSFLAG;
-          break;
 
-        case XK_Num_Lock :
-          if (lockkeys & NUMFLAG)
-              return;
-	  else
-	      lockkeys |= NUMFLAG;
-          break;
+/*
+ * Handle the KeyPresses of the lock keys.
+ */
 
-        case XK_Scroll_Lock :
-          if (lockkeys & SCROLLFLAG)
-              return;
-	  else
-	      lockkeys |= SCROLLFLAG;
-          break;
-    }
-  }
-  else {
-    switch( keysym[0] ) {
-        case XK_Caps_Lock :
-            lockkeys &= ~CAPSFLAG;
-            break;
+	if(down) {
+		switch( keysym[0] ) {
+			case XK_Caps_Lock: 
+				if(lockkeys & CAPSFLAG) {
+					lockkeys &= ~CAPSFLAG;
+					return;
+				} else {
+					lockkeys |= CAPSFLAG;
+					updateLeds = TRUE;
+				}
+				xf86Info.capsLock = down;
+				break;
+	
+			case XK_Num_Lock:
+				if(lockkeys & NUMFLAG) {
+					lockkeys &= ~NUMFLAG;
+					return;
+				} else {
+					lockkeys |= NUMFLAG;
+					updateLeds = TRUE;
+				}
+				xf86Info.numLock = down;
+				break;
+	
+			case XK_Scroll_Lock:
+				if(lockkeys & SCROLLFLAG) {
+					lockkeys &= ~SCROLLFLAG;
+					return;
+				} else { 
+					lockkeys |= SCROLLFLAG;
+					updateLeds = TRUE;
+				}
+				xf86Info.scrollLock = down;
+				break;
+		} 
+	} else {
 
-        case XK_Num_Lock :
-            lockkeys &= ~NUMFLAG;
-            break;
+/*
+ * Handle the releases of the lock keys.
+ */
+		switch( keysym[0] ) {
+			case XK_Caps_Lock: 
+				if(lockkeys & CAPSFLAG) {
+					return;
+				} else { 
+					updateLeds = TRUE;
+				}
+				xf86Info.capsLock = down;
+				break;
+	
+			case XK_Num_Lock:
+				if(lockkeys & NUMFLAG) {
+					return;
+				} else { 
+					updateLeds = TRUE;
+				}
+				xf86Info.numLock = down;
+				break;
+	
+			case XK_Scroll_Lock:
+				if(lockkeys & SCROLLFLAG) {
+					return;
+				} else { 
+					updateLeds = TRUE;
+				}
+				xf86Info.scrollLock = down;
+				break;
+		}
+	}
 
-        case XK_Scroll_Lock :
-            lockkeys &= ~SCROLLFLAG;
-            break;
-    }
-  }
-
-  /*
-   * LockKey special handling:
-   * ignore releases, toggle on & off on presses.
-   * Don't deal with the Caps_Lock keysym directly, but check the lock modifier
-   */
-
-  if (keyc->modifierMap[keycode] & LockMask ||
-      keysym[0] == XK_Scroll_Lock ||
-      keysym[0] == XK_Num_Lock)
-    {
-      Bool flag;
-
-      if (!down) return;
-      if (KeyPressed(keycode)) {
-	down = !down;
-	flag = FALSE;
-      }
-      else
-	flag = TRUE;
-
-      if (keyc->modifierMap[keycode] & LockMask)   xf86Info.capsLock   = flag;
-      if (keysym[0] == XK_Num_Lock)    xf86Info.numLock    = flag;
-      if (keysym[0] == XK_Scroll_Lock) xf86Info.scrollLock = flag;
-      updateLeds = TRUE;
-    }
-
-
-  if (updateLeds) xf86KbdLeds();
+  	if (updateLeds) xf86KbdLeds();
 #ifdef XKB
   }
 #endif
 
-  /*
-   * check for an autorepeat-event
-   */
-  if ((down && KeyPressed(keycode)) &&
-      (xf86Info.autoRepeat != AutoRepeatModeOn || keyc->modifierMap[keycode]))
-    return;
+/* 
+ * If this keycode is not a modifier key, and its down
+ * initiate the autorepeate sequence. 
+ * (Only necessary if not using XKB)
+ * 
+ * If its not down, then reset the timer 
+ */
+#ifdef XKB
+  if(noXkbExtension) {
+#endif
+	  if( !keyc->modifierMap[keycode] ) {
+		if( down ) {
+			sol8_startautorepeat(keycode);
+		} else { 
+			TimerFree(sol8Timer);
+			sol8Timer = NULL; 
+		}
+  	}
+#ifdef XKB
+  }
+#endif
 
   xf86Info.lastEventTime = kevent.u.keyButtonPointer.time = GetTimeInMillis();
 
@@ -291,3 +330,57 @@ void sol8PostKbdEvent(Firm_event	*event)
 
    ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
 }
+
+/* 
+ * Autorepeat stuff
+ * 
+ */
+
+void sol8_setkbdinitiate(double value)
+{
+	sol8AutoRepeatInitiate = value * 1000; 
+	return;
+} 
+
+void sol8_setkbdrepeat(double value) 
+{
+	sol8AutoRepeatDelay = value * 1000; 
+	return; 
+} 
+
+
+void sol8_startautorepeat(int keycode)
+{
+
+	sol8Timer = TimerSet(
+			sol8Timer, 		/* Timer */
+			0, 			/* Flags */
+			sol8AutoRepeatInitiate, /* millis */
+			(OsTimerCallback) sol8_processautorepeat, /* callback */
+			(pointer) keycode);	/* arg for timer */
+	return; 
+}
+			
+	
+CARD32 sol8_processautorepeat(OsTimerPtr timer, CARD32 now, pointer arg)
+{
+  xEvent      	kevent;
+  int		keycode;
+
+  keycode = (int)arg; 
+	
+  xf86Info.lastEventTime = kevent.u.keyButtonPointer.time = GetTimeInMillis();
+
+  /* 
+   * Repeat a key by faking a KeyRelease, and a KeyPress event in rapid
+   * succession 
+   */
+
+  ENQUEUE(&kevent, keycode,  KeyRelease, XE_KEYBOARD);
+  ENQUEUE(&kevent, keycode,  KeyPress, XE_KEYBOARD);
+
+  /* And return the appropriate value so we get rescheduled */
+  return(sol8AutoRepeatDelay); 
+
+}
+

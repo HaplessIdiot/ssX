@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.h,v 1.2 1999/04/17 07:06:39 dawes Exp $ */
 
 /*
  * file vloaduc.h
@@ -6,8 +6,8 @@
  * loads microcode
  */
 
-#ifndef _VLOADUC_H_
-#define _VLOADUC_H_
+#ifndef __VLOADUC_H__
+#define __VLOADUC_H__
 
 
 
@@ -30,11 +30,11 @@
  * function prototypes
  */
 
-int v_load_ucfile(struct v_board_t *board, char *file_name);
+int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name);
 
 
 
-#endif /* #ifndef _VLOADUC_H_ */
+#endif /* __VLOADUC_H__ */
 
 /*
  * end of file vloaduc.h

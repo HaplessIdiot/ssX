@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.8 1999/04/25 10:01:37 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.9 1999/04/25 11:34:09 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -161,7 +161,7 @@ int FTtoXReturnCode(int rc)
 int 
 ttf_GetEnglishName(TT_Face face, char *name, int nameID)
 {
-  int i, j, nrec;
+  int i, nrec;
   unsigned short slen;
   unsigned short nrPlatformID, nrEncodingID, nrLanguageID, nrNameID;
   char *s;
@@ -179,7 +179,7 @@ ttf_GetEnglishName(TT_Face face, char *name, int nameID)
           nrLanguageID==0x0c09 || nrLanguageID==0x1009 ||
           nrLanguageID==0x1409 || nrLanguageID==0x1809)) ||
         /* or for Apple, Unicode, English */
-        ((nrPlatformID==0 && nrNameID==nameID &
+        ((nrPlatformID==0 && nrNameID==nameID &&
           nrLanguageID==0))) {
       if(!TT_Get_Name_String(face, i, &s, &slen))
         return ttf_u2a(slen, s, name, MSBFirst);
@@ -206,7 +206,7 @@ ttf_GetEnglishName(TT_Face face, char *name, int nameID)
 }
 
 int
-ttc_checkForTTCName(char *fileName, char **realFileName, int *faceNumber)
+ttf_checkForTTCName(char *fileName, char **realFileName, int *faceNumber)
 {
   int length;
   int fn;

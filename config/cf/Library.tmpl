@@ -19,7 +19,7 @@ XCOMM $TOG: Library.tmpl /main/44 1997/04/28 11:47:53 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.10 1999/06/06 08:47:43 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.11 1999/08/28 09:00:17 dawes Exp $
 
 #ifndef LibraryCplusplusOptions
 # if DoSharedLib && defined(SharedLibraryCplusplusOptions)
@@ -34,11 +34,13 @@ XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.10 1999/06/06 08:47:43 dawes Exp $
 #ifndef LibraryDebugOpt
 # define LibraryDebugOpt /**/
 #endif
+/* Note: Changing LibraryCDebugFlags has no effect because CDEBUGFLAGS is over-
+   ridden by PassCDebugFlags in the parent Makefile or toplevel xmakefile. */
 #ifndef LibraryCDebugFlags
-# define LibraryCDebugFlags DefaultCDebugFlags LibraryDebugOpt
+# define LibraryCDebugFlags DefaultCDebugFlags
 #endif
 #ifndef LibraryCplusplusDebugFlags
-# define LibraryCplusplusDebugFlags DefaultCplusplusDebugFlags LibraryDebugOpt
+# define LibraryCplusplusDebugFlags DefaultCplusplusDebugFlags
 #endif
 #ifndef SeparateSharedCompile
 # define SeparateSharedCompile YES
@@ -64,6 +66,8 @@ XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.10 1999/06/06 08:47:43 dawes Exp $
   CCOPTIONS = LibraryCCOptions
 STD_DEFINES = LibraryDefines $(PROJECT_DEFINES)
 CDEBUGFLAGS = LibraryCDebugFlags
+CLIBDEBUGFLAGS = LibraryDebugOpt
+     CFLAGS = $(CDEBUGFLAGS) $(CLIBDEBUGFLAGS) $(CCOPTIONS) $(THREADS_CFLAGS) $(ALLDEFINES)
 # if defined(LargePICTable) && LargePICTable && defined(LargePositionIndependentCFlags)
    PICFLAGS = LargePositionIndependentCFlags
 # endif
@@ -87,6 +91,8 @@ CDEBUGFLAGS = LibraryCDebugFlags
    CXXOPTIONS = LibraryCplusplusOptions
   STD_DEFINES = LibraryDefines $(PROJECT_DEFINES)
 CXXDEBUGFLAGS = LibraryCplusplusDebugFlags
+CXXLIBDEBUGFLAGS = LibraryDebugOpt
+     CXXFLAGS = $(CXXDEBUGFLAGS) $(CXXLIBDEBUGFLAGS) $(CXXOPTIONS) $(THREADS_CXXFLAGS) $(CXXDEFINES)
 # if defined(LargePICTable) && LargePICTable
 #  ifdef LargePositionIndependentCplusplusFlags
   CXXPICFLAGS = LargePositionIndependentCplusplusFlags

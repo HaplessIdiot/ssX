@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.12 1999/08/14 10:49:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.13 1999/08/28 09:01:06 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -34,7 +34,7 @@
 #undef extern
 #include "nvvga.h"
 
-
+#include "xf86int10.h"
 /*
  * Forward definitions for the functions that make up the driver.
  */
@@ -656,7 +656,16 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     pNv->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
     if (pNv->pEnt->location.type != BUS_PCI)
 	return FALSE;
+ 
+    /* Initialize the card through int10 interface if needed */
+    if ( xf86LoadSubModule(pScrn, "int10")){
+        xf86Int10InfoPtr pInt;
 
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
+        pInt = xf86InitInt10(pNv->pEnt->index);
+        xf86FreeInt10(pInt);
+    }
+   
     /* Find the PCI info for this screen */
     pNv->PciInfo = xf86GetPciInfoForEntity(pNv->pEnt->index);
     pNv->PciTag = pciTag(pNv->PciInfo->bus, pNv->PciInfo->device,

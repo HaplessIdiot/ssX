@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.51 1999/08/28 09:00:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.52 1999/09/27 06:29:01 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -246,6 +246,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.51 1999/08/28 09:00:18 dawes Exp $
 #endif
 #ifndef BuildXF86MiscLibrary
 #define BuildXF86MiscLibrary	BuildXF86MiscExt
+#endif
+#ifndef BuildXF86BigfontExt
+#define BuildXF86BigfontExt	NO
 #endif
 #ifndef BuildXF86DGA
 #define BuildXF86DGA		NO
@@ -623,6 +626,14 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #endif
 
+#ifndef XF86BigfontExtensionDefines
+#if BuildXF86BigfontExt
+#define XF86BigfontExtensionDefines -DXF86BIGFONT
+#else
+#define XF86BigfontExtensionDefines /**/
+#endif
+#endif
+
 #ifndef XvExtensionDefines
 #if BuildXvExt
 #define XvExtensionDefines -DXV
@@ -693,7 +704,8 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #ifndef PervasiveExtensionDefines
 #define PervasiveExtensionDefines \
 	ShapeDefines XInputDefines XkbDefines LbxDefines AppgroupDefines \
-	XCSecurityDefines CupDefines PervasiveDBEDefines DPMSDefines \
+	XCSecurityDefines CupDefines PervasiveDBEDefines \
+	XF86BigfontExtensionDefines DPMSDefines \
 	LowMemDefines XprintDefines XineramaDefines \
 	SitePervasiveExtensionDefines
 #endif

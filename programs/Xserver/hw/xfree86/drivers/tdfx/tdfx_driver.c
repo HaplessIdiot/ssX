@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.1 1999/08/29 12:21:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.2 1999/09/27 06:29:57 dawes Exp $ */
 
 /*
  * Authors:
@@ -50,6 +50,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86_OSproc.h"
 #include "xf86Resources.h"
 #include "xf86RAC.h"
+#include "xf86int10.h"
 #include "xf86cmap.h"
 
 /* If the driver uses port I/O directly, it needs: */
@@ -538,6 +539,24 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
 
   pTDFX->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
   if (pTDFX->pEnt->location.type != BUS_PCI) return FALSE;
+
+  if (xf86LoadSubModule(pScrn, "int10")) {
+    xf86Int10InfoPtr pInt;
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+               "Softbooting the board (through the int10 interface).\n");
+    pInt = xf86InitInt10(pTDFX->pEnt->index);
+    if (!pInt)
+    {
+      xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+                 "Softbooting the board failed.\n");
+    }
+    else
+    {
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+                 "Softbooting the board succeeded.\n");
+      xf86FreeInt10(pInt);
+    }
+  }
 
   pTDFX->PciInfo = xf86GetPciInfoForEntity(pTDFX->pEnt->index);
   pTDFX->PciTag = pciTag(pTDFX->PciInfo->bus, pTDFX->PciInfo->device,

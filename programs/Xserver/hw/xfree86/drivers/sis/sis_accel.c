@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.11 1999/05/15 12:10:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.12 1999/05/30 02:28:12 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -51,12 +51,14 @@ static void SiSSetClippingRectangle ( ScrnInfoPtr pScrn,
 
 static void SiSDisableClipping (ScrnInfoPtr pScrn);
 
+ 
 static void SiSSetupForSolidLine(ScrnInfoPtr pScrn, 
 				int color, int rop, unsigned int planemask);
-
+#ifdef USEHWLINES                                                               
+/* SiS accelerated lines are not correct for X */                            
 static void SiSSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
         int x1, int y1, int x2, int y2, int flags);
-
+#endif
 static void SiSSubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
         int x, int y, int len, int dir);
 
@@ -100,7 +102,9 @@ Bool SiSAccelInit(ScreenPtr pScreen)
 					BIT_ORDER_IN_BYTE_MSBFIRST;
 
 	infoPtr->SetupForSolidLine = SiSSetupForSolidLine;
+#ifdef USEHWLINES
 	infoPtr->SubsequentSolidTwoPointLine = SiSSubsequentSolidTwoPointLine;
+#endif
 	infoPtr->SubsequentSolidHorVertLine = SiSSubsequentSolidHorVertLine;
     }
 
@@ -422,7 +426,7 @@ static void SiSSetupForSolidLine(ScrnInfoPtr pScrn,
     sisSETROP(XAACopyROP[rop]); 	/* dst */
 }
 
-
+#ifdef USEHWLINES                                                               
 static void SiSSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
         	int x1, int y1, int x2, int y2, int flags)
 
@@ -456,7 +460,7 @@ static void SiSSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
     sisSETCMD(op);
 /*    SiSSync(pScrn);*/
 }
-
+#endif
 
 static void SiSSubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
                                 int x, int y, int len, int dir)

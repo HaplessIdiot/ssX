@@ -54,7 +54,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.43 1999/08/21 13:49:07 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.44 1999/09/25 14:38:36 dawes Exp $ */
 
 /* screen.c */
 
@@ -74,12 +74,12 @@
 #define SYSV
 #include <termios.h>
 #else
-#ifndef __CYGWIN32__
+#ifndef __CYGWIN__
 #include <sys/ioctl.h>
 #endif
 #endif
 
-#if defined(__CYGWIN32__) && !defined(TIOCSPGRP)
+#if defined(__CYGWIN__) && !defined(TIOCSPGRP)
 #include <termios.h>
 #define TIOCSPGRP (_IOW('t', 118, pid_t))
 #endif
@@ -626,7 +626,7 @@ ScrnRefresh (
 	int scrollamt = screen->scroll_amt;
 	int max = screen->max_row;
 	int gc_changes = 0;
-#ifdef __CYGWIN32__
+#ifdef __CYGWIN__
 	static char first_time = 1;
 #endif
 
@@ -879,7 +879,7 @@ ScrnRefresh (
 		SGR_Background(term->cur_background);
 	})
 
-#if defined(__CYGWIN32__) && defined(TIOCSWINSZ)
+#if defined(__CYGWIN__) && defined(TIOCSWINSZ)
 	if (first_time == 1) {
 		struct winsize ws;
 

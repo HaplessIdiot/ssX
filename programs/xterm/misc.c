@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/112 1996/11/29 10:34:07 swick $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.43 1999/09/25 14:38:33 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.44 1999/09/27 06:30:21 dawes Exp $
  */
 
 /*
@@ -1728,7 +1728,14 @@ Error (int i)
 void
 Cleanup (int code)
 {
+	static Boolean cleaning;
 	register TScreen *screen;
+
+	if (cleaning) {
+		hold_screen = 0;
+		return;
+	}
+	cleaning = TRUE;
 
 	TRACE(("Cleanup %d\n", code))
 

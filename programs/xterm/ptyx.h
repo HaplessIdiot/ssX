@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.63 1999/09/25 14:38:35 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.64 1999/09/27 06:30:22 dawes Exp $
  */
 
 /*
@@ -890,7 +890,7 @@ typedef struct {
 	Boolean		locator_pixels;	/* report in pixels?		*/
 					/* if false, report in cells	*/
 	unsigned short	locator_events;	/* what events to report	*/
-	int		loc_filter;	/* is filter rectangle active?	*/
+	Boolean		loc_filter;	/* is filter rectangle active?	*/
 	int		loc_filter_top;	/* filter rectangle for DEC Locator */
 	int		loc_filter_left;
 	int		loc_filter_bottom;

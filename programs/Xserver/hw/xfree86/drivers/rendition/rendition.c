@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.5 1999/06/20 15:02:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.6 1999/06/27 09:20:22 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -31,42 +31,22 @@
  *
  * The initial port of this driver to XFree86 4.0 was done by
  * Marc Langenbach <mlangen@studcs.uni-sb.de>
+ * Additions, updates and bugfixes by Dejan Ilic <dejan.ilic@home.se>
  */
 
 /*
  * includes 
  */
 
-#include "xf86.h"
-#include "xf86_OSproc.h"
-#include "xf86Resources.h"
-#include "xf86_ansic.h"
-#include "xf86PciInfo.h"
-#include "xf86Pci.h"
-#include "compiler.h"
-#include "vgaHW.h"
-#include "xf86RAC.h"
+#include "rendition.h"
+#include "rendition_options.h"
 
-/* This is used for module versioning */
-#include "xf86Version.h"
-
-#undef  PSZ
-#define PSZ 8
-#include "cfb.h"
-#undef  PSZ
-#include "cfb16.h"
-#include "cfb32.h"
-
-#include "mipointer.h"
-#include "micmap.h"
-
-#include "xf86RAC.h"
+#include "hwcursor.h"
 
 #include "vtypes.h"
 #include "vboard.h"
 #include "vmodes.h"
 #include "vvga.h"
-
 
 
 /*
@@ -83,9 +63,6 @@
 #define RENDITION_PATCHLEVEL      0
 #define RENDITION_VERSION_CURRENT ((RENDITION_VERSION_MAJOR << 24) | \
                  (RENDITION_VERSION_MINOR << 16) | RENDITION_PATCHLEVEL)
-
-#define RENDITIONPTR(p)     ((renditionPtr)((p)->driverPrivate))
-
 
 /* 
  * local function prototypes
@@ -146,8 +123,40 @@ static const char *fbSymbols[]={
     "cfbScreenInit",
     "cfb16ScreenInit",
     "cfb32ScreenInit",
+    "renditionOptions",
     NULL
 };
+
+static const char *ramdacSymbols[] = {
+    "xf86InitCursor",
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    NULL
+};
+
+static const char *xaaSymbols[] = {
+    "XAACreateInfoRec",
+    "XAACursorInfoRec",
+    "XAACursorInit",
+    "XAADestroyInfoRec",
+    "XAAInit",
+    "XAAPixmapIndex",
+    "XAAQueryBestSize",
+    "XAAReverseBitOrder",
+    "XAARestoreCursor",
+    "XAAScreenIndex",
+    "XAAStippleScanlineFuncMSBFirst",
+    "XAAGlyphScanlineFuncLSBFirst",
+    "XAAWarpCursor",
+    NULL
+};
+
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC2",
+    NULL
+};
+
 
 #ifdef XFree86LOADER
 
@@ -171,6 +180,15 @@ static XF86ModuleVersionInfo renditionVersionRec = {
 XF86ModuleData renditionModuleData = 
                { &renditionVersionRec, renditionSetup, NULL };
 
+static OptionInfoRec renditionOptions[]={
+    { OPTION_FBWC,      "FramebufferWC", OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_SW_CURSOR, "SW_Cursor", OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_NOACCEL,   "NoAccel",  OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_OVERCLOCK_MEM,"Overclock_Mem",  OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_NO_DDC,    "NoDDC",    OPTV_BOOLEAN, {0}, FALSE },    
+    { -1,                NULL,      OPTV_NONE,    {0}, FALSE }
+};
+
 static pointer
 renditionSetup(pointer Module, pointer Options, int *ErrorMajor, 
                int *ErrorMinor)
@@ -180,7 +198,7 @@ renditionSetup(pointer Module, pointer Options, int *ErrorMajor,
     if (!Initialised) {
         Initialised=TRUE;
         xf86AddDriver(&RENDITION, Module, 0);
-        LoaderRefSymLists(vgahwSymbols, fbSymbols, NULL);
+        LoaderRefSymLists(vgahwSymbols, ramdacSymbols, fbSymbols, NULL);
         return (pointer)TRUE;
     }
 
@@ -200,8 +218,8 @@ enum renditionTypes {
 
 /* supported chipsets */
 static SymTabRec renditionChipsets[] = {
-    {CHIP_RENDITION_V1000, "Verite 1000"},
-    {CHIP_RENDITION_V2x00, "Verite 2x00"},
+    {CHIP_RENDITION_V1000, "V1000"},
+    {CHIP_RENDITION_V2x00, "V2100/V2200"},
     {-1,                   NULL}
 };
 
@@ -210,22 +228,6 @@ static PciChipsets renditionPCIchipsets[] = {
   { CHIP_RENDITION_V2x00, PCI_CHIP_V2x00, RES_SHARED_VGA },
   { -1,                   -1,             RES_UNDEFINED }
 };
-
-/* supported options */
-typedef enum {
-    OPTION_FBWC,
-    OPTION_SW_CURSOR,
-    OPTION_NOACCEL
-} renditionOpts;
-
-static OptionInfoRec renditionOptions[]={
-    { OPTION_FBWC,      "FramebufferWC", OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_SW_CURSOR, "SWCursor", OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_NOACCEL,   "NoAccel",  OPTV_BOOLEAN, {0}, FALSE },
-    { -1,                NULL,      OPTV_NONE,    {0}, FALSE }
-};
-
-
 
 /*
  * functions
@@ -315,20 +317,6 @@ renditionClockSelect(ScrnInfoPtr pScreenInfo, int ClockNumber)
 
     return TRUE;
 }
-
-
-/*
- * This structure is used to wrap the screen's CloseScreen vector.
- */
-typedef struct _renditionRec
-{
-    struct v_board_t board;             /* information on the board */
-    struct v_modeinfo_t mode;           /* information on the mode */
-    int pcitag;                         /* tag for the PCI config space */
-    pciVideoPtr PciInfo;                /* PCI config data */
-    EntityInfoPtr pEnt;                 /* entity information */
-    CloseScreenProcPtr CloseScreen;     /* wrap CloseScreen */
-} renditionRec, *renditionPtr;
 
 
 static renditionPtr
@@ -431,12 +419,23 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     pScreenInfo->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
     
     /* determine depth, bpp, etc. */
-    if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, NoDepth24Support))
+    if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, Support32bppFb))
         return FALSE;
 
     switch (pScreenInfo->depth) {
         case 8:   Module = "cfb";   Sym = "cfbScreenInit";   break;
+
+        case 15:  if (PCI_CHIP_V1000==pRendition->PciInfo->chipType){
+                    Module = "cfb16"; Sym = "cfbScreenInit16"; break;
+	          }
+                  else {
+		    xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+		       "Given depth (%d) is not supported by this chipset.\n",
+		       pScreenInfo->depth);
+		    return FALSE;
+		  }
         case 16:  Module = "cfb16"; Sym = "cfbScreenInit16"; break;
+
         case 24:  Module = "cfb32"; Sym = "cfbScreenInit32"; break;
 
         default:
@@ -456,12 +455,13 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     pScreenInfo->rgbBits=8;
 
     if (pScreenInfo->depth > 8) {
-      rgb zeros = {0, 0, 0};
+      rgb defaultWeight = {0, 0, 0};
+      rgb defaultMask = {0, 0, 0};
 
       xf86PrintDepthBpp(pScreenInfo);
 
       /* Standard defaults are OK if depths are OK */
-      if (!xf86SetWeight(pScreenInfo, zeros, zeros))
+      if (!xf86SetWeight(pScreenInfo, defaultWeight, defaultMask))
         return FALSE;
       else{
 	/* XXX:  Check that returned weight is supported */
@@ -525,25 +525,52 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
       pRendition->board.chip==V1000_DEVICE ? 0:1].name,
         pRendition->board.io_base,
         pRendition->board.mem_base);
-    /* so I hardcoded it <ml> */
-    /* pRendition->board.io_base=0x9800; */
 
     /* determine video ram -- to do so, we assume a full size memory of 16M,
      * then map it and use v_getmemorysize() to determine the real amount of
      * memory */
     pScreenInfo->videoRam=pRendition->board.mem_size=16<<20;
     renditionMapMem(pScreenInfo);
-    videoRam=v_getmemorysize(&pRendition->board)>>10;
+    videoRam=v_getmemorysize(pScreenInfo)>>10;
     renditionUnmapMem(pScreenInfo);
     From = X_PROBED;
     xf86DrvMsg(pScreenInfo->scrnIndex, From, "videoRam: %d kBytes\n", videoRam);
     pScreenInfo->videoRam=videoRam;
     pRendition->board.mem_size=videoRam;
 
-    if (!xf86LoadSubModule(pScreenInfo, "vgahw"))
-        return FALSE;
 
+    /* Load the needed symbols */
+
+    if (!xf86LoadSubModule(pScreenInfo, "vgahw")){
+        return FALSE;
+    }
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
+
+    /* Load XAA if needed */
+    if (!xf86ReturnOptValBool(renditionOptions, OPTION_NOACCEL,0)) {
+      if (!xf86LoadSubModule(pScreenInfo, "xaa")) {
+            return FALSE;
+      }
+      xf86LoaderReqSymLists(xaaSymbols, NULL);
+    }
+    xf86MarkOptionUsedByName(renditionOptions,"NoAccel");
+
+    /* Load Ramdac module if needed */
+    if (!xf86ReturnOptValBool(renditionOptions, OPTION_SW_CURSOR,0)){
+      if (!xf86LoadSubModule(pScreenInfo, "ramdac")) {
+	return FALSE;
+      }
+      xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    }
+    xf86MarkOptionUsedByName(renditionOptions,"SWCursor");
+
+    /* Load DDC module if needed */
+    if (!xf86ReturnOptValBool(renditionOptions, OPTION_NO_DDC,0)){
+      if (!xf86LoadSubModule(pScreenInfo, "ddc")) {
+	return FALSE;
+      }
+      xf86LoaderReqSymLists(ddcSymbols, NULL);
+    }
 
     /* ensure vgahw private structure is allocated */
     if (!vgaHWGetHWRec(pScreenInfo))
@@ -634,14 +661,11 @@ renditionSave(ScrnInfoPtr pScreenInfo)
 static void
 renditionRestore(ScrnInfoPtr pScreenInfo)
 {
-    vgaHWPtr pvgaHW = VGAHWPTR(pScreenInfo);
-
     vgaHWProtect(pScreenInfo, TRUE);
-    vgaHWRestore(pScreenInfo, &pvgaHW->SavedReg, VGA_SR_ALL);
+    vgaHWRestore(pScreenInfo, &VGAHWPTR(pScreenInfo)->SavedReg, VGA_SR_ALL);
     vgaHWProtect(pScreenInfo, FALSE);
 
-    v_setmode(&RENDITIONPTR(pScreenInfo)->board, 
-        &RENDITIONPTR(pScreenInfo)->mode);
+    v_setmode(pScreenInfo, &RENDITIONPTR(pScreenInfo)->mode);
 }
 
 
@@ -649,13 +673,14 @@ renditionRestore(ScrnInfoPtr pScreenInfo)
 static Bool
 renditionSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
 {
-    vgaHWPtr pvgaHW=VGAHWPTR(pScreenInfo);
     struct v_modeinfo_t *modeinfo=&RENDITIONPTR(pScreenInfo)->mode;
+    vgaHWPtr pvgaHW;
 
 #ifdef DEBUG
     ErrorF("RENDITION: renditionSetMode() called\n");
 #endif
 
+    pvgaHW = VGAHWPTR(pScreenInfo);
     /* construct a modeinfo for the v_setmode function */
     modeinfo->clock=pMode->SynthClock;
     modeinfo->hdisplay=pMode->HDisplay;
@@ -725,9 +750,9 @@ renditionSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
             break;
     }
     modeinfo->fifosize=128;
+    modeinfo->flags=pMode->Flags;
 
-    v_setmode(&RENDITIONPTR(pScreenInfo)->board, 
-        &RENDITIONPTR(pScreenInfo)->mode);
+    v_setmode(pScreenInfo,&RENDITIONPTR(pScreenInfo)->mode);
 
     return TRUE;
 }
@@ -774,7 +799,6 @@ renditionLeaveGraphics(ScrnInfoPtr pScreenInfo)
 
     renditionRestore(pScreenInfo);
     vgaHWLock(VGAHWPTR(pScreenInfo));
-    vgaHWUnmapMem(pScreenInfo);
 
     v_textmode(&RENDITIONPTR(pScreenInfo)->board);
 }
@@ -828,6 +852,8 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     unsigned char *FBBase=RENDITIONPTR(pScreenInfo)->board.vmem_base;
     VisualPtr visual;
 
+    vgaHWPtr          pvgaHW;
+
 #ifdef DEBUG
     ErrorF("RENDITION: renditionScreenInit() called\n");
 #endif
@@ -841,9 +867,8 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!renditionEnterGraphics(pScreen, pScreenInfo))
         return FALSE;
 
-    /* Get vgahw private
+    /* Get vgahw private     */
     pvgaHW = VGAHWPTR(pScreenInfo);
-    */
 
     miClearVisualTypes();
 
@@ -928,8 +953,19 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-    /* Initialise cursor */
+    /* Initialise cursor functions */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+
+    if(!xf86ReturnOptValBool(renditionOptions, OPTION_SW_CURSOR,0)){
+      /* Initialise HW cursor */
+      if(!RenditionHWCursorInit(scrnIndex, pScreen)){
+	ErrorF("Hardware Cursor initalization failed!!\n");
+      }
+    }
+    else {
+      ErrorF("RENDITION: Software cursor selected\n");
+    }
+
 
     /* Setup default colourmap */
     Inited = miCreateDefColormap(pScreen);
@@ -953,14 +989,12 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (serverGeneration == 1)
       xf86ShowUnusedOptions(pScreenInfo->scrnIndex, pScreenInfo->options);
 
+    if(xf86ReturnOptValBool(renditionOptions, OPTION_OVERCLOCK_MEM,0)){
+      ErrorF ("*** Overclock -- Driver ***\n");
+    }
+
     return Inited;
 }
-/*
-
-    ErrorF ("XX Pee: **\n");
-    LoaderCheckUnresolved(LD_RESOLV_IFDONE);
-    return FALSE;
-*/
 
 static Bool
 renditionSwitchMode(int scrnIndex, DisplayModePtr pMode, int flags)
@@ -976,6 +1010,8 @@ static void
 renditionAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
         ScrnInfoPtr pScreenInfo=xf86Screens[scrnIndex];
+	renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+
         int offset, virtualwidth, bitsPerPixel;
 
 #ifdef DEBUG
@@ -983,10 +1019,13 @@ renditionAdjustFrame(int scrnIndex, int x, int y, int flags)
 #endif
 
     bitsPerPixel=pScreenInfo->bitsPerPixel;
-    virtualwidth=RENDITIONPTR(pScreenInfo)->mode.virtualwidth;
+    virtualwidth=pRendition->mode.virtualwidth;
     offset=(y*virtualwidth+x)*(bitsPerPixel>>3);
 
-    v_setframebase(&RENDITIONPTR(pScreenInfo)->board, offset+FBOFFSET);
+    offset+=pRendition->board.hwcursor_vmemsize;
+    ErrorF ("MOVING SCREEN %d bytes!!\n",pRendition->board.hwcursor_vmemsize);
+    /* FIXME MOVE OFFSET */
+    v_setframebase(pScreenInfo, offset);
 }
 
 

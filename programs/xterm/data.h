@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.h /main/13 1996/11/24 17:35:40 rws $
- *	$XFree86: xc/programs/xterm/data.h,v 3.20 1999/09/25 14:38:29 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.h,v 3.21 1999/09/27 06:30:19 dawes Exp $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -108,7 +108,7 @@ extern XtermWidget term;
 #endif
 
 #if OPT_WIDE_CHARS
-const unsigned short dec2ucs[32];
+extern const unsigned short dec2ucs[32];
 #endif
 
 #endif /* included_data_h */

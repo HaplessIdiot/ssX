@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: VTPrsTbl.c,v 1.10 95/06/09 22:17:06 gildea Exp $
- *	$XFree86: xc/programs/xterm/VTPrsTbl.c,v 3.18 1999/07/18 03:27:05 dawes Exp $
+ *	$XFree86: xc/programs/xterm/VTPrsTbl.c,v 3.19 1999/09/27 06:30:10 dawes Exp $
  */
 
 /*
@@ -71,7 +71,7 @@
 #include <VTparse.h>
 
 #if !OPT_DEC_LOCATOR
-#undef  CASE_CSI_TICK_STATE,
+#undef  CASE_CSI_TICK_STATE
 #define CASE_CSI_TICK_STATE CASE_ESC_IGNORE
 #endif
 

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.10 1999/06/20 15:02:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.11 1999/07/06 11:38:45 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -262,6 +262,8 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     pReg->sisRegs3C4[LinearAdd0] = (pSiS->FbAddress & 0x07F80000) >> 19;
     pReg->sisRegs3C4[LinearAdd1] = ((pSiS->FbAddress & 0xF8000000) >> 27) | 0x60;
+
+    
     pReg->sisRegs3x4[Offset] = offset & 0xFF;
     pReg->sisRegs3C4[CRTCOff] = ((offset & 0xF00) >> 4) | 
 				(((mode->CrtcVTotal-2) & 0x400) >> 10 ) |
@@ -337,6 +339,12 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    else
     	    	pReg->sisRegs3C4[TurboQueueBase] = (pScrn->videoRam/32) - 1;
 	}
+          
+        pReg->sisRegs3C4[MMIOEnable] &= 0x9F;
+        if (pSiS->IOAddress == 0xA0000) {
+            pReg->sisRegs3C4[MMIOEnable] |= 0x20;
+        }
+	else
     	pReg->sisRegs3C4[MMIOEnable] |= 0x60; /* At PCI base */
     }
     pReg->sisRegs3C4[Mode64] |= 0x80;

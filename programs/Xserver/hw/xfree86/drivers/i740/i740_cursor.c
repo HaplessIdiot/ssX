@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_cursor.c,v 1.1 1999/08/29 12:20:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_cursor.c,v 1.2 1999/09/27 06:29:51 dawes Exp $ */
 
 /*
  * Authors:
@@ -87,7 +87,7 @@ I740CursorInit(ScreenPtr pScreen)
  */
   fbarea = xf86AllocateOffscreenArea(pScreen, 
 				pScrn->displayWidth,
-				(6*1024)/(pScrn->displayWidth*pI740->cpp)+1,
+				((6*1024)/(pScrn->displayWidth*pI740->cpp))+1,
 				0,0,0,0);
   if (fbarea == NULL) {
     pI740->CursorStart=0;

@@ -1,7 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/v1kregs.h,v 1.2 1999/04/17 07:06:34 dawes Exp $ */
 
-#ifndef _V1KREGS_H_
-#define _V1KREGS_H_
+#ifndef __V1KREGS_H__
+#define __V1KREGS_H__
 
 
 #define FIFO_SIZE	0x1f
@@ -214,4 +214,4 @@
 
 
 
-#endif /* _V1KREGS_H_  */
+#endif /* __V1KREGS_H__  */

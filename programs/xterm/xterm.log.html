@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.37 1999/09/25 14:38:43 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.38 1999/09/27 06:30:24 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,8 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_118">Patch #118 - 1999/10/5 - XFree86 3.9.16b</A>
+<LI><A HREF="#xterm_117">Patch #117 - 1999/9/29 - XFree86 3.9.16b</A>
 <LI><A HREF="#xterm_116">Patch #116 - 1999/9/25 - XFree86 3.9.16a</A>
 <LI><A HREF="#xterm_115">Patch #115 - 1999/9/18 - XFree86 3.9.16a</A>
 <LI><A HREF="#xterm_114">Patch #114 - 1999/9/15 - XFree86 3.9.16</A>
@@ -159,6 +161,72 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_118">Patch #118 - 1999/10/5 - XFree86 3.9.16b</A></H1>
+<ul>
+	<li>refine configure test for utmp versus utmpx, to build on HP-UX 10.x
+	  (reported by David Ellement).
+
+	<li>move the configure check for <code>const</code> after the check
+	  for ANSI C compiler options, since those may be required to make
+	  it work properly on HP-UX.
+
+	<li>add configure test for defining <code>_GNU_SOURCE</code>
+
+	<li>correction to <em>-hold</em> option, ensure that if data is already
+	  in the output buffer that it will be displayed before closing the
+	  PTY.
+
+	<li>move the configure checks for setuid install of xterm into a script
+	  to avoid installing it setuid'd to a non-root user (reported by
+	  Adam Sulmicki &lt;adam@cfar.umd.edu&gt;).
+
+	<li>correct configure script's check for termcap.h to avoid using
+	  ncurses' version of it on systems that have a working
+	  <code>tgetent()</code> function.  This is needed to make
+	  <code>resize</code> work properly.
+
+	<li>fix some typography in ctlseqs.ms description of DEC locator events
+	  (reported by Steve Wall).
+</ul>
+
+<H1><A NAME="xterm_117">Patch #117 - 1999/9/29 - XFree86 3.9.16b</A></H1>
+<ul>
+	<li>change order of tests in configure script for utmp and utmpx
+	  to test utmpx first, to compile on Solaris (reported by
+	  Leena Heino &lt;liinu@uta.fi&gt;
+	  and Patrik Hagglund &lt;patha@ida.liu.se&gt;).
+
+	<li>add a configure test for utmp.ut_xtime, needed for SCO Openserver,
+	  and for lastlog, needed for Redhat 6.0, to refine the utmp/utmpx
+	  auto-configure.
+
+	<li>remove a spurious comma in an #undef (reported by
+	  David Green &lt;greendjf@cvhp152.marconicomms.com&gt; and
+	  David Ellement &lt;ellement@sdd.hp.com&gt; both on HP-UX, whose
+	  compiler does care about syntax).
+	  
+	<li>change ifdef's using __CYGWIN32__ to __CYGWIN__ (reported by Suhaib
+	  M. Siddiqi &lt;Ssiddiqi@InspirePharm.Com&gt;, who is told that the
+	  next Cygnus release will drop that symbol in their next release).
+
+	<li>minor cleanup of ifdef's for makeColorPair (patch by Steve Wall).
+
+	<li>patch by Alexander V Lukyanov to work around problem observed
+	 in XFree86 3.3.5, reported as bug #5419 to Mozilla.  From the
+	 problem report:
+	<blockquote>
+	xterm consumes cpu when selecting text with mouse (holding
+	down left mouse button) and when a program working under the 
+	xterm outputs something to stdout. 
+	<p> 
+	Easy way to reproduce:<br>
+		<code>while :; do echo aaa; sleep 1; done</code><br>
+	(while this runs, select text and hold down left mouse button) 
+	watch cpu load.<br>
+	release left mouse button - spinning stops. 
+	</blockquote>
+</ul>
 
 <H1><A NAME="xterm_116">Patch #116 - 1999/9/25 - XFree86 3.9.16a</A></H1>
 <ul>

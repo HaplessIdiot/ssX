@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.45 1999/06/27 14:08:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.46 1999/07/04 06:38:57 dawes Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.37 1999/07/02 18:38:31 faith Exp $ */
 
 #define PSZ 8
@@ -50,6 +50,7 @@
 #include "vgaHW.h"
 #include "xf86RAC.h"
 #include "xf86Resources.h"
+#include "xf86int10.h"
 
 #include "mipointer.h"
 
@@ -837,6 +838,16 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     pGlint->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
     if (pGlint->pEnt->location.type != BUS_PCI)
 	return FALSE;
+
+    /* Initialize the card through int10 interface if needed */
+    if ( xf86LoadSubModule(pScrn, "int10")){
+        xf86Int10InfoPtr pInt;
+
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
+        pInt = xf86InitInt10(pGlint->pEnt->index);
+        xf86FreeInt10(pInt);
+    }
+    
     pGlint->PciInfo = xf86GetPciInfoForEntity(pGlint->pEnt->index);
     pGlint->PciTag = pciTag(pGlint->PciInfo->bus, pGlint->PciInfo->device,
 			    pGlint->PciInfo->func);

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.44 1999/07/18 03:27:14 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.45 1999/09/25 14:38:41 dawes Exp $
  */
 
 /*
@@ -1765,15 +1765,11 @@ extract_bg (unsigned color)
 unsigned
 makeColorPair (int fg, int bg)
 {
-	unsigned my_bg;
-	unsigned my_fg;
+	unsigned my_bg = (bg >= 0) && (bg < NUM_ANSI_COLORS) ? bg : 0;
+	unsigned my_fg = (fg >= 0) && (fg < NUM_ANSI_COLORS) ? fg : my_bg;
 #if OPT_EXT_COLORS
-	my_bg = (bg >= 0) && (bg < NUM_ANSI_COLORS) ? bg : 0;
-	my_fg = (fg >= 0) && (fg < NUM_ANSI_COLORS) ? fg : my_bg;
 	return (my_fg << 8) | my_bg;
 #else
-	my_bg = (bg >= 0) && (bg < 16) ? bg : 0;
-	my_fg = (fg >= 0) && (fg < 16) ? fg : my_bg;
 	return (my_fg << 4) | my_bg;
 #endif
 }

@@ -1,4 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vgapalette.data,v 1.2 1999/04/17 07:06:38 dawes Exp $ */
+#ifndef __VGAPALETTE__
+#define __VGAPALETTE__
+
 unsigned char vga_pal[]=
 {
 /* 00 - 0f */
@@ -275,3 +278,4 @@ unsigned char vga_pal[]=
 0x00,0x00,0x00	/*f*/
 };
 
+#endif /* __VGAPALETTE __ */
