@@ -1,12 +1,17 @@
 
 This is an import of selected parts of SGI's ogl-sample distribution,
-which is available from their CVS repository at :pserver:cvs@oss.sgi.com/cvs.
+which is available from their CVS repository at :pserver:cvs@oss.sgi.com/cvs
+(password 'cvs', check out "projects/ogl-sample/main).
 
 Currently only the GLw and GLU components have been imported:
 
-  main/doc/man/manglw
-  main/gfx/lib/glw
+  main/doc/man/macros
+  main/doc/man/mandefs
   main/doc/man/manglu
+  main/doc/man/manglw
+  main/doc/man/manrules
+  main/doc/man/tools
+  main/gfx/lib/glw
   main/gfx/lib/glu
 
 Others may be imported at a later date.
@@ -17,4 +22,4 @@ CVS repository.
 
 
 
-$XFree86: xc/extras/ogl-sample/README.XF86,v 1.2 2000/11/06 21:57:10 dawes Exp $
+$XFree86: xc/extras/ogl-sample/README.XF86,v 1.3 2001/01/15 22:17:45 dawes Exp $
