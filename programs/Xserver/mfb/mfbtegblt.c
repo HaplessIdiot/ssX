@@ -1,4 +1,4 @@
-/* $Xorg: mfbtegblt.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbtegblt.c,v 1.8 2001/12/14 20:00:12 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -46,8 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-/* $XFree86: xc/programs/Xserver/mfb/mfbtegblt.c,v 1.7 2001/01/17 22:37:03 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -167,13 +165,8 @@ typedef unsigned int	*glyphPointer;
 #endif
 
 void
-MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
-    DrawablePtr pDrawable;
-    GC 		*pGC;
-    int 	x, y;
-    unsigned int nglyph;
-    CharInfoPtr *ppci;		/* array of character info */
-    pointer	pglyphBase;	/* start of array of glyphs */
+MFBTEGLYPHBLT(DrawablePtr pDrawable, GC *pGC, int x, int y,
+	      unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
     FontPtr	pfont = pGC->font;
     int widthDst;
@@ -181,24 +174,24 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 				   of current glyph */
 
     int h;			/* height of glyph and char */
-    register int xpos;		/* current x  */
+    int xpos;		/* current x  */
     int ypos;			/* current y */
     int widthGlyph;
 
     int hTmp;			/* counter for height */
-    register PixelType startmask, endmask;
+    PixelType startmask, endmask;
     int nfirst;			/* used if glyphs spans a longword boundary */
     BoxRec bbox;		/* for clipping */
     int	widthGlyphs;
-    register PixelType  *dst;
-    register PixelType  c;
-    register int	    xoff1, xoff2, xoff3, xoff4;
-    register glyphPointer   char1, char2, char3, char4;
+    PixelType  *dst;
+    PixelType  c;
+    int	    xoff1, xoff2, xoff3, xoff4;
+    glyphPointer   char1, char2, char3, char4;
 
 #ifdef USE_LEFTBITS
-    register PixelType  glyphMask;
-    register PixelType  tmpSrc;
-    register int	    glyphBytes;
+    PixelType  glyphMask;
+    PixelType  tmpSrc;
+    int	    glyphBytes;
 #endif
 
     if (!(pGC->planemask & 1))

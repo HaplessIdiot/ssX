@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.12 2001/10/28 03:33:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.13 2001/12/14 19:59:23 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: cfbimage.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -58,13 +57,8 @@ SOFTWARE.
 #include "mi.h"
 
 void
-cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
-    DrawablePtr pDraw;
-    GCPtr	pGC;
-    int		depth, x, y, w, h;
-    int		leftPad;
-    int		format;
-    char 	*pImage;
+cfbPutImage(DrawablePtr pDraw, GCPtr pGC, int depth, int x, int y,
+	    int w, int h, int leftPad, int format, char *pImage)
 {
     PixmapPtr   pPixmap;
 
@@ -126,12 +120,8 @@ cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 }
 
 void
-cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
-    DrawablePtr pDrawable;
-    int		sx, sy, w, h;
-    unsigned int format;
-    unsigned long planeMask;
-    char	*pdstLine;
+cfbGetImage(DrawablePtr pDrawable, int sx, int sy, int w, int h,
+	    unsigned int format, unsigned long planeMask, char *pdstLine)
 {
     BoxRec box;
     DDXPointRec ptSrc;

@@ -1,4 +1,3 @@
-/* $Xorg: tables.c,v 1.3 2000/08/17 19:53:56 cpqbld Exp $ */
 /*
  * Copyright 1992 Network Computing Devices
  *
@@ -20,12 +19,13 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/lbxproxy/di/tables.c,v 1.2 2004/04/03 22:38:54 tsi Exp $ */
 
 #include "lbx.h"
 #include "gfx.h"
 #include "wire.h"
 #include "tables.h"
+#include "lbxext.h"
 
 int         (*InitialVector[3]) (ClientPtr client) =
 {

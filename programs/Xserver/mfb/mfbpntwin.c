@@ -1,4 +1,4 @@
-/* $Xorg: mfbpntwin.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
+/* $XFree86$ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -59,12 +59,9 @@ SOFTWARE.
 #include "mi.h"
 
 void
-mfbPaintWindow(pWin, pRegion, what)
-    WindowPtr	pWin;
-    RegionPtr	pRegion;
-    int		what;
+mfbPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
 {
-    register mfbPrivWin	*pPrivWin;
+    mfbPrivWin	*pPrivWin;
 
     pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
     

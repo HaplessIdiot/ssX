@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.23 2004/12/07 15:59:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.24 2004/12/09 19:33:00 tsi Exp $ */
 
 /*
 
@@ -281,7 +281,7 @@ ProcXF86DGAViewPortChanged(ClientPtr client)
 }
 
 int
-ProcXF86DGADispatch(register ClientPtr client)
+ProcXF86DGADispatch(ClientPtr client)
 {
     REQUEST(xReq);
 

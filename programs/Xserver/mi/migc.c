@@ -1,4 +1,3 @@
-/* $Xorg: migc.c,v 1.4 2001/02/09 02:05:21 xorgcvs Exp $ */
 /*
 
 Copyright 1993, 1998  The Open Group
@@ -27,7 +26,7 @@ from The Open Group.
 
 */
 
-/* $XFree86: xc/programs/Xserver/mi/migc.c,v 1.8 2001/08/06 20:51:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/migc.c,v 1.9 2001/12/14 20:00:23 dawes Exp $ */
 
 #include "scrnintstr.h"
 #include "gcstruct.h"
@@ -37,16 +36,13 @@ from The Open Group.
 
 /* ARGSUSED */
 void
-miChangeGC(pGC, mask)
-    GCPtr           pGC;
-    unsigned long   mask;
+miChangeGC(GCPtr pGC, unsigned long mask)
 {
     return;
 }
 
 void
-miDestroyGC(pGC)
-    GCPtr           pGC;
+miDestroyGC(GCPtr pGC)
 {
     if (pGC->pRotatedPixmap)
 	(*pGC->pScreen->DestroyPixmap) (pGC->pRotatedPixmap);
@@ -60,8 +56,7 @@ miDestroyGC(pGC)
  */
 
 GCOpsPtr
-miCreateGCOps(prototype)
-    GCOpsPtr        prototype;
+miCreateGCOps(GCOpsPtr prototype)
 {
     GCOpsPtr        ret;
 
@@ -76,8 +71,7 @@ miCreateGCOps(prototype)
 }
 
 void
-miDestroyGCOps(ops)
-    GCOpsPtr        ops;
+miDestroyGCOps(GCOpsPtr ops)
 {
     if (ops->devPrivate.val)
 	xfree(ops);
@@ -85,8 +79,7 @@ miDestroyGCOps(ops)
 
 
 void
-miDestroyClip(pGC)
-    GCPtr           pGC;
+miDestroyClip(GCPtr pGC)
 {
     if (pGC->clientClipType == CT_NONE)
 	return;
@@ -107,11 +100,7 @@ miDestroyClip(pGC)
 }
 
 void
-miChangeClip(pGC, type, pvalue, nrects)
-    GCPtr           pGC;
-    int             type;
-    pointer         pvalue;
-    int             nrects;
+miChangeClip(GCPtr pGC, int type, pointer pvalue, int nrects)
 {
     (*pGC->funcs->DestroyClip) (pGC);
     if (type == CT_PIXMAP)
@@ -138,8 +127,7 @@ miChangeClip(pGC, type, pvalue, nrects)
 }
 
 void
-miCopyClip(pgcDst, pgcSrc)
-    GCPtr           pgcDst, pgcSrc;
+miCopyClip(GCPtr pgcDst, GCPtr pgcSrc)
 {
     RegionPtr       prgnNew;
 
@@ -163,18 +151,13 @@ miCopyClip(pgcDst, pgcSrc)
 
 /* ARGSUSED */
 void
-miCopyGC(pGCSrc, changes, pGCDst)
-    GCPtr           pGCSrc;
-    unsigned long   changes;
-    GCPtr           pGCDst;
+miCopyGC(GCPtr pGCSrc, unsigned long changes, GCPtr pGCDst)
 {
     return;
 }
 
 void
-miComputeCompositeClip(pGC, pDrawable)
-    GCPtr           pGC;
-    DrawablePtr     pDrawable;
+miComputeCompositeClip(GCPtr pGC, DrawablePtr pDrawable)
 {
     ScreenPtr       pScreen;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbhrzvert.c,v 3.0 1996/08/18 01:45:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbhrzvert.c,v 3.1 2001/08/01 00:44:47 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbhrzvert.c,v 1.15 94/04/17 20:28:24 dpw Exp $ */
 
 #include "X.h"
 
@@ -63,21 +62,14 @@ SOFTWARE.
    abs(len) > 1
 */
 void
-afbHorzS(pbase, nlwidth, sizeDst, depthDst, x1, y1, len, rrops)
-PixelType *pbase;		/* pointer to base of bitmap */
-register int nlwidth;		/* width in longwords of bitmap */
-int sizeDst;
-int depthDst;
-int x1;						/* initial point */
-int y1;
-int len;				/* length of line */
-register unsigned char *rrops;
+afbHorzS(PixelType *pbase, int nlwidth, int sizeDst, int depthDst, int x1,
+	 int y1, int len, unsigned char *rrops)
 {
-	register PixelType *addrl;
-	register PixelType startmask;
-	register PixelType endmask;
-	register int nlmiddle;
-	register int d;
+	PixelType *addrl;
+	PixelType startmask;
+	PixelType endmask;
+	int nlmiddle;
+	int d;
 	int saveNLmiddle;
 
 	/* force the line to go left to right
@@ -158,17 +150,11 @@ register unsigned char *rrops;
    it's OK to use it.
 */
 void
-afbVertS(pbase, nlwidth, sizeDst, depthDst, x1, y1, len, rrops)
-PixelType *pbase;		/* pointer to base of bitmap */
-register int nlwidth;		/* width in longwords of bitmap */
-int sizeDst;
-int depthDst;
-int x1, y1;				/* initial point */
-register int len;		/* length of line */
-unsigned char *rrops;
+afbVertS(PixelType *pbase, int nlwidth, int sizeDst, int depthDst, int x1,
+	 int y1, int len, unsigned char *rrops)
 {
-	register PixelType *addrl;
-	register PixelType bitmask;
+	PixelType *addrl;
+	PixelType bitmask;
 	int saveLen;
 	int d;
 

@@ -1,4 +1,3 @@
-/* $Xorg: xprint.c,v 1.5 2001/03/05 20:42:26 pookie Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -64,7 +63,7 @@ copyright holders.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.15 2003/10/28 23:08:44 tsi Exp $ */
 
 #define _XP_PRINT_SERVER_
 #include "X.h"
@@ -415,7 +414,8 @@ FreeScreenEntry(XpScreenPtr pScreenEntry)
  * whenever a context gets created for a particular driver on this screen.
  */
 void
-XpRegisterInitFunc(ScreenPtr pScreen, char *driverName, int (*initContext)(struct _XpContext *))
+XpRegisterInitFunc(ScreenPtr pScreen, char *driverName,
+		   int (*initContext)(struct _XpContext *))
 {
     XpDriverPtr pDriver;
 
@@ -568,7 +568,7 @@ ProcXpQueryVersion(ClientPtr client)
 {
     /* REQUEST(xPrintQueryVersionReq); */
     xPrintQueryVersionReply rep;
-    register int n;
+    int n;
     long l;
 
     REQUEST_SIZE_MATCH(xPrintQueryVersionReq);
@@ -1099,8 +1099,8 @@ ProcXpGetContext(ClientPtr client)
     xPrintGetContextReply rep;
 
     XpContextPtr pContext;
-    register int n;
-    register long l;
+    int n;
+    long l;
 
     REQUEST_SIZE_MATCH(xPrintGetContextReq);
 
@@ -1381,11 +1381,11 @@ XpFreePage(pointer data, XID id)
 static void
 InitContextPrivates(XpContextPtr context)
 {
-    register char *ptr;
+    char *ptr;
     DevUnion *ppriv;
-    register unsigned *sizes;
-    register unsigned size;
-    register int i;
+    unsigned *sizes;
+    unsigned size;
+    int i;
 
     if (totalContextSize == sizeof(XpContextRec))
         ppriv = (DevUnion *)NULL;
@@ -1733,9 +1733,7 @@ ProcXpEndDoc(ClientPtr client)
 }
 
 static Bool
-DoStartPage(
-    ClientPtr client,
-    XpStPagePtr c)
+DoStartPage(ClientPtr client, XpStPagePtr c)
 {
     WindowPtr pWin = c->pWin;
     int result = Success;
@@ -2324,7 +2322,7 @@ ProcXpInputSelected(ClientPtr client)
 {
     REQUEST(xPrintInputSelectedReq);
     xPrintInputSelectedReply rep;
-    register int n;
+    int n;
     long l;
     XpClientPtr pXpClient;
     XpContextPtr pContext;

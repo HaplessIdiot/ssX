@@ -1,4 +1,3 @@
-/* $Xorg: xkbevd.h,v 1.3 2000/08/17 19:54:49 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbevd/xkbevd.h,v 3.4 2001/01/17 23:46:09 dawes Exp $ */
+/* $XFree86: xc/programs/xkbevd/xkbevd.h,v 3.5 2003/11/17 22:20:53 dawes Exp $ */
 
 #ifndef XKBEVD_H
 #define	XKBEVD_H 1
@@ -99,7 +98,9 @@ extern int setScanState ( char * file, int line );
 extern int CFGParseFile ( FILE *file );
 
 extern int yylex(void);
+#ifndef YYBISON
 extern int yyparse(void);
+#endif
 extern int yyerror(char *s);
 extern int yywrap(void);
 #endif /* XKBEVD_H */

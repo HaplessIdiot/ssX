@@ -1,4 +1,4 @@
-/* $Xorg: cfbcmap.c,v 1.3 2000/08/17 19:48:13 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.13 2001/01/17 22:36:34 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -27,7 +27,6 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.12 2000/02/12 03:39:23 dawes Exp $ */
 
 
 #include "X.h"
@@ -57,10 +56,8 @@ cfbUninstallColormap(ColormapPtr pmap)
 }
 
 void
-cfbResolveColor(unsigned short *pred, 
-		unsigned short *pgreen,
-		unsigned short *pblue,
-		VisualPtr	pVisual)
+cfbResolveColor(unsigned short *pred, unsigned short *pgreen,
+		unsigned short *pblue, VisualPtr pVisual)
 {
     miResolveColor(pred, pgreen, pblue, pVisual);
 }
@@ -103,14 +100,9 @@ cfbSetVisualTypes (int depth, int visuals, int bitsPerRGB)
  */
 
 Bool
-cfbInitVisuals (VisualPtr   *visualp,
-		DepthPtr    *depthp,
-		int	    *nvisualp,
-		int	    *ndepthp,
-		int	    *rootDepthp,
-		VisualID    *defaultVisp,
-		unsigned long	sizes,
-		int	    bitsPerRGB)
+cfbInitVisuals(VisualPtr *visualp, DepthPtr *depthp, int *nvisualp,
+	       int *ndepthp, int *rootDepthp, VisualID *defaultVisp,
+	       unsigned long sizes, int bitsPerRGB)
 {
     return miInitVisuals(visualp, depthp, nvisualp, ndepthp, rootDepthp,
 			 defaultVisp, sizes, bitsPerRGB, -1);

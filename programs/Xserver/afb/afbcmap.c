@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbcmap.c,v 3.0 1996/08/18 01:45:30 dawes Exp $ */
-/* $XConsortium: afbcmap.c,v 4.19 94/04/17 20:28:46 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbcmap.c,v 3.1 1998/11/22 10:36:58 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -35,66 +34,55 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "colormapst.h"
 #include "resource.h"
 #include "micmap.h"
+#include "afb.h"
 
 int
-afbListInstalledColormaps(pScreen, pmaps)
-	ScreenPtr		pScreen;
-	Colormap		*pmaps;
+afbListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps)
 {
 	return miListInstalledColormaps(pScreen, pmaps);
 }
 
 
 void
-afbInstallColormap(pmap)
-	ColormapPtr		pmap;
+afbInstallColormap(ColormapPtr pmap)
 {
 	miInstallColormap(pmap);
 }
 
 void
-afbUninstallColormap(pmap)
-	ColormapPtr		pmap;
+afbUninstallColormap(ColormapPtr pmap)
 {
 	miUninstallColormap(pmap);
 }
 
 void
-afbResolveColor(pred, pgreen, pblue, pVisual)
-	unsigned short		*pred, *pgreen, *pblue;
-	register VisualPtr		pVisual;
+afbResolveColor(unsigned short *pred, unsigned short *pgreen,
+		unsigned short *pblue, VisualPtr pVisual)
 {
 	miResolveColor(pred, pgreen, pblue, pVisual);
 }
 
 Bool
-afbInitializeColormap(pmap)
-	register ColormapPtr		pmap;
+afbInitializeColormap(ColormapPtr pmap)
 {
 	return miInitializeColormap(pmap);
 }
 
 int
-afbExpandDirectColors(pmap, ndef, indefs, outdefs)
-	ColormapPtr		pmap;
-	int				ndef;
-	xColorItem		*indefs, *outdefs;
+afbExpandDirectColors(ColormapPtr pmap, int ndef, xColorItem *indefs,
+		      xColorItem *outdefs)
 {
 	return miExpandDirectColors(pmap, ndef, indefs, outdefs);
 }
 
 Bool
-afbCreateDefColormap(pScreen)
-	ScreenPtr pScreen;
+afbCreateDefColormap(ScreenPtr pScreen)
 {
 	return miCreateDefColormap(pScreen);
 }
 
 Bool
-afbSetVisualTypes(depth, visuals, bitsPerRGB)
-	int depth;
-	int visuals;
-	int bitsPerRGB;
+afbSetVisualTypes(int depth, int visuals, int bitsPerRGB)
 {
 	return miSetVisualTypes(depth, visuals, bitsPerRGB, -1);
 }
@@ -106,15 +94,9 @@ afbSetVisualTypes(depth, visuals, bitsPerRGB)
  */
 
 Bool
-afbInitVisuals(visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp,
-					 sizes, bitsPerRGB)
-	VisualPtr *visualp;
-	DepthPtr *depthp;
-	int *nvisualp, *ndepthp;
-	int *rootDepthp;
-	VisualID *defaultVisp;
-	unsigned long sizes;
-	int bitsPerRGB;
+afbInitVisuals(VisualPtr *visualp, DepthPtr *depthp, int *nvisualp,
+	       int *ndepthp, int *rootDepthp, VisualID *defaultVisp,
+	       unsigned long sizes, int bitsPerRGB)
 {
 	return miInitVisuals(visualp, depthp, nvisualp, ndepthp, rootDepthp,
 				defaultVisp, sizes, bitsPerRGB, -1);

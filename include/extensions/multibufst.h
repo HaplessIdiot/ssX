@@ -1,5 +1,4 @@
 /*
- * $Xorg: multibufst.h,v 1.4 2001/02/09 02:03:24 xorgcvs Exp $
  *
 Copyright 1989, 1998  The Open Group
 
@@ -24,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/include/extensions/multibufst.h,v 3.8 2001/12/19 21:37:29 dawes Exp $ */
+/* $XFree86: xc/include/extensions/multibufst.h,v 3.9 2003/11/17 22:20:03 dawes Exp $ */
 
 #ifndef _MULTIBUFST_H_
 #define _MULTIBUFST_H_
@@ -532,11 +531,13 @@ typedef struct _mbufScreen {
 		unsigned short		/* height */,
 		Bool			/* exposures */
     		);
-    Bool (* ChangeMBufferAttributes)(	/* pMBWindow, vmask */ 
-    		/* FIXME */
+    Bool (* ChangeMBufferAttributes)(
+		mbufWindowPtr		/* pMBWindow */,
+		unsigned long		/* vmask */
     		);
-    Bool (* ChangeBufferAttributes)(	/* pMBBuffer, vmask */
-    		/* FIXME */
+    Bool (* ChangeBufferAttributes)(
+		mbufBufferPtr		/* pMBBuffer */,
+		unsigned long		/* vmask */
     		);
     void (* DeleteBufferDrawable)(
 		DrawablePtr		/* pDrawable */
@@ -590,8 +591,8 @@ typedef struct _mbufBufferPriv
     RegionRec   unionRgn;	/* Regions gained by backBuffer */
     Bool	rgnChanged;	/* TRUE if "backBuffer" needs to be updated */
 
-    void (* CopyBufferBits)();	/* pMBWindow, srcBufferNum, dstBufferNum */
-    void (* DrawSelectPlane)();	/* pScreen, selectPlane, pRegion, bufferNum */
+    mbufCopyBufferBitsFunc	CopyBufferBits;
+    mbufDrawSelectPlaneFunc	DrawSelectPlane;
 
     /* Pointers to wrapped functions */
     PostValidateTreeProcPtr	PostValidateTree; /* pParent, pChild, kind */

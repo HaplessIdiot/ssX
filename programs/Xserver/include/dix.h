@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.27 2003/04/27 21:31:04 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.28 2005/03/25 02:22:58 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: dix.h,v 1.4 2001/02/09 02:05:15 xorgcvs Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -460,10 +459,10 @@ extern void ProcessWorkQueue(void);
 
 extern void ProcessWorkQueueZombies(void);
 
+typedef Bool (*WorkQueueProcPtr)(ClientPtr pClient, pointer closure);
+
 extern Bool QueueWorkProc(
-    Bool (* /*function*/)(
-        ClientPtr /*clientUnused*/,
-        pointer /*closure*/),
+    WorkQueueProcPtr /*function*/,
     ClientPtr /*client*/,
     pointer /*closure*/
 );

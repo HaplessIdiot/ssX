@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbpushpxl.c,v 3.1 1998/03/20 21:04:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbpushpxl.c,v 3.2 2003/07/16 01:38:35 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbpushpxl.c,v 5.6 94/04/17 20:28:31 dpw Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -56,6 +55,7 @@ SOFTWARE.
 #include "maskbits.h"
 #include "afb.h"
 
+#if 0
 /*  afbSolidPP is courtesy of xhacks@csri.toronto.edu
 
 	For fillStyle==FillSolid, a monochrome PushPixels can be reduced to
@@ -94,18 +94,15 @@ For src=1: newRop = 0x4|(rop&3)
  * has a zero bit or outside the area covered by the stencil.
  */
 void
-afbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
-	GCPtr		pGC;
-	PixmapPtr		pBitMap;
-	DrawablePtr pDrawable;
-	int				dx, dy, xOrg, yOrg;
+afbSolidPP(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDrawable,
+	   int dx, int dy, int xOrg, int yOrg)
 {
 	unsigned char alu;
 	RegionRec rgnDst;
 	DDXPointPtr pptSrc;
 	BoxRec srcBox;
-	register DDXPointPtr ppt;
-	register BoxPtr pbox;
+	DDXPointPtr ppt;
+	BoxPtr pbox;
 	int i;
 
 	if (!pGC->planemask & 1) return;
@@ -141,6 +138,7 @@ afbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	}
 	REGION_UNINIT(pGC->pScreen, &rgnDst);
 }
+#endif
 
 #define NPT 128
 
@@ -152,19 +150,16 @@ afbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
  * has a zero bit or outside the area covered by the stencil.
  */
 void
-afbPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
-	GCPtr pGC;
-	PixmapPtr pBitMap;
-	DrawablePtr pDrawable;
-	int dx, dy, xOrg, yOrg;
+afbPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDrawable,
+	      int dx, int dy, int xOrg, int yOrg)
 {
 	int h, dxDivPPW, ibEnd;
 	PixelType *pwLineStart;
-	register PixelType *pw, *pwEnd;
-	register PixelType mask;
-	register int ib;
-	register PixelType w;
-	register int ipt;				/* index into above arrays */
+	PixelType *pw, *pwEnd;
+	PixelType mask;
+	int ib;
+	PixelType w;
+	int ipt;				/* index into above arrays */
 	Bool fInBox;
 	DDXPointRec pt[NPT];
 	int width[NPT];

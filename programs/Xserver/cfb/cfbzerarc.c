@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbzerarc.c,v 3.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbzerarc.c,v 3.5 2003/10/29 22:44:53 tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -25,8 +25,6 @@ in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
 
-/* $Xorg: cfbzerarc.c,v 1.4 2001/02/09 02:04:39 xorgcvs Exp $ */
-
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
  * by M. L. V. Pitteway
@@ -48,25 +46,22 @@ in this Software without prior written authorization from The Open Group.
 #ifdef PIXEL_ADDR
 
 static void
-RROP_NAME(cfbZeroArcSS8)(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    xArc *arc)
+RROP_NAME(cfbZeroArcSS8)(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 {
     miZeroArcRec info;
     Bool do360;
-    register int x;
+    int x;
     PixelType *addrp;
-    register PixelType *yorgp, *yorgop;
+    PixelType *yorgp, *yorgop;
 #if PSZ == 24
     int xorg, xorg3, xorgo, xorgo3;
-    register int xtmp;
+    int xtmp;
 #endif
     RROP_DECLARE
-    register int yoffset;
+    int yoffset;
     int npwidth, dyoffset;
-    register int y, a, b, d, mask;
-    register int k1, k3, dx, dy;
+    int y, a, b, d, mask;
+    int k1, k3, dx, dy;
 
     cfbGetPixelWidthAndPointer(pDraw,npwidth, addrp)
 
@@ -109,10 +104,10 @@ RROP_NAME(cfbZeroArcSS8)(
     }
     if (do360 && (arc->width == arc->height) && !(arc->width & 1))
     {
-	register int xoffset = npwidth;
+	int xoffset = npwidth;
 #if PSZ == 24
 	PixelType *yorghb = yorgp + (info.h * npwidth);
-	register int tmp1, tmp2, tmp1_3, tmp2_3;
+	int tmp1, tmp2, tmp1_3, tmp2_3;
 
 	tmp1 = xorg + info.h;
 	tmp1_3 = tmp1 * 3;
@@ -270,14 +265,11 @@ RROP_NAME(cfbZeroArcSS8)(
 }
 
 void
-RROP_NAME (cfbZeroPolyArcSS8) (pDraw, pGC, narcs, parcs)
-    register DrawablePtr	pDraw;
-    GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
+RROP_NAME(cfbZeroPolyArcSS8)(DrawablePtr pDraw, GCPtr pGC, int narcs,
+			     xArc *parcs)
 {
-    register xArc *arc;
-    register int i;
+    xArc *arc;
+    int i;
     BoxRec box;
     int x2, y2;
     RegionPtr cclip;

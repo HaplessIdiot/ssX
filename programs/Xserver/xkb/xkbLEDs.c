@@ -1,4 +1,3 @@
-/* $Xorg: xkbLEDs.c,v 1.4 2001/05/10 19:54:01 steve Exp $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbLEDs.c,v 3.7 2003/07/16 01:39:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbLEDs.c,v 3.8 2003/11/17 22:20:46 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -56,7 +55,7 @@ XkbIndicatorsToUpdate(	DeviceIntPtr	dev,
 			unsigned long 	state_changes,
 			Bool		enable_changes)
 {
-register unsigned	update=	0;
+unsigned	update=	0;
 XkbSrvLedInfoPtr	sli;
 
     sli= XkbFindSrvLedInfo(dev,XkbDfltXIClass,XkbDfltXIId,0);
@@ -116,8 +115,8 @@ XkbStatePtr	state;
     }
     state= &xkbi->state;
     if ((map->groups)&&((map->which_groups&(~XkbIM_UseBase))!=0)) {
-	register int i;
-	register unsigned bit,match;
+	int i;
+	unsigned bit,match;
 
 	if (on)	match= (map->groups)&XkbAllGroupsMask;
 	else 	match= (~map->groups)&XkbAllGroupsMask;
@@ -143,7 +142,7 @@ XkbStatePtr	state;
     }
     if ((map->mods.mask)&&((map->which_mods&(~XkbIM_UseBase))!=0)) {
 	if (map->which_mods&(XkbIM_UseLocked|XkbIM_UseEffective)) {
-	    register unsigned long old;
+	    unsigned long old;
 	    old= state->locked_mods;
 	    if (on)	state->locked_mods|= map->mods.mask;
 	    else	state->locked_mods&= ~map->mods.mask;
@@ -151,7 +150,7 @@ XkbStatePtr	state;
 		stateChange= True;
 	}
 	if (map->which_mods&(XkbIM_UseLatched|XkbIM_UseEffective)) {
-	    register unsigned long newmods;
+	    unsigned long newmods;
 	    newmods= state->latched_mods;
 	    if (on)	newmods|=  map->mods.mask;
 	    else	newmods&= ~map->mods.mask;
@@ -296,7 +295,7 @@ CARD8 			mods,group;
 
 void
 XkbUpdateIndicators(	DeviceIntPtr		dev,
-			register CARD32		update,
+			CARD32		update,
 			Bool			check_edevs,
 			XkbChangesPtr		changes,
 			XkbEventCausePtr	cause)
@@ -361,7 +360,7 @@ XkbSrvLedInfoPtr	sli;
 void
 XkbCheckIndicatorMaps(DeviceIntPtr dev,XkbSrvLedInfoPtr sli,unsigned which)
 {
-register unsigned	i,bit;
+unsigned	i,bit;
 XkbIndicatorMapPtr	map;
 XkbDescPtr		xkb;
 
@@ -509,7 +508,7 @@ Bool			checkNames;
     if ((sli->maps==NULL)&&(needed_parts&XkbXI_IndicatorMapsMask))
 	sli->maps= _XkbTypedCalloc(XkbNumIndicators,XkbIndicatorMapRec);
     if (checkNames) {
-	register unsigned i,bit;
+	unsigned i,bit;
 	sli->namesPresent=	0;
 	for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
 	    if (sli->names[i]!=None)
@@ -782,7 +781,7 @@ XkbSrvInfoPtr			xkbi;
 DeviceIntPtr			kbd;
 XkbChangesRec			my_changes;
 xkbExtensionDeviceNotify	my_ed;
-register unsigned		i,bit,affected;
+unsigned		i,bit,affected;
 XkbIndicatorMapPtr		map;
 unsigned			oldState;
 Bool				kb_changed;
@@ -870,8 +869,8 @@ XkbStatePtr			state;
 XkbControlsPtr			ctrls;
 XkbChangesRec			my_changes;
 xkbExtensionDeviceNotify	my_ed;
-register unsigned		i,bit,affected;
-register XkbIndicatorMapPtr	map;
+unsigned		i,bit,affected;
+XkbIndicatorMapPtr	map;
 unsigned			oldState;
 
     if ((maps_to_check==0)||(sli->maps==NULL)||(sli->mapsPresent==0))
@@ -940,7 +939,7 @@ _UpdateButtonVMods(	XkbDescPtr			xkb,
 			unsigned			changed,
 			xkbExtensionDeviceNotify *	ed_inout)
 {
-register int i;
+int i;
 
     for (i=0;i<num_btns;i++,acts++) {
 	if ((acts->any.type!=XkbSA_NoAction)&&
@@ -960,11 +959,11 @@ register int i;
 
 static void
 _UpdateMapVMods(	XkbDescPtr	xkb,
-			register	XkbIndicatorMapPtr map,
+			XkbIndicatorMapPtr map,
 			unsigned	changed_vmods,
 			unsigned *	changed_maps_rtrn)
 {
-register int i;
+int i;
 
     *changed_maps_rtrn= 0;
     for (i=0;i<XkbNumIndicators;i++,map++) {

@@ -1,10 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/kbd_mode.c,v 3.5 1996/12/23 06:47:13 dawes Exp $ */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/kbd_mode.c,v 3.6 1998/07/26 09:56:17 dawes Exp $ */
 
 /* Keyboard mode control program for 386BSD */
-
-
-/* $XConsortium: kbd_mode.c /main/7 1996/03/11 10:46:12 kaleb $ */
 
 #include <sys/types.h>
 #include <fcntl.h>
@@ -25,8 +21,8 @@
 
 static int fd;
 
-void
-msg (char* s)
+static void
+msg(const char* s)
 {
   perror (s);
   close (fd);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbbresd.c,v 3.5 2001/01/17 22:36:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbresd.c,v 3.6 2001/12/14 19:59:22 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: cfbbresd.c,v 1.4 2001/02/09 02:04:37 xorgcvs Exp $ */
+
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -55,30 +55,15 @@ SOFTWARE.
 /* Dashed bresenham line */
 
 void
-cfbBresD(rrops,
-	 pdashIndex, pDash, numInDashList, pdashOffset, isDoubleDash,
-	 addrl, nlwidth,
-	 signdx, signdy, axis, x1, y1, e, e1, e2, len)
-    cfbRRopPtr	    rrops;
-    int		    *pdashIndex;	/* current dash */
-    unsigned char   *pDash;		/* dash list */
-    int		    numInDashList;	/* total length of dash list */
-    int		    *pdashOffset;	/* offset into current dash */
-    int		    isDoubleDash;
-    CfbBits   *addrl;		/* pointer to base of bitmap */
-    int		    nlwidth;		/* width in longwords of bitmap */
-    int		    signdx, signdy;	/* signs of directions */
-    int		    axis;		/* major axis (Y_AXIS or X_AXIS) */
-    int		    x1, y1;		/* initial point */
-    register int    e;			/* error accumulator */
-    register int    e1;			/* bresenham increments */
-    int		    e2;
-    int		    len;		/* length of line */
+cfbBresD(cfbRRopPtr rrops, int *pdashIndex, unsigned char *pDash,
+	 int numInDashList, int *pdashOffset, int isDoubleDash,
+	 CfbBits *addrl, int nlwidth, int signdx, int signdy, int axis,
+	 int x1, int y1, int e, int e1, int e2, int len)
 {
 #ifdef PIXEL_ADDR
-    register PixelType	*addrp;
+    PixelType	*addrp;
 #endif
-    register		int e3 = e2-e1;
+    int e3 = e2-e1;
     int			dashIndex;
     int			dashOffset;
     int			dashRemaining;
@@ -279,7 +264,7 @@ cfbBresD(rrops,
     }
 #else /* !PIXEL_ADDR */
     {
-    	register CfbBits	tmp;
+    	CfbBits	tmp;
 	CfbBits		startbit, bit;
 
     	/* point to longword containing first point */

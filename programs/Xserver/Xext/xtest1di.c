@@ -1,4 +1,3 @@
-/* $Xorg: xtest1di.c,v 1.4 2001/02/09 02:04:33 xorgcvs Exp $ */
 /*
  *	File:  xtest1di.c
  *
@@ -52,7 +51,7 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest1di.c,v 3.5 2003/09/13 21:33:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest1di.c,v 3.6 2003/11/17 22:20:28 dawes Exp $ */
 
 /*****************************************************************************
  * include files
@@ -226,8 +225,7 @@ XTestExtension1Init(INITARGS)
  *
  */
 static int
-ProcXTestDispatch(client)
-	register ClientPtr	client;
+ProcXTestDispatch(ClientPtr client)
 {
 	REQUEST(xReq);
 	if (stuff->data == X_TestFakeInput)
@@ -268,8 +266,7 @@ ProcXTestDispatch(client)
  *
  */
 static int
-SProcXTestDispatch(client)
-	register ClientPtr	client;
+SProcXTestDispatch(ClientPtr client)
 {
 	REQUEST(xReq);
 	if (stuff->data == X_TestFakeInput)
@@ -310,13 +307,12 @@ SProcXTestDispatch(client)
  *
  */
 static int
-SProcTestFakeInput(client)
-	register ClientPtr	client;
+SProcTestFakeInput(ClientPtr client)
 {
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
 	 */
-	register char	n;
+	char	n;
 	/*
 	 * index counter
 	 */
@@ -432,13 +428,12 @@ SProcTestFakeInput(client)
  *
  */
 static int
-SProcTestGetInput(client)
-	register ClientPtr	client;
+SProcTestGetInput(ClientPtr client)
 {
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
 	 */
-	register char	n;
+	char	n;
 
 	REQUEST(xTestGetInputReq);
 	/*
@@ -456,13 +451,12 @@ SProcTestGetInput(client)
  *
  */
 static int
-SProcTestStopInput(client)
-	register ClientPtr	client;
+SProcTestStopInput(ClientPtr client)
 {
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
 	 */
-	register char	n;
+	char	n;
 
 	REQUEST(xTestStopInputReq);
 	/*
@@ -479,13 +473,12 @@ SProcTestStopInput(client)
  *
  */
 static int
-SProcTestReset(client)
-	register ClientPtr	client;
+SProcTestReset(ClientPtr client)
 {
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
 	 */
-	register char	n;
+	char	n;
 
 	REQUEST(xTestResetReq);
 	/*
@@ -502,13 +495,12 @@ SProcTestReset(client)
  *
  */
 static int
-SProcTestQueryInputSize(client)
-	register ClientPtr	client;
+SProcTestQueryInputSize(ClientPtr client)
 {
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
 	 */
-	register char	n;
+	char	n;
 
 	REQUEST(xTestQueryInputSizeReq);
 	/*
@@ -525,8 +517,7 @@ SProcTestQueryInputSize(client)
  *
  */
 static int
-ProcTestFakeInput(client)
-	register ClientPtr	client;
+ProcTestFakeInput(ClientPtr client)
 {
 	REQUEST(xTestFakeInputReq);
 	REQUEST_SIZE_MATCH(xTestFakeInputReq);
@@ -574,8 +565,7 @@ ProcTestFakeInput(client)
  *
  */
 static int
-ProcTestGetInput(client)
-	register ClientPtr	client;
+ProcTestGetInput(ClientPtr client)
 {
 	REQUEST(xTestGetInputReq);
 	REQUEST_SIZE_MATCH(xTestGetInputReq);
@@ -628,8 +618,7 @@ ProcTestGetInput(client)
  *
  */
 static int
-ProcTestStopInput(client)
-	register ClientPtr	client;
+ProcTestStopInput(ClientPtr client)
 {
 	REQUEST_SIZE_MATCH(xTestStopInputReq);
 	if (on_steal_input && (current_xtest_client == client)) 
@@ -666,8 +655,7 @@ ProcTestStopInput(client)
  *
  */
 static int
-ProcTestReset(client)
-	register ClientPtr	client;
+ProcTestReset(ClientPtr client)
 {
 	REQUEST_SIZE_MATCH(xTestResetReq);
 	on_steal_input = FALSE;
@@ -690,8 +678,7 @@ ProcTestReset(client)
  *
  */
 static int
-ProcTestQueryInputSize(client)
-	register ClientPtr	client;
+ProcTestQueryInputSize(ClientPtr client)
 {
 	REQUEST_SIZE_MATCH(xTestQueryInputSizeReq);
 	/*
@@ -778,7 +765,7 @@ SReplyXTestDispatch(client_ptr, size, reply_ptr)
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
 	 */
-	register char	n;
+	char	n;
 	/*
 	 * pointer to xTestQueryInputSizeReply
 	 */
@@ -811,7 +798,7 @@ SEventXTestDispatch(from, to)
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
 	 */
-	register char	n;
+	char	n;
 	/*
 	 * index counter
 	 */

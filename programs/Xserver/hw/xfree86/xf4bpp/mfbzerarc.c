@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbzerarc.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbzerarc.c,v 1.5 2003/02/18 21:29:59 tsi Exp $ */
 
 /************************************************************
 
@@ -27,8 +27,6 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 /* GJA -- Took mfb code and modified it. */
-
-/* $XConsortium: mfbzerarc.c /main/4 1996/02/21 17:56:52 kaleb $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -71,12 +69,12 @@ extern ScrnInfoPtr *xf86Screens;
 
 #define PixelateWhite(addr,off) \
 { \
-    register int *tmpaddr = &((addr)[(off)>>PWSH]); \
+    int *tmpaddr = &((addr)[(off)>>PWSH]); \
     UPDRW(tmpaddr,SCRRIGHT (LEFTMOST, ((off) & PIM))); \
 }
 #define PixelateBlack(addr,off) \
 { \
-    register int *tmpaddr = &((addr)[(off)>>PWSH]); \
+    int *tmpaddr = &((addr)[(off)>>PWSH]); \
     UPDRW(tmpaddr,~(SCRRIGHT (LEFTMOST, ((off) & PIM)))); \
 }
 
@@ -90,23 +88,18 @@ extern ScrnInfoPtr *xf86Screens;
 #define DoPix(bit,base,off) if (msk & bit) Pixelate(base,off);
 
 static void
-v16ZeroArcSS
-(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    xArc *arc
-)
+v16ZeroArcSS(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 {
     miZeroArcRec info;
     Bool do360;
-    register int x, y, a, b, d, msk;
-    register int k1, k3, dx, dy;
+    int x, y, a, b, d, msk;
+    int k1, k3, dx, dy;
     int *addrl;
     int *yorgl, *yorgol;
     unsigned long pixel;
     int nlwidth, yoffset, dyoffset;
     int pmask;
-    register int *paddr;
+    int *paddr;
 
     if (((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop ==
 	RROP_BLACK)
@@ -217,16 +210,10 @@ v16ZeroArcSS
 }
 
 static void
-xf4bppZeroPolyArcSS
-(
-    DrawablePtr	pDraw,
-    GCPtr	pGC,
-    int		narcs,
-    xArc	*parcs
-)
+xf4bppZeroPolyArcSS(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs)
 {
-    register xArc *arc;
-    register int i;
+    xArc *arc;
+    int i;
     BoxRec box;
     RegionPtr cclip;
 
@@ -252,11 +239,7 @@ xf4bppZeroPolyArcSS
 }
 
 void
-xf4bppZeroPolyArc(pDraw, pGC, narcs, parcs)
-    DrawablePtr	pDraw;
-    GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
+xf4bppZeroPolyArc(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs)
 {
     if ( !xf86Screens[pDraw->pScreen->myNum]->vtSema ) {
 	miZeroPolyArc(pDraw, pGC, narcs, parcs);

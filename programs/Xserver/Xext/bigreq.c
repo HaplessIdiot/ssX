@@ -1,4 +1,3 @@
-/* $Xorg: bigreq.c,v 1.4 2001/02/09 02:04:32 xorgcvs Exp $ */
 /*
 
 Copyright 1992, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/bigreq.c,v 3.8 2003/10/28 23:08:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/bigreq.c,v 3.9 2003/11/17 22:20:26 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -70,18 +69,16 @@ BigReqExtensionInit(INITARGS)
 
 /*ARGSUSED*/
 static void
-BigReqResetProc (extEntry)
-    ExtensionEntry	*extEntry;
+BigReqResetProc(ExtensionEntry *extEntry)
 {
 }
 
 static int
-ProcBigReqDispatch (client)
-    register ClientPtr	client;
+ProcBigReqDispatch(ClientPtr client)
 {
     REQUEST(xBigReqEnableReq);
     xBigReqEnableReply rep;
-    register int n;
+    int n;
 
     if (client->swapped) {
 	swaps(&stuff->length, n);

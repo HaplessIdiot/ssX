@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipolycon.c,v 1.3 2001/08/06 21:46:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipolycon.c,v 1.4 2001/12/14 20:00:25 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mipolycon.c,v 1.4 2001/02/09 02:05:21 xorgcvs Exp $ */
 
 #include "gcstruct.h"
 #include "pixmap.h"
@@ -70,15 +69,11 @@ static int getPolyYBounds(DDXPointPtr pts, int n, int *by, int *ty);
  *     this code.
  */
 Bool
-miFillConvexPoly(dst, pgc, count, ptsIn)
-    DrawablePtr dst;
-    GCPtr	pgc;
-    int		count;                /* number of points        */
-    DDXPointPtr ptsIn;                /* the points              */
+miFillConvexPoly(DrawablePtr dst, GCPtr pgc, int count, DDXPointPtr ptsIn)
 {
-    register int xl = 0, xr = 0; /* x vals of left and right edges */
-    register int dl = 0, dr = 0; /* decision variables             */
-    register int ml = 0, m1l = 0;/* left edge slope and slope+1    */
+    int xl = 0, xr = 0; /* x vals of left and right edges */
+    int dl = 0, dr = 0; /* decision variables             */
+    int ml = 0, m1l = 0;/* left edge slope and slope+1    */
     int mr = 0, m1r = 0;         /* right edge slope and slope+1   */
     int incr1l = 0, incr2l = 0;  /* left edge error increments     */
     int incr1r = 0, incr2r = 0;  /* right edge error increments    */
@@ -219,7 +214,7 @@ miFillConvexPoly(dst, pgc, count, ptsIn)
 static int
 getPolyYBounds(DDXPointPtr pts, int n, int *by, int *ty)
 {
-    register DDXPointPtr ptMin;
+    DDXPointPtr ptMin;
     int ymin, ymax;
     DDXPointPtr ptsStart = pts;
 

@@ -1,4 +1,3 @@
-/* $Xorg: xkbAccessX.c,v 1.4 2001/02/05 18:50:20 coskrey Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbAccessX.c,v 1.9 2001/08/23 14:33:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbAccessX.c,v 1.10 2003/11/17 22:20:46 dawes Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -446,8 +445,8 @@ XkbSrvLedInfoPtr	sli;
 /*									*/
 /************************************************************************/
 Bool
-AccessXFilterPressEvent(	register xEvent *	xE, 
-				register DeviceIntPtr	keybd, 
+AccessXFilterPressEvent(	xEvent *	xE, 
+				DeviceIntPtr	keybd, 
 				int			count)
 {
 XkbSrvInfoPtr	xkbi = keybd->key->xkbInfo;
@@ -581,8 +580,8 @@ KeySym *	sym = XkbKeySymsPtr(xkbi->desc,key);
 /*									*/
 /************************************************************************/
 Bool
-AccessXFilterReleaseEvent(	register xEvent *	xE, 
-				register DeviceIntPtr	keybd, 
+AccessXFilterReleaseEvent(	xEvent *	xE, 
+				DeviceIntPtr	keybd, 
 				int			count)
 {
 XkbSrvInfoPtr	xkbi = keybd->key->xkbInfo;
@@ -689,8 +688,8 @@ Bool		ignoreKeyEvent = FALSE;
 /*									*/
 /************************************************************************/
 void
-ProcessPointerEvent(	register xEvent  *	xE, 
-			register DeviceIntPtr	mouse, 
+ProcessPointerEvent(	xEvent  *	xE, 
+			DeviceIntPtr	mouse, 
 			int		        count)
 {
 DeviceIntPtr	dev = (DeviceIntPtr)LookupKeyboardDevice();

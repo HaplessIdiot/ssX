@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcIO.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcIO.c,v 1.6 2003/11/03 05:11:57 tsi Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -48,7 +48,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: ppcIO.c /main/8 1996/02/21 17:57:49 kaleb $ */
 
 #include "xf4bpp.h"
 #include "mfbmap.h"
@@ -93,11 +92,7 @@ static BSFuncRec ppcBSFuncRec = {
 
 /*ARGSUSED*/
 static Bool
-vgaScreenClose
-(
-	int       idx,
-	ScreenPtr pScreen
-)
+vgaScreenClose(int idx, ScreenPtr pScreen)
 {
 	pScreen->defColormap = 0 ;
 	return TRUE;
@@ -130,10 +125,7 @@ typedef struct
  * screen pixmap here.
  */
 static Bool
-v16CreateScreenResources
-(
-    ScreenPtr pScreen
-)
+v16CreateScreenResources(ScreenPtr pScreen)
 {
     miScreenInitParmsPtr pScrInitParms;
     pointer value;
@@ -174,12 +166,8 @@ v16CreateScreenResources
 
 
 Bool
-xf4bppScreenInit( pScreen, pbits, virtx, virty, dpix, dpiy, width )
-    ScreenPtr pScreen;
-    pointer pbits;
-    int virtx, virty;
-    int dpix, dpiy;
-    int width;
+xf4bppScreenInit(ScreenPtr pScreen, pointer pbits, int virtx, int virty,
+		 int dpix, int dpiy, int width)
 {
   Bool ret;
   VisualPtr visuals;

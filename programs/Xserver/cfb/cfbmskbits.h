@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.14 2003/10/29 22:44:53 tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -28,7 +28,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $Xorg: cfbmskbits.h,v 1.3 2000/08/17 19:48:14 cpqbld Exp $ */
 /* Optimizations for PSZ == 32 added by Kyle Marvin (marvin@vitec.com) */
 
 #include	"X.h"
@@ -432,7 +431,7 @@ getleftbits(psrc, w, dst)
     }
 
 #define getbits24(psrc, dst, index) {\
-    register int idx; \
+    int idx; \
     switch(idx = ((index)&3)<<1){ \
     	case 0: \
 		dst = (*(psrc) &cfbmask[idx]); \
@@ -447,8 +446,8 @@ getleftbits(psrc, w, dst)
 }
 
 #define putbits24(src, w, pdst, planemask, index) {\
-    register PixelGroup dstpixel; \
-    register unsigned int idx; \
+    PixelGroup dstpixel; \
+    unsigned int idx; \
     switch(idx = ((index)&3)<<1){ \
     	case 0: \
 		dstpixel = (*(pdst) &cfbmask[idx]); \
@@ -481,8 +480,8 @@ getleftbits(psrc, w, dst)
 
 #define putbitsrop24(src, x, pdst, planemask, rop) \
 { \
-    register PixelGroup t1, dstpixel; \
-    register unsigned int idx; \
+    PixelGroup t1, dstpixel; \
+    unsigned int idx; \
     switch(idx = (x)<<1){ \
     	case 0: \
 		dstpixel = (*(pdst) &cfbmask[idx]); \
@@ -842,8 +841,8 @@ if ((x) + (w) <= PPW) {\
 { \
     PixelGroup q; \
     CfbBits src; \
-    register unsigned int sidx; \
-    register unsigned int didx; \
+    unsigned int sidx; \
+    unsigned int didx; \
     sidx = ((srcindex) & 3)<<1; \
     didx = ((dstindex) & 3)<<1; \
     q = *(psrcstip) >> (xt); \

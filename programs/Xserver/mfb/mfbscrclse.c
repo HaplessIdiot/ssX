@@ -1,4 +1,4 @@
-/* $Xorg: mfbscrclse.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbscrclse.c,v 1.4 2003/02/18 21:30:01 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,16 +45,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/mfb/mfbscrclse.c,v 1.3tsi Exp $ */
 
 #include "mfb.h"
 #include "scrnintstr.h"
 
 /*ARGSUSED*/
 Bool
-mfbCloseScreen(index, pScreen)
-    int	index;
-    register ScreenPtr pScreen;
+mfbCloseScreen(int index, ScreenPtr pScreen)
 {
     xfree(pScreen->devPrivate);
     return TRUE;

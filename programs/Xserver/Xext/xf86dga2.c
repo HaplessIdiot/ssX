@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.21 2005/01/20 17:53:44 tsi Exp $ */
 
 
 #define NEED_REPLIES
@@ -120,7 +120,7 @@ XFree86DGAExtensionInit(INITARGS)
 
 
 static void
-XDGAResetProc (ExtensionEntry *extEntry)
+XDGAResetProc(ExtensionEntry *extEntry)
 {
    DeleteCallback (&ClientStateCallback, DGAClientStateChange, NULL);
    DGACallbackRefCount = 0;

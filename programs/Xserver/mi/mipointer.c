@@ -2,8 +2,6 @@
  * mipointer.c
  */
 
-/* $Xorg: mipointer.c,v 1.4 2001/02/09 02:05:21 xorgcvs Exp $ */
-
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -28,7 +26,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/mi/mipointer.c,v 3.9 2001/09/04 14:03:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipointer.c,v 3.10 2001/12/14 20:00:24 dawes Exp $ */
 
 # define NEED_EVENTS
 # include   "X.h"
@@ -68,11 +66,8 @@ static Bool miPointerCloseScreen(int index, ScreenPtr pScreen);
 static void miPointerMove(ScreenPtr pScreen, int x, int y, unsigned long time);
 
 Bool
-miPointerInitialize (pScreen, spriteFuncs, screenFuncs, waitForUpdate)
-    ScreenPtr		    pScreen;
-    miPointerSpriteFuncPtr  spriteFuncs;
-    miPointerScreenFuncPtr  screenFuncs;
-    Bool		    waitForUpdate;
+miPointerInitialize(ScreenPtr pScreen, miPointerSpriteFuncPtr spriteFuncs,
+		    miPointerScreenFuncPtr screenFuncs, Bool waitForUpdate)
 {
     miPointerScreenPtr	pScreenPriv;
 
@@ -130,9 +125,7 @@ miPointerInitialize (pScreen, spriteFuncs, screenFuncs, waitForUpdate)
 }
 
 static Bool
-miPointerCloseScreen (index, pScreen)
-    int		index;
-    ScreenPtr	pScreen;
+miPointerCloseScreen(int index, ScreenPtr pScreen)
 {
     SetupScreen(pScreen);
 
@@ -150,9 +143,7 @@ miPointerCloseScreen (index, pScreen)
  */
 
 static Bool
-miPointerRealizeCursor (pScreen, pCursor)
-    ScreenPtr	pScreen;
-    CursorPtr	pCursor;
+miPointerRealizeCursor(ScreenPtr pScreen, CursorPtr pCursor)
 {
     SetupScreen(pScreen);
 
@@ -160,9 +151,7 @@ miPointerRealizeCursor (pScreen, pCursor)
 }
 
 static Bool
-miPointerUnrealizeCursor (pScreen, pCursor)
-    ScreenPtr	pScreen;
-    CursorPtr	pCursor;
+miPointerUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCursor)
 {
     SetupScreen(pScreen);
 
@@ -170,9 +159,7 @@ miPointerUnrealizeCursor (pScreen, pCursor)
 }
 
 static Bool
-miPointerDisplayCursor (pScreen, pCursor)
-    ScreenPtr	pScreen;
-    CursorPtr	pCursor;
+miPointerDisplayCursor(ScreenPtr pScreen, CursorPtr pCursor)
 {
     miPointer.pCursor = pCursor;
     miPointer.pScreen = pScreen;
@@ -181,9 +168,7 @@ miPointerDisplayCursor (pScreen, pCursor)
 }
 
 static void
-miPointerConstrainCursor (pScreen, pBox)
-    ScreenPtr	pScreen;
-    BoxPtr	pBox;
+miPointerConstrainCursor(ScreenPtr pScreen, BoxPtr pBox)
 {
     miPointer.limits = *pBox;
     miPointer.confined = PointerConfinedToScreen();
@@ -191,20 +176,15 @@ miPointerConstrainCursor (pScreen, pBox)
 
 /*ARGSUSED*/
 static void
-miPointerPointerNonInterestBox (pScreen, pBox)
-    ScreenPtr	pScreen;
-    BoxPtr	pBox;
+miPointerPointerNonInterestBox(ScreenPtr pScreen, BoxPtr pBox)
 {
     /* until DIX uses this, this will remain a stub */
 }
 
 /*ARGSUSED*/
 static void
-miPointerCursorLimits(pScreen, pCursor, pHotBox, pTopLeftBox)
-    ScreenPtr	pScreen;
-    CursorPtr	pCursor;
-    BoxPtr	pHotBox;
-    BoxPtr	pTopLeftBox;
+miPointerCursorLimits(ScreenPtr pScreen, CursorPtr pCursor, BoxPtr pHotBox,
+		      BoxPtr pTopLeftBox)
 {
     *pTopLeftBox = *pHotBox;
 }
@@ -212,10 +192,7 @@ miPointerCursorLimits(pScreen, pCursor, pHotBox, pTopLeftBox)
 static Bool GenerateEvent;
 
 static Bool
-miPointerSetCursorPosition(pScreen, x, y, generateEvent)
-    ScreenPtr pScreen;
-    int       x, y;
-    Bool      generateEvent;
+miPointerSetCursorPosition(ScreenPtr pScreen, int x, int y, Bool generateEvent)
 {
     SetupScreen (pScreen);
 
@@ -230,9 +207,7 @@ miPointerSetCursorPosition(pScreen, x, y, generateEvent)
 /* Once signals are ignored, the WarpCursor function can call this */
 
 void
-miPointerWarpCursor (pScreen, x, y)
-    ScreenPtr	pScreen;
-    int		x, y;
+miPointerWarpCursor(ScreenPtr pScreen, int x, int y)
 {
     SetupScreen (pScreen);
 
@@ -271,11 +246,9 @@ miPointerGetMotionBufferSize ()
 }
 
 int
-miPointerGetMotionEvents (pPtr, coords, start, stop, pScreen)
-    DeviceIntPtr    pPtr;
-    xTimecoord	    *coords;
-    unsigned long   start, stop;
-    ScreenPtr	    pScreen;
+miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
+			 unsigned long start, unsigned long stop,
+			 ScreenPtr pScreen)
 {
     int		    i;
     int		    count = 0;
@@ -374,9 +347,7 @@ miPointerUpdate ()
  */
 
 void
-miPointerDeltaCursor (dx, dy, time)
-    int		    dx, dy;
-    unsigned long   time;
+miPointerDeltaCursor(int dx, int dy, unsigned long time)
 {
     miPointerAbsoluteCursor (miPointer.x + dx, miPointer.y + dy, time);
 }
@@ -406,9 +377,7 @@ miPointerCurrentScreen ()
  */
 
 void
-miPointerAbsoluteCursor (x, y, time)
-    int		    x, y;
-    unsigned long   time;
+miPointerAbsoluteCursor(int x, int y, unsigned long time)
 {
     miPointerScreenPtr	pScreenPriv;
     ScreenPtr		pScreen;
@@ -453,8 +422,7 @@ miPointerAbsoluteCursor (x, y, time)
 }
 
 void
-miPointerPosition (x, y)
-    int	    *x, *y;
+miPointerPosition(int *x, int *y)
 {
     *x = miPointer.x;
     *y = miPointer.y;
@@ -465,10 +433,7 @@ miPointerPosition (x, y)
  */
 
 static void
-miPointerMove (pScreen, x, y, time)
-    ScreenPtr	    pScreen;
-    int		    x, y;
-    unsigned long   time;
+miPointerMove(ScreenPtr pScreen, int x, int y, unsigned long time)
 {
     SetupScreen(pScreen);
     xEvent		xE;
@@ -519,9 +484,7 @@ miPointerMove (pScreen, x, y, time)
 }
 
 void
-_miRegisterPointerDevice (pScreen, pDevice)
-    ScreenPtr	pScreen;
-    DeviceIntPtr pDevice;
+_miRegisterPointerDevice(ScreenPtr pScreen, DeviceIntPtr pDevice)
 {
     miPointer.pPointer = (DevicePtr)pDevice;
 }
@@ -530,9 +493,7 @@ _miRegisterPointerDevice (pScreen, pDevice)
 #ifdef miRegisterPointerDevice
 #undef miRegisterPointerDevice
 void
-miRegisterPointerDevice (pScreen, pDevice)
-    ScreenPtr	pScreen;
-    DevicePtr pDevice;
+miRegisterPointerDevice(ScreenPtr pScreen, DevicePtr pDevice)
 {
     miPointer.pPointer = pDevice;
 }

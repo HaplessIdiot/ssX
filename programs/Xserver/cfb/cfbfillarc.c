@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.7 2003/10/29 22:44:53 tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -25,8 +25,6 @@ in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
 
-/* $Xorg: cfbfillarc.c,v 1.4 2001/02/09 02:04:37 xorgcvs Exp $ */
-
 #include "X.h"
 #include "Xprotostr.h"
 #include "regionstr.h"
@@ -47,10 +45,7 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 static void
-RROP_NAME(cfbFillEllipseSolid)(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    xArc *arc)
+RROP_NAME(cfbFillEllipseSolid)(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 {
     STUPID int x, y, e;
     STUPID int yk, xk, ym, xm, dx, dy, xorg, yorg;
@@ -60,16 +55,16 @@ RROP_NAME(cfbFillEllipseSolid)(
 #else
     CfbBits *addrlt, *addrlb;
 #endif
-    register CfbBits *addrl;
-    register int n;
+    CfbBits *addrl;
+    int n;
     int nlwidth;
     RROP_DECLARE
-    register int xpos;
-    register int slw;
+    int xpos;
+    int slw;
     CfbBits startmask, endmask;
     int	nlmiddle;
 #if PSZ == 24
-    register int pidx;
+    int pidx;
     int xpos3;
 #endif
 
@@ -255,13 +250,10 @@ RROP_NAME(cfbFillEllipseSolid)(
     }
 
 static void
-RROP_NAME(cfbFillArcSliceSolid)(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    xArc *arc)
+RROP_NAME(cfbFillArcSliceSolid)(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 {
     int yk, xk, ym, xm, dx, dy, xorg, yorg, slw;
-    register int x, y, e;
+    int x, y, e;
     miFillArcRec info;
     miArcSliceRec slice;
     int xl, xr, xc;
@@ -270,13 +262,13 @@ RROP_NAME(cfbFillArcSliceSolid)(
 #else
     CfbBits *addrlt, *addrlb;
 #endif
-    register CfbBits *addrl;
-    register int n;
+    CfbBits *addrl;
+    int n;
     int nlwidth;
     RROP_DECLARE
     CfbBits startmask, endmask;
 #if PSZ == 24
-    register int pidx;
+    int pidx;
 #endif /* PSZ == 24 */
 
 #if PSZ == 24
@@ -318,14 +310,11 @@ RROP_NAME(cfbFillArcSliceSolid)(
 }
 
 void
-RROP_NAME(cfbPolyFillArcSolid) (pDraw, pGC, narcs, parcs)
-    DrawablePtr	pDraw;
-    GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
+RROP_NAME(cfbPolyFillArcSolid)(DrawablePtr pDraw, GCPtr pGC, int narcs,
+			       xArc *parcs)
 {
-    register xArc *arc;
-    register int i;
+    xArc *arc;
+    int i;
     int x2, y2;
     BoxRec box;
     RegionPtr cclip;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.45 2004/12/15 04:11:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.46 2004/12/15 15:03:28 twini Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -202,17 +202,15 @@ XFree86MiscExtensionInit(void)
 
 /*ARGSUSED*/
 static void
-XF86MiscResetProc (extEntry)
-    ExtensionEntry* extEntry;
+XF86MiscResetProc(ExtensionEntry *extEntry)
 {
 }
 
 static int
-ProcXF86MiscQueryVersion(client)
-    register ClientPtr client;
+ProcXF86MiscQueryVersion(ClientPtr client)
 {
     xXF86MiscQueryVersionReply rep;
-    register int n;
+    int n;
 
     DEBUG_P("XF86MiscQueryVersion");
 
@@ -240,8 +238,7 @@ ProcXF86MiscQueryVersion(client)
  * clients.
  */
 static int
-ProcXF86MiscSetSaver(client)
-    register ClientPtr client;
+ProcXF86MiscSetSaver(ClientPtr client)
 {
     REQUEST(xXF86MiscSetSaverReq);
     ScrnInfoPtr vptr;
@@ -266,12 +263,11 @@ ProcXF86MiscSetSaver(client)
  * clients.
  */
 static int
-ProcXF86MiscGetSaver(client)
-    register ClientPtr client;
+ProcXF86MiscGetSaver(ClientPtr client)
 {
     REQUEST(xXF86MiscGetSaverReq);
     xXF86MiscGetSaverReply rep;
-    register int n;
+    int n;
     ScrnInfoPtr vptr;
 
     if (stuff->screen > screenInfo.numScreens)
@@ -299,13 +295,12 @@ ProcXF86MiscGetSaver(client)
 #endif /* _XF86MISC_SAVER_COMPAT_ */
 
 static int
-ProcXF86MiscGetMouseSettings(client)
-    register ClientPtr client;
+ProcXF86MiscGetMouseSettings(ClientPtr client)
 {
     xXF86MiscGetMouseSettingsReply rep;
     char *devname;
     pointer mouse;
-    register int n;
+    int n;
 
     DEBUG_P("XF86MiscGetMouseSettings");
 
@@ -351,12 +346,11 @@ ProcXF86MiscGetMouseSettings(client)
 }
 
 static int
-ProcXF86MiscGetKbdSettings(client)
-    register ClientPtr client;
+ProcXF86MiscGetKbdSettings(ClientPtr client)
 {
     xXF86MiscGetKbdSettingsReply rep;
     pointer kbd;
-    register int n;
+    int n;
 
     DEBUG_P("XF86MiscGetKbdSettings");
 
@@ -383,8 +377,7 @@ ProcXF86MiscGetKbdSettings(client)
 }
 
 static int
-ProcXF86MiscSetMouseSettings(client)
-    register ClientPtr client;
+ProcXF86MiscSetMouseSettings(ClientPtr client)
 {
     MiscExtReturn ret;
     pointer mouse;
@@ -460,8 +453,7 @@ ProcXF86MiscSetMouseSettings(client)
 }
 
 static int
-ProcXF86MiscSetKbdSettings(client)
-    register ClientPtr client;
+ProcXF86MiscSetKbdSettings(ClientPtr client)
 {
     MiscExtReturn ret;
     pointer kbd;
@@ -499,8 +491,7 @@ ProcXF86MiscSetKbdSettings(client)
 }
 
 static int
-ProcXF86MiscSetGrabKeysState(client)
-    register ClientPtr client;
+ProcXF86MiscSetGrabKeysState(ClientPtr client)
 {
     int n, status;
     xXF86MiscSetGrabKeysStateReply rep;
@@ -556,14 +547,13 @@ ProcXF86MiscSetClientVersion(ClientPtr client)
 }
 
 static int
-ProcXF86MiscGetFilePaths(client)
-    register ClientPtr client;
+ProcXF86MiscGetFilePaths(ClientPtr client)
 {
     xXF86MiscGetFilePathsReply rep;
     const char *configfile;
     const char *modulepath;
     const char *logfile;
-    register int n;
+    int n;
 
     DEBUG_P("XF86MiscGetFilePaths");
 
@@ -602,13 +592,12 @@ ProcXF86MiscGetFilePaths(client)
 }
 
 static int
-ProcXF86MiscPassMessage(client)
-    register ClientPtr client;
+ProcXF86MiscPassMessage(ClientPtr client)
 {
     xXF86MiscPassMessageReply rep;
     char *msgtype, *msgval, *retstr;
     int retval, size;
-    register int n;
+    int n;
 
     REQUEST(xXF86MiscPassMessageReq);
 
@@ -666,8 +655,7 @@ ProcXF86MiscPassMessage(client)
 }
 
 static int
-ProcXF86MiscDispatch (client)
-    register ClientPtr	client;
+ProcXF86MiscDispatch(ClientPtr client)
 {
     REQUEST(xReq);
     switch (stuff->data)
@@ -710,10 +698,9 @@ ProcXF86MiscDispatch (client)
 }
 
 static int
-SProcXF86MiscQueryVersion(client)
-    register ClientPtr	client;
+SProcXF86MiscQueryVersion(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86MiscQueryVersionReq);
     swaps(&stuff->length, n);
     return ProcXF86MiscQueryVersion(client);
@@ -721,10 +708,9 @@ SProcXF86MiscQueryVersion(client)
 
 #ifdef _XF86MISC_SAVER_COMPAT_
 static int
-SProcXF86MiscGetSaver(client)
-    ClientPtr client;
+SProcXF86MiscGetSaver(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86MiscGetSaverReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86MiscGetSaverReq);
@@ -733,10 +719,9 @@ SProcXF86MiscGetSaver(client)
 }
 
 static int
-SProcXF86MiscSetSaver(client)
-    ClientPtr client;
+SProcXF86MiscSetSaver(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86MiscSetSaverReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86MiscSetSaverReq);
@@ -748,10 +733,9 @@ SProcXF86MiscSetSaver(client)
 #endif /* _XF86MISC_SAVER_COMPAT_ */
 
 static int
-SProcXF86MiscGetMouseSettings(client)
-    ClientPtr client;
+SProcXF86MiscGetMouseSettings(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86MiscGetMouseSettingsReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86MiscGetMouseSettingsReq);
@@ -759,10 +743,9 @@ SProcXF86MiscGetMouseSettings(client)
 }
 
 static int
-SProcXF86MiscGetKbdSettings(client)
-    ClientPtr client;
+SProcXF86MiscGetKbdSettings(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86MiscGetKbdSettingsReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86MiscGetKbdSettingsReq);
@@ -770,10 +753,9 @@ SProcXF86MiscGetKbdSettings(client)
 }
 
 static int
-SProcXF86MiscSetMouseSettings(client)
-    ClientPtr client;
+SProcXF86MiscSetMouseSettings(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86MiscSetMouseSettingsReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86MiscSetMouseSettingsReq);
@@ -788,10 +770,9 @@ SProcXF86MiscSetMouseSettings(client)
 }
 
 static int
-SProcXF86MiscSetKbdSettings(client)
-    ClientPtr client;
+SProcXF86MiscSetKbdSettings(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86MiscSetKbdSettingsReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86MiscSetKbdSettingsReq);
@@ -802,10 +783,9 @@ SProcXF86MiscSetKbdSettings(client)
 }
 
 static int
-SProcXF86MiscSetGrabKeysState(client)
-    ClientPtr client;
+SProcXF86MiscSetGrabKeysState(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86MiscSetGrabKeysStateReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86MiscSetGrabKeysStateReq);
@@ -816,7 +796,7 @@ SProcXF86MiscSetGrabKeysState(client)
 static int
 SProcXF86MiscSetClientVersion(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86MiscSetClientVersionReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86MiscSetClientVersionReq);
@@ -826,10 +806,9 @@ SProcXF86MiscSetClientVersion(ClientPtr client)
 }
 
 static int
-SProcXF86MiscGetFilePaths(client)
-    ClientPtr client;
+SProcXF86MiscGetFilePaths(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86MiscGetFilePathsReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86MiscGetFilePathsReq);
@@ -837,10 +816,9 @@ SProcXF86MiscGetFilePaths(client)
 }
 
 static int
-SProcXF86MiscPassMessage(client)
-    ClientPtr client;
+SProcXF86MiscPassMessage(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86MiscPassMessageReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86MiscPassMessageReq);
@@ -848,8 +826,7 @@ SProcXF86MiscPassMessage(client)
 }
 
 static int
-SProcXF86MiscDispatch (client)
-    register ClientPtr	client;
+SProcXF86MiscDispatch(ClientPtr client)
 {
     REQUEST(xReq);
     switch (stuff->data)

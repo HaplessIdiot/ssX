@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /************************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,8 +46,6 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $Xorg: glyphcurs.c,v 1.4 2001/02/09 02:04:40 xorgcvs Exp $ */
-
 #include "misc.h"
 #include "fontstruct.h"
 #include "dixfontstr.h"
@@ -71,14 +70,11 @@ cursor metrics.
 */
 
 int
-ServerBitsFromGlyph(pfont, ch, cm, ppbits)
-    FontPtr	pfont;
-    unsigned int ch;
-    register CursorMetricPtr cm;
-    unsigned char **ppbits;
+ServerBitsFromGlyph(FontPtr pfont, unsigned int ch, CursorMetricPtr cm,
+		    unsigned char **ppbits)
 {
-    register ScreenPtr pScreen;
-    register GCPtr pGC;
+    ScreenPtr pScreen;
+    GCPtr pGC;
     xRectangle rect;
     PixmapPtr ppix;
     long nby;
@@ -141,10 +137,7 @@ ServerBitsFromGlyph(pfont, ch, cm, ppbits)
 
 
 Bool
-CursorMetricsFromGlyph( pfont, ch, cm)
-    register FontPtr 	pfont;
-    unsigned		ch;
-    register CursorMetricPtr cm;
+CursorMetricsFromGlyph(FontPtr pfont, unsigned ch, CursorMetricPtr cm)
 {
     CharInfoPtr 	pci;
     unsigned long	nglyphs;

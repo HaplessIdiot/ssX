@@ -1,5 +1,4 @@
-/* $XFree86$ */
-/* $XConsortium: afbbstore.c,v 5.7 94/04/17 20:28:18 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbbstore.c,v 3.0 1996/08/18 01:45:28 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /*
 
@@ -60,17 +59,13 @@ from the X Consortium.
  *-----------------------------------------------------------------------
  */
 void
-afbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
-	PixmapPtr		  		pPixmap;  		/* Backing pixmap */
-	RegionPtr		  		prgnSave; 		/* Region to save (pixmap-relative) */
-	int					  		xorg;					/* X origin of region */
-	int					  		yorg;					/* Y origin of region */
-	WindowPtr				pWin;
+afbSaveAreas(PixmapPtr pPixmap, RegionPtr prgnSave, int xorg, int yorg,
+	     WindowPtr pWin)
 {
-	register DDXPointPtr pPt;
-	DDXPointPtr				pPtsInit;
-	register BoxPtr		pBox;
-	register int		numRects;
+	DDXPointPtr	pPt;
+	DDXPointPtr	pPtsInit;
+	BoxPtr		pBox;
+	int		numRects;
 
 	numRects = REGION_NUM_RECTS(prgnSave);
 	pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(numRects * sizeof(DDXPointRec));
@@ -116,17 +111,13 @@ afbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
  *-----------------------------------------------------------------------
  */
 void
-afbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
-	PixmapPtr		  		pPixmap;  		/* Backing pixmap */
-	RegionPtr		  		prgnRestore; 		/* Region to restore (screen-relative)*/
-	int					  		xorg;					/* X origin of window */
-	int					  		yorg;					/* Y origin of window */
-	WindowPtr				pWin;
+afbRestoreAreas(PixmapPtr pPixmap, RegionPtr prgnRestore, int xorg, int yorg,
+		WindowPtr pWin)
 {
-	register DDXPointPtr pPt;
-	DDXPointPtr				pPtsInit;
-	register BoxPtr		pBox;
-	register int		numRects;
+	DDXPointPtr	pPt;
+	DDXPointPtr	pPtsInit;
+	BoxPtr		pBox;
+	int		numRects;
 
 	numRects = REGION_NUM_RECTS(prgnRestore);
 	pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(numRects*sizeof(DDXPointRec));

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.62 2005/01/26 21:53:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.63 2005/02/03 02:01:14 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -599,8 +599,8 @@ extern int snprintf(char *str, size_t size, const char *format, ...)
 extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 #endif
 #if defined(NEED_STRLCAT)
-extern size_t strlcat(char *dst, const char *src, size_t size);
-extern size_t strlcpy(char *dst, const char *src, size_t size);
+#include "strlcat.h"
+#include "strlcpy.h"
 #endif
 #endif
 

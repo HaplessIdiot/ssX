@@ -1,5 +1,3 @@
-/* $Xorg: XawI18n.h,v 1.4 2001/02/09 02:03:47 xorgcvs Exp $ */
-
 /************************************************************
 
 Copyright 1993, 1994, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.14 2001/12/14 19:54:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.15 2003/12/19 02:05:38 dawes Exp $ */
 
 #ifdef HAS_WCTYPE_H
 #include <wctype.h>
@@ -114,8 +112,9 @@ wchar_t _Xaw_atowc
 
 #ifndef iswalnum
 #define iswalnum(c) _Xaw_iswalnum(c)
+#endif
+
 int _Xaw_iswalnum
 (
  wchar_t		c
  );
-#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcCReduce.c,v 1.2 1998/07/25 16:59:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcCReduce.c,v 1.3 1999/06/06 08:48:58 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -22,8 +22,6 @@
  *
 */
 
-/* $XConsortium: ppcCReduce.c /main/3 1996/02/21 17:57:17 kaleb $ */
-
 #include "xf4bpp.h"
 #include "ppcGCstr.h"
 
@@ -33,16 +31,9 @@
  */
 
 static void 
-ppcReduceGeneral
-(
-	register int		alu,
-	register unsigned long	pm,
-	register unsigned long	fg,
-	register unsigned long	bg,
-	register int		fillStyle,
-	int			drawableDepth,
-	ppcReducedRrop		*returnLoc
-)
+ppcReduceGeneral(int alu, unsigned long pm, unsigned long fg,
+		 unsigned long bg, int fillStyle, int drawableDepth,
+		 ppcReducedRrop *returnLoc)
 {
 
 if ( ( alu == GXnoop )
@@ -218,10 +209,7 @@ return ;
 }
 
 void 
-xf4bppGetReducedColorRrop( pGC, drawableDepth, returnLoc )
-GC		*pGC ;
-int		drawableDepth ;
-ppcReducedRrop	*returnLoc ;
+xf4bppGetReducedColorRrop(GC *pGC, int drawableDepth, ppcReducedRrop *returnLoc)
 {
 
 ppcReduceGeneral( pGC->alu,

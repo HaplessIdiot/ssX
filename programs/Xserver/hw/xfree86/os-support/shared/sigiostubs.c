@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigiostubs.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigiostubs.c,v 1.6 2004/12/15 01:26:50 tsi Exp $ */
 /*
- * Copyright (c) 1999-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1999-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -52,6 +52,7 @@
 # endif
 # include "misc.h"
 #endif
+#include "xf86_OSproc.h"
 
 int
 xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *closure)

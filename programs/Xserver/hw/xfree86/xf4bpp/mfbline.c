@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbline.c,v 1.5 2003/11/03 05:11:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbline.c,v 1.6 2003/11/17 22:20:42 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -47,7 +47,6 @@ SOFTWARE.
 
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
-/* $XConsortium: mfbline.c /main/4 1996/02/21 17:56:48 kaleb $ */
 
 #include "xf4bpp.h"
 #include "OScompiler.h"
@@ -96,11 +95,7 @@ static void DoV16SegmentSS(
 );
 
 void
-xf4bppSegmentSS (pDrawable, pGC, nseg, pSeg)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		nseg;
-    register xSegment	*pSeg;
+xf4bppSegmentSS(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 {
     if ( ! xf86Screens[pDrawable->pScreen->myNum]->vtSema ) {
 	miPolySegment(pDrawable, pGC, nseg, pSeg);
@@ -110,17 +105,11 @@ xf4bppSegmentSS (pDrawable, pGC, nseg, pSeg)
 }
 
 #else
-static void DoV16LineSS(
-    DrawablePtr, GCPtr, int, int, DDXPointPtr
-);
+static void DoV16LineSS(DrawablePtr, GCPtr, int, int, DDXPointPtr);
 
 void
-xf4bppLineSS (pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		mode;		/* Origin or Previous */
-    int		npt;		/* number of points */
-    DDXPointPtr pptInit;
+xf4bppLineSS(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	     DDXPointPtr pptInit)
 {
     if ( ! xf86Screens[pDrawable->pScreen->myNum]->vtSema ) {
 	miZeroLine(pDrawable, pGC, mode, npt, pptInit);
@@ -132,26 +121,18 @@ xf4bppLineSS (pDrawable, pGC, mode, npt, pptInit)
 
 static void
 #ifdef POLYSEGMENT
-DoV16SegmentSS (pDrawable, pGC, nseg, pSeg)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		nseg;
-    register xSegment	*pSeg;
+DoV16SegmentSS(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 #else
-DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		mode;		/* Origin or Previous */
-    int		npt;		/* number of points */
-    DDXPointPtr pptInit;
+DoV16LineSS(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	    DDXPointPtr pptInit)
 #endif
 {
     int nboxInit;
-    register int nbox;
+    int nbox;
     BoxPtr pboxInit;
-    register BoxPtr pbox;
+    BoxPtr pbox;
 #ifndef POLYSEGMENT
-    register DDXPointPtr ppt;	/* pointer to list of translated points */
+    DDXPointPtr ppt;	/* pointer to list of translated points */
 #endif
 
     unsigned int oc1;		/* outcode of point 1 */
@@ -175,8 +156,8 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
     unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
 
 				/* a bunch of temporaries */
-    register int y1, y2;
-    register int x1, x2;
+    int y1, y2;
+    int x1, x2;
     RegionPtr cclip;
 #ifndef POLYSEGMENT
     int	     alu = pGC->alu; /* GJA */
@@ -232,7 +213,7 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
 	    */
 	    if (y1 > y2)
 	    {
-		register int tmp;
+		int tmp;
 
 		tmp = y2;
 		y2 = y1 + 1;
@@ -285,7 +266,7 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
 	    */
 	    if (x1 > x2)
 	    {
-		register int tmp;
+		int tmp;
 
 		tmp = x2;
 		x2 = x1 + 1;
@@ -495,16 +476,10 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
  */
 
 #ifdef POLYSEGMENT
-static void DoV16SegmentSD(
-    DrawablePtr, GCPtr, int, xSegment*
-);
+static void DoV16SegmentSD(DrawablePtr, GCPtr, int, xSegment*);
 
 void
-xf4bppSegmentSD (pDrawable, pGC, nseg, pSeg)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		nseg;
-    register xSegment	*pSeg;
+xf4bppSegmentSD(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 {
     if ( ! xf86Screens[pDrawable->pScreen->myNum]->vtSema ) {
 	miPolySegment(pDrawable, pGC, nseg, pSeg);
@@ -514,17 +489,11 @@ xf4bppSegmentSD (pDrawable, pGC, nseg, pSeg)
 }
 
 #else
-static void DoV16LineSD(
-    DrawablePtr, GCPtr, int, int, DDXPointPtr
-);
+static void DoV16LineSD(DrawablePtr, GCPtr, int, int, DDXPointPtr);
 
 void
-xf4bppLineSD (pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		mode;		/* Origin or Previous */
-    int		npt;		/* number of points */
-    DDXPointPtr pptInit;
+xf4bppLineSD(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	     DDXPointPtr pptInit)
 {
     if ( ! xf86Screens[pDrawable->pScreen->myNum]->vtSema ) {
 	miZeroDashLine(pDrawable, pGC, mode, npt, pptInit);
@@ -536,30 +505,22 @@ xf4bppLineSD (pDrawable, pGC, mode, npt, pptInit)
 
 static void
 #ifdef POLYSEGMENT
-DoV16SegmentSD (pDrawable, pGC, nseg, pSeg)
-    DrawablePtr	pDrawable;
-    register GCPtr	pGC;
-    int		nseg;
-    register xSegment	*pSeg;
+DoV16SegmentSD(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 #else
-DoV16LineSD( pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    register GCPtr pGC;
-    int mode;		/* Origin or Previous */
-    int npt;		/* number of points */
-    DDXPointPtr pptInit;
+DoV16LineSD(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	    DDXPointPtr pptInit)
 #endif
 {
     int nboxInit;
-    register int nbox;
+    int nbox;
     BoxPtr pboxInit;
-    register BoxPtr pbox;
+    BoxPtr pbox;
 #ifndef POLYSEGMENT
-    register DDXPointPtr ppt;	/* pointer to list of translated points */
+    DDXPointPtr ppt;	/* pointer to list of translated points */
 #endif
 
-    register unsigned int oc1;	/* outcode of point 1 */
-    register unsigned int oc2;	/* outcode of point 2 */
+    unsigned int oc1;	/* outcode of point 1 */
+    unsigned int oc2;	/* outcode of point 2 */
 
     PixelType *addrl;		/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */
@@ -819,23 +780,15 @@ then pulled out to make clipping dashes easier.
 */
 
 int
-mfbClipLine(pbox, box,
-	    ppt1Orig, ppt1, ppt2, 
-	    adx, ady, signdx, signdy, axis,
-	    pclip1, pclip2)
-BoxPtr pbox;			/* box to clip to */
-BoxRec box;			/* box to do calculations with */
-DDXPointPtr ppt1Orig, ppt1, ppt2;
-int adx, ady;
-int signdx, signdy;
-register int axis;
-int *pclip1, *pclip2;
+mfbClipLine(BoxPtr pbox, BoxRec box, DDXPointPtr ppt1Orig,
+	    DDXPointPtr ppt1, DDXPointPtr ppt2, int adx, int ady,
+	    int signdx, int signdy, int axis, int *pclip1, int *pclip2)
 {
     DDXPointRec pt1Orig, pt1, pt2;
-    register int swapped = 0;
+    int swapped = 0;
     int clipDone = 0;
-    register unsigned int utmp;
-    register int oc1, oc2;
+    unsigned int utmp;
+    int oc1, oc2;
     int clip1, clip2;
 
     pt1Orig = *ppt1Orig;

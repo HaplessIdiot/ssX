@@ -1,7 +1,4 @@
 /*
- * $XConsortium: init.c,v 2.81 95/01/25 14:56:39 swick Exp $
- *
- *
  *		        COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -25,7 +22,7 @@
  * without specific, written prior permission.
  *
  */
-/* $XFree86: xc/programs/xmh/init.c,v 1.5 2002/01/07 20:20:12 dawes Exp $ */
+/* $XFree86: xc/programs/xmh/init.c,v 1.6 2002/04/05 21:06:28 dickey Exp $ */
 
 /* Init.c - Handle start-up initialization. */
 
@@ -259,7 +256,10 @@ static void _Die(
 
 /* All the start-up initialization goes here. */
 
-extern char** environ;	/* POSIX doesn't specify a .h for this */
+#include <stdlib.h>
+#ifndef _GNU_SOURCE
+extern char **environ;
+#endif
 
 void InitializeWorld(int argc, char **argv)
 {

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mi/mipoly.c,v 1.3 2003/07/16 01:38:56 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mipoly.c,v 1.4 2001/02/09 02:05:21 xorgcvs Exp $ */
+
 /*
  *  mipoly.c
  *
@@ -65,16 +65,12 @@ SOFTWARE.
 
 
 void
-miFillPolygon(dst, pgc, shape, mode, count, pPts)
-    DrawablePtr		dst;
-    register GCPtr	pgc;
-    int			shape, mode;
-    register int	count;
-    DDXPointPtr		pPts;
+miFillPolygon(DrawablePtr dst, GCPtr pgc, int shape, int mode, int count,
+	      DDXPointPtr pPts)
 {
     int			i;
-    register int	xorg, yorg;
-    register DDXPointPtr ppt;
+    int	xorg, yorg;
+    DDXPointPtr ppt;
 
     if (count == 0)
 	return;

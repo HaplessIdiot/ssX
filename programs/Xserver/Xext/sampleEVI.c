@@ -1,4 +1,3 @@
-/* $Xorg: sampleEVI.c,v 1.3 2000/08/17 19:47:58 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1997 by Silicon Graphics Computer Systems, Inc.
 Permission to use, copy, modify, and distribute this
@@ -21,7 +20,7 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/sampleEVI.c,v 3.5 2003/07/16 01:38:29 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -32,7 +31,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XEVIstr.h"
 #include "EVIstruct.h"
 #include "scrnintstr.h"
-static int sampleGetVisualInfo(
+static int
+sampleGetVisualInfo(
     VisualID32 *visual,
     int n_visual,
     xExtendedVisualInfo **evi_rn,
@@ -44,7 +44,7 @@ static int sampleGetVisualInfo(
     VisualID32 *temp_conflict;
     xExtendedVisualInfo *evi;
     int max_visuals = 0, max_sz_conflict, sz_conflict = 0;
-    register int visualI, scrI, sz_evi = 0, conflictI, n_conflict;
+    int visualI, scrI, sz_evi = 0, conflictI, n_conflict;
     *evi_rn = evi = (xExtendedVisualInfo *)xalloc(max_sz_evi);
     if (!*evi_rn)
          return BadAlloc;
@@ -79,9 +79,8 @@ static int sampleGetVisualInfo(
     return Success;
 }
 
-static void sampleFreeVisualInfo(
-    xExtendedVisualInfo *evi,
-    VisualID32 *conflict)
+static void
+sampleFreeVisualInfo(xExtendedVisualInfo *evi, VisualID32 *conflict)
 {
     if (evi)
         xfree(evi);
@@ -89,7 +88,8 @@ static void sampleFreeVisualInfo(
     	xfree(conflict);
 }
 
-EviPrivPtr eviDDXInit(void)
+EviPrivPtr
+eviDDXInit(void)
 {
     static EviPrivRec eviPriv;
     eviPriv.getVisualInfo = sampleGetVisualInfo;
@@ -97,6 +97,7 @@ EviPrivPtr eviDDXInit(void)
     return &eviPriv;
 }
 
-void eviDDXReset(void)
+void
+eviDDXReset(void)
 {
 }

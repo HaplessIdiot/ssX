@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipolytext.c,v 1.2 2001/08/06 20:51:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipolytext.c,v 1.3 2001/12/14 20:00:26 dawes Exp $ */
 /*******************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-/* $Xorg: mipolytext.c,v 1.4 2001/02/09 02:05:21 xorgcvs Exp $ */
+
 /*
  * mipolytext.c - text routines
  *
@@ -65,13 +65,8 @@ SOFTWARE.
 #include	"mi.h"
 
 int
-miPolyText(pDraw, pGC, x, y, count, chars, fontEncoding)
-    DrawablePtr pDraw;
-    GCPtr	pGC;
-    int		x, y;
-    int		count;
-    char 	*chars;
-    FontEncoding fontEncoding;
+miPolyText(DrawablePtr pDraw, GCPtr pGC, int x, int y, int count,
+	   char *chars, FontEncoding fontEncoding)
 {
     unsigned long n, i;
     int w;
@@ -89,12 +84,7 @@ miPolyText(pDraw, pGC, x, y, count, chars, fontEncoding)
 
 
 int
-miPolyText8(pDraw, pGC, x, y, count, chars)
-    DrawablePtr pDraw;
-    GCPtr	pGC;
-    int		x, y;
-    int 	count;
-    char	*chars;
+miPolyText8(DrawablePtr pDraw, GCPtr pGC, int x, int y, int count, char *chars)
 {
     unsigned long n, i;
     int w;
@@ -112,12 +102,8 @@ miPolyText8(pDraw, pGC, x, y, count, chars)
 
 
 int
-miPolyText16(pDraw, pGC, x, y, count, chars)
-    DrawablePtr pDraw;
-    GCPtr	pGC;
-    int		x, y;
-    int		count;
-    unsigned short *chars;
+miPolyText16(DrawablePtr pDraw, GCPtr pGC, int x, int y, int count,
+	     unsigned short *chars)
 {
     unsigned long n, i;
     int w;
@@ -136,13 +122,8 @@ miPolyText16(pDraw, pGC, x, y, count, chars)
 
 
 int
-miImageText(pDraw, pGC, x, y, count, chars, fontEncoding)
-    DrawablePtr pDraw;
-    GCPtr	pGC;
-    int 	x, y;
-    int 	count;
-    char 	*chars;
-    FontEncoding fontEncoding;
+miImageText(DrawablePtr pDraw, GCPtr pGC, int x, int y, int count,
+	    char *chars, FontEncoding fontEncoding)
 {
     unsigned long n, i;
     FontPtr font = pGC->font;
@@ -160,12 +141,8 @@ miImageText(pDraw, pGC, x, y, count, chars, fontEncoding)
 
 
 void
-miImageText8(pDraw, pGC, x, y, count, chars)
-    DrawablePtr pDraw;
-    GCPtr	pGC;
-    int		x, y;
-    int		count;
-    char	*chars;
+miImageText8(DrawablePtr pDraw, GCPtr pGC, int  x, int  y, int  count,
+	     char *chars)
 {
     unsigned long n;
     FontPtr font = pGC->font;
@@ -179,12 +156,8 @@ miImageText8(pDraw, pGC, x, y, count, chars)
 
 
 void
-miImageText16(pDraw, pGC, x, y, count, chars)
-    DrawablePtr pDraw;
-    GCPtr	pGC;
-    int		x, y;
-    int		count;
-    unsigned short *chars;
+miImageText16(DrawablePtr pDraw, GCPtr pGC, int x, int y, int count,
+	      unsigned short *chars)
 {
     unsigned long n;
     FontPtr font = pGC->font;

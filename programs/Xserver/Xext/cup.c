@@ -1,4 +1,3 @@
-/* $Xorg: cup.c,v 1.4 2001/02/09 02:04:32 xorgcvs Exp $ */
 /*
 
 Copyright 1997, 1998  The Open Group
@@ -24,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.12 2003/10/28 23:08:43 tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -48,6 +47,8 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 #include "modinit.h"
+
+#ifdef TOGCUP
 
 static int		ProcDispatch(ClientPtr client);
 static int              SProcDispatch(ClientPtr client);
@@ -128,7 +129,7 @@ static xColorItem citems[] = {
 #define NUM_DESKTOP_COLORS (sizeof citems / sizeof citems[0])
 
 void
-XcupExtensionInit (INITARGS)
+XcupExtensionInit(INITARGS)
 {
 #if 0
     ExtensionEntry* extEntry;
@@ -157,19 +158,17 @@ XcupExtensionInit (INITARGS)
 }
 
 /*ARGSUSED*/
-static 
-void ResetProc(
-    ExtensionEntry* extEntry)
+static void
+ResetProc(ExtensionEntry* extEntry)
 {
 }
 
-static 
-int ProcQueryVersion(
-    register ClientPtr client)
+static int
+ProcQueryVersion(ClientPtr client)
 {
     /* REQUEST (xXcupQueryVersionReq); */
     xXcupQueryVersionReply rep;
-    register int n;
+    int n;
 
     REQUEST_SIZE_MATCH (xXcupQueryVersionReq);
     rep.type = X_Reply;
@@ -187,14 +186,13 @@ int ProcQueryVersion(
     return client->noClientException;
 }
 
-static
-int ProcGetReservedColormapEntries(
-    register ClientPtr client)
+static int
+ProcGetReservedColormapEntries(ClientPtr client)
 {
     REQUEST (xXcupGetReservedColormapEntriesReq);
     xXcupGetReservedColormapEntriesReply rep;
     xColorItem* cptr;
-    register int n;
+    int n;
 
     REQUEST_SIZE_MATCH (xXcupGetReservedColormapEntriesReq);
 
@@ -220,9 +218,8 @@ int ProcGetReservedColormapEntries(
     return client->noClientException;
 }
 
-static
-int ProcStoreColors(
-    register ClientPtr client)
+static int
+ProcStoreColors(ClientPtr client)
 {
     REQUEST (xXcupStoreColorsReq);
     ColormapPtr pcmp;
@@ -279,9 +276,8 @@ int ProcStoreColors(
     }
 }
 
-static 
-int ProcDispatch(
-    register ClientPtr client)
+static int
+ProcDispatch(ClientPtr client)
 {
     REQUEST (xReq);
     switch (stuff->data)
@@ -297,22 +293,20 @@ int ProcDispatch(
     }
 }
 
-static 
-int SProcQueryVersion(
-    register ClientPtr client)
+static int
+SProcQueryVersion(ClientPtr client)
 {
-    register int n;
+    int n;
 
     REQUEST(xXcupQueryVersionReq);
     swaps(&stuff->length, n);
     return ProcQueryVersion(client);
 }
 
-static 
-int SProcGetReservedColormapEntries(
-    ClientPtr client)
+static int
+SProcGetReservedColormapEntries(ClientPtr client)
 {
-    register int n;
+    int n;
 
     REQUEST (xXcupGetReservedColormapEntriesReq);
     swaps (&stuff->length, n);
@@ -321,11 +315,10 @@ int SProcGetReservedColormapEntries(
     return ProcGetReservedColormapEntries (client);
 }
 
-static 
-int SProcXcupStoreColors(
-    ClientPtr client)
+static int
+SProcXcupStoreColors(ClientPtr client)
 {
-    register int n;
+    int n;
     int count;
     xColorItem* pItem;
 
@@ -339,9 +332,8 @@ int SProcXcupStoreColors(
     return ProcStoreColors (client);
 }
 
-static 
-int SProcDispatch(
-    register ClientPtr client)
+static int
+SProcDispatch(ClientPtr client)
 {
     REQUEST(xReq);
     switch (stuff->data)
@@ -357,4 +349,4 @@ int SProcDispatch(
     }
 }
 
-
+#endif

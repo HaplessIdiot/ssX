@@ -1,4 +1,3 @@
-/* $Xorg: lcFile.c,v 1.5 2000/12/12 12:44:05 coskrey Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -23,7 +22,7 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.32 2003/03/25 04:18:09 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.33 2003/07/16 01:38:26 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,11 +30,22 @@
 #include "Xlibint.h"
 #include "XlcPubI.h"
 #include <X11/Xos.h>
-#if 0
-#include <unistd.h>  /* in theory delivers getresuid/gid prototypes,
-		      * in practice only the Linux syscall wrapper is there. */
-#endif
 
+#ifdef HASGETRESUID
+# include <unistd.h>
+# if !defined(__GLIBC_PREREQ)
+#  define _NEED_GETRESUID_PROTO
+# else
+#  if !__GLIBC_PREREQ(2,3)
+#   define _NEED_GETRESUID_PROTO
+#  endif
+# endif
+# ifdef _NEED_GETRESUID_PROTO
+   extern int getresuid(uid_t *, uid_t *, uid_t *);
+   extern int getresgid(gid_t *, gid_t *, gid_t *);
+#  undef _NEED_GETRESUID_PROTO
+# endif
+#endif
 
 /************************************************************************/
 

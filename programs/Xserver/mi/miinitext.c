@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.69 2004/06/30 20:21:46 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.70 2005/03/25 02:22:58 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: miinitext.c,v 1.4 2001/02/09 02:05:21 xorgcvs Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -250,9 +249,7 @@ extern void DMXExtensionInit(INITARGS);
 
 /*ARGSUSED*/
 void
-InitExtensions(argc, argv)
-    int		argc;
-    char	*argv[];
+InitExtensions(int argc, char *argv[])
 {
 #ifdef PANORAMIX
 # if !defined(PRINT_ONLY_SERVER) && !defined(NO_PANORAMIX)
@@ -519,9 +516,7 @@ static ExtensionModule staticExtensions[] = {
     
 /*ARGSUSED*/
 void
-InitExtensions(argc, argv)
-    int		argc;
-    char	*argv[];
+InitExtensions(int argc, char *argv[])
 {
     int i;
     ExtensionModule *ext;

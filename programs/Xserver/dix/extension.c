@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/extension.c,v 3.11 2001/12/14 19:59:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/extension.c,v 3.12 2002/02/19 11:09:22 alanh Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: extension.c,v 1.4 2001/02/09 02:04:40 xorgcvs Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -86,7 +85,7 @@ AddExtension(char *name, int NumEvents, int NumErrors,
 	     unsigned short (*MinorOpcodeProc)(ClientPtr c3))
 {
     int i;
-    register ExtensionEntry *ext, **newexts;
+    ExtensionEntry *ext, **newexts;
 
     if (!MainProc || !SwappedMainProc || !CloseDownProc || !MinorOpcodeProc)
         return((ExtensionEntry *) NULL);
@@ -156,9 +155,8 @@ AddExtension(char *name, int NumEvents, int NumErrors,
     return(ext);
 }
 
-Bool AddExtensionAlias(alias, ext)
-    char *alias;
-    ExtensionEntry *ext;
+Bool
+AddExtensionAlias(char *alias, ExtensionEntry *ext)
 {
     char *name;
     char **aliases;
@@ -219,9 +217,7 @@ CheckExtension(const char *extname)
 }
 
 void
-DeclareExtensionSecurity(extname, secure)
-    char *extname;
-    Bool secure;
+DeclareExtensionSecurity(char *extname, Bool secure)
 {
 #ifdef XCSECURITY
     int i = FindExtension(extname, strlen(extname));
@@ -247,15 +243,13 @@ DeclareExtensionSecurity(extname, secure)
 }
 
 unsigned short
-StandardMinorOpcode(client)
-    ClientPtr client;
+StandardMinorOpcode(ClientPtr client)
 {
     return ((xReq *)client->requestBuffer)->data;
 }
 
 unsigned short
-MinorOpcodeOfRequest(client)
-    ClientPtr client;
+MinorOpcodeOfRequest(ClientPtr client)
 {
     unsigned char major;
 
@@ -271,7 +265,7 @@ MinorOpcodeOfRequest(client)
 void
 CloseDownExtensions()
 {
-    register int i,j;
+    int i,j;
 
 #ifdef LBX
     LbxCloseDownExtensions();
@@ -293,7 +287,7 @@ CloseDownExtensions()
     lastError = FirstExtensionError;
     for (i=0; i<MAXSCREENS; i++)
     {
-	register ScreenProcEntry *spentry = &AuxillaryScreenProcs[i];
+	ScreenProcEntry *spentry = &AuxillaryScreenProcs[i];
 
 	while (spentry->num)
 	{
@@ -307,8 +301,7 @@ CloseDownExtensions()
 
 
 int
-ProcQueryExtension(client)
-    ClientPtr client;
+ProcQueryExtension(ClientPtr client)
 {
     xQueryExtensionReply reply;
     int i;
@@ -347,8 +340,7 @@ ProcQueryExtension(client)
 }
 
 int
-ProcListExtensions(client)
-    ClientPtr client;
+ProcListExtensions(ClientPtr client)
 {
     xListExtensionsReply reply;
     char *bufptr, *buffer;
@@ -364,7 +356,7 @@ ProcListExtensions(client)
 
     if ( NumExtensions )
     {
-        register int i, j;
+        int i, j;
 
         for (i=0;  i<NumExtensions; i++)
 	{
@@ -413,12 +405,10 @@ ProcListExtensions(client)
 
 
 ExtensionLookupProc 
-LookupProc(name, pGC)
-    char *name;
-    GCPtr pGC;
+LookupProc(char *name, GCPtr pGC)
 {
-    register int i;
-    register ScreenProcEntry *spentry;
+    int i;
+    ScreenProcEntry *spentry;
     spentry  = &AuxillaryScreenProcs[pGC->pScreen->myNum];
     if (spentry->num)    
     {
@@ -430,22 +420,16 @@ LookupProc(name, pGC)
 }
 
 Bool
-RegisterProc(name, pGC, proc)
-    char *name;
-    GC *pGC;
-    ExtensionLookupProc proc;
+RegisterProc(char *name, GCPtr pGC, ExtensionLookupProc proc)
 {
     return RegisterScreenProc(name, pGC->pScreen, proc);
 }
 
 Bool
-RegisterScreenProc(name, pScreen, proc)
-    char *name;
-    ScreenPtr pScreen;
-    ExtensionLookupProc proc;
+RegisterScreenProc(char *name, ScreenPtr pScreen, ExtensionLookupProc proc)
 {
-    register ScreenProcEntry *spentry;
-    register ProcEntryPtr procEntry = (ProcEntryPtr)NULL;
+    ScreenProcEntry *spentry;
+    ProcEntryPtr procEntry = (ProcEntryPtr)NULL;
     char *newname;
     int i;
 

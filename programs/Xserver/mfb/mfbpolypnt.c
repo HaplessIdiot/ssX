@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbpolypnt.c,v 1.4 2001/01/17 22:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbpolypnt.c,v 1.5 2001/12/14 20:00:11 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbpolypnt.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -61,26 +60,22 @@ SOFTWARE.
 #include "maskbits.h"
 
 void
-mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
-    register DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		mode;		/* Origin or Previous */
-    int		npt;
-    xPoint 	*pptInit;
+mfbPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	     xPoint *pptInit)
 {
 
-    register BoxPtr pbox;
-    register int nbox;
+    BoxPtr pbox;
+    int nbox;
 
-    register PixelType *addrl;
+    PixelType *addrl;
     int nlwidth;
 
     int nptTmp;
-    register xPoint *ppt;
+    xPoint *ppt;
 
-    register int x;
-    register int y;
-    register int rop;
+    int x;
+    int y;
+    int rop;
     mfbPrivGC	*pGCPriv;
 
     if (!(pGC->planemask & 1))

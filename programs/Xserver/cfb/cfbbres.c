@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbbres.c,v 3.4 2001/01/17 22:36:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbres.c,v 3.5 2001/12/14 19:59:21 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: cfbbres.c,v 1.4 2001/02/09 02:04:37 xorgcvs Exp $ */
+
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -54,34 +54,31 @@ SOFTWARE.
 #include "miline.h"
 
 /* Solid bresenham line */
-/* NOTES
-   e2 is used less often than e1, so it's not in a register
+/*
+    CfbBits   *addrl;		pointer to base of bitmap
+    int	       nlwidth;		width in longwords of bitmap
+    int        signdx;
+    int	       signdy;		signs of directions
+    int	       axis;		major axis (Y_AXIS or X_AXIS)
+    int	       x1, y1;		initial point
+    int        e;		error accumulator
+    int        e1;		bresenham increments
+    int	       len;		length of line
 */
 
 void
-cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1,
-	 e2, len)
-    int		    rop;
-    CfbBits   and, xor;
-    CfbBits   *addrl;		/* pointer to base of bitmap */
-    int		    nlwidth;		/* width in longwords of bitmap */
-    register int    signdx;
-    int		    signdy;		/* signs of directions */
-    int		    axis;		/* major axis (Y_AXIS or X_AXIS) */
-    int		    x1, y1;		/* initial point */
-    register int    e;			/* error accumulator */
-    register int    e1;			/* bresenham increments */
-    int		    e2;
-    int		    len;		/* length of line */
+cfbBresS(int rop, CfbBits and, CfbBits xor, CfbBits *addrl, int nlwidth,
+	 int signdx, int signdy, int axis, int x1, int y1, int e, int e1,
+	 int e2, int len)
 {
-    register int	e3 = e2-e1;
+    int	e3 = e2-e1;
 #if PSZ == 24
     CfbBits piQxelXor[3],piQxelAnd[3];
     char *addrb;
     int nlwidth3, signdx3;
 #endif
 #ifdef PIXEL_ADDR
-    register PixelType	*addrp;		/* Pixel pointer */
+    PixelType	*addrp;		/* Pixel pointer */
 
     if (len == 0)
     	return;
@@ -230,7 +227,7 @@ cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1,
 	}
     }
 #else /* !PIXEL_ADDR */
-    register CfbBits   tmp, bit;
+    CfbBits   tmp, bit;
     CfbBits leftbit, rightbit;
 
     /* point to longword containing first point */

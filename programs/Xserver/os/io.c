@@ -45,7 +45,7 @@ SOFTWARE.
 
 
 ******************************************************************/
-/* $Xorg: io.c,v 1.6 2001/02/09 02:05:23 xorgcvs Exp $ */
+
 /*****************************************************************
  * i/o functions
  *
@@ -53,7 +53,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.35 2003/04/27 21:31:08 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.36 2004/06/08 00:21:47 dawes Exp $ */
 
 #if 0
 #define DEBUG_COMMUNICATION
@@ -217,7 +217,7 @@ ReadRequestFromClient(ClientPtr client)
     int fd = oc->fd;
     unsigned int gotnow, needed;
     int result;
-    register xReq *request;
+    xReq *request;
     Bool need_header;
 #ifdef BIGREQS
     Bool move_header;
@@ -233,7 +233,7 @@ ReadRequestFromClient(ClientPtr client)
     {
 	if (AvailableInput != oc)
 	{
-	    register ConnectionInputPtr aci = AvailableInput->input;
+	    ConnectionInputPtr aci = AvailableInput->input;
 	    if (aci->size > BUFWATERMARK)
 	    {
 		xfree(aci->buffer);
@@ -601,9 +601,9 @@ void
 ResetCurrentRequest(ClientPtr client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
-    register ConnectionInputPtr oci = oc->input;
+    ConnectionInputPtr oci = oc->input;
     int fd = oc->fd;
-    register xReq *request;
+    xReq *request;
     int gotnow, needed;
 #ifdef LBX
     LbxClientPtr lbxClient = LbxClient(client);
@@ -686,7 +686,7 @@ PeekNextRequest(
     ClientPtr client,	/* client whose requests we're skipping */
     Bool readmore)	/* attempt to read more if next request isn't there? */
 {
-    register ConnectionInputPtr oci = ((OsCommPtr)client->osPrivate)->input;
+    ConnectionInputPtr oci = ((OsCommPtr)client->osPrivate)->input;
     xReqPtr pnextreq;
     int needed, gotnow, reqlen;
 
@@ -749,7 +749,7 @@ SkipRequests(
     int numskipped)	/* how many requests we're skipping */
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
-    register ConnectionInputPtr oci = oc->input;
+    ConnectionInputPtr oci = oc->input;
     int reqlen;
 
     /* see if anyone wants to snoop the skipped requests */
@@ -807,10 +807,10 @@ static int padlength[4] = {0, 3, 2, 1};
 void
 FlushAllOutput(void)
 {
-    register int index, base;
-    register fd_mask mask; /* raphael */
+    int index, base;
+    fd_mask mask; /* raphael */
     OsCommPtr oc;
-    register ClientPtr client;
+    ClientPtr client;
     Bool newoutput = NewOutputPending;
 #if defined(WIN32)
     fd_set newOutputPending;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipolygen.c,v 1.2 2001/05/29 22:24:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipolygen.c,v 1.3 2001/12/14 20:00:25 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mipolygen.c,v 1.4 2001/02/09 02:05:21 xorgcvs Exp $ */
+
 #include "X.h"
 #include "gcstruct.h"
 #include "miscanfill.h"
@@ -64,18 +64,14 @@ SOFTWARE.
  */
 
 Bool
-miFillGeneralPoly(dst, pgc, count, ptsIn)
-    DrawablePtr dst;
-    GCPtr	pgc;
-    int		count;              /* number of points        */
-    DDXPointPtr ptsIn;              /* the points              */
+miFillGeneralPoly(DrawablePtr dst, GCPtr pgc, int count, DDXPointPtr ptsIn)
 {
-    register EdgeTableEntry *pAET;  /* the Active Edge Table   */
-    register int y;                 /* the current scanline    */
-    register int nPts = 0;          /* number of pts in buffer */
-    register EdgeTableEntry *pWETE; /* Winding Edge Table      */
-    register ScanLineList *pSLL;    /* Current ScanLineList    */
-    register DDXPointPtr ptsOut;      /* ptr to output buffers   */
+    EdgeTableEntry *pAET;  /* the Active Edge Table   */
+    int y;                 /* the current scanline    */
+    int nPts = 0;          /* number of pts in buffer */
+    EdgeTableEntry *pWETE; /* Winding Edge Table      */
+    ScanLineList *pSLL;    /* Current ScanLineList    */
+    DDXPointPtr ptsOut;      /* ptr to output buffers   */
     int *width;
     DDXPointRec FirstPoint[NUMPTSTOBUFFER]; /* the output buffers */
     int FirstWidth[NUMPTSTOBUFFER];

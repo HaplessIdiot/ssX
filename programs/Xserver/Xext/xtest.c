@@ -1,4 +1,3 @@
-/* $Xorg: xtest.c,v 1.4 2001/02/09 02:04:33 xorgcvs Exp $ */
 /*
 
 Copyright 1992, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.10 2003/10/28 23:08:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.11 2003/11/17 22:20:27 dawes Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -106,14 +105,12 @@ XTestExtensionInit(INITARGS)
 
 /*ARGSUSED*/
 static void
-XTestResetProc (extEntry)
-ExtensionEntry	*extEntry;
+XTestResetProc(ExtensionEntry *extEntry)
 {
 }
 
 static int
-ProcXTestGetVersion(client)
-    register ClientPtr client;
+ProcXTestGetVersion(ClientPtr client)
 {
     xXTestGetVersionReply rep;
     register int n;
@@ -133,8 +130,7 @@ ProcXTestGetVersion(client)
 }
 
 static int
-ProcXTestCompareCursor(client)
-    register ClientPtr client;
+ProcXTestCompareCursor(ClientPtr client)
 {
     REQUEST(xXTestCompareCursorReq);
     xXTestCompareCursorReply rep;
@@ -170,8 +166,7 @@ ProcXTestCompareCursor(client)
 }
 
 static int
-ProcXTestFakeInput(client)
-    register ClientPtr client;
+ProcXTestFakeInput(ClientPtr client)
 {
     REQUEST(xXTestFakeInputReq);
     int nev;
@@ -465,8 +460,7 @@ ProcXTestFakeInput(client)
 }
 
 static int
-ProcXTestGrabControl(client)
-    register ClientPtr client;
+ProcXTestGrabControl(ClientPtr client)
 {
     REQUEST(xXTestGrabControlReq);
 
@@ -484,8 +478,7 @@ ProcXTestGrabControl(client)
 }
 
 static int
-ProcXTestDispatch (client)
-    register ClientPtr	client;
+ProcXTestDispatch(ClientPtr client)
 {
     REQUEST(xReq);
     switch (stuff->data)
@@ -504,8 +497,7 @@ ProcXTestDispatch (client)
 }
 
 static int
-SProcXTestGetVersion(client)
-    register ClientPtr	client;
+SProcXTestGetVersion(ClientPtr client)
 {
     register int n;
     REQUEST(xXTestGetVersionReq);
@@ -517,8 +509,7 @@ SProcXTestGetVersion(client)
 }
 
 static int
-SProcXTestCompareCursor(client)
-    register ClientPtr	client;
+SProcXTestCompareCursor(ClientPtr client)
 {
     register int n;
     REQUEST(xXTestCompareCursorReq);
@@ -531,9 +522,7 @@ SProcXTestCompareCursor(client)
 }
 
 static int
-XTestSwapFakeInput(client, req)
-    register ClientPtr	client;
-    xReq *req;
+XTestSwapFakeInput(ClientPtr client, xReq *req)
 {
     register int nev;
     register xEvent *ev;
@@ -557,8 +546,7 @@ XTestSwapFakeInput(client, req)
 }
 
 static int
-SProcXTestFakeInput(client)
-    register ClientPtr	client;
+SProcXTestFakeInput(ClientPtr client)
 {
     register int n;
     REQUEST(xReq);
@@ -571,8 +559,7 @@ SProcXTestFakeInput(client)
 }
 
 static int
-SProcXTestGrabControl(client)
-    register ClientPtr	client;
+SProcXTestGrabControl(ClientPtr client)
 {
     register int n;
     REQUEST(xXTestGrabControlReq);
@@ -583,8 +570,7 @@ SProcXTestGrabControl(client)
 }
 
 static int
-SProcXTestDispatch (client)
-    register ClientPtr	client;
+SProcXTestDispatch(ClientPtr client)
 {
     REQUEST(xReq);
     switch (stuff->data)

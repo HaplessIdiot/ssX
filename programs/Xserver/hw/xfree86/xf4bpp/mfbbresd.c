@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbbresd.c,v 1.3 1999/06/06 08:48:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbbresd.c,v 1.4 2002/01/25 21:56:22 tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -47,7 +47,6 @@ SOFTWARE.
 
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
-/* $XConsortium: mfbbresd.c /main/5 1996/02/21 17:56:34 kaleb $ */
 
 #include "xf4bpp.h"
 #include "OScompiler.h"
@@ -75,33 +74,18 @@ SOFTWARE.
     }
 
 void
-xf4bppBresD(pDrawable, fgink, bgink,
-	 pdashIndex, pDash, numInDashList, pdashOffset, isDoubleDash,
-	 addrlbase, nlwidth,
-	 signdx, signdy, axis, x1, y1, e, e1, e2, len)
-DrawablePtr pDrawable;
-int fgink, bgink;
-int *pdashIndex;	/* current dash */
-unsigned char *pDash;	/* dash list */
-int numInDashList;	/* total length of dash list */
-int *pdashOffset;	/* offset into current dash */
-int isDoubleDash;
-PixelType *addrlbase;	/* pointer to base of bitmap */
-int nlwidth;		/* width in longwords of bitmap */
-int signdx, signdy;	/* signs of directions */
-int axis;		/* major axis (Y_AXIS or X_AXIS) */
-int x1, y1;		/* initial point */
-register int e;		/* error accumulator */
-register int e1;	/* bresenham increments */
-int e2;
-int len;		/* length of line */
+xf4bppBresD(DrawablePtr pDrawable, int fgink, int bgink, int *pdashIndex,
+	    unsigned char *pDash, int numInDashList, int *pdashOffset,
+	    int isDoubleDash, PixelType *addrlbase, int nlwidth,
+	    int signdx, int signdy, int axis, int x1, int y1, int e, int e1,
+	    int e2, int len)
 {
     IOADDRESS REGBASE =
 	xf86Screens[pDrawable->pScreen->myNum]->domainIOBase + 0x300;
-    register int yinc;	/* increment to next scanline, in bytes */
-    register PixelType *addrl;
-    register int e3 = e2-e1;
-    register unsigned long bit;
+    int yinc;	/* increment to next scanline, in bytes */
+    PixelType *addrl;
+    int e3 = e2-e1;
+    unsigned long bit;
     PixelType leftbit = mask[0]; /* leftmost bit to process in new word */
     PixelType rightbit = mask[PPW-1]; /* rightmost bit to process in new word */
     int dashIndex;

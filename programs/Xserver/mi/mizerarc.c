@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mizerarc.c,v 1.6 2001/12/14 20:00:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mizerarc.c,v 1.7 2003/07/16 01:38:59 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -26,8 +26,6 @@ in this Software without prior written authorization from The Open Group.
 Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
-
-/* $Xorg: mizerarc.c,v 1.4 2001/02/09 02:05:22 xorgcvs Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -95,8 +93,8 @@ static miZeroArcPtRec oob = {65536, 65536, 0};
 
 Bool
 miZeroArcSetup(arc, info, ok360)
-    register xArc *arc;
-    register miZeroArcRec *info;
+    xArc *arc;
+    miZeroArcRec *info;
     Bool ok360;
 {
     int l;
@@ -402,11 +400,11 @@ miZeroArcSetup(arc, info, ok360)
 DDXPointPtr
 miZeroArcPts(arc, pts)
     xArc *arc;
-    register DDXPointPtr pts;
+    DDXPointPtr pts;
 {
     miZeroArcRec info;
-    register int x, y, a, b, d, mask;
-    register int k1, k3, dx, dy;
+    int x, y, a, b, d, mask;
+    int k1, k3, dx, dy;
     Bool do360;
 
     do360 = miZeroArcSetup(arc, &info, TRUE);
@@ -507,14 +505,14 @@ miZeroArcDashPts(
     GCPtr pGC,
     xArc *arc,
     DashInfo *dinfo,
-    register DDXPointPtr points,
+    DDXPointPtr points,
     int maxPts,
-    register DDXPointPtr *evenPts, 
-    register DDXPointPtr *oddPts )
+    DDXPointPtr *evenPts, 
+    DDXPointPtr *oddPts )
 {
     miZeroArcRec info;
-    register int x, y, a, b, d, mask;
-    register int k1, k3, dx, dy;
+    int x, y, a, b, d, mask;
+    int k1, k3, dx, dy;
     int dashRemaining;
     DDXPointPtr arcPts[4];
     DDXPointPtr startPts[5], endPts[5];
@@ -713,11 +711,11 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     xArc	*parcs;
 {
     int maxPts = 0;
-    register int n, maxw = 0;
-    register xArc *arc;
-    register int i;
+    int n, maxw = 0;
+    xArc *arc;
+    int i;
     DDXPointPtr points, pts, oddPts;
-    register DDXPointPtr pt;
+    DDXPointPtr pt;
     int numPts;
     Bool dospans;
     int *widths = NULL;

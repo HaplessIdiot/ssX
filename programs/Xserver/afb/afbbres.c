@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbbres.c,v 3.0 1996/08/18 01:45:25 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbbres.c,v 1.22 94/04/17 20:28:17 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -56,33 +55,30 @@ SOFTWARE.
 #include "miline.h"
 
 /* Solid bresenham line */
-/* NOTES
-   e2 is used less often than e1, so it's not in a register
+
+/*
+    PixelType *addrlbase;	pointer to base of bitmap
+    int nlwidth;		width in longwords of bitmap
+    int signdx, signdy;		signs of directions
+    int axis;			major axis (Y_AXIS or X_AXIS)
+    int x1, y1;			initial point
+    int e;			error accumulator
+    int e1;			bresenham increments
+    int len;			length of line
 */
 
 void
-afbBresS(addrlbase, nlwidth, sizeDst, depthDst, signdx, signdy, axis, x1, y1,
-		 e, e1, e2, len, rrops)
-PixelType *addrlbase;		/* pointer to base of bitmap */
-int nlwidth;				/* width in longwords of bitmap */
-int sizeDst;
-int depthDst;
-int signdx, signdy;		/* signs of directions */
-int axis;				/* major axis (Y_AXIS or X_AXIS) */
-int x1, y1;				/* initial point */
-register int e;				/* error accumulator */
-register int e1;		/* bresenham increments */
-int e2;
-int len;				/* length of line */
-unsigned char *rrops;
+afbBresS(PixelType *addrlbase, int nlwidth, int sizeDst, int depthDst,
+	 int signdx, int signdy, int axis, int x1, int y1, int e, int e1,
+	 int e2, int len, unsigned char *rrops)
 {
-	register int yinc;		/* increment to next scanline, in bytes */
-	register PixelType *addrl;		/* bitmask long pointer */
-	register PixelType bit;		/* current bit being set/cleared/etc.  */
+	int yinc;		/* increment to next scanline, in bytes */
+	PixelType *addrl;	/* bitmask long pointer */
+	PixelType bit;		/* current bit being set/cleared/etc.  */
 	PixelType leftbit = mask[0]; /* leftmost bit to process in new word */
 	PixelType rightbit = mask[PPW-1]; /* rightmost bit to process in new word */
 
-	register int e3 = e2-e1;
+	int e3 = e2-e1;
 	PixelType		tmp;
 	int saveE;
 	int saveLen;

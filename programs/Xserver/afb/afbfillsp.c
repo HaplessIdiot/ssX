@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbfillsp.c,v 3.3 2000/11/22 00:58:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbfillsp.c,v 3.4 2001/10/28 03:32:58 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbfillsp.c,v 5.13 94/04/17 20:28:21 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -80,26 +79,21 @@ MaxRectsPerBand * nSpans.
 
 
 void
-afbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-	DrawablePtr pDrawable;
-	GCPtr		pGC;
-	int				nInit;				/* number of spans to fill */
-	DDXPointPtr pptInit;		/* pointer to list of start points */
-	int				*pwidthInit;		/* pointer to list of n widths */
-	int 		fSorted;
+afbSolidFS(DrawablePtr pDrawable, GCPtr pGC, int nInit, DDXPointPtr pptInit,
+	   int *pwidthInit, int fSorted)
 {
-								/* next three parameters are post-clip */
-	int n;						/* number of spans to fill */
-	register DDXPointPtr ppt;		/* pointer to list of start points */
-	register int *pwidth;		/* pointer to list of n widths */
-	PixelType *addrlBase;		/* pointer to start of bitmap */
+	/* next three parameters are post-clip */
+	int n;			/* number of spans to fill */
+	DDXPointPtr ppt;	/* pointer to list of start points */
+	int *pwidth;		/* pointer to list of n widths */
+	PixelType *addrlBase;	/* pointer to start of bitmap */
 	PixelType *pBase;
-	int nlwidth;				/* width in longwords of bitmap */
-	register PixelType *addrl;/* pointer to current longword in bitmap */
-	register int nlmiddle;
-	register PixelType startmask;
-	register PixelType endmask;
-	int *pwidthFree;				/* copies of the pointers to free */
+	int nlwidth;		/* width in longwords of bitmap */
+	PixelType *addrl;	/* pointer to current longword in bitmap */
+	int nlmiddle;
+	PixelType startmask;
+	PixelType endmask;
+	int *pwidthFree;	/* copies of the pointers to free */
 	DDXPointPtr pptFree;
 	int depthDst;
 	int sizeDst;
@@ -186,30 +180,25 @@ afbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 }
 
 void 
-afbStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-	DrawablePtr pDrawable;
-	GC *pGC;
-	int nInit;						/* number of spans to fill */
-	DDXPointPtr pptInit;		/* pointer to list of start points */
-	int *pwidthInit;				/* pointer to list of n widths */
-	int fSorted;
+afbStippleFS(DrawablePtr pDrawable, GC *pGC, int nInit, DDXPointPtr pptInit,
+	     int *pwidthInit, int fSorted)
 {
-								/* next three parameters are post-clip */
-	int n;						/* number of spans to fill */
-	register DDXPointPtr ppt;		/* pointer to list of start points */
-	register int *pwidth;		/* pointer to list of n widths */
-	PixelType *addrlBase;		/* pointer to start of bitmap */
+	/* next three parameters are post-clip */
+	int n;			/* number of spans to fill */
+	DDXPointPtr ppt;	/* pointer to list of start points */
+	int *pwidth;		/* pointer to list of n widths */
+	PixelType *addrlBase;	/* pointer to start of bitmap */
 	PixelType *pBase;
-	int nlwidth;				/* width in longwords of bitmap */
-	register PixelType *addrl;/* pointer to current longword in bitmap */
-	register PixelType src;
-	register int nlmiddle;
-	register PixelType startmask;
-	register PixelType endmask;
+	int nlwidth;		/* width in longwords of bitmap */
+	PixelType *addrl;	/* pointer to current longword in bitmap */
+	PixelType src;
+	int nlmiddle;
+	PixelType startmask;
+	PixelType endmask;
 	PixmapPtr pStipple;
 	PixelType *psrc;
 	int tileHeight;
-	int *pwidthFree;				/* copies of the pointers to free */
+	int *pwidthFree;	/* copies of the pointers to free */
 	DDXPointPtr pptFree;
 	int d;
 	int depthDst;
@@ -300,31 +289,26 @@ afbStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 }
 
 void
-afbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-	DrawablePtr pDrawable;
-	GC *pGC;
-	int nInit;						/* number of spans to fill */
-	DDXPointPtr pptInit;		/* pointer to list of start points */
-	int *pwidthInit;				/* pointer to list of n widths */
-	int fSorted;
+afbTileFS(DrawablePtr pDrawable, GC *pGC, int nInit, DDXPointPtr pptInit,
+	  int *pwidthInit, int fSorted)
 {
-								/* next three parameters are post-clip */
-	int n;						/* number of spans to fill */
-	register DDXPointPtr ppt;		/* pointer to list of start points */
-	register int *pwidth;		/* pointer to list of n widths */
-	PixelType *addrlBase;		/* pointer to start of bitmap */
+	/* next three parameters are post-clip */
+	int n;			/* number of spans to fill */
+	DDXPointPtr ppt;	/* pointer to list of start points */
+	int *pwidth;		/* pointer to list of n widths */
+	PixelType *addrlBase;	/* pointer to start of bitmap */
 	PixelType *pBase;
-	int nlwidth;				/* width in longwords of bitmap */
-	register PixelType *addrl;		/* pointer to current longword in bitmap */
-	register PixelType src;
-	register int nlmiddle;
-	register PixelType startmask;
-	register PixelType endmask;
+	int nlwidth;		/* width in longwords of bitmap */
+	PixelType *addrl;	/* pointer to current longword in bitmap */
+	PixelType src;
+	int nlmiddle;
+	PixelType startmask;
+	PixelType endmask;
 	PixmapPtr pTile;
 	PixelType *psrc;
 	int tileHeight;
 	int rop;
-	int *pwidthFree;				/* copies of the pointers to free */
+	int *pwidthFree;	/* copies of the pointers to free */
 	DDXPointPtr pptFree;
 	int sizeDst;
 	int depthDst;
@@ -389,7 +373,7 @@ afbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 		default:
 			{
-				register DeclareMergeRop ();
+				DeclareMergeRop ();
 
 				InitializeMergeRop(rop,~0);
 				while (n--) {
@@ -431,32 +415,27 @@ afbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 }
 
 void
-afbOpaqueStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-	DrawablePtr pDrawable;
-	GC *pGC;
-	int nInit;						/* number of spans to fill */
-	DDXPointPtr pptInit;		/* pointer to list of start points */
-	int *pwidthInit;				/* pointer to list of n widths */
-	int fSorted;
+afbOpaqueStippleFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+		   DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
-								/* next three parameters are post-clip */
-	int n;						/* number of spans to fill */
-	register DDXPointPtr ppt;		/* pointer to list of start points */
-	register int *pwidth;		/* pointer to list of n widths */
-	PixelType *addrlBase;		/* pointer to start of bitmap */
+	/* next three parameters are post-clip */
+	int n;			/* number of spans to fill */
+	DDXPointPtr ppt;	/* pointer to list of start points */
+	int *pwidth;		/* pointer to list of n widths */
+	PixelType *addrlBase;	/* pointer to start of bitmap */
 	PixelType *pBase;
-	int nlwidth;				/* width in longwords of bitmap */
-	register PixelType *addrl;		/* pointer to current longword in bitmap */
-	register PixelType src = 0;
-	register int nlmiddle;
-	register PixelType startmask;
-	register PixelType endmask;
+	int nlwidth;		/* width in longwords of bitmap */
+	PixelType *addrl;	/* pointer to current longword in bitmap */
+	PixelType src = 0;
+	int nlmiddle;
+	PixelType startmask;
+	PixelType endmask;
 	PixmapPtr pTile;
 	PixelType *psrc;
 	int tileHeight;
 	int rop;
 	unsigned char *rropsOS;
-	int *pwidthFree;				/* copies of the pointers to free */
+	int *pwidthFree;	/* copies of the pointers to free */
 	DDXPointPtr pptFree;
 	int sizeDst;
 	int depthDst;
@@ -535,7 +514,7 @@ afbOpaqueStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 		default:
 			{
-				register DeclareMergeRop ();
+				DeclareMergeRop ();
 
 				InitializeMergeRop(rop,~0);
 				while (n--) {
@@ -591,37 +570,32 @@ afbOpaqueStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 /* Fill spans with tiles that aren't PPW bits wide */
 void
-afbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-	DrawablePtr pDrawable;
-	GC				*pGC;
-	int				nInit;				/* number of spans to fill */
-	DDXPointPtr pptInit;		/* pointer to list of start points */
-	int *pwidthInit;				/* pointer to list of n widths */
-	int fSorted;
+afbUnnaturalTileFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+		   DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
-	int				iline;				/* first line of tile to use */
-								/* next three parameters are post-clip */
-	int n;						/* number of spans to fill */
-	register DDXPointPtr ppt;		/* pointer to list of start points */
-	register int *pwidth;		/* pointer to list of n widths */
-	PixelType *addrlBase;		/* pointer to start of bitmap */
+	int iline;		/* first line of tile to use */
+	/* next three parameters are post-clip */
+	int n;			/* number of spans to fill */
+	DDXPointPtr ppt;	/* pointer to list of start points */
+	int *pwidth;		/* pointer to list of n widths */
+	PixelType *addrlBase;	/* pointer to start of bitmap */
 	PixelType *pBase;
-	int				 nlwidth;		/* width in longwords of bitmap */
-	register PixelType *pdst;/* pointer to current word in bitmap */
-	register PixelType *psrc;/* pointer to current word in tile */
-	register int nlMiddle;
-	register int rop, nstart;
+	int  nlwidth;		/* width in longwords of bitmap */
+	PixelType *pdst;	/* pointer to current word in bitmap */
+	PixelType *psrc;	/* pointer to current word in tile */
+	int nlMiddle;
+	int rop, nstart;
 	PixelType startmask;
-	PixmapPtr		pTile;				/* pointer to tile we want to fill with */
-	int				w, width, x, xSrc, ySrc, srcStartOver, nend;
-	int 		tlwidth, rem, tileWidth, tileHeight, endinc;
-	PixelType	  endmask, *psrcT;
-	int *pwidthFree;				/* copies of the pointers to free */
+	PixmapPtr pTile;	/* pointer to tile we want to fill with */
+	int w, width, x, xSrc, ySrc, srcStartOver, nend;
+	int tlwidth, rem, tileWidth, tileHeight, endinc;
+	PixelType endmask, *psrcT;
+	int *pwidthFree;	/* copies of the pointers to free */
 	DDXPointPtr pptFree;
 	int sizeDst;
 	int sizeTile;
 	int depthDst;
-	register int d;
+	int d;
 
 	n = nInit * miFindMaxBand(pGC->pCompositeClip);
 	pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
@@ -736,36 +710,31 @@ afbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 /* Fill spans with stipples that aren't PPW bits wide */
 void
-afbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-	DrawablePtr pDrawable;
-	GC				*pGC;
-	int				nInit;				/* number of spans to fill */
-	DDXPointPtr pptInit;		/* pointer to list of start points */
-	int *pwidthInit;				/* pointer to list of n widths */
-	int fSorted;
+afbUnnaturalStippleFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+		      DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
-								/* next three parameters are post-clip */
-	int n;						/* number of spans to fill */
-	register DDXPointPtr ppt;		/* pointer to list of start points */
-	register int *pwidth;		/* pointer to list of n widths */
-	int				iline;				/* first line of tile to use */
-	PixelType		*addrlBase;		/* pointer to start of bitmap */
-	PixelType		*pBase;
-	int				 nlwidth;		/* width in longwords of bitmap */
-	register PixelType *pdst;				/* pointer to current word in bitmap */
-	register PixelType *psrc;				/* pointer to current word in tile */
-	register int nlMiddle;
-	register int rop, nstart;
+	/* next three parameters are post-clip */
+	int n;			/* number of spans to fill */
+	DDXPointPtr ppt;	/* pointer to list of start points */
+	int *pwidth;		/* pointer to list of n widths */
+	int iline;		/* first line of tile to use */
+	PixelType *addrlBase;	/* pointer to start of bitmap */
+	PixelType *pBase;
+	int nlwidth;		/* width in longwords of bitmap */
+	PixelType *pdst;	/* pointer to current word in bitmap */
+	PixelType *psrc;	/* pointer to current word in tile */
+	int nlMiddle;
+	int rop, nstart;
 	PixelType startmask;
-	PixmapPtr		pTile;				/* pointer to tile we want to fill with */
-	int				w, width,  x, xSrc, ySrc, srcStartOver, nend;
-	PixelType 		endmask, *psrcT;
-	int 		tlwidth, rem, tileWidth, endinc;
-	int				tileHeight;
-	int *pwidthFree;				/* copies of the pointers to free */
+	PixmapPtr pTile;	/* pointer to tile we want to fill with */
+	int w, width,  x, xSrc, ySrc, srcStartOver, nend;
+	PixelType endmask, *psrcT;
+	int tlwidth, rem, tileWidth, endinc;
+	int tileHeight;
+	int *pwidthFree;	/* copies of the pointers to free */
 	DDXPointPtr pptFree;
 	unsigned char *rrops;
-	register int d;
+	int d;
 	int sizeDst;
 	int depthDst;
 
@@ -881,36 +850,31 @@ afbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 /* Fill spans with OpaqueStipples that aren't PPW bits wide */
 void
-afbUnnaturalOpaqueStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-	DrawablePtr pDrawable;
-	GC				*pGC;
-	int				nInit;				/* number of spans to fill */
-	DDXPointPtr pptInit;		/* pointer to list of start points */
-	int *pwidthInit;				/* pointer to list of n widths */
-	int fSorted;
+afbUnnaturalOpaqueStippleFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+			    DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
-	int				iline;				/* first line of tile to use */
-								/* next three parameters are post-clip */
-	int n;						/* number of spans to fill */
-	register DDXPointPtr ppt;		/* pointer to list of start points */
-	register int *pwidth;		/* pointer to list of n widths */
-	PixelType *addrlBase;		/* pointer to start of bitmap */
+	int iline;		/* first line of tile to use */
+	/* next three parameters are post-clip */
+	int n;			/* number of spans to fill */
+	DDXPointPtr ppt;	/* pointer to list of start points */
+	int *pwidth;		/* pointer to list of n widths */
+	PixelType *addrlBase;	/* pointer to start of bitmap */
 	PixelType *pBase;
-	int				 nlwidth;		/* width in longwords of bitmap */
-	register PixelType *pdst;/* pointer to current word in bitmap */
-	register PixelType *psrc;/* pointer to current word in tile */
-	register int nlMiddle;
-	register int d;
-	register PixelType tmpsrc = 0;
-	register PixelType tmpdst;
-	register int alu, nstart;
-	register unsigned char *rropsOS;
+	int nlwidth;		/* width in longwords of bitmap */
+	PixelType *pdst;	/* pointer to current word in bitmap */
+	PixelType *psrc;	/* pointer to current word in tile */
+	int nlMiddle;
+	int d;
+	PixelType tmpsrc = 0;
+	PixelType tmpdst;
+	int alu, nstart;
+	unsigned char *rropsOS;
 	PixelType startmask;
-	PixmapPtr		pTile;				/* pointer to tile we want to fill with */
-	int				w, width, x, xSrc, ySrc, srcStartOver, nend;
-	int 		tlwidth, rem, tileWidth, tileHeight, endinc;
-	PixelType	  endmask, *psrcT;
-	int *pwidthFree;				/* copies of the pointers to free */
+	PixmapPtr pTile;	/* pointer to tile we want to fill with */
+	int w, width, x, xSrc, ySrc, srcStartOver, nend;
+	int tlwidth, rem, tileWidth, tileHeight, endinc;
+	PixelType endmask, *psrcT;
+	int *pwidthFree;	/* copies of the pointers to free */
 	DDXPointPtr pptFree;
 	int sizeDst;
 	int depthDst;

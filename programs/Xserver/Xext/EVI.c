@@ -1,4 +1,3 @@
-/* $Xorg: EVI.c,v 1.3 2000/08/17 19:47:55 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1997 by Silicon Graphics Computer Systems, Inc.
 Permission to use, copy, modify, and distribute this
@@ -21,7 +20,7 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/EVI.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/EVI.c,v 3.11 2003/10/28 23:08:43 tsi Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -33,6 +32,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "EVIstruct.h"
 #include "modinit.h"
 
+#ifdef EVI
 #if 0
 static unsigned char XEVIReqCode = 0;
 #endif
@@ -196,3 +196,4 @@ EVIExtensionInit(INITARGS)
 	eviPriv = eviDDXInit();
     }
 }
+#endif

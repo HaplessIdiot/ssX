@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbscrinit.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbscrinit.c,v 3.9 2003/02/18 21:30:01 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbscrinit.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -95,9 +94,7 @@ BSFuncRec mfbBSFuncRec = {
 #endif /* ifndef LOWMEMFTPT */
 
 Bool
-mfbAllocatePrivates(pScreen, pWinIndex, pGCIndex)
-    ScreenPtr pScreen;
-    int *pWinIndex, *pGCIndex;
+mfbAllocatePrivates(ScreenPtr pScreen, int *pWinIndex, int *pGCIndex)
 {
     if (mfbGeneration != serverGeneration)
     {
@@ -125,12 +122,8 @@ mfbAllocatePrivates(pScreen, pWinIndex, pGCIndex)
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
-mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
-    register ScreenPtr pScreen;
-    pointer pbits;		/* pointer to screen bitmap */
-    int xsize, ysize;		/* in pixels */
-    int dpix, dpiy;		/* dots per inch */
-    int width;			/* pixel width of frame buffer */
+mfbScreenInit(ScreenPtr pScreen, pointer pbits, int xsize, int ysize,
+	      int dpix, int dpiy, int width)
 {
     if 	(!mfbAllocatePrivates(pScreen, (int *)NULL, (int *)NULL))
 	return FALSE;
@@ -171,8 +164,7 @@ mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 #endif /* ifndef LOWMEMFTPT */
 
 PixmapPtr
-mfbGetWindowPixmap(pWin)
-    WindowPtr pWin;
+mfbGetWindowPixmap(WindowPtr pWin)
 {
 #ifdef PIXMAP_PER_WINDOW
     return (PixmapPtr)(pWin->devPrivates[frameWindowPrivateIndex].ptr);
@@ -184,9 +176,7 @@ mfbGetWindowPixmap(pWin)
 }
 
 void
-mfbSetWindowPixmap(pWin, pPix)
-    WindowPtr pWin;
-    PixmapPtr pPix;
+mfbSetWindowPixmap(WindowPtr pWin, PixmapPtr pPix)
 {
 #ifdef PIXMAP_PER_WINDOW
     pWin->devPrivates[frameWindowPrivateIndex].ptr = (pointer)pPix;

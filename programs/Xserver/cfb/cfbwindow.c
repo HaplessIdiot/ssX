@@ -1,4 +1,4 @@
-/* $Xorg: cfbwindow.c,v 1.4 2001/02/09 02:04:39 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbwindow.c,v 1.6 2003/11/10 18:21:45 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbwindow.c,v 1.5tsi Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -56,8 +55,7 @@ SOFTWARE.
 #include "cfbmskbits.h"
 
 Bool
-cfbCreateWindow(pWin)
-    WindowPtr pWin;
+cfbCreateWindow(WindowPtr pWin)
 {
     cfbPrivWin *pPrivWin;
 
@@ -79,8 +77,7 @@ cfbCreateWindow(pWin)
 }
 
 Bool
-cfbDestroyWindow(pWin)
-    WindowPtr pWin;
+cfbDestroyWindow(WindowPtr pWin)
 {
     cfbPrivWin *pPrivWin;
 
@@ -95,8 +92,7 @@ cfbDestroyWindow(pWin)
 
 /*ARGSUSED*/
 Bool
-cfbMapWindow(pWindow)
-    WindowPtr pWindow;
+cfbMapWindow(WindowPtr pWindow)
 {
     return(TRUE);
 }
@@ -110,9 +106,7 @@ in pPrivWin->pRotated*
 */
 /*ARGSUSED*/
 Bool
-cfbPositionWindow(pWin, x, y)
-    WindowPtr pWin;
-    int x, y;
+cfbPositionWindow(WindowPtr pWin, int x, int y)
 {
     cfbPrivWin *pPrivWin;
     int setxy = 0;
@@ -147,8 +141,7 @@ cfbPositionWindow(pWin, x, y)
 
 /*ARGSUSED*/
 Bool
-cfbUnmapWindow(pWindow)
-    WindowPtr pWindow;
+cfbUnmapWindow(WindowPtr pWindow)
 {
     return (TRUE);
 }
@@ -162,17 +155,14 @@ visible in the source.
 
 
 void 
-cfbCopyWindow(pWin, ptOldOrg, prgnSrc)
-    WindowPtr pWin;
-    DDXPointRec ptOldOrg;
-    RegionPtr prgnSrc;
+cfbCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 {
     DDXPointPtr pptSrc;
-    register DDXPointPtr ppt;
+    DDXPointPtr ppt;
     RegionRec rgnDst;
-    register BoxPtr pbox;
-    register int dx, dy;
-    register int i, nbox;
+    BoxPtr pbox;
+    int dx, dy;
+    int i, nbox;
     WindowPtr pwinRoot;
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
@@ -212,12 +202,10 @@ routine (i.e. the pixmap is paddable to 32 bits), also pre-rotate a copy
 of it in devPrivates[cfbWindowPrivateIndex].ptr.
 */
 Bool
-cfbChangeWindowAttributes(pWin, mask)
-    WindowPtr pWin;
-    unsigned long mask;
+cfbChangeWindowAttributes(WindowPtr pWin, unsigned long mask)
 {
-    register unsigned long index;
-    register cfbPrivWin *pPrivWin;
+    unsigned long index;
+    cfbPrivWin *pPrivWin;
     int width;
     WindowPtr	pBgWin;
 

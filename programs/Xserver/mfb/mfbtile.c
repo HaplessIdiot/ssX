@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbtile.c,v 1.3 2003/02/18 21:30:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbtile.c,v 1.4 2003/07/16 01:38:55 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbtile.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
+
 #include "X.h"
 
 #include "windowstr.h"
@@ -71,28 +71,24 @@ is equivalent to iy%= tileheight, and saves a division.
     tile area with a PPW bit wide pixmap 
 */
 void
-MROP_NAME(mfbTileAreaPPW)(pDraw, nbox, pbox, alu, ptile)
-    DrawablePtr pDraw;
-    int nbox;
-    BoxPtr pbox;
-    int alu;
-    PixmapPtr ptile;
+MROP_NAME(mfbTileAreaPPW)(DrawablePtr pDraw, int nbox, BoxPtr pbox, int alu,
+			  PixmapPtr ptile)
 {
-    register PixelType *psrc;
+    PixelType *psrc;
 			/* pointer to bits in tile, if needed */
     int tileHeight;	/* height of the tile */
-    register PixelType srcpix;	
+    PixelType srcpix;	
     int nlwidth;	/* width in longwords of the drawable */
     int w;		/* width of current box */
     MROP_DECLARE_REG ()
-    register int h;	/* height of current box */
-    register int nlw;	/* loop version of nlwMiddle */
-    register PixelType *p;	/* pointer to bits we're writing */
+    int h;	/* height of current box */
+    int nlw;	/* loop version of nlwMiddle */
+    PixelType *p;	/* pointer to bits we're writing */
     PixelType startmask;
     PixelType endmask;	/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
     int nlwExtra;	/* to get from right of box to left of next span */
-    register int iy;	/* index of current scanline in tile */
+    int iy;	/* index of current scanline in tile */
     PixelType *pbits;	/* pointer to start of drawable */
 
     mfbGetPixelWidthAndPointer(pDraw, nlwidth, pbits);
@@ -213,12 +209,8 @@ MROP_NAME(mfbTileAreaPPW)(pDraw, nbox, pbox, alu, ptile)
 
 #if (MROP) == 0
 void
-mfbTileAreaPPW (pDraw, nbox, pbox, alu, ptile)
-    DrawablePtr pDraw;
-    int nbox;
-    BoxPtr pbox;
-    int alu;
-    PixmapPtr ptile;
+mfbTileAreaPPW(DrawablePtr pDraw, int nbox, BoxPtr pbox, int alu,
+	       PixmapPtr ptile)
 {
     void (*f)(
 	DrawablePtr /*pDraw*/,

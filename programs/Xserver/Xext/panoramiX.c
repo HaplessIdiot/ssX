@@ -1,4 +1,3 @@
-/* $Xorg: panoramiX.c,v 1.5 2000/08/17 19:47:57 cpqbld Exp $ */
 /*****************************************************************
 Copyright (c) 1991, 1997 Digital Equipment Corporation, Maynard, Massachusetts.
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -69,7 +68,7 @@ Equipment Corporation.
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.39 2004/06/02 22:42:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.40 2004/06/30 20:21:38 martin Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -194,7 +193,7 @@ GCFuncs XineramaGCFuncs = {
 
 
 static Bool
-XineramaCloseScreen (int i, ScreenPtr pScreen)
+XineramaCloseScreen(int i, ScreenPtr pScreen)
 {
     PanoramiXScreenPtr pScreenPriv = 
         (PanoramiXScreenPtr) pScreen->devPrivates[PanoramiXScreenIndex].ptr;
@@ -681,7 +680,8 @@ void PanoramiXExtensionInit(int argc, char *argv[])
 
 extern Bool CreateConnectionBlock(void);
 
-Bool PanoramiXCreateConnectionBlock(void)
+Bool
+PanoramiXCreateConnectionBlock(void)
 {
     int i, j, length;
     Bool disableBackingStore = FALSE;
@@ -799,8 +799,8 @@ Bool PanoramiXCreateConnectionBlock(void)
     return TRUE;
 }
 
-extern
-void PanoramiXConsolidate(void)
+void
+PanoramiXConsolidate(void)
 {
     int 	i, j, k;
     VisualPtr   pVisual, pVisual2;
@@ -957,7 +957,8 @@ void PanoramiXConsolidate(void)
  *		Exit, deallocating as needed.
  */
 
-static void PanoramiXResetProc(ExtensionEntry* extEntry)
+static void
+PanoramiXResetProc(ExtensionEntry* extEntry)
 {
     int		i;
 
@@ -973,11 +974,11 @@ static void PanoramiXResetProc(ExtensionEntry* extEntry)
 
 
 int
-ProcPanoramiXQueryVersion (ClientPtr client)
+ProcPanoramiXQueryVersion(ClientPtr client)
 {
     /* REQUEST(xPanoramiXQueryVersionReq); */
     xPanoramiXQueryVersionReply		rep;
-    register 	int			n;
+    int			n;
 
     REQUEST_SIZE_MATCH (xPanoramiXQueryVersionReq);
     rep.type = X_Reply;
@@ -1001,7 +1002,7 @@ ProcPanoramiXGetState(ClientPtr client)
 	REQUEST(xPanoramiXGetStateReq);
     	WindowPtr			pWin;
 	xPanoramiXGetStateReply		rep;
-	register int			n;
+	int			n;
 	
 	REQUEST_SIZE_MATCH(xPanoramiXGetStateReq);
 	pWin = LookupWindow (stuff->window, client);
@@ -1027,7 +1028,7 @@ ProcPanoramiXGetScreenCount(ClientPtr client)
 	REQUEST(xPanoramiXGetScreenCountReq);
     	WindowPtr			pWin;
 	xPanoramiXGetScreenCountReply	rep;
-	register int			n;
+	int			n;
 
 	REQUEST_SIZE_MATCH(xPanoramiXGetScreenCountReq);
 	pWin = LookupWindow (stuff->window, client);
@@ -1052,7 +1053,7 @@ ProcPanoramiXGetScreenSize(ClientPtr client)
 	REQUEST(xPanoramiXGetScreenSizeReq);
     	WindowPtr			pWin;
 	xPanoramiXGetScreenSizeReply	rep;
-	register int			n;
+	int			n;
 	
 	REQUEST_SIZE_MATCH(xPanoramiXGetScreenSizeReq);
 	pWin = LookupWindow (stuff->window, client);
@@ -1088,7 +1089,7 @@ ProcXineramaIsActive(ClientPtr client)
     rep.sequenceNumber = client->sequence;
     rep.state = !noPanoramiXExtension;
     if (client->swapped) {
-	register int n;
+	int n;
 	swaps (&rep.sequenceNumber, n);
 	swapl (&rep.length, n);
 	swapl (&rep.state, n);
@@ -1111,7 +1112,7 @@ ProcXineramaQueryScreens(ClientPtr client)
     rep.number = (noPanoramiXExtension) ? 0 : PanoramiXNumScreens;
     rep.length = rep.number * sz_XineramaScreenInfo >> 2;
     if (client->swapped) {
-	register int n;
+	int n;
 	swaps (&rep.sequenceNumber, n);
 	swapl (&rep.length, n);
 	swapl (&rep.number, n);
@@ -1129,7 +1130,7 @@ ProcXineramaQueryScreens(ClientPtr client)
 	    scratch.height = panoramiXdataPtr[i].height;
 	
 	    if(client->swapped) {
-		register int n;
+		int n;
 		swaps (&scratch.x_org, n);
 		swaps (&scratch.y_org, n);
 		swaps (&scratch.width, n);

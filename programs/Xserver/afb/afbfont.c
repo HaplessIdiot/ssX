@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbfont.c,v 3.0 1996/08/18 01:45:35 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: afbfont.c,v 1.18 94/04/17 20:28:22 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -58,18 +57,14 @@ SOFTWARE.
 
 /*ARGSUSED*/
 Bool
-afbRealizeFont( pscr, pFont)
-	ScreenPtr		pscr;
-	FontPtr		pFont;
+afbRealizeFont(ScreenPtr pscr, FontPtr pFont)
 {
 	return (TRUE);
 }
 
 /*ARGSUSED*/
 Bool
-afbUnrealizeFont( pscr, pFont)
-	ScreenPtr		pscr;
-	FontPtr		pFont;
+afbUnrealizeFont(ScreenPtr pscr, FontPtr pFont)
 {
 	return (TRUE);
 }

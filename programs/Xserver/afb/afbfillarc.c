@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbfillarc.c,v 3.1 1998/03/20 21:04:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbfillarc.c,v 3.2 2003/07/16 01:38:35 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -26,8 +26,6 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: afbfillarc.c,v 5.14 94/04/17 20:28:20 dpw Exp $ */
-
 #include "X.h"
 #include "Xprotostr.h"
 #include "regionstr.h"
@@ -40,22 +38,19 @@ in this Software without prior written authorization from the X Consortium.
 #include "mi.h"
 
 static void
-afbFillEllipseSolid(pDraw, arc, rrops)
-	DrawablePtr pDraw;
-	xArc *arc;
-	register unsigned char *rrops;
+afbFillEllipseSolid(DrawablePtr pDraw, xArc *arc, unsigned char *rrops)
 {
 	int x, y, e;
 	int yk, xk, ym, xm, dx, dy, xorg, yorg;
-	register int slw;
+	int slw;
 	miFillArcRec info;
 	PixelType *addrlt, *addrlb;
-	register PixelType *pdst;
+	PixelType *pdst;
 	PixelType *addrl;
-	register int n;
-	register int d;
+	int n;
+	int d;
 	int nlwidth;
-	register int xpos;
+	int xpos;
 	PixelType startmask, endmask;
 	int nlmiddle;
 	int depthDst;
@@ -264,18 +259,15 @@ afbFillEllipseSolid(pDraw, arc, rrops)
 	}
 
 static void
-afbFillArcSliceSolidCopy(pDraw, pGC, arc, rrops)
-	DrawablePtr pDraw;
-	GCPtr pGC;
-	xArc *arc;
-	register unsigned char *rrops;
+afbFillArcSliceSolidCopy(DrawablePtr pDraw, GCPtr pGC, xArc *arc,
+			 unsigned char *rrops)
 {
 	PixelType *addrl;
-	register PixelType *pdst;
-	register int n;
-	register int d;
+	PixelType *pdst;
+	int n;
+	int d;
 	int yk, xk, ym, xm, dx, dy, xorg, yorg, slw;
-	register int x, y, e;
+	int x, y, e;
 	miFillArcRec info;
 	miArcSliceRec slice;
 	int xl, xr, xc;
@@ -317,15 +309,11 @@ afbFillArcSliceSolidCopy(pDraw, pGC, arc, rrops)
 }
 
 void
-afbPolyFillArcSolid(pDraw, pGC, narcs, parcs)
-	register DrawablePtr pDraw;
-	GCPtr		pGC;
-	int				narcs;
-	xArc		*parcs;
+afbPolyFillArcSolid(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs)
 {
 	afbPrivGC *priv;
-	register xArc *arc;
-	register int i;
+	xArc *arc;
+	int i;
 	BoxRec box;
 	RegionPtr cclip;
 	unsigned char *rrops;

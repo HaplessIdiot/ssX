@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbgc.c,v 1.5 2001/01/17 22:36:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbgc.c,v 1.6 2001/12/14 19:59:22 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,8 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-/* $Xorg: cfbgc.c,v 1.4 2001/02/09 02:04:37 xorgcvs Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -230,9 +228,7 @@ GCOps	cfbNonTEOps = {
 };
 
 GCOps *
-cfbMatchCommon (pGC, devPriv)
-    GCPtr	    pGC;
-    cfbPrivGCPtr    devPriv;
+cfbMatchCommon(GCPtr pGC, cfbPrivGCPtr devPriv)
 {
     if (pGC->lineWidth != 0)
 	return 0;
@@ -274,8 +270,7 @@ cfbMatchCommon (pGC, devPriv)
 }
 
 Bool
-cfbCreateGC(pGC)
-    register GCPtr pGC;
+cfbCreateGC(GCPtr pGC)
 {
     cfbPrivGC  *pPriv;
 
@@ -317,10 +312,7 @@ cfbCreateGC(pGC)
 */
 
 void
-cfbValidateGC(pGC, changes, pDrawable)
-    register GCPtr  pGC;
-    unsigned long   changes;
-    DrawablePtr	    pDrawable;
+cfbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
     int         mask;		/* stateChanges */
     int         index;		/* used for stepping through bitfields */

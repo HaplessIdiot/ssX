@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbcmap.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbcmap.c,v 1.8 2003/02/18 21:30:01 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbcmap.c,v 1.4 2001/02/09 02:05:18 xorgcvs Exp $ */
+
 #include "X.h"
 #include "scrnintstr.h"
 #include "colormapst.h"
@@ -68,35 +68,28 @@ SOFTWARE.
  */
 
 int
-mfbListInstalledColormaps(pScreen, pmaps)
-    ScreenPtr	pScreen;
-    Colormap	*pmaps;
+mfbListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps)
 {
     return miListInstalledColormaps(pScreen, pmaps);
 }
 
 
 void
-mfbInstallColormap(pmap)
-    ColormapPtr	pmap;
+mfbInstallColormap(ColormapPtr pmap)
 {
     miInstallColormap(pmap);
 }
 
 void
-mfbUninstallColormap(pmap)
-    ColormapPtr	pmap;
+mfbUninstallColormap(ColormapPtr pmap)
 {
     miUninstallColormap(pmap);
 }
 
 /*ARGSUSED*/
 void
-mfbResolveColor (pred, pgreen, pblue, pVisual)
-    unsigned short	*pred;
-    unsigned short	*pgreen;
-    unsigned short	*pblue;
-    VisualPtr		pVisual;
+mfbResolveColor(unsigned short *pred, unsigned short *pgreen,
+		unsigned short *pblue, VisualPtr pVisual)
 {
     /* 
      * Gets intensity from RGB.  If intensity is >= half, pick white, else
@@ -109,8 +102,7 @@ mfbResolveColor (pred, pgreen, pblue, pVisual)
 }
 
 Bool
-mfbCreateColormap(pMap)
-    ColormapPtr	pMap;
+mfbCreateColormap(ColormapPtr pMap)
 {
     ScreenPtr	pScreen;
     unsigned short  red0, green0, blue0;
@@ -146,15 +138,13 @@ mfbCreateColormap(pMap)
 
 /*ARGSUSED*/
 void
-mfbDestroyColormap (pMap)
-    ColormapPtr	pMap;
+mfbDestroyColormap(ColormapPtr pMap)
 {
     return;
 }
 
 Bool
-mfbCreateDefColormap (pScreen)
-    ScreenPtr	pScreen;
+mfbCreateDefColormap(ScreenPtr pScreen)
 {
     return miCreateDefColormap(pScreen);
 }

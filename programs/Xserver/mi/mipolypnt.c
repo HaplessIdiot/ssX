@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipolypnt.c,v 1.2 2001/05/29 22:24:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipolypnt.c,v 1.3 2001/12/14 20:00:25 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mipolypnt.c,v 1.4 2001/02/09 02:05:21 xorgcvs Exp $ */
+
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -54,12 +54,8 @@ SOFTWARE.
 #include "mi.h"
 
 void
-miPolyPoint(pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr 	pDrawable;
-    GCPtr 		pGC;
-    int 		mode;		/* Origin or Previous */
-    int 		npt;
-    xPoint 		*pptInit;
+miPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	    xPoint *pptInit)
 {
 
     int 		xorg;
@@ -68,7 +64,7 @@ miPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     XID			fsOld, fsNew;
     int			*pwidthInit, *pwidth;
     int			i;
-    register xPoint 	*ppt;
+    xPoint 	*ppt;
 
     /* make pointlist origin relative */
     if (mode == CoordModePrevious)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcRslvC.c,v 1.4 1999/06/06 08:49:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcRslvC.c,v 1.5 2001/12/17 20:00:46 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -51,8 +51,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
 */
 
-/* $XConsortium: ppcRslvC.c /main/7 1996/02/21 17:58:25 kaleb $ */
-
 /* Generic Color Resolution Scheme
  * P. Shupak 12/31/87
  */
@@ -85,11 +83,10 @@ static unsigned short defstaticpalette[16][3] = {
 	};
 
 Bool
-xf4bppInitializeColormap(pmap)
-    register ColormapPtr	pmap;
+xf4bppInitializeColormap(ColormapPtr pmap)
 {
-    register unsigned i;
-    register VisualPtr pVisual;
+    unsigned i;
+    VisualPtr pVisual;
     unsigned lim, maxent, shift;
 
     pVisual = pmap->pVisual;
@@ -136,11 +133,8 @@ xf4bppInitializeColormap(pmap)
 }
 
 void
-xf4bppResolveColor( pred, pgreen, pblue, pVisual )
-register unsigned short* pred ;
-register unsigned short* pgreen ;
-register unsigned short* pblue ;
-register VisualPtr pVisual ;
+xf4bppResolveColor(unsigned short *pred, unsigned short *pgreen,
+		   unsigned short *pblue, VisualPtr pVisual )
 { 
     unsigned lim, maxent, shift;
 

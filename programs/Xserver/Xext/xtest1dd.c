@@ -1,4 +1,3 @@
-/* $Xorg: xtest1dd.c,v 1.4 2001/02/09 02:04:33 xorgcvs Exp $ */
 /*
  *	File: xtest1dd.c
  *
@@ -52,7 +51,7 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.c,v 3.6 2003/10/28 23:08:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.c,v 3.7 2003/11/17 22:20:28 dawes Exp $ */
 
 /***************************************************************
  * include files
@@ -337,17 +336,12 @@ stop_stealing_input()
  *
  *	Start stealing input actions and sending them to the passed-in client.
  */
-void
-steal_input(client, mode)
 /*
- * which client is to receive the input action events
- */
-ClientPtr	client;
-/*
- * what input action packing mode to use.  one of 0, XTestPACKED_MOTION,
+ * mode: what input action packing mode to use.  one of 0, XTestPACKED_MOTION,
  * or XTestPACKED_ACTIONS; optionally 'or'ed with XTestEXCLUSIVE,
  */
-CARD32		mode;
+void
+steal_input(ClientPtr client, CARD32 mode)
 {
 	if (packet_index != 0) 
 	{
@@ -449,16 +443,7 @@ flush_input_actions()
  *	and an XTestJUMP_ACTION.
  */
 void
-XTestStealJumpData(jx, jy, dev_type)
-/*
- * the x and y coordinates to jump to
- */
-int	jx;
-int	jy;
-/*
- * which device caused the jump
- */
-int	dev_type;
+XTestStealJumpData(int jx, int jy, int dev_type)
 {	
 	XTestJumpInfo 	*jmp_ptr;
 	/*
@@ -526,8 +511,7 @@ int	dev_type;
  *	current time, and then updates the passed-in time to the current time.
  */
 static CARD32
-current_ms(otime)
-struct timeval	*otime;
+current_ms(struct timeval *otime)
 {	
 	struct timeval	tval;
 	unsigned long	the_ms;
@@ -646,11 +630,7 @@ check_time_event()
  *
  */
 static int
-there_is_room(actsize)
-/*
- * the number of bytes of space needed
- */
-int	actsize;
+there_is_room(int actsize)
 {
 	if ((packet_index + actsize) > XTestACTIONS_SIZE)
 	{ 
@@ -671,21 +651,7 @@ int	actsize;
  *	called from x_hil.c
  */
 void
-XTestStealMotionData(dx, dy, dev_type, mx, my)
-/*
- * the x and y delta motion of the locator
- */
-int	dx;
-int	dy;
-/*
- * which locator did the moving
- */
-int	dev_type;
-/*
- * the x and y position of the locator before the delta motion
- */
-int	mx;
-int	my;
+XTestStealMotionData(int dx, int dy, int dev_type, int mx, int my)
 {
 	/*
 	 * pointer to a XTestMOTION_ACTION input action
@@ -789,24 +755,8 @@ int	my;
  *
  */
 Bool
-XTestStealKeyData(keycode, keystate, dev_type, locx, locy)
-/*
- * which key/button moved
- */
-unsigned	keycode;
-/*
- * whether the key/button was pressed or released
- */
-int		keystate;
-/*
- * which device caused the input action
- */
-int		dev_type;
-/*
- * the x and y coordinates of the locator when the action happenned
- */
-int		locx;
-int		locy;
+XTestStealKeyData(unsigned keycode, int keystate, int dev_type,
+		  int locx, int locy)
 {
 	/*
 	 * pointer to key/button motion input action
@@ -905,15 +855,7 @@ int		locy;
  *	from the input action array and send them to the server to be handled.
  */
 void
-parse_fake_input(client, req)
-/*
- * which client did the XTestFakeInput request
- */
-ClientPtr	client;
-/*
- * a pointer to the xTestFakeInputReq structure sent by the client
- */
-char		*req;
+parse_fake_input(ClientPtr client, char *req)
 {	
 	/*
 	 * if set to 1, done processing input actions from the request
@@ -1044,8 +986,7 @@ char		*req;
  *	pending input events.
  */
 static void
-parse_key_fake(fkey)
-XTestKeyInfo	*fkey;
+parse_key_fake(XTestKeyInfo *fkey)
 {	
 	action_array[write_index].type = XTestKEY_ACTION;
 	action_array[write_index].device = XTestUnpackDeviceID(fkey->header);
@@ -1065,8 +1006,7 @@ XTestKeyInfo	*fkey;
  *	pending input events.
  */
 static void
-parse_motion_fake(fmotion)
-XTestMotionInfo	*fmotion;
+parse_motion_fake(XTestMotionInfo *fmotion)
 {	
 	int	dx;
 	int	dy;
@@ -1107,8 +1047,7 @@ XTestMotionInfo	*fmotion;
  *	pending input events.
  */
 static void
-parse_jump_fake(fjump)
-XTestJumpInfo	*fjump;
+parse_jump_fake(XTestJumpInfo *fjump)
 {
 	pmousex = fjump->jumpx;
 	pmousey = fjump->jumpy;
@@ -1130,8 +1069,7 @@ XTestJumpInfo	*fjump;
  *	pending input events.
  */
 static void
-parse_delay_fake(tevent)
-XTestDelayInfo	*tevent;
+parse_delay_fake(XTestDelayInfo *tevent)
 {
 	action_array[write_index].type = XTestDELAY_ACTION;
 	action_array[write_index].delay_time = tevent->delay_time;
@@ -1146,8 +1084,7 @@ XTestDelayInfo	*tevent;
  *	next monitor event in playback mode.
  */
 void
-XTestComputeWaitTime(waittime)
-struct timeval	*waittime;
+XTestComputeWaitTime(struct timeval *waittime)
 {	
 	/*
 	 * The playback_on flag is set to 1 in parse_fake_input.  It is set to
@@ -1204,9 +1141,8 @@ struct timeval	*waittime;
  *	then take one out and process it.
  *
  */
-int
-XTestProcessInputAction(readable, waittime)
 /*
+ * readable:
  * This is the value that a 'select' function returned just before this
  * routine was called.  If the select timed out, this value will be 0.
  *
@@ -1216,12 +1152,12 @@ XTestProcessInputAction(readable, waittime)
  * give it a chance to process an input action.  If we have an input action
  * to process and the only reason that the select returned was because it
  * timed out, then we change the select value to 1 and return 1 instead of 0.
- */
-int		readable;
-/*
+ *
+ * timeout:
  * this is the timeout value that the select was called with
  */
-struct timeval	*waittime;
+int
+XTestProcessInputAction(int readable, struct timeval *waittime)
 {	
 int mousex, mousey;
 	/*
@@ -1328,8 +1264,7 @@ int mousex, mousey;
  *	send an xTestFakeAck event to the client
  */
 static void
-send_ack(client)
-ClientPtr	client;
+send_ack(ClientPtr client)
 {
 	xTestFakeAckEvent  rep;
 
@@ -1366,8 +1301,7 @@ start_play_clock()
  *	for the delta until the time for the next input action.
  */
 static void
-compute_action_time(rtime)
-struct timeval	*rtime;
+compute_action_time(struct timeval *rtime)
 {
 	/*
 	 * holds the delay time in milliseconds
@@ -1445,8 +1379,7 @@ struct timeval	*rtime;
  *	the current time.
  */
 static int
-find_residual_time(the_residual)
-struct timeval	*the_residual;
+find_residual_time(struct timeval *the_residual)
 {
 	/*
 	 * if > 0, there is time to wait.  If < 0, then don't wait
@@ -1592,11 +1525,7 @@ abort_play_back()
  *	Return the number of input actions in the input action array.
  */
 void
-return_input_array_size(client)
-/*
- * which client to send the reply to
- */
-ClientPtr	client;
+return_input_array_size(ClientPtr client)
 {
 	xTestQueryInputSizeReply  rep;
 

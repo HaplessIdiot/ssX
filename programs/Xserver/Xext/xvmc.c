@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.8 2003/07/16 01:38:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.9 2003/07/17 16:04:33 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -557,7 +557,7 @@ int (*ProcXvMCVector[xvmcNumRequest])(ClientPtr) = {
 };
 
 static int
-ProcXvMCDispatch (ClientPtr client)
+ProcXvMCDispatch(ClientPtr client)
 {
     REQUEST(xReq);
     
@@ -568,7 +568,7 @@ ProcXvMCDispatch (ClientPtr client)
 }
 
 static int
-SProcXvMCDispatch (ClientPtr client)
+SProcXvMCDispatch(ClientPtr client)
 {
     /* We only support local */
     return BadImplementation;
@@ -603,7 +603,7 @@ XvMCExtensionInit()
 }
 
 static Bool
-XvMCCloseScreen (int i, ScreenPtr pScreen)
+XvMCCloseScreen(int i, ScreenPtr pScreen)
 {
     XvMCScreenPtr pScreenPriv = XVMC_GET_PRIVATE(pScreen);
 
@@ -641,7 +641,8 @@ XvMCScreenInit(ScreenPtr pScreen, int num, XvMCAdaptorPtr pAdapt)
    return Success;
 }
 
-XvImagePtr XvMCFindXvImage(XvPortPtr pPort, CARD32 id)
+XvImagePtr
+XvMCFindXvImage(XvPortPtr pPort, CARD32 id)
 {
     XvImagePtr pImage = NULL;
     ScreenPtr pScreen = pPort->pAdaptor->pScreen;

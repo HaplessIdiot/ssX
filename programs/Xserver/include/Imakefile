@@ -1,9 +1,4 @@
-XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:53:29 cpqbld Exp $
-
-
-
-
-XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.21 2001/01/17 22:36:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.22 2004/01/27 01:29:03 dawes Exp $
 
 #if defined(XFree86Version) || defined(BSDOSArchitecture)
 #if DoLoadableServer
@@ -19,6 +14,11 @@ LinkSourceFile(compiler.h,$(XF86COMSRC))
 LinkSourceFile(osdep.h,../os)
 #ifdef cygwinArchitecture
 LinkFile(xxwindow.h,window.h)
+#endif
+
+#if !HasStrlcat
+LinkSourceFile(strlcat.h,$(LIBSRC)/misc)
+LinkSourceFile(strlcpy.h,$(LIBSRC)/misc)
 #endif
 
 all::

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.19 2003/10/29 22:44:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.20 2004/09/15 15:01:24 dawes Exp $ */
 
 /*
 Copyright 1990, 1998  The Open Group
@@ -29,7 +29,7 @@ in this Software without prior written authorization from The Open Group.
  */
 
 /*
- * Copyright (c) 2004 by The XFree86 Project, Inc.
+ * Copyright (c) 2004, 2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -308,55 +308,48 @@ in this Software without prior written authorization from The Open Group.
 
 int
 #ifdef POLYSEGMENT
-FUNC_NAME(cfb8SegmentSS1Rect) (pDrawable, pGC, nseg, pSegInit)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		nseg;
-    xSegment	*pSegInit;
+FUNC_NAME(cfb8SegmentSS1Rect)(DrawablePtr pDrawable, GCPtr pGC, int nseg,
+			      xSegment *pSegInit)
 #else
-FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
-			    x1p,y1p,x2p,y2p)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int	mode;		/* Origin or Previous */
-    int	npt;		/* number of points */
-    DDXPointPtr pptInit, pptInitOrig;
-    int	*x1p, *y1p, *x2p, *y2p;
+FUNC_NAME(cfb8LineSS1Rect)(DrawablePtr pDrawable, GCPtr pGC, int mode,
+			   int npt, DDXPointPtr pptInit,
+			   DDXPointPtr pptInitOrig, int *x1p, int *y1p,
+			   int *x2p, int *y2p)
 #endif /* POLYSEGMENT */
 {
-    register long   e;
-    register int    y1_or_e1;
-    register PixelType   *addrp;
-    register int    stepmajor;
-    register int    stepminor;
+    long   e;
+    int    y1_or_e1;
+    PixelType   *addrp;
+    int    stepmajor;
+    int    stepminor;
 #ifndef REARRANGE
-    register long   e3;
+    long   e3;
 #endif
 #ifdef mc68000
-    register short  x1_or_len;
+    short  x1_or_len;
 #else
-    register int    x1_or_len;
+    int    x1_or_len;
 #endif
     RROP_DECLARE
 
 #ifdef SAVE_X2Y2
 # define c2 y2
 #else
-    register int    c2;
+    int    c2;
 #endif
 #if !defined(ORIGIN) && !defined(POLYSEGMENT)
-    register int _x1 = 0, _y1 = 0, _x2 = 0, _y2 = 0;
+    int _x1 = 0, _y1 = 0, _x2 = 0, _y2 = 0;
     int extents_x1, extents_y1, extents_x2, extents_y2;
 #endif /* !ORIGIN */
 #ifndef PREVIOUS
-    register int upperleft, lowerright;
+    int upperleft, lowerright;
     CARD32	 ClipMask = 0x80008000;
 #endif /* !PREVIOUS */
 #ifdef POLYSEGMENT
-    register int    capStyle;
+    int    capStyle;
 #endif /* POLYSEGMENT */
 #ifdef SAVE_X2Y2
-    register int    x2, y2;
+    int    x2, y2;
 # define X1  x1_or_len
 # define Y1  y1_or_e1
 # define X2  x2
@@ -572,7 +565,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	if (x1_or_len < y1_or_e1)
 	{
 #ifdef REARRANGE
-	    register int	e3;
+	    int	e3;
 #endif
 
 	    e3 = x1_or_len;
@@ -593,7 +586,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 
 	{
 #ifdef REARRANGE
-	register int e3;
+	int e3;
 	RROP_DECLARE
 	RROP_FETCH_GCPRIV(devPriv);
 #endif
@@ -709,7 +702,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	else /* Polysegment horizontal line optimization */
 	{
 # ifdef REARRANGE
-	    register int    e3;
+	    int    e3;
 	    RROP_DECLARE
 	    RROP_FETCH_GCPRIV(devPriv);
 # endif /* REARRANGE */
@@ -762,11 +755,11 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 #if PSZ == 24
 	    {
 #if RROP == GXcopy
-	      register int nlmiddle;
+	      int nlmiddle;
 	      int leftIndex = xOffset & 3;
 	      int rightIndex = (xOffset + x1_or_len) & 3;
 #else
-	      register int pidx;
+	      int pidx;
 #endif
 
 #if RROP == GXcopy
@@ -1146,11 +1139,8 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 #ifdef POLYSEGMENT
 
 void
-cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
-    DrawablePtr	    pDrawable;
-    GCPtr	    pGC;
-    int		    nseg;
-    xSegment	    *pSegInit;
+cfb8SegmentSS1Rect(DrawablePtr pDrawable, GCPtr pGC, int nseg,
+		   xSegment *pSegInit)
 {
     int	    (*func)(DrawablePtr, GCPtr, int, xSegment *);
     void    (*clip)(DrawablePtr, GCPtr, int, int, int, int, BoxPtr, Bool);
@@ -1209,12 +1199,8 @@ cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
 #else /* POLYSEGMENT */
 
 void
-cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		mode;
-    int		npt;
-    DDXPointPtr	pptInit;
+cfb8LineSS1Rect(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+		DDXPointPtr pptInit)
 {
     int	    (*func)(DrawablePtr, GCPtr, int, int, 
 		    DDXPointPtr, DDXPointPtr,
@@ -1301,12 +1287,8 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
 #if !defined(POLYSEGMENT) && !defined (PREVIOUS)
 
 void
-RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		x1, y1, x2, y2;
-    BoxPtr	boxp;
-    Bool	shorten;
+RROP_NAME(cfb8ClippedLine)(DrawablePtr pDrawable, GCPtr pGC, int x1, int y1,
+			   int x2, int y2, BoxPtr boxp, Bool shorten)
 {
     int		    oc1, oc2;
     int		    e, e1, e3, len;
@@ -1431,7 +1413,7 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
     x1 = new_x1;
     y1 = new_y1;
     {
-    register PixelType	*addrp;
+    PixelType	*addrp;
     RROP_DECLARE
 
     RROP_FETCH_GC(pGC);

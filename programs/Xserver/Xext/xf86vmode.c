@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.58 2003/11/06 18:37:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.59 2003/11/17 22:20:27 dawes Exp $ */
 
 /*
 
@@ -29,7 +29,6 @@ or other dealings in this Software without prior written authorization
 from Kaleb S. KEITHLEY
 
 */
-/* $Xorg: xf86vmode.c,v 1.3 2000/08/17 19:47:59 cpqbld Exp $ */
 /* THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION */
 
 #define NEED_REPLIES
@@ -229,8 +228,7 @@ XFree86VidModeExtensionInit(void)
 
 /*ARGSUSED*/
 static void
-XF86VidModeResetProc (extEntry)
-    ExtensionEntry* extEntry;
+XF86VidModeResetProc(ExtensionEntry *extEntry)
 {
 }
 
@@ -248,8 +246,7 @@ ClientMajorVersion(ClientPtr client)
 
 #ifdef XF86VIDMODE_EVENTS
 static void
-CheckScreenPrivate (pScreen)
-    ScreenPtr	pScreen;
+CheckScreenPrivate(ScreenPtr pScreen)
 {
     SetupScreen (pScreen);
 
@@ -262,8 +259,7 @@ CheckScreenPrivate (pScreen)
 }
     
 static XF86VidModeScreenPrivatePtr
-MakeScreenPrivate (pScreen)
-    ScreenPtr	pScreen;
+MakeScreenPrivate(ScreenPtr pScreen)
 {
     SetupScreen (pScreen);
 
@@ -279,7 +275,7 @@ MakeScreenPrivate (pScreen)
 }
 
 static unsigned long
-getEventMask (ScreenPtr pScreen, ClientPtr client)
+getEventMask(ScreenPtr pScreen, ClientPtr client)
 {
     SetupScreen(pScreen);
     XF86VidModeEventPtr pEv;
@@ -293,7 +289,7 @@ getEventMask (ScreenPtr pScreen, ClientPtr client)
 }
 
 static Bool
-setEventMask (ScreenPtr pScreen, ClientPtr client, unsigned long mask)
+setEventMask(ScreenPtr pScreen, ClientPtr client, unsigned long mask)
 {
     SetupScreen(pScreen);
     XF86VidModeEventPtr pEv, *pPrev;
@@ -404,7 +400,7 @@ static int
 ProcXF86VidModeQueryVersion(ClientPtr client)
 {
     xXF86VidModeQueryVersionReply rep;
-    register int n;
+    int n;
 
     DEBUG_P("XF86VidModeQueryVersion");
 
@@ -431,7 +427,7 @@ ProcXF86VidModeGetModeLine(ClientPtr client)
     xXF86VidModeGetModeLineReply rep;
     xXF86OldVidModeGetModeLineReply oldrep;
     pointer mode;
-    register int n;
+    int n;
     int dotClock;
     int ver;
 
@@ -534,7 +530,7 @@ ProcXF86VidModeGetAllModeLines(ClientPtr client)
     xXF86OldVidModeModeInfo oldmdinf;
     pointer mode;
     int modecount, dotClock;
-    register int n;
+    int n;
     int ver;
 
     DEBUG_P("XF86VidModeGetAllModelines");
@@ -1139,7 +1135,7 @@ status_reply:
     rep.sequenceNumber = client->sequence;
     rep.status = status;
     if (client->swapped) {
-        register int n;
+        int n;
     	swaps(&rep.sequenceNumber, n);
     	swapl(&rep.length, n);
 	swapl(&rep.status, n);
@@ -1287,7 +1283,7 @@ ProcXF86VidModeGetMonitor(ClientPtr client)
 {
     REQUEST(xXF86VidModeGetMonitorReq);
     xXF86VidModeGetMonitorReply rep;
-    register int n;
+    int n;
     CARD32 *hsyncdata, *vsyncdata;
     int i, nHsync, nVrefresh;
     pointer monitor;
@@ -1424,7 +1420,7 @@ ProcXF86VidModeGetDotClocks(ClientPtr client)
 {
     REQUEST(xXF86VidModeGetDotClocksReq);
     xXF86VidModeGetDotClocksReply rep;
-    register int n;
+    int n;
     int numClocks;
     CARD32 dotclock;
     int *Clocks = NULL;
@@ -1507,7 +1503,7 @@ ProcXF86VidModeGetGamma(ClientPtr client)
 {
     REQUEST(xXF86VidModeGetGammaReq);
     xXF86VidModeGetGammaReply rep;
-    register int n;
+    int n;
     float red, green, blue;
 
     DEBUG_P("XF86VidModeGetGamma");
@@ -1756,7 +1752,7 @@ ProcXF86VidModeDispatch(ClientPtr client)
 static int
 SProcXF86VidModeQueryVersion(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeQueryVersionReq);
     swaps(&stuff->length, n);
     return ProcXF86VidModeQueryVersion(client);
@@ -1765,7 +1761,7 @@ SProcXF86VidModeQueryVersion(ClientPtr client)
 static int
 SProcXF86VidModeGetModeLine(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeGetModeLineReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeGetModeLineReq);
@@ -1776,7 +1772,7 @@ SProcXF86VidModeGetModeLine(ClientPtr client)
 static int
 SProcXF86VidModeGetAllModeLines(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeGetAllModeLinesReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeGetAllModeLinesReq);
@@ -1790,7 +1786,7 @@ SProcXF86VidModeAddModeLine(ClientPtr client)
     xXF86OldVidModeAddModeLineReq *oldstuff =
 			(xXF86OldVidModeAddModeLineReq *)client->requestBuffer;
     int ver;
-    register int n;
+    int n;
     
     REQUEST(xXF86VidModeAddModeLineReq);
     ver = ClientMajorVersion(client);
@@ -1835,7 +1831,7 @@ SProcXF86VidModeDeleteModeLine(ClientPtr client)
     xXF86OldVidModeDeleteModeLineReq *oldstuff =
 		(xXF86OldVidModeDeleteModeLineReq *)client->requestBuffer;
     int ver;
-    register int n;
+    int n;
 
     REQUEST(xXF86VidModeDeleteModeLineReq);
     ver = ClientMajorVersion(client);
@@ -1880,7 +1876,7 @@ SProcXF86VidModeModModeLine(ClientPtr client)
     xXF86OldVidModeModModeLineReq *oldstuff =
 		(xXF86OldVidModeModModeLineReq *)client->requestBuffer;
     int ver;
-    register int n;
+    int n;
 
     REQUEST(xXF86VidModeModModeLineReq);
     ver = ClientMajorVersion(client);
@@ -1925,7 +1921,7 @@ SProcXF86VidModeValidateModeLine(ClientPtr client)
     xXF86OldVidModeValidateModeLineReq *oldstuff =
 		(xXF86OldVidModeValidateModeLineReq *)client->requestBuffer;
     int ver;
-    register int n;
+    int n;
 
     REQUEST(xXF86VidModeValidateModeLineReq);
     ver = ClientMajorVersion(client);
@@ -1967,7 +1963,7 @@ SProcXF86VidModeValidateModeLine(ClientPtr client)
 static int
 SProcXF86VidModeSwitchMode(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeSwitchModeReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeSwitchModeReq);
@@ -1979,7 +1975,7 @@ SProcXF86VidModeSwitchMode(ClientPtr client)
 static int
 SProcXF86VidModeSwitchToMode(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeSwitchToModeReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeSwitchToModeReq);
@@ -1990,7 +1986,7 @@ SProcXF86VidModeSwitchToMode(ClientPtr client)
 static int
 SProcXF86VidModeLockModeSwitch(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeLockModeSwitchReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeLockModeSwitchReq);
@@ -2002,7 +1998,7 @@ SProcXF86VidModeLockModeSwitch(ClientPtr client)
 static int
 SProcXF86VidModeGetMonitor(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeGetMonitorReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeGetMonitorReq);
@@ -2013,7 +2009,7 @@ SProcXF86VidModeGetMonitor(ClientPtr client)
 static int
 SProcXF86VidModeGetViewPort(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeGetViewPortReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeGetViewPortReq);
@@ -2024,7 +2020,7 @@ SProcXF86VidModeGetViewPort(ClientPtr client)
 static int
 SProcXF86VidModeSetViewPort(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeSetViewPortReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeSetViewPortReq);
@@ -2037,7 +2033,7 @@ SProcXF86VidModeSetViewPort(ClientPtr client)
 static int
 SProcXF86VidModeGetDotClocks(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeGetDotClocksReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeGetDotClocksReq);
@@ -2048,7 +2044,7 @@ SProcXF86VidModeGetDotClocks(ClientPtr client)
 static int
 SProcXF86VidModeSetClientVersion(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeSetClientVersionReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeSetClientVersionReq);
@@ -2060,7 +2056,7 @@ SProcXF86VidModeSetClientVersion(ClientPtr client)
 static int
 SProcXF86VidModeSetGamma(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeSetGammaReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeSetGammaReq);
@@ -2074,7 +2070,7 @@ SProcXF86VidModeSetGamma(ClientPtr client)
 static int
 SProcXF86VidModeGetGamma(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xXF86VidModeGetGammaReq);
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeGetGammaReq);

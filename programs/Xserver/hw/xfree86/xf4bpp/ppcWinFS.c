@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcWinFS.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcWinFS.c,v 1.4 2003/11/03 05:11:57 tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -44,7 +44,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ppcWinFS.c /main/3 1996/02/21 17:58:39 kaleb $ */
 
 #include "xf4bpp.h"
 #include "mfbmap.h"
@@ -68,21 +67,16 @@ MaxRectsPerBand * nSpans.
 */
 
 void
-xf4bppSolidWindowFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
-    DrawablePtr pDrawable ;
-    GCPtr	pGC ;
-    int		nInit ;			/* number of spans to fill */
-    DDXPointPtr pptInit ;		/* pointer to list of start points */
-    int		*pwidthInit ;		/* pointer to list of n widths */
-    int 	fSorted ;
+xf4bppSolidWindowFS(DrawablePtr pDrawable, GCPtr pGC, int nInit,
+		    DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
-    register unsigned long int pm ;
-    register unsigned long int fg ;
-    register int alu ;
+    unsigned long int pm ;
+    unsigned long int fg ;
+    int alu ;
 				/* next three parameters are post-clip */
     int n ;			/* number of spans to fill */
-    register DDXPointPtr ppt ;	/* pointer to list of start points */
-    register int *pwidth ;	/* pointer to list of n widths */
+    DDXPointPtr ppt ;	/* pointer to list of start points */
+    int *pwidth ;	/* pointer to list of n widths */
     int *pwidthFree ;		/* copies of the pointers to free */
     DDXPointPtr pptFree ;
 
@@ -126,21 +120,16 @@ xf4bppSolidWindowFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
 }
 
 void
-xf4bppStippleWindowFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
-DrawablePtr pDrawable ;
-register GC *pGC ;
-int nInit ;			/* number of spans to fill */
-DDXPointPtr pptInit ;		/* pointer to list of start points */
-int *pwidthInit ;		/* pointer to list of n widths */
-int fSorted ;
+xf4bppStippleWindowFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+		      DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
-    register unsigned long int pm ;
-    register unsigned long int fg ;
-    register int alu ;
+    unsigned long int pm ;
+    unsigned long int fg ;
+    int alu ;
 				/* next three parameters are post-clip */
     int n ;			/* number of spans to fill */
-    register DDXPointPtr ppt ;	/* pointer to list of start points */
-    register int *pwidth ;	/* pointer to list of n widths */
+    DDXPointPtr ppt ;	/* pointer to list of start points */
+    int *pwidth ;	/* pointer to list of n widths */
     PixmapPtr	pTile ;		/* pointer to tile we want to fill with */
     int xSrc ;
     int ySrc ;
@@ -185,16 +174,11 @@ int fSorted ;
 }
 
 void
-xf4bppOpStippleWindowFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
-DrawablePtr pDrawable ;
-register GC *pGC ;
-int nInit ;			/* number of spans to fill */
-DDXPointPtr pptInit ;		/* pointer to list of start points */
-int *pwidthInit ;		/* pointer to list of n widths */
-int fSorted ;
+xf4bppOpStippleWindowFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+			DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
-    register DDXPointPtr ppt ;	/* pointer to list of start points */
-    register int *pwidth ;	/* pointer to list of n widths */
+    DDXPointPtr ppt ;	/* pointer to list of start points */
+    int *pwidth ;	/* pointer to list of n widths */
     int n ;			/* number of spans to fill */
     int xSrc ;
     int ySrc ;
@@ -236,17 +220,12 @@ int fSorted ;
 }
 
 void
-xf4bppTileWindowFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
-DrawablePtr pDrawable ;
-register GC *pGC ;
-int nInit ;			/* number of spans to fill */
-DDXPointPtr pptInit ;		/* pointer to list of start points */
-int *pwidthInit ;		/* pointer to list of n widths */
-int fSorted ;
+xf4bppTileWindowFS(DrawablePtr pDrawable, GC *pGC, int nInit,
+		   DDXPointPtr pptInit, int *pwidthInit, int fSorted)
 {
 				/* next three parameters are post-clip */
-    register DDXPointPtr ppt ;	/* pointer to list of start points */
-    register int *pwidth ;	/* pointer to list of n widths */
+    DDXPointPtr ppt ;	/* pointer to list of start points */
+    int *pwidth ;	/* pointer to list of n widths */
     int n ;			/* number of spans to fill */
     unsigned char pm ;
     int alu ;

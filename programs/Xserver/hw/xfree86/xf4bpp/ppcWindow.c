@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcWindow.c,v 1.3 1999/06/06 08:49:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcWindow.c,v 1.4 1999/09/25 14:38:17 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -68,7 +68,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: ppcWindow.c /main/5 1996/02/21 17:58:43 kaleb $ */
 
 #include "xf4bpp.h"
 #include "mfbmap.h"
@@ -82,16 +81,13 @@ visible in the source.
 */
 
 void 
-xf4bppCopyWindow(pWin, ptOldOrg, prgnSrc)
-    register WindowPtr pWin ;
-    DDXPointRec ptOldOrg ;
-    RegionPtr prgnSrc ;
+xf4bppCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 {
     RegionPtr prgnDst ;
-    register BoxPtr pbox ;
-    register int dx, dy ;
-    register int nbox ;
-    register int pm ;
+    BoxPtr pbox ;
+    int dx, dy ;
+    int nbox ;
+    int pm ;
 
     BoxPtr pboxTmp, pboxNext, pboxBase, pboxNew ;
 				/* temporaries for shuffling rectangles */
@@ -191,26 +187,23 @@ xf4bppCopyWindow(pWin, ptOldOrg, prgnSrc)
     REGION_DESTROY(pWin->drawable.pScreen, prgnDst);
 }
 
-Bool xf4bppPositionWindow(pWin, x, y)
-register WindowPtr pWin ;
-register int x, y ;
+Bool
+xf4bppPositionWindow(WindowPtr pWin, int x, int y)
 {
     return TRUE ;
 }
 
 Bool 
-xf4bppDestroyWindow(pWin)
-register WindowPtr pWin ;
+xf4bppDestroyWindow(WindowPtr pWin)
 {
 return pWin ? TRUE : FALSE ;
 }
 
 /* As The Name Says -- Used For ega, vga and apa8c */
 Bool
-xf4bppCreateWindowForXYhardware(pWin)
-register WindowPtr pWin ;
+xf4bppCreateWindowForXYhardware(WindowPtr pWin)
 {
-    register mfbPrivWin *pPrivWin;
+    mfbPrivWin *pPrivWin;
 
     TRACE(("xf4bppCreateWindowForXYhardware (pWin= 0x%x)\n", pWin));
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.18 2003/11/17 22:20:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.19 2004/04/03 22:26:22 dawes Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -106,8 +106,7 @@ static unsigned int pagesize;
 static Bool badSysCall = FALSE;
 
 static void
-SigSysHandler(
-     int signo)
+SigSysHandler(int signo)
 {
     badSysCall = TRUE;
 }
@@ -222,8 +221,7 @@ typedef struct _ShmDesc {
 static ShmDescPtr ShmList = (ShmDescPtr) NULL;
 
 static ShmDescPtr
-shmalloc(
-    unsigned int size)
+shmalloc(unsigned int size)
 {
     ShmDescPtr pDesc;
     int shmid;
@@ -279,8 +277,7 @@ shmalloc(
 }
 
 static void
-shmdealloc(
-    ShmDescPtr pDesc)
+shmdealloc(ShmDescPtr pDesc)
 {
 #ifndef EARLY_REMOVE
     shmctl(pDesc->shmid, IPC_RMID, (void *) 0);
@@ -296,8 +293,7 @@ shmdealloc(
 
 /* Called when a font is closed. */
 void
-XF86BigfontFreeFontShm(
-    FontPtr pFont)
+XF86BigfontFreeFontShm(FontPtr pFont)
 {
 #ifdef HAS_SHM
     ShmDescPtr pDesc;
@@ -326,8 +322,7 @@ XF86BigfontCleanup()
 
 /* Called when a server generation dies. */
 static void
-XF86BigfontResetProc(
-    ExtensionEntry* extEntry)
+XF86BigfontResetProc(ExtensionEntry* extEntry)
 {
     /* This function is normally called from CloseDownExtensions(), called
      * from main(). It will be followed by a call to FreeAllResources(),
@@ -344,8 +339,7 @@ XF86BigfontResetProc(
 /* ========== Handling of extension specific requests ========== */
 
 static int
-ProcXF86BigfontQueryVersion(
-    ClientPtr client)
+ProcXF86BigfontQueryVersion(ClientPtr client)
 {
     xXF86BigfontQueryVersionReply reply;
 
@@ -385,8 +379,7 @@ ProcXF86BigfontQueryVersion(
 }
 
 static void
-swapCharInfo(
-    xCharInfo *pCI)
+swapCharInfo(xCharInfo *pCI)
 {
     char tmp;
 
@@ -406,8 +399,7 @@ swapCharInfo(
 	          (p->ascent << 11) + (p->descent << 6)) ^ p->attributes)
 
 static int
-ProcXF86BigfontQueryFont(
-    ClientPtr client)
+ProcXF86BigfontQueryFont(ClientPtr client)
 {
     FontPtr pFont;
     REQUEST(xXF86BigfontQueryFontReq);
@@ -727,8 +719,7 @@ ProcXF86BigfontQueryFont(
 }
 
 static int
-ProcXF86BigfontDispatch(
-    ClientPtr client)
+ProcXF86BigfontDispatch(ClientPtr client)
 {
     REQUEST(xReq);
 
@@ -743,8 +734,7 @@ ProcXF86BigfontDispatch(
 }
 
 static int
-SProcXF86BigfontQueryVersion(
-    ClientPtr client)
+SProcXF86BigfontQueryVersion(ClientPtr client)
 {
     REQUEST(xXF86BigfontQueryVersionReq);
     char tmp;
@@ -754,8 +744,7 @@ SProcXF86BigfontQueryVersion(
 }
 
 static int
-SProcXF86BigfontQueryFont(
-    ClientPtr client)
+SProcXF86BigfontQueryFont(ClientPtr client)
 {
     REQUEST(xXF86BigfontQueryFontReq);
     char tmp;
@@ -767,8 +756,7 @@ SProcXF86BigfontQueryFont(
 }
 
 static int
-SProcXF86BigfontDispatch(
-    ClientPtr client)
+SProcXF86BigfontDispatch(ClientPtr client)
 {
     REQUEST(xReq);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPntWin.c,v 1.3 1999/06/06 08:49:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPntWin.c,v 1.4 2003/11/17 22:20:42 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -69,7 +69,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ppcPntWin.c /main/5 1996/02/21 17:58:04 kaleb $ */
 
 #include "xf4bpp.h"
 #include "mfbmap.h"
@@ -91,13 +90,10 @@ static void xf4bppPaintWindowTile(
 );
 
 void
-xf4bppPaintWindow(pWin, pRegion, what)
-    WindowPtr	pWin;
-    RegionPtr	pRegion;
-    int		what;
+xf4bppPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
 {
 
-    register mfbPrivWin	*pPrivWin;
+    mfbPrivWin	*pPrivWin;
     pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
 
     TRACE(("xf4bppPaintWindow( pWin= 0x%x, pRegion= 0x%x, what= %d )\n",
@@ -144,15 +140,12 @@ xf4bppPaintWindow(pWin, pRegion, what)
 }
 
 static void
-xf4bppPaintWindowSolid(pWin, pRegion, what)
-    register WindowPtr pWin;
-    register RegionPtr pRegion;
-    int what;		
+xf4bppPaintWindowSolid(WindowPtr pWin, RegionPtr pRegion, int what)
 {
-    register int nbox;
-    register BoxPtr pbox;
-    register unsigned long int pixel;
-    register unsigned long int pm ;
+    int nbox;
+    BoxPtr pbox;
+    unsigned long int pixel;
+    unsigned long int pm ;
 
     TRACE(("xf4bppPaintWindowSolid(pWin= 0x%x, pRegion= 0x%x, what= %d)\n", pWin, pRegion, what));
 
@@ -178,15 +171,12 @@ xf4bppPaintWindowSolid(pWin, pRegion, what)
 }
 
 static void
-xf4bppPaintWindowTile(pWin, pRegion, what)
-    register WindowPtr pWin;
-    register RegionPtr pRegion;
-    int what;		
+xf4bppPaintWindowTile(WindowPtr pWin, RegionPtr pRegion, int what)
 {
-    register int nbox;
-    register BoxPtr pbox;
-    register PixmapPtr pTile;
-    register unsigned long int pm ;
+    int nbox;
+    BoxPtr pbox;
+    PixmapPtr pTile;
+    unsigned long int pm ;
 
     TRACE(("xf4bppPaintWindowTile(pWin= 0x%x, pRegion= 0x%x, what= %d)\n", pWin, pRegion, what));
 

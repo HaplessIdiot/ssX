@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/atom.c,v 3.3 2001/12/14 19:59:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/atom.c,v 3.4 2002/02/19 11:09:21 alanh Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,8 +46,6 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Xorg: atom.c,v 1.4 2001/02/09 02:04:39 xorgcvs Exp $ */
-
 #include "X.h"
 #include "Xatom.h"
 #include "misc.h"
@@ -71,15 +69,12 @@ static NodePtr *nodeTable;
 void FreeAtom(NodePtr patom);
 
 Atom 
-MakeAtom(string, len, makeit)
-    char *string;
-    unsigned len;
-    Bool makeit;
+MakeAtom(char *string, unsigned len, Bool makeit)
 {
-    register    NodePtr * np;
+    NodePtr * np;
     unsigned i;
     int     comp;
-    register unsigned int   fp = 0;
+    unsigned int   fp = 0;
 
     np = &atomRoot;
     for (i = 0; i < (len+1)/2; i++)
@@ -106,7 +101,7 @@ MakeAtom(string, len, makeit)
     }
     if (makeit)
     {
-	register NodePtr nd;
+	NodePtr nd;
 
 	nd = (NodePtr) xalloc(sizeof(NodeRec));
 	if (!nd)
@@ -151,15 +146,13 @@ MakeAtom(string, len, makeit)
 }
 
 Bool
-ValidAtom(atom)
-    Atom atom;
+ValidAtom(Atom atom)
 {
     return (atom != None) && (atom <= lastAtom);
 }
 
 char *
-NameForAtom(atom)
-    Atom atom;
+NameForAtom(Atom atom)
 {
     NodePtr node;
     if (atom > lastAtom) return 0;

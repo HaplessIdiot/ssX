@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbclip.c,v 3.2 2001/10/28 03:32:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbclip.c,v 3.3 2003/07/16 01:38:35 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbclip.c,v 5.6 94/04/17 20:28:19 dpw Exp $ */
 
 #include "X.h"
 #include "regionstr.h"
@@ -90,19 +89,18 @@ if (((rx1) < (rx2)) && ((ry1) < (ry2)) &&						\
  * at the same X coordinates.
  */
 RegionPtr
-afbPixmapToRegion(pPix)
-	PixmapPtr		pPix;
+afbPixmapToRegion(PixmapPtr pPix)
 {
-	register RegionPtr	pReg;
-	register PixelType	*pw, w;
-	register int		ib;
+	RegionPtr		pReg;
+	PixelType		*pw, w;
+	int			ib;
 	int			width, h, base, rx1 = 0, crects;
 	PixelType		*pwLineEnd;
 	int			irectPrevStart, irectLineStart;
-	register BoxPtr		prectO, prectN;
+	BoxPtr			prectO, prectN;
 	BoxPtr			FirstRect, rects, prectLineStart;
 	Bool			fInBox, fSame;
-	register PixelType	mask0 = mask[0];
+	PixelType		mask0 = mask[0];
 	PixelType		*pwLine;
 	int			nWidth;
 

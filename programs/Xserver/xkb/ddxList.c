@@ -1,4 +1,3 @@
-/* $Xorg: ddxList.c,v 1.3 2000/08/17 19:53:46 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxList.c,v 3.8 2003/07/16 01:39:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxList.c,v 3.9 2003/11/17 22:20:45 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -98,7 +97,7 @@ char *		tmp;
     wire16[1]= slen;
     memcpy(wire8,str,slen);
     if (client->swapped) {
-	register int n;
+	int n;
 	swaps(&wire16[0],n);
 	swaps(&wire16[1],n);
     }
@@ -211,7 +210,7 @@ char tmpname[32];
     list->nFound[what]= 0;
     while ((status==Success)&&((tmp=fgets(buf,PATH_MAX,in))!=NULL)) {
 	unsigned flags;
-	register unsigned int i;
+	unsigned int i;
 	if (*tmp=='#') /* comment, skip it */
 	    continue;
 	if (!strncmp(tmp, "Warning:", 8) || !strncmp(tmp, "        ", 8))

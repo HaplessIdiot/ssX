@@ -1,5 +1,5 @@
+/* $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.11 2003/10/30 14:53:39 tsi Exp $ */
 /*
- * $Xorg: cfbply1rct.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $
  *
 Copyright 1990, 1998  The Open Group
 
@@ -25,7 +25,6 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.10 2003/10/29 22:44:53 tsi Exp $ */
 
 #include "X.h"
 
@@ -41,20 +40,15 @@ in this Software without prior written authorization from The Open Group.
 #include "cfbrrop.h"
 
 void
-RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		shape;
-    int		mode;
-    int		count;
-    DDXPointPtr	ptsIn;
+RROP_NAME(cfbFillPoly1Rect)(DrawablePtr pDrawable, GCPtr pGC, int shape,
+			    int mode, int count, DDXPointPtr ptsIn)
 {
     cfbPrivGCPtr    devPriv;
     int		    nwidth;
     CfbBits	    *addrl, *addr;
 #if PSZ == 24
     CfbBits	    startmask, endmask;
-    register int    pidx;
+    int		    pidx;
 #else
 #if PPW > 1
     CfbBits	    mask, bits = ~((CfbBits)0);
@@ -62,7 +56,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 #endif
     int		    maxy;
     int		    origin;
-    register int    vertex1, vertex2;
+    int		    vertex1, vertex2;
     int		    c = 0;
     BoxPtr	    extents;
     int		    clip;

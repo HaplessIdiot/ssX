@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcFillRct.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcFillRct.c,v 1.6 2003/11/03 05:11:57 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ppcFillRct.c /main/5 1996/02/21 17:57:35 kaleb $ */
 
 #include "xf4bpp.h"
 #include "mfbmap.h"
@@ -66,16 +65,13 @@ helper function in the GC.
 #define NUM_STACK_RECTS	1024
 
 void
-xf4bppPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		nrectFill; 	/* number of rectangles to fill */
-    xRectangle	*prectInit;  	/* Pointer to first rectangle to fill */
+xf4bppPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
+		   xRectangle *prectInit)
 {
     xRectangle	    *prect;
     RegionPtr	    prgnClip;
-    register BoxPtr pbox;
-    register BoxPtr pboxClipped;
+    BoxPtr pbox;
+    BoxPtr pboxClipped;
     BoxPtr	    pboxClippedBase;
     BoxPtr	    pextent;
     BoxRec	    stackRects[NUM_STACK_RECTS];

@@ -1,4 +1,3 @@
-/* $Xorg: grabs.c,v 1.4 2001/02/09 02:04:40 xorgcvs Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/dix/grabs.c,v 3.4 2002/02/19 11:09:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/grabs.c,v 3.5 2003/11/17 22:20:34 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -65,18 +64,11 @@ SOFTWARE.
 #define GETBIT(buf, i) (MASKWORD(buf, i) & BITMASK(i))
 
 GrabPtr
-CreateGrab(
-    int client,
-    DeviceIntPtr device,
-    WindowPtr window,
-    Mask eventMask,
-    Bool ownerEvents, Bool keyboardMode, Bool pointerMode,
-    DeviceIntPtr modDevice,
-    unsigned short modifiers,
-    int type,
-    KeyCode keybut,	/* key or button */
-    WindowPtr confineTo,
-    CursorPtr cursor)
+CreateGrab(int client, DeviceIntPtr device, WindowPtr window, Mask eventMask,
+	   Bool ownerEvents, Bool keyboardMode, Bool pointerMode,
+	   DeviceIntPtr modDevice, unsigned short modifiers, int type,
+	   KeyCode keybut,	/* key or button */
+	   WindowPtr confineTo, CursorPtr cursor)
 {
     GrabPtr grab;
 
@@ -125,11 +117,9 @@ FreeGrab(GrabPtr pGrab)
 
 /*ARGSUSED*/
 int
-DeletePassiveGrab(value, id)
-    pointer value;
-    XID   id;
+DeletePassiveGrab(pointer value, XID id)
 {
-    register GrabPtr g, prev;
+    GrabPtr g, prev;
     GrabPtr pGrab = (GrabPtr)value;
 
     /* it is OK if the grab isn't found */
@@ -154,8 +144,8 @@ DeletePassiveGrab(value, id)
 static Mask *
 DeleteDetailFromMask(Mask *pDetailMask, unsigned short detail)
 {
-    register Mask *mask;
-    register int i;
+    Mask *mask;
+    int i;
 
     mask = (Mask *)xalloc(sizeof(Mask) * MasksPerDetailMask);
     if (mask)
@@ -172,10 +162,8 @@ DeleteDetailFromMask(Mask *pDetailMask, unsigned short detail)
 }
 
 static Bool
-IsInGrabMask(
-    DetailRec firstDetail,
-    DetailRec secondDetail,
-    unsigned short exception)
+IsInGrabMask(DetailRec firstDetail, DetailRec secondDetail,
+	     unsigned short exception)
 {
     if (firstDetail.exact == exception)
     {
@@ -194,10 +182,8 @@ IsInGrabMask(
 }
 
 static Bool 
-IdenticalExactDetails(
-    unsigned short firstExact,
-    unsigned short secondExact,
-    unsigned short exception)
+IdenticalExactDetails(unsigned short firstExact, unsigned short secondExact,
+		      unsigned short exception)
 {
     if ((firstExact == exception) || (secondExact == exception))
 	return FALSE;
@@ -209,10 +195,8 @@ IdenticalExactDetails(
 }
 
 static Bool 
-DetailSupersedesSecond(
-    DetailRec firstDetail,
-    DetailRec secondDetail,
-    unsigned short exception)
+DetailSupersedesSecond(DetailRec firstDetail, DetailRec secondDetail,
+		       unsigned short exception)
 {
     if (IsInGrabMask(firstDetail, secondDetail, exception))
 	return TRUE;
@@ -240,8 +224,7 @@ GrabSupersedesSecond(GrabPtr pFirstGrab, GrabPtr pSecondGrab)
 }
 
 Bool
-GrabMatchesSecond(pFirstGrab, pSecondGrab)
-    GrabPtr pFirstGrab, pSecondGrab;
+GrabMatchesSecond(GrabPtr pFirstGrab, GrabPtr pSecondGrab)
 {
     if ((pFirstGrab->device != pSecondGrab->device) ||
 	(pFirstGrab->modifierDevice != pSecondGrab->modifierDevice) ||
@@ -272,8 +255,7 @@ GrabMatchesSecond(pFirstGrab, pSecondGrab)
 }
 
 int
-AddPassiveGrabToList(pGrab)
-    GrabPtr pGrab;
+AddPassiveGrabToList(GrabPtr pGrab)
 {
     GrabPtr grab;
 
@@ -306,10 +288,9 @@ AddPassiveGrabToList(pGrab)
  */
 
 Bool
-DeletePassiveGrabFromList(pMinuendGrab)
-    GrabPtr pMinuendGrab;
+DeletePassiveGrabFromList(GrabPtr pMinuendGrab)
 {
-    register GrabPtr grab;
+    GrabPtr grab;
     GrabPtr *deletes, *adds;
     Mask ***updates, **details;
     int i, ndels, nadds, nups;

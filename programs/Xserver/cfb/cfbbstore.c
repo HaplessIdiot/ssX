@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbbstore.c,v 1.4 1999/01/31 12:21:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbstore.c,v 1.5 2001/01/17 22:36:34 dawes Exp $ */
 /*-
  * cfbbstore.c --
  *	Functions required by the backing-store implementation in MI.
@@ -15,7 +15,6 @@
  *
  *
  */
-/* $Xorg: cfbbstore.c,v 1.3 2000/08/17 19:48:13 cpqbld Exp $ */
 
 #include    "cfb.h"
 #include    "X.h"
@@ -46,17 +45,13 @@
  *-----------------------------------------------------------------------
  */
 void
-cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
-    PixmapPtr	  	pPixmap;  	/* Backing pixmap */
-    RegionPtr	  	prgnSave; 	/* Region to save (pixmap-relative) */
-    int	    	  	xorg;	    	/* X origin of region */
-    int	    	  	yorg;	    	/* Y origin of region */
-    WindowPtr		pWin;
+cfbSaveAreas(PixmapPtr pPixmap, RegionPtr prgnSave, int xorg, int yorg,
+	     WindowPtr pWin)
 {
-    register DDXPointPtr pPt;
+    DDXPointPtr		 pPt;
     DDXPointPtr		pPtsInit;
-    register BoxPtr	pBox;
-    register int	i;
+    BoxPtr		pBox;
+    int			i;
     ScreenPtr		pScreen = pPixmap->drawable.pScreen;
     PixmapPtr		pScrPix;
     
@@ -104,17 +99,13 @@ cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
  *-----------------------------------------------------------------------
  */
 void
-cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
-    PixmapPtr	  	pPixmap;  	/* Backing pixmap */
-    RegionPtr	  	prgnRestore; 	/* Region to restore (screen-relative)*/
-    int	    	  	xorg;	    	/* X origin of window */
-    int	    	  	yorg;	    	/* Y origin of window */
-    WindowPtr		pWin;
+cfbRestoreAreas(PixmapPtr pPixmap, RegionPtr prgnRestore, int xorg, int yorg,
+		WindowPtr pWin)
 {
-    register DDXPointPtr pPt;
+    DDXPointPtr 	pPt;
     DDXPointPtr		pPtsInit;
-    register BoxPtr	pBox;
-    register int	i;
+    BoxPtr		pBox;
+    int			i;
     ScreenPtr		pScreen = pPixmap->drawable.pScreen;
     PixmapPtr		pScrPix;
     

@@ -1,4 +1,3 @@
-/* $Xorg: panoramiXSwap.c,v 1.4 2000/08/17 19:47:57 cpqbld Exp $ */
 /*****************************************************************
 Copyright (c) 1991, 1997 Digital Equipment Corporation, Maynard, Massachusetts.
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,7 +22,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXSwap.c,v 3.9 2003/07/16 01:38:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXSwap.c,v 3.10 2003/09/13 21:33:03 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -50,10 +49,10 @@ Equipment Corporation.
 #include "panoramiXh.h"
 
 static int
-SProcPanoramiXQueryVersion (ClientPtr client)
+SProcPanoramiXQueryVersion(ClientPtr client)
 {
 	REQUEST(xPanoramiXQueryVersionReq);
-	register int n;
+	int n;
 
 	swaps(&stuff->length,n);
 	REQUEST_SIZE_MATCH (xPanoramiXQueryVersionReq);
@@ -64,7 +63,7 @@ static int
 SProcPanoramiXGetState(ClientPtr client)
 {
 	REQUEST(xPanoramiXGetStateReq);
-	register int n;
+	int n;
 
  	swaps (&stuff->length, n);	
 	REQUEST_SIZE_MATCH(xPanoramiXGetStateReq);
@@ -75,7 +74,7 @@ static int
 SProcPanoramiXGetScreenCount(ClientPtr client)
 {
 	REQUEST(xPanoramiXGetScreenCountReq);
-	register int n;
+	int n;
 
 	swaps (&stuff->length, n);
 	REQUEST_SIZE_MATCH(xPanoramiXGetScreenCountReq);
@@ -86,7 +85,7 @@ static int
 SProcPanoramiXGetScreenSize(ClientPtr client)
 {
 	REQUEST(xPanoramiXGetScreenSizeReq);
-	register int n;
+	int n;
 
 	swaps (&stuff->length, n);
 	REQUEST_SIZE_MATCH(xPanoramiXGetScreenSizeReq);
@@ -98,7 +97,7 @@ static int
 SProcXineramaIsActive(ClientPtr client)
 {
 	REQUEST(xXineramaIsActiveReq);
-	register int n;
+	int n;
 
 	swaps (&stuff->length, n);
 	REQUEST_SIZE_MATCH(xXineramaIsActiveReq);
@@ -110,7 +109,7 @@ static int
 SProcXineramaQueryScreens(ClientPtr client)
 {
 	REQUEST(xXineramaQueryScreensReq);
-	register int n;
+	int n;
 
 	swaps (&stuff->length, n);
 	REQUEST_SIZE_MATCH(xXineramaQueryScreensReq);

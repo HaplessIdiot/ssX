@@ -1,4 +1,3 @@
-/* $XConsortium: cfbcmap.c,v 4.19 94/04/17 20:28:46 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -27,7 +26,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.11 2001/05/29 22:24:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.12 2004/06/30 20:21:46 martin Exp $ */
 
 /*
  * This is based on cfbcmap.c.  The functions here are useful independently
@@ -122,8 +121,8 @@ miResolveColor(unsigned short *pred, unsigned short *pgreen,
 Bool
 miInitializeColormap(ColormapPtr pmap)
 {
-    register unsigned i;
-    register VisualPtr pVisual;
+    unsigned i;
+    VisualPtr pVisual;
     unsigned lim, maxent, shift;
 
     pVisual = pmap->pVisual;
@@ -208,13 +207,13 @@ int
 miExpandDirectColors(ColormapPtr pmap, int ndef, xColorItem *indefs,
 			xColorItem *outdefs)
 {
-    register int    red, green, blue;
+    int    red, green, blue;
     int		    maxred, maxgreen, maxblue;
     int		    stepred, stepgreen, stepblue;
     VisualPtr	    pVisual;
-    register int    pixel;
-    register int    nresult;
-    register int    i;
+    int    pixel;
+    int    nresult;
+    int    i;
 
     pVisual = pmap->pVisual;
 

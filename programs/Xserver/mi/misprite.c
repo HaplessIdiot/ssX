@@ -4,8 +4,6 @@
  * machine independent software sprite routines
  */
 
-/* $Xorg: misprite.c,v 1.4 2001/02/09 02:05:22 xorgcvs Exp $ */
-
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -30,7 +28,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/mi/misprite.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/misprite.c,v 3.11 2002/12/09 04:10:58 tsi Exp $ */
 
 # include   "X.h"
 # include   "Xproto.h"
@@ -318,10 +316,8 @@ static void miSpriteRestoreCursor(ScreenPtr pScreen);
  */
 
 Bool
-miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
-    ScreenPtr		    pScreen;
-    miSpriteCursorFuncPtr   cursorFuncs;
-    miPointerScreenFuncPtr  screenFuncs;
+miSpriteInitialize(ScreenPtr pScreen, miSpriteCursorFuncPtr cursorFuncs,
+		   miPointerScreenFuncPtr screenFuncs)
 {
     miSpriteScreenPtr	pPriv;
     VisualPtr		pVisual;
@@ -431,9 +427,7 @@ miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
  */
 
 static Bool
-miSpriteCloseScreen (i, pScreen)
-    int i;
-    ScreenPtr	pScreen;
+miSpriteCloseScreen(int i, ScreenPtr pScreen)
 {
     miSpriteScreenPtr   pScreenPriv;
 #ifdef RENDER
@@ -471,12 +465,8 @@ miSpriteCloseScreen (i, pScreen)
 }
 
 static void
-miSpriteGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
-    DrawablePtr	    pDrawable;
-    int		    sx, sy, w, h;
-    unsigned int    format;
-    unsigned long   planemask;
-    char	    *pdstLine;
+miSpriteGetImage(DrawablePtr pDrawable, int sx, int sy, int w, int h,
+		 unsigned int format, unsigned long planemask, char *pdstLine)
 {
     ScreenPtr	    pScreen = pDrawable->pScreen;
     miSpriteScreenPtr    pScreenPriv;
@@ -499,13 +489,8 @@ miSpriteGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 }
 
 static void
-miSpriteGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
-    DrawablePtr	pDrawable;
-    int		wMax;
-    DDXPointPtr	ppt;
-    int		*pwidth;
-    int		nspans;
-    char	*pdstStart;
+miSpriteGetSpans(DrawablePtr pDrawable, int wMax, DDXPointPtr ppt,
+		 int *pwidth, int nspans, char *pdstStart)
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
     miSpriteScreenPtr	    pScreenPriv;
@@ -516,11 +501,10 @@ miSpriteGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 
     if (pDrawable->type == DRAWABLE_WINDOW && pScreenPriv->isUp)
     {
-	register DDXPointPtr    pts;
-	register int    	*widths;
-	register int    	nPts;
-	register int    	xorg,
-				yorg;
+	DDXPointPtr	pts;
+	int		*widths;
+	int		nPts;
+	int		xorg, yorg;
 
 	xorg = pDrawable->x;
 	yorg = pDrawable->y;
@@ -544,9 +528,8 @@ miSpriteGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 }
 
 static void
-miSpriteSourceValidate (pDrawable, x, y, width, height)
-    DrawablePtr	pDrawable;
-    int		x, y, width, height;
+miSpriteSourceValidate(DrawablePtr pDrawable, int x, int y,
+		       int width, int height)
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
     miSpriteScreenPtr	    pScreenPriv;
@@ -569,8 +552,7 @@ miSpriteSourceValidate (pDrawable, x, y, width, height)
 }
 
 static Bool
-miSpriteCreateGC (pGC)
-    GCPtr   pGC;
+miSpriteCreateGC(GCPtr pGC)
 {
     ScreenPtr	    pScreen = pGC->pScreen;
     Bool	    ret;
@@ -592,11 +574,8 @@ miSpriteCreateGC (pGC)
 }
 
 static void
-miSpriteBlockHandler (i, blockData, pTimeout, pReadmask)
-    int	i;
-    pointer	blockData;
-    pointer	pTimeout;
-    pointer	pReadmask;
+miSpriteBlockHandler(int i, pointer blockData, pointer pTimeout,
+		     pointer pReadmask)
 {
     ScreenPtr		pScreen = screenInfo.screens[i];
     miSpriteScreenPtr	pPriv;
@@ -614,8 +593,7 @@ miSpriteBlockHandler (i, blockData, pTimeout, pReadmask)
 }
 
 static void
-miSpriteInstallColormap (pMap)
-    ColormapPtr	pMap;
+miSpriteInstallColormap(ColormapPtr pMap)
 {
     ScreenPtr		pScreen = pMap->pScreen;
     miSpriteScreenPtr	pPriv;
@@ -638,10 +616,7 @@ miSpriteInstallColormap (pMap)
 }
 
 static void
-miSpriteStoreColors (pMap, ndef, pdef)
-    ColormapPtr	pMap;
-    int		ndef;
-    xColorItem	*pdef;
+miSpriteStoreColors(ColormapPtr pMap, int ndef, xColorItem *pdef)
 {
     ScreenPtr		pScreen = pMap->pScreen;
     miSpriteScreenPtr	pPriv;
@@ -714,7 +689,7 @@ miSpriteStoreColors (pMap, ndef, pdef)
 }
 
 static void
-miSpriteFindColors (ScreenPtr pScreen)
+miSpriteFindColors(ScreenPtr pScreen)
 {
     miSpriteScreenPtr	pScreenPriv = (miSpriteScreenPtr)
 			    pScreen->devPrivates[miSpriteScreenIndex].ptr;
@@ -753,10 +728,7 @@ miSpriteFindColors (ScreenPtr pScreen)
  */
 
 static void
-miSpriteSaveDoomedAreas (pWin, pObscured, dx, dy)
-    WindowPtr	pWin;
-    RegionPtr	pObscured;
-    int		dx, dy;
+miSpriteSaveDoomedAreas(WindowPtr pWin, RegionPtr pObscured, int dx, int dy)
 {
     ScreenPtr		pScreen;
     miSpriteScreenPtr   pScreenPriv;
@@ -788,9 +760,7 @@ miSpriteSaveDoomedAreas (pWin, pObscured, dx, dy)
 }
 
 static RegionPtr
-miSpriteRestoreAreas (pWin, prgnExposed)
-    WindowPtr	pWin;
-    RegionPtr	prgnExposed;
+miSpriteRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 {
     ScreenPtr		pScreen;
     miSpriteScreenPtr   pScreenPriv;
@@ -819,10 +789,7 @@ miSpriteRestoreAreas (pWin, prgnExposed)
  */
 
 static void
-miSpritePaintWindowBackground (pWin, pRegion, what)
-    WindowPtr	pWin;
-    RegionPtr	pRegion;
-    int		what;
+miSpritePaintWindowBackground(WindowPtr pWin, RegionPtr pRegion, int what)
 {
     ScreenPtr	    pScreen;
     miSpriteScreenPtr    pScreenPriv;
@@ -848,10 +815,7 @@ miSpritePaintWindowBackground (pWin, pRegion, what)
 }
 
 static void
-miSpritePaintWindowBorder (pWin, pRegion, what)
-    WindowPtr	pWin;
-    RegionPtr	pRegion;
-    int		what;
+miSpritePaintWindowBorder(WindowPtr pWin, RegionPtr pRegion, int what)
 {
     ScreenPtr	    pScreen;
     miSpriteScreenPtr    pScreenPriv;
@@ -877,10 +841,7 @@ miSpritePaintWindowBorder (pWin, pRegion, what)
 }
 
 static void
-miSpriteCopyWindow (pWin, ptOldOrg, pRegion)
-    WindowPtr	pWin;
-    DDXPointRec	ptOldOrg;
-    RegionPtr	pRegion;
+miSpriteCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr pRegion)
 {
     ScreenPtr	    pScreen;
     miSpriteScreenPtr    pScreenPriv;
@@ -917,11 +878,8 @@ miSpriteCopyWindow (pWin, ptOldOrg, pRegion)
 }
 
 static void
-miSpriteClearToBackground (pWin, x, y, w, h, generateExposures)
-    WindowPtr pWin;
-    int x,y;
-    int w,h;
-    Bool generateExposures;
+miSpriteClearToBackground(WindowPtr pWin, int x, int y, int w, int h,
+			  Bool generateExposures)
 {
     ScreenPtr		pScreen;
     miSpriteScreenPtr	pScreenPriv;
@@ -955,10 +913,7 @@ miSpriteClearToBackground (pWin, x, y, w, h, generateExposures)
  */
 
 static void
-miSpriteValidateGC (pGC, changes, pDrawable)
-    GCPtr	pGC;
-    unsigned long	changes;
-    DrawablePtr	pDrawable;
+miSpriteValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
     GC_FUNC_PROLOGUE (pGC);
 
@@ -982,9 +937,7 @@ miSpriteValidateGC (pGC, changes, pDrawable)
 }
 
 static void
-miSpriteChangeGC (pGC, mask)
-    GCPtr	    pGC;
-    unsigned long   mask;
+miSpriteChangeGC(GCPtr pGC, unsigned long mask)
 {
     GC_FUNC_PROLOGUE (pGC);
 
@@ -994,9 +947,7 @@ miSpriteChangeGC (pGC, mask)
 }
 
 static void
-miSpriteCopyGC (pGCSrc, mask, pGCDst)
-    GCPtr	    pGCSrc, pGCDst;
-    unsigned long   mask;
+miSpriteCopyGC(GCPtr pGCSrc, unsigned long mask, GCPtr pGCDst)
 {
     GC_FUNC_PROLOGUE (pGCDst);
 
@@ -1006,8 +957,7 @@ miSpriteCopyGC (pGCSrc, mask, pGCDst)
 }
 
 static void
-miSpriteDestroyGC (pGC)
-    GCPtr   pGC;
+miSpriteDestroyGC(GCPtr pGC)
 {
     GC_FUNC_PROLOGUE (pGC);
 
@@ -1017,11 +967,7 @@ miSpriteDestroyGC (pGC)
 }
 
 static void
-miSpriteChangeClip (pGC, type, pvalue, nrects)
-    GCPtr   pGC;
-    int		type;
-    pointer	pvalue;
-    int		nrects;
+miSpriteChangeClip(GCPtr pGC, int type, pointer pvalue, int nrects)
 {
     GC_FUNC_PROLOGUE (pGC);
 
@@ -1031,8 +977,7 @@ miSpriteChangeClip (pGC, type, pvalue, nrects)
 }
 
 static void
-miSpriteCopyClip(pgcDst, pgcSrc)
-    GCPtr pgcDst, pgcSrc;
+miSpriteCopyClip(GCPtr pgcDst, GCPtr pgcSrc)
 {
     GC_FUNC_PROLOGUE (pgcDst);
 
@@ -1042,8 +987,7 @@ miSpriteCopyClip(pgcDst, pgcSrc)
 }
 
 static void
-miSpriteDestroyClip(pGC)
-    GCPtr	pGC;
+miSpriteDestroyClip(GCPtr pGC)
 {
     GC_FUNC_PROLOGUE (pGC);
 
@@ -1057,21 +1001,21 @@ miSpriteDestroyClip(pGC)
  */
 
 static void
-miSpriteFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
-    int 	fSorted;
+miSpriteFillSpans(
+    DrawablePtr pDrawable,
+    GCPtr	pGC,
+    int		nInit,			/* number of spans to fill */
+    DDXPointPtr pptInit,		/* pointer to list of start points */
+    int		*pwidthInit,		/* pointer to list of n widths */
+    int 	fSorted)
 {
     GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
     {
-	register DDXPointPtr    pts;
-	register int    	*widths;
-	register int    	nPts;
+	DDXPointPtr	pts;
+	int		*widths;
+	int		nPts;
 
 	for (pts = pptInit, widths = pwidthInit, nPts = nInit;
 	     nPts--;
@@ -1093,22 +1037,16 @@ miSpriteFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 }
 
 static void
-miSpriteSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
-    DrawablePtr		pDrawable;
-    GCPtr		pGC;
-    char		*psrc;
-    register DDXPointPtr ppt;
-    int			*pwidth;
-    int			nspans;
-    int			fSorted;
+miSpriteSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc, DDXPointPtr ppt,
+		 int *pwidth, int nspans, int fSorted)
 {
     GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
     {
-	register DDXPointPtr    pts;
-	register int    	*widths;
-	register int    	nPts;
+	DDXPointPtr	pts;
+	int		*widths;
+	int		nPts;
 
 	for (pts = ppt, widths = pwidth, nPts = nspans;
 	     nPts--;
@@ -1130,17 +1068,8 @@ miSpriteSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 }
 
 static void
-miSpritePutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pBits)
-    DrawablePtr	  pDrawable;
-    GCPtr   	  pGC;
-    int		  depth;
-    int	    	  x;
-    int	    	  y;
-    int	    	  w;
-    int	    	  h;
-    int		  leftPad;
-    int	    	  format;
-    char    	  *pBits;
+miSpritePutImage(DrawablePtr pDrawable, GCPtr pGC, int depth, int x, int y,
+		 int w, int h, int leftPad, int format, char *pBits)
 {
     GC_SETUP(pDrawable, pGC);
 
@@ -1161,16 +1090,8 @@ miSpritePutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pBits)
 }
 
 static RegionPtr
-miSpriteCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
-    DrawablePtr	  pSrc;
-    DrawablePtr	  pDst;
-    GCPtr   	  pGC;
-    int	    	  srcx;
-    int	    	  srcy;
-    int	    	  w;
-    int	    	  h;
-    int	    	  dstx;
-    int	    	  dsty;
+miSpriteCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
+		 int srcx, int srcy, int w, int h, int dstx, int dsty)
 {
     RegionPtr rgn;
 
@@ -1196,17 +1117,9 @@ miSpriteCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
 }
 
 static RegionPtr
-miSpriteCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
-    DrawablePtr	  pSrc;
-    DrawablePtr	  pDst;
-    register GCPtr pGC;
-    int     	  srcx,
-		  srcy;
-    int     	  w,
-		  h;
-    int     	  dstx,
-		  dsty;
-    unsigned long  plane;
+miSpriteCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
+		  int srcx, int srcy, int w, int h, int dstx, int dsty,
+		  unsigned long plane)
 {
     RegionPtr rgn;
 
@@ -1234,17 +1147,13 @@ miSpriteCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
 }
 
 static void
-miSpritePolyPoint (pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		mode;		/* Origin or Previous */
-    int		npt;
-    xPoint 	*pptInit;
+miSpritePolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+		  xPoint *pptInit)
 {
     xPoint	t;
     int		n;
     BoxRec	cursor;
-    register xPoint *pts;
+    xPoint	*pts;
 
     GC_SETUP (pDrawable, pGC);
 
@@ -1293,15 +1202,11 @@ miSpritePolyPoint (pDrawable, pGC, mode, npt, pptInit)
 }
 
 static void
-miSpritePolylines (pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr	  pDrawable;
-    GCPtr   	  pGC;
-    int	    	  mode;
-    int	    	  npt;
-    DDXPointPtr	  pptInit;
+miSpritePolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+		  DDXPointPtr pptInit)
 {
     BoxPtr  cursor;
-    register DDXPointPtr pts;
+    DDXPointPtr pts;
     int	    n;
     int	    x, y, x1, y1, x2, y2;
     int	    lw;
@@ -1368,14 +1273,10 @@ miSpritePolylines (pDrawable, pGC, mode, npt, pptInit)
 }
 
 static void
-miSpritePolySegment(pDrawable, pGC, nseg, pSegs)
-    DrawablePtr pDrawable;
-    GCPtr 	pGC;
-    int		nseg;
-    xSegment	*pSegs;
+miSpritePolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
 {
     int	    n;
-    register xSegment *segs;
+    xSegment *segs;
     BoxPtr  cursor;
     int	    x1, y1, x2, y2;
     int	    extra;
@@ -1411,13 +1312,10 @@ miSpritePolySegment(pDrawable, pGC, nseg, pSegs)
 }
 
 static void
-miSpritePolyRectangle(pDrawable, pGC, nrects, pRects)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		nrects;
-    xRectangle	*pRects;
+miSpritePolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects,
+		      xRectangle *pRects)
 {
-    register xRectangle *rects;
+    xRectangle *rects;
     BoxPtr  cursor;
     int	    lw;
     int	    n;
@@ -1454,16 +1352,12 @@ miSpritePolyRectangle(pDrawable, pGC, nrects, pRects)
 }
 
 static void
-miSpritePolyArc(pDrawable, pGC, narcs, parcs)
-    DrawablePtr	pDrawable;
-    register GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
+miSpritePolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 {
     BoxPtr  cursor;
     int	    lw;
     int	    n;
-    register xArc *arcs;
+    xArc *arcs;
     
     GC_SETUP (pDrawable, pGC);
 
@@ -1492,15 +1386,11 @@ miSpritePolyArc(pDrawable, pGC, narcs, parcs)
 }
 
 static void
-miSpriteFillPolygon(pDrawable, pGC, shape, mode, count, pPts)
-    register DrawablePtr pDrawable;
-    register GCPtr	pGC;
-    int			shape, mode;
-    int			count;
-    DDXPointPtr		pPts;
+miSpriteFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode,
+		    int count, DDXPointPtr pPts)
 {
     int x, y, minx, miny, maxx, maxy;
-    register DDXPointPtr pts;
+    DDXPointPtr pts;
     int n;
 
     GC_SETUP (pDrawable, pGC);
@@ -1565,19 +1455,16 @@ miSpriteFillPolygon(pDrawable, pGC, shape, mode, count, pPts)
 }
 
 static void
-miSpritePolyFillRect(pDrawable, pGC, nrectFill, prectInit)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		nrectFill; 	/* number of rectangles to fill */
-    xRectangle	*prectInit;  	/* Pointer to first rectangle to fill */
+miSpritePolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
+		     xRectangle *prectInit)
 {
     GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
     {
-	register int	    nRect;
-	register xRectangle *pRect;
-	register int	    xorg, yorg;
+	int	    nRect;
+	xRectangle *pRect;
+	int	    xorg, yorg;
 
 	xorg = pDrawable->x;
 	yorg = pDrawable->y;
@@ -1598,19 +1485,15 @@ miSpritePolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 }
 
 static void
-miSpritePolyFillArc(pDrawable, pGC, narcs, parcs)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
+miSpritePolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 {
     GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
     {
-	register int	n;
-	BoxPtr		cursor;
-	register xArc *arcs;
+	int	n;
+	BoxPtr	cursor;
+	xArc	*arcs;
 
 	cursor = &pScreenPriv->saved;
 
@@ -1734,7 +1617,7 @@ miSpriteText (
     BoxPtr	    cursorBox)
 {
     CharInfoPtr *charinfo;
-    register CharInfoPtr *info;
+    CharInfoPtr *info;
     unsigned long i;
     unsigned int  n;
     int		  w;
@@ -1802,12 +1685,8 @@ miSpriteText (
 }
 
 static int
-miSpritePolyText8(pDrawable, pGC, x, y, count, chars)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		x, y;
-    int 	count;
-    char	*chars;
+miSpritePolyText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count,
+		  char *chars)
 {
     int	ret;
 
@@ -1826,12 +1705,8 @@ miSpritePolyText8(pDrawable, pGC, x, y, count, chars)
 }
 
 static int
-miSpritePolyText16(pDrawable, pGC, x, y, count, chars)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		x, y;
-    int		count;
-    unsigned short *chars;
+miSpritePolyText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count,
+		   unsigned short *chars)
 {
     int	ret;
 
@@ -1852,12 +1727,8 @@ miSpritePolyText16(pDrawable, pGC, x, y, count, chars)
 }
 
 static void
-miSpriteImageText8(pDrawable, pGC, x, y, count, chars)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		x, y;
-    int		count;
-    char	*chars;
+miSpriteImageText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count,
+		   char *chars)
 {
     GC_SETUP(pDrawable, pGC);
 
@@ -1873,12 +1744,8 @@ miSpriteImageText8(pDrawable, pGC, x, y, count, chars)
 }
 
 static void
-miSpriteImageText16(pDrawable, pGC, x, y, count, chars)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		x, y;
-    int		count;
-    unsigned short *chars;
+miSpriteImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count,
+		    unsigned short *chars)
 {
     GC_SETUP(pDrawable, pGC);
 
@@ -1896,13 +1763,9 @@ miSpriteImageText16(pDrawable, pGC, x, y, count, chars)
 }
 
 static void
-miSpriteImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
-    DrawablePtr pDrawable;
-    GCPtr 	pGC;
-    int 	x, y;
-    unsigned int nglyph;
-    CharInfoPtr *ppci;		/* array of character info */
-    pointer 	pglyphBase;	/* start of array of glyphs */
+miSpriteImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y,
+		      unsigned int nglyph, CharInfoPtr *ppci,
+		      pointer pglyphBase)
 {
     GC_SETUP(pDrawable, pGC);
 
@@ -1919,13 +1782,8 @@ miSpriteImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 }
 
 static void
-miSpritePolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int 	x, y;
-    unsigned int nglyph;
-    CharInfoPtr *ppci;		/* array of character info */
-    pointer	pglyphBase;	/* start of array of glyphs */
+miSpritePolyGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y,
+		     unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
     GC_SETUP (pDrawable, pGC);
 
@@ -1942,11 +1800,8 @@ miSpritePolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 }
 
 static void
-miSpritePushPixels(pGC, pBitMap, pDrawable, w, h, x, y)
-    GCPtr	pGC;
-    PixmapPtr	pBitMap;
-    DrawablePtr pDrawable;
-    int		w, h, x, y;
+miSpritePushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDrawable,
+		   int w, int h, int x, int y)
 {
     GC_SETUP(pDrawable, pGC);
 
@@ -2110,9 +1965,7 @@ miSpriteGlyphs(CARD8		op,
 #define SPRITE_PAD  8
 
 static Bool
-miSpriteRealizeCursor (pScreen, pCursor)
-    ScreenPtr	pScreen;
-    CursorPtr	pCursor;
+miSpriteRealizeCursor(ScreenPtr pScreen, CursorPtr pCursor)
 {
     miSpriteScreenPtr	pScreenPriv;
 
@@ -2123,9 +1976,7 @@ miSpriteRealizeCursor (pScreen, pCursor)
 }
 
 static Bool
-miSpriteUnrealizeCursor (pScreen, pCursor)
-    ScreenPtr	pScreen;
-    CursorPtr	pCursor;
+miSpriteUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCursor)
 {
     miSpriteScreenPtr	pScreenPriv;
 
@@ -2134,11 +1985,7 @@ miSpriteUnrealizeCursor (pScreen, pCursor)
 }
 
 static void
-miSpriteSetCursor (pScreen, pCursor, x, y)
-    ScreenPtr	pScreen;
-    CursorPtr	pCursor;
-    int		x;
-    int		y;
+miSpriteSetCursor(ScreenPtr pScreen, CursorPtr pCursor, int x, int y)
 {
     miSpriteScreenPtr	pScreenPriv;
 
@@ -2230,9 +2077,7 @@ miSpriteSetCursor (pScreen, pCursor, x, y)
 }
 
 static void
-miSpriteMoveCursor (pScreen, x, y)
-    ScreenPtr	pScreen;
-    int		x, y;
+miSpriteMoveCursor(ScreenPtr pScreen, int x, int y)
 {
     miSpriteScreenPtr	pScreenPriv;
 
@@ -2245,8 +2090,7 @@ miSpriteMoveCursor (pScreen, x, y)
  */
 
 static void
-miSpriteRemoveCursor (pScreen)
-    ScreenPtr	pScreen;
+miSpriteRemoveCursor(ScreenPtr pScreen)
 {
     miSpriteScreenPtr   pScreenPriv;
 
@@ -2269,8 +2113,7 @@ miSpriteRemoveCursor (pScreen)
  */
 
 static void
-miSpriteRestoreCursor (pScreen)
-    ScreenPtr	pScreen;
+miSpriteRestoreCursor(ScreenPtr pScreen)
 {
     miSpriteScreenPtr   pScreenPriv;
     int			x, y;
@@ -2301,8 +2144,7 @@ miSpriteRestoreCursor (pScreen)
  */
 
 static void
-miSpriteComputeSaved (pScreen)
-    ScreenPtr	pScreen;
+miSpriteComputeSaved(ScreenPtr pScreen)
 {
     miSpriteScreenPtr   pScreenPriv;
     int		    x, y, w, h;

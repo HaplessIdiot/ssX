@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.16 2003/10/28 23:08:44 tsi Exp $ */
 
 /*
 ** File: 
@@ -205,7 +205,6 @@ XvExtensionInit()
 
 static Bool
 CreateResourceTypes()
-
 {
   
   if (XvResourceGeneration == serverGeneration) return TRUE;
@@ -530,12 +529,7 @@ XvdiDestroyEncoding(pointer value, XID id)
 }
 
 static int
-XvdiSendVideoNotify(pPort, pDraw, reason)
-
-XvPortPtr pPort;
-DrawablePtr pDraw;
-int reason;
-
+XvdiSendVideoNotify(XvPortPtr pPort, DrawablePtr pDraw, int reason)
 {
   xvEvent event;
   XvVideoNotifyPtr pn;
@@ -1170,7 +1164,6 @@ XvdiGetPortAttribute(
 
 static void
 WriteSwappedVideoNotifyEvent(xvEvent *from, xvEvent *to)
-
 {
 
   to->u.u.type = from->u.u.type;
@@ -1185,7 +1178,6 @@ WriteSwappedVideoNotifyEvent(xvEvent *from, xvEvent *to)
 
 static void
 WriteSwappedPortNotifyEvent(xvEvent *from, xvEvent *to)
-
 {
 
   to->u.u.type = from->u.u.type;

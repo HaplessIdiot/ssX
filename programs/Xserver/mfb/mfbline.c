@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbline.c,v 1.6 2001/01/17 22:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbline.c,v 1.7 2001/12/14 20:00:09 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mfbline.c,v 1.4 2001/02/09 02:05:19 xorgcvs Exp $ */
+
 #include "X.h"
 
 #include "gcstruct.h"
@@ -90,26 +90,18 @@ actual clipping.
 
 void
 #ifdef POLYSEGMENT
-mfbSegmentSS (pDrawable, pGC, nseg, pSeg)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		nseg;
-    register xSegment	*pSeg;
+mfbSegmentSS(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 #else
-mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    GCPtr	pGC;
-    int		mode;		/* Origin or Previous */
-    int		npt;		/* number of points */
-    DDXPointPtr pptInit;
+mfbLineSS(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	  DDXPointPtr pptInit)
 #endif
 {
     int nboxInit;
-    register int nbox;
+    int nbox;
     BoxPtr pboxInit;
-    register BoxPtr pbox;
+    BoxPtr pbox;
 #ifndef POLYSEGMENT
-    register DDXPointPtr ppt;	/* pointer to list of translated points */
+    DDXPointPtr ppt;	/* pointer to list of translated points */
 #endif
 
     unsigned int oc1;		/* outcode of point 1 */
@@ -133,8 +125,8 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
 
 				/* a bunch of temporaries */
-    register int y1, y2;
-    register int x1, x2;
+    int y1, y2;
+    int x1, x2;
     RegionPtr cclip;
     int		    alu;
 
@@ -188,7 +180,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	    */
 	    if (y1 > y2)
 	    {
-		register int tmp;
+		int tmp;
 
 		tmp = y2;
 		y2 = y1 + 1;
@@ -242,7 +234,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	    */
 	    if (x1 > x2)
 	    {
-		register int tmp;
+		int tmp;
 
 		tmp = x2;
 		x2 = x1 + 1;
@@ -468,30 +460,22 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 
 void
 #ifdef POLYSEGMENT
-mfbSegmentSD (pDrawable, pGC, nseg, pSeg)
-    DrawablePtr	pDrawable;
-    register GCPtr	pGC;
-    int		nseg;
-    register xSegment	*pSeg;
+mfbSegmentSD(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 #else
-mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    register GCPtr pGC;
-    int mode;		/* Origin or Previous */
-    int npt;		/* number of points */
-    DDXPointPtr pptInit;
+mfbLineSD(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+	  DDXPointPtr pptInit)
 #endif
 {
     int nboxInit;
-    register int nbox;
+    int nbox;
     BoxPtr pboxInit;
-    register BoxPtr pbox;
+    BoxPtr pbox;
 #ifndef POLYSEGMENT
-    register DDXPointPtr ppt;	/* pointer to list of translated points */
+    DDXPointPtr ppt;	/* pointer to list of translated points */
 #endif
 
-    register unsigned int oc1;	/* outcode of point 1 */
-    register unsigned int oc2;	/* outcode of point 2 */
+    unsigned int oc1;	/* outcode of point 1 */
+    unsigned int oc2;	/* outcode of point 2 */
 
     PixelType *addrl;		/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */

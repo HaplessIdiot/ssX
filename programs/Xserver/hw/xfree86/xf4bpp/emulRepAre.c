@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/emulRepAre.c,v 1.2 1998/07/25 16:59:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/emulRepAre.c,v 1.3 1999/06/06 08:48:54 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -21,7 +21,6 @@
  * SOFTWARE.
  *
 */
-/* $XConsortium: emulRepAre.c /main/5 1996/02/21 17:56:16 kaleb $ */
 
 /* ppc Replicate Area -- A Divide & Conquer Algorithm
  * a "ppc" Helper Function For Stipples And Tiling
@@ -30,12 +29,10 @@
 
 #include "xf4bpp.h"
 
-void xf4bppReplicateArea( pWin, x, y, planeMask, goalWidth, goalHeight,
-			currentHoriz, currentVert)
-WindowPtr pWin; /* GJA */
-register int x, y, planeMask ;
-int goalWidth, goalHeight ;
-int currentHoriz, currentVert ;
+void
+xf4bppReplicateArea(WindowPtr pWin, int x, int y, int planeMask,
+		    int goalWidth, int goalHeight,
+		    int currentHoriz, int currentVert)
 {
 	for ( ;
 	      currentHoriz <= ( goalWidth >> 1 ) ;

@@ -52,15 +52,12 @@ from The Open Group.
 
 
 /***********************************************************************
- *
- * $Xorg: twm.h,v 1.4 2001/02/09 02:05:37 xorgcvs Exp $
- *
  * twm include file
  *
  * 28-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storeing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.h,v 3.12 2001/12/14 20:01:10 dawes Exp $ */
+/* $XFree86: xc/programs/twm/twm.h,v 3.13 2003/04/21 11:46:14 herrb Exp $ */
 
 #ifndef _TWM_
 #define _TWM_
@@ -408,7 +405,9 @@ extern Bool GetWMState ( Window w, int *statep, Window *iwp );
 
 extern void twmrc_error_prefix ( void );
 
+#ifndef YYBISON
 extern int yyparse ( void );
+#endif
 extern int yylex ( void ); 
 extern void yyerror ( char *s );
 extern int doinput ( char *buf, int size );

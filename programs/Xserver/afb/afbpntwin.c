@@ -1,5 +1,4 @@
-/* $XFree86$ */
-/* $XConsortium: afbpntwin.c,v 5.12 94/04/17 20:28:30 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbpntwin.c,v 3.0 1996/08/18 01:45:50 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -61,12 +60,9 @@ SOFTWARE.
 #include "mi.h"
 
 void
-afbPaintWindow(pWin, pRegion, what)
-	WindowPtr		pWin;
-	RegionPtr		pRegion;
-	int				what;
+afbPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
 {
-	register afbPrivWin		*pPrivWin;
+	afbPrivWin		*pPrivWin;
 	unsigned char rrops[AFB_MAX_DEPTH];
 
 	pPrivWin = (afbPrivWin *)(pWin->devPrivates[afbWindowPrivateIndex].ptr);

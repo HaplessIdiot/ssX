@@ -1,6 +1,5 @@
+/* $XFree86: xc/programs/Xserver/cfb/cfballpriv.c,v 1.12 2001/12/14 19:59:21 dawes Exp $ */
 /*
- * $Xorg: cfballpriv.c,v 1.4 2001/02/09 02:04:37 xorgcvs Exp $
- *
 Copyright 1991, 1998  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -25,7 +24,6 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfballpriv.c,v 1.11 2001/01/30 22:06:15 tsi Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -53,9 +51,7 @@ static unsigned long cfbGeneration = 0;
 
 
 Bool
-cfbAllocatePrivates(pScreen, window_index, gc_index)
-    ScreenPtr	pScreen;
-    int		*window_index, *gc_index;
+cfbAllocatePrivates(ScreenPtr pScreen, int *window_index, int *gc_index)
 {
     if (!window_index || !gc_index ||
 	(*window_index == -1 && *gc_index == -1))

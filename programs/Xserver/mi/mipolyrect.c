@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipolyrect.c,v 1.3 2001/12/14 20:00:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipolyrect.c,v 1.4 2003/07/16 01:38:57 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mipolyrect.c,v 1.4 2001/02/09 02:05:21 xorgcvs Exp $ */
+
 #include "X.h"
 #include "Xprotostr.h"
 #include "regionstr.h"
@@ -54,11 +54,7 @@ SOFTWARE.
 #include "mi.h"
 
 void
-miPolyRectangle(pDraw, pGC, nrects, pRects)
-    DrawablePtr	pDraw;
-    GCPtr	pGC;
-    int		nrects;
-    xRectangle	*pRects;
+miPolyRectangle(DrawablePtr pDraw, GCPtr pGC, int nrects, xRectangle *pRects)
 {
     int i;
     xRectangle *pR = pRects;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbfillarc.c,v 1.5 2001/12/14 20:00:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbfillarc.c,v 1.6 2003/07/16 01:38:55 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -25,8 +25,6 @@ in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
 
-/* $Xorg: mfbfillarc.c,v 1.4 2001/02/09 02:05:18 xorgcvs Exp $ */
-
 #include "X.h"
 #include "Xprotostr.h"
 #include "regionstr.h"
@@ -39,20 +37,17 @@ in this Software without prior written authorization from The Open Group.
 #include "mi.h"
 
 static void
-mfbFillEllipseSolid(
-    DrawablePtr pDraw,
-    xArc *arc,
-    register int rop)
+mfbFillEllipseSolid(DrawablePtr pDraw, xArc *arc, int rop)
 {
     int x, y, e;
     int yk, xk, ym, xm, dx, dy, xorg, yorg;
-    register int slw;
+    int slw;
     miFillArcRec info;
     PixelType *addrlt, *addrlb;
-    register PixelType *addrl;
-    register int n;
+    PixelType *addrl;
+    int n;
     int nlwidth;
-    register int xpos;
+    int xpos;
     PixelType startmask, endmask;
     int nlmiddle;
 
@@ -220,16 +215,12 @@ mfbFillEllipseSolid(
     }
 
 static void
-mfbFillArcSliceSolidCopy(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    xArc *arc,
-    register int rop)
+mfbFillArcSliceSolidCopy(DrawablePtr pDraw, GCPtr pGC, xArc *arc, int rop)
 {
-    register PixelType *addrl;
-    register int n;
+    PixelType *addrl;
+    int n;
     int yk, xk, ym, xm, dx, dy, xorg, yorg, slw;
-    register int x, y, e;
+    int x, y, e;
     miFillArcRec info;
     miArcSliceRec slice;
     int xl, xr, xc;
@@ -271,15 +262,11 @@ mfbFillArcSliceSolidCopy(
 }
 
 void
-mfbPolyFillArcSolid(pDraw, pGC, narcs, parcs)
-    register DrawablePtr pDraw;
-    GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
+mfbPolyFillArcSolid(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs)
 {
     mfbPrivGC *priv;
-    register xArc *arc;
-    register int i;
+    xArc *arc;
+    int i;
     BoxRec box;
     int x2, y2;
     RegionPtr cclip;

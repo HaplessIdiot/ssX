@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.43 2004/09/25 18:06:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.44 2005/03/25 02:22:53 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -26,8 +26,6 @@ in this Software without prior written authorization from The Open Group.
 ********************************************************/
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION */
-
-/* $Xorg: shm.c,v 1.4 2001/02/09 02:04:33 xorgcvs Exp $ */
 
 #define SHM
 
@@ -276,23 +274,19 @@ ShmResetProc(ExtensionEntry *extEntry)
 }
 
 void
-ShmRegisterFuncs(
-    ScreenPtr pScreen,
-    ShmFuncsPtr funcs)
+ShmRegisterFuncs(ScreenPtr pScreen, ShmFuncsPtr funcs)
 {
     shmFuncs[pScreen->myNum] = funcs;
 }
 
 void
-ShmSetPixmapFormat(
-    ScreenPtr pScreen,
-    int format)
+ShmSetPixmapFormat(ScreenPtr pScreen, int format)
 {
     shmPixFormat[pScreen->myNum] = format;
 }
 
 static Bool
-ShmDestroyPixmap (PixmapPtr pPixmap)
+ShmDestroyPixmap(PixmapPtr pPixmap)
 {
     ScreenPtr	    pScreen = pPixmap->drawable.pScreen;
     Bool	    ret;

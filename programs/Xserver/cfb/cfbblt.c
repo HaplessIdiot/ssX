@@ -1,7 +1,7 @@
 /*
  * cfb copy area
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.14 2003/10/29 22:44:53 tsi Exp $ */
 
 /*
 
@@ -30,7 +30,6 @@ in this Software without prior written authorization from The Open Group.
 Author: Keith Packard
 
 */
-/* $Xorg: cfbblt.c,v 1.4 2001/02/09 02:04:37 xorgcvs Exp $ */
 
 /* 24-bit bug fixes: Peter Wainwright, 1998/11/28 */
 
@@ -118,13 +117,9 @@ Author: Keith Packard
 #endif
 
 void
-MROP_NAME(cfbDoBitblt)(
-    DrawablePtr	    pSrc, 
-    DrawablePtr	    pDst,
-    int		    alu,
-    RegionPtr	    prgnDst,
-    DDXPointPtr	    pptSrc,
-    unsigned long   planemask)
+MROP_NAME(cfbDoBitblt)(DrawablePtr pSrc, DrawablePtr pDst, int alu,
+		       RegionPtr prgnDst, DDXPointPtr pptSrc,
+		       unsigned long planemask)
 {
     CfbBits *psrcBase, *pdstBase;	
 				/* start of src and dst bitmaps */
@@ -144,8 +139,8 @@ MROP_NAME(cfbDoBitblt)(
 
     CfbBits *psrcLine, *pdstLine;	
 				/* pointers to line with current src and dst */
-    register CfbBits *psrc;/* pointer to current src longword */
-    register CfbBits *pdst;/* pointer to current dst longword */
+    CfbBits *psrc;/* pointer to current src longword */
+    CfbBits *pdst;/* pointer to current dst longword */
 
     MROP_DECLARE_REG()
 
@@ -153,13 +148,13 @@ MROP_NAME(cfbDoBitblt)(
     CfbBits startmask, endmask;	/* masks for writing ends of dst */
     int nlMiddle;		/* whole longwords in dst */
     int xoffSrc, xoffDst;
-    register int nl;		/* temp copy of nlMiddle */
+    int nl;		/* temp copy of nlMiddle */
     int careful;
 
 #if (PSZ != 24) || (MROP != 0)
-    register int leftShift, rightShift;
-    register CfbBits bits;
-    register CfbBits bits1;
+    int leftShift, rightShift;
+    CfbBits bits;
+    CfbBits bits1;
 #endif
 
 #if PSZ == 24
@@ -380,7 +375,7 @@ MROP_NAME(cfbDoBitblt)(
 	      /* ...otherwise, pixel by pixel operation */
 	  while (h--)
 	    {
-	      register int i, si, sii, di;
+	      int i, si, sii, di;
 
 	      for (i = 0, si = pptSrc->x, di = pbox->x1;
 		   i < w;
@@ -427,8 +422,8 @@ MROP_NAME(cfbDoBitblt)(
 		while (h--)
 		{
 #if PSZ == 24 && MROP == 0
-		    register int index;
-		    register int im3;
+		    int index;
+		    int im3;
 #endif /*  PSZ == 24 && MROP == 0 */
 		    psrc = psrcLine;
 		    pdst = pdstLine;
@@ -662,7 +657,7 @@ pdst++;
 	      /* ...otherwise, pixel by pixel operation */
 	  while (h--)
 	    {
-	      register int i, si, sii, di;
+	      int i, si, sii, di;
 
 		    for (i = 0, si = pptSrc->x + w - 1, di = pbox->x2 - 1;
 		   i < w;
@@ -713,8 +708,8 @@ pdst++;
 		while (h--)
 		{
 #if PSZ == 24 && MROP == 0
-		    register int index;
-		    register int im3;
+		    int index;
+		    int im3;
 #endif /*  PSZ == 24 && MROP == 0 */
 		    psrc = psrcLine;
 		    pdst = pdstLine;

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.25 2003/04/27 18:17:31 tsi Exp $
+XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.26 2003/05/20 21:44:48 tsi Exp $
 
 #include "lisp.cf"
 #include "lisp.rules"
@@ -20,7 +20,7 @@ LinkSourceFile(snprintf.c, $(LIBSRC)/misc)
   SNPRINTF_OBJS = snprintf.o
 #endif
 
-#if defined(LynxOSArchitecture) || defined(SVR3Architecture) || defined(LinuxArchitecture)
+#if defined(LynxOSArchitecture) || defined(SVR3Architecture)
 #ifndef UseInstalled
 LinkSourceFile(realpath.c, $(TOP)/programs/xedit)
 #endif

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -44,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $Xorg: mfbfont.c,v 1.4 2001/02/09 02:05:18 xorgcvs Exp $ */
+
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -55,18 +56,14 @@ SOFTWARE.
 
 /*ARGSUSED*/
 Bool
-mfbRealizeFont( pscr, pFont)
-    ScreenPtr	pscr;
-    FontPtr	pFont;
+mfbRealizeFont(ScreenPtr pscr, FontPtr pFont)
 {
     return (TRUE);
 }
 
 /*ARGSUSED*/
 Bool
-mfbUnrealizeFont( pscr, pFont)
-    ScreenPtr	pscr;
-    FontPtr	pFont;
+mfbUnrealizeFont(ScreenPtr pscr, FontPtr pFont)
 {
     return (TRUE);
 }

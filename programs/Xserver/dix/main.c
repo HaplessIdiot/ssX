@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.45 2004/06/30 20:21:38 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.46 2005/03/25 02:22:54 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: main.c,v 1.4 2001/02/09 02:04:40 xorgcvs Exp $ */
 
 /* The panoramix components contained the following notice */
 /****************************************************************
@@ -68,8 +67,6 @@ SOFTWARE.
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-
-/* $TOG: main.c /main/86 1998/02/09 14:20:03 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -94,20 +91,15 @@ SOFTWARE.
 #include "extnsionst.h"
 #ifdef PANORAMIX
 #include "panoramiXsrv.h"
-#else
+#endif
 #include "dixevents.h"		/* InitEvents() */
 #include "dispatch.h"		/* InitProcVectors() */
-#endif
 
 #ifdef DPMSExtension
 #define DPMS_SERVER
 #include "dpms.h"
 #include "dpmsproc.h"
 #endif
-
-extern int InitClientPrivates(
-    ClientPtr /*client*/
-);
 
 extern void Dispatch(
     void
@@ -146,11 +138,7 @@ NotImplemented(xEvent *from, xEvent *to)
  */
 /*ARGSUSED*/
 void
-ReplyNotSwappd(
-	ClientPtr pClient ,
-	int size ,
-	void * pbuf
-	)
+ReplyNotSwappd(ClientPtr pClient, int size, void *pbuf)
 {
     FatalError("Not implemented");
 }
@@ -657,15 +645,7 @@ with its screen number, a pointer to its ScreenRec, argc, and argv.
 */
 
 int
-AddScreen(
-    Bool	(* pfnInit)(
-	int /*index*/,
-	ScreenPtr /*pScreen*/,
-	int /*argc*/,
-	char ** /*argv*/
-		),
-    int argc,
-    char **argv)
+AddScreen(ScrnInitProcPtr pfnInit, int argc, char **argv)
 {
 
     int i;
@@ -770,8 +750,7 @@ AddScreen(
 }
 
 static void
-FreeScreen(pScreen)
-    ScreenPtr pScreen;
+FreeScreen(ScreenPtr pScreen)
 {
     xfree(pScreen->WindowPrivateSizes);
     xfree(pScreen->GCPrivateSizes);

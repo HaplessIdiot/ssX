@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbbresd.c,v 3.0 1996/08/18 01:45:26 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: afbbresd.c,v 1.10 94/04/17 20:28:18 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -66,33 +65,32 @@ SOFTWARE.
 			rop = bgrop; \
 	}
 
+/*
+    int *pdashIndex;		current dash
+    unsigned char *pDash;	dash list
+    int numInDashList;		total length of dash list
+    int *pdashOffset;		offset into current dash
+    PixelType *addrlbase;	pointer to base of bitmap
+    int nlwidth;		width in longwords of bitmap
+    int signdx, signdy;		signs of directions
+    int axis;			major axis (Y_AXIS or X_AXIS)
+    int x1, y1;			initial point
+    int e;			error accumulator
+    int e1;			bresenham increments
+    int len;			length of line
+*/
+
 void
-afbBresD(pdashIndex, pDash, numInDashList, pdashOffset, isDoubleDash,
-		 addrlbase, nlwidth, sizeDst, depthDst,
-		 signdx, signdy, axis, x1, y1, e, e1, e2, len, rrops, bgrrops)
-int *pdashIndex;		/* current dash */
-unsigned char *pDash;		/* dash list */
-int numInDashList;		/* total length of dash list */
-int *pdashOffset;		/* offset into current dash */
-int isDoubleDash;
-PixelType *addrlbase;		/* pointer to base of bitmap */
-int nlwidth;				/* width in longwords of bitmap */
-int sizeDst;
-int depthDst;
-int signdx, signdy;		/* signs of directions */
-int axis;				/* major axis (Y_AXIS or X_AXIS) */
-int x1, y1;				/* initial point */
-register int e;				/* error accumulator */
-register int e1;		/* bresenham increments */
-int e2;
-int len;				/* length of line */
-unsigned char *rrops;
-unsigned char *bgrrops;
+afbBresD(int *pdashIndex, unsigned char *pDash, int numInDashList,
+	 int *pdashOffset, int isDoubleDash, PixelType *addrlbase,
+	 int nlwidth, int sizeDst, int depthDst, int signdx, int signdy,
+	 int axis, int x1, int y1, int e, int e1, int e2, int len,
+	 unsigned char *rrops, unsigned char *bgrrops)
 {
-	register int yinc;		/* increment to next scanline, in bytes */
-	register PixelType *addrl;
-	register int e3 = e2-e1;
-	register unsigned long bit;
+	int yinc;		/* increment to next scanline, in bytes */
+	PixelType *addrl;
+	int e3 = e2-e1;
+	unsigned long bit;
 	PixelType leftbit = mask[0]; /* leftmost bit to process in new word */
 	PixelType rightbit = mask[PPW-1]; /* rightmost bit to process in new word */
 	int dashIndex;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcBStore.c,v 1.2 1998/07/25 16:59:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcBStore.c,v 1.3 1999/06/06 08:48:57 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -60,7 +60,6 @@ used in advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.
 
 */
-/* $XConsortium: ppcBStore.c /main/5 1996/02/21 17:57:06 kaleb $ */
 
 #include "xf4bpp.h"
 #include "vgaVideo.h"
@@ -80,15 +79,11 @@ software without specific, written prior permission.
  *-----------------------------------------------------------------------
  */
 void
-xf4bppSaveAreas( pPixmap, prgnSave, xorg, yorg, pWin )
-    register PixmapPtr pPixmap ; /* Backing pixmap */
-    RegionPtr prgnSave ;	/* Region to save (pixmap-relative) */
-    int xorg ;			/* X origin of region */
-    int yorg ;			/* Y origin of region */
-    WindowPtr pWin;
+xf4bppSaveAreas(PixmapPtr pPixmap, RegionPtr prgnSave, int xorg, int yorg,
+		WindowPtr pWin)
 {
-    register BoxPtr pBox ;
-    register int nBox ;
+    BoxPtr pBox ;
+    int nBox ;
 
     TRACE( ( "xf4bppSaveAreas(0x%x,0x%x,%d,%d)\n",
 	   pPixmap, prgnSave, xorg, yorg ) ) ;
@@ -123,15 +118,11 @@ xf4bppSaveAreas( pPixmap, prgnSave, xorg, yorg, pWin )
  *-----------------------------------------------------------------------
  */
 void
-xf4bppRestoreAreas( pPixmap, prgnRestore, xorg, yorg, pWin )
-    register PixmapPtr pPixmap ; /* Backing pixmap */
-    RegionPtr prgnRestore ;	/* Region to restore (screen-relative)*/
-    int xorg ;			/* X origin of window */
-    int yorg ;			/* Y origin of window */
-    WindowPtr pWin;
+xf4bppRestoreAreas(PixmapPtr pPixmap, RegionPtr prgnRestore, int xorg,
+		   int yorg, WindowPtr pWin)
 {
-    register BoxPtr pBox ;
-    register int nBox ;
+    BoxPtr pBox ;
+    int nBox ;
 
     TRACE( ( "xf4bppRestoreAreas(0x%x,0x%x,%d,%d)\n",
 	   pPixmap, prgnRestore, xorg, yorg ) ) ;

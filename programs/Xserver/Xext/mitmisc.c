@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mitmisc.c,v 3.6 2003/10/28 23:08:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mitmisc.c,v 3.7 2003/11/17 22:20:26 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -26,8 +26,6 @@ in this Software without prior written authorization from The Open Group.
 ********************************************************/
 
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM OR X PROJECT TEAM  BLESSING */
-
-/* $Xorg: mitmisc.c,v 1.4 2001/02/09 02:04:32 xorgcvs Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -76,14 +74,12 @@ MITMiscExtensionInit(INITARGS)
 
 /*ARGSUSED*/
 static void
-MITResetProc (extEntry)
-ExtensionEntry	*extEntry;
+MITResetProc(ExtensionEntry *extEntry)
 {
 }
 
 static int
-ProcMITSetBugMode(client)
-    register ClientPtr client;
+ProcMITSetBugMode(ClientPtr client)
 {
     REQUEST(xMITSetBugModeReq);
 
@@ -98,11 +94,10 @@ ProcMITSetBugMode(client)
 }
 
 static int
-ProcMITGetBugMode(client)
-    register ClientPtr client;
+ProcMITGetBugMode(ClientPtr client)
 {
     xMITGetBugModeReply rep;
-    register int n;
+    int n;
 
     REQUEST_SIZE_MATCH(xMITGetBugModeReq);
     rep.type = X_Reply;
@@ -118,8 +113,7 @@ ProcMITGetBugMode(client)
 }
 
 static int
-ProcMITDispatch (client)
-    register ClientPtr	client;
+ProcMITDispatch(ClientPtr client)
 {
     REQUEST(xReq);
     switch (stuff->data)
@@ -134,10 +128,9 @@ ProcMITDispatch (client)
 }
 
 static int
-SProcMITSetBugMode(client)
-    register ClientPtr	client;
+SProcMITSetBugMode(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xMITSetBugModeReq);
 
     swaps(&stuff->length, n);
@@ -145,10 +138,9 @@ SProcMITSetBugMode(client)
 }
 
 static int
-SProcMITGetBugMode(client)
-    register ClientPtr	client;
+SProcMITGetBugMode(ClientPtr client)
 {
-    register int n;
+    int n;
     REQUEST(xMITGetBugModeReq);
 
     swaps(&stuff->length, n);
@@ -156,8 +148,7 @@ SProcMITGetBugMode(client)
 }
 
 static int
-SProcMITDispatch (client)
-    register ClientPtr	client;
+SProcMITDispatch(ClientPtr client)
 {
     REQUEST(xReq);
     switch (stuff->data)

@@ -1,5 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.17 93/08/17 20:49:32 rws Exp $
-XCOMM $XFree86: xc/programs/xedit/Imakefile,v 1.25 2003/03/25 04:18:26 dawes Exp $
+XCOMM $XFree86: xc/programs/xedit/Imakefile,v 1.26 2003/05/20 21:44:48 tsi Exp $
 
 #include "lisp/lisp.cf"
 
@@ -20,7 +19,7 @@ LOCAL_LDFLAGS	= -Xlinker -E
         DEPLIBS = XawClientDepLibs $(SUBDIRS)
 LOCAL_LIBRARIES = $(LISPLIBS) XawClientLibs $(DLLIB)
   SYS_LIBRARIES = MathLibrary
-#if defined(LynxOSArchitecture) || defined(SVR3Architecture) || defined(LinuxArchitecture)
+#if defined(LynxOSArchitecture) || defined(SVR3Architecture)
         RP_SRCS = realpath.c
         RP_OBJS = realpath.o
      RP_DEFINES = -DNEED_REALPATH

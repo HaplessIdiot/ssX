@@ -1,5 +1,4 @@
 /*
- * $Xorg: multibuf.h,v 1.4 2001/02/09 02:03:24 xorgcvs Exp $
  *
 Copyright 1989, 1998  The Open Group
 
@@ -24,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/include/extensions/multibuf.h,v 3.4 2001/12/14 19:53:28 dawes Exp $ */
+/* $XFree86: xc/include/extensions/multibuf.h,v 3.5 2003/11/17 22:20:03 dawes Exp $ */
 
 #ifndef _MULTIBUF_H_
 #define _MULTIBUF_H_
@@ -274,16 +273,19 @@ _XFUNCPROTOEND
 
 #include "scrnintstr.h"
 
-typedef Bool	(* mbInitFunc)();
-
 struct _mbufScreen;		/* declared in multibufst.h */
+struct _mbufWindow;
+
+typedef Bool (* mbInitFunc)(ScreenPtr pScreen, struct _mbufScreen *pMBScreen);
+typedef void (*mbufCopyBufferBitsFunc)(struct _mbufWindow *pMBWindow,
+				       int srcBufferNum, int dstBufferNum);
+typedef void (*mbufDrawSelectPlaneFunc)(ScreenPtr pScreen,
+					DevUnion selectPlane, RegionPtr prgn,
+					long bufferNum);
 
 extern void	RegisterMultibufferInit(
     ScreenPtr			/* pScreen */,
-    Bool (* /* bufMultibufferInit */)(
-	ScreenPtr		/* pScreen */,
-	struct _mbufScreen *	/* pMBScreen */
-    )
+    mbInitFunc			/* bufMultibufferInit */
 );
 
 struct xMbufBufferInfo;		/* declared in multibufst.h */
@@ -294,8 +296,8 @@ extern void	RegisterDoubleBufferHardware(
     struct xMbufBufferInfo *	/* pInfo */,
     DevUnion *			/* frameBuffer */,
     DevUnion			/* selectPlane */,
-    void (* /* CopyBufferBitsFunc */ )(),
-    void (* /* DrawSelectPlaneFunc */ )()
+    mbufCopyBufferBitsFunc	/* CopyBufferBitsFunc */,
+    mbufDrawSelectPlaneFunc	/* DrawSelectPlaneFunc */
 );
 
 extern int	CreateImageBuffers (

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcArea.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcArea.c,v 1.4 2003/02/18 21:29:59 tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -21,7 +21,6 @@
  * SOFTWARE.
  *
 */
-/* $XConsortium: ppcArea.c /main/4 1996/02/21 17:57:02 kaleb $ */
 
 /* 
  * ppc solid area fill
@@ -36,13 +35,9 @@
 #include "ibmTrace.h"
 
 void
-xf4bppFillArea( pWin, nboxes, pBox, pGC )
-    register WindowPtr pWin ;
-    register int nboxes ;
-    register BoxPtr pBox ;
-    GCPtr	pGC ;
+xf4bppFillArea(WindowPtr pWin, int nboxes, BoxPtr pBox, GCPtr pGC)
 {
-register int x, y, w, h ;
+int x, y, w, h ;
 int alu ;
 unsigned long int fg, bg, pm ;
 int xSrc, ySrc ;

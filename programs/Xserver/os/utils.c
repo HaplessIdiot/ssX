@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.101 2005/01/30 17:48:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.102 2005/02/03 02:01:14 dawes Exp $ */
 /*
  * Copyright (c) 1996-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -478,8 +478,8 @@ CARD32
 GetTimeInMillis(void)
 {
     struct timeval  tp;
-    register CARD32 val;
-    register INT32 diff;
+    CARD32 val;
+    INT32 diff;
     static CARD32 oldval = 0;
     static CARD32 time = 0;
 
@@ -1243,7 +1243,7 @@ set_font_authorizations(char **authorizations, int *authlen, pointer client)
 void * 
 Xalloc(unsigned long amount)
 {
-    register pointer  ptr;
+    pointer  ptr;
 	
     if ((long)amount <= 0)
 	return NULL;
@@ -1271,7 +1271,7 @@ Xalloc(unsigned long amount)
 void *
 XNFalloc(unsigned long amount)
 {
-    register pointer ptr;
+    pointer ptr;
 
     if ((long)amount <= 0)
         return NULL;

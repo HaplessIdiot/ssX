@@ -1,5 +1,4 @@
 /*
- * $Xorg: sleepuntil.c,v 1.4 2001/02/09 02:04:33 xorgcvs Exp $
  *
 Copyright 1992, 1998  The Open Group
 
@@ -25,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/Xext/sleepuntil.c,v 3.6 2003/07/16 01:38:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sleepuntil.c,v 3.7 2003/11/17 22:20:27 dawes Exp $ */
 
 /* dixsleep.c - implement millisecond timeouts for X clients */
 
@@ -76,13 +75,8 @@ static void	    SertafiedWakeupHandler(
 );
 
 int
-ClientSleepUntil (client, revive, notifyFunc, closure)
-    ClientPtr	client;
-    TimeStamp	*revive;
-    void	(*notifyFunc)(
-        ClientPtr /* client */,
-        pointer   /* closure */);
-    pointer	closure;
+ClientSleepUntil(ClientPtr client, TimeStamp *revive,
+		 sleepUntilNotifyFunc notifyFunc, pointer closure)
 {
     SertafiedPtr	pRequest, pReq, pPrev;
 
@@ -136,9 +130,7 @@ ClientSleepUntil (client, revive, notifyFunc, closure)
 }
 
 static void
-ClientAwaken (client, closure)
-    ClientPtr	client;
-    pointer	closure;
+ClientAwaken(ClientPtr client, pointer closure)
 {
     if (!client->clientGone)
 	AttendClient (client);
@@ -146,9 +138,7 @@ ClientAwaken (client, closure)
 
 
 static int
-SertafiedDelete (value, id)
-    pointer value;
-    XID id;
+SertafiedDelete(pointer value, XID id)
 {
     SertafiedPtr	pRequest = (SertafiedPtr)value;
     SertafiedPtr	pReq, pPrev;
@@ -170,10 +160,7 @@ SertafiedDelete (value, id)
 }
 
 static void
-SertafiedBlockHandler (data, wt, LastSelectMask)
-    pointer	    data;		/* unused */
-    OSTimePtr	    wt;			/* wait time */
-    pointer	    LastSelectMask;
+SertafiedBlockHandler(pointer data, OSTimePtr wt, pointer LastSelectMask)
 {
     SertafiedPtr	    pReq, pNext;
     unsigned long	    delay;
@@ -206,10 +193,7 @@ SertafiedBlockHandler (data, wt, LastSelectMask)
 }
 
 static void
-SertafiedWakeupHandler (data, i, LastSelectMask)
-    pointer	    data;
-    int		    i;
-    pointer	    LastSelectMask;
+SertafiedWakeupHandler(pointer data, int i, pointer LastSelectMask)
 {
     SertafiedPtr	pReq, pNext;
     TimeStamp		now;

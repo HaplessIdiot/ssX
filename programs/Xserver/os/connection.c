@@ -1,4 +1,3 @@
-/* $Xorg: connection.c,v 1.6 2001/02/09 02:05:23 xorgcvs Exp $ */
 /***********************************************************
 
 Copyright 1987, 1989, 1998  The Open Group
@@ -45,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.66tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.67 2004/06/23 19:40:17 tsi Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -824,11 +823,11 @@ EstablishNewConnections(ClientPtr clientUnused, pointer closure)
 {
     fd_set  readyconnections;     /* set of listeners that are ready */
     int curconn;                  /* fd of listener that's ready */
-    register int newconn;         /* fd of new client */
+    int newconn;         /* fd of new client */
     CARD32 connect_time;
-    register int i;
-    register ClientPtr client;
-    register OsCommPtr oc;
+    int i;
+    ClientPtr client;
+    OsCommPtr oc;
     fd_set tmask;
 
     XFD_ANDSET (&tmask, (fd_set*)closure, &WellKnownConnections);

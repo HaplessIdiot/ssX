@@ -1,4 +1,3 @@
-/* $Xorg: panoramiXprocs.c,v 1.5 2000/08/17 19:47:57 cpqbld Exp $ */
 /*****************************************************************
 Copyright (c) 1991, 1997 Digital Equipment Corporation, Maynard, Massachusetts.
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,7 +25,7 @@ Equipment Corporation.
 
 /* Massively rewritten by Mark Vojkovich <markv@valinux.com> */
 
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.37 2003/11/10 18:21:43 tsi Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -69,7 +68,8 @@ extern void WriteSConnSetupPrefix();
  */
 extern XID clientErrorValue;   /* XXX this is a kludge */
 
-int PanoramiXCreateWindow(ClientPtr client)
+int
+PanoramiXCreateWindow(ClientPtr client)
 {
     PanoramiXRes *parent, *newWin;
     PanoramiXRes *backPix = NULL;
@@ -172,7 +172,8 @@ int PanoramiXCreateWindow(ClientPtr client)
 }
 
 
-int PanoramiXChangeWindowAttributes(ClientPtr client)
+int
+PanoramiXChangeWindowAttributes(ClientPtr client)
 {
     PanoramiXRes *win;
     PanoramiXRes *backPix = NULL;
@@ -240,7 +241,8 @@ int PanoramiXChangeWindowAttributes(ClientPtr client)
 }
 
 
-int PanoramiXDestroyWindow(ClientPtr client)
+int
+PanoramiXDestroyWindow(ClientPtr client)
 {
     PanoramiXRes *win;
     int         result = 0, j;
@@ -265,7 +267,8 @@ int PanoramiXDestroyWindow(ClientPtr client)
 }
 
 
-int PanoramiXDestroySubwindows(ClientPtr client)
+int
+PanoramiXDestroySubwindows(ClientPtr client)
 {
     PanoramiXRes *win;
     int         result = 0, j;
@@ -290,7 +293,8 @@ int PanoramiXDestroySubwindows(ClientPtr client)
 }
 
 
-int PanoramiXChangeSaveSet(ClientPtr client)
+int
+PanoramiXChangeSaveSet(ClientPtr client)
 {
     PanoramiXRes *win;
     int         result = 0, j;
@@ -312,7 +316,8 @@ int PanoramiXChangeSaveSet(ClientPtr client)
 }
 
 
-int PanoramiXReparentWindow(ClientPtr client)
+int
+PanoramiXReparentWindow(ClientPtr client)
 {
     PanoramiXRes *win, *parent;
     int         result = 0, j;
@@ -349,7 +354,8 @@ int PanoramiXReparentWindow(ClientPtr client)
 }
 
 
-int PanoramiXMapWindow(ClientPtr client)
+int
+PanoramiXMapWindow(ClientPtr client)
 {
     PanoramiXRes *win;
     int         result = 0, j;
@@ -371,7 +377,8 @@ int PanoramiXMapWindow(ClientPtr client)
 }
 
 
-int PanoramiXMapSubwindows(ClientPtr client)
+int
+PanoramiXMapSubwindows(ClientPtr client)
 {
     PanoramiXRes *win;
     int         result = 0, j;
@@ -393,7 +400,8 @@ int PanoramiXMapSubwindows(ClientPtr client)
 }
 
 
-int PanoramiXUnmapWindow(ClientPtr client)
+int
+PanoramiXUnmapWindow(ClientPtr client)
 {
     PanoramiXRes *win;
     int         result = 0, j;
@@ -415,7 +423,8 @@ int PanoramiXUnmapWindow(ClientPtr client)
 }
 
 
-int PanoramiXUnmapSubwindows(ClientPtr client)
+int
+PanoramiXUnmapSubwindows(ClientPtr client)
 {
     PanoramiXRes *win;
     int         result = 0, j;
@@ -437,7 +446,8 @@ int PanoramiXUnmapSubwindows(ClientPtr client)
 }
 
 
-int PanoramiXConfigureWindow(ClientPtr client)
+int
+PanoramiXConfigureWindow(ClientPtr client)
 {
     PanoramiXRes *win;
     PanoramiXRes *sib = NULL;
@@ -503,7 +513,8 @@ int PanoramiXConfigureWindow(ClientPtr client)
 }
 
 
-int PanoramiXCirculateWindow(ClientPtr client)
+int
+PanoramiXCirculateWindow(ClientPtr client)
 {
     PanoramiXRes *win;
     int         result = 0, j;
@@ -525,7 +536,8 @@ int PanoramiXCirculateWindow(ClientPtr client)
 }
 
 
-int PanoramiXGetGeometry(ClientPtr client)
+int
+PanoramiXGetGeometry(ClientPtr client)
 {
     xGetGeometryReply 	 rep;
     DrawablePtr pDraw;
@@ -567,12 +579,13 @@ int PanoramiXGetGeometry(ClientPtr client)
     return (client->noClientException);
 }
 
-int PanoramiXTranslateCoords(ClientPtr client)
+int
+PanoramiXTranslateCoords(ClientPtr client)
 {
     INT16 x, y;
     REQUEST(xTranslateCoordsReq);
 
-    register WindowPtr pWin, pDst;
+    WindowPtr pWin, pDst;
     xTranslateCoordsReply rep;
 
     REQUEST_SIZE_MATCH(xTranslateCoordsReq);
@@ -643,7 +656,8 @@ int PanoramiXTranslateCoords(ClientPtr client)
     return(client->noClientException);
 }
 
-int PanoramiXCreatePixmap(ClientPtr client)
+int
+PanoramiXCreatePixmap(ClientPtr client)
 {
     PanoramiXRes *refDraw, *newPix;
     int result = 0, j;
@@ -681,7 +695,8 @@ int PanoramiXCreatePixmap(ClientPtr client)
 }
 
 
-int PanoramiXFreePixmap(ClientPtr client)
+int
+PanoramiXFreePixmap(ClientPtr client)
 {
     PanoramiXRes *pix;
     int         result = 0, j;
@@ -708,7 +723,8 @@ int PanoramiXFreePixmap(ClientPtr client)
 }
 
 
-int PanoramiXCreateGC(ClientPtr client)
+int
+PanoramiXCreateGC(ClientPtr client)
 {
     PanoramiXRes *refDraw;
     PanoramiXRes *newGC;
@@ -785,7 +801,8 @@ int PanoramiXCreateGC(ClientPtr client)
     return (result);
 }
 
-int PanoramiXChangeGC(ClientPtr client)
+int
+PanoramiXChangeGC(ClientPtr client)
 {
     PanoramiXRes *gc;
     PanoramiXRes *stip = NULL;
@@ -848,7 +865,8 @@ int PanoramiXChangeGC(ClientPtr client)
 }
 
 
-int PanoramiXCopyGC(ClientPtr client)
+int
+PanoramiXCopyGC(ClientPtr client)
 {
     PanoramiXRes *srcGC, *dstGC;
     int         result = 0, j;
@@ -875,7 +893,8 @@ int PanoramiXCopyGC(ClientPtr client)
 }
 
 
-int PanoramiXSetDashes(ClientPtr client)
+int
+PanoramiXSetDashes(ClientPtr client)
 {
     PanoramiXRes *gc;
     int         result = 0, j;
@@ -897,7 +916,8 @@ int PanoramiXSetDashes(ClientPtr client)
 }
 
 
-int PanoramiXSetClipRectangles(ClientPtr client)
+int
+PanoramiXSetClipRectangles(ClientPtr client)
 {
     PanoramiXRes *gc;
     int         result = 0, j;
@@ -919,7 +939,8 @@ int PanoramiXSetClipRectangles(ClientPtr client)
 }
 
 
-int PanoramiXFreeGC(ClientPtr client)
+int
+PanoramiXFreeGC(ClientPtr client)
 {
     PanoramiXRes *gc;
     int         result = 0, j;
@@ -944,7 +965,8 @@ int PanoramiXFreeGC(ClientPtr client)
 }
 
 
-int PanoramiXClearToBackground(ClientPtr client)
+int
+PanoramiXClearToBackground(ClientPtr client)
 {
     PanoramiXRes *win;
     int         result = 0, j, x, y;
@@ -984,7 +1006,8 @@ int PanoramiXClearToBackground(ClientPtr client)
     have to fix this later. (MArk).
 */
 
-int PanoramiXCopyArea(ClientPtr client)
+int
+PanoramiXCopyArea(ClientPtr client)
 {
     int			j, result = 0, srcx, srcy, dstx, dsty;
     PanoramiXRes	*gc, *src, *dst;
@@ -1129,7 +1152,8 @@ int PanoramiXCopyArea(ClientPtr client)
 }
 
 
-int PanoramiXCopyPlane(ClientPtr client)
+int
+PanoramiXCopyPlane(ClientPtr client)
 {
     int			j, srcx, srcy, dstx, dsty;
     PanoramiXRes	*gc, *src, *dst;
@@ -1233,7 +1257,8 @@ int PanoramiXCopyPlane(ClientPtr client)
 }
 
 
-int PanoramiXPolyPoint(ClientPtr client)
+int
+PanoramiXPolyPoint(ClientPtr client)
 {
     PanoramiXRes *gc, *draw;
     int 	  result = 0, npoint, j;
@@ -1291,7 +1316,8 @@ int PanoramiXPolyPoint(ClientPtr client)
 }
 
 
-int PanoramiXPolyLine(ClientPtr client)
+int
+PanoramiXPolyLine(ClientPtr client)
 {
     PanoramiXRes *gc, *draw;
     int 	  result = 0, npoint, j;
@@ -1349,7 +1375,8 @@ int PanoramiXPolyLine(ClientPtr client)
 }
 
 
-int PanoramiXPolySegment(ClientPtr client)
+int
+PanoramiXPolySegment(ClientPtr client)
 {
     int		  result = 0, nsegs, i, j;
     PanoramiXRes *gc, *draw;
@@ -1410,7 +1437,8 @@ int PanoramiXPolySegment(ClientPtr client)
 }
 
 
-int PanoramiXPolyRectangle(ClientPtr client)
+int
+PanoramiXPolyRectangle(ClientPtr client)
 {
     int 	  result = 0, nrects, i, j;
     PanoramiXRes *gc, *draw;
@@ -1471,7 +1499,8 @@ int PanoramiXPolyRectangle(ClientPtr client)
 }
 
 
-int PanoramiXPolyArc(ClientPtr client)
+int
+PanoramiXPolyArc(ClientPtr client)
 {
     int 	  result = 0, narcs, i, j;
     PanoramiXRes *gc, *draw;
@@ -1529,7 +1558,8 @@ int PanoramiXPolyArc(ClientPtr client)
 }
 
 
-int PanoramiXFillPoly(ClientPtr client)
+int
+PanoramiXFillPoly(ClientPtr client)
 {
     int 	  result = 0, count, j;
     PanoramiXRes *gc, *draw;
@@ -1588,7 +1618,8 @@ int PanoramiXFillPoly(ClientPtr client)
 }
 
 
-int PanoramiXPolyFillRectangle(ClientPtr client)
+int
+PanoramiXPolyFillRectangle(ClientPtr client)
 {
     int 	  result = 0, things, i, j;
     PanoramiXRes *gc, *draw;
@@ -1647,7 +1678,8 @@ int PanoramiXPolyFillRectangle(ClientPtr client)
 }
 
 
-int PanoramiXPolyFillArc(ClientPtr client)
+int
+PanoramiXPolyFillArc(ClientPtr client)
 {
     PanoramiXRes *gc, *draw;
     Bool	  isRoot;
@@ -1706,7 +1738,8 @@ int PanoramiXPolyFillArc(ClientPtr client)
 }
 
 
-int PanoramiXPutImage(ClientPtr client)
+int
+PanoramiXPutImage(ClientPtr client)
 {
     PanoramiXRes *gc, *draw;
     Bool	  isRoot;
@@ -1744,7 +1777,8 @@ int PanoramiXPutImage(ClientPtr client)
 }
 
 
-int PanoramiXGetImage(ClientPtr client)
+int
+PanoramiXGetImage(ClientPtr client)
 {
     DrawablePtr 	drawables[MAXSCREENS];
     DrawablePtr 	pDraw;

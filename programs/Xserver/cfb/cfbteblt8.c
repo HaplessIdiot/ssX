@@ -3,7 +3,7 @@
  * 8 bit displays, in Copy mode with no clipping.
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbteblt8.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbteblt8.c,v 1.7 2004/12/31 02:56:03 tsi Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -28,8 +28,6 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-
-/* $Xorg: cfbteblt8.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $ */
 
 #if PSZ == 8
 
@@ -321,29 +319,24 @@ extern CfbBits endtab[];
 
 
 void
-CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
-    DrawablePtr pDrawable;
-    GC 		*pGC;
-    int 	xInit, yInit;
-    unsigned int nglyph;
-    CharInfoPtr *ppci;		/* array of character info */
-    pointer	pglyphBase;	/* start of array of glyphs */
+CFBTEGBLT8(DrawablePtr pDrawable, GC *pGC, int xInit, int yInit,
+	   unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
-    register CfbBits  c;
-    register CfbBits  *dst;
-    register CfbBits  leftMask, rightMask;
-    register int	    hTmp;
-    register int	    xoff1;
-    register glyphPointer   char1;
-    register glyphPointer   char2;
+    CfbBits  c;
+    CfbBits  *dst;
+    CfbBits  leftMask, rightMask;
+    int	    hTmp;
+    int	    xoff1;
+    glyphPointer   char1;
+    glyphPointer   char2;
 #if NGLYPHS >= 3
-    register glyphPointer   char3;
+    glyphPointer   char3;
 #endif
 #if NGLYPHS >= 4
-    register glyphPointer   char4;
+    glyphPointer   char4;
 #endif
 #if NGLYPHS >= 5
-    register glyphPointer   char5;
+    glyphPointer   char5;
 #endif
 #ifdef ALL_LEFTBITS
     int xoff2, xoff3, xoff4, xoff5;
@@ -366,9 +359,9 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     int			lshift;
     int			widthGlyphs;
 #ifdef USE_LEFTBITS
-    register CfbBits  glyphMask;
-    register CfbBits  tmpSrc;
-    register int	    glyphBytes;
+    CfbBits  glyphMask;
+    CfbBits  tmpSrc;
+    int	    glyphBytes;
 #endif
 
     widthGlyph = FONTMAXBOUNDS(pfont,characterWidth);

@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbtegblt.c,v 3.1 1998/03/20 21:04:57 hohndel Exp $ */
-/* $XConsortium: afbtegblt.c,v 5.14 94/04/17 20:28:35 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbtegblt.c,v 3.2 2001/10/28 03:32:58 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -202,49 +201,44 @@ typedef unsigned int		*glyphPointer;
 #endif
 
 void
-afbTEGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
-	DrawablePtr pDrawable;
-	GC 				*pGC;
-	int 		x, y;
-	unsigned int nglyph;
-	CharInfoPtr *ppci;				/* array of character info */
-	pointer		pglyphBase;			/* start of array of glyphs */
+afbTEGlyphBlt(DrawablePtr pDrawable, GC *pGC, int x, int y,
+	      unsigned int nglyph, CharInfoPtr *ppci, pointer pglyphBase)
 {
-	FontPtr		pfont = pGC->font;
+	FontPtr	pfont = pGC->font;
 	int widthDst;
-	PixelType *pdstBase;				/* pointer to longword with top row
-								 				of current glyph */
+	PixelType *pdstBase;		/* pointer to longword with top row
+					of current glyph */
 
-	int h;								/* height of glyph and char */
-	register int xpos;				/* current x  */
-	int ypos;							/* current y */
+	int h;				/* height of glyph and char */
+	int xpos;			/* current x  */
+	int ypos;			/* current y */
 	int widthGlyph;
 
-	int hTmp;							/* counter for height */
-	register PixelType startmask, endmask;
-	int nfirst;							/* used if glyphs spans a longword boundary */
-	BoxRec bbox;						/* for clipping */
+	int hTmp;			/* counter for height */
+	PixelType startmask, endmask;
+	int nfirst;			/* used if glyphs spans a longword boundary */
+	BoxRec bbox;			/* for clipping */
 	int		widthGlyphs;
 	int sizeDst;
 	int depthDst;
 	PixelType *saveDst;
-	register PixelType  *dst;
-	register PixelType  c;
-	register int d;
-	register int xoff1, xoff2, xoff3, xoff4;
-	register glyphPointer char1, char2, char3, char4;
+	PixelType  *dst;
+	PixelType  c;
+	int d;
+	int xoff1, xoff2, xoff3, xoff4;
+	glyphPointer char1, char2, char3, char4;
 	glyphPointer schar1, schar2, schar3, schar4;
 #if PPW == 64
-	register int xoff5, xoff6, xoff7, xoff8;
-	register glyphPointer char5, char6, char7, char8;
+	int xoff5, xoff6, xoff7, xoff8;
+	glyphPointer char5, char6, char7, char8;
 	glyphPointer schar5, schar6, schar7, schar8;
 #endif /* PPW */
 
 	unsigned char *rrops;
 #ifdef USE_LEFTBITS
-	register PixelType glyphMask;
-	register PixelType tmpSrc;
-	register int glyphBytes;
+	PixelType glyphMask;
+	PixelType tmpSrc;
+	int glyphBytes;
 #endif
 
 	afbGetPixelWidthSizeDepthAndPointer(pDrawable, widthDst, sizeDst, depthDst,

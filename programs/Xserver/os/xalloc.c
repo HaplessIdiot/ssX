@@ -26,7 +26,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.36 2003/11/03 05:12:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.37 2005/02/16 19:20:55 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -309,7 +309,7 @@ void XfreeTrap(void)
 void *
 Xalloc (unsigned long amount)
 {
-    register unsigned long *ptr;
+    unsigned long *ptr;
     int indx;
 
     /* sanity checks */
@@ -464,7 +464,7 @@ Xalloc (unsigned long amount)
 pointer
 XNFalloc (unsigned long amount)
 {
-    register pointer ptr;
+    pointer ptr;
 
     /* zero size requested */
     if (amount == 0) {
@@ -534,7 +534,7 @@ XNFcalloc (unsigned long amount)
 void *
 Xrealloc (pointer ptr, unsigned long amount)
 {
-    register unsigned long *new_ptr;
+    unsigned long *new_ptr;
 
     /* zero size requested */
     if (amount == 0) {

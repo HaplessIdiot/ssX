@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbzerarc.c,v 3.2 2001/10/28 03:32:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbzerarc.c,v 3.3 2003/07/16 01:38:36 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -25,8 +25,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
-
-/* $XConsortium: afbzerarc.c,v 5.19 94/04/17 20:28:37 dpw Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -79,23 +77,20 @@ in this Software without prior written authorization from the X Consortium.
 #define DoPix(bit,base,yoff,xoff) if (mask & bit) Pixelate(base,yoff,xoff);
 
 static void
-afbZeroArcSS(pDraw, pGC, arc)
-	DrawablePtr pDraw;
-	GCPtr pGC;
-	xArc *arc;
+afbZeroArcSS(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 {
 	miZeroArcRec info;
 	Bool do360;
-	register int de;
-	register int x, y, a, b, d, mask;
-	register int k1, k3, dx, dy;
+	int de;
+	int x, y, a, b, d, mask;
+	int k1, k3, dx, dy;
 	PixelType *addrl;
 	PixelType *yorgl, *yorgol;
 	int nlwidth, yoffset, dyoffset;
 	int sizeDst, depthDst;
 	PixelType pmask;
-	register PixelType *paddr;
-	register unsigned char *rrops;
+	PixelType *paddr;
+	unsigned char *rrops;
 
 	rrops = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->rrops;
 
@@ -178,14 +173,10 @@ afbZeroArcSS(pDraw, pGC, arc)
 }
 
 void
-afbZeroPolyArcSS(pDraw, pGC, narcs, parcs)
-	DrawablePtr		pDraw;
-	GCPtr		pGC;
-	int				narcs;
-	xArc		*parcs;
+afbZeroPolyArcSS(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs)
 {
-	register xArc *arc;
-	register int i;
+	xArc *arc;
+	int i;
 	BoxRec box;
 	RegionPtr cclip;
 

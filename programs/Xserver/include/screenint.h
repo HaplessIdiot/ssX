@@ -1,4 +1,3 @@
-/* $Xorg: screenint.h,v 1.4 2001/02/09 02:05:15 xorgcvs Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/screenint.h,v 1.5 2001/12/14 19:59:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/screenint.h,v 1.6 2003/04/27 21:31:05 herrb Exp $ */
 #ifndef SCREENINT_H
 #define SCREENINT_H
 
@@ -78,12 +77,10 @@ extern Bool AllocateGCPrivate(
     int /* index */,
     unsigned /* amount */);
 
+typedef Bool (*ScrnInitProcPtr)(int index, ScreenPtr pScreen, int argc,
+				char **argv);
 extern int AddScreen(
-    Bool (* /*pfnInit*/)(
-	int /*index*/,
-	ScreenPtr /*pScreen*/,
-	int /*argc*/,
-	char ** /*argv*/),
+    ScrnInitProcPtr /*pfnInit*/,
     int /*argc*/,
     char** /*argv*/);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbbres.c,v 1.2 1998/07/25 16:59:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbbres.c,v 1.3 1999/06/06 08:48:54 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -48,7 +48,6 @@ SOFTWARE.
 
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
-/* $XConsortium: mfbbres.c /main/5 1996/02/21 17:56:30 kaleb $ */
 
 #include "xf4bpp.h"
 #include "OScompiler.h"
@@ -59,30 +58,19 @@ SOFTWARE.
 #include "wm3.h"
 
 /* Solid bresenham line */
-/* NOTES
-   e2 is used less often than e1, so it's not in a register
-*/
 
 void
-xf4bppBresS(addrlbase, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
-PixelType *addrlbase;        /* pointer to base of bitmap */
-int nlwidth;                /* width in longwords of bitmap */
-int signdx, signdy;        /* signs of directions */
-int axis;                /* major axis (Y_AXIS or X_AXIS) */
-int x1, y1;                /* initial point */
-register int e;                /* error accumulator */
-register int e1;        /* bresenham increments */
-int e2;
-int len;                /* length of line */
+xf4bppBresS(PixelType *addrlbase, int nlwidth, int signdx, int signdy,
+	    int axis, int x1, int y1, int e, int e1, int e2, int len)
 {
-    register int yinc;        /* increment to next scanline, in bytes */
-    register PixelType *addrl;                        /* bitmask long pointer 
+    int yinc;        /* increment to next scanline, in bytes */
+    PixelType *addrl;                        /* bitmask long pointer 
                                         *dont*         * cast to char pointer */
-    register PixelType bit;        /* current bit being set/cleared/etc.  */
+    PixelType bit;        /* current bit being set/cleared/etc.  */
     PixelType leftbit = mask[0]; /* leftmost bit to process in new word */
     PixelType rightbit = mask[PPW-1]; /* rightmost bit to process in new word */
 
-    register int e3 = e2-e1;
+    int e3 = e2-e1;
 
     /* point to longword containing first point */
     addrl = mfbScanline(addrlbase, x1, y1, nlwidth);

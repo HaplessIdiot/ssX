@@ -1,7 +1,7 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86: xc/programs/Xserver/Xext/xres.c,v 1.8 2003/10/28 23:08:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xres.c,v 1.9 2004/03/04 19:31:37 dawes Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -15,6 +15,8 @@
 #include "XResproto.h"
 #include "pixmapstr.h"
 #include "modinit.h"
+
+#ifdef RES
 
 static int
 ProcXResQueryVersion (ClientPtr client)
@@ -86,7 +88,7 @@ ProcXResQueryClients (ClientPtr client)
             scratch.resource_mask = RESOURCE_ID_MASK;
         
             if(client->swapped) {
-                register int n;
+                int n;
                 swapl (&scratch.resource_base, n);
                 swapl (&scratch.resource_mask, n);
             }
@@ -167,7 +169,7 @@ ProcXResQueryClientResources (ClientPtr client)
             scratch.count = counts[i];
 
             if(client->swapped) {
-                register int n;
+                int n;
                 swapl (&scratch.resource_type, n);
                 swapl (&scratch.count, n);
             }
@@ -332,3 +334,5 @@ ResExtensionInit(INITARGS)
     RegisterResourceName(RT_OTHERCLIENT, "OTHER CLIENT");
     RegisterResourceName(RT_PASSIVEGRAB, "PASSIVE GRAB");
 }
+
+#endif

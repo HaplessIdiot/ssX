@@ -1,4 +1,3 @@
-/* $Xorg: privates.c,v 1.4 2001/02/09 02:04:40 xorgcvs Exp $ */
 /*
 
 Copyright 1993, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/dix/privates.c,v 3.7 2001/01/17 22:36:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/privates.c,v 3.8 2001/12/14 19:59:32 dawes Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -73,9 +72,7 @@ AllocateClientPrivateIndex()
 }
 
 Bool
-AllocateClientPrivate(index2, amount)
-    int index2;
-    unsigned amount;
+AllocateClientPrivate(int index2, unsigned amount)
 {
     unsigned oldamount;
 
@@ -166,10 +163,7 @@ AllocateWindowPrivateIndex()
 }
 
 Bool
-AllocateWindowPrivate(pScreen, index2, amount)
-    register ScreenPtr pScreen;
-    int index2;
-    unsigned amount;
+AllocateWindowPrivate(ScreenPtr pScreen, int index2, unsigned amount)
 {
     unsigned oldamount;
 
@@ -219,10 +213,7 @@ AllocateGCPrivateIndex()
 }
 
 Bool
-AllocateGCPrivate(pScreen, index2, amount)
-    register ScreenPtr pScreen;
-    int index2;
-    unsigned amount;
+AllocateGCPrivate(ScreenPtr pScreen, int index2, unsigned amount)
 {
     unsigned oldamount;
 
@@ -272,10 +263,7 @@ AllocatePixmapPrivateIndex()
 }
 
 Bool
-AllocatePixmapPrivate(pScreen, index2, amount)
-    register ScreenPtr pScreen;
-    int index2;
-    unsigned amount;
+AllocatePixmapPrivate(ScreenPtr pScreen, int index2, unsigned amount)
 {
     unsigned oldamount;
 
@@ -322,10 +310,7 @@ ResetColormapPrivates()
 
 
 int
-AllocateColormapPrivateIndex (initPrivFunc)
-
-InitCmapPrivFunc initPrivFunc;
-
+AllocateColormapPrivateIndex(InitCmapPrivFunc initPrivFunc)
 {
     int		index;
     int		i;

@@ -1,4 +1,3 @@
-/* $Xorg: cfb.h,v 1.3 2000/08/17 19:48:12 cpqbld Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -27,7 +26,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.30 2003/07/19 13:22:27 tsi Exp $ */
 
 #if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 
@@ -320,6 +319,13 @@ extern Bool cfbAllocatePrivates(
 );
 /* cfbbitblt.c */
 
+#ifndef CFB_PROTOTYPES_ONLY
+typedef void (*cfbDoBitBltProcPtr)(DrawablePtr pSrc, DrawablePtr pDst,
+				   int alu, RegionPtr prgnDst,
+				   DDXPointPtr pptSrc,
+				   unsigned long planemask);
+#endif
+
 extern RegionPtr cfbBitBlt(
     DrawablePtr /*pSrcDrawable*/,
     DrawablePtr /*pDstDrawable*/,
@@ -330,18 +336,19 @@ extern RegionPtr cfbBitBlt(
     int /*height*/,
     int /*dstx*/,
     int /*dsty*/,
-    void (* /*doBitBlt*/)(
-	DrawablePtr /*pSrc*/,
-	DrawablePtr /*pDst*/,
-	int /*alu*/,
-	RegionPtr /*prgnDst*/,
-	DDXPointPtr /*pptSrc*/,
-	unsigned long /*planemask*/
-	),
+    cfbDoBitBltProcPtr /*doBitBlt*/,
     unsigned long /*bitPlane*/
 );
 
 #define cfbCopyPlaneExpand cfbBitBlt
+
+#ifndef CFB_PROTOTYPES_ONLY
+typedef void (*cfbDoCopyPlaneProcPtr)(DrawablePtr pSrc, DrawablePtr pDst,
+				      int alu, RegionPtr prgnDst,
+				      DDXPointPtr pptSrc,
+				      unsigned long planemask,
+				      unsigned long bitPlane);
+#endif
 
 extern RegionPtr cfbCopyPlaneReduce(
     DrawablePtr /*pSrcDrawable*/,
@@ -353,15 +360,7 @@ extern RegionPtr cfbCopyPlaneReduce(
     int /*height*/,
     int /*dstx*/,
     int /*dsty*/,
-    void (* /*doCopyPlane*/)(
-	DrawablePtr /*pSrc*/,
-	DrawablePtr /*pDst*/,
-	int /*alu*/,
-	RegionPtr /*prgnDst*/,
-	DDXPointPtr /*pptSrc*/,
-	unsigned long /*planemask*/,
-	unsigned long /*bitPlane*/ /* We must know which plane to reduce! */
-	),
+    cfbDoCopyPlaneProcPtr /*doCopyPlane*/,
     unsigned long /*bitPlane*/
 );
 
