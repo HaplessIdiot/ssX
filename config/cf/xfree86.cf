@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.398 2002/05/31 15:12:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.399 2002/06/07 21:03:24 alanh Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1754,7 +1754,9 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
  */
 
 #ifndef Egcs112Bug
-# if HasGcc2 && defined(i386Architecture)
+  /* Not exactly precise, but it'll do for now... */
+# if HasGcc2 && defined(i386Architecture) && \
+     (GccMajorVersion == 2) && (GccMinorVersion > 8)
 #  define Egcs112Bug YES
 # else
 #  define Egcs112Bug NO
