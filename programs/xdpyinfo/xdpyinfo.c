@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xdpyinfo.c /main/34 1995/12/08 12:09:32 dpw $
- * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.9 1996/03/04 05:29:09 dawes Exp $
+ * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.10 1996/03/10 12:13:08 dawes Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -830,7 +830,9 @@ print_xinput_info(dpy, extname)
   int		list = 0;
   XExtensionVersion *ext;
 
-  if (!(ext = XGetExtensionVersion(dpy, extname)))
+  ext = XGetExtensionVersion(dpy, extname);
+  
+  if (!ext || (ext == (XExtensionVersion*) NoSuchExtension))
       return 0;
 
   print_standard_extension_info(dpy, extname, ext->major_version,

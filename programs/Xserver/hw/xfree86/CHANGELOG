@@ -1,3 +1,17 @@
+XFree86 3.1.2Z (20 October 1996)
+1049. Update XF86_SVGA man page (Harm Hanemaayer).
+1048. Update Linux README (Dirk Hohndel).
+1047. Fix some mono/4bpp problems introduced by recent ET6000 changes
+      (Koen Gadeyne).
+1046. Updates to the Cards database (Harald Koenig).
+1045. Fix xdpyinfo core dump when the XInput extension is not available
+      (Frederic Lepied).
+1044. Fix SuperProbe mis-detection of S3 ViRGE (Harald Koenig).
+1043. S3V README (Harald Koenig).
+1042. Resync some PC98 Imakefiles (Takaaki Nomura).
+1041. Update XF86Setup card list features, and add 1152x864 video modes
+      (Harald Koenig).
+
 XFree86 3.1.2Gq (19 October 1996)
 1040. Some updates to use the native setlocale() in the GNU libc used
       by Linux/Alpha/ELF (Ulrich Drepper, Harald Koenig).
