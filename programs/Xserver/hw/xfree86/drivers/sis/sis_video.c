@@ -2499,7 +2499,7 @@ set_saturation(SISPtr pSiS, short saturation)
 static __inline void
 set_hue(SISPtr pSiS, CARD8 hue)
 {
-    setvideoreg(pSiS, Index_VI_Hue, (hue & 0x08) ? (hue ^ 0x07) : hue);
+    setvideoregmask(pSiS, Index_VI_Hue, (hue & 0x08) ? (hue ^ 0x07) : hue, 0x0F);
 }
 
 static __inline void
