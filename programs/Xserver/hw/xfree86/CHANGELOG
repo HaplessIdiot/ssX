@@ -1,4 +1,6 @@
 XFree86 4.3.99.6 (xx May 2003)
+ 200. Fix library dependencies for xlibi18n modules (Bugzilla #82, Joe Kelsey,
+      Matthieu Herrb).
  199. Fix manual pages typos (Bugzilla #316, Jens Schweikhardt).
  198. Fix bug (Bugzilla #315) in _XTextPropertyToTextList() that causes
       an application crash in some circumstances (Ivan Pascal).
@@ -17040,7 +17042,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2720 2003/05/29 13:30:16 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2721 2003/05/29 21:48:06 herrb Exp $
 
 
 

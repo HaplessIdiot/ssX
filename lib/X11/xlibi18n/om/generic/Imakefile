@@ -5,7 +5,7 @@
 		  omTextEsc.c omTextExt.c omTextPer.c omXChar.c
 
            OBJS = ${SRCS:.c=.o}
-   REQUIREDLIBS = -L$(XENVLIBDIR) -lX11 -lc
+   REQUIREDLIBS = SharedXlibi18nReqs
 
 LinkSourceFile(omDefault.c, ../../..)
 LinkSourceFile(omGeneric.c, ../../..)

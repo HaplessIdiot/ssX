@@ -4,7 +4,7 @@
       XI18NLIBNAME = xlocale
            SRCS = lcEuc.c lcSjis.c lcJis.c
            OBJS = ${SRCS:.c=.o}
-   REQUIREDLIBS = -L$(XENVLIBDIR) -lX11 -lc
+   REQUIREDLIBS = SharedXlibi18nReqs
 
 LinkSourceFile(lcEuc.c, ../../..)
 LinkSourceFile(lcSjis.c, ../../..)
