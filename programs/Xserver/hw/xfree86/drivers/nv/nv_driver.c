@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.61 2001/02/22 01:42:11 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.62 2001/02/23 01:19:09 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -293,7 +293,8 @@ typedef enum {
     OPTION_SHOWCACHE,
     OPTION_SHADOW_FB,
     OPTION_FBDEV,
-    OPTION_ROTATE
+    OPTION_ROTATE,
+    OPTION_VIDEO_KEY
 } NVOpts;
 
 
@@ -305,6 +306,7 @@ static OptionInfoRec NVOptions[] = {
     { OPTION_SHADOW_FB,         "ShadowFB",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_FBDEV,             "UseFBDev",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_ROTATE,		"Rotate",	OPTV_ANYSTR,	{0}, FALSE },
+    { OPTION_VIDEO_KEY,		"VideoKey",	OPTV_INTEGER,	{0}, FALSE },
     { -1,                       NULL,           OPTV_NONE,      {0}, FALSE }
 };
 
@@ -601,6 +603,30 @@ NVLeaveVT(int scrnIndex, int flags)
     vgaHWLock(hwp);
 }
 
+
+
+static void 
+NVBlockHandler (
+    int i, 
+    pointer blockData, 
+    pointer pTimeout,
+    pointer pReadmask
+)
+{
+    ScreenPtr     pScreen = screenInfo.screens[i];
+    ScrnInfoPtr   pScrnInfo = xf86Screens[i];
+    NVPtr         pNv = NVPTR(pScrnInfo);
+    
+    pScreen->BlockHandler = pNv->BlockHandler;
+    (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
+    pScreen->BlockHandler = NVBlockHandler;
+
+    if (pNv->VideoTimerCallback) 
+        (*pNv->VideoTimerCallback)(pScrnInfo, currentTime.milliseconds);
+
+}
+
+
 /*
  * This is called at the end of each server generation.  It restores the
  * original (text) mode.  It should also unmap the video memory, and free
@@ -636,9 +662,12 @@ NVCloseScreen(int scrnIndex, ScreenPtr pScreen)
         xfree(pNv->DGAModes);
     if ( pNv->expandBuffer )
         xfree(pNv->expandBuffer);
+    if (pNv->overlayAdaptor)
+	xfree(pNv->overlayAdaptor);
 
     pScrn->vtSema = FALSE;
     pScreen->CloseScreen = pNv->CloseScreen;
+    pScreen->BlockHandler = pNv->BlockHandler;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
 }
 
@@ -1085,6 +1114,15 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 		"Valid options are \"CW\" or \"CCW\"\n");
       }
     }
+    if(xf86GetOptValInteger(NVOptions, OPTION_VIDEO_KEY, &(pNv->videoKey))) {
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
+                                pNv->videoKey);
+    } else {
+        pNv->videoKey =  (1 << pScrn->offset.red) | 
+                          (1 << pScrn->offset.green) |
+        (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue); 
+    }
+
     
     if (pNv->pEnt->device->MemBase != 0) {
 	/* Require that the config file value matches one of the PCI values. */
@@ -1813,24 +1851,16 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn->memPhysBase = pNv->FbAddress;
     pScrn->fbOffset = 0;
 
-#ifdef XvExtension
-    {
-	XF86VideoAdaptorPtr *ptr;
-	int n;
-	
-	n = xf86XVListGenericAdaptors(pScrn,&ptr);
-	if (n) { 
-	    xf86XVScreenInit(pScreen, ptr, n);
-	}
-    }
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Xv set up\n"));
-#endif
+    NVInitVideo(pScreen);
 
     pScreen->SaveScreen = NVSaveScreen;
 
     /* Wrap the current CloseScreen function */
     pNv->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = NVCloseScreen;
+
+    pNv->BlockHandler = pScreen->BlockHandler;
+    pScreen->BlockHandler = NVBlockHandler;
 
     /* Report any unused options (only for the first generation) */
     if (serverGeneration == 1) {
