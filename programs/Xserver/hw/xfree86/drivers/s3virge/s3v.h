@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.9 1999/03/21 07:35:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.10 1999/03/28 15:32:46 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -43,6 +43,8 @@ in this Software without prior written authorization from the XFree86 Project.
 
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
+
+#include "xf86Cursor.h"
 
 #include "vgaHW.h"
 
@@ -164,6 +166,8 @@ typedef struct {
   S3VRegRec 		SavedReg;
   /* XServer video state mode registers */
   S3VRegRec 		ModeReg;
+  /* HW Cursor info */
+  xf86CursorInfoPtr	CursorInfoRec;
   /* Flag indicating ModeReg has been */
   /* duped from console state. */
   Bool		ModeStructInit;
@@ -197,6 +201,8 @@ typedef struct {
   unsigned char *	FBBase;
   /* Current visual FB starting location */
   unsigned char *	FBStart;
+  /* Cursor storage location */
+  unsigned char *	FBCursorStart;
   /* Saved CR53 value */
   unsigned char	EnableMmioCR53;
   /* Extended reg unlock storage */
@@ -242,6 +248,8 @@ typedef struct {
   Bool 		late_ras_precharge;
   /* MX LCD centering		*/
   Bool		lcd_center;
+  /* hardware cursor enabled */
+  Bool		hwcursor;
   /* ViRGE options -end- */
   /***********************/
   /* ViRGE specifics -end- */
@@ -331,6 +339,18 @@ typedef struct {
 #define NEED_MONO_FILL    0x01
 #define MONO_TRANSPARENCY 0x02
 
+/* prototypes */
+/* s3v_dac.c */
+extern void S3VCommonCalcClock(long freq, int min_m, int min_n1, int max_n1,
+			int min_n2, int max_n2, long freq_min, long freq_max,
+			unsigned char * mdiv, unsigned char * ndiv);
+
+/* s3v_accel.c */
+extern Bool S3VAccelInit(ScreenPtr pScreen);
+extern Bool S3VAccelInit32(ScreenPtr pScreen);
+
+/* s3v_hwcurs.c */
+extern Bool S3VHWCursorInit(ScreenPtr pScreen);
 
 #endif  /*_S3V_H*/
 

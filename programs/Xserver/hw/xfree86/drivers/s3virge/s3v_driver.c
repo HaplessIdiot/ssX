@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.19 1999/03/28 15:32:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.20 1999/03/29 00:46:02 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -95,12 +95,6 @@ static void S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 #endif
 
 /*
- * in s3v_accel.c
- */
-extern Bool S3VAccelInit(ScreenPtr pScreen);
-extern Bool S3VAccelInit32(ScreenPtr pScreen);
-
-/*
  * This is intentionally screen-independent.  It indicates the binding
  * choice made in the first PreInit.
  */
@@ -109,9 +103,9 @@ static int pix24bpp = 0;
 
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "0.5.0"
+#define S3VIRGE_VERSION_NAME "0.6.0"
 #define S3VIRGE_VERSION_MAJOR   0
-#define S3VIRGE_VERSION_MINOR   5
+#define S3VIRGE_VERSION_MINOR   6
 #define S3VIRGE_PATCHLEVEL      0
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
@@ -181,15 +175,14 @@ typedef enum {
    OPTION_FIFO_AGGRESSIVE, 	
    OPTION_PCI_RETRY, 		
    OPTION_NOACCEL, 		
- /*
-   OPTION_HW_CURSOR, 		
-   */
    OPTION_EARLY_RAS_PRECHARGE, 	
    OPTION_LATE_RAS_PRECHARGE,
    OPTION_LCD_CENTER,
    OPTION_LCDCLOCK,
    OPTION_MCLK,
-   OPTION_SHOWCACHE
+   OPTION_SHOWCACHE,
+   OPTION_SWCURSOR,
+   OPTION_HWCURSOR
 } S3VOpts;
 
 static OptionInfoRec S3VOptions[] =
@@ -205,17 +198,15 @@ static OptionInfoRec S3VOptions[] =
    { OPTION_FIFO_AGGRESSIVE, 	"fifo_aggressive", OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_PCI_RETRY, 		"pci_retry",	OPTV_BOOLEAN,	{0}, FALSE  },
    { OPTION_NOACCEL, 		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE  },
- /*
-   { OPTION_HW_CURSOR, 		},
-  */ 
    { OPTION_EARLY_RAS_PRECHARGE, "early_ras_precharge",	OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_LATE_RAS_PRECHARGE, "late_ras_precharge", OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_LCD_CENTER, 	"lcd_center", 	OPTV_BOOLEAN, 	{0}, FALSE },
    { OPTION_LCDCLOCK, 		"set_lcdclk", 	OPTV_INTEGER, 	{0}, FALSE },
    { OPTION_MCLK, 		"set_mclk", 	OPTV_INTEGER, 	{0}, FALSE },
    { OPTION_SHOWCACHE,		"show_cache",   OPTV_BOOLEAN,	{0}, FALSE },
-   {-1, NULL, OPTV_NONE,
-	{0}, FALSE}
+   { OPTION_HWCURSOR,		"HWCursor",     OPTV_BOOLEAN,	{0}, FALSE },
+   { OPTION_SWCURSOR,		"SWCursor",     OPTV_BOOLEAN,	{0}, FALSE },
+   {-1, NULL, OPTV_NONE,	{0}, FALSE}
 };
 
 
@@ -521,8 +512,8 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     unsigned char config1, config2, m, n, n1, n2, cr66;
     int mclk;
     
-  vgaHWPtr hwp;
-  int vgaCRIndex, vgaCRReg, vgaIOBase;
+    vgaHWPtr hwp;
+    int vgaCRIndex, vgaCRReg, vgaIOBase;
     
     			      
     PVERB5("	S3VPreInit 1\n");
@@ -752,6 +743,17 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     } else
    	ps3v->MCLK = 0;
+
+    from = X_DEFAULT;
+    ps3v->hwcursor = TRUE;
+    if (xf86GetOptValBool(S3VOptions, OPTION_HWCURSOR, &ps3v->hwcursor))
+	  from = X_CONFIG;
+    if (xf86ReturnOptValBool(S3VOptions, OPTION_SWCURSOR, FALSE)) {
+	  ps3v->hwcursor = FALSE;
+	  from = X_CONFIG;
+    }
+    xf86DrvMsg(pScrn->scrnIndex, from, "Using %s Cursor\n",
+		ps3v->hwcursor ? "HW" : "SW");
 	
     /* Find the PCI slot for this screen */
     /*
@@ -1325,7 +1327,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymbols(reqSym, NULL);
 	     
     /* Load XAA if needed */
-    if (!ps3v->NoAccel /*|| pMga->HWCursor*/ ) {
+    if (!ps3v->NoAccel || ps3v->hwcursor ) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    S3VFreeRec(pScrn);
 	    return FALSE;
@@ -2023,6 +2025,10 @@ S3VMapMem(ScrnInfoPtr pScrn)
   		       		/* Initially the visual display start */
 				/* is the same as the mapped start. */
   ps3v->FBStart = ps3v->FBBase;
+
+  				/* Set up pointer to hwcursor memory area */
+  				/* It's a 1K chunk at the end of the frame buffer */
+  ps3v->FBCursorStart = ps3v->FBStart + ps3v->videoRambytes - 1024;
   
   S3VEnableMmio( pScrn);
    					/* Assign hwp->MemBase & IOBase here */
@@ -2188,6 +2194,15 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     					/* Initialise cursor functions */
   miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+
+    /* Initialize HW cursor layer. 
+	Must follow software cursor initialization*/
+  if (ps3v->hwcursor) { 
+  if(!S3VHWCursorInit(pScreen)) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+		"Hardware cursor initialization failed\n");
+		}
+  }
    
     					/* Initialise default colourmap */
   if (!miCreateDefColormap(pScreen))
@@ -2425,7 +2440,7 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     */
 
    if(ps3v->MCLK> 0) {
-       commonCalcClock(ps3v->MCLK, 1, 1, 31, 0, 3,
+       S3VCommonCalcClock(ps3v->MCLK, 1, 1, 31, 0, 3,
 	   135000, 270000, &new->SR11, &new->SR10);
        }
    else {
@@ -2457,7 +2472,7 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
           S3VInitSTREAMS(pScrn, new->STREAMS, mode);
           new->MMPR0 = 0xc098;            /* Adjust FIFO slots */
           }
-       commonCalcClock(dclk, 1, 1, 31, 0, 4, 
+       S3VCommonCalcClock(dclk, 1, 1, 31, 0, 4, 
 	   220000, 440000, &new->SR13, &new->SR12);
 
       }
@@ -2520,17 +2535,17 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		 ps3v->LCDClk = ((2 * 1431818 * (sr13+2)) / (n1+2) / (1 << n2) + 50) / 100;
 	       }
 	     }
-	     commonCalcClock(ps3v->LCDClk/2, 1, 1, 31, 0, 4,
+	     S3VCommonCalcClock(ps3v->LCDClk/2, 1, 1, 31, 0, 4,
 			     170000, 340000, &new->SR13, &ndiv);
 	   }
 	   else
-	     commonCalcClock(dclk/2, 1, 1, 31, 0, 4,
+	     S3VCommonCalcClock(dclk/2, 1, 1, 31, 0, 4,
 			     170000, 340000, &new->SR13, &ndiv);
 	   VGAOUT8(0x3c4, 0x08);
 	   VGAOUT8(0x3c5, sr8);
 	 }
 	 else  /* S3_ViRGE_GX2 */
-	   commonCalcClock(dclk, 1, 1, 31, 0, 4,
+	   S3VCommonCalcClock(dclk, 1, 1, 31, 0, 4,
 			   170000, 340000, &new->SR13, &ndiv);
          new->SR29 = ndiv >> 7;
          new->SR12 = (ndiv & 0x1f) | ((ndiv & 0x60) << 1);
@@ -2564,7 +2579,7 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
          S3VInitSTREAMS(pScrn, new->STREAMS, mode);
          new->MMPR0 = 0x10000;            /* Still more FIFO slots */
          }
-      commonCalcClock(dclk, 1, 1, 31, 0, 3, 
+      S3VCommonCalcClock(dclk, 1, 1, 31, 0, 3, 
 	135000, 270000, &new->SR13, &new->SR12);
       }
 
