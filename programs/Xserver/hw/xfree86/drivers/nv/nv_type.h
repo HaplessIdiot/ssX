@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.8 1999/11/12 02:12:41 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.9 1999/12/13 02:26:22 robin Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -103,6 +103,11 @@ typedef struct {
     /* Misc flags */
     unsigned int        opaqueMonochrome;
     int                 currentRop;
+    /* I2C / DDC */
+    unsigned int        (*ddc1Read)(ScrnInfoPtr);
+    void                (*DDC1SetSpeed)(ScrnInfoPtr, xf86ddcSpeed);
+    Bool                (*i2cInit)(ScrnInfoPtr);
+    I2CBusPtr           I2C;
 } NVRec, *NVPtr;
 
 #define NVPTR(p) ((NVPtr)((p)->driverPrivate))

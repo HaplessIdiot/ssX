@@ -1,4 +1,5 @@
-XFree86 3.9.17c (27 January 2000)
+XFree86 3.9.17c (30 January 2000)
+3613. Add DDC1 and DDC2 support to the NVIDIA driver (#3608, Jarno Paananen).
 3612. Make -configure multihead aware, add loading of all extension modules,
       setup Layout sections (Alan Hourihane).
 3611. XTextPropertyToTextList doesn't work if incoming XTextProperty has
@@ -9394,4 +9395,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.966 2000/01/29 17:16:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.968 2000/01/30 01:23:16 alanh Exp $
