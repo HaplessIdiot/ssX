@@ -155,6 +155,7 @@ cfb8_32CloseScreen (int i, ScreenPtr pScreen)
 
     if(pScreenPriv->visualData)
 	xfree(pScreenPriv->visualData);
+
     xfree((pointer) pScreenPriv);
 
     return(cfb32CloseScreen(i, pScreen));
@@ -240,8 +241,6 @@ cfb8_32SetupVisuals (ScreenPtr pScreen)
     int numDepths = pScreen->numDepths;
     int i;
 
-    pScreenPriv->visualData = NULL;
-
     /* find depth 8 visuals */
     for(i = 0; i < numDepths; i++, pDepth++) {
 	if(pDepth->depth == 8) {
@@ -290,6 +289,8 @@ cfb8_32ScreenInit(
 
     pScreenPriv = CFB8_32_GET_SCREEN_PRIVATE(pScreen);
     pScreenPriv->key = pScrn->colorKey;
+    pScreenPriv->visualData = NULL;
+
 
     pScreenPriv->EnableDisableFBAccess = pScrn->EnableDisableFBAccess;
     pScrn->EnableDisableFBAccess = cfb8_32EnableDisableFBAccess;
@@ -297,7 +298,7 @@ cfb8_32ScreenInit(
 
     if(cfb8_32FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, w))
     { 
-	cfb8_32SetupVisuals(pScreen);
+	cfb8_32SetupVisuals(pScreen); 
 	return TRUE;
     }
     return FALSE;
