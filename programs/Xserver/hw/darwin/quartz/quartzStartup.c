@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.6 2003/09/16 00:36:14 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.7 2003/10/16 23:50:12 torrey Exp $ */
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -126,7 +126,7 @@ Bool QuartzLoadDisplayBundle(
     bundleName = CFStringCreateWithCStringNoCopy(kCFAllocatorDefault,
                                                  dpyBundleName,
                                                  kCFStringEncodingASCII,
-                                                 NULL);
+                                                 kCFAllocatorNull);
 
     // Look for the appropriate bundle in the main bundle
     bundleURL = CFBundleCopyResourceURL(mainBundle, bundleName,
@@ -185,7 +185,7 @@ static void LoadGlxBundle(void)
         bundleName = CFStringCreateWithCStringNoCopy(kCFAllocatorDefault,
                                                      quartzOpenGLBundle,
                                                      kCFStringEncodingASCII,
-                                                     NULL);
+                                                     kCFAllocatorNull);
         ErrorF("%s (using Apple's OpenGL)\n", quartzOpenGLBundle);
     } else {
         bundleName = CFSTR("glxMesa.bundle");
