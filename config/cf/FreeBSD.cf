@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.85 1999/05/22 08:39:55 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.86 2000/01/24 23:22:30 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -395,8 +395,8 @@ install.man:: list							@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
 	for i in list; do \						@@\
-		(set -x; \						@@\
-		MNAME=`echo $$i | cut -f1 -d.`; \			@@\
+		(MNAME=`echo $$i | cut -f1 -d.`; \			@@\
+		set -x;	\						@@\
 		$(RM) $(DESTDIR)dest/$${MNAME}*; \			@@\
 		$(INSTALL) -c $(INSTMANFLAGS) $$i \			@@\
 		  $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX); \		@@\

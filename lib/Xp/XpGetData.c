@@ -34,6 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
+/* $XFree86$ */
 
 #define NEED_REPLIES
 
@@ -168,7 +169,6 @@ XpGetDocumentData (
 )
 {
     xPrintGetDocumentDataReq *req;
-    XExtensionVersion *ext;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
     _XAsyncHandler *async;
     _XpState *async_state;

@@ -34,7 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpPrinter.c,v 1.3 1996/12/29 13:43:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xp/XpPrinter.c,v 1.4 1997/05/31 13:51:17 dawes Exp $ */
 
 #define NEED_REPLIES
 
@@ -63,7 +63,6 @@ XpGetPrinterList (
 
     XPPrinterList ptr_list;
 
-    XExtensionVersion            *ext;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
     /* For converting root winID to corresponding ScreenPtr */

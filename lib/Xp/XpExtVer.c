@@ -34,6 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
+/* $XFree86$ */
 
 #define NEED_REPLIES
 
@@ -70,7 +71,6 @@ XpQueryVersion (
 {
     xPrintQueryVersionReq     *req;
     xPrintQueryVersionReply   rep;
-    XExtensionVersion         *ext;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
     /*

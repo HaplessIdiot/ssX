@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/XIE/xiemodule.c,v 1.5 1999/01/17 12:29:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/xiemodule.c,v 1.6 1999/01/26 05:53:47 dawes Exp $ */
 
 #include "xf86Module.h"
 #include "XIE.h"		
@@ -11,6 +11,7 @@ ExtensionModule XieExt =
 {
     XieInit,
     xieExtName,
+    NULL,
     NULL,
     NULL
 };
@@ -34,7 +35,7 @@ XF86ModuleData xieModuleData = { &VersRec, xieSetup, NULL };
 static pointer
 xieSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
-    LoadExtension(&XieExt);
+    LoadExtension(&XieExt, FALSE);
 
     /* Need a non-NULL return value to indicate success */
     return (pointer)1;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.42 1999/12/27 00:39:56 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.43 1999/12/27 00:50:54 robin Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -74,6 +74,32 @@ extern Bool noXkbExtension;
 typedef void (*InitExtension)(INITARGS);
 #else /* XFree86Loader */
 #include "xf86Module.h"
+#endif
+
+#include "Xlib.h"
+#ifdef MITSHM
+#include "shmstr.h"
+#endif
+#ifdef XTEST
+#include "XTest.h"
+#endif
+#ifdef XKB
+#include "XKB.h"
+#endif
+#ifdef LBX
+#include "lbxstr.h"
+#endif
+#ifdef XPRINT
+#include "Print.h"
+#endif
+#ifdef XAPPGROUP
+#include "Xagstr.h"
+#endif
+#ifdef XCSECURITY
+#include "securstr.h"
+#endif
+#ifdef PANORAMIX
+#include "panoramiXproto.h"
 #endif
 
 /* FIXME: this whole block of externs should be from the appropriate headers */
@@ -321,6 +347,7 @@ InitVisualWrap()
 }
 
 #else /* XFree86LOADER */
+#if 0
 /* FIXME:The names here must come from the headers. those with ?? are 
    not included in X11R6.3 sample implementation, so there's a problem... */
 /* XXX use the correct #ifdefs for symbols not present when an extension
@@ -372,7 +399,52 @@ ExtensionModule extension[] =
     { NULL, "Adobe-DPS-Extension", NULL, NULL },
     { NULL, NULL, NULL, NULL }
 };
+#endif
 
+/* List of built-in (statically linked) extensions */
+static ExtensionModule staticExtensions[] = {
+#ifdef BEZIER
+    { BezierExtensionInit, "BEZIER", NULL, NULL, NULL },
+#endif
+#ifdef XTESTEXT1
+    { XTestExtension1Init, "XTEST1", &noTestExtensions, NULL, NULL },
+#endif
+#ifdef MITSHM
+    { ShmExtensionInit, SHMNAME, NULL, NULL, NULL },
+#endif
+#ifdef XINPUT
+    { XInputExtensionInit, "XInputExtension", NULL, NULL, NULL },
+#endif
+#ifdef XTEST
+    { XTestExtensionInit, XTestExtensionName, &noTestExtensions, NULL, NULL },
+#endif
+#ifdef XIDLE
+    { XIdleExtensionInit, "XIDLE", NULL, NULL, NULL },
+#endif
+#ifdef XTRAP
+    { DEC_XTRAPIbit, "XTRAP", &noTestExtensions, NULL, NULL },
+#endif
+#ifdef XKB
+    { XkbExtensionInit, XkbName, &noXkbExtension, NULL, NULL },
+#endif
+#ifdef LBX
+    { LbxExtensionInit, LBXNAME, NULL, NULL, NULL },
+#endif
+#ifdef XAPPGROUP
+    { XagExtensionInit, XAGNAME, NULL, NULL, NULL },
+#endif
+#ifdef XCSECURITY
+    { SecurityExtensionInit, SECURITY_EXTENSION_NAME, NULL, NULL, NULL },
+#endif
+#ifdef XPRINT
+    { XpExtensionInit, XP_PRINTNAME, NULL, NULL, NULL },
+#endif
+#ifdef PANORAMIX
+    { PanoramiXExtensionInit, PANORAMIX_PROTOCOL_NAME, &noPanoramiXExtension, NULL, NULL },
+#endif
+    { NULL, NULL, NULL, NULL, NULL }
+};
+    
 /*ARGSUSED*/
 void
 InitExtensions(argc, argv)
@@ -380,77 +452,25 @@ InitExtensions(argc, argv)
     char	*argv[];
 {
     int i;
-#if 1 
-   /* Add static extensions */
-#ifdef BEZIER
-    extension[0].initFunc = BezierExtensionInit;
-#endif 
-#ifdef XTESTEXT1
-    extension[1].initFunc = XTestExtension1Init;
-#endif
-    /* 2 - SHAPE */
-#ifdef MITSHM
-    extension[3].initFunc = ShmExtensionInit;
-#endif
-    /* 4 - pex */
-    /* 5 - multibuf */
-#ifdef XINPUT
-    extension[6].initFunc = XInputExtensionInit;
-#endif
-#ifdef XTEST
-    extension[7].initFunc = XTestExtensionInit;
-#endif
-    /* 8 - BigReqs */
-    /* 9 - MITMisc */
-#ifdef XIDLE
-    extension[10].initFunc = XIdleExtensionInit;
-#endif
-#ifdef XTRAP
-    extension[11].initFunc = DEC_XTRAPIbit;
-#endif
-    /* 12 - ScreenSaver */
-    /* 13 - XVideo */
-    /* 14 - XIE */
-    /* 15 - XSYNC */
-#ifdef XKB
-    extension[16].initFunc = XkbExtensionInit;
-#endif
-    /* 17 - XCMISC */
-    /* 18 - XRECORD */
-#ifdef LBX
-    extension[19].initFunc = LbxExtensionInit;
-#endif
-    /* 20 - DBE */
-#ifdef XAPPGROUP
-    extension[21].initFunc = XagExtensionInit;
-#endif
-#ifdef XCSECURITY
-    extension[22].initFunc = SecurityExtensionInit;
-#endif
-#ifdef XPRINT
-    extension[23].initFunc = XpExtensionInit;
-#endif
-    /* 24 - XF86VidMode */
-    /* 25 - XF86Misc */
-    /* 26 - XF86DGA */
-    /* 27 - DPMS */
-    /* 28 - GLX */
-    /* 29 - TOG-CUP */
-    /* 30 - EVI */
-#ifdef PANORAMIX
-    extension[31].initFunc = PanoramiXExtensionInit;
-#endif
-    /* 31 - XAnti */
-    /* 32 - XF86DRI */
-    /* 33 - Adobe-DPS-Extension */
+    ExtensionModule *ext;
 
-#endif
-    for (i = 0; extension[i].name != NULL; i++) 
-	if (extension[i].initFunc != NULL && 
-	    (extension[i].disablePtr == NULL || 
-	     (extension[i].disablePtr != NULL && !*extension[i].disablePtr))) {
-	    (*extension[i].initFunc)();
+    /* Add built-in extensions to the list. */
+    for (i = 0; staticExtensions[i].name; i++)
+	LoadExtension(&staticExtensions[i], TRUE);
+
+    /*
+     * XXX Need to add code here to sort the list of extension modules
+     * based on the dependencies fields.
+     */
+
+    for (i = 0; ExtensionModuleList[i].name != NULL; i++) {
+	ext = &ExtensionModuleList[i];
+	if (ext->initFunc != NULL && 
+	    (ext->disablePtr == NULL || 
+	     (ext->disablePtr != NULL && !*ext->disablePtr))) {
+	    (ext->initFunc)();
 	}
+    }
 }
 
 static void (*__miHookInitVisualsFunction)(miInitVisualsProcPtr *);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dbe/dbemodule.c,v 1.5 1999/01/17 12:29:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbemodule.c,v 1.6 1999/01/26 05:53:50 dawes Exp $ */
 
 #include "xf86Module.h"
 
@@ -9,6 +9,7 @@ extern void DbeExtensionInit(INITARGS);
 ExtensionModule dbeExt = {
     DbeExtensionInit,
     "DOUBLE-BUFFER",
+    NULL,
     NULL,
     NULL
 };
@@ -35,7 +36,7 @@ XF86ModuleData dbeModuleData = { &VersRec, dbeSetup, NULL };
 static pointer
 dbeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
-    LoadExtension(&dbeExt);
+    LoadExtension(&dbeExt, FALSE);
 
     /* Need a non-NULL return value to indicate success */
     return (pointer)1;

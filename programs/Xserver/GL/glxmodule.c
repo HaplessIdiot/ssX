@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/GL/glxmodule.c,v 1.4 1999/04/11 15:28:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glxmodule.c,v 1.5 1999/06/14 07:31:19 dawes Exp $ */
 
 /*
  * Authors:
@@ -48,6 +48,7 @@ ExtensionModule GLXExt =
 {
     GlxExtensionInit,
     "GLX",
+    NULL,
     NULL,
     NULL
 };
@@ -79,7 +80,7 @@ glxSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     char GLcoreName[] = "libGLcore";
 #endif
 
-    LoadExtension(&GLXExt);
+    LoadExtension(&GLXExt, FALSE);
 
     /* Wrap the init visuals routine in micmap.c */
     GlxWrapInitVisuals(&miInitVisualsProc);
