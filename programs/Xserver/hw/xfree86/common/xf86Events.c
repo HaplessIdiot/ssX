@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.119 2001/08/29 11:55:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.121 2001/10/01 13:44:01 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1120,10 +1120,6 @@ xf86VTSwitch()
 	if (xf86Screens[i]->EnableDisableFBAccess)
 	  (*xf86Screens[i]->EnableDisableFBAccess) (i, FALSE);
     }
-    xf86EnterServerState(SETUP);
-    for (i = 0; i < xf86NumScreens; i++) {
-      xf86Screens[i]->LeaveVT(i, 0);
-    }
 #if !defined(__EMX__)
 
     /* 
@@ -1136,11 +1132,11 @@ xf86VTSwitch()
       DisableDevice(pInfo->dev);
       pInfo = pInfo->next;
     }
+#endif /* !__EMX__ */
     xf86EnterServerState(SETUP);
     for (i = 0; i < xf86NumScreens; i++) {
       xf86Screens[i]->LeaveVT(i, 0);
     }
-#endif /* !__EMX__ */
     for (ih = InputHandlers; ih; ih = ih->next)
       xf86DisableInputHandler(ih);
     xf86AccessLeave();      /* We need this here, otherwise */
