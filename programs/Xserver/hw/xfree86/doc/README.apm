@@ -62,7 +62,7 @@ grammable clock that can take (almost) any modeline you throw at it. It might
 fail at some specific clock values but you should just try a slightly differ-
 ent clock and it should work.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/apm.sgml,v 1.1.2.1 1998/02/24 13:54:23 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/apm.sgml,v 1.2 1999/08/23 06:18:33 dawes Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.apm,v 1.1.2.6 1999/06/25 08:56:47 hohndel Exp $
+$XFree86$

@@ -96,7 +96,7 @@ revert back to software cursor.
 
    o Acceleration for V2100 and V2200 chipset. Not ready for general use.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.1.2.9 1999/08/02 08:38:18 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.2 1999/08/23 06:18:35 dawes Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.rendition,v 1.1.2.8 1999/08/02 09:52:45 hohndel Exp $
+$XFree86$

@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                                 14 Oct 1996
+                                 27 Feb 1998
 
                                   Abstract
 
@@ -38,7 +38,7 @@ and the following versions of SVR4.2:
 
    o Consensys
 
-   o Novell UnixWare 1.x and 2.0
+   o Novell/SCO UnixWare 1.x and 2.0
 
 Basically, we believe that XFree86 binaries will run unmodified on any ISA,
 EISA, or MCA platform version version of SVR4.0 (Solaris 2.x is an excep-
@@ -180,6 +180,16 @@ restarting, or switching VTs.
       ing a kernel unless you add an appropriate entry to
       /etc/conf/node.d/gmse.)
 
+      NOTE: Many of the accelerated server/drivers have problems when using a
+      HW cursor and Xqueue together.  If you have a serial mouse, you can
+      work around this by not using Xqueue.  Otherwise the only workaround is
+      to disable the HW cursor.  This is done by adding the line:
+
+              Option "sw_cursor"
+
+      to the Device section of your XF86Config file.  The S3 server is the
+      only one known to not have this problem.
+
       If you have problems with both Xqueue and your standard asy driver with
       SVR4, then you should install SAS.  When using SAS, set up XF86Config
       as you would for the standard driver.
@@ -243,24 +253,7 @@ restarting, or switching VTs.
       set and exported in your .xinitrc file (when using xinit or startx) or
       your /usr/X11R6/lib/xdm/Xsession script (when using xdm).
 
-6.  Notes for running XFree86 on SVR4.2
-
-In addition to the notes for SVR4.0, you need to be aware of a few problems
-with SVR4.2.  Basically, the base SVR4.2 code has broken Unix-domain sockets
-in such a way that making local connections via UNIXCONN does not work prop-
-erly (this bug is known to exist on Consensys SVR4.2 and Novell UnixWare).
-The manifestation of this bug is that windows remain on the screen after the
-client program exits, until you move the mouse into the window, or otherwise
-cause the server to try to write to the client.
-
-If you run XFree86 and see the manifestation of the Unix-domain socket bug
-described above, you can work around this problem quickly and effectively by
-changing the default local connection mode to NAMED rather than UNIX.  The
-mechanisms for doing this are described above.  This is not a problem for
-clients using the X11R6 X libraries because UNIX is no longer considered a
-local connection type.
-
-7.  Building non-core clients with SVR4
+6.  Building non-core clients with SVR4
 
   1.  A lot of clients (even some which have explicit SVR4 support) require
       -DSYSV when building under SVR4.  This will not be set when using the
@@ -274,7 +267,7 @@ local connection type.
       The best solution is to modify the code so it compiles correctly with-
       out -DSYSV.
 
-8.  Using DOS/Merge 2.2 with XFree86
+7.  Using DOS/Merge 2.2 with XFree86
 
 It is possible to use the Locus DOS/Merge 2.2 X clients with XFree86.  You
 need to do a couple of things for this to work, though.  One change is a
@@ -340,7 +333,7 @@ you need to do:
                 fi
                 /usr/bin/dos.real "$@"
 
-9.  Keyboard mapping problems with some Esix systems
+8.  Keyboard mapping problems with some Esix systems
 
 One of the console driver patches for Esix 4.0.3A causes the XFree86 server's
 default keymap to be corrupted.  If you are being affected by this problem it
@@ -355,7 +348,7 @@ by adding the line:
 
 to your .xinitrc file (or your Xsetup file if using xdm).
 
-10.  106 Japanese keyboard problem on PANIX
+9.  106 Japanese keyboard problem on PANIX
 
 PANIX for PC-AT uses Japanese keycodes standardized by DICOP(Desktop UNIX for
 Intel Cooperative Promotion Group) in Japan.  Therefore keycode confliction
@@ -370,7 +363,7 @@ word "panix106" in XF86Config like this:
          panix106
        EndSection
 
-11.  A kernel patch that is required for accelerated servers
+10.  A kernel patch that is required for accelerated servers
 
 SVR4.0 has a bug handling programs that access extended I/O registers (above
 0x3FF).  Boards like S3 and 8514/A use these extended I/O registers.  XFree86
@@ -378,7 +371,7 @@ supports boards that tickle this bug.  In preparation for using these
 servers, we have produced a kernel patch that works around the problem, and
 provided scripts for you that will both install and back out the patch.  You
 must install this if you intend to use the S3, 8514, Mach8, Mach32, P9000,
-AGX servers.
+AGX or W32 servers.
 
 Dell 2.2 is known to not need the patch, because Thomas Roell found and fixed
 the bug while he was working for Dell.  Microport has fixed this in their 4.0
@@ -398,7 +391,16 @@ directory /etc/conf/pack.d/kernel/.xfree86
 Thanks to John M. Sully of Microport for helping us find a simple workaround
 for this problem, and giving us permission to release the information.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.15 1999/04/15 03:35:19 dawes Exp $
+11.  Other problems
+
+Some accelerated drivers may cause the machine to lockup when starting up the
+server on some versions of SVR4.0.  The problem seems to be related to the
+kernel checking for the presence of physical memory when mmaping /dev/pmem.
+This can cause problems when mapping memory mapped registers.  This was known
+to be a problem with the MGA driver in the SVGA server.  Some other drivers
+may be affected too.  The problem with the MGA driver is now fixed.
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.16 1999/08/23 06:38:52 dawes Exp $
 
      $XConsortium: SVR4.sgml /main/8 1996/10/27 11:06:06 kaleb $
 

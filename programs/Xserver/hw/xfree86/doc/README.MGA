@@ -1,124 +1,172 @@
-              Information for Matrox Millennium/Mystique Users
+                        Information for Matrox Users
 
                           The XFree86 Project Inc.
 
-                                 16 May 1997
+                              30 December 1998
 
 1.  Supported hardware
 
-The current MGA driver in the SVGA server supports the Matrox Millennium
-(MGA2064W) with Ti3026 RAMDAC. It has been tested with 175, 220MHz, and
-250MHz cards with 2MB, 4MB and 8MB WRAM.  It also supports, for the first
-time, Matrox Mystique (MGA1064SG) board tested up to 135 MHz for 2 and 4 MB
-configs.
+The current MGA driver in the SVGA server supports
 
-NOTE: This driver is pretty new, and not everything works like you expect it
-to. It shouldn't crash your machine, but you may have video artifacts or
-missing lines. Please report any and all problems to XFree86@Xfree86.org
-using the appropriate bug report sheet.
+   o Matrox Millennium (MGA2064W with Texas Instruments TVP3026 RAMDAC). It
+     has been tested with 175, 220MHz, and 250MHz cards with 2MB, 4MB and 8MB
+     WRAM.
+
+   o Millennium II both PCI and AGP (MGA2164W with Texas Instruments TVP3026
+     RAMDAC). It has been tested with 4 MB, 8 MB and 16 MB WRAM.
+
+   o Matrox Mystique (Both MGA1064SG and MGA1164SG with integrated RAMDACs)
+     170 MHz and 220 MHz (Mystique 220) versions should work.
+
+   o Millennium G200 with SGRAM and SDRAM (Millennium G200-SD), with 8MB RAM.
+
+   o Mystique G200 (but no TVout support)
+
+   o Productiva G100 with SGRAM and SDRAM.  4MB and 8MB versions have been
+     tested.
+
+   o Matrox G400 (only the first head and no TVout support).
+
+1.1  What's not supported
+
+   o  Chipsets other than those listed above.  We are still interested in
+     providing support for the other Matrox chipsets including the Impres-
+     sion, Atlas, Genesis etc... but at this time have not been able to
+     obtain documentation for them.
+
+   o  MGA2064W and MGA2164W based cards with ramdacs other than the TVP3026
+     RAMDAC (like the Matrox Corona) are not supported.
 
 2.  Features:
 
-   o Basic support for the Matrox Millennium video adapter
+   o uses linear frame buffer
 
-        o uses linear frame buffer
+   o Resolutions up to the maximum supported by the card should be possible.
 
-        o it should be possible to reach resolutions up to 1920x1024
+   o 8 bpp, 16 bpp (depth 15 and 16), 24 bpp (depth 24, packed) and 32 bpp
+     (depth 24, sparse) are all supported.
 
-        o it should be possible to use pixel depths of 8, 16, 24, and 32 bits
-          per pixel (256 pseudo colour, "high colour", "packed true colour",
-          "true colour").
+   o supports VESA Display Power Management Signaling (DPMS)
 
-        o supports VESA Display Power Management Signaling (DPMS)
+   o supports RGB Sync-on-Green
 
-        o supports RGB Sync-on-Green
+   o supports the XF86_DGA extension
 
-        o supports DGA
+   o Makes extensive use of the graphics accelerator.  This server is very
+     well accelerated, and is one of the fastest XFree86 X servers.
 
-        o has the following accelerations:
+3.  Configuration:
 
-             o lines
+The MGA driver should auto-detect all supported hardware so you needn't have
+anything other than the Identifier in the Section "Device" of the XF86Config
+file.  When running the XF86Setup or xf86config programs one merely needs to
+select a Matrox card so that the correct server will be used.  One need not
+and should not specify a RAMDAC, clockchip or allow the setup program to
+probe for clocks. The driver will auto-detect the amount of video ram pre-
+sent, however, due to some hardware problems this is not detected for the
+MGA2164W (Millennium II) or G100/G200.  In this case users should specify the
+amount of video ram in the Section "Device" of the XF86Config file. eg:
 
-             o most bitblts
+             VideoRam 4096
+                 or
+             VideoRam 8192
+                 or
+             VideoRam 16384
 
-             o filled rectangles
+as appropriate so that the server doesn't have to probe for it.
 
-             o cached pixmaps
+The following Section "Device" options are supported by the MGA driver:
 
-             o many more...
+   o Option "sw_cursor"
 
-          The Millenium server is fairly well accelerated, and is one of the
-          fastest XFree86 3.3 Xservers. Future work will concentrate on fix-
-          ing remaining bugs.
+     Will disable the hardware cursor on the Millennium and Millennium II.
 
-   o Basic support for the Matrox Mystique video adapter
+   o Option "no_accel"
 
-        o uses linear frame buffer
+     Will disable all hardware acceleration (oh my!).
 
-        o it should be possible to reach resolutions up to 1280x1024
+   o Option "no_pixmap_cache"
 
-        o it should be possible to use pixel depths of 8, 16, 24, and 32 bits
-          per pixel (256 pseudo colour, "high colour", "packed true colour",
-          "true colour").
+     Will disable caching of pixmaps in offscreen video memory.
 
-        o supports VESA Display Power Management Signaling (DPMS)
+   o Option "sync_on_green"
 
-        o has the following accelerations (may be with some bugs):
+     Will enable syncing on green for sync-on-green monitors (these are typi-
+     cally fixed frequency workstation monitors).
 
-             o lines
+   o Option "pci_retry"
 
-             o most bitblts
+     This will allow the MGA hardware to generate a pci_disconnect based on
+     accelerator FIFO status. This can yield large performance boosts for
+     some graphics operations but has a tendency to hog the PCI bus so it is
+     turned off by default.
 
-             o filled rectangles
+   o Option "mga_sdram"
 
-             o cached pixmaps
+     This will force the server to disable sgram features such as block mode
+     fills and hardware planemasks.
 
-             o NOTE: If acceleration do not work properly, you had rather to
-               insert: Option "noaccel" line in the Device section of
-               XF86Config file. It will be slower but will work better.
+4.  Known solutions for some problems:
 
-3.  Future Features (in order from highest to lowest priority)
+   o Temporary loss of monitor sync when the cursor shape changes on Millen-
+     nium and Millennium II.  The hardware cursor has been enabled by default
+     in 3.3.3.1. This seems to cause some problems on a minority of systems.
+     If you experience problems with this on your system, please put:
 
-   o more hardware acceleration (hw cursor, more primitive operations, etc)
+               Option "sw_cursor"
 
-   o more chipsets and RAMDACs
+     in the Section "Device" of the XF86Config file to disable the hardware
+     cursor.
 
-   o 3D acceleration using Mesa
+   o Garbage in the cursor instead of the normal cursor image.  A bug in the
+     driver will cause this when less than 1K of video memory is left unused
+     and the hardware cursor is enabled for some cards.  If you experience
+     this problem, please put:
 
-   o other depths and full acceleration for Mystique board
+               Option "sw_cursor"
 
-4.  Technical Note:
+     in the Section "Device" of the XF86Config file to disable the hardware
+     cursor. This should be fixed in XFree86 3.3.3.1 as in cases like this
+     the software cursor should be used automatically.
 
-This driver only supports:
+   o the driver doesn't support some values of HTotal parameter in Modelines
+     in the XF86Config file. If you get flickering vertical stripes on the
+     screen, try to change this parameter +/- 8.
 
-   o the MGA Storm (MGA2064W) chipset with the TI (TVP) 3026 RAMDAC. Matrox
-     have only so far made 175, 220 and 250 MHz boards with these two compo-
-     nents, although a 135 MHz RAMDAC part exists.
+   o On some Millennium II cards the driver shows severe distortions with
+     24bpp in modes above about 1024x768. We hope to have automated the
+     detection and fix of this problem. If it still occurs, putting
 
-   o the MGA Storm (MGA1064SG) chipset with integrated 170 MHz RAMDAC
+               Option "mga_24bpp_fix"
 
-   o We will eventually provide support for the other Matrox chipsets (once
-     the Millennium driver is at a far enough stage and more people with
-     other cards join the effort), including the Impression, Atlas, Genesis
-     etc.
+     in the Device Section may fix the problem.
 
-     At the moment, however, only the Millennium and Mystique are supported.
+   o On some MGA cards the amount of memory is mis-detected, on others prob-
+     ing for the amount of memory can cause a lockup in the system so memory
+     probing is not done on those hardware (Millennium II, G100/G200).  If
+     the default of 4MB RAM (Millennium II) or 8MB RAM (G100/G200) is not
+     correct, specify the amount of video ram in the Section "Device" of the
+     XF86Config file as described in section 3 above.
 
-5.  Configuration:
+   o If you Millennium II card that worked fine with XFree86-3.3.2.3 and ear-
+     lier now shows pixel errors and strange effects when returning to the
+     text console, make sure that the amount of memory that the server
+     reports is correct.  See item above for details.
 
-The server auto-detects WRAM size and RAMDAC speed. Do not bother putting
-these in your "Device" section, as they will be overridden. The TVP3026 and
-MGA1064SG have a programmable clock generator, so probing and setting clocks
-is unnecessary as well.
+   o With virtual screens that use 8MB of memory or more (e.g., 2048x2048 at
+     16bpp) there can be cursor distortions when panning the screen verti-
+     cally. If that occurs, please put
 
-The "nolinear" option is currently unsupported - do not use this
+               Option "sw_cursor"
 
-The options "noaccel" or "no_bitblt" turn off BitBlt Engine and other accel-
-erated functions.
+     in the Section "Device" of the XF86Config file to disable the hardware
+     cursor.
 
-6.  Authors
+5.  Authors
 
 Radoslaw Kapitan, kapitan@student.uci.agh.edu.pl
+
+Mark Vojkovich, mvojkovi@sdcc10.ucsd.edu
 
 and:
 
@@ -136,17 +184,15 @@ and:
 
    o Leonard N. Zubkoff, lnz@dandelion.com
 
-   o Mark Vojkovich, mvojkovi@sdcc10.ucsd.edu
-
    o Harm Hanemaayer, H.Hanemaayer@inter.nl.net
 
    o Guy Desbief, g.desbief@aix.pacwan.net
 
-Visit the Matrox Millennium XServer for XFree86 Home Page
-<URL:http://www.bf.rmit.edu.au/~ajv/xf86-matrox.html> to keep up to date with
-the latest news, new sources, etc.
+   o Takaaki Nomura, tnomura@sfc.keio.ac.jp
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.7 1997/06/03 14:11:52 hohndel Exp $
+   o Doug Merritt, doug@netcom.com
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.8 1999/08/23 06:38:47 dawes Exp $
 
 
 $XFree86$

@@ -1,9 +1,9 @@
                      Information for Cirrus Chipset Users
 
   Harm Hanemaayer (H.Hanemaayer@inter.nl.net), Randy Hendry (randy@sgi.com)
-               (64xx), Corin Anderson (corina@bdc.cirrus.com)
+                 (64xx), Corin Anderson (corina@the4cs.com)
 
-                                 24 May 1997
+                               5 November 1998
 
 1.  Supported chipsets
 
@@ -197,12 +197,12 @@ Memory-mapped I/O is the default mode of operation for any Alpine family
 chip. For the 5429, the "mmio" option may be used to enable it, but it has
 not been tested.
 
-Finally, if you have 546X chip, it will be on the PCI bus.  As such, there is
-no problem about memory mapped I/O or linear frame buffer address spaces run-
-ning into system memory.  The PCI spaces are mapped way up near the 4GB
-point.  Because the mmio and linear frame buffer don't conflict at all on the
-system, the "linear", Membase, and "mmio" options are ignored (memory mapped
-I/O  and linear addressing are always used).
+Finally, if you have 546X chip, it will be on either a PCI or AGP bus.  As
+such, there is no problem about memory mapped I/O or linear frame buffer
+address spaces running into system memory.  The PCI spaces are mapped way up
+near the 4GB point.  Because the mmio and linear frame buffer don't conflict
+at all on the system, the "linear", Membase, and "mmio" options are ignored
+(memory mapped I/O  and linear addressing are always used).
 
 3.  XF86Config options
 
@@ -223,8 +223,9 @@ section).
             the cost of performance (which will still be reasonable on a
             local bus).
 
-      Option "fast_dram" "med_dram" "slow_dram" (5424/6/8/9, 543x, 5446)
-            These options set the internal memory clock (MCLK) register to
+      Option "fast_dram" "med_dram"
+            "slow_dram" (5424/6/8/9, 543x, 5446, 546x)" These options set the
+            internal memory clock (MCLK, or BCLK for the 546x) register to
             another value. The default value programmed by the BIOS is usu-
             ally OK, don't mess with these options unless absolutely
             required.
@@ -282,8 +283,14 @@ section).
             The driver takes the MCLK into account for clock limits that are
             determined by DRAM bandwidth.
 
-            If you are not having any problems (performance or stability at
-            high dot clocks), it is best not to use any of the DRAM options.
+            For the 546x chips, the BCLK is the Rambus access clock.  Typical
+            values live in the range of 258 MHz to 300 MHz.  If you have
+            troubles, such as a black checkerboard pattern on the screen, try
+            using the "med_dram" or "slow_dram" options.
+
+            In all cases, if you are not having any problems (performance or
+            stability at high dot clocks), it is best not to use any of the
+            DRAM options.
 
       Option "no_bitblt"
             This option, when used with a 5426/28/29/3x/46/6x/754x, will have
@@ -293,7 +300,7 @@ section).
             engine.  Performance is significantly decreased.
 
       Option "no_imageblt"
-            This option is now obsolete. The "xaa_no_col_exp" option has a
+            This option is now obsolete. The "xaa_no_color_exp" option has a
             somewhat similar effect.
 
       chipset "clgd54xx"
@@ -321,7 +328,10 @@ section).
             This option will set the CRT FIFO threshold to an aggressive
             value; it will be the same as that used for lower dot clocks.
             Theoretically it improves performance at high dot clocks, but it
-            does not help in the vast majority of cases.
+            does not help in the vast majority of cases.  In some cases with
+            546x chips, however, this option can help reduce horizontal
+            streaks or otherwise fix abnormal display problems (display
+            shifted to the left, etc.).
 
       Option "no_2mb_banksel" (542x)
             This option will cause the driver not to set the `DRAM bank
@@ -374,7 +384,7 @@ section).
             This disables the use of memory-mapped I/O to talk to the BitBLT
             engine on any chip for which it is the default mode of operation.
 
-      Option "sw_cursor" (542x/3x/46)
+      Option "sw_cursor" (542x/3x/46/6x)
             This disables use of the hardware cursor provided by the chip.
             Try this if the cursor seems to have problems. In particular, use
             this when using dot clocks greater than 85 MHz on the 5434/6
@@ -390,7 +400,7 @@ section).
             use of a pixmap cache in XAA. It could help with certain drawing
             bugs.
 
-      Option "xaa_no_col_exp"
+      Option "xaa_no_color_exp"
             When XAA is used, this option disables the use of hardware color
             expansion features by XAA. Again, this might help with certain
             drawing bugs.
@@ -398,6 +408,15 @@ section).
       Option "no_stretch" (754x)
             Disable automatic stretching (horizontal and vertical expansion)
             of 640x480 on a 800x600 LCD.
+
+      Option "pci_retry" (546x)
+            Enables a performance feature for PCI based cards.  When this
+            feature is enabled, the driver code will attempt to transmit data
+            on the PCI bus as fast as possible.  For the most part, this
+            option is safe, but may cause trouble with other PCI devices such
+            as PCI network cards, sound cards, SCSI controllers, etc.  When
+            this option is not selected, a safer approach (polling the VGA's
+            command queue) is taken.
 
 4.  Mode issues
 
@@ -408,10 +427,10 @@ memory, and the hardware cursor also uses 1K (2K on the '6X). Consequently, a
 On older chips, the use of a higher dot clock frequencies has a negative
 effect on the performance of graphics operations, especially BitBlt, when
 little video memory bandwidth is left for drawing (the amount is displayed
-during start-up for 542x/3x/46 chips).  For the 542x/3x chips, with default
-MCLK setting (0x1c) and a 32-bit memory interface, performance with a 65 MHz
-dot clock can be half of that with a dot clock of 25 MHz.  So if you are
-short on memory bandwidth and experience blitting slowness, try using the
+during start-up for 542x/3x/46/6x chips).  For the 542x/3x chips, with
+default MCLK setting (0x1c) and a 32-bit memory interface, performance with a
+65 MHz dot clock can be half of that with a dot clock of 25 MHz.  So if you
+are short on memory bandwidth and experience blitting slowness, try using the
 lowest dot clock that is acceptable; for example, on a 14" or 15" screen
 800x600 with high refresh (50 MHz dot clock) is not so bad, with a large vir-
 tual screen.
@@ -424,14 +443,11 @@ for the 544x.
 5.  Linear addressing and 16bpp/24bpp/32bpp modes
 
 Currently the framebuffer code 16-bit, 24-bit, and 32-bit pixels  in the SVGA
-server requires linear addressing. (This restriction may be removed in a
-future version, but with nearly all new cards using the PCI bus (where linear
-addressing poses no problem), removing the linear addressing requirement
-presently has a lower priority than other features.)  Option "linear" can be
-specified in a depth-specific screen section to enable linear addressing; a
-MemBase setting (in the device section) is probably also required (although
-they are both automatically selected with PCI cards, like 5446, 546x, and
-some 543x based cards). There are a number of different card configurations.
+server requires linear addressing.  Option "linear" can be specified in a
+depth-specific screen section to enable linear addressing; a MemBase setting
+(in the device section) is probably also required (although they are both
+automatically selected with PCI cards, like 5446, 546x, and some 543x based
+cards). There are a number of different card configurations.
 
 If you have a 542x/543x on the ISA bus, and you have 16Mb or more of system
 memory, linear addressing is impossible. 16bpp is out, sorry.  If you have
@@ -500,7 +516,7 @@ will use the memory addresses up near 4GB.  Yay for PCI!
 
 The 16bpp and 32bpp modes are now fully accelerated, thanks to XAA. On more
 recent chips like the 5436/46 and the 546X, 24bpp is also fully accelerated.
-So although there are now 4 up to times as many bits to display, the X server
+So although there are now up to 4 times as many bits to display, the X server
 shouldn't feel overly sluggish.  Note also that the 24bpp and 32bpp modes are
 only supported on a limited set of cards, and with at least 2Mb of memory.
 
@@ -619,7 +635,8 @@ the horizontal timing parameters).
             try the "fifo_conservative" option. Failing that, you can try the
             "fast_dram" option, or use a lower dot clock.  If that is not
             sufficient, the "noaccel" option or "no_bitblt" will probably
-            help.
+            help.  When using a 546x, option "fifo_aggressive" can also be
+            tried.
 
       `Wavy' screen.
             Horizontal waving or jittering of the whole screen, continuously
@@ -689,13 +706,36 @@ the horizontal timing parameters).
             PCI 5428-based cards (which are very rare, since the 5428 chip
             doesn't support PCI).
 
+      No mouse cursor, or cursor appears twice on screen
+            With high dot clocks, the graphics card's hardware cursor doesn't
+            operate correctly.  Try option "sw_cursor" or use a lower screen
+            refresh.
+
+      Random/garbage pixels on far right or bottom of screen (546x)
+            This problem is usually associated with using a virtual screen
+            size larger than the screen display size.  The garbage pixels are
+            unused portions of the frame buffer that result from padding each
+            scanline to an integral number of memory tiles.  To eliminate the
+            extra pixels, use a screen display mode whose pixel width is
+            evenly divisible by 128 / bits per pixel.
+
+      Screen is wrapped horizontally on right side (546x)
+            Same as above entry.
+
+      The screen is initially displayed correctly, but then turns all
+            white. (546x)" This problem usually happens at high bit depths
+            and while the screen is changing rapidly (catting a long file or
+            dragging a large window around).  The RamBus memory is being
+            overdriven.  Use Option "med_dram", or, if the problem persists,
+            Option "slow_dram".
+
 For other screen drawing related problems, try the "noaccel" option (if
 "no_bitblt" doesn't help).
 
 If are having driver-related problems that are not addressed by this docu-
 ment, or if you have found bugs in accelerated functions, you can try con-
-tacting the XFree86 team (the current driver maintainer can be reached at
-H.Hanemaayer@inter.nl.net), or post in the Usenet newsgroup "comp.win-
+tacting the XFree86 team (the current driver maintainer, Corin Anderson, can
+be reached at corina@the4cs.com), or post in the Usenet newsgroup "comp.win-
 dows.x.i386unix".
 
 In fact, reports (success or failure) are very welcome, especially on config-
@@ -705,7 +745,19 @@ releases at www.xfree86.org.
 
 8.  Tested Configurations
 
-For version 3.2B, the following configurations have received a certain amount
+Version 3.3.3 has had the following configurations tested:
+
+      CL-GD5446 with 2MB memory on PCI bus
+
+      CL-GD5464 with 2MB memory on PCI bus
+
+      CL-GD5465 with 4MB memory on PCI bus
+
+      CL-GD5480 with 4MB memory on PCI bus
+
+      CL-GD5465 with 4MB memory on AGP bus
+
+For version 3.3, the following configurations have received a certain amount
 of testing:
 
       CL-GD5446 with 2MB memory on PCI bus
@@ -789,6 +841,20 @@ Some configurations for which no up-to-date testing data is available:
 
 9.  Driver Changes
 
+Changes since XFree86 3.3.2:
+
+   o Fix transparent screen-to-screen copies on 546x.
+
+   o The built-in screen saver now correctly blanks the screen on 546x chips.
+
+   o Driver prevents the use of the HW cursor on the 546x when the screen
+     height is greater than 1023 scanlines (fix to double pointer problem).
+
+   o CPU-to-screen BitBLT transfers disabled on the 5465.  This fix should
+     prevent 5465 AGP lockups.
+
+   o Fixed mode display problem with 5480 at high resolutions.
+
 Changes since XFree86 3.2A:
 
    o A bug that caused a server crash with memory-mapped I/O operation on
@@ -816,7 +882,7 @@ Changes since XFree86 3.2:
    o Improved support for 754x, including support for LCD stretching/center-
      ing.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.24 1997/06/03 14:11:55 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.25 1999/08/23 06:38:53 dawes Exp $
 
      $XConsortium: cirrus.sgml /main/12 1996/10/28 05:43:32 kaleb $
 

@@ -2,7 +2,7 @@
 
                           Rich Murphey, David Dawes
 
-                               25 January 1997
+                               8 November 1998
 
 1.  What and Where is XFree86?
 
@@ -11,251 +11,22 @@ Unix.  It is derived from X386 1.2, which was the X server distributed with
 X11R5.  This release consists of many new features and performance improve-
 ments as well as many bug fixes.
 
-For further details about this beta release, please refer to the Release
-Notes.
+For further details about this release, including installation instructions,
+please refer to the Release Notes.
 
 See the Copyright Notice.
 
-Binaries for XFree86 on FreeBSD 2.1.6, 2.2 and 3.0-current are available
-from:
+Binaries for XFree86 on FreeBSD 2.2.x and 3.0 are available from:
 
-ftp://ftp.XFree86.org/pub/XFree86/beta/
+ftp://ftp.XFree86.org/pub/XFree86/current/binaries/
 
 Send email to Rich-Murphey@Rice.edu or XFree86@XFree86.org if you have com-
 ments or suggestions about this file and we'll revise it.
 
-2.  Installing the Binaries
+2.  FreeBSD 3.0 and ELF
 
-If you want to save space, first select which archives you want to unpack.
-If you can't decide what to pick and you have 52Mb of disk space, it's safe
-to unpack everything.
-
-At a minimum you need to unpack the 'required' X32A*.tgz archives plus at
-least one server that matches your vga card.  You'll need 13Mb for the mini-
-mum required run-time binaries only.
-
-      Required:
-
-                  X32Abin.tgz
-                        all the executable X client applications and shared
-                        libs
-
-                  X32Afnts.tgz
-                        the misc, 75 dpi and PEX fonts
-
-                  X32Alib.tgz
-                        data files needed at runtime
-
-      Required unless you have already customized your configuration files:
-
-                  X32Acfg.tgz
-                        customizable xinit and xdm runtime configuration
-                        files
-
-      Choose at least one server:
-
-                  X32A8514.tgz
-                        8-bit color for IBM 8514 and true compatibles.
-
-                  X32AAGX.tgz
-                        8 and 16-bit color for AGX and XGA boards.
-
-                  X32AI128.tgz
-                        8 and 16-bit color for I128 boards.
-
-                  X32AMa32.tgz
-                        8 and 16-bit color for ATI Mach32 boards.
-
-                  X32AMa64.tgz
-                        8, 16 and 32-bit color for ATI Mach64 boards.
-
-                  X32AMa8.tgz
-                        8-bit color for ATI Mach8 boards.
-
-                  X32AMono.tgz
-                        1-bit monochrome for VGA, Super-VGA, Hercules, and
-                        others.
-
-                  X32AP9K.tgz
-                        8, 16, and 32-bit color for Weitek P9000 boards (Dia-
-                        mond Viper).
-
-                  X32AS3.tgz
-                        8, 16 and 32-bit color for S3 boards.
-
-                  X32AS3V.tgz
-                        8 and 16-bit color for S3 ViRGE boards.
-
-                  X32ASVGA.tgz
-                        >=8-bit color for Super-VGA cards.
-
-                  X32AVG16.tgz
-                        4-bit color for VGA and Super-VGA cards
-
-                  X32A9GAN.tgz
-                        8-bit color for PC98 GA-98NB/WAP boards
-
-                  X32A9480.tgz
-                        8-bit color for PC98 PEGC
-
-                  X32A9NKV.tgz
-                        8-bit color for PC98 NEC-CIRRUS/EPSON NKV/NKV2 boards
-
-                  X32A9WBS.tgz
-                        8-bit color for PC98 WAB-S boards
-
-                  X32A9WEP.tgz
-                        8-bit color for PC98 WAB-EP boards
-
-                  X32A9WSN.tgz
-                        8-bit color for PC98 WSN-A2F boards
-
-                  X32A9EGC.tgz
-                        4-bit color for PC98 EGC
-
-                  X32A9TGU.tgz
-                        8 and 16-bit color for PC98 Trident Cyber9320/9680
-                        boards
-
-                  X32A9NS3.tgz
-                        8 and 16-bit color for PC98 NEC S3 boards
-
-                  X32A9SPW.tgz
-                        8 and 16-bit color for PC98 S3 PW/PCSKB boards
-
-                  X32A9LPW.tgz
-                        8 and 16-bit color for PC98 S3 PW/LB boards
-
-                  X32A9GA9.tgz
-                        8 and 16-bit color for PC98 S3 GA-968 boards
-
-                  X32Anest.tgz
-                        A nested server running as a client window on another
-                        display.
-
-      Optional:
-
-                  X32doc.tgz
-                        READMEs
-
-                  X32ps.tgz
-                        READMEs in PostScript
-
-                  X32html.tgz
-                        READMEs in HTML
-
-                  X32man.tgz
-                        man pages
-
-                  X32f100.tgz
-                        100dpi fonts
-
-                  X32fscl.tgz
-                        Speedo and Type1 fonts
-
-                  X32fnon.tgz
-                        Japanese, Chinese and other non-english fonts
-
-                  X32fcyr.tgz
-                        Cyrillic fonts
-
-                  X32fsrv.tgz
-                        the font server and its man page
-
-                  X32prog.tgz
-                        config, lib*.a and *.h files needed only for compil-
-                        ing
-
-2.1  Full Install:
-
-  1.   You must be logged in as root to unpack the archives because several
-      executables are set-user-id.  Otherwise the server may abort if you
-      unpack it as an ordinary user.  You must also use a ``umask'' value of
-      022 because the X server requires special permissions.
-
-            % su
-            # umask 022
-
-  2.  If you have 52Mb free in the /usr partition ``cd /usr'' and skip to no.
-      4.  Otherwise, create a directory on another partition and sym link it
-      into /usr:
-
-            # cd /usr/local
-            # mkdir X11R6
-            # ln -s /usr/local/X11R6 /usr/X11R6
-
-  3.  Run the preinst.sh script
-
-            # cd /usr/X11R6
-            # sh preinst.sh
-
-  4.  Unpack everything:
-
-      If you are using sh (as root usually does):
-
-            # for i in X32A*.tgz; do
-            #   tar -x -z --unlink -f $i
-            # done
-
-      Else, if you are using csh:
-
-            % foreach i (X32A*.tgz)
-            %   tar -x -z --unlink -f $i
-            % end
-
-  5.  Create a symbolic link ``X'' that points to the server that matches
-      your video card.  The XF86_* man pages list which vga chip sets are
-      supported by each server.  For example, if you have an ET4000 based
-      card you will use the XF86_SVGA server:
-
-            # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
-
-2.2  Minimal Install:
-
-First do numbers 1, 2 and 4 above. Then unpack the required archives:
-
-      # for i in bin fnts lib xicf; do
-      #   tar -x -z --unlink -f  X32A$i.tgz
-      # done
-
-Then unpack a server archive corresponding to your vga card.  The server man
-pages, X11R6/man/man1/XF86_*, list the vga chip sets supported by each
-server.  For example, if you have an ET4000 based card you will use the
-XF86_SVGA server:
-
-      # tar -x -z --unlink -f X32ASVGA.tgz
-      # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
-
-2.3  After either Full or Minimal Install above:
-
-Add /usr/X11R6/bin to the default path for sh in /etc/profile and for csh in
-/etc/csh.login if they are not already there:
-
-      # echo 'set path = ($path /usr/X11R6/bin)' >>/etc/csh.login
-      # echo 'PATH=$PATH:/usr/X11R6/bin' >>/etc/profile
-
-Or make sure all who use X put /usr/X11R6/bin in their shell's ``path'' vari-
-able.
-
-Next either reboot or invoke ldconfig as root to put the shared libraries in
-ld.so's cache:
-
-      # ldconfig /usr/lib /usr/local/lib /usr/X11R6/lib
-
-If you had already configured X11R6/lib/X11/xinit/xinitrc or
-X11R6/lib/X11/xdm/* omit the xinit-config or xdm-config archive or unpack it
-separately and merge in your customizations.
-
-The fscl and f100 archives are optional and can be omitted if you are short
-on space.  The optional link archive allows you to reconfigure and customize
-a X server binary.  The optional prog archive is needed only for writing or
-compiling X applications.  The optional pex archive contains pex clients and
-libraries for building 3D graphics applications.
-
-     NOTE: You don't need to uncompress the font files, but if you
-     uncompress them anyway you must run mkfontdir in the corresponding
-     font directory; otherwise your server will abort with the message
-     ``could not open default font 'fixed'''.
+The FreeBSD-3.0 binary distribution is ELF only.  The Xbin.tgz tarball con-
+tains a.out libraries for compatibility purposes.
 
 3.  Installing The Display Manager (xdm)
 
@@ -282,25 +53,9 @@ The XF86Config file tells the X server what kind of monitor, video card and
 mouse you have.  You must create it to tell the server what specific hardware
 you have.
 
-It is strongly recommended that you use either the `XF86Setup' utility (which
-requires the VGA16 server to be installed), or the `xf86config' utility to
-generate an XF86Config file.
-
-In order to protect your hardware from damage, the server no longer will read
-XF86Config files from a user's home directory, but requires that it be in
-/etc/XF86Config, /usr/X11R6/lib/X11/XF86Config.hostname or
-/usr/X11R6/lib/X11/XF86Config.
-
-You'll need info on your hardware:
-
-   o Your mouse type, baud rate and its /dev entry.
-
-   o The video card's chipset (e.g. ET4000, S3, etc).
-
-   o Your monitor's sync frequencies.
-
-If you plan to fine tune the screen size or position on your monitor you'll
-need the specs for sync frequencies from your monitor's manual.
+It is strongly recommended that you read through the QuickStart guide, and
+use either the `XF86Setup' utility (which requires the VGA16 server to be
+installed), or the `xf86config' utility to generate an XF86Config file.
 
 When you run the `XF86Setup' utility, do NOT touch the mouse until you are
 finished with mouse set up.  Otherwise, the VGA16 server and the mouse device
@@ -355,8 +110,7 @@ your ``mouse'' port later.
 The next step is to guess the appropriate protocol type for the mouse.  In
 FreeBSD 2.2.6 or later, the X server may be able to automatically determine
 the appropriate protocol type, unless your mouse is of a relatively old
-model.  You should always try the ``Auto'' protocol first for any mouse,
-serial, bus, or PS/2, in these versions.
+model.  Use the ``Auto'' protocol in these versions.
 
 In other versions of FreeBSD or if the ``Auto'' protocol doesn't work in
 2.2.6, you have to guess a protocol type and try.
@@ -529,7 +283,7 @@ Many thanks to:
    o Orest Zborowski, Simon Cooper and Dirk Hohndel for ideas from the Linux
      distribution.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.28 1999/08/01 07:57:15 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.29 1999/08/23 06:38:46 dawes Exp $
 
      $XConsortium: FreeBSD.sgml /main/12 1996/10/28 05:43:08 kaleb $
 

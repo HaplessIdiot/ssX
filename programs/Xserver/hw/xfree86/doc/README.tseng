@@ -2,7 +2,7 @@
 
     The XFree86 Project, Inc.  Dirk H. Hohndel, Koen Gadeyne and others.
 
-                                 02 Feb 1998
+                                 03 Nov 1998
 
 1.  Supported chipsets
 
@@ -78,10 +78,10 @@ REQUIRED. It is enabled by default in these modes. There is no need to spec-
 ify that in the XF86Config file. Please read the section on linear memory
 below: it contains some vital information on how to avoid serious problems.
 
-To force linear memory mode in 8bpp modes (where "banked" mode is the
+To force "banked" mode in 8bpp modes (where linear memory mode is the
 default), put the following in the Device section of your XF86Config:
 
-       Option "linear"
+       Option "no_linear"
 
 Acceleration support is present, and enabled by default, for all W32 and
 ET6000 family chips. This is based on the new XFree86 acceleration interface
@@ -92,11 +92,22 @@ putting the following in the Device section of your XF86Config:
 
        Option "noaccel"
 
-On some (fast) systems, acceleration may cause occasional font corruption.
-Until this problem is fixed, font acceleration may be disabled using the fol-
-lowing in the Device section of your XF86Config:
+On some PCI systems (i.e. only on the ET6000 and the ET4000W32p), accelera-
+tion may cause occasional font corruption. This is probably caused by a badly
+written system BIOS that ignores the fact that the Tseng PCI devices have
+their "non-prefetchable" attribute set. On such a BIOS, a PCI feature called
+"write combining" (or "byte merging") is enabled for the Tseng video card,
+although it is not permitted. Some systems allow you to manually enable or
+disable the Write Combining feature in the BIOS setup (sometimes abbreviated
+to WC). Make sure WC is disabled for the VGA memory aperture.
+
+If you experience font corruption on your system and are unable to manually
+disable WC in your BIOS, font acceleration may be disabled using the follow-
+ing in the Device section of your XF86Config:
 
        Option "xaa_no_color_exp"
+
+Note that this will reduce the performance of the X server.
 
 4.  ET6000 driver features
 
@@ -106,7 +117,8 @@ ports all possible color depths in the SVGA server: 8bpp, 16bpp (both at
 
 Linear memory mode (as opposed to the VGA default, banked memory layout) is
 supported. It is required and enabled by default for the 16/24/32 bpp modes.
-For 8bpp, the default is banked mode.
+For 8bpp, the default is linear mode for PCI cards and banked mode for
+ISA/VLB cards.
 
 To force linear memory at 8bpp, put the following in the SVGA section of your
 XF86Config:
@@ -138,9 +150,11 @@ to use DoubleScan modes (320x200 is a popular one), then do not enable the
 hardware cursor. Most recent ET6000 cards and the ET6100 do not exhibit this
 problem.
 
-On some fast systems, acceleration may cause occasional font corruption.
-Until this problem is fixed, font acceleration may be disabled using the fol-
-lowing in the Device section of your XF86Config:
+On some PCI systems, acceleration may cause occasional font corruption. As
+described above, this is caused by a bug in your system BIOS or a wrong set-
+ting of the write combining feature in that BIOS. If you are unable to fix
+the BIOS or force the option off, font acceleration may be disabled using the
+following in the Device section of your XF86Config:
 
        Option "xaa_no_color_exp"
 
@@ -204,7 +218,7 @@ described in detail in the next section; here the basic options are hinted
 at.
 
 If graphics redrawing goes wrong on accelerated chips (ET4000W32 and ET6000),
-first try the "noaccel"; option, which disables all accelerated functions.
+first try the "noaccel" option, which disables all accelerated functions.
 
 8.  general options in the XF86Config file
 
@@ -932,6 +946,8 @@ vided an ET6100 evaluation board.
 Heiko Eissfeldt provided an ET4000W32p_rev_b board which allowed us to get
 better support for those rev_a and rev_b boards.
 
+Gyorgy Krajcsovits donated an ET4000W32p + CH8398 board. A Really Good Move!
+
 Numerous testers have given me feedback for X_W32 and later XF86_W32.  I
 apologize for my failure to keep track of the people who tested X_W32, but
 the names of the people involved with the XF86_W32 testing are listed below:
@@ -993,7 +1009,7 @@ incomplete):
 
    o Kurt Olsen
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.31 1998/04/26 16:04:52 robin Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.32 1999/08/23 06:38:54 dawes Exp $
 
      $XConsortium: tseng.sgml /main/6 1996/10/27 11:06:09 kaleb $
 

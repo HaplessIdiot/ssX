@@ -2,7 +2,7 @@
 
                                Frédéric Lepied
 
-                                 12 May 1996
+                               2 November 1998
 
 1.  Introduction
 
@@ -55,6 +55,22 @@ The server supports the following extended devices :
 
         o 1 button.
 
+   o Stylus on MicroTouch touchscreen. Features :
+
+        o Absolute mode.
+
+        o 2 valuators (x and y axis).
+
+        o 1 button.
+
+   o Finger on MicroTouch touchscreen. Features :
+
+        o Absolute mode.
+
+        o 2 valuators (x and y axis).
+
+        o 1 button.
+
    o Mouse. Features :
 
         o Relative mode.
@@ -67,7 +83,7 @@ The server supports the following extended devices :
 
         o Absolute or relative modes.
 
-        o 5 valuators :
+        o 6 valuators :
 
             1.  X axis.
 
@@ -78,6 +94,8 @@ The server supports the following extended devices :
             4.  X tilt.
 
             5.  Y tilt.
+
+            6.  wheel.
 
         o 3 buttons.
 
@@ -91,7 +109,7 @@ The server supports the following extended devices :
 
         o Absolute or relative modes.
 
-        o 5 valuators :
+        o 6 valuators :
 
             1.  X axis.
 
@@ -102,6 +120,8 @@ The server supports the following extended devices :
             4.  X tilt.
 
             5.  Y tilt.
+
+            6.  wheel.
 
         o 1 button.
 
@@ -115,7 +135,7 @@ The server supports the following extended devices :
 
         o Absolute or relative modes.
 
-        o 5 valuators :
+        o 6 valuators :
 
             1.  X axis.
 
@@ -126,6 +146,8 @@ The server supports the following extended devices :
             4.  X tilt.
 
             5.  Y tilt.
+
+            6.  wheel.
 
         o 16 buttons.
 
@@ -141,15 +163,65 @@ The server supports the following extended devices :
 
         o 2 valuators (x and y axis).
 
-        o 2 button stylus or 4 button puck.
+        o 2 buttons stylus or 4 buttons puck.
 
         o Proximity report.
+
+        o Motion history capability.
+
+   o AceCad tablet. Features :
+
+        o Absolute or relative modes.
+
+        o 2 valuators (x and y axis).
+
+        o 2 buttons stylus or 4 buttons puck.
+
+        o Proximity report.
+
+        o Motion history capability.
+
+   o Calcomp DrawingBoard tablet. Features :
+
+        o Absolute or relative modes.
+
+        o 2 valuators (x and y axis).
+
+        o 4 buttons stylus or 16 buttons puck.
+
+        o Proximity report.
+
+        o Motion history capability.
+
+   o SWITCH virtual device. Features :
+
+        o Absolute mode.
+
+        o 1 valuator (device id) which reports the id of the device control-
+          ling the core pointer (works with the AlwaysCore feature see bel-
+          low).
+
+   o SGI button box. Features :
+
+        o Absolute or relative modes.
+
+        o 8 valuators.
+
+        o 32 buttons.
 
         o Motion history capability.
 
 To  enable  an   extended  device, you  must   add   en  entry  in the
 XF86Config file.   Consult   to  the XF86Config  man pages to see the
 details.
+
+The  XFree86 implementation supports  a  non  standard feature  called
+AlwaysCore which enables an  XInput device to send both  core and extended
+events at the same time. To enable it you have to add the AlwaysCore keyword
+to the  subsection describing your  device in the XF86Config  file.  The
+SWITCH virtual device reports a Motion event when another  device takes over
+the control of the core pointer. The id of the new device is reported in the
+first valuator of the event.
 
 3.2  Clients
 
@@ -162,7 +234,7 @@ device must not control the core pointer.
 
 Consult the man pages for details.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/xinput.sgml,v 3.6 1997/01/25 03:22:26 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/xinput.sgml,v 3.7 1999/08/23 06:38:55 dawes Exp $
 
      $XConsortium: xinput.sgml /main/3 1996/10/27 11:06:13 kaleb $
 

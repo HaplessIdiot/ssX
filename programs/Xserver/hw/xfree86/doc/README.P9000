@@ -1,22 +1,23 @@
-                   XFree86 3.2 P9000 Server Release Notes
+                     XFree86 P9000 Server Release Notes
 
                         Erik Nygren (nygren@mit.edu)
 
-                              1997 February 24
+                              1998 December 29
 
 1.  Change Log
 
-      1997.02.24:
+      1998.10.13:
 
-               o Added loadable module support (Erik Nygren)
+               o Fixed a bug that would cause the server to crash when it
+                 tried to enable or disable the screen saver while at a VT
+                 (Erik Nygren)
 
       1997.01.30:
 
                o Added probing for MemBase and IOBase on Diamond Viper PCI
                  cards (Karl Anders Øygard)
 
-               o Added support for DPMS screen saving -- off mode only (Karl
-                 Anders Øygard)
+               o Added support for DPMI screen saving (Karl Anders Øygard)
 
       1996.03.31:
 
@@ -218,13 +219,8 @@ of XF86Config
 
 4.  Viper Pro and other P9100 and P9130 cards (UNSUPPORTED!!!)
 
-These are NOT supported yet.  We don't have the hardware to write and or test
-drivers for them on.  The docs I have says the P9100 has a different inter-
-face than the P9000.  As a result, they may need an entirely new server.  If
-you need support for one of these cards, you should look into Xi Graphic's
-AcceleratedX or MetroLink's MetroX.  They're commercial products that cost
-about $99.  Check out http://www.metrolink.com/ and http://www.xinside.com
-for more info.
+These are NOT supported yet by this server, but are supported in the p9x00
+driver of the SVGA server.
 
 5.  Acceleration
 
@@ -335,10 +331,6 @@ and the first usable mode is selected (ie the first one which works with
 available memory, etc).  Any other modes which are valid and have the same
 dimensions are also used.  And other modes are ignored.
 
-If you're using the XF86_LOADER server, you'll need to tell it to load the
-libp9000.a and/or the XF86_P9000.o module.  Each of them knows that the other
-needs to be loaded and will load it if you do not specify it.
-
 The current supported keywords in the Device section of the XF86Config file
 are:
 
@@ -415,10 +407,6 @@ are:
 
 Here's a portion of a sample XF86Config file for the Viper VLB:
 
-     Section "Module"
-         Load "libp9000.a"
-     EndSection
-
      Section "Device"
          Identifier "ViperVLB"
          VendorName "Diamond"
@@ -476,7 +464,7 @@ people, and everyone else!
 During the course of the next few months, people will be working on accelera-
 tion, etc.  Please send any patches to me (nygren@mit.edu).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.21 1997/02/25 14:21:08 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.22 1999/08/23 06:38:51 dawes Exp $
 
      $XConsortium: P9000.sgml /main/9 1996/05/12 20:58:05 kaleb $
 

@@ -2,7 +2,7 @@
 
                                  Holger Veit
 
-                          Last modified 17 May 1997
+                       Last modified August 1st, 1999
 
 1.  Preface
 
@@ -16,18 +16,17 @@ hints if you intend to rebuild the system from scratch under OS/2.
 Please also read README.OS2 for end-user information, and set at least the
 environment variables described there.
 
-At the current time, the most recent version available is XFree86-3.3.  This
-is a full and unrestricted version which comes with complete source code. 3.3
-is an intermediate version which was released because the last beta version
-(3.2A) was about to expire and the new 4.0 version was not completely fin-
-ished in time. 3.3 is the last ``classical'' version which has separate
-Xservers for different video cards.
+At the current time, the most recent version available is XFree86-3.3.5.
+This is a full and unrestricted version which comes with complete source
+code. 3.3.5 is not only a bugfix release, but also supports new hardware,
+some of which might not even supported by OS/2 itself. See the RELEASE NOTES
+document for details.
 
 If you want to join the XFree86 developer team, e.g. to add support for cer-
 tain hardware, please send a request to BOD@XFree86.org. Please think about
 such a step carefully before, though, since much work is involved. Please use
-the XFree86-3.3 source code as a test example how to compile the system. The
-ability to manage that is a basic requirement for becoming a developer.
+the XFree86-3.3.5 source code as a test example how to compile the system.
+The ability to manage that is a basic requirement for becoming a developer.
 
 2.  Tools required
 
@@ -38,7 +37,7 @@ software required.  Most of this software is available from hobbes.nmsu.edu
 or ftp.leo.org via anonymous FTP. The following shopping list shows what you
 will need:
 
-   o gcc  EMX/gcc emx 0.9C patch2 or later
+   o gcc  EMX/gcc emx 0.9C patch4 or later (0.9d preferred!)
 
    o gzip GNU zip/unzip
 
@@ -61,7 +60,7 @@ will need:
 
    o gawk GNU awk
 
-   o make GNU make 3.71/3.72 (use the one coming with XFree86!)
+   o make GNU make 3.71/3.72 (use the one from Xprog.zip!)
 
    o flex GNU flex
 
@@ -76,7 +75,7 @@ tion which might still be available from some archives is NOT compatible.
 
 Furthermore, you need the XFree86 sources. These are available from the com-
 mon XFree86 repositories. Look into a directory which is often named
-/pub/XFree86/3.3/source.
+/pub/XFree86/3.3.5/source.
 
 3.  Compiling and Installing
 
@@ -174,29 +173,53 @@ installed them. Nor did I install the test subtree.
       XFree86/OS2 installation. If you have not set this variable, go back to
       the prefix section of this document: you have forgotten something.
 
- 10.  Copy the file xc/config/util/buildos2.cmd into the xc directory. If
+ 10.  Copy the file xc/pro-
+      grams/Xserver/hw/xfree86/etc/bindist/OS2/host.def.os2 to the location
+      xc/config/cf/host.def. Use this file to do any specific modifications
+      to imake variables, rather than editing the file xfree86.cf,
+      imake.tmpl, or os2.cf directly.
+
+ 11.  Copy the file xc/config/util/buildos2.cmd into the xc directory. If
       this is a second or later attempt, you might need to copy the saved
       toplevel Makefile.os2 back to Makefile.
 
- 11.  Execute this buildos2.cmd command in the xc directory; it will produce
+ 12.  Execute this buildos2.cmd command in the xc directory; it will produce
       a logfile buildxc.log in this directory.
 
- 12.  Go have a bucket of coffee, or better, buy new coffee - in Colombia!
+ 13.  Go have a bucket of coffee, or better, buy new coffee - in Colombia!
       The compile will need between 2 and 20 hours, depending on your selec-
       tions, and the horse power of your hardware.
 
- 13.  When finished, view the logfile for errors, and fix the problems if
+ 14.  When finished, view the logfile for errors, and fix the problems if
       there are some. I have managed to compile the whole system flawlessly,
       so there is at least one configuration that works.
 
- 14.  Finally, from the xc dir, execute
+ 15.  Finally, from the xc dir, execute
 
                  xmake install
                  xmake install.man
 
+ 16.  There are a few minor glitches in the installation:
+
+        1.  The xdm and linkkit directories will fail in compile and instal-
+            lation.  This is no problem and has no effect on the rest of the
+            system.
+
+        2.  The imake.exe which is installed in \XFree86\bin is usually
+            defective.  The one which was built initially and installed in
+            the root directory of the drive where you have the source tree is
+            okay. So simply copy this \imake.exe to the \XFree86\bin direc-
+            tory manually. Some day this might be fixed.
+
+        3.  XF86Setup is not ported yet and won't work with the tcl/tk port
+            available for XFree86/OS2. My idea was to replace this by some
+            native installation tool, which I didn't find the time to do yet.
+            Feel free to spend a bit of time to play with XF86Setup if you
+            like.
+
 Well, you see, this was quite easy :-)
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.5 1997/05/18 12:12:10 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.6 1999/08/23 06:38:50 dawes Exp $
 
      $XConsortium: OS2note.sgml /main/1 1996/02/24 10:08:59 kaleb $
 

@@ -1,8 +1,8 @@
              Information for Oak Technologies Inc. Chipset Users
 
-                 Jorge F. Delgado Mendoza (ernar@dit.upm.es)
+             Jorge F. Delgado Mendoza (delgadomendoza.j@pg.com)
 
-                                12 March 1996
+                               17 August 1999
 
 1.  Supported chipsets
 
@@ -10,33 +10,40 @@ The driver is used in the 8-bit / 256-color SVGA server and the mono server.
 The following chipsets for Oak Tech. Inc. are supported:
 
       OTI037C
-            8-bit SVGA chipset, with up to 256Kbytes of DRAM, only prelimi-
-            nary support is included in the driver as I don't have a 037c to
-            test it.
+            8-bit VGA chipset, with up to 256Kbytes of DRAM. All the boards I
+            have seen are only able to do standard VGA modes.  (ie. up to
+            320x200x256 and up to 640x480x16). Currently the probe for this
+            chip is disabled, so use the generic VGA driver instead.
 
       OTI067
             ISA SVGA chipset, up to 512Kbytes of DRAM (usually 70/80 ns).
 
       OTI077
             Enhanced version of the 067, with support for 1Mbyte and up to 65
-            Mhz dot-clock, this chipset supports up to 1024x768x256 colors in
-            Non-Interlaced mode, and up to 1280x1024x16 colors Interlaced.
+            Mhz dot-clock. This chipset is capable of resolutions up to
+            1024x768x256 colors in Non-Interlaced mode, and up to
+            1280x1024x16 colors Interlaced.
 
       OTI087
             One of the first VLB chipsets available, it has a 16-bit external
-            data path, and a 32-bit internal memory-controller data path, it
-            also has register-based color expansion, hardware cursor, a prim-
-            itive BitBlt engine, a 64 bit graphic latch and some other new
-            (on its time) features. Maximum BIOS resolutions are 1024x768x256
-            Non-Interlaced and 1280x1024x256 interlaced.  Maximum Dot-Clock
-            is 80Mhz, but is usually coupled with the OTI068 clock generator
-            whose highest frequency is 78Mhz.  Supports up to 2MBytes of
-            70/70R ns DRAM.
+            data path, and a 32-bit internal memory-controller data path. It
+            features some acceleration hardware: register-based color expan-
+            sion, hardware cursor, a primitive BitBlt engine, a 64 bit
+            graphic latch and some other new (on its time) features.  Maximum
+            BIOS resolutions are 1024x768x256 Non-Interlaced and
+            1280x1024x256 interlaced. Maximum Dot-Clock is 80Mhz, but is usu-
+            ally coupled with the OTI068 clock generator capable of frequen-
+            cies up to 78Mhz.  This chipset supports up to 2MBytes of 70/70R
+            ns DRAM.
 
       OTI107 and OTI111
             These are new, PCI chipsets by Oak Tech. Inc. Support is not
-            included for them, as they are very rare, and I haven't had the
-            chance to look at one of these boards.
+            included for them, as they are very rare and I haven't had the
+            chance to look at one of these boards.  We have been unable to
+            locate 107's. If anybody has such a board and can donate it to
+            XFree86, we would be more than glad to add support for them.
+
+            An OTI111 is now available and we are working on support for it.
 
 All the chipsets up to the OTI087 are "Backwards compatible", in fact some
 early drivers for the OTI087 based chipsets were those made for the 077.
@@ -81,7 +88,7 @@ options for all depths by specifying them in the Device section).
             or less 100%, (double BlitStones on xbench). Most OTI087 boards
             seem to have this feature broken, corrupting text from xterms and
             leaving mouse droppings throughout the screen. As a rule of
-            thumb, enable it, if it works badly, disable it ;).
+            thumb, enable it, if it works badly, disable it.
 
       Option "clock_50" (OTI087)
             This one will force the internal speed to 50 Mhz.
@@ -154,11 +161,9 @@ XF86Config or from the amount of memory that is detected if VideoRam is not
 found.
 
 I hope (because I have not tested it very thoroughly) that linear addressing
-will work on ISA boards, VLB ones are fine (I am writing this stuff on mine).
+will work on all ISA boards, VLB ones work flawlessly.
 
-GOOD LUCK!!!!
-
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.12 1997/01/25 03:22:02 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.13 1999/08/23 06:38:50 dawes Exp $
 
      $XConsortium: Oak.sgml /main/8 1996/05/12 20:58:00 kaleb $
 
