@@ -1,4 +1,5 @@
 /* $XConsortium: miPck1Prim.c,v 5.3 94/04/17 20:36:53 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -59,7 +60,6 @@ SOFTWARE.
 #include "miWks.h"
 #include "miText.h"
 #include "miClip.h"
-#include "extnsionst.h"
 
 #include <stdio.h>
 

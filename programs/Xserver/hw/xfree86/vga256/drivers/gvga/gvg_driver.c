@@ -1,5 +1,5 @@
 /* $XConsortium: gvg_driver.c /main/5 1996/01/12 12:17:16 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.8 1996/01/12 14:38:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.9 1996/02/04 09:13:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -42,7 +42,6 @@
 #ifdef XFreeXDGA 
 #include "X.h"
 #include "Xproto.h"
-#include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
 #define _XF86DGA_SERVER_

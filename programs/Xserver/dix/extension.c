@@ -46,8 +46,10 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: extension.c,v 1.55 95/02/27 16:43:20 dpw Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
+#define NEED_EVENTS
 #define NEED_REPLIES
 #include "Xproto.h"
 #include "misc.h"

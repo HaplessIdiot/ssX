@@ -1,4 +1,5 @@
 /* $XConsortium: grabdev.c,v 1.14 94/04/17 20:33:14 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -62,13 +63,15 @@ SOFTWARE.
 #include "windowstr.h"			/* window structure  */
 #include "XI.h"
 #include "XIproto.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
+#include "dixevents.h"			/* GrabDevice */
 
-extern	int 		IReqCode;
-extern	int		BadDevice;
-extern	int		BadClass;
+#include "grabdev.h"
+
 extern	XExtEventInfo	EventInfo[];
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
+extern int		ExtEventIndex;
 
 /***********************************************************************
  *
@@ -172,7 +175,6 @@ CreateMaskFromList (client, list, count, mask, dev, req)
     int			i,j;
     int			device;
     DeviceIntPtr	tdev;
-    extern int		ExtEventIndex;
 
     for (i=0; i<EMASKSIZE; i++)
 	{
@@ -213,6 +215,7 @@ CreateMaskFromList (client, list, count, mask, dev, req)
  *
  */
 
+void
 SRepXGrabDevice (client, size, rep)
     ClientPtr	client;
     int		size;

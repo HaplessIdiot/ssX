@@ -1,4 +1,5 @@
 /* $XConsortium: getfocus.c,v 1.7 94/04/17 20:33:11 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -61,11 +62,11 @@ SOFTWARE.
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 		IReqCode;
-extern	int		BadDevice;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
+#include "getfocus.h"
 
 /***********************************************************************
  *
@@ -137,6 +138,7 @@ ProcXGetDeviceFocus(client)
  *
  */
 
+void
 SRepXGetDeviceFocus (client, size, rep)
     ClientPtr	client;
     int		size;

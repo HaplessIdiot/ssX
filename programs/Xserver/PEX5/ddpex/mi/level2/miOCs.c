@@ -1,4 +1,5 @@
 /* $XConsortium: miOCs.c,v 5.6 94/04/17 20:37:14 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -57,7 +58,6 @@ SOFTWARE.
 #include "ddpex2.h"
 #include "miRender.h"
 #include "miStruct.h"
-#include "extnsionst.h"
 #include "gcstruct.h"
 #include "miLight.h"
 

@@ -1,4 +1,5 @@
 /* $XConsortium: miNSTrim.c,v 5.5 94/04/17 20:37:11 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -54,7 +55,6 @@ SOFTWARE.
 #include "miscstruct.h"
 #include "miRender.h"
 #include "PEXErr.h"
-#include "extnsionst.h"
 #include "gcstruct.h"
 #include "ddpex2.h"
 #include "miNurbs.h"

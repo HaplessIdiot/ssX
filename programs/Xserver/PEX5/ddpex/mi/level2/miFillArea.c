@@ -1,4 +1,5 @@
 /* $XConsortium: miFillArea.c,v 5.10 94/04/17 20:37:05 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -58,7 +59,6 @@ SOFTWARE.
 #include "miStruct.h"
 #include "PEXprotost.h"
 #include "miRender.h"
-#include "extnsionst.h"
 #include "gcstruct.h"
 #include "ddpex2.h"
 #include "miLight.h"

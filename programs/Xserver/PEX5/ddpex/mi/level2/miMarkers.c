@@ -1,4 +1,5 @@
 /* $XConsortium: miMarkers.c,v 5.5 94/04/17 20:37:09 mor Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -56,7 +57,6 @@ SOFTWARE.
 #include "PEXErr.h"
 #include "miRender.h"
 #include "miStruct.h"
-#include "extnsionst.h"
 #include "gcstruct.h"
 #include "ddpex2.h"
 #include "miMarkers.h"

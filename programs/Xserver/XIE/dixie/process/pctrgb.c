@@ -1,4 +1,5 @@
 /* $XConsortium: pctrgb.c,v 1.4 94/04/17 20:33:45 rws Exp $ */
+/* $XFree86$ */
 /**** module pctrgb.c ****/
 /******************************************************************************
 
@@ -82,6 +83,7 @@ terms and conditions:
   /*
    *  Core X Includes
    */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
   /*

@@ -1,5 +1,5 @@
 /* $XConsortium: getprop.c,v 1.11 94/04/17 20:33:12 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/getprop.c,v 3.0 1995/07/07 15:36:57 dawes Exp $ */
 
 /************************************************************
 
@@ -62,11 +62,15 @@ SOFTWARE.
 #include "windowstr.h"			/* window structs    */
 #include "XI.h"
 #include "XIproto.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 		IReqCode;
-extern	void		(* ReplySwapVector[256]) ();
+#include "getprop.h"
+
 extern			XExtEventInfo EventInfo[];
-DeviceIntPtr		LookupDeviceIntRec();
+extern	void				Swap32Write();
+extern int	ExtEventIndex;
 
 /***********************************************************************
  *
@@ -93,6 +97,7 @@ SProcXGetDeviceDontPropagateList(client)
  *
  */
 
+int
 ProcXGetDeviceDontPropagateList (client)
     register ClientPtr client;
     {
@@ -101,8 +106,6 @@ ProcXGetDeviceDontPropagateList (client)
     XEventClass				*buf, *tbuf;
     WindowPtr 				pWin;
     xGetDeviceDontPropagateListReply	rep;
-    XEventClass 			*ClassFromMask ();
-    void				Swap32Write();
     OtherInputMasks			*others;
 
     REQUEST(xGetDeviceDontPropagateListReq);
@@ -123,7 +126,7 @@ ProcXGetDeviceDontPropagateList (client)
 	return Success;
         }
 
-    if (others = wOtherInputMasks(pWin))
+    if ((others = wOtherInputMasks(pWin)) != 0)
 	{
 	for (i=0; i<EMASKSIZE; i++)
 	    tbuf = ClassFromMask (NULL, others->dontPropagateMask[i], i, 
@@ -171,7 +174,6 @@ XEventClass
     int		i,j;
     int		id = maskndx;
     Mask	tmask = 0x80000000;
-    extern int	ExtEventIndex;
 
     for (i=0; i<32; i++,tmask>>=1)
 	if (tmask & mask)
@@ -195,6 +197,7 @@ XEventClass
  *
  */
 
+void
 SRepXGetDeviceDontPropagateList (client, size, rep)
     ClientPtr	client;
     int		size;

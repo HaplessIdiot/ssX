@@ -1,4 +1,5 @@
-/* $XConsortium: colorlst.c,v 1.5 94/04/17 20:33:52 rws Exp $ */
+/* $XConsortium: colorlst.c,v 1.6 94/06/03 15:59:07 dpw Exp $ */
+/* $XFree86$ */
 /**** module colorlst.c ****/
 /****************************************************************************
 
@@ -81,6 +82,7 @@ terms and conditions:
 /*
  *  Core X Includes
  */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
 /*
@@ -237,9 +239,9 @@ int ProcQueryColorList(client)
      *       (anyone care to donate an Alpha?)
      */
     if( client->swapped )
-      CopySwap32Write(client, clst->cellCnt, clst->cellPtr);
+      CopySwap32Write(client, clst->cellCnt << 2, clst->cellPtr);
     else
-      WriteToClient(client, clst->cellCnt, (char *)clst->cellPtr);
+      WriteToClient(client, clst->cellCnt << 2, (char *)clst->cellPtr);
   
   return(Success);
 }                               /* end ProcQueryColorList */

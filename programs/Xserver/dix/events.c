@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 /* $XConsortium: events.c /main/185 1996/02/02 14:25:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.5 1996/01/26 09:01:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.6 1996/02/04 08:55:16 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -65,8 +65,9 @@ SOFTWARE.
 
 #ifdef XKB
 #include "XKBsrv.h"
-extern Bool noXkbExtension;
 #endif
+
+#include "dixevents.h"
 
 extern WindowPtr *WindowTable;
 
@@ -170,13 +171,6 @@ static WindowPtr XYToWindow(
     int /*y*/
 #endif
 );
-
-void DeliverFocusedEvent();
-int DeliverDeviceEvents();
-void DoFocusEvents();
-Mask EventMaskForClient();
-Bool CheckDeviceGrabs();
-void EnqueueEvent();
 
 extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern Bool GrabMatchesSecond();
@@ -2695,6 +2689,15 @@ DoFocusEvents(dev, fromWin, toWin, mode)
 }
 
 int
+#if NeedFunctionPrototypes
+SetInputFocus(
+    ClientPtr client,
+    DeviceIntPtr dev,
+    Window focusID,
+    CARD8 revertTo,
+    Time ctime,
+    Bool followOK)
+#else
 SetInputFocus(client, dev, focusID, revertTo, ctime, followOK)
     ClientPtr client;
     DeviceIntPtr dev;
@@ -2702,6 +2705,7 @@ SetInputFocus(client, dev, focusID, revertTo, ctime, followOK)
     CARD8 revertTo;
     Time ctime;
     Bool followOK;
+#endif
 {
     register FocusClassPtr focus;
     register WindowPtr focusWin;

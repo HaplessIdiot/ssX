@@ -1,5 +1,5 @@
 /* $XConsortium: miText.c,v 5.13 94/04/17 20:37:19 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miText.c,v 3.0 1995/07/07 15:34:55 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -66,7 +66,6 @@ SOFTWARE.
 #include "miFont.h"
 #include "miText.h"
 #include "miClip.h"
-#include "extnsionst.h"
 #include "gcstruct.h"
 
 #ifndef PADDING

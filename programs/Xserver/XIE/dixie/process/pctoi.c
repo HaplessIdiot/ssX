@@ -1,4 +1,6 @@
-/* $XConsortium: pctoi.c,v 1.5 94/04/17 20:33:44 rws Exp $ */
+/* $XConsortium: pctoi.c /main/7 1995/12/02 16:48:00 dpw $ */
+/* $XFree86$ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module pctoi.c ****/
 /******************************************************************************
 
@@ -82,6 +84,7 @@ terms and conditions:
   /*
    *  Core X Includes
    */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
   /*
@@ -196,14 +199,23 @@ Bool CopyCtoIAllocAll(flo, ped, sparms, rparms, tsize, isDefault)
      CARD16	tsize;
      Bool       isDefault;
 {
+  pTecCtoIDefPtr pvt;
+
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
-  
+
+  if(!(ped->techPvt=(pointer)XieMalloc(sizeof(pTecCtoIDefRec))))
+    FloAllocError(flo,ped->phototag,xieElemConvertToIndex, return(TRUE));
+
+  pvt = (pTecCtoIDefPtr)ped->techPvt;
+
+  pvt->defTech = isDefault;
+
   if (isDefault) 
-    rparms->fill = 0; /* Not really a good way to pick this so . . . */
+    pvt->fill = 0;	/* Not really a good way to pick this so . . . */
   else if( flo->reqClient->swapped ) {
-    cpswapl(sparms->fill, rparms->fill);
+    cpswapl(sparms->fill, pvt->fill);
   } else
-    rparms->fill = sparms->fill;
+    pvt->fill = sparms->fill;
   
   return(TRUE);
 }
@@ -426,4 +438,4 @@ static Bool DebriefConvertToIndex(flo,ped,ok)
   return(TRUE);
 }                               /* end DebriefConvertToIndex */
 
-/* end module ictoi.c */
+/* end module pctoi.c */

@@ -1,5 +1,5 @@
 /* $XConsortium: getdctl.c,v 1.4 94/04/17 20:33:09 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/getdctl.c,v 3.0 1995/07/07 15:36:54 dawes Exp $ */
 
 /************************************************************
 
@@ -61,12 +61,11 @@ SOFTWARE.
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 	IReqCode;
-extern	int	BadDevice;
-extern	void	(* ReplySwapVector[256]) ();
-DeviceIntPtr	LookupDeviceIntRec();
-void		CopySwapDeviceResolution();
+#include "getdctl.h"
 
 /***********************************************************************
  *
@@ -94,6 +93,7 @@ SProcXGetDeviceControl(client)
  *
  */
 
+int
 ProcXGetDeviceControl(client)
     ClientPtr client;
     {
@@ -212,6 +212,7 @@ CopySwapDeviceResolution (client, v, buf, length)
  *
  */
 
+void
 SRepXGetDeviceControl (client, size, rep)
     ClientPtr	client;
     int		size;

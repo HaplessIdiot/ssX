@@ -1,4 +1,5 @@
 /* $XConsortium: ungrdev.c,v 1.8 94/04/17 20:33:24 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -60,11 +61,11 @@ SOFTWARE.
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "windowstr.h"			/* window structure  */
 #include "XIproto.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 	IReqCode;
-extern	int	BadDevice;
-extern	void	(* ReplySwapVector[256]) ();
-DeviceIntPtr	LookupDeviceIntRec();
+#include "ungrdev.h"
 
 /***********************************************************************
  *

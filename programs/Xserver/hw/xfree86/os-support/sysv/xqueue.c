@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.0 1996/02/19 09:51:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.1 1996/03/17 11:41:50 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *
@@ -36,6 +36,13 @@
 #ifdef XQUEUE
 
 static xqEventQueue      *XqueQaddr;
+
+#ifdef XKB
+#include <X11/extensions/XKB.h>
+#include <X11/extensions/XKBstr.h>
+#include <X11/extensions/XKBsrv.h>
+extern Bool noXkbExtension;
+#endif
 
 /*
  * xf86XqueRequest --
@@ -224,20 +231,55 @@ xf86XqueKbdProc (pKeyboard, what)
      * Get also the initial led settings
      */
     ioctl(xf86Info.consoleFd, KDGETLED, &xf86Info.leds);
-    
+
     /*
      * Perform final initialization of the system private keyboard
      * structure and fill in various slots in the device record
      * itself which couldn't be filled in before.
      */
     pKeyboard->public.on = FALSE;
-    
+
+#ifdef XKB
+    if (noXkbExtension) {
+#endif
     InitKeyboardDeviceStruct((DevicePtr)xf86Info.pKeyboard,
 			     &keySyms,
 			     modMap,
 			     xf86KbdBell,
 			     (KbdCtrlProcPtr)xf86KbdCtrl);
-    
+#ifdef XKB
+    } else {
+	XkbComponentNamesRec names;
+	if (XkbInitialMap) {
+	    if ((xf86Info.xkbkeymap = strchr(XkbInitialMap, '/')) != NULL)
+		xf86Info.xkbkeymap++;
+	    else
+		xf86Info.xkbkeymap = XkbInitialMap;
+	}
+	if (xf86Info.xkbkeymap) {
+	    names.keymap = xf86Info.xkbkeymap;
+	    names.keycodes = NULL;
+	    names.types = NULL;
+	    names.compat = NULL;
+	    names.symbols = NULL;
+	    names.geometry = NULL;
+	} else {
+	    names.keymap = NULL;
+	    names.keycodes = xf86Info.xkbkeycodes;
+	    names.types = xf86Info.xkbtypes;
+	    names.compat = xf86Info.xkbcompat;
+	    names.symbols = xf86Info.xkbsymbols;
+	    names.geometry = xf86Info.xkbgeometry;
+	}
+	XkbInitKeyboardDeviceStruct(pKeyboard, 
+				    &names,
+				    &keySyms, 
+				    modMap, 
+				    xf86KbdBell,
+				    (KbdCtrlProcPtr)xf86KbdCtrl);
+    }
+#endif
+
     xf86InitKBD(TRUE);
     break;
     

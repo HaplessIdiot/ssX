@@ -1,4 +1,5 @@
 /* $XConsortium: gtmotion.c,v 1.15 94/04/17 20:33:15 rws Exp $ */ /*ALLOC-FIX*/
+/* $XFree86$ */
 
 /************************************************************
 
@@ -60,11 +61,11 @@ SOFTWARE.
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 		IReqCode;
-extern	int		BadDevice;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
+#include "gtmotion.h"
 
 /***********************************************************************
  *
@@ -98,11 +99,10 @@ ProcXGetDeviceMotionEvents(client)
 {
     INT32 *coords, *bufptr;
     xGetDeviceMotionEventsReply rep;
-    int     i, j, num_events, axes, size, tsize;
+    int     i, num_events, axes, size, tsize;
     unsigned long nEvents;
     DeviceIntPtr dev;
     TimeStamp start, stop;
-    void XSwapTimeCoordWrite();
     int	length = 0;
     ValuatorClassPtr 	v;
 
@@ -186,6 +186,7 @@ ProcXGetDeviceMotionEvents(client)
  *
  */
 
+void
 SRepXGetDeviceMotionEvents (client, size, rep)
     ClientPtr	client;
     int		size;

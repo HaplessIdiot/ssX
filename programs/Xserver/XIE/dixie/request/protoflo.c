@@ -1,4 +1,6 @@
-/* $XConsortium: protoflo.c,v 1.8 94/04/17 20:33:57 rws Exp $ */
+/* $XConsortium: protoflo.c /main/10 1995/12/02 16:47:30 dpw $ */
+/* $XFree86$ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module protoflo.c ****/
 /****************************************************************************
 
@@ -80,6 +82,7 @@ terms and conditions:
 /*
  *  Core X Includes
  */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
 /*
@@ -516,10 +519,11 @@ int ProcPutClientData(client)
   }
   /* pass the byte-stream to the target element
    */
-  ddInput(flo, ped, stuff->bandNumber,
-	  (CARD8*)&stuff[1], stuff->byteCount, stuff->final);
+  if(stuff->byteCount || stuff->final)
+    ddInput(flo, ped, stuff->bandNumber,
+	    (CARD8*)&stuff[1], stuff->byteCount, stuff->final);
 
- egress:  
+ egress:
   return(ferrCode(flo) || !flo->flags.active ? FloDone(flo) : Success);
 }                               /* end ProcPutClientData */
 
@@ -552,7 +556,7 @@ int ProcQueryPhotoflo(client)
   
   /* Fill in the reply header
    */
-  shorts = (imCnt + 1 & ~1) + (exCnt + 1 & ~1) << 1;
+  shorts = (imCnt + 1 & ~1) + (exCnt + 1 & ~1);
   rep.type           = X_Reply;
   rep.sequenceNum    = client->sequence;
   rep.length         = shorts >> 1;

@@ -46,7 +46,7 @@ SOFTWARE.
 ********************************************************/
 
 /* $XConsortium: getselev.c,v 1.12 94/04/17 20:33:13 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/getselev.c,v 3.0 1995/07/07 15:36:59 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -62,10 +62,14 @@ SOFTWARE.
 #include "XIproto.h"
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "windowstr.h"			/* window struct     */
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 		IReqCode;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
+#include "getprop.h"
+#include "getselev.h"
+
+extern	void				Swap32Write();
 
 /***********************************************************************
  *
@@ -104,8 +108,6 @@ ProcXGetSelectedExtensionEvents(client)
     XEventClass				*buf;
     XEventClass				*tclient;
     XEventClass				*aclient;
-    XEventClass 			*ClassFromMask ();
-    void				Swap32Write();
     OtherInputMasks			*pOthers;
     InputClientsPtr			others;
 
@@ -126,7 +128,7 @@ ProcXGetSelectedExtensionEvents(client)
 	return Success;
         }
 
-    if (pOthers=wOtherInputMasks(pWin))
+    if ((pOthers = wOtherInputMasks(pWin)) != 0)
 	{
 	for (others = pOthers->inputClients; others; others=others->next)
 	    for (i=0; i<EMASKSIZE; i++)
@@ -176,6 +178,7 @@ ProcXGetSelectedExtensionEvents(client)
  *
  */
 
+void
 SRepXGetSelectedExtensionEvents (client, size, rep)
     ClientPtr	client;
     int		size;

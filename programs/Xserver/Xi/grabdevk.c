@@ -1,4 +1,5 @@
 /* $XConsortium: grabdevk.c,v 1.11 94/04/17 20:33:15 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -61,13 +62,13 @@ SOFTWARE.
 #include "windowstr.h"			/* window structure  */
 #include "XI.h"
 #include "XIproto.h"
+#include "exevents.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 		IReqCode;
-extern	int		BadClass;
-extern	int		BadDevice;
-extern	InputInfo	inputInfo;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
+#include "grabdev.h"
+#include "grabdevk.h"
 
 /***********************************************************************
  *

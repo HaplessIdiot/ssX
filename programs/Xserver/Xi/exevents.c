@@ -1,5 +1,5 @@
 /* $XConsortium: exevents.c /main/51 1995/12/08 13:41:35 dpw $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/exevents.c,v 3.0 1996/01/14 13:34:03 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -64,6 +64,17 @@ SOFTWARE.
 #include "windowstr.h"
 #include "miscstruct.h"
 #include "region.h"
+#include "exevents.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
+#include "dixevents.h"			/* DeliverFocusedEvent */
+
+#include "chgptr.h"
+
+extern	void	NoticeEventTime();
+extern	GrabPtr CreateGrab();
+extern	WindowPtr GetCurrentRootWindow();
 
 #define WID(w) ((w) ? ((w)->drawable.id) : 0)
 #define AllModifiersMask ( \
@@ -76,22 +87,18 @@ SOFTWARE.
 
 void 			ActivateKeyboardGrab();
 void 			DeactivateKeyboardGrab();
-void 			ProcessOtherEvent();
-void 			RecalculateDeviceDeliverableEvents();
-static Bool		ShouldFreeInputMasks();
-static Bool		MakeInputMasks ();
-extern int		DeviceKeyPress;
-extern int		DeviceButtonPress;
-extern int		DeviceValuator;
-extern Mask 		DevicePointerMotionMask;
-extern Mask 		DeviceMappingNotifyMask;
-extern Mask 		DeviceButtonMotionMask;
-extern Mask 		DeviceButtonGrabMask;
-extern Mask 		DeviceOwnerGrabButtonMask;
-extern Mask		PropagateMask[];
-extern WindowPtr 	GetSpriteWindow();
-extern InputInfo	inputInfo;
-extern int		RT_INPUTCLIENT;
+
+static Bool		ShouldFreeInputMasks(
+#if NeedFunctionPrototypes
+				WindowPtr /* pWin */,
+				Bool /* ignoreSelectedEvents */
+#endif
+				);
+static Bool		MakeInputMasks (
+#if NeedFunctionPrototypes
+				WindowPtr /* pWin */
+#endif
+				);
 
 /**************************************************************************
  *
@@ -101,27 +108,21 @@ extern int		RT_INPUTCLIENT;
 
 void
 RegisterOtherDevice (device)
-    DevicePtr device;
+    DeviceIntPtr device;
     {
-    device->processInputProc = ProcessOtherEvent;
-    device->realInputProc = ProcessOtherEvent;
-    ((DeviceIntPtr)device)->ActivateGrab = ActivateKeyboardGrab;
-    ((DeviceIntPtr)device)->DeactivateGrab = DeactivateKeyboardGrab;
+    device->public.processInputProc = ProcessOtherEvent;
+    device->public.realInputProc = ProcessOtherEvent;
+    (device)->ActivateGrab = ActivateKeyboardGrab;
+    (device)->DeactivateGrab = DeactivateKeyboardGrab;
     }
-
-extern	int	DeviceMotionNotify;
 
 /*ARGSUSED*/
 void
 ProcessOtherEvent (xE, other, count)
-    deviceKeyButtonPointer *xE;
+    xEventPtr xE;
     register DeviceIntPtr other;
     int count;
     {
-    extern	int	DeviceKeyRelease;
-    extern	int	DeviceButtonRelease;
-    extern	int	ProximityIn;
-    extern	int	ProximityOut;
     register BYTE   	*kptr;
     register int    	i;
     register CARD16 	modifiers;
@@ -132,16 +133,15 @@ ProcessOtherEvent (xE, other, count)
     ButtonClassPtr	b = other->button;
     KeyClassPtr		k = other->key;
     ValuatorClassPtr	v = other->valuator;
-    void		NoticeEventTime();
     deviceValuator	*xV = (deviceValuator *) xE;
 
-    if (xE->type != DeviceValuator) {
+    if (xE->u.u.type != DeviceValuator) {
         GetSpritePosition(&rootX, &rootY);
-        xE->root_x = rootX;
-        xE->root_y = rootY;
-        key = xE->detail;
+        xE->u.keyButtonPointer.rootX = rootX;
+        xE->u.keyButtonPointer.rootY = rootY;
+        key = xE->u.u.detail;
         NoticeEventTime(xE);
-        xE->state = inputInfo.keyboard->key->state | 
+        xE->u.keyButtonPointer.state = inputInfo.keyboard->key->state | 
 		    inputInfo.pointer->button->state;
         bit = 1 << (key & 7);
     }
@@ -188,7 +188,7 @@ ProcessOtherEvent (xE, other, count)
 		}
 	    }
     
-    if (xE->type == DeviceKeyPress)
+    if (xE->u.u.type == DeviceKeyPress)
 	{
 	modifiers = k->modifierMap[key];
         kptr = &k->down[key >> 3];
@@ -196,9 +196,9 @@ ProcessOtherEvent (xE, other, count)
 	    {   
 	    if (!modifiers)
 		{
-		xE->type = DeviceKeyRelease;
+		xE->u.u.type = DeviceKeyRelease;
 		ProcessOtherEvent(xE, other, count);
-		xE->type = DeviceKeyPress;
+		xE->u.u.type = DeviceKeyPress;
 		/* release can have side effects, don't fall through */
 		ProcessOtherEvent(xE, other, count);
 		}
@@ -224,7 +224,7 @@ ProcessOtherEvent (xE, other, count)
 	    return;
 	    }
 	}
-    else if (xE->type == DeviceKeyRelease)
+    else if (xE->u.u.type == DeviceKeyRelease)
 	{
         kptr = &k->down[key >> 3];
 	if (!(*kptr & bit)) /* guard against duplicates */
@@ -251,7 +251,7 @@ ProcessOtherEvent (xE, other, count)
 	if (other->fromPassiveGrab && (key == other->activatingKey))
 	    deactivateDeviceGrab = TRUE;
 	}
-    else if (xE->type == DeviceButtonPress)
+    else if (xE->u.u.type == DeviceButtonPress)
 	{
         kptr = &b->down[key >> 3];
 	*kptr |= bit;
@@ -259,18 +259,18 @@ ProcessOtherEvent (xE, other, count)
 	    other->valuator->motionHintWindow = NullWindow;
 	b->buttonsDown++;
 	b->motionMask = DeviceButtonMotionMask;
-	xE->detail = b->map[key];
-	if (xE->detail == 0)
+	xE->u.u.detail = b->map[key];
+	if (xE->u.u.detail == 0)
 	     return;
-	if (xE->detail <= 5)
-	    b->state |= (Button1Mask >> 1) << xE->detail;
+	if (xE->u.u.detail <= 5)
+	    b->state |= (Button1Mask >> 1) << xE->u.u.detail;
 	SetMaskForEvent(Motion_Filter(b),DeviceMotionNotify);
 	if (!grab)
 	    if (CheckDeviceGrabs(other, xE, 0, count))
 		return;
 
 	}
-    else if (xE->type == DeviceButtonRelease)
+    else if (xE->u.u.type == DeviceButtonRelease)
 	{
         kptr = &b->down[key >> 3];
 	*kptr &= ~bit;
@@ -278,18 +278,18 @@ ProcessOtherEvent (xE, other, count)
 	    other->valuator->motionHintWindow = NullWindow;
 	if (!--b->buttonsDown)
 		b->motionMask = 0;
-	xE->detail = b->map[key];
-	if (xE->detail == 0)
+	xE->u.u.detail = b->map[key];
+	if (xE->u.u.detail == 0)
 	    return;
-	if (xE->detail <= 5)
-	    b->state &= ~((Button1Mask >> 1) << xE->detail);
+	if (xE->u.u.detail <= 5)
+	    b->state &= ~((Button1Mask >> 1) << xE->u.u.detail);
 	SetMaskForEvent(Motion_Filter(b),DeviceMotionNotify);
 	if (!b->state && other->fromPassiveGrab)
 	    deactivateDeviceGrab = TRUE;
 	}
-    else if (xE->type == ProximityIn)
+    else if (xE->u.u.type == ProximityIn)
 	other->valuator->mode &= ~OutOfProximity;
-    else if (xE->type == ProximityOut)
+    else if (xE->u.u.type == ProximityOut)
 	other->valuator->mode |= OutOfProximity;
 
     if (grab)
@@ -304,9 +304,10 @@ ProcessOtherEvent (xE, other, count)
         (*other->DeactivateGrab)(other);
     }
 
+int
 InitProximityClassDeviceStruct(dev)
     DeviceIntPtr dev;
-    {
+{
     register ProximityClassPtr proxc;
 
     proxc = (ProximityClassPtr)xalloc(sizeof(ProximityClassRec));
@@ -316,6 +317,7 @@ InitProximityClassDeviceStruct(dev)
     return TRUE;
     }
 
+void
 InitValuatorAxisStruct(dev, axnum, minval, maxval, resolution, min_res, max_res)
     DeviceIntPtr dev;
     int axnum;
@@ -340,8 +342,6 @@ static void FixDeviceStateNotify (dev, ev, k, b, v, first)
     ValuatorClassPtr v;
     int first;
     {
-    extern      int     DeviceStateNotify;
-
     ev->type = DeviceStateNotify;
     ev->deviceid = dev->id;
     ev->time = currentTime.milliseconds;
@@ -402,18 +402,12 @@ static void FixDeviceValuator (dev, ev, v, first)
     first += ev->num_valuators;
     }
 
+void
 DeviceFocusEvent(dev, type, mode, detail, pWin)
     DeviceIntPtr dev;
     int type, mode, detail;
     register WindowPtr pWin;
     {
-    extern      int     DeviceFocusIn;
-    extern      int     DeviceFocusOut;
-    extern      int     DeviceKeyStateNotify;
-    extern      int     DeviceButtonStateNotify;
-    extern      int     DeviceValuatorStateNotify;
-    extern      Mask    DeviceStateNotifyMask;
-    extern      Mask    DeviceFocusChangeMask;
     deviceFocus	event;
 
     if (type == FocusIn)
@@ -428,15 +422,13 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
     event.window = pWin->drawable.id;
     event.time = currentTime.milliseconds;
 
-    (void)
-    DeliverEventsToWindow(pWin, &event, 1, DeviceFocusChangeMask, NullGrab, 
-	dev->id);
+    (void) DeliverEventsToWindow(pWin, (xEvent *)&event, 1,
+    	DeviceFocusChangeMask, NullGrab, dev->id);
 
     if ((type == DeviceFocusIn) && 
 	(wOtherInputMasks(pWin)) &&
 	(wOtherInputMasks(pWin)->inputEvents[dev->id] & DeviceStateNotifyMask))
         {
-	int			i,j;
 	int 			evcount = 1;
 	deviceStateNotify 	*ev, *sev;
 	deviceKeyStateNotify 	*kev;
@@ -526,13 +518,28 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 	    }
 	}
 
-	(void) DeliverEventsToWindow(pWin, sev, evcount, DeviceStateNotifyMask, 
-	    NullGrab, dev->id);
+	(void) DeliverEventsToWindow(pWin, (xEvent *)sev, evcount,
+	    DeviceStateNotifyMask, NullGrab, dev->id);
 	xfree (sev);
         }
     }
 
 int
+#if NeedFunctionPrototypes
+GrabButton(
+    ClientPtr client,
+    DeviceIntPtr dev,
+    BYTE this_device_mode,
+    BYTE other_devices_mode,
+    CARD16 modifiers,
+    DeviceIntPtr modifier_device,
+    CARD8 button,
+    Window grabWindow,
+    BOOL ownerEvents,
+    Cursor rcursor,
+    Window rconfineTo,
+    Mask eventMask)
+#else
 GrabButton(client, dev, this_device_mode, other_devices_mode, modifiers,
 	modifier_device, button, grabWindow, ownerEvents, rcursor, rconfineTo,
 	eventMask)
@@ -548,11 +555,10 @@ GrabButton(client, dev, this_device_mode, other_devices_mode, modifiers,
     Cursor rcursor;
     Window rconfineTo;
     Mask eventMask;
-   
+#endif   
 {
     WindowPtr pWin, confineTo;
     CursorPtr cursor;
-    GrabPtr CreateGrab();
     GrabPtr grab;
 
     if ((this_device_mode != GrabModeSync) &&
@@ -611,6 +617,19 @@ GrabButton(client, dev, this_device_mode, other_devices_mode, modifiers,
     }
 
 int
+#if NeedFunctionPrototypes
+GrabKey(
+    ClientPtr client,
+    DeviceIntPtr dev,
+    BYTE this_device_mode,
+    BYTE other_devices_mode,
+    CARD16 modifiers,
+    DeviceIntPtr modifier_device,
+    CARD8 key,
+    Window grabWindow,
+    BOOL ownerEvents,
+    Mask mask)
+#else
 GrabKey(client, dev, this_device_mode, other_devices_mode, modifiers,
     modifier_device, key, grabWindow, ownerEvents, mask)
     ClientPtr client;
@@ -623,10 +642,9 @@ GrabKey(client, dev, this_device_mode, other_devices_mode, modifiers,
     Window grabWindow;
     BOOL ownerEvents;
     Mask mask;
-   
+#endif 
 {
     WindowPtr pWin;
-    GrabPtr CreateGrab();
     GrabPtr grab;
     KeyClassPtr k = dev->key;
 
@@ -674,8 +692,6 @@ GrabKey(client, dev, this_device_mode, other_devices_mode, modifiers,
 	return BadAlloc;
     return AddPassiveGrabToList(grab);
     }
-
-extern Mask DevicePointerMotionHintMask;
 
 int
 SelectForWindow(dev, pWin, client, mask, exclusivemasks, validmasks)
@@ -805,7 +821,7 @@ RecalculateDeviceDeliverableEvents(pWin)
     pChild = pWin;
     while (1)
 	{
-	if (inputMasks = wOtherInputMasks(pChild))
+	if ((inputMasks = wOtherInputMasks(pChild)) != 0)
 	    {
 	    for (others = inputMasks->inputClients; others; 
 		others = others->next)
@@ -897,7 +913,6 @@ SendEvent (client, d, dest, propagate, ev, mask, count)
     {
     WindowPtr pWin;
     WindowPtr effectiveFocus = NullWindow; /* only set if dest==InputFocus */
-    WindowPtr GetCurrentRootWindow();
     WindowPtr spriteWin=GetSpriteWindow();
 
     if (dest == PointerWindow)
@@ -1072,15 +1087,22 @@ SetModifierMapping(client, dev, len, rlen, numKeyPerModifier, inputMap, k)
     return(MappingSuccess);
     }
 
-int
+void
+#if NeedFunctionPrototypes
+SendDeviceMappingNotify(
+    CARD8 request,
+    KeyCode firstKeyCode,
+    CARD8 count,
+    DeviceIntPtr dev)
+#else
 SendDeviceMappingNotify(request, firstKeyCode, count, dev)
     CARD8 request, count;
     KeyCode firstKeyCode;
     DeviceIntPtr dev;
-    {
+#endif
+{
     xEvent event;
     deviceMappingNotify         *ev = (deviceMappingNotify *) &event;
-    extern              	int     DeviceMappingNotify;
 
     ev->type = DeviceMappingNotify;
     ev->request = request;
@@ -1092,10 +1114,21 @@ SendDeviceMappingNotify(request, firstKeyCode, count, dev)
 	ev->count = count;
 	}
 
-    SendEventToAllWindows (dev, DeviceMappingNotifyMask, ev, 1);
+    SendEventToAllWindows (dev, DeviceMappingNotifyMask, (xEvent *)ev, 1);
     }
 
 int
+#if NeedFunctionPrototypes
+ChangeKeyMapping(
+    ClientPtr 	client,
+    DeviceIntPtr dev,
+    unsigned 	len,
+    int 	type,
+    KeyCode 	firstKeyCode,
+    CARD8 	keyCodes,
+    CARD8 	keySymsPerKeyCode,
+    KeySym	*map)
+#else
 ChangeKeyMapping(client, dev, len, type, firstKeyCode, keyCodes, 
 	keySymsPerKeyCode, map)
     ClientPtr 	client;
@@ -1106,6 +1139,7 @@ ChangeKeyMapping(client, dev, len, type, firstKeyCode, keyCodes,
     CARD8 	keyCodes;
     CARD8 	keySymsPerKeyCode;
     KeySym	*map;
+#endif
 {
     KeySymsRec keysyms;
     KeyClassPtr k = dev->key;
@@ -1160,7 +1194,7 @@ DeleteWindowFromAnyExtEvents(pWin, freeResources)
 	DeleteDeviceFromAnyExtEvents(pWin, dev);
 
     if (freeResources)
-	while (inputMasks = wOtherInputMasks(pWin))
+	while ((inputMasks = wOtherInputMasks(pWin)) != 0)
 	    {
 	    ic = inputMasks->inputClients;
 	    for (i=0; i<EMASKSIZE; i++)
@@ -1169,6 +1203,7 @@ DeleteWindowFromAnyExtEvents(pWin, freeResources)
 	    }
     }
 
+void
 DeleteDeviceFromAnyExtEvents(pWin, dev)
     WindowPtr		pWin;
     DeviceIntPtr	dev;
@@ -1243,7 +1278,6 @@ MaybeSendDeviceMotionNotifyHint (pEvents, mask)
     Mask mask;
     {
     DeviceIntPtr dev;
-    DeviceIntPtr LookupDeviceIntRec ();
 
     dev = LookupDeviceIntRec (pEvents->deviceid & DEVICE_BITS);
     if (pEvents->type == DeviceMotionNotify)
@@ -1264,7 +1298,7 @@ MaybeSendDeviceMotionNotifyHint (pEvents, mask)
     return (0);
     }
 
-int
+void
 CheckDeviceGrabAndHintWindow (pWin, type, xE, grab, client, deliveryMask)
     WindowPtr pWin;
     int type;
@@ -1274,7 +1308,6 @@ CheckDeviceGrabAndHintWindow (pWin, type, xE, grab, client, deliveryMask)
     Mask deliveryMask;
     {
     DeviceIntPtr dev;
-    DeviceIntPtr LookupDeviceIntRec ();
 
     dev = LookupDeviceIntRec (xE->deviceid & DEVICE_BITS);
     if (type == DeviceMotionNotify)

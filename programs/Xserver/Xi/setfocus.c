@@ -1,4 +1,5 @@
 /* $XConsortium: setfocus.c,v 1.7 94/04/17 20:33:22 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -62,11 +63,13 @@ SOFTWARE.
 #include "XI.h"
 #include "XIproto.h"
 
-extern	int 		IReqCode;
-extern	int		BadDevice;
-extern	InputInfo	inputInfo;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
+#include "dixevents.h"
+
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
+
+#include "setfocus.h"
 
 /***********************************************************************
  *

@@ -1,4 +1,5 @@
 /* $XConsortium: miRndTStrip.c,v 5.3 94/04/17 20:36:56 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -50,6 +51,7 @@ SOFTWARE.
 
 */
 
+#define NEED_EVENTS
 #include "miRender.h"
 #include "miClip.h"
 #include "misc.h"

@@ -1,4 +1,5 @@
 /* $XConsortium: photomap.c,v 1.6 94/04/17 20:33:56 rws Exp $ */
+/* $XFree86$ */
 /**** module photomap.c ****/
 /****************************************************************************
 
@@ -81,6 +82,7 @@ terms and conditions:
 /*
  *  Core X Includes
  */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
 /*

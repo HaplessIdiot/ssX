@@ -1,4 +1,5 @@
 /* $XConsortium: allowev.c,v 1.8 94/04/17 20:33:02 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -61,10 +62,11 @@ SOFTWARE.
 #include "XI.h"
 #include "XIproto.h"
 
-extern	int 		IReqCode;
-extern	int 		BadDevice;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
+
+#include "allowev.h"
 
 /***********************************************************************
  *
@@ -97,7 +99,6 @@ ProcXAllowDeviceEvents(client)
     {
     TimeStamp		time;
     DeviceIntPtr	thisdev;
-    void AllowSome ();
 
     REQUEST(xAllowDeviceEventsReq);
     REQUEST_SIZE_MATCH(xAllowDeviceEventsReq);

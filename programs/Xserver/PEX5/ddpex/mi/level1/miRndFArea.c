@@ -1,4 +1,5 @@
 /* $XConsortium: miRndFArea.c,v 5.5 94/04/17 20:36:54 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -50,6 +51,7 @@ SOFTWARE.
 
 */
 
+#define NEED_EVENTS
 #include "miRender.h"
 #include "misc.h"
 #include "miscstruct.h"

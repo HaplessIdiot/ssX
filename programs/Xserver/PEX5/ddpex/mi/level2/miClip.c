@@ -1,4 +1,5 @@
 /* $XConsortium: miClip.c,v 5.4 94/04/17 20:37:03 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -56,7 +57,6 @@ SOFTWARE.
 #include "PEXErr.h"
 #include "miRender.h"
 #include "miClip.h"
-#include "extnsionst.h"
 #include "gcstruct.h"
 
 /*++

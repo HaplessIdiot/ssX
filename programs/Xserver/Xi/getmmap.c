@@ -1,4 +1,5 @@
 /* $XConsortium: getmmap.c,v 1.6 94/04/17 20:33:12 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -60,11 +61,11 @@ SOFTWARE.
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"			/* Request macro     */
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 	IReqCode;
-extern	int	BadDevice;
-extern	void	(* ReplySwapVector[256]) ();
-DeviceIntPtr	LookupDeviceIntRec();
+#include "getmmap.h"
 
 /***********************************************************************
  *
@@ -90,6 +91,7 @@ SProcXGetDeviceModifierMapping(client)
  *
  */
 
+int
 ProcXGetDeviceModifierMapping(client)
     ClientPtr client;
     {
@@ -139,6 +141,7 @@ ProcXGetDeviceModifierMapping(client)
  *
  */
 
+void
 SRepXGetDeviceModifierMapping (client, size, rep)
     ClientPtr	client;
     int		size;

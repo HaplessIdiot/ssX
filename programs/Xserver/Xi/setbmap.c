@@ -1,4 +1,5 @@
 /* $XConsortium: setbmap.c,v 1.8 94/04/17 20:33:21 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -63,12 +64,12 @@ SOFTWARE.
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"
+#include "exevents.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 		IReqCode;
-extern	int 		BadDevice;
-extern	int 		DeviceMappingNotify;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
+#include "setbmap.h"
 
 /***********************************************************************
  *
@@ -93,6 +94,7 @@ SProcXSetDeviceButtonMapping(client)
  *
  */
 
+int
 ProcXSetDeviceButtonMapping (client)
     register ClientPtr client;
     {
@@ -125,7 +127,7 @@ ProcXSetDeviceButtonMapping (client)
 	return Success;
 	}
 
-    ret = SetButtonMapping (client, dev, stuff->map_length, &stuff[1]);
+    ret = SetButtonMapping (client, dev, stuff->map_length, (BYTE *)&stuff[1]);
 
     if (ret == BadValue || ret == BadMatch)
 	{
@@ -151,6 +153,7 @@ ProcXSetDeviceButtonMapping (client)
  *
  */
 
+void
 SRepXSetDeviceButtonMapping (client, size, rep)
     ClientPtr	client;
     int		size;

@@ -1,4 +1,5 @@
 /* $XConsortium: closedev.c,v 1.12 94/04/17 20:33:06 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -62,13 +63,15 @@ SOFTWARE.
 #include "scrnintstr.h"			/* screen structure  */
 #include "XI.h"
 #include "XIproto.h"
+#include "XIstubs.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
+
+#include "closedev.h"
 
 extern	ScreenInfo	screenInfo;
 extern	WindowPtr	*WindowTable;
-extern	int 		IReqCode;
-extern	int 		BadDevice;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
 
 /***********************************************************************
  *
@@ -138,6 +141,7 @@ ProcXCloseDevice(client)
  *
  */
 
+void
 DeleteEventsFromChildren(dev, p1, client)
     DeviceIntPtr	dev;
     WindowPtr 		p1;
@@ -161,6 +165,7 @@ DeleteEventsFromChildren(dev, p1, client)
  *
  */
 
+void
 DeleteDeviceEvents (dev, pWin, client)
     DeviceIntPtr	dev;
     WindowPtr		pWin;
@@ -170,7 +175,7 @@ DeleteDeviceEvents (dev, pWin, client)
     OtherInputMasks	*pOthers;
     GrabPtr		grab, next;
 
-    if (pOthers=wOtherInputMasks(pWin))
+    if ((pOthers = wOtherInputMasks(pWin)) != 0)
 	for (others=pOthers->inputClients; others; 
 	    others = others->next)
 	    if (SameClient(others,client))
