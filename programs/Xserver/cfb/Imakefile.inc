@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.6tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.7 2005/01/30 17:48:43 tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -91,7 +91,7 @@ XFMODSRC = cfbmodule.c
 XFMODOBJ = cfbmodule.o
 #endif
 
-#if !(defined(IHaveModules) && defined(LinkDirectory))
+#if !(defined(IHaveModules) && PixelSize != 8)
 CFBCMAP = cfbcmap.o
 #endif
 
