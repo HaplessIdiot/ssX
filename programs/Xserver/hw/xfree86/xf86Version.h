@@ -1,4 +1,4 @@
 /* $XConsortium: xf86Version.h,v 1.1 94/03/28 21:01:50 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.6 1994/05/29 02:04:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.7 1994/05/30 08:22:35 dawes Exp $ */
 
-#define XF86_VERSION " 3.0Ac "
+#define XF86_VERSION " 3.0B "
