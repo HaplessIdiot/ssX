@@ -44,6 +44,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/TextSinkP.h>
 #include <X11/Xaw/TextP.h>
+#include "Private.h"
 
 /****************************************************************
  *
@@ -305,6 +306,20 @@ Dimension width, height;
  * Don't clear in height or width are zero.
  * XClearArea() has special semantic for these values.
  */
+  TextWidget xaw = (TextWidget)XtParent(w);
+  Position x1, y1, x2, y2;
+
+  /* XXX The '- 3' and '+ 1' values are to the caret work right */
+  x1 = XawMax(x, xaw->text.r_margin.left - 3);
+  y1 = XawMax(y, xaw->text.r_margin.top);
+  x2 = XawMin(x + (int)width, (int)XtWidth(xaw) - xaw->text.r_margin.right);
+  y2 = XawMin(y + (int)height,
+	      (int)XtHeight(xaw) - xaw->text.r_margin.bottom + 1);
+
+  x = x1;
+  y = y1;
+  width = XawMax(0, x2 - x1);
+  height = XawMax(0, y2 - y1);
 
     if ( (height == 0) || (width == 0) ) return;
     XClearArea(XtDisplayOfObject(w), XtWindowOfObject(w),

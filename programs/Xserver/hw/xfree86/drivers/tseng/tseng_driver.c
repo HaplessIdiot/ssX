@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.26 1998/01/24 16:58:26 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.27 1998/04/26 16:04:59 robin Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1488,6 +1488,9 @@ ET4000Restore(restore)
   }
 
   if (CH8398_programmable_clock) {
+    inb(0x3c8);
+    inb(0x3c6);inb(0x3c6);inb(0x3c6);inb(0x3c6);inb(0x3c6);
+    outb(0x3c6,restore->gendac.timingctrl);
     outb(vgaIOBase + 4, 0x31);
     i = inb(vgaIOBase + 5);
     outb(vgaIOBase + 5, i | (1<<6)); /* Set RS2 through CS3 */
@@ -1505,8 +1508,8 @@ ET4000Restore(restore)
     inb(0x3c8);
     outb(0x3c8,restore->gendac.PLL_ctrl);
     outb(vgaIOBase + 4, 0x31);
-    outb(vgaIOBase + 5, i);
-    /* If CS3 wasn't set before then we are outside ClockRAM mode */
+    outb(vgaIOBase + 5, (i & 0x3F));
+    /* Make sure CS3 isn't set */
   }
    
   if (ET6000_programmable_clock)
@@ -1692,6 +1695,9 @@ ET4000Save(save)
     save->gendac.cmd_reg = xf86getdaccomm();
   }
   if (CH8398_programmable_clock) {
+     inb(0x3c8);
+     inb(0x3c6);inb(0x3c6);inb(0x3c6);inb(0x3c6);inb(0x3c6);
+     save->gendac.timingctrl=inb(0x3c6);
      /* Save PLL */ 
      outb(vgaIOBase + 4, 0x31);
      temp = inb(vgaIOBase + 5); 
@@ -1928,7 +1934,10 @@ ET4000Init(mode)
     else
     if (CH8398_programmable_clock) {
        /* Let's call common_hw/Ch8391clk.c ! */
-       Chrontel8391CalcClock(mode->SynthClock,&temp1,&temp2,&temp3);
+       if(mode->Flags & V_PIXMUX)  
+	  Chrontel8391CalcClock(mode->SynthClock/2,&temp1,&temp2,&temp3);
+       else
+	  Chrontel8391CalcClock(mode->SynthClock,&temp1,&temp2,&temp3);
        new->gendac.PLL_f2_N = (unsigned char)(temp2);
        new->gendac.PLL_f2_M = (unsigned char)(temp1 | (temp3<<6));
        if(xf86Verbose) ErrorF("CH8398 or CH8398A PLL set to %fMhz\n",
@@ -1936,9 +1945,11 @@ ET4000Init(mode)
        /* ok LSB=PLL_f2_N and MSB=PLL_f2_M            */
        /* now set the Clock Select Register(CSR)      */
        new->gendac.PLL_ctrl = (new->gendac.PLL_ctrl | 0x90) & 0xF0;
+       new->gendac.timingctrl &= 0x1F;
        new->gendac.PLL_r_idx = 0;
        new->gendac.PLL_w_idx = 0;
        new->std.NoClock = 2;
+       new->GenPurp &= 0x3F;
        /* clear CS2: we need clock #2 */
        new->Compatibility = (new->Compatibility & 0xFD);
        new->std.MiscOutReg = (new->std.MiscOutReg & 0xF3) | 0x08;
@@ -2213,8 +2224,8 @@ int flag;
    * is found.
    */
   if ( (Tseng_pixMuxPossible) &&
-       (mode->Clock > Tseng_nonMuxMaxClock) &&
-       (mode->HDisplay >= Tseng_pixMuxMinWidth)
+       (mode->Clock > Tseng_nonMuxMaxClock) 
+        /* && (mode->HDisplay >= Tseng_pixMuxMinWidth) */
         /* && (!(mode->Flags & V_INTERLACE)) */   /* PIXMUX+interlace seem to work now */
      ) {
            mode->Flags |= V_PIXMUX;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.71 1998/03/21 00:12:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.72 1998/03/27 23:23:28 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -479,6 +479,7 @@ typedef struct _MouseDevRec {
     int           protoBufTail;
     unsigned char protoBuf[8];
     unsigned char protoPara[7];
+    unsigned char inSync;		/* Bool: driver in sync with datastream */
 #endif
     
 #ifndef CSRG_BASED

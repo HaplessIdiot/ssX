@@ -55,6 +55,11 @@ SOFTWARE.
 
 #include <X11/Xaw/Form.h>
 
+#ifndef XAW_DL_DEFINED
+#define XAW_DL_DEFINED
+typedef struct _XawDL XawDisplayList;
+#endif
+
 #define XtREdgeType "EdgeType"
 
 typedef enum {LayoutPending, LayoutInProgress, LayoutDone} LayoutState;
@@ -95,6 +100,7 @@ typedef struct _FormPart {
     Boolean	resize_in_layout;   /* should layout() do geom request?  */
     Dimension	preferred_width, preferred_height; /* cached from layout */
     Boolean     resize_is_no_op;    /* Causes resize to take not action. */
+    XawDisplayList *display_list;
 } FormPart;
 
 typedef struct _FormRec {

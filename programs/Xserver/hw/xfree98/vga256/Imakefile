@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:43:07 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.21 1998/03/20 19:08:13 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.22 1998/03/20 21:07:57 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -100,16 +100,45 @@ INCLUDES = -I$(XF86SRC)/vga256/vga -I$(XF86COMSRC) -I$(XF86OSSRC) \
 
 VGADRIVERS = XF98SvgaDrivers
 
+#if XF98GANBWAPServer || XF98GANBWAPModule
 $(GANBWAPDONES):	$(GANBWAPSUBDIRS)
+#endif
+
+#if XF98PEGCServer || XF98PEGCModule
 $(PEGCDONES):	$(PEGCSUBDIRS)
+#endif
+
+#if XF98NKVNECServer || XF98NKVNECModule
 $(NKVNECDONES):	$(NKVNECSUBDIRS)
+#endif
+
+#if XF98WABSServer || XF98WABSModule
 $(WABSDONES):	$(WABSSUBDIRS)
+#endif
+
+#if XF98WABEPServer || XF98WABEPModule
 $(WABEPDONES):	$(WABEPSUBDIRS)
+#endif
+
+#if XF98WSNAServer || XF98WSNAModule
 $(WSNADONES):	$(WSNASUBDIRS)
+#endif
+
+#if XF98TGUIServer || XF98TGUIModule
 $(TGUIDONES):	$(TGUISUBDIRS)
+#endif
+
+#if XF98MGAServer || XF98MGAModule
 $(MGADONES):	$(MGASUBDIRS)
+#endif
+
+#if XF98SVGAServer || XF98SVGAModule
 $(SVGADONES):	$(SVGASUBDIRS)
+#endif
+
+#if XF98EGCServer || XF98EGCModule
 $(EGCDONES):	$(EGCSUBDIRS)
+#endif
 
 #if ! DoLoadableServer
 #if XF98GANBWAPServer

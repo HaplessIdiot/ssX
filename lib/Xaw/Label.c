@@ -121,6 +121,8 @@ static void ClassInitialize();
 static void Destroy();
 static XtGeometryResult QueryGeometry();
 
+#define Superclass (&simpleClassRec)
+
 LabelClassRec labelClassRec = {
   {
 /* core_class fields */	
@@ -483,6 +485,9 @@ static void Redisplay(gw, event, region)
     LabelWidget w = (LabelWidget) gw;
     LabelWidgetClass lwclass = (LabelWidgetClass) XtClass (gw);
     GC gc;
+
+    if (*Superclass->core_class.expose)
+      (*Superclass->core_class.expose)(gw, event, region);
 
     /*
      * now we'll see if we need to draw the rest of the label

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.34 1998/03/27 23:23:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.35 1998/04/05 00:45:54 robin Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -194,28 +194,30 @@ xf86MouseSupported(mousetype)
  */
 
 #ifndef MOUSE_PROTOCOL_IN_KERNEL
-static unsigned char proto[][7] = {
-  /* hd_mask hd_id dp_mask dp_id bytes b4_mask b4_id */
-  {  0x40,   0x40, 0x40,   0x00, 3,   ~0x23,   0x00 },  /* MicroSoft */
-  {  0xf8,   0x80, 0x00,   0x00, 5,    0x00,   0xff },  /* MouseSystems */
-  {  0xe0,   0x80, 0x80,   0x00, 3,    0x00,   0xff },  /* MMSeries */
-  {  0xe0,   0x80, 0x80,   0x00, 3,    0x00,   0xff },  /* Logitech */
-  {  0xf8,   0x80, 0x00,   0x00, 5,    0x00,   0xff },  /* BusMouse */
-  {  0x40,   0x40, 0x40,   0x00, 3,   ~0x23,   0x00 },  /* MouseMan */
-  {  0xc0,   0x00, 0x00,   0x00, 3,    0x00,   0xff },  /* PS/2 mouse */
-  {  0xe0,   0x80, 0x80,   0x00, 3,    0x00,   0xff },  /* MM_HitTablet */
-  {  0x40,   0x40, 0x40,   0x00, 3,   ~0x33,   0x00 },  /* GlidePoint */
-  {  0x40,   0x40, 0x40,   0x00, 3,   ~0x3f,   0x00 },  /* IntelliMouse */
-  {  0x40,   0x40, 0x40,   0x00, 3,   ~0x33,   0x00 },  /* ThinkingMouse */
-							/* PS/2 variants */
-  {  0xc0,   0x00, 0x00,   0x00, 4,    0x00,   0xff },  /* IntelliMouse */
-  {  0x80,   0x80, 0x00,   0x00, 3,    0x00,   0xff },  /* ThinkingMouse */
-  {  0x08,   0x08, 0x00,   0x00, 3,    0x00,   0xff },  /* MouseMan+ */
-  {  0xc0,   0x00, 0x00,   0x00, 3,    0x00,   0xff },  /* GlidePoint */
-  {  0xc0,   0x00, 0x00,   0x00, 4,    0x00,   0xff },  /* NetMouse */
-  {  0xc0,   0x00, 0x00,   0x00, 6,    0x00,   0xff },  /* NetScroll */
+#define MF_SAFE	0x01	/* !inSync: Accept packet only if no header in data */
+static unsigned char proto[][8] = {
+  /* --header--  ---data--- packet -4th-byte-  mouse   */
+  /* mask   id   mask   id  bytes  mask   id   flags   */
+  {  0x40, 0x40, 0x40, 0x00,  3,  ~0x23, 0x00, 0       },  /* MicroSoft */
+  {  0xf8, 0x80, 0x00, 0x00,  5,   0x00, 0xff, MF_SAFE },  /* MouseSystems */
+  {  0xe0, 0x80, 0x80, 0x00,  3,   0x00, 0xff, 0       },  /* MMSeries */
+  {  0xe0, 0x80, 0x80, 0x00,  3,   0x00, 0xff, 0       },  /* Logitech */
+  {  0xf8, 0x80, 0x00, 0x00,  5,   0x00, 0xff, 0       },  /* BusMouse */
+  {  0x40, 0x40, 0x40, 0x00,  3,  ~0x23, 0x00, 0       },  /* MouseMan */
+  {  0xc0, 0x00, 0x00, 0x00,  3,   0x00, 0xff, 0       },  /* PS/2 mouse */
+  {  0xe0, 0x80, 0x80, 0x00,  3,   0x00, 0xff, 0       },  /* MM_HitTablet */
+  {  0x40, 0x40, 0x40, 0x00,  3,  ~0x33, 0x00, 0       },  /* GlidePoint */
+  {  0x40, 0x40, 0x40, 0x00,  3,  ~0x3f, 0x00, 0       },  /* IntelliMouse */
+  {  0x40, 0x40, 0x40, 0x00,  3,  ~0x33, 0x00, 0       },  /* ThinkingMouse */
+							   /* PS/2 variants */
+  {  0xc0, 0x00, 0x00, 0x00,  4,   0x00, 0xff, 0       },  /* IntelliMouse */
+  {  0x80, 0x80, 0x00, 0x00,  3,   0x00, 0xff, 0       },  /* ThinkingMouse */
+  {  0x08, 0x08, 0x00, 0x00,  3,   0x00, 0xff, 0       },  /* MouseMan+ */
+  {  0xc0, 0x00, 0x00, 0x00,  3,   0x00, 0xff, 0       },  /* GlidePoint */
+  {  0xc0, 0x00, 0x00, 0x00,  4,   0x00, 0xff, 0       },  /* NetMouse */
+  {  0xc0, 0x00, 0x00, 0x00,  6,   0x00, 0xff, 0       },  /* NetScroll */
 
-  {  0xf8,   0x80, 0x00,   0x00, 5,    0x00,   0xff },  /* sysmouse */
+  {  0xf8, 0x80, 0x00, 0x00,  5,   0x00, 0xff, 0       },  /* sysmouse */
 };
 #endif /* ! MOUSE_PROTOCOL_IN_KERNEL */
 
@@ -617,6 +619,7 @@ MouseDevPtr mouse;
 	}
 
       mouse->protoBufTail = 0;
+      mouse->inSync = 0;
 #endif /* !MOUSE_PROTOCOL_IN_KERNEL || MACH386 */
 }
  
@@ -628,73 +631,30 @@ xf86MouseProtocol(device, rBuf, nBytes)
     int nBytes;
 {
   MouseDevPtr          mouse = MOUSE_DEV(device);
-  int                  i, buttons, dx, dy, dz;
+  int                  i, j, buttons, dx, dy, dz, baddata;
   int                  pBufP = mouse->protoBufTail;
   unsigned char        *pBuf = mouse->protoBuf;
   
-#ifdef EXTMOUSEDEBUG
-    ErrorF("received %d bytes ",nBytes);
+#ifdef EXTMOUSEDEBUG2
+    ErrorF("received %d bytes",nBytes);
     for ( i=0; i < nBytes; i++)
-    	ErrorF("%2x ",rBuf[i]);
+    	ErrorF(" %02x",rBuf[i]);
     ErrorF("\n");
 #endif
   for ( i=0; i < nBytes; i++) {
-    /*
-     * Hack for resyncing: We check here for a package that is:
-     *  a) illegal (detected by wrong data-package header)
-     *  b) invalid (0x80 == -128 and that might be wrong for MouseSystems)
-     *  c) bad header-package
-     *
-     * NOTE: b) is a voilation of the MouseSystems-Protocol, since values of
-     *       -128 are allowed, but since they are very seldom we can easily
-     *       use them as package-header with no button pressed.
-     * NOTE/2: On a PS/2 mouse any byte is valid as a data byte. Furthermore,
-     *         0x80 is not valid as a header byte. For a PS/2 mouse we skip
-     *         checking data bytes.
-     *         For resyncing a PS/2 mouse we require the two most significant
-     *         bits in the header byte to be 0. These are the overflow bits,
-     *         and in case of an overflow we actually lose sync. Overflows
-     *         are very rare, however, and we quickly gain sync again after
-     *         an overflow condition. This is the best we can do. (Actually,
-     *         we could use bit 0x08 in the header byte for resyncing, since
-     *         that bit is supposed to be always on, but nobody told
-     *         Microsoft...)
-     *
-     */
-#if 0
-    if (pBufP != 0 &&
-#if !defined(__NetBSD__)
-	mouse->mseType != P_PS2 &&
-#endif
-	((rBuf[i] & mouse->protoPara[2]) != mouse->protoPara[3] 
-	 || rBuf[i] == 0x80))
-      {
-	pBufP = 0;
-      }
-#endif
 
-     /*
-      * [KAZU,OYVIND-120398]
-      * The above hack is wrong!  Because of b) above, we shall see
-      * erroneous mouse events so often when the MouseSystem mouse is
-      * moved quickly.  As for the PS/2 and its variants, we don't need 
-      * to treat them as special cases, because protoPara[2] and 
-      * protoPara[3] are both 0x00 for them, thus, any data bytes will 
-      * never be discarded.  0x80 is rejected for MMSeries, Logitech 
-      * and MMHittab protocols, because protoPara[2] and protoPara[3] 
-      * are 0x80 and 0x00 respectively.  The other protocols are 7-bit 
-      * protocols; there is no use checking 0x80.  
-      * 
-      * All in all we should check the condition a) only.
-      */
-    if (pBufP != 0 && (rBuf[i] & mouse->protoPara[2]) != mouse->protoPara[3])
-      pBufP = 0;	/* skip package */
+    if (pBufP >= mouse->protoPara[4]) {
 
-    if (pBufP == 0 && (rBuf[i] & mouse->protoPara[0]) != mouse->protoPara[1])
-      continue;
+      /*
+       * Buffer contains a full packet, which has already been processed:
+       * Empty the buffer and check for optional 4th byte, which will be
+       * processed directly, without being put into the buffer first ...
+       */
 
-    if (pBufP >= mouse->protoPara[4] 
-	&& (rBuf[i] & mouse->protoPara[0]) != mouse->protoPara[1])
+      pBufP = 0;
+
+      if ((rBuf[i] & mouse->protoPara[0]) != mouse->protoPara[1] &&
+        (rBuf[i] & mouse->protoPara[5]) == mouse->protoPara[6])
       {
 	/*
 	 * Hack for Logitech MouseMan Mouse - Middle button
@@ -730,11 +690,9 @@ xf86MouseProtocol(device, rBuf, nBytes)
 	 * the byte.
 	 */
 
-	if ((rBuf[i] & mouse->protoPara[5]) != mouse->protoPara[6])
-	  {
-	    pBufP = 0;
-	    continue;
-	  }
+#ifdef EXTMOUSEDEBUG
+	ErrorF("mouse 4th byte %02x",rBuf[i]);
+#endif
 
 	dx = dy = dz = 0;
 	buttons = 0;
@@ -766,22 +724,112 @@ xf86MouseProtocol(device, rBuf, nBytes)
 	  buttons |= ((int)(rBuf[i] & 0x20) >> 4) | (mouse->lastButtons & 0x05);
 	  break;
 	}
-        pBufP = 0;
 	goto post_event;
       }
+    }
+    /* End of packet buffer flush and 4th byte hack. */
 
-    if (pBufP >= mouse->protoPara[4])
-      pBufP = 0;
+    /*
+     * Append next byte to buffer (which is empty or contains an
+     * incomplete packet); iterate if packet (still) not complete.
+     */
     pBuf[pBufP++] = rBuf[i];
     if (pBufP != mouse->protoPara[4]) continue;
 
     /*
-     * assembly full package
+     * Hack for resyncing: We check here for a package that is:
+     *  a) illegal (detected by wrong data-package header)
+     *  b) invalid (0x80 == -128 and that might be wrong for MouseSystems)
+     *  c) bad header-package
+     *
+     * NOTE: b) is a violation of the MouseSystems-Protocol, since values of
+     *       -128 are allowed, but since they are very seldom we can easily
+     *       use them as package-header with no button pressed.
+     * NOTE/2: On a PS/2 mouse any byte is valid as a data byte. Furthermore,
+     *         0x80 is not valid as a header byte. For a PS/2 mouse we skip
+     *         checking data bytes.
+     *         For resyncing a PS/2 mouse we require the two most significant
+     *         bits in the header byte to be 0. These are the overflow bits,
+     *         and in case of an overflow we actually lose sync. Overflows
+     *         are very rare, however, and we quickly gain sync again after
+     *         an overflow condition. This is the best we can do. (Actually,
+     *         we could use bit 0x08 in the header byte for resyncing, since
+     *         that bit is supposed to be always on, but nobody told
+     *         Microsoft...)
      */
-    dz = 0;
+
+     /*
+      * [KAZU,OYVIND-120398]
+      * The above hack is wrong!  Because of b) above, we shall see
+      * erroneous mouse events so often when the MouseSystem mouse is
+      * moved quickly.  As for the PS/2 and its variants, we don't need 
+      * to treat them as special cases, because protoPara[2] and 
+      * protoPara[3] are both 0x00 for them, thus, any data bytes will 
+      * never be discarded.  0x80 is rejected for MMSeries, Logitech 
+      * and MMHittab protocols, because protoPara[2] and protoPara[3] 
+      * are 0x80 and 0x00 respectively.  The other protocols are 7-bit 
+      * protocols; there is no use checking 0x80.  
+      * 
+      * All in all we should check the condition a) only.
+      */
+
+     /*
+      * [OYVIND-120498]
+      * Check packet for valid data:
+      * If driver is in sync with datastream, the packet is considered
+      * bad if any byte (header and/or data) contains an invalid value.
+      * 
+      * If packet is bad, we discard the first byte and shift the buffer.
+      * Next iteration will then check the new situation for validity.
+      * 
+      * If flag MF_SAFE is set in proto[7] and the driver
+      * is out of sync, the packet is also considered bad if
+      * any of the data bytes contains a valid header byte value.
+      * This situation could occur if the buffer contains
+      * the tail of one packet and the header of the next.
+      *
+      * Note: The driver starts in out-of-sync mode (mouse->inSync = 0).
+      */
+
+    baddata = 0;
+
+    /* All databytes must be valid. */
+    for ( j=1; j < pBufP; j++ )
+      if ((pBuf[j] & mouse->protoPara[2]) != mouse->protoPara[3])
+	baddata = 1;
+
+    /* If out of sync, don't mistake a header byte for data. */
+    if ((mouse->protoPara[7] & MF_SAFE) && !mouse->inSync)
+      for ( j=1; j < pBufP; j++ )
+	if ((pBuf[j] & mouse->protoPara[0]) == mouse->protoPara[1])
+	  baddata = 1;
+
+    /* Accept or reject the packet ? */
+    if ((pBuf[0] & mouse->protoPara[0]) != mouse->protoPara[1] || baddata) {
 #ifdef EXTMOUSEDEBUG
-    ErrorF("packet %2x %2x %2x %2x\n",pBuf[0],pBuf[1],pBuf[2],pBuf[3]);
+      if (mouse->inSync)
+	ErrorF("mouse driver lost sync\n");
+      ErrorF("skipping byte %02x\n",*pBuf);
 #endif
+      mouse->protoBufTail = --pBufP;
+      for ( j=0; j < pBufP; j++)
+        pBuf[j] = pBuf[j+1];
+      mouse->inSync = 0;
+      continue;
+    }
+
+    if (!mouse->inSync) {
+#ifdef EXTMOUSEDEBUG
+      ErrorF("mouse driver back in sync\n");
+#endif
+      mouse->inSync = 1;
+    }
+
+    /*
+     * Packet complete and verified, now process it ...
+     */
+
+    dz = 0;
     switch(mouse->mseType) {
       
     case P_LOGIMAN:	    /* MouseMan / TrackMan   [CHRIS-211092] */
@@ -921,8 +969,17 @@ xf86MouseProtocol(device, rBuf, nBytes)
       break;
 
     default: /* There's a table error */
+#ifdef EXTMOUSEDEBUG
+      ErrorF("mouse table error\n");
+#endif
       continue;
     }
+
+#ifdef EXTMOUSEDEBUG
+    ErrorF("packet");
+    for ( j=0; j < pBufP; j++)
+      ErrorF(" %02x",pBuf[j]);
+#endif
 
 post_event:
     /* map the Z axis movement */
@@ -952,6 +1009,16 @@ post_event:
       dz = 0;
       break;
     }
+
+#ifdef EXTMOUSEDEBUG
+    ErrorF(":  buttons %c%c%c%c%c  delta (%d,%d)\n",
+	(buttons&0x10) ? '5' : '-',
+	(buttons&0x08) ? '4' : '-',
+	(buttons&0x04) ? '3' : '-',
+	(buttons&0x02) ? '2' : '-',
+	(buttons&0x01) ? '1' : '-',
+	dx, dy);
+#endif
 
     /* post an event */
     xf86PostMseEvent(device, buttons, dx, dy);

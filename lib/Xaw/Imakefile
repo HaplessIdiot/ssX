@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.86 94/04/02 18:01:47 kaleb Exp $
+XCOMM $XConsortium: Imakefile /main/87 1996/09/28 16:43:34 rws $
 #define DoNormalLib NormalLibXaw
 #define DoSharedLib SharedLibXaw
 #define DoDebugLib DebugLibXaw 
@@ -6,7 +6,8 @@ XCOMM $XConsortium: Imakefile,v 1.86 94/04/02 18:01:47 kaleb Exp $
 #define HasSharedData YES
 #define LibName Xaw
 #define SoRev SOXAWREV
-#define IncSubdir Xaw
+#define IncSubdir X11
+#define IncSubSubdir Xaw
 
 #ifdef SharedXawReqs
 REQUIREDLIBS = SharedXawReqs
@@ -88,13 +89,16 @@ HEADERS = \
 	XawInit.h
 
 SRCS = \
+	Actions.c \
 	AllWidgets.c \
 	AsciiSink.c \
 	AsciiSrc.c \
 	AsciiText.c \
 	Box.c \
 	Command.c \
+	Converters.c \
 	Dialog.c \
+	DisplayList.c \
 	Form.c \
 	Grip.c \
 	Label.c \
@@ -133,13 +137,16 @@ UNSHAREDOBJS = AllWidgets.o sharedlib.o
 #endif
 
 OBJS = \
+	Actions.o \
 	AllWidgets.o \
 	AsciiSink.o \
 	AsciiSrc.o \
 	AsciiText.o \
 	Box.o \
 	Command.o \
+	Converters.o \
 	Dialog.o \
+	DisplayList.o \
 	Form.o \
 	Grip.o \
 	Label.o \

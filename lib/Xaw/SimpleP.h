@@ -54,6 +54,11 @@ SOFTWARE.
 
 #include <X11/Xaw/Simple.h>
 
+#ifndef XAW_DL_DEFINED
+#define XAW_DL_DEFINED
+typedef struct _XawDL XawDisplayList;
+#endif
+
 typedef struct {
     Boolean	(*change_sensitive)(/* widget */);
 } SimpleClassPart;
@@ -76,6 +81,7 @@ typedef struct {
     Pixel       pointer_fg, pointer_bg;	/* Pointer colors. */
     Boolean     international;
     /* private state */
+    XawDisplayList *display_list;
 } SimplePart;
 
 typedef struct _SimpleRec {

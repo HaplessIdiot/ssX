@@ -1,4 +1,12 @@
 XFree86 3.9Ah (XX April 1998)
+1663. Xaw updates including more functions for diaplayLists, fixes
+      for simpleMenuWidget, boxWidget, and panedWidget (#1660 Paulo Cesar
+      Pereira de Andrade).
+1662. Xdm seg fault fix (#1658 Matthieu Herrb).
+1661. Tseng PIXMUX updates (#1656 Krajcsovits Gyorgy).
+1660. Mouse driver loop restructuring and additional packet data
+      checks (#1654, Oyvind Aabling).
+1659. PANIX build fix for PC98 platform (#1653, Satoshi Kimura).
 1658. Sync loss on cursor change fix (#1650, Mark Vojkovich).
 1657. Driver line fix, unresolved symbol fix, remove loading of xaavga256
       at depths greater than 8, glint 24bpp fix (#1645-1649 Alan Hourihane).
@@ -6106,4 +6114,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.585 1998/04/23 00:59:24 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.586 1998/04/26 16:04:31 robin Exp $

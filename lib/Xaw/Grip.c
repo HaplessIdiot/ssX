@@ -105,7 +105,7 @@ GripClassRec gripClassRec = {
     /* visible_interest   */   FALSE,
     /* destroy            */   NULL,
     /* resize             */   NULL,
-    /* expose             */   NULL,
+    /* expose             */   XtInheritExpose,
     /* set_values         */   NULL,
     /* set_values_hook    */   NULL,
     /* set_values_almost  */   XtInheritSetValuesAlmost,

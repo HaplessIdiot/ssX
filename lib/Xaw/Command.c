@@ -100,6 +100,8 @@ static void ClassInitialize();
 static Boolean ShapeButton();
 static void Realize(), Resize();
 
+static void XawCommandToggle();
+
 static XtActionsRec actionsList[] = {
   {"set",		Set},
   {"notify",		Notify},
@@ -262,6 +264,21 @@ CommandWidget cbw;
 *  Action Procedures
 *
 ***************************/
+void
+XawCommandToggle(w)
+     Widget w;
+{
+  CommandWidget xaw = (CommandWidget)w;
+  Arg args[2];
+  Cardinal num_args;
+
+  num_args = 0;
+  XtSetArg(args[num_args], XtNbackground,
+	   xaw->label.foreground);        ++num_args;
+  XtSetArg(args[num_args], XtNforeground,
+	   xaw->core.background_pixel);   ++num_args;
+  XtSetValues(w, args, num_args);
+}
 
 /* ARGSUSED */
 static void 
@@ -277,8 +294,7 @@ Cardinal *num_params;	/* unused */
     return;
 
   cbw->command.set= TRUE;
-  if (XtIsRealized(w))
-    PaintCommandWidget(w, event, (Region) NULL, TRUE);
+  XawCommandToggle(w);
 }
 
 /* ARGSUSED */
@@ -295,10 +311,7 @@ Cardinal *num_params;
     return;
 
   cbw->command.set = FALSE;
-  if (XtIsRealized(w)) {
-    XClearWindow(XtDisplay(w), XtWindow(w));
-    PaintCommandWidget(w, event, (Region) NULL, TRUE);
-  }
+  XawCommandToggle(w);
 }
 
 /* ARGSUSED */
@@ -424,15 +437,6 @@ Boolean change;
   very_thick = cbw->command.highlight_thickness >
                (Dimension)((Dimension) Min(cbw->core.width, cbw->core.height)/2);
 
-  if (cbw->command.set) {
-    cbw->label.normal_GC = cbw->command.inverse_GC;
-    XFillRectangle(XtDisplay(w), XtWindow(w), cbw->command.normal_GC,
-		   0, 0, cbw->core.width, cbw->core.height);
-    region = NULL;		/* Force label to repaint text. */
-  }
-  else
-    cbw->label.normal_GC = cbw->command.normal_GC;
-
   if (cbw->command.highlight_thickness <= 0)
   {
     (*SuperClass->core_class.expose) (w, event, region);
@@ -443,7 +447,7 @@ Boolean change;
  * If we are set then use the same colors as if we are not highlighted. 
  */
 
-  if (cbw->command.set == (cbw->command.highlighted == HighlightNone)) {
+  if (cbw->command.highlighted != HighlightNone) {
     norm_gc = cbw->command.inverse_GC;
     rev_gc = cbw->command.normal_GC;
   }
@@ -456,7 +460,6 @@ Boolean change;
 	  ((cbw->command.highlighted == HighlightWhenUnset) &&
 	   (cbw->command.set))) ) {
     if (very_thick) {
-      cbw->label.normal_GC = norm_gc; /* Give the label the right GC. */
       XFillRectangle(XtDisplay(w),XtWindow(w), rev_gc,
 		     0, 0, cbw->core.width, cbw->core.height);
     }
@@ -478,10 +481,7 @@ Widget w;
   CommandWidget cbw = (CommandWidget) w;
 
   /* so Label can release it */
-  if (cbw->label.normal_GC == cbw->command.normal_GC)
-    XtReleaseGC( w, cbw->command.inverse_GC );
-  else
-    XtReleaseGC( w, cbw->command.normal_GC );
+  XtReleaseGC( w, cbw->command.inverse_GC );
 }
 
 /*
@@ -512,20 +512,14 @@ Cardinal *num_args;
                                    cbw->command.highlight_thickness) ||
        (oldcbw->label.font != cbw->label.font) ) 
   {
-    if (oldcbw->label.normal_GC == oldcbw->command.normal_GC)
-	/* Label has release one of these */
-      XtReleaseGC(new, cbw->command.inverse_GC);
-    else
-      XtReleaseGC(new, cbw->command.normal_GC);
+    XtReleaseGC(new, cbw->command.inverse_GC);
 
     cbw->command.normal_GC = Get_GC(cbw, cbw->label.foreground, 
 				    cbw->core.background_pixel);
     cbw->command.inverse_GC = Get_GC(cbw, cbw->core.background_pixel, 
 				     cbw->label.foreground);
     XtReleaseGC(new, cbw->label.normal_GC);
-    cbw->label.normal_GC = (cbw->command.set
-			    ? cbw->command.inverse_GC
-			    : cbw->command.normal_GC);
+    cbw->label.normal_GC = cbw->command.normal_GC;
     
     redisplay = True;
   }

@@ -70,6 +70,7 @@ SOFTWARE.
  border		     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
+ displayList	     DisplayList	XawDisplayList*	NULL
  hSpace 	     HSpace		Dimension	4
  height		     Height		Dimension	0
  mappedWhenManaged   MappedWhenManaged	Boolean		True
@@ -86,6 +87,18 @@ SOFTWARE.
 #ifndef _XtStringDefs_h_
 #define XtNhSpace "hSpace"
 #define XtNvSpace "vSpace"
+#endif
+
+#ifndef XawNdisplayList
+#define XawNdisplayList "displayList"
+#endif
+ 
+#ifndef XawCDisplayList
+#define XawCDisplayList "DisplayList"
+#endif
+
+#ifndef XawRDisplayList
+#define XawRDisplayList "XawDisplayList"
 #endif
 
 /* Class record constants */
