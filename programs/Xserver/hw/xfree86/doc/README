@@ -148,10 +148,14 @@ size, it is split into four parts.  The patch files are:
      XFree86-4.3.0-4.4.0.diff3.gz
      XFree86-4.3.0-4.4.0.diff4.gz
 
-There is also a tarball that contains some files that have components that
-can't be included in a diff.  It is XFree86-4.3.0-4.4.0-diff0.tgz.  These
-patches should be applied to a clean 4.3.0 source tree, working from the
-directory containing the xc/ directory.  The patches should be applied by
+There is also a tarball and a cleanup script that handle files that have com-
+ponents that can't be included in a diff.  These are:
+
+     XFree86-4.3.0-4.4.0-diff0.tgz
+     XFree86-4.3.0-4.4.0-cleanup.sh
+
+These patches should be applied to a clean 4.3.0 source tree, working from
+the directory containing the xc/ directory.  The patches should be applied by
 running:
 
      gzip -d < XFree86-4.3.0-4.4.0.diff1.gz | patch -p0 -E
@@ -159,19 +163,7 @@ running:
      gzip -d < XFree86-4.3.0-4.4.0.diff3.gz | patch -p0 -E
      gzip -d < XFree86-4.3.0-4.4.0.diff4.gz | patch -p0 -E
 
-     rm -f xc/doc/hardcopy/Xext/mit-shm.PS.gz
-     rm -f xc/doc/hardcopy/saver/saver.PS.gz
-     rm -fr xc/fonts/scaled/Ethiopic
-     rm -fr xc/fonts/scaled/Meltho
-     rm -fr xc/programs/Xserver/hw/darwin/bundle
-     rm -f xc/programs/Xserver/hw/hp/input/drivers/XHPKeymaps
-     rm -f xc/programs/Xserver/hw/hp/ngle/ngledoblt.o.8.07
-     rm -f xc/programs/Xserver/hw/xwin/X.ico
-     rm -fr xc/programs/xcursorgen/redglass
-     rm -fr xc/programs/xcursorgen/whiteglass
-     touch xc/extras/Mesa/src/Trace/tr_attrib.c
-     touch xc/lib/fontconfig/NEWS
-
+     sh XFree86-4.3.0-4.4.0-cleanup.sh
      gzip -d < XFree86-4.3.0-4.4.0-diff0.tgz | tar vxf -
 
 To format the XFree86 documentation use the latest version of our doctools
@@ -198,7 +190,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.140 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.141 dawes Exp $
 
 
 $XFree86: $
