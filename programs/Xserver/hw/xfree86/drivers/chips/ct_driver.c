@@ -192,7 +192,9 @@ static void chipsSetPanelType(CHIPSPtr cPtr);
  * choice made in the first PreInit.
  */
 static int pix24bpp = 0;
- 
+
+/* Set the non-documented SAR04 register for overlay/video */
+#define SAR04 
 /*
  * Initialise some arrays that are used in multiple instances of the
  * acceleration code. Set them up here as its a convenient place to do it.
@@ -653,7 +655,8 @@ static const char *fbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
     "cfb8_16ScreenInit",
-    "fb_ScreenInit",
+    "fbScreenInit",
+    "fbPictureInit",
     NULL
 };
 
@@ -661,6 +664,8 @@ static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
     "XAAInit",
+    "XAAFillSolidRects" ,
+    "XAAInitDualFramebufferOverlay",
     "XAAStippleScanlineFuncMSBFirst",
     NULL
 };
@@ -986,10 +991,8 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 {
     pciVideoPtr pciPtr;
     ClockRangePtr clockRanges;
-    char *mod = NULL;
     int i;
     CHIPSPtr cPtr;
-    const char *reqSym = NULL;
     Bool res = FALSE;
 
     if (flags & PROBE_DETECT) return FALSE;
@@ -3323,8 +3326,10 @@ CHIPSEnterVT(int scrnIndex, int flags)
     if(!chipsModeInit(pScrn, pScrn->currentMode))
       return FALSE;
     if ((!(cPtr->Flags & ChipsOverlay8plus16)) &&
-		(cPtr->Flags & ChipsVideoSupport)) 
-      CHIPSResetVideo(pScrn); 
+	(cPtr->Flags & ChipsVideoSupport)
+	&& (cPtr->Flags & ChipsAccelSupport)) 
+        CHIPSResetVideo(pScrn); 
+
     xf86UDelay(50000);
     chipsHWCursorOn(cPtr);
     /* cursor settle delay */
@@ -3862,7 +3867,8 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
 
 	if ((!(cPtr->Flags & ChipsOverlay8plus16)) &&
-	    (cPtr->Flags & ChipsVideoSupport)) {
+	    (cPtr->Flags & ChipsVideoSupport)
+	    && (cPtr->Flags & ChipsAccelSupport)) {
 	    CHIPSInitVideo(pScreen);
     }
 
@@ -4691,7 +4697,12 @@ chipsSave(ScrnInfoPtr pScrn)
     /* save extended registers */
     if (IS_HiQV(cPtr)) {
 	for (i = 0; i < 0xFF; i++) {
-	    ChipsSave->XR[i] = cPtr->readXR(cPtr, i);
+#ifdef SAR04
+	    /* Save SAR04 multimedia register correctly */
+	    if (i == 0x4F)
+	        cPtr->writeXR(cPtr, 0x4E, 0x04);
+#endif
+	    ChipsSave->XR[i] = cPtr->readXR(cPtr,i);
 #ifdef DEBUG
 	    ErrorF("XS%X - %X\n", i, ChipsSave->XR[i]);
 #endif
@@ -4703,11 +4714,6 @@ chipsSave(ScrnInfoPtr pScrn)
 #endif
 	}
 	for (i = 0; i < 0x80; i++) {
-	    /* Save SAR04 multimedia register correctly */
-	    if (i == 0x4F) {
-		cPtr->writeXR(cPtr, 0x4E, 0x04);
-		ChipsSave->MR[i] = cPtr->readMR(cPtr, i);
-	    } else
 		ChipsSave->MR[i] = cPtr->readMR(cPtr, i);
 #ifdef DEBUG
 	    ErrorF("MS%X - %X\n", i, ChipsSave->FR[i]);
@@ -4823,12 +4829,12 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
    
     /* get C&T Specific Registers */
     for (i = 0; i < 0xFF; i++) {
+#ifdef SAR04
 	/* Save SAR04 multimedia register correctly */
-	if (i == 0x4F) {
+	if (i == 0x4F)
 	    cPtr->writeXR(cPtr, 0x4E, 0x04);
-	    ChipsNew->XR[i] = cPtr->readXR(cPtr, i);
-	} else
-	    ChipsNew->XR[i] = cPtr->readXR(cPtr, i);
+#endif
+	ChipsNew->XR[i] = cPtr->readXR(cPtr, i);
     }
     for (i = 0; i < 0x80; i++) {
 	ChipsNew->FR[i] = cPtr->readFR(cPtr, i);
@@ -4969,8 +4975,30 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if ((cPtr->Chipset == CHIPS_CT69000) || (cPtr->Chipset == CHIPS_CT69030)) {
 	/* The 690xx has overflow bits for the horizontal values as well */
 	ChipsNew->CR[0x38] = (((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8;
-	ChipsNew->CR[0x3C] = ((mode->CrtcHSyncEnd >> 3) & 0xC0);
-    }
+#if 0
+	/* We need to redo the overscan voodoo from vgaHW.c */
+	ChipsStd->CRTC[3]  = (ChipsStd->CRTC[3] & ~0x1F) 
+	  | (((mode->CrtcHBlankEnd >> 3) - 1) & 0x1F);
+	ChipsStd->CRTC[5]  = (ChipsStd->CRTC[5] & ~0x80) 
+	  | ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x20) << 2);
+	ChipsNew->CR[0x3C] = ((mode->CrtcHBlankEnd >> 3) - 1) & 0xC0;
+	if ((mode->CrtcHBlankEnd >> 3) == (mode->CrtcHTotal >> 3)) {
+	    int i = (ChipsStd->CRTC[3] & 0x1F) 
+	             | ((ChipsStd->CRTC[5] & 0x80) >> 2) 
+	             | (ChipsNew->CR[0x3C] & 0xC0);
+	    if ((i-- > (ChipsStd->CRTC[2])) &&
+		(mode->CrtcHBlankEnd == mode->CrtcHTotal))
+	        i = 0;
+	    ChipsStd->CRTC[3] = (ChipsStd->CRTC[3] & ~0x1F) | (i & 0x1F);
+	    ChipsStd->CRTC[5] = (ChipsStd->CRTC[5] & ~0x80) | ((i << 2) &0x80);
+	    ChipsNew->CR[0x3C] = (i & 0xC0);
+	}
+#endif
+	ChipsNew->CR[0x3C] = vgaHWHBlankKGA(mode, ChipsStd, 8, 0) << 6;
+    } else
+      vgaHWHBlankKGA(mode, ChipsStd, 6, 0);
+    vgaHWVBlankKGA(mode, ChipsStd, 8, 0);
+
     ChipsNew->CR[0x40] |= 0x80;
 
     /* centering/stretching */
@@ -5171,7 +5199,9 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* Setup the video/overlay */
     if (cPtr->Flags & ChipsOverlay8plus16) {
 	ChipsNew->XR[0xD0] |= 0x10;	/* Force the Multimedia engine on */
+#ifdef SAR04
 	ChipsNew->XR[0x4F] = 0x2A;	/* SAR04 >352 pixel overlay width */
+#endif
 	ChipsNew->MR[0x1E] &= 0xE0;	/* Set Zoom and Direction */
 	if ((!(cPtr->PanelType & ChipsLCD)) && (mode->Flags & V_INTERLACE))
 	    ChipsNew->MR[0x1E] |= 0x10;	/* Interlace */
@@ -5223,7 +5253,9 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #if 0
 	ChipsNew->XR[0xD0] |= 0x10;	/* Force the Multimedia engine on */
 #endif
+#ifdef SAR04
 	ChipsNew->XR[0x4F] = 0x2A;	/* SAR04 >352 pixel overlay width */
+#endif
 	ChipsNew->MR[0x3C] &= 0x18;	/* Ensure that the overlay is off */
 	cPtr->VideoZoomMax = 0x100;
 
@@ -6086,10 +6118,13 @@ chipsRestoreExtendedRegs(ScrnInfoPtr pScrn, CHIPSRegPtr Regs)
 	}
 
 	/* Set SAR04 multimedia register correctly */
-	if (cPtr->Flags & ChipsOverlay8plus16) {
+	if ((cPtr->Flags & ChipsOverlay8plus16)
+	    || (cPtr->Flags & ChipsVideoSupport)) {
+#ifdef SAR04
 	    cPtr->writeXR(cPtr, 0x4E, 0x04);
 	    if (cPtr->readXR(cPtr, 0x4F) != Regs->XR[0x4F])
 		cPtr->writeXR(cPtr, 0x4F, Regs->XR[0x4F]);
+#endif
 	}
 
 	/* Don't touch reserved memory control registers */
