@@ -1366,6 +1366,21 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 		    break;
 	    }
 	    break;
+	case CYBER9388:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x04)
+		ramtype = "EDO Ram";
+    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x08)
+		ramtype = "SDRAM";
+    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x0C) {
+		pTrident->HasSGRAM = TRUE;
+		ramtype = "SGRAM";
+	    }
+	    pTrident->IsCyber = TRUE;
+	    Support24bpp = TRUE;
+	    chipset = "Cyber 9388";
+	    pTrident->NewClockCode = TRUE;
+	    break;
 	case CYBER9397:
     	    pTrident->ddc1Read = Tridentddc1Read;
     	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x04)
