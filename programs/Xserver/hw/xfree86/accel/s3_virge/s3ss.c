@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ss.c,v 3.4 1996/12/27 07:02:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ss.c,v 3.5 1997/01/14 22:17:25 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -105,7 +105,7 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
   * *pwidth);
   */
 
-   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema /*|| ((pGC->planemask & s3BppPMask) != s3BppPMask)*/)
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
@@ -214,7 +214,7 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
         * all.  move on to the next point
         */
 	 ppt++;
-	 psrc += PixmapBytePad(*pwidth, PSZ);
+	 psrc += PixmapBytePad(*pwidth, pDrawable->depth/*PSZ*/);
 	 pwidth++;
       }
    } else {

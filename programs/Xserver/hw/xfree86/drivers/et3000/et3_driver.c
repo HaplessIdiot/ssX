@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/et3000/et3_driver.c,v 1.1 1997/03/06 23:15:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/et3000/et3_driver.c,v 1.2 1997/05/03 09:18:02 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -125,7 +125,7 @@ static int Num_ET3000_ExtPorts =
 XF86ModuleVersionInfo et3VersRec =
 {
         "et3_drv.o",
-        "The XFree86 Project",
+        MODULEVENDORSTRING,
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,

@@ -244,6 +244,8 @@ release.
 <itemize>
   <item>A bug that causes problems when running XF86Setup with cards with
 	less than 2MB of video memory has been fixed.
+  <item>Minor shifts in maximum clock rate under 16 bpp, and inclusion of
+        explicit 15 "bpp" setting.
 </itemize>
 <sect1> W32 server
 <p>
@@ -749,7 +751,7 @@ run at boot time.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.59 1997/01/27 07:47:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.60 1997/05/14 10:33:54 dawes Exp $
 </verb>
 
 </article>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.7 1996/12/27 07:02:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.8 1997/03/10 10:11:49 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -113,13 +113,13 @@ DoCacheExpandPixmap(pci)
    SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC |
 		INC_Y | INC_X | ROP_S );
 
-   while (cur_w * 2 <= pci->w) {
+   while ((cur_w << 1) /*cur_w * 2*/ <= pci->w) {
       SETB_BLT(pci->x, pci->y,
 	       pci->x + cur_w, pci->y,
 	       cur_w - 1, cur_h,
 	       INC_X);
 
-      cur_w *= 2;
+      cur_w <<= 1 /*cur_w *= 2*/;
    }
    if (cur_w != pci->w) {
       SETB_BLT(pci->x, pci->y,
@@ -131,13 +131,13 @@ DoCacheExpandPixmap(pci)
    }
 
    /* Expand in the y direction */
-   while (cur_h * 2 <= pci->h) {
+   while ((cur_h << 1) /*cur_h * 2*/ <= pci->h) {
       SETB_BLT(pci->x, pci->y,
 	       pci->x, pci->y + cur_h,
 	       cur_w - 1, cur_h,
 	       INC_X);
 
-      cur_h *= 2;
+      cur_h <<= 1 /*cur_h *= 2*/;
    }
    if (cur_h != pci->h) {
       SETB_BLT(pci->x, pci->y,
@@ -184,11 +184,6 @@ DoCacheOpStipple(pix)
      PixmapPtr pix;
 {
    CacheInfoPtr pci = &cInfo;
-
-/* SM[07/03/97]
- * Disable Stipples for now until we find a way to fix color expands 
- */
-   return NULL;
 
    if( (pixmap_size) && (pix->drawable.width <= pixmap_size) &&
        (pix->drawable.height <= pixmap_size) ) {
@@ -483,7 +478,7 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
    int   xrot, yrot;
    CacheInfoPtr pci;
 
-   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema /*|| ((pGC->planemask & s3BppPMask) != s3BppPMask)*/)
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {

@@ -1126,6 +1126,8 @@ LINE     #Option "noaccel"      # when problems with accelerator
 LINE     #Option "power_saver"  # enable VESA DPMS
 LINE     #Option "fast_dram"
 LINE     #Option "pci_retry"    # faster, but problematic for ISA DMA
+LINE     #Option "hibit_high"   # see README.tseng -- most cards need this
+LINE     #Option "hibit_low"    # see README.tseng -- mostly for older ET4000 cards
 LINE     #MemBase 0x3C00000     # when automatic MemBase detection doesn't work
 LINE         # -- see README.tseng for more (important) information on MemBase
 

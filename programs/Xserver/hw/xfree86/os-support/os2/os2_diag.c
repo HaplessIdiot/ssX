@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_diag.c,v 3.1 1997/01/27 06:58:07 dawes Exp $ */
 /*
  * (c) Copyright 1997 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -76,9 +76,49 @@ static void check_emx (void)
         }
 }
 
+static void check_bsl(const char *var)
+{
+	char *t1 = strrchr(var,'\\');
+	if (strchr(var,'/')) {
+		ErrorF("xf86-OS/2: \"%s\" must exclusively use backward slashes \"\\\"\n",
+			var);
+	}
+	if (t1 && *(t1+1)=='\0') {
+		ErrorF("xf86-OS/2: \"%s\" mustn't end with \"\\\"\n",var);
+		*t1 = '\0';
+	}
+}
+
+static void check_long(const char* path)
+{
+	FILE *f;
+	char n[300];
+
+	sprintf(n,"%s\\xf86_test_for_very_long_filename",path);
+	f = fopen(n,"w");
+	if (f==NULL) {
+	ErrorF("xf86-OS/2: \"%s\" does not accept long filenames\nmust reside on HPFS or similar\n",
+		path);
+	} else {
+		fclose(f);
+		unlink(n);
+	}
+}
+
+char *check_env_present(const char *env)
+{
+	char *e = getenv(env);
+	if (!e) {
+		ErrorF("xf86-OS/2: You have no \"%s\" environment variable, but need one\n",
+			env);
+		return 0;
+	}
+	return e;
+}
+
 void os2_checkinstallation(void)
 {
-	char *emxopt;
+	char *emxopt, *tmp, *home, *logname, *termcap;
 	int i;
 
 	if (diag_checks) return;
@@ -102,4 +142,21 @@ void os2_checkinstallation(void)
 			}
 		}
 	}
+
+	tmp = check_env_present("TMP");
+	if (tmp) {
+	        check_bsl(tmp);
+	        check_long(tmp);
+	}
+
+	home = check_env_present("HOME");
+	if (home) {
+	        check_bsl(home);
+	        check_long(home);
+	}
+
+	logname = check_env_present("LOGNAME");
+	termcap = check_env_present("TERMCAP");
+	if (termcap)
+	        check_bsl(termcap);
 }

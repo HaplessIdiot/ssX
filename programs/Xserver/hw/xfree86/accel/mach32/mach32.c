@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.71 1997/04/12 13:44:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.72 1997/05/03 09:16:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -159,7 +159,8 @@ ScrnInfoRec mach32InfoRec = {
     {0, },	       	/* OFlagSet xconfigFlag */
     NULL,	       	/* char *chipset */
     NULL,	       	/* char *ramdac */
-    0,			/* int dacSpeed */
+    {0, 0, 0, 0},	/* int dacSpeeds[MAXDACSPEEDS] */
+    0,			/* int dacSpeedBpp */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */
@@ -213,7 +214,7 @@ return &mach32InfoRec;
 XF86ModuleVersionInfo mach32VersRec =
 {
         "libmach32.a",
-        "The XFree86 Project",
+        MODULEVENDORSTRING,
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,
@@ -579,6 +580,7 @@ mach32Probe()
     switch (xf86bpp) {
     case 8:
 	break;
+    case 15:
     case 16:
         if (info->DAC_Type == DAC_BT476) {
 /*
@@ -594,7 +596,7 @@ mach32Probe()
 	    return(FALSE);
 	}
 
-	mach32InfoRec.depth = 16;	/* if 555, set to 15, below */
+	mach32InfoRec.depth = xf86bpp;	/* if 16/555, set to 15, below */
 	mach32InfoRec.bitsPerPixel = 16;
 	if (mach32InfoRec.defaultVisual < 0)
 	    mach32InfoRec.defaultVisual = TrueColor;
@@ -612,10 +614,18 @@ mach32Probe()
 	if (info->DAC_Type != DAC_TLC34075 && info->DAC_Type != DAC_BT481)
 	    ErrorF("number of bpp is 8\n");
 	else
-	    ErrorF("numbers of bpp are 8 and 16\n");
+	    ErrorF("numbers of bpp are 8, 15 and 16\n");
 	return(FALSE);
     }
 
+    if (xf86bpp == 15) {
+        if (xf86weight.red != 5 && xf86weight.green != 5
+            && xf86weight.blue != 5) {
+	    ErrorF("Invalid color weighting\n");
+	    return(FALSE);
+	}
+        mach32WeightMask = mach32WeightMasks[1];
+    }
     if (xf86bpp == 16) {
 	for (i = 0; i < 4; i++) {
 	    if (xf86weight.red == mach32weights[i].red
@@ -647,7 +657,10 @@ mach32Probe()
     if (mach32InfoRec.bitsPerPixel == 16) {
         /* Only the ATI68860 can MUX 4 pixels at 16bpp each */
         if (info->DAC_Type != DAC_ATI68860) {
-            mach32InfoRec.maxClock /= 2;
+            if (info->DAC_Type == DAC_ATI68875)
+                mach32InfoRec.maxClock = mach32MaxClock;
+            else
+                mach32InfoRec.maxClock /= 2;
         }
         /* 8-bit data path DACs have to be double-clocked */
         if (info->DAC_Type == DAC_ATI68830 || info->DAC_Type == DAC_SC11483 ||

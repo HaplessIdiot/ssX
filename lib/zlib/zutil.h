@@ -17,7 +17,7 @@
 
 #include "zlib.h"
 
-#if defined(MSDOS)||defined(VMS)||defined(CRAY)||defined(WIN32)||defined(RISCOS)
+#if defined(MSDOS)||defined(VMS)||defined(CRAY)||defined(WIN32)||defined(RISCOS)||defined(__EMX__)
 #   include <stddef.h>
 #   include <errno.h>
 #else

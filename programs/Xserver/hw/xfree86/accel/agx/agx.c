@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.55 1997/04/12 13:44:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.56 1997/05/03 09:16:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -110,7 +110,8 @@ ScrnInfoRec agxInfoRec = {
     {0, },	       	/* OFlagSet xconfigFlag */
     NULL,       	/* char *chipset */
     NULL,       	/* char *ramdac */
-    0,			/* int dacSpeed */
+    {0, 0, 0, 0},	/* int dacSpeeds[MAXDACSPEEDS] */
+    0,			/* int dacSpeedBpp */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */
@@ -682,7 +683,7 @@ for information on how to manually configure.\n",
       /* has programmable clocks */ 
       agxClockSelectFunc = xgaNiClockSelect;  
       if( OFLG_ISSET(XCONFIG_DACSPEED, &agxInfoRec.xconfigFlag) )
-         xf86MaxClock = min( MAX_XGA_NI_CLOCK, agxInfoRec.dacSpeed );
+         xf86MaxClock = min( MAX_XGA_NI_CLOCK, agxInfoRec.dacSpeeds[0] );
       else
          xf86MaxClock = MAX_XGA_NI_CLOCK_CONSERV;
       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &(agxInfoRec.clockOptions));

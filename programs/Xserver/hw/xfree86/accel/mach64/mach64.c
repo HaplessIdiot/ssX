@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.76 1997/05/17 14:07:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.77 1997/05/28 13:24:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -178,7 +178,8 @@ ScrnInfoRec mach64InfoRec = {
     {0, },	       	/* OFlagSet xconfigFlag */
     NULL,	       	/* char *chipset */
     NULL,               /* char *ramdac */
-    0,                  /* int dacSpeed */
+    {0, 0, 0, 0},	/* int dacSpeeds[MAXDACSPEEDS] */
+    0,			/* int dacSpeedBpp */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */
@@ -232,7 +233,7 @@ ServerInit()
 XF86ModuleVersionInfo mach64VersRec =
 {
 	"libmach64.a", 
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

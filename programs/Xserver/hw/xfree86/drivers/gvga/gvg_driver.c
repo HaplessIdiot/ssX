@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/gvga/gvg_driver.c,v 1.1 1997/03/06 23:15:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/gvga/gvg_driver.c,v 1.2 1997/05/03 09:18:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -119,7 +119,7 @@ vgaVideoChipRec GVGA = {
 XF86ModuleVersionInfo gvgaVersRec =
 {
         "gvga_drv.o",
-        "The XFree86 Project",
+        MODULEVENDORSTRING,
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,

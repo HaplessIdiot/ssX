@@ -1,5 +1,5 @@
 /* REXX */
-/* $XFree86: xc/config/util/buildos2.cmd,v 3.6 1996/12/09 11:48:20 dawes Exp $
+/* $XFree86: xc/config/util/buildos2.cmd,v 3.7 1997/01/05 11:50:00 dawes Exp $
  * this file is supposed to run from the xc/ dir.
  * you must copy it manually to there before using. It is just here
  * in order not to be in the root dir.
@@ -11,6 +11,9 @@ env = 'OS2ENVIRONMENT'
 'copy config\util\indir.cmd \ > nul 2>&1'
 'copy config\util\mkdirhier.cmd \ > nul 2>&1'
 'copy config\imake\imakesvc.cmd \ > nul 2>&1'
+
+IF \ exists('config\cf\host.def') THEN
+    CALL LINEOUT 'config\cf\host.def',' '
 
 CALL create_makefile
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.4 1997/03/27 08:30:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.5 1997/04/08 10:13:04 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -511,15 +511,15 @@ Bool S3Probe()
    	|	 Now set the DAC speed if not already set 	|
 	\*******************************************************/
 
-   if (vga256InfoRec.dacSpeed <= 0) {
-	vga256InfoRec.dacSpeed = s3Ramdacs[s3RamdacType].DacSpeed;
+   if (vga256InfoRec.dacSpeeds[0] <= 0) {
+	vga256InfoRec.dacSpeeds[0] = s3Ramdacs[s3RamdacType].DacSpeed;
    }
    
    if (xf86Verbose) {
       ErrorF("%s %s: Ramdac speed: %d\n",
 	     OFLG_ISSET(XCONFIG_DACSPEED, &vga256InfoRec.xconfigFlag) ?
 	     XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name,
-	     vga256InfoRec.dacSpeed / 1000);
+	     vga256InfoRec.dacSpeeds[0] / 1000);
    }
 
    /*******************************************************************\
@@ -571,8 +571,8 @@ Bool S3Probe()
 	\***************************************/
 
    /* Check that maxClock is not higher than dacSpeed */
-   if (vga256InfoRec.maxClock > vga256InfoRec.dacSpeed)
-      vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+   if (vga256InfoRec.maxClock > vga256InfoRec.dacSpeeds[0])
+      vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
 
    /* Modify vga256InfoRec.maxClock if necessary */
    if(s3clockDoublingPossible) 

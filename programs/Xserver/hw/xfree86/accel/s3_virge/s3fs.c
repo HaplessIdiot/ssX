@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fs.c,v 3.4 1996/12/27 07:02:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fs.c,v 3.5 1997/01/14 22:17:21 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -104,7 +104,7 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema /*|| ((pGC->planemask & s3BppPMask) != s3BppPMask)*/)
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
@@ -151,6 +151,9 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
       return;
 
    n = nInit * miFindMaxBand(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+
+   if (n <= 0) return;
+
    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 
    initPpt = ppt = (DDXPointRec *) ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
@@ -164,29 +167,29 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    n = miClipSpans(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
 		   pptInit, pwidthInit, nInit,
 		   ppt, pwidth, fSorted);
+   if (n > 0) {
+     BLOCK_CURSOR;
+     WaitIdle();
+     WaitQueue(4);
+     SETB_PAT_FG_CLR(pGC->fgPixel);
+     ;SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
+     ;SET_WRT_MASK(pGC->planemask);
+     SETB_MONO_PAT0(~0);
+     SETB_MONO_PAT1(~0);
+     SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC |
+                  MIX_MONO_PATT |
+                  INC_Y | INC_X | s3alu_sp[pGC->alu] );
 
-   BLOCK_CURSOR;
-   WaitIdle();
-   WaitQueue(4);
-   SETB_PAT_FG_CLR(pGC->fgPixel);
-   ;SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
-   ;SET_WRT_MASK(pGC->planemask);
-   SETB_MONO_PAT0(~0);
-   SETB_MONO_PAT1(~0);
-   SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC |
-                MIX_MONO_PATT |
-                INC_Y | INC_X | s3alu_sp[pGC->alu] );
+     while (n--) {
+       SETB_BLT(ppt->x, ppt->y, ppt->x, ppt->y, ((short)*pwidth) - 1, 1, INC_X);
+       ppt++;
+       pwidth++;
+     }
 
-   while (n--) {
-      SETB_BLT(ppt->x, ppt->y, ppt->x, ppt->y, ((short)*pwidth) - 1, 1, INC_X);
-      ppt++;
-      pwidth++;
+     WaitIdle();
+     SETB_CMD_SET(CMD_NOP);
+     UNBLOCK_CURSOR;
    }
-
-   WaitIdle();
-   SETB_CMD_SET(CMD_NOP);
-   UNBLOCK_CURSOR;
-
    DEALLOCATE_LOCAL(initPpt);
    DEALLOCATE_LOCAL(initPwidth);
 }
@@ -208,7 +211,7 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema /*|| ((pGC->planemask & s3BppPMask) != s3BppPMask)*/)
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
@@ -251,6 +254,9 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
       return;
 
    n = nInit * miFindMaxBand(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+
+   if (n <= 0) return;
+
    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 
    initPpt = ppt = (DDXPointRec *) ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
@@ -264,27 +270,27 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    n = miClipSpans(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
 		   pptInit, pwidthInit, nInit,
 		   ppt, pwidth, fSorted);
+   if (n > 0) {
+     xrot = pDrawable->x + pGC->patOrg.x;
+     yrot = pDrawable->y + pGC->patOrg.y;
 
-   xrot = pDrawable->x + pGC->patOrg.x;
-   yrot = pDrawable->y + pGC->patOrg.y;
+     if (pPix == (PixmapPtr) 0) {
+       ErrorF("s3TiledFSpans:  PixmapPtr tile.pixmap == NULL\n");
+       return;
+     }
+     width = pPix->drawable.width;
+     height = pPix->drawable.height;
+     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-   if (pPix == (PixmapPtr) 0) {
-      ErrorF("s3TiledFSpans:  PixmapPtr tile.pixmap == NULL\n");
-      return;
-   }
-   width = pPix->drawable.width;
-   height = pPix->drawable.height;
-   pixWidth = PixmapBytePad(width, pPix->drawable.depth);
-
-   while (n--) {
-      (s3ImageFillFunc) (ppt->x, ppt->y, *pwidth, 1,
+     while (n--) {
+       (s3ImageFillFunc) (ppt->x, ppt->y, *pwidth, 1,
 			 pPix->devPrivate.ptr, pixWidth,
 			 width, height, xrot, yrot,
 			 s3alu[pGC->alu], pGC->planemask);
        ppt++;
        pwidth++;
+     }
    }
-
    DEALLOCATE_LOCAL(initPpt);
    DEALLOCATE_LOCAL(initPwidth);
 }
@@ -306,7 +312,7 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema /*|| ((pGC->planemask & s3BppPMask) != s3BppPMask)*/)
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
@@ -353,6 +359,9 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
       return;
 
    n = nInit * miFindMaxBand(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+
+   if (n <= 0) return;
+
    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 
    initPpt = ppt = (DDXPointRec *) ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
@@ -367,26 +376,27 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		   pptInit, pwidthInit, nInit,
 		   ppt, pwidth, fSorted);
 
-   xrot = pDrawable->x + pGC->patOrg.x;
-   yrot = pDrawable->y + pGC->patOrg.y;
+   if (n > 0) {
+     xrot = pDrawable->x + pGC->patOrg.x;
+     yrot = pDrawable->y + pGC->patOrg.y;
 
-   if (pPix == (PixmapPtr) 0) {
-      ErrorF("s3StipFSpans:  PixmapPtr stipple == NULL\n");
-      return;
-   }
-   width = pPix->drawable.width;
-   height = pPix->drawable.height;
-   pixWidth = PixmapBytePad(width, pPix->drawable.depth);
+     if (pPix == (PixmapPtr) 0) {
+        ErrorF("s3StipFSpans:  PixmapPtr stipple == NULL\n");
+        return;
+     }
+     width = pPix->drawable.width;
+     height = pPix->drawable.height;
+     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-   while (n--) {
-      s3ImageStipple(ppt->x, ppt->y, *pwidth, 1,
+     while (n--) {
+       s3ImageStipple(ppt->x, ppt->y, *pwidth, 1,
 		     pPix->devPrivate.ptr, pixWidth, width, height,
 		     xrot, yrot, pGC->fgPixel,
 		     s3alu[pGC->alu], pGC->planemask);
-      ppt++;
-      pwidth++;
+       ppt++;
+       pwidth++;
+     }
    }
-
    DEALLOCATE_LOCAL(initPpt);
    DEALLOCATE_LOCAL(initPwidth);
 }
@@ -408,7 +418,7 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema /*|| ((pGC->planemask & s3BppPMask) != s3BppPMask)*/)
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
@@ -455,6 +465,9 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
       return;
 
    n = nInit * miFindMaxBand(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+
+   if (n <= 0) return;
+
    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 
    initPpt = ppt = (DDXPointRec *) ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
@@ -469,27 +482,28 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		   pptInit, pwidthInit, nInit,
 		   ppt, pwidth, fSorted);
 
-   xrot = pDrawable->x + pGC->patOrg.x;
-   yrot = pDrawable->y + pGC->patOrg.y;
+   if (n > 0) {
+     xrot = pDrawable->x + pGC->patOrg.x;
+     yrot = pDrawable->y + pGC->patOrg.y;
 
-   if (pPix == (PixmapPtr) 0) {
-      ErrorF("s3StipFSpans:  PixmapPtr stipple == NULL\n");
-      return;
-   }
-   width = pPix->drawable.width;
-   height = pPix->drawable.height;
-   pixWidth = PixmapBytePad(width, pPix->drawable.depth);
+     if (pPix == (PixmapPtr) 0) {
+       ErrorF("s3StipFSpans:  PixmapPtr stipple == NULL\n");
+       return;
+     }
+     width = pPix->drawable.width;
+     height = pPix->drawable.height;
+     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-   while (n--) {
-      s3ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
+     while (n--) {
+       s3ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
 		       pPix->devPrivate.ptr, pixWidth,
 		       width, height,
 		       xrot, yrot, pGC->fgPixel, pGC->bgPixel,
 		       s3alu[pGC->alu], pGC->planemask);
-      ppt++;
-      pwidth++;
+       ppt++;
+       pwidth++;
+     }
    }
-
    DEALLOCATE_LOCAL(initPpt);
    DEALLOCATE_LOCAL(initPwidth);
 }

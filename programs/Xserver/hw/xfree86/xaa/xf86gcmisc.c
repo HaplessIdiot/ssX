@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.14 1997/04/17 08:17:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.15 1997/05/03 09:19:34 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -73,7 +73,7 @@
 # ifdef WriteBitGroup
 #  define useTEGlyphBlt	cfbImageGlyphBlt8
 # else
-#  define useTEGlyphBlt	cfbTEGlyphBlt
+#  define useTEGlyphBlt	cfbImageGlyphBlt8 /* cfbTEGlyphBlt */ /* FIXME!!! [kmg] */
 # endif
 #endif
 

@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ali/ali_driver.c,v 1.1 1997/03/06 23:14:26 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ali/ali_driver.c,v 1.2 1997/05/03 09:17:31 dawes Exp $
  */
 
 #include "X.h"
@@ -195,7 +195,7 @@ static int Num_ALI_ExtPorts =
 XF86ModuleVersionInfo aliVersRec =
 {
 	"ali_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

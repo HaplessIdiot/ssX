@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.8 1996/12/27 07:02:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.9 1997/02/12 08:55:53 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -114,16 +114,13 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 			     srcx, srcy, width, height, dstx, dsty);
 	 break;
       case 24:
-      case 32:	/* temp KJB */
 	 ret = cfb24CopyArea(pSrcDrawable, pDstDrawable, pGC,
 			     srcx, srcy, width, height, dstx, dsty);
 	 break;
-      #if 0
       case 32:
 	 ret = cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
 			     srcx, srcy, width, height, dstx, dsty);
 	 break;
-      #endif
       }
       if (xf86VTSema) WaitIdleEmpty();
       return ret;
@@ -522,16 +519,13 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
 	 break;
       case 24:
-      case 32:	/* temp KJB */
 	 ret = cfb24CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
 	 break;
-      #if 0
       case 32:
 	 ret = cfb32CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
 	 break;
-      #endif
       }
       if (xf86VTSema) WaitIdleEmpty();
       return ret;

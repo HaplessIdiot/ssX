@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.68 1997/01/20 12:35:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.69 1997/05/19 10:04:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -234,8 +234,10 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       base0 &= 0xfc000000;
 	       if (base0 == 0 || base0 != orig_base0) {
 		  /* the aligned address may clash with other devices,
-		     so use a pretty random base address... */
-		  base0 = 0xb4000000;  /* last resort */
+		     so use a pretty random base address as last resort,
+		     0x04000000 seems to be a necessary  for some VLB boards
+		     but won't work with 128MB though :-( */
+		  base0 = 0x04000000;
 		  ErrorF("%s %s: PCI: base address not correctly aligned\n",
 			 XCONFIG_PROBED, s3InfoRec.name);
 		  ErrorF("\t      base address changed from 0x%08lx to 0x%08lx\n",
@@ -455,9 +457,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			   if (s3NewMmio) {
 			      xf86UnMapVidMem(scr_index, MMIO_REGION,
 					      s3MmioMem, S3_NEWMMIO_REGSIZE);
-			      s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
-							 (pointer)(addr+S3_NEWMMIO_REGBASE),
-							 S3_NEWMMIO_REGSIZE);
+			      s3MmioMem = xf86MapVidMem(scr_index, MMIO_REGION,
+							(pointer)(addr+S3_NEWMMIO_REGBASE),
+							S3_NEWMMIO_REGSIZE);
 			   }
 			   if (s3TryAddress((long *)s3VideoMem, pVal,
 					    addr, 4)) {

@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.20 1997/05/03 09:17:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.21 1997/05/27 06:30:54 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -95,7 +95,8 @@ ScrnInfoRec tgaInfoRec = {
     {0, },	       	/* OFlagSet xconfigFlag */
     NULL,	       	/* char *chipset */
     NULL,	       	/* char *ramdac */
-    0,			/* int dacSpeed */
+    {0, 0, 0, 0},	/* int dacSpeeds[MAXDACSPEEDS] */
+    0,			/* int dacSpeedBpp */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */
@@ -349,7 +350,7 @@ tgaProbe()
   tgaInfoRec.chipset = "tga";
   xf86ProbeFailed = FALSE;
 
-  tgaInfoRec.dacSpeed = 135000; 	/* 135MHz for the Bt485 */
+  tgaInfoRec.dacSpeeds[0] = 135000; 	/* 135MHz for the Bt485 */
   tgaInfoRec.maxClock = 135000;		/* 135MHz for the Bt485 */
 
   /* Let's grab the basic mode lines */

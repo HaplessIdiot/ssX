@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.4 1997/04/08 10:13:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.5 1997/04/14 07:05:24 hohndel Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -32,7 +32,7 @@ typedef struct {
   unsigned char StateControl;    /* TS 6 & 7 */
   unsigned char AuxillaryMode;
   unsigned char Misc;           /* ATC 0x16 */
-  unsigned char SegSel;
+  unsigned char SegSel1, SegSel2;
   unsigned char HorOverflow;
   unsigned char ET6KMMAPCtrl;    /* ET6000 -- used for linear memory mapping */
   unsigned char ET6KVidCtrl1;    /* ET6000 -- used for 15/16 bpp modes */
@@ -106,6 +106,14 @@ extern void Check_Tseng_Ramdac();
                      || (TsengRamdacType == ATT20C491_DAC) \
                      || (TsengRamdacType == ATT20C492_DAC) \
                      || (TsengRamdacType == ATT20C493_DAC) )
+
+#define CHIP_SUPPORTS_LINEAR (et4000_type >= TYPE_ET4000W32I)
+
+#define BUS_ISA 0
+#define BUS_MCA 1
+#define BUS_VLB 2
+#define BUS_PCI 3
+
 
 /*
  * From tseng_clocks.c

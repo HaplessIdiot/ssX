@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.1 1997/02/14 12:17:36 hohndel Exp $ */
 
 
 
@@ -100,7 +100,7 @@ extern Elf32_Dyn _DYNAMIC [];
 #define ELF32_R_SYM(x) ((x) >> 8)
 #define ELF32_R_TYPE(x) ((x) & 0xff)
 
-/* x86 Relocation Typrs */
+/* x86 Relocation Types */
 #define R_386_NONE	0
 #define R_386_32	1
 #define R_386_PC32	2
@@ -113,6 +113,61 @@ extern Elf32_Dyn _DYNAMIC [];
 #define R_386_GOTOFF	9
 #define R_386_GOTPC	10
 #define R_386_NUM	11
+
+/* m68k Relocation Types */
+#define R_68K_NONE	0		/* No reloc */
+#define R_68K_32	1		/* Direct 32 bit  */
+#define R_68K_16	2		/* Direct 16 bit  */
+#define R_68K_8		3		/* Direct 8 bit  */
+#define R_68K_PC32	4		/* PC relative 32 bit */
+#define R_68K_PC16	5		/* PC relative 16 bit */
+#define R_68K_PC8	6		/* PC relative 8 bit */
+#define R_68K_GOT32	7		/* 32 bit PC relative GOT entry */
+#define R_68K_GOT16	8		/* 16 bit PC relative GOT entry */
+#define R_68K_GOT8	9		/* 8 bit PC relative GOT entry */
+#define R_68K_GOT32O	10		/* 32 bit GOT offset */
+#define R_68K_GOT16O	11		/* 16 bit GOT offset */
+#define R_68K_GOT8O	12		/* 8 bit GOT offset */
+#define R_68K_PLT32	13		/* 32 bit PC relative PLT address */
+#define R_68K_PLT16	14		/* 16 bit PC relative PLT address */
+#define R_68K_PLT8	15		/* 8 bit PC relative PLT address */
+#define R_68K_PLT32O	16		/* 32 bit PLT offset */
+#define R_68K_PLT16O	17		/* 16 bit PLT offset */
+#define R_68K_PLT8O	18		/* 8 bit PLT offset */
+#define R_68K_COPY	19		/* Copy symbol at runtime */
+#define R_68K_GLOB_DAT	20		/* Create GOT entry */
+#define R_68K_JMP_SLOT	21		/* Create PLT entry */
+#define R_68K_RELATIVE	22		/* Adjust by program base */
+
+/* Alpha Relocation Types */
+#define R_ALPHA_NONE		0	/* No reloc */
+#define R_ALPHA_REFLONG		1	/* Direct 32 bit */
+#define R_ALPHA_REFQUAD		2	/* Direct 64 bit */
+#define R_ALPHA_GPREL32		3	/* GP relative 32 bit */
+#define R_ALPHA_LITERAL		4	/* GP relative 16 bit w/optimization */
+#define R_ALPHA_LITUSE		5	/* Optimization hint for LITERAL */
+#define R_ALPHA_GPDISP		6	/* Add displacement to GP */
+#define R_ALPHA_BRADDR		7	/* PC+4 relative 23 bit shifted */
+#define R_ALPHA_HINT		8	/* PC+4 relative 16 bit shifted */
+#define R_ALPHA_SREL16		9	/* PC relative 16 bit */
+#define R_ALPHA_SREL32		10	/* PC relative 32 bit */
+#define R_ALPHA_SREL64		11	/* PC relative 64 bit */
+#define R_ALPHA_OP_PUSH		12	/* OP stack push */
+#define R_ALPHA_OP_STORE	13	/* OP stack pop and store */
+#define R_ALPHA_OP_PSUB		14	/* OP stack subtract */
+#define R_ALPHA_OP_PRSHIFT	15	/* OP stack right shift */
+#define R_ALPHA_GPVALUE		16
+#define R_ALPHA_GPRELHIGH	17
+#define R_ALPHA_GPRELLOW	18
+#define R_ALPHA_IMMED_GP_16	19
+#define R_ALPHA_IMMED_GP_HI32	20
+#define R_ALPHA_IMMED_SCN_HI32	21
+#define R_ALPHA_IMMED_BR_HI32	22
+#define R_ALPHA_IMMED_LO32	23
+#define R_ALPHA_COPY		24	/* Copy symbol at runtime */
+#define R_ALPHA_GLOB_DAT	25	/* Create GOT entry */
+#define R_ALPHA_JMP_SLOT	26	/* Create PLT entry */
+#define R_ALPHA_RELATIVE	27	/* Adjust by program base */
 
 /* PPC Relocation Types */
 #define R_PPC_NONE              0

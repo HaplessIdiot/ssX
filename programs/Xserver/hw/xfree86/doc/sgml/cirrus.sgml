@@ -7,7 +7,7 @@
 <author> Harm Hanemaayer (<it>H.Hanemaayer@inter.nl.net</it>),
 Randy Hendry (<it>randy@sgi.com</it>) (64xx),
 Corin Anderson (<it>corina@bdc.cirrus.com</it>)
-<date> 19 January 1997
+<date> 24 May 1997
 
 <!-- Table of contents -->
 <toc>
@@ -75,17 +75,24 @@ The following chipsets by Cirrus Logic are supported:
 <tag>CL-GD5446</tag>
 	Another member of the Alpine family of 2D accelerators; similar
         to the CL-GD5436.
-<tag>CL-GD546X</tag>
+<tag>CL-GD5480</tag>
+	Newer Alpine family chip that support synchronous graphics RAM
+	(SGRAM).
+<tag>CL-GD5462, CL-GD5464 and CL-GD5465</tag>
 	The Laguna VisualMedia family of 2D  Accelerators.  These chips 
 	use Rambus RDRAM memory.  The '62 is a 64-bit 2D 
 	accelerator, including a BitBlit engine, video windows (not currently
 	used by the server), and 64x64 HW cursor.  Mono modes have not been
-	tested. The CL-GD5464 is the next chip in the Laguna family, and 
-	is supported and has been tested.
+	tested. The CL-GD5464 is the next chip in the Laguna family, and the
+	CL-GD5465 is the latest member, both have been tested.
 <tag>CL-GD7541/7542/7543/7548</tag>
 	Laptop chipsets more or less compatible with the 5428/3x.
         While has it been tested on some configurations, not all
         configuration may work correctly.
+<tag>CL-GD7555</tag>
+	Limited untested support, without auto-detection, has been
+	provided for this chip which is a 64-bit extension of the 754x
+	family. Use a Chipset "clgd7555" line.
 </descrip>
 
 Here's a list of maximum dot clocks for each supported depth:
@@ -105,7 +112,9 @@ CL-GD5436/1Mb	85 MHz	 110 MHz (3)  60 MHz (3)   40 MHz (3)
 CL-GD5436/2Mb	85 MHz	 135 MHz      85 MHz       85 MHz (3)   60 MHz (3)
 CL-GD5446/1Mb	85 MHz	 110 MHz (3)  60 MHz (3)   40 MHz (3)
 CL-GD5446/2Mb	85 MHz	 135 MHz      85 MHz       85 MHz (3)   60 MHz (3)
-CL-GD546X	170 MHz  170 Mhz      170 MHz      170 MHz      170 MHz
+CL-GD5462	170 MHz  170 Mhz      170 MHz      170 MHz      135 MHz
+CL-GD5464/65	170 MHz  230 Mhz      170 MHz      170 MHz      135 MHz
+CL-GD5480	85 MHz	 200 MHz      100 MHz      100 MHz      50 MHz
 CL-GD754x	80 MHz   80 MHz       40 MHz (4)   (5)
 
 (1) with 512K memory.
@@ -755,11 +764,28 @@ keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 <sect> Tested Configurations <p>
 
+For version 3.2B, the following configurations have received a
+certain amount of testing:
+
+<descrip>
+<tag>CL-GD5446 with 2MB memory on PCI bus</tag>
+	Support for dot clocks > 85 MHz has been fixed. At 16bpp, it
+	has been reported that some stippled edges of window frames
+	may be corrupted or show the wrong colors. The option
+	"xaa_no_pixmap_cache" eliminates the problem.
+
+<tag>CL-GD5464 with 4MB memory on PCI bus</tag>
+
+<tag>CL-GD7543 on PCI bus</tag>
+	
+</descrip>
+
+
 This is a list of configurations that has received testing with one or
-more of the changes introduced in the current version XFree86 3.2A. The
-amount of testing is very small for some of the configurations, and the
-summaries may be incomplete. If you can contribute, please do so. For
-the latest information check the latest version of this document on
+more of the changes introduced in version XFree86 3.2A. The amount of
+testing is very small for some of the configurations, and the summaries
+may be incomplete. If you can contribute, please do so. For the latest
+information check the latest version of this document on
 <it>www.xfree86.org</it>.
 
 <descrip>
@@ -832,6 +858,18 @@ Some configurations for which no up-to-date testing data is available:
 
 <sect> Driver Changes <p>
 
+Changes since XFree86 3.2A:
+<itemize>
+<item>A bug that caused a server crash with memory-mapped I/O operation
+      on some chips has been fixed.
+<item>Correct handling of dot clocks > 85 MHz on the 5436 and 5446.
+<item>Preliminary support for the CL-GD7555 (no detection yet).
+<item>Support has been added for the CL-GD5480 and CL-GD5465.
+<item>32bpp mode has been fixed on some Alpine family chips.
+<item>Support for dot clocks up to 230 MHz has been added for Laguna
+      family chips.
+</itemize>
+
 Changes since XFree86 3.2:
 <itemize>
 <item>Enhanced acceleration using XAA on all chips with a BitBLT
@@ -843,7 +881,7 @@ Changes since XFree86 3.2:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.22 1997/01/25 03:22:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.23 1997/01/27 11:02:50 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.8 1996/06/29 09:07:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.9 1996/12/23 06:44:23 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -74,6 +74,10 @@
 #define   TI_MUX1_DIRECT_565	0x05
 #define   TI_MUX1_DIRECT_555	0x04
 #define   TI_MUX1_DIRECT_664	0x03
+#define   TI_MUX1_TRUE_888	0x46
+#define   TI_MUX1_TRUE_565	0x45
+#define   TI_MUX1_TRUE_555	0x44
+#define   TI_MUX1_TRUE_664	0x43
 #define   TI_MUX1_3025D_888	0x0E     /* 3025 only */
 #define   TI_MUX1_3025D_565	0x0D     /* 3025 only */
 #define   TI_MUX1_3025D_555	0x0C     /* 3025 only */

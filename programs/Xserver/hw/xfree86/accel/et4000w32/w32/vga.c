@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.42 1997/04/12 13:44:16 hohndel Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.43 1997/05/03 09:16:33 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -87,7 +87,8 @@ ScrnInfoRec vga256InfoRec = {
   {0, },                /* OFlagSet xconfigFlag */
   NULL,			/* char *chipset */
   NULL,			/* char *ramdac */
-  0,			/* int dacSpeed */
+  {0, 0, 0, 0},		/* int dacSpeeds[MAXDACSPEEDS] */
+  0,			/* int dacSpeedBpp */
   0,			/* int clocks */
   {0, },		/* int clock[MAXCLOCKS] */
   MAX_W32_CLOCK,	/* int maxClock */
@@ -318,9 +319,9 @@ vgaProbe()
 	  ErrorF("\n");
         }
 
-        /* dacSpeed option processing */
+        /* dacSpeeds option processing */
         
-        if (vga256InfoRec.dacSpeed <= 0) {
+        if (vga256InfoRec.dacSpeeds[0] <= 0) {
           switch(W32RamdacType) {
             case NORMAL_DAC:
             case ATT20C47xA_DAC:
@@ -330,16 +331,17 @@ vgaProbe()
             case ATT20C493_DAC:
             case ATT20C491_DAC:
             case ATT20C492_DAC:
-                                vga256InfoRec.dacSpeed = MAX_W32_CLOCK;
+                                vga256InfoRec.dacSpeeds[0] = MAX_W32_CLOCK;
                                 break;
             case GENDAC_DAC:
             case ICS5341_DAC:
+	    case STG1702_DAC:
             case STG1703_DAC:
             case ET6000_DAC:
-                                vga256InfoRec.dacSpeed = 135000;
+                                vga256InfoRec.dacSpeeds[0] = 135000;
                                 break;
             default:
-               vga256InfoRec.dacSpeed = MAX_W32_CLOCK;
+               vga256InfoRec.dacSpeeds[0] = MAX_W32_CLOCK;
           }
         }
 
@@ -347,15 +349,15 @@ vgaProbe()
           ErrorF("%s %s: Ramdac speed: %d\n",
                  OFLG_ISSET(XCONFIG_DACSPEED, &vga256InfoRec.xconfigFlag) ?
                  XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name,
-                 vga256InfoRec.dacSpeed / 1000);
+                 vga256InfoRec.dacSpeeds[0] / 1000);
         }
 
-        /* Check that maxClock is not higher than dacSpeed */
-        if (vga256InfoRec.maxClock > vga256InfoRec.dacSpeed)
-          vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+        /* Check that maxClock is not higher than dacSpeeds */
+        if (vga256InfoRec.maxClock > vga256InfoRec.dacSpeeds[0])
+          vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
 
-        /* maxClock  = dacSpeed , unless we use pixel multiplexing (?) */
-          vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+        /* maxClock  = dacSpeeds , unless we use pixel multiplexing (?) */
+          vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
 
         if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
           if (OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions))
@@ -555,6 +557,7 @@ vgaProbe()
           do {
              switch(W32RamdacType) {
              case ICS5341_DAC:
+	     case STG1702_DAC:
              case STG1703_DAC:
                 /*
                  * This one depend on pixel multiplexing for 8bpp.

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.24 1997/05/12 13:28:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.25 1997/05/18 13:58:13 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -34,6 +34,10 @@
 #include "xf86Xinput.h"
 #include "xf86Procs.h"
 #include "mipointer.h"
+
+#ifdef DPMSExtension
+#include "extensions/dpms.h"
+#endif
 
 #include "exevents.h"	/* AddInputDevice */
 
@@ -807,6 +811,10 @@ xf86eqProcessInputEvents ()
     {
 	if (screenIsSaved == SCREEN_SAVER_ON)
 	    SaveScreens (SCREEN_SAVER_OFF, ScreenSaverReset);
+#ifdef DPMSExtension
+        if (DPMSPowerLevel != DPMSModeOn)
+            DPMSSet(DPMSModeOn);
+#endif
 
 	e = &xf86EventQueue.events[xf86EventQueue.head];
 	/*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.14 1997/01/20 12:35:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.16 1997/03/10 10:11:51 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -698,7 +698,7 @@ s3AdjustFrame(int x, int y)
     * to catch them all only even base values will be used.
     */
 
-   origBase = (y * s3DisplayWidth + x) * s3Bpp;
+   origBase = (y * s3DisplayWidth + x) * realS3Bpp /*s3Bpp*/;
    Base = (origBase >> 2) & ~1;
 
     /* STREAMS handler */
@@ -717,8 +717,12 @@ s3AdjustFrame(int x, int y)
            ( (0x7ff - x) << 16 ) | (0x7ff - y) & 0xf800f800;
 	   #endif
 	 #else
-         ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr0 = 
-		((y * s3DisplayWidth + (x & ~3)) * s3Bpp) /* & ~3 */;
+	 if (S3_ViRGE_VX_SERIES(s3ChipId))
+	   ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr0 = 
+	     ((y * s3DisplayWidth + (x & ~7)) * realS3Bpp/*s3Bpp*/);
+	 else
+	   ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr0 = 
+	     ((y * s3DisplayWidth + (x & ~3)) * realS3Bpp/*s3Bpp*/) /* & ~3 */;
          #endif
          }
     } else {
@@ -738,7 +742,7 @@ s3AdjustFrame(int x, int y)
 #ifdef XFreeXDGA
    if (!(s3InfoRec.directMode & XF86DGADirectMouse)) {
 #endif
-      s3AdjustCursorXPos = (origBase - (Base << 2)) / s3Bpp;
+      s3AdjustCursorXPos = (origBase - (Base << 2)) / realS3Bpp/*s3Bpp*/;
 
       if (s3ModeSwitched) {
          s3ModeSwitched = FALSE;

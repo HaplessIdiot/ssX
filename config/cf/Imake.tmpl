@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.38 1997/05/12 13:27:49 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.39 1997/05/21 15:16:56 dawes Exp $
 XCOMM
 
 /*
@@ -823,10 +823,10 @@ TCLIBDIR = TclLibDir
 #else
 #define Malloc0ReturnsNull NO
 #endif
+#endif
 #if Malloc0ReturnsNull
 #ifndef Malloc0ReturnsNullDefines
 #define Malloc0ReturnsNullDefines -DMALLOC_0_RETURNS_NULL
-#endif
 #endif
 #endif
 #ifndef ToolkitStringsABIOptions

@@ -15,7 +15,7 @@
 
 <sect>Supported Cards, RAMDACs, and Bits Per Pixel<p>
 The base support in the Mach32 X server is for 8 bpp, with a dot clock
-of up to 80 MHz.  At present 16 bpp is supported on only three of the
+of up to 80 MHz.  At present 15/16 bpp is supported on only three of the
 many RAMDACs; however those three cover the most commonly sold cards.
 <p>
 <verb>
@@ -25,7 +25,7 @@ Default           80MHz       8      1280x1024i            2Mb
 Default           80MHz       8      1024x768              1Mb
 
 ATI68875         135MHz       8      1280x1024             2Mb
-ATI68875          67MHz      16      1024x768              2Mb
+ATI68875          80MHz      16      1024x768              2Mb
 
 AT&amp;T20C49x        80MHz       8      1024x768              1Mb
 AT&amp;T20C49x        40MHz      16       800x600              2Mb
@@ -139,7 +139,7 @@ comp.windows.x.i386unix newsgroup.
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach32.sgml,v 3.4 1997/01/24 09:32:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach32.sgml,v 3.5 1997/01/25 03:21:58 dawes Exp $
 
 
 

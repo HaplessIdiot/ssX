@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.58 1997/05/12 13:27:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.59 1997/05/18 12:12:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -104,6 +104,7 @@ typedef struct {
 } MonRec, *MonPtr;
 
 #define MAXCLOCKS   128
+#define MAXDACSPEEDS  4  /* for <= 8, 16, 24, 32bpp */
 
 /* Set default max allowed clock to 90MHz */
 #define DEFAULT_MAX_CLOCK	90000
@@ -184,7 +185,8 @@ typedef struct {
   OFlagSet	 xconfigFlag;
   char           *chipset;
   char           *ramdac;
-  int            dacSpeed;
+  int            dacSpeeds[MAXDACSPEEDS];
+  int            dacSpeedBpp;
   int            clocks;
   int            clock[MAXCLOCKS];
   int            maxClock;
@@ -299,6 +301,10 @@ typedef enum {
 
 #define MODINFOSTRING1	0xef23fdc5
 #define MODINFOSTRING2	0x10dc023a
+
+#ifndef MODULEVENDORSTRING
+#define MODULEVENDORSTRING	"The XFree86 Project"
+#endif
 
 /* this structure is expected to be returned by initfunc by MAGIC_VERSION */
 typedef struct {

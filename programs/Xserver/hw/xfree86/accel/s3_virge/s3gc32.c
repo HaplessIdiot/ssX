@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3gc32.c,v 3.1 1996/10/03 08:33:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3gc32.c,v 3.2 1996/12/27 07:02:36 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -573,27 +573,33 @@ s3ValidateGC(pGC, changes, pDrawable)
 	      int   width = pGC->tile.pixmap->drawable.width * 32;
 
 	      if ((width <= PPW*PSZ) && !(width & (width - 1))) {
+/*
 		 mfbCopyRotatePixmap(pGC->tile.pixmap,
+*/
+		 cfb32CopyRotatePixmap(pGC->tile.pixmap,
 				     &devPriv->pRotatedPixmap,
 				     xrot, yrot);
 		 new_pix = TRUE;
 	      }
 	   }
 	   break;
-#if 0 /* XXX: why nothing? */
+/*#if 0*/ /* XXX: why nothing? */
 	case FillStippled:
 	case FillOpaqueStippled:
 	   {
 	      int   width = pGC->stipple->drawable.width;
 
 	      if ((width <= 64) && !(width & (width - 1))) {
+/*
 		 mfbCopyRotatePixmap(pGC->stipple,
+*/
+		 cfb32CopyRotatePixmap(pGC->stipple,
 				     &devPriv->pRotatedPixmap, xrot, yrot);
 		 new_pix = TRUE;
 	      }
 	   }
 	   break;
-#endif
+/*#endif*/
       }
       if (!new_pix && devPriv->pRotatedPixmap) {
 	 cfb32DestroyPixmap(devPriv->pRotatedPixmap);
@@ -669,8 +675,8 @@ s3ValidateGC(pGC, changes, pDrawable)
 	   case LineDoubleDash:
 	      if (pGC->lineWidth == 0) {
 		 if (pGC->fillStyle == FillSolid) {
-		    pGC->ops->Polylines = s3Dline;
-		    pGC->ops->PolySegment = s3Dsegment;
+		    pGC->ops->Polylines = /*s3Dline*/ s3Line ;
+		    pGC->ops->PolySegment = /*s3Dsegment*/ s3Segment  ;
 		 } else
 		    pGC->ops->Polylines = miWideDash;
 	      } else
@@ -721,8 +727,8 @@ s3ValidateGC(pGC, changes, pDrawable)
 	   case LineOnOffDash:
 	   case LineDoubleDash:
 	      if (pGC->lineWidth == 0 && pGC->fillStyle == FillSolid) {
-		 pGC->ops->Polylines = cfb32LineSD;
-		 pGC->ops->PolySegment = cfb32SegmentSD;
+		 pGC->ops->Polylines = /*s3Dline*/ s3Line ;
+		 pGC->ops->PolySegment = /*s3Dsegment*/ s3Segment ;
 	      } else
 		 pGC->ops->Polylines = miWideDash;
 	      break;
@@ -791,7 +797,10 @@ s3ValidateGC(pGC, changes, pDrawable)
 
 	   case FillTiled:
 	      if (devPriv->pRotatedPixmap) {
+/*
 		 if (pGC->alu == GXcopy && (pGC->planemask & 0xffffffff) == 0xffffffff)
+*/
+		 if (pGC->alu == GXcopy && (pGC->planemask & 0x00ffffff) == 0x00ffffff)
 		    pGC->ops->FillSpans = cfb32Tile32FSCopy;
 		 else
 		    pGC->ops->FillSpans = cfb32Tile32FSGeneral;
@@ -854,5 +863,3 @@ else {
       }
    }
 }
-
-

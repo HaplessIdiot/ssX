@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3Cursor.c,v 3.5 1996/12/27 07:02:18 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3Cursor.c,v 3.6 1997/03/10 10:11:46 hohndel Exp $
  *
  * Copyright 1991 MIPS Computer Systems, Inc.
  *
@@ -309,8 +309,8 @@ s3LoadCursor(pScr, pCurs, x, y)
    if (!(s3InfoRec.modes->Flags & V_DBLSCAN)) {
        MemToBus(cursorbuffer, (char *) ram, n);
        }
-/* Disable this for now for the doublescan cursor mode, until I figured 
- * out if I'm doing it right.
+/* The following code is for doublesacn modes.
+ */
 #define S3CURSORRAMWIDTH 16   
    else {
       ram_loc = 0;
@@ -322,7 +322,6 @@ s3LoadCursor(pScr, pCurs, x, y)
 	ram_loc += S3CURSORRAMWIDTH;
 	}
       }
-*/ 
 
    UNBLOCK_CURSOR;
 

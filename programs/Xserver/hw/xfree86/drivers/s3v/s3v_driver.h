@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.h,v 1.4 1997/04/17 08:17:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.h,v 1.5 1997/05/03 09:18:38 dawes Exp $ */
 
 /* Header file for ViRGE server */
 
@@ -14,10 +14,12 @@ typedef struct {
    unsigned char SR10, SR11, SR12, SR13, SR15, SR18; /* SR9-SR1C, ext seq. */
    unsigned char Clock;
    unsigned char s3DacRegs[0x101];
-   unsigned char CR31, CR32, CR33, CR34, CR36, CR3A, CR3B, CR3C, CR42, CR43;
-   unsigned char CR51, CR53, CR54, CR58;   
-   unsigned char CR59, CR5A, CR5D,CR5E;
-   unsigned char CR61, CR63, CR65, CR66, CR67, CR68, CR69; /* Video attrib. */
+   unsigned char CR31, CR33, CR34, CR36, CR3A, CR3B, CR3C;
+   unsigned char CR42, CR43;
+   unsigned char CR51, CR53, CR54, CR58, CR5D, CR5E;
+   unsigned char CR63, CR65, CR66, CR67, CR68, CR69; /* Video attrib. */
+   unsigned char CR86;
+   unsigned char CR90;
    unsigned char ColorStack[8]; /* S3 hw cursor color stack CR4A/CR4B */
    unsigned int  STREAMS[22];   /* Streams regs */
    unsigned int  MMPR0, MMPR1, MMPR2, MMPR3;   /* MIU regs */

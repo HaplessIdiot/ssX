@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.113 1997/03/27 08:30:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.114 1997/05/12 13:27:55 hohndel Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -294,16 +294,21 @@ s3Init(mode)
        * Set up the Serial Access Mode 256 Words Control
        *   (bit 6 in CR58)
        */
+      outb(vgaCRIndex, 0x58);
+      s3SAM256 = inb(vgaCRReg) & 0x80;
+
       if (S3_968_SERIES(s3ChipId) || (S3_964_SERIES(s3ChipId) &&
 	  !OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)))
-         s3SAM256 = 0x40;
+         s3SAM256 |= 0x40;
       else if ((OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
                S3_928_ONLY(s3ChipId)) ||
 	       OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
-         s3SAM256 = 0x80; /* set 6 MCLK cycles for R/W time on Mercury */
-      else
-         s3SAM256 = 0x00;
+         s3SAM256 |= 0x80; /* set 6 MCLK cycles for R/W time on Mercury */
 
+      if (OFLG_ISSET(OPTION_EARLY_RAS_PRECHARGE, &s3InfoRec.options))
+	 s3SAM256 |= 0x80;
+      if (OFLG_ISSET(OPTION_LATE_RAS_PRECHARGE, &s3InfoRec.options))
+	 s3SAM256 &= 0x7f;
 
       if (DAC_IS_TI3025) {
  	  outb(vgaCRIndex, 0x5C);
@@ -745,15 +750,21 @@ s3Init(mode)
    } else
 #endif
       {
+	 int pci_disc;
+	 if (OFLG_ISSET(OPTION_NO_PCI_DISC, &s3InfoRec.options))
+	    pci_disc = 0x00;
+	 else
+	    pci_disc = 0x80;
+
 	 outb(vgaCRIndex, 0x66);  /* set CR66_7 before CR3A_7 */
-	 tmp = inb(vgaCRReg);
-	 outb(vgaCRReg, tmp | 0x80);
+	 tmp = inb(vgaCRReg) & 0x7f;
+	 outb(vgaCRReg, tmp | pci_disc);
 	 
 	 outb(vgaCRIndex, 0x3a);
 	 if (OFLG_ISSET(OPTION_SLOW_DRAM_REFRESH, &s3InfoRec.options))
-	    outb(vgaCRReg, 0xb7);
+	    outb(vgaCRReg, 0x37 | pci_disc);
 	 else
-	    outb(vgaCRReg, 0xb5);
+	    outb(vgaCRReg, 0x35 | pci_disc);
       }
 
    outb(vgaCRIndex, 0x3b);
@@ -1045,7 +1056,13 @@ s3Init(mode)
 
       outb(vgaCRIndex, 0x3b);
       if (DAC_IS_IBMRGB528) {
-	 if (s3Bpp==1)
+	 if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options)) {
+	    itmp = (( (new->CRTC[0] + ((i&0x01)<<8)) * 3
+		     + new->CRTC[4] + ((i&0x10)<<4) + 1) / 4) & ~1;
+	    if (itmp-(new->CRTC[4] + ((i&0x10)<<4)) < 4)
+	       itmp = (  new->CRTC[0] + ((i&0x01)<<8) - 2) & ~1;
+	 }
+	 else if (s3Bpp==1)
 	    itmp = ((new->CRTC[4] + ((i&0x10)<<4) + 2) + 1) & ~1;
 	 else
 	    itmp = ((new->CRTC[4] + ((i&0x10)<<4) + 4) + 1) & ~1;

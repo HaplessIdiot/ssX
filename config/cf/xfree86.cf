@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.161 1997/05/03 09:14:42 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.162 1997/05/04 05:26:14 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -477,7 +477,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  */
 #ifndef XF86CardDrivers
 # ifdef AlphaArchitecture
-#  define XF86CardDrivers	trident mga
+#  define XF86CardDrivers	trident mga s3v
 # else
 #  define XF86CardDrivers	nv tseng et3000 wd gvga ati sis trident \
 				cirrus ncr compaq mga oak al2101 ali \
@@ -500,7 +500,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 
 #ifndef XF86SvgaDrivers
 # ifdef AlphaArchitecture
-#  define XF86SvgaDrivers	mga trident
+#  define XF86SvgaDrivers	mga trident s3v
 # else
 #  define XF86SvgaDrivers	nv tseng et3000 wd gvga ati sis trident \
 				cirrus ncr compaq mga oak al2101 ali \
@@ -554,7 +554,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 # if !defined(AlphaArchitecture)
 #  define XF86S3Drivers		newmmio mmio_928 s3_generic
 # else
-#  define XF86S3Drivers		mmio_928 s3_generic newmmio
+#  define XF86S3Drivers		newmmio mmio_928 s3_generic
 # endif
 #endif
 
@@ -566,7 +566,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 # define XF86W32Drivers		et4000w32
 #endif
 
-#if XF68FBDevServer
+#if XF68FBDevServer || XF68LoaderServer
 # ifndef XF68FBDevIPLAN2p2
 #  define XF68FBDevIPLAN2p2	YES
 # endif
@@ -804,6 +804,11 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #define BuildDPMSExt			YES
 #endif
 
+#if Malloc0ReturnsNull
+#ifndef XtMalloc0ReturnsNullDefines
+#define XtMalloc0ReturnsNullDefines	Malloc0ReturnsNullDefines -DXTMALLOC_BC
+#endif
+#endif
 
 #ifndef UseInternalMalloc
 #define UseInternalMalloc	YES

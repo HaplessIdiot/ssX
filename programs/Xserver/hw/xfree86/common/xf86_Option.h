@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.72 1997/05/12 13:28:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.73 1997/05/21 15:17:08 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -155,6 +155,7 @@ typedef struct {
 #define OPTION_SUSPEND_HACK	135 /* (CT) Use different suspend/resume scheme */
 #define OPTION_18_BIT_BUS	136 /* (CT) Use 18bit TFT bus for 24bpp mode */
 #define OPTION_PCI_RETRY	137 /* Use PCI-retry instead of busy-waiting */
+#define OPTION_NO_PCI_DISC	138 /* Disable PCI disconnect (S3) */
 
 /* Debugging options */
 #define OPTION_SHOWCACHE	150 /* Allow cache to be seen (S3) */
@@ -372,6 +373,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "suspend_hack",	OPTION_SUSPEND_HACK },
   { "use_18bit_bus",	OPTION_18_BIT_BUS },
   { "pci_retry",	OPTION_PCI_RETRY },
+  { "no_pci_disconnect",	OPTION_NO_PCI_DISC },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.168 1997/05/03 09:17:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.169 1997/05/12 13:27:54 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -168,7 +168,8 @@ ScrnInfoRec s3InfoRec =
    {{0}},              		/* OFlagSet xconfigFlag */
    NULL,			/* char *chipset */
    NULL,			/* char *ramdac */
-   0,				/* int dacSpeed */
+   {0, 0, 0, 0},		/* int dacSpeeds[MAXDACSPEEDS] */
+   0,				/* int dacSpeedBpp */
    0,				/* int clocks */
    {0,},			/* int clock[MAXCLOCKS] */
    0,				/* int maxClock */
@@ -216,7 +217,7 @@ ScrnInfoRec s3InfoRec =
 XF86ModuleVersionInfo s3VersRec =
 {
 	"libs3.a", 
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
@@ -707,13 +708,12 @@ s3GetPCIInfo()
     * S3 868/968 only pretend to need 32MB and thus fool 
     * the BIOS PCI auto configuration :-(  */
  
-   if (   info.ChipType == S3_868 
-       || info.ChipType == S3_968 
-       || info.ChipType == S3_TRIO_32_64  /* only needed for Trio64V+ */
-       || info.ChipType == S3_TRIO64UVP
-       || info.ChipType == S3_TRIO64V2
-       || info.ChipType == S3_AURORA64VP
-       /* || info.ChipType == S3_ViRGE */) {
+   if (found 
+       && info.ChipType != S3_928
+       && info.ChipType != S3_864
+       && info.ChipType != S3_964
+       && (info.ChipType == S3_TRIO_32_64 && info.ChipRev < 0x40)  /* only Trio64V+ */
+       ) {
       unsigned long base0;
       char *probed;
       char map_64m[64];
@@ -856,7 +856,7 @@ s3Probe()
    char *card, *serno, *elsa_modes;
    int card_id, max_pix_clock, max_mem_clock, hwconf;
    int lookupFlags;
-   unsigned char tmp;
+   unsigned char tmp, cr66;
 
    Bool OldPixMuxStatus;
 
@@ -974,7 +974,7 @@ s3Probe()
 	 ErrorF("%s %s: S3 ViRGE chipset: please load \"libs3v.a\" module\n",
 		XCONFIG_PROBED, s3InfoRec.name);
 #else
-         ErrorF("%s %s: S3 ViRGE chipset: please use \"XF86_S3V\" serve\n",
+         ErrorF("%s %s: S3 ViRGE chipset: please use \"XF86_S3V\" server\n",
 		XCONFIG_PROBED,s3InfoRec.name);
 #endif
       } else {
@@ -1172,6 +1172,8 @@ s3Probe()
    OFLG_SET(OPTION_SLOW_VRAM, &validOptions);
    OFLG_SET(OPTION_SLOW_DRAM_REFRESH, &validOptions);
    OFLG_SET(OPTION_FAST_VRAM, &validOptions);
+   OFLG_SET(OPTION_EARLY_RAS_PRECHARGE, &validOptions);
+   OFLG_SET(OPTION_LATE_RAS_PRECHARGE, &validOptions);
    OFLG_SET(OPTION_TRIO32_FC_BUG, &validOptions);
    OFLG_SET(OPTION_S3_968_DASH_BUG, &validOptions);
    OFLG_SET(OPTION_TRIO64VP_BUG1, &validOptions);
@@ -1179,6 +1181,7 @@ s3Probe()
    OFLG_SET(OPTION_TRIO64VP_BUG3, &validOptions);
    OFLG_SET(OPTION_ELSA_W2000PRO_X8, &validOptions);
    OFLG_SET(OPTION_MIRO_80SV, &validOptions);
+   OFLG_SET(OPTION_NO_PCI_DISC, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
 
 #ifdef __alpha__
@@ -1257,6 +1260,14 @@ s3Probe()
 	| Determine card vendor to aid in clockchip detection |
 	\*****************************************************/
 	
+   /* reset S3 graphics engine to avoid memory corruption */
+   if (S3_TRIO64V_SERIES(s3ChipId)) {
+     outb(vgaCRIndex, 0x66);
+     cr66 = inb(vgaCRReg);
+     outb(vgaCRReg, i |  0x02);
+     usleep(10000);  /* wait a little bit... */
+   }
+
    card_id = s3DetectMIRO_20SV_Rev(s3InfoRec.BIOSbase);
    if (card_id > 1) {
       ErrorF("%s %s: MIRO 20SV Rev.2 or newer detected.\n",
@@ -1292,6 +1303,13 @@ s3Probe()
 
    card_id = s3DetectELSA(s3InfoRec.BIOSbase, &card, &serno, &max_pix_clock,
 			  &max_mem_clock, &hwconf, &elsa_modes);
+
+   if (S3_TRIO64V_SERIES(s3ChipId)) {
+     outb(vgaCRIndex, 0x66);
+     outb(vgaCRReg, cr66 & ~0x02);  /* clear reset flag */
+     usleep(10000);  /* wait a little bit... */
+   }
+
    if (card_id > 0) {
       if (s3BiosVendor == UNKNOWN_BIOS) 
 	 s3BiosVendor = ELSA_BIOS;
@@ -1306,8 +1324,8 @@ s3Probe()
       xfree(serno);
       xfree(elsa_modes);
 
-      if (s3InfoRec.dacSpeed <= 0)
-	 s3InfoRec.dacSpeed = max_pix_clock;
+      if (s3InfoRec.dacSpeeds[0] <= 0)
+	 s3InfoRec.dacSpeeds[0] = max_pix_clock;
 
       do {
 	 switch (card_id) {
@@ -1658,18 +1676,30 @@ s3Probe()
    }
 
 	/*******************************************************\
-   	|	 Now set the DAC speed if not already set 	|
+   	|	 Now set the DAC speeds if not already set 	|
 	\*******************************************************/
 
-   if (s3InfoRec.dacSpeed <= 0) {
-	s3InfoRec.dacSpeed = s3Ramdacs[s3RamdacType].DacSpeed;
+   if (s3InfoRec.dacSpeeds[0] <= 0) {
+	s3InfoRec.dacSpeeds[0] = s3Ramdacs[s3RamdacType].DacSpeed;
    }
+   if (s3InfoRec.dacSpeedBpp <= 0)
+      if (xf86bpp > 24 && s3InfoRec.dacSpeeds[3] > 0)
+	 s3InfoRec.dacSpeedBpp = s3InfoRec.dacSpeeds[3];
+      else if (xf86bpp >= 24 && s3InfoRec.dacSpeeds[2] > 0)
+	 s3InfoRec.dacSpeedBpp = s3InfoRec.dacSpeeds[2];
+      else if (xf86bpp > 8 && xf86bpp < 24 && s3InfoRec.dacSpeeds[1] > 0)
+	 s3InfoRec.dacSpeedBpp = s3InfoRec.dacSpeeds[1];
+      else if (xf86bpp <= 8 && s3InfoRec.dacSpeeds[0] > 0)
+	 s3InfoRec.dacSpeedBpp = s3InfoRec.dacSpeeds[0];
    
    if (xf86Verbose) {
-      ErrorF("%s %s: Ramdac speed: %d\n",
+      ErrorF("%s %s: Ramdac speed: %d MHz",
 	     OFLG_ISSET(XCONFIG_DACSPEED, &s3InfoRec.xconfigFlag) ?
 	     XCONFIG_GIVEN : XCONFIG_PROBED, s3InfoRec.name,
-	     s3InfoRec.dacSpeed / 1000);
+	     s3InfoRec.dacSpeeds[0] / 1000);
+      if (s3InfoRec.dacSpeedBpp > 0 && s3InfoRec.dacSpeedBpp != s3InfoRec.dacSpeeds[0])
+	 ErrorF("  (%d MHz for %d bpp)",s3InfoRec.dacSpeedBpp / 1000, xf86bpp);
+      ErrorF("\n");
    }
 
    /*******************************************************************\
@@ -1712,9 +1742,9 @@ s3Probe()
 	|	Last minute Clock Checks 	|
 	\***************************************/
 
-   /* Check that maxClock is not higher than dacSpeed */
-   if (s3InfoRec.maxClock > s3InfoRec.dacSpeed)
-      s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+   /* Check that maxClock is not higher than dacSpeeds */
+   if (s3InfoRec.maxClock > s3InfoRec.dacSpeeds[0])
+      s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0];
 
    /* Check if this exceeds the clock chip's limit */
    if (clockDoublingPossible)
@@ -1814,7 +1844,7 @@ s3Probe()
 		     s3InfoRec.clocks = 16;
 	       }
 	       if (s3InfoRec.clock[j] * 2 > pixMuxMinClock &&
-		   s3InfoRec.clock[j] * 2 <= s3InfoRec.dacSpeed)
+		   s3InfoRec.clock[j] * 2 <= s3InfoRec.dacSpeeds[0])
 		  s3InfoRec.clock[j + 16] = s3InfoRec.clock[j] * 2;
 	       else
 		  s3InfoRec.clock[j + 16] = 0;
@@ -1854,6 +1884,7 @@ s3Probe()
 	 case S3_GENDAC_DAC:
 	 case S3_TRIO32_DAC:
 	 case S3_TRIO64_DAC:
+	 case S3_TRIO64V2_DAC:
 	    /*
 	     * We should never get here since these have a programmable
 	     * clock built in.
@@ -2565,7 +2596,7 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose, int flag)
 	 case IBMRGB525_DAC:
 	 case IBMRGB528_DAC:
 	    if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options)) {
-	       if (pMode->SynthClock > 80000 && s3Bpp <= 2)
+	       if (pMode->SynthClock > 80000 && s3Bpp == 1)
 		  pMode->Flags |= V_DBLCLK;
 	    }
 	    else if (pMode->SynthClock > 80000 || S3_968_SERIES(s3ChipId)) {
@@ -2604,6 +2635,7 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose, int flag)
 	    break;
 	 case S3_TRIO32_DAC:
 	 case S3_TRIO64_DAC:
+	 case S3_TRIO64V2_DAC:
 	    switch (s3Bpp) {
 	    case 1:
 #if 0  
@@ -2661,6 +2693,8 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose, int flag)
 		  else 
 		     pMode->Private[S3_INVERT_VCLK] = 0;
 	       } 
+	       else if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options))
+		  pMode->Private[S3_INVERT_VCLK] = 0;
 	       else if (s3Bpp == 4) 
 		  pMode->Private[S3_INVERT_VCLK] = 0;
 	       else if (s3BiosVendor == STB_BIOS && s3Bpp == 2 
@@ -2749,6 +2783,14 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose, int flag)
 		  else 
 		     pMode->Private[S3_BLANK_DELAY] = 0x06;
 	       }
+	       else if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options)) {
+		  if (s3Bpp == 1 && (pMode->Flags & V_DBLCLK))
+		     pMode->Private[S3_BLANK_DELAY] = 0x21;
+		  else if (s3Bpp == 4 && s3InfoRec.clock[pMode->Clock] >  135000)
+		     pMode->Private[S3_BLANK_DELAY] = 0x01;
+		  else 
+		     pMode->Private[S3_BLANK_DELAY] = 0x10;
+	       }
 	       else
 		  pMode->Private[S3_BLANK_DELAY] = 0x00;
 	    } else {
@@ -2797,6 +2839,9 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose, int flag)
 		   pMode->Private[S3_EARLY_SC] = 0;
 	       }
 	       else if (OFLG_ISSET(OPTION_ELSA_W2000PRO_X8,  &s3InfoRec.options)) {
+		  pMode->Private[S3_EARLY_SC] = 0;
+	       }
+	       else if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options)) {
 		  pMode->Private[S3_EARLY_SC] = 0;
 	       }
 	       else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.10 1997/05/03 09:18:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.11 1997/05/18 12:12:12 dawes Exp $ */
 
 /*
  *
@@ -171,7 +171,7 @@ extern vgaHWCursorRec vgaHWCursor;
 XF86ModuleVersionInfo s3vVersRec =
 {
         "s3v_drv.o",
-        "The XFree86 Project",
+        MODULEVENDORSTRING,
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,
@@ -259,8 +259,28 @@ Bool enter;
 
    else {
       if (s3vMmioMem) {
+	 unsigned char cr3a, cr53, cr66;
+	 outb(vgaCRIndex, 0x53);
+	 cr53 = inb(vgaCRReg);
+	 outb(vgaCRReg, cr53 | 0x08);  /* Enable NEWMMIO temporarily */
+
+	 outb(vgaCRIndex, 0x66);
+	 cr66 = inb(vgaCRReg);
+	 outb(vgaCRReg, cr66 | 0x80);
+	 outb(vgaCRIndex, 0x3a);
+	 cr3a = inb(vgaCRReg);
+	 outb(vgaCRReg, cr3a | 0x80);
+
          WaitIdle();           /* DOn't know if these map properly ? */
          WaitCommandEmpty();   /* We should probably do a DMAEmpty() as well */
+
+	 outb(vgaCRIndex, 0x53);
+	 outb(vgaCRReg, cr53);   /* Restore CR53 to original for MMIO */
+
+	 outb(vgaCRIndex, 0x66);
+	 outb(vgaCRReg, cr66);
+	 outb(vgaCRIndex, 0x3a);             
+	 outb(vgaCRReg, cr3a);
          }
       if (enterCalled){
 
@@ -293,7 +313,7 @@ static void
 S3VRestore (restore)
 vgaS3VPtr restore;
 {
-unsigned char tmp;
+unsigned char tmp, cr3a, cr53, cr66, cr67;
 
    vgaProtect(TRUE);
 
@@ -312,8 +332,8 @@ unsigned char tmp;
 
    /* As per databook, always disable STREAMS before changing modes */
    outb(vgaCRIndex, 0x67);
-   tmp = inb(vgaCRReg);
-   if ((tmp & 0x0c) == 0x0c) {
+   cr67 = inb(vgaCRReg);
+   if ((cr67 & 0x0c) == 0x0c) {
       S3VDisableSTREAMS();     /* If STREAMS was running, disable it */
       }
 
@@ -328,9 +348,6 @@ unsigned char tmp;
    outb(vgaCRReg, restore->CR31);
    outb(vgaCRIndex, 0x58);             
    outb(vgaCRReg, restore->CR58);
-
-   /* Restore the standard VGA registers */
-   vgaHWRestore((vgaHWPtr)restore);
 
    /* Extended mode timings registers */  
    outb(vgaCRIndex, 0x53);             
@@ -352,8 +369,8 @@ unsigned char tmp;
    /* Restore the desired video mode with CR67 */
         
    outb(vgaCRIndex, 0x67);             
-   tmp = inb(vgaCRReg) & 0xf; /* Possible hardware bug on VX? */
-   outb(vgaCRReg, 0x50 | tmp); 
+   cr67 = inb(vgaCRReg) & 0xf; /* Possible hardware bug on VX? */
+   outb(vgaCRReg, 0x50 | cr67); 
    outb(vgaCRReg, restore->CR67 & ~0x0c); /* Don't enable STREAMS yet */
 
    /* Other mode timing and extended regs */
@@ -371,6 +388,17 @@ unsigned char tmp;
    outb(vgaCRReg, restore->CR36);
    outb(vgaCRIndex, 0x68);             
    outb(vgaCRReg, restore->CR68);
+   outb(vgaCRIndex, 0x69);
+   outb(vgaCRReg, restore->CR69);
+
+   outb(vgaCRIndex, 0x33);
+   outb(vgaCRReg, restore->CR33);
+   if (s3vPriv.chip == S3_ViRGE_DXGX) {
+      outb(vgaCRIndex, 0x86);
+      outb(vgaCRReg, restore->CR86);
+      outb(vgaCRIndex, 0x90);
+      outb(vgaCRReg, restore->CR90);
+   }
 
    /* Unlock extended sequencer regs */
    outb(0x3c4, 0x08);
@@ -420,12 +448,19 @@ unsigned char tmp;
     * We also restore FIFO and TIMEOUT memory controller registers.
     */
 
-   if (s3vPriv.NeedSTREAMS) {
       outb(vgaCRIndex, 0x53);
-      tmp = inb(vgaCRReg);
-      outb(vgaCRReg, tmp | 0x08);  /* Enable NEWMMIO to restore STREAMS context */
+   cr53 = inb(vgaCRReg);
+   outb(vgaCRReg, cr53 | 0x08);  /* Enable NEWMMIO temporarily */
+
+   outb(vgaCRIndex, 0x66);
+   cr66 = inb(vgaCRReg);
+   outb(vgaCRReg, cr66 | 0x80);
+   outb(vgaCRIndex, 0x3a);
+   cr3a = inb(vgaCRReg);
+   outb(vgaCRReg, cr3a | 0x80);
+
+   if (s3vPriv.NeedSTREAMS) {
       if(s3vPriv.STREAMSRunning) S3VRestoreSTREAMS(restore->STREAMS);
-      outb(vgaCRReg, tmp);  /* Restore CR53 for MMIO */
       }
 
    /* Now, before we continue, check if this mode has the graphic engine ON 
@@ -443,9 +478,6 @@ unsigned char tmp;
       }
 
    VerticalRetraceWait();
-   outb(vgaCRIndex, 0x53);
-   tmp = inb(vgaCRReg);
-   outb(vgaCRReg, tmp | 0x08);  /* Enable NEWMMIO temporarily */
    ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control = restore->MMPR0;
    WaitIdle();                  /* Don't ask... */
    ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control = restore->MMPR1;
@@ -453,7 +485,26 @@ unsigned char tmp;
    ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout = restore->MMPR2;
    WaitIdle();
    ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout = restore->MMPR3;
-   outb(vgaCRReg, tmp);  /* Restore CR53 for MMIO */
+
+   outb(vgaCRIndex, 0x53);
+   outb(vgaCRReg, cr53);   /* Restore CR53 to original for MMIO */
+
+   outb(vgaCRIndex, 0x66);             
+   outb(vgaCRReg, cr66);
+   outb(vgaCRIndex, 0x3a);             
+   outb(vgaCRReg, cr3a);
+
+   outb(0x3c4, 0x08);
+   outb(0x3c5, 0x06); 
+   outb(0x3c4, 0x12);
+   outb(0x3c5, restore->SR12);
+   outb(0x3c4, 0x13);
+   outb(0x3c5, restore->SR13);
+   outb(0x3c4, 0x15);
+   outb(0x3c5, restore->SR15); 
+
+   /* Restore the standard VGA registers */
+   vgaHWRestore((vgaHWPtr)restore);
 
    if (xf86Verbose > 1) {
       ErrorF("\n\nViRGE driver: done restoring mode, dumping CR registers:\n\n");
@@ -475,7 +526,7 @@ S3VSave (save)
 vgaS3VPtr save;
 {
 int i;
-unsigned char tmp;
+unsigned char cr3a, cr53, cr66;
 
    /*
     * This function will handle creating the data structure and filling
@@ -515,6 +566,17 @@ unsigned char tmp;
    save->CR67 = inb(vgaCRReg);
    outb(vgaCRIndex, 0x68);             
    save->CR68 = inb(vgaCRReg);
+   outb(vgaCRIndex, 0x69);
+   save->CR69 = inb(vgaCRReg);
+
+   outb(vgaCRIndex, 0x33);             
+   save->CR33 = inb(vgaCRReg);
+   if (s3vPriv.chip == S3_ViRGE_DXGX) {
+      outb(vgaCRIndex, 0x86);
+      save->CR86 = inb(vgaCRReg);
+      outb(vgaCRIndex, 0x90);
+      save->CR90 = inb(vgaCRReg);
+   }
 
    /* Extended mode timings regs */
 
@@ -552,19 +614,22 @@ unsigned char tmp;
 
    /* And if streams is to be used, save that as well */
 
-   if(s3vPriv.NeedSTREAMS) {
-      unsigned char tmp;
       outb(vgaCRIndex, 0x53);
-      tmp = inb(vgaCRReg);
-      outb(vgaCRReg, tmp | 0x08);  /* Enable NEWMMIO to save STREAMS context */
+   cr53 = inb(vgaCRReg);
+   outb(vgaCRReg, cr53 | 0x08);  /* Enable NEWMMIO to save MIU context */
+
+   outb(vgaCRIndex, 0x66);
+   cr66 = inb(vgaCRReg);
+   outb(vgaCRReg, cr66 | 0x80);
+   outb(vgaCRIndex, 0x3a);
+   cr3a = inb(vgaCRReg);
+   outb(vgaCRReg, cr3a | 0x80);
+
+   if(s3vPriv.NeedSTREAMS) {
       S3VSaveSTREAMS(save->STREAMS);
-      outb(vgaCRReg, tmp);   /* Restore CR53 to original for MMIO */
       }
 
    /* Now save Memory Interface Unit registers, enable MMIO for this */
-   outb(vgaCRIndex, 0x53);
-   tmp = inb(vgaCRReg);
-   outb(vgaCRReg, tmp | 0x08);  /* Enable NEWMMIO to save MIU context */
    save->MMPR0 = ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control;
    save->MMPR1 = ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control;
    save->MMPR2 = ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout;
@@ -577,11 +642,18 @@ unsigned char tmp;
          ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control,
          ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout,
          ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout );
-      outb(vgaCRReg, tmp);   /* Restore CR53 to original for MMIO */
 
       ErrorF("\n\nViRGE driver: saved current video mode. Register dump:\n\n");
-      S3VPrintRegs();
    }
+   outb(vgaCRIndex, 0x53);
+   outb(vgaCRReg, cr53);   /* Restore CR53 to original for MMIO */
+
+   outb(vgaCRIndex, 0x3a);
+   outb(vgaCRReg, cr3a);
+   outb(vgaCRIndex, 0x66);
+   outb(vgaCRReg, cr66);
+
+   if (xf86Verbose > 1) S3VPrintRegs();
 
    return ((void *) save);
 }
@@ -619,7 +691,7 @@ int mclk;
       if(pciInfo->ChipType != S3_ViRGE && 
          pciInfo->ChipType != S3_ViRGE_VX &&
 	 pciInfo->ChipType != S3_ViRGE_DXGX){
-          ErrorF("%s %s: Unidentified S3 chipset detected!\n", 
+          ErrorF("%s %s: S3V: unidentified S3 chipset (non-ViRGE?) detected!\n", 
              XCONFIG_PROBED, vga256InfoRec.name);
           return FALSE;
           }
@@ -632,6 +704,12 @@ int mclk;
 	 }
    
    vga256InfoRec.chipset = S3VIdent(0);
+
+#ifdef __alpha__
+   if (xf86bpp > 16)
+     FatalError("%s %s: %d bpp not yet supported for Alpha/AXP\n",
+		XCONFIG_GIVEN, vga256InfoRec.name, xf86bpp);
+#endif
 
    /* Add/enable IO ports to list: call EnterLeave */
    S3VEnterLeave(ENTER);
@@ -715,13 +793,13 @@ int mclk;
    /* ViRGE built-in ramdac speeds */
 
    if (s3vPriv.chip == S3_ViRGE_VX) {
-      vga256InfoRec.dacSpeed = 220000;
+      vga256InfoRec.dacSpeeds[0] = 220000;
       }
    else if(s3vPriv.chip == S3_ViRGE_DXGX) {
-      vga256InfoRec.dacSpeed = 170000;
+      vga256InfoRec.dacSpeeds[0] = 170000;
       }
    else {
-      vga256InfoRec.dacSpeed = 135000;
+      vga256InfoRec.dacSpeeds[0] = 135000;
       }
 
    /* Now set RAMDAC limits */
@@ -839,6 +917,8 @@ int mclk;
    OFLG_SET(OPTION_PCI_RETRY, &S3V.ChipOptionFlags);
    OFLG_SET(OPTION_NOACCEL, &S3V.ChipOptionFlags);
    OFLG_SET(OPTION_HW_CURSOR, &S3V.ChipOptionFlags);
+   OFLG_SET(OPTION_EARLY_RAS_PRECHARGE, &S3V.ChipOptionFlags);
+   OFLG_SET(OPTION_LATE_RAS_PRECHARGE, &S3V.ChipOptionFlags);
 
    s3vPriv.NoPCIRetry = 1;
    S3V.ChipLinearBase = vga256InfoRec.MemBase;
@@ -926,8 +1006,12 @@ unsigned char tmp;
       }
    else {          /* Change start address for STREAMS case */
       VerticalRetraceWait();
-      ((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr0 =
-      ((y * vga256InfoRec.displayWidth + (x & ~3)) * vgaBitsPerPixel / 8);
+      if(s3vPriv.chip == S3_ViRGE_VX)
+	((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr0 =
+	  ((y * vga256InfoRec.displayWidth + (x & ~7)) * vgaBitsPerPixel / 8);
+      else
+	((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr0 =
+	((y * vga256InfoRec.displayWidth + (x & ~3)) * vgaBitsPerPixel / 8);
       }
 
 #ifdef XFreeXDGA
@@ -991,16 +1075,21 @@ int i, j;
 
 /* Now set linear addr. registers */
 /* LAW size: we have 2 cases, 2MB, 4MB or >= 4MB for VX */
-
+   outb(vgaCRIndex, 0x58);
+   new->CR58 = inb(vgaCRReg) & 0x80;
    if(vga256InfoRec.videoRam == 2048){   
-      new->CR58 = 0x02 | 0x10; 
+      new->CR58 |= 0x02 | 0x10; 
       }
    else {
-      new->CR58 = 0x03 | 0x10; /* 4MB window on virge, 8MB on VX */
+      new->CR58 |= 0x03 | 0x10; /* 4MB window on virge, 8MB on VX */
       } 
    if(s3vPriv.chip == S3_ViRGE_VX)
       new->CR58 |= 0x40;
-
+   if (OFLG_ISSET(OPTION_EARLY_RAS_PRECHARGE, &vga256InfoRec.options))
+      new->CR58 |= 0x80;
+   if (OFLG_ISSET(OPTION_LATE_RAS_PRECHARGE, &vga256InfoRec.options))
+      new->CR58 &= 0x7f;
+  
 /* ** On PCI bus, no need to reprogram the linear window base address */
 
 /* Now do clock PLL programming. Use the s3gendac function to get m,n */
@@ -1064,7 +1153,7 @@ int i, j;
           }
        else if ((vgaBitsPerPixel == 24) || (vgaBitsPerPixel == 32)) {
           new->CR67 = 0xd0 | 0x0c;              /* 24bpp, 135MHz, STREAMS */
-          S3VInitSTREAMS(new->STREAMS);
+          S3VInitSTREAMS(new->STREAMS, mode);
           new->MMPR0 = 0xc098;            /* Adjust FIFO slots */
           }
        commonCalcClock(dclk, 1, 1, 31, 0, 4, 
@@ -1087,12 +1176,12 @@ int i, j;
          }
       else if (vgaBitsPerPixel == 24) { 
          new->CR67 = 0xd0 | 0x0c;
-         S3VInitSTREAMS(new->STREAMS);
+         S3VInitSTREAMS(new->STREAMS, mode);
          new->MMPR0 = 0xc000;            /* Adjust FIFO slots */
          }
       else if (vgaBitsPerPixel == 32) { 
          new->CR67 = 0xd0 | 0x0c;
-         S3VInitSTREAMS(new->STREAMS);
+         S3VInitSTREAMS(new->STREAMS, mode);
          new->MMPR0 = 0x10000;            /* Still more FIFO slots */
          }
       commonCalcClock(dclk, 1, 1, 31, 0, 3, 
@@ -1169,6 +1258,13 @@ int i, j;
    new->std.MiscOutReg |= 0x0c;      
 
 
+   new->CR33 = 0x20;
+   if (s3vPriv.chip == S3_ViRGE_DXGX) {
+      new->CR86 = 0x80;  /* disable DAC power saving to avoid bright left edge */
+      new->CR90 = 0x00;  /* disable the stream display fetch length control */
+   }
+	 
+
    /* Now we handle various XConfig memory options and others */
 
    /* option "slow_edodram" sets EDO to 2 cycle mode on ViRGE */
@@ -1193,6 +1289,7 @@ int i, j;
 
    outb(vgaCRIndex, 0x68);
    new->CR68 = inb(vgaCRReg);
+   new->CR69 = 0;
 
 
   return TRUE;
@@ -1242,8 +1339,9 @@ S3VFbInit()
  * This has essentially been taken from the accel/s3_virge code and the databook.
  */
 void
-S3VInitSTREAMS(streams)
+S3VInitSTREAMS(streams, mode)
 int * streams;
+DisplayModePtr mode;
 {
   
    if ( vga256InfoRec.bitsPerPixel == 24 ) {
@@ -1300,12 +1398,9 @@ int * streams;
 
          /* Specify window Width -1 and Height of */
          /* stream. */
-         /* ScreenHeight ??? */
-         /* Set the STREAM source to the frame. */
-
    streams[19] =
-         (vga256InfoRec.frameX1 - vga256InfoRec.frameX0 - 1) << 16 |
-         (vga256InfoRec.frameY1 - vga256InfoRec.frameY0);
+         (mode->HDisplay - 1) << 16 |
+         (mode->VDisplay);
    
                                 /* Book says 0x07ff07ff. */
    streams[20] = 0x07ff07ff;

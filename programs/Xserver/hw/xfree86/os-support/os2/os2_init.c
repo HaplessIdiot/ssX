@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.11 1997/01/27 06:58:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.12 1997/03/03 15:55:32 hohndel Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -82,7 +82,7 @@ void xf86OpenConsole()
            exit(1);  
            }
         if (_chdir2(x11r) < 0) {
-		ErrorF("xf86-OS/2: Cannot change to X11ROOT directory!\n");
+  		ErrorF("xf86-OS/2: Cannot change to X11ROOT directory!\n");
 	}
 
 	ErrorF("xf86-OS/2: Console opened\n");

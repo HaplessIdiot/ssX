@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/drivers/s3_virge/s3_virge.c,v 3.2 1996/12/27 07:03:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/drivers/s3_virge/s3_virge.c,v 3.3 1997/03/27 08:30:33 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -34,7 +34,7 @@ extern char *xf86ModulePath;
 XF86ModuleVersionInfo s3_virgeVersRec =
 {
 	"s3_virge.o", 
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

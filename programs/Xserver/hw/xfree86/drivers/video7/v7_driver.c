@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/video7/v7_driver.c,v 1.1 1997/03/06 23:17:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/video7/v7_driver.c,v 1.2 1997/05/03 09:18:57 dawes Exp $ */
 /*
  * Copyright 1994 by Craig Struble   <cstruble@acm.vt.edu>
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -260,7 +260,7 @@ static int Num_VIDEO7_ExtPorts =
 XF86ModuleVersionInfo video7VersRec =
 {
 	"video7_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

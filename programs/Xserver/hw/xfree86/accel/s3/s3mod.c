@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3mod.c,v 3.2 1997/03/28 09:42:45 hohndel Exp $ */
 
 
 
@@ -26,7 +26,7 @@ XF86ModuleVersionInfo s3pioVersRec =
 	"libs3pio.a",
 #endif
 #endif
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

@@ -7,7 +7,7 @@
 <author> Glenn G. Lai <it>&lt;glenn@cs.utexas.edu&gt;</it>,
 Dirk H. Hohndel <it>&lt;hohndel@XFree86.Org&gt;</it>,
 Koen Gadeyne <it>&lt;koen.gadeyne@barco.com&gt;</it>
-<date>November 13, 1995
+<date>May 16, 1997
 <toc>
  
 <!-- added this section name -->
@@ -17,8 +17,19 @@ Koen Gadeyne <it>&lt;koen.gadeyne@barco.com&gt;</it>
 acceleration is at least as fast as the W32 server but supports more cards
 and for some even higher color depths. For details about using the
 <tt>XF86_SVGA</tt> with W32 cards, look below. Note that currently not all
-accelerated cards that are supported by XF86_W32 are supported by XF86_SVGA
-at this moment (only ET6000 and ET4000W32p to be exact).
+cards that are accelerated by XF86_W32 are accelerated by XF86_SVGA at this
+moment (only ET6000 and ET4000W32p to be exact). 
+
+<tt>XF86_W32</tt> is supposed to be the stable server for cards that worked
+before and have trouble with the new <tt>XF86_SVGA</tt>. Use this server
+when the SVGA server fails to work for you (this happens on some ET4000W32
+ISA cards), or when it refuses to accelerate anything (on ET4000W32i for
+example).
+
+Since XFree 3.2A, this server has not been updated. This means that some
+(known) bugs have not been fixed. They are fixed in the SVGA Tseng driver
+(or replaced by others...), so if you have problems, try the SVGA server
+instead.
 
 <!-- so this will become obsolete at some point -->
 <tt>XF86_W32</tt> is basically <tt>XF86_SVGA</tt> with the drawing code
@@ -74,11 +85,11 @@ If you have problems with the server.  Try the following:
 Ramdac "generic"
 </verb></tscreen>
 
-</itemize>
-Note that the built-in power saver (for a "green" monitor) has not been
-tested. Also do not expect it to work on a board without a w32p_rev_c or
-later chip. This option is currently disabled completely, because it causes
-video memory corruption.
+</itemize> Note that the built-in power saver (for a "green" monitor) has
+not been tested. Also do not expect it to work on a board without a
+w32p_rev_c or later chip. This option is currently disabled completely,
+because it causes video memory corruption (or even a crash). The SVGA server
+(<tt>XF86_SVGA</tt>) supports VESA DPMS, and doesn't corrupt the screen.
 
 <sect> Using XF86_W32 on a board with an ICS5341 GENDAC <p>
 Even though the GENDAC provides a set of standard clocks that can be found
@@ -128,6 +139,12 @@ incompatibilities between the two devices. Major speed improvements should
 be possible.
 Tseng Labs specifies a maximum pixel clock of 135 MHz for the ET6000 chips
 (with higher clocks to come).
+
+There is a known bug in this server when using it with ET6000 cards with
+2.25 MB MDRAM: the server will detect 2.5 MB instead, and as a result, most
+accelerated operations won't work. On cards with 2.25 MB MDRAM, you
+<it>must</it> insert a <tscreen><verb> VideoRam 2304 </verb></tscreen> line
+in your XF86Config.
 
 <sect> Using <tt>XF86_SVGA</tt> with ET4000/W32 and ET6000 cards <p>
 Starting with XFree86-3.2A, the SVGA server uses the new XFree86 Acceleration
@@ -200,7 +217,7 @@ listed below:
 <!-- moved author name to title page. -->
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.15 1997/01/24 09:32:36 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.16 1997/01/25 03:22:18 dawes Exp $ 
 
 
 

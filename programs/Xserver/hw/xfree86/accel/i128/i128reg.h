@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.4 1996/12/23 06:35:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.5 1997/01/24 01:02:11 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -25,36 +25,36 @@
 
 
 struct i128pci {
-    unsigned long devicevendor;
-    unsigned long statuscommand;
-    unsigned long classrev;
-    unsigned long bhlc;
-    unsigned long base0;
-    unsigned long base1;
-    unsigned long base2;
-    unsigned long base3;
-    unsigned long base4;
-    unsigned long base5;
-    unsigned long rsvd0;
-    unsigned long rsvd1;
-    unsigned long baserom;
-    unsigned long rsvd2;
-    unsigned long rsvd3;
-    unsigned long lgii;
+    CARD32 devicevendor;
+    CARD32 statuscommand;
+    CARD32 classrev;
+    CARD32 bhlc;
+    CARD32 base0;
+    CARD32 base1;
+    CARD32 base2;
+    CARD32 base3;
+    CARD32 base4;
+    CARD32 base5;
+    CARD32 rsvd0;
+    CARD32 rsvd1;
+    CARD32 baserom;
+    CARD32 rsvd2;
+    CARD32 rsvd3;
+    CARD32 lgii;
 };
 
 struct i128io {
-    unsigned long rbase_g;
-    unsigned long rbase_w;
-    unsigned long rbase_a;
-    unsigned long rbase_b;
-    unsigned long rbase_i;
-    unsigned long rbase_e;
-    unsigned long id;
-    unsigned long config1;
-    unsigned long config2;
-    unsigned long rsvd1;
-    unsigned long soft_sw;
+    CARD32 rbase_g;
+    CARD32 rbase_w;
+    CARD32 rbase_a;
+    CARD32 rbase_b;
+    CARD32 rbase_i;
+    CARD32 rbase_e;
+    CARD32 id;
+    CARD32 config1;
+    CARD32 config2;
+    CARD32 rsvd1;
+    CARD32 soft_sw;
 };
 
 struct i128mem {
@@ -62,11 +62,11 @@ struct i128mem {
     unsigned char *mw1_ad;
     unsigned char *xyw_ada;
     unsigned char *xyw_adb;
-    unsigned long *rbase_g;
-    unsigned long *rbase_w;
-    unsigned long *rbase_a;
-    unsigned long *rbase_b;
-    unsigned long *rbase_i;
+    CARD32 *rbase_g;
+    CARD32 *rbase_w;
+    CARD32 *rbase_a;
+    CARD32 *rbase_b;
+    CARD32 *rbase_i;
     unsigned char *rbase_g_b;  /* special byte pointer for ramdac registers */
 };
 

@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.3 1997/05/03 09:18:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.4 1997/05/09 11:13:08 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -189,7 +189,7 @@ vgaVideoChipRec MGA = {
 	 * This is the size	 of the linear-mapped frame buffer (when used).
 	 * Set it to 0 when not in use.
 	 */
-	0x00800000,
+	0,
 	/*
 	 * This is TRUE if the driver has support for the given depth for 
 	 * the detected configuration. It must be set in the Probe function.
@@ -220,7 +220,7 @@ vgaVideoChipRec MGA = {
 XF86ModuleVersionInfo mgaVersRec =
 {
 	"mga_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
@@ -356,7 +356,7 @@ MGACountRam()
 	
 		base = xf86MapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION,
 			      (pointer)((unsigned long)MGA.ChipLinearBase),
-			      MGA.ChipLinearSize);
+			      8192 * 1024);
 	
 		/* turn MGA mode on - enable linear frame buffer (CRTCEXT3) */
 		outb(0x3DE, 3);
@@ -366,6 +366,7 @@ MGACountRam()
 		/* write, read and compare method */
 		base[0x500000] = 0x55;
 		base[0x300000] = 0x33;
+		base[0x100000] = 0x11;
 		tmp5 = base[0x500000];
 		tmp3 = base[0x300000];
 
@@ -374,7 +375,7 @@ MGACountRam()
 		outb(0x3DF, tmp);
 	
 		xf86UnMapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION, 
-				(pointer)base, MGA.ChipLinearSize);
+				(pointer)base, 8192 * 1024);
 	
 		if(tmp5 == 0x55)
 			return 8192;
@@ -558,6 +559,8 @@ MGAProbe()
 	if (!vga256InfoRec.videoRam)
 		vga256InfoRec.videoRam = MGACountRam();
 	
+	MGA.ChipLinearSize = vga256InfoRec.videoRam * 1024;
+	
 	/*
 	 * fill MGAdac struct
 	 * Warning: currently, it should be after RAM counting
@@ -576,8 +579,8 @@ MGAProbe()
 	 * If the user has specified ramdac speed in the XF86Config
 	 * file, we respect that setting.
 	 */
-	if( vga256InfoRec.dacSpeed )
-		vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+	if( vga256InfoRec.dacSpeeds[0] )
+		vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
 	else
 		vga256InfoRec.maxClock = MGAdac.maxPixelClock;
 
@@ -672,11 +675,6 @@ TestAndSetRounding(pitch)
 
 	if (MGAchipset == PCI_CHIP_MGA1064) {
 		MGABppShft--;
-		
-		/* I think we don't need this but I can't test [rdk] */
-		if (vgaBitsPerPixel == 8) { 
-			MGA.ChipRounding = 128;
-		}
 	}
 	
 	if (pitch % MGA.ChipRounding)
@@ -862,24 +860,6 @@ MGAFbInit()
 }
 
 /*
- * MGAWaitForBlitter waits for drawing engine to be free and tries to dislock
- * engine when is locked by ILOAD (should not happen, but...)
- */
- 
-static int
-MGAWaitForBlitter()
-{
-	int i;
-	
-	OUTREG8(MGAREG_OPMODE, 0); /* terminate DMA sequence */
-	for(i = 10000000; (INREG8(MGAREG_Status + 2) & 0x01) && (--i >= 0););
-	if( i >= 0 )
-		return 1;
-	FatalError("MGA: BitBlt Engine timeout\n");
-	return 0;
-}
-
-/*
  * MGAInit --
  *
  * The 'mode' parameter describes the video mode.	The 'mode' structure 
@@ -925,7 +905,7 @@ vgaHWPtr restore;
 		break;
 	}
 
-	MGAWaitForBlitter();
+	MGAStormSync();
 	MGAStormEngineInit();
 
 	vgaProtect(FALSE);
@@ -983,7 +963,7 @@ Bool enter;
 		{
 			xf86MapDisplay(vga256InfoRec.scrnIndex,
 					MMIO_REGION);
-			MGAWaitForBlitter();
+			MGAStormSync();
 		}
 		
 		vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
@@ -1000,14 +980,9 @@ Bool enter;
 		
 		if (MGAMMIOBase)
 		{
- 			MGAWaitForBlitter();
+ 			MGAStormSync();
 			xf86UnMapDisplay(vga256InfoRec.scrnIndex,
 					MMIO_REGION);
-		if (MGAchipset == PCI_CHIP_MGA1064 )  {
-			misc_ctrl = inMGA1064(MGA1064_MISC_CTL);
-			misc_ctrl &= ~MGA1064_MISC_CTL_VGA8;
-			outMGA1064(MGA1064_MISC_CTL,misc_ctrl);
-			}
 		}
 		
 		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
@@ -1034,11 +1009,11 @@ int x, y;
 	/* Wait for vertical retrace */
 	while (!(inb(vgaIOBase + 0xA) & 0x08));
 	
+	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
+	outw(vgaIOBase + 4, ((Base & 0x0000FF) << 8) | 0x0D);
 	outb(0x3DE, 0x00);
 	tmp = inb(0x3DF);
 	outb(0x3DF, (tmp & 0xF0) | ((Base & 0x0F0000) >> 16));
-	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
-	outw(vgaIOBase + 4, ((Base & 0x0000FF) << 8) | 0x0D);
 
 #ifdef XFreeXDGA
 	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {

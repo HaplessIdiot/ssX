@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.13 1997/03/27 08:30:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.14 1997/05/12 13:27:56 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -436,9 +436,9 @@ static int BT485_SERIES_PreInit()
 	 clockDoublingPossible = TRUE;
       /* These limits are based on the LCLK rating, and may be too high */
       if (s3Bt485PixMux && s3Bpp < 4)
-	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+	 s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0];
       else {
-	 if (s3InfoRec.dacSpeed < 150000)    /* 110 and 135 */
+	 if (s3InfoRec.dacSpeeds[0] < 150000)    /* 110 and 135 */
 	    s3InfoRec.maxClock = 90000;
 	 else				      /* 150 and 170 (if they exist) */
 	    s3InfoRec.maxClock = 110000;
@@ -448,11 +448,11 @@ static int BT485_SERIES_PreInit()
 	 clockDoublingPossible = TRUE;
       /* These limits are based on the LCLK rating, and may be too high */
       if (s3Bt485PixMux && s3Bpp < 4)
-	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+	 s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0];
       else {
-	 if (s3InfoRec.dacSpeed < 110000)	  /* 85 */
+	 if (s3InfoRec.dacSpeeds[0] < 110000)	  /* 85 */
 	    s3InfoRec.maxClock = 85000;
-	 else if (s3InfoRec.dacSpeed < 135000)	  /* 110 */
+	 else if (s3InfoRec.dacSpeeds[0] < 135000)	  /* 110 */
 	    s3InfoRec.maxClock = 90000;
 	 else					  /* 135, 150, 170 */
 	    s3InfoRec.maxClock = 110000;
@@ -915,7 +915,7 @@ static int TI3020_3025_PreInit()
 
         s3ClockSelectFunc = ti3025ClockSelect;
       	numClocks = 3;
-        maxRawClock = s3InfoRec.dacSpeed; 
+        maxRawClock = s3InfoRec.dacSpeeds[0]; 
 
       	outb(vgaCRIndex, 0x5c);
       	cr5c = inb(vgaCRReg);
@@ -958,7 +958,7 @@ static int TI3020_3025_PreInit()
 	clock doubling, etc...  s3Probe will do some last minute
 	clock sanity checks when we return */
    clockDoublingPossible = TRUE;
-   s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+   s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0];
 
    return 1;
 }
@@ -1493,7 +1493,7 @@ static int ATT409_498_PreInit()
    if (OFLG_ISSET(CLOCK_OPTION_ATT409, &s3InfoRec.clockOptions)) {
       s3ClockSelectFunc = att409ClockSelect;
       numClocks = 3;
-      maxRawClock = s3InfoRec.dacSpeed; /* Is this right?? */
+      maxRawClock = s3InfoRec.dacSpeeds[0]; /* Is this right?? */
       if (xf86Verbose)
 	 ErrorF("%s %s: Using ATT20C409/ATT20C499 programmable clock\n",
 		clockchip_probed, s3InfoRec.name);
@@ -1503,11 +1503,11 @@ static int ATT409_498_PreInit()
 
 
    if (s3ATT498PixMux) {
-	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+	 s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0];
 	 if (s3Bpp == 1)	/* XXXX is this right?? */
 	    clockDoublingPossible = TRUE;
    } else {
-	 if (s3InfoRec.dacSpeed >= 135000) /* 20C498 -13, -15, -17 */
+	 if (s3InfoRec.dacSpeeds[0] >= 135000) /* 20C498 -13, -15, -17 */
 	    s3InfoRec.maxClock = 110000;
 	 else				   /* 20C498 -11 */
 	    s3InfoRec.maxClock = 80000;
@@ -1698,15 +1698,15 @@ static int SC15025_PreInit()
 	clock doubling, etc...  s3Probe will do some last minute
 	clock sanity checks when we return */
 
-    if (s3InfoRec.dacSpeed >= 125000)	/* -125 */
+    if (s3InfoRec.dacSpeeds[0] >= 125000)	/* -125 */
 	  doubleEdgeLimit = 85000;
-    else if (s3InfoRec.dacSpeed >= 110000)	/* -110 */
+    else if (s3InfoRec.dacSpeeds[0] >= 110000)	/* -110 */
 	  doubleEdgeLimit = 65000;
     else					/* -80, -66 */
 	  doubleEdgeLimit = 50000;
     switch (s3Bpp) {
 	  case 1:
-	    s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+	    s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0];
 	    break;
 	  case 2:
 	    s3InfoRec.maxClock = doubleEdgeLimit;
@@ -1926,12 +1926,12 @@ static int STG17xx_PreInit()
 	clock doubling, etc...  s3Probe will do some last minute
 	clock sanity checks when we return */
    if (s3ATT498PixMux) {
-	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+	 s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0];
 	 if (s3Bpp == 1)	/* XXXX is this right?? */
 	    clockDoublingPossible = TRUE;
    }
    else {
-	 if (s3InfoRec.dacSpeed >= 135000) /* 20C498 -13, -15, -17 */
+	 if (s3InfoRec.dacSpeeds[0] >= 135000) /* 20C498 -13, -15, -17 */
 	    s3InfoRec.maxClock = 110000;
 	 else				   /* 20C498 -11 */
 	    s3InfoRec.maxClock = 80000;
@@ -2265,11 +2265,11 @@ static int S3_SDAC_GENDAC_PreInit()
 	clock sanity checks when we return */
     if(DAC_IS_SDAC) {
     	if (s3ATT498PixMux) {
-	  s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+	  s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0];
 	  if (s3Bpp == 1)	/* XXXX is this right?? */
 	    clockDoublingPossible = TRUE;
         } else {
-	  if (s3InfoRec.dacSpeed >= 135000) /* 20C498 -13, -15, -17 */
+	  if (s3InfoRec.dacSpeeds[0] >= 135000) /* 20C498 -13, -15, -17 */
 	    s3InfoRec.maxClock = 110000;
 	  else				   /* 20C498 -11 */
 	    s3InfoRec.maxClock = 80000;
@@ -2280,7 +2280,7 @@ static int S3_SDAC_GENDAC_PreInit()
 	  }
         }
      } else  /* DAC_IS_GENDAC */
-        s3InfoRec.maxClock = s3InfoRec.dacSpeed / s3Bpp;
+        s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0] / s3Bpp;
 
       return 1;
 }
@@ -2552,15 +2552,15 @@ static int S3_TRIO_PreInit()
     	pixMuxLimitedWidths = FALSE;
     	pixMuxMinWidth = 0;
    
-	s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+	s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0];
     } else if (s3Bpp < 4)
        if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions))
-	  s3InfoRec.maxClock = 110000;
+	  s3InfoRec.maxClock = 170000;
        else
 	  s3InfoRec.maxClock = 80000;
     else
        if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions))
-	  s3InfoRec.maxClock = 60000;
+	  s3InfoRec.maxClock = 135000;
        else
 	  s3InfoRec.maxClock = 50000;
  
@@ -2619,6 +2619,19 @@ static int S3_TRIO_PreInit()
     } else {
 	 s3InfoRec.s3MClk = mclk;
     }
+    if (s3InfoRec.MemClk > 0) {
+       /* some sanity checks */
+       if (s3InfoRec.MemClk < 40000 || s3InfoRec.MemClk > 100000) {
+	  ErrorF("%s %s: MCLK %1.3f MHz too low/high, not changed!\n",
+		 OFLG_ISSET(XCONFIG_DACSPEED, &s3InfoRec.xconfigFlag) ?
+		 XCONFIG_GIVEN : XCONFIG_PROBED, s3InfoRec.name, 
+		 s3InfoRec.MemClk / 1000.0);
+	  s3InfoRec.MemClk = 0;
+       }
+       else if (xf86Verbose)
+	  ErrorF("%s %s: set MCLK to %1.3f MHz\n",
+		 XCONFIG_GIVEN, s3InfoRec.name, s3InfoRec.MemClk / 1000.0);
+    }
 
  
     return 1;  
@@ -2643,10 +2656,10 @@ static void S3_TRIO_Restore()
       outb(0x3c4, 0x1a); outb(0x3c5, s3DacRegs[12]); 
       outb(0x3c4, 0x1b); outb(0x3c5, s3DacRegs[13]); 
       outb(0x3c4, 0x15);
-      tmp = inb(0x3c5);
-      outb(0x3c4, tmp & ~0x20);
-      outb(0x3c4, tmp |  0x20);
-      outb(0x3c4, tmp & ~0x20);
+      tmp = inb(0x3c5) & ~0x21;
+      outb(0x3c5, tmp | 0x03);
+      outb(0x3c5, tmp | 0x23);
+      outb(0x3c5, tmp | 0x03);
 
       outb(0x3c4, 0x15); outb(0x3c5, s3DacRegs[6]); 
       outb(0x3c4, 0x18); outb(0x3c5, s3DacRegs[7]);
@@ -2929,7 +2942,7 @@ static int TI3030_3026_PreInit()
 
    if (OFLG_ISSET(CLOCK_OPTION_TI3026, &s3InfoRec.clockOptions)) {
       s3ClockSelectFunc = ti3026ClockSelect;
-      maxRawClock = s3InfoRec.dacSpeed; /* Is this right?? */
+      maxRawClock = s3InfoRec.dacSpeeds[0]; /* Is this right?? */
       OFLG_SET(CLOCK_OPTION_TI3026, &s3InfoRec.clockOptions);
       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
       if (xf86Verbose)
@@ -2940,7 +2953,7 @@ static int TI3030_3026_PreInit()
       OtherClocksSetup();
 
    clockDoublingPossible = TRUE;
-   s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+   s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0];
    dacOutTi3026IndReg = s3OutTi3026IndReg;
    dacInTi3026IndReg = s3InTi3026IndReg;
 
@@ -3364,7 +3377,7 @@ static int IBMRGB52x_PreInit()
       int m0,m1,n0,n1;
       double f0,f1,f,fdiff;
 	 
-      maxRawClock = s3InfoRec.dacSpeed; /* Is this right?? */
+      maxRawClock = s3InfoRec.dacSpeeds[0]; /* Is this right?? */
       s3ClockSelectFunc = IBMRGBClockSelect;
       numClocks = 3;
 
@@ -3505,10 +3518,10 @@ static int IBMRGB52x_PreInit()
 	|| OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options))
        && s3Bpp > 2)
          s3InfoRec.maxClock = 220000;
-   else if ((s3InfoRec.dacSpeed * s3Bpp) / 8 > 100000)
+   else if ((s3InfoRec.dacSpeeds[0] * s3Bpp) / 8 > 100000)
 	 s3InfoRec.maxClock = (100000 * 8) / s3Bpp; 
    else
-	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+	 s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0];
 
    return 1;
 }
@@ -3900,7 +3913,7 @@ static int MISC_HI_COLOR_PreInit()
 	function for external clocks*/
     OtherClocksSetup();
 
-    s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+    s3InfoRec.maxClock = s3InfoRec.dacSpeeds[0];
     /* Halve it for 16bpp (32bpp not supported) */
     if (s3Bpp > 1) {
 	 s3InfoRec.maxClock /= 2;
@@ -4434,12 +4447,26 @@ s3GendacClockSelect(freq)
 	       (void) S3Trio64V2SetClock(freq, 2); /* can't fail */
 	    else 
 	       (void) S3TrioSetClock(freq, 2); /* can't fail */
+	    if (s3InfoRec.MemClk > 0) {
+	       if (OFLG_ISSET(CLOCK_OPTION_S3AURORA, &s3InfoRec.clockOptions))
+		  (void) S3AuroraSetClock(s3InfoRec.MemClk, 10); /* can't fail */
+	       else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions))
+		  (void) S3Trio64V2SetClock(s3InfoRec.MemClk, 10); /* can't fail */
+	       else 
+		  (void) S3TrioSetClock(s3InfoRec.MemClk, 10); /* can't fail */
+	    }
 	 }
 	 else {
 	    if (OFLG_ISSET(CLOCK_OPTION_ICS5342, &s3InfoRec.clockOptions))
 	       (void) ICS5342SetClock(freq, 2); /* can't fail */
 	    else
 	       (void) S3gendacSetClock(freq, 2); /* can't fail */
+	    if (s3InfoRec.MemClk > 0) {
+	       if (OFLG_ISSET(CLOCK_OPTION_ICS5342, &s3InfoRec.clockOptions))
+		  (void) ICS5342SetClock(s3InfoRec.MemClk, 10); /* can't fail */
+	       else
+		  (void) S3gendacSetClock(s3InfoRec.MemClk, 10); /* can't fail */
+	    }
 #endif
 	    outb(vgaCRIndex, 0x42);/* select the clock */
 #if defined(PC98_PW)
@@ -4619,7 +4646,7 @@ IBMRGBClockSelect(freq)
 	    result = FALSE;
 	    break;
 	 }
-	 (void)IBMRGBSetClock(freq, 2, s3InfoRec.dacSpeed, s3InfoRec.s3RefClk);
+	 (void)IBMRGBSetClock(freq, 2, s3InfoRec.dacSpeeds[0], s3InfoRec.s3RefClk);
       }
    }
    LOCK_SYS_REGS;

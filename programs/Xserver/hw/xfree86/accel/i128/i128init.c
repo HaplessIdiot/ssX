@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.5 1996/12/23 06:35:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.6 1997/01/24 01:02:09 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -31,8 +31,8 @@
 
 
 typedef struct {
-unsigned long i128_base_g[0x60/4];	/* base g registers                  */
-unsigned long i128_base_w[0x28/4];	/* base w registers                  */
+CARD32 i128_base_g[0x60/4];	/* base g registers                  */
+CARD32 i128_base_w[0x28/4];	/* base w registers                  */
 unsigned char Ti302X[0x40];		/* Ti302[05] registers               */
 unsigned char Ti3025[9];		/* Ti3025 N,M,P for PCLK, MCLK, LCLK */
 unsigned char IBMRGB[0x101];		/* IBMRGB registers                  */

@@ -16,6 +16,11 @@ the SVGA driver. For details about the separate accelerated 8bpp (=256
 color) ET4000/W32 and ET6000 server, refer to
 <htmlurl name="README.W32" url="W32.html">.
 
+Things that are known NOT to work with the SVGA server in this version
+(XFree86 3.3) are some ET4000W32 ISA cards (they hang the machine... Use the
+W32 server <tt>XF86_W32</tt> for these cards!), and acceleration on
+ET4000W32i cards.
+
 In the rest of this document, "8bpp" is short for "8 bits per pixel", which
 means a 256-color mode. Similarly, 15bpp refers to 32768 colors, 16bpp to
 65536 colors , 24bpp to a "packed" 16 million color mode, and 32bpp to a
@@ -76,25 +81,13 @@ section of your
   Option "linear"
 </verb>
 
-Please note that there are problems when combining both linear memory mode
-and acceleration in 8bpp modes which have forced us to disable acceleration
-when forcing linear memory mode at 8bpp. So you have either accelerated, but
-banked 8bpp, or a non-accelerated, linear mode with 256 colors.
-
 Acceleration support is present, and enabled by default, for W32p chips (not
 yet for W32i, but that's being worked on). This is based on the new XFree86
 acceleration interface (XAA). See also
 <htmlurl name="README.W32" url="W32.html">.
 
-Acceleration may not work together with linear memory mode on some cards,
-and will produce a mostly black screen. This combination is disabled at
-8bpp, since this mode can be run in banked mode, but for 16bpp and up, that
-cannot be done (linear memory is required). If you see a mostly black screen
-with only a few pixmaps visible, disabling acceleration will get rid of that
-problem. On most cards, however, switching modes (CTRL-ALT-+/-) somehow
-cures the problem (a screen refresh is required to repaint the screen).
-
-To disable acceleration, put the following in the Device section of your
+If you have problems with acceleration, acceleration can be disabled by
+putting the following in the Device section of your
 <tt>XF86Config</tt>:
 <verb>
   Option "noaccel"
@@ -283,7 +276,7 @@ Clockchip &dquot;et6000&dquot;  (et6000)
         should still be capable of syncing to this frequency, but the
         clockchip may already be outside an unstable region.
 <tag>
-Option &dquot;linear&dquot;  (ET4000W32p, ET6000)
+Option &dquot;linear&dquot;  (ET4000W32i, ET4000W32p, ET6000)
 </tag>
         This enables linear addressing, which is the mapping of the entire
         framebuffer to a high address beyond system memory, making the full
@@ -333,6 +326,10 @@ Rule &num;1: first, let the server find a memory base by itself, without
 specifying it. Make sure you "sync" all files to disk and close all critical
 applications. Make sure nothing bad will happen to your filesystems if you
 have to jump for the power switch soon.
+
+The most critical cards are the ET4000W32p rev a and rev b on VESA local bus
+(VLB). The server will autodetect a linear base address that doesn't work on
+all systems.
 
 If the server gets it wrong, you may end up with a severe system crash (e.g.
 if it maps the video memory right on top of your system memory). If this
@@ -758,7 +755,7 @@ keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.23 1997/05/18 12:12:11 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.24 1997/05/19 10:04:38 dawes Exp $ 
 
 
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.128 1997/05/12 13:27:58 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.129 1997/05/18 12:12:07 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1853,7 +1853,8 @@ configDeviceSection()
   /* Pre-init the newly created device */
   devp->chipset = NULL;
   devp->ramdac = NULL;
-  devp->dacSpeed = 0;
+  for (i=0; i<MAXDACSPEEDS; i++)
+     devp->dacSpeeds[i] = 0;
   OFLG_ZERO(&(devp->options));
   OFLG_ZERO(&(devp->xconfigFlag));
   devp->videoRam = 0;
@@ -1917,8 +1918,20 @@ configDeviceSection()
       break;
 
     case DACSPEED:
-      if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("DAC speed expected");
-      devp->dacSpeed = (int)(val.realnum * 1000.0 + 0.5);
+      for (i=0; i<MAXDACSPEEDS; i++) 
+	 devp->dacSpeeds[i] = 0;
+      if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("DAC speed(s) expected");
+      else {
+	 devp->dacSpeeds[0] = (int)(val.realnum * 1000.0 + 0.5);
+	 for(i=1; i<MAXDACSPEEDS; i++) {
+	    if (xf86GetToken(NULL) == NUMBER) 
+	       devp->dacSpeeds[i] = (int)(val.realnum * 1000.0 + 0.5);
+	    else {
+	       pushToken = token;
+	       break;
+	    }
+	 }
+      }
       OFLG_SET(XCONFIG_DACSPEED,&(devp->xconfigFlag));
       break;
 
@@ -2135,6 +2148,7 @@ configDeviceSection()
     case MEMCLOCK:
       if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("Memory Clock value in MHz expected");
       devp->MemClk = (int)(val.realnum * 1000.0 + 0.5);
+      OFLG_SET(XCONFIG_MEMCLOCK,&(devp->xconfigFlag));
       break;
 
     case CHIPID:
@@ -2928,7 +2942,9 @@ configScreenSection()
           }
           screen->chipset = device_list[i].chipset;
           screen->ramdac = device_list[i].ramdac;
-          screen->dacSpeed = device_list[i].dacSpeed;
+	  for (j=0; j<MAXDACSPEEDS; j++)
+	     screen->dacSpeeds[j] = device_list[i].dacSpeeds[j];
+	  screen->dacSpeedBpp = 0;
           screen->options = device_list[i].options;
           screen->clockOptions = device_list[i].clockOptions;
           screen->xconfigFlag = device_list[i].xconfigFlag;

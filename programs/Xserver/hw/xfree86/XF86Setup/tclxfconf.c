@@ -5,7 +5,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.16 1997/02/25 16:04:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.17 1997/05/18 13:58:12 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -823,7 +823,15 @@ getsection_device(interp, varname)
 		Tcl_SetVar2(interp, namebuf, "Ramdac",
 			StrOrNull(dptr->ramdac), 0);
 		Tcl_SetVar2(interp, namebuf, "DacSpeed",
-			NonZeroStr(dptr->dacSpeed,10), 0);
+			NonZeroStr(dptr->dacSpeeds[0]/1000,10), 0);
+		if (dptr->dacSpeeds[0]/1000 > 0)
+		   for (j = 1; j < MAXDACSPEEDS; j++) {
+		      if (dptr->dacSpeeds[j]/1000 <= 0)
+			 break;
+		      sprintf(tmpbuf, " %d", dptr->dacSpeeds[j]/1000);
+		      Tcl_SetVar2(interp, namebuf, "DacSpeed",
+				  tmpbuf, TCL_APPEND_VALUE);
+		   }
 		Tcl_SetVar2(interp, namebuf, "Clocks", "", 0);
 		for (j = 0; j < dptr->clocks; j++) {
 			sprintf(tmpbuf, "%.5g ", dptr->clock[j]/1000.0);

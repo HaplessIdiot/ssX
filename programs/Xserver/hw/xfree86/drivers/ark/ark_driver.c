@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.1 1997/03/06 23:14:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.2 1997/05/03 09:17:35 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -403,7 +403,7 @@ static SymTabRec ramdacs[] = {
 XF86ModuleVersionInfo arkVersRec =
 {
 	"ark_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
@@ -730,13 +730,13 @@ ArkProbe()
 	arkMultiplexingThreshold = 999999;
 	support_8bit_color_components = FALSE;
 	arkUse8bitColorComponents = FALSE;
-	if (vga256InfoRec.dacSpeed <= 0)
-		vga256InfoRec.dacSpeed = 80000;
+	if (vga256InfoRec.dacSpeeds[0] <= 0)
+		vga256InfoRec.dacSpeeds[0] = 80000;
 	switch (arkRamdac) {
 	case ATT490 :	/* Industry-standard 8-bit DAC. */
-		if (vga256InfoRec.dacSpeed <= 0)
-			vga256InfoRec.dacSpeed = 80000;
-		maxclock8bpp = vga256InfoRec.dacSpeed;
+		if (vga256InfoRec.dacSpeeds[0] <= 0)
+			vga256InfoRec.dacSpeeds[0] = 80000;
+		maxclock8bpp = vga256InfoRec.dacSpeeds[0];
 		maxclock16bpp = maxclock8bpp / 2;
 		maxclock24bpp = maxclock8bpp / 3;
 		support_8bit_color_components = TRUE;
@@ -747,14 +747,14 @@ ArkProbe()
 		 * Trust the DAC speed rating for 8bpp (use RAMDAC
 		 * clock doubling for high clocks, 16-bit path).
 		 */
-		if (vga256InfoRec.dacSpeed <= 0)
-			vga256InfoRec.dacSpeed = 80000;
+		if (vga256InfoRec.dacSpeeds[0] <= 0)
+			vga256InfoRec.dacSpeeds[0] = 80000;
 #ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
-		maxclock8bpp = vga256InfoRec.dacSpeed;
+		maxclock8bpp = vga256InfoRec.dacSpeeds[0];
 #else
 		maxclock8bpp = ARK_DEFAULT_MAX_RAW_CLOCK_IN_KHZ;
 #endif
-		if (vga256InfoRec.dacSpeed >= 135000)
+		if (vga256InfoRec.dacSpeeds[0] >= 135000)
 			maxclock16bpp = 110000;
 		else	/* 110 MHz 8bpp rated */
 			maxclock16bpp = 80000;
@@ -772,10 +772,10 @@ ArkProbe()
 		 * IC Works ZoomDAC, used on Hercules Stingray 64
 		 * and Stingray Pro/V.
 		 */
-		if (vga256InfoRec.dacSpeed <= 0)
-			vga256InfoRec.dacSpeed = 80000;
+		if (vga256InfoRec.dacSpeeds[0] <= 0)
+			vga256InfoRec.dacSpeeds[0] = 80000;
 #ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
-		maxclock8bpp = vga256InfoRec.dacSpeed;
+		maxclock8bpp = vga256InfoRec.dacSpeeds[0];
 #else
 		maxclock8bpp = 110000;
 #endif
@@ -784,7 +784,7 @@ ArkProbe()
 			/* Uses only 8-bit path to 16-bit RAMDAC. */
 			if (xf86weight.green == 6)
 				/* Only 5-6-5 16bpp supported. */
-				if (vga256InfoRec.dacSpeed >= 135000)
+				if (vga256InfoRec.dacSpeeds[0] >= 135000)
 					maxclock16bpp = 67500;
 				else	/* 110 MHz rated. */
 					maxclock16bpp = 55000;
@@ -792,7 +792,7 @@ ArkProbe()
 			break;
 		}
 		/* ARK2000PV, 16-bit path to RAMDAC. */
-		if (vga256InfoRec.dacSpeed >= 135000)
+		if (vga256InfoRec.dacSpeeds[0] >= 135000)
 			maxclock16bpp = 135000;
 		else	/* 110 MHz rated. */
 			maxclock16bpp = 110000;
@@ -809,21 +809,21 @@ ArkProbe()
 		break;
 	case ICS5342:
 		/* ICS5342 GENDAC used on Diamond Stealth64 Graphics 2001 */
-		if (vga256InfoRec.dacSpeed >= 135000)
-			vga256InfoRec.dacSpeed = 135000;
-		else if (vga256InfoRec.dacSpeed <= 0)
-			vga256InfoRec.dacSpeed = 110000;	/* guess */
+		if (vga256InfoRec.dacSpeeds[0] >= 135000)
+			vga256InfoRec.dacSpeeds[0] = 135000;
+		else if (vga256InfoRec.dacSpeeds[0] <= 0)
+			vga256InfoRec.dacSpeeds[0] = 110000;	/* guess */
 #ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
-		maxclock8bpp = vga256InfoRec.dacSpeed;
+		maxclock8bpp = vga256InfoRec.dacSpeeds[0];
 #else
 		maxclock8bpp = ARK_DEFAULT_MAX_RAW_CLOCK_IN_KHZ;
 #endif
 		if (arkChip == ARK1000PV) {
 			/* ARK1000PV, 8-bit path to RAMDAC. */
-			maxclock16bpp = vga256InfoRec.dacSpeed / 2;
+			maxclock16bpp = vga256InfoRec.dacSpeeds[0] / 2;
 		} else {
 			/* ARK2000PV, 16-bit path to RAMDAC. */
-			maxclock16bpp = vga256InfoRec.dacSpeed; /* Not right */
+			maxclock16bpp = vga256InfoRec.dacSpeeds[0]; /* Not right */
 			maxclock32bpp = maxclock16bpp / 2;
 			arkDacPathWidth = 16;
 #ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
@@ -835,8 +835,8 @@ ArkProbe()
 		break;
 	default :
 		/* Unknown DAC. Only allow 8pp at conservative rate. */
-		if (vga256InfoRec.dacSpeed <= 0)
-			vga256InfoRec.dacSpeed = 80000;
+		if (vga256InfoRec.dacSpeeds[0] <= 0)
+			vga256InfoRec.dacSpeeds[0] = 80000;
 		maxclock8bpp = ARK_DEFAULT_MAX_RAW_CLOCK_IN_KHZ;
 		break;
 	}

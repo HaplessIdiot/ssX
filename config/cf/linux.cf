@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/27 1996/12/26 08:52:44 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.63 1997/05/03 10:29:44 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.64 1997/05/24 13:46:27 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -75,7 +75,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define UseGas			YES
 #define GnuCpp			YES
 #ifndef HasShadowPasswd
-# define HasShadowPasswd	NO
+# if UseElfFormat
+#  define HasShadowPasswd	YES
+# else
+#  define HasShadowPasswd	NO
+# endif
 #endif
 #ifndef HasLibCrypt
 # define HasLibCrypt		NO
@@ -85,6 +89,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasSockets		YES
 #if UseElfFormat || defined(AlphaArchitecture)
 #define HasSnprintf		YES
+#define HasMkstemp		YES
 #endif
 
 #define AvoidNullMakeCommand	YES

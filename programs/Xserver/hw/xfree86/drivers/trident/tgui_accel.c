@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.4 1997/05/03 09:18:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.5 1997/05/03 11:31:42 dawes Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -102,7 +102,7 @@ void TGUIAccelInit() {
     xf86AccelInfoRec.ErrorTermBits = 11;
     xf86AccelInfoRec.SubsequentBresenhamLine = TGUISubsequentBresenhamLine;
 
-    xf86GCInfoRec.CopyAreaFlags = NO_PLANEMASK;
+    xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY | NO_PLANEMASK;
 
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
        		TGUISetupForScreenToScreenCopy;
@@ -129,7 +129,6 @@ void TGUIAccelInit() {
 					BIT_ORDER_IN_BYTE_MSBFIRST |
 					SCANLINE_PAD_DWORD |
 					CPU_TRANSFER_PAD_DWORD |
-					LEFT_EDGE_CLIPPING |
 					NO_TRANSPARENCY |
 					NO_PLANEMASK;
 
@@ -291,7 +290,6 @@ void TGUISetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 void TGUISubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
     int x, y, w, h, skipleft;
 {
-	TGUI_OUTB(0x2B, skipleft);
 	TGUI_DEST_XY(x,y);
 	TGUI_DIM_XY(w,h);
 	TGUI_COMMAND(GE_BLT);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.91 1997/05/03 09:19:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.92 1997/05/24 13:46:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -116,9 +116,9 @@ ScrnInfoRec vga256InfoRec = {
   vgaDPMSSet,		/* void (* DPMSSet)() */
   vgaPrintIdent,        /* void (* PrintIdent)() */
   8,			/* int depth */
-  {5, 6, 5},            /* xrgb weight */
+  {0, 0, 0},            /* xrgb weight */
   8,			/* int bitsPerPixel */
-  PseudoColor,		/* int defaultVisual */
+  -1,			/* int defaultVisual */
   -1, -1,		/* int virtualX,virtualY */
   -1,                   /* int displayWidth */
   -1, -1, -1, -1,	/* int frameX0, frameY0, frameX1, frameY1 */
@@ -127,7 +127,8 @@ ScrnInfoRec vga256InfoRec = {
   {0, },                /* OFlagSet xconfigFlag */
   NULL,			/* char *chipset */
   NULL,			/* char *ramdac */
-  0,			/* int dacSpeed */
+  {0, 0, 0, 0},		/* int dacSpeeds[MAXDACSPEEDS] */
+  0,			/* int dacSpeedBpp */
   0,			/* int clocks */
   {0, },		/* int clock[MAXCLOCKS] */
   DEFAULT_MAX_CLOCK,	/* int maxClock */
@@ -427,99 +428,99 @@ vgaProbe()
   int            maxX, maxY;
   int            needmem, rounding;
   int            tx,ty;
+  Bool 		 defaultVisualGiven = FALSE;
 
-  /*
-   * Chipsets that don't support 16bpp/32bpp must have ChipHas16bpp/
-   * ChipHas32bpp in the ChipRec structure set to FALSE after a
-   * successful probe.
-   *
-   * normally, xf86bpp is set by the time we get here and tells us
-   * the bpp to use. If it isn't set, we use the default bpp, which will
-   * fail badly for the mono devices, as it is 8 in the unified server
-   */
-  if (xf86bpp < 0) {
-      xf86bpp = vga256InfoRec.depth;
-  } else {
-      vga256InfoRec.depth = xf86bpp;
+/* 
+   At this point xf86bpp is what's given as -bpp on the command
+   line.  The true depth has yet to be determined.  At this
+   point, the weights are uninitialized unless specifically given
+   by the user. Here we determine good defaults if weights haven't 
+   been explicitly given.  
+*/
+
+
+  if(vga256InfoRec.defaultVisual >= 0)
+	defaultVisualGiven = TRUE;
+
+
+  switch(xf86bpp) {
+	case 1:
+	   vga256InfoRec.depth = 1;
+      	   vga256InfoRec.bitsPerPixel = 1;
+	   if(!defaultVisualGiven)
+	   	vga256InfoRec.defaultVisual = StaticGray;
+	   xf86weight.red = 1;
+	   xf86weight.green = 1;
+	   xf86weight.blue = 1;
+	   break;
+	case 4:
+	   vga256InfoRec.depth = 4;
+      	   vga256InfoRec.bitsPerPixel = 8;
+ 	   if(!defaultVisualGiven)
+          	vga256InfoRec.defaultVisual = PseudoColor;
+	   xf86bpp = 8;	/* is that correct? */ 
+	   xf86weight.red = 6;
+	   xf86weight.green = 6;
+	   xf86weight.blue = 6;
+	   break;
+	case 8:
+	   vga256InfoRec.depth = 8;
+      	   vga256InfoRec.bitsPerPixel = 8;
+	   if(!defaultVisualGiven)
+           	vga256InfoRec.defaultVisual = PseudoColor;
+	   xf86weight.red = 6;
+	   xf86weight.green = 6;
+	   xf86weight.blue = 6;
+	   break;
+	case 16:
+	   vga256InfoRec.depth = 16;
+      	   vga256InfoRec.bitsPerPixel = 16;
+	   if(!defaultVisualGiven)
+           	vga256InfoRec.defaultVisual = TrueColor;
+  	   if(xf86weight.red && xf86weight.green && xf86weight.blue) { 
+	   	vga256InfoRec.depth = xf86weight.red + xf86weight.green +
+				xf86weight.red;
+	   } else { 
+		 xf86weight.red = 5;
+		 xf86weight.green = 6;
+		 xf86weight.blue = 5;
+	   }
+	   break;
+	case 24:
+	   vga256InfoRec.depth = 24;
+      	   vga256InfoRec.bitsPerPixel = 24;
+	   if(!defaultVisualGiven)
+           	vga256InfoRec.defaultVisual = TrueColor;
+	   xf86weight.red = 8;
+	   xf86weight.green = 8;
+	   xf86weight.blue = 8;
+	   break;
+	case 32:
+	   vga256InfoRec.depth = 24;
+      	   vga256InfoRec.bitsPerPixel = 32;
+	   if(!defaultVisualGiven)
+           	vga256InfoRec.defaultVisual = TrueColor;
+	   xf86weight.red = 8;
+	   xf86weight.green = 8;
+	   xf86weight.blue = 8;
+	   break;
+	case 15:
+	   ErrorF("Error: Do not use \"-bpp 15\"."
+		" Use \"-bpp 16 -weight 555\" instead.\n");	
+	default:
+	   ErrorF("Error: Unsupported bpp \"%i\"\n",xf86bpp);
+	   return(FALSE);
+
   }
-  /* Oddly enough vga16 needs bitsPerPixel == 8 */
-  if (xf86bpp == 4)
-      vga256InfoRec.bitsPerPixel = 8;
-  else
-      vga256InfoRec.bitsPerPixel = xf86bpp;
-  if (xf86weight.red == 0 || xf86weight.green == 0 || xf86weight.blue == 0) {
-      xf86weight = vga256InfoRec.weight;
-  }
+
+  if(defaultColorVisualClass < 0)
+  	defaultColorVisualClass = vga256InfoRec.defaultVisual;
+
   vgaBitsPerPixel = xf86bpp;
   vgaBytesPerPixel = xf86bpp >> 3;
 
-  if (vgaBitsPerPixel > 8) {
-      if (vgaBitsPerPixel != 16 && vgaBitsPerPixel != 24 && vgaBitsPerPixel != 32) {
-          ErrorF("\n%s %s: Unsupported bpp for SVGA server (%d)\n",
-              XCONFIG_GIVEN, vga256InfoRec.name, vgaBitsPerPixel);
-	  return(FALSE);
-      }
-      /*
-       * First override a few entries in the ScrnInfoRec structure for
-       * 16/32bpp (which may not be entirely necessary).
-       *
-       * With 5-5-5 RGB, we don't want to use a depth of 15; depth 16 works
-       * and is much faster with cfb16.
-       */
-      vga256InfoRec.depth = vgaBitsPerPixel;
-      if (vgaBitsPerPixel == 32 || vgaBitsPerPixel == 24)
-          xf86weight.red = xf86weight.green = xf86weight.blue = 8;
-      vga256InfoRec.weight = xf86weight;
-      vga256InfoRec.blackColour.red = 0;
-      vga256InfoRec.blackColour.green = 0;
-      vga256InfoRec.blackColour.blue = 0;
-      if (xf86weight.green == 5) {
-          vga256InfoRec.whiteColour.red = 0x1f;
-          vga256InfoRec.whiteColour.green = 0x1f;
-          vga256InfoRec.whiteColour.blue = 0x1f;
-      }
-      if (xf86weight.green == 6) {
-          vga256InfoRec.whiteColour.red = 0x1f;
-          vga256InfoRec.whiteColour.green = 0x3f;
-          vga256InfoRec.whiteColour.blue = 0x1f;
-      }
-      if (xf86weight.green == 8) {
-          vga256InfoRec.whiteColour.red = 0xff;
-          vga256InfoRec.whiteColour.green = 0xff;
-          vga256InfoRec.whiteColour.blue = 0xff;
-      }
-      ErrorF("%s %s: Using %d bpp.  Color weight: %d%d%d\n",
-          XCONFIG_GIVEN, vga256InfoRec.name, vgaBitsPerPixel,
-          vga256InfoRec.weight.red, vga256InfoRec.weight.green,
-          vga256InfoRec.weight.blue);
-      /* Handle the default visual setting. */
-      if (vga256InfoRec.defaultVisual < 0)
-          vga256InfoRec.defaultVisual = TrueColor;
-      if (defaultColorVisualClass < 0)
-          defaultColorVisualClass = vga256InfoRec.defaultVisual;
-      if (defaultColorVisualClass != TrueColor) {
-	  ErrorF("Invalid default visual type: %d (%s)\n",
-		 defaultColorVisualClass,
-		 xf86VisualNames[defaultColorVisualClass]);
-	  return(FALSE);
-      }
-  } else {
-      switch (vga256InfoRec.depth) {
-	case 1:
-		xf86weight.red = xf86weight.green = xf86weight.blue = 0;
-		vga256InfoRec.weight = xf86weight;
-		vga256InfoRec.defaultVisual = StaticGray;
-	  	break;
-	case 4:
-	case 8:
-		break;
-	default:
-		ErrorF("\n%s %s: Unsupported bpp for %s server (%d)\n",
-			XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.name,
-			vga256InfoRec.depth);
-		return(FALSE);
-  	}
-  }
+
+
 #if !defined(PC98) || defined(PC98_TGUI)
   /* First do a general PCI probe (unless disabled) */
   if (!OFLG_ISSET(OPTION_NO_PCI_PROBE, &vga256InfoRec.options)) {
@@ -540,7 +541,6 @@ vgaProbe()
         if ((vgaBitsPerPixel == 1 && !Drivers[i]->ChipHas1bpp)
         || (vgaBitsPerPixel == 4 && !Drivers[i]->ChipHas4bpp)
         || (vgaBitsPerPixel == 8 && !Drivers[i]->ChipHas8bpp)
-	/* Not sure what to do about 15bpp yet */
         || (vgaBitsPerPixel == 16 && !Drivers[i]->ChipHas16bpp)
         || (vgaBitsPerPixel == 24 && !Drivers[i]->ChipHas24bpp)
         || (vgaBitsPerPixel == 32 && !Drivers[i]->ChipHas32bpp)) {
@@ -549,6 +549,34 @@ vgaProbe()
 	    Drivers[i]->ChipEnterLeave(LEAVE);
 	    return(FALSE);
         }
+
+
+	/* We do this after the option has been verified. */
+	if (vgaBitsPerPixel == 8
+	&& OFLG_ISSET(OPTION_DAC_8_BIT, &vga256InfoRec.options)) {
+            ErrorF("%s %s: Using 8 bits per color component\n",
+                XCONFIG_GIVEN, vga256InfoRec.name);
+	    vgaDAC8BitComponents = TRUE;
+ 	    xf86weight.red = xf86weight.green = xf86weight.blue = 8;
+	}
+
+ 	vga256InfoRec.blackColour.red = 0;
+  	vga256InfoRec.blackColour.green = 0;
+  	vga256InfoRec.blackColour.blue = 0;
+
+  	vga256InfoRec.weight.red = xf86weight.red;
+  	vga256InfoRec.weight.green = xf86weight.green;
+  	vga256InfoRec.weight.blue = xf86weight.blue;
+
+  	vga256InfoRec.whiteColour.red =  (0x0001 << xf86weight.red) - 1;
+  	vga256InfoRec.whiteColour.green = (0x0001 << xf86weight.green) - 1;
+  	vga256InfoRec.whiteColour.blue = (0x0001 << xf86weight.blue) - 1;
+
+  	ErrorF("%s %s: Using %d bpp, Depth %d, Color weight: %d%d%d\n",
+          XCONFIG_GIVEN, vga256InfoRec.name, vgaBitsPerPixel, 
+		vga256InfoRec.depth, vga256InfoRec.weight.red,
+		vga256InfoRec.weight.green, vga256InfoRec.weight.blue);
+
 
 	if (xf86bpp == 1) {
 #ifdef BANKEDMONOVGA
@@ -693,17 +721,6 @@ vgaProbe()
 	if (OFLG_ISSET(OPTION_CLGD6225_LCD, &vga256InfoRec.options))
 	    clgd6225Lcd = TRUE;
 
-	/* We do this after the option has been verified. */
-	if (vgaBitsPerPixel == 8
-	&& OFLG_ISSET(OPTION_DAC_8_BIT, &vga256InfoRec.options)) {
-            ErrorF("%s %s: Using 8 bits per color component\n",
-                XCONFIG_GIVEN, vga256InfoRec.name);
-	    vgaDAC8BitComponents = TRUE;
-            vga256InfoRec.whiteColour.red = 0xff;
-            vga256InfoRec.whiteColour.green = 0xff;
-            vga256InfoRec.whiteColour.blue = 0xff;
-	    xf86weight.red = xf86weight.green = xf86weight.blue = 8;
-	}
 
 	/* if Virtual given: is the virtual size too big? */
 	if (vga256InfoRec.virtualX > 0) {

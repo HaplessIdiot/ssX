@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_accel.c,v 1.5 1997/04/17 08:17:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_accel.c,v 1.6 1997/05/03 09:18:34 dawes Exp $ */
 
 /*
  *
@@ -117,13 +117,13 @@ S3VAccelInit()
     if (vgaBitsPerPixel == 8) {
       s3vPriv.PlaneMask = 0xff;
       s3vAccelCmd |= DST_8BPP;
-      s3vPriv.bltbug_width1 = 49;
+      s3vPriv.bltbug_width1 = 51;
       s3vPriv.bltbug_width2 = 64;
       }
     else if (vgaBitsPerPixel == 16) {
       s3vPriv.PlaneMask = 0xffff;
       s3vAccelCmd |= DST_16BPP;
-      s3vPriv.bltbug_width1 = 29;
+      s3vPriv.bltbug_width1 = 26;
       s3vPriv.bltbug_width2 = 32;
       }
     else if (vgaBitsPerPixel == 24) {
@@ -247,7 +247,7 @@ S3VAccelInit32()
     s3vAccelCmd |= DRAW ;
     s3vPriv.PlaneMask = 0xffff;
     s3vAccelCmd |= DST_16BPP;
-    s3vPriv.bltbug_width1 = 29;
+    s3vPriv.bltbug_width1 = 26;
     s3vPriv.bltbug_width2 = 32;
 
     xf86AccelInfoRec.Flags = PIXMAP_CACHE |
@@ -401,7 +401,7 @@ int x1, y1, x2, y2, w, h;
 {
     int new_width;
 
-    if(vgaBitsPerPixel == 8 && S3VROPHasDst(s3vSavedCmd)) {
+    if(S3VROPHasDst(s3vSavedCmd)) {
         new_width = S3VCheckBltWidth(w);  /* Check for blit bug */
         WaitQueue(5);
         if(new_width != w) {
@@ -522,7 +522,7 @@ void
 S3VSubsequentFillRectSolid(x, y, w, h)
 int x, y, w, h;
 {
-    int dwords_to_transfer;
+    int dwords_to_transfer, new_width;
 
     if(s3vSavedCmd != NEED_MONO_FILL) {  /* Easy case, no planemask */
 
@@ -531,8 +531,16 @@ int x, y, w, h;
         SETB_RDEST_XY(x, y);
         }
     else {                               /* Use mono fill for planemask */
+        new_width = S3VCheckLSPN(w, 1);  /* Check for blit bug */
+        WaitQueue(4);
+        if(new_width != w) {
+            CACHE_SETB_CMD_SET(s3vSavedRectCmdForLine | CMD_HWCLIP);
+            CACHE_SETB_CLIP_L_R(x, x + w -1); 
+            w = new_width;
+            }
+        else 
+            CACHE_SETB_CLIP_L_R(0, s3vPriv.Width); 
         dwords_to_transfer = ((w + 31) / 32) * h;
-        WaitQueue(2);
         SETB_RWIDTH_HEIGHT(w - 1, h);
         SETB_RDEST_XY(x, y);
         S3VWriteImageTransferArea (dwords_to_transfer, 0xffffffff);  
@@ -1024,11 +1032,14 @@ unsigned int *image_transfer;
     left_to_do = dwords - blocks * 8192;
     for(j = 0; j < blocks ; j ++) {
         image_transfer = (unsigned int *) &IMG_TRANS;
-        for(i = 0; i < 8192; i++)
+        for(i = 0; i < 8192; i++) {
             *image_transfer++ = value;
+	    write_mem_barrier();
+	}
     }
     image_transfer = (unsigned int *) &IMG_TRANS;
-    for(i = 0; i < left_to_do; i++)
+    for(i = 0; i < left_to_do; i++) {
         *image_transfer++ = value;
-
+	write_mem_barrier();
+    }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.66 1997/05/12 13:28:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.67 1997/05/18 12:12:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -57,7 +57,7 @@ typedef struct {
    char *board;
    char *chipset;
    char *ramdac;
-   int dacSpeed;
+   int dacSpeeds[MAXDACSPEEDS];
    int clocks;
    int clock[MAXCLOCKS];
    OFlagSet options;
@@ -656,6 +656,7 @@ static SymTabRec VisualTab[] = {
 #define XCONFIG_POSBASE         19      /* XF86Config or default */
 #define XCONFIG_VGABASE         20      /* XF86Config or default */
 #define XCONFIG_MODULEPATH      21      /* XF86Config or default */
+#define XCONFIG_MEMCLOCK        22      /* XF86Config or default */
 
 #define XCONFIG_GIVEN		"(**)"
 #define XCONFIG_PROBED		"(--)"

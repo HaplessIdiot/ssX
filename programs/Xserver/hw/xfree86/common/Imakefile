@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.60 1997/04/12 13:44:55 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.61 1997/05/03 09:17:18 dawes Exp $
 
 
 
@@ -129,7 +129,8 @@ SERVERSRCS = \
 	XF86_LOADER.c \
 	XF86_W32.c \
 	XF86_I128.c \
-	XF86_TGA.c
+	XF86_TGA.c \
+	XF86_GLINT.c
 
 SRCS =	\
 	$(XF86DL_SRC) \
@@ -288,6 +289,10 @@ all:: XF86_W32.o
 #if XF86I128Server
 SpecialObjectRule(XF86_I128.o,XF86_I128.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_I128.o
+#endif
+#if XF86GLINTServer
+SpecialObjectRule(XF86_GLINT.o,XF86_GLINT.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_GLINT.o
 #endif
 #if XF86TGAServer
 SpecialObjectRule(XF86_TGA.o,XF86_TGA.c $(ICONFIGFILES),$(XF86SCREENFLAGS))

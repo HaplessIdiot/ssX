@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mfbscrinit.c,v 5.17 94/04/17 20:28:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/mfb/mfbscrinit.c,v 3.0 1994/06/18 16:29:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbscrinit.c,v 3.1 1997/03/11 13:10:32 hohndel Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -173,7 +173,7 @@ mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 XF86ModuleVersionInfo mfbVersRec =
 {
         "libmfb.a",
-        "The XFree86 Project",
+        MODULEVENDORSTRING,
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86icache.c,v 3.1 1997/05/03 09:16:30 dawes Exp $ */
 
 /*
  * To get rid of complains from the Loader about no existing ModuleInit routine
@@ -21,7 +21,7 @@
 XF86ModuleVersionInfo xf86cacheVersRec =
 {
         "libxf86cache.a",
-        "The XFree86 Project",
+        MODULEVENDORSTRING,
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,

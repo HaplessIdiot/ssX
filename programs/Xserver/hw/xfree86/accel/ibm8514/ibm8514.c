@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.31 1997/04/12 13:44:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.32 1997/05/03 09:16:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -52,6 +52,9 @@
 #include "mi.h"
 #include "cfb.h"
 
+#include "xf86Version.h"
+#include "xf86_Config.h"
+
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 
 static int ibm8514ValidMode(
@@ -61,6 +64,43 @@ static int ibm8514ValidMode(
     int
 #endif
 );
+
+#if defined(XFree86LOADER)
+
+ScrnInfoPtr xf86Screens[] = 
+{
+  &ibm8514InfoRec,
+};
+
+int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
+
+int xf86ScreenNames[] =
+{
+  ACCEL,
+  -1
+};
+
+int ibm8514ValidTokens[] =
+{
+  STATICGRAY,
+  GRAYSCALE,
+  STATICCOLOR,
+  PSEUDOCOLOR,
+  TRUECOLOR,
+  DIRECTCOLOR,
+  CHIPSET,
+  CLOCKS,
+  MODES,
+  OPTION,
+  VIDEORAM,
+  VIEWPORT,
+  VIRTUAL,
+  CLOCKPROG,
+  BIOSBASE,
+  -1
+};
+
+#endif
 
 ScrnInfoRec ibm8514InfoRec = {
     FALSE,		/* Bool configured */
@@ -88,7 +128,8 @@ ScrnInfoRec ibm8514InfoRec = {
     {0, },	       	/* OFlagSet xconfigFlag */
     NULL,	       	/* char *chipset */
     NULL,	       	/* char *ramdac */
-    0,			/* int dacSpeed */
+    {0, 0, 0, 0},	/* int dacSpeeds[MAXDACSPEEDS] */
+    0,			/* int dacSpeedBpp */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */
@@ -131,6 +172,54 @@ ScrnInfoRec ibm8514InfoRec = {
     0			/* int physSize */
 #endif
 };
+
+#if defined(XFree86LOADER)
+ScrnInfoRec *
+ServerInit()
+{
+return &ibm8514InfoRec;
+}
+
+XF86ModuleVersionInfo ibm8514VersRec =
+{
+        "lib8514.a",
+        "The XFree86 Project",
+        MODINFOSTRING1,
+        MODINFOSTRING2,
+        XF86_VERSION_CURRENT,
+        0x00010001,
+        {0,0,0,0}       /* signature, to be patched into the file by a tool */
+};
+
+void
+ModuleInit(data,magic)
+    pointer   * data;
+    INT32     * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+        /* MAGIC_VERSION must be first in ModuleInit */
+    case 0:
+        * data = (pointer) &ibm8514VersRec;
+        * magic= MAGIC_VERSION;
+        break;
+    case 1:
+        * data = (pointer) &ibm8514InfoRec;
+        * magic= MAGIC_ADD_VIDEO_CHIP_REC;
+        break;
+    case 2:
+        * data = (pointer) "libxf86cache.a";
+        * magic= MAGIC_LOAD;
+        break;
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
+#endif
 
 short ibm8514alu[16] = {
     MIX_0,

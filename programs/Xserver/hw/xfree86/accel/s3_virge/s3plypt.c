@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3plypt.c,v 3.6 1997/01/18 06:55:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3plypt.c,v 3.7 1997/05/03 09:17:10 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -95,7 +95,7 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
       s3_rop = s3ConvertPlanemask(pGC, &s3_clr);
    }
 
-   if (!xf86VTSema || (s3_rop == -1)) {
+   if (!xf86VTSema /*|| (s3_rop == -1)*/) {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
       case 8:
@@ -158,7 +158,7 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
        */
       WaitQueue(7 + npt);
       SETB_PAT_FG_CLR(s3_clr);
-      SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC | s3_rop);
+      SETB_CMD_SET(s3_gcmd | CMD_BITBLT | MIX_MONO_PATT | CMD_AUTOEXEC | s3_rop);
       SETB_RWIDTH_HEIGHT(0,1);
 
       for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.9 1997/04/08 10:11:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.10 1997/05/03 09:17:11 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -75,7 +75,7 @@
 #define S3_OUTL(p,n) /* MML(p) = (unsigned int)(n)   */
 
 #define outw32(p,n) \
-  if (s3InfoRec.bitsPerPixel == 32) { \
+  if (s3InfoRec.depth/*bitsPerPixel*/ == 32) { \
     outw(p,n); \
     outw(p,(n)>>16); \
   } \
@@ -83,7 +83,7 @@
     outw(p,n)
 
 #define S3_OUTW32(p,n) \
-  if (s3InfoRec.bitsPerPixel == 32) { \
+  if (s3InfoRec.depth/*bitsPerPixel*/ == 32) { \
     S3_OUTW(p,n); \
     S3_OUTW(p,(n)>>16); \
   } \
@@ -141,7 +141,8 @@ extern int s3DisplayWidth;
 extern int s3ScissB;
 /* right scissor BL 0816150096 */
 extern int s3ScissR;
-extern int s3Bpp;    /* Bytes per pixel */
+extern int s3Bpp;    /* Bytes per pixel -- use with passed-down data */
+extern int realS3Bpp;    /* real Bytes per pixel, for 8/16/24 framebufer bpp */
 extern int s3BppDisplayWidth;
 extern int s3Weight;
 extern int s3alu[], s3alu_sp[], s3alu_pat[];
@@ -240,6 +241,7 @@ extern Pixel s3BppPMask;
 #define NUMBER_NINE_BIOS	 6
 #define HERCULES_BIOS		 7
 #define DIAMOND_BIOS		 8
+#define MELCO_BIOS		 9
 
 
 /* Function Prototypes */

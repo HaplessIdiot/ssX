@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/oak/oak_driver.c,v 1.1 1997/03/06 23:16:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/oak/oak_driver.c,v 1.2 1997/05/03 09:18:25 dawes Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -358,7 +358,7 @@ static int Num_OAK_ExtPorts = (sizeof(OAK_ExtPorts)/sizeof(OAK_ExtPorts[0]));
 XF86ModuleVersionInfo oakVersRec =
 {
 	"oak_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

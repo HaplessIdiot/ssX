@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h /main/58 1996/12/02 10:22:09 lehors $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.19 1996/12/31 04:17:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.21 1997/02/25 16:05:11 hohndel Exp $ */
 
 /*
  * Machine dependent values:
@@ -152,6 +152,7 @@ SOFTWARE.
 #if (defined(sun) && !(defined(i386) && defined(SVR4))) || \
     (defined(AMOEBA) && (defined(sparc) || defined(mc68000))) || \
     (defined(__uxp__) && (defined(sparc) || defined(mc68000))) || \
+    (defined(Lynx) && defined(__sparc__)) || \
     (defined(__NetBSD__) && (defined(__sparc__) || defined(mc68000)))
 
 #if defined(sun386) || defined(sun5)

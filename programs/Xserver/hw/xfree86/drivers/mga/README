@@ -1,4 +1,4 @@
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/README,v 1.1 1997/03/06 23:15:58 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/README,v 1.2 1997/05/17 13:11:40 dawes Exp $
 
 
 
@@ -12,18 +12,15 @@ it to. It shouldn't crash your machine, and there are problems with 24 bpp,
 but it should work pretty well. Please report any and all problems to
 XFree86@Xfree86.org using the appropriate bug report sheet. 
 
-This is the first release of Mystique driver and, for this board, acceleration functions
-might not work. 
-
-!!!! Warning: For Mystique board, this driver works only in 256 colors (8 bits).
+This is the first release of Mystique driver and, for this board, acceleration
+functions might not work. 
 
 
 Features:
 ---------
-- for Millenium board:
-- - - - - - - - - - -
 
 * Fairly complete support for the Matrox Millennium video adapter.
+* First release of support for Matrox Mystique
 * Can only use a linear frame buffer
 * It should be possible to reach resolutions up to 1920x1024.
 * It should be possible to use pixel depths of:
@@ -35,11 +32,6 @@ Features:
 There are some 24 bpp mode problems - tiling doesn't work properly, so for some 
 programs, notably Netscape, gimp, xsetroot, etc, you may see corrupted images.
 
-- for Mystique board:
-- - - - - - - - - - -
-* It should be possible to reach resolutions up to 1280x1024.
-* It should be possible to use pixel depths of:
-   -  8 bits per pixel (256 pseudo colour)
 
 Planned Features
 ----------------
@@ -96,9 +88,6 @@ section in your XF86Config file:
     		Identifier  "Mystique"
     		VendorName  "Matrox"
     		BoardName   "mga1064sg"
-    		Chipset     "mga1064sg"
-    		Option "noaccel"
-    		DacSpeed 170
 	EndSection
 
 or let xf86config or XF86Setup do this for you.
@@ -149,7 +138,7 @@ become corrupted and you may damage the card!
 
 - for Mystique board:
 - - - - - - - - - - -
-FORCE_FAST_MCLK flag has no effect.
+MCLK_FROM_XCONFIG flag has no effect.
 
 Main author:
 ------------

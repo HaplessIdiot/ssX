@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/apollo/apollodriv.c,v 3.7 1997/03/04 10:40:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apollo/apollo_driver.c,v 1.1 1997/03/06 23:14:33 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -426,7 +426,7 @@ return(p+offset);
 XF86ModuleVersionInfo apolloVersRec =
 {
 	"apollo_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

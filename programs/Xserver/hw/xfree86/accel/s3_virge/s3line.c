@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.12 1997/04/08 10:11:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.13 1997/05/03 09:17:09 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -89,6 +89,131 @@ static __inline__ int double2int(double d)
    return (int)(d);
 }
 
+/* cmd pack to draw a line, "long" is 32-bit -hu */
+static void _s3drwline (x1, x2, delx, xstart, ystart, ycnt)
+unsigned int  x1;
+unsigned int  x2;
+unsigned long delx;
+unsigned long xstart;
+unsigned long ystart;
+unsigned long ycnt;
+{
+	WaitQueue(5);
+	SETL_LXEND0_END1(x1, x2);
+	SETL_LDX(delx);
+	SETL_LXSTART(xstart);
+	SETL_LYSTART(ystart);
+	SETL_LYCNT(ycnt);
+}
+
+/*++ merged simple H/V dashed-line stuff -hu ++*/
+#define NextDash {\
+    dashIndexTmp++; \
+    if (dashIndexTmp == numInDashList) \
+        dashIndexTmp = 0; \
+    dashRemaining = pDash[dashIndexTmp]; \
+    thisDash = dashRemaining; \
+    }
+
+#define FillDashPat {\
+   int i; \
+\
+   for (i = 0; i < 16; i++) {\
+      dashPat <<= 1;\
+      if (tmp + i < len) {\
+	 if (!(dashIndexTmp & 1))\
+	    dashPat |= 1;\
+	 if (--thisDash == 0)\
+	    NextDash\
+      }\
+   }\
+}
+
+#define s3_dashlineV { \
+	int len, pixon; \
+	unsigned short mask; \
+	/* use tmp dash index and offsets */ \
+	dashIndexTmp = dashIndex; \
+	dashOffsetTmp = dashOffset; \
+ \
+	if (y1t != y1) { /* advance the dash index */ \
+	  miStepDash (y1t - y1, &dashIndexTmp, pDash, \
+		      numInDashList, &dashOffsetTmp); \
+	} \
+	dashRemaining = pDash[dashIndexTmp] - dashOffsetTmp; \
+	thisDash = dashRemaining ; \
+	len = y2t - y1t; \
+	pixon = 0; \
+	y2t = y1t - 1; \
+	for (tmp = 0 ; tmp < len; tmp+=16) { \
+	  FillDashPat; \
+	  mask = 0x8000; \
+	  while (mask) { \
+	    if (dashPat & mask) { \
+		if (pixon == 0) y2t++; \
+		pixon++; \
+	    } \
+	    else { \
+		if (pixon) { \
+		  _s3drwline (x1, x1, 0L, (long)(x1 << 20), \
+			      (long)(y2t+pixon-1), pixon); \
+		  y2t += (pixon - 1); \
+		} \
+		pixon = 0; \
+		y2t++; \
+	    } \
+	    mask >>= 1; \
+	  } \
+	} \
+	if (pixon) { \
+	  if ((tmp = pixon-1) <= 0) tmp = 1; \
+	  _s3drwline (x1, x1, 0L, (long)(x1<<20),\
+		      (long)(y2t+pixon-1), tmp);\
+	} \
+}
+
+#define s3_dashlineH { \
+	int len, pixon; \
+	unsigned short mask; \
+\
+	dashIndexTmp = dashIndex; \
+	dashOffsetTmp = dashOffset; \
+\
+	if (x1t != x1) { /* advance the dash index */ \
+	     miStepDash (x1t - x1, &dashIndexTmp, pDash, \
+			 numInDashList, &dashOffsetTmp); \
+	} \
+	dashRemaining = pDash[dashIndexTmp] - dashOffsetTmp; \
+	thisDash = dashRemaining ; \
+	len = x2t - x1t; \
+	x1t--; \
+	pixon = 0; \
+	for (tmp = 0 ; tmp < len; tmp+=16) { \
+	  FillDashPat; \
+	  mask = 0x8000; \
+	  while (mask) { \
+	    if ((dashPat & mask) == 0) { \
+	      if (pixon) { \
+		_s3drwline (x1t, x1t+pixon-1, 0L, (long)(x1t << 20), \
+			    (long)y1, 0x80000001); \
+		x1t += pixon - 1; \
+	      } \
+	      x1t++; \
+	      pixon = 0; \
+	    } \
+	    else { \
+	      if (pixon == 0) x1t++; \
+	      pixon++; \
+	    } \
+	    mask >>= 1; \
+	  } \
+	} \
+	if (pixon) { \
+	  _s3drwline (x1t, x1t+pixon-1, 0L, (long)(x1t << 20), \
+		      (long)y1, 0x80000001); \
+	} \
+}
+
 
 void
 #ifndef POLYSEGMENT
@@ -136,12 +261,20 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
    cfbPrivGCPtr devPriv;
    int s3_clr, s3_rop;
 
+   unsigned char *pDash;
+   int   dashOffset;
+   int numInDashList;
+   int dashIndex;
+   int dashIndexTmp, dashOffsetTmp, thisDash, dashRemaining;
+   int unclippedlen;
+   short dashPat = 0;
+
    if (!pGC->planemask)  /* for xgc "benchmarks" ;-) */
       return;
 
    s3_rop = s3ConvertPlanemask(pGC, &s3_clr);
 
-   if (!xf86VTSema || (s3_rop == -1) || (pGC->planemask & s3BppPMask) != s3BppPMask) {
+   if (!xf86VTSema || (s3_rop == -1) /*|| (pGC->planemask & s3BppPMask) != s3BppPMask*/) {
       if (xf86VTSema) WaitIdleEmpty();
 #ifndef POLYSEGMENT
       switch (s3InfoRec.bitsPerPixel) {
@@ -205,6 +338,20 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
    x2 = ppt->x + xorg;
    y2 = ppt->y + yorg;
 #endif /* not POLYSEGMENT */
+
+   if (pGC->lineStyle == LineOnOffDash  ||
+       pGC->lineStyle == LineDoubleDash) {
+     pDash = (unsigned char *) pGC->dash;
+     numInDashList = pGC->numInDashList;
+
+     dashIndex = 0;
+     dashOffset = 0;
+     miStepDash ((int)pGC->dashOffset, &dashIndex, pDash,
+                  numInDashList, &dashOffset);
+
+     dashRemaining = pDash[dashIndex] - dashOffset;
+     thisDash = dashRemaining ;
+   }
 
 #ifndef POLYSEGMENT
    while (--npt) {
@@ -270,14 +417,25 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 		  y1t = max(y1, pbox->y1);
 		  y2t = min(y2, pbox->y2);
 		  if (y1t != y2t) {
-                     /* Since the ViRGE draws from bottom to top, I draw
-                        from x2,y2 to x1,y1, where x2,y2 is skipped. */
-		     WaitQueue(5);
-		     SETL_LXEND0_END1(x1, x1);
-		     SETL_LDX(0);  /* dX == 0 */
-		     SETL_LXSTART(x1 << 20);
-		     SETL_LYSTART(y2t - 1);
-		     SETL_LYCNT(y2t - y1t);
+
+		    if (pGC->lineStyle == LineOnOffDash  ||
+			pGC->lineStyle == LineDoubleDash) {
+		      s3_dashlineV;
+		    }
+		    else {
+                      /* Since the ViRGE draws from bottom to top, I draw
+                         from x2,y2 to x1,y1, where x2,y2 is skipped. */
+#if 0
+		      WaitQueue(5);
+		      SETL_LXEND0_END1(x1, x1);
+		      SETL_LDX(0);  /* dX == 0 */
+		      SETL_LXSTART(x1 << 20);
+		      SETL_LYSTART(y2t - 1);
+		      SETL_LYCNT(y2t - y1t);
+#endif
+		      _s3drwline (x1, x1, 0L, (long)(x1<<20),
+				 (long)(y2t-1), y2t-y1t);
+		    }
 		  }
 	       }
 	       nbox--;
@@ -335,13 +493,23 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 	       x1t = max(x1, pbox->x1);
 	       x2t = min(x2, pbox->x2);
 	       if (x1t != x2t) {
-                  /* Skip x2,y2 */
-		  WaitQueue(5);
-		  SETL_LXEND0_END1(x1t, x2t-1);
-		  SETL_LDX(0);	/* dY == 0 */
-		  SETL_LXSTART(x1t << 20);
-		  SETL_LYSTART(y1);
-		  SETL_LYCNT(1 | 0x80000000);
+		 if (pGC->lineStyle == LineOnOffDash  ||
+		     pGC->lineStyle == LineDoubleDash) {
+		   s3_dashlineH;
+		 }
+		 else {
+                   /* Skip x2,y2 */
+#if 0
+		   WaitQueue(5);
+		   SETL_LXEND0_END1(x1t, x2t-1);
+		   SETL_LDX(0);	/* dY == 0 */
+		   SETL_LXSTART(x1t << 20);
+		   SETL_LYSTART(y1);
+		   SETL_LYCNT(1 | 0x80000000);
+#endif
+		   _s3drwline (x1t, x2t-1, 0L, (long)(x1t<<20),
+			       y1, 0x80000001);
+		 }
 	       }
 	       nbox--;
 	       pbox++;
@@ -367,9 +535,17 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 	 }
 
 	 if (adx > 2047) /* avoid integer overflow */
-	    xdelta = -double2int((double)(x2-x1) * (1<<20) / (double)(y2-y1));
+	    xdelta = -double2int((double)(adx) * (1<<20) / (double)(ady));
 	 else
-	    xdelta = -((x2-x1) << 20) / (y2-y1);
+	    xdelta = -(((adx) << 20)) / (ady);
+
+	 if ((x1 < x2) ^ (y1 < y2)) {
+	    xdelta = -xdelta;
+	    xdir = 0x80000000;
+	 } 
+	 else
+	    xdir = 0;
+
 	 if (axis == Y_AXIS)
 	    if (xdelta >= 0)
 	       xfixup = 0x7ffff;
@@ -382,10 +558,6 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 	       xdelta--;
 	       xfixup = ((xdelta+1) >> 1) + ((1<<20) - 1);
 	    }
-	 if ((x1 < x2) ^ (y1 < y2))
-	    xdir = 0x80000000;
-	 else
-	    xdir = 0;
 
 	 /*
 	  * we have bresenham parameters and two points. all we have to do now
@@ -445,19 +617,22 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 		* 
 		* ViRGE vector generator uses DDA instead of bresenham and
 		* for long sloped lines (> 500 scanlines) rounding error can result
-		* in wrong pixels been drawn.  longer lines are splited in 
+		* in wrong pixels being drawn.  longer lines are split in 
 		* multple parts and starting points fraction is set so that
 		* parts will join exactly (mostly experimental values)
 		*/
 
 #define LEN 250
 	       if (len <= LEN) { /* use old code to avoid FP stuff for short lines */
+#if 0
 		  WaitQueue(5);
 		  SETL_LXEND0_END1(xs, xe);
 		  SETL_LDX(xdelta);
 		  SETL_LXSTART(xss);
 		  SETL_LYSTART(ys);
 		  SETL_LYCNT((len+1) | xdir);
+#endif
+		  _s3drwline (xs, xe, xdelta, xss, ys, ((len+1) | xdir));
 	       }
 	       else {
 		  double xd2 = -(double)(x2-x1) * (1<<20) / (double)(y2-y1);
@@ -514,7 +689,7 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 #endif /* POLYSEGMENT */
 
 	       if (len) {
-		  int xofs,yofs;
+		  int yofs;
 
 		  len = abs(new_y2 - new_y1);
 

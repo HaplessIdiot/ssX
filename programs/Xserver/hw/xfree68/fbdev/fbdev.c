@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.6 1997/05/03 09:16:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.7 1997/05/17 13:11:34 dawes Exp $ */
 /*
  *
  *  Author: Martin Schaller. Taken from hga2.c
@@ -129,6 +129,39 @@ static struct fb_var_screeninfo initscrvar;
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 
+#if defined(XFree86LOADER)
+
+#define _NO_XF86_PROTOTYPES
+
+#include "xf86.h"
+
+extern ScrnInfoRec fbdevInfoRec;
+
+ScrnInfoPtr xf86Screens[] = {
+	&fbdevInfoRec,
+};
+
+int xf86MaxScreens = sizeof(xf86Screens)/sizeof(ScrnInfoPtr);
+
+int xf86ScreenNames[] = {
+	FBDEV,
+	-1
+};
+
+int fbdevValidTokens[] = {
+	STATICGRAY,
+	GRAYSCALE,
+	STATICCOLOR,
+	PSEUDOCOLOR,
+	TRUECOLOR,
+	DIRECTCOLOR,
+	MODES,
+	VIEWPORT,
+	VIRTUAL,
+	-1
+};
+#endif
+
 ScrnInfoRec fbdevInfoRec = {
     FALSE,			/* Bool configured */
     -1,				/* int tmpIndex */
@@ -190,15 +223,15 @@ ScrnInfoRec fbdevInfoRec = {
     -1,				/* int s3BlankDelay */
     0,				/* int textClockFreq */
     NULL,			/* char *DCConfig */
-    NULL,			/* char *DCOptions */
+    NULL			/* char *DCOptions */
 #ifdef XFreeXDGA
-    0,				/* int directMode */
-    NULL,			/* void (*setBank)() */
+    ,0,				/* int directMode */
+    0,			/* void (*setBank)() */
     0,				/* unsigned long physBase */
-    0,				/* int physSize */
+    0				/* int physSize */
 #endif
 #ifdef XF86SETUP
-    NULL,			/* void *device */
+    ,NULL,			/* void *device */
 #endif
 
 

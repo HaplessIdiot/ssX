@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ncr/ncr_driver.c,v 1.2 1997/03/11 11:10:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ncr/ncr_driver.c,v 1.3 1997/05/03 09:18:21 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -37,7 +37,7 @@
 #include "xf86.h"
 #include "xf86Version.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
+#include "xf86_OSproc.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
 
@@ -149,7 +149,7 @@ static unsigned char NCRchipset;
 XF86ModuleVersionInfo ncrVersRec =
 {
 	"ncr_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

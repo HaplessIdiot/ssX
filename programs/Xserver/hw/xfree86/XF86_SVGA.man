@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.43 1997/03/03 10:18:16 hohndel Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.44 1997/05/11 02:53:01 dawes Exp $ 
 .TH XF86_SVGA 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XF86_SVGA - SVGA X Window System servers for UNIX on 
@@ -14,7 +14,8 @@ the
 .I X386
 server provided with X11R5.
 Note: 16-bit and 24-bit TrueColor are currently only supported for some
-Cirrus, ARK, Chips & Technologies, and Trident chips, and the ET6000.
+Cirrus, ARK, Chips & Technologies, and Trident chips, the ET6000 and some
+ET4000W32 chips.
 .SH CONFIGURATIONS
 .PP
 The
@@ -24,12 +25,13 @@ Virtual resolutions up to (approximately) 1152x900 are supported, using (up
 to) 1Mb of display memory. The Western Digital WD90C33, some of the Cirrus
 chipsets, ARK, the Oak OTI087, the Chips & Technologies 65550 or 65554 and
 the ET6000 support up to 2Mb of display memory and virtual resolutions of
-1280x1024 and higher.  Some of the Cirrus and ARK chipsets also support 16bpp,
-24bpp and 32bpp (truecolor) modes on certain configurations. Some Trident
-chips are supported at 16bpp. Some Chips & Technologies chipset also 
-support 16bpp and 24bpp (truecolor) modes. The ET6000 supports all color
-depths. Generic VGA cards are also supported at 8bpp 320x200 only.
-The Matrox Millennium supports all color depths.
+1280x1024 and higher. Some of the Cirrus and ARK chipsets also support
+16bpp, 24bpp and 32bpp (truecolor) modes on certain configurations. Some
+Trident chips are supported at 16bpp. Some Chips & Technologies chipset also
+support 16bpp and 24bpp (truecolor) modes. The ET6000 and some ET4000W32i or
+ET4000W32p chips supports all color depths. Generic VGA cards are also
+supported at 8bpp 320x200 only. The Matrox Millennium supports all color
+depths.
 .RS .5i
 .TP 4
 ATI:
@@ -103,8 +105,9 @@ NV1, STG2000
 .PP
 Accelerated support is included for most of the Cirrus chipsets, the Western
 Digital WD90C31 and WD90C33 chipsets, the Oak OTI087 chipset, Chips &
-Technologies, ARK Logic chipsets, and the ET6000. Accelerated 8bpp support
-for the ET4000/W32 and ET6000 is implemented in a separate server (see
+Technologies, ARK Logic chipsets, the ET6000 and the ET4000/W32p.
+Accelerated 8bpp support for the ET4000/W32 (i and p) and ET6000 is
+implemented in a separate server (see
 \fIXF86_W32(1)\fP). Users of boards based on ATI's Mach8, Mach32 and Mach64
 chipsets should refer to the \fIXF86_Mach8(1)\fP, \fIXF86_Mach32(1)\fP and
 \fIXF86_Mach64(1)\fP manual pages, respectively.
@@ -140,7 +143,9 @@ ATI:
 ati (See README.ati for other recognized names)
 .TP 4
 Tseng:
-et3000, et4000, et4000w32, et4000w32i, et4000w32p, et6000
+et3000, et4000W32, et4000W32i, et4000W32i_rev_b, et4000W32i_rev_c,
+et4000W32p, et4000W32p_rev_a, et4000W32p_rev_b, et4000W32p_rev_c,
+et4000W32p_rev_d, et6000
 .TP 4
 Western Digital:
 pvga1, wd90c00, wd90c10, wd90c24, wd90c30, wd90c31, wd90c33
@@ -271,8 +276,9 @@ clgd546X, wd90c24, wd90c31 and wd90c33, C&T, ARK, MGA and Tseng chipsets.
 which includes ARK, Cirrus, C&T, MGA, SiS, Trident 9440/9680, and Tseng
 chipsets. This disables the use of a pixmap cache by XAA.
 .sp
-\fBxaa_no_color_exp\fP - for any chip that uses XAA for acceleration.
-This option disables the use by XAA of hardware color expansion features.
+\fBxaa_no_col_exp\fP - for any chip that uses XAA for acceleration.
+This option disables the use by XAA of hardware color expansion features. If
+you see text rendering problems, try this.
 .sp
 \fBxaa_benchmarks\fP - most useful for a chip that uses XAA for
 acceleration. This option makes the server perform and report the results
@@ -317,9 +323,11 @@ I/O for BitBLT communication.
 .sp
 \fBlinear\fP - Attempt a linear mapping of the framebuffer into high
 memory. Currently only supported for some Cirrus and oti087 configurations,
-the ET6000, and the ET4000W32p rev C and D.
-Automatically selected (and hence the option is ignored) for the clgd5462 
-and clgd5464, C&T, NVidia, and the ARK chipsets.
+the ET6000, the ET4000W32p rev C and D and the ET4000W32i.
+Automatically selected (and hence the option is ignored) for the clgd5462
+and clgd5464, C&T, NVidia, and the ARK chipsets. This is also true for Tseng
+chips, except for 8bpp modes, where this flag allows linear mapping to be
+forced (it defaults to banked mode at 8bpp).
 .sp
 \fBnolinear\fP - Disable linear mapping. Useful for C&T, ARK and some
 Cirrus chipsets.
@@ -334,8 +342,8 @@ suspend_hack, use_18bit_bus\fP - more Chips & Technologies specific
 options for use with LCD screens. Refer to <XRoot>/lib/X11/doc/README.chips
 for a detailed description of these options.
 .sp
-\fBhw_cursor\fP - for ARK chipsets.  This option enables the hardware
-cursor.
+\fBhw_cursor\fP - for ARK or ET6000 chipsets.  This option enables the
+hardware cursor.
 .sp
 \fBsw_cursor\fP - for Cirrus and C&T chipsets.  This option disables the
 hardware cursor.
@@ -343,6 +351,12 @@ hardware cursor.
 \fBsync_on_green\fP - for Chips & Technologies 65550's and 65554's
 and Matrox MGA2064W's.  This option enables the generation of a sync
 on green signal.
+.sp
+\fBpci_retry\fP - for all accelerated Tseng chipsets. This option enables a
+"bus-hold" feature on the Tseng chip that will increase accelerator
+performance, but at the cost of long system bus blocking periods. This may
+cause bus timeouts for some ISA DMA hardware (soundcards, floppy tape drives,
+etc). Despite the name, this is not limited to PCI bus cards only.
 .ig
 intern_disp (use internal display for laptops -- WD90C2x)
 extern_disp (use external display for laptops -- WD90C2x)
@@ -369,8 +383,8 @@ won't work with a given configuration are automatically disabled.
 disables the SpeedUp code.  This is equivalent to \fBspeedup "none"\fP.
 .TP 8
 .B Ramdac \fI"ramdac-type"\fP
-This specifies the type of RAMDAC used on the board.  Only the ARK driver
-currently uses this. Refer to the ARK-specific documentation for
+This specifies the type of RAMDAC used on the board.  The ARK and
+ET4000W32i/p drivers use this. Refer to the chips-specific documentation for
 details.
 .TP 8
 .B TextClockFreq \fItxtclk\fP

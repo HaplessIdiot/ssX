@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.24 1997/03/22 09:35:27 hohndel Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.25 1997/03/27 08:30:35 hohndel Exp $ */ 
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -439,6 +439,12 @@ settriopll(clk, m, n)
 	 outb(0x3c5, n);
 	 outb(0x3c4, 0x13);
 	 outb(0x3c5, m);
+
+	 outb(0x3c4, 0x15);
+	 tmp = inb(0x3c5) & ~0x21;
+	 outb(0x3c5, tmp | 0x02);
+	 outb(0x3c5, tmp | 0x22);
+	 outb(0x3c5, tmp | 0x02);
       }
       else {		/* MCLK */
 	 index2 = 0x10;
@@ -448,13 +454,14 @@ settriopll(clk, m, n)
 	 outb(0x3c5, m);
 	 outb(0x3c4, 0x1a);
 	 outb(0x3c5, n);
-      }
 
-      outb(0x3c4, 0x15);
-      tmp = inb(0x3c5);
-      outb(0x3c4, tmp & ~0x20);
-      outb(0x3c4, tmp |  0x20);
-      outb(0x3c4, tmp & ~0x20);
+	 outb(0x3c4, 0x15);
+	 tmp = inb(0x3c5) & ~0x21;
+	 outb(0x3c5, tmp | 0x01);
+	 outb(0x3c5, tmp | 0x21);
+	 outb(0x3c5, tmp | 0x01);
+	 outb(0x3c5, tmp);
+      }
 
       outb(0x3c4, 0x08);
       outb(0x3c5, 0x00);  /* lock extended CR9-CR18 */
