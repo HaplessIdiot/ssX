@@ -1,3 +1,5 @@
+3900. Fix xc/lib/Imakefile for BuildServersOnly (Marc La France).
+
 XFree86 3.9.18b (29 February 2000)
 3899. Fix a bug in lnx_apm.c that causes fd 0 to be closed instead
       of the just opened /proc/apm (#3766, Kars de Jong).
@@ -9906,4 +9908,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1046 2000/02/29 22:43:47 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1047 2000/03/01 00:25:16 dawes Exp $
