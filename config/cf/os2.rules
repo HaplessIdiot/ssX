@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.6 1996/01/30 15:24:14 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.7 1996/02/09 08:17:45 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -112,8 +112,7 @@ ProgramTargetName(program): objects deplibs				@@\
 	RemoveTargetProgram($@)						@@\
 	LinkRule($@,$(LDOPTIONS),objects,locallibs $(LDLIBS) syslibs)	@@\
 									@@\
-InstallProgram(program,$(BINDIR))					@@\
-InstallManPage(program,$(MANDIR))
+InstallProgram(program,$(BINDIR))
 
 #if 0
 #define ComplexProgramTargetNoMan(program)				@@\
@@ -384,3 +383,30 @@ step:: srcname								@@\
 
 #endif /* InstallNamedTargetNoClobber */
 
+#ifndef InstallManPageLong
+#define InstallManPageLong(file,destdir,dest)                           @@\
+install.man:: file.man                                                  @@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	ImakeHelper 10 file $(DESTDIR)destdir dest $(MANSUFFIX)
+#endif
+
+#ifndef InstallManPageAliases
+#define InstallManPageAliases(file,destdir,aliases)                     @@\
+install.man::                                                           @@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	for %i in (aliases) do $(INSTALL) $(DESTDIR)destdir/file.$(MANSUFFIX) $(DESTDIR)destdir/%i.$(MANSUFFIX) 
+#endif
+
+#ifndef InstallGenManPageLong
+#define InstallGenManPageLong(file,destdir,dest,suffix)                 @@\
+install.man:: file.man                                                  @@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	ImakeHelper 10 file $(DESTDIR)destdir dest suffix
+#endif
+
+#ifndef InstallMultipleMan
+#define InstallMultipleMan(list,dest)                                   @@\
+install.man:: list                                                      @@\
+	MakeDir($(DESTDIR)dest)						@@\
+	for %i in (list) do ImakeHelper 10 %i $(DESTDIR)dest %i $(MANSUFFIX)
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.6 1996/01/11 10:37:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.7 1996/02/04 09:05:01 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -170,13 +170,15 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
    nboxInit = REGION_NUM_RECTS(cclip);
 
    BLOCK_CURSOR;
-   WaitQueue16_32(4,5);
+   WaitQueue16_32(3,4);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
    if (pGC->lineStyle == LineDoubleDash) {
       S3_OUTW32(BKGD_COLOR, pGC->bgPixel);
       S3_OUTW(BKGD_MIX, BSS_BKGDCOL | s3alu[pGC->alu]);      
-   } else
-      S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+   } else {
+      S3_OUTW32(BKGD_COLOR, 0);
+      S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
+   }
 
    WaitQueue16_32(3,5);
    S3_OUTW32(WRT_MASK, pGC->planemask);

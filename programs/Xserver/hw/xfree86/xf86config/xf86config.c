@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.22 1996/02/04 09:15:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.23 1996/02/18 03:43:53 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -109,9 +109,7 @@
 #define PREFER_XF86CONFIG_IN_ETC
 
 /*
- * Define this to force the user to go through XKB configuration section
- * This is default for OS/2, because OS/2 has broken standard keyboard
- * support.
+ * Define this to force the user to go through XKB configuration section.
  *
 #define FORCE_XKB_DIALOG
  */
@@ -128,9 +126,6 @@
 #ifdef __EMX__
 #define DUMBCONFIG2 "/dconfig.2"
 #define DUMBCONFIG3 "/dconfig.3"
-#ifndef FORCE_XKB_DIALOG
-#define FORCE_XKB_DIALOG
-#endif
 #else
 #define DUMBCONFIG2 "/tmp/dumbconfig.2"
 #define DUMBCONFIG3 "/tmp/dumbconfig.3"

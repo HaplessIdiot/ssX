@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_ioperm.c,v 3.0 1996/01/30 15:26:33 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -66,7 +66,7 @@ int ScreenNum;
 HFILE hfd;
 	ULONG dlen;
 
-
+ErrorF("Calling Enable IO Ports\n");
 	/* no need to call multiple times */
 	if (ioEnabled) return;
 	
@@ -78,8 +78,6 @@ HFILE hfd;
 		ErrorF("Please install xf86sup.sys in config.sys!\n");
 		return;
 	}
-	ErrorF("xf86-OS/2: Granting IOPL to X-server\n");
-
 	callgate[0] = callgate[1] = 0;
 
 /* Get callgate from driver for fast io to ports and other stuff */
@@ -110,6 +108,7 @@ int ScreenNum;
 HFILE hfd;
 	ULONG dlen;
 
+ErrorF("Calling Disable IO Ports\n");
 
 	/* no need to call multiple times */
 	if (!ioEnabled) return;
@@ -122,11 +121,7 @@ HFILE hfd;
 		ErrorF("Please install xf86sup.sys in config.sys!\n");
 		return;
 	}
-	ErrorF("xf86-OS/2: Setting X-server back to ring 3\n");
-
 	callgate[0] = callgate[1] = 0;
-
-/* Get callgate from driver for fast io to ports and other stuff */
 
 	if (DosDevIOCtl(hfd, (ULONG)0x76, (ULONG)0x64,
 		NULL, 0, NULL,

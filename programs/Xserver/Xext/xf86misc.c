@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.8 1996/02/09 08:19:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.9 1996/02/18 03:41:35 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -19,6 +19,7 @@
 #define _XF86MISC_SERVER_
 #include "xf86mscstr.h"
 #include "Xfuncproto.h"
+#include "xf86_OSlib.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 

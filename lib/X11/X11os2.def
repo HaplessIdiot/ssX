@@ -1,9 +1,10 @@
+
 LIBRARY X11
-DESCRIPTION "X11R6 XFree86 libX11.dll for OS/2 EMX09A VERSION=6.0"
+DESCRIPTION "X11R6 XFree86 libX11.dll for OS/2 EMX09B VERSION=6.1"
 CODE
 	PRELOAD
 DATA
-	SINGLE NONSHARED
+	MULTIPLE NONSHARED
 STACKSIZE 32768
 EXPORTS
 	XSaveContext  @ 1
@@ -429,7 +430,6 @@ EXPORTS
 	XFree  @ 419
 	_XGetHostname  @ 420
 	_XScreenOfWindow  @ 421
-	_XANYSET  @ 422
 	_XAllocIDs  @ 423
 	_XAllocTemp  @ 424
 	_XFreeTemp  @ 425
@@ -786,7 +786,6 @@ EXPORTS
 	_XimResetIMInstantiateCallback  @ 775
 	_XimDestroyIMStructureList  @ 776
 	_XimServerDestroy  @ 777
-	_XimOpenIM  @ 778
 	_XInitIM  @ 779
 	_XimLocalFilter  @ 780
 	_XimLocalGetICValues  @ 781
@@ -892,16 +891,16 @@ EXPORTS
 	_XlcUtfLoader  @ 880
 	_XlcCompareISOLatin1  @ 881
 	_XlcNCompareISOLatin1  @ 882
-	_XmbDefalutTextEscapement  @ 883
-	_XwcDefalutTextEscapement  @ 884
-	_XmbDefalutTextExtents  @ 885
-	_XwcDefalutTextExtents  @ 886
-	_XmbDefalutTextPerCharExtents  @ 887
-	_XwcDefalutTextPerCharExtents  @ 888
-	_XmbDefalutDrawString  @ 889
-	_XwcDefalutDrawString  @ 890
-	_XmbDefalutDrawImageString  @ 891
-	_XwcDefalutDrawImageString  @ 892
+	_XmbDefaultTextEscapement  @ 883
+	_XwcDefaultTextEscapement  @ 884
+	_XmbDefaultTextExtents  @ 885
+	_XwcDefaultTextExtents  @ 886
+	_XmbDefaultTextPerCharExtents  @ 887
+	_XwcDefaultTextPerCharExtents  @ 888
+	_XmbDefaultDrawString  @ 889
+	_XwcDefaultDrawString  @ 890
+	_XmbDefaultDrawImageString  @ 891
+	_XwcDefaultDrawImageString  @ 892
 	_XomGenericOpenOM  @ 893
 	_XInitOM  @ 894
 	_XmbGenericDrawImageString  @ 895
@@ -952,3 +951,152 @@ EXPORTS
 	_XimXTransGetConnectionNumber  @ 940
 	_XimXTransGetHostname  @ 945
 	__XOS2RedirRoot @ 950
+	__XOS2RedirRoot1 @ 951
+
+	XkbIgnoreExtension @ 1000
+	XkbOpenDisplay @ 1001
+	XkbQueryExtension @ 1002
+	XkbUseExtension @ 1003
+	XkbLibraryVersion @ 1004
+	XkbSetXlibControls @ 1005
+	XkbGetXlibControls @ 1006
+	XkbSetAtomFuncs @ 1007
+	XkbKeycodeToKeysym @ 1008
+	XkbKeysymToModifiers @ 1009
+	XkbLookupKeySym @ 1010
+	XkbLookupKeyBinding @ 1011
+	XkbTranslateKeyCode @ 1012
+	XkbTranslateKeySym @ 1013
+	XkbSetAutoRepeatRate @ 1014
+	XkbGetAutoRepeatRate @ 1015
+	XkbChangeEnabledControls @ 1016
+	XkbDeviceBell @ 1017
+	XkbForceDeviceBell @ 1018
+	XkbDeviceBellEvent @ 1019
+	XkbBell @ 1020
+	XkbForceBell @ 1021
+	XkbBellEvent @ 1022
+	XkbSelectEvents @ 1023
+	XkbSelectEventDetails @ 1024
+	XkbNoteMapChanges @ 1025
+	XkbNoteNameChanges @ 1026
+	XkbGetIndicatorState @ 1027
+	XkbGetIndicatorMap @ 1029
+	XkbSetIndicatorMap @ 1030
+	XkbGetNamedIndicator @ 1031
+	XkbGetNamedDeviceIndicator @ 1032
+	XkbSetNamedIndicator @ 1033
+	XkbSetNamedDeviceIndicator @ 1034
+	XkbLockModifiers @ 1035
+	XkbLatchModifiers @ 1036
+	XkbLockGroup @ 1037
+	XkbLatchGroup @ 1038
+	XkbSetServerInternalMods @ 1039
+	XkbSetIgnoreLockMods @ 1040
+	XkbVirtualModsToReal @ 1041
+	XkbComputeEffectiveMap @ 1042
+	XkbInitCanonicalKeyTypes @ 1043
+	XkbAllocKeyboard @ 1044
+	XkbFreeKeyboard @ 1045
+	XkbAllocClientMap @ 1046
+	XkbAllocServerMap @ 1047
+	XkbFreeClientMap @ 1048
+	XkbFreeServerMap @ 1049
+	XkbAddKeyType @ 1050
+	XkbAllocIndicatorMaps @ 1051
+	XkbFreeIndicatorMaps @ 1052
+	XkbGetMap @ 1053
+	XkbGetUpdatedMap @ 1054
+	XkbGetMapChanges @ 1055
+	XkbRefreshKeyboardMapping @ 1056
+	XkbGetKeyTypes @ 1057
+	XkbGetKeySyms @ 1058
+	XkbGetKeyActions @ 1059
+	XkbGetKeyBehaviors @ 1060
+	XkbGetVirtualMods @ 1061
+	XkbGetKeyExplicitComponents @ 1062
+	XkbGetKeyModifierMap @ 1063
+	XkbAllocControls @ 1064
+	XkbFreeControls @ 1065
+	XkbGetControls @ 1066
+	XkbSetControls @ 1067
+	XkbAllocCompatMap @ 1069
+	XkbFreeCompatMap @ 1070
+	XkbGetCompatMap @ 1071
+	XkbSetCompatMap @ 1072
+	XkbAllocNames @ 1073
+	XkbGetNames @ 1074
+	XkbSetNames @ 1075
+	XkbChangeNames @ 1076
+	XkbFreeNames @ 1077
+	XkbGetState @ 1078
+	XkbSetMap @ 1079
+	XkbChangeMap @ 1080
+	XkbSetDetectableAutoRepeat @ 1081
+	XkbGetDetectableAutoRepeat @ 1082
+	XkbSetAutoResetControls @ 1083	
+	XkbGetAutoResetControls @ 1084
+	XkbCopyKeyType @ 1085
+	XkbCopyKeyTypes @ 1086
+	XkbResizeKeyType @ 1087
+	XkbResizeKeySyms @ 1088
+	XkbResizeKeyActions @ 1089
+	XkbChangeTypesOfKey @ 1090
+	XkbListComponents @ 1091
+	XkbFreeComponentList @ 1092
+	XkbGetKeyboard @ 1093
+	XkbGetKeyboardByName @ 1094
+	XkbAddDeviceLedInfo @ 1098
+	XkbResizeDeviceButtonActions @ 1099
+	XkbAllocDeviceInfo @ 1100
+	XkbFreeDeviceInfo @ 1101
+	XkbNoteDeviceChanges @ 1102
+	XkbGetDeviceInfo @ 1103
+	XkbGetDeviceInfoChanges @ 1104
+	XkbGetDeviceButtonActions @ 1105
+	XkbGetDeviceLedInfo @ 1106
+	XkbSetDeviceInfo @ 1107
+	XkbChangeDeviceInfo @ 1108
+	XkbSetDeviceLedInfo @ 1109
+	XkbSetDeviceButtonActions @ 1110
+	XkbToControl @ 1111
+	XkbSetDebuggingFlags @ 1112
+	_XkbInternAtomFunc @ 1113
+	_XkbGetAtomNameFunc @ 1114
+	_XkbReloadDpy @ 1115
+	_XKeycodeToKeysym @ 1116
+	_XKeysymToKeycode @ 1117
+	_XLookupKeysym @ 1118
+	_XRefreshKeyboardMapping @ 1119
+	_XLookupString @ 1120
+	_XkbNoteCoreMapChanges @ 1121
+	_XkbInitReadBuffer @ 1122
+	_XkbSkipReadBufferData @ 1123
+	_XkbCopyFromReadBuffer @ 1124
+	_XkbReadCopyKeySyms @ 1125
+	_XkbWriteCopyKeySyms @ 1126
+	_XkbReadBufferCopyKeySyms @ 1127
+	_XkbPeekAtReadBuffer @ 1128
+	_XkbGetReadBufferPtr @ 1129
+	_XkbFreeReadBuffer @ 1130
+	_XkbGetReadBufferCountedString @ 1131
+	_XkbGetCharset @ 1132
+	_XkbGetConverters @ 1133
+	XkbGetGeometry @ 1134
+	XkbAddGeomShape @ 1135
+	XkbAddGeomOutline @ 1136
+	XkbComputeShapeBounds @ 1137
+	XkbAddGeomDoodad @ 1138
+	XkbAddGeomColor @ 1139
+	XkbAddGeomOverlayRow @ 1140
+	XkbAddGeomSection @ 1141
+	XkbAddGeomRow @ 1142
+	XkbAddGeomKey @ 1143
+	XkbComputeSectionBounds @ 1144
+	XkbAllocGeometry @ 1145
+	XkbAddGeomProperty @ 1146
+	XkbAddGeomOverlay @ 1147
+	XkbComputeShapeTop @ 1148
+	XkbFindOverlayForKey @ 1149
+	XkbAllocGeomKeyAliases @ 1150
+

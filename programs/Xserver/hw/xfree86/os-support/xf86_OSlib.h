@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.22 1996/02/04 09:09:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.23 1996/02/09 08:20:48 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -444,7 +444,7 @@ extern capability iopcap;
 # define OSMOUSE_ONLY
 # define MOUSE_PROTOCOL_IN_KERNEL
 
-extern char* __SrvRedirRoot(char*);
+extern char* __XOS2RedirRoot(char*);
 
 #endif
 
@@ -725,13 +725,13 @@ extern void xf86MouseEvents(
 );
 extern int  xf86XqueKbdProc(
 #if NeedFunctionPrototypes
-	DevicePtr,
+	DeviceIntPtr,
 	int
 #endif
 );
 extern int  xf86XqueMseProc(
 #if NeedFunctionPrototypes
-	DevicePtr,
+	DeviceIntPtr,
 	int
 #endif
 );
@@ -763,7 +763,7 @@ extern Bool xf86CheckPorts(
 );
 extern int  xf86OsMouseProc(
 #if NeedFunctionPrototypes
-	DevicePtr,
+	DeviceIntPtr,
 	int
 #endif
 );

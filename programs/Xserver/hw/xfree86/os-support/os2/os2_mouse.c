@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.2 1996/01/30 15:26:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.3 1996/02/09 08:20:57 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -47,7 +47,7 @@
 #include "xf86Procs.h"
 #include "xf86_Config.h"
 
-HMOU hMouse=-1;
+HMOU hMouse=65535;
 BOOL HandleValid=FALSE;
 extern BOOL SwitchedToWPS;
 extern CARD32 LastSwitchTime;
@@ -75,18 +75,18 @@ pointer lex_ptr;
 
 /* almost everything stolen from sco_mouse.c */
 int xf86OsMouseProc(pPointer, what)
-DevicePtr pPointer;
+DeviceIntPtr pPointer;
 int what;
 {
-	APIRET rc;
+	APIRET rc=0;
 	USHORT nbutton,state;
 	unsigned char *map;
 	int i;
 
 	switch (what) {
 	case DEVICE_INIT: 
-		pPointer->on = FALSE;
-		rc = MouOpen((PSZ)0, &hMouse);
+		pPointer->public.on = FALSE;
+		if(hMouse==65535) rc = MouOpen((PSZ)0, &hMouse);
 		if (rc != 0)
 			FatalError("Cannot open mouse, rc=%d\n",rc);
 		xf86Info.mseFd = -1;
@@ -106,7 +106,7 @@ int what;
 		for (i = 1; i <= nbutton; i++)
 			map[i] = i;
 
-		InitPointerDeviceStruct(pPointer, map, nbutton,
+		InitPointerDeviceStruct((DevicePtr)pPointer, map, nbutton,
 			GetMotionEvents, (PtrCtrlProcPtr)xf86MseCtrl, 0);
 
 		xfree(map);
@@ -114,11 +114,12 @@ int what;
 		break;
       
 	case DEVICE_ON:
+		ErrorF("xf86-OS/2: mouse DEVICE_ON being called, hMouse=%d\n",hMouse);
 		/*AddEnabledDevice(xf86Info.mseFd);*/
 		if(!HandleValid) return(-1);
 		xf86Info.lastButtons = 0;
 		xf86Info.emulateState = 0;
-		pPointer->on = TRUE;
+		pPointer->public.on = TRUE;
 		state = 0x300;
 		rc=MouSetDevStatus(&state,hMouse);
 		state = 0x7f;
@@ -128,17 +129,19 @@ int what;
       
 	case DEVICE_CLOSE:
 	case DEVICE_OFF:
+		ErrorF("xf86-OS/2: mouse DEVICE_OFF/DEVICE_CLOSE being called, hMouse=%d\n",hMouse);
 		if(!HandleValid) return(-1);
-		pPointer->on = FALSE;
+		pPointer->public.on = FALSE;
 		state = 0x300;
 		MouSetDevStatus(&state,hMouse);
 		state = 0;
 		MouSetEventMask(&state,hMouse);
 		/*RemoveEnabledDevice(xf86Info.mseFd);*/
 		if (what == DEVICE_CLOSE) {
-			MouClose(hMouse);
+			/* MouClose(hMouse);
+			hMouse=65535;
 			xf86Info.mseFd = -1;
-			HandleValid=FALSE;
+		        HandleValid=FALSE;  */ /* Comment out for now as this seems to break server */
 		}
 		break;
 	}
@@ -157,13 +160,13 @@ void xf86OsMouseEvents()
 
 	if(!HandleValid) return;
 	if((rc=MouGetNumQueEl(&mqif,hMouse))!=0){
-	     ErrorF("Bad return code from MouGetNumQueEl, rc=%d\n",rc);
+	     ErrorF("xf86-OS/2: Bad return code from MouGetNumQueEl, rc=%d, hMouse=%d\n",rc,hMouse);
 	     return;
 	}
 	if(mqif.cEvents<1) return;  /* There are no events */
 	for(i=0;i<mqif.cEvents;i++){
 	     if((rc=MouReadEventQue(&mev,&waitflg,hMouse))!=0){
-	          ErrorF("Bad return code from MouReadEventQue, rc=%d\n",rc);
+	          ErrorF("xf86-OS/2: Bad return code from MouReadEventQue, rc=%d\n",rc);
 	          return;
 	     }
 		waitflg = 0;
@@ -190,9 +193,10 @@ int os2MouseQueueQuery()
 	     /* Now we check for activity on mouse handles */
 MOUQUEINFO mouQueInfo;
 APIRET rc;
+	     if(!HandleValid) return(1);
 	     rc=MouGetNumQueEl(&mouQueInfo,hMouse);
 	     if(rc!=0){
-		  ErrorF("Mouse queue check has rc=%d\n",rc);
+		  ErrorF("xf86-OS/2: Mouse queue check has rc=%d\n",rc);
 		  return(-1); /* We could also check here for focus */
 	     }
 	     

@@ -2,7 +2,7 @@
  * This script serves as a helper cmd file for imake. Install this in
  * the path just like imake itself.
  *
- * $XFree86: xc/config/imake/imakesvc.cmd,v 3.3 1996/01/30 15:24:25 dawes Exp $
+ * $XFree86: xc/config/imake/imakesvc.cmd,v 3.4 1996/02/09 08:18:00 dawes Exp $
  */
 '@echo off'
 call RxFuncAdd 'SysFileDelete', 'RexxUtil', 'SysFileDelete'
@@ -60,7 +60,10 @@ SELECT
       ELSE DO
          /* this is simple it is relative to this dir */
          pfx = downlevels(dirfwd)
-         nruledir = pfx||ruledir
+         nruledir = ruledir
+         IF instflg = 'n' THEN DO /*sm120296*/
+            nruledir = pfx||ruledir
+         END
          ntopdir = pfx||topdir
          ncurdir = currentdir  /* use to be pfx || currentdir */
       END
@@ -131,6 +134,15 @@ SELECT
       CALL LINEOUT dst,'#include "'WORD(all,3)'"'
       CALL LINEOUT dst,'#include "'src'"'
       CALL LINEOUT dst 
+   END
+   WHEN code=10 THEN DO
+      /* imakesvc 10 srcfile destdir destfile suffix */
+      src = stripsuffix(WORD(all,2))
+      destdir = TRANSLATE(WORD(all,3),'\','/')
+      dest = stripsuffix(WORD(all,4))
+      suffix = WORD(all,5)
+      tgt = destdir'\'dest'.'suffix
+      'groff -e -t -man -Tascii 'src'.man >'tgt
    END
    OTHERWISE NOP
 END
@@ -220,3 +232,11 @@ DO k=1 TO n
   str = str||'../'
 END
 RETURN str||'.'
+
+stripsuffix:
+str = ARG(1)
+spos = POS('.',str)
+IF spos = 0 THEN
+   RETURN str
+ELSE
+   RETURN LEFT(str,spos-1)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.1 1996/01/24 22:02:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.2 1996/01/30 15:26:38 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -119,7 +119,7 @@ unsigned long Size;
 	if (DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x44,
 	      (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 	      (PVOID)&dta, (ULONG)dlen, (PULONG)&dlen) == 0) {
-		ErrorF("xf86MapVidMem succeeded: (ScreenNum= %d, Base= %p, Size= 0x%x\n",
+		ErrorF("xf86-OS/2: xf86MapVidMem succeeded: (ScreenNum= %d, Base= %p, Size= 0x%x\n",
 		ScreenNum, Base, Size);
 		if (dlen==sizeof(dta)) {
 			return (pointer)dta.addr;
@@ -128,7 +128,7 @@ unsigned long Size;
 	}
 
 	/* fail */
-	ErrorF("xf86MapVidMem FAILED!!: (ScreenNum= %d, Base= %p, Size= 0x%x return len %d\n",
+	ErrorF("xf86-OS/2: xf86MapVidMem FAILED!!: (ScreenNum= %d, Base= %p, Size= 0x%x return len %d\n",
 		ScreenNum, Base, Size,dlen);
 	return (pointer)0;
 }

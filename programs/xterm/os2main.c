@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.20 1995/07/08 13:16:41 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.0 1996/01/30 15:28:31 dawes Exp $ */
 
 /***********************************************************
 
@@ -1302,6 +1302,7 @@ spawn ()
 			DosCloseEventSem(sev);
 			break;
 		case 0:		/* child */
+
 /*debug fclose(confd);
 opencons();*/
 			/* we don't need the socket, or the pty master anymore */
@@ -1394,7 +1395,7 @@ opencons();*/
 			/* put the display into the environment of the shell*/
 			Setenv ("DISPLAY=", XDisplayString (screen->display));
 
-			/*signal(SIGTERM, SIG_DFL);*/
+			signal(SIGTERM, SIG_DFL);
 
 			/* this is the time to go and set up stdin, 
 			 * out, and err
@@ -1477,7 +1478,7 @@ opencons();*/
 			sleep(5);
 
 			/* preventively shoot the parent */
-			kill (getppid(),SIGTERM);
+			kill (-getppid(),SIGTERM);
 
 			exit(ERROR_EXEC);
 		} /* endcase */
@@ -1491,11 +1492,11 @@ opencons();*/
  * don't ignore the signals.  This is annoying.
  */
 
-/*	signal (SIGINT, SIG_IGN);*/
+	signal (SIGINT, SIG_IGN);
 
 	/* hung shell problem */
-/*	signal (SIGQUIT, SIG_IGN);*/
-/*	signal (SIGTERM, SIG_IGN);*/
+	signal (SIGQUIT, SIG_IGN);
+	signal (SIGTERM, SIG_IGN);
 	return 0;
 }							/* end spawn */
 
@@ -1510,7 +1511,6 @@ Exit(n)
 	if(screen->logging)
 		CloseLog(screen);
 #endif
-
 	if (!am_slave) {
 		/* restore ownership of tty and pty */
 		chown (ttydev, 0, 0);

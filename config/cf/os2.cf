@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.6 1996/01/24 21:51:52 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.7 1996/02/09 08:17:44 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -34,16 +34,30 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.6 1996/01/24 21:51:52 dawes E
 #define XAppLoadDir	$(LIBDIR)/app_defs
         DESTDIR = $(X11ROOT)
 
+/* for the man pages */
+#define BookFormatManPages	YES
+#define ManDirectoryRoot /XFree86/man/man
+#define ManSuffix	1
+#define LibManSuffix	3
+#define FileManSuffix	4
+#define XmanSearchPath	$(LIBDIR)/man/man
+/* you must have installed groff! */
+#define TblCmd		tbl
+#define EqnCmd		eqn
+#define ColCmd		cat
+#define NeqnCmd		eqn
+#define NroffCmd	groff -Tascii
+
 /* A set of standard defines: */
 #define OSDefines		-D__EMX__ -D__i386__ -Demxos2 -D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_GNU_SOURCE
 
-/* OS/2 bash implementation (or even OS/2 itself) has a bug preventing
- * proper make clean/include/depend/all in deeper Xfree86 dirs. The following
- * prevents diving into XFree86 dirs, unless explicitly requested.
+/* the xf86 standard keyboard support seems to be badly broken, so we
+ * must use XKB
  */
-#define OS2DepthBug	YES
+#define BuildXKB		YES
 
+/* some more properties of the OS/2 implementation */
 #define HasNdbm         	YES
 #define HasPutenv       	YES
 #define HasSockets		YES

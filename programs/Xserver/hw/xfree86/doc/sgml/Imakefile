@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/01/16 15:35:18 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.11 1996/01/16 15:04:22 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.12 1996/02/04 09:08:09 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -38,6 +38,9 @@ LinuxDocReadmeTarget(SCO)
 # endif
 # if defined(i386IscArchitecture) || BuildAllDocs
 LinuxDocReadmeTarget(isc)
+# endif
+# if defined(OS2Architecture) || BuildAllDocs
+LinuxDocReadmeTarget(OS2)
 # endif
 # if 0
 LinuxDocReadmeTarget(SVR3)

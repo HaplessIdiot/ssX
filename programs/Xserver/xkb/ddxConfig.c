@@ -1,4 +1,4 @@
-/* $XConsortium: ddxConfig.c /main/3 1995/12/18 17:12:07 converse $ */
+/* $XConsortium: ddxConfig.c /main/5 1996/01/14 16:45:41 kaleb $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -39,13 +39,18 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/XKBconfig.h>
 
 Bool
+#if NeedFunctionPrototypes
+XkbDDXApplyConfig(XPointer cfg_in,XkbSrvInfoPtr info)
+#else
 XkbDDXApplyConfig(cfg_in,info)
     XPointer		cfg_in;	
     XkbSrvInfoPtr	info;
+#endif
 {
 XkbConfigRtrnPtr 	rtrn;
 XkbDescPtr		xkb;
 Bool			ok;
+XkbEventCauseRec	cause;
 
     xkb= info->desc;
     rtrn= (XkbConfigRtrnPtr)cfg_in;
@@ -61,7 +66,11 @@ Bool			ok;
 	    info->state.locked_mods&= ~rtrn->initial_mods.mods_clear;
     }
     XkbComputeDerivedState(info);
-    XkbUpdateIndicators(info->device,~0,NULL);
+    cause.kc=		0;
+    cause.event=	0;
+    cause.mjr=		0;
+    cause.mnr=		0;
+    XkbUpdateIndicators(info->device,XkbAllIndicatorsMask,False,NULL,&cause);
     if (info->device && info->device->kbdfeed) {
 	DeviceIntPtr	dev;
 	KeybdCtrl	newCtrl;
@@ -83,9 +92,13 @@ Bool			ok;
 }
 
 XPointer
+#if NeedFunctionPrototypes
+XkbDDXPreloadConfig(XkbComponentNamesPtr names,DeviceIntPtr dev)
+#else
 XkbDDXPreloadConfig(names,dev)
     XkbComponentNamesPtr	names;
     DeviceIntPtr		dev;
+#endif
 {
 char			buf[PATH_MAX];
 char *			dName;
@@ -110,6 +123,9 @@ extern char *		display;
 	 sprintf(buf,"%s/X%s-config%s%s",XkbBaseDirectory,display,
 						(dName?".":""),dName);
     else sprintf(buf,"%s/X%s-config%s%s",display,(dName?".":""),dName);
+#endif
+#ifdef __EMX__
+    strcpy(buf,(char*)__XOS2RedirRoot(buf));
 #endif
 #ifdef DEBUG
     ErrorF("Looking for keyboard configuration in %s...",buf);
@@ -160,5 +176,5 @@ extern char *		display;
 	}
     }
     fclose(file);
-    return (XPointer) rtrn;
+    return (XPointer)rtrn;
 }

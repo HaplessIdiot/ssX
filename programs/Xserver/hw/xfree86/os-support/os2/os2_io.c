@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.3 1996/01/30 15:26:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.4 1996/02/09 08:20:55 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -41,9 +41,10 @@
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 
-BOOL IsHotKeyDisabled();
 int os2MouseQueueQuery();
 int os2KbdQueueQuery();
+void os2RecoverFromPopup();
+extern BOOL os2PopupErrorPending;
 
 /***************************************************************************/
 
@@ -111,7 +112,6 @@ int xf86KbdOn()
 	KBDINFO info;
 	APIRET rc;
 	int i,k;
-	HOTKEYPARAM hotKey;
 	ULONG len;
 
 
@@ -122,35 +122,15 @@ int xf86KbdOn()
 	info.fsMask |= 0x136;
 	info.fsInterim &= ~0x20;
 	KbdSetStatus(&info,(HKBD)xf86Info.consoleFd);
-		/* Now we disable ctrl-esc as a hot key */
-	hotKey.keyID=0xFFFF;
-        hotKey.state=0;
-        hotKey.makeCode=0;
-        hotKey.breakCode=0;
-	if(!IsHotKeyDisabled());
-        rc=DosDevIOCtl((HKBD)xf86Info.consoleFd,0x04,0x56,&hotKey,
-		sizeof(hotKey),&len,NULL,0,NULL);
-        ErrorF("xf86-OS/2: Keyboard has been initialized and the hot-keys disabled. RC=%d\n",rc);
 	return -1;
 }
 
 int xf86KbdOff()
 {
-	KBDINFO info;
-	HOTKEYPARAM hotKey;
 	ULONG len;
 	APIRET rc;
+	KBDINFO info;
 
-	ErrorF("xf86: Keyboard is being turned off and restored\n");
-		/* Now we restore ctrl-esc as a hot key */
-	hotKey.keyID=0xFFFF;
-        hotKey.state=0;
-        hotKey.makeCode=0;
-        hotKey.breakCode=0;
-	if(IsHotKeyDisabled()); 
-        rc=DosDevIOCtl((HKBD)xf86Info.consoleFd,0x04,0x56,&hotKey,
-		sizeof(hotKey),&len,NULL,0,NULL);
-	ErrorF("xf86-OS/2: Keyboard is being turned off and restored to original state. RC=%d\n",rc);
 	info.fsMask=OrigKbdState;
 	info.fsInterim=OrigKbdInterim;
 	KbdSetStatus(&info,(HKBD)xf86Info.consoleFd);
@@ -168,7 +148,7 @@ int xf86MouseOn()
 	APIRET rc;
 	USHORT nbut;
 
-ErrorF ("Calling MouseOn, a bad thing.... \n");
+ErrorF ("\nxf86-OS/2: Calling MouseOn, a bad thing.... Must be some bug in the code!\n");
 	if (serverGeneration == 1) {
 		rc = MouOpen((PSZ)NULL,(PHMOU)&fd);
 		if (rc != 0)
@@ -206,42 +186,6 @@ Bool xf86SupportedMouseTypes[] =
 
 int xf86NumMouseTypes = sizeof(xf86SupportedMouseTypes) /
 			sizeof(xf86SupportedMouseTypes[0]);
-
-/* This checks wether ctrl-esc hotkey is disabled or not */
-
-BOOL IsHotKeyDisabled()
-{
-        APIRET rc;
-        HOTKEYPARAM HotKeyParam[32];    /* I hope its not bigger than this... */
-        USHORT Type;
-        ULONG len,data_len,param_len;
-        int i;
-
-        len=sizeof(USHORT);
-        Type=0;
-        rc=DosDevIOCtl((HKBD)xf86Info.consoleFd,0x04,0x76,&Type,
-		sizeof(Type),&len,NULL,0,NULL);
-
-        if(Type==0) return(TRUE);  /* No hot-keys defined */
-
-        if(Type>32) {
-                ErrorF("Too many hot-keys defined. Sebastien: change the code.\n");
-                return(FALSE);
-                }
-       
-        Type=1;
-        param_len=sizeof(Type);
-        rc=DosDevIOCtl((HKBD)xf86Info.consoleFd,0x04,0x76,&Type,
-		sizeof(Type),&param_len,HotKeyParam,len,&data_len);
-        if(Type==0) return(TRUE);
-        for(i=0;i<Type;i++){            /* Walk the array and check for 0xFFFF iD */
- 
-                if(HotKeyParam[i].keyID==0xFFFF) return (FALSE);
-                }
-return(TRUE);    /* Not found... */
-}
-
- 
 
 /*
  * This declares a missing function in the __EMX__ library, used in
@@ -305,8 +249,9 @@ dummy_timeout.tv_usec=0;
 	     }
 
 	     /* Now we check for activity on mouse/kbd handles */
-	     if((!os2MouseQueueQuery()) || (!os2KbdQueueQuery()) || xf86Info.vtRequestsPending){
-		      /* Mouse queue not empty */
+	     if((!os2MouseQueueQuery()) || (!os2KbdQueueQuery()) || 
+                        xf86Info.vtRequestsPending || os2PopupErrorPending){
+		  if(os2PopupErrorPending) os2RecoverFromPopup();
 		  time_remaining=max_time-elapsed;
 		  timeout->tv_sec=time_remaining/1000;
 		  timeout->tv_usec=(time_remaining % 1000) *1000;

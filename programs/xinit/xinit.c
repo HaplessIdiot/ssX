@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c,v 11.61 95/01/09 21:20:29 kaleb Exp $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.5 1995/01/28 16:17:13 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.6 1996/02/09 08:22:53 dawes Exp $ */
 
 /*
 
@@ -40,14 +40,6 @@ in this Software without prior written authorization from the X Consortium.
 #include <errno.h>
 #include <setjmp.h>
 
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#else
-extern char *getenv();
-#endif
-extern char **environ;
-char **newenviron = NULL;
-
 #ifdef __EMX__
 #define setpgid(a,b)
 #define setuid(a)
@@ -55,7 +47,17 @@ char **newenviron = NULL;
 #define SHELL "cmd.exe"
 #define XINITRC "xinitrc.cmd"
 #define XSERVERRC "xservrc.cmd"
+char **envsave;	/* to circumvent an EMX problem */
+#define environ envsave
 #endif
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *getenv();
+#endif
+extern char **environ;
+char **newenviron = NULL;
 
 #ifndef SHELL
 #define SHELL "sh"
@@ -173,7 +175,7 @@ SIGVAL sigCatch(sig)
 SIGVAL sigAlarm(sig)
 	int sig;
 {
-#if defined(SYSV) || defined(SVR4) || defined(linux)
+#if defined(SYSV) || defined(SVR4) || defined(linux) || defined(__EMX__)
 	signal (sig, sigAlarm);
 #endif
 }
@@ -182,26 +184,33 @@ SIGVAL
 sigUsr1(sig)
 	int sig;
 {
-#if defined(SYSV) || defined(SVR4) || defined(linux)
+#if defined(SYSV) || defined(SVR4) || defined(linux) || defined(__EMX__)
 	signal (sig, sigUsr1);
 #endif
 }
 
-static void Execute (vec)
+static void Execute (vec, envp)
     char **vec;				/* has room from up above */
+    char **envp;
 {
-    execvp (vec[0], vec);
+    execvpe (vec[0], vec, envp);
+#ifndef __EMX__
     if (access (vec[0], R_OK) == 0) {
 	vec--;				/* back it up to stuff shell in */
 	vec[0] = SHELL;
-	execvp (vec[0], vec);
+	execvpe (vec[0], vec, envp);
     }
+#endif
     return;
 }
 
+#ifndef __EMX__
 main(argc, argv)
 int argc;
 register char **argv;
+#else
+main(int argc, char **argv, char **envp)
+#endif
 {
 	register char **sptr = server;
 	register char **cptr = client;
@@ -210,10 +219,11 @@ register char **argv;
 	int client_given = 0, server_given = 0;
 	int client_args_given = 0, server_args_given = 0;
 	int start_of_client_args, start_of_server_args;
-
+#ifdef __EMX__
+	envsave = envp;	/* circumvent an EMX problem */
+#endif
 	program = *argv++;
 	argc--;
-
 	/*
 	 * copy the client args.
 	 */
@@ -254,9 +264,11 @@ register char **argv;
 		*sptr++ = default_server;
 #else
 		*sptr = getenv("XSERVER");
-		if (!*sptr)
-			*sptr = "X.EXE";
-		sptr++;
+		if (!*sptr) {
+			Error("No XSERVER environment variable set");
+			exit(1);
+		}
+		*sptr++;
 #endif
 	} else {
 		server_given = 1;
@@ -460,8 +472,7 @@ startServer(server)
 #ifndef __EMX__
 		setpgrp(0,getpid());
 #endif
-
-		Execute (server);
+		Execute (server, environ);
 		Error ("no server \"%s\" in PATH\n", server[0]);
 		{
 		    char **cpp;
@@ -527,7 +538,7 @@ startClient(client)
 		setuid(getuid());
 		setpgrp(0, getpid());
 		environ = newenviron;
-		Execute (client);
+		Execute (client,newenviron);
 		Error ("no program named \"%s\" in PATH\r\n", client[0]);
 		fprintf (stderr,
 "\nSpecify a program on the command line or make sure that %s\r\n", bindir);

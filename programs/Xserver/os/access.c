@@ -1,5 +1,5 @@
 /* $XConsortium: access.c /main/62 1995/12/07 17:53:09 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.10 1996/02/09 08:22:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.11 1996/02/18 03:45:22 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -801,7 +801,7 @@ ResetHosts (display)
     strcat (fname, ".hosts");
 #else
     sprintf (fname, "/XFree86/lib/X11/X%s.hosts",display);
-    strcpy(fname, (char*)__SrvRedirRoot(fname));
+    strcpy(fname, (char*)__XOS2RedirRoot(fname));
 #endif /* __EMX__ */
     if (fd = fopen (fname, "r")) 
     {

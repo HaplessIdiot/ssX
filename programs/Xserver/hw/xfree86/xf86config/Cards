@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.27 1996/01/14 14:04:59 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.28 1996/02/04 09:15:37 dawes Exp $
 
 # Cirrus Logic
 
@@ -1002,6 +1002,12 @@ NAME Trident TGUI9680 (generic)
 CHIPSET TGUI9680
 SERVER SVGA
 NOCLOCKPROBE
+
+# SiS
+
+NAME SiS SG86C201
+CHIPSET SIS86C201
+SERVER VGA16
 
 # VGA
 

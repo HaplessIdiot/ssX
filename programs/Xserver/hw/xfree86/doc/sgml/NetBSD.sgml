@@ -1,61 +1,73 @@
 <!doctype linuxdoc system>
 
 <article>
-<title> README for XFree86 3.1.2 on NetBSD
+<title> README for XFree86 3.1.2D on NetBSD
 <author>Rich  Murphey,
 David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>Last modified on: 27 Jan 1996
+<Date>Last modified on: 17 Feb 1996
 
 <toc>
+
+<p>
+<bf>Important Notice</bf>
+<p>
+Since the XFree86 3.1.2D beta is only distributed in binary form, all
+comments about rebuilding the distribution from source in this
+document are worthless. They are left there  for reference purpose
+only. 
+
+<p>
+If you absolutely need to build a server with particular options,
+please contact me (<htmlurl name="matthieu@laas.fr"
+url="mailto:matthieu@laas.fr">). I'll try to satisfy your request on
+my free time and resources. 
 
 <sect>What and Where is XFree86?
 
 <p>
-XFree86 is a port of X11R6 that supports several versions of
+XFree86 is a port of X11R6.1 that supports several versions of
 Intel-based Unix.  It is derived from X386 1.2, which was the X server
 distributed with X11R5.  This release consists of many new features
 and performance improvements as well as many bug fixes.  The release
-is available as source patches against the X Consortium X11R6 code, as
+is available as source patches against the X Consortium X11R6.1 code, as
 well as binary distributions for many architectures.
 
 See the <url url="COPYRIGHT.html" name="Copyright Notice">.
 
 The sources for XFree86 are available by anonymous ftp from:
 
-<url name="ftp.XFree86.org:/pub/XFree86/current"
+<htmlurl name="ftp.XFree86.org:/pub/XFree86/current"
 url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
 Binaries for NetBSD 1.1 and NetBSD-current are available from:
 
-<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/NetBSD"
+<htmlurl name="ftp.XFree86.org:/pub/XFree86/current/binaries/NetBSD"
 url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD">
 <p>
-<url name="ftp.laas.fr:/pub/ii/NetBSD/XFree86-3.1.2"
-url="ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.1.2">
-<p>
-<url name="ftp.iastate.edu:/pub/XFree86/XFree86-3.1.2"
-url="ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2">
-<p>
-<url name="ftp.eecs.umich.edu:/BSD/XFree86"
-url="ftp://ftp.eecs.umich.edu/BSD/XFree86">
+<htmlurl name="ftp.laas.fr:/pub/ii/NetBSD"
+url="ftp://ftp.laas.fr/pub/ii/NetBSD">
 
-Other versions:
+Other NetBSD versions:
 
-Binaries built with NetBSD 1.1 are not compatible with earlier
-versions. 
+These Binaries are built with NetBSD 1.1 and thus are not compatible
+with earlier NetBSD versions.
 
 If you're still running NetBSD 0.9 or 1.0, you should think about
 upgrading to a newer version of NetBSD first.
 
-If you don't, you'll have to build XFree86 from the sources.  XFree86
-3.1.2 compiles cleanly under NetBSD 1.0; it has not been tested with
-NetBSD 0.9. Binaries built on 1.0 will work on 1.1.
+If you don't upgrade, you'll have to build XFree86 from the sources.
+XFree86 3.1.2D compiles cleanly under NetBSD 1.0; it has not been
+tested with NetBSD 0.9. Binaries built on 1.0 will work on 1.1.
 
-XFree86 3.1.2 also builds on NetBSD/sparc. See section <ref id="sparc"
+XFree86 3.1.2D also builds on NetBSD/sparc. See section <ref id="sparc"
 name="Building on NetBSD/sparc"> for details.
+
+XFree86 3.1.2D supports NetBSD on PC98 machines. Servers for these
+machines are available in the <tt/NetBSD-PC98/ directory on the above
+FTP servers. 
 
 <sect>Bug Reports for This Document
 
@@ -85,38 +97,53 @@ XFree86 binary distribution.
 <descrip>
 <tag/REQUIRED:/
     <descrip>
-    <tag/X312doc/ READMEs and XFree86 specific man pages.
-    <tag/X312bin/ all of the executable X client applications and shared libs
-    <tag/X312font/ the misc and 75dpi fonts
-    <tag/X312lib/ data files needed at runtime
-    <tag/X312cfg/ customizable xinit, xdm, and fs runtime configuration files.
+    <tag/X312Ddoc/ READMEs and XFree86 specific man pages.
+    <tag/X312Dbin/ all of the executable X client applications and shared libs
+    <tag/X312Dfnt/ the misc and 75dpi fonts
+    <tag/X312Dlib/ data files needed at runtime
+    <tag/X312Dcfg/ customizable xinit, xdm, and fs runtime configuration files.
     </descrip>
 
-    Choose at least one of the following to match your hardware:
+    Choose at least one of the following server to match your hardware:
 
     <descrip>
-    <tag/X312svga/  the 8-bit pseudo-color X server for Super VGA cards
-    <tag/X312vg16/ the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
-    <tag/X312mono/  the Monochrome X Server
-    <tag/X3128514/  the X server for IBM 8514/A and compatible boards
-    <tag/X312agx/   the X server for AGX boards
-    <tag/X312mc8/ the X server for ATI Mach8 graphics boards
-    <tag/X312mc32/ the X server for ATI Mach32 graphics boards
-    <tag/X312mc64/ the X server for ATI Mach64 graphics boards
-    <tag/X312p9k/	the X server for P9000 based boards
-    <tag/X312s3/ 	the X server for S3 based boards
-    <tag/X312w32/	the X server for et4000w32 based boards
+    <tag/X312Dsvga/  the 8-bit pseudo-color X server for Super VGA cards
+    <tag/X312Dvg16/ the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
+    <tag/X312Dmono/  the Monochrome X Server
+    <tag/X312D8514/  the X server for IBM 8514/A and compatible boards
+    <tag/X312Dagx/   the X server for AGX boards
+    <tag/X312Dmc8/ the X server for ATI Mach8 graphics boards
+    <tag/X312Dmc32/ the X server for ATI Mach32 graphics boards
+    <tag/X312Dmc64/ the X server for ATI Mach64 graphics boards
+    <tag/X312Dp9k/	the X server for P9000 based boards
+    <tag/X312Ds3/ 	the X server for S3 based boards
+    <tag/X312Dw32/	the X server for et4000w32 based boards
+    </descrip>
+
+    The following servers are available for PC98 hardware from the
+    directory XFree98-3.1.2D
+
+    <descrip>
+    <tag/X312Degc/	EGC 
+    <tag/X312Dgan/	GANB-WAP
+    <tag/X312D480/	PEGC-480 
+    <tag/X312Dns3/	NEC(S3) 
+    <tag/X312Dnkv/	NEC(cirrus)
+    <tag/X312Dlb/	PowerWindowLB(S3)
+    <tag/X312Dskb/	SKB-PowerWindow(S3)
+    <tag/X312Dwep/	WABEP
+    <tag/X312Dws/	WABS
+    <tag/X312Dwsn/	WSN-A2F
     </descrip>
 
 <tag/OPTIONAL:/
 
     <descrip>
-    <tag/X312fs/ the font server with man pages.
-    <tag/X312prog/ the X11 header files and static libraries needed only 
+    <tag/X312Dfs/ the font server with man pages.
+    <tag/X312Dprog/ the X11 header files and static libraries needed only 
 		  for compiling other X applications
-    <tag/X312man/ man pages except XFree86 specific ones in the doc archive
-    <tag/X312xfnt/ the other fonts (100dpi, scaled, Japanese, Chinese, etc)
-    <tag/X312link/ X server reconfiguration kit
+    <tag/X312Dman/ man pages except XFree86 specific ones in the doc archive
+    <tag/X312Dxfnt/ the other fonts (100dpi, scaled, Japanese, Chinese, etc)
     </descrip>
 </descrip>
 
@@ -167,7 +194,7 @@ below.
 	The X server needs special permissions that are only granted
 	to the root user.
 
-	Assuming that the destination directory for XFree86 3.1.2 is
+	Assuming that the destination directory for XFree86 3.1.2D is
 	<tt>/usr/X11R6</tt>, run the following from wherever all the archive
 	files are (replace <tt>/usr/X11R6</tt> with wherever you wish them to
 	go if that isn't the place):
@@ -257,6 +284,16 @@ export restriction outside US for this binary distribution of xdm: it
 does not contain the DES encryption code. So it's now included in the
 bin package.
 
+However the file <tt>xc/lib/Xdmcp/WrapHelp.c</tt> is not available in
+France (where the binary distribution is built) so support for
+XDM-AUTHORIZATION-1 is not included here. You'll have to get
+WrapHelp.c and rebuild xdm after having set <tt/HasXdmAuth/ in
+<tt/xf86site.def/.
+
+The file is available within the US; for
+details see <htmlurl name="ftp.x.org:/pub/R6/xdm-auth/README"
+url="ftp://ftp.x.org/pub/R6/xdm-auth/README">.
+
 To start the display manager, log in as root on the console and type:
 ``<tt/xdm -nodaemon/''.
 
@@ -323,6 +360,24 @@ and complete the rest according to the <tt>XF86Config</tt> man page and the
 If your mouse does not work try using <tt>kermit</tt> or <tt>tip</tt>
 to connect to the mouse serial port and verify that it does indeed
 generate characters.
+
+<p>
+XFree86 3.1.2D now support the dynamic loading of drivers for external
+input devices using the <tt/XInput/ extention. Currently supported
+devices are:
+<itemize>
+<item> Joystick
+<item> Wacom tablets (Wacom IV protocol only)
+<item> Elographics touchscreen
+</itemize>
+
+For joystick support, you'll need to install the joystick device
+driver in the kernel. For now it's problem report &num;1916 in the <url
+name="NetBSD gnats database"
+url="http://www.netbsd.org/Misc/query-pr.html">.
+
+Refer to the <em>XF86Config(4/5)</em> man page for detailed
+configuration instructions.
 
 <sect> Running X
 
@@ -487,6 +542,13 @@ extension.
 </verb></tscreen>
 
 
+<sect1>Other kernel options
+
+It seems that xterm still uses BSD 4.3 style ioctls to set the terminal
+modes. Hence, it won't work unless you have <tt/option COMPAT_43/ in
+your kernel configuration file.
+
+
 <sect> Rebuilding the XFree86 Distribution
 
 <p>
@@ -496,7 +558,7 @@ changes to the <tt/xf86site.def/, type ``<tt>./mkmf</tt>'' and
 ``<tt/make/'' to link the server.  See <tt>/usr/X11R6/lib/Server/README</tt>
 for more info.
 
-See <url url="INSTALL.html" name="INSTALL"> for instructions on unbundling and
+See <htmlurl url="INSTALL.html" name="INSTALL"> for instructions on unbundling and
 building the source distribution.
 
 You should configure the distribution by editing
@@ -506,7 +568,7 @@ sources, invoke ``<tt/make World/'' in the xc directory.
 <sect1>Console drivers<label id="console-drivers">
 
 <p>
-XFree86 3.1.2 has a configuration option to select the console
+XFree86 3.1.2D has a configuration option to select the console
 drivers to use in <tt/xf86site.def/:
 <itemize>
 <item> if you're using pccons put:
@@ -550,7 +612,7 @@ anymore. You should get it from the syscons distribution.
 <sect1> Support for shared libs under NetBSD 1.0 and later
 
 <p>
-    By default XFree86 3.1.2 builds for NetBSD with shared libraries 
+    By default XFree86 3.1.2D builds for NetBSD with shared libraries 
     support. If you're building on 0.9 or don't want shared libraries 
     add the following line to <tt/xf86site.def/:
 
@@ -561,7 +623,7 @@ anymore. You should get it from the syscons distribution.
 <sect1>Building on NetBSD/sparc<label id="sparc">
 
 <p>
-XFree86 3.1.2 also compiles on NetBSD/sparc. The Sun server
+XFree86 3.1.2D also compiles on NetBSD/sparc. The Sun server
 patches from Dennis Ferguson and Matthew Green have been integrated in
 <tt>xc/programs/Xserver/hw/sun</tt>.  Small
 modifications to <tt/xf86site.def/ are needed:
@@ -572,7 +634,7 @@ modifications to <tt/xf86site.def/ are needed:
 defined at the end of <tt/NetBSD.cf/.)
 <item> Set <bf/ServerToInstall/ to the sun server of your
 choice. (Xsun or XsunMono).
-<item> Look at other applicable options in the <url name="INSTALL document"
+<item> Look at other applicable options in the <htmlurl name="INSTALL document"
 url="INSTALL.html">.
 </itemize>
 
@@ -643,7 +705,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.19 1996/02/04 09:08:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.20 1996/02/12 11:13:08 dawes Exp $
 
 
 

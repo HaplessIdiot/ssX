@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.2 1996/01/30 15:26:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.3 1996/02/09 08:20:56 dawes Exp $ */
 /*
- * (c) Copyright 1994 by Holger Veit
+ * (c) Copyright 1994,1996 by Holger Veit
  *			<Holger.Veit@gmd.de>
  * Modified 1996 Sebastien Marineau <marineau@genie.uottawa.ca>
  *
@@ -43,6 +43,10 @@
 #include "xf86_OSlib.h"
 #include "atKeynames.h"
 
+#ifdef XKB
+extern Bool noXkbExtension;
+#endif
+
 /* Attention! these lines copied from ../../common/xf86Events.c */
 #define XE_POINTER 1
 #define XE_KEYBOARD 2
@@ -57,6 +61,15 @@ extern int   on_steal_input;
 extern Bool  XTestStealKeyData();
 extern void  XTestStealMotionData();
 
+#ifdef XINPUT
+#define ENQUEUE(ev, code, direction, dev_type) \
+  (ev)->u.u.detail = (code); \
+  (ev)->u.u.type   = (direction); \
+  if (!on_steal_input ||  \
+      XTestStealKeyData((ev)->u.u.detail, (ev)->u.u.type, dev_type, \
+                        xtest_mousex, xtest_mousey)) \
+  xf86eqEnqueue((ev))
+#else
 #define ENQUEUE(ev, code, direction, dev_type) \
   (ev)->u.u.detail = (code); \
   (ev)->u.u.type   = (direction); \
@@ -64,6 +77,7 @@ extern void  XTestStealMotionData();
       XTestStealKeyData((ev)->u.u.detail, (ev)->u.u.type, dev_type, \
 			xtest_mousex, xtest_mousey)) \
   mieqEnqueue((ev))
+#endif
 
 #define MOVEPOINTER(dx, dy, time) \
   if (on_steal_input) \
@@ -72,19 +86,25 @@ extern void  XTestStealMotionData();
 
 #else /* ! XTESTEXT1 */
 
+#ifdef XINPUT
+#define ENQUEUE(ev, code, direction, dev_type) \
+  (ev)->u.u.detail = (code); \
+  (ev)->u.u.type   = (direction); \
+  xf86eqEnqueue((ev))
+#else
 #define ENQUEUE(ev, code, direction, dev_type) \
   (ev)->u.u.detail = (code); \
   (ev)->u.u.type   = (direction); \
   mieqEnqueue((ev))
-
+#endif
 #define MOVEPOINTER(dx, dy, time) \
   miPointerDeltaCursor (dx, dy, time)
 
 #endif
 /* end of include */
 
-
-int last_status;
+int lastScan = 0;
+int lastStatus;
 int lastShiftState;
 extern BOOL SwitchedToWPS;
 
@@ -126,16 +146,17 @@ void xf86KbdEvents()
 
 	rc = KbdCharIn(&keybuf, 1, xf86Info.consoleFd);
 	if (rc != 0){
-		ErrorF("Keyboard driver rc=%d\n",rc);
+		ErrorF("xf86-OS/2: Bad keyboard driver rc=%d\n",rc);
 	    return;
 	}
-	if ((keybuf.fbStatus == 0))
-	    return;
-	scan = keybuf.chScan;
+	if ((keybuf.fbStatus == 0)) {
+		return;
+	}
 	ModState=(0xFF83 &
 		(lastShiftState ^ keybuf.fsState));
 
-        /* Check to see if we need toreenable the server */
+
+        /* Check to see if we need to reenable the server */
 
 	/* the separate cursor keys return 0xe0/scan */
 	if (keybuf.fbStatus & 0x02) {
@@ -195,7 +216,8 @@ void xf86KbdEvents()
 
 	down = (keybuf.fbStatus & 0x40) ? TRUE : FALSE;
 	if(scan!=0) os2PostKbdEvent(scan, down);
-	last_status = keybuf.fbStatus;
+	lastScan = scan;
+	lastStatus = keybuf.fbStatus;
 	lastShiftState = keybuf.fsState;
     }
 }
@@ -254,18 +276,17 @@ void os2PostKbdEvent(scanCode, down)
 	switch (scanCode) {
 	case KEY_BackSpace:
 	    if (!xf86Info.dontZap) GiveUp(0);
-	return;
+	    return;
         }
     }
 
     /* CTRL-ESC is std OS/2 hotkey for going back to PM and popping up
-     * window list... handled by keyboard driver if you tell it.
-     */
+     * window list... handled by keyboard driverand PM if you tell it. This is 
+     * what we have done, and thus should never detect this key combo */
     if (ModifierDown(ControlMask) && scanCode==KEY_Escape) {
-        if(!SwitchedToWPS) xf86Info.vtRequestsPending=TRUE;
-        return;
+         return;
     } else if (ModifierDown(AltLangMask|AltMask) && scanCode==KEY_Escape) {
-	/*notyet*/
+	/* same here */
     }
 
   /*
@@ -275,8 +296,10 @@ void os2PostKbdEvent(scanCode, down)
   keysym = (keyc->curKeySyms.map +
 	    keyc->curKeySyms.mapWidth * 
 	    (keycode - keyc->curKeySyms.minKeyCode));
-  ErrorF("Keyboard keycode %d, keysym =%di down %d\n",keycode,*keysym,down);
 
+#ifdef XKB
+  if (noXkbExtension) {
+#endif
   /*
    * Filter autorepeated caps/num/scroll lock keycodes.
    */
@@ -339,6 +362,7 @@ void os2PostKbdEvent(scanCode, down)
    * ignore releases, toggle on & off on presses.
    * Don't deal with the Caps_Lock keysym directly, but check the lock modifier
    */
+#ifndef PC98
   if (keyc->modifierMap[keycode] & LockMask ||
       keysym[0] == XK_Scroll_Lock ||
       keysym[1] == XF86XK_ModeLock ||
@@ -360,7 +384,7 @@ void os2PostKbdEvent(scanCode, down)
       if (keysym[1] == XF86XK_ModeLock)   xf86Info.modeSwitchLock = flag;
       updateLeds = TRUE;
     }
-	
+#endif /* not PC98 */	
   /*
    * check for an autorepeat-event
    */
@@ -386,9 +410,6 @@ void os2PostKbdEvent(scanCode, down)
       }
   }
 
-
-
-
   /*
    * And now send these prefixes ...
    * NOTE: There cannot be multiple Mode_Switch keys !!!!
@@ -407,10 +428,20 @@ void os2PostKbdEvent(scanCode, down)
     }
   else 
     {
-      ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
+#ifdef XFreeDGA
+      if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectKeyb) {
+          XF86DirectVideoKeyEvent(&kevent, keycode, (down ? KeyPress : KeyRelease));
+      } else
+#endif
+      {
+         ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
+      }
     }
 
   if (updateLeds) xf86KbdLeds();
 }
+#ifdef XKB
+  }
+#endif
 
 

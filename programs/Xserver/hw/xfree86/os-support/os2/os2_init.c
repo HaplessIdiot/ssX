@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.2 1996/01/30 15:26:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.3 1996/02/09 08:20:54 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -65,23 +65,10 @@ void xf86OpenConsole()
 	if(rc!=0) ErrorF("xf86-OS/2: Could not get original video mode. RC=%d\n",rc);
 	xf86Info.consoleFd = -1;
 
-/* Start up the VIO monitor thread */
-	VioTid=_beginthread(os2VideoNotify,NULL,0x4000,(void *)NULL);
-	ErrorF("xf86-OS/2: Started Vio thread, Tid=%d\n",VioTid);
-
-/* Start up the hard-error VIO monitor thread */
-	VioTid=_beginthread(os2HardErrorNotify,NULL,0x4000,(void *)NULL);
-	ErrorF("xf86-OS/2: Started hard error Vio mode monitor thread, Tid=%d\n",VioTid);
-
-/* Disable hard-errors through DosError */
-	rc = DosSuppressPopUps(0x0001L,'c');     /* Disable popups */
-	ErrorF("xf86-OS/2: Harderror popups disabled, redirected to c:\\popuplog.os2. Rc=%d\n",rc);
-
 	/* grab the keyboard */
 	rc = KbdGetFocus(0,0);
 	if (rc != 0)
 		FatalError("xf86OpenConsole: cannot grab kbd focus, rc=%d\n",rc);
-	
 
 	/* open the keyboard */
 	rc = KbdOpen(&fd);
@@ -97,6 +84,19 @@ void xf86OpenConsole()
 	if (rc != 0)
 		FatalError("xf86OpenConsole: cannot set local kbd focus, rc=%d\n",rc);
 
+/* Start up the VIO monitor thread */
+	VioTid=_beginthread(os2VideoNotify,NULL,0x4000,(void *)NULL);
+	ErrorF("xf86-OS/2: Started Vio thread, Tid=%d\n",VioTid);
+	rc=DosSetPriority(2,3,0,VioTid);
+
+/* Start up the hard-error VIO monitor thread */
+	VioTid=_beginthread(os2HardErrorNotify,NULL,0x4000,(void *)NULL);
+	ErrorF("xf86-OS/2: Started hard error Vio mode monitor thread, Tid=%d\n",VioTid);
+	rc=DosSetPriority(2,3,0,VioTid);
+
+/* Disable hard-errors through DosError */
+	rc = DosSuppressPopUps(0x0001L,'c');     /* Disable popups */
+	
 	rc = KbdSetCp(0,0,fd);
 	if(rc != 0)
 		FatalError("xf86OpenCOnsole: cannot set keyboard codepage, rc=%d\n",rc);
@@ -130,7 +130,6 @@ void xf86CloseConsole()
 	}
 	VioSetMode(&OriginalVideoMode,(HVIO)0);
 	rc = DosSuppressPopUps(0x0000L,'c');    /* Reenable popups */
-	ErrorF("xf86-OS/2: Harderror popups enabled. Rc=%d\n",rc);
 	return;
 }
 
@@ -148,7 +147,12 @@ void xf86UseMsg()
 	return;
 }
 
-char *__SrvRedirRoot(char *fname)
+/* This code is duplicated from XLibInt.c, because the same problems with
+ * the drive letter as in clients also exist in the server
+ * Unfortunately the standalone servers don't link against libX11
+ */
+
+char *__XOS2RedirRoot(char *fname)
 {
     /* This adds a further redirection by allowing the ProjectRoot
      * to be prepended by the content of the envvar X11ROOT.
@@ -170,15 +174,15 @@ char *__SrvRedirRoot(char *fname)
         (strlen(fname)+strlen(root)+2) > 300))
 	return fname;
     sprintf(redirname,"%s%s",root,fname);
-    return access(redirname,R_OK)==0 ? redirname : fname;
+    return redirname;
 }
 
-char *__SrvRedirRoot1(char *format, char *arg1, char *arg2, char *arg3)
+char *__XOS2RedirRoot1(char *format, char *arg1, char *arg2, char *arg3)
 {
     /* this first constructs a name from a format and up to three
      * components, then adds a path
      */
     char buf[300];
     sprintf(buf,format,arg1,arg2,arg3);
-    return __SrvRedirRoot(buf);
+    return __XOS2RedirRoot(buf);
 }

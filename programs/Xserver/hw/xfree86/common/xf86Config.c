@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.77 1996/02/18 03:42:42 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.78 1996/02/18 12:01:34 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -231,9 +231,17 @@ xf86ValidateFontPath(path)
   next = path;
   while (next != NULL) {
     path_elem = xf86GetPathElem(&next);
+#ifndef __EMX__
     if (*path_elem == '/') {
       dir_elem = (char *)xcalloc(1, strlen(path_elem) + 1);
       if (p1 = strchr(path_elem, ':'))
+#else
+    /* OS/2 must prepend X11ROOT */
+    if (*path_elem == '/') {
+      path_elem = (char*)__XOS2RedirRoot(path_elem);
+      dir_elem = (char*)xcalloc(1, strlen(path_elem) + 1);
+      if (p1 = strchr(path_elem+2, ':'))
+#endif
 	dirlen = p1 - path_elem;
       else
 	dirlen = strlen(path_elem);
@@ -256,7 +264,9 @@ xf86ValidateFontPath(path)
 	if (flag == 0)
 	  if (!CHECK_TYPE(stat_buf.st_mode, S_IFREG))
 	    flag = -1;
+#ifndef __EMX__
 	xfree(p1);
+#endif
 	if (flag != 0) {
 	  ErrorF("Warning: 'fonts.dir' not found (or not valid) in \"%s\".\n", 
 		 dir_elem);
@@ -705,7 +715,7 @@ findConfigFile(filename, fp)
      */
     xwinhome = getenv("X11ROOT"); /* get drive letter */
     if (!xwinhome) FatalError("X11ROOT environment variable not set\n");
-    sprintf(configPaths[pcount], "%s/XFree86/lib/X11/XConfig", xwinhome);
+    strcpy(configPaths[pcount], __XOS2RedirRoot("/XFree86/lib/X11/XConfig"));
 #endif
 
     if (configFile = fopen( configPaths[pcount], "r" )) break;
@@ -1024,19 +1034,7 @@ static char* prependRoot(char *pathname)
 	return pathname;
 #else
 	/* XXXX caveat: multiple path components in line */
-
-	char *pathbuf;
-	char *root = getenv("X11ROOT"); 
-	if (!root) root = "";
-
-	pathbuf = (char*)xalloc(strlen(root)+strlen(pathname)+1);
-
-	/* prepend the drive path if not already present */
-	if (isalpha(pathname[0]) && pathname[1] == ':')
-		strcpy(pathbuf,pathname);
-	else
-		sprintf(pathbuf,"%s", pathname);  /* Removed %s root prepending */
-	return pathbuf;
+	return (char*)__XOS2RedirRoot(pathname);
 #endif
 }
     
@@ -1076,9 +1074,6 @@ configFilesSection()
         strcat(fontPath, ",");
 
       strcat(fontPath, str);
-#ifdef __EMX__
-      xfree(str);
-#endif
       xfree(val.str);
       break;
       
@@ -1086,7 +1081,7 @@ configFilesSection()
       OFLG_SET(XCONFIG_RGBPATH, &GenericXF86ConfigFlag);
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("RGB path expected");
       if (!xf86coFlag)
-        rgbPath = prependRoot(val.str);
+        rgbPath = val.str;
       break;
 
     case MODULEPATH:
@@ -1114,9 +1109,6 @@ configFilesSection()
         strcat(modulePath, ",");
 
       strcat(modulePath, str);
-#ifdef __EMX__
-      xfree(str);
-#endif
       xfree(val.str);
       break;
 

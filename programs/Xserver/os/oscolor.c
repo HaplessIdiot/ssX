@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: oscolor.c,v 1.23 94/04/17 20:27:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.0 1995/07/07 15:46:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.1 1996/02/09 08:22:28 dawes Exp $ */
 
 #ifndef USE_RGB_TXT
 
@@ -226,10 +226,16 @@ OsInitColors()
 
   if (!was_here)
     {
+#ifndef __EMX__
       path = (char*)ALLOCATE_LOCAL(strlen(rgbPath) +5);
       strcpy(path, rgbPath);
       strcat(path, ".txt");
-
+#else
+      char *tmp = (char*)__XOS2RedirRoot(rgbPath);
+      path = (char*)ALLOCATE_LOCAL(strlen(tmp) +5);
+      strcpy(path, tmp);
+      strcat(path, ".txt");
+#endif
       if (!(rgb = fopen(path, "r")))
         {
 	   ErrorF( "Couldn't open RGB_DB '%s'\n", rgbPath );
