@@ -1,6 +1,6 @@
 XFree86 4.3.99.903 (xx December 2003)
  700. Update Swedish localization of XDarwin GUI (Patrik Montgomery).
- 699. Fixes to build/run on cygwin (Thomas Dickey).
+ 699. Fixes to build/run on cygwin (Ralf Habacker, Cygwin/X Project).
  698. Warning fixes for gcc 3.3.2 (Marc La France).
  697. Fix file descriptor leaks in xdm (Marc La France).
  696. Fix memory leaks in libFS (Marc La France).
@@ -18401,7 +18401,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3047 2003/12/22 21:33:53 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3048 2003/12/23 20:21:01 torrey Exp $
 
 
 
