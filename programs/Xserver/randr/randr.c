@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.8 2001/06/08 20:41:05 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.9 2001/06/11 01:38:32 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -486,6 +486,7 @@ RREditConnectionInfo (ScreenPtr pScreen)
     xDepth	    *depth;
     xVisualType	    *visual;
     int		    screen = 0;
+    int		    d;
 
     connSetup = (xConnSetup *) ConnectionInfo;
     vendor = (char *) connSetup + sizeof (xConnSetup);
@@ -498,12 +499,19 @@ RREditConnectionInfo (ScreenPtr pScreen)
     {
 	depth = (xDepth *) ((char *) root + 
 			    sizeof (xWindowRoot));
-	visual = (xVisualType *) ((char *) depth +
-				  sizeof (xDepth));
-	root = (xWindowRoot *) ((char *) visual + 
+	for (d = 0; d < root->nDepths; d++)
+	{
+	    visual = (xVisualType *) ((char *) depth +
+				      sizeof (xDepth));
+	    depth = (xDepth *) ((char *) visual +
 				depth->nVisuals * sizeof (xVisualType));
+	}
+	root = (xWindowRoot *) ((char *) depth);
 	screen++;
     }
+    ErrorF ("old size %dx%d %dx%d\n",
+	    pScreen->width, pScreen->height, 
+	    pScreen->mmWidth, pScreen->mmHeight);
     root->pixWidth = pScreen->width;
     root->pixHeight = pScreen->height;
     root->mmWidth = pScreen->mmWidth;
