@@ -1,6 +1,6 @@
 %{
 /* $XConsortium: lex.l,v 5.7 94/06/04 17:03:52 rws Exp $ */
-/* $XFree86: xc/fonts/PEX/lex.l,v 3.5 1994/11/30 20:30:57 dawes Exp $ */
+/* $XFree86: xc/fonts/PEX/lex.l,v 3.6 1994/12/02 05:40:25 dawes Exp $ */
 
 /*****************************************************************
 
@@ -144,7 +144,7 @@ int	n;
 		str++;
 		n -= 2;	/* one for EOL, one for end quote */
 	}
-	if ((yylval.cval = (char *)malloc(n+1)) != NULL)
+	if ((yylval.cval = (char *)malloc(n + 1)) != NULL)
 	{
 		strncpy(yylval.cval, str, n);
 		yylval.cval[n] = '\0';
