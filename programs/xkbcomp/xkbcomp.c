@@ -1,5 +1,5 @@
 /* $XConsortium: xkbcomp.c /main/12 1996/12/27 21:17:23 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.6 1996/12/23 07:11:39 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.7 1996/12/29 13:56:21 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -45,6 +45,10 @@
 #include "misc.h"
 #include "tokens.h"
 #include <X11/extensions/XKBgeom.h>
+
+#ifdef __EMX__
+#define chdir _chdir2
+#endif
 
 #define	lowbit(x)	((x) & (-(x)))
 

@@ -27,7 +27,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.3 1997/01/18 06:54:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.4 1997/01/24 01:02:10 dawes Exp $ */
 
 #include "servermd.h"
 
@@ -103,9 +103,9 @@ i128Initialize(scr_index, pScreen, argc, argv)
         if (i128InfoRec.bitsPerPixel == 8)
 		ScreenInitFunc = &xf86XAAScreenInit8bpp;
         else if (i128InfoRec.bitsPerPixel == 16)
-		ScreenInitFunc = &i128ScreenInit /*&xf86XAAScreenInit16bpp*/;
+		ScreenInitFunc = &xf86XAAScreenInit16bpp;
 	else
-		ScreenInitFunc = &i128ScreenInit /*&xf86XAAScreenInit32bpp*/;
+		ScreenInitFunc = &xf86XAAScreenInit32bpp;
    }
 
    if (!ScreenInitFunc(pScreen,

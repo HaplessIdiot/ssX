@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.8 1996/12/23 06:50:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.9 1997/01/05 11:59:19 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -138,9 +138,9 @@ unsigned long Size;
 	if (mapdev == -1)
 		FatalError("xf86MapVidMem: install DEVICE=path\\XF86SUP.SYS!");
 
-	if (DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x44,
+	if ((rc=DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x44,
 	      (PVOID)&par, (ULONG)plen, (PULONG)&plen,
-	      (PVOID)&dta, (ULONG)dlen, (PULONG)&dlen) == 0) {
+	      (PVOID)&dta, (ULONG)dlen, (PULONG)&dlen)) == 0) {
 		ErrorF("xf86-OS/2: xf86MapVidMem succeeded: (ScreenNum= %d, Base= %p, Size= 0x%x\n",
 		ScreenNum, Base, Size);
 		if (dlen==sizeof(dta)) {

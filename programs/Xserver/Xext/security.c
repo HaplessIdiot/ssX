@@ -15,6 +15,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from the X Consortium.
 */
+/* $XFree86$ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -1352,8 +1353,11 @@ SecurityFreePropertyAccessList()
     }
 } /* SecurityFreePropertyAccessList */
 
-
+#ifndef __EMX__
 #define SecurityIsWhitespace(c) ( (c == ' ') || (c == '\t') || (c == '\n') )
+#else
+#define SecurityIsWhitespace(c) ( (c == ' ') || (c == '\t') || (c == '\n') || (c == '\r') )
+#endif
 
 static char *
 SecuritySkipWhitespace(p)
@@ -1630,7 +1634,11 @@ SecurityLoadPropertyAccessList()
     if (!SecurityPolicyFile)
 	return;
 
+#ifndef __EMX__
     f = fopen(SecurityPolicyFile, "r");
+#else
+    f = fopen((char*)__XOS2RedirRoot(SecurityPolicyFile), "r");
+#endif    
     if (!f)
     {
 	ErrorF("error opening security policy file %s\n",

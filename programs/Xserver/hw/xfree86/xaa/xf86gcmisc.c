@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.5 1997/01/20 12:38:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.6 1997/01/22 11:17:13 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -260,6 +260,7 @@ void xf86GCNewLine(pGC, pDrawable, new_cfb_line)
         PolyLineFunc = xf86GCInfoRec.PolyLineSolidZeroWidth;
     if (xf86GCInfoRec.PolySegmentSolidZeroWidth &&
         pGC->lineStyle == LineSolid &&
+        pGC->fillStyle == FillSolid &&
         pGC->lineWidth == 0 &&
 #if !defined(NO_ONE_RECT)
 	(!(xf86GCInfoRec.PolyLineSolidZeroWidthFlags & ONE_RECT_CLIPPING)

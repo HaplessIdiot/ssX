@@ -1,5 +1,5 @@
 /* OS/2 REXX */
-/* $XFree86: xc/programs/xinit/xinitrc.cmd,v 3.2 1996/04/15 11:35:16 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinitrc.cmd,v 3.3 1996/08/20 12:33:26 dawes Exp $ */
 '@echo off'
 env = 'OS2ENVIRONMENT'
 x11root = VALUE('X11ROOT',,env)
@@ -39,7 +39,7 @@ IF exists(usermodmap) THEN
 'start/min/k "X Clock" xclock -update 1 -geometry 100x100-1+1'
 'start/min/k "Login Xterm" xterm -sb -geometry 80x25+0+0 -name login'
 IF manpath \= '' THEN
-	'start/min/k "X Manual" xman -geometry 100x100-105+1'
+	'detach xman -geometry 100x100-105+1'
 /* 'start/min/k "Xterm 1" xterm -sb -geometry 80x50+494+51' */
 /* 'start/min/k "Xterm 2" xterm -sb -geometry 80x20+494-0' */
 'twm'

@@ -1,6 +1,6 @@
 /* 
  * $XConsortium: xset.c /main/71 1996/11/24 17:24:48 rws $ 
- * $XFree86: xc/programs/xset/xset.c,v 3.5 1997/01/12 10:49:26 dawes Exp $ 
+ * $XFree86: xc/programs/xset/xset.c,v 3.6 1997/01/18 07:03:17 dawes Exp $ 
  */
 
 /*
@@ -404,10 +404,15 @@ for (i = 1; i < argc; ) {
 	       * NOTE: SYSV and SVR4 don't have usleep().  For now, just
 	       * use sleep(), but could probably do something better
 	       * using poll().
+	       * On OS/2, use _sleep2()
 	       */
 #if defined(SYSV) || defined(SVR4)
 #define usleep(us) sleep((us / 1000000 > 0) ? us / 1000000 : 1)
 #endif
+#ifdef __EMX__
+#define usleep(us) _sleep(us/1000)
+#endif
+
 	      if (strcmp(arg, "on") == 0) {
 		  DPMSEnable(dpy);
 		  DPMSForceLevel(dpy, DPMSModeOn);

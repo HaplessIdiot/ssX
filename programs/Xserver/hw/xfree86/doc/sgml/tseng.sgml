@@ -450,6 +450,19 @@ Textmode is not properly restored
         line will fix this. Normally you should be able to restore the
         textmode font using a utility that sets it (<tt>setfont</tt>,
         <tt>runx</tt>, <tt>restorefont</tt> on Linux).
+<tag>
+Problems with DMA hardware (floppy, tape)
+</tag>
+	On some systems, the accelerated server will interfere with other
+	hardware that uses ISA DMA. Most notably is the PC floppy
+	controller. The floppy interface cannot cope with inordinately long
+	bus-holds, which may occur during large accelerated operations. The
+	Linux-ftape module for example (a floppy-tape driver) will generate
+	lots of "write error" messages when running a backup or restore
+	operation while the X-server is in use. These errors should not be
+	fatal, but that all depends on how well the operating system handles
+	these conditions. Linux seems to cope. There is only one solution:
+	disable acceleration using the <tt>"noaccel"</tt> option.
 </descrip>
 For other screen drawing related problems, try the <tt>"noaccel"</tt>
 option.
@@ -471,7 +484,7 @@ keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.13 1997/01/24 09:32:52 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.14 1997/01/25 03:22:25 dawes Exp $ 
 
 
 

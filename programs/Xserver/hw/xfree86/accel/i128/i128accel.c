@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.2 1997/01/25 04:17:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.3 1997/01/26 04:31:33 dawes Exp $ */
 
 /*
  * Copyright 1997 by Robin Cutshaw <robin@XFree86.Org>
@@ -149,13 +149,12 @@ i128SetupForScreenToScreenCopy(int xdir, int ydir, int rop, unsigned planemask,
 	eng_a[DE_DORG] = 0x00;
 	eng_a[DE_MSRC] = 0x00;
 	eng_a[DE_WKEY] = 0x00;
-	eng_a[DE_SPTCH] = i128DisplayWidth;
-	eng_a[DE_DPTCH] = i128DisplayWidth;
+	eng_a[DE_SPTCH] = i128mem.rbase_g[DB_PTCH];
+	eng_a[DE_DPTCH] = i128mem.rbase_g[DB_PTCH];
 	eng_a[MASK] = planemask;
 	eng_a[RMSK] = planemask;
-
-	eng_a[CLPTL] = 0;		/* we could do clipping here */
-	eng_a[CLPBR] = 0xffffffff;	/* we could do clipping here */
+	eng_a[CLPTL] = 0x00000000;
+	eng_a[CLPBR] = 0xffffffff;
 
 
 	if (xdir == -1) {
@@ -176,6 +175,9 @@ i128SetupForScreenToScreenCopy(int xdir, int ydir, int rop, unsigned planemask,
 void
 i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w,int h)
 {
+	int origx2 = x2;
+	int origy2 = y2;
+
 	i128EngineReady();
 
 	eng_a[CMD] = CMD_BLIT;
@@ -210,9 +212,15 @@ i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w,int h)
 			}
 
 			bppi = split_size[bppi];
+#if 1
+			/* split method */
+
 			eng_a[XY2_WH] = (bppi<<16) | h;
 			eng_a[XY0_SRC] = (x1<<16) | y1;
 			eng_a[XY1_DST] = (x2<<16) | y2;
+
+			i128EngineDone();
+
 			w -= bppi;
 
 			if (i128blitdir & DIR_RL_TB) {
@@ -224,8 +232,12 @@ i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w,int h)
 				x1 += bppi;
 				x2 += bppi;
 			}
-
-			i128EngineReady();
+#else
+			/* clip method */
+			eng_a[CLPTL] = (origx2<<16) | origy2;
+			eng_a[CLPBR] = ((origx2+w)<<16) | (origy2+h);
+			w += bppi;
+#endif
 		}
 	}
 

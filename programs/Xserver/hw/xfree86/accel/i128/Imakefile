@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/Imakefile,v 3.3 1996/12/23 06:35:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/Imakefile,v 3.4 1997/01/24 01:02:06 dawes Exp $
 
 
 
@@ -29,5 +29,6 @@ NormalLibraryTarget(i128,$(OBJS))
 
 InstallLinkKitLibrary(i128,$(LINKKITDIR)/drivers)
 
+#ifndef OS2Architecture
 DependTarget()
-
+#endif

@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.9 1997/01/25 04:19:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.10 1997/01/26 04:41:10 dawes Exp $ */
 
 
 /*
@@ -143,8 +143,6 @@ void TsengAccelInit() {
      * Currently, 24bpp pattern tiling doesn't work at all.
      */
 
-    /* Disabled for beta version, still bugs somewhere. */
-#if 0
 #ifdef BPP24_BUG
     if ( !((et4000_type < TYPE_ET6000) && (vga256InfoRec.bitsPerPixel == 24)) )
 #else
@@ -156,7 +154,6 @@ void TsengAccelInit() {
       xf86AccelInfoRec.SubsequentFill8x8Pattern =
           TsengSubsequentFill8x8Pattern;
     }
-#endif
 
     /*
      * Setup hardware-line-drawing code.

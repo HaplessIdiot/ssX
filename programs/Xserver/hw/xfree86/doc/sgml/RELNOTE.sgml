@@ -263,7 +263,7 @@ release.
 <sect1> I128 server
 <p>
 <itemize>
-  <item>Some preliminary acceleration (at 8bpp for bitblts) is included.
+  <item>Some preliminary acceleration (for bitblts) is included.
 	This code is very new, and hasn't been extensively tested yet.
 </itemize>
 <sect1> TGA server
@@ -744,7 +744,7 @@ run at boot time.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.56 1997/01/25 04:42:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.57 1997/01/26 04:46:01 dawes Exp $
 </verb>
 
 </article>

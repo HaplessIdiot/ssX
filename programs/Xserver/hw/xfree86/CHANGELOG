@@ -1,3 +1,9 @@
+XFree86 3.2A (28 January 1997)
+ 378. OS/2 updates (including documentation) (Holger Veit).
+ 377. Add bitblt acceleration for 16 and 32bpp for the I128 server
+      (Robin Cutshaw).
+ 376. Tseng doc update (Koen Gadeyne).
+
 XFree86 3.2y (26 January 1997)
  375. I128 accel fix (Robin Cutshaw).
  374. Update Japanese version of documentation to 3.2 (Kazuyuki Okamoto).
