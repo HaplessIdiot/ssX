@@ -18,8 +18,6 @@ XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:21:20 dpw Exp $
 SERVERSRCS = \
 	XF86_SVGA.c \
 	XF86_VGA16.c \
-	XF86_Bdm.c \
-	XF86_Hga.c \
 	XF86_Mono.c \
 	XF86_S3.c \
 	XF86_8514.c \
@@ -54,6 +52,21 @@ OBJS = \
    OSVENDOR = OSVendor
   OSNAMEDEF = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
 
+#if XF86MonoServer
+VGA2BUILD = -DBUILD_VGA2
+#endif
+#if XF86VGA16Server
+VGA16BUILD = -DBUILD_VGA16
+#endif
+#if XF86MonoDualServer
+VGA2MONOBUILD = -DBUILD_VGA2_MONO
+#endif
+#if XF86VGA16DualServer
+VGA16MONOBUILD = -DBUILD_VGA16_MONO
+#endif
+
+XF86SCREENFLAGS = $(VGA2BUILD) $(VGA16BUILD) $(VGA2MONOBUILD) $(VGA16MONOBUILD)
+
 all:: xf86Init.o xf86Init_m.o xf86_Option.o
 
 SpecialObjectRule(xf86Config.o,xf86Config.c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/Xconfig"')
@@ -70,14 +83,6 @@ all:: XF86_VGA16.o
 #if XF86MonoServer
 SpecialObjectRule(XF86_Mono.o,XF86_Mono.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_Mono.o
-#endif
-#if XF86BdmServer
-SpecialObjectRule(XF86_Bdm.o,XF86_Bdm.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
-all:: XF86_Bdm.o
-#endif
-#if XF86HgaServer
-SpecialObjectRule(XF86_Hga.o,XF86_Hga.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
-all:: XF86_Hga.o
 #endif
 #if XF86S3Server
 SpecialObjectRule(XF86_S3.o,XF86_S3.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
