@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: usl.cf /main/50 1997/04/17 14:11:39 barstow $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.16 1999/05/17 13:17:01 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.17 1999/12/08 21:36:56 robin Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -43,7 +43,7 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #else
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_ISW_FUNCS
 #endif
-#if OSTeenyVersion > 1
+#if OSMajorVersion > 1 || OSTeenyVersion > 1
 # define ExtraLibraries		-lsocket -lnsl -lgen -lw
 # define ThreadedX		YES
 # define HasThreadSafeAPI	NO
