@@ -9,7 +9,7 @@
 <date>26 January 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.125 2005/02/25 18:25:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.126 2005/03/01 03:48:52 dawes Exp $
 </ident>
 
 <abstract>
@@ -1091,7 +1091,7 @@ or the 'cvs log' information for individual source files.
   <tag>Integrate TinyX into the mainline XFree86 build:</tag>X-Oz Technologies
 
   <tag>Intel i915GM support, dual head i830/i855/i915 support:</tag>Tungsten
-  Grahpics, Alan Hourihane, Keith Whitwell
+  Graphics, Alan Hourihane, Keith Whitwell
 
   <tag>Automatic configuration enhancements:</tag>X-Oz Technologies, David Dawes
 
@@ -1244,7 +1244,7 @@ Marius Strobl,
 Mikko Markus Torni,
 Jess Thrysoee,
 Izumi Tsutsui,
-Tungsten Grahpics,
+Tungsten Graphics,
 Ryan Underwood,
 Tristan Van Berkom,
 Michael van Elst,

@@ -1,4 +1,5 @@
 XFree86 4.4.99.903 (xx February 2005)
+ 353. Documentation readability updates (#7466, Georgina Economou).
  352. Limit the maximum refresh rate to 85Hz and remove the bogus 
       100Hz and 120Hz settings as they don't match close enough and
       are really unsupported in the i830 driver (Alan Hourihane).
@@ -19434,7 +19435,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3458 2005/03/03 03:35:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3459 2005/03/03 18:06:25 alanh Exp $
 
 
 
