@@ -1,0 +1,26 @@
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.5 2002/12/05 01:07:40 torrey Exp $
+
+#include <Server.tmpl>
+
+SRCS =  xprCursor.c \
+        xprFrame.c \
+        xprScreen.c \
+        x-hash.c \
+        x-list.c
+
+OBJS =  xprCursor.o \
+        xprFrame.o \
+        xprScreen.o \
+        x-hash.o \
+        x-list.o
+
+INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+           -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
+           -I$(SERVERSRC)/miext/rootless -I$(EXTINCSRC) -I.. -I../.. \
+           -I$(SERVERSRC)/Xext
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(xpr,$(OBJS))
+
+DependTarget()
+

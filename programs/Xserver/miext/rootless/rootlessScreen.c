@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessScreen.c,v 1.4 2003/02/23 21:48:23 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessScreen.c,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
 
 
 #include "mi.h"
@@ -43,6 +43,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -62,6 +63,80 @@ int rootlessScreenPrivateIndex = -1;
 int rootlessWindowPrivateIndex = -1;
 
 
+/*
+ * RootlessUpdateScreenPixmap
+ *  miCreateScreenResources does not like a null framebuffer pointer,
+ *  it leaves the screen pixmap with an uninitialized data pointer.
+ *  Thus, rootless implementations typically set the framebuffer width
+ *  to zero so that miCreateScreenResources does not allocate a screen
+ *  pixmap for us. We allocate our own screen pixmap here since we need
+ *  the screen pixmap to be valid (e.g. CopyArea from the root window).
+ */
+void
+RootlessUpdateScreenPixmap(ScreenPtr pScreen)
+{
+    RootlessScreenRec *s = SCREENREC(pScreen);
+    PixmapPtr pPix;
+    unsigned int rowbytes;
+
+    pPix = (*pScreen->GetScreenPixmap)(pScreen);
+    if (pPix == NULL) {
+        pPix = (*pScreen->CreatePixmap)(pScreen, 0, 0, pScreen->rootDepth);
+        (*pScreen->SetScreenPixmap)(pPix);
+    }
+
+    rowbytes = PixmapBytePad(pScreen->width, pScreen->rootDepth);
+
+    if (s->pixmap_data_size < rowbytes) {
+        if (s->pixmap_data != NULL)
+            xfree(s->pixmap_data);
+
+        s->pixmap_data_size = rowbytes;
+        s->pixmap_data = xalloc(s->pixmap_data_size);
+        if (s->pixmap_data == NULL)
+            return;
+
+        memset(s->pixmap_data, 0xFF, s->pixmap_data_size);
+
+        pScreen->ModifyPixmapHeader(pPix, pScreen->width, pScreen->height,
+                                    pScreen->rootDepth,
+                                    BitsPerPixel(pScreen->rootDepth),
+                                    0, s->pixmap_data);
+        /* ModifyPixmapHeader ignores zero arguments, so install rowbytes
+           by hand. */
+        pPix->devKind = 0;
+    }
+}
+
+
+/*
+ * RootlessCreateScreenResources
+ *  Rootless implementations typically set a null framebuffer pointer, which
+ *  causes problems with miCreateScreenResources. We fix things up here.
+ */
+static Bool
+RootlessCreateScreenResources(ScreenPtr pScreen)
+{
+    Bool ret = TRUE;
+
+    SCREEN_UNWRAP(pScreen, CreateScreenResources);
+
+    if (pScreen->CreateScreenResources != NULL)
+        ret = (*pScreen->CreateScreenResources)(pScreen);
+
+    SCREEN_WRAP(pScreen, CreateScreenResources);
+
+    if (!ret)
+        return ret;
+
+    /* Make sure we have a valid screen pixmap. */
+
+    RootlessUpdateScreenPixmap(pScreen);
+
+    return ret;
+}
+
+
 static Bool
 RootlessCloseScreen(int i, ScreenPtr pScreen)
 {
@@ -71,6 +146,12 @@ RootlessCloseScreen(int i, ScreenPtr pScreen)
 
     // fixme unwrap everything that was wrapped?
     pScreen->CloseScreen = s->CloseScreen;
+
+    if (s->pixmap_data != NULL) {
+        xfree (s->pixmap_data);
+        s->pixmap_data = NULL;
+        s->pixmap_data_size = 0;
+    }
 
     xfree(s);
     return pScreen->CloseScreen(i, pScreen);
@@ -110,10 +191,10 @@ RootlessGetImage(DrawablePtr pDrawable, int sx, int sy, int w, int h,
         x1 = x0 + w;
         y1 = y0 + h;
 
-	x0 = MAX (x0, winRec->x);
-	y0 = MAX (y0, winRec->y);
-	x1 = MIN (x1, winRec->x + winRec->width);
-	y1 = MIN (y1, winRec->y + winRec->height);
+        x0 = MAX (x0, winRec->x);
+        y0 = MAX (y0, winRec->y);
+        x1 = MIN (x1, winRec->x + winRec->width);
+        y1 = MIN (y1, winRec->y + winRec->height);
 
         sx = x0 - pDrawable->x;
         sy = y0 - pDrawable->y;
@@ -175,9 +256,12 @@ RootlessComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
     // SCREEN_UNWRAP(ps, Composite);
     ps->Composite = SCREENREC(pScreen)->Composite;
 
-    if (srcWin  && IsFramedWindow(srcWin))  RootlessStartDrawing(srcWin);
-    if (maskWin && IsFramedWindow(maskWin)) RootlessStartDrawing(maskWin);
-    if (dstWin  && IsFramedWindow(dstWin))  RootlessStartDrawing(dstWin);
+    if (srcWin  && IsFramedWindow(srcWin))
+        RootlessStartDrawing(srcWin);
+    if (maskWin && IsFramedWindow(maskWin))
+        RootlessStartDrawing(maskWin);
+    if (dstWin  && IsFramedWindow(dstWin))
+        RootlessStartDrawing(dstWin);
 
     ps->Composite(op, pSrc, pMask, pDst,
                   xSrc, ySrc, xMask, yMask,
@@ -227,44 +311,44 @@ RootlessGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst,
             y += list->yOff;
             n = list->len;
 
-	    /* Calling DamageRect for the bounding box of each glyph is
+            /* Calling DamageRect for the bounding box of each glyph is
                inefficient. So compute the union of all glyphs in a list
                and damage that. */
 
-	    if (n > 0) {
-		BoxRec box;
+            if (n > 0) {
+                BoxRec box;
 
                 glyph = *glyphs++;
 
-		box.x1 = x - glyph->info.x;
-		box.y1 = y - glyph->info.y;
-		box.x2 = box.x1 + glyph->info.width;
-		box.y2 = box.y2 + glyph->info.height;
+                box.x1 = x - glyph->info.x;
+                box.y1 = y - glyph->info.y;
+                box.x2 = box.x1 + glyph->info.width;
+                box.y2 = box.y2 + glyph->info.height;
 
-		x += glyph->info.xOff;
-		y += glyph->info.yOff;
+                x += glyph->info.xOff;
+                y += glyph->info.yOff;
 
-		while (--n > 0) {
-		    short x1, y1, x2, y2;
+                while (--n > 0) {
+                    short x1, y1, x2, y2;
 
-		    glyph = *glyphs++;
+                    glyph = *glyphs++;
 
-		    x1 = x - glyph->info.x;
-		    y1 = y - glyph->info.y;
-		    x2 = x1 + glyph->info.width;
-		    y2 = y1 + glyph->info.height;
+                    x1 = x - glyph->info.x;
+                    y1 = y - glyph->info.y;
+                    x2 = x1 + glyph->info.width;
+                    y2 = y1 + glyph->info.height;
 
-		    box.x1 = MAX (box.x1, x1);
-		    box.y1 = MAX (box.y1, y1);
-		    box.x2 = MAX (box.x2, x2);
-		    box.y2 = MAX (box.y2, y2);
+                    box.x1 = MAX (box.x1, x1);
+                    box.y1 = MAX (box.y1, y1);
+                    box.x2 = MAX (box.x2, x2);
+                    box.y2 = MAX (box.y2, y2);
 
-		    x += glyph->info.xOff;
-		    y += glyph->info.yOff;
-		}
+                    x += glyph->info.xOff;
+                    y += glyph->info.yOff;
+                }
 
-		RootlessDamageBox(dstWin, &box);
-	    }
+                RootlessDamageBox(dstWin, &box);
+            }
             list++;
         }
     }
@@ -389,10 +473,10 @@ RootlessRedisplayCallback(OsTimerPtr timer, CARD32 time, void *arg)
     RootlessScreenRec *screenRec = arg;
 
     if (!screenRec->redisplay_queued) {
-	/* No update needed. Stop the timer. */
+        /* No update needed. Stop the timer. */
 
-	screenRec->redisplay_timer_set = FALSE;
-	return 0;
+        screenRec->redisplay_timer_set = FALSE;
+        return 0;
     }
 
     screenRec->redisplay_queued = FALSE;
@@ -420,7 +504,7 @@ RootlessQueueRedisplay(ScreenPtr pScreen)
     screenRec->redisplay_queued = TRUE;
 
     if (screenRec->redisplay_timer_set)
-	return;
+        return;
 
     screenRec->redisplay_timer = TimerSet(screenRec->redisplay_timer,
                                           0, ROOTLESS_REDISPLAY_DELAY,
@@ -442,9 +526,9 @@ RootlessBlockHandler(pointer pbdata, OSTimePtr pTimeout, pointer pReadmask)
     RootlessScreenRec *screenRec = SCREENREC(pScreen);
 
     if (screenRec->redisplay_expired) {
-	screenRec->redisplay_expired = FALSE;
+        screenRec->redisplay_expired = FALSE;
 
-	RootlessRedisplayScreen(pScreen);
+        RootlessRedisplayScreen(pScreen);
     }
 }
 
@@ -483,6 +567,9 @@ RootlessAllocatePrivates(ScreenPtr pScreen)
     if (! s) return FALSE;
     SCREENREC(pScreen) = s;
 
+    s->pixmap_data = NULL;
+    s->pixmap_data_size = 0;
+
     s->redisplay_timer = NULL;
     s->redisplay_timer_set = FALSE;
 
@@ -505,6 +592,7 @@ RootlessWrap(ScreenPtr pScreen)
     } \
     pScreen->a = Rootless##a
 
+    WRAP(CreateScreenResources);
     WRAP(CloseScreen);
     WRAP(CreateGC);
     WRAP(PaintWindowBackground);
@@ -560,15 +648,15 @@ Bool RootlessInit(ScreenPtr pScreen, RootlessFrameProcsPtr procs)
         return FALSE;
 
     s = (RootlessScreenRec*)
-            pScreen->devPrivates[rootlessScreenPrivateIndex].ptr;
+        pScreen->devPrivates[rootlessScreenPrivateIndex].ptr;
 
     s->imp = procs;
 
     RootlessWrap(pScreen);
 
-    if (!RegisterBlockAndWakeupHandlers (RootlessBlockHandler,
-                                         RootlessWakeupHandler,
-                                         (pointer) pScreen))
+    if (!RegisterBlockAndWakeupHandlers(RootlessBlockHandler,
+                                        RootlessWakeupHandler,
+                                        (pointer) pScreen))
     {
         return FALSE;
     }

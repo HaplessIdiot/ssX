@@ -1,6 +1,37 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.4 2002/07/24 05:58:33 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.5 2002/12/05 01:07:40 torrey Exp $
 
 #include <Server.tmpl>
+#define IHaveSubdirs
+
+#if HasXplugin
+
+SRCS =  Preferences.m \
+        XApplication.m \
+        XServer.m \
+        XView.m \
+        fullscreen.c \
+        quartz.c \
+        quartzAudio.c \
+        quartzCocoa.m \
+        quartzPasteboard.c \
+        pseudoramiX.c \
+        aquaPicture.c \
+        aquaWindow.c
+
+OBJS =  Preferences.o \
+        XApplication.o \
+        XServer.o \
+        XView.o \
+        fullscreen.o \
+        quartz.o \
+        quartzAudio.o \
+        quartzCocoa.o \
+        quartzPasteboard.o \
+        pseudoramiX.o \
+        aquaPicture.o \
+        aquaWindow.o
+
+#else
 
 SRCS =  Preferences.m \
         XApplication.m \
@@ -44,6 +75,8 @@ OBJS =  Preferences.o \
         rootlessWindow.o \
         pseudoramiX.o
 
+#endif  /* HasXplugin */
+
 INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
            -I$(SERVERSRC)/miext/shadow -I$(EXTINCSRC) -I.. -I$(SERVERSRC)/Xext
@@ -70,6 +103,10 @@ EXTRAMANDEFS = -D__XBinDir__=$(BINDIR)
 XDARWINROOT = $(BINDIR)
 #else
 XDARWINROOT = /Applications
+#endif
+
+#if HasXplugin
+SUBDIRS = xpr
 #endif
 
 NormalLibraryObjectRule()
@@ -100,3 +137,5 @@ clean::
 
 DependTarget()
 
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))

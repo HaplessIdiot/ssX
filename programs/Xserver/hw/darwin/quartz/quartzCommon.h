@@ -31,7 +31,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.7 2003/01/19 06:52:54 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.8 2003/01/23 00:34:26 torrey Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
@@ -76,6 +76,7 @@ extern int              quartzUseAGL;
 extern int              quartzServerVisible;
 extern int              quartzServerQuitting;
 extern int              quartzScreenIndex;
+extern int              quartzUsesNSWindow;
 extern int              aquaMenuBarHeight;
 
 void QuartzReadPreferences(void);

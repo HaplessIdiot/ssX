@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.h,v 1.7 2003/01/29 01:11:05 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessCommon.h,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
 
 #ifndef _ROOTLESSCOMMON_H
 #define _ROOTLESSCOMMON_H
@@ -67,6 +67,7 @@ typedef struct _RootlessScreenRec {
     RootlessFrameProcsPtr imp;
 
     // Wrapped screen functions
+    CreateScreenResourcesProcPtr CreateScreenResources;
     CloseScreenProcPtr CloseScreen;
 
     CreateWindowProcPtr CreateWindow;
@@ -98,6 +99,9 @@ typedef struct _RootlessScreenRec {
     CompositeProcPtr Composite;
     GlyphsProcPtr Glyphs;
 #endif
+
+    void *pixmap_data;
+    unsigned int pixmap_data_size;
 
     void *redisplay_timer;
     unsigned int redisplay_timer_set :1;
@@ -253,5 +257,8 @@ void RootlessRedisplay(WindowPtr pWindow);
 void RootlessRedisplayScreen(ScreenPtr pScreen);
 
 void RootlessQueueRedisplay (ScreenPtr pScreen);
+
+// Move the window to it's correct place in the physical stacking order.
+void RootlessReorderWindow (WindowPtr pWin);
 
 #endif /* _ROOTLESSCOMMON_H */

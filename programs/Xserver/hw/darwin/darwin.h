@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2002 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2001-2003 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,14 +23,14 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.14 2002/11/20 23:51:58 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.15 2002/12/10 00:00:38 torrey Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
 
 #include <IOKit/IOTypes.h>
 #include "inputstr.h"
-#include "screenint.h"
+#include "scrnintstr.h"
 #include "extensions/XKB.h"
 #include "quartz/quartzShared.h"
 
@@ -48,6 +48,8 @@ typedef struct {
 } DarwinFramebufferRec, *DarwinFramebufferPtr;
 
 
+// From darwin.c
+void DarwinAdjustScreenOrigins(ScreenInfo *pScreenInfo);
 void xf86SetRootClip (ScreenPtr pScreen, BOOL enable);
 
 // From darwinEvents.c
