@@ -15,7 +15,6 @@ xc/lib/Xau/
 xc/lib/Xdmcp/
 xc/lib/font/
 xc/lib/xtrans/
-xc/nls/
 xc/programs/Imakefile
 xc/programs/Xserver/Xserver.man
 xc/programs/Xserver/Imakefile
@@ -30,6 +29,7 @@ xc/programs/Xserver/mfb/
 xc/programs/Xserver/mi/
 xc/programs/Xserver/os/
 xc/registry
+xc/workInProgress/lbx
 
 To include PEX support in the server, the following directory is also required:
 
@@ -39,16 +39,13 @@ To include XIE support in the server, the following directory is also required:
 
 xc/programs/Xserver/XIE
 
-To include LBX support in the server, the following directory is also required:
-
-xc/workInProgress/lbx
 
 Notes:
 
 1. the Xnest server cannot be built with this cut-down tree since it
 requires libX11.
 
-To get a cut-down source tree when starting form the full source tree,
+2. To get a cut-down source tree when starting form the full source tree,
 do the following:
 
 cd xc
@@ -60,6 +57,13 @@ rm -fr programs/Xserver/hw/[a-wy-z]*
 rm -fr workInProgress/Fresco workInProgress/MTXserver
 rm -fr workInProgress/Xtf workInProgress/record workInProgress/xsm
 
+3. To start the build, run:
+
+  make -f Makefile.ini World
+
+For some OSs you need to set BOOTSTRAPCFLAGS.  Refer to the appropriate
+OS-specific README for information about this.
+
 
 $XConsortium: ServersOnly,v 1.2 94/11/21 21:48:41 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/ServersOnly,v 3.1 1995/01/28 15:59:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/ServersOnly,v 3.2 1995/02/12 09:54:16 dawes Exp $
