@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.463 2003/10/18 02:14:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.464 2003/10/29 11:41:46 alanh Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1748,6 +1748,8 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #ifndef XFree86ConsoleDefines
 # if defined(i386BsdArchitecture) || defined(AlphaBsdArchitecture)
 #  define XFree86ConsoleDefines	-DPCCONS_SUPPORT -DSYSCONS_SUPPORT -DPCVT_SUPPORT
+# elif defined(FreeBSDArchitecture)
+#  define XFree86ConsoleDefines -DSYSCONS_SUPPORT
 # else
 #  define XFree86ConsoleDefines	/**/
 # endif

@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: FreeBSD.cf,v 1.3 2000/08/17 19:41:45 cpqbld Exp $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.140 2003/11/05 00:58:56 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.141 2003/11/05 18:14:11 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -264,7 +264,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasAgpGart		YES
 #endif
 #if (defined(AlphaArchitecture) || defined(ia64Architecture) || \
-	defined(x86_64Architecture)) && (OSMajorVersion >= 5)
+	defined(AMD64Architecture)) && (OSMajorVersion >= 5)
 #define HasAgpGart		YES
 #endif
 #endif
@@ -273,7 +273,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * SSE and 3DNow will be autodetected, so binutils is the only 
  * requirement for enabling this.  By 4.2 they were all supported.
  */
-#if defined(x86_64Architecture) || defined(i386Architecture) && \
+#if defined(AMD64Architecture) || defined(i386Architecture) && \
 	(OSMajorVersion >= 5 || (OSMajorVersion == 4 && OSMinorVersion >= 2))
 # define HasX86Support          YES
 # define HasMMXSupport		YES
@@ -377,7 +377,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define ServerExtraDefines GccGasOption XFree86ServerDefines
 #endif
 #if defined(AlphaArchitecture) || defined(Sparc64Architecture) || \
-	defined(ia64Architecture) || defined(x86_64Architecture)
+	defined(ia64Architecture) || defined(AMD64Architecture)
 #define ServerExtraDefines GccGasOption XFree86ServerDefines -D_XSERVER64
 #endif
 #ifdef Sparc64Architecture

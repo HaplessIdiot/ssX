@@ -1,4 +1,5 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 569. Some missing FreeBSD AMD64/Sparc64 patches (Bugzilla #786, Eric Anholt).
  568. The call to xf86RandRSetMode() from xf86RandRCreateScreenResources()
       doesn't appear to be necessary.  Removing it restores the documented
       ViewPort behaviour when RandR is enabled (David Dawes).
@@ -18138,7 +18139,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2944 2003/11/07 22:59:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2945 2003/11/07 23:40:11 dawes Exp $
 
 
 

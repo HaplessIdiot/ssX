@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.41 2003/08/29 20:49:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.43 2003/10/02 13:30:06 eich Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -325,7 +325,7 @@
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
 # if !defined(__FreeBSD__)
-# define ARCH_PCI_PCI_BRIDGE sparcPciPciBridge
+#  define ARCH_PCI_PCI_BRIDGE sparcPciPciBridge
 # endif
 #elif defined(__AMD64__)
 # if defined(__FreeBSD__)
