@@ -22,6 +22,7 @@
  *
  * Author:  Dale Tonogai, Network Computing Devices
  */
+/* $XFree86$ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
