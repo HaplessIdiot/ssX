@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.80 1999/04/04 07:03:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.81 1999/04/11 13:11:04 dawes Exp $ */
 
 /*
  *
@@ -268,7 +268,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(DGABlitRect)
    SYMFUNC(DGABlitTransRect)
    SYMFUNC(DGAGetModes)
-   SYMFUNC(DGAGetDeviceInfo)
    SYMFUNC(DGAGetOldDGAMode)
 
    /* xf86DPMS.c */
