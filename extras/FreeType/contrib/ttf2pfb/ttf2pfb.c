@@ -17,6 +17,7 @@
  * templates.
  *
  */
+/* $XFree86$ */
 
 /*
  * Requirements:

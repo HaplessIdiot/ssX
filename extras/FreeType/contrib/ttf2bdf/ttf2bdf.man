@@ -1,5 +1,6 @@
 .\"
 .\" Id: ttf2bdf.man,v 1.14 1999/10/21 16:31:54 mleisher Exp $
+.\" $XFree86$
 .\"
 .TH TTF2BDF 1 "21 October 1999" "X Version 11"
 .SH NAME 
