@@ -136,6 +136,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.101 1997/01/23 10:56:28 dawes Exp 
 #define XF86LoaderServer        NO
 #define XF86SVGAModule          NO
 #define XF86S3Module            NO
+#define XF86S3VModule           NO
 #define XF86Mach32Module        NO
 
 #define XF86SVGAServer          NO
