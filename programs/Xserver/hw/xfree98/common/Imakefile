@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/19 1996/10/25 21:24:28 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.42 1998/03/20 19:08:05 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.43 1998/03/20 21:07:51 hohndel Exp $
 
 
 
@@ -180,6 +180,7 @@ SRCS =	\
 	xf86Lock.c \
 	xf86_Mouse.c \
 	xf86_Option.c \
+	xf86Cmap.c \
 	$(KBD).c \
 	$(XF86_XINPUT_SRC) \
 	$(XINPUT_DEV_SRCS) \
@@ -196,6 +197,7 @@ OBJS = \
 	xf86Io.o \
 	xf86Lock.o \
 	xf86_Mouse.o \
+	xf86Cmap.o \
 	$(XF86_XINPUT_OBJ) \
 	$(XINPUT_DEV_OBJS) \
 	$(XKBDDXOBJ) \
@@ -359,6 +361,7 @@ LinkSourceFile(xf86AceCad.c,$(XF86SRC)/common)
 #if NeedXF86Beta
 LinkSourceFile(xf86Beta.c,$(XF86SRC)/common)
 #endif
+LinkSourceFile(xf86Cmap.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Config.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Cursor.c,$(XF86SRC)/common)
 LinkSourceFile(xf86DCConf.c,$(XF86SRC)/common)
