@@ -2250,8 +2250,6 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
 	for (i = 0x90; i <= NEO_EXT_GR_MAX; i++) {
 	    VGAwGR(i, restore->reg->GR[i]);
 	}
-	xfree(restore->reg);
-	restore->reg = NULL;
     }
     /* Program vertical extension register */
     if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2230
