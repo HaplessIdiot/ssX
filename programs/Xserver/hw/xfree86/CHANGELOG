@@ -1,4 +1,7 @@
 XFree86 4.1.99.1 (xx June 2001)
+  61. Fix the Shape extension's XShapeCombineMask to handle cases where
+      src_mask is None according to the spec.  This reportedly fixes an
+      X server crash (#4715, Huver).
   60. Exclude the DRI extension when NO_HW_ONLY_EXTS is defined (based on
       #4714, Frederic Lepied).
   59. Fixup Cygwin/XFree86 after recent Xrandr changes (#4726, Harold Hunt).
@@ -13415,4 +13418,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1816 2001/05/31 09:11:16 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1817 2001/05/31 16:11:11 dawes Exp $
