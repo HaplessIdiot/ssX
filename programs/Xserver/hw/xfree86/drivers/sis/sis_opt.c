@@ -988,18 +988,19 @@ SiSOptions(ScrnInfoPtr pScrn)
 	         pSiS->UsePanelScaler ? disabledstr : enabledstr);
 	  }
 
-         /* PanelDelayCompensation (300/315/330 series only; currently used
-          *     on 300 series only)
+         /* PanelDelayCompensation (300/315/330 series only)
           * This might be required if the LCD panel shows "small waves".
-          * The parameter is an integer, usually either 4, 32 or 24.
+          * The parameter is an integer, (on 300 series usually either
+	  * 4, 32 or 24; on 315 series + LV bridge usually 3 or 51)
           * Why this option? Simply because SiS did poor BIOS design.
           * The PDC value depends on the very LCD panel used in a
           * particular machine. For most panels, the driver is able
           * to detect the correct value. However, some panels require
-          * a different setting. The value given must be within the mask 0x3c.
+          * a different setting. For 300 series, the value given must
+	  * be within the mask 0x3c.
           */
           if(xf86GetOptValInteger(pSiS->Options, OPTION_PDC, &pSiS->PDC)) {
-	     if(pSiS->PDC & ~0x3c) {
+	     if((pSiS->VGAEngine == SIS_300_VGA) && (pSiS->PDC & ~0x3c)) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	            "Illegal PanelDelayCompensation parameter\n");
 	        pSiS->PDC = -1;
