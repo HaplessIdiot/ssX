@@ -1,3 +1,21 @@
+XFree86 3.1.1g (7 May 1995)
+ 74. i386 BSD support for the memleak utility (Jeffrey Hsu).
+ 73. Fix a scrolling corruption problem with multiple regions in the VGA16
+     server (Stuart Anderson).
+ 72. Modify VGA16 server to provide 4 visuals which can be selected
+     using the standard -cc flag (Stuart Anderson).
+ 71. Changes to allow XDMCP broadcasts on some transports when using
+     STREAMSCONN (Stuart Anderson).
+ 70. Updates for building on NCR SVR4/MP-RAS 3.0 (Stuart Anderson).
+ 69. Some updates for ISC (Michael Rohleder).
+ 68. Fix FillRect problem that causes a server crash for most accel servers
+     when running at 16/32bpp and X isn't on the active VC (Harald Koenig).
+ 67. Fix mach32 inline asm problem (outsw) that shows up with recent gcc
+     versions.
+ 66. Modify xterm to find all ptys on recent FreeBSD (Satoshi Asami).
+ 65. Work around S3 Trio "white line" problem by swapping the default black
+     and white pixel values.
+
 XFree86 3.1.1f (24 April 1995)
  64. Remove ComplexProgramTargetNoMan rule, and use NormalProgramTarget
      instead.
