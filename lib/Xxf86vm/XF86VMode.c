@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.17 1996/02/18 03:41:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.18 1996/10/03 08:29:37 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -45,6 +45,10 @@ from Kaleb S. KEITHLEY.
 #include "include/extensions/xf86vmstr.h"
 #include "include/extensions/Xext.h"
 #include "include/extensions/extutil.h"
+#endif
+
+#ifndef MODE_BAD
+#define MODE_BAD 255
 #endif
 
 static XExtensionInfo _xf86vidmode_info_data;
@@ -251,7 +255,7 @@ Bool XF86VidModeAddModeLine (dpy, screen, newmodeline, aftermodeline)
     XExtDisplayInfo *info = find_display (dpy);
     xXF86VidModeAddModeLineReq *req;
 
-    XF86VidModeCheckExtension (dpy, info, 0);
+    XF86VidModeCheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
     GetReq(XF86VidModeAddModeLine, req);
@@ -269,16 +273,29 @@ Bool XF86VidModeAddModeLine (dpy, screen, newmodeline, aftermodeline)
     req->vtotal =	newmodeline->vtotal;
     req->flags =	newmodeline->flags;
     req->privsize =	newmodeline->privsize;
-    req->after_dotclock =	aftermodeline->dotclock;
-    req->after_hdisplay =	aftermodeline->hdisplay;
-    req->after_hsyncstart =	aftermodeline->hsyncstart;
-    req->after_hsyncend =	aftermodeline->hsyncend;
-    req->after_htotal =		aftermodeline->htotal;
-    req->after_vdisplay =	aftermodeline->vdisplay;
-    req->after_vsyncstart =	aftermodeline->vsyncstart;
-    req->after_vsyncend =	aftermodeline->vsyncend;
-    req->after_vtotal =		aftermodeline->vtotal;
-    req->after_flags =		aftermodeline->flags;
+    if (aftermodeline != NULL) {
+	req->after_dotclock =	aftermodeline->dotclock;
+	req->after_hdisplay =	aftermodeline->hdisplay;
+	req->after_hsyncstart =	aftermodeline->hsyncstart;
+	req->after_hsyncend =	aftermodeline->hsyncend;
+	req->after_htotal =	aftermodeline->htotal;
+	req->after_vdisplay =	aftermodeline->vdisplay;
+	req->after_vsyncstart =	aftermodeline->vsyncstart;
+	req->after_vsyncend =	aftermodeline->vsyncend;
+	req->after_vtotal =	aftermodeline->vtotal;
+	req->after_flags =	aftermodeline->flags;
+    } else {
+	req->after_dotclock =	0;
+	req->after_hdisplay =	0;
+	req->after_hsyncstart =	0;
+	req->after_hsyncend =	0;
+	req->after_htotal =	0;
+	req->after_vdisplay =	0;
+	req->after_vsyncstart =	0;
+	req->after_vsyncend =	0;
+	req->after_vtotal =	0;
+	req->after_flags =	0;
+    }
     if (newmodeline->privsize) {
 	req->length += newmodeline->privsize;
 	Data32(dpy, (long *) newmodeline->private,
@@ -367,6 +384,7 @@ Status XF86VidModeValidateModeLine (dpy, screen, modeline)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86VidModeValidateModeLineReq *req;
+    xXF86VidModeValidateModeLineReply rep;
 
     XF86VidModeCheckExtension (dpy, info, 0);
 
@@ -391,9 +409,14 @@ Status XF86VidModeValidateModeLine (dpy, screen, modeline)
 	Data32(dpy, (long *) modeline->private,
 	       modeline->privsize * sizeof(INT32));
     }
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return MODE_BAD;
+    }
     UnlockDisplay(dpy);
     SyncHandle();
-    return True;
+    return rep.status;
 }
 
 Bool XF86VidModeSwitchMode(dpy, screen, zoom)

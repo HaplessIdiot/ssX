@@ -1,5 +1,5 @@
 ! $XConsortium: XErrorDB /main/37 1996/02/02 16:08:31 kaleb $
-! $XFree86: xc/lib/X11/XErrorDB,v 3.11 1996/08/13 11:25:33 dawes Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.12 1996/09/14 13:05:42 dawes Exp $
 ! Copyright (c) 1993, 1995  X Consortium
 ! 
 ! Permission is hereby granted, free of charge, to any person obtaining
@@ -607,6 +607,8 @@ XRequest.XFree86-DGA.4: XF86DGASetViewPort
 XRequest.XFree86-DGA.5: XF86DGAGetVidPage
 XRequest.XFree86-DGA.6: XF86DGASetVidPage
 XRequest.XFree86-DGA.7: XF86DGAInstallColormap
+XRequest.XFree86-DGA.8: XF86DGAQueryDirectVideo
+XRequest.XFree86-DGA.9: XF86DGAViewPortChanged
 XProtoError.XFree86-DGA.0: XF86DGAClientNotLocal
 XProtoError.XFree86-DGA.1: XF86DGANoDirectVideoMode
 XProtoError.XFree86-DGA.2: XF86DGAScreenNotActive

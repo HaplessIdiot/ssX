@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/10 1996/01/22 17:35:30 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.52 1996/08/24 12:47:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.53 1996/08/26 06:19:49 dawes Exp $
 
 #ifndef OSName
 #define OSName			FreeBSD 2.1.5
@@ -104,6 +104,9 @@ XCOMM operating system:  OSName
 #define DependFileName		.depend
 #ifndef BuildDynamicLoading
 #define BuildDynamicLoading	YES
+#endif
+#ifndef ForceNormalLib
+#define ForceNormalLib		YES
 #endif
 #else
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DXNO_SYSCONF

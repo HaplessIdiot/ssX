@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h /main/91 1995/12/05 16:44:18 mor $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.16 1996/08/11 12:32:31 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.17 1996/10/03 08:28:27 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -249,7 +249,7 @@ in this Software without prior written authorization from the X Consortium.
 #ifdef _CRAY
 #define DEFAULT_CPP "/lib/pcpp"
 #endif
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)
 #define DEFAULT_CPP "/usr/libexec/cpp"
 #endif
 #ifdef	MACH
@@ -287,7 +287,7 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef unix
 	"-Uunix",	/* remove unix symbol so that filename unix.c okay */
 #endif
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(MACH)
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(MACH)
 # ifdef __i386__
 	"-D__i386__",
 # endif
