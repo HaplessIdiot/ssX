@@ -146,10 +146,18 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     int vgaIOBase;
     int offset = 0;
     int clock = mode->Clock;
+    CARD8 protect;
+
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     vgaRegPtr vgaReg = &hwp->ModeReg;
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    
+    
+    /* Unprotect */
+    OUTB(0x3C4, 0x11);
+    protect = INB(0x3C4);
+    OUTB(0x3C5, 0x92);
 
     OUTB(0x3C4, 0x0B); INB(0x3C5); /* Ensure we are in New Mode */
 
@@ -391,6 +399,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     pReg->tridentRegs3C4[NewMode1] = 0xC0;
+    pReg->tridentRegs3C4[Protection] = 0x92;
 
     if (pTrident->Linear)
     	pReg->tridentRegs3x4[LinearAddReg] = ((pTrident->FbAddress >> 24) << 6)|
@@ -443,12 +452,17 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     else
     	pReg->tridentRegs3x4[PCIReg] = INB(vgaIOBase + 5) & 0xF8; 
     /* Enable PCI Bursting on capable chips */
-    if (pTrident->Chipset >= TGUI9660)
+    if (pTrident->Chipset >= TGUI9660) {
 	if(pTrident->UsePCIBurst) {
 	    pReg->tridentRegs3x4[PCIReg] |= 0x06;
 	} else {
 	    pReg->tridentRegs3x4[PCIReg] &= 0xF9;
 	}
+    }
+     /* restore */
+    OUTB(0x3C4, 0x11);
+    OUTB(0x3C5, protect);
+   
     return(TRUE);
 }
 
@@ -461,13 +475,15 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
+    OUTB(0x3C4, Protection);
+    OUTB(0x3C5, 0x92);
     /* Goto New Mode */
     OUTB(0x3C4, 0x0B);
     temp = INB(0x3C5);
 
     /* Unprotect registers */
     OUTW(0x3C4, ((0xC0 ^ 0x02) << 8) | NewMode1);
-
+    
     temp = INB(0x3C8);
     temp = INB(0x3C6);
     temp = INB(0x3C6);
@@ -535,6 +551,8 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     }
     OUTB(0x3C2, tridentReg->tridentRegsClock[0x00]);
 
+    OUTB(0x3C4, Protection);
+    OUTB(0x3C5, tridentReg->tridentRegs3C4[Protection]);
     OUTW(0x3C4, ((tridentReg->tridentRegs3C4[NewMode1] ^ 0x02) << 8)| NewMode1);
 }
 
@@ -552,7 +570,8 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     temp = INB(0x3C5);
 
     INB_3C4(NewMode1);
-
+    INB_3C4(Protection);
+    
     /* Unprotect registers */
     OUTW(0x3C4, ((0xC0 ^ 0x02) << 8) | NewMode1);
     OUTW(vgaIOBase + 4, (0x92 << 8) | NewMode1);
