@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.12 2002/06/05 00:00:37 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.14 2002/12/20 20:18:33 paulo Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"
@@ -1558,7 +1558,7 @@ PrepareKeyDef(KeyInfo *key)
             }
             key->typesDefined |= 1 << i;
         }
-        if (key->actsDefined & 1) {
+        if ((key->actsDefined & 1) && key->acts[0]) {
             key->acts[i]= uTypedCalloc(width, XkbAction);
             if (key->acts[i] == NULL)
                 continue;
@@ -1566,7 +1566,7 @@ PrepareKeyDef(KeyInfo *key)
                    width * sizeof(XkbAction));
             key->actsDefined |= 1 << i;
         }
-        if (key->symsDefined & 1) {
+        if ((key->symsDefined & 1) && key->syms[0]) {
             key->syms[i]= uTypedCalloc(width, KeySym);
             if (key->syms[i] == NULL)
                 continue;
