@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.16 2001/09/20 19:35:11 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.17 2001/09/23 04:04:49 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -25,11 +25,12 @@
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
 // Shared global variables for Quartz modes
-int                     quartzServerVisible = TRUE;
 int                     quartzEventWriteFD = -1;
 int                     quartzStartClients = 1;
 int                     quartzRootless = -1;
 int                     quartzUseSysBeep = 0;
+int                     quartzServerVisible = TRUE;
+int                     quartzScreenIndex = 0;
 int                     aquaMenuBarHeight = 0;
 
 // Full screen specific per screen storage structure
@@ -194,6 +195,7 @@ static Bool QuartzFSAddScreen(
     ScreenPtr pScreen)
 {
     DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
+    QuartzScreenPtr displayInfo = QUARTZ_PRIV(pScreen);
     CGDirectDisplayID cgID = quartzDisplayList[index];
     CGRect bounds;
     QuartzFSScreenPtr fsDisplayInfo;
@@ -202,6 +204,7 @@ static Bool QuartzFSAddScreen(
     fsDisplayInfo = xalloc(sizeof(QuartzFSScreenRec));
     FULLSCREEN_PRIV(pScreen) = fsDisplayInfo;
 
+    displayInfo->displayID = cgID;
     fsDisplayInfo->displayID = cgID;
     fsDisplayInfo->xDisplayMode = 0;
     fsDisplayInfo->aquaDisplayMode = 0;
@@ -259,6 +262,10 @@ Bool QuartzAddScreen(
     int index,
     ScreenPtr pScreen)
 {
+    // allocate space for private per screen Quartz specific storage
+    QuartzScreenPtr displayInfo = xalloc(sizeof(QuartzScreenRec));
+    QUARTZ_PRIV(pScreen) = displayInfo;
+
     // do full screen or rootless specific initialization
     if (quartzRootless) {
         return AquaAddScreen(index, pScreen);
@@ -403,6 +410,14 @@ static void QuartzFSDisplayInit(void)
  */
 void QuartzInitOutput(void)
 {
+    static unsigned long generation = 0;
+
+    // Allocate private storage for each screen's Quartz specific info
+    if (generation != serverGeneration) {
+        quartzScreenIndex = AllocateScreenPrivateIndex();
+        generation = serverGeneration;
+    }
+
     QuartzAudioInit();
 
     if (quartzRootless) {

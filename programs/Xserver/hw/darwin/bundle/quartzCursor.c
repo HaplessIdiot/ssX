@@ -3,7 +3,7 @@
  * Support for using the Quartz Window Manager cursor
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.7 2001/09/20 19:35:11 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.8 2001/09/23 04:04:49 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartzCursor.h"
@@ -31,10 +31,11 @@ static QD_Cursor gQDArrow; // QuickDraw arrow cursor
 
 #define CURSOR_PRIV(pScreen) \
     ((QuartzCursorScreenPtr)pScreen->devPrivates[darwinCursorScreenIndex].ptr)
-#define HIDE_QD_CURSOR(display, visible) \
-    if (visible) { CGDisplayHideCursor(display); visible = FALSE; }
-#define SHOW_QD_CURSOR(display, visible) \
-    CGDisplayShowCursor(display); visible = TRUE;
+#define HIDE_QD_CURSOR(pScreen, visible) \
+    if (visible) { CGDisplayHideCursor(QUARTZ_PRIV(pScreen)->displayID); \
+                   visible = FALSE; }
+#define SHOW_QD_CURSOR(pScreen, visible) \
+    CGDisplayShowCursor(QUARTZ_PRIV(pScreen)->displayID); visible = TRUE;
 
 
 /*
@@ -273,7 +274,7 @@ QuartzSetCursor(
 
     if (!pCursor) {
         // Remove the cursor completely.
-        HIDE_QD_CURSOR(kCGDirectMainDisplay, ScreenPriv->qdCursorVisible);
+        HIDE_QD_CURSOR(pScreen, ScreenPriv->qdCursorVisible);
         if (! ScreenPriv->qdCursorMode)
             (*ScreenPriv->spriteFuncs->SetCursor)(pScreen, 0, x, y);
     }
@@ -289,11 +290,11 @@ QuartzSetCursor(
 
         curs = (CCrsrHandle) pCursor->devPriv[pScreen->myNum];
         SetCCursor(curs);
-        SHOW_QD_CURSOR(kCGDirectMainDisplay, ScreenPriv->qdCursorVisible);
+        SHOW_QD_CURSOR(pScreen, ScreenPriv->qdCursorVisible);
     }
     else {
         // Cursor is too big for QuickDraw. Use X software cursor.
-        HIDE_QD_CURSOR(kCGDirectMainDisplay, ScreenPriv->qdCursorVisible);
+        HIDE_QD_CURSOR(pScreen, ScreenPriv->qdCursorVisible);
         ScreenPriv->qdCursorMode = FALSE;
         (*ScreenPriv->spriteFuncs->SetCursor)(pScreen, pCursor, x, y);
     }
@@ -374,7 +375,8 @@ QuartzWarpCursor(
 
     if (quartzServerVisible) {
         cgPoint = CGPointMake(x + darwinMainScreenX, y + darwinMainScreenY);
-        cgErr = CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgPoint);
+        cgErr = CGDisplayMoveCursorToPoint(QUARTZ_PRIV(pScreen)->displayID,
+                                           cgPoint);
         if (cgErr != CGDisplayNoErr) {
             ErrorF("Could not set cursor position with error code 0x%x.\n",
                     cgErr);
@@ -475,7 +477,7 @@ void QuartzSuspendXCursor(
     QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
 
     SetCursor(&gQDArrow);
-    SHOW_QD_CURSOR(kCGDirectMainDisplay, ScreenPriv->qdCursorVisible);
+    SHOW_QD_CURSOR(pScreen, ScreenPriv->qdCursorVisible);
 }
 
 
