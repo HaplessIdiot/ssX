@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.193 2002/11/26 02:16:42 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.194 2002/12/10 03:17:24 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -368,7 +368,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
  * Streaming SIMD Extensions, was introduced in the 2.4.x kernels.
  */
 #ifndef HasSSESupport
-#  if defined (i386Architecture)
+#  if defined(i386Architecture) || defined(x86_64Architecture)
 #    if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 4)
 #      define HasSSESupport		YES
 #    else
@@ -384,7 +384,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
  * don't enable it for libc5 as a reasonable default.
  */
 #ifndef HasMMXSupport
-#  ifdef i386Architecture
+#  if defined(i386Architecture) || defined(x86_64Architecture)
 #    if (LinuxCLibMajorVersion > 5)
 #      define HasMMXSupport		YES
 #    else
@@ -402,7 +402,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
  * XXX This is preliminary.
  */
 #ifndef Has3DNowSupport
-#  ifdef i386Architecture
+#  if defined(i386Architecture) || defined(x86_64Architecture)
 #    if (LinuxCLibMajorVersion > 5)
 #      define Has3DNowSupport		YES
 #    else
