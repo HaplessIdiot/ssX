@@ -1,4 +1,5 @@
 /* $XConsortium: access.c,v 1.4 94/04/17 21:17:11 rws Exp $ */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

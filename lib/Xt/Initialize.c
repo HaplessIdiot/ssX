@@ -1,4 +1,5 @@
 /* $XConsortium: Initialize.c,v 1.220 94/04/17 20:14:13 converse Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
