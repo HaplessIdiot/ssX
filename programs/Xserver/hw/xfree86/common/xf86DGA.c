@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.32 2000/01/21 01:12:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.33 2000/03/31 22:55:32 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -852,7 +852,7 @@ Bool
 DGAIsDgaEvent (xEvent *e)
 {
     int	    coreEquiv;
-    if (DGAScreenIndex < 0)
+    if (DGAScreenIndex < 0 || XDGAEventBase == 0)
 	return FALSE;
     coreEquiv = e->u.u.type - *XDGAEventBase;
     if (KeyPress <= coreEquiv && coreEquiv <= MotionNotify)
