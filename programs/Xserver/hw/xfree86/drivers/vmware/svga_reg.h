@@ -9,6 +9,7 @@
  *
  * SVGA hardware definitions
  */
+/* $XFree86$ */
 
 #ifndef _SVGA_REG_H_
 #define _SVGA_REG_H_
