@@ -1,4 +1,19 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 270. Made xf4bpp code moer 64bit clean (still doesn't work on Alphas)
+      (Egbert Eich).
+ 269. Removed disable/enable interrupt call on ia64 platforms.
+      The machine instruction is privileged and not permitted in user space
+      (Egbert Eich).
+ 268. Improved mode setting in Trident driver; added code to ValidMode
+      to reject any modes whose size is larger than the physical LCD
+      size if LCD is enabled (Egbert Eich).
+ 267. Modified error message in TDFX driver to give user a clue how
+      to avoid error (Stefan Dirsch).
+ 266. Fixed appearant typo in SMI driver (Egbert Eich).
+ 265. Changed Savage driver to unmap memory when exiting PreInit() and
+      maps it on every call to ScreenInit() (Egbert Eich).
+ 264. Changed handling of failed vbe call in rage 128 driver.
+      No the driver doesn't fail any more (Egbert Eich).
  263. Integrate the currently Panix-specific keycodes into atKeynames.h,
       since they're not really Panix-specific (David Dawes).
  262. Fix problem with a NULL pointer in Xv Xineramification (Benjamin Monate).
@@ -12689,4 +12704,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1624 2001/03/07 19:39:27 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1625 2001/03/07 19:53:12 dawes Exp $

@@ -61,9 +61,6 @@ typedef struct {
     CARD32		IOAddress;
     unsigned long	FbAddress;
     unsigned char *     IOBase;
-#ifdef __alpha__
-    unsigned char *     IOBaseDense;
-#endif
     unsigned char *	FbBase;
     long		FbMapSize;
     Bool		NoAccel;
@@ -109,6 +106,8 @@ typedef struct {
     int			w;
     int			y;
     int                 lcdMode;
+    Bool                lcdActive;
+    Bool                doInt;
 #ifdef READOUT
     Bool                DontSetClock;
 #endif
@@ -143,7 +142,8 @@ typedef struct {
 
 typedef struct {
     CARD8 mode;
-    char* display;
+    int display_x;
+    int display_y;
     int clock;
     int shadow_0;
     int shadow_3;

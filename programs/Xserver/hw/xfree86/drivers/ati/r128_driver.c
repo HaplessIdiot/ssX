@@ -1418,7 +1418,8 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 
     if (!R128GetPLLParameters(pScrn))          goto fail;
 
-    if (!R128PreInitDDC(pScrn, pInt10))        goto fail;
+    /* Don't fail on this one */
+    R128PreInitDDC(pScrn, pInt10);
 
     if (!R128PreInitGamma(pScrn))              goto fail;
 

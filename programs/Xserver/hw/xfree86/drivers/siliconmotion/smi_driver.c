@@ -1578,7 +1578,7 @@ SMI_WriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, SMIRegPtr restore)
 			VGAOUT8_INDEX(pSmi, vgaCRIndex, vgaCRData, 0x9E,
 					restore->CR90[14] & ~0x20);
 
-			VGAOUT8_INDEX(pSmi, vgaCRIndex, vgaCRData, 0x33, restore->CR33_2);
+			VGAOUT8_INDEX(pSmi, vgaCRIndex, vgaCRData, 0x33, restore->CR33);
 			VGAOUT8_INDEX(pSmi, vgaCRIndex, vgaCRData, 0x3A, restore->CR3A);
 			for (i = 0; i < 14; i++)
 			{

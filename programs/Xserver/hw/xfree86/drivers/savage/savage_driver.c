@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.9 2001/02/13 21:15:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.11 2001/02/15 20:00:19 eich Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -1315,6 +1315,8 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
 
+    SavageUnmapMem(pScrn, 1);
+    
     return TRUE;
 }
 
@@ -2039,6 +2041,9 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
 
     pScrn = xf86Screens[pScreen->myNum];
     psav = SAVPTR(pScrn);
+
+    if (!SavageMapMMIO(pScrn))
+	return FALSE;
 
     SavageEnableMMIO(pScrn);
 
