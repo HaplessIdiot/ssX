@@ -1,13 +1,13 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.46 2003/02/16 17:01:23 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.47 2003/02/17 17:03:40 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
 # Copyright © 1996-2003 by The XFree86 Project, Inc.
 #
-# This script should be used to install XFree86 4.2.99.902.
+# This script should be used to install XFree86 4.3.0.
 #
 # Parts of this script are based on the old preinst.sh and postinst.sh
 # scripts.
@@ -20,7 +20,7 @@
 # Fallbacks for when the bindist version can't be auto-detected.
 # These should be updated for each release.
 
-SNAPSHOT=y
+SNAPSHOT=n
 
 if [ $SNAPSHOT = y ]; then
 	FULLPREFIX=XXX
@@ -36,8 +36,8 @@ fi
 SCRIPTVERSION=$VERSION
 
 # XXX Could get this (and above) version info from imake...
-FreetypeCurrent=8
-FreetypeAge=2
+FreetypeCurrent=9
+FreetypeAge=3
 
 BINDISTFULLPREFIX=
 BINDISTPATCHLEVEL=
