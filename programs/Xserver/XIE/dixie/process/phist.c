@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. August 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/phist.c,v 3.2 1998/10/04 09:35:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/phist.c,v 3.3 1998/10/05 13:22:14 dawes Exp $ */
 
 #define _XIEC_PHIST
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -101,14 +95,9 @@ terms and conditions:
 
 
 /*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeMatchHistogram();
-
-/*
  *  routines internal to this module
  */
-static Bool	PrepMatchHistogram();
+static Bool PrepMatchHistogram(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -122,10 +111,7 @@ static diElemVecRec pMatchHistogramVec =
 /*------------------------------------------------------------------------
 ----------------- routine: make a match histogram element ----------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeMatchHistogram(flo,tag,pe)
-floDefPtr      flo;
-xieTypPhototag tag;
-xieFlo        *pe;
+peDefPtr MakeMatchHistogram(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
     int inputs;
     peDefPtr ped;
@@ -161,7 +147,7 @@ xieFlo        *pe;
    * copy technique data (if any)
    */
   if(!(ped->techVec = FindTechnique(xieValHistogram, raw->shape)) || 
-     !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
+     !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams, 0)))
     TechniqueError(flo,ped,xieValHistogram,raw->shape,raw->lenParams,
 		   return(ped));
 
@@ -178,11 +164,7 @@ xieFlo        *pe;
 ------------------- routine: copy routine for Flat technique  ------------
 ------------------------------------------------------------------------*/
 
-Bool CopyPHistogramFlat(flo, ped, sparms, rparms, tsize) 
-floDefPtr  flo;
-peDefPtr   ped;
-pointer sparms, rparms;
-CARD16	   tsize;
+Bool CopyPHistogramFlat(TECHNQ_COPY_ARGS)
 {
      return (tsize == 0);
 }
@@ -191,11 +173,12 @@ CARD16	   tsize;
 ---------------- routine: copy routine for Gaussian technique  -----------
 ------------------------------------------------------------------------*/
 
-Bool CopyPHistogramGaussian(flo, ped, sparms, rparms, tsize) 
-floDefPtr  flo;
-peDefPtr   ped;
-xieTecHistogramGaussian *sparms, *rparms;
-CARD16	   tsize;
+#undef  sparms
+#define sparms ((xieTecHistogramGaussian *)sParms)
+#undef  rparms
+#define rparms ((xieTecHistogramGaussian *)rParms)
+
+Bool CopyPHistogramGaussian(TECHNQ_COPY_ARGS)
 {
      pTecHistogramGaussianDefPtr pvt;
 
@@ -222,11 +205,12 @@ CARD16	   tsize;
 -------------- routine: copy routine for Hyperbolic technique  -----------
 ------------------------------------------------------------------------*/
 
-Bool CopyPHistogramHyperbolic(flo, ped, sparms, rparms, tsize) 
-floDefPtr  flo;
-peDefPtr   ped;
-xieTecHistogramHyperbolic *sparms, *rparms;
-CARD16	   tsize;
+#undef  sparms
+#define sparms ((xieTecHistogramHyperbolic *)sParms)
+#undef  rparms
+#define rparms ((xieTecHistogramHyperbolic *)rParms)
+
+Bool CopyPHistogramHyperbolic(TECHNQ_COPY_ARGS)
 {
      pTecHistogramHyperbolicDefPtr pvt;
 
@@ -251,9 +235,7 @@ CARD16	   tsize;
 /*------------------------------------------------------------------------
 ---------------- routine: prep routine for Gaussian technique ------------
 ------------------------------------------------------------------------*/
-Bool PrepPHistogramFlat(flo, ped) 
-     floDefPtr  flo;
-     peDefPtr   ped;
+Bool PrepPHistogramFlat(floDefPtr flo, peDefPtr ped)
 {
   return(TRUE);
 }
@@ -261,9 +243,7 @@ Bool PrepPHistogramFlat(flo, ped)
 /*------------------------------------------------------------------------
 ---------------- routine: prep routine for Gaussian technique ------------
 ------------------------------------------------------------------------*/
-Bool PrepPHistogramGaussian(flo, ped) 
-     floDefPtr  flo;
-     peDefPtr   ped;
+Bool PrepPHistogramGaussian(floDefPtr flo, peDefPtr ped)
 {
   if (((pTecHistogramGaussianDefPtr)ped->techPvt)->sigma <= 0)
       return(FALSE);
@@ -274,9 +254,7 @@ Bool PrepPHistogramGaussian(flo, ped)
 /*------------------------------------------------------------------------
 ---------------- routine: prep routine for Hyperbolic technique ----------
 ------------------------------------------------------------------------*/
-Bool PrepPHistogramHyperbolic(flo, ped) 
-     floDefPtr  flo;
-     peDefPtr   ped;
+Bool PrepPHistogramHyperbolic(floDefPtr flo, peDefPtr ped)
 {
   double constant = ((pTecHistogramHyperbolicDefPtr)ped->techPvt)->constant;
 
@@ -289,9 +267,7 @@ Bool PrepPHistogramHyperbolic(flo, ped)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepMatchHistogram(flo,ped)
-floDefPtr  flo;
-peDefPtr   ped;
+static Bool PrepMatchHistogram(floDefPtr flo, peDefPtr ped)
 {
     xieFloMatchHistogram *raw = (xieFloMatchHistogram *)ped->elemRaw;
     inFloPtr  ind, in = &ped->inFloLst[SRCtag];

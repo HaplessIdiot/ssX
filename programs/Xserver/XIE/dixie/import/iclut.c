@@ -68,7 +68,7 @@ terms and conditions:
 	Ben Fahy 	-- AGE Logic, Inc. May   1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/import/iclut.c,v 3.1 1998/10/04 09:35:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/import/iclut.c,v 3.2 1998/10/05 13:22:06 dawes Exp $ */
 
 #define _XIEC_ICLUT
 
@@ -84,13 +84,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_i.h>
   /*
    *  Server XIE Includes
    */
@@ -100,16 +94,10 @@ terms and conditions:
 #include <element.h>
 #include <lut.h>
 
-
-/*
- *  routines referenced by other modules
- */
-peDefPtr	MakeICLUT();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepICLUT();
+static Bool PrepICLUT(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -121,10 +109,7 @@ static diElemVecRec iCLUTVec = {
 /*------------------------------------------------------------------------
 --------------- routine: make an import client lut element -------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeICLUT(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeICLUT(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   ELEMENT(xieFloImportClientLUT);
@@ -163,9 +148,7 @@ peDefPtr MakeICLUT(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepICLUT(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepICLUT(floDefPtr flo, peDefPtr ped)
 {
   xieFloImportClientLUT *raw = (xieFloImportClientLUT *)ped->elemRaw;
   inFloPtr inflo = &ped->inFloLst[IMPORT];

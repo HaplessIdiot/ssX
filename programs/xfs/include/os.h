@@ -43,65 +43,92 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)os.h,v 4.2 1991/05/10 07:59:16 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/include/os.h,v 3.3 1998/03/20 21:08:25 hohndel Exp $ */
+/* $XFree86: xc/programs/xfs/include/os.h,v 3.4 1998/10/04 09:41:11 dawes Exp $ */
 
 #ifndef	_OS_H_
 #define	_OS_H_
 
+typedef struct _FontPathRec *FontPathPtr;
+typedef struct _alt_server *AlternateServerPtr;
+typedef struct _auth *AuthPtr;
+
 #include "FSproto.h"
+#include "client.h"
 #include "misc.h"
+
+typedef pointer FID;
+
 #define ALLOCATE_LOCAL_FALLBACK(_size) FSalloc((unsigned long)_size)
 #define DEALLOCATE_LOCAL_FALLBACK(_ptr) FSfree((pointer)_ptr)
+
 #include "X11/Xalloca.h"
 
 #define	MAX_REQUEST_SIZE	16384
 
-extern unsigned long *FSalloc();
-extern unsigned long *FSrealloc();
-extern void FSfree();
+#ifdef SIGNALRETURNSINT
+#define SIGVAL int
+#else
+#define SIGVAL void
+#endif
 
 #define	fsalloc(size)		FSalloc((unsigned long)size)
 #define	fsrealloc(ptr, size)	FSrealloc((pointer)ptr, (unsigned long)size)
 #define	fsfree(ptr)		FSfree((pointer)ptr)
 
-int         ReadRequest();
+struct _osComm;	/* FIXME: osCommPtr */
 
-Bool        CloseDownConnection();
-void        CreateSockets();
-void        FlushAllOuput();
-long        GetTimeInMIllis();
-void        Error();
-void        InitErrors();
-void        CloseErrors();
-void        NoticeF();
-#if defined(MetroLink)
-extern void ErrorF(
-#if NeedVarargsPrototypes
-    char* /*f*/,
-    ...
-#endif
-);
-extern void FatalError(
-#if NeedVarargsPrototypes
-    char* /*f*/,
-    ...
-#endif
-);
-#else
-void        ErrorF();
-void        FatalError();
-#endif
-void        SetConfigValues();
+/* os/config.c */
+extern	int	ReadConfigFile(char *filename);
 
-typedef pointer FID;
-typedef struct _FontPathRec *FontPathPtr;
+/* os/connection.c */
+extern	void	AttendClient(ClientPtr client);
+extern	void	CheckConnections(void);
+extern	void	CloseDownConnection(ClientPtr client);
+extern	void	IgnoreClient(ClientPtr client);
+extern	void	MakeNewConnections(void);
+extern	void	ReapAnyOldClients(void);
+extern	void	ResetSockets(void);
+extern	void	StopListening(void);
 
-FontPathPtr expand_font_name_pattern();
+/* os/error.c */
+extern void	Error(char *str);
+extern void	InitErrors(void);
+extern void	CloseErrors(void);
+extern void	NoticeF(char *f, ...);
+extern void	ErrorF(char * f, ...);
+extern void	FatalError(char* f, ...);
 
-typedef struct _alt_server *AlternateServerPtr;
-typedef struct _auth *AuthPtr;
+/* os/io.c */
+extern	Bool	InsertFakeRequest(ClientPtr client, char *data, int count);
+extern	int	FlushClient(ClientPtr client, struct _osComm *oc, char *extraBuf, int extraCount, int padsize);
+extern	int	ReadRequest(ClientPtr client);
+extern	void	FlushAllOutput(void);
+extern	void	FreeOsBuffers(struct _osComm *oc);
+extern	void	ResetCurrentRequest(ClientPtr client);
+extern	void	ResetOsBuffers(void);
+extern	void	WriteToClient(ClientPtr client, int count, char *buf);
+extern	void	WriteToClientUnpadded(ClientPtr client, int count, char *buf);
 
-extern int  ListCatalogues();
-extern int  ListAlternateServers();
+/* os/utils.c */
+extern	SIGVAL	AutoResetServer (int n);
+extern	SIGVAL	CleanupChild (int n);
+extern	SIGVAL	GiveUp (void);
+extern	SIGVAL	ServerCacheFlush (int n);
+extern	SIGVAL	ServerReconfig (int n);
+extern	long	GetTimeInMillis (void);
+extern	pointer	FSalloc(unsigned long);
+extern	pointer	FScalloc (unsigned long amount);
+extern	pointer	FSrealloc(pointer, unsigned long);
+extern	void	FSfree(pointer);
+extern	void	OsInitAllocator (void);
+extern	void	ProcessCmdLine (int argc, char **argv);
+extern	void	ProcessLSoption (char *str);
+
+/* os/waitfor.c */
+extern	int	WaitForSomething(int *pClientsReady);
+
+extern void	SetConfigValues(void);
+
+extern int  ListAlternateServers(AlternateServerPtr *svrs);
 
 #endif				/* _OS_H_ */

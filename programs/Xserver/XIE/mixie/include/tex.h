@@ -1,15 +1,10 @@
-/* $XConsortium: tex.h,v 1.4 94/04/17 20:35:06 rws Exp $ */
+/* $TOG: tex.h /main/5 1998/02/09 16:18:29 kaleb $ */
 /**** module tex.h ****/
 /****************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -138,24 +133,54 @@ terms and conditions:
 
 
 #ifndef _XIEC_FLOMAN
-extern	int	InitFloManager();
-extern	int	MakePETex();
-extern	Bool	InitReceptors();
-extern	Bool	InitReceptor();
-extern	Bool	InitEmitter();
-extern	Bool	InitBand();
-extern	void	ResetReceptors();
-extern	void	ResetEmitter();
+struct _band;
+struct _receptor;
+
+extern	int	InitFloManager(floDefPtr flo);
+extern	int	MakePETex(
+			floDefPtr flo,
+			peDefPtr ped,
+			CARD32 extend,
+			Bool inSync,
+			Bool bandSync);
+extern	Bool	InitReceptors(
+			floDefPtr flo,
+			peDefPtr ped,
+			CARD32 mapSize,
+			CARD32 threshold);
+extern	Bool	InitReceptor(
+			floDefPtr flo,
+			peDefPtr ped,
+			struct _receptor * rcp,
+			CARD32 mapSize,
+			CARD32 threshold,
+			unsigned process,
+			unsigned bypass);
+extern	Bool	InitEmitter(
+			floDefPtr flo,
+			peDefPtr ped,
+			CARD32 mapSize,
+			INT32 inPlace);
+extern	Bool	InitBand(
+			floDefPtr flo,
+			peDefPtr ped,
+			struct _band * bnd,
+			CARD32 mapSize,
+			CARD32 threshold,
+			INT32 inPlace);
+extern  void    ResetBand(struct _band * bnd);
+extern	void	ResetReceptors(peDefPtr ped);
+extern	void	ResetEmitter(peDefPtr ped);
 #endif
 
 #ifndef _XIEC_SCHED
-extern	int	InitScheduler();
+extern	int	InitScheduler(floDefPtr flo);
 #endif
 
 #ifndef _XIEC_STRIP
-extern	int	InitStripManager();
-extern  int	DebriefStrips();
-extern  void	FreeStrips();
+extern	int	InitStripManager(floDefPtr flo);
+extern  int	DebriefStrips(stripLstPtr i_head, stripLstPtr o_head);
+extern  void	FreeStrips(stripLstPtr head);
 #endif
 
 #endif /* end _XIEH_TEX */

@@ -67,7 +67,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/export/ecphoto.c,v 3.2 1998/10/04 09:35:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/ecphoto.c,v 3.3 1998/10/05 13:22:03 dawes Exp $ */
 
 #define _XIEC_ECPHOTO
 
@@ -83,13 +83,8 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
+#include <dixie_e.h>
 #include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
   /*
    *  Server XIE Includes
    */
@@ -101,43 +96,10 @@ terms and conditions:
 #include <technq.h>
 #include <memory.h>
 
-
-/*
- *  routines referenced by other modules
- */
-peDefPtr	MakeECPhoto();
-Bool		CopyECPhotoUnSingle();
-Bool		CopyECPhotoG31D();
-Bool		CopyECPhotoG32D();
-Bool		CopyECPhotoG42D();
-Bool		CopyECPhotoTIFF2();
-Bool		CopyECPhotoTIFFPackBits();
-
-Bool		PrepECPhotoUnSingle();
-Bool		PrepECPhotoG31D();
-Bool		PrepECPhotoG32D();
-Bool		PrepECPhotoG42D();
-Bool		PrepECPhotoTIFF2();
-Bool		PrepECPhotoTIFFPackBits();
-
-#if XIE_FULL
-Bool		CopyECPhotoUnTriple();
-Bool		CopyECPhotoJPEGBaseline();
-Bool		PrepECPhotoUnTriple();
-Bool		PrepECPhotoJPEGBaseline();
-#ifdef BEYOND_SI
-Bool		CopyECPhotoJPEGLossless();
-Bool		PrepECPhotoJPEGLossless();
-#endif /* BEYOND_SI */
-#endif
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepECPhoto();
-
-extern Bool	BuildDecodeFromEncode();
-extern Bool	CompareDecode();
+static Bool PrepECPhoto(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie element entry points
@@ -150,10 +112,7 @@ static diElemVecRec eCPhotoVec = {
 /*------------------------------------------------------------------------
 --------------- routine: make an import client photo element -------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeECPhoto(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeECPhoto(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   ELEMENT(xieFloExportClientPhoto);
@@ -185,7 +144,7 @@ peDefPtr MakeECPhoto(flo,tag,pe)
   /* copy technique data (if any)
    */
   if(!(ped->techVec = FindTechnique(xieValEncode,raw->encodeTechnique)) 
-    || !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
+    || !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams, 0)))
     TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,raw->lenParams,
 		   return(ped));
 
@@ -196,12 +155,12 @@ peDefPtr MakeECPhoto(flo,tag,pe)
   return(ped);
 }                               /* end MakeECPhoto */
 
+#undef  sparms
+#define sparms ((xieTecEncodeUncompressedSingle *)sParms)
+#undef  rparms
+#define rparms ((xieTecEncodeUncompressedSingle *)rParms)
 
-Bool CopyECPhotoUnSingle(flo, ped, sparms, rparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeUncompressedSingle *sparms, *rparms;
-     CARD16	tsize;
+Bool CopyECPhotoUnSingle(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -211,11 +170,12 @@ Bool CopyECPhotoUnSingle(flo, ped, sparms, rparms, tsize)
   return(TRUE);
 }
 
-Bool CopyECPhotoG31D(flo, ped, sparms, rparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeG31D *sparms, *rparms;
-     CARD16	tsize;
+#undef  sparms
+#define sparms ((xieTecEncodeG31D *)sParms)
+#undef  rparms
+#define rparms ((xieTecEncodeG31D *)rParms)
+
+Bool CopyECPhotoG31D(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -225,11 +185,12 @@ Bool CopyECPhotoG31D(flo, ped, sparms, rparms, tsize)
   return(TRUE);
 }
 
-Bool CopyECPhotoG32D(flo, ped, sparms, rparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeG32D *sparms, *rparms;
-     CARD16	tsize;
+#undef  sparms
+#define sparms ((xieTecEncodeG32D *)sParms)
+#undef  rparms
+#define rparms ((xieTecEncodeG32D *)rParms)
+
+Bool CopyECPhotoG32D(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -245,11 +206,12 @@ Bool CopyECPhotoG32D(flo, ped, sparms, rparms, tsize)
   return(TRUE);
 }
 
-Bool CopyECPhotoG42D(flo, ped, sparms, rparms, tsize)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeG42D *sparms, *rparms;
-     CARD16	tsize;
+#undef  sparms
+#define sparms ((xieTecEncodeG42D *)sParms)
+#undef  rparms
+#define rparms ((xieTecEncodeG42D *)rParms)
+
+Bool CopyECPhotoG42D(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -259,11 +221,12 @@ Bool CopyECPhotoG42D(flo, ped, sparms, rparms, tsize)
   return(TRUE);
 }
 
-Bool CopyECPhotoTIFF2(flo, ped, sparms, rparms, tsize)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeTIFF2 *sparms, *rparms;
-     CARD16	tsize;
+#undef  sparms
+#define sparms ((xieTecEncodeTIFF2 *)sParms)
+#undef  rparms
+#define rparms ((xieTecEncodeTIFF2 *)rParms)
+
+Bool CopyECPhotoTIFF2(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -273,11 +236,12 @@ Bool CopyECPhotoTIFF2(flo, ped, sparms, rparms, tsize)
   return(TRUE);
 }
 
-Bool CopyECPhotoTIFFPackBits(flo, ped, sparms, rparms, tsize)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeTIFFPackBits *sparms, *rparms;
-     CARD16	tsize;
+#undef  sparms
+#define sparms ((xieTecEncodeTIFFPackBits *)sParms)
+#undef  rparms
+#define rparms ((xieTecEncodeTIFFPackBits *)rParms)
+
+Bool CopyECPhotoTIFFPackBits(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -286,13 +250,14 @@ Bool CopyECPhotoTIFFPackBits(flo, ped, sparms, rparms, tsize)
   
   return(TRUE);
 }
+
+#undef  sparms
+#define sparms ((xieTecEncodeUncompressedTriple *)sParms)
+#undef  rparms
+#define rparms ((xieTecEncodeUncompressedTriple *)rParms)
 
 #if XIE_FULL
-Bool CopyECPhotoUnTriple(flo, ped, sparms, rparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeUncompressedTriple *sparms, *rparms;
-     CARD16	tsize;
+Bool CopyECPhotoUnTriple(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -302,11 +267,12 @@ Bool CopyECPhotoUnTriple(flo, ped, sparms, rparms, tsize)
   return(TRUE);
 }
 
-Bool CopyECPhotoJPEGBaseline(flo, ped, sparms, rparms, tsize)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeJPEGBaseline *sparms, *rparms;
-     CARD16	tsize;
+#undef  sparms
+#define sparms ((xieTecEncodeJPEGBaseline *)sParms)
+#undef  rparms
+#define rparms ((xieTecEncodeJPEGBaseline *)rParms)
+
+Bool CopyECPhotoJPEGBaseline(TECHNQ_COPY_ARGS)
 {
   eTecEncodeJPEGBaselineDefPtr pvt;
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
@@ -342,12 +308,13 @@ Bool CopyECPhotoJPEGBaseline(flo, ped, sparms, rparms, tsize)
   return(TRUE);
 }
 
+#undef  sparms
+#define sparms ((xieTecEncodeJPEGLossless *)sParms)
+#undef  rparms
+#define rparms ((xieTecEncodeJPEGLossless *)rParms)
+
 #ifdef BEYOND_SI
-Bool CopyECPhotoJPEGLossless(flo, ped, sparms, rparms, tsize)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeJPEGLossless *sparms, *rparms;
-     CARD16	tsize;
+Bool CopyECPhotoJPEGLossless(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
 
@@ -362,14 +329,14 @@ Bool CopyECPhotoJPEGLossless(flo, ped, sparms, rparms, tsize)
 #endif /* BEYOND_SI */
 #endif
 
+#undef  sparms
+#undef  rparms
 
 
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepECPhoto(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepECPhoto(floDefPtr flo, peDefPtr ped)
 {
   xieFloExportClientPhoto *raw = (xieFloExportClientPhoto *)ped->elemRaw;
   ePhotoDefPtr             pvt = (ePhotoDefPtr)ped->elemPvt;
@@ -425,10 +392,10 @@ static Bool PrepECPhoto(flo,ped)
 ------------------------------------------------------------------------*/
 
 /* Prep routine for uncompressed single band data */
-Bool PrepECPhotoUnSingle(flo, ped, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieTecEncodeUncompressedSingle *tec;
+Bool PrepECPhotoUnSingle(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieTecEncodeUncompressedSingle *tec)
 {
   outFloPtr dst = &ped->outFlo;
   CARD32 padmod =  tec->scanlinePad * 8;
@@ -459,10 +426,10 @@ Bool PrepECPhotoUnSingle(flo, ped, tec)
   return(TRUE);
 } /* PrepECPhotoUnSingle */
 
-Bool PrepECPhotoG31D(flo, ped, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieTecEncodeG31D *tec;
+Bool PrepECPhotoG31D(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieTecEncodeG31D *tec)
 {
   outFloPtr dst = &ped->outFlo;
   
@@ -477,10 +444,10 @@ Bool PrepECPhotoG31D(flo, ped, tec)
   
 } /* PrepECPhotoG31D */
 
-Bool PrepECPhotoG32D(flo, ped, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieTecEncodeG32D *tec;
+Bool PrepECPhotoG32D(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieTecEncodeG32D *tec)
 {
   outFloPtr dst = &ped->outFlo;
   
@@ -495,10 +462,10 @@ Bool PrepECPhotoG32D(flo, ped, tec)
   
 } /* PrepECPhotoG32D */
 
-Bool PrepECPhotoG42D(flo, ped, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieTecEncodeG42D *tec;
+Bool PrepECPhotoG42D(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieTecEncodeG42D *tec)
 {
   outFloPtr dst = &ped->outFlo;
   
@@ -513,10 +480,10 @@ Bool PrepECPhotoG42D(flo, ped, tec)
   
 } /* PrepECPhotoG42D */
 
-Bool PrepECPhotoTIFF2(flo, ped, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieTecEncodeTIFF2 *tec;
+Bool PrepECPhotoTIFF2(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieTecEncodeTIFF2 *tec)
 {
   outFloPtr dst = &ped->outFlo;
   
@@ -531,10 +498,10 @@ Bool PrepECPhotoTIFF2(flo, ped, tec)
   
 } /* PrepECPhotoTIFF2 */
 
-Bool PrepECPhotoTIFFPackBits(flo, ped, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieTecEncodeTIFFPackBits *tec;
+Bool PrepECPhotoTIFFPackBits(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieTecEncodeTIFFPackBits *tec)
 {
   outFloPtr dst = &ped->outFlo;
   
@@ -550,10 +517,10 @@ Bool PrepECPhotoTIFFPackBits(flo, ped, tec)
   
 #if XIE_FULL
 /* Prep routine for uncompressed triple band data */
-Bool PrepECPhotoUnTriple(flo, ped, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieTecEncodeUncompressedTriple *tec;
+Bool PrepECPhotoUnTriple(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieTecEncodeUncompressedTriple *tec)
 {
   outFloPtr dst = &ped->outFlo;
   int b;
@@ -620,10 +587,10 @@ Bool PrepECPhotoUnTriple(flo, ped, tec)
   return(TRUE);
 } /* PrepECPhotoUnTriple */
 
-Bool PrepECPhotoJPEGBaseline(flo, ped, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieTecEncodeJPEGBaseline *tec;
+Bool PrepECPhotoJPEGBaseline(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieTecEncodeJPEGBaseline *tec)
 {
   outFloPtr dst = &ped->outFlo;
   
@@ -658,10 +625,10 @@ Bool PrepECPhotoJPEGBaseline(flo, ped, tec)
 } /* PrepECPhotoJPEGBaseline */
 
 #ifdef BEYOND_SI
-Bool PrepECPhotoJPEGLossless(flo, ped, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieTecEncodeJPEGLossless *tec;
+Bool PrepECPhotoJPEGLossless(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieTecEncodeJPEGLossless *tec)
 {
   outFloPtr dst = &ped->outFlo;
   CARD8 pred;

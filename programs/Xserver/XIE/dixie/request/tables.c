@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden, AGE Logic, Inc	March 1993
 
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/tables.c,v 3.1 1998/10/04 09:35:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/tables.c,v 3.2 1998/10/05 13:22:21 dawes Exp $ */
 
 #define _XIEC_TABLES
 
@@ -87,8 +87,7 @@ terms and conditions:
 /*------------------------------------------------------------------------
 ------------------------ Procedure Not Implemented -----------------------
 ------------------------------------------------------------------------*/
-static int ProcNotImplemented(client)
-     ClientPtr client;
+static int ProcNotImplemented(ClientPtr client)
 {
   return( BadRequest );
 }                                   /* end ProcNotImplemented */
@@ -97,10 +96,10 @@ static int ProcNotImplemented(client)
 /*------------------------------------------------------------------------
 ---------------- Error stub for unsupported element types ----------------
 ------------------------------------------------------------------------*/
-static peDefPtr ElementNotImplemented(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+static peDefPtr ElementNotImplemented(
+     floDefPtr      flo,
+     xieTypPhototag tag,
+     xieFlo        *pe)
 {
   FloElementError(flo,tag,pe->elemType, return(NULL));
 }
@@ -118,7 +117,7 @@ xieVoidProc DDInterface[] = {
 
 
 #if XIE_FULL
-static int (*ProcTable5_00[])() = {
+static int (*ProcTable5_00[])(ClientPtr) = {
 /* 00 */  ProcNotImplemented,	/* Illegal protocol request */	
 /* 01 */  ProcNotImplemented,	/* QueryImageExtension doesn't use the table */
 /* 02 */  ProcQueryTechniques,
@@ -148,7 +147,7 @@ static int (*ProcTable5_00[])() = {
 /* 26 */  ProcAbort
   };
 
-static int (*SProcTable5_00[])() = {
+static int (*SProcTable5_00[])(ClientPtr) = {
 /* 00 */  ProcNotImplemented,	/* Illegal protocol request */	
 /* 01 */  ProcNotImplemented,	/* QueryImageExtension doesn't use the table */
 /* 02 */  SProcQueryTechniques,
@@ -178,7 +177,10 @@ static int (*SProcTable5_00[])() = {
 /* 26 */  SProcAbort
   };
      
-peDefPtr (*MakeTable[])() = {
+peDefPtr (*MakeTable[])(
+     floDefPtr      flo,
+     xieTypPhototag tag,
+     xieFlo        *pe) = {
 /* 00 */  ElementNotImplemented,
 /* 01 */  MakeICLUT,
 /* 02 */  MakeICPhoto,
@@ -327,9 +329,10 @@ peDefPtr (*MakeTable[])() = {
      Fill in the version specific tables for the selected minor protocol 
      version
 ************************************************************************/
-void init_proc_tables(minorVersion, ptable, sptable)
-     CARD16 minorVersion;
-     int (**ptable[])(), (**sptable[])();
+void init_proc_tables(
+     CARD16 minorVersion,
+     int (**ptable[])(ClientPtr),
+     int (**sptable[])(ClientPtr))
 {
   /* Kind of boring with only one version to work with */
   switch (minorVersion) {

@@ -64,7 +64,7 @@ terms and conditions:
 
 	Dean Verheiden  AGE Logic, Inc.  April 1993
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/technq.c,v 3.3 1998/10/04 09:35:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/technq.c,v 3.4 1998/10/05 13:22:21 dawes Exp $ */
 
 #define _XIEC_TECHNQ
 
@@ -109,29 +109,18 @@ terms and conditions:
 #include <macro.h>
 #include <memory.h>
 #include <technq.h>
-
-/*
- *  Xie protocol proceedures called from the dispatcher
- */
-int  ProcQueryTechniques();
-int  SProcQueryTechniques();
-
-/*
- *  Functions called by other Xie procedures
- */
-techVecPtr FindTechnique();
+#include <tables.h>
 
 /*
  *  Used internally by this module
  */
-static Bool send_reply();
-static Bool send_technique_replies();
+static Bool send_reply(xieTypTechniqueGroup group, TechPtr tech, ClientPtr client);
+static Bool send_technique_replies(xieTypTechniqueGroup group, ClientPtr client);
 
 /*------------------------------------------------------------------------
 ------------------------ QueryTechniques Procedures -----------------------
 ------------------------------------------------------------------------*/
-int ProcQueryTechniques(client)
-     ClientPtr client;
+int ProcQueryTechniques(ClientPtr client)
 {
   xieQueryTechniquesReply rep;
   REQUEST( xieQueryTechniquesReq );
@@ -184,8 +173,7 @@ int ProcQueryTechniques(client)
   return(Success);
 }                               /* end ProcQueryTechniques */
 
-int SProcQueryTechniques(client)
-     ClientPtr client;
+int SProcQueryTechniques(ClientPtr client)
 {
   register int n;
   REQUEST( xieQueryTechniquesReq );
@@ -198,7 +186,7 @@ int SProcQueryTechniques(client)
  Initialization Procedure: Fill in various technique fields
 *************************************************************************/
 
-Bool technique_init()
+Bool technique_init(void)
 {
     CARD32 defaultSize = 0;
     CARD32 tableSize = 0;
@@ -245,10 +233,10 @@ Bool technique_init()
 			swapping them first if necessary
 *************************************************************************/
 
-static Bool send_reply(group, tech, client)
-xieTypTechniqueGroup group;
-TechPtr tech;
-ClientPtr client;
+static Bool send_reply(
+    xieTypTechniqueGroup group,
+    TechPtr tech,
+    ClientPtr client)
 {
 	xieTypTechniqueRec rep;
 
@@ -267,9 +255,9 @@ ClientPtr client;
 	return(TRUE);
 }
 
-static Bool send_technique_replies(group,client)
-xieTypTechniqueGroup	group;
-ClientPtr client;
+static Bool send_technique_replies(
+    xieTypTechniqueGroup group,
+    ClientPtr client)
 {
     if (group == xieValDefault) {
         TechGroupPtr tg = techTable.techgroups;
@@ -313,9 +301,9 @@ ClientPtr client;
 /*************************************************************************
 FindTechnique: return group's technique entry point structure
 *************************************************************************/
-techVecPtr FindTechnique(group,number)
-xieTypTechniqueGroup	group;
-CARD16	number;
+techVecPtr FindTechnique(
+    xieTypTechniqueGroup group,
+    CARD16	number)
 {
     TechGroupPtr tg = techTable.techgroups;
     int g;
@@ -344,10 +332,11 @@ CARD16	number;
 NoParamCheck: Used as copyfnc for techniques that do not have parameters.
 	      Checks to make sure that no parameters have been passed in.
 *************************************************************************/
-static Bool NoParamCheck(flo, rparms, cparms, tsize) 
-     floDefPtr flo;
-     pointer rparms, cparms;
-     CARD16 tsize;
+static Bool NoParamCheck(
+     floDefPtr flo,
+     pointer rparms,
+     pointer cparms,
+     CARD16 tsize)
 {
   return(!tsize);
 }			/* end NoParamCheck */
@@ -355,11 +344,11 @@ static Bool NoParamCheck(flo, rparms, cparms, tsize)
 /*************************************************************************
 NoTechYet: error stub for unimplemented technique routines
 *************************************************************************/
-static Bool NoTechYet(flo, ped, parm, tech) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     pointer   parm;
-     pointer   tech;
+static Bool NoTechYet(
+     floDefPtr flo,
+     peDefPtr  ped,
+     pointer   parm,
+     pointer   tech)
 {
   return(FALSE);
 }			/* end NoTechYet */

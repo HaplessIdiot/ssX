@@ -66,7 +66,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.9 1998/10/03 08:42:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.10 1998/10/10 15:25:07 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -113,9 +113,9 @@ static void GetCursorBounds(Widget, XRectangle*);
  * Prototypes
  */
 static void GetGC(MultiSinkObject);
-static int CharWidth(Widget , int, wchar_t);
+static int CharWidth(MultiSinkObject, XFontSet, int, wchar_t);
 static unsigned int PaintText(Widget w, GC gc, int x, int y,
-			      wchar_t *buf, int len);
+			      wchar_t *buf, int len, Bool);
 
 /*
  * Initialization
@@ -216,21 +216,21 @@ WidgetClass multiSinkObjectClass = (WidgetClass)&multiSinkClassRec;
  * Implementation
  */
 static int
-CharWidth(Widget w, int x, wchar_t c)
+CharWidth(MultiSinkObject sink, XFontSet fontset, int x, wchar_t c)
 {
-  int i, width;
-  MultiSinkObject sink = (MultiSinkObject)w;
-  XFontSet fontset = sink->multi_sink.fontset;
-  Position *tab;
+  int width = 0;
 
   if (c == _Xaw_atowc(XawLF))
     return (0);
 
   if (c == _Xaw_atowc(XawTAB))
     {
+      int i;
+      Position *tab;
+
       width = x;
       /* Adjust for Left Margin. */
-      x -= ((TextWidget)XtParent(w))->text.margin.left;
+      x -= ((TextWidget)XtParent((Widget)sink))->text.left_margin;
 
       i = 0;
       tab = sink->text_sink.tabs;
@@ -289,46 +289,35 @@ CharWidth(Widget w, int x, wchar_t c)
  *	y   - ""
  *	buf - buffer and length of text to paint
  *	len - ""
+ *	clear_bg - clear background before drawing ?
  *
  * Description:
  *	Actually paints the text into the window.
  *
  * Returns:
- *	The width of the text painted, or 0
+ *	The width of the text painted
  */
 static unsigned int
-PaintText(Widget w, GC gc, int x, int y, wchar_t *buf, int len)
+PaintText(Widget w, GC gc, int x, int y, wchar_t *buf, int len, Bool clear_bg)
 {
   MultiSinkObject sink = (MultiSinkObject)w;
   TextWidget ctx = (TextWidget)XtParent(w);
   XFontSet fontset = sink->multi_sink.fontset;
-  int max_x;
   unsigned int width = XwcTextEscapement(fontset, buf, len);
-  XFontSetExtents *ext = XExtentsOfFontSet(fontset);
-
-  max_x = XtWidth(ctx);
 
   if (((int)width) <= -x)		/* Don't draw if we can't see it */
     return (width);
 
-  if (ctx->core.background_pixmap != XtUnspecifiedPixmap
-      && gc == sink->multi_sink.normgc)
-    {
-      XwcTextItem item;
+  if (clear_bg) {
+      XFontSetExtents *ext = XExtentsOfFontSet(fontset);
 
-      item.chars = buf;
-      item.nchars = len;
-      item.delta = 0;
-      item.font_set = fontset;
       XawTextSinkClearToBackground(w, x, y - abs(ext->max_logical_extent.y),
 				   width, ext->max_logical_extent.height);
-      XwcDrawText(XtDisplay(ctx), XtWindow(ctx), gc, x, y, &item, 1);
+      XwcDrawString(XtDisplay(ctx), XtWindow(ctx), fontset, gc, x, y, buf, len);
     }
   else
     XwcDrawImageString(XtDisplay(ctx), XtWindow(ctx), fontset, gc,
 		       x, y, buf, len);
-  if ((int)width + x > max_x && ctx->text.margin.right != 0)
-    return (0);
 
   return (width);
 }
@@ -343,15 +332,21 @@ DisplayText(Widget w, int x, int y,
 {
   TextWidget ctx = (TextWidget)XtParent(w);
   MultiSinkObject sink = (MultiSinkObject)w;
+  XFontSet fontset = sink->multi_sink.fontset;
   Widget source = XawTextGetSource(XtParent(w));
-  wchar_t buf[BUFSIZ];
-  XFontSetExtents *ext = XExtentsOfFontSet(sink->multi_sink.fontset);
+  wchar_t buf[256];
+  XFontSetExtents *ext = XExtentsOfFontSet(fontset);
   int j, k;
   XawTextBlock blk;
   GC gc, invgc, tabgc;
+  int max_x;
+  Bool clear_bg;
 
   if (!sink->multi_sink.echo || !ctx->text.lt.lines)
     return;
+
+  max_x = (int)XtWidth(ctx) - ctx->text.r_margin.right;
+  clear_bg = !highlight && ctx->core.background_pixmap != XtUnspecifiedPixmap;
 
   gc = highlight ? sink->multi_sink.invgc : sink->multi_sink.normgc;
   invgc = highlight ? sink->multi_sink.normgc : sink->multi_sink.invgc;
@@ -367,9 +362,11 @@ DisplayText(Widget w, int x, int y,
       pos1 = XawTextSourceRead(source, pos1, &blk, (int) pos2 - pos1);
       for (k = 0; k < blk.length; k++)
 	{
-	  if (j >= BUFSIZ)		/* buffer full, dump the text */
+	  if (j >= (sizeof(buf) / sizeof(wchar_t)) - 1)
+	      /* buffer full, dump the text */
 	    {
-	      x += PaintText(w, gc, x, y, buf, j);
+	      if ((x += PaintText(w, gc, x, y, buf, j, clear_bg)) >= max_x)
+		  return;
 	      j = 0;
 	    }
 	  buf[j] = ((wchar_t *)blk.ptr)[k];
@@ -378,16 +375,14 @@ DisplayText(Widget w, int x, int y,
 
 	  else if (buf[j] == _Xaw_atowc(XawTAB))
 	    {
-	      Position temp = 0;
-	      Dimension width;
+	      unsigned int width;
 
-	      if (j != 0 && (temp = PaintText(w, gc, x, y, buf, j)) == 0)
+	      if (j != 0 &&
+		  (x += PaintText(w, gc, x, y, buf, j, clear_bg)) >= max_x)
 		return;
 
-	      x += temp;
-	      width = CharWidth(w, x, _Xaw_atowc(XawTAB));
-	      if (!highlight
-		  && ctx->core.background_pixmap != XtUnspecifiedPixmap)
+	      width = CharWidth(sink, fontset, x, _Xaw_atowc(XawTAB));
+	      if (clear_bg)
 		XawTextSinkClearToBackground
 		  (w,
 		   x, y - abs(ext->max_logical_extent.y),
@@ -407,14 +402,14 @@ DisplayText(Widget w, int x, int y,
 	      if (sink->multi_sink.display_nonprinting)
 		buf[j] = _Xaw_atowc('@');
 	      else
-		buf[j] = _Xaw_atowc(' ');
+		buf[j] = _Xaw_atowc(XawSP);
             }
 	  j++;
 	}
     }
 
   if (j > 0)
-    (void)PaintText(w, gc, x, y, buf, j);
+    (void)PaintText(w, gc, x, y, buf, j, clear_bg);
 }
 
 /*
@@ -433,7 +428,7 @@ GetCursorBounds(Widget w, XRectangle *rect)
 {
   MultiSinkObject sink = (MultiSinkObject)w;
 
-  rect->width = CharWidth(w, 0, _Xaw_atowc(' '));
+  rect->width = CharWidth(sink, sink->multi_sink.fontset, 0, _Xaw_atowc(XawSP));
   rect->height = (XExtentsOfFontSet(sink->multi_sink.fontset)
 		  ->max_logical_extent.height);
   rect->x = sink->multi_sink.cursor_x;
@@ -447,6 +442,7 @@ static void
 InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 {
   MultiSinkObject sink = (MultiSinkObject)w;
+  XFontSet fontset = sink->multi_sink.fontset;
   Widget ctx = XtParent(w);
   XawTextPosition position = XawTextGetInsertionPoint(ctx);
 
@@ -457,7 +453,7 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
       wchar_t c;
       XawTextPosition selection_start, selection_end;
       Boolean has_selection;
-      XFontSetExtents *ext = XExtentsOfFontSet(sink->multi_sink.fontset);
+      XFontSetExtents *ext = XExtentsOfFontSet(fontset);
 
       XawTextGetSelectionPos((Widget)ctx, &selection_start, &selection_end);
       has_selection = selection_start != selection_end;
@@ -491,8 +487,8 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 					 sink->multi_sink.cursor_x,
 					 (sink->multi_sink.cursor_y - 1
 					  - fheight),
-					 CharWidth(w, 0, wspace[0]), fheight);
-	  else if (ochar[0] >= _Xaw_atowc(XawSP))
+					 CharWidth(sink, fontset, 0, wspace[0]), fheight);
+	  if (XwcTextEscapement(sink->multi_sink.fontset, ochar, 1) != 0)
 	    DisplayText(w, sink->multi_sink.cursor_x,
 			sink->multi_sink.cursor_y - 1 - fheight,
 			sink->multi_sink.cursor_position,
@@ -503,7 +499,8 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 		      sink->multi_sink.normgc,
 		      sink->multi_sink.cursor_x,
 		      sink->multi_sink.cursor_y - 1 - fdiff,
-		      ochar, 1);
+		      ochar, 1,
+		      ctx->core.background_pixmap != XtUnspecifiedPixmap);
 	}
 
       if (!has_selection && state != XawisOff)
@@ -522,9 +519,9 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 
 	  if (focus)
 	  {
-	    if (nchar[0] >= _Xaw_atowc(XawSP))
+	    if (XwcTextEscapement(sink->multi_sink.fontset, nchar, 1) != 0)
 	      XwcDrawImageString(XtDisplay(ctx), XtWindow(ctx),
-			         sink->multi_sink.fontset,
+			         fontset,
 			         sink->multi_sink.invgc,
 			         x, (y - 1 - fdiff),
 			         nchar, 1);
@@ -537,7 +534,7 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 			   sink->multi_sink.xorgc ?
 			   sink->multi_sink.xorgc : sink->multi_sink.normgc,
 			   x, y - 1 - fheight,
-			   CharWidth(w, 0, *nchar) - 1, fheight - 1);
+			   CharWidth(sink, fontset, 0, *nchar) - 1, fheight - 1);
 	}
     }
 
@@ -556,10 +553,11 @@ FindDistance(Widget w, XawTextPosition fromPos, int fromx,
 	     XawTextPosition *resPos, int *resHeight)
 {
   MultiSinkObject sink = (MultiSinkObject)w;
+  XFontSet fontset = sink->multi_sink.fontset;
   Widget source = XawTextGetSource(XtParent(w));
   XawTextPosition idx, lastPos;
   wchar_t c;
-  XFontSetExtents *ext = XExtentsOfFontSet(sink->multi_sink.fontset);
+  XFontSetExtents *ext = XExtentsOfFontSet(fontset);
   XawTextBlock blk;
 
   /* we may not need this */
@@ -571,7 +569,7 @@ FindDistance(Widget w, XawTextPosition fromPos, int fromx,
       if (idx - blk.firstPos >= blk.length)
 	XawTextSourceRead(source, idx, &blk, (int) toPos - fromPos);
       c = ((wchar_t *)blk.ptr)[idx - blk.firstPos];
-      *resWidth += CharWidth(w, fromx + *resWidth, c);
+      *resWidth += CharWidth(sink, fontset, fromx + *resWidth, c);
       if (c == _Xaw_atowc(XawLF))
 	{
 	  idx++;
@@ -588,13 +586,14 @@ FindPosition(Widget w, XawTextPosition fromPos, int fromx, int width,
 	     int *resHeight)
 {
   MultiSinkObject sink = (MultiSinkObject)w;
+  XFontSet fontset = sink->multi_sink.fontset;
   Widget source = XawTextGetSource(XtParent(w));
 
   XawTextPosition lastPos, idx, whiteSpacePosition = 0;
   int lastWidth = 0, whiteSpaceWidth = 0;
   Boolean whiteSpaceSeen;
   wchar_t c;
-  XFontSetExtents *ext = XExtentsOfFontSet(sink->multi_sink.fontset);
+  XFontSetExtents *ext = XExtentsOfFontSet(fontset);
   XawTextBlock blk;
 
   lastPos = GETLASTPOS;
@@ -609,7 +608,7 @@ FindPosition(Widget w, XawTextPosition fromPos, int fromx, int width,
       if (idx - blk.firstPos >= blk.length)
 	XawTextSourceRead(source, idx, &blk, BUFSIZ);
       c = ((wchar_t *)blk.ptr)[idx - blk.firstPos];
-      *resWidth += CharWidth(w, fromx + *resWidth, c);
+      *resWidth += CharWidth(sink, fontset, fromx + *resWidth, c);
 
       if ((c == _Xaw_atowc(XawSP) || c == _Xaw_atowc(XawTAB))
 	  && *resWidth <= width)
@@ -689,7 +688,7 @@ GetGC(MultiSinkObject sink)
 static void
 XawMultiSinkClassInitialize(void)
 {
-  wspace[0] = _Xaw_atowc(' ');
+  wspace[0] = _Xaw_atowc(XawSP);
   XawInitializeWidgetSet();
 }
 

@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/export/eroi.c,v 3.1 1998/10/04 09:35:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/eroi.c,v 3.2 1998/10/05 13:22:05 dawes Exp $ */
 
 #define _XIEC_EROI
 
@@ -82,13 +82,8 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
+#include <dixie_e.h>
 #include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
   /*
    *  Server XIE Includes
    */
@@ -98,17 +93,11 @@ terms and conditions:
 #include <element.h>
 #include <error.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeEROI();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepEROI();
-static Bool    DebriefEROI();
+static Bool PrepEROI(floDefPtr flo, peDefPtr ped);
+static Bool DebriefEROI(floDefPtr flo, peDefPtr ped, Bool ok);
 
 /*
  * dixie entry points
@@ -123,10 +112,7 @@ static diElemVecRec eROIVec =
 /*------------------------------------------------------------------------
 ----------------- routine: make an ExportROI element ----------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeEROI(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeEROI(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   inFloPtr inFlo;
@@ -163,9 +149,7 @@ peDefPtr MakeEROI(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepEROI(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepEROI(floDefPtr flo, peDefPtr ped)
 {
   xieFloExportROI *raw = (xieFloExportROI *)ped->elemRaw;
   eROIDefPtr pvt = (eROIDefPtr) ped->elemPvt;
@@ -193,10 +177,7 @@ static Bool PrepEROI(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------- routine: post execution cleanup -------------------
 ------------------------------------------------------------------------*/
-static Bool DebriefEROI(flo,ped,ok)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     Bool	ok;
+static Bool DebriefEROI(floDefPtr flo, peDefPtr ped, Bool ok)
 {
   xieFloExportROI *raw = (xieFloExportROI *)ped->elemRaw;
   eROIDefPtr pvt = (eROIDefPtr)ped->elemPvt;

@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. May 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pdither.c,v 3.1 1998/10/04 09:35:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pdither.c,v 3.2 1998/10/05 13:22:13 dawes Exp $ */
 
 #define _XIEC_PDITHER
 
@@ -83,13 +83,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -100,23 +94,11 @@ terms and conditions:
 #include <technq.h>
 #include <difloat.h>
 
-
-/*
- *  routines referenced by other modules
- */
-peDefPtr	MakeDither();
-
-Bool		CopyPDitherErrorDiffusion();
-Bool		PrepPDitherErrorDiffusion();
-
-Bool		CopyPDitherOrdered();
-Bool		PrepPDitherOrdered();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepPDither();
-static Bool	PrepPDitherStandard();
+static Bool PrepPDither(floDefPtr flo, peDefPtr ped);
+static Bool PrepPDitherStandard(floDefPtr flo, peDefPtr ped, pointer raw, pointer tec);
 
 /*
  * dixie element entry points
@@ -128,10 +110,7 @@ static diElemVecRec pDitherVec = {
 /*------------------------------------------------------------------------
 -------------------- routine: make a dither element ------------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeDither(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeDither(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   ELEMENT(xieFloDither);
@@ -183,12 +162,7 @@ peDefPtr MakeDither(flo,tag,pe)
 ---------------- routine: copy routine for no Error Diffusion technique --
 ------------------------------------------------------------------------*/
 
-Bool CopyPDitherErrorDiffusion(flo, ped, sparms, rparms, tsize, isDefault) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     pointer sparms, rparms;
-     CARD16	tsize;
-     Bool	isDefault;
+Bool CopyPDitherErrorDiffusion(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
 
@@ -199,12 +173,12 @@ Bool CopyPDitherErrorDiffusion(flo, ped, sparms, rparms, tsize, isDefault)
 ---------------- routine: copy routine for Ordered techniques  ---------
 ------------------------------------------------------------------------*/
 
-Bool CopyPDitherOrdered(flo, ped, sparms, rparms, tsize, isDefault) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecDitherOrdered *sparms, *rparms;
-     CARD16	tsize;
-     Bool	isDefault;
+#undef  sparms
+#define sparms ((xieTecDitherOrdered *)sParms)
+#undef  rparms
+#define rparms ((xieTecDitherOrdered *)rParms)
+
+Bool CopyPDitherOrdered(TECHNQ_COPY_ARGS)
 {
      VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
 
@@ -220,10 +194,11 @@ Bool CopyPDitherOrdered(flo, ped, sparms, rparms, tsize, isDefault)
 ---------------- routine: prep routine for no param techniques -------------
 ------------------------------------------------------------------------*/
 static
-Bool PrepPDitherStandard(flo, ped, raw, tec) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     pointer raw, tec;
+Bool PrepPDitherStandard(
+     floDefPtr  flo,
+     peDefPtr   ped,
+     pointer    raw,
+     pointer    tec)
 {
   return(TRUE);
 }
@@ -231,11 +206,11 @@ Bool PrepPDitherStandard(flo, ped, raw, tec)
 /*------------------------------------------------------------------------
 ---------------- routine: prep routine for Error Diffusion techniques ----
 ------------------------------------------------------------------------*/
-Bool PrepPDitherErrorDiffusion(flo, ped, raw, tec) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieFloDither *raw;
-     pointer tec;
+Bool PrepPDitherErrorDiffusion(
+     floDefPtr  flo,
+     peDefPtr   ped,
+     xieFloDither *raw,
+     pointer tec)
 {
   return PrepPDitherStandard(flo, ped, (pointer) raw, tec);
 }
@@ -243,11 +218,11 @@ Bool PrepPDitherErrorDiffusion(flo, ped, raw, tec)
 /*------------------------------------------------------------------------
 ---------------- routine: prep routine for Ordered technique -------------
 ------------------------------------------------------------------------*/
-Bool PrepPDitherOrdered(flo, ped, raw, tec) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieFloDither *raw;
-     xieTecDitherOrdered *tec;
+Bool PrepPDitherOrdered(
+     floDefPtr  flo,
+     peDefPtr   ped,
+     xieFloDither *raw,
+     xieTecDitherOrdered *tec)
 {
   return PrepPDitherStandard(flo, ped, (pointer) raw, (pointer) tec);
 }
@@ -256,9 +231,7 @@ Bool PrepPDitherOrdered(flo, ped, raw, tec)
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
 
-static Bool PrepPDither(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepPDither(floDefPtr flo, peDefPtr ped)
 {
   inFloPtr inf = &ped->inFloLst[SRCtag];
   outFloPtr src = &inf->srcDef->outFlo;

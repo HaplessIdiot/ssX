@@ -118,17 +118,9 @@ typedef unsigned long Atom;
 		 ((char *) &(dst))[1] = ((char *) &(src))[0];
 
 
-extern void SwapLongs();
-extern void SwapShorts();
-
-extern void CopyIsoLatin1Lowered();
-extern void NoopDDA();
-extern char *NameForAtom();
-extern void BitOrderInvert();
-extern void TwoByteInvert();
-extern void FourByteInvert();
-
-extern long GetTimeInMillis();
+extern void NoopDDA(void);
+extern char *NameForAtom(Atom atom);
+extern void BitOrderInvert(unsigned char *buf, int nbytes);
 
 
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
@@ -187,5 +179,7 @@ typedef struct {		/* when cloning, need old transport info */
     int portnum;
 } OldListenRec;
 
+/* os/connection.c */
+extern	void	CreateSockets(int old_listen_count, OldListenRec *old_listen);
 
 #endif				/* _MISC_H_ */

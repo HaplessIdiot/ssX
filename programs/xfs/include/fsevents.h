@@ -52,9 +52,13 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef _EVENTS_H_
 #define _EVENTS_H_
 
+#include	<misc.h>
 #include	"FS.h"
 
-extern void WriteErrorToClient();
-extern void SendKeepAlive();
+extern int ProcGetEventMask(ClientPtr client);
+extern int ProcSetEventMask(ClientPtr client);
+extern void SendKeepAlive(ClientPtr client);
+extern void SendKeepAliveEvent(ClientPtr client);
+extern void WriteErrorToClient(ClientPtr client, fsError *error);
 
 #endif				/* _EVENTS_H_ */

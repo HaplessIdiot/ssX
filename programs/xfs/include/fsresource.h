@@ -76,17 +76,20 @@ typedef unsigned long RESTYPE;
 #define	BAD_RESOURCE		0xe0000000
 
 #ifdef NOTYET
-extern RESTYPE CreateNewResourceType();
-extern RESTYPE CreateNewResourceClass();
-extern FSID FakeClientID();
-extern pointer LookupIDByClass();
-extern void	FreeResourceByType();
-extern Bool	ChangeResourceValue();
+extern Bool ChangeResourceValue(int cid, FSID id, RESTYPE rtype, pointer value);
+extern FSID FakeClientID(int client);
+extern RESTYPE CreateNewResourceClass(void);
+extern RESTYPE CreateNewResourceType(DeleteType deleteFunc);
+extern pointer LookupIDByClass(FSID id, RESTYPE classes);
+extern void FreeResourceByType(int cid, FSID id, RESTYPE type, Bool skipFree);
 #endif /* NOTYET */
 
-extern Bool AddResource();
-extern void FreeResource();
-extern void FreeClientResources();
-extern pointer LookupIDByType();
+extern Bool AddResource(int cid, FSID id, RESTYPE type, pointer value);
+extern Bool InitClientResources(ClientPtr client);
+extern FSID FakeClientID(int client);
+extern pointer LookupIDByType(int cid, FSID id, RESTYPE rtype);
+extern void FreeAllResources(void);
+extern void FreeClientResources(ClientPtr client);
+extern void FreeResource(int cid, FSID id, RESTYPE skipDeleteFuncType);
 
 #endif				/* _RESOURCE_H_ */

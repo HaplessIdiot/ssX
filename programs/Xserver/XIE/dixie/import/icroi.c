@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley, Dean Verheiden -- AGE Logic, Inc. April 1993
 
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/import/icroi.c,v 3.1 1998/10/04 09:35:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/import/icroi.c,v 3.2 1998/10/05 13:22:07 dawes Exp $ */
 
 #define _XIEC_ICROI
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_i.h>
   /*
    *  Server XIE Includes
    */
@@ -98,14 +92,9 @@ terms and conditions:
 #include <element.h>
 
 /*
- *  routines referenced by other modules
- */
-peDefPtr	MakeICROI();
-
-/*
  *  routines internal to this module
  */
-static Bool	PrepICROI();
+static Bool PrepICROI(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie element entry points
@@ -118,10 +107,7 @@ static diElemVecRec iCROIVec =
 /*------------------------------------------------------------------------
 --------------- routine: make an import client roi element -------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeICROI(flo,tag,pe)
-	floDefPtr      flo;
-	xieTypPhototag tag;
-	xieFlo        *pe;
+peDefPtr MakeICROI(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
 	peDefPtr ped;
 	ELEMENT(xieFloImportClientROI);
@@ -151,9 +137,7 @@ peDefPtr MakeICROI(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepICROI(flo,ped)
-	floDefPtr  flo;
-	peDefPtr   ped;
+static Bool PrepICROI(floDefPtr flo, peDefPtr ped)
 {
 	inFloPtr inflo   = &ped->inFloLst[IMPORT];
 	outFloPtr outflo = &ped->outFlo;

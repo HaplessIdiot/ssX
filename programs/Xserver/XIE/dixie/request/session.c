@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc  March, 1993
 
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.9 1998/07/26 09:56:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.10 1998/10/04 09:35:54 dawes Exp $ */
 
 #define _XIEC_SESSION
 
@@ -88,11 +88,14 @@ terms and conditions:
 #include <technq.h>		/* extern def for technique_init	*/
 
 /* function declarations */
-static	int	XieDispatch(),	/* dispatcher for XIE opcodes */
-		SXieDispatch(),	/* dispatcher for swapped code */
-		DeleteXieClient(); /* Clean up routine */
-static void	XieReset();	/* reset the XIE code, eg, on reboot */
-static int	DdxInit();
+extern	int	SProcQueryImageExtension(ClientPtr client);
+extern	int	ProcQueryImageExtension(ClientPtr client);
+
+static	int	XieDispatch(ClientPtr client),
+		SXieDispatch(ClientPtr client),
+		DeleteXieClient(pointer data, XID id);
+static void	XieReset (ExtensionEntry *extEntry);
+static int	DdxInit(void);
 
 #define REPORT_MEMORY_LEAKS
 #ifdef  REPORT_MEMORY_LEAKS
@@ -117,13 +120,13 @@ RESTYPE		RT_XIE_CLIENT;		/* XIE Type for Shutdown Notice */
 
 struct _client_table {
   XID	   Shutdown_id;
-  int 	(**proc_table)();	/* Table of version specific procedures */
-  int 	(**sproc_table)();	
+  int 	(**proc_table)(ClientPtr);	/* Table of version specific procedures */
+  int 	(**sproc_table)(ClientPtr);	
   CARD16   minorVersion;
   CARD16   pad;		
 } client_table[MAXCLIENTS];
 
-void XieInit()
+void XieInit(void)
 {
   ExtensionEntry *AddExtension();
   
@@ -164,9 +167,7 @@ void XieInit()
 
 /**********************************************************************/
 /* Register client with core X under a FakeClientID */
-static int RegisterXieClient(client, minor)
-ClientPtr client;
-CARD16 minor;
+static int RegisterXieClient(ClientPtr client, CARD16 minor)
 {
     client_table[client->index].Shutdown_id  = FakeClientID(client->index);
     client_table[client->index].minorVersion = minor;
@@ -182,8 +183,8 @@ CARD16 minor;
 }
 
 /**********************************************************************/
-static int XieDispatch (client)
-     register ClientPtr	client;
+/* dispatcher for XIE opcodes */
+static int XieDispatch (ClientPtr client)
 {
   REQUEST(xieReq); 	/* make "stuff" point to client's request buffer */
   
@@ -204,8 +205,8 @@ static int XieDispatch (client)
 
 
 /**********************************************************************/
-static int SXieDispatch (client)
-     register ClientPtr	client;
+/* dispatcher for swapped code */
+static int SXieDispatch (ClientPtr client)
 {
   REQUEST(xieReq);	/* make "stuff" point to client's request buffer */
   
@@ -226,8 +227,7 @@ static int SXieDispatch (client)
 }
 
 /**********************************************************************/
-ProcQueryImageExtension(client)
-     register ClientPtr client;
+int ProcQueryImageExtension(ClientPtr client)
 {
   xieQueryImageExtensionReply reply;
   XID FakeClientID();
@@ -294,8 +294,7 @@ ProcQueryImageExtension(client)
 
 
 /**********************************************************************/
-SProcQueryImageExtension(client)
-     register ClientPtr client;
+int SProcQueryImageExtension(ClientPtr client)
 {
   REQUEST(xieQueryImageExtensionReq);
   register int n;
@@ -307,22 +306,22 @@ SProcQueryImageExtension(client)
 
 /************************************************************************/
 
-static int DdxInit() 
+static int DdxInit(void)
 {
   return Success;
 }
 
 /**********************************************************************/
-static int DeleteXieClient(data, id)
-pointer data;
-XID id;
+/* Clean up routine */
+static int DeleteXieClient(pointer data, XID id)
 {
   bzero((char *)&(client_table[CLIENT_ID(id)]), sizeof(struct _client_table));
+  return 0;
 }
 
 /**********************************************************************/
-static void XieReset (extEntry)
-     ExtensionEntry	*extEntry;
+/* reset the XIE code, eg, on reboot */
+static void XieReset (ExtensionEntry *extEntry)
 {
 #ifdef REPORT_MEMORY_LEAKS
 

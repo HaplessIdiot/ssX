@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden, AGE Logic, Inc., April 1993
 
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/roi.c,v 3.1 1998/10/04 09:35:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/roi.c,v 3.2 1998/10/05 13:22:21 dawes Exp $ */
 
 #define _XIEC_ROI
 
@@ -96,26 +96,18 @@ terms and conditions:
 #include <macro.h>
 #include <memory.h>
 #include <roi.h>
-
-/*
- *  Xie protocol proceedures called from the dispatcher
- */
-int  ProcCreateROI();
-int  ProcDestroyROI();
-int  SProcCreateROI();
-int  SProcDestroyROI();
+#include <tables.h>
 
 /*
  *  routines referenced by other modules.
  */
-int  DeleteROI();
+extern int DeleteROI(roiPtr roi, xieTypROI id);
 
 
 /*------------------------------------------------------------------------
 --------------------------- CreateROI Procedures -------------------------
 ------------------------------------------------------------------------*/
-int ProcCreateROI(client)
- ClientPtr client;
+int ProcCreateROI(ClientPtr client)
 {
   roiPtr roi;
   REQUEST(xieCreateROIReq);
@@ -139,8 +131,7 @@ int ProcCreateROI(client)
 /*------------------------------------------------------------------------
 ------------------------ DestroyROI Procedures --------------------------
 ------------------------------------------------------------------------*/
-int ProcDestroyROI(client)
- ClientPtr client;
+int ProcDestroyROI(ClientPtr client)
 {
   roiPtr roi;
   REQUEST( xieDestroyROIReq );
@@ -160,9 +151,7 @@ int ProcDestroyROI(client)
 /*------------------------------------------------------------------------
 ----------------------- deleteFunc: DeleteROI ---------------------------
 ------------------------------------------------------------------------*/
-int DeleteROI(roi, id)
- roiPtr  roi;
- xieTypROI id;
+int DeleteROI(roiPtr roi, xieTypROI id)
 {
   if( --roi->refCnt )
     return(Success);
@@ -173,8 +162,7 @@ int DeleteROI(roi, id)
   return(Success);
 }                               /* end DeleteROI */
 
-int SProcCreateROI(client)
-ClientPtr client;
+int SProcCreateROI(ClientPtr client)
 {
 	register int n;
 	REQUEST(xieCreateROIReq);
@@ -184,8 +172,7 @@ ClientPtr client;
 	return (ProcCreateROI(client));
 }                               /* end SProcCreateROI */
 
-int SProcDestroyROI(client)
-ClientPtr client;
+int SProcDestroyROI(ClientPtr client)
 {
 	register int n;
 	REQUEST( xieDestroyROIReq );

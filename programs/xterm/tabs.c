@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: tabs.c,v 1.4 91/05/06 17:12:18 gildea Exp $
- *	$XFree86: xc/programs/xterm/tabs.c,v 3.4 1997/06/29 07:54:43 dawes Exp $
+ *	$XFree86: xc/programs/xterm/tabs.c,v 3.5 1998/06/04 16:44:02 hohndel Exp $
  */
 
 /*
@@ -28,15 +28,8 @@
 
 /* tabs.c */
 
-#ifdef HAVE_CONFIG_H
-#include <xtermcfg.h>
-#endif
-
-#include "ptyx.h"
-
-#include "xterm.h"
-
-extern XtermWidget term;
+#include <xterm.h>
+#include <data.h>
 
 /*
  * This file presumes 32bits/word.  This is somewhat of a crock, and should

@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. July 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/export/echist.c,v 3.1 1998/10/04 09:35:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/echist.c,v 3.2 1998/10/05 13:22:03 dawes Exp $ */
 
 #define _XIEC_ECHIST
 
@@ -82,13 +82,8 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
+#include <dixie_e.h>
 #include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
   /*
    *  Server XIE Includes
    */
@@ -97,16 +92,10 @@ terms and conditions:
 #include <element.h>
 #include <error.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeECHistogram();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepECHistogram();
+static Bool PrepECHistogram(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -119,10 +108,7 @@ static diElemVecRec eHistogramVec = {
 /*------------------------------------------------------------------------
 -------------- routine: make an ExportClientHistogram element ------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeECHistogram(flo,tag,pe)
-floDefPtr      flo;
-xieTypPhototag tag;
-xieFlo        *pe;
+peDefPtr MakeECHistogram(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
     int inputs;
     peDefPtr ped;
@@ -169,9 +155,7 @@ xieFlo        *pe;
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepECHistogram(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepECHistogram(floDefPtr flo, peDefPtr ped)
 {
   xieFloExportClientHistogram *raw = 
     			(xieFloExportClientHistogram *)ped->elemRaw;

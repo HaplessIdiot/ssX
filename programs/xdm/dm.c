@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.6 1998/10/04 09:40:54 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.7 1998/10/10 15:25:32 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -415,10 +415,11 @@ WaitForChild (void)
     sigaddset(&mask, SIGCHLD);
     sigaddset(&mask, SIGHUP);
     sigprocmask(SIG_BLOCK, &mask, &omask);
+    Debug ("signals blocked\n");
 #else
     omask = sigblock (sigmask (SIGCHLD) | sigmask (SIGHUP));
+    Debug ("signals blocked, mask was 0x%x\n", omask);
 #endif
-    Debug ("signals blocked, mask was 0x%x\n", (unsigned int) omask);
     if (!ChildReady && !Rescan)
 #ifndef X_NOT_POSIX
 	sigsuspend(&omask);

@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. August 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/export/ecroi.c,v 3.1 1998/10/04 09:35:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/ecroi.c,v 3.2 1998/10/05 13:22:04 dawes Exp $ */
 
 #define _XIEC_ECROI
 
@@ -82,13 +82,8 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
+#include <dixie_e.h>
 #include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
   /*
    *  Server XIE Includes
    */
@@ -98,16 +93,10 @@ terms and conditions:
 #include <roi.h>
 #include <error.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeECROI();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepECROI();
+static Bool PrepECROI(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -120,10 +109,7 @@ static diElemVecRec eROIVec = {
 /*------------------------------------------------------------------------
 ----------------- routine: make an ExportClientROI element ----------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeECROI(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeECROI(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   inFloPtr inFlo;
@@ -162,9 +148,7 @@ peDefPtr MakeECROI(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepECROI(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepECROI(floDefPtr flo, peDefPtr ped)
 {
   xieFloExportClientROI *raw = (xieFloExportClientROI *)ped->elemRaw;
   inFloPtr inf   = &ped->inFloLst[SRCtag];

@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/import/ilut.c,v 3.1 1998/10/04 09:35:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/import/ilut.c,v 3.2 1998/10/05 13:22:08 dawes Exp $ */
 
 #define _XIEC_ILUT
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_i.h>
   /*
    *  Server XIE Includes
    */
@@ -98,17 +92,11 @@ terms and conditions:
 #include <lut.h>
 #include <element.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeILUT();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepILUT();
-static Bool	DebriefILUT();
+static Bool PrepILUT(floDefPtr flo, peDefPtr ped);
+static Bool DebriefILUT(floDefPtr flo, peDefPtr ped, Bool ok);
 
 /*
  * dixie entry points
@@ -122,10 +110,7 @@ static diElemVecRec iLUTVec = {
 /*------------------------------------------------------------------------
 ----------------- routine: make an import lut element ---------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeILUT(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeILUT(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   ELEMENT(xieFloImportLUT);
@@ -157,9 +142,7 @@ peDefPtr MakeILUT(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepILUT(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepILUT(floDefPtr flo, peDefPtr ped)
 {
   xieFloImportLUT *raw = (xieFloImportLUT *)ped->elemRaw;
   iLUTDefPtr	pvt = (iLUTDefPtr) ped->elemPvt;
@@ -202,10 +185,7 @@ static Bool PrepILUT(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------- routine: post execution cleanup -------------------
 ------------------------------------------------------------------------*/
-static Bool DebriefILUT(flo,ped,ok)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     Bool	ok;
+static Bool DebriefILUT(floDefPtr flo, peDefPtr ped, Bool ok)
 {
   xieFloImportLUT *raw = (xieFloImportLUT *)ped->elemRaw;
   iLUTDefPtr pvt = (iLUTDefPtr) ped->elemPvt;

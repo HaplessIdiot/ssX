@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)config.c,v 4.6 1991/07/09 14:08:09 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/config.c,v 3.4 1998/03/20 19:08:15 hohndel Exp $ */
+/* $XFree86: xc/programs/xfs/os/config.c,v 3.5 1998/10/04 09:41:12 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -56,15 +56,15 @@ in this Software without prior written authorization from The Open Group.
 
 static char *font_catalogue = NULL;
 
-static char *config_set_int(),
-           *config_set_bool(),
-           *config_set_catalogue(),
-           *config_set_glyph_caching_mode(),
-           *config_set_list(),
-           *config_set_file(),
-           *config_set_resolutions(),
-           *config_set_ignored_transports(),
-	   *config_set_snf_format();
+static char *config_set_int(ConfigOptionPtr parm, char *val);
+static char *config_set_bool(ConfigOptionPtr parm, char *val);
+static char *config_set_catalogue(ConfigOptionPtr parm, char *val);
+static char *config_set_glyph_caching_mode(ConfigOptionPtr parm, char *val);
+static char *config_set_list(ConfigOptionPtr parm, char *val);
+static char *config_set_file(ConfigOptionPtr parm, char *val);
+static char *config_set_resolutions(ConfigOptionPtr parm, char *val);
+static char *config_set_ignored_transports(ConfigOptionPtr parm, char *val);
+static char *config_set_snf_format(ConfigOptionPtr parm, char *val);
 
 /* these need to be in lower case and alphabetical order so a
  * binary search lookup can be used
@@ -111,8 +111,7 @@ char       *ConfigErrors[] = {
 						*(c)++= ' ';
 
 static char *
-next_assign(c)
-    char       *c;
+next_assign(char *c)
 {
     int         nesting = 0;
 
@@ -129,8 +128,7 @@ next_assign(c)
 }
 
 static void
-strip_comments(data)
-    char       *data;
+strip_comments(char *data)
 {
     char       *c;
 
@@ -144,9 +142,8 @@ strip_comments(data)
     }
 }
 
-static      ConfigOptionPtr
-match_param_name(name)
-    char       *name;
+static ConfigOptionPtr
+match_param_name(char *name)
 {
     int         pos,
                 rc,
@@ -172,8 +169,7 @@ match_param_name(name)
 }
 
 static int
-parse_config(data)
-    char       *data;
+parse_config(char *data)
 {
     char       *c,
                *val,
@@ -265,7 +261,7 @@ parse_config(data)
  * handles anything that should be set once the file is parsed
  */
 void
-SetConfigValues()
+SetConfigValues(void)
 {
     int         err,
                 num;
@@ -301,8 +297,7 @@ char *__XFSRedirRoot(char *fname)
 #endif
 
 int
-ReadConfigFile(filename)
-    char       *filename;
+ReadConfigFile(char *filename)
 {
     FILE       *fp;
     int         ret;
@@ -349,11 +344,11 @@ struct nameVal {
 };
 
 static char *
-config_parse_nameVal (c, ret, pval, name_val)
-    char       *c;
-    int        *ret;
-    int		*pval;
-    struct nameVal   *name_val;
+config_parse_nameVal (
+    char       *c,
+    int        *ret,
+    int		*pval,
+    struct nameVal   *name_val)
 {
     char       *start,
                 t;
@@ -381,30 +376,30 @@ config_parse_nameVal (c, ret, pval, name_val)
 }
 
 static char *
-config_parse_bool (c, ret, pval)
-    char	*c;
-    int		*ret;
-    Bool	*pval;
+config_parse_bool (
+    char	*c,
+    int		*ret,
+    Bool	*pval)
 {
     static struct nameVal bool_val[] = {
-    	    "yes", TRUE,
-    	    "on", TRUE,
-    	    "1", TRUE,
-    	    "true", TRUE,
-    	    "no", FALSE,
-    	    "off", FALSE,
-    	    "0", FALSE,
-    	    "false", FALSE,
-    	    (char *) 0, 0,
+    	    { "yes",   TRUE },
+    	    { "on",    TRUE },
+    	    { "1",     TRUE },
+    	    { "true",  TRUE },
+    	    { "no",    FALSE },
+    	    { "off",   FALSE },
+    	    { "0",     FALSE },
+    	    { "false", FALSE },
+    	    { (char *) 0, 0 },
     };
     return config_parse_nameVal (c, ret, pval, bool_val);
 }
 
 static char *
-config_parse_int(c, ret, pval)
-    char       *c;
-    int        *ret;
-    int        *pval;
+config_parse_int(
+    char       *c,
+    int        *ret,
+    int        *pval)
 {
     char       *start,
                 t;
@@ -434,9 +429,9 @@ config_parse_int(c, ret, pval)
 /* config option sets */
 /* these have to know how to do the real work and tweak the proper things */
 static char *
-config_set_int(parm, val)
-    ConfigOptionPtr parm;
-    char       *val;
+config_set_int(
+    ConfigOptionPtr parm,
+    char       *val)
 {
     int         ival,
                 ret;
@@ -459,9 +454,9 @@ config_set_int(parm, val)
 }
 
 static char *
-config_set_bool(parm, val)
-    ConfigOptionPtr parm;
-    char       *val;
+config_set_bool(
+    ConfigOptionPtr parm,
+    char       *val)
 {
     int
                 ret;
@@ -484,9 +479,9 @@ config_set_bool(parm, val)
 }
 
 static char *
-config_set_file(parm, val)
-    ConfigOptionPtr parm;
-    char       *val;
+config_set_file(
+    ConfigOptionPtr parm,
+    char       *val)
 {
     extern char ErrorFile[];
     char       *start = val,
@@ -507,9 +502,9 @@ config_set_file(parm, val)
 }
 
 static char *
-config_set_catalogue(parm, val)
-    ConfigOptionPtr parm;
-    char       *val;
+config_set_catalogue(
+    ConfigOptionPtr parm,
+    char       *val)
 {
     char       *b;
 
@@ -531,9 +526,9 @@ config_set_catalogue(parm, val)
 }
 
 static char *
-config_set_list(parm, val)
-    ConfigOptionPtr parm;
-    char       *val;
+config_set_list(
+    ConfigOptionPtr parm,
+    char       *val)
 {
     char       *start = val,
                 t;
@@ -549,9 +544,9 @@ config_set_list(parm, val)
 }
 
 static char *
-config_set_ignored_transports(parm, val)
-    ConfigOptionPtr parm;
-    char       *val;
+config_set_ignored_transports(
+    ConfigOptionPtr parm,
+    char       *val)
 {
     char       *start = val,
                 t;
@@ -565,9 +560,9 @@ config_set_ignored_transports(parm, val)
 }
 
 static char *
-config_set_glyph_caching_mode(parm, val)
-    ConfigOptionPtr parm;
-    char       *val;
+config_set_glyph_caching_mode(
+    ConfigOptionPtr parm,
+    char       *val)
 {
     char       *start = val,
                 t;
@@ -583,9 +578,9 @@ config_set_glyph_caching_mode(parm, val)
 }
 
 static char *
-config_set_resolutions(parm, val)
-    ConfigOptionPtr parm;
-    char       *val;
+config_set_resolutions(
+    ConfigOptionPtr parm,
+    char       *val)
 {
     char       *start = val,
                 t;
@@ -606,28 +601,28 @@ config_set_resolutions(parm, val)
 
 
 static char *
-config_parse_endian(c, ret, pval)
-    char       *c;
-    int        *ret;
-    int		*pval;
+config_parse_endian(
+    char       *c,
+    int        *ret,
+    int		*pval)
 {
     static struct nameVal endian_val[] = {
-	"lsb",	LSBFirst,
-	"little",   LSBFirst,
-	"lsbfirst", LSBFirst,
-	"msb",	    MSBFirst,
-	"big",	    MSBFirst,
-	"msbfirst", MSBFirst,
-	(char *) 0, 0,
+	{ "lsb",      LSBFirst },
+	{ "little",   LSBFirst },
+	{ "lsbfirst", LSBFirst },
+	{ "msb",      MSBFirst },
+	{ "big",      MSBFirst },
+	{ "msbfirst", MSBFirst },
+	{ (char *) 0, 0 },
     };
     return config_parse_nameVal (c, ret, pval, endian_val);
 }
 
 /* ARGSUSED */
 static char *
-config_set_snf_format (parm, val)
-    ConfigOptionPtr parm;
-    char	    *val;
+config_set_snf_format (
+    ConfigOptionPtr parm,
+    char	    *val)
 {
     int	    bit, byte, glyph, scan;
     int	    ret;
@@ -650,4 +645,3 @@ config_set_snf_format (parm, val)
     SnfSetFormat (bit, byte, glyph, scan);
     return val;
 }
-

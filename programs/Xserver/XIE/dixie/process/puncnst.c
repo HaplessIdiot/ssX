@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. May 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/puncnst.c,v 3.1 1998/10/04 09:35:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/puncnst.c,v 3.2 1998/10/05 13:22:15 dawes Exp $ */
 
 #define _XIEC_PUNCNST
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -96,16 +90,10 @@ terms and conditions:
 #include <macro.h>
 #include <element.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeUnconstrain();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepUnconstrain();
+static Bool PrepUnconstrain(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -118,10 +106,7 @@ static diElemVecRec pUnconstrainVec = {
 /*------------------------------------------------------------------------
 ----------------------- routine: make an unconstrain element -------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeUnconstrain(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeUnconstrain(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   inFloPtr inFlo;
@@ -159,9 +144,7 @@ peDefPtr MakeUnconstrain(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepUnconstrain(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepUnconstrain(floDefPtr flo, peDefPtr ped)
 {
   inFloPtr  inf = &ped->inFloLst[SRCtag];
   outFloPtr src = &inf->srcDef->outFlo;

@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcfromi.c,v 3.1 1998/10/04 09:35:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcfromi.c,v 3.2 1998/10/05 13:22:11 dawes Exp $ */
 
 #define _XIEC_PCFROMI
 #define _XIEC_PCI
@@ -83,13 +83,10 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
+#include <dixie_p.h>
   /*
    *  more X server includes.
    */
-#include <misc.h>
-#include <dixstruct.h>
 #include <scrnintstr.h>
 #include <colormapst.h>
   /*
@@ -100,14 +97,9 @@ terms and conditions:
 #include <macro.h>
 #include <element.h>
 
-
-/* routines referenced by other modules.
- */
-peDefPtr	MakeConvertFromIndex();
-
 /* routines internal to this module
  */
-static Bool	PrepConvertFromIndex();
+static Bool PrepConvertFromIndex(floDefPtr flo, peDefPtr ped);
 
 /* dixie entry points
  */
@@ -119,10 +111,7 @@ static diElemVecRec pCfromIVec = {
 /*------------------------------------------------------------------------
 ----------------- routine: make an ConvertFromIndex element ----------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeConvertFromIndex(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeConvertFromIndex(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   inFloPtr inFlo;
@@ -163,9 +152,7 @@ peDefPtr MakeConvertFromIndex(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepConvertFromIndex(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepConvertFromIndex(floDefPtr flo, peDefPtr ped)
 {
   xieFloConvertFromIndex *raw = (xieFloConvertFromIndex *)ped->elemRaw;
   pCfromIDefPtr pvt = (pCfromIDefPtr) ped->elemPvt;
@@ -176,8 +163,8 @@ static Bool PrepConvertFromIndex(flo,ped)
 
   /* check client parameters
    */
-  if(raw->class != xieValSingleBand &&
-     raw->class != xieValTripleBand ||
+  if((raw->class != xieValSingleBand &&
+      raw->class != xieValTripleBand) ||
      raw->precision < 1 || raw->precision > 16)
     ValueError(flo,ped,raw->precision, return(FALSE));
 

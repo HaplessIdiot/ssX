@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.54 1998/10/05 13:23:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.55 1998/10/11 10:20:30 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -94,6 +94,8 @@
 #include "mga_bios.h"
 #include "mga_reg.h"
 #include "mga.h"
+#include "mga_macros.h"
+
 #include "xaa.h"
 #include "xf86_8plus24.h"
 
@@ -629,11 +631,46 @@ MGAReadBios(ScrnInfoPtr pScrn)
 }
 
 /*
+ * MGASoftReset --
+ *
+ * Resets drawing engine
+ */
+static void
+MGASoftReset(ScrnInfoPtr pScrn)
+{
+	MGAPtr pMga = MGAPTR(pScrn);
+	int i;
+
+	pMga->FbMapSize = 8192 * 1024;
+	MGAMapMem(pScrn);
+
+	/* set soft reset bit */
+	OUTREG(MGAREG_Reset, 1);
+	usleep(200);
+	OUTREG(MGAREG_Reset, 0);
+
+	/* reset memory */
+	OUTREG(MGAREG_MACCESS, 1<<15);
+	usleep(10);
+
+	/* wait until drawing engine is ready */
+	while ( MGAISBUSY() )
+	    usleep(1000);
+		
+	/* flush FIFO */	
+	i = 32;
+	WAITFIFO(i);
+	while ( i-- )
+	    OUTREG(MGAREG_SHIFT, 0);
+
+	MGAUnmapMem(pScrn);
+}
+
+/*
  * MGACountRAM --
  *
  * Counts amount of installed RAM 
  */
-
 static int
 MGACountRam(ScrnInfoPtr pScrn)
 {
@@ -1090,6 +1127,12 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     /* HW bpp matches reported bpp */
     pMga->HwBpp = pScrn->bitsPerPixel;
 
+    /*
+     * Reset card if it isn't primary one
+     */
+    if (!xf86IsPrimaryPci(pMga->PciInfo))
+        MGASoftReset(pScrn);
+         
     /*
      * If the user has specified the amount of memory in the XF86Config
      * file, we respect that setting.
@@ -1607,7 +1650,10 @@ MGARestore(ScrnInfoPtr pScrn)
 
     /* Only restore text mode fonts/text for the primary card */
     vgaHWProtect(pScrn, TRUE);
-    (*pMga->Restore)(pScrn, vgaReg, mgaReg, xf86IsPrimaryPci(pMga->PciInfo));
+    if (xf86IsPrimaryPci(pMga->PciInfo))
+        (*pMga->Restore)(pScrn, vgaReg, mgaReg, TRUE);
+    else
+        vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
     vgaHWProtect(pScrn, FALSE);
 
     xf86DelControlledResource(&pScrn->Access, FALSE);

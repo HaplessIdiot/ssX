@@ -66,9 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. May, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/flo.c,v 3.2 1998/10/04 09:35:51 dawes Exp $ */
-
-#define _XIEC_FLO
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/flo.c,v 3.3 1998/10/05 13:22:19 dawes Exp $ */
 
 /*
  *  Include files
@@ -103,33 +101,20 @@ terms and conditions:
  */
 #include <memory.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-floDefPtr MakeFlo();
-Bool      EditFlo();
-void	  PrepFlo();
-floDefPtr FreeFlo();
-peDefPtr  MakePEDef();
-peDefPtr  FreePEDef();
-void      SendClientData();
-Bool      UpdateFormatfromLevels();
-
 /*
  *  routines used internal to this module
  */
-static void   DAGonize();
-static Bool   InputsOK();
+static void   DAGonize(floDefPtr flo, peDefPtr ped);
+static Bool   InputsOK(peDefPtr old, peDefPtr new);
 
 
 /*------------------------------------------------------------------------
 ----------------------------- routine: MakeFlo ---------------------------
 ------------------------------------------------------------------------*/
-floDefPtr MakeFlo(client,peCnt,peLst)
-     ClientPtr  client;
-     CARD16     peCnt;
-     xieFlo    *peLst;
+floDefPtr MakeFlo(
+     ClientPtr  client,
+     CARD16     peCnt,
+     xieFlo    *peLst)
 {
   xieTypPhototag tag;
   xieFlo    *pe;
@@ -180,11 +165,11 @@ floDefPtr MakeFlo(client,peCnt,peLst)
 /*------------------------------------------------------------------------
 ----------------------------- routine: EditFlo ---------------------------
 ------------------------------------------------------------------------*/
-Bool EditFlo(flo,start,end,peLst)
-     floDefPtr      flo;
-     xieTypPhototag start;
-     xieTypPhototag end;
-     xieFlo        *peLst;
+Bool EditFlo(
+     floDefPtr      flo,
+     xieTypPhototag start,
+     xieTypPhototag end,
+     xieFlo        *peLst)
 {
   xieTypPhototag tag;
   pointer ptr;
@@ -203,7 +188,7 @@ Bool EditFlo(flo,start,end,peLst)
 
     if( pe->elemType <= xieMaxElem ) {
       /* make a temporary peDef to hold the new client parameters    */
-      if(tmp = MakeElement(flo, tag, pe))
+      if ((tmp = MakeElement(flo, tag, pe)) != 0) {
         if(InputsOK(old,tmp)) {
           /* swap the new parameter pointers into the existing peDef */
           SwapPtr(old->elemRaw,tmp->elemRaw,ptr);
@@ -217,8 +202,9 @@ Bool EditFlo(flo,start,end,peLst)
 	  FreePEDef(tmp);
 	  SourceError(flo,old, return(FALSE));
 	}
-      else
+      } else {
         return(FALSE);
+      }
       pe = (xieFlo *)((CARD32 *)pe + pe->elemLength);
     } else
       FloElementError(flo,tag,pe->elemType, return(FALSE));
@@ -230,8 +216,7 @@ Bool EditFlo(flo,start,end,peLst)
 /*------------------------------------------------------------------------
 ----------------------------- routine: PrepFlo ---------------------------
 ------------------------------------------------------------------------*/
-void PrepFlo(flo)
-     floDefPtr flo; 
+void PrepFlo(floDefPtr flo)
 {
   peDefPtr  ped;
   pedLstPtr lst = ListEmpty(&flo->optDAG) ? &flo->defDAG : &flo->optDAG;
@@ -253,8 +238,7 @@ void PrepFlo(flo)
 /*------------------------------------------------------------------------
 ----------------------------- routine: FreeFlo ---------------------------
 ------------------------------------------------------------------------*/
-floDefPtr FreeFlo(flo)
-     floDefPtr flo;
+floDefPtr FreeFlo(floDefPtr flo)
 {
   peDefPtr ped;
   xieTypPhototag tag;
@@ -278,10 +262,10 @@ floDefPtr FreeFlo(flo)
 /*------------------------------------------------------------------------
 ---- routine: Alloc a peDef and DIXIE parameter storage for an element ---
 ------------------------------------------------------------------------*/
-peDefPtr MakePEDef(inFloCnt, rawLen, pvtLen)
-     CARD32 inFloCnt;
-     CARD32 rawLen;
-     CARD32 pvtLen;
+peDefPtr MakePEDef(
+     CARD32 inFloCnt,
+     CARD32 rawLen,
+     CARD32 pvtLen)
 {
   int i, b;
   inFloPtr inf;
@@ -294,7 +278,7 @@ peDefPtr MakePEDef(inFloCnt, rawLen, pvtLen)
 
     /* alloc whatever private space this element needs for dixie info */
     if(pvtLen)
-      if(ped->elemPvt = (pointer)XieCalloc(pvtLen))
+      if ((ped->elemPvt = (pointer)XieCalloc(pvtLen)) != 0)
 	*(CARD32 *)ped->elemPvt = pvtLen;
       else
 	ped = FreePEDef(ped);
@@ -321,8 +305,7 @@ peDefPtr MakePEDef(inFloCnt, rawLen, pvtLen)
 /*------------------------------------------------------------------------
 ---------------------------- routine: FreePEDef --------------------------
 ------------------------------------------------------------------------*/
-peDefPtr FreePEDef(ped)
-     peDefPtr ped;
+peDefPtr FreePEDef(peDefPtr ped)
 {
   int b;
 
@@ -349,13 +332,13 @@ peDefPtr FreePEDef(ped)
 /*------------------------------------------------------------------------
 ----------------------------- Send Client Data ---------------------------
 ------------------------------------------------------------------------*/
-void SendClientData(flo,ped,data,bytes,swapUnits,state)
-  floDefPtr flo;
-  peDefPtr  ped;
-  CARD8   *data;
-  CARD32  bytes;
-  CARD8   swapUnits;
-  CARD8   state;
+void SendClientData(
+  floDefPtr flo,
+  peDefPtr  ped,
+  CARD8   *data,
+  CARD32  bytes,
+  CARD8   swapUnits,
+  CARD8   state)
 {
   xieGetClientDataReply rep;
   
@@ -365,7 +348,7 @@ void SendClientData(flo,ped,data,bytes,swapUnits,state)
   rep.newState    = state;
   rep.type        = X_Reply;
   rep.sequenceNum = flo->reqClient->sequence;
-  rep.length      = bytes+3>>2;
+  rep.length      = (bytes + 3) >> 2;
   rep.byteCount   = bytes;
   
   if( flo->reqClient->swapped ) {      
@@ -400,8 +383,7 @@ void SendClientData(flo,ped,data,bytes,swapUnits,state)
 /*------------------------------------------------------------------------
 ------- Based on levels, updata the passed in peDef's outFlo format-------
 ------------------------------------------------------------------------*/
-Bool	UpdateFormatfromLevels(ped)
-     peDefPtr   ped;
+Bool UpdateFormatfromLevels(peDefPtr ped)
 {
   int i,bits;
   
@@ -440,9 +422,7 @@ Bool	UpdateFormatfromLevels(ped)
  *   - an element with fully connected inputs is found                    *
  *   - an error is encountered (phototag out of range, or loop detected)  *
  *------------------------------------------------------------------------*/
-static void DAGonize(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static void DAGonize(floDefPtr flo, peDefPtr ped)
 {
   int  in, tag;
   peDefPtr src;
@@ -489,8 +469,7 @@ static void DAGonize(flo,ped)
 /*------------------------------------------------------------------------
 -------------- compare input connections between two peDefs --------------
 ------------------------------------------------------------------------*/
-static Bool InputsOK(old,new)
-     peDefPtr old, new;
+static Bool InputsOK(peDefPtr old, peDefPtr new)
 {
   inFloPtr oldin = old->inFloLst, newin = old->inFloLst;
   int i;

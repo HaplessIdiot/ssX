@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. August, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/meroi.c,v 3.2 1998/10/04 09:36:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/meroi.c,v 3.3 1998/10/05 13:22:32 dawes Exp $ */
 
 #define _XIEC_MEROI
 
@@ -97,19 +97,13 @@ terms and conditions:
 #include <texstr.h>
 #include <memory.h>
 
-
-/*
- *  routines referenced by other DDXIE modules
- */
-int	miAnalyzeEROI();
-
 /*
  *  routines used internal to this module
  */
-static int CreateEROI();
-static int InitializeEROI();
-static int ResetEROI();
-static int DestroyEROI();
+static int CreateEROI(floDefPtr flo, peDefPtr ped);
+static int InitializeEROI(floDefPtr flo, peDefPtr ped);
+static int ResetEROI(floDefPtr flo, peDefPtr ped);
+static int DestroyEROI(floDefPtr flo, peDefPtr ped);
 
 /*
  * DDXIE ImportROI entry points
@@ -128,9 +122,7 @@ static ddElemVecRec meROIVec =
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
 ------------------------------------------------------------------------*/
-int miAnalyzeEROI(flo,ped)
-	floDefPtr flo;
-	peDefPtr  ped;
+int miAnalyzeEROI(floDefPtr flo, peDefPtr ped)
 {
 	/* for now just stash our entry point vector in the peDef */
 	ped->ddVec = meROIVec;
@@ -141,9 +133,7 @@ int miAnalyzeEROI(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-static int CreateEROI(flo,ped)
-	floDefPtr flo;
-	peDefPtr  ped;
+static int CreateEROI(floDefPtr flo, peDefPtr ped)
 {
 	/* attach an execution context to the roi element definition */
 	return MakePETex(flo,ped,NO_PRIVATE,NO_SYNC,NO_SYNC);
@@ -153,9 +143,7 @@ static int CreateEROI(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeEROI(flo,ped)
-	floDefPtr flo;
-	peDefPtr  ped;
+static int InitializeEROI(floDefPtr flo, peDefPtr ped)
 {
  /* Allows data manager to bypass element entirely */
   return(InitReceptor(flo, ped, ped->peTex->receptor, NO_DATAMAP, 1, NO_BANDS, 
@@ -167,9 +155,7 @@ static int InitializeEROI(flo,ped)
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
-static int ResetEROI(flo,ped)
-	floDefPtr flo;
-	peDefPtr  ped;
+static int ResetEROI(floDefPtr flo, peDefPtr ped)
 {
 	ResetReceptors(ped);
 	return TRUE;
@@ -179,9 +165,7 @@ static int ResetEROI(flo,ped)
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-static int DestroyEROI(flo,ped)
-	floDefPtr flo;
-	peDefPtr  ped;
+static int DestroyEROI(floDefPtr flo, peDefPtr ped)
 {
 	/* get rid of the peTex structure  */
 	ped->peTex = (peTexPtr) XieFree(ped->peTex);

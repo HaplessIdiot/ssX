@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/parith.c,v 3.1 1998/10/04 09:35:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/parith.c,v 3.2 1998/10/05 13:22:10 dawes Exp $ */
 
 #define _XIEC_PARITH
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -97,16 +91,10 @@ terms and conditions:
 #include <element.h>
 #include <difloat.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeArith();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepArith();
+static Bool PrepArith(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -119,10 +107,7 @@ static diElemVecRec pArithVec = {
 /*------------------------------------------------------------------------
 ----------------------- routine: make a arithmetic element --------------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeArith(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeArith(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   int inputs;
   peDefPtr ped;
@@ -185,9 +170,7 @@ peDefPtr MakeArith(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepArith(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepArith(floDefPtr flo, peDefPtr ped)
 {
   xieFloArithmetic *raw = (xieFloArithmetic *)ped->elemRaw;
   inFloPtr  ind, in2, in1 = &ped->inFloLst[SRCt1];
@@ -211,8 +194,8 @@ static Bool PrepArith(flo,ped)
     for (b = 0; b < sr1->bands; b++) {
 	if ((bmask & (1<<b)) == 0) continue;
 	if (sr1->format[b].class != sr2->format[b].class ||
-	    IsConstrained(sr1->format[b].class) && 
-	    sr1->format[b].levels != sr2->format[b].levels)
+	    (IsConstrained(sr1->format[b].class) && 
+	     sr1->format[b].levels != sr2->format[b].levels))
 	    MatchError(flo,ped, return(FALSE));
     }
     in2->bands = sr2->bands;

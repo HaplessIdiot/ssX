@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. June, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/melut.c,v 3.2 1998/10/04 09:36:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/melut.c,v 3.3 1998/10/05 13:22:31 dawes Exp $ */
 
 #define _XIEC_MELUT
 #define _XIEC_ELUT
@@ -103,18 +103,13 @@ terms and conditions:
 #include <memory.h>
 
 /*
- *  routines referenced by other DDXIE modules
- */
-int	miAnalyzeELUT();
-
-/*
  *  routines used internal to this module
  */
-static int CreateELUT();
-static int InitializeELUT();
-static int ActivateELUT();
-static int ResetELUT();
-static int DestroyELUT();
+static int CreateELUT(floDefPtr flo, peDefPtr ped);
+static int InitializeELUT(floDefPtr flo, peDefPtr ped);
+static int ActivateELUT(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+static int ResetELUT(floDefPtr flo, peDefPtr ped);
+static int DestroyELUT(floDefPtr flo, peDefPtr ped);
 
 /*
  * DDXIE ExportLUT entry points
@@ -132,9 +127,7 @@ static ddElemVecRec ELUTVec = {
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
 ------------------------------------------------------------------------*/
-int miAnalyzeELUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int miAnalyzeELUT(floDefPtr flo, peDefPtr ped)
 {
   /* for now just stash our entry point vector in the peDef */
   ped->ddVec = ELUTVec;
@@ -145,9 +138,7 @@ int miAnalyzeELUT(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-static int CreateELUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int CreateELUT(floDefPtr flo, peDefPtr ped)
 {
   /* attach an execution context to the lut element definition */
   return(MakePETex(flo, ped, NO_PRIVATE, NO_SYNC, NO_SYNC));
@@ -156,9 +147,7 @@ static int CreateELUT(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeELUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int InitializeELUT(floDefPtr flo, peDefPtr ped)
 {
   return InitReceptors(flo,ped,NO_DATAMAP,1) &&
 	 InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
@@ -167,10 +156,7 @@ static int InitializeELUT(flo,ped)
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateELUT(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateELUT(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   receptorPtr  rcp =  pet->receptor;
   CARD32     bands =  rcp->inFlo->bands;
@@ -200,9 +186,7 @@ static int ActivateELUT(flo,ped,pet)
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
-static int ResetELUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int ResetELUT(floDefPtr flo, peDefPtr ped)
 {
   ResetReceptors(ped);
   ResetEmitter(ped);
@@ -213,9 +197,7 @@ static int ResetELUT(flo,ped)
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-static int DestroyELUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int DestroyELUT(floDefPtr flo, peDefPtr ped)
 {
   /* get rid of the peTex structure  */
   ped->peTex = (peTexPtr) XieFree(ped->peTex);

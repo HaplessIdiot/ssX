@@ -1,5 +1,5 @@
 /* $XConsortium: font.h /main/14 1996/09/28 16:32:33 rws $ */
-/* $XFree86: xc/include/fonts/font.h,v 3.1 1996/12/23 05:58:38 dawes Exp $ */
+/* $XFree86: xc/include/fonts/font.h,v 3.2 1997/01/14 22:13:06 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -99,33 +99,27 @@ typedef int DrawDirection;
 #define DEFAULT_GLYPH_CACHING_MODE CACHING_OFF
 extern int glyphCachingMode;
 
+struct _Client;
+
 extern int StartListFontsWithInfo(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/,
+    struct _Client * /*client*/,
     int /*length*/,
     unsigned char */*pattern*/,
     int /*max_names*/
-#endif
 );
 
 extern FontNamesPtr MakeFontNamesRecord(
-#if NeedFunctionPrototypes
     unsigned /* size */
-#endif
 );
 
 extern void FreeFontNames(
-#if NeedFunctionPrototypes
     FontNamesPtr /* pFN*/
-#endif
 );
 
 extern int  AddFontNamesName(
-#if NeedFunctionPrototypes
     FontNamesPtr /* names */,
     char * /* name */,
     int /* length */
-#endif
 );
 
 #if 0 /* unused */
@@ -136,50 +130,36 @@ extern FontResolutionPtr GetClientResolution();
 typedef struct _FontPatternCache    *FontPatternCachePtr;
 
 extern FontPatternCachePtr  MakeFontPatternCache (
-#if NeedFunctionPrototypes
     void
-#endif
 );
 
 extern void		    FreeFontPatternCache (
-#if NeedFunctionPrototypes
     FontPatternCachePtr /* cache */
-#endif
 );
 
 extern void		    EmptyFontPatternCache (
-#if NeedFunctionPrototypes
     FontPatternCachePtr /* cache */
-#endif
 );
 
 extern void		    CacheFontPattern (
-#if NeedFunctionPrototypes
     FontPatternCachePtr /* cache */,
     char * /* pattern */,
     int /* patlen */,
     FontPtr /* pFont */
-#endif
 );
 extern FontResolutionPtr GetClientResolutions(
-#if NeedFunctionPrototypes
     int * /* num */
-#endif
 );
 
 extern FontPtr		    FindCachedFontPattern (
-#if NeedFunctionPrototypes
     FontPatternCachePtr /* cache */,
     char * /* pattern */,
     int /* patlen */
-#endif
 );
 
 extern void		    RemoveCachedFontPattern (
-#if NeedFunctionPrototypes
     FontPatternCachePtr /* cache */,
     FontPtr /* pFont */
-#endif
 );
 
 typedef enum {

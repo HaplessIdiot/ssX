@@ -67,7 +67,7 @@ terms and conditions:
 	Ben Fahy -- AGE Logic, Inc. Oct, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mefax.c,v 3.2 1998/10/04 09:36:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mefax.c,v 3.3 1998/10/05 13:22:30 dawes Exp $ */
 
 #define _XIEC_MEPHOTO
 #define _XIEC_EPHOTO
@@ -107,26 +107,18 @@ terms and conditions:
 /*
  *  routines referenced by other DDXIE modules
  */
-int CreateEPhotoFAX();
-int InitializeEPhotoFAX();
-int ActivateEPhotoFAX();
-int ResetEPhotoFAX();
-int DestroyEPhotoFAX();
-
-int InitializeECPhotoFAX();
+extern int CreateEPhotoFAX(floDefPtr flo, peDefPtr ped);
+extern int InitializeEPhotoFAX(floDefPtr flo, peDefPtr ped);
+extern int ActivateEPhotoFAX(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+extern int ResetEPhotoFAX(floDefPtr flo, peDefPtr ped);
+extern int DestroyEPhotoFAX(floDefPtr flo, peDefPtr ped);
+extern int InitializeECPhotoFAX(floDefPtr flo, peDefPtr ped);
 
 /* ECPhoto Create routines are shared */
 /* ECPhoto Activate routines are shared */
 /* ECPhoto Reset    routines are shared */
 /* ECPhoto Destroy routines are shared */
 
-/*
- *  routines used internal to this module
- */
-
-static int 	common_init();
-static int 	sub_fun();
-static void 	FreeFaxData();
 /*
  * Local Declarations
  */
@@ -157,12 +149,31 @@ typedef struct _fax_encode_pvt {
 		}							\
 	 }
 
+/*
+ *  routines used internal to this module
+ */
+
+static int 	common_init(
+     floDefPtr flo,
+     peDefPtr  ped,
+     char *tec,
+     CARD16 encodeTechnique);
+
+static int 	sub_fun(
+     floDefPtr flo,
+     peDefPtr  ped,
+     peTexPtr  pet,
+     faxPvtPtr texpvt,
+     FaxEncodeState *state,
+     bandPtr     sbnd,
+     bandPtr     dbnd);
+
+static void FreeFaxData(floDefPtr flo, peDefPtr ped);
+
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-int CreateEPhotoFAX(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int CreateEPhotoFAX(floDefPtr flo, peDefPtr ped)
 {
   /* attach an execution context to the photo element definition */
   return(MakePETex(flo, ped, sizeof(faxPvtRec), NO_SYNC, NO_SYNC));
@@ -170,9 +181,7 @@ int CreateEPhotoFAX(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-int InitializeEPhotoFAX(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int InitializeEPhotoFAX(floDefPtr flo, peDefPtr ped)
 {
   ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
 
@@ -181,9 +190,7 @@ int InitializeEPhotoFAX(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-int InitializeECPhotoFAX(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int InitializeECPhotoFAX(floDefPtr flo, peDefPtr ped)
 {
   xieFloExportClientPhoto *raw = (xieFloExportClientPhoto *) ped->elemRaw;
   peTexPtr pet = ped->peTex;
@@ -199,11 +206,11 @@ int InitializeECPhotoFAX(flo,ped)
 /*------------------------------------------------------------------------
 ------- lots of stuff shared between ECPhoto and EPhoto. . . -------------
 ------------------------------------------------------------------------*/
-static int common_init(flo,ped,tec,encodeTechnique)
-floDefPtr flo;
-peDefPtr  ped;
-char *tec;
-CARD16 encodeTechnique;
+static int common_init(
+    floDefPtr flo,
+    peDefPtr  ped,
+    char *tec,
+    CARD16 encodeTechnique)
 {
 peTexPtr pet = ped->peTex;
 faxPvtPtr texpvt=(faxPvtPtr) pet->private;
@@ -367,9 +374,7 @@ int pbytes,max_lines_in;
 /*------------------------------------------------------------------------
 ----------------------------- free some data ----------------------------
 ------------------------------------------------------------------------*/
-static void FreeFaxData(flo,ped)
-floDefPtr flo;
-peDefPtr  ped;
+static void FreeFaxData(floDefPtr flo, peDefPtr ped)
 {
 peTexPtr pet = ped->peTex;
 faxPvtPtr texpvt=(faxPvtPtr) pet->private;
@@ -424,10 +429,7 @@ FaxEncodeState *state = &texpvt->state;
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-int ActivateEPhotoFAX(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+int ActivateEPhotoFAX(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   receptorPtr  rcp = pet->receptor;
   bandPtr    sbnd = &rcp->band[0];
@@ -443,7 +445,7 @@ int ActivateEPhotoFAX(flo,ped,pet)
     
   if(texpvt->notify && ~was_ready & ped->outFlo.ready & 1  &&
      (texpvt->notify==xieValNewData   ||
-      texpvt->notify==xieValFirstData && !ped->outFlo.output[0].flink->start))
+      (texpvt->notify==xieValFirstData && !ped->outFlo.output[0].flink->start)))
     SendExportAvailableEvent(flo,ped,0,0,0,0);
   
   return( status );
@@ -452,13 +454,14 @@ int ActivateEPhotoFAX(flo,ped,pet)
 /*------------------------------------------------------------------------
 -------------------- *really* crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int sub_fun(flo,ped,pet,texpvt,state,sbnd,dbnd)
- floDefPtr flo;
- peDefPtr  ped;
- peTexPtr  pet;
- faxPvtPtr texpvt;
- FaxEncodeState *state;
- bandPtr     sbnd,dbnd;
+static int sub_fun(
+     floDefPtr flo,
+     peDefPtr  ped,
+     peTexPtr  pet,
+     faxPvtPtr texpvt,
+     FaxEncodeState *state,
+     bandPtr     sbnd,
+     bandPtr     dbnd)
 {
 BytePixel	*src,*dst;
 int lines_coded;
@@ -491,8 +494,8 @@ int nl_mappable;
   	FreeData(flo,pet,sbnd,sbnd->maxGlobal);
 	return(TRUE);
     }
-    while (dst = (BytePixel*)GetDstBytes(flo,pet,dbnd,dbnd->current,
-  		texpvt->strip_req_newbytes,KEEP)) {
+    while ((dst = (BytePixel*)GetDstBytes(flo,pet,dbnd,dbnd->current,
+  		texpvt->strip_req_newbytes,KEEP)) != 0) {
 
 	if (!state->strip) {
 		state->strip = dst;
@@ -574,9 +577,7 @@ int nl_mappable;
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
-int ResetEPhotoFAX(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int ResetEPhotoFAX(floDefPtr flo, peDefPtr ped)
 {
   faxPvtPtr texpvt=(faxPvtPtr) ped->peTex->private;
 
@@ -591,9 +592,7 @@ int ResetEPhotoFAX(flo,ped)
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-int DestroyEPhotoFAX(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int DestroyEPhotoFAX(floDefPtr flo, peDefPtr ped)
 {
   /* get rid of the peTex structure  */
   ped->peTex = (peTexPtr) XieFree(ped->peTex);

@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/export/edrawp.c,v 3.1 1998/10/04 09:35:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/edrawp.c,v 3.2 1998/10/05 13:22:04 dawes Exp $ */
 
 #define _XIEC_EDRAWP
 
@@ -82,13 +82,11 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
+#include <dixie_e.h>
 #include <XIEproto.h>
   /*
    *  more X server includes.
    */
-#include <misc.h>
-#include <dixstruct.h>
 #include <pixmapstr.h>
 #include <gcstruct.h>
   /*
@@ -99,16 +97,10 @@ terms and conditions:
 #include <element.h>
 #include <error.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeEDrawPlane();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepEDrawPlane();
+static Bool PrepEDrawPlane(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -121,10 +113,7 @@ static diElemVecRec eDrawPlaneVec = {
 /*------------------------------------------------------------------------
 --------------- routine: make an ExportDrawablePlane element -------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeEDrawPlane(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeEDrawPlane(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   inFloPtr inFlo;
@@ -167,9 +156,7 @@ peDefPtr MakeEDrawPlane(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepEDrawPlane(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepEDrawPlane(floDefPtr flo, peDefPtr ped)
 {
   xieFloExportDrawablePlane *raw = (xieFloExportDrawablePlane *)ped->elemRaw;
   eDrawPDefPtr pvt = (eDrawPDefPtr) ped->elemPvt;

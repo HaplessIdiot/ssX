@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pblend.c,v 3.1 1998/10/04 09:35:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pblend.c,v 3.2 1998/10/05 13:22:11 dawes Exp $ */
 
 #define _XIEC_PBLEND
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -97,16 +91,10 @@ terms and conditions:
 #include <element.h>
 #include <difloat.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeBlend();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepBlend();
+static Bool PrepBlend(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -119,10 +107,7 @@ static diElemVecRec pBlendVec = {
 /*------------------------------------------------------------------------
 ----------------------- routine: make a blend element --------------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeBlend(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeBlend(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   int inputs, index;
   peDefPtr ped;
@@ -196,9 +181,7 @@ peDefPtr MakeBlend(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepBlend(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepBlend(floDefPtr flo, peDefPtr ped)
 {
   xieFloBlend *raw = (xieFloBlend *)ped->elemRaw;
   pBlendDefPtr pvt = (pBlendDefPtr)ped->elemPvt;
@@ -208,8 +191,8 @@ static Bool PrepBlend(flo,ped)
   int aindex = pvt->aindex, dindex = pvt->dindex, b;
   CARD8 bmask = raw->bandMask;
 
-  if ( raw->alpha &&  pvt->alphaConst <= 0.0 || 
-      !raw->alpha && (pvt->alphaConst <  0.0 || pvt->alphaConst > 1.0))
+  if (( raw->alpha &&  pvt->alphaConst <= 0.0) || 
+      (!raw->alpha && (pvt->alphaConst <  0.0 || pvt->alphaConst > 1.0)))
     	ValueError(flo, ped, raw->alphaConst, return(FALSE));
 
   for (b = 0; b < sr1->bands; b++)
@@ -227,8 +210,8 @@ static Bool PrepBlend(flo,ped)
     for (b = 0; b < sr1->bands; b++) {
 	if ((bmask & (1<<b)) == 0) continue;
 	if (sr1->format[b].class != sr2->format[b].class ||
-	    IsConstrained(sr1->format[b].class) && 
-	    sr1->format[b].levels != sr2->format[b].levels)
+	    (IsConstrained(sr1->format[b].class) && 
+	     sr1->format[b].levels != sr2->format[b].levels))
       		MatchError(flo,ped, return(FALSE));
     }
   } else 

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.31 1998/10/02 06:15:17 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.32 1998/10/05 13:21:47 dawes Exp $ */
 
 
 /* 
@@ -276,7 +276,9 @@ in this Software without prior written authorization from The Open Group.
 /* expects cpp in PATH */
 #define DEFAULT_CPP "cpp"
 #endif
-
+#if defined(__GNU__)
+#define USE_CC_E
+#endif
 /*
  * Step 5:  cpp_argv
  *     The following table contains the flags that should be passed
@@ -298,10 +300,12 @@ in this Software without prior written authorization from The Open Group.
 char *cpp_argv[ARGUMENTS] = {
 	"cc",		/* replaced by the actual program to exec */
 	"-I.",		/* add current directory to include path */
+#if !defined(__NetBSD_Version__) || __NetBSD_Version__ < 103080000
 #ifdef unix
 	"-Uunix",	/* remove unix symbol so that filename unix.c okay */
 #endif
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(MACH) || defined(linux)
+#endif
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(MACH) || defined(linux) || defined(__GNU__)
 # ifdef __i386__
 	"-D__i386__",
 # endif

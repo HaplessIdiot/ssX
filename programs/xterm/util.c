@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.30 1998/07/17 12:05:26 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.31 1998/10/10 15:25:51 dawes Exp $
  */
 
 /*
@@ -28,18 +28,13 @@
 
 /* util.c */
 
-#ifdef HAVE_CONFIG_H
-#include <xtermcfg.h>
-#endif
+#include <xterm.h>
 
-#include <stdio.h>
+#include <data.h>
+#include <error.h>
+#include <menu.h>
 
-#include "ptyx.h"
-#include "data.h"
-#include "error.h"
-#include "menu.h"
-
-#include "xterm.h"
+#include <ctype.h>
 
 extern Bool waiting_for_initial_map;
 
@@ -1643,3 +1638,15 @@ char *my_strerror(int n)
 }
 #endif
 #endif
+
+int char2lower(int ch)
+{
+	if (isascii(ch) && isupper(ch)) {		/* lowercasify */
+#ifdef _tolower
+		ch = _tolower (ch);
+#else
+		ch = tolower (ch);
+#endif
+	}
+	return ch;
+}

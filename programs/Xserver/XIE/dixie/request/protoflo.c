@@ -67,91 +67,30 @@ terms and conditions:
 	Robert NC Shelley, Dean Verheiden -- AGE Logic, Inc., May 1993
 
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/protoflo.c,v 3.1 1998/10/04 09:35:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/protoflo.c,v 3.2 1998/10/05 13:22:20 dawes Exp $ */
 
-#define _XIEC_PROTOFLO
-/*
- *  Include files
- */
-/*
- *  Core X Includes
- */
-#define NEED_EVENTS
-#include <X.h>
-#include <Xproto.h>
-/*
- *  XIE Includes
- */
-#include <XIE.h>
-#include <XIEproto.h>
-/*
- *  more X server includes.
- */
-#include <misc.h>
-#include <dixstruct.h>
-/*
- *  immediate-specific includes
- */
+
+#include <protoflo.h>
+
 #include <corex.h>
 #include <macro.h>
 #include <memory.h>
-#include <flostr.h>
-#include <photospc.h>
-
-
-/*
- *  Xie protocol procedures called from the dispatcher
- */
-int  ProcCreatePhotospace();
-int  ProcDestroyPhotospace();
-int  ProcExecuteImmediate();
-int  ProcCreatePhotoflo();
-int  ProcDestroyPhotoflo();
-int  ProcExecutePhotoflo();
-int  ProcModifyPhotoflo();
-int  ProcRedefinePhotoflo();
-int  ProcAbort();
-int  ProcAwait();
-int  ProcGetClientData();
-int  ProcPutClientData();
-int  ProcQueryPhotoflo();
-
-int  SProcCreatePhotospace();
-int  SProcDestroyPhotospace();
-int  SProcExecuteImmediate();
-int  SProcCreatePhotoflo();
-int  SProcDestroyPhotoflo();
-int  SProcExecutePhotoflo();
-int  SProcModifyPhotoflo();
-int  SProcRedefinePhotoflo();
-int  SProcAbort();
-int  SProcAwait();
-int  SProcGetClientData();
-int  SProcPutClientData();
-int  SProcQueryPhotoflo();
-
-/*
- *  routines referenced by other modules
- */
-int  DeletePhotospace();
-int  DeletePhotoflo();
 
 /*
  *  routines used internal to this module
  */
-static floDefPtr LookupExecutable();
-static floDefPtr LookupImmediate();
-static int	 RunFlo();
-static int	 FloDone();
-static void	 DeleteImmediate();
+static floDefPtr LookupExecutable(CARD32 spaceID, CARD32 floID);
+static floDefPtr LookupImmediate(CARD32  spaceID, CARD32  floID, photospacePtr *spacePtr);
+static int       RunFlo(ClientPtr client, floDefPtr flo);
+static int       FloDone(floDefPtr flo);
+static void      DeleteImmediate(floDefPtr flo);
 
 
 
 /*------------------------------------------------------------------------
 --------------------------- CreatePhotospace Procedure -------------------
 ------------------------------------------------------------------------*/
-int ProcCreatePhotospace(client)
- ClientPtr client;
+int ProcCreatePhotospace(ClientPtr client)
 {
   photospacePtr space;
   REQUEST(xieCreatePhotospaceReq);
@@ -176,8 +115,7 @@ int ProcCreatePhotospace(client)
 /*------------------------------------------------------------------------
 ------------------------ DestroyPhotospace Procedure ---------------------
 ------------------------------------------------------------------------*/
-int ProcDestroyPhotospace(client)
-     ClientPtr client;
+int ProcDestroyPhotospace(ClientPtr client)
 {
   photospacePtr space;
   REQUEST( xieDestroyPhotospaceReq );
@@ -198,8 +136,7 @@ int ProcDestroyPhotospace(client)
 /*------------------------------------------------------------------------
 ------------------------ ExecuteImmediate Procedure ----------------------
 ------------------------------------------------------------------------*/
-int ProcExecuteImmediate(client)
-     ClientPtr client;
+int ProcExecuteImmediate(ClientPtr client)
 {
   floDefPtr flo;
   photospacePtr space;
@@ -231,8 +168,7 @@ int ProcExecuteImmediate(client)
 /*------------------------------------------------------------------------
 ------------------------- CreatePhotoflo Procedure -----------------------
 ------------------------------------------------------------------------*/
-int ProcCreatePhotoflo(client)
-     ClientPtr client;
+int ProcCreatePhotoflo(ClientPtr client)
 {
   floDefPtr flo;
   REQUEST(xieCreatePhotofloReq);
@@ -260,8 +196,7 @@ int ProcCreatePhotoflo(client)
 /*------------------------------------------------------------------------
 ------------------------ DestroyPhotoflo Procedure -----------------------
 ------------------------------------------------------------------------*/
-int ProcDestroyPhotoflo(client)
-     ClientPtr client;
+int ProcDestroyPhotoflo(ClientPtr client)
 {
   floDefPtr flo;
   REQUEST( xieDestroyPhotofloReq );
@@ -281,8 +216,7 @@ int ProcDestroyPhotoflo(client)
 /*------------------------------------------------------------------------
 ------------------------ ExecutePhotoflo Procedure -----------------------
 ------------------------------------------------------------------------*/
-int ProcExecutePhotoflo(client)
-     ClientPtr client;
+int ProcExecutePhotoflo(ClientPtr client)
 {
   floDefPtr flo;
   REQUEST( xieExecutePhotofloReq );
@@ -304,8 +238,7 @@ int ProcExecutePhotoflo(client)
 /*------------------------------------------------------------------------
 ------------------------- ModifyPhotoflo Procedure -----------------------
 ------------------------------------------------------------------------*/
-int ProcModifyPhotoflo(client)
-     ClientPtr client;
+int ProcModifyPhotoflo(ClientPtr client)
 {
   floDefPtr flo;
   xieTypPhototag end;
@@ -336,8 +269,7 @@ int ProcModifyPhotoflo(client)
 /*------------------------------------------------------------------------
 ------------------------ RedefinePhotoflo Procedure ----------------------
 ------------------------------------------------------------------------*/
-int ProcRedefinePhotoflo(client)
-     ClientPtr client;
+int ProcRedefinePhotoflo(ClientPtr client)
 {
   floDefPtr old, new;
   REQUEST( xieRedefinePhotofloReq );
@@ -374,14 +306,13 @@ int ProcRedefinePhotoflo(client)
 /*------------------------------------------------------------------------
 ------------------------------ Abort Procedure ---------------------------
 ------------------------------------------------------------------------*/
-int ProcAbort(client)
-     ClientPtr client;
+int ProcAbort(ClientPtr client)
 {
   floDefPtr flo;
   REQUEST( xieAbortReq );
   REQUEST_SIZE_MATCH( xieAbortReq );
   
-  if( flo = LookupExecutable(stuff->nameSpace, stuff->floID) )
+  if ((flo = LookupExecutable(stuff->nameSpace, stuff->floID)) != 0)
     if( flo->flags.active ) {
       flo->reqClient     = client;
       flo->flags.aborted = TRUE;
@@ -395,8 +326,7 @@ int ProcAbort(client)
 /*------------------------------------------------------------------------
 ------------------------------ Await Procedure ---------------------------
 ------------------------------------------------------------------------*/
-int ProcAwait(client)
-     ClientPtr client;
+int ProcAwait(ClientPtr client)
 {
   ClientPtr *awaken;
   floDefPtr flo;
@@ -405,10 +335,10 @@ int ProcAwait(client)
   
   if( (flo = LookupExecutable(stuff->nameSpace, stuff->floID))
      && flo->flags.active ) {
-    if(awaken = (ClientPtr*)(flo->awakenCnt
+    if((awaken = (ClientPtr*)(flo->awakenCnt
 			     ? XieRealloc( flo->awakenPtr,
 					  (flo->awakenCnt+1)*sizeof(ClientPtr))
-			     : XieMalloc(sizeof(ClientPtr)))) {
+			     : XieMalloc(sizeof(ClientPtr)))) != 0) {
       /*
        * tell core X to ignore this client until the flo is done
        */
@@ -426,8 +356,7 @@ int ProcAwait(client)
 /*------------------------------------------------------------------------
 -------------------------- Get Client Data Procedure ---------------------
 ------------------------------------------------------------------------*/
-int ProcGetClientData(client)
-     ClientPtr client;
+int ProcGetClientData(ClientPtr client)
 {
   floDefPtr flo;
   peDefPtr  ped;
@@ -464,8 +393,7 @@ int ProcGetClientData(client)
 /*------------------------------------------------------------------------
 -------------------------- Put Client Data Procedure ---------------------
 ------------------------------------------------------------------------*/
-int ProcPutClientData(client)
-     ClientPtr client;
+int ProcPutClientData(ClientPtr client)
 {
   floDefPtr flo;
   peDefPtr  ped;
@@ -525,8 +453,7 @@ int ProcPutClientData(client)
 /*------------------------------------------------------------------------
 ------------------------ QueryPhotoflo Procedure -------------------------
 ------------------------------------------------------------------------*/
-int ProcQueryPhotoflo(client)
-     ClientPtr client;
+int ProcQueryPhotoflo(ClientPtr client)
 {
   CARD16 imCnt, exCnt;
   CARD32 shorts;
@@ -550,7 +477,7 @@ int ProcQueryPhotoflo(client)
   
   /* Fill in the reply header
    */
-  shorts = (imCnt + 1 & ~1) + (exCnt + 1 & ~1);
+  shorts = ((imCnt + 1) & ~1) + ((exCnt + 1) & ~1);
   rep.type           = X_Reply;
   rep.sequenceNum    = client->sequence;
   rep.length         = shorts >> 1;
@@ -581,9 +508,9 @@ int ProcQueryPhotoflo(client)
 /*------------------------------------------------------------------------
 ----------------------- deleteFunc: DeletePhotospace ---------------------
 ------------------------------------------------------------------------*/
-int DeletePhotospace(space, id)
-     photospacePtr space;
-     xieTypPhotospace id;
+int DeletePhotospace(
+     photospacePtr space,
+     xieTypPhotospace id)
 {
   /* abort and destroy all flos in the photospace
    */
@@ -610,9 +537,9 @@ int DeletePhotospace(space, id)
 /*------------------------------------------------------------------------
 ----------------------- deleteFunc: DeletePhotoflo -----------------------
 ------------------------------------------------------------------------*/
-int DeletePhotoflo(flo, id)
-     floDefPtr     flo;
-     xieTypPhotoflo id;
+int DeletePhotoflo(
+     floDefPtr     flo,
+     xieTypPhotoflo id)
 {
   if(flo->flags.active) {
     /*
@@ -640,9 +567,7 @@ int DeletePhotoflo(flo, id)
 /*------------------------------------------------------------------------
 ------------------------- routine: LookupExecutable ----------------------
 ------------------------------------------------------------------------*/
-static floDefPtr LookupExecutable(spaceID, floID)
-     CARD32 spaceID;
-     CARD32 floID;
+static floDefPtr LookupExecutable(CARD32 spaceID, CARD32 floID)
 {
   floDefPtr flo;
   
@@ -658,10 +583,10 @@ static floDefPtr LookupExecutable(spaceID, floID)
 /*------------------------------------------------------------------------
 ------------------------ routine: LookupImmediate ------------------------
 ------------------------------------------------------------------------*/
-static floDefPtr LookupImmediate(spaceID, floID, spacePtr)
-     CARD32  spaceID;
-     CARD32  floID;
-     photospacePtr *spacePtr;
+static floDefPtr LookupImmediate(
+     CARD32  spaceID,
+     CARD32  floID,
+     photospacePtr *spacePtr)
 {
   floDefPtr flo;
   photospacePtr space = (photospacePtr) LookupIDByType(spaceID, RT_PHOTOSPACE);
@@ -684,9 +609,7 @@ static floDefPtr LookupImmediate(spaceID, floID, spacePtr)
 /*------------------------------------------------------------------------
 ----------- initiate, and possibly complete, photoflo execution ----------
 ------------------------------------------------------------------------*/
-static int RunFlo(client,flo)
-     ClientPtr client;
-     floDefPtr flo;
+static int RunFlo(ClientPtr client, floDefPtr flo)
 {
   flo->runClient = flo->reqClient = client;
 
@@ -715,8 +638,7 @@ static int RunFlo(client,flo)
 /*------------------------------------------------------------------------
 -------- Handle Photoflo Done: send error and event, then clean up -------
 ------------------------------------------------------------------------*/
-static int FloDone(flo)
-     floDefPtr flo;
+static int FloDone(floDefPtr flo)
 {
   peDefPtr ped;
   pedLstPtr lst = ListEmpty(&flo->optDAG) ? &flo->defDAG : &flo->optDAG;
@@ -763,8 +685,7 @@ static int FloDone(flo)
 /*------------------------------------------------------------------------
 ------------------------- routine: DeleteImmediate -----------------------
 ------------------------------------------------------------------------*/
-static void DeleteImmediate(flo)
-     floDefPtr flo;
+static void DeleteImmediate(floDefPtr flo)
 {
   floDefPtr tmp;
 
@@ -783,8 +704,7 @@ static void DeleteImmediate(flo)
 /*------------------------------------------------------------------------
 ----------------------------- Swap procedures ----------------------------
 ------------------------------------------------------------------------*/
-int SProcCreatePhotospace(client)
-     ClientPtr client;
+int SProcCreatePhotospace(ClientPtr client)
 {
   register long n;
   REQUEST(xieCreatePhotospaceReq);
@@ -794,8 +714,7 @@ int SProcCreatePhotospace(client)
   return (ProcCreatePhotospace(client));
 }                               /* end SProcCreatePhotospace */
 
-int SProcDestroyPhotospace(client)
-     ClientPtr client;
+int SProcDestroyPhotospace(ClientPtr client)
 {
   register long n;
   REQUEST( xieDestroyPhotospaceReq );
@@ -805,8 +724,7 @@ int SProcDestroyPhotospace(client)
   return (ProcDestroyPhotospace(client));
 }                               /* end SProcDestroyPhotospace */
 
-int SProcExecuteImmediate(client)
-     register ClientPtr client;
+int SProcExecuteImmediate(ClientPtr client)
 {
   register int n;
   REQUEST(xieExecuteImmediateReq);
@@ -818,8 +736,7 @@ int SProcExecuteImmediate(client)
   return( ProcExecuteImmediate(client) );
 }
 
-int SProcCreatePhotoflo(client)
-     register ClientPtr client;
+int SProcCreatePhotoflo(ClientPtr client)
 {
   register int n;
   REQUEST(xieCreatePhotofloReq);
@@ -830,8 +747,7 @@ int SProcCreatePhotoflo(client)
   return( ProcCreatePhotoflo(client) );
 }
 
-int SProcDestroyPhotoflo(client)
-     register ClientPtr client;
+int SProcDestroyPhotoflo(ClientPtr client)
 {
   register int n;
   REQUEST(xieDestroyPhotofloReq);
@@ -841,8 +757,7 @@ int SProcDestroyPhotoflo(client)
   return( ProcDestroyPhotoflo(client) );
 }
 
-int SProcExecutePhotoflo(client)
-     register ClientPtr client;
+int SProcExecutePhotoflo(ClientPtr client)
 {
   register int n;
   REQUEST(xieExecutePhotofloReq);
@@ -852,8 +767,7 @@ int SProcExecutePhotoflo(client)
   return( ProcExecutePhotoflo(client) );
 }
 
-int SProcModifyPhotoflo(client)
-     register ClientPtr client;
+int SProcModifyPhotoflo(ClientPtr client)
 {
   register int n;
   REQUEST(xieModifyPhotofloReq);
@@ -865,8 +779,7 @@ int SProcModifyPhotoflo(client)
   return( ProcModifyPhotoflo(client) );
 }
 
-int SProcRedefinePhotoflo(client)
-     register ClientPtr client;
+int SProcRedefinePhotoflo(ClientPtr client)
 {
   register int n;
   REQUEST(xieRedefinePhotofloReq);
@@ -877,8 +790,7 @@ int SProcRedefinePhotoflo(client)
   return( ProcRedefinePhotoflo(client) );
 }
 
-int SProcAbort(client)
-     register ClientPtr client;
+int SProcAbort(ClientPtr client)
 {
   register int n;
   REQUEST(xieAbortReq);
@@ -889,8 +801,7 @@ int SProcAbort(client)
   return( ProcAbort(client) );
 }
 
-int SProcAwait(client)
-     register ClientPtr client;
+int SProcAwait(ClientPtr client)
 {
   register int n;
   REQUEST(xieAwaitReq);
@@ -901,8 +812,7 @@ int SProcAwait(client)
   return( ProcAwait(client) );
 }
 
-int SProcGetClientData(client)
-     register ClientPtr client;
+int SProcGetClientData(ClientPtr client)
 {
   register int n;
   REQUEST(xieGetClientDataReq);
@@ -915,8 +825,7 @@ int SProcGetClientData(client)
   return( ProcGetClientData(client) );
 }
 
-int SProcPutClientData(client)
-     register ClientPtr client;
+int SProcPutClientData(ClientPtr client)
 {
   register int n;
   REQUEST(xiePutClientDataReq);
@@ -929,8 +838,7 @@ int SProcPutClientData(client)
   return( ProcPutClientData(client) );
 }
 
-int SProcQueryPhotoflo(client)
-     register ClientPtr client;
+int SProcQueryPhotoflo(ClientPtr client)
 {
   register int n;
   REQUEST(xieQueryPhotofloReq);

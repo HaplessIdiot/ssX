@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * %W%	%G%
  *
  */
-/* $XFree86: xc/programs/xfs/difs/resource.c,v 3.0 1995/06/02 10:32:45 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/resource.c,v 3.1 1998/10/04 09:41:10 dawes Exp $ */
 /*
  *      a resource is a 32 bit quantity.  the upper 12 bits are client id.
  *      client provides a 19 bit resource id. this is "hashed" by me by
@@ -68,7 +68,7 @@ in this Software without prior written authorization from The Open Group.
 #include "clientstr.h"
 #include "globals.h"
 
-static void rebuild_table();
+static void rebuild_table(int client);
 
 #define INITBUCKETS 64
 #define INITHASHSIZE 6
@@ -99,12 +99,14 @@ static RESTYPE TypeMask;
 
 typedef int (*DeleteType) ();
 
+extern int  CloseClientFont();
+extern int  DeleteAuthCont ();
+
 static DeleteType *DeleteFuncs = (DeleteType *) NULL;
 
 #ifdef NOTYET
 RESTYPE
-CreateNewResourceType(deleteFunc)
-    DeleteType  deleteFunc;
+CreateNewResourceType(DeleteType deleteFunc)
 {
     RESTYPE     next = lastResourceType + 1;
     DeleteType *funcs;
@@ -122,7 +124,7 @@ CreateNewResourceType(deleteFunc)
 }
 
 RESTYPE
-CreateNewResourceClass()
+CreateNewResourceClass(void)
 {
     RESTYPE     next = lastResourceClass >> 1;
 
@@ -144,21 +146,17 @@ ClientResourceRec clientTable[MAXCLIENTS];
  *****************/
 
 int
-NoneDeleteFunc ()
+NoneDeleteFunc (void)
 {
 }
 
 Bool
-InitClientResources(client)
-    ClientPtr   client;
+InitClientResources(ClientPtr client)
 {
     register int i,
                 j;
 
     if (client == serverClient) {
-	extern int  CloseClientFont();
-	extern int  DeleteAuthCont ();
-
 	lastResourceType = RT_LASTPREDEF;
 	lastResourceClass = RC_LASTPREDEF;
 	TypeMask = RC_LASTPREDEF - 1;
@@ -188,9 +186,7 @@ InitClientResources(client)
 }
 
 static int
-hash(client, id)
-    int         client;
-    register FSID id;
+hash(int client, FSID id)
 {
     id &= RESOURCE_ID_MASK;
     switch (clientTable[client].hashsize) {
@@ -212,9 +208,11 @@ hash(client, id)
 
 
 static Font
-AvailableID(client, id, maxid, goodid)
-    register int client;
-    register FSID id, maxid, goodid;
+AvailableID(
+    register int client,
+    register FSID id,
+    register FSID maxid,
+    register FSID goodid)
 {
     register ResourcePtr res;
 
@@ -240,8 +238,7 @@ AvailableID(client, id, maxid, goodid)
  */
 
 FSID
-FakeClientID(client)
-    int	client;
+FakeClientID(int client)
 {
     register FSID id, maxid;
     register ResourcePtr *resp;
@@ -283,11 +280,11 @@ FakeClientID(client)
 }
 
 Bool
-AddResource(cid, id, type, value)
-    int         cid;
-    FSID        id;
-    RESTYPE     type;
-    pointer     value;
+AddResource(
+    int         cid,
+    FSID        id,
+    RESTYPE     type,
+    pointer     value)
 {
     register ClientResourceRec *rrec;
     register ResourcePtr res,
@@ -320,8 +317,7 @@ AddResource(cid, id, type, value)
 }
 
 static void
-rebuild_table(client)
-    int         client;
+rebuild_table(int client)
 {
     register int j;
     register ResourcePtr res,
@@ -369,10 +365,10 @@ rebuild_table(client)
 }
 
 void
-FreeResource(cid, id, skipDeleteFuncType)
-    int         cid;
-    FSID        id;
-    RESTYPE     skipDeleteFuncType;
+FreeResource(
+    int         cid,
+    FSID        id,
+    RESTYPE     skipDeleteFuncType)
 {
     register ResourcePtr res;
     register ResourcePtr *prev,
@@ -408,11 +404,11 @@ FreeResource(cid, id, skipDeleteFuncType)
 
 #ifdef NOTYET
 void
-FreeResourceByType(cid, id, type, skipFree)
-    int         cid;
-    FSID        id;
-    RESTYPE     type;
-    Bool        skipFree;
+FreeResourceByType(
+    int         cid,
+    FSID        id,
+    RESTYPE     type,
+    Bool        skipFree)
 {
     register ResourcePtr res;
     register ResourcePtr *prev,
@@ -442,11 +438,11 @@ FreeResourceByType(cid, id, type, skipFree)
  */
 
 Bool
-ChangeResourceValue(cid, id, rtype, value)
-    int         cid;
-    FSID        id;
-    RESTYPE     rtype;
-    pointer     value;
+ChangeResourceValue(
+    int         cid,
+    FSID        id,
+    RESTYPE     rtype,
+    pointer     value)
 {
     register ResourcePtr res;
 
@@ -465,8 +461,7 @@ ChangeResourceValue(cid, id, rtype, value)
 #endif				/* NOTYET */
 
 void
-FreeClientResources(client)
-    ClientPtr   client;
+FreeClientResources(ClientPtr client)
 {
     register ResourcePtr *resources;
     register ResourcePtr this;
@@ -509,7 +504,8 @@ FreeClientResources(client)
     clientTable[client->index].buckets = 0;
 }
 
-FreeAllResources()
+void
+FreeAllResources(void)
 {
     int         i;
 
@@ -523,10 +519,10 @@ FreeAllResources()
  *  lookup_id_by_type returns the object with the given id and type, else NULL.
  */
 pointer
-LookupIDByType(cid, id, rtype)
-    int         cid;
-    FSID        id;
-    RESTYPE     rtype;
+LookupIDByType(
+    int         cid,
+    FSID        id,
+    RESTYPE     rtype)
 {
     register ResourcePtr res;
 
@@ -546,9 +542,9 @@ LookupIDByType(cid, id, rtype)
  *  given classes, else NULL.
  */
 pointer
-LookupIDByClass(id, classes)
-    FSID        id;
-    RESTYPE     classes;
+LookupIDByClass(
+    FSID        id,
+    RESTYPE     classes)
 {
     int         cid;
     register ResourcePtr res;

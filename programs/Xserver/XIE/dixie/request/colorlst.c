@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. March, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/colorlst.c,v 3.1 1998/10/04 09:35:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/colorlst.c,v 3.2 1998/10/05 13:22:18 dawes Exp $ */
 
 #define _XIEC_COLORLST
 
@@ -98,18 +98,7 @@ terms and conditions:
 #include <macro.h>
 #include <memory.h>
 #include <colorlst.h>
-
-/*
- *  Xie protocol proceedures called from the dispatcher
- */
-int  ProcCreateColorList();
-int  ProcDestroyColorList();
-int  ProcPurgeColorList();
-int  ProcQueryColorList();
-int  SProcCreateColorList();
-int  SProcDestroyColorList();
-int  SProcPurgeColorList();
-int  SProcQueryColorList();
+#include <tables.h>
 
 /*
  *  routines referenced by other modules.
@@ -122,8 +111,7 @@ void ResetColorList();
 /*------------------------------------------------------------------------
 ------------------------ CreateColorList Procedures ----------------------
 ------------------------------------------------------------------------*/
-int ProcCreateColorList(client)
- ClientPtr client;
+int ProcCreateColorList(ClientPtr client)
 {
   colorListPtr clst;
   REQUEST(xieCreateColorListReq);
@@ -150,8 +138,7 @@ int ProcCreateColorList(client)
 /*------------------------------------------------------------------------
 ------------------------ DestroyColorList Procedures ---------------------
 ------------------------------------------------------------------------*/
-int ProcDestroyColorList(client)
-     ClientPtr client;
+int ProcDestroyColorList(ClientPtr client)
 {
   colorListPtr clst;
   REQUEST( xieDestroyColorListReq );
@@ -172,8 +159,7 @@ int ProcDestroyColorList(client)
 /*------------------------------------------------------------------------
 -------------------------- PurgeColorList Procedures ---------------------
 ------------------------------------------------------------------------*/
-int ProcPurgeColorList(client)
- ClientPtr client;
+int ProcPurgeColorList(ClientPtr client)
 {
   colorListPtr clst;
   REQUEST( xiePurgeColorListReq );
@@ -194,8 +180,7 @@ int ProcPurgeColorList(client)
 /*------------------------------------------------------------------------
 ------------------------ QueryColorList Procedures -----------------------
 ------------------------------------------------------------------------*/
-int ProcQueryColorList(client)
- ClientPtr client;
+int ProcQueryColorList(ClientPtr client)
 {
   xieQueryColorListReply rep;
   colorListPtr clst;
@@ -244,9 +229,7 @@ int ProcQueryColorList(client)
 /*------------------------------------------------------------------------
 ----------------------- deleteFunc: DeleteColorList ----------------------
 ------------------------------------------------------------------------*/
-int DeleteColorList(clst, id)
- colorListPtr  clst;
- xieTypColorList id;
+int DeleteColorList(colorListPtr  clst, xieTypColorList id)
 {
   if( --clst->refCnt )
     return(Success);
@@ -267,8 +250,7 @@ int DeleteColorList(clst, id)
 /*------------------------------------------------------------------------
 ------------------------ routine: LookupColorList ------------------------
 ------------------------------------------------------------------------*/
-colorListPtr LookupColorList(id)
- xieTypColorList id;
+colorListPtr LookupColorList(xieTypColorList id)
 {
   colorListPtr clst;
   ColormapPtr  cmap;
@@ -295,9 +277,7 @@ colorListPtr LookupColorList(id)
 /*------------------------------------------------------------------------
 -------------------------- routine: ResetColorList -----------------------
 ------------------------------------------------------------------------*/
-void ResetColorList(clst, cmap)
- colorListPtr clst;
- ColormapPtr  cmap;
+void ResetColorList(colorListPtr clst, ColormapPtr cmap)
 {
   if( clst->cellPtr ) {
     if(cmap && !clst->client->clientGone) {
@@ -319,8 +299,7 @@ void ResetColorList(clst, cmap)
 }                               /* end ResetColorList */
 
 
-int SProcCreateColorList(client)
- ClientPtr client;
+int SProcCreateColorList(ClientPtr client)
 {
   register int n;
   REQUEST(xieCreateColorListReq);
@@ -330,8 +309,7 @@ int SProcCreateColorList(client)
   return (ProcCreateColorList(client));
 }                               /* end SProcCreateColorList */
 
-int SProcDestroyColorList(client)
- ClientPtr client;
+int SProcDestroyColorList(ClientPtr client)
 {
   register int n;
   REQUEST( xieDestroyColorListReq );
@@ -341,8 +319,7 @@ int SProcDestroyColorList(client)
   return (ProcDestroyColorList(client));
 }                               /* end SProcDestroyColorList */
 
-int SProcPurgeColorList(client)
- ClientPtr client;
+int SProcPurgeColorList(ClientPtr client)
 {
   register int n; 
   REQUEST( xiePurgeColorListReq );
@@ -352,8 +329,7 @@ int SProcPurgeColorList(client)
   return (ProcPurgeColorList(client));
 }                               /* end SProcPurgeColorList */
 
-int SProcQueryColorList(client)
- ClientPtr client;
+int SProcQueryColorList(ClientPtr client)
 {
   register int n;
   REQUEST( xieQueryColorListReq );

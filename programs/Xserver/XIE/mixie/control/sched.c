@@ -66,9 +66,7 @@ terms and conditions:
 	Dean Verheiden, Robert NC Shelley -- AGE Logic, Inc. May, 1993
   
 *****************************************************************************/
-/* $XFree86$ */
-
-#define _XIEC_SCHED
+/* $XFree86: xc/programs/Xserver/XIE/mixie/control/sched.c,v 1.3 1998/10/06 10:35:16 dawes Exp $ */
 
 /*
  *  Include files
@@ -101,20 +99,12 @@ terms and conditions:
 #define SCHED_BAIL_OUT 10000 /* number of nonproductive times around scheduler
 			      * loop before bailing out -- bad element
 			      */
-/*
- *  routines called from DIXIE
- */
-
-/*
- *  routines referenced by other DDXIE modules
- */
-int	InitScheduler();
 
 /*
  *  routines used internal to this module
  */
-static Bool	execute();
-static bandMsk	runnable();
+static Bool    execute(floDefPtr flo, peTexPtr importer);
+static bandMsk runnable(floDefPtr flo, peTexPtr pet);
 
 /*
  * DDXIE photoflo manager entry points
@@ -128,8 +118,7 @@ static schedVecRec schedulerVec = {
 /*------------------------------------------------------------------------
 --------------------------- Initialize Scheduler -------------------------
 ------------------------------------------------------------------------*/
-int InitScheduler(flo)
-     floDefPtr flo;
+int InitScheduler(floDefPtr flo)
 {
   /* plug in the DDXIE scheduler vector */
   flo->schedVec = &schedulerVec;
@@ -144,9 +133,7 @@ int InitScheduler(flo)
 /*------------------------------------------------------------------------
 ------------------------- Execute the photoflo ---------------------------
 ------------------------------------------------------------------------*/
-static Bool execute(flo, importer)
-     floDefPtr flo;
-     peTexPtr  importer;
+static Bool execute(floDefPtr flo, peTexPtr importer)
 {
   bandMsk ready;
   peTexPtr  pet;
@@ -210,9 +197,7 @@ static Bool execute(flo, importer)
 /*------------------------------------------------------------------------
 ----------------------- test element for runnability ---------------------
 ------------------------------------------------------------------------*/
-static bandMsk runnable(flo,pet)
-     floDefPtr   flo;
-     peTexPtr    pet;
+static bandMsk runnable(floDefPtr flo, peTexPtr pet)
 {
   receptorPtr rcp = pet->receptor, rend = &pet->receptor[pet->peDef->inCnt];
   bandMsk R, r;

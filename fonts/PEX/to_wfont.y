@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.6 1996/12/23 05:56:32 dawes Exp $ */
+/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.7 1998/10/02 06:49:07 dawes Exp $ */
 
 
 #define YYMAXDEPTH 10000
@@ -346,7 +346,7 @@ check_num_ch()
 
 yyerror()
 {
-#if !defined(CSRG_BASED) && !defined(linux) && !defined(Lynx)
+#if !defined(CSRG_BASED) && !defined(linux) && !defined(Lynx) && !defined(__GNU__)
 	extern int      yylineno;
 #endif
 #	define ERR_SIZE (sizeof(err_string) / sizeof(char *))
@@ -369,7 +369,7 @@ yyerror()
 		str = err_string[yyerrno-1];
 	else
 		str = "Syntax error";
-#if !defined(CSRG_BASED) && !defined(linux) && !defined(Lynx)
+#if !defined(CSRG_BASED) && !defined(linux) && !defined(Lynx) && !defined(__GNU__)
 		fprintf(stderr, "line %d: %s.\n", yylineno, str);
 #else
 		fprintf(stderr, "%s.\n", str);

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.10 1998/08/29 05:44:18 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.11 1998/10/10 15:25:52 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,9 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_87">Patch #87 - 1998/10/21 - XFree86 3.9Nj and 3.3.2f</A>
+<LI><A HREF="#xterm_86">Patch #86 - 1998/10/14 - XFree86 3.9Nj and 3.3.2e</A>
+<LI><A HREF="#xterm_85">Patch #85 - 1998/10/12 - XFree86 3.9Nj and 3.3.2e</A>
 <LI><A HREF="#xterm_84">Patch #84 - 1998/10/9 - XFree86 3.9Ni and 3.3.2e</A>
 <LI><A HREF="#sync_83">Resync #83 - 1998/10/7 - XFree86 3.3.2e</A>
 <LI><A HREF="#xterm_83">Patch #83 - 1998/8/25 - XFree86 3.9Nb</A>
@@ -127,6 +130,42 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_87">Patch #87 - 1998/10/21 - XFree86 3.9Nj and 3.3.2f</A></H1>
+This corrects a problem reported by Stefan Dalibor.  My table entries for the
+<em>printerExtent</em> and <em>printerFormFeed</em> resources used the wrong
+types for sizeof, causing the printer to not work properly on some platforms
+because the <em>printAttributes</em> resource was overwritten (e.g., Digital Unix with DEC Alpha).
+<p>
+I reviewed all of the resource table entries and fixed a potential problem with
+<em>resizeGravity</em>, which was typed as <em>int</em> rather than
+<em>XtGravity</em>.
+
+<H1><A NAME="xterm_86">Patch #86 - 1998/10/14 - XFree86 3.9Nj and 3.3.2e</A></H1>
+A small fix: when switching to/from the continuous mouse reporting mode,
+the event mask was incorrect if xterm was built under X11R5 because the
+original data was saved under an ifdef for active-icon.
+
+<H1><A NAME="xterm_85">Patch #85 - 1998/10/12 - XFree86 3.9Nj and 3.3.2e</A></H1>
+Some cleanup (I noticed the pixel droppings a few months ago after getting a
+new 17" monitor):
+<ul>
+	<li>split-out the functions that load/reload fonts for xterm as new
+	  file fontutils.c to extend them to support automatic loading of
+	  bold font corresponding to the normal font.  Adapted logic from
+	  EMU 1.3 for this purpose.  This fixes most occurrences of pixel
+	  droppings from bold characters.
+
+	<li>modified by renaming variables and adding casts to permit compile
+	  with g++.
+
+	<li>modify headers so they can all be compiled without order
+	  dependencies, and use bracketed rather than quoting includes to allow
+	  compile from separate directory.
+
+	<li>renamed xtermm terminfo entry to xterm-mono, to avoid conflict with
+	  Solaris entry now in ncurses.
+</ul>
 
 <H1><A NAME="xterm_84">Patch #84 - 1998/10/9 - XFree86 3.9Ni</A> and 3.3.2e</H1>
 Several small fixes and enhancements, including a patch from

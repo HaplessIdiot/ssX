@@ -67,7 +67,7 @@ terms and conditions:
 	Dean Verheiden && Robert NC Shelley -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pctoi.c,v 3.2 1998/10/04 09:35:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pctoi.c,v 3.3 1998/10/05 13:22:13 dawes Exp $ */
 
 #define _XIEC_PCTOI
 #define _XIEC_PCI
@@ -84,13 +84,10 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
+#include <dixie_p.h>
   /*
    *  more X server includes.
    */
-#include <misc.h>
-#include <dixstruct.h>
 #include <scrnintstr.h>
 #include <colormapst.h>
   /*
@@ -106,20 +103,10 @@ terms and conditions:
 #include <memory.h>
 
 
-/* routines referenced by other modules.
- */
-peDefPtr	MakeConvertToIndex();
-Bool 		CopyCtoIAllocAll();
-Bool 		PrepCtoIAllocAll();
-#ifdef BEYOND_SI
-Bool 		CopyCtoIAllocMatch();
-Bool 		CopyCtoIAllocRequantize();
-#endif /* BEYOND_SI */
-
 /* routines internal to this module
  */
-static Bool	PrepConvertToIndex();
-static Bool	DebriefConvertToIndex();
+static Bool PrepConvertToIndex(floDefPtr flo, peDefPtr ped);
+static Bool DebriefConvertToIndex(floDefPtr flo, peDefPtr ped, Bool ok);
 
 /* dixie entry points
  */
@@ -132,10 +119,7 @@ static diElemVecRec pCtoIVec = {
 /*------------------------------------------------------------------------
 ----------------- routine: make an ExportPhotomap element ----------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeConvertToIndex(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeConvertToIndex(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   inFloPtr inFlo;
@@ -187,12 +171,12 @@ peDefPtr MakeConvertToIndex(flo,tag,pe)
 -----------------------  copy routines for techniques  -------------------
 ------------------------------------------------------------------------*/
 
-Bool CopyCtoIAllocAll(flo, ped, sparms, rparms, tsize, isDefault) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecColorAllocAll *sparms, *rparms;
-     CARD16	tsize;
-     Bool       isDefault;
+#undef  sparms
+#define sparms ((xieTecColorAllocAll *)sParms)
+#undef  rparms
+#define rparms ((xieTecColorAllocAll *)rParms)
+
+Bool CopyCtoIAllocAll(TECHNQ_COPY_ARGS)
 {
   pTecCtoIDefPtr pvt;
 
@@ -216,12 +200,13 @@ Bool CopyCtoIAllocAll(flo, ped, sparms, rparms, tsize, isDefault)
 }
 
 #ifdef BEYOND_SI
-Bool CopyCtoIAllocMatch(flo, ped, sparms, rparms, tsize, isDefault) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecColorAllocMatch *sparms, *rparms;
-     CARD16	tsize;
-     Bool       isDefault;
+
+#undef  sparms
+#define sparms ((xieTecColorAllocMatch *)sParms)
+#undef  rparms
+#define rparms ((xieTecColorAllocMatch *)rParms)
+
+Bool CopyCtoIAllocMatch(TECHNQ_COPY_ARGS)
 {
   pConvertToIndexMatchDefPtr pvt;
 
@@ -242,12 +227,12 @@ Bool CopyCtoIAllocMatch(flo, ped, sparms, rparms, tsize, isDefault)
   return(TRUE);
 }
 
-Bool CopyCtoIAllocRequantize(flo, ped, sparms, rparms, tsize, isDefault) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecColorAllocRequantize *sparms, *rparms;
-     CARD16	tsize;
-     Bool       isDefault;
+#undef  sparms
+#define sparms ((xieTecColorAllocRequantize *)sParms)
+#undef  rparms
+#define rparms ((xieTecColorAllocRequantize *)rParms)
+
+Bool CopyCtoIAllocRequantize(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
   
@@ -264,9 +249,7 @@ Bool CopyCtoIAllocRequantize(flo, ped, sparms, rparms, tsize, isDefault)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepConvertToIndex(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepConvertToIndex(floDefPtr flo, peDefPtr ped)
 {
   xieFloConvertToIndex *raw = (xieFloConvertToIndex *)ped->elemRaw;
   pCtoIDefPtr pvt = (pCtoIDefPtr) ped->elemPvt;
@@ -280,12 +263,12 @@ static Bool PrepConvertToIndex(flo,ped)
   /* must be constrained and inter-band dimensions must match
    */
   if(IsntConstrained(sf[0].class) ||
-     src->bands == 3 && (IsntConstrained(sf[1].class)  ||
+    ((src->bands == 3) && (IsntConstrained(sf[1].class)  ||
 			 IsntConstrained(sf[2].class)  ||
 			 sf[0].width  != sf[1].width  ||
 			 sf[1].width  != sf[2].width  ||
 			 sf[0].height != sf[1].height ||
-			 sf[1].height != sf[2].height))
+			 sf[1].height != sf[2].height)))
     MatchError(flo,ped, return(FALSE));
 
   /* determine our output attributes from the input (figure out levels later)
@@ -383,11 +366,11 @@ static Bool PrepConvertToIndex(flo,ped)
 /*------------------------------------------------------------------------
 ------------------------ technique prep routines  ------------------------
 ------------------------------------------------------------------------*/
-Bool PrepCtoIAllocAll(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloConvertToIndex *raw;
-     xieTecColorAllocAll  *tec;
+Bool PrepCtoIAllocAll(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieFloConvertToIndex *raw,
+     xieTecColorAllocAll  *tec)
 {
   pCtoIDefPtr pvt = (pCtoIDefPtr) ped->elemPvt;
   inFloPtr     inf = &ped->inFloLst[SRCtag];
@@ -402,8 +385,8 @@ Bool PrepCtoIAllocAll(flo, ped, raw, tec)
    *     XIE only supports up to 16 bits per band for "non-index" data,
    *     we will further limit RGB images to a total depth of 31.
    */
-  if(inf->bands == 1 &&  fmt[0].depth > 16 ||
-     inf->bands == 3 && (fmt[0].depth + fmt[1].depth + fmt[2].depth > 31))
+  if((inf->bands == 1 &&  fmt[0].depth > 16) ||
+     (inf->bands == 3 && (fmt[0].depth + fmt[1].depth + fmt[2].depth > 31)))
     return(FALSE);
   
   return(TRUE);
@@ -412,10 +395,7 @@ Bool PrepCtoIAllocAll(flo, ped, raw, tec)
 /*------------------------------------------------------------------------
 ---------------------- routine: post execution cleanup -------------------
 ------------------------------------------------------------------------*/
-static Bool DebriefConvertToIndex(flo,ped,ok)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     Bool	ok;
+static Bool DebriefConvertToIndex(floDefPtr flo, peDefPtr ped, Bool ok)
 {
   pCtoIDefPtr pvt = (pCtoIDefPtr) ped->elemPvt;
   colorListPtr lst;

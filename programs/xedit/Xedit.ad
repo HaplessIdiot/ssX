@@ -1,0 +1,84 @@
+! $XFree86: contrib/programs/xedit/Xedit.ad,v 1.4 1998/10/11 11:20:00 dawes Exp $
+
+*geometry:				590x440
+*input:					TRUE
+*enableBackups:				True
+*backupNameSuffix:			~
+
+*hints:\
+Use Control-S and Control-R to Search.\n\
+Use Control-Shift-_ to Undo. Control-G to switch between Undo and Redo.\n\
+Use Control-A to jump to the beginning of the line.\n\
+Use Control-E to jump to the end of the line.\n\
+Use Control-T to transpose characters.\n\
+Use Control-K to cut to the end of the line. Control-Y to paste.\n\
+Use Control-Q to escape control characters.\n\
+Use Control-U,<number> to multiply actions. Control-G to cancel.\n\
+Use Control-Z to scroll one line up. Meta-Z to scroll one line down.\n\
+Use Meta-Q to format a paragraph.\n\
+Use Button3 to extend selections.\n\
+Use Meta-I to insert a file.\n\
+Use Control-W to delete a selection, and/or jump to the selection mark.\n\
+Use Control-X,Control-F to find a file. Tab for filename completion.\n\
+Use Control-X,Control-S to save.\n\
+Use Control-X,Control-C to exit.\n\
+Use Control-C to paste the selection at CUT_BUFFER0.
+
+*labelWindow*justify:			center
+*labelWindow*label:			no file yet
+*labelWindow.min:			18
+*labelWindow.max:			18
+
+*quit.label:				Quit
+*save.label:				Save
+*load.label:				Load
+
+*buttons*orientation:			horizontal
+*buttons*showGrip:			False
+*buttons.min:				18
+
+*messageWindow.height:			50
+*messageWindow.min:			18
+*Paned*Text*allowResize:		True
+
+*messageWindow.autoFill:		False
+*messageWindow.scrollVertical:		Never
+
+*editWindow.autoFill:			False
+*editWindow.scrollVertical:		Always
+*editWindow.showGrip:			False
+*editWindow.enableUndo:			True
+
+*bc_label*label:			Use Control-S and Control-R to Search.
+*bc_label*showGrip:			False
+*bc_label.min:				18
+
+*insertFile*text.width:			141
+*search*searchText.width:		157
+*search*replaceText.width:		157
+
+*TransientShell*Text.translations: #override \
+c<Key>S:	no-op(r)\n\
+c<Key>R:	no-op(r)\n\
+m<Key>I:	no-op(r)
+
+*TransientShell.translations: #override \
+<Map>:	get-values(1, $w, width, $h, height)\
+	set-values(1, minWidth, $w, minHeight, $h, maxHeight, $h,\
+		   translations, "#override <Map>:")
+
+*baseTranslations: #override \
+<Ctrl>X,<Ctrl>C:	quit()\n\
+<Ctrl>X,<Ctrl>S:	save-file()\n\
+<Ctrl>X,<Ctrl>F:	find-file()
+
+*editWindow.translations: #override \
+<Ctrl>X,<Ctrl>U:	undo()
+
+*filename.translations: #override \
+c<Key>S:	no-op(r)\n\
+c<Key>R:	no-op(r)\n\
+m<Key>I:	no-op(r)\n\
+c<Key>G:	cancel-find-file()\n\
+<Key>Return:	load-file()\n\
+<Key>Tab:	file-completion()

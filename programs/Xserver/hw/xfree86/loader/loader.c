@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.25 1998/09/20 14:41:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.26 1998/09/26 08:34:21 dawes Exp $ */
 
 /*
  *
@@ -672,7 +672,7 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
     unsigned int	size;
     unsigned int	offset;
     int	arnamesize, modnamesize;
-    char	*slash;
+    char	*slash, *longname;
     LOOKUP *lookup_ret, *p;
     LOOKUP *myLookup = NULL; /* Does realloc behave if ptr == 0? */
     int modtype;
@@ -708,6 +708,7 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 
     while( read(arfd,&hdr,sizeof(struct ar_hdr)) ) {
 
+	longname = NULL;
 	sscanf(hdr.ar_size,"%d",&size);
 #if defined(__powerpc__) && defined(Lynx)
 	sscanf(hdr.ar_namlen,"%d",&namlen);
@@ -752,30 +753,52 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 		    offset=lseek(arfd,1,SEEK_CUR); /* make it an even boundary */
 	    continue;
 	}
+	/* Check for a BSD 4.4 style long member name */
+	if (hdr.ar_name[0] == '#' && hdr.ar_name[1] == '1' &&
+	    hdr.ar_name[2] == '/') {
+	    if (sscanf(hdr.ar_name+3, "%d", &modnamesize) != 1) {
+		ErrorF("Bad archive member %s\n", hdr.ar_name);
+		offsetbias = 0;
+		return NULL;
+	    }
+	    /* allocate space for fully qualified name */
+	    longname = xf86loadermalloc(arnamesize + modnamesize + 2);
+	    strcpy(longname,modrec->name);
+	    strcat(longname,":");
+	    i = read(arfd, longname+modnamesize+1, modnamesize);
+	    if (i != modnamesize) {
+		ErrorF("Bad archive member %d\n", hdr.ar_name);
+		xf86loaderfree(longname);
+		offsetbias = 0;
+		return NULL;
+	    }		
+	    longname[i] = '\0';
+	    offset += i;
+	    size -= i;
+	} else {
 
-	/* Regular archive member */
+	    /* Regular archive member */
 #ifdef DEBUGAR
-	ErrorF("Member '%16.16s', size %d, offset %x\n",
+	    ErrorF("Member '%16.16s', size %d, offset %x\n",
 #if !(defined(__powerpc__) && defined(Lynx))
-		hdr.ar_name,
+		   hdr.ar_name,
 #else
-		name,
+		   name,
 #endif
-		size, offset );
+		   size, offset );
 #endif
 
-	slash=strchr(hdr.ar_name,'/');
-	if (slash == NULL) {
-	    /* BSD format without trailing slash */
-	    slash = strchr(hdr.ar_name,' ');
-	} 
-	/* XXX lots to do with long name in the form #1/ */
-        /* SM: Make sure we do not overwrite other parts of struct */
+	    slash=strchr(hdr.ar_name,'/');
+	    if (slash == NULL) {
+		/* BSD format without trailing slash */
+		slash = strchr(hdr.ar_name,' ');
+	    } 
+	    /* SM: Make sure we do not overwrite other parts of struct */
         
-	if((slash - hdr.ar_name) > sizeof(hdr.ar_name)) 
+	    if((slash - hdr.ar_name) > sizeof(hdr.ar_name)) 
                 slash = hdr.ar_name + sizeof(hdr.ar_name) -1;
-	*slash='\000';
-
+	    *slash='\000';
+	}
 	if( (modtype=_GetModuleType(arfd,offset)) < 0 ) {
 	    ErrorF( "%s is an unrecognized module type\n", hdr.ar_name ) ;
 	    offsetbias=0;
@@ -787,12 +810,17 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 	tmp->handle = modrec->handle;
 	tmp->module = moduleseq++;
 	tmp->funcs=&funcs[modtype];
-	modnamesize=strlen(hdr.ar_name);
-	tmp->name=(char *)xf86loadermalloc(arnamesize+modnamesize+2 );
-	strcpy(tmp->name,modrec->name);
-	strcat(tmp->name,":");
-	strcat(tmp->name,hdr.ar_name);
-
+	if (longname == NULL) {
+	    modnamesize=strlen(hdr.ar_name);
+	    tmp->name=(char *)xf86loadermalloc(arnamesize+modnamesize+2 );
+	    strcpy(tmp->name,modrec->name);
+	    strcat(tmp->name,":");
+	    strcat(tmp->name,hdr.ar_name);
+	    
+	} else {
+	    tmp->name = longname;
+	}
+	    
 	offsetbias=offset;
 
 	if((tmp->private = funcs[modtype].LoadModule(tmp, arfd,

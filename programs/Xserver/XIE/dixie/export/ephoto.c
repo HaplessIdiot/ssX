@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley && Dean Verheiden -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/export/ephoto.c,v 3.2 1998/10/04 09:35:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/ephoto.c,v 3.3 1998/10/05 13:22:05 dawes Exp $ */
 
 #define _XIEC_EPHOTO
 
@@ -82,13 +82,11 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
+#include <dixie_e.h>
 #include <XIEproto.h>
   /*
    *  more X server includes.
    */
-#include <misc.h>
-#include <dixstruct.h>
 #include <servermd.h>
   /*
    *  Server XIE Includes
@@ -103,20 +101,17 @@ terms and conditions:
 #include <tables.h>	/* For Server Choice function */
 #include <memory.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeEPhoto();
-Bool		BuildDecodeFromEncode();
-Bool		CompareDecode();
-
 /*
  *  routines internal to this module
  */
-static Bool     CopyEPhotoServerChoice();
-static Bool	PrepEPhoto();
-static Bool	DebriefEPhoto();
+static Bool CopyEPhotoServerChoice(
+			floDefPtr  flo,
+			peDefPtr   ped,
+			xieTecEncodeServerChoice *sparms,
+			xieTecEncodeServerChoice *rparms,
+			CARD16	tsize);
+static Bool PrepEPhoto(floDefPtr flo, peDefPtr ped);
+static Bool DebriefEPhoto(floDefPtr flo, peDefPtr ped, Bool ok);
 
 extern pointer	GetImportTechnique();
 
@@ -132,10 +127,7 @@ static diElemVecRec ePhotoVec = {
 /*------------------------------------------------------------------------
 ----------------- routine: make an ExportPhotomap element ----------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeEPhoto(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeEPhoto(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   inFloPtr inFlo;
@@ -173,22 +165,26 @@ peDefPtr MakeEPhoto(flo,tag,pe)
    * copy technique data (if any)
    */
   if (raw->encodeTechnique == xieValEncodeServerChoice) {
-    if (!CopyEPhotoServerChoice(flo,ped,&stuff[1],&raw[1],raw->lenParams))
+    if (!CopyEPhotoServerChoice(flo, ped,
+		(xieTecEncodeServerChoice *) &stuff[1],
+		(xieTecEncodeServerChoice *) &raw[1],
+		raw->lenParams))
        TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,raw->lenParams,
 		     return(ped));
   } else if (!(ped->techVec = FindTechnique(xieValEncode,raw->encodeTechnique)) 
-         || !(ped->techVec->copyfnc(flo,ped,&stuff[1],&raw[1],raw->lenParams)))
+         || !(ped->techVec->copyfnc(flo,ped,&stuff[1],&raw[1],raw->lenParams,0)))
        TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,raw->lenParams,
 		     return(ped));
 
   return(ped);
 }                               /* end MakeEPhoto */
 
-static Bool CopyEPhotoServerChoice(flo, ped, sparms, rparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecEncodeServerChoice *sparms, *rparms;
-     CARD16	tsize;
+static Bool CopyEPhotoServerChoice(
+     floDefPtr  flo,
+     peDefPtr   ped,
+     xieTecEncodeServerChoice *sparms,
+     xieTecEncodeServerChoice *rparms,
+     CARD16	tsize)
 {
   if(tsize == 1)
     rparms->preference = sparms->preference;
@@ -202,9 +198,7 @@ static Bool CopyEPhotoServerChoice(flo, ped, sparms, rparms, tsize)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepEPhoto(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepEPhoto(floDefPtr flo, peDefPtr ped)
 {
   xieFloExportPhotomap *raw = (xieFloExportPhotomap *)ped->elemRaw;
   ePhotoDefPtr          pvt = (ePhotoDefPtr)ped->elemPvt;
@@ -274,9 +268,7 @@ static Bool PrepEPhoto(flo,ped)
 
 /* All technique-specific prep routines are defined in ecphoto.c */
 
-Bool BuildDecodeFromEncode(flo,ped)
-  floDefPtr flo;
-  peDefPtr  ped;
+Bool BuildDecodeFromEncode(floDefPtr flo, peDefPtr ped)
 {
   ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
 
@@ -429,9 +421,7 @@ Bool BuildDecodeFromEncode(flo,ped)
   return(TRUE);
 }
 
-Bool CompareDecode(flo,ped)
-  floDefPtr flo;
-  peDefPtr  ped;
+Bool CompareDecode(floDefPtr flo, peDefPtr ped)
 {
   ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
   peDefPtr  srcped = ped->inFloLst[IMPORT].srcDef;
@@ -526,10 +516,7 @@ Bool CompareDecode(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------- routine: post execution cleanup -------------------
 ------------------------------------------------------------------------*/
-static Bool DebriefEPhoto(flo,ped,ok)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     Bool	ok;
+static Bool DebriefEPhoto(floDefPtr flo, peDefPtr ped, Bool ok)
 {
   xieFloExportPhotomap *raw = (xieFloExportPhotomap *)ped->elemRaw;
   ePhotoDefPtr pvt = (ePhotoDefPtr) ped->elemPvt;

@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare  -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/export/elut.c,v 3.1 1998/10/04 09:35:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/elut.c,v 3.2 1998/10/05 13:22:05 dawes Exp $ */
 
 #define _XIEC_ELUT
 
@@ -82,13 +82,8 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
+#include <dixie_e.h>
 #include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
   /*
    *  Server XIE Includes
    */
@@ -99,15 +94,10 @@ terms and conditions:
 #include <element.h>
 
 /*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeELUT();
-
-/*
  *  routines internal to this module
  */
-static Bool	PrepELUT();
-static Bool	DebriefELUT();
+static Bool PrepELUT(floDefPtr flo, peDefPtr ped);
+static Bool DebriefELUT(floDefPtr flo, peDefPtr ped, Bool ok);
 
 /*
  * dixie entry points
@@ -121,10 +111,7 @@ static diElemVecRec eLUTVec = {
 /*------------------------------------------------------------------------
 ----------------- routine: make an ExportLUT element ----------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeELUT(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeELUT(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   inFloPtr inFlo;
@@ -167,9 +154,7 @@ peDefPtr MakeELUT(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepELUT(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepELUT(floDefPtr flo, peDefPtr ped)
 {
   xieFloExportLUT *raw = (xieFloExportLUT *)ped->elemRaw;
   eLUTDefPtr   pvt = (eLUTDefPtr) ped->elemPvt;
@@ -207,10 +192,7 @@ static Bool PrepELUT(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------- routine: post execution cleanup -------------------
 ------------------------------------------------------------------------*/
-static Bool DebriefELUT(flo,ped,ok)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     Bool	ok;
+static Bool DebriefELUT(floDefPtr flo, peDefPtr ped, Bool ok)
 {
   xieFloExportLUT *raw = (xieFloExportLUT *)ped->elemRaw;
   eLUTDefPtr      pvt = (eLUTDefPtr) ped->elemPvt;

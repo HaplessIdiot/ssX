@@ -63,7 +63,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.13 1997/07/05 15:17:08 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.14 1998/10/04 09:41:13 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	"misc.h"
@@ -135,29 +135,12 @@ int		ListenTransCount;
 
 extern ClientPtr NextAvailableClient();
 
-#ifdef SIGNALRETURNSINT
-#define SIGVAL int
-#else
-#define SIGVAL void
-#endif
-
-extern SIGVAL AutoResetServer();
-extern SIGVAL GiveUp();
-extern SIGVAL ServerReconfig();
-extern SIGVAL ServerCacheFlush();
-extern SIGVAL CleanupChild();
-
-extern void FreeOsBuffers();
-
-static void error_conn_max();
-static void close_fd();
+static void error_conn_max(XtransConnInfo trans_conn);
+static void close_fd(OsCommPtr oc);
 
 
 static XtransConnInfo
-lookup_trans_conn (fd)
-
-int fd;
-
+lookup_trans_conn (int fd)
 {
     if (ListenTransFds)
     {
@@ -170,7 +153,8 @@ int fd;
     return (NULL);
 }
 
-StopListening()
+void
+StopListening(void)
 {
     int i;
 
@@ -193,11 +177,7 @@ StopListening()
  * only called when server first started
  */
 void
-CreateSockets(old_listen_count, old_listen)
-
-int 	     old_listen_count;
-OldListenRec *old_listen;
-
+CreateSockets(int old_listen_count, OldListenRec *old_listen)
 {
     int         request,
                 i;
@@ -305,7 +285,8 @@ OldListenRec *old_listen;
 /*
  * called when server cycles
  */
-ResetSockets()
+void
+ResetSockets(void)
 {
 }
 
@@ -313,7 +294,7 @@ ResetSockets()
  * accepts new connections
  */
 void
-MakeNewConnections()
+MakeNewConnections(void)
 {
     fd_mask     readyconnections;
     int         curconn;
@@ -334,10 +315,10 @@ MakeNewConnections()
     for (i = MINCLIENT; i < currentMaxClients; i++) {
 	if ((client = clients[i]) != NullClient) {
 	    oc = (OsCommPtr) client->osPrivate;
-	    if (oc && (oc->conn_time != 0) &&
-		    (connect_time - oc->conn_time) >= TimeOutValue ||
-		    client->noClientException != FSSuccess &&
-		    client->clientGone != CLIENT_GONE)
+	    if ((oc && (oc->conn_time != 0) &&
+		    (connect_time - oc->conn_time) >= TimeOutValue) ||
+		     ((client->noClientException != FSSuccess) &&
+		      (client->clientGone != CLIENT_GONE)))
 		CloseDownClient(client);
 	}
     }
@@ -387,10 +368,7 @@ MakeNewConnections()
 #define	NOROOM	"Maximum number of clients reached"
 
 static void
-error_conn_max(trans_conn)
-
-XtransConnInfo trans_conn;
-
+error_conn_max(XtransConnInfo trans_conn)
 {
     int fd = _FontTransGetConnectionNumber (trans_conn);
     fsConnSetup conn;
@@ -454,8 +432,7 @@ XtransConnInfo trans_conn;
 }
 
 static void
-close_fd(oc)
-    OsCommPtr   oc;
+close_fd(OsCommPtr oc)
 {
     int         fd = oc->fd;
 
@@ -472,7 +449,8 @@ close_fd(oc)
     fsfree(oc);
 }
 
-CheckConnections()
+void
+CheckConnections(void)
 {
     fd_set      mask;
     fd_set      tmask;
@@ -498,8 +476,8 @@ CheckConnections()
     }
 }
 
-CloseDownConnection(client)
-    ClientPtr   client;
+void
+CloseDownConnection(ClientPtr client)
 {
     OsCommPtr   oc = (OsCommPtr) client->osPrivate;
 
@@ -519,8 +497,8 @@ CloseDownConnection(client)
 
 static fd_set IgnoredClientsWithInput;
 
-IgnoreClient(client)
-    ClientPtr   client;
+void
+IgnoreClient(ClientPtr client)
 {
     OsCommPtr   oc = (OsCommPtr) client->osPrivate;
     int         connection = oc->fd;
@@ -541,8 +519,8 @@ IgnoreClient(client)
  *    Adds one client back into the input masks.
  ****************/
 
-AttendClient(client)
-    ClientPtr   client;
+void
+AttendClient(ClientPtr client)
 {
     OsCommPtr   oc = (OsCommPtr) client->osPrivate;
     int         connection = oc->fd;
@@ -557,12 +535,13 @@ AttendClient(client)
 /*
  * figure out which clients need to be toasted
  */
-ReapAnyOldClients()
+void
+ReapAnyOldClients(void)
 {
     int         i;
     long        cur_time = GetTimeInMillis();
     ClientPtr   client;
-    extern void SendKeepAliveEvent();
+    extern void SendKeepAliveEvent(ClientPtr);
 
 #ifdef DEBUG
     fprintf(stderr, "Looking for clients to reap\n");

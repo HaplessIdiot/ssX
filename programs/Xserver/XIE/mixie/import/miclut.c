@@ -66,7 +66,7 @@ terms and conditions:
 	Ben Fahy -- AGE Logic, Inc. May, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/import/miclut.c,v 3.2 1998/10/04 09:36:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/import/miclut.c,v 3.3 1998/10/05 13:22:34 dawes Exp $ */
 
 #define _XIEC_MICLUT
 #define _XIEC_ICLUT
@@ -103,17 +103,16 @@ terms and conditions:
 /*
  *  routines referenced by other DDXIE modules
  */
-int	miAnalyzeICLUT();
 
 /*
  *  routines used internal to this module
  */
 
-static int CreateICLUT();
-static int InitializeICLUT();
-static int ActivateICLUT();
-static int ResetICLUT();
-static int DestroyICLUT();
+static int CreateICLUT(floDefPtr flo, peDefPtr ped);
+static int InitializeICLUT(floDefPtr flo, peDefPtr ped);
+static int ActivateICLUT(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+static int ResetICLUT(floDefPtr flo, peDefPtr ped);
+static int DestroyICLUT(floDefPtr flo, peDefPtr ped);
 
 /*
  * DDXIE ImportClientLUT entry points
@@ -143,9 +142,7 @@ typedef struct _lutpvt {
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
 ------------------------------------------------------------------------*/
-int miAnalyzeICLUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int miAnalyzeICLUT(floDefPtr flo, peDefPtr ped)
 {
   /* for now just copy our entry point vector into the peDef */
   ped->ddVec = ICLUTVec;
@@ -156,9 +153,7 @@ int miAnalyzeICLUT(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-static int CreateICLUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int CreateICLUT(floDefPtr flo, peDefPtr ped)
 {
   return MakePETex(flo,ped,xieValMaxBands * sizeof(lutPvtRec),NO_SYNC,NO_SYNC); 
 }
@@ -166,9 +161,7 @@ static int CreateICLUT(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeICLUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int InitializeICLUT(floDefPtr flo, peDefPtr ped)
 {
   xieFloImportClientLUT *raw = (xieFloImportClientLUT *)ped->elemRaw;
   lutPvtPtr ext = (lutPvtPtr) ped->peTex->private;
@@ -185,7 +178,7 @@ static int InitializeICLUT(flo,ped)
 	ext->striplength = (1 << deep);
 	ext->bandnum = (raw->class == xieValSingleBand ||
 			raw->bandOrder == xieValLSFirst)
-			? band : xieValMaxBands - band - 1;
+			? band : (xieValMaxBands - band - 1);
   }
   return InitReceptors(flo,ped,NO_DATAMAP,1) &&
 	 InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
@@ -194,10 +187,7 @@ static int InitializeICLUT(flo,ped)
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateICLUT(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateICLUT(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   int band, nbands = pet->receptor[SRCtag].inFlo->bands;
   bandPtr iband = &(pet->receptor[SRCtag].band[0]);
@@ -219,7 +209,7 @@ static int ActivateICLUT(flo,ped,pet)
     **  something similar to a decodeNotify.
     */
     for(ilen = 0;
-	ivoid = GetSrcBytes(flo,pet,iband,iband->current+ilen,1,FALSE);) {
+	(ivoid = GetSrcBytes(flo,pet,iband,iband->current+ilen,1,FALSE)) != 0;) {
       icopy = ilen = iband->strip->length;
       
       if ((ext->byteptr + ilen) > ext->bytelength)
@@ -244,9 +234,7 @@ static int ActivateICLUT(flo,ped,pet)
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
-static int ResetICLUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int ResetICLUT(floDefPtr flo, peDefPtr ped)
 {
   ResetReceptors(ped);
   ResetEmitter(ped);
@@ -257,9 +245,7 @@ static int ResetICLUT(flo,ped)
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-static int DestroyICLUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int DestroyICLUT(floDefPtr flo, peDefPtr ped)
 {
   /* get rid of the peTex structure  */
   ped->peTex = (peTexPtr) XieFree(ped->peTex);

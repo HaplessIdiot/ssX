@@ -1,17 +1,12 @@
-/* $XConsortium: extensions.c,v 1.7 94/04/17 19:56:14 hersh Exp $ */
+/* $TOG: extensions.c /main/8 1998/02/11 10:02:40 kaleb $ */
 /*
  * font server extensions
  */
 /*
  
-Copyright (c) 1990, 1991  X Consortium
+Copyright 1990, 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -19,13 +14,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation 
@@ -59,8 +54,6 @@ in this Software without prior written authorization from the X Consortium.
 #define	LAST_ERROR	255
 
 static ExtensionEntry **extensions = (ExtensionEntry **) NULL;
-extern int  (*ProcVector[]) ();
-extern int  (*SwappedProcVector[]) ();
 extern void (*ReplySwapVector[]) ();
 
 int         lastEvent = EXTENSION_EVENT_BASE;
@@ -69,15 +62,14 @@ static int  NumExtensions = 0;
 
 
 ExtensionEntry *
-AddExtension(name, num_events, num_errors, main_proc, smain_proc,
-	     closedown_proc, minorop_proc)
-    char       *name;
-    int         num_events;
-    int         num_errors;
-    int         (*main_proc) ();
-    int         (*smain_proc) ();
-    void        (*closedown_proc) ();
-    unsigned short (*minorop_proc) ();
+AddExtension(
+    char       *name,
+    int         num_events,
+    int         num_errors,
+    int         (*main_proc) (),
+    int         (*smain_proc) (),
+    void        (*closedown_proc) (),
+    unsigned short (*minorop_proc) ())
 {
     int         i;
     ExtensionEntry *ext,
@@ -136,9 +128,7 @@ AddExtension(name, num_events, num_errors, main_proc, smain_proc,
 }
 
 Bool
-AddExtensionAlias(alias, ext)
-    char       *alias;
-    ExtensionEntry *ext;
+AddExtensionAlias(char *alias, ExtensionEntry *ext)
 {
     char       *name;
     char      **aliases;
@@ -157,15 +147,13 @@ AddExtensionAlias(alias, ext)
 }
 
 unsigned short
-StandardMinorOpcode(client)
-    ClientPtr   client;
+StandardMinorOpcode(ClientPtr client)
 {
     return ((fsReq *) client->requestBuffer)->data;
 }
 
 unsigned short
-MinorOpcodeOfRequest(client)
-    ClientPtr   client;
+MinorOpcodeOfRequest(ClientPtr client)
 {
     unsigned char major;
 
@@ -178,7 +166,8 @@ MinorOpcodeOfRequest(client)
     return (*extensions[major]->MinorOpcode) (client);
 }
 
-CloseDownExtensions()
+void
+CloseDownExtensions(void)
 {
     int         i,
                 j;
@@ -199,13 +188,12 @@ CloseDownExtensions()
 }
 
 void
-InitExtensions()
+InitExtensions(void)
 {
 }
 
 int
-ProcQueryExtension(client)
-    ClientPtr   client;
+ProcQueryExtension(ClientPtr client)
 {
     fsQueryExtensionReply reply;
     int         i,
@@ -252,8 +240,7 @@ ProcQueryExtension(client)
 }
 
 int
-ProcListExtensions(client)
-    ClientPtr   client;
+ProcListExtensions(ClientPtr client)
 {
     fsListExtensionsReply reply;
     char       *bufptr,

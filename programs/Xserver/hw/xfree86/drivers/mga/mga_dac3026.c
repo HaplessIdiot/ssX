@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.30 1998/09/26 13:24:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.31 1998/10/11 10:20:30 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -469,7 +469,7 @@ MGATi3026SetPCLK( ScrnInfoPtr pScrn, long f_out, int bpp )
 static Bool
 MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
-	int hd, hs, he, hbs, hbe, ht, vd, vs, ve, vbs, vbe, vt, wd;
+	int hd, hs, he, ht, vd, vs, ve, vt, wd;
 	int i, index_1d = 0;
 	const unsigned char* initDAC;
 	MGAPtr pMga = MGAPTR(pScrn);
@@ -527,16 +527,19 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	hd = (mode->CrtcHDisplay	>> 3)	- 1;
 	hs = (mode->CrtcHSyncStart	>> 3)	- 1;
 	he = (mode->CrtcHSyncEnd	>> 3)	- 1;
-	hbs = (mode->CrtcHBlankStart	>> 3)	- 1;
-	hbe = (mode->CrtcHBlankEnd	>> 3)	- 1;
 	ht = (mode->CrtcHTotal		>> 3)	- 1;
 	vd = mode->CrtcVDisplay			- 1;
 	vs = mode->CrtcVSyncStart		- 1;
 	ve = mode->CrtcVSyncEnd			- 1;
-	vbs = mode->CrtcVBlankStart		- 1;
-	vbe = mode->CrtcVBlankEnd		- 1;
 	vt = mode->CrtcVTotal			- 2;
-	if (pScrn->bitsPerPixel == 24)
+
+        /* HTOTAL & 0x7 equal to 0x6 in 8bpp or 0x4 in 24bpp causes strange
+         * vertical stripes
+         */
+        if((ht & 0x07) == 0x06 || (ht & 0x07) == 0x04)
+                ht++;
+
+        if (pScrn->bitsPerPixel == 24)
 		wd = (pScrn->displayWidth * 3) >> (4 - pMga->BppShift);
 	else
 		wd = pScrn->displayWidth >> (4 - pMga->BppShift);
@@ -557,12 +560,12 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	pReg->ExtVga[0]	|= (wd & 0x300) >> 4;
 	pReg->ExtVga[1]	= (((ht - 4) & 0x100) >> 8) |
-				((hbs & 0x100) >> 7) |
+				((hd & 0x100) >> 7) |
 				((hs & 0x100) >> 6) |
 				(ht & 0x40);
 	pReg->ExtVga[2]	= ((vt & 0xc00) >> 10) |
 				((vd & 0x400) >> 8) |
-				((vbs & 0xc00) >> 7) |
+				((vd & 0xc00) >> 7) |
 				((vs & 0xc00) >> 5);
 	if (pScrn->bitsPerPixel == 24)
 		pReg->ExtVga[3]	= (((1 << pMga->BppShift) * 3) - 1) | 0x80;
@@ -577,26 +580,26 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		
 	pVga->CRTC[0]	= ht - 4;
 	pVga->CRTC[1]	= hd;
-	pVga->CRTC[2]	= hbs;
-	pVga->CRTC[3]	= (hbe & 0x1F) | 0x80;
+	pVga->CRTC[2]	= hd;
+	pVga->CRTC[3]	= (ht & 0x1F) | 0x80;
 	pVga->CRTC[4]	= hs;
-	pVga->CRTC[5]	= ((hbe & 0x20) << 2) | (he & 0x1F);
+	pVga->CRTC[5]	= ((ht & 0x20) << 2) | (he & 0x1F);
 	pVga->CRTC[6]	= vt & 0xFF;
 	pVga->CRTC[7]	= ((vt & 0x100) >> 8 ) |
 				((vd & 0x100) >> 7 ) |
 				((vs & 0x100) >> 6 ) |
-				((vbs & 0x100) >> 5 ) |
+				((vd & 0x100) >> 5 ) |
 				0x10 |
 				((vt & 0x200) >> 4 ) |
 				((vd & 0x200) >> 3 ) |
 				((vs & 0x200) >> 2 );
-	pVga->CRTC[9]	= ((vbs & 0x200) >> 4) | 0x40; 
+	pVga->CRTC[9]	= ((vd & 0x200) >> 4) | 0x40; 
 	pVga->CRTC[16] = vs & 0xFF;
 	pVga->CRTC[17] = (ve & 0x0F) | 0x20;
 	pVga->CRTC[18] = vd & 0xFF;
 	pVga->CRTC[19] = wd & 0xFF;
-	pVga->CRTC[21] = vbs & 0xFF;
-	pVga->CRTC[22] = vbe & 0xFF;
+	pVga->CRTC[21] = vd & 0xFF;
+	pVga->CRTC[22] = (vt + 1) & 0xFF;
 
 	if (mode->Flags & V_DBLSCAN)
 		pVga->CRTC[9] |= 0x80;

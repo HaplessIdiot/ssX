@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/import/iphoto.c,v 3.1 1998/10/04 09:35:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/import/iphoto.c,v 3.2 1998/10/05 13:22:08 dawes Exp $ */
 
 #define _XIEC_IPHOTO
 
@@ -82,36 +82,21 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_i.h>
   /*
    *  Server XIE Includes
    */
 #include <corex.h>
 #include <error.h>
 #include <macro.h>
-#include <photomap.h>
 #include <element.h>
-
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeIPhoto();
-photomapPtr	GetImportPhotomap();
-pointer		GetImportTechnique();
 
 
 /*
  *  routines internal to this module
  */
-static Bool	PrepIPhoto();
-static Bool	DebriefIPhoto();
+static Bool PrepIPhoto(floDefPtr flo, peDefPtr ped);
+static Bool DebriefIPhoto(floDefPtr flo, peDefPtr ped, Bool ok);
 
 /*
  * dixie entry points
@@ -125,10 +110,7 @@ static diElemVecRec iPhotoVec = {
 /*------------------------------------------------------------------------
 ----------------- routine: make an import photomap element ---------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeIPhoto(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeIPhoto(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   ELEMENT(xieFloImportPhotomap);
@@ -161,9 +143,7 @@ peDefPtr MakeIPhoto(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepIPhoto(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepIPhoto(floDefPtr flo, peDefPtr ped)
 {
   xieFloImportPhotomap *raw = (xieFloImportPhotomap *)ped->elemRaw;
   iPhotoDefPtr pvt = (iPhotoDefPtr) ped->elemPvt;
@@ -214,10 +194,7 @@ static Bool PrepIPhoto(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------- routine: post execution cleanup -------------------
 ------------------------------------------------------------------------*/
-static Bool DebriefIPhoto(flo,ped,ok)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     Bool	ok;
+static Bool DebriefIPhoto(floDefPtr flo, peDefPtr ped, Bool ok)
 {
   xieFloImportPhotomap *raw = (xieFloImportPhotomap *)ped->elemRaw;
   iPhotoDefPtr pvt = (iPhotoDefPtr) ped->elemPvt;
@@ -238,16 +215,12 @@ static Bool DebriefIPhoto(flo,ped,ok)
 /*------------------------------------------------------------------------
 ------------------ routine: return import-private stuff  -----------------
 ------------------------------------------------------------------------*/
-photomapPtr GetImportPhotomap(ped)
-peDefPtr   ped;
+photomapPtr GetImportPhotomap(peDefPtr ped)
 {
 	return(((iPhotoDefPtr)ped->elemPvt)->map);
 }
 
-pointer GetImportTechnique(ped,num_ret,len_ret)
-     peDefPtr ped;
-     CARD16  *num_ret;
-     CARD16  *len_ret;
+pointer GetImportTechnique(peDefPtr ped, CARD16 *num_ret, CARD16 *len_ret)
 {
   switch(ped->elemRaw->elemType) {
   case xieElemImportPhotomap:

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.46 1998/07/25 05:57:13 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.47 1998/10/02 06:14:59 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -728,18 +728,18 @@ clean::									@@\
  * that describe a single program.
  */
 #ifndef ComplexProgramTargetNoMan
-#define        ComplexProgramTargetNoMan(program)                      @@\
-        PROGRAM = program                                              @@\
-                                                                       @@\
-AllTarget(program)                                                     @@\
-                                                                       @@\
+#define ComplexProgramTargetNoMan(program)				@@\
+        PROGRAM = program						@@\
+									@@\
+AllTarget(program)							@@\
+									@@\
 ProgramTargetHelperNoMan(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
-                                                                       @@\
-DependTarget()                                                         @@\
-LintTarget()                                                           @@\
-                                                                       @@\
-clean::                                                                @@\
-       RemoveFile(ProgramTargetName(program))
+									@@\
+DependTarget()								@@\
+LintTarget()								@@\
+									@@\
+clean::									@@\
+	RemoveFile(ProgramTargetName(program))
 #endif /* ComplexProgramTargetNoMan */
 
 /*

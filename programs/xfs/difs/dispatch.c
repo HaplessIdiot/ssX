@@ -42,13 +42,16 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/dispatch.c,v 3.1 1997/05/31 13:51:37 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/dispatch.c,v 3.2 1998/10/04 09:41:08 dawes Exp $ */
+
+#include	<dispatch.h>
+#include	<swapreq.h>
+#include	<swaprep.h>
 
 #include	"FS.h"
 #include	"FSproto.h"
 #include	"clientstr.h"
 #include	"authstr.h"
-#include	"misc.h"
 #include	"osstruct.h"
 #include	"extentst.h"
 #include	"globals.h"
@@ -59,7 +62,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"fsevents.h"
 #include	"cache.h"
 
-static void kill_all_clients();
+static void kill_all_clients(void);
 
 char        dispatchException = 0;
 char        isItTimeToYield;
@@ -79,12 +82,8 @@ extern Bool drone_server;
 extern void NotImplemented();
 
 extern int  (*InitialVector[3]) ();
-extern int  (*ProcVector[NUM_PROC_VECTORS]) ();
-extern int  (*SwappedProcVector[NUM_PROC_VECTORS]) ();
 extern void (*EventSwapVector[NUM_EVENT_VECTORS]) ();
 extern void (*ReplySwapVector[NUM_PROC_VECTORS]) ();
-
-extern void Swap32Write(), Swap16Write(), CopySwap16Write();
 
 #define	MAJOROP	((fsReq *)client->requestBuffer)->reqType
 
@@ -100,7 +99,8 @@ extern void Swap32Write(), Swap16Write(), CopySwap16Write();
 				 BitmapFormatMaskScanLinePad | \
 				 BitmapFormatMaskScanLineUnit)
 
-Dispatch()
+void
+Dispatch(void)
 {
     int         nready,
                 result;
@@ -186,8 +186,7 @@ Dispatch()
 }
 
 int
-ProcInitialConnection(client)
-    ClientPtr   client;
+ProcInitialConnection(ClientPtr client)
 {
     REQUEST(fsFakeReq);
     fsConnClientPrefix *prefix;
@@ -214,8 +213,7 @@ ProcInitialConnection(client)
 }
 
 int
-ProcEstablishConnection(client)
-    ClientPtr   client;
+ProcEstablishConnection(ClientPtr client)
 {
     fsConnClientPrefix *prefix;
     fsConnSetup csp;
@@ -368,10 +366,10 @@ ProcEstablishConnection(client)
  */
 
 void
-SendErrToClient(client, error, data)
-    ClientPtr   client;
-    int         error;
-    pointer     data;		/* resource id, format, resolution, etc */
+SendErrToClient(
+    ClientPtr   client,
+    int         error,
+    pointer     data)		/* resource id, format, resolution, etc */
 {
     fsError     rep;
     int         extralen = 0;
@@ -431,16 +429,14 @@ SendErrToClient(client, error, data)
 
 /* ARGSUSED */
 int
-ProcBadRequest(client)
-    ClientPtr   client;
+ProcBadRequest(ClientPtr client)
 {
     SendErrToClient(client, FSBadRequest, NULL);
     return FSBadRequest;
 }
 
 int
-ProcNoop(client)
-    ClientPtr   client;
+ProcNoop(ClientPtr client)
 {
     REQUEST(fsReq);
     REQUEST_AT_LEAST_SIZE(fsReq);
@@ -449,8 +445,7 @@ ProcNoop(client)
 }
 
 int
-ProcListCatalogues(client)
-    ClientPtr   client;
+ProcListCatalogues(ClientPtr client)
 {
     int         len,
                 num;
@@ -476,8 +471,7 @@ ProcListCatalogues(client)
 }
 
 int
-ProcSetCatalogues(client)
-    ClientPtr   client;
+ProcSetCatalogues(ClientPtr client)
 {
     char       *new_cat;
     int         err,
@@ -512,8 +506,7 @@ ProcSetCatalogues(client)
 }
 
 int
-ProcGetCatalogues(client)
-    ClientPtr   client;
+ProcGetCatalogues(ClientPtr client)
 {
     int         len,
                 i,
@@ -543,8 +536,7 @@ ProcGetCatalogues(client)
 }
 
 int
-ProcCreateAC(client)
-    ClientPtr   client;
+ProcCreateAC(ClientPtr client)
 {
     fsCreateACReply rep;
     AuthPtr     acp;
@@ -648,9 +640,7 @@ alloc_failure:
 
 /* ARGSUSED */
 int
-DeleteAuthCont (value, id)
-    pointer value;
-    FSID    id;
+DeleteAuthCont (pointer value, FSID id)
 {
     AuthContextPtr  authp = (AuthContextPtr) value;
 
@@ -663,8 +653,7 @@ DeleteAuthCont (value, id)
 }
 
 int
-ProcFreeAC(client)
-    ClientPtr   client;
+ProcFreeAC(ClientPtr client)
 {
     AuthContextPtr authp;
 
@@ -684,8 +673,7 @@ ProcFreeAC(client)
 }
 
 int
-ProcSetAuthorization(client)
-    ClientPtr   client;
+ProcSetAuthorization(ClientPtr client)
 {
     AuthContextPtr acp;
 
@@ -703,8 +691,7 @@ ProcSetAuthorization(client)
 }
 
 int
-ProcSetResolution(client)
-    ClientPtr   client;
+ProcSetResolution(ClientPtr client)
 {
     fsResolution *new_res;
 
@@ -727,8 +714,7 @@ ProcSetResolution(client)
 }
 
 int
-ProcGetResolution(client)
-    ClientPtr   client;
+ProcGetResolution(ClientPtr client)
 {
     fsGetResolutionReply reply;
 
@@ -752,8 +738,7 @@ ProcGetResolution(client)
 }
 
 int
-ProcListFonts(client)
-    ClientPtr   client;
+ProcListFonts(ClientPtr client)
 {
     REQUEST(fsListFontsReq);
     REQUEST_FIXED_SIZE(fsListFontsReq, stuff->nbytes);
@@ -764,8 +749,7 @@ ProcListFonts(client)
 }
 
 int
-ProcListFontsWithXInfo(client)
-    ClientPtr   client;
+ProcListFontsWithXInfo(ClientPtr client)
 {
     REQUEST(fsListFontsWithXInfoReq);
     REQUEST_FIXED_SIZE(fsListFontsWithXInfoReq, stuff->nbytes);
@@ -775,8 +759,7 @@ ProcListFontsWithXInfo(client)
 }
 
 int
-ProcOpenBitmapFont(client)
-    ClientPtr   client;
+ProcOpenBitmapFont(ClientPtr client)
 {
     FontPtr     pfont;
     int         nbytes,
@@ -815,9 +798,9 @@ ProcOpenBitmapFont(client)
 	return err;
     }
 }
+
 int
-ProcQueryXInfo(client)
-    ClientPtr   client;
+ProcQueryXInfo(ClientPtr client)
 {
     ClientFontPtr cfp;
     int         err,
@@ -871,8 +854,7 @@ ProcQueryXInfo(client)
 }
 
 int
-ProcQueryXExtents(client)
-    ClientPtr   client;
+ProcQueryXExtents(ClientPtr client)
 {
     ClientFontPtr cfp;
     int         err;
@@ -902,8 +884,7 @@ ProcQueryXExtents(client)
 }
 
 int
-ProcQueryXBitmaps(client)
-    ClientPtr   client;
+ProcQueryXBitmaps(ClientPtr client)
 {
     ClientFontPtr cfp;
     int         err;
@@ -940,8 +921,7 @@ ProcQueryXBitmaps(client)
 }
 
 int
-ProcCloseFont(client)
-    ClientPtr   client;
+ProcCloseFont(ClientPtr client)
 {
     ClientFontPtr cfp;
 
@@ -960,8 +940,7 @@ ProcCloseFont(client)
 }
 
 void
-CloseDownClient(client)
-    ClientPtr   client;
+CloseDownClient(ClientPtr client)
 {
     if (client->clientGone != CLIENT_GONE) {
 	DeleteClientFontStuff(client);
@@ -1002,7 +981,7 @@ CloseDownClient(client)
 }
 
 static void
-kill_all_clients()
+kill_all_clients(void)
 {
     int         i;
 
@@ -1013,7 +992,7 @@ kill_all_clients()
 }
 
 void
-InitProcVectors()
+InitProcVectors(void)
 {
     int         i;
 
@@ -1028,10 +1007,11 @@ InitProcVectors()
     }
 }
 
-InitClient(client, i, ospriv)
-    ClientPtr   client;
-    int         i;
-    pointer     ospriv;
+void
+InitClient(
+    ClientPtr   client,
+    int         i,
+    pointer     ospriv)
 {
     client->index = i;
     client->sequence = 0;
@@ -1051,8 +1031,7 @@ InitClient(client, i, ospriv)
 }
 
 ClientPtr
-NextAvailableClient(ospriv)
-    pointer     ospriv;
+NextAvailableClient(pointer ospriv)
 {
     int         i;
     ClientPtr   client;
@@ -1092,8 +1071,8 @@ NextAvailableClient(ospriv)
     return client;
 }
 
-MarkClientException(client)
-    ClientPtr   client;
+void
+MarkClientException(ClientPtr client)
 {
     client->noClientException = -2;
 }

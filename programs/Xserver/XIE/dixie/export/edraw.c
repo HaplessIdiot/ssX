@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/export/edraw.c,v 3.1 1998/10/04 09:35:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/edraw.c,v 3.2 1998/10/05 13:22:04 dawes Exp $ */
 
 #define _XIEC_EDRAW
 
@@ -82,13 +82,11 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
+#include <dixie_e.h>
 #include <XIEproto.h>
   /*
    *  more X server includes.
    */
-#include <misc.h>
-#include <dixstruct.h>
 #include <pixmapstr.h>
 #include <gcstruct.h>
 #include <scrnintstr.h>
@@ -100,17 +98,10 @@ terms and conditions:
 #include <macro.h>
 #include <element.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeEDraw();
-Bool     	DrawableAndGC();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepEDraw();
+static Bool PrepEDraw(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -123,10 +114,7 @@ static diElemVecRec eDrawVec = {
 /*------------------------------------------------------------------------
 ----------------- routine: make an ExportDrawable element ----------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeEDraw(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeEDraw(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   inFloPtr inflo;
@@ -168,9 +156,7 @@ peDefPtr MakeEDraw(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepEDraw(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static Bool PrepEDraw(floDefPtr flo, peDefPtr ped)
 {
   xieFloExportDrawable *raw = (xieFloExportDrawable *) ped->elemRaw;
   eDrawDefPtr pvt = (eDrawDefPtr) ped->elemPvt;
@@ -205,7 +191,7 @@ static Bool PrepEDraw(flo,ped)
 
   right_padm1  = screenInfo.formats[f].scanlinePad - 1;
   df[0].stride = screenInfo.formats[f].bitsPerPixel;
-  df[0].pitch  = df[0].width * df[0].stride + right_padm1 & ~right_padm1;
+  df[0].pitch  = (df[0].width * df[0].stride + right_padm1) & ~right_padm1;
 
   return(TRUE);
 }                               /* end PrepEDraw */
@@ -214,13 +200,13 @@ static Bool PrepEDraw(flo,ped)
 --- callable version of GetGCAndDrawableAndValidate (from extension.h) ---
 --- made callable because the macro version returned standard X errors ---
 ------------------------------------------------------------------------*/
-Bool DrawableAndGC(flo,ped,draw_id,gc_id,draw_ret,gc_ret)
-     floDefPtr    flo;
-     peDefPtr     ped;
-     Drawable	  draw_id;
-     GContext	  gc_id;
-     DrawablePtr  *draw_ret;
-     GCPtr        *gc_ret;
+Bool DrawableAndGC(
+     floDefPtr    flo,
+     peDefPtr     ped,
+     Drawable	  draw_id,
+     GContext	  gc_id,
+     DrawablePtr  *draw_ret,
+     GCPtr        *gc_ret)
 {
   register ClientPtr	client = flo->runClient;
   register DrawablePtr	draw;

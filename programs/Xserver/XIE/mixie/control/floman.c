@@ -66,9 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. May, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/control/floman.c,v 3.1 1998/10/04 09:35:59 dawes Exp $ */
-
-#define _XIEC_FLOMAN
+/* $XFree86: xc/programs/Xserver/XIE/mixie/control/floman.c,v 3.2 1998/10/05 13:22:25 dawes Exp $ */
 
 /*
  *  Include files
@@ -98,25 +96,13 @@ terms and conditions:
 #include <texstr.h>
 #include <memory.h>
 
-/*
- *  routines referenced by other DDXIE modules
- */
-int	MakePETex();
-Bool	InitReceptors();
-Bool	InitReceptor();
-Bool    InitEmitter();
-Bool    InitBand();
-void	ResetReceptors();
-void    ResetEmitter();
-void    ResetBand();
-
 /* routines used internal to this module
  */
-static int flo_link();
-static int flo_startup();
-static int flo_resume();
-static int flo_shutdown();
-static int flo_destroy();
+static int flo_link(floDefPtr flo);
+static int flo_startup(floDefPtr flo);
+static int flo_resume(floDefPtr flo);
+static int flo_shutdown(floDefPtr flo);
+static int flo_destroy(floDefPtr flo);
 
 /* DIXIE to DDXIE photoflo management entry points
  */
@@ -131,8 +117,7 @@ static floVecRec floManagerVec = {
 /*------------------------------------------------------------------------
 ------------------------ Initialize Photoflo Manager ---------------------
 ------------------------------------------------------------------------*/
-int InitFloManager(flo)
-     floDefPtr flo;
+int InitFloManager(floDefPtr flo)
 {
   /* plug in the DDXIE photoflo management vector */
   flo->floVec = &floManagerVec;
@@ -144,12 +129,12 @@ int InitFloManager(flo)
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-int MakePETex(flo,ped,extend,inSync,bandSync)
-     floDefPtr   flo;
-     peDefPtr    ped;
-     CARD32   extend;
-     Bool     inSync;
-     Bool   bandSync;
+int MakePETex(
+     floDefPtr   flo,
+     peDefPtr    ped,
+     CARD32   extend,
+     Bool     inSync,
+     Bool   bandSync)
 {
   peTexPtr    pet;
   inFloPtr    inf;
@@ -203,10 +188,11 @@ int MakePETex(flo,ped,extend,inSync,bandSync)
 /*------------------------------------------------------------------------
 --------------------- prepare Receptors for execution --------------------
 ------------------------------------------------------------------------*/
-Bool InitReceptors(flo,ped,mapSize,threshold)
-     floDefPtr flo;
-     peDefPtr  ped;
-     CARD32    mapSize, threshold;
+Bool InitReceptors(
+     floDefPtr flo,
+     peDefPtr  ped,
+     CARD32    mapSize,
+     CARD32    threshold)
 {
   receptorPtr rcp = ped->peTex->receptor;
   int i;
@@ -223,12 +209,14 @@ Bool InitReceptors(flo,ped,mapSize,threshold)
 /*------------------------------------------------------------------------
 --------------------- prepare Receptors for execution --------------------
 ------------------------------------------------------------------------*/
-Bool InitReceptor(flo,ped,rcp,mapSize,threshold,process,bypass)
-     floDefPtr	 flo;
-     peDefPtr	 ped;
-     receptorPtr rcp;
-     CARD32	 mapSize, threshold;
-     bandMsk	 process, bypass;
+Bool InitReceptor(
+     floDefPtr	 flo,
+     peDefPtr	 ped,
+     receptorPtr rcp,
+     CARD32	 mapSize,
+     CARD32	 threshold,
+     unsigned	 process,
+     unsigned	 bypass)
 {
   bandPtr  bnd = rcp->band;
   int b, bands = rcp->inFlo->bands;
@@ -249,11 +237,11 @@ Bool InitReceptor(flo,ped,rcp,mapSize,threshold,process,bypass)
 /*------------------------------------------------------------------------
 ---------------------- prepare emitter for execution ---------------------
 ------------------------------------------------------------------------*/
-Bool InitEmitter(flo,ped,mapSize,inPlace)
-     floDefPtr flo;
-     peDefPtr  ped;
-     CARD32    mapSize;
-     INT32     inPlace;
+Bool InitEmitter(
+     floDefPtr flo,
+     peDefPtr  ped,
+     CARD32    mapSize,
+     INT32     inPlace)
 {
   peTexPtr pet = ped->peTex;
   int b;
@@ -275,12 +263,13 @@ Bool InitEmitter(flo,ped,mapSize,inPlace)
 /*------------------------------------------------------------------------
 ------------- prepare a receptor or emitter band for execution -----------
 ------------------------------------------------------------------------*/
-Bool InitBand(flo,ped,bnd,mapSize,threshold,inPlace)
-     floDefPtr	flo;
-     peDefPtr	ped;
-     bandPtr	bnd;
-     CARD32	mapSize, threshold;
-     INT32	inPlace;
+Bool InitBand(
+     floDefPtr	flo,
+     peDefPtr	ped,
+     bandPtr	bnd,
+     CARD32	mapSize,
+     CARD32	threshold,
+     INT32	inPlace)
 {
   bnd->threshold  = threshold;
   bnd->available  = 0;
@@ -340,8 +329,7 @@ Bool InitBand(flo,ped,bnd,mapSize,threshold,inPlace)
 /*------------------------------------------------------------------------
 ------------------- get rid of left over strips etc. ---------------------
 ------------------------------------------------------------------------*/
-void ResetReceptors(ped)
-     peDefPtr  ped;
+void ResetReceptors(peDefPtr ped)
 {
   peTexPtr    pet = ped->peTex;
   receptorPtr rcp;
@@ -367,8 +355,7 @@ void ResetReceptors(ped)
 /*------------------------------------------------------------------------
 ------------------- get rid of left over strips etc. ---------------------
 ------------------------------------------------------------------------*/
-void ResetEmitter(ped)
-     peDefPtr  ped;
+void ResetEmitter(peDefPtr ped)
 {
   peTexPtr pet = ped->peTex;
   int b;
@@ -383,8 +370,7 @@ void ResetEmitter(ped)
 /*------------------------------------------------------------------------
 ------------------- get rid of left over strips etc. ---------------------
 ------------------------------------------------------------------------*/
-void ResetBand(bnd)
-     bandPtr  bnd;
+void ResetBand(bandPtr bnd)
 {
   bnd->replicate = NO_BANDS;
 
@@ -398,8 +384,7 @@ void ResetBand(bnd)
 /*------------------------------------------------------------------------
 -------------------------------- Link -----------------------------------
 ------------------------------------------------------------------------*/
-static int flo_link(flo)
-     floDefPtr flo;
+static int flo_link(floDefPtr flo)
 {
   peDefPtr ped;
   ddElemVecRec vec;
@@ -429,8 +414,7 @@ static int flo_link(flo)
 /*------------------------------------------------------------------------
 -------------------------------- Startup -----------------------------------
 ------------------------------------------------------------------------*/
-static int flo_startup(flo)
-     floDefPtr flo;
+static int flo_startup(floDefPtr flo)
 {
   peDefPtr ped;
   pedLstPtr lst = ListEmpty(&flo->optDAG) ? &flo->defDAG : &flo->optDAG;
@@ -472,8 +456,7 @@ static int flo_startup(flo)
 /*------------------------------------------------------------------------
 -------------------------------- Resume -----------------------------------
 ------------------------------------------------------------------------*/
-static int flo_resume(flo)
-     floDefPtr flo;
+static int flo_resume(floDefPtr flo)
 {
   /* not implemented in the SI */
   
@@ -484,8 +467,7 @@ static int flo_resume(flo)
 /*------------------------------------------------------------------------
 ------------------------------ Shutdown ----------------------------------
 ------------------------------------------------------------------------*/
-static int flo_shutdown(flo)
-     floDefPtr flo;
+static int flo_shutdown(floDefPtr flo)
 {
   peDefPtr ped;
   pedLstPtr lst = ListEmpty(&flo->optDAG) ? &flo->defDAG : &flo->optDAG;
@@ -519,8 +501,7 @@ static int flo_shutdown(flo)
 /*------------------------------------------------------------------------
 -------------------------------- Destroy ---------------------------------
 ------------------------------------------------------------------------*/
-static int flo_destroy(flo)
-     floDefPtr flo;
+static int flo_destroy(floDefPtr flo)
 {
   peDefPtr ped;
   pedLstPtr lst = ListEmpty(&flo->optDAG) ? &flo->defDAG : &flo->optDAG;

@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc.  March 1993
 
 ******************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/include/macro.h,v 1.6 1998/10/04 09:35:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/include/macro.h,v 1.7 1998/10/05 13:22:23 dawes Exp $ */
 
 #ifndef _XIEH_MACRO
 #define _XIEH_MACRO
@@ -129,7 +129,7 @@ terms and conditions:
 #define SetDepthFromLevels(levels,depth) \
 		if(levels > 2) { CARD32 _i = levels; \
 		  for(depth = 0; (_i >>= 1); ++depth); \
-		  if((1 << depth) - 1 & levels) ++depth; } \
+		  if(((1 << depth) - 1) & levels) ++depth; } \
 		else depth = levels ? 1 : 32
 
 /* event convenience macros

@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.9 1998/10/06 04:39:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.10 1998/10/21 06:12:06 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -33,13 +33,6 @@
  
 #define DACREGSIZE 0x50
     
-/*
- * Set this flag if you want to soft-reset the MGA during mode changes.
- * This is useful during development.
- */
-
-#define USE_RESET
-
 /*
  * Only change bits shown in this mask.  Ideally reserved bits should be
  * zeroed here.  Also, don't change the vgaioen bit here since it is
@@ -203,7 +196,7 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out,
 
 #ifdef DEBUG
 	ErrorF( "f_out_requ =%ld f_pll_real=%.1f f_vco=%.1f n=0x%x m=0x%x p=0x%x s=0x%x\n",
-		f_out, f_pll, f_vco, *best_n, *best_m, *best_p, *s );
+		f_out, f_pll, f_vco, *best_n, *best_m, *p, *s );
 #endif
 
 	return f_pll;
@@ -256,7 +249,7 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* 0x48: */	   0,    0,    0,    0,    0,    0,    0,    0
 	};
 
-	int hd, hs, he, hbs, hbe, ht, vd, vs, ve, vbs, vbe, vt, wd;
+	int hd, hs, he, ht, vd, vs, ve, vt, wd;
 	int i;
 	MGAPtr pMga;
 	MGARegPtr pReg;
@@ -302,11 +295,21 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
 	default:
+#if 0           
+                /* 124 Mhz */
 		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x04;
 		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x2D;
 		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x19;
 		pReg->Option  = 0x4007CC21;
 		pReg->Option2 = 0x00008000;
+#else           
+                /* 143 Mhz */
+		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x06;
+		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x24;
+		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
+		pReg->Option  = 0x400FCC21;
+		pReg->Option2 = 0x00008000;
+#endif
 		break;
 	}
 	
@@ -355,20 +358,16 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	hd = (mode->CrtcHDisplay	>> 3)	- 1;
 	hs = (mode->CrtcHSyncStart	>> 3)	- 1;
 	he = (mode->CrtcHSyncEnd	>> 3)	- 1;
-	hbs = (mode->CrtcHBlankStart	>> 3)	- 1;
-	hbe = (mode->CrtcHBlankEnd	>> 3)	- 1;
 	ht = (mode->CrtcHTotal		>> 3)	- 1;
 	vd = mode->CrtcVDisplay			- 1;
 	vs = mode->CrtcVSyncStart		- 1;
 	ve = mode->CrtcVSyncEnd			- 1;
-	vbs = mode->CrtcVBlankStart		- 1;
-	vbe = mode->CrtcVBlankEnd		- 1;
 	vt = mode->CrtcVTotal			- 2;
 	
-	/* HTOTAL & 0xF equal to 0xE in 8bpp or 0x4 in 24bpp causes strange
+	/* HTOTAL & 0x7 equal to 0x6 in 8bpp or 0x4 in 24bpp causes strange
 	 * vertical stripes
 	 */  
-	if((ht & 0x0F) == 0x0E || (ht & 0x0F) == 0x04)
+	if((ht & 0x07) == 0x06 || (ht & 0x07) == 0x04)
 		ht++;
 		
 	if (pScrn->bitsPerPixel == 24)
@@ -389,12 +388,12 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	pReg->ExtVga[0]	|= (wd & 0x300) >> 4;
 	pReg->ExtVga[1]	= (((ht - 4) & 0x100) >> 8) |
-				((hbs & 0x100) >> 7) |
+				((hd & 0x100) >> 7) |
 				((hs & 0x100) >> 6) |
 				(ht & 0x40);
 	pReg->ExtVga[2]	= ((vt & 0xc00) >> 10) |
 				((vd & 0x400) >> 8) |
-				((vbs & 0xc00) >> 7) |
+				((vd & 0xc00) >> 7) |
 				((vs & 0xc00) >> 5);
 	if (pScrn->bitsPerPixel == 24)
 		pReg->ExtVga[3]	= (((1 << pMga->BppShift) * 3) - 1) | 0x80;
@@ -411,26 +410,26 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		
 	pVga->CRTC[0]	= ht - 4;
 	pVga->CRTC[1]	= hd;
-	pVga->CRTC[2]	= hbs;
-	pVga->CRTC[3]	= (hbe & 0x1F) | 0x80;
+	pVga->CRTC[2]	= hd;
+	pVga->CRTC[3]	= (ht & 0x1F) | 0x80;
 	pVga->CRTC[4]	= hs;
-	pVga->CRTC[5]	= ((hbe & 0x20) << 2) | (he & 0x1F);
+	pVga->CRTC[5]	= ((ht & 0x20) << 2) | (he & 0x1F);
 	pVga->CRTC[6]	= vt & 0xFF;
 	pVga->CRTC[7]	= ((vt & 0x100) >> 8 ) |
 				((vd & 0x100) >> 7 ) |
 				((vs & 0x100) >> 6 ) |
-				((vbs & 0x100) >> 5 ) |
+				((vd & 0x100) >> 5 ) |
 				0x10 |
 				((vt & 0x200) >> 4 ) |
 				((vd & 0x200) >> 3 ) |
 				((vs & 0x200) >> 2 );
-	pVga->CRTC[9]	= ((vbs & 0x200) >> 4) | 0x40; 
+	pVga->CRTC[9]	= ((vd & 0x200) >> 4) | 0x40; 
 	pVga->CRTC[16] = vs & 0xFF;
 	pVga->CRTC[17] = (ve & 0x0F) | 0x20;
 	pVga->CRTC[18] = vd & 0xFF;
 	pVga->CRTC[19] = wd & 0xFF;
-	pVga->CRTC[21] = vbs & 0xFF;
-	pVga->CRTC[22] = vbe & 0xFF;
+	pVga->CRTC[21] = vd & 0xFF;
+	pVga->CRTC[22] = (vt + 1) & 0xFF;
 
 	if (mode->Flags & V_DBLSCAN)
 		pVga->CRTC[9] |= 0x80;
@@ -445,11 +444,8 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    pReg->ExtVga[3] |= 0x40;
 	}
 
-	/* select external clock and disable VGA frame buffer mapping */
+	/* select external clock */
 	pVga->MiscOutReg |= 0x0C; 
-#if 0     /* somethink is wrong - a mode isn't initialized properly */
-	pVga->MiscOutReg &= 0x02;
-#endif
 	
 	MGAGSetPCLK( pScrn, mode->Clock );
 
@@ -527,44 +523,6 @@ MGAGSavePalette(ScrnInfoPtr pScrn, unsigned char* pntr)
         *(pntr++) = inMGAdreg(MGA1064_COL_PAL);
 }
 
-
-static void
-MGAGReset(ScrnInfoPtr pScrn)
-{
-#ifdef USE_RESET
-	MGAPtr pMga = MGAPTR(pScrn);
-	int i;
-
-#ifdef DEBUG	
-	ErrorF("Resetting...\n");
-#endif
-
-	/* set soft reset bit */
-	OUTREG(MGAREG_Reset, 1);
-	usleep(10);
-	OUTREG(MGAREG_Reset, 0);
-
-	/* reset memory */
-	OUTREG(MGAREG_MACCESS, 1<<15);
-	usleep(10);
-
-	/* wait until drawing engine is ready */
-	while ( MGAISBUSY() )
-		usleep(1000);
-		
-	/* flush FIFO */	
-	i = 32;
-	WAITFIFO(i);
-	while ( i-- )
-		OUTREG(MGAREG_Reset, 0);
-
-#ifdef DEBUG		
-	ErrorF("Reset done\n");
-#endif	
-
-#endif
-}
-
 /*
  * MGAGRestore
  *
@@ -577,8 +535,6 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 {
 	int i;
 	MGAPtr pMga = MGAPTR(pScrn);
-
-	MGAGReset(pScrn);
 
 	/*
 	 * Code is needed to get things back to bank zero.

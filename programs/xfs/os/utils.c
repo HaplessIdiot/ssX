@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.5 1996/06/29 09:10:38 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.6 1998/10/04 09:41:14 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
@@ -76,12 +76,6 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #endif /* PATH_MAX */
 
-#ifdef SIGNALRETURNSINT
-#define SIGVAL int
-#else
-#define SIGVAL void
-#endif
-
 #if defined(X_NOT_POSIX) && (defined(SYSV) || defined(SVR4))
 #define SIGNALS_RESET_WHEN_CAUGHT
 #endif
@@ -105,8 +99,7 @@ int 	     OldListenCount = 0;
 
 /* ARGSUSED */
 SIGVAL
-AutoResetServer(n)
-    int n;
+AutoResetServer(int n)
 {
 
 #ifdef DEBUG
@@ -122,7 +115,7 @@ AutoResetServer(n)
 }
 
 SIGVAL
-GiveUp()
+GiveUp(void)
 {
 
 #ifdef DEBUG
@@ -135,8 +128,7 @@ GiveUp()
 
 /* ARGSUSED */
 SIGVAL
-ServerReconfig(n)
-    int n;
+ServerReconfig(int n)
 {
 
 #ifdef DEBUG
@@ -153,8 +145,7 @@ ServerReconfig(n)
 
 /* ARGSUSED */
 SIGVAL
-ServerCacheFlush(n)
-    int n;
+ServerCacheFlush(int n)
 {
 
 #ifdef DEBUG
@@ -171,8 +162,7 @@ ServerCacheFlush(n)
 
 /* ARGSUSED */
 SIGVAL
-CleanupChild(n)
-    int n;
+CleanupChild(int n)
 {
 
 #ifdef DEBUG
@@ -187,7 +177,7 @@ CleanupChild(n)
 }
 
 long
-GetTimeInMillis()
+GetTimeInMillis(void)
 {
     struct timeval tp;
 
@@ -196,14 +186,15 @@ GetTimeInMillis()
 }
 
 static void
-usage()
+usage(void)
 {
     fprintf(stderr, "usage: %s [-config config_file] [-port tcp_port]\n",
 	    progname);
     exit(1);
 }
 
-OsInitAllocator ()
+void
+OsInitAllocator (void)
 {
 #ifdef MEMBUG
     CheckMemory ();
@@ -226,10 +217,7 @@ OsInitAllocator ()
  */
 
 void
-ProcessLSoption (str)
-
-char *str;
-
+ProcessLSoption (char *str)
 {
     char *ptr = str;
     char *slash, *next;
@@ -288,9 +276,7 @@ char *str;
 
 /* ARGSUSED */
 void
-ProcessCmdLine(argc, argv)
-    int         argc;
-    char      **argv;
+ProcessCmdLine(int argc, char **argv)
 {
     int         i;
 
@@ -350,14 +336,13 @@ unsigned long	MemoryFail;
  * expectations of malloc, but this makes lint happier.
  */
 
-unsigned long * 
-FSalloc (amount)
-    unsigned long amount;
+pointer 
+FSalloc (unsigned long amount)
 {
     register pointer  ptr;
 	
     if ((long)amount < 0)
-	return (unsigned long *)NULL;
+	return 0;
     if (amount == 0)
 	amount++;
     /* aligned extra on long word boundary */
@@ -365,27 +350,26 @@ FSalloc (amount)
 #ifdef MEMBUG
     if (!Must_have_memory && MemoryFail &&
 	((random() % MEM_FAIL_SCALE) < MemoryFail))
-	return (unsigned long *)NULL;
+	return 0;
     if (ptr = (pointer)fmalloc(amount))
-	return (unsigned long *) ptr;
+	return ptr;
 #else
-    if (ptr = (pointer)malloc(amount))
-	return (unsigned long *)ptr;
+    if ((ptr = (pointer)malloc(amount)) != 0)
+	return ptr;
 #endif
     if (Must_have_memory)
 	FatalError("Out of memory\n");
-    return (unsigned long *)NULL;
+    return 0;
 }
 
 /*****************
  * FScalloc
  *****************/
 
-unsigned long *
-FScalloc (amount)
-    unsigned long   amount;
+pointer
+FScalloc (unsigned long amount)
 {
-    unsigned long   *ret;
+    pointer ret;
 
     ret = FSalloc (amount);
     if (ret)
@@ -397,24 +381,22 @@ FScalloc (amount)
  * FSrealloc
  *****************/
 
-unsigned long *
-FSrealloc (ptr, amount)
-    register pointer ptr;
-    unsigned long amount;
+pointer
+FSrealloc (pointer ptr, unsigned long amount)
 {
 #ifdef MEMBUG
     if (!Must_have_memory && MemoryFail &&
 	((random() % MEM_FAIL_SCALE) < MemoryFail))
-	return (unsigned long *)NULL;
+	return 0;
     ptr = (pointer)frealloc((char *) ptr, amount);
     if (ptr)
-	return (unsigned long *) ptr;
+	return ptr;
 #else
     if ((long)amount <= 0)
     {
 	if (ptr && !amount)
 	    free(ptr);
-	return (unsigned long *)NULL;
+	return 0;
     }
     amount = (amount + 3) & ~3;
     if (ptr)
@@ -422,11 +404,11 @@ FSrealloc (ptr, amount)
     else
 	ptr = (pointer)malloc(amount);
     if (ptr)
-        return (unsigned long *)ptr;
+        return ptr;
 #endif
     if (Must_have_memory)
 	FatalError("Out of memory\n");
-    return (unsigned long *)NULL;
+    return 0;
 }
                     
 /*****************
@@ -435,8 +417,7 @@ FSrealloc (ptr, amount)
  *****************/    
 
 void
-FSfree(ptr)
-    register pointer ptr;
+FSfree(pointer ptr)
 {
 #ifdef MEMBUG
     if (ptr)

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.1 1996/06/29 09:10:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.2 1998/10/04 09:39:06 dawes Exp $ */
 
 #ifndef _MERGEROP_H_
 #define _MERGEROP_H_
@@ -69,7 +69,7 @@ extern mergeRopRec	mergeRopBits[16];
 /* AND has higher precedence than XOR */
 
 #define DoMergeRop(src, dst) \
-    ((dst) & ((src) & _ca1 ^ _cx1) ^ ((src) & _ca2 ^ _cx2))
+    (((dst) & (((src) & _ca1) ^ _cx1)) ^ (((src) & _ca2) ^ _cx2))
 
 #define DoMergeRop24(src,dst,index) {\
 	register int idx = ((index) & 3)<< 1; \
@@ -106,7 +106,7 @@ extern mergeRopRec	mergeRopBits[16];
 			       (_ccx = (src) & _ca2 ^ _cx2))
 
 #define DoMaskMergeRop(src, dst, mask) \
-    ((dst) & (((src) & _ca1 ^ _cx1) | ~(mask)) ^ (((src) & _ca2 ^ _cx2) & (mask)))
+    (((dst) & ((((src) & _ca1) ^ _cx1) | ~(mask))) ^ ((((src) & _ca2) ^ _cx2) & (mask)))
 
 #define DoMaskMergeRop24(src, dst, mask, index)  {\
 	register int idx = ((index) & 3)<< 1; \
@@ -162,7 +162,7 @@ extern mergeRopRec	mergeRopBits[16];
 	idx++; \
 	*((dst)+1) = (*((dst)+1) & cfbrmask[idx])|(((src)>>cfb24Shift[idx])&cfbmask[idx]); \
 	}
-#define MROP_MASK(src,dst,mask)	((dst) & ~(mask) | (src) & (mask))
+#define MROP_MASK(src,dst,mask)	(((dst) & ~(mask)) | ((src) & (mask)))
 #define MROP_MASK24(src,dst,mask,index)	{\
 	register int idx = ((index) & 3)<< 1; \
 	*(dst) = (*(dst) & cfbrmask[idx] &(~(((mask)<< cfb24Shift[idx])&cfbmask[idx])) | \

@@ -1,17 +1,12 @@
-/* $XConsortium: swaprep.c,v 1.11 94/04/17 19:56:19 gildea Exp $ */
+/* $TOG: swaprep.c /main/12 1998/02/11 10:03:25 kaleb $ */
 /*
  * font server reply swapping
  */
 /*
  
-Copyright (c) 1990, 1991  X Consortium
+Copyright 1990, 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -19,13 +14,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation 
@@ -48,17 +43,19 @@ in this Software without prior written authorization from the X Consortium.
  * THIS SOFTWARE.
  */
 
+#include	<swaprep.h>
+#include	<swapreq.h>
+
 #include	"FSproto.h"
 #include	"clientstr.h"
-#include	"misc.h"
 
-static void SwapConnSetupAccept();
+static void SwapConnSetupAccept(fsConnSetupAccept *pConnSetup, fsConnSetupAccept *pConnSetupT);
 
 void
-Swap32Write(client, size, pbuf)
-    ClientPtr   client;
-    int         size;
-    long       *pbuf;
+Swap32Write(
+    ClientPtr   client,
+    int         size,
+    long       *pbuf)
 {
     int         n,
                 i;
@@ -71,10 +68,10 @@ Swap32Write(client, size, pbuf)
 }
 
 void
-Swap16Write(client, size, pbuf)
-    ClientPtr   client;
-    int         size;
-    short      *pbuf;
+Swap16Write(
+    ClientPtr   client,
+    int         size,
+    short      *pbuf)
 {
     int         n,
                 i;
@@ -86,10 +83,11 @@ Swap16Write(client, size, pbuf)
     (void) WriteToClient(client, size << 1, (char *) pbuf);
 }
 
-CopySwap32Write(client, size, pbuf)
-    ClientPtr   client;
-    int         size;
-    long       *pbuf;
+void
+CopySwap32Write(
+    ClientPtr   client,
+    int         size,
+    long       *pbuf)
 {
     int         bufsize = size;
     long       *pbufT;
@@ -135,10 +133,10 @@ CopySwap32Write(client, size, pbuf)
 }
 
 void
-CopySwap16Write(client, size, pbuf)
-    ClientPtr   client;
-    int         size;
-    short      *pbuf;
+CopySwap16Write(
+    ClientPtr   client,
+    int         size,
+    short      *pbuf)
 {
     int         bufsize = size;
     short      *pbufT;
@@ -185,33 +183,44 @@ CopySwap16Write(client, size, pbuf)
 	DEALLOCATE_LOCAL((char *) pbufT);
 }
 
+
+#undef  pRep
+#define pRep ((fsGenericReply *)data)
+
 void
-SGenericReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsGenericReply *pRep;
+SGenericReply(
+    ClientPtr   client,
+    int         size,
+    void *	data)
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
+
+#undef  pRep
+#define pRep ((fsListExtensionsReply *)data)
+
 void
-SListExtensionsReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsListExtensionsReply *pRep;
+SListExtensionsReply(
+    ClientPtr   client,
+    int         size,
+    void *	data)
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
+#undef  pRep
+#define pRep ((fsQueryExtensionReply *)data)
+
 void
-SQueryExtensionReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsQueryExtensionReply *pRep;
+SQueryExtensionReply(
+    ClientPtr   client,
+    int         size,
+    void *	data)
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
@@ -220,11 +229,14 @@ SQueryExtensionReply(client, size, pRep)
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
+#undef  pRep
+#define pRep ((fsListCataloguesReply *)data)
+
 void
-SListCataloguesReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsListCataloguesReply *pRep;
+SListCataloguesReply(
+    ClientPtr   client,
+    int         size,
+    void *	data)
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
@@ -233,11 +245,14 @@ SListCataloguesReply(client, size, pRep)
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
+#undef  pRep
+#define pRep ((fsCreateACReply *)data)
+
 void
-SCreateACReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsCreateACReply *pRep;
+SCreateACReply(
+    ClientPtr   client,
+    int         size,
+    void *	data)
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
@@ -245,11 +260,14 @@ SCreateACReply(client, size, pRep)
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
+#undef  pRep
+#define pRep ((fsGetEventMaskReply *)data)
+
 void
-SGetEventMaskReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsGetEventMaskReply *pRep;
+SGetEventMaskReply(
+    ClientPtr   client,
+    int         size,
+    void *	data)
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
@@ -257,22 +275,28 @@ SGetEventMaskReply(client, size, pRep)
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
+#undef  pRep
+#define pRep ((fsGetResolutionReply *)data)
+
 void
-SGetResolutionReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsGetResolutionReply *pRep;
+SGetResolutionReply(
+    ClientPtr   client,
+    int         size,
+    void *	data)
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
+#undef  pRep
+#define pRep ((fsListFontsReply *)data)
+
 void
-SListFontsReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsListFontsReply *pRep;
+SListFontsReply(
+    ClientPtr   client,
+    int         size,
+    void *	data)
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
@@ -301,11 +325,14 @@ SListFontsReply(client, size, pRep)
     reply->font_header_font_ascent = lswaps(reply->font_header_font_ascent); \
     reply->font_header_font_descent = lswaps(reply->font_header_font_descent)
 
+#undef  pRep
+#define pRep ((fsListFontsWithXInfoReply *)data)
+
 void
-SListFontsWithXInfoReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsListFontsWithXInfoReply *pRep;
+SListFontsWithXInfoReply(
+    ClientPtr   client,
+    int         size,
+    void *	data)
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
@@ -316,11 +343,14 @@ SListFontsWithXInfoReply(client, size, pRep)
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
+#undef  pRep
+#define pRep ((fsOpenBitmapFontReply *)data)
+
 void
-SOpenBitmapFontReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsOpenBitmapFontReply *pRep;
+SOpenBitmapFontReply(
+    ClientPtr   client,
+    int         size,
+    void *	data)
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
@@ -329,11 +359,14 @@ SOpenBitmapFontReply(client, size, pRep)
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
+#undef  pRep
+#define pRep ((fsQueryXInfoReply *)data)
+
 void
-SQueryXInfoReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsQueryXInfoReply *pRep;
+SQueryXInfoReply(
+    ClientPtr   client,
+    int         size,
+    void *	data)
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
@@ -341,11 +374,14 @@ SQueryXInfoReply(client, size, pRep)
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
+#undef  pRep
+#define pRep ((fsQueryXExtents8Reply *)data)
+
 void
-SQueryXExtentsReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsQueryXExtents8Reply *pRep; /* QueryXExtents16Reply is the same */
+SQueryXExtentsReply(
+    ClientPtr   client,
+    int         size,
+    void *	data) /* QueryXExtents16Reply is the same */
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
@@ -353,11 +389,14 @@ SQueryXExtentsReply(client, size, pRep)
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
+#undef  pRep
+#define pRep ((fsQueryXBitmaps8Reply *)data)
+
 void
-SQueryXBitmapsReply(client, size, pRep)
-    ClientPtr   client;
-    int         size;
-    fsQueryXBitmaps8Reply *pRep; /* QueryXBitmaps16Reply is the same */
+SQueryXBitmapsReply(
+    ClientPtr   client,
+    int         size,
+    void *	data) /* QueryXBitmaps16Reply is the same */
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
@@ -368,9 +407,7 @@ SQueryXBitmapsReply(client, size, pRep)
 }
 
 void
-SErrorEvent(error, perror)
-    fsError    *error,
-               *perror;
+SErrorEvent(fsError *error, fsError *perror)
 {
     *perror = *error;
     perror->sequenceNumber = lswaps(perror->sequenceNumber);
@@ -379,10 +416,10 @@ SErrorEvent(error, perror)
 }
 
 void
-WriteSConnectionInfo(client, size, pInfo)
-    ClientPtr   client;
-    unsigned long size;
-    char       *pInfo;
+WriteSConnectionInfo(
+    ClientPtr   client,
+    unsigned long size,
+    char       *pInfo)
 {
     char       *pInfoT,
                *pInfoTBase;
@@ -406,9 +443,7 @@ WriteSConnectionInfo(client, size, pInfo)
 }
 
 static void
-SwapConnSetupAccept(pConnSetup, pConnSetupT)
-    fsConnSetupAccept *pConnSetup,
-               *pConnSetupT;
+SwapConnSetupAccept(fsConnSetupAccept *pConnSetup, fsConnSetupAccept *pConnSetupT)
 {
     pConnSetupT->length = lswapl(pConnSetup->length);
     pConnSetupT->max_request_len = lswaps(pConnSetup->max_request_len);
@@ -417,9 +452,7 @@ SwapConnSetupAccept(pConnSetup, pConnSetupT)
 }
 
 void
-WriteSConnSetup(client, pcsp)
-    ClientPtr   client;
-    fsConnSetup *pcsp;
+WriteSConnSetup(ClientPtr client, fsConnSetup *pcsp)
 {
     fsConnSetup cspT;
 
@@ -434,8 +467,7 @@ WriteSConnSetup(client, pcsp)
 }
 
 static void
-SwapPropOffset(po)
-    char *po;
+SwapPropOffset(char *po)
 {
     int i, n;
 
@@ -447,8 +479,7 @@ SwapPropOffset(po)
 }
 
 void
-SwapPropInfo(pi)
-    fsPropInfo *pi;
+SwapPropInfo(fsPropInfo *pi)
 {
     int i;
     char *po;
@@ -465,9 +496,7 @@ SwapPropInfo(pi)
 }
 
 void
-SwapExtents(extents, num)
-    fsXCharInfo *extents;
-    int         num;
+SwapExtents(fsXCharInfo *extents, int num)
 {
     SwapShorts((short *)extents, num * (SIZEOF(fsXCharInfo) / 2));
 }

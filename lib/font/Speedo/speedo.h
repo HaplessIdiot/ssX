@@ -95,7 +95,7 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 #endif
 
 #ifndef PROTOS_AVAIL                /* 1 to use function prototyping */
-#define PROTOS_AVAIL 0   			/* 0 to suppress it */
+#define PROTOS_AVAIL 1   			/* 0 to suppress it */
 #endif
 
 #ifndef FONTFAR						/* if Intel mixed memory model implementation */

@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrc.h,v 1.3 1998/08/20 13:59:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.h,v 1.4 1998/10/03 08:42:28 dawes Exp $ */
 
 #ifndef _XawTextSrc_h
 #define _XawTextSrc_h
@@ -70,7 +70,8 @@ typedef enum {
   XawstWhiteSpace,
   XawstEOL,
   XawstParagraph,
-  XawstAll
+  XawstAll,
+  XawstAlphaNumeric
 } XawTextScanType;
 
 typedef enum {

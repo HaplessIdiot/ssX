@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/plogic.c,v 3.1 1998/10/04 09:35:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/plogic.c,v 3.2 1998/10/05 13:22:14 dawes Exp $ */
 
 #define _XIEC_PLOGIC
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -97,16 +91,10 @@ terms and conditions:
 #include <element.h>
 #include <difloat.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeLogic();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepLogic();
+static Bool PrepLogic(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -120,10 +108,7 @@ static diElemVecRec pLogicVec =
 /*------------------------------------------------------------------------
 ----------------------- routine: make a logical element --------------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeLogic(flo,tag,pe)
-	floDefPtr      flo;
-	xieTypPhototag tag;
-	xieFlo        *pe;
+peDefPtr MakeLogic(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
 	int inputs;
 	peDefPtr ped;
@@ -185,9 +170,7 @@ peDefPtr MakeLogic(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepLogic(flo,ped)
-	floDefPtr  flo;
-	peDefPtr   ped;
+static Bool PrepLogic(floDefPtr flo, peDefPtr ped)
 {
 	xieFloLogical *raw = (xieFloLogical *)ped->elemRaw;
 	inFloPtr  ind, in2, in1 = &ped->inFloLst[SRCt1];

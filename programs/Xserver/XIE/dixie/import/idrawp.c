@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/import/idrawp.c,v 3.1 1998/10/04 09:35:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/import/idrawp.c,v 3.2 1998/10/05 13:22:08 dawes Exp $ */
 
 #define _XIEC_IDRAWP
 
@@ -82,13 +82,10 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
+#include <dixie_i.h>
   /*
    *  more X server includes.
    */
-#include <misc.h>
-#include <dixstruct.h>
 #include <pixmapstr.h>
 #include <scrnintstr.h>
 #include <windowstr.h>
@@ -101,16 +98,10 @@ terms and conditions:
 #include <macro.h>
 #include <element.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeIDrawP();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepIDrawP();
+static Bool PrepIDrawP(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -123,10 +114,7 @@ static diElemVecRec iDrawPVec = {
 /*------------------------------------------------------------------------
 ----------------- routine: make an ImportDrawablePlane element ----------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeIDrawP(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeIDrawP(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   ELEMENT(xieFloImportDrawablePlane);
@@ -164,9 +152,7 @@ peDefPtr MakeIDrawP(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepIDrawP(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static Bool PrepIDrawP(floDefPtr flo, peDefPtr ped)
 {
   xieFloImportDrawablePlane *raw = (xieFloImportDrawablePlane *) ped->elemRaw;
   iDrawDefPtr pvt 	    = (iDrawDefPtr) ped->elemPvt;
@@ -180,8 +166,8 @@ static Bool PrepIDrawP(flo,ped)
 			  LookupIDByClass(raw->drawable, RC_DRAWABLE))))
     DrawableError(flo,ped,raw->drawable,return(FALSE));
 
-  if(!(pd->type == DRAWABLE_WINDOW && ((WindowPtr)pd)->realized ||
-       pd->type == DRAWABLE_PIXMAP))
+  if(!((pd->type == DRAWABLE_WINDOW && ((WindowPtr)pd)->realized) ||
+        pd->type == DRAWABLE_PIXMAP))
     DrawableError(flo,ped,raw->drawable, return(FALSE));
 
   if(raw->srcX < 0) {
@@ -210,7 +196,7 @@ static Bool PrepIDrawP(flo,ped)
   fmt->height = raw->height;
   fmt->levels = 1<<pd->depth;
   fmt->stride = screenInfo.formats[f].bitsPerPixel;
-  fmt->pitch  = fmt->stride * raw->width + padmask & ~padmask;
+  fmt->pitch  = (fmt->stride * raw->width + padmask) & ~padmask;
   /*
    * set output attributes from input format (stride and pitch may differ)
    */

@@ -66,7 +66,7 @@ terms and conditions:
 	Ben Fahy -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pgeom.c,v 3.2 1998/10/04 09:35:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pgeom.c,v 3.3 1998/10/05 13:22:14 dawes Exp $ */
 
 #define _XIEC_PGEOM
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -100,28 +94,13 @@ terms and conditions:
 #include <difloat.h>
 #include <memory.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeGeometry();
-Bool		CopyGeomNearestNeighbor();
-Bool		PrepGeomNearestNeighbor();
-Bool		CopyGeomAntiAlias();
-Bool		PrepGeomAntiAlias();
-
-#if XIE_FULL
-Bool		CopyGeomBilinearInterp();
-Bool		PrepGeomBilinearInterp();
-Bool		CopyGeomGaussian();
-Bool		PrepGeomGaussian();
-#endif
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepGeometry();
-static Bool	CopyGeomNoParams();
+static Bool PrepGeometry(
+		floDefPtr flo,
+		peDefPtr ped);
+static Bool CopyGeomNoParams(TECHNQ_COPY_ARGS);
 
 /*
  * dixie entry points
@@ -133,10 +112,7 @@ static diElemVecRec pGeometryVec = {
 /*------------------------------------------------------------------------
 ----------------------- routine: make a convolution element --------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeGeometry(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeGeometry(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   int inputs;
   peDefPtr ped;
@@ -211,12 +187,12 @@ peDefPtr MakeGeometry(flo,tag,pe)
 ----------- routine: copy routine for NearestNeighbor technique  ---------
 ------------------------------------------------------------------------*/
 
-Bool CopyGeomNearestNeighbor(flo, ped, sparms, rparms, tsize, isDefault) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecGeomNearestNeighbor *sparms, *rparms;
-     CARD16	tsize;
-     Bool	isDefault;
+#undef  sparms
+#define sparms ((xieTecGeomNearestNeighbor *)sParms)
+#undef  rparms
+#define rparms ((xieTecGeomNearestNeighbor *)rParms)
+
+Bool CopyGeomNearestNeighbor(TECHNQ_COPY_ARGS)
 {
      pTecGeomNearestNeighborDefPtr pvt;
 
@@ -242,13 +218,7 @@ Bool CopyGeomNearestNeighbor(flo, ped, sparms, rparms, tsize, isDefault)
 /*------------------------------------------------------------------------
 ------ routine: copy routine for bilinear interpolation technique --------
 ------------------------------------------------------------------------*/
-
-Bool CopyGeomBilinearInterp(flo, ped, sparms, rparms, tsize, isDefault) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     pointer sparms, rparms;
-     CARD16	tsize;
-     Bool	isDefault;
+Bool CopyGeomBilinearInterp(TECHNQ_COPY_ARGS)
 {
      VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
 
@@ -257,12 +227,13 @@ Bool CopyGeomBilinearInterp(flo, ped, sparms, rparms, tsize, isDefault)
 /*------------------------------------------------------------------------
 ------ routine: copy routine for gaussian interpolation technique --------
 ------------------------------------------------------------------------*/
-Bool CopyGeomGaussian(flo, ped, sparms, rparms, tsize, isDefault) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecGeomGaussian *sparms, *rparms;
-     CARD16	tsize;
-     Bool	isDefault;
+
+#undef  sparms
+#define sparms ((xieTecGeomGaussian *)sParms)
+#undef  rparms
+#define rparms ((xieTecGeomGaussian *)rParms)
+
+Bool CopyGeomGaussian(TECHNQ_COPY_ARGS)
 {
      pTecGeomGaussianDefPtr pvt;
 
@@ -300,12 +271,7 @@ Bool CopyGeomGaussian(flo, ped, sparms, rparms, tsize, isDefault)
 ------ routine: copy routine for antialias technique --------
 ------------------------------------------------------------------------*/
 
-Bool CopyGeomAntiAlias(flo, ped, sparms, rparms, tsize, isDefault) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     pointer sparms, rparms;
-     CARD16	tsize;
-     Bool	isDefault;
+Bool CopyGeomAntiAlias(TECHNQ_COPY_ARGS)
 {
      VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
 
@@ -315,12 +281,11 @@ Bool CopyGeomAntiAlias(flo, ped, sparms, rparms, tsize, isDefault)
 /*------------------------------------------------------------------------
 ------------ routine: copy routine for techniques with no params  --------
 ------------------------------------------------------------------------*/
-static Bool CopyGeomNoParams(flo, ped, sparms, rparms, tsize, isDefault) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     pointer sparms, rparms;
-     CARD16	tsize;
-     Bool	isDefault;
+
+#undef  sparms
+#undef  rparms
+
+static Bool CopyGeomNoParams(TECHNQ_COPY_ARGS)
 {
   return(tsize == 0);
 }
@@ -328,9 +293,7 @@ static Bool CopyGeomNoParams(flo, ped, sparms, rparms, tsize, isDefault)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepGeometry(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepGeometry(floDefPtr flo, peDefPtr ped)
 {
   xieFloGeometry *raw = (xieFloGeometry *)ped->elemRaw;
   inFloPtr  in = &ped->inFloLst[SRCtag];
@@ -367,11 +330,11 @@ static Bool PrepGeometry(flo,ped)
 /*------------------------------------------------------------------------
 ---------------- routine: prep routine for nearest neighbor --------------
 ------------------------------------------------------------------------*/
-Bool PrepGeomNearestNeighbor(flo, ped, raw, tec) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieFloGeometry *raw;
-     pointer tec;
+Bool PrepGeomNearestNeighbor(
+     floDefPtr  flo,
+     peDefPtr   ped,
+     xieFloGeometry *raw,
+     pointer tec)
 {
   return(TRUE);
 }
@@ -380,22 +343,22 @@ Bool PrepGeomNearestNeighbor(flo, ped, raw, tec)
 /*------------------------------------------------------------------------
 ---------- routine: prep routine for bilinear interpolation --------------
 ------------------------------------------------------------------------*/
-Bool PrepGeomBilinearInterp(flo, ped, raw, tec) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieFloGeometry *raw;
-     pointer tec;
+Bool PrepGeomBilinearInterp(
+     floDefPtr  flo,
+     peDefPtr   ped,
+     xieFloGeometry *raw,
+     pointer tec)
 {
   return(TRUE);
 }
 /*------------------------------------------------------------------------
 ---------- routine: prep routine for gaussian ----------------------------
 ------------------------------------------------------------------------*/
-Bool PrepGeomGaussian(flo, ped, raw, tec) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieFloGeometry *raw;
-     pointer tec;
+Bool PrepGeomGaussian(
+     floDefPtr  flo,
+     peDefPtr   ped,
+     xieFloGeometry *raw,
+     pointer tec)
 {
   return(TRUE);
 }
@@ -404,11 +367,11 @@ Bool PrepGeomGaussian(flo, ped, raw, tec)
 /*------------------------------------------------------------------------
 ---------- routine: prep routine for antialias ---------------------------
 ------------------------------------------------------------------------*/
-Bool PrepGeomAntiAlias(flo, ped, raw, tec) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieFloGeometry *raw;
-     pointer tec;
+Bool PrepGeomAntiAlias(
+     floDefPtr  flo,
+     peDefPtr   ped,
+     xieFloGeometry *raw,
+     pointer tec)
 {
   return(TRUE);
 }
