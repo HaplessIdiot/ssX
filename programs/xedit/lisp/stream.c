@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.6 2002/03/08 04:33:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.7 2002/03/12 23:28:55 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -242,8 +242,9 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 	    else if (atom == Ssupersede)
 		exist = EXT_SUPERSEDE;
 	}
-	LispDestroy(mac, "bad :IF-EXISTS %s, at %s",
-		    STRFUN(builtin), STROBJ(if_exists));
+	if (exist == -1)
+	    LispDestroy(mac, "%s: bad :IF-EXISTS %s",
+			STRFUN(builtin), STROBJ(if_exists));
     }
     else
 	exist = EXT_ERROR;
@@ -310,7 +311,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 	    else if (exist == EXT_APPEND)
 		mode |= FILE_APPEND;
 	    else
-		LispDestroy(mac, "%s: unsupported :IF-EXISTS %s, at %s",
+		LispDestroy(mac, "%s: unsupported :IF-EXISTS %s",
 		    STRFUN(builtin), STROBJ(if_exists));
 	}
 	else
@@ -336,7 +337,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 				STROBJ(CAR(filename->data.quote)));
 	    }
 	    else
-		LispDestroy(mac, "%s: unsupported :IF-DOES-NOT-EXIST %s, at %s",
+		LispDestroy(mac, "%s: unsupported :IF-DOES-NOT-EXIST %s",
 			    STRFUN(builtin), STROBJ(if_does_not_exist));
 	}
 	mode |= FILE_READ;
@@ -344,7 +345,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 
     file = LispFopen(string, mode);
     if (file == NULL)
-	LispDestroy(mac, "%s: open: %s, at %s",
+	LispDestroy(mac, "%s: open: %s",
 		    STRFUN(builtin), strerror(errno));
 
     flags = 0;
