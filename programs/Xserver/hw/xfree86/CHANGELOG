@@ -1,4 +1,19 @@
 XFree86 3.9Py (17 July 1999)
+2895. Add missing references to xf86MiscExt.c in common/Imakefile (#3025,
+      Joe Moss).
+2894. Update for the apm driver so that it will work on a Japanese PC-98
+      with GA-RUSH6/PCI(VoodooRUSH based video card) (#3024, Isao Ohishi).
+2893. ISO 10646-1 Japanese font (12x13ja.bdf) that covers a superset of
+      CP1252 and JIS X 208, and which is suitable to be used together with
+      6x13 for bi-width Japanese text output (#3022, Markus Kuhn).
+2892. Refine the MouseMan+ (PS2++) protocol support (#3020, Kazutaka Yokota).
+2891. Fix problems with the wheels on some mice, including the OEM version of
+      the Logitech FirstMouse+, are not recognized and the mouse cursor jumps
+      around (#3020, Kazutaka Yokota).
+2890. Fix a problem building the X-TT modules on Solaris 7 (based on #3019,
+      David Holland).
+2889. Fix a bug in Xaw/TextAction.c introduced in 3.9Pw (#3018,
+      Paulo Cesar Pereira de Andrade).
 2888. ISO 10646-1 version of the 5x7 and 6x13B fonts, and an update for the
       6x13 font (#3017, Markus Kuhn).
 2887. First part of the ansification of xc/lib/fonts.  So far the bitmap,
@@ -8440,4 +8455,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.800 1999/07/12 08:14:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.801 1999/07/17 05:30:50 dawes Exp $

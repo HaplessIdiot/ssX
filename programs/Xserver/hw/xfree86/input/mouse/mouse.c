@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.14 1999/07/10 12:17:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.15 1999/07/11 08:49:28 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -896,14 +896,12 @@ SetupMouse(InputInfoPtr pInfo)
 	} else {
 	    unsigned char c2[2];
 
-	    c = 246;		/* default settings */
-	    xf86WriteSerial(pInfo->fd, &c, 1);
 	    c = 230;		/* 1:1 scaling */
 	    xf86WriteSerial(pInfo->fd, &c, 1);
 	    c = 244;		/* enable mouse */
 	    xf86WriteSerial(pInfo->fd, &c, 1);
+	    c2[0] = 243;	/* set sampling rate */
 	    if (pMse->sampleRate > 0) {
-		c2[0] = 243;	/* set sampling rate */
  		if (pMse->sampleRate >= 200)
  		    c2[1] = 200;
  		else if (pMse->sampleRate >= 100)
@@ -914,10 +912,12 @@ SetupMouse(InputInfoPtr pInfo)
  		    c2[1] = 40;
  		else
  		    c2[1] = 20;
-		xf86WriteSerial(pInfo->fd, c2, 2);
+	    } else {
+ 		c2[1] = 100;
 	    }
+	    xf86WriteSerial(pInfo->fd, c2, 2);
+	    c2[0] = 232;	/* set device resolution */
 	    if (pMse->resolution > 0) {
-		c2[0] = 232;	/* set device resolution */
 		if (pMse->resolution >= 200)
 		    c2[1] = 3;
 		else if (pMse->resolution >= 100)
@@ -926,8 +926,10 @@ SetupMouse(InputInfoPtr pInfo)
 		    c2[1] = 1;
 		else
 		    c2[1] = 0;
-		xf86WriteSerial(pInfo->fd, c2, 2);
+	    } else {
+		c2[1] = 2;
 	    }
+	    xf86WriteSerial(pInfo->fd, c2, 2);
 	    usleep(30000);
 	    xf86FlushInput(pInfo->fd);
 	}
@@ -1233,20 +1235,32 @@ MouseReadInput(InputInfoPtr pInfo)
 	    break;
 
 	case PROT_MMPS2:	/* MouseMan+ PS/2 */
-	    if ((pBuf[0] & ~0x07) == 0xc8) {
+	    buttons = (pBuf[0] & 0x04) >> 1 |       /* Middle */
+		      (pBuf[0] & 0x02) >> 1 |       /* Right */
+		      (pBuf[0] & 0x01) << 2;        /* Left */
+	    dx = (pBuf[0] & 0x10) ? pBuf[1] - 256 : pBuf[1];
+	    if (((pBuf[0] & 0x48) == 0x48) &&
+		(abs(dx) > 191) &&
+		((((pBuf[2] & 0x03) << 2) | 0x02) == (pBuf[1] & 0x0f))) {
 		/* extended data packet */
-		buttons = (pBuf[0] & 0x04) >> 1 |       /* Middle */
-			  (pBuf[0] & 0x02) >> 1 |       /* Right */
-			  (pBuf[0] & 0x01) << 2 |       /* Left */
-			  ((pBuf[2] & 0x10) ? 0x08 : 0);/* fourth button */
-		dx = dy = 0;
-		dz = (pBuf[1] & 0x08) ? (pBuf[2] & 0x0f) - 16 :
-					(pBuf[2] & 0x0f);
+		switch ((((pBuf[0] & 0x30) >> 2) | ((pBuf[1] & 0x30) >> 4))) {
+		case 1:		/* wheel data packet */
+		    buttons |= ((pBuf[2] & 0x10) ? 0x08 : 0) | /* 4th button */
+		               ((pBuf[2] & 0x20) ? 0x10 : 0);  /* 5th button */
+		    dx = dy = 0;
+		    dz = (pBuf[2] & 0x08) ? (pBuf[2] & 0x0f) - 16 :
+					    (pBuf[2] & 0x0f);
+		    break;
+		case 0:		/* device type packet - shouldn't happen */
+		case 2:		/* reserved packet - shouldn't happen */
+		default:
+		    buttons |= (pMse->lastButtons & ~0x07);
+		    dx = dy = 0;
+		    dz = 0;
+		    break;
+		}
 	    } else {
-		buttons = (pBuf[0] & 0x04) >> 1 |     /* Middle */
-			  (pBuf[0] & 0x02) >> 1 |     /* Right */
-			  (pBuf[0] & 0x01) << 2 |     /* Left */
-			  (pMse->lastButtons & ~0x07);
+		buttons |= (pMse->lastButtons & ~0x07);
 		dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
 		dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
 	    }
@@ -1277,8 +1291,8 @@ MouseReadInput(InputInfoPtr pInfo)
 		      (pBuf[0] & 0x01) << 2 |       /* Left */
 		      ((pBuf[0] & 0x08) ? 0x08 : 0);/* fourth button */
 	    pBuf[1] |= (pBuf[0] & 0x40) ? 0x80 : 0x00;
-	    dx = (pBuf[0] & 0x10) ?   (pBuf[1] & 0x7f)-128 :  pBuf[1];
-	    dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256)        : -pBuf[2];
+	    dx = (pBuf[0] & 0x10) ?    pBuf[1]      :  pBuf[1];
+	    dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
 	    break;
 
 	case PROT_SYSMOUSE:	/* sysmouse */
