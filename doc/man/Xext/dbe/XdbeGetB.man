@@ -1,4 +1,4 @@
-.\" $TOG: XdbeGetB.man /main/4 1997/11/04 20:41:57 kaleb $
+.\" $Xorg: XdbeGetB.man,v 1.3 2000/08/17 19:41:55 cpqbld Exp $
 .\"
 .\" Copyright (c) 1995  Hewlett-Packard Company
 .\" 

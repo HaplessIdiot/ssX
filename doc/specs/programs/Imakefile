@@ -1,5 +1,8 @@
-XCOMM $XConsortium: Imakefile /main/10 1996/02/08 01:54:18 gildea $
-XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.4 2000/12/12 16:16:42 dawes Exp $
+XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:50 cpqbld Exp $
+
+
+
+XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.5 2001/01/12 18:55:58 dawes Exp $
 
 /* does not include manual pages under util (not X programs)
    or any of the library function manual pages under doc/man */
