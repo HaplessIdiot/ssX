@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shrotate.c,v 1.3 2001/07/21 04:13:26 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shrotate.c,v 1.4tsi Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -58,13 +58,14 @@ shadowUpdateRotatePacked (ScreenPtr	pScreen,
     int		shaBpp;
     int		shaXoff, shaYoff;
     int		box_x1, box_x2, box_y1, box_y2;
-    int		sha_x1, sha_y1;
-    int		scr_x1, scr_x2, scr_y1, scr_y2, scr_w, scr_h;
+    int		sha_x1 = 0, sha_y1 = 0;
+    int		scr_x1 = 0, scr_x2 = 0, scr_y1 = 0, scr_y2 = 0, scr_w, scr_h;
     int		scr_x, scr_y;
     int		w;
     int		pixelsPerBits;
     int		pixelsMask;
-    FbStride	shaStepOverY, shaStepDownY, shaStepOverX, shaStepDownX;
+    FbStride	shaStepOverY = 0, shaStepDownY = 0;
+    FbStride	shaStepOverX = 0, shaStepDownX = 0;
     FbBits	*shaLine, *sha;
     int		shaHeight = pShadow->drawable.height;
     int		shaWidth = pShadow->drawable.width;
