@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.47 2002/05/05 19:07:11 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/ppc_video.c,v 1.1 2002/08/06 13:08:39 herrb Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -29,12 +29,16 @@
 #include "X.h"
 #include "xf86.h"
 #include "xf86Priv.h"
+
 #include "xf86_OSlib.h"
 #include "xf86OSpriv.h"
+
+#include "bus/Pci.h"
 
 #ifndef MAP_FAILED
 #define MAP_FAILED ((caddr_t)-1)
 #endif
+
 
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
@@ -86,12 +90,14 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	     int Len)
 {
 	int rv;
-	int kmem;
+	static int kmem = -1;
 
- 	kmem = open("/dev/kmem", 2);
- 	if (kmem == -1) {
- 		FatalError("xf86ReadBIOS: open /dev/kmem\n");
- 	}
+	if (kmem == -1) {
+		kmem = open("/dev/xf86", 2);
+		if (kmem == -1) {
+			FatalError("xf86ReadBIOS: open /dev/xf86\n");
+		}
+	}
 
 #ifdef DEBUG
 	xf86MsgVerb(X_INFO, 3, "xf86ReadBIOS() %lx %lx, %x", 
@@ -106,7 +112,6 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 
 	lseek(kmem, Base + Offset, 0);
 	rv = read(kmem, Buf, Len);
-	close(kmem);
 
 	return rv;
 }
