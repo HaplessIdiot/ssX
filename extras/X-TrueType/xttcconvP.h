@@ -246,79 +246,9 @@ codeconv_search_map_id(CharSetSelectionHints const *charSetHints,
 #ifdef FONTMODULE
 /* for New Designed XFree86 font module */
 
+#include "xf86Module.h"
 #include "xttversion.h"
 #include "cconvversion.h"
-#include "xf86Module.h"
-#define CCONVVERSION(name) PREDEFCCONVVERSION(name)
-#define PREDEFCCONVVERSION(name) \
-static XF86ModuleVersionInfo name ## VersRec = \
-{ \
-	#name, \
-	_XTT_VENDOR_NAME, \
-	MODINFOSTRING1, \
-	MODINFOSTRING2, \
-	XF86_VERSION_CURRENT, \
-	_XTT_V_MAJOR, \
-	_XTT_V_MINOR, \
-	_XTT_V_REVISION, \
-	ABI_CLASS_ANSIC,	\
-	CODECONV_ABI_VER, \
-	CODECONV_ABI_STR, \
-	{0,0,0,0}       /* signature, to be patched into the file by a tool */ \
-};
-
-#define CCONVINIT(name) PREDEFCCONVINIT(name)
-#define PREDEFCCONVINIT(name) \
-void \
-name ## ModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup, \
-	      ModuleTearDownProc *teardown) \
-{ \
-    *vers = & name ## VersRec; \
-    *setup = name ## Setup; \
-    *teardown = NULL; \
-}
-
-
-#define CCONVSETUP(name) PREDEFCCONVSETUP(name)
-
-#ifdef CCONV_USE_SYMBOLIC_ENTRY_POINT
-#define PREDEFCCONVSETUP(name) \
-char* name ## _entrypointName = {\
-#name\
-"_entrypoint"};\
-static pointer \
-name ## Setup(pointer module, pointer opts, int *errmaj, int *errmin) \
-{ \
-	ModuleSetupArg *moduleArg = (ModuleSetupArg*)opts; \
-	return (pointer) name ## _entrypoint (\
-		moduleArg->charSetHints,\
-		moduleArg->refCodeConverterInfo,\
-		moduleArg->refMapID); \
-}
-#else
-#define PREDEFCCONVSETUP(name) \
-static pointer \
-name ## Setup(pointer module, pointer opts, int *errmaj, int *errmin) \
-{ \
-	ModuleSetupArg *moduleArg = (ModuleSetupArg*)opts; \
-	return (pointer) name ## _entrypoint (\
-		moduleArg->charSetHints,\
-		moduleArg->refCodeConverterInfo,\
-		moduleArg->refMapID); \
-}
-#endif
-
-#define CCONV_MODULE_SETUP \
-CCONVVERSION(MODNAME) \
-CCONVSETUP(MODNAME) \
-CCONVINIT(MODNAME)
-
-/* argument for module setup */
-typedef struct {
-    CharSetSelectionHints const *charSetHints;
-    CodeConverterInfo *refCodeConverterInfo;
-    int *refMapID;
-} ModuleSetupArg;
 
 /* end of New Designed XFree86 font module */
 #else

@@ -161,19 +161,11 @@ mydlclose(void *handle)
 
 extern FontModule xttModule;  /* in module/xttmodule.c */
 
-static XF86ModReqInfo cconvSubReq =
-{
-    _XTT_V_MAJOR,
-    _XTT_V_MINOR,
-    _XTT_V_REVISION,
-    ABI_CLASS_ANSIC,
-    CODECONV_ABI_VER,
-    CODECONV_ABI_STR,
-};
+DECLARE_SUBREQ(cconvSubReq)
 
 static const char* convModuleSubdir[] = {
 	CCONV_MODULE_SUBDIR,
-#if 0 /* do we need historical one? */
+#if 0
 	"fonts/"CCONV_MODULE_SUBDIR,
 #endif
 	NULL,
@@ -446,10 +438,6 @@ codeconv_search_code_converter(char const *charsetName,
                 for (l=list; *l ; l++) {
 					if(!strcasecmp(*l,moduleArg.charSetHints->charsetStdName))
 						tryItFirst = l;
-#if 0
-					ErrorF("%s/%s\n",
-                           *l, moduleArg.charSetHints->charsetStdName);
-#endif
 				}
 
 				if(tryItFirst)
@@ -474,11 +462,7 @@ codeconv_search_code_converter(char const *charsetName,
                                            *l, convModuleSubdir, NULL,
                                            &moduleArg, &cconvSubReq,
                                            &errorMajor, &errorMinor);
-#if 0
-					ErrorF("%s/%s %s\n",
-                           *l, moduleArg.charSetHints->charsetStdName,
-                           (NULL!=handle)?"loaded":"fail");
-#endif
+
                     if (NULL != handle) {
                             refCodeConverterInfo->handleModule =
                                 (ft_module_handle_t)handle;
