@@ -2,7 +2,7 @@
  *	$Xorg: input.c,v 1.3 2000/08/17 19:55:08 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/input.c,v 3.64 2003/09/21 17:12:47 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/input.c,v 3.65 2003/10/20 00:58:54 dickey Exp $ */
 
 /*
  * Copyright 1999-2001,2002 by Thomas E. Dickey
@@ -1017,9 +1017,9 @@ TranslationsUseKeyword(Widget w, const char *keyword)
 
     if (data != 0) {
 	char *p = data;
-	TRACE(("TranslationsUseKeyword(%p):%s\n", w, p));
 	int state = 0;
 	int now = ' ', prv;
+	TRACE(("TranslationsUseKeyword(%p):%s\n", w, p));
 	while (*p != 0) {
 	    prv = now;
 	    now = char2lower(*p++);
