@@ -1,4 +1,5 @@
 XFree86 3.1.0e (27 November 1994)
+ 94. Add missing install rule for gccmakedep.
  93. Define CSRG_BASED for *BSD (Kaleb Keithley).
  92. Code/prototype cleanup under hw/xfree86 (Kaleb Keithley).
  91. Mach64 accelerated server (Kevin Martin).
