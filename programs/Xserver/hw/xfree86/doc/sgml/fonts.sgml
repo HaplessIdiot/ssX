@@ -6,10 +6,10 @@
 
 <title>Fonts in XFree86
 <author>Juliusz Chroboczek, <email/jch@xfree86.org/
-<date>26 November 2001</date>
+<date>29 September 2002</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.14 2001/11/21 21:31:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.15 2001/12/17 19:25:36 dawes Exp $
 </ident>
 
 <toc>
@@ -880,15 +880,13 @@ to use these fonts with standard applications, it may be useful to
 remap them to their proper names.
 
 This is done by writing a `<tt/fonts.alias/' file. The format of this file
-is similar to the format of the `<tt/fonts.dir/' file, except that it maps
-XLFD names to XLFD names. A `<tt/fonts.alias/' file might look as follows:
+is very simple: it consists of a series of lines each mapping an alias name to a font name.  A `<tt/fonts.alias/' file might look as follows:
 <tscreen><verb>
-1
 "-ogonki-alamakota-medium-r-normal--0-0-0-0-p-0-iso8859-2" \
   "-ogonki-alamakota-medium-r-normal--0-0-0-0-p-0-adobe-fontspecific"
 </verb></tscreen>
 (both XLFD names on a single line).  The syntax of the
-`<tt/fonts.alias/' file is precisely described in the
+`<tt/fonts.alias/' file is more precisely described in the
 <tt/mkfontdir/(1) manual page.
 
 <sect>Additional notes about TrueType support
