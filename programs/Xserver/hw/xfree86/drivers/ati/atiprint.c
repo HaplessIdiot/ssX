@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.26 2003/04/23 21:51:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.27tsi Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -184,7 +184,7 @@ ATIMach64PrintRegisters
                 (IOValue & CRTC_EXT_DISP_EN))
                 *crtc = ATI_CRTC_MACH64;
 
-            xf86ErrorFVerb(4, " %08X", IOValue);
+            xf86ErrorFVerb(4, " %08lX", (unsigned long)IOValue);
         }
     }
 

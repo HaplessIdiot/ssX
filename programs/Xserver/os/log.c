@@ -76,7 +76,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * authorization from the copyright holder(s) and author(s).
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.4 2003/10/29 04:17:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.5tsi Exp $ */
 
 #include "Xos.h"
 #include <stdio.h>
@@ -400,7 +400,7 @@ AbortServer(void)
 }
 
 #ifndef AUDIT_PREFIX
-#define AUDIT_PREFIX "AUDIT: %s: %d %s: "
+#define AUDIT_PREFIX "AUDIT: %s: %ld %s: "
 #endif
 #ifndef AUDIT_TIMEOUT
 #define AUDIT_TIMEOUT ((CARD32)(120 * 1000)) /* 2 mn */
@@ -441,7 +441,7 @@ AuditPrefix(void)
     tmpBuf = malloc(len);
     if (!tmpBuf)
 	return NULL;
-    snprintf(tmpBuf, len, AUDIT_PREFIX, autime, getpid(), s);
+    snprintf(tmpBuf, len, AUDIT_PREFIX, autime, (unsigned long)getpid(), s);
     return tmpBuf;
 }
 
