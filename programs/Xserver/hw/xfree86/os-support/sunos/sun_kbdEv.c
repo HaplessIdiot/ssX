@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_kbdEv.c,v 1.3 2001/10/28 03:34:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_kbdEv.c,v 1.4 2001/11/08 04:15:33 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -105,7 +105,7 @@ static OsTimerPtr sunTimer = NULL;
  * type.
  */
 static unsigned char map[256] = {
-#if defined(i368) || defined(__i386) || defined(__i386__)
+#if defined(i386) || defined(__i386) || defined(__i386__)
 	KEY_NOTUSED,		/*   0 */
 	KEY_Tilde,		/*   1 */
 	KEY_1,			/*   2 */
