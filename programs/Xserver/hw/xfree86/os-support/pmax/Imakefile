@@ -1,5 +1,5 @@
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/Imakefile,v 1.11 2002/10/11 01:47:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/Imakefile,v 1.12 2002/10/17 02:22:48 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -24,7 +24,11 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86OSSRC)/bus -I. \
 
 RESDEFINES = -DUSESTDRES
 
-DEFINES = $(RESDEFINES)
+#if !HasStrlcat
+STRLCAT_DEFS = -DNEED_STRLCAT
+#endif
+
+DEFINES = $(RESDEFINES) $(STRLCAT_DEFS)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
