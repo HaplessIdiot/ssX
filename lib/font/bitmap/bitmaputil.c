@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitmaputil.c,v 1.2 1999/07/17 05:30:30 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmaputil.c,v 1.3 1999/08/01 07:56:54 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "bitmap.h"
@@ -144,8 +144,7 @@ bitmapComputeFontInkBounds(FontPtr pFont)
     int         nchars;
     int         r,
                 c;
-    CharInfoPtr *pci,
-                cit;
+    CharInfoPtr cit;
     xCharInfo  *ci;
     int         offset;
     xCharInfo  *minbounds,

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/charsets.c,v 1.4 1999/04/29 09:14:02 dawes Exp $
+ * $XFree86: xc/programs/xterm/charsets.c,v 1.5 1999/07/11 08:49:34 dawes Exp $
  */
 
 /************************************************************
@@ -254,7 +254,7 @@ int xtermCharSetOut(IChar *buf, IChar *ptr, char leftset)
 		visibleIChar(buf, ptr-buf)))
 
 	for (s = buf; s < ptr; ++s) {
-		int eight = E2A(*s) & 0xff;
+		int eight = CharOf(E2A(*s));
 		int seven = eight & 0x7f;
 		int cs = (eight >= 128) ? rightset : leftset;
 		int chr = eight;

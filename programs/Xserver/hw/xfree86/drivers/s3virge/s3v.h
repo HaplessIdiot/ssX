@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.13 1999/06/12 15:37:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.14 1999/06/27 14:08:11 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -72,7 +72,7 @@ in this Software without prior written authorization from the XFree86 Project.
 /* Drivers using the XAA interface ... */
 #include "xaa.h"
 #include "xf86cmap.h"
-
+#include "xf86i2c.h"
 
 #ifndef _S3V_VGAHWMMIO_H
 #define _S3V_VGAHWMMIO_H
@@ -99,7 +99,7 @@ in this Software without prior written authorization from the XFree86 Project.
 #define VGAOUT16(addr, val) *(volatile CARD16 *)(ps3v->IOBase + (addr)) = (val)
 #define VGAOUT(addr, val) *(volatile CARD32 *)(ps3v->IOBase + (addr)) = (val)
 
-#define INREG(addr) *(volatile CARD32*)(ps3v->MapBase+ (addr))
+#define INREG(addr) *(volatile CARD32*)(ps3v->MapBase + (addr))
 #define OUTREG(addr, val) *(volatile CARD32 *)(ps3v->MapBase + (addr)) = (val)
 #define NEW_INREG(addr) INREG(addr)
 #define NEW_OUTREG(addr, val) OUTREG(addr, val)
@@ -108,6 +108,9 @@ in this Software without prior written authorization from the XFree86 Project.
 
 #endif /*_S3V_VGAHWMMIO_H*/
 
+/*******************  s3v_i2c  ****************************/
+
+Bool S3V_I2CInit(ScrnInfoPtr pScrn);
 
 /******************* s3v_accel ****************************/
 
@@ -273,7 +276,8 @@ typedef struct {
   int			numDGAModes;
   Bool			DGAactive;
   int			DGAViewportStatus;
-  
+  I2CBusPtr             I2C;
+    
   /* Used by ViRGE driver, but generic -end- */
   
   

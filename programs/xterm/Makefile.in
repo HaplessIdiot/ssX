@@ -1,4 +1,4 @@
-## $XFree86: xc/programs/xterm/Makefile.in,v 3.23 1999/06/27 14:08:35 dawes Exp $ ##
+## $XFree86: xc/programs/xterm/Makefile.in,v 3.24 1999/07/18 03:27:05 dawes Exp $ ##
 
 #### Start of system configuration section. ####
 
@@ -97,7 +97,7 @@ resize : $(OBJS2)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ $(OBJS2) $(X_LIBS) $(X_EXTRA_LIBS) $(LIBS)
 
 256colres.h : $(srcdir)/256colres.pl
-	$(srcdir)/256colres.pl > 256colres.h
+	perl $(srcdir)/256colres.pl > 256colres.h
 
 charproc.o : @CHARPROC_DEPS@
 

@@ -28,15 +28,19 @@
  */
 /*SHARED*/
  
-#define   InitHints()   t1_InitHints()
-void t1_InitHints();   /* Initialize hint data structure */
+#define   InitHints   t1_InitHints
+extern void t1_InitHints ( void );	/* Initialize hint data structure */
  
 #define   CloseHints(hintP)   t1_CloseHints(hintP)
-void t1_CloseHints();   /* Reverse hints that are still open */
+/* Reverse hints that are still open */
+extern void t1_CloseHints ( struct fractpoint *hintP );
  
 #define   ProcessHint(hP, currX, currY, hintP)   t1_ProcessHint(hP, currX, currY, hintP)
-void t1_ProcessHint();   /* Process a rasterization hint */
- 
+/* Process a rasterization hint */
+extern void t1_ProcessHint ( struct hintsegment *hP, fractpel currX, fractpel currY, struct fractpoint *hintP );
+
 #define   ApplyContinuity(R)  t1_ApplyContinuity(R)
-void t1_ApplyContinuity();    /* fix false connection breaks in a region      */
+/* fix false connection breaks in a region      */
+extern void t1_ApplyContinuity ( struct region *R );
+
 /*END SHARED*/

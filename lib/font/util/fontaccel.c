@@ -30,10 +30,10 @@ from The Open Group.
 
 #include    "fontmisc.h"
 #include    "fontstruct.h"
+#include    "fontutil.h"
 
 void
-FontComputeInfoAccelerators(pFontInfo)
-    FontInfoPtr pFontInfo;
+FontComputeInfoAccelerators(FontInfoPtr pFontInfo)
 {
     pFontInfo->noOverlap = FALSE;
     if (pFontInfo->maxOverlap <= pFontInfo->minbounds.leftSideBearing)
@@ -77,8 +77,8 @@ FontComputeInfoAccelerators(pFontInfo)
 	pFontInfo->inkInside = FALSE;
 }
 
-int FontCouldBeTerminal(pFontInfo)
-    FontInfoPtr pFontInfo;
+int 
+FontCouldBeTerminal(FontInfoPtr pFontInfo)
 {
     if ((pFontInfo->minbounds.leftSideBearing >= 0) &&
 	    (pFontInfo->maxbounds.rightSideBearing <= pFontInfo->maxbounds.characterWidth) &&

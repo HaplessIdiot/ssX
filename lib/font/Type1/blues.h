@@ -29,7 +29,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
  
-extern psobj *GetType1CharString();
+extern psobj *GetType1CharString ( psfont *fontP, unsigned char code );
  
 #define TOPLEFT 1
 #define BOTTOMRIGHT 2

@@ -40,6 +40,7 @@ The included files are:
  
 #include "objects.h"
 #include "spaces.h"
+#include "paths.h"
 #include "regions.h"
 #include "lines.h"
  

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.5 1999/07/06 11:38:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.6 1999/08/01 07:57:19 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -612,13 +612,12 @@ ATICRTCCalculate
                 ~(AUTO_VERT_RATIO | VERT_STRETCH_MODE);
 
             /*
-             * XXX
-             *
-             * On a 1024x768 panel, vertical blending does not work when
-             * HDisplay is greater than 896.
+             * Don't use vertical blending if the mode is too wide, too short,
+             * or not vertically stretched.
              */
-            if ((pMode->HDisplay < pATI->LCDHorizontal) &&
-                (pMode->VDisplay < pATI->LCDVertical))
+            if ((pMode->HDisplay <= pATI->LCDVBlendFIFOSize) &&
+                (pMode->VDisplay < pATI->LCDVertical) &&
+                (pMode->VDisplay >= (pATI->LCDVertical / 2)))
                 pATIHW->ext_vert_stretch |= VERT_STRETCH_MODE;
 
             outl(pATI->CPIO_LCD_INDEX, lcd_index);

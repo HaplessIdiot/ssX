@@ -44,7 +44,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1intf.h,v 1.3 1999/05/03 05:58:47 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1intf.h,v 1.4 1999/05/15 12:10:07 dawes Exp $ */
 
 #ifdef BUILDCID
 #include "AFM.h"
@@ -70,3 +70,74 @@ typedef struct cid_glyphs {
 #endif
 } cidglyphs;
 #endif
+
+/*
+ * Function prototypes
+ */
+/* t1funcs.c */
+#ifdef BUILDCID
+extern int CIDOpenScalable ( FontPathElementPtr fpe, FontPtr *ppFont,
+			     int flags, FontEntryPtr entry, char *fileName, 
+			     FontScalablePtr vals, fsBitmapFormat format, 
+			     fsBitmapFormatMask fmask, 
+			     FontPtr non_cachable_font );
+#endif
+extern int Type1OpenScalable ( FontPathElementPtr fpe, FontPtr *ppFont, 
+			       int flags, FontEntryPtr entry, char *fileName,
+			       FontScalablePtr vals, fsBitmapFormat format, 
+			       fsBitmapFormatMask fmask,
+			       FontPtr non_cachable_font );
+#ifdef BUILDCID
+extern unsigned int getCID ( FontPtr pFont, unsigned int charcode );
+extern int CIDGetGlyphs ( FontPtr pFont, unsigned long count, 
+			  unsigned char *chars, FontEncoding charEncoding, 
+			  unsigned long *glyphCount, CharInfoPtr *glyphs );
+extern int CIDGetMetrics ( FontPtr pFont, unsigned long count, 
+			   unsigned char *chars, FontEncoding charEncoding, 
+			   unsigned long *glyphCount, xCharInfo **glyphs );
+extern void CIDCloseFont ( FontPtr pFont );
+#endif
+extern void Type1CloseFont ( FontPtr pFont );
+#ifdef BUILDCID
+extern void CIDRegisterFontFileFunctions ( void );
+extern void Type1RegisterFontFileFunctions ( void );
+#endif
+extern int Type1ReturnCodeToXReturnCode ( int rc );
+#ifdef BUILDCID
+extern CharInfoPtr CIDRenderGlyph ( FontPtr pFont, psobj *charstringP, 
+				    psobj *subarrayP, 
+				    struct blues_struct *bluesP, 
+				    CharInfoPtr pci, int *mode );
+#endif
+
+/* t1info.c */
+#ifdef CID_ALL_CHARS
+extern void ComputeBoundsAllChars ( FontPtr pFont, char *cfmfilename, double sxmult );
+#endif
+#ifdef BUILDCID
+extern int CIDGetInfoScalable ( FontPathElementPtr fpe, FontInfoPtr pInfo, 
+				FontEntryPtr entry, FontNamePtr fontName, 
+				char *fileName, FontScalablePtr Vals );
+#endif
+extern int Type1GetInfoScalable ( FontPathElementPtr fpe, FontInfoPtr pInfo, 
+				  FontEntryPtr entry, FontNamePtr fontName, 
+				  char *fileName, FontScalablePtr Vals );
+#ifdef BUILDCID
+extern void CIDFillFontInfo ( FontPtr pFont, FontScalablePtr Vals, 
+			      char *Filename, char *Fontname, char *Cmapname, 
+#ifdef HAVE_CFM
+			      char *cfmfilename,
+#endif
+			      long sAscent, long sDescent, double sxmult );
+#endif
+extern void T1FillFontInfo ( FontPtr pFont, FontScalablePtr Vals, 
+			     char *Filename, char *Fontname, long sWidth );
+extern void Type1InitStdProps ( void );
+
+/* cidchar.c */
+extern CharInfoPtr CIDGetGlyphInfo ( FontPtr pFont, unsigned int cidcode, 
+				     CharInfoPtr pci, int *rc );
+extern int CIDGetAFM ( FontPtr pFont, unsigned long count, 
+		       unsigned char *chars, FontEncoding charEncoding, 
+		       unsigned long *glyphCount, CharInfoPtr *glyphs, 
+		       char *cidafmfile );

@@ -16,7 +16,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/programs/mkcfm/mkcfm.c,v 1.6 1999/07/10 12:17:44 dawes Exp $ */
+/* $XFree86: xc/programs/mkcfm/mkcfm.c,v 1.7 1999/07/17 08:21:32 dawes Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,16 +27,23 @@
 #include "FSproto.h"
 #include "FS.h"
 #include "font.h"
+#include "fontenc.h"
 #include "fontstruct.h"
 #include "fsmasks.h"
 #include "range.h"
+#include "objects.h"
+#include "spaces.h"
 
-extern void CIDRegisterFontFileFunctions(void);
+#include "fontutil.h"
+#include "util.h"
+#include "fontfcn.h"
+#include "blues.h"
+#include "t1intf.h"
+#include "t1unicode.h"
 
-extern int CIDOpenScalable();
+#include "os.h"
  
-void CIDFillVals(FontScalablePtr);
-
+static void CIDFillVals(FontScalablePtr);
 static Bool DoDirectory(char *dirName);
  
 #define DEFAULTCID "/usr/X11R6/lib/X11/fonts/CID"
@@ -47,15 +54,11 @@ static Bool DoDirectory(char *dirName);
 FontScalableRec vals;
 FontEntryRec entry;
 
-int main(int argc, char **argv)
+int 
+main(int argc, char **argv)
 {
-       int h;
        char temp[CID_NAME_MAX];
-       char charcode[2];
-       CharInfoRec *glyphs[1];
-       int count, code, failed;
-       int rc = -1;
-       register int i;
+       int failed;
        char *p;
  
        temp[0] = '\0';
@@ -88,7 +91,6 @@ static Bool
 DoDirectory(char *dirName) {
     DIR *dir, *dir1, *dir2, *dir3;
     struct dirent *dp, *dp1, *dp2;
-    char *getresource;
     char fname[CID_NAME_MAX];
     char dirName1[CID_NAME_MAX], dirName2[CID_NAME_MAX];
     char dirName3[CID_NAME_MAX];
@@ -139,7 +141,8 @@ DoDirectory(char *dirName) {
     } return FALSE;
 }
 
-void CIDFillVals(FontScalablePtr vals)
+static void 
+CIDFillVals(FontScalablePtr vals)
 {
     FontResolutionPtr res;
     int         x_res = DEFAULTRES;
@@ -178,62 +181,80 @@ void CIDFillVals(FontScalablePtr vals)
     }
 }
  
-int CheckFSFormat(int format, int fmask, int *bit, int *byte,
-		  int *scan, int *glyph, int *image)
+int 
+CheckFSFormat(fsBitmapFormat format, fsBitmapFormatMask fmask, int *bit, 
+	      int *byte, int *scan, int *glyph, int *image)
 {
        *bit = *byte = 1;
        *glyph = *scan = *image = 1;
        return Successful;
  
 }
+
  
-Atom MakeAtom(char *p, unsigned len, int makeit)
+Atom 
+MakeAtom(char *p, unsigned len, int makeit)
 {
        return *p;
 }
 
-FontResolutionPtr GetClientResolutions(int *resP)
+FontResolutionPtr 
+GetClientResolutions(int *resP)
 {
        *resP = 0;
        return NULL;
 }
  
-pointer Xalloc(unsigned long size)
+pointer 
+Xalloc(unsigned long size)
 {
        return(malloc(size));
 }
  
-void Xfree(pointer p)
+void 
+Xfree(pointer p)
 {
        free((char *)p);
 }
  
-void FontDefaultFormat(int *bit, int *byte, int *glyph, int *scan) { ; }
+void 
+FontDefaultFormat(int *bit, int *byte, int *glyph, int *scan) { ; }
  
-Bool FontFileRegisterRenderer(FontRendererPtr renderer) { return TRUE; }
+Bool 
+FontFileRegisterRenderer(FontRendererPtr renderer) { return TRUE; }
  
-void GenericGetBitmaps() { ; }
-void GenericGetExtents() { ; }
- 
-Bool FontParseXLFDName(char *fname, FontScalablePtr vals, int subst)
+Bool 
+FontParseXLFDName(char *fname, FontScalablePtr vals, int subst)
 { return TRUE; }
 
-void FontComputeInfoAccelerators() { ; }
+void 
+FontComputeInfoAccelerators(FontInfoPtr f) { ; }
 
-void FatalError() { ; }
+void 
+FatalError(const char *f, ...) { exit (1); }
 
-void ErrorF() { ; }
+void 
+ErrorF(const char *f, ...) { ; }
 
-char *font_encoding_from_xlfd() { return NULL; }
+char *
+font_encoding_from_xlfd(const char *name, int n ) { return NULL; }
 
-struct font_encoding *font_encoding_find() { return NULL; }
+struct font_encoding *
+font_encoding_find(const char *c1, const char *c2) { return NULL; }
 
-char *unicodetoPSname() { return NULL; }
+char *
+unicodetoPSname(unsigned short code) { return NULL; }
 
-unsigned font_encoding_recode() { return 0; }
+unsigned 
+font_encoding_recode(unsigned i, struct font_encoding *fe, 
+		     struct font_encoding_mapping *m) { return 0; }
 
-char *font_encoding_name() { return NULL; }
+char *
+font_encoding_name(unsigned i, struct font_encoding *fe,
+		   struct font_encoding_mapping *m) { return NULL; }
 
-FontPtr CreateFontRec() { return NULL; }
+FontPtr 
+CreateFontRec(void) { return NULL; }
 
-void DestroyFontRec(FontPtr p) { ; }
+void 
+DestroyFontRec(FontPtr p) { ; }

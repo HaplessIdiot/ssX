@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.17 1999/01/13 08:30:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.18 1999/01/26 10:40:06 dawes Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -2023,121 +2023,21 @@ GetClientResolutions (num)
  */
 
 int
-#if NeedFunctionPrototypes
-RegisterFPEFunctions(
-    int         (*name_func) (
-                  char* /* name */
-                  ),
-    int         (*init_func) (
-                  FontPathElementPtr /* fpe */
-                  ),
-    int         (*free_func) (
-                  FontPathElementPtr /* fpe */
-                  ),
-    int         (*reset_func) (
-                  FontPathElementPtr /* fpe */
-                  ),
-    int         (*open_func) (
-                  pointer /* client */,
-                  FontPathElementPtr /* fpe */,
-                  int /* flags */,
-                  char* /* name */,
-                  int /* namelen */,
-                  fsBitmapFormat /* format */,
-                  fsBitmapFormatMask /* fmask */,
-                  unsigned long /* id (type XID or FSID) */,
-                  FontPtr* /* pFont */,
-                  char** /* aliasName */,
-                  FontPtr /* non_cachable_font */
-                  ),
-    int         (*close_func) (
-                  FontPathElementPtr /* fpe */,
-                  FontPtr /* pFont */
-                  ),
-    int         (*list_func) (
-                  pointer /* client */,
-                  FontPathElementPtr /* fpe */,
-                  char* /* pat */,
-                  int /* len */,
-                  int /* max */,
-                  FontNamesPtr /* names */
-                  ),
-    int         (*start_lfwi_func) (
-                  pointer /* client */,
-                  FontPathElementPtr /* fpe */,
-                  char* /* pat */,
-                  int /* patlen */,
-                  int /* maxnames */,
-                  pointer* /* privatep */
-                  ),
-    int         (*next_lfwi_func) (
-                  pointer /* client */,
-                  FontPathElementPtr /* fpe */,
-                  char** /* name */,
-                  int* /* namelen */,
-                  FontInfoPtr* /* info */,
-                  int* /* numFonts */,
-                  pointer /* private */
-                  ),
-    int         (*wakeup_func) (
-                  FontPathElementPtr /* fpe */,
-                  unsigned long* /* LastSelectMask */
-                  ),
-    int         (*client_died) (
-                  pointer /* client */,
-                  FontPathElementPtr /* fpe */
-                  ),
-    int         (*load_glyphs) (
-                  pointer /* client */,
-                  FontPtr /* pfont */,
-                  Bool /* range_flag */,
-                  unsigned int /* nchars */,
-                  int /* item_size */,
-                  unsigned char* /* data */
-                  ),
-    int         (*start_list_alias_func) (
-                  pointer /* client */,
-                  FontPathElementPtr /* fpe */,
-                  char* /* pat */,
-                  int /* len */,
-                  int /* max */,
-                  pointer* /* privatep */
-                  ),
-    int         (*next_list_alias_func) (
-                  pointer /* client */,
-                  FontPathElementPtr /* fpe */,
-                  char** /* namep */,
-                  int* /* namelenp */,
-                  char** /* resolvedp */,
-                  int* /* resolvedlenp */,
-                  pointer /* private */
-                  ),
-    void        (*set_path_func) (
-                  void
-                  )
-)
-#else
-RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
-	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
-		     wakeup_func, client_died, load_glyphs,
-		     start_list_alias_func, next_list_alias_func,
-		     set_path_func)
-    Bool        (*name_func) ();
-    int         (*init_func) ();
-    int         (*free_func) ();
-    int         (*reset_func) ();
-    int         (*open_func) ();
-    int         (*close_func) ();
-    int         (*list_func) ();
-    int         (*start_lfwi_func) ();
-    int         (*next_lfwi_func) ();
-    int         (*wakeup_func) ();
-    int		(*client_died) ();
-    int		(*load_glyphs) ();
-    int		(*start_list_alias_func) ();
-    int		(*next_list_alias_func) ();
-    void	(*set_path_func) ();
-#endif
+RegisterFPEFunctions(NameCheckFunc name_func, 
+		     InitFpeFunc init_func, 
+		     FreeFpeFunc free_func, 
+		     ResetFpeFunc reset_func, 
+		     OpenFontFunc open_func, 
+		     CloseFontFunc close_func, 
+		     ListFontsFunc list_func, 
+		     StartLfwiFunc start_lfwi_func, 
+		     NextLfwiFunc next_lfwi_func, 
+		     WakeupFpeFunc wakeup_func, 
+		     ClientDiedFunc client_died, 
+		     LoadGlyphsFunc load_glyphs, 
+		     StartLaFunc start_list_alias_func, 
+		     NextLaFunc next_list_alias_func, 
+		     SetPathFunc set_path_func)
 {
     FPEFunctions *new;
 

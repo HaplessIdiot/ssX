@@ -26,7 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1malloc.c,v 1.4 1998/07/25 06:56:59 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1malloc.c,v 1.5 1998/10/03 09:07:18 dawes Exp $ */
  /* MALLOC   CWEB         V0004 LOTS                                 */
 /*
 :h1.MALLOC - Fast Memory Allocation
@@ -39,16 +39,13 @@ routines (malloc/free).
 */
 
 #ifdef FONTMODULE
-#include "fontmisc.h"	/* Bool declaration */
+#include "Xdefs.h"	/* Bool declaration */
 #include "Xmd.h"	/* INT32 declaration */
 #include "xf86_ansic.h"
 #endif
 #include "objects.h"	/* get #define for abort() */
 
-static void combine();
-static void freeuncombinable();
-static void unhook();
-static void dumpchain();
+#include "os.h"
 
 /*
 :h3.Define NULL
@@ -171,6 +168,18 @@ asked for.
  
 long AvailableWords = 0;     /* number of words available in memory          */
 char mallocdebug = 0;        /* a flag that enables some chatty printf's     */
+
+/*
+:h3.Prototypes of static functions
+*/
+
+static void combine ( void );
+static void freeuncombinable ( long *addr, long size );
+static void unhook ( struct freeblock *p );
+static void dumpchain ( void );
+#ifdef notused
+static void reportarea ( long *area );
+#endif
  
 /*
 :h3.whocalledme() - Debug for Memory Leaks
@@ -184,9 +193,9 @@ We use it to see who is malloc-ing memory without free-ing it.
  
 #if DEBUGWORDS
  
-static whocalledme(addr, stack)
-       long *addr;           /* address of memory block                      */
-       long *stack;          /* address of malloc's parameter on stack       */
+static void 
+whocalledme(long *addr,      /* address of memory block                      */
+	    long *stack)     /* address of malloc's parameter on stack       */
 {
        register long size;   /* size of memory block                         */
        register int i;       /* loop index                                   */
@@ -212,8 +221,8 @@ The actual beginning of the block is one 'long' before the address we
 gave to the user.  The block begins and ends with '-size' in words.
 */
  
-void xiFree(addr)
-        register long *addr;           /* user's memory to be returned   */
+void 
+xiFree(long *addr)                     /* user's memory to be returned   */
 {
         register long size;            /* amount of memory in this block */
         register struct freeblock *p;  /* identical to 'addr'            */
@@ -270,7 +279,7 @@ In any event, that block will be moved to the end of the list (after
 */
  
 static void
-combine()
+combine(void)
 {
         register struct freeblock *p;   /* block we will try to combine */
         register long *addr;            /* identical to 'p' for 'long' access */
@@ -309,7 +318,7 @@ First we attempt to combine this with the block immediately above:
                 addr -= size2;
                 if (addr[0] != size2)
                         abort("bad block above");
-                unhook(addr);
+                unhook((struct freeblock *)addr);
                 size += size2;
         }
 /*
@@ -343,9 +352,8 @@ no neighbors.
 */
  
 static void
-freeuncombinable(addr, size)
-        register long *addr;  /* address of the block to be freed            */
-        register long size;   /* size of block in words                      */
+freeuncombinable(long *addr,  /* address of the block to be freed            */
+		 long size)   /* size of block in words                      */
 {
         register struct freeblock *p;  /* a convenient synonym for 'addr'    */
  
@@ -378,8 +386,7 @@ have to worry about the end cases.)
 */
  
 static void
-unhook(p)
-        register struct freeblock *p;  /* block to unhook                    */
+unhook(struct freeblock *p)            /* block to unhook                    */
 {
         p->back->fore = p->fore;
         p->fore->back = p->back;
@@ -400,10 +407,10 @@ cache.
  
 #ifdef TYPE1IMAGER
  
-static char *malloc_local();
+static char *malloc_local(unsigned size);
  
-char *xiMalloc(size)
-        register unsigned size;
+char *
+xiMalloc(unsigned size)
 {
   char *memaddr;
  
@@ -424,11 +431,12 @@ memory, and it is also compatible with the definition of a "size_t"
 in most systems.
 */
 #ifdef TYPE1IMAGER
-static char *malloc_local(Size)
+static char *
+malloc_local(unsigned Size)  /* number of bytes the user requested           */
 #else
-char *xiMalloc(Size)
+char *
+xiMalloc(unsigned Size)
 #endif
-        unsigned Size;       /* number of bytes the user requested           */
 {
         register long size = (long)Size;  /* a working register for size     */
         register struct freeblock *p;  /* tentative block to be returned     */
@@ -460,7 +468,7 @@ only to be "unhook"ed:
                         unhook(p);
                         uncombined--;
                         if (mallocdebug) {
-                               printf("fast xiMalloc(%d) = %p, ", size, p);
+                               printf("fast xiMalloc(%ld) = %p, ", size, p);
                                dumpchain();
                         }
                         AvailableWords += size;  /* decreases AvailableWords */
@@ -517,7 +525,7 @@ flag that this block is allocated:
         area[size - 1] = area[0] = - size;
  
         if (mallocdebug) {
-                printf("slow xiMalloc(%d) @ %08x, ", size, area);
+                printf("slow xiMalloc(%ld) @ %p, ", size, area);
                 dumpchain();
         }
         whocalledme(area, &Size);
@@ -554,9 +562,9 @@ boundary.
  
 static long *freearea[MAXAREAS] = { NULL };  /* so we can report later       */
  
-void addmemory(addr, size)
-        register long *addr; /* beginning of free area                       */
-        register long size;  /* number of bytes of free area                 */
+void 
+addmemory(long *addr,        /* beginning of free area                       */
+	  long size)         /* number of bytes of free area                 */
 {
         register int i;      /* loop index variable                          */
         register long *aaddr;  /* aligned beginning of free area             */
@@ -601,7 +609,8 @@ free list:
 /*
 :h3.delmemory() - Delete Memory Pool
 */
-void delmemory()
+void 
+delmemory(void)
 {
        register int i;
  
@@ -621,7 +630,7 @@ void delmemory()
 */
  
 static void
-dumpchain()
+dumpchain(void)
 {
         register struct freeblock *p;  /* current free block                 */
         register long size;  /* size of block                                */
@@ -645,7 +654,7 @@ dumpchain()
         printf("DUMPING COMBINED FREE LIST:\n");
         for (; p != &lastfree; p = p->fore)  {
                 size = p->size;
-                printf(". . . area @ %p, size = %d\n", p, size);
+                printf(". . . area @ %p, size = %ld\n", p, size);
                 if (size <= 0 || size != ((int *) p)[size - 1])
                         abort("dumpchain: bad size");
                 if (p->back != back)
@@ -656,13 +665,13 @@ dumpchain()
                 abort("dumpchain: bad lastfree");
 }
  
+#ifdef notused
 /*
 :h3.reportarea() - Display a Contiguous Set of Memory Blocks
 */
  
 static void
-reportarea(area)
-       register long *area;   /* start of blocks (from addmemory)            */
+reportarea(long *area)        /* start of blocks (from addmemory)            */
 {
        register long size;    /* size of current block                       */
        register long wholesize;  /* size of original area                    */
@@ -679,7 +688,7 @@ reportarea(area)
                        register int i,j;
  
                        size = -size;
-                       printf("Allocated %5d bytes at %08x, first words=%08x %08x\n",
+                       printf("Allocated %5ld bytes at %p, first words=%08lx %08lx\n",
                                size * sizeof(long), area + 1, area[1], area[2]);
 #if DEBUGWORDS
                        printf("  ...Last operator: %s\n",
@@ -688,13 +697,13 @@ reportarea(area)
                        for (i = size - DEBUGWORDS; i < size - 2; i += 8) {
                                printf("  ...");
                                for (j=0; j<8; j++)
-                                       printf(" %08x", area[i+j]);
+                                       printf(" %08lx", area[i+j]);
                                printf("\n");
                        }
  
                }
                else {
-                       printf("Free %d bytes at %x\n", size * sizeof(long),
+                       printf("Free %ld bytes at %p\n", size * sizeof(long),
                                area);
                        if (size == 0)
                                abort("zero sized memory block");
@@ -720,7 +729,8 @@ reportarea(area)
 :h3.MemReport() - Display All of Memory
 */
  
-void MemReport()
+void 
+MemReport(void)
 {
        register int i;
  
@@ -734,8 +744,10 @@ void MemReport()
 :h3.MemBytesAvail - Display Number of Bytes Now Available
 */
  
-void MemBytesAvail()
+void 
+MemBytesAvail(void)
 {
-       printf("There are now %d bytes available\n", AvailableWords *
+       printf("There are now %ld bytes available\n", AvailableWords *
                                                     sizeof(long) );
 }
+#endif

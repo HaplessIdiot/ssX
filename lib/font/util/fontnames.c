@@ -1,16 +1,10 @@
-/* $XConsortium: fontnames.c,v 1.2 94/04/17 20:17:32 keith Exp $ */
+/* $TOG: fontnames.c /main/3 1998/02/09 10:55:16 kaleb $ */
 
 /*
 
-Copyright (c) 1991  X Consortium
+Copyright 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,15 +12,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -40,8 +34,7 @@ from the X Consortium.
 #include	"fontstruct.h"
 
 void
-FreeFontNames(pFN)
-    FontNamesPtr pFN;
+FreeFontNames(FontNamesPtr pFN)
 {
     int         i;
 
@@ -56,8 +49,7 @@ FreeFontNames(pFN)
 }
 
 FontNamesPtr
-MakeFontNamesRecord(size)
-    unsigned    size;
+MakeFontNamesRecord(unsigned int size)
 {
     FontNamesPtr pFN;
 
@@ -86,10 +78,7 @@ MakeFontNamesRecord(size)
 }
 
 int
-AddFontNamesName(names, name, length)
-    FontNamesPtr names;
-    char       *name;
-    int         length;
+AddFontNamesName(FontNamesPtr names, char *name, int length)
 {
     int         index = names->nnames;
     char       *nelt;

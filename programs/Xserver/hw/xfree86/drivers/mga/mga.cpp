@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.5 1999/06/20 08:41:35 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.6 1999/07/10 12:17:31 dawes Exp $ 
 .TH MGA __drivermansuffix__ "Version 3.9.15"  "XFree86"
 .SH NAME
 mga \- Matrox video driver
@@ -18,7 +18,8 @@ is an XFree86 driver for Matrox video cards.  The driver is fully
 accelerated, and provides support for the following framebuffer depths:
 8, 15, 16, 24, and an 8+24 overlay mode (all chips except G100).  All
 visual types are supported for depth 8, and both TrueColor and DirectColor
-visuals are supported for the other depths.  Multi-head configurations
+visuals are supported for the other depths except 8+24 mode which supports
+PseudoColor, GrayScale and TrueColor.  Multi-head configurations
 are supported.
 .SH SUPPORTED HARDWARE
 The
@@ -86,24 +87,18 @@ be used to override that auto-detection.  Default: auto-detected.
 Disable or enable acceleration.  Default: acceleration is enabled.
 .TP
 .BI "Option ""OverclockMem""
-Enable memory overclocking.  Default: off.
+Enable memory overclocking (G100 and G200 only).  Default: off.
 .TP
 .BI "Option ""Overlay""
-Enable 8+24 overlay mode.  Only appropriate for depth 24.  Default: off.
+Enable 8+24 overlay mode.  Only appropriate for depth 24, 32 bits per pixel.
+Default: off.
 .TP
 .BI "Option ""PciRetry"" """ boolean """
 Enable or disable PCI retries.  Default: off.
 .TP
-.BI "Option ""RGBbits"" """ integer """
-Set the number of significant bits per RGB channel.  Only appropriate for
-depth 8.  Allowed values are 6 and 8.  Default: 8.
-.TP
 .BI "Option ""ShadowFB"" """ boolean """
 Enable or disable use of the shadow framebuffer layer.  See
 shadowfb(__drivermansuffix__) for further information.  Default: off.
-.TP
-.BI "Option ""ShowCache"" """ boolean """
-Enable or disable viewing offscreen memory.  Default: off.
 .TP
 .BI "Option ""SyncOnGreen"" """ boolean """
 Enable or disable combinging the sync signals with the green signal.

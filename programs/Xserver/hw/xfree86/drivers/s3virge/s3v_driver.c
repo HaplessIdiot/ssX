@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.31 1999/07/17 07:18:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.32 1999/07/18 03:26:59 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -28,6 +28,7 @@ in this Software without prior written authorization from the XFree86 Project.
 /* Needed by Resources Access Control (RAC) */
 #include "xf86RAC.h"
 
+#include "xf86DDC.h"
 /*
  * s3v_driver.c
  * Port to 4.0 design level
@@ -99,6 +100,8 @@ static void S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					 int PowerManagementMode,
 					 int flags);
 #endif
+static void S3Vddc1(int scrnIndex);
+static unsigned int S3Vddc1Read(ScrnInfoPtr pScrn);
 
 /*
  * This is intentionally screen-independent.  It indicates the binding
@@ -278,6 +281,18 @@ static const char *cfbSymbols[] = {
     NULL
 };
 
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC1",
+    "xf86DoEDID_DDC2",
+    NULL
+};
+
+static const char *i2cSymbols[] = {
+    "xf86CreateI2CBusRec",
+    "xf86I2CBusInit",
+    NULL
+};
 
 static MODULESETUPPROTO(s3virgeSetup);
 
@@ -450,7 +465,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *reqSym = NULL;
-    int mmioFlags;
 
     unsigned char config1, config2, m, n, n1, n2, cr66;
     int mclk;
@@ -549,18 +563,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    /*
-     * If the driver can do gamma correction, it should call xf86SetGamma()
-     * here. (from MGA, no ViRGE gamma support yet, but needed for 
-     * xf86HandleColormaps support.)
-     */
-    {
-	Gamma zeros = {0.0, 0.0, 0.0};
-
-	if (!xf86SetGamma(pScrn, zeros)) {
-	    return FALSE;
-	}
-    }
     /* We use a programamble clock */
     pScrn->progClock = TRUE;
 
@@ -776,58 +778,8 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     ps3v->PciTag = pciTag(ps3v->PciInfo->bus, ps3v->PciInfo->device,
 			  ps3v->PciInfo->func);
 			  
-    					/* Map the ViRGE register space */
-					/* Starts with PCI registers */
-					/* around 0x18000 from MemBase */
-#ifdef __alpha__ 
-    mmioFlags = VIDMEM_MMIO | VIDMEM_SPARSE;
-#else
-    mmioFlags = VIDMEM_MMIO;
-#endif
-    ps3v->IOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, ps3v->PciTag,
-			ps3v->PciInfo->memBase[0] + S3_NEWMMIO_VGABASE,
-			S3V_MMIO_REGSIZE );
-  		   
-    S3VEnableMmio( pScrn);
-
-		/********************************************************/
-		/* Aaagh...  So many locations!  On my machine (KJB) the*/
-		/* following is true. 					*/
-		/* PciInfo->memBase[0] returns e400 0000 		*/
-		/* From my ViRGE manual, the memory map looks like 	*/
-		/* Linear mem - 16M  	000 0000 - 0ff ffff 		*/
-		/* Image xfer - 32k  	100 0000 - 100 7fff 		*/
-		/* PCI cnfg    		100 8000 - 100 8043 		*/
-		/* ...				   			*/
-		/* CRT VGA 3b? reg	100 83b0 - 			*/
-		
-		/* And S3_NEWMMIO_VGABASE = S3_NEWMMIO_REGBASE + 0x8000	*/
-		/* where S3_NEWMMIO_REGBASE = 0x100 0000  ( 16MB )      */
-		/* S3_NEWMMIO_REGSIZE = 0x1 0000  ( 64KB )		*/
-		/* S3V_MMIO_REGSIZE = 0x8000 ( 32KB ) - above includes	*/
-		/* the image transfer area, so this one is used instead.*/
-		
-		/* ps3v->IOBase is assinged the virtual address returned*/
-		/* from MapPciMem, it is the address to base all 	*/
-		/* register access. (It is a pointer.)  		*/
-		
-		/* hwp->MemBase is a CARD32, containing the register	*/
-		/* base. (It's a conversion from IOBase above.) 	*/
-
-
+  S3VMapMem(pScrn);
   hwp = VGAHWPTR(pScrn);
-		  			/* Note that for convience during */
-					/* Init we have mapped at 0 offset*/
-  vgaHWSetMmioFuncs( hwp, ps3v->IOBase, 0 );
-
-  xf86ErrorFVerb(VERBLEV, 
-	"	S3VPreInit hwp=%p, hwp->MMIOBase=%x\n",
-		hwp, hwp->MMIOBase );
-	
-  					/* assigns hwp->IOBase to 3D0 or 3B0 */
-					/* needs hwp->MMIOBase to work */
-
-  vgaHWGetIOBase(hwp);
   vgaIOBase = hwp->IOBase;
   vgaCRIndex = vgaIOBase + 4;
   vgaCRReg = vgaIOBase + 5;
@@ -851,6 +803,36 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
    VGAOUT8(vgaCRIndex, 0x37);              /* for register CR37 (CONFG_REG2), */
    config2 = VGAIN8(vgaCRReg);             /* get amount of off-screen ram  */
 
+   if (xf86LoadSubModule(pScrn, "ddc")) {
+       xf86LoaderReqSymLists(ddcSymbols, NULL);
+#if 1
+       S3Vddc1(pScrn->scrnIndex);
+#else
+       if ( xf86LoadSubModule(pScrn, "i2c") ) {
+	   xf86LoaderReqSymLists(i2cSymbols,NULL);
+	   if (S3V_I2CInit(pScrn)) {
+	       CARD32 tmp = (INREG(DDC_REG));
+	       OUTREG(DDC_REG,(tmp | 0x13));
+	       xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,ps3v->I2C));
+	       OUTREG(DDC_REG,tmp);
+	   }
+       }
+#endif
+   }
+
+   /*
+    * If the driver can do gamma correction, it should call xf86SetGamma()
+    * here. (from MGA, no ViRGE gamma support yet, but needed for 
+    * xf86HandleColormaps support.)
+    */
+   {
+       Gamma zeros = {0.0, 0.0, 0.0};
+       
+       if (!xf86SetGamma(pScrn, zeros)) {
+	   return FALSE;
+       }
+   }
+   
    /* And compute the amount of video memory and offscreen memory */
    ps3v->MemOffScreen = 0;
 
@@ -1065,8 +1047,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	      , lcdclk / 1000.0);
    }
 
-   S3VDisableMmio(pScrn);
-   xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->IOBase, S3V_MMIO_REGSIZE);
+   S3VUnmapMem(pScrn);
 
    /* Set scale factors for mode timings */
 
@@ -1921,6 +1902,28 @@ unsigned char tmp;
 
 /* MapMem - contains half of pre-4.0 EnterLeave function */
 /* The EnterLeave function which en/dis access to IO ports and ext. regs */
+                /********************************************************/
+		/* Aaagh...  So many locations!  On my machine (KJB) the*/
+		/* following is true. 					*/
+		/* PciInfo->memBase[0] returns e400 0000 		*/
+		/* From my ViRGE manual, the memory map looks like 	*/
+		/* Linear mem - 16M  	000 0000 - 0ff ffff 		*/
+		/* Image xfer - 32k  	100 0000 - 100 7fff 		*/
+		/* PCI cnfg    		100 8000 - 100 8043 		*/
+		/* ...				   			*/
+		/* CRT VGA 3b? reg	100 83b0 - 			*/
+		/* And S3_NEWMMIO_VGABASE = S3_NEWMMIO_REGBASE + 0x8000	*/
+		/* where S3_NEWMMIO_REGBASE = 0x100 0000  ( 16MB )      */
+		/* S3_NEWMMIO_REGSIZE = 0x1 0000  ( 64KB )		*/
+		/* S3V_MMIO_REGSIZE = 0x8000 ( 32KB ) - above includes	*/
+		/* the image transfer area, so this one is used instead.*/
+		/* ps3v->IOBase is assinged the virtual address returned*/
+		/* from MapPciMem, it is the address to base all 	*/
+		/* register access. (It is a pointer.)  		*/
+		/* hwp->MemBase is a CARD32, containing the register	*/
+		/* base. (It's a conversion from IOBase above.) 	*/
+                /********************************************************/
+
 
 static Bool
 S3VMapMem(ScrnInfoPtr pScrn)
@@ -1943,7 +1946,8 @@ S3VMapMem(ScrnInfoPtr pScrn)
 #else
   mmioFlags = VIDMEM_MMIO;
 #endif
-
+  ErrorF("1\n");
+  
   ps3v->MapBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, ps3v->PciTag,
 			ps3v->PciInfo->memBase[0] + S3_NEWMMIO_REGBASE,
 			S3_NEWMMIO_REGSIZE);
@@ -1967,18 +1971,21 @@ S3VMapMem(ScrnInfoPtr pScrn)
     return FALSE;
   }
 					/* Map the framebuffer */
-  ps3v->FBBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER, 
-			ps3v->PciTag, ps3v->PciInfo->memBase[0],
-			ps3v->videoRambytes );
+  if (ps3v->videoRambytes) { /* not set in PreInit() */
+      ps3v->FBBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER, 
+				   ps3v->PciTag, ps3v->PciInfo->memBase[0],
+				   ps3v->videoRambytes );
 
-  if( !ps3v->FBBase ) {
-    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-	"Internal error: could not map framebuffer.\n");
-    return FALSE;
-  }
+      if( !ps3v->FBBase ) {
+	  xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		     "Internal error: could not map framebuffer.\n");
+	  return FALSE;
+      }
   		       		/* Initially the visual display start */
 				/* is the same as the mapped start. */
-  ps3v->FBStart = ps3v->FBBase;
+      ps3v->FBStart = ps3v->FBBase;
+  }
+  
   pScrn->memPhysBase = ps3v->PciInfo->memBase[0];
   pScrn->fbOffset = 0;
 
@@ -2030,8 +2037,9 @@ S3VUnmapMem(ScrnInfoPtr pScrn)
 
   xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->MapBase,
 		  S3_NEWMMIO_REGSIZE);
-  xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->FBBase,
-		  ps3v->videoRambytes);
+  if (ps3v->FBBase)
+      xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->FBBase,
+		      ps3v->videoRambytes);
 #ifdef __alpha__
   xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->MapBaseDense,
 		  0x8000);
@@ -3016,7 +3024,6 @@ S3VDisableMmio(ScrnInfoPtr pScrn)
   vgaHWPtr hwp;
   S3VPtr ps3v;
   int vgaCRIndex, vgaCRReg;
-  unsigned char c;
   
   PVERB5("	S3VDisableMmio\n");
   
@@ -3166,5 +3173,36 @@ S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
   return;
 }
 #endif /* DPMSExtension */
+
+static unsigned int
+S3Vddc1Read(ScrnInfoPtr pScrn)
+{
+    register vgaHWPtr hwp = VGAHWPTR(pScrn);
+    register CARD32 tmp;
+    S3VPtr ps3v = S3VPTR(pScrn);
+
+    while (hwp->readST01(hwp)&0x8) {};
+    while (!(hwp->readST01(hwp)&0x8)) {};
+
+    tmp = (INREG(DDC_REG));
+    return ((unsigned int) (tmp & 0x08));
+}
+
+static void
+S3Vddc1(int scrnIndex)
+{
+    S3VPtr ps3v = S3VPTR(xf86Screens[scrnIndex]);
+    CARD32 tmp;
+    
+    /* initialize chipset */
+    tmp = INREG(DDC_REG);
+    OUTREG(DDC_REG,(tmp | 0x12));
+    
+    xf86PrintEDID(xf86DoEDID_DDC1(scrnIndex,vgaHWddc1SetSpeed,S3Vddc1Read));
+
+    /* undo initialization */
+    OUTREG(DDC_REG,(tmp));
+}
 /*EOF*/
+
 

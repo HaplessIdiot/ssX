@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.11 1999/06/13 13:47:34 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.12 1999/07/17 05:30:36 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -61,6 +61,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"fservestr.h"
 #include	"fontutil.h"
 #include	<errno.h>
+
 #if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
 extern int errno;
 #define Time_t long
@@ -99,9 +100,9 @@ static int fs_read_list_info ( FontPathElementPtr fpe,
 static int  fs_font_type;
 extern fd_set _fs_fd_mask;
 
-static void fs_block_handler ( pointer data, struct timeval **wt, 
-			       fd_set * LastSelectMask );
-static int fs_wakeup ( FontPathElementPtr fpe, fd_set * LastSelectMask );
+static void fs_block_handler ( pointer data, OSTimePtr wt, 
+			       pointer LastSelectMask );
+static int fs_wakeup ( FontPathElementPtr fpe, fd_set *LastSelectMask );
 
 static FSFpePtr awaiting_reconnect;
 
@@ -879,7 +880,8 @@ fs_read_query_info(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
     }
 
     if (glyphCachingMode == CACHING_OFF ||
-	glyphCachingMode == CACHE_16_BIT_GLYPHS && !bfont->pfont->info.lastRow)
+	(glyphCachingMode == CACHE_16_BIT_GLYPHS 
+	 && !bfont->pfont->info.lastRow))
 	bfont->flags |= FontLoadAll;
 
     bfont->state = FS_EXTENT_REPLY;
@@ -1129,7 +1131,7 @@ fs_do_open_font(FontPathElementPtr fpe, FSBlockDataPtr blockrec,
     }
     if (err != StillWorking) {
 	bfont->state = FS_DONE_REPLY;	/* for _fs_load_glyphs() */
-	while (blockrec = blockrec->depending) {
+	while ((blockrec = blockrec->depending)) {
 	    bfont = (FSBlockedFontPtr) blockrec->data;
 	    bfont->errcode = err;
 	    bfont->state = FS_DONE_REPLY;	/* for _fs_load_glyphs() */
@@ -1140,18 +1142,19 @@ fs_do_open_font(FontPathElementPtr fpe, FSBlockDataPtr blockrec,
 
 /* ARGSUSED */
 static void
-fs_block_handler(pointer data, struct timeval **wt, fd_set *LastSelectMask)
+fs_block_handler(pointer data, OSTimePtr wt, pointer LastSelectMask)
 {
     static struct timeval recon_timeout;
     Time_t      now,
                 soonest;
     FSFpePtr    recon;
 
-    XFD_ORSET(LastSelectMask, LastSelectMask, &_fs_fd_mask);
-    if (recon = awaiting_reconnect) {
+    XFD_ORSET((fd_set *)LastSelectMask, (fd_set *)LastSelectMask, 
+	      &_fs_fd_mask);
+    if ((recon = awaiting_reconnect)) {
 	now = time((Time_t *) 0);
 	soonest = recon->time_to_try;
-	while (recon = recon->next_reconnect) {
+	while ((recon = recon->next_reconnect)) {
 	    if (recon->time_to_try < soonest)
 		soonest = recon->time_to_try;
 	}
@@ -1160,7 +1163,7 @@ fs_block_handler(pointer data, struct timeval **wt, fd_set *LastSelectMask)
 	soonest = soonest - now;
 	recon_timeout.tv_sec = soonest;
 	recon_timeout.tv_usec = 0;
-	if (*wt == (struct timeval *) 0) {
+	if (*wt == NULL) {
 	    *wt = &recon_timeout;
 	} else if ((*wt)->tv_sec > soonest) {
 	    **wt = recon_timeout;
@@ -1296,7 +1299,7 @@ _fs_restart_connection(FSFpePtr conn)
     FD_SET(conn->fs_fd, &_fs_fd_mask);
     if (!fs_send_init_packets(conn))
 	return FALSE;
-    while (block = (FSBlockDataPtr) conn->blocked_requests) {
+    while ((block = (FSBlockDataPtr) conn->blocked_requests)) {
 	ClientSignal(block->client);
 	fs_abort_blockrec(conn, block);
     }
@@ -1312,7 +1315,7 @@ _fs_try_reconnect(void)
 
     prev = &awaiting_reconnect;
     now = time((Time_t *) 0);
-    while (conn = *prev) {
+    while ((conn = *prev)) {
 	if (now - conn->time_to_try > 0) {
 	    if (_fs_reopen_server(conn) && _fs_restart_connection(conn)) {
 		conn->attemptReconnect = TRUE;
@@ -1593,7 +1596,7 @@ fs_open_font(pointer client, FontPathElementPtr fpe, Mask flags,
     int         err;
 
     /* libfont interface expects ImageRectMin glyphs */
-    format = format & ~BitmapFormatImageRectMask | BitmapFormatImageRectMin;
+    format = (format & ~BitmapFormatImageRectMask) | BitmapFormatImageRectMin;
 
     *alias = (char *) 0;
     /* XX if we find the blockrec for the font */
@@ -1636,7 +1639,7 @@ fs_send_close_font(FontPathElementPtr fpe, Font id)
 }
 
 /* ARGSUSED */
-static int
+static void
 fs_close_font(FontPathElementPtr fpe, FontPtr pfont)
 {
     FSFontDataPtr fsd = (FSFontDataPtr) pfont->fpePrivate;
@@ -1656,8 +1659,6 @@ fs_close_font(FontPathElementPtr fpe, FontPtr pfont)
     xfree(pfont->info.props);
     DestroyFontRec(pfont);
 
-
-    return Successful;
 }
 
 static int
@@ -1707,7 +1708,7 @@ fs_read_glyphs(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
 	- offset_size;
     ppbits = (fsOffset32 *) xalloc(offset_size);
     pbitmaps = (pointer) xalloc(glyph_size);
-    if (glyph_size && !pbitmaps || !ppbits)
+    if ((glyph_size && !pbitmaps) || !ppbits)
     {
 	xfree(pbitmaps);
 	xfree(ppbits);
@@ -1857,7 +1858,7 @@ fs_send_load_glyphs(pointer client, FontPtr pfont,
     req.fid = ((FSFontDataPtr) pfont->fpePrivate)->fontid;
     req.format = pfont->format;
     if (pfont->info.terminalFont)
-	req.format = req.format & ~(BitmapFormatImageRectMask) |
+	req.format = (req.format & ~(BitmapFormatImageRectMask)) |
 		     BitmapFormatImageRectMax;
     req.range = TRUE;
     /* each range takes up 4 bytes */
@@ -1909,12 +1910,13 @@ fs_send_load_glyphs(pointer client, FontPtr pfont,
 }
 
 
+extern pointer serverClient;	/* This could be any number that
+				   doesn't conflict with existing
+				   client values. */
+
 int
 fs_load_all_glyphs(FontPtr pfont)
 {
-    extern pointer serverClient;	/* This could be any number that
-					   doesn't conflict with existing
-					   client values. */
     int err;
     FSFpePtr conn = (FSFpePtr) pfont->fpe->private;
 
@@ -2473,7 +2475,7 @@ fs_client_died(pointer client, FontPathElementPtr fpe)
     FSClientPtr	*prev, cur;
     fsFreeACReq	freeac;
 
-    for (prev = &conn->clients; cur = *prev; prev = &cur->next)
+    for (prev = &conn->clients; (cur = *prev); prev = &cur->next)
     {
 	if (cur->client == client) {
 	    freeac.reqType = FS_FreeAC;
@@ -2515,7 +2517,7 @@ fs_client_died(pointer client, FontPathElementPtr fpe)
     	}
     }
     /* replace the client pointers in this block rec with the chained one */
-    if (depending = blockrec->depending) {
+    if ((depending = blockrec->depending)) {
 	blockrec->client = depending->client;
 	blockrec->depending = depending->depending;
 	blockrec = depending;
@@ -2534,7 +2536,7 @@ _fs_client_access (FSFpePtr conn, pointer client, Bool sync)
     int			    authlen;
     Bool		    new_cur = FALSE;
 
-    for (prev = &conn->clients; cur = *prev; prev = &cur->next)
+    for (prev = &conn->clients; (cur = *prev); prev = &cur->next)
     {
 	if (cur->client == client)
 	{
@@ -2621,9 +2623,9 @@ fs_register_fpe_functions(void)
 					fs_wakeup,
 					fs_client_died,
 					_fs_load_glyphs,
-					(int (*))0,
-					(int (*))0,
-					(void (*))0);
+					NULL,
+					NULL,
+					NULL);
 }
 
 static int
@@ -2688,7 +2690,7 @@ check_fs_register_fpe_functions(void)
 					fs_wakeup,
 					fs_client_died,
 					_fs_load_glyphs,
-					(int (*))0,
-					(int (*))0,
-					(void (*))0);
+					NULL,
+					NULL,
+					NULL);
 }

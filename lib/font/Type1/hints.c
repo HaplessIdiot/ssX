@@ -44,7 +44,8 @@ The included files are:
 #include "paths.h"
 #include "regions.h"
 #include "hints.h"
- 
+
+#include "os.h" 
 /*
 :h3.Functions Provided to the TYPE1IMAGER User
  
@@ -81,7 +82,8 @@ static struct {
 #define FPFLOOR(fp) TOFRACTPEL((fp) >> FRACTBITS)
 #define FPROUND(fp) FPFLOOR((fp) + FPHALF)
  
-void InitHints()
+void 
+InitHints(void)
 {
   int i;
  
@@ -96,8 +98,8 @@ void InitHints()
 :h3.CloseHints(hintP) - Reverse hints that are still open
 */
  
-void CloseHints(hintP)
-  struct fractpoint *hintP;
+void 
+CloseHints(struct fractpoint *hintP)
 {
   int i;
  
@@ -120,10 +122,10 @@ void CloseHints(hintP)
 :h3.ComputeHint(hP, currX, currY, hintP) - Compute the value of a hint
 */
  
-static void ComputeHint(hP, currX, currY, hintP)
-  struct hintsegment *hP;
-  fractpel currX, currY;
-  struct fractpoint *hintP;
+static void 
+ComputeHint(struct hintsegment *hP, 
+	    fractpel currX, fractpel currY, 
+	    struct fractpoint *hintP)
 {
   fractpel currRef, currWidth;
   int idealWidth;
@@ -225,10 +227,10 @@ multiple of 90 degrees.
 :h3.ProcessHint(hP, currX, currY, hintP) - Process a rasterization hint
 */
  
-void ProcessHint(hP, currX, currY, hintP)
-  struct hintsegment *hP;
-  fractpel currX, currY;
-  struct fractpoint *hintP;
+void 
+ProcessHint(struct hintsegment *hP, 
+	    fractpel currX, fractpel currY, 
+	    struct fractpoint *hintP)
 {
   struct fractpoint thisHint;
  
@@ -362,9 +364,9 @@ off of the edge's range; XofY() could be replace by FindXofY() to
 call ourselves recursively if this were not true.
 */
  
-static pel SearchXofY(edge, y)
-       register struct edgelist *edge;  /* represents edge                   */
-       register pel y;       /* 'y' value to find edge for                   */
+static pel 
+SearchXofY(register struct edgelist *edge,   /* represents edge              */
+	   register pel y)                   /* 'y' value to find edge for   */
 {
        register struct edgelist *e;  /* loop variable                        */
  
@@ -413,9 +415,10 @@ are at the top and the first edge is going up.
 #define  BLACKBELOW  +1
 #define  NONE         0
  
-static int ImpliedHorizontalLine(e1, e2, y)
-       register struct edgelist *e1,*e2;  /* two edges to check              */
-       register int y;       /* y where they might be connected              */
+static int 
+ImpliedHorizontalLine(struct edgelist *e1, /* two edges to check            */
+		      struct edgelist *e2, 
+		      int y) /* y where they might be connected             */
 {
        register struct edgelist *e3,*e4;
  
@@ -483,8 +486,8 @@ routine finds and fixes false breaks.
 Also, this routine sets the ISTOP and ISBOTTOM flags in the edge lists.
 */
  
-static void FixSubPaths(R)
-       register struct region *R;       /* anchor of region                */
+static void 
+FixSubPaths(struct region *R)           /* anchor of region                  */
 {
        register struct edgelist *e;     /* fast loop variable                */
        register struct edgelist *edge;  /* current edge in region            */
@@ -626,10 +629,10 @@ get all the way to the outside without resolving ambiguity.
 A debug tool.
 */
  
-static struct edgelist *before();  /* subroutine of DumpSubPaths             */
+static struct edgelist *before(struct edgelist *e);  /* subroutine of DumpSubPaths             */
  
-static void DumpSubPaths(anchor)
-       struct edgelist *anchor;
+static void
+DumpSubPaths(struct edgelist *anchor)
 {
  
        register struct edgelist *edge,*e,*e2;
@@ -672,8 +675,8 @@ static void DumpSubPaths(anchor)
        }
 }
  
-static struct edgelist *before(e)
-       struct edgelist *e;
+static struct edgelist *
+before(struct edgelist *e)
 {
        struct edgelist *r;
        for (r = e->subpath; r->subpath != e; r = r->subpath) { ; }
@@ -705,10 +708,10 @@ new x might exceed the region's bounds, updating those are the
 responsibility of the caller.
 */
  
-static void writeXofY(e, y, x)
-       struct edgelist *e;   /* relevant edgelist                            */
-       int y;                /* y value                                      */
-       int x;                /* new x value                                  */
+static void 
+writeXofY(struct edgelist *e,/* relevant edgelist                            */
+	  int y,             /* y value                                      */
+	  int x)             /* new x value                                  */
 {
        if (e->xmin > x)  e->xmin = x;
        if (e->xmax < x)  e->xmax = x;
@@ -739,12 +742,12 @@ points (collapses) the white run as necessary if it is not.  The
 goal is to collapse the white run as little as possible.
 */
  
-static void CollapseWhiteRun(anchor, yblack, left, right, ywhite)
-        struct edgelist *anchor;  /* anchor of edge list                     */
-        pel yblack;          /* y of (hopefully) black run above or below    */
-        struct edgelist *left;  /* edgelist at left of WHITE run             */
-        struct edgelist *right;  /* edgelist at right of WHITE run           */
-        pel ywhite;          /* y location of white run                      */
+static void 
+CollapseWhiteRun(struct edgelist *anchor, /* anchor of edge list             */
+		 pel yblack, /* y of (hopefully) black run above or below    */
+		 struct edgelist *left, /* edgelist at left of WHITE run     */
+		 struct edgelist *right, /* edgelist at right of WHITE run   */
+		 pel ywhite) /* y location of white run                      */
 {
        struct edgelist *edge;
        struct edgelist *swathstart = anchor;
@@ -810,8 +813,8 @@ This is the externally visible routine called from the REGIONS module
 when the +CONTINUITY flag is on the Interior() fill rule.
 */
  
-void ApplyContinuity(R)
-struct region *R;
+void 
+ApplyContinuity(struct region *R)
 {
  struct edgelist *left;
  struct edgelist *right;

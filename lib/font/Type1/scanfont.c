@@ -45,12 +45,12 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.11 1999/05/04 09:35:22 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.12 1999/05/23 06:33:32 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <string.h>
 #else
-#include "fontmisc.h"	/* Bool declaration */
+#include "Xdefs.h"	/* Bool declaration */
 #include "Xmd.h"	/* INT32 declaration */
 #include "xf86_ansic.h"
 #endif
@@ -60,17 +60,15 @@
 #ifdef BUILDCID
 #include "range.h"
 #endif
+#include "objects.h"
+#include "spaces.h"
 #include "fontfcn.h"
 #include "blues.h"
  
 #ifdef BUILDCID
-#ifndef FONTMODULE
-typedef int          Bool;
-#endif
 #define CID_BUFSIZE 80
 
-extern Bool CIDType1fontfcnA(int *);
-extern void resetDecrypt();
+extern Bool CIDType1fontfcnA( int * );
 
 extern psfont *FDArrayP;
 static spacerange *spacerangeP;
@@ -104,358 +102,358 @@ typedef struct				/* Builtin Standard Encoding */
 } EncodingTable;
 
 static EncodingTable StdEnc[] = {
-   040 , "space",
-   041 , "exclam",
-   042 , "quotedbl",
-   043 , "numbersign",
-   044 , "dollar",
-   045 , "percent",
-   046 , "ampersand",
-   047 , "quoteright",
-   050 , "parenleft",
-   051 , "parenright",
-   052 , "asterisk",
-   053 , "plus",
-   054 , "comma",
-   055 , "hyphen",
-   056 , "period",
-   057 , "slash",
-   060 , "zero",
-   061 , "one",
-   062 , "two",
-   063 , "three",
-   064 , "four",
-   065 , "five",
-   066 , "six",
-   067 , "seven",
-   070 , "eight",
-   071 , "nine",
-   072 , "colon",
-   073 , "semicolon",
-   074 , "less",
-   075 , "equal",
-   076 , "greater",
-   077 , "question",
-  0100 , "at",
-  0101 , "A",
-  0102 , "B",
-  0103 , "C",
-  0104 , "D",
-  0105 , "E",
-  0106 , "F",
-  0107 , "G",
-  0110 , "H",
-  0111 , "I",
-  0112 , "J",
-  0113 , "K",
-  0114 , "L",
-  0115 , "M",
-  0116 , "N",
-  0117 , "O",
-  0120 , "P",
-  0121 , "Q",
-  0122 , "R",
-  0123 , "S",
-  0124 , "T",
-  0125 , "U",
-  0126 , "V",
-  0127 , "W",
-  0130 , "X",
-  0131 , "Y",
-  0132 , "Z",
-  0133 , "bracketleft",
-  0134 , "backslash",
-  0135 , "bracketright",
-  0136 , "asciicircum",
-  0137 , "underscore",
-  0140 , "quoteleft",
-  0141 , "a",
-  0142 , "b",
-  0143 , "c",
-  0144 , "d",
-  0145 , "e",
-  0146 , "f",
-  0147 , "g",
-  0150 , "h",
-  0151 , "i",
-  0152 , "j",
-  0153 , "k",
-  0154 , "l",
-  0155 , "m",
-  0156 , "n",
-  0157 , "o",
-  0160 , "p",
-  0161 , "q",
-  0162 , "r",
-  0163 , "s",
-  0164 , "t",
-  0165 , "u",
-  0166 , "v",
-  0167 , "w",
-  0170 , "x",
-  0171 , "y",
-  0172 , "z",
-  0173 , "braceleft",
-  0174 , "bar",
-  0175 , "braceright",
-  0176 , "asciitilde",
-  0241 , "exclamdown",
-  0242 , "cent",
-  0243 , "sterling",
-  0244 , "fraction",
-  0245 , "yen",
-  0246 , "florin",
-  0247 , "section",
-  0250 , "currency",
-  0251 , "quotesingle",
-  0252 , "quotedblleft",
-  0253 , "guillemotleft",
-  0254 , "guilsinglleft",
-  0255 , "guilsinglright",
-  0256 , "fi",
-  0257 , "fl",
-  0261 , "endash",
-  0262 , "dagger",
-  0263 , "daggerdbl",
-  0264 , "periodcentered",
-  0266 , "paragraph",
-  0267 , "bullet",
-  0270 , "quotesinglbase",
-  0271 , "quotedblbase",
-  0272 , "quotedblright",
-  0273 , "guillemotright",
-  0274 , "ellipsis",
-  0275 , "perthousand",
-  0277 , "questiondown",
-  0301 , "grave",
-  0302 , "acute",
-  0303 , "circumflex",
-  0304 , "tilde",
-  0305 , "macron",
-  0306 , "breve",
-  0307 , "dotaccent",
-  0310 , "dieresis",
-  0312 , "ring",
-  0313 , "cedilla",
-  0315 , "hungarumlaut",
-  0316 , "ogonek",
-  0317 , "caron",
-  0320 , "emdash",
-  0341 , "AE",
-  0343 , "ordfeminine",
-  0350 , "Lslash",
-  0351 , "Oslash",
-  0352 , "OE",
-  0353 , "ordmasculine",
-  0361 , "ae",
-  0365 , "dotlessi",
-  0370 , "lslash",
-  0371 , "oslash",
-  0372 , "oe",
-  0373 , "germandbls",
-    0,      0
+  {  040 , "space" },
+  {  041 , "exclam" },
+  {  042 , "quotedbl" },
+  {  043 , "numbersign" },
+  {  044 , "dollar" },
+  {  045 , "percent" },
+  {  046 , "ampersand" },
+  {  047 , "quoteright" },
+  {  050 , "parenleft" },
+  {  051 , "parenright" },
+  {  052 , "asterisk" },
+  {  053 , "plus" },
+  {  054 , "comma" },
+  {  055 , "hyphen" },
+  {  056 , "period" },
+  {  057 , "slash" },
+  {  060 , "zero" },
+  {  061 , "one" },
+  {  062 , "two" },
+  {  063 , "three" },
+  {  064 , "four" },
+  {  065 , "five" },
+  {  066 , "six" },
+  {  067 , "seven" },
+  {  070 , "eight" },
+  {  071 , "nine" },
+  {  072 , "colon" },
+  {  073 , "semicolon" },
+  {  074 , "less" },
+  {  075 , "equal" },
+  {  076 , "greater" },
+  {  077 , "question" },
+  { 0100 , "at" },
+  { 0101 , "A" },
+  { 0102 , "B" },
+  { 0103 , "C" },
+  { 0104 , "D" },
+  { 0105 , "E" },
+  { 0106 , "F" },
+  { 0107 , "G" },
+  { 0110 , "H" },
+  { 0111 , "I" },
+  { 0112 , "J" },
+  { 0113 , "K" },
+  { 0114 , "L" },
+  { 0115 , "M" },
+  { 0116 , "N" },
+  { 0117 , "O" },
+  { 0120 , "P" },
+  { 0121 , "Q" },
+  { 0122 , "R" },
+  { 0123 , "S" },
+  { 0124 , "T" },
+  { 0125 , "U" },
+  { 0126 , "V" },
+  { 0127 , "W" },
+  { 0130 , "X" },
+  { 0131 , "Y" },
+  { 0132 , "Z" },
+  { 0133 , "bracketleft" },
+  { 0134 , "backslash" },
+  { 0135 , "bracketright" },
+  { 0136 , "asciicircum" },
+  { 0137 , "underscore" },
+  { 0140 , "quoteleft" },
+  { 0141 , "a" },
+  { 0142 , "b" },
+  { 0143 , "c" },
+  { 0144 , "d" },
+  { 0145 , "e" },
+  { 0146 , "f" },
+  { 0147 , "g" },
+  { 0150 , "h" },
+  { 0151 , "i" },
+  { 0152 , "j" },
+  { 0153 , "k" },
+  { 0154 , "l" },
+  { 0155 , "m" },
+  { 0156 , "n" },
+  { 0157 , "o" },
+  { 0160 , "p" },
+  { 0161 , "q" },
+  { 0162 , "r" },
+  { 0163 , "s" },
+  { 0164 , "t" },
+  { 0165 , "u" },
+  { 0166 , "v" },
+  { 0167 , "w" },
+  { 0170 , "x" },
+  { 0171 , "y" },
+  { 0172 , "z" },
+  { 0173 , "braceleft" },
+  { 0174 , "bar" },
+  { 0175 , "braceright" },
+  { 0176 , "asciitilde" },
+  { 0241 , "exclamdown" },
+  { 0242 , "cent" },
+  { 0243 , "sterling" },
+  { 0244 , "fraction" },
+  { 0245 , "yen" },
+  { 0246 , "florin" },
+  { 0247 , "section" },
+  { 0250 , "currency" },
+  { 0251 , "quotesingle" },
+  { 0252 , "quotedblleft" },
+  { 0253 , "guillemotleft" },
+  { 0254 , "guilsinglleft" },
+  { 0255 , "guilsinglright" },
+  { 0256 , "fi" },
+  { 0257 , "fl" },
+  { 0261 , "endash" },
+  { 0262 , "dagger" },
+  { 0263 , "daggerdbl" },
+  { 0264 , "periodcentered" },
+  { 0266 , "paragraph" },
+  { 0267 , "bullet" },
+  { 0270 , "quotesinglbase" },
+  { 0271 , "quotedblbase" },
+  { 0272 , "quotedblright" },
+  { 0273 , "guillemotright" },
+  { 0274 , "ellipsis" },
+  { 0275 , "perthousand" },
+  { 0277 , "questiondown" },
+  { 0301 , "grave" },
+  { 0302 , "acute" },
+  { 0303 , "circumflex" },
+  { 0304 , "tilde" },
+  { 0305 , "macron" },
+  { 0306 , "breve" },
+  { 0307 , "dotaccent" },
+  { 0310 , "dieresis" },
+  { 0312 , "ring" },
+  { 0313 , "cedilla" },
+  { 0315 , "hungarumlaut" },
+  { 0316 , "ogonek" },
+  { 0317 , "caron" },
+  { 0320 , "emdash" },
+  { 0341 , "AE" },
+  { 0343 , "ordfeminine" },
+  { 0350 , "Lslash" },
+  { 0351 , "Oslash" },
+  { 0352 , "OE" },
+  { 0353 , "ordmasculine" },
+  { 0361 , "ae" },
+  { 0365 , "dotlessi" },
+  { 0370 , "lslash" },
+  { 0371 , "oslash" },
+  { 0372 , "oe" },
+  { 0373 , "germandbls" },
+  {    0,      0 }
 };
 
 static EncodingTable ISO8859Enc[] = {
-  32, "space",
-  33, "exclam",
-  34, "quotedbl",
-  35, "numbersign",
-  36, "dollar",
-  37, "percent",
-  38, "ampersand",
-  39, "quoteright",
-  40, "parenleft",
-  41, "parenright",
-  42, "asterisk",
-  43, "plus",
-  44, "comma",
-  45, "minus",
-  46, "period",
-  47, "slash",
-  48, "zero",
-  49, "one",
-  50, "two",
-  51, "three",
-  52, "four",
-  53, "five",
-  54, "six",
-  55, "seven",
-  56, "eight",
-  57, "nine",
-  58, "colon",
-  59, "semicolon",
-  60, "less",
-  61, "equal",
-  62, "greater",
-  63, "question",
-  64, "at",
-  65, "A",
-  66, "B",
-  67, "C",
-  68, "D",
-  69, "E",
-  70, "F",
-  71, "G",
-  72, "H",
-  73, "I",
-  74, "J",
-  75, "K",
-  76, "L",
-  77, "M",
-  78, "N",
-  79, "O",
-  80, "P",
-  81, "Q",
-  82, "R",
-  83, "S",
-  84, "T",
-  85, "U",
-  86, "V",
-  87, "W",
-  88, "X",
-  89, "Y",
-  90, "Z",
-  91, "bracketleft",
-  92, "backslash",
-  93, "bracketright",
-  94, "asciicircum",
-  95, "underscore",
-  96, "quoteleft",
-  97, "a",
-  98, "b",
-  99, "c",
- 100, "d",
- 101, "e",
- 102, "f",
- 103, "g",
- 104, "h",
- 105, "i",
- 106, "j",
- 107, "k",
- 108, "l",
- 109, "m",
- 110, "n",
- 111, "o",
- 112, "p",
- 113, "q",
- 114, "r",
- 115, "s",
- 116, "t",
- 117, "u",
- 118, "v",
- 119, "w",
- 120, "x",
- 121, "y",
- 122, "z",
- 123, "braceleft",
- 124, "bar",
- 125, "braceright",
- 126, "asciitilde",
- 160, "space",
- 161, "exclamdown",
- 162, "cent",
- 163, "sterling",
- 164, "currency",
- 165, "yen",
- 166, "brokenbar",
- 167, "section",
- 168, "dieresis",
- 169, "copyright",
- 170, "ordfeminine",
- 171, "guillemotleft",
- 172, "logicalnot",
- 173, "hyphen",
- 174, "registered",
- 175, "macron",
- 176, "degree",
- 177, "plusminus",
- 178, "twosuperior",
- 179, "threesuperior",
- 180, "acute",
- 181, "mu",
- 182, "paragraph",
- 183, "periodcentered",
- 184, "cedilla",
- 185, "onesuperior",
- 186, "ordmasculine",
- 187, "guillemotright",
- 188, "onequarter",
- 189, "onehalf",
- 190, "threequarters",
- 191, "questiondown",
- 192, "Agrave",
- 193, "Aacute",
- 194, "Acircumflex",
- 195, "Atilde",
- 196, "Adieresis",
- 197, "Aring",
- 198, "AE",
- 199, "Ccedilla",
- 200, "Egrave",
- 201, "Eacute",
- 202, "Ecircumflex",
- 203, "Edieresis",
- 204, "Igrave",
- 205, "Iacute",
- 206, "Icircumflex",
- 207, "Idieresis",
- 208, "Eth",
- 209, "Ntilde",
- 210, "Ograve",
- 211, "Oacute",
- 212, "Ocircumflex",
- 213, "Otilde",
- 214, "Odieresis",
- 215, "multiply",
- 216, "Oslash",
- 217, "Ugrave",
- 218, "Uacute",
- 219, "Ucircumflex",
- 220, "Udieresis",
- 221, "Yacute",
- 222, "Thorn",
- 223, "germandbls",
- 224, "agrave",
- 225, "aacute",
- 226, "acircumflex",
- 227, "atilde",
- 228, "adieresis",
- 229, "aring",
- 230, "ae",
- 231, "ccedilla",
- 232, "egrave",
- 233, "eacute",
- 234, "ecircumflex",
- 235, "edieresis",
- 236, "igrave",
- 237, "iacute",
- 238, "icircumflex",
- 239, "idieresis",
- 240, "eth",
- 241, "ntilde",
- 242, "ograve",
- 243, "oacute",
- 244, "ocircumflex",
- 245, "otilde",
- 246, "odieresis",
- 247, "divide",
- 248, "oslash",
- 249, "ugrave",
- 250, "uacute",
- 251, "ucircumflex",
- 252, "udieresis",
- 253, "yacute",
- 254, "thorn",
- 255, "ydieresis",
-    0,      0
+ {  32, "space" },
+ {  33, "exclam" },
+ {  34, "quotedbl" },
+ {  35, "numbersign" },
+ {  36, "dollar" },
+ {  37, "percent" },
+ {  38, "ampersand" },
+ {  39, "quoteright" },
+ {  40, "parenleft" },
+ {  41, "parenright" },
+ {  42, "asterisk" },
+ {  43, "plus" },
+ {  44, "comma" },
+ {  45, "minus" },
+ {  46, "period" },
+ {  47, "slash" },
+ {  48, "zero" },
+ {  49, "one" },
+ {  50, "two" },
+ {  51, "three" },
+ {  52, "four" },
+ {  53, "five" },
+ {  54, "six" },
+ {  55, "seven" },
+ {  56, "eight" },
+ {  57, "nine" },
+ {  58, "colon" },
+ {  59, "semicolon" },
+ {  60, "less" },
+ {  61, "equal" },
+ {  62, "greater" },
+ {  63, "question" },
+ {  64, "at" },
+ {  65, "A" },
+ {  66, "B" },
+ {  67, "C" },
+ {  68, "D" },
+ {  69, "E" },
+ {  70, "F" },
+ {  71, "G" },
+ {  72, "H" },
+ {  73, "I" },
+ {  74, "J" },
+ {  75, "K" },
+ {  76, "L" },
+ {  77, "M" },
+ {  78, "N" },
+ {  79, "O" },
+ {  80, "P" },
+ {  81, "Q" },
+ {  82, "R" },
+ {  83, "S" },
+ {  84, "T" },
+ {  85, "U" },
+ {  86, "V" },
+ {  87, "W" },
+ {  88, "X" },
+ {  89, "Y" },
+ {  90, "Z" },
+ {  91, "bracketleft" },
+ {  92, "backslash" },
+ {  93, "bracketright" },
+ {  94, "asciicircum" },
+ {  95, "underscore" },
+ {  96, "quoteleft" },
+ {  97, "a" },
+ {  98, "b" },
+ {  99, "c" },
+ { 100, "d" },
+ { 101, "e" },
+ { 102, "f" },
+ { 103, "g" },
+ { 104, "h" },
+ { 105, "i" },
+ { 106, "j" },
+ { 107, "k" },
+ { 108, "l" },
+ { 109, "m" },
+ { 110, "n" },
+ { 111, "o" },
+ { 112, "p" },
+ { 113, "q" },
+ { 114, "r" },
+ { 115, "s" },
+ { 116, "t" },
+ { 117, "u" },
+ { 118, "v" },
+ { 119, "w" },
+ { 120, "x" },
+ { 121, "y" },
+ { 122, "z" },
+ { 123, "braceleft" },
+ { 124, "bar" },
+ { 125, "braceright" },
+ { 126, "asciitilde" },
+ { 160, "space" },
+ { 161, "exclamdown" },
+ { 162, "cent" },
+ { 163, "sterling" },
+ { 164, "currency" },
+ { 165, "yen" },
+ { 166, "brokenbar" },
+ { 167, "section" },
+ { 168, "dieresis" },
+ { 169, "copyright" },
+ { 170, "ordfeminine" },
+ { 171, "guillemotleft" },
+ { 172, "logicalnot" },
+ { 173, "hyphen" },
+ { 174, "registered" },
+ { 175, "macron" },
+ { 176, "degree" },
+ { 177, "plusminus" },
+ { 178, "twosuperior" },
+ { 179, "threesuperior" },
+ { 180, "acute" },
+ { 181, "mu" },
+ { 182, "paragraph" },
+ { 183, "periodcentered" },
+ { 184, "cedilla" },
+ { 185, "onesuperior" },
+ { 186, "ordmasculine" },
+ { 187, "guillemotright" },
+ { 188, "onequarter" },
+ { 189, "onehalf" },
+ { 190, "threequarters" },
+ { 191, "questiondown" },
+ { 192, "Agrave" },
+ { 193, "Aacute" },
+ { 194, "Acircumflex" },
+ { 195, "Atilde" },
+ { 196, "Adieresis" },
+ { 197, "Aring" },
+ { 198, "AE" },
+ { 199, "Ccedilla" },
+ { 200, "Egrave" },
+ { 201, "Eacute" },
+ { 202, "Ecircumflex" },
+ { 203, "Edieresis" },
+ { 204, "Igrave" },
+ { 205, "Iacute" },
+ { 206, "Icircumflex" },
+ { 207, "Idieresis" },
+ { 208, "Eth" },
+ { 209, "Ntilde" },
+ { 210, "Ograve" },
+ { 211, "Oacute" },
+ { 212, "Ocircumflex" },
+ { 213, "Otilde" },
+ { 214, "Odieresis" },
+ { 215, "multiply" },
+ { 216, "Oslash" },
+ { 217, "Ugrave" },
+ { 218, "Uacute" },
+ { 219, "Ucircumflex" },
+ { 220, "Udieresis" },
+ { 221, "Yacute" },
+ { 222, "Thorn" },
+ { 223, "germandbls" },
+ { 224, "agrave" },
+ { 225, "aacute" },
+ { 226, "acircumflex" },
+ { 227, "atilde" },
+ { 228, "adieresis" },
+ { 229, "aring" },
+ { 230, "ae" },
+ { 231, "ccedilla" },
+ { 232, "egrave" },
+ { 233, "eacute" },
+ { 234, "ecircumflex" },
+ { 235, "edieresis" },
+ { 236, "igrave" },
+ { 237, "iacute" },
+ { 238, "icircumflex" },
+ { 239, "idieresis" },
+ { 240, "eth" },
+ { 241, "ntilde" },
+ { 242, "ograve" },
+ { 243, "oacute" },
+ { 244, "ocircumflex" },
+ { 245, "otilde" },
+ { 246, "odieresis" },
+ { 247, "divide" },
+ { 248, "oslash" },
+ { 249, "ugrave" },
+ { 250, "uacute" },
+ { 251, "ucircumflex" },
+ { 252, "udieresis" },
+ { 253, "yacute" },
+ { 254, "thorn" },
+ { 255, "ydieresis" },
+ {   0,      0 }
 };
 
 static psobj *StdEncArrayP = NULL;
 psobj *ISOLatin1EncArrayP = NULL; 
  
-static psobj *MakeEncodingArrayP(encodingTable)
-    EncodingTable *encodingTable;
+static psobj *
+MakeEncodingArrayP(EncodingTable *encodingTable)
 {
   int i;
   psobj *encodingArrayP;
@@ -478,7 +476,8 @@ static psobj *MakeEncodingArrayP(encodingTable)
   return(encodingArrayP);
 }
  
-boolean Init_BuiltInEncoding()
+boolean 
+Init_BuiltInEncoding(void)
 {
     StdEncArrayP = MakeEncodingArrayP(StdEnc);
     ISOLatin1EncArrayP = MakeEncodingArrayP(ISO8859Enc);
@@ -487,8 +486,8 @@ boolean Init_BuiltInEncoding()
  
 /********************************************************************/
 /***================================================================***/
-static int getNextValue(valueType)
-    int valueType;
+static int 
+getNextValue(int valueType)
 {
   scan_token(inputP);
   if (tokenType != valueType) {
@@ -500,7 +499,8 @@ static int getNextValue(valueType)
 /***================================================================***/
 /*  This routine will set the global rc if there is an error          */
 /***================================================================***/
-static int getInt()
+static int 
+getInt(void)
 {
   scan_token(inputP);
   if (tokenType != TOKEN_INTEGER) {
@@ -517,8 +517,8 @@ static int getInt()
  * See Sec 10.3 of ``Adobe Type 1 Font Format'' v1.1,
  * for parsing Encoding.
  */
-static int getEncoding(arrayP)
-    psobj *arrayP;
+static int 
+getEncoding(psobj *arrayP)
 {
   scan_token(inputP);
   if ((tokenType == TOKEN_NAME && (tokenLength==16 || tokenLength==17)))
@@ -625,11 +625,10 @@ static int getEncoding(arrayP)
 }
 /***================================================================***/
 #ifdef BUILDCID
-static int getFDArray(arrayP)
-    psobj *arrayP;
+static int 
+getFDArray(psobj *arrayP)
 {
   int rc;
-  psobj *objP;
 
   /* get the number of items in the FDArray */
   scan_token(inputP);
@@ -677,8 +676,8 @@ static int getFDArray(arrayP)
 }
 #endif
 
-static int getArray(arrayP)
-    psobj *arrayP;
+static int 
+getArray(psobj *arrayP)
 {
   int N;   /* count the items in the array */
   psobj *objP;
@@ -741,8 +740,8 @@ restart:
   /* NOTREACHED*/
 }
 /***================================================================***/
-static int getName(nameP)
-    char *nameP;
+static int 
+getName(char *nameP)
 {
   do {
     scan_token(inputP);
@@ -756,8 +755,8 @@ static int getName(nameP)
   return(SCAN_OK);
 }
 /***================================================================***/
-static int getNbytes(N)
-    int N;
+static int 
+getNbytes(int N)
 {
   int I;
  
@@ -779,8 +778,8 @@ static int getNbytes(N)
 /*    It means that the CharStrings does not have as many characters  */
 /*    as the dictionary said it would and that is ok.                 */
 /***================================================================***/
-static int getLiteralName(nameObjP)
-    psobj *nameObjP;
+static int 
+getLiteralName(psobj *nameObjP)
 {
   do {
     scan_token(inputP);
@@ -808,8 +807,8 @@ static int getLiteralName(nameObjP)
  */
 /***================================================================***/
  
-static int BuildSubrs(FontP)
-    psfont *FontP;
+static int 
+BuildSubrs(psfont *FontP)
 {
    int N;   /* number of values in Subrs */
    int I;   /* index into Subrs */
@@ -883,8 +882,8 @@ static int BuildSubrs(FontP)
  */
 /***================================================================***/
  
-static int BuildCharStrings(FontP)
-    psfont   *FontP;
+static int 
+BuildCharStrings(psfont *FontP)
 {
    int N;   /* number of values in CharStrings */
    int i;   /* loop thru  Subrs */
@@ -944,8 +943,8 @@ static int BuildCharStrings(FontP)
  *   BuildCIDFontInfo Dictionary
  */
 /***================================================================***/
-static int BuildCIDFontInfo(CIDfontP)
-    cidfont *CIDfontP;
+static int 
+BuildCIDFontInfo(cidfont *CIDfontP)
 {
   psdict *dictP;
 
@@ -998,8 +997,8 @@ static int BuildCIDFontInfo(CIDfontP)
  *   BuildCMapInfo Dictionary
  */
 /***================================================================***/
-static int BuildCMapInfo(CMapP)
-    cmapres *CMapP;
+static int 
+BuildCMapInfo(cmapres *CMapP)
 {
   psdict *dictP;
 
@@ -1034,8 +1033,8 @@ static int BuildCMapInfo(CMapP)
  *   BuildFontInfo Dictionary
  */
 /***================================================================***/
-static int BuildFontInfo(fontP)
-    psfont *fontP;
+static int 
+BuildFontInfo(psfont *fontP)
 {
   psdict *dictP;
  
@@ -1087,8 +1086,8 @@ static int BuildFontInfo(fontP)
  *   BuildCIDType1Private Dictionary
  */
 /***================================================================***/
-static int BuildCIDType1Private(fontP)
-    psfont *fontP;
+static int 
+BuildCIDType1Private(psfont *fontP)
 {
   psdict *Private;
 
@@ -1150,8 +1149,8 @@ static int BuildCIDType1Private(fontP)
  *   BuildPrivate Dictionary
  */
 /***================================================================***/
-static int BuildPrivate(fontP)
-    psfont *fontP;
+static int 
+BuildPrivate(psfont *fontP)
 {
   psdict *Private;
  
@@ -1209,8 +1208,8 @@ static int BuildPrivate(fontP)
 /*                                                                    */
 /*                                                                    */
 /**********************************************************************/
-static int GetType1Blues(fontP)
-    psfont *fontP;
+static int 
+GetType1Blues(psfont *fontP)
 {
   psdict *PrivateDictP;   /* the Private dict relating to hints */
   struct blues_struct *blues;  /* ptr for the blues struct we will allocate */
@@ -1479,9 +1478,8 @@ static int GetType1Blues(fontP)
 /*                                                                    */
 /*   Returns a psobj (string)                                         */
 /**********************************************************************/
-psobj *GetType1CharString(fontP, code)
-psfont *fontP;
-unsigned char code;
+psobj *
+GetType1CharString(psfont *fontP, unsigned char code)
 {
   int  N;           /* the 'Nth' entry in the CharStrings       */
   psobj *charnameP; /* points to psobj that is name of character*/
@@ -1523,8 +1521,8 @@ unsigned char code;
  */
 /***================================================================***/
  
-static int FindDictValue(dictP)
-    psdict    *dictP;
+static int 
+FindDictValue(psdict *dictP)
 {
    psobj LitName;
    int   N;
@@ -1615,9 +1613,8 @@ static int FindDictValue(dictP)
  *  Result is placed on the Operand Stack as next object
  * -------------------------------------------------------------------
  */
-int scan_cidfont(CIDFontP, CMapP)
-  cidfont *CIDFontP;
-  cmapres *CMapP;
+int 
+scan_cidfont(cidfont *CIDFontP, cmapres *CMapP)
 {
   char   filename[CID_PATH_MAX];
   char   cmapfile[CID_PATH_MAX];
@@ -1628,12 +1625,8 @@ int scan_cidfont(CIDFontP, CMapP)
   char   *nameP;
   char   *p;
   int    namelen;
-  int    V;
-  int    i, j, cid;
-  int    cread, rangecnt, Code;
-  unsigned char charstring[1000];
-  unsigned char subrstring[1000];
-  char decdat[1000];
+  int    i, j;
+  int    cread, rangecnt;
   unsigned int char_row, char_col;
 
     InFDArray = FALSE;
@@ -1793,8 +1786,8 @@ int scan_cidfont(CIDFontP, CMapP)
  
           /* read "endcodespacerange" */
           scan_token(inputP);
-          if (tokenType != TOKEN_NAME || tokenType == TOKEN_NAME &&
-            (strncmp(tokenStartP,"endcodespacerange",17) != 0)) {
+          if (tokenType != TOKEN_NAME || (tokenType == TOKEN_NAME &&
+            (strncmp(tokenStartP,"endcodespacerange",17) != 0))) {
             rc = SCAN_ERROR;
             break;
           }
@@ -1873,8 +1866,8 @@ int scan_cidfont(CIDFontP, CMapP)
 
           /* read "endcidrange" */
           scan_token(inputP);
-          if (tokenType != TOKEN_NAME || tokenType == TOKEN_NAME &&
-            (strncmp(tokenStartP,"endcidrange",11) != 0)) {
+          if (tokenType != TOKEN_NAME || (tokenType == TOKEN_NAME &&
+            (strncmp(tokenStartP,"endcidrange",11) != 0))) {
             rc = SCAN_ERROR;
             break;
           }
@@ -1933,8 +1926,8 @@ int scan_cidfont(CIDFontP, CMapP)
 
           /* read "endnotdefrange" */
           scan_token(inputP);
-          if (tokenType != TOKEN_NAME || tokenType == TOKEN_NAME &&
-            (strncmp(tokenStartP,"endnotdefrange",14) != 0)) {
+          if (tokenType != TOKEN_NAME || (tokenType == TOKEN_NAME &&
+            (strncmp(tokenStartP,"endnotdefrange",14) != 0))) {
             rc = SCAN_ERROR;
             break;
           }
@@ -2080,12 +2073,9 @@ int scan_cidfont(CIDFontP, CMapP)
  *  Result is placed on the Operand Stack as next object
  * -------------------------------------------------------------------
  */
-int scan_cidtype1font(FontP)
-  psfont *FontP;
+int 
+scan_cidtype1font(psfont *FontP)
 {
-  char   *nameP;
-  int    namelen;
-  int    V;
   int    i;
   int    begincnt = 0; /* counter for the number of unpaired begin operators */
   int    currentfilefound = 0;
@@ -2212,8 +2202,8 @@ int scan_cidtype1font(FontP)
  *  Result is placed on the Operand Stack as next object
  * -------------------------------------------------------------------
  */
-int scan_font(FontP)
-  psfont *FontP;
+int 
+scan_font(psfont *FontP)
 {
  
  
@@ -2249,7 +2239,7 @@ int scan_font(FontP)
     filterFile.data.fileP = NULL;
  
     inputP = &inputFile;
-    if (fileP = T1Open(filename,filetype)) {
+    if ((fileP = T1Open(filename,filetype))) {
       /* get the first byte of file */
       V = _XT1getc(fileP);
       /* if file starts with x'80' then skip next 5 bytes */

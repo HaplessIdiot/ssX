@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/difsutils.c,v 1.3 1998/10/25 12:47:59 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/difsutils.c,v 1.4 1999/08/01 11:55:25 dawes Exp $ */
 
 #define	XK_LATIN1
 
@@ -328,10 +328,10 @@ ValidHost(
 /* block & wakeup handlers */
 
 typedef struct _BlockHandler {
-    DifsBlockFunc BlockHandler;
-    DifsWakeupFunc WakeupHandler;
-    pointer     blockData;
-    Bool        deleted;
+    BlockHandlerProcPtr	BlockHandler;
+    DifsWakeupFunc	WakeupHandler;
+    pointer     	blockData;
+    Bool        	deleted;
 }           BlockHandlerRec, *BlockHandlerPtr;
 
 static BlockHandlerPtr handlers;
@@ -343,7 +343,7 @@ static Bool handlerDeleted;
 /* called from the OS layer */
 void
 BlockHandler(
-    pointer     pTimeout,	/* DIX doesn't want to know how OS represents
+    OSTimePtr   pTimeout,	/* DIX doesn't want to know how OS represents
 				 * time */
     pointer     pReadmask)	/* nor how it represents the set of
 				 * descriptors */
@@ -398,7 +398,7 @@ WakeupHandler(
 
 Bool
 RegisterBlockAndWakeupHandlers(
-    DifsBlockFunc blockHandler,
+    BlockHandlerProcPtr blockHandler,
     DifsWakeupFunc wakeupHandler,
     pointer     blockData)
 {
@@ -421,7 +421,7 @@ RegisterBlockAndWakeupHandlers(
 
 void
 RemoveBlockAndWakeupHandlers(
-    DifsBlockFunc blockHandler,
+    BlockHandlerProcPtr blockHandler,
     DifsWakeupFunc wakeupHandler,
     pointer     blockData)
 {

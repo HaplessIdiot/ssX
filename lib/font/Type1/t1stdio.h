@@ -27,7 +27,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1stdio.h,v 1.6 1999/02/25 06:00:59 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1stdio.h,v 1.7 1999/05/23 06:33:33 dawes Exp $ */
 /* T1IO FILE structure and related stuff */
 #ifdef XFree86LOADER
 #undef FILE
@@ -68,12 +68,17 @@ typedef struct F_FILE {
 #define  T1Feof(f)          (((f)->flags & FIOEOF) && ((f)->b_cnt==0))
 
 #ifdef BUILDCID
-extern FILE *CIDeexec();
+extern F_FILE *CIDeexec ( FILE *f );
 #endif
 
-extern FILE *T1Open(), *T1eexec();
-extern int T1Close(), T1Ungetc(), T1Read();
- 
+extern FILE *T1Open ( char *fn, char *mode );
+extern int T1Getc ( FILE *f );
+extern int T1Ungetc ( int c, FILE *f );
+extern int T1Read ( char *buffP, int size, int n, FILE *f );
+extern int T1Close ( FILE *f );
+extern FILE *T1eexec ( FILE *f );
+extern void resetDecrypt ( void );
+
 #undef fclose
 #undef fopen
 #undef ungetc

@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.17 1998/11/29 13:09:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.18 1999/03/06 13:12:23 dawes Exp $ */
 
 #if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 
@@ -148,7 +148,44 @@ extern void cfbCopyPlane8to1(
     unsigned long /*bitPlane*/
 #endif
 );
+
+extern void cfbCopyPlane16to1(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    int /*rop*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/,
+    unsigned long /*planemask*/,
+    unsigned long /*bitPlane*/
 #endif
+);
+
+extern void cfbCopyPlane24to1(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    int /*rop*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/,
+    unsigned long /*planemask*/,
+    unsigned long /*bitPlane*/
+#endif
+);
+
+extern void cfbCopyPlane32to1(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    int /*rop*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/,
+    unsigned long /*planemask*/,
+    unsigned long /*bitPlane*/
+#endif
+);
+#endif
+
 /* cfb8lineCO.c */
 
 extern int cfb8LineSS1RectCopy(

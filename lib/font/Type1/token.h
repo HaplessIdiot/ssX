@@ -56,7 +56,7 @@
 #define TOKEN_IMMED_NAME    (16)
  
 /* Token routines */
-extern void scan_token();
+extern void scan_token( psobj *inputP );
  
 /*
  * -------------------------------------------------------------------------

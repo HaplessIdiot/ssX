@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.32 1999/07/04 06:38:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.33 1999/08/15 13:00:32 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -2271,9 +2271,13 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 
     for (i = 0; i < src->textSrc.num_text; i++) {
 	TextWidget tw = (TextWidget)src->textSrc.text[i];
+	Bool needs_updating = tw->text.old_insert < 0;
+	Bool showposition = tw->text.showposition;
 
-	if (tw != ctx)
+	if (needs_updating) {
+	    tw->text.showposition = False;
 	    _XawTextPrepareToUpdate(tw);
+	}
 #else
 	TextWidget tw = ctx;
 	XawTextPosition pos;
@@ -2300,8 +2304,10 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 	tw->text.s.right = right;
 
 #ifndef OLDXAW
-	if (tw != ctx)
+	if (needs_updating) {
 	    _XawTextExecuteUpdate(tw);
+	    tw->text.showposition = showposition;
+	}
     }
 #endif /* OLDXAW */
 
@@ -2771,7 +2777,7 @@ DisplayText(Widget w, XawTextPosition left, XawTextPosition right)
 	segment.x1 = ctx->text.left_margin;
 	if (XmuValidSegment(&segment)) {
 	    scanline.y = y;
-	    next.y = (int)XtWidth(ctx) - (int)ctx->text.margin.bottom;
+	    next.y = (int)XtHeight(ctx) - (int)ctx->text.margin.bottom;
 	    XmuAreaOr(paint_list->clip, &area);
 	}
     }

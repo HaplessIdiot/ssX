@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.3 1999/07/06 11:38:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.4 1999/08/01 07:57:19 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -50,9 +50,10 @@ const char *ATIBusNames[] =
  * ATIClaimResources --
  *
  * This function registers most of the bus resources used by an adapter.  The
- * only exceptions are non-PCI non-AGP linear apertures, which are registered
- * by ATIPreInit().  This function also attempts to register unshareable
- * resources for inactive PCI adapters, whether or not they are relocatable.
+ * exceptions are PCI-configured resources and non-PCI non-AGP linear
+ * apertures, both of which are registered by ATIPreInit().  This function also
+ * attempts to register unshareable resources for inactive PCI adapters,
+ * whether or not they are relocatable.
  */
 static void
 ATIClaimResources

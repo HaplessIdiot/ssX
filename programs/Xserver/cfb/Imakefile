@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/71 1997/11/17 10:00:11 msr $
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.21 1999/05/15 06:24:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.22 1999/08/14 10:49:26 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -10,8 +10,8 @@ XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.21 1999/05/15 06:24:50 daw
 
 #if PixelSize == 8
 /* cfb8cppl.c MUST come last to avoid confusing makedepend */
-PSZSRCS = cfb8bit.c cfbteblt8.c cfbglrop8.c cfbpush8.c cfbrctstp8.c cfb8cppl.c
-PSZOBJS = cfb8bit.o cfbteblt8.o cfbglrop8.o cfbpush8.o cfbrctstp8.o cfb8cppl.o
+PSZSRCS = cfb8bit.c cfbteblt8.c cfbglrop8.c cfbpush8.c cfbrctstp8.c
+PSZOBJS = cfb8bit.o cfbteblt8.o cfbglrop8.o cfbpush8.o cfbrctstp8.o
 #ifdef MipsArchitecture
 #ifndef ArcArchitecture
 #ifndef Mips64Architecture
@@ -61,7 +61,7 @@ SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \
 	 cfbbres.c cfbline.c cfbhrzvert.c cfbbresd.c cfbimage.c cfbseg.c \
 	 cfb8lineCO.c cfb8lineX.c cfb8lineG.c cfb8lineCP.c \
 	 cfb8segC.c cfb8segX.c cfb8segG.c cfb8segCS.c \
-	 cfbply1rctC.c cfbply1rctG.c $(PSZSRCS) $(XFMODSRC)
+	 cfbply1rctC.c cfbply1rctG.c cfbcppl.c $(PSZSRCS) $(XFMODSRC)
 
 OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfbgetsp.o cfbfillrct.o \
@@ -77,7 +77,8 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfb8lineCO.o cfb8lineX.o cfb8lineG.o cfb8lineCP.o \
 	 cfb8segCS.o cfb8segX.o cfb8segG.o cfb8segC.o \
 	 cfbbitblt.o cfbbltC.o cfbbltX.o cfbbltO.o cfbbltG.o \
-	 cfbply1rctC.o cfbply1rctG.o $(PSZOBJS) $(STIPPLEOBJ) $(XFMODOBJ)
+	 cfbply1rctC.o cfbply1rctG.o cfbcppl.o $(PSZOBJS) $(STIPPLEOBJ) \
+	 $(XFMODOBJ)
 
 #ifdef XFree86Version
 PLATFORMDEFS = -DXFREE86
@@ -121,6 +122,7 @@ LinkSourceFile(cfbbres.c,LinkDirectory)
 LinkSourceFile(cfbbresd.c,LinkDirectory)
 LinkSourceFile(cfbbstore.c,LinkDirectory)
 LinkSourceFile(cfbcmap.c,LinkDirectory)
+LinkSourceFile(cfbcppl.c,LinkDirectory)
 LinkSourceFile(cfbfillarc.c,LinkDirectory)
 LinkSourceFile(cfbfillrct.c,LinkDirectory)
 LinkSourceFile(cfbfillsp.c,LinkDirectory)

@@ -92,11 +92,13 @@ typedef int boolean;
 /***================================================================***/
 /*  Routines for managing virtual memory                              */
 /***================================================================***/
-extern boolean  vm_init();
+
+extern boolean  vm_init ( int cnt );
 extern long     vm_free;
 extern long     vm_size;
 extern char    *vm_next;
-extern char    *vm_alloc();
+extern char    *vm_alloc ( int bytes );
+
 /***================================================================***/
 /*  Macros for managing virtual memory                                */
 /***================================================================***/
@@ -194,5 +196,17 @@ typedef struct ps_dict {
 #define objPSetString(o)         ((o)->type = OBJ_STRING)
 #define objPSetName(o)           ((o)->type = OBJ_NAME)
 #define objPSetFile(o)           ((o)->type = OBJ_FILE)
- 
+
+/***================================================================***/
+/* Prototypes of object formatting functions */
+/***================================================================***/
+extern void objFormatInteger ( psobj *objP, int value );
+extern void objFormatReal ( psobj *objP, float value );
+extern void objFormatBoolean ( psobj *objP, boolean value );
+extern void objFormatEncoding ( psobj *objP, int length, psobj *valueP );
+extern void objFormatArray ( psobj *objP, int length, psobj *valueP );
+extern void objFormatString ( psobj *objP, int length, char *valueP );
+extern void objFormatName ( psobj *objP, int length, char *valueP );
+extern void objFormatFile ( psobj *objP, FILE *valueP );
+
 #endif

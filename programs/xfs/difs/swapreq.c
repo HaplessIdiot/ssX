@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/difs/swapreq.c,v 1.3 1998/10/25 12:48:00 dawes Exp $ */
 
 #include	<swapreq.h>
 
@@ -138,7 +138,7 @@ SProcResourceRequest(ClientPtr client)
 static void
 swap_auth(pointer data, int num)
 {
-    pointer     p;
+    unsigned char *p;
     unsigned char t;
     CARD16      namelen,
                 datalen;

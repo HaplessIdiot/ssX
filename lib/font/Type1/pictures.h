@@ -44,5 +44,5 @@ struct picture {
 #define    Phantom(o)             t1_Phantom(o)
 #define    Snap(o)                t1_Snap(o)
  
-struct segment *t1_Phantom();
-struct segment *t1_Snap();
+extern struct segment *t1_Phantom ( struct segment *p );
+extern struct segment *t1_Snap ( struct segment *p );

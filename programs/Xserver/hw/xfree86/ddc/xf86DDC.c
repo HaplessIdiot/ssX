@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.9 1999/04/11 13:10:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.10 1999/06/27 14:08:01 dawes Exp $ */
 
 /* xf86DDC.c 
  * 
- * Copyright 1998 by Egbert Eich <Egbert.Eich@Physik.TU-Darmstadt.DE>
+ * Copyright 1998,1999 by Egbert Eich <Egbert.Eich@Physik.TU-Darmstadt.DE>
  */
 #include "misc.h"
 #include "xf86.h"
@@ -153,7 +153,12 @@ xf86DoEDID_DDC1(
     if (EDID_block){
 	tmp = InterpretEDID(EDID_block);
     }
-    return tmp;
+#ifdef DEBUG
+	else ErrorF("No EDID block returned\n");
+    if (!tmp)
+	ErrorF("Cannot interpret EDID block\n");
+#endif
+	return tmp;
 }
 
 xf86MonPtr
@@ -178,9 +183,16 @@ xf86DoEDID_DDC2(int scrnIndex, I2CBusPtr pBus)
 
     if (EDID_block){
 	tmp = InterpretEDID(EDID_block);
-    } else 
+    } else {
+#ifdef DEBUG
+	ErrorF("No EDID block returned\n");
+#endif
 	return NULL;
-
+    }
+#ifdef DEBUG
+    if (!tmp)
+	ErrorF("Cannot interpret EDID block\n");
+#endif
     ErrorF("Sections to follow: %i\n",tmp->no_sections);
     VDIF_Block = 
 	VDIFRead(scrnIndex, pBus, EDID1_LEN * (tmp->no_sections + 1));    
@@ -320,12 +332,20 @@ DDCRead_DDC2(int scrnIndex, I2CBusPtr pBus, int start, int len)
     R_Buffer = xcalloc(1,sizeof(unsigned char) 
 					* (len));
     for (i=0; i<RETRIES; i++) {
-	if (xf86I2CWriteRead(dev, W_Buffer,w_bytes, R_Buffer,len) 
-	    && !checksum(R_Buffer,len)) { 
-	    xf86DestroyI2CDevRec(dev,TRUE);
-	    return R_Buffer;
+	if (xf86I2CWriteRead(dev, W_Buffer,w_bytes, R_Buffer,len)) {
+	    if (!checksum(R_Buffer,len)) { 
+		xf86DestroyI2CDevRec(dev,TRUE);
+		return R_Buffer;
+	    }
+#ifdef DEBUG
+	    else ErrorF("Checksum error in EDID block\n");
+#endif
 	}
+#ifdef DEBUG
+	else ErrorF("Error reading EDID block\n");
+#endif
     }
+    
     xf86DestroyI2CDevRec(dev,TRUE);
     xfree(R_Buffer);
     return NULL;

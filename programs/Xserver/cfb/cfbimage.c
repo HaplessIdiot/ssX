@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.6 1999/03/14 03:21:32 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -171,7 +171,6 @@ cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     }
     else
     {
-#if PSZ == 8
 	pPixmap = GetScratchPixmapHeader(pScreen, w, h,  /*depth*/ 1,
 			/*bpp*/ 1, BitmapBytePad(w), (pointer)pdstLine);
 	if (!pPixmap)
@@ -188,8 +187,5 @@ cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 		    &ptSrc, planeMask);
         REGION_UNINIT(pScreen, &rgnDst);
 	FreeScratchPixmapHeader(pPixmap);
-#else
-	miGetImage (pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
-#endif
     }
 }

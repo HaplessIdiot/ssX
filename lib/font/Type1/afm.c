@@ -15,7 +15,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/Type1/afm.c,v 1.1 1999/05/03 05:58:44 dawes Exp $ */
 
 #ifdef BUILDCID
 #ifndef FONTMODULE
@@ -24,10 +24,10 @@
 #include <stdlib.h>
 #else
 #include "Xmd.h"        /* For INT32 declaration */
-#include "fontmisc.h"   /* For Bool */
+#include "Xdefs.h"      /* For Bool */
 #include "xf86_ansic.h"
 #endif
-#include "fontmisc.h"
+#include "fontmisc.h"			/* for xalloc/xfree */
 #include "AFM.h"
 
 #define PBUF 256
@@ -36,7 +36,6 @@
 char *gettoken(FILE *);
   
 static char *afmbuf = NULL;
-static char *bp;
 
 char *gettoken(FILE *fd) {
     char *bp;

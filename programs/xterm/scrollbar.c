@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: scrollbar.c /main/47 1996/12/01 23:47:08 swick $
- *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.22 1999/03/14 03:22:43 dawes Exp $
+ *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.23 1999/03/28 15:33:22 dawes Exp $
  */
 
 /*
@@ -109,6 +109,9 @@ ResizeScreen(register XtermWidget xw, int min_width, int min_height)
 	 * to have time to completely rewrite xterm.
 	 */
 
+	TRACE(("ResizeScreen(min_width=%d, min_height=%d) xw=%#lx\n",
+		min_width, min_height, (long) xw))
+
 #ifndef nothack
 	/*
 	 * NOTE: If you change the way any of the hints are calculated
@@ -146,13 +149,20 @@ ResizeScreen(register XtermWidget xw, int min_width, int min_height)
 		      XtNminHeight, min_height + FontHeight(screen),
 		      NULL);
 
-	reqWidth = (screen->max_col + 1) * screen->fullVwin.f_width + min_width;
+	reqWidth = screen->fullVwin.f_width * (screen->max_col + 1) + min_width;
 	reqHeight = screen->fullVwin.f_height * (screen->max_row + 1) + min_height;
+
+	TRACE(("...requesting screensize chars %dx%d, pixels %dx%d\n",
+		(screen->max_row + 1),
+		(screen->max_col + 1),
+		reqHeight, reqWidth))
+
 	geomreqresult = XtMakeResizeRequest ((Widget)xw, reqWidth, reqHeight,
 					     &repWidth, &repHeight);
 
 	if (geomreqresult == XtGeometryAlmost) {
-	     geomreqresult = XtMakeResizeRequest ((Widget)xw, repWidth,
+	    TRACE(("...almost, retry screensize %dx%d\n", repHeight, repWidth))
+	    geomreqresult = XtMakeResizeRequest ((Widget)xw, repWidth,
 						  repHeight, NULL, NULL);
 	}
 	XSync(screen->display, FALSE);	/* synchronize */
@@ -248,7 +258,7 @@ ResizeScrollBar(TScreen *screen)
 		screen->scrollWidget,
 #ifdef SCROLLBAR_RIGHT
         	(term->misc.useRight)
-			? (screen->fullVwin.fullwidth -
+			? (term->core.width -
 			   screen->scrollWidget->core.width -
 			   screen->scrollWidget->core.border_width)
 			: -1,

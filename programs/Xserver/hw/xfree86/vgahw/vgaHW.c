@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.29 1999/07/17 07:18:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.30 1999/07/18 03:27:02 dawes Exp $ */
 
 /*
  *
@@ -216,6 +216,12 @@ stdReadSeq(vgaHWPtr hwp, CARD8 index)
     return inb(VGA_SEQ_DATA);
 }
 
+static CARD8
+stdReadST01(vgaHWPtr hwp)
+{
+    return inb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
+}
+
 static void
 stdWriteAttr(vgaHWPtr hwp, CARD8 index, CARD8 value)
 {
@@ -321,6 +327,7 @@ vgaHWSetStdFuncs(vgaHWPtr hwp)
     hwp->readCrtc		= stdReadCrtc;
     hwp->writeGr		= stdWriteGr;
     hwp->readGr			= stdReadGr;
+    hwp->readST01               = stdReadST01;
     hwp->writeAttr		= stdWriteAttr;
     hwp->readAttr		= stdReadAttr;
     hwp->writeSeq		= stdWriteSeq;
@@ -393,6 +400,12 @@ mmioReadSeq(vgaHWPtr hwp, CARD8 index)
 {
     moutb(VGA_SEQ_INDEX, index);
     return minb(VGA_SEQ_DATA);
+}
+
+static CARD8
+mmioReadST01(vgaHWPtr hwp)
+{
+    return minb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
 }
 
 static void
@@ -500,6 +513,7 @@ vgaHWSetMmioFuncs(vgaHWPtr hwp, CARD8 *base, int offset)
     hwp->readCrtc		= mmioReadCrtc;
     hwp->writeGr		= mmioWriteGr;
     hwp->readGr			= mmioReadGr;
+    hwp->readST01               = mmioReadST01;
     hwp->writeAttr		= mmioWriteAttr;
     hwp->readAttr		= mmioReadAttr;
     hwp->writeSeq		= mmioWriteSeq;
@@ -1280,7 +1294,7 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
     if ((mode->CrtcHBlankEnd >> 3) == (mode->CrtcHTotal >> 3))
     {
 	i = (regp->CRTC[3] & 0x1F) | ((regp->CRTC[5] & 0x80) >> 2);
-	if ((i-- > (regp->CRTC[2] & 0x1F)) &&
+	if ((i-- > (regp->CRTC[2] & 0x3F)) &&
 	    (mode->CrtcHBlankEnd == mode->CrtcHTotal))
 	    i = 0;
 	regp->CRTC[3] = (regp->CRTC[3] & ~0x1F) | (i & 0x1F);

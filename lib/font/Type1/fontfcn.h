@@ -85,10 +85,13 @@ struct blues_struct *BluesP;
 /***================================================================***/
 /*  Routines in scan_font                                             */
 /***================================================================***/
- 
-extern boolean Init_StdEnc();
-extern int scan_font();
-extern int GetFontInfo();
+
+extern boolean Init_BuiltInEncoding ( void );
+#ifdef BUILDCID
+extern int scan_cidfont ( cidfont *CIDFontP, cmapres *CMapP );
+extern int scan_cidtype1font ( psfont *FontP );
+#endif
+extern int scan_font ( psfont *FontP );
 /***================================================================***/
 /*  Return codes from scan_font                                       */
 /***================================================================***/
@@ -204,4 +207,33 @@ extern int GetFontInfo();
 #define CIDT1EXPFACTOR     20
 
 #define CID_BITMAP_UNDEFINED       0
+extern int SearchDictName ( psdict *dictP, psobj *keyP );
+#ifdef BUILDCID
+extern boolean initCIDType1Font ( void );
+#endif
+extern boolean initFont ( int cnt );
+#ifdef BUILDCID
+extern int readCIDFont ( char *cidfontname, char *cmapfile );
+extern int readCIDType1Font ( void );
+#endif
+extern int readFont ( char *env );
+extern struct xobject *fontfcnB ( struct XYspace *S, unsigned char *code, 
+				  int *lenP, int *mode );
+#ifdef BUILDCID
+extern Bool CIDfontfcnA ( char *cidfontname, char *cmapfile, int *mode );
+extern Bool CIDType1fontfcnA ( int *mode );
+#endif
+extern Bool fontfcnA ( char *env, int *mode );
+#ifdef BUILDCID
+extern void CIDQueryFontLib ( char *cidfontname, char *cmapfile, 
+			      char *infoName, pointer infoValue, int *rcodeP );
+#endif
+extern void QueryFontLib ( char *env, char *infoName, pointer infoValue, 
+			   int *rcodeP );
+#ifdef BUILDCID
+extern struct xobject *CIDfontfcnC ( struct XYspace *S, psobj *theStringP, 
+				     psobj *SubrsArrayP,
+				     struct blues_struct *BluesP, int *lenP, 
+				     int *mode );
+#endif
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_ddc.c,v 1.3 1999/01/14 13:04:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_ddc.c,v 1.4 1999/07/19 13:36:25 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -107,7 +107,7 @@ static void
 chips_I2CGetBits(I2CBusPtr b, int *clock, int *data) 
 {
     CHIPSI2CPtr pI2C_c = (CHIPSI2CPtr) (b->DriverPrivate.ptr);  
-    unsigned char FR0C, XR62, XR63, val;
+    unsigned char FR0C, XR62, val;
 
     FR0C = pI2C_c->cPtr->readFR(pI2C_c->cPtr, 0x0C);
     if (pI2C_c->i2cDataBit & 0x01 || pI2C_c->i2cClockBit & 0x01)
@@ -127,15 +127,24 @@ static void
 chips_I2CPutBits(I2CBusPtr b, int clock, int data)
 {
     CHIPSI2CPtr pI2C_c = (CHIPSI2CPtr) (b->DriverPrivate.ptr);  
-    unsigned char FR0C, XR62, XR63, val;
+    unsigned char FR0C, XR62, val;
 
     FR0C = pI2C_c->cPtr->readFR(pI2C_c->cPtr, 0x0C);
-    if (pI2C_c->i2cDataBit & 0x01 || pI2C_c->i2cClockBit & 0x01)
+    if (((pI2C_c->i2cDataBit & 0x01) && data)
+	|| ((pI2C_c->i2cClockBit & 0x01) && clock))
 	FR0C |=  0x18;
-    if (pI2C_c->i2cDataBit & 0x02 || pI2C_c->i2cClockBit & 0x02)
+    else if ((pI2C_c->i2cDataBit & 0x01)
+	|| (pI2C_c->i2cClockBit & 0x01))
+	FR0C |=  0x10;
+    if (((pI2C_c->i2cDataBit & 0x02) && data)
+	|| ((pI2C_c->i2cClockBit & 0x02) && clock))
 	FR0C |=  0xC0;
+    else if ((pI2C_c->i2cDataBit & 0x02)
+	     || (pI2C_c->i2cClockBit & 0x02))
+	FR0C |=  0x80;
     XR62 = pI2C_c->cPtr->readXR(pI2C_c->cPtr, 0x62);
-    XR62 |= (pI2C_c->i2cDataBit | pI2C_c->i2cClockBit);
+    XR62 = (XR62 & ~pI2C_c->i2cClockBit) | (clock ? pI2C_c->i2cClockBit : 0);
+    XR62 = (XR62 & ~pI2C_c->i2cDataBit) | (data ? pI2C_c->i2cDataBit : 0);
     pI2C_c->cPtr->writeFR(pI2C_c->cPtr, 0x0C, FR0C);
     pI2C_c->cPtr->writeXR(pI2C_c->cPtr, 0x62, XR62);
     val = pI2C_c->cPtr->readXR(pI2C_c->cPtr, 0x63);
@@ -177,10 +186,11 @@ chips_setI2CBits(I2CBusPtr b, ScrnInfoPtr pScrn)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);    
     CHIPSI2CPtr pI2C_c = (CHIPSI2CPtr) (b->DriverPrivate.ptr);  
-    unsigned char FR0B, FR0C, XR62;
+    unsigned char FR0B, FR0C;
     unsigned char bits, data_bits, clock_bits;
     int i,j;
 
+    FR0C = cPtr->readFR(cPtr, 0x0C);
     switch (cPtr->Chipset) {
     case CHIPS_CT65550:
 	bits = 0x1F;         /* GPIO 0-4 */

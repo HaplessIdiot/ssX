@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.27 1999/08/01 07:57:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.28 1999/08/14 10:49:47 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -774,9 +774,7 @@ MGAGUseHWCursor(ScreenPtr pScrn, CursorPtr pCurs)
 }
 
 
-/* Please can someone with a Mystique or G series check these
- * and alter if necessary.
- *
+/*
  * According to mga-1064g.pdf pp215-216 (4-179 & 4-180) the low bits of
  * XGENIODATA and XGENIOCTL are connected to the 4 DDC pins, but don't say
  * which VGA line is connected to each DDC pin, so I've had to guess.
@@ -791,16 +789,18 @@ static unsigned int
 MGAG_ddc1Read(ScrnInfoPtr pScrn)
 {
   MGAPtr pMga = MGAPTR(pScrn);
-
+  unsigned char val;
+  
   /* Define the SDA as an input */
-  outMGAdacmsk(MGA1064_GEN_IO_CTL, 0xfb, 0);
+  outMGAdacmsk(MGA1064_GEN_IO_CTL, ~(DDC_SCL_MASK | DDC_SDA_MASK), 0);
 
   /* wait for Vsync */
   while( INREG( MGAREG_Status ) & 0x08 );
   while( ! (INREG( MGAREG_Status ) & 0x08) );
 
   /* Get the result */
-  return (inMGAdac(MGA1064_GEN_IO_DATA) & DDC_SDA_MASK) >> 2 ;
+  val = (inMGAdac(MGA1064_GEN_IO_DATA) & DDC_SDA_MASK);
+  return val;
 }
 
 static void
@@ -808,38 +808,37 @@ MGAG_I2CGetBits(I2CBusPtr b, int *clock, int *data)
 {
   MGAPtr pMga = MGAPTR(xf86Screens[b->scrnIndex]);
   unsigned char val;
-
-  /* Define the SDA (Data) and SCL (clock) as inputs */
-  outMGAdacmsk(MGA1064_GEN_IO_CTL, ~(DDC_SDA_MASK | DDC_SCL_MASK), 0);
-
-  /* Get the result. */
-  val = inMGAdac(MGA1064_GEN_IO_DATA); 
-  *clock = (val & DDC_SCL_MASK) != 0;
-  *data  = (val & DDC_SDA_MASK) != 0;
-
+  
+   /* Get the result. */
+   val = inMGAdac(MGA1064_GEN_IO_DATA);
+   
+   *clock = (val & DDC_SCL_MASK) != 0;
+   *data  = (val & DDC_SDA_MASK) != 0;
 #ifdef DEBUG
-	 ErrorF("MGAG_I2CGetBits(%p,...) val=0x%x, returns clock %d, data %d\n", b, val, *clock, *data);
+  ErrorF("MGAG_I2CGetBits(%p,...) val=0x%x, returns clock %d, data %d\n", b, val, *clock, *data);
 #endif
 }
 
+/*
+ * ATTENTION! - the DATA and CLOCK lines need to be tri-stated when
+ * high. Therefore turn off output driver for the line to set line
+ * to high. High signal is maintained by a 15k Ohm pll-up resistor.
+ */
 static void
 MGAG_I2CPutBits(I2CBusPtr b, int clock, int data)
 {
   MGAPtr pMga = MGAPTR(xf86Screens[b->scrnIndex]);
-  unsigned char val;
+  unsigned char drv, val;
+
+  val = (clock ? DDC_SCL_MASK : 0) | (data ? DDC_SDA_MASK : 0);
+  drv = ((!clock) ? DDC_SCL_MASK : 0) | ((!data) ? DDC_SDA_MASK : 0);
 
   /* Write the values */
-  val = (clock ? DDC_SCL_MASK : 0) | (data ? DDC_SDA_MASK : 0);
-  outMGAdacmsk(MGA1064_GEN_IO_DATA, ~(DDC_SDA_MASK | DDC_SCL_MASK), val); 
-
+  outMGAdacmsk(MGA1064_GEN_IO_CTL, ~(DDC_SCL_MASK | DDC_SDA_MASK) , drv);
+  outMGAdacmsk(MGA1064_GEN_IO_DATA, ~(DDC_SCL_MASK | DDC_SDA_MASK) , val);
 #ifdef DEBUG
   ErrorF("MGAG_I2CPutBits(%p, %d, %d) val=0x%x\n", b, clock, data, val);
 #endif
-
-  /* Define the SDA (Data) and SCL (clock) as outputs */
-  outMGAdacmsk(MGA1064_GEN_IO_CTL,
-	    ~(DDC_SDA_MASK | DDC_SCL_MASK),
-	    (DDC_SDA_MASK & DDC_SCL_MASK));
 }
 
 
@@ -858,6 +857,7 @@ MGAG_i2cInit(ScrnInfoPtr pScrn)
     I2CPtr->scrnIndex  = pScrn->scrnIndex;
     I2CPtr->I2CPutBits = MGAG_I2CPutBits;
     I2CPtr->I2CGetBits = MGAG_I2CGetBits;
+    I2CPtr->AcknTimeout = 5;
 
     if (!xf86I2CBusInit(I2CPtr)) {
 	return FALSE;

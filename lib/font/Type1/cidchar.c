@@ -15,7 +15,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/cidchar.c,v 1.6 1999/05/15 12:10:06 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/cidchar.c,v 1.7 1999/07/10 12:17:13 dawes Exp $ */
 
 #ifdef BUILDCID
 #ifndef FONTMODULE
@@ -30,7 +30,7 @@
 #endif
 #else
 #include "Xmd.h"        /* For INT32 declaration */
-#include "fontmisc.h"   /* For Bool */
+#include "Xdefs.h"      /* For Bool */
 #include "xf86_ansic.h"
 #endif
 #ifndef FONTMODULE
@@ -43,6 +43,8 @@
 #endif
 #endif
 #include "fntfilst.h"
+#include "objects.h"
+#include "spaces.h"
 #include "range.h"
 #include "util.h"
 #include "fontfcn.h"
@@ -56,18 +58,7 @@ extern cidfont *CIDFontP;
 extern psfont *FDArrayP;
 extern psfont *FontP;
 
-extern CharInfoPtr CIDRenderGlyph(FontPtr, psobj *, psobj *, struct blues_struct *, CharInfoPtr, int *);
-
-extern unsigned int getCID(FontPtr, unsigned int);
-
-static CharInfoRec *CIDGetCharMetrics(FontPtr, FontInfo *, unsigned int, double);
-
-CharInfoPtr CIDGetGlyphInfo(FontPtr, unsigned int, CharInfoPtr, int *);
-
 static unsigned char sd[] = "StartData";
-
-int CIDGetAFM(FontPtr, unsigned long, unsigned char *, FontEncoding, unsigned long *, CharInfoPtr *, char *);
-
 
 CharInfoPtr
 CIDGetGlyphInfo(FontPtr pFont, unsigned int cidcode, CharInfoPtr pci, int *rc)
@@ -449,13 +440,14 @@ CIDGetGlyphInfo(FontPtr pFont, unsigned int cidcode, CharInfoPtr pci, int *rc)
     return(cp);
 }
 
-static int node_compare(node1, node2)
-Metrics *node1, *node2;
+static int 
+node_compare(const void *node1, const void *node2)
 {
-   return (node1->code - node2->code);
+   return (((Metrics *)node1)->code - ((Metrics *)node2)->code);
 }
 
-static CharInfoRec *CIDGetCharMetrics(FontPtr pFont, FontInfo *fi, unsigned int charcode, double sxmult)
+static CharInfoRec *
+CIDGetCharMetrics(FontPtr pFont, FontInfo *fi, unsigned int charcode, double sxmult)
 {
     CharInfoPtr cp;
     Metrics *p, node;
@@ -492,7 +484,8 @@ static CharInfoRec *CIDGetCharMetrics(FontPtr pFont, FontInfo *fi, unsigned int 
     return cp;
 }
 
-int CIDGetAFM(FontPtr pFont, unsigned long count, unsigned char *chars, FontEncoding charEncoding, unsigned long *glyphCount, CharInfoPtr *glyphs, char *cidafmfile)
+int 
+CIDGetAFM(FontPtr pFont, unsigned long count, unsigned char *chars, FontEncoding charEncoding, unsigned long *glyphCount, CharInfoPtr *glyphs, char *cidafmfile)
 {
     int rc;
     FILE *fp;

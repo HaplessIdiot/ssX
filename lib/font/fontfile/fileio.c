@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fileio.c,v 3.5 1998/10/03 09:07:26 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fileio.c,v 3.6 1999/07/17 05:30:41 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -34,7 +34,7 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 FontFilePtr
-FontFileOpen (char *name)
+FontFileOpen (const char *name)
 {
     int		fd;
     int		len;

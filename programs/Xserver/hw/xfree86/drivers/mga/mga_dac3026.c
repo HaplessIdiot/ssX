@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.46 1999/08/01 07:57:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.47 1999/08/14 10:49:46 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -933,9 +933,6 @@ MGA3026_I2CGetBits(I2CBusPtr b, int *clock, int *data)
   MGAPtr pMga = MGAPTR(xf86Screens[b->scrnIndex]);
   unsigned char val;
 
-  /* Define the SDA (Data) and SCL (clock) as inputs */
-  outTi3026(TVP3026_GEN_IO_CTL, ~(DDC_SDA_MASK | DDC_SCL_MASK), 0);
-
   /* Get the result. */
   val = inTi3026(TVP3026_GEN_IO_DATA); 
   *clock = (val & DDC_SCL_MASK) != 0;
@@ -946,24 +943,28 @@ MGA3026_I2CGetBits(I2CBusPtr b, int *clock, int *data)
 #endif
 }
 
+/*
+ * ATTENTION! - the DATA and CLOCK lines need to be tri-stated when
+ * high. Therefore turn off output driver for the line to set line
+ * to high. High signal is maintained by a 15k Ohm pll-up resistor.
+ */
 static void
 MGA3026_I2CPutBits(I2CBusPtr b, int clock, int data)
 {
   MGAPtr pMga = MGAPTR(xf86Screens[b->scrnIndex]);
-  unsigned char val;
+  unsigned char val,drv;
 
   /* Write the values */
   val = (clock ? DDC_SCL_MASK : 0) | (data ? DDC_SDA_MASK : 0);
+  drv = ((!clock) ? DDC_SCL_MASK : 0) | ((!data) ? DDC_SDA_MASK : 0);
+  /* Define the SDA (Data) and SCL (clock) as outputs */
+  outTi3026(TVP3026_GEN_IO_CTL, ~(DDC_SDA_MASK | DDC_SCL_MASK), drv);
   outTi3026(TVP3026_GEN_IO_DATA, ~(DDC_SDA_MASK | DDC_SCL_MASK), val); 
 
 #ifdef DEBUG
   ErrorF("MGA3026_I2CPutBits(%p, %d, %d) val=0x%x\n", b, clock, data, val);
 #endif
 
-  /* Define the SDA (Data) and SCL (clock) as outputs */
-  outTi3026(TVP3026_GEN_IO_CTL,
-	    ~(DDC_SDA_MASK | DDC_SCL_MASK),
-	    (DDC_SDA_MASK & DDC_SCL_MASK));
 }
 
 

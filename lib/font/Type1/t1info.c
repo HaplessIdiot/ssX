@@ -95,7 +95,7 @@ from The Open Group.
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.11 1999/05/09 12:21:47 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.12 1999/05/15 12:10:07 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "fontutil.h"
@@ -108,7 +108,6 @@ from The Open Group.
 #include "xf86_ansic.h"
 #endif
 #include "FSproto.h"
-#include "t1intf.h"
 
 #ifdef BUILDCID
 #ifndef FONTMODULE
@@ -120,6 +119,8 @@ from The Open Group.
 #undef _XOPEN_SOURCE
 #endif
 #endif
+#include "objects.h"
+#include "spaces.h"
 #include "range.h"
 #endif
 
@@ -135,6 +136,7 @@ char cfmDefaultDir[] = DEFAULT_CFM_DIR;
 #define CFMMAGIC 0x91239123
 #endif
 #endif
+#include "t1intf.h"
 
 #define DECIPOINTSPERINCH 722.7
 #define DEFAULTRES 75
@@ -146,9 +148,6 @@ enum scaleType {
 };
 
 #ifdef BUILDCID
-extern void CIDQueryFontLib();
-extern int CIDGetGlyphs();
-extern int CIDGetMetrics();
 extern cidfont *CIDFontP;
 static int stdpropsinit = 0;
 
@@ -216,9 +215,7 @@ static fontProp extraProps[] = {
  
 /*ARGSUSED*/
 static void
-FillHeader(pInfo, Vals)
-    FontInfoPtr         pInfo;
-    FontScalablePtr     Vals;
+FillHeader(FontInfoPtr pInfo, FontScalablePtr Vals)
 {
     /* OpenScalable in T1FUNCS sets the following:
     pInfo->firstCol,
@@ -240,10 +237,7 @@ FillHeader(pInfo, Vals)
 }
  
 static void
-adjust_min_max(minc, maxc, tmp)
-    xCharInfo  *minc,
-               *maxc,
-               *tmp;
+adjust_min_max(xCharInfo *minc, xCharInfo *maxc, xCharInfo *tmp)
 {
 #define MINMAX(field,ci) \
         if (minc->field > (ci)->field) \
@@ -268,10 +262,7 @@ adjust_min_max(minc, maxc, tmp)
 }
  
 static void
-ComputeBounds(pInfo, pChars, Vals)
-    FontInfoPtr         pInfo;
-    CharInfoPtr         pChars;
-    FontScalablePtr     Vals;
+ComputeBounds(FontInfoPtr pInfo, CharInfoPtr pChars, FontScalablePtr Vals)
 {
     int i;
     xCharInfo minchar, maxchar;
@@ -388,7 +379,7 @@ ComputeBoundsAllChars(FontPtr pFont, char *cfmfilename, double sxmult)
           ccode[0] = (k >> 8) & 0xff;
           ccode[1] = k & 0xff;
           ret = CIDGetMetrics(pFont, 1, ccode, 2, &ccount, &pmetrics);
-          if (ret != Successful || ret == Successful && pmetrics == NULL)
+          if (ret != Successful || (ret == Successful && pmetrics == NULL))
               continue;
           total_width += pmetrics->attributes;
           total_raw_width += abs((int)(INT16)pmetrics->attributes);
@@ -474,7 +465,7 @@ ComputeBoundsAllChars(FontPtr pFont, char *cfmfilename, double sxmult)
     fclose(cfm);
 }
 #else
-long
+static long
 ComputeBoundsAll(FontPtr pFont)
 {
     int count = 0;
@@ -506,7 +497,7 @@ ComputeBoundsAll(FontPtr pFont)
           k <= cidrangeP->range[j].srcCodeHi; k++) {
           ccode[0] = (k >> 8) & 0xff;
           ccode[1] = k & 0xff;
-          ret = CIDGetMetrics(pFont, 1, ccode, 2, &ccount, (CharInfoRec *)cinfo);
+          ret = CIDGetMetrics(pFont, 1, ccode, 2, &ccount, (xCharInfo **)cinfo);
           if (ret != Successful || cinfo == NULL)
               continue;
           pmetrics = &cinfo[0]->metrics;
@@ -571,12 +562,8 @@ ComputeBoundsAll(FontPtr pFont)
 #endif
 
 static void
-ComputeProps(pInfo, Vals, Filename, sAscent, sDescent)
-    FontInfoPtr         pInfo;
-    FontScalablePtr     Vals;
-    char                *Filename;
-    long		*sAscent;
-    long		*sDescent;
+ComputeProps(FontInfoPtr pInfo, FontScalablePtr Vals, char *Filename, 
+	     long *sAscent, long *sDescent)
 {
     int infoint;
     int infoBBox[4];
@@ -600,16 +587,11 @@ ComputeProps(pInfo, Vals, Filename, sAscent, sDescent)
 }
 
 #ifdef BUILDCID
+#ifndef CID_ALL_CHARS
 static void
-CIDComputeStdProps(pInfo, Vals, Filename, Cmapname, Fontname, sAscent, sDescent, sWidth)
-    FontInfoPtr         pInfo;
-    FontScalablePtr     Vals;
-    char                *Filename;
-    char                *Cmapname;
-    char                *Fontname;
-    long                sAscent;
-    long                sDescent;
-    long                sWidth;
+CIDComputeStdProps(FontInfoPtr pInfo, FontScalablePtr Vals, 
+		   char *Filename, char *Cmapname, char *Fontname, 
+		   long sAscent, long sDescent, long sWidth)
 {
     FontPropPtr pp;
     int         i,
@@ -620,7 +602,7 @@ CIDComputeStdProps(pInfo, Vals, Filename, Cmapname, Fontname, sAscent, sDescent,
                *ptr2;
     char       *ptr3;
     char *infostrP;
-    long rc;
+    int rc;
     char      scaledName[CID_PATH_MAX];
 
     strcpy (scaledName, Fontname);
@@ -732,16 +714,12 @@ CIDComputeStdProps(pInfo, Vals, Filename, Cmapname, Fontname, sAscent, sDescent,
     }
 }
 #endif
+#endif
  
 static void
-ComputeStdProps(pInfo, Vals, Filename, Fontname, sAscent, sDescent, sWidth)
-    FontInfoPtr         pInfo;
-    FontScalablePtr     Vals;
-    char                *Filename;
-    char                *Fontname;
-    long		sAscent;
-    long		sDescent;
-    long		sWidth;
+ComputeStdProps(FontInfoPtr pInfo, FontScalablePtr Vals, 
+		char *Filename, char *Fontname, 
+		long sAscent, long sDescent, long sWidth)
 {
     FontPropPtr pp;
     int         i,
@@ -752,7 +730,7 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname, sAscent, sDescent, sWidth)
                *ptr2;
     char       *ptr3;
     char *infostrP;
-    long rc;
+    int rc;
     char      scaledName[MAXFONTNAMELEN];
  
     strcpy (scaledName, Fontname);
@@ -867,13 +845,12 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname, sAscent, sDescent, sWidth)
 #ifdef BUILDCID
 /*ARGSUSED*/
 int
-CIDGetInfoScalable(fpe, pInfo, entry, fontName, fileName, Vals)
-    FontPathElementPtr  fpe;
-    FontInfoPtr         pInfo;
-    FontEntryPtr        entry;
-    FontNamePtr         fontName;
-    char                *fileName;
-    FontScalablePtr     Vals;
+CIDGetInfoScalable(FontPathElementPtr fpe, 
+		   FontInfoPtr pInfo, 
+		   FontEntryPtr entry, 
+		   FontNamePtr fontName, 
+		   char *fileName, 
+		   FontScalablePtr Vals)
 {
     FontPtr pfont;
     int flags = 0;
@@ -881,7 +858,8 @@ CIDGetInfoScalable(fpe, pInfo, entry, fontName, fileName, Vals)
     long fmask = 0;
     int ret;
 
-    ret = CIDOpenScalable(fpe, &pfont, flags, entry, fileName, Vals, format, fmask);
+    ret = CIDOpenScalable(fpe, &pfont, flags, entry, fileName, Vals, 
+			  format, fmask, NULL);
     if (ret != Successful)
         return ret;
     *pInfo = pfont->info;
@@ -897,13 +875,12 @@ CIDGetInfoScalable(fpe, pInfo, entry, fontName, fileName, Vals)
 
 /*ARGSUSED*/
 int
-Type1GetInfoScalable(fpe, pInfo, entry, fontName, fileName, Vals)
-    FontPathElementPtr  fpe;
-    FontInfoPtr         pInfo;
-    FontEntryPtr        entry;
-    FontNamePtr         fontName;
-    char                *fileName;
-    FontScalablePtr     Vals;
+Type1GetInfoScalable(FontPathElementPtr fpe, 
+		     FontInfoPtr pInfo, 
+		     FontEntryPtr entry, 
+		     FontNamePtr fontName, 
+		     char *fileName, 
+		     FontScalablePtr Vals)
 {
     FontPtr pfont;
     int flags = 0;
@@ -911,7 +888,8 @@ Type1GetInfoScalable(fpe, pInfo, entry, fontName, fileName, Vals)
     long fmask = 0;
     int ret;
  
-    ret = Type1OpenScalable(fpe, &pfont, flags, entry, fileName, Vals, format, fmask);
+    ret = Type1OpenScalable(fpe, &pfont, flags, entry, fileName, Vals, 
+			    format, fmask , NULL);
     if (ret != Successful)
 	return ret;
     *pInfo = pfont->info;
@@ -926,30 +904,14 @@ Type1GetInfoScalable(fpe, pInfo, entry, fontName, fileName, Vals)
 
 #ifdef BUILDCID
 #ifndef CID_ALL_CHARS
-#ifdef HAVE_CFM
 void
-CIDFillFontInfo(pFont, Vals, Filename, Fontname, Cmapname, cfmfilename, sAscent, sDescent, sxmult)
-    FontPtr             pFont;
-    FontScalablePtr     Vals;
-    char                *Filename;
-    char                *Fontname;
-    char                *Cmapname;
-    char                *cfmfilename;
-    long                sAscent;
-    long                sDescent;
-    double              sxmult;
-#else
-CIDFillFontInfo(pFont, Vals, Filename, Fontname, Cmapname, sAscent, sDescent, sxmult)
-    FontPtr             pFont;
-    FontScalablePtr     Vals;
-    char                *Filename;
-    char                *Fontname;
-    char                *Cmapname;
-    long                sAscent;
-    long                sDescent;
+CIDFillFontInfo(FontPtr pFont, FontScalablePtr Vals, 
+		char *Filename, char *Fontname, char *Cmapname, 
+#ifdef HAVE_CFM
+		char *cfmfilename, 
 #endif
+		long sAscent, long sDescent, double sxmult)
 {
-
 #ifdef HAVE_CFM
     FILE *cfm;
     cfmrec *cfmp;
@@ -1051,12 +1013,8 @@ CIDFillFontInfo(pFont, Vals, Filename, Fontname, Cmapname, sAscent, sDescent, sx
 #endif /* BUILDCID */
 
 void
-T1FillFontInfo(pFont, Vals, Filename, Fontname, sWidth)
-    FontPtr             pFont;
-    FontScalablePtr     Vals;
-    char                *Filename;
-    char                *Fontname;
-    long		sWidth;
+T1FillFontInfo(FontPtr pFont, FontScalablePtr Vals, 
+	       char *Filename, char *Fontname, long sWidth)
 {
     FontInfoPtr         pInfo = &pFont->info;
     struct type1font *p = (struct type1font *)pFont->fontPrivate;
@@ -1073,9 +1031,9 @@ T1FillFontInfo(pFont, Vals, Filename, Fontname, sWidth)
 /* Called once, at renderer registration time */
 void
 #ifdef BUILDCID
-Type1InitStdProps()
+Type1InitStdProps(void)
 #else
-T1InitStdProps()
+T1InitStdProps(void)
 #endif
 {
     int         i;

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.34 1999/07/11 08:49:47 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.35 1999/07/18 03:27:15 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_113">Patch #113 - 1999/8/15 - XFree86 3.9.15b</A>
 <LI><A HREF="#xterm_112">Patch #112 - 1999/7/17 - XFree86 3.9Pw</A>
 <LI><A HREF="#xterm_111">Patch #111 - 1999/7/10 - XFree86 3.9Pw</A>
 <LI><A HREF="#xterm_110">Patch #110 - 1999/6/29 - XFree86 3.9Pu</A>
@@ -155,6 +156,51 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_113">Patch #113 - 1999/8/15 - XFree86 3.9.15b</A></H1>
+Several fixes.  The main one is a first draft of pulldown menus.  It's not
+complete (I have some minor/annoying geometry problems to correct), but is
+usable.  Once it's complete I plan to add a menu to support additional
+selections that won't fit on the current popup menus.  Also, this fits into my
+longterm plan to allow configuring with Motif libraries.
+
+<ul>
+	<li>correct error in input conversion for NRC mode (reported by
+	  Stefan Traby &lt;stefan@sime.com&gt;).
+
+	<li>fix initialization of num_lock data in Misc struct (since those
+	  fields of the reference widget aren't initialized), and add logic to
+	  deal with XVision whose NumLock key does not transmit but does alter
+	  keypad state.
+
+	<li>correct a missing return-value in get_pty(), for SCO
+
+	<li>add E2A fix for backspace (Greg Smith), i.e.,<br>
+	  #define VAL_INITIAL_ERASE A2E(127)
+
+	<li>correct foreground color within cursor outline when the
+	  window is unfocused (reported by Stephane Chazelas).
+
+	<li>corrected position of scrollbar set in ResizeScrollBar(), which
+	  left it positioned incorrectly if the right scrollbar were enabled
+	  from the popup menu but was not initially enabled.
+
+	  <p>
+	  I have noticed some additional problems with right-scrollbar on
+	  X11R5 which I will correct later.
+
+	<li>integrate changes by Jean-Claude Michot for QNX from XFree86 3.3.4c
+
+	<li>add resources menuBar/MenuBar, menuHeight/MenuHeight for later
+	  use in toolbar geometry.
+
+	<li>add configure option --enable-toolbar
+
+	<li>add missing definition to make ziconbeep logic not compile-in when
+	  configure script disables it.
+
+	<li>add configure-check for input-method support in X libraries
+</ul>
 
 <H1><A NAME="xterm_112">Patch #112 - 1999/7/17 - XFree86 3.9Pw</A></H1>
 <ul>

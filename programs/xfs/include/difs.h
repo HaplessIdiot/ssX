@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/include/difs.h,v 1.1 1999/03/07 11:40:59 dawes Exp $ */
 /*
  * Copyright (C) 1999 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -29,6 +29,7 @@
 
 #include "difsfn.h"
 #include "globals.h"
+#include "fontstruct.h"
 
 typedef int (*InitialFunc)(ClientPtr);
 typedef int (*ProcFunc)(ClientPtr);
@@ -40,79 +41,6 @@ extern InitialFunc InitialVector[3];
 extern ReplySwapFunc ReplySwapVector[NUM_PROC_VECTORS];
 
 /* FIXME: this is derived from fontstruct.h; should integrate it */
-typedef int (*InitFpeFunc) (FontPathElementPtr fpe);
-typedef int (*FreeFpeFunc) (FontPathElementPtr fpe);
-typedef int (*ResetFpeFunc) (FontPathElementPtr fpe);
-typedef int (*OpenFontFunc) (
-		pointer client,
-		FontPathElementPtr fpe,
-		int flags,
-		char* name,
-		int namelen,
-		fsBitmapFormat format,
-		fsBitmapFormatMask fmask,
-		unsigned long id,
-		FontPtr* pFont,
-		char** aliasName,
-		FontPtr non_cachable_font);
-typedef int (*CloseFontFunc) (FontPathElementPtr fpe, FontPtr pFont);
-typedef int (*ListFontsFunc) (
-		pointer client,
-		FontPathElementPtr fpe,
-		char* pat,
-		int len,
-		int max,
-		FontNamesPtr names);
-
-typedef int (*StartLfwiFunc) (
-		pointer client,
-		FontPathElementPtr fpe,
-		char* pat,
-		int len,
-		int max,
-		pointer* privatep);
-
-typedef int (*NextLfwiFunc) (
-		pointer client,
-		FontPathElementPtr fpe,
-		char** name,
-		int* namelen,
-		FontInfoPtr* info,
-		int* numFonts,
-		pointer private);
-
-typedef int (*WakeupFpeFunc) (
-		FontPathElementPtr fpe,
-		unsigned long* LastSelectMask);
-
-typedef int (*ClientDiedFunc) (
-		pointer client,
-		FontPathElementPtr fpe);
-
-typedef int (*LoadGlyphsFunc) (
-		pointer client,
-		FontPtr pfont,
-		Bool range_flag,
-		unsigned int nchars,
-		int item_size,
-		unsigned char* data);
-
-typedef int (*StartLaFunc) (
-		pointer client,
-		FontPathElementPtr fpe,
-		char* pat,
-		int len,
-		int max,
-		pointer* privatep);
-
-typedef int (*NextLaFunc) (
-		pointer client,
-		FontPathElementPtr fpe,
-		char** namep,
-		int* namelenp,
-		char** resolvedp,
-		int* resolvedlenp,
-		pointer private);
 
 /* difs/atom.c */
 extern Atom MakeAtom ( char *string, unsigned len, Bool makeit );
@@ -142,28 +70,8 @@ extern int ListFonts ( ClientPtr client, int length, unsigned char *pattern, int
 extern int StartListFontsWithInfo ( ClientPtr client, int length, unsigned char *pattern, int maxNames );
 #endif
 extern int LoadGlyphRanges ( ClientPtr client, FontPtr pfont, Bool range_flag, int num_ranges, int item_size, fsChar2b *data );
-extern int RegisterFPEFunctions ( Bool          (*name_func) (char *name),
-				  InitFpeFunc   init_func,
-				  FreeFpeFunc   free_func,
-				  ResetFpeFunc  reset_func,
-				  OpenFontFunc  open_func,
-				  CloseFontFunc close_func,
-				  ListFontsFunc list_func,
-				  StartLfwiFunc start_lfwi_func,
-				  NextLfwiFunc  next_lfwi_func,
-				  WakeupFpeFunc wakeup_func,
-				  ClientDiedFunc client_died,
-				  LoadGlyphsFunc load_glyphs,
-				  StartLaFunc   start_list_alias_func,
-				  NextLaFunc    next_list_alias_func,
-				  void	  (*set_path_func) (void));
 extern void FreeFonts ( void );
 extern FontPtr find_old_font ( FSID id );
-extern Font GetNewFontClientID ( void );
-extern int StoreFontClientFont ( FontPtr pfont, Font id );
-extern void DeleteFontClientID ( Font id );
-extern int init_fs_handlers ( FontPathElementPtr fpe, DifsBlockFunc block_handler );
-extern void remove_fs_handlers ( FontPathElementPtr fpe, DifsBlockFunc block_handler, Bool all );
 extern void DeleteClientFontStuff ( ClientPtr client );
 
 /* difs/fontinfo.c */

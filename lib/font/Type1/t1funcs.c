@@ -71,7 +71,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.16 1999/05/15 12:10:06 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.17 1999/06/13 13:47:30 dawes Exp $ */
 
 /*
 
@@ -112,16 +112,19 @@ from The Open Group.
 #undef _XOPEN_SOURCE
 #endif
 #include "X11/Xfuncs.h"
+#ifdef USE_MMAP
+#include <sys/types.h>
+#include <sys/mman.h>
+#endif
 #else
 #include "Xmd.h"
-#include "fontmisc.h"
+#include "Xdefs.h"
 #include "xf86_ansic.h"
 #endif
 
 #include "fntfilst.h"
 #include "fontutil.h"
 #include "FSproto.h"
-#include "t1intf.h"
 #include "fontenc.h"
 #include "t1unicode.h"
  
@@ -131,29 +134,36 @@ from The Open Group.
 
 #include "objects.h"
 #include "spaces.h"
+#include "paths.h"
 #include "regions.h"
 #include "t1stdio.h"
 #include "util.h"
 #include "fontfcn.h"
+#include "t1intf.h"
 
-int         Type1OpenScalable ();
-static int  Type1GetGlyphs();
-void        Type1CloseFont();
-extern int  Type1GetInfoScalable ();
- 
+#include "os.h"
+
+static int Type1GetGlyphs ( FontPtr pFont, unsigned long count,
+			    unsigned char *chars, FontEncoding charEncoding, 
+			    unsigned long *glyphCount, CharInfoPtr *glyphs );
+
 #ifdef BUILDCID
 #define CMapDir "/CMap/"
 #define CFMDir "/CFM/"
 #define CIDFontDir "/CIDFont/"
 #endif
 
-static int  Type1GetMetrics ();
+static int Type1GetMetrics ( FontPtr pFont, unsigned long count, 
+				    unsigned char *chars, 
+				    FontEncoding charEncoding, 
+				    unsigned long *glyphCount, 
+				    xCharInfo **glyphs );
+
  
 #define minchar(p) ((p).min_char_low + ((p).min_char_high << 8))
 #define maxchar(p) ((p).max_char_low + ((p).max_char_high << 8))
 
-static void fillrun();
- 
+static void fillrun ( char *p, pel x0, pel x1, int bit );
  
 extern psfont *FontP;
 extern psobj *ISOLatin1EncArrayP;
@@ -162,55 +172,28 @@ extern psobj *ISOLatin1EncArrayP;
 extern char CurCIDFontName[];
 extern char CurCMapName[];
 
-int  CIDGetGlyphs();
-static CharInfoPtr CIDGetGlyph();
-void        CIDCloseFont();
-int         CIDOpenScalable ();
-extern void Type1InitStdProps();
-
-CharInfoPtr CIDRenderGlyph(FontPtr, psobj *, psobj *, struct blues_struct *, CharInfoPtr, int *);
-
-extern int  CIDGetInfoScalable ();
-extern void T1FillFontInfo();
-
-#ifndef CID_ALL_CHARS
-extern void CIDFillFontInfo();
-#endif
-
-extern CharInfoPtr CIDGetGlyphInfo();
-extern int CIDGetAFM(FontPtr, unsigned long, unsigned char *, FontEncoding, unsigned long *, CharInfoPtr *, char *);
-
-#ifdef CID_ALL_CHARS
-extern void ComputeBoundsAllChars(FontPtr, char *, double);
-#endif
-
-int  CIDGetMetrics ();
-unsigned int getCID(FontPtr, unsigned int);
+static CharInfoPtr CIDGetGlyph ( FontPtr pFont, unsigned int charcode, 
+				 CharInfoPtr pci );
 
 extern cidfont *CIDFontP;
 extern cmapres *CMapP;
 #endif
 
-static void fill();
+static void fill ( char *dest, int h, int w, struct region *area, int byte, 
+		   int bit, int wordsize );
 
 #ifdef BUILDCID
-int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
-                       fmask, non_cachable_font)
-    FontPathElementPtr  fpe;
-    FontPtr             *ppFont;
-    int                 flags;
-    FontEntryPtr        entry;
-    char                *fileName;
-    FontScalablePtr     vals;
-    fsBitmapFormat      format;
-    fsBitmapFormatMask  fmask;
-    FontPtr             non_cachable_font;      /* We don't do licensing */
+int 
+CIDOpenScalable (FontPathElementPtr fpe, 
+		 FontPtr *ppFont, 
+		 int flags, 
+		 FontEntryPtr entry, 
+		 char *fileName, 
+		 FontScalablePtr vals, 
+		 fsBitmapFormat format,
+		 fsBitmapFormatMask fmask, 
+		 FontPtr non_cachable_font) /* We don't do licensing */
 {
-    extern struct XYspace *IDENTITY;
-    extern Bool CIDfontfcnA();
-    extern struct region *fontfcnB();
-
-
     FontPtr     pFont;
     int         bit,
                 byte,
@@ -221,18 +204,11 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
     unsigned long *pool;  /* memory pool for ximager objects              */
     int size;             /* for memory size calculations                 */
     struct XYspace *S;    /* coordinate space for character               */
-    struct region *area;
-    CharInfoRec *glyphs;
-    register int i, j;
-    unsigned int k;
+    register int i;
     int nchars, len, rc;
     cidglyphs *cid;
     char *p;
-    psobj *fontencoding = NULL;
-    fsRange char_range;
-    psobj *fontmatrix;
-    long x0;
-    double x1, y1, t1 = .001, t2 = 0.0, t3 = 0.0, t4 = .001;
+    double t1 = .001, t2 = 0.0, t3 = 0.0, t4 = .001;
     double sxmult;
     char CIDFontName[CID_NAME_MAX];
     char CMapName[CID_NAME_MAX];
@@ -244,13 +220,11 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 #if defined(HAVE_CFM) || defined(CID_ALL_CHARS)
     char cfmdir[CID_PATH_MAX];
     char cfmfilename[CID_NAME_MAX];
+#endif
+#if defined(CID_ALL_CHARS)
     char *cf;
 #endif
-    DIR *dir;
-    struct dirent *dp;
-    Bool filefound;
     long sAscent, sDescent;
-    cidrange *cidrangeP;
 
     /* check the font name */
     len = strlen(fileName);
@@ -282,7 +256,7 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 
     /* extract the CIDFontName and CMapName from the font name */
     /* check for <CIDFontName>--<CMapName> */
-    if (p = strstr(fileName, "--")) {
+    if ((p = strstr(fileName, "--"))) {
         if (p == fileName)
             return BadFontName;
         else {
@@ -301,8 +275,8 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 
     /* The CMap files whose names end with -V are not yet supported */
     len = strlen(CMapName);
-    if (len >= 2 && CMapName[len - 2] == '-' && CMapName[len - 1] == 'V' ||
-        len == 1 && CMapName[len - 1] == 'V')
+    if ((len >= 2 && CMapName[len - 2] == '-' && CMapName[len - 1] == 'V') ||
+        (len == 1 && CMapName[len - 1] == 'V'))
         return BadFontName;
 
     /* Reject ridiculously small font sizes that will blow up the math */
@@ -386,12 +360,14 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 
     FontP = NULL;
 
-    S = (struct XYspace *) t1_Transform(IDENTITY, t1, t2, t3, t4);
+    S = (struct XYspace *) t1_Transform((struct xobject *)IDENTITY, 
+					t1, t2, t3, t4);
 
-    S = (struct XYspace *) Permanent(t1_Transform(S, vals->pixel_matrix[0],
-                                                    -vals->pixel_matrix[1],
-                                                     vals->pixel_matrix[2],
-                                                    -vals->pixel_matrix[3]));
+    S = (struct XYspace *) Permanent(t1_Transform((struct xobject *)S, 
+						   vals->pixel_matrix[0],
+						   -vals->pixel_matrix[1],
+						   vals->pixel_matrix[2],
+						   -vals->pixel_matrix[3]));
 
     /* multiplier for computation of raw values */
     sxmult = hypot(vals->pixel_matrix[0], vals->pixel_matrix[1]);
@@ -505,23 +481,17 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 #endif
  
 /*ARGSUSED*/
-int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
-		       fmask, non_cachable_font)
-    FontPathElementPtr  fpe;
-    FontPtr             *ppFont;
-    int                 flags;
-    FontEntryPtr        entry;
-    char                *fileName;
-    FontScalablePtr     vals;
-    fsBitmapFormat      format;
-    fsBitmapFormatMask  fmask;
-    FontPtr		non_cachable_font;	/* We don't do licensing */
+int 
+Type1OpenScalable (FontPathElementPtr fpe, 
+		   FontPtr *ppFont, 
+		   int flags, 
+		   FontEntryPtr entry, 
+		   char *fileName, 
+		   FontScalablePtr vals, 
+		   fsBitmapFormat format,
+		   fsBitmapFormatMask fmask, 
+		   FontPtr non_cachable_font) 	/* We don't do licensing */
 {
-       extern struct XYspace *IDENTITY;
-       extern Bool fontfcnA();
-       extern struct region *fontfcnB();
- 
- 
        FontPtr     pFont;
        int         bit,
                    byte,
@@ -538,13 +508,9 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
        int len, rc, count = 0;
        struct type1font *type1;
        char *p;
-#ifdef BUILDCID
-       psobj *fontencoding = NULL;
-#endif
        struct font_encoding *encoding;
        struct font_encoding_mapping *mapping;
        int no_mapping;
-       fsRange char_range;
        psobj *fontmatrix;
        long x0, total_width = 0, total_raw_width = 0;
        double x1, y1, t1 = .001, t2 = 0.0, t3 = 0.0, t4 = .001;
@@ -621,12 +587,14 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 	   assign(3, t4, .001);
        }
 
-       S = (struct XYspace *) t1_Transform(IDENTITY, t1, t2, t3, t4);
+       S = (struct XYspace *) t1_Transform((struct xobject *)IDENTITY,
+					   t1, t2, t3, t4);
 
-       S = (struct XYspace *) Permanent(t1_Transform(S, vals->pixel_matrix[0],
-						       -vals->pixel_matrix[1],
-							vals->pixel_matrix[2],
-						       -vals->pixel_matrix[3]));
+       S = (struct XYspace *) Permanent(t1_Transform((struct xobject *)S, 
+						     vals->pixel_matrix[0],
+						     -vals->pixel_matrix[1],
+						     vals->pixel_matrix[2],
+						     -vals->pixel_matrix[3]));
 
 
        /* multiplier for computation of raw values */
@@ -684,7 +652,6 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
                  codename=unicodetoPSname(i);
                  len=codename?strlen(codename):0;
                } else {
-                 int j;
                  if(mapping->type==FONT_ENCODING_UNICODE) {
                    codename=unicodetoPSname(font_encoding_recode(i,
                                                                  encoding,
@@ -723,7 +690,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
                }
 
                rc = 0;
-               area = fontfcnB(S, codename, &len, &rc);
+               area = (struct region *)fontfcnB(S, codename, &len, &rc);
                if (rc < 0) {
                        rc = Type1ReturnCodeToXReturnCode(rc);
                        break;
@@ -853,7 +820,8 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 }
 
 #ifdef BUILDCID
-unsigned int getCID(FontPtr pFont, unsigned int charcode)
+unsigned int 
+getCID(FontPtr pFont, unsigned int charcode)
 {
     unsigned int cidcode = 0;
     Bool charvalid = FALSE;
@@ -957,10 +925,7 @@ unsigned int getCID(FontPtr pFont, unsigned int charcode)
 }
 
 static CharInfoPtr
-CIDGetGlyph(pFont, charcode, pci)
-    FontPtr pFont;
-    unsigned int charcode;
-    CharInfoPtr pci;
+CIDGetGlyph(FontPtr pFont, unsigned int charcode, CharInfoPtr pci)
 {
     int  rc;
     CharInfoPtr cp = NULL;
@@ -979,19 +944,18 @@ CIDGetGlyph(pFont, charcode, pci)
     return cp;
 }
 
-int CIDGetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
-    FontPtr     pFont;
-    unsigned long count;
-    register unsigned char *chars;
-    FontEncoding charEncoding;
-    unsigned long *glyphCount;  /* RETURN */
-    CharInfoPtr *glyphs;        /* RETURN */
+int 
+CIDGetGlyphs(FontPtr pFont, 
+	     unsigned long count, 
+	     unsigned char *chars, 
+	     FontEncoding charEncoding, 
+	     unsigned long *glyphCount, /* RETURN */
+	     CharInfoPtr *glyphs)	/* RETURN */
 {
     unsigned int firstRow, numRows, code, char_row, char_col;
     CharInfoPtr *glyphsBase;
     register unsigned int c;
     CharInfoPtr pci;
-    unsigned int r;
     CharInfoPtr pDefault;
     cidglyphs *cid;
     register int firstCol;
@@ -1125,13 +1089,12 @@ int CIDGetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 #endif
  
 static int
-Type1GetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
-    FontPtr     pFont;
-    unsigned long count;
-    register unsigned char *chars;
-    FontEncoding charEncoding;
-    unsigned long *glyphCount;  /* RETURN */
-    CharInfoPtr *glyphs;        /* RETURN */
+Type1GetGlyphs(FontPtr pFont, 
+	       unsigned long count, 
+	       unsigned char *chars, 
+	       FontEncoding charEncoding, 
+	       unsigned long *glyphCount,  /* RETURN */
+	       CharInfoPtr *glyphs)	   /* RETURN */
 {
     unsigned int firstRow;
     unsigned int numRows;
@@ -1207,19 +1170,17 @@ Type1GetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 static CharInfoRec nonExistantChar;
 
 int
-CIDGetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
-    FontPtr     pFont;
-    unsigned long count;
-    register unsigned char *chars;
-    FontEncoding charEncoding;
-    unsigned long *glyphCount;  /* RETURN */
-    xCharInfo **glyphs;         /* RETURN */
+CIDGetMetrics(FontPtr pFont, 
+	      unsigned long count, 
+	      unsigned char *chars, 
+	      FontEncoding charEncoding, 
+	      unsigned long *glyphCount, /* RETURN */
+	      xCharInfo **glyphs)	 /* RETURN */
 {
     int         ret;
     cidglyphs *cid;
     CharInfoPtr oldDefault;
     char cidafmname[CID_PATH_MAX];
-    char cmapname[CID_PATH_MAX];
     char CIDFontName[CID_NAME_MAX];
     char *ptr;
 
@@ -1249,7 +1210,8 @@ CIDGetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     ret = CIDGetAFM(pFont, count, chars, charEncoding, glyphCount, (CharInfoPtr
 *)glyphs, cidafmname);
     if (ret != Successful)
-        ret = CIDGetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs);
+        ret = CIDGetGlyphs(pFont, count, chars, charEncoding, glyphCount, 
+			   (CharInfoPtr *)glyphs);
 
     *ptr = 0;
     cid->pDefault = oldDefault;
@@ -1258,13 +1220,12 @@ CIDGetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
 #endif
 
 static int
-Type1GetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
-    FontPtr     pFont;
-    unsigned long count;
-    register unsigned char *chars;
-    FontEncoding charEncoding;
-    unsigned long *glyphCount;  /* RETURN */
-    xCharInfo **glyphs;         /* RETURN */
+Type1GetMetrics(FontPtr pFont, 
+		unsigned long count, 
+		unsigned char *chars, 
+		FontEncoding charEncoding, 
+		unsigned long *glyphCount, /* RETURN */
+		xCharInfo **glyphs) 	   /* RETURN */
 {
     static CharInfoRec nonExistantChar;
  
@@ -1281,8 +1242,8 @@ Type1GetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
 }
 
 #ifdef BUILDCID
-void CIDCloseFont(pFont)
-    FontPtr pFont;
+void 
+CIDCloseFont(FontPtr pFont)
 {
     register int i;
     cidglyphs *cid;
@@ -1340,8 +1301,8 @@ void CIDCloseFont(pFont)
 }
 #endif
 
-void Type1CloseFont(pFont)
-       FontPtr pFont;
+void 
+Type1CloseFont(FontPtr pFont)
 {
        register int i;
        struct type1font *type1;
@@ -1361,12 +1322,12 @@ void Type1CloseFont(pFont)
        DestroyFontRec(pFont);
 }
 
-static void fill(dest, h, w, area, byte, bit, wordsize)
-       register char *dest;  /* destination bitmap                           */
-       int h,w;              /* dimensions of 'dest', w padded               */
-       register struct region *area;  /* region to write to 'dest'           */
-       int byte,bit;         /* flags; LSBFirst or MSBFirst                  */
-       int wordsize;         /* number of bits per word for LSB/MSB purposes */
+static void 
+fill(char *dest,             /* destination bitmap                           */
+     int h, int w,           /* dimensions of 'dest', w padded               */
+     struct region *area,    /* region to write to 'dest'                    */
+     int byte, int bit,      /* flags; LSBFirst or MSBFirst                  */
+     int wordsize)           /* number of bits per word for LSB/MSB purposes */
 {
        register struct edgelist *edge;  /* for looping through edges         */
        register char *p;     /* current scan line in 'dest'                  */
@@ -1441,10 +1402,10 @@ it:
  
 #define  ALLONES  0xFF
  
-static void fillrun(p, x0, x1, bit)
-       register char *p;     /* address of this scan line                    */
-       pel x0,x1;            /* left and right X                             */
-       int bit;              /* format:  LSBFirst or MSBFirst                */
+static void 
+fillrun(char *p,             /* address of this scan line                    */
+	pel x0, pel x1,      /* left and right X                             */
+	int bit)             /* format:  LSBFirst or MSBFirst                */
 {
        register int startmask,endmask;  /* bits to set in first and last char*/
        register int middle;  /* number of chars between start and end + 1    */
@@ -1476,8 +1437,8 @@ static void fillrun(p, x0, x1, bit)
 
 #ifdef BUILDCID
 FontRendererRec CIDRendererInfo[] = {
-  { ".cid", 4, (int (*)()) 0, CIDOpenScalable,
-        (int (*)()) 0, CIDGetInfoScalable, 0, CAPABILITIES }
+  { ".cid", 4, NULL, CIDOpenScalable,
+        NULL, CIDGetInfoScalable, 0, CAPABILITIES }
 };
 #endif
  
@@ -1486,14 +1447,15 @@ FontRendererRec Type1RendererInfo[] = {
 #else
 static FontRendererRec renderers[] = {
 #endif
-  { ".pfa", 4, (int (*)()) 0, Type1OpenScalable,
-        (int (*)()) 0, Type1GetInfoScalable, 0, CAPABILITIES },
-  { ".pfb", 4, (int (*)()) 0, Type1OpenScalable,
-        (int (*)()) 0, Type1GetInfoScalable, 0, CAPABILITIES }
+  { ".pfa", 4, NULL, Type1OpenScalable,
+        NULL, Type1GetInfoScalable, 0, CAPABILITIES },
+  { ".pfb", 4, NULL, Type1OpenScalable,
+        NULL, Type1GetInfoScalable, 0, CAPABILITIES }
 };
 
 #ifdef BUILDCID
-void CIDRegisterFontFileFunctions(void)
+void 
+CIDRegisterFontFileFunctions(void)
 {
     int i;
 
@@ -1504,7 +1466,7 @@ void CIDRegisterFontFileFunctions(void)
 #endif
  
 void
-Type1RegisterFontFileFunctions()
+Type1RegisterFontFileFunctions(void)
 {
     int i;
  
@@ -1519,8 +1481,8 @@ Type1RegisterFontFileFunctions()
 #endif
 }
 
-int Type1ReturnCodeToXReturnCode(rc)
-    int rc;
+int 
+Type1ReturnCodeToXReturnCode(int rc)
 {
     switch(rc) {
     case SCAN_OK:
@@ -1549,12 +1511,10 @@ int Type1ReturnCodeToXReturnCode(rc)
 }
 
 #ifdef BUILDCID
-CharInfoPtr CIDRenderGlyph(FontPtr pFont, psobj *charstringP, psobj *subarrayP,
-struct blues_struct *bluesP, CharInfoPtr pci, int *mode)
+CharInfoPtr 
+CIDRenderGlyph(FontPtr pFont, psobj *charstringP, psobj *subarrayP,
+	       struct blues_struct *bluesP, CharInfoPtr pci, int *mode)
 {
-       extern struct XYspace *IDENTITY;
-       extern struct region *CIDfontfcnC();
-
        int         bit,
                    byte,
                    glyph,
@@ -1566,17 +1526,12 @@ struct blues_struct *bluesP, CharInfoPtr pci, int *mode)
        struct XYspace *S;    /* coordinate space for character               */
        struct region *area;
        CharInfoRec *glyphs;
-       register int i;
        int len, rc;
-       char *p;
-       psobj *fontencoding = NULL;
-       fsRange char_range;
        long x0;
        double x1, y1, t1 = .001, t2 = 0.0, t3 = 0.0, t4 = .001;
        double sxmult;
        long h,w;
        long paddedW;
-       int j;
        cidglyphs *cid;
        fsBitmapFormat      format = 0;
        fsBitmapFormatMask  fmask = 0;
@@ -1620,19 +1575,22 @@ struct blues_struct *bluesP, CharInfoPtr pci, int *mode)
            bzero(glyphs, sizeof(CharInfoRec));
        }
 
-       S = (struct XYspace *) t1_Transform(IDENTITY, t1, t2, t3, t4);
+       S = (struct XYspace *) t1_Transform((struct xobject *)IDENTITY, 
+					   t1, t2, t3, t4);
 
-       S = (struct XYspace *) Permanent(t1_Transform(S, cid->pixel_matrix[0],
-                                                       -cid->pixel_matrix[1],
-                                                        cid->pixel_matrix[2],
-                                                       -cid->pixel_matrix[3]));
+       S = (struct XYspace *) Permanent(t1_Transform((struct xobject *)S,
+						     cid->pixel_matrix[0],
+						     -cid->pixel_matrix[1],
+						     cid->pixel_matrix[2],
+						     -cid->pixel_matrix[3]));
 
        /* multiplier for computation of raw values */
        sxmult = hypot(cid->pixel_matrix[0], cid->pixel_matrix[1]);
        if (sxmult > EPS) sxmult = 1000.0 / sxmult;
 
        rc = 0;
-       area = CIDfontfcnC(S, charstringP, subarrayP, bluesP, &len, &rc);
+       area = (struct region *)CIDfontfcnC(S, charstringP, subarrayP, bluesP, 
+					   &len, &rc);
        if (rc < 0 || area == NULL) {
          delmemory();
          xfree(pool);

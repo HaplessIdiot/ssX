@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.5 1996/12/23 06:02:34 dawes Exp $ */
+/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.6 1998/10/03 09:07:31 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -32,6 +32,7 @@ from The Open Group.
 #include	"fontmisc.h"
 #include	"fontstruct.h"
 #include	"fontxlfd.h"
+#include	"fontutil.h"
 #include	<X11/Xos.h>
 #include	<math.h>
 #if !defined(X_NOT_STDC_ENV) || defined(SCO)
@@ -47,9 +48,7 @@ from The Open Group.
 #include	<stdio.h>	/* for sprintf() */
 
 static char *
-GetInt(ptr, val)
-    char       *ptr;
-    int        *val;
+GetInt(char *ptr, int *val)
 {
     if (*ptr == '*') {
 	*val = -1;
@@ -72,9 +71,7 @@ static struct lconv *locale = 0;
 static char *radix = ".", *plus = "+", *minus = "-";
 
 static char *
-readreal(ptr, result)
-char *ptr;
-double *result;
+readreal(char *ptr, double *result)
 {
     char buffer[80], *p1, *p2;
 
@@ -125,10 +122,7 @@ double *result;
 }
 
 static char *
-xlfd_double_to_text(value, buffer, space_required)
-double value;
-char *buffer;
-int space_required;
+xlfd_double_to_text(double value, char *buffer, int space_required)
 {
     char formatbuf[40];
     register char *p1;
@@ -201,8 +195,7 @@ int space_required;
 }
 
 double
-xlfd_round_double(x)
-double x;
+xlfd_round_double(double x)
 {
    /* Utility for XLFD users to round numbers to XLFD_NDIGITS
       significant digits.  How do you round to n significant digits on
@@ -286,10 +279,7 @@ double x;
 }
 
 static char *
-GetMatrix(ptr, vals, which)
-char *ptr;
-FontScalablePtr vals;
-int which;
+GetMatrix(char *ptr, FontScalablePtr vals, int which)
 {
     double *matrix;
 
@@ -366,10 +356,8 @@ int which;
 }
 
 
-static void append_ranges(fname, nranges, ranges)
-char *fname;
-int nranges;
-fsRange *ranges;
+static void 
+append_ranges(char *fname, int nranges, fsRange *ranges)
 {
     if (nranges)
     {
@@ -393,10 +381,7 @@ fsRange *ranges;
 }
 
 Bool
-FontParseXLFDName(fname, vals, subst)
-    char       *fname;
-    FontScalablePtr vals;
-    int         subst;
+FontParseXLFDName(char *fname, FontScalablePtr vals, int subst)
 {
     register char *ptr;
     register char *ptr1,
@@ -600,15 +585,12 @@ FontParseXLFDName(fname, vals, subst)
     return TRUE;
 }
 
-fsRange *FontParseRanges(name, nranges)
-char *name;
-int *nranges;
+fsRange *FontParseRanges(char *name, int *nranges)
 {
     int n;
     unsigned long l;
     char *p1, *p2;
     fsRange *result = (fsRange *)0;
-    extern int add_range();
 
     name = strchr(name, '-');
     for (n = 1; name && n < 14; n++)

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xfs/include/difsutils.h,v 1.1 1998/10/25 07:12:29 dawes Exp $
+ * $XFree86: xc/programs/xfs/include/difsutils.h,v 1.2 1999/03/07 11:41:00 dawes Exp $
  */
 
 /************************************************************
@@ -34,17 +34,16 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <auth.h>
 #include <font.h>
 #include <accstr.h>
+#include <fontstruct.h>
 
-typedef void (*DifsBlockFunc)(pointer data, pointer pTimeout, pointer pReadmask);
 typedef void (*DifsWakeupFunc)(pointer data, int result, unsigned long * pReadmask);
 typedef Bool (*DifsWorkFunc) (ClientPtr, pointer);
 
 extern AuthContextPtr GetClientAuthorization (void);
 extern Bool ClientIsAsleep (ClientPtr client);
-extern Bool ClientSignal (ClientPtr client);
 extern Bool ClientSleep (ClientPtr client, Bool (*function) (ClientPtr, pointer), pointer data);
 extern Bool QueueWorkProc (DifsWorkFunc function, ClientPtr client, pointer data);
-extern Bool RegisterBlockAndWakeupHandlers (DifsBlockFunc blockHandler, DifsWakeupFunc wakeupHandler, pointer blockData);
+extern Bool RegisterBlockAndWakeupHandlers (BlockHandlerProcPtr blockHandler, DifsWakeupFunc wakeupHandler, pointer blockData);
 extern Bool ValidHost (HostList list, HostAddress *addr);
 extern Bool XpClientIsBitmapClient (ClientPtr client);
 extern Bool XpClientIsPrintClient (ClientPtr client, FontPathElementPtr fpe);
@@ -60,13 +59,13 @@ extern int set_font_authorizations (char **authorizations, int *authlen, ClientP
 extern int strncmpnocase (char *first, char *second, int n);
 extern pointer Xalloc (unsigned long m);
 extern pointer Xrealloc (pointer n, unsigned long m);
-extern void BlockHandler (pointer pTimeout, pointer pReadmask);
+extern void BlockHandler (OSTimePtr pTimeout, pointer pReadmask);
 extern void ClientWakeup (ClientPtr client);
 extern void CopyISOLatin1Lowered (unsigned char *dest, unsigned char *source, int length);
 extern void InitBlockAndWakeupHandlers (void);
 extern void NoopDDA (void);
 extern void ProcessWorkQueue (void);
-extern void RemoveBlockAndWakeupHandlers (DifsBlockFunc blockHandler, DifsWakeupFunc wakeupHandler, pointer blockData);
+extern void RemoveBlockAndWakeupHandlers (BlockHandlerProcPtr blockHandler, DifsWakeupFunc wakeupHandler, pointer blockData);
 extern void SetDefaultPointSize (int ps);
 extern void WakeupHandler (int result, unsigned long * pReadmask);
 extern void Xfree (unsigned long *n);

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/fontutil.c,v 3.2 1998/10/03 09:07:31 dawes Exp $ */
+/* $XFree86: xc/lib/font/util/fontutil.c,v 3.3 1999/04/27 07:08:59 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -32,6 +32,7 @@ from The Open Group.
 #include    "fontmisc.h"
 #include    "fontstruct.h"
 #include    "FSproto.h"
+#include    "fontutil.h"
 
 /* Define global here...  doesn't hurt the servers, and avoids
    unresolved references in font clients.  */
@@ -40,13 +41,12 @@ static int defaultGlyphCachingMode = DEFAULT_GLYPH_CACHING_MODE;
 int glyphCachingMode = DEFAULT_GLYPH_CACHING_MODE;
 
 void
-GetGlyphs(font, count, chars, fontEncoding, glyphcount, glyphs)
-    FontPtr     font;
-    unsigned long count;
-    unsigned char *chars;
-    FontEncoding fontEncoding;
-    unsigned long *glyphcount;	/* RETURN */
-    CharInfoPtr *glyphs;	/* RETURN */
+GetGlyphs(FontPtr font, 
+	  unsigned long count, 
+	  unsigned char *chars, 
+	  FontEncoding fontEncoding, 
+	  unsigned long *glyphcount,	/* RETURN */
+	  CharInfoPtr *glyphs)		/* RETURN */
 {
     (*font->get_glyphs) (font, count, chars, fontEncoding, glyphcount, glyphs);
 }
@@ -55,11 +55,10 @@ GetGlyphs(font, count, chars, fontEncoding, glyphcount, glyphs)
 #define MAX(a,b)    ((a)>(b)?(a):(b))
 
 void
-QueryGlyphExtents(pFont, charinfo, count, info)
-    FontPtr     pFont;
-    CharInfoPtr *charinfo;
-    unsigned long count;
-    ExtentInfoRec *info;
+QueryGlyphExtents(FontPtr pFont, 
+		  CharInfoPtr *charinfo, 
+		  unsigned long count, 
+		  ExtentInfoRec *info)
 {
     register unsigned long i;
     xCharInfo  *pCI;
@@ -128,11 +127,10 @@ QueryGlyphExtents(pFont, charinfo, count, info)
 }
 
 Bool
-QueryTextExtents(pFont, count, chars, info)
-    FontPtr     pFont;
-    unsigned long count;
-    unsigned char *chars;
-    ExtentInfoRec *info;
+QueryTextExtents(FontPtr pFont, 
+		 unsigned long count, 
+		 unsigned char *chars, 
+		 ExtentInfoRec *info)
 {
     xCharInfo     **charinfo;
     unsigned long   n;
@@ -155,11 +153,11 @@ QueryTextExtents(pFont, count, chars, info)
     /* Do default character substitution as get_metrics doesn't */
 
 #define IsNonExistentChar(ci) (!(ci) || \
-			       (ci)->ascent == 0 && \
+			       ((ci)->ascent == 0 && \
 			       (ci)->descent == 0 && \
 			       (ci)->leftSideBearing == 0 && \
 			       (ci)->rightSideBearing == 0 && \
-			       (ci)->characterWidth == 0)
+			       (ci)->characterWidth == 0))
 
     firstReal = n;
     defc[0] = pFont->info.defaultCh >> 8;
@@ -188,8 +186,7 @@ QueryTextExtents(pFont, count, chars, info)
 }
 
 Bool
-ParseGlyphCachingMode(str)
-    char       *str;
+ParseGlyphCachingMode(char *str)
 {
     if (!strcmp(str, "none")) defaultGlyphCachingMode = CACHING_OFF;
     else if (!strcmp(str, "all")) defaultGlyphCachingMode = CACHE_ALL_GLYPHS;
@@ -199,7 +196,7 @@ ParseGlyphCachingMode(str)
 }
 
 void
-InitGlyphCaching()
+InitGlyphCaching(void)
 {
     /* Set glyphCachingMode to the mode the server hopes to
        support.  DDX drivers that do not support the requested level
@@ -214,8 +211,7 @@ InitGlyphCaching()
  * caching they can support.
  */
 void
-SetGlyphCachingMode(newmode)
-    int newmode;
+SetGlyphCachingMode(int newmode)
 {
     if ( (glyphCachingMode > newmode) && (newmode >= 0) )
 	glyphCachingMode = newmode;
@@ -227,11 +223,10 @@ SetGlyphCachingMode(newmode)
 
 /* add_range(): Add range to a list of ranges, with coalescence */
 int
-add_range(newrange, nranges, range, charset_subset)
-fsRange *newrange;
-int *nranges;
-fsRange **range;
-Bool charset_subset;
+add_range(fsRange *newrange, 
+	  int *nranges, 
+	  fsRange **range, 
+	  Bool charset_subset)
 {
     int first, last, middle;
     unsigned long keymin, keymax;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/stubs/stubs.h,v 1.1 1999/01/11 05:13:22 dawes Exp $ */
 
 /* This directory includes dummy entry for bdftopcf and mkfontdir */
 
@@ -6,12 +6,22 @@
 #include "fntfilst.h"
 #include "font.h"
 
-typedef char *ClientPtr ;
+
 #ifndef True
 #define True (-1)
 #endif
 #ifndef False
 #define False (0)
 #endif
+
+extern FontPtr find_old_font ( FSID id );
+extern FontResolutionPtr GetClientResolutions ( int *num );
+extern int GetDefaultPointSize ( void );
+extern int set_font_authorizations ( char **authorizations, 
+				     int *authlen, 
+				     ClientPtr client );
+extern Bool XpClientIsBitmapClient ( ClientPtr client );
+extern Bool XpClientIsPrintClient ( ClientPtr client, 
+				    FontPathElementPtr fpe );
 
 /* end of file */

@@ -39,12 +39,15 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/include/client.h,v 1.3 1998/10/25 12:48:03 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/client.h,v 1.4 1999/03/07 11:40:59 dawes Exp $ */
 
 #ifndef	_CLIENT_H_
 #define	_CLIENT_H_
 
+#ifndef _XTYPEDEF_CLIENTPTR
 typedef struct _Client *ClientPtr;
+#define _XTYPEDEF_CLIENTPTR
+#endif
 
 #include <misc.h>
 

@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.3 1998/10/25 07:12:23 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.4 1999/03/07 11:40:53 dawes Exp $ */
 
 #include        "FS.h"
 #include        "FSproto.h"
@@ -1468,7 +1468,7 @@ static unsigned int last_server_gen;
 int
 init_fs_handlers(
     FontPathElementPtr fpe,
-    DifsBlockFunc block_handler)
+    BlockHandlerProcPtr block_handler)
 {
     /* if server has reset, make sure the b&w handlers are reinstalled */
     if (last_server_gen < serverGeneration) {
@@ -1493,7 +1493,7 @@ init_fs_handlers(
 void
 remove_fs_handlers(
     FontPathElementPtr fpe,
-    DifsBlockFunc block_handler,
+    BlockHandlerProcPtr block_handler,
     Bool        all)
 {
     if (all) {

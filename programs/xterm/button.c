@@ -50,7 +50,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.39 1999/07/11 08:49:32 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.40 1999/07/18 03:27:09 dawes Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -85,12 +85,6 @@ button.c	Handles button events in the terminal emulator.
 	meta key  -> 2
 	control key -> 4 */
 
-#define TEXTMODES 4
-#define NBUTS 3
-#define DIRS 2
-#define UP 1
-#define DOWN 0
-#define SHIFTS 8		/* three keys, so eight combinations */
 #define	Coordinate(r,c)		((r) * (term->screen.max_col+1) + (c))
 
 
