@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.13 1998/11/15 04:29:58 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.14 1998/12/06 06:08:10 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -1539,7 +1539,7 @@ GetDefaultPieceSize(Widget w, int offset, XrmValue *value)
     static int pagesize;
 
     if (pagesize == 0) {
-	pagesize = getpagesize();
+	pagesize = _XawGetPageSize();
 	if (pagesize < BUFSIZ)
 	    pagesize = BUFSIZ;
     }

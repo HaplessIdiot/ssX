@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.13 1998/11/15 04:30:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.14 1998/12/06 06:08:11 dawes Exp $ */
 
 /*
 
@@ -1641,7 +1641,7 @@ GetDefaultPieceSize(Widget w, int offset, XrmValue *value)
     static int pagesize;
 
     if (pagesize == 0) {
-	pagesize = getpagesize();
+	pagesize = _XawGetPageSize();
 	if (pagesize < BUFSIZ)
 	    pagesize = BUFSIZ;
     }

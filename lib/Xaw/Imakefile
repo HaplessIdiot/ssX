@@ -106,6 +106,7 @@ SRCS = \
 	MenuButton.c \
 	MultiSrc.c \
 	MultiSink.c \
+	OS.c \
 	Paned.c \
 	Panner.c \
 	Pixmap.c \
@@ -155,6 +156,7 @@ OBJS = \
 	MenuButton.o \
 	MultiSrc.o \
 	MultiSink.o \
+	OS.o \
 	Paned.o \
 	Panner.o \
 	Pixmap.o \
