@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.15 2000/08/22 21:54:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.16 2000/10/11 22:52:57 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -618,7 +618,7 @@ ATIPrintRegisters
 #ifndef AVOID_CPIO
 
     if (pATI->pBank)
-        xf86ErrorFVerb(4, "\n Banked aperture at 0x%08X.",
+        xf86ErrorFVerb(4, "\n Banked aperture at 0x%0lX.",
             pATI->pBank);
     else
         xf86ErrorFVerb(4, "\n No banked aperture.");
@@ -630,18 +630,18 @@ ATIPrintRegisters
 #endif /* AVOID_CPIO */
 
     {
-        xf86ErrorFVerb(4, "\n Linear aperture at 0x%08X.\n", pATI->pMemory);
+        xf86ErrorFVerb(4, "\n Linear aperture at 0x%0lX.\n", pATI->pMemory);
     }
 
     if (pATI->pBlock[0])
     {
-        xf86ErrorFVerb(4, " Block 0 aperture at 0x%08X.\n", pATI->pBlock[0]);
+        xf86ErrorFVerb(4, " Block 0 aperture at 0x%0lX.\n", pATI->pBlock[0]);
         if (inr(CONFIG_CHIP_ID) == pATI->config_chip_id)
             xf86ErrorFVerb(4, " MMIO registers are correctly mapped.\n");
         else
             xf86ErrorFVerb(4, " MMIO mapping is in error!\n");
         if (pATI->pBlock[1])
-            xf86ErrorFVerb(4, " Block 1 aperture at 0x%08X.\n",
+            xf86ErrorFVerb(4, " Block 1 aperture at 0x%0lX.\n",
                 pATI->pBlock[1]);
     }
     else
