@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.31 2004/07/21 20:27:58 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.32 2005/02/03 03:32:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1999-2005 by The XFree86 Project, Inc.
@@ -88,11 +88,12 @@
 static void usbSigioReadInput (int fd, void *closure);
 #endif
 
+#define DEFAULT_MOUSE_DEV		"/dev/mouse"
+#define DEFAULT_PS2_DEV			"/dev/pms0"
+
 #if defined(__FreeBSD__)
 /* These are for FreeBSD */
-#define DEFAULT_MOUSE_DEV		"/dev/mouse"
 #define DEFAULT_SYSMOUSE_DEV		"/dev/sysmouse"
-#define DEFAULT_PS2_DEV			"/dev/psm0"
 
 static const char *mouseDevs[] = {
 	DEFAULT_MOUSE_DEV,
@@ -100,16 +101,27 @@ static const char *mouseDevs[] = {
 	DEFAULT_PS2_DEV,
 	NULL
 };
-#elif defined(__OpenBSD__) && defined(WSCONS_SUPPORT)
-/* Only wsmouse mices are autoconfigured for now on OpenBSD */
+
+#elif defined(__OpenBSD__) || defined(__NetBSD__)
+
 #define DEFAULT_WSMOUSE_DEV		"/dev/wsmouse"
 #define DEFAULT_WSMOUSE0_DEV		"/dev/wsmouse0"
 
 static const char *mouseDevs[] = {
+	DEFAULT_MOUSE_DEV,
+	DEFAULT_WSMOUSE_DEV,
+	DEFAULT_WSMOUSE0_DEV,
+	DEFAULT_PS2_DEV,
+	NULL
+};
+
+#ifdef WSCONS_SUPPORT
+static const char *wsMouseDevs[] = {
 	DEFAULT_WSMOUSE_DEV,
 	DEFAULT_WSMOUSE0_DEV,
 	NULL
 };
+#endif
 #endif
 
 static int
@@ -169,13 +181,7 @@ CheckProtocol(const char *protocol)
 static const char *
 DefaultProtocol(void)
 {
-#if defined(__FreeBSD__)
     return "Auto";
-#elif defined(__OpenBSD__) && defined(WSCONS_SUPPORT)
-    return "WSMouse";
-#else
-    return NULL;
-#endif
 }
 
 #if defined(__FreeBSD__) && defined(MOUSE_PROTO_SYSMOUSE)
@@ -357,16 +363,85 @@ FindDevice(InputInfoPtr pInfo, const char *protocol, int flags)
 }
 #endif
 
-#if defined(__OpenBSD__) && defined(WSCONS_SUPPORT)
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+
+static const char *
+haveWSCons(void)
+{
+#ifndef WSCONS_SUPPORT
+    return NULL;
+#else
+    const char **pdev;
+    int fd;
+
+    for (pdev = wsMouseDevs; *pdev; pdev++) {
+	SYSCALL(fd = open(*pdev, O_RDWR | O_NONBLOCK));
+	if (fd != -1) {
+	    close(fd);
+	    return *pdev;
+	}
+    }
+    return NULL;
+#endif
+}
+
+static const char *
+GuessProtocol(InputInfoPtr pInfo, int flags)
+{
+    const char *dev;
+    char *realdev = NULL;
+    const char *ret = NULL;
+    int i;
+    struct stat sbuf;
+
+    dev = xf86SetStrOption(pInfo->conf_idev->commonOptions, "Device", NULL);
+    if (!dev) {
+#ifdef DEBUG
+	ErrorF("xf86SetStrOption failed to return the device name\n");
+#endif
+	return NULL;
+    }
+    if (S_ISLNK(sbuf.st_mode)) {
+	realdev = xnfalloc(PATH_MAX + 1);
+	i = readlink(dev, realdev, PATH_MAX);
+	if (i <= 0) {
+#ifdef DEBUG
+	    ErrorF("readlink failed for %s (%s)\n", dev, strerror(errno));
+#endif
+	    xfree(realdev);
+	    return NULL;
+	}
+	realdev[i] = '\0';
+	dev = realdev;
+    }
+
+    if (strncmp(dev, DEFAULT_WSMOUSE_DEV, strlen(DEFAULT_WSMOUSE_DEV) == 0))
+	ret = "wsmouse";
+    else if (strcmp(dev, DEFAULT_PS2_DEV) == 0)
+	ret = "ps/2";
+    if (realdev)
+	xfree(realdev);
+    return ret;
+}
 
 /* Only support wsmouse configuration for now */
 static const char *
 SetupAuto(InputInfoPtr pInfo, int *protoPara)
 {
+    const char *guess = NULL;
+
+    if (pInfo->fd == -1)
+	guess = GuessProtocol(pInfo, 0);
+    if (!guess) {
+	if (haveWSCons())
+	    guess = "wsmouse";
+	else
+	    guess = "ps/2";
+    }
 
     xf86MsgVerb(X_INFO, 3, "%s: SetupAuto: protocol is %s\n",
-		pInfo->name, "wsmouse");
-    return "wsmouse";
+		pInfo->name, guess);
+    return guess;
 }
 
 static void
@@ -398,7 +473,7 @@ FindDevice(InputInfoPtr pInfo, const char *protocol, int flags)
     }
     return *pdev;
 }
-#endif /* __OpenBSD__ && WSCONS_SUPPORT */
+#endif /* __OpenBSD__ || __NetBSD__ */
 
 #ifdef WSCONS_SUPPORT
 #define NUMEVENTS 64
@@ -800,11 +875,12 @@ xf86OSMouseInit(int flags)
     p->SetBMRes = SetSysMouseRes;
     p->SetMiscRes = SetSysMouseRes;
 #endif
-#if defined(__OpenBSD__) && defined(WSCONS_SUPPORT)
+#if defined(__OpenBSD__) || defined(__NetBSD__)
     p->SetupAuto = SetupAuto;
     p->SetMiscRes = SetMouseRes;
+    p->GuessProtocol = GuessProtocol;
 #endif
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
     p->FindDevice = FindDevice;
 #endif
     p->PreInit = bsdMousePreInit;

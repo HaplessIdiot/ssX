@@ -1,4 +1,6 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 311. Extend OpenBSD auto mouse detection to PS/2 devices, and add initial
+      NetBSD auto mouse detection (David Dawes).
  310. Fix duplicate free error resulting from mouse os-support (David Dawes).
  309. Add Xasprintf() to the server, providing a cleaner mechanism for
       printing into (X-)allocated memory (David Dawes).
@@ -19354,7 +19356,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3419 2005/02/03 02:01:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3420 2005/02/03 03:32:52 dawes Exp $
 
 
 
