@@ -1,13 +1,13 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.20 2001/04/19 16:07:11 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.21 2001/05/30 07:02:19 torrey Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
-# Copyright © 2000 by VA Linux Systems, Inc.
+# Copyright © 2000, 2001 by VA Linux Systems, Inc.
 # Portions Copyright © 1996-2000 by The XFree86 Project, Inc.
 #
-# This script should be used to install XFree86 4.0.2.
+# This script should be used to install XFree86 4.1.0.
 #
 # Parts of this script are based on the old preinst.sh and postinst.sh
 # scripts.
@@ -17,16 +17,19 @@
 # Authors:	David Dawes <dawes@xfree86.org>
 #
 
-VERSION=4.0.2
+VERSION=4.1.0
+FULLVERSION=4.1.0
 
 RUNDIR=/usr/X11R6
 ETCDIR=/etc/X11
 VARDIR=/var
 
+TESTROOT=/home1/test
+
 if [ X"$1" = "X-test" -o X"$XINST_TEST" != X ]; then
-	RUNDIR=/home1/test/X11R6
-	ETCDIR=/home1/test/etcX11
-	VARDIR=/home1/test/var
+	RUNDIR=$TESTROOT/X11R6
+	ETCDIR=$TESTROOT/etcX11
+	VARDIR=$TESTROOT/var
 	if [ X"$1" = "X-test" ]; then
 		shift
 	fi
@@ -53,6 +56,12 @@ BASEDIST=" \
 	Xdoc.tgz \
 	Xfnts.tgz \
 	Xfenc.tgz \
+	"
+
+UPDATEDIST=" \
+	Xupdate.tgz \
+	Xdrivers.tgz \
+	Xdocupd.tgz \
 	"
 
 ETCDIST="Xetc.tgz"
@@ -104,7 +113,14 @@ FONTDIRS=" \
 	misc
 	"
 
+XSERVERCMD="$RUNDIR/bin/XFree86"
+
 WDIR=`pwd`
+
+DOUPDATE=
+DOBASE=
+
+OPTS=""
 
 # Check how to suppress newlines with echo (from perl's Configure)
 ((echo "xxx\c"; echo " ") > .echotmp) 2> /dev/null
@@ -599,6 +615,132 @@ FindDistName()
 	fi
 }
 
+CheckInstallType()
+{
+	# Check for explicit options
+
+	if [ X"$1" != X ]; then
+		case $1 in
+		-update)
+			DOUPDATE=YES
+			DOBASE=NO
+			OPTS="$OPTS $1"
+			shift
+			;;
+		-base|-full)
+			DOBASE=YES
+			DOUPDATE=NO
+			OPTS="$OPTS $1"
+			shift
+			;;
+		esac
+	fi
+		
+	# Auto-detect based on what files are present
+
+	if [ X"$DOUPDATE" = X ]; then
+		for i in $BASEDIST; do
+			if [ -f $i ]; then
+				DOBASE=YES
+			fi
+		done
+		for i in $UPDATEDIST; do
+			if [ -f $i ]; then
+				DOUPDATE=YES
+			fi
+		done
+		if [ X"$DOBASE" = XYES -a X"$DOUPDATE" = XYES ]; then
+			echo ""
+			echo "You appear to have binaries in the current directory for"
+			echo "both a full release and an update release.  The full release"
+			echo "must be installed before installing the update release."
+			echo ""
+			echo "The full release can be installed by re-running this script"
+			echo "with the '-base' option (sh $0 -base)."
+			echo ""
+			echo "The update release can be installed by re-running this script"
+			echo "with the '-update' option (sh $0 -update)."
+			echo ""
+			exit 1
+		fi
+	fi
+}
+
+InstallUpdate()
+{
+	# Check that there's an existing installation.
+
+	missingDir=
+
+	for d in $RUNDIR $RUNDIR/lib $RUNDIR/lib/X11 $RUNDIR/bin; do
+		if [ ! -d $d ]; then
+			missingDir="$missingDir $d"
+		fi
+	done
+
+	if [ X$missingDir != X ]; then
+		echo ""
+		echo "You don't appear to have an existing installation of XFree86."
+		echo "You must install the most recent full release ($FULLVERSION)"
+		echo "before installing this update release."
+		echo ""
+		exit 1
+	fi
+
+	if [ -f $XSERVERCMD ]; then
+		existingVer=`$XSERVERCMD -version 2>&1 | grep "XFree86 Version" | \
+						awk '{print $3}'`
+		case $existingVer in
+		${FULLVERSION}*)
+			;;
+		*)
+			echo ""
+			echo "This update release should be installed on top of the most"
+			echo "recent full release ($FULLVERSION).  Your current version"
+			echo "appears to be $existingVer.  Please install $FULLVERSION"
+			echo "before installing this update release."
+			echo ""
+			exit 1
+		esac
+	fi
+
+	echo ""
+	echo "Installing the update binary distribution"
+	echo ""
+	for i in $UPDATEDIST $EXTRAUPDATE; do
+		(cd $RUNDIR; $EXTRACT $WDIR/$i)
+	done
+
+	# Need to run ldconfig on some OSs
+	case "$OsName" in
+	FreeBSD|NetBSD|OpenBSD)
+		echo ""
+		echo "Running ldconfig"
+		/sbin/ldconfig -m $RUNDIR/lib
+		;;
+	Linux)
+		echo ""
+		echo "Running ldconfig"
+		/sbin/ldconfig $RUNDIR/lib
+		;;
+	esac
+
+	# Run mkfontdir in the local and misc directories to make sure that
+	# the fonts.dir files are up to date after the installation.
+	echo ""
+	for i in $FONTDIRS $EXTRAFONTDIRS; do
+		if [ -d $RUNDIR/lib/X11/fonts/$i ]; then
+			Echo "Updating the fonts.dir file in $RUNDIR/lib/X11/fonts/$i..."
+			$RUNDIR/bin/mkfontdir $RUNDIR/lib/X11/fonts/$i
+			echo ""
+		fi
+	done
+		
+	echo ""
+	echo "Update installation complete."
+}
+
+
 if [ X"$1" = "X-check" ]; then
 	GetOsInfo
 	FindDistName
@@ -638,6 +780,7 @@ case "$OsName" in
 Darwin)
 	SERVDIST="Xxserv.tgz"
 	EXTRAOPTDIST="Xquartz.tgz"
+	UPDATEDIST="Xupdate.tgz Xdocupd.tgz"
 	;;
 FreeBSD|NetBSD|OpenBSD)
 	VARDIST="Xvar.tgz"
@@ -649,18 +792,28 @@ Interactive)	# Need the correct name for this
 	;;
 Linux)
 	VARDIST="Xvar.tgz"
-	XKBDIR="/var/state/xkb"
+	XKBDIR="/var/lib/xkb"
 	;;
 esac
 
-REQUIREDFILES=" \
-	extract \
-	$BASEDIST \
-	$ETCDIST \
-	$VARDIST \
-	$SERVDIST \
-	$EXTRADIST \
-	"
+CheckInstallType "$@"
+
+if [ X"$DOUPDATE" = XYES ]; then
+	REQUIREDFILES=" \
+		extract \
+		$UPDATEDIST \
+		$EXTRAUPDATE
+		"
+else
+	REQUIREDFILES=" \
+		extract \
+		$BASEDIST \
+		$ETCDIST \
+		$VARDIST \
+		$SERVDIST \
+		$EXTRADIST \
+		"
+fi
 
 echo "Checking for required files ..."
 Needed=""
@@ -724,7 +877,7 @@ if [ X"$ExtractOK" != XYES ]; then
 		echo "and put it in this directory."
 	fi
 	echo ""
-	echo "When you have corrected the problem, please re-run 'sh $0'"
+	echo "When you have corrected the problem, please re-run 'sh $0$OPTS'"
 	echo "to proceed with the installation."
 	echo ""
 	exit 1
@@ -744,7 +897,7 @@ if [ X"$Needed" != X ]; then
 	echo "must be present in the current directory to proceed with the"
 	echo "installation.  You should be able to find it at the same place"
 	echo "you picked up the rest of the XFree86 binary distribution."
-	echo "Please re-run 'sh $0' to proceed with the installation when"
+	echo "Please re-run 'sh $0$OPTS' to proceed with the installation when"
 	echo "you have them."
 	echo ""
 	exit 1
@@ -754,7 +907,7 @@ DoOsChecks
 
 if [ X"$NEEDSOMETHING" != X ]; then
 	echo ""
-	echo "Please re-run 'sh $0' to proceed with the installation after you"
+	echo "Please re-run 'sh $0$OPTS' to proceed with the installation after you"
 	echo "have made the required updates."
 	echo ""
 	exit 1
@@ -768,6 +921,11 @@ ln extract gnu-tar
 
 EXTRACT=$WDIR/extract
 TAR=$WDIR/gnu-tar
+
+if [ X"$DOUPDATE" = XYES ]; then
+	InstallUpdate
+	exit 0
+fi
 
 # Create $RUNDIR and $ETCDIR if they don't already exist
 
