@@ -1,4 +1,5 @@
 /* $XConsortium: xwud.c,v 1.58 94/04/17 20:24:32 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1985, 1986, 1988  X Consortium
