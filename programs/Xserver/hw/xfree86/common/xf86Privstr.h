@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.42 2004/02/13 23:58:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.43 2005/01/26 05:31:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -224,7 +224,6 @@ typedef struct {
     Bool		pc98;
 #endif
     Bool		pmFlag;
-    Log			log;
     int			estimateSizesAggressively;
     Bool		kbdCustomKeycodes;
     Bool		disableRandR;

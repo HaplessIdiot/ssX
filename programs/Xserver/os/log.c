@@ -96,7 +96,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.10 2004/12/20 19:27:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.11 2005/01/26 21:53:31 dawes Exp $ */
 
 #include "Xos.h"
 #include <stdio.h>
@@ -280,7 +280,7 @@ LogVWrite(int verb, const char *f, va_list args)
     if ((verb < 0 || logFileVerbosity >= verb) && len > 0) {
 	if (logFile) {
 	    fwrite(tmpBuffer, len, 1, logFile);
-	    if (logFlush) {
+	    if (logFlush || logSync) {
 		fflush(logFile);
 		if (logSync)
 		    fsync(fileno(logFile));
