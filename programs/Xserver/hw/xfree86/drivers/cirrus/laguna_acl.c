@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/laguna_acl.c,v 1.3 1997/04/13 13:57:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/laguna_acl.c,v 1.4 1997/08/15 07:19:18 hohndel Exp $ */
 
 /*
  * New-style acceleration for the Laguna-family (CL-GD5462/5464).
@@ -43,7 +43,8 @@ void LagunaSetupForFill8x8Pattern();
 void LagunaSubsequentFill8x8Pattern();
 void LagunaSetupFor8x8PatternColorExpand();
 void LagunaSubsequent8x8PatternColorExpand();
-void LagunaImageWrite();
+void LagunaSetupForImageWrite();
+void LagunaSubsequentImageWrite();
 
 
 
@@ -158,13 +159,21 @@ void LagunaAccelInit() {
     LagunaSubsequent8x8PatternColorExpand;
 
 
+  /* ImageWrite acceleration */
+  /* I'm not sure if the Lg can do transparency on host-to-screen
+     blits.  We can worry about that later... */
+  if (cirrusChip != CLGD5462) {
+    xf86AccelInfoRec.ImageWriteFlags = NO_TRANSPARENCY;
+    xf86AccelInfoRec.SetupForImageWrite = LagunaSetupForImageWrite;
+    xf86AccelInfoRec.SubsequentImageWrite = LagunaSubsequentImageWrite;
+    xf86AccelInfoRec.ImageWriteBase = 
+      xf86AccelInfoRec.CPUToScreenColorExpandBase;
+    xf86AccelInfoRec.ImageWriteRange = 
+      xf86AccelInfoRec.CPUToScreenColorExpandRange;
+  }
+
 
   /* PixMap caching and CPU-to-screen transfers. */
-  /* THe '62 had some host-to-screen transfer problems. */
-/*
-  if (cirrusChip != CLGD5462)
-    xf86AccelInfoRec.ImageWrite = LagunaImageWrite;
-*/
   xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
       vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8,
       vga256InfoRec.videoRam * 1024 - 1024);
@@ -543,63 +552,26 @@ void LagunaSubsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
 
 
 
-/* ImageWrite.  Copy an area w pixels wide, h pixels high from src (on 
-   the CPU) to the frame buffer, at point (x,y).  The source pixmap
-   is srcwidth bytes wide.  The srcwidth may be larger than the 
-   destination copy area. */
+void LagunaSetupForImageWrite(int rop, unsigned int planemask, 
+			      int transparency_color) {
 
-void LagunaImageWrite(x, y, w, h, src, srcwidth, rop, planemask)
-    int x;
-    int y;
-    int w;
-    int h;
-    void *src;
-    int srcwidth;
-    int rop;
-    unsigned planemask;
-{
-  volatile unsigned long *pHOSTDATA;
-  unsigned long *pdSrc;
-  unsigned char *pbSrc;
-  int dwords, dwordTotal;
-  int burst;
+  LagunaWaitQAvail(4);
+
+  LgSETPHASE1(0);                   /* Assume that the data starts on 
+				       the DWORD boundary. */
+  LgSETROP(lgCirrusRop[rop]);       /* We support all the raster ops */
+  LgSETMODE(HOST2SCR | COLORSRC);   /* Host-to-screen, color copy */
+  LgSetBitmask(planemask);          /* Is this ever _not_ 0xFFFFFFFF? */
+}
+
+
+void LagunaSubsequentImageWrite(int x, int y, int w, int h, int skipleft) {
+  /* We don't support left edge clipping, so we can ignore skipleft. */
   
-  /* Don't try any funny stuff */
-  if (h == 0 || w == 0)
-    return;
+  LagunaWaitQAvail(2);
 
-  /* Wait until the chip is idle. */
-  LagunaSync();
+  LgSETDSTXY(x, y);
+  LgSETEXTENTS(w, h);
 
-  /* Setup the Laguna chip for a Host-to-screen copy */
-  LgSETDSTXY(x, y);                  /* Destination */
-  LgSETPHASE1(0);                    /* Assume only byte-alignment */
-  LgSETMODE(HOST2SCR | COLORSRC);    /* Host-to-screen, color copy */
-  LgSETROP(lgCirrusRop[rop]);        /* Straight copy, no frills */
-  LgSetBitmask(planemask);
-
-  LgSETEXTENTS(w, h);                /* Start watching HOSTDATA */
-
-  pbSrc = (unsigned char *)src;
-
-  dwordTotal = (w * vga256InfoRec.bitsPerPixel / 8 + 3) >> 2;
-  burst = (dwordTotal < HOSTDATASIZE * 4);
-  if (!burst)
-    pHOSTDATA = (unsigned long *)(cirrusMMIOBase + HOSTDATA);
-
-  while (h--) {
-    /* Each scanline must be DWORD padded.  */
-    dwords = dwordTotal;
-
-    pdSrc = (unsigned long *)pbSrc;
-    if (burst) {
-      pHOSTDATA = (unsigned long *)(cirrusMMIOBase + HOSTDATA);
-      while (dwords--)
-	*pHOSTDATA++ = *pdSrc++;
-    } else {
-      while (dwords--)
-	*pHOSTDATA = *pdSrc++;
-    }
-    pbSrc += srcwidth;
-  }
+  /* Boy, I hope that I get the right number of DWORDS now... */
 }
