@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.5 2002/04/05 02:05:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.6 2002/06/11 00:11:03 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -182,6 +182,7 @@ RootlessRealizeWindow(WindowPtr pWin)
         CallFrameProc(pScreen, CreateFrame,
                       (pScreen, &WINREC(pWin)->frame,
                       pWin->prevSib ? &WINREC(pWin->prevSib)->frame : NULL));
+        if (!winRec->frame.devPrivate) goto windowcreatebad;
 
         // Disallow ParentRelative background state on top-level windows.
         // This might have been set before the window was mapped.
