@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_tcl.c,v 1.1.1.5 2004/12/10 15:33:23 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_tcl.c,v 1.5 2004/12/10 15:41:01 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -105,7 +105,7 @@ static GLboolean discrete_prim[0x10] = {
 };
    
 
-#define LOCAL_VARS radeonContextPtr rmesa = RADEON_CONTEXT(ctx); (void)rmesa
+#define LOCAL_VARS radeonContextPtr rmesa = RADEON_CONTEXT(ctx)
 #define ELT_TYPE  GLushort
 
 #define ELT_INIT(prim, hw_prim) \
