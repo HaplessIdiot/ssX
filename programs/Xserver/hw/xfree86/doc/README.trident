@@ -11,6 +11,7 @@
 
        8800CS 8200LX 8900B 8900C 8900CL/D 9000 9000i 9100B 9200CXr
        9320LCD 9400CXi 9420 9420DGi 9430DGi 9440AGi 9660XGi 9680
+       Cyber9382 Cyber9385
 
 
   It must be noted that the 9000i chipset is treated as a 9000 by the
@@ -21,6 +22,12 @@
   according to the chipset documentation.
 
    NOTES:
+
+     o  The Cyber 9382/5 chips that have started to appear, have
+        preliminary support in XFree86 3.2 and appear to work at 800x600
+        on the LCD.  The server cannot yet detect the Cyber chips and
+        therefore it is necessary to specify "Chipset 'cyber938x'" in
+        your XF86Config file to support them.
 
      o  The TGUI9440/9660/9680 are now fully supported by the SVGA
         server.
@@ -58,29 +65,21 @@
            70ns DRAM
 
         Option "slow_dram"
-           80ns DRAM.  This is the default for TGUIs.
+           80ns DRAM.  This is the default for TGUIs.  NOTE: The above
+           settings allow for higher dot clocks. Choose the one that
+           matches your DRAM speed.
 
         Option "hw_cursor"
            Turn on hardware cursor (NOTE: it is off by default)
 
-
-        Option "tgui_pci_read_on"
-           Turn on PCI burst read mode.
-
         Option "tgui_pci_read_off"
            Turn off PCI burst read mode.
 
-        Option "tgui_pci_write_on"
-           Turn on PCI burst write mode.
-
         Option "tgui_pci_write_off"
-           Turn off PCI burst write mode.  NOTE: PCI modes. By default
-           the read burst and write burst are independent of each other.
-           By not specifying one of the above - the PCI registers are
-           untouched. If you suffer from screen corruption then try
-           turning them off. By turning them on explicitly may benefit
-           from improved performance, but it may also give screen
-           corruption. USE WITH CAUTION.
+           Turn off PCI burst write mode.  NOTE: PCI Burst modes are now
+           on by default.  If you suffer from screen corruption, you
+           might like to try and specify one or both of the PCI options
+           above.
 
         ClockChip "tgui"
            Turn on programmable clocks.  This is the default for TGUIs.
@@ -130,6 +129,7 @@
   clocks for the newer clock synthesizers, but you should have no prob-
   lems on newer boards.
 
+
   Some newer Trident 8900B/C boards are apparently being built with the
   clock synthesizers used on the 9000 and 8900CL boards.  If your board
   has a chip labeled "Trident TCK900x" ("x" has been seen as 2 or 4;
@@ -162,7 +162,7 @@
   be worth checking wait states etc. on the card and in the BIOS setup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.13 1996/08/26 14:08:49 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.14 1996/10/19 15:15:46 dawes Exp $
 
 
 

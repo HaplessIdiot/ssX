@@ -749,6 +749,16 @@
 
         o  Alan Hourihane <alanh@fairlite.demon.co.uk>
 
+     SiS SVGA driver by:
+
+        o  Alan Hourihane <alanh@fairlite.demon.co.uk>
+
+     DEC 21030 (TGA) server by:
+
+        o  Alan Hourihane <alanh@fairlite.demon.co.uk>
+
+        o  Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
+
      NCR SVGA driver by:
 
         o  Stuart Anderson <anderson@metrolink.com> with the permission
@@ -778,6 +788,8 @@
 
         o  Hans Oey <hans@mo.hobby.nl>
 
+
+
      Oak SVGA driver by:
 
         o  Steve Goldman <sgoldman@encore.com>
@@ -787,8 +799,6 @@
      ARK Logic SVGA driver by:
 
         o  Harm Hanemaayer <hhanemaa@cs.ruu.nl>
-
-
 
         o  Leon Bottou <bottou@laforia.ibp.fr>
 
@@ -844,6 +854,8 @@
 
         o  and an entire horde of beta-testers around the world!
 
+
+
   8.  Contact information
 
   Ongoing development planning and support is coordinated by the XFree86
@@ -853,8 +865,6 @@
      o  Robin Cutshaw <robin@XFree86.org>
 
      o  David Dawes <dawes@XFree86.org>
-
-
 
      o  Marc Evans <marc@XFree86.org>
 
@@ -910,6 +920,8 @@
 
      o  David Dawes, President and Secretary
 
+
+
      o  Dirk Hohndel, Vice-President
 
      o  Glenn Lai, Director
@@ -919,8 +931,6 @@
      o  Jim Tsillas, Director
 
      o  Jon Tombs, Director
-
-
 
      o  David Wexelblat, Director
 
@@ -977,6 +987,7 @@
 
      o  Caldera, Inc. <http://www.caldera.com/>
 
+
      o  Delix Computer GmbH <http://www.delix.de/>, Stuttgart, Germany
 
      o  The Destek Group, Inc. <http://www.destek.net/Destek/>, Nashua,
@@ -985,8 +996,6 @@
      o  Diamond Multimedia Systems, Inc. <http://www.diamondmm.com/>
 
      o  Digital Equipment Corporation <http://www.digital.com/>
-
-
 
      o  Elsa GmbH <http://www.elsa.de/>, Aachen, Germany
 
@@ -1043,6 +1052,8 @@
      o  Tekelec Airtronic GmbH <http://www.tekelec.com>, Muenchen,
         Germany
 
+
+
      o  Jim Tsillas
 
      o  Trans-Ameritech Enterprises, Inc., Santa Clara, CA
@@ -1052,7 +1063,6 @@
      o  Vixie Enterprises <http://www.vix.com/>, La Honda, CA
 
      o  Walnut Creek CDROM <http://www.cdrom.com/>, Concord, CA
-
 
      o  Xtreme s.a.s. <http://www.xfree86.org/xtreme>, Livorno, Italy
 
@@ -1108,6 +1118,8 @@
         +  ftp://ftp.fee.vutbr.cz/pub/XFree86 (source patches and
            binaries)
 
+
+
         +  ftp://ftp.gwdg.de/pub/xfree86/XFree86 (source and binaries)
 
         +  ftp://ftp.uni-erlangen.de/pub/Linux/MIRROR.xfree86 (source
@@ -1117,8 +1129,6 @@
            binaries)
 
         +  ftp://ftp.funet.fi/pub/X11/XFree86 (source and binaries)
-
-
 
         +  ftp://ftp.calvacom.fr/pub/unix/X/XFree86 (source and
            binaries)
@@ -1162,23 +1172,13 @@
   building the distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.59 1996/10/13 11:19:46 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.60 1996/10/19 15:15:45 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
-
-
-
-
-
-
-
-
-
-
 
 
 

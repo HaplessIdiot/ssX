@@ -15,7 +15,8 @@
         1. Only one modeline is accepted, this will be the first viable
            one that matches other criteria.
 
-        2. Due to 3. Virtual Resolutions is not supported either.
+        2. Due to the above, Virtual Resolutions is not supported
+           either.
 
         3. VideoRam is currently limited to 2MB.
 
@@ -37,14 +38,6 @@
            "Prefetchable 32 bit memory at 0x???????" and enter this as
            your MemBase setting.
 
-        Option "hw_cursor"
-           Not yet available, but will turn on BT463 hardware cursor.
-           (NOTE: for the 24plane and 24plane3D chip.)
-
-        Option "bt485_curs"
-           Not yet available, but will turn on the BT485 RamDac's
-           cursor.  (NOTE: for the 8plane chip.)
-
      o  No acceleration features of the 21030 have been taken advantage
         of yet!
 
@@ -54,7 +47,14 @@
   better known as the Multia, in a Linux environment.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.3 1996/10/17 15:19:20 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.4 1996/10/19 15:15:41 dawes Exp $
+
+
+
+
+
+
+
 
 
 
