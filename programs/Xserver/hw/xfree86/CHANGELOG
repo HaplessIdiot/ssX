@@ -1,4 +1,7 @@
 XFree86 4.1.99.4 (xx December 2001)
+ 613. In XDarwin multi-monitor IOKit mode, read screen location from the
+      kernel (Torrey T. Lyons).
+ 612. Update XDarwin credits file (Torrey T. Lyons).
  611. Fix various XDarwin crashes in multi-monitor rootless mode by using
       a new "light" version of PanoramiX/Xinerama called PseudoramiX
       (Gregory Parker).
@@ -14405,4 +14408,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2100 2001/12/21 21:09:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2101 2001/12/22 05:28:28 torrey Exp $

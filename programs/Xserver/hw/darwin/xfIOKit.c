@@ -8,7 +8,7 @@
  * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.10 2001/08/12 00:10:01 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.11 2001/12/22 05:28:34 torrey Exp $ */
 
 #define NDEBUG 1
 
@@ -363,8 +363,8 @@ static Bool SetupFBandHID(
         return FALSE;
 
     dfb->framebuffer = (void*)vram;
-    dfb->x = 0;
-    dfb->y = 0;
+    dfb->x = cshmem->screenBounds.minx;
+    dfb->y = cshmem->screenBounds.miny;
     dfb->width = fbInfo.activeWidth;
     dfb->height = fbInfo.activeHeight;
     dfb->pitch = fbInfo.bytesPerRow;
