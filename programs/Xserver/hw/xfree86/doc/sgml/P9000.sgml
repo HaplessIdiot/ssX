@@ -4,11 +4,17 @@
  
 <title> XFree86 3.1.1 P9000 Server Release Notes
 <author> Erik Nygren (<it>nygren@mit.edu</it>)
-<date> 1995 January 15
+<date> 1995 January 29
 <toc>
  
 <sect> Change Log <p>
 <descrip>
+<tag/1995.01.29:/
+	<itemize>
+	<item>
+	  Updated P9000.sgml to mention using Robin's scanpci rather
+	  than PCIDUMP.EXE.
+	</itemize>
 <tag/1995.01.15:/
 	<itemize>
 	<item>
@@ -183,21 +189,25 @@ into your <tt>XF86Config</tt> file.
 This should now work, thanks to help from Bob Hollinger and Matt Thomas.
 You may to specify the chipset <tt>"viperpci"</tt> in your <tt>XF86Config</tt>
 file.
-You'll also need to specify an <tt>IOBase</tt> and a <tt>MemBase</tt>.
-You can obtain these values with <tt>PCIDUMP.EXE</tt>.
-This program may be obtained
-by sending email to <it>xserver@summit.novell.com</it> with the two lines:
+You'll also need to specify an <tt>IOBase</tt> and a <tt>memBase</tt>.
+These values may be obtained by running the <tt>scanpci</tt>
+program available
+via anonymous ftp from <url name="ftp.xfree86.org:/pub/XFree86/3.1.1/ScanPCI"
+url="ftp://ftp.xfree86.org/pub/XFree86/3.1.1/ScanPCI">
+Part of the output of this program will look like:
+
 <verb>
-send
-*p9k
+pci slot at 0xce00, vendor 0x100e device 0x9001
+ Diamond Viper/PCI
+  STATUS    0x0400  COMMAND 0x0003
+  CLASS     0x03 0x00 0x00  REVISION 0x03
+  BASE0     0xa0000000  addr 0xa0000000  MEM
+  BASE1     0x0000e001  addr 0x0000e000  I/O
+  BASEROM   0xff800000  addr 0xff800000  not-decode-enabled
 </verb>
-You should run this program and change these values after you
-add more PCI cards or move existing cards to different slots.
-According to David DeWolfe (<it>SXDJD@orca.alaska.edu</it>),
-you need to run <tt>PCIDUMP.EXE</tt> after a clean boot
-to DOS (with no <tt>AUTOEXEC.BAT</tt> or <tt>CONFIG.SYS</tt>).
-This may be accomplished by holding down the <tt>SHIFT</tt>
-key while <tt>DOS</tt> is booting.
+
+In this case, you would specify <tt>0xe000</tt> as the <tt>IOBase</tt>
+and <tt>0xa0000000</tt> as the <tt>memBase</tt>.
 
 Eventually we would like to autodetect the <tt>IOBase</tt> and
 <tt>memBase</tt>, but this doesn't yet work.
@@ -415,7 +425,7 @@ acceleration, etc.  Please send any patches to me (<it>nygren@mit.edu</it>).
 
 <verb>
 $XConsortium: P9000.sgml,v 1.4 95/01/27 16:14:28 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.7 1995/01/25 11:08:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.8 1995/01/28 16:02:06 dawes Exp $
 </verb>
 
 </article>

@@ -1,9 +1,14 @@
   XFree86 3.1.1 P9000 Server Release Notes
   Erik Nygren (nygren@mit.edu)
-  1995 January 15
+  1995 January 29
 
   1.  Change Log
 
+
+     1995.01.29:
+
+        o  Updated P9000.sgml to mention using Robin's scanpci rather
+           than PCIDUMP.EXE.
 
      1995.01.15:
 
@@ -179,18 +184,29 @@
 
   This should now work, thanks to help from Bob Hollinger and Matt
   Thomas.  You may to specify the chipset "viperpci" in your XF86Config
-  file.  You'll also need to specify an IOBase and a MemBase.  You can
-  obtain these values with PCIDUMP.EXE.  This program may be obtained by
-  sending email to xserver@summit.novell.com with the two lines:
-  send
-  *p9k
+  file.  You'll also need to specify an IOBase and a memBase.  These
+  values may be obtained by running the scanpci program available via
+  anonymous ftp from ftp.xfree86.org:/pub/XFree86/3.1.1/ScanPCI
+  (ftp://ftp.xfree86.org/pub/XFree86/3.1.1/ScanPCI) Part of the output
+  of this program will look like:
 
-  You should run this program and change these values after you add more
-  PCI cards or move existing cards to different slots.  According to
-  David DeWolfe (SXDJD@orca.alaska.edu), you need to run PCIDUMP.EXE
-  after a clean boot to DOS (with no AUTOEXEC.BAT or CONFIG.SYS).  This
-  may be accomplished by holding down the SHIFT key while DOS is boot-
-  ing.
+
+
+
+
+
+
+  pci slot at 0xce00, vendor 0x100e device 0x9001
+   Diamond Viper/PCI
+    STATUS    0x0400  COMMAND 0x0003
+    CLASS     0x03 0x00 0x00  REVISION 0x03
+    BASE0     0xa0000000  addr 0xa0000000  MEM
+    BASE1     0x0000e001  addr 0x0000e000  I/O
+    BASEROM   0xff800000  addr 0xff800000  not-decode-enabled
+
+
+  In this case, you would specify 0xe000 as the IOBase and 0xa0000000 as
+  the memBase.
 
   Eventually we would like to autodetect the IOBase and memBase, but
   this doesn't yet work.
@@ -312,7 +328,6 @@
 
   The current supported keywords in the Device section of the XF86Config
   file are:
-
      VideoRAM
         1024 or 2048  (use 2048 for ``3MB'' Orchid P9000's)
 
@@ -328,6 +343,7 @@
         Orchid P9000:
            0xC0000000 or 0xD0000000 or 0xE0000000 (this MUST be set to
            correspond to the jumpers)
+
         Viper PCI:
            any value corresponding to the output of PCIDUMP.EXE
 
@@ -378,22 +394,11 @@
         24 or 32:
            use 32 bits per pixel (sparse 24 bpp) for up to 16 million
            colors
-
      Weight
         555 or 565 if Depth is 15 or 16.  Otherwise this is ignored.
         These are the Red, Green, and Blue bits per pixel (default=565)
 
   Here's a portion of a sample XF86Config file for the Viper VLB:
-
-
-
-
-
-
-
-
-
-
   Section "Device"
       Identifier "ViperVLB"
       VendorName "Diamond"
@@ -455,13 +460,8 @@
 
   During the course of the next few months, people will be working on
   acceleration, etc.  Please send any patches to me (nygren@mit.edu).
-
   $XConsortium: P9000.sgml,v 1.4 95/01/27 16:14:28 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.8 1995/01/28 16:02:06 dawes Exp $
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.9 1995/01/29 10:45:34 dawes Exp $
 
 
 
