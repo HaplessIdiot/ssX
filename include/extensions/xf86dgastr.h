@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.6 1999/04/17 07:05:41 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.7 1999/05/03 12:15:37 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -264,6 +264,15 @@ typedef struct {
     CARD32	pad7 B32;
 } xXDGAFlushReply;
 #define sz_xXDGAFlushReply	32
+
+typedef struct _XDGASetClientVersion {
+    CARD8	reqType;
+    CARD8	dgaReqType;
+    CARD16	length B16;
+    CARD16	major B16;
+    CARD16	minor B16;
+} xXDGASetClientVersionReq;
+#define sz_xXDGASetClientVersionReq	8
 
 typedef struct {
   union {

@@ -1,7 +1,7 @@
 /*
    Copyright (c) 1999  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.9 1999/04/17 07:05:40 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.10 1999/05/03 12:15:37 dawes Exp $ */
 
 #ifndef _XF86DGA_H_
 #define _XF86DGA_H_
@@ -27,6 +27,7 @@
 #define X_XDGAFlush			21
 #define X_XDGAOpenFramebuffer		22
 #define	X_XDGACloseFramebuffer		23
+#define X_XDGASetClientVersion		24
 
 
 #define XDGAConcurrentAcces	0x00000001
@@ -177,11 +178,6 @@ void XDGAInstallColormap(
     Colormap	cmap
 );
 
-void XDGAFlush(
-    Display	*dpy,
-    int		screen
-);
-
 void XDGASelectInput(
     Display	*dpy,
     int		screen,
@@ -231,6 +227,10 @@ int XDGAGetViewportStatus(
 void XDGAFlush(
     Display	*dpy,
     int		screen
+);
+
+Bool XDGASetClientVersion(
+    Display	*dpy
 );
 
 

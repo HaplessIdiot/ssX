@@ -1,4 +1,5 @@
 XFree86 3.9Pn (16 May 1999)
+2659. Add a SetClientVersion request to the DGA extension (David Dawes).
 2658. Change DGA initialisation ordering in the MGA driver (#2796,
       Mark Vojkovich).
 2657. Turn on DGA pixmaps in xinerama since it insists on duplicating
@@ -8018,4 +8019,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.750 1999/05/16 06:55:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.751 1999/05/16 10:12:53 dawes Exp $

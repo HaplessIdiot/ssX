@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.6 1999/05/09 10:51:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.7 1999/05/09 15:17:57 dawes Exp $ */
 
 
 #define NEED_REPLIES
@@ -46,6 +46,7 @@ static DISPATCH_PROC(ProcXDGACopyArea);
 static DISPATCH_PROC(ProcXDGACopyTransparentArea);
 static DISPATCH_PROC(ProcXDGAGetViewportStatus);
 static DISPATCH_PROC(ProcXDGAFlush);
+static DISPATCH_PROC(ProcXDGASetClientVersion);
 
 
 extern DISPATCH_PROC(ProcXF86DGADispatch);
@@ -58,6 +59,17 @@ static ClientPtr DGAClients[MAXSCREENS];
 unsigned char DGAReqCode = 0;
 int DGAErrorBase;
 int DGAEventBase;
+
+static int DGAGeneration = 0;
+static int DGAClientPrivateIndex;
+
+/* This holds the client's version information */
+typedef struct {
+    int		major;
+    int		minor;
+} DGAPrivRec, *DGAPrivPtr;
+
+#define DGAPRIV(c) ((c)->devPrivates[DGAClientPrivateIndex].ptr)
 
 void
 XFree86DGAExtensionInit(void)
@@ -81,6 +93,22 @@ XFree86DGAExtensionInit(void)
 	DGAEventBase = extEntry->eventBase;
     }
 
+    /*
+     * Allocate a client private index to hold the client's version
+     * information.
+     */
+    if (DGAGeneration != serverGeneration) {
+	DGAClientPrivateIndex = AllocateClientPrivateIndex();
+	/*
+	 * Allocate 0 length, and use the private to hold a pointer to
+	 * our DGAPrivRec.
+	 */
+	if (!AllocateClientPrivate(DGAClientPrivateIndex, 0)) {
+	    ErrorF("XFree86DGAExtensionInit: AllocateClientPrivate failed\n");
+	    return;
+	}
+	DGAGeneration = serverGeneration;
+    }
 }
 
 
@@ -500,6 +528,26 @@ ProcXDGAFlush(ClientPtr client)
     return (client->noClientException);
 }
 
+static int
+ProcXDGASetClientVersion(ClientPtr client)
+{
+    REQUEST(xXDGASetClientVersionReq);
+
+    DGAPrivPtr pPriv;
+
+    REQUEST_SIZE_MATCH(xXDGASetClientVersionReq);
+    if ((pPriv = DGAPRIV(client)) == NULL) {
+	pPriv = xalloc(sizeof(DGAPrivRec));
+	/* XXX Need to look into freeing this */
+	if (!pPriv)
+	    return BadAlloc;
+	DGAPRIV(client) = pPriv;
+    }
+    pPriv->major = stuff->major;
+    pPriv->minor = stuff->minor;
+
+    return (client->noClientException);
+}
 
 static int
 SProcXDGADispatch (ClientPtr client)
@@ -549,6 +597,8 @@ ProcXDGADispatch (ClientPtr client)
 	return ProcXDGAGetViewportStatus(client);
     case X_XDGAFlush:
 	return ProcXDGAFlush(client);
+    case X_XDGASetClientVersion:
+	return ProcXDGASetClientVersion(client);
     default:
 	return BadRequest;
     }
