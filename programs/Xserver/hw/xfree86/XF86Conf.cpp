@@ -1,29 +1,6 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.9 1995/01/02 04:45:27 dawes Exp $
+XCOMM $XFree86$
 XCOMM
-XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
-XCOMM
-XCOMM Permission is hereby granted, free of charge, to any person obtaining a
-XCOMM copy of this software and associated documentation files (the "Software"),
-XCOMM to deal in the Software without restriction, including without limitation
-XCOMM the rights to use, copy, modify, merge, publish, distribute, sublicense,
-XCOMM and/or sell copies of the Software, and to permit persons to whom the
-XCOMM Software is furnished to do so, subject to the following conditions:
-XCOMM 
-XCOMM The above copyright notice and this permission notice shall be included in
-XCOMM all copies or substantial portions of the Software.
-XCOMM 
-XCOMM THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-XCOMM IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-XCOMM FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
-XCOMM THE XFREE86 PROJECT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-XCOMM WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
-XCOMM OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-XCOMM SOFTWARE.
-XCOMM 
-XCOMM Except as contained in this notice, the name of the XFree86 Project shall
-XCOMM not be used in advertising or otherwise to promote the sale, use or other
-XCOMM dealings in this Software without prior written authorization from the
-XCOMM XFree86 Project.
+XCOMM Copyright 1994 by The XFree86 Project, Inc.
 XCOMM
 
 XCOMM **********************************************************************
@@ -37,10 +14,6 @@ XCOMM **********************************************************************
 
 Section "Files"
 
-XCOMM The location of the RGB database.  Note, this is the name of the
-XCOMM file minus the extension (like ".txt" or ".db").  There is normally
-XCOMM no need to change the default.
-
     RgbPath	RGBPATH
 
 XCOMM Multiple FontPath entries are allowed (which are concatenated together),
@@ -48,10 +21,10 @@ XCOMM as well as specifying multiple comma-separated entries in one FontPath
 XCOMM command (or a combination of both methods)
 
     FontPath	MISCFONTPATH
-USE_T1FONTS	T1FONTPATH
-USE_SPFONTS	SPFONTPATH
-USE_75FONTS	DPI75FONTPATH
-USE_100FONTS	DPI100FONTPATH
+    USE_T1FONTS	T1FONTPATH
+    USE_SPFONTS	SPFONTPATH
+    USE_75FONTS	DPI75FONTPATH
+    USE_100FONTS	DPI100FONTPATH
 
 EndSection
 
@@ -68,14 +41,8 @@ XCOMM provide a better stack trace in the core dump to aid in debugging
 XCOMM    NoTrapSignals
 
 XCOMM Uncomment this to disable the <Crtl><Alt><BS> server abort sequence
-XCOMM This allows clients to receive this key event.
 
 XCOMM    DontZap
-
-XCOMM Uncomment this to disable the <Crtl><Alt><KP_+>/<KP_-> mode switching
-XCOMM sequences.  This allows clients to receive these key events.
-
-XCOMM    DontZoom
 
 EndSection
 
@@ -89,18 +56,15 @@ XCOMM **********************************************************************
 
 Section "Keyboard"
 
-    Protocol	"Standard"
+    Device	"Standard"
 
 XCOMM when using XQUEUE, comment out the above line, and uncomment the
 XCOMM following line
 
-XCOMM    Protocol	"Xqueue"
+XCOMM    Device	"Xqueue"
 
     AutoRepeat	500 5
-
-XCOMM Let the server do the NumLock processing.  This should only be required
-XCOMM when using pre-R6 clients
-XCOMM    ServerNumLock
+    ServerNumLock
 
 XCOMM Specifiy which keyboard LEDs can be user-controlled (eg, with xset(1))
 XCOMM    Xleds      1 2 3
@@ -137,11 +101,11 @@ XCOMM    SampleRate	150
 
 XCOMM Emulate3Buttons is an option for 2-button Microsoft mice
 
-XCOMM    Emulate3Buttons
+XCOMM	Emulate3Buttons
 
-XCOMM ChordMiddle is an option for some 3-button Logitech mice
+XCOMM ChordMiddle is an optino for some 3-button Logitech mice
 
-XCOMM    ChordMiddle
+XCOMM	ChordMiddle
 
 EndSection
 
@@ -165,42 +129,29 @@ XCOMM Bandwidth is in MHz unless units are specified
 XCOMM HorizSync is in kHz unless units are specified.
 XCOMM HorizSync may be a comma separated list of discrete values, or a
 XCOMM comma separated list of ranges of values.
-XCOMM NOTE: THE VALUES HERE ARE EXAMPLES ONLY.  REFER TO YOUR MONITOR'S
-XCOMM USER MANUAL FOR THE CORRECT NUMBERS.
 
-    HorizSync   31.5  # typical for a single frequency fixed-sync monitor
+    HorizSync   31.5
 
-XCOMM    HorizSync	30-64         # multisync
-XCOMM    HorizSync	31.5, 35.2    # multiple fixed sync frequencies
-XCOMM    HorizSync	15-25, 30-50  # multiple ranges of sync frequencies
+XCOMM    HorizSync	30-64
+XCOMM    HorizSync	31.5, 35.2
+XCOMM    HorizSync	15-25, 30-50
 
 XCOMM VertRefresh is in Hz unless units are specified.
 XCOMM VertRefresh may be a comma separated list of discrete values, or a
 XCOMM comma separated list of ranges of values.
-XCOMM NOTE: THE VALUES HERE ARE EXAMPLES ONLY.  REFER TO YOUR MONITOR'S
-XCOMM USER MANUAL FOR THE CORRECT NUMBERS.
 
-    VertRefresh 60  # typical for a single frequency fixed-sync monitor
+    VertRefresh 60
 
-XCOMM    VertRefresh	50-100        # multisync
-XCOMM    VertRefresh	60, 65        # multiple fixed sync frequencies
-XCOMM    VertRefresh	40-50, 80-100 # multiple ranges of sync frequencies
-
-XCOMM Modes can be specified in two formats.  A compact one-line format, or
+XCOMM Modes can be specified in two formats.  A compact on-line format, or
 XCOMM a multi-line format.
 
-XCOMM A generic VGA 640x480 mode (hsync = 31.5kHz, refresh = 60Hz)
-XCOMM These two are equivalent
-
-XCOMM    ModeLine "640x480" 25.175 640 664 760 800 480 491 493 525
+XCOMM    ModeLine "640x480" 25 640 664 760 800 480 491 493 525
 
     Mode "640x480"
-        DotClock	25.175
+        DotClock	25
         HTimings	640 664 760 800
         VTimings	480 491 493 525
     EndMode
-
-XCOMM These two are equivalent
 
 XCOMM    ModeLine "1024x768i" 45 1024 1048 1208 1264 768 776 784 817 Interlace
 
@@ -208,7 +159,7 @@ XCOMM    Mode "1024x768i"
 XCOMM        DotClock	45
 XCOMM        HTimings	1024 1048 1208 1264
 XCOMM        VTimings	768 776 784 817
-XCOMM        Flags		"Interlace"
+XCOMM        Flags		Interlace
 XCOMM    EndMode
 
 EndSection
@@ -224,15 +175,11 @@ Section "Device"
     VendorName	"Unknown"
     BoardName	"Unknown"
     Chipset	"generic"
-XCOMM    VideoRam	256
-XCOMM    Clocks	25.2 28.3
-EndSection
 
-Section "Device"
-    # SVGA server auto-detected chipset
-    Identifier	"Generic SVGA"
-    VendorName	"Unknown"
-    BoardName	"Unknown"
+XCOMM    VideoRam	256
+
+XCOMM    Clocks	25.2 28.3
+
 EndSection
 
 XCOMM Section "Device"
@@ -264,7 +211,7 @@ XCOMM The colour SVGA server
 
 Section "Screen"
     Driver	"svga"
-    Device	"Generic SVGA"
+    Device	"Any Trident TVGA9000"
     Monitor	"Generic Monitor"
     Subsection "Display"
         Depth	    8
@@ -300,24 +247,24 @@ Section "Screen"
     EndSubsection
 EndSection
 
-XCOMM The accelerated servers (S3, Mach32, Mach8, 8514, P9000, AGX, W32)
+XCOMM The accelerated servers (S3, Mach32, Mach8, 8514, P9000, AGX)
 
-XCOMM Section "Screen"
-XCOMM     Driver	"accel"
-XCOMM     Device	"Actix GE32+ 2MB"
-XCOMM     Monitor	"Generic Monitor"
-XCOMM     Subsection  "Display"
-XCOMM         Depth	    8
-XCOMM         Modes	    "640x480"
-XCOMM         ViewPort    0 0
-XCOMM         Virtual	    1280 1024
-XCOMM     EndSubsection
-XCOMM     SubSection "Display"
-XCOMM         Depth	    16
-XCOMM         Weight	    565
-XCOMM         Modes	    "640x480"
-XCOMM         ViewPort    0 0
-XCOMM         Virtual	    1024 768
-XCOMM     EndSubsection
-XCOMM EndSection
+Section "Screen"
+    Driver	"accel"
+    Device	"Actix GE32+ 2MB"
+    Monitor	"Generic Monitor"
+    Subsection  "Display"
+        Depth	    8
+        Modes	    "640x480"
+        ViewPort    0 0
+        Virtual	    1280 1024
+    EndSubsection
+    SubSection "Display"
+        Depth	    16
+        Weight	    565
+        Modes	    "640x480"
+        ViewPort    0 0
+        Virtual	    1024 768
+    EndSubsection
+EndSection
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3dline.c,v 1.2 94/04/17 20:31:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDSeg.c,v 3.0 1994/11/19 07:49:58 dawes Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -129,11 +129,10 @@ agxDSegment(pDrawable, pGC, nseg, pSeg)
    int   axis;			/* major axis */
    int   cmd2;
    unsigned char *pDash;
+   int   dashOffset;   
    int numInDashList;
-   int dashOffset = 0;   
-   int dashIndex = 0;
-   int dashIndexTmp = 0;
-   int dashOffsetTmp, thisDash, dashRemaining;
+   int dashIndex;
+   int dashIndexTmp, dashOffsetTmp, thisDash, dashRemaining;
    unsigned int dashPat;
  /* a bunch of temporaries */
    int   tmp;
@@ -153,17 +152,6 @@ agxDSegment(pDrawable, pGC, nseg, pSeg)
    cclip = devPriv->pCompositeClip;
    pboxInit = REGION_RECTS(cclip);
    nboxInit = REGION_NUM_RECTS(cclip);
-
-   pDash = (unsigned char *) pGC->dash;
-   numInDashList = pGC->numInDashList;
-   dashIndex = 0;
-   dashIndexTmp = 0;
-   dashOffset = 0;
-   miStepDash ((int)pGC->dashOffset, &dashIndex, pDash,
-               numInDashList, &dashOffset);
-
-   xorg = pDrawable->x;
-   yorg = pDrawable->y;
 
    MAP_INIT( GE_MS_MAP_B, 
              GE_MF_1BPP | GE_MF_INTEL_FORMAT,
@@ -197,6 +185,15 @@ agxDSegment(pDrawable, pGC, nseg, pSeg)
              | GE_OP_INC_X
              | GE_OP_INC_Y         );
 
+   pDash = (unsigned char *) pGC->dash;
+   numInDashList = pGC->numInDashList;
+   dashIndex = 0;
+   dashOffset = 0;
+   miStepDash ((int)pGC->dashOffset, &dashIndex, pDash,
+               numInDashList, &dashOffset);
+
+   xorg = pDrawable->x;
+   yorg = pDrawable->y;
    while (nseg--) {
       nbox = nboxInit;
       pbox = pboxInit;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga256.h,v 3.0 1994/07/24 11:58:39 dawes Exp $ */
+/* $XFree86$ */
 
 #ifndef _VGA256_H
 #define VGA256_H
@@ -113,16 +113,6 @@ typedef struct _Cfbfunc{
 		DDXPointPtr,
 		unsigned long,
 		unsigned long
-#endif
-);
-    void (*fillSolidSpans)(	/* Solid spans, any rop. */
-#if NeedFunctionPrototypes	/* Must include clipping etc. */
-		DrawablePtr,
-		GCPtr,
-		int,
-		DDXPointPtr,
-		int *,
-		int
 #endif
 );
 } CfbfuncRec, *CfbfuncPtr;

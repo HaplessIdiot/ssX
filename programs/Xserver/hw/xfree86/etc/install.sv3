@@ -24,15 +24,13 @@
 
 # Changed for XFree86 by Thomas Wolfram,
 # (thomas@aeon.in-berlin.de, wolf@prz.tu-berlin.de)
-# Changed for XFree86 3.1 to coexist with Interactive X11 by Michael Rohleder
-# (michael.rohleder%iktffm.uucp@Germany.EU.net)
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/install.svr3,v 3.0 1994/06/05 05:57:04 dawes Exp $
+# $XFree86$
 
 #
 # XFree86 version
 #
-VERSION=3.1.1
+VERSION=3.1
 
 #
 # dependencies
@@ -54,32 +52,28 @@ fi
 #
 # Make a X11 label, so that following commercial products can be installed
 # 
-if [ ! -s /usr/options/xfree86.name ]
-then
-    echo "X11R6 XFree86 Version $VERSION" >/usr/options/xfree86.name
-fi
-
 if [ ! -s /usr/options/xu.name ]
 then
-   echo "There's no Interactive X11 installed"
-   echo "Generating links, so following commercial products can be installed"
-   ln /usr/options/xfree86.name /usr/options/xu.name
+    echo "X11R6 XFree86 Version $VERSION" >/usr/options/xu.name
 fi
 
 #
 # Install remove script
 #
-if [ ! -s /usr/lib/installed/Remove/xfree86.name ]
+if [ ! -s /usr/lib/installed/Remove/xu.name ]
 then
-    echo -n 'echo "Removing XFree86 Version ' >/usr/lib/installed/Remove/xfree86.name
-    echo -n $VERSION >>/usr/lib/installed/Remove/xfree86.name
-    echo '"' >>/usr/lib/installed/Remove/xfree86.name
-    echo '/bin/rm -rf /usr/X11R6' >>/usr/lib/installed/Remove/xfree86.name
-    echo '/bin/rm -f /usr/options/xfree86.name' >>/usr/lib/installed/Remove/xfree86.name
+    echo -n 'echo "Removing XFree86 Version ' >/usr/lib/installed/Remove/xu.name
+    echo -n $VERSION >>/usr/lib/installed/Remove/xu.name
+    echo ':
+/usr/X386/*"
+/bin/rm -rf /usr/X386' >>/usr/lib/installed/Remove/xu.name
 fi
 
-echo "Setting up node and sdevice"
-cd /usr/X11R6/lib/X11/etc
+#
+# Setup STREAMS for maximum performance
+#
+echo "Setup STREAMS for maximum performance..."
+cd /usr/X386/lib/X11/etc
 cp pts.node /etc/conf/node.d/pts 2>/dev/null
 cp sp.node /etc/conf/node.d/sp 2>/dev/null
 cp ldterm.sdevice /etc/conf/sdevice.d/ldterm 2>/dev/null
@@ -89,26 +83,19 @@ cp pts.sdevice /etc/conf/sdevice.d/pts 2>/dev/null
 cp sp.sdevice /etc/conf/sdevice.d/sp 2>/dev/null
 
 
-#
-# Setup STREAMS for maximum performance
-#
-echo "Setup STREAMS for maximum performance..."
-echo "if you allready tuned the STREAMS parameters - enter s to skip"
-read skip
-[ "$skip" != "s" ] && {
- /bin/sh /etc/conf/bin/idtune -m NSTREAM 128
- /bin/sh /etc/conf/bin/idtune -m NQUEUE 512
- /bin/sh /etc/conf/bin/idtune -m NBLK4096 4
- /bin/sh /etc/conf/bin/idtune -m NBLK2048 32
- /bin/sh /etc/conf/bin/idtune -m NBLK1024 32
- /bin/sh /etc/conf/bin/idtune -m NBLK512 32
- /bin/sh /etc/conf/bin/idtune -m NBLK256 64
- /bin/sh /etc/conf/bin/idtune -m NBLK128 256
- /bin/sh /etc/conf/bin/idtune -m NBLK64 256
- /bin/sh /etc/conf/bin/idtune -m NBLK16 256
- /bin/sh /etc/conf/bin/idtune -m NBLK4 128
- /bin/sh /etc/conf/bin/idtune -m SHLBMAX 8
-}
+/bin/sh /etc/conf/bin/idtune -m NSTREAM 128
+/bin/sh /etc/conf/bin/idtune -m NQUEUE 512
+/bin/sh /etc/conf/bin/idtune -m NBLK4096 4
+/bin/sh /etc/conf/bin/idtune -m NBLK2048 32
+/bin/sh /etc/conf/bin/idtune -m NBLK1024 32
+/bin/sh /etc/conf/bin/idtune -m NBLK512 32
+/bin/sh /etc/conf/bin/idtune -m NBLK256 64
+/bin/sh /etc/conf/bin/idtune -m NBLK128 256
+/bin/sh /etc/conf/bin/idtune -m NBLK64 256
+/bin/sh /etc/conf/bin/idtune -m NBLK16 256
+/bin/sh /etc/conf/bin/idtune -m NBLK4 128
+/bin/sh /etc/conf/bin/idtune -m SHLBMAX 8
+
 
 # increase number of pseudo terminals from 16 to 32
 
@@ -195,9 +182,7 @@ read answer
 #
 # install additional termcap & terminfo entries
 #
-echo "Do you want me to Install additional termcap & terminfo entries...[y/n]"
-read answer
-[ "$answer" = "y" ] && {
+echo "Install additional termcap & terminfo entries..."
 grep xterm   /etc/termcap >/dev/null || cat xterm.termcap >>/etc/termcap
 grep sun-cmd /etc/termcap >/dev/null || cat sun.termcap   >>/etc/termcap
 
@@ -208,10 +193,9 @@ if [ -s /usr/lib/loadfont/vga437.bdf ]
 then
     echo "Convert VGA font for using under X11..."
     sed -e 's/FONT 8x16/FONT vga/' </usr/lib/loadfont/vga437.bdf \
-    | bdftopcf -t >/usr/X11R6/lib/X11/fonts/misc/vga.pcf
-    chmod 644 /usr/X11R6/lib/X11/fonts/misc/fonts.dir
-    mkfontdir /usr/X11R6/lib/X11/fonts/misc
+    | bdftopcf -t >/usr/X386/lib/X11/fonts/misc/vga.pcf
+    chmod 644 /usr/X386/lib/X11/fonts/misc/fonts.dir
+    mkfontdir /usr/X386/lib/X11/fonts/misc
 fi
-}
 echo READY
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.11 1995/01/02 04:53:43 dawes Exp $ */
+/* $XFree86$ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -78,12 +78,6 @@ ScreenPtr pScreen
 #endif
 );
 
-Bool monoValidMode(
-#if NeedFunctionPrototypes
-    DisplayModePtr
-#endif 
-);
-
 /* ScrnInfoRec (common/xf86.h) describes the SCREEN */
 /* This record is device and driver independent */
 /* Used by the upper levels: xf86Init.c uses */
@@ -95,7 +89,6 @@ ScrnInfoRec monoInfoRec = {
   -1,			/* int scrnIndex */
   monoProbe,		/* Bool (* Probe)() */
   monoScreenInit,	/* Bool (* Init)() */
-  monoValidMode,	/* Bool (* ValidMode)() */
   monoEnterLeaveVT,	/* void (* EnterLeaveVT)(int,int) */
   (void (*)())NoopDDA,	/* void (* EnterLeaveMonitor)(int) */
   (void (*)())NoopDDA,	/* void (* EnterLeaveCursor)(int) */
@@ -103,18 +96,14 @@ ScrnInfoRec monoInfoRec = {
   (Bool (*)())NoopDDA,	/* Bool (* SwitchMode)() */
   monoPrintIdent,	/* void (* PrintIdent)() */
   1,			/* int depth */
-  {0, 0, 0},            /* xrgb weight */
   1,			/* int bitsPerPixel */
   StaticGray,		/* int defaultVisual */
   -1, -1,		/* int virtualX,virtualY */
-  -1,                   /* int displayWidth */
   -1, -1, -1, -1,	/* int frameX0, frameY0, frameX1, frameY1 */
   {0, },		/* OFlagSet options */
   {0, },		/* OFlagSet clockOptions */
   {0, },                /* OFlagSet xconfigFlag */
   NULL,			/* char *chipset */
-  NULL,			/* char *ramdac */
-  0,			/* int dacSpeed */
   0,			/* int clocks */
   {0, },		/* int clock[MAXCLOCKS] */
   0,			/* int maxClock */
@@ -125,23 +114,14 @@ ScrnInfoRec monoInfoRec = {
 			/* This should be given from the lowlevel driver! */
   0,			/* unsigned long speedup */
   NULL,			/* DisplayModePtr modes */
-  NULL,			/* DisplayModePtr pModes */
   NULL,			/* char *clockprog */
   -1,			/* int textclock */
   FALSE,		/* Bool bankedMono */
   "MONO",		/* char *name */
-  {0, },		/* xrgb blackColour */
-  {0, },		/* xrgb whiteColour */
+  {0, },		/* RgbRec blackColour */
+  {0, },		/* RgbRec whiteColour */
   monoValidTokens,	/* int *validTokens */
   MONO_PATCHLEVEL,	/* char *patchLevel */
-  0,			/* int IObase */
-  0,			/* int PALbase */
-  0,			/* int COPbase */
-  0,			/* int POSbase */
-  0,			/* int instance */
-  0,			/* int s3Madjust */
-  0,			/* int s3Nadjust */
-  0,			/* int s3MClk */
 };
 
 unsigned char *monoBase = NULL;
@@ -277,7 +257,7 @@ monoPrintIdent()
 
     ErrorF("  %s: server for interlaced and banked monochrome graphics adaptors",
 		monoInfoRec.name);
-    ErrorF("\n        (Patchlevel %s):\n      ", monoInfoRec.patchLevel);
+    ErrorF(" (Patchlevel %s):\n      ", monoInfoRec.patchLevel);
 
     for (i=0; monoDrivers[i]; i++)
 	for (j = 0; (id = (monoDrivers[i]->ChipIdent)(j)); j++, n++) {
@@ -306,12 +286,6 @@ Bool
 monoProbe()
 {
     static int            i;
-
-    if (monoInfoRec.depth != 1) {
-	ErrorF("\n%s %s: Unsupported bpp for Mono server (%d)\n",
-	       XCONFIG_GIVEN, monoInfoRec.name, monoInfoRec.depth);
-	return(FALSE);
-    }
 
     for (i=0; monoDrivers[i]; i++) {
 	/* Probe every driver */
@@ -411,12 +385,12 @@ monoScreenInit (index, pScreen, argc, argv)
     unsigned int mapSize;
 
     if (serverGeneration == 1) {
-#if defined(CSRG_BASED) && !defined(__bsdi__)
+#if defined(__386BSD__) && !defined(__bsdi__)
 	/* Hack for mmap() problem on 386bsd */
 	if (monoMapSize < 0x18000)
 	    mapSize = 0x18000;
 	else
-#endif /* CSRG_BASED && !__bsdi__ */
+#endif /* __386BSD__ && !__bsdi__ */
 	    mapSize = monoMapSize;
 	monoBase = (unsigned char *)xf86MapVidMem(index, VGA_REGION /* ?? */,
 						 (pointer)monoMapBase, mapSize);
@@ -647,12 +621,4 @@ monoAdjustFrame(x, y)
 		monoInfoRec.name, x);
 #endif
     }
-}
-
-Bool
-monoValidMode(mode)
-     DisplayModePtr mode;
-{
-  /* XXXX Maybe this should return FALSE since no XF86Config modes are used? */
-  return(TRUE);
 }

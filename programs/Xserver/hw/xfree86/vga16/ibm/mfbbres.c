@@ -48,15 +48,15 @@ SOFTWARE.
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
 /* $XConsortium: mfbbres.c,v 1.20 94/03/06 18:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbbres.c,v 3.0 1994/05/04 15:03:09 dawes Exp $ */
+/* $XFree86$ */
 #include "X.h"
 #include "misc.h"
 #include "maskbits.h"
+#include "miline.h"
 #include "wm3.h"	/* GJA */
 #include "windowstr.h"	/* GJA */
 #include "ppc.h"	/* GJA */
 #include "OScompiler.h"	/* GJA */
-#include "miline.h"
 
 /* Solid bresenham line */
 /* NOTES

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32stip.h,v 3.2 1994/11/19 07:52:40 dawes Exp $ */
+/* $XFree86$ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -24,22 +24,44 @@ Glenn G. Lai
 P.O. Box 4314
 Austin, Tx 78765
 glenn@cs.utexas.edu)
-10/1/94
+8/9/94
 *******************************************************************************/
 #ifndef W32_STIP_H
 #define W32_STIP_H
 
-#include "w32.h"
+#include "w32blt.h"
 
 
-#define W32_INIT_OPAQUE_STIPPLE(OP, FOREGROUND, BACKGROUND, DST_OFFSET) \
+/* the following needs some polishing */
+#define W32_INIT_OPAQUE_STIPPLE(OP, MASK, FOREGROUND, BACKGROUND, DST_OFFSET) \
+	W32_INIT_STIPPLE(0xf0, OP, MASK, FOREGROUND, BACKGROUND, DST_OFFSET)
+
+
+#define W32_INIT_TR_STIPPLE(OP, MASK, FOREGROUND, BACKGROUND, DST_OFFSET) \
+	W32_INIT_STIPPLE(0xaa, OP, MASK, FOREGROUND, BACKGROUND, DST_OFFSET)
+
+
+#define W32_INIT_STIPPLE(BK_OP, OP, MASK, FOREGROUND, BACKGROUND, DST_OFFSET) \
 { \
-    *ACL_FOREGROUND_RASTER_OPERATION 	= W32OpTable[OP]; \
-    *ACL_BACKGROUND_RASTER_OPERATION	= 0xf0; \
+    if (W32) \
+    { \
+	*ACL_FOREGROUND_RASTER_OPERATION= W32OpTable[OP]; \
+    } \
+    else \
+    { /* The following works only for the w32p--undebugged */ \
+	*ACL_FOREGROUND_RASTER_OPERATION= \
+	    (0xf0 & W32OpTable[OP]) | (0x0f & 0xaa); \
+	*ACL_PATTERN_WRAP		= 0x02; \
+	*ACL_PATTERN_Y_OFFSET		= 0x3; \
+	*MBP0 				= W32Pattern; \
+	*(LongP)W32Buffer 		= MASK; \
+    } \
+    *ACL_Y_COUNT = 0; \
+    *ACL_BACKGROUND_RASTER_OPERATION	= BK_OP; \
     *ACL_ROUTING_CONTROL		= 0x2; \
+    if (W32) *ACL_VIRTUAL_BUS_SIZE	= 0x0; \
     *ACL_XY_DIRECTION			= 0; \
     *ACL_DESTINATION_Y_OFFSET		= DST_OFFSET; \
-    *ACL_VIRTUAL_BUS_SIZE		= 0x0; \
     *ACL_SOURCE_WRAP			= 0x12; \
     *ACL_SOURCE_Y_OFFSET		= 0x3; \
     *ACL_SOURCE_ADDRESS			= W32Foreground; \
@@ -55,151 +77,19 @@ glenn@cs.utexas.edu)
 }
 
 
-#define W32_INIT_TR_STIPPLE(OP, MASK, FOREGROUND, BACKGROUND, DST_OFFSET) \
+#define W32_INIT_STIPPLE_BLT(MASK, OFFSET, WIDTH, BASE) \
 { \
-    if (MASK == 0xffffffff) \
-	*ACL_FOREGROUND_RASTER_OPERATION	= W32OpTable[OP]; \
-    else \
-    { \
-	*ACL_FOREGROUND_RASTER_OPERATION= \
-	    (0xf0 & W32OpTable[OP]) | 0x0a; \
-	*ACL_PATTERN_WRAP		= 0x12; \
-	*ACL_PATTERN_Y_OFFSET		= 0x3; \
-	*ACL_PATTERN_ADDRESS		= W32Pattern; \
-	*MBP0 				= W32Pattern; \
-	*(LongP)W32Buffer 		= MASK; \
-	*(LongP)(W32Buffer + 4) 	= MASK; \
-    } \
-    *ACL_BACKGROUND_RASTER_OPERATION	= 0xaa; \
-    *ACL_ROUTING_CONTROL		= 0x2; \
-    *ACL_XY_DIRECTION			= 0; \
-    *ACL_DESTINATION_Y_OFFSET		= DST_OFFSET; \
-    *ACL_VIRTUAL_BUS_SIZE		= 0x0; \
-    *ACL_SOURCE_WRAP			= 0x12; \
-    *ACL_SOURCE_Y_OFFSET		= 0x3; \
-    *ACL_SOURCE_ADDRESS			= W32Foreground; \
-    *MBP0 				= W32Foreground; \
-    *(LongP)W32Buffer	 		= FOREGROUND; \
-    *(LongP)(W32Buffer + 4) 		= FOREGROUND; \
+    W32_INIT_BLT(GXcopy, MASK, OFFSET, OFFSET, 1, 1) \
+    *ACL_SOURCE_ADDRESS = BASE; \
+    *ACL_X_COUNT = WIDTH; \
 }
 
 
-#define W32P_INIT_OPAQUE_STIPPLE(OP, FOREGROUND, BACKGROUND, DST_OFFSET) \
+#define W32_STIPPLE_BLT(DST, Y) \
 { \
-    *ACL_FOREGROUND_RASTER_OPERATION 	= W32OpTable[OP]; \
-    *ACL_BACKGROUND_RASTER_OPERATION	= 0xf0; \
-    *ACL_ROUTING_CONTROL		= 0x2; \
-    *ACL_XY_DIRECTION			= 0; \
-    *ACL_DESTINATION_Y_OFFSET		= DST_OFFSET; \
-    *ACL_SOURCE_WRAP			= 0x02; \
-    *ACL_SOURCE_Y_OFFSET		= 0x3; \
-    *ACL_SOURCE_ADDRESS			= W32Foreground; \
-    *MBP0 				= W32Foreground; \
-    *(LongP)W32Buffer	 		= FOREGROUND; \
-    *ACL_PATTERN_WRAP			= 0x02; \
-    *ACL_PATTERN_Y_OFFSET		= 0x3; \
-    *ACL_PATTERN_ADDRESS		= W32Pattern; \
-    *MBP0 				= W32Pattern; \
-    *(LongP)W32Buffer	 		= BACKGROUND; \
-    *ACL_MIX_ADDRESS			= 0; \
-    *ACL_MIX_Y_OFFSET 			= 31; \
+    *ACL_Y_COUNT = Y; \
+    START_ACL(DST) \
 }
-
-
-#define W32P_INIT_TR_STIPPLE(OP, MASK, FOREGROUND, BACKGROUND, DST_OFFSET) \
-{ \
-    if (MASK == 0xffffffff) \
-	*ACL_FOREGROUND_RASTER_OPERATION	= W32OpTable[OP]; \
-    else \
-    { \
-	*ACL_FOREGROUND_RASTER_OPERATION= \
-	    (0xf0 & W32OpTable[OP]) | 0x0a; \
-	*ACL_PATTERN_WRAP		= 0x02; \
-	*ACL_PATTERN_Y_OFFSET		= 0x3; \
-	*ACL_PATTERN_ADDRESS		= W32Pattern; \
-	*MBP0 				= W32Pattern; \
-	*(LongP)W32Buffer 		= MASK; \
-    } \
-    *ACL_BACKGROUND_RASTER_OPERATION	= 0xaa; \
-    *ACL_ROUTING_CONTROL		= 0x2; \
-    *ACL_XY_DIRECTION			= 0; \
-    *ACL_DESTINATION_Y_OFFSET		= DST_OFFSET; \
-    *ACL_SOURCE_WRAP			= 0x02; \
-    *ACL_SOURCE_Y_OFFSET		= 0x3; \
-    *ACL_SOURCE_ADDRESS			= W32Foreground; \
-    *MBP0 				= W32Foreground; \
-    *(LongP)W32Buffer	 		= FOREGROUND; \
-    *ACL_MIX_ADDRESS			= 0; \
-    *ACL_MIX_Y_OFFSET 			= 31; \
-}
-
-
-#define W32_STIPPLE \
-	    while (h--) \
-	    { \
-	    	bits = src[y]; \
-	    	if (++y == stippleHeight) \
-		    y = 0; \
-	    	if (rot) \
-		    RotBitsLeft(bits,rot); \
-		w = w32_chunks; \
-		while (w--) \
-		{ \
-		    *ACL = bits; \
-		    *ACL = bits >> 8; \
-		    *ACL = bits >> 16; \
-		    *ACL = bits >> 24; \
-	    	} \
-		switch (w32_misc) \
-		{ \
-		    case 3: \
-			*ACL = bits; \
-			*ACL = bits >> 8; \
-			*ACL = bits >> 16; \
-			break; \
-		    case 2: \
-			*ACL = bits; \
-			*ACL = bits >> 8; \
-			break; \
-		    case 1: \
-			*ACL = bits; \
-			break; \
-		} \
-	    }
-
-
-#define W32P_STIPPLE \
-	    while (h--) \
-	    { \
-	    	bits = src[y]; \
-	    	if (++y == stippleHeight) \
-		    y = 0; \
-	    	if (rot) \
-		    RotBitsLeft(bits,rot); \
-		w = w32_chunks; \
-		while (w--) \
-		{ \
-		    *ACL = bits; \
-		    *(ACL + 1) = bits >> 8; \
-		    *(ACL + 2) = bits >> 16; \
-		    *(ACL + 3) = bits >> 24; \
-	    	} \
-		switch (w32_misc) \
-		{ \
-		    case 3: \
-			*ACL = bits; \
-			*(ACL + 1) = bits >> 8; \
-			*(ACL + 2) = bits >> 16; \
-			break; \
-		    case 2: \
-			*ACL = bits; \
-			*(ACL + 1) = bits >> 8; \
-			break; \
-		    case 1: \
-			*ACL = bits; \
-			break; \
-		} \
-	    }
 
 
 #endif /* W32_STIP_H */

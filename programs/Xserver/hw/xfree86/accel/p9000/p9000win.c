@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000win.c,v 3.0 1994/08/31 04:23:17 dawes Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -121,8 +121,9 @@ p9000CopyWindow(pWin, ptOldOrg, prgnSrc)
 #if 0
 ErrorF("Moving rect: (%d,%d,%d,%d) -> (%d,%d,%d,%d) ", prect->x1+dx, prect->y1+dy, prect->x2+dx, prect->y2+dy-1, prect->x1, prect->y1, prect->x2, prect->y2-1 );
 #endif
+	p9000NotBusy();
 	/* Load the coordinates */
-	/* for blits, YX_PACKing makes little difference */
+	/* Should this be done with YX_PACKING or not?  *TO*DO* */
         p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_0, 
 		 CtlBase, p9000BytesPerPixel * (prect->x1+dx));
         p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_0,
@@ -140,11 +141,11 @@ ErrorF("Moving rect: (%d,%d,%d,%d) -> (%d,%d,%d,%d) ", prect->x1+dx, prect->y1+d
         p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_3,
 		 CtlBase, prect->y2-1);
 
-	/* wait for engine and blit */
+	/* Do the Blit and wait for it to be done */
 	do engstatus = p9000Fetch(CMD_BLIT, CtlBase);
 	while (engstatus & SR_ISSUE_QBN);
     }
     DEALLOCATE_LOCAL(ordering);
-    /* wait for last blit to finish */
-    p9000QBNotBusy();
+    /* Wait for it to be all done.  Do you need this?  *TO*DO* */
+    p9000NotBusy();
 }

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hercules/Imakefile,v 3.0 1994/05/04 15:01:01 dawes Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 SRCS = hercules.c
@@ -11,6 +11,10 @@ INCLUDES = -I. -I../../../include -I../..
 INCLUDES = -I. -I../../mono -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
            -I$(INCLUDESRC)
+#endif
+
+#if HasGcc2
+DEFINES = -fomit-frame-pointer
 #endif
 
 NormalLibraryObjectRule()

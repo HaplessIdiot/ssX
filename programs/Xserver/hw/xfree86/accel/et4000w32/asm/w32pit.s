@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/asm/w32pit.s,v 3.0 1994/09/11 00:40:17 dawes Exp $ */
+/* $XFree86$ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -80,11 +80,7 @@ GLNAME(W32pImageText2):
 itb2:
 	MOV_L	(REGIND(ESI), EAX)
 	ADD_L	(CONST(4), ESI)
-
-	MOV_B	(AL, REGIND(EDX))
-	INC_L	(EDX)
-	MOV_B	(AH, REGIND(EDX))
-	DEC_L	(EDX)
+	MOV_W	(AX, REGIND(EDX))
 itb1:
 	DEC_L	(ECX)
 	JNZ	(itb2)
@@ -105,12 +101,9 @@ GLNAME(W32pImageText3):
 itc2:
 	MOV_L	(REGIND(ESI), EAX)
 	ADD_L	(CONST(4), ESI)
-
-	MOV_B	(AL, REGIND(EDX))
-	INC_L	(EDX)
-	MOV_B	(AH, REGIND(EDX))
+	MOV_W	(AX, REGIND(EDX))
 	SHR_L	(CONST(16), EAX)
-	INC_L	(EDX)
+	ADD_L	(CONST(2), EDX)
 	MOV_B	(AL, REGIND(EDX))
 	SUB_L	(CONST(2), EDX)
 itc1:
@@ -133,16 +126,7 @@ GLNAME(W32pImageText4):
 itd2:
 	MOV_L	(REGIND(ESI), EAX)
 	ADD_L	(CONST(4), ESI)
-
-	MOV_B	(AL, REGIND(EDX))
-	INC_L	(EDX)
-	MOV_B	(AH, REGIND(EDX))
-	SHR_L	(CONST(16), EAX)
-	INC_L	(EDX)
-	MOV_B	(AL, REGIND(EDX))
-	INC_L	(EDX)
-	MOV_B	(AH, REGIND(EDX))
-	SUB_L	(CONST(3), EDX)
+	MOV_L	(EAX, REGIND(EDX))
 itd1:
 	DEC_L	(ECX)
 	JNZ	(itd2)

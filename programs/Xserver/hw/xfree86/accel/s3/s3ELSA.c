@@ -1,21 +1,16 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.4 1994/09/11 00:50:40 dawes Exp $ */
+/* $XFree86$ */
 /* 
  * s3ELSA.c 
  * 
  * compile standalone program with   
  *
-      rm -f s3ELSA.o
-      make DEFINES=-DELSA_MAIN "LDLIBS=../../os-support/libxf86_os.a" s3ELSA 
-      rm -f s3ELSA.o
+ *     rm -f s3ELSA.o; make "DEFINES=-DELSA_MAIN" s3ELSA 
  * 
  * 
  */
 
 #ifdef ELSA_MAIN
 #include <stdio.h>
-#ifdef linux
-#include <unistd.h>
-#endif
 #ifndef SVR4
 #include <getopt.h>
 #endif
@@ -24,11 +19,6 @@
 
 #include "s3.h"
 #include "s3ELSA.h"
-#include "xf86_OSlib.h"
-
-#define BIOS_BSIZE 512
-#define BIOS_BASE  0xc0000
-
 
 elsa_board_types_t elsa_board_types[] = {
    ELSA_WINNER_1000,	"ELSA Winner 1000",	0,
@@ -103,6 +93,7 @@ static int read_eeprom_data(unsigned short **pdata)
 
 #ifdef ELSA_MAIN
 #ifdef linux
+#include <unistd.h>
    iopl(3);
 #endif
 #endif
@@ -134,13 +125,16 @@ static int read_eeprom_data(unsigned short **pdata)
 
    eedata = (elsa_eeprom_data_t *) data;
 
-   if (eedata->wnr_type == ('S' | '3'<<8)) {
-      if (eedata->eeprom_size > ndata) {
-	 ndata = eedata->eeprom_size;
-	 data = (unsigned short*) realloc(data, ndata*sizeof(unsigned short));
-	 for (; i<ndata; i++)
-	    data[i] = read_eeprom_byte(i);
-      }
+   if (eedata->wnr_type != ('S' | '3'<<8)) {
+      free(data);
+      return -1;
+   }
+
+   if (eedata->eeprom_size > ndata) {
+      ndata = eedata->eeprom_size;
+      data = (unsigned short*) realloc(data, ndata*sizeof(unsigned short));
+      for (; i<ndata; i++)
+	 data[i] = read_eeprom_byte(i);
    }
 
    outb(0x3d4,0x5c); outb(0x3d5,cr5c);
@@ -160,14 +154,7 @@ static int read_eeprom_data(unsigned short **pdata)
 #endif
 #endif
 
-   eedata = (elsa_eeprom_data_t *) data;
-   if (eedata->wnr_type == ('S' | '3'<<8)) {
-      *pdata = data;
-   }
-   else {
-      free(data);
-      ndata = -1;
-   }
+   *pdata = data;
    return ndata;
 }
 
@@ -188,32 +175,8 @@ static int calc_crc16(int ndata, unsigned short *data)
    return crc16;
 }
 
-static int check_ELSA_bios(int BIOSbase)
-{
-   unsigned char bios[BIOS_BSIZE];
-   char *match = " ELSA GmbH";
-   int i,l;
-   
-   if (xf86ReadBIOS(BIOSbase, 0, bios, BIOS_BSIZE) != BIOS_BSIZE)
-      return -1;
-
-   if ((bios[0] != 0x55) || (bios[1] != 0xaa))
-      return -2;
-
-   l = strlen(match);
-   for (i=0; i<BIOS_BSIZE-l; i++) 
-      if (bios[i] == match[0] && !memcmp(&bios[i],match,l))
-	 return 1;
-   return 0;
-}
-
 
 #ifdef ELSA_MAIN
-
-void ErrorF(char *s, ...)
-{
-}
-
 void main()
 {
    int i;
@@ -223,11 +186,6 @@ void main()
    elsa_eeprom_data_t *eedata;
    elsa_eeprom_timing_t *eetim;
    unsigned long serno;
-
-   if (check_ELSA_bios(BIOS_BASE) <= 0) {
-      printf("no ELSA Bios detected\n");
-      exit(1);
-   }
 
    ndata = read_eeprom_data(&data);
    if (ndata<0) {
@@ -283,8 +241,7 @@ void main()
       printf("\tvfp     %d\n",ELSA_TIM_vfp(*eetim));
       printf("\tvsw     %d\n",ELSA_TIM_vsw(*eetim));
 #endif
-      if (ELSA_ET_VM_VALID(eetim))
-	 printf("\"%dx%dx%d\" \t %7.3f   %4d %4d %4d %4d   %4d %4d %4d %4d\n"
+      printf("\"%dx%dx%d\" \t %7.3f   %4d %4d %4d %4d   %4d %4d %4d %4d\n"
 	     ,ELSA_TIM_xres(*eetim),ELSA_TIM_yres(*eetim),ELSA_TIM_bpp(*eetim)
 	     ,(ELSA_TIM_pixfrq4(*eetim)*4)/1000.0
 	     ,ELSA_TIM_xres(*eetim)
@@ -301,7 +258,7 @@ void main()
 }
 
 #else
-int s3DetectELSA(int BIOSbase, char **pcard, char **pserno, 
+int s3DetectELSA(char **pcard, char **pserno, 
 		 int *max_pix_clock, int *max_mem_clock)
 {
    int i;
@@ -312,25 +269,21 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
    elsa_eeprom_timing_t *eetim;
    unsigned long serno;
 
-   if (check_ELSA_bios(BIOSbase>0 ? BIOSbase : BIOS_BASE) <= 0) {
-      return -1;
-   }
-
    ndata = read_eeprom_data(&data);
    if (ndata<0) 
-      return -2;
+      return -1;
 
    crc16 = calc_crc16(ndata,data);
    eedata = (elsa_eeprom_data_t *) data;
 
    if (eedata->crc16 != crc16) {
       free(data);
-      return -3;
+      return -2;
    }
 
    if (eedata->wnr_type != ('S' | '3'<<8)) {
       free(data);
-      return -4;
+      return -3;
    }
 
    for (i=0; elsa_board_types[i].code; i++)

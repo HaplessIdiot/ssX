@@ -1,31 +1,27 @@
 /*
- * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
+ * Copyright 1993,1994 by David Wexelblat <dwex@goblin.org>
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
- * Software is furnished to do so, subject to the following conditions:
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of David Wexelblat not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  David Wexelblat makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
- * DAVID WEXELBLAT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
- * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
- * SOFTWARE.
- * 
- * Except as contained in this notice, the name of David Wexelblat shall not be
- * used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from David Wexelblat.
+ * DAVID WEXELBLAT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL DAVID WEXELBLAT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.2 1994/09/26 15:30:55 dawes Exp $ */
+/* $XFree86: mit/server/ddx/x386/SuperProbe/Cirrus.c,v 2.8 1994/04/15 05:09:39 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -198,11 +194,8 @@ int Class;
 					case 0x27:
 						*Chipset = CHIP_CL5429;
 						break;
-					case 0x28:
-						*Chipset = CHIP_CL5430;
-						break;
-					case 0x2A:
-						*Chipset = CHIP_CL5434;
+					case 0x29:
+						*Chipset = CHIP_CL543X;
 						break;
 					default:
 						Chip_data = Ver;
@@ -292,7 +285,7 @@ int Class;
 static int MemProbe_Cirrus54(Chipset)
 int Chipset;
 {
-	Byte old, SRF;
+	Byte old;
 	int Mem = 0;
 
 	EnableIOPorts(NUMPORTS, Ports);
@@ -314,19 +307,7 @@ int Chipset;
 	case CHIP_CL6235:
 		Mem = 512;
 		break;
-	case CHIP_CL5430:
-	case CHIP_CL5434:
-		Mem = 512;
-		SRF = rdinx(SEQ_IDX, 0x0F);
-		if (SRF & 0x10)
-			Mem *= 2;
-		if ((SRF & 0x18) == 0x18)
-			Mem *= 2;
-		if (Chipset != CHIP_CL5430 && (SRF & 0x80))
-			Mem *= 2;
-		break;
 	default:
-		/* 542x, use BIOS Scratch Register value */
 		switch ((rdinx(SEQ_IDX, 0x0A) & 0x18) >> 3)
 		{
 		case 0x00:

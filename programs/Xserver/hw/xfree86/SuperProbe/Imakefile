@@ -1,14 +1,11 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.5 1994/12/10 02:05:21 dawes Exp $
+XCOMM $XFree86: mit/server/ddx/x386/SuperProbe/Imakefile,v 2.4 1994/02/28 14:09:27 dawes Exp $
 
 #if defined(SVR3Architecture) || defined(SVR4Architecture)
 # define OSModule OS_SYSV
 #endif
 
-#if defined(SVR4Architecture)
-# include <Server.tmpl>
-#endif
-
 #if defined(SVR4Architecture) && defined(SunArchitecture) && !HasGcc
+# include <Server.tmpl>
   OS_IO_SRC = SolX86IO.s
   OS_IO_OBJ = SolX86IO.o
 #endif
@@ -22,12 +19,13 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.5 1994/1
 # define OSModule OS_Minix
 #endif
 #if defined(i386MachArchitecture)
+# ifdef i386Mach_BsdTree
+   INCLUDES	 = -I/usr/mach/include -I/usr/include
    SYS_LIBRARIES = /usr/lib/libmach.a
+# else
+   SYS_LIBRARIES = /usr/misc/.mach/lib/libmach.a
+# endif
 # define OSModule OS_Mach
-#endif
-#if defined(OS2Architecture)
-# define OSModule OS_Os2
-  CCOPTIONS = -Zmts
 #endif
 
 OS_SRC = OSModule.c $(OS_IO_SRC)
@@ -40,27 +38,21 @@ SVGA_SRC = Tseng.c WD.c ChipsTech.c Video7.c Genoa.c Trident.c Oak.c \
 SVGA_OBJ = Tseng.o WD.o ChipsTech.o Video7.o Genoa.o Trident.o Oak.o \
 	   Cirrus.o Ahead.o ATI.o S3.o AL.o Yamaha.o NCR.o MX.o \
 	   RealTek.o Primus.o Compaq.o HMC.o UMC.o Weitek.o
-COPROC_SRC = 8514.c ATIMach.c I128.c
-COPROC_OBJ = 8514.o ATIMach.o I128.o
+COPROC_SRC = 8514.c ATIMach.c
+COPROC_OBJ = 8514.o ATIMach.o
 SRCS = Main.c $(SVGA_SRC) $(COPROC_SRC) $(BASE_SRC) Print.c Utils.c $(OS_SRC)
 OBJS = Main.o $(SVGA_OBJ) $(COPROC_OBJ) $(BASE_OBJ) Print.o Utils.o $(OS_OBJ)
 
 #ifdef GccGasOption
-GASDEFINES = GccGasOption
-#endif
-CONSDEFINES = XFree86ConsoleDefines
-
-DEFINES = $(GASDEFINES) $(CONSDEFINES)
-
-#ifdef OS2Architecture
-SPECIALS = -lemxio
+DEFINES = GccGasOption
 #endif
 
 PROG = SuperProbe
+INST_FLAGS = -o root -m 4755
 
-AllTarget(ProgramTargetName($(PROG)))
-SetUIDProgramTarget($(PROG),$(OBJS),NullParameter,$(SPECIALS),NullParameter)
-InstallProgramWithFlags($(PROG),$(BINDIR),$(INSTUIDFLAGS))
+AllTarget($(PROG))
+NormalProgramTarget($(PROG),$(OBJS),NullParameter,NullParameter,NullParameter)
+InstallProgramWithFlags($(PROG),$(BINDIR),$(INST_FLAGS))
 InstallManPage($(PROG),$(MANDIR))
 
 DependTarget()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.0 1994/06/15 15:35:20 dawes Exp $ */
+/* $XFree86$ */
 /*
  * $XConsortium: mipsCursor.c,v 1.2 91/07/18 22:58:13 keith Exp $
  * 
@@ -56,41 +56,13 @@
 #include "agx.h"
 #include "regagx.h"
 
-static Bool agxRealizeCursor(
-#if NeedFunctionPrototypes
-    ScreenPtr ,
-    CursorPtr
-#endif
-);
-static Bool agxUnrealizeCursor(
-#if NeedFunctionPrototypes
-    ScreenPtr ,
-    CursorPtr
-#endif
-);
-static void agxSetCursor(
-#if NeedFunctionPrototypes
-    ScreenPtr ,
-    CursorPtr ,
-    int ,
-    int
-#endif
-);
-static void agxMoveCursor(
-#if NeedFunctionPrototypes
-    ScreenPtr ,
-    int ,
-    int
-#endif
-);
-static void agxRecolorCursor(
-#if NeedFunctionPrototypes
-   ScreenPtr,
-   CursorPtr,
-   Bool
-#endif
-);
+static Bool agxRealizeCursor();
+static Bool agxUnrealizeCursor();
+static void agxSetCursor();
+static void agxMoveCursor();
+static void agxRecolorCursor();
 
+extern void agxSetVGAPage();
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
 int xf86hotX, xf86hotY;
@@ -305,7 +277,7 @@ agxLoadCursor(pScr, pCurs, x, y)
 
    agxMoveCursor(0, x, y);
 
-   agxRecolorCursor(pScr, pCurs, TRUE); 
+   agxRecolorCursor(pScr, pCurs); 
 
    /* turn cursor on */
    outb(agxIdxReg, IR_CUR_CNTL);
@@ -483,8 +455,8 @@ agxWarpCursor(pScr, x, y)
 void
 agxQueryBestSize(class, pwidth, pheight, pScreen)
    int class;
-   unsigned short *pwidth;
-   unsigned short *pheight;
+   short *pwidth;
+   short *pheight;
    ScreenPtr pScreen;
 {
    if (*pwidth > 0) {

@@ -1,10 +1,12 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.h,v 3.2 1995/01/18 06:10:33 dawes Exp $ */
+/* $XFree86$ */
 /* Jon Tombs <jon@esix2.us.es>  */
 
 
 #define GENDAC_INDEX	     0x3C8
 #define GENDAC_DATA	     0x3C9
-#define BASE_FREQ         14.31818   /* MHz */
+#define BASE_GENDAC_FREQ     14318.18   /* KHz */
+#define FREQ_GENDAC_MAX     250000.0   
+#define FREQ_GENDAC_MIN      50000.0
 
 int S3gendacSetClock( 
 #if NeedFunctionPrototypes
@@ -12,14 +14,3 @@ int S3gendacSetClock(
 #endif
 );     
 
-int ICS5342SetClock( 
-#if NeedFunctionPrototypes
-   long freq, int clock
-#endif
-);     
-
-int S3TrioSetClock( 
-#if NeedFunctionPrototypes
-   long freq, int clock
-#endif
-);     

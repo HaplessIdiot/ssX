@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32itext.h,v 3.2 1994/09/19 14:33:47 dawes Exp $ */
+/* $XFree86$ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -32,20 +32,12 @@ glenn@cs.utexas.edu)
 #include "w32.h"
 
 /* the following needs some polishing */
-void W32ImageText1();
-void W32ImageText2();
-void W32ImageText3();
-void W32ImageText4();
 
-void W32pImageText1();
-void W32pImageText2();
-void W32pImageText3();
-void W32pImageText4();
 
 #define W32_INIT_IMAGE_TEXT(FOREGROUND, BACKGROUND, DST_OFFSET, X, Y) \
 { \
     SET_XY(X, Y) \
-    *ACL_FOREGROUND_RASTER_OPERATION	= 0xcc; \
+    *ACL_FOREGROUND_RASTER_OPERATION	= W32OpTable[GXcopy]; \
     *ACL_BACKGROUND_RASTER_OPERATION	= 0xf0; \
     *ACL_ROUTING_CONTROL		= 0x2; \
     *ACL_VIRTUAL_BUS_SIZE		= 0x0; \
@@ -55,14 +47,24 @@ void W32pImageText4();
     *MBP0 				= W32Foreground; \
     *ACL_PATTERN_ADDRESS		= W32Background; \
     *(LongP)W32Buffer	 		= FOREGROUND; \
-    *(LongP)(W32Buffer + 4) 		= FOREGROUND; \
-    *ACL_SOURCE_WRAP			= 0x12; \
-    *ACL_SOURCE_Y_OFFSET		= 0x3; \
-    *ACL_PATTERN_WRAP			= 0x12; \
-    *ACL_PATTERN_Y_OFFSET		= 0x3; \
-    *MBP0 				= W32Background; \
-    *(LongP)W32Buffer	 		= BACKGROUND; \
-    *(LongP)(W32Buffer + 4) 		= BACKGROUND; \
+    if (W32) \
+    { \
+	*(LongP)(W32Buffer + 4) 	= FOREGROUND; \
+	*ACL_SOURCE_WRAP		= 0x12; \
+	*ACL_SOURCE_Y_OFFSET		= 0x3; \
+	*ACL_PATTERN_WRAP		= 0x12; \
+	*ACL_PATTERN_Y_OFFSET		= 0x3; \
+	*MBP0 				= W32Background; \
+	*(LongP)W32Buffer	 	= BACKGROUND; \
+	*(LongP)(W32Buffer + 4) 	= BACKGROUND; \
+    } \
+    else /* w32i */ \
+    { \
+	*ACL_SOURCE_WRAP		= 0x02; \
+	*ACL_PATTERN_WRAP		= 0x02; \
+	*MBP0 				= W32Background; \
+	*(LongP)W32Buffer	 	= BACKGROUND; \
+    } \
 }
 
 #define W32P_INIT_IMAGE_TEXT(FOREGROUND, BACKGROUND, DST_OFFSET, X, Y) \
@@ -73,16 +75,58 @@ void W32pImageText4();
     *ACL_ROUTING_CONTROL		= 0x02; \
     *ACL_XY_DIRECTION			= 0; \
     *ACL_DESTINATION_Y_OFFSET		= DST_OFFSET; \
+    *ACL_SOURCE_WRAP			= 0x02; \
     *ACL_SOURCE_ADDRESS			= W32Foreground; \
     *MBP0 				= W32Foreground; \
     *(LongP)W32Buffer	 		= FOREGROUND; \
-    *ACL_SOURCE_WRAP			= 0x02; \
     *ACL_PATTERN_WRAP			= 0x02; \
     *ACL_PATTERN_ADDRESS		= W32Background; \
     *MBP0 				= W32Background; \
     *(LongP)W32Buffer	 		= BACKGROUND; \
     *ACL_MIX_ADDRESS			= 0; \
     *ACL_MIX_Y_OFFSET 			= 31; \
+}
+
+#define W32_IMAGE_TEXT(DST, Y) \
+{ \
+    WAIT_QUEUE \
+    START_ACL_CPU(DST) \
+    switch (bytes) \
+    { \
+	case 1: \
+	    for (i = 0; i < Y; i++, char1++) \
+	    { \
+		*(volatile char*)(ACL) = *((char*)(char1)+0); \
+	    } \
+	    break; \
+	case 2: \
+	    for (i = 0; i < Y; i++, char1++) \
+	    { \
+		*(volatile char*)(ACL) = *((char*)(char1)+0); \
+		*(volatile char*)(ACL) = *((char*)(char1)+1); \
+	    } \
+	    break; \
+	case 3: \
+	    for (i = 0; i < Y; i++, char1++) \
+	    { \
+		*(volatile char*)(ACL) = *((char*)(char1)+0); \
+		*(volatile char*)(ACL) = *((char*)(char1)+1); \
+		*(volatile char*)(ACL) = *((char*)(char1)+2); \
+	    } \
+	    break; \
+	case 4: \
+	    for (i = 0; i < Y; i++, char1++) \
+	    { \
+		*(volatile char*)(ACL) = *((char*)(char1)+0); \
+		*(volatile char*)(ACL) = *((char*)(char1)+1); \
+		*(volatile char*)(ACL) = *((char*)(char1)+2); \
+		*(volatile char*)(ACL) = *((char*)(char1)+3); \
+	    } \
+	    break; \
+	default: \
+	    break; \
+    } \
+    /* WAIT_XY */ \
 }
 
 

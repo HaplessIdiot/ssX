@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_orect.c,v 3.2 1995/01/07 04:12:06 dawes Exp $ */
+/* $XFree86$ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -33,7 +33,7 @@ Modified for Cirrus by Harm Hanemaayer (hhanemaa@cs.ruu.nl)
 #include "vga.h"
 #include "linearline.h"
 #include "cir_driver.h"
-#include "cirBlitMM.h"		/* MMIO BitBLT commands */
+#include "cir_blitmm.h"		/* MMIO BitBLT commands */
 
 
 /*
@@ -46,9 +46,6 @@ Modified for Cirrus by Harm Hanemaayer (hhanemaa@cs.ruu.nl)
  *
  * The BitBLT foreground/VGA set/reset register does not interfere with
  * plain framebuffer writes on the MMIO chips (5429, 543x).
- * Note that for heights > 1024, BLTs must be split into two because
- * of the stupid 1024 line restriction of the 5429/5430/4 (even though
- * the 543x databook says 2048).
  *
  */
 
@@ -221,26 +218,11 @@ CirrusPolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
 	    	else {
 		    int destaddr;
 		    destaddr = clippedY1 * destpitch + clippedX1 * (PSZ / 8);
-		    if (height > 1024) {
-			    do { BLTBUSY(busy); } while (busy);
-			    SETDESTADDR(destaddr);
-		            SETWIDTH(PSZ / 8);
-			    SETHEIGHT(1024);
-			    STARTBLT();
-			    destaddr += destpitch * 1024;
-			    do { BLTBUSY(busy); } while (busy);
-			    SETDESTADDR(destaddr);
-		            SETWIDTH(PSZ / 8);
-			    SETHEIGHT(height - 1024);
-			    STARTBLT();
-		    }
-		    else {
-			    do { BLTBUSY(busy); } while (busy);
-			    SETDESTADDR(destaddr);
-		            SETWIDTH(PSZ / 8);
-			    SETHEIGHT(height);
-			    STARTBLT();
-		    }
+		    do { BLTBUSY(busy); } while (busy);
+		    SETDESTADDR(destaddr);
+	            SETWIDTH(PSZ / 8);
+		    SETHEIGHT(height);
+		    STARTBLT();
 		}
 	    }
 
@@ -249,8 +231,7 @@ CirrusPolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
             	if (pGC->alu == GXcopy && cirrusUseLinear) {
 		    unsigned char *destp;
 	    	    int fg;
-	    	    destp = clippedY1 * destpitch + clippedX2 * (PSZ / 8)
-	    	        + base;
+	    	    destp = clippedY1 * destpitch + clippedX2 + base;
 	    	    fg = pGC->fgPixel;
 		    do { BLTBUSY(busy); } while (busy);
 		    LinearFramebufferVerticalLine(destp, fg, height,
@@ -259,26 +240,11 @@ CirrusPolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
 	    	else {
 		    int destaddr;
 		    destaddr = clippedY1 * destpitch + clippedX2 * (PSZ / 8);
-		    if (height > 1024) {
-			    do { BLTBUSY(busy); } while (busy);
-			    SETDESTADDR(destaddr);
-		            SETWIDTH(PSZ / 8);
-			    SETHEIGHT(1024);
-			    STARTBLT();
-			    destaddr += destpitch * 1024;
-			    do { BLTBUSY(busy); } while (busy);
-			    SETDESTADDR(destaddr);
-		            SETWIDTH(PSZ / 8);
-			    SETHEIGHT(height - 1024);
-			    STARTBLT();
-		    }
-		    else {
-			    do { BLTBUSY(busy); } while (busy);
-			    SETDESTADDR(destaddr);
-		            SETWIDTH(PSZ / 8);
-			    SETHEIGHT(height);
-			    STARTBLT();
-		    }
+		    do { BLTBUSY(busy); } while (busy);
+		    SETDESTADDR(destaddr);
+	            SETWIDTH(PSZ / 8);
+		    SETHEIGHT(height);
+		    STARTBLT();
 		}
 	    }
 
@@ -291,7 +257,7 @@ drawbottomedge:
 		/*
 		 * Corrected for decreased clippedY2.
 		 */
-	    	destaddr = (clippedY2 + 1) * destpitch + clippedX1 * (PSZ / 8);
+	    	destaddr = (clippedY2 + 1) * destpitch + clippedX1 + (PSZ / 8);
 		do { BLTBUSY(busy); } while (busy);
 		SETDESTADDR(destaddr);
 		SETWIDTH(width * (PSZ / 8));

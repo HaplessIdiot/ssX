@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.1 1994/07/24 11:47:47 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -26,11 +26,6 @@
  * Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
  * Modified for the P9000 by Erik Nygren (nygren@mit.edu)
  *
- */
-
-/* Note that the outb's and inb's in here should be changed to use the
- * p9000OutBtReg, etc routines.  It's not needed yet because
- * everything in here is in the 03c[6789] range. *TO*DO*
  */
 
 #include "X.h"
@@ -235,30 +230,24 @@ void
 p9000UnblankScreen(pScreen)
      ScreenPtr pScreen;
 {
+  Pixel       pix = 0;
+  xrgb        rgb;
+
+  if (InstalledMaps[pScreen->myNum] == NOMAPYET)
+    return;
+
+  QueryColors(InstalledMaps[pScreen->myNum], 1, &pix, &rgb);
+  
   if (xf86VTSema)
     {
-#if 0
-      if (p9000InfoRec.bitsPerPixel == 8)
-	{
-	  Pixel       pix = 0;
-	  xrgb        rgb;
-
-	  if (InstalledMaps[pScreen->myNum] == NOMAPYET)
-	    return;
-	  QueryColors(InstalledMaps[pScreen->myNum], 1, &pix, &rgb);  
-	  outb(BT_WRITE_ADDR, 0);
-	  outb(BT_RAMDAC_DATA, rgb.red >> 8);
-	  outb(BT_RAMDAC_DATA, rgb.green >> 8);
-	  outb(BT_RAMDAC_DATA, rgb.blue >> 8);
-	  outw(BT_PIXEL_MASK, 0xff);
-	}
-#else
-      /* Power the RAMDAC back up. */
-      p9000OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x0 /* ~BT_CR0_POWERDOWN */);  
-#endif
+      outb(BT_WRITE_ADDR, 0);
+      outb(BT_RAMDAC_DATA, rgb.red >> 8);
+      outb(BT_RAMDAC_DATA, rgb.green >> 8);
+      outb(BT_RAMDAC_DATA, rgb.blue >> 8);
+      outw(BT_PIXEL_MASK, 0xff);
     }
 }
-  
+
 /* Blanks a screen temporarily for a screen saver */
 void
 p9000BlankScreen(pScreen)
@@ -266,21 +255,11 @@ p9000BlankScreen(pScreen)
 {
   if (xf86VTSema)
     {
-#if 0
-      if (p9000InfoRec.bitsPerPixel == 8)
-	{
-	  outb(BT_WRITE_ADDR, 0);
-	  outb(BT_RAMDAC_DATA, 0);
-	  outb(BT_RAMDAC_DATA, 0);
-	  outb(BT_RAMDAC_DATA, 0);
-	  outw(BT_PIXEL_MASK, 0x00);
-	}
-#else
-      /* Power down the RAMDAC output to blank the screen.  No data
-       * will be lost and MPU reads and writes should continue to work.
-       * Will this cause powersaving monitors to do the right thing? */
-      p9000OutBtReg(BT_COMMAND_REG_0, 0xFE, BT_CR0_POWERDOWN);	  
-#endif
+      outb(BT_WRITE_ADDR, 0);
+      outb(BT_RAMDAC_DATA, 0);
+      outb(BT_RAMDAC_DATA, 0);
+      outb(BT_RAMDAC_DATA, 0);
+      outw(BT_PIXEL_MASK, 0x00);
     }
 }
 

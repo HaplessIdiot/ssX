@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_bank.s,v 3.0 1994/11/05 23:51:51 dawes Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 1994 by Régis Cridlig <cridlig@dmi.ens.fr>
+ * Copyright 1993 by Jon Block <block@frc.com>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/sigmaHW.h,v 3.0 1994/05/04 15:01:16 dawes Exp $ */
+/* $XFree86$ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -63,7 +63,7 @@
  * 0x8000, 0x9000 or 0xF0000 is available!
  * On Systems without VGA, 0xA0000, 0xB0000 and 0xC0000 is available */
 /* So: valid choices for mono are 0x{ABCDE}0000L */
-/* 0xE0000 is the default, other values are selected in XF86Config
+/* 0xE0000 is the default, other values are selected in Xconfig
  * with ' membase "xxxx" ' */
 #define SIGMA_DEF_MEM_BASE	(0xE0000L)
 

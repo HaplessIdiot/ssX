@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000BtCurs.c,v 3.2 1994/08/31 04:23:02 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -44,6 +44,7 @@
 #include "p9000curs.h"
 
 static unsigned char p9000BtYPosMask = 0xFF;
+static int p9000DAC8Bit = TRUE;
 
 
 /*
@@ -64,18 +65,13 @@ static __inline__ void p9000OutBtData(reg, data)
 unsigned short reg;
 unsigned char data;
 {
-  /* Output data to RAMDAC */
-  if ((p9000VendorPtr->Label == P9000_VENDOR_VIPERPCI)
-      && (0xf000 & reg))
-    {
-      reg = ((unsigned long)((reg & 0x00ff) | ((reg & 0xf000)>>4)))
-	+ (unsigned long)p9000InfoRec.IObase;
-    }
+   /* Output data to RAMDAC */
    outb(reg, data);
 }
 
 static __inline__ void p9000EndBtData()
 {
+   unsigned char tmp;
 }
 
 /*
@@ -161,9 +157,8 @@ void
 p9000BtCursorOff()
 {
    /* Disable cursor */
-  if (xf86VTSema)
-    p9000OutBtReg(BT_COMMAND_REG_2, 0xFC, 0x00);
-  return;
+   p9000OutBtReg(BT_COMMAND_REG_2, 0xFC, 0x00);
+   return;
 }
 
 void
@@ -172,8 +167,6 @@ p9000BtMoveCursor(pScr, x, y)
      int   x, y;
 {
    extern int p9000hotX, p9000hotY;
-
-  if (!xf86VTSema) return;
 
    if (p9000BlockCursor)
       return;
@@ -205,8 +198,6 @@ p9000BtRecolorCursor(pScr, pCurs)
      CursorPtr pCurs;
 {
    extern Bool p9000DAC8Bit;
-
-   if (!xf86VTSema) return;
 
    /* Start writing at address 1 (0 is overscan color) */
    p9000StartBtData(BT_CURS_WR_ADDR, 0x01, BT_CURS_DATA);

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/oak/Imakefile,v 3.0 1994/05/04 15:02:15 dawes Exp $
+XCOMM $XFree86$
 
 #include <Server.tmpl>
 
@@ -7,21 +7,22 @@ SRCS = oak_driver.c oak_bank.s
 OBJS = oak_driver.o oak_bank.o
 
 #if XF86LinkKit
-INCLUDES = -I. -I../../../include -I../..
+VGA256DIR = $(XF86SRC)/vga256
+INCLUDES = -I. -I$(SERVERSRC)/include -I$(XF86SRC)
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+VGA256DIR = $(XF86SRC)/vga256/drivers
 #endif
 
 DEFINES = -DXF86VGA16
 
 NormalLibraryObjectRule()
-NormalAsmObjectRule()
 
-NormalRelocatableTarget(oak_drv,$(OBJS))
+NormalRelocatableTarget(oak_drv, $(OBJS))
 
-LinkSourceFile(oak_driver.c,$(VGADRIVERSRC)/oak)
-LinkSourceFile(oak_bank.s,$(VGADRIVERSRC)/oak)
+ObjectFromSpecialSource(oak_driver,$(VGA256DIR)/oak/oak_driver,/**/)
+ObjectFromSpecialAsmSource(oak_bank,$(VGA256DIR)/oak/oak_bank,/**/)
 
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga16/oak)
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3gc.c,v 1.2 94/04/17 20:31:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc32.c,v 3.2 1994/09/21 13:23:33 dawes Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -175,7 +175,6 @@ static GCOps cfbTEOps =
    NULL,
 };
 
-#if 0 /* XXX defined but not used */
 static GCOps cfbNonTEOps1Rect =
 {
    cfb32SolidSpansCopy,
@@ -200,7 +199,6 @@ static GCOps cfbNonTEOps1Rect =
    mfbPushPixels,
    NULL,
 };
-#endif
 
 static GCOps cfbNonTEOps =
 {
@@ -294,7 +292,6 @@ s3CreateGC32(pGC)
  * create a private op array for a gc
  */
 
-#if 0 /* XXX defined but not used */
 static GCOps *
 cfbCreateOps(prototype)
      GCOps *prototype;
@@ -311,7 +308,7 @@ cfbCreateOps(prototype)
    ret->devPrivate.val = 1;
    return ret;
 }
-#endif
+
 
 /*
  * Clipping conventions if the drawable is a window CT_REGION ==>
@@ -338,6 +335,11 @@ s3ValidateGC(pGC, changes, pDrawable)
  /* flags for changing the proc vector */
    cfbPrivGCPtr devPriv;
    int   oneRect;
+
+#ifdef PIXPRIV
+   if (pDrawable->type == DRAWABLE_PIXMAP)
+      s3CacheFreeSlot(pDrawable);
+#endif
 
    new_rotate = pGC->lastWinOrg.x != pDrawable->x ||
       pGC->lastWinOrg.y != pDrawable->y;
@@ -571,10 +573,10 @@ s3ValidateGC(pGC, changes, pDrawable)
       switch (pGC->fillStyle) {
 	case FillTiled:
 	   if (!pGC->tileIsPixel) { /* XXX: check constants */
-	      int   width = pGC->tile.pixmap->drawable.width * 32;
+	      int   width = pGC->tile.pixmap->drawable.width * 16;
 
-	      if ((width <= 128) && !(width & (width - 1))) {
-		 mfbCopyRotatePixmap(pGC->tile.pixmap,
+	      if ((width <= 64) && !(width & (width - 1))) {
+		 cfb32CopyRotatePixmap(pGC->tile.pixmap,
 				     &devPriv->pRotatedPixmap,
 				     xrot, yrot);
 		 new_pix = TRUE;
@@ -792,7 +794,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 
 	   case FillTiled:
 	      if (devPriv->pRotatedPixmap) {
-		 if (pGC->alu == GXcopy && (pGC->planemask & 0xffffffff) == 0xffffffff)
+		 if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
 		    pGC->ops->FillSpans = cfb32Tile32FSCopy;
 		 else
 		    pGC->ops->FillSpans = cfb32Tile32FSGeneral;
@@ -800,6 +802,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 		 pGC->ops->FillSpans = cfb32UnnaturalTileFS;
 	      break;
 	   case FillStippled:
+
 		 pGC->ops->FillSpans = cfb32UnnaturalStippleFS;
 	      break;
 	   case FillOpaqueStippled:
@@ -809,27 +812,12 @@ s3ValidateGC(pGC, changes, pDrawable)
 	      FatalError("s3ValidateGC: illegal fillStyle\n");
 	 }
       }
-   }
-#if 0
-else {
-      switch (pGC->fillStyle) {
-      case FillSolid:
-	 pGC->ops->FillSpans = cfb32SolidSpansGeneral;
-	 break;
-      case FillTiled:
-	 pGC->ops->FillSpans = cfb32UnnaturalTileFS;
-	 break;
-      case FillStippled:
-      case FillOpaqueStippled:
-	 pGC->ops->FillSpans = cfb32UnnaturalStippleFS;
-	 break;
-      }
-   }  /* end of new_fillspans */
-#endif
-
+   }				/* end of new_fillspans */
    if (new_fillarea) {
       if (pWin) {
+	 pGC->ops->PolyFillRect = s3PolyFillRect;
 	 pGC->ops->PolyFillArc = miPolyFillArc;
+	 pGC->ops->PushPixels = miPushPixels;
       } else {
 	 pGC->ops->PolyFillArc = miPolyFillArc;
 	 if (pGC->fillStyle == FillSolid) {
@@ -841,16 +829,6 @@ else {
 		 pGC->ops->PolyFillArc = cfb32PolyFillArcSolidGeneral;
 		 break;
 	    }
-	 }
-      }
-   }
-   if (new_fillarea || pGC->ops->devPrivate.val == 2) {
-      if (pWin) {
-	 pGC->ops->PolyFillRect = s3PolyFillRect;
-      } else {
-	 pGC->ops->PolyFillRect = miPolyFillRect;
-	 if (pGC->fillStyle == FillSolid || pGC->fillStyle == FillTiled) {
-	    pGC->ops->PolyFillRect = cfb32PolyFillRect;
 	 }
       }
    }

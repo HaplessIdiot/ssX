@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.5 1994/10/20 06:11:01 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -51,7 +51,6 @@ static char *   AL2101Ident();
 static Bool     AL2101ClockSelect();
 static void     AL2101EnterLeave();
 static Bool     AL2101Init();
-static Bool     AL2101ValidMode();
 static void *   AL2101Save();
 static void     AL2101Restore();
 static void     AL2101Adjust();
@@ -64,7 +63,6 @@ vgaVideoChipRec AL2101 = {
   AL2101Ident,
   AL2101EnterLeave,
   AL2101Init,
-  AL2101ValidMode,
   AL2101Save,
   AL2101Restore,
   AL2101Adjust,
@@ -84,21 +82,10 @@ vgaVideoChipRec AL2101 = {
   VGA_NO_DIVIDE_VERT,
   {0,},
   8,
-  FALSE,
-  0,
-  0,
-  FALSE,
-  FALSE,
-  NULL,
-  1,
 };
 
 
 #define new ((vgaAL2101Ptr)vgaNewVideoState)
-
-static unsigned AL2101_IOPorts[] = {
-	0x3D6, 0x3D7
-};
 
 /*
  * AL2101ClockSelect --
@@ -164,8 +151,6 @@ AL2101Probe()
    */  
   xf86ClearIOPortList(vga256InfoRec.scrnIndex);
   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, sizeof(AL2101_IOPorts) /
-      sizeof(AL2101_IOPorts[0]), AL2101_IOPorts);
 
   if (vga256InfoRec.chipset)
     {
@@ -336,20 +321,9 @@ static void
 AL2101Adjust(x, y)
      int x, y;
 {
-  int Base = (y * vga256InfoRec.displayWidth + x) >> 3;
+  int Base = (y * vga256InfoRec.virtualX + x) >> 3;
 
   outw(vgaIOBase + 4, (Base & 0x00FF00)        | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8)   | 0x0D);
   outw(vgaIOBase + 4, ((Base & 0x070000) >> 8) | 0x20);
-}
-
-/*
- * AL2101ValidMode --
- *
- */
-static Bool
-AL2101ValidMode(mode)
-DisplayModePtr mode;
-{
-return TRUE;
 }

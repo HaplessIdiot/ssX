@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32bc.c,v 3.2 1994/09/07 15:49:12 dawes Exp $$ */
+/* $XFree86$$ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 
@@ -41,8 +41,10 @@
 #include        "xf86bcache.h"
 
 #include	"mach32.h"
+#include	"regmach32.h"
 
-extern unsigned short mach32cachemask[];
+
+extern unsigned short *mach32cachemask;
 extern unsigned short *mach32cachereadmask;
 
 /*
@@ -57,10 +59,10 @@ unsigned int id;
 
 {
     WaitQueue(8);
-    outw(EXT_SCISSOR_T, 0);
-    outw(EXT_SCISSOR_L, 0);
-    outw(EXT_SCISSOR_R, mach32MaxX);
-    outw(EXT_SCISSOR_B, mach32MaxY);
+    outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
+    outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
+    outw(MULTIFUNC_CNTL, SCISSORS_R | mach32MaxX);
+    outw(MULTIFUNC_CNTL, SCISSORS_B | mach32MaxY);
     outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX);  
     outw(FRGD_MIX, FSS_BITBLT | MIX_SRC);
     outw(BKGD_MIX, BSS_BITBLT | MIX_SRC);
@@ -83,8 +85,7 @@ unsigned int id;
     outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
     WaitQueue(4);		/* sanity returns */
-    outw(RD_MASK, 0xffff);
-    outw(WRT_MASK, 0xffff);
+    outw(RD_MASK, 0xff);
     outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
     outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
     outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);

@@ -4,8 +4,8 @@
 <!-- Title information -->
 
 <title>Information for Solaris for x86 Users
-<author>David Holland
-<date>13 December 1994
+<author>XFree86, Inc
+<date>v1.0, 13 December 1994
 
 <!-- Table of contents -->
 <toc>
@@ -16,7 +16,7 @@
 <!--Contents
 --------
 
-	1) What is XFree86 3.1.1
+	1) What is XFree86 3.1
 	2) Solaris versions on which XFree86 has been tested.
 	3) The VT-switching sub-system in Solaris x86
 	4) Various notes for building XFree86 on Solaris x86
@@ -24,9 +24,9 @@
  -->
 
 
-<sect>What is XFree86 3.1.1<p>
+<sect>What is XFree86 3.1<p>
 
-	XFree86 3.1.1 is a port of X11R6 that supports several versions of 
+	XFree86 3.1 is a port of X11R6 that supports several versions of 
 	Intel-based Unix.  It is derived from X386 1.2 which was the X server 
 	distributed with X11R5.  this release consists of many new features 
 	and 
@@ -36,22 +36,19 @@
 <p>
 The sources for XFree86 are available by anonymous ftp from:
 <quote>
-	<url name="ftp.XFree86.org:/pub/XFree86/current"
-	url="ftp://ftp.XFree86.org/pub/XFree86/current">
+	<url url="ftp://ftp.XFree86.org:/pub/XFree86/current">
 </quote>
 Solaris binaries for XFree86 are available for anonymous ftp from:
 <quote>
-	<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/Solaris"
-	url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/Solaris"><p>
-	<url name="abode.ccd.bnl.gov:/pub/XFree86"
-	url="ftp://abode.ccd.bnl.gov/pub/XFree86">
+	<url url="ftp://ftp.XFree86.org:/pub/XFree86/current/Solaris"><p>
+	<url url="ftp://abode.ccd.bnl.gov:/pub/XFree86">
 </quote>
 Many thanks to <bf/Jerry Whelan/ for making the space available for these 
 binaries.
 
-<sect> Solaris for x86, versions on which XFree86 3.1.1 has been tested<p>
+<sect> Solaris for x86, versions on which XFree86 3.1 has been tested<p>
 
-XFree86 3.1.1 has been actively tested on:
+XFree86 3.1 has been actively tested on:
 <itemize>
 <item>Solaris 2.1 for x86
 <item>Solaris 2.4 EA1 for x86
@@ -158,7 +155,7 @@ Limitations of the virtual terminal sub-system under Solaris x86:<p>
 Under Solaris 2.1 for x86, <tt>sun.cf</tt> needs to read 
 (near the top of the file)
 
-<verb>	#ifdef SVR4Architecture
+<verb>	#ifdef SVR4
 	#ifdef i386Architecture
 	#define OSName			SunOS 5.1 x86
 	XCOMM operating system:  OSName
@@ -169,7 +166,7 @@ Under Solaris 2.1 for x86, <tt>sun.cf</tt> needs to read
 Under Solaris 2.4 for x86, <tt>sun.cf</tt> needs to read 
 (near the top of the file)
 
-<verb>	#ifdef SVR4Architecture
+<verb>	#ifdef SVR4
 	#ifdef i386Architecture
 	#define OSName			SunOS 5.4 x86
 	XCOMM operating system:  OSName
@@ -296,6 +293,6 @@ Xserver.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.1 1994/12/26 11:03:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SOLX86,v 3.1 1994/09/27 10:30:37 dawes Exp $
 </verb>
 </article>

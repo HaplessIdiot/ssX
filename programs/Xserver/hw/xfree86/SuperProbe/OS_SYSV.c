@@ -1,31 +1,27 @@
 /*
- * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
+ * Copyright 1993,1994 by David Wexelblat <dwex@goblin.org>
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
- * Software is furnished to do so, subject to the following conditions:
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of David Wexelblat not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  David Wexelblat makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
- * DAVID WEXELBLAT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
- * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
- * SOFTWARE.
- * 
- * Except as contained in this notice, the name of David Wexelblat shall not be
- * used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from David Wexelblat.
+ * DAVID WEXELBLAT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL DAVID WEXELBLAT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.4 1994/11/26 12:39:26 dawes Exp $ */
+/* $XFree86: mit/server/ddx/x386/SuperProbe/OS_SYSV.c,v 2.8 1994/03/01 09:51:12 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -47,35 +43,22 @@
 # include <sys/console.h>
 #else
 # include <sys/kd.h>
-# if !defined(sun)
-#  include <sys/vt.h>
-# endif
+#ifndef SOLX86
+# include <sys/vt.h>
+#endif
 #endif
 #include <sys/immu.h>
-#if !defined(sun)
+#ifndef SOLX86
 # include <sys/region.h>
-#endif
-#if defined(sun)
-/* Fix for Solaris */
-#define __EXTENSIONS__
 #endif
 #include <sys/proc.h>
 #include <sys/tss.h>
-#ifdef NCR
-/* broken NCR <sys/sysi86.h> */
-#define __STDC
 #include <sys/sysi86.h>
-#undef __STDC
-#else
-#include <sys/sysi86.h>
-#endif
 #ifdef SVR4
-# if !defined(sun)
-#  include <sys/seg.h>
-# endif
+# include <sys/seg.h>
 #endif
 #include <sys/v86.h>
-#if defined(sun)
+#ifdef SOLX86
 # include <sys/psw.h>
 #endif
 
@@ -91,7 +74,7 @@ int munmap();
 
 #ifdef SVR4
 # include <sys/mman.h>
-# if defined(sun)
+# ifdef SOLX86
 #  define DEV_MEM	"/dev/fb"
 # else
 #  define DEV_MEM 	"/dev/pmem"
@@ -130,7 +113,7 @@ int OpenVideo()
 	else 
 	{
 
-#if !defined(sun)
+#ifndef SOLX86
 		if ((fd = open("/dev/console", O_RDWR, 0)) < 0)
 		{
 			fprintf(stderr, "%s: Cannot open /dev/console\n", 
@@ -154,7 +137,7 @@ int OpenVideo()
 				MyName, fn);
 			return(-1);
 		}
-#if !defined(SCO) && !defined(sun)
+#if !defined(SCO) && !defined(SOLX86)
 		if (ioctl(VT_fd, VT_WAITACTIVE, VT_num) != 0)
 		{
 			fprintf(stderr, "%s: VT_WAITACTIVE failed!\n", MyName);

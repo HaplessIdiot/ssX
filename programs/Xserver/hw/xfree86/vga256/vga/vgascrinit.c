@@ -27,7 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 /* $XConsortium: cfbscrinit.c,v 5.32 94/04/17 20:29:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgascrinit.c,v 3.0 1994/07/24 11:59:14 dawes Exp $ */
+/* $XFree86$ */
 
 #include "vga256.h"
 #include "mibstore.h"
@@ -67,7 +67,7 @@ vga256FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
     rootdepth = 0;
     if (!cfbInitVisuals (&visuals, &depths, &nvisuals, &ndepths, &rootdepth,
-			 &defaultVisual,((unsigned long)1<<(PSZ-1)), 6))
+			 &defaultVisual,((unsigned long)1<<(PSZ-1)), 8))
 	return FALSE;
 #ifdef CFB_NEED_SCREEN_PRIVATE
     oldDevPrivate = pScreen->devPrivate;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.4 1995/01/18 06:10:31 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -19,114 +19,61 @@ int reg, unsigned char data1, unsigned char data2
 #endif
 );
 
-static void settriopll(
-#if NeedFunctionPrototypes
-int reg, unsigned char data1, unsigned char data2
-#endif
-);
-
-static int commonSetClock( 
-#if NeedFunctionPrototypes
-   long freq, int clock,
-   int min_n2, int trio_pll,
-   long freq_min, long freq_max
-#endif
-);     
-
 int
 S3gendacSetClock(freq, clk)
 long freq;
 int clk;
 {
-   return commonSetClock(freq, clk, 0, 0, 100000, 250000);
-}
+   float ffreq;
+   unsigned char n, n1, n2, m;
+   float n1f, n2f, mf;
+   float  max_error = 0.05;  /* ~ within 1% at 100MHz */
 
-int
-ICS5342SetClock(freq, clk)
-long freq;
-int clk;
-{
-   return commonSetClock(freq, clk, 1, 0, 100000, 250000);
-}
+   ffreq = (float) freq;
 
-int
-S3TrioSetClock(freq, clk)
-long freq;
-int clk;
-{
-   return commonSetClock(freq, clk, 0, 1, 135000, 270000);
-}
-
-static int
-commonSetClock(freq, clk, min_n2, trio_pll, freq_min, freq_max)
-long freq;
-int clk;
-int min_n2, trio_pll;
-long freq_min, freq_max;
-{
-   double ffreq, ffreq_min, ffreq_max;
-   double div, diff, best_diff;
-   unsigned int m;
-   unsigned char n, n1, n2;
-   unsigned char best_n1=16+2, best_n2=2, best_m=125+2;
-
-   ffreq     = freq     / 1000.0 / BASE_FREQ;
-   ffreq_min = freq_min / 1000.0 / BASE_FREQ;
-   ffreq_max = freq_max / 1000.0 / BASE_FREQ;
-
-   if (ffreq < ffreq_min/8) {
-      ErrorF("invalid frequency %1.3f MHz  [freq >= %1.3f MHz]\n", 
-	     ffreq*BASE_FREQ, ffreq_min*BASE_FREQ/8);
-      ffreq = ffreq_min/8;
-   }
-   if (ffreq > ffreq_max / (1<<min_n2)) {
-      ErrorF("invalid frequency %1.3f MHz  [freq <= %1.3f MHz]\n", 
-	     ffreq*BASE_FREQ, ffreq_max*BASE_FREQ / (1<<min_n2));
-      ffreq = ffreq_max / (1<<min_n2);
+   if (ffreq < 20000.0 || ffreq > 110000.0) {
+      fprintf(stderr, "invalid frequency %f. [20000<freq<110000]\n", ffreq);
+      return 3;
    }
 
    /* work out suitable timings */
 
-   best_diff = ffreq;
-   
-   for (n2=min_n2; n2<=3; n2++) {
-      for (n1 = 1+2; n1 <= 31+2; n1++) {
-	 m = (int)(ffreq * n1 * (1<<n2) + 0.5) ;
-	 if (m < 1+2 || m > 127+2) 
-	    continue;
-	 div = (double)(m) / (double)(n1);	 
-	 if ((div >= ffreq_min) &&
-	     (div <= ffreq_max)) {
-	    diff = ffreq - div / (1<<n2);
-	    if (diff < 0.0) 
-	       diff = -diff;
-	    if (diff < best_diff) {
-	       best_diff = diff;
-	       best_m    = m;
-	       best_n1   = n1;
-	       best_n2   = n2;
-	    }
-	 }
-      }
+   /* output divider */
+   if (ffreq < 40000.0) {
+     n2f = 1.0;
+     ffreq *= 2;
+   } else {
+     n2f = 0.0; 
    }
    
-#if 0
-   ErrorF("clk %d, setting to %1.6f MHz (m %d, n1 %d, n2 %d)\n", clk,
-	  ((double)(best_m) / (double)(best_n1) / (1 << best_n2)) * BASE_FREQ
-	  ,best_m-2 ,best_n1-2 ,best_n2
-	  );
-#endif
+   ffreq /= BASE_GENDAC_FREQ;
 
-   n = (best_n1 - 2) | (best_n2 << 5);
-   m = best_m - 2;
-
-   if (trio_pll)
-      settriopll(clk, m, n);
-   else
-      setdacpll(clk, m, n);
-
-   return 0;
-}	   
+   while (1) {
+      for (n1f = 4.0; n1f < 33.0; n1f++) {
+         for (mf = 3.0; mf < 129.0; mf++) {	 
+           float div = mf/n1f;
+	   
+           if (div > (ffreq + max_error)) /* next n1 */
+	      break;
+           if ((div > FREQ_GENDAC_MAX/BASE_GENDAC_FREQ) ||
+	       (div < FREQ_GENDAC_MIN/BASE_GENDAC_FREQ))
+	      continue; /* out of spec */
+	   if (fabs(div - ffreq) < max_error) {          
+              ErrorF("clk %d, setting to %f\n", clk,
+		     (mf/n1f) * BASE_GENDAC_FREQ);
+              n1 = n1f - 2.0;
+              n2 = n2f;
+              n = n1 | n2 <<5;
+              m = mf - 2.0;
+	      setdacpll(clk, m, n);
+              return 0;
+	   }	   
+	 }
+      }
+      /* try again with a bigger error */
+      max_error += 0.05;
+   }
+}
 
 
 static void
@@ -152,54 +99,6 @@ unsigned char data2;
    /* Now clean up our mess */
    outb(GENDAC_INDEX, tmp1);  
    outb(vgaCRReg, tmp);
-}
 
 
-static void
-settriopll(clk, m, n)
-     int clk;
-     unsigned char m;
-     unsigned char n;
-{
-   unsigned char tmp;
-   int index;
-
-   /*
-    * simlulate S3 GENDAC clock numbers:
-    * 0,1 for fixed 25 and 28 MHz clocks
-    * 2-8 free programmable
-    * 10  MCLK
-    */
-
-   if (clk < 2) {
-      tmp = inb(0x3cc);
-      outb(0x3c2, (tmp & 0xf3) | (clk << 2));
-   }
-   else {
-      tmp = inb(0x3cc);
-      outb(0x3c2, tmp | 0x0c);
-
-      if (clk != 10)  /* DCLK */
-	 index = 0x12;
-      else		/* MCLK */
-	 index = 0x10;
-
-      outb(0x3c4, 0x08);
-      outb(0x3c5, 0x06);  /* unlock extended CR9-CR18 */
-      
-      outb(0x3c4, index);
-      outb(0x3c5, n);
-      outb(0x3c4, index+1);
-      outb(0x3c5, m);
-
-      outb(0x3c4, 0x15);
-      tmp = inb(0x3c5);
-      outb(0x3c4, tmp & ~0x20);
-      outb(0x3c4, tmp |  0x20);
-      outb(0x3c4, tmp & ~0x20);
-
-      outb(0x3c4, 0x08);
-      outb(0x3c5, 0x00);  /* lock extended CR9-CR18 */
-      
-   }
 }

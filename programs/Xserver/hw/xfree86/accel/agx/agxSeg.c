@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSeg.c,v 3.3 1994/09/07 15:47:35 dawes Exp $ */
+/* $XFree86$ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -104,7 +104,6 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
     int axis;			/* major axis */
     short cmd2;
     short fix;
-    Bool first = TRUE;
 
 				/* a bunch of temporaries */
     int tmp;
@@ -124,6 +123,14 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
     cclip = devPriv->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
+
+    GE_WAIT_IDLE();
+
+    MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
+
+    GE_OUT_B(GE_FRGD_MIX, (char) pGC->alu);
+    GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
+    GE_OUT_D(GE_FRGD_CLR, pGC->fgPixel);
 
     xorg = pDrawable->x;
     yorg = pDrawable->y;
@@ -163,45 +170,27 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
 		nbox--;
 	    }
 
-	    /* stop when lower edge of box is beyond end of line */
-	    while((nbox) && (y2 >= pbox->y1)) {
-	       if ((x1 >= pbox->x1) && (x1 < pbox->x2)) {
-		  int y1t, y2t;
-		  /* this box has part of the line in it */
-		  y1t = max(y1, pbox->y1);
-		  y2t = min(y2, pbox->y2);
-                  if (y1t != y2t) {
-#if 1
-                     register unsigned int opDim = y2t-y1t-1 << 16;
-                     register unsigned int mapCoOrd = y1t << 16 | x1;
-#else
-                           register unsigned int mapCoOrd = y1t << 16 | x1;
+	    if (nbox)
+	    {
+		/* stop when lower edge of box is beyond end of line */
+		while((nbox) && (y2 >= pbox->y1)) {
+		    if ((x1 >= pbox->x1) && (x1 < pbox->x2)) {
+			int y1t, y2t;
+			/* this box has part of the line in it */
+			y1t = max(y1, pbox->y1);
+			y2t = min(y2, pbox->y2);
+                        if (y1t != y2t) {
                            len = y2t-y1t-1;
                            e = -len;
                            e1 = 0;
                            e2 = -(len<<1);
-#endif
-                     GE_WAIT_IDLE();
-                     if (first) {
-                        first = FALSE;
-                        MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
-                        GE_OUT_B(GE_FRGD_MIX, (char) pGC->alu);
-                        GE_OUT_D(GE_PIXEL_BIT_MASK, (int) pGC->planemask);
-                        GE_OUT_D(GE_FRGD_CLR, (int) pGC->fgPixel);
-                     }
-#if 1
-                     GE_OUT_D( GE_DEST_MAP_X, mapCoOrd );
-                     GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-                     GE_START_CMD( GE_OP_BITBLT
-                                   | GE_OP_MASK_DISABLED
-                                   | GE_OP_PAT_FRGD
-                                   | GE_OP_FRGD_SRC_CLR
-                                   | GE_OP_SRC_MAP_A
-                                   | GE_OP_DEST_MAP_A
-                                   | GE_OP_INC_X
-                                   | GE_OP_INC_Y         );
+                           GE_WAIT_IDLE();
+#ifndef NO_MULTI_IO
+                           GE_OUT_D( GE_DEST_MAP_X, y1t << 16 | x1 );
 #else
-                           GE_OUT_D( GE_DEST_MAP_X, mapCoOrd );
+                           GE_OUT_W( GE_DEST_MAP_X,      (short) x1 );
+                           GE_OUT_W( GE_DEST_MAP_Y,      (short) y1t );
+#endif
                            GE_OUT_W( GE_OP_DIM_LINE_MAJ, (short) len );
                            GE_OUT_W( GE_BRES_ERROR_TERM, (short) e );
                            GE_OUT_W( GE_BRES_CONST_K1,   (short) 0 );
@@ -213,11 +202,11 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
                                          | GE_OP_PAT_FRGD
                                          | GE_OP_Y_MAJ
                                          | GE_OP_INC_Y         );
-#endif
-                  }
-	       }
-	       nbox--;
-	       pbox++;
+			   }
+		    }
+		    nbox--;
+		    pbox++;
+		}
 	    }
 	}
 	else if (y1 == y2)
@@ -247,53 +236,53 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
 
 	    /* try to draw the line, if we haven't gone beyond it */
 	    if ((nbox) && (pbox->y1 <= y1))
-            {
-               /* when we leave this band, we're done */
-               tmp = pbox->y1;
-	       while((nbox) && (pbox->y1 == tmp))
-	       {
-	           int	x1t, x2t;
+	    {
+		/* when we leave this band, we're done */
+		tmp = pbox->y1;
+		while((nbox) && (pbox->y1 == tmp))
+		{
+		    int	x1t, x2t;
 
-                    if (pbox->x2 <= x1)
-                    {
-                        /* skip boxes until one might contain start point */
-                        nbox--;
-                        pbox++;
-                        continue;
-                    }
+		    if (pbox->x2 <= x1)
+		    {
+			/* skip boxes until one might contain start point */
+			nbox--;
+			pbox++;
+			continue;
+		    }
 
-                    /* stop if left of box is beyond right of line */
-                    if (pbox->x1 >= x2)
-                    {
-                        nbox = 0;
-                        break;
-                    }
+		    /* stop if left of box is beyond right of line */
+		    if (pbox->x1 >= x2) {
+			nbox = 0;
+			break;
+		    }
 
 		    x1t = max(x1, pbox->x1);
 		    x2t = min(x2, pbox->x2);
 		    if (x1t != x2t) {
-                       register unsigned int opDim = x2t-x1t-1;
-                       register unsigned int mapCoOrd = y1 << 16 | x1t;
+                       len = x2t-x1t-1;
+                       e = -len;
+                       e1 = 0;
+                       e2 = -(len<<1);
                        GE_WAIT_IDLE();
-                       if (first) {
-                          first = FALSE;
-                          MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
-                          GE_OUT_B(GE_FRGD_MIX, (char) pGC->alu);
-                          GE_OUT_D(GE_PIXEL_BIT_MASK, (int) pGC->planemask);
-                          GE_OUT_D(GE_FRGD_CLR, (int) pGC->fgPixel);
-                       }
-                       GE_OUT_D( GE_DEST_MAP_X, mapCoOrd );
-                       GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-                       GE_START_CMD( GE_OP_BITBLT
-                                     | GE_OP_MASK_DISABLED
-                                     | GE_OP_PAT_FRGD
+#ifndef NO_MULTI_IO
+                       GE_OUT_D( GE_DEST_MAP_X, y1 << 16 | x1t );
+#else
+                       GE_OUT_W( GE_DEST_MAP_X, (short)x1t );
+                       GE_OUT_W( GE_DEST_MAP_Y, (short)y1 );
+                       GE_OUT_W( GE_OP_DIM_LINE_MAJ, (short) len);
+#endif
+                       GE_OUT_W( GE_BRES_ERROR_TERM, (short) e );
+                       GE_OUT_W( GE_BRES_CONST_K1,   (short) 0 );
+                       GE_OUT_W( GE_BRES_CONST_K2,   (short) e2 );
+                       GE_START_CMD( GE_OP_LINE_DRAW_WR
                                      | GE_OP_FRGD_SRC_CLR
                                      | GE_OP_SRC_MAP_A
                                      | GE_OP_DEST_MAP_A
-                                     | GE_OP_INC_X
-                                     | GE_OP_INC_Y         );
+                                     | GE_OP_PAT_FRGD
+                                     | GE_OP_INC_X         );
 		    }
-	 	    nbox--;
+		    nbox--;
 		    pbox++;
 		}
 	    }
@@ -341,29 +330,26 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
 		OUTCODES(oc2, x2, y2, pbox);
 		if ((oc1 | oc2) == 0)
 		{
-                    register unsigned int mapCoOrd = y1 << 16 | x1;
-		    if (pGC->capStyle == CapNotLast)
-			len--;
+		    if (pGC->capStyle != CapNotLast)
+			len++;
                     GE_WAIT_IDLE();
-                    if (first) {
-                       first = FALSE;
-                       MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
-                       GE_OUT_B(GE_FRGD_MIX, (char) pGC->alu);
-                       GE_OUT_D(GE_PIXEL_BIT_MASK, (int) pGC->planemask);
-                       GE_OUT_D(GE_FRGD_CLR, (int) pGC->fgPixel);
-                    }
-                    GE_OUT_D( GE_DEST_MAP_X, mapCoOrd );
-                    GE_OUT_W( GE_OP_DIM_LINE_MAJ, len );
-                    GE_OUT_W( GE_BRES_ERROR_TERM, e+fix );
-                    GE_OUT_W( GE_BRES_CONST_K1,   e1 );
-                    GE_OUT_W( GE_BRES_CONST_K2,   e2 );
+#ifndef NO_MULTI_IO
+                    GE_OUT_D( GE_DEST_MAP_X, y1 | x1 );
+#else
+                    GE_OUT_W( GE_DEST_MAP_X,      (short) x1 );
+                    GE_OUT_W( GE_DEST_MAP_Y,      (short) y1 );
+#endif
+                    GE_OUT_W( GE_OP_DIM_LINE_MAJ, (short) len );
+                    GE_OUT_W( GE_BRES_ERROR_TERM, (short) e+fix );
+                    GE_OUT_W( GE_BRES_CONST_K1,   (short) e1 );
+                    GE_OUT_W( GE_BRES_CONST_K2,   (short) e2 );
                     GE_START_CMD( GE_OP_LINE_DRAW_WR
                                   | GE_OP_FRGD_SRC_CLR
                                   | GE_OP_SRC_MAP_A
                                   | GE_OP_DEST_MAP_A
-                                  | GE_OP_DRAW_ALL
                                   | GE_OP_PAT_FRGD
                                   | cmd2                );
+
 		    break;
 		}
 		else if (oc1 & oc2)
@@ -396,16 +382,14 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
                         continue;
                     }
                     if (axis == X_AXIS)
-                       len = abs(new_x2 - new_x1);
+                            len = abs(new_x2 - new_x1);
                     else
-                       len = abs(new_y2 - new_y1);
+                            len = abs(new_y2 - new_y1);
 
-                    if (clip2 == 0 && pGC->capStyle == CapNotLast)
-                       len--;
-
-                    if (len >= 0)
+                    if (clip2 != 0 || pGC->capStyle != CapNotLast)
+                            len++;
+                    if (len)
                     {
-                        register unsigned int mapCoOrd = new_y1 << 16 | new_x1;
                         /* unwind bresenham error term to first point */
                         if (clip1)
                         {
@@ -419,37 +403,14 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
                         else
                             err = e;
 
-                        /*
-                         * Here is a problem, the unwound error terms could be
-                         * upto 16bit now. The poor AGX is only 13 bit.
-                         */
-                        if ( abs(err) > 8192  
-                             || abs(e1) > 8192 
-                             || abs(e2) > 8192 ) {
-                           int div;
-   
-                           if (abs(err) > abs(e1))
-                               div = (abs(err) > abs(e2)) ?
-                               (abs(err) + 8192)/ 8192 : (abs(e2) + 8191)/ 8192;
-                           else
-                               div = (abs(e1) > abs(e2)) ?
-                               (abs(e1) + 8191)/ 8192 : (abs(e2) + 8191)/ 8192;
-   
-                           err /= div;
-                           e1 /= div;
-                           e2 /= div;
-                        }
 
                         GE_WAIT_IDLE();
-                        if (first) {
-                           first = FALSE;
-                           MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
-                           GE_OUT_B(GE_FRGD_MIX, (char) pGC->alu);
-                           GE_OUT_D(GE_PIXEL_BIT_MASK, (int) pGC->planemask);
-                           GE_OUT_D(GE_FRGD_CLR, (int) pGC->fgPixel);
-                        }
-
-                        GE_OUT_D( GE_DEST_MAP_X, mapCoOrd );
+#ifndef NO_MULTI_IO
+                        GE_OUT_D( GE_DEST_MAP_X, new_y1 | new_x1 );
+#else
+                        GE_OUT_W( GE_DEST_MAP_X,      (short) new_x1 );
+                        GE_OUT_W( GE_DEST_MAP_Y,      (short) new_y1 );
+#endif
                         GE_OUT_W( GE_OP_DIM_LINE_MAJ, (short) len );
                         GE_OUT_W( GE_BRES_ERROR_TERM, (short) err+fix );
                         GE_OUT_W( GE_BRES_CONST_K1,   (short) e1 );
@@ -458,7 +419,6 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
                                       | GE_OP_FRGD_SRC_CLR
                                       | GE_OP_SRC_MAP_A
                                       | GE_OP_DEST_MAP_A
-                                      | GE_OP_DRAW_ALL
                                       | GE_OP_PAT_FRGD
                                       | cmd2                );
 		    }
@@ -468,5 +428,5 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
 	} /* sloped line */
     } /* while (nline--) */
 
-    GE_WAIT_IDLE_EXIT();
+    GE_WAIT_IDLE();
 }

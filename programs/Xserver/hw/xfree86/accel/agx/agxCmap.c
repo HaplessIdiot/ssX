@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCmap.c,v 3.0 1994/06/15 15:35:19 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994    by Henry A. Worth, Sunnyvale, California.
@@ -248,65 +248,4 @@ agxUninstallColormap(pmap)
 
   (*pmap->pScreen->InstallColormap) (defColormap);
 }
-
-
-/* This is for the screen saver */
-void
-agxRestoreColor0(pScreen)
-     ScreenPtr pScreen;
-{
-  Pixel       pix = 0;
-  xrgb        rgb;
-  unsigned int  palDataReg;
-
-  if (InstalledMaps[pScreen->myNum] == NOMAPYET)
-    return;
-
-  QueryColors(InstalledMaps[pScreen->myNum], 1, &pix, &rgb);
-
-  if(XGA_PALETTE_CONTROL(agxChipId)) {
-     outb(agxIdxReg, IR_CUR_PAL_INDEX_LO);
-     outb(agxByteData, 0x00);
-     outb(agxIdxReg, IR_PAL_DATA);
-     palDataReg = agxByteData;
-  }
-  else {
-     outb(agxIdxReg, 0);  /* make sure index is not 0x51 */
-     outb(VGA_PAL_WRITE_INDEX, 0x00);
-     palDataReg = VGA_PAL_DATA;
-  }
-  if (xf86Dac8Bit) {  /* XGA 8-bit or 6-bit */
-    outb(palDataReg, rgb.red >> 8);
-    outb(palDataReg, rgb.green >> 8);
-    outb(palDataReg, rgb.blue >> 8);
-  } else {
-    outb(palDataReg, rgb.red >> 10);
-    outb(palDataReg, rgb.green >> 10);
-    outb(palDataReg, rgb.blue >> 10);
-  }
-}
-
-void
-agxClearColor0()
-{
-  Pixel       pix = 0;
-  xrgb        rgb;
-  unsigned int  palDataReg;
-
-  if(XGA_PALETTE_CONTROL(agxChipId)) {
-     outb(agxIdxReg, IR_CUR_PAL_INDEX_LO);
-     outb(agxByteData, 0x00);
-     outb(agxIdxReg, IR_PAL_DATA);
-     palDataReg = agxByteData;
-  }
-  else {
-     outb(agxIdxReg, 0);  /* make sure index is not 0x51 */
-     outb(VGA_PAL_WRITE_INDEX, 0x00);
-     palDataReg = VGA_PAL_DATA;
-  }
-  outb(palDataReg, 0);
-  outb(palDataReg, 0);
-  outb(palDataReg, 0);
-}
-
 

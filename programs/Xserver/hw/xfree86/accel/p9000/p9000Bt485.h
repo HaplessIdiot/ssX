@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000Bt485.h,v 3.0 1994/05/29 02:05:35 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -46,7 +46,6 @@
 #define BT_CURS_X_HIGH  	0xC3C9
 
 /* bt485 Command Register 0 Bits */
-#define BT_CR0_POWERDOWN        0x01  /* Powerdown the RAMDAC */
 #define BT_CR0_8BIT             0x02  /* 8 bit operation as opposed to 6 bit */
 #define BT_CR0_SYNC_R           0x04  /* Sync on Red */
 #define BT_CR0_SYNC_G           0x08  /* Sync on Green */

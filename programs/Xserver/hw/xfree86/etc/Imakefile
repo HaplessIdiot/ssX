@@ -1,9 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.3 1994/12/17 10:06:45 dawes Exp $
+XCOMM $XFree86$
 
 #if SystemV
  CONFIGFILES = ldterm.sdevice ptem.sdevice ptm.sdevice pts.node \
                pts.sdevice sp.node sp.sdevice
-    INSTPROG = install.sv3
+    INSTPROG = install.svr3
 #ifdef i386ScoArchitecture
    MISCFILES = dmmap.shar 
 #else
@@ -12,7 +12,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.3 1994/12/17 10
 #endif
 
 #if SystemV4
-    INSTPROG = install.sv4
+    INSTPROG = install.svr4
      XDMCONF = XdmConf.svr4
 #ifdef SunArchitecture
    MISCFILES = apSolx86.shar xcode.xfree86
@@ -42,17 +42,14 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.3 1994/12/17 10
 #endif
 
        FILES = $(CONFIGFILES) $(TERMFILES) \
-               $(PATCHFILES) $(XDMCONF) ati.test.c regati.h \
+               $(PATCHFILES) $(XDMCONF) ati.test.c \
                et4000clock.c xmodmap.std $(MISCFILES)
-    INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
+    INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
 	       -I$(INCLUDESRC)
 
 all:: $(FILES)
 
 #if defined(FreeBSDArchitecture) || defined(NetBSDArchitecture)
-        SRCS = kbd_mode.c
-     DEFINES = XFree86ConsoleDefines
-
 all:: kbd_mode
 
 SingleProgramTarget(kbd_mode,kbd_mode.o,NullParameter,NullParameter)
@@ -62,18 +59,18 @@ InstallManPage(kbd_mode,$(MANDIR))
 #endif
 
 #if (SystemV && !defined(i386ScoArchitecture)) || SystemV4
-InstallNamedProg($(INSTPROG),xf86install,$(LIBDIR)/etc)
+InstallNamedProg($(X386INSTPROG),x386install,$(LIBDIR)/etc)
 #endif
 
 InstallMultipleDestFlags(install,$(FILES),$(LIBDIR)/etc,$(INSTDATFLAGS))
 
 #if SystemV
 InstallNamedProg(svr3_patch,svr3_patch,$(LIBDIR)/etc)
-InstallNamedProg(svr3_rem_pch,svr3_patch_rem,$(LIBDIR)/etc)
+InstallNamedProg(svr3_patch_rem,svr3_patch_rem,$(LIBDIR)/etc)
 #endif
 #if SystemV4 && !defined(SunArchitecture)
 InstallNamedProg(svr4_patch,svr4_patch,$(LIBDIR)/etc)
-InstallNamedProg(svr4_rem_pch,svr4_patch_rem,$(LIBDIR)/etc)
+InstallNamedProg(svr4_patch_rem,svr4_patch_rem,$(LIBDIR)/etc)
 #endif
 
 #if !BuildServersOnly
@@ -82,10 +79,6 @@ LinkFile(xterm.termcap,$(PROGRAMSRC)/xterm/termcap)
 LinkFile(xterm.terminfo,$(PROGRAMSRC)/xterm/terminfo)
 #endif
 #endif
-
-LinkSourceFile(regati.h,$(VGADRIVERSRC)/ati)
-LinkFile(sun.termcap,sun.tcap)
-LinkFile(sun.terminfo,sun.tinfo)
 
 NormalLibraryObjectRule()
 DependTarget()

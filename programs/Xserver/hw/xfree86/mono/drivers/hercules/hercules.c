@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hercules/hercules.c,v 3.1 1994/05/14 06:52:56 dawes Exp $ */
+/* $XFree86$ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -235,13 +235,13 @@ HGA6845Probe()
     /* The following is done for both probed and preset chipset */
 
     if (!monoInfoRec.videoRam) {
-	/* videoram not given in XF86Config */
+	/* videoram not given in Xconfig */
 	monoInfoRec.videoRam=32;
     }
 
     /* We do 'virtual' handling here as it is highly chipset specific */
     if (!(monoInfoRec.virtualX < 0)) {
-	/* virtual set in XF86Config */
+	/* virtual set in Xconfig */
 	ErrorF("%s %s: %s: Virtual not allowed for this chipset\n",
 		XCONFIG_PROBED, monoInfoRec.name, monoInfoRec.chipset);
     }
@@ -363,8 +363,8 @@ HGA6845SaveScreen (pScreen, on)
     return(TRUE);
 }
 
-static unsigned long *hga6845Mapping=NULL;
-static unsigned long *hga6845RevMapping=NULL;
+static unsigned long *hga6845Mapping;
+static unsigned long *hga6845RevMapping;
 
 /*
  * HGA6845MapFrameBuffer --
@@ -375,15 +375,8 @@ static int HGA6845MapFrameBuffer()
     unsigned long voffset;
     unsigned long roffset;
 
-    if ( (NULL!=hga6845Mapping) && (NULL!=hga6845RevMapping) )
-	return(0); /* already done */
-
-    if (NULL!=hga6845Mapping)
-	xfree(hga6845Mapping);
     hga6845Mapping    = (unsigned long *)xalloc(
 				HGA6845MapSize * sizeof(unsigned long));
-    if (NULL!=hga6845RevMapping)
-	xfree(hga6845RevMapping);
     hga6845RevMapping = (unsigned long *)xalloc(
 				HGA6845MapSize * sizeof(unsigned long));
     if ( (NULL==hga6845Mapping) || (NULL==hga6845RevMapping) ) {

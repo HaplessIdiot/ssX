@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.9 1995/01/10 10:20:46 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -49,7 +49,6 @@
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 extern Bool miDCInitialize();
-extern Bool W32SaveScreen();
 
 ScrnInfoRec vga256InfoRec = {
   FALSE,		/* Bool configured */
@@ -57,7 +56,6 @@ ScrnInfoRec vga256InfoRec = {
   -1,			/* int scrnIndex */
   vgaProbe,		/* Bool (* Probe)() */
   vgaScreenInit,	/* Bool (* Init)() */
-  vgaValidMode,		/* Bool (* ValidMode)() */
   vgaEnterLeaveVT,	/* void (* EnterLeaveVT)() */
   (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
   (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
@@ -92,7 +90,7 @@ ScrnInfoRec vga256InfoRec = {
   FALSE,		/* Bool bankedMono */
   "ET4000W32",		/* char *name */
   {0, 0, 0},		/* RgbRec blackColour */ 
-  {0xFF, 0xFF, 0xFF},	/* RgbRec whiteColour */ 
+  {0x3F, 0x3F, 0x3F},	/* RgbRec whiteColour */ 
   vga256ValidTokens,	/* int *validTokens */
   ET4000W32_PATCH_LEVEL,/* char *patchLevel */
   0,			/* int IObase */
@@ -100,9 +98,6 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int COPbase */
   0,			/* int POSbase */
   0,			/* int instance */
-  0,			/* int s3Madjust */
-  0,			/* int s3Nadjust */
-  0,			/* int s3MClk */
 };
 
 pointer vgaOrigVideoState = NULL;
@@ -116,11 +111,6 @@ void (* vgaEnterLeaveFunc)(
 #endif
 ) = (void (*)())NoopDDA;
 Bool (* vgaInitFunc)(
-#if NeedFunctionPrototypes
-    DisplayModePtr
-#endif
-) = (Bool (*)())NoopDDA;
-Bool (* vgaValidModeFunc)(
 #if NeedFunctionPrototypes
     DisplayModePtr
 #endif
@@ -143,9 +133,6 @@ void (* vgaAdjustFunc)(
 ) = (void (*)())NoopDDA;
 void (* vgaSaveScreenFunc)() = (void (*)())NoopDDA;
 int vgaMapSize;
-void *vgaWriteBottom;
-void *vgaWriteTop; 
-
 int  vgaInterlaceType;
 OFlagSet vgaOptionFlags;
 extern Bool vgaPowerSaver;
@@ -166,7 +153,6 @@ extern vgaVideoChipPtr Drivers[];
 /*
  *	Wrap the chip-level restore function in a protect/unprotect.
  */
-static w32_mode = FALSE;
 void
 vgaRestore(mode)
      pointer mode;
@@ -174,26 +160,8 @@ vgaRestore(mode)
     vgaProtect(TRUE);
     (vgaRestoreFunc)(mode);
     vgaProtect(FALSE);
-    if (w32_mode)
-    {
-	/*
-	 *  Temporary
-	 *  This somewhat contradicts Tseng's Tehnical Note #24--GGL
-	 */
-	if (W32p)
-	{
-	    int tmp;
-	    outb(vgaIOBase + 4, 0x34);
-	    GlennsIODelay();
-	    tmp = inb(vgaIOBase + 5) | 0x10;
-	    GlennsIODelay();
-	    outb(vgaIOBase + 5, tmp);
-	    GlennsIODelay();
-	}
-	(*vgaSaveScreenFunc)(SS_FINISH);
-    }
+    (*vgaSaveScreenFunc)(SS_FINISH);
 }
-
 
 /*
  *     Print out identifying strings for drivers included in the server
@@ -204,7 +172,7 @@ vgaPrintIdent()
   int            i, j, n, c;
   char		 *id;
 
-  ErrorF("  %s: accelerated server for ET4000W32 graphics adaptors (Patchlevel %s):\n      ",
+  ErrorF("  %s: server for 8-bit color displays (Patchlevel %s):\n      ",
          vga256InfoRec.name, vga256InfoRec.patchLevel);
 
   n = 0;
@@ -246,14 +214,6 @@ vgaProbe()
   int            needmem, rounding;
   int            tx,ty;
 
-  /* Only supports 8bpp.  Check if someone is trying a different depth */
-  if (vga256InfoRec.depth != 8)
-    {
-      ErrorF("\n%s %s: Unsupported depth (%d)\n",
-	     XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.depth);
-      return(FALSE);
-    }
-
   for (i=0; Drivers[i]; i++)
 
     if ((Drivers[i]->ChipProbe)())
@@ -292,11 +252,8 @@ vgaProbe()
 
 	vgaEnterLeaveFunc = Drivers[i]->ChipEnterLeave;
 	vgaInitFunc = Drivers[i]->ChipInit;
-	vgaValidModeFunc = Drivers[i]->ChipValidMode;
 	vgaSaveFunc = Drivers[i]->ChipSave;
 	vgaRestoreFunc = Drivers[i]->ChipRestore;
-	vgaWriteBottom = (pointer)Drivers[i]->ChipWriteBottom;
-        vgaWriteTop = (pointer)Drivers[i]->ChipWriteTop;
 
 	vga256InfoRec.AdjustFrame = vgaAdjustFunc = Drivers[i]->ChipAdjust;
 
@@ -435,10 +392,6 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA0000,
 			    vgaMapSize);
     vgaVirtBase = (pointer)VGABASE;
-    vgaWriteBottom = (void *)((unsigned int)vgaWriteBottom +
-		     (unsigned int)vgaBase); 
-    vgaWriteTop    = (void *)((unsigned int)vgaWriteTop +
-		     (unsigned int)vgaBase);
   }
 
   if (!(vgaInitFunc)(vga256InfoRec.modes))
@@ -455,7 +408,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   vgaRestore(vgaNewVideoState);
 
 #ifndef DIRTY_STARTUP
-  W32SaveScreen(NULL, FALSE); /* blank the screen */
+  vgaSaveScreen(NULL, FALSE); /* blank the screen */
 #endif
   (vgaAdjustFunc)(vga256InfoRec.frameX0, vga256InfoRec.frameY0);
 
@@ -478,7 +431,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     return(FALSE);
 
   pScreen->CloseScreen = vgaCloseScreen;
-  pScreen->SaveScreen = W32SaveScreen;
+  pScreen->SaveScreen = vgaSaveScreen;
   pScreen->InstallColormap = vgaInstallColormap;
   pScreen->UninstallColormap = vgaUninstallColormap;
   pScreen->ListInstalledColormaps = vgaListInstalledColormaps;
@@ -495,12 +448,19 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     miDCInitialize (pScreen, &xf86PointerScreenFuncs);
   }
 
+    if (serverGeneration == 1)
+    {
+	/* Depends on pixel size--GGLGGL*/
+	W32_INIT_BOX(GXcopy, ~0, PFILL(pScreen->whitePixel), vga256InfoRec.virtualX - 1)
+	W32_BOX(0, vga256InfoRec.virtualX, vga256InfoRec.virtualY)
+	WAIT_XY
+    }
   if (!cfbCreateDefColormap(pScreen))
     return(FALSE);
 
 
 #ifndef DIRTY_STARTUP
-    W32SaveScreen(NULL, TRUE); /* unblank the screen */
+    vgaSaveScreen(NULL, TRUE); /* unblank the screen */
 
   /* Fill the screen with black pixels */
     if (serverGeneration == 1)
@@ -544,12 +504,10 @@ vgaEnterLeaveVT(enter, screen_idx)
 
   if (enter)
     {
-      w32_mode = TRUE;
       xf86MapDisplay(screen_idx, VGA_REGION);
 
       (vgaEnterLeaveFunc)(ENTER);
       vgaOrigVideoState = (pointer)(vgaSaveFunc)(vgaOrigVideoState);
-      XRamdac();
       vgaRestore(vgaNewVideoState);
 
 #ifdef SCO 
@@ -592,7 +550,6 @@ vgaEnterLeaveVT(enter, screen_idx)
     }
   else
     {
-      w32_mode = FALSE;
       /* Make sure IO isn't disabled (by other drivers) */    
       xf86MapDisplay(screen_idx, VGA_REGION);
 
@@ -621,7 +578,6 @@ vgaEnterLeaveVT(enter, screen_idx)
        */
       if (vgaOrigVideoState)
 	vgaRestore(vgaOrigVideoState);
-      VGARamdac();
 
       (vgaEnterLeaveFunc)(LEAVE);
 
@@ -672,25 +628,6 @@ vgaSwitchMode(mode)
   else
   {
     ErrorF("Mode switch failed because of hardware initialisation error\n");
-    return(FALSE);
-  }
-}
-
-/*
- * vgaValidMode --
- *     Validate a mode for VGA architecture. Also checks the chip driver
- *     to see if the mode can be supported.
- */
-Bool
-vgaValidMode(mode)
-     DisplayModePtr mode;
-{
-  if ((vgaValidModeFunc)(mode))
-  {
-    return(TRUE);
-  }
-  else
-  {
     return(FALSE);
   }
 }

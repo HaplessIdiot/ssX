@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxWin.c,v 3.0 1994/08/01 12:09:03 dawes Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -95,7 +95,7 @@ agxCopyWindow(pWin, ptOldOrg, prgnSrc)
 
    if (!xf86VTSema)
    {
-      cfbCopyWindow(pWin, ptOldOrg, prgnSrc);
+      vga256CopyWindow(pWin, ptOldOrg, prgnSrc);
       return;
    }
 
@@ -258,5 +258,5 @@ agxCopyWindow(pWin, ptOldOrg, prgnSrc)
    (*pWin->drawable.pScreen->RegionDestroy) (prgnDst);
    DEALLOCATE_LOCAL(ordering);
    
-   GE_WAIT_IDLE_EXIT();
+   GE_WAIT_IDLE();
 }

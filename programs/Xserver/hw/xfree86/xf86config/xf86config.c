@@ -1,11 +1,12 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.7 1995/01/20 04:23:53 dawes Exp $ */
+/* $XFree86$ */
 
 /*
- * This is a configuration program that will create a base XF86Config
- * file based on menu choices. Its main feature is that clueless users
- * may be less inclined to select crazy sync rates way over monitor spec,
- * by presenting a menu with standard monitor types. Also some people
- * don't read docs unless an executable that they can run tells them to.
+ * This is a dumb configuration program that will create a base
+ * XF86Config file based on menu choices. Its main feature is that
+ * clueless users may be less inclined to select crazy sync rates
+ * way over monitor spec, by presenting a menu with standard monitor
+ * types. Also some people don't read docs unless an executable that
+ * they can run tells them to.
  *
  * It assumes a 24-line or bigger text console.
  *
@@ -38,37 +39,12 @@
  *           the proper +/-h/vsync flags.
  * 11Oct94 Skip 'numclocks:' and 'pixel clocks:' lines when probing for
  * 	     clocks.
- * 18Oct94 Add check for existence of /usr/X11R6.
- *	   Add note about ctrl-alt-backspace.
- * 06Nov94 Add comment above standard mode timings in XF86Config.
- * 24Dec94 Add low-resolution modes using doublescan.
- * 29Dec94 Add note in horizontal sync range selection.
- *	   Ask about ClearDTR/RTS option for Mouse Systems mice.
- *	   Ask about writing to /etc/XF86Config.
- *	   Allow link to be set in /var/X11R6/bin.
- *	   Note about X -probeonly crashing.
- *	   Add keyboard Alt binding option for non-ASCII characters.
- *	   Add card database selection.
- *	   Write temporary XF86Config for clock probing in /tmp instead
- *	     of /usr/X11R6/lib/X11.
- *	   Add RAMDAC and Clockchip menu.
  *
  * Possible enhancements:
  * - Add more standard mode timings (also applies to README.Config). Missing
  *   are 1024x768 @ 72 Hz, 1152x900 modes, and 1280x1024 @ ~70 Hz.
  *   I suspect there is a VESA standard for 1024x768 @ 72 Hz with 77 MHz dot
- *   clock, and 1024x768 @ 75 Hz with 78.7 MHz dot clock. New types of
- *   monitors probably work better with VESA 75 Hz timings.
- * - Add option for creation of clear, minimal XF86Config.
- * - The card database doesn't include most of the entries in previous
- *   databases.
- *
- * Send comments to hhanemaa@cs.ruu.nl.
- *
- * Things to keep up-to-date:
- * - Accelerated server names.
- * - Ramdac and Clockchip settings.
- * - The card database.
+ *   clock, and 1024x768 @ 75 Hz with 78.7 MHz dot clock.
  *
  */
 
@@ -79,27 +55,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "cards.h"
-
-
-/*
- * Define the following to 310 to remove references to XFree86 features that
- * have been added since XFree86 3.1 (e.g. DoubleScan modes).
- */
-#define XFREE86_VERSION 311
-
-/*
- * This is the filename of the temporary XF86Config file that is written
- * when the program is told to probe clocks (which can only happen for
- * root).
- */
-#define TEMPORARY_XF86CONFIG_FILENAME "/tmp/XF86Config.tmp"
-
-/*
- * Define this to have /etc/XF86Config prompted for as the default
- * location to write the XF86Config file to.
- */
-#define PREFER_XF86CONFIG_IN_ETC
 
 
 /*
@@ -111,16 +66,14 @@
 int config_mousetype;		/* Mouse. */
 int config_emulate3buttons;
 int config_chordmiddle;
-int config_cleardtrrts;
 char *config_pointerdevice;
-int config_altmeta;		/* Keyboard. */
 int config_monitortype;		/* Monitor. */
 char *config_hsyncrange;
 char *config_vsyncrange;
 char *config_monitoridentifier;
 char *config_monitorvendorname;
 char *config_monitormodelname;
-int config_videomemory;		/* Video card. */
+int config_videomemory;
 int config_screentype;		/* mono, vga16, svga, accel */
 char *config_deviceidentifier;
 char *config_devicevendorname;
@@ -133,18 +86,6 @@ char *config_modesline32bpp;
 int config_virtualx8bpp, config_virtualy8bpp;
 int config_virtualx16bpp, config_virtualy16bpp;
 int config_virtualx32bpp, config_virtualy32bpp;
-char *config_ramdac;
-char *config_dacspeed;
-char *config_clockchip;
-
-/*
- * These are from the selected card definition. Parameters from the
- * definition are offered during the questioning about the video card.
- */
-
-int card_selected;	/* Card selected from database. */
-int card_screentype;
-int card_accelserver;
 
 
 void write_XF86Config();
@@ -159,10 +100,9 @@ static char *intro_text =
 "This program will create a basic XF86Config file, based on menu selections you\n"
 "make.\n"
 "\n"
-"The XF86Config file usually resides in /usr/X11R6/lib/X11 or /etc. A sample\n"
-"XF86Config file is supplied with XFree86; it is configured for a standard\n"
-"VGA card and monitor with 640x480 resolution. This program will ask for a\n"
-"pathname when it is ready to write the file.\n"
+"The XF86Config file usually resides in /usr/X11R6/lib/X11. A sample XF86Config\n"
+"file is supplied with XFree86; this program does not use it. The program\n"
+"will ask for a pathname when it is ready to write the file.\n"
 "\n"
 "You can either take the sample XF86Config as a base and edit it for your\n"
 "configuration, or let this program produce a base XF86Config file for your\n"
@@ -184,9 +124,7 @@ static char *finalcomment_text =
 "File has been written. Take a look at it before running 'startx'. Note that\n"
 "the XF86Config file must be in one of the directories searched by the server\n"
 "(e.g. /usr/X11R6/lib/X11) in order to be used. Within the server press\n"
-"ctrl, alt and '+' simultaneously to cycle video resolutions. Pressing ctrl,\n"
-"alt and backspace simultaneously immediately exits the server (use if\n"
-"the monitor doesn't sync for a particular mode).\n"
+"ctrl, alt and '+' simultaneously to cycle video resolutions.\n"
 "\n"
 "For further configuration, refer to /usr/X11R6/lib/X11/doc/README.Config.\n"
 "\n";
@@ -241,7 +179,7 @@ static char *mousetype_name[8] = {
 	"Mouse Systems (3-button protocol)",
 	"Bus Mouse",
 	"PS/2 Mouse",
-	"Logitech Mouse (serial, old type, Logitech protocol)",
+	"Logitech Mouse (old type, Logitech protocol)",
 	"Logitech MouseMan (Microsoft compatible)",
 	"MM Series",	/* XXXX These descriptions should be improved. */
 	"MM HitTablet"
@@ -269,7 +207,7 @@ static char *mousecomment_text =
 "two main varieties of the latter type: mice with a switch to select the\n"
 "protocol, and mice that default to 1 and require a button to be held at\n"
 "boot-time to select protocol 2. Some mice can be convinced to do 2 by sending\n"
-"a special sequence to the serial port (see the ClearDTR/ClearRTS options).\n"
+"a special sequence to the serial port.\n"
 "\n";
 
 static char *twobuttonmousecomment_text =
@@ -288,11 +226,6 @@ static char *microsoftmousecomment_text =
 "You have selected a Microsoft protocol mouse. If your mouse was made by\n"
 "Logitech, you might want to enable ChordMiddle which could cause the\n"
 "third button to work.\n";
-
-static char *mousesystemscomment_text =
-"You have selected a Mouse Systems protocol mouse. If your mouse is normally\n"
-"in Microsoft-compatible mode, enabling the ClearDTR and ClearRTS options\n"
-"may cause it to switch to Mouse Systems mode when the server starts.\n";
 
 static char *logitechmousecomment_text =
 "You have selected a Logitech protocol mouse. This is only valid for old\n"
@@ -348,19 +281,6 @@ void mouse_configuration() {
 		printf("\n");
 	}
 
-	config_cleardtrrts = 0;
-	if (config_mousetype == 1) {
-		/* Mouse Systems. */
-		printf("%s", mousesystemscomment_text);
-		printf("\n");
-		printf("Please answer the following question with either 'y' or 'n'.\n");
-		printf("Do you want to enable ClearDTR and ClearRTS? ");
-		getstring(s);
-		if (answerisyes(s))
-			config_cleardtrrts = 1;
-		printf("\n");
-	}
-
 	switch (config_mousetype) {
 	case 0 : /* Microsoft compatible */
 		if (config_chordmiddle)
@@ -401,32 +321,6 @@ void mouse_configuration() {
 
 
 /*
- * Keyboard configuration.
- */
-
-/* XXXX Does this make sense? */
-
-static char *keyboardalt_text =
-"If you want your keyboard to generate non-ASCII characters in X, because\n"
-"you want to be able to enter language-specific characters, you can\n"
-"set the left Alt key to Meta, and the right Alt key to ModeShift.\n"
-"\n";
-
-void keyboard_configuration() {
-	char s[80];
-	printf("%s", keyboardalt_text);
-
-	printf("Please answer the following question with either 'y' or 'n'.\n");
-	printf("Do you want to enable these bindings for the Alt keys? ");
-	getstring(s);
-	config_altmeta = 0;
-	if (answerisyes(s))
-		config_altmeta = 1;
-	printf("\n");
-}
-
-
-/*
  * Monitor configuration.
  */
 
@@ -445,10 +339,6 @@ static char *hsyncintro_text =
 "You must indicate the horizontal sync range of your monitor. You can either\n"
 "select one of the predefined ranges below that correspond to industry-\n"
 "standard monitor types, or give a specific range.\n"
-"\n"
-"It is VERY IMPORTANT that you do not specify a monitor type with a horizontal\n"
-"sync range that is beyond the capabilities of your monitor. If in doubt,\n"
-"choose a conservative setting.\n"
 "\n";
 
 static char *customhsync_text =
@@ -596,142 +486,13 @@ void monitor_configuration() {
 
 
 /*
- * Card database.
- */
-
-static char *cardintro_text =
-"Now we must configure video card specific settings. At this point you can\n"
-"choose to make a selection out of a database of video card definitions.\n"
-"Because there can be variation in Ramdacs and clock generators even\n"
-"between cards of the same model, it is not sensible to blindly copy\n"
-"the settings (e.g. a Device section). For this reason, after you make a\n"
-"selection, you will still be asked about the components of the card, with\n"
-"the settings from the chosen database entry presented as a strong hint.\n"
-"\n"
-"The database entries include information about the chipset, what server to\n"
-"run, the Ramdac and ClockChip, and comments that will be included in the\n"
-"Device section. However, a lot of definitions only hint about what server\n"
-"to run (based on the chipset the card uses) and are untested.\n"
-"\n"
-"If you can't find your card in the database, there's nothing to worry about.\n"
-"You should only choose a database entry that is exactly the same model as\n"
-"your card; choosing one that looks similar is just a bad idea (e.g. a\n"
-"GemStone Snail 64 may be as different from a GemStone Snail 64+ in terms of\n"
-"hardware as can be).\n"
-"\n";
-
-static char *cardunsupported_text =
-"This is card is basically UNSUPPORTED. It may only work as a generic\n"
-"VGA-compatible card. If you have an XFree86 version more recent than what\n"
-"this card definition was based on, there's a chance that it is now\n"
-"supported.\n";
-
-#define NU_ACCELSERVER_IDS 8
-
-static char *accelserver_id[NU_ACCELSERVER_IDS] = {
-	"S3", "Mach32", "Mach8", "8514", "P9000", "AGX", "W32", "Mach64"
-};
-
-void carddb_configuration() {
-	int i;
-	char s[80];
-	card_selected = -1;
-	card_screentype = -1;
-	printf("%s", cardintro_text);
-	printf("Do you want to look at the card database? ");
-	getstring(s);
-	printf("\n");
-	if (!answerisyes(s))
-		return;
-
-	/*
-	 * Choose a database entry.
-	 */
-	if (parse_database()) {
-		printf("Couldn't read card database file %s.\n",
-			CARD_DATABASE_FILE);
-		keypress();
-		return;
-	}
-
-	i = 0;
-	for (;;) {
-		int j;
-		emptylines();
-		for (j = i; j < i + 18 && j <= lastcard; j++)
-			printf("%3d  %-50s%s\n", j,
-				card[j].name,
-				card[j].chipset);
-		printf("\n");
-		printf("Enter a number to choose the corresponding card definition.\n");
-		printf("Press enter for the next page, q to continue configuration.\n");
-		printf("\n");
-		getstring(s);
-		if (s[0] == 'q')
-			break;
-		if (strlen(s) == 0) {
-			i += 18;
-			if (i > lastcard)
-				i = 0;
-			continue;
-		}
-		card_selected = atoi(s);
-		if (card_selected >= 0 && card_selected <= lastcard)
-			break;
-	}
-
-	/*
-	 * Look at the selected card.
-	 */
-	if (card_selected != -1) {
-		if (strcmp(card[card_selected].server, "Mono") == 0)
-			card_screentype = 1;
-		else
-		if (strcmp(card[card_selected].server, "VGA16") == 0)
-			card_screentype = 2;
-		if (strcmp(card[card_selected].server, "SVGA") == 0)
-			card_screentype = 3;
-		for (i = 0; i < NU_ACCELSERVER_IDS; i++)
-			if (strcmp(card[card_selected].server,
-			accelserver_id[i]) == 0) {
-				card_screentype = 4;
-				card_accelserver = i;
-				break;
-			}
-
-		printf("\nYour selected card definition:\n\n");
-		printf("Identifier: %s\n", card[card_selected].name);
-		printf("Chipset:    %s\n", card[card_selected].chipset);
-		printf("Server:     XF86_%s\n", card[card_selected].server);
-		if (card[card_selected].ramdac != NULL)
-			printf("Ramdac:     %s\n", card[card_selected].ramdac);
-		if (card[card_selected].dacspeed != NULL)
-			printf("DacSpeed:     %s\n", card[card_selected].dacspeed);
-		if (card[card_selected].clockchip != NULL)
-			printf("Clockchip:  %s\n", card[card_selected].clockchip);
-		if (card[card_selected].flags & NOCLOCKPROBE)
-			printf("Do NOT probe clocks or use any Clocks line.\n");
-		if (card[card_selected].flags & UNSUPPORTED)
-			printf("%s", cardunsupported_text);
-#if 0	/* Might be confusing. */
-		if (strlen(card[card_selected].lines) > 0)
-			printf("Device section text:\n%s",
-				card[card_selected].lines);
-#endif
-		printf("\n");
-		keypress();
-	}
-}
-
-
-/*
  * Screen/video card configuration.
  */
 
 static char *screenintro_text =
-"Now you must determine which server to run. Refer to the manpages and other\n"
-"documentation. The following servers are available (they may not all be\n"
-"installed on your system):\n"
+"Now we must configure video card specific settings. The first thing is\n"
+"which server to run. Refer to the manpages and other documentation. The\n"
+"following servers are available (they may not all be installed on your system):\n"
 "\n"
 " 1  The XF86_Mono server. This a monochrome server that should work on any\n"
 "    VGA-compatible card, in 640x480 (more on some SVGA chipsets).\n"
@@ -741,11 +502,7 @@ static char *screenintro_text =
 "    a number of SVGA chipsets. It is accelerated on some Cirrus and WD\n"
 "    chipsets; it supports 16/32-bit color on certain Cirrus configurations.\n"
 " 4  The accelerated servers. These include XF86_S3, XF86_Mach32, XF86_Mach8,\n"
-#if XFREE86_VERSION >= 311
-"    XF86_8514, XF86_P9000, XF86_AGX, XF86_W32 and XF86_Mach64.\n"
-#else
 "    XF86_8514, XF86_P9000, XF86_AGX, and XF86_W32.\n"
-#endif
 "\n"
 "These four server types correspond to the four different \"Screen\" sections in\n"
 "XF86Config (vga2, vga16, svga, accel).\n"
@@ -757,12 +514,6 @@ static char *screenlink_text =
 "the SVGA server.\n"
 "\n";
 
-static char *varlink_text =
-"The directory /var/X11R6/bin exists. On many Linux systems this is the\n"
-"preferred location of the symbolic link 'X'. You can select this location\n"
-"when setting the symbolic link.\n"
-"\n";
-
 static char *deviceintro_text =
 "Now you must give information about your video card. This will be used for\n"
 "the \"Device\" section of your video card in XF86Config.\n"
@@ -771,10 +522,7 @@ static char *deviceintro_text =
 static char *videomemoryintro_text =
 "You must indicate how much video memory you have. It is probably a good\n"
 "idea to use the same approximate amount as that detected by the server you\n"
-"intend to use. If you encounter problems that are due to the used server\n"
-"not supporting the amount memory you have (e.g. ATI Mach64 is limited to\n"
-"1024K with the SVGA server), specify the maximum amount supported by the\n"
-"server.\n"
+"intend to use.\n"
 "\n"
 "How much video memory do you have on your video card:\n"
 "\n";
@@ -786,87 +534,24 @@ static char *screenaccelservers_text =
 static char *carddescintro_text =
 "You must now enter a few identification/description strings, namely an\n"
 "identifier, a vendor name, and a model name. Just pressing enter will fill\n"
-"in default names (possibly from a card definition).\n"
+"in default names.\n"
 "\n";
 
 static char *devicevendornamecomment_text =
 "You can simply press enter here if you have a generic card, or want to\n"
 "describe your card with one string.\n";
 
-static char *devicesettingscomment_text =
-"Especially for accelerated servers, Ramdac, Dacspeed and ClockChip settings\n"
-"or special options may be required in the Device section.\n"
-"\n";
-
-static char *ramdaccomment_text =
-"The RAMDAC setting only applies to the S3 and AGX servers. Some RAMDAC's are\n"
-"auto-detected by the server. The detection of a RAMDAC is forced by using a\n"
-"Ramdac \"identifier\" line in the Device section. The identifiers are shown\n"
-"at the right of the following table of RAMDAC types:\n"
-"\n";
-
-#define NU_RAMDACS 13
-
-static char *ramdac_name[NU_RAMDACS] = {
-	"AT&T 20C490 (S3 server)",
-	"AT&T 20C498/21C498/22C498 (S3)",
-	"AT&T 20C505 (S3)",
-	"BrookTree BT481 (AGX)",
-	"BrookTree BT482 (AGX)",
-	"BrookTree BT485/9485 (S3)",
-	"Sierra SC15025 (S3, AGX)",
-#if XFREE86_VERSION >= 311	
-	"S3 GenDAC (86C708) (autodetected)",
-	"S3 SDAC (86C716) (autodetected)",
-#else
-	"S3 GenDAC (86C708)",
-	"S3 SDAC (86C716)",
-#endif
-	"STG-1700 (S3)",
-	"TI 3020 (S3)",
-	"TI 3025 (S3)",
-	"Normal DAC"
-};
-
-static char *ramdac_id[NU_RAMDACS] = {
-	"att20c490", "att20c498", "att20c505", "bt481", "bt482",
-	"bt485", "sc15025", "s3gendac", "s3_sdac", "stg1700",
-	"ti3020", "ti3025", "normal"
-};
-
-static char *clockchipcomment_text =
-"A Clockchip line in the Device section forces the detection of a\n"
-"programmable clock device. With a clockchip enabled, any required\n"
-"clock can be programmed without requiring probing of clocks or a\n"
-"Clocks line. Most cards don't have a programmable clock chip.\n"
-"Choose from the following list:\n"
-"\n";
-
-#define NU_CLOCKCHIPS 8
-
-static char *clockchip_name[] = {
-	"Chrontel 8391 (uncertain at the time of writing)",
-	"ICD2061A and compatibles (ICS9161A, DCS2824)",
-	"ICS2595",
-	"ICS5342 (similar to SDAC, but not completely compatible)",
-	"S3 GenDAC (86C708) and ICS5300 (autodetected)",
-	"S3 SDAC (86C716)",
-	"Sierra SC11412",
-	"TI 3025",
-};
-
-static char *clockchip_id[] = {
-	"ch8391", "icd2061a", "ics2595", "ics5342", "s3gendac", "s3_sdac",
-	"sc11412", "ti3025"
-};
-
-static char *deviceclockscomment_text =
-"For most configurations, a Clocks line is useful since it prevents the slow\n"
-"and nasty sounding clock probing at server start-up. Probed clocks are\n"
-"displayed at server startup, along with other server and hardware\n"
-"configuration info. You can save this information in a file by running\n"
+static char *devicecomment_text =
+"More options and settings can be specified in the Device section. For most\n"
+"configurations, a Clocks line is useful since it prevents the slow and nasty\n"
+"sounding clock probing at server start-up. Probed clocks are displayed at\n"
+"server startup, along with other server and hardware configuration info.\n"
+"You can save this information in a file by running\n"
 "'X -probeonly 2>output_file'. Be warned that clock probing is inherently\n"
 "imprecise; some clocks may be slightly too high (varies per run).\n"
+"\n"
+"Especially for accelerated servers, Ramdac and Dacspeed settings or special\n"
+"options may be required in the Device section.\n"
 "\n";
 
 static char *deviceclocksquestion_text =
@@ -880,14 +565,6 @@ static char *deviceclocksquestion_text =
 "a programmable clock chip you need a 'ClockChip' line and no Clocks line.\n"
 "\n"
 "You must be root to be able to run X -probeonly now.\n"
-"\n";
-
-static char *probeonlywarning_text =
-"It is possible that the hardware detection routines in the server somehow\n"
-"cause the system to crash and the screen to remain blank. If this is the\n"
-"case, do not choose this option the next time. The server may need a\n"
-"Ramdac, ClockChip or special option (e.g. \"nolinear\" for S3) to probe\n"
-"and start-up correctly.\n"
 "\n";
 
 static char *modesorderintro_text =
@@ -914,96 +591,46 @@ static char *modeslist_text =
 "default mode of 1024x768.\n"
 "\n";
 
-#if XFREE86_VERSION >= 311
-#define NU_ACCEL_SERVERS 8
-#else
-#define NU_ACCEL_SERVERS 7
-#endif
-
-static char *accelserver_name[NU_ACCEL_SERVERS] = {
+static char *accelserver_name[7] = {
 	"XF86_S3", "XF86_Mach32", "XF86_Mach8", "XF86_8514", "XF86_P9000",
 	"XF86_AGX", "XF86_W32"
-#if XFREE86_VERSION >= 311
-	,"XF86_Mach64"
-#endif
 };
 
 static int videomemory[5] = {
 	256, 512, 1024, 2048, 4096
 };
 
-#if XFREE86_VERSION >= 311
-#define NU_MODESTRINGS 8
-#else
 #define NU_MODESTRINGS 5
-#endif
 
 static char *modestring[NU_MODESTRINGS] = {
 	"\"640x400\"",
 	"\"640x480\"",
 	"\"800x600\"",
 	"\"1024x768\"",
-	"\"1280x1024\"",
-#if XFREE86_VERSION >= 311
-	"\"320x200\"",
-	"\"320x240\"",
-	"\"400x300\""
-#endif
+	"\"1280x1024\""
 };
 
 void screen_configuration() {
-	int i, c, varlink;
-	int usecardscreentype;
+	int i, c;
 	char s[80];
-	FILE *f;
 	printf("%s", screenintro_text);
 
-	if (card_screentype != -1)
-		printf(" 5  Choose the server from the card definition, XF86_%s.\n\n",
-			card[card_selected].server);
-
-	printf("Which one of these screen types do you intend to run by default (1-%d)? ",
-		4 + (card_screentype != -1 ? 1 : 0));
+	printf("Which one of these four screen types do you intend to run by default (1-4)? ");
 	getstring(s);
 	config_screentype = atoi(s);
-	usecardscreentype = 0;
-	if (config_screentype == 5) {
-		config_screentype = card_screentype;	/* From definition. */
-		usecardscreentype = 1;
-	}
 	printf("\n");
 
 	printf("%s", screenlink_text);
-
-	f = fopen("/var/X11R6/bin", "r");
-	varlink = 0;
-	if (f != NULL) {
-		varlink = 1;
-		printf("%s", varlink_text);
-		fclose(f);
-	}
-
 	printf("Please answer the following question with either 'y' or 'n'.\n");
 	printf("Do you want me to set the symbolic link? ");
 	getstring(s);
 	printf("\n");
 	if (answerisyes(s)) {
 		char *servername;
-		if (varlink) {
-			printf("Do you want to set it in /var/X11R6/bin? ");
-			getstring(s);
-			printf("\n");
-			if (!answerisyes(s))
-				varlink = 0;
-		}
-		if (config_screentype == 4 && usecardscreentype)
-			/* Use screen type from card definition. */
-			servername = accelserver_name[card_accelserver];
-		else
 		if (config_screentype == 4) {
 			/* Accel server. */
 			printf("%s", screenaccelservers_text);
-			for (i = 0; i < NU_ACCEL_SERVERS; i++)
+			for (i = 0; i < 7; i++)
 				printf("%2d  %s\n", i + 1,
 					accelserver_name[i]);
 			printf("\n");
@@ -1018,16 +645,9 @@ void screen_configuration() {
 			case 2 : servername = "XF86_VGA16"; break;
 			case 3 : servername = "XF86_SVGA"; break;
 			}
-		if (varlink) {
-			system("rm -f /var/X11R6/bin/X");
-			sprintf(s, "ln -s /usr/X11R6/bin/%s /var/X11R6/bin/X",
-				servername);
-		}
-		else {
-			system("rm -f /usr/X11R6/bin/X");
-			sprintf(s, "ln -s /usr/X11R6/bin/%s /usr/X11R6/bin/X",
-				servername);
-		}
+		system("rm -f /usr/X11R6/bin/X");
+		sprintf(s, "ln -s /usr/X11R6/bin/%s /usr/X11R6/bin/X",
+			servername);
 		system(s);
 	}
 
@@ -1048,7 +668,7 @@ void screen_configuration() {
 	printf("Enter your choice: ");
 	getstring(s);
 	printf("\n");
-
+	
 	c = atoi(s) - 1;
 	if (c < 5)
 		config_videomemory = videomemory[c];
@@ -1060,17 +680,11 @@ void screen_configuration() {
 	}
 
 	printf("%s", carddescintro_text);
-	if (card_selected != -1)
-		printf("Your card definition is %s.\n\n",
-			card[card_selected].name);
 	printf("The strings are free-form, spaces are allowed.\n");
 	printf("Enter an identifier for your video card definition: ");
 	getstring(s);
 	if (strlen(s) == 0)
-		if (card_selected != -1)
-			config_deviceidentifier = card[card_selected].name;
-		else
-			config_deviceidentifier = "My Video Card";
+		config_deviceidentifier = "My Video Card";
 	else {
 		config_deviceidentifier = malloc(strlen(s) + 1);
 		strcpy(config_deviceidentifier, s);
@@ -1097,11 +711,13 @@ void screen_configuration() {
 
 	emptylines();
 
+	printf("%s", devicecomment_text);
+
 	/*
 	 * Initialize screen mode variables for svga and accel
 	 * to default values.
 	 * XXXX Doesn't leave room for off-screen caching in 16/32bpp modes
-	 *      for the accelerated servers in some situations.
+	 *      for the accelerated servers.
 	 */
 	config_modesline8bpp =
 	config_modesline16bpp =
@@ -1177,82 +793,12 @@ void screen_configuration() {
 	}
 
 	/*
-	 * Handle the Ramdac/Clockchip setting.
-	 */
-
-	printf("%s", devicesettingscomment_text);
-
-	if (config_screentype != 4)
-		goto skipramdacselection;
-
-	printf("%s", ramdaccomment_text);
-
-	for (i = 0; i < NU_RAMDACS; i++)
-		printf("%2d  %-60s%s\n",
-			i + 1, ramdac_name[i], ramdac_id[i]);
-
-	printf("\n");
-
-	if (card_selected != -1)
-		if (card[card_selected].ramdac != NULL)
-			printf("The card definition has Ramdac \"%s\".\n\n",
-				card[card_selected].ramdac);
-
-	printf("Just press enter if you don't want a Ramdac setting.\n");
-	printf("What Ramdac setting do you want (1-%d)? ", NU_RAMDACS);
-
-	getstring(s);
-	config_ramdac = NULL;
-	if (strlen(s) > 0)
-		config_ramdac = ramdac_id[atoi(s) - 1];
-
-	printf("\n");
-skipramdacselection:
-
-	printf("%s", clockchipcomment_text);
-
-	for (i = 0; i < NU_CLOCKCHIPS; i++)
-		printf("%2d  %-60s%s\n",
-			i + 1, clockchip_name[i], clockchip_id[i]);
-
-	printf("\n");
-
-	if (card_selected != -1)
-		if (card[card_selected].clockchip != NULL)
-			printf("The card definition has Clockchip \"%s\"\n\n",
-				card[card_selected].clockchip);
-
-	printf("Just press enter if you don't want a Clockchip setting.\n");
-	printf("What Clockchip setting do you want (1-%d)? ", NU_CLOCKCHIPS);
-
-	getstring(s);
-	config_clockchip = NULL;
-	if (strlen(s) > 0)
-		config_clockchip = clockchip_id[atoi(s) - 1];
-
-	emptylines();
-
-	/*
 	 * Optionally run X -probeonly to figure out the clocks.
 	 */
 
 	config_numberofclockslines = 0;
 
-	printf("%s", deviceclockscomment_text);
-
 	printf("%s", deviceclocksquestion_text);
-
-	if (card_selected != -1)
-		if (card[card_selected].flags & NOCLOCKPROBE)
-			printf("The card definition says to NOT probe clocks.\n");
-
-	if (config_clockchip != NULL) {
-		printf("Because you have enabled a Clockchip line, there's no need for clock\n"
-			"probing.\n");
-		keypress();
-		goto skipclockprobing;
-	}
-
 	printf("Do you want me to run 'X -probeonly' now? ");
 	getstring(s);
 	printf("\n");
@@ -1267,14 +813,9 @@ skipramdacselection:
 			printf("Sorry, you must be root to do this.\n\n");
 			goto endofprobeonly;
 		}
-		printf("%s", probeonlywarning_text);
-		keypress();
-		printf("Running X -probeonly -pn -xf86config "
-			TEMPORARY_XF86CONFIG_FILENAME ".\n");
-		write_XF86Config(TEMPORARY_XF86CONFIG_FILENAME);
-		sync();
-		if (system("X -probeonly -pn -xf86config "
-		TEMPORARY_XF86CONFIG_FILENAME " 2>/tmp/dumbconfig.2")) {
+		printf("Running X -probeonly -pn -xf86config /usr/X11R6/lib/X11/XF86Config.tmp.\n");
+		write_XF86Config("/usr/X11R6/lib/X11/XF86Config.tmp");
+		if (system("X -probeonly -pn -xf86config /usr/X11R6/lib/X11/XF86Config.tmp 2>/tmp/dumbconfig.2")) {
 			printf("X -probeonly call failed.\n");
 			printf("No Clocks line inserted.\n");
 			goto clocksprobefailed;
@@ -1309,13 +850,12 @@ skipramdacselection:
 clocksprobefailed:
 		unlink("/tmp/dumbconfig.3");
 		unlink("/tmp/dumbconfig.2");
-		unlink(TEMPORARY_XF86CONFIG_FILENAME);
+		unlink("/usr/X11R6/lib/X11/XF86Config.tmp");
 		printf("\n");
 
 endofprobeonly:
 		keypress();
 	}
-skipclockprobing:
 
 	/*
 	 * For the mono and vga16 server, no further configuration is
@@ -1361,7 +901,7 @@ skipclockprobing:
 
 		modes[0] = '\0';
 		for (i = 0; i < strlen(s); i++) {
-			if (s[i] < '1' || s[i] > '0' + NU_MODESTRINGS) {
+			if (s[i] < '1' || s[i] > '5') {
 				printf("Invalid mode skipped.\n");
 				continue;
 			}
@@ -1432,25 +972,16 @@ static char *XF86Config_firstchunk_text =
 "\n"
 "Section \"Files\"\n"
 "\n"
-"# The location of the RGB database.  Note, this is the name of the\n"
-"# file minus the extension (like \".txt\" or \".db\").  There is normally\n"
-"# no need to change the default.\n"
-"\n"
 "    RgbPath	\"/usr/X11R6/lib/X11/rgb\"\n"
 "\n"
 "# Multiple FontPath entries are allowed (which are concatenated together),\n"
 "# as well as specifying multiple comma-separated entries in one FontPath\n"
 "# command (or a combination of both methods)\n"
-"# \n"
-"# If you don't have a floating point coprocessor and emacs, Mosaic or other\n"
-"# programs take long to start up, try moving the Type1 and Speedo directory\n"
-"# to the end of this list (or comment them out).\n"
-"# \n"
 "\n"
 "    FontPath	\"/usr/X11R6/lib/X11/fonts/misc/\"\n"
-"    FontPath	\"/usr/X11R6/lib/X11/fonts/Type1/\"\n"
-"    FontPath	\"/usr/X11R6/lib/X11/fonts/Speedo/\"\n"
-"    FontPath	\"/usr/X11R6/lib/X11/fonts/75dpi/\"\n"
+"        FontPath	\"/usr/X11R6/lib/X11/fonts/Type1/\"\n"
+"        FontPath	\"/usr/X11R6/lib/X11/fonts/Speedo/\"\n"
+"        FontPath	\"/usr/X11R6/lib/X11/fonts/75dpi/\"\n"
 "    FontPath	\"/usr/X11R6/lib/X11/fonts/100dpi/\"\n"
 "\n"
 "EndSection\n"
@@ -1468,14 +999,8 @@ static char *XF86Config_firstchunk_text =
 "#    NoTrapSignals\n"
 "\n"
 "# Uncomment this to disable the <Crtl><Alt><BS> server abort sequence\n"
-"# This allows clients to receive this key event.\n"
 "\n"
 "#    DontZap\n"
-"\n"
-"# Uncomment this to disable the <Crtl><Alt><KP_+>/<KP_-> mode switching\n"
-"# sequences.  This allows clients to receive these key events.\n"
-"\n"
-"#    DontZoom\n"
 "\n"
 "EndSection\n"
 "\n"
@@ -1497,18 +1022,16 @@ static char *XF86Config_firstchunk_text =
 "#    Protocol	\"Xqueue\"\n"
 "\n"
 "    AutoRepeat	500 5\n"
-"# Let the server do the NumLock processing.  This should only be required\n"
-"# when using pre-R6 clients\n"
-"#    ServerNumLock\n"
+"    ServerNumLock\n"
 "\n"
 "# Specifiy which keyboard LEDs can be user-controlled (eg, with xset(1))\n"
 "#    Xleds      1 2 3\n"
 "\n"
 "# To set the LeftAlt to Meta, RightAlt key to ModeShift, \n"
 "# RightCtl key to Compose, and ScrollLock key to ModeLock:\n"
-"\n";
-
-static char *keyboardlastchunk_text =
+"\n"
+"#    LeftAlt     Meta\n"
+"#    RightAlt    ModeShift\n"
 "#    RightCtl    Compose\n"
 "#    ScrollLock  ModeLock\n"
 "\n"
@@ -1589,14 +1112,6 @@ static char *monitorsection_text4 =
 "\n";
 
 static char *modelines_text =
-"# This is a set of standard mode timings. Modes that are out of monitor spec\n"
-"# are automatically deleted by the server (provided the HorizSync and\n"
-"# VertRefresh lines are correct), so there's no immediate need to\n"
-"# delete mode timings (unless particular mode timings don't work on your\n"
-"# monitor). With these modes, the best standard mode that your monitor\n"
-"# and video card can support for a given resolution is automatically\n"
-"# used.\n"
-"\n"
 "# 640x400 @ 70 Hz, 31.5 kHz hsync\n"
 "Modeline \"640x400\"     25.175 640  664  760  800   400  409  411  450\n"
 "# 640x480 @ 60 Hz, 31.5 kHz hsync\n"
@@ -1628,35 +1143,7 @@ static char *modelines_text =
 "\n"
 "# 1280x1024 @ 74 Hz, 78.85 kHz hsync\n"
 "Modeline \"1280x1024\"  135    1280 1312 1456 1712  1024 1027 1030 1064\n"
-"\n"
-#if XFREE86_VERSION >= 311
-"# Low-res Doublescan modes\n"
-"# If your chipset does not support doublescan, you get a 'squashed'\n"
-"# resolution like 320x400.\n"
-"\n"
-"# 320x200 @ 70 Hz, 31.5 kHz hsync, 8:5 aspect ratio\n"
-"Modeline \"320x200\"     12.588 320  336  384  400   200  204  205  225 Doublescan\n"
-"# 320x240 @ 60 Hz, 31.5 kHz hsync, 4:3 aspect ratio\n"
-"Modeline \"320x240\"     12.588 320  336  384  400   240  245  246  262 Doublescan\n"
-"# 320x240 @ 72 Hz, 36.5 kHz hsync\n"
-"Modeline \"320x240\"     15.750 320  336  384  400   240  244  246  262 Doublescan\n"
-"# 400x300 @ 56 Hz, 35.2 kHz hsync, 4:3 aspect ratio\n"
-"ModeLine \"400x300\"     18     400  416  448  512   300  301  602  312 Doublescan\n"
-"# 400x300 @ 60 Hz, 37.8 kHz hsync\n"
-"Modeline \"400x300\"     20     400  416  480  528   300  301  303  314 Doublescan\n"
-"# 400x300 @ 72 Hz, 48.0 kHz hsync\n"
-"Modeline \"400x300\"     25     400  424  488  520   300  319  322  333 Doublescan\n"
-"# 480x300 @ 56 Hz, 35.2 kHz hsync, 8:5 aspect ratio\n"
-"ModeLine \"480x300\"     21.656 480  496  536  616   300  301  302  312 Doublescan\n"
-"# 480x300 @ 60 Hz, 37.8 kHz hsync\n"
-"Modeline \"480x300\"     23.890 480  496  576  632   300  301  303  314 Doublescan\n"
-"# 480x300 @ 63 Hz, 39.6 kHz hsync\n"
-"Modeline \"480x300\"     25     480  496  576  632   300  301  303  314 Doublescan\n"
-"# 480x300 @ 72 Hz, 48.0 kHz hsync\n"
-"Modeline \"480x300\"     29.952 480  504  584  624   300  319  322  333 Doublescan\n"
-"\n"
-#endif
-;
+"\n";
 
 static char *devicesection_text =
 "# **********************************************************************\n"
@@ -1722,19 +1209,6 @@ void write_XF86Config(filename)
 	fprintf(f, "%s", XF86Config_firstchunk_text);
 
 	/*
-	 * Write keyboard section.
-	 */
-	if (config_altmeta) {
-		fprintf(f, "    LeftAlt     Meta\n");
-		fprintf(f, "    RightAlt    ModeShift\n");
-	}
-	else {
-		fprintf(f, "#    LeftAlt     Meta\n");
-		fprintf(f, "#    RightAlt    ModeShift\n");
-	}
-	fprintf(f, "%s", keyboardlastchunk_text);
-
-	/*
 	 * Write pointer section.
 	 */
 	fprintf(f, "%s", pointersection_text1);
@@ -1749,10 +1223,6 @@ void write_XF86Config(filename)
 	if (!config_chordmiddle)
 		fprintf(f, "#");
 	fprintf(f, "    ChordMiddle\n\n");
-	if (config_cleardtrrts) {
-		fprintf(f, "    ClearDTR\n");
-		fprintf(f, "    ClearRTS\n\n");
-	}
 	fprintf(f, "EndSection\n\n\n");
 
 	/*
@@ -1782,22 +1252,9 @@ void write_XF86Config(filename)
 	fprintf(f, "    Identifier  \"%s\"\n", config_deviceidentifier);
 	fprintf(f, "    VendorName  \"%s\"\n", config_devicevendorname);
 	fprintf(f, "    BoardName   \"%s\"\n", config_deviceboardname);
-	/* Rely on server to detect video memory. */
-	fprintf(f, "    #VideoRam    %d\n", config_videomemory);
-	if (card_selected != -1)
-		/* Add comment lines from card definition. */
-		fprintf(f, card[card_selected].lines);
-	if (config_ramdac != NULL)
-		fprintf(f, "    Ramdac      \"%s\"\n", config_ramdac);
-	if (card_selected != -1)
-		if (card[card_selected].dacspeed != NULL)
-			fprintf(f, "    Dacspeed    \"%s\"\n",
-				card[card_selected].dacspeed);
-	if (config_clockchip != NULL)
-		fprintf(f, "    Clockchip   \"%s\"\n", config_clockchip);
-	else
+	fprintf(f, "    VideoRam    %d\n", config_videomemory);
 	if (config_numberofclockslines == 0)
-		fprintf(f, "    # Insert Clocks lines here if appropriate\n");
+		fprintf(f, "    # Insert Clocks lines here\n");
 	else {
 		int i;
 		for (i = 0; i < config_numberofclockslines; i++)
@@ -1952,11 +1409,7 @@ void write_XF86Config(filename)
 	 * The Accel section.
 	 */
 	fprintf(f, 
-#if XFREE86_VERSION >= 311
-		"# The accelerated servers (S3, Mach32, Mach8, 8514, P9000, AGX, W32, Mach64)\n"
-#else
 		"# The accelerated servers (S3, Mach32, Mach8, 8514, P9000, AGX, W32)\n"
-#endif
 		"\n"
 		"Section \"Screen\"\n"
 		"    Driver      \"accel\"\n"
@@ -2009,28 +1462,12 @@ char *ask_XF86Config_location() {
 "overwrite a previously configured one.\n\n");
 
 	if (getuid() == 0) {
-#ifdef PREFER_XF86CONFIG_IN_ETC
-		printf("Shall I write it to /etc/XF86Config? ");
-		getstring(s);
-		printf("\n");
-		if (answerisyes(s))
-			return "/etc/XF86Config";
-#endif
-
 		printf("Please answer the following question with either 'y' or 'n'.\n");
 		printf("Shall I write it to the default location, /usr/X11R6/lib/X11/XF86Config? ");
 		getstring(s);
 		printf("\n");
 		if (answerisyes(s))
 			return "/usr/X11R6/lib/X11/XF86Config";
-
-#ifndef PREFER_XF86CONFIG_IN_ETC
-		printf("Shall I write it to /etc/XF86Config? ");
-		getstring(s);
-		printf("\n");
-		if (answerisyes(s))
-			return "/etc/XF86Config";
-#endif
 	}
 
 	printf("Do you want it written to the current directory as 'XF86Config'? ");
@@ -2039,7 +1476,7 @@ char *ask_XF86Config_location() {
 	if (answerisyes(s))
 		return "XF86Config";
 
-	printf("Please give a filename to write to: ");
+	printf("Please give a path+filename to write to: ");
 	getstring(s);
 	printf("\n");
 	filename = malloc(strlen(s) + 1);
@@ -2058,20 +1495,11 @@ static char *oldxfree86_text =
 "XFree86 installed (XFree86 3.1 installs in '/usr/X11R6' instead of\n"
 "'/usr/X386').\n"
 "\n"
-"It is important that the directory '/usr/X11R6/bin' is present in your\n"
+"It is imperative that the directory '/usr/X11R6/bin' is present in your\n"
 "search path, *before* any occurrence of '/usr/X386/bin'. If you have installed\n"
 "X program binaries that are not in the base XFree86 distribution in\n"
 "'/usr/X386/bin', you can keep the directory in your path as long as it is\n"
 "after '/usr/X11R6/bin'.\n"
-"\n";
-
-static char *notinstalled_text =
-"The directory /usr/X11R6 does not exist. This probably means that you have\n"
-"not yet installed an X11R6-based version of XFree86. Please install\n"
-"XFree86 3.1+ before running this program, following the instructions in\n"
-"the INSTALL or README that comes with the XFree86 distribution for your OS.\n"
-"For a minimal installation it is sufficient to only install base binaries,\n"
-"libraries, configuration files and a server that you want to use.\n"
 "\n";
 
 static char *pathnote_text =	
@@ -2083,20 +1511,7 @@ static char *pathnote_text =
 "Make sure the path is OK before continuing.\n";
 
 void path_check() {
-	char s[80];
 	FILE *f;
-
-	f = fopen("/usr/X11R6", "r");
-	if (f == NULL) {
-		printf("%s", notinstalled_text);
-		printf("Do you want to continue? ");
-		getstring(s);
-		if (!answerisyes(s))
-			exit(-1);
-		printf("\n");
-	}
-	fclose(f);
-
 	f = fopen("/usr/X386/bin", "r");
 	if (f == NULL)
 		return;
@@ -2130,15 +1545,7 @@ void main() {
 
 	emptylines();
 
-	keyboard_configuration();
-
-	emptylines();
-
 	monitor_configuration();
-
-	emptylines();
-
-	carddb_configuration();
 
 	emptylines();
 

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.23 94/04/17 20:28:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_line.c,v 3.0 1994/12/25 12:35:06 dawes Exp $ */
+/* $XFree86$ */
 
 /*
  * Modified: Harm Hanemaayer (hhanemaa@cs.ruu.nl)
@@ -62,7 +62,7 @@ SOFTWARE.
 #include "compiler.h"
 #include "linearline.h"
 #include "cir_driver.h"
-#include "cirBlitMM.h"		/* MMIO BitBLT commands */
+#include "cir_blitmm.h"		/* MMIO BitBLT commands */
 
 /*
  * The following define enables calls to the optimized linear framebuffer

@@ -1,1058 +1,638 @@
-  README for XFree86[TM] 3.1.1
-  The XFree86 Project, Inc
 
-  15 January 1995
-
-  XFree86 is a port of X11R6 that supports several versions of Intel-
-  based Unix and Unix-like operating systems.  This release consists of
-  many new features and performance improvements as well as many bug
-  fixes.  The release is available as source patches against the X Con-
-  sortium X11R6 code, as well as binary distributions for many architec-
-  tures.
-
-  1.  What's new in XFree86 3.1.1
-
-
-  The following items have been added since XFree86 3.1 was released in
-  October 1994:
-
-     1. XFree86 3.1.1 includes the X Consortium's recently released
-        public patches (up to fix-11).  The XFree86 Project, Inc has
-        worked with the X Consortium to have much of XFree86 3.1.1
-        included in the X Consortium's fix-11.
-
-     2. A new accelerated server for Mach64 boards.
-
-     3. Support for the S3 Trio32 and Trio64 chipsets.
-
-     4. Support in the S3 server for the Chrontel 8391 clock chip.
-
-     5. Support for SPEA Mercury P64 and MIRO Crystal 40SV.
-
-     6. Bug fixes and some performance improvements for most of the
-        accelerated servers.
-
-     7. Support for `double scan' video modes (most servers).
-
-     8. New chipset support for the SVGA server.  This includes the
-        Avance Logic 2228/2301, Chips & Technology 655xx, Cirrus Logic
-        6440, and Oak OTI-087.  Accelerated support is included for the
-        OTI-087.
-
-     9. Support for FreeBSD 2.0.
-
-     10.
-        Preliminary support for OS/2 (client-only at this stage; this is
-        still under development).
-
-     11.
-        Linear aperture access when running on BSD/386.
-
-     12.
-        16bpp and 32bpp support for more S3 boards (refer to README.S3
-        (S3.html) for details).
-
-     13.
-        Support for ISC's SVR3 (only tested for 3.x and 4.x).
-
-     14.
-        The `xf86config' utility for generating XF86Config files has
-        been improved and now uses a database of video cards.
-
-     15.
-        The X server LinkKit has been updated to include support for
-        LBX.
-
-
-     16.
-        The slow X server startup time on machines without hardware
-        floating point has been improved.
-
-  Plus a number of other small items.  Refer to the CHANGELOG file in
-  the source distribution for full details.
-
-
-  2.  What's new in XFree86 3.1?
-
-
-  The following items have been added since XFree86 2.1.1 was released
-  in May 1994:
-
-     1. XFree86 is now based on X11R6, including shared library support
-        for SVR4, Linux, FreeBSD and NetBSD.
-
-     2. New configuration file format. One of the biggest changes that
-        you will notice with the new XFree86 version is that the old
-        Xconfig file has been replaced by an XF86Config file.For further
-        details, see the section ``Important Changes'' below.
-
-     3. Support is included for the X Image Extension (XIE).
-
-     4. A new accelerated server for boards based on the Weitek P9000
-        chipset.
-
-     5. A new accelerated server for boards based on the AGX chipsets.
-
-     6. A new accelerated server for boards based on the Tseng
-        ET4000/W32 series of chipsets.
-
-     7. Support for the S3 Vision 864 and 964 chipsets (including boards
-        like the ELSA Winner 1000Pro and 2000Pro, Number Nine GXE64 and
-        GXE64Pro, Miro Crystal 20SV).
-
-     8. 16bpp support for some Mach32 boards.
-
-     9. 16bpp and 32bpp support for P9000 boards.
-
-     10.
-        16bpp and 32bpp support for some S3 boards.
-
-     11.
-        Improved Cirrus accelerated support (including 5434), and 16bpp
-        and 32bpp support for some Cirrus boards.
-
-     12.
-        Accelerated support for Western Digital WD90C33 boards.
-
-     13.
-        Support for the S3 GENDAC, S3 SDAC, AT&T 20C498, STG1700 and
-        TI3025 RAMDACS in the S3 server.
-
-     14.
-        Support for the S3 GENDAC, S3 SDAC, ICS2595, and TI3025
-        programmable clocks in the S3 server.
-
-     15.
-        New SVGA drivers for the AL2101, MX68000/MX68010, Video7, Cirrus
-        CL6420 chipsets.
-
-     16.
-        Significantly updated ATI vgawonder driver, including
-        unaccelerated support for Mach64 boards.
-
-     17.
-        A generic VGA driver for the SVGA server (fixed 320x200 at
-        8bpp).
-
-     18.
-        Dual-headed vga2/mono and vga16/mono servers.
-
-     19.
-        Significant updates to the VGA16 code, including a wider range
-        of banking support.
-
-     20.
-        Incorporated the Screen Saver extension into the base server.
-
-     21.
-        Support for "green" monitor screen savers in S3 and SVGA
-        servers.
-
-     22.
-        Support for the "experimental" LBX code included with X11R6.
-
-  Plus a number of other small things.  Refer to the CHANGELOG file in
-  the source distribution for full details.
-
-
-
-  3.  Systems XFree86 has been tested on
-
-
-
-     SVR4.0:
-
-        o  Esix: 4.0.3A, 4.0.4, 4.0.4.1
-
-        o  Microport: 2.2, 3.1, 4.1, 4.2
-
-        o  Dell: 2.1, 2.2, 2.2.1
-
-        o  UHC: 2.0, 3.6
-
-        o  Consensys: 1.2
-
-        o  MST: 4.0.3 (Load 2.07 and Load 3.02)
-
-        o  ISC: 4.0.3
-
-        o  AT&T: 2.1, 4.0
-
-        o  NCR: MP-RAS
-
-        o  SunSoft: Solaris x86 2.1, 2.4
-
-
-
-     SVR4.2:
-
-        o  Consensys
-
-        o  Novell UnixWare
-
-
-
-     SVR3:
-
-        o  SCO: 3.2.2, 3.2.4
-
-        o  ISC: 3.0, 4.0, 4.1
-
-
-
-     Others:
-
-        o  NetBSD 1.0,
-
-        o  FreeBSD 1.1.5.1, 2.0
-
-        o  BSD/386 1.1
-
-        o  Mach 386
-
-        o  Linux
-
-        o  Amoeba
-
-        o  Minix-386
-
-
-
-
-  4.  Supported video-card chip-sets
-
-
-  At this time, XFree86 3.1.1 supports the following accelerated
-  chipsets:
-
-
-     8514/A
-        (and true clones)
-
-     ATI
-        Mach8, Mach32, Mach64
-
-     Cirrus
-        CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
-        CLGD5430, CLGD5434
-
-     S3 86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C864, 86C964,
-        86C732, 86C764
-
-     Western Digital
-        WD90C31, WD90C33
-
-     Weitek
-        P9000
-
-     IIT
-        AGX-014, AGX-015, AGX-016
-
-     Tseng
-        ET4000/W32, ET4000/W32i, ET4000/W32p
-
-  The Cirrus, Western Digital and Oak accelerators are supported in the
-  SVGA server; the other chipsets each have their own server.  A list of
-  some cards which the accelerated servers have been tested is included
-  in the files AccelCards, Devices, and some of the chipset-specific
-  README files.  They may well work on other cards, but we cannot
-  guarantee it.
-
-  In addition, the following SVGA chipsets are supported:
-
-     Tseng
-        ET3000, ET4000AX, ET4000/W32
-     Western Digital/Paradise
-        PVGA1
-
-     Western Digital
-        WD90C00, WD90C10, WD90C11, WD90C24, WD90C30, WD90C31,WD90C33
-
-     Genoa
-        GVGA
-
-     Trident
-        TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000,
-        TVGA9000i, TVGA9100B, TVGA9200CX, TVGA9320, TVGA9400CX, TVGA9420
-
-     ATI
-        18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3,
-        68800-6, 68800AX, 68800LX, 88800
-
-     NCR
-        77C22, 77C22E, 77C22E+
-
-     Cirrus Logic
-        CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
-        CLGD5430, CLGD5434, CLGD6205, CLGD6215, CLGD6225, CLGD6235,
-        CLGD6410, CLGD6412, CLGD6420, CLGD6440
-
-     Compaq
-        AVGA
-
-     OAK
-        OTI067, OTI077, OTI087
-
-     Avance Logic
-        ALG2101, ALG2228, ALG2301, ALG2302, ALG2308, ALG2401
-
-     Chips & Technology
-        65520, 65530, 65540, 65545
-
-     MX MX68000, MX680010
-
-      Video 7/Headland Technologies
-        HT216-32
-
-
-  All of the above are supported in both 256 color and monochrome modes,
-  with the exception of the Advance Logic, MX, Chips & Technology and
-  Video 7 chipsets, which are only supported in 256 color mode.
-
-  Refer to the chipset-specific README files (currently for Cirrus,
-  Tseng, Western Digital, ATI, Trident, Oak and Video 7) for more
-  information about using those chipsets.
-
-  The monochrome server also supports generic VGA cards, using 64k of
-  video memory in a single bank, the Hercules monochrome card, the
-  Hyundai HGC1280, Sigma LaserView, Visa and Apollo monochrome cards.
-  On the Compaq AVGA, only 64k of video memory is supported for the
-  monochrome server, and the GVGA has not been tested with more than
-  64k.
-
-  The VGA16 server supports memory banking with the ET4000, Trident,
-  ATI, NCR, OAK and Cirrus 6420 chipsets allowing virtual display sizes
-  up to about 1600x1200 (with 1MB of video memory).  For other chipsets
-  the display size is limited to approximately 800x600.
-
-
-  Note: The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards
-  are NOT supported, even though they use the ET4000.  The Stealth 32
-  which uses the ET4000/W32p is also not supported.  Most other Diamond
-  boards will work with this release of XFree86.  Historically the
-  information required for this support was only available under non-
-  disclosure.  As of September 27, 1994, Diamond has verbally agreed to
-  provide The XFree86 Project, Inc. with detailed information about
-  Diamond products.  This should permit us to better support these in
-  future versions of XFree86.
-
-
-
-  5.  Important Changes
-
-
-  There are a number of important user-visible changes between XFree86
-  2.1.1 and XFree86 3.1.  The first is the default install location.
-  The XFree86 distribution is now installed by default under /usr/X11R6
-  instead of /usr/X386.  This moves away from the now out-dated "X386"
-  name, and it also makes it possible for both versions to co-exist.
-
-  The next major change is related to the server configuration file.
-  The old Xconfig file has been replaced in XFree86 3.1 by an XF86Config
-  file.  This is more than just a name change.  The new XF86Config file
-  uses a format that is quite different from the old Xconfig file.  The
-  new format is more structured, logical, and extensible than the old
-  format.  We realise that the transition to this new format won't be
-  without problems.  To help in this transition we have provided a
-  program (`reconfig') to convert the old Xconfig format into the new
-  XF86Config format.  This doesn't provide a perfect conversion mostly
-  because the new format contains more information than the old format.
-  Some manual editing will always be required.  One of the new types of
-  information the XF86Config contains is a description of the monitor(s)
-  you are using.  This addition allows the servers to check that the
-  video modes are within the specifications of the monitor.
-
-  For information about the new config file format and how to use it,
-  refer to the XF86Config(4/5) and  reconfig(1) manual pages, and the
-  README.Config file which can be found in /usr/X11R6/lib/X11/doc.
-
-  Another change related to the config file is the locations the servers
-  look for it in.  In previous releases the servers would look in places
-  which could be specified by the user.  This raised a number of
-  security concerns.  To address these, the server now only looks in
-  places which are normally under the control of the system
-  administrator.  For further details, refer to the XFree86(1) manual
-  page.
-
-
-
-
-  6.  Where to get more information
-
-
-  Additional documentation is available in the XFree86(1),
-  XF86Config(4/5), XF86_SVGA(1), XF86_Mono(1), XF86_VGA16(1) and
-  XF86_Accel(1) manual pages.  In addition, several README files and
-  tutorial documents are provided.  These are available in
-  /usr/X11R6/lib/X11/doc in the binary distributions, and in
-  xc/programs/Xserver/hw/xfree86/doc in the source distribution.
-
-  The files README.Config and VideoModes.doc should be consulted for
-  information on how to set up the XFree86 servers.  All supplied
-  documents and manual pages should be read before contacting the
-  XFree86 team for assistance.
-
-  Documentation on SVGA driver development can be found in the directory
-  /usr/X11R6/lib/Server/VGADriverDoc in the binary distribution, and in
-  the directory xc/programs/Xserver/hw/xfree86/VGADriverDoc in the
-  source distribution.
-
-  If you are totally at a loss, you can contact the XFree86 Support Team
-  at <XFree86@XFree86.Org>.
-
-  There is a Usenet news group comp.windows.x.i386unix that contains
-  mostly discussions about XFree86 and related topics. Many questions
-  can be answered there. The answers to common questions are found in
-  the corresponding FAQ.
-
-
-
-  7.  Credits
-
-
-  XFree86 was originally put together by:
-
-     o  David Dawes <dawes@XFree86.org>
-
-     o  Glenn Lai <glenn@cs.utexas.edu>
-
-     o  Jim Tsillas <jtsilla@ccs.neu.edu>
-
-     o  David Wexelblat <dwex@XFree86.org>
-
-  XFree86 support was integrated into the base X11R6 distribution by:
-
-     o  Stuart Anderson <Stuart.Anderson@ColumbiaSC.NCR.COM>
-
-     o  Doug Anson <danson@lgc.com>
-
-     o  Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
-
-     o  Mike Bernson <mike@mbsun.mlb.org>
-
-     o  Robin Cutshaw <robin@XFree86.org>
-
-     o  David Dawes <dawes@XFree86.org>
-
-     o  Marc Evans <marc@XFree86.org>
-
-     o  Pascal Haible <haible@izfm.uni-stuttgart.de>
-
-     o  Matthieu Herrb <Matthieu.Herrb@laas.fr>
-
-     o  Dirk Hohndel <hohndel@XFree86.org>
-
-     o  David Holland <davidh@use.com>
-
-     o  Alan Hourihane <alanh@fairlite.demon.co.uk>
-
-     o  Jeffrey Hsu <hsu@soda.berkeley.edu>
-
-     o  Glenn Lai <glenn@cs.utexas.edu>
-
-     o  Ted Lemon <mellon@ncd.com>
-
-     o  Rich Murphey <rich@XFree86.org>
-
-     o  Hans Nasten <nasten@everyware.se>
-
-     o  Mark Snitily <mark@sgcs.com>
-
-     o  Randy Terbush <randyt@cse.unl.edu>
-
-     o  Jon Tombs <tombs@XFree86.org>
-
-     o  Kees Verstoep <versto@cs.vu.nl>
-
-     o  Paul Vixie <paul@vix.com>
-
-     o  Mark Weaver <Mark_Weaver@brown.edu>
-
-     o  David Wexelblat <dwex@XFree86.org>
-
-     o  Philip Wheatley <Philip.Wheatley@ColumbiaSC.NCR.COM>
-
-     o  Thomas Wolfram <wolf@prz.tu-berlin.de>
-
-     o  Orest Zborowski <orestz@eskimo.com>
-
-
-     386BSD, FreeBSD, NetBSD  support by:
-
-        o  Rich Murphey <Rich@XFree86.org>
-
-     NetBSD  support by:
-
-        o  Matthieu Herrb <Matthieu.Herrb.@laas.fr>
-
-     Original 386BSD port by:
-
-        o  Pace Willison,
-
-        o  Amancio Hasty Jr <hasty@netcom.com>
-
-     Mach 386 support by:
-
-        o  Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
-
-     Linux support by:
-
-        o  Orest Zborowski <orestz@eskimo.com>
-
-     SCO Unix support by:
-
-        o  David McCullough <davidm@stallion.oz.au>
-
-     Amoeba support by:
-
-        o  Kees Verstoep <versto@cs.vu.nl>
-
-     Minix-386 support by:
-
-        o  Philip Homburg <philip@cs.vu.nl>
-
-     OSF/1 support by:
-
-        o  Marc Evans <Marc@Synergytics.Com>
-
-     BSD/386 support by:
-
-        o  Hans Nasten <nasten@everyware.se>,
-
-        o  Paul Vixie <paul@vix.com>
-
-     Solaris support by:
-
-        o  Doug Anson <danson@lgc.com>,
-
-
-        o  David Holland <davidh@use.com>
-
-     ISC SVR3 support by:
-
-        o  Michael Rohleder
-           <michael.rohleder%iktffm.uucp@germany.eu.net>
-
-     Linux shared libraries by:
-
-        o  Orest Zborowski <orestz@eskimo.com>,
-
-        o  Dirk Hohndel <hohndel@XFree86.org>
-
-
-     Original accelerated code by:
-
-        o  Kevin Martin <martin@cs.unc.edu>,
-
-        o  Rik Faith <faith@cs.unc.edu>,
-
-        o  Jon Tombs <tombs@XFree86.org>
-
-     S3 accelerated code by:
-
-        o  Jon Tombs <tombs@XFree86.org>,
-
-        o  David Wexelblat <dwex@XFree86.org>,
-
-        o  David Dawes <dawes@XFree86.org>,
-
-        o  Robin Cutshaw <robin@XFree86.org>,
-
-        o  Amancio Hasty <hasty@netcom.com>,
-
-        o  Norbert Distler <Norbert.Distler@physik.tu-muenchen.de>,
-
-        o  Leonard N. Zubkoff <lnz@dandelion.com>,
-
-        o  Harald Koenig <koenig@tat.physik.uni-tuebingen.de>,
-
-        o  Bernhard Bender <br@elsa.mhs.compuserve.com>
-
-     Mach32 accelerated code by:
-
-        o  Kevin Martin <martin@cs.unc.edu>,
-
-        o  Rik Faith <faith@cs.unc.edu>,
-
-        o  Mike Bernson <mike@mbsun.mlb.org>,
-
-        o  Mark Weaver <Mark_Weaver@brown.edu>,
-
-        o  Craig Groeschel <craig@metrolink.com>
-
-     Mach64 accelerated code by:
-
-        o  Kevin Martin <martin@cs.unc.edu>,
-
-     Mach8, 8514 accelerated code by:
-
-        o  Kevin Martin <martin@cs.unc.edu>,
-
-        o  Rik Faith <faith@cs.unc.edu>,
-
-        o  Tiago Gons <tiago@comosjn.hobby.nl>,
-
-        o  Hans Nasten <nasten@everyware.se>,
-
-        o  Scott Laird <lair@midway.uchicago.edu>
-
-     Cirrus accelerated code by:
-
-        o  Simon Cooper <scooper@vizlab.rutgers.edu>,
-
-        o  Harm Hanemaayer <hhanemaa@cs.ruu.nl>,
-
-        o  Bill Reynolds <bill@goshawk.lanl.gov>
-
-     Western Digital accelerated code by:
-
-        o  Mike Tierney <floyd@pepsi.eng.umd.edu>,
-
-        o  Bill Conn <conn@bnr.ca>
-
-     Oak Technologies Inc. accelerated code by:
-
-        o  Jorge Delgado <ernar@dit.upm.es>,
-
-
-     16 color VGA server by:
-
-        o  Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
-
-
-     2 color VGA and non-VGA mono servers by:
-
-        o  Pascal Haible <haible@izfm.uni-stuttgart.de>
-
-
-     ATI SVGA driver by:
-
-        o  Per Lindqvist <pgd@compuram.bbt.se> and Doug Evans
-           <dje@cygnus.com>.
-
-        o  Ported to X11R5 by Rik Faith <faith@cs.unc.edu>.
-
-        o  Rewritten by Marc La France <tsi@ualberta.ca>
-
-     Trident SVGA driver by:
-
-        o  Alan Hourihane <alanh@fairlite.demon.co.uk>
-
-     NCR SVGA driver by:
-
-        o  Stuart Anderson <Stuart.Anderson@ColumbiaSC.NCR.COM> with the
-           permission of NCR Corporation
-
-     Cirrus SVGA driver by:
-
-        o  Bill Reynolds <bill@goshawk.lanl.gov>,
-
-        o  Hank Dietz <hankd@ecn.purdue.edu>,
-
-        o  Simon Cooper <scooper@vizlab.rutgers.edu>,
-
-        o  Harm Hanemaayer <hhanemaa@cs.ruu.nl>,
-
-     Cirrus CL64xx driver by:
-
-        o  Manfred Brands <mb@oceonics.nl>
-
-
-        o  Randy Hendry <randy@sgi.com>
-
-        o  Jeff Kirk <jeff@bambam.dsd.ES.COM>
-
-     Compaq SVGA driver by:
-
-        o  Hans Oey <hans@mo.hobby.nl>
-
-     Oak SVGA driver by:
-
-        o  Steve Goldman <sgoldman@encore.com>
-
-        o  Jorge Delgado <ernar@dit.upm.es>
-
-     AL2101 SVGA driver by:
-
-        o  Paolo Severini <lendl@dist.dist.unige.it>
-
-     Avance Logic ``ali'' SVGA driver by:
-
-        o  Ching-Tai Chiu <cchiu@netcom.com>
-
-     MX SVGA driver by:
-
-        o  Frank Dikker <dikker@cs.utwente.nl>
-
-     Video7 SVGA driver by:
-
-        o  Craig Struble <cstruble@acm.vt.edu>
-
-
-     Apollo Mono driver by:
-
-        o  Hamish Coleman <hamish@zot.apana.org.au>
-
-
-     Other contributors:
-
-        o  Joerg Wunsch <joerg_wunsch@uriah.sax.de> (ET3000 banked
-           mono),
-
-        o  Eric Raymond <esr@snark.thyrsus.com> (new video mode
-           documentation),
-
-        o  and an entire horde of beta-testers around the world!
-
-
-  8.  Contact information
-
-
-  Ongoing development planning and support is coordinated by the XFree86
-  Core Team.  At this time the Core Team consists of (in alphabetical
-  order):
-
-     o  Robin Cutshaw <robin@XFree86.org>
-
-     o  David Dawes <dawes@XFree86.org>
-
-     o  Marc Evans <marc@XFree86.org>
-
-     o  Dirk Hohndel <hohndel@XFree86.org>
-
-     o  Rich Murphey <rich@XFree86.org>
-
-     o  Jon Tombs <tombs@XFree86.org>
-
-     o  David Wexelblat <dwex@XFree86.org>
-
-  Mail sent to <Core@XFree86.org> will reach the core team.  Please note
-  that support questions should be sent to <XFree86@XFree86.org>.
-
-
-  9.  The XFree86 Project, Inc.
-
-
-  The XFree86 Project, Inc, has been founded to accomplish two major
-  goals:
-
-     1. To provide a vehicle by which XFree86 can be represented in X
-        Consortium, Inc, the organization responsible for the design,
-        development, and release of The X Window System.
-
-     2. To provide some basic funding for acquisition of facilities for
-        ongoing XFree86 development, largely to consist of new video
-        hardware and basic computing facilities.
-
-  The first of these was the primary motivation.  We have held discus-
-  sions with the X Consortium on and off for many months, attempting to
-  find an avenue by which our loosely-organized free software project
-  could be given a voice within the X Consortium.  The bylaws of the
-  Consortium would not recognize such an organization.  After an initial
-  investigation about funding, we decided to form our own corporation to
-  provide the avenue we needed to meet the requirements of the X Consor-
-  tium bylaws.
-
-  By doing this, we were able to be involved in the beta-test interval
-  for X11R6, and have contributed the majority of XFree86 to the X11R6
-  core release.  The version of XFree86 in the initial X11R6 core is
-  3.0.  The version of XFree86 in the current X11R6 patched release is
-  3.1.1.  As time goes on, XFree86 will be involved with more of the
-  development of The X Window System, as a full Consortium member.  How
-  exactly this will evolve is still being determined.
-
-  An additional benefit of this incorporation is that The XFree86
-  Project, Inc has obtained outside financial support for our work.
-  This will hopefully give us the freedom to be more pro-active in
-  obtaining new video hardware, and enable us to release better products
-  more quickly, as we will be able to go and get what we need, and get
-  it into the hands of the people who can do the work.
-
-  The current Board of Directors and Officers of the The XFree86
-  Project, Inc, are:
-
-     o  David Dawes, President and Secretary
-
-     o  Dirk Hohndel, Vice-President
-
-     o  Glenn Lai, Director
-
-     o  Rich Murphey, Treasurer
-
-     o  Jim Tsillas, Director
-
-     o  Jon Tombs, Director
-
-     o  David Wexelblat, Director
-
-  Email to <BOD@XFree86.org> reaches the board of directors.
-
-  Our bylaws have been crafted in such a way to ensure that XFree86 is
-  and always will be a free software project.  There is no personal
-  financial benefit to any member of the Core Team or any other XFree86
-  participant.  All assets of the corporation remain with the
-  corporation, and, in the event of the dissolution of the corporation,
-  all assets will be turned over to the X Consortium, Inc.  It is hoped
-  that by doing this, our corporation will be merely a formalization of
-  what we have been doing in the past, rather than something entirely
-  new.
-
-  Here is a list of the organizations and individuals who have provided
-  sponsorship to The XFree86 Project, Inc, either by financial
-  contribution or by the donation of equipment and resources.  The
-  XFree86 Project, Inc gratefully acknowledges these contributions, and
-  hopes that we can do justice to them by continuing to release high-
-  quality free software for the betterment of the Internet community as
-  a whole.
-
-     o  UUNET Communications Services, Inc. (http://www.uu.net/)
-
-  UUNET Communications Services, Inc, deserves special mention.  This
-  organization stepped forward and contributed the entire 1994 X Consor-
-  tium membership fee on a moment's notice.  This single act ensured
-  XFree86's involvement in X11R6.
-
-     o  AIB Software Corporation (ftp://ftp.uu.net/vendor/AIB/), Dulles,
-        VA
-
-     o  Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
-
-     o  American Micro Group
-
-     o  AT&T Global Information Services (http://www.ncr.com/) (formerly
-        NCR)
-
-     o  Andrew Burgess
-
-     o  Berkeley Software Design, Inc (http://www.bsdi.com/), Falls
-        Church, VA
-
-     o  The Destek Group, Inc. (http://www.destek.net/Destek/), Pelham,
-        NH (formerly Synergytics)
-
-     o  Digital Equipment Corporation (http://www.digital.com/)
-
-     o  Elsa GmbH, Aachen, Germany
-
-     o  Dirk Hohndel
-
-     o  Frank & Paige McCormick
-
-     o  InfoMagic (http://www.infomagic.com/), Rocky Hill, NJ
-
-     o  LunetIX Softfair, Berlin, Germany
-
-     o  MIRO Computer Products AG, Braunschweig, Germany
-
-     o  Rich & Amy Murphey
-
-     o  Brett Neumeier
-
-     o  Number Nine, Lexington, MA
-
-     o  Kazuyuki Okamoto, Japan
-
-     o  Prime Time Freeware, San Bruno, CA
-
-     o  Red Hat Software, Chapel Hill, NC
-
-     o  SPEA Software AG, Starnberg, Germany
-
-     o  Clifford M Stein
-
-     o  Joel Storm
-
-     o  S.u.S.E, GmbH, Fuerth, Germany
-
-     o  Tekelec Airtronic GmbH, Muenchen, Germany
-
-     o  Jim Tsillas
-
-     o  Trans-Ameritech Enterprises, Inc., Santa Clara, CA
-
-     o  Unifix Software GmbH, Braunschweig, Germany
-
-     o  Vixie Enterprises (http://www.vix.com/), La Honda, CA
-
-     o  Walnut Creek CDROM (http://www.cdrom.com/), Concord, CA
-
-     o  Xtreme s.a.s., Livorno, Italy
-
-  The XFree86 Project, Inc, welcomes the additional contribution of
-  funding and/or equipment.  Such contributions should be tax-
-  deductible; we will know for certain when the lawyers get finished
-  with the papers.  For more information, contact The XFree86 Project,
-  Inc, at <BOD@XFree86.org>
-
-
-  10.  Source and binary archive sites
-
-
-  Source patches are available to upgrade X11R6 PL11 from the X
-  Consortium to XFree86 3.1.1.  They and binaries for many OSs are
-  available via anonymous FTP from:
-
-
-     o  ftp.XFree86.org:/pub/XFree86/current
-        (ftp://ftp.XFree86.org/pub/XFree86/current)
-
-  and the following mirror sites:
-
-     o  North America:
-
-        +  Xfree86.cdrom.com:/pub/XFree86
-           (ftp://xfree86.cdrom.com/pub/XFree86) (source and binaries)
-
-        +  ftp.bsdi.com:/contrib/X11/XFree86
-           (ftp://ftp.bsdi.com/contrib/X11/XFree86) (source and BSD/386
-           binaries)
-
-        +  ref.tfs.com:/pub/mirrors/XFree86
-           (ftp://ref.tfs.com/pub/mirrors/XFree86) (source and FreeBSD
-           binaries)
-
-        +  ftp.iastate.edu:/pub/netbsd/XFree86/XFree86-3.1.1
-           (ftp://ftp.iastate.edu/pub/netbsd/XFree86/XFree86-3.1.1)
-           (source and NetBSD binaries)
-
-        +  tsx-11.mit.edu:/pub/linux/packages/X11
-           (ftp://tsx-11.mit.edu/pub/linux/packages/X11) (Linux binaries
-           and source diffs)
-
-        +  ftp.eecs.umich.edu:/BSD/XFree86
-           (ftp://ftp.eecs.umich.edu/BSD/XFree86) (source and binaries)
-
-        +  sunsite.unc.edu:/pub/X11/XFree86
-           (ftp://sunsite.unc.edu/pub/X11/XFree86) (source and binaries)
-
-        +  abode.ccd.bnl.gov:/pub/XFree86
-           (ftp://abode.ccd.bnl.gov/pub/XFree86) (Solaris, SVR4, SCO
-           binaries)
-
-
-     o  Europe:
-
-        +  ftp.fee.vutbr.cz:/pub/XFree86
-           (ftp://ftp.fee.vutbr.cz/pub/XFree86) (source and binaries)
-
-        +  ftp.gwdg.de:/pub/Xfree86 (ftp://ftp.gwdg.de/pub/Xfree86)
-           (source and binaries)
-
-        +  ftp.uni-stuttgart.de:/pub/X11/Xfree86 (ftp://ftp.uni-
-           stuttgart.de/pub/X11/Xfree86) (source and binaries)
-
-        +  fvkma.tu-graz.ac.at:/pub/X11/XFree86/3.1.1 (ftp://fvkma.tu-
-           graz.ac.at/pub/XFree86/3.1.1) (source and binaries)
-
-        +  ftp.funet.fi:/pub/X11/XFree86
-           (ftp://ftp.funet.fi/pub/X11/XFree86) (source and binaries)
-
-        +  ftp.laas.fr:/pub/netbsd/XFree86-3.1.1
-           (ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.1) (NetBSD binaries
-           only)
-
-        +  ftp.unipi.it:/pub/mirrors/XFree86-3.1.1
-           (ftp://ftp.unipi.it/pub/mirrors/XFree86-3.1.1) (source and
-           binaries)
-
-        +  nova.pvv.unit.no:/pub/XFree86/current
-           (ftp://nova.pvv.unit.no/pub/XFree86/current) (source and
-           binaries)
-
-        +  ftp.demon.co.uk:/pub/Xwindows/XFree86
-           (ftp://ftp.demon.co.uk/pub/Xwindows/XFree86) (source and
-           binaries)
-
-
-
-
-     o  Middle East:
-
-        +  orgchem.weizmann.ac.il:/pub/XFree86
-           (ftp://orgchem.weizmann.ac.il/pub/XFree86) (sources and
-           FreeBSD binaries)
-
-
-     o  Asia/Australia:
-
-        +  x.physics.su.oz.au:/pub/XFree86
-           (ftp://x.physics.su.oz.au/pub/XFree86) (source and binaries)
-
-        +  ftp.iij.ad.jp:/pub/X/XFree86
-           (ftp://ftp.iij.ad.jp/pub/X/XFree86) (source and binaries)
-
-        +  ftp.nectec.or.th:/pub/mirrors/XFree86
-           (ftp://ftp.nectec.or.th/pub/mirrors/XFree86) (source and
-           binaries)
-
-        +  ftp.edu.tw:/X/XFree86/3.1.1
-           (ftp://ftp.edu.tw/X/XFree86/3.1.1) (source and Linux
-           binaries)
-  Refer to the README file under the specified directory for information
-  on which files you need to get to build your distribution.
-
-  Ensure that you are getting XFree86 3.1.1 - some of these sites may
-  archive older releases as well.  Each binary distribution will contain
-  a README file that describes what files you need to take from the
-  archive, and which compile-time option selections were made when
-  building the distribution.
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.16 1995/01/25 11:51:37 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86$
+                         README for XFree86[TM] 2.1.1
+                         ----------------------------
+Contents
+--------
+    1) What is XFree86?
+    2) What's new in XFree86 2.1.1?
+    3) What's new in XFree86 2.1?
+    4) XFree86 features
+    5) Systems XFree86 has been tested on
+    6) Supported video-card chip-sets
+    7) Where to get more information
+    8) Bugs known fixed in XFree86 vs stock X11R5
+    9) Known bugs in XFree86
+   10) Credits
+   11) The XFree86 Project, Inc.
+   12) Contact information
+   13) Source and binary archive sites
+
+1 - What is XFree86?
+--------------------
+XFree86 is a port of X11R5 that supports several versions of Intel-based
+Unix and Unix-like operating systems.  The XFree86 servers are derived
+from X386 1.2, which was the X server distributed with X11R5.  This
+release consists of many new features and performance improvements as well
+as many bug fixes.  The release is available as source patches against the
+MIT X11R5 code, as well as binary distributions for many architectures.
+
+Note that while the source and installation trees retain the 'X386'
+name (for simplicity of maintenance of the source tree), there is no
+connection between XFree86 and the commercial X386 product formerly
+sold by SGCS.  The XFree86 Core Team has maintained technical contacts 
+with SGCS in an effort to keep user-affecting changes to the workings 
+of the products from diverging too radically (although this has happened
+anyhow over the course of time).  There is no direct involvement of either 
+group in the workings of the other.
+
+			****News Flash****
+
+At this time, the XFree86 Core Team is pursuing the legal work to complete
+the formation of The XFree86 Project, Inc, a not-for-profit corporation.
+The paperwork is with the lawyers, and this incorporation should be
+complete in the near future.  See the section on The XFree86 Project, Inc,
+later in this document for more information.
+
+2 - What's new in XFree86 2.1.1?
+--------------------------------
+XFree86 2.1.1 is a patch release providing bug fixes and some new
+functionality for some of the servers.  It is intended that this be the
+final XFree86 release based on X11R5.
+
+Note that XFree86 3.0 is part of the core X11R6 release.  That version
+should be regarded as beta quality, and does not work on many of the
+platforms supported by 2.1.1.  We plan to have XFree86 3.1 included
+in the X11R6 contrib release, and the missing functionality and OS
+support will be included in that version.
+
+The following items have been added since XFree86 2.1 was released in March
+1994:
+
+    1) Support for pixel multiplexing has been added for Number Nine boards
+       using the Bt485 RAMDAC, and for the STB Pegasus which uses the same
+       RAMDAC.  This allows dot clocks up to 135MHz to be used with these
+       boards.
+    2) Some graphics bugs in the Cirrus driver's accelerated code have been
+       fixed.
+    3) A probe problem in the Mach32 server has been fixed.
+    4) The problem with the Comaq driver in 2.0 and 2.1 should now be fixed.
+    5) Support has been added for generating sync-on-green for S3 cards
+       using the Bt485 or Ti3020 RAMDACs.
+    6) Text-mode restore problems with some S3 cards have been fixed.
+    7) A new ATI Wonder SVGA driver has been included.  This driver is
+       experimental.  It works better than the 2.1 driver on some cards and
+       worse on others.  This driver now works with the VGA16 and Mono
+       servers.
+    8) A driver for an Apollo mono card has been added to the Bdm2 section
+       of the Mono server.
+    
+
+3 - What's new in XFree86 2.1?
+------------------------------
+XFree86 2.1 is not a huge release compared to prior XFree86 releases.  There
+are a number of reasons for this, including the fact that two of the Core
+Team members have moved and started new employment, significantly cutting into
+their time for XFree86 work.  In addition, we are hard at work on merging
+XFree86 with the upcoming X11R6.  Many new features have been put on hold
+while this integration is done, so that a stable and viable X11R6 release
+can be developed.  XFree86 3.1 will be released on the X11R6 contributed
+software distribution, and it is our intention that many of these features
+will be present in that release.
+
+The following items have been added since XFree86 2.0 was released in
+October 1993:
+
+    1) The X Consortium's fix-26 is included.
+    2) Support for pixel multiplexing has been added for Mach32 boards
+       with ATI68875, TLC34075 or Bt885 RAMDACs.  This allows dot clocks
+       up to 135MHz to be used with these boards.
+    3) Support for the TI ViewPoint 3020 RAMDAC used on the #9 GXe
+       Level 14 and 16 cards has been added, supporting dot clocks up to
+       135MHz and 200MHz respectively.
+    4) Support for pixel multiplexing (and thus dot clocks up to 135MHz)
+       has been added for the SPEA Mercury cards (S3 928 + Bt485).  This
+       has *not* been tested on other 928 + Bt485 cards.
+    5) Performance improvements for some of the accelerated servers.
+    6) Support has been added for all the display widths available with
+       the S3 chips.  In addition to the 1024 and 1280 widths supported
+       by XFree86 2.0, there is now support for 640, 800 and 2048 with
+       all 801, 805 and 928 chips.  1152 is supported with 801/5 chips
+       at revision C or later.  1152 and 1600 are supported with 928
+       chips at revision E or later.  Note that this change should make
+       XFree86 viable on 512k boards.
+    7) Support for 8-bit resolution RGB values (as opposed to the
+       standard VGA 6-bit resolution) for S3 cards with AT&T20C490/1,
+       Sierra SC15025 or Ti3020 RAMDACs, and for Mach32 cards with
+       ATI68875, TLC34075 or Bt885 RAMDACs.
+    8) Support for DRAM based S3 cards using slow memory has been
+       improved.
+    9) Accelerated support for the Cirrus chipsets has been enhanced and
+       extended to include the lower-end chipsets (5420, 5422, 5424).
+   10) The pvga1 driver can now access all the clocks on boards using the
+       WD90C30 and WD90C31 chips.
+   11) The 16 colour generic VGA server has been extended to include
+       banked memory support on selected chipsets.  This allows it to
+       make full use of the available video memory on these boards.  This
+       server now includes support for GrayScale and StaticGray visuals
+       which makes for better use on many laptops.
+   12) Support for the Sigma LaserView and Visa monochrome boards has
+       been added to the bdm2 driver in the Mono server.
+   13) Support for Solaris x86 2.1 has been added.
+   14) Support is included for shared libraries on FreeBSD-1.1 and
+       NetBSD-current (0.9 based) systems.
+   15) The SuperProbe program introduced with XFree86 1.3 has been updated
+       to detect more chipsets, to detect installed video memory,  and to 
+       be more reliable overall.
+   16) Several dozen bug fixes for problems detected and reported for
+       XFree86 2.0.
+
+Plus a number of other small things.  Refer to the CHANGELOG file in the
+source distribution for full details.
+
+4 - XFree86 Features
+--------------------
+Here is a list of the other significant features that XFree86 adds over
+stock X386 1.2 (X11R5):
+
+    1) New servers to support S3, ATI and 8514 accelerated hardware, and 
+       support for Cirrus and Western Digital accelerated hardware in
+       the SVGA server.
+    2) The SpeedUp package from Glenn Lai is an integral part of the 
+       SVGA server, selectable at run-time via the Xconfig file.  Some 
+       SpeedUps require an ET4000 based SVGA, and others require a 
+       virtual screen width of 1024.  The SpeedUps suitable to the 
+       configuration are selected by default.  With a high-quality 
+       ET4000 board, this can yield up to 40% improvement of the Xstones 
+       benchmark over X386 1.2.
+    3) The fX386 packages from Jim Tsillas are included as the default
+       operating mode of the SVGA server if SpeedUp is not selected.  
+       This mode is now equivalent in performance to X386 1.1b (X11R4), 
+       and approximately 20% faster than X386 1.2.
+    4) A monochrome server that supports bank-switching of available SVGA
+       memory to allow virtual screens up to 1600x1200.
+    5) Support for the Hercules mono card in the monochrome server, and 
+       with it the ability to support a "two headed" server - one mono 
+       VGA, and one Hercules.
+    6) Support for Hyundai HGC1280, Sigma LaserView, Visa and Apollo
+       monochrome graphics card in the monochrome server.
+    7) A 16-color VGA server is included, which supports generic VGA
+       hardware.
+    8) SVR3 shared libraries, tested under ISC SVR3 2.0.2, 2.2, 3.0.1 and
+       4.0; SCO 3.2.2, 3.2.4.
+    9) Support for Linux, 386BSD, NetBSD, FreeBSD, BSD/386, Mach, OSF/1,
+       SVR4.2, SCO, Solaris 2.1, Amoeba, and Minix-386. Including shared
+       libraries for Linux, FreeBSD and NetBSD.
+   10) Support for LOCALCONN.  This support is for both SVR3.2 and SVR4.
+       For SVR4.0.4 with the 'Advanced Compatibility Package' and on
+       SVR4.2, local connections from SCO XSight/ODT clients are supported.
+   11) Drivers for ATI, Trident, NCR, Compaq, Cirrus, and OAK SVGA chipsets.
+       Refer to chipset-specific README files for details about these
+       drivers.
+   12) Support for compressed bitmap fonts has been added (Thomas
+       Eberhardt's code from the contrib directory on ftp.x.org).
+   13) Type1 Font code from MIT contrib tape has been included, and is
+       compile-time selectable.  There are contributed Type1 fonts in the
+       contrib directory on ftp.x.org.
+   14) New configuration method which allows the server's drivers and font
+       renderers to be reconfigured from both source and binary
+       distributions.
+   15) Greatly improved documentation and configuration databases are
+       included.
+   16) A new tutorial on how to develop correct video card and monitor
+       timing data, written by Eric Raymond (derived from previous
+       documentation and a lot of experimentation).
+   17) Greatly improved support for international keyboards, including
+       implementation of the Compose key functionality found on many
+       vendor servers.
+   18) Many enhancements in error handling and parsing of the Xconfig
+       configuration file.  Error messages are much more informative and
+       intuitive, and more validation is done.  There are many new options
+       that can be enabled in the Xconfig file.
+
+5 - Systems XFree86 has been tested on
+--------------------------------------
+    SVR4.0:
+	Esix: 4.0.3A, 4.0.4, 4.0.4.1
+	Microport: 2.2, 3.1, 4.1, 4.2
+	Dell: 2.1, 2.2, 2.2.1
+	UHC: 2.0, 3.6
+	Consensys: 1.2
+	MST: 4.0.3 (Load 2.07 and Load 3.02)
+	ISC: 4.0.3
+	AT&T: 2.1, 4.0
+	NCR: MP-RAS
+	SunSoft: Solaris x86 2.1
+
+    SVR4.2:
+	Consensys
+	Novell UnixWare
+
+    SVR3:
+	Interactive: 2.0.2, 2.2, 3.0, 4.0
+	SCO: 3.2.2, 3.2.4
+	AT&T: 3.2.2
+
+    Others:
+	386BSD 0.1, NetBSD 0.9, NetBSD-current, FreeBSD 1.1(gamma)
+	BSD/386 1.0
+	Mach 386
+	OSF/1
+	Linux 1.0
+	Amoeba
+	Minix-386
+
+6 - Supported video-card chipsets
+---------------------------------
+At this time, XFree86 2.1 supports the following accelerated chipsets:
+
+    8514/A (and true clones)
+    ATI Mach8, Mach32
+    Cirrus CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428
+    S3 86C911, 86C924, 86C801, 86C805, 86C805i, 86C928
+    Western Digital WD90C31
+
+The Cirrus and Western Digital accelerators are supported in the SVGA
+server; the other chipsets each have their own server.  A list of cards
+on which the accelerated servers have been tested is included in the file
+AccelCards.  They may well work on other cards, but we cannot guarantee it.
+  
+In addition, the following SVGA chipsets are supported:
+    
+    Tseng ET3000, ET4000AX, ET4000/W32
+    Western Digital/Paradise PVGA1
+    Western Digital WD90C00, WD90C10, WD90C11, WD90C24, WD90C30, WD90C31
+    Genoa GVGA
+    Trident TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000,
+	    TVGA9000i, TVGA9100B, TVGA9200CX, TVGA9320, TVGA9400CX, TVGA9420
+    ATI 28800-4, 28800-5, 28800-6, 28800-a
+    NCR 77C22, 77C22E, 77C22E+
+    Cirrus Logic CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428
+		 CLGD6205, CLGD6215, CLGD6225, CLGD6235
+    Compaq AVGA
+    OAK OTI067, OTI077
+    
+All of the above are supported in both 256 color and monochrome modes,
+with the exception of the Cirrus chipsets, which are only supported in 256
+color mode.
+
+Refer to the chipset-specific README files (currently for Tseng, Western
+Digital, ATI, and Trident) for more information about using those chipsets.
+
+The monochrome server also supports generic VGA cards, using 64k of video
+memory in a single bank, the Hercules monochrome card, the Hyundai HGC1280,
+Sigma LaserView, Visa and Apollo monochrome cards.  On the Compaq AVGA, only
+64k of video memory is supported for the monochrome server, and the GVGA has
+not been tested with more than 64k.
+
+The VGA16 server has not been as extensively tested and debugged as the
+others, but it should work rather well (but slowly) on most hardware.
+This server supports memory banking with the ET4000, Trident and ATI
+chipsets allowing virtual display sizes up to about 1600x1200 (with 1MB of
+video memory).  For other chipsets the display size is limited to
+approximately 800x600.
+
+  Note
+  ----
+Some of the SVGA card manufacturers are using non-traditional mechanisms 
+for selecting pixel-clock frequencies.  To avoid having to modify the 
+server to accommodate these schemes XFree86 1.2 added support for using 
+an external program to select the pixel clock.  This allows programs to 
+be written as new mechanisms are discovered.  Refer to the README.clkprog 
+file for information on how these programs work, if you need to write one.
+If you do develop such a program, we would be interested in including it 
+with future XFree86 releases.
+
+NOTE: The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards are
+      NOT supported, even though they use the ET4000. The same is true
+      for all of Diamond's S3 boards. The reason for this is that
+      Diamond has changed the mechanism used to select pixel clock 
+      frequencies, and will only release programming information under
+      non-disclosure.  We are not willing to do this (as it would mean
+      that source cannot be provided).  We have had discussions with
+      Diamond over this, and they do not intend to change this policy.
+      Hence we will do nothing to support Diamond products going forward
+      (i.e. don't send us a program to run to set their clocks).  XFree86
+      DOES NOT SUPPORT DIAMOND HARDWARE.  It is possible to make some
+      of it work, but we will not assist in doing this.
+
+      Diamond's Cirrus-based boards should work with XFree86 because they
+      use the standard Cirrus clock synthesiser.  This includes the
+      SpeedStar Pro and possibly the SpeedStar 64.
+
+7 - Where to get more information
+---------------------------------
+Additional documentation is available in the XFree86(1), Xconfig(4/5),
+XF86_SVGA(1), XF86_Mono(1), XF86_VGA16(1), XF86_Accel(1) and XF86keybd(1)
+manual pages.  In addition, several README files and tutorial documents are
+provided.  These are available in /usr/X386/lib/X11/etc in the binary
+distributions, and in mit/server/ddx/x386 and ddx/x386/etc in the source
+distribution.
+
+The files README.Config and VideoModes.doc should be consulted for 
+information on how to set up the XFree86 servers.  All supplied documents
+and manual pages should be read before contacting the XFree86 team for
+assistance.
+
+Documentation on SVGA driver development can be found in the directory
+/usr/X386/lib/Server/VGADriverDoc in the binary distribution, and in the
+directory mit/server/ddx/x386/VGADriverDoc in the source distribution.
+
+If you are totally at a loss, you can contact the XFree86 Core Team at
+the electronic mail address below.
+
+There is a Usenet news group comp.windows.x.i386unix that contains
+mostly discussions about XFree86 and related topics. Many questions can
+be answered there. The answers to common questions are found in the
+corresponding FAQ.
+
+8 - Bugs known fixed in XFree86 vs stock X11R5
+----------------------------------------------
+    1) Server now traps and exits cleanly if unexpected signals are
+       received (a core is still generated for debugging).  There is an
+       Xconfig option to disable this trapping.
+    2) VT switching (on OS's that support the feature) is more robust.
+       The server will no longer crash nor will the screen get corrupted
+       as a result of starting or exiting clients while switched away.
+       Also, the screen saver is turned off when switching back so you
+       don't return to a blank screen.  These changes also ensure that xdm
+       shuts down cleanly, and allow multiple servers to be active
+       simultaneously
+    3) Many bugs in the frame buffer code have been fixed.
+    4) The use of xdm with xqueue under SVR4 has been fixed.
+    5) The maximum number of server connections is now correctly
+       determined for SVR4 by making use of getrlimit().
+    6) The default pointer button mapping has been fixed.
+    7) xterm no longer tries to open /dev/tty[psr]?? for SVR4.  This
+       speeds up the startup time for xterm, as well as keeping it from
+       using the wrong pty's on SVR4.0.4.
+    8) xconsole fixed to use /dev/osm (SVR4 and some SVR3.2) for OS messages.
+    9) A bug with XDM-AUTHORIZATION-1 which caused strange problems with
+       some hardware has been fixed.
+   10) The xman scroll bug has been fixed.
+   11) Improved the accuracy of the server's probe for pixel clock
+       frequencies
+   12) Redefined the handling of the numeric keypad, so that it works
+       correctly with Xt-based applications (translation problems
+       resolved).
+   13) Plugged security risk related to suid-root execution of the server.
+
+9 - Known bugs in XFree86
+-------------------------
+    1) There are some problems with some of the 'xset fp' operations (in
+       particular 'xset fp rehash').  These seem to be caused by memory
+       allocation/deallocation problems in the server's font code.  We
+       believe that we have worked around this problem, but have not yet
+       solved the root cause.
+    2) While not strictly a bug, there is currently a limitation on the
+       dot-clock frequencies allowed with the S3 server.  For some S3 cards
+       with the Bt485 RAMDAC, the limit is 85Mhz.
+
+We welcome reports of bugs sent to the electronic mail address listed
+below.
+
+10 - Credits
+-----------
+XFree86 was originally put together by:
+       David Dawes <dawes@physics.su.oz.au>
+       Glenn Lai <glenn@cs.utexas.edu>
+       Jim Tsillas <jtsilla@damon.ccs.northeastern.edu>
+       David Wexelblat <dwex@goblin.org>, <dwex@aib.com>
+
+386BSD, FreeBSD, NetBSD  support by:
+       Rich Murphey <Rich@Rice.edu>
+Original 386BSD port by:
+       Pace Willison
+       Amancio Hasty Jr <hasty@netcom.com>
+Mach 386 support by:
+       Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
+Linux support by:
+       Orest Zborowski <orestz@eskimo.com>
+SCO Unix support by:
+       David McCullough <davidm@stallion.oz.au>
+Amoeba support by:
+       Kees Verstoep <versto@cs.vu.nl>
+Minix-386 support by:
+       Philip Homburg <philip@cs.vu.nl>
+OSF/1 support by:
+       Marc Evans <Marc@Synergytics.Com>
+BSD/386 support by:
+       Hans Nasten <nasten@everyware.se>
+       Paul Vixie <paul@vix.com>
+Solaris support by:
+       Doug Anson <danson@lgc.com>
+       David Holland <davidh@use.com>
+SVR3 shared libraries by:
+       Thomas Wolfram <wolf@prz.tu-berlin.de>
+Linux shared libraries by:
+       Dirk Hohndel <hohndel@aib.com>
+
+Original accelerated code by:
+       Kevin Martin <martin@cs.unc.edu>
+       Rik Faith <faith@cs.unc.edu>
+       Jon Tombs <jon@gtex02.us.es>
+S3 accelerated code by:
+       Jon Tombs <jon@gtex02.us.es>
+       David Wexelblat <dwex@goblin.org> <dwex@aib.com>
+       David Dawes <dawes@physics.su.oz.au>
+       Robin Cutshaw <robin@paros.com>
+       Amancio Hasty <hasty@netcom.com>
+       Norbert Distler <Norbert.Distler@physik.tu-muenchen.de>
+       Leonard N. Zubkoff <lnz@dandelion.com>
+Mach32 accelerated code by:
+       Kevin Martin <martin@cs.unc.edu>
+       Rik Faith <faith@cs.unc.edu>
+       Mike Bernson <mike@mbsun.mlb.org>
+       Mark Weaver <Mark_Weaver@brown.edu>
+       Craig Groeschel <craig@adikia.sccsi.com>
+Mach8, 8514 accelerated code by:
+       Kevin Martin <martin@cs.unc.edu>
+       Rik Faith <faith@cs.unc.edu>
+       Tiago Gons <tiago@comosjn.hobby.nl>
+       Hans Nasten <nasten@everyware.se>
+       Scott Laird <lair@midway.uchicago.edu>
+Cirrus accelerated code by:
+       Simon Cooper <scooper@vizlab.rutgers.edu>
+       Harm Hanemaayer <hhanemaa@cs.ruu.nl>
+       Bill Reynolds <bill@goshawk.lanl.gov>
+Western Digital accelerated code by:
+       Mike Tierney <floyd@pepsi.eng.umd.edu>
+
+16 color VGA server by:
+       Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
+
+ATI SVGA driver by:
+       Per Lindqvist <pgd@compuram.bbt.se> and Doug Evans <dje@cygnus.com>
+       Ported to X11R5 by Rik Faith <faith@cs.unc.edu>
+       Rewritten by Marc La France <tsi@gpu.srv.ualberta.ca>
+Trident SVGA driver by:
+       Alan Hourihane <alanh@metro.co.uk>
+NCR SVGA driver by:
+       Stuart Anderson <Stuart.Anderson@ColumbiaSC.NCR.COM>
+		with the permission of NCR Corporation
+Cirrus SVGA driver by:
+       Bill Reynolds <bill@goshawk.lanl.gov>
+       Hank Dietz <hankd@ecn.purdue.edu>
+Compaq SVGA driver by:
+       Hans Oey <hans@mo.hobby.nl>
+Oak SVGA driver by:
+       Steve Goldman <sgoldman@encore.com>
+
+Configurable MFB and Hercules driver by:
+       Davor Matic <dmatic@Athena.MIT.EDU>
+Banked Dumb Monochrome and related drivers by:
+       Pascal Haible <haible@izfm.uni-stuttgart.de>
+Apollo driver for BDM by:
+       Hamish Coleman <hamish@zot.apana.org.au>
+
+X386 1.2, and moral support from:
+       Thomas Roell <roell@informatik.tu-muenchen.de>
+       Mark Snitily <mark@sgcs.com>
+
+Other contributors:
+       Joerg Wunsch <joerg_wunsch@uriah.sax.de> (ET3000 banked mono)
+       Bob Crosson <crosson@cam.nist.gov> (video mode documentation)
+       Thomas Eberhardt <thomas@mathematik.uni-Bremen.de> (compressed fonts)
+       Eric Raymond <esr@snark.thyrsus.com> (new video mode documentation)
+
+       and an entire horde of beta-testers around the world!
+
+11 - Contact information
+------------------------
+Ongoing development planning and support is coordinated by the XFree86
+Core Team.  At this time the Core Team consists of (in alphabetical order):
+
+       David Dawes <dawes@physics.su.oz.au>
+       Dirk Hohndel <hohndel@aib.com>
+       Rich Murphey <Rich@Rice.edu>
+       Jon Tombs <jon@gtex02.us.es>
+       David Wexelblat <dwex@goblin.org>, <dwex@aib.com>
+
+E-mail sent to <XFree86@XFree86.org> will reach the Core Team.
+
+12 - The XFree86 Project, Inc.
+------------------------------
+The XFree86 Project, Inc, has been founded to accomplish two major goals:
+
+	1) To provide a vehicle by which XFree86 can be represented in
+	   X Consortium, Inc, the organization responsible for the
+	   design, development, and release of The X Window System.
+	2) To provide some basic funding for acquisition of facilities for
+	   ongoing XFree86 development, largly to consist of new video
+	   hardware and basic computing facilities.
+
+The first of these was the primary motivation.  We have held discussions
+with the X Consortium on and off for many months, attempting to find an
+avenue by which our loosely-organized free software project could be
+given a voice within the X Consortium.  The bylaws of the Consortium
+would not recognize such an organization.  After an initial investigation
+about funding, we decided to form our own corporation to provide the
+avenue we needed to meet the requirements of the X Consortium bylaws.
+
+By doing this, we were able to be involved in the beta-test interval for
+X11R6, and have contributed the majority of XFree86 to the X11R6 core
+release.  The version of XFree86 in the X11R6 core is 3.0.  The next
+full-featured release of XFree86, version 3.1, will be present on the
+X11R6 contributed software tape, with full X11R6 support, and (hopefully)
+a host of new features.  As time goes on, XFree86 will be involved with
+more of the development of The X Window System, as a full Consortium
+member.  How exactly this will evolve is still being determined.
+
+An additional benefit of this incorporation is that The XFree86 Project,
+Inc has obtained outside financial support for our work.  This will
+hopefully give us the freedom to be more proactive in obtaining new
+video hardware, and enable us to release better products more quickly,
+as we will be able to go and get what we need, and get it into the hands
+of the people who can do the work.
+
+The initial Board of Directors and Officers of the The XFree86 Project,
+Inc, are the same XFree86 Core Team as is listed above. Our bylaws have 
+been crafted in such a way to ensure that XFree86 is and always will 
+be a free software project.  There is no personal financial benefit 
+to any member of the Core Team or any other XFree86 participant.  All 
+assets of the corporation remain with the corporation, and, in the event 
+of the dissolution of the corporation, all assets will be turned over 
+to the X Consortium, Inc.  It is hoped that by doing this, our corporation 
+will be merely a formalization of what we have been doing in the past, 
+rather than something entirely new.
+
+Here is a list of the organizations and individuals who have provided
+sponsorship to The XFree86 Project, Inc, either by financial contribution
+or by the donation of equipment and resources.  The XFree86 Project, Inc
+gratefully acknowledges these contributions, and hopes that we can do
+justice to them by continuing to release high-quality free software for
+the betterment of the Internet community as a whole.
+
+	UUNET Communications Services, Inc.
+
+UUNET Communications Services, Inc, deserves special mention.  This
+organization stepped forward and contributed the entire 1994 X Consortium
+membership fee on a moment's notice.  This single act ensured XFree86's
+involvement in X11R6.
+
+	AIB Software Corporation, Dulles, VA
+	American Micro Group
+	AT&T Global Information Services (formerly NCR)
+	Andrew Burgess
+	BSDI, Falls Church, VA
+	Frank & Paige McCormick
+	InfoMagic, Rocky Hill, NJ
+	LunetIX Softfair, Berlin, Germany
+	Prime Time Freeware, San Bruno, CA
+	Red Hat Software, Chapel Hill, NC
+	Unifix Software GmbH, Braunschweig, Germany
+	Xtreme s.a.s., Livorno, Italy
+
+The XFree86 Project, Inc, welcomes the additional contribution of funding
+and/or equipment.  Such contributions should be tax-deductible; we will
+know for certain when the lawyers get finished with the papers.  For more 
+information, contact The XFree86 Project, Inc, at <XFree86@XFree86.org>
+
+We are in the process of establishing our own Internet domain, XFree86.Org.
+Most of the pieces are in place, it is currently accepting e-mail.
+
+13 - Source and binary archive sites
+------------------------------------
+Source patches are available to upgrade 2.1 to 2.1.1.  These and source
+patches for 2.1 based on X11R5 PL26, from MIT, and as an upgrade from
+XFree86 2.0 are available via anonymous FTP from:
+
+       ftp.x.org (under /contrib/XFree86)
+       ftp.physics.su.oz.au (under /XFree86)
+       ftp.win.tue.nl (under /pub/XFree86)
+       ftp.prz.tu-berlin.de (under /pub/pc/src/XFree86)
+
+Refer to the README file under the specified directory for information on
+which files you need to get to build your distribution (which will depend
+on whether this is a new installation or an upgrade from an earlier
+version of XFree86).
+
+Binaries are available via anonymous FTP from:
+
+       ftp.physics.su.oz.au                    - SVR4 binaries
+                under /XFree86/SVR4
+       ftp.win.tue.nl                          - SVR4 binaries
+                under /pub/XFree86/SVR4
+       ftp.tcp.com                             - SVR4 binaries
+                under /pub/SVR4/XFree86
+       stasi.bradley.edu                       - SVR4 binaries
+                under /pub/XFree86/SVR4
+       stasi.bradley.edu                       - SVR3 (SCO) binaries (2.1 only)
+                under /pub/XFree86/sco
+       ftp.physics.su.oz.au                    - SVR3 (SCO) binaries (2.1 only)
+                under /XFree86/SCO
+       tsx-11.mit.edu                          - Linux binaries
+                under /pub/linux/packages/X11
+       sunshine.informatik.uni-wuerzburg.de    - Linux binaries
+		under /pub/Linux/XFree86-2.1.1
+       XFree86.cdrom.com                       - FreeBSD binaries
+		under /pub/XFree86/FreeBSD/XFree86-2.1.1
+       gil.physik.rwth-aachen.de               - FreeBSD binaries
+		under /pub/XFree86
+       sun-lamp.cs.berkeley.edu                - NetBSD-current binaries
+		under /pub/NetBSD/ports
+       ftp.iastate.edu                         - NetBSD-current binaries
+		under /pub/netbsd
+       ftp.wonderland.org                      - NetBSD-current binaries
+		under /pub/NetBSD
+       ftp.laas.fr                             - NetBSD-current binaries
+		under /pub/NetBSD
+
+Ensure that you are getting XFree86 2.1.1 - some of these sites may archive
+older releases as well.  Each binary distribution will contain a README
+file that describes what files you need to take from the archive, and
+which compile-time option selections were made when building the
+distribution.
+
+4 May 1994
+
+$XFree86: mit/server/ddx/x386/README,v 2.20 1994/05/04 12:11:30 dawes Exp $

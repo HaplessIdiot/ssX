@@ -3,22 +3,22 @@
 # To extract the files from this archive, save it to a file, remove
 # everything above the "!/bin/sh" line above, and type "sh file_name".
 #
-# made 09/25/1994 14:29 UTC by davidh@barite
-# Source directory /usr10/davidh/aperture
+# made 02/25/1994 17:20 UTC by davidh@dorite
+# Source directory /usr13/davidh
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apSolx86.shar,v 3.1 1994/09/23 10:18:25 dawes Exp $
+# $XFree86$
 #
 # existing files will NOT be overwritten unless -c is specified
 #
 # This shar contains:
 # length  mode       name
 # ------ ---------- ------------------------------------------
-#   1342 -rw-r--r-- aperture/Makefile
+#   1343 -rw-r--r-- aperture/Makefile
 #   4042 -rw-r--r-- aperture/aperture.h
 #     95 -rw-r--r-- aperture/devlink.tab
-#   2914 -rw-r--r-- aperture/README
+#   2770 -rw-r--r-- aperture/README
 #  20528 -rw-r--r-- aperture/aperture.c
-#    518 -rw-r--r-- aperture/aperture.conf
+#    816 -rw-r--r-- aperture/aperture.conf
 #   3530 -rw-r--r-- aperture/aptest.c
 #   2174 -rw-r--r-- aperture/DISCLAIMER
 #
@@ -103,8 +103,8 @@ SHAR_EOF
 chmod 0644 aperture/Makefile ||
 echo 'restore of aperture/Makefile failed'
 Wc_c="`wc -c < 'aperture/Makefile'`"
-test 1342 -eq "$Wc_c" ||
-	echo 'aperture/Makefile: original size 1342, current size' "$Wc_c"
+test 1343 -eq "$Wc_c" ||
+	echo 'aperture/Makefile: original size 1343, current size' "$Wc_c"
 fi
 # ============= aperture/aperture.h ==============
 if test -f 'aperture/aperture.h' -a X"$1" != X"-c"; then
@@ -288,7 +288,7 @@ X   The screen should look something like this:
 X
 X	# make install
 X	cp aperture aperture.conf /kernel/drv
-X	# add_drv /kernel/drv/aperture
+X	# add_drv /kernel/drv/mmap
 X
 X   This installs the driver in the system. 
 X
@@ -299,13 +299,9 @@ type=ddi_pseudo;name=aperture	fbs/\M0
 X
 X   Add that line exactly as shown. You may also simply add the 
 X   contents of the devlink.tab file supplied to /etc/devlink.tab.
-X   It contains the lines as well.  (Yes, that is a tab between
-X   aperture, and fbs, not spaces - very important)
+X   It contains the lines as well.
 X
-6) Perform a reconfiguration boot of the system.
-X
-X	# touch /reconfigure
-X	# init 6
+6) Reboot the system.
 X
 7) Login as root and run the aptest program. It tests that the 
 X   mmap driver is working properly, by mmaping the main bios
@@ -341,8 +337,8 @@ SHAR_EOF
 chmod 0644 aperture/README ||
 echo 'restore of aperture/README failed'
 Wc_c="`wc -c < 'aperture/README'`"
-test 2914 -eq "$Wc_c" ||
-	echo 'aperture/README: original size 2914, current size' "$Wc_c"
+test 2770 -eq "$Wc_c" ||
+	echo 'aperture/README: original size 2770, current size' "$Wc_c"
 fi
 # ============= aperture/aperture.c ==============
 if test -f 'aperture/aperture.c' -a X"$1" != X"-c"; then
@@ -1121,25 +1117,30 @@ sed 's/^X//' << 'SHAR_EOF' > 'aperture/aperture.conf' &&
 #
 # Copyright 1994	Doug Anson, danson@lgc.com & David Holland, davidh@use.com
 #
-# File:   aperture.conf
+# File:   fbmem.conf
 # Author: Doug Anson (danson@lgc.com)
 # 
 # Modified: David Holland (davidh@use.com)
 # Log:		Change comments		2/23/94
-# Log:		Change defaults/comments	9/25/94
 #
-# Purpose: 	This conf file is used by the aperture Framebuffer aperture
-# 			driver. Do NOT! change the first two numbers of of 
-# 			the 'reg' property. They should be 0, and 0x0, 
-#			respectivly.
+# Purpose: 	This conf file is used by the aperture Framebuffer mmap 
+# 			driver. The only portion of this configuration file 
+# 			should be changed is possibly the last entry in the
+#			'reg' propery.  This entry controls the maximum address
+#			the driver is allowed to access.  It is set to
+#			128Megs (0x8000000).  If your framebuffer apperture
+# 			happens to lay at a address greater than this
+#			change it appropriately. Do NOT! change the first
+#			two numbers of of the 'reg' property. They should be
+#			0, and 0x0, respectivly.
 #
-name="aperture" class="sysbus" reg=0,0x0,0x7fffffff;
+name="aperture" class="sysbus" reg=0,0x0,0x8000000;
 SHAR_EOF
 chmod 0644 aperture/aperture.conf ||
 echo 'restore of aperture/aperture.conf failed'
 Wc_c="`wc -c < 'aperture/aperture.conf'`"
-test 518 -eq "$Wc_c" ||
-	echo 'aperture/aperture.conf: original size 518, current size' "$Wc_c"
+test 816 -eq "$Wc_c" ||
+	echo 'aperture/aperture.conf: original size 816, current size' "$Wc_c"
 fi
 # ============= aperture/aptest.c ==============
 if test -f 'aperture/aptest.c' -a X"$1" != X"-c"; then

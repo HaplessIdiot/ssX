@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.17 1995/01/07 04:02:17 dawes Exp $
+XCOMM $XFree86$
 /*
  * Server Makefile for LinkKit
  */
@@ -46,32 +46,23 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.17 1995/
 #if BuildXKB
       XKBEXT = lib/libxkb.a
 #endif
-#if BuildLBX
-      LBXEXT = lib/liblbx.a lib/liblbxutil.a
-#endif
 #ifdef SiteExtensionLibs
      SITEEXTS = SiteExtensionLibs
 #endif
 
-      OTHEREXTS = lib/libext.a $(XKBEXT) $(XINPUTEXT) $(XIEEXT) \
-                  $(LBXEXT) $(SITEEXTS)
+      OTHEREXTS = lib/libext.a $(XKBEXT) $(XINPUTEXT) $(XIEEXT) $(SITEEXTS)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = lib/libXau.a
        XDMCPLIB = lib/libXdmcp.a
+             OS = lib/libos.a $(XAULIB) $(XDMCPLIB)
         BSDEMUL = lib/libXbsd.a
             MFB = lib/libmfb.a
             CFB = lib/libcfb.a lib/libcfb16.a lib/libcfb32.a
            CFB8 = lib/libcfb.a
           CFB16 = lib/libcfb.a lib/libcfb16.a
           CFB32 = lib/libcfb.a lib/libcfb32.a
-#if BuildLBX
-             OS = lib/liboslbx.a $(XAULIB) $(XDMCPLIB)
-            DIX = lib/libdixlbx.a
-#else
-             OS = lib/libos.a $(XAULIB) $(XDMCPLIB)
+             MI = lib/libmi.a
             DIX = lib/libdix.a
-#endif
-             MI = miinitext.o lib/libmi.a
            FONT = lib/libfont.a
 #if NeedLibGcc
          GCCLIB = -lgcc
@@ -79,10 +70,23 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.17 1995/
 #ifdef ServerExtraSysLibs
    EXTRASYSLIBS = ServerExtraSysLibs
 #endif
+#if  SystemV4 || defined(BSD386Architecture) || defined(i386BsdArchitecture) || defined(NetBSDArchitecture) || defined(FreeBSDArchitecture) || defined(MinixArchitecture)
         SYSLIBS = MathLibrary Krb5Libraries $(EXTRASYSLIBS) $(GCCLIB)
-           CBRT = lib/libcbrt.a
+#else
+        SYSLIBS = MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS) $(GCCLIB)
+#endif
+           CBRT = lib/cbrt.o
 
        IRULESRC = $(CONFIGDIR)
+
+  IMAKE_DEFINES = -DXF86LinkKit=1
+      IMAKE_CMD = $(IMAKE) -DUseInstalled -I$(TOP)/$(NEWTOP) -I$(IRULESRC) \
+                  $(IMAKE_DEFINES)
+
+#undef ImakeSubCmdHelper
+#define ImakeSubCmdHelper $(IMAKE) -DUseInstalled -I$$imakeprefix \
+			  -I$(IRULESRC) $(IMAKE_DEFINES)
+
        INCLUDES = -Iinclude -Idrivers
 
   SCREENDEFINES = $(VGA2BUILD) $(VGA2MONOBUILD) $(VGA16BUILD) $(VGA16MONOBUILD)
@@ -130,9 +134,9 @@ DDXDIR1 = $(VGADRIVERSRC)
 XF86SVGASUBDIRS = $(VGADRIVERSRC)
 XF86SVGAOBJS = XF86_SVGA.o vga256Conf.o
 XF86SVGALIBS = $(VGADRIVERSRC)/libdriver256.a $(DRIVERSRC)/libvga256.a \
-               $(XF86LIBS) CFBLibs
+               $(XF86LIBS) MFBLibs
 XF86SVGASYSLIBS = $(SYSLIBS)
-VGADRIVERS = XF86SvgaDrivers
+VGADRIVERS = XF86Vga256Drivers
 ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),confvga256.sh,$(VGADRIVERS))
 XF86_SVGA.o: XF86_SVGA.c $(ICONFIGFILES)
 SetUIDServerTarget(XF86_SVGA,$(XF86SVGASUBDIRS),$(XF86SVGAOBJS),$(XF86SVGALIBS),$(XF86SVGASYSLIBS))
@@ -170,22 +174,6 @@ SetUIDServerTarget(XF86_VGA16,$(XF86VGA16SUBDIRS),$(XF86VGA16OBJS),$(XF86VGA16LI
 #endif
 #endif	/* XF86VGA16Server */
 
-
-#if XF86W32Server
-XCOMM
-XCOMM XFree86 W32 Server
-XCOMM
-XF86W32OBJS = XF86_W32.o w32Conf.o
-XF86W32LIBS = $(DRIVERSRC)/libw32.a $(DRIVERSRC)/libw32cfb.a $(DRIVERSRC)/libw32.a $(DRIVERSRC)/libw32asm.a $(XF86LIBS) CFB8Libs
-XF86W32SYSLIBS = $(SYSLIBS)
-W32DRIVERS = XF86W32Drivers
-ConfigTargetNoDepend(w32Conf,$(ICONFIGFILES),confw32.sh,$(W32DRIVERS))
-XF86_W32.o: XF86_W32.c $(ICONFIGFILES)
-SetUIDServerTarget(XF86_W32,$(XF86W32SUBDIRS),$(XF86W32OBJS),$(XF86W32LIBS),$(XF86W32SYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall XF86_W32
-#endif
-#endif
 
 #if XF86MonoServer
 XCOMM
@@ -227,7 +215,7 @@ XCOMM
 DDXDIR5 = $(S3DRIVERSRC)
 XF86S3SUBDIRS = $(S3DRIVERSRC)
 XF86S3OBJS = XF86_S3.o s3Conf.o $(S3DRIVERSRC)/mmio_928/mmio_928.o $(S3DRIVERSRC)/s3_generic/s3_generic.o
-XF86S3LIBS = $(DRIVERSRC)/libs3.a $(DRIVERSRC)/libs3mmio.a $(XF86LIBS) CFBLibs lib/libxf86cache.a
+XF86S3LIBS = $(DRIVERSRC)/libs3.a $(DRIVERSRC)/libs3mmio.a $(XF86LIBS) CFB8Libs
 XF86S3SYSLIBS = $(SYSLIBS)
 S3DRIVERS = XF86S3Drivers
 ConfigTargetNoDepend(s3Conf,$(ICONFIGFILES),confS3.sh,$(S3DRIVERS))
@@ -274,7 +262,8 @@ XCOMM
 XCOMM XFree86 Mach32 Server
 XCOMM
 XF86MACH32OBJS = XF86_Mach32.o
-XF86MACH32LIBS = $(DRIVERSRC)/libmach32.a $(XF86LIBS) CFB16Libs lib/libxf86cache.a
+XF86MACH32FBLIBS = $(DRIVERSRC)/libm32cfb.a $(DRIVERSRC)/libm32cfb16.a
+XF86MACH32LIBS = $(DRIVERSRC)/libmach32.a $(XF86LIBS) PreFbLibs $(XF86MACH32FBLIBS) PostFbLibs
 XF86MACH32SYSLIBS = $(SYSLIBS)
 XF86_Mach32.o: XF86_Mach32.c $(ICONFIGFILES)
 SetUIDServerTarget(XF86_Mach32,$(XF86MACH32SUBDIRS),$(XF86MACH32OBJS),$(XF86MACH32LIBS),$(XF86MACH32SYSLIBS))
@@ -284,27 +273,12 @@ SetUIDServerTarget(XF86_Mach32,$(XF86MACH32SUBDIRS),$(XF86MACH32OBJS),$(XF86MACH
 #endif	/* XF86Mach32Server */
 
 
-#if XF86Mach64Server
-XCOMM
-XCOMM XFree86 Mach64 Server
-XCOMM
-XF86MACH64OBJS = XF86_Mach64.o
-XF86MACH64LIBS = $(DRIVERSRC)/libmach64.a $(XF86LIBS) CFBLibs
-XF86MACH64SYSLIBS = $(SYSLIBS)
-XF86_Mach64.o: XF86_Mach64.c $(ICONFIGFILES)
-SetUIDServerTarget(XF86_Mach64,$(XF86MACH64SUBDIRS),$(XF86MACH64OBJS),$(XF86MACH64LIBS),$(XF86MACH64SYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall XF86_Mach64
-#endif
-#endif	/* XF86Mach64Server */
-
-
 #if XF86P9000Server
 XCOMM
 XCOMM XFree86 P9000 Server
 XCOMM
 XF86P9000OBJS = XF86_P9000.o
-XF86P9000LIBS = $(DRIVERSRC)/libp9000.a $(XF86LIBS) CFBLibs
+XF86P9000LIBS = $(DRIVERSRC)/libp9000.a $(XF86LIBS) CFB8Libs
 XF86P9000SYSLIBS = $(SYSLIBS)
 XF86_P9000.o: XF86_P9000.c $(ICONFIGFILES)
 SetUIDServerTarget(XF86_P9000,$(XF86P9000SUBDIRS),$(XF86P9000OBJS),$(XF86P9000LIBS),$(XF86P9000SYSLIBS))
@@ -313,37 +287,9 @@ SetUIDServerTarget(XF86_P9000,$(XF86P9000SUBDIRS),$(XF86P9000OBJS),$(XF86P9000LI
 #endif
 #endif	/* XF86P9000Server */
 
-#if XF86AGXServer
-XCOMM
-XCOMM XFree86 AGX Server
-XCOMM
-XF86AGXOBJS = XF86_AGX.o
-XF86AGXLIBS = $(DRIVERSRC)/libagx.a $(XF86LIBS) CFB8Libs
-XF86AGXSYSLIBS = $(SYSLIBS)
-XF86_AGX.o: XF86_AGX.c $(ICONFIGFILES)
-SetUIDServerTarget(XF86_AGX,$(XF86AGXSUBDIRS),$(XF86AGXOBJS),$(XF86AGXLIBS),$(XF86AGXSYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall XF86_AGX
-#endif
-#endif	/* XF86AGXServer */
-
-#if XnestServer
-XCOMM
-XCOMM Server with Xlib-based ddx
-XCOMM
-XNESTOBJS =
-XNESTDIRS =
-XNEST = lib/libxnest.a
-XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(EXTENSIONS)
-XNESTSYSLIBS = $(LDPRELIB) $(XLIB) $(XNEST) $(SYSLIBS)
-ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(XNESTSYSLIBS))
-#endif /* XnestServer */
-
 CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB32DIR)
 DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(DDXDIR4) $(DDXDIR5) $(DDXDIR6)
 SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIRS) $(DDXDIRS)
-
-miinitext.o: miinitext.c $(ICONFIGFILES)
 
 #ifdef ServerToInstall
 install::

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt481.c,v 3.1 1994/09/11 00:36:51 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -41,7 +41,7 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86RamDac.h"
-#include "Bt481.h"
+#include "xf86Bt481.h"
 
 static unsigned char xf86BtYPosMask = 0xFF;
 
@@ -129,18 +129,15 @@ void
 xf86Bt481Init()
 #endif
 {
-   xf86OutRamDacData( BT481_COMMAND_REG_A, 0x00 );
-   xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x7E, 0x00 ); /* powerup */
-   
    if (xf86Dac8Bit)
-      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x7C, 0x2 );
+      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0xFC, 0x2 );
    else
-      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x7C, 0x0 );
+      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0xFC, 0x0 );
 
    if (xf86DacSyncOnGreen)
-      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x73, 0x4 );
+      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0xE3, 0x4 );
    else
-      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x73, 0x0 );
+      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0xE3, 0x0 );
 
 }
 

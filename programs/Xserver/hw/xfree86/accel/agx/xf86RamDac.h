@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.h,v 3.1 1994/07/15 06:57:16 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth,  Sunnyvale, California.
@@ -35,6 +35,8 @@
 #include <X11/Xfuncproto.h>
 
 
+#define HERC_SMALL_DAC	  -3
+#define HERC_DUAL_DAC	  -2
 #define UNKNOWN_DAC       -1
 #define NORMAL_DAC         0
 #define BT485_DAC          1
@@ -46,8 +48,6 @@
 #define ATT20C504_DAC      7
 #define SC15025_DAC	   8
 #define SC15021_DAC	   9
-#define HERC_SMALL_DAC	  10
-#define HERC_DUAL_DAC	  11
 
 #define DAC_IS_BT485_SERIES    (xf86RamDacType == BT485_DAC \
 			        || xf86RamDacType == BT484_DAC \
@@ -67,10 +67,6 @@ extern int  xf86RamDacType;
 extern int  xf86MaxCurs;
 extern int  xf86FrameX0;
 extern int  xf86FrameY0;
-extern int  xf86MaxClock;
-extern int  xf86MaxClockDirect;
-extern int  xf86MinClockDoubled;
-extern int  xf86MaxClockDoubled;
 
 extern unsigned char xf86SwapBits[256];
 

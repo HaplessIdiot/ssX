@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGC.c,v 3.3 1994/09/07 15:47:21 dawes Exp $ */
+/* $XFree86$ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -49,18 +49,18 @@ $XConsortium: cfbgc.c,v 1.2 91/07/18 23:00:53 keith
 
 #include "agx.h"
 
-static void agxValidateGC(), agxChangeGC(), agxCopyGC(), agxDestroyGC();
-static void agxChangeClip(), agxDestroyClip(), agxCopyClip();
-static void agxDestroyOps();
+static void agxValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
+static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
+static void cfbDestroyOps();
 
-static GCFuncs agxFuncs = {
+static GCFuncs cfbFuncs = {
     agxValidateGC,
-    agxChangeGC,
-    agxCopyGC,
-    agxDestroyGC,
-    agxChangeClip,
-    agxDestroyClip,
-    agxCopyClip,
+    cfbChangeGC,
+    cfbCopyGC,
+    cfbDestroyGC,
+    cfbChangeClip,
+    cfbDestroyClip,
+    cfbCopyClip,
 };
 
 static GCOps	agxOps = {
@@ -69,25 +69,25 @@ static GCOps	agxOps = {
     cfbPutImage,
     agxCopyArea,
     agxCopyPlane,
-    miPolyPoint,
+    cfbPolyPoint,
     miWideLine,
     miPolySegment,
     miPolyRectangle,
     miPolyArc,
-    agxFillPolygon,
+    miFillPolygon,
     agxPolyFillRect,
-    agxPolyFillArc,
+    cfbPolyFillArcSolidCopy,
     agxPolyText8,
     miPolyText16,
     agxImageText8,
     miImageText16,
-    miImageGlyphBlt,
-    miPolyGlyphBlt,
-    miPushPixels,
+    cfbTEGlyphBlt8,
+    cfbPolyGlyphBlt8,
+    cfbPushPixels8,
     NULL,
 };
 
-static GCOps	agxTEOps1Rect = {
+static GCOps	cfbTEOps1Rect = {
     cfbSolidSpansCopy,
     cfbSetSpans,
     cfbPutImage,
@@ -115,7 +115,7 @@ static GCOps	agxTEOps1Rect = {
     NULL,
 };
 
-static GCOps	agxTEOps = {
+static GCOps	cfbTEOps = {
     cfbSolidSpansCopy,
     cfbSetSpans,
     cfbPutImage,
@@ -143,7 +143,7 @@ static GCOps	agxTEOps = {
     NULL,
 };
 
-static GCOps	agxNonTEOps1Rect = {
+static GCOps	cfbNonTEOps1Rect = {
     cfbSolidSpansCopy,
     cfbSetSpans,
     cfbPutImage,
@@ -171,7 +171,7 @@ static GCOps	agxNonTEOps1Rect = {
     NULL,
 };
 
-static GCOps	agxNonTEOps = {
+static GCOps	cfbNonTEOps = {
     cfbSolidSpansCopy,
     cfbSetSpans,
     cfbPutImage,
@@ -223,14 +223,14 @@ matchCommon (pGC, devPriv)
 #endif
 	)
 	    if (devPriv->oneRect)
-		return &agxTEOps1Rect;
+		return &cfbTEOps1Rect;
 	    else
-		return &agxTEOps;
+		return &cfbTEOps;
 	else
 	    if (devPriv->oneRect)
-		return &agxNonTEOps1Rect;
+		return &cfbNonTEOps1Rect;
 	    else
-		return &agxNonTEOps;
+		return &cfbNonTEOps;
     }
     return 0;
 }
@@ -247,7 +247,7 @@ agxCreateGC(pGC)
     case PSZ:
 	break;
     default:
-	ErrorF("agxCreateGC: unsupported depth: %d\n", pGC->depth);
+	ErrorF("cfbCreateGC: unsupported depth: %d\n", pGC->depth);
 	return FALSE;
     }
     pGC->clientClip = NULL;
@@ -260,8 +260,8 @@ agxCreateGC(pGC)
      * on being a color frame buffer, they don't change 
      */
 
-    pGC->ops = &agxNonTEOps;
-    pGC->funcs = &agxFuncs;
+    pGC->ops = &cfbNonTEOps;
+    pGC->funcs = &cfbFuncs;
 
     /* cfb wants to translate before scan conversion */
     pGC->miTranslate = 1;
@@ -277,7 +277,7 @@ agxCreateGC(pGC)
 
 /*ARGSUSED*/
 static void
-agxChangeGC(pGC, mask)
+cfbChangeGC(pGC, mask)
     GC		    *pGC;
     BITS32	    mask;
 {
@@ -285,7 +285,7 @@ agxChangeGC(pGC, mask)
 }
 
 static void
-agxDestroyGC(pGC)
+cfbDestroyGC(pGC)
     GC 			*pGC;
 {
     cfbPrivGC *pPriv;
@@ -295,7 +295,7 @@ agxDestroyGC(pGC)
 	cfbDestroyPixmap(pPriv->pRotatedPixmap);
     if (pPriv->freeCompClip)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
-    agxDestroyOps (pGC->ops);
+    cfbDestroyOps (pGC->ops);
 }
 
 /*
@@ -303,7 +303,7 @@ agxDestroyGC(pGC)
  */
 
 static GCOps *
-agxCreateOps (prototype)
+cfbCreateOps (prototype)
     GCOps	*prototype;
 {
     GCOps	*ret;
@@ -320,7 +320,7 @@ agxCreateOps (prototype)
 }
 
 static void
-agxDestroyOps (ops)
+cfbDestroyOps (ops)
     GCOps   *ops;
 {
     if (ops->devPrivate.val)
@@ -666,9 +666,9 @@ agxValidateGC(pGC, changes, pDrawable)
     if (pWin && pGC->ops->devPrivate.val != 2)
     {
 	if (pGC->ops->devPrivate.val == 1)
-	    agxDestroyOps (pGC->ops);
+	    cfbDestroyOps (pGC->ops);
 
-	pGC->ops = agxCreateOps (&agxOps);
+	pGC->ops = cfbCreateOps (&agxOps);
 	pGC->ops->devPrivate.val = 2;
 
 	/* Make sure that everything is properly initialized the first time through */
@@ -681,7 +681,7 @@ agxValidateGC(pGC, changes, pDrawable)
 	if (newops = matchCommon (pGC, devPriv))
  	{
 	    if (pGC->ops->devPrivate.val)
-		agxDestroyOps (pGC->ops);
+		cfbDestroyOps (pGC->ops);
 	    pGC->ops = newops;
 	    new_rrop = new_line = new_fillspans = new_text = new_fillarea = 0;
 	}
@@ -689,13 +689,13 @@ agxValidateGC(pGC, changes, pDrawable)
  	{
 	    if (!pGC->ops->devPrivate.val)
 	    {
-		pGC->ops = agxCreateOps (pGC->ops);
+		pGC->ops = cfbCreateOps (pGC->ops);
 		pGC->ops->devPrivate.val = 1;
 	    }
 	    else if (pGC->ops->devPrivate.val != 1)
 	    {
-		agxDestroyOps (pGC->ops);
-		pGC->ops = agxCreateOps (&agxNonTEOps);
+		cfbDestroyOps (pGC->ops);
+		pGC->ops = cfbCreateOps (&cfbNonTEOps);
 		pGC->ops->devPrivate.val = 1;
 		new_rrop = new_line = new_text = new_fillspans = new_fillarea = TRUE;
 	    }
@@ -723,7 +723,8 @@ agxValidateGC(pGC, changes, pDrawable)
 		     pGC->ops->PolySegment = agxSegment;
                   }
                   else {
-		     pGC->ops->Polylines = miZeroLine;
+		     pGC->ops->Polylines = cfbLineSS;
+		     pGC->ops->PolySegment = cfbSegmentSS;
                   }
 		}
  		else
@@ -733,41 +734,37 @@ agxValidateGC(pGC, changes, pDrawable)
 		pGC->ops->Polylines = miWideLine;
 	    break;
 	case LineOnOffDash:
-	case LineDoubleDash:
-            if(pGC->lineWidth == 0)
+	    pGC->ops->Polylines = miWideDash;
+            if ((pGC->lineWidth == 0) && (pGC->fillStyle == FillSolid))
             {
-                if (pGC->fillStyle == FillSolid)
-                {
-                  if(!AGX_14_ONLY(agxChipId)) {
-                     pGC->ops->Polylines = agxDLine;
-                     pGC->ops->PolySegment = agxDSegment;
-                  }
-                  else {
-                     pGC->ops->Polylines = miWideDash;
-                  }
-                }
-                else
-                    pGC->ops->Polylines = miWideDash;
-            }
-            else
-  	       pGC->ops->Polylines = miWideDash;
+                pGC->ops->Polylines = cfbLineSD;
+                pGC->ops->PolySegment = cfbSegmentSD;
+	    }
+	    break;
+	case LineDoubleDash:
+	    pGC->ops->Polylines = miWideDash;
+            if ((pGC->lineWidth == 0) && (pGC->fillStyle == FillSolid))
+            {
+                pGC->ops->Polylines = cfbLineSD;
+                pGC->ops->PolySegment = cfbSegmentSD;
+	    }
 	    break;
 	}
       } 
       else 
       {
 	pGC->ops->FillPolygon = miFillPolygon;
-        if (devPriv->oneRect && pGC->fillStyle == FillSolid)
-        {
-            switch (devPriv->rop) {
-            case GXcopy:
-                pGC->ops->FillPolygon = cfbFillPoly1RectCopy;
-                break;
-            default:
-                pGC->ops->FillPolygon = cfbFillPoly1RectGeneral;
-                break;
-            }
-        }
+	if (devPriv->oneRect && pGC->fillStyle == FillSolid)
+	{
+	    switch (devPriv->rop) {
+	    case GXcopy:
+		pGC->ops->FillPolygon = cfbFillPoly1RectCopy;
+		break;
+	    default:
+		pGC->ops->FillPolygon = cfbFillPoly1RectGeneral;
+		break;
+	    }
+	}
 	if (pGC->lineWidth == 0)
 	{
 #if PPW == 4
@@ -876,25 +873,27 @@ agxValidateGC(pGC, changes, pDrawable)
 
 
     if (new_fillspans) {
+#if 0
       if (pWin) {
 	 switch (pGC->fillStyle) {
 	   case FillSolid:
-	      pGC->ops->FillSpans = agxSolidFSpans;
+	      pGC->ops->FillSpans = ibm8514SolidFSpans;
 	      break;
 	   case FillTiled:
-	      pGC->ops->FillSpans = agxTiledFSpans;
+	      pGC->ops->FillSpans = ibm8514TiledFSpans;
 	      break;
 	   case FillStippled:
-	      pGC->ops->FillSpans = agxStipFSpans;
+	      pGC->ops->FillSpans = ibm8514StipFSpans;
 	      break;
 	   case FillOpaqueStippled:
-	      pGC->ops->FillSpans = agxOStipFSpans;
+	      pGC->ops->FillSpans = ibm8514OStipFSpans;
 	      break;
 	   default:
 	      FatalError("agxValidateGC: illegal fillStyle\n");
 	 }
       } 
       else
+#endif
       {
  	 switch (pGC->fillStyle) {
 	   case FillSolid:
@@ -912,10 +911,13 @@ agxValidateGC(pGC, changes, pDrawable)
 	     break;
 	   case FillTiled:
 	     if (devPriv->pRotatedPixmap) {
+               extern void cfbTile32FS();
 	       if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK) 
-		  pGC->ops->FillSpans = cfbTile32FSCopy;
+		  /*pGC->ops->FillSpans = cfbTile32FSCopy;*/
+		  pGC->ops->FillSpans = cfbTile32FS;
 	       else
-		  pGC->ops->FillSpans = cfbTile32FSGeneral;
+		  /*pGC->ops->FillSpans = cfbTile32FSGeneral;*/
+		  pGC->ops->FillSpans =  cfbTile32FS;
 	     }
 	     else
 	       pGC->ops->FillSpans = cfbUnnaturalTileFS;
@@ -944,13 +946,14 @@ agxValidateGC(pGC, changes, pDrawable)
     } /* end of new_fillspans */
 
     if (new_fillarea) {
+#if 0
       if (pWin) {
 	pGC->ops->PolyFillRect = agxPolyFillRect;
-	pGC->ops->PolyFillArc = agxPolyFillArc;
+	pGC->ops->PolyFillArc = miPolyFillArc;
 	pGC->ops->PushPixels = miPushPixels;
-	pGC->ops->FillPolygon = agxFillPolygon;
       } 
       else
+#endif
       {
 #if PPW != 4
 	pGC->ops->PolyFillRect = miPolyFillRect;
@@ -981,7 +984,7 @@ agxValidateGC(pGC, changes, pDrawable)
 }
 
 static void
-agxDestroyClip(pGC)
+cfbDestroyClip(pGC)
     GCPtr	pGC;
 {
     if(pGC->clientClipType == CT_NONE)
@@ -1002,13 +1005,13 @@ agxDestroyClip(pGC)
 }
 
 static void
-agxChangeClip(pGC, type, pvalue, nrects)
+cfbChangeClip(pGC, type, pvalue, nrects)
     GCPtr	pGC;
     int		type;
     pointer	pvalue;
     int		nrects;
 {
-    agxDestroyClip(pGC);
+    cfbDestroyClip(pGC);
     if(type == CT_PIXMAP)
     {
 	pGC->clientClip = (pointer) (*pGC->pScreen->BitmapToRegion)((PixmapPtr)pvalue);
@@ -1031,7 +1034,7 @@ agxChangeClip(pGC, type, pvalue, nrects)
 }
 
 static void
-agxCopyClip (pgcDst, pgcSrc)
+cfbCopyClip (pgcDst, pgcSrc)
     GCPtr pgcDst, pgcSrc;
 {
     RegionPtr prgnNew;
@@ -1042,21 +1045,21 @@ agxCopyClip (pgcDst, pgcSrc)
 	((PixmapPtr) pgcSrc->clientClip)->refcnt++;
 	/* Fall through !! */
       case CT_NONE:
-        agxChangeClip(pgcDst, (int)pgcSrc->clientClipType, pgcSrc->clientClip,
+        cfbChangeClip(pgcDst, (int)pgcSrc->clientClipType, pgcSrc->clientClip,
 		      0);
         break;
       case CT_REGION:
         prgnNew = (*pgcSrc->pScreen->RegionCreate)(NULL, 1);
         (*pgcSrc->pScreen->RegionCopy)(prgnNew,
                                        (RegionPtr)(pgcSrc->clientClip));
-        agxChangeClip(pgcDst, CT_REGION, (pointer)prgnNew, 0);
+        cfbChangeClip(pgcDst, CT_REGION, (pointer)prgnNew, 0);
         break;
     }
 }
 
 /*ARGSUSED*/
 static void
-agxCopyGC (pGCSrc, changes, pGCDst)
+cfbCopyGC (pGCSrc, changes, pGCDst)
     GCPtr	pGCSrc;
     Mask 	changes;
     GCPtr	pGCDst;

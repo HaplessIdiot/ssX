@@ -1,4 +1,3 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/Imakefile,v 3.1 1994/05/05 07:50:10 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -16,15 +15,17 @@ INCLUDES = -Imono -I../common -I../os-support -I$(SERVERSRC)/include \
 
 MONODRIVERS = XF86MonoDrivers
 
-NormalDepLibraryTarget(mono,$(SUBDIRS) $(DONES),$(OBJS))
-
 ConfigTargetNoDepend(monoConf,$(ICONFIGFILES),confmono.sh,$(MONODRIVERS))
+
+all:: subdirs libmono.a
 
 NormalLibraryObjectRule()
 
-ForceSubdirs($(SUBDIRS))
+NamedMakeSubdirs(subdirs,$(SUBDIRS))
 
 InstallLinkKitLibrary(mono,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(confmono.sh,$(LINKKITDIR))
+
+NormalDepLibraryTarget(mono,$(SUBDIRS) $(DONES),$(OBJS))
 
 DependSubdirs($(SUBDIRS))

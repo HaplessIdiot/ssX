@@ -1,5 +1,6 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.9 1994/12/20 12:10:32 dawes Exp $
-.TH XF86Config 4/5 "Version 3.1.1"  "XFree86"
+.\" $XFree86$
+.\" XF86Conf.man
+.TH XF86Config 4/5 "Version 3.1"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
 .SH DESCRIPTION
@@ -18,7 +19,7 @@ places:
 .LP
 where <XRoot> refers to the root of the X11 install tree.
 .PP
-This file is composed of a number of sections.  Each section has
+This file is composed of a number of section.  Each section has
 the form:
 .sp
 .in 8
@@ -66,7 +67,7 @@ for connections on TCP port number 7100.
 .B RGBPath \fI"path"\fP
 sets the path name for the RGB color database.
 .PP
-The \fBServerFlags\fP section is used to specify some miscellaneous
+The \fBServerFlags\fP section is used to specify some miscelaneous
 X server options.  The entries available for this section are:
 .TP 8
 .B NoTrapSignals
@@ -80,20 +81,13 @@ an X server problem.
 .B DontZap
 This disallows the use of the \fBCtrl+Alt+Backspace\fP sequence.
 This sequence allows you to terminate the X server.
-Setting \fBDontZap\fP allows this key sequence to be passed to clients.
-.TP 8
-.B DontZoom
-This disallows the use of the \fBCtrl+Alt+Keypad-Plus\fP and
-\fBCtrl+Alt+Keypad-Minus\fP sequences.  These sequences allows you to
-switch between video modes.
-Setting \fBDontZoom\fP allows these key sequences to be passed to clients.
 .PP
 The \fBKeyboard\fP section is used to specify the keyboard input
 device, parameters and some default keyboard mapping options.  The
 entries available for this section are:
 .TP 8
-.B Protocol \fI"kbd-protocol"\fP
-\fIkbd-protocol\fP may be either \fBStandard\fP or \fBXqueue\fP.
+.B Device \fI"kbd-device"\fP
+\fIkbd-device\fP may be either \fBStandard\fP or \fBXqueue\fP.
 \fBXqueue\fP is specified when using the event queue driver on SVR3
 or SVR4.
 .TP
@@ -249,8 +243,7 @@ This optional entry specifies the monitor's manufacturer.
 This optional entry specifies the monitor's model.
 .TP 8
 .B Bandwidth \fIbandwidth\fP
-This optional entry specifies the bandwith of the monitor.  By default
-\fIbandwidth\fP is
+gives the bandwith of the monitor.  By default \fIbandwidth\fP is
 in units of MHz.  It may be specified in kHz or Hz if \fBkHz\fP or
 \fBHz\fP is appended to the number.
 .TP 8
@@ -260,7 +253,7 @@ monitor.  \fIhorizsync-range\fP may be a comma separated list of
 either discrete values or ranges of values.  A range of values is
 two values separated by a dash.  By default the values are in units
 of kHz.  They may be specified in MHz or Hz if \fBMHz\fP or \fBHz\fP
-is added to the end of the line.  The data given here is used by the X
+is appended to the numbers.  The data given here is used by the X
 server to determine if video modes are within the specifications
 of the monitor.  This information should be available in the
 monitor's handbook.
@@ -271,7 +264,7 @@ the monitor.  \fIvertrefresh-range\fP may be a comma separated list
 of either discrete values or ranges of values.  A range of values
 is two values separated by a dash.  By default the values are in
 units of Hz.  They may be specified in MHz or kHz if \fBMHz\fP or
-\fBkHz\fP is added to the end of the line.  The data given here is used
+\fBkHz\fP is appended to the numbers.  The data given here is used
 by the X server to determine if video modes are within the
 specifications of the monitor.  This information should be available
 in the monitor's handbook.
@@ -279,7 +272,7 @@ in the monitor's handbook.
 .B Gamma \fIgamma-value(s)\fP
 This is an optional entry that can be used to specify the gamma
 correction for the monitor.  It may be specified as either a single
-value or as three separate RGB values.  Not all X servers are capable
+value or as three separate RGB values.  Not all X servers a capable
 of using this information.
 .TP 8
 .B Mode \fI"name"\fP
@@ -298,22 +291,19 @@ specifies the horizontal timings for the mode.
 .B VTimings \fIvdisp vsyncstart vsyncend vtotal\fP
 specifies the vertical timings for the mode.
 .TP 4
-.B Flags \fI"flag" ...\fP
-specifies an optional set of mode flags.  \fB"Interlace"\fP indicates
-that the mode is interlaced.  \fB"DoubleScan"\fP indicates a mode where
-each scanline is doubled.  \fB"+HSync"\fP and \fB\"-HSync"\fP can
-be used to select the polarity of the HSync signal.  \fB"+VSync"\fP
-and \fB\"-VSync"\fP can be used to select the polarity of the VSync
-signal.  \fB"Composite"\fP, can be used to specify composite sync on
-hardware where this is supported.  Additionally, on some hardware,
-\fB"+CSync"\fP and \fB"-CSync"\fP may be used to select the composite
-sync polarity.
+.B Flags \fIflag ...\fP
+specifies an optional set of mode flags.  \fBInterlace\fP indicates
+that the mode is interlaced.  \fB+HSync\fP and \fB\-HSync\fP can
+be used to select the polarity of the HSync signal.  \fB+VSync\fP
+and \fB\-VSync\fP can be used to select the polarity of the VSync
+signal.  \fBCSync\fP can be used to specify composite sync on
+hardware where this is supported.
 .RE
 .TP 8
 .B Modeline \fI"name" mode-description\fP
 is a single line format for specifying video modes.  The
 \fImode-description\fP is in four sections, the first three of
-which are mandatory.  The first is the pixel clock.  This is a
+which are manditory.  The first is the pixel clock.  This is a
 single number specifying the pixel clock rate for the mode.  The
 second section is a list of four numbers specifying the horizontal
 timings.  These numbers are the \fIhdisp\fP, \fIhsyncstart\fP,
@@ -322,14 +312,10 @@ numbers specifying the vertical timings.  These numbers are
 \fIvdisp\fP, \fIvsyncstart\fP, \fIvsyncend\fP, \fIvtotal\fP.  The
 final section is a list of flags specifying other characteristics
 of the mode.  \fBInterlace\fP indicates that the mode is interlaced.
-\fB"DoubleScan"\fP indicates a mode where each scanline is doubled.  
 \fB+HSync\fP and \fB\-HSync\fP can be used to select the polarity
 of the HSync signal.  \fB+VSync\fP and \fB\-VSync\fP can be used
-to select the polarity of the VSync signal.  \fBComposite\fP can be
+to select the polarity of the VSync signal.  \fBCSync\fP can be
 used to specify composite sync on hardware where this is supported.
-Additionally, on some hardware,
-\fB"+CSync"\fP and \fB"-CSync"\fP may be used to select the composite
-sync polarity.
 .PP
 The \fBDevice\fP sections are used to define a graphics device
 (video board).  More than one \fBDevice\fP section may be present
@@ -350,20 +336,20 @@ This optional entry specifies the name of the graphics device.
 This optional entry specifies the chipset used on the graphics
 board.  In most cases this entry is not required because the X
 servers will probe the hardware to determine the chipset type.
-.TP 8
+.TP
 .B Ramdac \fI"ramdac-type"\fP
 This optional entry specifies the type of RAMDAC used on the graphics
 board.  This is only used by a few of the X servers, and in most
 cases it is not required because the X servers will probe the
 hardware to determine the RAMDAC type where possible.
-.TP 8
+.TP
 .B DacSpeed \fIspeed\fP
 This optional entry specifies the RAMDAC speed rating (which is
 usually printed on the RAMDAC chip).  The speed is in MHz.  This
 is only used by a few of the X servers, and only needs to be
 specified when the speed rating of the RAMDAC is different from
 the default built in to the X server.
-.TP 8
+.TP
 .B Clocks \fIclock ...\fP
 specifies the dotclocks that are on your graphics board.  The clocks
 are in MHz, and may be specified as a floating point number.  The
@@ -376,13 +362,13 @@ entry is not mandatory for boards with non-programmable clock chips,
 but is highly recommended because it prevents the clock probing
 phase during server startup.  This clock probing phase can cause
 problems for some monitors.
-.TP 8
+.TP
 .B ClockChip \fI"clockchip-type"\fP
 This optional entry is used to specify the clock chip type on
 graphics boards which have a programmable clock generator.  Only
 a few X servers support programmable clock chips.  For details,
 see the appropriate X server manual page.
-.TP 8
+.TP
 .B ClockProg \fI"command"\fP [\fItextclock\fP]
 This optional entry runs \fIcommand\fP to set the clock on the
 graphics board instead of using the internal code.  The command
@@ -409,7 +395,7 @@ program fails at initialisation the server exits.  If it fails
 during a mode switch, the mode switch is aborted but the server
 keeps running.  It is assumed that if the command fails the clock
 has not been changed.
-.TP 8
+.TP
 .B Option \fI"optionstring"\fP
 This optional entry allows the user to select certain options
 provided by the drivers.  Multiple \fBOption\fP entries may be
@@ -439,38 +425,37 @@ board's linear frame buffer.  This entry is only used by a few
 X servers, and the interpretation of this base address may be different
 for different X servers.  Refer to the appropriate X server manual
 page for details.
-.TP 8
+.TP
 .B IOBase \fIbaseaddress\fP
 This optional entry specifies the IO base address.  This entry is only
 used for a few X servers.  Refer to the appropriate X server manual page
 for details.
-.TP 8
+.TP
 .B DACBase \fIbaseaddress\fP
 This optional entry specifies the DAC base address.  This entry is only
 used for a few X servers.  Refer to the appropriate X server manual page
 for details.
-.TP 8
+.TP
 .B POSBase \fIbaseaddress\fP
 This optional entry specifies the POS base address.  This entry is only
 used for a few X servers.  Refer to the appropriate X server manual page
 for details.
-.TP 8
+.TP
 .B COPBase \fIbaseaddress\fP
-This optional entry specifies the coprocessor base address.  This entry
-is only used for a few X servers.  Refer to the appropriate X server
-manual page for details.
-.TP 8
+This optional entry specifies the COP base address.  This entry is only
+used for a few X servers.  Refer to the appropriate X server manual page
+for details.
+.TP
 .B Instance \fInumber\fP
-This optional entry specifies the instance (which indicates of the
-chip is integrated on the motherboard or on an expansion card).
+This optional entry specifies the instance (what ever that is).
 This entry is only used for a few X servers.  Refer to the appropriate
 X server manual page for details.
-.TP 8
+.TP
 .B Speedup \fI"selection"\fP
 This optional entry specifies the selection of speedups to be
 enabled.  This entry is only used for a few X servers.  Refer to
 the appropriate X server manual page for details.
-.TP 8
+.TP
 .B S3MNAdjust \fIM N\fP
 This optional entry is specific to the S3 X server.  For details, refer
 to the \fIXF86_S3(1)\fP manual page.
@@ -567,7 +552,7 @@ for details.
 This optional entry sets the upper left corner of the initial
 display.  This is only relevant when the virtual screen resolution
 is different from the resolution of the initial video mode.  If
-this entry is not given, then the initial display will be centered
+this entry is not given, the the initial display will be centred
 in the virtual display area.
 .TP 4
 .B Modes \fI"modename" ...\fP
@@ -600,12 +585,20 @@ The visual types available for 8bpp X servers are (default is
 .in -20
 .RS 12
 .PP
-The visual type available for the 16bpp and 32bpp X servers is 
-\fBTrueColor\fP.
+The visual types available for the 16bpp and 32bpp X servers are (default
+is \fBTrueColor\fP):
+.RE
+.sp
+.in 20
+.nf
+.B TrueColor
+.B DirectColor
+.fi
+.in -20
+.RS 12
 .PP
-The visual type available for the 1bpp X server is \fBStaticGray\fP.
-.PP
-The visual types available for the 4bpp X server are (default is
+The visual type available for the 1bpp X server is \fBStaticGray\fP, and
+the visual types available for the 4bpp X server are (default is
 \fBPseudoColor\fP):
 .RE
 .sp

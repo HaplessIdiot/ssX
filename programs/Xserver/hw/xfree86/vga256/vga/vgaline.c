@@ -46,14 +46,10 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.23 94/04/17 20:28:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaline.c,v 3.1 1994/08/31 04:49:56 dawes Exp $ */
+/* $XFree86$ */
 
 #include "vga256.h"
 #include "miline.h"
-#include "xf86.h"	/* for xf86VTSema */
-
-extern Bool vgaUseLinearAddressing;
-extern pointer vgaLinearBase;
 
 void
 #ifdef POLYSEGMENT
@@ -111,16 +107,6 @@ vga256LineSS (pDrawable, pGC, mode, npt, pptInit)
     unsigned long   xor, and;
     int		    alu;
 
-    /*
-     * The following check does NOT work when writing to the
-     * virtualized screen when VT-switched away.
-     * The current inconsistent behaviour is to use cfb for off-screen
-     * pixmaps, the fastvga256 routines for on-screen lines, and the
-     * fastvga256 routines also for the off-screen pixmap of the
-     * virtualized screen when VT-switched away.
-     * If SPEEDUP is defined, which would apply to ET4000, the speedup
-     * routines are always used.
-     */
 #ifndef SPEEDUP
     if( pDrawable->type != DRAWABLE_WINDOW )
 	{
@@ -139,14 +125,6 @@ vga256LineSS (pDrawable, pGC, mode, npt, pptInit)
     nboxInit = REGION_NUM_RECTS(cclip);
 
     cfbGetLongWidthAndPointer (pDrawable, nlwidth, addrl)
-
-    /*
-     * This is a temporary hack to really use the non-bankchecking routines
-     * in the fXF86 functions if linear addressing is enabled.
-     */
-    if (vgaUseLinearAddressing && xf86VTSema)
-         (unsigned char *)addrl = (unsigned char *)vgaLinearBase +
-             (unsigned int)((unsigned char *)addrl - (unsigned int)VGABASE);
 
     BANK_FLAG(addrl)
 

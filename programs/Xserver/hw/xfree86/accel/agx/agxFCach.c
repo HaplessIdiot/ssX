@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.8 1994/11/19 07:50:02 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -47,11 +47,7 @@ static unsigned long agxFontAge;
 
 static void agxloadFontBlock();
 static __inline__ void DoagxCPolyText8();
-static __inline__ void DoagxConstMetrics();
 extern CacheFont8Ptr agxFontCache;
-
-Bool geBlockMove = FALSE;
-bitMapBlockPtr  blockInUse = NULL;
 
 void
 agxUnCacheFont8(font)
@@ -69,24 +65,22 @@ agxUnCacheFont8(font)
 	        agxCReturnBlock(ptr->fblock[i]);
 	    }
 
-	 if (ptr != agxHeadFont) {
-	    last->next = ptr->next;
-	    Xfree(ptr);
-	 }
-         else {
-	    if (ptr->next != NULL) { /* move the head down */
-	       agxHeadFont=ptr->next;
-	       Xfree(ptr);		  
+	    if (ptr != agxHeadFont) {
+	       last->next = ptr->next;
+	       Xfree(ptr);
+	    } else {
+	       if (ptr->next != NULL) { /* move the head down */
+		  agxHeadFont=ptr->next;
+		  Xfree(ptr);		  
+	       } else { /* one and only entry */
+		  agxHeadFont->font = NULL;
+	       }
 	    }
-            else { /* one and only entry */
-	       agxHeadFont->font = NULL;
-	    }
-         }
 #ifdef DEBUG_FCACHE
-         for (ptr = agxHeadFont; ptr != NULL; ptr = ptr->next)
-	    ErrorF("fonts 0x%x\n", ptr->font);
+            for (ptr = agxHeadFont; ptr != NULL; ptr = ptr->next)
+	       ErrorF("fonts 0x%x\n", ptr->font);
 #endif	       
-      	 return;	 
+      	    return;	 
       }
       last=ptr;
    }
@@ -100,9 +94,6 @@ agxCacheFont8(font)
    unsigned long n;
    unsigned char chr;
    int   width, height;
-   int   bWidth;
-   int   blockSize;
-   int   gper;
    CharInfoPtr pci;
 
    CacheFont8Ptr last, ret = agxHeadFont;
@@ -119,15 +110,10 @@ agxCacheFont8(font)
    height = FONTMAXBOUNDS(font, ascent) 
              + FONTMAXBOUNDS(font, descent);
 
-   bWidth = PixmapBytePad(width,1); 
-   gper = CACHE_LINE_WIDTH_BYTES / bWidth;
-   blockSize =  (((BLOCK_NUM_CHAR - 1) / gper) + 1) * height;
-
    if ( (width > CACHE_LINE_WIDTH_PIXELS) 
         || (FONTFIRSTROW(font) != 0) 
         || (FONTLASTROW(font) != 0)
-        || (FONTLASTCOL(font) > 255)  
-        || blockSize > ROW_NUM_LINES )
+        || (FONTLASTCOL(font) > 255)  )
        return NULL;
 
    if (agxHeadFont->font == NULL)
@@ -139,9 +125,8 @@ agxCacheFont8(font)
 
    ret->wPix = width;
    ret->hPix = height;
-   ret->wBytes = bWidth;
-   ret->gper = gper;
-   ret->blockSize = blockSize;
+   ret->wBytes = PixmapBytePad(width,1);
+   ret->gper = CACHE_LINE_WIDTH_BYTES / ret->wBytes;
    ret->font = font;
 
    /*
@@ -179,6 +164,7 @@ agxloadFontBlock(fentry, block)
    unsigned int   gWidth, gHeight, gSize;
    unsigned int   nbyGlyphWidth;
    unsigned int   nbyPadGlyph;
+   unsigned int   blockSize;                   /* block size in lines */
 
    ERROR_F(("loading 0x%x (0x%x) 0x%x\n", 
              fentry->font, block, fentry->fblock[block]));
@@ -186,12 +172,12 @@ agxloadFontBlock(fentry, block)
 
    nbyWidth = fentry->wBytes;  		/* glyph width in bytes */
    gSize = nbyWidth * fentry->hPix;  	 /*  font cache glyph size in bytes */
+   blockSize =  ((BLOCK_NUM_CHAR / fentry->gper) + 1) * fentry->hPix; 
 
    pbits = (unsigned char *)ALLOCATE_LOCAL(gSize);   /* buffer for copy */
 
    if ( pbits != NULL 
-        && (fentry->fblock[block]
-             = agxCGetBlock(fentry->blockSize)) != NULL ) {
+        && (fentry->fblock[block] = agxCGetBlock(blockSize)) != NULL ) {
 
       unsigned int first = block << BLOCK_NUM_SHIFT;  /* first char in block */
       unsigned int last  = first + BLOCK_NUM_CHAR;    /* last+1 char in block */
@@ -210,6 +196,7 @@ agxloadFontBlock(fentry, block)
 	       nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(fentry->pci[c]);
                nbyPadGlyph = PixmapBytePad(gWidth, 1);
 
+#if 0
 	       if ( nbyWidth == nbyPadGlyph
 #if GLYPHPADBYTES != 4
 		    && (((int)pglyph) & 3) == 0
@@ -221,6 +208,7 @@ agxloadFontBlock(fentry, block)
 		  pb = pglyph;
                }
 	       else
+#endif
                {
                   unsigned char *pg;
                   /*
@@ -273,8 +261,7 @@ agxloadFontBlock(fentry, block)
                   /* cache is laid out so that blocks don't cross banks */ 
                   outb( agxApIdxReg, bank );
                   for( i=0, offset = 0; i < gHeight; i++ ) {
-                     MemToBus( (void *)((unsigned char *)base+offset), 
-                               pb,
+                     MemToBus( (void *)((unsigned char *)base+offset), pb,
 			       nbyWidth );
                      offset += CACHE_LINE_WIDTH_BYTES;
                      pb+=nbyWidth;
@@ -303,7 +290,7 @@ agxloadFontBlock(fentry, block)
 
       for (fptr = agxHeadFont; fptr == NULL; fptr= fptr->next)
 	 if (fptr != fentry) {
-	    for (i = 0; i < BLOCKS_PER_FONT; i++)
+	    for (i = 0; i < MAX_NUM_ROWS; i++)
 	       if (fptr->fblock[i] != NULL) {
 	         agxCReturnBlock(fptr->fblock[i]);
 		 found = TRUE;
@@ -314,20 +301,19 @@ agxloadFontBlock(fentry, block)
 
       /* getting real desperate - this doesn't work with pre-loading */
       if (!found) { 
-         ERROR_F(("Flushing Current Font!\n"));
-	 for (i = 0; i < BLOCKS_PER_FONT; i++)
+	 for (i = 0; i < MAX_NUM_ROWS; i++)
 	    if (fentry->fblock[i] != NULL) 
 	       agxCReturnBlock(fentry->fblock[i]);	    
       }
       agxloadFontBlock(fentry, block);
       return;
    }
-   for (i = 0; i < BLOCKS_PER_FONT; i++)
-      ERROR_F(("got 0x%x(0x%x) 0x%x\n", fentry->font, i, fentry->fblock[i]));
+   for (i = 0; i < MAX_NUM_ROWS; i++)
+   ERROR_F(("got 0x%x(0x%x) 0x%x\n", fentry->font, i, fentry->fblock[i]));
 }
 
 int
-agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
+agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry)
      DrawablePtr pDraw;
      GCPtr pGC;
      int   x;
@@ -335,326 +321,269 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
      int   count;
      unsigned char *chars;
      CacheFont8Ptr fentry;
-     int   opaque;
 {
-   register BoxPtr pBox;
+   int   i;
+   BoxPtr pBox;
    int   numRects;
-   int   block;
    RegionPtr pRegion;
+   int   yBand;
    int   maxAscent, maxDescent;
-   int   minX, maxX, minY, maxY;
+   int   minLeftBearing;
    FontPtr pfont = pGC->font;
-   int width = 0;
    int ret_x;
-   unsigned int mapDim, mapCoOrd;
    char  toload[BLOCKS_PER_FONT];
-   xRectangle backrect;
-   Bool noLeftBearing = TRUE;
-   Bool first = TRUE;
-   Bool overlap = !( fentry->font->info.constantMetrics 
-                     && fentry->font->info.noOverlap );
- 
-   {
-      register int i = 0;
-      register unsigned char *ch = chars;
-      for (; i < count; i++, ch++) {
-         register CharInfoPtr info = fentry->pci[*ch];
-         if (info) {
-            width += info->metrics.characterWidth; 
-            if ( info->metrics.leftSideBearing != 0 )
-               noLeftBearing = FALSE;
-         }
-      }
-   }
+
+   for (i = 0; i < BLOCKS_PER_FONT; i++)
+      toload[i] = 0;
 
    /*
     * If miPolyText8() is to be believed, the returned new X value is
     * completely independent of what happens during rendering.
     */
-   ret_x = x + width;
+
+   /*
+    * Too maximize concurrency we shouldn't preload for the AGX, 
+    * which won't use the GE to load fonts. I'll remove this once
+    * I get this stuff going.
+    */
+   ret_x = x;
+   for (i = 0; i < count; i++) {
+      toload[chars[i] & FONT_BLOCK_MASK] = 1;
+      ret_x += fentry->pci[(int)chars[i]] ? 
+	          fentry->pci[(int)chars[i]]->metrics.characterWidth : 0; 
+   }
+
+   for (i = 0; i < BLOCKS_PER_FONT; i++) {
+      if (toload[i]) {
+	 if ((fentry->fblock[i]) == NULL) {
+	    agxloadFontBlock(fentry, i);
+	 }
+	 fentry->fblock[i]->lru++;
+      }
+   }
 
    x += pDraw->x;
    y += pDraw->y;
    maxAscent = FONTMAXBOUNDS(pfont, ascent);
    maxDescent = FONTMAXBOUNDS(pfont, descent);
-   minY = y - maxAscent;
-   maxY = y + maxDescent;
-   if (width >= 0) {
-      backrect.x =  x;
-      backrect.width = width - 1;
-   } 
-   else {
-      backrect.x = x + width;
-      -width;
-      backrect.width = width - 1;
-   }
-   backrect.y = minY;
-   backrect.height = maxAscent + maxDescent - 1; 
-   maxX = x + width;
-   minX = x - FONTMINBOUNDS(pfont, leftSideBearing);
-
-   /* since GE may be busy, preload first block if needed */
-   block = *chars >> BLOCK_NUM_SHIFT;
-   if (fentry->fblock[block] == NULL) 
-      agxloadFontBlock(fentry, block);
-
+   minLeftBearing = FONTMINBOUNDS(pfont, leftSideBearing);
    pRegion = ((cfbPrivGC *) 
                  (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
 
    pBox = REGION_RECTS(pRegion);
    numRects = REGION_NUM_RECTS(pRegion);
-   while (numRects && pBox->y2 <= minY ) {
+   while (numRects && pBox->y2 <= y - maxAscent) {
       ++pBox;
       --numRects;
    }
-   if (!numRects || pBox->y1 >= maxY )
+   if (!numRects || pBox->y1 >= y + maxDescent)
       return ret_x;
-   while (numRects && pBox->y1 < maxY && pBox->x2 <= minX ) {
+   yBand = pBox->y1;
+   while (numRects && pBox->y1 == yBand && pBox->x2 <= x + minLeftBearing) {
       ++pBox;
       --numRects;
    }
+   if (!numRects)
+      return ret_x;
 
-   for (; 
-        numRects-- > 0
-        && pBox->y1 < maxY;
-        ++pBox) {
-      unsigned short mixes;
-
-      if (pBox->x1 < maxX && pBox->x2 > minX) {
-         /* mask off clipped areas of the destination */
-         register unsigned int mapDim = (pBox->y1 << 16) | pBox->x1;
-         register unsigned int mapCoOrd = ((pBox->y2 - pBox->y1)-1) << 16 
-                                          | ((pBox->x2 - pBox->x1)-1);
-         GE_WAIT_IDLE_SHORT();
-         GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MASK_MAP );
-         GE_OUT_D( GE_MASK_MAP_X, mapDim );
-         GE_OUT_D( GE_PIXEL_MAP_WIDTH, mapCoOrd ); 
-         if (first) {
-            first = FALSE;
-            GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MAP_C );
-            GE_OUT_D( GE_PIXEL_MAP_WIDTH, ROW_NUM_LINES-1 << 16
-                                          | CACHE_LINE_WIDTH_PIXELS-1 );
-            GE_OUT_B( GE_PIXEL_MAP_FORMAT, GE_MF_1BPP );
-            GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MASK_MAP );
-            GE_OUT_D( GE_MASK_MAP_X, mapDim );
-            GE_OUT_D( GE_PIXEL_MAP_WIDTH, mapCoOrd ); 
-            MAP_SET_DST( GE_MS_MAP_A );
-            GE_OUT_D( GE_PIXEL_BIT_MASK, pGC->planemask );
-            GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
-            GE_OUT_D( GE_BKGD_CLR, pGC->bgPixel );
-            if (opaque ) {
-               /* opaque stipples are faster, so if noLeftBearing: opaque it */ 
-               if (noLeftBearing || !overlap) 
-                  mixes = MIX_SRC << 8 | MIX_SRC; 
-               else
-                  mixes = MIX_DST << 8 | MIX_SRC; 
-            }
-            else {
-               mixes = MIX_DST << 8 | pGC->alu; 
-            }
-            GE_OUT_W( GE_FRGD_MIX, mixes );
-         }
-         if (opaque) {
-           if (!overlap)  {
-               /* we can do just an opaque stipple */
-              DoagxConstMetrics( x, y, count, chars, fentry, pGC, maxAscent );
-           }
-           else {
-              /* have to seperate the opaque from the character draw */
-              register unsigned int opDim = backrect.height<< 16 
-                                            | backrect.width; 
-              register unsigned int dstCoOrd = backrect.y << 16 | backrect.x;
-   
-              GE_OUT_D( GE_FRGD_CLR, pGC->bgPixel );
-              GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-              GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-              GE_START_CMD( GE_OP_BITBLT
-                            | GE_OP_PAT_FRGD
-                            | GE_OP_MASK_BOUNDARY
-                            | GE_OP_INC_X
-                            | GE_OP_INC_Y
-                            | GE_OP_FRGD_SRC_CLR
-                            | GE_OP_DEST_MAP_A   );
-              DoagxCPolyText8( x, y, count, chars, fentry, 
-                               pGC, TRUE, mixes );
-           }
-         }
-         else {
-            DoagxCPolyText8( x, y, count, chars, fentry, pGC, FALSE, mixes );
-         }
-      }
+   for (; --numRects >= 0; ++pBox) {
+      /* mask off clipped areas of the destination */
+      GE_WAIT_IDLE_SHORT();
+      GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MASK_MAP );
+      GE_OUT_D( GE_MASK_MAP_X, (long) pBox->x1 );
+      GE_OUT_D( GE_MASK_MAP_Y, (long) pBox->y1 );
+#ifndef NO_MULTI_IO
+      GE_OUT_D( GE_PIXEL_MAP_WIDTH, (pBox->y2 - pBox->y1)-1 << 16
+                                     | (pBox->x2 - pBox->x1)-1    );
+#else
+      GE_OUT_W( GE_PIXEL_MAP_WIDTH, (short) (pBox->x2 - pBox->x1) - 1 );
+      GE_OUT_W( GE_PIXEL_MAP_HEIGHT, (short) (pBox->y2 - pBox->y1) - 1 );
+#endif
+      DoagxCPolyText8(x, y, count, chars, fentry, pGC);
+      GE_WAIT_IDLE_SHORT();
    }
+
    return ret_x;
 }
 
+int
+agxCImageText8(pDraw, pGC, x, y, count, chars, fentry)
+     DrawablePtr pDraw;
+     GCPtr pGC;
+     int   x;
+     int   y;
+     int   count;
+     unsigned char *chars;
+     CacheFont8Ptr fentry;
+{
+   ExtentInfoRec info;		/* used by QueryGlyphExtents() */
+   XID   gcvals[3];
+   int   oldAlu, oldFS;
+   unsigned long oldFG;
+   xRectangle backrect;
+   CharInfoPtr *ppci;
+   unsigned long n;
+
+   if (!(ppci = (CharInfoPtr *) ALLOCATE_LOCAL(count * sizeof(CharInfoPtr))))
+      return 0;
+
+   GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
+	     Linear8Bit, &n, ppci);
+
+   QueryGlyphExtents(pGC->font, ppci, n, &info);
+
+   DEALLOCATE_LOCAL(ppci);
+
+   if (info.overallWidth >= 0) {
+      backrect.x = x;
+      backrect.width = info.overallWidth;
+   } else {
+      backrect.x = x + info.overallWidth;
+      backrect.width = -info.overallWidth;
+   }
+   backrect.y = y - FONTASCENT(pGC->font);
+   backrect.height = FONTASCENT(pGC->font) + FONTDESCENT(pGC->font);
+
+   oldAlu = pGC->alu;
+   oldFG = pGC->fgPixel;
+   oldFS = pGC->fillStyle;
+
+ /* fill in the background */
+   gcvals[0] = GXcopy;
+   gcvals[1] = pGC->bgPixel;
+   gcvals[2] = FillSolid;
+   DoChangeGC(pGC, GCFunction | GCForeground | GCFillStyle, gcvals, 0);
+   ValidateGC(pDraw, pGC);
+   if ( pDraw->type != DRAWABLE_PIXMAP )
+      (*pGC->ops->PolyFillRect) (pDraw, pGC, 1, &backrect);
+   else   /* temporary until agxIm.c stuff is complete */
+      agxPolyFillRect(pDraw, pGC, 1, &backrect);
+      
+
+ /* put down the glyphs */
+   gcvals[0] = oldFG;
+   DoChangeGC(pGC, GCForeground, gcvals, 0);
+   ValidateGC(pDraw, pGC);
+   (void)agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry);
+
+ /* put all the toys away when done playing */
+   gcvals[0] = oldAlu;
+   gcvals[1] = oldFG;
+   gcvals[2] = oldFS;
+   DoChangeGC(pGC, GCFunction | GCForeground | GCFillStyle, gcvals, 0);
+   return 0;
+}
 
 static __inline__ void
-DoagxCPolyText8(x, y, count, chars, fentry, pGC, opaque, mixes)
+DoagxCPolyText8(x, y, count, chars, fentry, pGC)
      int   x, y, count;
      unsigned char *chars;
      CacheFont8Ptr fentry;
-     GCPtr pGC; 
-     int           opaque;
-     unsigned int  mixes;
+     GCPtr pGC;
 {
-   register unsigned int dstCoOrd, patCoOrd;
-   register unsigned int opDim;
-   register CharInfoPtr pci;
-   register unsigned int idx;
-   unsigned int h = fentry->hPix;
-   unsigned int w = fentry->wBytes<<3;
-   unsigned int blocki = 0xFFFFFFFF;
+   CharInfoPtr pci;
+   unsigned short h = fentry->hPix;
+   unsigned short w = fentry->wBytes<<3;
+   unsigned short xStart, yStart;
+   unsigned int blocki = 255;
    bitMapBlockPtr block;
-   unsigned int blockBase;
-   unsigned int oldBlockBase = 0;
+   unsigned short gHeight; 
+   unsigned short gWidth; 
+   unsigned short idx;  
+   unsigned short line;  
+   unsigned short linePos;  
+   unsigned int   blockBase;
+   unsigned int   oldBlockBase = 0;
 
-   GE_WAIT_IDLE_SHORT(); 
-   if (opaque) {
-      GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
-   }
-      
-   GE_OUT_W( GE_PIXEL_OP,
-             GE_OP_PAT_MAP_C
-             | GE_OP_MASK_BOUNDARY 
-             | GE_OP_INC_X
-             | GE_OP_INC_Y         );
+   GE_WAIT_IDLE_SHORT();
+
+   MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
+
+#ifndef NO_MULTI_IO
+    GE_OUT_W(GE_FRGD_MIX, (MIX_DST << 8) | pGC->alu );  /* both fg & bg */
+#else
+    GE_OUT_B(GE_FRGD_MIX, pGC->alu );
+    GE_OUT_B(GE_BKGD_MIX, MIX_DST );
+#endif
+   GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
+   GE_OUT_D(GE_FRGD_CLR, pGC->fgPixel);
+   GE_OUT_D(GE_BKGD_CLR, pGC->bgPixel);
 
    for (;count > 0; count--, chars++) {
-      if ( (pci = fentry->pci[(int)*chars]) != NULL ) {
-         if ( (opDim = GLYPHHEIGHTPIXELS(pci)) > 0 ) {
-	    if ((int)(*chars >> BLOCK_NUM_SHIFT) != blocki) {
-	       blocki = (int)(*chars >> BLOCK_NUM_SHIFT);
+
+      pci = fentry->pci[(int)*chars];
+
+      if (pci != NULL) {
+
+	 gHeight = GLYPHHEIGHTPIXELS(pci);
+	 if (gHeight) {
+
+	    if ((int) (*chars >> BLOCK_NUM_SHIFT) != blocki) {
+	       
+	       blocki = (int) (*chars >> BLOCK_NUM_SHIFT);
 	       block = fentry->fblock[blocki];
 	       if (block == NULL) {
-                  geBlockMove = FALSE;
 		  agxloadFontBlock(fentry, blocki);
 		  block = fentry->fblock[blocki];
-                  if( geBlockMove ) {
-                     GE_WAIT_IDLE_SHORT();
-                     MAP_SET_DST( GE_MS_MAP_A );
-                     GE_OUT_W(GE_FRGD_MIX, mixes);
-                     GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
-                     GE_OUT_W( GE_PIXEL_OP,
-                               GE_OP_PAT_MAP_C
-                               | GE_OP_MASK_BOUNDARY 
-                               | GE_OP_INC_X
-                               | GE_OP_INC_Y         );
-                  }
 	       }
-               blockInUse = block;
-               block->lru = NEXT_FONT_AGE;
+	       block->lru = NEXT_FONT_AGE;
                blockBase = agxMemBase + block->daddy->offset;
                if( blockBase != oldBlockBase ) {
                   GE_WAIT_IDLE_SHORT();
+                  /* 
+                   * need to add map management to reduce 
+                   * how often we do this 
+                   */
                   GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MAP_C );
+  
                   GE_OUT_D( GE_PIXEL_MAP_BASE, blockBase );
+#ifndef NO_MULTI_IO
+                  GE_OUT_D( GE_PIXEL_MAP_WIDTH,  ROW_NUM_LINES-1 << 16
+                                                 | CACHE_LINE_WIDTH_PIXELS-1 );
+#else
+                  GE_OUT_W( GE_PIXEL_MAP_WIDTH,  CACHE_LINE_WIDTH_PIXELS-1 );
+                  GE_OUT_W( GE_PIXEL_MAP_HEIGHT, ROW_NUM_LINES-1 );
+#endif
+                  GE_OUT_B( GE_PIXEL_MAP_FORMAT, GE_MF_1BPP|GE_MF_MOTO_FORMAT );
                   oldBlockBase = blockBase;
                }
    	    }
-
-            idx =  (*chars) & BLOCK_IDX_MASK;
-            patCoOrd = (block->line + ((idx / fentry->gper) * h)) << 16
-                       | (w * (idx % fentry->gper));
-            dstCoOrd = (y - pci->metrics.ascent) << 16
-                       | (x + pci->metrics.leftSideBearing);
-            opDim = (opDim-1) << 16 
-                    | (GLYPHWIDTHPIXELS(pci)-1);
+            idx = (*chars) & BLOCK_IDX_MASK;
+            line = block->line + ((idx / fentry->gper) * h);
+            linePos = w * (idx % fentry->gper);
+            xStart = x + pci->metrics.leftSideBearing;
+            yStart = y - pci->metrics.ascent;
+            gHeight--;
+            gWidth = GLYPHWIDTHPIXELS(pci) - 1;
 
             GE_WAIT_IDLE_SHORT();
-            GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-            GE_OUT_D( GE_PAT_MAP_X, patCoOrd ); 
-            GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-            GE_START_CMDW( GE_OPW_BITBLT
-                            | GE_OPW_FRGD_SRC_CLR 
-                            | GE_OPW_BKGD_SRC_CLR 
-                            | GE_OPW_DEST_MAP_A   );
+
+#ifndef NO_MULTI_IO
+            GE_OUT_D( GE_DEST_MAP_X, yStart << 16 | xStart );
+            GE_OUT_D( GE_PAT_MAP_X,  line << 16 | linePos ); 
+            GE_OUT_D( GE_OP_DIM_WIDTH,  gHeight << 16 | gWidth );
+#else
+            GE_OUT_W( GE_DEST_MAP_X, xStart );
+            GE_OUT_W( GE_DEST_MAP_Y, yStart );
+            GE_OUT_W( GE_PAT_MAP_X,  linePos ); 
+            GE_OUT_W( GE_PAT_MAP_Y,  line );
+            GE_OUT_W( GE_OP_DIM_WIDTH,  gWidth );
+            GE_OUT_W( GE_OP_DIM_HEIGHT, gHeight ); 
+#endif
+            GE_START_CMD( GE_OP_BITBLT
+                          | GE_OP_FRGD_SRC_CLR 
+                          | GE_OP_BKGD_SRC_MAP
+                          | GE_OP_SRC_MAP_A
+                          | GE_OP_DEST_MAP_A
+                          | GE_OP_PAT_MAP_C
+                          | GE_OP_MASK_BOUNDARY
+                          | GE_OP_INC_X
+                          | GE_OP_INC_Y );
 	 }
          x += pci->metrics.characterWidth;
       }
    }
 
-   GE_WAIT_IDLE_EXIT();
-   return;
-}
-
-static __inline__ void
-DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent)
-     int   x, y, count;
-     unsigned char *chars;
-     CacheFont8Ptr fentry;
-     GCPtr pGC; 
-     int maxAscent;
-{
-   register unsigned int dstCoOrd, patCoOrd;
-   register CharInfoPtr pci;
-   register unsigned int idx;
-   unsigned int h = fentry->hPix;
-   unsigned int opDim = (h-1) << 16 
-                        | fentry->font->info.maxbounds.characterWidth - 1;
-   unsigned int w = fentry->wBytes<<3;
-   unsigned int blocki = 0xFFFFFFFF;
-   bitMapBlockPtr block;
-   unsigned int blockBase;
-   unsigned int oldBlockBase = 0;
-
-   y = (y - maxAscent) << 16;
-     
-   GE_WAIT_IDLE_SHORT(); 
-   GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-   GE_OUT_W( GE_PIXEL_OP,
-             GE_OP_PAT_MAP_C
-             | GE_OP_MASK_BOUNDARY 
-             | GE_OP_INC_X
-             | GE_OP_INC_Y         );
-
-   for (;count > 0; count--, chars++) {
-      if ( (pci = fentry->pci[(int)*chars]) != NULL 
-            && GLYPHWIDTHPIXELS(pci) ) {
-	    if ((int)(*chars >> BLOCK_NUM_SHIFT) != blocki) {
-	       blocki = (int)(*chars >> BLOCK_NUM_SHIFT);
-	       block = fentry->fblock[blocki];
-	       if (block == NULL) {
-                  geBlockMove = FALSE;
-		  agxloadFontBlock(fentry, blocki);
-		  block = fentry->fblock[blocki];
-                  if( geBlockMove ) {
-                     GE_WAIT_IDLE_SHORT();
-                     MAP_SET_DST( GE_MS_MAP_A );
-                     GE_OUT_W(GE_FRGD_MIX, MIX_SRC << 8 | MIX_SRC );
-                     GE_OUT_W( GE_PIXEL_OP,
-                               GE_OP_PAT_MAP_C
-                               | GE_OP_MASK_BOUNDARY 
-                               | GE_OP_INC_X
-                               | GE_OP_INC_Y         );
-                  }
-	       }
-               blockInUse = block;
-               block->lru = NEXT_FONT_AGE;
-               blockBase = agxMemBase + block->daddy->offset;
-               if( blockBase != oldBlockBase ) {
-                  GE_WAIT_IDLE_SHORT();
-                  GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MAP_C );
-                  GE_OUT_D( GE_PIXEL_MAP_BASE, blockBase );
-                  oldBlockBase = blockBase;
-               }
-   	    }
-
-            idx =  (*chars) & BLOCK_IDX_MASK;
-            patCoOrd = (block->line + ((idx / fentry->gper) * h)) << 16
-                       | (w * (idx % fentry->gper));
-            dstCoOrd = y | (x + pci->metrics.leftSideBearing);
-
-            GE_WAIT_IDLE_SHORT();
-            GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-            GE_OUT_D( GE_PAT_MAP_X, patCoOrd ); 
-            GE_START_CMDW( GE_OPW_BITBLT
-                            | GE_OPW_FRGD_SRC_CLR 
-                            | GE_OPW_BKGD_SRC_CLR 
-                            | GE_OPW_DEST_MAP_A   );
-	 }
-         x += pci->metrics.characterWidth;
-   }
-
-   GE_WAIT_IDLE_EXIT();
+   GE_WAIT_IDLE_SHORT();
    return;
 }

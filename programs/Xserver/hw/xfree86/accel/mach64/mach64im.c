@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64im.c,v 3.0 1994/11/26 12:42:51 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -63,12 +63,12 @@ mach64ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			y;
     int			w;
     int			h;
-    char		*psrc;
+    unsigned char	*psrc;
     int			pwidth;
     int			px;
     int			py;
     int			alu;
-    unsigned long	planemask;
+    int			planemask;
 {
     pointer curvm;
     int byteCount;
@@ -106,12 +106,12 @@ mach64ImageWriteHW(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			y;
     int			w;
     int			h;
-    char		*psrc;
+    unsigned char	*psrc;
     int			pwidth;
     int			px;
     int			py;
     int			alu;
-    unsigned long	planemask;
+    int			planemask;
 {
     int wordsPerLine;
     register int count;
@@ -212,11 +212,11 @@ mach64ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			y;
     int			w;
     int			h;
-    char		*psrc;
+    unsigned char	*psrc;
     int			pwidth;
     int			px;
     int			py;
-    unsigned long	planemask;
+    int			planemask;
 {
     int j;
     pointer curvm;
@@ -252,14 +252,14 @@ mach64ImageStippleFunc(x, y, w, h, psrc, pwidth, px, py, fgPixel, bgPixel,
     int                 y;
     int                 w;
     int                 h;
-    char                *psrc;
+    unsigned char       *psrc;
     int                 pwidth;
     int                 px;
     int                 py;
     Pixel               fgPixel;
     Pixel               bgPixel;
     int                 alu;
-    unsigned long       planemask;
+    int                 planemask;
     int 		opaque;
 {
     register int *pword;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_AGX.c,v 3.1 1994/06/28 12:29:06 dawes Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #include "os.h"
@@ -43,6 +43,7 @@ int agxValidTokens[] =
   DIRECTCOLOR,
   CHIPSET,
   CLOCKS,
+  DISPLAYSIZE,
   MODES,
   OPTION,
   VIDEORAM,
@@ -59,5 +60,14 @@ int agxValidTokens[] =
   -1
 };
 
-#include "xf86ExtInit.h"
+/* Dummy function for PEX in LinkKit */
 
+#if defined(LINKKIT) && !defined(PEXEXT)
+PexExtensionInit() {}
+#endif
+
+/* Dummy function for XIE in LinkKit */
+
+#if defined(LINKKIT) && !defined(XIE)
+XieInit() {}
+#endif

@@ -7,8 +7,8 @@
  <title>		Configuring XFree86
 
 			A Step-By-Step Guide
- <author> David Wexelblat and The XFree86 Project, Inc
- <date> 5 October 1994
+ <author> XFree86, Inc
+ <date> 5.10.1994
 
 <abstract>
 	This document describes how to set up your XFree86 server and
@@ -86,14 +86,13 @@ The server binaries are:
 	<tag>XF86_SVGA:</tag>   
 	  Super-VGA server.  Contains accelerated support for
 	  Cirrus 542{0,2,4,6,8,9}, 543{0,4} and Western
-	  Digital 90C3{1,3} and Oak Technologies Inc. OTI087 chipsets,
-	  unaccelerated for the rest of the supported chipsets.
+	  Digital 90C3{1,3} chipsets, unaccelerated for the
+	  rest of the supported chipsets.
  	<tag>XF86_Mono:</tag>   (S)VGA monochrome, optionally Hercules
 	  or other monochrome hardware support is linked in.
 	<tag>XF86_VGA16:</tag>  Generic VGA 16-color server.
 	<tag>XF86_S3:</tag>     S3 accelerated server.
 	<tag>XF86_Mach32:</tag> ATI Mach32 accelerated server.
-	<tag>XF86_Mach64:</tag> ATI Mach64 accelerated server.
 	<tag>XF86_Mach8:</tag>  ATI Mach8 accelerated server.
 	<tag>XF86_8514:</tag>   8514/A accelerated server.
 	<tag>XF86_P9000:</tag>  P9000 accelerated server.
@@ -146,7 +145,7 @@ press.
 
 	Note that if the server complains about being unable to open
 your mouse device, this is NOT a server problem.  It has been a very
-common misconfiguration error on several of the OSs, and 99.999&percnt; of the
+common misconfiguration error on several of the OSs, and 99.999% of the
 time it is because the device is not correctly configured in the OS.
 Hence don't bug us until after you prove that your OS level support
 is correct.
@@ -168,8 +167,7 @@ need is:
 <itemize>
 	<item> Chipset
 	<item> Amount of video memory
-	<item> Dot-clocks available or clock chip used (if programmable)
-	<item> Ramdac type (for some servers)
+	<item> Dot-clocks available
 </itemize>
 The server, in general, is capable of filling these on its own, but it
 is best to fully specify things in the <tt>XF86Config</tt> file, so that no
@@ -245,8 +243,8 @@ For all the gory details of mode generation and tuning, refer to the
 	The monitor specs and video modes are described in the "Monitor"
 sections in the <tt>XF86Config</tt> file.  To create a Monitor section, you need
 to know your monitor's specifications.  In particular, you need to know
-what range of horizontal sync and vertical sync (refresh) rates it supports and
-what its video bandwidth is.  This information should be available in
+what range of horizontal sync and vertical refresh rates it supports and
+what its video bandwitdh is.  This information should be available in
 the monitor's user manual.  Also check the 'Monitors' file to see if it
 has an entry for your monitor.  See the <it>XF86Config(4/5)</it>
 manual page for details of how this information is entered into the
@@ -291,8 +289,7 @@ file.  You need to supply a Screen section for each of the server
 driver types you will be using.  
 The driver types are "SVGA" (XF86_SVGA), "VGA16" (XF86_VGA16), "VGA2"
 (XF86_Mono), "MONO" (XF86_Mono, XF86_VGA16), and "ACCEL" (XF86_S3,
-XF86_Mach32, XF86_Mach8, XF86_Mach64, XF86_8514, XF86_P9000, XF86_AGX,
-XF86_W32).
+XF86_Mach32, XF86_Mach8, XF86_8514, XF86_P9000, XF86_AGX, XF86_W32).
 Each Screen section specifies which Monitor description and Device
 description are to be used. 
 
@@ -305,7 +302,7 @@ you can have an 800x600 display, but a 1280x1024 virtual size).  The
 Virtual keyword is used to specify this size.  Note that many of the new
 accelerated server use non-displayed memory for caching.  It is not
 desirable to use all of your memory for virtual display, as this leaves
-none for caching, and this can cost as much as 30-40&percnt; of your server
+none for caching, and this can cost as much as 30-40% of your server
 performance.
 
 	The last thing you specify in Display subsection is the display
@@ -519,7 +516,7 @@ installation.
 </code>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Config.sgml,v 3.3 1995/01/19 05:22:43 dawes Exp $
+$XFree86$
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 /* $XConsortium: s3dline.c,v 1.2 94/04/17 20:31:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDLine.c,v 3.0 1994/11/19 07:49:57 dawes Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -131,12 +131,11 @@ agxDLine(pDrawable, pGC, mode, npt, pptInit)
    int   axis;			/* major axis */
    int   cmd2;
    unsigned char *pDash;
+   int   dashOffset;   
    int numInDashList;
-   int dashOffset = 0;   
-   int dashIndex = 0;
-   int dashIndexTmp = 0;
+   int dashIndex;
    int isDoubleDash;
-   int dashOffsetTmp, thisDash, dashRemaining;
+   int dashIndexTmp, dashOffsetTmp, thisDash, dashRemaining;
    int unclippedlen;
    unsigned int dashPat;
  /* a bunch of temporaries */
@@ -157,19 +156,6 @@ agxDLine(pDrawable, pGC, mode, npt, pptInit)
    cclip = devPriv->pCompositeClip;
    pboxInit = REGION_RECTS(cclip);
    nboxInit = REGION_NUM_RECTS(cclip);
-
-   pDash = (unsigned char *) pGC->dash;
-   numInDashList = pGC->numInDashList;
-   miStepDash ((int)pGC->dashOffset, &dashIndex, pDash,
-                numInDashList, &dashOffset);
-   dashRemaining = pDash[dashIndex] - dashOffset;
-   thisDash = dashRemaining ;
-
-   xorg = pDrawable->x;
-   yorg = pDrawable->y;
-   ppt = pptInit;
-   x2 = ppt->x + xorg;
-   y2 = ppt->y + yorg;
 
    MAP_INIT( GE_MS_MAP_B, 
              GE_MF_1BPP | GE_MF_MOTO_FORMAT,
@@ -204,6 +190,21 @@ agxDLine(pDrawable, pGC, mode, npt, pptInit)
              | GE_OP_INC_X
              | GE_OP_INC_Y         );
 
+   pDash = (unsigned char *) pGC->dash;
+   numInDashList = pGC->numInDashList;
+   dashIndex = 0;
+   dashOffset = 0;
+   miStepDash ((int)pGC->dashOffset, &dashIndex, pDash,
+                numInDashList, &dashOffset);
+   dashRemaining = pDash[dashIndex] - dashOffset;
+   thisDash = dashRemaining ;
+
+  
+   xorg = pDrawable->x;
+   yorg = pDrawable->y;
+   ppt = pptInit;
+   x2 = ppt->x + xorg;
+   y2 = ppt->y + yorg;
    while (--npt) {
       nbox = nboxInit;
       pbox = pboxInit;

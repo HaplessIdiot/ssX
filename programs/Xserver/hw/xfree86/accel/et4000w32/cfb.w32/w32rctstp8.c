@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32rctstp8.c,v 3.4 1994/11/19 10:50:07 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
@@ -50,36 +50,7 @@ Author: Keith Packard, MIT X Consortium
 
 #define MFB_CONSTS_ONLY
 #include "maskbits.h"
-#include "w32stip.h"
-
-
-#define STIPPLE   \
-	while (nBox--)  \
-	{  \
-	    w = pBox->x2 - pBox->x1;  \
-	    h = pBox->y2 - pBox->y1;  \
-	    y = pBox->y1;  \
-	    if (w == 0 || h == 0)  \
-	    {  \
-		pBox++;  \
-		continue;  \
-	    }  \
-  \
-	    SET_XY(w, h)  \
-	    START_ACL_CPU(pBox->y1 * nlwDst + pBox->x1 * (PSZ >> 3))  \
-	    rot = pBox->x1 & (PGSZ-1);  \
-	    pBox++;  \
-	    y = y % stippleHeight;  \
-	    w = (w + 7) >> 3;  \
-	    w32_chunks = w >> 2;  \
-	    w32_misc = w & 0x3;  \
-  \
-	    if (W32OrW32i)  \
-		W32_STIPPLE  \
-	    else  \
-		W32P_STIPPLE  \
-	}
-
+#include "w32.h"
 
 void
 W328FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
@@ -111,38 +82,16 @@ W328FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     PixmapPtr		    stipple;
     int	    wEnd;
 
-    int w32_chunks, w32_misc;
-
-    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pbits)
-    if ((CARD32)pbits != VGABASE)
-    {
-	cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox);
-	return;
-    }
-
     devPriv = cfbGetGCPrivate(pGC);
     stipple = devPriv->pRotatedPixmap;
+
+    cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
 
     stippleHeight = stipple->drawable.height;
     src = (unsigned long *)stipple->devPrivate.ptr;
 
-    if ((pGC->planemask & PMSK) == PMSK)
-    {
-	nlwDst <<= 2;
-	if (W32OrW32i)
-	    W32_INIT_OPAQUE_STIPPLE(pGC->alu,
-				    PFILL(pGC->fgPixel), PFILL(pGC->bgPixel),
-				    nlwDst - 1)
-	else
-	    W32P_INIT_OPAQUE_STIPPLE(pGC->alu,
-				     PFILL(pGC->fgPixel), PFILL(pGC->bgPixel),
-				     nlwDst - 1)
-	STIPPLE
-	return;
-    }
-
+    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pbits)
     pbits = 0;
-    cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
 
     while (nBox--)
     {
@@ -167,131 +116,137 @@ W328FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 	{
 	    if (w < PGSZ*2)
 	    {
-	    	while (h--)
-	    	{
-	    	    bits = src[y];
-	    	    y++;
-	    	    if (y == stippleHeight)
-		    	y = 0;
-	    	    if (rot)
-		    	RotBitsLeft(bits,rot);
-		    dst = dstLine;
-		    W32_LONG(dst)
-	    	    dstLine += nlwDst;
-	    	    if (startmask)
-	    	    {
-		    	*dst = *dst & ~startmask |
-				GetPixelGroup (bits) & startmask;
-		    	dst++;
-		    	RotBitsLeft (bits, PGSZB);
-	    	    }
-		    nlw = nlwMiddle;
-	    	    while (nlw--)
-	    	    {
-			*dst++ = GetPixelGroup(bits);
-		    	RotBitsLeft (bits, PGSZB);
-	    	    }
-	    	    if (endmask)
-	    	    {
-			*dst = *dst & ~endmask |
-			      GetPixelGroup (bits) & endmask;
-	    	    }
+#define GGL_DRAW \
+	    	while (h--) \
+	    	{ \
+	    	    bits = src[y]; \
+	    	    y++; \
+	    	    if (y == stippleHeight) \
+		    	y = 0; \
+	    	    if (rot) \
+		    	RotBitsLeft(bits,rot); \
+		    dst = dstLine; \
+	    	    dstLine += nlwDst; \
+	    	    if (startmask) \
+	    	    { \
+		    	*dst = *dst & ~startmask | \
+				GetPixelGroup (bits) & startmask; \
+		    	dst++; \
+		    	RotBitsLeft (bits, PGSZB); \
+	    	    } \
+		    nlw = nlwMiddle; \
+	    	    while (nlw--) \
+	    	    { \
+			*dst++ = GetPixelGroup(bits); \
+		    	RotBitsLeft (bits, PGSZB); \
+	    	    } \
+	    	    if (endmask) \
+	    	    { \
+			*dst = *dst & ~endmask | \
+			      GetPixelGroup (bits) & endmask; \
+	    	    } \
 	    	}
+#define GGL_COUNT h 
+#define GGL_PTR dstLine
+#define GGL_SET(DST) W32_LONG2(DST)
+#include "gglbox.h"
 	    }
 	    else
 	    {
 		wEnd = 7 - (nlwMiddle & 7);
 		nlwMiddle = (nlwMiddle >> 3) + 1;
-	    	while (h--)
-	    	{
-		    bits = src[y];
-		    y++;
-		    if (y == stippleHeight)
-			y = 0;
-	    	    if (rot != 0)
-			RotBitsLeft (bits, rot);
-	    	    dstTmp = dstLine;
-		    W32_LONG(dstTmp)
-	    	    dstLine += nlwDst;
-		    if (startmask)
-		    {
-			*dstTmp = *dstTmp & ~startmask |
-			       GetPixelGroup (bits) & startmask;
-			dstTmp++;
-			RotBitsLeft (bits, PGSZB);
-		    }
-		    w = 7 - wEnd;
-		    while (w--)
-		    {
-			nlw = nlwMiddle;
-			dst = dstTmp;
-			dstTmp++;
-			xor = GetPixelGroup (bits);
-			while (nlw--)
-			{
-			    *dst = xor;
-			    dst += 8;
-			}
-			NextBitGroup (bits);
-		    }
-		    nlwMiddle--;
-		    w = wEnd + 1;
-		    if (endmask)
-		    {
-			dst = dstTmp + (nlwMiddle << 3);
-			*dst = (*dst & ~endmask) |
-			       GetPixelGroup (bits) & endmask;
-		    }
-		    while (w--)
-		    {
-			nlw = nlwMiddle;
-			dst = dstTmp;
-			dstTmp++;
-			xor = GetPixelGroup (bits);
-			while (nlw--)
-			{
-			    *dst = xor;
-			    dst += 8;
-			}
-			NextBitGroup (bits);
-		    }
-		    nlwMiddle++;
+#define GGL_DRAW \
+	    	while (h--) \
+	    	{ \
+		    bits = src[y]; \
+		    y++; \
+		    if (y == stippleHeight) \
+			y = 0; \
+	    	    if (rot != 0) \
+			RotBitsLeft (bits, rot); \
+	    	    dstTmp = dstLine; \
+	    	    dstLine += nlwDst; \
+		    if (startmask) \
+		    { \
+			*dstTmp = *dstTmp & ~startmask | \
+			       GetPixelGroup (bits) & startmask; \
+			dstTmp++; \
+			RotBitsLeft (bits, PGSZB); \
+		    } \
+		    w = 7 - wEnd; \
+		    while (w--) \
+		    { \
+			nlw = nlwMiddle; \
+			dst = dstTmp; \
+			dstTmp++; \
+			xor = GetPixelGroup (bits); \
+			while (nlw--) \
+			{ \
+			    *dst = xor; \
+			    dst += 8; \
+			} \
+			NextBitGroup (bits); \
+		    } \
+		    nlwMiddle--; \
+		    w = wEnd + 1; \
+		    if (endmask) \
+		    { \
+			dst = dstTmp + (nlwMiddle << 3); \
+			*dst = (*dst & ~endmask) | \
+			       GetPixelGroup (bits) & endmask; \
+		    } \
+		    while (w--) \
+		    { \
+			nlw = nlwMiddle; \
+			dst = dstTmp; \
+			dstTmp++; \
+			xor = GetPixelGroup (bits); \
+			while (nlw--) \
+			{ \
+			    *dst = xor; \
+			    dst += 8; \
+			} \
+			NextBitGroup (bits); \
+		    } \
+		    nlwMiddle++; \
 		}
+#include "gglbox.h"
 	    }
 	}
 	else
 	{
-	    while (h--)
-	    {
-	    	bits = src[y];
-	    	y++;
-	    	if (y == stippleHeight)
-		    y = 0;
-	    	if (rot)
-		    RotBitsLeft(bits,rot);
-		dst = dstLine;
-		W32_LONG(dst)
-	    	dstLine += nlwDst;
-	    	if (startmask)
-	    	{
-		    xor = GetBitGroup(bits);
-		    *dst = MaskRRopPixels(*dst, xor, startmask);
-		    dst++;
-		    RotBitsLeft (bits, PGSZB);
-	    	}
-		nlw = nlwMiddle;
-	    	while (nlw--)
-	    	{
-		    RRopBitGroup(dst, GetBitGroup(bits));
-		    dst++;
-		    RotBitsLeft (bits, PGSZB);
-	    	}
-	    	if (endmask)
-	    	{
-		    xor = GetBitGroup(bits);
-		    *dst = MaskRRopPixels(*dst, xor, endmask);
-	    	}
+#define GGL_DRAW \
+	    while (h--) \
+	    { \
+	    	bits = src[y]; \
+	    	y++; \
+	    	if (y == stippleHeight) \
+		    y = 0; \
+	    	if (rot) \
+		    RotBitsLeft(bits,rot); \
+		dst = dstLine; \
+	    	dstLine += nlwDst; \
+	    	if (startmask) \
+	    	{ \
+		    xor = GetBitGroup(bits); \
+		    *dst = MaskRRopPixels(*dst, xor, startmask); \
+		    dst++; \
+		    RotBitsLeft (bits, PGSZB); \
+	    	} \
+		nlw = nlwMiddle; \
+	    	while (nlw--) \
+	    	{ \
+		    RRopBitGroup(dst, GetBitGroup(bits)); \
+		    dst++; \
+		    RotBitsLeft (bits, PGSZB); \
+	    	} \
+	    	if (endmask) \
+	    	{ \
+		    xor = GetBitGroup(bits); \
+		    *dst = MaskRRopPixels(*dst, xor, endmask); \
+	    	} \
 	    }
+#include "gglbox.h"
 	}
     }
 }
@@ -317,31 +272,192 @@ W328FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
     PixmapPtr	    stipple;
     int		    stippleHeight;
     register int    nlw;
-
-    int w32_chunks, w32_misc;
-
-    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pbits)
-    if ((CARD32)pbits != VGABASE)
-    {
-	cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox);
-	return;
-    }
-
+    
     devPriv = cfbGetGCPrivate(pGC);
     stipple = devPriv->pRotatedPixmap;
     src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
 
-    nlwDst <<= 2;
-    if (W32OrW32i)
-	W32_INIT_TR_STIPPLE(pGC->alu, PFILL(pGC->planemask),
-			    PFILL(pGC->fgPixel), PFILL(pGC->bgPixel),
-			    nlwDst - 1)
-    else
-	W32P_INIT_TR_STIPPLE(pGC->alu, PFILL(pGC->planemask),
-			     PFILL(pGC->fgPixel), PFILL(pGC->bgPixel),
-			     nlwDst - 1)
-    STIPPLE
+    cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+
+    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pbits)
+    pbits = 0;
+
+    while (nBox--)
+    {
+	x = pBox->x1;
+    	w = pBox->x2 - x;
+	if (((x & PIM) + w) <= PPW)
+	{
+	    maskpartialbits(x, w, startmask);
+	    endmask = 0;
+	    nlwMiddle = 0;
+	}
+	else
+	{
+	    maskbits (x, w, startmask, endmask, nlwMiddle);
+	}
+	rot = (x & ((PGSZ-1) & ~PIM));
+    	y = pBox->y1;
+    	dstLine = pbits + (y * nlwDst) + (x >> PWSH);
+    	h = pBox->y2 - y;
+	pBox++;
+	y %= stippleHeight;
+	if (cfb8StippleRRop == GXcopy)
+	{
+	    xor = devPriv->xor;
+	    if (w < PGSZ*2)
+	    {
+#define GGL_DRAW \
+	    	while (h--) \
+	    	{ \
+		    bits = src[y]; \
+		    y++; \
+		    if (y == stippleHeight) \
+			y = 0; \
+	    	    if (rot != 0) \
+			RotBitsLeft (bits, rot); \
+	    	    dst = dstLine; \
+	    	    dstLine += nlwDst; \
+	    	    if (startmask) \
+	    	    { \
+		    	mask = cfb8PixelMasks[GetBitGroup(bits)]; \
+		    	*dst = (*dst & ~(mask & startmask)) | \
+		       	       (xor & (mask & startmask)); \
+		    	dst++; \
+		    	RotBitsLeft (bits, PGSZB); \
+	    	    } \
+		    nlw = nlwMiddle; \
+	    	    while (nlw--) \
+	    	    { \
+		    	WriteBitGroup (dst,xor,GetBitGroup(bits)) \
+		    	dst++; \
+		    	RotBitsLeft (bits, PGSZB); \
+	    	    } \
+	    	    if (endmask) \
+	    	    { \
+		    	mask = cfb8PixelMasks[GetBitGroup(bits)]; \
+		    	*dst = (*dst & ~(mask & endmask)) | \
+		       	       (xor & (mask & endmask)); \
+	    	    }
+#include "gglbox.h"
+	    	}
+	    }
+	    else
+	    {
+		wEnd = 7 - (nlwMiddle & 7);
+		nlwMiddle = (nlwMiddle >> 3) + 1;
+{ /* gglbox.h--GGL */
+    CARD32 ggl_tmp, ggl_ptr;
+    ggl_tmp = h;
+    ggl_ptr = (CARD32)dstLine;
+    while (ggl_tmp)
+    {
+        dstLine = (void*)ggl_ptr;
+        W32_LONG2(dstLine)
+        ggl_ptr += W32BoxHop;
+        h = ggl_tmp <= W32BoxCount ? ggl_tmp : W32BoxCount;
+        ggl_tmp -= h;
+	    	while (h--)
+	    	{
+		    bits = src[y];
+		    y++;
+		    if (y == stippleHeight)
+			y = 0;
+	    	    if (rot != 0)
+			RotBitsLeft (bits, rot);
+	    	    dstTmp = dstLine;
+	    	    dstLine += nlwDst;
+		    if (startmask)
+		    {
+		    	mask = cfb8PixelMasks[GetBitGroup(bits)];
+		    	*dstTmp = (*dstTmp & ~(mask & startmask)) |
+		       	       (xor & (mask & startmask));
+		    	dstTmp++;
+		    	RotBitsLeft (bits, PGSZB);
+		    }
+		    w = 7 - wEnd;
+		    while (w--)
+		    {
+			nlw = nlwMiddle;
+			dst = dstTmp;
+			dstTmp++;
+#define SwitchBitsLoop(body) \
+	while (nlw--)	\
+	{		\
+	    body	\
+	    dst += 8;	\
+	}
+			SwitchBitGroup(dst, xor, GetBitGroup(bits));
+#undef SwitchBitsLoop
+			NextBitGroup (bits);
+		    }
+		    nlwMiddle--;
+		    w = wEnd + 1;
+		    if (endmask)
+		    {
+			mask = cfb8PixelMasks[GetBitGroup(bits)];
+			dst = dstTmp + (nlwMiddle << 3);
+			*dst = (*dst & ~(mask & endmask)) |
+			       (xor &  (mask & endmask));
+		    }
+		    while (w--)
+		    {
+			nlw = nlwMiddle;
+			dst = dstTmp;
+			dstTmp++;
+#define SwitchBitsLoop(body) \
+	while (nlw--)	\
+	{		\
+	    body	\
+	    dst += 8;	\
+	}
+			SwitchBitGroup(dst, xor, GetBitGroup(bits));
+#undef SwitchBitsLoop
+			NextBitGroup (bits);
+		    }
+		    nlwMiddle++;
+		}
+    }
+} /* gglbox.h --GGL */
+	    }
+	}
+	else
+	{
+#define GGL_DRAW \
+	    while (h--) \
+	    { \
+		bits = src[y]; \
+		y++; \
+		if (y == stippleHeight) \
+		    y = 0; \
+	    	if (rot != 0) \
+		    RotBitsLeft (bits, rot); \
+	    	dst = dstLine; \
+	    	dstLine += nlwDst; \
+	    	if (startmask) \
+	    	{ \
+		    xor = GetBitGroup(bits); \
+		    *dst = MaskRRopPixels(*dst, xor, startmask); \
+		    dst++; \
+		    RotBitsLeft (bits, PGSZB); \
+	    	} \
+		nlw = nlwMiddle; \
+	    	while (nlw--) \
+	    	{ \
+		    RRopBitGroup(dst, GetBitGroup(bits)); \
+		    dst++; \
+		    RotBitsLeft (bits, PGSZB); \
+	    	} \
+	    	if (endmask) \
+	    	{ \
+		    xor = GetBitGroup(bits); \
+		    *dst = MaskRRopPixels(*dst, xor, endmask); \
+	    	} \
+	    }
+#include "gglbox.h"
+	}
+    }
 }
 
 
@@ -369,14 +485,6 @@ W328FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
     unsigned long   *srcTemp, *srcStart;
     unsigned long   *psrcBase;
     unsigned long   startmask, endmask;
-
-    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pdstBase)
-    if ((CARD32)pdstBase != VGABASE)
-    {
-	cfb8FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox);
-	return;
-    }
-    pdstBase = 0;
 
     if (pGC->fillStyle == FillStippled)
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
@@ -414,6 +522,9 @@ W328FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
     xSrc = pDrawable->x;
     ySrc = pDrawable->y;
 
+    cfbGetLongWidthAndPointer (pDrawable, nlwDst, pdstBase)
+    pdstBase = 0;
+
     /* this replaces rotating the stipple. Instead we just adjust the offset
      * at which we start grabbing bits from the stipple.
      * Ensure that ppt->x - xSrc >= 0 and ppt->y - ySrc >= 0,
@@ -446,40 +557,43 @@ W328FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
 	{
 	    maskbits (x, w, startmask, endmask, nlwMiddle);
 	}
-	while (h--)
-	{
-    	    srcTemp = srcStart + (xrem >> MFB_PWSH);
-    	    bitsLeft = stippleWidth - (xrem & ~MFB_PIM);
-	    NextUnnaturalStippleWord
-	    NextSomeBits (inputBits, (xrem & MFB_PIM));
-	    partBitsLeft -= (xrem & MFB_PIM);
-	    NextUnnaturalStippleBits
-	    nlw = nlwMiddle;
-	    pdst = pdstLine;
-	    W32_LONG(pdst)
-	    if (startmask)
-	    {
-		*pdst = MaskRRopPixels(*pdst,bits,startmask);
-		pdst++;
-		NextUnnaturalStippleBits
-	    }
-	    while (nlw--)
-	    {
-		*pdst = RRopPixels(*pdst,bits);
-		pdst++;
-		NextUnnaturalStippleBits
-	    }
-	    if (endmask)
-		*pdst = MaskRRopPixels(*pdst,bits,endmask);
-	    pdstLine += nlwDst;
-	    y++;
-	    srcStart += stwidth;
-	    if (y == stippleHeight)
-	    {
-		y = 0;
-		srcStart = psrcBase;
-	    }
+#undef GGL_PTR
+#define GGL_PTR pdstLine
+#define GGL_DRAW \
+	while (h--) \
+	{ \
+    	    srcTemp = srcStart + (xrem >> MFB_PWSH); \
+    	    bitsLeft = stippleWidth - (xrem & ~MFB_PIM); \
+	    NextUnnaturalStippleWord \
+	    NextSomeBits (inputBits, (xrem & MFB_PIM)); \
+	    partBitsLeft -= (xrem & MFB_PIM); \
+	    NextUnnaturalStippleBits \
+	    nlw = nlwMiddle; \
+	    pdst = pdstLine; \
+	    if (startmask) \
+	    { \
+		*pdst = MaskRRopPixels(*pdst,bits,startmask); \
+		pdst++; \
+		NextUnnaturalStippleBits \
+	    } \
+	    while (nlw--) \
+	    { \
+		*pdst = RRopPixels(*pdst,bits); \
+		pdst++; \
+		NextUnnaturalStippleBits \
+	    } \
+	    if (endmask) \
+		*pdst = MaskRRopPixels(*pdst,bits,endmask); \
+	    pdstLine += nlwDst; \
+	    y++; \
+	    srcStart += stwidth; \
+	    if (y == stippleHeight) \
+	    { \
+		y = 0; \
+		srcStart = psrcBase; \
+	    } \
 	}
+#include "gglbox.h"
     }
 }
 

@@ -1,31 +1,29 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000Bt485.c,v 3.2 1994/07/24 11:47:44 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 By David Wexelblat <dwex@aib.com>
  *
  * Modified 1994 for P9000 Server By Erik Nygren <nygren@mit.edu>
- * Modified for Viper PCI by Matt Thomas <thomas@lkg.dec.com>
  *
- * Permission to use, copy, modify, distribute, and sell this software
- * and its documentation for any purpose is hereby granted without
- * fee, provided that the above copyright notice appear in all copies
- * and that both that copyright notice and this permission notice
- * appear in supporting documentation, and that the names of David
- * Wexelblat, Matt Thomas, and Erik Nygren not be used in advertising
- * or publicity pertaining to distribution of the software without
- * specific, written prior permission.  David Wexelblat and Erik
- * Nygren make no representations about the suitability of this
- * software for any purpose.  It is provided "as is" without express
- * or implied warranty.
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the names of David Wexelblat and Erik Nygren not 
+ * be used in advertising or publicity pertaining to distribution of the
+ * software without specific, written prior permission.  David Wexelblat and
+ * Erik Nygren make no representations about the suitability of this software
+ * for any purpose.
+ * It is provided "as is" without express or implied warranty.
  *
- * DAVID WEXELBLAT, MATT THOMAS, AND ERIK NYGREN DISCLAIM ALL
- * WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL DAVID
- * WEXELBLAT OR ERIK NYGREN BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- * */
+ * DAVID WEXELBLAT AND ERIK NYGREN DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+ * IN NO EVENT SHALL DAVID WEXELBLAT OR ERIK NYGREN BE LIABLE FOR ANY SPECIAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
 
 #include "X.h"
 #include "input.h"
@@ -40,9 +38,6 @@
 #include "p9000reg.h"
 #include "p9000Bt485.h"
 
-extern xrgb xf86weight;
-
-
 #ifndef __GNUC__
 # define __inline__ /**/
 #endif
@@ -53,11 +48,6 @@ extern xrgb xf86weight;
  * for some reason aren't in numeric order, so we remap them through 
  * an array).  The P9000 provides access by remapping to 
  * 0x03C[6789], 0x43C[6789], 0x83C[6789], and 0xC3C[6789].
- * The Viper PCI is a special case where addresses are remapped
- * 0x03C[6789] and then the rest are mapped into IOBase+0x[48C][6789].
- * How the Viper PCI is handled is a hack and should be changed!
- * Maybe have a table of DAC functions.  *TO*DO* (ELN)
- * If you change this, make sure to change p9000BtCurs as well!
  */
 #ifdef __STDC__
 void p9000OutBtReg(unsigned short reg, unsigned char mask, unsigned char data)
@@ -68,15 +58,9 @@ unsigned char mask;
 unsigned char data;
 #endif
 {
-  unsigned char tmp;
-  if ((p9000VendorPtr->Label == P9000_VENDOR_VIPERPCI)
-      && (0xf000 & reg))
-    {
-      reg = ((unsigned long)((reg & 0x00ff) | ((reg & 0xf000)>>4)))
-	+ (unsigned long)p9000InfoRec.IObase;
-    }
-  tmp = inb(reg) & mask;
-  outb(reg, tmp | data);
+   unsigned char tmp = inb(reg) & mask;
+
+   outb(reg, tmp | data);
 }
 
 #ifdef __STDC__
@@ -86,13 +70,7 @@ unsigned char p9000InBtReg(reg)
 unsigned short reg;
 #endif
 {
-  if ((p9000VendorPtr->Label == P9000_VENDOR_VIPERPCI)
-      && (0xf000 & reg))
-    {
-      reg = ((unsigned long)((reg & 0x00ff) | ((reg & 0xf000)>>4)))
-	+ (unsigned long)p9000InfoRec.IObase;
-    }
-  return(inb(reg));
+   return(inb(reg));
 }
 
 /*
@@ -156,8 +134,6 @@ void
 p9000BtEnable(crtcRegs)
      p9000CRTCRegPtr crtcRegs;
 {
-  Bool weight555;  /* Is the 16 bpp weighting 555 (as opposed to 565)? */
-
   if (!bt_saved)
     {
       bt_cr0_save = p9000InBtReg(BT_COMMAND_REG_0);
@@ -178,16 +154,11 @@ p9000BtEnable(crtcRegs)
     p9000OutBtReg(BT_COMMAND_REG_1, 0x0, BT_CR1_BP8); /* 4:1 mux */
 
   else if (crtcRegs->BytesPerPixel == 2)  /* 16 bit color */
-    {      
-      weight555 = (xf86weight.red == 5 && xf86weight.green == 5
-		   && xf86weight.blue == 5);
-
-      p9000OutBtReg(BT_COMMAND_REG_1, 0x0,
-		    BT_CR1_BP16 | BT_CR1_BYPASS_PAL
-		    | (weight555 ? BT_CR1_555RGB : BT_CR1_565RGB)
-		    | BT_CR1_16B_21MUX );
-    }
-  else                        /* sparse 32 bit color (24 bit depth) */
+    p9000OutBtReg(BT_COMMAND_REG_1, 0x0,
+		  BT_CR1_BP16 | BT_CR1_BYPASS_PAL
+		  | BT_CR1_555RGB | BT_CR1_16B_21MUX);
+  
+  else                                    /* 24 bit color */
     p9000OutBtReg(BT_COMMAND_REG_1, 0x0, BT_CR1_BP24 | BT_CR1_BYPASS_PAL);
 }
 
@@ -207,8 +178,3 @@ p9000BtRestore()
   p9000OutBtReg(BT_COMMAND_REG_2, 0x0, bt_cr2_save);
   p9000OutBtReg(BT_COMMAND_REG_0, 0x0, bt_cr0_save);
 }
-
-
-
-
-

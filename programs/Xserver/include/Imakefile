@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.1 1994/09/11 11:16:13 dawes Exp $
+XCOMM $XFree86$
 
 all::
 
@@ -6,7 +6,6 @@ InstallLinkKitNonExecFile(closure.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(colormap.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(colormapst.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(cursor.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(cursorstr.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(dix.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(dixfont.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(dixfontstr.h,$(LINKKITDIR)/include)
@@ -31,4 +30,3 @@ InstallLinkKitNonExecFile(window.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(windowstr.h,$(LINKKITDIR)/include)
 
 depend::
-

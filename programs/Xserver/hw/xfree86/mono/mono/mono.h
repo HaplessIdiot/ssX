@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.h,v 3.0 1994/05/04 15:01:40 dawes Exp $ */
+/* $XFree86$ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -124,7 +124,7 @@ extern unsigned char *monoBankBTop;
 extern int  monoBankAseg;
 extern int  monoBankBseg;
 
-#ifdef CSRG_BASED
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
 #define MONOBASE 0xFF000000
 #else
 #define MONOBASE 0xF0000000

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxScrIn.c,v 3.3 1994/09/07 15:47:34 dawes Exp $ */
+/* $XFree86$ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -41,8 +41,21 @@ Modified for the AGX    by Henry A. Worth  (haw30@eng.amdahl.com)
 
 ********************************************************/
 
-#include "mi.h"
+
+#include "X.h"
+#include "Xmd.h"
+#include "servermd.h"
+#include "scrnintstr.h"
+#include "pixmapstr.h"
+#include "resource.h"
+#include "colormap.h"
+#include "colormapst.h"
 #include "cfb.h"
+#include "mi.h"
+#include "mistruct.h"
+#include "dix.h"
+#include "cfbmskbits.h"
+#include "mibstore.h"
 #include "agx.h"
 #include "xf86RamDac.h"
 
@@ -67,10 +80,12 @@ extern int defaultColorVisualClass;
 
 static VisualRec visuals[] = {
 /* vid  class        bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
+#ifndef STATIC_COLOR
     0,  PseudoColor, _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
     0,  DirectColor, _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
     0,  GrayScale,   _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
     0,  StaticGray,  _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
+#endif
     0,  StaticColor, _BP,  1<<PSZ,   PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
     0,  TrueColor,   _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS
 };
@@ -90,8 +105,8 @@ static DepthRec depths[] = {
 static unsigned long cfbGeneration = 0;
 
 miBSFuncRec agxBSFuncRec = {
-    agxSaveAreas,
-    agxRestoreAreas,
+    cfbSaveAreas,
+    cfbRestoreAreas,
     (void (*)()) 0,
     (PixmapPtr (*)()) 0,
     (PixmapPtr (*)()) 0,
@@ -145,17 +160,17 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
     pScreen->QueryBestSize = mfbQueryBestSize;
     /* SaveScreen */
-    pScreen->GetImage = agxGetImage;
-    pScreen->GetSpans = agxGetSpans;
+    pScreen->GetImage = cfbGetImage;
+    pScreen->GetSpans = cfbGetSpans;
     pScreen->CreateWindow = cfbCreateWindow;
     pScreen->DestroyWindow = cfbDestroyWindow;
     pScreen->PositionWindow = cfbPositionWindow;
     pScreen->ChangeWindowAttributes = cfbChangeWindowAttributes;
     pScreen->RealizeWindow = cfbMapWindow;
     pScreen->UnrealizeWindow = cfbUnmapWindow;
-    pScreen->PaintWindowBackground = agxPaintWindow;
-    pScreen->PaintWindowBorder = agxPaintWindow;
-    pScreen->CopyWindow = agxCopyWindow;
+    pScreen->PaintWindowBackground = miPaintWindow;
+    pScreen->PaintWindowBorder = miPaintWindow;
+    pScreen->CopyWindow = cfbCopyWindow;
     pScreen->CreatePixmap = cfbCreatePixmap;
     pScreen->DestroyPixmap = cfbDestroyPixmap;
     pScreen->RealizeFont = agxRealizeFont;
@@ -163,10 +178,17 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->CreateGC = agxCreateGC;
     pScreen->CreateColormap = cfbInitializeColormap;
     pScreen->DestroyColormap = (void (*)())NoopDDA;
+#ifdef	STATIC_COLOR
+    pScreen->InstallColormap = cfbInstallColormap;
+    pScreen->UninstallColormap = cfbUninstallColormap;
+    pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
+    pScreen->StoreColors = (void (*)())NoopDDA;
+#else
     pScreen->InstallColormap = agxInstallColormap;
     pScreen->UninstallColormap = agxUninstallColormap;
     pScreen->ListInstalledColormaps = agxListInstalledColormaps;
     pScreen->StoreColors = agxStoreColors;
+#endif
     pScreen->ResolveColor = cfbResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
     mfbRegisterCopyPlaneProc (pScreen, agxCopyPlane);

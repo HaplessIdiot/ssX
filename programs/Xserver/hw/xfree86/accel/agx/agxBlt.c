@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.8 1994/11/19 07:49:54 dawes Exp $ */
+/* $XFree86$ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -42,8 +42,9 @@ Modified for the AGX    by Henry A. Worth  (haw30@eng.amdahl.com)
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
-#include	"mi.h"
 #include	"cfb.h"
+#include	"cfbmskbits.h"
+#include	"cfb8bit.h"
 #include	"fastblt.h"
 
 #include	"regagx.h"
@@ -271,8 +272,10 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
 	if ( pSrcDrawable->type == DRAWABLE_WINDOW 
              && pDstDrawable->type == DRAWABLE_WINDOW ) {
 	    /* Window --> Window */
-            BoxPtr prect;
 	    unsigned int *ordering;
+            unsigned short height, width;
+            unsigned int   src_x, src_y;
+	    BoxPtr prect;
 	    short direction = 0;
         
 	    ordering = (unsigned int *)
@@ -287,151 +290,150 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
                              srcx, srcy, dstx, dsty, 
                              ordering );
 
-            i = 0;
-            prect = &pbox[ordering[0]];
+	    GE_WAIT_IDLE();
+
+            MAP_SET_SRC_AND_DST( GE_MS_MAP_A ); 
+            
+            GE_OUT_B(GE_FRGD_MIX, pGC->alu);
+	    GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
+            GE_OUT_D(GE_FRGD_CLR, pGC->fgPixel);
+
             if ( dx > 0 && dy > 0 ) {
-               register unsigned int srcCoOrd = (prect->y1+dy) << 16
-                                                | (prect->x1+dx);
-               register unsigned int dstCoOrd = prect->y1 << 16 | prect->x1;
-               register unsigned int opDim = (prect->y2-prect->y1-1) << 16
-                                             | (prect->x2-prect->x1-1);
-               MAP_SET_SRC_AND_DST( GE_MS_MAP_A ); 
-	       GE_WAIT_IDLE();
-               GE_OUT_B(GE_FRGD_MIX, pGC->alu);
-	       GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
-               for(;;) {
-	          GE_OUT_D( GE_SRC_MAP_X, srcCoOrd );
-	          GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-                  GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-                  GE_START_CMD( GE_OP_BITBLT
-                                | GE_OP_FRGD_SRC_MAP 
-                                | GE_OP_SRC_MAP_A
-                                | GE_OP_DEST_MAP_A  
-                                | GE_OP_PAT_FRGD
-                                | GE_OP_MASK_DISABLED
-                                | GE_OP_INC_X
-                                | GE_OP_INC_Y         );
-                  if (++i >= numRects )
-                     break;
-                  prect = &pbox[ordering[i]];
-                  srcCoOrd = (prect->y1+dy) << 16 | (prect->x1+dx);
-                  dstCoOrd = prect->y1 << 16 | prect->x1;
-                  opDim = (prect->y2-prect->y1-1) << 16
-                          | (prect->x2-prect->x1-1);
+               GE_OUT_W( GE_PIXEL_OP, GE_OP_PAT_FRGD
+                                      | GE_OP_MASK_DISABLED
+                                      | GE_OP_INC_X
+                                      | GE_OP_INC_Y         );
+               for (i = 0; i < numRects; i++) {
+	          prect = &pbox[ordering[i]];
+                  width = prect->x2 - prect->x1 - 1;
+                  height = prect->y2 - prect->y1 - 1;
+                  src_x = prect->x1 + dx;
+                  src_y = prect->y1 + dy;
+
 	          GE_WAIT_IDLE();
-               }
+#ifndef NO_MULTI_IO
+	          GE_OUT_D( GE_SRC_MAP_X, src_y << 16 | src_x );
+	          GE_OUT_D( GE_DEST_MAP_X, prect->y1 << 16 | prect->x1 );
+                  GE_OUT_D( GE_OP_DIM_WIDTH, height << 16 | width );
+#else
+	          GE_OUT_W( GE_SRC_MAP_X, src_x );
+	          GE_OUT_W( GE_SRC_MAP_Y, src_y ); 
+	          GE_OUT_W( GE_DEST_MAP_X, prect->x1 );
+	          GE_OUT_W( GE_DEST_MAP_Y, prect->y1 );
+                  GE_OUT_W( GE_OP_DIM_WIDTH, width );
+                  GE_OUT_W( GE_OP_DIM_HEIGHT, height );
+#endif
+                  GE_START_CMDW( GE_OPW_BITBLT
+                                 | GE_OPW_FRGD_SRC_MAP 
+                                 | GE_OPW_SRC_MAP_A
+                                 | GE_OPW_DEST_MAP_A   );
+	       }
             }
             else if ( dx > 0 ) {
-               register unsigned int srcCoOrd = (prect->y2+dy-1) << 16
-                                                | (prect->x1+dx);
-               register unsigned int dstCoOrd = (prect->y2-1) << 16 
-                                                | prect->x1;
-               register unsigned int opDim = (prect->y2-prect->y1-1) << 16
-                                             | (prect->x2-prect->x1-1);
-               MAP_SET_SRC_AND_DST( GE_MS_MAP_A ); 
-	       GE_WAIT_IDLE();
-               GE_OUT_B(GE_FRGD_MIX, pGC->alu);
-	       GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
-               for(;;){
-	          GE_OUT_D( GE_SRC_MAP_X, srcCoOrd );
-	          GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-                  GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-                  GE_START_CMD( GE_OP_BITBLT
-                                | GE_OP_FRGD_SRC_MAP 
-                                | GE_OP_SRC_MAP_A
-                                | GE_OP_DEST_MAP_A 
-                                | GE_OP_PAT_FRGD
-                                | GE_OP_MASK_DISABLED
-                                | GE_OP_INC_X
-                                | GE_OP_DEC_Y         );
-                  if (++i >= numRects )
-                     break;
+               GE_OUT_W( GE_PIXEL_OP, GE_OP_PAT_FRGD
+                                      | GE_OP_MASK_DISABLED
+                                      | GE_OP_INC_X
+                                      | GE_OP_DEC_Y         );
+               for (i = 0; i < numRects; i++) {
                   prect = &pbox[ordering[i]];
-                  srcCoOrd = (prect->y2+dy-1) << 16 | (prect->x1+dx);
-                  dstCoOrd = (prect->y2-1) << 16 | prect->x1;
-                  opDim = (prect->y2-prect->y1-1) << 16
-                          | (prect->x2-prect->x1-1);
+                  width = prect->x2 - prect->x1 - 1;
+                  height = prect->y2 - prect->y1 - 1;
+                  src_x = prect->x1 + dx;
+                  src_y = prect->y2 + dy -1;
+
 	          GE_WAIT_IDLE();
+#ifndef NO_MULTI_IO
+	          GE_OUT_D( GE_SRC_MAP_X, src_y << 16 | src_x );
+	          GE_OUT_D( GE_DEST_MAP_X, (prect->y2-1) << 16 | prect->x1 );
+                  GE_OUT_D( GE_OP_DIM_WIDTH, height << 16 | width );
+#else
+                  GE_OUT_W( GE_SRC_MAP_X, src_x ); 
+                  GE_OUT_W( GE_SRC_MAP_Y, src_y );
+                  GE_OUT_W( GE_DEST_MAP_X, (short)(prect->x1) );
+                  GE_OUT_W( GE_DEST_MAP_Y, (short)(prect->y2 - 1) );
+                  GE_OUT_W( GE_OP_DIM_WIDTH, width ); 
+                  GE_OUT_W( GE_OP_DIM_HEIGHT, height );
+#endif
+                  GE_START_CMDW( GE_OPW_BITBLT
+                                 | GE_OPW_FRGD_SRC_MAP 
+                                 | GE_OPW_SRC_MAP_A
+                                 | GE_OPW_DEST_MAP_A   );
                }
             }
             else if ( dy > 0 ) {
-               register unsigned int srcCoOrd = (prect->y1+dy) << 16
-                                                | (prect->x2+dx-1);
-               register unsigned int dstCoOrd = prect->y1 << 16 
-                                                | (prect->x2-1);
-               register unsigned int opDim = (prect->y2-prect->y1-1) << 16
-                                             | (prect->x2-prect->x1-1);
-               MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
-	       GE_WAIT_IDLE();
-               GE_OUT_B(GE_FRGD_MIX, pGC->alu);
-               GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
-               for(;;) { 
-	          GE_OUT_D( GE_SRC_MAP_X, srcCoOrd );
-	          GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-                  GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-                  GE_START_CMD( GE_OP_BITBLT
-                                | GE_OP_FRGD_SRC_MAP
-                                | GE_OP_SRC_MAP_A
-                                | GE_OP_DEST_MAP_A
-                                | GE_OP_PAT_FRGD
-                                | GE_OP_MASK_DISABLED
-                                | GE_OP_DEC_X
-                                | GE_OP_INC_Y         );
-                  if (++i >= numRects )
-                     break;
+               GE_OUT_W( GE_PIXEL_OP, GE_OP_PAT_FRGD
+                                      | GE_OP_MASK_DISABLED
+                                      | GE_OP_DEC_X
+                                      | GE_OP_INC_Y         );
+               for (i = 0; i < numRects; i++) {
                   prect = &pbox[ordering[i]];
-                  srcCoOrd = (prect->y1+dy) << 16 | (prect->x2+dx-1);
-                  dstCoOrd = prect->y1 << 16 | (prect->x2-1);
-                  opDim = (prect->y2-prect->y1-1) << 16
-                          | (prect->x2-prect->x1-1);
+                  width = prect->x2 - prect->x1 - 1;
+                  height = prect->y2 - prect->y1 - 1;
+                  src_x = prect->x2 + dx - 1;
+                  src_y = prect->y1 + dy;
+
 	          GE_WAIT_IDLE();
-               } 
+#ifndef NO_MULTI_IO
+	          GE_OUT_D( GE_SRC_MAP_X, src_y << 16 | src_x );
+	          GE_OUT_D( GE_DEST_MAP_X, prect->y1 << 16 | (prect->x2-1) );
+                  GE_OUT_D( GE_OP_DIM_WIDTH, height << 16 | width );
+#else
+                  GE_OUT_W( GE_SRC_MAP_X, src_x );
+                  GE_OUT_W( GE_SRC_MAP_Y, src_y );
+                  GE_OUT_W( GE_DEST_MAP_X, (short)(prect->x2 - 1) );
+                  GE_OUT_W( GE_DEST_MAP_Y, (short)(prect->y1) );
+                  GE_OUT_W( GE_OP_DIM_WIDTH, width ); 
+                  GE_OUT_W( GE_OP_DIM_HEIGHT, height );
+#endif
+                  GE_START_CMDW( GE_OPW_BITBLT
+                                 | GE_OPW_FRGD_SRC_MAP
+                                 | GE_OPW_SRC_MAP_A
+                                 | GE_OPW_DEST_MAP_A   );
+               }
             }
             else {
-               register unsigned int srcCoOrd = (prect->y2+dy-1) << 16
-                                                | (prect->x2+dx-1);
-               register unsigned int dstCoOrd = prect->y2-1 << 16 
-                                                | (prect->x2-1);
-               register unsigned int opDim = (prect->y2-prect->y1-1) << 16
-                                             | (prect->x2-prect->x1-1);
-               MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
-               GE_WAIT_IDLE();
-               GE_OUT_B(GE_FRGD_MIX, pGC->alu);
-               GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
-               for(;;) { 
-	          GE_OUT_D( GE_SRC_MAP_X, srcCoOrd );
-	          GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-                  GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-                  GE_START_CMD( GE_OP_BITBLT
-                                | GE_OP_FRGD_SRC_MAP
-                                | GE_OP_SRC_MAP_A
-                                | GE_OP_DEST_MAP_A
-                                | GE_OP_PAT_FRGD
-                                | GE_OP_MASK_DISABLED
-                                | GE_OP_DEC_X
-                                | GE_OP_DEC_Y         );
-                  if (++i >= numRects )
-                     break;
+               GE_OUT_W( GE_PIXEL_OP, GE_OP_PAT_FRGD
+                                      | GE_OP_MASK_DISABLED
+                                      | GE_OP_DEC_X
+                                      | GE_OP_DEC_Y         );
+               for (i = 0; i < numRects; i++) {
                   prect = &pbox[ordering[i]];
-                  srcCoOrd = (prect->y2+dy-1) << 16 | (prect->x2+dx-1);
-                  dstCoOrd = prect->y2-1 << 16 | (prect->x2-1);
-                  opDim = (prect->y2-prect->y1-1) << 16
-                          | (prect->x2-prect->x1-1);
+                  width = prect->x2 - prect->x1 - 1;
+                  height = prect->y2 - prect->y1 - 1;
+                  src_x = prect->x2 + dx - 1;
+                  src_y = prect->y2 + dy - 1;
+
 	          GE_WAIT_IDLE();
-               } 
+#ifndef NO_MULTI_IO
+	          GE_OUT_D( GE_SRC_MAP_X, src_y << 16 | src_x );
+	          GE_OUT_D( GE_DEST_MAP_X, (prect->y2-1) << 16 
+                                           | (prect->x2-1) );
+                  GE_OUT_D( GE_OP_DIM_WIDTH, height << 16 | width );
+#else
+                  GE_OUT_W( GE_SRC_MAP_X, src_x ); 
+                  GE_OUT_W( GE_SRC_MAP_Y, src_y ); 
+                  GE_OUT_W( GE_DEST_MAP_X, (short)(prect->x2 - 1) );
+                  GE_OUT_W( GE_DEST_MAP_Y, (short)(prect->y2 - 1) );
+                  GE_OUT_W( GE_OP_DIM_WIDTH, width ); 
+                  GE_OUT_W( GE_OP_DIM_HEIGHT, height );
+#endif
+                  GE_START_CMDW( GE_OPW_BITBLT
+                                 | GE_OPW_FRGD_SRC_MAP
+                                 | GE_OPW_SRC_MAP_A
+                                 | GE_OPW_DEST_MAP_A   );
+               }
             }
 
             DEALLOCATE_LOCAL(ordering);
-	    GE_WAIT_IDLE_EXIT();
+	    GE_WAIT_IDLE();
 
 	}
         else if ( pSrcDrawable->type == DRAWABLE_WINDOW 
                   && pDstDrawable->type != DRAWABLE_WINDOW ) {
 
 	    /* Window --> Pixmap */
-	    int pixWidth = PixmapBytePad(pDstDrawable->width,
-					 pDstDrawable->depth);
-	    char *pdst = ((PixmapPtr)pDstDrawable)->devPrivate.ptr;
+	    int pixWidth = PixmapBytePad(pDstDrawable->width, pDstDrawable->depth);
+	    unsigned char *pdst = ((PixmapPtr)pDstDrawable)->devPrivate.ptr;
 
 	    for (i = numRects; --i >= 0; pbox++)
 		(agxImageReadFunc)( pbox->x1 + dx, pbox->y1 + dy,
@@ -442,9 +444,8 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
         else if ( pSrcDrawable->type != DRAWABLE_WINDOW 
                   && pDstDrawable->type == DRAWABLE_WINDOW ) {
 	    /* Pixmap --> Window */
-	    int pixWidth = PixmapBytePad(pSrcDrawable->width,
-					 pSrcDrawable->depth);
-	    char *psrc = ((PixmapPtr)pSrcDrawable)->devPrivate.ptr;
+	    int pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
+	    unsigned char *psrc = ((PixmapPtr)pSrcDrawable)->devPrivate.ptr;
 
 	    for (i = numRects; --i >= 0; pbox++)
 		(agxImageWriteFunc)( pbox->x1, pbox->y1,
@@ -572,7 +573,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
     int			srcx, srcy;
     int			width, height;
     int			dstx, dsty;
-    unsigned long	bitPlane;
+    unsigned int 	bitPlane;
 {
    PixmapPtr pBitmap = NULL;
    RegionPtr prgnSrcClip;       /* may be a new region, or just a copy */
@@ -602,7 +603,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
     if ((pSrcDrawable->type != DRAWABLE_WINDOW) &&
 	(pDstDrawable->type == DRAWABLE_WINDOW) &&
 	(pSrcDrawable->bitsPerPixel != 1)) {
-#if 1
+#if 0
 	 /*
 	  * Shortcut - we can do Pixmap->Window when the source depth is
 	  * 8 by using the handy-dandy cfbCopyPlane8to1 to create a bitmap
@@ -626,7 +627,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
         FreeScratchGC(pGC1);
         pSrcDrawable = (DrawablePtr)pBitmap;
 #else
-        return xxxCopyPlane(pSrcDrawable, pDstDrawable,
+        return cfbCopyPlane(pSrcDrawable, pDstDrawable,
                pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
 #endif
     } else if ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
@@ -649,8 +650,8 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
  	    return(NULL);
  	}
  	ValidateGC((DrawablePtr)pPixmap, pGC1);
- 	agxCopyArea( pSrcDrawable, (DrawablePtr)pPixmap, pGC1, 
-                     srcx, srcy, width, height, 0, 0);
+ 	agxCopyArea(pSrcDrawable, pPixmap, pGC1, srcx, srcy, width, height,
+ 		       0, 0);
  	retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                               0, 0, width, height, dstx, dsty, bitPlane);
         FreeScratchGC(pGC1);
@@ -850,6 +851,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
          /* Window --> Window , src Window depth of 1 */
 
          unsigned int *ordering;
+         BoxPtr prect;
          short direction = 0;
 
          ordering = (unsigned int *)
@@ -866,8 +868,14 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
 
          GE_WAIT_IDLE();
 
-         MAP_SET_DST( GE_MS_MAP_A );
+         MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
+
+#ifndef NO_MULTI_IO
          GE_OUT_W(GE_FRGD_MIX, pGC->alu << 16 | pGC->alu);
+#else
+         GE_OUT_B(GE_FRGD_MIX, pGC->alu);
+         GE_OUT_B(GE_BKGD_MIX, pGC->alu);
+#endif
          GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
          GE_OUT_D(GE_FRGD_CLR, pGC->fgPixel);
          GE_OUT_D(GE_BKGD_CLR, pGC->bgPixel);
@@ -878,19 +886,28 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
                                    | GE_OP_INC_X
                                    | GE_OP_INC_Y         );
             for (i = 0; i < numRects; i++) {
-               BoxPtr prect = &pbox[ordering[i]];
-               register unsigned int patCoOrd = (prect->y1+dy) << 16
-                                                | (prect->x1+dx);
-               register unsigned int dstCoOrd = prect->y1 << 16 | prect->x1;
-               register unsigned int opDim = (prect->y2-prect->y1-1) << 16
-                                             | (prect->x2-prect->x1-1);
+               prect = &pbox[ordering[i]];
+
                GE_WAIT_IDLE();
-               GE_OUT_D( GE_PAT_MAP_X, patCoOrd );
-               GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-               GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+#ifndef NO_MULTI_IO
+               GE_OUT_D( GE_PAT_MAP_X, prect->y1 + dy << 16 | prect->x1 + dx );
+               GE_OUT_D( GE_DEST_MAP_X, prect->y1 << 16 | prect->x1 );
+               GE_OUT_D( GE_OP_DIM_WIDTH, (prect->y2 - prect->y1 - 1) << 16 
+                                          | (prect->x2 - prect->x1 - 1) );
+#else
+               GE_OUT_W( GE_PAT_MAP_X, (short)(prect->x1 + dx) );
+               GE_OUT_W( GE_PAT_MAP_Y, (short)(prect->y1 + dy) );
+               GE_OUT_W( GE_DEST_MAP_X, (short)(prect->x1) );
+               GE_OUT_W( GE_DEST_MAP_Y, (short)(prect->y1) );
+               GE_OUT_W( GE_OP_DIM_WIDTH, 
+                         (short)(prect->x2 - prect->x1 - 1) );
+               GE_OUT_W( GE_OP_DIM_HEIGHT, 
+                         (short)(prect->y2 - prect->y1 - 1) );
+#endif
                GE_START_CMDW( GE_OPW_BITBLT
                               | GE_OPW_FRGD_SRC_CLR 
                               | GE_OPW_BKGD_SRC_CLR 
+                              | GE_OPW_SRC_MAP_A
                               | GE_OPW_DEST_MAP_A   );
             }
          } 
@@ -900,18 +917,25 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
                                      | GE_OP_INC_X
                                      | GE_OP_DEC_Y         );
             for (i = 0; i < numRects; i++) {
-               BoxPtr prect = &pbox[ordering[i]];
-               register unsigned int patCoOrd = (prect->y2+dy-1) << 16
-                                                | (prect->x1+dx);
-               register unsigned int dstCoOrd = (prect->y2-1) << 16 
-                                                | prect->x1;
-               register unsigned int opDim = (prect->y2-prect->y1-1) << 16
-                                             | (prect->x2-prect->x1-1);
+               prect = &pbox[ordering[i]];
 
                GE_WAIT_IDLE();
-               GE_OUT_D( GE_PAT_MAP_X, patCoOrd );
-               GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-               GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+#ifndef NO_MULTI_IO
+               GE_OUT_D( GE_PAT_MAP_X, prect->y2 + dy - 1 << 16 
+                                       | prect->x1 + dx  );
+               GE_OUT_D( GE_DEST_MAP_X,  prect->y2 - 1 << 16 | prect->x1 );
+               GE_OUT_D( GE_OP_DIM_WIDTH, (prect->y2 - prect->y1 - 1) << 16
+                                          | (prect->x2 - prect->x1 - 1) );
+#else
+               GE_OUT_W( GE_PAT_MAP_X, (short)(prect->x1 + dx) );
+               GE_OUT_W( GE_PAT_MAP_Y, (short)(prect->y2 + dy - 1) );
+               GE_OUT_W( GE_DEST_MAP_X, (short)(prect->x1) );
+               GE_OUT_W( GE_DEST_MAP_Y, (short)(prect->y2 - 1) );
+               GE_OUT_W( GE_OP_DIM_WIDTH,
+                         (short)(prect->x2 - prect->x1 - 1) );
+               GE_OUT_W( GE_OP_DIM_HEIGHT,
+                    (short)(prect->y2 - prect->y1 - 1) );
+#endif
                GE_START_CMDW( GE_OPW_BITBLT
                               | GE_OPW_FRGD_SRC_CLR
                               | GE_OPW_BKGD_SRC_CLR
@@ -924,18 +948,26 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
                                    | GE_OP_DEC_X
                                    | GE_OP_INC_Y         );
             for (i = 0; i < numRects; i++) {
-               BoxPtr prect = &pbox[ordering[i]];
-               register unsigned int patCoOrd = (prect->y1+dy) << 16
-                                                | (prect->x2+dx-1);
-               register unsigned int dstCoOrd = prect->y1 << 16 
-                                                | (prect->x2-1);
-               register unsigned int opDim = (prect->y2-prect->y1-1) << 16
-                                             | (prect->x2-prect->x1-1);
+               prect = &pbox[ordering[i]];
 
                GE_WAIT_IDLE();
-               GE_OUT_D( GE_PAT_MAP_X, patCoOrd );
-               GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-               GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+#ifndef NO_MULTI_IO
+               GE_OUT_D( GE_PAT_MAP_X, (prect->y1 + dy) << 16 
+                                       | (prect->x2 + dx -1) );
+               GE_OUT_D( GE_DEST_MAP_X, (prect->y1) << 16 
+                                        | (prect->x2 - 1) );
+               GE_OUT_D( GE_OP_DIM_WIDTH, (prect->x2 - prect->x1 - 1) << 16
+                                          | (prect->y2 - prect->y1 - 1) );
+#else
+               GE_OUT_W( GE_PAT_MAP_X, (short)(prect->x2 + dx -1) );
+               GE_OUT_W( GE_PAT_MAP_Y, (short)(prect->y1 + dy) );
+               GE_OUT_W( GE_DEST_MAP_X, (short)(prect->x2 - 1) );
+               GE_OUT_W( GE_DEST_MAP_Y, (short)(prect->y1) );
+               GE_OUT_W( GE_OP_DIM_WIDTH,
+                         (short)(prect->x2 - prect->x1 - 1) );
+               GE_OUT_W( GE_OP_DIM_HEIGHT,
+                         (short)(prect->y2 - prect->y1 - 1) );
+#endif
                GE_START_CMDW( GE_OPW_BITBLT
                               | GE_OPW_FRGD_SRC_CLR
                               | GE_OPW_BKGD_SRC_CLR
@@ -948,19 +980,26 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
                                    | GE_OP_DEC_X
                                    | GE_OP_DEC_Y         );
             for (i = 0; i < numRects; i++) {
-               BoxPtr prect = &pbox[ordering[i]];
-               register unsigned int patCoOrd = (prect->y2+dy-1) << 16
-                                                | (prect->x2+dx-1);
-               register unsigned int dstCoOrd = prect->y2-1 << 16 
-                                                | (prect->x2-1);
-               register unsigned int opDim = (prect->y2-prect->y1-1) << 16
-                                             | (prect->x2-prect->x1-1);
-
+               prect = &pbox[ordering[i]];
 
                GE_WAIT_IDLE();
-               GE_OUT_D( GE_PAT_MAP_X, patCoOrd );
-               GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-               GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+#ifndef NO_MULTI_IO
+               GE_OUT_D( GE_PAT_MAP_X, (prect->y2 + dy - 1) << 16
+                                       | (prect->x2 + dx - 1) );
+               GE_OUT_D( GE_DEST_MAP_X, (prect->y2 - 1) << 16 
+                                        | (prect->x2 - 1) );
+               GE_OUT_D( GE_OP_DIM_WIDTH, (prect->y2 - prect->y1 - 1) << 16 
+                                          | (prect->x2 - prect->x1 - 1) );
+#else
+               GE_OUT_W( GE_PAT_MAP_X, (short)(prect->x2 + dx - 1) );
+               GE_OUT_W( GE_PAT_MAP_Y, (short)(prect->y2 + dy - 1) );
+               GE_OUT_W( GE_DEST_MAP_X, (short)(prect->x2 - 1) );
+               GE_OUT_W( GE_DEST_MAP_Y, (short)(prect->y2 - 1) );
+               GE_OUT_W( GE_OP_DIM_WIDTH,
+                         (short)(prect->x2 - prect->x1 - 1) );
+               GE_OUT_W( GE_OP_DIM_HEIGHT,
+                         (short)(prect->y2 - prect->y1 - 1) );
+#endif
                GE_START_CMDW( GE_OPW_BITBLT
                               | GE_OPW_FRGD_SRC_CLR
                               | GE_OPW_BKGD_SRC_CLR
@@ -968,7 +1007,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
             }
          }
          DEALLOCATE_LOCAL(ordering);
-	 GE_WAIT_IDLE_EXIT();
+	 GE_WAIT_IDLE();
       } 
 #if 1 
       else if ( pSrcDrawable->type == DRAWABLE_WINDOW 
@@ -978,7 +1017,6 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
       } 
       else if ( pSrcDrawable->type != DRAWABLE_WINDOW  
                 && pDstDrawable->type == DRAWABLE_WINDOW ) {
-#if 0
          /* Pixmap --> Window */
          PixmapPtr pix = (PixmapPtr) pSrcDrawable;
          int   pixWidth;
@@ -988,22 +1026,14 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
          psrc = pix->devPrivate.ptr;
 
          for (i = numRects; --i >= 0; pbox++) {
-            agxImageStipple( pbox->x1, pbox->y1,
-                             pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
-                             psrc, pixWidth,
-                             pix->drawable.width, pix->drawable.height,
-                             -dx, -dy,
-                             pGC->fgPixel, pGC->bgPixel,
-                             pGC->alu, pGC->alu,
-                             pGC->planemask );
+            agxImageOpStipple(pbox->x1, pbox->y1,
+                                pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
+                                psrc, pixWidth,
+                                pix->drawable.width, pix->drawable.height,
+                                -dx, -dy,
+                                pGC->fgPixel, pGC->bgPixel,
+                                pGC->alu, pGC->planemask);
          }
-#endif
-         agxFillBoxStipple( pDstDrawable, numRects, pbox,
-                            (PixmapPtr) pSrcDrawable,
-                            -dx, -dy,
-                             pGC->fgPixel, pGC->bgPixel,
-                             pGC->alu, pGC->alu,
-                             pGC->planemask );
       } else {
          /* Pixmap --> Pixmap */
          ErrorF("agxCopyPlane:  Tried to do a Pixmap to Pixmap copy\n");

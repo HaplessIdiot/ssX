@@ -1,18 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitmm.h,v 3.2 1994/12/02 05:48:07 dawes Exp $ */
+/* $XFree86$ */
 
 /* Definitions for BitBLT engine communication. */
 /* Using Memory-Mapped I/O. */
-
-#if !defined(__STDC__) && !defined(__GNUC__)
-
-/* If we don't have volatile, MMIO isn't used, but we compile anyway. */
-
-#ifdef volatile
-#undef volatile
-#endif
-#define volatile /**/
-
-#endif
 
 /* BitBLT modes. */
 
@@ -46,18 +35,12 @@ extern unsigned char *cirrusMMIOBase;
 /* Address: the 5426 adresses 2MBytes, the 5434 can address 4MB. */
 
 #define SETDESTADDR(dstAddr) \
-  *(unsigned int *)(cirrusMMIOBase + MMIODESTADDR) = dstAddr;
-#if 0
   *(unsigned short *)(cirrusMMIOBase + MMIODESTADDR) = dstAddr; \
   *(unsigned char *)(cirrusMMIOBase + MMIODESTADDR + 2) = dstAddr >> 16;
-#endif
 
 #define SETSRCADDR(srcAddr) \
-  *(unsigned int *)(cirrusMMIOBase + MMIOSRCADDR) = srcAddr;
-#if 0
   *(unsigned short *)(cirrusMMIOBase + MMIOSRCADDR) = srcAddr; \
   *(unsigned char *)(cirrusMMIOBase + MMIOSRCADDR + 2) = srcAddr >> 16;
-#endif
   
 #define SETSRCADDRUNMODIFIED SETSRCADDR
 
@@ -72,12 +55,12 @@ extern unsigned char *cirrusMMIOBase;
 /* Width: the 5426 goes up to 2048, the 5434 can do 8192. */
 
 #define SETWIDTH(fillWidth) \
-  *(unsigned short *)(cirrusMMIOBase + MMIOWIDTH) = fillWidth - 1;
+  *(unsigned short *)(cirrusMMIOBase + MMIOWIDTH) = fillWidth;
 
 /* Height: the 5426 goes up to 1024, the 5434 can do 2048. */
 
 #define SETHEIGHT(fillHeight) \
-  *(unsigned short *)(cirrusMMIOBase + MMIOHEIGHT) = fillHeight - 1;
+  *(unsigned short *)(cirrusMMIOBase + MMIOHEIGHT) = fillHeight;
 
 #define SETBLTMODE(m) \
   *(unsigned char *)(cirrusMMIOBase + MMIOBLTMODE) = m;
@@ -92,12 +75,12 @@ extern unsigned char *cirrusMMIOBase;
   *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) |= 0x02;
 
 #define BLTBUSY(s) \
-  s = *(volatile unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) & 1;
+  s = *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) & 1;
 
 /* BitBLT reset: temporarily set bit 2 of GR31 */
 #define BLTRESET() \
-  *(volatile unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) ^= 0x04; \
-  *(volatile unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) ^= 0x04;
+  *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) ^= 0x04; \
+  *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) ^= 0x04;
 
 #define WAITUNTILFINISHED() CirrusBLTWaitUntilFinished()  
 

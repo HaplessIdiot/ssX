@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/lex.l,v 3.2 1994/09/07 15:54:12 dawes Exp $ */
+/* $XFree86$ */
 
 %{
-#include "os.h"
 #include "strlist.h"
+#include "malloc.h"
 #include "reconfig.h"
 
 struct keyword { 
@@ -60,11 +60,11 @@ int line = 1;
 digit		[0-9]
 hexdigit	[0-9a-fA-F]
 octdigit	[0-7]
-identifier	[-+]?[a-zA-Z][a-zA-Z0-9/]*
+identifier	[-+]?[a-zA-Z][a-zA-Z0-9]*
 hexnum		0[xX]{hexdigit}+
 octnum		0{octdigit}+
 decnum		(([1-9]{digit}*)|0)
-flonum		{decnum}"."{digit}*
+flonum		{decnum}"."{decnum}
 string		\"[^\"\n]*\"
 
 comment		\#([^\n]*)

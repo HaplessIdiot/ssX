@@ -1,4 +1,4 @@
-# $XFree86: xc/lib/Xt/jump_funcs,v 3.0 1994/04/28 12:32:12 dawes Exp $
+# $XFree86$
 #
 00000000 T _XtAppAddActionHook  libXt          ActionHook
 00000000 T _XtRemoveActionHook  libXt          ActionHook
@@ -25,7 +25,6 @@
 00000000 T _XtCallCallbacks     libXt          Callback
 00000000 T _XtHasCallbacks      libXt          Callback
 00000000 T _XtCallCallbackList  libXt          Callback
-00000000 T __XtCallConditionalCallbackList libXt          Callback
 00000000 T _XtSetMultiClickTime libXt          ClickTime
 00000000 T _XtGetMultiClickTime libXt          ClickTime
 00000000 T __XtSetDefaultConverterTable libXt          Convert
@@ -75,8 +74,6 @@
 00000000 T _XtCvtStringToVisual libXt          Converters
 00000000 T _XtCvtStringToAtom   libXt          Converters
 00000000 T __XtAddDefaultConverters libXt          Converters
-00000000 T _XtCvtStringToDirectoryString libXt          Converters
-00000000 T _XtCvtStringToCommandArgArray libXt          Converters
 00000000 T _XtInitializeWidgetClass libXt          Create
 00000000 T __XtCreateWidget     libXt          Create
 00000000 T _XtCreateWidget      libXt          Create
@@ -169,7 +166,6 @@
 00000000 T _XtMapWidget         libXt          Functions
 00000000 T _XtUnmapWidget       libXt          Functions
 00000000 T _XtNewString         libXt          Functions
-00000000 T _XtIsSessionShell    libXt          Functions
 00000000 T __XtGClistFree       libXt          GCManager
 00000000 T _XtAllocateGC        libXt          GCManager
 00000000 T _XtGetGC             libXt          GCManager
@@ -198,7 +194,6 @@
 00000000 T _XtAppSetFallbackResources libXt          Initialize
 00000000 T _XtAppInitialize     libXt          Initialize
 00000000 T _XtInitialize        libXt          Initialize
-00000000 T _XtOpenApplication   libXt          Initialize
 00000000 T _XtIsSubclass        libXt          Intrinsic
 00000000 T __XtCheckSubclassFlag libXt          Intrinsic
 00000000 T __XtIsSubclassOf     libXt          Intrinsic
@@ -370,8 +365,6 @@
 00000000 T _XtVaSetSubvalues    libXt          VarCreate
 00000000 T __XtVaAppInitialize  libXt          VarCreate
 00000000 T _XtVaAppInitialize   libXt          VarCreate
-00000000 T __XtVaOpenApplication libXt          VarCreate
-00000000 T _XtVaOpenApplication libXt          VarCreate
 00000000 T _XtVaGetSubresources libXt          VarGet
 00000000 T _XtVaGetApplicationResources libXt          VarGet
 00000000 T _XtVaGetValues       libXt          VarGet
@@ -423,7 +416,6 @@
 00000000 T __XEditResGet32      libXmu         EditresCom
 00000000 T __XEditResGetString8 libXmu         EditresCom
 00000000 T __XEditResGetWidgetInfo libXmu         EditresCom
-00000000 T _XmuRegisterExternalAgent libXmu         ExtAgent
 00000000 T _XmuCvtFunctionToCallback libXmu         FToCback
 00000000 T _XmuGetHostname      libXmu         GetHost
 00000000 T _XmuCreateStippledPixmap libXmu         GrayPixmap
@@ -585,6 +577,7 @@
 00000000 T _XShmCreatePixmap    libXext        XShm
 00000000 T __XtPeekCallback     libXt          Callback
 00000000 T _XtCvtStringToRestartStyle libXt          Converters
+00000000 T _XtCvtStringToStringArray libXt          Converters
 00000000 T _XtCvtStringToGravity libXt          Converters
 00000000 T __XtCreateHookObj    libXt          Create
 00000000 T _XtAppSetExitFlag    libXt          Display
@@ -631,6 +624,16 @@
 00000000 T _XtToolkitThreadInitialize libXt          Threads
 00000000 T __XtDoFreeBindings   libXt          TMaction
 00000000 T _XmbufClearBufferArea libXext        XMultibuf
+00000000 T _XScreenSaverQueryExtension libXext        XScrnSaver
+00000000 T _XScreenSaverQueryVersion libXext        XScrnSaver
+00000000 T _XScreenSaverAllocInfo libXext        XScrnSaver
+00000000 T _XScreenSaverQueryInfo libXext        XScrnSaver
+00000000 T _XScreenSaverSelectInput libXext        XScrnSaver
+00000000 T _XScreenSaverSetAttributes libXext        XScrnSaver
+00000000 T _XScreenSaverUnsetAttributes libXext        XScrnSaver
+00000000 T _XScreenSaverRegister libXext        XScrnSaver
+00000000 T _XScreenSaverUnregister libXext        XScrnSaver
+00000000 T _XScreenSaverGetRegistered libXext        XScrnSaver
 00000000 T _XSyncQueryExtension libXext        XSync
 00000000 T _XSyncInitialize     libXext        XSync
 00000000 T _XSyncListSystemCounters libXext        XSync
@@ -663,6 +666,9 @@
 00000000 T _XSyncValueSubtract  libXext        XSync
 00000000 T _XSyncMaxValue       libXext        XSync
 00000000 T _XSyncMinValue       libXext        XSync
+00000000 T _XLbxQueryExtension  libXext        XLbx
+00000000 T _XLbxGetEventBase    libXext        XLbx
+00000000 T _XLbxQueryVersion    libXext        XLbx
 00000000 T __XiEventToWire      libXi          XExtToWire
 00000000 T __XiCheckExtInit     libXi          XExtInt
 00000000 T _XTestFakeDeviceKeyEvent libXtst        XTest
@@ -670,3 +676,11 @@
 00000000 T _XTestFakeProximityEvent libXtst        XTest
 00000000 T _XTestFakeDeviceMotionEvent libXtst        XTest
 00000000 T _XTestGrabControl    libXtst        XTest
+00000000 T _XRecordQueryVersion libXtst        XRecord
+00000000 T _XRecordCreateCG     libXtst        XRecord
+00000000 T _XRecordFreeCG       libXtst        XRecord
+00000000 T _XRecordChangeCG     libXtst        XRecord
+00000000 T _XRecordGetCG        libXtst        XRecord
+00000000 T _XRecordDisableCG    libXtst        XRecord
+00000000 T _XRecordEnableCG     libXtst        XRecord
+00000000 T _XRecordEnableCGAsync libXtst        XRecord

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.3 1994/11/19 07:52:44 dawes Exp $ */
+/* $XFree86$ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -28,8 +28,7 @@ glenn@cs.utexas.edu)
 *******************************************************************************/
 #include "w32.h"
 
-ByteP W32Buffer;
-VByteP ACL; 
+ByteP W32Buffer, ACL; 
 
 LongP MBP0, MBP1, MBP2; 
 ByteP MMU_CONTROL;
@@ -83,9 +82,11 @@ Bool W32;
 Bool W32i;
 Bool W32OrW32i;
 Bool W32p;
-Bool W32pa;
-Bool W32pCAndLater;
 Bool FrameBuffer;
+
+long W32BlankHackR;
+long W32BlankHackG;
+long W32BlankHackB;
 
 ByteP W32BytePtr;
 WordP W32WordPtr;

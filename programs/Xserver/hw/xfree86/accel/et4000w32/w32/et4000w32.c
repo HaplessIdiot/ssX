@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.5 1994/11/19 07:52:09 dawes Exp $
+ * $XFree86$
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -48,7 +48,6 @@ static Bool     ET4000W32Probe();
 static char *   ET4000W32Ident();
 static void     ET4000W32EnterLeave();
 static Bool     ET4000W32Init();
-static Bool     ET4000W32ValidMode();
 static void *   ET4000W32Save();
 static void     ET4000W32Restore();
 static void     ET4000W32Adjust();
@@ -64,7 +63,6 @@ vgaVideoChipRec ET4000W32 = {
     ET4000W32Ident,
     ET4000W32EnterLeave,
     ET4000W32Init,
-    ET4000W32ValidMode,
     ET4000W32Save,
     ET4000W32Restore,
     ET4000W32Adjust,
@@ -98,25 +96,6 @@ static int Num_ET4000W32_ExtPorts =
 	(sizeof(ET4000W32_ExtPorts)/sizeof(ET4000W32_ExtPorts[0]));
 
 
-static char * w32ChipNames[] = {
-	"et4000w32",
-	"et4000w32i",
-	"et4000w32p_rev_a",
-	"et4000w32i_rev_b",
-	"et4000w32i_rev_c",
-	"et4000w32p_rev_b",
-	"et4000w32p_rev_c",
-	"et4000w32p_rev_d",
-	"reserved",
-	"reserved",
-	"reserved",
-	"reserved",
-	"reserved",
-	"reserved",
-	"reserved",
-	"reserved"
-};
-
 /*
  * ET4000W32Ident
  */
@@ -135,6 +114,14 @@ ET4000W32Ident(n)
 	"et4000w32p_rev_b",
 	"et4000w32p_rev_c",
 	"et4000w32p_rev_d",
+	"reserved",
+	"reserved",
+	"reserved",
+	"reserved",
+	"reserved",
+	"reserved",
+	"reserved",
+	"reserved"
     };
 
     if (n + 1 > sizeof(w32_ids) / sizeof(char *))
@@ -148,36 +135,24 @@ ET4000W32Ident(n)
  * ET4000W32Probe --
  */
 
+static char *et4000w32_id = NULL;
 static Bool
 ET4000W32Probe()
 {
-    static char *et4000w32_id = NULL;
-    char *et4000 = "et4000";
-    char *save_chipset;
-    int save_videoram;
-    int i;
+    static char *et4000_id = NULL;
 
-    if (et4000w32_id)
-	return TRUE;
-
-    if (save_chipset = vga256InfoRec.chipset)
-    {
-	if (strcmp(save_chipset, et4000) == 0)
-	    return FALSE;
-	vga256InfoRec.chipset = et4000;
-    }
-
-    save_videoram = vga256InfoRec.videoRam;
+    /* Coax the et4000 driver into cooperation */
+    if (vga256InfoRec.chipset)
+	vga256InfoRec.chipset = et4000_id;
 
     if (!ET4000.ChipProbe())
-    {
-	vga256InfoRec.chipset = save_chipset;
-	vga256InfoRec.videoRam = save_videoram;
 	return FALSE;
-    }
 
-    vga256InfoRec.chipset = save_chipset; 
-    vga256InfoRec.videoRam = save_videoram;
+    /*
+     *  So we don't get messed up if the ET4000 code is changed in unexpected
+     *  ways
+     */ 
+    et4000_id = vga256InfoRec.chipset;
 
     /*
      *  Set up those I/O ports not in the ET4000 
@@ -187,20 +162,16 @@ ET4000W32Probe()
 		   ET4000W32_ExtPorts);
     ET4000W32EnterLeave(ENTER);
 
-    if (vga256InfoRec.chipset)
+    if (et4000w32_id == NULL)
     {
-	i = 0;
-	while (et4000w32_id = ET4000W32Ident(i++))
-	    if (StrCaseCmp(et4000w32_id, vga256InfoRec.chipset) == 0)
-		break;
-	if (!et4000w32_id)
-	{
-	    ET4000W32EnterLeave(LEAVE);
-	    return FALSE;
-	}
-    }
-    else
-    {
+	int i;
+	unsigned config;
+
+#if 0
+	if ((GlennDebug = fopen("/tmp/glenn", "w")) == NULL)
+	    FatalError("Failed to open debug file\n");
+#endif
+
 	/*
 	 *  Hope this doesn't cause any trouble
 	 *  Use a delay loop if it does--GGL
@@ -210,7 +181,7 @@ ET4000W32Probe()
 	    outb(0x3cb, i);
 	    if (i != inb(0x3cb))
 	    {
-		ErrorF("w32:  failed the segment test\n");
+		FatalError("w32:  failed the segment test");
 		ET4000W32EnterLeave(LEAVE);
 		return FALSE;
 	    }
@@ -220,53 +191,47 @@ ET4000W32Probe()
 	    outb(0x3cb, i);
 	    if (i != inb(0x3cb))
 	    {
-		ErrorF("w32:  failed the segment test\n");
+		FatalError("w32:  failed the segment test");
 		ET4000W32EnterLeave(LEAVE);
 		return FALSE;
 	    }
 	}
+
 	outb(0x217a, 0xec);
-	vga256InfoRec.chipset = et4000w32_id = w32ChipNames[inb(0x217b) >> 4];
+	vga256InfoRec.chipset = et4000w32_id
+			      = ET4000W32Ident(inb(0x217b) >> 4);
 	if (strcmp(et4000w32_id, "reserved") == 0)
 	{
-	    vga256InfoRec.chipset = et4000w32_id = NULL;
-	    ET4000W32EnterLeave(LEAVE);
+	    et4000w32_id = NULL;
 	    return FALSE;
 	}
-    }
 
-    W32 = strcmp(et4000w32_id, "et4000w32") == 0;
-    W32i = strcmp(et4000w32_id, "et4000w32i") == 0 ||
-	   strcmp(et4000w32_id, "et4000w32i_rev_b") == 0 ||
-	   strcmp(et4000w32_id, "et4000w32i_rev_c") == 0;
-    W32OrW32i = W32 || W32i;
-    W32p = !W32OrW32i;
-    W32pa = strcmp(et4000w32_id, "et4000w32_rev_a") == 0;
-    W32pCAndLater = W32p && strcmp(et4000w32_id, "et4000w32p_rev_a") != 0
-			 && strcmp(et4000w32_id, "et4000w32p_rev_b") != 0;
+	W32 = strcmp(et4000w32_id, "et4000w32") == 0;
+	W32i = strcmp(et4000w32_id, "et4000w32i") == 0 ||
+	       strcmp(et4000w32_id, "et4000w32i_rev_b") == 0 ||
+	       strcmp(et4000w32_id, "et4000w32i_rev_c") == 0;
+	W32OrW32i = W32 || W32i;
+	W32p = !W32OrW32i;
 
-    if (vga256InfoRec.videoRam == 0)
-    {
-	outb(vgaIOBase + 0x04, 0x37);
-	switch (inb(vgaIOBase + 0x05) & 0x9)
+	outb(vgaIOBase+0x04, 0x37); config = inb(vgaIOBase+0x05);
+	switch(config & 0x09)
 	{
-	    case 0: i = 2048; break;
-	    case 1: i = 4096; break;
-	    case 8: i = 512; break;
-	    case 9: i = 1024;
-		    if (!W32)
-		    {
-			outb(vgaIOBase+0x04, 0x32);
-			if (inb(vgaIOBase+0x05) & 0x80)
-			    i = 2048;
-		    }
-		    break;
+	    case 0x00: vga256InfoRec.videoRam = 2048; break;
+	    case 0x01: vga256InfoRec.videoRam = 4096; break;
+	    case 0x08: vga256InfoRec.videoRam = 512; break;
+	    case 0x09: vga256InfoRec.videoRam = 1024; break;
 	}
-	vga256InfoRec.videoRam = i; 
-    }
 
-    vga256InfoRec.videoRam -= 1;
-    SetupRamdac();
+	outb(vgaIOBase+0x04, 0x32);
+	config = inb(vgaIOBase + 0x05);
+
+	/* Interleaving? */
+	if (strcmp(vga256InfoRec.chipset, "et4000w32") != 0 &&
+	   (config & 0x80))
+	    vga256InfoRec.videoRam <<= 1;
+
+	vga256InfoRec.videoRam -= 1;
+    }
 
     return TRUE;
 }
@@ -329,8 +294,6 @@ static Bool
 ET4000W32Init(mode)
     DisplayModePtr mode;
 {
-    int i;
-
     static et4000w32_initted = FALSE;
 
     if (!ET4000.ChipInit(mode))
@@ -341,6 +304,7 @@ ET4000W32Init(mode)
 
     W32Buffer			= (ByteP)vgaBase + 96 * 1024;
     ACL				= W32Buffer + 16384;
+
 #define MMR_BASE (W32Buffer + 0x7f00)  
     MBP0                        = (LongP) (MMR_BASE);
     MBP1                        = (LongP) (MMR_BASE + 0x4);
@@ -452,15 +416,3 @@ ET4000W32SaveScreen(start_finish)
 	RESET_ACL
     }
 }
-
-/*
- * ET4000W32ValidMode --
- *
- */
-static Bool
-ET4000W32ValidMode(mode)
-DisplayModePtr mode;
-{
-return TRUE;
-}
-

@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: cfbgc.c,v 5.62 94/04/17 20:28:49 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbgc.c,v 3.0 1994/09/11 00:41:32 dawes Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -115,7 +115,7 @@ GCOps	cfbTEOps1Rect = {
     cfbPutImage,
     cfbCopyArea,
     cfbCopyPlane,
-    W32PolyPoint,
+    cfbPolyPoint,
 /*
 #ifdef PIXEL_ADDR
     W328LineSS1Rect,
@@ -150,7 +150,7 @@ GCOps	cfbNonTEOps1Rect = {
     cfbPutImage,
     cfbCopyArea,
     cfbCopyPlane,
-    W32PolyPoint,
+    cfbPolyPoint,
 /*
 #ifdef PIXEL_ADDR
     W328LineSS1Rect,
@@ -185,7 +185,7 @@ GCOps	cfbTEOps = {
     cfbPutImage,
     cfbCopyArea,
     cfbCopyPlane,
-    W32PolyPoint,
+    cfbPolyPoint,
     W32LineSS,
     W32SegmentSS,
     miPolyRectangle,
@@ -211,7 +211,7 @@ GCOps	cfbNonTEOps = {
     cfbPutImage,
     cfbCopyArea,
     cfbCopyPlane,
-    W32PolyPoint,
+    cfbPolyPoint,
     W32LineSS,
     W32SegmentSS,
     miPolyRectangle,
