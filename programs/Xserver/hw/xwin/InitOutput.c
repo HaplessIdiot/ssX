@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.20 2001/09/07 08:41:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.21 2001/09/13 08:25:44 alanh Exp $ */
 
 #include "win.h"
 
@@ -36,6 +36,7 @@ int		g_iGCPrivateIndex = -1;
 int		g_iPixmapPrivateIndex = -1;
 unsigned long	g_ulServerGeneration = 0;
 Bool		g_fInitializedDefaultScreens = FALSE;
+FILE		*g_pfLog = NULL;
 
 extern void OsVendorVErrorF (const char *pszFormat, va_list va_args);
 
@@ -123,6 +124,16 @@ ddxGiveUp()
       g_fdMessageQueue = WIN_FD_INVALID;
     }
 
+  /* Close the log file handle */
+  if (g_pfLog != NULL)
+    {
+      /* Close log file */
+      fclose (g_pfLog);
+      
+      /* Set the file handle to invalid */
+      g_pfLog = NULL;
+    }
+
   /* Tell Windows that we want to end the app */
   PostQuitMessage (0);
 }
@@ -137,12 +148,17 @@ AbortDDX (void)
   ddxGiveUp ();
 }
 
+
 void
 OsVendorInit (void)
 {
 #ifdef DDXOSVERRORF
   if (!OsVendorVErrorFProc)
     OsVendorVErrorFProc = OsVendorVErrorF;
+
+  /* Open log file if not yet open */
+  if (g_pfLog == NULL)
+    g_pfLog = fopen (WIN_LOG_FNAME, "w");
 #endif
 
   /* Add a default screen if no screens were specified */
@@ -164,6 +180,7 @@ OsVendorInit (void)
       g_iLastScreen = 0;
     }
 }
+
 
 /* See Porting Layer Definition - p. 57 */
 void
@@ -193,6 +210,7 @@ ddxUseMsg (void)
           "\tCtrl+Alt+Backspace exits the XServer\n");
 }
 
+
 /* See Porting Layer Definition - p. 57 */
 /*
  * INPUT
@@ -220,12 +238,18 @@ ddxProcessArgument (int argc, char *argv[], int i)
   /* Initialize once */
   if (!beenHere)
     {
+      printf ("Foo!\n");
+
 #ifdef DDXOSVERRORF
       /*
-       * This initialises our hook into VErrorF() for catching log messages
-       * that are generated before OsInit() is called.
+       * This initialises our hook into VErrorF () for catching log messages
+       * that are generated before OsInit () is called.
        */
       OsVendorVErrorFProc = OsVendorVErrorF;
+
+      /* Open log file if not yet open */
+      if (g_pfLog == NULL)
+	g_pfLog = fopen (WIN_LOG_FNAME, "w");
 #endif
 
       beenHere = TRUE;
@@ -622,6 +646,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
   return 0;
 }
 
+
 #ifdef DDXTIME /* from ServerOSDefines */
 CARD32
 GetTimeInMillis (void)
@@ -629,6 +654,7 @@ GetTimeInMillis (void)
   return GetTickCount ();
 }
 #endif /* DDXTIME */
+
 
 /* See Porting Layer Definition - p. 20 */
 /* We use ddxProcessArgument, so we don't need to touch argc and argv */

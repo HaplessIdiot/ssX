@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.246 2001/09/05 07:12:40 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.247 2001/09/12 01:00:42 torrey Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1196,11 +1196,7 @@ XWINOBJS = $(XWINDDXDIR)/stubs.o
 XWINLIBS = PreFbLibs $(XWINLIB) FbPostFbLibs $(LAYER) $(SHADOW)
 XWINSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XLIB) $(SYSLIBS) -lgdi32 -lddraw
 
-#if 0
 /*
- * Do not erase this block - it will be used in the future, and the
- * flags are obscure enough as to be easily forgotten.
- *
  * These flags cause XWin.exe to be a Windows executable, which
  * prevents XWin.exe from opening a Command Prompt window when it is
  * started.  However, the flags also prevent XWin.exe from outputting
@@ -1209,7 +1205,6 @@ XWINSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XLIB) $(SYSLIBS) -lgdi32 -lddraw
  * before enabling these flags.
  */
 EXTRA_LDOPTIONS = -mwindows -e _mainCRTStartup
-#endif
 
 #if HasParallelMake
 MakeMutex($(XWINDIRS) $(XWINOBJS) $(XWINLIB) $(XWINLIBS) $(XWINSYSLIBS))

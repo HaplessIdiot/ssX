@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.29 2001/09/19 16:16:55 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.30 2001/09/19 16:20:26 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -33,7 +33,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.29 2001/09/19 16:16:55 ala
 #define BootstrapCFlags		-L/lib/automode.o
 #endif
 
-#define ExtraLoadOptions	-Wl,--enable-auto-import
+#define ExtraLoadFlags		-Wl,--enable-auto-import
 
 #define HasShadowPasswd         NO
 #define HasLibCrypt             YES
@@ -152,7 +152,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.29 2001/09/19 16:16:55 ala
 #  define StandardCppDefines      StandardDefines
 # endif
 #endif
-#define ServerOSDefines         XFree86ServerDefines -DDDXTIME -DFD_SETSIZE=256 -DDDXOSINIT -DDDXOSVERRORF
+#define ServerOSDefines         XFree86ServerDefines -DDDXTIME -DFD_SETSIZE=256 -DDDXOSINIT -DDDXOSVERRORF -DDDXOSFATALERROR
 #define XkbServerDefines        -DXKB_ALWAYS_USES_SOFT_REPEAT
 #define ServerExtraDefines      -DGCCUSESGAS XFree86ServerDefines
 #define ConnectionFlags         -DTCPCONN -DUNIXCONN

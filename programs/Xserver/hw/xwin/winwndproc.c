@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.13 2001/09/07 08:41:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.14 2001/09/13 08:25:45 alanh Exp $ */
 
 #include "Xatom.h"
 
@@ -376,6 +376,9 @@ winWindowProc (HWND hWnd, UINT message,
       winKeybdReleaseModifierKeys ();
       return 0;
 
+    case WM_SETFOCUS:
+      return 0;
+
     case WM_SYSKEYDOWN:
     case WM_KEYDOWN:
       /*
@@ -599,6 +602,7 @@ winWindowProc (HWND hWnd, UINT message,
 	}
       else
 	{
+	  /* Deactivating */
 	  /* Store the state of all mode keys */
 	  winStoreModeKeyStates (pScreen);
 	}
@@ -652,7 +656,6 @@ winWindowProc (HWND hWnd, UINT message,
 
       /* Store last active window handle */
       hwndLastMouse = hWnd;
-
       return 0;
 
     case WM_ACTIVATEAPP:
