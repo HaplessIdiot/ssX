@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.42 1999/12/03 19:17:38 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.43 1999/12/08 06:10:12 dawes Exp $ */
 
 
 
@@ -367,10 +367,12 @@ struct xf86stat {
 #undef assert
 #define assert(a)		((void)0)
 #undef HUGE_VAL
-#define HUGE_VAL		xf86HUGE_VAL;
+#define HUGE_VAL		xf86HUGE_VAL
 
 #undef hypot
 #define hypot(x,y)		xf86hypot(x,y)
+
+#define qsort(b, n, s, f)	xf86qsort(b, n, s, f)
 
 /* non-ANSI C functions */
 #undef opendir
@@ -628,6 +630,8 @@ struct xf86stat {
 #endif
 #define errno			xf86errno
 #endif
+#define putchar(i)		xf86fputc(i, xf86stdout)
+#define puts(s)			xf86fputs(s, xf86stdout)
 
 #ifdef EACCES
 #undef EACCES

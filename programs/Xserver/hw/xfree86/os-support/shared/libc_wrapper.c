@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.52 1999/07/18 08:14:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.53 1999/09/25 14:38:04 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -177,6 +177,13 @@ double
 xf86hypot(double x, double y)
 {
 	return(hypot(x,y));
+}
+
+void
+xf86qsort(void *base, xf86size_t nmemb, xf86size_t size,
+	  int (*comp)(const void *, const void *))
+{
+	return qsort(base, nmemb, size, comp);
 }
 
 /* string functions */
@@ -1749,6 +1756,8 @@ xf86GetErrno ()
 }
 
 #undef mapnum
+
+
 
 #ifdef NEED_SNPRINTF
 #include "snprintf.c"

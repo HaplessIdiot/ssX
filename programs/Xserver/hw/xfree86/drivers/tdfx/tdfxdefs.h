@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfxdefs.h,v 1.1 1999/08/29 12:21:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfxdefs.h,v 1.2 1999/09/27 06:29:58 dawes Exp $ */
 /*
    Voodoo Banshee driver version 1.0.1
 
@@ -52,6 +52,9 @@
 
 #define MEM_TYPE_SGRAM  0
 #define MEM_TYPE_SDRAM  1
+#define SST_RAW_LFB_ADDR_STRIDE_SHIFT 13
+#define SST_RAW_LFB_ADDR_STRIDE_4K 0x2<<SST_RAW_LFB_ADDR_STRIDE_SHIFT
+#define SST_RAW_LFB_TILE_STRIDE_SHIFT 16
 
 #define BLIT_LEFT 1
 #define BLIT_UP 2

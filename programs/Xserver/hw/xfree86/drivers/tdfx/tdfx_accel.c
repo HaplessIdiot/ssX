@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.1 1999/08/29 12:21:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.3 1999/11/19 13:54:50 hohndel Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -26,33 +26,6 @@ static int cmdCnt=0;
 static int lastAddr=0;
 #endif
 
-#ifndef PROP_3DFX
-#define DECLARE(a)
-#define DECLARE_LAUNCH(size, x)
-#ifdef TDFX_DEBUG_CMDS
-#define TDFXMakeRoom(p, n) \
-  do { \
-    if (cmdCnt) \
-      ErrorF("Previous TDFXMakeRoom passed incorrect size\n"); \
-    cmdCnt=n; \
-    lastAddr=0;
-    TDFXMakeRoomNoProp(p, n); \
-  } while(0)
-#define TDFXWriteLong(p, a, v) \
-  do { \
-    if (lastAddr && a<lastAddr) \
-      ErrorF("TDFXWriteLong not ordered\n"); \
-    lastAddr=a; \
-    cmdCnt--; \
-    TDFXWriteLongMMIO(p, a, v); \
-  while (0)
-#else
-#define TDFXMakeRoom(p, n) TDFXMakeRoomNoProp(p, n)
-#define TDFXWriteLong(p, a, v) TDFXWriteLongMMIO(p, a, v)
-#endif
-#define TDFXSendNOP TDFXSendNOPNoProp
-#endif
-
 static int TDFXROPCvt[] = {0x00, 0x88, 0x44, 0xCC, 0x22, 0xAA, 0x66, 0xEE,
 			   0x11, 0x99, 0x55, 0xDD, 0x33, 0xBB, 0x77, 0xFF,
 			   0x00, 0xA0, 0x50, 0xF0, 0x0A, 0xAA, 0x5A, 0xFA,
@@ -62,17 +35,6 @@ static int TDFXROPCvt[] = {0x00, 0x88, 0x44, 0xCC, 0x22, 0xAA, 0x66, 0xEE,
 static void TDFXSetClippingRectangle(ScrnInfoPtr pScrn, int left, int top, 
 				     int right, int bottom);
 static void TDFXDisableClipping(ScrnInfoPtr pScrn);
-static void TDFXSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, 
-					   int ydir, int rop,
-					   unsigned int planemask, 
-					   int trans_color);
-static void TDFXSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int srcX, 
-					     int srcY, int dstX, int dstY, 
-					     int w, int h);
-static void TDFXSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop, 
-				  unsigned int planemask);
-static void TDFXSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, 
-					int w, int h);
 static void TDFXSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, 
 					   int paty, int fg, int bg, int rop, 
 					   unsigned int planemask);
@@ -111,6 +73,8 @@ static void TDFXSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
                                                      int skipleft);
 static void TDFXSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
 
+void TDFXSelectBuffer(TDFXPtr pTDFX, int which);
+
 void
 TDFXNeedSync(ScrnInfoPtr pScrn) {
   TDFXPtr pTDFX = TDFXPTR(pScrn);
@@ -135,6 +99,48 @@ TDFXCheckSync(ScrnInfoPtr pScrn) {
     pTDFX->sync(pScrn);
     pTDFX->syncDone=FALSE;
   }
+}
+
+void
+TDFXSelectBuffer(TDFXPtr pTDFX, int which) {
+#ifdef XF86DRI
+  int fmt;
+
+  TDFXMakeRoom(pTDFX, 4);
+  DECLARE(SSTCP_SRCBASEADDR|SSTCP_DSTBASEADDR|SSTCP_SRCFORMAT|SSTCP_DSTFORMAT);
+  switch (which) {
+  case TDFX_FRONT:
+    if (pTDFX->cpp==1) fmt=pTDFX->stride|(1<<16);
+    else fmt=pTDFX->stride|((pTDFX->cpp+1)<<16);
+    TDFXWriteLong(pTDFX, SST_2D_DSTBASEADDR, pTDFX->fbOffset);
+    TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
+    TDFXWriteLong(pTDFX, SST_2D_SRCBASEADDR, pTDFX->fbOffset);
+    TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, fmt);
+    break;
+  case TDFX_BACK:
+    fmt=((pTDFX->stride+127)/128)|(3<<16); /* Tiled 16bpp */
+    TDFXWriteLong(pTDFX, SST_2D_DSTBASEADDR, pTDFX->backOffset|BIT(31));
+    TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
+    TDFXWriteLong(pTDFX, SST_2D_SRCBASEADDR, pTDFX->backOffset|BIT(31));
+    TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, fmt);
+    break;
+  case TDFX_DEPTH:
+    fmt=((pTDFX->stride+127)/128)|(3<<16); /* Tiled 16bpp */
+    TDFXWriteLong(pTDFX, SST_2D_DSTBASEADDR, pTDFX->depthOffset|BIT(31));
+    TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
+    TDFXWriteLong(pTDFX, SST_2D_SRCBASEADDR, pTDFX->depthOffset|BIT(31));
+    TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, fmt);
+    break;
+  default:
+  }
+#endif  
+}
+
+void
+TDFXSetLFBConfig(TDFXPtr pTDFX) {
+  TDFXWriteLongMMIO(pTDFX, LFBMEMORYCONFIG, (pTDFX->backOffset>>12) |
+		    SST_RAW_LFB_ADDR_STRIDE_4K | 
+		    ((pTDFX->stride+127)/128)<<SST_RAW_LFB_TILE_STRIDE_SHIFT);
 }
 
 Bool
@@ -334,14 +340,7 @@ TDFXSetClippingRectangle(ScrnInfoPtr pScrn, int left, int top, int right,
   pTDFX->ModeReg.clip1min=(top&0xFFF)<<16 | (left&0xFFF);
   pTDFX->ModeReg.clip1max=((bottom+1)&0xFFF)<<16 | ((right+1)&0xFFF);
 
-#if 0
-  TDFXMakeRoom(pTDFX, 2);
-  DECLARE(SSTCP_CLIP1MIN|SSTCP_CLIP1MAX);
-  TDFXWriteLong(pTDFX, SST_2D_CLIP1MIN, pTDFX->ModeReg.clip1min);
-  TDFXWriteLong(pTDFX, SST_2D_CLIP1MAX, pTDFX->ModeReg.clip1max);
-#endif
-  pTDFX->DrawState|=DRAW_STATE_CLIPPING;
-  pTDFX->DrawState|=DRAW_STATE_CLIP1CHANGED;
+  pTDFX->DrawState|=DRAW_STATE_CLIPPING|DRAW_STATE_CLIP1CHANGED;
 }
 
 static void
@@ -355,7 +354,7 @@ TDFXDisableClipping(ScrnInfoPtr pScrn)
   pTDFX->DrawState&=~DRAW_STATE_CLIPPING;
 }
 
-static void
+void
 TDFXSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
 			       unsigned int planemask, int trans_color)
 {
@@ -389,7 +388,7 @@ TDFXSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
   TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, fmt);
 }  
 
-static void
+void
 TDFXSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int srcX, int srcY, 
 				 int dstX, int dstY, int w, int h) 
 {
@@ -408,7 +407,8 @@ TDFXSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int srcX, int srcY,
     srcX += w-1;
     dstX += w-1;
   }
-  if (srcY>=pTDFX->prevBlitDest.y1-8 && srcY<=pTDFX->prevBlitDest.y1) {
+  if (srcY>=pTDFX->prevBlitDest.y1-32 && srcY<=pTDFX->prevBlitDest.y1) {
+    /* ErrorF("Sending NOP\n"); */
     TDFXSendNOP(pTDFX);
   }
 
@@ -422,7 +422,7 @@ TDFXSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int srcX, int srcY,
   pTDFX->prevBlitDest.y1=dstY;
 }
 
-static void
+void
 TDFXSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop, 
 		      unsigned int planemask)
 {
@@ -447,7 +447,7 @@ TDFXSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
   TDFXWriteLong(pTDFX, SST_2D_COLORFORE, color);
 }
 
-static void
+void
 TDFXSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
   /* Also called by TDFXSubsequentMono8x8PatternFillRect */
@@ -575,37 +575,6 @@ TDFXSubsequentSolidHorVertLine(ScrnInfoPtr pScrn, int x, int y, int len,
   else
     TDFXWriteLong(pTDFX, SST_2D_DSTXY, ((y+len)&0x1FFF)<<16 | (x&0x1FFF));
   TDFXWriteLong(pTDFX, SST_2D_COMMAND, pTDFX->Cmd|SST_2D_POLYLINE|SST_2D_GO);
-}
-
-static void CreateClipBox(TDFXPtr pTDFX, BoxPtr result, BoxPtr src)
-{
-  int cminx, cminy, cmaxx, cmaxy;
-
-  if (pTDFX->DrawState&DRAW_STATE_CLIPPING) {
-    cminx=pTDFX->ModeReg.clip1min&0x1FFF;
-    cminy=(pTDFX->ModeReg.clip1min>>16)&0x1FFF;
-    cmaxx=(pTDFX->ModeReg.clip1max&0x1FFF)-1;
-    cmaxy=((pTDFX->ModeReg.clip1max>>16)&0x1FFF)-1;
-  } else {
-    cminx=pTDFX->ModeReg.clip0min&0x1FFF;
-    cminy=(pTDFX->ModeReg.clip0min>>16)&0x1FFF;
-    cmaxx=(pTDFX->ModeReg.clip0max&0x1FFF)-1;
-    cmaxy=((pTDFX->ModeReg.clip0max>>16)&0x1FFF)-1;
-  }
-  result->x1=max(cminx, src->x1);
-  result->y1=max(cminy, src->y1);
-  result->x2=min(cmaxx, src->x2);
-  result->y2=min(cmaxy, src->y2);
-  if (src->x1!=result->x1 || src->x2!=result->x2 || src->y1!=result->y1 ||
-      src->y2!=result->y2) {
-    ErrorF("Clipping changed:\n");
-    ErrorF("OLD (%d) minx=%d miny=%d maxx=%d maxy=%d\n", 
-	   pTDFX->DrawState&DRAW_STATE_CLIPPING, cminx, cminy, cmaxx, cmaxy);
-    ErrorF("NEW      minx=%d miny=%d maxx=%d maxy=%d\n",
-	   src->x1, src->y1, src->x2, src->y2);
-    ErrorF("RESULT   minx=%d miny=%d maxx=%d maxy=%d\n",
-	   result->x1, result->y1, result->x2, result->y2);
-  }
 }
 
 static void
@@ -758,7 +727,7 @@ TDFXSubsequentScreenToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y,
   /* Don't bother resetting clip1 since we're changing it anyway */
   pTDFX->DrawState&=~DRAW_STATE_CLIP1CHANGED;
   TDFXMatchState(pTDFX);
-  /* We changing clip1 so make sure we use it and flag it */
+  /* We're changing clip1 so make sure we use it and flag it */
   pTDFX->Cmd|=BIT(23);
   pTDFX->DrawState|=DRAW_STATE_CLIP1CHANGED;
 

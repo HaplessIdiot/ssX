@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.h,v 1.1 1999/08/29 12:21:03 dawes Exp $ */
 
 #ifndef _TDFX_DRI_
 #define _TDFX_DRI_
@@ -10,6 +10,9 @@ typedef struct {
   drmSize regsSize;
   drmAddress regsMap;
   int deviceID;
+  int width;
+  int height;
+  int mem;
   int cpp;
   int stride;
   int priv1;

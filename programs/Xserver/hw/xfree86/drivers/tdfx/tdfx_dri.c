@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.2 1999/08/30 01:25:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.3 1999/09/27 06:29:57 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -21,17 +21,20 @@
 #include "tdfx_dri.h"
 #include "tdfx_dripriv.h"
 
-static char TDFXKernelDriverName[] = "generic";
+static char TDFXKernelDriverName[] = "tdfx";
 static char TDFXClientDriverName[] = "tdfx";
 
 static Bool TDFXInitVisualConfigs(ScreenPtr pScreen);
 static Bool TDFXCreateContext(ScreenPtr pScreen, VisualPtr visual, 
-			      drmContext hwContext, void *pVisualConfigPriv);
+			      drmContext hwContext, void *pVisualConfigPriv,
+			      DRIContextType contextStore);
+static void TDFXDestroyContext(ScreenPtr pScreen, drmContext hwContext,
+			       DRIContextType contextStore);
 static void TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
 			       DRIContextType readContextType, 
-			       void **readContextStore,
+			       void *readContextStore,
 			       DRIContextType writeContextType, 
-			       void **writeContextStore);
+			       void *writeContextStore);
 static void TDFXDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
 static void TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
 			       RegionPtr prgnSrc, CARD32 index);
@@ -209,12 +212,6 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   DRIInfoPtr pDRIInfo;
   TDFXDRIPtr pTDFXDRI;
 
-#if XFree86LOADER
-  if (!LoaderSymbol("GlxSetVisualConfigs")) return FALSE;
-  if (!LoaderSymbol("DRIScreenInit")) return FALSE;
-  if (!LoaderSymbol("drmAvailable")) return FALSE;
-#endif
-
   pDRIInfo = DRICreateInfoRec();
   if (!pDRIInfo) return FALSE;
   pTDFX->pDRIInfo = pDRIInfo;
@@ -250,6 +247,10 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   /* For now the mapping works by using a fixed size defined
    * in the SAREA header
    */
+  if (sizeof(XF86DRISAREARec)+sizeof(TDFXSAREAPriv)>SAREA_MAX) {
+    ErrorF("Data does not fit in SAREA\n");
+    return FALSE;
+  }
   pDRIInfo->SAREASize = SAREA_MAX;
 #endif
 
@@ -263,10 +264,11 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo->contextSize = sizeof(TDFXDRIContextRec);
 
   pDRIInfo->CreateContext = TDFXCreateContext;
+  pDRIInfo->DestroyContext = TDFXDestroyContext;
   pDRIInfo->SwapContext = TDFXDRISwapContext;
   pDRIInfo->InitBuffers = TDFXDRIInitBuffers;
   pDRIInfo->MoveBuffers = TDFXDRIMoveBuffers;
-  pDRIInfo->bufferRequests = DRI_ALL_WINDOWS; /* !!! WHAT IS THIS? !!! */
+  pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
 
   if (!DRIScreenInit(pScreen, pDRIInfo, &pTDFX->drmSubFD)) {
     xfree(pDRIInfo->devPrivate);
@@ -293,7 +295,7 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
 
   return TRUE;
 }
-		
+
 void
 TDFXDRICloseScreen(ScreenPtr pScreen)
 {
@@ -316,14 +318,24 @@ TDFXDRICloseScreen(ScreenPtr pScreen)
 
 static Bool
 TDFXCreateContext(ScreenPtr pScreen, VisualPtr visual, 
-		  drmContext hwContext, void *pVisualConfigPriv)
+		  drmContext hwContext, void *pVisualConfigPriv,
+		  DRIContextType contextStore)
 {
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   TDFXPtr pTDFX = TDFXPTR(pScrn);
   TDFXConfigPrivPtr pTDFXConfig = (TDFXConfigPrivPtr)pVisualConfigPriv;
+  TDFXDRIContextPtr ctx;
 
-  /* !!! I don't think we need anything here !!! */
+  ctx=(TDFXDRIContextPtr)contextStore;
   return TRUE;
+}
+
+static void
+TDFXDestroyContext(ScreenPtr pScreen, drmContext hwContext, 
+		   DRIContextType contextStore)
+{
+  TDFXDRIContextPtr ctx;
+  ctx=(TDFXDRIContextPtr)contextStore;
 }
 
 Bool
@@ -335,43 +347,40 @@ TDFXDRIFinishScreenInit(ScreenPtr pScreen)
   int size;
 
   pTDFX->pDRIInfo->driverSwapMethod = DRI_HIDE_X_CONTEXT;
+  /* pTDFX->pDRIInfo->driverSwapMethod = DRI_SERVER_SWAP; */
 
   pTDFXDRI=(TDFXDRIPtr)pTDFX->pDRIInfo->devPrivate;
   pTDFXDRI->deviceID=pTDFX->PciInfo->chipType;
+  pTDFXDRI->width=pScrn->virtualX;
+  pTDFXDRI->height=pScrn->virtualY;
+  pTDFXDRI->mem=pScrn->videoRam*1024;
   pTDFXDRI->cpp=pTDFX->cpp;
   pTDFXDRI->stride=pTDFX->stride;
 #ifdef PROP_3DFX
   TDFXFillPrivateDRI(pTDFX, pTDFXDRI);
 #endif
   pTDFXDRI->textureOffset=pTDFX->texOffset;
-  pTDFXDRI->textureSize=4*1024*1024; /* !!! This should be calculated !!! */
+  pTDFXDRI->textureSize=pTDFX->texSize;
   pTDFXDRI->fbOffset=pTDFX->fbOffset;
-  pTDFXDRI->backOffset=(pTDFX->lowMemLoc+4095)&~0xFFF;
+  pTDFXDRI->backOffset=pTDFX->backOffset=(pTDFX->lowMemLoc+4095)&~0xFFF;
   size=2*pScrn->virtualX*pScrn->virtualY;
-  pTDFXDRI->depthOffset=(pTDFXDRI->backOffset+size+4095)&~0xFFF;
+  pTDFXDRI->depthOffset=pTDFX->depthOffset=(pTDFXDRI->backOffset+size+4095)&~0xFFF;
 
   return DRIFinishScreenInit(pScreen);
 }
 
 static void
 TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
-		   DRIContextType readContextType, void **readContextStore,
-		   DRIContextType writeContextType, void **writeContextStore)
+		   DRIContextType oldContextType, void *oldContext,
+		   DRIContextType newContextType, void *newContext)
 {
-  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-  TDFXPtr pTDFX = TDFXPTR(pScrn);
-  TDFXDRIContextPtr pRC = (TDFXDRIContextPtr)readContextStore;
-  TDFXDRIContextPtr pWC = (TDFXDRIContextPtr)writeContextStore;
-
-  if ((syncType==DRI_3D_SYNC) && (readContextType==DRI_2D_CONTEXT) &&
-      (writeContextType==DRI_3D_CONTEXT)) {
-    /* Entering through wakeup handler */
-    TDFXNeedSync(pScrn);
+  if ((syncType==DRI_3D_SYNC) && (oldContextType==DRI_2D_CONTEXT) &&
+      (newContextType==DRI_2D_CONTEXT)) { /* Entering from Wakeup */
+    TDFXSwapContextPrivate(pScreen);
   }
-  if ((syncType==DRI_2D_SYNC) && (readContextType==DRI_NO_CONTEXT) &&
-      (writeContextType==DRI_2D_CONTEXT)) {
-    /* Exiting through block handler */
-    TDFXCheckSync(pScrn);
+  if ((syncType==DRI_2D_SYNC) && (oldContextType==DRI_NO_CONTEXT) &&
+      (newContextType==DRI_2D_CONTEXT)) { /* Exiting from Block Handler */
+    TDFXLostContext(pScreen);
   }
 }
 
@@ -381,11 +390,34 @@ TDFXDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
   ScreenPtr pScreen = pWin->drawable.pScreen;
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   TDFXPtr pTDFX = TDFXPTR(pScrn);
+  BoxPtr pbox;
+  int nbox;
 
-  /* Setup ancillary buffers */
-  /* There really isn't setup to do */
+  /* It looks nicer if these start out black */
+  pbox = REGION_RECTS(prgn);
+  nbox = REGION_NUM_RECTS(prgn);
+
+  TDFXSetupForSolidFill(pScrn, 0, GXcopy, -1);
+  while (nbox--) {
+    TDFXSelectBuffer(pTDFX, TDFX_BACK);
+    TDFXSubsequentSolidFillRect(pScrn, pbox->x1, pbox->y1, 
+				pbox->x2-pbox->x1, pbox->y2-pbox->y1);
+    TDFXSelectBuffer(pTDFX, TDFX_DEPTH);
+    TDFXSubsequentSolidFillRect(pScrn, pbox->x1, pbox->y1, 
+				pbox->x2-pbox->x1, pbox->y2-pbox->y1);
+    pbox++;
+  }
+  TDFXSelectBuffer(pTDFX, TDFX_FRONT);
+
+  pTDFX->AccelInfoRec->NeedToSync = TRUE;
 }
 
+/*
+  This routine is a modified form of XAADoBitBlt with the calls to
+  ScreenToScreenBitBlt built in. My routine has the prgnSrc as source
+  instead of destination. My origin is upside down so the ydir cases
+  are reversed.
+*/
 static void
 TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
 		   RegionPtr prgnSrc, CARD32 index)
@@ -393,6 +425,120 @@ TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
   ScreenPtr pScreen = pParent->drawable.pScreen;
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   TDFXPtr pTDFX = TDFXPTR(pScrn);
+  int nbox;
+  BoxPtr pbox, pboxTmp, pboxNext, pboxBase, pboxNew1, pboxNew2;
+  DDXPointPtr pptTmp, pptNew1, pptNew2;
+  int xdir, ydir;
+  int dx, dy, w, h;
+  DDXPointPtr pptSrc;
 
-  /* Move ancillary buffers */
+  pbox = REGION_RECTS(prgnSrc);
+  nbox = REGION_NUM_RECTS(prgnSrc);
+  pboxNew1 = 0;
+  pptNew1 = 0;
+  pboxNew2 = 0;
+  pboxNew2 = 0;
+  pptSrc = &ptOldOrg;
+
+  dx = pParent->drawable.x - ptOldOrg.x;
+  dy = pParent->drawable.y - ptOldOrg.y;
+
+  /* If the copy will overlap in Y, reverse the order */
+  if (dy>0) {
+    ydir = -1;
+
+    if (nbox>1) {
+      /* Keep ordering in each band, reverse order of bands */
+      pboxNew1 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec)*nbox);
+      if (!pboxNew1) return;
+      pptNew1 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec)*nbox);
+      if (!pptNew1) {
+	DEALLOCATE_LOCAL(pboxNew1);
+	return;
+      }
+      pboxBase = pboxNext = pbox+nbox-1;
+      while (pboxBase >= pbox) {
+	while ((pboxNext >= pbox) && (pboxBase->y1 == pboxNext->y1))
+	  pboxNext--;
+	pboxTmp = pboxNext+1;
+	pptTmp = pptSrc + (pboxTmp - pbox);
+	while (pboxTmp <= pboxBase) {
+	  *pboxNew1++ = *pboxTmp++;
+	  *pptNew1++ = *pptTmp++;
+	}
+	pboxBase = pboxNext;
+      }
+      pboxNew1 -= nbox;
+      pbox = pboxNew1;
+      pptNew1 -= nbox;
+      pptSrc = pptNew1;
+    }
+  } else {
+    /* No changes required */
+    ydir = 1;
+  }
+
+  /* If the regions will overlap in X, reverse the order */
+  if (dx>0) {
+    xdir = -1;
+
+    if (nbox > 1) {
+      /*reverse orderof rects in each band */
+      pboxNew2 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec)*nbox);
+      pptNew2 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec)*nbox);
+      if (!pboxNew2 || !pptNew2) {
+	if (pptNew2) DEALLOCATE_LOCAL(pptNew2);
+	if (pboxNew2) DEALLOCATE_LOCAL(pboxNew2);
+	if (pboxNew1) {
+	  DEALLOCATE_LOCAL(pptNew1);
+	  DEALLOCATE_LOCAL(pboxNew1);
+	}
+	return;
+      }
+      pboxBase = pboxNext = pbox;
+      while (pboxBase < pbox+nbox) {
+	while ((pboxNext < pbox+nbox) && (pboxNext->y1 == pboxBase->y1))
+	  pboxNext++;
+	pboxTmp = pboxNext;
+	pptTmp = pptSrc + (pboxTmp - pbox);
+	while (pboxTmp != pboxBase) {
+	  *pboxNew2++ = *--pboxTmp;
+	  *pptNew2++ = *--pptTmp;
+	}
+	pboxBase = pboxNext;
+      }
+      pboxNew2 -= nbox;
+      pbox = pboxNew2;
+      pptNew2 -= nbox;
+      pptSrc = pptNew2;
+    }
+  } else {
+    /* No changes are needed */
+    xdir = 1;
+  }
+
+  TDFXSetupForScreenToScreenCopy(pScrn, xdir, ydir, GXcopy, -1, -1);
+  while (nbox--) {
+    w=pbox->x2-pbox->x1+1;
+    h=pbox->y2-pbox->y1+1;
+    TDFXSelectBuffer(pTDFX, TDFX_BACK);
+    TDFXSubsequentScreenToScreenCopy(pScrn, pbox->x1, pbox->y1, 
+				     pbox->x1+dx, pbox->y1+dy, w, h);
+    TDFXSelectBuffer(pTDFX, TDFX_DEPTH);
+    TDFXSubsequentScreenToScreenCopy(pScrn, pbox->x1, pbox->y1, 
+				     pbox->x1+dx, pbox->y1+dy, w, h);
+    pbox++;
+  }
+  TDFXSelectBuffer(pTDFX, TDFX_FRONT);
+
+  if (pboxNew2) {
+    DEALLOCATE_LOCAL(pptNew2);
+    DEALLOCATE_LOCAL(pboxNew2);
+  }
+  if (pboxNew1) {
+    DEALLOCATE_LOCAL(pptNew1);
+    DEALLOCATE_LOCAL(pboxNew1);
+  }
+
+  pTDFX->AccelInfoRec->NeedToSync = TRUE;
 }

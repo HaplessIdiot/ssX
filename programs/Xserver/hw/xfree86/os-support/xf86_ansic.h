@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.29 1999/07/18 08:14:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.30 1999/09/25 14:37:42 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -248,6 +248,8 @@ extern int xf86GetErrno(void);
 extern double xf86HUGE_VAL;
 
 extern double xf86hypot(double,double);
+extern void xf86qsort(void *, xf86size_t, xf86size_t,
+		      int (*)(const void *, const void *));
 
 /* non-ANSI C functions */
 extern XF86DIR* xf86opendir(const char*);

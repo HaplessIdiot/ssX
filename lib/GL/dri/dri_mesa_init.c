@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_mesa_init.c,v 1.1 1999/06/14 07:23:31 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_mesa_init.c,v 1.2 1999/06/27 14:07:23 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -39,12 +39,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdio.h>
 #include <dlfcn.h>
 #endif
-#if USE_GAMMA
-#include "gamma_gl.h"
-#include "gamma_xmesa.h"
-#else
 #include "mesa_api.h"
-#endif
 #include "dri_mesa.h"
 #include "dri_glapi.h"
 #include "dri_xmesaapi.h"
@@ -80,7 +75,7 @@ void *driMesaInitAPI(char *name, __XMESAapi *XMesaAPI, __GLapi *glAPI)
     dlopen_error = False;
 
     if (name) {
-	snprintf(libname, 256, "%s.so", name);
+	snprintf(libname, 256, "%s_dri.so", name);
     } else {
 	return NULL;
     }

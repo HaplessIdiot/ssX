@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.2 1999/06/14 07:23:30 dawes Exp $
 XCOMM $PI: xc/lib/GL/dri/Imakefile,v 1.11 1999/05/16 14:00:45 faith Exp $
 
 #define DoNormalLib NormalLibGlx
@@ -19,7 +19,11 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 		-I../mesa/include -I../mesa/src -I../mesa/src/drv/gamma
 #endif
 
-      DEFINES = $(ALLOC_DEFINES) GlxDefines
+#if GlxBuiltInTdfx
+    TDFX_DEFS = -DUSE_TDFX
+#endif
+
+      DEFINES = $(ALLOC_DEFINES) GlxDefines $(TDFX_DEFS)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I$(XF86OSSRC) $(DRI_INCS)
          SRCS = XF86dri.c dri_tmm.c $(DRI_SRCS)
          OBJS = XF86dri.o dri_tmm.o $(DRI_OBJS)

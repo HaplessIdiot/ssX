@@ -1,21 +1,21 @@
-/* Id: gl.h,v 1.2 1999/02/26 08:52:29 martin Exp $ */
+/* $Id: gl.h,v 1.2 1999/12/14 01:32:24 robin Exp $ */
 
 /*
  * Mesa 3-D graphics library
  * Version:  3.1
- * 
+ *
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included
  * in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -25,122 +25,6 @@
  */
 
 
-/*
- * Log: gl.h,v $
- * Revision 1.2  1999/02/26 08:52:29  martin
- * Updated Mesa to the official version checked into the Mesa cvs archive
- * Cleaned up the XMesa interface
- * Fixed support for standalone Mesa
- * Removed several unused files in the lib/GL/mesa/src subdirectory
- * Moved glcore.h back to include/GL/internal/glcore.h
- *
- * Revision 3.34  1999/02/14 03:39:09  brianp
- * new copyright
- *
- * Revision 3.33  1999/02/04 04:11:24  brianp
- * include stdlib.h for BeOS R4
- *
- * Revision 3.32  1999/01/03 03:02:55  brianp
- * now using GLAPI and GLAPIENTRY keywords, misc Windows changes (Ted Jump)
- *
- * Revision 3.31  1998/12/01 02:37:36  brianp
- * GL_UNSIGNED_SHORT_5_6_5 and GL_UNSIGNED_BYTE_2_3_3_REV swapped again!
- *
- * Revision 3.30  1998/12/01 02:34:27  brianp
- * applied Mark Kilgard's patches from November 30, 1998
- *
- * Revision 3.29  1998/11/29 21:25:45  brianp
- * minor clean-up
- *
- * Revision 3.28  1998/11/27 14:11:19  brianp
- * changed glTexImage3D() internalFormat from GLenum to GLint
- *
- * Revision 3.27  1998/11/25 04:09:04  brianp
- * swapped values for GL_UNSIGNED_SHORT_5_6_5 and GL_UNSIGNED_BYTE_2_3_3_REV
- *
- * Revision 3.26  1998/11/17 01:52:47  brianp
- * implemented GL_NV_texgen_reflection extension (MJK)
- *
- * Revision 3.25  1998/11/17 01:14:02  brianp
- * minor changes for OpenStep compilation (pete@ohm.york.ac.uk)
- *
- * Revision 3.24  1998/10/29 04:08:20  brianp
- * changed glEdgeFlagPointer() pointer from GLboolean * to GLvoid *
- *
- * Revision 3.23  1998/10/23 01:03:47  brianp
- * added GL_ARB_multitexture extension
- *
- * Revision 3.22  1998/10/20 02:27:12  brianp
- * removed GL_EXT_multitexture extension
- *
- * Revision 3.21  1998/10/05 00:40:15  brianp
- * added GL_INGR_blend_func_separate extension
- *
- * Revision 3.20  1998/10/03 13:16:44  brianp
- * implemented GL_EXT_stencil_wrap
- *
- * Revision 3.19  1998/07/31 03:23:36  brianp
- * Added Ted Jump's latest Win32 changes
- *
- * Revision 3.18  1998/07/26 03:10:28  brianp
- * added defines for non-Windows compilation!
- *
- * Revision 3.17  1998/07/26 01:38:39  brianp
- * updated for Windows compilation per Ted Jump
- *
- * Revision 3.16  1998/07/18 02:43:07  brianp
- * added missing enums: GL_SELECTION_BUFFER_POINTER, GL_SELECTION_BUFFER_SIZE
- * added missing enums: GL_TEXTURE_INTERNAL_FORMAT
- *
- * Revision 3.15  1998/06/07 22:17:58  brianp
- * added GL_EXT_multitexture extension
- *
- * Revision 3.14  1998/04/01 03:01:20  brianp
- * added void parameter to glResizeBuffersMESA()
- *
- * Revision 3.13  1998/03/19 02:03:51  brianp
- * added GL_SGIS_texture_edge_clamp
- *
- * Revision 3.12  1998/03/15 18:48:55  brianp
- * added GL_EXT_abgr extension
- *
- * Revision 3.11  1998/02/28 15:15:05  brianp
- * added official enum values for some constants
- *
- * Revision 3.10  1998/02/20 04:54:45  brianp
- * implemented GL_SGIS_multitexture
- *
- * Revision 3.9  1998/02/10 03:31:31  brianp
- * added static Win32 lib support (Theodore Jump)
- *
- * Revision 3.8  1998/02/06 01:57:42  brianp
- * added GL 1.2 3-D texture enums and functions
- *
- * Revision 3.7  1998/02/03 04:27:54  brianp
- * added texture lod clamping
- *
- * Revision 3.6  1998/02/02 03:09:34  brianp
- * added GL_LIGHT_MODEL_COLOR_CONTROL (separate specular color interpolation)
- *
- * Revision 3.5  1998/02/01 22:29:09  brianp
- * added support for packed pixel formats
- *
- * Revision 3.4  1998/02/01 20:47:42  brianp
- * added GL_BGR and GL_BGRA pixel formats
- *
- * Revision 3.3  1998/02/01 20:05:10  brianp
- * added glDrawRangeElements()
- *
- * Revision 3.2  1998/02/01 19:39:36  brianp
- * added GL_CLAMP_TO_EDGE texture wrap mode
- *
- * Revision 3.1  1998/02/01 16:36:47  brianp
- * added GL_EXT_rescale_normal extension
- *
- * Revision 3.0  1998/02/01 16:03:04  brianp
- * initial rev
- *
- */
 
 
 #ifndef GL_H
@@ -165,16 +49,12 @@
 #	define __WIN32__
 #endif
 
-#if defined(__WIN32__) || defined(__CYGWIN32__)
+#if !defined(OPENSTEP) && (defined(__WIN32__) || defined(__CYGWIN32__))
 #	pragma warning( disable : 4244 ) /* '=' : conversion from 'const double ' to 'float ', possible loss of data */
 #	pragma warning( disable : 4018 ) /* '<' : signed/unsigned mismatch */
 #	pragma warning( disable : 4305 ) /* '=' : truncation from 'const double ' to 'float ' */
-#	pragma warning( disable : 4013 ) /* 'function' undefined; assuming extern returning int */
+#	pragma warning( disable : 4550 ) /* 'function' undefined; assuming extern returning int */
 #	pragma warning( disable : 4761 ) /* integral size mismatch in argument; conversion supplied */
-#	pragma warning( disable : 4273 ) /* 'identifier' : inconsistent DLL linkage. dllexport assumed */
-#	if (MESA_WARNQUIET>1)
-#		pragma warning( disable : 4146 ) /* unary minus operator applied to unsigned type, result still unsigned */
-#	endif
 #	if defined(_MSC_VER) && defined(BUILD_GL32) /* tag specify we're building mesa as a DLL */
 #		define GLAPI __declspec(dllexport)
 #	elif defined(_MSC_VER) && defined(_DLL) /* tag specifying we're building for DLL runtime support */
@@ -197,7 +77,7 @@
 
 /* compatability guard so we don't need to change client code */
 
-#if defined(_WIN32) && !defined(_WINDEF_)
+#if defined(_WIN32) && !defined(_WINDEF_) && !defined(OPENSTEP)
 #	if !defined(MESA_MINWARN)
 #		pragma message( "note: WINDOWS.H not included, providing Mesa definition of CALLBACK macro" )
 #		pragma message( "----: and PROC typedef. If you receive compiler warnings about either ")
@@ -210,7 +90,7 @@ typedef void *HDC;
 typedef unsigned long COLORREF;
 #endif
 
-#if defined(_WIN32) && !defined(_WINGDI_)
+#if defined(_WIN32) && !defined(_WINGDI_) && !defined(OPENSTEP)
 #	if !defined(MESA_MINWARN)
 #		pragma message( "note: WINDOWS.H not included, providing Mesa definition of wgl functions" )
 #		pragma message( "----: and macros. If you receive compiler warnings about any being multiply ")
@@ -1033,13 +913,152 @@ typedef enum {
 	GL_TEXTURE1_ARB				= 0x84C1,
 	GL_TEXTURE2_ARB				= 0x84C2,
 	GL_TEXTURE3_ARB				= 0x84C3,
+	GL_TEXTURE4_ARB				= 0x84C4,
+	GL_TEXTURE5_ARB				= 0x84C5,
+	GL_TEXTURE6_ARB				= 0x84C6,
+	GL_TEXTURE7_ARB				= 0x84C7,
+	GL_TEXTURE8_ARB				= 0x84C8,
+	GL_TEXTURE9_ARB				= 0x84C9,
+	GL_TEXTURE10_ARB			= 0x84CA,
+	GL_TEXTURE11_ARB			= 0x84CB,
+	GL_TEXTURE12_ARB			= 0x84CC,
+	GL_TEXTURE13_ARB			= 0x84CD,
+	GL_TEXTURE14_ARB			= 0x84CE,
+	GL_TEXTURE15_ARB			= 0x84CF,
+	GL_TEXTURE16_ARB			= 0x84D0,
+	GL_TEXTURE17_ARB			= 0x84D1,
+	GL_TEXTURE18_ARB			= 0x84D2,
+	GL_TEXTURE19_ARB			= 0x84D3,
+	GL_TEXTURE20_ARB			= 0x84D4,
+	GL_TEXTURE21_ARB			= 0x84D5,
+	GL_TEXTURE22_ARB			= 0x84D6,
+	GL_TEXTURE23_ARB			= 0x84D7,
+	GL_TEXTURE24_ARB			= 0x84D8,
+	GL_TEXTURE25_ARB			= 0x84D9,
+	GL_TEXTURE26_ARB			= 0x84DA,
+	GL_TEXTURE27_ARB			= 0x84DB,
+	GL_TEXTURE28_ARB			= 0x84DC,
+	GL_TEXTURE29_ARB			= 0x84DD,
+	GL_TEXTURE30_ARB			= 0x84DE,
+	GL_TEXTURE31_ARB			= 0x84DF,
 	GL_ACTIVE_TEXTURE_ARB			= 0x84E0,
 	GL_CLIENT_ACTIVE_TEXTURE_ARB		= 0x84E1,
 	GL_MAX_TEXTURE_UNITS_ARB		= 0x84E2,
 
+	/*
+	 * OpenGL 1.2 imaging subset (NOT IMPLEMENTED BY MESA)
+	 */
+	/* GL_EXT_color_table */
+	GL_COLOR_TABLE				= 0x80D0,
+	GL_POST_CONVOLUTION_COLOR_TABLE		= 0x80D1,
+	GL_POST_COLOR_MATRIX_COLOR_TABLE	= 0x80D2,
+	GL_PROXY_COLOR_TABLE			= 0x80D3,
+	GL_PROXY_POST_CONVOLUTION_COLOR_TABLE	= 0x80D4,
+	GL_PROXY_POST_COLOR_MATRIX_COLOR_TABLE	= 0x80D5,
+	GL_COLOR_TABLE_SCALE			= 0x80D6,
+	GL_COLOR_TABLE_BIAS			= 0x80D7,
+	GL_COLOR_TABLE_FORMAT			= 0x80D8,
+	GL_COLOR_TABLE_WIDTH			= 0x80D9,
+	GL_COLOR_TABLE_RED_SIZE			= 0x80DA,
+	GL_COLOR_TABLE_GREEN_SIZE		= 0x80DB,
+	GL_COLOR_TABLE_BLUE_SIZE		= 0x80DC,
+	GL_COLOR_TABLE_ALPHA_SIZE		= 0x80DD,
+	GL_COLOR_TABLE_LUMINANCE_SIZE		= 0x80DE,
+	GL_COLOR_TABLE_INTENSITY_SIZE		= 0x80DF,
+
+	/* GL_EXT_convolution and GL_HP_convolution_border_modes */
+	GL_CONVOLUTION_1D			= 0x8010,
+	GL_CONVOLUTION_2D			= 0x8011,
+	GL_SEPARABLE_2D				= 0x8012,
+	GL_CONVOLUTION_BORDER_MODE		= 0x8013,
+	GL_CONVOLUTION_FILTER_SCALE		= 0x8014,
+	GL_CONVOLUTION_FILTER_BIAS		= 0x8015,
+	GL_REDUCE				= 0x8016,
+	GL_CONVOLUTION_FORMAT			= 0x8017,
+	GL_CONVOLUTION_WIDTH			= 0x8018,
+	GL_CONVOLUTION_HEIGHT			= 0x8019,
+	GL_MAX_CONVOLUTION_WIDTH		= 0x801A,
+	GL_MAX_CONVOLUTION_HEIGHT		= 0x801B,
+	GL_POST_CONVOLUTION_RED_SCALE		= 0x801C,
+	GL_POST_CONVOLUTION_GREEN_SCALE		= 0x801D,
+	GL_POST_CONVOLUTION_BLUE_SCALE		= 0x801E,
+	GL_POST_CONVOLUTION_ALPHA_SCALE		= 0x801F,
+	GL_POST_CONVOLUTION_RED_BIAS		= 0x8020,
+	GL_POST_CONVOLUTION_GREEN_BIAS		= 0x8021,
+	GL_POST_CONVOLUTION_BLUE_BIAS		= 0x8022,
+	GL_POST_CONVOLUTION_ALPHA_BIAS		= 0x8023,
+	GL_CONSTANT_BORDER			= 0x8151,
+	GL_REPLICATE_BORDER			= 0x8153,
+	GL_CONVOLUTION_BORDER_COLOR		= 0x8154,
+
+	/* GL_SGI_color_matrix */
+	GL_COLOR_MATRIX				= 0x80B1,
+	GL_COLOR_MATRIX_STACK_DEPTH		= 0x80B2,
+	GL_MAX_COLOR_MATRIX_STACK_DEPTH		= 0x80B3,
+	GL_POST_COLOR_MATRIX_RED_SCALE		= 0x80B4,
+	GL_POST_COLOR_MATRIX_GREEN_SCALE	= 0x80B5,
+	GL_POST_COLOR_MATRIX_BLUE_SCALE		= 0x80B6,
+	GL_POST_COLOR_MATRIX_ALPHA_SCALE	= 0x80B7,
+	GL_POST_COLOR_MATRIX_RED_BIAS		= 0x80B8,
+	GL_POST_COLOR_MATRIX_GREEN_BIAS		= 0x80B9,
+	GL_POST_COLOR_MATRIX_BLUE_BIAS		= 0x80BA,
+	GL_POST_COLOR_MATRIX_ALPHA_BIAS		= 0x80BB,
+
+	/* GL_EXT_histogram */
+	GL_HISTOGRAM				= 0x8024,
+	GL_PROXY_HISTOGRAM			= 0x8025,
+	GL_HISTOGRAM_WIDTH			= 0x8026,
+	GL_HISTOGRAM_FORMAT			= 0x8027,
+	GL_HISTOGRAM_RED_SIZE			= 0x8028,
+	GL_HISTOGRAM_GREEN_SIZE			= 0x8029,
+	GL_HISTOGRAM_BLUE_SIZE			= 0x802A,
+	GL_HISTOGRAM_ALPHA_SIZE			= 0x802B,
+	GL_HISTOGRAM_LUMINANCE_SIZE		= 0x802C,
+	GL_HISTOGRAM_SINK			= 0x802D,
+	GL_MINMAX				= 0x802E,
+	GL_MINMAX_FORMAT			= 0x802F,
+	GL_MINMAX_SINK				= 0x8030,
+	GL_TABLE_TOO_LARGE			= 0x8031,
+
 	/* GL_NV_texgen_reflection (nVidia) */
 	GL_NORMAL_MAP_NV			= 0x8511,
-	GL_REFLECTION_MAP_NV			= 0x8512
+	GL_REFLECTION_MAP_NV			= 0x8512,
+
+	/* GL_PGI_misc_hints */
+	GL_PREFER_DOUBLEBUFFER_HINT_PGI		= 107000,
+	GL_STRICT_DEPTHFUNC_HINT_PGI		= 107030,
+	GL_STRICT_LIGHTING_HINT_PGI		= 107031,
+	GL_STRICT_SCISSOR_HINT_PGI		= 107032,
+	GL_FULL_STIPPLE_HINT_PGI		= 107033,
+	GL_NATIVE_GRAPHICS_BEGIN_HINT_PGI	= 107011,
+	GL_NATIVE_GRAPHICS_END_HINT_PGI		= 107012,
+	GL_CONSERVE_MEMORY_HINT_PGI		= 107005,
+	GL_RECLAIM_MEMORY_HINT_PGI		= 107006,
+	GL_ALWAYS_FAST_HINT_PGI			= 107020,
+	GL_ALWAYS_SOFT_HINT_PGI			= 107021,
+	GL_ALLOW_DRAW_OBJ_HINT_PGI		= 107022,
+	GL_ALLOW_DRAW_WIN_HINT_PGI		= 107023,
+	GL_ALLOW_DRAW_FRG_HINT_PGI		= 107024,
+	GL_ALLOW_DRAW_SPN_HINT_PGI		= 107024,
+	GL_ALLOW_DRAW_MEM_HINT_PGI		= 107025,
+	GL_CLIP_NEAR_HINT_PGI			= 107040,
+	GL_CLIP_FAR_HINT_PGI			= 107041,
+	GL_WIDE_LINE_HINT_PGI		  	= 107042,
+	GL_BACK_NORMALS_HINT_PGI		= 107043,
+	GL_NATIVE_GRAPHICS_HANDLE_PGI		= 107010,
+
+	/* GL_EXT_compiled_vertex_array */
+	GL_ARRAY_ELEMENT_LOCK_FIRST_SGI		= 0x81A8,
+	GL_ARRAY_ELEMENT_LOCK_COUNT_SGI		= 0x81A9,
+
+	/* GL_EXT_clip_volume_hint */
+	GL_CLIP_VOLUME_CLIPPING_HINT_EXT	= 0x80F0
+
+
+/* When you add new enums, please make sure you update the strings
+ * in enums.c as well...
+ */
+
 }
 #ifdef CENTERLINE_CLPP
   /* CenterLine C++ workaround: */
@@ -1077,16 +1096,15 @@ enum {
 	GL_LIST_BIT		= 0x00020000,
 	GL_TEXTURE_BIT		= 0x00040000,
 	GL_SCISSOR_BIT		= 0x00080000,
-	GL_ALL_ATTRIB_BITS	= 0x000fffff
+	GL_ALL_ATTRIB_BITS	= 0x000FFFFF
 };
 
 
 enum {
 	GL_CLIENT_PIXEL_STORE_BIT	= 0x00000001,
-	GL_CLIENT_VERTEX_ARRAY_BIT	= 0x00000002,
-	GL_CLIENT_ALL_ATTRIB_BITS	= 0x0000FFFF
+	GL_CLIENT_VERTEX_ARRAY_BIT	= 0x00000002
 };
-
+#define GL_CLIENT_ALL_ATTRIB_BITS 0xFFFFFFFF
 
 
 typedef unsigned int GLbitfield;
@@ -1518,19 +1536,19 @@ GLAPI void GLAPIENTRY glRectsv( const GLshort *v1, const GLshort *v2 );
  */
 
 GLAPI void GLAPIENTRY glVertexPointer( GLint size, GLenum type,
-                                         GLsizei stride, const GLvoid *ptr );
+                                       GLsizei stride, const GLvoid *ptr );
 
 GLAPI void GLAPIENTRY glNormalPointer( GLenum type, GLsizei stride,
-                                         const GLvoid *ptr );
+                                       const GLvoid *ptr );
 
 GLAPI void GLAPIENTRY glColorPointer( GLint size, GLenum type,
-                                        GLsizei stride, const GLvoid *ptr );
+                                      GLsizei stride, const GLvoid *ptr );
 
 GLAPI void GLAPIENTRY glIndexPointer( GLenum type, GLsizei stride,
-                                        const GLvoid *ptr );
+                                      const GLvoid *ptr );
 
 GLAPI void GLAPIENTRY glTexCoordPointer( GLint size, GLenum type,
-                                           GLsizei stride, const GLvoid *ptr );
+                                         GLsizei stride, const GLvoid *ptr );
 
 GLAPI void GLAPIENTRY glEdgeFlagPointer( GLsizei stride, const GLvoid *ptr );
 
@@ -1538,14 +1556,13 @@ GLAPI void GLAPIENTRY glGetPointerv( GLenum pname, void **params );
 
 GLAPI void GLAPIENTRY glArrayElement( GLint i );
 
-GLAPI void GLAPIENTRY glDrawArrays( GLenum mode, GLint first,
-                                      GLsizei count );
+GLAPI void GLAPIENTRY glDrawArrays( GLenum mode, GLint first, GLsizei count );
 
 GLAPI void GLAPIENTRY glDrawElements( GLenum mode, GLsizei count,
-                                        GLenum type, const GLvoid *indices );
+                                      GLenum type, const GLvoid *indices );
 
 GLAPI void GLAPIENTRY glInterleavedArrays( GLenum format, GLsizei stride,
-                                             const GLvoid *pointer );
+                                           const GLvoid *pointer );
 
 
 /*
@@ -1557,14 +1574,14 @@ GLAPI void GLAPIENTRY glShadeModel( GLenum mode );
 GLAPI void GLAPIENTRY glLightf( GLenum light, GLenum pname, GLfloat param );
 GLAPI void GLAPIENTRY glLighti( GLenum light, GLenum pname, GLint param );
 GLAPI void GLAPIENTRY glLightfv( GLenum light, GLenum pname,
-                                   const GLfloat *params );
+                                 const GLfloat *params );
 GLAPI void GLAPIENTRY glLightiv( GLenum light, GLenum pname,
-                                   const GLint *params );
+                                 const GLint *params );
 
 GLAPI void GLAPIENTRY glGetLightfv( GLenum light, GLenum pname,
-                                      GLfloat *params );
+                                    GLfloat *params );
 GLAPI void GLAPIENTRY glGetLightiv( GLenum light, GLenum pname,
-                                      GLint *params );
+                                    GLint *params );
 
 GLAPI void GLAPIENTRY glLightModelf( GLenum pname, GLfloat param );
 GLAPI void GLAPIENTRY glLightModeli( GLenum pname, GLint param );
@@ -1597,33 +1614,33 @@ GLAPI void GLAPIENTRY glPixelTransferf( GLenum pname, GLfloat param );
 GLAPI void GLAPIENTRY glPixelTransferi( GLenum pname, GLint param );
 
 GLAPI void GLAPIENTRY glPixelMapfv( GLenum map, GLint mapsize,
-                                      const GLfloat *values );
+                                    const GLfloat *values );
 GLAPI void GLAPIENTRY glPixelMapuiv( GLenum map, GLint mapsize,
-                                       const GLuint *values );
+                                     const GLuint *values );
 GLAPI void GLAPIENTRY glPixelMapusv( GLenum map, GLint mapsize,
-                                       const GLushort *values );
+                                     const GLushort *values );
 
 GLAPI void GLAPIENTRY glGetPixelMapfv( GLenum map, GLfloat *values );
 GLAPI void GLAPIENTRY glGetPixelMapuiv( GLenum map, GLuint *values );
 GLAPI void GLAPIENTRY glGetPixelMapusv( GLenum map, GLushort *values );
 
 GLAPI void GLAPIENTRY glBitmap( GLsizei width, GLsizei height,
-                                  GLfloat xorig, GLfloat yorig,
-                                  GLfloat xmove, GLfloat ymove,
-                                  const GLubyte *bitmap );
+                                GLfloat xorig, GLfloat yorig,
+                                GLfloat xmove, GLfloat ymove,
+                                const GLubyte *bitmap );
 
 GLAPI void GLAPIENTRY glReadPixels( GLint x, GLint y,
-                                      GLsizei width, GLsizei height,
-                                      GLenum format, GLenum type,
-                                      GLvoid *pixels );
+                                    GLsizei width, GLsizei height,
+                                    GLenum format, GLenum type,
+                                    GLvoid *pixels );
 
 GLAPI void GLAPIENTRY glDrawPixels( GLsizei width, GLsizei height,
-                                      GLenum format, GLenum type,
-                                      const GLvoid *pixels );
+                                    GLenum format, GLenum type,
+                                    const GLvoid *pixels );
 
 GLAPI void GLAPIENTRY glCopyPixels( GLint x, GLint y,
-                                      GLsizei width, GLsizei height,
-                                      GLenum type );
+                                    GLsizei width, GLsizei height,
+                                    GLenum type );
 
 
 
@@ -1677,31 +1694,31 @@ GLAPI void GLAPIENTRY glTexParameteriv( GLenum target, GLenum pname,
                                           const GLint *params );
 
 GLAPI void GLAPIENTRY glGetTexParameterfv( GLenum target,
-                                             GLenum pname, GLfloat *params);
+                                           GLenum pname, GLfloat *params);
 GLAPI void GLAPIENTRY glGetTexParameteriv( GLenum target,
-                                             GLenum pname, GLint *params );
+                                           GLenum pname, GLint *params );
 
 GLAPI void GLAPIENTRY glGetTexLevelParameterfv( GLenum target, GLint level,
-                                                  GLenum pname, GLfloat *params );
+                                                GLenum pname, GLfloat *params );
 GLAPI void GLAPIENTRY glGetTexLevelParameteriv( GLenum target, GLint level,
-                                                  GLenum pname, GLint *params );
+                                                GLenum pname, GLint *params );
 
 
 GLAPI void GLAPIENTRY glTexImage1D( GLenum target, GLint level,
-                                      GLint internalFormat,
-                                      GLsizei width, GLint border,
-                                      GLenum format, GLenum type,
-                                      const GLvoid *pixels );
+                                    GLint internalFormat,
+                                    GLsizei width, GLint border,
+                                    GLenum format, GLenum type,
+                                    const GLvoid *pixels );
 
 GLAPI void GLAPIENTRY glTexImage2D( GLenum target, GLint level,
-                                      GLint internalFormat,
-                                      GLsizei width, GLsizei height,
-                                      GLint border, GLenum format, GLenum type,
-                                      const GLvoid *pixels );
+                                    GLint internalFormat,
+                                    GLsizei width, GLsizei height,
+                                    GLint border, GLenum format, GLenum type,
+                                    const GLvoid *pixels );
 
 GLAPI void GLAPIENTRY glGetTexImage( GLenum target, GLint level,
-                                       GLenum format, GLenum type,
-                                       GLvoid *pixels );
+                                     GLenum format, GLenum type,
+                                     GLvoid *pixels );
 
 
 
@@ -1714,51 +1731,51 @@ GLAPI void GLAPIENTRY glDeleteTextures( GLsizei n, const GLuint *textures);
 GLAPI void GLAPIENTRY glBindTexture( GLenum target, GLuint texture );
 
 GLAPI void GLAPIENTRY glPrioritizeTextures( GLsizei n,
-                                              const GLuint *textures,
-                                              const GLclampf *priorities );
+                                            const GLuint *textures,
+                                            const GLclampf *priorities );
 
 GLAPI GLboolean GLAPIENTRY glAreTexturesResident( GLsizei n,
-                                                    const GLuint *textures,
-                                                    GLboolean *residences );
+                                                  const GLuint *textures,
+                                                  GLboolean *residences );
 
 GLAPI GLboolean GLAPIENTRY glIsTexture( GLuint texture );
 
 
 GLAPI void GLAPIENTRY glTexSubImage1D( GLenum target, GLint level,
-                                         GLint xoffset,
-                                         GLsizei width, GLenum format,
-                                         GLenum type, const GLvoid *pixels );
+                                       GLint xoffset,
+                                       GLsizei width, GLenum format,
+                                       GLenum type, const GLvoid *pixels );
 
 
 GLAPI void GLAPIENTRY glTexSubImage2D( GLenum target, GLint level,
-                                         GLint xoffset, GLint yoffset,
-                                         GLsizei width, GLsizei height,
-                                         GLenum format, GLenum type,
-                                         const GLvoid *pixels );
+                                       GLint xoffset, GLint yoffset,
+                                       GLsizei width, GLsizei height,
+                                       GLenum format, GLenum type,
+                                       const GLvoid *pixels );
 
 
 GLAPI void GLAPIENTRY glCopyTexImage1D( GLenum target, GLint level,
-                                          GLenum internalformat,
-                                          GLint x, GLint y,
-                                          GLsizei width, GLint border );
+                                        GLenum internalformat,
+                                        GLint x, GLint y,
+                                        GLsizei width, GLint border );
 
 
 GLAPI void GLAPIENTRY glCopyTexImage2D( GLenum target, GLint level,
-                                          GLenum internalformat,
-                                          GLint x, GLint y,
-                                          GLsizei width, GLsizei height,
-                                          GLint border );
+                                        GLenum internalformat,
+                                        GLint x, GLint y,
+                                        GLsizei width, GLsizei height,
+                                        GLint border );
 
 
 GLAPI void GLAPIENTRY glCopyTexSubImage1D( GLenum target, GLint level,
-                                             GLint xoffset, GLint x, GLint y,
-                                             GLsizei width );
+                                           GLint xoffset, GLint x, GLint y,
+                                           GLsizei width );
 
 
 GLAPI void GLAPIENTRY glCopyTexSubImage2D( GLenum target, GLint level,
-                                             GLint xoffset, GLint yoffset,
-                                             GLint x, GLint y,
-                                             GLsizei width, GLsizei height );
+                                           GLint xoffset, GLint yoffset,
+                                           GLint x, GLint y,
+                                           GLsizei width, GLsizei height );
 
 
 
@@ -1768,11 +1785,11 @@ GLAPI void GLAPIENTRY glCopyTexSubImage2D( GLenum target, GLint level,
  */
 
 GLAPI void GLAPIENTRY glMap1d( GLenum target, GLdouble u1, GLdouble u2,
-                                 GLint stride,
-                                 GLint order, const GLdouble *points );
+                               GLint stride,
+                               GLint order, const GLdouble *points );
 GLAPI void GLAPIENTRY glMap1f( GLenum target, GLfloat u1, GLfloat u2,
-                                 GLint stride,
-                                 GLint order, const GLfloat *points );
+                               GLint stride,
+                               GLint order, const GLfloat *points );
 
 GLAPI void GLAPIENTRY glMap2d( GLenum target,
 		     GLdouble u1, GLdouble u2, GLint ustride, GLint uorder,
@@ -1803,9 +1820,9 @@ GLAPI void GLAPIENTRY glMapGrid1d( GLint un, GLdouble u1, GLdouble u2 );
 GLAPI void GLAPIENTRY glMapGrid1f( GLint un, GLfloat u1, GLfloat u2 );
 
 GLAPI void GLAPIENTRY glMapGrid2d( GLint un, GLdouble u1, GLdouble u2,
-                                     GLint vn, GLdouble v1, GLdouble v2 );
+                                   GLint vn, GLdouble v1, GLdouble v2 );
 GLAPI void GLAPIENTRY glMapGrid2f( GLint un, GLfloat u1, GLfloat u2,
-                                     GLint vn, GLfloat v1, GLfloat v2 );
+                                   GLint vn, GLfloat v1, GLfloat v2 );
 
 GLAPI void GLAPIENTRY glEvalPoint1( GLint i );
 
@@ -1862,7 +1879,7 @@ GLAPI void GLAPIENTRY glBlendEquationEXT( GLenum mode );
 
 /* GL_EXT_blend_color */
 GLAPI void GLAPIENTRY glBlendColorEXT( GLclampf red, GLclampf green,
-                                         GLclampf blue, GLclampf alpha );
+                                       GLclampf blue, GLclampf alpha );
 
 
 
@@ -1874,32 +1891,32 @@ GLAPI void GLAPIENTRY glPolygonOffsetEXT( GLfloat factor, GLfloat bias );
 /* GL_EXT_vertex_array */
 
 GLAPI void GLAPIENTRY glVertexPointerEXT( GLint size, GLenum type,
-                                            GLsizei stride,
-                                            GLsizei count, const GLvoid *ptr );
+                                          GLsizei stride,
+                                          GLsizei count, const GLvoid *ptr );
 
 GLAPI void GLAPIENTRY glNormalPointerEXT( GLenum type, GLsizei stride,
-                                            GLsizei count, const GLvoid *ptr );
+                                          GLsizei count, const GLvoid *ptr );
 
 GLAPI void GLAPIENTRY glColorPointerEXT( GLint size, GLenum type,
-                                           GLsizei stride,
-                                           GLsizei count, const GLvoid *ptr );
+                                         GLsizei stride,
+                                         GLsizei count, const GLvoid *ptr );
 
 GLAPI void GLAPIENTRY glIndexPointerEXT( GLenum type, GLsizei stride,
-                                           GLsizei count, const GLvoid *ptr );
+                                         GLsizei count, const GLvoid *ptr );
 
 GLAPI void GLAPIENTRY glTexCoordPointerEXT( GLint size, GLenum type,
-                                              GLsizei stride, GLsizei count,
-                                              const GLvoid *ptr );
+                                            GLsizei stride, GLsizei count,
+                                            const GLvoid *ptr );
 
 GLAPI void GLAPIENTRY glEdgeFlagPointerEXT( GLsizei stride, GLsizei count,
-                                              const GLboolean *ptr );
+                                            const GLboolean *ptr );
 
 GLAPI void GLAPIENTRY glGetPointervEXT( GLenum pname, void **params );
 
 GLAPI void GLAPIENTRY glArrayElementEXT( GLint i );
 
 GLAPI void GLAPIENTRY glDrawArraysEXT( GLenum mode, GLint first,
-                                         GLsizei count );
+                                       GLsizei count );
 
 
 
@@ -1907,18 +1924,17 @@ GLAPI void GLAPIENTRY glDrawArraysEXT( GLenum mode, GLint first,
 
 GLAPI void GLAPIENTRY glGenTexturesEXT( GLsizei n, GLuint *textures );
 
-GLAPI void GLAPIENTRY glDeleteTexturesEXT( GLsizei n,
-                                             const GLuint *textures);
+GLAPI void GLAPIENTRY glDeleteTexturesEXT( GLsizei n, const GLuint *textures);
 
 GLAPI void GLAPIENTRY glBindTextureEXT( GLenum target, GLuint texture );
 
 GLAPI void GLAPIENTRY glPrioritizeTexturesEXT( GLsizei n,
-                                                 const GLuint *textures,
-                                                 const GLclampf *priorities );
+                                               const GLuint *textures,
+                                               const GLclampf *priorities );
 
 GLAPI GLboolean GLAPIENTRY glAreTexturesResidentEXT( GLsizei n,
-                                                       const GLuint *textures,
-                                                       GLboolean *residences );
+                                                     const GLuint *textures,
+                                                     GLboolean *residences );
 
 GLAPI GLboolean GLAPIENTRY glIsTextureEXT( GLuint texture );
 
@@ -1927,48 +1943,48 @@ GLAPI GLboolean GLAPIENTRY glIsTextureEXT( GLuint texture );
 /* GL_EXT_texture3D */
 
 GLAPI void GLAPIENTRY glTexImage3DEXT( GLenum target, GLint level,
-                                         GLenum internalFormat,
-                                         GLsizei width, GLsizei height,
-                                         GLsizei depth, GLint border,
-                                         GLenum format, GLenum type,
-                                         const GLvoid *pixels );
+                                       GLenum internalFormat,
+                                       GLsizei width, GLsizei height,
+                                       GLsizei depth, GLint border,
+                                       GLenum format, GLenum type,
+                                       const GLvoid *pixels );
 
 GLAPI void GLAPIENTRY glTexSubImage3DEXT( GLenum target, GLint level,
-                                            GLint xoffset, GLint yoffset,
-                                            GLint zoffset, GLsizei width,
-                                            GLsizei height, GLsizei depth,
-                                            GLenum format,
-                                            GLenum type, const GLvoid *pixels);
+                                          GLint xoffset, GLint yoffset,
+                                          GLint zoffset, GLsizei width,
+                                          GLsizei height, GLsizei depth,
+                                          GLenum format,
+                                          GLenum type, const GLvoid *pixels);
 
 GLAPI void GLAPIENTRY glCopyTexSubImage3DEXT( GLenum target, GLint level,
-                                                GLint xoffset, GLint yoffset,
-                                                GLint zoffset, GLint x,
-                                                GLint y, GLsizei width,
-                                                GLsizei height );
+                                              GLint xoffset, GLint yoffset,
+                                              GLint zoffset, GLint x,
+                                              GLint y, GLsizei width,
+                                              GLsizei height );
 
 
 
 /* GL_EXT_color_table */
 
 GLAPI void GLAPIENTRY glColorTableEXT( GLenum target, GLenum internalformat,
-                                         GLsizei width, GLenum format,
-                                         GLenum type, const GLvoid *table );
+                                       GLsizei width, GLenum format,
+                                       GLenum type, const GLvoid *table );
 
 GLAPI void GLAPIENTRY glColorSubTableEXT( GLenum target,
-                                            GLsizei start, GLsizei count,
-                                            GLenum format, GLenum type,
-                                            const GLvoid *data );
+                                          GLsizei start, GLsizei count,
+                                          GLenum format, GLenum type,
+                                          const GLvoid *data );
 
 GLAPI void GLAPIENTRY glGetColorTableEXT( GLenum target, GLenum format,
-                                            GLenum type, GLvoid *table );
+                                          GLenum type, GLvoid *table );
 
 GLAPI void GLAPIENTRY glGetColorTableParameterfvEXT( GLenum target,
-                                                       GLenum pname,
-                                                       GLfloat *params );
+                                                     GLenum pname,
+                                                     GLfloat *params );
 
 GLAPI void GLAPIENTRY glGetColorTableParameterivEXT( GLenum target,
-                                                       GLenum pname,
-                                                       GLint *params );
+                                                     GLenum pname,
+                                                     GLint *params );
 
 
 /* GL_SGIS_multitexture */
@@ -2062,7 +2078,7 @@ GLAPI void GLAPIENTRY glPointParameterfvEXT( GLenum pname,
 /* GL_INGR_blend_func_separate */
 GLAPI void GLAPIENTRY glBlendFuncSeparateINGR( GLenum sfactorRGB,
                                                GLenum dfactorRGB,
-                                               GLenum sfactorAlpha, 
+                                               GLenum sfactorAlpha,
                                                GLenum dfactorAlpha );
 
 
@@ -2130,6 +2146,97 @@ GLAPI void GLAPIENTRY glCopyTexSubImage3D( GLenum target, GLint level,
                                              GLsizei height );
 
 
+/* 1.2 imaging extension functions */
+
+GLAPI void GLAPIENTRY glBlendEquation( GLenum mode );
+
+GLAPI void GLAPIENTRY glBlendColor( GLclampf red, GLclampf green,
+                                    GLclampf blue, GLclampf alpha );
+
+GLAPI void GLAPIENTRY glHistogram( GLenum target, GLsizei width,
+				   GLenum internalformat, GLboolean sink );
+
+GLAPI void GLAPIENTRY glResetHistogram( GLenum target );
+
+GLAPI void GLAPIENTRY glGetHistogram( GLenum target, GLboolean reset,
+				      GLenum format, GLenum type,
+				      GLvoid *values );
+
+GLAPI void GLAPIENTRY glGetHistogramParameterfv( GLenum target, GLenum pname,
+						 GLfloat *params );
+
+GLAPI void GLAPIENTRY glGetHistogramParameteriv( GLenum target, GLenum pname,
+						 GLint *params );
+
+GLAPI void GLAPIENTRY glMinmax( GLenum target, GLenum internalformat,
+				GLboolean sink );
+
+GLAPI void GLAPIENTRY glResetMinmax( GLenum target );
+
+GLAPI void GLAPIENTRY glGetMinMax( GLenum target, GLboolean reset,
+                                   GLenum format, GLenum types,
+                                   GLvoid *values );
+
+GLAPI void GLAPIENTRY glGetMinmaxParameterfv( GLenum target, GLenum pname,
+					      GLfloat *params );
+
+GLAPI void GLAPIENTRY glGetMinmaxParameteriv( GLenum target, GLenum pname,
+					      GLint *params );
+
+GLAPI void GLAPIENTRY glConvolutionFilter1D( GLenum target,
+	GLenum internalformat, GLsizei width, GLenum format, GLenum type,
+	const GLvoid *image );
+
+GLAPI void GLAPIENTRY glConvolutionFilter2D( GLenum target,
+	GLenum internalformat, GLsizei width, GLsizei height, GLenum format,
+	GLenum type, const GLvoid *image );
+
+GLAPI void GLAPIENTRY glConvolutionParameterf( GLenum target, GLenum pname,
+	GLfloat params );
+
+GLAPI void GLAPIENTRY glConvolutionParameterfv( GLenum target, GLenum pname,
+	const GLfloat *params );
+
+GLAPI void GLAPIENTRY glConvolutionParameteri( GLenum target, GLenum pname,
+	GLint params );
+
+GLAPI void GLAPIENTRY glConvolutionParameteriv( GLenum target, GLenum pname,
+	const GLint *params );
+
+GLAPI void GLAPIENTRY glCopyConvolutionFilter1D( GLenum target,
+	GLenum internalformat, GLint x, GLint y, GLsizei width );
+
+GLAPI void GLAPIENTRY glCopyConvolutionFilter2D( GLenum target,
+	GLenum internalformat, GLint x, GLint y, GLsizei width,
+	GLsizei height);
+
+GLAPI void GLAPIENTRY glGetConvolutionFilter( GLenum target, GLenum format,
+	GLenum type, GLvoid *image );
+
+GLAPI void GLAPIENTRY glGetConvolutionParameterfv( GLenum target, GLenum pname,
+	GLfloat *params );
+
+GLAPI void GLAPIENTRY glGetConvolutionParameteriv( GLenum target, GLenum pname,
+	GLint *params );
+
+GLAPI void GLAPIENTRY glSeparableFilter2D( GLenum target,
+	GLenum internalformat, GLsizei width, GLsizei height, GLenum format,
+	GLenum type, const GLvoid *row, const GLvoid *column );
+
+GLAPI void GLAPIENTRY glGetSeparableFilter( GLenum target, GLenum format,
+	GLenum type, GLvoid *row, GLvoid *column, GLvoid *span );
+
+GLAPI void GLAPIENTRY glCopyColorSubTable( GLenum target, GLsizei start,
+	GLint x, GLint y, GLsizei width );
+
+GLAPI void GLAPIENTRY glCopyColorTable( GLenum target, GLenum internalformat,
+	GLint x, GLint y, GLsizei width );
+
+
+
+/* GL_EXT_compiled_vertex_array */
+GLAPI void GLAPIENTRY glLockArraysEXT( GLint first, GLsizei count );
+GLAPI void GLAPIENTRY glUnlockArraysEXT( void );
 
 
 #if defined(__BEOS__) || defined(__QUICKDRAW__)
@@ -2161,6 +2268,9 @@ GLAPI void GLAPIENTRY glCopyTexSubImage3D( GLenum target, GLint level,
 #define GL_INGR_blend_func_separate	1
 #define GL_ARB_multitexture		1
 #define GL_NV_texgen_reflection		1
+#define GL_PGI_misc_hints               1
+#define GL_EXT_compiled_vertex_array    1
+#define GL_EXT_clip_volume_hint         1
 
 
 #ifdef macintosh

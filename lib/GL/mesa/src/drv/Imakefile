@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/Imakefile,v 1.1 1999/06/14 07:31:11 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/Imakefile,v 1.2 1999/06/27 14:07:29 dawes Exp $
 XCOMM $PI: xc/lib/GL/mesa/src/drv/Imakefile,v 1.3 1999/06/14 21:10:41 faith Exp $
 
 #define DoNormalLib NormalLibGlx
@@ -12,12 +12,16 @@ XCOMM $PI: xc/lib/GL/mesa/src/drv/Imakefile,v 1.3 1999/06/14 21:10:41 faith Exp 
 
 #if GlxUseBuiltInDRIDriver
 #if GlxBuiltInGamma
-DRIVER = gamma
+DRIVER += gamma
+#endif
+#if GlxBuiltInTdfx
+DRIVER += tdfx
 #endif
 
 SUBDIRS = $(DRIVER)
 #else
-SUBDIRS = gamma
+SUBDIRS += gamma
+SUBDIRS += tdfx
 #endif
 
 MakeSubdirs($(SUBDIRS))

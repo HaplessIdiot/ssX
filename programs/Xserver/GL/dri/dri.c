@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.3 1999/07/04 06:38:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.6 1999/12/02 20:55:29 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -69,6 +69,9 @@ static int DRIScreenPrivIndex = -1;
 static int DRIWindowPrivIndex = -1;
 static unsigned long DRIGeneration = 0;
 static unsigned int DRIDrawableValidationStamp = 0;
+/* We know there will be one extra unlock during startup. Setting this to
+   -1, flags that we are in this initialization case */
+static int lockRefCount=-1;
 
 static RESTYPE DRIDrawablePrivResType;
 static RESTYPE DRIContextPrivResType;
@@ -254,7 +257,7 @@ DRIFinishScreenInit(ScreenPtr pScreen)
 	
 	/* allocate memory for hidden context store */
 	pDRIPriv->hiddenContextStore
-	    = (void **)xalloc(pDRIPriv->pDriverInfo->contextSize);
+	    = (void *)xalloc(pDRIPriv->pDriverInfo->contextSize);
 	if (!pDRIPriv->hiddenContextStore) {
 	    DRIDrvMsg(pScreen->myNum, X_ERROR, 
 		      "failed to allocate hidden context\n");
@@ -264,7 +267,7 @@ DRIFinishScreenInit(ScreenPtr pScreen)
 
 	/* allocate memory for partial 3D context store */
 	pDRIPriv->partial3DContextStore
-	    = (void **)xalloc(pDRIPriv->pDriverInfo->contextSize);
+	    = (void *)xalloc(pDRIPriv->pDriverInfo->contextSize);
 	if (!pDRIPriv->partial3DContextStore) {
 	    DRIDrvMsg(pScreen->myNum, X_ERROR, 
 		      "[DRI] failed to allocate partial 3D context\n");
@@ -368,6 +371,8 @@ DRICloseScreen(ScreenPtr pScreen)
 		      reserved_count, reserved_count > 1 ? "s" : "");
 	}
 
+	DRIUnlock(pScreen);
+	lockRefCount=-1;
 	DRIDrvMsg(pScreen->myNum, X_INFO,
 		  "[drm] unmapping %d bytes of SAREA 0x%08lx at %p\n",
 		  pDRIPriv->pDriverInfo->SAREASize,
@@ -543,7 +548,7 @@ DRICreateContextPrivFromHandle(ScreenPtr pScreen,
     if (!(pDRIContextPriv = xalloc(contextPrivSize))) {
 	return NULL;
     }
-    pDRIContextPriv->pContextStore = (void **)(pDRIContextPriv + 1);
+    pDRIContextPriv->pContextStore = (void *)(pDRIContextPriv + 1);
 
     drmAddContextTag(pDRIPriv->drmFD, hHWContext, pDRIContextPriv);
     
@@ -591,6 +596,7 @@ DRIDestroyContextPriv(DRIContextPrivPtr pDRIContextPriv)
 	if (drmDestroyContext(pDRIPriv->drmFD, pDRIContextPriv->hwContext))
 	    return FALSE;
     }
+
 				/* Remove the tag last to prevent a race
                                    condition where the context has pending
                                    buffers.  The context can't be re-used
@@ -614,6 +620,7 @@ DRICreateContext(
     __GLXvisualConfig *pGLXVis = pGLXScreen->pGlxVisual;
     void **pVisualConfigPriv = pGLXScreen->pVisualPriv;
     DRIContextPrivPtr pDRIContextPriv;
+    void *contextStore;
     int visNum;
 
     /* Find the GLX visual associated with the one requested */
@@ -631,11 +638,13 @@ DRICreateContext(
 	return FALSE;
     }
 
+    contextStore=DRIGetContextStore(pDRIContextPriv);
     if (pDRIPriv->pDriverInfo->CreateContext) {
 	if (!((*pDRIPriv->pDriverInfo->CreateContext)(pScreen, 
 				                      visual, 
 				                      *pHWContext, 
-				                      *pVisualConfigPriv))) {
+				                      *pVisualConfigPriv,
+						      contextStore))) {
 	    DRIDestroyContextPriv(pDRIContextPriv);
 	    return FALSE;
 	}
@@ -665,7 +674,16 @@ DRIContextPrivDelete(
     XID id)
 {
     DRIContextPrivPtr pDRIContextPriv = (DRIContextPrivPtr)pResource;
+    DRIScreenPrivPtr pDRIPriv;
+    void *contextStore;
 
+    pDRIPriv = DRI_SCREEN_PRIV(pDRIContextPriv->pScreen);
+    if (pDRIPriv->pDriverInfo->DestroyContext) {
+      contextStore=DRIGetContextStore(pDRIContextPriv);
+      (pDRIPriv->pDriverInfo->DestroyContext)(pDRIContextPriv->pScreen,
+					     pDRIContextPriv->hwContext,
+					     contextStore);
+    }
     return DRIDestroyContextPriv(pDRIContextPriv);
 }
 
@@ -873,8 +891,12 @@ DRIGetDrawableInfo(
 	    *stamp = pDRIPriv->pSAREA->drawableTable[*index].stamp;
 	    *X = (int)(pWin->drawable.x);
 	    *Y = (int)(pWin->drawable.y);
+#if 0
 	    *W = (int)(pWin->winSize.extents.x2 - pWin->winSize.extents.x1);
 	    *H = (int)(pWin->winSize.extents.y2 - pWin->winSize.extents.y1);
+#endif
+	    *W = (int)(pWin->drawable.width);
+	    *H = (int)(pWin->drawable.height);
 	    *numClipRects = REGION_NUM_RECTS(&pWin->clipList);
 	    *pClipRects = (XF86DRIClipRectPtr)REGION_RECTS(&pWin->clipList);
 	}
@@ -939,8 +961,7 @@ DRIWakeupHandler(
     ScreenPtr pScreen = screenInfo.screens[screenNum];
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
 
-    DRM_LIGHT_LOCK(pDRIPriv->drmFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
-
+    DRILock(pScreen);
     if (pDRIPriv->pDriverInfo->driverSwapMethod == DRI_HIDE_X_CONTEXT) {
 	/* hide X context by swapping 2D component here */
 	(*pDRIPriv->pDriverInfo->SwapContext)(pScreen,
@@ -991,8 +1012,7 @@ DRIBlockHandler(
 					      DRI_2D_CONTEXT,
 					      pDRIPriv->partial3DContextStore);
     }
-
-    DRM_UNLOCK(pDRIPriv->drmFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
+    DRIUnlock(pScreen);
 }
 
 void 
@@ -1006,9 +1026,9 @@ DRISwapContext(
     DRIContextPrivPtr newContext      = (DRIContextPrivPtr)newctx;
     ScreenPtr         pScreen         = newContext->pScreen;
     DRIScreenPrivPtr  pDRIPriv        = DRI_SCREEN_PRIV(pScreen);
-    void**            oldContextStore = NULL;
+    void*             oldContextStore = NULL;
     DRIContextType    oldContextType;
-    void**            newContextStore = NULL;
+    void*             newContextStore = NULL;
     DRIContextType    newContextType;
     DRISyncType       syncType;
 #ifdef DEBUG
@@ -1148,10 +1168,10 @@ DRISwapContext(
 					  newContextStore);
 }
 
-void** 
+void* 
 DRIGetContextStore(DRIContextPrivPtr context)
 {
-    return((void **)context->pContextStore);
+    return((void *)context->pContextStore);
 }
 
 void 
@@ -1443,3 +1463,44 @@ DRIGetDrawableIndex(
 
     return index;
 }
+
+void
+DRILock(ScreenPtr pScreen) {
+    DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
+
+    if (!lockRefCount)
+      DRM_LIGHT_LOCK(pDRIPriv->drmFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
+    lockRefCount++;
+}
+
+void
+DRIUnlock(ScreenPtr pScreen) {
+    DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
+
+    if (lockRefCount>0) lockRefCount--;
+    else {
+      if (lockRefCount==-1) {
+	lockRefCount=0;
+	return;
+      }
+      ErrorF("DRIUnlock called when not locked\n");
+      return;
+    }
+    if (!lockRefCount)
+      DRM_UNLOCK(pDRIPriv->drmFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
+}
+
+void *DRIGetSAREAPrivate(ScreenPtr pScreen)
+{
+  DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
+  if (!pDRIPriv) return 0;
+  return ((void*)pDRIPriv->pSAREA)+sizeof(XF86DRISAREARec);
+}
+
+drmContext DRIGetContext(ScreenPtr pScreen)
+{
+  DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
+  if (!pDRIPriv) return 0;
+  return pDRIPriv->myContext;
+}
+  

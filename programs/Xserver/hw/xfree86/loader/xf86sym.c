@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.117 1999/12/13 01:39:53 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.118 1999/12/13 23:38:16 robin Exp $ */
 
 /*
  *
@@ -639,6 +639,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86getenv)
    SYMFUNC(xf86getpagesize)
    SYMFUNC(xf86hypot)
+   SYMFUNC(xf86qsort)
    SYMFUNC(xf86ioctl)
    SYMFUNC(xf86isalnum)
    SYMFUNC(xf86isalpha)

@@ -1,14 +1,14 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.4 1999/06/14 07:31:43 dawes Exp $
 XCOMM $PI: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.6 1999/03/15 21:36:10 martin Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
-LinkSourceFile(xmesa1.c,../../../../../../lib/GL/mesa/src/X)
-LinkSourceFile(xmesa2.c,../../../../../../lib/GL/mesa/src/X)
-LinkSourceFile(xmesa3.c,../../../../../../lib/GL/mesa/src/X)
-LinkSourceFile(xmesa4.c,../../../../../../lib/GL/mesa/src/X)
-LinkSourceFile(xmesaP.h,../../../../../../lib/GL/mesa/src/X)
+LinkSourceFile(xmesa1.c,../../../../../../extras/Mesa/src/X)
+LinkSourceFile(xmesa2.c,../../../../../../extras/Mesa/src/X)
+LinkSourceFile(xmesa3.c,../../../../../../extras/Mesa/src/X)
+LinkSourceFile(xmesa4.c,../../../../../../extras/Mesa/src/X)
+LinkSourceFile(xmesaP.h,../../../../../../extras/Mesa/src/X)
 
 LinkSourceFile(compsize.c,../../../../../../lib/GL/glx)
 LinkSourceFile(size.h,../../../../../../lib/GL/glx)

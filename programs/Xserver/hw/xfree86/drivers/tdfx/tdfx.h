@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.4 1999/09/27 06:29:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.5 1999/09/27 14:33:44 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -30,9 +30,13 @@ typedef struct _TDFXRec *TDFXPtr;
 
 #ifdef PROP_3DFX
 #include "tdfx_priv.h"
+#else
+#define PROPDATA
+#define PROPSAREADATA
 #endif
 extern Bool TDFXInitPrivate(ScreenPtr pScreen);
 extern void TDFXShutdownPrivate(ScreenPtr pScreen);
+extern void TDFXSwapContextPrivate(ScreenPtr pScreen);
 
 #ifdef XF86DRI
 extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
@@ -40,9 +44,9 @@ extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
 
 #if 0
 /* These are not normally turned on. They are only included for debugging. */
-#define TDFX_DEBUG_CMDS
-#define TRACEACCEL 1
 #define TRACE 1
+#define TRACEACCEL 1
+#define TDFX_DEBUG_CMDS
 #define TRACECURS 1
 #define REGDEBUG 1
 #endif
@@ -81,6 +85,7 @@ typedef char (*TDFXReadIndexedByteFunc)(TDFXPtr pTDFX, int addr,
 typedef void (*TDFXWriteWordFunc)(TDFXPtr pTDFX, int addr, int value);
 typedef int (*TDFXReadWordFunc)(TDFXPtr pTDFX, int addr);
 typedef void (*TDFXSyncFunc)(ScrnInfoPtr pScrn);
+typedef void (*TDFXBufferFunc)(TDFXPtr pTDFX, int which);
 
 typedef struct {
   unsigned int vidcfg;
@@ -99,6 +104,12 @@ typedef struct {
   unsigned int dstbaseaddr;
   unsigned char ExtVga[2];
 } TDFXRegRec, *TDFXRegPtr;
+
+typedef struct TextureData_t {
+  int contextid;
+  void *data;
+  struct TextureData_t *next;
+} TextureData;
 
 typedef struct _TDFXRec {
   unsigned char *MMIOBase;
@@ -135,7 +146,10 @@ typedef struct _TDFXRec {
   int lowMemLoc;
   int cursorOffset;
   int fbOffset;
+  int backOffset;
+  int depthOffset;
   int texOffset;
+  int texSize;
   TDFXWriteIndexedByteFunc writeControl;
   TDFXReadIndexedByteFunc readControl;
   TDFXWriteWordFunc writeLong;
@@ -144,9 +158,7 @@ typedef struct _TDFXRec {
   int syncDone;
   int scanlineWidth;
   int *scanlineColorExpandBuffers[2];
-#ifdef PROP_3DFX
   PROPDATA;
-#endif
 #ifdef XF86DRI
   Bool directRenderingEnabled;
   DRIInfoPtr pDRIInfo;
@@ -158,11 +170,22 @@ typedef struct _TDFXRec {
 #endif
 } TDFXRec;
 
+typedef struct {
+  PROPSAREADATA;
+  int fifoOwner;
+  int CtxOwner;
+  int TexOwner;
+} TDFXSAREAPriv;
+
 #define TDFXPTR(p) ((TDFXPtr)((p)->driverPrivate))
 
 #define DRAW_STATE_CLIPPING 0x1
 #define DRAW_STATE_TRANSPARENT 0x2
 #define DRAW_STATE_CLIP1CHANGED 0x4
+
+#define TDFX_FRONT 0
+#define TDFX_BACK 1
+#define TDFX_DEPTH 2
 
 #define TDFX2XCUTOFF 135000
 
@@ -174,6 +197,7 @@ extern void TDFXDRICloseScreen(ScreenPtr pScreen);
 extern Bool TDFXDRIFinishScreenInit(ScreenPtr pScreen);
 extern Bool TDFXDGAInit(ScreenPtr pScreen);
 extern void TDFXCursorGrabMemory(ScreenPtr pScreen);
+extern void TDFXSetLFBConfig(TDFXPtr pTDFX);
 
 extern Bool TDFXSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 extern void TDFXAdjustFrame(int scrnIndex, int x, int y, int flags);
@@ -185,6 +209,45 @@ extern int TDFXReadLongMMIO(TDFXPtr pTDFX, int addr);
 
 extern void TDFXNeedSync(ScrnInfoPtr pScrn);
 extern void TDFXCheckSync(ScrnInfoPtr pScrn);
+
+extern void TDFXSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, 
+					   int ydir, int rop,
+					   unsigned int planemask, 
+					   int trans_color);
+extern void TDFXSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int srcX, 
+					     int srcY, int dstX, int dstY, 
+					     int w, int h);
+extern void TDFXSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop, 
+				  unsigned int planemask);
+extern void TDFXSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, 
+					int w, int h);
+
+#ifndef PROP_3DFX
+#define DECLARE(a)
+#define DECLARE_LAUNCH(size, x)
+#ifdef TDFX_DEBUG_CMDS
+#define TDFXMakeRoom(p, n) \
+  do { \
+    if (cmdCnt) \
+      ErrorF("Previous TDFXMakeRoom passed incorrect size\n"); \
+    cmdCnt=n; \
+    lastAddr=0;
+    TDFXMakeRoomNoProp(p, n); \
+  } while(0)
+#define TDFXWriteLong(p, a, v) \
+  do { \
+    if (lastAddr && a<lastAddr) \
+      ErrorF("TDFXWriteLong not ordered\n"); \
+    lastAddr=a; \
+    cmdCnt--; \
+    TDFXWriteLongMMIO(p, a, v); \
+  while (0)
+#else
+#define TDFXMakeRoom(p, n) TDFXMakeRoomNoProp(p, n)
+#define TDFXWriteLong(p, a, v) TDFXWriteLongMMIO(p, a, v)
+#endif
+#define TDFXSendNOP TDFXSendNOPNoProp
+#endif
 
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.3 1999/06/14 07:23:36 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -67,6 +67,7 @@ GLXContext CreateContext(Display *dpy, XVisualInfo *vis,
     __GLXdisplayPrivate *priv;
 #endif
 
+    if (getenv("DRI_ALWAYS_INDIRECT")) allowDirect = GL_FALSE;
     opcode = __glXSetupForCommand(dpy);
     if (!opcode) {
 	return NULL;
@@ -375,7 +376,8 @@ void glXUseXFont(Font font, int first, int count, int listBase)
 
 #ifdef GLX_DIRECT_RENDERING
     if (gc->isDirect) {
-	/* NOT_DONE: This does not work yet */
+      DRI_glXUseXFont(font, first, count, listBase);
+      return;
     }
 #endif
 
