@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.h,v 1.4 2001/04/19 12:40:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.h,v 1.5 2001/04/20 02:53:59 tsi Exp $ */
 
 /* modified from tdfx_dri.h */
 
@@ -66,5 +66,4 @@ void SISDRICloseScreen(ScreenPtr pScreen);
 Bool SISDRIFinishScreenInit(ScreenPtr pScreen);
 
 #endif
-
 #endif

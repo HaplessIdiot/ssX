@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.2 2001/04/19 12:40:33 alanh Exp $ */
 
 /*
  * sis_video.c: SIS Xv driver. Based on the mga Xv driver by Mark Vojkovich
@@ -212,9 +212,8 @@ void SISInitVideo(ScreenPtr pScreen)
     XF86VideoAdaptorPtr newAdaptor = NULL;
     int num_adaptors;
     
-    if (pScrn->bitsPerPixel != 8) 
-    {
-    newAdaptor = SISSetupImageVideo(pScreen);
+    if (pScrn->bitsPerPixel != 8) {
+        newAdaptor = SISSetupImageVideo(pScreen);
     }
 
     num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
@@ -224,8 +223,8 @@ void SISInitVideo(ScreenPtr pScreen)
         num_adaptors = 1;
         adaptors = &newAdaptor;
     } else {
-        newAdaptors =  /* need to free this someplace */
-        xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr*));
+        /* need to free this someplace */
+        newAdaptors = xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr*));
         if(newAdaptors) {
         memcpy(newAdaptors, adaptors, num_adaptors * 
                     sizeof(XF86VideoAdaptorPtr));
@@ -337,7 +336,7 @@ typedef struct {
     CARD8   contrastCtrl;
     CARD8   contrastFactor;
 
-        CARD8   lineBufSize;
+    CARD8   lineBufSize;
 
     CARD8 (*VBlankActiveFunc)(SISPtr);
     CARD32 (*GetScanLineFunc)(SISPtr pSIS);
@@ -814,7 +813,7 @@ set_colorkey(SISPtr pSIS, CARD32 colorkey)
     g = (CARD8)((colorkey>>8) & 0xFF);
     r = (CARD8)((colorkey>>16) & 0xFF);
 
-        /* Activate the colorkey mode */
+    /* Activate the colorkey mode */
     setvideoreg(pSIS, Index_VI_Overlay_ColorKey_Blue_Min  ,(CARD8)b);
     setvideoreg(pSIS, Index_VI_Overlay_ColorKey_Green_Min ,(CARD8)g);
     setvideoreg(pSIS, Index_VI_Overlay_ColorKey_Red_Min   ,(CARD8)r);
@@ -1134,7 +1133,7 @@ SISPutImage(
       /* TODO: use xf86AllocateOffscreenLinear is better */
       if(pPriv->fbAreaPtr) {
         /* TODO: resize */     
-    xf86FreeOffscreenArea(pPriv->fbAreaPtr);
+        xf86FreeOffscreenArea(pPriv->fbAreaPtr);
       }
       depth = (pScrn->bitsPerPixel + 7 ) / 8;
       pitch = pScrn->displayWidth * depth;

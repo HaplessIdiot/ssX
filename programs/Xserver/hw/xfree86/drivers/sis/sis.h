@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.20 2001/04/19 12:40:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.21 2001/05/04 19:05:44 dawes Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -144,6 +144,7 @@ typedef struct {
     Bool                DGAactive;
     int                 DGAViewportStatus;
     Bool                NoAccel;
+    Bool                NoXvideo;
     Bool                HWCursor;
     Bool                UsePCIRetry;
     Bool                TurboQueue;
