@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xsm/restart.c,v 1.3 1999/03/07 14:23:43 dawes Exp $ */
 
 #include "xsm.h"
 #include "log.h"
@@ -542,7 +542,7 @@ StartDefaultApps (void)
     buf = NULL;
     buflen = 0;
 
-    while (getline(&buf, &buflen, f))
+    while (getnextline(&buf, &buflen, f))
     {
 	char logtext[256];
 
