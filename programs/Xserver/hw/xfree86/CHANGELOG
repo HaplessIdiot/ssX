@@ -1,4 +1,6 @@
 XFree86 4.4.99.16 (xx October 2004)
+ 199. Fix for server crash in the screen saver extension (David Dawes,
+      reported by Josip Deanovic).
  198. Fix detection of phantom PCI devices again (Marc La France).
  197. Fix an integer overflow in libICE/libSM (Radu Octavian, David Dawes).
  196. Fix NULL dereference in libSM when given a bad previous session ID
@@ -19126,7 +19128,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3327 2004/10/13 17:20:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3328 2004/10/17 23:32:12 tsi Exp $
 
 
 

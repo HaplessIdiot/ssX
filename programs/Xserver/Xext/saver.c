@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/Xext/saver.c,v 3.9 2004/03/02 19:43:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/saver.c,v 3.10 2004/06/01 00:16:58 dawes Exp $ */
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1200,7 +1200,7 @@ ScreenSaverSetAttributes (ClientPtr client)
 	pVlist++;
     }
     if (pPriv->attr)
-	FreeScreenAttr (pPriv->attr);
+	FreeResource(pPriv->attr->resource, AttrType);
     pPriv->attr = pAttr;
     pAttr->resource = FakeClientID (client->index);
     if (!AddResource (pAttr->resource, AttrType, (pointer) pAttr))
@@ -1229,7 +1229,7 @@ ScreenSaverUnsetAttributes (ClientPtr client)
     pPriv = GetScreenPrivate (pDraw->pScreen);
     if (pPriv && pPriv->attr && pPriv->attr->client == client)
     {
-    	FreeScreenAttr (pPriv->attr);
+	FreeResource(pPriv->attr->resource, AttrType);
 	pPriv->attr = NULL;
 	CheckScreenPrivate (pDraw->pScreen);
     }
