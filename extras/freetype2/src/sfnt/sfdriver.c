@@ -14,7 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/extras/freetype2/src/sfnt/sfdriver.c,v 1.2 2003/05/27 22:26:22 tsi Exp $ */
+/* $XFree86: xc/extras/freetype2/src/sfnt/sfdriver.c,v 1.3 2003/05/29 02:13:05 dawes Exp $ */
 
 #include <ft2build.h>
 #include FT_INTERNAL_SFNT_H
@@ -287,6 +287,8 @@
     /* see `ttsbit.h' */
     tt_face_set_sbit_strike,
     tt_face_load_sbit_strikes,
+    tt_find_sbit_image,
+    tt_load_sbit_metrics,
     tt_face_load_sbit_image,
     tt_face_free_sbit_strikes,
 
@@ -295,6 +297,8 @@
     0,
     0,
     0,
+    0, 
+    0, 
     0,
     0,
 

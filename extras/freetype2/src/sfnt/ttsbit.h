@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType and OpenType embedded bitmap support (specification).       */
 /*                                                                         */
-/*  Copyright 1996-2000 by                                                 */
+/*  Copyright 1996-2001, 2002 by                                           */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -14,58 +14,60 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
+/* $XFree86$ */
 
 
-#ifndef TTSBIT_H
-#define TTSBIT_H
+#ifndef __TTSBIT_H__
+#define __TTSBIT_H__
 
 
-#ifdef FT_FLAT_COMPILE
-
+#include <ft2build.h>
 #include "ttload.h"
 
-#else
 
-#include <sfnt/ttload.h>
-
-#endif
+FT_BEGIN_HEADER
 
 
-#ifdef __cplusplus
-  extern "C" {
-#endif
+  FT_LOCAL( FT_Error )
+  tt_face_load_sbit_strikes( TT_Face    face,
+                             FT_Stream  stream );
+
+  FT_LOCAL( void )
+  tt_face_free_sbit_strikes( TT_Face  face );
 
 
-  FT_LOCAL
-  FT_Error  TT_Load_SBit_Strikes( TT_Face    face,
-                                  FT_Stream  stream );
+  FT_LOCAL( FT_Error )
+  tt_face_set_sbit_strike( TT_Face    face,
+                           FT_Int     x_ppem,
+                           FT_Int     y_ppem,
+                           FT_ULong  *astrike_index );
 
-  FT_LOCAL
-  void      TT_Free_SBit_Strikes( TT_Face  face );
+  FT_LOCAL( FT_Error )
+  tt_find_sbit_image( TT_Face          face,
+                      FT_UInt          glyph_index,
+                      FT_ULong         strike_index,
+                      TT_SBit_Range   *arange,
+                      TT_SBit_Strike  *astrike,
+                      FT_ULong        *aglyph_offset );
+
+  FT_LOCAL( FT_Error )
+  tt_load_sbit_metrics( FT_Stream        stream,
+                        TT_SBit_Range    range,
+                        TT_SBit_Metrics  metrics );
+
+  FT_LOCAL( FT_Error )
+  tt_face_load_sbit_image( TT_Face              face,
+                           FT_ULong             strike_index,
+                           FT_UInt              glyph_index,
+                           FT_UInt              load_flags,
+                           FT_Stream            stream,
+                           FT_Bitmap           *map,
+                           TT_SBit_MetricsRec  *metrics );
 
 
-  FT_LOCAL
-  FT_Error  TT_Set_SBit_Strike( TT_Face    face,
-                                FT_Int     x_ppem,
-                                FT_Int     y_ppem,
-                                FT_ULong  *astrike_index );
+FT_END_HEADER
 
-  FT_LOCAL
-  FT_Error  TT_Load_SBit_Image( TT_Face           face,
-                                FT_ULong          strike_index,
-                                FT_UInt           glyph_index,
-                                FT_UInt           load_flags,
-                                FT_Stream         stream,
-                                FT_Bitmap        *map,
-                                TT_SBit_Metrics  *metrics );
-
-
-#ifdef __cplusplus
-  }
-#endif
-
-
-#endif /* TTSBIT_H */
+#endif /* __TTSBIT_H__ */
 
 
 /* END */
