@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.5 2004/02/13 23:58:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.6 2005/01/28 02:11:20 dawes Exp $ */
 /*
  * Copyright 1999-2005 The XFree86 Project, Inc.
  * All rights reserved.
@@ -56,7 +56,8 @@
 #include "mipointer.h"
 #include <sys/vuid_event.h>
 
-#define DEFAULT_MOUSE_DEV		"/dev/mouse"
+#define DEFAULT_MOUSE_VUID_DEV		"/dev/mouse"
+#define DEFAULT_MOUSE_PS2_DEV		"/dev/kdmouse"
 
 /* Names of protocols that are handled internally here. */
 
@@ -301,19 +302,58 @@ CheckProtocol(const char *protocol)
 static const char *
 DefaultProtocol(void)
 {
-    return "VUID";
+    return "Auto";
+}
+
+static Bool
+haveVUID(int fd)
+{
+    Bool needToClose = FALSE;
+    int ret, fmt;
+
+    if (fd == -1) {
+	needToClose = TRUE;
+	SYSCALL (fd = open(DEFAULT_MOUSE_VUID_DEV, O_RDWR | O_NONBLOCK));
+    }
+    if (fd == -1) {
+#ifdef DEBUG
+	ErrorF("Cannot open %s (%s)\n", DEFAULT_MOUSE_VUID_DEV,
+		strerror(errno));
+#endif
+	return FALSE;
+    }
+
+    ret = ioctl(fd, VUIDGFORMAT, &fmt);
+    if (needToClose)
+	close(fd);
+
+    if (ret == -1) {
+#ifdef DEBUG
+	ErrorF("VUIDGFORMAT ioctl failed (%s)\n", strerror(errno));
+#endif
+	return FALSE;
+    } else
+	return TRUE;
 }
 
 static const char *
 SetupAuto(InputInfoPtr pInfo, int *protoPara)
 {
-    return DefaultProtocol();
+    if (haveVUID(pInfo->fd))
+	return "VUID";
+    else
+	return "PS/2";
 }
 
 static const char *
 FindDevice(InputInfoPtr pInfo, const char *protocol, int flags)
 {
-    const char *dev = DEFAULT_MOUSE_DEV;
+    const char *dev;
+
+    if (haveVUID(-1))
+	dev = DEFAULT_MOUSE_VUID_DEV;
+    else
+	dev = DEFAULT_MOUSE_PS2_DEV;
 
     pInfo->conf_idev->commonOptions =
 	xf86AddNewOption(pInfo->conf_idev->commonOptions, "Device", dev);
