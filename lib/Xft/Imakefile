@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.25tsi Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.26 2003/10/24 16:20:53 tsi Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -81,9 +81,12 @@ XRENDER_CFLAGS=-I$(INCROOT)
 
 #endif
 
+RPATH_CFLAG = HardCodeLibdirFlag
+
 SUBSTVARS=prefix="$(PROJECTROOT)" \
 	  exec_prefix="$(BINDIR)" \
 	  libdir="$(USRLIBDIR)" \
+	  hardcode_libdir_flag_spec="$(RPATH_CFLAG)" \
 	  includedir="$(INCROOT)" \
 	  PACKAGE_VERSION="$(SOXFTREV).$(XFT_REVISION)" \
 	  FREETYPE_LIBS="$(FREETYPE_LIBS)" \

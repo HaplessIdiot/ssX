@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.12tsi Exp $
+XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.13 2003/10/24 16:21:12 tsi Exp $
 
 #define DoNormalLib NormalLibFontconfig
 #define DoSharedLib SharedLibFontconfig
@@ -75,9 +75,12 @@ FONTDIRS=$(FONTDIR)
 FONTDIRS=/usr/share/fonts $(FONTDIR) $(MACFONTDIRS)
 #endif
 
+RPATH_CFLAG = HardCodeLibdirFlag
+
 SUBSTVARS=prefix=$(PROJECTROOT) \
           exec_prefix=$(BINDIR) \
           libdir=$(USRLIBDIR) \
+	  hardcode_libdir_flag_spec=$(RPATH_CFLAG) \
           includedir=$(INCROOT) \
           PACKAGE_VERSION=$(SOFONTCONFIGREV).$(FONTCONFIG_REVISION)
 
