@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.22 2001/05/10 10:17:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.23 2001/08/28 16:55:09 tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -345,6 +345,9 @@ AllocateArea(
 	if(!link) return NULL;
 
         area = &(link->area);
+        link->next = offman->UsedAreas;
+        offman->UsedAreas = link;
+        offman->NumUsedAreas++;
 	break;
    }
 
@@ -376,8 +379,6 @@ AllocateArea(
 	   REGION_UNION(pScreen, offman->FreeBoxes, offman->FreeBoxes, &NewReg);
 	   REGION_UNINIT(pScreen, &NewReg); 
 
-	   offman->NumUsedAreas--;
-
            area = &(link->area);
 	   break;
 	}
@@ -397,10 +398,6 @@ AllocateArea(
         REGION_INIT(pScreen, &NewReg, &(area->box), 1);
 	REGION_SUBTRACT(pScreen, offman->FreeBoxes, offman->FreeBoxes, &NewReg);
 	REGION_UNINIT(pScreen, &NewReg);
-
-	link->next = offman->UsedAreas;
-	offman->UsedAreas = link;
-	offman->NumUsedAreas++;
    }
 
    return area;
