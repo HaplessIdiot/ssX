@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.101 2004/01/09 00:35:00 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.102 2004/03/21 11:11:44 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -353,7 +353,7 @@ InstallManPageAliasesBase(file,destdir,aliases)
  */
 #ifndef InstallFontAliasesNoComment
 #define InstallFontAliasesNoComment(dest)				@@\
-install:: fonts.alias							@@\
+install::								@@\
 	$(RM) _fonts.alias 						@@\
 	sed -e '/^!/d' -e '/^$$/d' < fonts.alias > _fonts.alias		@@\
 	MakeDir($(DESTDIR)dest)						@@\

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/bsdiLib.rules,v 3.5 2004/03/12 18:10:25 tsi Exp $
+XCOMM $XFree86: xc/config/cf/bsdiLib.rules,v 3.6 2004/03/25 03:19:15 dawes Exp $
 
 /*
  * BSDI shared library rules (converted from SVr4/Linux rules)
@@ -47,7 +47,7 @@ XCOMM $XFree86: xc/config/cf/bsdiLib.rules,v 3.5 2004/03/12 18:10:25 tsi Exp $
  */
 #ifndef InstallSharedLibrary
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
-install:: Concat(lib,libname.so.rev) 					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
 	@if $(SOSYMLINK); then (set -x; \				@@\
@@ -243,7 +243,7 @@ clean::									@@\
 
 #ifndef InstallLibrary
 #define	InstallLibrary(libname,dest)					@@\
-install:: LibraryTargetName(libname)					@@\
+install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS)			  \
 	    LibraryTargetName(libname) $(DESTDIR)dest			@@\
