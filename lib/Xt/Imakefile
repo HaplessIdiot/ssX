@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/116 1995/11/30 19:05:17 kaleb $
-XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.3 1996/01/05 13:12:47 dawes Exp $
+XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.4 1996/01/24 21:58:29 dawes Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -207,16 +207,6 @@ UNSHAREDOBJS = sharedlib.o
 
 #include <Library.tmpl>
 
-STRINGS_FILES = StringDefs.c StringDefs.h Shell.h
-STRINGS_TMPLS = util/StrDefs.ct util/StrDefs.ht util/Shell.ht
-#ifdef OS2Architecture
-STRING_LIST = util\string.list
-#else
-STRING_LIST = util/string.list
-#endif
-
-ToolkitMakeStrings($(STRINGS_FILES),$(STRING_LIST),$(STRINGSABIOPTIONS),$(STRINGS_TMPLS),StringDefs.c)
-
 SpecialCLibObjectRule(Intrinsic,$(ICONFIGFILES),$(SRCH_DEFINES))
 SpecialCLibObjectRule(Error,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialCLibObjectRule(Alloc,$(_NOOP_),$(ALLOC_DEFINES))
@@ -234,5 +224,15 @@ SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 #ifdef MinixArchitecture
 SpecialCLibObjectRule(Shell,$(ICONFIGFILES),-DXT_NO_SM)
 #endif
+
+STRINGS_FILES = StringDefs.c StringDefs.h Shell.h
+STRINGS_TMPLS = util/StrDefs.ct util/StrDefs.ht util/Shell.ht
+#ifdef OS2Architecture
+STRING_LIST = util\string.list
+#else
+STRING_LIST = util/string.list
+#endif
+
+ToolkitMakeStrings($(STRINGS_FILES),$(STRING_LIST),$(STRINGSABIOPTIONS),$(STRINGS_TMPLS),StringDefs.c)
 
 DependTarget()
