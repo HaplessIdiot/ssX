@@ -1,4 +1,4 @@
-/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_driver.c-arc   1.37   30 Nov 2000 16:59:58   Frido  $ */
+/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_driver.c-arc   1.40   06 Dec 2000 15:35:00   Frido  $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.4 2000/12/02 15:30:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.5 2000/12/05 21:18:37 dawes Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -86,10 +86,10 @@ static void SMI_ProbeDDC(ScrnInfoPtr pScrn, int index);
 
 #define SILICONMOTION_NAME			"Silicon Motion"
 #define SILICONMOTION_DRIVER_NAME	"siliconmotion"
-#define SILICONMOTION_VERSION_NAME	"1.1.9"
+#define SILICONMOTION_VERSION_NAME	"1.2.0"
 #define SILICONMOTION_VERSION_MAJOR	1
-#define SILICONMOTION_VERSION_MINOR	1
-#define SILICONMOTION_PATCHLEVEL	9
+#define SILICONMOTION_VERSION_MINOR	2
+#define SILICONMOTION_PATCHLEVEL	0
 #define SILICONMOTION_DRIVER_VERSION	( (SILICONMOTION_VERSION_MAJOR << 24)  \
 										| (SILICONMOTION_VERSION_MINOR << 16)  \
 										| (SILICONMOTION_PATCHLEVEL)		   \
@@ -1463,7 +1463,6 @@ SMI_WriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, SMIRegPtr restore)
 		/* Enable linear mode. */
 		outb(VGA_SEQ_INDEX, 0x18);
 		tmp = inb(VGA_SEQ_DATA);
-		pSmi->SR18Value = tmp;
 		outb(VGA_SEQ_DATA, tmp | 0x01);
 
 		/* Enable DPR/VPR registers. */
