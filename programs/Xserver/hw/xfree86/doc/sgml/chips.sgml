@@ -11,7 +11,7 @@
 <date> 19th July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.27 1999/08/14 10:49:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.28 1999/08/28 09:00:55 dawes Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -414,7 +414,7 @@ Option "Overlay"
 	multimedia engine to its limit, and some manufacturers have set a
 	default memory clock that will cause pixel errors with this option.
 	If you get pixel error with this option try using the
-	"<tt>SetMClk</tt>" to slow the memory clock.
+	"<tt>SetMClk</tt>" option to slow the memory clock.
 <tag>
 Option "ColorKey" "255" 
 </tag>
