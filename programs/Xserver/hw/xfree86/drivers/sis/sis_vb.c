@@ -36,7 +36,8 @@
 #include "sis_vb.h"
 #include "sis_dac.h"
 
-extern void    SISWaitRetraceCRT1(ScrnInfoPtr pScrn);
+extern void    	     SISWaitRetraceCRT1(ScrnInfoPtr pScrn);
+extern unsigned char SiS_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned char value);
 
 static const SiS_LCD_StStruct SiS300_LCD_Type[]=
 {
@@ -82,15 +83,22 @@ static Bool
 SISTestMonitorType(ScrnInfoPtr pScrn, int r, int g, int b)
 {
     SISPtr  pSiS = SISPTR(pScrn);
-    unsigned short testval = (r * 77) + (g * 151) + (b * 28);
+    unsigned char rr = r, gg = g, bb = b, vgainfo;
+    unsigned short testval;
 
-    if((testval & 0xff) > 0x80) testval += 0x100;
-    testval >>= 8;
+    vgainfo = SiS_GetSetBIOSScratch(pScrn, 0x489, 0xff);
+    if(!vgainfo) vgainfo = 0x11;
+
+    if(vgainfo & 0x06) {
+       testval = (r * 77) + (g * 151) + (b * 28);
+       if((testval & 0xff) > 0x80) testval += 0x100;
+       rr = gg = bb = (testval >> 8);
+    }
 
     outSISREG(SISCOLIDX,0x00);
-    outSISREG(SISCOLDATA,testval);
-    outSISREG(SISCOLDATA,testval);
-    outSISREG(SISCOLDATA,testval);
+    outSISREG(SISCOLDATA,rr);
+    outSISREG(SISCOLDATA,gg);
+    outSISREG(SISCOLDATA,bb);
 
     while(!(inSISREG(SISINPSTAT) & 0x01)) {}
     while(inSISREG(SISINPSTAT) & 0x01) {}
