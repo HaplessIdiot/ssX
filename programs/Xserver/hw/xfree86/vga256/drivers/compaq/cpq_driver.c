@@ -1,5 +1,5 @@
 /* $XConsortium: cpq_driver.c /main/6 1996/01/12 12:16:57 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.12 1996/06/29 09:08:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.13 1996/09/14 13:11:59 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -365,7 +365,7 @@ DisplayModePtr mode;
 		return(FALSE);
 #ifndef MONOVGA
 	new->std.Sequencer[0x02] = 0xff; /* write plane mask for 256 colors */
-	new->std.CRTC[0x13] = vga256InfoRec.virtualX >> 3;
+	new->std.CRTC[0x13] = vga256InfoRec.displayWidth >> 3;
 	new->std.CRTC[0x14] = 0x40;
 #endif
 

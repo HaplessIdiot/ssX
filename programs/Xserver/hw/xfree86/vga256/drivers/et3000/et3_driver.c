@@ -1,5 +1,5 @@
 /* $XConsortium: et3_driver.c /main/6 1996/01/12 12:17:02 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.14 1996/06/29 09:08:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.15 1996/09/14 13:12:04 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -388,7 +388,7 @@ ET3000Init(mode)
 #ifdef MONOVGA
   new->AuxillaryMode = 0xc8;	/* MCLK / 2, devil knows what's that */
   new->std.CRTC[5] |= 0x60;	/* Hsync skew */
-  new->std.CRTC[19] = vga256InfoRec.virtualX >> 5;
+  new->std.CRTC[19] = vga256InfoRec.displayWidth >> 5;
   /* This weird mode uses the DAC in an unusual way */
 #ifndef XF86VGA16
   if (first_time)

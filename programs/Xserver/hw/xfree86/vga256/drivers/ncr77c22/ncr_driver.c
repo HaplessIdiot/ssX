@@ -1,5 +1,5 @@
 /* $XConsortium: ncr_driver.c /main/6 1996/01/12 12:18:28 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.13 1996/06/29 09:08:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.14 1996/09/14 13:12:35 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -532,7 +532,7 @@ NCRInit(mode)
   new->std.CRTC[4]  = (mode->CrtcHSyncStart >> 2);
   new->std.CRTC[5]  = (((mode->CrtcHSyncEnd >> 2) & 0x20 ) << 2 )
     | (((mode->CrtcHSyncEnd >> 2)) & 0x1F);
-  new->std.CRTC[19] = vga256InfoRec.virtualX >> 3; /* we are in byte-mode */
+  new->std.CRTC[19] = vga256InfoRec.displayWidth >> 3; /* we are in byte-mode */
   new->std.CRTC[23] = 0xE3;		/* Countbytwo=0 */
 #else
   new->ExtHTime = 0x00;

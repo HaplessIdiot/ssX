@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.24 1996/06/29 09:09:02 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.25 1996/09/14 13:12:54 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1013,7 +1013,7 @@ PVGA1Init(mode)
     outw(COMMAND_BUFFER, 0);
 
 #ifndef MONOVGA
-  new->std.CRTC[19] = vga256InfoRec.virtualX >> 3; /* we are in byte-mode */
+  new->std.CRTC[19] = vga256InfoRec.displayWidth >> 3; /* we are in byte-mode */
   if (WDchipset == WD90C33)
     new->std.CRTC[20] = 0x00;	/* this needs to be 00 for wd90C33 */
 				/* should also be true for C31 too */
