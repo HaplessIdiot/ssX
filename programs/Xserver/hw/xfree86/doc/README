@@ -1,7 +1,7 @@
   README for XFree86[TM] 3.2
   The XFree86 Project, Inc
 
-  31 October 1996
+  26 October 1996
 
   XFree86 is a port of X11R6.1 that supports several Unix and Unix-like
   operating systems on Intel and other platforms.  This release consists
@@ -145,7 +145,7 @@
 
      PC98:
 
-        o  FreeBSD(98) 2.0.5, 2.1, 2.1.5
+        o  FreeBSD(98) 2.0.5, 2.1, 2.1.5, 2.2-current
 
         o  NetBSD/pc98 (based on NetBSD 1.2)
 
@@ -1120,7 +1120,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.63 1996/10/24 12:30:22 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.64 1996/10/26 09:38:53 dawes Exp $
 
 
 

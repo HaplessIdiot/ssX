@@ -1,6 +1,6 @@
-  README for XFree86 3.2 on FreeBSD 2.1.5
+  README for XFree86 3.2 on FreeBSD
   Rich Murphey, David Dawes
-  24 Oct 1996
+  26 Oct 1996
 
   1.  What and Where is XFree86?
 
@@ -18,13 +18,21 @@
   ftp.XFree86.org:/pub/XFree86/current
   <ftp://ftp.XFree86.org/pub/XFree86/current>
 
-  Binaries for XFree86 on FreeBSD are available from:
+  Binaries for XFree86 on FreeBSD 2.1.5 are available from:
 
   ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-2.1.5
   <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.1.5>
 
   XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-2.1.5
   <ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.1.5>
+
+  Binaries for XFree86 on FreeBSD 2.2-current are available from:
+
+  ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-current
+  <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-current>
+
+  XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-current
+  <ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-current>
 
   Send email to Rich-Murphey@Rice.edu or XFree86@XFree86.org if you have
   comments or suggestions about this file and we'll revise it.
@@ -40,7 +48,7 @@
   the minimum required run-time binaries only.
 
 
-     Required (10.4Mb):
+     Required (10.7Mb):
 
         X32bin.tgz
            all the executable X client applications and shared libs
@@ -54,15 +62,15 @@
      Required unless you have already customized your configuration
         files:
 
+
+
         X32cfg.tgz
            customizable xinit and xdm runtime configuration files
 
-     Choose at least one server ( 2.3Mb):
+     Choose at least one server (max 2.5Mb):
 
         X328514.tgz
            8-bit color for IBM 8514 and true compatibles.
-
-
 
         X32AGX.tgz
            8 and 16-bit color for AGX and XGA boards.
@@ -128,8 +136,6 @@
         X329NS3.tgz
            8 and 16-bit color for PC98 NEC S3 boards
 
-
-
         X329SPW.tgz
            8 and 16-bit color for PC98 S3 PW/PCSKB boards
 
@@ -187,6 +193,9 @@
   does not itself contain des and there is no more need for us to
   provide separate tar balls.
 
+
+
+
   2.1.  Full Install:
 
 
@@ -195,6 +204,7 @@
         abort if you unpack it as an ordinary user.  You must also use a
         ``umask'' value of 022 because the X server requires special
         permissions.
+
 
            % su
            # umask 022
@@ -262,6 +272,8 @@
            # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 
 
+
+
   2.2.  Minimal Install:
 
   First do numbers 1, 2 and 4 above. Then unpack the required archives:
@@ -315,6 +327,7 @@
 
 
   If you had already configured X11R6/lib/X11/xinit/xinitrc or
+
   X11R6/lib/X11/xdm/* omit the xinit-config or xdm-config archive or
   unpack it separately and merge in your customizations.
 
@@ -326,13 +339,11 @@
   applications.
 
 
-
-
-  NOTE: You don't need to uncompress the font files, but if
-  you uncompress them anyway you must run mkfontdir in the
-  corresponding font directory; otherwise your server will
-  abort with the message ``could not open default font
-  'fixed'''.
+       NOTE: You don't need to uncompress the font files, but if
+       you uncompress them anyway you must run mkfontdir in the
+       corresponding font directory; otherwise your server will
+       abort with the message ``could not open default font
+       'fixed'''.
 
 
   3.  Installing The Display Manager (xdm)
@@ -382,6 +393,7 @@
 
      o  The video card's chipset (e.g. ET4000, S3, etc).
 
+
      o  Your monitor's sync frequencies.
 
   The easiest way to find which device your mouse is plugged into is to
@@ -392,6 +404,8 @@
 
 
         % cat < /dev/tty00
+
+
 
 
   If you can't find the right mouse device then use ``dmesg|grep sio''
@@ -440,9 +454,11 @@
 
   6.  Rebuilding Kernels for X
 
-  The GENERIC FreeBSD 2.1.0 and 2.1.5 kernels support XFree86 without
-  any modifications required.  You do not need to make any changes to
-  the GENERIC kernel or any kernel configuration which is a superset.
+  The GENERIC FreeBSD 2.1.0, 2.1.5 and 2.2-current kernels support
+  XFree86 without any modifications required.  You do not need to make
+  any changes to the GENERIC kernel or any kernel configuration which is
+  a superset.
+
 
   For a general description of BSD kernel configuration get
   smm.02.config.ps.Z
@@ -460,9 +476,12 @@
         options                UCONSOLE                #X Console support
 
 
-  The generic FreeBSD 2.1.0 and 2.1.5 kernels are configured by default
-  with the syscons driver.  To configure your kernel similarly it should
-  have a line like this in /usr/src/sys/i386/conf/GENERIC:
+
+
+  The generic FreeBSD 2.1.0, 2.1.5 and 2.2-current kernels are
+  configured by default with the syscons driver.  To configure your
+  kernel similarly it should have a line like this in
+  /usr/src/sys/i386/conf/GENERIC:
 
 
 
@@ -506,6 +525,7 @@
 
   If you are using a SoundBlaster 16 on IRQ 2 (9), then you need a patch
   for sb16_dsp.c.  Otherwise a kernel configured with the SoundBlaster
+
   driver will claim interrupt 9 doesn't exist and X server will lock up.
 
   S3 cards and serial port COM 4 cannot be installed together on a
@@ -525,7 +545,6 @@
 
   To compile the sources on FreeBSD 1.1 and later, edit
   xc/config/cf/FreeBSD.cf to set the OS version parameters correctly,
-
   and then type:
 
 
@@ -571,6 +590,8 @@
 
      o  Amancio Hasty for 386BSD kernel and S3 chipset support.
 
+
+
      o  David Greenman, Nate Williams, Jordan Hubbard for FreeBSD kernel
         support.
 
@@ -581,34 +602,13 @@
         the Linux distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.19 1996/10/24 12:30:17 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.20 1996/10/26 09:38:47 dawes Exp $
 
 
 
 
 
   $XConsortium: FreeBSD.sgml /main/5 1995/11/12 19:59:27 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

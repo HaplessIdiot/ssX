@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.2
   The XFree86 Project, Inc
 
-  24 October 1996
+  26 October 1996
 
   This document describes the new features in XFree86 3.2 compared with
   the previous full release, 3.1.2.  It also includes installation
@@ -477,11 +477,6 @@
      o  Check README.trident distributed with this release for full
         details.
 
-     o  Known problems: ?
-
-        +  There is a problem with interlaced modes with the SVGA
-           driver.
-
   3.17.  Ark driver (SVGA server)
 
 
@@ -524,13 +519,12 @@
         and 32bpp operation.  Note, this support isn't currently present
         in the W32 accelerated server.
 
-
-
   3.19.  Alliance ProMotion driver (SVGA server)
 
 
      o  A driver for the Alliance ProMotion 6442 has been added (from
         Alliance Semiconductor). This has not been thoroughly tested.
+
 
   3.20.  NVidia NV1 / SGS Thomson STG2000 driver (SVGA server)
 
@@ -590,12 +584,12 @@
 
      o  16bpp and 24bpp (packed) support for the 65545 an above.
 
-
-
      o  BitBLT and some other acceleration for the 65545, 65546, 65548
         and 65550.
 
   3.25.  ALI driver (SVGA server)
+
+
 
 
      o  Interlaced modes now work with this driver.
@@ -657,13 +651,13 @@
         for libX11, libXaw, libXext, and libXtst have been incremented
         to 6.1.
 
-
      o  The client-side library code for the XFree86 extensions and the
         ScreenSaver extension has been moved into separate libraries.
         The old libXExExt has been removed.
 
      o  Colour support is now included by default in xterm.  I18N
         support in xterm has been improved (as part of X11R6.1).  If
+
         you've previously been using one of the many "color_xterm"
         variants, try this and let us know if you have any problems.
 
@@ -730,18 +724,32 @@
   The following are required for all installations:
 
 
-       preinst.sh      Pre-installation script
-       postinst.sh     Post-installation script
-       X32bin.tgz      Clients, run-time libs, and app-defaults files
-       X32doc.tgz      Documentation
-       X32fnts.tgz     75dpi, misc and PEX fonts
-       X32lib.tgz      Data files required at run-time
-       X32man.tgz      Manual pages
-       X32set.tgz      XF86Setup utility
-       X32VG16.tgz     16 colour VGA server (XF86Setup needs this server)
+  preinst.sh      Pre-installation script
+  postinst.sh     Post-installation script
+  X32bin.tgz      Clients, run-time libs, and app-defaults files
+  X32doc.tgz      Documentation
+  X32fnts.tgz     75dpi, misc and PEX fonts
+  X32lib.tgz      Data files required at run-time
+  X32man.tgz      Manual pages
+  X32set.tgz      XF86Setup utility
+  X32VG16.tgz     16 colour VGA server (XF86Setup needs this server)
 
 
 
+
+  The following is required for new installations, and optional for
+  existing installations:
+
+
+       X32cfg.tgz     sample config files for xinit, xdm
+
+
+
+
+  NOTE: Be very careful about installing X32cfg.tgz over an existing
+  installation if you have customised your xinit and/or xdm config
+  files.  Installing X32cfg.tgz will overwrite any existing files.  If
+  you do have customised files, there is no need to install X32cfg.tgz.
 
   The following X servers are for PC/AT hardware.  Choose at least one
   which matches your hardware, as well as the VGA16 server.  The VGA16
@@ -782,14 +790,6 @@
 
 
 
-
-
-
-
-
-
-
-
   X329NS3.tgz     PC98 NEC(S3) server
   X329SPW.tgz     PC98 PCSKB-PowerWindow(S3) server
   X329LPW.tgz     PC98 PowerWindowLB(S3) server
@@ -798,7 +798,7 @@
   X329GAN.tgz     PC98 GANB-WAP(cirrus) server
   X329480.tgz     PC98 PEGC-480(generic) server
   X329NKV.tgz     PC98 NKV-NEC(cirrus) server
-  X329WBS.tgz     PC98 WABS(cirrus) server
+  X329WS.tgz      PC98 WABS(cirrus) server
   X329WEP.tgz     PC98 WAB-EP(cirrus) server
   X329WSN.tgz     PC98 WSN-A2F(cirrus) server
   X329TGU.tgz     PC98 TGUI server
@@ -814,7 +814,6 @@
        X32fnon.tgz    Other fonts (Chinese, Japanese, Korean, Hebrew)
        X32fscl.tgz    Scalable fonts (Speedo and Type1)
        X32fsrv.tgz    Font server and config files
-       X32cfg.tgz     sample config files for xinit, xdm
        X32prog.tgz    X header files, config files and compile-time libs
        X32lkit.tgz    X server LinkKit
        X32lk98.tgz    PC98 X server LinkKit
@@ -825,11 +824,6 @@
 
 
 
-
-  NOTE: Be very careful about installing X32cfg.tgz if you have
-  customised your xinit and/or xdm config files.  Installing X32cfg.tgz
-  will overwrite any existing files.  If you do have customised files,
-  there is no need to install X32cfg.tgz.
 
   If you already have a version of XFree86 installed, MAKE A BACKUP OF
   /usr/X11R6 BEFORE DOING ANYTHING ELSE.  The standard installation
@@ -855,14 +849,11 @@
   problems.
 
   Copy the preinst.sh script to /var/tmp, then go to /usr/X11R6 and run
-
   it:
 
 
                cd /usr/X11R6
                sh /var/tmp/preinst.sh
-
-
 
 
   The .tgz files are gzipped tar files.  To extract them, go to
@@ -894,7 +885,7 @@
   files with:
 
 
-               gzip -d < X32file.tgz | cpio -i -v -u -H ustar
+               gzip -d < X32file.tgz | cpio -i -v -d -u -H ustar
 
 
 
@@ -916,7 +907,16 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.46 1996/10/24 12:30:23 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.47 1996/10/26 09:38:54 dawes Exp $
+
+
+
+
+
+
+
+
+
 
 
 

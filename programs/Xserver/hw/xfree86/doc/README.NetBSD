@@ -25,15 +25,12 @@
 
   ftp.laas.fr:/pub/ii/NetBSD
 
-  As of version 3.1.2G, there is a separate binary distribution for
-  OpenBSD.  Binaries for OpenBSD are available from:
+  Binaries for OpenBSD are available from:
 
   ftp.XFree86.org:/pub/XFree86/current/binaries/OpenBSD
 
-  Note: the OpenBSD binary distribution only support recent OpenBSD
-  snapshots (after August 23) where ttyC0 is used for the console
-  device. Prior OpenBSD snapshots can run the NetBSD binary
-  distribution.
+  Note: the OpenBSD binary distribution only support OpenBSD 2.0 and
+  later snapshots  where ttyC0 is used for the console device.
 
   Other NetBSD versions:
 
@@ -62,14 +59,13 @@
   if you have comments or suggestions about this file and we'll revise
   it.
 
-
-
   3.  Installing the Binaries
 
   The binary distribution is composed of a number of  tar archives which
   are the executables, servers, fonts, libraries, include files, man
+
   pages, config files, and the server link kit.  The full distribution
-  takes over 55MB of disk space.
+  takes over 67MB of disk space.
 
   All archives are now made using the NetBSD package tools. We recommend
   that you install these tools first.  All packages can be installed
@@ -129,9 +125,10 @@
         X32P9K
            the X server for P9000 based boards
 
-
         X32S3
            the X server for S3 based boards
+
+
 
         X32S3V
            the X server for S3 ViRGE boards
@@ -194,10 +191,10 @@
         X32lkit
            X server reconfiguration kit
 
-
-
         X32lk98
            X server reconfiguration kit for PC98 X servers
+
+
 
         X32f100
            100dpi fonts
@@ -219,6 +216,12 @@
 
         X32vfb
            Virtual framebuffer X server
+
+        X32html
+           HTML format version of the documentation
+
+        X32ps
+           PostScript format version of the documentation
 
   If this is your first time, then you can safely install all of the
   packages.  As a minimal install, you'll need doc, bin, fonts lib,
@@ -255,9 +258,14 @@
         ie, on my machine, I do the following:
 
 
-              % cd /usr/local
-              % mkdir X11R6
-              % ln -s /usr/local/X11R6 /usr/X11R6
+
+
+
+
+         % cd /usr/local
+         % mkdir X11R6
+         % ln -s /usr/local/X11R6 /usr/X11R6
+
 
 
 
@@ -320,13 +328,10 @@
 
 
 
-
      (Replace /usr/X11R6 by the appropriate dir if necessary).
 
      Also, don't forget to include these lines in your .login or .pro-
      file for permanent use.
-
-
 
      2. Create a symbolic link in ${XWINHOME}/bin named ``X'' that
         points to the server that matches your video card: See the
@@ -388,11 +393,14 @@
   The file is available within the US; for details see
   ftp.x.org:/pub/R6/xdm-auth/README.
 
+
   To start the display manager, log in as root on the console and type:
   ``xdm -nodaemon''.
 
   You can start xdm automatically on bootup by disabling the console
   getty adding the following code to /etc/rc.local:
+
+
 
          if [ -x /usr/X11R6/bin/xdm ]; then
            echo -n ' xdm'; /usr/X11R6/bin/xdm
@@ -450,6 +458,8 @@
      # reconfig <Xconfig >XF86Config
 
 
+
+
   and complete the rest with the help of XF86Setup.
 
   Once you've set up a XF86Config file, you can fine tune the video
@@ -459,7 +469,6 @@
 
   If your serial mouse does not work try using kermit or tip to connect
   to the mouse serial port and verify that it does indeed generate
-
   characters.
 
   The NetBSD pms mouse driver handles PS/2 style mice as Busmouse.
@@ -471,7 +480,7 @@
   use the PS/2 protocol for talking to the device in that mode.
   "cooked" mode is the old BusMouse translation.  By default, the driver
   runs in "cooked" mode.  It can be switched using ioctls or by opening
-  the first minor device which is /dev/pms0r.
+  the first minor device which is /dev/psm0.
 
   5.2.  Other input devices
 
@@ -516,6 +525,7 @@
 
 
 
+
   6.  Running X
 
   8mb of memory is a recommended minimum for running X.  The server,
@@ -524,7 +534,6 @@
   like gcc that expect a few meg free.  X will work with 4Mb of memory,
   but in practice compilation while running X can take 5 or 10 times as
   long due to constant paging.
-
 
   The easiest way for new users to start X windows is to type: ``startx
   >& startx.log''.  Error messages are lost unless you redirect them
@@ -582,12 +591,12 @@
   If using pccons you get the message:
 
 
-       > Fatal server error:
-       > xf86OpenConsole: CONSOLE_X_MODE_OFF failed (Inappropriate ioctl for device)
-       > Was expecting pccons driver with X support
-       > Check your kernel's console driver configuration and /dev entries
-       >
 
+  > Fatal server error:
+  > xf86OpenConsole: CONSOLE_X_MODE_OFF failed (Inappropriate ioctl for device)
+  > Was expecting pccons driver with X support
+  > Check your kernel's console driver configuration and /dev entries
+  >
 
 
 
@@ -649,14 +658,11 @@
           have linear memory access.  Use 'option INSECURE' if you
           need more that one X server at a time.
 
-
-
   7.2.  MIT-SHM
 
   NetBSD 1.0 and later supports System V shared memory. If XFree86
   detects this support in your kernel, it will support the MIT-SHM
   extension.
-
 
   To add support for system V shared memory to your kernel add the
   lines:
@@ -717,9 +723,8 @@
      o  if you're using pccons put:
 
 
-           #define XFree86ConsoleDefines -DPCCONS_SUPPORT
 
-
+      #define XFree86ConsoleDefines -DPCCONS_SUPPORT
 
 
 
@@ -789,7 +794,6 @@
   taken from your installed version of the driver.
 
   The console.h file for syscons isn't distributed with XFree86 anymore.
-
   You should get it from the syscons distribution.
 
   8.4.  Support for shared libs under NetBSD 1.0 and later
@@ -851,10 +855,10 @@
 
 
   To ensure that this symbol is correctly defined, include <sys/param.h>
+
   in the source that requires it.  Note that the symbol CSRG_BASED is
   defined for *BSD systems in XFree86 3.1.1 and later.  This should be
   used to protect the inclusion of <sys/param.h>.
-
 
   For code that really is specific to a particular i386 BSD port, use
   __FreeBSD__ for FreeBSD, __NetBSD__ for NetBSD, __OpenBSD__ for
@@ -891,17 +895,13 @@
         machines in preparing the FreeBSD binary release.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.40 1996/10/24 12:30:20 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.41 1996/10/26 09:38:51 dawes Exp $
 
 
 
 
 
   $XConsortium: NetBSD.sgml /main/9 1996/01/28 08:05:37 kaleb $
-
-
-
-
 
 
 

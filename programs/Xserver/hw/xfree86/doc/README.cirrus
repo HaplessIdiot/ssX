@@ -86,10 +86,10 @@
         is supported and has been tested.
 
      CL-GD7541/7542/7543/7548
-        Laptop chipsets more or less compatible with the 5428/3x. The
-        only dot clock supported is 25 MHz (more on an external
-        display). Support for these chips is not perfect, and reports
-        are welcomed.
+        Laptop chipsets more or less compatible with the 5428/3x.  When
+        the LCD is on, the maximum dot clock supported is 44 MHz.
+        Support for these chips seems to be broken in this release.
+        Reports are welcomed.
 
   Here's a list of maximum dot clocks for each supported depth:
 
@@ -785,9 +785,14 @@
 
      CL-GD6440 on ISA bus
 
+     CL-GD7543 on PCI bus
+        Apparently broken in this release. On 800x600 displays, the
+        recommended dot clock is 40 MHz for TFT and 33.7 MHz for a DSTN
+        panel, with corresponding horizontal syncs of 33.7 kHz for TFT
+
+        and 38.6 kHz for DSTN.
 
   Some configurations for which no up-to-date testing data is available:
-
 
 
      CL-GD5430, and CL-GD5436 and CL-GD5446 with 1MB memory
@@ -800,8 +805,8 @@
         uncertain.
 
      CL-GD754x
-        Support for these chips was reported broken in 3.1.2G. It may be
-        fixed in the current release.
+        Support for these chips was reported broken in 3.1.2G, although
+        the 7548 was reported to work in some cases.
 
   9.  Driver Changes
 
@@ -831,18 +836,13 @@
         with 1MB memory).
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.16 1996/10/20 13:33:26 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.17 1996/10/26 09:38:57 dawes Exp $
 
 
 
 
 
   $XConsortium: cirrus.sgml /main/6 1995/11/12 20:00:36 kaleb $
-
-
-
-
-
 
 
 

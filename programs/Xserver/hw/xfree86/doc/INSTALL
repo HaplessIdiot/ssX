@@ -94,20 +94,21 @@
 
                        contrib/Imakefile
                        contrib/programs/Imakefile
-                       contrib/programs/ico/
-                       contrib/programs/listres/
-                       contrib/programs/showfont/
-                       contrib/programs/viewres/
-                       contrib/programs/xbiff/
-                       contrib/programs/xcalc/
-                       contrib/programs/xditview/
-                       contrib/programs/xedit/
-                       contrib/programs/xev/
-                       contrib/programs/xeyes/
-                       contrib/programs/xfontsel/
-                       contrib/programs/xgc/
-                       contrib/programs/xman/
-                       contrib/programs/xmessage/
+                       contrib/programs/ico
+                       contrib/programs/listres
+                       contrib/programs/showfont
+                       contrib/programs/viewres
+                       contrib/programs/xbiff
+                       contrib/programs/xcalc
+                       contrib/programs/xditview
+                       contrib/programs/xedit
+                       contrib/programs/xev
+                       contrib/programs/xeyes
+                       contrib/programs/xfontsel
+                       contrib/programs/xgc
+                       contrib/programs/xload
+                       contrib/programs/xman
+                       contrib/programs/xmessage
 
 
 
@@ -128,8 +129,8 @@
 
 
      If you are installing in an unmodified tree there shouldn't be any
-     problems.  Check for any patch rejections and resolve them. If
 
+     problems.  Check for any patch rejections and resolve them. If
      you've modified some files (e.g. xf86site.def, site.def) you should
      rename them, and restore the standard versions before patching. If
      you don't have backups of the originals, individual files can be
@@ -194,8 +195,8 @@
      xf86site.def.  The drivers used for the SVGA server are set by the
      XF86SvgaDrivers parameter.  This should be a list of the driver
      directory names (in lower case).  The ordering determines the order
-     in which the drivers are probed at startup.  The default is to
 
+     in which the drivers are probed at startup.  The default is to
      include all supplied drivers.  Similarly the following parameters
      specify drivers for the other servers:
 
@@ -261,7 +262,6 @@
         ``make install.man'' to install it.
 
 
-
   2.  Reconfiguring the server (source distribution)
 
   To build a different set of servers or servers with a different set of
@@ -295,7 +295,7 @@
   file.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.16 1996/10/24 12:30:18 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.17 1996/10/26 09:38:49 dawes Exp $
 
 
 
