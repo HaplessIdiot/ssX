@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/21 16:42:31 coskrey Exp $
 
 
 
-XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.23 2001/11/21 21:20:53 dawes Exp $
+XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.24 2002/06/03 19:55:26 dawes Exp $
 
 
 #if BuildUCSFonts
@@ -310,7 +310,7 @@ MISC_MISC_OBJS = \
 	FontObj(clB8x12) FontObj(clB8x13) FontObj(clB8x14) FontObj(clB8x16) \
 	FontObj(clB8x8) FontObj(clB9x15) FontObj(clI6x12) FontObj(clI8x8) \
 	FontObj(clR4x6) FontObj(clR5x10) FontObj(clR5x6) FontObj(clR5x8) \
-	FontObj(clR6x10) FontObj(clR6x12) FontObj(clR6x13) FontObj(clR6x6) \
+	FontObj(clR6x10) FontObj(clR6x13) FontObj(clR6x6) \
 	FontObj(clR6x8) FontObj(clR7x10) FontObj(clR7x12) FontObj(clR7x14) \
 	FontObj(clR7x8) FontObj(clR8x10) FontObj(clR8x12) FontObj(clR8x13) \
 	FontObj(clR8x14) FontObj(clR8x16) FontObj(clR8x8) FontObj(clR9x15)
@@ -792,9 +792,6 @@ FontTarget(clR5x10)
 FontTarget(clR5x6)
 FontTarget(clR5x8)
 FontTarget(clR6x10)
-#if 0
-FontTarget(clR6x12)
-#endif
 FontTarget(clR6x13)
 FontTarget(clR6x6)
 FontTarget(clR6x8)
