@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.16 2003/07/09 15:27:38 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -83,7 +83,7 @@ pollRandomDevice (int fd)
     return poll(&fds, 1, 5000);
 }
 #else
-#define pollRandomDevice 1
+#define pollRandomDevice(fd) 1
 #endif
 
 # define FILE_LIMIT	1024	/* no more than this many buffers */
