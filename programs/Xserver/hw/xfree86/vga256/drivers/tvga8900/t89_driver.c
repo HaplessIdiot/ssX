@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.54 1996/12/26 07:01:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.55 1996/12/28 07:42:27 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -69,7 +69,6 @@
 #include "vga.h"
 #include "t89_driver.h"
 #include "tgui_ger.h"
-#include "tgui_mmio.h"
 #include "vgaPCI.h"
 
 #ifdef XFreeXDGA
@@ -87,6 +86,7 @@
 
 #ifndef MONOVGA
 #include "tgui_drv.h"
+#include "tgui_mmio.h"
 #include "vga256.h"
 extern vgaHWCursorRec vgaHWCursor;
 #endif

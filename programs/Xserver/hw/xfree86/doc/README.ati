@@ -236,15 +236,18 @@
 
   6.  Miscellaneous notes
 
+  In all cases, virtual resolutions must be less than 4096 pixels wide.
+  For VGAWonder V3 adapters with 256kB of video memory, and for all
+  264xT adapters, the 256-colour server will further limit virtual
+  resolutions to less than 2048 pixels wide.  These are hardware limits
+  that cannot be circumvented.
+
   Dot clocks greater than 80MHz cannot be used on most adapters as a way
   still needs to be discovered to make the VGA Wonder controller do
   pixel multiplexing.
 
   Support for more than 8bpp colour depth is pending proper RAMDAC
   handling and banked framebuffer code for >8bpp.
-
-  Video memory banking does not work in the 16-colour and monochrome
-  servers on V3, V4 and V5 adapters.
 
   Video memory corruption can still occur during mode switches on V3, V4
   and V5 adapters.  Symptoms of this problem include garbled fonts on
@@ -254,16 +257,24 @@
   can be done with the kbd or svgalib packages.  In the second case,
   xrefresh will usually cleanup the image.
 
-  Interlaced modes do not work in the monochrome server on 28800-x
-  adapters when using a virtual resolution wider than 1024 pixels.
+  Video memory banking does not work in the 16-colour and monochrome
+  servers on V3, V4 and V5 adapters (with 512kB of video memory).  This
+  appears to be a hardware limitation.  The driver's default behaviour
+  has been changed to take this into consideration by limiting video
 
-  Some (particularly low resolution) interlaced modes do not work on
-  264xT adapters.
+  memory to 256kB.
+
+  Interlaced modes do not work in the monochrome server on 28800-x
+  adapters when using a virtual resolution that is 2048 pixels or wider.
+  This appears to be a hardware limitation.  The driver has been changed
+  to prune modes accordingly.
 
   Support for virtual resolutions using more than 1MB of video memory is
-
   still incomplete.  Specifically, such support works on Mach32
   adapters, and on 264xT adapters, but not on any other Mach64 adapters.
+  On 88800GX and 88800CX adapters, this appears to be a hardware
+  limitation.  Consequently, the driver's default behaviour is to limit
+  video memory to 1MB.
 
   There is some controversy over whether or not clocks higher than
   135MHz should be allowed on 264xT adapters.  For now, clocks will be
@@ -272,6 +283,10 @@
   XF86Config.  Be aware however that doing this is untested and might
   damage the adapter.
 
+  The default mode does not work on the more recent Mach64 adapters.
+  This will be fixed in a future release by reading the programmable
+  clock generator's registers.
+
   Future development plans include addressing the above problems and
   using accelerated functionality.
 
@@ -279,28 +294,13 @@
   France, tsi@ualberta.ca
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.13 1996/12/23 06:46:23 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.14 1996/12/28 08:15:35 dawes Exp $
 
 
 
 
 
   $XConsortium: ati.sgml /main/9 1996/10/19 18:03:54 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -4,14 +4,14 @@ XCOMM $XConsortium: Imakefile /main/8 1996/10/27 18:08:34 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/Imakefile,v 3.12 1996/12/23 06:58:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/Imakefile,v 3.13 1996/12/28 07:42:22 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = t89_driver.c t89_bank.s tgui_curs.c tgui_accel.c tguimaccel.c
 
 OBJS = t89_driver.o t89_bank.o tgui_curs.o tgui_accel.o tguimaccel.o
 
-DEFINES = -DPSZ=8 -DCYBER938X_SUPPORT
+DEFINES = -DPSZ=8
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..

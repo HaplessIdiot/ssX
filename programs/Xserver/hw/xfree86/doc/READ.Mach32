@@ -60,7 +60,7 @@
         the Mach32 itself.
 
      Option "intel_gx"
-        This option sets the memory apeture address to the hardwired
+        This option sets the memory aperture address to the hardwired
         value for the Intel GX Pro.  It is equivalent to setting Membase
         to 0x78000000.
 
@@ -152,19 +152,21 @@
         RAMDAC values above have no effect except to block higher bit
         modes.
 
+     o  Sixteen bit character support (e.g., Chinese and Japanese
+        character sets) has been known to lose parts of characters.
+        While this should be fixed, if it occurs try running the server
+        with Option "no_linear".
+
   Bug reports should be sent to XFree86@XFree86.org or posted to the
   comp.windows.x.i386unix newsgroup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach32.sgml,v 1.00 1996/09/22 20:09:02 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach32.sgml,v 3.3 1996/12/27 07:04:14 dawes Exp $
 
 
 
 
-
-  $XConsortium: Mach32.sgml /main/5 1996/09/22 15:59:01 kaleb $
-
-
+  $XConsortium: Mach32.sgml /main/4 1996/10/28 04:47:43 kaleb $
 
 
 
@@ -195,4 +197,4 @@
 
 
 
-
+$XFree86$
