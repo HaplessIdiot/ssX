@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.2 94/02/23 15:56:46 dpw Exp $ */
+/* $TOG: Keyboard.c /main/5 1998/04/21 09:19:15 msr $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -22,14 +22,12 @@ is" without express or implied warranty.
 #include "scrnintstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"
 #include "Keyboard.h"
+#include "Args.h"
 
 void xnestBell(volume, pDev, ctrl, cls)
      int volume;
@@ -89,16 +87,33 @@ int xnestKeyboardProc(pDev, onoff, argc, argv)
   KeySymsRec keySyms;
   CARD8 modmap[256];
   int i, j;
+  XKeyboardState values;
 
   switch (onoff)
     {
     case DEVICE_INIT: 
       modifier_keymap = XGetModifierMapping(xnestDisplay);
       XDisplayKeycodes(xnestDisplay, &min_keycode, &max_keycode);
+#ifdef _XSERVER64
+      {
+	KeySym64 *keymap64;
+	int i, len;
+	keymap64 = XGetKeyboardMapping(xnestDisplay,
+				     min_keycode,
+				     max_keycode - min_keycode + 1,
+				     &mapWidth);
+	len = (max_keycode - min_keycode + 1) * mapWidth;
+	keymap = (KeySym *)xalloc(len * sizeof(KeySym));
+	for(i = 0; i < len; ++i)
+	  keymap[i] = keymap64[i];
+	XFree(keymap64);
+      }
+#else
       keymap = XGetKeyboardMapping(xnestDisplay, 
 				   min_keycode,
 				   max_keycode - min_keycode + 1,
 				   &mapWidth);
+#endif
       
       for (i = 0; i < 256; i++)
 	modmap[i] = 0;
@@ -116,18 +131,28 @@ int xnestKeyboardProc(pDev, onoff, argc, argv)
       keySyms.maxKeyCode = max_keycode;
       keySyms.mapWidth = mapWidth;
       keySyms.map = keymap;
+
+      XGetKeyboardControl(xnestDisplay, &values);
+
+      memmove((char *) defaultKeyboardControl.autoRepeats,
+             (char *) values.auto_repeats, sizeof(values.auto_repeats));
+
       InitKeyboardDeviceStruct(pDev, &keySyms, modmap,
 			       xnestBell, xnestChangeKeyboardControl);
+#ifdef _XSERVER64
+      xfree(keymap);
+#else
       XFree(keymap);
+#endif
       break;
     case DEVICE_ON: 
       xnestEventMask |= XNEST_KEYBOARD_EVENT_MASK;
-      for (i = 0; i < screenInfo.numScreens; i++)
+      for (i = 0; i < xnestNumScreens; i++)
 	XSelectInput(xnestDisplay, xnestDefaultWindows[i], xnestEventMask);
       break;
     case DEVICE_OFF: 
       xnestEventMask &= ~XNEST_KEYBOARD_EVENT_MASK;
-      for (i = 0; i < screenInfo.numScreens; i++)
+      for (i = 0; i < xnestNumScreens; i++)
 	XSelectInput(xnestDisplay, xnestDefaultWindows[i], xnestEventMask);
       break;
     case DEVICE_CLOSE: 
