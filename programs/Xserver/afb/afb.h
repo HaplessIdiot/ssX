@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.3 1999/06/13 13:47:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.4 1999/06/20 15:02:45 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -92,7 +92,16 @@ extern RegionPtr afbBitBlt(
 	int /*height*/,
 	int /*dstx*/,
 	int /*dsty*/,
-	void (*doBitBlt)(),
+	void (*doBitBlt)(
+#if NeedNestedPrototypes
+		DrawablePtr /*pSrc*/,
+		DrawablePtr /*pDst*/,
+		int /*alu*/,
+		RegionPtr /*prgnDst*/,
+		DDXPointPtr /*pptSrc*/,
+		unsigned long /*planemask*/
+#endif
+        ),
 	unsigned long /*planemask*/
 #endif
 );

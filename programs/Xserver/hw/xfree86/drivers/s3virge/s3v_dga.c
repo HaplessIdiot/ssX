@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 /*
  * file: s3v_dga.c
