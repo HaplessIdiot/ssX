@@ -1,3 +1,4 @@
+3534. Fix for various compilation glitches (Marc La France).
 3533. Fix some Segmentation faults with NULL pointers in xf86Config.c
       (Alan Hourihane).
 3532. Update some drivers to respect the PROBE_DETECT flag and update 
@@ -9246,4 +9247,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.921 1999/12/31 15:14:50 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.931 2000/01/17 23:30:35 alanh Exp $

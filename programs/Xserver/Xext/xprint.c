@@ -64,7 +64,7 @@ copyright holders.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.6 1998/12/20 11:57:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.7 1999/12/13 02:12:44 robin Exp $ */
 
 #include "X.h"
 #include "Xos.h"
@@ -90,7 +90,7 @@ extern WindowPtr *WindowTable; /* declared in dix:globals.c */
 extern XpContextPtr XpContextOfClient(ClientPtr);
 extern void XpRegisterInitFunc(ScreenPtr, char *, int (*)(struct _XpContext *));
 
-static void XpResetProc(ExtensionEntry);
+static void XpResetProc(ExtensionEntry *);
 
 static int ProcXpDispatch(ClientPtr);
 static int ProcXpSwappedDispatch(ClientPtr);
@@ -343,7 +343,7 @@ XpExtensionInit(void)
 }
 
 static void
-XpResetProc(ExtensionEntry extEntry)
+XpResetProc(ExtensionEntry *extEntry)
 {
     int i;
 

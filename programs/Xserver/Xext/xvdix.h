@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdix.h,v 1.3 1998/08/13 14:45:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdix.h,v 1.5 1999/12/11 19:26:32 mvojkovi Exp $ */
 
 #ifndef XVDIX_H
 #define XVDIX_H
@@ -183,7 +183,8 @@ typedef struct {
   int (* ddPutImage)(ClientPtr, DrawablePtr, struct _XvPortRec*, GCPtr,
    				INT16, INT16, CARD16, CARD16, 
 				INT16, INT16, CARD16, CARD16,
-				XvImagePtr, char*, Bool, CARD16, CARD16);
+				XvImagePtr, unsigned char*, Bool,
+				CARD16, CARD16);
   int (* ddQueryImageAttributes)(ClientPtr, struct _XvPortRec*, XvImagePtr, 
 				CARD16*, CARD16*, int*, int*);
   DevUnion devPriv;
@@ -262,7 +263,8 @@ extern int XvdiGetStill(ClientPtr, DrawablePtr, XvPortPtr, GCPtr,
 extern int XvdiPutImage(ClientPtr, DrawablePtr, XvPortPtr, GCPtr,
    				INT16, INT16, CARD16, CARD16, 
 				INT16, INT16, CARD16, CARD16,
-				XvImagePtr, char*, Bool, CARD16, CARD16);
+				XvImagePtr, unsigned char*, Bool,
+				CARD16, CARD16);
 extern int XvdiSelectVideoNotify(ClientPtr, DrawablePtr, BOOL);
 extern int XvdiSelectPortNotify(ClientPtr, XvPortPtr, BOOL);
 extern int XvdiSetPortAttribute(ClientPtr, XvPortPtr, Atom, INT32);

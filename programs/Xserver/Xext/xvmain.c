@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.5 1998/09/19 12:14:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.7 1999/12/11 19:26:32 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -720,7 +720,7 @@ XvdiPutImage(
    INT16 drw_x, INT16 drw_y,
    CARD16 drw_w, CARD16 drw_h,
    XvImagePtr image,
-   char* data,
+   unsigned char* data,
    Bool sync,
    CARD16 width, CARD16 height
 ){

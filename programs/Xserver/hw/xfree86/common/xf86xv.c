@@ -6,7 +6,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.13 1999/09/06 11:27:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.16 1999/12/17 02:45:37 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -63,7 +63,8 @@ static int xf86XVQueryBestSize(ClientPtr, XvPortPtr, CARD8,
 static int xf86XVPutImage(ClientPtr, DrawablePtr, XvPortPtr, GCPtr,
    				INT16, INT16, CARD16, CARD16, 
 				INT16, INT16, CARD16, CARD16,
-				XvImagePtr, char*, Bool, CARD16, CARD16);
+				XvImagePtr, unsigned char*, Bool,
+				CARD16, CARD16);
 static int xf86XVQueryImageAttributes(ClientPtr, XvPortPtr, XvImagePtr, 
 				CARD16*, CARD16*, int*, int*);
 
@@ -1405,7 +1406,7 @@ xf86XVPutImage(
    INT16 drw_x, INT16 drw_y,
    CARD16 drw_w, CARD16 drw_h,
    XvImagePtr format,
-   char* data,
+   unsigned char* data,
    Bool sync,
    CARD16 width, CARD16 height
 ){

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.6 1999/09/06 11:27:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.8 1999/12/11 19:25:06 mvojkovi Exp $ */
 
 #ifndef _XVDIX_H_
 #define _XVDIX_H_
@@ -16,7 +16,7 @@ typedef struct {
   int id;
   int type;
   int byte_order;
-  char guid[16];               
+  unsigned char guid[16];               
   int bits_per_pixel;
   int format;
   int num_planes;
@@ -69,10 +69,10 @@ typedef void (* QueryBestSizeFuncPtr)(ScrnInfoPtr pScrn, Bool motion,
 typedef int (* PutImageFuncPtr)( ScrnInfoPtr pScrn, 
 	short src_x, short src_y, short drw_x, short drw_y,
 	short src_w, short src_h, short drw_w, short drw_h,
-	int image, char* buf, short width, short height, Bool sync,
+	int image, unsigned char* buf, short width, short height, Bool sync,
 	RegionPtr clipBoxes, pointer data );
 typedef int (*QueryImageAttributesFuncPtr)(ScrnInfoPtr pScrn, 
-	int image, short *width, short *height, 
+	int image, unsigned short *width, unsigned short *height, 
 	int *pitches, int *offsets);
 
 /*** this is what the driver needs to fill out ***/

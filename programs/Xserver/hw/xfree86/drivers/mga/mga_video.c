@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.7 1999/12/30 21:40:50 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -36,9 +36,9 @@ static void MGAQueryBestSizeG(ScrnInfoPtr, Bool,
 	short, short, short, short, unsigned int *, unsigned int *, pointer);
 static int MGAPutImageG( ScrnInfoPtr, 
 	short, short, short, short, short, short, short, short,
-	int, char*, short, short, Bool, RegionPtr, pointer);
+	int, unsigned char*, short, short, Bool, RegionPtr, pointer);
 static int MGAQueryImageAttributesG(ScrnInfoPtr, 
-	int, short *, short *,  int *, int *);
+	int, unsigned short *, unsigned short *,  int *, int *);
 
 static void MGABlockHandler(int, pointer, pointer, pointer);
 
@@ -528,7 +528,7 @@ MGAPutImageG(
   short drw_x, short drw_y,
   short src_w, short src_h, 
   short drw_w, short drw_h,
-  int id, char* buf, 
+  int id, unsigned char* buf, 
   short width, short height, 
   Bool sync,
   RegionPtr clipBoxes, pointer data
@@ -723,7 +723,7 @@ static int
 MGAQueryImageAttributesG(
   ScrnInfoPtr pScrn, 
   int id, 
-  short *w, short *h, 
+  unsigned short *w, unsigned short *h, 
   int *pitches, int *offsets
 ){
     int size, tmp;

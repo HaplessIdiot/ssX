@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.4 1998/08/14 13:35:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.8 2000/01/07 17:58:23 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -1030,7 +1030,7 @@ ProcXvPutImage(ClientPtr client)
 			    stuff->src_w, stuff->src_h,
 			    stuff->drw_x, stuff->drw_y,
 			    stuff->drw_w, stuff->drw_h,
-			    pImage, (char*)(&stuff[1]), FALSE,
+			    pImage, (unsigned char*)(&stuff[1]), FALSE,
 			    stuff->width, stuff->height);
 }
 
@@ -1116,8 +1116,8 @@ ProcXvShmPutImage(ClientPtr client)
 			    stuff->src_x, stuff->src_y,
 			    stuff->src_w, stuff->src_h,
 			    stuff->drw_x, stuff->drw_y,
-			    stuff->drw_w, stuff->drw_h,
-			    pImage, shmdesc->addr + stuff->offset, 
+			    stuff->drw_w, stuff->drw_h, pImage,
+			    (unsigned char *)shmdesc->addr + stuff->offset, 
 			    stuff->send_event, stuff->width, stuff->height);
 
   if((status == Success) && stuff->send_event) {

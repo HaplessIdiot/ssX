@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.43 1999/12/08 06:10:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.44 1999/12/14 01:33:54 robin Exp $ */
 
 
 
@@ -407,111 +407,59 @@ struct xf86stat {
 #define mkdir(a,b)              xf86mkdir(a,b)
 #undef getpagesize
 #define getpagesize		xf86getpagesize
-#ifdef S_ISUID
 #undef S_ISUID
-#endif
 #define S_ISUID XF86_S_ISUID
-#ifdef S_ISGID
 #undef S_ISGID
-#endif
 #define S_ISGID XF86_S_ISGID
-#ifdef S_ISVTX
 #undef S_ISVTX
-#endif
 #define S_ISVTX XF86_S_ISVTX
-#ifdef S_IRUSR
 #undef S_IRUSR
-#endif
 #define S_IRUSR XF86_S_IRUSR
-#ifdef S_IWUSR
 #undef S_IWUSR
-#endif
 #define S_IWUSR XF86_S_IWUSR
-#ifdef S_IXUSR
 #undef S_IXUSR
-#endif
 #define S_IXUSR XF86_S_IXUSR
-#ifdef S_IRGRP
 #undef S_IRGRP
-#endif
 #define S_IRGRP XF86_S_IRGRP
-#ifdef S_IWGRP
 #undef S_IWGRP
-#endif
 #define S_IWGRP XF86_S_IWGRP
-#ifdef S_IXGRP
 #undef S_IXGRP
-#endif
 #define S_IXGRP XF86_S_IXGRP
-#ifdef S_IROTH
 #undef S_IROTH
-#endif
 #define S_IROTH XF86_S_IROTH
-#ifdef S_IWOTH
 #undef S_IWOTH
-#endif
 #define S_IWOTH XF86_S_IWOTH
-#ifdef S_IXOTH
 #undef S_IXOTH
-#endif
 #define S_IXOTH XF86_S_IXOTH
-#ifdef S_IFREG
 #undef S_IFREG
-#endif
 #define S_IFREG XF86_S_IFREG
-#ifdef S_IFCHR
 #undef S_IFCHR
-#endif
 #define S_IFCHR XF86_S_IFCHR
-#ifdef S_IFBLK
 #undef S_IFBLK
-#endif
 #define S_IFBLK XF86_S_IFBLK
-#ifdef S_IFIFO
 #undef S_IFIFO
-#endif
 #define S_IFIFO XF86_S_IFIFO
 
 /* some types */
-#ifdef FILE
 #undef FILE
-#endif
 #define FILE			XF86FILE
-#ifdef fpos_t
 #undef fpos_t
-#endif
 #define fpos_t			XF86fpos_t
-#ifdef DIR
 #undef DIR
-#endif
 #define DIR			XF86DIR
-#ifdef DIRENT
 #undef DIRENT
-#endif
 #define DIRENT			XF86DIRENT
-#ifdef size_t
 #undef size_t
-#endif
 #define size_t			xf86size_t
-#ifdef ssize_t
 #undef ssize_t
-#endif
 #define ssize_t			xf86ssize_t
-#ifdef dev_t
 #undef dev_t
-#endif
 #define dev_t                   xf86dev_t
-#ifdef mode_t
 #undef mode_t
-#endif
 #define mode_t                  xf86mode_t
-#ifdef uid_t
 #undef uid_t
-#endif
 #define uid_t                   xf86uid_t
-#ifdef gid_t
 #undef gid_t
-#endif
 #define gid_t                   xf86gid_t
 
 /*
@@ -520,30 +468,18 @@ struct xf86stat {
  */
 
 /* some vars */
-#ifdef stdin
 #undef stdin
-#endif
 #define	stdin			xf86stdin
-#ifdef stdout
 #undef stdout
-#endif
 #define stdout			xf86stdout
-#ifdef stderr
 #undef stderr
-#endif
 #define stderr			xf86stderr
 
-#ifdef SEEK_SET
 #undef SEEK_SET
-#endif
 #define SEEK_SET		XF86_SEEK_SET
-#ifdef SEEK_CUR
 #undef SEEK_CUR
-#endif
 #define SEEK_CUR		XF86_SEEK_CUR
-#ifdef SEEK_END
 #undef SEEK_END
-#endif
 #define SEEK_END		XF86_SEEK_END
 
 /*
@@ -560,180 +496,98 @@ struct xf86stat {
 #define stat(a,b)               xf86stat(a,b)
 #define fstat(a,b)              xf86fstat(a,b)
 #define access(a,b)             xf86access(a,b)
-#ifdef O_RDONLY
 #undef O_RDONLY
-#endif
 #define O_RDONLY		XF86_O_RDONLY
-#ifdef O_WRONLY
 #undef O_WRONLY
-#endif
 #define O_WRONLY		XF86_O_WRONLY
-#ifdef O_RDWR
 #undef O_RDWR
-#endif
 #define O_RDWR			XF86_O_RDWR
-#ifdef O_CREAT
 #undef O_CREAT
-#endif
 #define O_CREAT			XF86_O_CREAT
-#ifdef PROT_EXEC
 #undef PROT_EXEC
-#endif
 #define PROT_EXEC		XF86_PROT_EXEC
-#ifdef PROT_READ
 #undef PROT_READ
-#endif
 #define PROT_READ		XF86_PROT_READ
-#ifdef PROT_WRITE
 #undef PROT_WRITE
-#endif
 #define PROT_WRITE		XF86_PROT_WRITE
-#ifdef PROT_NONE
 #undef PROT_NONE
-#endif
 #define PROT_NONE		XF86_PROT_NONE
-#ifdef MAP_FIXED
 #undef MAP_FIXED
-#endif
 #define MAP_FIXED		XF86_MAP_FIXED
-#ifdef MAP_SHARED
 #undef MAP_SHARED
-#endif
 #define MAP_SHARED		XF86_MAP_SHARED
-#ifdef MAP_PRIVATE
 #undef MAP_PRIVATE
-#endif
 #define MAP_PRIVATE		XF86_MAP_PRIVATE
-#ifdef MAP_FAILED
 #undef MAP_FAILED
-#endif
 #define MAP_FAILED		XF86_MAP_FAILED
-#ifdef R_OK
 #undef R_OK
-#endif
 #define R_OK                    XF86_R_OK
-#ifdef W_OK
 #undef W_OK
-#endif
 #define W_OK                    XF86_W_OK
-#ifdef X_OK
 #undef X_OK
-#endif
 #define X_OK                    XF86_X_OK
-#ifdef F_OK
 #undef F_OK
-#endif
 #define F_OK                    XF86_F_OK
 #ifndef __EMX__
-#ifdef errno
 #undef errno
-#endif
 #define errno			xf86errno
 #endif
+#undef putchar
 #define putchar(i)		xf86fputc(i, xf86stdout)
+#undef puts
 #define puts(s)			xf86fputs(s, xf86stdout)
 
-#ifdef EACCES
 #undef EACCES
-#endif
 #define EACCES		xf86_EACCES
-#ifdef EAGAIN
 #undef EAGAIN
-#endif
 #define EAGAIN		xf86_EAGAIN
-#ifdef EBADF
 #undef EBADF
-#endif
 #define EBADF		xf86_EBADF
-#ifdef EEXIST
 #undef EEXIST
-#endif
 #define EEXIST		xf86_EEXIST
-#ifdef EFAULT
 #undef EFAULT
-#endif
 #define EFAULT		xf86_EFAULT
-#ifdef EINTR
 #undef EINTR
-#endif
 #define EINTR		xf86_EINTR
-#ifdef EINVAL
 #undef EINVAL
-#endif
 #define EINVAL		xf86_EINVAL
-#ifdef EISDIR
 #undef EISDIR
-#endif
 #define EISDIR		xf86_EISDIR
-#ifdef ELOOP
 #undef ELOOP
-#endif
 #define ELOOP		xf86_ELOOP
-#ifdef EMFILE
 #undef EMFILE
-#endif
 #define EMFILE		xf86_EMFILE
-#ifdef ENAMETOOLONG
 #undef ENAMETOOLONG
-#endif
 #define ENAMETOOLONG	xf86_ENAMETOOLONG
-#ifdef ENFILE
 #undef ENFILE
-#endif
 #define ENFILE		xf86_ENFILE
-#ifdef ENOENT
 #undef ENOENT
-#endif
 #define ENOENT		xf86_ENOENT
-#ifdef ENOMEM
 #undef ENOMEM
-#endif
 #define ENOMEM		xf86_ENOMEM
-#ifdef ENOSPC
 #undef ENOSPC
-#endif
 #define ENOSPC		xf86_ENOSPC
-#ifdef ENOTDIR
 #undef ENOTDIR
-#endif
 #define ENOTDIR		xf86_ENOTDIR
-#ifdef EPIPE
 #undef EPIPE
-#endif
 #define EPIPE		xf86_EPIPE
-#ifdef EROFS
 #undef EROFS
-#endif
 #define EROFS		xf86_EROFS
-#ifdef ETXTBSY
 #undef ETXTBSY
-#endif
 #define ETXTBSY		xf86_ETXTBSY
-#ifdef ENOTTY
 #undef ENOTTY
-#endif 
 #define ENOTTY		xf86_ENOTTY
-#ifdef ENOSYS
 #undef ENOSYS
-#endif
 #define ENOSYS		xf86_ENOSYS
-#ifdef EBUSY
 #undef EBUSY
-#endif
 #define EBUSY		xf86_EBUSY
-#ifdef ENODEV
 #undef ENODEV
-#endif
 #define ENODEV		xf86_ENODEV
-#ifdef EIO
 #undef EIO
-#endif
 #define EIO		xf86_EIO
 
 /* Some ANSI macros */
-#ifdef FILENAME_MAX
 #undef FILENAME_MAX
-#endif
 #define FILENAME_MAX		1024
 
 #endif /* XFree86LOADER */

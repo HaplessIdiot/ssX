@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.7 1999/02/19 21:26:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.8 2000/01/02 00:18:20 mvojkovi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -31,6 +31,7 @@ in this Software without prior written authorization from The Open Group.
 #include "windowstr.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
+#include "gcstruct.h"
 #include "extnsionst.h"
 #include "dixstruct.h"
 #include "resource.h"

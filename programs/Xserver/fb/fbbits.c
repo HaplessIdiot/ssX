@@ -1,5 +1,5 @@
 /*
- * $Id: fbbits.c,v 1.1 1999/11/19 13:53:41 hohndel Exp $
+ * $Id: fbbits.c,v 1.2 2000/01/18 16:35:41 tsi Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,11 +21,20 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.c,v 1.1 1999/11/19 13:53:41 hohndel Exp $ */
 
 #include "fb.h"
 #include "miline.h"
 #include "mizerarc.h"
+
+#undef BRESSOLID
+#undef BRESDASH
+#undef DOTS
+#undef ARC
+#undef GLYPH
+#undef BITS
+#undef BITS2
+#undef BITS4
 
 #define BRESSOLID   fbBresSolid8
 #define BRESDASH    fbBresDash8

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.8 1999/12/27 00:39:45 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.9 1999/12/30 03:25:24 robin Exp $ */
 
 /*
  * Authors:
@@ -189,7 +189,7 @@ static PciChipsets TDFXPciChipsets[] = {
 typedef enum {
   OPTION_NOACCEL,
   OPTION_SW_CURSOR,
-  OPTION_USE_PIO,
+  OPTION_USE_PIO
 } TDFXOpts;
 
 static OptionInfoRec TDFXOptions[] = {
@@ -1409,7 +1409,8 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   if (!pTDFX->usePIO) {
     TDFXSetMMIOAccess(pTDFX);
     hwp->IOBase = ((hwp->readMiscOut(hwp) & 0x01) ? 
-      VGA_IOBASE_COLOR : VGA_IOBASE_MONO) + pTDFX->MMIOBase - 0x300;
+      VGA_IOBASE_COLOR : VGA_IOBASE_MONO) +
+      (unsigned long)pTDFX->MMIOBase - 0x300;
   } else {
     vgaHWGetIOBase(hwp);
   }
