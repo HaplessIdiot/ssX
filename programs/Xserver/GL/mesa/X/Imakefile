@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.16 2002/11/22 22:56:01 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/X/Imakefile,v 1.1 2004/04/08 10:08:01 alanh Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -27,8 +27,8 @@ LinkSourceFile(compsize.c,$(LIBSRC)/GL/glx)
   DRIVER_SRCS = $(XMESA_SRCS)
   DRIVER_OBJS = $(XMESA_OBJS)
 
-  COMMON_SRCS = 
-  COMMON_OBJS = 
+  COMMON_SRCS = driverfuncs.c
+  COMMON_OBJS = driverfuncs.o
 
 #ifndef XFree86Version
 
@@ -86,3 +86,5 @@ LinkSourceFile(xf86glx_util.c,..)
 MESADRVSRCDIR = MesaDrvSrcDir
 
 
+LinkSourceFile(driverfuncs.c, $(MESADRVSRCDIR)/../common)
+LinkSourceFile(driverfuncs.h, $(MESADRVSRCDIR)/../common)
