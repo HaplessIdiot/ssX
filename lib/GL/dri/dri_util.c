@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.1 2002/02/22 21:32:52 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.3 2002/11/25 14:04:49 eich Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -621,16 +621,20 @@ __driUtilUpdateDrawableInfo(Display *dpy, int scrn,
 				&pdp->numBackClipRects,
 				&pdp->pBackClipRects
                                 )) {
+	/* Error -- eg the window may have been destroyed.  Keep going
+	 * with no cliprects.
+	 */
+	pdp->pStamp = &pdp->lastStamp; /* prevent endless loop */
 	pdp->numClipRects = 0;
 	pdp->pClipRects = NULL;
 	pdp->numBackClipRects = 0;
 	pdp->pBackClipRects = 0;
-	/* ERROR!!! */
     }
+    else
+       pdp->pStamp = &(psp->pSAREA->drawableTable[pdp->index].stamp);
 
     DRM_SPINLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
 
-    pdp->pStamp = &(psp->pSAREA->drawableTable[pdp->index].stamp);
 }
 
 /*****************************************************************/
@@ -758,8 +762,8 @@ static void driDestroyContext(Display *dpy, int scrn, void *contextPrivate)
  		psp->fullscreen = NULL;
  	    }
 	}
-	__driGarbageCollectDrawables(pcp->driScreenPriv->drawHash);
 	(*pcp->driScreenPriv->DriverAPI.DestroyContext)(pcp);
+	__driGarbageCollectDrawables(pcp->driScreenPriv->drawHash);
 	(void)XF86DRIDestroyContext(dpy, scrn, pcp->contextID);
 	Xfree(pcp);
     }

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tcl.h,v 1.1 2002/10/30 12:51:57 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -57,7 +57,7 @@ extern void radeonTclFallback( GLcontext *ctx, GLuint bit, GLboolean mode );
 #define RADEON_TCL_FALLBACK_TEXGEN_2          0x40 /* texgen, unit 2 */
 #define RADEON_TCL_FALLBACK_TCL_DISABLE       0x80 /* user disable */
 
-#define RADEON_MAX_TCL_VERTSIZE (4*4) /* using maos now... */
+#define RADEON_MAX_TCL_VERTSIZE (15*4) 
 
 #define TCL_FALLBACK( ctx, bit, mode )	radeonTclFallback( ctx, bit, mode )
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.26 2002/11/29 11:06:42 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.27 2002/12/16 16:19:18 dawes Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -251,11 +251,11 @@ static Bool MGAInitVisualConfigs( ScreenPtr pScreen )
                pConfigs[i].redSize		= 8;
                pConfigs[i].greenSize		= 8;
                pConfigs[i].blueSize		= 8;
-               pConfigs[i].alphaSize		= 8;
+               pConfigs[i].alphaSize		= 0;
                pConfigs[i].redMask		= 0x00FF0000;
                pConfigs[i].greenMask		= 0x0000FF00;
                pConfigs[i].blueMask		= 0x000000FF;
-               pConfigs[i].alphaMask		= 0;
+               pConfigs[i].alphaMask		= 0x0;
                if ( accum ) {
                   pConfigs[i].accumRedSize	= 16;
                   pConfigs[i].accumGreenSize	= 16;
@@ -273,7 +273,7 @@ static Bool MGAInitVisualConfigs( ScreenPtr pScreen )
                   pConfigs[i].doubleBuffer	= FALSE;
 	       }
                pConfigs[i].stereo		= FALSE;
-               pConfigs[i].bufferSize		= 32;
+               pConfigs[i].bufferSize		= 24;
                if ( depth ) {
 		     pConfigs[i].depthSize	= 24;
                      pConfigs[i].stencilSize	= 8;

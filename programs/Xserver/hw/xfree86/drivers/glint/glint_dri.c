@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.29 2002/10/08 22:14:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.30 2002/10/30 12:52:15 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -148,7 +148,7 @@ GLINTInitVisualConfigs(ScreenPtr pScreen)
                   pConfigs[i].doubleBuffer	= FALSE;
 	       }
                pConfigs[i].stereo		= FALSE;
-               pConfigs[i].bufferSize		= 16;
+               pConfigs[i].bufferSize		= 20;
                if ( depth ) {
                   pConfigs[i].depthSize		= 16;
                } else {
@@ -243,7 +243,7 @@ GLINTInitVisualConfigs(ScreenPtr pScreen)
                   pConfigs[i].doubleBuffer	= FALSE;
 	       }
                pConfigs[i].stereo		= FALSE;
-               pConfigs[i].bufferSize		= 32;
+               pConfigs[i].bufferSize		= 24;
                if ( depth ) {
 		     pConfigs[i].depthSize	= 16;
                      pConfigs[i].stencilSize	= 8;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.5 2002/10/30 12:51:54 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.6 2002/12/16 16:18:57 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -360,9 +360,9 @@ radeonCreateContext( Display *dpy, const __GLcontextModes *glVisual,
     * fit in a single dma buffer for indexed rendering of quad strips,
     * etc.
     */
-/*     ctx->Const.MaxArrayLockSize =  */
-/*        MIN2( ctx->Const.MaxArrayLockSize, */
-/*  	    RADEON_BUFFER_SIZE / RADEON_MAX_TCL_VERTSIZE ); */
+   ctx->Const.MaxArrayLockSize = 
+      MIN2( ctx->Const.MaxArrayLockSize,
+  	    RADEON_BUFFER_SIZE / RADEON_MAX_TCL_VERTSIZE );
 
    if (getenv("LIBGL_PERFORMANCE_BOXES"))
       rmesa->boxes = 1;
