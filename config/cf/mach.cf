@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/mach.cf,v 3.2 1994/06/12 16:30:15 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/mach.cf,v 3.3 1994/09/19 13:36:23 dawes Exp $
 
 #define OSName           Mach 2.5/3.0
 #define OSVendor          /**/
@@ -34,7 +34,7 @@ XCOMM operating system:  OSName
 #endif
 #define StandardCppDefines	-traditional
 #define StandardDefines		-DNOSTDHDRS -DMACH386
-#define ServerOSDefines		-DDDXTIME
+#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME
 
 #define AvoidNullMakeCommand	YES
 #define CompressAllFonts	YES

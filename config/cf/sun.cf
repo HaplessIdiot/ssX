@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf,v 1.134 94/08/17 18:56:43 matt Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.8 1994/09/17 13:38:32 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.9 1994/10/20 06:00:16 dawes Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -135,10 +135,11 @@ XCOMM operating system:  OSName
 
 #ifdef i386Architecture
 #define ServerExtraDefines AllocateLocalDefines XFree86ServerDefines
+#define ServerOSDefines   XFree86ServerOSDefines
 #else
 #define ServerExtraDefines AllocateLocalDefines
-#endif
 #define ServerOSDefines   -DDDXOSINIT
+#endif
 
 #if OSMajorVersion > 4
 #define BootstrapCFlags	  -DSVR4

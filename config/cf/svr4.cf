@@ -1,5 +1,5 @@
 XCOMM $XConsortium: svr4.cf,v 1.6 94/04/08 18:56:33 rws Exp $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.2 1994/05/14 05:58:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.3 1994/10/20 06:00:17 dawes Exp $
 /*
  * A default OS name
  */
@@ -94,12 +94,6 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.2 1994/05/14 05:58:53 dawes Exp $
 #endif
 #else
 #define DefaultCCOptions -Xc -Dasm=__asm
-#ifndef ServerCCOptions
-/* This might be better in sun.cf -- does it ever get used? */
-#if defined(SunArchitecture)
-#define ServerCCOptions -Xt -Dasm=__asm
-#endif
-#endif
 #endif
 #endif
 #ifndef DefaultCDebugFlags
@@ -110,7 +104,7 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.2 1994/05/14 05:58:53 dawes Exp $
 #endif
 #endif
 #ifndef ServerOSDefines
-#define ServerOSDefines -DDDXTIME -DDDXOSINIT
+#define ServerOSDefines -DDDXTIME XFree86ServerOSDefines
 #endif
 #endif
 

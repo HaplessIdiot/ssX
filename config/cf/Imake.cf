@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf,v 1.12 94/03/29 15:42:08 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.5 1994/09/24 15:09:40 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.6 1994/10/20 06:00:07 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -59,6 +59,10 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.5 1994/09/24 15:09:40 dawes Exp $
 #ifdef __i386__
 #define i386BsdArchitecture
 #define i386Architecture
+#endif
+#if defined(__sparc__) || defined(sparc)
+#define SparcArchitecture
+#undef sparc
 #endif
 #endif /* NetBSD */
 

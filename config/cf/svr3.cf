@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.1 1994/05/22 01:45:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.2 1994/09/24 15:09:51 dawes Exp $
 
 #ifndef HasGcc
 #define HasGcc      YES
@@ -127,7 +127,7 @@ XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.1 1994/05/22 01:45:19 dawes Exp $
 #endif
 
 #ifndef ServerOSDefines
-# define ServerOSDefines -DDDXTIME -DDDXOSINIT
+# define ServerOSDefines -DDDXTIME XFree86ServerOSDefines
 #endif
 
 #ifndef XawI18nDefines
@@ -297,6 +297,7 @@ install.man::                                                           @@\
 #ifndef InstallGenManPageAliases
 #define InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
 	InstallManPageAliases(file,destdir,aliases)
+#endif
 
 #endif /* FormattedManPages */
 

@@ -1,5 +1,5 @@
 /* $XConsortium: imake.c,v 1.89 94/08/12 00:45:51 gildea Exp $ */
-/* $XFree86: xc/config/imake/imake.c,v 3.4 1994/08/20 07:27:39 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.5 1994/10/20 06:00:37 dawes Exp $ */
 
 /***************************************************************************
  *                                                                         *
@@ -127,6 +127,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <sys/file.h>
 #endif
 #else
+#include <unistd.h>
+#endif
+#ifdef ISC
 #include <unistd.h>
 #endif
 #if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.0 1994/10/20 06:00:10 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -141,7 +141,7 @@ XCOMM platform:  $XFree86$
 
 #ifdef i386Architecture
 # define OptimizedCDebugFlags 	-m486 -O2
-# define ServerOSDefines	-DDDXTIME
+# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
 #else
 # define OptimizedCDebugFlags 	-O2
 # define ServerOSDefines 	/**/
