@@ -1,4 +1,6 @@
 XFree86 4.3.99.4 (xx April 2003)
+ 154. Fix a memory leak caused by the data allocated in XGetDefault() never
+      being freed (Jim Radford).
  153. Update keysym capitalization rules in XConvertCase() with unicode
       keysyms and some missed charsets (Bugzilla #209, Séamus Ó Ciardhuáin).
  152. Use C89 style function prototypes in manual pages (Bugzilla #208,
@@ -16913,7 +16915,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2675 2003/04/28 22:21:25 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2676 2003/04/29 11:32:03 pascal Exp $
 
 
 

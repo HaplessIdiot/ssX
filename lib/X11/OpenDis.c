@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/OpenDis.c,v 3.12 2001/12/14 19:54:03 dawes Exp $ */
+/* $XFree86: xc/lib/X11/OpenDis.c,v 3.13 2003/03/31 21:58:55 herrb Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -748,6 +748,9 @@ void _XFreeDisplayStructure(dpy)
 	   (*dpy->free_funcs->context_db)(dpy);
 	if (dpy->xkb_info)
 	   (*dpy->free_funcs->xkb)(dpy);
+
+	if (dpy->db)
+	    XrmDestroyDatabase(dpy->db);
 
 	if (dpy->screens) {
 	    register int i;
