@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.19 1996/05/06 05:57:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.20 1996/05/10 06:58:04 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -1164,48 +1164,11 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 				       ((unsigned char *)(ptmp) + (srcx >> 3));
 		    x2 = srcx & 7;		/* Offset within byte. */
 		    if( np >= 16 ) {
-#ifdef __alpha__ /* alignment check */
-		      switch ((long)pnt & 3) {
-		      case 0:
-			pix = (unsigned short)(*((unsigned int *)(pnt)) >> x2);
-			break;
-		      case 2:
-			pix = (unsigned short)((*pnt | (*(pnt+1)<<16)) >> x2);
-			break;			  
-		      default:
-			pix = (unsigned short)(( ((unsigned char *)(pnt))[0]<<0  |
-						 ((unsigned char *)(pnt))[1]<<8  |
-						 ((unsigned char *)(pnt))[2]<<16 |
-						 ((unsigned char *)(pnt))[3]<<24 ) >> x2);
-			break;
-		      }
-#else
-		      pix = (unsigned short)(*((unsigned int *)(pnt)) >> x2);
-#endif
+		      pix = (unsigned short)(ldl_u((unsigned int *)(pnt)) >> x2);
 		    }
 		    else if( pw >= 16 ) {
-#ifdef __alpha__ /* alignment check */
-		      switch ((long)pnt & 3) {
-		      case 0:
-			pix = (unsigned short)((*((unsigned int *)(pnt)) >> x2)
-					       & MSKBIT(np)) | (*ptmp << np);
-			break;
-		      case 2:
-			pix = (unsigned short)(((*pnt | (*(pnt+1)<<16)) >> x2)
-					       & MSKBIT(np)) | (*ptmp << np);
-			break;			  
-		      default:
-			pix = (unsigned short)(((((unsigned char *)(pnt))[0]<<0  |
-						 ((unsigned char *)(pnt))[1]<<8  |
-						 ((unsigned char *)(pnt))[2]<<16 |
-						 ((unsigned char *)(pnt))[3]<<24 ) >> x2)
-					       & MSKBIT(np)) | (*ptmp << np);
-			break;
-		      }
-#else
-		      pix = (unsigned short)((*((unsigned int *)(pnt)) >> x2)
+		      pix = (unsigned short)((ldl_u((unsigned int *)(pnt)) >> x2)
 					     & MSKBIT(np)) | (*ptmp << np);
-#endif
 		    }
 		    else if( pw >= 8 ) {
 			pix = ((*pnt >> x2) & MSKBIT(np)) | (*ptmp << np)

@@ -1,5 +1,5 @@
 /* $XConsortium: header.c,v 1.5 94/04/17 20:24:28 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/fstobdf/header.c,v 3.0 1996/05/06 06:00:40 dawes Exp $ */
 /*
  
 Copyright (c) 1990  X Consortium
@@ -50,6 +50,7 @@ in this Software without prior written authorization from the X Consortium.
 #include	<X11/Xosdefs.h>
 #ifndef X_NOT_STDC_ENV
 #include	<stdlib.h>
+#include	<string.h>
 #endif
 #include	"FSlib.h"
 
@@ -96,7 +97,7 @@ FindStringProperty(propName, propLength, propInfo, propOffsets, propData)
 #endif
 
 	    if ((propOffset->name.length == length) &&
-		    !strncmp(propData + propOffset->name.position, propName, length)) {
+		    !strncmp((char*)propData + propOffset->name.position, propName, length)) {
 		*propLength = propOffset->value.length;
 		return (char *)(propData + propOffset->value.position);
 	    }
@@ -124,7 +125,7 @@ FindNumberProperty(propName, propValue, propInfo, propOffsets, propData)
 	if ((propOffset->type == PropTypeSigned) ||
 		(propOffset->type == PropTypeUnsigned)) {
 	    if ((propOffset->name.length == length) &&
-		    !strncmp(propData + propOffset->name.position, propName, length)) {
+		    !strncmp((char*)propData + propOffset->name.position, propName, length)) {
 		*propValue = propOffset->value.position;
 		return (propOffset->type);
 	    }

@@ -1,5 +1,5 @@
 # $XConsortium: jump_funcs,v 1.7 95/01/27 22:17:51 kaleb Exp $
-# $XFree86: xc/lib/X11/jump_funcs,v 3.6 1995/01/28 15:42:53 dawes Exp $
+# $XFree86: xc/lib/X11/jump_funcs,v 3.7 1996/02/12 11:11:05 dawes Exp $
 #
 00000000 T _XSaveContext        libX11         Context
 00000000 T _XFindContext        libX11         Context
@@ -1288,6 +1288,7 @@
 00000000 T _XkbResizeDeviceButtonActions libX11         XKBAlloc
 00000000 T _XkbAllocDeviceInfo  libX11         XKBAlloc
 00000000 T _XkbFreeDeviceInfo   libX11         XKBAlloc
+00000000 T _XkbChangeKeycodeRange libX11         XKBMAlloc
 #else
 00000000 T __DUMMY__   libX11         XKB
 00000000 T __DUMMY__   libX11         XKB
@@ -1455,5 +1456,6 @@
 00000000 T __DUMMY__ libX11         XKBAlloc
 00000000 T __DUMMY__ libX11         XKBAlloc
 00000000 T __DUMMY__  libX11         XKBAlloc
+00000000 T __DUMMY__   libX11         XKBAlloc
 00000000 T __DUMMY__   libX11         XKBAlloc
 #endif

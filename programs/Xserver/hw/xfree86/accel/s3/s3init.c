@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.89 1996/03/31 11:48:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.90 1996/04/15 11:30:07 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -2775,7 +2775,7 @@ s3Init(mode)
       /* -RAS low timing 3.5 MCLKs, -RAS precharge timing 2.5 MCLKs */
       outb(vgaCRReg, tmp | 0xf0);
    }
-   
+
    if (OFLG_ISSET(OPTION_SLOW_VRAM, &s3InfoRec.options)) {
       /* 
        * some Diamond Stealth 64 VRAM cards have a problem with VRAM timing,
@@ -2787,6 +2787,31 @@ s3Init(mode)
       tmp = inb(vgaCRReg);
       if ((tmp & 0x30) == 0x30) 		/* 3.5 MCLKs */
 	 outb(vgaCRReg, tmp & 0xef);		/* 4.5 MCLKs */
+   }
+
+   if (OFLG_ISSET(OPTION_SLOW_DRAM, &s3InfoRec.options)) {
+      /* 
+       * fixes some pixel errors for a SPEA Trio64V+ card
+       * increase -RAS precharge timing from 2.5 MCLKs to 3.5 MCLKs 
+       */ 
+      outb(vgaCRIndex, 0x39);
+      outb(vgaCRReg, 0xa5);
+      outb(vgaCRIndex, 0x68);
+      tmp = inb(vgaCRReg);
+      outb(vgaCRReg, tmp & 0xf7);		/* 3.5 MCLKs */
+   }
+
+   if (OFLG_ISSET(OPTION_SLOW_EDODRAM, &s3InfoRec.options)) {
+      /* 
+       * fixes some pixel errors for a SPEA Trio64V+ card
+       * increase from 1-cycle to 2-cycle EDO mode
+       */ 
+      outb(vgaCRIndex, 0x39);
+      outb(vgaCRReg, 0xa5);
+      outb(vgaCRIndex, 0x36);
+      tmp = inb(vgaCRReg);
+      if ((tmp & 0x0c) == 0x00) 		/* 1-cycle EDO */
+	 outb(vgaCRReg, tmp | 0x08);		/* 2-cycel EDO */
    }
 
 

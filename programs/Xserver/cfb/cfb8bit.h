@@ -34,7 +34,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.16 94/04/17 20:28:40 dpw Exp $ */
+/* $XConsortium: cfb8bit.h,v 1.18 95/04/07 18:59:27 kaleb Exp $ */
 
 #include "servermd.h"
 
@@ -394,7 +394,7 @@ extern int		cfb8StippleRRop;
 	        break;						\
 	    case 6:						\
 	        ((CARD8 *) (dst))[SinglePixel5] = (pixel);	\
-	        ((CARD8 *) (dst))[SinglePixel7] = (pixel);	\
+	        ((CARD8 *) (dst))[SinglePixel6] = (pixel);	\
 	        break;						\
 	    case 7:						\
 	        ((CARD16 *) (dst))[DoublePixel2] = (pixel);	\
@@ -612,6 +612,7 @@ extern int		cfb8StippleRRop;
 	        SwitchBitsLoop (((CARD32 *) (dst))[QuadPixel1] = (pixel);) \
 	        break; 							   \
 	} 								   \
+    }									   \
 }
 #endif /* PGSZ == 64 */
 #endif /* PSZ == 8 */
@@ -1165,3 +1166,32 @@ extern int		cfb8StippleRRop;
 #endif /* AVOID_MEMORY_READ */
 
 extern PixelGroup cfb8BitLenMasks[PGSZ];
+
+extern int cfb8SetStipple (
+#if NeedFunctionPrototypes
+    int	/*alu*/,
+    unsigned long /*fg*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern int cfb8SetOpaqueStipple (
+#if NeedFunctionPrototypes
+    int /*alu*/,
+    unsigned long /*fg*/,
+    unsigned long /*bg*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern int cfb8ComputeClipMasks32 (
+#if NeedFunctionPrototypes
+    BoxPtr	/*pBox*/,
+    int		/*numRects*/,
+    int		/*x*/,
+    int		/*y*/,
+    int		/*w*/,
+    int		/*h*/,
+    CARD32 * /*clips*/
+#endif
+);

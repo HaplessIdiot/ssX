@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.50 1996/04/15 11:30:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.51 1996/05/06 05:57:39 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -82,6 +82,7 @@ typedef struct {
 #define OPTION_PCI_BURST_OFF	36 /* W32/SVGA */
 #define OPTION_W32_INTERLEAVE_ON  37 /* W32/SVGA */
 #define OPTION_W32_INTERLEAVE_OFF 38 /* W32/SVGA */
+#define OPTION_SLOW_EDODRAM	39 /* slow EDO-DRAM (for S3) */
 
 /* Accel/cursor features */
 #define OPTION_NOACCEL		40 /* Disable accel support in SVGA server */
@@ -230,6 +231,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "fast_dram",	OPTION_FAST_DRAM },
   { "med_dram",		OPTION_MED_DRAM },
   { "slow_dram",	OPTION_SLOW_DRAM },
+  { "slow_edodram",	OPTION_SLOW_EDODRAM },
   { "nomemaccess",	OPTION_NO_MEM_ACCESS },
   { "nolinear",		OPTION_NOLINEAR_MODE },
   { "intel_gx",		OPTION_INTEL_GX },
@@ -362,6 +364,7 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "s3_trio64",	CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
   { "ti3025",		CLOCK_OPTION_TI3025 },    /* TI3025 */
   { "ti3026",		CLOCK_OPTION_TI3026 },    /* TI3026 */
+  { "ti3030",		CLOCK_OPTION_TI3026 },    /* TI3030 is TI3026 compatible */
   { "ibm_rgb514",	CLOCK_OPTION_IBMRGB },    /* IBM RGB514 */
   { "ibm_rgb524",	CLOCK_OPTION_IBMRGB },    /* IBM RGB524 */
   { "ibm_rgb525",	CLOCK_OPTION_IBMRGB },    /* IBM RGB525 */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.127 1996/05/06 05:57:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.128 1996/05/10 06:58:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -872,6 +872,8 @@ s3Probe()
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
    OFLG_SET(OPTION_S3_964_BT485_VCLK, &validOptions);
+   OFLG_SET(OPTION_SLOW_DRAM, &validOptions);
+   OFLG_SET(OPTION_SLOW_EDODRAM, &validOptions);
    OFLG_SET(OPTION_SLOW_VRAM, &validOptions);
    OFLG_SET(OPTION_SLOW_DRAM_REFRESH, &validOptions);
    OFLG_SET(OPTION_FAST_VRAM, &validOptions);
@@ -2056,8 +2058,14 @@ s3Probe()
 	 }
       }
       else if (DAC_IS_TRIO) {
-	 nonMuxMaxClock = 80000;
-	 pixMuxMinClock = 80000;
+	 if (S3_TRIO64V_SERIES(s3ChipId)) {
+	    nonMuxMaxClock = 0;   /* need CR67=10 and DCLK/2 all the time */
+	    pixMuxMinClock = 0;   /* to avoid problems with blank signal */
+	 }
+	 else {
+	    nonMuxMaxClock = 80000;
+	    pixMuxMinClock = 80000;
+	 }
       }
       else {
 	 nonMuxMaxClock = 67500;
