@@ -1,4 +1,8 @@
-XFree86 3.1.0Ae (xx December 1994)
+XFree86 3.1.0Ae (2 January 1995)
+159. Major updates to xf86config(1), including the addition of a Cards
+     database (Harm Hanemaayer).
+158. Check and reject invalid XF86Config depths for the VGA16 and Mono
+     servers.
 157. Add an "s3_964_bt485_vclk" option to fix a problem with 964+Bt485.
      Also added code to detect the MIRO 20SV board revision (Harald Koenig).
 156. Add an S3Mclk entry to XF86Config to allow the MCLK value to be specified
