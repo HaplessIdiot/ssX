@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.13 2000/09/13 15:47:32 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.14 2000/10/13 05:23:29 anderson Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -56,9 +56,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define ADDRREG(addr)       ((volatile CARD32 *)(R128MMIO + (addr)))
 
-#define R128MMIO_VARS()                                                     \
-    unsigned char *R128MMIO   = R128PTR(pScrn)->MMIO
-
 
 #define OUTREGP(addr, val, mask)   \
     do {                           \
@@ -67,6 +64,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
         tmp |= (val);              \
         OUTREG(addr, tmp);         \
     } while (0)
+
+#define INPLL(pScrn, addr) R128INPLL(pScrn, addr)
 
 #define OUTPLL(addr, val)                                                 \
     do {                                                                  \
@@ -271,6 +270,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define R128_CLR_CMP_CLR_DST              0x15c8
 #define R128_CLR_CMP_CLR_SRC              0x15c4
 #define R128_CLR_CMP_CNTL                 0x15c0
+#       define R128_SRC_CMP_EQ_COLOR      (4 <<  0)
 #       define R128_SRC_CMP_NEQ_COLOR     (5 <<  0)
 #       define R128_CLR_CMP_SRC_SOURCE    (1 << 24)
 #define R128_CLR_CMP_MASK                 0x15cc

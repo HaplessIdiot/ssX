@@ -1,4 +1,6 @@
 XFree86 4.0.1d (xx October 2000)
+ 769. Added ATI Radeon driver, accelerated 2D only (for now) (VA Linux).
+ 768. Fix depth24/32 issue in i128 driver (#4176, Andrew C Aitchison).
  767. On IA-64's, build DRI and drm's if they would be built on IA-32's
       (David Mosberger).
  766. Fix xf8_32wid build on Sparc's (Marc La France).
@@ -11236,4 +11238,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1343 2000/10/17 09:07:00 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1344 2000/10/17 16:53:13 tsi Exp $

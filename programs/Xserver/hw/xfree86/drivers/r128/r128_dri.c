@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dri.c,v 1.4 2000/06/26 05:41:32 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dri.c,v 1.5 2000/08/25 13:42:37 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -59,31 +59,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "cfb32.h"
 #include "cfb24_32.h"
 
-				/* XAA and Cursor Support */
-#include "xaa.h"
-#include "xf86Cursor.h"
-
-				/* PCI support */
-#include "xf86PciInfo.h"
-#include "xf86Pci.h"
-
-				/* DDC support */
-#include "xf86DDC.h"
-
-				/* DRI support */
-#include "GL/glxint.h"
-#include "GL/glxtokens.h"
-#include "xf86drm.h"
-#include "xf86drmR128.h"
-#include "sarea.h"
-#define _XF86DRI_SERVER_
-#include "xf86dri.h"
-#include "dri.h"
-#include "r128_dri.h"
-#include "r128_sarea.h"
-#include "r128_dripriv.h"
-
 				/* Driver data structures */
+#include "ati2.h"
 #include "r128.h"
 #include "r128_reg.h"
 
@@ -104,9 +81,9 @@ do {                                                                         \
    slots available is stored in info->CCEFifoSize. */
 static void R128CCEWaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
 {
-    R128InfoPtr    info     = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    int            i;
+    int           i;
 
     for (;;) {
 	for (i = 0; i < R128_TIMEOUT; i++) {
@@ -122,9 +99,9 @@ static void R128CCEWaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
    CCE is idle. */
 void R128CCEWaitForIdle(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr    info     = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    int            i;
+    int           i;
 
     if (!info->CCEInUse || info->CCEMode == R128_PM4_NONPM4) return;
 
@@ -172,9 +149,9 @@ void R128CCEWaitForIdle(ScrnInfoPtr pScrn)
 /* Reset the ring buffer status, if the engine was reset */
 void R128CCEResetRing(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr       info            = R128PTR(pScrn);
-    unsigned char    *R128MMIO        = info->MMIO;
-    R128SAREAPrivPtr  pSAREAPriv;
+    R128InfoPtr      info      = R128PTR(pScrn);
+    unsigned char    *R128MMIO = info->MMIO;
+    R128SAREAPrivPtr pSAREAPriv;
     volatile CARD32  *r128RingReadPtr;
 
     if (!info->CCEInUse || info->CCEMode == R128_PM4_NONPM4) return;
@@ -195,7 +172,7 @@ void R128CCEResetRing(ScrnInfoPtr pScrn)
    mode is a CCE mode.  The mode is stored in info->CCEMode. */
 void R128CCEStart(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr    info     = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     if (info->CCEInUse || info->CCEMode == R128_PM4_NONPM4) return;
@@ -212,7 +189,7 @@ void R128CCEStart(ScrnInfoPtr pScrn)
    requests before switching modes.*/
 void R128CCEStop(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr    info     = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     if (!info->CCEInUse || info->CCEMode == R128_PM4_NONPM4) return;
@@ -231,14 +208,14 @@ void R128CCEStop(ScrnInfoPtr pScrn)
 static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 {
     ScrnInfoPtr       pScrn            = xf86Screens[pScreen->myNum];
-    R128InfoPtr       pR128            = R128PTR(pScrn);
+    R128InfoPtr       info             = R128PTR(pScrn);
     int               numConfigs       = 0;
     __GLXvisualConfig *pConfigs        = 0;
     R128ConfigPrivPtr pR128Configs     = 0;
     R128ConfigPrivPtr *pR128ConfigPtrs = 0;
     int               i, accum, stencil;
 
-    switch (pR128->CurrentLayout.pixel_code) {
+    switch (info->CurrentLayout.pixel_code) {
     case 8:  /* 8bpp mode is not support */
     case 15: /* FIXME */
     case 24: /* FIXME */
@@ -395,9 +372,9 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 	break;
     }
 
-    pR128->numVisualConfigs   = numConfigs;
-    pR128->pVisualConfigs     = pConfigs;
-    pR128->pVisualConfigsPriv = pR128Configs;
+    info->numVisualConfigs   = numConfigs;
+    info->pVisualConfigs     = pConfigs;
+    info->pVisualConfigsPriv = pR128Configs;
     GlxSetVisualConfigs(numConfigs, pConfigs, (void**)pR128ConfigPtrs);
     return TRUE;
 }
@@ -427,15 +404,15 @@ static void R128DestroyContext(ScreenPtr pScreen, drmContext hwContext,
 static void R128EnterServer(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    R128InfoPtr pR128 = R128PTR(pScrn);
+    R128InfoPtr info = R128PTR(pScrn);
 
-    if (pR128->accel) pR128->accel->NeedToSync = TRUE;
+    if (info->accel) info->accel->NeedToSync = TRUE;
 
 #if 1
-    if (!pR128->CCE2D) R128CCEStop(pScrn);
+    if (!info->CCE2D) R128CCEStop(pScrn);
 #else
-    if (pR128->CCE2D) R128CCEWaitForIdle(pScrn);
-    else              R128CCEStop(pScrn);
+    if (info->CCE2D) R128CCEWaitForIdle(pScrn);
+    else             R128CCEStop(pScrn);
 #endif
 }
 
@@ -448,13 +425,13 @@ static void R128EnterServer(ScreenPtr pScreen)
 static void R128LeaveServer(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    R128InfoPtr pR128 = R128PTR(pScrn);
+    R128InfoPtr info = R128PTR(pScrn);
 
 #if 1
-    if (!pR128->CCE2D) R128CCEStart(pScrn);
+    if (!info->CCE2D) R128CCEStart(pScrn);
 #else
-    if (pR128->CCE2D) R128CCEWaitForIdle(pScrn);
-    else              R128CCEStart(pScrn);
+    if (info->CCE2D) R128CCEWaitForIdle(pScrn);
+    else             R128CCEStart(pScrn);
 #endif
 }
 
@@ -482,13 +459,13 @@ static void R128DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
     /* FIXME: This routine needs to have acceleration turned on */
     ScreenPtr   pScreen = pWin->drawable.pScreen;
     ScrnInfoPtr pScrn   = xf86Screens[pScreen->myNum];
-    R128InfoPtr pR128   = R128PTR(pScrn);
+    R128InfoPtr info   = R128PTR(pScrn);
     BoxPtr      pbox;
     int         nbox;
     int         depth;
 
     /* FIXME: Use accel when CCE 2D code is written */
-    if (pR128->CCE2D) return;
+    if (info->CCE2D) return;
 
     /* FIXME: This should be based on the __GLXvisualConfig info */
     switch (pScrn->bitsPerPixel) {
@@ -506,29 +483,29 @@ static void R128DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
     pbox = REGION_RECTS(prgn);
     nbox = REGION_NUM_RECTS(prgn);
 
-    (*pR128->accel->SetupForSolidFill)(pScrn, 0, GXcopy, -1);
+    (*info->accel->SetupForSolidFill)(pScrn, 0, GXcopy, -1);
     for (; nbox; nbox--, pbox++) {
-	(*pR128->accel->SubsequentSolidFillRect)(pScrn,
-						 pbox->x1 + pR128->fbX,
-						 pbox->y1 + pR128->fbY,
-						 pbox->x2 - pbox->x1,
-						 pbox->y2 - pbox->y1);
-	(*pR128->accel->SubsequentSolidFillRect)(pScrn,
-						 pbox->x1 + pR128->backX,
-						 pbox->y1 + pR128->backY,
-						 pbox->x2 - pbox->x1,
-						 pbox->y2 - pbox->y1);
+	(*info->accel->SubsequentSolidFillRect)(pScrn,
+						pbox->x1 + info->fbX,
+						pbox->y1 + info->fbY,
+						pbox->x2 - pbox->x1,
+						pbox->y2 - pbox->y1);
+	(*info->accel->SubsequentSolidFillRect)(pScrn,
+						pbox->x1 + info->backX,
+						pbox->y1 + info->backY,
+						pbox->x2 - pbox->x1,
+						pbox->y2 - pbox->y1);
     }
 
-    (*pR128->accel->SetupForSolidFill)(pScrn, depth, GXcopy, -1);
+    (*info->accel->SetupForSolidFill)(pScrn, depth, GXcopy, -1);
     for (; nbox; nbox--, pbox++)
-	(*pR128->accel->SubsequentSolidFillRect)(pScrn,
-						 pbox->x1 + pR128->depthX,
-						 pbox->y1 + pR128->depthY,
-						 pbox->x2 - pbox->x1,
-						 pbox->y2 - pbox->y1);
+	(*info->accel->SubsequentSolidFillRect)(pScrn,
+						pbox->x1 + info->depthX,
+						pbox->y1 + info->depthY,
+						pbox->x2 - pbox->x1,
+						pbox->y2 - pbox->y1);
 
-    pR128->accel->NeedToSync = TRUE;
+    info->accel->NeedToSync = TRUE;
 }
 
 /* Copy the back and depth buffers when the X server moves a window. */
@@ -537,7 +514,7 @@ static void R128DRIMoveBuffers(WindowPtr pWin, DDXPointRec ptOldOrg,
 {
     ScreenPtr   pScreen = pWin->drawable.pScreen;
     ScrnInfoPtr pScrn   = xf86Screens[pScreen->myNum];
-    R128InfoPtr pR128   = R128PTR(pScrn);
+    R128InfoPtr info   = R128PTR(pScrn);
 
     /* FIXME: This routine needs to have acceleration turned on */
     /* FIXME: Copy XAACopyWindow() and use REGION_TRANSLATE() */
@@ -545,14 +522,14 @@ static void R128DRIMoveBuffers(WindowPtr pWin, DDXPointRec ptOldOrg,
        that request them */
 
     /* FIXME: Use accel when CCE 2D code is written */
-    if (pR128->CCE2D) return;
+    if (info->CCE2D) return;
 }
 
 /* Initialize the AGP state.  Request memory for use in AGP space, and
    initialize the Rage 128 registers to point to that memory. */
-static Bool R128DRIAgpInit(R128InfoPtr pR128, ScreenPtr pScreen)
+static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
 {
-    unsigned char *R128MMIO = pR128->MMIO;
+    unsigned char *R128MMIO = info->MMIO;
     unsigned long mode;
     unsigned int  vendor, device;
     int           ret;
@@ -560,7 +537,7 @@ static Bool R128DRIAgpInit(R128InfoPtr pR128, ScreenPtr pScreen)
     int           s, l;
     int           flags;
 
-    if (drmAgpAcquire(pR128->drmFD) < 0) {
+    if (drmAgpAcquire(info->drmFD) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR, "[agp] AGP not available\n");
 	return FALSE;
     }
@@ -570,12 +547,12 @@ static Bool R128DRIAgpInit(R128InfoPtr pR128, ScreenPtr pScreen)
                                    combination of graphics card and AGP
                                    chipset. */
 
-    mode   = drmAgpGetMode(pR128->drmFD);	/* Default mode */
-    vendor = drmAgpVendorId(pR128->drmFD);
-    device = drmAgpDeviceId(pR128->drmFD);
+    mode   = drmAgpGetMode(info->drmFD);	/* Default mode */
+    vendor = drmAgpVendorId(info->drmFD);
+    device = drmAgpDeviceId(info->drmFD);
 
     mode &= ~R128_AGP_MODE_MASK;
-    switch (pR128->agpMode) {
+    switch (info->agpMode) {
     case 2:          mode |= R128_AGP_2X_MODE;
     case 1: default: mode |= R128_AGP_1X_MODE;
     }
@@ -583,161 +560,161 @@ static Bool R128DRIAgpInit(R128InfoPtr pR128, ScreenPtr pScreen)
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[agp] Mode 0x%08lx [AGP 0x%04x/0x%04x; Card 0x%04x/0x%04x]\n",
 	       mode, vendor, device,
-	       pR128->PciInfo->vendor,
-	       pR128->PciInfo->chipType);
+	       info->PciInfo->vendor,
+	       info->PciInfo->chipType);
 
-    if (drmAgpEnable(pR128->drmFD, mode) < 0) {
+    if (drmAgpEnable(info->drmFD, mode) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR, "[agp] AGP not enabled\n");
-	drmAgpRelease(pR128->drmFD);
+	drmAgpRelease(info->drmFD);
 	return FALSE;
     }
 
-    pR128->agpOffset = 0;
+    info->agpOffset = 0;
 
-    if ((ret = drmAgpAlloc(pR128->drmFD, pR128->agpSize*1024*1024, 0, NULL,
-			   &pR128->agpMemHandle)) < 0) {
+    if ((ret = drmAgpAlloc(info->drmFD, info->agpSize*1024*1024, 0, NULL,
+			   &info->agpMemHandle)) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR, "[agp] Out of memory (%d)\n", ret);
-	drmAgpRelease(pR128->drmFD);
+	drmAgpRelease(info->drmFD);
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[agp] %d kB allocated with handle 0x%08x\n",
-	       pR128->agpSize*1024, pR128->agpMemHandle);
+	       info->agpSize*1024, info->agpMemHandle);
 
-    if (drmAgpBind(pR128->drmFD, pR128->agpMemHandle, pR128->agpOffset) < 0) {
+    if (drmAgpBind(info->drmFD, info->agpMemHandle, info->agpOffset) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR, "[agp] Could not bind\n");
-	drmAgpFree(pR128->drmFD, pR128->agpMemHandle);
-	drmAgpRelease(pR128->drmFD);
+	drmAgpFree(info->drmFD, info->agpMemHandle);
+	drmAgpRelease(info->drmFD);
 	return FALSE;
     }
 
 				/* Initialize the CCE ring buffer data */
-    pR128->ringStart       = pR128->agpOffset;
-    pR128->ringMapSize     = pR128->ringSize*1024*1024 + 4096;
-    pR128->ringSizeLog2QW  = R128MinBits(pR128->ringSize*1024*1024/8) - 1;
+    info->ringStart       = info->agpOffset;
+    info->ringMapSize     = info->ringSize*1024*1024 + 4096;
+    info->ringSizeLog2QW  = R128MinBits(info->ringSize*1024*1024/8) - 1;
 
-    pR128->ringReadOffset  = pR128->ringStart + pR128->ringMapSize;
-    pR128->ringReadMapSize = 4096;
+    info->ringReadOffset  = info->ringStart + info->ringMapSize;
+    info->ringReadMapSize = 4096;
 
 				/* Reserve space for the vertex buffer */
-    pR128->vbStart         = pR128->ringReadOffset + pR128->ringReadMapSize;
-    pR128->vbMapSize       = pR128->vbSize*1024*1024;
+    info->vbStart         = info->ringReadOffset + info->ringReadMapSize;
+    info->vbMapSize       = info->vbSize*1024*1024;
 
 				/* Reserve space for the indirect buffer */
-    pR128->indStart        = pR128->vbStart + pR128->vbMapSize;
-    pR128->indMapSize      = pR128->indSize*1024*1024;
+    info->indStart        = info->vbStart + info->vbMapSize;
+    info->indMapSize      = info->indSize*1024*1024;
 
 				/* Reserve the rest for AGP textures */
-    pR128->agpTexStart     = pR128->indStart + pR128->indMapSize;
-    s = (pR128->agpSize*1024*1024 - pR128->agpTexStart);
+    info->agpTexStart     = info->indStart + info->indMapSize;
+    s = (info->agpSize*1024*1024 - info->agpTexStart);
     l = R128MinBits((s-1) / R128_NR_TEX_REGIONS);
     if (l < R128_LOG_TEX_GRANULARITY) l = R128_LOG_TEX_GRANULARITY;
-    pR128->agpTexMapSize   = (s >> l) << l;
-    pR128->log2AGPTexGran  = l;
+    info->agpTexMapSize   = (s >> l) << l;
+    info->log2AGPTexGran  = l;
 
-    if (pR128->CCESecure) flags = DRM_READ_ONLY;
+    if (info->CCESecure) flags = DRM_READ_ONLY;
     else                  flags = 0;
 
-    if (drmAddMap(pR128->drmFD, pR128->ringStart, pR128->ringMapSize,
-		  DRM_AGP, flags, &pR128->ringHandle) < 0) {
+    if (drmAddMap(info->drmFD, info->ringStart, info->ringMapSize,
+		  DRM_AGP, flags, &info->ringHandle) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Could not add ring mapping\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
-	       "[agp] ring handle = 0x%08lx\n", pR128->ringHandle);
+	       "[agp] ring handle = 0x%08lx\n", info->ringHandle);
 
-    if (drmMap(pR128->drmFD, pR128->ringHandle, pR128->ringMapSize,
-	       (drmAddressPtr)&pR128->ring) < 0) {
+    if (drmMap(info->drmFD, info->ringHandle, info->ringMapSize,
+	       (drmAddressPtr)&info->ring) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR, "[agp] Could not map ring\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[agp] Ring mapped at 0x%08lx\n",
-	       (unsigned long)pR128->ring);
+	       (unsigned long)info->ring);
 
-    if (drmAddMap(pR128->drmFD, pR128->ringReadOffset, pR128->ringReadMapSize,
-		  DRM_AGP, flags, &pR128->ringReadPtrHandle) < 0) {
+    if (drmAddMap(info->drmFD, info->ringReadOffset, info->ringReadMapSize,
+		  DRM_AGP, flags, &info->ringReadPtrHandle) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Could not add ring read ptr mapping\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[agp] ring read ptr handle = 0x%08lx\n",
-	       pR128->ringReadPtrHandle);
+	       info->ringReadPtrHandle);
 
-    if (drmMap(pR128->drmFD, pR128->ringReadPtrHandle, pR128->ringReadMapSize,
-	       (drmAddressPtr)&pR128->ringReadPtr) < 0) {
+    if (drmMap(info->drmFD, info->ringReadPtrHandle, info->ringReadMapSize,
+	       (drmAddressPtr)&info->ringReadPtr) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Could not map ring read ptr\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[agp] Ring read ptr mapped at 0x%08lx\n",
-	       (unsigned long)pR128->ringReadPtr);
+	       (unsigned long)info->ringReadPtr);
 
-    if (drmAddMap(pR128->drmFD, pR128->vbStart, pR128->vbMapSize,
-		  DRM_AGP, 0, &pR128->vbHandle) < 0) {
+    if (drmAddMap(info->drmFD, info->vbStart, info->vbMapSize,
+		  DRM_AGP, 0, &info->vbHandle) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Could not add vertex buffers mapping\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
-	       "[agp] vertex buffers handle = 0x%08lx\n", pR128->vbHandle);
+	       "[agp] vertex buffers handle = 0x%08lx\n", info->vbHandle);
 
-    if (drmMap(pR128->drmFD, pR128->vbHandle, pR128->vbMapSize,
-	       (drmAddressPtr)&pR128->vb) < 0) {
+    if (drmMap(info->drmFD, info->vbHandle, info->vbMapSize,
+	       (drmAddressPtr)&info->vb) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Could not map vertex buffers\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[agp] Vertex buffers mapped at 0x%08lx\n",
-	       (unsigned long)pR128->vb);
+	       (unsigned long)info->vb);
 
-    if (drmAddMap(pR128->drmFD, pR128->indStart, pR128->indMapSize,
-		  DRM_AGP, flags, &pR128->indHandle) < 0) {
+    if (drmAddMap(info->drmFD, info->indStart, info->indMapSize,
+		  DRM_AGP, flags, &info->indHandle) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Could not add indirect buffers mapping\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
-	       "[agp] indirect buffers handle = 0x%08lx\n", pR128->indHandle);
+	       "[agp] indirect buffers handle = 0x%08lx\n", info->indHandle);
 
-    if (drmMap(pR128->drmFD, pR128->indHandle, pR128->indMapSize,
-	       (drmAddressPtr)&pR128->ind) < 0) {
+    if (drmMap(info->drmFD, info->indHandle, info->indMapSize,
+	       (drmAddressPtr)&info->ind) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Could not map indirect buffers\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[agp] Indirect buffers mapped at 0x%08lx\n",
-	       (unsigned long)pR128->ind);
+	       (unsigned long)info->ind);
 
-    if (drmAddMap(pR128->drmFD, pR128->agpTexStart, pR128->agpTexMapSize,
-		  DRM_AGP, 0, &pR128->agpTexHandle) < 0) {
+    if (drmAddMap(info->drmFD, info->agpTexStart, info->agpTexMapSize,
+		  DRM_AGP, 0, &info->agpTexHandle) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Could not add AGP texture map mapping\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[agp] AGP texture map handle = 0x%08lx\n",
-	       pR128->agpTexHandle);
+	       info->agpTexHandle);
 
-    if (drmMap(pR128->drmFD, pR128->agpTexHandle, pR128->agpTexMapSize,
-	       (drmAddressPtr)&pR128->agpTex) < 0) {
+    if (drmMap(info->drmFD, info->agpTexHandle, info->agpTexMapSize,
+	       (drmAddressPtr)&info->agpTex) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Could not map AGP texture map\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[agp] AGP Texture map mapped at 0x%08lx\n",
-	       (unsigned long)pR128->agpTex);
+	       (unsigned long)info->agpTex);
 
 				/* Initialize Rage 128's AGP registers */
     cntl  = INREG(R128_AGP_CNTL);
     cntl &= ~R128_AGP_APER_SIZE_MASK;
-    switch (pR128->agpSize) {
+    switch (info->agpSize) {
     case 256: cntl |= R128_AGP_APER_SIZE_256MB; break;
     case 128: cntl |= R128_AGP_APER_SIZE_128MB; break;
     case  64: cntl |= R128_AGP_APER_SIZE_64MB;  break;
@@ -748,41 +725,41 @@ static Bool R128DRIAgpInit(R128InfoPtr pR128, ScreenPtr pScreen)
     default:
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Illegal aperture size %d kB\n",
-		   pR128->agpSize*1024);
+		   info->agpSize*1024);
 	return FALSE;
     }
-    OUTREG(R128_AGP_BASE, pR128->ringHandle); /* Ring buf is at AGP offset 0 */
+    OUTREG(R128_AGP_BASE, info->ringHandle); /* Ring buf is at AGP offset 0 */
     OUTREG(R128_AGP_CNTL, cntl);
 
     return TRUE;
 }
 
 /* Fake the vertex buffers for PCI cards. */
-static Bool R128DRIPciInit(R128InfoPtr pR128, ScreenPtr pScreen)
+static Bool R128DRIPciInit(R128InfoPtr info, ScreenPtr pScreen)
 {
-    pR128->vbStart = 0;
-    pR128->vbMapSize = pR128->vbSize*1024*1024;
+    info->vbStart   = 0;
+    info->vbMapSize = info->vbSize*1024*1024;
 
     return TRUE;
 }
 
 /* Add a map for the MMIO registers that will be accessed by any
    DRI-based clients. */
-static Bool R128DRIMapInit(R128InfoPtr pR128, ScreenPtr pScreen)
+static Bool R128DRIMapInit(R128InfoPtr info, ScreenPtr pScreen)
 {
     int flags;
 
-    if (pR128->CCESecure) flags = DRM_READ_ONLY;
-    else                  flags = 0;
+    if (info->CCESecure) flags = DRM_READ_ONLY;
+    else                 flags = 0;
 
 				/* Map registers */
-    pR128->registerSize = R128_MMIOSIZE;
-    if (drmAddMap(pR128->drmFD, pR128->MMIOAddr, pR128->registerSize,
-		  DRM_REGISTERS, flags, &pR128->registerHandle) < 0) {
+    info->registerSize = R128_MMIOSIZE;
+    if (drmAddMap(info->drmFD, info->MMIOAddr, info->registerSize,
+		  DRM_REGISTERS, flags, &info->registerHandle) < 0) {
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
-	       "[drm] register handle = 0x%08lx\n", pR128->registerHandle);
+	       "[drm] register handle = 0x%08lx\n", info->registerHandle);
 
     return TRUE;
 }
@@ -791,9 +768,9 @@ static Bool R128DRIMapInit(R128InfoPtr pR128, ScreenPtr pScreen)
    DRI-based clients. */
 static void R128DRICCEInitRingBuffer(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr    info     = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    unsigned long  addr;
+    unsigned long addr;
 
     /* FIXME: When we use the CCE for the X server, we should move this
        function (and the support functions above) to r128_accel.c */
@@ -831,63 +808,63 @@ static void R128DRICCEInitRingBuffer(ScrnInfoPtr pScrn)
 }
 
 /* Initialize the kernel data structures. */
-static int R128DRIKernelInit(R128InfoPtr pR128, ScreenPtr pScreen)
+static int R128DRIKernelInit(R128InfoPtr info, ScreenPtr pScreen)
 {
     drmR128Init      drmInfo;
 
     drmInfo.sarea_priv_offset   = sizeof(XF86DRISAREARec);
-    drmInfo.is_pci              = pR128->IsPCI;
-    drmInfo.cce_mode            = pR128->CCEMode;
-    drmInfo.cce_fifo_size       = pR128->CCEFifoSize;
-    drmInfo.cce_secure          = pR128->CCESecure;
-    drmInfo.ring_size           = pR128->ringSize*1024*1024;
-    drmInfo.usec_timeout        = pR128->CCEusecTimeout;
+    drmInfo.is_pci              = info->IsPCI;
+    drmInfo.cce_mode            = info->CCEMode;
+    drmInfo.cce_fifo_size       = info->CCEFifoSize;
+    drmInfo.cce_secure          = info->CCESecure;
+    drmInfo.ring_size           = info->ringSize*1024*1024;
+    drmInfo.usec_timeout        = info->CCEusecTimeout;
 
-    drmInfo.fb_offset           = pR128->LinearAddr;
-    drmInfo.agp_ring_offset     = pR128->ringHandle;
-    drmInfo.agp_read_ptr_offset = pR128->ringReadPtrHandle;
-    drmInfo.agp_vertbufs_offset = pR128->vbHandle;
-    drmInfo.agp_indbufs_offset  = pR128->indHandle;
-    drmInfo.agp_textures_offset = pR128->agpTexHandle;
-    drmInfo.mmio_offset         = pR128->registerHandle;
+    drmInfo.fb_offset           = info->LinearAddr;
+    drmInfo.agp_ring_offset     = info->ringHandle;
+    drmInfo.agp_read_ptr_offset = info->ringReadPtrHandle;
+    drmInfo.agp_vertbufs_offset = info->vbHandle;
+    drmInfo.agp_indbufs_offset  = info->indHandle;
+    drmInfo.agp_textures_offset = info->agpTexHandle;
+    drmInfo.mmio_offset         = info->registerHandle;
 
-    if (drmR128InitCCE(pR128->drmFD, &drmInfo) < 0) return FALSE;
+    if (drmR128InitCCE(info->drmFD, &drmInfo) < 0) return FALSE;
 
     return TRUE;
 }
 
 /* Add a map for the vertex buffers that will be accessed by any
    DRI-based clients. */
-static Bool R128DRIBufInit(R128InfoPtr pR128, ScreenPtr pScreen)
+static Bool R128DRIBufInit(R128InfoPtr info, ScreenPtr pScreen)
 {
 				/* Initialize vertex buffers */
-    if ((pR128->vbNumBufs = drmAddBufs(pR128->drmFD,
-				       pR128->vbMapSize / pR128->vbBufSize,
-				       pR128->vbBufSize,
-				       DRM_AGP_BUFFER,
-				       pR128->vbStart)) <= 0) {
+    if ((info->vbNumBufs = drmAddBufs(info->drmFD,
+				      info->vbMapSize / info->vbBufSize,
+				      info->vbBufSize,
+				      DRM_AGP_BUFFER,
+				      info->vbStart)) <= 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[drm] Could not create vertex buffers list\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[drm] Added %d %d byte vertex buffers\n",
-	       pR128->vbNumBufs, pR128->vbBufSize);
+	       info->vbNumBufs, info->vbBufSize);
 
-    if (drmMarkBufs(pR128->drmFD, 0.133333, 0.266666)) {
+    if (drmMarkBufs(info->drmFD, 0.133333, 0.266666)) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[drm] Failed to mark vertex buffers list\n");
 	return FALSE;
     }
 
-    if (!(pR128->vbBufs = drmMapBufs(pR128->drmFD))) {
+    if (!(info->vbBufs = drmMapBufs(info->drmFD))) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[drm] Failed to map vertex buffers list\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[drm] Mapped %d vertex buffers\n",
-	       pR128->vbBufs->count);
+	       info->vbBufs->count);
 
     return TRUE;
 }
@@ -895,9 +872,10 @@ static Bool R128DRIBufInit(R128InfoPtr pR128, ScreenPtr pScreen)
 /* Load the microcode for the CCE */
 static void R128DRILoadMicrocode(ScrnInfoPtr pScrn)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    int            i;
-    unsigned long  R128Microcode[] = {
+    R128InfoPtr   info            = R128PTR(pScrn);
+    unsigned char *R128MMIO       = info->MMIO;
+    int           i;
+    unsigned long R128Microcode[] = {
 	/* CCE microcode (from ATI) */
     0, 276838400, 0, 268449792, 2, 142, 2, 145, 0, 1076765731, 0, 1617039951,
     0, 774592877, 0, 1987540286, 0, 2307490946U, 0, 599558925, 0, 589505315, 0,
@@ -948,7 +926,7 @@ static void R128DRILoadMicrocode(ScrnInfoPtr pScrn)
 /* Initialize the CCE state, and start the CCE (if used by the X server) */
 static void R128DRICCEInit(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr    info     = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
 				/* CCEMode is initialized in r128_driver.c */
@@ -982,7 +960,7 @@ static void R128DRICCEInit(ScrnInfoPtr pScrn)
 Bool R128DRIScreenInit(ScreenPtr pScreen)
 {
     ScrnInfoPtr   pScrn = xf86Screens[pScreen->myNum];
-    R128InfoPtr   pR128 = R128PTR(pScrn);
+    R128InfoPtr   info = R128PTR(pScrn);
     DRIInfoPtr    pDRIInfo;
     R128DRIPtr    pR128DRI;
     int           major, minor, patch;
@@ -1010,7 +988,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 	return FALSE;
     }
 
-    switch (pR128->CurrentLayout.pixel_code) {
+    switch (info->CurrentLayout.pixel_code) {
     case 8:
 	/* These modes are not supported (yet). */
     case 15:
@@ -1027,22 +1005,22 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
        DRIScreenInit(). */
     if (!(pDRIInfo = DRICreateInfoRec())) return FALSE;
 
-    pR128->pDRIInfo                      = pDRIInfo;
+    info->pDRIInfo                       = pDRIInfo;
     pDRIInfo->drmDriverName              = R128_NAME;
     pDRIInfo->clientDriverName           = R128_NAME;
     pDRIInfo->busIdString                = xalloc(64);
     sprintf(pDRIInfo->busIdString,
 	    "PCI:%d:%d:%d",
-	    pR128->PciInfo->bus,
-	    pR128->PciInfo->device,
-	    pR128->PciInfo->func);
-    pDRIInfo->ddxDriverMajorVersion      = R128_VERSION_MAJOR;
-    pDRIInfo->ddxDriverMinorVersion      = R128_VERSION_MINOR;
-    pDRIInfo->ddxDriverPatchVersion      = R128_VERSION_PATCH;
-    pDRIInfo->frameBufferPhysicalAddress = pR128->LinearAddr;
-    pDRIInfo->frameBufferSize            = pR128->FbMapSize;
+	    info->PciInfo->bus,
+	    info->PciInfo->device,
+	    info->PciInfo->func);
+    pDRIInfo->ddxDriverMajorVersion      = ATI2_VERSION_MAJOR;
+    pDRIInfo->ddxDriverMinorVersion      = ATI2_VERSION_MINOR;
+    pDRIInfo->ddxDriverPatchVersion      = ATI2_VERSION_PATCH;
+    pDRIInfo->frameBufferPhysicalAddress = info->LinearAddr;
+    pDRIInfo->frameBufferSize            = info->FbMapSize;
     pDRIInfo->frameBufferStride          = (pScrn->displayWidth *
-					    pR128->CurrentLayout.pixel_bytes);
+					    info->CurrentLayout.pixel_bytes);
     pDRIInfo->ddxDrawableTableEntry      = R128_MAX_DRAWABLES;
     pDRIInfo->maxDrawableTableEntry      = (SAREA_MAX_DRAWABLES
 					    < R128_MAX_DRAWABLES
@@ -1068,8 +1046,8 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 #endif
 
     if (!(pR128DRI = (R128DRIPtr)xnfcalloc(sizeof(R128DRIRec),1))) {
-	DRIDestroyInfoRec(pR128->pDRIInfo);
-	pR128->pDRIInfo = NULL;
+	DRIDestroyInfoRec(info->pDRIInfo);
+	info->pDRIInfo = NULL;
 	return FALSE;
     }
     pDRIInfo->devPrivate     = pR128DRI;
@@ -1083,7 +1061,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->MoveBuffers    = R128DRIMoveBuffers;
     pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
 
-    if (!DRIScreenInit(pScreen, pDRIInfo, &pR128->drmFD)) {
+    if (!DRIScreenInit(pScreen, pDRIInfo, &info->drmFD)) {
 	xfree(pDRIInfo->devPrivate);
 	pDRIInfo->devPrivate = NULL;
 	DRIDestroyInfoRec(pDRIInfo);
@@ -1092,7 +1070,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     }
 
     /* Check the r128 DRM version */
-    version = drmGetVersion(pR128->drmFD);
+    version = drmGetVersion(info->drmFD);
     if (version) {
 	if (version->version_major != 1 ||
 	    version->version_minor != 0 ||
@@ -1113,12 +1091,12 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     }
 
 				/* Initialize AGP */
-    if (!pR128->IsPCI && !R128DRIAgpInit(pR128, pScreen)) {
+    if (!info->IsPCI && !R128DRIAgpInit(info, pScreen)) {
 	R128DRICloseScreen(pScreen);
 	return FALSE;
     }
 				/* Initialize PCI */
-    if (pR128->IsPCI && !R128DRIPciInit(pR128, pScreen)) {
+    if (info->IsPCI && !R128DRIPciInit(info, pScreen)) {
 	R128DRICloseScreen(pScreen);
 	return FALSE;
     }
@@ -1126,22 +1104,22 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 				/* DRIScreenInit doesn't add all the
                                    common mappings.  Add additional
                                    mappings here. */
-    if (!R128DRIMapInit(pR128, pScreen)) {
+    if (!R128DRIMapInit(info, pScreen)) {
 	R128DRICloseScreen(pScreen);
 	return FALSE;
     }
 
 				/* Initialize the ring buffer */
-    if (!pR128->IsPCI) R128DRICCEInitRingBuffer(pScrn);
+    if (!info->IsPCI) R128DRICCEInitRingBuffer(pScrn);
 
 				/* Initialize the kernel data structures */
-    if (!R128DRIKernelInit(pR128, pScreen)) {
+    if (!R128DRIKernelInit(info, pScreen)) {
 	R128DRICloseScreen(pScreen);
 	return FALSE;
     }
 
 				/* Initialize vertex buffers list */
-    if (!pR128->IsPCI && !R128DRIBufInit(pR128, pScreen)) {
+    if (!info->IsPCI && !R128DRIBufInit(info, pScreen)) {
 	R128DRICloseScreen(pScreen);
 	return FALSE;
     }
@@ -1169,7 +1147,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
 {
     ScrnInfoPtr      pScrn      = xf86Screens[pScreen->myNum];
-    R128InfoPtr      pR128      = R128PTR(pScrn);
+    R128InfoPtr      info      = R128PTR(pScrn);
     R128SAREAPrivPtr pSAREAPriv;
     R128DRIPtr       pR128DRI;
 
@@ -1179,54 +1157,54 @@ Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
     pSAREAPriv = (R128SAREAPrivPtr)DRIGetSAREAPrivate(pScreen);
     memset(pSAREAPriv, 0, sizeof(*pSAREAPriv));
 
-    pR128->pDRIInfo->driverSwapMethod = DRI_HIDE_X_CONTEXT;
-    /* pR128->pDRIInfo->driverSwapMethod = DRI_SERVER_SWAP; */
+    info->pDRIInfo->driverSwapMethod = DRI_HIDE_X_CONTEXT;
+    /* info->pDRIInfo->driverSwapMethod = DRI_SERVER_SWAP; */
 
-    pR128DRI                 = (R128DRIPtr)pR128->pDRIInfo->devPrivate;
-    pR128DRI->registerHandle = pR128->registerHandle;
-    pR128DRI->registerSize   = pR128->registerSize;
+    pR128DRI                 = (R128DRIPtr)info->pDRIInfo->devPrivate;
+    pR128DRI->registerHandle = info->registerHandle;
+    pR128DRI->registerSize   = info->registerSize;
 
-    pR128DRI->ringHandle     = pR128->ringHandle;
-    pR128DRI->ringMapSize    = pR128->ringMapSize;
-    pR128DRI->ringSize       = pR128->ringSize*1024*1024;
+    pR128DRI->ringHandle     = info->ringHandle;
+    pR128DRI->ringMapSize    = info->ringMapSize;
+    pR128DRI->ringSize       = info->ringSize*1024*1024;
 
-    pR128DRI->ringReadPtrHandle = pR128->ringReadPtrHandle;
-    pR128DRI->ringReadMapSize   = pR128->ringReadMapSize;
+    pR128DRI->ringReadPtrHandle = info->ringReadPtrHandle;
+    pR128DRI->ringReadMapSize   = info->ringReadMapSize;
 
-    pR128DRI->vbHandle       = pR128->vbHandle;
-    pR128DRI->vbMapSize      = pR128->vbMapSize;
-    pR128DRI->vbOffset       = pR128->vbStart;
-    pR128DRI->vbBufSize      = pR128->vbBufSize;
+    pR128DRI->vbHandle       = info->vbHandle;
+    pR128DRI->vbMapSize      = info->vbMapSize;
+    pR128DRI->vbOffset       = info->vbStart;
+    pR128DRI->vbBufSize      = info->vbBufSize;
 
-    pR128DRI->indHandle      = pR128->indHandle;
-    pR128DRI->indMapSize     = pR128->indMapSize;
+    pR128DRI->indHandle      = info->indHandle;
+    pR128DRI->indMapSize     = info->indMapSize;
 
-    pR128DRI->agpTexHandle   = pR128->agpTexHandle;
-    pR128DRI->agpTexMapSize  = pR128->agpTexMapSize;
-    pR128DRI->log2AGPTexGran = pR128->log2AGPTexGran;
-    pR128DRI->agpTexOffset   = pR128->agpTexStart;
+    pR128DRI->agpTexHandle   = info->agpTexHandle;
+    pR128DRI->agpTexMapSize  = info->agpTexMapSize;
+    pR128DRI->log2AGPTexGran = info->log2AGPTexGran;
+    pR128DRI->agpTexOffset   = info->agpTexStart;
 
-    pR128DRI->deviceID       = pR128->Chipset;
+    pR128DRI->deviceID       = info->Chipset;
     pR128DRI->width          = pScrn->virtualX;
     pR128DRI->height         = pScrn->virtualY;
     pR128DRI->depth          = pScrn->depth;
     pR128DRI->bpp            = pScrn->bitsPerPixel;
 
-    pR128DRI->fbX            = pR128->fbX;
-    pR128DRI->fbY            = pR128->fbY;
-    pR128DRI->backX          = pR128->backX;
-    pR128DRI->backY          = pR128->backY;
-    pR128DRI->depthX         = pR128->depthX;
-    pR128DRI->depthY         = pR128->depthY;
-    pR128DRI->textureX       = pR128->textureX;
-    pR128DRI->textureY       = pR128->textureY;
-    pR128DRI->textureSize    = pR128->textureSize;
-    pR128DRI->log2TexGran    = pR128->log2TexGran;
+    pR128DRI->fbX            = info->fbX;
+    pR128DRI->fbY            = info->fbY;
+    pR128DRI->backX          = info->backX;
+    pR128DRI->backY          = info->backY;
+    pR128DRI->depthX         = info->depthX;
+    pR128DRI->depthY         = info->depthY;
+    pR128DRI->textureX       = info->textureX;
+    pR128DRI->textureY       = info->textureY;
+    pR128DRI->textureSize    = info->textureSize;
+    pR128DRI->log2TexGran    = info->log2TexGran;
 
-    pR128DRI->IsPCI          = pR128->IsPCI;
+    pR128DRI->IsPCI          = info->IsPCI;
 
-    pR128DRI->CCEMode        = pR128->CCEMode;
-    pR128DRI->CCEFifoSize    = pR128->CCEFifoSize;
+    pR128DRI->CCEMode        = info->CCEMode;
+    pR128DRI->CCEFifoSize    = info->CCEFifoSize;
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "0x%08lx %d\n",
 	       pR128DRI->registerHandle, pR128DRI->registerSize);
@@ -1238,66 +1216,66 @@ Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
 void R128DRICloseScreen(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    R128InfoPtr pR128 = R128PTR(pScrn);
+    R128InfoPtr info = R128PTR(pScrn);
 
 				/* Stop the CCE if it is still in use */
-    if (pR128->CCE2D) R128CCEStop(pScrn);
+    if (info->CCE2D) R128CCEStop(pScrn);
 
 				/* De-allocate vertex buffers */
-    if (pR128->vbBufs) {
-	drmUnmapBufs(pR128->vbBufs);
-	pR128->vbBufs = NULL;
+    if (info->vbBufs) {
+	drmUnmapBufs(info->vbBufs);
+	info->vbBufs = NULL;
     }
 
 				/* De-allocate all kernel resources */
-    drmR128CleanupCCE(pR128->drmFD);
+    drmR128CleanupCCE(info->drmFD);
 
 				/* De-allocate all AGP resources */
-    if (pR128->agpTex) {
-	drmUnmap(pR128->agpTex, pR128->agpTexMapSize);
-	pR128->agpTex = NULL;
+    if (info->agpTex) {
+	drmUnmap(info->agpTex, info->agpTexMapSize);
+	info->agpTex = NULL;
     }
-    if (pR128->ind) {
-	drmUnmap(pR128->ind, pR128->indMapSize);
-	pR128->ind = NULL;
+    if (info->ind) {
+	drmUnmap(info->ind, info->indMapSize);
+	info->ind = NULL;
     }
-    if (pR128->vb) {
-	drmUnmap(pR128->vb, pR128->vbMapSize);
-	pR128->vb = NULL;
+    if (info->vb) {
+	drmUnmap(info->vb, info->vbMapSize);
+	info->vb = NULL;
     }
-    if (pR128->ringReadPtr) {
-	drmUnmap(pR128->ringReadPtr, pR128->ringReadMapSize);
-	pR128->ringReadPtr = NULL;
+    if (info->ringReadPtr) {
+	drmUnmap(info->ringReadPtr, info->ringReadMapSize);
+	info->ringReadPtr = NULL;
     }
-    if (pR128->ring) {
-	drmUnmap(pR128->ring, pR128->ringMapSize);
-	pR128->ring = NULL;
+    if (info->ring) {
+	drmUnmap(info->ring, info->ringMapSize);
+	info->ring = NULL;
     }
-    if (pR128->agpMemHandle) {
-	drmAgpUnbind(pR128->drmFD, pR128->agpMemHandle);
-	drmAgpFree(pR128->drmFD, pR128->agpMemHandle);
-	pR128->agpMemHandle = 0;
-	drmAgpRelease(pR128->drmFD);
+    if (info->agpMemHandle) {
+	drmAgpUnbind(info->drmFD, info->agpMemHandle);
+	drmAgpFree(info->drmFD, info->agpMemHandle);
+	info->agpMemHandle = 0;
+	drmAgpRelease(info->drmFD);
     }
 
 				/* De-allocate all DRI resources */
     DRICloseScreen(pScreen);
 
 				/* De-allocate all DRI data structures */
-    if (pR128->pDRIInfo) {
-	if (pR128->pDRIInfo->devPrivate) {
-	    xfree(pR128->pDRIInfo->devPrivate);
-	    pR128->pDRIInfo->devPrivate = NULL;
+    if (info->pDRIInfo) {
+	if (info->pDRIInfo->devPrivate) {
+	    xfree(info->pDRIInfo->devPrivate);
+	    info->pDRIInfo->devPrivate = NULL;
 	}
-	DRIDestroyInfoRec(pR128->pDRIInfo);
-	pR128->pDRIInfo = NULL;
+	DRIDestroyInfoRec(info->pDRIInfo);
+	info->pDRIInfo = NULL;
     }
-    if (pR128->pVisualConfigs) {
-	xfree(pR128->pVisualConfigs);
-	pR128->pVisualConfigs = NULL;
+    if (info->pVisualConfigs) {
+	xfree(info->pVisualConfigs);
+	info->pVisualConfigs = NULL;
     }
-    if (pR128->pVisualConfigsPriv) {
-	xfree(pR128->pVisualConfigsPriv);
-	pR128->pVisualConfigsPriv = NULL;
+    if (info->pVisualConfigsPriv) {
+	xfree(info->pVisualConfigsPriv);
+	info->pVisualConfigsPriv = NULL;
     }
 }
