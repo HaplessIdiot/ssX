@@ -1,33 +1,37 @@
 /*
- * $XFree86: xc/programs/xrandr/xrandr.c,v 1.7 2001/06/17 15:18:39 herrb Exp $
+ * $XFree86: xc/programs/xrandr/xrandr.c,v 1.8 2001/07/11 16:40:32 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
- * Copyright © 2001 Compaq Computer Corporation
+ * Copyright © 2002 Hewlett Pacard Company, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Keith Packard or Compaq not be used in
+ * documentation, and that the name of Keith Packard or HP not be used in
  * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  Keith Packard makes no
+ * specific, written prior permission.  Keith Packard and HP makes no
  * representations about the suitability of this software for any purpose.  It
  * is provided "as is" without express or implied warranty.
  *
- * KEITH PACKARD and COMPAQ DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * KEITH PACKARD and HP DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
  * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
  * EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
- * Blame Jim Gettys for any bugs...
+ *
+ * Blame Jim Gettys for any bugs; he wrote most of the client side code,
+ * and part of the server code for randr.
  */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
+#include <X11/Xlibint.h>
 #include <X11/Xproto.h>
 #include <X11/extensions/Xrandr.h>
+#include <X11/extensions/Xrender.h>	/* we share subpixel information */
 #include <string.h>
 #include <stdlib.h>
 
@@ -40,6 +44,15 @@ static char *direction[5] = {
   "right",
   "\n"};
 
+/* subpixel order */
+static char *order[6] = {
+  "unknown",
+  "horizontal rgb",
+  "horizontal bgr",
+  "vertical rgb",
+  "vertical bgr",
+  "no subpixels"};
+
 
 static void
 usage(void)
@@ -49,11 +62,14 @@ usage(void)
   fprintf(stderr, "  -display <display> or -d <display>\n");
   fprintf(stderr, "  -help\n");
   fprintf(stderr, "  -o <normal,inverted,left,right,0,1,2,3>\n");
-  fprintf(stderr, "   or --orientation <normal,inverted,left,right,0,1,2,3>\n");
-  fprintf(stderr, "  -q                or --query\n");
-  fprintf(stderr, "  -s <size>         or --size <size>\n");
-  fprintf(stderr, "  -v                or --verbose\n");
-  fprintf(stderr, "                    or --screen <screen>\n");
+  fprintf(stderr, "            or --orientation <normal,inverted,left,right,0,1,2,3>\n");
+  fprintf(stderr, "  -q        or --query\n");
+  fprintf(stderr, "  -s <size> or --size <size>\n");
+  fprintf(stderr, "  -v        or --version\n");
+  fprintf(stderr, "  -x        (reflect in x)\n");
+  fprintf(stderr, "  -y        (reflect in y)\n");
+  fprintf(stderr, "  --screen <screen>\n");
+  fprintf(stderr, "  --verbose\n");
   
   exit(1);
   /*NOTREACHED*/
@@ -71,15 +87,18 @@ main (int argc, char **argv)
   int		rot = -1;
   int		verbose = 0, query = 0;
   Rotation	rotation, current_rotation, rotations;
-  XRRScreenChangeNotifyEvent event;    
+  XEvent	event;
+  XRRScreenChangeNotifyEvent *sce;    
   char          *display_name = NULL;
   int 		i;
   SizeID	current_size;
-  VisualGroupID	current_visual_group;
   int		size = -1;
   int		dirind = 0;
   int		setit = 0;
   int		screen = -1;
+  int		version = 0;
+  int		event_base, error_base;
+  int		reflection = 0;
 
   program_name = argv[0];
   if (argc == 1) query = 1;
@@ -92,14 +111,31 @@ main (int argc, char **argv)
     if (!strcmp("-help", argv[i])) {
       usage();
     }
-    if (!strcmp ("-v", argv[i]) || !strcmp ("--verbose", argv[i])) {
+    if (!strcmp ("--verbose", argv[i])) {
       verbose = 1;
       continue;
     }
+
     if (!strcmp ("-s", argv[i]) || !strcmp ("--size", argv[i])) {
       if (++i>=argc) usage ();
       size = atoi (argv[i]);
       if (size < 0) usage();
+      setit = 1;
+      continue;
+    }
+
+    if (!strcmp ("-v", argv[i]) || !strcmp ("--version", argv[i])) {
+      version = 1;
+      continue;
+    }
+
+    if (!strcmp ("-x", argv[i])) {
+      reflection |= RR_Reflect_X;
+      setit = 1;
+      continue;
+    }
+    if (!strcmp ("-y", argv[i])) {
+      reflection |= RR_Reflect_Y;
       setit = 1;
       continue;
     }
@@ -132,6 +168,7 @@ main (int argc, char **argv)
   if (verbose) query = 1;
 
   dpy = XOpenDisplay (display_name);
+
   if (dpy == NULL) {
       fprintf (stderr, "Can't open display %s\n", display_name);
       exit (1);
@@ -151,9 +188,10 @@ main (int argc, char **argv)
   if (sc == NULL) 
       exit (1);
   
-  current_size = XRRCurrentConfig (sc, &current_visual_group, &current_rotation);
-  if (size < 0)
-    size = current_size;
+  current_size = XRRConfigCurrentConfiguration (sc, &current_rotation);
+
+  if (size < 0)    size = current_size;
+
   if (rot < 0)
   {
     for (rot = 0; rot < 4; rot++)
@@ -161,51 +199,120 @@ main (int argc, char **argv)
 	    break;
   }
 
-  sizes = XRRSizes(sc, &nsize);
-  for (i = 0; i < nsize; i++) {
-    if (query) 
-      printf ("SZ:  Pixels        Physical\n%d: %4d x%4d  (%4dmm x%4dmm)\n",
-	      i, sizes[i].width, sizes[i].height,
-	      sizes[i].mwidth, sizes[i].mheight);
+  if (version) {
+    int major_version, minor_version;
+    XRRQueryVersion (dpy, &major_version, &minor_version);
+    printf("Server reports RandR version %d.%d\n", 
+	   major_version, minor_version);
+  }
+
+  sizes = XRRConfigSizes(sc, &nsize);
+
+  if (query) {
+    printf("SZ:    Pixels          Physical\n");
+    for (i = 0; i < nsize; i++) {
+      printf ("%-2d %5d x %-5d  (%4dmm x%4dmm )\n",
+	   i, sizes[i].width, sizes[i].height,
+	   sizes[i].mwidth, sizes[i].mheight);
+    }
   }
 
   if (size >= nsize) usage();
-  rotations = XRRRotations(sc, &current_rotation);
+
+  rotations = XRRConfigRotations(sc, &current_rotation);
+
   rotation = 1 << rot ;
   if (query) {
     for (i = 0; i < 4; i ++) {
       if ((current_rotation >> i) & 1) 
 	printf("Current rotation - %s\n", direction[i]);
     }
+
+    printf("Current reflection - ");
+    if (current_rotation & RR_Reflect_X) printf ("X Axis ");
+    else if (current_rotation & RR_Reflect_Y) printf ("Y Axis");
+    else printf ("none");
+    printf ("\n");
+    
+
     printf ("Rotations possible - ");
     for (i = 0; i < 4; i ++) {
       if ((rotations >> i) & 1)  printf("%s ", direction[i]);
     }
     printf ("\n");
+
+    printf ("Reflections possible - ");
+    if (rotations & RR_Reflect_X) printf ("X Axis ");
+    else if (rotations & RR_Reflect_Y) printf ("Y Axis");
+    else printf ("none");
+    printf ("\n");
+
   }
 
-  if (verbose) printf("Setting size to %d, rotation to %s\n", 
-		      size, direction[rot]);
+  if (verbose) { 
+    printf("Setting size to %d, rotation to %s\n",  size, direction[rot]);
 
-  if (setit) XRRScreenChangeSelectInput (dpy, root, True);
+    printf ("Setting reflection on ");
+    if (reflection & RR_Reflect_X) printf ("X Axis ");
+    else if (reflection & RR_Reflect_Y) printf ("Y Axis");
+    else printf ("neither axis");
+    printf ("\n");
+
+    if (reflection & RR_Reflect_X) printf("Setting reflection on X axis\n");
+
+    if (reflection & RR_Reflect_Y) printf("Setting reflection on Y axis\n");
+  }
+
+  /* we should test configureNotify on the root window */
+  XSelectInput (dpy, root, StructureNotifyMask);
+
+  if (setit) XRRSelectInput (dpy, root,
+			RRScreenChangeNotifyMask);
   if (setit) status = XRRSetScreenConfig (dpy, sc, DefaultRootWindow (dpy), 
-		       (SizeID) size, current_visual_group, (Rotation) rotation, CurrentTime);
+	       (SizeID) size, (Rotation) (rotation | reflection), CurrentTime);
+  XRRQueryExtension(dpy, &event_base, &error_base);
   if (verbose && setit) {
     if (status == RRSetConfigSuccess)
       {
+	while (1) {
+	int spo;
 	XNextEvent(dpy, (XEvent *) &event);
-	printf("Got an event!\n");
-	printf(" window = %d\n root = %d\n size_index = %d\n visual_group_index %d\n rotation %d\n", 
-	       (int) event.window, (int) event.root, 
-	       event.size_index, event.visual_group_index, event.rotation);
-	printf(" timestamp = %ld, config_timestamp = %ld\n",
-	       event.timestamp, event.config_timestamp);
-	printf(" %dX%d pixels, %dX%d mm\n",
-	       event.width, event.height,
-	       event.mwidth, event.mheight);
+	
+	printf ("Event received, type = %d\n", event.type);
+	/* update Xlib's knowledge of the event */
+	XRRUpdateConfiguration (&event);
+	if (event.type == ConfigureNotify)
+	  printf("Received ConfigureNotify Event!\n");
+
+	switch (event.type - event_base) {
+	case RRScreenChangeNotify:
+	  sce = (XRRScreenChangeNotifyEvent *) &event;
+
+	  printf("Got a screen change notify event!\n");
+	  printf(" window = %d\n root = %d\n size_index = %d\n rotation %d\n", 
+	       (int) sce->window, (int) sce->root, 
+	       sce->size_index,  sce->rotation);
+	  printf(" timestamp = %ld, config_timestamp = %ld\n",
+	       sce->timestamp, sce->config_timestamp);
+	  printf(" Rotation = %x\n", sce->rotation);
+	  printf(" %d X %d pixels, %d X %d mm\n",
+		 sce->width, sce->height, sce->mwidth, sce->mheight);
+	  printf("Display width   %d, height   %d\n",
+		 DisplayWidth(dpy, screen), DisplayHeight(dpy, screen));
+	  printf("Display widthmm %d, heightmm %d\n", 
+		 DisplayWidthMM(dpy, screen), DisplayHeightMM(dpy, screen));
+	  spo = sce->subpixel_order;
+	  if ((spo < 0) || (spo > 5))
+	    printf ("Unknown subpixel order, value = %d\n", spo);
+	  else printf ("new Subpixel rendering model is %s\n", order[spo]);
+	  break;
+	default:
+	  if (event.type != ConfigureNotify) 
+	    printf("unknown event received, type = %d!\n", event.type);
+	}
+	}
       }
   }
-  XRRFreeScreenInfo(sc);
+  XRRFreeScreenConfigInfo(sc);
   return(0);
 }
-

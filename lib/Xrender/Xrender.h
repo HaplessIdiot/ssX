@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.h,v 1.12 2002/05/15 06:42:49 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.h,v 1.15 2002/09/26 02:56:52 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -170,6 +170,8 @@ Status XRenderQueryVersion (Display *dpy,
 Status XRenderQueryFormats (Display *dpy);
 
 int XRenderQuerySubpixelOrder (Display *dpy, int screen);
+
+Bool XRenderSetSubpixelOrder (Display *dpy, int screen, int subpixel);
 
 XRenderPictFormat *
 XRenderFindVisualFormat (Display *dpy, _Xconst Visual *visual);

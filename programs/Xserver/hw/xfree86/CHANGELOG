@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 352. Update RandR extension to 1.0.  Eliminate depth switching 
+      (Keith Packard)
  351. Fix XDarwin rootless crash when window resizing with complex bit
       gravity (Greg Parker).
  350. Fix some incorrect mappings in the gbk-0.enc encodings file (#5313,

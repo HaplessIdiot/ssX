@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.c,v 1.10 2002/05/17 23:54:57 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.c,v 1.11 2002/09/26 02:56:52 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -335,6 +335,23 @@ XRenderQuerySubpixelOrder (Display *dpy, int screen)
 
     xri = (XRenderInfo *) info->data;
     return xri->screen[screen].subpixel;
+}
+
+Bool
+XRenderSetSubpixelOrder (Display *dpy, int screen, int subpixel)
+{
+    XExtDisplayInfo *info = XRenderFindDisplay (dpy);
+    XRenderInfo	    *xri;
+
+    if (!XextHasExtension (info))
+	return False;
+
+    if (!XRenderQueryFormats (dpy))
+	return False;
+
+    xri = (XRenderInfo *) info->data;
+    xri->screen[screen].subpixel = subpixel;
+    return True;
 }
 
 XRenderPictFormat *
