@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.292 2000/06/15 20:49:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.293 2000/06/17 00:02:02 martin Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1008,6 +1008,16 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 # define ServerSnprintfDefines /**/
 #endif
 
+#ifndef UseSmartScheduler
+#define UseSmartScheduler YES
+#endif
+
+#if UseSmartScheduler
+#define SmartScheduleDefines -DSMART_SCHEDULE
+#else
+#define SmartScheduleDefines /**/
+#endif
+
 /* Server defines required for all OSs */
 #ifndef XFree86ServerDefines
 # define XFree86ServerDefines	-DAVOID_GLYPHBLT -DPIXPRIV -DSINGLEDEPTH \
@@ -1015,13 +1025,13 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 				XFree86LoaderDefines -DXFree86Server \
 				VidModeExtensionDefines \
 				ServerSnprintfDefines \
-				-DX_BYTE_ORDER=ByteOrder \
-				-DSMART_SCHEDULE
+				SmartScheduleDefines \
+				-DX_BYTE_ORDER=ByteOrder
 #endif
 
 #ifndef XFree86ServerOSDefines
 # define XFree86ServerOSDefines	-DDDXOSINIT -DSERVER_LOCK -DDDXOSFATALERROR \
-				-DDDXOSVERRORF -DSMART_SCHEDULE
+				-DDDXOSVERRORF
 #endif
 
 #ifndef XFree86ConsoleDefines
