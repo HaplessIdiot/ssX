@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.9 2001/04/27 12:32:42 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.10 2001/05/01 07:53:46 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -10,10 +10,10 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.9 2001/04/27 12:32:42 alan
 #define OSMajorVersion          1
 #endif
 #ifndef OSMinorVersion
-#define OSMinorVersion          1
+#define OSMinorVersion          3
 #endif
 #ifndef OSTeenyVersion
-#define OSTeenyVersion		8
+#define OSTeenyVersion		1
 #endif
 
 #define ProjectRoot /usr/X11R6
@@ -36,10 +36,8 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.9 2001/04/27 12:32:42 alan
 #define HasPoll			NO
 #if UseCygIPC
 # define HasShm			YES
-# define HasShmDefines		-DHAS_SHM
 #else
 # define HasShm                 NO
-# define HasShmDefines		/**/
 #endif
 #define HasSnprintf		YES
 #define HasZlib			YES
@@ -109,11 +107,15 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.9 2001/04/27 12:32:42 alan
 
 #define OptimizedCDebugFlags	-O2 -fno-strength-reduce -fpcc-struct-return -m486
 
-#define StandardDefines         -D__i386__ -DWIN32_LEAN_AND_MEAN -DX_LOCALE -D_X86_ -D__STDC__ -DNO_TCP_H -D__CYGWIN__ -D_XOPEN_SOURCE -D_POSIX_C_SOURCE=199309L -D_BSD_SOURCE -D_SVID_SOURCE -D_GNU_SOURCE -DX_SOURCE HasShmDefines
+#define StandardDefines         -D__i386__ -DWIN32_LEAN_AND_MEAN -DX_LOCALE -D_X86_ -D__STDC__ -DNO_TCP_H -D__CYGWIN__ -D_XOPEN_SOURCE -D_POSIX_C_SOURCE=199309L -D_BSD_SOURCE -D_SVID_SOURCE -D_GNU_SOURCE -DX_SOURCE
 
 #define XawI18nDefines          -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #define HasWChar32              YES
-#define StandardCppDefines      -traditional StandardDefines
+#if UseCygIPC
+# define StandardCppDefines      -traditional -DHAS_SHM StandardDefines
+#else
+# define StandardCppDefines      -traditional StandardDefines
+#endif
 #define ServerOSDefines         XFree86ServerDefines -DDDXTIME -DFD_SETSIZE=256 -DDXOSINIT
 #define XkbServerDefines        -DXKB_ALWAYS_USES_SOFT_REPEAT
 #define ServerExtraDefines      -DGCCUSESGAS XFree86ServerDefines
