@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.227 2004/06/25 15:33:21 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.228 2004/07/07 03:46:21 martin Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -157,60 +157,6 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # define MiscManSuffix         7x
 # define MiscManDir            $(MANSOURCEPATH)7
 
-/*
- *
- *
-# define DebianMaintainer	YES
- *
- *
- */
-
-# ifdef DebianMaintainer
-#  ifndef XFree86CustomVersion
-#   define XFree86CustomVersion		"Debian"
-#  endif
-#  ifndef BuilderEMailAddr
-#   define BuilderEMailAddr		"debian-x@lists.debian.org"
-#  endif
-#  define XFree86Devel			YES
-#  define BuildAllSpecsDocs		YES
-#  define InstallXinitConfig		YES
-#  define InstallXdmConfig		YES
-#  define InstallFSConfig		YES
-#  define DebuggableLibraries		YES
-#  define ForceNormalLib		YES
-#  define BuildSpecsDocs		YES
-#  define SpecsDocDirs			CTEXT GL ICCCM X11 Xext Xv i18n xterm
-#  define BuildRman			NO
-#  define BuildHtmlManPages		NO
-
-/* we build-depend on libfreetype6-dev (FreeType 2.x) */
-#   define BuildFreetype2Library	NO
-#   define HasFreetype2			YES
-/* m68k has no 2.4 kernel yet */
-#   ifndef Mc68020Architecture
-#    define HasLinuxInput		YES
-#   endif
-#   define HasLatex			YES
-/* at present, glide2 only works on i386 */
-#   ifdef i386Architecture
-#    define HasGlide2			YES
-#    define Glide2IncDir		/usr/include/glide
-#   endif /* i386Architecture */
-/* at present, glide3 only works on alpha and i386 */
-#   if defined(i386Architecture) || defined(AlphaArchitecture)
-#    define HasGlide3			YES
-#    define Glide3IncDir		/usr/include/glide3
-#   endif /* i386Architecture || AlphaArchitecture */
-/* extended instruction set support */
-#   ifdef i386Architecture
-#   define HasX86Support		YES
-#    define HasMMXSupport		YES
-#    define Has3DNowSupport		YES
-/* 2.4 is not yet the official (or predominant) kernel in unstable */
-#    define HasSSESupport		NO
-#   endif /* i386Architecture */
-# endif /* DebianMaintainer */
 #endif /* LinuxDebian */
 
 #if LinuxDistribution == LinuxRedHat
