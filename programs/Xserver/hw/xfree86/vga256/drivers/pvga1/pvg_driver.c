@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.2 94/03/28 21:52:30 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.0 1994/04/29 14:10:28 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.1 1994/05/31 08:15:47 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -126,14 +126,16 @@ vgaVideoChipRec PVGA1 = {
 #define WD90C10	2		/* WD90C1x */
 #define WD90C30	3		/* WD90C30 */
 #define WD90C31	4		/* WD90C31 */
-#define WD90C20 5		/* WD90C2x */
+#define WD90C33	5		/* WD90C33 */
+#define WD90C20 6		/* WD90C2x */
 static int WDchipset;
 static int MClk = 45000;
 static int MClkIndex = 8;
 static unsigned char save_cs2 = 0;
 static Bool use_cs2 = TRUE;
 
-#define IS_WD90C3X(x)	(((x) == WD90C30) || ((x) == WD90C31))
+#define IS_WD90C3X(x)	(((x) == WD90C30) || ((x) == WD90C31) || \
+			 ((x) == WD90C33))
 
 #undef DO_WD90C20
 
@@ -154,9 +156,10 @@ PVGA1Ident(n)
 {
 #ifdef DO_WD90C20
   static char *chipsets[] = {"pvga1","wd90c00","wd90c10",
-			     "wd90c30","wd90c31","wd90c20"};
+			     "wd90c30","wd90c31","wd90c33","wd90c20"};
 #else
-  static char *chipsets[] = {"pvga1","wd90c00","wd90c10","wd90c30","wd90c31"};
+  static char *chipsets[] = {"pvga1","wd90c00","wd90c10","wd90c30","wd90c31",
+			     "wd90c33"};
 #endif
 
   if (n + 1 > sizeof(chipsets) / sizeof(char *))
@@ -279,8 +282,10 @@ PVGA1Probe()
 	    WDchipset = WD90C30;
 	else if (!StrCaseCmp(vga256InfoRec.chipset, PVGA1Ident(4)))
 	    WDchipset = WD90C31;
+	else if (!StrCaseCmp(vga256InfoRec.chipset, PVGA1Ident(5)))
+	    WDchipset = WD90C33;
 #ifdef DO_WD90C20
-        else if (!StrCaseCmp(vga256InfoRec.chipset, PVGA1Ident(5)))
+        else if (!StrCaseCmp(vga256InfoRec.chipset, PVGA1Ident(6)))
 	    WDchipset = WD90C20;
 #endif
         else
@@ -335,6 +340,8 @@ PVGA1Probe()
 		    WDchipset = WD90C31;
 		else if ((sig[0] == '3') && (sig[1] == '0'))
 		    WDchipset = WD90C30;
+		else if ((sig[0] == '3') && (sig[1] == '3'))
+		    WDchipset = WD90C33;
 		else if ((sig[0] == '2') && (sig[1] == '4')) {
 		    WDchipset = WD90C30;
 		    ErrorF("%s %s: WD: Detected 90C24, treating it at 90C30\n",
@@ -760,7 +767,10 @@ PVGA1Init(mode)
 
 #ifndef MONOVGA
   new->std.CRTC[19] = vga256InfoRec.virtualX >> 3; /* we are in byte-mode */
-  new->std.CRTC[20] = 0x40;
+  if (WDchipset == WD90C33)
+    new->std.CRTC[20] = 0x00;
+  else
+    new->std.CRTC[20] = 0x40;
   new->std.CRTC[23] = 0xE3; /* thats what the man says */
 #endif
 
