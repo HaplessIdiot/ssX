@@ -57,11 +57,29 @@ Segment:
 	ALIGNTEXT4
 	GLOBL	GLNAME(S3SetRead)
 GLNAME(S3SetRead):
-	MOV_B    (AL, AH)
-	MOV_B    (CONST(0x35), AL)
+	MOV_B	(AL, CONTENT(Segment))
+/*	Segment b0..3 -> CRTC[0x35] b0..3 */
+	MOV_B	(CONST(0x35), AL)
 	MOV_L	(CONST(0x3D4), EDX)
 	OUT_B	
-	MOV_B   (AH, AL)
 	MOV_L	(CONST(0x3D5), EDX)
+	IN_B
+	AND_B	(CONST(0xF0), AL)
+	MOV_B	(CONTENT(Segment), AH)
+	AND_B	(CONST(0x0F), AH)
+	OR_B	(AH, AL)
 	OUT_B	
+/*	Segment b4.5 -> CRTC[0x51] b2.3 */
+	MOV_B	(CONST(0x51), AL)
+	MOV_L	(CONST(0x3D4), EDX)
+	OUT_B	
+	MOV_L	(CONST(0x3D5), EDX)
+	IN_B
+	AND_B	(CONST(0xF3), AL)
+	MOV_B	(CONTENT(Segment), AH)
+	AND_B	(CONST(0x30), AH)
+	ROR_B	(CONST(2), AH)
+	OR_B	(AH, AL)
+	OUT_B	
+		
 	RET
