@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX January 2002)
+  19. Fix for `hostname` issue on Linux (Marc La France).
   18. Fix startx script for ksh (Phillip B. Bruce).
   17. Fix Emulate3Buttons for wsmouse protocol on NetBSD and OpenBSD
       (Matthieu Herrb).
@@ -14588,4 +14589,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2154 2002/01/27 18:59:30 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2155 2002/01/28 12:48:42 tsi Exp $
