@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.96 2000/10/23 12:10:10 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.98 2000/11/03 18:46:08 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -558,7 +558,7 @@ typedef enum {
     OPTION_FP_CLOCK_32,
     OPTION_SET_MCLK,
     OPTION_ROTATE,
-    OPTION_NO_TMED,
+    OPTION_NO_TMED
 } CHIPSOpts;
 
 static OptionInfoRec Chips655xxOptions[] = {
