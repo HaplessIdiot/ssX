@@ -56,7 +56,7 @@ AuthCheckSitePolicy(
     }
 
     permit = (*policy++ == 0);
-    nPolicies = *policy++;
+    nPolicies = (CARD8) *policy++;
 
     length -= 2;
 
@@ -70,7 +70,7 @@ AuthCheckSitePolicy(
 	    return FALSE;
 	}
 
-	strLen = *policy++;
+	strLen = (CARD8) *policy++;
 	if (--length < strLen) {
 	    *reason = InvalidPolicyReason;
 	    return FALSE;
