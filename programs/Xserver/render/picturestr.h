@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.13 2001/04/05 17:42:35 dawes Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.14 2001/07/18 10:15:02 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -129,6 +129,11 @@ typedef Bool	(*InitIndexedProcPtr)	    (ScreenPtr	    pScreen,
 typedef void	(*CloseIndexedProcPtr)	    (ScreenPtr	    pScreen,
 					     PictFormatPtr  pFormat);
 
+typedef void	(*UpdateIndexedProcPtr)	    (ScreenPtr	    pScreen,
+					     PictFormatPtr  pFormat,
+					     int	    ndef,
+					     xColorItem	    *pdef);
+
 typedef struct _PictureScreen {
     int				totalPictureSize;
     unsigned int		*PicturePrivateSizes;
@@ -153,8 +158,11 @@ typedef struct _PictureScreen {
     DestroyWindowProcPtr	DestroyWindow;
     CloseScreenProcPtr		CloseScreen;
 
+    StoreColorsProcPtr		StoreColors;
+
     InitIndexedProcPtr		InitIndexed;
     CloseIndexedProcPtr		CloseIndexed;
+    UpdateIndexedProcPtr	UpdateIndexed;
 
 } PictureScreenRec, *PictureScreenPtr;
 
