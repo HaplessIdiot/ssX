@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.28 2003/02/10 23:42:51 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.29 2003/02/12 21:26:27 mvojkovi Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -75,8 +75,7 @@ NVDisableClipping(ScrnInfoPtr pScrn)
 static void
 NVSetPattern(NVPtr pNv, int clr0, int clr1, int pat0, int pat1)
 {
-    RIVA_FIFO_FREE(pNv->riva, Patt, 5);
-    pNv->riva.Patt->Shape         = 0; /* 0 = 8X8, 1 = 64X1, 2 = 1X64 */
+    RIVA_FIFO_FREE(pNv->riva, Patt, 4);
     pNv->riva.Patt->Color0        = clr0;
     pNv->riva.Patt->Color1        = clr1;
     pNv->riva.Patt->Monochrome[0] = pat0;
@@ -89,9 +88,8 @@ NVSetPattern(NVPtr pNv, int clr0, int clr1, int pat0, int pat1)
 static void
 NVSetRopSolid(NVPtr pNv, int rop)
 {    
-    if (pNv->currentRop != rop)
-    {
-        if (pNv->currentRop > 16)
+    if (pNv->currentRop != rop) {
+        if (pNv->currentRop >= 16)
             NVSetPattern(pNv, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
         pNv->currentRop = rop;
         RIVA_FIFO_FREE(pNv->riva, Rop, 1);
@@ -102,8 +100,7 @@ NVSetRopSolid(NVPtr pNv, int rop)
 static void
 NVSetRopPattern(NVPtr pNv, int rop)
 {
-    if (pNv->currentRop != rop + 16)
-    {
+    if (pNv->currentRop != (rop + 16)) {
         pNv->currentRop = rop + 16; /* +16 is important */
         RIVA_FIFO_FREE(pNv->riva, Rop, 1);
         pNv->riva.Rop->Rop3 = XAAPatternROP[rop];
@@ -219,8 +216,11 @@ NVResetGraphics(ScrnInfoPtr pScrn)
 
     if(pNv->NoAccel) return;
 
-    pNv->currentRop = -1;
-    NVSetRopPattern(pNv, GXcopy); 
+    RIVA_FIFO_FREE(pNv->riva, Patt, 1);
+    pNv->riva.Patt->Shape = 0; 
+    NVDisableClipping(pScrn);
+    pNv->currentRop = 16;  /* to force NVSetRopSolid to reset the pattern */
+    NVSetRopSolid(pNv, GXcopy);
 }
 
 
@@ -510,8 +510,6 @@ NVAccelInit(ScreenPtr pScreen)
      */
     pNv->opaqueMonochrome = ~((1 << pScrn->depth) - 1);
 
-    pNv->currentRop = -1;
-
     infoPtr->Mono8x8PatternFillFlags = HARDWARE_PATTERN_SCREEN_ORIGIN |
 				       HARDWARE_PATTERN_PROGRAMMED_BITS |
 				       NO_PLANEMASK;
@@ -566,7 +564,7 @@ NVAccelInit(ScreenPtr pScreen)
     infoPtr->ValidatePolyPoint = NVValidatePolyPoint;
     infoPtr->PolyPointMask = GCFunction | GCPlaneMask;
    
-    NVDisableClipping(pScrn);
+    NVResetGraphics(pScrn);
 
     return(XAAInit(pScreen, infoPtr));
 }
