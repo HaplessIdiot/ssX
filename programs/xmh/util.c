@@ -1,6 +1,6 @@
 /*
  * $XConsortium: util.c,v 2.44 94/03/30 19:55:04 gildea Exp $
- * $XFree86$
+ * $XFree86: xc/programs/xmh/util.c,v 3.0 1994/06/28 12:33:38 dawes Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -33,28 +33,17 @@
 #include <errno.h>
 #include <ctype.h>
 #include <X11/cursorfont.h>
+#include <X11/Xos.h>
 
 #ifndef abs
 #define abs(x)		((x) < 0 ? (-(x)) : (x))
 #endif
 
-#ifdef MINIX	/* actually, if std-c */
 static char *SysErrorMsg (n)
     int n;
 {
 	return strerror(n);
 }
-#else
-static char *SysErrorMsg (n)
-    int n;
-{
-    extern char *sys_errlist[];
-    extern int sys_nerr;
-    char *s = ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
-
-    return (s ? s : "no such error");
-}
-#endif
 
 /* Something went wrong; panic and quit. */
 
