@@ -1,4 +1,4 @@
-/* $Header: /vol1/history/xf86/xc/programs/mkcfm/mkcfm.c,v 1.2 1999/05/04 09:35:28 dawes Exp $ */
+/* From: Header: xc/programs/mkcfm/RCS/mkcfm.c,v 1.3 1996/05/08 21:38:21 ib Exp $ */
 /* Copyright (c) 1994-1999 Silicon Graphics, Inc. All Rights Reserved.
  *
  * The contents of this file are subject to the CID Font Code Public Licence
@@ -16,6 +16,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
+/* $XFree86$ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
