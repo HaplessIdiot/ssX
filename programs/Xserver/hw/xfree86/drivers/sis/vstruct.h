@@ -208,6 +208,12 @@ typedef struct _SiS_ModeResInfoStruct
 
 typedef UCHAR DRAM4Type[4];
 
+/* Defines for SiS_Customt */
+#define CUT_NONE       0
+#define CUT_FORCENONE  1
+#define CUT_BARCO1366  2
+#define CUT_BARCO1024  3
+
 typedef struct _SiS_Private
 {
 #ifdef LINUX_KERNEL
@@ -243,13 +249,14 @@ typedef struct _SiS_Private
 	UCHAR  SiS_VGAINFO;
 #ifndef LINUX_KERNEL
         USHORT SiS_CP1, SiS_CP2, SiS_CP3, SiS_CP4;
-#endif	
+#endif
 	BOOLEAN SiS_UseROM;
 	int    SiS_CHOverScan;
 	BOOLEAN SiS_CHSOverScan;
 	BOOLEAN SiS_ChSW;
 	BOOLEAN SiS_UseLCDA;
 	int    SiS_UseOEM;
+	ULONG  SiS_CustomT;
 	USHORT SiS_Backup70xx;
 	USHORT SiS_CRT1Mode;
 	USHORT SiS_flag_clearbuffer;
@@ -307,6 +314,7 @@ typedef struct _SiS_Private
 	USHORT SiS_Panel640x480_3;
 	USHORT SiS_Panel1152x864;
 	USHORT SiS_PanelCustom;
+	USHORT SiS_PanelBarco1366;
 	USHORT SiS_PanelMax;
 	USHORT SiS_PanelMinLVDS;
 	USHORT SiS_PanelMin301;
@@ -426,6 +434,10 @@ typedef struct _SiS_Private
 	const SiS_LVDSDataStruct  *SiS_LCDA1600x1200Data_1;
 	const SiS_LVDSDataStruct  *SiS_LCDA1600x1200Data_2;
 	const SiS_LVDSDataStruct  *SiS_LVDSXXXxXXXData_1;
+	const SiS_LVDSDataStruct  *SiS_LVDSBARCO1366Data_1;
+	const SiS_LVDSDataStruct  *SiS_LVDSBARCO1366Data_2;
+	const SiS_LVDSDataStruct  *SiS_LVDSBARCO1024Data_1;
+	const SiS_LVDSDataStruct  *SiS_LVDSBARCO1024Data_2;
 	const SiS_LVDSDataStruct  *SiS_CHTVUNTSCData;
 	const SiS_LVDSDataStruct  *SiS_CHTVONTSCData;
 	const SiS_LVDSDataStruct  *SiS_CHTVUPALData;

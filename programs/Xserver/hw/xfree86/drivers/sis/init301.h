@@ -206,7 +206,7 @@ void     SiS_GetLVDSDesPtrA(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,US
                             USHORT RefreshRateTableIndex,USHORT *PanelIndex,USHORT *ResIndex);
 #endif			    
 void     SiS_SetTPData(SiS_Private *SiS_Pr);
-void     SiS_WhatIsThis(SiS_Private *SiS_Pr, USHORT myvbinfo);
+void     SiS_SetChrontelGPIO(SiS_Private *SiS_Pr, USHORT myvbinfo);
 void     SiS_ModCRT1CRTC(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex,
                          USHORT RefreshRateTableIndex,PSIS_HW_DEVICE_INFO HwDeviceExtension);
 void     SiS_SetCHTVReg(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex,
@@ -240,11 +240,13 @@ USHORT   SiS_CheckACK(SiS_Private *SiS_Pr);
 void     SiS_OEM310Setting(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
                            UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
 void     SiS_OEMLCD(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
-                    UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
+                    UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex,USHORT RefreshRateTableIndex);
 #endif
 #ifdef SIS300
 void     SiS_OEM300Setting(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
-                           UCHAR *ROMAddr,USHORT ModeNo);
+                           UCHAR *ROMAddr,USHORT ModeNo, USHORT ModeIdIndex, USHORT RefTabindex);
+void     SetOEMLCDData2(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
+			UCHAR *ROMAddr, USHORT ModeNo, USHORT ModeIdIndex,USHORT RefTableIndex);
 #endif
 BOOLEAN  SiS_LowModeStuff(SiS_Private *SiS_Pr, USHORT ModeNo,PSIS_HW_DEVICE_INFO HwDeviceExtension);
 

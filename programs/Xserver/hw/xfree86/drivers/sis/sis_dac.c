@@ -1085,7 +1085,7 @@ SiS301BSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	 Part2max = 0x4d;
 	 Part3max = 0x3e;
 	 if(pSiS->VBFlags & (VB_301LV|VB_302LV))
-	   Part4max = 0x24;
+	   Part4max = 0x34;
 	 else
 	   Part4max = 0x23;
 	 break;
@@ -1094,7 +1094,7 @@ SiS301BSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	 Part2max = 0x4d;
 	 Part3max = 0x3e;
 	 if(pSiS->VBFlags & (VB_301LV|VB_302LV))
-	   Part4max = 0x24;
+	   Part4max = 0x34;
 	 else
 	   Part4max = 0x23;
 	 break;
@@ -1321,7 +1321,7 @@ SiSLVDSChrontelRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     SiS_LockCRT2(pSiS->SiS_Pr, &pSiS->sishw_ext, pSiS->RelIO+0x30);
 }
 
-/* TW: Restore output selection registers */
+/* Restore output selection registers */
 void
 SiSRestoreBridge(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 {
@@ -1348,6 +1348,7 @@ SiSRestoreBridge(ScrnInfoPtr pScrn, SISRegPtr sisReg)
       }
    }
    if(pSiS->VGAEngine == SIS_315_VGA) {
+      outSISIDXREG(SISCR, 0x39, sisReg->sisRegs3D4[0x39]);
       outSISIDXREG(SISCR, 0x63, sisReg->sisRegs3D4[0x63]);
       outSISIDXREG(SISCR, 0x79, sisReg->sisRegs3D4[0x79]);
    }
@@ -1758,7 +1759,7 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
                 xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			"Memory bandwidth at %d bpp is %g MHz\n", bpp, total/1000);
 
-                if(pSiS->VBFlags & CRT2_ENABLE)  {
+                if((pSiS->VBFlags & CRT2_ENABLE) && (!pSiS->CRT1off)) {
 
 		    maxcrt2 = 135000;
 		    if(pSiS->VBFlags & (VB_301B|VB_302B)) maxcrt2 = 162000;

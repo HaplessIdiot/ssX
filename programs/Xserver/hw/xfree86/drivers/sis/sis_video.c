@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.16 2003/05/22 18:58:09 twini Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.4 2001/06/15 21:23:00 dawes Exp $ */
 /*
  * Xv driver for SiS 300, 315 and 330 series.
  *
@@ -310,8 +310,8 @@ static XF86VideoFormatRec SISFormats[NUM_FORMATS] =
 };
 
 #ifndef SIS_CP
-#define NUM_ATTRIBUTES_300 9
-#define NUM_ATTRIBUTES_315 12
+#define NUM_ATTRIBUTES_300 15
+#define NUM_ATTRIBUTES_315 17
 #endif
 
 static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
@@ -325,6 +325,12 @@ static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
    {XvSettable | XvGettable, -32, 32,          "XV_TVYPOSITION"},
    {XvSettable | XvGettable, 0, 1,             "XV_DISABLE_GRAPHICS"},
    {XvSettable | XvGettable, 0, 1,             "XV_DISABLE_GRAPHICS_LR"},
+   {XvSettable | XvGettable, 0, 1,             "XV_DISABLE_COLORKEY"},
+   {XvSettable | XvGettable, 0, 1,             "XV_USE_CHROMAKEY"},
+   {XvSettable | XvGettable, 0, 1,             "XV_INSIDE_CHROMAKEY"},
+   {XvSettable | XvGettable, 0, 1,             "XV_YUV_CHROMAKEY"},
+   {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_CHROMAMIN"},
+   {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_CHROMAMAX"},
 #ifdef SIS_CP
    SIS_CP_VIDEO_ATTRIBUTES
 #endif
@@ -343,6 +349,12 @@ static XF86AttributeRec SISAttributes_315[NUM_ATTRIBUTES_315] =
    {XvSettable | XvGettable, -32, 32,          "XV_TVYPOSITION"},
    {XvSettable | XvGettable, 0, 1,             "XV_DISABLE_GRAPHICS"},
    {XvSettable | XvGettable, 0, 1,             "XV_DISABLE_GRAPHICS_LR"},
+   {XvSettable | XvGettable, 0, 1,             "XV_DISABLE_COLORKEY"},
+   {XvSettable | XvGettable, 0, 1,             "XV_USE_CHROMAKEY"},
+   {XvSettable | XvGettable, 0, 1,             "XV_INSIDE_CHROMAKEY"},
+/* {XvSettable | XvGettable, 0, 1,             "XV_YUV_CHROMAKEY"},   - NO, Chromakey format = Source format */
+   {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_CHROMAMIN"},
+   {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_CHROMAMAX"},
 #ifdef SIS_CP
    SIS_CP_VIDEO_ATTRIBUTES
 #endif
@@ -562,6 +574,10 @@ typedef struct {
     Bool 	 disablegfx;
     Bool	 disablegfxlr;
 
+    Bool         usechromakey;
+    Bool	 insidechromakey, yuvchromakey;
+    CARD32	 chromamin, chromamax;
+
     CARD32       videoStatus;
     BOOLEAN	 overlayStatus; 
     Time         offTime;
@@ -614,15 +630,21 @@ SISSetPortDefaults(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
     SISEntPtr pSiSEnt = pSiS->entityPrivate;;
 #endif    
     
-    pPriv->colorKey    = 0x000101fe;
+    pPriv->colorKey    = pSiS->colorKey = 0x000101fe;
     pPriv->videoStatus = 0;
-    pPriv->brightness  = pSiS->XvDefBri; /* 0;  - see sis_opt.c */
-    pPriv->contrast    = pSiS->XvDefCon; /* 4;  */
-    pPriv->hue         = pSiS->XvDefHue; /* 0;  */
-    pPriv->saturation  = pSiS->XvDefSat; /* 0;  */
+    pPriv->brightness  = pSiS->XvDefBri;
+    pPriv->contrast    = pSiS->XvDefCon;
+    pPriv->hue         = pSiS->XvDefHue;
+    pPriv->saturation  = pSiS->XvDefSat;
     pPriv->autopaintColorKey = TRUE;
     pPriv->disablegfx  = pSiS->XvDefDisableGfx;
     pPriv->disablegfxlr= pSiS->XvDefDisableGfxLR;
+    pSiS->disablecolorkeycurrent = pSiS->XvDisableColorKey;
+    pPriv->usechromakey    = pSiS->XvUseChromaKey;
+    pPriv->insidechromakey = pSiS->XvInsideChromaKey;
+    pPriv->yuvchromakey    = pSiS->XvYUVChromaKey;
+    pPriv->chromamin       = pSiS->XvChromaMin;
+    pPriv->chromamax       = pSiS->XvChromaMax;
     if(pPriv->dualHeadMode) {
 #ifdef SISDUALHEAD
        if(!pSiS->SecondHead) {
@@ -680,13 +702,13 @@ SISResetVideo(ScrnInfoPtr pScrn)
     /* Disable overlay */
     setvideoregmask(pSiS, Index_VI_Control_Misc0,         0x00, 0x02);
 
-    /* Disable bob de-interlacer */
-    setvideoregmask(pSiS, Index_VI_Control_Misc1,         0x00, 0x02);
+    /* Disable bob de-interlacer and some strange bit */
+    setvideoregmask(pSiS, Index_VI_Control_Misc1,         0x00, 0x82);
 
-#if 0
-    /* TEST: Enable vertical interpolation @@@ */
-    setvideoregmask(pSiS, Index_VI_Control_Misc2,         0x08, 0x08);
-#endif
+    /* Select RGB chroma key format (300 series only) */
+    if(pSiS->VGAEngine == SIS_300_VGA) {
+       setvideoregmask(pSiS, Index_VI_Control_Misc0,      0x00, 0x40);
+    }
 
     /* Reset scale control and contrast */
     /* (Enable DDA (interpolation)) */
@@ -724,13 +746,15 @@ SISResetVideo(ScrnInfoPtr pScrn)
     	/* Disable overlay */
     	setvideoregmask(pSiS, Index_VI_Control_Misc0,         0x00, 0x02);
 
-    	/* Disable bob de-interlacer */
-    	setvideoregmask(pSiS, Index_VI_Control_Misc1,         0x00, 0x02);
+    	/* Disable bob de-interlacer and some strange bit */
+    	setvideoregmask(pSiS, Index_VI_Control_Misc1,         0x00, 0x82);
 
-#if 0
-	/* TEST: Enable vertical interpolation @@@ */
-        setvideoregmask(pSiS, Index_VI_Control_Misc2,         0x08, 0x08);
-#endif
+	/* Select RGB chroma key format */
+	if(pSiS->VGAEngine == SIS_300_VGA) {
+	   setvideoregmask(pSiS, Index_VI_Control_Misc0,      0x00, 0x40);
+	} else {
+	   /* setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x01, 0x01); */
+	}
 
     	/* Reset scale control and contrast */
 	/* (Enable DDA (interpolation)) */
@@ -1003,6 +1027,12 @@ SISSetupImageVideo(ScreenPtr pScreen)
     pSiS->xvDisableGfxLR      = MAKE_ATOM("XV_DISABLE_GRAPHICS_LR");
     pSiS->xvTVXPosition       = MAKE_ATOM("XV_TVXPOSITION");
     pSiS->xvTVYPosition       = MAKE_ATOM("XV_TVYPOSITION");
+    pSiS->xvDisableColorkey   = MAKE_ATOM("XV_DISABLE_COLORKEY");
+    pSiS->xvUseChromakey      = MAKE_ATOM("XV_USE_CHROMAKEY");
+    pSiS->xvInsideChromakey   = MAKE_ATOM("XV_INSIDE_CHROMAKEY");
+    pSiS->xvYUVChromakey      = MAKE_ATOM("XV_YUV_CHROMAKEY");
+    pSiS->xvChromaMin	      = MAKE_ATOM("XV_CHROMAMIN");
+    pSiS->xvChromaMax         = MAKE_ATOM("XV_CHROMAMAX");
 #ifdef SIS_CP
     SIS_CP_VIDEO_ATOMS
 #endif
@@ -1146,7 +1176,7 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
         return BadValue;
      pPriv->contrast = value;
   } else if(attribute == pSiS->xvColorKey) {
-     pPriv->colorKey = value;
+     pPriv->colorKey = pSiS->colorKey = value;
      REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
   } else if(attribute == pSiS->xvAutopaintColorKey) {
      if((value < 0) || (value > 1))
@@ -1172,6 +1202,26 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
         return BadValue;
      pPriv->tvypos = value;
      pPriv->updatetvypos = TRUE;
+  } else if(attribute == pSiS->xvDisableColorkey) {
+     if((value < 0) || (value > 1))
+        return BadValue;
+     pSiS->disablecolorkeycurrent = value;
+  } else if(attribute == pSiS->xvUseChromakey) {
+     if((value < 0) || (value > 1))
+        return BadValue;
+     pPriv->usechromakey = value;
+  } else if(attribute == pSiS->xvInsideChromakey) {
+     if((value < 0) || (value > 1))
+        return BadValue;
+     pPriv->insidechromakey = value;
+  } else if(attribute == pSiS->xvYUVChromakey) {
+     if((value < 0) || (value > 1))
+        return BadValue;
+     pPriv->yuvchromakey = value;
+  } else if(attribute == pSiS->xvChromaMin) {
+     pPriv->chromamin = value;
+  } else if(attribute == pSiS->xvChromaMax) {
+     pPriv->chromamax = value;
 #ifdef SIS_CP
   SIS_CP_VIDEO_SETATTRIBUTE
 #endif
@@ -1227,6 +1277,18 @@ SISGetPortAttribute(
      *value = pPriv->tvxpos;
   } else if(attribute == pSiS->xvTVYPosition) {
      *value = pPriv->tvypos;
+  } else if(attribute == pSiS->xvDisableColorkey) {
+     *value = (pSiS->disablecolorkeycurrent) ? 1 : 0;
+  } else if(attribute == pSiS->xvUseChromakey) {
+     *value = (pPriv->usechromakey) ? 1 : 0;
+  } else if(attribute == pSiS->xvInsideChromakey) {
+     *value = (pPriv->insidechromakey) ? 1 : 0;
+  } else if(attribute == pSiS->xvYUVChromakey) {
+     *value = (pPriv->yuvchromakey) ? 1 : 0;
+  } else if(attribute == pSiS->xvChromaMin) {
+     *value = pPriv->chromamin;
+  } else if(attribute == pSiS->xvChromaMax) {
+     *value = pPriv->chromamax;
 #ifdef SIS_CP
   SIS_CP_VIDEO_GETATTRIBUTE
 #endif
@@ -1818,6 +1880,28 @@ set_colorkey(SISPtr pSiS, CARD32 colorkey)
 }
 
 static __inline void
+set_chromakey(SISPtr pSiS, CARD32 chromamin, CARD32 chromamax)
+{
+    CARD8 r1, g1, b1;
+    CARD8 r2, g2, b2;
+
+    b1 = (CARD8)(chromamin & 0xFF);
+    g1 = (CARD8)((chromamin>>8) & 0xFF);
+    r1 = (CARD8)((chromamin>>16) & 0xFF);
+    b2 = (CARD8)(chromamax & 0xFF);
+    g2 = (CARD8)((chromamax>>8) & 0xFF);
+    r2 = (CARD8)((chromamax>>16) & 0xFF);
+
+    setvideoreg(pSiS, Index_VI_Overlay_ChromaKey_Blue_V_Min  ,(CARD8)b1);
+    setvideoreg(pSiS, Index_VI_Overlay_ChromaKey_Green_U_Min ,(CARD8)g1);
+    setvideoreg(pSiS, Index_VI_Overlay_ChromaKey_Red_Y_Min   ,(CARD8)r1);
+
+    setvideoreg(pSiS, Index_VI_Overlay_ChromaKey_Blue_V_Max  ,(CARD8)b2);
+    setvideoreg(pSiS, Index_VI_Overlay_ChromaKey_Green_U_Max ,(CARD8)g2);
+    setvideoreg(pSiS, Index_VI_Overlay_ChromaKey_Red_Y_Max   ,(CARD8)r2);
+}
+
+static __inline void
 set_brightness(SISPtr pSiS, CARD8 brightness)
 {
     setvideoreg(pSiS, Index_VI_Brightness, brightness);
@@ -2213,7 +2297,11 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 
    overlay.pixelFormat = pPriv->id;
    overlay.pitch = overlay.origPitch = srcPitch;
-   overlay.keyOP = VI_ROP_DestKey;
+   if(pPriv->usechromakey) {
+      overlay.keyOP = (pPriv->insidechromakey) ? VI_ROP_ChromaKey : VI_ROP_NotChromaKey;
+   } else {
+      overlay.keyOP = VI_ROP_DestKey;
+   }
    /* overlay.bobEnable = 0x02; */
    overlay.bobEnable = 0x00;    /* Disable BOB de-interlacer */
 
@@ -2628,6 +2716,15 @@ MIRROR:
    /* set color key */
    set_colorkey(pSiS, pPriv->colorKey);
 
+   if(pPriv->usechromakey) {
+      /* Select chroma key format (300 series only) */
+      if(pSiS->VGAEngine == SIS_300_VGA) {
+	 setvideoregmask(pSiS, Index_VI_Control_Misc0,
+	                 (pPriv->yuvchromakey ? 0x40 : 0x00), 0x40);
+      }
+      set_chromakey(pSiS, pPriv->chromamin, pPriv->chromamax);
+   }
+
    /* set brightness, contrast, hue, saturation */
    set_brightness(pSiS, pPriv->brightness);
    set_contrast(pSiS, pPriv->contrast);
@@ -2925,13 +3022,15 @@ SISPutImage(
 			REGION_RECTS(clipBoxes),
 			0x00422418, 0x18244200, 0, 0);
      } else {
+        if(!pSiS->disablecolorkeycurrent) {
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
-        XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
-                        REGION_NUM_RECTS(clipBoxes),
-                        REGION_RECTS(clipBoxes));
+           XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
+                           REGION_NUM_RECTS(clipBoxes),
+                           REGION_RECTS(clipBoxes));
 #else
-	xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
+	   xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
 #endif
+	}
      }
 
    }

@@ -341,6 +341,7 @@
 #define  VI_Misc0_Fmt_YVYU                      0x38 /* (YVYU) (315 series only?) */
 #define  VI_Misc0_Fmt_NV21			0x5c /* (330 series only?) */
 #define  VI_Misc0_Fmt_NV12			0x4c /* (330 series only?) */
+#define  VI_Misc0_ChromaKeyRGBYUV               0x40 /* 300 series only: 0 = RGB, 1 = YUV */
 
 /* TW: Bits for Index_VI_Control_Misc1 */
 #define  VI_Misc1_DisableGraphicsAtOverlay      0x01 /* Disables graphics display in overlay area */
@@ -370,6 +371,8 @@
 /* TW: Values for Index_VI_Key_Overlay_OP (0x2F) */
 #define  VI_ROP_Never				0x00
 #define  VI_ROP_DestKey				0x03
+#define  VI_ROP_ChromaKey			0x05
+#define  VI_ROP_NotChromaKey                    0x0A
 #define  VI_ROP_Always				0x0F
 
 

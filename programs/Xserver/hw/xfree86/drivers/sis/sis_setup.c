@@ -23,13 +23,14 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Alan Hourihane, alanh@fairlite.demon.co.uk
+ * Authors:  Thomas Winischhofer <thomas@winischhofer.net>
+ *		(nearly entirely rewritten)
+ *           Alan Hourihane, alanh@fairlite.demon.co.uk
  *           Mike Chapman <mike@paranoia.com>,
- *           Juanjo Santamarta <santamarta@ctv.es>, 
+ *           Juanjo Santamarta <santamarta@ctv.es>,
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp>
  *           David Thomas <davtom@dream.org.uk>.
- *	     Thomas Winischhofer <thomas@winischhofer.net>
- *		(nearly entirely rewritten)
+ *
  */
  
 #include "xf86PciInfo.h"
