@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 765. Fixes/build updates for BSD/OS 5.1 and 4.3.1 (Bugzilla #1111, Kurt Lidl).
  764. Fix a problem in libXmu's FindChildren() that can cause a crash by
       copying memory from outside the bounds of an array (Bugzilla #1109,
       John Tillman).
@@ -18565,7 +18566,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3108 2004/01/21 22:51:07 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3109 2004/01/23 02:36:35 dawes Exp $
 
 
 
