@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.0 1995/07/16 09:15:18 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -56,6 +56,9 @@
 #include <stdio.h>
 #include <sys/types.h>
 #if defined(SVR4)
+#if defined(sun)
+#define __EXTENSIONS__
+#endif
 #include <sys/proc.h>
 #include <sys/tss.h>
 #if defined(NCR)
