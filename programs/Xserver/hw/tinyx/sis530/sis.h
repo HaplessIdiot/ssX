@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/sis530/sis.h,v 1.6 2000/09/03 05:11:19 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/sis530/sis.h,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -69,12 +69,14 @@
 
 #ifndef _SIS_H_
 #define _SIS_H_
+#ifdef __GNUC__
+#define inline __inline__
+#endif
 #include "tinyx.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #define extern static
-#define inline __inline__
 #include <asm/io.h>
 #undef extern
 #include <stdio.h>

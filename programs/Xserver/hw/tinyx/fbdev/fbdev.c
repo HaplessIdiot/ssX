@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/fbdev/fbdev.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/fbdev/fbdev.c,v 1.2tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -67,6 +67,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef __GNUC__
+#define inline __inline__
+#endif
 #include "fbdev.h"
 #include <sys/ioctl.h>
 
