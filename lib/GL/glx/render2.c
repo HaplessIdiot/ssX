@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/render2.c,v 1.3 2001/03/21 16:04:39 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/render2.c,v 1.4 2003/09/28 20:15:04 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -46,10 +46,10 @@
 void glCallLists(GLsizei n, GLenum type, const GLvoid *lists)
 {
     __GLX_DECLARE_VARIABLES();
+    __GLX_LOAD_VARIABLES();
 
     compsize = __glCallLists_size(n,type);
     cmdlen = __GLX_PAD(12 + compsize);
-    __GLX_LOAD_VARIABLES();
     if (!gc->currentDpy) return;
 
     if (cmdlen <= gc->maxSmallRenderCommandSize) {
