@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.12 2001/05/29 04:54:09 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.13 2003/12/09 12:12:43 alanh Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -253,17 +253,17 @@ fbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
     }
     if (changes & GCStipple)
     {
-	if (pGC->stipple &&
-	    FbEvenStip (pGC->stipple->drawable.width,
-			 			pDrawable->bitsPerPixel) &&
-	    fbCanEvenStipple (pGC->stipple, pDrawable->bitsPerPixel))
-	{
-	    pPriv->evenStipple = TRUE;
+	if (pGC->stipple) {
+	    if (FbEvenStip (pGC->stipple->drawable.width,
+						pDrawable->bitsPerPixel) &&
+	       (fbCanEvenStipple (pGC->stipple, pDrawable->bitsPerPixel)))
+	   	pPriv->evenStipple = TRUE;
+	    else
+	    	pPriv->evenStipple = FALSE;
+
 	    if (pGC->stipple->drawable.width * pDrawable->bitsPerPixel < FB_UNIT)
 		fbPadPixmap (pGC->stipple);
 	}
-	else
-	    pPriv->evenStipple = FALSE;
     }
     /*
      * Recompute reduced rop values
