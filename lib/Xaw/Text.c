@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.40 2000/12/07 20:26:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.41 2001/01/17 19:42:33 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -805,6 +805,7 @@ CreateVScrollBar(TextWidget ctx)
 	XtRealizeWidget(vbar);
 	XtMapWidget(vbar);
     }
+    XtSetKeyboardFocus(vbar, (Widget)ctx);
 }
 
 /*
@@ -863,6 +864,7 @@ CreateHScrollBar(TextWidget ctx)
 	XtRealizeWidget(hbar);
 	XtMapWidget(hbar);
     }
+    XtSetKeyboardFocus(hbar, (Widget)ctx);
 }
 
 /*
