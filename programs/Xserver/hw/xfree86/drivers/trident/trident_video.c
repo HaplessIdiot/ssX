@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.3 2001/05/15 10:19:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.4 2001/05/15 11:08:40 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -294,10 +294,7 @@ TRIDENTSetupImageVideo(ScreenPtr pScreen)
     adapt->PutImage = TRIDENTPutImage;
     adapt->QueryImageAttributes = TRIDENTQueryImageAttributes;
 
-    if ((pScrn->depth == 15) || (pScrn->depth == 24)) 
-    	pPriv->colorKey = 0; /* FIXME */
-    else	
-    	pPriv->colorKey = pTrident->videoKey;
+    pPriv->colorKey = pTrident->videoKey;
     pPriv->videoStatus = 0;
     
     /* gotta uninit this someplace */
