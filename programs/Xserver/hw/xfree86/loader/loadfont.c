@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadfont.c,v 1.2 1998/12/13 12:42:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadfont.c,v 1.3 2003/08/24 17:37:01 dawes Exp $ */
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
  *
@@ -36,44 +36,42 @@
 FontModule *FontModuleList = NULL;
 static int numFontModules = 0;
 
-
 static FontModule *
 NewFontModule(void)
 {
-	FontModule *save = FontModuleList;
-	int n;
+    FontModule *save = FontModuleList;
+    int n;
 
-	/* Sanity check */
-	if (!FontModuleList)
-		numFontModules = 0;
+    /* Sanity check */
+    if (!FontModuleList)
+	numFontModules = 0;
 
-	n = numFontModules + 1;
-	FontModuleList = xrealloc(FontModuleList, (n + 1) * sizeof(FontModule));
-	if (FontModuleList == NULL) {
-		FontModuleList = save;
-		return NULL;
-	} else {
-		numFontModules++;
-		FontModuleList[numFontModules].name = NULL;
-		return FontModuleList + (numFontModules - 1);
-	}
+    n = numFontModules + 1;
+    FontModuleList = xrealloc(FontModuleList, (n + 1) * sizeof(FontModule));
+    if (FontModuleList == NULL) {
+	FontModuleList = save;
+	return NULL;
+    } else {
+	numFontModules++;
+	FontModuleList[numFontModules].name = NULL;
+	return FontModuleList + (numFontModules - 1);
+    }
 }
 
 void
-LoadFont(FontModule *f)
+LoadFont(FontModule * f)
 {
-	FontModule *newfont;
+    FontModule *newfont;
 
-	if (f == NULL)
-		return;
+    if (f == NULL)
+	return;
 
-	if (!(newfont = NewFontModule()))
-		return;
+    if (!(newfont = NewFontModule()))
+	return;
 
-	xf86MsgVerb(X_INFO, 2, "Loading font %s\n", f->name);
+    xf86MsgVerb(X_INFO, 2, "Loading font %s\n", f->name);
 
-	newfont->name = f->name;
-	newfont->initFunc = f->initFunc;
-	newfont->module = f->module;
+    newfont->name = f->name;
+    newfont->initFunc = f->initFunc;
+    newfont->module = f->module;
 }
-

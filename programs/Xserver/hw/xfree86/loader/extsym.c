@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/extsym.c,v 1.7 2003/03/23 05:14:35 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/extsym.c,v 1.8 2003/08/24 17:37:01 dawes Exp $ */
 
 /*
  *
@@ -48,34 +48,33 @@ extern unsigned long XRT_PIXMAP;
 extern unsigned long XRT_GC;
 extern unsigned long XRT_COLORMAP;
 extern unsigned long XRC_DRAWABLE;
-extern Bool XineramaRegisterConnectionBlockCallback(void (*func)(void));
+extern Bool XineramaRegisterConnectionBlockCallback(void (*func) (void));
 extern int XineramaDeleteResource(pointer, XID);
 #endif
 
 LOOKUP extLookupTab[] = {
 
- SYMFUNC(ClientSleepUntil)
+    SYMFUNC(ClientSleepUntil)
 
 #ifdef HAS_SHM
- SYMVAR(ShmCompletionCode)
- SYMVAR(BadShmSegCode)
- SYMVAR(ShmSegType)
+    SYMVAR(ShmCompletionCode)
+    SYMVAR(BadShmSegCode)
+    SYMVAR(ShmSegType)
 #endif
 
 #ifdef PANORAMIX
- SYMFUNC(XineramaRegisterConnectionBlockCallback)
- SYMFUNC(XineramaDeleteResource)
- SYMVAR(noPanoramiXExtension)
- SYMVAR(PanoramiXNumScreens)
- SYMVAR(panoramiXdataPtr)
- SYMVAR(PanoramiXVisualTable)
- SYMVAR(XRT_WINDOW)
- SYMVAR(XRT_PIXMAP)
- SYMVAR(XRT_GC)
- SYMVAR(XRT_COLORMAP)
- SYMVAR(XRC_DRAWABLE)
+    SYMFUNC(XineramaRegisterConnectionBlockCallback)
+    SYMFUNC(XineramaDeleteResource)
+    SYMVAR(noPanoramiXExtension)
+    SYMVAR(PanoramiXNumScreens)
+    SYMVAR(panoramiXdataPtr)
+    SYMVAR(PanoramiXVisualTable)
+    SYMVAR(XRT_WINDOW)
+    SYMVAR(XRT_PIXMAP)
+    SYMVAR(XRT_GC)
+    SYMVAR(XRT_COLORMAP)
+    SYMVAR(XRC_DRAWABLE)
 #endif
 
- { 0, 0 },
-
+    {0, 0}
 };
