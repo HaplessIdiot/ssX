@@ -25,8 +25,12 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: shape.c /main/36 1996/08/01 19:23:05 dpw $ */
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.1 1996/12/23 06:29:01 dawes Exp $ */
+/* $TOG: shape.c /main/37 1997/05/22 10:11:40 kaleb $ */
+
+
+
+
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.2 1997/05/06 09:45:09 dawes Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -214,11 +218,11 @@ RegionOperate (client, pWin, kind, destRgnp, srcRgn, op, xoff, yoff, create)
 	srcRgn = 0;
 	break;
     case ShapeUnion:
-	if (*destRgnp)
+	if (*destRgnp && srcRgn)
 	    REGION_UNION(pScreen, *destRgnp, *destRgnp, srcRgn);
 	break;
     case ShapeIntersect:
-	if (*destRgnp)
+	if (*destRgnp && srcRgn)
 	    REGION_INTERSECT(pScreen, *destRgnp, *destRgnp, srcRgn);
 	else {
 	    *destRgnp = srcRgn;
@@ -228,12 +232,13 @@ RegionOperate (client, pWin, kind, destRgnp, srcRgn, op, xoff, yoff, create)
     case ShapeSubtract:
 	if (!*destRgnp)
 	    *destRgnp = (*create)(pWin);
-	REGION_SUBTRACT(pScreen, *destRgnp, *destRgnp, srcRgn);
+	if (srcRgn)
+	    REGION_SUBTRACT(pScreen, *destRgnp, *destRgnp, srcRgn);
 	break;
     case ShapeInvert:
 	if (!*destRgnp)
 	    *destRgnp = REGION_CREATE(pScreen, (BoxPtr) 0, 0);
-	else
+	else if (srcRgn)
 	    REGION_SUBTRACT(pScreen, *destRgnp, srcRgn, *destRgnp);
 	break;
     default:

@@ -1,4 +1,4 @@
-/* $XConsortium: record.c /main/4 1995/12/16 15:56:43 dpw $ */
+/* $TOG: record.c /main/8 1997/04/06 10:52:30 kaleb $ */
 
 /*
 
@@ -323,7 +323,8 @@ RecordAProtocolElement(pContext, pClient, category, data, datalen, futurelen)
 	    }
 	    else /* it's a device event, StartOfData, or EndOfData */
 	    {
-		pRep->clientSwapped = recordingClientSwapped;
+		pRep->clientSwapped = (category != XRecordFromServer) && 
+						recordingClientSwapped;
 		pRep->idBase = 0;
 		pRep->recordedSequenceNumber = 0;
 	    }
@@ -863,8 +864,22 @@ RecordADeviceEvent(pcbl, nulldata, calldata)
 		    if (RecordIsMemberOfSet(pRCAP->pDeviceEventSet,
 					    pev->u.u.type & 0177))
 		    {
+		        xEvent swappedEvent;
+		        xEvent *pEvToRecord = pev;
+
+			if (pContext->pRecordingClient->swapped)
+			{
+			    (*EventSwapVector[pev->u.u.type & 0177])
+				(pev, &swappedEvent);
+			    pEvToRecord = &swappedEvent;
+			}
+
 			RecordAProtocolElement(pContext, NULL,
-			    XRecordFromServer, pev, SIZEOF(xEvent), 0);
+			   XRecordFromServer,  pEvToRecord, SIZEOF(xEvent), 0);
+			/* make sure device events get flushed in the absence
+			 * of other client activity
+			 */
+			SetCriticalOutputPending();
 		    }
 		} /* end for each event */
 	    } /* end this RCAP selects device events */
@@ -995,6 +1010,10 @@ RecordInstallHooks(pRCAP, oneclient)
 	    return BadAlloc;
 	if (!AddCallback(&FlushCallback, RecordFlushAllContexts, NULL))
 	    return BadAlloc;
+	/* Alternate context flushing scheme: delete the line above
+	 * and call RegisterBlockAndWakeupHandlers here passing
+	 * RecordFlushAllContexts.  Is this any better?
+	 */
     }
     return Success;
 } /* RecordInstallHooks */
@@ -1093,6 +1112,12 @@ RecordUninstallHooks(pRCAP, oneclient)
 	DeleteCallback(&ReplyCallback, RecordAReply, NULL);
 	DeleteCallback(&SkippedRequestsCallback, RecordASkippedRequest, NULL);
 	DeleteCallback(&FlushCallback, RecordFlushAllContexts, NULL);
+	/* Alternate context flushing scheme: delete the line above
+	 * and call RemoveBlockAndWakeupHandlers here passing
+	 * RecordFlushAllContexts.  Is this any better?
+	 */
+	/* Having deleted the callback, call it one last time. -gildea */
+	RecordFlushAllContexts(&FlushCallback, NULL, NULL);
     }
 } /* RecordUninstallHooks */
 
@@ -2508,15 +2533,19 @@ RecordDisableContext(pContext)
     int i;
 
     if (!pContext->pRecordingClient) return;
-    RecordAProtocolElement(pContext, NULL, XRecordEndOfData, NULL, 0, 0);
-    RecordFlushReplyBuffer(pContext, NULL, 0, NULL, 0);
+    if (!pContext->pRecordingClient->clientGone)
+    {
+	RecordAProtocolElement(pContext, NULL, XRecordEndOfData, NULL, 0, 0);
+	RecordFlushReplyBuffer(pContext, NULL, 0, NULL, 0);
+	/* Re-enable request processing on this connection. */
+	AttendClient(pContext->pRecordingClient);
+    }
+
     for (pRCAP = pContext->pListOfRCAP; pRCAP; pRCAP = pRCAP->pNextRCAP)
     {
 	RecordUninstallHooks(pRCAP, 0);
     }
 
-    /* Re-enable request processing on this connection. */
-    AttendClient(pContext->pRecordingClient);
     pContext->pRecordingClient = NULL;
 
     /* move the newly disabled context to the rear part of ppAllContexts,

@@ -480,7 +480,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
 </itemize>
 <tag/AGX accelerated code by:  /
 <itemize>
-       <item>Henry Worth <it>&lt;henry.worth@amail.amdahl.com&gt;</it>,
+       <item>Henry Worth <it>&lt;haworth@wco.com&gt;</it>,
 </itemize>
 <tag/Number Nine I128 driver by:  /
 <itemize>
@@ -607,6 +607,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
 
 <tag/Matrox SVGA driver by:  /
 <itemize>
+       <item>Guy Desbief <it>&lt;g.desbief@aix.pacwan.net&gt;</it>
        <item>Radoslaw Kapitan <it>&lt;kapitan@student.uci.agh.edu.pl&gt;</it>
        <item>Andrew Vanderstock <it>&lt;vanderaj@mail2.svhm.org.au&gt;</it>
        <item>Angsar Hockmann <it>&lt;Ansgar.Hockmann@hrz.uni-dortmund.de&gt;</it>
@@ -1046,7 +1047,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.81 1997/05/18 12:12:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.82 1997/05/22 14:22:25 dawes Exp $
 
 
 

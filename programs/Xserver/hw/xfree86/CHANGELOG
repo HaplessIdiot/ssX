@@ -1,4 +1,11 @@
 XFree86 3.9c (xx May 1997)
+ 828. Add an autoconf configuration script for xterm.  This isn't used
+      in the standard build process, but is useful when building xterm
+      standalone (#500, Thomas E. Dickey).
+ 827. Fix a problem in the RECORD server extension where the last ClientDied
+      is never flushed (#498, Kaleb Keithley).
+ 826. Fix array bounds problem in dixutils.c (#493, Kaleb Keithley).
+ 825. Fix Xserver crash in SHAPE extension (#492, Kaleb Keithley).
  824. Fix typos in NetBSD.cf and OpenBSD.cf (#491, Takaaki Nomura).
  823. Update sun.cf with the version numbers of more recent Sun ProWorks
       compilers (#489, William Austin).
@@ -4620,4 +4627,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.474 1997/05/21 15:17:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.475 1997/05/22 14:22:18 dawes Exp $
