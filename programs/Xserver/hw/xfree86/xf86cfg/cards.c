@@ -32,6 +32,8 @@
 #define CARDS_PRIVATE
 #include "cards.h"
 
+#undef SERVER	/* defined in config.h, but of no use here */
+
 /* return values from ReadCardsLine. */
 #define ERROR		-3
 #define UNKNOWN		-2
@@ -57,6 +59,10 @@ static int CompareCards(_Xconst void *left, _Xconst void *right);
 static int BCompareCards(_Xconst void *left, _Xconst void *right);
 static void DoReadCardsDatabase(void);
 static char **DoFilterCardNames(char *pattern, int *result);
+
+#ifdef USE_MODULES
+extern int ErrorF(const char*, ...);
+#endif
 
 /*
  * Initialization
@@ -206,12 +212,45 @@ ReadCardsDatabase(void)
 			/* XXX no private copy of strings */
 			entry->chipset = (char*)chips->name;
 			entry->driver = opts->name;
+
+			/* better than linear searchs to find duplicates */
+			qsort(CardsDB, NumCardsEntry, sizeof(CardsEntry*),
+			      CompareCards);
 		    }
 		    ++chips;
 		}
 	    }
 	    opts = opts->next;
 	}
+
+	/* fix entries with the same name */
+	for (i = 0; i < NumCardsEntry - 2;) {
+	    for (j = i + 1; j < NumCardsEntry - 1 &&
+		 strcmp(CardsDB[i]->name, CardsDB[j]->name) == 0; j++)
+		    ;
+
+	    if (i + 1 != j) {
+		while (i < j) {
+		    char *str;
+
+		    if (strcmp(CardsDB[i]->chipset, CardsDB[j]->chipset))
+			str = CardsDB[i]->chipset;
+		    else
+			str = CardsDB[i]->driver;
+
+		    XmuSnprintf(name, sizeof(name), "%s (%s)",
+				CardsDB[i]->name, str);
+		    XtFree(CardsDB[i]->name);
+		    CardsDB[i]->name = XtNewString(name);
+
+		    ++i;
+		}
+	    }
+	    else
+		++i;
+	}
+
+	/* make sure data is valid to bsearch in */
 	qsort(CardsDB, NumCardsEntry, sizeof(CardsEntry*), CompareCards);
     }
     else
