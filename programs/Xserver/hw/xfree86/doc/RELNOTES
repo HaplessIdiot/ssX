@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                  10 July 1999 (this document needs work!)
+                  11 July 1999 (this document needs work!)
 
                                   Abstract
 
@@ -156,6 +156,85 @@ the monitor gamma (brightness) curve, and the screen size and pitch.
 
 2.2  xterm
 
+New Features:
+
+   o Support Unix98 PTY's.
+
+   o Support Unicode using UTF-8 input and output.  There are a few limita-
+     tions, this work is still in progress:
+
+        o You must use the -u8 command line option to use this feature, as
+          well as compile with the OPT_WIDE_CHARS definition.  (The feature
+          is compiled when using imake).
+
+        o Input (from keyboard) and output (select/paste) are in UTF-8 form.
+          There is no support in Xlib for UTF-8; xterm uses a lookup table to
+          map keysym codes.  Select/paste is done either via STRING or using
+          the new atom UTF8_STRING.
+
+   o Add optional feature (resource and command-line options) to make xterm
+     use the PTY's sense of erase character on startup, rather than requiring
+     it to be \177, or set the PTY's erase character to match xterm's config-
+     uration.  Note that while $TERMCAP is modified to reflect the actual
+     configuration, the terminfo kdch1 string is not.  (This feature is also
+     in XFree86 3.3.4).
+
+   o Revised keyboard handling, making two modes (VT220 and Sun/PC) which are
+     switched by popup menu.  This makes the numeric keypad work as expected.
+     Codes sent by the backarrow and delete keys also are affected.
+
+   o Add parameters to function key escape sequences to indicate if shift,
+     control or alt are set.  This works for Sun/PC keyboard mode.
+
+   o Separated command-line and menu settings for reverse video from that
+     done under program control.  This is a problem which was introduced by
+     X11R6.  Though correct, most users are confused by allowing the reset
+     command to undo the effect of the command-line -rv option.
+
+   o Blinking cursor can be specified by resource or popup menu.
+
+   o New control sequences for switching between normal and alternate screens
+     maintain separate cursor-save locations for the two screens, avoiding
+     incorrect cursor placement on exit from vi.
+
+   o Support line-drawing characters when the font does not include them by
+     drawing them.
+
+   o Add support for switching font sizes, by stepping through the font menu
+     using shifted keypad plus and minus.
+
+   o New resource trimSelection allows xterm to trim trailing blanks from
+     selected lines.
+
+   o Provide user applications a means of determining the version of xterm
+     for feature comparison by returning the patch number (e.g., 111) in the
+     secondary DA response.
+
+Bug fixes/improvements:
+
+   o If colorMode is enabled by default, compile-in default resources to
+     match the colors listed in XTerm-col.ad.
+
+   o Deprecate DA answerback string, making it settable via a resource value
+     for applications which may need this.
+
+   o Input characters which are mapped when in vt220 National Replacement
+     Character mode.
+
+   o Completed support for double size characters.
+
+   o Remove kfnd/kll/kslt strings from terminfo, because curses applications
+     do not necessarily return khome/kend pairs.
+
+   o Corrected ifdef's for menus, which did not allow tek4014 to be sup-
+     pressed properly.
+
+   o Improved tests for determining if xterm should use overstriking to simu-
+     late bold fonts.
+
+   o Add test/demo scripts for double size characters, font switching, screen
+     resizing and colors.
+
 2.3  xedit
 
 3.  Fonts and Internationalisation
@@ -194,7 +273,7 @@ Known problems:
    o ISO 10646 Level 2 combining characters not yet supported by xterm (will
      be needed for instance for the Thai script).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.5 1999/07/10 12:17:25 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.6 1999/07/11 08:49:23 dawes Exp $
 
 
 $XFree86$

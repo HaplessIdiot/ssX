@@ -4520,13 +4520,12 @@ WRec.  They are defined in vgaHW.h.
                int numSequencer, int numGraphics, int numAttribute)
 
           This function allows the number of CRTC, Sequencer,
-          Graphics and Attribute registers to be set to a value
-          higher than the defaults.  This makes it possible for
-          extended registers to be saved and restored with vgaH-
-          WSave() and vgaHWRestore().  This function should be
-          called after a vgaHWRec has been allocated with vgaH-
-          WGetHWRec().  The default values are defined in vgaHW.h
-          as follows:
+          Graphics and Attribute registers to be changed.  This
+          makes it possible for extended registers to be saved and
+          restored with vgaHWSave() and vgaHWRestore().  This func-
+          tion should be called after a vgaHWRec has been allocated
+          with vgaHWGetHWRec().  The default values are defined in
+          vgaHW.h as follows:
 
                     #define VGA_NUM_CRTC 25
                     #define VGA_NUM_SEQ   5
@@ -5905,7 +5904,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.6 1999/07/10 12:17:24 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.7 1999/07/11 08:49:22 dawes Exp $
 
 
 $XFree86$
