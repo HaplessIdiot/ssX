@@ -1,6 +1,6 @@
 /*
  * $XConsortium: GenKey.c,v 1.6 94/04/17 20:16:36 rws Exp $
- * $XFree86$
+ * $XFree86: xc/lib/Xdmcp/GenKey.c,v 3.0 1994/10/20 06:05:14 dawes Exp $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -57,7 +57,11 @@ extern Time_t time ();
 #define random lrand48
 #endif
 
+#ifdef linux
+#include <stdlib.h>
+#else
 long random();
+#endif
 
 void
 XdmcpGenerateKey (key)

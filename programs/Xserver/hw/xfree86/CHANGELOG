@@ -1,3 +1,18 @@
+XFree86 3.1.2Zb (23 October 1996)
+1061. Fix some NV1 problems, including clock selection problems and
+      pixel corruption problems (David McKay).
+1060. Fix some bad random() prototypes for Linux (Harald Koenig).
+1059. Fix NeqnCmd definition in NetBSD.cf (Matthieu Herrb).
+1058. Chips&Tech doc updates (David Bateman).
+1057. Cards db update for Chips&Tech (David Bateman).
+1056. Some updates to the "supported" contrib clients (Harald Koenig).
+1055. VGADriver doc updates (Stuart Lamble). 
+1054. LynxOS doc updates (Thomas Mueller).
+1053. Fix a problem in mgaFillBoxSolid() (Radislaw Kapitan).
+1052. Fix a serious probe bug in the MGA driver which causes a crash on
+      non-PCI machines (Egbert Eich).
+1051. Fix a serious probe bug in the NV driver (David Bateman).
+
 XFree86 3.1.2Za (21 October 1996)
 1052. Some documentation updates (Dirk Hohndel).
 1051. A few cleanups that have no affect on function (Harald Koenig).
