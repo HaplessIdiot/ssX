@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.19 1995/01/22 03:07:34 dawes Exp $ */
 /*
  * Copyright 1994 and 1995 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -2020,9 +2020,9 @@ Bool enter;
                         outl(GEN_TEST_CNTL, GEN_GUI_EN);
 
                         /* Ensure VGA aperture is enabled */
-                        outl(CONFIG_CNTL, (saved_config_cntl &
-                                ~(CFG_MEM_AP_SIZE | CFG_VGA_DIS)) |
-                                CFG_MEM_VGA_AP_EN);
+                        outl(CONFIG_CNTL, saved_config_cntl &
+                                ~(CFG_MEM_AP_SIZE | CFG_VGA_DIS |
+                                        CFG_MEM_VGA_AP_EN));
                         outl(CRTC_GEN_CNTL,
                                 saved_crtc_gen_cntl & ~CRTC_EXT_DISP_EN);
                         outl(MEM_INFO, saved_mem_info &

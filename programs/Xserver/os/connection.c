@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.190 94/11/08 20:47:43 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.5 1995/01/14 10:49:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.6 1995/01/25 10:56:41 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -412,7 +412,7 @@ AuthAudit (client, letin, saddr, len, proto_n, auth_proto)
 	switch (saddr->sa_family)
 	{
 	case AF_UNSPEC:
-#ifdef UNIXCONN
+#if defined(UNIXCONN) || defined(LOCALCONN)
 	case AF_UNIX:
 #endif
 	    strcpy(addr, "local host");

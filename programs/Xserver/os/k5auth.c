@@ -1,4 +1,5 @@
 /* $XConsortium: k5auth.c,v 1.8 94/04/17 20:27:02 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -304,9 +305,9 @@ int k5_stage1(client)
 	    krb5_free_creds(creds);
 	return(SendConnSetup(client, "Krb5 stage1: getpeername failed"));
     }
-    if (cli_net_addr.sa_family == AF_UNSPEC ||
-#ifdef UNIXCONN
-	cli_net_addr.sa_family == AF_UNIX
+    if (cli_net_addr.sa_family == AF_UNSPEC
+#if defined(UNIXCONN) || defined(LOCALCONN)
+	|| cli_net_addr.sa_family == AF_UNIX
 #endif
 	)			/* assume local host */
     {
