@@ -50,6 +50,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
 
 /*
  * Paned.h - Paned Composite Widget's public header file.

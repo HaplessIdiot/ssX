@@ -26,6 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>

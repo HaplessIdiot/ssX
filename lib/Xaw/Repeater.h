@@ -26,6 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Jim Fulton, MIT X Consortium
  */
+/* $XFree86$ */
 
 #ifndef _XawRepeater_h
 #define _XawRepeater_h

@@ -26,6 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
+/* $XFree86$ */
 
 /*
  * Sme.c - Source code for the generic menu entry

@@ -23,6 +23,7 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  */
+/* $XFree86$ */
 
 /*
  * MenuButtonP.h - Private Header file for MenuButton widget.

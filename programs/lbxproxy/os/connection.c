@@ -61,6 +61,7 @@ SOFTWARE.
  *      socket ids aren't small nums (0 - 2^8)
  *
  *****************************************************************/
+/* $XFree86$ */
 
 #include "misc.h"
 #include <X11/Xtrans.h>

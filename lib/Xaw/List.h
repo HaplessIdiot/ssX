@@ -24,6 +24,7 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
+/* $XFree86$ */
 
 /*  This is the List widget, it is useful to display a list, without the
  *  overhead of having a widget for each item in the list.  It allows 

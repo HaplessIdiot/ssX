@@ -49,6 +49,7 @@ in this Software without prior written authorization from the X Consortium.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
+/* $XFree86$ */
 
 
 #ifndef _XawTree_h
