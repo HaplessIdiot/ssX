@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osinit.c /main/45 1996/12/02 10:23:13 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.12 1997/01/18 06:58:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.13 1997/05/06 09:46:53 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -98,9 +98,6 @@ OsInit()
 #if !defined(MINIX) && !defined(SCO)
 	fclose(stdin);
 	fclose(stdout);
-#endif
-#ifdef DGUX
-	fclose(stderr);
 #endif
 	/* hack test to decide where to log errors */
 	if (write (2, fname, 0)) 
