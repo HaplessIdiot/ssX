@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.13 2000/05/10 18:55:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.14 2000/07/09 21:02:20 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -412,13 +412,13 @@ Permedia2vSetCursorColors(
     int i;
     /* The Permedia2v cursor is always 8 bits so shift 8, not 10 */
 
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+0, 0x00, bg >> 16);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+1, 0x00, bg >> 8);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+2, 0x00, bg);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+7, 0x00, bg >> 16);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+8, 0x00, bg >> 8);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+9, 0x00, bg);
 
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+3, 0x00, fg >> 16);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+4, 0x00, fg >> 8);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+5, 0x00, fg);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+10, 0x00, fg >> 16);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+11, 0x00, fg >> 8);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+12, 0x00, fg);
 }
 
 static Bool 
