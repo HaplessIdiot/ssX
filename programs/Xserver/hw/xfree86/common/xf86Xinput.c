@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.39 1999/03/07 11:40:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.40 1999/03/21 07:34:59 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -47,17 +47,17 @@
 #include "dgaproc.h"
 #endif
 
-#include "exevents.h"			/* AddInputDevice */
+#include "exevents.h"	/* AddInputDevice */
 #include "exglobals.h"
 
 #include "extnsionst.h"
-#include "extinit.h"			/* LookupDeviceIntRec */
+#include "extinit.h"	/* LookupDeviceIntRec */
 
-#include "windowstr.h"			/* screenIsSaved */
+#include "windowstr.h"	/* screenIsSaved */
 
 #include <stdarg.h>
 
-#include "osdep.h"			/* EnabledDevices */
+#include "osdep.h"		/* EnabledDevices */
 
 /******************************************************************************
  * debugging macro
@@ -69,17 +69,21 @@
 #undef DEBUG
 #endif
 
-static int debug_level = 0;
-#define DEBUG 1
+#define DEBUG 0
+
 #if DEBUG
+static int      debug_level = 0;
+
 #define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
 #else
 #define DBG(lvl, f)
 #endif
 
-static LocalDevicePtr localDevices = NULL;
 
-#define DEBUG_LEVEL	10010
+static LocalDevicePtr	localDevices = NULL;
+
+static LocalDevicePtr	switch_device;
+extern DeviceAssocRec	switch_assoc;
 
 /***********************************************************************
  *
@@ -91,8 +95,8 @@ static LocalDevicePtr localDevices = NULL;
  ***********************************************************************
  */
 static void
-xf86AlwaysCoreControl(	DeviceIntPtr device,
-						IntegerCtrl *control )
+xf86AlwaysCoreControl(DeviceIntPtr	device,
+		      IntegerCtrl	*control)
 {
 }
 
@@ -106,51 +110,48 @@ xf86AlwaysCoreControl(	DeviceIntPtr device,
  ***********************************************************************
  */
 int
-xf86IsCorePointer( DeviceIntPtr device )
+xf86IsCorePointer(DeviceIntPtr	device)
 {
-	return (device == inputInfo.pointer);
+    return(device == inputInfo.pointer);
 }
 
 static int
-xf86ShareCorePointer( DeviceIntPtr device )
+xf86ShareCorePointer(DeviceIntPtr	device)
 {
-	LocalDevicePtr local = (LocalDevicePtr) device->public.devicePrivate;
-
-	return (local->flags & XI86_SEND_CORE_EVENTS);
+    LocalDevicePtr	local = (LocalDevicePtr) device->public.devicePrivate;
+    
+    return((local->always_core_feedback &&
+	    local->always_core_feedback->ctrl.integer_displayed));
 }
 
 static Bool
-xf86SendDragEvents( DeviceIntPtr device )
+xf86SendDragEvents(DeviceIntPtr	device)
 {
-	LocalDevicePtr local = (LocalDevicePtr) device->public.devicePrivate;
-
-	if (inputInfo.pointer->button->buttonsDown > 0)
-		return (local->flags & XI86_SEND_DRAG_EVENTS);
-	else
-		return (TRUE);
+    LocalDevicePtr local = (LocalDevicePtr) device->public.devicePrivate;
+    
+    if (inputInfo.pointer->button->buttonsDown > 0)
+	return (local->flags & XI86_SEND_DRAG_EVENTS);
+    else
+	return (TRUE);
 }
-
 int
-xf86IsCoreKeyboard( DeviceIntPtr device)
+xf86IsCoreKeyboard(DeviceIntPtr	device)
 {
-	LocalDevicePtr local = (LocalDevicePtr) device->public.devicePrivate;
-
-	return ((local->flags & XI86_ALWAYS_CORE) ||
-			(device == inputInfo.keyboard));
+    LocalDevicePtr	local = (LocalDevicePtr) device->public.devicePrivate;
+    
+    return((local->flags & XI86_ALWAYS_CORE) ||
+	   (device == inputInfo.keyboard));
 }
 
 void
-xf86AlwaysCore(	LocalDevicePtr local,
-				Bool always )
+xf86AlwaysCore(LocalDevicePtr	local,
+	       Bool		always)
 {
-	if (always)
-	{
-		local->flags |= XI86_ALWAYS_CORE;
-	}
-	else
-	{
-		local->flags &= ~XI86_ALWAYS_CORE;
-	}
+    if (always) {
+	local->flags |= XI86_ALWAYS_CORE;
+    } else {
+	local->flags &= ~XI86_ALWAYS_CORE;
+    }
 }
 
 /***********************************************************************
@@ -163,19 +164,17 @@ xf86AlwaysCore(	LocalDevicePtr local,
  ***********************************************************************
  */
 Bool
-xf86CheckButton( int button,
-				 int down )
+xf86CheckButton(int	button,
+		int	down)
 {
-	/* The device may have up to MSE_MAXBUTTONS (12) buttons. */
-	int state = (inputInfo.pointer->button->state & 0x0fff00) >> 8;
-	int check = (state & (1 << (button - 1)));
+    int	state = (inputInfo.pointer->button->state & 0x1f00) >> 8;
+    int	check = (state & (1 << (button - 1)));
+    
+    if ((check && down) && (!check && !down)) {
+	return FALSE;
+    }
 
-	if ((check && down) && (!check && !down))
-	{
-		return FALSE;
-	}
-
-	return TRUE;
+    return TRUE;
 }
 
 /***********************************************************************
@@ -187,32 +186,65 @@ xf86CheckButton( int button,
  ***********************************************************************
  */
 static void
-ReadInput(	pointer block_data,
-			int select_status,
-			pointer read_mask )
+ReadInput(pointer	block_data,
+	  int		select_status,
+	  pointer	read_mask)
 {
-	LocalDevicePtr local_dev;
-	fd_set *LastSelectMask = (fd_set *) read_mask;
-	fd_set devices_with_input;
+  LocalDevicePtr	local_dev = localDevices;
+  fd_set*		LastSelectMask = (fd_set*) read_mask;
+  fd_set		devices_with_input;
 
-	if (select_status < 1)
-		return;
+  if (select_status < 1)
+    return;
 
-	XFD_ANDSET (&devices_with_input, LastSelectMask, &EnabledDevices);
-	if (!XFD_ANYSET (&devices_with_input))
-		return;
+  XFD_ANDSET(&devices_with_input, LastSelectMask, &EnabledDevices);
+  if (!XFD_ANYSET(&devices_with_input))
+    return;
 
-	local_dev = localDevices;
-	while (local_dev)
-	{
-		if (local_dev->read_input && (local_dev->fd >= 0) &&
-			(FD_ISSET (local_dev->fd, ((fd_set *) read_mask)) != 0))
-		{
-			(*local_dev->read_input) (local_dev);
-			break;
-		}
-		local_dev = local_dev->next;
-	}
+  while(local_dev) {
+    if (local_dev->read_input &&
+	(local_dev->fd >= 0) &&
+        (FD_ISSET(local_dev->fd, ((fd_set *) read_mask)) != 0)) {
+      (*local_dev->read_input)(local_dev);
+      break;
+    }
+    local_dev = local_dev->next;
+  }
+}
+
+/***********************************************************************
+ *
+ * xf86ProcessCommonOptions --
+ * 
+ *	Process global options.
+ *
+ ***********************************************************************
+ */
+static void
+xf86ProcessCommonOptions(LocalDevicePtr local,
+			 pointer	list)
+{
+    if (xf86SetBoolOption(list, "AlwaysCore", 0)) {
+	local->flags |= XI86_ALWAYS_CORE;
+	xf86Msg(X_CONFIG, "%s always reports core events\n", local->name);
+    }
+
+    if (xf86SetBoolOption(list, "SendDragEvents", 1)) {
+	local->flags |= XI86_SEND_DRAG_EVENTS;
+    }
+    else {
+	xf86Msg(X_CONFIG, "%s doesn't report drag events\n", local->name);
+    }
+    
+    local->history_size = xf86SetIntOption(list, "HistorySize", 0);
+
+    if (local->history_size > 0) {
+	xf86Msg(X_CONFIG, "%s has %d motions history\n", local->name,
+		local->history_size);
+    }
+    
+    /* Save the options for latter use. Serial line setup for example. */
+    local->options = list;
 }
 
 /***********************************************************************
@@ -225,40 +257,56 @@ ReadInput(	pointer block_data,
  ***********************************************************************
  */
 void
-xf86XinputFinalizeInit( DeviceIntPtr dev )
+xf86XinputFinalizeInit(DeviceIntPtr	dev)
 {
-	LocalDevicePtr local = (LocalDevicePtr) dev->public.devicePrivate;
-
-	if (InitIntegerFeedbackClassDeviceStruct (dev, xf86AlwaysCoreControl) == FALSE)
-	{
-		ErrorF ("Unable to init integer feedback for always core feature\n");
-	}
-	else
-	{
-		local->always_core_feedback = dev->intfeed;
-		dev->intfeed->ctrl.integer_displayed = (local->flags & XI86_ALWAYS_CORE) ? 1 : 0;
-	}
+    LocalDevicePtr        local = (LocalDevicePtr)dev->public.devicePrivate;
+    
+    if (InitIntegerFeedbackClassDeviceStruct(dev, xf86AlwaysCoreControl) == FALSE) {
+	ErrorF("Unable to init integer feedback for always core feature\n");
+    } else {
+	local->always_core_feedback = dev->intfeed;
+	dev->intfeed->ctrl.integer_displayed = (local->flags & XI86_ALWAYS_CORE) ? 1 : 0;
+    }
 }
 
-
+/***********************************************************************
+ *
+ * xf86ActivateDevice --
+ * 
+ *	Initialize an input device.
+ *
+ ***********************************************************************
+ */
 static void
-ActivateDevice( LocalDevicePtr local )
+xf86ActivateDevice(LocalDevicePtr local)
 {
-	DeviceIntPtr dev;
-	Atom atom;
+    DeviceIntPtr	dev;
 
-	dev = AddInputDevice (local->device_control, TRUE);
+    if (local->flags & XI86_CONFIGURED) {
+	int	open_on_init;
+	
+	open_on_init = !(local->flags & XI86_NO_OPEN_ON_INIT) ||
+	    (local->flags & XI86_ALWAYS_CORE);
+	
+	dev = AddInputDevice(local->device_control,
+			     open_on_init);
 	if (dev == NULL)
-		FatalError ("Too many input devices");
-
+	    FatalError("Too many input devices");
+	
+	local->atom = MakeAtom(local->name,
+			       strlen(local->name),
+			       TRUE);
+	AssignTypeAndName (dev, local->atom, local->name);
 	dev->public.devicePrivate = (pointer) local;
-	local->dev = dev;
+	local->dev = dev;      
+	
+	xf86XinputFinalizeInit(dev);
 
-	xf86XinputFinalizeInit (dev);
-
-	RegisterOtherDevice (dev);
-	atom = MakeAtom (local->type, strlen (local->type), FALSE);
-	AssignTypeAndName (dev, atom, local->name);
+	RegisterOtherDevice(dev);
+	if (serverGeneration == 1) 
+	    xf86Msg(X_INFO, "XINPUT: Adding extended input device \"%s\" (type: %s)\n",
+		    local->name, local->type_name);
+    }
 }
 
 /***********************************************************************
@@ -271,24 +319,27 @@ ActivateDevice( LocalDevicePtr local )
  ***********************************************************************
  */
 void
-InitExtInput( void )
+InitExtInput()
 {
-	LocalDevicePtr local = localDevices;
+    LocalDevicePtr	local;
 
-	/* Register a Wakeup handler to handle input when generated */
-	RegisterBlockAndWakeupHandlers ((BlockHandlerProcPtr) NoopDDA, ReadInput,
-									NULL);
+    /* Register a Wakeup handler to handle input when generated */
+    RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr) NoopDDA, ReadInput,
+				   NULL);
 
-	/* they have to be added here, and not when the driver is registered
-	 * because the upper levels forget the extension devices on a server
-	 * reset and call this to add them again */
-	while (local)
-	{
-		ActivateDevice (local);
+    /* Create and initialize the special device Switch */
+    local = switch_assoc.device_allocate();
+    switch_device = local;
+    switch_device->flags |= XI86_CONFIGURED; /* no configuration available */
+    switch_device->next = localDevices;
 
-		local = local->next;
-	}
+    /* Add each device */
+    while(local) {
+	xf86ActivateDevice(local);
+	local = local->next;
+    }
 }
+
 
 /***********************************************************************
  *
@@ -314,30 +365,25 @@ InitExtInput( void )
  */
 
 void
-OpenInputDevice( DeviceIntPtr dev,
-				 ClientPtr client,
-				 int *status )
+OpenInputDevice (dev, client, status)
+    DeviceIntPtr dev;
+    ClientPtr client;
+    int *status;
 {
-	if (!dev->inited)
-	{
+    if (!dev->inited) {
+	*status = BadDevice;
+    } else {
+	if (!dev->public.on) {
+	    if (!EnableDevice(dev)) {
 		*status = BadDevice;
+	    } else {
+		/* to prevent ProcXOpenDevice to call EnableDevice again */
+		dev->startup = FALSE;
+	    }
 	}
-	else
-	{
-		if (!dev->public.on)
-		{
-			if (!EnableDevice (dev))
-			{
-				*status = BadDevice;
-			}
-			else
-			{
-				/* to prevent ProcXOpenDevice to call EnableDevice again */
-				dev->startup = FALSE;
-			}
-		}
-	}
+    }
 }
+
 
 /***********************************************************************
  *
@@ -365,14 +411,14 @@ OpenInputDevice( DeviceIntPtr dev,
  */
 
 int
-ChangeKeyboardDevice( DeviceIntPtr old_dev,
-					  DeviceIntPtr new_dev )
+ChangeKeyboardDevice (DeviceIntPtr old_dev, DeviceIntPtr new_dev)
 {
   /**********************************************************************
    * DeleteFocusClassDeviceStruct(old_dev);	 * defined in xchgptr.c *
    **********************************************************************/
-	return !Success;
+  return !Success;
 }
+
 
 /***********************************************************************
  *
@@ -406,38 +452,61 @@ ChangeKeyboardDevice( DeviceIntPtr old_dev,
  */
 
 int
-ChangePointerDevice( DeviceIntPtr old_dev,
-					 DeviceIntPtr new_dev,
-					 unsigned char x,
-					 unsigned char y )
+#ifdef NeedFunctionPrototypes
+ChangePointerDevice (
+     DeviceIntPtr	old_dev,
+     DeviceIntPtr	new_dev,
+     unsigned char	x,
+     unsigned char	y)
+#else
+ChangePointerDevice (old_dev, new_dev, x, y)
+     DeviceIntPtr	old_dev, new_dev;
+     unsigned char	x, y;
+#endif /* NeedFunctionPrototypes */
 {
-	/* 
-	 * We don't allow axis swap or other exotic features.
-	 */
-	if (x == 0 && y == 1)
-	{
-		LocalDevicePtr old_local = (LocalDevicePtr) old_dev->public.devicePrivate;
-		LocalDevicePtr new_local = (LocalDevicePtr) new_dev->public.devicePrivate;
+  /************************************************************************
+    InitFocusClassDeviceStruct(old_dev);	* allow focusing old ptr*
+    
+    x_axis = x;					* keep track of new x-axis*
+    y_axis = y;					* keep track of new y-axis*
+    if (x_axis != 0 || y_axis != 1)
+    axes_changed = TRUE;			* remember axes have changed*
+    else
+    axes_changed = FALSE;
+   *************************************************************************/
 
-		InitFocusClassDeviceStruct (old_dev);
+  /* Return failure if we try with the Switch device */
+  if (new_dev == switch_device->dev) {
+    return !Success;
+  }
+  
+  /*
+   * We don't allow axis swap or other exotic features.
+   */
+  if (x == 0 && y == 1) {
+      LocalDevicePtr	old_local = (LocalDevicePtr)old_dev->public.devicePrivate;
+      LocalDevicePtr	new_local = (LocalDevicePtr)new_dev->public.devicePrivate;
+      
+      InitFocusClassDeviceStruct(old_dev);
+    
+      /* Restore Extended motion history information */
+      old_dev->valuator->GetMotionProc   = old_local->motion_history_proc;
+      old_dev->valuator->numMotionEvents = old_local->history_size;
 
-		/* Restore Extended motion history information */
-		old_dev->valuator->GetMotionProc = old_local->motion_history_proc;
-		old_dev->valuator->numMotionEvents = old_local->history_size;
-
-		/* Save Extended motion history information */
-		new_local->motion_history_proc = new_dev->valuator->GetMotionProc;
-		new_local->history_size = new_dev->valuator->numMotionEvents;
-
-		/* Set Core motion history information */
-		new_dev->valuator->GetMotionProc = miPointerGetMotionEvents;
-		new_dev->valuator->numMotionEvents = miPointerGetMotionBufferSize ();
-
-		return Success;
-	}
-	else
-		return !Success;
+      /* Save Extended motion history information */
+      new_local->motion_history_proc = new_dev->valuator->GetMotionProc;
+      new_local->history_size	     = new_dev->valuator->numMotionEvents;
+      
+      /* Set Core motion history information */
+      new_dev->valuator->GetMotionProc   = miPointerGetMotionEvents;
+      new_dev->valuator->numMotionEvents = miPointerGetMotionBufferSize();
+      
+    return Success;
+  }
+  else
+    return !Success;
 }
+
 
 /***********************************************************************
  *
@@ -454,11 +523,11 @@ ChangePointerDevice( DeviceIntPtr old_dev,
  */
 
 void
-CloseInputDevice( DeviceIntPtr d,
-				  ClientPtr client )
+CloseInputDevice (DeviceIntPtr d, ClientPtr client)
 {
-	ErrorF ("ProcXCloseDevice to close or not ?\n");
+  ErrorF("ProcXCloseDevice to close or not ?\n");
 }
+
 
 /***********************************************************************
  *
@@ -488,9 +557,10 @@ CloseInputDevice( DeviceIntPtr d,
  */
 
 void
-AddOtherInputDevices( void )
+AddOtherInputDevices ()
 {
 }
+
 
 /****************************************************************************
  *
@@ -506,19 +576,17 @@ AddOtherInputDevices( void )
  */
 
 int
-SetDeviceMode(	register ClientPtr client,
-				DeviceIntPtr dev,
-				int mode )
+SetDeviceMode (ClientPtr client, DeviceIntPtr dev, int mode)
 {
-	LocalDevicePtr local = (LocalDevicePtr) dev->public.devicePrivate;
+  LocalDevicePtr        local = (LocalDevicePtr)dev->public.devicePrivate;
 
-	if (local->switch_mode)
-	{
-		return (*local->switch_mode) (client, dev, mode);
-	}
-	else
-		return BadMatch;
+  if (local->switch_mode) {
+    return (*local->switch_mode)(client, dev, mode);
+  }
+  else
+    return BadMatch;
 }
+
 
 /***********************************************************************
  *
@@ -534,14 +602,12 @@ SetDeviceMode(	register ClientPtr client,
  */
 
 int
-SetDeviceValuators(	register ClientPtr client,
-					DeviceIntPtr dev,
-					int *valuators,
-					int first_valuator,
-					int num_valuators )
+SetDeviceValuators (ClientPtr client, DeviceIntPtr dev, int *valuators,
+		    int first_valuator, int num_valuators)
 {
-	return BadMatch;
+  return BadMatch;
 }
+
 
 /***********************************************************************
  *
@@ -553,68 +619,59 @@ SetDeviceValuators(	register ClientPtr client,
  */
 
 int
-ChangeDeviceControl( register ClientPtr client,
-					 DeviceIntPtr dev,
-					 xDeviceCtl *control )
+ChangeDeviceControl (ClientPtr client, DeviceIntPtr dev, xDeviceCtl *control)
 {
-	LocalDevicePtr local = (LocalDevicePtr) dev->public.devicePrivate;
+  LocalDevicePtr        local = (LocalDevicePtr)dev->public.devicePrivate;
 
-	if (!local->control_proc)
-	{
-		return (BadMatch);
-	}
-	else
-	{
-		return (*local->control_proc) (local, control);
-	}
+  if (!local->control_proc) {
+      return (BadMatch);
+  }
+  else {
+      return (*local->control_proc)(local, control);
+  }
 }
 
-/* 
+/*
  * adapted from mieq.c to support extended events
  *
  */
 #define QUEUE_SIZE  256
 
-typedef struct _Event
-{
-	xEvent event;
+typedef struct _Event {
+    xEvent	event;
 #ifdef XINPUT
-	deviceValuator val;
+  deviceValuator val;
 #endif
-	ScreenPtr pScreen;
-}
-EventRec, *EventPtr;
+    ScreenPtr	pScreen;
+} EventRec, *EventPtr;
 
-typedef struct _EventQueue
-{
-	HWEventQueueType head, tail;
-	CARD32 lastEventTime;		/* to avoid time running backwards */
-	Bool lastMotion;
-	EventRec events[QUEUE_SIZE];	/* static allocation for signals */
-	DevicePtr pKbd, pPtr;		/* device pointer, to get funcs */
-	ScreenPtr pEnqueueScreen;	/* screen events are being delivered to */
-	ScreenPtr pDequeueScreen;	/* screen events are being dispatched to */
-}
-EventQueueRec, *EventQueuePtr;
+typedef struct _EventQueue {
+    HWEventQueueType head, tail;
+    CARD32	lastEventTime;	    /* to avoid time running backwards */
+    Bool	lastMotion;
+    EventRec	events[QUEUE_SIZE]; /* static allocation for signals */
+    DevicePtr	pKbd, pPtr;	    /* device pointer, to get funcs */
+    ScreenPtr	pEnqueueScreen;	    /* screen events are being delivered to */
+    ScreenPtr	pDequeueScreen;	    /* screen events are being dispatched to */
+} EventQueueRec, *EventQueuePtr;
 
 static EventQueueRec xf86EventQueue;
 
 Bool
-xf86eqInit( DevicePtr pKbd,
-			DevicePtr pPtr )
+xf86eqInit (DevicePtr pKbd, DevicePtr pPtr)
 {
-	xf86EventQueue.head = xf86EventQueue.tail = 0;
-	xf86EventQueue.lastEventTime = GetTimeInMillis ();
-	xf86EventQueue.pKbd = pKbd;
-	xf86EventQueue.pPtr = pPtr;
-	xf86EventQueue.lastMotion = FALSE;
-	xf86EventQueue.pEnqueueScreen = screenInfo.screens[0];
-	xf86EventQueue.pDequeueScreen = xf86EventQueue.pEnqueueScreen;
-	SetInputCheck (&xf86EventQueue.head, &xf86EventQueue.tail);
-	return TRUE;
+    xf86EventQueue.head = xf86EventQueue.tail = 0;
+    xf86EventQueue.lastEventTime = GetTimeInMillis ();
+    xf86EventQueue.pKbd = pKbd;
+    xf86EventQueue.pPtr = pPtr;
+    xf86EventQueue.lastMotion = FALSE;
+    xf86EventQueue.pEnqueueScreen = screenInfo.screens[0];
+    xf86EventQueue.pDequeueScreen = xf86EventQueue.pEnqueueScreen;
+    SetInputCheck (&xf86EventQueue.head, &xf86EventQueue.tail);
+    return TRUE;
 }
 
-/* 
+/*
  * Must be reentrant with ProcessInputEvents.  Assumption: xf86eqEnqueue
  * will never be interrupted.  If this is called from both signal
  * handlers and regular code, make sure the signal is suspended when
@@ -622,600 +679,658 @@ xf86eqInit( DevicePtr pKbd,
  */
 
 void
-xf86eqEnqueue( xEvent *e )
+xf86eqEnqueue (xEvent *e)
 {
-	int oldtail, newtail;
-	Bool isMotion;
+    int	oldtail, newtail;
+    Bool    isMotion;
 #ifdef XINPUT
-	int count;
+    int     count;
 
-	switch (e->u.u.type)
-	{
-	case KeyPress:
-	case KeyRelease:
+    switch (e->u.u.type)
+      {
+      case KeyPress:
+      case KeyRelease:
+      case ButtonPress:
+      case ButtonRelease:
+      case MotionNotify:
+        count = 1;
+        break;
+      default:
+        if (!((deviceKeyButtonPointer *) e)->deviceid & MORE_EVENTS)
+          {
+            count = 1;
+          }
+        else
+          {
+          count = 2;
+          }
+        break;
+      }
+#endif
+
 #ifdef XFreeXDGA
-	/* we do this here, because nobody seems to be calling xf86PostKeyEvent().
-	   We can't steal MotionNotify events here because the motion-relative
-	   information has been lost already. */
-	    if(DGAStealKeyEvent(xf86EventQueue.pEnqueueScreen->myNum, e))
-		return;
-#endif
-	case ButtonPress:
-	case ButtonRelease:
-	case MotionNotify:
-		count = 1;
-		break;
-	default:
-		if (!((deviceKeyButtonPointer *) e)->deviceid & MORE_EVENTS)
-		{
-			count = 1;
-		}
-		else
-		{
-			count = 2;
-		}
-		break;
-	}
+    if(DGAStealEvent(xf86EventQueue.pEnqueueScreen->myNum, e))
+	return;
 #endif
 
-	oldtail = xf86EventQueue.tail;
-	isMotion = e->u.u.type == MotionNotify;
-	if (isMotion && xf86EventQueue.lastMotion && oldtail != xf86EventQueue.head)
-	{
-		if (oldtail == 0)
-			oldtail = QUEUE_SIZE;
-		oldtail = oldtail - 1;
-	}
-	else
-	{
-		newtail = oldtail + 1;
-		if (newtail == QUEUE_SIZE)
-			newtail = 0;
-		/* Toss events which come in late */
-		if (newtail == xf86EventQueue.head)
-			return;
-		xf86EventQueue.tail = newtail;
-	}
-
-	xf86EventQueue.lastMotion = isMotion;
-	xf86EventQueue.events[oldtail].event = *e;
+    oldtail = xf86EventQueue.tail;
+    isMotion = e->u.u.type == MotionNotify;
+    if (isMotion && xf86EventQueue.lastMotion && oldtail != xf86EventQueue.head)
+    {
+	if (oldtail == 0)
+	    oldtail = QUEUE_SIZE;
+	oldtail = oldtail - 1;
+    }
+    else
+    {
+    	newtail = oldtail + 1;
+    	if (newtail == QUEUE_SIZE)
+	    newtail = 0;
+    	/* Toss events which come in late */
+    	if (newtail == xf86EventQueue.head)
+	    return;
+	xf86EventQueue.tail = newtail;
+    }
+    
+    xf86EventQueue.lastMotion = isMotion;
+    xf86EventQueue.events[oldtail].event = *e;
 #ifdef XINPUT
-	if (count == 2)
-	{
-		xf86EventQueue.events[oldtail].val = *((deviceValuator *) (((deviceKeyButtonPointer *) e) + 1));
-	}
+    if (count == 2)
+    {
+      xf86EventQueue.events[oldtail].val = *((deviceValuator *) (((deviceKeyButtonPointer *) e)+1));
+    }
 #endif
-	/* 
-	 * Make sure that event times don't go backwards - this
-	 * is "unnecessary", but very useful
-	 */
-	if (e->u.keyButtonPointer.time < xf86EventQueue.lastEventTime &&
-		xf86EventQueue.lastEventTime - e->u.keyButtonPointer.time < 10000)
-	{
-		xf86EventQueue.events[oldtail].event.u.keyButtonPointer.time =
-			xf86EventQueue.lastEventTime;
-	}
-	xf86EventQueue.events[oldtail].pScreen = xf86EventQueue.pEnqueueScreen;
+    /*
+     * Make sure that event times don't go backwards - this
+     * is "unnecessary", but very useful
+     */
+    if (e->u.keyButtonPointer.time < xf86EventQueue.lastEventTime &&
+	xf86EventQueue.lastEventTime - e->u.keyButtonPointer.time < 10000)
+    {
+	xf86EventQueue.events[oldtail].event.u.keyButtonPointer.time =
+	    xf86EventQueue.lastEventTime;
+    }
+    xf86EventQueue.events[oldtail].pScreen = xf86EventQueue.pEnqueueScreen;
 }
 
-/* 
+/*
  * Call this from ProcessInputEvents()
  */
 void
-xf86eqProcessInputEvents( void )
+xf86eqProcessInputEvents ()
 {
-	EventRec *e;
-	int x, y;
-	xEvent xe;
+    EventRec	*e;
+    int		x, y;
+    xEvent	xe;
 #ifdef XINPUT
-	DeviceIntPtr dev;
-	int id, count;
-	deviceKeyButtonPointer *dev_xe;
+    DeviceIntPtr                dev;
+    int                         id, count;
+    deviceKeyButtonPointer      *dev_xe;
 #endif
 
-	while (xf86EventQueue.head != xf86EventQueue.tail)
-	{
-		if (screenIsSaved == SCREEN_SAVER_ON)
-			SaveScreens (SCREEN_SAVER_OFF, ScreenSaverReset);
+    while (xf86EventQueue.head != xf86EventQueue.tail)
+    {
+	if (screenIsSaved == SCREEN_SAVER_ON)
+	    SaveScreens (SCREEN_SAVER_OFF, ScreenSaverReset);
 #ifdef DPMSExtension
-		if (DPMSPowerLevel != DPMSModeOn)
-			DPMSSet (DPMSModeOn);
+        if (DPMSPowerLevel != DPMSModeOn)
+            DPMSSet(DPMSModeOn);
 #endif
 
-		e = &xf86EventQueue.events[xf86EventQueue.head];
-		/* 
-		 * Assumption - screen switching can only occur on motion events
-		 */
-		if (e->pScreen != xf86EventQueue.pDequeueScreen)
-		{
-			xf86EventQueue.pDequeueScreen = e->pScreen;
-			x = e->event.u.keyButtonPointer.rootX;
-			y = e->event.u.keyButtonPointer.rootY;
-			if (xf86EventQueue.head == QUEUE_SIZE - 1)
-				xf86EventQueue.head = 0;
-			else
-				++xf86EventQueue.head;
-			NewCurrentScreen (xf86EventQueue.pDequeueScreen, x, y);
-		}
-		else
-		{
-			xe = e->event;
-			if (xf86EventQueue.head == QUEUE_SIZE - 1)
-				xf86EventQueue.head = 0;
-			else
-				++xf86EventQueue.head;
-			switch (xe.u.u.type)
-			{
-			case KeyPress:
-			case KeyRelease:
-				(*xf86EventQueue.pKbd->processInputProc)
-					(&xe, (DeviceIntPtr) xf86EventQueue.pKbd, 1);
-				break;
+	e = &xf86EventQueue.events[xf86EventQueue.head];
+	/*
+	 * Assumption - screen switching can only occur on motion events
+	 */
+	if (e->pScreen != xf86EventQueue.pDequeueScreen)
+	{
+	    xf86EventQueue.pDequeueScreen = e->pScreen;
+	    x = e->event.u.keyButtonPointer.rootX;
+	    y = e->event.u.keyButtonPointer.rootY;
+	    if (xf86EventQueue.head == QUEUE_SIZE - 1)
+	    	xf86EventQueue.head = 0;
+	    else
+	    	++xf86EventQueue.head;
+	    NewCurrentScreen (xf86EventQueue.pDequeueScreen, x, y);
+	}
+	else
+	{
+	    xe = e->event;
+	    if (xf86EventQueue.head == QUEUE_SIZE - 1)
+	    	xf86EventQueue.head = 0;
+	    else
+	    	++xf86EventQueue.head;
+	    switch (xe.u.u.type) 
+	    {
+	    case KeyPress:
+	    case KeyRelease:
+	    	(*xf86EventQueue.pKbd->processInputProc)
+				(&xe, (DeviceIntPtr)xf86EventQueue.pKbd, 1);
+	    	break;
 #ifdef XINPUT
-			case ButtonPress:
-			case ButtonRelease:
-			case MotionNotify:
-				(*(inputInfo.pointer->public.processInputProc))
-					(&xe, (DeviceIntPtr) inputInfo.pointer, 1);
-				break;
+            case ButtonPress:
+            case ButtonRelease:
+            case MotionNotify:
+	    	(*(inputInfo.pointer->public.processInputProc))
+				(&xe, (DeviceIntPtr)inputInfo.pointer, 1);
+                  break;
 
-			default:
-				dev_xe = (deviceKeyButtonPointer *) e;
-				id = dev_xe->deviceid & DEVICE_BITS;
-				if (!(dev_xe->deviceid & MORE_EVENTS))
-				{
-					count = 1;
-				}
-				else
-				{
-					count = 2;
-				}
-				dev = LookupDeviceIntRec (id);
-				if (dev == NULL)
-				{
-					ErrorF ("LookupDeviceIntRec id=0x%x not found\n", id);
-/* FatalError("xf86eqProcessInputEvents : device not found.\n"); */
-					break;
-				}
-				if (!dev->public.processInputProc)
-				{
-					FatalError ("xf86eqProcessInputEvents : device has no input proc.\n");
-					break;
-				}
-				(*dev->public.processInputProc) (&e->event, dev, count);
+	    default:
+              dev_xe = (deviceKeyButtonPointer *) e;
+              id = dev_xe->deviceid & DEVICE_BITS;
+              if (!(dev_xe->deviceid & MORE_EVENTS)) {
+                count = 1;
+              } else {
+                count = 2;
+              }
+              dev = LookupDeviceIntRec(id);
+              if (dev == NULL)
+                {
+                  ErrorF("LookupDeviceIntRec id=0x%x not found\n", id);
+/*                   FatalError("xf86eqProcessInputEvents : device not found.\n");
+ */
+                  break;
+                }
+              if (!dev->public.processInputProc)
+                {
+                  FatalError("xf86eqProcessInputEvents : device has no input proc.\n");
+                  break;
+                }
+              (*dev->public.processInputProc)(&e->event, dev, count);
 #else
-			default:
-				(*xf86EventQueue.pPtr->processInputProc)
-					(&xe, (DeviceIntPtr) xf86EventQueue.pPtr, 1);
+	    default:
+	    	(*xf86EventQueue.pPtr->processInputProc)
+				(&xe, (DeviceIntPtr)xf86EventQueue.pPtr, 1);
 #endif
-				break;
-			}
-		}
+	    	break;
+	    }
 	}
-}
-
-
-void
-xf86PostMotionEvent( DeviceIntPtr device,
-					 int is_absolute,
-					 int first_valuator,
-					 int num_valuators,
-					 ... )
-{
-	va_list var;
-	int loop;
-	xEvent xE[2];
-	deviceKeyButtonPointer *xev = (deviceKeyButtonPointer *) xE;
-	deviceValuator *xv = (deviceValuator *) xev + 1;
-	LocalDevicePtr local = (LocalDevicePtr) device->public.devicePrivate;
-	char *buff = 0;
-	Time current;
-	Bool is_core = xf86IsCorePointer (device);
-	Bool is_shared = xf86ShareCorePointer (device);
-	Bool drag = xf86SendDragEvents (device);
-	ValuatorClassPtr val = device->valuator;
-	int *axisvals;
-	AxisInfoPtr axes;
-
-	DBG (5, ErrorF ("xf86PostMotionEvent BEGIN 0x%x(%s) is_core=%s is_shared=%s\n",
-					device, device->name, 
-					is_core ? "True" : "False",
-					is_shared ? "True" : "False"));
-
-	current = GetTimeInMillis ();
-
-
-	if (num_valuators && (!val || (first_valuator + num_valuators > val->numAxes)))
-	{
-		ErrorF ("Bad valuators reported for device \"%s\"\n", device->name);
-		return;
-	}
-
-	axisvals = val->axisVal;
-	axes = val->axes;
-
-	va_start (var, num_valuators);
-
-	for (loop = 0; loop < num_valuators; loop++)
-	{
-		switch (loop % 6)
-		{
-		case 0:
-			xv->valuator0 = va_arg (var, int);
-			break;
-		case 1:
-			xv->valuator1 = va_arg (var, int);
-			break;
-		case 2:
-			xv->valuator2 = va_arg (var, int);
-			break;
-		case 3:
-			xv->valuator3 = va_arg (var, int);
-			break;
-		case 4:
-			xv->valuator4 = va_arg (var, int);
-			break;
-		case 5:
-			xv->valuator5 = va_arg (var, int);
-			break;
-		}
-		if ((loop % 6 == 5) || (loop == num_valuators - 1))
-		{
-			xv->num_valuators = (loop % 6) + 1;
-			xv->first_valuator = first_valuator + (loop / 6) * 6;
-
-			if (!is_core)
-			{
-				xev->type = DeviceMotionNotify;
-				xev->detail = 0;
-				xf86Info.lastEventTime = xev->time = current;
-				xev->deviceid = device->id | MORE_EVENTS;
-
-				xv->type = DeviceValuator;
-				xv->deviceid = device->id;
-
-				xv->device_state = 0;
-
-				if (HAS_MOTION_HISTORY (local))
-				{
-					buff = ((char *) local->motion_history +
-							(sizeof (INT32) * local->dev->valuator->numAxes +
-							sizeof (Time)) * local->last);
-					*(Time *) buff = current;
-					memcpy (buff + sizeof (Time) + sizeof (INT32) *
-							xv->first_valuator, &xv->valuator0,
-							sizeof (INT32) * xv->num_valuators);
-					local->last = (local->last + 1) %
-							device->valuator->numMotionEvents;
-					if (local->last == local->first)
-						local->first = (local->first + 1) %
-							device->valuator->numMotionEvents;
-				}
-
-				xf86eqEnqueue (xE);
-			}
-			/* drag is true if no buttons are down, or if there are buttons
-			 * down and SendDragEvents is true
-			 */
-			if ((is_core || is_shared) && (num_valuators >= 2) && drag)
-			{
-				int x, y;
-
-				if ((*local->conversion_proc) (local,
-											   xv->first_valuator,
-											   xv->num_valuators,
-											   xv->valuator0,
-											   xv->valuator1,
-											   xv->valuator2,
-											   xv->valuator3,
-											   xv->valuator4,
-											   xv->valuator5,
-											   &x, &y) == FALSE)
-				{
-					DBG (4, ErrorF ("xf86PostMotionEvent conversion failed\n"));
-					continue;
-				}
-
-				DBG (4, ErrorF ("xf86PostMotionEvent x=%d y=%d\n", x, y));
-
-				if (x == local->old_x && y == local->old_y)
-				{
-					DBG (4, ErrorF ("xf86PostMotionEvent same cursor position continuing\n"));
-					continue;
-				}
-
-				local->old_x = x;
-				local->old_y = y;
-
-				xf86Info.lastEventTime = current;
-
-				/* FL [Sat Jun 14 14:32:01 1997] * needs to integrate with
-				 * DGA and XTEST event posting */
-
-#ifdef XFreeXDGA
-				if(!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, x, y))
-#endif
-				{
-				   if( is_absolute )
-					miPointerAbsoluteCursor (x, y, xf86Info.lastEventTime);
-				   else
-					miPointerDeltaCursor (x, y, xf86Info.lastEventTime);
-				}
-			}
-		}
-	}
-	va_end (var);
-	DBG (5, ErrorF ("xf86PostMotionEvent END   0x%x(%s) is_core=%s is_shared=%s\n",
-					device, device->name,
-					is_core ? "True" : "False",
-					is_shared ? "True" : "False"));
+    }
 }
 
 void
-xf86PostProximityEvent( DeviceIntPtr device,
-						int is_in,
-						int first_valuator,
-						int num_valuators,
-						... )
+xf86eqSwitchScreen(ScreenPtr	pScreen,
+		   Bool		fromDIX )
 {
-	va_list var;
-	int loop;
-	xEvent xE[2];
-	deviceKeyButtonPointer *xev = (deviceKeyButtonPointer *) xE;
-	deviceValuator *xv = (deviceValuator *) xev + 1;
-	ValuatorClassPtr val = device->valuator;
-	Bool is_core = xf86IsCorePointer (device);
-#if 0
-    /* XXX ? */
-	Bool is_absolute = val && ((val->mode & 1) == Relative);
-#endif
+  xf86EventQueue.pEnqueueScreen = pScreen;
+  
+  if (fromDIX)
+    xf86EventQueue.pDequeueScreen = pScreen;
+}
 
-	if (is_core)
-	{
-		return;
+/* 
+ * convenient functions to post events
+ */
+
+#define RELATIVE_CHECK(VALUATOR,IDX)				\
+       {							\
+	    if (!is_absolute) {					\
+		(VALUATOR) += axisvals[(IDX)];			\
+                if ((VALUATOR) < axes[(IDX)].min_value-1) {     \
+                    (VALUATOR) = axes[(IDX)].min_value-1;       \
+		}						\
+		else if ((VALUATOR) > axes[(IDX)].max_value) {	\
+		    (VALUATOR) = axes[(IDX)].max_value;		\
+		}						\
+		axisvals[(IDX)] = (VALUATOR);			\
+	    }							\
+    }
+
+
+void
+xf86PostMotionEvent(DeviceIntPtr	device,
+		    int			is_absolute,
+		    int			first_valuator,
+		    int			num_valuators,
+		    ...)
+{
+    va_list			var;
+    int				loop;
+    xEvent			xE[2];
+    deviceKeyButtonPointer	*xev  = (deviceKeyButtonPointer*) xE;
+    deviceValuator		*xv   = (deviceValuator*) xev+1;
+    LocalDevicePtr		local = (LocalDevicePtr) device->public.devicePrivate;
+    char			*buff = 0;
+    Time			current;
+    Bool			is_core = xf86IsCorePointer(device);
+    Bool			is_shared = xf86ShareCorePointer(device);
+    Bool			drag = xf86SendDragEvents(device);
+    ValuatorClassPtr		val = device->valuator;
+    int				*axisvals;
+    AxisInfoPtr			axes;
+
+    DBG(5, ErrorF("xf86PostMotionEvent BEGIN 0x%x(%s) switch=0x%x is_core=%s is_shared=%s is_absolute=%s\n",
+		  device, device->name, switch_device,
+		  is_core ? "True" : "False",
+		  is_shared ? "True" : "False",
+		  is_absolute ? "True" : "False"));
+    
+    if (is_core || is_shared) {
+      xf86SwitchCoreDevice(switch_device, device);
+    }
+    
+    current = GetTimeInMillis();
+    
+    if (!is_core) {
+      if (HAS_MOTION_HISTORY(local)) {
+	buff = ((char *)local->motion_history +
+		(sizeof(INT32) * local->dev->valuator->numAxes + sizeof(Time)) * local->last);
+      }
+    }
+
+    if (num_valuators && (!val || (first_valuator + num_valuators > val->numAxes))) {
+	ErrorF("Bad valuators reported for device \"%s\"\n", device->name);
+	return;
+    }
+
+    axisvals = val->axisVal;
+    axes = val->axes;
+    
+    va_start(var, num_valuators);
+
+    for(loop=0; loop<num_valuators; loop++) {
+	switch (loop % 6) {
+	case 0:
+	    xv->valuator0 = va_arg(var, int);
+	    if (loop == num_valuators)
+		RELATIVE_CHECK(xv->valuator0, loop+first_valuator);
+	    break;
+	case 1:
+	    xv->valuator1 = va_arg(var, int);
+
+	    DBG(5, ErrorF("xf86PostMotionEvent v0=%d v1=%d\n", xv->valuator0, xv->valuator1));
+	    
+	    if (loop == 1 && !is_absolute && device->ptrfeed && device->ptrfeed->ctrl.num) {
+		/* modeled from xf86Events.c */
+		if ((abs(xv->valuator0) + abs(xv->valuator1)) >= device->ptrfeed->ctrl.threshold) {
+		    xv->valuator0 = (xv->valuator0 * device->ptrfeed->ctrl.num) /
+			device->ptrfeed->ctrl.den;
+		    xv->valuator1 = (xv->valuator1 * device->ptrfeed->ctrl.num) /
+			device->ptrfeed->ctrl.den;
+		    DBG(6, ErrorF("xf86PostMotionEvent acceleration v0=%d v1=%d\n", xv->valuator0, xv->valuator1));
+		}
+	    }
+            /* mr Sat Jul  5 13:46:55 MET 1997
+             * fix to recognize XWarpCursor requests
+	     * FL Thu Nov 12 07:42:03 1998
+	     * Fix the fix to revert x/y coordinates to valuators space.
+	     * This has to be done only for relative devices which control
+	     * the core pointer.
+             */
+            if ((loop == 1) && !is_absolute && (is_core || is_shared)) {
+               int x1,y1;
+               miPointerPosition(&x1,&y1);
+               if (x1!=local->old_x || y1!=local->old_y ) {
+		 if (!local->reverse_conversion_proc) {
+		   axisvals[loop+first_valuator-1] = x1;
+		   axisvals[loop+first_valuator] = y1;
+		 }
+		 else {
+		   (*local->reverse_conversion_proc)(local, x1, y1, axisvals);
+		 }
+		 DBG(5, ErrorF("xf86PostMotionEvent(mr) x1=%d y1=%d\n", x1,y1));
+	       }
+            }
+	    RELATIVE_CHECK(xv->valuator0, loop+first_valuator-1);
+	    RELATIVE_CHECK(xv->valuator1, loop+first_valuator);
+	    break;
+	case 2:
+	    xv->valuator2 = va_arg(var, int);
+	    RELATIVE_CHECK(xv->valuator2, loop+first_valuator);
+	    break;
+	case 3:
+	    xv->valuator3 = va_arg(var, int);
+	    RELATIVE_CHECK(xv->valuator3, loop+first_valuator);
+	    break;
+	case 4:
+	    xv->valuator4 = va_arg(var, int);
+	    RELATIVE_CHECK(xv->valuator4, loop+first_valuator);
+	    break;
+	case 5:
+	    xv->valuator5 = va_arg(var, int);
+	    RELATIVE_CHECK(xv->valuator5, loop+first_valuator);
+	    break;
 	}
+	if ((loop % 6 == 5) || (loop == num_valuators - 1)) {
+	    xv->num_valuators = (loop % 6) + 1;
+	    xv->first_valuator = first_valuator + (loop / 6) * 6;
+	    
+	    if (!is_core) {
+		xev->type = DeviceMotionNotify;
+		xev->detail = 0;
+		xf86Info.lastEventTime = xev->time = current;
+		xev->deviceid = device->id | MORE_EVENTS;
+            
+		xv->type = DeviceValuator;
+		xv->deviceid = device->id;
+	    
+		xv->device_state = 0;
+		
+		if (HAS_MOTION_HISTORY(local)) {
+		    *(Time*)buff = current;
+		    memcpy(buff+sizeof(Time)+sizeof(INT32)*xv->first_valuator, &xv->valuator0,
+			   sizeof(INT32)*xv->num_valuators);
+		}
+		
+		xf86eqEnqueue(xE);
+	    }
+	    /* Drag is true if no buttons are down, or if there are buttons
+	     * down and SendDragEvents is true.
+	     */
+	    if ((is_core || is_shared) && (num_valuators >= 2) && drag) {
+	        int	x, y;
 
-	if (num_valuators && (!val || (first_valuator + num_valuators > val->numAxes)))
-	{
-		ErrorF ("Bad valuators reported for device \"%s\"\n", device->name);
-		return;
+		if ((*local->conversion_proc)(local,
+					      xv->first_valuator,
+					      xv->num_valuators,
+					      xv->valuator0,
+					      xv->valuator1,
+					      xv->valuator2,
+					      xv->valuator3,
+					      xv->valuator4,
+					      xv->valuator5,
+					      &x, &y) == FALSE) {
+		    DBG(4, ErrorF("xf86PostMotionEvent conversion failed\n"));
+		    continue;
+		}
+
+		DBG(4, ErrorF("xf86PostMotionEvent x=%d y=%d\n", x, y));
+
+		if (x == local->old_x && y == local->old_y) {
+		    DBG(4, ErrorF("xf86PostMotionEvent same cursor position continuing\n"));
+		    continue;
+		}
+		
+		local->old_x = x;
+		local->old_y = y;
+		
+		xf86Info.lastEventTime = current;
+
+		/* FL [Sat Jun 14 14:32:01 1997]
+		 * needs to integrate with DGA and XTEST event posting
+		 */
+
+		miPointerAbsoluteCursor(x, y, xf86Info.lastEventTime); 
+
+		if (!is_shared)
+		  break;
+	    }
 	}
+    }
+    va_end(var);
+    if (HAS_MOTION_HISTORY(local)) {
+	local->last = (local->last + 1) % device->valuator->numMotionEvents;
+	if (local->last == local->first)
+	    local->first = (local->first + 1) % device->valuator->numMotionEvents;
+    }
+    DBG(5, ErrorF("xf86PostMotionEvent END   0x%x(%s) switch=0x%x is_core=%s is_shared=%s\n",
+		  device, device->name, switch_device,
+		  is_core ? "True" : "False",
+		  is_shared ? "True" : "False"));
+}
 
-	xev->type = is_in ? ProximityIn : ProximityOut;
-	xev->detail = 0;
+void
+xf86PostProximityEvent(DeviceIntPtr	device,
+		       int		is_in,
+		       int		first_valuator,
+		       int		num_valuators,
+		       ...)
+{
+    va_list			var;
+    int				loop;
+    xEvent			xE[2];
+    deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer*) xE;
+    deviceValuator		*xv = (deviceValuator*) xev+1;
+    ValuatorClassPtr		val = device->valuator;
+    Bool			is_core = xf86IsCorePointer(device);
+    Bool			is_absolute = val && ((val->mode & 1) == Relative);
+
+    DBG(5, ErrorF("xf86PostProximityEvent BEGIN 0x%x(%s) prox=%s is_core=%s is_absolute=%s\n",
+		  device, device->name, is_in ? "true" : "false",
+		  is_core ? "True" : "False",
+		  is_absolute ? "True" : "False"));
+    
+    if (is_core) {
+	return;
+    }
+  
+    if (num_valuators && (!val || (first_valuator + num_valuators > val->numAxes))) {
+	ErrorF("Bad valuators reported for device \"%s\"\n", device->name);
+	return;
+    }
+
+    xev->type = is_in ? ProximityIn : ProximityOut;
+    xev->detail = 0;
+    xev->deviceid = device->id | MORE_EVENTS;
+	
+    xv->type = DeviceValuator;
+    xv->deviceid = device->id;
+    xv->device_state = 0;
+
+    if ((device->valuator->mode & 1) == Relative) {
+	num_valuators = 0;
+    }
+  
+    if (num_valuators != 0) {
+	int	*axisvals = val->axisVal;
+	    
+	va_start(var, num_valuators);
+
+	for(loop=0; loop<num_valuators; loop++) {
+	    switch (loop % 6) {
+	    case 0:
+		xv->valuator0 = is_absolute ? va_arg(var, int) : axisvals[loop]; 
+		break;
+	    case 1:
+		xv->valuator1 = is_absolute ? va_arg(var, int) : axisvals[loop];
+		break;
+	    case 2:
+		xv->valuator2 = is_absolute ? va_arg(var, int) : axisvals[loop];
+		break;
+	    case 3:
+		xv->valuator3 = is_absolute ? va_arg(var, int) : axisvals[loop];
+		break;
+	    case 4:
+		xv->valuator4 = is_absolute ? va_arg(var, int) : axisvals[loop];
+		break;
+	    case 5:
+		xv->valuator5 = is_absolute ? va_arg(var, int) : axisvals[loop];
+		break;
+	    }
+	    if ((loop % 6 == 5) || (loop == num_valuators - 1)) {
+		xf86Info.lastEventTime = xev->time = GetTimeInMillis();
+
+		xv->num_valuators = (loop % 6) + 1;
+		xv->first_valuator = first_valuator + (loop / 6) * 6;
+	
+		xf86eqEnqueue(xE);
+	    }
+	}
+	va_end(var);
+    }
+    else {
+	/* no valuator */
+	xf86Info.lastEventTime = xev->time = GetTimeInMillis();
+
+	xv->num_valuators = 0;
+	xv->first_valuator = 0;
+      
+	xf86eqEnqueue(xE);
+    }
+    DBG(5, ErrorF("xf86PostProximityEvent END   0x%x(%s) prox=%s is_core=%s is_absolute=%s\n",
+		  device, device->name, is_in ? "true" : "false",
+		  is_core ? "True" : "False",
+		  is_absolute ? "True" : "False"));
+    
+}
+
+void
+xf86PostButtonEvent(DeviceIntPtr	device,
+		    int			is_absolute,
+		    int			button,
+		    int			is_down,
+		    int			first_valuator,
+		    int			num_valuators,
+		    ...)
+{
+    va_list			var;
+    int				loop;
+    xEvent			xE[2];
+    deviceKeyButtonPointer	*xev	        = (deviceKeyButtonPointer*) xE;
+    deviceValuator		*xv	        = (deviceValuator*) xev+1;
+    ValuatorClassPtr		val		= device->valuator;
+    Bool			is_core		= xf86IsCorePointer(device);
+    Bool			is_shared       = xf86ShareCorePointer(device);
+    
+    DBG(5, ErrorF("xf86PostButtonEvent BEGIN 0x%x(%s) button=%d down=%s is_core=%s is_shared=%s is_absolute=%s\n",
+		  device, device->name, button,
+		  is_down ? "True" : "False",
+		  is_core ? "True" : "False",
+		  is_shared ? "True" : "False",
+		  is_absolute ? "True" : "False"));
+    
+    /* Check the core pointer button state not to send an inconsistent
+     * event. This can happen with the AlwaysCore feature.
+     */
+    if ((is_core || is_shared) && !xf86CheckButton(button, is_down)) {
+	return;
+    }
+    
+    if (num_valuators && (!val || (first_valuator + num_valuators > val->numAxes))) {
+	ErrorF("Bad valuators reported for device \"%s\"\n", device->name);
+	return;
+    }
+
+    if (is_core || is_shared) {
+	xf86SwitchCoreDevice(switch_device, device);
+    }
+
+    if (!is_core) {
+	xev->type = is_down ? DeviceButtonPress : DeviceButtonRelease;
+	xev->detail = button;
 	xev->deviceid = device->id | MORE_EVENTS;
-
+	    
 	xv->type = DeviceValuator;
 	xv->deviceid = device->id;
 	xv->device_state = 0;
 
-	if ((device->valuator->mode & 1) == Relative)
-	{
-		num_valuators = 0;
-	}
-
-	if (num_valuators != 0)
-	{
-		va_start (var, num_valuators);
-
-		for (loop = 0; loop < num_valuators; loop++)
-		{
-			switch (loop % 6)
-			{
-			case 0:
-				xv->valuator0 = va_arg (var, int);
-				break;
-			case 1:
-				xv->valuator1 = va_arg (var, int);
-				break;
-			case 2:
-				xv->valuator2 = va_arg (var, int);
-				break;
-			case 3:
-				xv->valuator3 = va_arg (var, int);
-				break;
-			case 4:
-				xv->valuator4 = va_arg (var, int);
-				break;
-			case 5:
-				xv->valuator5 = va_arg (var, int);
-				break;
-			}
-			if ((loop % 6 == 5) || (loop == num_valuators - 1))
-			{
-				xf86Info.lastEventTime = xev->time = GetTimeInMillis ();
-
-				xv->num_valuators = (loop % 6) + 1;
-				xv->first_valuator = first_valuator + (loop / 6) * 6;
-
-				xf86eqEnqueue (xE);
-			}
-		}
-		va_end (var);
-	}
-	else
-	{
-		/* no valuator */
-		xf86Info.lastEventTime = xev->time = GetTimeInMillis ();
-
-		xv->num_valuators = 0;
-		xv->first_valuator = 0;
-
-		xf86eqEnqueue (xE);
-	}
-}
-
-void
-xf86PostButtonEvent( DeviceIntPtr device,
-					 int is_absolute,
-					 int button,
-					 int is_down,
-					 int first_valuator,
-					 int num_valuators,
-					 ... )
-{
-	va_list var;
-	int loop;
-	xEvent xE[2];
-	deviceKeyButtonPointer *xev = (deviceKeyButtonPointer *) xE;
-	deviceValuator *xv = (deviceValuator *) xev + 1;
-	ValuatorClassPtr val = device->valuator;
-	Bool is_core = xf86IsCorePointer (device);
-	Bool is_shared = xf86ShareCorePointer (device);
-
-	/* Check the core pointer button state not to send an inconsistent *
-	 * event. This can happen with the AlwaysCore feature. */
-	if ((is_core || is_shared) && !xf86CheckButton (button, is_down))
-	{
-		return;
-	}
-
-	if (num_valuators && (!val || (first_valuator + num_valuators > val->numAxes)))
-	{
-		ErrorF ("Bad valuators reported for device \"%s\"\n", device->name);
-		return;
-	}
-
-	if (!is_core)
-	{
-		xev->type = is_down ? DeviceButtonPress : DeviceButtonRelease;
-		xev->detail = button;
-		xev->deviceid = device->id | MORE_EVENTS;
-
-		xv->type = DeviceValuator;
-		xv->deviceid = device->id;
-		xv->device_state = 0;
-
-		if (num_valuators != 0)
-		{
-			va_start (var, num_valuators);
-
-			for (loop = 0; loop < num_valuators; loop++)
-			{
-				switch (loop % 6)
-				{
-					case 0:
-						xv->valuator0 = va_arg (var, int);
-						break;
-					case 1:
-						xv->valuator1 = va_arg (var, int);
-						break;
-					case 2:
-						xv->valuator2 = va_arg (var, int);
-						break;
-					case 3:
-						xv->valuator3 = va_arg (var, int);
-						break;
-					case 4:
-						xv->valuator4 = va_arg (var, int);
-						break;
-					case 5:
-						xv->valuator5 = va_arg (var, int);
-						break;
-				}
-				if ((loop % 6 == 5) || (loop == num_valuators - 1))
-				{
-					xf86Info.lastEventTime = xev->time = GetTimeInMillis ();
-					xv->num_valuators = (loop % 6) + 1;
-					xv->first_valuator = first_valuator + (loop / 6) * 6;
-					xf86eqEnqueue (xE);
-				}
-			}
-			va_end (var);
-		}
-		else
-		{
-			/* no valuator */
-			xf86Info.lastEventTime = xev->time = GetTimeInMillis ();
-			xv->num_valuators = 0;
-			xv->first_valuator = 0;
-			xf86eqEnqueue (xE);
-		}
-	}
-
-	if (is_core || is_shared)
-	{
-		/* core pointer */
-		int cx, cy;
-
-		GetSpritePosition (&cx, &cy);
-
-		xE->u.u.type = is_down ? ButtonPress : ButtonRelease;
-		xE->u.u.detail = button;
-		xE->u.keyButtonPointer.rootY = cx;
-		xE->u.keyButtonPointer.rootX = cy;
-		xf86Info.lastEventTime = xE->u.keyButtonPointer.time = GetTimeInMillis ();
-#ifdef XFreeXDGA
-		if(!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, 0, 0))
-#endif
-		    xf86eqEnqueue (xE);
-	}
-}
-
-void
-xf86PostKeyEvent( DeviceIntPtr device,
-				  unsigned int key_code,
-				  int is_down,
-				  int is_absolute,
-				  int first_valuator,
-				  int num_valuators,
-				  ... )
-{
-	va_list var;
-	int loop;
-	xEvent xE[2];
-	deviceKeyButtonPointer *xev = (deviceKeyButtonPointer *) xE;
-	deviceValuator *xv = (deviceValuator *) xev + 1;
-
-	va_start (var, num_valuators);
-
-	for (loop = 0; loop < num_valuators; loop++)
-	{
-		switch (loop % 6)
-		{
+	if (num_valuators != 0) {
+	    int			*axisvals = val->axisVal;
+	    
+	    va_start(var, num_valuators);
+      
+	    for(loop=0; loop<num_valuators; loop++) {
+		switch (loop % 6) {
 		case 0:
-			xv->valuator0 = va_arg (var, int);
-			break;
+		    xv->valuator0 = is_absolute ? va_arg(var, int) : axisvals[loop];
+		    break;
 		case 1:
-			xv->valuator1 = va_arg (var, int);
-			break;
+		    xv->valuator1 = is_absolute ? va_arg(var, int) : axisvals[loop];
+		    break;
 		case 2:
-			xv->valuator2 = va_arg (var, int);
-			break;
+		    xv->valuator2 = is_absolute ? va_arg(var, int) : axisvals[loop];
+		    break;
 		case 3:
-			xv->valuator3 = va_arg (var, int);
-			break;
+		    xv->valuator3 = is_absolute ? va_arg(var, int) : axisvals[loop];
+		    break;
 		case 4:
-			xv->valuator4 = va_arg (var, int);
-			break;
+		    xv->valuator4 = is_absolute ? va_arg(var, int) : axisvals[loop];
+		    break;
 		case 5:
-			xv->valuator5 = va_arg (var, int);
-			break;
+		    xv->valuator5 = is_absolute ? va_arg(var, int) : axisvals[loop];
+		    break;
 		}
-		if (((loop % 6 == 5) || (loop == num_valuators - 1)))
-		{
-			xev->type = is_down ? DeviceKeyPress : DeviceKeyRelease;
-			xev->detail = key_code;
-
-			xf86Info.lastEventTime = xev->time = GetTimeInMillis ();
-			xev->deviceid = device->id | MORE_EVENTS;
-
-			xv->type = DeviceValuator;
-			xv->deviceid = device->id;
-			xv->device_state = 0;
-			/* if the device is in the relative mode we don't have to send
-			 * valuators */
-			xv->num_valuators = is_absolute ? (loop % 6) + 1 : 0;
-			xv->first_valuator = first_valuator + (loop / 6) * 6;
-
-			xf86eqEnqueue (xE);
-			/* if the device is in the relative mode only one event is needed 
-			 */
-			if (!is_absolute)
-				break;
+		if ((loop % 6 == 5) || (loop == num_valuators - 1)) {
+		    xf86Info.lastEventTime = xev->time = GetTimeInMillis();
+		    xv->num_valuators = (loop % 6) + 1;
+		    xv->first_valuator = first_valuator + (loop / 6) * 6;
+		    xf86eqEnqueue(xE);
 		}
+	    }
+	    va_end(var);
 	}
-	va_end (var);
+	else {
+	    /* no valuator */
+	    xf86Info.lastEventTime = xev->time = GetTimeInMillis();
+	    xv->num_valuators = 0;
+	    xv->first_valuator = 0;
+	    xf86eqEnqueue(xE);
+	}
+    }
+
+    if (is_core || is_shared) {
+	/* core pointer */
+	int       cx, cy;
+      
+	GetSpritePosition(&cx, &cy);
+      
+	xE->u.u.type = is_down ? ButtonPress : ButtonRelease;
+	xE->u.u.detail =  button;
+	xE->u.keyButtonPointer.rootY = cx;
+	xE->u.keyButtonPointer.rootX = cy;
+	xf86Info.lastEventTime = xE->u.keyButtonPointer.time = GetTimeInMillis();
+	xf86eqEnqueue(xE);
+    }
+    DBG(5, ErrorF("xf86PostButtonEvent END\n"));
+}
+
+void
+xf86PostKeyEvent(DeviceIntPtr	device,
+		 unsigned int	key_code,
+		 int		is_down,
+		 int		is_absolute,
+		 int		first_valuator,
+		 int		num_valuators,
+		 ...)
+{
+    va_list			var;
+    int				loop;
+    xEvent			xE[2];
+    deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer*) xE;
+    deviceValuator		*xv = (deviceValuator*) xev+1;
+    
+    va_start(var, num_valuators);
+
+    for(loop=0; loop<num_valuators; loop++) {
+	switch (loop % 6) {
+	case 0:
+	    xv->valuator0 = va_arg(var, int);
+	    break;
+	case 1:
+	    xv->valuator1 = va_arg(var, int);
+	    break;
+	case 2:
+	    xv->valuator2 = va_arg(var, int);
+	    break;
+	case 3:
+	    xv->valuator3 = va_arg(var, int);
+	    break;
+	case 4:
+	    xv->valuator4 = va_arg(var, int);
+	    break;
+	case 5:
+	    xv->valuator5 = va_arg(var, int);
+	    break;
+	}
+	if (((loop % 6 == 5) || (loop == num_valuators - 1))) {
+	    xev->type = is_down ? DeviceKeyPress : DeviceKeyRelease;
+	    xev->detail = key_code;
+	    
+	    xf86Info.lastEventTime = xev->time = GetTimeInMillis();
+	    xev->deviceid = device->id | MORE_EVENTS;
+	    
+	    xv->type = DeviceValuator;
+	    xv->deviceid = device->id;
+	    xv->device_state = 0;
+	    /* if the device is in the relative mode we don't have to send valuators */
+	    xv->num_valuators = is_absolute ? (loop % 6) + 1 : 0;
+	    xv->first_valuator = first_valuator + (loop / 6) * 6;
+	    
+	    xf86eqEnqueue(xE);
+	    /* if the device is in the relative mode only one event is needed */
+	    if (!is_absolute) break;
+	}
+    }
+    va_end(var);
 }
 
 /* 
@@ -1223,61 +1338,50 @@ xf86PostKeyEvent( DeviceIntPtr device,
  */
 
 void
-xf86MotionHistoryAllocate( LocalDevicePtr local )
+xf86MotionHistoryAllocate(LocalDevicePtr	local)
 {
-	ValuatorClassPtr valuator = local->dev->valuator;
-
-	if (!HAS_MOTION_HISTORY (local))
-		return;
-
-	local->motion_history = xalloc ((sizeof (INT32) * valuator->numAxes + sizeof (Time))
-									* valuator->numMotionEvents);
-	local->first = 0;
-	local->last = 0;
+    ValuatorClassPtr	valuator = local->dev->valuator;
+    
+    if (!HAS_MOTION_HISTORY(local))
+	return;
+    
+    local->motion_history = xalloc((sizeof(INT32) * valuator->numAxes + sizeof(Time))
+				   * valuator->numMotionEvents);
+    local->first = 0;
+    local->last	 = 0;
 }
 
 int
-xf86GetMotionEvents( DeviceIntPtr dev,
-					 xTimecoord * buff,
-					 unsigned long start,
-					 unsigned long stop,
-					 ScreenPtr pScreen )
+xf86GetMotionEvents(DeviceIntPtr	dev,
+		    xTimecoord		*buff,
+		    unsigned long	start,
+		    unsigned long	stop,
+		    ScreenPtr		pScreen)
 {
-	LocalDevicePtr local = (LocalDevicePtr) dev->public.devicePrivate;
-	ValuatorClassPtr valuator = dev->valuator;
-	int num = 0;
-	int loop = local->first;
-	int size;
-	Time current;
+    LocalDevicePtr	local	 = (LocalDevicePtr)dev->public.devicePrivate;
+    ValuatorClassPtr	valuator = dev->valuator;
+    int			num  	 = 0;
+    int			loop	 = local->first;
+    int			size;
+    Time		current;
+    
+    if (!HAS_MOTION_HISTORY(local))
+	return 0;
 
-	if (!HAS_MOTION_HISTORY (local))
-		return 0;
+    size = (sizeof(INT32) * valuator->numAxes + sizeof(Time));
 
-	size = (sizeof (INT32) * valuator->numAxes + sizeof (Time));
-
-	while (loop != local->last)
-	{
-		current = *(Time *) (((char *) local->motion_history) + loop * size);
-		if (current > stop)
-			return num;
-		if (current >= start)
-		{
-			memcpy (((char *) buff) + size * num,
-					((char *) local->motion_history) + loop * size, size);
-			num++;
-		}
-		loop = (loop + 1) % valuator->numMotionEvents;
+    while (loop != local->last) {
+	current = *(Time*)(((char *)local->motion_history)+loop*size);
+	if (current > stop)
+	    return num;
+	if (current >= start) {
+	    memcpy(((char *)buff)+size*num,
+		   ((char *)local->motion_history)+loop*size, size);
+	    num++;
 	}
-	return num;
-}
-
-void
-xf86eqSwitchScreen(	ScreenPtr pScreen,
-					Bool fromDIX )
-{
-	xf86EventQueue.pEnqueueScreen = pScreen;
-	if (fromDIX)
-		xf86EventQueue.pDequeueScreen = pScreen;
+	loop = (loop + 1) % valuator->numMotionEvents;
+    }
+    return num;
 }
 
 /* 
@@ -1286,63 +1390,50 @@ xf86eqSwitchScreen(	ScreenPtr pScreen,
  * called during startup
  */
 void
-xf86AddLocalDevice(	LocalDevicePtr new,
-					pointer options )
+xf86AddLocalDevice(LocalDevicePtr	new,
+		   pointer		options)
 {
-	new->next = localDevices;
-	localDevices = new;
+    new->next = localDevices;
+    localDevices = new;
 
-	if (xf86FindOption (options, "DemandLoaded"))
-	{
-		ActivateDevice (new);
-		new->dev->inited = ((*new->dev->deviceProc) (new->dev, DEVICE_INIT)
-							== Success);
-	}
+    xf86ProcessCommonOptions(new, options);
+    
+    new->flags |= XI86_CONFIGURED;
+    
+    if (xf86FindOption (options, "DemandLoaded")) {
+	xf86ActivateDevice (new);
+	new->dev->inited = ((*new->dev->deviceProc) (new->dev, DEVICE_INIT) == Success);
+    }
 }
 
 Bool
-xf86RemoveLocalDevice( LocalDevicePtr local )
+xf86RemoveLocalDevice(LocalDevicePtr local)
 {
-	LocalDevicePtr prev = NULL, tmp;
-
-	tmp = localDevices;
-	while (tmp)
-	{
-		if (local == tmp)
-		{
-			if (prev)
-				prev->next = tmp->next;
-			else
-				localDevices = tmp->next;
-			RemoveDevice (local->dev);
-			break;
-		}
-		prev = tmp;
-		tmp = tmp->next;
+    LocalDevicePtr prev = NULL, tmp;
+    
+    tmp = localDevices;
+    while (tmp) {
+	if (local == tmp) {
+	    if (prev)
+		prev->next = tmp->next;
+	    else
+		localDevices = tmp->next;
+	    RemoveDevice (local->dev);
+	    break;
 	}
-	if (tmp)
-		return (TRUE);
-	else
-		return (FALSE);
+	prev = tmp;
+	tmp = tmp->next;
+    }
+    if (tmp)
+	return (TRUE);
+    else
+	return (FALSE);
 }
 
-/*
- * This function checks the given screen against the current screen and
- * makes changes if appropriate. It should be called from an XInput driver's
- * ReadInput function before any events are posted, if the device is screen
- * specific like a touch screen.
- */
-void
-xf86XInputSetScreen( LocalDevicePtr local,
-					 int screen_number,
-					 int x,
-					 int y )
+LocalDevicePtr
+xf86FirstLocalDevice()
 {
-	if ((local->flags & XI86_SEND_CORE_EVENTS) &&
-		(miPointerCurrentScreen() != screenInfo.screens[screen_number]))
-	{
-		miPointerSetNewScreen (screen_number, x, y);
-	}
+    return localDevices;
 }
 
 /* 
@@ -1359,57 +1450,49 @@ xf86XInputSetScreen( LocalDevicePtr local,
  */
 
 int
-xf86ScaleAxis(	int Cx,
-				int Sxhigh,
-				int Sxlow,
-				int Rxhigh,
-				int Rxlow )
+xf86ScaleAxis(int	Cx,
+	      int	Sxhigh,
+	      int	Sxlow,
+	      int	Rxhigh,
+	      int	Rxlow )
 {
-	int X;
-	int dSx = Sxhigh - Sxlow;
-	int dRx = Rxhigh - Rxlow;
+    int X;
+    int dSx = Sxhigh - Sxlow;
+    int dRx = Rxhigh - Rxlow;
 
-	dSx = Sxhigh - Sxlow;
-	if (dRx)
-	{
-		X = ((dSx * (Cx - Rxlow)) / dRx) + Sxlow;
-	}
-	else
-	{
-		X = 0;
-		ErrorF ("Divide by Zero in xf86ScaleAxis");
-	}
-
-	if (X > Sxlow)
-		X = Sxlow;
-	if (X < Sxhigh)
-		X = Sxhigh;
-
-	return (X);
+    dSx = Sxhigh - Sxlow;
+    if (dRx) {
+	X = ((dSx * (Cx - Rxlow)) / dRx) + Sxlow;
+    }
+    else {
+	X = 0;
+	ErrorF ("Divide by Zero in xf86ScaleAxis");
+    }
+    
+    if (X > Sxlow)
+	X = Sxlow;
+    if (X < Sxhigh)
+	X = Sxhigh;
+    
+    return (X);
 }
 
 /*
- * this function should be called by all drivers to handle common options.
- * This also serves to hide the implimentation details from the drivers.
+ * This function checks the given screen against the current screen and
+ * makes changes if appropriate. It should be called from an XInput driver's
+ * ReadInput function before any events are posted, if the device is screen
+ * specific like a touch screen.
  */
 void
-xf86XInputProcessOptions( LocalDevicePtr local,
-						  pointer list )
+xf86XInputSetScreen(LocalDevicePtr	local,
+		    int			screen_number,
+		    int			x,
+		    int			y)
 {
-	local->flags = 0;
-	if( xf86SetBoolOption( list, "SendCoreEvents", 0 ) )
-		local->flags |= XI86_SEND_CORE_EVENTS;
-	if( xf86SetBoolOption( list, "SendDragEvents", 1 ) )
-		local->flags |= XI86_SEND_DRAG_EVENTS;
+    if ((xf86IsCorePointer(local->dev) || xf86ShareCorePointer(local->dev)) &&
+	(miPointerCurrentScreen() != screenInfo.screens[screen_number])) {
+	miPointerSetNewScreen (screen_number, x, y);
+    }
 }
 
-void
-xf86XInputSetSendCoreEvents( LocalDevicePtr local,
-							 int flag )
-{
-	if (flag)
-		local->flags |= XI86_SEND_CORE_EVENTS;
-	else
-		local->flags &= ~XI86_SEND_CORE_EVENTS;
-}
 /* end of xf86Xinput.c */

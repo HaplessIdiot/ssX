@@ -1,6 +1,6 @@
 /* $XConsortium: xf86Xinput.h /main/11 1996/10/27 11:05:29 kaleb $ */
 /*
- * Copyright 1995-1997 by Frederic Lepied, France. <Frederic.Lepied@sugix.frmug.org>
+ * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is  hereby granted without fee, provided that
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.19 1998/12/05 14:40:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.20 1998/12/13 05:32:41 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -51,15 +51,12 @@
  */
 #define XI86_SEND_DRAG_EVENTS	8
 
-#ifdef DBG
-#undef DBG
+#ifdef PRIVATE
+#undef PRIVATE
 #endif
-#define DBG(lvl, f) {if ((lvl) <= xf86GetVerbosity()) f;}
+#define PRIVATE(dev) (((LocalDevicePtr)((dev)->public.devicePrivate))->private)
 
-#define XI_PRIVATE(dev) \
-	(((LocalDevicePtr)((dev)->public.devicePrivate))->private)
-
-#define MOUSE_DEV(dev) (MouseDevPtr) XI_PRIVATE(dev)
+#define MOUSE_DEV(dev) (MouseDevPtr) PRIVATE(dev)
 
 #ifdef HAS_MOTION_HISTORY
 #undef HAS_MOTION_HISTORY
@@ -67,32 +64,21 @@
 #define HAS_MOTION_HISTORY(local) ((local)->dev->valuator && (local)->dev->valuator->numMotionEvents)
 
 typedef struct _LocalDeviceRec {  
-  char		*name;
-  char		*type;
-  int           flags;
-  Bool		(*device_control)(	DeviceIntPtr,					/*device*/
-								int );							/*what*/
-  void		(*read_input)(	struct _LocalDeviceRec* );			/*local*/
-  int		(*control_proc)(	struct _LocalDeviceRec*,		/*local*/
-								xDeviceCtl*	);					/* control */
-  void		(*close_proc)(	struct _LocalDeviceRec*	);			/*local*/
-  int		(*switch_mode)(	ClientPtr,							/*client*/
-							DeviceIntPtr,						/*dev*/
-							int	);								/*mode*/
-
-  Bool		(*conversion_proc)(	struct _LocalDeviceRec*,		/*local*/
-								int,							/* first */
-								int,							/* num */
-								int,							/* v0 */
-								int,							/* v1 */
-								int,							/* v2 */
-								int,							/* v3 */
-								int,							/* v4 */
-								int,							/* v5 */
-								int*,							/* x */
-								int* );							/* y */
+    char		*name;
+    int			flags;
     
-	int			fd;
+    Bool (*device_control)(DeviceIntPtr /*device*/, int /*what*/);
+    void (*read_input)(struct _LocalDeviceRec* /*local*/);
+    int (*control_proc)(struct _LocalDeviceRec* /*local*/, xDeviceCtl* /* control */);
+    void (*close_proc)(struct _LocalDeviceRec* /*local*/);
+    int (*switch_mode)(ClientPtr /*client*/, DeviceIntPtr /*dev*/, int /*mode*/);
+    Bool (*conversion_proc)(struct _LocalDeviceRec* /*local*/, int /* first */,
+			    int /* num */, int /* v0 */, int /* v1 */, int /* v2 */,
+			    int /* v3 */, int /* v4 */, int /* v5 */, int* /* x */,
+			    int* /* y */);
+    
+    int			fd;
+    Atom		atom;
     DeviceIntPtr	dev;
     pointer		private;
     int			private_flags;
@@ -103,133 +89,117 @@ typedef struct _LocalDeviceRec {
     unsigned int	last;
     int			old_x;
     int			old_y;
+    char		*type_name;
     IntegerFeedbackPtr	always_core_feedback;
-	struct _LocalDeviceRec *next;
+    Bool (*reverse_conversion_proc)(struct _LocalDeviceRec* /*local*/,
+				    int /* x */, int /* y */,
+				    int* /* valuators */);
+    pointer		options;
+    struct _LocalDeviceRec *next;
 } LocalDeviceRec, *LocalDevicePtr;
 
 typedef struct _DeviceAssocRec 
 {
   char                  *config_section_name;
-  LocalDevicePtr        (*device_allocate)( void );
+  LocalDevicePtr        (*device_allocate)(void);
 } DeviceAssocRec, *DeviceAssocPtr;
 
-extern int
-xf86IsCorePointer( DeviceIntPtr	);								/*dev*/
-
-
-extern int
-xf86IsCoreKeyboard( DeviceIntPtr );								/*dev*/
-
-
-extern void
-xf86AlwaysCore(	LocalDevicePtr,									/*local*/
-				Bool );											/*always*/
-
-
-void
-xf86AddDeviceAssoc(	DeviceAssocPtr );							/* assoc */
-
-
-void
-InitExtInput( void );
-
-Bool
-xf86eqInit(	DevicePtr,											/* pKbd */
-			DevicePtr );										/* pPtr */
-
-
-void
-xf86eqEnqueue(	struct _xEvent*	);								/*event */
-
-
-void
-xf86eqSwitchScreen(	ScreenPtr,
-					Bool );
-
-void
-xf86eqProcessInputEvents( void );
-
-void
-xf86PostMotionEvent(	DeviceIntPtr,						/*device*/
-						int,								/*is_absolute*/
-						int,								/*first_valuator*/
-						int,								/*num_valuators*/
-						... );
-
-
-void
-xf86PostProximityEvent(	DeviceIntPtr,						/*device*/
-						int,								/*is_in*/
-						int,								/*first_valuator*/
-						int,								/*num_valuators*/
-						... );
-
-void
-xf86PostButtonEvent(	DeviceIntPtr,						/*device*/
-						int,								/*is_absolute*/
-						int,								/*button*/
-						int,								/*is_down*/
-						int,								/*first_valuator*/
-						int,								/*num_valuators*/
-						... );
-
-void
-xf86PostKeyEvent(	DeviceIntPtr	device,
-					unsigned int	key_code,
-					int				is_down,
-					int				is_absolute,
-					int				first_valuator,
-					int				num_valuators,
-					... );
-
-void
-xf86MotionHistoryAllocate( LocalDevicePtr local );
+int
+xf86IsCorePointer(DeviceIntPtr /*dev*/);
 
 int
-xf86GetMotionEvents(	DeviceIntPtr	dev,
-						xTimecoord		*buff,
-						unsigned long	start,
-						unsigned long	stop,
-						ScreenPtr		pScreen );
+xf86IsCoreKeyboard(DeviceIntPtr /*dev*/);
 
 void
-xf86XinputFinalizeInit( DeviceIntPtr dev );
+xf86AlwaysCore(LocalDevicePtr /*local*/, Bool /*always*/);
+
+void
+InitExtInput(void);
 
 Bool
-xf86CheckButton(	int	button,
-					int	down );
+xf86eqInit(DevicePtr /* pKbd */, DevicePtr /* pPtr */);
 
 void
-xf86SwitchCoreDevice(	LocalDevicePtr	device,
-						DeviceIntPtr	core );
+xf86eqEnqueue (struct _xEvent * /*event */);
 
 void
-xf86AddLocalDevice(	LocalDevicePtr	device,
-					pointer options );
-
-Bool
-xf86RemoveLocalDevice(	LocalDevicePtr	device );
+xf86eqProcessInputEvents (void);
 
 void
-xf86XInputSetScreen(	LocalDevicePtr	local,
-						int				screen_number,
-						int				x,
-						int				y );
+xf86eqSwitchScreen(ScreenPtr /* pScreen */, Bool /* fromDIX */);
+
+void
+xf86PostMotionEvent(DeviceIntPtr	/*device*/,
+		    int			/*is_absolute*/,
+		    int			/*first_valuator*/,
+		    int			/*num_valuators*/,
+		    ...);
+
+void
+xf86PostProximityEvent(DeviceIntPtr	/*device*/,
+		       int		/*is_in*/,
+		       int		/*first_valuator*/,
+		       int		/*num_valuators*/,
+		       ...);
+
+void
+xf86PostButtonEvent(DeviceIntPtr	/*device*/,
+		    int			/*is_absolute*/,
+		    int			/*button*/,
+		    int			/*is_down*/,
+		    int			/*first_valuator*/,
+		    int			/*num_valuators*/,
+		    ...);
+
+void
+xf86PostKeyEvent(DeviceIntPtr	/* device */,
+		 unsigned int	/* key_code */,
+		 int		/* is_down */,
+		 int		/* is_absolute */,
+		 int		/* first_valuator */,
+		 int		/* num_valuators */,
+		 ...);
+
+void
+xf86MotionHistoryAllocate(LocalDevicePtr /* local */);
 
 int
-xf86ScaleAxis(	int	Cx,
-				int	Sxhigh,
-				int	Sxlow,
-				int	Rxhigh,
-				int	Rxlow );
+xf86GetMotionEvents(DeviceIntPtr	/* dev */,
+		    xTimecoord		*/* buff */,
+		    unsigned long	/* start */,
+		    unsigned long	/* stop */,
+		    ScreenPtr		/* pScreen */);
 
 void
-xf86XInputProcessOptions(	LocalDevicePtr	local,
-							pointer	list );
+xf86XinputFinalizeInit(DeviceIntPtr /* dev */);
+
+Bool
+xf86CheckButton(int /* button */, int /* down */);
 
 void
-xf86XInputSetSendCoreEvents(	LocalDevicePtr	local,
-								int				flag );
+xf86SwitchCoreDevice(LocalDevicePtr /* device */, DeviceIntPtr /* core */);
+
+void
+xf86AddLocalDevice( LocalDevicePtr	/* device */,
+		    pointer		/* options */);
+
+Bool
+xf86RemoveLocalDevice(LocalDevicePtr	/* device */);
+
+LocalDevicePtr
+xf86FirstLocalDevice(void);
+
+int
+xf86ScaleAxis(int	/* Cx */,
+	      int	/* Sxhigh */,
+	      int	/* Sxlow */,
+	      int	/* Rxhigh */,
+	      int	/* Rxlow */);
+
+void
+xf86XInputSetScreen(LocalDevicePtr	/* local */,
+		    int			/* screen_number */,
+		    int			/* x */,
+		    int			/* y */);
 
 #endif /* _xf86Xinput_h */
-
