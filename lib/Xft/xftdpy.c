@@ -361,6 +361,10 @@ _XftDefaultInit (Display *dpy)
 	goto bail1;
     if (!_XftDefaultInitBool (dpy, pat, FC_ANTIALIAS))
 	goto bail1;
+    if (!_XftDefaultInitBool (dpy, pat, FC_AUTOHINT))
+	goto bail1;
+    if (!_XftDefaultInitBool (dpy, pat, FC_HINTING))
+	goto bail1;
     if (!_XftDefaultInitBool (dpy, pat, FC_MINSPACE))
 	goto bail1;
     if (!_XftDefaultInitInteger (dpy, pat, XFT_MAX_GLYPH_MEMORY))
@@ -448,6 +452,18 @@ XftDefaultSubstitute (Display *dpy, int screen, FcPattern *pattern)
 	FcPatternAddBool (pattern, FC_ANTIALIAS,
 			   XftDefaultGetBool (dpy, FC_ANTIALIAS, screen,
 					      True));
+    }
+    if (FcPatternGet (pattern, FC_HINTING, 0, &v) == FcResultNoMatch)
+    {
+	FcPatternAddBool (pattern, FC_HINTING,
+			  XftDefaultGetBool (dpy, FC_HINTING, screen,
+					     True));
+    }
+    if (FcPatternGet (pattern, FC_AUTOHINT, 0, &v) == FcResultNoMatch)
+    {
+	FcPatternAddBool (pattern, FC_AUTOHINT,
+			  XftDefaultGetBool (dpy, FC_AUTOHINT, screen,
+					     False));
     }
     if (FcPatternGet (pattern, FC_RGBA, 0, &v) == FcResultNoMatch)
     {
