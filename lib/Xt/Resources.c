@@ -59,7 +59,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xt/Resources.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/lib/Xt/Resources.c,v 1.11tsi Exp $ */
 
 /*LINTLIBRARY*/
 #include "IntrinsicI.h"
@@ -1165,8 +1165,8 @@ void _XtGetApplicationResources
 
     if (num_resources == 0) return;
 
-    if (w == NULL) app = _XtDefaultAppContext();
 #ifdef XTHREADS
+    if (w == NULL) app = _XtDefaultAppContext();
     else app = XtWidgetToApplicationContext(w);
 #endif
 

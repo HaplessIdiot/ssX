@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Manage.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/lib/Xt/Manage.c,v 3.10tsi Exp $ */
 
 /*
 
@@ -317,7 +317,9 @@ void XtManageChildren(children, num_children)
 		     (String*)NULL, (Cardinal*)NULL);
 	return;
     }
+#ifdef XTHREADS
     app = XtWidgetToApplicationContext(children[0]);
+#endif
     LOCK_APP(app);
     parent = children[0]->core.parent;
     if (parent->core.being_destroyed) {
