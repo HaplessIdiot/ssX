@@ -5094,7 +5094,7 @@ _mesa_GetString( GLenum name )
    GET_CURRENT_CONTEXT(ctx);
    static const char *vendor = "Brian Paul";
    static const char *renderer = "Mesa";
-   static const char *version = "1.2 Mesa 3.4";
+   static const char *version = "1.2 Mesa 3.4.1";
 
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH_WITH_RETVAL(ctx, "glGetString", 0);
 
