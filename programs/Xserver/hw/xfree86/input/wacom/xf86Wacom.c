@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.20 2000/11/14 17:33:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.21 2000/12/01 17:43:06 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -61,6 +61,14 @@ static const char identification[] = "$Identification: 20 $";
 #ifdef LINUX_INPUT
 #include <asm/types.h>
 #include <linux/input.h>
+
+/* keithp - a hack to avoid redefinitions of these in xf86str.h */
+#ifdef BUS_PCI
+#undef BUS_PCI
+#endif
+#ifdef BUS_ISA
+#undef BUS_ISA
+#endif
 
 #ifndef O_NDELAY
 #ifndef O_NONBLOCK
