@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.206 2003/05/27 21:56:39 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.208 2003/06/27 14:53:08 eich Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1503,8 +1503,8 @@ XCOMM X Window System make variables; these need to be coordinated with rules
               RGB = $(CLIENTENVSETUP) $(XBUILDBINDIR)/rgb
 # if !CrossCompiling
             FONTC = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/bdftopcf
-  MKFONTSCALE_DIR = mkfontscale -b -s -l
-        MKFONTDIR = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/$(MKFONTSCALE_DIR)  
+  MKFONTSCALE_DIR = $(PRELOADFREETYPESETUP) $(XBUILDBINDIR)/mkfontscale -b -s -l
+        MKFONTDIR = $(CLIENTENVSETUP) $(MKFONTSCALE_DIR)  
        XCURSORGEN = $(CLIENTENVSETUP) $(PRELOADSETUP) $(XBUILDBINDIR)/xcursorgen
 # elif UseInstalledOnCrossCompile
         MKFONTDIR = $(BINDIR)/mkfontdir
@@ -1581,6 +1581,9 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #endif
 #ifdef PreloadFontSetup
  PRELOADFONTSETUP = PreloadFontSetup
+#endif
+#ifdef PreloadFreetypeSetup
+ PRELOADFREETYPESETUP = PreloadFreetypeSetup
 #endif
 #ifdef PreloadXFTSetup
      PRELOADXFTSETUP = PreloadXFTSetup
