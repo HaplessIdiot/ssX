@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.23 2003/01/29 18:06:07 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.24 2003/02/07 20:41:15 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -61,15 +61,18 @@ static xf86EnterVTProc     *const volatile EnterVTProc     = RADEONEnterVT;
 static xf86LeaveVTProc     *const volatile LeaveVTProc     = RADEONLeaveVT;
 static xf86FreeScreenProc  *const volatile FreeScreenProc  = RADEONFreeScreen;
 static xf86ValidModeProc   *const volatile ValidModeProc   = RADEONValidMode;
+static xf86HandleMessageProc *const volatile HandleMessageProc
+							= RADEONHandleMessage;
 
-#define RADEONPreInit     PreInitProc
-#define RADEONScreenInit  ScreenInitProc
-#define RADEONSwitchMode  SwitchModeProc
-#define RADEONAdjustFrame AdjustFrameProc
-#define RADEONEnterVT     EnterVTProc
-#define RADEONLeaveVT     LeaveVTProc
-#define RADEONFreeScreen  FreeScreenProc
-#define RADEONValidMode   ValidModeProc
+#define RADEONPreInit       PreInitProc
+#define RADEONScreenInit    ScreenInitProc
+#define RADEONSwitchMode    SwitchModeProc
+#define RADEONAdjustFrame   AdjustFrameProc
+#define RADEONEnterVT       EnterVTProc
+#define RADEONLeaveVT       LeaveVTProc
+#define RADEONFreeScreen    FreeScreenProc
+#define RADEONValidMode     ValidModeProc
+#define RADEONHandleMessage HandleMessageProc
 
 #endif
 
@@ -271,6 +274,7 @@ RADEONProbe(DriverPtr drv, int flags)
 		pScrn->PreInit       = RADEONPreInit;
 		pScrn->ScreenInit    = RADEONScreenInit;
 		pScrn->SwitchMode    = RADEONSwitchMode;
+		pScrn->HandleMessage = RADEONHandleMessage;
 		pScrn->AdjustFrame   = RADEONAdjustFrame;
 		pScrn->EnterVT       = RADEONEnterVT;
 		pScrn->LeaveVT       = RADEONLeaveVT;

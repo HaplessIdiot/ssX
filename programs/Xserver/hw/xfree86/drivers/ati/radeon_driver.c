@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.90 2003/02/21 21:44:22 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.91 2003/02/25 03:50:15 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -5645,6 +5645,15 @@ Bool RADEONSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 #endif
 
     return ret;
+}
+
+Bool RADEONHandleMessage(int scrnIndex, const char* msgtype,
+			 const char* msgval, char** retmsg)
+{
+    ErrorF("RADEONHandleMessage(%d, \"%s\", \"%s\", retmsg)\n", scrnIndex,
+		    msgtype, msgval);
+    *retmsg = "";
+    return 0;
 }
 
 /* Used to disallow modes that are not supported by the hardware */
