@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.37 2001/08/17 13:27:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.38 2001/08/18 17:25:51 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -817,6 +817,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 
     from             = X_PROBED;
     info->LinearAddr = info->PciInfo->memBase[0] & 0xfc000000;
+    pScrn->memPhysBase = info->LinearAddr;
     if (dev->MemBase) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		   "Linear address override, using 0x%08x instead of 0x%08x\n",

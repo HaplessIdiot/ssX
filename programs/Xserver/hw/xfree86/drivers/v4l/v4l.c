@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.26 2001/06/15 21:23:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.27 2001/08/03 08:34:00 alanh Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -207,6 +207,8 @@ static void V4lQueryBestSize(ScrnInfoPtr pScrn, Bool motion,
 
 static int V4lOpenDevice(PortPrivPtr pPPriv, ScrnInfoPtr pScrn)
 {
+    static int first = 1;
+
     if (-1 == V4L_FD) {
 	V4L_FD = open(V4L_NAME, O_RDWR, 0);
 
@@ -215,7 +217,12 @@ static int V4lOpenDevice(PortPrivPtr pPPriv, ScrnInfoPtr pScrn)
 	pPPriv->rgb_fbuf.depth        = pScrn->bitsPerPixel;
 	pPPriv->rgb_fbuf.bytesperline = pScrn->displayWidth * ((pScrn->bitsPerPixel + 7)/8);
 	pPPriv->rgb_fbuf.base         = (pointer)(pScrn->memPhysBase + pScrn->fbOffset);
-	
+	if (first) {
+	    first = 0;
+	    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
+			 "v4l: memPhysBase=%p\n", pScrn->memPhysBase);
+	}
+
 	switch (pScrn->bitsPerPixel) {
 	case 16:
 	    if (pScrn->weight.green == 5) {

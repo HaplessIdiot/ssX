@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.33 2001/08/07 07:04:43 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.34 2001/08/17 22:08:13 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1213,6 +1213,7 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 
     from             = X_PROBED;
     info->LinearAddr = info->PciInfo->memBase[0] & 0xfc000000;
+    pScrn->memPhysBase = info->LinearAddr;
     if (dev->MemBase) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		   "Linear address override, using 0x%08x instead of 0x%08x\n",

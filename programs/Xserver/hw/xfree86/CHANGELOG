@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 270. Fix setting of memPhysBase in a few drivers (#4937, Gerd Knorr).
  269. Finish merging freetype-2-0-4 into trunk by resolving conflicts. This
       also fixes a syntax error on Darwin caused by an out of date version of
       ttgload.c (Torrey T. Lyons).
@@ -13796,4 +13797,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1937 2001/09/13 08:36:21 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1938 2001/09/14 01:05:13 torrey Exp $
