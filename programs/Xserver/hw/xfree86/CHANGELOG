@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 524. Fix support for ATI Graphics Pro Turbo 1600 adapters (Marc La France).
  523. Newport driver updates, including 24-bit support (#5062, Guido Guenther).
  522. Fix pixel info not being returned from the APPGROUP extension (#5061,
       Chris Bare, from X11R6.6).
@@ -14233,4 +14234,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2058 2001/11/23 19:21:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2059 2001/11/23 19:50:42 dawes Exp $
