@@ -46,7 +46,7 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.h,v 1.7 2000/06/07 22:03:02 tsi Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.h,v 1.8 2001/01/17 19:43:36 dawes Exp $ */
 
 #include "zlib.h"
 #include "Xfuncproto.h"
@@ -112,13 +112,10 @@ struct iovec {
 
 
 /* lbx_zlib_io.c */
-extern int InitZlibBuffer ( ZlibBufferPtr b, int size );
-extern void FreeZlibBuffer ( ZlibBufferPtr b );
 extern int GetInputPtr ( int fd, ZlibBufferPtr inbuf, int reqlen, 
 			 unsigned char **ppkt );
 extern int StuffInput ( ZlibBufferPtr inbuf, unsigned char *pkt, int reqlen );
 extern void FreeInput ( ZlibBufferPtr inbuf, int len );
-extern char * ReserveOutBuf ( ZlibBufferPtr outbuf, int outlen );
 extern void CommitOutBuf ( ZlibBufferPtr outbuf, int outlen );
 extern int FlushOutBuf ( int fd, ZlibBufferPtr outbuf );
 extern int FlushIovBuf ( int fd, struct iovec *iovbuf );

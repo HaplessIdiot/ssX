@@ -46,7 +46,7 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.c,v 1.7 2001/01/17 19:43:36 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.c,v 1.8 2001/07/25 15:04:57 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -85,8 +85,6 @@ struct ZlibInfo {
     unsigned char	    header[ZLIB_PACKET_HDRLEN];
     struct iovec	    iovbuf[2];
 };
-
-void ZlibFree(struct ZlibInfo *comp);
 
 static int
 init_compress(struct compress_private *priv,/* local pointer to private data */
@@ -391,7 +389,8 @@ ZlibWriteV(int		   fd,
 
     for (i = 0; i < iovcnt; i++)
     {
-	this_time = ZlibWrite(fd, iov[i].iov_base, iov[i].iov_len);
+	this_time = ZlibWrite(fd, (unsigned char *)iov[i].iov_base,
+				iov[i].iov_len);
 	if (this_time > 0)
 	    total += this_time;
 	if (this_time != iov[i].iov_len)
@@ -462,7 +461,7 @@ ZlibRead(int		fd,
     unsigned char	    *p = buffer;
     int			    lenleft = buflen;
     int			    len;
-    int			    retval;
+    int			    retval = -1;
 
     /*
      * First check if there is any data Zlib decompressed already but

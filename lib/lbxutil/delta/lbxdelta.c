@@ -22,7 +22,7 @@
  *
  * Author:  Dale Tonogai, Network Computing Devices
  */
-/* $XFree86: xc/lib/lbxutil/delta/lbxdelta.c,v 1.6 2001/01/17 19:43:34 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/delta/lbxdelta.c,v 1.7 2001/07/25 15:04:57 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -111,7 +111,7 @@ LBXDeltaMinDiffs(LBXDeltasPtr	pcache,
 		 int		maxdiff,
 		 int		*pindex)
 {
-    int			i, j, k, l = maxdiff + 1;
+    int			i, j, k = 0, l = maxdiff + 1;
     int		   	m;
     LBXDeltaElemPtr	dm;
 
