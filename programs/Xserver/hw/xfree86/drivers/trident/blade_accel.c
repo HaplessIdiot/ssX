@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.13 2000/12/04 08:46:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.15 2001/02/15 17:59:07 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -85,12 +85,14 @@ static void BladeSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 static void BladeSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, int x, int y, 
 				int w, int h);
+#if 0
 static void BladeSetupForColor8x8PatternFill(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, 
 				int rop, unsigned int planemask, int trans_col);
 static void BladeSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, int x, int y, 
 				int w, int h);
+#endif
 static void BladeSetupForImageWrite(ScrnInfoPtr pScrn, int rop,
    				unsigned int planemask, int transparency_color,
    				int bpp, int depth);
@@ -146,6 +148,18 @@ BladeAccelInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     BoxRec AvailFBArea;
+
+    AvailFBArea.x1 = 0;
+    AvailFBArea.y1 = 0;
+    AvailFBArea.x2 = pScrn->displayWidth;
+    AvailFBArea.y2 = (pTrident->FbMapSize - 4096) / (pScrn->displayWidth *
+					    pScrn->bitsPerPixel / 8);
+    if (AvailFBArea.y2 > 2047) AvailFBArea.y2 = 2047;
+
+    xf86InitFBManager(pScreen, &AvailFBArea);
+
+    if (pTrident->NoAccel)
+	return FALSE;
 
     pTrident->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
@@ -236,15 +250,6 @@ BladeAccelInit(ScreenPtr pScreen)
 				SYNC_AFTER_IMAGE_WRITE;
     infoPtr->ImageWriteBase = pTrident->IOBase + 0x10000;
     infoPtr->ImageWriteRange = 0x10000;
-
-    AvailFBArea.x1 = 0;
-    AvailFBArea.y1 = 0;
-    AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = (pTrident->FbMapSize - 4096) / (pScrn->displayWidth *
-					    pScrn->bitsPerPixel / 8);
-    if (AvailFBArea.y2 > 2047) AvailFBArea.y2 = 2047;
-
-    xf86InitFBManager(pScreen, &AvailFBArea);
 
     return(XAAInit(pScreen, infoPtr));
 }
@@ -620,6 +625,7 @@ BladeSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
     BLADE_OUT(0x210C, ((y+h-1)&0xfff)<<16 | ((x+w-1)&0xfff));
 }
 
+#if 0
 static void 
 BladeSetupForColor8x8PatternFill(ScrnInfoPtr pScrn, 
 					   int patternx, int patterny, 
@@ -657,6 +663,7 @@ BladeSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn,
     TGUI_COMMAND(GE_BLT);
     CHECKCLIPPING;
 }
+#endif
 
 static void BladeSetupForImageWrite(	
    ScrnInfoPtr pScrn,

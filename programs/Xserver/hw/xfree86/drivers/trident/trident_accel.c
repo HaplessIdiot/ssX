@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.20 2001/01/14 21:36:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.21 2001/09/23 18:03:26 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -71,12 +71,14 @@ static void TridentSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 static void TridentSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, int x, int y, 
 				int w, int h);
+#if 0
 static void TridentSetupForColor8x8PatternFill(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, 
 				int rop, unsigned int planemask, int trans_col);
 static void TridentSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, int x, int y, 
 				int w, int h);
+#endif
 static void TridentSetupForScanlineCPUToScreenColorExpandFill(
 				ScrnInfoPtr pScrn,
 				int fg, int bg, int rop, 
@@ -115,16 +117,29 @@ TridentAccelInit(ScreenPtr pScreen)
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     BoxRec AvailFBArea;
 
+    AvailFBArea.x1 = 0;
+    AvailFBArea.y1 = 0;
+    AvailFBArea.x2 = pScrn->displayWidth;
+    AvailFBArea.y2 = (pTrident->FbMapSize - 4096) / (pScrn->displayWidth *
+					    pScrn->bitsPerPixel / 8);
+
+    if (AvailFBArea.y2 > 2047) AvailFBArea.y2 = 2047;
+
+    xf86InitFBManager(pScreen, &AvailFBArea);
+
+    if (pTrident->NoAccel)
+	return FALSE;
+
     pTrident->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
-
-    pTrident->InitializeAccelerator = TridentInitializeAccelerator;
-    TridentInitializeAccelerator(pScrn);
 
     if (!(pTrident->Chipset == TGUI9440AGi && pScrn->bitsPerPixel > 8)) 
     	infoPtr->Flags = PIXMAP_CACHE |
 		     OFFSCREEN_PIXMAPS |
 		     LINEAR_FRAMEBUFFER;
+
+    pTrident->InitializeAccelerator = TridentInitializeAccelerator;
+    TridentInitializeAccelerator(pScrn);
 
     infoPtr->PixmapCacheFlags = DO_NOT_BLIT_STIPPLES;
  
@@ -201,16 +216,6 @@ TridentAccelInit(ScreenPtr pScreen)
 			TridentSubsequentScanlineCPUToScreenColorExpandFill;
     infoPtr->SubsequentColorExpandScanline = 
 			TridentSubsequentColorExpandScanline;
-
-    AvailFBArea.x1 = 0;
-    AvailFBArea.y1 = 0;
-    AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = (pTrident->FbMapSize - 4096) / (pScrn->displayWidth *
-					    pScrn->bitsPerPixel / 8);
-
-    if (AvailFBArea.y2 > 2047) AvailFBArea.y2 = 2047;
-
-    xf86InitFBManager(pScreen, &AvailFBArea);
 
     return(XAAInit(pScreen, infoPtr));
 }
@@ -552,6 +557,7 @@ TridentSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
     TridentSync(pScrn);
 }
 
+#if 0
 static void 
 TridentSetupForColor8x8PatternFill(ScrnInfoPtr pScrn, 
 					   int patternx, int patterny, 
@@ -592,6 +598,7 @@ TridentSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn,
     TGUI_COMMAND(GE_BLT);
     TridentClearSync(pScrn);
 }
+#endif
 
 static void
 TridentSetupForScanlineCPUToScreenColorExpandFill(

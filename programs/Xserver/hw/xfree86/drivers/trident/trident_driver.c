@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.143 2001/09/23 18:03:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.144 2001/09/23 18:15:49 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -349,8 +349,8 @@ static int ClockLimit24bpp[] = {
 	25180,
 	25180,
 	25180,
-	70000,
-	70000,
+	40000,
+	40000,
 	70000,
 	85000,
 	70000,
@@ -391,8 +391,8 @@ static int ClockLimit32bpp[] = {
 	25180,
 	25180,
 	25180,
-	70000,
-	70000,
+	40000,
+	40000,
 	70000,
 	85000,
 	70000,
@@ -1040,7 +1040,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     int vgaIOBase;
     float mclk;
     double real;
-    int i, NoClocks;
+    int i, NoClocks = 16;
     CARD8 revision;
     ClockRangePtr clockRanges;
     char *mod = NULL;
@@ -2690,22 +2690,20 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
-    if (!pTrident->NoAccel) {
-	if (Is3Dchip) {
-	    if ((pTrident->Chipset == CYBERBLADEI7) ||
-	        (pTrident->Chipset == CYBERBLADEI7D) ||
-	        (pTrident->Chipset == CYBERBLADEI1) ||
-	        (pTrident->Chipset == CYBERBLADEI1D) ||
-	        (pTrident->Chipset == CYBERBLADEAI1) ||
-	        (pTrident->Chipset == CYBERBLADEAI1D) ||
-	        (pTrident->Chipset == CYBERBLADEE4) ||
-	        (pTrident->Chipset == BLADE3D))
+    if (Is3Dchip) {
+	if ((pTrident->Chipset == CYBERBLADEI7) ||
+	    (pTrident->Chipset == CYBERBLADEI7D) ||
+	    (pTrident->Chipset == CYBERBLADEI1) ||
+	    (pTrident->Chipset == CYBERBLADEI1D) ||
+	    (pTrident->Chipset == CYBERBLADEAI1) ||
+	    (pTrident->Chipset == CYBERBLADEAI1D) ||
+	    (pTrident->Chipset == CYBERBLADEE4) ||
+	    (pTrident->Chipset == BLADE3D))
 		BladeAccelInit(pScreen);
 	    else
 	    	ImageAccelInit(pScreen);
-	} else {
-	    	TridentAccelInit(pScreen);
-        }
+    } else {
+    	TridentAccelInit(pScreen);
     }
 
     miInitializeBackingStore(pScreen);
@@ -2771,7 +2769,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn->fbOffset = 0;
 
 #ifdef XvExtension
-    if (pTrident->Chipset >= CYBER9397)
+    if (pTrident->Chipset >= TGUI9660)
 	TRIDENTInitVideo(pScreen);
 #endif
 
