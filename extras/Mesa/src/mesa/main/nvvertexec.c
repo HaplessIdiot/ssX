@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.0.1
