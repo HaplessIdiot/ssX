@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.51 1996/09/01 04:15:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.52 1996/09/01 12:29:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -467,12 +467,14 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		    outb(vgaCRReg, SKB4_WinAdd >> 8);
 		    outb(vgaCRIndex, 0x5a);
 		    outb(vgaCRReg, SKB4_WinAdd & 0xff);
+		    addr = SKB4_WinAdd << 16;
 		    break;
 		case NECWAB:
 		    outb(vgaCRIndex, 0x59);
 		    outb(vgaCRReg, 0x00);
 		    outb(vgaCRIndex, 0x5a);
 		    outb(vgaCRReg, NEC_WinAdd );
+		    addr = NEC_WinAdd << 16;
 		    break;
 		default:
 		    outb(vgaCRIndex, 0x59);
@@ -796,8 +798,8 @@ s3EnterLeaveVT(enter, screen_idx)
    }
 
    if (enter) {
-#ifdef PC98_GA968
-	s3ConnectPCI(PCI_S3_VENDOR_ID, PCI_968);
+#ifdef PC98
+      s3EnterLeaveMachdep(S3PC98SERVER_ENTER);
 #endif
       xf86MapDisplay(screen_idx, VGA_REGION);
       if (s3VideoMem != vgaBase)
@@ -869,8 +871,8 @@ s3EnterLeaveVT(enter, screen_idx)
 	s3EnableLinear();
       }
 #endif
-#ifdef PC98_GA968
-   s3DisconnectPCI(PCI_S3_VENDOR_ID, PCI_968);
+#ifdef PC98
+   s3EnterLeaveMachdep(S3PC98SERVER_LEAVE);
 #endif
    }
 }
