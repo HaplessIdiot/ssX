@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/18 1996/01/16 16:08:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.42 1996/10/08 12:23:12 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.43 1996/10/10 14:03:53 dawes Exp $
 
 
 
@@ -313,5 +313,8 @@ InstallLinkKitNonExecFile(XF86_AGX.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_W32.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_I128.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_TGA.c,$(LINKKITDIR))
+InstallLinkKitNonExecFile(cfb16.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(cfb24.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(cfb32.h,$(LINKKITDIR)/include)
 
 DependTarget()
