@@ -123,6 +123,12 @@ Default: off.
 .BI "Option \*qVideoKey\*q \*q" integer \*q
 This sets the default pixel value for the YUV video overlay key.
 Default: undefined.
+.TP
+.BI "Option \*qTexturedVideo\*q \*q" boolean \*q
+This has XvImage support use the texture engine rather than the video overlay.
+This option is only supported by the G200 and G400, and only in 16 and 32 
+bits per pixel.
+Default: off.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
