@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.12 2002/01/10 19:05:44 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.14 2002/01/17 09:57:29 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -1792,9 +1792,8 @@ void SiSDisableBridge(UShort  BaseAddr)
 void SiSDisableBridge301(UShort BaseAddr)  /* TW: needed for external X driver using VESA */
 {
   UChar   temp3,part2_02,part2_05;
-  UShort  Part2Port, Part1Port=0;
+  UShort  Part2Port;
   Part2Port=BaseAddr+IND_SIS_CRT2_PORT_10;
-  Part1Port=BaseAddr+IND_SIS_CRT2_PORT_04;
 
     part2_02=(UChar)SiSGetReg1(Part2Port,0x02);
     part2_05=(UChar)SiSGetReg1(Part2Port,0x05);
@@ -1835,6 +1834,7 @@ void SiSDisableBridgeLVDS(UShort BaseAddr)	/* TW: needed for external X driver u
 {
     UShort  Part2Port,Part1Port=0;
     Part2Port=BaseAddr+IND_SIS_CRT2_PORT_10;
+    Part1Port=BaseAddr+IND_SIS_CRT2_PORT_04;
 
     DisableLockRegs();
     DisableCRT2();
@@ -4184,6 +4184,7 @@ void SiSEnableBridgeLVDS(UShort BaseAddr)
     EnableCRT2();
     SiSUnLockCRT2(BaseAddr);
     /* TW: new 10/2/01 */
+    SetRegANDOR(Part1Port,0x02,~0x040,0x0);
     if (BridgeInSlave ()) {
 	SetRegANDOR (Part1Port, 0x01, 0x1F, 0x00);
     } else {

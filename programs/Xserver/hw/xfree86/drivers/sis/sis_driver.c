@@ -27,7 +27,7 @@
  *
  *  Fixes for 630 chipsets: Thomas Winischhofer.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.75 2002/01/10 20:56:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.77 2002/01/17 09:57:30 eich Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -195,27 +195,24 @@ int sis2Reg32MMIO[]={0x8200,0x8204,0x8208,0x820C,0x8210,0x8214,0x8218,0x821C,
 /* TW: The following was re-included because there are BIOSes out there that
  *     report incomplete mode lists. These are BIOS versions <2.01.2x
  *     NOTE: Mode numbers for 1280, 1600 and 1920 are unofficial but they work here!
+ *     TW: VBE 3.0 on SiS630 does not support 24 fpp modes (only 32fpp when depth = 24);
  */
 				       /*     8      16     24    32   */
-/* TW: VBE 3.0 on SiS630 does not support 24 fpp modes (only 32fpp when depth = 24);
- */
 static UShort  VESAModeIndex_640x480[]   = {0x100, 0x111, 0x112, 0x13a};
 static UShort  VESAModeIndex_720x480[]   = {0x000, 0x000, 0x000, 0x000};
 static UShort  VESAModeIndex_720x576[]   = {0x000, 0x000, 0x000, 0x000};
 static UShort  VESAModeIndex_800x600[]   = {0x103, 0x114, 0x115, 0x13b};
 static UShort  VESAModeIndex_1024x768[]  = {0x105, 0x117, 0x118, 0x13c};
-UShort  VESAModeIndex_1280x1024[] = {0x107, 0x11a, 0x11b, 0x13d};
-UShort  VESAModeIndex_1600x1200[] = {0x13e, 0x13f, 0x000, 0x140};
-UShort  VESAModeIndex_1920x1440[] = {0x141, 0x142, 0x000, 0x143};
+static UShort  VESAModeIndex_1280x1024[] = {0x107, 0x11a, 0x11b, 0x13d};
+static UShort  VESAModeIndex_1600x1200[] = {0x13e, 0x13f, 0x000, 0x140};
+static UShort  VESAModeIndex_1920x1440[] = {0x141, 0x142, 0x000, 0x143};
 
 static struct _sis_vrate {
     CARD16 idx;
     CARD16 xres;
     CARD16 yres;
     CARD16 refresh;
-}
-
-sisx_vrate[] = {
+} sisx_vrate[] = {
     {1, 640, 480, 60},  {2, 640, 480, 72}, {3, 640, 480, 75},  {4, 640, 480, 85},
     {5, 640, 480, 100}, {6, 640, 480, 120}, {7, 640, 480, 160}, {8, 640, 480, 200},
     {1, 720, 480, 60}, {1, 720, 576, 50},
