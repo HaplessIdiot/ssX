@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.15 2001/04/07 01:39:39 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.16 2002/02/22 21:32:53 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -38,7 +38,7 @@
 #include "glxclient.h"
 #include <extutil.h>
 #include <Xext.h>
-#include <strings.h>
+#include <string.h>
 #include "glapi.h"
 #ifdef GLX_DIRECT_RENDERING
 #include "indirect_init.h"
