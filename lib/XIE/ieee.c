@@ -64,6 +64,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "XIElibint.h"
 #include <math.h>
