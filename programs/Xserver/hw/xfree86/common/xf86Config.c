@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.253 2001/11/30 12:11:53 eich Exp $ */
+/* $XFree86: xf86Config.c,v 3.254 2002/01/15 01:56:55 dawes Exp $ */
 
 
 /*
@@ -1023,7 +1023,7 @@ configInputKbd(IDevPtr inputp)
 			 " the \"wskbd\" keyboard protocol");
 	 return FALSE;
      }
-     xf86Info.kbdFd = open(s, O_RDONLY | O_NONBLOCK | O_EXCL);
+     xf86Info.kbdFd = open(s, O_RDWR | O_NONBLOCK | O_EXCL);
      if (xf86Info.kbdFd == -1) {
        xf86ConfigError("cannot open \"%s\"", s);
        xfree(s);
