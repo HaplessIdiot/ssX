@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.72 2003/04/03 22:44:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.74 2003/07/07 15:34:26 eich Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1057,6 +1057,11 @@ MouseReadInput(InputInfoPtr pInfo)
 
     while ((c = XisbRead(pMse->buffer)) >= 0) {
 	u = (unsigned char)c;
+
+#if defined (EXTMOUSEDEBUG) || defined (MOUSEDATADEBUG)
+	ErrorF("mouse byte: %2.2x\n",u);
+#endif
+
 #if 1
 	/* if we do autoprobing collect the data */
 	if (pMse->collectData && pMse->autoProbe)

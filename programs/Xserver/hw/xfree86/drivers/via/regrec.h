@@ -21,38 +21,45 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/regrec.h,v 1.1tsi Exp $ */
-/*#define   XV_DEBUG	  1*/	  /* write log msg to /var/log/XFree86.0.log */
-
-#ifdef XV_DEBUG
-#  define DBG_DD(x) (x)
-#else
-#  define DBG_DD(x)
-#endif
 
 #ifndef __REGREC
 #define __REGREC
-#define VIDREGREC_RESET_COUNTER	  0
-#define VIDREGREC_SAVE_REGISTER	  VIDREGREC_RESET_COUNTER +1
+
+/*#define   XV_DEBUG      1*/     /* write log msg to /var/log/XFree86.0.log */
+
+#ifdef XV_DEBUG
+# define DBG_DD(x) (x)
+#else
+# define DBG_DD(x)
+#endif
+
+#define VIDREGREC_RESET_COUNTER   0
+#define VIDREGREC_SAVE_REGISTER   VIDREGREC_RESET_COUNTER +1
 #define VIDREGREC_FLUSH_REGISTER  VIDREGREC_RESET_COUNTER +2
 #define VIDEO_REG_NUM  100
 
-#define IN_HQV_FIRE	(*((CARD32 volatile *)(lpVidMEMIO+HQV_CONTROL))&HQV_IDLE)
-#define IN_VIDEO_FIRE	(*((CARD32 volatile *)(lpVidMEMIO+V_COMPOSE_MODE))&V1_COMMAND_FIRE)
-#define IN_HQV_FLIP	(*((CARD32 volatile *)(lpVidMEMIO+HQV_CONTROL))&HQV_FLIP_STATUS)
-#define IN_VIDEO_DISPLAY     (*((CARD32 volatile *)(lpVidMEMIO+V_FLAGS))&VBI_STATUS)
+#define IN_HQV_FIRE     (*((unsigned long volatile *)(lpVidMEMIO+HQV_CONTROL))&HQV_IDLE)
+#define IN_VIDEO_FIRE   (*((unsigned long volatile *)(lpVidMEMIO+V_COMPOSE_MODE))&V1_COMMAND_FIRE)
+#define IN_HQV_FLIP     (*((unsigned long volatile *)(lpVidMEMIO+HQV_CONTROL))&HQV_FLIP_STATUS) 
+#define IN_VIDEO_DISPLAY     (*((unsigned long volatile *)(lpVidMEMIO+V_FLAGS))&VBI_STATUS) 
 
+/*#define IN_DISPLAY      (VIDInD(V_FLAGS) & 0x200)
+//#define IN_VBLANK       (!IN_DISPLAY)
+*/
 typedef struct
 {
-  CARD32 dwIndex;
-  CARD32 dwData;
+  unsigned long dwIndex;
+  unsigned long dwData;
 }VIDEOREGISTER;
 
-__inline void WaitVideoCommandFire(void);
-__inline void WaitHQVFlip(void);
-__inline void WaitHQVFlipClear(CARD32 dwData);
-__inline void WaitVBI(void);
-__inline void WaitHQVDone(void);
-__inline void Macro_VidREGFlush(void);
-__inline void Macro_VidREGRec(CARD32 dwAction, CARD32 dwIndex, CARD32 dwData);
+__inline void viaWaitHQVIdle(void);
+__inline void viaWaitVideoCommandFire(void);
+__inline void viaWaitHQVFlip(void);
+__inline void viaWaitHQVFlipClear(unsigned long dwData);
+__inline void viaWaitVBI(void);
+__inline void viaWaitHQVDone(void);
+__inline void viaMacro_VidREGFlush(void);
+__inline void viaMacro_VidREGRec(unsigned long dwAction, unsigned long dwIndex, unsigned long dwData);
+__inline void viaMacro_VidREGFlushVPE(void);
+__inline void viaMacro_VidREGRecVPE(unsigned long dwAction, unsigned long dwIndex, unsigned long dwData);
 #endif /*end of __REGREC*/

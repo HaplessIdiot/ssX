@@ -209,6 +209,13 @@ IconMgr *iconp;
     FetchWmProtocols (tmp_win);
     FetchWmColormapWindows (tmp_win);
 
+    if (name == NULL)
+	tmp_win->name = strdup(NoName);
+    else {
+      tmp_win->name = strdup(name);
+      free(name);
+    }
+
     if (GetWindowConfig (tmp_win,
 	&saved_x, &saved_y, &saved_width, &saved_height,
 	&restore_iconified, &restore_icon_info_present,
@@ -277,12 +284,6 @@ IconMgr *iconp;
     tmp_win->transient = Transient(tmp_win->w, &tmp_win->transientfor);
 
     tmp_win->nameChanged = 0;
-    if (name == NULL)
-	tmp_win->name = strdup(NoName);
-    else {
-      tmp_win->name = strdup(name);
-      free(name);
-    }
     if (tmp_win->class.res_name == NULL)
     	tmp_win->class.res_name = NoName;
     if (tmp_win->class.res_class == NULL)

@@ -48,9 +48,9 @@ static int
 xf86RandRModeRefresh (DisplayModePtr mode)
 {
     if (mode->VRefresh)
-	return (int) mode->VRefresh;
+	return (int) (mode->VRefresh + 0.5);
     else
-	return (int) (mode->Clock * 1000.0 / mode->HTotal / mode->VTotal);
+	return (int) (mode->Clock * 1000.0 / mode->HTotal / mode->VTotal + 0.5);
 }
 
 static Bool

@@ -9,7 +9,7 @@
 ; be TAB, not a nice looking number of spaces! Don't try to beautify this
 ; file!!!!
 ;
-; $XFree86: xc/config/cf/os2def.db,v 1.2 2003/03/25 04:18:04 dawes Exp $
+; $XFree86: xc/config/cf/os2def.db,v 1.4 2003/06/18 16:17:33 eich Exp $
 ;
 LIBRARY	PEX5 PEX5
 PEX5	PEXAccumulateState	1
@@ -5104,6 +5104,7 @@ frtype	FT_Get_Next_Char	153
 frtype	FT_Get_PS_Font_Info	154
 frtype	FT_Has_PS_Glyph_Names	155
 frtype	FT_Get_Name_Index	156
+frtype	FT_Get_BDF_Property	157
 LIBRARY	XTrap	XTrap
 XTrap	XEAddEventCB	1
 XTrap	XEAddEventCBs	2

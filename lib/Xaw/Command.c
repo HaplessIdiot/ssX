@@ -249,6 +249,8 @@ XawCommandInitialize(Widget request, Widget cnew,
     CommandWidget cbw = (CommandWidget)cnew;
     int shape_event_base, shape_error_base;
 
+    if (!cbw->label.font) XtError("Aborting: no font found\n");
+    
     if (cbw->command.shape_style != XawShapeRectangle &&
 	!XShapeQueryExtension(XtDisplay(cnew), &shape_event_base,
 			      &shape_error_base))

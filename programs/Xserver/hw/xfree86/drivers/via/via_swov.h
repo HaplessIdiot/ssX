@@ -21,26 +21,33 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_swov.h,v 1.1tsi Exp $ */
-/*#define   XV_DEBUG	  1*/	  /* write log msg to /var/log/XFree86.0.log */
+
+#ifndef _VIA_SWOV_H
+#define _VIA_SWOV_H
+
+/*#define   XV_DEBUG      1*/     /* write log msg to /var/log/XFree86.0.log */
 
 #ifdef XV_DEBUG
-#  define DBG_DD(x) (x)
+# define DBG_DD(x) (x)
 #else
-#  define DBG_DD(x)
+# define DBG_DD(x)
 #endif
 
 #include "ddmpeg.h"
 #include "via_xvpriv.h"
 
 /* Definition for VideoStatus */
-#define VIDEO_NULL		0x00000000
+#define VIDEO_NULL              0x00000000
+ 
+unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurfaceDesc);
+unsigned long VIAVidLockSurface(ScrnInfoPtr pScrn, LPDDLOCK lpLock);
+unsigned long VIAVidDestroySurface(ScrnInfoPtr pScrn,  LPDDSURFACEDESC lpDDSurfaceDesc);
 
-void PassViaInfo(ScrnInfoPtr pScrnOV, viaPortPrivPtr pPrivOV);
+unsigned long Upd_MPEG(ScrnInfoPtr pScrn, unsigned long dwVideoFlag,unsigned long dwStartAddr,RECTL rSrc,RECTL rDest,unsigned long dwSrcPitch,
+                 unsigned long dwOriSrcWidth,unsigned long dwOriSrcHeight,LPDDPIXELFORMAT lpDPFsrc,
+                 unsigned long dwDeinterlaceMode,unsigned long dwColorKey,unsigned long dwChromaKey,
+                 unsigned long dwKeyLow,unsigned long dwKeyHigh,unsigned long dwChromaLow,unsigned long dwChromaHigh);
 
-CARD32 VIAVidCreateSurface(LPSURFACEPARAM lpSurfaceParam);
-CARD32 VIAVidLockSurface(LPLOCKPARAM lpLock);
-CARD32 VIAVidUpdateOverlay(VIAPtr pVia, LPUPDATEOVERLAYREC lpUpdate);
-CARD32 VIAVidDestroySurface( LPSURFACEPARAM lpSurfaceParam);
-
-
+unsigned long VIAVidUpdateOverlay(ScrnInfoPtr pScrn, LPDDUPDATEOVERLAY lpUpdate);
+unsigned long VIAVidAdjustFrame(ScrnInfoPtr pScr, LPADJUSTFRAME lpAdjustFrame);
+#endif /* _VIA_SWOV_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.16 2003/02/04 15:21:18 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.18 2003/06/12 14:12:33 eich Exp $ */
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
  *
@@ -34,6 +34,11 @@
 #include "xf86_ansic.h"
 #include "mouse.h"
 #include "mousePriv.h"
+
+#ifdef MOUSEINITDEBUG
+# define DEBUG
+# define EXTMOUSEDEBUG
+#endif
 
 /* serial PnP ID string */
 typedef struct {

@@ -526,6 +526,8 @@ XawLabelInitialize(Widget request, Widget cnew,
 {
     LabelWidget lw = (LabelWidget)cnew;
 
+    if (!lw->label.font) XtError("Aborting: no font found\n");
+    
     if (lw->label.label == NULL) 
 	lw->label.label = XtNewString(lw->core.name);
     else

@@ -22,6 +22,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.2 2003/06/30 16:52:57 eich Exp $ */
+
+/*************************************************************************
+ *
+ *  File:       via_accel.c
+ *  Content:    2D acceleration function for VIA/S3G UniChrom
+ *
+ ************************************************************************/
+
 #include "Xarch.h"
 #include "xaalocal.h"
 #include "xaarop.h"
@@ -240,60 +248,83 @@ VIAInitialize2DEngine(ScrnInfoPtr pScrn)
     VIASETREG(0x440, 0x00000000);
 
     if (pVia->VQStart != 0) {
-	/* Enable VQ */
-	dwVQStartAddr = pVia->VQStart;
-	dwVQEndAddr = pVia->VQEnd;
-	dwVQStartL = 0x50000000 | (dwVQStartAddr & 0xFFFFFF);
-	dwVQEndL = 0x51000000 | (dwVQEndAddr & 0xFFFFFF);
-	dwVQStartEndH = 0x52000000 | ((dwVQStartAddr & 0xFF000000) >> 24) |
-			((dwVQEndAddr & 0xFF000000) >> 16);
-	dwVQLen = 0x53000000 | (VIA_VQ_SIZE >> 3);
+        /* Enable VQ */
+        dwVQStartAddr = pVia->VQStart;
+        dwVQEndAddr = pVia->VQEnd;
+        dwVQStartL = 0x50000000 | (dwVQStartAddr & 0xFFFFFF);
+        dwVQEndL = 0x51000000 | (dwVQEndAddr & 0xFFFFFF);
+        dwVQStartEndH = 0x52000000 | ((dwVQStartAddr & 0xFF000000) >> 24) |
+                        ((dwVQEndAddr & 0xFF000000) >> 16);
+        dwVQLen = 0x53000000 | (VIA_VQ_SIZE >> 3);
 
-	VIASETREG(0x43c, 0x00fe0000);
-	VIASETREG(0x440, 0x080003fe);
-	VIASETREG(0x440, 0x0a00027c);
-	VIASETREG(0x440, 0x0b000260);
-	VIASETREG(0x440, 0x0c000274);
-	VIASETREG(0x440, 0x0d000264);
-	VIASETREG(0x440, 0x0e000000);
-	VIASETREG(0x440, 0x0f000020);
-	VIASETREG(0x440, 0x1000027e);
-	VIASETREG(0x440, 0x110002fe);
-	VIASETREG(0x440, 0x200f0060);
+        VIASETREG(0x43c, 0x00fe0000);
+        VIASETREG(0x440, 0x080003fe);
+        VIASETREG(0x440, 0x0a00027c);
+        VIASETREG(0x440, 0x0b000260);
+        VIASETREG(0x440, 0x0c000274);
+        VIASETREG(0x440, 0x0d000264);
+        VIASETREG(0x440, 0x0e000000);
+        VIASETREG(0x440, 0x0f000020);
+        VIASETREG(0x440, 0x1000027e);
+        VIASETREG(0x440, 0x110002fe);
+        VIASETREG(0x440, 0x200f0060);
 
-	VIASETREG(0x440, 0x00000006);
-	VIASETREG(0x440, 0x40008c0f);
-	VIASETREG(0x440, 0x44000000);
-	VIASETREG(0x440, 0x45080c04);
-	VIASETREG(0x440, 0x46800408);
+        VIASETREG(0x440, 0x00000006);
+        VIASETREG(0x440, 0x40008c0f);
+        VIASETREG(0x440, 0x44000000);
+        VIASETREG(0x440, 0x45080c04);
+        VIASETREG(0x440, 0x46800408);
 
-	VIASETREG(0x440, dwVQStartEndH);
-	VIASETREG(0x440, dwVQStartL);
-	VIASETREG(0x440, dwVQEndL);
-	VIASETREG(0x440, dwVQLen);
+        VIASETREG(0x440, dwVQStartEndH);
+        VIASETREG(0x440, dwVQStartL);
+        VIASETREG(0x440, dwVQEndL);
+        VIASETREG(0x440, dwVQLen);
     }
     else {
-	/* Diable VQ */
-	VIASETREG(0x43c, 0x00fe0000);
-	VIASETREG(0x440, 0x00000004);
-	VIASETREG(0x440, 0x40008c0f);
-	VIASETREG(0x440, 0x44000000);
-	VIASETREG(0x440, 0x45080c04);
-	VIASETREG(0x440, 0x46800408);
+        /* Diable VQ */
+        VIASETREG(0x43c, 0x00fe0000);
+        VIASETREG(0x440, 0x00000004);
+        VIASETREG(0x440, 0x40008c0f);
+        VIASETREG(0x440, 0x44000000);
+        VIASETREG(0x440, 0x45080c04);
+        VIASETREG(0x440, 0x46800408);
     }
 
     dwGEMode = 0;
 
     switch (pScrn->bitsPerPixel) {
     case 16:
-	dwGEMode |= VIA_GEM_16bpp;
-	break;
+        dwGEMode |= VIA_GEM_16bpp;
+        break;
     case 32:
-	dwGEMode |= VIA_GEM_32bpp;
+        dwGEMode |= VIA_GEM_32bpp;
     default:
-	dwGEMode |= VIA_GEM_8bpp;
-	break;
+        dwGEMode |= VIA_GEM_8bpp;
+        break;
     }
+
+#if 0
+    switch (pScrn->displayWidth) {
+    case 800:
+        dwGEMode |= VIA_GEM_800;
+        break;
+    case 1024:
+        dwGEMode |= VIA_GEM_1024;
+        break;
+    case 1280:
+        dwGEMode |= VIA_GEM_1280;
+        break;
+    case 1600:
+        dwGEMode |= VIA_GEM_1600;
+        break;
+    case 2048:
+        dwGEMode |= VIA_GEM_2048;
+        break;
+    default:
+        dwGEMode |= VIA_GEM_640;
+        break;
+    }
+#endif
 
     /* Set BPP and Pitch */
     VIASETREG(VIA_REG_GEMODE, dwGEMode);
@@ -302,8 +333,8 @@ VIAInitialize2DEngine(ScrnInfoPtr pScrn)
     VIASETREG(VIA_REG_SRCBASE, 0x0);
     VIASETREG(VIA_REG_DSTBASE, 0x0);
     VIASETREG(VIA_REG_PITCH, VIA_PITCH_ENABLE |
-	      ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
-	      (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
+              ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
+              (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
 }
 
 
@@ -312,47 +343,62 @@ VIAInitialize2DEngine(ScrnInfoPtr pScrn)
 Bool
 VIAInitAccel(ScreenPtr pScreen)
 {
-    ScrnInfoPtr	    pScrn = xf86Screens[pScreen->myNum];
-    VIAPtr	    pVia = VIAPTR(pScrn);
+    ScrnInfoPtr     pScrn = xf86Screens[pScreen->myNum];
+    VIAPtr          pVia = VIAPTR(pScrn);
     XAAInfoRecPtr   xaaptr;
+    BoxRec AvailFBArea;
+
+    pVia->VQStart = 0;
+    if (((pVia->FBFreeEnd - pVia->FBFreeStart) >= VIA_VQ_SIZE) &&
+        pVia->VQEnable) {
+        /* Reserved space for VQ */
+        pVia->VQStart = pVia->FBFreeEnd - VIA_VQ_SIZE;
+        pVia->VQEnd = pVia->VQStart + VIA_VQ_SIZE - 1;
+        pVia->FBFreeEnd -= VIA_VQ_SIZE;
+    }
+    if (pVia->hwcursor) {
+		pVia->FBFreeEnd -= VIA_CURSOR_SIZE;
+	}
 
     VIAInitialize2DEngine(pScrn);
 
     if (pScrn->depth == 8) {
-	pVia->PlaneMask = 0xFF;
+        pVia->PlaneMask = 0xFF;
     }
     else if (pScrn->depth == 15) {
-	pVia->PlaneMask = 0x7FFF;
+        pVia->PlaneMask = 0x7FFF;
     }
     else if (pScrn->depth == 16) {
-	pVia->PlaneMask = 0xFFFF;
+        pVia->PlaneMask = 0xFFFF;
     }
     else if (pScrn->depth == 24) {
-	pVia->PlaneMask = 0xFFFFFF;
+        pVia->PlaneMask = 0xFFFFFF;
     }
 
     /* General acceleration flags */
     if (!(xaaptr = pVia->AccelInfoRec = XAACreateInfoRec()))
-	return FALSE;
+        return FALSE;
 
     xaaptr->Flags = PIXMAP_CACHE |
-		    OFFSCREEN_PIXMAPS |
-		    LINEAR_FRAMEBUFFER |
-		    MICROSOFT_ZERO_LINE_BIAS |
-		    0;
+                    OFFSCREEN_PIXMAPS |
+                    LINEAR_FRAMEBUFFER |
+                    MICROSOFT_ZERO_LINE_BIAS |
+                    0;
 
     if (pScrn->bitsPerPixel == 8)
-	xaaptr->CachePixelGranularity = 128;
+        xaaptr->CachePixelGranularity = 128;
 
     /* Clipping */
     xaaptr->SetClippingRectangle = VIASetClippingRectangle;
     xaaptr->DisableClipping = VIADisableClipping;
     xaaptr->ClippingFlags = HARDWARE_CLIP_SOLID_FILL |
-			    HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY |
-			    HARDWARE_CLIP_MONO_8x8_FILL |
-			    HARDWARE_CLIP_COLOR_8x8_FILL |
-			    HARDWARE_CLIP_SCREEN_TO_SCREEN_COLOR_EXPAND |
-			    0;
+                            /*HARDWARE_CLIP_SOLID_LINE |*/
+                            /*HARDWARE_CLIP_DASHED_LINE |*/
+                            HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY |
+                            HARDWARE_CLIP_MONO_8x8_FILL |
+                            HARDWARE_CLIP_COLOR_8x8_FILL |
+                            HARDWARE_CLIP_SCREEN_TO_SCREEN_COLOR_EXPAND |
+                            0;
 
     xaaptr->Sync = VIAAccelSync;
 
@@ -369,41 +415,37 @@ VIAInitAccel(ScreenPtr pScreen)
     /* Mono 8x8 pattern fills */
     xaaptr->SetupForMono8x8PatternFill = VIASetupForMono8x8PatternFill;
     xaaptr->SubsequentMono8x8PatternFillRect =
-	    VIASubsequentMono8x8PatternFillRect;
+            VIASubsequentMono8x8PatternFillRect;
     xaaptr->Mono8x8PatternFillFlags = NO_PLANEMASK |
-				      HARDWARE_PATTERN_PROGRAMMED_BITS |
-				      HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
+                                      HARDWARE_PATTERN_PROGRAMMED_BITS |
+                                      HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
 				      ROP_NEEDS_SOURCE |
-				      BIT_ORDER_IN_BYTE_MSBFIRST |
-				      0;
+                                      BIT_ORDER_IN_BYTE_MSBFIRST |
+                                      0;
 
     /* Color 8x8 pattern fills */
     xaaptr->SetupForColor8x8PatternFill = VIASetupForColor8x8PatternFill;
     xaaptr->SubsequentColor8x8PatternFillRect =
-	    VIASubsequentColor8x8PatternFillRect;
+            VIASubsequentColor8x8PatternFillRect;
     xaaptr->Color8x8PatternFillFlags = NO_PLANEMASK |
-				       NO_TRANSPARENCY |
-				       HARDWARE_PATTERN_PROGRAMMED_BITS |
-				       HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
+                                       NO_TRANSPARENCY |
+                                       HARDWARE_PATTERN_PROGRAMMED_BITS |
+                                       HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
 				       ROP_NEEDS_SOURCE |
-				       0;
+                                       0;
 
-    /* setting the mono source linear address
-     * to the register: Source Map Base Address. */
-
-    /* This function is only used in drawing check box when
-     * use RedHat 7.2 Raleigh Theme. The behavior is a little strange, so we
-     * temporarily disable this function.
-     */
+    /*=* This function is only used in drawing check box when use RedHat 7.2
+     * Raleigh Theme. The behavior is a little strange, so we temporarily
+     * disable this function. *=*/
     /* Screen to Screen color expansion. */
     xaaptr->SetupForScreenToScreenColorExpandFill =
-	    VIASetupForScreenToScreenColorExpand;
+            VIASetupForScreenToScreenColorExpand;
     xaaptr->SubsequentScreenToScreenColorExpandFill =
-	    VIASubsequentScreenToScreenColorExpand;
+            VIASubsequentScreenToScreenColorExpand;
     xaaptr->ScreenToScreenColorExpandFillFlags = NO_PLANEMASK |
-						 BIT_ORDER_IN_BYTE_MSBFIRST |
+                                                 BIT_ORDER_IN_BYTE_MSBFIRST |
 						 ROP_NEEDS_SOURCE |
-					 	 0;
+						 0;
 
     /* Solid lines */
     xaaptr->SetupForSolidLine = VIASetupForSolidLine;
@@ -418,34 +460,36 @@ VIAInitAccel(ScreenPtr pScreen)
     xaaptr->DashPatternMaxLength = 8;
     xaaptr->DashedLineFlags = NO_PLANEMASK |
 			      ROP_NEEDS_SOURCE |
-			      LINE_PATTERN_POWER_OF_2_ONLY |
-			      LINE_PATTERN_MSBFIRST_LSBJUSTIFIED |
-			      0;
+                              LINE_PATTERN_POWER_OF_2_ONLY |
+                              LINE_PATTERN_MSBFIRST_LSBJUSTIFIED |
+                              0;
 
     /* CPU to Screen color expansion */
     xaaptr->ScanlineCPUToScreenColorExpandFillFlags = NO_PLANEMASK |
-						      CPU_TRANSFER_PAD_DWORD |
-						      SCANLINE_PAD_DWORD |
-						      BIT_ORDER_IN_BYTE_MSBFIRST |
-						      LEFT_EDGE_CLIPPING |
+                                                      CPU_TRANSFER_PAD_DWORD |
+                                                      SCANLINE_PAD_DWORD |
+                                                      BIT_ORDER_IN_BYTE_MSBFIRST |
+                                                      LEFT_EDGE_CLIPPING |
 						      ROP_NEEDS_SOURCE |
-						      0;
+                                                      0;
 
     xaaptr->SetupForScanlineCPUToScreenColorExpandFill =
-	    VIASetupForCPUToScreenColorExpandFill;
+            VIASetupForCPUToScreenColorExpandFill;
     xaaptr->SubsequentScanlineCPUToScreenColorExpandFill =
-	    VIASubsequentScanlineCPUToScreenColorExpandFill;
+            VIASubsequentScanlineCPUToScreenColorExpandFill;
     xaaptr->ColorExpandBase = pVia->BltBase;
     xaaptr->ColorExpandRange = VIA_MMIO_BLTSIZE;
 
     /* ImageWrite */
     xaaptr->ImageWriteFlags = NO_PLANEMASK |
-			      CPU_TRANSFER_PAD_DWORD |
-			      SCANLINE_PAD_DWORD |
-			      BIT_ORDER_IN_BYTE_MSBFIRST |
-			      LEFT_EDGE_CLIPPING |
+                              CPU_TRANSFER_PAD_DWORD |
+                              SCANLINE_PAD_DWORD |
+                              BIT_ORDER_IN_BYTE_MSBFIRST |
+                              LEFT_EDGE_CLIPPING |
 			      ROP_NEEDS_SOURCE |
-			      0;
+                              /*NO_GXCOPY |*/
+                              /*SYNC_AFTER_IMAGE_WRITE |*/
+                              0;
 
     xaaptr->SetupForImageWrite = VIASetupForImageWrite;
     xaaptr->SubsequentImageWriteRect = VIASubsequentImageWriteRect;
@@ -457,7 +501,23 @@ VIAInitAccel(ScreenPtr pScreen)
     pVia->FBFreeStart += VIA_PIXMAP_CACHE_SIZE;
 
     if (pVia->ScissB > 2047)
-	pVia->ScissB = 2047;
+        pVia->ScissB = 2047;
+
+    /*
+     * Finally, we set up the video memory space available to the pixmap
+     * cache. In this case, all memory from the end of the virtual screen
+     * to the end of the command overflow buffer can be used. If you haven't
+     * enabled the PIXMAP_CACHE flag, then these lines can be omitted.
+     */
+
+    AvailFBArea.x1 = 0;
+    AvailFBArea.y1 = 0;
+    AvailFBArea.x2 = pScrn->displayWidth;
+    AvailFBArea.y2 = (pVia->FBFreeEnd) / pVia->Bpl;
+    xf86InitFBManager(pScreen, &AvailFBArea);
+    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+					 "Using %d lines for offscreen memory.\n",
+					 AvailFBArea.y2 - pScrn->virtualY ));
 
     return XAAInit(pScreen, xaaptr);
 }
@@ -487,26 +547,26 @@ VIASetupForScreenToScreenCopy(
     int trans_color)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    cmd;
+    int     cmd;
 
     cmd = VIA_GEC_BLT | (XAACopyROP[rop] << 24);
 
     if (xdir < 0)
-	cmd |= VIA_GEC_DECX;
+        cmd |= VIA_GEC_DECX;
 
     if (ydir < 0)
-	cmd |= VIA_GEC_DECY;
+        cmd |= VIA_GEC_DECY;
 
     pVia->SavedCmd = cmd;
 
     if (trans_color != -1) {
-	/* Transparent Bitblt */
-	VIASETREG(VIA_REG_SRCCOLORKEY, trans_color);
-	VIASETREG(VIA_REG_KEYCONTROL, 0x4000);
+        /* Transparent Bitblt */
+        VIASETREG(VIA_REG_SRCCOLORKEY, trans_color);
+        VIASETREG(VIA_REG_KEYCONTROL, 0x4000);
     }
     else {
-	/* Disable Transparent Bitblt */
-	VIASETREG(VIA_REG_KEYCONTROL, 0x0);
+        /* Disable Transparent Bitblt */
+        VIASETREG(VIA_REG_KEYCONTROL, 0x0);
     }
 }
 
@@ -524,27 +584,24 @@ VIASubsequentScreenToScreenCopy(
     VIAPtr pVia = VIAPTR(pScrn);
 
     if (!w || !h)
-	return;
+        return;
 
     if (pVia->SavedCmd & VIA_GEC_DECX) {
-	x1 += (w - 1);
-	x2 += (w - 1);
+        x1 += (w - 1);
+        x2 += (w - 1);
     }
 
     if (pVia->SavedCmd & VIA_GEC_DECY) {
-	y1 += (h - 1);
-	y2 += (h - 1);
+        y1 += (h - 1);
+        y2 += (h - 1);
     }
-
-    /* command will be lost if we don't wait engine idle */
-    WaitIdle();
 
     /* Set Src and Dst base address and pitch, pitch is qword */
     VIASETREG(VIA_REG_SRCBASE, 0x0);
     VIASETREG(VIA_REG_DSTBASE, 0x0);
     VIASETREG(VIA_REG_PITCH, VIA_PITCH_ENABLE |
-	      ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
-	      (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
+              ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
+              (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
 
     VIASETREG(VIA_REG_SRCPOS, ((y1 << 16) | x1));
     VIASETREG(VIA_REG_DSTPOS, ((y2 << 16) | x2));
@@ -565,7 +622,7 @@ VIASetupForSolidFill(
     unsigned planemask)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    cmd;
+    int     cmd;
 
     cmd = VIA_GEC_BLT | VIA_GEC_FIXCOLOR_PAT | (XAAPatternROP[rop] << 24);
 
@@ -585,14 +642,14 @@ VIASubsequentSolidFillRect(
     VIAPtr pVia = VIAPTR(pScrn);
 
     if (!w || !h)
-	return;
+        return;
 
     /* Set Src and Dst base address and pitch, pitch is qword */
     VIASETREG(VIA_REG_SRCBASE, 0x0);
     VIASETREG(VIA_REG_DSTBASE, 0x0);
     VIASETREG(VIA_REG_PITCH, VIA_PITCH_ENABLE |
-	      ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
-	      (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
+              ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
+              (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
 
     VIASETREG(VIA_REG_DSTPOS, ((y << 16) | x));
     VIASETREG(VIA_REG_DIMENSION, (((h - 1) << 16) | (w - 1)));
@@ -600,6 +657,18 @@ VIASubsequentSolidFillRect(
     VIASETREG(VIA_REG_GECMD, pVia->SavedCmd);
 }
 
+
+/*
+ * The meaning of the two pattern paremeters to Setup & Subsequent for
+ * Mono8x8Patterns varies depending on the flag bits.  We specify
+ * HW_PROGRAMMED_BITS, which means our hardware can handle 8x8 patterns
+ * without caching in the frame buffer.  Thus, Setup gets the pattern bits.
+ * There is no way with BCI to rotate an 8x8 pattern, so we do NOT specify
+ * HW_PROGRAMMED_ORIGIN.  XAA wil rotate it for us and pass the rotated
+ * pattern to both Setup and Subsequent.  If we DID specify PROGRAMMED_ORIGIN,
+ * then Setup would get the unrotated pattern, and Subsequent gets the
+ * origin values.
+ */
 
 static void
 VIASetupForMono8x8PatternFill(
@@ -612,14 +681,14 @@ VIASetupForMono8x8PatternFill(
     unsigned planemask)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    cmd;
+    int     cmd;
 
     cmd = VIA_GEC_BLT | VIA_GEC_PAT_REG | VIA_GEC_PAT_MONO |
-	  (XAAPatternROP[rop] << 24);
+          (XAAPatternROP[rop] << 24);
 
     if (bg == -1) {
-	/* transparent mono pattern */
-	cmd |= VIA_GEC_MPAT_TRANS;
+        /* transparent mono pattern */
+        cmd |= VIA_GEC_MPAT_TRANS;
     }
 
     pVia->SavedCmd = cmd;
@@ -644,7 +713,7 @@ VIASubsequentMono8x8PatternFillRect(
     CARD32  dwPatOffset;
 
     if (!w || !h)
-	return;
+        return;
 
     dwPatOffset = ((patOffy & 0x7)  << 29) | ((patOffx & 0x7) << 26);
 
@@ -652,8 +721,8 @@ VIASubsequentMono8x8PatternFillRect(
     VIASETREG(VIA_REG_SRCBASE, 0x0);
     VIASETREG(VIA_REG_DSTBASE, 0x0);
     VIASETREG(VIA_REG_PITCH, VIA_PITCH_ENABLE |
-	      ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
-	      (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
+              ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
+              (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
 
     VIASETREG(VIA_REG_DSTPOS, ((y << 16) | x));
     VIASETREG(VIA_REG_DIMENSION, (((h - 1) << 16) | (w - 1)));
@@ -675,7 +744,7 @@ VIASetupForColor8x8PatternFill(
     int trans_color)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    cmd;
+    int     cmd;
 
     cmd = VIA_GEC_BLT | (XAAPatternROP[rop] << 24);
 
@@ -698,17 +767,17 @@ VIASubsequentColor8x8PatternFillRect(
     CARD32  dwPatAddr;
 
     if (!w || !h)
-	return;
+        return;
 
     dwPatAddr = (pVia->SavedPatternAddr >> 3) |
-		((patOffy & 0x7)  << 29) | ((patOffx & 0x7) << 26);
+                ((patOffy & 0x7)  << 29) | ((patOffx & 0x7) << 26);
 
     /* Set Src and Dst base address and pitch, pitch is qword */
     VIASETREG(VIA_REG_SRCBASE, 0x0);
     VIASETREG(VIA_REG_DSTBASE, 0x0);
     VIASETREG(VIA_REG_PITCH, VIA_PITCH_ENABLE |
-	      ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
-	      (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
+              ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
+              (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
 
     VIASETREG(VIA_REG_DSTPOS, ((y << 16) | x));
     VIASETREG(VIA_REG_DIMENSION, (((h - 1) << 16) | (w - 1)));
@@ -725,13 +794,13 @@ VIASetupForCPUToScreenColorExpandFill(
     unsigned planemask)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    cmd;
+    int     cmd;
 
     cmd = VIA_GEC_BLT | VIA_GEC_SRC_SYS | VIA_GEC_SRC_MONO |
-	  (XAACopyROP[rop] << 24);
+          (XAACopyROP[rop] << 24);
 
     if (bg == -1) {
-	cmd |= VIA_GEC_MSRC_TRANS;
+        cmd |= VIA_GEC_MSRC_TRANS;
     }
 
     pVia->SavedCmd = cmd;
@@ -758,15 +827,15 @@ VIASubsequentScanlineCPUToScreenColorExpandFill(
     /* We should probably wait for empty/idle here. */
 
     if (skipleft) {
-	VIASetClippingRectangle(pScrn, (x + skipleft), y, (x + w - 1), (y + h -1));
+        VIASetClippingRectangle(pScrn, (x + skipleft), y, (x + w - 1), (y + h -1));
     }
 
     /* Set Src and Dst base address and pitch, pitch is qword */
     VIASETREG(VIA_REG_SRCBASE, 0x0);
     VIASETREG(VIA_REG_DSTBASE, 0x0);
     VIASETREG(VIA_REG_PITCH, VIA_PITCH_ENABLE |
-	      ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
-	      (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
+              ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
+              (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
 
     VIASETREG(VIA_REG_SRCPOS, 0);
     VIASETREG(VIA_REG_DSTPOS, ((y << 16) | x));
@@ -786,12 +855,12 @@ VIASetupForScreenToScreenColorExpand(
     unsigned int planemask)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    cmd;
+    int     cmd;
 
     cmd = VIA_GEC_BLT | VIA_GEC_SRC_MONO | (XAACopyROP[rop] << 24);
 
     if (bg == -1) {
-	cmd |= VIA_GEC_MSRC_TRANS;
+        cmd |= VIA_GEC_MSRC_TRANS;
     }
 
     pVia->SavedCmd = cmd;
@@ -820,16 +889,16 @@ VIASubsequentScreenToScreenColorExpand(
     VIASETREG(VIA_REG_SRCBASE, 0x0);
     VIASETREG(VIA_REG_DSTBASE, 0x0);
     VIASETREG(VIA_REG_PITCH, VIA_PITCH_ENABLE |
-	      ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
-	      (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
+              ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
+              (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
 
     VIASETREG(VIA_REG_SRCBASE, ((((srcy * pScrn->displayWidth) + srcx) *
-			    (pScrn->bitsPerPixel >> 3)) >> 3));
+                            (pScrn->bitsPerPixel >> 3)) >> 3));
     srcy = 0;
     srcx = 0;
 
     VIASETREG(VIA_REG_SRCPOS, ((srcy << 16) |
-	      (srcx * pScrn->bitsPerPixel + offset)));
+              (srcx * pScrn->bitsPerPixel + offset)));
     VIASETREG(VIA_REG_DSTPOS, ((y << 16) | x));
     VIASETREG(VIA_REG_DIMENSION, (((h - 1) << 16) | (w - 1)));
     VIASETREG(VIA_REG_FGCOLOR, pVia->SavedFgColor);
@@ -849,20 +918,23 @@ VIASetupForImageWrite(
     int depth)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    cmd;
+    int     cmd;
+
+    /* We don't record bpp and depth because we assume bpp is equal to
+       bpp of screen. Is this assume correct ? */
 
     cmd = VIA_GEC_BLT | VIA_GEC_SRC_SYS | (XAACopyROP[rop] << 24);
 
     pVia->SavedCmd = cmd;
 
     if (trans_color != -1) {
-	/* Transparent Bitblt */
-	VIASETREG(VIA_REG_SRCCOLORKEY, trans_color);
-	VIASETREG(VIA_REG_KEYCONTROL, 0x4000);
+        /* Transparent Bitblt */
+        VIASETREG(VIA_REG_SRCCOLORKEY, trans_color);
+        VIASETREG(VIA_REG_KEYCONTROL, 0x4000);
     }
     else {
-	/* Disable Transparent Bitblt */
-	VIASETREG(VIA_REG_KEYCONTROL, 0x0);
+        /* Disable Transparent Bitblt */
+        VIASETREG(VIA_REG_KEYCONTROL, 0x0);
     }
 
 }
@@ -880,15 +952,15 @@ VIASubsequentImageWriteRect(
     VIAPtr  pVia = VIAPTR(pScrn);
 
    if (skipleft) {
-	VIASetClippingRectangle(pScrn, (x + skipleft), y, (x + w - 1), (y + h -1));
+        VIASetClippingRectangle(pScrn, (x + skipleft), y, (x + w - 1), (y + h -1));
     }
 
     /* Set Src and Dst base address and pitch, pitch is qword */
     VIASETREG(VIA_REG_SRCBASE, 0x0);
     VIASETREG(VIA_REG_DSTBASE, 0x0);
     VIASETREG(VIA_REG_PITCH, VIA_PITCH_ENABLE |
-	      ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
-	      (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
+              ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
+              (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
 
     VIASETREG(VIA_REG_SRCPOS, 0);
     VIASETREG(VIA_REG_DSTPOS, ((y << 16) | x));
@@ -906,7 +978,7 @@ VIASetupForSolidLine(
     unsigned int planemask)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    cmd;
+    int     cmd;
 
     /* we move VIA_GEC_LINE from here to the place firing command */
     cmd = VIA_GEC_FIXCOLOR_PAT | (XAAPatternROP[rop] << 24);
@@ -930,43 +1002,46 @@ VIASubsequentSolidTwoPointLine(
     int flags)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    dx, dy, cmd, tmp, error = 1;
+    int     dx, dy, cmd, tmp, error = 1;
 
     cmd = pVia->SavedCmd | VIA_GEC_LINE;
 
     dx = x2 - x1;
     if (dx < 0) {
-	dx = -dx;
-	cmd |= VIA_GEC_DECX;		/* line will be drawn from right */
-	error = 0;
+        dx = -dx;
+        cmd |= VIA_GEC_DECX;            /* line will be drawn from right */
+        error = 0;
     }
 
     dy = y2 - y1;
     if (dy < 0) {
-	dy = -dy;
-	cmd |= VIA_GEC_DECY;		/* line will be drawn from bottom */
+        dy = -dy;
+        cmd |= VIA_GEC_DECY;            /* line will be drawn from bottom */
     }
 
     if (dy > dx) {
-	tmp  = dy;
-	dy = dx;
-	dx = tmp;			/* Swap 'dx' and 'dy' */
-	cmd |= VIA_GEC_Y_MAJOR;		/* Y major line */
+        tmp  = dy;
+        dy = dx;
+        dx = tmp;                       /* Swap 'dx' and 'dy' */
+        cmd |= VIA_GEC_Y_MAJOR;         /* Y major line */
     }
 
     if (flags & OMIT_LAST) {
-	cmd |= VIA_GEC_LASTPIXEL_OFF;
+        cmd |= VIA_GEC_LASTPIXEL_OFF;
     }
 
     /* Set Src and Dst base address and pitch, pitch is qword */
     VIASETREG(VIA_REG_SRCBASE, 0x0);
     VIASETREG(VIA_REG_DSTBASE, 0x0);
     VIASETREG(VIA_REG_PITCH, VIA_PITCH_ENABLE |
-	      ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
-	      (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
+              ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
+              (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
 
+    /* major = 2*dmaj, minor = 2*dmin, err = -dmaj - ((bias >> octant) & 1) */
+    /* K1 = 2*dmin K2 = 2*(dmin - dmax) */
+    /* Error Term = (StartX<EndX) ? (2*dmin - dmax - 1) : (2*(dmin - dmax)) */
     VIASETREG(VIA_REG_LINE_K1K2, ((((dy << 1) & 0x3fff) << 16)|
-	      (((dy - dx) << 1) & 0x3fff)));
+              (((dy - dx) << 1) & 0x3fff)));
     VIASETREG(VIA_REG_LINE_XY, ((y1 << 16) | x1));
     VIASETREG(VIA_REG_DIMENSION, dx);
     VIASETREG(VIA_REG_LINE_ERROR, (((dy << 1) - dx - error) & 0x3fff));
@@ -990,18 +1065,18 @@ VIASubsequentSolidHorVertLine(
     VIASETREG(VIA_REG_SRCBASE, 0x0);
     VIASETREG(VIA_REG_DSTBASE, 0x0);
     VIASETREG(VIA_REG_PITCH, VIA_PITCH_ENABLE |
-	      ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
-	      (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
+              ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
+              (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
 
     if (dir == DEGREES_0) {
-	VIASETREG(VIA_REG_DSTPOS, ((y << 16) | x));
-	VIASETREG(VIA_REG_DIMENSION, (len - 1));
-	VIASETREG(VIA_REG_GECMD, pVia->SavedCmd | VIA_GEC_BLT);
+        VIASETREG(VIA_REG_DSTPOS, ((y << 16) | x));
+        VIASETREG(VIA_REG_DIMENSION, (len - 1));
+        VIASETREG(VIA_REG_GECMD, pVia->SavedCmd | VIA_GEC_BLT);
     }
     else {
-	VIASETREG(VIA_REG_DSTPOS, ((y << 16) | x));
-	VIASETREG(VIA_REG_DIMENSION, ((len - 1) << 16));
-	VIASETREG(VIA_REG_GECMD, pVia->SavedCmd | VIA_GEC_BLT);
+        VIASETREG(VIA_REG_DSTPOS, ((y << 16) | x));
+        VIASETREG(VIA_REG_DIMENSION, ((len - 1) << 16));
+        VIASETREG(VIA_REG_GECMD, pVia->SavedCmd | VIA_GEC_BLT);
     }
 }
 
@@ -1016,14 +1091,14 @@ VIASetupForDashedLine(
     unsigned char *pattern)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    cmd;
+    int     cmd;
     CARD32  pat = *(CARD32 *)pattern;
 
     cmd = VIA_GEC_LINE | VIA_GEC_FIXCOLOR_PAT | (XAAPatternROP[rop] << 24);
 
     if (bg == -1) {
-	/* transparent mono pattern */
-	cmd |= VIA_GEC_MPAT_TRANS;
+        /* transparent mono pattern */
+        cmd |= VIA_GEC_MPAT_TRANS;
     }
 
     pVia->SavedCmd = cmd;
@@ -1031,10 +1106,10 @@ VIASetupForDashedLine(
     pVia->SavedBgColor = bg;
 
     switch (length) {
-	case  2: pat |= pat <<	2; /* fall through */
-	case  4: pat |= pat <<	4; /* fall through */
-	case  8: pat |= pat <<	8; /* fall through */
-	case 16: pat |= pat << 16;
+        case  2: pat |= pat <<  2; /* fall through */
+        case  4: pat |= pat <<  4; /* fall through */
+        case  8: pat |= pat <<  8; /* fall through */
+        case 16: pat |= pat << 16;
     }
 
     pVia->SavedPattern0 = pat;
@@ -1056,43 +1131,46 @@ VIASubsequentDashedTwoPointLine(
     int phase)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int	    dx, dy, cmd, tmp, error = 1;
+    int     dx, dy, cmd, tmp, error = 1;
 
     cmd = pVia->SavedCmd;
 
     dx = x2 - x1;
     if (dx < 0) {
-	dx = -dx;
-	cmd |= VIA_GEC_DECX;		/* line will be drawn from right */
-	error = 0;
+        dx = -dx;
+        cmd |= VIA_GEC_DECX;            /* line will be drawn from right */
+        error = 0;
     }
 
     dy = y2 - y1;
     if (dy < 0) {
-	dy = -dy;
-	cmd |= VIA_GEC_DECY;		/* line will be drawn from bottom */
+        dy = -dy;
+        cmd |= VIA_GEC_DECY;            /* line will be drawn from bottom */
     }
 
     if (dy > dx) {
-	tmp  = dy;
-	dy = dx;
-	dx = tmp;			/* Swap 'dx' and 'dy' */
-	cmd |= VIA_GEC_Y_MAJOR;		/* Y major line */
+        tmp  = dy;
+        dy = dx;
+        dx = tmp;                       /* Swap 'dx' and 'dy' */
+        cmd |= VIA_GEC_Y_MAJOR;         /* Y major line */
     }
 
     if (flags & OMIT_LAST) {
-	cmd |= VIA_GEC_LASTPIXEL_OFF;
+        cmd |= VIA_GEC_LASTPIXEL_OFF;
     }
 
     /* Set Src and Dst base address and pitch, pitch is qword */
     VIASETREG(VIA_REG_SRCBASE, 0x0);
     VIASETREG(VIA_REG_DSTBASE, 0x0);
     VIASETREG(VIA_REG_PITCH, VIA_PITCH_ENABLE |
-	      ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
-	      (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
+              ((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) |
+              (((pScrn->displayWidth * pScrn->bitsPerPixel >> 3) >> 3) << 16));
 
+    /* major = 2*dmaj, minor = 2*dmin, err = -dmaj - ((bias >> octant) & 1) */
+    /* K1 = 2*dmin K2 = 2*(dmin - dmax) */
+    /* Error Term = (StartX<EndX) ? (2*dmin - dmax - 1) : (2*(dmin - dmax)) */
     VIASETREG(VIA_REG_LINE_K1K2, ((((dy << 1) & 0x3fff) << 16)|
-	      (((dy - dx) << 1) & 0x3fff)));
+              (((dy - dx) << 1) & 0x3fff)));
     VIASETREG(VIA_REG_LINE_XY, ((y1 << 16) | x1));
     VIASETREG(VIA_REG_DIMENSION, dx);
     VIASETREG(VIA_REG_LINE_ERROR, (((dy << 1) - dx - error) & 0x3fff) | 0xFF0000);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.123tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.125 2003/07/17 08:19:34 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -4545,7 +4545,8 @@ CHIPSValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     /* The tests here need to be expanded */
     if ((mode->Flags & V_INTERLACE) && (cPtr->PanelType & ChipsLCD))
 	return MODE_NO_INTERLACE;
-    if ((cPtr->PanelType & ChipsLCD) 
+    if ((cPtr->PanelType & ChipsLCD)
+	&& !xf86ReturnOptValBool(cPtr->Options, OPTION_PANEL_SIZE, FALSE)
 	&& ((cPtr->PanelSize.HDisplay < mode->HDisplay)
 	    || (cPtr->PanelSize.VDisplay < mode->VDisplay)))
       return MODE_PANEL;
