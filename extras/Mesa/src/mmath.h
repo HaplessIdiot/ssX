@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mmath.h,v 1.10 2001/10/28 03:32:06 tsi Exp $ */
+/* $XFree86: mmath.h,v 1.11 2001/12/11 09:18:54 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.4
@@ -233,6 +233,7 @@ do {						\
  */
 
 #if defined(__i386__) || defined(__sparc__) || defined(__s390x__) || \
+    defined(__ppc__) || defined(__powerpc__) || \
     ( defined(__alpha__) && ( defined( __IEEE_FLOAT ) || !defined( VMS ) ) )
 #define USE_IEEE
 #define IEEE_ONE 0x3f7f0000
@@ -291,7 +292,7 @@ do {						\
 #define IEEE_INF 0x7fc00000 
 #define IEEE_NAN 0x7f800000
 /* BIG_ENDIAN - add other architectures here */
-#elif defined(__mc68000__) || defined(__ppc__) || defined(__sparc__)
+#elif defined(__mc68000__) || defined(__ppc__) || defined(__powerpc__) || defined(__sparc__)
 #define IEEE_INF 0x7fffffff
 #define IEEE_NAN 0x7f800000
 #else
