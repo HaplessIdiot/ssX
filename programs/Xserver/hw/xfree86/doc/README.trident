@@ -11,7 +11,7 @@
 
        8800CS 8200LX 8900B 8900C 8900CL/D 9000 9000i 9100B 9200CXr
        9320LCD 9400CXi 9420 9420DGi 9430DGi 9440AGi 9660XGi 9680
-       Cyber9382 Cyber9385
+       9682 9685 Cyber9382 Cyber9385 Cyber9385-1
 
 
   It must be noted that the 9000i chipset is treated as a 9000 by the
@@ -23,25 +23,24 @@
 
    NOTES:
 
-     o  Acceleration is now supported for the 9320, 9440, 9660, 9680,
-        9682 and Cyber chips.
+     o  Acceleration is now supported for the 9320, 9440 and 96xx chips.
 
      o  The Cyber 9382/5 chips that have started to appear, have
         preliminary support in XFree86 3.2 and appear to work at 800x600
         on the LCD.
 
-     o  The TGUI9440/9660/9680 are now fully supported by the SVGA
+     o  The TGUI9440 and TGUI96xx based cards are supported by the SVGA
         server.
 
      o  16 bits per pixel is now supported for the 8900D, 9200CXr,
-        9400CXi, 9420DGi, 9430DGi, 9440AGi, 9660XGi and 9680, but only
-        the 9440AGi and 9400CXi have been tested.
+        9400CXi, 9420DGi, 9430DGi, 9440AGi, 96xx, but only the 9440AGi
+        and 9400CXi have been tested.
 
      o  Linear access has been implemented for chipsets that support it.
         It is enabled by default for PCI cards, and disabled by default
         for other cards.  Additionally Hardware cursor is implemented
-        for the 9430, 9440, 9660 and 9680, although only the 9440 and
-        9660 have been tested with the hardware cursor.
+        for the 9430, 9440, 96xx, although only the 9440 and 9660 have
+        been tested with the hardware cursor.
 
      o  The following options may be specified for the Trident driver:
 
@@ -64,18 +63,20 @@
            speed, but hasn't been extensively tested yet.
 
 
+
         Option "hw_cursor"
            Turn on hardware cursor (NOTE: it is off by default) This is
            known to be buggy.
 
-        Option "tgui_pci_read_off"
-           Turn off PCI burst read mode.
+        Option "tgui_pci_read_on"
+           Turn on PCI burst read mode.
 
-        Option "tgui_pci_write_off"
-           Turn off PCI burst write mode.  NOTE: PCI Burst modes are now
-           on by default.  If you suffer from screen corruption, you
-           might like to try and specify one or both of the PCI options
-           above.
+        Option "tgui_pci_write_on"
+           Turn on PCI burst write mode.  NOTE: PCI Burst modes are now
+           OFF by default. The reason for this is the Graphics
+           Accelerator gets upset, but we allow you to turn it back on
+           it may improve performance, or lock up the chip with Timeouts
+           displayed.
 
         ClockChip "tgui"
            Turn on programmable clocks.  This is the default for TGUIs.
@@ -88,11 +89,21 @@
         Option "noaccel"
            Turn off XAA acceleration.
 
+        Option "xaa_no_color_exp"
+           Disable color expansion, which is needed for some 9440 cards
+           (and maybe others?).
+
         Option "no_stretch"
            Disable LCD stretching on Cyber 938x based chips.
 
         Option "lcd_center"
            Enable LCD centering on Cyber 938x based chips.
+
+        Option "tgui_mclk_66'
+           Pushes the Memory Clock from its default value to 66MHz.
+           Increases graphics speed dramitically, but use entirely at
+           your own risk, as it may damage the videocard.  If snow
+           appears, disable.
 
   The original Trident chipset, 8800BR, cannot be supported as an SVGA
   chipset by either the color or monochrome servers.  The chip is
@@ -118,6 +129,7 @@
 
   We have had reports of the server failing to detect the amount of
   installed memory and the correct dot-clocks on older TVGA8900 boards.
+
   If the server fails to detect the correct amount of memory, use the
   "Videoram" keyword in your XF86Config file to specify it.  (e.g.
   Videoram 512 or Videoram 1024).  If the server has problems detecting
@@ -128,9 +140,8 @@
 
   This line gives the clock values provided by older Trident clock syn-
   thesizer chipsets.  This also appears to be the standard first 8
-  clocks for the newer clock synthesizers, but you should have no
-
-  problems on newer boards.
+  clocks for the newer clock synthesizers, but you should have no prob-
+  lems on newer boards.
 
   Some newer Trident 8900B/C boards are apparently being built with the
   clock synthesizers used on the 9000 and 8900CL boards.  If your board
@@ -164,7 +175,7 @@
   be worth checking wait states etc. on the card and in the BIOS setup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.18 1997/01/14 22:17:48 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.19 1997/01/18 06:55:44 dawes Exp $
 
 
 
@@ -172,17 +183,6 @@
 
 
   $XConsortium: trident.sgml /main/11 1996/10/28 04:24:08 kaleb $
-
-
-
-
-
-
-
-
-
-
-
 
 
 
