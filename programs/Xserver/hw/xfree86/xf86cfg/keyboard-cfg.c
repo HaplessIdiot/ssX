@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.15 2001/10/28 03:34:07 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.19 2002/10/29 20:18:05 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -464,7 +464,8 @@ InitializeKeyboard(void)
     if (timeout <= 0) {
 	fprintf(stderr, "Couldn't get keyboard\n");
     }
-    if (xkb_info->xkb->names->geometry == 0)
+    if (xkb_info->xkb && xkb_info->xkb->names && xkb_info->xkb->geom &&
+	xkb_info->xkb->names->geometry == 0)
 	xkb_info->xkb->names->geometry = xkb_info->xkb->geom->name;
 
     bzero((char*)&(xkb_info->defs), sizeof(XkbRF_VarDefsRec));
