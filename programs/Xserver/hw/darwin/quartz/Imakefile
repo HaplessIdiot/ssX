@@ -1,7 +1,12 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.7 2003/05/14 05:27:56 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.8 2003/06/07 05:49:06 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
+
+#if HasXplugin
+APPLEWMSRC = applewm.c
+APPLEWMOBJ = applewm.o
+#endif
 
 SRCS =  Preferences.m \
         XApplication.m \
@@ -14,7 +19,8 @@ SRCS =  Preferences.m \
         quartzStartup.c \
         pseudoramiX.c \
         aquaPicture.c \
-        aquaWindow.c
+        aquaWindow.c \
+        $(APPLEWMSRC)
 
 OBJS =  Preferences.o \
         XApplication.o \
@@ -27,11 +33,13 @@ OBJS =  Preferences.o \
         quartzStartup.o \
         pseudoramiX.o \
         aquaPicture.o \
-        aquaWindow.o
+        aquaWindow.o \
+        $(APPLEWMOBJ)
 
 INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
-           -I$(SERVERSRC)/miext/shadow -I$(EXTINCSRC) -I.. -I$(SERVERSRC)/Xext
+           -I$(SERVERSRC)/miext/shadow -I$(EXTINCSRC) -I$(SERVERSRC)/Xext \
+           -I.. -I$(APPLEWMLIBSRC) -I$(SERVERSRC)/miext/rootless
 
 #if defined(XFree86CustomVersion)
 CUSTOMVERSION = XFree86CustomVersion

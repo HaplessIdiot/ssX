@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.210tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.211 2003/07/09 15:27:24 tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -586,6 +586,10 @@ VENDORMANVERSION = XVendorManVersionString
 
 #ifndef DefaultCursorTheme
 #define DefaultCursorTheme	core
+#endif
+
+#ifndef BuildAppleWMLibrary
+#define BuildAppleWMLibrary	NO
 #endif
 
 #ifndef BuildMiscDocs
@@ -2064,6 +2068,30 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #define ProfileLibXcursor	NO
 #endif
 
+#if BuildAppleWMLibrary
+#ifndef SharedLibAppleWM
+#define SharedLibAppleWM	HasSharedLibraries
+#endif
+#ifndef NormalLibAppleWM
+#define NormalLibAppleWM	YES
+#endif
+#ifndef DebugLibAppleWM
+#define DebugLibAppleWM		NO
+#endif
+#ifndef ProfileLibAppleWM
+#define ProfileLibAppleWM	NO
+#endif
+#else
+#undef  SharedLibAppleWM
+#define SharedLibAppleWM	NO
+#undef  NormalLibAppleWM
+#define NormalLibAppleWM	NO
+#undef  DebugLibAppleWM
+#define DebugLibAppleWM		NO
+#undef  ProfileLibAppleWM
+#define ProfileLibAppleWM	NO
+#endif
+
 #if BuildGLULibrary
 #ifndef SharedLibGlu
 #define SharedLibGlu		HasSharedLibraries
@@ -2370,6 +2398,16 @@ ProjectUnsharedLibReferences(XRANDR,Xrandr,$(XRANDRLIBSRC),XBuildLibDir)
 SharedLibReferences(XCURSOR,Xcursor,$(XCURSORLIBSRC),SOXCURSORREV,SharedXcursorRev)
 #else
 ProjectUnsharedLibReferences(XCURSOR,Xcursor,$(XCURSORLIBSRC),XBuildLibDir)
+#endif
+
+   APPLEWMLIBSRC = $(LIBSRC)/apple
+#if SharedLibAppleWM
+#ifndef SharedAppleWMRev
+#define SharedAppleWMRev 1.0
+#endif
+SharedLibReferences(APPLEWM,AppleWM,$(APPLEWMLIBSRC),SOAPPLEWMREV,SharedAppleWMRev)
+#else
+ProjectUnsharedLibReferences(APPLEWM,AppleWM,$(APPLEWMLIBSRC),XBuildLibDir)
 #endif
 
 # ifndef SharedLibXfontcache

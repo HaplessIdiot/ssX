@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.36 2003/05/08 05:47:12 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.37 2003/06/30 01:45:07 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -124,15 +124,17 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 # ifndef BuildAppleDRI
 #  if HasXplugin
-#   define BuildAppleDRI       YES
+#   define BuildAppleDRI        YES
 #  else
-#   define BuildAppleDRI       NO
+#   define BuildAppleDRI        NO
 #  endif
 # endif
 
 # if BuildAppleDRI
 #  define GlxExtraDefines -DGLX_DIRECT_RENDERING -DGLX_USE_APPLEGL GlxArchDefines
 # endif
+
+#define BuildAppleWMLibrary       YES
 
 #endif  /* DarwinQuartzSupport */
 

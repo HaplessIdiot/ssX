@@ -31,7 +31,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.10 2003/05/14 05:27:56 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.11 2003/06/30 01:45:12 torrey Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
@@ -82,6 +82,8 @@ extern const char      *quartzOpenGLBundle;
 
 void QuartzReadPreferences(void);
 void QuartzMessageMainThread(unsigned msg, void *data, unsigned length);
+void QuartzSetWindowMenu(int nitems, const char **items,
+                         const char *shortcuts);
 void QuartzFSCapture(void);
 void QuartzFSRelease(void);
 int  QuartzFSUseQDCursor(int depth);
@@ -94,7 +96,11 @@ enum {
     kQuartzServerStarted,
     kQuartzServerDied,
     kQuartzCursorUpdate,
-    kQuartzPostEvent
+    kQuartzPostEvent,
+    kQuartzSetWindowMenu,
+    kQuartzSetWindowMenuCheck,
+    kQuartzSetFrontProcess,
+    kQuartzSetCanQuit
 };
 
 #endif	/* _QUARTZCOMMON_H */

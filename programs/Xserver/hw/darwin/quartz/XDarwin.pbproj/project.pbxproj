@@ -23,18 +23,6 @@
 			path = XApplication.h;
 			refType = 4;
 		};
-		014C68ED00ED6A9D7F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = XView.h;
-			refType = 4;
-		};
-		014C68EE00ED6A9D7F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = XView.m;
-			refType = 4;
-		};
 		015698ED003DF345CE6F79C2 = {
 			isa = PBXFileReference;
 			path = XDarwin.icns;
@@ -232,8 +220,6 @@
 				0127909800074B1A0A000002,
 				01279092000747AA0A000002,
 				1C4A3109004D8F24CE6F79C2,
-				014C68EE00ED6A9D7F000001,
-				014C68ED00ED6A9D7F000001,
 			);
 			isa = PBXGroup;
 			name = Classes;
@@ -885,6 +871,7 @@
 //434
 		43B962CE00617089416877C2 = {
 			children = (
+				6EE9B21604E859C200CA7FEA,
 				018F40F8003E1979CE6F79C2,
 				018F40FA003E197ECE6F79C2,
 				237A34C10076E37E7F000001,
@@ -1241,6 +1228,12 @@
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = crScreen.m;
+			refType = 4;
+		};
+		6EE9B21604E859C200CA7FEA = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = applewm.c;
 			refType = 4;
 		};
 		6EF065C003D4EE19006877C2 = {

@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.1 2003/04/30 23:15:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.2 2003/06/30 01:45:13 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "xpr.h"
@@ -37,6 +37,8 @@
 #include "rootless.h"
 #include "dri.h"
 #include "Xplugin.h"
+#define _APPLEWM_SERVER_
+#include "applewmstr.h"
 
 // Name of GLX bundle for native OpenGL
 const char *quartzOpenGLBundle = "glxCGL.bundle";
@@ -163,6 +165,7 @@ AquaDisplayInit(void)
     }
 
     AppleDRIExtensionInit();
+    AppleWMExtensionInit();
 }
 
 

@@ -1,4 +1,5 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 372. Added Apple-WM extension and library (Apple and Torrey T. Lyons).
  371. Fixed indirect GLX on Mac OS X when the client can not make a
       connection to the CoreGraphics window server (Apple).
  370. Fixed support for 64bit PCI bus on 32bit systems (Egbert Eich).
@@ -17525,7 +17526,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2803 2003/08/11 17:41:30 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2804 2003/08/12 00:28:58 torrey Exp $
 
 
 
