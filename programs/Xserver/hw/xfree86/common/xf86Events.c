@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.139 2002/12/05 18:29:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.140 2002/12/17 04:45:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -600,8 +600,15 @@ special:
   }
 #endif /* defined (__sparc__) */
 
+#ifndef TERMINATE_FALLBACK
+#define TERMINATE_FALLBACK 1
+#endif
 #ifdef XKB
-  if (noXkbExtension) {
+  if (noXkbExtension
+#if TERMINATE_FALLBACK
+      || specialkey == KEY_BackSpace
+#endif
+      ) {
 #endif
   if (!(ModifierDown(ShiftMask)) &&
       ((ModifierDown(ControlMask | AltMask)) ||

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.3 2002/12/12 18:29:10 eich Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -547,12 +547,24 @@ PostKbdEvent(InputInfoPtr pInfo, unsigned int scanCode, Bool down)
      }
   }
 
-  if (xf86CommonSpecialKey(specialkey, down, keyc->state))
-     return;
-  if (pKbd->SpecialKey != NULL)
-     if (pKbd->SpecialKey(pInfo, specialkey, down, keyc->state))
-        return;
-
+#ifndef TERMINATE_FALLBACK
+#define TERMINATE_FALLBACK 1
+#endif
+#ifdef XKB
+  if (noXkbExtension
+#if TERMINATE_FALLBACK
+      || specialkey == KEY_BackSpace
+#endif
+     )
+#endif
+  {    
+      if (xf86CommonSpecialKey(specialkey, down, keyc->state))
+	  return;
+      if (pKbd->SpecialKey != NULL)
+	  if (pKbd->SpecialKey(pInfo, specialkey, down, keyc->state))
+	      return;
+  }
+  
   /*
    * Now map the scancodes to real X-keycodes ...
    */

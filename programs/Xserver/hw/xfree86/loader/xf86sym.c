@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.221 2002/12/09 18:06:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.222 2002/12/10 02:49:45 tsi Exp $ */
 
 /*
  *
@@ -1065,6 +1065,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86PixmapIndex)
    SYMVAR(xf86Screens)
    SYMVAR(byte_reversed)
+   SYMVAR(xf86inSuspend)
    /* debugging variables */
 #ifdef BUILDDEBUG
    SYMVAR(xf86p8bit)
