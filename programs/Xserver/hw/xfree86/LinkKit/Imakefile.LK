@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.14 1994/12/05 04:08:45 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.15 1994/12/25 12:17:14 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -67,7 +67,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.14 1994/
              OS = lib/libos.a $(XAULIB) $(XDMCPLIB)
             DIX = lib/libdix.a
 #endif
-             MI = lib/libmi.a
+             MI = miinitext.o lib/libmi.a
            FONT = lib/libfont.a
 #if NeedLibGcc
          GCCLIB = -lgcc
@@ -326,6 +326,8 @@ SetUIDServerTarget(XF86_AGX,$(XF86AGXSUBDIRS),$(XF86AGXOBJS),$(XF86AGXLIBS),$(XF
 CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB32DIR)
 DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(DDXDIR4) $(DDXDIR5) $(DDXDIR6)
 SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIRS) $(DDXDIRS)
+
+miinitext.o: miinitext.c $(ICONFIGFILES)
 
 #ifdef ServerToInstall
 install::

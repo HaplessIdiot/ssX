@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.9 1994/12/17 09:57:33 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.10 1994/12/25 12:17:16 dawes Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -122,10 +122,9 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.9 1994/12
 
 /*
  * If you want to disable the ScreenSaver extension that may be included
- * in the LinkKit, uncomment the following
- *
-#define BuildScreenSaverExt	NO
+ * in the LinkKit, set the following to NO
  */
+#define BuildScreenSaverExt	YES
 
 #endif /* BeforeVendorCF */
 
