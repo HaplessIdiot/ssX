@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.36 2000/06/23 22:42:00 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.37 2000/06/24 17:43:44 dawes Exp $
 XCOMM
 
 #ifndef OSName
@@ -80,12 +80,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /*
  * Compiler Features
  */
-#undef HasGcc
-#define HasGcc			YES
-#define HasGcc2			YES
-#ifndef HasGcc2ForCplusplus
-#define HasGcc2ForCplusplus	YES
-#endif
 #define GccUsesGas		YES
 #define UseGas			YES
 #define GnuCpp			YES

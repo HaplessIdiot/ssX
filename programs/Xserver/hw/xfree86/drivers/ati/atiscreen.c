@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.8 2000/05/03 00:44:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.9 2000/06/19 15:00:59 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -282,6 +282,10 @@ ATICloseScreen
     pATI->Closeable = FALSE;
 
     ATILeaveGraphics(pScreenInfo, pATI);
+
+    xfree(pATI->ExpansionBitmapScanlinePtr[1]);
+    pATI->ExpansionBitmapScanlinePtr[0] =
+        pATI->ExpansionBitmapScanlinePtr[1] = NULL;
 
     xfree(pATI->pShadow);
     pATI->pShadow = NULL;

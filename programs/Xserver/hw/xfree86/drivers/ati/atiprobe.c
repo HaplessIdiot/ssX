@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.21 2000/05/03 00:44:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.22 2000/06/19 15:00:58 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1072,6 +1072,14 @@ ATIProbe
             if (Chip > ATI_CHIP_Mach64)
                 continue;
 
+            /*
+             * Update copy of the PIO base in case it was relocated by
+             * resource conflict resolution.
+             */
+            pPCI = (pciConfigPtr)(pVideo->thisCard);
+            pPCI->pci_base1 = pciReadLong(pPCI->tag, PCI_CMD_BASE_REG + 4);
+            pVideo->ioBase[1] = PCIGETIO(pPCI->pci_base1);
+
             pATI = ATIMach64Probe(pVideo->ioBase[1], BLOCK_IO,
                 pVideo->chipType, Chip);
             if (!pATI)
@@ -1639,7 +1647,7 @@ NoVGAWonder:;
              * The ChipID and ChipRev specifications are compared next.  First,
              * require these to be unspecified for anything other than Mach32
              * or Mach64 adapters.  ChipRev is also required to be unspecified
-             * for Mach32's.  ChipID is optional for for Mach32's, and both
+             * for Mach32's.  ChipID is optional for Mach32's, and both
              * specifications are optional for Mach64's.  Lastly, allow both
              * specifications to override their detected value in the case of
              * Mach64 adapters whose ChipID is unrecognised.

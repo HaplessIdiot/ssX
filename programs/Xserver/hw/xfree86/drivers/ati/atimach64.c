@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.20 2000/05/03 00:44:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.21 2000/06/19 15:00:56 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -49,112 +49,12 @@
 #include "atichip.h"
 #include "atiio.h"
 #include "atimach64.h"
+#include "atimach64io.h"
+
 #include "miline.h"
 
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-
-/*
- * Note:  Only 32-bit MMIO is needed here.
- */
-
-#define inm(_Register)                                        \
-    MMIO_IN32(pATI->pBlock[GetBits(_Register, BLOCK_SELECT)], \
-              (_Register) & MM_IO_SELECT)
-
-/*
- * ATIMach64PollEngineStatus --
- *
- * This function refreshes the driver's view of the draw engine's status.
- */
-static void
-ATIMach64PollEngineStatus
-(
-    ATIPtr pATI
-)
-{
-    CARD32 IOValue;
-    int    Count;
-
-    if (pATI->Chip < ATI_CHIP_264VTB)
-    {
-        /*
-         * TODO:  Deal with locked engines.
-         */
-        IOValue = inm(FIFO_STAT);
-        pATI->EngineIsLocked = GetBits(IOValue, FIFO_ERR);
-
-        /*
-         * The following counts the number of bits in FIFO_STAT_BITS, and is
-         * derived from miSetVisualTypes() (formerly cfbSetVisualTypes()).
-         */
-        IOValue = GetBits(IOValue, FIFO_STAT_BITS);
-        Count = (IOValue >> 1) & 0x36DBU;
-        Count = IOValue - Count - ((Count >> 1) & 0x36DBU);
-        Count = ((Count + (Count >> 3)) & 0x71C7U) % 0x3FU;
-        Count = pATI->nFIFOEntries - Count;
-        if (Count > pATI->nAvailableFIFOEntries)
-            pATI->nAvailableFIFOEntries = Count;
-
-        /*
-         * If the command FIFO is non-empty, then the engine isn't idle.
-         */
-        if (pATI->nAvailableFIFOEntries < pATI->nFIFOEntries)
-        {
-            pATI->EngineIsBusy = TRUE;
-            return;
-        }
-    }
-
-    IOValue = inm(GUI_STAT);
-    pATI->EngineIsBusy = GetBits(IOValue, GUI_ACTIVE);
-    Count = GetBits(IOValue, GUI_FIFO);
-    if (Count > pATI->nAvailableFIFOEntries)
-        pATI->nAvailableFIFOEntries = Count;
-}
-
-/*
- * MMIO cache definitions.
- */
-#define CacheByte(___Register) pATI->MMIOCached[CacheSlotOf(___Register) >> 3]
-#define CacheBit(___Register)  (0x80U >> (CacheSlotOf(___Register) & 0x07U))
-
-#define RegisterIsCached(__Register) \
-    (CacheByte(__Register) & CacheBit(__Register))
-#define CacheRegister(__Register) \
-    CacheByte(__Register) |= CacheBit(__Register)
-#define UncacheRegister(__Register) \
-    CacheByte(__Register) &= ~CacheBit(__Register)
-
-#define CacheSlot(__Register)  pATI->MMIOCache[CacheSlotOf(__Register)]
-
-/* This would be quite a bit slower as a function */
-#define outm(_Register, _Value)                                        \
-    do                                                                 \
-    {                                                                  \
-        CARD32 _IOValue = (_Value);                                    \
-                                                                       \
-        if (!RegisterIsCached(_Register) ||                            \
-            (_IOValue != CacheSlot(_Register)))                        \
-        {                                                              \
-            while (!pATI->nAvailableFIFOEntries--)                     \
-                ATIMach64PollEngineStatus(pATI);                       \
-            MMIO_OUT32(pATI->pBlock[GetBits(_Register, BLOCK_SELECT)], \
-                (_Register) & MM_IO_SELECT, _IOValue);                 \
-            CacheSlot(_Register) = _IOValue;                           \
-            pATI->EngineIsBusy = TRUE;                                 \
-        }                                                              \
-    } while (0)
-
-/* This is no longer as critical, especially for _n == 1 */
-#define ATIMach64WaitForFIFO(_n)                               \
-    while ((pATI->nAvailableFIFOEntries < (_n)) &&             \
-           (pATI->nAvailableFIFOEntries < pATI->nFIFOEntries)) \
-        ATIMach64PollEngineStatus(pATI)
-
-#define ATIMach64WaitForIdle()          \
-    while (pATI->EngineIsBusy)          \
-        ATIMach64PollEngineStatus(pATI)
 
 /*
  * X-to-Mach64 mix translation table.
@@ -283,7 +183,7 @@ ATIMach64PreInit
         {
             case 8:
                 pATIHW->dp_chain_mask = DP_CHAIN_8BPP;
-                pATIHW->dp_pix_width = /* DP_BYTE_PIX_ORDER | */
+                pATIHW->dp_pix_width = DP_BYTE_PIX_ORDER |
                     SetBits(PIX_WIDTH_8BPP, DP_DST_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_8BPP, DP_SRC_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
@@ -291,7 +191,7 @@ ATIMach64PreInit
 
             case 15:
                 pATIHW->dp_chain_mask = DP_CHAIN_15BPP_1555;
-                pATIHW->dp_pix_width = /* DP_BYTE_PIX_ORDER | */
+                pATIHW->dp_pix_width = DP_BYTE_PIX_ORDER |
                     SetBits(PIX_WIDTH_15BPP, DP_DST_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_15BPP, DP_SRC_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
@@ -299,7 +199,7 @@ ATIMach64PreInit
 
             case 16:
                 pATIHW->dp_chain_mask = DP_CHAIN_16BPP_565;
-                pATIHW->dp_pix_width = /* DP_BYTE_PIX_ORDER | */
+                pATIHW->dp_pix_width = DP_BYTE_PIX_ORDER |
                     SetBits(PIX_WIDTH_16BPP, DP_DST_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_16BPP, DP_SRC_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
@@ -309,7 +209,7 @@ ATIMach64PreInit
                 if (pATI->bitsPerPixel == 24)
                 {
                     pATIHW->dp_chain_mask = DP_CHAIN_24BPP_888;
-                    pATIHW->dp_pix_width = /* DP_BYTE_PIX_ORDER | */
+                    pATIHW->dp_pix_width = DP_BYTE_PIX_ORDER |
                         SetBits(PIX_WIDTH_8BPP, DP_DST_PIX_WIDTH) |
                         SetBits(PIX_WIDTH_8BPP, DP_SRC_PIX_WIDTH) |
                         SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
@@ -317,7 +217,7 @@ ATIMach64PreInit
                 else
                 {
                     pATIHW->dp_chain_mask = DP_CHAIN_32BPP_8888;
-                    pATIHW->dp_pix_width = /* DP_BYTE_PIX_ORDER | */
+                    pATIHW->dp_pix_width = DP_BYTE_PIX_ORDER |
                         SetBits(PIX_WIDTH_32BPP, DP_DST_PIX_WIDTH) |
                         SetBits(PIX_WIDTH_32BPP, DP_SRC_PIX_WIDTH) |
                         SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
@@ -386,7 +286,7 @@ ATIMach64Save
         outl(pATI->CPIO_BUS_CNTL, pATI->NewHW.bus_cntl);
         outl(pATI->CPIO_CONFIG_CNTL, pATI->NewHW.config_cntl);
 
-        ATIMach64WaitForIdle();
+        ATIMach64WaitForIdle(pATI);
 
         /* Save FIFO size */
         if (pATI->Chip >= ATI_CHIP_264VT4)
@@ -423,10 +323,10 @@ ATIMach64Save
         pATIHW->pat_cntl = inm(PAT_CNTL);
 
         /* Save scissor registers */
-        pATIHW->sc_left = inm(SC_LEFT);
-        pATIHW->sc_right = inm(SC_RIGHT);
-        pATIHW->sc_top = inm(SC_TOP);
-        pATIHW->sc_bottom = inm(SC_BOTTOM);
+        pATIHW->sc_left = pATI->sc_left = inm(SC_LEFT);
+        pATIHW->sc_right = pATI->sc_right = inm(SC_RIGHT);
+        pATIHW->sc_top = pATI->sc_top = inm(SC_TOP);
+        pATIHW->sc_bottom = pATI->sc_bottom = inm(SC_BOTTOM);
 
         /* Save data path registers */
         pATIHW->dp_bkgd_clr = inm(DP_BKGD_CLR);
@@ -669,7 +569,7 @@ ATIMach64Set
         outl(pATI->CPIO_CONFIG_CNTL, pATI->NewHW.config_cntl);
 
         pATI->EngineIsBusy = TRUE;      /* Force engine poll */
-        ATIMach64WaitForIdle();
+        ATIMach64WaitForIdle(pATI);
 
         /* Load FIFO size */
         if (pATI->Chip >= ATI_CHIP_264VT4)
@@ -683,7 +583,7 @@ ATIMach64Set
         pATI->nFIFOEntries = pATI->nAvailableFIFOEntries;
 
         /* Load destination registers */
-        ATIMach64WaitForFIFO(7);
+        ATIMach64WaitForFIFO(pATI, 7);
         outm(DST_OFF_PITCH, pATIHW->dst_off_pitch);
         outm(DST_Y_X, SetWord(pATIHW->dst_x, 1) | SetWord(pATIHW->dst_y, 0));
         outm(DST_HEIGHT, pATIHW->dst_height);
@@ -693,7 +593,7 @@ ATIMach64Set
         outm(DST_CNTL, pATIHW->dst_cntl);
 
         /* Load source registers */
-        ATIMach64WaitForFIFO(6);
+        ATIMach64WaitForFIFO(pATI, 6);
         outm(SRC_OFF_PITCH, pATIHW->src_off_pitch);
         outm(SRC_Y_X, SetWord(pATIHW->src_x, 1) | SetWord(pATIHW->src_y, 0));
         outm(SRC_HEIGHT1_WIDTH1,
@@ -705,24 +605,36 @@ ATIMach64Set
         outm(SRC_CNTL, pATIHW->src_cntl);
 
         /* Load host data register */
-        ATIMach64WaitForFIFO(1);
+        ATIMach64WaitForFIFO(pATI, 1);
         outm(HOST_CNTL, pATIHW->host_cntl);
 
+        /* Set host transfer window address and size clamp */
+        pATI->pHOST_DATA =
+            (CARD8 *)pATI->pBlock[GetBits(HOST_DATA_0, BLOCK_SELECT)] +
+            (HOST_DATA_0 & MM_IO_SELECT);
+        pATI->nHostFIFOEntries = pATI->nFIFOEntries >> 1;
+        if (pATI->nHostFIFOEntries > 16)
+            pATI->nHostFIFOEntries = 16;
+
         /* Load pattern registers */
-        ATIMach64WaitForFIFO(3);
+        ATIMach64WaitForFIFO(pATI, 3);
         outm(PAT_REG0, pATIHW->pat_reg0);
         outm(PAT_REG1, pATIHW->pat_reg1);
         outm(PAT_CNTL, pATIHW->pat_cntl);
 
         /* Load scissor registers */
-        ATIMach64WaitForFIFO(2);
+        ATIMach64WaitForFIFO(pATI, 2);
         outm(SC_LEFT_RIGHT,
             SetWord(pATIHW->sc_right, 1) | SetWord(pATIHW->sc_left, 0));
         outm(SC_TOP_BOTTOM,
             SetWord(pATIHW->sc_bottom, 1) | SetWord(pATIHW->sc_top, 0));
+        pATI->sc_left = pATIHW->sc_left;
+        pATI->sc_right = pATIHW->sc_right;
+        pATI->sc_top = pATIHW->sc_top;
+        pATI->sc_bottom = pATIHW->sc_bottom;
 
         /* Load data path registers */
-        ATIMach64WaitForFIFO(7);
+        ATIMach64WaitForFIFO(pATI, 7);
         outm(DP_BKGD_CLR, pATIHW->dp_bkgd_clr);
         outm(DP_FRGD_CLR, pATIHW->dp_frgd_clr);
         outm(DP_WRITE_MASK, pATIHW->dp_write_mask);
@@ -732,16 +644,16 @@ ATIMach64Set
         outm(DP_SRC, pATIHW->dp_src);
 
         /* Load colour compare registers */
-        ATIMach64WaitForFIFO(3);
+        ATIMach64WaitForFIFO(pATI, 3);
         outm(CLR_CMP_CLR, pATIHW->clr_cmp_clr);
         outm(CLR_CMP_MSK, pATIHW->clr_cmp_msk);
         outm(CLR_CMP_CNTL, pATIHW->clr_cmp_cntl);
 
         /* Load context mask */
-        ATIMach64WaitForFIFO(1);
+        ATIMach64WaitForFIFO(pATI, 1);
         outm(CONTEXT_MASK, pATIHW->context_mask);
 
-        ATIMach64WaitForIdle();
+        ATIMach64WaitForIdle(pATI);
 
         if (pATI->OptionMMIOCache)
         {
@@ -903,6 +815,39 @@ ATIMach64SetDPMSMode
 }
 
 /*
+ * ATIMach64ValidateClip --
+ *
+ * This function ensures the current scissor settings do not interfere with
+ * the current draw request.
+ */
+static void
+ATIMach64ValidateClip
+(
+    ATIPtr pATI,
+    CARD16 sc_left,
+    CARD16 sc_right,
+    CARD16 sc_top,
+    CARD16 sc_bottom
+)
+{
+    if ((sc_left < pATI->sc_left) || (sc_right > pATI->sc_right))
+    {
+        outm(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
+            SetWord(pATI->NewHW.sc_left, 0));
+        pATI->sc_left = pATI->NewHW.sc_left;
+        pATI->sc_right = pATI->NewHW.sc_right;
+    }
+
+    if ((sc_top < pATI->sc_top) || (sc_bottom > pATI->sc_bottom))
+    {
+        outm(SC_TOP_BOTTOM, SetWord(pATI->NewHW.sc_bottom, 1) |
+            SetWord(pATI->NewHW.sc_top, 0));
+        pATI->sc_top = pATI->NewHW.sc_top;
+        pATI->sc_bottom = pATI->NewHW.sc_bottom;
+    }
+}
+
+/*
  * ATIMach64Sync --
  *
  * This is called to wait for the draw engine to become idle.
@@ -915,7 +860,7 @@ ATIMach64Sync
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    ATIMach64WaitForIdle();
+    ATIMach64WaitForIdle(pATI);
 
     if (pATI->OptionMMIOCache)
     {
@@ -1079,7 +1024,7 @@ ATIMach64SetupForScreenToScreenCopy
     else
         pATI->dst_cntl |= DST_24_ROT_EN;
 
-    ATIMach64WaitForFIFO(3);
+    ATIMach64WaitForFIFO(pATI, 3);
     outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
     outm(DP_WRITE_MASK, planemask);
     outm(DP_SRC, DP_MONO_SRC_ALLONES |
@@ -1110,14 +1055,7 @@ ATIMach64SubsequentScreenToScreenCopy
     w    *= pATI->XModifier;
 
     /* Disable clipping if it gets in the way */
-    if ((xDst < (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 0)) ||
-        ((xDst + w - 1) > (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 1)))
-        outm(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
-            SetWord(pATI->NewHW.sc_left, 0));
-    if ((yDst < (int)GetWord(CacheSlot(SC_TOP_BOTTOM), 0)) ||
-        ((yDst + h - 1) > (int)GetWord(CacheSlot(SC_TOP_BOTTOM), 1)))
-        outm(SC_TOP_BOTTOM, SetWord(pATI->NewHW.sc_bottom, 1) |
-            SetWord(pATI->NewHW.sc_top, 0));
+    ATIMach64ValidateClip(pATI, xDst, xDst + w - 1, yDst, yDst + h - 1);
 
     if (!(pATI->dst_cntl & DST_X_DIR))
     {
@@ -1134,7 +1072,7 @@ ATIMach64SubsequentScreenToScreenCopy
     if (pATI->XModifier != 1)
         outm(DST_CNTL, pATI->dst_cntl | SetBits((xDst / 4) % 6, DST_24_ROT));
 
-    ATIMach64WaitForFIFO(4);
+    ATIMach64WaitForFIFO(pATI, 4);
     outm(SRC_Y_X, SetWord(xSrc, 1) | SetWord(ySrc, 0));
     outm(SRC_WIDTH1, w);
     outm(DST_Y_X, SetWord(xDst, 1) | SetWord(yDst, 0));
@@ -1160,7 +1098,7 @@ ATIMach64SetupForSolidFill
     if (pATI->XModifier == 1)
         outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
 
-    ATIMach64WaitForFIFO(4);
+    ATIMach64WaitForFIFO(pATI, 4);
     outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
     outm(DP_WRITE_MASK, planemask);
     outm(DP_SRC, DP_MONO_SRC_ALLONES |
@@ -1195,16 +1133,9 @@ ATIMach64SubsequentSolidFillRect
     }
 
     /* Disable clipping if it gets in the way */
-    if ((x < (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 0)) ||
-        ((x + w - 1) > (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 1)))
-        outm(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
-            SetWord(pATI->NewHW.sc_left, 0));
-    if ((y < (int)GetWord(CacheSlot(SC_TOP_BOTTOM), 0)) ||
-        ((y + h - 1) > (int)GetWord(CacheSlot(SC_TOP_BOTTOM), 1)))
-        outm(SC_TOP_BOTTOM, SetWord(pATI->NewHW.sc_bottom, 1) |
-            SetWord(pATI->NewHW.sc_top, 0));
+    ATIMach64ValidateClip(pATI, x, x + w - 1, y, y + h - 1);
 
-    ATIMach64WaitForFIFO(2);
+    ATIMach64WaitForFIFO(pATI, 2);
     outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
     outm(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
 }
@@ -1226,17 +1157,15 @@ ATIMach64SetupForSolidLine
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    ATIMach64WaitForFIFO(6);
+    ATIMach64WaitForFIFO(pATI, 6);
     outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
     outm(DP_WRITE_MASK, planemask);
     outm(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
     outm(DP_FRGD_CLR, colour);
 
-    outm(SC_LEFT_RIGHT,
-        SetWord(pATI->NewHW.sc_right, 1) | SetWord(pATI->NewHW.sc_left, 0));
-    outm(SC_TOP_BOTTOM,
-        SetWord(pATI->NewHW.sc_bottom, 1) | SetWord(pATI->NewHW.sc_top, 0));
+    ATIMach64ValidateClip(pATI, pATI->NewHW.sc_left, pATI->NewHW.sc_right,
+        pATI->NewHW.sc_top, pATI->NewHW.sc_bottom);
 }
 
 /*
@@ -1257,7 +1186,7 @@ ATIMach64SubsequentSolidHorVertLine
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    ATIMach64WaitForFIFO(3);
+    ATIMach64WaitForFIFO(pATI, 3);
     outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
     outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
 
@@ -1297,7 +1226,7 @@ ATIMach64SubsequentSolidBresenhamLine
     if (!(octant & YDECREASING))
         dst_cntl |= DST_Y_DIR;
 
-    ATIMach64WaitForFIFO(6);
+    ATIMach64WaitForFIFO(pATI, 6);
     outm(DST_CNTL, dst_cntl);
     outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
     outm(DST_BRES_ERR, minor + err);
@@ -1334,13 +1263,13 @@ ATIMach64SetupForMono8x8PatternFill
             SetBits(MIX_DST, DP_BKGD_MIX));
     else
     {
-        ATIMach64WaitForFIFO(2);
+        ATIMach64WaitForFIFO(pATI, 2);
         outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
             SetBits(ATIMach64ALU[rop], DP_BKGD_MIX));
         outm(DP_BKGD_CLR, bg);
     }
 
-    ATIMach64WaitForFIFO(6);
+    ATIMach64WaitForFIFO(pATI, 6);
     outm(DP_WRITE_MASK, planemask);
     outm(DP_SRC, DP_MONO_SRC_PATTERN |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
@@ -1380,16 +1309,9 @@ ATIMach64SubsequentMono8x8PatternFillRect
     }
 
     /* Disable clipping if it gets in the way */
-    if ((x < (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 0)) ||
-        ((x + w - 1) > (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 1)))
-        outm(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
-            SetWord(pATI->NewHW.sc_left, 0));
-    if ((y < (int)GetWord(CacheSlot(SC_TOP_BOTTOM), 0)) ||
-        ((y + h - 1) > (int)GetWord(CacheSlot(SC_TOP_BOTTOM), 1)))
-        outm(SC_TOP_BOTTOM, SetWord(pATI->NewHW.sc_bottom, 1) |
-            SetWord(pATI->NewHW.sc_top, 0));
+    ATIMach64ValidateClip(pATI, x, x + w - 1, y, y + h - 1);
 
-    ATIMach64WaitForFIFO(2);
+    ATIMach64WaitForFIFO(pATI, 2);
     outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
     outm(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
 }
@@ -1419,13 +1341,13 @@ ATIMach64SetupForScanlineCPUToScreenColorExpandFill
             SetBits(MIX_DST, DP_BKGD_MIX));
     else
     {
-        ATIMach64WaitForFIFO(2);
+        ATIMach64WaitForFIFO(pATI, 2);
         outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
             SetBits(ATIMach64ALU[rop], DP_BKGD_MIX));
         outm(DP_BKGD_CLR, bg);
     }
 
-    ATIMach64WaitForFIFO(3);
+    ATIMach64WaitForFIFO(pATI, 3);
     outm(DP_WRITE_MASK, planemask);
     outm(DP_SRC, DP_MONO_SRC_HOST |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
@@ -1462,8 +1384,10 @@ ATIMach64SubsequentScanlineCPUToScreenColorExpandFill
 
     pATI->ExpansionBitmapWidth = (w + 31) / 32;
 
-    ATIMach64WaitForFIFO(3);
-    outm(SC_LEFT_RIGHT, SetWord(x + w - 1, 1) | SetWord(x + skipleft, 0));
+    ATIMach64WaitForFIFO(pATI, 3);
+    pATI->sc_left = x + skipleft;
+    pATI->sc_right = x + w - 1;
+    outm(SC_LEFT_RIGHT, SetWord(pATI->sc_right, 1) | SetWord(pATI->sc_left, 0));
     outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
     outm(DST_HEIGHT_WIDTH,
         SetWord(pATI->ExpansionBitmapWidth * 32, 1) | SetWord(h, 0));
@@ -1473,7 +1397,8 @@ ATIMach64SubsequentScanlineCPUToScreenColorExpandFill
  * ATIMach64SubsequentColorExpandScanline --
  *
  * This function feeds a bitmap scanline to the engine for a colour expansion
- * fill.
+ * fill.  This is written to do burst transfers for those platforms that can do
+ * them, and to improve CPU/engine concurrency.
  */
 static void
 ATIMach64SubsequentColorExpandScanline
@@ -1482,22 +1407,69 @@ ATIMach64SubsequentColorExpandScanline
     int         iBuffer
 )
 {
-    ATIPtr pATI         = ATIPTR(pScreenInfo);
-    CARD32 *pBitmapData = pATI->ExpansionBitmapScanline;
-    int    w            = pATI->ExpansionBitmapWidth;
-    int    nFIFOEntries = pATI->nFIFOEntries;
+    ATIPtr       pATI         = ATIPTR(pScreenInfo);
+    CARD32       *pBitmapData = pATI->ExpansionBitmapScanlinePtr[iBuffer];
+    CARD32       *pDst, *pSrc;
+    int          w            = pATI->ExpansionBitmapWidth;
+    int          nDWord;
+    unsigned int iDWord;
 
-    pATI->nFIFOEntries >>= 1;
-
-    for (;  w > 0;  w--, pBitmapData++)
+    while (w > 0)
     {
-        if (!pATI->nAvailableFIFOEntries && (w > 1))
-            ATIMach64WaitForFIFO(w);
+        /*
+         * Transfers are done in chunks of up to 64 bytes in length (32 on
+         * earlier controllers).
+         */
+        nDWord = w;
+        if (nDWord > pATI->nHostFIFOEntries)
+            nDWord = pATI->nHostFIFOEntries;
 
-        outm(HOST_DATA_0, *pBitmapData);
+        /* Make enough FIFO slots available */
+        ATIMach64WaitForFIFO(pATI, nDWord);
+
+        /*
+         * Always start transfers on a chuck-sized boundary.  Note that
+         * HOST_DATA_0 is actually on a 512-byte boundary, but *pBitmapData can
+         * only be guaranteed to be on a chunk-sized boundary.
+         */
+        iDWord = 16 - nDWord;
+        pDst = (CARD32 *)pATI->pHOST_DATA - iDWord;
+        pSrc = pBitmapData - iDWord;
+
+        /*
+         * Transfer current chunk.  With any luck, the compiler won't mangle
+         * this too badly...
+         */
+        switch (iDWord)
+        {
+            case  0:  MMIO_OUT32(pDst +  0, 0, *(pSrc +  0));
+            case  1:  MMIO_OUT32(pDst +  1, 0, *(pSrc +  1));
+            case  2:  MMIO_OUT32(pDst +  2, 0, *(pSrc +  2));
+            case  3:  MMIO_OUT32(pDst +  3, 0, *(pSrc +  3));
+            case  4:  MMIO_OUT32(pDst +  4, 0, *(pSrc +  4));
+            case  5:  MMIO_OUT32(pDst +  5, 0, *(pSrc +  5));
+            case  6:  MMIO_OUT32(pDst +  6, 0, *(pSrc +  6));
+            case  7:  MMIO_OUT32(pDst +  7, 0, *(pSrc +  7));
+            case  8:  MMIO_OUT32(pDst +  8, 0, *(pSrc +  8));
+            case  9:  MMIO_OUT32(pDst +  9, 0, *(pSrc +  9));
+            case 10:  MMIO_OUT32(pDst + 10, 0, *(pSrc + 10));
+            case 11:  MMIO_OUT32(pDst + 11, 0, *(pSrc + 11));
+            case 12:  MMIO_OUT32(pDst + 12, 0, *(pSrc + 12));
+            case 13:  MMIO_OUT32(pDst + 13, 0, *(pSrc + 13));
+            case 14:  MMIO_OUT32(pDst + 14, 0, *(pSrc + 14));
+            case 15:  MMIO_OUT32(pDst + 15, 0, *(pSrc + 15));
+
+            default:    /* Muffle compiler */
+                break;
+        }
+
+        /* Step to next chunk */
+        pBitmapData += nDWord;
+        w -= nDWord;
+        pATI->nAvailableFIFOEntries -= nDWord;
     }
 
-    pATI->nFIFOEntries = nFIFOEntries;
+    pATI->EngineIsBusy = TRUE;
 }
 
 /*
@@ -1535,8 +1507,8 @@ ATIMach64AccelInit
     pXAAInfo->SubsequentSolidFillRect = ATIMach64SubsequentSolidFillRect;
 
     /* 8x8 mono pattern fills */
-    pXAAInfo->Mono8x8PatternFillFlags = HARDWARE_PATTERN_PROGRAMMED_BITS |
-        HARDWARE_PATTERN_SCREEN_ORIGIN | BIT_ORDER_IN_BYTE_MSBFIRST;
+    pXAAInfo->Mono8x8PatternFillFlags =
+        HARDWARE_PATTERN_PROGRAMMED_BITS | HARDWARE_PATTERN_SCREEN_ORIGIN;
     pXAAInfo->SetupForMono8x8PatternFill = ATIMach64SetupForMono8x8PatternFill;
     pXAAInfo->SubsequentMono8x8PatternFillRect =
         ATIMach64SubsequentMono8x8PatternFillRect;
@@ -1547,14 +1519,21 @@ ATIMach64AccelInit
      */
     pXAAInfo->ScanlineCPUToScreenColorExpandFillFlags =
         LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X |
-        BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_DWORD |
-        SCANLINE_PAD_DWORD;
+        CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD;
     if (pATI->XModifier != 1)
         pXAAInfo->ScanlineCPUToScreenColorExpandFillFlags |= TRIPLE_BITS_24BPP;
     pXAAInfo->NumScanlineColorExpandBuffers = 1;
-    pATI->ExpansionBitmapScanlinePtr = pATI->ExpansionBitmapScanline;
+
+    /* Align bitmap data on a 64-byte boundary */
+    pATI->ExpansionBitmapWidth =        /* DWord size in bits */
+        ((pATI->displayWidth * pATI->XModifier) + 31) & ~31U;
+    pATI->ExpansionBitmapScanlinePtr[1] =
+        (CARD32 *)xnfalloc((pATI->ExpansionBitmapWidth >> 3) + 63);
+    pATI->ExpansionBitmapScanlinePtr[0] =
+        (pointer)(((unsigned long)pATI->ExpansionBitmapScanlinePtr[1] + 63) &
+                  ~63UL);
     pXAAInfo->ScanlineColorExpandBuffers =
-        (CARD8 **)&pATI->ExpansionBitmapScanlinePtr;
+        (CARD8 **)pATI->ExpansionBitmapScanlinePtr;
     pXAAInfo->SetupForScanlineCPUToScreenColorExpandFill =
         ATIMach64SetupForScanlineCPUToScreenColorExpandFill;
     pXAAInfo->SubsequentScanlineCPUToScreenColorExpandFill =

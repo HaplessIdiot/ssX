@@ -1,4 +1,16 @@
 XFree86 4.0.1a (XX XXXX 2000)
+ 417. Make ATI driver tolerate relocation of conflicting resources
+      (Marc La France).
+ 416. Make Mach64 FIFO handling available to GATOS (Marc La France).
+ 415. Fix bug in Mach64 scissor handling (Marc La France).
+ 414. Implement Mark Vojkovich's suggestions in the ATI driver
+      (LSB ordering of monochrome data and host transfer burst modes)
+      (Marc La France).
+ 413. More fixes to ATI DSP register calculation (Marc La France).
+ 412. ATI DGA support fixes for VGA Wonder capable adapters and the
+      setting of the DGA_CONCURRENT_ACCESS flag (Marc La France).
+ 411. Change imake to generate symbols for the GCC version used to
+      compile it (Marc La France).
  418. Fix xf1bpp/xf4bpp in trident driver and some planemask problems
       (Alan Hourihane).
 
@@ -10821,4 +10833,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1230 2000/07/02 02:35:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1231 2000/07/05 13:41:35 alanh Exp $

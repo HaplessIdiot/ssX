@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.9 2000/03/22 03:08:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.10 2000/06/19 15:00:56 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -21,12 +21,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ati.h"
 #include "atichip.h"
 #include "aticrtc.h"
 #include "atidsp.h"
 #include "atiio.h"
 #include "atividmem.h"
-#include "xf86.h"
 
 /*
  * ATIDSPPreInit --
@@ -148,7 +148,7 @@ ATIDSPPreInit
     if (dsp_config)
         pATI->DisplayLoopLatency = GetBits(dsp_config, DSP_LOOP_LATENCY);
 
-    if (!dsp_on_off ||
+    if ((!dsp_on_off && (pATI->Chip < ATI_CHIP_264GTPRO)) ||
         ((dsp_on_off == vga_dsp_on_off) &&
          (!dsp_config || !((dsp_config ^ vga_dsp_config) & DSP_XCLKS_PER_QW))))
     {
@@ -261,8 +261,15 @@ ATIDSPCalculate
             ATIDivide(pATI->XCLKPageFaultDelay, 1, xshift, 1);
     }
 
-    if (dsp_on >= dsp_off)
+    /* Calculate rounding factor and apply it to dsp_on */
+    tmp = ((1 << (Maximum_DSP_PRECISION - dsp_precision)) - 1) >> 1;
+    dsp_on = ((dsp_on + tmp) / (tmp + 1)) * (tmp + 1);
+
+    if (dsp_on >= ((dsp_off / (tmp + 1)) * (tmp + 1)))
+    {
         dsp_on = dsp_off - ATIDivide(Multiplier, Divider, vshift, -1);
+        dsp_on = (dsp_on / (tmp + 1)) * (tmp + 1);
+    }
 
     /* Last but not least:  dsp_xclks */
     dsp_xclks = ATIDivide(Multiplier, Divider, vshift + 5, 1);

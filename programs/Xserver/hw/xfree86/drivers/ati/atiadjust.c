@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.5 2000/02/18 12:19:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.6 2000/06/19 15:00:55 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -21,12 +21,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ati.h"
 #include "atiadjust.h"
 #include "atichip.h"
 #include "aticrtc.h"
 #include "atiio.h"
 #include "atilock.h"
-#include "xf86.h"
 
 /*
  * The display start address is expressed in units of 32-bit (VGA) or 64-bit

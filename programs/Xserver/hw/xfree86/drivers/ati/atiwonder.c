@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.7 2000/02/18 12:19:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.8 2000/06/19 15:00:59 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -50,6 +50,7 @@
  * accessed at indices 0xB0 through 0xBF on all chipsets.
  */
 
+#include "ati.h"
 #include "atichip.h"
 #include "atiio.h"
 #include "atiwonder.h"

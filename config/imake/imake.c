@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.34 2000/05/18 23:46:07 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.35 2000/06/13 02:28:27 dawes Exp $ */
 
 /*
  * 
@@ -1133,6 +1133,19 @@ get_sun_compiler_versions (FILE *inFile)
 }
 #endif
 
+#ifdef __GNUC__
+static void
+get_gcc_version(FILE *inFile)
+{
+   fprintf (inFile, "#define HasGcc 1\n");
+#if __GNUC__ > 1
+   fprintf (inFile, "#define HasGcc2 1\n");
+#endif
+   fprintf (inFile, "#define GccMajorVersion %d\n", __GNUC__);
+   fprintf (inFile, "#define GccMinorVersion %d\n", __GNUC_MINOR__);
+}
+#endif
+
 #ifndef __EMX__
 static void
 get_gcc_incdir(FILE *inFile)
@@ -1237,6 +1250,9 @@ define_os_defaults(FILE *inFile)
     get_gcc_incdir(inFile);
 #if defined (sun) && defined(SVR4)
     get_sun_compiler_versions (inFile);
+#endif
+#ifdef __GNUC__
+    get_gcc_version (inFile);
 #endif
 #ifdef __FreeBSD__
     get_binary_format(inFile);
