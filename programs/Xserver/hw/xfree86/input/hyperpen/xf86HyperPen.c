@@ -35,12 +35,12 @@
  * TORTIOUS ACTIONS, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86$ */
 
 #include <xf86Version.h>
 
 #if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(3,9,0,0,0)
 #define XFREE86_V4 1
-#define XFree86LOADER 1
 #endif
 
 #ifdef XFREE86_V4
@@ -1488,7 +1488,7 @@ init_xf86HyperPen(unsigned long server_version)
  * Entry point for the loader code
  */
 XF86ModuleVersionInfo xf86HyperPenVersion = {
-    "HyperPen",
+    "hyperpen",
     MODULEVENDORSTRING,
     MODINFOSTRING1,
     MODINFOSTRING2,
