@@ -17,8 +17,7 @@
 		};
 		0127909800074B1A0A000002 = {
 			isa = PBXFileReference;
-			name = XApplication.h;
-			path = ../../../../../../xc/programs/Xserver/hw/darwin/bundle/XApplication.h;
+			path = XApplication.h;
 			refType = 4;
 		};
 		015698ED003DF345CE6F79C2 = {
@@ -186,8 +185,8 @@
 			);
 			isa = PBXGroup;
 			name = "X Server";
-			path = ../..;
-			refType = 0;
+			path = ..;
+			refType = 2;
 		};
 		018F40F3003E1916CE6F79C2 = {
 			isa = PBXFileReference;
@@ -251,8 +250,7 @@
 		};
 		04329611000763920A000002 = {
 			isa = PBXFileReference;
-			name = Preferences.h;
-			path = ../../../../../../xc/programs/Xserver/hw/darwin/bundle/Preferences.h;
+			path = Preferences.h;
 			refType = 4;
 		};
 		06EB6C3B004099E7CE6F79C2 = {
@@ -492,8 +490,7 @@
 		};
 		1C4A3109004D8F24CE6F79C2 = {
 			isa = PBXFileReference;
-			name = Xserver.h;
-			path = ../../../../../../xc/programs/Xserver/hw/darwin/bundle/Xserver.h;
+			path = Xserver.h;
 			refType = 4;
 		};
 		29B97313FDCFA39411CA2CEA = {

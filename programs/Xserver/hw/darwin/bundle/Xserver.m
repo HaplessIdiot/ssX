@@ -20,8 +20,9 @@ extern char **envpGlobal;
 - (id)init {
     self=[super init];
 
-    serverDied = NO;
+    serverLock = [[NSLock alloc] init];
     serverVisible = NO;
+    appQuitting = NO;
     mouseState = 0;
     eventWriteFD = gDarwinEventWriteFD;
 
@@ -31,27 +32,26 @@ extern char **envpGlobal;
 - (BOOL)applicationShouldTerminate:(NSApplication *)sender {
     int but;
 
-    if (serverVisible) {
-        [self hide];
-    }
-
-    if (serverDied) {
+    if ([serverLock tryLock])
         return YES;
-    } else {
-        but = NSRunAlertPanel(@"Quit X server?", 
-                              @"Quitting the X server will terminate any running X Window programs.", 
-                              @"Quit", @"Cancel", nil);
+    if (serverVisible)
+        [self hide];
 
-        switch (but) {
-          case NSAlertDefaultReturn:		// quit
+    but = NSRunAlertPanel(@"Quit X server?", 
+                          @"Quitting the X server will terminate any running X Window programs.", 
+                          @"Quit", @"Cancel", nil);
+
+    switch (but) {
+        case NSAlertDefaultReturn:		// quit
+            appQuitting = YES;
             [self kill];
-            if (eventWriteFD >= 0) close(eventWriteFD);
+            // Try to wait until the X server shuts down
+            [serverLock lockBeforeDate:[NSDate dateWithTimeIntervalSinceNow:10]];
             return YES;
-          case NSAlertAlternateReturn:		// cancel
+        case NSAlertAlternateReturn:		// cancel
             break;
-        }
-        return NO;
     }
+    return NO;
 }
 
 // returns YES when event was handled
@@ -126,6 +126,9 @@ extern char **envpGlobal;
     // Start the X server thread
     [NSThread detachNewThreadSelector:@selector(run) toTarget:self withObject:nil];
 
+    // Make sure the menu bar gets drawn
+    [NSApp setWindowsNeedUpdate:YES];
+
     // Display the help splash screen or show the X server
     if ([Preferences startupHelp]) {
         [self sendShowHide:NO];
@@ -137,9 +140,12 @@ extern char **envpGlobal;
 
 // Run the X server thread
 - (void)run {
+    [serverLock lock];
     main(argcGlobal, argvGlobal, envpGlobal);
-    serverDied = YES;
-    [NSApp terminate:nil];
+    serverVisible = NO;
+    [serverLock unlock];
+    if (!appQuitting)
+        [NSApp terminate:nil];	// quit if we aren't already
 }
 
 // Close the help splash screen and show the X server
@@ -216,7 +222,8 @@ extern char **envpGlobal;
 - (void)sendNXEvent:(NXEvent*)ev {
     if (write(eventWriteFD, ev, sizeof(*ev)) == sizeof(*ev))
         return;
-    // FIXME: handle bad writes?
+    ErrorF("Bad write to event pipe.\n");
+    // FIXME: handle bad writes better?
 }
 
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag {
