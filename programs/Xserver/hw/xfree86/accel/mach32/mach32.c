@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.5 1994/06/15 15:40:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.6 1994/06/18 16:23:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -88,6 +88,7 @@ ScrnInfoRec mach32InfoRec = {
     {0, },	       	/* OFlagSet clockOptions */
     {0, },	       	/* OFlagSet xconfigFlag */
     NULL,	       	/* char *chipset */
+    NULL,	       	/* char *ramdac */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */
