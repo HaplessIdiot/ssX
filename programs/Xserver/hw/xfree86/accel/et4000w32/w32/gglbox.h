@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/gglbox.h,v 3.0 1994/09/11 00:42:15 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -31,7 +31,7 @@ glenn@cs.utexas.edu)
     CARD32 ggl_cnt, ggl_ptr;
     ggl_cnt = GGL_COUNT;
     ggl_ptr = (CARD32)GGL_PTR;
-    while (ggl_cnt)
+    while (ggl_cnt != 0)
     {
 	GGL_PTR = (void*)ggl_ptr;
 	GGL_SET(GGL_PTR)

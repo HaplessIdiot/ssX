@@ -1,5 +1,6 @@
 
-/* $XConsortium: sun.h,v 5.38 94/03/28 14:35:05 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.39 94/08/16 13:45:30 dpw Exp $ */
+/* $XFree86$ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -48,10 +49,12 @@ extern char *getenv();
 #endif
 #endif
 #include <fcntl.h>
+#ifndef __NetBSD__
 #ifndef i386
 # include <poll.h>
 #else
 # include <sys/poll.h>
+#endif
 #endif
 #include <errno.h>
 #include <memory.h>
@@ -61,11 +64,17 @@ extern int errno;
 #endif
 
 /* 
- * Sun specific headers Sun moved in Solaris.
+ * Sun specific headers Sun moved in Solaris, and are different for NetBSD.
  *
  * Even if only needed by one source file, I have put them here 
  * to simplify finding them...
  */
+#ifdef        __NetBSD__
+# include <machine/fbio.h>
+# include <machine/kbd.h>
+# include <machine/kbio.h>
+# include <machine/vuid_event.h>
+#else
 #ifdef SVR4
 # include <sys/fbio.h>
 # include <sys/kbd.h>
@@ -87,6 +96,7 @@ extern int ioctl();
 extern int getrlimit();
 extern int setrlimit();
 extern int getpagesize();
+#endif
 #endif
 extern int gettimeofday();
 
@@ -237,11 +247,13 @@ typedef struct {
     char*		name;	/* /usr/include/fbio names */
 } sunFbDataRec;
 
-#ifndef XKB
+#ifdef XKB
+extern Bool		noXkbExtension;
+#endif
+
 extern Bool		sunAutoRepeatHandlersInstalled;
 extern long		sunAutoRepeatInitiate;
 extern long		sunAutoRepeatDelay;
-#endif
 extern sunFbDataRec	sunFbData[];
 extern fbFd		sunFbs[];
 extern Bool		sunSwapLkeys;
@@ -274,7 +286,7 @@ extern int sunChangeKbdTranslation(
 
 extern void sunNonBlockConsoleOff(
 #if NeedFunctionPrototypes
-#ifdef SVR4
+#if defined(SVR4) || defined(__NetBSD__)
     void
 #else
     char* /* arg */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.4 1994/09/07 15:47:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.5 1994/09/11 00:36:39 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -437,6 +437,25 @@ void agxSegment(
     register xSegment *
 #endif
 );
+/* agxDLine.c */
+void agxDLine(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    int ,
+    DDXPointPtr
+#endif
+);
+/* agxDSeg.c */
+void agxDSegment(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    register xSegment *
+#endif
+);
 /* agxMap.c */
 void agxMapSetSrc(
 #if NeedFunctionPrototypes
@@ -668,6 +687,46 @@ void agxCopyWindow(
     RegionPtr
 #endif
 );
+/* agxFillArc.c */
+void
+agxPolyFillArc(
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    xArc *
+#endif
+);
+/* agxFillPoly.c */
+void
+agxFillPolygon(
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    int,
+    int,
+    DDXPointPtr
+#endif
+);
+void
+agxFillConvexPoly(
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    DDXPointPtr
+#endif
+);
+void
+agxFillGeneralPoly(
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    DDXPointPtr
+#endif
+);
 /* xf86RamDac.c */
 void xf86ProbeRamDac(
 #if NeedFunctionPrototypes
@@ -871,9 +930,10 @@ extern Bool    vgaUse2Banks;
 extern Bool    useSpeedUp;
 
 extern Bool xf86VTSema;
-extern short agxMaxX, agxMaxY;
-extern short agxVirtX, agxVirtY;
-extern short agxAdjustedVirtX;
+extern int   agxMaxX, agxMaxY;
+extern int   agxVirtX, agxVirtY;
+extern int   agxDisplayWidth; 
+extern int   agxAdjustedVirtX;
 extern Bool  agx128WidthAdjust;
 extern Bool  agx256WidthAdjust;
 extern Bool  agx288WidthAdjust;

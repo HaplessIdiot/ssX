@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.222 94/04/17 20:23:28 gildea Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.3 1994/09/22 16:39:46 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.4 1994/10/23 13:02:54 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -310,17 +310,22 @@ extern Time_t time ();
 #define endutent endutxent
 #define pututline pututxline
 #else
+#ifdef ISC
+#include <sys/types.h>
+#endif
 #include <utmp.h>
 #if defined(_CRAY) && OSMAJORVERSION < 8
 extern struct utmp *getutid __((struct utmp *_Id));
 #endif
 #endif
 
+#ifndef ISC
 #ifdef UTMP
 #include <utmp.h>
 #endif
 #if defined(LASTLOG) && (BSD < 199103)
 #include <lastlog.h>
+#endif
 #endif
 
 #ifdef  PUCC_PTYD

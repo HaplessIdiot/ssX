@@ -1,5 +1,6 @@
 
-/* $XConsortium: sunCfb.c,v 1.14 94/04/17 20:29:34 kaleb Exp $ */
+/* $XConsortium: sunCfb.c,v 1.15 94/05/18 11:17:56 kaleb Exp $ */
+/* $XFree86$ */
 
 /*
 Copyright (c) 1990  X Consortium
@@ -114,6 +115,8 @@ void sunInstallColormap(cmap)
     register Entry *pent;
     register VisualPtr pVisual = cmap->pVisual;
     u_char	  rmap[256], gmap[256], bmap[256];
+    unsigned long rMask, gMask, bMask;
+    int	oRed, oGreen, oBlue;
 
     if (cmap == pPrivate->installedMap)
 	return;
@@ -121,10 +124,21 @@ void sunInstallColormap(cmap)
 	WalkTree(pPrivate->installedMap->pScreen, TellLostMap,
 		 (pointer) &(pPrivate->installedMap->mid));
     if ((pVisual->class | DynamicClass) == DirectColor) {
+	if (pVisual->ColormapEntries < 256) {
+	    rMask = pVisual->redMask;
+	    gMask = pVisual->greenMask;
+	    bMask = pVisual->blueMask;
+	    oRed = pVisual->offsetRed;
+	    oGreen = pVisual->offsetGreen;
+	    oBlue = pVisual->offsetBlue;
+	} else {
+	    rMask = gMask = bMask = 255;
+	    oRed = oGreen = oBlue = 0;
+	}
 	for (i = 0; i < 256; i++) {
-	    rmap[i] = cmap->red[i].co.local.red >> 8;
-	    gmap[i] = cmap->green[i].co.local.green >> 8;
-	    bmap[i] = cmap->blue[i].co.local.blue >> 8;
+	    rmap[i] = cmap->red[(i & rMask) >> oRed].co.local.red >> 8;
+	    gmap[i] = cmap->green[(i & gMask) >> oGreen].co.local.green >> 8;
+	    bmap[i] = cmap->blue[(i & bMask) >> oBlue].co.local.blue >> 8;
 	}
     } else {
 	for (i = 0, pent = cmap->red;
@@ -233,16 +247,11 @@ static void checkMono (argc, argv)
 /*
  * CG3_MMAP_OFFSET is #defined in <pixrect/cg3var.h> or <sys/cg3var.h>
  * on  SunOS and Solaris respectively.  Under Solaris, cg3var.h 
- * #includes a non-existent file, and causes the make to abort.  Since all 
- * cg3var.h is needed for is this one #define, we'll just #define it here 
- * and let it go at that.
+ * #includes a non-existent file, and causes the make to abort.  Other
+ * systems may not have cg3var.h at all.  Since all cg3var.h is needed
+ * for is this one #define, we'll just #define it here and let it go at that.
  */
-
-#ifdef SVR4
 #define CG3_MMAP_OFFSET 0x04000000
-#else
-#include <pixrect/cg3var.h>
-#endif
 
 Bool sunCG3Init (screen, pScreen, argc, argv)
     int	    	  screen;    	/* what screen am I going to be */
@@ -259,11 +268,15 @@ Bool sunCG3Init (screen, pScreen, argc, argv)
 
 #ifndef i386 /* { */
 
+#ifdef __NetBSD__
+#include <machine/cgtworeg.h>
+#else
 #ifdef SVR4
 #include <sys/cg2reg.h>
 #else
 #include <pixrect/cg2reg.h>
 #endif
+#endif        /* __NetBSD__ */
 
 typedef struct {
     struct cg2memfb	mem;
@@ -347,10 +360,18 @@ Bool sunCG2Init (screen, pScreen, argc, argv)
     return ret;
 }
 
+/*
+ * This used to #include <sundev/cg4reg.h> for SunOS 4 and <sys/cg4reg.h>
+ * for Solaris, but it doesn't use anything from the file.  Since other
+ * systems don't have this #include file anywhere, I deleted the reference
+ * to it.
+ */
+#if 0
 #ifdef SVR4
 #include    <sys/cg4reg.h>
 #else
 #include    <sundev/cg4reg.h>
+#endif
 #endif
 
 #define	CG4_HEIGHT	900

@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h,v 1.71 94/05/05 16:03:22 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.3 1994/05/22 06:49:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.4 1994/05/29 02:09:19 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -133,7 +133,8 @@ SOFTWARE.
 #endif /* vax */
 
 #if (defined(sun) && !(defined(i386) && defined(SVR4))) || \
-    (defined(AMOEBA) && (defined(sparc) || defined(mc68000)))
+    (defined(AMOEBA) && (defined(sparc) || defined(mc68000))) || \
+    (defined(__NetBSD__) && (defined(__sparc__) || defined(mc68000)))
 
 #if defined(sun386) || defined(sun5)
 # define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the SUN only */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32fillarc.c,v 3.0 1994/09/11 00:41:50 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -236,7 +236,6 @@ RROP_NAME(W32PolyFillArcSolid) (pDraw, pGC, narcs, parcs)
     CHECK_NOOP
 
     cfbGetLongWidthAndPointer (pDraw, nlwidth, addrlt)
-/*GGLGGL if (pDraw->type != DRAWABLE_WINDOW)*/
     if ((CARD32)addrlt != VGABASE)
     {
 	RROP_NAME(cfbPolyFillArcSolid) (pDraw, pGC, narcs, parcs);

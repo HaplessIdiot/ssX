@@ -1,5 +1,5 @@
 /* $XConsortium: cfbpntwin.c,v 5.18 94/04/17 20:28:57 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbpntwin.c,v 3.0 1994/09/11 00:41:37 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -207,11 +207,10 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
     int		    w;
 
     cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase);
-    TEST_SET_FB(pdstBase)
 
     rrop_xor = PFILL(pixel);
 
-    if (FrameBuffer) 
+    if ((CARD32)pdstBase == VGABASE)
     {
 	int dst;
 
@@ -219,7 +218,7 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
 	W32_INIT_BOX(GXcopy, 0xffffffff, rrop_xor, widthDst - 1)
 	for (; nBox; nBox--, pBox++)
 	{
-	    dst = pBox->y1 * widthDst + pBox->x1;
+	    dst = pBox->y1 * widthDst + (pBox->x1 * (PSZ >> 3));
 	    h = pBox->y2 - pBox->y1;
 	    w = pBox->x2 - pBox->x1;
 	    WAIT_XY
@@ -240,22 +239,10 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
 	    register char    *pdstb = ((char *) pdst) + pBox->x1;
 	    int	    incr = widthDst * PGSZB;
 
-	    if (FrameBuffer)
+	    while (h--)
 	    {
-		/* Speed this up later--GGL */ 
-		while (h--)
-		{
-		    W32_PIXEL(pdstb, rrop_xor)
-		    pdstb += incr;
-		}
-	    }
-	    else
-	    {
-		while (h--)
-		{
-		    *pdstb = rrop_xor;
-		    pdstb += incr;
-		}
+		*pdstb = rrop_xor;
+		pdstb += incr;
 	    }
 	}
 	else
@@ -265,22 +252,10 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
 	if ((pBox->x1 & PIM) + w <= PPW)
 	{
 	    maskpartialbits(pBox->x1, w, leftMask);
-	    if (FrameBuffer)
+	    while (h--)
 	    {
-		while (h--)
-		{
-		    W32_SET_LONG(pdst)
-		    *(LongP)W32Ptr = (*(LongP)W32Ptr & ~leftMask) | (rrop_xor & leftMask);
-		    pdst += widthDst;
-		}
-	    }
-	    else
-	    {
-		while (h--)
-		{
-		    *pdst = (*pdst & ~leftMask) | (rrop_xor & leftMask);
-		    pdst += widthDst;
-		}
+		*pdst = (*pdst & ~leftMask) | (rrop_xor & leftMask);
+		pdst += widthDst;
 	    }
 	}
 	else

@@ -1,3 +1,23 @@
+XFree86 3.1.0d (19 November 1994)
+ 84. Some preliminary support for ISC (SVR3) 4.x (Michael Rohleder).
+ 83. ET4000/W32 server updates (Glenn Lai).
+ 82. NetBSD support in hw/sun (Dennis Ferguson, Matthew Green, Matthieu
+     Herrb).
+ 81. Fix xterm hang-on-exit problem on SolX86 2.4 (David Holland).
+ 80. Speedups for AGX constant-metric and non-overlapping characters
+     (Henry Worth).
+ 79. AGX accelerated dashed lines, and solid fills for arcs and polygons
+     (Henry Worth).
+ 78. Doublescan support for the AGX server (Henry Worth).
+ 77. Update AGX server to delete unusable modes, and to allow the virtual
+     width to be less than the display width (Henry Worth).
+ 76. Fix typo in oak driver (which broke 067/077 support) (Jorge Delgado).
+ 75. NetBSD updates, including SparcArchitecture support in imake config
+     (Matthieu Herrb).
+ 74. 32bpp support for SPEA Mercury (928+Bt485) (Norbert Distler).
+ 73. Modify Linux kbd code to read the "high_keys" mapping (Takashi Manabe).
+ 72. Fix RGBPath in XF86Config being ignored.
+
 XFree86 3.1.0c (6 November 1994)
  71. Fix xload for FreeBSD 1.1.5 (Joerg Wunsch).
  70. Modify S3 linear fb probe to handle the non-standard CR5A[6:7] address

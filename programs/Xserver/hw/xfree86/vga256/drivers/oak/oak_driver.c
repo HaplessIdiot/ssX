@@ -1,5 +1,5 @@
 /* $XConsortium: oak_driver.c,v 1.1 94/03/28 21:52:02 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.6 1994/10/20 06:12:01 dawes Exp $ */
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
  *
@@ -707,7 +707,7 @@ OAKProbe()
    * THE STRUCTURE, ALLOWING FOR LINEAR FRAMEBUFFER
    */
 
-  if (OTI_chipset = OTI87)
+  if (OTI_chipset == OTI87)
     {
       OAK.ChipSetRead = OTI87SetRead ;
       OAK.ChipSetWrite = OTI87SetWrite ;

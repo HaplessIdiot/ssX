@@ -24,7 +24,8 @@ If you have problems with the server.  Try the following things:
 
 2.  Get a motherboard with its local bus running at 33 MHz.  Many, if not
     all, ET4000/W32 boards will surely behave in a funny way on a 50-MHz
-    bus.
+    bus.  You may have to use a wait state or two, but first try without
+    any.
 
 Note that the built-in power saver (for a "green" monitor) has not been
 tested.  Also do not expect it to work on a board without a w32p_rev_c or
@@ -33,20 +34,41 @@ later chip.
 ACKNOWLEDGMENTS:
 
 Jerry J. Shekhel (jerry@msi.com) gave me the 1-M Mirage ET4000/W32 VLB board
-on which the initial development was done.
+on which the initial development (X_W32) was done.
 
 X11R6 and the XFree86 Project provide the base code for XF86_W32. 
 
-Hercules Computer Technology Inc. lent me a 2-M Hercules Dynamite Pro VLB board
-for work related to the w32p.
+Hercules Computer Technology Inc. lent me a 2-M Hercules Dynamite Pro VLB
+board for the development that led to XF86_W32. 
 
-Numerous testers have given me feedback for X_W32 and later XF86_W32.
+Numerous testers have given me feedback for X_W32 and later XF86_W32.  I
+apologize for my failure to keep track of the people who tested X_W32, but
+the names of the people involved with the XF86_W32 testing are listed below:
+
+Linux:
+
+bf11620@coewl.cen.uiuc.edu (Byron Thomas Faber)
+dlj0@chern.math.lehigh.edu (David Johnson)
+peterc@a3.ph.man.ac.uk (Peter Chang) 
+dmm0t@rincewind.mech.virginia.edu (David Meyer)
+nrh@philabs.Philips.COM (Nikolaus R. Haus)
+jdooley@dbp.caltech.edu (James Dooley)
+thumper@hitchcock.eng.uiowa.edu (Timothy Paul Schlie)
+klatta@pkdla5.syntex.com (Ken Latta)
+robinson@cnj.digex.net (Andrew Robinson)
+reggie@phys.washington.edu (Reginald S. Perry)
+sjm@cs.tut.fi (M{kinen Sami J)
+engel@yacc.central.de (C. Engelmann) USE cengelm@gwdg.de
+postgate@cafe.net (Richard Postgate)
+are1@cec.wustl.edu (Andy Ellsworth)
+bill@celtech.com (Bill Foster)
+
+FreeBSD: 
+ljo@ljo-slip.DIALIN.CWRU.Edu (L Jonas Olsson)
+
 
 
 Glenn G. Lai
 glenn@cs.utexas.edu
-9/26/94
+10/24/94
 
-
-
-$XFree86$

@@ -31,7 +31,7 @@ Author: Keith Packard
 
 */
 /* $XConsortium: cfbblt.c,v 1.13 94/04/17 20:28:44 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbblt.c,v 3.0 1994/09/11 00:41:28 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -259,13 +259,12 @@ if (ggl_type == PIXPIX || ggl_type == WINWIN)
 else
     xdir = ydir = 1;
 
-
-    if (ggl_type == WINWIN && (W32p || ((planemask & PMSK) == PMSK)))
+    if (ggl_type == WINWIN) 
     {
 	int width, src, dst;
 
 	width = widthDst >= 0 ? (widthDst << 2) : (-widthDst << 2);
-	W32_INIT_BLT(alu, PFILL(planemask), width - 1, width - 1, xdir, ydir) 
+	W32_INIT_WINWIN(alu, PFILL(planemask), width - 1, width - 1, xdir, ydir) 
 
 	while(nbox--)
 	{
@@ -274,13 +273,13 @@ else
 
 	    if (xdir == -1)
 	    {
-		src = pptSrc->x + w - 1;
-		dst = pbox->x2 - 1;
+		src = pptSrc->x + (w - 1) * (PSZ >> 3);
+		dst = (pbox->x2 - 1) * (PSZ >> 3);
 	    }
 	    else
 	    {
-		src = pptSrc->x;
-		dst = pbox->x1;
+		src = (pptSrc->x) * (PSZ >> 3);
+		dst = (pbox->x1) * (PSZ >> 3);
 	    }
 
 	    if (ydir == -1)
@@ -295,7 +294,7 @@ else
 	    }
 
 	    WAIT_XY
-	    W32_BLT(src, dst, w, h)
+	    W32_WINWIN(src, dst, w, h)
 
 	    pbox++;
 	    pptSrc++;
@@ -356,16 +355,6 @@ else
 
 	    switch (ggl_type)
 	    {
-		case WINWIN:
-		    while (h--)
-		    {
-			W32_SET_BLT0
-			W32_SET_BLT1
-			BusToMem(ggl2, ggl1, w);
-			pdst += dst_inc;
-			psrc += src_inc;
-		    }
-		    break;
 		case WINPIX:
 		    while (h--)
 		    {
@@ -601,7 +590,7 @@ pdst++;
 	else	/* xdir == -1 */
 	{
 /*
- *  The magic constant 2048 restricts us to a horizontal rez of 2048--GGL
+ *  The choice of 2048 restricts us to a maximum horizontal rez of 2048--GGL
  */
 #define GGL_X_BACKWARD \
 		    if (ggl_src) \

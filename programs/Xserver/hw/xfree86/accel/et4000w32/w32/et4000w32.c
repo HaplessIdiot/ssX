@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.3 1994/09/20 12:45:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.4 1994/09/25 12:28:01 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -143,60 +143,6 @@ ET4000W32Ident(n)
 
 
 /*
- *  Detect the amount of memory installed.  NOT used for the moment--GGL.
- */
-static Bool
-w32_fails_memory_check(i)
-    int *i;
-{
-    int p, *pp, t;
-
-    /*
-     *  Assume the amount of memory is a multiple of 256K to speed this up--GGL
-     */
-#define STRIDE (256 * 1024)
-
-    /*
-     *  Should at least fail at 16M--GGL
-     */
-    for (p = 0; p <= 16 * 1024 * 1024; p += STRIDE)
-    {
-	pp = (int *)p;
-	W32_LONG(pp);
-	*pp = p;
-
-	for (t = 0; t < p; t += STRIDE) 
-	{
-	    pp = (int *)t;
-	    W32_LONG(pp);
-	    if (*pp != t)
-		goto sanity_check;
-	}
-    }
-
-sanity_check:
-
-    for (t = 0; t < p; t += STRIDE)
-    {
-	pp = (int *)t;
-	W32_LONG(pp);
-	*pp = t;
-    }
-
-    for (t = 0; t < p; t += STRIDE)
-    {
-	pp = (int *)t;
-	W32_LONG(pp);
-	if (*pp != t)
-	    return TRUE;
-    }
-
-    *i = p >> 10;
-    return FALSE;
-}
-
-
-/*
  * ET4000W32Probe --
  */
 
@@ -293,19 +239,9 @@ ET4000W32Probe()
 	   strcmp(et4000w32_id, "et4000w32i_rev_c") == 0;
     W32OrW32i = W32 || W32i;
     W32p = !W32OrW32i;
+    W32pa = strcmp(et4000w32_id, "et4000w32_rev_a") == 0;
     W32pCAndLater = W32p && strcmp(et4000w32_id, "et4000w32p_rev_a") != 0
 			 && strcmp(et4000w32_id, "et4000w32p_rev_b") != 0;
-/*  Problematic with current code setup--GGL 
-
-    if (vga256InfoRec.videoRam == 0)
-	if (w32_fails_memory_check(&i))
-	{
-	    ET4000W32EnterLeave(LEAVE);
-	    FatalError("Memory check failed\n");
-	}
-	else
-	    vga256InfoRec.videoRam = i;
-*/
 
     if (vga256InfoRec.videoRam == 0)
     {
@@ -328,6 +264,7 @@ ET4000W32Probe()
     }
 
     vga256InfoRec.videoRam -= 1;
+    SetupRamdac();
 
     return TRUE;
 }
@@ -472,8 +409,6 @@ ET4000W32Init(mode)
     W32Pattern = W32Foreground + 16;
 
     RESET_ACL
-
-    SetupRamdac();
 
     return et4000w32_initted = TRUE;
 }

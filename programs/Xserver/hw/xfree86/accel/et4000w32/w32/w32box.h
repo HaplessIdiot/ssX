@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32box.h,v 3.1 1994/09/19 13:42:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32box.h,v 3.2 1994/09/25 12:28:08 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -35,15 +35,14 @@ glenn@cs.utexas.edu)
 #define W32_INIT_BOX(OP, MASK, COLOR, DST_OFFSET) \
 { \
     if (MASK == 0xffffffff) \
-    { \
 	*ACL_FOREGROUND_RASTER_OPERATION	= W32OpTable[OP]; \
-    } \
     else \
     { /* w32p only */ \
 	*ACL_FOREGROUND_RASTER_OPERATION	= \
 	    (0xf0 & W32OpTable[OP]) | 0x0a; \
 	*ACL_PATTERN_WRAP			= 0x02; \
 	*ACL_PATTERN_Y_OFFSET			= 0x3; \
+	*ACL_PATTERN_ADDRESS			= W32Pattern; \
 	*MBP0 					= W32Pattern; \
 	*(LongP)W32Buffer 			= MASK; \
     } \

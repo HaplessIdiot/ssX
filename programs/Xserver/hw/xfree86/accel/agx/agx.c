@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.16 1994/09/25 13:25:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.17 1994/10/23 12:56:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -163,9 +163,10 @@ Bool     agxHWCursor = FALSE;
 
 
 extern Bool xf86VTSema;
-short agxMaxX, agxMaxY;
-short agxVirtX, agxVirtY;
-short agxAdjustedVirtX;
+int agxMaxX, agxMaxY;
+int agxVirtX, agxVirtY;
+int agxAdjustedVirtX;
+int agxDisplayWidth;
 Bool  agx128WidthAdjust;
 Bool  agx256WidthAdjust;
 Bool  agx288WidthAdjust;
@@ -367,7 +368,6 @@ agxProbe()
       agxChipId = AGX_16;
    else {
       agxChipId = 0;
-      xf86ProbeFailed = TRUE;
       agxInfoRec.chipset = "UNKNOWN";
       ErrorF("%s :Valid AGX/XGA Chip type must be specified.\n",
              agxInfoRec.name);
@@ -395,6 +395,9 @@ agxProbe()
           agxInfoRec.IObase = DA_AGX_IO_BASE;
       else
           agxInfoRec.IObase = DA_XGA_IO_BASE + (agxInfoRec.instance << 4);
+   ErrorF( "%s %s: XGA Instance = %d, I/O Register Base = 0x%04x.\n",
+            XCONFIG_GIVEN, agxInfoRec.name, 
+            agxInfoRec.instance, agxInfoRec.IObase );
 
    for( i= 0; i <= DA_LAST_IO_REG; i++ )
       agxDAIOPorts[ i ] = agxInfoRec.IObase + i;
@@ -457,6 +460,9 @@ agxProbe()
       }
    }
    agxGEPhysBase = (pointer) agxInfoRec.COPbase;
+
+   ErrorF( "%s %s: Graphics Engine Register Memory Base Address = 0x%05x.\n",
+            XCONFIG_GIVEN, agxInfoRec.name, agxInfoRec.COPbase );
 
    agxGEBase = xf86MapVidMem( agxInfoRec.scrnIndex, LINEAR_REGION,
                               (pointer)((unsigned int)agxGEPhysBase & 0xFFF000),
@@ -610,7 +616,6 @@ memory size in your XF86Config file.\n",
 
    /*
     * xf86LookupMode may exit, so cleanup up now
-    * XXXX The usage of xf86ProbeFailed is not what was intended.
     */
    agxHWRestore(agxSavedState);
 
@@ -622,16 +627,48 @@ memory size in your XF86Config file.\n",
    if( pMode == NULL ) {
       ErrorF("No modes supplied in XF86Config\n");
       return FALSE;
-   } else {
-      do {
-         if( !xf86LookupMode(pMode, &agxInfoRec) )
-            xf86ProbeFailed = TRUE; 
+   } 
+   pEnd = NULL;
+   do {
+      DisplayModePtr pModeSv;
+
+      pModeSv = pMode->next;
+      /*
+       * xf86LookupMode returns FALSE if it ran into an invalid
+       * parameter 
+       */
+
+      if (!xf86LookupMode(pMode, &agxInfoRec)) {
+         xf86DeleteMode(&agxInfoRec, pMode);
+      } else if (pMode->HDisplay > 2048) {
+         ErrorF("%s %s: Width of mode \"%s\" is too large (max is %d)\n",
+                XCONFIG_PROBED, agxInfoRec.name, pMode->name, 2048);
+         xf86DeleteMode(&agxInfoRec, pMode);
+      } else if ((pMode->HDisplay * (1 + pMode->VDisplay)) >
+                 agxInfoRec.videoRam * 1024) {
+         ErrorF("%s %s: Too little memory for mode \"%s\"\n", XCONFIG_PROBED,
+                agxInfoRec.name, pMode->name);
+         xf86DeleteMode(&agxInfoRec, pMode);
+      } else if (((tx > 0) && (pMode->HDisplay > tx)) ||
+                 ((ty > 0) && (pMode->VDisplay > ty))) {
+         ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
+                XCONFIG_PROBED, agxInfoRec.name,
+                pMode->HDisplay, pMode->VDisplay, tx, ty);
+         xf86DeleteMode(&agxInfoRec, pMode);
+      } else {
+         /*
+          * Successfully looked up this mode.  If pEnd isn't
+          * initialized, set it to this mode.
+          */
+         if (pEnd == (DisplayModePtr) NULL)
+            pEnd = pMode;
+
          agxInfoRec.virtualX = max(agxInfoRec.virtualX, pMode->HDisplay);
          agxInfoRec.virtualY = max(agxInfoRec.virtualY, pMode->VDisplay);
          pMode = pMode->next;
       }
-      while (pMode != pEnd);
-   }
+      pMode = pModeSv;
+   } while (pMode != pEnd);
 
    agxVirtX = agxInfoRec.virtualX;
    agxVirtY = agxInfoRec.virtualY;
@@ -648,18 +685,18 @@ memory size in your XF86Config file.\n",
    agx128WidthAdjust = FALSE;
    agx256WidthAdjust = FALSE;
    agx288WidthAdjust = FALSE;
-   agxAdjustedVirtX = agxVirtX;
+   agxAdjustedVirtX  = agxVirtX;
+   agxDisplayWidth   = agxVirtX;
    if (AGX_SERIES(agxChipId)) {
       int i = 0;
       unsigned int width = 1;
-      unsigned int adjWidth = 0;
 
       while( width < agxVirtX && i < 13 ) {
          width <<= 1;
          i++;
       }
-      adjWidth = width;
       agxAdjustedVirtX = width;
+      agxDisplayWidth = width;  
 
       if (agxVirtX != width && AGX_15_16_ONLY(agxChipId)) {
 #if 0   /* doesn't work yet - may only be good for 640 and 800 widths */
@@ -667,7 +704,22 @@ memory size in your XF86Config file.\n",
             agx128WidthAdjust = TRUE;
             width >>= 1;
             agxAdjustedVirtX = width;
-            adjWidth = width + 128;
+            agxDisplayWidth = width + 128;
+         }
+         else 
+#else
+         if (AGX_16_ONLY(agxChipId) && agxVirtX == 640) {
+            agx128WidthAdjust = TRUE;
+            width = 512;
+            agxAdjustedVirtX = width;
+            agxDisplayWidth = width + 128;
+         }
+         else 
+         if (AGX_16_ONLY(agxChipId) && agxVirtX == 800) {
+            agx288WidthAdjust = TRUE;
+            width = 512;
+            agxAdjustedVirtX = width;
+            agxDisplayWidth = width + 288;
          }
          else 
 #endif
@@ -675,29 +727,17 @@ memory size in your XF86Config file.\n",
                agx256WidthAdjust = TRUE;
                width >>= 1;
                agxAdjustedVirtX = width;
-               adjWidth = width + 256;
+               agxDisplayWidth = width + 256;
          } 
 #if 0
          else if (AGX_16_ONLY(agxChipId) && ((width>>1) + 288) >= agxVirtX) {
                agx288WidthAdjust = TRUE;
                width >>= 1;
                agxAdjustedVirtX = width;
-               adjWidth = width + 288;
+               agxDisplayWidth = width + 288;
          } 
 #endif
-         if (agxVirtX != adjWidth)
-            ErrorF("%s: Virtual screen width must be a power of 2 or \
-256 plus a power of 2; \
-adjusting to %d\n", 
-                    agxInfoRec.name, adjWidth);
       }
-      else {
-         if (agxVirtX != adjWidth)
-             ErrorF("%s: Virtual screen width must be a power of 2; \
-adjusting to %d\n", 
-                    agxInfoRec.name, adjWidth);
-      }
-      agxVirtX = adjWidth;
    }        
 
    agxInfoRec.virtualX = agxVirtX;
@@ -706,10 +746,10 @@ adjusting to %d\n",
    agxMaxY = agxVirtY - 1;
 
    if (xf86Verbose) {
-      ErrorF("%s %s: Virtual resolution: %dx%d\n",
+      ErrorF("%s %s: Virtual resolution = %dx%d, CRTC Line Width = %d\n",
 	     OFLG_ISSET(XCONFIG_VIRTUAL, &agxInfoRec.xconfigFlag)
                 ? XCONFIG_GIVEN : XCONFIG_PROBED,
-	     agxInfoRec.name, agxVirtX, agxVirtY);
+	     agxInfoRec.name, agxVirtX, agxVirtY, agxDisplayWidth);
    }
 
     /* Set agxMemorySize to required MEM_SIZE value in MISC_OPTIONS */
@@ -723,22 +763,22 @@ adjusting to %d\n",
       agxMemorySize = MEM_SIZE_4M;
 
    if (xf86Verbose) {
-      ErrorF("%s %s: videoram: %dk\n",
+      ErrorF("%s %s: Videoram = %dk\n",
 	     OFLG_ISSET(XCONFIG_VIDEORAM, &agxInfoRec.xconfigFlag)
 	        ? XCONFIG_GIVEN : XCONFIG_PROBED, 
              agxInfoRec.name,
 	     agxInfoRec.videoRam );
    }
 
-   if (((agxVirtX)*(agxVirtY)) > (agxInfoRec.videoRam<<10)) {
-      ErrorF("%s %s: Not enough memory for requested virtual resolution (%dx%d)\n",
+   if (((agxDisplayWidth)*(agxVirtY)) > (agxInfoRec.videoRam<<10)) {
+      ErrorF("%s %s: Not enough memory for requested CRTC resolution (%dx%d).\n",
              XCONFIG_PROBED, agxInfoRec.name,
-             agxVirtX, agxVirtY);
-      return TRUE;
+             agxDisplayWidth, agxVirtY);
+      return FALSE;
    }
 
    {
-     unsigned int end = agxVirtX * agxVirtY;
+     unsigned int end = agxDisplayWidth * agxVirtY;
      unsigned int avail;
      unsigned int total = agxInfoRec.videoRam << 10;
  
@@ -760,11 +800,11 @@ adjusting to %d\n",
      if( agxScratchSize < 0x10000 ) {
          ErrorF("%s %s: 64K video memory required for scratchpad, reduce the number of lines\n",
              XCONFIG_PROBED, agxInfoRec.name );
-         xf86ProbeFailed = TRUE; 
+         return FALSE; 
      }
      
      if (xf86Verbose) 
-       ErrorF( "%s %s: ScratchPad: %dk @ offset 0x%x\n",
+       ErrorF( "%s %s: ScratchPad = %dk @ offset 0x%x\n",
 	       XCONFIG_PROBED, agxInfoRec.name,
                agxScratchSize>>10, agxScratchOffset );
    }
@@ -777,7 +817,7 @@ adjusting to %d\n",
              agxInfoRec.name, vgaPhysBase, vgaBase );
    }
 
-   return !xf86ProbeFailed;
+   return TRUE;
 }
 
 
@@ -873,13 +913,10 @@ agxInit (scr_index, pScreen, argc, argv)
    /* Clear the display.
     * Need to set the color, origin, and size.  Then draw.
     */
-   agxBitCache8Init(agxVirtX, agxVirtY);
+   agxBitCache8Init(agxDisplayWidth, agxVirtY);
 
 #ifndef DIRTY_STARTUP
    agxImageClear();
-#endif
-#if 0
-   agxCacheInit(agxVirtX, agxVirtY);
 #endif
    /*
     * Take display resolution from the -dpi flag if specified
@@ -894,7 +931,7 @@ agxInit (scr_index, pScreen, argc, argv)
 		      agxInfoRec.virtualY,
 		      displayResolution,
 		      displayResolution,
-		      agxInfoRec.virtualX))
+		      agxDisplayWidth))
       return(FALSE);
 
    pScreen->CloseScreen = agxCloseScreen;
@@ -998,10 +1035,7 @@ agxEnterLeaveVT(enter, screen_idx)
 #ifndef DIRTY_STARTUP
          agxImageClear();
 #endif
-#if 0
-   	 agxCacheInit(agxVirtX, agxVirtY);
-#endif
-  	 agxBitCache8Init(agxVirtX, agxVirtY);
+  	 agxBitCache8Init(agxDisplayWidth, agxVirtY);
   	 agxRestoreCursor(pScreen);
   	 agxAdjustFrame(pScr->frameX0, pScr->frameY0);
 
@@ -1012,7 +1046,7 @@ agxEnterLeaveVT(enter, screen_idx)
             (*agxImageWriteFunc)( 0, 0, 
                                   pScreen->width, pScreen->height,
 		 	          ppix->devPrivate.ptr,
-				  PixmapBytePad( pScreen->width,
+				  PixmapBytePad( agxDisplayWidth,
 					         pScreen->rootDepth ),
 				  0, 0, MIX_SRC, ~0 );
 	 }
@@ -1052,7 +1086,7 @@ agxEnterLeaveVT(enter, screen_idx)
           */
 
 	 ppix = (pScreen->CreatePixmap)(pScreen,
-					pScreen->width, pScreen->height,
+					agxDisplayWidth, pScreen->height,
 					pScreen->rootDepth);
 
 	 if (ppix) {
@@ -1060,7 +1094,7 @@ agxEnterLeaveVT(enter, screen_idx)
    	    (agxImageReadFunc)( 0, 0, 
 				pScreen->width, pScreen->height,
 				ppix->devPrivate.ptr,
-				PixmapBytePad( pScreen->width,
+				PixmapBytePad( agxDisplayWidth,
 					       pScreen->rootDepth ),
 				0, 0, ~0 );
 	    pspix->devPrivate.ptr = ppix->devPrivate.ptr;
@@ -1200,11 +1234,12 @@ void
 agxAdjustFrame(x, y)
    int x, y;
 {
+   unsigned int byte_offset;
    /*
     * XGA and AGX are documented as being offset in units of 8.
     * But, the AGX-015 is actually offset in units of 4.
     */
-   unsigned int byte_offset = (x + y*agxVirtX + 1) >> 2;
+   byte_offset = (x + y*agxDisplayWidth + 1) >> 2;
 
    xf86EnableIOPorts(agxInfoRec.scrnIndex);
    if (vgaPhysBase)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.5 1994/09/28 16:24:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.6 1994/10/23 12:57:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -136,6 +136,9 @@ void (* vgaAdjustFunc)(
 ) = (void (*)())NoopDDA;
 void (* vgaSaveScreenFunc)() = (void (*)())NoopDDA;
 int vgaMapSize;
+void *vgaWriteBottom;
+void *vgaWriteTop; 
+
 int  vgaInterlaceType;
 OFlagSet vgaOptionFlags;
 extern Bool vgaPowerSaver;
@@ -165,8 +168,25 @@ vgaRestore(mode)
     (vgaRestoreFunc)(mode);
     vgaProtect(FALSE);
     if (w32_mode)
+    {
+	/*
+	 *  Temporary
+	 *  This somewhat contradicts Tseng's Tehnical Note #24--GGL
+	 */
+	if (W32p)
+	{
+	    int tmp;
+	    outb(vgaIOBase + 4, 0x34);
+	    GlennsIODelay();
+	    tmp = inb(vgaIOBase + 5) | 0x10;
+	    GlennsIODelay();
+	    outb(vgaIOBase + 5, tmp);
+	    GlennsIODelay();
+	}
 	(*vgaSaveScreenFunc)(SS_FINISH);
+    }
 }
+
 
 /*
  *     Print out identifying strings for drivers included in the server
@@ -259,6 +279,8 @@ vgaProbe()
 	vgaInitFunc = Drivers[i]->ChipInit;
 	vgaSaveFunc = Drivers[i]->ChipSave;
 	vgaRestoreFunc = Drivers[i]->ChipRestore;
+	vgaWriteBottom = (pointer)Drivers[i]->ChipWriteBottom;
+        vgaWriteTop = (pointer)Drivers[i]->ChipWriteTop;
 
 	vga256InfoRec.AdjustFrame = vgaAdjustFunc = Drivers[i]->ChipAdjust;
 
@@ -397,6 +419,10 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA0000,
 			    vgaMapSize);
     vgaVirtBase = (pointer)VGABASE;
+    vgaWriteBottom = (void *)((unsigned int)vgaWriteBottom +
+		     (unsigned int)vgaBase); 
+    vgaWriteTop    = (void *)((unsigned int)vgaWriteTop +
+		     (unsigned int)vgaBase);
   }
 
   if (!(vgaInitFunc)(vga256InfoRec.modes))
@@ -577,9 +603,9 @@ vgaEnterLeaveVT(enter, screen_idx)
        * abnormaly. Therefore there MUST be a check whether vgaOrigVideoState
        * is valid or not.
        */
-      VGARamdac();
       if (vgaOrigVideoState)
 	vgaRestore(vgaOrigVideoState);
+      VGARamdac();
 
       (vgaEnterLeaveFunc)(LEAVE);
 

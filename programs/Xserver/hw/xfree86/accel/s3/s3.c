@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.47 1994/11/05 23:42:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.48 1994/11/06 09:51:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1123,13 +1123,11 @@ s3Probe()
 	 case BT485_DAC:
 	 case ATT20C505_DAC:
 	    /*
-	     * Currently: 16bpp for SPEA Mercury (928 + Bt485)
-	     *            16bpp, 32bpp for 946 + Bt485
+	     * Currently: 16bpp, 32bpp for SPEA Mercury (928 + Bt485)
+	     *            16bpp, 32bpp for 964 + Bt485
 	     */
-	    if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
-	       if (s3Bpp > 2)
-		  reason = "Bt485 and ATT20C505 RAMDACs";
-	    } else if (!S3_964_SERIES(s3ChipId)) {
+	    if (!OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
+		!S3_964_SERIES(s3ChipId)) {
 #if 0
 	       if (s3Bpp > 1)
 		  reason = "Bt485 and ATT20C505 RAMDACs";
@@ -1287,7 +1285,7 @@ s3Probe()
 	    nonMuxMaxMemory = 0;	/* Only 2:1MUX works (yet)!     */
 	    pixMuxMinWidth = 800;
 	 } else if (s3Bpp==4) {
-	    nonMuxMaxMemory = 2048;
+	    nonMuxMaxMemory = 0;
 	    pixMuxMinWidth = 640;
 	 }
       } else if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c,v 1.182 94/08/10 21:53:24 gildea Exp $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.1 1994/05/08 05:26:58 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.2 1994/08/20 07:38:09 dawes Exp $
  */
 
 /*
@@ -1355,8 +1355,17 @@ in_put()
 		bcnt = -1;
 	    }
 #endif
-	    if (bcnt < 0) {
+	    if (bcnt <= 0) {
+/*
+ * Yes, I know this is a majorly f*ugly hack, however it seems to be
+ * necessary for Solaris x86.   DWH 11/15/94
+ * Dunno why though..
+ */
+#if defined(i386) && defined(SVR4) && defined(sun)
+		if (errno == EIO || errno == 0 )
+#else
 		if (errno == EIO)
+#endif
 		    Cleanup (0);
 		else if (!E_TEST(errno))
 		    Panic(

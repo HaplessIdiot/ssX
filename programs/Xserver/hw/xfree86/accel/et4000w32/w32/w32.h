@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.1 1994/09/19 13:42:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.2 1994/09/25 12:28:06 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -121,8 +121,9 @@ extern Bool W32;
 extern Bool W32i;
 extern Bool W32OrW32i;
 extern Bool W32p;
+extern Bool W32pa;
 extern Bool W32pCAndLater;
-extern Bool FrameBuffer; /* Is the operation on the frame buffer? */  
+extern Bool FrameBuffer;
 
 extern long W32Foreground;
 extern long W32Background;
@@ -177,7 +178,8 @@ void figure(char*);
 {while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x4);}
 
 
-#define SET_XY(X, Y) {*((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + (X) - 1;}
+#define SET_XY(X, Y) \
+    {*((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + ((X) - 1) * (PSZ >> 3);}
 
 
 /* Must do 0x09 (in one operatoin) for the W32 */
@@ -211,7 +213,7 @@ void figure(char*);
     } \
     else /* w32p */ \
     { /* Enable the W32p startup bit and set use an eight-bit pixel depth */ \
-	*ACL_PIXEL_DEPTH = 0; \
+	*ACL_PIXEL_DEPTH = (PSZ - 8) << 1; \
         *ACL_OPERATION_STATE = 0x10; \
     } \
     *MMU_CONTROL = 0x74; \

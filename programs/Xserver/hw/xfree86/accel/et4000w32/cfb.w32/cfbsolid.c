@@ -1,6 +1,6 @@
 /*
  * $XConsortium: cfbsolid.c,v 1.9 94/04/17 20:29:02 dpw Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbsolid.c,v 3.0 1994/09/11 00:41:41 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -98,7 +98,6 @@ in this Software without prior written authorization from the X Consortium.
 #  define Expand(left, right, leftAdjust) { \
     while (h--) { \
 	pdst = pdstRect; \
-	FB_LONG(pdst) \
 	left \
 	m = nmiddle; \
 	while (m--) {\
@@ -134,11 +133,10 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
     devPriv = cfbGetGCPrivate(pGC);
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
-    TEST_SET_FB(pdstBase)
 
     RROP_FETCH_GC(pGC)
     
-    if (FrameBuffer && (W32p || ((pGC->planemask & PMSK) == PMSK)))
+    if ((CARD32)pdstBase == VGABASE)
     {
 	int dst;
 
@@ -146,7 +144,7 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 	W32_INIT_BOX(pGC->alu, PFILL(pGC->planemask), rrop_xor, widthDst - 1)
 	for (; nBox; nBox--, pBox++)
 	{
-	    dst = pBox->y1 * widthDst + pBox->x1;
+	    dst = pBox->y1 * widthDst + (pBox->x1 * (PSZ >> 3));
 	    h = pBox->y2 - pBox->y1;
 	    w = pBox->x2 - pBox->x1;
 	    WAIT_XY
@@ -167,22 +165,10 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 	    register char    *pdstb = ((char *) pdstRect) + pBox->x1;
 	    int	    incr = widthDst * PGSZB;
 
-	    if (FrameBuffer)
+	    while (h--)
 	    {
-		/* Speed this up later--GGL */ 
-		while (h--)
-		{
-		    W32_PIXEL(pdstb, rrop_xor)
-		    pdstb += incr;
-		}
-	    }
-	    else
-	    {
-		while (h--)
-		{
-		    *pdstb = rrop_xor;
-		    pdstb += incr;
-		}
+		RROP_SOLID (pdstb);
+		pdstb += incr;
 	    }
 	}
 	else
@@ -193,22 +179,10 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 	{
 	    maskpartialbits(pBox->x1, w, leftMask);
 	    pdst = pdstRect;
-	    if (FrameBuffer)
+	    while (h--)
 	    {
-		while (h--)
-		{
-		    W32_SET_LONG(pdst)
-		    *(LongP)W32Ptr = (*(LongP)W32Ptr & ~leftMask) | (rrop_xor & leftMask);
-		    pdst += widthDst;
-		}
-	    }
-	    else
-	    {
-		while (h--)
-		{
-		    *pdst = (*pdst & ~leftMask) | (rrop_xor & leftMask);
-		    pdst += widthDst;
-		}
+		RROP_SOLID_MASK (pdst, leftMask);
+		pdst += widthDst;
 	    }
 	}
 	else

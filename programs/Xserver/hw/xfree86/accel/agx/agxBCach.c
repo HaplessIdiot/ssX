@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.4 1994/09/07 15:47:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.5 1994/09/23 10:07:25 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -43,7 +43,7 @@
 #define XCONFIG_FLAGS_ONLY
 #include        "xf86_Config.h"
 
-
+extern bitMapBlockPtr blockInUse;
 
 static bitMapRowPtr headBitRow;   /* top of linked list of cache rows */
 CacheFont8Ptr       agxHeadFont;  /* top of linked list of fonts in cache */
@@ -112,11 +112,11 @@ agxBitCache8Init(x,y)
 
    if (xf86Verbose) {
       if (agxFontCacheSize) {
-	 ErrorF( "%s %s: Font Cache: %dk @ offset 0x%x\n",
+	 ErrorF( "%s %s: Font Cache = %dk @ offset 0x%x\n",
 	         XCONFIG_PROBED, agxInfoRec.name, 
                  agxFontCacheSize>>10, agxFontCacheOffset );
       } else {
-	 ErrorF("%s %s: Font caching is disabled due to lack of video ram\n",
+	 ErrorF("%s %s: Font caching is disabled due to lack of VRAM.\n",
                 XCONFIG_PROBED, agxInfoRec.name);
       }
    }
@@ -218,8 +218,15 @@ agxCReturnBlock(block)
    bptr = block->daddy;
    first  = bptr->blocks;
 
+   if( block == blockInUse) 
+   {
+      ERROR_F(("freeing in-use block: line offset=0x%x num lines=0x%x\n", 
+                                     block->line, block->sizel));
+      GE_WAIT_IDLE_SHORT();
+   }
+
    ERROR_F(("free block: line offset=0x%x num lines=0x%x\n", 
-             block->base, block->sizel));
+             block->line, block->sizel));
    SHOWCACHE();
    bptr->freel += block->sizel;	/* this much we can be sure of */
 
@@ -240,12 +247,12 @@ agxCReturnBlock(block)
    }
    else { /* we are not the last of the row */
       unsigned int newLine;
-      unsigned int oldSizeL;
       extern Bool geBlockMove;
 
-      geBlockMove = TRUE;      
-
+      newLine = block->line;
+      tmpb = block->next;
       if( xf86VTSema ) {
+         geBlockMove = TRUE;      
          MAP_INIT( GE_MS_MAP_B,
                    GE_MF_8BPP,
                    block->daddy->offset + agxMemBase,
@@ -255,44 +262,41 @@ agxCReturnBlock(block)
 
          GE_WAIT_IDLE();
          MAP_SET_SRC_AND_DST( GE_MS_MAP_B ); 
-         GE_SET_MAP( GE_MS_MAP_B )
-      }
+         GE_SET_MAP( GE_MS_MAP_B );
+         GE_OUT_B( GE_FRGD_MIX, MIX_SRC );
+         GE_OUT_D( GE_PIXEL_BIT_MASK, 0xFF );
+         GE_OUT_W( GE_PIXEL_OP,
+                   GE_OP_PAT_FRGD
+                   | GE_OP_MASK_DISABLED
+                   | GE_OP_INC_X
+                   | GE_OP_INC_Y         );
 
-      newLine = block->line;
-      tmpb = block->next;
-      while (tmpb != NULL) {
-         oldSizeL = tmpb->sizel;
-         if( xf86VTSema ) {
+         while (tmpb != NULL) {
+            unsigned int srcCoOrd, dstCoOrd, opDim;
+            srcCoOrd = tmpb->line << 16;
+            dstCoOrd = newLine << 16; 
+            opDim    = (tmpb->sizel-1 << 16) | (CACHE_LINE_WIDTH_BYTES-1);
+
             GE_WAIT_IDLE();
-
-            GE_OUT_B( GE_FRGD_MIX, MIX_SRC );
-            GE_OUT_D( GE_PIXEL_BIT_MASK, 0xFF );
-#ifndef NO_MULTI_IO
-            GE_OUT_D( GE_SRC_MAP_X, tmpb->line << 16 );
-            GE_OUT_D( GE_DEST_MAP_X, newLine << 16 );
-            GE_OUT_D( GE_OP_DIM_WIDTH, oldSizeL-1 << 16 
-                                       | CACHE_LINE_WIDTH_BYTES-1 );
-#else
-            GE_OUT_W( GE_SRC_MAP_X, 0 );
-            GE_OUT_W( GE_SRC_MAP_Y, tmpb->line );
-            GE_OUT_W( GE_DEST_MAP_X, 0 );
-            GE_OUT_W( GE_DEST_MAP_Y, newLine );
-            GE_OUT_W( GE_OP_DIM_WIDTH, CACHE_LINE_WIDTH_BYTES-1 );
-            GE_OUT_W( GE_OP_DIM_HEIGHT, oldSizeL-1 ); 
-#endif
-            GE_START_CMD( GE_OP_BITBLT
-                          | GE_OP_FRGD_SRC_MAP 
-                          | GE_OP_SRC_MAP_B
-                          | GE_OP_DEST_MAP_B   
-                          | GE_OP_PAT_FRGD
-                          | GE_OP_MASK_DISABLED
-                          | GE_OP_INC_X
-                          | GE_OP_INC_Y         );
+            GE_OUT_D( GE_SRC_MAP_X, srcCoOrd );
+            GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+            GE_OUT_D( GE_OP_DIM_WIDTH, opDim ); 
+            GE_START_CMDW( GE_OPW_BITBLT
+                           | GE_OPW_FRGD_SRC_MAP
+                           | GE_OPW_SRC_MAP_B
+                           | GE_OPW_DEST_MAP_B   );
+            tmpb->line = newLine;
+            newLine += tmpb->sizel;
+	    tmpb = tmpb->next;
          }
-         tmpb->line = newLine;
-         newLine += oldSizeL;
-	 tmpb = tmpb->next;
          GE_WAIT_IDLE_EXIT();
+      }
+      else {
+         while (tmpb != NULL) {
+            tmpb->line = newLine;
+            newLine += tmpb->sizel;
+	    tmpb = tmpb->next;
+         }
       }
 
       /* reconnect the new list of blocks */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGC.c,v 3.2 1994/07/24 11:42:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGC.c,v 3.3 1994/09/07 15:47:21 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -74,9 +74,9 @@ static GCOps	agxOps = {
     miPolySegment,
     miPolyRectangle,
     miPolyArc,
-    miFillPolygon,
+    agxFillPolygon,
     agxPolyFillRect,
-    miPolyFillArc,
+    agxPolyFillArc,
     agxPolyText8,
     miPolyText16,
     agxImageText8,
@@ -733,10 +733,24 @@ agxValidateGC(pGC, changes, pDrawable)
 		pGC->ops->Polylines = miWideLine;
 	    break;
 	case LineOnOffDash:
-	    pGC->ops->Polylines = miWideDash;
-	    break;
 	case LineDoubleDash:
-	    pGC->ops->Polylines = miWideDash;
+            if(pGC->lineWidth == 0)
+            {
+                if (pGC->fillStyle == FillSolid)
+                {
+                  if(!AGX_14_ONLY(agxChipId)) {
+                     pGC->ops->Polylines = agxDLine;
+                     pGC->ops->PolySegment = agxDSegment;
+                  }
+                  else {
+                     pGC->ops->Polylines = miWideDash;
+                  }
+                }
+                else
+                    pGC->ops->Polylines = miWideDash;
+            }
+            else
+  	       pGC->ops->Polylines = miWideDash;
 	    break;
 	}
       } 
@@ -932,8 +946,9 @@ agxValidateGC(pGC, changes, pDrawable)
     if (new_fillarea) {
       if (pWin) {
 	pGC->ops->PolyFillRect = agxPolyFillRect;
-	pGC->ops->PolyFillArc = miPolyFillArc;
+	pGC->ops->PolyFillArc = agxPolyFillArc;
 	pGC->ops->PushPixels = miPushPixels;
+	pGC->ops->FillPolygon = agxFillPolygon;
       } 
       else
       {

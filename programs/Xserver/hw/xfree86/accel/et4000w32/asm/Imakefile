@@ -1,11 +1,11 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/asm/Imakefile,v 3.0 1994/09/11 00:40:15 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/asm/Imakefile,v 3.1 1994/09/13 15:08:10 dawes Exp $
 #include <Server.tmpl>
 
-SUSRCS = w32it.s w32pit.s
+SUSRCS = w32it.s w32pit.s w32line.s
 
 SRCS = $(SUSRCS)
 
-SUOBJS = w32it.o w32pit.o
+SUOBJS = w32it.o w32pit.o w32line.o
 
 OBJS = $(SUOBJS)
 

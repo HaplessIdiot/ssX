@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_KbdLnx.c,v 1.1 94/03/28 21:24:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdLnx.c,v 3.0 1994/06/26 13:09:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdLnx.c,v 3.1 1994/09/23 10:13:15 dawes Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -315,7 +315,17 @@ static unsigned char at2lnx[] =
 	0x6f,	/* KEY_Delete */	0x60,	/* KEY_KP_Enter */
 	0x61,	/* KEY_RCtrl */		0x77,	/* KEY_Pause */
 	0x63,	/* KEY_Print */		0x62,	/* KEY_KP_Divide */
-	0x64,	/* KEY_AltLang */	0x65	/* KEY_Break */
+	0x64,	/* KEY_AltLang */	0x65,	/* KEY_Break */
+	0x00,	/* ??????????? */	0x00,	/* ??????????? */
+	0x7A,	/* FOCUS_PF11 */	0x00,	/* ??????????? */
+	0x7B,	/* FOCUS_PF12 */	0x00,	/* ??????????? */
+	0x00,	/* ??????????? */	0x00,	/* ??????????? */
+	0x59,	/* FOCUS_PF2 */		0x78,	/* FOCUS_PF9 */
+	0x00,	/* ??????????? */	0x00,	/* ??????????? */
+	0x5A,	/* FOCUS_PF3 */		0x5B,	/* FOCUS_PF4 */
+	0x5C,	/* FOCUS_PF5 */		0x5D,	/* FOCUS_PF6 */
+	0x5E,	/* FOCUS_PF7 */		0x5F,	/* FOCUS_PF8 */
+	0x7C,	/* JAP_86 */		0x79	/* FOCUS_PF10 */
 };
 #define NUM_AT2LNX (sizeof(at2lnx) / sizeof(at2lnx[0]))
 

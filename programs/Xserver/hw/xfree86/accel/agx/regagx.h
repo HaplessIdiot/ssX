@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.5 1994/09/07 15:47:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.6 1994/09/11 00:36:49 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -72,6 +72,7 @@ typedef struct {
     unsigned char clock_sel;
     unsigned char overscan;
     unsigned char interlaced;
+    unsigned char dbl_scan;
 } agxCRTCRegRec, *agxCRTCRegPtr;
 
 /*
@@ -528,6 +529,11 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_DC2_8_BPP				0x03
 #define IR_DC2_16_BPP				0x04
 #define IR_DC2_24_BPP				0x05
+#define IR_DC2_NORMAL_SCAN                      0x00
+#define IR_DC2_DBL_SCAN                         0x40
+#define IR_DC2_DBL_CLOCK                        0x10
+#define IR_DC2_QUAD_SCAN                        0x80
+#define IR_DC2_QUAD_CLOCK                       0x20
 #define IR_DISP_MON_ID_DAC_COMP		0x52
 #define IR_DISP_MON_ID_DAC_COMP		0x52
 
@@ -753,7 +759,17 @@ typedef struct {
 #define GE_BRES_CONST_K1  	0x24
 #define GE_BRES_CONST_K2  	0x28
 
-#define GE_SHORT_STROKE	0x2C
+#define GE_SHORT_STROKE		0x2C
+#define GE_SS_MOVE			0x00
+#define GE_SS_DRAW              	0x10
+#define GE_SS_0				0x00
+#define GE_SS_45			0x20
+#define GE_SS_90			0x40
+#define GE_SS_135			0x60
+#define GE_SS_180			0x80
+#define GE_SS_225			0xA0
+#define GE_SS_270			0xC0
+#define GE_SS_315			0XE0	
 
 #define GE_FRGD_MIX		0x48
 #define GE_BKGD_MIX		0x49

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osinit.c,v 1.48 94/04/17 20:27:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.2 1994/05/21 23:59:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.3 1994/10/23 13:01:59 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -191,7 +191,9 @@ OsInit()
     OsVendorInit();
 #endif
     OsInitAllocator();
+#ifndef XFREE86
     OsInitColors();
+#endif
 }
 
 void

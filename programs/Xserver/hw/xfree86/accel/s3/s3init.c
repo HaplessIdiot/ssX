@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.35 1994/10/30 04:44:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.36 1994/11/05 23:43:01 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1157,14 +1157,17 @@ s3Init(mode)
 	    outb(vgaCRReg, 0);
          }
 
+	 outb(vgaCRIndex, 0x65);
+	 tmp = inb(vgaCRReg);
+
          if (!OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
 	    outb(vgaCRReg, tmp | 0x20);
  	    /* set s3 reg65 for some unknown reason                      */
 	    /* Setting this for the SPEA Mercury affects clocks > 120MHz */
-	  } else if (s3DisplayWidth >= 1024) {
+	  } else if ((s3DisplayWidth >= 1024) | (s3InfoRec.depth == 24)) {
 	    outb(vgaCRReg, tmp | 0x40);
 	    /* remove horizontal stripes in 1600/8bpp and 1152/16bpp      */
-	    /* linewidth pixmux modes                                     */
+	    /* 800/32bpp linewidth pixmux modes                           */
 	    /* someone should check this for other 928 + Bt485 cards      */
 	  } else outb(vgaCRReg, tmp & 0xBF);
 

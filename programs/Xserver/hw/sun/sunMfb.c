@@ -1,5 +1,6 @@
 
 /* $XConsortium: sunMfb.c,v 1.4 94/04/17 20:29:46 kaleb Exp $ */
+/* $XFree86$ */
 
 /*
 Copyright (c) 1990, 1993  X Consortium
@@ -88,11 +89,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "mfb.h"
 /* #include <sys/mman.h> */
 
-#ifdef SVR4
-#include <sys/bw2reg.h>
-#else
-#include <sundev/bw2reg.h>
-#endif
+/*
+ * This used to #include <sundev/bw2reg.h> for SunOS and <sys/bw2reg.h>
+ * for Solaris, but it doesn't use anything from that file.  Since other
+ * systems don't have this #include file anywhere, I deleted the reference.
+ */
 
 Bool sunBW2Init (screen, pScreen, argc, argv)
     int		    screen;    	/* what screen am I going to be */

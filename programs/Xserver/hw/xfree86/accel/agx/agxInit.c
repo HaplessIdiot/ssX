@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.8 1994/09/20 12:44:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.9 1994/09/23 10:07:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -353,7 +353,6 @@ agxCalcCRTCRegs(crtcRegs, mode)
 {
     unsigned int temp;
 
-
     crtcRegs->disp_cntl_1 = 0;
     crtcRegs->disp_cntl_2 = 0;
     crtcRegs->clock_sel   = 0;
@@ -377,8 +376,13 @@ agxCalcCRTCRegs(crtcRegs, mode)
     if (mode->Flags & V_NHSYNC) 
        crtcRegs->disp_cntl_1 |= IR_DC1_SYNC_HNEG;
 
-    if (mode->Flags & V_INTERLACE) 
+    if (mode->Flags & V_INTERLACE) {
        crtcRegs->disp_cntl_1 |= IR_DC1_INTERLACED;
+       crtcRegs->interlaced = TRUE;
+    }
+    else {
+       crtcRegs->interlaced = FALSE;
+    }
 
     temp = mode->VTotal - 1;
     crtcRegs->vblnk_end_lo =
@@ -412,9 +416,17 @@ agxCalcCRTCRegs(crtcRegs, mode)
        crtcRegs->disp_cntl_1 |= IR_DC1_INTERLACED;
 
     crtcRegs->disp_cntl_2 = IR_DC2_8_BPP;
+    if (mode->Flags & V_DBLSCAN) {
+       crtcRegs->disp_cntl_2 |= IR_DC2_DBL_SCAN;
+       crtcRegs->dbl_scan = TRUE;
+    }
+    else {
+       crtcRegs->dbl_scan = FALSE;
+    }
+
     crtcRegs->mem_acc_mode = DA_MA_8_BPP;
 
-    temp = agxVirtX >> 3;
+    temp = agxDisplayWidth >> 3;
     crtcRegs->disp_width_lo = temp & 0xFF;
     crtcRegs->disp_width_hi = (temp>>8) & 0xFF;
 
@@ -478,7 +490,6 @@ agxSetCRTCRegs(crtcRegs)
     * The CRTC registers are passed in from the calling routine.
     */
 
-#if 1
    if (AGX_SERIES(agxChipId)) {
       if( hercBigDAC ) {
          if( !usingHercBigDAC && inb(hercBrdIO+4) & 0x01 ) {
@@ -499,7 +510,6 @@ agxSetCRTCRegs(crtcRegs)
       }
       (*xf86RamDacInit)();
    }
-#endif
 
    /*
     * switch to XGA graphics mode 
@@ -561,7 +571,7 @@ agxSetCRTCRegs(crtcRegs)
       /*
        * Some boards only need refresh split at higher resolutions,
        * others need it at always. Haven't found any problems leaving
-       * it on all the time.
+       * it on all the time.    
        */
       byteData |= IR_M5_REFRESH_SPLIT;
       if (OFLG_ISSET(OPTION_ENGINE_DELAY, &agxInfoRec.options))
@@ -727,19 +737,6 @@ agxSetCRTCRegs(crtcRegs)
    outb(agxByteData, crtcRegs->overscan);
    outb(agxIdxReg, IR_PAL_SEQUENCE);
    outb(agxByteData, IR_PS_FRMT_RGB);
-#if 0
-   if (AGX_SERIES(agxChipId)) {
-      if( hercBigDAC ) {
-         usingHercBigDAC = hercBigDAC && crtcRegs->clock_sel > 15;
-         if( usingHercBigDAC )
-            hercSwitchToBigDac();
-         else 
-            hercSwitchToLittleDac();
-         usleep(10000);
-      }
-      (*xf86RamDacInit)();
-   }
-#endif
 
    /* Clock select register */
    (*agxClockSelectFunc)(crtcRegs->clock_sel,0);
@@ -770,6 +767,8 @@ agxSwitchMode(mode)
       xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION);
    }
    xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION);
+
+   GE_WAIT_IDLE();
 
    if( hercBigDAC )
       agxSaveLUT(agxsavedLUT);

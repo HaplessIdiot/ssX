@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32zerarc.c,v 3.0 1994/09/11 00:41:56 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -197,7 +197,6 @@ RROP_NAME (W32ZeroPolyArcSS8) (pDraw, pGC, narcs, parcs)
     CHECK_NOOP
 
     cfbGetPixelWidthAndPointer(pDraw,npwidth, addrp)
-/*GGLGGL if (pDraw->type != DRAWABLE_WINDOW)*/
     if ((CARD32)addrp != VGABASE)
     {
 	RROP_NAME (cfbZeroPolyArcSS8) (pDraw, pGC, narcs, parcs);

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32line.c,v 3.0 1994/09/11 00:41:52 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -59,7 +59,7 @@ SOFTWARE.
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "miline.h"
-#include "w32.h"
+#include "w32box.h"
 
 /* single-pixel lines on a color frame buffer
 
@@ -137,12 +137,11 @@ W32LineSS (pDrawable, pGC, mode, npt, pptInit)
     cfbPrivGCPtr    devPriv;
     unsigned long   xor, and;
     int		    alu;
+    int	adir, xdir, ydir;
 
     CHECK_NOOP
 
     cfbGetLongWidthAndPointer (pDrawable, nlwidth, addrl)
-
-/*GGLGGL if (pDrawable->type != DRAWABLE_WINDOW) */
 
     if ((CARD32)addrl != VGABASE)
     {
@@ -166,8 +165,6 @@ W32LineSS (pDrawable, pGC, mode, npt, pptInit)
     and = devPriv->and;
     xorg = pDrawable->x;
     yorg = pDrawable->y;
-
-    WAIT
 
 #ifdef POLYSEGMENT
     while (nseg--)
@@ -241,14 +238,17 @@ W32LineSS (pDrawable, pGC, mode, npt, pptInit)
 			y2t = min(y2, pbox->y2);
 			if (y1t != y2t)
 			{
-			    W32VertS (alu, and, xor,
-				      addrl, nlwidth, 
-				      x1, y1t, y2t-y1t);
+			    WAIT_XY
+			    W32_INIT_BOX(alu, PFILL(pGC->planemask),
+					 PFILL(pGC->fgPixel),
+					 (nlwidth << 2) - 1)
+			    W32_BOX(y1t * (nlwidth << 2) + x1, 1, y2t - y1t)
 			}
 		    }
 		    nbox--;
 		    pbox++;
 		}
+		WAIT_XY
 	    }
 #ifndef POLYSEGMENT
 	    y2 = ppt->y + yorg;
@@ -311,13 +311,15 @@ W32LineSS (pDrawable, pGC, mode, npt, pptInit)
 		    x2t = min(x2, pbox->x2);
 		    if (x1t != x2t)
 		    {
-			W32HorzS (alu, and, xor,
-				  addrl, nlwidth, 
-				  x1t, y1, x2t-x1t);
+			WAIT_XY
+			W32_INIT_BOX(alu, PFILL(pGC->planemask),
+				     PFILL(pGC->fgPixel), 0)
+			W32_BOX(y1 * (nlwidth << 2) + x1t, x2t - x1t, 1)
 		    }
 		    nbox--;
 		    pbox++;
 		}
+		WAIT_XY
 	    }
 #ifndef POLYSEGMENT
 	    x2 = ppt->x + xorg;
@@ -338,7 +340,7 @@ W32LineSS (pDrawable, pGC, mode, npt, pptInit)
 		signdy = -1;
 	    }
 
-	    if (adx > ady)
+	    if (adx >= ady)
 	    {
 		axis = X_AXIS;
 		e1 = ady << 1;
@@ -375,10 +377,9 @@ W32LineSS (pDrawable, pGC, mode, npt, pptInit)
 		    if (pGC->capStyle != CapNotLast)
 			len++;
 #endif
-		    W32BresS (alu, and, xor,
-			  addrl, nlwidth,
-			  signdx, signdy, axis, x1, y1,
-			  e, e1, e2, len);
+		    W32BresS (alu, and, xor, addrl, nlwidth,
+			      signdx, signdy, axis, x1, y1,
+			      e, e1, e2, len);
 		    break;
 		}
 		else if (oc1 & oc2)
@@ -437,7 +438,9 @@ W32LineSS (pDrawable, pGC, mode, npt, pptInit)
 	} /* sloped line */
     } /* while (nline--) */
 
+
 #ifndef POLYSEGMENT
+
     /* paint the last point if the end style isn't CapNotLast.
        (Assume that a projecting, butt, or round cap that is one
         pixel wide is the same as the single pixel of the endpoint.)
@@ -533,7 +536,6 @@ W32LineSD( pDrawable, pGC, mode, npt, pptInit)
 
     cfbGetLongWidthAndPointer (pDrawable, nlwidth, addrl)
 
-/*GGLGGL if (pDrawable->type != DRAWABLE_WINDOW) */
     if ((CARD32)addrl != VGABASE)
     {
 #ifdef POLYSEGMENT

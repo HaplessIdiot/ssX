@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.66 94/04/17 20:10:51 rws Exp $
- * $XFree86: xc/include/Xos.h,v 3.5 1994/08/06 05:57:16 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.6 1994/08/31 03:22:51 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -254,17 +254,19 @@ typedef unsigned char u_char;
 #endif /* MINIX */
 
 /* use POSIX name for signal */
-#if defined(X_NOT_POSIX) && defined(SYSV) && !defined(SIGCHLD)
+#if defined(X_NOT_POSIX) && defined(SYSV) && !defined(SIGCHLD) && !defined(ISC)
 #define SIGCHLD SIGCLD
 #endif
 
 #ifdef ISC
 #include <sys/bsdtypes.h>
+#include <sys/limits.h>
+#define NGROUPS 16
 #endif
 
-#ifdef SCO
+#if defined(SCO) || defined(ISC)
 /*
- *	Some OS's may not have this, perhaps SCO is the only one
+ *	Some OS's may not have this
  */
 
 #define X_NO_SYS_UN 1

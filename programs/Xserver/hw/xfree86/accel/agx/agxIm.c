@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.5 1994/09/11 00:36:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.6 1994/09/23 10:07:31 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -97,7 +97,7 @@ agxImageInit()
          BytesPerPixelShift++, i <<= 1   );
     agxVideoMapFormat = (BytesPerPixelShift & 0x07) | GE_MF_MOTO_FORMAT;
     BytesPerPixelShift -= 3;
-    screenStride = agxVirtX << BytesPerPixelShift;
+    screenStride = agxDisplayWidth << BytesPerPixelShift;
 
 
 #if 0
@@ -307,53 +307,6 @@ agxPartMemToVid( dst, dstWidth, src, srcWidth, w, h )
     }
 }
 
-#if 0
-static void
-agxImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
-    unsigned int        x;
-    unsigned int	y;
-    unsigned int	w;
-    unsigned int	h;
-    unsigned char	*psrc;
-    unsigned int	pwidth;
-    unsigned int	px;
-    unsigned int	py;
-    unsigned int        alu;
-    unsigned int  	planemask;
-{
-    pointer curvm;
-
-    if ((w == 0) || (h == 0))
-	return;
-
-    if (alu == MIX_DST)
-	return;
-
-    GE_WAIT_IDLE();
-
-    if ((alu != MIX_SRC) || ((planemask & PMask) != PMask)) {
-#if 0
-	vgaImageWrite( agxVideoMem, psrc, 
-                       pwidth, agxVirtX,
-                       px, py, x, y, w, h, 
-                       1, 1, alu, planemask );
-#else
-        agxImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask);
-#endif
-	return;
-    }
-	
-    psrc += pwidth * py + px;
-    curvm = (agxVideoMem + x) + y * agxVirtX;
-
-    while(h--) {
-	MemToBus(curvm, psrc, w);
-	
-	curvm += agxVirtX; 
-	psrc += pwidth;
-    }
-}
-#endif
 
 static void
 agxImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
@@ -380,28 +333,20 @@ agxImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     if (alu == MIX_DST)
 	  return;
 
-    GE_WAIT_IDLE();
-
     if ((alu != MIX_SRC) || ((planemask & PMask) != PMask)) {
-#if 0
-	vgaImageWrite( agxVideoMem, psrc, 
-                       pwidth, agxVirtX,
-                       px, py, x, y, w, h, 
-                       1, 1, alu, planemask );
-#else
+        GE_WAIT_IDLE();
         agxImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask);
-#endif
 	return;
     }
 	
     psrc += (pwidth * py + px) << BytesPerPixelShift;
-    offset = (x + y * agxVirtX) << BytesPerPixelShift;
+    offset = (x + y * agxDisplayWidth) << BytesPerPixelShift;
     bank = offset / agxBankSize;
     offset &= (agxBankSize-1);
     curvm = (pointer)&((char*)agxVideoMem)[offset];
     agxSetVGAPage(bank);
 
-
+    GE_WAIT_IDLE();
     while(h) {
 	/*
 	 * calc number of line before need to switch banks
@@ -412,10 +357,10 @@ agxImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 		h = 0;
 	} 
         else {
- 	   offset += (count * agxVirtX);
+ 	   offset += (count * agxDisplayWidth);
 	   if (offset + (w<<BytesPerPixelShift) < agxBankSize) {
 	      count++;
-	      offset += agxVirtX;
+	      offset += agxDisplayWidth;
 	   }
            h -= count;
 	}
@@ -425,7 +370,7 @@ agxImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 	 */
 	while(count--) {
 		MemToBus(curvm, psrc, w<<BytesPerPixelShift);
-		curvm = (void *)((unsigned char *)curvm + agxVirtX);
+		curvm = (void *)((unsigned char *)curvm + agxDisplayWidth);
 		psrc += pwidth;
 	}
 
@@ -464,9 +409,9 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
 {
     unsigned int      srcPWidth;
     unsigned int      srcBWidth;
-    int  		srcBWidthShift;
+    int   	      srcBWidthShift;
     unsigned int      srcStripHeight;
-    unsigned int        srcMaxLines;
+    unsigned int      srcMaxLines;
     unsigned int      srcLine;
     unsigned int      numVertStrips;
     unsigned int      lastVStripHeight;
@@ -524,37 +469,22 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
 
     MAP_SET_DST( GE_MS_MAP_A );
     MAP_SET_SRC( GE_MS_MAP_B );
-
-#ifdef MAP_MNG
     GE_SET_MAP( GE_MS_MAP_B );
-#else
-    GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MAP_B );
-    GE_OUT_D( GE_PIXEL_MAP_BASE, agxMemBase + agxScratchOffset );
-    GE_OUT_W( GE_PIXEL_MAP_WIDTH,  srcPWidth - 1 );
-    GE_OUT_W( GE_PIXEL_MAP_HEIGHT, srcStripHeight - 1 );
-    GE_OUT_B( GE_PIXEL_MAP_FORMAT, agxVideoMapFormat );
-#endif
 
     GE_OUT_B( GE_FRGD_MIX, alu );
     GE_OUT_D( GE_PIXEL_BIT_MASK, planemask );
-#ifndef NO_MULTI_IO
     GE_OUT_D( GE_OP_DIM_WIDTH, (srcStripHeight-1 << 16) | w-1 );
-#else
-    GE_OUT_W( GE_OP_DIM_HEIGHT, srcStripHeight - 1 );
-    GE_OUT_W( GE_OP_DIM_WIDTH, w - 1);
-#endif
     GE_OUT_W( GE_PIXEL_OP, 
               GE_OP_PAT_FRGD
               | GE_OP_MASK_DISABLED
               | GE_OP_INC_X
               | GE_OP_INC_Y         );
 
-
-    srcLine = 0; 
-
+    srcLine = 0;       
     for( strip = 1; strip <= numVertStrips; strip++ ) {
+       register dstCoOrd = srcLine << 16 | x;
 
-       GE_WAIT_IDLE(); /* need to double buffer! */
+       GE_WAIT_IDLE(); 
 
        if( strip == numVertStrips ) {
           srcStripHeight = lastVStripHeight;
@@ -575,59 +505,17 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
                        srcStripHeight );
        }
 
-#ifndef NO_MULTI_IO
        GE_OUT_D( GE_SRC_MAP_X, 0 );
-       GE_OUT_D( GE_DEST_MAP_X, (srcLine << 16) | x );
-#else
-       GE_OUT_W( GE_SRC_MAP_X, 0 );
-       GE_OUT_W( GE_SRC_MAP_Y, 0 );
-       GE_OUT_W( GE_DEST_MAP_X, x );
-       GE_OUT_W( GE_DEST_MAP_Y, srcLine );
-#endif
+       GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
        GE_START_CMDW( GE_OPW_BITBLT
                       | GE_OPW_FRGD_SRC_MAP
                       | GE_OPW_SRC_MAP_B
                       | GE_OPW_DEST_MAP_A   );
 
-       srcLine += srcStripHeight;
+       srcLine += srcStripHeight << 16;
     }
     GE_WAIT_IDLE_EXIT();
 } 
-
-#if 0
-static void
-agxImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
-    unsigned int	x;
-    unsigned int	y;
-    unsigned int	w;
-    unsigned int	h;
-    unsigned char	*psrc;
-    unsigned int	pwidth;
-    unsigned int	px;
-    unsigned int	py;
-    unsigned int	planemask;
-{
-    int j;
-    pointer curvm;
-
-    if ((w == 0) || (h == 0))
-	return;
-
-    GE_WAIT_IDLE();
-
-    if ((planemask & PMask) != PMask) {
-	return;
-    }
-
-    psrc += pwidth * py + px;
-    curvm = agxVideoMem + x;
-    
-    for (j = y; j < y+h; j++) {
-	BusToMem(psrc, curvm + j*agxVirtX, w);
-	psrc += pwidth;
-    }
-}
-#endif
 
 static void
 agxImageReadBank(x, y, w, h, psrc, pwidth, px, py, planemask)
@@ -697,64 +585,6 @@ agxImageReadBank(x, y, w, h, psrc, pwidth, px, py, planemask)
     }
 }
 
-#if 0
-static void
-agxImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
-    int			x;
-    int			y;
-    int			w;
-    int			h;
-    unsigned char	*psrc;
-    int			pwidth;
-    int			pw;
-    int			ph;
-    int			pox;
-    int			poy;
-    unsigned int	alu;
-    unsigned int	planemask;
-{
-    unsigned int 	i,j;
-    unsigned char	*pline;
-    int                 mod, ymod;
-    unsigned char       *curvm;
-    int                 count;
-
-    if ((w == 0) || (h == 0))
-	return;
-
-    if (alu == MIX_DST)
-	  return;
-
-    if ((alu != MIX_SRC) || ((planemask&PMask) != PMask))
-    {
-	agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox,
-			     poy, alu, planemask);
-	return;
-    }
-
-    GE_WAIT_IDLE();
-    modulus(y-poy,ph,ymod);
-
-    for (j = y; j < y+h; j++) {
-	curvm = agxVideoMem + x + j*agxVirtX;
-	
-	pline = psrc + pwidth*ymod;
-	if (++ymod >= ph)
-	    ymod -= ph;
-	modulus(x-pox,pw,mod);
-	for (i = 0, count = 0; i < w; i += count ) {
-	    count = pw - mod;
-	    if (i + count > w)
-		count = w - i;
-	    MemToBus( curvm, pline + mod, count);
-	    curvm += count;
-	    mod += count;
-	    while(mod >= pw)
-		mod -= pw;
-	}
-    }
-}
-#endif
 
 static void
 agxImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
@@ -794,7 +624,7 @@ agxImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 
        GE_WAIT_IDLE();
    
-       agxPartMemToVid( (x + y * agxVirtX) << BytesPerPixelShift, 
+       agxPartMemToVid( (x + y * agxDisplayWidth) << BytesPerPixelShift, 
                         agxVirtX,
                         psrc + ((xrot + yrot * pwidth) << BytesPerPixelShift),
                         pwidth,
@@ -843,7 +673,6 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     unsigned int      firstHeight;
     unsigned int      secondHeight;
     unsigned int      vTile;
-    unsigned int      dstY;         
 
     modulus( x-pox, pw, xrot );
     modulus( y-poy, ph, yrot );
@@ -967,6 +796,9 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
           lastVTileLastStripHeight = srcStripHeight;
     }
 
+    srcLine = yrot; 
+    vStripFirstY = y;
+
     MAP_INIT( GE_MS_MAP_B,
               agxVideoMapFormat,
               agxMemBase + agxScratchOffset,
@@ -978,16 +810,7 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 
     MAP_SET_DST( GE_MS_MAP_A );
     MAP_SET_SRC( GE_MS_MAP_B );
-
-#ifdef MAP_MNG
     GE_SET_MAP( GE_MS_MAP_B );
-#else
-    GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MAP_B );
-    GE_OUT_D( GE_PIXEL_MAP_BASE, agxMemBase + agxScratchOffset );
-    GE_OUT_W( GE_PIXEL_MAP_WIDTH,  srcPWidth - 1 );
-    GE_OUT_W( GE_PIXEL_MAP_HEIGHT, srcStripHeight - 1 );
-    GE_OUT_B( GE_PIXEL_MAP_FORMAT, agxVideoMapFormat );
-#endif
 
     GE_OUT_B( GE_FRGD_MIX, alu );
     GE_OUT_D( GE_PIXEL_BIT_MASK, planemask );
@@ -997,14 +820,8 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
               | GE_OP_INC_X
               | GE_OP_INC_Y         );
 
-    srcLine = yrot; 
-    vStripFirstY = y;
-
     for( strip = 1; strip <= numVertStrips; strip++ ) {
-
-       dstY = vStripFirstY;
-
-       GE_WAIT_IDLE();
+       unsigned int dstY = vStripFirstY;
 
        /*
         * Load map B with the current strip. 
@@ -1021,6 +838,8 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
           firstHeight = srcStripHeight;
           secondHeight = 0;
        }
+
+       GE_WAIT_IDLE();
 
        agxPartMemToVid( agxScratchOffset + firstBWidth, srcBWidth, 
                         psrc + srcLine * pwidth, pwidth,
@@ -1051,10 +870,10 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
        }
           
        for( vTile = 1; vTile <= numVertTiles; vTile++ ) {
+          register unsigned int dstX;
           unsigned int hTile;
-          unsigned int dstX;
           unsigned int dstHeight;
-
+   
           if( vTile == numVertTiles )
              if( strip < numLastVTileStrips )
                 dstHeight = srcStripHeight - 1;
@@ -1066,12 +885,8 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
              dstHeight = srcStripHeight - 1;
 
           dstX = x;
-
-          GE_WAIT_IDLE();
-          GE_OUT_W( GE_OP_DIM_HEIGHT, dstHeight );
-
           for( hTile = 1; hTile <= numHorizTiles; hTile++ ) {
-             unsigned int dstWidth;
+             register unsigned int dstWidth;
 
              if( hTile == 1 ) {
                 dstWidth = firstHTileWidth - 1;
@@ -1082,22 +897,21 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
              else {
                 dstWidth = pw - 1; 
              }
-      
-            GE_WAIT_IDLE();
-#ifndef NO_MULTI_IO
-            GE_OUT_D( GE_SRC_MAP_X,  0 );
-            GE_OUT_D( GE_DEST_MAP_X, (dstY << 16) | dstX );
-#else
-            GE_OUT_D( GE_SRC_MAP_X, 0 );
-            GE_OUT_W( GE_DEST_MAP_X, dstX );
-            GE_OUT_W( GE_DEST_MAP_Y, dstY );
-#endif
-            GE_OUT_W( GE_OP_DIM_WIDTH, dstWidth );
-            GE_START_CMDW( GE_OPW_BITBLT
-                           | GE_OPW_FRGD_SRC_MAP
-                           | GE_OPW_SRC_MAP_B
-                           | GE_OPW_DEST_MAP_A   );
-            dstX += dstWidth + 1;    
+     
+             { 
+               register unsigned int dstCoOrd = dstY << 16 | dstX;
+               register unsigned int opDim = dstHeight << 16 | dstWidth;
+               
+               GE_WAIT_IDLE();
+               GE_OUT_D( GE_SRC_MAP_X,  0 );
+               GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+               GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+               GE_START_CMDW( GE_OPW_BITBLT
+                              | GE_OPW_FRGD_SRC_MAP
+                              | GE_OPW_SRC_MAP_B
+                              | GE_OPW_DEST_MAP_A   );
+             }
+             dstX += dstWidth + 1;    
           }
           dstY += ph;
        }
@@ -1316,23 +1130,9 @@ agxImageStipple( x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 
     MAP_SET_DST( GE_MS_MAP_A );
     MAP_SET_SRC( GE_MS_MAP_B );
-
-#ifdef MAP_MNG
     GE_SET_MAP( GE_MS_MAP_B );   
-#else
-    GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MAP_B );
-    GE_OUT_D( GE_PIXEL_MAP_BASE, agxMemBase + agxScratchOffset );
-    GE_OUT_W( GE_PIXEL_MAP_WIDTH,  srcPWidth-1 );
-    GE_OUT_W( GE_PIXEL_MAP_HEIGHT, srcStripHeight-1 );
-    GE_OUT_B( GE_PIXEL_MAP_FORMAT, GE_MF_1BPP | GE_MF_MOTO_FORMAT );
-#endif
 
-#ifndef NO_MULTI_IO
-    GE_OUT_W(GE_FRGD_MIX, (bgAlu << 8) | fgAlu );  /* both fg & bg */
-#else
-    GE_OUT_B(GE_FRGD_MIX, fgAlu );
-    GE_OUT_B(GE_BKGD_MIX, bgAlu );
-#endif
+    GE_OUT_W(GE_FRGD_MIX, bgAlu << 8 | fgAlu );  /* both fg & bg */
     GE_OUT_D(GE_FRGD_CLR, fgPixel );
     GE_OUT_D(GE_BKGD_CLR, bgPixel );
     GE_OUT_D(GE_PIXEL_BIT_MASK, planemask);
@@ -1430,7 +1230,7 @@ agxImageStipple( x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
           GE_OUT_W( GE_OP_DIM_HEIGHT, dstHeight );
 
           for( hTile = 1; hTile <= numHorizTiles; hTile++ ) {
-             unsigned int dstWidth;
+            unsigned int dstWidth;
 
             if( autoHTiling ) {
                dstWidth = w - 1;
@@ -1457,23 +1257,19 @@ agxImageStipple( x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
                    srcY = 0;
                 }
             }
-      
-            GE_WAIT_IDLE();
-#ifndef NO_MULTI_IO
-
-            GE_OUT_D( GE_PAT_MAP_X,  (srcY << 16) | srcX );
-            GE_OUT_D( GE_DEST_MAP_X, (dstY << 16) | dstX );
-#else
-            GE_OUT_W( GE_PAT_MAP_X, srcX );
-            GE_OUT_W( GE_PAT_MAP_Y, srcY );
-            GE_OUT_W( GE_DEST_MAP_X, dstX );
-            GE_OUT_W( GE_DEST_MAP_Y, dstY );
-#endif
-            GE_OUT_W( GE_OP_DIM_WIDTH, dstWidth );
-            GE_START_CMDW( GE_OPW_BITBLT
-                           | GE_OPW_FRGD_SRC_CLR
-                           | GE_OPW_BKGD_SRC_CLR
-                           | GE_OPW_DEST_MAP_A   );
+     
+            { 
+               register unsigned int srcCoOrd = srcY << 16 | srcX;
+               register unsigned int dstCoOrd = dstY << 16 | dstX;
+               GE_WAIT_IDLE();
+               GE_OUT_D( GE_PAT_MAP_X,  srcCoOrd );
+               GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+               GE_OUT_W( GE_OP_DIM_WIDTH, dstWidth );
+               GE_START_CMDW( GE_OPW_BITBLT
+                              | GE_OPW_FRGD_SRC_CLR
+                              | GE_OPW_BKGD_SRC_CLR
+                              | GE_OPW_DEST_MAP_A   );
+            }
             dstX += dstWidth + 1;    
           }
           dstY += ph; 
@@ -1522,7 +1318,7 @@ agxFillBoxStipple( pDrawable, nBox, pBox,
     pixBWidth = BitmapBytePad( width );
 
     if( (width != srcPWidth && width != 2 && width !=4)
-        || width * height > 64 * 64
+        || width * height > 256 * 256 
         || srcMaxLines < height ) { 
 
        for (; nBox; nBox--, pBox++) {
@@ -1566,13 +1362,8 @@ agxFillBoxStipple( pDrawable, nBox, pBox,
        MAP_SET_DST( GE_MS_MAP_A );
        MAP_SET_SRC( GE_MS_MAP_B );
        GE_SET_MAP( GE_MS_MAP_B );
- 
-#ifndef NO_MULTI_IO
-       GE_OUT_W(GE_FRGD_MIX, bgAlu << 8) | fgAlu );  /* both fg & bg */
-#else
-       GE_OUT_B(GE_FRGD_MIX, fgAlu );
-       GE_OUT_B(GE_BKGD_MIX, bgAlu );
-#endif
+
+       GE_OUT_W(GE_FRGD_MIX, bgAlu << 8 | fgAlu );  /* both fg & bg */
        GE_OUT_D(GE_FRGD_CLR, fgpixel );
        GE_OUT_D(GE_BKGD_CLR, bgpixel );
        GE_OUT_D(GE_PIXEL_BIT_MASK, planemask);
@@ -1589,23 +1380,16 @@ agxFillBoxStipple( pDrawable, nBox, pBox,
           w = pBox->x2 - pBox->x1 - 1;
  
           if ((w >= 0) && (h >= 0)) {
-             srcX = (pBox->x1 - pox) & widthMask;
-             srcY = (pBox->y1 - poy) % height;
- 
+             register unsigned int patCoOrd = 
+                    ((pBox->y1 - poy) % height) << 16
+                    | (pBox->x1 - pox) & widthMask;
+             register unsigned int dstCoOrd = pBox->y1 << 16 | pBox->x1;
+             register unsigned int opDim = h << 16 | w;
+
              GE_WAIT_IDLE();
-#ifndef NO_MULTI_IO
-             GE_OUT_D( GE_PAT_MAP_X,  (srcY << 16) | srcX );
-             GE_OUT_D( GE_DEST_MAP_X, pBox->y1 << 16
-                                      | pBox->x1 );
-             GE_OUT_D( GE_OP_DIM_WIDTH, h << 16 | w );
-#else
-             GE_OUT_W( GE_PAT_MAP_X, srcX );
-             GE_OUT_W( GE_PAT_MAP_Y, srcY );
-             GE_OUT_W( GE_DEST_MAP_X, (short)(pBox->x1) );
-             GE_OUT_W( GE_DEST_MAP_Y, (short)(pBox->y1) );
-             GE_OUT_W( GE_OP_DIM_WIDTH, w );
-             GE_OUT_W( GE_OP_DIM_HEIGHT, h );
-#endif
+             GE_OUT_D( GE_PAT_MAP_X, patCoOrd );
+             GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+             GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
              GE_START_CMDW( GE_OPW_BITBLT
                             | GE_OPW_FRGD_SRC_CLR
                             | GE_OPW_BKGD_SRC_CLR
@@ -1630,12 +1414,15 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
 {
     int            w, h;
     unsigned int   width, height;
-    unsigned int   srcX, srcY;
     unsigned int   pixBWidth;
     unsigned int   srcPWidth;
     unsigned int   srcBWidth;
     int            srcBWidthShift;
     unsigned int   srcMaxLines;
+#if 0
+    int            xrot, yrot;
+    Bool           oneBox = FALSE;
+#endif
 
     width = tile->drawable.width;
     height = tile->drawable.height;
@@ -1645,19 +1432,42 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
     srcPWidth = srcBWidth >> BytesPerPixelShift;
     srcMaxLines = agxScratchSize >> srcBWidthShift;
     pixBWidth = PixmapBytePad( width, tile->drawable.depth );
- 
+
+#if 0
+    if( nBox == 1 && alu == GXcopy ) {
+       modulus( pBox->x1-pox, width, xrot );
+       modulus( pBox->y1-poy, height, yrot );
+       if( (width - xrot) > (pBox->x2 - pBox->x1)
+           &&  (height - yrot) > (pBox->y2 - pBox->y2) )
+          oneBox = TRUE;
+    }
+
+    if( oneBox ) { 
+        /* copy direct */
+        GE_WAIT_IDLE();
+        agxPartMemToVid( (pBox->x1 + pBox->y1 * agxDisplayWidth)
+                            << BytesPerPixelShift,
+                         agxVirtX,
+                         tile->devPrivate.ptr 
+                           + ((xrot + yrot * srcPWidth) << BytesPerPixelShift), 
+                         srcPWidth,
+                         (pBox->x2 - pBox->x1) << BytesPerPixelShift, 
+                         pBox->y2 - pBox->y1 );
+
+    } 
+    else 
+#endif
     if( srcPWidth != width
-        || width * height > 64 * 64
+        || width * height > 128 * 128 
         || srcMaxLines < height ) { 
 
        for (; nBox; nBox--, pBox++) {
-          h = pBox->y2 - pBox->y1 - 1;
-          w = pBox->x2 - pBox->x1 - 1;
+          h = pBox->y2 - pBox->y1;
+          w = pBox->x2 - pBox->x1;
 
-          if ((w >= 0) && (h >= 0)) {
+          if ((w > 0) && (h > 0)) {
               (*agxImageFillFunc)( pBox->x1, pBox->y1,
-                                   pBox->x2 - pBox->x1,
-                                   pBox->y2 - pBox->y1,
+                                   w, h,
                                    tile->devPrivate.ptr, pixBWidth,
                                    width, height, 
                                    pox, poy,
@@ -1698,22 +1508,16 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
           w = pBox->x2 - pBox->x1 - 1;
  
           if ((w >= 0) && (h >= 0)) {
-             srcX = (pBox->x1 - pox) & widthMask;
-             srcY = (pBox->y1 - poy) % height;
+             register unsigned int srcCoOrd = 
+                    ((pBox->y1 - poy) % height) << 16
+                    | (pBox->x1 - pox) & widthMask;
+             register unsigned int dstCoOrd = pBox->y1 << 16 | pBox->x1;
+             register unsigned int opDim = h << 16 | w;
  
              GE_WAIT_IDLE();
-#ifndef NO_MULTI_IO
-             GE_OUT_D( GE_SRC_MAP_X,  (srcY << 16) | srcX );
-             GE_OUT_D( GE_DEST_MAP_X, pBox->y1 << 16 | pBox->x1 );
-             GE_OUT_D( GE_OP_DIM_WIDTH, h << 16 | w );
-#else
-             GE_OUT_W( GE_SRC_MAP_X, srcX );
-             GE_OUT_W( GE_SRC_MAP_Y, srcY );
-             GE_OUT_W( GE_DEST_MAP_X, (short)(pBox->x1) );
-             GE_OUT_W( GE_DEST_MAP_Y, (short)(pBox->y1) );
-             GE_OUT_W( GE_OP_DIM_WIDTH, w );
-             GE_OUT_W( GE_OP_DIM_HEIGHT, h );
-#endif
+             GE_OUT_D( GE_SRC_MAP_X, srcCoOrd );
+             GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+             GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
              GE_START_CMDW( GE_OPW_BITBLT
                             | GE_OPW_FRGD_SRC_MAP
                             | GE_OPW_SRC_MAP_B
@@ -1766,18 +1570,29 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
 
     modulus(pPts->x-pox,width,minX);
     modulus(pPts->x+*pWidth-pox-1,width,maxX);
+    if( maxX < minX )
+       wrap = TRUE;
     modulus(pPts->y-poy,height,minLine);
     maxLine = minLine;
+    /*
+     * Try to load as little of the pixmap as possible.
+     * We're not realigning to the pox origins so that
+     * the drawing part of the routine will also work with
+     * cached pixmaps in the future.
+     */
     while( n-- > 0 ) {
        int tmp;
        modulus(pPts->x-pox,width,tmp);
        if( tmp < minX ) minX = tmp;
        tmp += *pWidth - 1 ;
        if( tmp >= width ) {
-          wrap = TRUE;
-          modulus(tmp,width,maxX);
+          modulus(tmp,width,tmp);
+          if( !wrap ) {
+             wrap = TRUE;
+             maxX = 0;
+          } 
        }
-       else if( wrap && tmp > maxX && tmp < minX ) {
+       if( wrap && tmp > maxX && tmp < minX ) {
           maxX = tmp;
        }
        else if( tmp > maxX ) {
@@ -1789,6 +1604,7 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
        pWidth++;
        pPts++;
     }
+
     pPts = ppts;
     pWidth = pwidth;
     n = nSpans;
@@ -1872,7 +1688,6 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
               | GE_OP_INC_X
               | GE_OP_INC_Y         );
 
-    GE_OUT_W( GE_OP_DIM_HEIGHT, 0 );
 
     while( nSpans-- ) {
        int firstWidth = *pwidth;   
@@ -1881,10 +1696,8 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
        int nextX = ppts->x;
 
        if (firstWidth > 0) {
-
           modulus(ppts->x-pox,width,srcX);
           modulus(ppts->y-poy,height,srcY);
-
           /* 
            * If the GE can't handle the wrap (width ! a pow of 2)
            * we'll need to handle the horz tiling ourselves.
@@ -1918,61 +1731,43 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
           }
           srcY -= firstLine;
 
-          GE_WAIT_IDLE();
-#ifndef NO_MULTI_IO
-          GE_OUT_D( GE_SRC_MAP_X,  (srcY << 16) | srcX );
-          GE_OUT_D( GE_DEST_MAP_X, ppts->y << 16 | nextX );
-#else
-          GE_OUT_W( GE_SRC_MAP_X, srcX );
-          GE_OUT_W( GE_SRC_MAP_Y, srcY );
-          GE_OUT_W( GE_DEST_MAP_X, nextX );
-          GE_OUT_W( GE_DEST_MAP_Y, ppts->y );
-#endif
-          GE_OUT_W( GE_OP_DIM_WIDTH, firstWidth - 1 );
-          GE_OUT_W( GE_OP_DIM_HEIGHT, 0 );
-          GE_START_CMDW( GE_OPW_BITBLT
-                         | GE_OPW_FRGD_SRC_MAP
-                         | GE_OPW_SRC_MAP_B
-                         | GE_OPW_DEST_MAP_A   );
+          {
+             register unsigned int srcCoOrd = srcY << 16 | srcX;
+             register unsigned int dstCoOrd = ppts->y << 16 | nextX;
 
-          nextX += firstWidth;
-          while( numMids-- > 0 ) { 
              GE_WAIT_IDLE();
-#ifndef NO_MULTI_IO
-             GE_OUT_D( GE_SRC_MAP_X, srcY << 16 );
-             GE_OUT_D( GE_DEST_MAP_X, ppts->y << 16 | nextX );
-#else
-             GE_OUT_W( GE_SRC_MAP_X, 0 );
-             GE_OUT_W( GE_SRC_MAP_Y, srcY );
-             GE_OUT_W( GE_DEST_MAP_X, nextX );
-             GE_OUT_W( GE_DEST_MAP_Y, ppts->y );
-#endif
-             GE_OUT_W( GE_OP_DIM_WIDTH, width - 1 );
-             GE_OUT_W( GE_OP_DIM_HEIGHT, 0 );
+             GE_OUT_D( GE_SRC_MAP_X, srcCoOrd ); 
+             GE_OUT_D( GE_DEST_MAP_X, dstCoOrd ); 
+             GE_OUT_D( GE_OP_DIM_WIDTH, firstWidth - 1 );
              GE_START_CMDW( GE_OPW_BITBLT
                             | GE_OPW_FRGD_SRC_MAP
                             | GE_OPW_SRC_MAP_B
                             | GE_OPW_DEST_MAP_A   );
-             nextX += width;
-          }
-
-          if( lastWidth > 0 ) {
-             GE_WAIT_IDLE();
-#ifndef NO_MULTI_IO
-             GE_OUT_D( GE_SRC_MAP_X, srcY << 16 );
-             GE_OUT_D( GE_DEST_MAP_X, ppts->y << 16 | nextX );
-#else
-             GE_OUT_W( GE_SRC_MAP_X, 0 );
-             GE_OUT_W( GE_SRC_MAP_Y, srcY );
-#endif
-             GE_OUT_W( GE_OP_DIM_WIDTH, lastWidth - 1 );
-             GE_OUT_W( GE_OP_DIM_HEIGHT, 0 );
-             GE_OUT_W( GE_DEST_MAP_X, nextX );
-             GE_OUT_W( GE_DEST_MAP_Y, ppts->y );
-             GE_START_CMDW( GE_OPW_BITBLT
-                            | GE_OPW_FRGD_SRC_MAP
-                            | GE_OPW_SRC_MAP_B
-                            | GE_OPW_DEST_MAP_A   );
+   
+             srcCoOrd &= 0xFFFF0000;   
+             dstCoOrd += firstWidth;
+             while( numMids-- > 0 ) { 
+                GE_WAIT_IDLE();
+                GE_OUT_D( GE_SRC_MAP_X, srcCoOrd );
+                GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+                GE_OUT_D( GE_OP_DIM_WIDTH, width-1 );
+                GE_START_CMDW( GE_OPW_BITBLT
+                               | GE_OPW_FRGD_SRC_MAP
+                               | GE_OPW_SRC_MAP_B
+                               | GE_OPW_DEST_MAP_A   );
+                dstCoOrd += width;
+             }
+   
+             if( lastWidth > 0 ) {
+                GE_WAIT_IDLE();
+                GE_OUT_D( GE_SRC_MAP_X, srcCoOrd );
+                GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+                GE_OUT_D( GE_OP_DIM_WIDTH, lastWidth - 1 );
+                GE_START_CMDW( GE_OPW_BITBLT
+                               | GE_OPW_FRGD_SRC_MAP
+                               | GE_OPW_SRC_MAP_B
+                               | GE_OPW_DEST_MAP_A   );
+             }
           }
        }
        ppts++;
@@ -1981,7 +1776,6 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
     GE_WAIT_IDLE_EXIT();
 }
     
-
  
 void
 agxFSpansStipple( pDrawable, nSpans, ppts, pwidth,
@@ -2091,12 +1885,7 @@ agxFSpansStipple( pDrawable, nSpans, ppts, pwidth,
     MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
     GE_SET_MAP( GE_MS_MAP_B );
  
-#ifndef NO_MULTI_IO
-    GE_OUT_W(GE_FRGD_MIX, bgAlu << 8) | fgAlu );  /* both fg & bg */
-#else
-    GE_OUT_B(GE_FRGD_MIX, fgAlu );
-    GE_OUT_B(GE_BKGD_MIX, bgAlu );
-#endif
+    GE_OUT_W(GE_FRGD_MIX, bgAlu << 8 | fgAlu);  /* both fg & bg */
     GE_OUT_D(GE_FRGD_CLR, fgpixel );
     GE_OUT_D(GE_BKGD_CLR, bgpixel );
     GE_OUT_D(GE_PIXEL_BIT_MASK, planemask);
@@ -2114,10 +1903,8 @@ agxFSpansStipple( pDrawable, nSpans, ppts, pwidth,
        int nextX = ppts->x;
 
        if (firstWidth > 0) {
-
           modulus(ppts->x-pox,width,srcX);
           modulus(ppts->y-poy,height,srcY);
-
           /* 
            * If the GE can't handle the wrap (width ! a pow of 2)
            * we'll need to handle the horz tiling ourselves.
@@ -2145,61 +1932,43 @@ agxFSpansStipple( pDrawable, nSpans, ppts, pwidth,
           } 
           srcY -= firstLine;
 
-          GE_WAIT_IDLE();
-#ifndef NO_MULTI_IO
-          GE_OUT_D( GE_PAT_MAP_X,  (srcY << 16) | srcX );
-          GE_OUT_D( GE_DEST_MAP_X, ppts->y << 16 | nextX );
-#else
-          GE_OUT_W( GE_PAT_MAP_X, srcX );
-          GE_OUT_W( GE_PAT_MAP_Y, srcY );
-          GE_OUT_W( GE_DEST_MAP_X, nextX );
-          GE_OUT_W( GE_DEST_MAP_Y, ppts->y );
-#endif
-          GE_OUT_W( GE_OP_DIM_WIDTH, firstWidth - 1 );
-          GE_OUT_W( GE_OP_DIM_HEIGHT, 0 );
-          GE_START_CMDW( GE_OPW_BITBLT
-                         | GE_OPW_FRGD_SRC_CLR
-                         | GE_OPW_BKGD_SRC_CLR
-                         | GE_OPW_DEST_MAP_A   );
+          {
+             register unsigned int srcCoOrd = srcY << 16 | srcX;
+             register unsigned int dstCoOrd = ppts->y << 16 | nextX;
 
-          nextX += firstWidth;
-          while( numMids-- > 0 ) {
              GE_WAIT_IDLE();
-#ifndef NO_MULTI_IO
-             GE_OUT_D( GE_PAT_MAP_X, srcY << 16 );
-             GE_OUT_D( GE_DEST_MAP_X, ppts->y << 16 | nextX );
-#else
-             GE_OUT_W( GE_PAT_MAP_X, 0 );
-             GE_OUT_W( GE_PAT_MAP_Y, srcY );
-             GE_OUT_W( GE_DEST_MAP_X, nextX );
-             GE_OUT_W( GE_DEST_MAP_Y, ppts->y );
-#endif
-             GE_OUT_W( GE_OP_DIM_WIDTH, width - 1 );
-             GE_OUT_W( GE_OP_DIM_HEIGHT, 0 );
+             GE_OUT_D( GE_PAT_MAP_X,  srcCoOrd );
+             GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+             GE_OUT_D( GE_OP_DIM_WIDTH, firstWidth - 1 );
              GE_START_CMDW( GE_OPW_BITBLT
                             | GE_OPW_FRGD_SRC_CLR
                             | GE_OPW_BKGD_SRC_CLR
                             | GE_OPW_DEST_MAP_A   );
-             nextX += width;
-          }
 
-          if( lastWidth > 0 ) {
-             GE_WAIT_IDLE();
-#ifndef NO_MULTI_IO
-             GE_OUT_D( GE_PAT_MAP_X, srcY << 16 );
-             GE_OUT_D( GE_DEST_MAP_X, ppts->y << 16 | nextX );
-#else
-             GE_OUT_W( GE_PAT_MAP_X, 0 );
-             GE_OUT_W( GE_PAT_MAP_Y, srcY );
-#endif
-             GE_OUT_W( GE_OP_DIM_WIDTH, lastWidth - 1 );
-             GE_OUT_W( GE_OP_DIM_HEIGHT, 0 );
-             GE_OUT_W( GE_DEST_MAP_X, nextX );
-             GE_OUT_W( GE_DEST_MAP_Y, ppts->y );
-             GE_START_CMDW( GE_OPW_BITBLT
-                            | GE_OPW_FRGD_SRC_CLR
-                            | GE_OPW_BKGD_SRC_CLR
-                            | GE_OPW_DEST_MAP_A   );
+             srcCoOrd &= 0xFFFF0000;   
+             dstCoOrd += firstWidth;
+             while( numMids-- > 0 ) {
+                GE_WAIT_IDLE();
+                GE_OUT_D( GE_PAT_MAP_X,  srcCoOrd );
+                GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+                GE_OUT_D( GE_OP_DIM_WIDTH, width-1 );
+                GE_START_CMDW( GE_OPW_BITBLT
+                               | GE_OPW_FRGD_SRC_CLR
+                               | GE_OPW_BKGD_SRC_CLR
+                               | GE_OPW_DEST_MAP_A   );
+                dstCoOrd += width;
+             }
+   
+             if( lastWidth > 0 ) {
+                GE_WAIT_IDLE();
+                GE_OUT_D( GE_PAT_MAP_X,  srcCoOrd );
+                GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+                GE_OUT_D( GE_OP_DIM_WIDTH, lastWidth - 1 );
+                GE_START_CMDW( GE_OPW_BITBLT
+                               | GE_OPW_FRGD_SRC_CLR
+                               | GE_OPW_BKGD_SRC_CLR
+                               | GE_OPW_DEST_MAP_A   );
+             }
           }
        }
        ppts++;
