@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.86 2001/02/07 10:11:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.87 2001/02/12 04:24:23 tsi Exp $ */
 /*
  * PCI Probe
  *
@@ -475,6 +475,8 @@
 #define PCI_CHIP_UTNT2		0x0029
 #define PCI_CHIP_VTNT2		0x002C
 #define PCI_CHIP_UVTNT2		0x002D
+#define PCI_CHIP_TNT2_A		0x002E
+#define PCI_CHIP_TNT2_B		0x002F
 #define PCI_CHIP_ITNT2		0x00A0
 #define PCI_CHIP_GEFORCE256     0x0100
 #define PCI_CHIP_GEFORCEDDR     0x0101
@@ -487,6 +489,10 @@
 #define PCI_CHIP_GEFORCE2GTS_1  0x0151
 #define PCI_CHIP_GEFORCE2ULTRA  0x0152
 #define PCI_CHIP_QUADRO2PRO     0x0153
+#define PCI_CHIP_0200		0x0200
+#define PCI_CHIP_0201		0x0201
+#define PCI_CHIP_0202		0x0202
+#define PCI_CHIP_0203		0x0203
 
 /* NVIDIA & SGS */
 #define PCI_CHIP_RIVA128	0x0018
@@ -1209,6 +1215,8 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_UTNT2,	"Riva Ultra TNT2",0},
 				{PCI_CHIP_VTNT2,	"Riva Vanta",0},
 				{PCI_CHIP_UVTNT2,	"Riva Ultra 64",0},
+				{PCI_CHIP_TNT2_A,	"Riva TNT2 (A)",0},
+				{PCI_CHIP_TNT2_B,	"Riva TNT2 (B)",0},
 				{PCI_CHIP_ITNT2,	"Riva Integrated",0},
 				{PCI_CHIP_GEFORCE256,	"GeForce 256",0},
 				{PCI_CHIP_GEFORCEDDR,	"GeForce DDR",0},

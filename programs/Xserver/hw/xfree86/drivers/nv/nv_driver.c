@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.56 2001/02/06 19:25:57 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.57 2001/02/15 11:03:57 alanh Exp $ */
 
 #include "nv_include.h"
 
@@ -90,6 +90,8 @@ static SymTabRec NVChipsets[] = {
     { NV_CHIP_RIVA128,    "RIVA128" },
     { NV_CHIP_TNT,        "RIVATNT" },
     { NV_CHIP_TNT2,       "RIVATNT2" },
+    { NV_CHIP_TNT2_A,     "RIVATNT2 (A)" },
+    { NV_CHIP_TNT2_B,     "RIVATNT2 (B)" },
     { NV_CHIP_UTNT2,      "RIVATNT2 (Ultra)" },
     { NV_CHIP_VTNT2,      "RIVATNT2 (Vanta)" },
     { NV_CHIP_UVTNT2,     "RIVATNT2 M64" },
@@ -105,6 +107,10 @@ static SymTabRec NVChipsets[] = {
     { NV_CHIP_GEFORCE2MXDDR, "GeForce2 MX DDR"},
     { NV_CHIP_QUADRO2MXR,   "Quadro 2 MXR"},
     { NV_CHIP_GEFORCE2GO,   "GeForce 2 Go"},
+    { NV_CHIP_0200,       "NV Chip 0x0200"},
+    { NV_CHIP_0201,       "NV Chip 0x0201"},
+    { NV_CHIP_0202,       "NV Chip 0x0202"},
+    { NV_CHIP_0203,       "NV Chip 0x0203"},
     {-1,                        NULL }
 };
 
@@ -112,6 +118,8 @@ static PciChipsets NVPciChipsets[] = {
     { NV_CHIP_RIVA128,          NV_CHIP_RIVA128,        RES_SHARED_VGA },
     { NV_CHIP_TNT,              NV_CHIP_TNT,            RES_SHARED_VGA },
     { NV_CHIP_TNT2,             NV_CHIP_TNT2,           RES_SHARED_VGA },
+    { NV_CHIP_TNT2_A,           NV_CHIP_TNT2_A,         RES_SHARED_VGA },
+    { NV_CHIP_TNT2_B,           NV_CHIP_TNT2_B,         RES_SHARED_VGA },
     { NV_CHIP_UTNT2,            NV_CHIP_UTNT2,          RES_SHARED_VGA },
     { NV_CHIP_VTNT2,            NV_CHIP_VTNT2,          RES_SHARED_VGA },
     { NV_CHIP_UVTNT2,           NV_CHIP_UVTNT2,         RES_SHARED_VGA },
@@ -127,6 +135,10 @@ static PciChipsets NVPciChipsets[] = {
     { NV_CHIP_GEFORCE2MXDDR,    NV_CHIP_GEFORCE2MXDDR,  RES_SHARED_VGA },
     { NV_CHIP_QUADRO2MXR,       NV_CHIP_QUADRO2MXR,     RES_SHARED_VGA },
     { NV_CHIP_GEFORCE2GO,       NV_CHIP_GEFORCE2GO,     RES_SHARED_VGA },
+    { NV_CHIP_0200,             NV_CHIP_0200,           RES_SHARED_VGA },
+    { NV_CHIP_0201,             NV_CHIP_0201,           RES_SHARED_VGA },
+    { NV_CHIP_0202,             NV_CHIP_0202,           RES_SHARED_VGA },
+    { NV_CHIP_0203,             NV_CHIP_0203,           RES_SHARED_VGA },
     { -1,                       -1,                     RES_UNDEFINED  }
 };
 
