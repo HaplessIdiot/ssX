@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.2 2002/01/31 04:33:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.1 2002/02/08 02:59:30 paulo Exp $ */
 
 #include "write.h"
 #include <math.h>
@@ -147,7 +147,7 @@ static void
 format_integer(char *buffer, long value, int radix)
 {
     if (radix == 10)
-	sprintf(buffer, "%d", value);
+	sprintf(buffer, "%ld", value);
     else if (radix == 16)
 	sprintf(buffer, "%x", value);
     else if (radix == 8)
@@ -243,7 +243,7 @@ LispDoWriteList(LispMac *mac, LispObj *stream, LispObj *object, int paren)
 int
 LispDoWriteObject(LispMac *mac, LispObj *stream, LispObj *object, int paren)
 {
-    int length;
+    int length = 0;
     char stk[64];
 
     switch (object->type) {
@@ -452,9 +452,9 @@ LispWriteChar(LispMac *mac, LispObj *stream, int character)
 
     check_stream(mac, stream, &file, &string, 1);
     if (file != NULL)
-	LispFputc(file, character);
-    else
-	LispSputc(string, character);
+	return (LispFputc(file, character));
+
+    return (LispSputc(string, character));
 }
 
 /* write a character count times to stream */

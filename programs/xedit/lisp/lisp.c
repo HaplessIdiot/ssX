@@ -77,6 +77,7 @@
 #include "stream.h"
 #include "struct.h"
 #include "time.h"
+#include "write.h"
 #include <math.h>
 
 /*
@@ -3481,7 +3482,7 @@ LispStrObj(LispMac *mac, LispObj *object)
 	stream.data.stream.readable = 0;
 	stream.data.stream.writable = 1;
 
-	string.string = buffer;
+	string.string = (unsigned char*)buffer;
 	string.fixed = 1;
 	string.space = sizeof(buffer);
 	first = 0;

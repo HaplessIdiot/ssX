@@ -503,7 +503,7 @@ static void
 format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 {
     LispObj *string = NIL;
-    int length,
+    int length = 0,
 	protect = mac->protect.length,
 	atsign = args->atsign,
 	collon = args->collon,
@@ -645,7 +645,7 @@ format_radix_special(LispMac *mac, LispObj *stream,
 static void
 format_roman(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 {
-    long value;
+    long value = 0;
     int cando, new_roman = args->collon == 0;
 
     if (INT_P(object)) {
@@ -668,7 +668,7 @@ static void
 format_english(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 {
     int cando;
-    long number;
+    long number = 0;
 
     if (INT_P(object)) {
 	number = object->data.integer;
@@ -951,14 +951,14 @@ list_formats(LispMac *mac, FmtInfo *info, int command, char **format_ptr,
 
     /* initialize */
     formats = NULL;
-    num_formats = 0;
+    num_formats = format_index = 0;
     if (has_default != NULL)
 	*has_default = 0;
     if (comma_width != NULL)
 	*comma_width = 0;
     if (line_width != NULL)
 	*line_width = 0;
-    format = start = *format_ptr;
+    format = start = next_format = *format_ptr;
     switch (command) {
 	case '[': counters[0] = 1; format_index = 0; break;
 	case '(': counters[1] = 1; format_index = 1; break;
@@ -1094,7 +1094,7 @@ format_case_conversion(LispMac *mac, LispObj *stream, FmtInfo *info)
     /* format text to string */
     LispFormat(mac, string, &case_info);
 
-    str = ptr = LispGetSstring(SSTREAMP(string));
+    str = ptr = (unsigned char*)LispGetSstring(SSTREAMP(string));
 
     /* do case conversion */
     if (!atsign && !collon) {
@@ -1245,7 +1245,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 {
     FmtInfo iterate_info;
     LispObj *object, *arguments, *iarguments, *iobject;
-    char *format, *next_format, *start, *loop_format, **formats;
+    char *format, *next_format, *loop_format, **formats;
     int num_arguments, iterate, iterate_max, has_max, has_min, inum_arguments,
 	num_formats;
 
@@ -1255,7 +1255,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
     num_arguments = *(info->num_arguments);
 
     /* initialize */
-    iterate = 0;
+    iterate = has_min = 0;
     next_format = *(info->format);
 
     /* if has_max set, iterate at most iterate_max times */
@@ -1513,7 +1513,7 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 {
     FmtInfo justify_info;
     char **formats, *format, *next_format;
-    LispObj *string, *strings, *cons;
+    LispObj *string, *strings = NIL, *cons;
     int atsign = info->args.atsign,
 	collon = info->args.collon,
 	mincol = info->args.arguments[0].value,
@@ -1730,7 +1730,7 @@ static void
 LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 {
     FmtArgs *args;
-    FmtDefs *defs;
+    FmtDefs *defs = NULL;
     LispObj *object, *arguments;
     char stk[256], *format, *next_format;
     int length, num_arguments, code, need_update, need_argument, hash, escape;
